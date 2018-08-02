@@ -1240,6 +1240,7 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80010113","2446641051083200000","0163103100000010"); // no dist to bad channel cut, Ncells: 3, min energy 400 MeV
     cuts.AddCut("80010113","2446641051012200000","0163103100000010"); // no dist to bad channel cut, Ncells: 2, min energy 300 MeV
     cuts.AddCut("80010113","2446641051082200000","0163103100000010"); // no dist to bad channel cut, Ncells: 2, min energy 400 MeV
+  } else if (trainConfig == 511){ // cut variation: dist to bad channel, Ncells, min energy
     cuts.AddCut("80010113","2446641151013200000","0163103100000010"); // dist to bad channel: 1, Ncells: 3, min energy 300 MeV
     cuts.AddCut("80010113","2446641151083200000","0163103100000010"); // dist to bad channel: 1, Ncells: 3, min energy 400 MeV
     cuts.AddCut("80010113","2446641151012200000","0163103100000010"); // dist to bad channel: 1, Ncells: 2, min energy 300 MeV
