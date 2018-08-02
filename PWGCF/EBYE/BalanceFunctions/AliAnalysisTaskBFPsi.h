@@ -174,6 +174,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fExcludeInjectedSignals = kTRUE;
   }
 
+   
   //Centrality
   void SetCentralityEstimator(const char* centralityEstimator) {fCentralityEstimator = centralityEstimator;}
   const char* GetCentralityEstimator(void)  const              {return fCentralityEstimator;}
@@ -539,7 +540,6 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fExcludeInjectedSignals; //Flag to reject MC injected signals from MC analysis
   Bool_t fRejectCheckGenName; // Flag to activate the injected signal rejection based on the name of the MC generator 
   TString fGenToBeKept; //String to select the generator name that has to be kept for analysis
-
   
   TString fEventClass; //Can be "EventPlane", "Centrality", "Multiplicity"
   TString fCustomBinning;//for setting customized binning (for output AliTHn of AliBalancePsi)

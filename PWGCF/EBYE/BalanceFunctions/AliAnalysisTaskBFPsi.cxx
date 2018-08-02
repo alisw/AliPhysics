@@ -2739,7 +2739,6 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 
       //analyze one set of particles
       if(fUseMCPdgCode) {
-
 	Int_t label = TMath::Abs(aodTrack->GetLabel());
 	AliAODMCParticle *AODmcTrackForPID = (AliAODMCParticle*) fArrayMC->At(label);
 
@@ -3011,11 +3010,11 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       
       // add the track to the TObjArray
       if(fUseRapidity){// use rapidity instead of pseudorapidity in correlation histograms
-	tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction)); 
+	tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, label_pdg)); 
       } 
       else{
-	tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction)); 
-      } 
+	tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction, label_pdg)); 
+      }
     }//track loop
   }//MCAODrec
   //==============================================================================================================

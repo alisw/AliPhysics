@@ -67,6 +67,8 @@ AliBalancePsi::AliBalancePsi() :
   fHistHBTafter(0),
   fHistPhiStarHBTbefore(0),
   fHistPhiStarHBTafter(0),
+  fHistSameLabelMCCutBefore(0),
+  fHistSameLabelMCCutAfter(0),
   fHistConversionbefore(0),
   fHistConversionafter(0),
   fHistPsiMinusPhi(0),
@@ -82,6 +84,7 @@ AliBalancePsi::AliBalancePsi() :
   fResonancesCut(kFALSE),
   fHBTCut(kFALSE),
   fHBTCutValue(0.02),
+  fSameLabelMCCut(kFALSE),
   fConversionCut(kFALSE),
   fInvMassCutConversion(0.04),
   fQCut(kFALSE),
@@ -111,6 +114,8 @@ AliBalancePsi::AliBalancePsi(const AliBalancePsi& balance):
   fHistHBTafter(balance.fHistHBTafter),
   fHistPhiStarHBTbefore(balance.fHistPhiStarHBTbefore),
   fHistPhiStarHBTafter(balance.fHistPhiStarHBTafter),
+  fHistSameLabelMCCutBefore(balance.fHistSameLabelMCCutBefore),
+  fHistSameLabelMCCutAfter(balance.fHistSameLabelMCCutAfter),
   fHistConversionbefore(balance.fHistConversionbefore),
   fHistConversionafter(balance.fHistConversionafter),
   fHistPsiMinusPhi(balance.fHistPsiMinusPhi),
@@ -151,6 +156,8 @@ AliBalancePsi::~AliBalancePsi() {
   delete fHistHBTafter;
   delete fHistPhiStarHBTbefore;
   delete fHistPhiStarHBTafter;
+  delete fHistSameLabelMCCutBefore;
+  delete fHistSameLabelMCCutAfter;
   delete fHistConversionbefore;
   delete fHistConversionafter;
   delete fHistPsiMinusPhi;
@@ -390,6 +397,8 @@ void AliBalancePsi::InitHistograms() {
   fHistHBTafter         = new TH2D("fHistHBTafter","after HBT cut",200,-0.5,0.5,200,-0.5,0.5);
   fHistPhiStarHBTbefore = new TH2D("fHistPhiStarHBTbefore","before PhiStarHBT cut",200,-0.5,0.5,200,-0.5,0.5);
   fHistPhiStarHBTafter  = new TH2D("fHistPhiStarHBTafter","after PhiStarHBT cut",200,-0.5,0.5,200,-0.5,0.5);
+  fHistSameLabelMCCutBefore  = new TH2D("fHistSameLabelMCCutBefore","before Same Label MC cut;#Delta#eta;#Delta#phi",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2); 
+  fHistSameLabelMCCutAfter  = new TH2D("fHistSameLabelMCCutBefore","after Same Label MC cut;#Delta#eta;#Delta#phi",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2);
   fHistConversionbefore = new TH3D("fHistConversionbefore","before Conversion cut;#Delta#eta;#Delta#phi;M_{inv}^{2}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
   fHistConversionafter  = new TH3D("fHistConversionafter","after Conversion cut;#Delta#eta;#Delta#phi;M_{inv}^{2}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
   fHistPsiMinusPhi      = new TH2D("fHistPsiMinusPhi","",4,-0.5,3.5,100,0,2.*TMath::Pi());
@@ -443,6 +452,7 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
   TArrayF secondPt(jMax);
   TArrayS secondCharge(jMax);
   TArrayD secondCorrection(jMax);
+  TArrayI secondLabel(jMax);
 
   for (Int_t i=0; i<jMax; i++){
     secondEta[i] = ((AliVParticle*) particlesSecond->At(i))->Eta();
@@ -450,6 +460,7 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
     secondPt[i]  = ((AliVParticle*) particlesSecond->At(i))->Pt();
     secondCharge[i]  = (Short_t)((AliVParticle*) particlesSecond->At(i))->Charge();
     secondCorrection[i]  = (Double_t)((AliBFBasicParticle*) particlesSecond->At(i))->Correction();   //==========================correction
+    if (fSameLabelMCCut) secondLabel[i]  = (Double_t)((AliBFBasicParticle*) particlesSecond->At(i))->GetLabel(); 
   }
   
   //TLorenzVector implementation for resonances
@@ -475,7 +486,9 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
     Float_t firstPhi = firstParticle->Phi();
     Float_t firstPt  = firstParticle->Pt();
     Float_t firstCorrection  = firstParticle->Correction();//==========================correction
-
+    Float_t firstLabel= 0; 
+    if (fSameLabelMCCut) firstLabel = firstParticle->GetLabel();
+    
     // Event plane (determine psi bin)
     Double_t gPsiMinusPhi    =   0.;
     Double_t gPsiMinusPhiBin = -10.;
@@ -615,6 +628,8 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 	    Float_t dphistar2 = GetDPhiStar(phi1rad, firstPt, charge1, phi2rad, secondPt[j], charge2, 2.5, bSign);
 	    
 	    const Float_t kLimit = fHBTCutValue * 3;
+
+	    // Printf("typical values: deta =%f dphistar1 0.8= %f,  dphistar2 2.5 =%f, kLimit =%f ", deta, dphistar1,  dphistar2, kLimit ); 
 	    
 	    Float_t dphistarminabs = 1e5;
 	    //Float_t dphistarmin = 1e5;
@@ -622,6 +637,8 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 	    if (TMath::Abs(dphistar1) < kLimit || TMath::Abs(dphistar2) < kLimit || dphistar1 * dphistar2 < 0 ) {
 	      for (Double_t rad=0.8; rad<2.51; rad+=0.01) {
 		Float_t dphistar = GetDPhiStar(phi1rad, firstPt, charge1, phi2rad, secondPt[j], charge2, rad, bSign);
+		//Printf("inside loop r = %f, dphistar = %f", rad,  dphistar); 
+			    
 		Float_t dphistarabs = TMath::Abs(dphistar);
 		
 		if (dphistarabs < dphistarminabs) {
@@ -639,7 +656,24 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 	fHistHBTafter->Fill(deta,dphi);
 	fHistPhiStarHBTafter->Fill(deta,dphistarMiddle);
       }//HBT cut
-	
+
+      if (fSameLabelMCCut){
+
+	if (charge1 * charge2 > 0) {
+	  Double_t deta = firstEta - secondEta[j];
+	  Double_t dphi = firstPhi - secondPhi[j];
+	  
+	  fHistSameLabelMCCutBefore->Fill(deta,dphi);
+	  
+	  if (secondLabel[j] == firstLabel) {
+	    Printf("label1 = %d, second %d", firstLabel, secondLabel[j]);
+		  
+	    continue;
+	  }
+	    fHistSameLabelMCCutAfter->Fill(deta,dphi);
+	}
+      }
+      
       // conversions
       if(fConversionCut) {
 	if (charge1 * charge2 < 0) {
