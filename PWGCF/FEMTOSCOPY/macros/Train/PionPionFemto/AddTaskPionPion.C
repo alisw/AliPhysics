@@ -97,7 +97,7 @@ AliAnalysisTaskFemto* AddTaskPionPion(TString configuration,
   macro.ReplaceAll("%%", AUTO_DIRECTORY);
 
   // Dealing with subwagons
-  if (subwagon_suffix) {
+  if (!subwagon_suffix.IsWhitespace()) {
     subwagon_type.ToLower();
 
     if (subwagon_type == "centrality") {
