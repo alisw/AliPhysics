@@ -134,6 +134,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistHFdijet(0), 
   fHistULSjet(0), 
   fHistLSjet(0), 
+  fHistHadjet(0), 
   fHistHFjetOrder(0), 
   fHistDiJetPhi(0), 
   fHistDiJetMomBalance(0), 
@@ -267,6 +268,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fHistHFdijet(0),
   fHistULSjet(0),
   fHistLSjet(0),
+  fHistHadjet(0),
   fHistHFjetOrder(0),
   fHistDiJetPhi(0), 
   fHistDiJetMomBalance(0), 
@@ -566,6 +568,9 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
 
   fHistULSjet = new TH2F("fHistULSjet","ULS jet;p_{T}",20,0,20,300,-100.,200.);
   fOutput->Add(fHistULSjet);
+
+  fHistHadjet = new TH2F("fHistHadjet","Hadron jet;p_{T}",20,0,20,300,-100.,200.);
+  fOutput->Add(fHistHadjet);
 
   fHistLSjet = new TH2F("fHistLSjet","LS jet;p_{T}",20,0,20,300,-100.,200.);
   fOutput->Add(fHistLSjet);
@@ -1278,6 +1283,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             if(eop>0.2  && eop<0.7 && m20>0.01 && m20<0.35)fHistTPCnSigma_had->Fill(pt,fTPCnSigma);
             if(abs(MCpdg)==11)fHistTPCnSigma_eMC->Fill(pt,fTPCnSigma);
  
+            if(fTPCnSigma<-2.5 && eop>fmimEop && eop<1.3)GetFakeHadronJet(pt,epTarray,rho);
+
             if(fTPCnSigma<fmimSig || fTPCnSigma>3)continue;  // Nsigma cut
             fHistEop->Fill(pt,eop);
 
@@ -1949,6 +1956,26 @@ void AliAnalysisHFjetTagHFE::MakeParticleLevelJet()
           }
         
        }
+}
+
+void AliAnalysisHFjetTagHFE::GetFakeHadronJet(Double_t pthad, Double_t *hpTarray, Double_t &rho)
+{
+
+   fJetsCont->ResetCurrentID();
+   AliEmcalJet *jethad = fJetsCont->GetNextAcceptJet();
+   while(jethad) 
+        {
+          Bool_t iTagHadjet = tagHFjet( jethad, hpTarray, 0, pthad);
+          if(iTagHadjet)
+             {
+	       Float_t pThJet = jethad->Pt();
+	       Float_t Eta_hJet = jethad->Eta();
+	       Float_t pThJetBG = rho * jethad->Area();
+               Float_t corrPtHad = pThJet - pThJetBG;
+               if(TMath::Abs(Eta_hJet)<0.6)fHistHadjet->Fill(pthad,corrPtHad); 
+              }
+           jethad = fJetsCont->GetNextAcceptJet(); 
+         }
 }
 
 void AliAnalysisHFjetTagHFE::FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom)
