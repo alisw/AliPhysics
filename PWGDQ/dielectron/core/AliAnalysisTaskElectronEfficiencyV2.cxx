@@ -611,12 +611,30 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
   if (!fPIDResponse) SetPIDResponse( eventHandler->GetPIDResponse() );
   AliDielectronVarManager::SetPIDResponse(fPIDResponse);
 
-  if(fPostPIDCntrdCorrTPC) AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorrTPC);
-  if(fPostPIDWdthCorrTPC)  AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorrTPC);
-  if(fPostPIDCntrdCorrITS) AliDielectronPID::SetCentroidCorrFunctionITS(fPostPIDCntrdCorrITS);
-  if(fPostPIDWdthCorrITS)  AliDielectronPID::SetWidthCorrFunctionITS(fPostPIDWdthCorrITS);
-  if(fPostPIDCntrdCorrTOF) AliDielectronPID::SetCentroidCorrFunctionTOF(fPostPIDCntrdCorrTOF);
-  if(fPostPIDWdthCorrTOF)  AliDielectronPID::SetWidthCorrFunctionTOF(fPostPIDWdthCorrTOF);
+  if(fPostPIDCntrdCorrTPC) {
+    // std::cout << "TPC mean correction applied" << std::endl;
+    AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorrTPC);
+  }
+  if(fPostPIDWdthCorrTPC)  {
+    // std::cout << "TPC width correction applied" << std::endl;
+    AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorrTPC);
+  }
+  if(fPostPIDCntrdCorrITS) {
+    // std::cout << "ITS mean correction applied" << std::endl;
+    AliDielectronPID::SetCentroidCorrFunctionITS(fPostPIDCntrdCorrITS);
+  }
+  if(fPostPIDWdthCorrITS)  {
+    // std::cout << "ITS width correction applied" << std::endl;
+    AliDielectronPID::SetWidthCorrFunctionITS(fPostPIDWdthCorrITS);
+  }
+  if(fPostPIDCntrdCorrTOF) {
+    // std::cout << "TOF mean correction applied" << std::endl;
+    AliDielectronPID::SetCentroidCorrFunctionTOF(fPostPIDCntrdCorrTOF);
+  }
+  if(fPostPIDWdthCorrTOF)  {
+    // std::cout << "TOF width correction applied" << std::endl;
+    AliDielectronPID::SetWidthCorrFunctionTOF(fPostPIDWdthCorrTOF);
+  }
 
 
   if (isAOD) fEvent = static_cast<AliAODEvent*>(eventHandler->GetEvent());
@@ -968,25 +986,6 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
               // if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_i].isMCSignal[iMCSignal] == true){
               if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_i].isMCSignal[iMCSignal] == true &&
                   fGenNegPart[neg_i].DielectronPairFromSameMother[iMCSignal] == false && fGenPosPart[pos_i].DielectronPairFromSameMother[iMCSignal] == false){
-
-                // int motherID1 = fGenNegPart[neg_i].GetMotherID();
-                // int motherID2 = fGenPosPart[pos_i].GetMotherID();
-                // // if (/*(mass < 0.1 || (mass > 0.9 && mass < 1.15))&& */iMCSignal == 1){
-                // if (motherID1 == motherID2 && iMCSignal == 1){
-                //   int pdgCodeM1 = (fMC->GetTrack(TMath::Abs(fGenNegPart[neg_i].GetMotherID())))->PdgCode();
-                //   int pdgCodeM2 = (fMC->GetTrack(TMath::Abs(fGenPosPart[pos_i].GetMotherID())))->PdgCode();
-                //   int pdgCode1 = (fMC->GetTrack(TMath::Abs(fGenNegPart[neg_i].GetTrackID())))->PdgCode();
-                //   int pdgCode2 = (fMC->GetTrack(TMath::Abs(fGenPosPart[pos_i].GetTrackID())))->PdgCode();
-                //   int uniqueID1 = (fMC->GetTrack(TMath::Abs(fGenNegPart[neg_i].GetTrackID())))->GetUniqueID();
-                //   int uniqueID2 = (fMC->GetTrack(TMath::Abs(fGenPosPart[pos_i].GetTrackID())))->GetUniqueID();
-                //   int uniqueM1 = (fMC->GetTrack(TMath::Abs(fGenNegPart[neg_i].GetMotherID())))->GetUniqueID();
-                //   int uniqueM2 = (fMC->GetTrack(TMath::Abs(fGenPosPart[pos_i].GetMotherID())))->GetUniqueID();
-                //   std::cout << "MCSignal = " << iMCSignal << "   pdgCodeM1 = " << pdgCodeM1 << "    pdgCodeM2 = " << pdgCodeM2 << "    mass = " << mass << "   pairpt = " << pairpt <<  std::endl;
-                //   std::cout << "  motherID1 = " << fGenNegPart[neg_i].GetMotherID() << "    motherID2 = " << fGenPosPart[pos_i].GetMotherID() << "   ID1 = " << fGenNegPart[neg_i].GetTrackID() << "   ID2 = " << fGenPosPart[pos_i].GetTrackID() <<  std::endl;
-                //   std::cout << "  uniqueID1 = " << uniqueID1 << "    uniqueID2 = " << uniqueID2 << std::endl;
-                //   std::cout << "  uniqueM1 = " << uniqueM1 << "    uniqueM2 = " << uniqueM2 << std::endl;
-                //   std::cout << "  pdgCode1 = " << pdgCode1 << "   pdgCode2 = " << pdgCode2 << std::endl;
-                // }
 
                 fHistGenPair_ULSandLS.at(3*iMCSignal)->Fill(mass, pairpt, weight);
               }
@@ -1702,9 +1701,18 @@ void AliAnalysisTaskElectronEfficiencyV2::SetCentroidCorrFunction(Detector det, 
   std::cout << "Do centroid correction with detector " << detector << std::endl;
 
   TH1* correctionMap = 0x0;
-  if      (det == kITS) correctionMap = fPostPIDCntrdCorrITS;
-  else if (det == kTPC) correctionMap = fPostPIDCntrdCorrTPC;
-  else if (det == kTOF) correctionMap = fPostPIDCntrdCorrTOF;
+  if      (det == kITS) {
+    fPostPIDCntrdCorrITS = dynamic_cast<TH1*>(fun);
+    correctionMap = fPostPIDCntrdCorrITS;
+  }
+  else if (det == kTPC) {
+    fPostPIDCntrdCorrTPC = dynamic_cast<TH1*>(fun);
+    correctionMap = fPostPIDCntrdCorrTPC;
+  }
+  else if (det == kTOF) {
+    fPostPIDCntrdCorrTOF = dynamic_cast<TH1*>(fun);
+    correctionMap = fPostPIDCntrdCorrTOF;
+  }
 
   UInt_t valType[20] = {0};
   valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
@@ -1752,9 +1760,19 @@ void AliAnalysisTaskElectronEfficiencyV2::SetWidthCorrFunction(Detector det, TOb
   std::cout << "Do width correction with detector " << detector << std::endl;
 
   TH1* correctionMap = 0x0;
-  if (det == kITS) correctionMap = fPostPIDWdthCorrITS;
-  if (det == kTPC) correctionMap = fPostPIDWdthCorrTPC;
-  if (det == kTOF) correctionMap = fPostPIDWdthCorrTOF;
+  if      (det == kITS) {
+    fPostPIDWdthCorrITS = dynamic_cast<TH1*>(fun);
+    correctionMap = fPostPIDWdthCorrITS;
+  }
+  else if (det == kTPC) {
+    fPostPIDWdthCorrTPC = dynamic_cast<TH1*>(fun);
+    correctionMap = fPostPIDWdthCorrTPC;
+  }
+  else if (det == kTOF) {
+    fPostPIDWdthCorrTOF = dynamic_cast<TH1*>(fun);
+    correctionMap = fPostPIDWdthCorrTOF;
+  }
+
 
   UInt_t valType[20] = {0};
   valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
