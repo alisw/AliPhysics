@@ -1948,6 +1948,13 @@ Int_t TrendingEMCALTree(Long_t RunId, TString fCalorimeter, TString system, TStr
     cT->SaveAs(outfilenameT);
   if(SavePlots)
     cT->SaveAs(outfilename2T);
+
+    fout->cd();
+    fout->Cd(Form("%s/%s/%ld/%s/%s", period.Data(), pass.Data(), RunId, "RunLevelQA", fTrigger.Data()));
+
+
+     cT->Write();
+     delete cT;
   
  TString   outfilename7 =  QAPATH + "OccupancyMapTrigger" + fTrigger(r) + ".pdf" ;
  TString   outfilename8= QAPATH + "OccupancyMapTrigger" + fTrigger(r) + ".png" ;
