@@ -7,6 +7,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliHLTVZERORecoComponent+;
+#pragma link C++ class AliHLTVZEROOnlineCalibComponent+;
 #pragma link C++ class AliHLTVZEROAgent+;
 
 #endif // __CINT__

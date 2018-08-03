@@ -32,6 +32,7 @@
 
 // header files of library components
 #include "AliHLTVZERORecoComponent.h"
+#include "AliHLTVZEROOnlineCalibComponent.h"
 
 // raw data handler of HLTOUT data
 #include "AliHLTOUTHandlerEquId.h"
@@ -134,6 +135,7 @@ Int_t AliHLTVZEROAgent::RegisterComponents(AliHLTComponentHandler* pHandler) con
   if (!pHandler) return -EINVAL;
   
   pHandler->AddComponent(new AliHLTVZERORecoComponent);
+  pHandler->AddComponent(new AliHLTVZEROOnlineCalibComponent);
   
   return 0;
 }

@@ -35,6 +35,7 @@ include_directories(${AliRoot_SOURCE_DIR}/HLT/BASE
 set(SRCS
     AliHLTVZEROAgent.cxx
     AliHLTVZERORecoComponent.cxx
+    AliHLTVZEROOnlineCalibComponent.cxx
    )
 
 # Headers from sources

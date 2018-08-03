@@ -1163,7 +1163,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       }
     }
 
-    //VZERO Multiplicity
+    //TZERO Multiplicity
     if (iter->fDataType == (kAliHLTDataTypeESDContent | kAliHLTDataOriginT0))
     {
       const TObject* o = GetInputObjectFromIndex(ndx);
