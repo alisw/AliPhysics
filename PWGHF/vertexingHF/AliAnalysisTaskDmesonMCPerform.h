@@ -50,7 +50,7 @@ class AliAnalysisTaskDmesonMCPerform : public AliAnalysisTaskSE
 
   AliAnalysisTaskDmesonMCPerform(const AliAnalysisTaskDmesonMCPerform &source);
   AliAnalysisTaskDmesonMCPerform& operator=(const AliAnalysisTaskDmesonMCPerform &source);
-  enum {kDecays=5, kMaxLabel=1000000};
+  enum {kDecays=6, kMaxLabel=1000000};
 
   TList* fOutput;                   //!<! list send on output slot 0
   TH1F* fHistNEvents;               //!<! hist. for N. of events
@@ -82,7 +82,7 @@ class AliAnalysisTaskDmesonMCPerform : public AliAnalysisTaskSE
   Int_t fMapTrLabel[kMaxLabel];              /// map of track labels
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskDmesonMCPerform,2);
+  ClassDef(AliAnalysisTaskDmesonMCPerform,3);
   /// \endcond
 };
 #endif
