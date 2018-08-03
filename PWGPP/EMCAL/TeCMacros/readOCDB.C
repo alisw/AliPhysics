@@ -220,6 +220,274 @@ void read_LHC16p(Bool_t loc=0, Bool_t test=0)
   readLed(runs,nruns,"lhc16p");
 }
 
+void read_LHC16q(Bool_t loc=0, Bool_t test=0)
+{
+    Int_t runs[] = {265305, 265308, 265309, 265331, 265332, 265334, 265335, 265336, 265338, 265339, 265342, 265343, 265344, 265378, 265383, 265384, 265387, 265388, 265419, 265420, 265421, 265424, 265425, 265426, 265427, 265499, 265500, 265501, 265521, 265525};
+
+    Int_t nruns = sizeof(runs)/sizeof(Int_t);
+    if (test)
+        nruns=3;
+
+    if (loc) {
+        AliCDBManager*  cdb = AliCDBManager::Instance();
+        cdb->SetDefaultStorage("local:///opt/alice/OCDB/2016/");
+    }
+
+    readTemp(runs,nruns,"lhc16q");
+    readLed(runs,nruns,"lhc16q");
+}
+
+void read_LHC16r(Bool_t loc=0, Bool_t test=0)
+{
+    Int_t runs[] = {265630, 265632, 265656, 265658, 265665, 265669, 265694, 265696, 265697, 265698, 265700, 265701, 265705, 265709, 265713, 265714, 265739, 265740, 265741, 265742, 265744, 265756, 265785, 265787, 265788, 265789, 265792, 265795, 265797, 265838, 265840, 265841, 266022, 266023, 266025, 266034, 266081, 266083, 266084, 266085, 266086, 266117, 266187, 266189, 266193, 266196, 266197, 266208, 266234, 266235, 266296, 266299, 266304, 266312, 266313, 266316, 266317, 266318};
+
+    Int_t nruns = sizeof(runs)/sizeof(Int_t);
+    if (test)
+        nruns=3;
+
+    if (loc) {
+        AliCDBManager*  cdb = AliCDBManager::Instance();
+        cdb->SetDefaultStorage("local:///opt/alice/OCDB/2016/");
+    }
+
+    readTemp(runs,nruns,"lhc16r");
+    readLed(runs,nruns,"lhc16r");
+}
+
+void read_LHC16s(Bool_t loc=0, Bool_t test=0)
+{
+    Int_t runs[] = {266405, 266437, 266438, 266439, 266441, 266470, 266472, 266477, 266479, 266480, 266514, 266516, 266518, 266520, 266522, 266523, 266525, 266526, 266534, 266539, 266543, 266549, 266584, 266585, 266587, 266588, 266590, 266591, 266592, 266595, 266596, 266614, 266615, 266617, 266618, 266619, 266621, 266625, 266628, 266630, 266657, 266658, 266659, 266665, 266668, 266669, 266700, 266702, 266703, 266706, 266708, 266775, 266776, 266800, 266805, 266807, 266808, 266857, 266878, 266880, 266881, 266882, 266883, 266885, 266886, 266912, 266915, 266940, 266942, 266943, 266944, 266988, 266993, 266994, 266997, 266998, 267020, 267060, 267061, 267062, 267067, 267070, 267072, 267077, 267081, 267109, 267110, 267130, 267131};
+
+    Int_t nruns = sizeof(runs)/sizeof(Int_t);
+    if (test)
+        nruns=3;
+
+    if (loc) {
+        AliCDBManager*  cdb = AliCDBManager::Instance();
+        cdb->SetDefaultStorage("local:///opt/alice/OCDB/2016/");
+    }
+
+    readTemp(runs,nruns,"lhc16s");
+    readLed(runs,nruns,"lhc16s");
+}
+
+void read_LHC16t(Bool_t loc=0, Bool_t test=0)
+{
+    Int_t runs[] = {267161, 267163, 267164, 267165, 267166};
+
+    Int_t nruns = sizeof(runs)/sizeof(Int_t);
+    if (test)
+        nruns=3;
+
+    if (loc) {
+        AliCDBManager*  cdb = AliCDBManager::Instance();
+        cdb->SetDefaultStorage("local:///opt/alice/OCDB/2016/");
+    }
+
+    readTemp(runs,nruns,"lhc16t");
+    readLed(runs,nruns,"lhc16t");
+}
+
+
+void read_LHC17c(Bool_t loc=0, Bool_t test=0)
+{
+    Int_t runs[] = {270531, 270578, 270581, 270598, 270601, 270661, 270663, 270665};
+
+    Int_t nruns = sizeof(runs)/sizeof(Int_t);
+    if (test)
+        nruns=3;
+
+    if (loc) {
+        AliCDBManager*  cdb = AliCDBManager::Instance();
+        cdb->SetDefaultStorage("local:///opt/alice/OCDB/2017/");
+    }
+
+    readTemp(runs,nruns,"lhc17c");
+    readLed(runs,nruns,"lhc17c");
+}
+
+void read_LHC17d(Bool_t loc=0, Bool_t test=0)
+{
+    Int_t runs[] = {270762, 270766, 270767, 270768, 270770, 270771, 270772};
+
+    Int_t nruns = sizeof(runs)/sizeof(Int_t);
+    if (test)
+        nruns=3;
+
+    if (loc) {
+        AliCDBManager*  cdb = AliCDBManager::Instance();
+        cdb->SetDefaultStorage("local:///opt/alice/OCDB/2017/");
+    }
+
+    readTemp(runs,nruns,"lhc17d");
+    readLed(runs,nruns,"lhc17d");
+}
+
+void read_LHC17f(Bool_t loc=0, Bool_t test=0)
+{
+    Int_t runs[] = {270854, 270855, 270856, 270861, 270865};
+
+    Int_t nruns = sizeof(runs)/sizeof(Int_t);
+    if (test)
+        nruns=3;
+
+    if (loc) {
+        AliCDBManager*  cdb = AliCDBManager::Instance();
+        cdb->SetDefaultStorage("local:///opt/alice/OCDB/2017/");
+    }
+
+    readTemp(runs,nruns,"lhc17f");
+    readLed(runs,nruns,"lhc17f");
+}
+
+void read_LHC17g(Bool_t loc=0, Bool_t test=0)
+{
+    Int_t runs[] = {270882, 270883, 270931, 270934, 270935, 270937, 270938, 270940, 271005, 271006, 271008, 271009, 271013, 271015, 271026, 271028, 271288, 271289, 271369, 271378, 271379, 271381, 271382, 271383, 271384, 271419, 271448, 271449, 271451, 271743, 271774, 271777};
+
+    Int_t nruns = sizeof(runs)/sizeof(Int_t);
+    if (test)
+        nruns=3;
+
+    if (loc) {
+        AliCDBManager*  cdb = AliCDBManager::Instance();
+        cdb->SetDefaultStorage("local:///opt/alice/OCDB/2017/");
+    }
+
+    readTemp(runs,nruns,"lhc17g");
+    readLed(runs,nruns,"lhc17g");
+}
+
+void read_LHC17h(Bool_t loc=0, Bool_t test=0)
+{
+    Int_t runs[] = {271871, 271873, 271878, 271879, 271880, 271881, 271886, 271908, 271911, 271912, 271915, 271916, 271925, 272075, 272076, 272100, 272101, 272123, 272151, 272152, 272153, 272154, 272155, 272156, 272335, 272340, 272359, 272400, 272619, 272746, 272753, 272755, 272762, 272763, 272764, 272782, 272783, 272784, 272828, 272870, 272871, 272873, 272880, 272903, 272905, 272932, 272934, 272947, 272949, 272983, 273009, 273077, 273099, 273100, 273101};
+
+    Int_t nruns = sizeof(runs)/sizeof(Int_t);
+    if (test)
+        nruns=3;
+
+    if (loc) {
+        AliCDBManager*  cdb = AliCDBManager::Instance();
+        cdb->SetDefaultStorage("local:///opt/alice/OCDB/2017/");
+    }
+
+    readTemp(runs,nruns,"lhc17h");
+    readLed(runs,nruns,"lhc17h");
+}
+
+void read_LHC17i(Bool_t loc=0, Bool_t test=0)
+{
+    Int_t runs[] = {273591, 273592, 273593, 273653, 273654, 273711, 273719, 273824, 273825, 273885, 273886, 273918, 273942, 273943, 273946, 274063, 274064, 274092, 274125, 274147, 274148, 274174, 274212, 274232, 274258, 274259, 274263, 274264, 274269, 274270, 274271, 274278, 274279, 274280, 274281, 274283, 274329, 274351, 274352, 274355, 274363, 274364, 274385, 274386, 274387, 274388, 274389, 274390, 274442};
+
+    Int_t nruns = sizeof(runs)/sizeof(Int_t);
+    if (test)
+        nruns=3;
+
+    if (loc) {
+        AliCDBManager*  cdb = AliCDBManager::Instance();
+        cdb->SetDefaultStorage("local:///opt/alice/OCDB/2017/");
+    }
+
+    readTemp(runs,nruns,"lhc17i");
+    readLed(runs,nruns,"lhc17i");
+}
+
+void read_LHC17j(Bool_t loc=0, Bool_t test=0)
+{
+    Int_t runs[] = {274591, 274593, 274594, 274595, 274596, 274601, 274653, 274657, 274667, 274668, 274669, 274670, 274671};
+
+    Int_t nruns = sizeof(runs)/sizeof(Int_t);
+    if (test)
+        nruns=3;
+
+    if (loc) {
+        AliCDBManager*  cdb = AliCDBManager::Instance();
+        cdb->SetDefaultStorage("local:///opt/alice/OCDB/2017/");
+    }
+
+    readTemp(runs,nruns,"lhc17j");
+    readLed(runs,nruns,"lhc17j");
+}
+
+void read_LHC17k(Bool_t loc=0, Bool_t test=0)
+{
+    Int_t runs[] = {274889, 274979, 275067, 275068, 275073, 275075, 275076, 275149, 275150, 275621, 275622, 275623, 275624, 275648, 275657, 275664, 275847, 275924, 276012, 276013, 276017, 276019, 276020, 276040, 276041, 276045, 276097, 276098, 276102, 276104, 276105, 276108, 276135, 276140, 276141, 276145, 276166, 276169, 276170, 276178, 276205, 276230, 276257, 276259, 276290, 276291, 276292, 276294, 276302, 276307, 276312, 276348, 276351, 276429, 276435, 276437};
+
+    Int_t nruns = sizeof(runs)/sizeof(Int_t);
+    if (test)
+        nruns=3;
+
+    if (loc) {
+        AliCDBManager*  cdb = AliCDBManager::Instance();
+        cdb->SetDefaultStorage("local:///opt/alice/OCDB/2017/");
+    }
+
+    readTemp(runs,nruns,"lhc17k");
+    readLed(runs,nruns,"lhc17k");
+}
+
+void read_LHC17l(Bool_t loc=0, Bool_t test=0)
+{
+    Int_t runs[] = {276552, 276553, 276556, 276557, 276608, 276644, 276669, 276670, 276671, 276672, 276674, 276675, 276762, 276916, 276917, 276920, 276967, 276969, 276970, 276971, 276972, 277015, 277016, 277017, 277037, 277075, 277076, 277079, 277082, 277087, 277088, 277091, 277121, 277155, 277180, 277181, 277182, 277183, 277188, 277189, 277193, 277194, 277196, 277197, 277250, 277256, 277257, 277262, 277293, 277310, 277312, 277314, 277360, 277383, 277384, 277385, 277389, 277416, 277417, 277418, 277470, 277472, 277473, 277476, 277477, 277478, 277479, 277530, 277531, 277534, 277536, 277537, 277574, 277575, 277576, 277577, 277718, 277720, 277721, 277722, 277723, 277725, 277745, 277746, 277747, 277748, 277749, 277794, 277799, 277800, 277801, 277802, 277834, 277841, 277842, 277845, 277847, 277848, 277876, 277897, 277898, 277899, 277900, 277901, 277903, 277907, 277930, 277952, 277987, 277988, 277989, 277996, 278055, 278077, 278079, 278080, 278089, 278092, 278093, 278094, 278095, 278121, 278122, 278126, 278127, 278158, 278162, 278163, 278164, 278165, 278166, 278167, 278189, 278191, 278215, 278216};
+
+    Int_t nruns = sizeof(runs)/sizeof(Int_t);
+    if (test)
+        nruns=3;
+
+    if (loc) {
+        AliCDBManager*  cdb = AliCDBManager::Instance();
+        cdb->SetDefaultStorage("local:///opt/alice/OCDB/2017/");
+    }
+
+    readTemp(runs,nruns,"lhc17l");
+    readLed(runs,nruns,"lhc17l");
+}
+
+void read_LHC17m(Bool_t loc=0, Bool_t test=0)
+{
+    Int_t runs[] = {278915, 278936, 278939, 278941, 278959, 278960, 278963, 278964, 278999, 279000, 279005, 279007, 279008, 279035, 279036, 279041, 279043, 279044, 279068, 279069, 279073, 279074, 279075, 279106, 279107, 279117, 279118, 279122, 279123, 279130, 279155, 279157, 279199, 279201, 279207, 279208, 279232, 279234, 279235, 279242, 279264, 279265, 279267, 279268, 279270, 279273, 279274, 279309, 279310, 279312, 279342, 279344, 279348, 279354, 279355, 279391, 279410, 279439, 279441, 279483, 279487, 279491, 279550, 279559, 279560, 279561, 279583, 279597, 279598, 279600, 279602, 279632, 279641, 279642, 279676, 279677, 279682, 279683, 279687, 279688, 279689, 279718, 279719, 279747, 279749, 279773, 279826, 279853, 279854, 279855, 279879, 279880, 279884, 279886, 279889, 279890, 279893, 279952, 279954, 279955, 279956, 279957, 279958, 279963, 279965, 279979, 279980, 279981, 279982, 279984, 280046, 280047, 280049, 280051, 280052, 280066, 280107, 280108, 280111, 280114, 280126, 280131, 280134, 280140};
+
+    Int_t nruns = sizeof(runs)/sizeof(Int_t);
+    if (test)
+        nruns=3;
+
+    if (loc) {
+        AliCDBManager*  cdb = AliCDBManager::Instance();
+        cdb->SetDefaultStorage("local:///opt/alice/OCDB/2017/");
+    }
+
+    readTemp(runs,nruns,"lhc17m");
+    readLed(runs,nruns,"lhc17m");
+}
+
+void read_LHC17n(Bool_t loc=0, Bool_t test=0)
+{
+    Int_t runs[] = {280234, 280235};
+    Int_t nruns = sizeof(runs)/sizeof(Int_t);
+
+    if (loc) {
+        AliCDBManager*  cdb = AliCDBManager::Instance();
+        cdb->SetDefaultStorage("local:///opt/alice/OCDB/2017/");
+    }
+
+    readTemp(runs,nruns,"lhc17n");
+    readLed(runs,nruns,"lhc17n");
+}
+
+void read_LHC17o(Bool_t loc=0, Bool_t test=0)
+{
+    Int_t runs[] = {280282, 280283, 280284, 280285, 280286, 280310, 280348, 280349, 280350, 280351, 280352, 280374, 280375, 280403, 280412, 280413, 280415, 280418, 280419, 280443, 280445, 280446, 280447, 280448, 280518, 280519, 280546, 280547, 280550, 280551, 280574, 280575, 280576, 280581, 280583, 280613, 280634, 280636, 280637, 280647, 280648, 280650, 280671, 280673, 280676, 280679, 280705, 280706, 280729, 280753, 280754, 280755, 280756, 280757, 280761, 280762, 280763, 280764, 280765, 280766, 280767, 280768, 280786, 280787, 280793, 280842, 280844, 280845, 280847, 280848, 280849, 280854, 280856, 280880, 280881, 280897, 280936, 280943, 280947, 280994, 280996, 280997, 280998, 280999, 281032, 281033, 281035, 281036, 281060, 281061, 281062, 281079, 281080, 281081, 281179, 281180, 281181, 281186, 281187, 281188, 281189, 281190, 281191, 281212, 281213, 281240, 281241, 281242, 281243, 281244, 281271, 281273, 281275, 281277, 281301, 281321, 281350, 281415, 281443, 281444, 281446, 281449, 281450, 281509, 281511, 281562, 281563, 281568, 281569, 281574, 281580, 281583, 281592, 281633, 281634, 281635, 281638, 281641, 281653, 281665, 281668, 281671, 281705, 281706, 281707, 281713, 281750, 281751, 281753, 281755, 281756, 281892, 281893, 281894, 281895, 281915, 281916, 281918, 281919, 281920, 281928, 281931, 281932, 281939, 281940, 281961};
+    Int_t nruns = sizeof(runs)/sizeof(Int_t);
+
+    if (loc) {
+        AliCDBManager*  cdb = AliCDBManager::Instance();
+        cdb->SetDefaultStorage("local:///opt/alice/OCDB/2017/");
+    }
+
+    readTemp(runs,nruns,"lhc17o");
+    readLed(runs,nruns,"lhc17o");
+}
+
+
 void read_LHC17p(Bool_t loc=0, Bool_t test=0)
 {
   Int_t runs[] = {282008,282016,282021,282025,282026,282027,282030,282031,282050,282051,282078,282098,282099,282118,282119,282120,282122,282123,282125,282126,282127,282146,282147,282189,282206,282224,282227,282229,282230,282247,282302,282303,282304,282305,282306,282307,282309,282312,282313,282314,282340,282341,282342,282343};
@@ -236,6 +504,36 @@ void read_LHC17p(Bool_t loc=0, Bool_t test=0)
   readTemp(runs,nruns,"lhc17p");
   readLed(runs,nruns,"lhc17p");
 }
+
+void read_LHC17q(Bool_t loc=0, Bool_t test=0)
+{
+    Int_t runs[] = {282365, 282366, 282367, 282391, 282392, 282393, 282398, 282399, 282402, 282411, 282415, 282437, 282440};
+    Int_t nruns = sizeof(runs)/sizeof(Int_t);
+
+    if (loc) {
+        AliCDBManager*  cdb = AliCDBManager::Instance();
+        cdb->SetDefaultStorage("local:///opt/alice/OCDB/2017/");
+    }
+
+    readTemp(runs,nruns,"lhc17q");
+    readLed(runs,nruns,"lhc17q");
+}
+
+void read_LHC17r(Bool_t loc=0, Bool_t test=0)
+{
+    Int_t runs[] = {282504, 282544, 282545, 282546, 282573, 282579, 282580, 282606, 282607, 282608, 282609, 282615, 282618, 282620, 282622, 282651, 282653, 282666, 282667, 282668, 282670, 282671, 282673, 282676, 282677, 282700, 282702, 282703, 282704};
+    Int_t nruns = sizeof(runs)/sizeof(Int_t);
+
+    if (loc) {
+        AliCDBManager*  cdb = AliCDBManager::Instance();
+        cdb->SetDefaultStorage("local:///opt/alice/OCDB/2017/");
+    }
+
+    readTemp(runs,nruns,"lhc17r");
+    readLed(runs,nruns,"lhc17r");
+}
+
+
 
 void read_LHC18b(Bool_t loc=0, Bool_t test=0)
 {
@@ -319,7 +617,25 @@ void read_all(Bool_t loc=0, Bool_t test=0)
   read_LHC16l(loc,test);
   read_LHC16o(loc,test);
   read_LHC16p(loc,test);
+  read_LHC16r(loc,test);
+  read_LHC16s(loc,test);
+  read_LHC16t(loc,test);
+  read_LHC16q(loc,test);
+  read_LHC17c(loc,test);
+  read_LHC17d(loc,test);
+  read_LHC17f(loc,test);
+  read_LHC17g(loc,test);
+  read_LHC17h(loc,test);
+  read_LHC17i(loc,test);
+  read_LHC17j(loc,test);
+  read_LHC17k(loc,test);
+  read_LHC17l(loc,test);
+  read_LHC17m(loc,test);
+  read_LHC17n(loc,test);
+  read_LHC17o(loc,test);
   read_LHC17p(loc,test);
+  read_LHC17q(loc,test);
+  read_LHC17r(loc,test);
   read_LHC18b(loc,test);
   read_LHC18c(loc,test);
   read_LHC18d(loc,test);

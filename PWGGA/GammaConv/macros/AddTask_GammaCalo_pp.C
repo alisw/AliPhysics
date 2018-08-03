@@ -1286,6 +1286,15 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   } else if (trainConfig == 803){ // PHOS clusters with larger acceptance w/ TM NCells 2
     cuts.AddCut("00010113","2446600044012300000","0163103100000010"); // INT7
     cuts.AddCut("00062113","2446600044012300000","0163103100000010"); // PHI7
+  } else if (trainConfig == 804){ // QA
+    cuts.AddCut("00010113","2446600040013300000","0163103100000010"); // INT7 NCells 3
+    cuts.AddCut("00010113","2446600044013300000","0163103100000010"); // INT7 w/ TM NCells 3
+  } else if (trainConfig == 805){
+    cuts.AddCut("00010113","2446600040013300000","0163103100000010"); // INT7 NCells 3
+    cuts.AddCut("00010113","2446600040012300000","0163103100000010"); // INT7 NCells 2
+    cuts.AddCut("00010113","2446600044013300000","0163103100000010"); // INT7 w/ TM NCells 3
+    cuts.AddCut("00010113","2446600044012300000","0163103100000010"); // INT7 w/ TM NCells 2
+
 
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
