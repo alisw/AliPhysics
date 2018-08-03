@@ -175,6 +175,7 @@ void AliAnalysisTaskEmcalJetSubstructureTree::UserCreateOutputObjects() {
                  ncellbinning(101, -0.5, 100.5);
   fQAHistos = new THistManager("QAhistos");
   fQAHistos->CreateTH1("hEventCounter", "Event counter", 1, 0.5, 1.5);
+  fQAHistos->CreateTH1("hTriggerClusterCounter", "Event counter separating into trigger clusters", 7, -1.5, 5.5);
   fQAHistos->CreateTH2("hClusterConstE", "EMCAL cluster energy vs jet pt; p_{t, jet} (GeV/c); E_{cl} (GeV)", jetptbinning, clusterenergybinning);
   fQAHistos->CreateTH2("hClusterConstTime", "EMCAL cluster time vs. jet pt; p_{t, jet} (GeV/c); t_{cl} (ns)", jetptbinning, timebinning);
   fQAHistos->CreateTH2("hClusterConstM02", "EMCAL cluster M02 vs. jet pt; p{t, jet} (GeV/c); M02", jetptbinning, m02binning);
@@ -294,10 +295,18 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
          isCENTNOTRD = (std::find(clusternames.begin(), clusternames.end(), "CENTNOTRD") != clusternames.end()),
          isCALO = (std::find(clusternames.begin(), clusternames.end(), "CALO") != clusternames.end()),
          isCALOFAST = (std::find(clusternames.begin(), clusternames.end(), "CALOFAST") != clusternames.end());
-    if(isCENT) fGlobalTreeParams->fTriggerClusterIndex = 0;
-    else if(isCENTNOTRD) fGlobalTreeParams->fTriggerClusterIndex = 1;
-    else if(isCALO) fGlobalTreeParams->fTriggerClusterIndex = 2;
-    else if(isCALOFAST) fGlobalTreeParams->fTriggerClusterIndex = 3;
+    if(isCENT || isCENTNOTRD) {
+      if(isCENT && isCENTNOTRD) fGlobalTreeParams->fTriggerClusterIndex = 0;    // CENTBOTH
+      else if(isCENT) fGlobalTreeParams->fTriggerClusterIndex = 1;              // OnlyCENT
+      else fGlobalTreeParams->fTriggerClusterIndex = 2;                         // OnlyCENTNOTRD
+    }
+    if(isCALO || isCALOFAST){
+      // CALO(FAST) and CENT(NOTRD) clusters disjunct - CALO cluster not read out in parallel with CENT cluster
+      // Therefore mixing between CALO and CENT triggers doesn't need to be handled.
+      if(isCALO && isCALOFAST) fGlobalTreeParams->fTriggerClusterIndex = 3;
+      else if(isCALO) fGlobalTreeParams->fTriggerClusterIndex = 4;
+      else if(isCALOFAST) fGlobalTreeParams->fTriggerClusterIndex = 5;
+    }
   }
 
   double weight = 1.;
@@ -314,6 +323,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
 
   // Count events (for spectrum analysis)
   fQAHistos->FillTH1("hEventCounter", 1);
+  fQAHistos->FillTH1("hTriggerClusterCounter", fGlobalTreeParams->fTriggerClusterIndex);
 
   AliSoftdropDefinition softdropSettings;
   softdropSettings.fBeta = fSDBetaCut;
