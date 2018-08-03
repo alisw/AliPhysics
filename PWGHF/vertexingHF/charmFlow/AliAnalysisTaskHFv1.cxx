@@ -487,10 +487,10 @@ void AliAnalysisTaskHFv1::UserCreateOutputObjects()
             const Int_t nETABins = 4;
             Double_t binsEta[nETABins+1] = {-0.8,-0.4,0.0,0.4,0.8};
             
-            Int_t nBins[5] = {100,fNMassBins,50,nETABins,3,2};
+            Int_t nBins[6] = {100,fNMassBins,50,nETABins,3,2};
             
-            Double_t xmin[5] = {-fScalProdLimit,fLowmasslimit,0.,-0.8,0.,0.};
-            Double_t xmax[5] = {fScalProdLimit,fUpmasslimit,50.,0.8,3.,2.};
+            Double_t xmin[6] = {-fScalProdLimit,fLowmasslimit,0.,-0.8,0.,0.};
+            Double_t xmax[6] = {fScalProdLimit,fUpmasslimit,50.,0.8,3.,2.};
             
             
             if(fDecChannel==kDplustoKpipi) {
@@ -1206,7 +1206,7 @@ void AliAnalysisTaskHFv1::FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,In
             if(fscaling == kTRUE){weightEff = 1./feff->Eval(ptD);}
             scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
             massd0_or_D0bar  = kmassD0;
-            Double_t sparsearray[5] = {scalprod[0],masses[0],ptD,etaD,FillisSel,massd0_or_D0bar};
+            Double_t sparsearray[6] = {scalprod[0],masses[0],ptD,etaD,FillisSel,massd0_or_D0bar};
             ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQA_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray,weightEff);
             scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
             sparsearray[0] = scalprod[1];
@@ -1245,7 +1245,7 @@ void AliAnalysisTaskHFv1::FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,In
             if(fscaling == kTRUE){weightEff = 1./feff->Eval(ptD);}
             massd0_or_D0bar  = kmassD0bar;
             scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
-            Double_t sparsearray[5] = {scalprod[0],masses[1],ptD,etaD,FillisSel,massd0_or_D0bar};
+            Double_t sparsearray[6] = {scalprod[0],masses[1],ptD,etaD,FillisSel,massd0_or_D0bar};
             ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQA_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray,weightEff);
             scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
             sparsearray[0] = scalprod[1];
