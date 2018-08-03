@@ -9,8 +9,9 @@ class LMEECutLib {
 		kMidMult,
 		kLowMult,
 		kTTreeCuts,
+		kV0_ITScorr,
 		kV0_TPCcorr,
-		kV0_ITScorr
+		kV0_TOFcorr
 	};
 
 
@@ -344,6 +345,7 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts(Int_t cutSet) {
 				case kTTreeCuts:
 				case kV0_TPCcorr:
 				case kV0_ITScorr:
+				case kV0_TOFcorr:
             eventCuts->SetVertexType(AliDielectronEventCuts::kVtxSPD); // AOD
             eventCuts->SetRequireVertex();
             eventCuts->SetMinVtxContributors(1);
@@ -364,6 +366,7 @@ AliDielectronCutGroup* LMEECutLib::GetCentralityCuts(Int_t centSel) {
 				case kTTreeCuts:
 				case kV0_TPCcorr:
 				case kV0_ITScorr:
+				case kV0_TOFcorr:
             break;
         case kHighMult:
             AliDielectronVarCuts* centCut1 = new AliDielectronVarCuts("centCutsHigh","MultiplicitypPbLHC16qHigh");
@@ -492,8 +495,15 @@ AliDielectronCutGroup* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
 		case kV0_ITScorr:
 			// PID cuts used to select out a very pure sample of V0 electrons using only TPC and TOF
 			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -0.6, 1., 0.1, 100., kFALSE);
-			cutsPID->AddCut(AliDielectronPID::kTOF, AliPID::kElectron, -1.,  1., 0.2, 0.4,  kFALSE, AliDielectronPID::kIfAvailable);
+			cutsPID->AddCut(AliDielectronPID::kTOF, AliPID::kElectron, -1.,  1., 0.1, 0.4,  kFALSE, AliDielectronPID::kIfAvailable);
 			cutsPID->AddCut(AliDielectronPID::kTOF, AliPID::kElectron, -1.,  1., 0.4, 100., kFALSE, AliDielectronPID::kRequire);
+			cuts->AddCut(cutsPID);
+			return cuts;
+			break;
+		case kV0_TOFcorr:
+			// PID cuts used to select out a very pure sample of V0 electrons using only TPC and TOF
+			cutsPID->AddCut(AliDielectronPID::kITS, AliPID::kElectron, -1., 1., 0.1, 100., kFALSE);
+			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -0.6, 1., 0.1, 100., kFALSE);
 			cuts->AddCut(cutsPID);
 			return cuts;
 			break;
@@ -587,6 +597,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 			break;
 		case kV0_TPCcorr:
 		case kV0_ITScorr:
+		case kV0_TOFcorr:
 			// V0 specific track cuts
 			AliDielectronV0Cuts* gammaV0cuts = new AliDielectronV0Cuts("gammaV0cuts", "gammaV0cuts");
 			gammaV0cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);
