@@ -22,9 +22,12 @@ Bool_t plots3D       = kFALSE;
 // Or if requesting PID corrections
 Bool_t v0plots       = kFALSE;
 
-AliDielectron* Config_acapon(TString cutDefinition, Bool_t hasMC = kFALSE, Bool_t isESD = kFALSE,
-                             Bool_t SDDstatus = kFALSE, Bool_t doPairing = kTRUE,
-                             Bool_t doMixing = kTRUE, Bool_t setTPCcorr = kFALSE, Bool_t setITScorr = kFALSE)
+AliDielectron* Config_acapon(TString cutDefinition,
+                             Bool_t hasMC = kFALSE,
+                             Bool_t isESD = kFALSE,
+                             Bool_t SDDstatus = kFALSE,
+                             Bool_t doPairing = kTRUE,   Bool_t doMixing = kTRUE,
+                             Bool_t setITScorr = kFALSE, Bool_t setTPCcorr = kFALSE, Bool_t setTOFcorr = kFALSE)
 {
 
     //Setup the instance of AliDielectron
@@ -43,6 +46,13 @@ AliDielectron* Config_acapon(TString cutDefinition, Bool_t hasMC = kFALSE, Bool_
 			v0plots = kTRUE;
 		}
 		if(setITScorr){
+			LMcutlib->SetEtaCorrectionITS(die, AliDielectronVarManager::kP,
+                                      AliDielectronVarManager::kEta,
+                                      AliDielectronVarManager::kRefMultTPConly, kFALSE);
+
+			v0plots = kTRUE;
+		}
+		if(setTOFcorr){
 			LMcutlib->SetEtaCorrectionITS(die, AliDielectronVarManager::kP,
                                       AliDielectronVarManager::kEta,
                                       AliDielectronVarManager::kRefMultTPConly, kFALSE);
@@ -133,6 +143,17 @@ AliDielectron* Config_acapon(TString cutDefinition, Bool_t hasMC = kFALSE, Bool_
 				v0plots = kTRUE;
         selectedCuts = LMEECutLib::kV0_ITScorr;
 				selectedPID = LMEECutLib::kV0_ITScorr;
+        //die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
+        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
+        if(pairCuts){
+            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
+            die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(selectedCuts) );
+        }
+    }
+    else if(cutDefinition == "V0_TOFcorr"){
+				v0plots = kTRUE;
+        selectedCuts = LMEECutLib::kV0_TOFcorr;
+				selectedPID = LMEECutLib::kV0_TOFcorr;
         //die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
         die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
         if(pairCuts){
