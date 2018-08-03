@@ -6,7 +6,7 @@
 
 //**************************************************************************
 // AliAnalysisTaskHFv1 directed flow of D mesons with scalar
-// product method (modified from AliAnalysisTaskHFv2)
+// product method (modified from AliAnalysisTaskHFv1)
 // Authors: Andrea Dubla, Jacopo Margutti
 //
 // AliAnalysisTaskHFv1 gives the needed tools for the D
@@ -38,7 +38,8 @@ class AliAnalysisTaskHFv1 : public AliAnalysisTaskSE
 {
     
  public:
-    
+  enum massD0orD0bar{kmassD0,kmassD0bar}; //for D0_D0bar mass check
+
   enum DecChannel{kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi}; //more particles can be added
   enum EventPlaneMeth{kTPC,kTPCVZERO,kVZERO,kVZEROA,kVZEROC,kPosTPCVZERO,kNegTPCVZERO,kZDC}; //Event plane to be calculated in the task
   enum FlowMethod{kEP,kSP,kEvShape}; // Event Plane, Scalar Product or Event Shape Engeneering methods
@@ -185,10 +186,9 @@ class AliAnalysisTaskHFv1 : public AliAnalysisTaskSE
   Double_t fScalProdLimit;      // max value for the scalar product histograms
   TF1     *feff;//-> func for eff_Correction
   Bool_t  fscaling;// scaling option
-    
   AliAnalysisTaskHFv1::FlowMethod fFlowMethod;
     
-  ClassDef(AliAnalysisTaskHFv1,5); // AliAnalysisTaskSE for the HF v2 analysis
+  ClassDef(AliAnalysisTaskHFv1,4); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif
