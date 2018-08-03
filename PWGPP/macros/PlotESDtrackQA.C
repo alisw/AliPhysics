@@ -246,6 +246,73 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   hPhiEtaPosTPCselITSrefHighPt->Sumw2();
   hPhiEtaPosTPCselSPDanyHighPt->Sumw2();
 
+  TString partNames[9]={"Elec","Muon","Pion","Kaon","Proton","Deuteron","Triton","He3","Alpha"};
+  TH2F* hdEdxVsPTPCsel[9];
+  TH2F* hdEdxVsPTPCselITSref[9];
+  TH2F* hdEdxVsPTPCselAll=0x0;
+  TCanvas* cdedxa=new TCanvas("cdedxall","dEdx Vs. hypo",1500,700);
+  cdedxa->Divide(2,1);
+  TLegend * legtrhyp=new TLegend(0.6,0.5,0.89,0.89);
+  legtrhyp->SetHeader("Mass Hypo in tracking");
+  for(Int_t jsp=0; jsp<9; jsp++){ 
+    hdEdxVsPTPCsel[jsp]=(TH2F*)l->FindObject(Form("hdEdxVsPTPCsel%s",partNames[jsp].Data()));
+    hdEdxVsPTPCsel[jsp]->GetXaxis()->SetTitle("p_{TPC} (GeV/c)");
+    hdEdxVsPTPCsel[jsp]->GetYaxis()->SetTitle("TPC dE/dx");
+    hdEdxVsPTPCsel[jsp]->SetTitle(Form("Tracked with %s mass hypothesis - TPC cuts",partNames[jsp].Data()));
+    hdEdxVsPTPCsel[jsp]->SetStats(0);
+    hdEdxVsPTPCselITSref[jsp]=(TH2F*)l->FindObject(Form("hdEdxVsPTPCselITSref%s",partNames[jsp].Data()));
+    hdEdxVsPTPCselITSref[jsp]->GetXaxis()->SetTitle("p_{TPC} (GeV/c)");
+    hdEdxVsPTPCselITSref[jsp]->GetYaxis()->SetTitle("TPC dE/dx");
+    hdEdxVsPTPCselITSref[jsp]->SetTitle(Form("Tracked with %s mass hypothesis - TPC cuts+ITS refit",partNames[jsp].Data()));
+    hdEdxVsPTPCselITSref[jsp]->SetStats(0);
+    if(jsp==0){
+      hdEdxVsPTPCselAll=(TH2F*)hdEdxVsPTPCsel[0]->Clone("hdEdxVsPTPCselAll");
+      hdEdxVsPTPCselAll->SetTitle("All mass hypotheses");
+    }else{
+      if(hdEdxVsPTPCselAll) hdEdxVsPTPCselAll->Add(hdEdxVsPTPCsel[jsp]);
+    }
+
+    TCanvas* cdedx=new TCanvas(Form("cdedx%s",partNames[jsp].Data()),Form("dEdx Hypo %s",partNames[jsp].Data()),1500,700);
+    cdedx->Divide(2,1);
+    cdedx->cd(1);
+    gPad->SetLogz();
+    gPad->SetRightMargin(0.12);
+    hdEdxVsPTPCsel[jsp]->GetYaxis()->SetTitleOffset(1.3);
+    hdEdxVsPTPCsel[jsp]->GetXaxis()->SetTitleOffset(1.1);
+    hdEdxVsPTPCsel[jsp]->Draw("colz");
+    cdedx->cd(2);
+    gPad->SetLogz();
+    gPad->SetRightMargin(0.12);
+    hdEdxVsPTPCselITSref[jsp]->GetYaxis()->SetTitleOffset(1.3);
+    hdEdxVsPTPCselITSref[jsp]->GetXaxis()->SetTitleOffset(1.1);
+    hdEdxVsPTPCselITSref[jsp]->Draw("colz");
+    plotFileName=Form("dEdx-TrackRecoWith%sHypo.%s",partNames[jsp].Data(),outputForm.Data());
+    cdedx->SaveAs(plotFileName.Data());
+    if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
+    
+    TH2F* htmp1=(TH2F*)hdEdxVsPTPCsel[jsp]->Clone(Form("%s_1",hdEdxVsPTPCselITSref[jsp]->GetName()));
+    htmp1->SetMarkerStyle(1);
+    htmp1->SetMarkerColor(jsp+1);
+    TH2F* htmp2=(TH2F*)hdEdxVsPTPCselITSref[jsp]->Clone(Form("%s_2",hdEdxVsPTPCselITSref[jsp]->GetName()));
+    htmp2->SetMarkerStyle(1);
+    htmp2->SetMarkerColor(jsp+1);
+    cdedxa->cd(1);
+    if(jsp==0) htmp1->Draw("P");
+    else htmp1->Draw("PSAME");
+    cdedxa->cd(2);
+    if(jsp==0) htmp2->Draw("P");
+    else htmp2->Draw("PSAME");
+    legtrhyp->AddEntry(htmp1,partNames[jsp].Data(),"")->SetTextColor(htmp1->GetMarkerColor());
+  }
+  cdedxa->cd(1);
+  legtrhyp->Draw();
+  cdedxa->cd(2);
+  legtrhyp->Draw();
+  plotFileName=Form("dEdxVsTrackRecoHypo.%s",outputForm.Data());
+  cdedxa->SaveAs(plotFileName.Data());
+  if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
+
+
   TH1D* hMatchEffVsPtNegEta=ComputeMatchEff(hPtEtaNegTPCselITSref,hPtEtaNegTPCsel,"hMatchEffVsPtNegEta",1,20,"p_{T} (GeV/c)");
   TH1D* hMatchEffVsPtPosEta=ComputeMatchEff(hPtEtaPosTPCselITSref,hPtEtaPosTPCsel,"hMatchEffVsPtPosEta",1,20,"p_{T} (GeV/c)");
   TH1D* hMatchEffVsPtNegEtaSPDany=ComputeMatchEff(hPtEtaNegTPCselSPDany,hPtEtaNegTPCsel,"hMatchEffVsPtNegEtaSPDAny",kBlue-7,33,"p_{T} (GeV/c)");
