@@ -6,6 +6,8 @@
  */
 
 #include "AliFemtoDreamBasePart.h"
+#include "AliSigma0ParticleV0.h"
+
 #include <iostream>
 ClassImp(AliFemtoDreamBasePart)
 AliFemtoDreamBasePart::AliFemtoDreamBasePart()
@@ -100,6 +102,50 @@ AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(
   fUse=obj.fUse;
   fIsSet=obj.fIsSet;
   return (*this);
+}
+
+AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliSigma0ParticlePhotonMother &mother)
+:fIsReset(false)
+,fGTI(0)
+,fTrackBufferSize(0)
+,fP(TVector3(mother.GetPx(), mother.GetPy(), mother.GetPz()))
+,fMCP(TVector3(mother.GetPxMC(), mother.GetPyMC(), mother.GetPzMC()))
+,fPt(mother.GetPt())
+,fMCPt(0)
+,fP_TPC(0)
+,fEta()
+,fTheta(0)
+,fMCTheta(0)
+,fPhi()
+,fPhiAtRadius(0)
+,fMCPhi(0)
+,fIDTracks()
+,fCharge(0)
+,fCPA(0)
+,fOrigin(kUnknown)
+,fPDGCode(0)
+,fMCPDGCode(0)
+,fPDGMotherWeak(0)
+,fMotherID(0)
+,fEvtNumber(0)
+,fIsMC(false)
+,fUse(true)
+,fIsSet(true)
+{
+	fEta.push_back(mother.GetV0().GetPosDaughter().GetEta());
+	fEta.push_back(mother.GetPhoton().GetPosDaughter().GetEta());
+	fEta.push_back(mother.GetV0().GetNegDaughter().GetEta());
+	fEta.push_back(mother.GetPhoton().GetNegDaughter().GetEta());
+
+	fPhi.push_back(mother.GetV0().GetPosDaughter().GetPhi());
+	fPhi.push_back(mother.GetPhoton().GetPosDaughter().GetPhi());
+	fPhi.push_back(mother.GetV0().GetNegDaughter().GetPhi());
+	fPhi.push_back(mother.GetPhoton().GetNegDaughter().GetPhi());
+
+	fIDTracks.push_back(mother.GetV0().GetTrackLabelPos());
+	fIDTracks.push_back(mother.GetV0().GetTrackLabelNeg());
+	fIDTracks.push_back(mother.GetPhoton().GetTrackLabelPos());
+	fIDTracks.push_back(mother.GetPhoton().GetTrackLabelNeg());
 }
 
 AliFemtoDreamBasePart::~AliFemtoDreamBasePart() {

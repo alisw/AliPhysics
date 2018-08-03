@@ -12,12 +12,14 @@
 #include "AliMCEvent.h"
 #include "Rtypes.h"
 #include "TVector3.h"
+#include "AliSigma0ParticlePhotonMother.h"
 
 class AliFemtoDreamBasePart {
  public:
   AliFemtoDreamBasePart();
   AliFemtoDreamBasePart(const AliFemtoDreamBasePart& part);
   AliFemtoDreamBasePart &operator=(const AliFemtoDreamBasePart &obj);
+  AliFemtoDreamBasePart(const AliSigma0ParticlePhotonMother &mother);
   virtual ~AliFemtoDreamBasePart();
   enum PartOrigin {
     kPhysPrimary=0,
