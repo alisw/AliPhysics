@@ -2796,6 +2796,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
   Bool_t pidElectron = kFALSE;
   const Double_t NsigmaCut = 3;
   Bool_t isGlobal = kFALSE;
+  const Double_t Rcut_CE = 240.;
 
   const Double_t NsigmaDisp = fPHOSClusterCuts->GetDispParameter();
   AliInfo(Form("NsigmaDisp = %2.1f sigma",NsigmaDisp));
@@ -2884,17 +2885,30 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
     if(fIsMC){
       AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(primary);
       Int_t pdg = p->PdgCode(); 
+      Double_t x = p->Xv();//absolute coordinate in ALICE
+      Double_t y = p->Yv();//absolute coordinate in ALICE
+      Double_t Rxy = TMath::Sqrt(x*x + y*y);
 
-      if(pdg == 22)                   FillHistogramTH1(fOutputContainer,"hPurityGamma_noPID",pT,weight);
+      Int_t motherid = p->GetMother();
+      Int_t pdg_mother = 0;//0 is not assiend to any particle
+
+      if(motherid > -1){
+        AliAODMCParticle *mp = (AliAODMCParticle*)fMCArrayAOD->At(motherid);
+        pdg_mother = mp->PdgCode();
+      }
+
+      //border of Rxy is 250 cm from (0,0,0) where TPC outer frame is.
+      //only for safety mergin, 240 cm is used.
+
+      if(pdg == 22) FillHistogramTH1(fOutputContainer,"hPurityGamma_noPID",pT,weight);
       else if(TMath::Abs(pdg) == 11){
-        FillHistogramTH1(fOutputContainer,"hPurityElectron_noPID",pT,weight);
-        FillHistogramTH2(fOutputContainer,"hElectronRxy_noPID",pT,R(p),weight);
-        Int_t motherid = p->GetMother();
-        if(motherid > -1){
-          AliAODMCParticle *mp = (AliAODMCParticle*)fMCArrayAOD->At(motherid);
-          Int_t pdg_mother = mp->PdgCode();
-          if(pdg_mother == 22) FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_noPID",pT,R(p),weight);
+        FillHistogramTH2(fOutputContainer,"hElectronRxy_noPID",pT,Rxy,weight);
+        if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_noPID",pT,weight);
+        if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
+          FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_noPID",pT,Rxy,weight);
+          if(Rxy > Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityGamma_noPID",pT,weight);
         }
+        else FillHistogramTH1(fOutputContainer,"hPurityOthers_noPID",pT,weight);
       }
       else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_noPID",pT,weight);
       else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_noPID",pT,weight);
@@ -2906,17 +2920,15 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
       else                            FillHistogramTH1(fOutputContainer,"hPurityOthers_noPID",pT,weight);
 
       if(fPHOSClusterCuts->IsNeutral(ph)){
-        if(pdg == 22)                   FillHistogramTH1(fOutputContainer,"hPurityGamma_CPV",pT,weight);
+        if(pdg == 22) FillHistogramTH1(fOutputContainer,"hPurityGamma_CPV",pT,weight);
         else if(TMath::Abs(pdg) == 11){
-          FillHistogramTH1(fOutputContainer,"hPurityElectron_CPV",pT,weight);
-          FillHistogramTH2(fOutputContainer,"hElectronRxy_CPV",pT,R(p),weight);
-          Int_t motherid = p->GetMother();
-          if(motherid > -1){
-            AliAODMCParticle *mp = (AliAODMCParticle*)fMCArrayAOD->At(motherid);
-            Int_t pdg_mother = mp->PdgCode();
-            if(pdg_mother == 22) FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_CPV",pT,R(p),weight);
+          FillHistogramTH2(fOutputContainer,"hElectronRxy_CPV",pT,Rxy,weight);
+          if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_CPV",pT,weight);
+          if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
+            FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_CPV",pT,Rxy,weight);
+            if(Rxy > Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityGamma_CPV",pT,weight);
           }
-
+          else FillHistogramTH1(fOutputContainer,"hPurityOthers_CPV",pT,weight);
         }
         else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_CPV",pT,weight);
         else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_CPV",pT,weight);
@@ -2931,15 +2943,13 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
       if(fPHOSClusterCuts->AcceptDisp(ph)){
         if(pdg == 22)                   FillHistogramTH1(fOutputContainer,"hPurityGamma_Disp",pT,weight);
         else if(TMath::Abs(pdg) == 11){
-
-          FillHistogramTH1(fOutputContainer,"hPurityElectron_Disp",pT,weight);
-          FillHistogramTH2(fOutputContainer,"hElectronRxy_Disp",pT,R(p),weight);
-          Int_t motherid = p->GetMother();
-          if(motherid > -1){
-            AliAODMCParticle *mp = (AliAODMCParticle*)fMCArrayAOD->At(motherid);
-            Int_t pdg_mother = mp->PdgCode();
-            if(pdg_mother == 22) FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_Disp",pT,R(p),weight);
+          FillHistogramTH2(fOutputContainer,"hElectronRxy_Disp",pT,Rxy,weight);
+          if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_Disp",pT,weight);
+          if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
+            FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_Disp",pT,Rxy,weight);
+            if(Rxy > Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityGamma_Disp",pT,weight);
           }
+          else FillHistogramTH1(fOutputContainer,"hPurityOthers_Disp",pT,weight);
         }
         else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_Disp",pT,weight);
         else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_Disp",pT,weight);
@@ -2954,15 +2964,13 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
       if(fPHOSClusterCuts->AcceptPhoton(ph)){
         if(pdg == 22)                   FillHistogramTH1(fOutputContainer,"hPurityGamma_PID",pT,weight);
         else if(TMath::Abs(pdg) == 11){
-          FillHistogramTH1(fOutputContainer,"hPurityElectron_PID",pT,weight);
-          FillHistogramTH2(fOutputContainer,"hElectronRxy_PID",pT,R(p),weight);
-          Int_t motherid = p->GetMother();
-          if(motherid > -1){
-            AliAODMCParticle *mp = (AliAODMCParticle*)fMCArrayAOD->At(motherid);
-            Int_t pdg_mother = mp->PdgCode();
-            if(pdg_mother == 22) FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_PID",pT,R(p),weight);
+          FillHistogramTH2(fOutputContainer,"hElectronRxy_PID",pT,Rxy,weight);
+          if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_PID",pT,weight);
+          if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
+            FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_PID",pT,Rxy,weight);
+            if(Rxy > Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityGamma_PID",pT,weight);
           }
-
+          else FillHistogramTH1(fOutputContainer,"hPurityOthers_PID",pT,weight);
         }
         else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_PID",pT,weight);
         else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_PID",pT,weight);
