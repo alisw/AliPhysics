@@ -170,6 +170,7 @@ AliMultSelectionTask::AliMultSelectionTask()
       fZpaFired(0),
       fZpcFired(0),
       fNTracks(0),
+      fNTracksTPCout(0),
       fNTracksGlobal2015(0),
       fNTracksGlobal2015Trigger(0),
       fNTracksITSsa2010(0),
@@ -272,6 +273,7 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
       fZpaFired(0),
       fZpcFired(0),
       fNTracks(0),
+      fNTracksTPCout(0),
       fNTracksGlobal2015(0),
       fNTracksGlobal2015Trigger(0),
       fNTracksITSsa2010(0),
@@ -534,6 +536,8 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     //Track counters (now useable as AliMultVariables as well)
     fNTracks =                  new AliMultVariable("fNTracks");
     fNTracks->SetIsInteger(kTRUE);
+    fNTracksTPCout =                  new AliMultVariable("fNTracksTPCout");
+    fNTracksTPCout->SetIsInteger(kTRUE);
     fNTracksGlobal2015 =        new AliMultVariable("fNTracksGlobal2015");
     fNTracksGlobal2015->SetIsInteger(kTRUE);
     fNTracksGlobal2015Trigger = new AliMultVariable("fNTracksGlobal2015Trigger");
@@ -1458,9 +1462,21 @@ void AliMultSelectionTask::UserExec(Option_t *)
             fNTracksGlobal2015Trigger -> SetValueInteger( fNTracksGlobal2015Trigger->GetValueInteger() + 1);
     }
     
+    Long_t lNTPCout = 0;
+    fNTracksTPCout->SetValueInteger(lNTPCout);
+    
     if(lVerbose) Printf("Doing ESD/AOD part...");
     if (lVevent->InheritsFrom("AliESDEvent")) {
         AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(lVevent);
+        
+        //Get TPCout counts
+        const Long_t nTracks = esdevent->GetNumberOfTracks();
+          for (int it = 0; it < nTracks; it++) {
+              AliESDtrack* trk = (AliESDtrack*)esdevent->GetTrack(it);
+              if (!trk) continue;
+              if ((trk->GetStatus() & AliESDtrack::kTPCout) &&
+                  trk->GetID() > 0) lNTPCout++;
+          }
 
         //Standard GetReferenceMultiplicity Estimator (0.5 and 0.8)
         fRefMultEta5 -> SetValueInteger ( fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTrackletsITSTPC,0.5) );
@@ -1517,6 +1533,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
     } else if (lVevent->InheritsFrom("AliAODEvent")) {
         AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(lVevent);
         AliAODHeader * header = dynamic_cast<AliAODHeader*>(aodevent->GetHeader());
+    
         fRefMultEta5 -> SetValueInteger ( header->GetRefMultiplicityComb05() );
         fRefMultEta8 -> SetValueInteger ( header->GetRefMultiplicityComb08() );
         
@@ -1524,6 +1541,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
             AliAODTrack *aodt=(AliAODTrack*)aodevent->GetTrack(itrack);
             if ( !aodt )  { continue; }
             if( (aodt->TestFilterBit(BIT(5)) || aodt->TestFilterBit(BIT(6))) && aodt->Pt()>0.4 && TMath::Abs(aodt->Eta())<0.8 ) ntrackINELgtONE+=1.;
+            if ((aodt->GetStatus() & AliESDtrack::kTPCout) &&
+                aodt->GetID() > 0) lNTPCout++;
         }
 
         //FIXME: get ZDC information in AOD in a fully consistent way
@@ -1548,6 +1567,9 @@ void AliMultSelectionTask::UserExec(Option_t *)
             fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
         }
     }
+    
+    fNTracksTPCout ->SetValueInteger(lNTPCout);
+    
     fNTracksINELgtONE->SetValue(ntrackINELgtONE);
     if(fkDebugIsMC && fkDebugAdditional2DHisto) ((TH2D*)(fListHist->FindObject("hist_NpartVsNtracks"))) -> Fill(npartINELgtONE,ntrackINELgtONE);
     
