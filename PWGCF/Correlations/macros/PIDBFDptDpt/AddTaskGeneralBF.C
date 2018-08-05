@@ -33,25 +33,24 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
  double vZwidth                 =  0.5, // zMin, zMax & vZwidth determine _nBins_vertexZ.
  int    trackFilterBit          =  1,   // PbPb10(Global=1;TPConly=128;Hybrid=272); pPb13(Global=?;TPConly=?;Hybrid=768); pp10(Global=1;TPConly=?; Hybrid=?)
  int    nClusterMin             =  70,
- double eta1Min                 = -0.8, // set y1min acturally if useRapidity==1
  double eta1Max                 =  0.8, // set y1max acturally if useRapidity==1
- double eta2Min                 = -0.8, // set y2min acturally if useRapidity==1
- double eta2Max                 =  0.8, // set y2max acturally if useRapidity==1
  double etaBinWidth             =  0.1, // set yBinWidth acturally if useRapidity==1
- double dcaZMin                 = -3.2,
  double dcaZMax                 =  3.2,
- double dcaXYMin                = -2.4,
  double dcaXYMax                =  2.4,
  int nCentrality                =  6,
  int particleID_1               =  0,   // Pion=0, Kaon=1, Proton=2
  int particleID_2               =  1,   // Pion=0, Kaon=1, Proton=2
- bool Use_CircularCutPID        =  1,   // 0: Not Use_CircularCutPID     1: Use_CircularCutPID TPC+TOF
+ bool Use_CircularCutPID_1      =  1,   // 0: Not Use_CircularCutPID     1: Use_CircularCutPID TPC+TOF
+ bool Use_CircularCutPID_2      =  1,   // 0: Not Use_CircularCutPID     1: Use_CircularCutPID TPC+TOF
  double nSigmaCut               =  2.0,
  double nSigmaCut_veto          =  3.0,
  double ElectronVetoCut         =  1.0,
- double ptMin                   =  0.2, // pt range lower limit cut ( also for pt histos )
- double ptTOFlowerMin           =  0.5, // boundary between TPC & TOF region
- double ptCUTupperMax           =  2.0, // pt range upper limit cut
+ double ptMin_1                 =  0.2, // pt range lower limit cut ( also for pt histos )
+ double ptTOFlowerMin_1         =  0.5, // boundary between TPC & TOF region
+ double ptCUTupperMax_1         =  2.0, // pt range upper limit cut
+ double ptMin_2                 =  0.2, // pt range lower limit cut ( also for pt histos )
+ double ptTOFlowerMin_2         =  0.5, // boundary between TPC & TOF region
+ double ptCUTupperMax_2         =  2.0, // pt range upper limit cut
  double ptMax                   =  3.0, // pt range upper limit for histos; NOT pt cut!!!
  double ptWidthBin              =  0.1, // pt bin width in histos
  int nBinsPhi                   =  36,  // 36 is default value
@@ -78,7 +77,11 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
   Bool_t NoResonances           = kTRUE; // only for MCAOD
   Bool_t NoElectron             = kTRUE; // only for MCAOD
   bool   PurePIDinMC            = 0;   // 0: Contamination in MCAODreco;       1: No Contamination in MCAODreco
-  
+  double eta2Max                =  eta1Max; // set y2max acturally if useRapidity==1
+  double eta1Min                = -eta1Max; // set y1min acturally if useRapidity==1
+  double eta2Min                = -eta1Max; // set y2min acturally if useRapidity==1
+  double dcaZMin                = -dcaZMax;
+  double dcaXYMin               = -dcaXYMax;
   
   
   if      ( System == "PbPb" )                { centralityMethod = 4; trigger = kFALSE; }
@@ -325,7 +328,7 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
     part1Name += "eta";
     part1Name += int(1000*eta1Max);
     part1Name += "_";
-    part1Name += int(1000*ptMin);
+    part1Name += int(1000*ptMin_1);
     part1Name += "pt";
     part1Name += int(1000*ptMax);
     part1Name += "_";
@@ -337,7 +340,7 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
     part2Name += "eta";
     part2Name += int(1000*eta2Max);
     part2Name += "_";
-    part2Name += int(1000*ptMin);
+    part2Name += int(1000*ptMin_2);
     part2Name += "pt";
     part2Name += int(1000*ptMax);
     part2Name += "_";
@@ -386,16 +389,16 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
       
       nameHisto_1 = nameHistoBase + "_1";
       weight_1 = (TH3F *) inputFile->Get(nameHisto_1);
-
+      
       if (!weight_1)
       {
         //cout << "Requested histogram 'correction_p/m' was not found. ABORT." << endl;
         return 0;
       }
-
+      
       nameHisto_2 = nameHistoBase + "_2";
       weight_2 = (TH3F *) inputFile->Get(nameHisto_2);
-   
+      
       if (!weight_2)
       {
         //cout << "Requested histogram 'correction_p/m' was not found. ABORT." << endl;
@@ -426,13 +429,13 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
     task->SetVertexXYMax(          1.             );
     task->SetCentralityMethod(    centralityMethod);
     task->SetCentrality(          minCentrality[iCentrality], maxCentrality[iCentrality]);
-    task->SetPtMin1(              ptMin           );
+    task->SetPtMin1(              ptMin_1         );
     task->SetPtMax1(              ptMax           );
     task->SetPtBinWidth1(         ptWidthBin      );
     task->SetNPhiBins1(           nBinsPhi        );
     task->SetEtaMin1(             eta1Min         ); // SetYMin1 acturally
     task->SetEtaMax1(             eta1Max         ); // SetYMax1 acturally
-    task->SetPtMin2(              ptMin           );
+    task->SetPtMin2(              ptMin_2         );
     task->SetPtMax2(              ptMax           );
     task->SetPtBinWidth2(         ptWidthBin      );
     task->SetNPhiBins2(           nBinsPhi        );
@@ -458,12 +461,15 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
     task->SetElectronCut(         NoElectron      );
     task->SetNSigmaCut( nSigmaCut );
     task->SetNSigmaCut_veto( nSigmaCut_veto );
-    task->SetPtCutUpperLimit( ptCUTupperMax );
-    task->SetPtTOFlowerBoundary( ptTOFlowerMin );
+    task->SetPtCutUpperLimit_1( ptCUTupperMax_1 );
+    task->SetPtCutUpperLimit_2( ptCUTupperMax_2 );
+    task->SetPtTOFlowerBoundary_1( ptTOFlowerMin_1 );
+    task->SetPtTOFlowerBoundary_2( ptTOFlowerMin_2 );
     task->SetElectronNSigmaVetoCut( ElectronVetoCut );
     task->SetfRemoveTracksT0Fill( remove_Tracks_T0 );
     task->SetUse_AliHelperPID(  Use_AliHelperPID  );
-    task->SetUse_CircularCutPID( Use_CircularCutPID );
+    task->SetUse_CircularCutPID_1( Use_CircularCutPID_1 );
+    task->SetUse_CircularCutPID_2( Use_CircularCutPID_2 );
     
     // assign initial values to AliHelperPID object
     AliHelperPID* helperpid = new AliHelperPID();
