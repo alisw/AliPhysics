@@ -264,6 +264,7 @@ private:
     AliMultVariable *fZpcFired;
     
     AliMultVariable *fNTracks;             //!  no. tracks
+    AliMultVariable *fNTracksTPCout;             //!  no. tracks
     AliMultVariable *fNTracksGlobal2015;             //!  no. tracks (2015 Global track cuts)
     AliMultVariable *fNTracksGlobal2015Trigger;             //!  no. tracks (2015 glob. + TOF-based selection for trigger event)
     AliMultVariable *fNTracksITSsa2010;                     //!  no. tracks ITSsa (2010 ITSsa track cuts)
