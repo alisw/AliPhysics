@@ -593,6 +593,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fInput->AddVariable( fZpaFired ); 
     fInput->AddVariable( fZpcFired ); 
     fInput->AddVariable( fNTracks                  );
+    fInput->AddVariable( fNTracksTPCout            );
     fInput->AddVariable( fNTracksGlobal2015        );
     fInput->AddVariable( fNTracksGlobal2015Trigger );
     fInput->AddVariable( fNTracksITSsa2010         );
