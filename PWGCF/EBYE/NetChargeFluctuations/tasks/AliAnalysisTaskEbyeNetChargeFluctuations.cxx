@@ -929,7 +929,7 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::doMCAODEvent(){
                     fEtaMCgen    = trackMCgen->Eta();
                     
                     if (fChargegen == 0) continue;
-                    if (fpTMCgen < 0.2) continue;
+                 //   if (fpTMCgen < 0.2) continue;
                     
                     // MC eta cut
                     if ((fEtaMCgen < etaDownArray[ieta]) || (fEtaMCgen > etaUpArray[ieta])) continue;
@@ -1024,7 +1024,7 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::doMCAODEvent(){
                     fEtaMCallgen        = trackMCallgen->Eta();
                     
                     if (fChargeMCallgen == 0) continue;
-                    if (fpTMCallgen < 0.2) continue;
+                  //  if (fpTMCallgen < 0.2) continue;
                     
                     // MC eta cut
                     if ((fEtaMCallgen < etaDownArray[ieta]) || (fEtaMCallgen > etaUpArray[ieta])) continue;
@@ -1171,7 +1171,7 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::FillMCEffMatrix(){
         Float_t fEtaRec    = trackReal->Eta();
         Float_t fPhiRec    = trackReal->Phi();
         Short_t fChargeRec = trackReal->Charge();
-        Int_t fPartID  = -10;
+        Int_t   fPartID  = -10;
         
         // Eta cut
         if ((trackReal->Eta()<fEtaDown) || (trackReal->Eta()>fEtaUp)) continue;
@@ -1233,7 +1233,7 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::FillMCEffMatrix(){
         Int_t fPartID  = -10;
         
         if (trackMCgen->Charge() == 0) continue;
-        if (trackMCgen->Pt() < 0.2) continue;
+       // if (trackMCgen->Pt() < 0.2) continue;
         if ((trackMCgen->Eta()<fEtaDown) || (trackMCgen->Eta()>fEtaUp)) continue;
         
         if (!trackMCgen->IsPhysicalPrimary()) continue;
@@ -1275,11 +1275,11 @@ Bool_t AliAnalysisTaskEbyeNetChargeFluctuations::AcceptTrack(AliAODTrack* aodtra
     if(!aodtrack) return kFALSE;
     Double_t pt = aodtrack->Pt();
     
-    if(pt< 0.2) return kFALSE;
+   // if(pt< 0.2) return kFALSE;
     if( aodtrack->Charge() == 0 ) return kFALSE;
     if(!aodtrack->TestFilterBit(768)) return kFALSE;   // for hybrid tracks
-    if(aodtrack->GetTPCNcls() < 80) return kFALSE;
-    if(aodtrack->Chi2perNDF() > 4.0) return kFALSE;
+   // if(aodtrack->GetTPCNcls() < 80) return kFALSE;
+   // if(aodtrack->Chi2perNDF() > 4.0) return kFALSE;
     
     fHistClustersTPC->Fill(aodtrack->GetTPCNcls());
     fHistChi2perNDF->Fill(aodtrack->Chi2perNDF());
