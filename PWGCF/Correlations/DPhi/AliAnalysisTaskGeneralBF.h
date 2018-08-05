@@ -36,10 +36,14 @@ public:
   
   //PID functions
   //User should call ONLY the function GetParticleSpecies and set the PID strategy in the steering macro!
-  Int_t TellParticleSpecies( AliVTrack * trk );//calculate the PID according to the slected method. // for pt cut analysis
-  Int_t TellParticleSpecies_CircularCut( AliVTrack * trk );
-  Int_t TellParticleSpecies_by_P( AliVTrack * trk );//calculate the PID according to the slected method. // for p cut analysis
-  Int_t TellParticleSpecies_by_P_CircularCut( AliVTrack * trk );
+  Int_t TellParticleSpecies_1( AliVTrack * trk );//calculate the PID according to the slected method. // for pt cut analysis
+  Int_t TellParticleSpecies_2( AliVTrack * trk );//calculate the PID according to the slected method. // for pt cut analysis
+  Int_t TellParticleSpecies_CircularCut_1( AliVTrack * trk );
+  Int_t TellParticleSpecies_CircularCut_2( AliVTrack * trk );
+  Int_t TellParticleSpecies_by_P_1( AliVTrack * trk );//calculate the PID according to the slected method. // for p cut analysis
+  Int_t TellParticleSpecies_by_P_2( AliVTrack * trk );//calculate the PID according to the slected method. // for p cut analysis
+  Int_t TellParticleSpecies_by_P_CircularCut_1( AliVTrack * trk );
+  Int_t TellParticleSpecies_by_P_CircularCut_2( AliVTrack * trk );
   void CalculateNSigmas( AliVTrack * trk );   //Calcuate nsigma[ipart][idet], fill NSigma histos
   void CalculateTPCNSigmasElectron( AliVTrack * trk );
   void CheckTOF( AliVTrack * trk );   //check the TOF matching and set fHasTOFPID
@@ -54,8 +58,10 @@ private:
   Bool_t fHasTOFPID;
   Double_t fNSigmaPID; // number of sigma for PID cut
   Double_t fNSigmaPID_veto;
-  Double_t ptUpperLimit; //pt cut upper limit
-  Double_t ptTOFlowerBoundary; // pt value which is the boundary between TPC & TOF.
+  Double_t ptUpperLimit_1; //pt cut upper limit for particle 1
+  Double_t ptUpperLimit_2; //pt cut upper limit for particle 2
+  Double_t ptTOFlowerBoundary_1; // pt value which is the boundary between TPC & TOF.
+  Double_t ptTOFlowerBoundary_2; // pt value which is the boundary between TPC & TOF.
   Double_t electronNSigmaVeto;
   Bool_t fRemoveTracksT0Fill;//if true remove tracks for which only StartTime from To-Fill is available (worst resolution)
   
@@ -117,7 +123,8 @@ public:
   virtual     void    SetPIDparticle( bool v )            { PIDparticle   = v; }
   virtual     void    SetUse_pT_cut( bool v )             { use_pT_cut   = v; }
   virtual     void    SetUse_AliHelperPID( bool v )       { useAliHelperPID   = v; }
-  virtual     void    SetUse_CircularCutPID( bool v )     { useCircularCutPID = v; }
+  virtual     void    SetUse_CircularCutPID_1( bool v )   { useCircularCutPID_1 = v; }
+  virtual     void    SetUse_CircularCutPID_2( bool v )   { useCircularCutPID_2 = v; }
   virtual     void    SetIfContaminationInMC( bool v )    { NoContamination   = v; }
   virtual     void    SetUseWeights(int v)                { _useWeights   = v; }
   virtual     void    SetUseRapidity(int v)               { _useRapidity  = v; }
@@ -182,8 +189,10 @@ public:
   
   void SetNSigmaCut( double nsigma )             { fNSigmaPID = nsigma; }
   void SetNSigmaCut_veto( double nsigma )        { fNSigmaPID_veto = nsigma; }
-  void SetPtCutUpperLimit( double ptUpper )      { ptUpperLimit = ptUpper; }
-  void SetPtTOFlowerBoundary( double ptTPCTOFboundary )   { ptTOFlowerBoundary = ptTPCTOFboundary; }
+  void SetPtCutUpperLimit_1( double ptUpper_1 )      { ptUpperLimit_1 = ptUpper_1; }
+  void SetPtCutUpperLimit_2( double ptUpper_2 )      { ptUpperLimit_2 = ptUpper_2; }
+  void SetPtTOFlowerBoundary_1( double ptTPCTOFboundary_1 )   { ptTOFlowerBoundary_1 = ptTPCTOFboundary_1; }
+  void SetPtTOFlowerBoundary_2( double ptTPCTOFboundary_2 )   { ptTOFlowerBoundary_2 = ptTPCTOFboundary_2; }
   void SetElectronNSigmaVetoCut( double electronVeto )   { electronNSigmaVeto = electronVeto; }
   void SetfRemoveTracksT0Fill( bool tof )     { fRemoveTracksT0Fill = tof; }    //fRemoveTracksT0Fill
   //void SetAliEventCuts(AliEventCuts * Event_Cut)     { fEventCut = Event_Cut; }
@@ -214,7 +223,8 @@ protected:
   bool      PIDparticle;
   bool      use_pT_cut;
   bool      useAliHelperPID;
-  bool      useCircularCutPID;
+  bool      useCircularCutPID_1;
+  bool      useCircularCutPID_2;
   bool      NoContamination;
   int      _useWeights;
   int      _useRapidity;
