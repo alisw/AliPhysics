@@ -476,7 +476,7 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
     helperpid -> SetNSigmaCut( nSigmaCut );
     helperpid -> SetPIDType( pidType );// kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF
     helperpid -> SetfRequestTOFPID( requestTOFPID );
-    helperpid -> SetfPtTOFPID( ptTOFlowerMin );
+    helperpid -> SetfPtTOFPID( ptTOFlowerMin_1 );
     helperpid -> SetisMC( isMC );
     task->SetHelperPID( helperpid );
     
