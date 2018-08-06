@@ -678,19 +678,17 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   Double_t zvert = -999;
   if(!fApplyZcutOnSPDvtx && vertex) zvert=vertex->GetZ();
   else if(fApplyZcutOnSPDvtx) {
-    if(!vSPD){
+    if(!vSPD || (vSPD && vSPD->GetNContributors()<1)){
       accept=kFALSE;
       fEvRejectionBits+=1<<kBadSPDVertex;
     }
     else zvert = vSPD->GetZ();
   }
   
-  if((!fApplyZcutOnSPDvtx && vertex) || (fApplyZcutOnSPDvtx && vSPD)) {
-    if(TMath::Abs(zvert)>fMaxVtxZ) {
-      fEvRejectionBits+=1<<kZVtxOutFid;
-      if(accept) fWhyRejection=6;
-      accept=kFALSE;
-    }
+  if(TMath::Abs(zvert)>fMaxVtxZ) {
+    fEvRejectionBits+=1<<kZVtxOutFid;
+    if(accept) fWhyRejection=6;
+    accept=kFALSE;
   }
   
   // pile-up rejection
