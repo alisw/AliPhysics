@@ -122,6 +122,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void SetPlotDCal(Bool_t b)                                { fPlotDCal = b; }
   void SetJetMatchingR(Double_t r)                          { fJetMatchingR = r; }
   void SetPlotJetMatchCandThresh(Double_t r)                { fPlotJetMatchCandThresh = r; };
+  void SetDoTriggerResponse(Bool_t b)                       { fDoTriggerResponse = b; };
 
  protected:
   void                        ExecOnce()                                        ;
@@ -192,6 +193,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   Double_t                    fMedianEMCal;                         //!<! median patch energy in EMCal, per event
   Double_t                    fMedianDCal;                          //!<! median patch energy in DCal, per event
   Bool_t                      fkEMCEJE;                             //!<! flag telling whether the event is "triggered" or not in "simulation"
+  Bool_t                      fDoTriggerResponse;                   ///< flag whether to compute max patch response, in case of MC
   
   // Embedding parameters
   AliEmcalEmbeddingQA         fEmbeddingQA;                         //!<! QA hists for embedding (will only be added if embedding)
