@@ -3484,15 +3484,12 @@ void AliHFSystErr::InitDstartoD0pi2017pp5TeV(){
     for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.013); // 1.3%
     for(Int_t i=1;i<=36;i++) fBR->SetBinError(i,0.);
 
-    // Tracking efficiency
-    // 11/07/18: To be updated after implementation new strategy for Dstar
+    // Tracking efficiency (TPC contribution: 0.5% per D0 daughter + 1.0% for soft pion)
     fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
-    fTrackingEff->SetBinContent(2,0.05);
-    fTrackingEff->SetBinContent(3,0.055);
-    fTrackingEff->SetBinContent(4,0.06);
-    fTrackingEff->SetBinContent(5,0.06);
-    for(Int_t i= 6;i<=16;i++) fTrackingEff->SetBinContent(i,0.065);
-    for(Int_t i=17;i<=36;i++) fTrackingEff->SetBinContent(i,0.07);
+    fTrackingEff->SetBinContent(2,0.04);
+    fTrackingEff->SetBinContent(3,0.04);
+    fTrackingEff->SetBinContent(4,0.045);
+    for(Int_t i=5;i<=36;i++) fTrackingEff->SetBinContent(i,0.05);
     for(Int_t i=1;i<=36;i++) fTrackingEff->SetBinError(i,0.);
 
     // Raw yield extraction
