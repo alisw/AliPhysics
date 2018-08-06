@@ -16,7 +16,7 @@ const char* AliHLTTPCLog::kPrec = "";
 const char* AliHLTTPCLog::kHex = "";
 const char* AliHLTTPCLog::kDec = "";
 
-stringstream AliHLTTPCLog::fgStream;
+stringstream* AliHLTTPCLog::fgStream = new stringstream;
 
 AliHLTLogging AliHLTTPCLog::fgHLTLogging;
 
@@ -29,9 +29,9 @@ const char* AliHLTTPCLog::Flush()
   string iter;
   string message("");
   int scanStatus=0;
-  fgStream >> severity;
-  while (!fgStream.eof()) {
-    fgStream >> iter;
+  *fgStream >> severity;
+  while (!fgStream->eof()) {
+    *fgStream >> iter;
     if (scanStatus==0 && iter.compare(AliHLTTPCLogKeyOrigin)==0) {
       // idicate scan of origin message
       scanStatus=1;
@@ -81,9 +81,8 @@ const char* AliHLTTPCLog::Flush()
     fgHLTLogging.Logging(kHLTLogFatal, origin.c_str(), keyword.c_str(), message.c_str());
     break;
   }
-  fgStream.clear();
+  fgStream->clear();
   string empty("");
-  fgStream.str(empty);
+  fgStream->str(empty);
   return "";
 }
-

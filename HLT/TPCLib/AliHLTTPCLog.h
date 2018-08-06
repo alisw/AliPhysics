@@ -60,7 +60,7 @@ class AliHLTTPCLog  {
   /**
    * Get the stream.
    */
-  static stringstream& GetStream() {return fgStream;}
+  static stringstream& GetStream() {return *fgStream;}
 
   /**
    * Get the logging level.
@@ -69,7 +69,7 @@ class AliHLTTPCLog  {
 
  private:
   /** a stringstream to receive the output */
-  static stringstream fgStream;                                    // see above
+  static stringstream* fgStream;                                   // see above
 
   /** the logging filter */
   static TLogLevel fgLevel;                                        // see above
