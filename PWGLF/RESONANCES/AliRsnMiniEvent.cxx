@@ -18,6 +18,7 @@ AliRsnMiniEvent::AliRsnMiniEvent(const AliRsnMiniEvent &copy) :
    TObject(copy),
    fID(copy.fID),
    fVz(copy.fVz),
+   fSpherocity(copy.fSpherocity),
    fMult(copy.fMult),
    fRefMult(copy.fRefMult),
    fTracklets(copy.fTracklets),
@@ -49,6 +50,7 @@ AliRsnMiniEvent &AliRsnMiniEvent::operator=(const AliRsnMiniEvent &copy)
       return *this;
    fID = copy.fID;
    fVz = copy.fVz;
+   fSpherocity=copy.fSpherocity;
    fMult = copy.fMult;
    fRefMult = copy.fRefMult;
    fTracklets = copy.fTracklets;
@@ -69,6 +71,7 @@ void AliRsnMiniEvent::Clear(Option_t *)
 //
     fID = 0;
     fVz = 0;
+    fSpherocity=0;
     fMult = 0;
     fRefMult = 0;
     fTracklets = 0;

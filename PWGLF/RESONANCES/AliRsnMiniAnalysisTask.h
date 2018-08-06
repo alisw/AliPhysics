@@ -67,11 +67,13 @@ public:
    void                SetCheckMomentumConservation(Bool_t checkP) {fCheckP = checkP;}
    void                SetCheckFeedDown(Bool_t checkFeedDown)      {fCheckFeedDown = checkFeedDown;}
    void                SetDselection(UShort_t originDselection);
-   void 	       SetRejectCandidateIfNotFromQuark(Bool_t opt){fRejectIfNoQuark=opt;}
+   void 	           SetRejectCandidateIfNotFromQuark(Bool_t opt){fRejectIfNoQuark=opt;}
    void                SetMotherAcceptanceCutMinPt(Float_t minPt)  {fMotherAcceptanceCutMinPt = minPt;}
    void                SetMotherAcceptanceCutMaxEta(Float_t maxEta){fMotherAcceptanceCutMaxEta = maxEta;}
    void                KeepMotherInAcceptance(Bool_t keepMotherInAcceptance) {fKeepMotherInAcceptance = keepMotherInAcceptance;}
    void                SaveRsnTreeInFile(Bool_t saveInFile=kTRUE) {fRsnTreeInFile = saveInFile;}
+   void                SetComputeSpherocity(Bool_t doit=kTRUE) {fComputeSpherocity = doit;}
+
    Int_t               AddTrackCuts(AliRsnCutSet *cuts);
    TClonesArray       *Outputs()                          {return &fHistograms;}
    TClonesArray       *Values()                           {return &fValues;}
@@ -95,7 +97,6 @@ public:
    Int_t               GetNResonanceFinders() {return ((Int_t) fNResonanceFinders);}
 
 private:
-
    Char_t   CheckCurrentEvent();
    void     FillMiniEvent(Char_t evType);
    Double_t ComputeAngle();
@@ -103,6 +104,7 @@ private:
    Double_t ComputeMultiplicity(Bool_t isESD,TString type);
    Double_t ComputeReferenceMultiplicity(Bool_t isESD,TString type);
    Double_t ComputeTracklets();
+   Double_t ComputeSpherocity();
    Double_t ApplyCentralityPatchAOD049();
    Double_t ApplyCentralityPatchPbPb2011();
    void     FillTrueMotherESD(AliRsnMiniEvent *event);
@@ -139,6 +141,7 @@ private:
    TH1F                *fHAEventsVsMulti; //  histogram of event statistics
    TH1F                *fHAEventsVsTracklets; //  histogram of event statistics
    TH2F                *fHAEventVzCent;       //  histogram of vertex-z vs. multiplicity/centrality
+   TH2F                *fHAEventSpherocityCent; //  histogram of spherocity vs. multiplicity/centrality
    TH2F                *fHAEventMultiCent;//  histogram of multiplicity vs. centrality
    TH2F                *fHAEventRefMultiCent;//  histogram of reference multiplicity vs. centrality
    TH2F                *fHAEventPlane;    //  histogram of event plane vs. multiplicity/centrality
@@ -157,19 +160,21 @@ private:
    Bool_t               fCheckP;          // flag to set in order to check the momentum conservation for mothers
    
    Bool_t               fCheckFeedDown;      // flag to set in order to check the particle feed down (specific for D meson analysis)
-   UShort_t 		fOriginDselection;   // flag to select D0 origins. 0 Only from charm 1 only from beauty 2 both from charm and beauty (specific for D meson analysis)
-   Bool_t   		fKeepDfromB;  	     // flag for the feed down from b quark decay (specific for D meson analysis)			
-   Bool_t   		fKeepDfromBOnly;     // flag to keep only the charm particles that comes from beauty decays (specific for D meson analysis)
-   Bool_t 		fRejectIfNoQuark;    // flag to remove events not generated with PYTHIA
+   UShort_t 		    fOriginDselection;   // flag to select D0 origins. 0 Only from charm 1 only from beauty 2 both from charm and beauty (specific for D meson analysis)
+   Bool_t   		    fKeepDfromB;  	     // flag for the feed down from b quark decay (specific for D meson analysis)
+   Bool_t   		    fKeepDfromBOnly;     // flag to keep only the charm particles that comes from beauty decays (specific for D meson analysis)
+   Bool_t 		        fRejectIfNoQuark;    // flag to remove events not generated with PYTHIA
    Float_t              fMotherAcceptanceCutMinPt;              // cut value to apply when selecting the mothers inside a defined acceptance
    Float_t              fMotherAcceptanceCutMaxEta;             // cut value to apply when selecting the mothers inside a defined acceptance
    Bool_t               fKeepMotherInAcceptance;                // flag to keep also mothers in acceptance
    Bool_t               fRsnTreeInFile;  // flag rsn tree should be saved in file instead of memory
+   Bool_t               fComputeSpherocity; // compute spherocity, false by default since spherocity calculation is time-consuming
+   Double_t             fSpherocity; // stores value of spherocity
 
-   UShort_t              fNResonanceFinders; // number of AliRsnMiniResonanceFinder objects
+   UShort_t             fNResonanceFinders; // number of AliRsnMiniResonanceFinder objects
    AliRsnMiniResonanceFinder* fResonanceFinder[2]; // pointers to AliRsnMiniResonanceFinder objects
 
-   ClassDef(AliRsnMiniAnalysisTask, 16);   // AliRsnMiniAnalysisTask
+   ClassDef(AliRsnMiniAnalysisTask, 17);   // AliRsnMiniAnalysisTask
 };
 
 

@@ -1,6 +1,6 @@
 /***************************************************************************
               Anders Knospe - last modified on 26 March 2016
-              Sushanta Tripathy - last modified on 6 July 2018
+              Sushanta Tripathy - last modified on 4 Aug 2018
 *** Configuration script for phi analysis of 2015 pp 5.02 TeV data ***
 ****************************************************************************/
 
@@ -67,7 +67,7 @@ Bool_t ConfigPhiPP5TeV_PID
   /* IM difference    */ Int_t diffID = task->CreateValue(AliRsnMiniValue::kInvMassDiff,kTRUE);
   /* transv. momentum */ Int_t ptID   = task->CreateValue(AliRsnMiniValue::kPt,kFALSE);
   /* centrality       */ Int_t centID = task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
-  ///* centrality       */ Int_t SpherocityID = task->CreateValue(AliRsnMiniValue::kSpherocity,kFALSE);
+  /* spherocity       */ Int_t SpherocityID = task->CreateValue(AliRsnMiniValue::kSpherocity,kFALSE);
   /* pseudorapidity   */ Int_t etaID  = task->CreateValue(AliRsnMiniValue::kEta,kFALSE);
   /* rapidity         */ Int_t yID    = task->CreateValue(AliRsnMiniValue::kY,kFALSE);
   /* 1st daughter pt  */ Int_t fdpt   = task->CreateValue(AliRsnMiniValue::kFirstDaughterPt,kFALSE);
@@ -122,7 +122,7 @@ Bool_t ConfigPhiPP5TeV_PID
     // else if(yaxisVar==AliRsnMiniValue::kFirstDaughterP) out->AddAxis(fdp,100,0.,10.);
     // else if(yaxisVar==AliRsnMiniValue::kSecondDaughterP)  out->AddAxis(sdp,100,0.,10.);
     // else if(isMC && (i==5 || i==7)) out->AddAxis(ptID,300,0.,3.);//fine binning for efficiency weighting
-    //   out->AddAxis(ptID,500,0.,50.);//default use mother pt
+     out->AddAxis(ptID,500,0.,50.);//default use mother pt
 
     // axis Z: centrality-multiplicity
     //   if(!isPP) out->AddAxis(centID,100,0.,100.);
@@ -131,9 +131,9 @@ Bool_t ConfigPhiPP5TeV_PID
     if(!isPP) out->AddAxis(centID,100,0.,100.); //ST
     else out->AddAxis(centID,10,0.,100); //ST
 
-     //out->AddAxis(SpherocityID,12,0,1.2); //ST
+     out->AddAxis(SpherocityID,200,-0.5,1.5); //ST
     // axis W: pseudorapidity
-    // out->AddAxis(etaID, 20, -1.0, 1.0);
+    //out->AddAxis(etaID, 20, -1.0, 1.0);
     // axis J: rapidity
     // out->AddAxis(yID, 10, -0.5, 0.5);
 
@@ -154,7 +154,7 @@ Bool_t ConfigPhiPP5TeV_PID
     outm->AddAxis(ptID,500,0.,50.);
     if(!isPP) outm->AddAxis(centID,100,0.,100.);
     else outm->AddAxis(centID,161,-0.5,160.5);
-    //outm->AddAxis(SpherocityID,12,0,1.2); //ST
+    outm->AddAxis(SpherocityID,200,-0.5,1.5); //ST
     if (polarizationOpt.Contains("J")) outm->AddAxis(ctjmID,21,-1.,1.);
     if (polarizationOpt.Contains("T")) outm->AddAxis(cttmID,21,-1.,1.);
 
@@ -169,7 +169,7 @@ Bool_t ConfigPhiPP5TeV_PID
     outmf->AddAxis(ptID,300,0.,3.);//fine binning for efficiency weighting
     if(!isPP) outmf->AddAxis(centID,100,0.,100.);
     else outmf->AddAxis(centID,161,-0.5,160.5);
-    //outmf->AddAxis(SpherocityID,12,0,1.2); //ST
+    outmf->AddAxis(SpherocityID,200,-0.5,1.5); //ST
     if (polarizationOpt.Contains("J")) outmf->AddAxis(ctjmID,21,-1.,1.);
     if (polarizationOpt.Contains("T")) outmf->AddAxis(cttmID,21,-1.,1.);
 
@@ -213,7 +213,7 @@ Bool_t ConfigPhiPP5TeV_PID
       outreflex->AddAxis(ptID,500,0.,50.);
       //if(!isPP) outreflex->AddAxis(centID,100,0.,100.);
       else outreflex->AddAxis(centID,400,0.5,400.5);
-      //outreflex->AddAxis(SpherocityID,12,0,1.2); //ST
+      outreflex->AddAxis(SpherocityID,200,-0.5,1.5); //ST
       if (polarizationOpt.Contains("J")) outreflex->AddAxis(ctjID,21,-1.,1.);
       if (polarizationOpt.Contains("T")) outreflex->AddAxis(cttID,21,-1.,1.);
     }//end reflections

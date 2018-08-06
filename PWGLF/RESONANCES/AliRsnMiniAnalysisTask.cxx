@@ -11,7 +11,6 @@
 //
 // Author: A. Pulvirenti
 // Developers: F. Bellini (fbellini@cern.ch)
-//
 
 #include <Riostream.h>
 
@@ -81,6 +80,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fHAEventVzCent(0x0),
    fHAEventMultiCent(0x0),
    fHAEventRefMultiCent(0x0),
+   fHAEventSpherocityCent(0x0),
    fHAEventPlane(0x0),
    fEventCuts(0x0),
    fTrackCuts(0),
@@ -103,6 +103,8 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fMotherAcceptanceCutMaxEta(0.9),
    fKeepMotherInAcceptance(kFALSE),
    fRsnTreeInFile(kFALSE),
+   fComputeSpherocity(kFALSE),
+   fSpherocity(-10),
    fNResonanceFinders(0)
 {
 //
@@ -141,6 +143,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bo
    fHAEventVzCent(0x0),
    fHAEventMultiCent(0x0),
    fHAEventRefMultiCent(0x0),
+   fHAEventSpherocityCent(0x0),
    fHAEventPlane(0x0),
    fEventCuts(0x0),
    fTrackCuts(0),
@@ -163,6 +166,8 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bo
    fMotherAcceptanceCutMaxEta(0.9),
    fKeepMotherInAcceptance(kFALSE),
    fRsnTreeInFile(saveRsnTreeInFile),
+   fComputeSpherocity(kFALSE),
+   fSpherocity(-10),
    fNResonanceFinders(0)
 {
 //
@@ -207,6 +212,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fHAEventVzCent(0x0),
    fHAEventMultiCent(0x0),
    fHAEventRefMultiCent(0x0),
+   fHAEventSpherocityCent(0x0),
    fHAEventPlane(0x0),
    fEventCuts(copy.fEventCuts),
    fTrackCuts(copy.fTrackCuts),
@@ -229,6 +235,8 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fMotherAcceptanceCutMaxEta(copy.fMotherAcceptanceCutMaxEta),
    fKeepMotherInAcceptance(copy.fKeepMotherInAcceptance),
    fRsnTreeInFile(copy.fRsnTreeInFile),
+   fComputeSpherocity(copy.fComputeSpherocity),
+   fSpherocity(copy.fSpherocity),
    fNResonanceFinders(0)
 {
 //
@@ -277,6 +285,7 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fHAEventVzCent = copy.fHAEventVzCent;
    fHAEventMultiCent = copy.fHAEventMultiCent;
    fHAEventRefMultiCent = copy.fHAEventRefMultiCent;
+   fHAEventSpherocityCent = copy.fHAEventSpherocityCent;
    fHAEventPlane = copy.fHAEventPlane;
    fEventCuts = copy.fEventCuts;
    fTrackCuts = copy.fTrackCuts;
@@ -296,6 +305,8 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fMotherAcceptanceCutMaxEta = copy.fMotherAcceptanceCutMaxEta;
    fKeepMotherInAcceptance = copy.fKeepMotherInAcceptance;
    fRsnTreeInFile = copy.fRsnTreeInFile;
+   fComputeSpherocity = copy.fComputeSpherocity;
+   fSpherocity = copy.fSpherocity;
 
    return (*this);
 }
@@ -408,6 +419,7 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    if(fHAEventVzCent) fOutput->Add(fHAEventVzCent);
    if(fHAEventMultiCent) fOutput->Add(fHAEventMultiCent);
    if(fHAEventRefMultiCent) fOutput->Add(fHAEventRefMultiCent);
+   if(fHAEventSpherocityCent) fOutput->Add(fHAEventSpherocityCent);
    if(fHAEventPlane) fOutput->Add(fHAEventPlane);
 
    AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections *>(AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
@@ -858,9 +870,11 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
      Double_t multi = ComputeCentrality((output == 'E'));
      Double_t tracklets = ComputeTracklets();
      Double_t refmulti = ComputeReferenceMultiplicity((output == 'E'), fRefMultiType.Data());
+     fSpherocity = (fComputeSpherocity) ? ComputeSpherocity() : -10;
      fHAEventsVsMulti->Fill(multi);
      fHAEventsVsTracklets->Fill(tracklets);
      if(fHAEventVzCent) fHAEventVzCent->Fill(multi,fInputEvent->GetPrimaryVertex()->GetZ());
+     if(fHAEventSpherocityCent && fComputeSpherocity) fHAEventSpherocityCent->Fill(multi,fSpherocity);
      if(fHAEventMultiCent) fHAEventMultiCent->Fill(multi,ComputeMultiplicity(output == 'E', fHAEventMultiCent->GetYaxis()->GetTitle()));
      if(fHAEventRefMultiCent) fHAEventRefMultiCent->Fill(refmulti, ComputeReferenceMultiplicity(output == 'E', fHAEventRefMultiCent->GetYaxis()->GetTitle()));
      if(fHAEventPlane) fHAEventPlane->Fill(multi,ComputeAngle());
@@ -910,6 +924,7 @@ void AliRsnMiniAnalysisTask::FillMiniEvent(Char_t evType)
    fMiniEvent->SetRef(fRsnEvent.GetRef());
    fMiniEvent->SetRefMC(fRsnEvent.GetRefMC());
    fMiniEvent->Vz()    = fInputEvent->GetPrimaryVertex()->GetZ();
+   fMiniEvent->Spherocity()  = fSpherocity;
    fMiniEvent->Angle() = ComputeAngle();
    fMiniEvent->Mult()  = ComputeCentrality((evType == 'E'));
    fMiniEvent->RefMult()  = ComputeReferenceMultiplicity((evType == 'E'), fRefMultiType.Data());
@@ -1216,6 +1231,55 @@ Double_t AliRsnMiniAnalysisTask::ComputeTracklets()
   }
 
   return count;
+}
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
+{
+//
+// Get spherocity
+//
+
+  AliVEvent * evTypeS = InputEvent();
+  Int_t iTrack,fNrec, ntracksLoop = evTypeS->GetNumberOfTracks();
+  Float_t spherocity = -10.0;
+  Float_t pFull = 0;
+  Float_t Spherocity = 2;
+  Float_t pt[10000],phi[1000];
+
+  //computing total pt
+  Float_t sumapt = 0;
+  for(Int_t i1 = 0; i1 < ntracksLoop; ++i1){
+    AliVTrack   *track = (AliVTrack *)evTypeS->GetTrack(i1);
+    pt[i1] = track->Pt();
+    sumapt += pt[i1];
+  }
+
+  //Getting thrust
+  for(Int_t i = 0; i < 360/0.01; ++i){
+	Float_t numerador = 0;
+	Float_t phiparam  = 0;
+	Float_t nx = 0;
+	Float_t ny = 0;
+	phiparam=( (TMath::Pi()) * i * 0.01 ) / 180; // parametrization of the angle
+	nx = TMath::Cos(phiparam);            // x component of an unitary vector n
+	ny = TMath::Sin(phiparam);            // y component of an unitary vector n
+	for(Int_t i1 = 0; i1 < ntracksLoop; ++i1){
+	  AliVTrack   *track = (AliVTrack *)evTypeS->GetTrack(i1);
+	  pt[i1] = track->Pt();
+	  phi[i1] = track->Phi();
+	  Float_t pxA = pt[i1] * TMath::Cos( phi[i1] );
+	  Float_t pyA = pt[i1] * TMath::Sin( phi[i1] );
+	  numerador += TMath::Abs( ny * pxA - nx * pyA );//product between p  proyection in XY plane and the unitary vector
+	}
+	pFull=TMath::Power( (numerador / sumapt),2 );
+	if(pFull < Spherocity)//maximization of pFull
+	  {
+	    Spherocity = pFull;
+	  }
+  }
+  spherocity=((Spherocity)*TMath::Pi()*TMath::Pi())/4.0;
+  return spherocity;
 }
 
 //__________________________________________________________________________________________________
@@ -1661,6 +1725,10 @@ void AliRsnMiniAnalysisTask::SetEventQAHist(TString type,TH1 *histo)
    if(!type.CompareTo("eventsvsmulti")) fHAEventsVsMulti = (TH1F*) histo;
    else if(!type.CompareTo("eventsvstracklets")) fHAEventsVsTracklets = (TH1F*) histo;
    else if(!type.CompareTo("vz")) fHAEventVzCent = (TH2F*) histo;
+   else if(!type.CompareTo("spherocitycent")){
+      fHAEventSpherocityCent = (TH2F*) histo;
+      fComputeSpherocity = kTRUE;
+   }
    else if(!type.CompareTo("multicent")) {
       if(multitype.CompareTo("QUALITY") && multitype.CompareTo("TRACKS") && multitype.CompareTo("TRACKLETS")) {
          AliWarning(Form("multiplicity vs. centrality histogram y-axis %s unknown, setting to TRACKS",multitype.Data()));
