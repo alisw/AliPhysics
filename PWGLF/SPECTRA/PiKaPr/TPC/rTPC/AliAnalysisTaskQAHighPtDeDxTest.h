@@ -244,6 +244,18 @@ class AliAnalysisTaskQAHighPtDeDxTest : public AliAnalysisTaskSE {
 		TH2D* hDCAxyVsPtPPos[10];
 		TH2D* hDCAxyVsPtPPosC[10];
 
+		//    [Cent][Pid][Charge: 0:neutral 1:Neg 2:Pos]
+		TH2D* hDCApTPrim[10][7][3];
+		TH2D* hDCApTWDec[10][7][3];
+		TH2D* hDCApTMate[10][7][3];
+
+		TH2D* hDCApTPrim2[10][7][3];
+		TH2D* hDCApTWDec2[10][7][3];
+		TH2D* hDCApTMate2[10][7][3];
+
+
+
+
 
 		TF1* fEtaCalibrationNeg;
 		TF1* fEtaCalibration;

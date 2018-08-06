@@ -133,6 +133,7 @@ Double_t deltaPiHigh = 100;
 const Double_t dEdxHigh = 200;
 const Double_t dEdxLow  = 40;
 const Char_t *Pid[7]={"Ch","Pion","Kaon","Proton","Electron","Muon","Oher"};
+const Char_t *Q[3]={"", "Neg", "Pos"};
 ClassImp(AliAnalysisTaskQAHighPtDeDxTest)
 	//_____________________________________________________________________________
 	//AliAnalysisTaskQAHighPtDeDx::AliAnalysisTaskQAHighPtDeDx(const char *name):
@@ -702,9 +703,42 @@ void AliAnalysisTaskQAHighPtDeDxTest::UserCreateOutputObjects()
 				fListOfObjects->Add(hMcOutNeg[cent][pid]);
 				fListOfObjects->Add(hMcOutPos[cent][pid]);
 
+			}	// pid Eff
+		}	// cent Eff
 
-			}
-		}
+		for(Int_t i_cent=0; i_cent<10; ++i_cent){
+			for(Int_t pid=0; pid<7; ++pid){
+				for(Int_t q=0; q<3; ++q){
+					hDCApTPrim[i_cent][pid][q] = 0;
+					hDCApTPrim[i_cent][pid][q] = new TH2D(Form("hDCA_%s%sPrimcent%d",Pid[pid],Q[q],i_cent),"primaries; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
+					hDCApTPrim[i_cent][pid][q]->Sumw2();
+					hDCApTWDec[i_cent][pid][q] = 0;
+					hDCApTWDec[i_cent][pid][q] = new TH2D(Form("hDCA_%s%sWDeccent%d",Pid[pid],Q[q],i_cent),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
+					hDCApTWDec[i_cent][pid][q]->Sumw2();
+					hDCApTMate[i_cent][pid][q] = 0;
+					hDCApTMate[i_cent][pid][q] = new TH2D(Form("hDCA_%s%sMatecent%d",Pid[pid],Q[q],i_cent),"from material; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, ndcaBins, dcaBins );
+					hDCApTMate[i_cent][pid][q]->Sumw2();
+
+					// narrower bin size
+					hDCApTPrim2[i_cent][pid][q] = 0;
+					hDCApTPrim2[i_cent][pid][q] = new TH2D(Form("hDCA2_%s%sPrimcent%d",Pid[pid],Q[q],i_cent),"primaries; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, 800, -4.0, 4.0 );
+					hDCApTPrim2[i_cent][pid][q]->Sumw2();
+					hDCApTWDec2[i_cent][pid][q] = 0;
+					hDCApTWDec2[i_cent][pid][q] = new TH2D(Form("hDCA2_%s%sWDeccent%d",Pid[pid],Q[q],i_cent),"from weak decays; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, 800, -4.0, 4.0 );
+					hDCApTWDec2[i_cent][pid][q]->Sumw2();
+					hDCApTMate2[i_cent][pid][q] = 0;
+					hDCApTMate2[i_cent][pid][q] = new TH2D(Form("hDCA2_%s%sMatecent%d",Pid[pid],Q[q],i_cent),"from material; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, 800, -4.0, 4.0 );
+					hDCApTMate2[i_cent][pid][q]->Sumw2();
+
+					fListOfObjects->Add(hDCApTPrim[i_cent][pid][q]);
+					fListOfObjects->Add(hDCApTPrim2[i_cent][pid][q]);
+					fListOfObjects->Add(hDCApTWDec[i_cent][pid][q]);
+					fListOfObjects->Add(hDCApTWDec2[i_cent][pid][q]);
+					fListOfObjects->Add(hDCApTMate[i_cent][pid][q]);
+					fListOfObjects->Add(hDCApTMate2[i_cent][pid][q]);
+				}	// charge MC
+			}	// pid MC
+		}	//cent DCA MC
 
 		fVtxMC = new TH1F("fVtxMC","mc vtx", 120, -30, 30);
 		fListOfObjects->Add(fVtxMC);
@@ -989,8 +1023,8 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProcessMCTruthESD(const Int_t Cent)
 		if ( TMath::Abs(trackMC->Eta()) > fEtaCut )
 			continue;
 
-		if ( TMath::Abs(trackMC->Y()) > 0.5 )
-			continue;
+		//		if ( TMath::Abs(trackMC->Y()) > 0.5 )
+		//			continue;
 
 		Int_t pdgCode = trackMC->GetPdgCode();
 		Short_t pidCodeMC = 0;
@@ -1392,6 +1426,8 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayTrksESD( AliESDEvent *ESDevent
 		}
 
 		//==========================  DCAxy cut
+
+		cout<<"DCA before::  "<<dcaxy<<endl;
 		if( TMath::Abs(dcaxy) > GetMaxDCApTDep(fcutDCAxy,pt) )
 			continue;
 
@@ -1412,14 +1448,118 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayTrksESD( AliESDEvent *ESDevent
 
 		Short_t pidCode     = 0;
 		if(fAnalysisMC) {
+
 			const Int_t label = TMath::Abs(esdTrack->GetLabel());
-			TParticle* mcTrack = fMCStack->Particle(label);
+			TParticle* mcTrack = 0;
+			mcTrack = fMCStack->Particle(label);
+
 			if (mcTrack){
+
+				if( esdTrack->Charge()==0 )
+					continue;
+
 				Int_t pdgCode = mcTrack->GetPdgCode();
 				pidCode = GetPidCode(pdgCode);
-			}
 
-		}
+				if( fMCStack->IsPhysicalPrimary(label) ){
+
+					hMcOut[Cent][0]->Fill(esdTrack->Pt());
+					hMcOut[Cent][pidCode]->Fill(esdTrack->Pt());
+
+					hMcOut[10][0]->Fill(esdTrack->Pt());
+					hMcOut[10][pidCode]->Fill(esdTrack->Pt());
+
+					hDCApTPrim[Cent][0][0]->Fill(pt,dcaxy);
+					hDCApTPrim[Cent][pidCode][0]->Fill(pt,dcaxy);
+
+					hDCApTPrim2[Cent][0][0]->Fill(pt,dcaxy);
+					hDCApTPrim2[Cent][pidCode][0]->Fill(pt,dcaxy);
+
+					if( esdTrack->Charge() < 0.0 ){
+						hMcOutNeg[Cent][0]->Fill(esdTrack->Pt());
+						hMcOutNeg[Cent][pidCode]->Fill(esdTrack->Pt());
+
+						hMcOutNeg[10][0]->Fill(esdTrack->Pt());
+						hMcOutNeg[10][pidCode]->Fill(esdTrack->Pt());
+
+						hDCApTPrim[Cent][0][1]->Fill(pt,dcaxy);
+						hDCApTPrim[Cent][pidCode][1]->Fill(pt,dcaxy);
+
+						hDCApTPrim2[Cent][0][1]->Fill(pt,dcaxy);
+						hDCApTPrim2[Cent][pidCode][1]->Fill(pt,dcaxy);
+					}
+					else{
+						hMcOutPos[Cent][0]->Fill(esdTrack->Pt());
+						hMcOutPos[Cent][pidCode]->Fill(esdTrack->Pt());
+
+						hMcOutPos[10][0]  ->Fill(esdTrack->Pt());
+						hMcOutPos[10][pidCode]  ->Fill(esdTrack->Pt());
+
+						hDCApTPrim[Cent][0][2]->Fill(pt,dcaxy);
+						hDCApTPrim[Cent][pidCode][2]->Fill(pt,dcaxy);
+
+						hDCApTPrim2[Cent][0][2]->Fill(pt,dcaxy);
+						hDCApTPrim2[Cent][pidCode][2]->Fill(pt,dcaxy);
+					}
+				}	// Primary particles MC
+
+				if( fMCStack->IsSecondaryFromWeakDecay(label) ){
+
+					hDCApTWDec[Cent][0][0]->Fill(pt,dcaxy);
+					hDCApTWDec[Cent][pidCode][0]->Fill(pt,dcaxy);
+
+					hDCApTWDec2[Cent][0][0]->Fill(pt,dcaxy);
+					hDCApTWDec2[Cent][pidCode][0]->Fill(pt,dcaxy);
+
+					if( esdTrack->Charge() < 0.0 ){
+
+						hDCApTWDec[Cent][0][1]->Fill(pt,dcaxy);
+						hDCApTWDec[Cent][pidCode][1]->Fill(pt,dcaxy);
+
+						hDCApTWDec2[Cent][0][1]->Fill(pt,dcaxy);
+						hDCApTWDec2[Cent][pidCode][1]->Fill(pt,dcaxy);
+
+					}
+					else{
+
+						hDCApTWDec[Cent][0][2]->Fill(pt,dcaxy);
+						hDCApTWDec[Cent][pidCode][2]->Fill(pt,dcaxy);
+
+						hDCApTWDec2[Cent][0][2]->Fill(pt,dcaxy);
+						hDCApTWDec2[Cent][pidCode][2]->Fill(pt,dcaxy);
+
+					}
+				}	// Weak Decay MC
+
+				if( fMCStack->IsSecondaryFromMaterial(label) ){
+
+					hDCApTMate[Cent][0][0]->Fill(pt,dcaxy);
+					hDCApTMate[Cent][pidCode][0]->Fill(pt,dcaxy);
+
+					hDCApTMate2[Cent][0][0]->Fill(pt,dcaxy);
+					hDCApTMate2[Cent][pidCode][0]->Fill(pt,dcaxy);
+
+					if( esdTrack->Charge() < 0.0 ){
+
+						hDCApTMate[Cent][0][1]->Fill(pt,dcaxy);
+						hDCApTMate[Cent][pidCode][1]->Fill(pt,dcaxy);
+
+						hDCApTMate2[Cent][0][1]->Fill(pt,dcaxy);
+						hDCApTMate2[Cent][pidCode][1]->Fill(pt,dcaxy);
+
+					}
+					else{
+
+						hDCApTMate[Cent][0][2]->Fill(pt,dcaxy);
+						hDCApTMate[Cent][pidCode][2]->Fill(pt,dcaxy);
+
+						hDCApTMate2[Cent][0][2]->Fill(pt,dcaxy);
+						hDCApTMate2[Cent][pidCode][2]->Fill(pt,dcaxy);
+
+					}
+				}	// Material Inte MC
+			}	//mcTrack
+		}	//fAnalysis MC
 
 		if(!fdEdxCalibrated){
 			//			cout<<"PreCalibration"<<endl;
@@ -1487,39 +1627,40 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayTrksESD( AliESDEvent *ESDevent
 		if(nh<0)
 			continue;
 
+		/*
+		   if(fAnalysisMC){
 
-		if(fAnalysisMC){
+		   if( !(fMCStack->IsPhysicalPrimary(iT)) )
+		   continue;
 
-		if( !(fMCStack->IsPhysicalPrimary(iT)) )
-			continue;
+		   if( esdTrack->Charge()==0 )
+		   continue;
 
-			if( esdTrack->Charge()==0 )
-				continue;
+		   if ( TMath::Abs(esdTrack->Y()) > 0.5 )
+		   continue;
 
-			if ( TMath::Abs(esdTrack->Y()) > 0.5 )
-				continue;
+		   hMcOut[Cent][0]->Fill(esdTrack->Pt());
+		   hMcOut[Cent][pidCode]->Fill(esdTrack->Pt());
 
-			hMcOut[Cent][0]->Fill(esdTrack->Pt());
-			hMcOut[Cent][pidCode]->Fill(esdTrack->Pt());
+		   hMcOut[10][0]->Fill(esdTrack->Pt());
+		   hMcOut[10][pidCode]->Fill(esdTrack->Pt());
 
-			hMcOut[10][0]->Fill(esdTrack->Pt());
-			hMcOut[10][pidCode]->Fill(esdTrack->Pt());
+		   if( esdTrack->Charge() < 0.0 ){
+		   hMcOutNeg[Cent][0]->Fill(esdTrack->Pt());
+		   hMcOutNeg[Cent][pidCode]->Fill(esdTrack->Pt());
 
-			if( esdTrack->Charge() < 0.0 ){
-				hMcOutNeg[Cent][0]->Fill(esdTrack->Pt());
-				hMcOutNeg[Cent][pidCode]->Fill(esdTrack->Pt());
+		   hMcOutNeg[10][0]->Fill(esdTrack->Pt());
+		   hMcOutNeg[10][pidCode]->Fill(esdTrack->Pt());
+		   }
+		   else{
+		   hMcOutPos[Cent][0]->Fill(esdTrack->Pt());
+		   hMcOutPos[Cent][pidCode]->Fill(esdTrack->Pt());
 
-				hMcOutNeg[10][0]->Fill(esdTrack->Pt());
-				hMcOutNeg[10][pidCode]->Fill(esdTrack->Pt());
-			}
-			else{
-				hMcOutPos[Cent][0]->Fill(esdTrack->Pt());
-				hMcOutPos[Cent][pidCode]->Fill(esdTrack->Pt());
-
-				hMcOutPos[10][0]  ->Fill(esdTrack->Pt());
-				hMcOutPos[10][pidCode]  ->Fill(esdTrack->Pt());
-			}
-		}
+		   hMcOutPos[10][0]  ->Fill(esdTrack->Pt());
+		   hMcOutPos[10][pidCode]  ->Fill(esdTrack->Pt());
+		   }
+		   }
+		 */
 
 		if(beta>1){
 			histPiTof[Cent][nh]->Fill(momentum, dedx);
@@ -1808,11 +1949,11 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayV0ESD( AliESDEvent *ESDevent, 
 		if ( !esdV0 ) continue;
 
 		//check onfly status
-//		if( !esdV0->GetOnFlyStatus() )
-//			continue;
+		//		if( !esdV0->GetOnFlyStatus() )
+		//			continue;
 
-		 if( esdV0->GetOnFlyStatus()!=0 )
-     			 continue;
+		if( esdV0->GetOnFlyStatus()!=0 )
+			continue;
 
 		// AliESDTrack (V0 Daughters)
 		UInt_t lKeyPos = (UInt_t)TMath::Abs(esdV0->GetPindex());
