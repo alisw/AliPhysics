@@ -24,6 +24,7 @@
 #include "AliCaloRawAnalyzerPeakFinder.h"
 #include "AliCaloRawAnalyzerCrude.h"
 #include "AliCaloRawAnalyzerKStandard.h"
+#include "AliCaloRawAnalyzerKStandardFast.h"
 #include "AliCaloRawAnalyzerFakeALTRO.h"
 
 ///
@@ -54,6 +55,9 @@ AliCaloRawAnalyzerFactory::CreateAnalyzer( const int algo )
       break;
     case kStandard:
       return new AliCaloRawAnalyzerKStandard();
+      break;
+    case kStandardFast:
+      return new AliCaloRawAnalyzerKStandardFast();
       break;
     case kFakeAltro:
       return  new AliCaloRawAnalyzerFakeALTRO();

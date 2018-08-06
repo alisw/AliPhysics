@@ -45,6 +45,7 @@ set(SRCS
     AliCaloRawAnalyzerFastFit.cxx
     AliCaloRawAnalyzerFitter.cxx
     AliCaloRawAnalyzerKStandard.cxx
+    AliCaloRawAnalyzerKStandardFast.cxx
     AliCaloRawAnalyzerNN.cxx
     AliCaloRawAnalyzerPeakFinder.cxx
     AliEMCALCCUSBRawStream.cxx

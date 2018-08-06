@@ -8,6 +8,7 @@
 #pragma link C++ class AliHLTEMCALRawAnalyzerComponent+;
 #pragma link C++ class AliHLTEMCALMapper+;
 #pragma link C++ class AliHLTEMCALRawAnalyzerStandardComponent+;
+#pragma link C++ class AliHLTEMCALRawAnalyzerStandardFastComponent+;
 #pragma link C++ class AliHLTEMCALRawAnalyzerCrudeComponent+;
 #pragma link C++ class AliHLTEMCALRawAnalyzerLMSComponent+;
 #pragma link C++ class AliHLTEMCALRawAnalyzerPeakFinderComponent+;
