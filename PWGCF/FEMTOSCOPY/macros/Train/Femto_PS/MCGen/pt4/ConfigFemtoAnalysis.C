@@ -123,10 +123,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	//int runktdep = 1;
 	double ktrng[numOfkTbins+1] = {0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
 	//double ktrng[numOfkTbins+1] = {0.0, 0, 0, 0, 0, 0};
-	double ktrngAll[numOfkTbins+1] = {0.0, 1.0, 2.0, 3.0, 4.0, 100.0};
+	/*double ktrngAll[numOfkTbins+1] = {0.0, 1.0, 2.0, 3.0, 4.0, 100.0};
 	double ktrngPion[numOfkTbins+1] = {0.0, 0.8, 1.2, 1.4, 2.5, 100.0};
 	double ktrngKaon[numOfkTbins+1] = {0.0, 1.5, 2.5, 3.5, 100.0, 0};
-	double ktrngProton[numOfkTbins+1] = {0.0, 2.75, 100, 0, 0, 0};
+	double ktrngProton[numOfkTbins+1] = {0.0, 2.75, 100, 0, 0, 0};*/
 
 	int runqinv = 1;
 	int runshlcms = 1;// 0:PRF(PAP), 1:LCMS(PP,APAP)
@@ -418,7 +418,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					
 					if (runktdep)
 					{
- 					if(ichg<=2){
+ 					/*if(ichg<=2){
 						for(int kit=0;kit<=numOfkTbins;kit++)
 						    ktrng[kit]=ktrngProton[kit];
 					  }
@@ -433,7 +433,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					else if(ichg>=9){
 					    for(int kit=0;kit<=numOfkTbins;kit++)
 					       ktrng[kit]=ktrngAll[kit];
-                                          }
+                                          }*/
 
 						int ktm;
 						for (int ikt=0; ikt<numOfkTbins; ikt++)
