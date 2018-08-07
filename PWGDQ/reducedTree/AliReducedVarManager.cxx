@@ -962,6 +962,15 @@ void AliReducedVarManager::FillITSlayerFlag(TRACK* track, Int_t layer, Float_t* 
 }
 
 //_________________________________________________________________
+void AliReducedVarManager::FillITSsharedLayerFlag(TRACK* track, Int_t layer, Float_t* values) {
+   //
+   // fill the ITS layer having shared cluster
+   //
+   values[kITSlayerShared] = -1.0*(layer+1);
+   if(fgUsedVars[kITSlayerShared] && track->ITSLayerHit(layer) && track->ITSClusterIsShared(layer)) values[kITSlayerShared] = layer+1;
+}
+
+//_________________________________________________________________
 void AliReducedVarManager::FillL0TriggerInputs(EVENT* event, Int_t input, Float_t* values, Int_t input2 /*=999*/) {
   //
   // fill the L0 trigger inputs
@@ -1385,7 +1394,11 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
      Float_t centroid = fgTPCelectronCentroidMap->GetBinContent(binX, binY);
      Float_t width = fgTPCelectronWidthMap->GetBinContent(binX, binY);
      if(TMath::Abs(width)<1.0e-6) width = 1.;
-     values[kTPCnSigCorrected+kElectron] = (values[kTPCnSig+kElectron] - centroid)/width;   
+     values[kTPCnSigCorrected+kElectron] = (values[kTPCnSig+kElectron] - centroid)/width;
+     /*Float_t deltaNsig = values[kTPCnSigCorrected+kElectron] - values[kTPCnSig+kElectron];
+     values[kTPCnSig+kPion] += deltaNsig;
+     values[kTPCnSig+kProton] += deltaNsig;
+     values[kTPCnSig+kKaon] += deltaNsig;*/
   }
 
   values[kTRDpidProbabilitiesLQ1D]   = pinfo->TRDpidLQ1D(0);
@@ -2628,6 +2641,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kITSnclsShared]     = "No.of shared ITS clusters";              fgVariableUnits[kITSnclsShared] = "";
   fgVariableNames[kNclsSFracITS]      = "Fraction of shared ITS clusters/ITS clusters";fgVariableUnits[kNclsSFracITS] = "";
   fgVariableNames[kITSlayerHit]       = "ITS layer";                    fgVariableUnits[kITSlayerHit] = "";
+  fgVariableNames[kITSlayerShared]    = "ITS layer";                    fgVariableUnits[kITSlayerShared] = "";
   fgVariableNames[kITSsignal]         = "ITS dE/dx";                    fgVariableUnits[kITSsignal] = "";    
   fgVariableNames[kITSnSig]           = "ITS n_{#sigma}^{e}";           fgVariableUnits[kITSnSig] = "#sigma";
   fgVariableNames[kITSnSig+1]         = "ITS n_{#sigma}^{#pi}";         fgVariableUnits[kITSnSig+1] = "#sigma";
