@@ -8,6 +8,7 @@
 #pragma link C++ class AliCaloRawAnalyzerFastFit+;
 #pragma link C++ class AliCaloRawAnalyzerPeakFinder+;
 #pragma link C++ class AliCaloRawAnalyzerKStandard+;
+#pragma link C++ class AliCaloRawAnalyzerKStandardFast+;
 #pragma link C++ class AliCaloRawAnalyzerFakeALTRO+;
 #pragma link C++ class AliCaloRawAnalyzerCrude+;
 #pragma link C++ class AliCaloNeuralFit+;

@@ -16,6 +16,7 @@
  **************************************************************************/
 // clang-format on
 
+#include "AliCaloAltroMapping.h"
 #include "AliCaloRawAnalyzer.h"
 #include "AliCaloBunchInfo.h"
 #include "AliCaloFitResults.h"
@@ -31,6 +32,7 @@
 #include "AliLog.h"
 #include "AliDAQ.h"
 #include "TStopwatch.h"
+#include "TSystem.h"
 
 #include "AliCaloRawAnalyzerFactory.h"
 
@@ -52,6 +54,7 @@ AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det, 
     fMapperPtr(0),
     fCurrentSpec(-1),
     fDebug(false),
+    fAltroMappingCache(NULL),
     fSanityInspectorPtr(0),
     fDetector(det),
     fAlgorithm(algo),
@@ -129,6 +132,13 @@ int AliHLTCaloRawAnalyzerComponentv3::DoDeinit()
   if (fSanityInspectorPtr)
     delete fSanityInspectorPtr;
   fSanityInspectorPtr = NULL;
+
+  if(fAltroMappingCache){
+    for(int i = 0; i < 20; i++){
+      if(fAltroMappingCache[i]) delete fAltroMappingCache[i];
+    }
+    delete[] fAltroMappingCache;
+  }
 
   return 0;
 }
@@ -258,7 +268,8 @@ Int_t AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* ite
   rawReaderMemoryPtr.SetMemory(reinterpret_cast<UChar_t*>(iter->fPtr), static_cast<ULong_t>(iter->fSize));
   rawReaderMemoryPtr.SetEquipmentID(fMapperPtr->GetDDLFromSpec(iter->fSpecification) + fCaloConstants->GetDDLOFFSET());
 
-  AliCaloRawStreamV3 altroRawStreamPtr(&rawReaderMemoryPtr, fDetector);
+  if(!fAltroMappingCache) InitAltroMapping();
+  AliCaloRawStreamV3 altroRawStreamPtr(&rawReaderMemoryPtr, fDetector, fAltroMappingCache);
 
   rawReaderMemoryPtr.Reset();
   rawReaderMemoryPtr.NextEvent();
@@ -266,6 +277,7 @@ Int_t AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* ite
   if (fDoPushRawData == true) {
     fRawDataWriter->NewEvent();
   }
+  
 
   if (altroRawStreamPtr.NextDDL()) {
     int cnt = 0;
@@ -365,6 +377,51 @@ AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::RawDataWriter(AliHLTCaloConstan
   // comment
   fRawDataBuffer = new UShort_t[fBufferSize];
   Init();
+}
+
+void AliHLTCaloRawAnalyzerComponentv3::InitAltroMapping() {
+  fAltroMappingCache = new AliAltroMapping*[20];
+  memset(fAltroMappingCache, 0, sizeof(AliAltroMapping *) * 20);
+  
+  Int_t nmodules, nrcu, nsides;
+  // PHOS and EMCAL have different number of RCU per module
+  //For PHOS (different mappings for different modules)
+  if(fDetector == "PHOS")  {
+    nmodules = 5;
+    nrcu     = 4;
+    nsides   = 1;
+  }
+  //For EMCAL (the same mapping for all modules)
+  if(fDetector == "EMCAL")  {
+    nmodules = 1;
+    nrcu     = 2;
+    nsides   = 2;
+  }
+  TString sides[]={"A","C"};
+
+  TString path = gSystem->Getenv("ALICE_ROOT");
+  path += "/"+fDetector+"/mapping/";
+  TString path1, path2;
+  for(Int_t m = 0; m < nmodules; m++) {
+    path1 = path;
+    if(fDetector == "EMCAL") {
+	    path1 += "RCU";
+    } else if(fDetector == "PHOS" ) {
+	    path1 += "Mod";
+	    path1 += m;
+	    path1 += "RCU";
+    }
+    for(Int_t j = 0; j < nsides; j++){
+	    for(Int_t i = 0; i < nrcu; i++) {
+	      path2 = path1;
+	      path2 += i;
+	      if(fDetector == "EMCAL") path2 += sides[j];
+	      path2 += ".data";
+	      HLTDebug(2,Form("Mapping file: %s",path2.Data()));
+	      fAltroMappingCache[m*nsides*nrcu + j*nrcu + i] = new AliCaloAltroMapping(path2.Data());
+	    }
+    }
+  }
 }
 
 AliHLTCaloRawAnalyzerComponentv3::RawDataWriter::~RawDataWriter() { delete[] fRawDataBuffer; }

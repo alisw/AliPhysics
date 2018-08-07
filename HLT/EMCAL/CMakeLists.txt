@@ -46,6 +46,7 @@ set(SRCS
     AliHLTEMCALMapper.cxx
     AliHLTEMCALRawAnalyzerComponent.cxx
     AliHLTEMCALRawAnalyzerStandardComponent.cxx
+    AliHLTEMCALRawAnalyzerStandardFastComponent.cxx
     AliHLTEMCALRawAnalyzerCrudeComponent.cxx
     AliHLTEMCALRawAnalyzerFastFitComponent.cxx
     AliHLTEMCALRawAnalyzerLMSComponent.cxx

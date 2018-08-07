@@ -150,6 +150,7 @@ int AliHLTEMCALDigitsMonitorComponent::DoInit(int argc, const char** argv)
   fDigitsMonitor = new AliHLTEMCALDigitsMonitor;
   fDigitsMonitor->Init();
   fDigitsMonitor->SetGeometry(fGeometry);
+  return 0;
 }
 
 int AliHLTEMCALDigitsMonitorComponent::Deinit()

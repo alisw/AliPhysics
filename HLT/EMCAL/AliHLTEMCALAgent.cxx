@@ -51,6 +51,7 @@ AliHLTEMCALAgent gAliHLTEMCALAgent;
 //#include "AliHLTEMCALMonitorTriggerComponent.h"
 #include "AliHLTEMCALRawAnalyzerComponent.h"
 #include "AliHLTEMCALRawAnalyzerStandardComponent.h"
+#include "AliHLTEMCALRawAnalyzerStandardFastComponent.h"
 #include "AliHLTEMCALRawAnalyzerPeakFinderComponent.h"
 #include "AliHLTEMCALRawAnalyzerComponentTRU.h"
 #include "AliHLTEMCALRawAnalyzerComponentSTU.h"
@@ -217,6 +218,7 @@ int AliHLTEMCALAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
     if (!pHandler) return -EINVAL;
     
     pHandler->AddComponent(new AliHLTEMCALRawAnalyzerStandardComponent);
+    pHandler->AddComponent(new AliHLTEMCALRawAnalyzerStandardFastComponent);
     pHandler->AddComponent(new AliHLTEMCALRawAnalyzerCrudeComponent);
     pHandler->AddComponent(new AliHLTEMCALRawAnalyzerLMSComponent);
     pHandler->AddComponent(new AliHLTEMCALRawAnalyzerPeakFinderComponent);

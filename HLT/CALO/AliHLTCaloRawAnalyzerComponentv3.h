@@ -36,7 +36,7 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-
+class AliAltroMapping;
 class AliCaloRawAnalyzer;
 class AliHLTCaloRcuCellEnergyDataStruct;
 class AliHLTCaloMapper;
@@ -146,6 +146,7 @@ class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected 
   
  protected:
   virtual void InitMapping(const int specification ) = 0;
+  void InitAltroMapping();
   void PrintDebugInfo();
   AliCaloRawAnalyzer *fAnalyzerPtr;   //COMMENT
   AliHLTCaloMapper *fMapperPtr;          //COMMENT
@@ -166,6 +167,9 @@ class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected 
 
   /** detector */
   TString fDetector;                                  // detector string id
+
+  /** cache for alto mapping, copied from AliCaloRawStreamV3 */
+  AliAltroMapping **fAltroMappingCache;
 
   /** Describing which algorithm we are using */
   Short_t fAlgorithm;                                 //COMMENT
@@ -190,7 +194,7 @@ class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected 
 
   /** Switch on L1 phase subtraction */ 
   Bool_t fDoL1PhaseSubtraction;                         // COMMENT             
-  
+
   class RawDataWriter  
   {
   public:
