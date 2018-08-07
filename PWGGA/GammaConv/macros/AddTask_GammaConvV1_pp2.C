@@ -415,9 +415,6 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
-
-
-
     if ( (trainConfig >= 70 && trainConfig <= 79) ){
         TString caloCutPos = cuts.GetClusterCut(i);
         caloCutPos.Resize(1);
@@ -439,13 +436,6 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
         ClusterCutList->Add(analysisClusterCuts[i]);
         analysisClusterCuts[i]->SetFillCutHistograms("");
     }
-
-
-
-
-
-
-
 
     analysisCuts[i] = new AliConversionPhotonCuts();
 
