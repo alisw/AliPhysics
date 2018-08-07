@@ -2348,6 +2348,25 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
       analysisEventCuts[i]->SetUseWeightMultiplicityFromFile(kTRUE, fileNameInputForMultWeighing, dataInputMultHisto, mcInputMultHisto );
     }
 
+    TString histoNameMCPi0PT = "";  TString histoNameMCEtaPT = "";  TString histoNameMCK0sPT = "";    // pT spectra to be weighted
+    TString fitNamePi0PT = "";      TString fitNameEtaPT = "";      TString fitNameK0sPT = "";        // fit to correct shape of pT spectra
+    Bool_t weightPi0 = kFALSE;      Bool_t weightEta = kFALSE;      Bool_t weightK0s = kFALSE;
+    if(doWeighting){
+      cout << "INFO enabeling pT weighting" << endl;
+      if(periodNameAnchor.CompareTo("LHC15o")==0){
+	TString cutNumber = cuts.GetEventCut(i);
+	TString centCut   = cutNumber(0,3);             // first three digits of event cut
+	weightPi0         = kTRUE;
+	histoNameMCPi0PT  = Form("Pi0_LHC16h4_AP_5TeV_%s",centCut.Data());  // added particle MC
+	fitNamePi0PT      = Form("Pi0_Data_5TeV_%s",centCut.Data());        // fit to data
+	weightEta         = kFALSE;
+	histoNameMCEtaPT  = Form("Eta_LHC16h4_AP_5TeV_%s",centCut.Data());
+	fitNameEtaPT      = Form("Eta_Data_5TeV_%s",centCut.Data());
+
+      }
+      analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(weightPi0, weightEta, weightK0s, fileNameInputForWeighting, histoNameMCPi0PT, histoNameMCEtaPT, histoNameMCK0sPT, fitNamePi0PT, fitNameEtaPT, fitNameK0sPT);
+    }
+
     if (  trainConfig == 1   || trainConfig == 5   || trainConfig == 9   || trainConfig == 13   || trainConfig == 17   ||
         trainConfig == 21   || trainConfig == 25   || trainConfig == 29   || trainConfig == 33   || trainConfig == 37  ||
         trainConfig == 300 || trainConfig == 302 || trainConfig == 304){
