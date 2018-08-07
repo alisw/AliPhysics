@@ -16,7 +16,7 @@ Bool_t randomizeDau = kTRUE;
 const Int_t nPF       = 2; // use prefiltering for cuts < nPF
 const Int_t nNoPF     = 5; // use no prefiltering for nPF <= cuts < nNoPF 
 const Int_t nExtraMin = 666; // use extra cuts for nExtraMin <= cuts < nExtraMax 
-const Int_t nExtraMax = 676; // use extra cuts for nExtraMin <= cuts < nExtraMax 
+const Int_t nExtraMax = 675; // use extra cuts for nExtraMin <= cuts < nExtraMax 
 
 AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
         Bool_t bESDANA = kFALSE,
@@ -200,7 +200,7 @@ void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA = kFALSE)
     }
   }
   else if( cutDefinition == 675 ){
-    // set to compare to Carsten's analysis
+    // set for Run 3 analysis (as close as possible as for FT2)
     if(!bESDANA){      
       SetupAODtrackCutsCarsten2(die);
     }
