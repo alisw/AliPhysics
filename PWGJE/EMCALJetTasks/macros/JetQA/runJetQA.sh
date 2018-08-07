@@ -21,11 +21,11 @@
 # organized in the same file structure, i.e. a directory for each run, and $plotDir/TrainOutput should be the parent directory.
 #
 # Author: James Mulligan <james.mulligan@yale.edu>
-plotDir="$HOME/steak/work/JetQAOutput"
+plotDir="$HOME/ALICE/JetQA/LHC15o/1872_highIR/TrainOutput"
 
 #..........................................
 #16q.......................................
-RUNLIST="265525 265521 265501 265500 265499 265435 265427 265426 265425 265424 265422 265421 265420 265419 265388 265387 265385 265384 265383 265381 265378 265377 265344 265343 265342 265339 265338 265336 265335 265334 265332 265309"
+#RUNLIST="265525 265521 265501 265500 265499 265435 265427 265426 265425 265424 265422 265421 265420 265419 265388 265387 265385 265384 265383 265381 265378 265377 265344 265343 265342 265339 265338 265336 265335 265334 265332 265309"
 
 
 #..........................................
@@ -63,9 +63,9 @@ RUNLIST="265525 265521 265501 265500 265499 265435 265427 265426 265425 265424 2
 #PREFIX="/alice/data/2017/LHC17q/000"
 #SUFFIX="YourTrainSuffix"
 
-downloadData=true
-plotQA=true
-generatePresentation=true
+downloadData=false
+plotQA=false
+generatePresentation=false
 
 analysisFile="AnalysisResults.root"   # For pt-hard, set to "AnalysisResultsFinal.root"
 referenceFile="AllRuns/AnalysisResults.root"
