@@ -58,7 +58,7 @@ AliAnalysisTaskDmesonMCPerform::AliAnalysisTaskDmesonMCPerform():
   //
 
   fRDHFCuts=new AliRDHFCutsD0toKpi("EvSelCuts");
-  fRDHFCuts->SetUsePhysicsSelection(kTRUE);
+  fRDHFCuts->SetUsePhysicsSelection(kFALSE);
   fRDHFCuts->SetUseAnyTrigger();
   fRDHFCuts->SetTriggerClass("");
   fRDHFCuts->SetMaxVtxZ(10.);
