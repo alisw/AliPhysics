@@ -39,6 +39,8 @@ class AliAnalysisTaskDmesonMCPerform : public AliAnalysisTaskSE
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
 
+  AliRDHFCuts* GetCutObject(){return fRDHFCuts;}
+
  private:
 
   void FillGenLevelHistos(AliAODEvent* aod, TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
