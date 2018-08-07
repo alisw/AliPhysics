@@ -12,19 +12,20 @@ void AddTask_ClusterQA( TString   V0ReaderEventCutNumber        = "00000003",
                         Double_t  kTree                         = 1.0,  // 0. / 0 / kFALSE for no, 1. / 1 / kTRUE for yes,  x > 1.0 will use only 1/x of the event statistics for the tree
                         TString   V0ReaderCutNumberAODBranch    = "0000000060084001001500000",
                         Bool_t    doEtaShiftV0Reader            = kFALSE,
-                        Bool_t    enableV0findingEffi           = kFALSE,              // enables V0finding efficiency histograms
-                        TString   periodNameV0Reader            = ""
+                        Bool_t    enableV0findingEffi           = kFALSE,
+                        TString   periodNameV0Reader            = "",
+                        TString   corrTaskSetting = "",
+                        Int_t     enableExtMatchAndQA           = 5,
+                        Bool_t    doSaveSurroundingCells        = 1,
+                        Int_t     nSurroundingCellsSaved        = 12,
+                        Bool_t    doSaveClusterCells            = 1,
+                        Bool_t    doSaveEventProp               = 1,
+                        Bool_t    enableTriggerOverlapRej       = kTRUE,
+                        Float_t   maxFacPtHard                  = 3.
                     ){
   
-  Bool_t enableTriggerOverlapRej = kTRUE;
-  Float_t   maxFacPtHard                  = 3.;
-  TString corrTaskSetting = "";
-  Int_t     enableExtMatchAndQA           = 5;
-  
-  Bool_t doSaveSurroundingCells                   = 1;
-  Int_t nSurroundingCellsSaved      = 12;
-  Bool_t doSaveClusterCells               = 1;
-  Bool_t doSaveEventProp                  = 1;
+
+
   
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
