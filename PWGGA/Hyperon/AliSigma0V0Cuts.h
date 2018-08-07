@@ -219,13 +219,10 @@ class AliSigma0V0Cuts : public TObject {
   TH2F *fHistArmenterosBefore;        //!
   TH2F *fHistArmenterosAfter;         //!
 
-  TH1F *fHistMCTruthV0Pt;                         //!
   TH2F *fHistMCTruthV0PtY;                        //!
   TH2F *fHistMCTruthV0PtEta;                      //!
-  TH1F *fHistMCTruthV0DaughterPt;                 //!
   TH2F *fHistMCTruthV0DaughterPtY;                //!
   TH2F *fHistMCTruthV0DaughterPtEta;              //!
-  TH1F *fHistMCTruthV0DaughterPtAccept;           //!
   TH2F *fHistMCTruthV0DaughterPtYAccept;          //!
   TH2F *fHistMCTruthV0DaughterPtEtaAccept;        //!
   TH2F *fHistMCTruthPtYHighMult;                  //!

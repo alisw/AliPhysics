@@ -131,7 +131,6 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TProfile *fHistCutBooking;  //!
 
   TH1F *fHistNSigma;                   //!
-  TH1F *fHistPt;                       //!
   TH1F *fHistMassCutPt;                //!
   TH1F *fHistInvMass;                  //!
   TH1F *fHistInvMassBeforeArmenteros;  //!
@@ -142,24 +141,17 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistInvMassPt;                //!
   TH2F *fHistInvMassEta;               //!
   TH2F *fHistEtaPhi;                   //!
-  TH1F *fHistRapidity;                 //!
   TH2F *fHistPtY[22];                  //!
   TH2F *fHistArmenterosBefore;         //!
   TH2F *fHistArmenterosAfter;          //!
-  TH1F *fHistMixedPt;                  //!
-  TH1F *fHistMixedInvMass;             //!
   TH2F *fHistMixedPtY[22];             //!
   TH2F *fHistMixedInvMassPt;           //!
   TH2F *fHistMixedInvMassBinnedPt;     //!
-  TH2F *fHistMixedInvMassEta;          //!
 
-  TH1F *fHistMCTruthPt;                           //!
   TH2F *fHistMCTruthPtY;                          //!
   TH2F *fHistMCTruthPtEta;                        //!
-  TH1F *fHistMCTruthDaughterPt;                   //!
   TH2F *fHistMCTruthDaughterPtY;                  //!
   TH2F *fHistMCTruthDaughterPtEta;                //!
-  TH1F *fHistMCTruthDaughterPtAccept;             //!
   TH2F *fHistMCTruthDaughterPtYAccept;            //!
   TH2F *fHistMCTruthDaughterPtEtaAccept;          //!
   TH2F *fHistMCTruthPtYHighMult;                  //!
