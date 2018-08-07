@@ -234,6 +234,14 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Double_t> MCverty;
   std::vector<Double_t> MCvertz;
   
+  
+  std::vector<Int_t> glabel ;
+  std::vector<Int_t> gLabelFirstMother ;
+  std::vector<Int_t> gLabelMinFirstMother ;
+  std::vector<Int_t> gLabelMaxFirstMother ;
+  std::vector<Int_t> iGenIndex ;
+  std::vector<Int_t> iPdgFirstMother ;
+  
   std::vector<Float_t> dcar;    //DCA
   std::vector<Float_t> dcaz;
   
