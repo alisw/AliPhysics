@@ -17,6 +17,8 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fDataBasePDG(),
       fLambdaMixed(),
       fPhotonMixed(),
+      fLambdaMixedBinned(),
+      fPhotonMixedBinned(),
       fTreeVariables(),
       fLambdaCuts(nullptr),
       fPhotonCuts(nullptr),
@@ -58,6 +60,7 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fHistMixedInvMass(nullptr),
       fHistMixedPtY(),
       fHistMixedInvMassPt(nullptr),
+      fHistMixedInvMassBinnedPt(nullptr),
       fHistMixedInvMassEta(nullptr),
       fHistMCTruthPt(nullptr),
       fHistMCTruthPtY(nullptr),
@@ -133,6 +136,7 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fHistMixedInvMass(nullptr),
       fHistMixedPtY(),
       fHistMixedInvMassPt(nullptr),
+      fHistMixedInvMassBinnedPt(nullptr),
       fHistMixedInvMassEta(nullptr),
       fHistMCTruthPt(nullptr),
       fHistMCTruthPtY(nullptr),
@@ -187,6 +191,7 @@ void AliSigma0PhotonMotherCuts::SelectPhotonMother(
   // Particle pairing
   SigmaToLambdaGamma(photonCandidates, lambdaCandidates);
   SigmaToLambdaGammaMixedEvent(photonCandidates, lambdaCandidates);
+  SigmaToLambdaGammaMixedEventBinned(photonCandidates, lambdaCandidates);
   FillEventBuffer(photonCandidates, lambdaCandidates);
 }
 
@@ -340,6 +345,77 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
 }
 
 //____________________________________________________________________________________________________
+void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEventBinned(
+    const std::vector<AliSigma0ParticleV0> &photonCandidates,
+    const std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
+  // Mulitplicity estimator: V0M
+  Float_t lPercentile = 300;
+  AliMultSelection *MultSelection = 0x0;
+  MultSelection =
+      (AliMultSelection *)fInputEvent->FindListObject("MultSelection");
+  if (MultSelection) {
+    lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+  }
+
+  const float zVertex = fInputEvent->GetPrimaryVertex()->GetZ();
+
+  const int zVertexBin = GetZvertexBin(zVertex);
+  const int multBin = GetMultiplicityBin(lPercentile);
+
+  if (zVertexBin < 0 || multBin < 0) return;
+
+  // photons from this event with mixed lambdas
+  for (const auto &LambdaContainer : fLambdaMixedBinned[zVertexBin][multBin]) {
+    for (const auto &Lambda : LambdaContainer) {
+      if (!Lambda.GetIsUse()) continue;
+      for (auto Photon : photonCandidates) {
+        if (Photon.GetPt() > fPhotonPtMax || Photon.GetPt() < fPhotonPtMin)
+          continue;
+        const AliSigma0ParticlePhotonMother sigma(Lambda, Photon, fInputEvent);
+        // Armenteros cut
+        const float armAlpha = sigma.GetArmenterosAlpha();
+        const float armQt = sigma.GetArmenterosQt();
+        const float pT = sigma.GetPt();
+        if (fArmenterosCut) {
+          if (armQt > fArmenterosQtUp || armQt < fArmenterosQtLow) continue;
+          if (armAlpha > fArmenterosAlphaUp || armAlpha < fArmenterosAlphaLow)
+            continue;
+        }
+        const float invMass = sigma.GetMass();
+        const float rap = sigma.GetRapidity();
+        if (std::abs(rap) > fRapidityMax) continue;
+        fHistMixedInvMassBinnedPt->Fill(pT, invMass);
+      }
+    }
+  }
+
+  // lambdas from this event with mixed photons
+  for (const auto &PhotonContainer : fPhotonMixedBinned[zVertexBin][multBin]) {
+    for (const auto &Photon : PhotonContainer) {
+      if (Photon.GetPt() > fPhotonPtMax || Photon.GetPt() < fPhotonPtMin)
+        continue;
+      for (const auto &Lambda : lambdaCandidates) {
+        if (!Lambda.GetIsUse()) continue;
+        const AliSigma0ParticlePhotonMother sigma(Lambda, Photon, fInputEvent);
+        // Armenteros cut
+        const float armAlpha = sigma.GetArmenterosAlpha();
+        const float armQt = sigma.GetArmenterosQt();
+        const float pT = sigma.GetPt();
+        if (fArmenterosCut) {
+          if (armQt > fArmenterosQtUp || armQt < fArmenterosQtLow) continue;
+          if (armAlpha > fArmenterosAlphaUp || armAlpha < fArmenterosAlphaLow)
+            continue;
+        }
+        const float invMass = sigma.GetMass();
+        const float rap = sigma.GetRapidity();
+        if (std::abs(rap) > fRapidityMax) continue;
+        fHistMixedInvMassBinnedPt->Fill(pT, invMass);
+      }
+    }
+  }
+}
+
+//____________________________________________________________________________________________________
 void AliSigma0PhotonMotherCuts::FillEventBuffer(
     const std::vector<AliSigma0ParticleV0> &photonCandidates,
     const std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
@@ -362,6 +438,48 @@ void AliSigma0PhotonMotherCuts::FillEventBuffer(
     } else {
       fLambdaMixed.pop_front();
       fLambdaMixed.push_back(lambdaCandidates);
+    }
+  }
+
+  // +++++++++++++++
+  // Binned mixed event in multiplicity and z-vertex position
+
+  // Mulitplicity estimator: V0M
+  Float_t lPercentile = 300;
+  AliMultSelection *MultSelection = 0x0;
+  MultSelection =
+      (AliMultSelection *)fInputEvent->FindListObject("MultSelection");
+  if (MultSelection) {
+    lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+  }
+
+  const float zVertex = fInputEvent->GetPrimaryVertex()->GetZ();
+
+  const int zVertexBin = GetZvertexBin(zVertex);
+  const int multBin = GetMultiplicityBin(lPercentile);
+
+  if (zVertexBin < 0 || multBin < 0) return;
+
+  // Photon
+  if (static_cast<int>(photonCandidates.size()) > 0) {
+    if (static_cast<int>(fPhotonMixedBinned[zVertexBin][multBin].size()) <
+        fMixingDepth) {
+      fPhotonMixedBinned[zVertexBin][multBin].push_back(photonCandidates);
+    } else {
+      fPhotonMixedBinned[zVertexBin][multBin].pop_front();
+      fPhotonMixedBinned[zVertexBin][multBin].push_back(photonCandidates);
+    }
+  }
+
+  // ++++++++++++++
+  // Lambda
+  if (static_cast<int>(lambdaCandidates.size()) > 0) {
+    if (static_cast<int>(fLambdaMixedBinned[zVertexBin][multBin].size()) <
+        fMixingDepth) {
+      fLambdaMixedBinned[zVertexBin][multBin].push_back(lambdaCandidates);
+    } else {
+      fLambdaMixedBinned[zVertexBin][multBin].pop_front();
+      fLambdaMixedBinned[zVertexBin][multBin].push_back(lambdaCandidates);
     }
   }
 }
@@ -538,6 +656,50 @@ int AliSigma0PhotonMotherCuts::GetRapidityBin(float rapidity) const {
 }
 
 //____________________________________________________________________________________________________
+int AliSigma0PhotonMotherCuts::GetMultiplicityBin(float percentile) const {
+  if (50 < percentile && percentile <= 100)
+    return 0;
+  else if (30 < percentile && percentile <= 50)
+    return 1;
+  else if (10 < percentile && percentile <= 30)
+    return 2;
+  else if (5 < percentile && percentile <= 10)
+    return 3;
+  else if (1 < percentile && percentile <= 5)
+    return 4;
+  else if (percentile <= 1)
+    return 5;
+  else
+    return -1;
+}
+
+//____________________________________________________________________________________________________
+int AliSigma0PhotonMotherCuts::GetZvertexBin(float zVertex) const {
+  if (-10.f < zVertex && zVertex <= -8.f)
+    return 0;
+  else if (-8.f < zVertex && zVertex <= -6.f)
+    return 1;
+  else if (-6.f < zVertex && zVertex <= -4.f)
+    return 2;
+  else if (-4.f < zVertex && zVertex <= -2.f)
+    return 3;
+  else if (-2.f < zVertex && zVertex <= 0)
+    return 4;
+  else if (0.f < zVertex && zVertex <= 2.f)
+    return 5;
+  else if (2.f < zVertex && zVertex <= 4.f)
+    return 6;
+  else if (4.f < zVertex && zVertex <= 6.f)
+    return 7;
+  else if (6.f < zVertex && zVertex <= 8.f)
+    return 8;
+  else if (8.f < zVertex && zVertex <= 10.f)
+    return 9;
+  else
+    return -1;
+}
+
+//____________________________________________________________________________________________________
 void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
   fMassSigma = fDataBasePDG.GetParticle(fPDG)->Mass();
 
@@ -599,6 +761,12 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
                                  "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
                                  100, 0, 10, 1000, 1., 1.5);
   fHistograms->Add(fHistMixedInvMassPt);
+  fHistMixedInvMassBinnedPt =
+      new TH2F("fHistMixedInvMassBinnedPt",
+               "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
+               "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
+               100, 0, 10, 1000, 1., 1.5);
+  fHistograms->Add(fHistMixedInvMassBinnedPt);
 
   if (!fIsLightweight) {
     fHistNSigma =

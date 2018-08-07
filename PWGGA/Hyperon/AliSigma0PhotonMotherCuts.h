@@ -37,11 +37,16 @@ class AliSigma0PhotonMotherCuts : public TObject {
   void SigmaToLambdaGammaMixedEvent(
       const std::vector<AliSigma0ParticleV0> &photonCandidates,
       const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
+  void SigmaToLambdaGammaMixedEventBinned(
+      const std::vector<AliSigma0ParticleV0> &photonCandidates,
+      const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
   void FillEventBuffer(
       const std::vector<AliSigma0ParticleV0> &photonCandidates,
       const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
   float ComputeRapidity(float pt, float pz, float m) const;
   int GetRapidityBin(float rapidity) const;
+  int GetMultiplicityBin(float percentile) const;
+  int GetZvertexBin(float zVertex) const;
   void ProcessMC() const;
   bool CheckDaughters(const AliMCParticle *particle) const;
   bool CheckDaughtersInAcceptance(const AliMCParticle *particle) const;
@@ -91,9 +96,11 @@ class AliSigma0PhotonMotherCuts : public TObject {
   AliMCEvent *fMCEvent;       //!
   TDatabasePDG fDataBasePDG;  //!
 
-  deque<vector<AliSigma0ParticleV0> > fLambdaMixed;  //!
-  deque<vector<AliSigma0ParticleV0> > fPhotonMixed;  //!
-  float fTreeVariables[4];                           //!
+  deque<vector<AliSigma0ParticleV0> > fLambdaMixed;               //!
+  deque<vector<AliSigma0ParticleV0> > fPhotonMixed;               //!
+  deque<vector<AliSigma0ParticleV0> > fLambdaMixedBinned[10][6];  //!
+  deque<vector<AliSigma0ParticleV0> > fPhotonMixedBinned[10][6];  //!
+  float fTreeVariables[4];                                        //!
 
   AliSigma0V0Cuts *fLambdaCuts;  //
   AliSigma0V0Cuts *fPhotonCuts;  //
@@ -143,6 +150,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH1F *fHistMixedInvMass;             //!
   TH2F *fHistMixedPtY[22];             //!
   TH2F *fHistMixedInvMassPt;           //!
+  TH2F *fHistMixedInvMassBinnedPt;     //!
   TH2F *fHistMixedInvMassEta;          //!
 
   TH1F *fHistMCTruthPt;                           //!
