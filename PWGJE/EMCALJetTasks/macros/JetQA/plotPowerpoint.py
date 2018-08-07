@@ -143,6 +143,8 @@ def plotPowerpoint(runList, plotDir):
       totalRuns=totalRuns+1
       p = tf.add_paragraph()
       p.text = str(run)+" with "+str(nEvents)+" Evts "
+      qaList.Delete()
+      f.Close()
     else:
       print("!!!!!!! Root file for run %s is empty - please check download" % str(run))
   p = tf.add_paragraph()
