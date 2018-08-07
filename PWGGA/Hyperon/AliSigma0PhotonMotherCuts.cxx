@@ -324,11 +324,12 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
             continue;
         }
         const float invMass = sigma.GetMass();
+        const float rap = sigma.GetRapidity();
+        if (std::abs(rap) > fRapidityMax) continue;
         fHistMixedInvMassPt->Fill(pT, invMass);
         if (!fIsLightweight) {
           fHistMixedPt->Fill(pT);
           fHistMixedInvMass->Fill(invMass);
-          const float rap = sigma.GetRapidity();
           const int rapBin = GetRapidityBin(rap);
           if (rapBin > -1) fHistMixedPtY[rapBin]->Fill(pT, invMass);
           fHistMixedInvMassEta->Fill(sigma.GetEta(), invMass);
