@@ -489,6 +489,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       continue;
     }
 
+    
+    
     // Counting particles to set multiplicity
     if (fEstEventMult == kGlobalCount) {
       //if (aodtrack->IsPrimaryCandidate()) //? instead of kinks?
@@ -576,6 +578,10 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     AliAODTrack *aodtrackpid = dynamic_cast<AliAODTrack *>(fEvent->GetTrack(pid_track_id));
     assert(aodtrackpid && "Not a standard AOD");
 
+
+
+
+    
     CopyPIDtoFemtoTrack(aodtrackpid, trackCopy);
 
     if (mcP) {
@@ -901,6 +907,33 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       if (daughterTrackPos == NULL || daughterTrackNeg == NULL || bachTrack == NULL) continue;         // daughter tracks must exist
       if (daughterTrackNeg->Charge() == daughterTrackPos->Charge()) continue;     // and have different charge
 
+
+
+    if(fCascadePileUpRemoval)
+      {
+	//method which checks if each of the v0 daughters and bachelor
+	//have at least 1 hit in ITS or TOF.
+	bool passPos = false;
+	bool passNeg = false;
+	bool passBac = false;
+
+	//does tof timing exist for our track?
+	if (daughterTrackPos->GetTOFBunchCrossing()==0) passPos = true;
+	if (daughterTrackNeg->GetTOFBunchCrossing()==0) passNeg = true;
+	if (bachTrack->GetTOFBunchCrossing()==0) passBac = true;
+
+	//loop over the 6 ITS Layrs and check for a hit!
+	for (int i=0;i<6;++i) {
+	  if (daughterTrackPos->HasPointOnITSLayer(i)) passPos=true;
+	  if (daughterTrackNeg->HasPointOnITSLayer(i)) passNeg=true;
+	  if (bachTrack->HasPointOnITSLayer(i)) passBac=true;
+	}
+	
+	if(!passPos) continue;
+	if(!passNeg) continue;
+	if(!passBac) continue;
+      }
+      
       AliFemtoXi *trackCopyXi = CopyAODtoFemtoXi(aodxi);
 
       //TODO for now, in AliFemtoHiddenInfo, consider V0 as positive daughter and bachelor pion as negative daughter
@@ -2147,6 +2180,11 @@ void AliFemtoEventReaderAOD::SetUseMVPlpSelection(Bool_t mvplp)
 void AliFemtoEventReaderAOD::SetIsPileUpEvent(Bool_t ispileup)
 {
   fisPileUp = ispileup;
+}
+
+void AliFemtoEventReaderAOD::SetCascadePileUpRemoval(Bool_t cascadePileUpRemoval)
+{
+  fCascadePileUpRemoval = cascadePileUpRemoval;
 }
 
 void AliFemtoEventReaderAOD::SetDCAglobalTrack(Int_t dcagt)
