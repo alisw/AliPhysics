@@ -69,6 +69,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
     fPDGDaughter1 = pdgDaughter1;
     fPDGDaughter2 = pdgDaughter2;
   }
+  void SetMCMultThreshold(float multThr) { fMCHighMultThreshold = multThr; }
 
   void SetLambdaCuts(AliSigma0V0Cuts *lamCut) { fLambdaCuts = lamCut; }
   void SetPhotonCuts(AliSigma0V0Cuts *photCut) { fPhotonCuts = photCut; }
@@ -116,6 +117,8 @@ class AliSigma0PhotonMotherCuts : public TObject {
   float fArmenterosAlphaLow;  //
   float fArmenterosAlphaUp;   //
 
+  float fMCHighMultThreshold;  //
+
   // Histograms
   // =====================================================================
   TProfile *fHistCutBooking;  //!
@@ -142,15 +145,21 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistMixedInvMassPt;           //!
   TH2F *fHistMixedInvMassEta;          //!
 
-  TH1F *fHistMCTruthPt;                   //!
-  TH2F *fHistMCTruthPtY;                  //!
-  TH2F *fHistMCTruthPtEta;                //!
-  TH1F *fHistMCTruthDaughterPt;           //!
-  TH2F *fHistMCTruthDaughterPtY;          //!
-  TH2F *fHistMCTruthDaughterPtEta;        //!
-  TH1F *fHistMCTruthDaughterPtAccept;     //!
-  TH2F *fHistMCTruthDaughterPtYAccept;    //!
-  TH2F *fHistMCTruthDaughterPtEtaAccept;  //!
+  TH1F *fHistMCTruthPt;                           //!
+  TH2F *fHistMCTruthPtY;                          //!
+  TH2F *fHistMCTruthPtEta;                        //!
+  TH1F *fHistMCTruthDaughterPt;                   //!
+  TH2F *fHistMCTruthDaughterPtY;                  //!
+  TH2F *fHistMCTruthDaughterPtEta;                //!
+  TH1F *fHistMCTruthDaughterPtAccept;             //!
+  TH2F *fHistMCTruthDaughterPtYAccept;            //!
+  TH2F *fHistMCTruthDaughterPtEtaAccept;          //!
+  TH2F *fHistMCTruthPtYHighMult;                  //!
+  TH2F *fHistMCTruthPtEtaHighMult;                //!
+  TH2F *fHistMCTruthDaughterPtYHighMult;          //!
+  TH2F *fHistMCTruthDaughterPtEtaHighMult;        //!
+  TH2F *fHistMCTruthDaughterPtYAcceptHighMult;    //!
+  TH2F *fHistMCTruthDaughterPtEtaAcceptHighMult;  //!
 
   TH1F *fHistMCV0Pt;    //!
   TH1F *fHistMCV0Mass;  //!

@@ -2,6 +2,7 @@
 #include <iostream>
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
+#include "AliMultSelection.h"
 
 ClassImp(AliSigma0V0Cuts)
 
@@ -56,6 +57,7 @@ ClassImp(AliSigma0V0Cuts)
       fLambdaSelectionLow(0.f),
       fLambdaSelectionUp(999.f),
       fPsiPairMax(999.f),
+      fMCHighMultThreshold(5.f),
       fPIDResponse(nullptr),
       fHistCutBooking(nullptr),
       fHistCuts(nullptr),
@@ -99,6 +101,12 @@ ClassImp(AliSigma0V0Cuts)
       fHistMCTruthV0DaughterPtAccept(nullptr),
       fHistMCTruthV0DaughterPtYAccept(nullptr),
       fHistMCTruthV0DaughterPtEtaAccept(nullptr),
+      fHistMCTruthPtYHighMult(nullptr),
+      fHistMCTruthPtEtaHighMult(nullptr),
+      fHistMCTruthDaughterPtYHighMult(nullptr),
+      fHistMCTruthDaughterPtEtaHighMult(nullptr),
+      fHistMCTruthDaughterPtYAcceptHighMult(nullptr),
+      fHistMCTruthDaughterPtEtaAcceptHighMult(nullptr),
       fHistMCV0Pt(nullptr),
       fHistV0Mother(nullptr),
       fHistV0MassPtTrue(nullptr),
@@ -232,6 +240,7 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fLambdaSelectionLow(0.f),
       fLambdaSelectionUp(999.f),
       fPsiPairMax(999.f),
+      fMCHighMultThreshold(5.f),
       fPIDResponse(nullptr),
       fHistCutBooking(nullptr),
       fHistCuts(nullptr),
@@ -275,6 +284,12 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fHistMCTruthV0DaughterPtAccept(nullptr),
       fHistMCTruthV0DaughterPtYAccept(nullptr),
       fHistMCTruthV0DaughterPtEtaAccept(nullptr),
+      fHistMCTruthPtYHighMult(nullptr),
+      fHistMCTruthPtEtaHighMult(nullptr),
+      fHistMCTruthDaughterPtYHighMult(nullptr),
+      fHistMCTruthDaughterPtEtaHighMult(nullptr),
+      fHistMCTruthDaughterPtYAcceptHighMult(nullptr),
+      fHistMCTruthDaughterPtEtaAcceptHighMult(nullptr),
       fHistMCV0Pt(nullptr),
       fHistV0Mother(nullptr),
       fHistV0MassPtTrue(nullptr),
@@ -1078,6 +1093,15 @@ float AliSigma0V0Cuts::ComputePsiPair(const AliESDv0 *v0) const {
 
 //____________________________________________________________________________________________________
 void AliSigma0V0Cuts::ProcessMC() const {
+  // Mulitplicity estimator: V0M
+  Float_t lPercentile = 300;
+  AliMultSelection *MultSelection = 0x0;
+  MultSelection =
+      (AliMultSelection *)fInputEvent->FindListObject("MultSelection");
+  if (MultSelection) {
+    lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+  }
+
   // Loop over the MC tracks
   for (int iPart = 1; iPart < (fMCEvent->GetNumberOfTracks()); iPart++) {
     AliMCParticle *mcParticle =
@@ -1088,17 +1112,32 @@ void AliSigma0V0Cuts::ProcessMC() const {
     fHistMCTruthV0Pt->Fill(mcParticle->Pt());
     fHistMCTruthV0PtY->Fill(mcParticle->Y(), mcParticle->Pt());
     fHistMCTruthV0PtEta->Fill(mcParticle->Eta(), mcParticle->Pt());
+    if (lPercentile < fMCHighMultThreshold) {
+      fHistMCTruthPtYHighMult->Fill(mcParticle->Y(), mcParticle->Pt());
+      fHistMCTruthPtEtaHighMult->Fill(mcParticle->Eta(), mcParticle->Pt());
+    }
 
     if (!CheckDaughters(mcParticle)) continue;
     fHistMCTruthV0DaughterPt->Fill(mcParticle->Pt());
     fHistMCTruthV0DaughterPtY->Fill(mcParticle->Y(), mcParticle->Pt());
     fHistMCTruthV0DaughterPtEta->Fill(mcParticle->Eta(), mcParticle->Pt());
+    if (lPercentile < fMCHighMultThreshold) {
+      fHistMCTruthDaughterPtYHighMult->Fill(mcParticle->Y(), mcParticle->Pt());
+      fHistMCTruthDaughterPtEtaHighMult->Fill(mcParticle->Eta(),
+                                              mcParticle->Pt());
+    }
 
     if (!CheckDaughtersInAcceptance(mcParticle)) continue;
     fHistMCTruthV0DaughterPtAccept->Fill(mcParticle->Pt());
     fHistMCTruthV0DaughterPtYAccept->Fill(mcParticle->Y(), mcParticle->Pt());
     fHistMCTruthV0DaughterPtEtaAccept->Fill(mcParticle->Eta(),
                                             mcParticle->Pt());
+    if (lPercentile < fMCHighMultThreshold) {
+      fHistMCTruthDaughterPtYAcceptHighMult->Fill(mcParticle->Y(),
+                                                  mcParticle->Pt());
+      fHistMCTruthDaughterPtEtaAcceptHighMult->Fill(mcParticle->Eta(),
+                                                    mcParticle->Pt());
+    }
   }
 }
 
@@ -1510,7 +1549,7 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
     fHistogramsNeg->SetName("V0_NegDaughter");
   }
 
-  fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 31, 0, 31);
+  fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 32, 0, 32);
   fHistCutBooking->GetXaxis()->SetBinLabel(1, "V0 on fly");
   fHistCutBooking->GetXaxis()->SetBinLabel(2, "#it{p}_{T} min");
   fHistCutBooking->GetXaxis()->SetBinLabel(3, "#it{p}_{T} max");
@@ -1542,6 +1581,7 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
   fHistCutBooking->GetXaxis()->SetBinLabel(29, "PDG pos");
   fHistCutBooking->GetXaxis()->SetBinLabel(20, "PID neg");
   fHistCutBooking->GetXaxis()->SetBinLabel(31, "PDG neg");
+  fHistCutBooking->GetXaxis()->SetBinLabel(32, "MC Mult for efficiency");
   fHistograms->Add(fHistCutBooking);
 
   fHistCutBooking->Fill(0.f, static_cast<double>(fV0OnFly));
@@ -1575,6 +1615,7 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
   fHistCutBooking->Fill(28.f, fPosPDG);
   fHistCutBooking->Fill(29.f, fNegPID);
   fHistCutBooking->Fill(30.f, fNegPDG);
+  fHistCutBooking->Fill(31.f, fMCHighMultThreshold);
 
   fHistCuts = new TH1F("fHistCuts", ";;Entries", 20, 0, 20);
   fHistCuts->GetXaxis()->SetBinLabel(1, "V0");
@@ -2082,6 +2123,25 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
         new TH2F("fHistMCTruthV0DaughterPtEtaAccept",
                  "; #eta; #it{p}_{T} (GeV/#it{c})", 500, -10, 10, 500, 0, 10);
 
+    fHistMCTruthPtYHighMult =
+        new TH2F("fHistMCTruthPtYHighMult", "; y; #it{p}_{T} (GeV/#it{c})",
+                 1000, -10, 10, 500, 0, 10);
+    fHistMCTruthPtEtaHighMult =
+        new TH2F("fHistMCTruthPtEtaHighMult", "; #eta; #it{p}_{T} (GeV/#it{c})",
+                 500, -10, 10, 500, 0, 10);
+    fHistMCTruthDaughterPtYHighMult =
+        new TH2F("fHistMCTruthDaughterPtYHighMult",
+                 "; y; #it{p}_{T} (GeV/#it{c})", 1000, -10, 10, 500, 0, 10);
+    fHistMCTruthDaughterPtEtaHighMult =
+        new TH2F("fHistMCTruthDaughterPtEtaHighMult",
+                 "; #eta; #it{p}_{T} (GeV/#it{c})", 500, -10, 10, 500, 0, 10);
+    fHistMCTruthDaughterPtYAcceptHighMult =
+        new TH2F("fHistMCTruthDaughterPtYAcceptHighMult",
+                 "; y; #it{p}_{T} (GeV/#it{c})", 1000, -10, 10, 500, 0, 10);
+    fHistMCTruthDaughterPtEtaAcceptHighMult =
+        new TH2F("fHistMCTruthDaughterPtEtaAcceptHighMult",
+                 "; #eta; #it{p}_{T} (GeV/#it{c})", 500, -10, 10, 500, 0, 10);
+
     fHistMCV0Pt = new TH1F("fHistMCV0Pt", "; #it{p}_{T} (GeV/#it{c}); Entries",
                            500, 0, 10);
 
@@ -2094,6 +2154,12 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
     fHistogramsMC->Add(fHistMCTruthV0DaughterPtAccept);
     fHistogramsMC->Add(fHistMCTruthV0DaughterPtYAccept);
     fHistogramsMC->Add(fHistMCTruthV0DaughterPtEtaAccept);
+    fHistogramsMC->Add(fHistMCTruthPtYHighMult);
+    fHistogramsMC->Add(fHistMCTruthPtEtaHighMult);
+    fHistogramsMC->Add(fHistMCTruthDaughterPtYHighMult);
+    fHistogramsMC->Add(fHistMCTruthDaughterPtEtaHighMult);
+    fHistogramsMC->Add(fHistMCTruthDaughterPtYAcceptHighMult);
+    fHistogramsMC->Add(fHistMCTruthDaughterPtEtaAcceptHighMult);
     fHistogramsMC->Add(fHistMCV0Pt);
 
     if (fCheckCutsMC) {
