@@ -29,7 +29,8 @@ ClassImp(AliSigma0V0Cuts)
       fNegPID(AliPID::kPion),
       fV0OnFly(false),
       fK0Rejection(true),
-      fUsePID(true),
+      fUsePID(false),
+      fUseArmenteros(false),
       fV0PtMin(0.f),
       fV0PtMax(1E30),
       fV0CosPAMin(0.f),
@@ -204,7 +205,8 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fNegPID(AliPID::kPion),
       fV0OnFly(false),
       fK0Rejection(true),
-      fUsePID(true),
+      fUsePID(false),
+      fUseArmenteros(false),
       fV0PtMin(0.f),
       fV0PtMax(1E30),
       fV0CosPAMin(0.f),
@@ -553,7 +555,8 @@ bool AliSigma0V0Cuts::V0PID(const AliESDv0 *v0, const AliESDtrack *pos,
                        SingleParticlePID(neg, fNegPID, negProb));
 
     if (!isParticle) return false;
-  } else {
+  }
+  if (fUseArmenteros) {
     // Armenteros cut
     if (armQt > fArmenterosQtUp || armQt < fArmenterosQtLow) return false;
     float prefactorAlpha = (fPID > 0) ? 1.f : -1.f;  // for anti-particles

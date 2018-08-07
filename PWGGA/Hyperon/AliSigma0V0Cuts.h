@@ -101,7 +101,7 @@ class AliSigma0V0Cuts : public TObject {
   }
   void SetArmenterosCut(float qtLow, float qtUp, float alphaLow,
                         float alphaUp) {
-    fUsePID = false;
+    fUseArmenteros = true;
     fArmenterosQtLow = qtLow;
     fArmenterosQtUp = qtUp;
     fArmenterosAlphaLow = alphaLow;
@@ -147,6 +147,7 @@ class AliSigma0V0Cuts : public TObject {
   bool fV0OnFly;                             //
   bool fK0Rejection;                         //
   bool fUsePID;                              //
+  bool fUseArmenteros;                       //
   float fV0PtMin;                            //
   float fV0PtMax;                            //
   float fV0CosPAMin;                         //
