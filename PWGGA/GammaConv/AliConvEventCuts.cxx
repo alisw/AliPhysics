@@ -4782,7 +4782,8 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
           fPeriodEnum == kLHC14a1a  || fPeriodEnum == kLHC14a1b       || fPeriodEnum == kLHC14a1c   ||              // LHC11h MCs
           fPeriodEnum == kLHC13e7   || fPeriodEnum == kLHC13b2_efix   || fPeriodEnum == kLHC14b2      ||            // LHC13bc MCs
           fPeriodEnum == kLHC14e2b  ||                                                                              // LHC12[a-i] pass 1 MCs
-          fPeriodEnum == kLHC12f1a  || fPeriodEnum == kLHC12f1b       || fPeriodEnum == kLHC12i3                    // LHC11a MCs
+          fPeriodEnum == kLHC12f1a  || fPeriodEnum == kLHC12f1b       || fPeriodEnum == kLHC12i3     ||             // LHC11a MCs
+	  fPeriodEnum == kLHC16h4                                                                                   // LHC15o MC
      ) ) return 1.;
   Int_t kCaseGen = 0;
 
@@ -4790,7 +4791,7 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
 
   if (IsParticleFromBGEvent(index, mcEvent, event)){
     if (fPeriodEnum == kLHC13d2 || fPeriodEnum == kLHC13d2b || fPeriodEnum == kLHC13e7 || fPeriodEnum == kLHC13b2_efix || fPeriodEnum == kLHC14a1a || fPeriodEnum ==  kLHC14a1b || fPeriodEnum ==  kLHC14a1c       ||
-      fPeriodEnum == kLHC14b2 || fPeriodEnum == kLHC14e2b || fPeriodEnum == kLHC12f1a || fPeriodEnum == kLHC12f1b || fPeriodEnum == kLHC12i3){
+      fPeriodEnum == kLHC14b2 || fPeriodEnum == kLHC14e2b || fPeriodEnum == kLHC12f1a || fPeriodEnum == kLHC12f1b || fPeriodEnum == kLHC12i3 || fPeriodEnum == kLHC16h4){
       kCaseGen = 1;
     }
   }
@@ -4841,7 +4842,7 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
   if (PDGCode ==  111 || PDGCode ==  221){
     if (functionResultData != 0. && functionResultMC != 0. && isfinite(functionResultData) && isfinite(functionResultMC)){
       weight = functionResultData/functionResultMC;
-      if ( kCaseGen == 3){
+      if ( kCaseGen == 3){   // never true ?
         if (PDGCode ==  111){
         if (!(fDoReweightHistoMCPi0 && hReweightMCHistPi0!= 0x0 && PDGCode ==  111)){
           weight = 1.;
