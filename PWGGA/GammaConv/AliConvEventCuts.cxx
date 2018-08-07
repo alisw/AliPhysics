@@ -791,51 +791,57 @@ void AliConvEventCuts::LoadReweightingHistosMCFromFile() {
   if (fNameHistoReweightingPi0.CompareTo("") != 0 && fDoReweightHistoMCPi0 ){
     cout << "I have to find: " <<  fNameHistoReweightingPi0.Data() << endl;
     TH1D *hReweightMCHistPi0temp = (TH1D*)f->Get(fNameHistoReweightingPi0.Data());
-    hReweightMCHistPi0 = new TH1D(*hReweightMCHistPi0temp);
-    if (hReweightMCHistPi0) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingPi0.Data(),fPathTrFReweighting.Data() ));
-    else AliWarning(Form("%s not found in %s", fNameHistoReweightingPi0.Data() ,fPathTrFReweighting.Data()));
-    hReweightMCHistPi0->SetDirectory(0);
+    if(hReweightMCHistPi0temp){
+      hReweightMCHistPi0 = new TH1D(*hReweightMCHistPi0temp);
+      hReweightMCHistPi0->SetDirectory(0);
+      AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingPi0.Data(),fPathTrFReweighting.Data() ));
+    } else AliWarning(Form("%s not found in %s", fNameHistoReweightingPi0.Data() ,fPathTrFReweighting.Data()));
   }
   if (fNameFitDataPi0.CompareTo("") != 0 && fDoReweightHistoMCPi0 ){
     cout << "I have to find: " <<  fNameFitDataPi0.Data() << endl;
     TF1 *fFitDataPi0temp = (TF1*)f->Get(fNameFitDataPi0.Data());
-    fFitDataPi0 = new TF1(*fFitDataPi0temp);
-    if (fFitDataPi0) AliInfo(Form("%s has been loaded from %s", fNameFitDataPi0.Data(),fPathTrFReweighting.Data() ));
-    else AliWarning(Form("%s not found in %s",fPathTrFReweighting.Data(), fNameFitDataPi0.Data() ));
+    if(fFitDataPi0temp){
+      fFitDataPi0 = new TF1(*fFitDataPi0temp);
+      AliInfo(Form("%s has been loaded from %s", fNameFitDataPi0.Data(),fPathTrFReweighting.Data() ));
+    } else AliWarning(Form("%s not found in %s",fPathTrFReweighting.Data(), fNameFitDataPi0.Data() ));
   }
 
   if (fNameHistoReweightingEta.CompareTo("") != 0 && fDoReweightHistoMCEta){
     cout << "I have to find: " <<  fNameHistoReweightingEta.Data() << endl;
     TH1D *hReweightMCHistEtatemp = (TH1D*)f->Get(fNameHistoReweightingEta.Data());
-    hReweightMCHistEta = new TH1D(*hReweightMCHistEtatemp);
-    if (hReweightMCHistEta) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingEta.Data(),fPathTrFReweighting.Data() ));
-    else AliWarning(Form("%s not found in %s", fNameHistoReweightingEta.Data(),fPathTrFReweighting.Data() ));
-    hReweightMCHistEta->SetDirectory(0);
+    if(hReweightMCHistEtatemp){
+      hReweightMCHistEta = new TH1D(*hReweightMCHistEtatemp);
+      hReweightMCHistEta->SetDirectory(0);
+      AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingEta.Data(),fPathTrFReweighting.Data() ));
+    } else AliWarning(Form("%s not found in %s", fNameHistoReweightingEta.Data(),fPathTrFReweighting.Data() ));
   }
 
   if (fNameFitDataEta.CompareTo("") != 0 && fDoReweightHistoMCEta){
     cout << "I have to find: " <<  fNameFitDataEta.Data() << endl;
     TF1 *fFitDataEtatemp = (TF1*)f->Get(fNameFitDataEta.Data());
-    fFitDataEta = new TF1(*fFitDataEtatemp);
-    if (fFitDataEta) AliInfo(Form("%s has been loaded from %s", fNameFitDataEta.Data(),fPathTrFReweighting.Data() ));
-    else AliWarning(Form("%s not found in %s", fNameFitDataEta.Data(),fPathTrFReweighting.Data() ));
+    if(fFitDataEtatemp){
+      fFitDataEta = new TF1(*fFitDataEtatemp);
+      AliInfo(Form("%s has been loaded from %s", fNameFitDataEta.Data(),fPathTrFReweighting.Data() ));
+    } else AliWarning(Form("%s not found in %s", fNameFitDataEta.Data(),fPathTrFReweighting.Data() ));
 
   }
   if (fNameHistoReweightingK0s.CompareTo("") != 0 && fDoReweightHistoMCK0s){
     cout << "I have to find: " <<  fNameHistoReweightingK0s.Data() << endl;
     TH1D *hReweightMCHistK0stemp = (TH1D*)f->Get(fNameHistoReweightingK0s.Data());
-    hReweightMCHistK0s = new TH1D(*hReweightMCHistK0stemp);
-    if (hReweightMCHistK0s) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingK0s.Data(),fPathTrFReweighting.Data() ));
-    else AliWarning(Form("%s not found in %s", fNameHistoReweightingK0s.Data(),fPathTrFReweighting.Data() ));
-    hReweightMCHistK0s->SetDirectory(0);
+    if(hReweightMCHistK0stemp){
+      hReweightMCHistK0s = new TH1D(*hReweightMCHistK0stemp);
+      hReweightMCHistK0s->SetDirectory(0);
+      AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingK0s.Data(),fPathTrFReweighting.Data() ));
+    } else AliWarning(Form("%s not found in %s", fNameHistoReweightingK0s.Data(),fPathTrFReweighting.Data() ));
   }
 
   if (fNameFitDataK0s.CompareTo("") != 0 && fDoReweightHistoMCK0s){
     cout << "I have to find: " <<  fNameFitDataK0s.Data() << endl;
     TF1 *fFitDataK0stemp = (TF1*)f->Get(fNameFitDataK0s.Data());
-    fFitDataK0s = new TF1(*fFitDataK0stemp);
-    if (fFitDataK0s) AliInfo(Form("%s has been loaded from %s", fNameFitDataK0s.Data(),fPathTrFReweighting.Data() ));
-    else AliWarning(Form("%s not found in %s", fNameFitDataK0s.Data(),fPathTrFReweighting.Data() ));
+    if(fFitDataK0stemp){
+      fFitDataK0s = new TF1(*fFitDataK0stemp);
+      AliInfo(Form("%s has been loaded from %s", fNameFitDataK0s.Data(),fPathTrFReweighting.Data() ));
+    } else AliWarning(Form("%s not found in %s", fNameFitDataK0s.Data(),fPathTrFReweighting.Data() ));
   }
   f->Close();
   delete f;
