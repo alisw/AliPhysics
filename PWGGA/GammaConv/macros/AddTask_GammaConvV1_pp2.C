@@ -92,7 +92,7 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
   TString corrTaskSetting = ""; // select which correction task setting to use
   //parse additionalTrainConfig flag
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
-  if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaConvV1_pp during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
+  if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaConvV1_pp2 during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
   TObjString* rAdditionalTrainConfig;
   for(Int_t i = 0; i<rAddConfigArr->GetEntries() ; i++){
     if(i==0){ rAdditionalTrainConfig = (TObjString*)rAddConfigArr->At(i);
@@ -104,11 +104,11 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
       if(tempStr.Contains("MaterialBudgetWeights") && enableMatBudWeightsPi0 > 0){
          if(tempStr.Contains("MaterialBudgetWeightsNONE")){
             enableMatBudWeightsPi0 = 0;
-            cout << "INFO:  AddTask_GammaConvV1_pp materialBudgetWeights switched off signaled by additionalTrainConfigFlag" << endl;
+            cout << "INFO:  AddTask_GammaConvV1_pp2 materialBudgetWeights switched off signaled by additionalTrainConfigFlag" << endl;
          } else {
             TObjArray *fileNameMatBudWeightsArr = filenameMatBudWeights.Tokenize("/");
             if(fileNameMatBudWeightsArr->GetEntries()<1 ){
-                cout<<"ERROR: AddTask_GammaConvV1_pp when reading material budget weights file name" << filenameMatBudWeights.Data()<< "'" << endl;
+                cout<<"ERROR: AddTask_GammaConvV1_pp2 when reading material budget weights file name" << filenameMatBudWeights.Data()<< "'" << endl;
                 return;
             }
             TObjString * oldMatObjStr = (TObjString*)fileNameMatBudWeightsArr->At( fileNameMatBudWeightsArr->GetEntries()-1);
@@ -117,11 +117,11 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
             cout<<newFileName.Data()<<endl;
             if( oldfileName.EqualTo(newFileName.Data()) == 0 ){
               filenameMatBudWeights.ReplaceAll(oldfileName.Data(),newFileName.Data());
-              cout << "INFO: AddTask_GammaConvV1_pp the material budget weights file has been change to " <<filenameMatBudWeights.Data()<<"'"<< endl;
+              cout << "INFO: AddTask_GammaConvV1_pp2 the material budget weights file has been change to " <<filenameMatBudWeights.Data()<<"'"<< endl;
           }
         }
       } else if(tempStr.BeginsWith("CF")){
-        cout << "INFO: AddTask_GammaCalo_pPb will use custom branch from Correction Framework!" << endl;
+        cout << "INFO: AddTask_GammaCalo_pp2 will use custom branch from Correction Framework!" << endl;
         corrTaskSetting = tempStr;
         corrTaskSetting.Replace(0,2,"");
       }
