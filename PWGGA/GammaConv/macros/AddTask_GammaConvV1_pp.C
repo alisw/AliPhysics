@@ -126,7 +126,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
           }
         }
       } else if(tempStr.BeginsWith("CF")){
-        cout << "INFO: AddTask_GammaCalo_pPb will use custom branch from Correction Framework!" << endl;
+        cout << "INFO: AddTask_GammaCalo_pp will use custom branch from Correction Framework!" << endl;
         corrTaskSetting = tempStr;
         corrTaskSetting.Replace(0,2,"");
       }
