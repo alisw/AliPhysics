@@ -323,6 +323,9 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t IsEventRejectedDueToVertexContributors() const {
     return fEvRejectionBits&(1<<kTooFewVtxContrib);
   }
+  Bool_t IsEventRejectedDueToMissingSPDVertex() const {
+    return fEvRejectionBits&(1<<kBadSPDVertex);
+  }
   Bool_t IsEventRejectedDueToZVertexOutsideFiducialRegion() const {
     return fEvRejectionBits&(1<<kZVtxOutFid);
   }
@@ -347,7 +350,13 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t IsEventRejectedDuePhysicsSelection() const {
     return fEvRejectionBits&(1<<kPhysicsSelection);
   }
-
+  Bool_t IsEventRejectedDueToBadPrimaryVertex() const{
+    if(!IsEventRejectedDueToCentrality() && !IsEventRejectedDueToCentralityFlattening() && !IsEventRejectedDueToTrigger() && !IsEventRejectedDuePhysicsSelection() && !IsEventRejectedDueToTRKV0CentralityCorrel()){
+      if(IsEventRejectedDueToBadTrackVertex() || IsEventRejectedDueToNotRecoVertex() || IsEventRejectedDueToVertexContributors()) return kTRUE;
+      if((fCutOnzVertexSPD>1 || fApplyZcutOnSPDvtx) && IsEventRejectedDueToMissingSPDVertex()) return kTRUE;
+    }
+    return kFALSE;
+  }
 
   void SetFixRefs(Bool_t fix=kTRUE) {fFixRefs=fix; return;}
   void SetUsePhysicsSelection(Bool_t use=kTRUE){fUsePhysicsSelection=use; return;}
