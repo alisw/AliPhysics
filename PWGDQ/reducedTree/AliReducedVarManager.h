@@ -520,7 +520,8 @@ class AliReducedVarManager : public TObject {
     kNclsSFracITS,
     kITSchi2,
     kITSnclsShared,
-    kITSlayerHit,       
+    kITSlayerHit, 
+    kITSlayerShared,
     kITSsignal,         
     kITSnSig,
     kTPCncls=kITSnSig+4,    
@@ -639,6 +640,7 @@ class AliReducedVarManager : public TObject {
   static void FillPairQualityFlag(AliReducedPairInfo* p, UShort_t flag, Float_t* values, UShort_t flag2=999);
   static void FillTrackInfo(AliReducedBaseTrack* p, Float_t* values);
   static void FillITSlayerFlag(AliReducedTrackInfo* track, Int_t layer, Float_t* values);
+  static void FillITSsharedLayerFlag(AliReducedTrackInfo* track, Int_t layer, Float_t* values);
   static void FillTPCclusterBitFlag(AliReducedTrackInfo* track, Int_t bit, Float_t* values);
   static void FillPairInfo(AliReducedPairInfo* p, Float_t* values);
   static void FillPairInfo(AliReducedBaseTrack* t1, AliReducedBaseTrack* t2, Int_t type, Float_t* values);

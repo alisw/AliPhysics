@@ -47,6 +47,7 @@ public:
   }
   void SetRunPrefilter(Bool_t option) {fOptionRunPrefilter = option;}
   void SetStoreJpsiCandidates(Bool_t option) {fOptionStoreJpsiCandidates = option;}
+  void SetMCJpsiPtWeights(TH1F* weights) {fMCJpsiPtWeights = weights;}
   
   void AddLegCandidateMCcut(AliReducedInfoCut* cut) {
      if(fLegCandidatesMCcuts.GetEntries()>=32) return;
@@ -139,8 +140,11 @@ protected:
   void FillTrackHistograms(AliReducedBaseTrack* track, TString trackClass = "Track");
   void FillPairHistograms(ULong_t mask, Int_t pairType, TString pairClass = "PairSE", UInt_t mcDecisions = 0);
   void FillMCTruthHistograms();
+
+  Bool_t fSkipMCEvent;          // decision to skip MC event
+  TH1F*  fMCJpsiPtWeights;            // weights vs pt to reject events depending on the jpsi true pt (needed to re-weights jpsi Pt distribution)
   
-  ClassDef(AliReducedAnalysisJpsi2ee,5);
+  ClassDef(AliReducedAnalysisJpsi2ee,6);
 };
 
 #endif
