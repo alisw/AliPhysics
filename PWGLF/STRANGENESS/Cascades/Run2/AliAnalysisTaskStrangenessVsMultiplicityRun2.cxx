@@ -143,6 +143,7 @@ fkDebugWrongPIDForTracking ( kFALSE ),
 fkDebugBump(kFALSE),
 fkDebugOOBPileup(kFALSE),
 fkDoExtraEvSels(kTRUE),
+fkPileupRejectionMode(0),
 fkUseOldCentrality ( kFALSE ) ,
 
 //---> Flags controlling Cascade TTree output
@@ -483,6 +484,7 @@ fkDebugWrongPIDForTracking ( kFALSE ), //also for cascades...
 fkDebugBump( kFALSE ),
 fkDebugOOBPileup(kFALSE),
 fkDoExtraEvSels(kTRUE),
+fkPileupRejectionMode(0),
 fkUseOldCentrality ( kFALSE ) , 
 
 //---> Flags controlling Cascade TTree output
@@ -1285,7 +1287,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
     fListHist = new TList();
     fListHist->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
     
-    fEventCuts.AddQAplotsToList(fListHist,kTRUE);
+    //Event Cuts with strong anti-pilep cuts
+    fEventCutsStrictAntipileup.fUseStrongVarCorrelationCut = true;
+    fEventCutsStrictAntipileup.fUseVariablesCorrelationCuts = true;
+
+    //Add QA plots
+    if( fkPileupRejectionMode == 0 ){
+        fEventCuts.AddQAplotsToList(fListHist,kTRUE);
+    }else{
+        fEventCutsStrictAntipileup.AddQAplotsToList(fListHist,kTRUE);
+    }
     
     if(! fHistEventCounter ) {
         //Histogram Output: Event-by-Event
@@ -1525,20 +1536,58 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     
     AliVEvent *ev = InputEvent();
     if( fkDoExtraEvSels ) {
-        if( !fEventCuts.AcceptEvent(ev) ) {
-            //Regular Output: Slots 1-6
-            PostData(1, fListHist    );
-            PostData(2, fListV0      );
-            PostData(3, fListXiMinus    );
-            PostData(4, fListXiPlus     );
-            PostData(5, fListOmegaMinus );
-            PostData(6, fListOmegaPlus  );
-            
-            //TTree Objects: Slots 7-9
-            if(fkSaveEventTree)    PostData(7, fTreeEvent   );
-            if(fkSaveV0Tree)       PostData(8, fTreeV0      );
-            if(fkSaveCascadeTree)  PostData(9, fTreeCascade );
-            return;
+        if ( fkPileupRejectionMode == 0) {
+            if( !fEventCuts.AcceptEvent(ev) ) {
+                //Regular Output: Slots 1-6
+                PostData(1, fListHist    );
+                PostData(2, fListV0      );
+                PostData(3, fListXiMinus    );
+                PostData(4, fListXiPlus     );
+                PostData(5, fListOmegaMinus );
+                PostData(6, fListOmegaPlus  );
+                
+                //TTree Objects: Slots 7-9
+                if(fkSaveEventTree)    PostData(7, fTreeEvent   );
+                if(fkSaveV0Tree)       PostData(8, fTreeV0      );
+                if(fkSaveCascadeTree)  PostData(9, fTreeCascade );
+                return;
+            }
+        }
+        if ( fkPileupRejectionMode == 1) {
+            if( !fEventCutsStrictAntipileup.AcceptEvent(ev) ) {
+                //Regular Output: Slots 1-6
+                PostData(1, fListHist    );
+                PostData(2, fListV0      );
+                PostData(3, fListXiMinus    );
+                PostData(4, fListXiPlus     );
+                PostData(5, fListOmegaMinus );
+                PostData(6, fListOmegaPlus  );
+                
+                //TTree Objects: Slots 7-9
+                if(fkSaveEventTree)    PostData(7, fTreeEvent   );
+                if(fkSaveV0Tree)       PostData(8, fTreeV0      );
+                if(fkSaveCascadeTree)  PostData(9, fTreeCascade );
+                return;
+            }
+        }
+        if ( fkPileupRejectionMode == 2) {
+            //Warning: this purposefully selects pileup for further study!
+            //  -> will pass if event accepted by regular evsel but rejected in pileup!
+            if( !fEventCuts.AcceptEvent(ev) && fEventCutsStrictAntipileup.AcceptEvent(ev) ) {
+                //Regular Output: Slots 1-6
+                PostData(1, fListHist    );
+                PostData(2, fListV0      );
+                PostData(3, fListXiMinus    );
+                PostData(4, fListXiPlus     );
+                PostData(5, fListOmegaMinus );
+                PostData(6, fListOmegaPlus  );
+                
+                //TTree Objects: Slots 7-9
+                if(fkSaveEventTree)    PostData(7, fTreeEvent   );
+                if(fkSaveV0Tree)       PostData(8, fTreeV0      );
+                if(fkSaveCascadeTree)  PostData(9, fTreeCascade );
+                return;
+            }
         }
     }
     
