@@ -33,6 +33,9 @@ class AliAnalysisTaskDmesonMCPerform : public AliAnalysisTaskSE
   void SetPtBinning(Int_t nbins, Double_t minpt, Double_t maxpt){
     fNPtBins=nbins; fMinPt=minpt; fMaxPt=maxpt;
   }
+  void SetFillExtraHistos(Bool_t opt){
+    fEnableExtraHistos=opt;
+  }
   virtual void UserCreateOutputObjects();
   virtual void Init(){};
   virtual void LocalInit() {Init();}
@@ -67,6 +70,14 @@ class AliAnalysisTaskDmesonMCPerform : public AliAnalysisTaskSE
   TH2F* fHistXvtxResVsPt[2*kDecays];    //!<! hist. for sec vert x resol
   TH2F* fHistYvtxResVsPt[2*kDecays];    //!<! hist. for sec vert x resol
   TH2F* fHistZvtxResVsPt[2*kDecays];    //!<! hist. for sec vert x resol
+  TH2F* fHistXvtxResRotVsPt[2*kDecays]; //!<! hist. for sec vert x resol
+  TH2F* fHistYvtxResRotVsPt[2*kDecays]; //!<! hist. for sec vert x resol
+  TH2F* fHistXvtxResVsPhi[2*kDecays];   //!<! hist. for sec vert x resol
+  TH2F* fHistYvtxResVsPhi[2*kDecays];   //!<! hist. for sec vert x resol
+  TH2F* fHistZvtxResVsPhi[2*kDecays];   //!<! hist. for sec vert x resol
+  TH3F* fHistXvtxResVsDecLenVsPt[2*kDecays];   //!<! hist. for sec vert x resol
+  TH3F* fHistYvtxResVsDecLenVsPt[2*kDecays];   //!<! hist. for sec vert x resol
+  TH3F* fHistZvtxResVsDecLenVsPt[2*kDecays];   //!<! hist. for sec vert x resol
   TH2F* fHistInvMassVsPt[2*kDecays];    //!<! hist. of inv mass (meas)
   TH2F* fHistDecLenVsPt[2*kDecays];     //!<! hist. of decay length (meas)
   TH2F* fHistNormDLxyVsPt[2*kDecays];     //!<! hist. of decay length (meas)
@@ -75,6 +86,7 @@ class AliAnalysisTaskDmesonMCPerform : public AliAnalysisTaskSE
   Int_t fNPtBins;               /// number of pt bins in histos
   Double_t fMinPt;              /// lower limit for pt
   Double_t fMaxPt;              /// upper limit for pt
+  Bool_t   fEnableExtraHistos;  /// flag to control the additional info
 
   Int_t fAODProtection;         /// flag to activate protection against AOD-dAOD mismatch.
 
@@ -84,7 +96,7 @@ class AliAnalysisTaskDmesonMCPerform : public AliAnalysisTaskSE
   Int_t fMapTrLabel[kMaxLabel];              /// map of track labels
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskDmesonMCPerform,3);
+  ClassDef(AliAnalysisTaskDmesonMCPerform,4);
   /// \endcond
 };
 #endif
