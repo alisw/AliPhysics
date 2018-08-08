@@ -1071,8 +1071,8 @@ bool AliFemtoESDTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsig
 bool AliFemtoESDTrackCut::IsDeuteronNSigma(float mom, float nsigmaTPCD, float nsigmaTOFD)
 {
   if (fNsigmaTPCTOF) {
-    if (mom > 1 && (nsigmaTOFD != -1000)) {
-      //        if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP )/TMath::Sqrt(2) < 3.0)
+    if (mom > 1) {  //if TOF avaliable: && (nsigmaTOFD != -1000) --> always TOF!
+      //if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP )/TMath::Sqrt(2) < 3.0)
       if (TMath::Hypot( nsigmaTOFD, nsigmaTPCD ) < fNsigma)
 	return true;
     }

@@ -908,7 +908,6 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       if (daughterTrackNeg->Charge() == daughterTrackPos->Charge()) continue;     // and have different charge
 
 
-
     if(fCascadePileUpRemoval)
       {
 	//method which checks if each of the v0 daughters and bachelor
