@@ -130,7 +130,13 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   MCphi(0),        
   MCvertx(0),
   MCverty(0),
-  MCvertz(0),        
+  MCvertz(0),
+  glabel(0),
+  gLabelFirstMother(0),
+  gLabelMinFirstMother(0),
+  gLabelMaxFirstMother(0),
+  iGenIndex(0),
+  iPdgFirstMother(0),        
   dcar(),
   dcaz(), 
   vertx(0),
@@ -228,7 +234,13 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   MCphi(0),        
   MCvertx(0),
   MCverty(0),
-  MCvertz(0),        
+  MCvertz(0), 
+  glabel(0),
+  gLabelFirstMother(0),
+  gLabelMinFirstMother(0),
+  gLabelMaxFirstMother(0),
+  iGenIndex(0),
+  iPdgFirstMother(0),         
   dcar(),
   dcaz(), 
   vertx(0),
@@ -367,6 +379,14 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
     fTree->Branch("MCTrack_vertx", &MCvertx);
     fTree->Branch("MCTrack_verty", &MCverty);
     fTree->Branch("MCTrack_vertz", &MCvertz);
+    
+    fTree->Branch("Label", &glabel);
+    fTree->Branch("LabelFirstMother", &gLabelFirstMother);
+    fTree->Branch("LabelMinFirstMother", &gLabelMinFirstMother);
+    fTree->Branch("LabelMaxFirstMother", &gLabelMaxFirstMother);
+    fTree->Branch("GenIndex", &iGenIndex);
+    fTree->Branch("PdgFirstMother", &iPdgFirstMother);   
+    
   }
   
   PostData(1, fList);
@@ -384,6 +404,8 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
     std::cout << "--- " << temp << std::endl;
     fGeneratorHashs.push_back(temp.Hash());
   }
+  
+  
 }
 
 //________________________________________________________________________
@@ -534,6 +556,12 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
   MCvertx.clear();
   MCverty.clear();
   MCvertz.clear();
+  glabel.clear();
+  gLabelFirstMother.clear();
+  gLabelMinFirstMother.clear();
+  gLabelMaxFirstMother.clear();
+  iGenIndex.clear();
+  iPdgFirstMother.clear();
   ITS1S.clear();
   ITS2S.clear();
   ITS3S.clear();
@@ -634,18 +662,96 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
           MCverty.push_back(MCvert[1]);
           MCvertz.push_back(MCvert[2]);
 
-        if(!(mcTrack->GetMother() < 0)) {  
-          hasmother.push_back(1);
-          AliAODMCParticle* mcmother = dynamic_cast<AliAODMCParticle *>(fMCEvent->GetTrack(mcTrack->GetMother()));
-	        pdgmother.push_back( mcmother->PdgCode());
+//        if(!(mcTrack->GetMother() < 0)) {  
+//          hasmother.push_back(1);
+//          AliAODMCParticle* mcmother = dynamic_cast<AliAODMCParticle *>(fMCEvent->GetTrack(mcTrack->GetMother()));
+//	        pdgmother.push_back( mcmother->PdgCode());
+//
+//          motherlabel.push_back(abs(mcmother->GetLabel()));
+//        }
+//        else{
+//          hasmother.push_back(0);  
+//          pdgmother.push_back( -9999);
+//          motherlabel.push_back(-9999);
+//        }
+          
+     // infos of mother:
+      Int_t gMotherIndex = mcTrack->GetMother();
+      Int_t gFirstMotherIndex    = 666666666;
 
-          motherlabel.push_back(abs(mcmother->GetLabel()));
-        }
-        else{
-          hasmother.push_back(0);  
-          pdgmother.push_back( -9999);
-          motherlabel.push_back(-9999);
-        }
+
+      // Extra for FFG studies: remove that for PID studies       
+      // write only electrons
+      if(TMath::Abs(pdg) != 11)
+       	continue;
+      
+      AliMCParticle* firstMotherTrack = NULL;
+
+      
+      if(gMotherIndex != -1) {
+	
+  	AliMCParticle* motherTrack = (AliMCParticle*)(mcEvent->GetTrack(gMotherIndex));
+  	pdgmother = motherTrack->PdgCode();
+
+  	// find first mother
+  	gFirstMotherIndex = motherTrack->GetMother();
+
+  	while(gFirstMotherIndex>0){
+  	  //cout<<gFirstMotherIndex<<" -> ";
+  	  gLabelFirstMother = gFirstMotherIndex;
+  	  firstMotherTrack = (AliMCParticle*)(mcEvent->GetTrack(gLabelFirstMother));
+  	  gFirstMotherIndex = firstMotherTrack->GetMother();
+  	  //cout<<gFirstMotherIndex<<endl;
+  	}
+
+  	if(gLabelFirstMother != -1) { 	  // if grandmother not primary!
+  	  iPdgFirstMother = firstMotherTrack->PdgCode();
+  	}
+  	else{     // if grandmother already primary!
+  	  gLabelFirstMother = gMotherIndex; // set mother to first mother
+  	  iPdgFirstMother = pdgmother;
+  	  //cout<<"Not Found: set PDG to "<<iPdgFirstMother<<" "<<pdgmother<<endl;
+  	}
+
+  	// find range of -1 - minimum
+  	gLabelMinFirstMother = gLabelFirstMother;
+
+  	while(gFirstMotherIndex<0){	
+  	  gLabelMinFirstMother--;
+  	  if(gLabelMinFirstMother<0){
+  	    gFirstMotherIndex = 0;
+  	    //cout<<"BZZZZZZ"<<endl;
+  	  }
+  	  else{
+  	    firstMotherTrack = (AliMCParticle*)(mcEvent->GetTrack(gLabelMinFirstMother));
+  	    gFirstMotherIndex = firstMotherTrack->GetMother();
+  	  }
+  	  //cout<<gLabelMinFirstMother<<" "<<gFirstMotherIndex<<endl;
+  	}
+  	gLabelMinFirstMother ++; // set back by one
+  	gFirstMotherIndex = -1; // set back to -1
+  	//cout<<"Found = "<<gLabelMinFirstMother<<endl<<endl;
+
+  	// find range of -1 - maximum
+  	gLabelMaxFirstMother = gLabelFirstMother;
+  	//cout<<endl<<"Find range Max = "<<gLabelMaxFirstMother<<" "<<gFirstMotherIndex<<endl;
+  	while(gFirstMotherIndex<0){
+  	  gLabelMaxFirstMother++;
+  	  if(gLabelMaxFirstMother > nParticles){
+  	    gFirstMotherIndex = 0;
+  	    //cout<<"BZZZZZZ"<<endl;
+  	  }
+  	  else{
+  	    firstMotherTrack = (AliMCParticle*)(mcEvent->GetTrack(gLabelMaxFirstMother));
+  	    gFirstMotherIndex = firstMotherTrack->GetMother();
+  	  }
+  	  //cout<<gLabelMaxFirstMother<<" "<<gFirstMotherIndex<<endl;
+
+  	}
+  	gLabelMaxFirstMother --; // set back by one     
+          
+      }   
+          
       } //End if hasMC 
       
                         
