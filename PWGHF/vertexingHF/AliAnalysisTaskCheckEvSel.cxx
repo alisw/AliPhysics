@@ -314,8 +314,8 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
     Float_t wrej4ntuple = (Float_t)wrej;
     if(isEvSel) wrej4ntuple = -1;
     Float_t vertextype=0;
-    TString vertextitle = vertex->GetTitle();
     if(vertex) {
+      TString vertextitle = vertex->GetTitle();
       //Vtx tracks
       if(vertextitle.Contains("VertexerTracks")) vertextype=3;
       //vtx SPD
