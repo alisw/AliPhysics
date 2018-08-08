@@ -2359,7 +2359,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
 	weightPi0         = kTRUE;
 	histoNameMCPi0PT  = Form("Pi0_LHC16h4_AP_5TeV_%s",centCut.Data());  // added particle MC
 	fitNamePi0PT      = Form("Pi0_Data_5TeV_%s",centCut.Data());        // fit to data
-	weightEta         = kFALSE;
+	weightEta         = kTRUE;
 	histoNameMCEtaPT  = Form("Eta_LHC16h4_AP_5TeV_%s",centCut.Data());
 	fitNameEtaPT      = Form("Eta_Data_5TeV_%s",centCut.Data());
 
