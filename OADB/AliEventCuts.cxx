@@ -232,7 +232,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
     fFlag |= BIT(kINELgt0);
   }
 
-  if (fUseVariablesCorrelationCuts && !fMC) {
+  if (fUseVariablesCorrelationCuts) {
     ComputeTrackMultiplicity(ev);
     const double fb32 = fContainer.fMultTrkFB32;
     const double fb32acc = fContainer.fMultTrkFB32Acc;
@@ -246,12 +246,12 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
 
     const bool multV0Mcut = (fMultiplicityV0McorrCut) ? fb32acc > fMultiplicityV0McorrCut->Eval(fCentPercentiles[0]) : true;
 
-    if ((fb32tof <= mu32tof + fTOFvsFB32nSigmaCut[0] * sigma32tof && fb32tof >= mu32tof - fTOFvsFB32nSigmaCut[1] * sigma32tof) &&
+    if (((fb32tof <= mu32tof + fTOFvsFB32nSigmaCut[0] * sigma32tof && fb32tof >= mu32tof - fTOFvsFB32nSigmaCut[1] * sigma32tof) &&
         (esd < fESDvsTPConlyLinearCut[0] + fESDvsTPConlyLinearCut[1] * fb128) &&
         multV0Mcut &&
         (fb128 < fFB128vsTrklLinearCut[0] + fFB128vsTrklLinearCut[1] * ntrkl) &&
-        (!fUseStrongVarCorrelationCut || fContainer.fMultVZERO > vzero_tpcout_limit)
-        )
+        (!fUseStrongVarCorrelationCut || fContainer.fMultVZERO > vzero_tpcout_limit))
+        || fMC)
       fFlag |= BIT(kCorrelations);
   } else fFlag |= BIT(kCorrelations);
 
