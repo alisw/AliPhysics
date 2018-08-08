@@ -101,7 +101,7 @@ class AliSigma0V0Cuts : public TObject {
   }
   void SetArmenterosCut(float qtLow, float qtUp, float alphaLow,
                         float alphaUp) {
-    fUsePID = false;
+    fUseArmenteros = true;
     fArmenterosQtLow = qtLow;
     fArmenterosQtUp = qtUp;
     fArmenterosAlphaLow = alphaLow;
@@ -111,6 +111,8 @@ class AliSigma0V0Cuts : public TObject {
     fLambdaSelectionLow = low, fLambdaSelectionUp = up;
   }
   void SetPsiPairMax(float max) { fPsiPairMax = max; }
+
+  void SetMCMultThreshold(float multThr) { fMCHighMultThreshold = multThr; }
 
   void ProcessMC() const;
   void CheckCutsMC() const;
@@ -147,6 +149,7 @@ class AliSigma0V0Cuts : public TObject {
   bool fV0OnFly;                             //
   bool fK0Rejection;                         //
   bool fUsePID;                              //
+  bool fUseArmenteros;                       //
   float fV0PtMin;                            //
   float fV0PtMax;                            //
   float fV0CosPAMin;                         //
@@ -172,6 +175,8 @@ class AliSigma0V0Cuts : public TObject {
   float fLambdaSelectionLow;                 //
   float fLambdaSelectionUp;                  //
   float fPsiPairMax;                         //
+
+  float fMCHighMultThreshold;  //
 
   AliPIDResponse *fPIDResponse;  //!  pid response
 
@@ -214,16 +219,19 @@ class AliSigma0V0Cuts : public TObject {
   TH2F *fHistArmenterosBefore;        //!
   TH2F *fHistArmenterosAfter;         //!
 
-  TH1F *fHistMCTruthV0Pt;                   //!
-  TH2F *fHistMCTruthV0PtY;                  //!
-  TH2F *fHistMCTruthV0PtEta;                //!
-  TH1F *fHistMCTruthV0DaughterPt;           //!
-  TH2F *fHistMCTruthV0DaughterPtY;          //!
-  TH2F *fHistMCTruthV0DaughterPtEta;        //!
-  TH1F *fHistMCTruthV0DaughterPtAccept;     //!
-  TH2F *fHistMCTruthV0DaughterPtYAccept;    //!
-  TH2F *fHistMCTruthV0DaughterPtEtaAccept;  //!
-  TH1F *fHistMCV0Pt;                        //!
+  TH2F *fHistMCTruthV0PtY;                        //!
+  TH2F *fHistMCTruthV0PtEta;                      //!
+  TH2F *fHistMCTruthV0DaughterPtY;                //!
+  TH2F *fHistMCTruthV0DaughterPtEta;              //!
+  TH2F *fHistMCTruthV0DaughterPtYAccept;          //!
+  TH2F *fHistMCTruthV0DaughterPtEtaAccept;        //!
+  TH2F *fHistMCTruthPtYHighMult;                  //!
+  TH2F *fHistMCTruthPtEtaHighMult;                //!
+  TH2F *fHistMCTruthDaughterPtYHighMult;          //!
+  TH2F *fHistMCTruthDaughterPtEtaHighMult;        //!
+  TH2F *fHistMCTruthDaughterPtYAcceptHighMult;    //!
+  TH2F *fHistMCTruthDaughterPtEtaAcceptHighMult;  //!
+  TH1F *fHistMCV0Pt;                              //!
 
   TH2F *fHistV0Mother;                                        //!
   TH2F *fHistV0MassPtTrue;                                    //!

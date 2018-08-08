@@ -37,11 +37,16 @@ class AliSigma0PhotonMotherCuts : public TObject {
   void SigmaToLambdaGammaMixedEvent(
       const std::vector<AliSigma0ParticleV0> &photonCandidates,
       const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
+  void SigmaToLambdaGammaMixedEventBinned(
+      const std::vector<AliSigma0ParticleV0> &photonCandidates,
+      const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
   void FillEventBuffer(
       const std::vector<AliSigma0ParticleV0> &photonCandidates,
       const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
   float ComputeRapidity(float pt, float pz, float m) const;
   int GetRapidityBin(float rapidity) const;
+  int GetMultiplicityBin(float percentile) const;
+  int GetZvertexBin(float zVertex) const;
   void ProcessMC() const;
   bool CheckDaughters(const AliMCParticle *particle) const;
   bool CheckDaughtersInAcceptance(const AliMCParticle *particle) const;
@@ -69,6 +74,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
     fPDGDaughter1 = pdgDaughter1;
     fPDGDaughter2 = pdgDaughter2;
   }
+  void SetMCMultThreshold(float multThr) { fMCHighMultThreshold = multThr; }
 
   void SetLambdaCuts(AliSigma0V0Cuts *lamCut) { fLambdaCuts = lamCut; }
   void SetPhotonCuts(AliSigma0V0Cuts *photCut) { fPhotonCuts = photCut; }
@@ -90,9 +96,11 @@ class AliSigma0PhotonMotherCuts : public TObject {
   AliMCEvent *fMCEvent;       //!
   TDatabasePDG fDataBasePDG;  //!
 
-  deque<vector<AliSigma0ParticleV0> > fLambdaMixed;  //!
-  deque<vector<AliSigma0ParticleV0> > fPhotonMixed;  //!
-  float fTreeVariables[4];                           //!
+  deque<vector<AliSigma0ParticleV0> > fLambdaMixed;               //!
+  deque<vector<AliSigma0ParticleV0> > fPhotonMixed;               //!
+  deque<vector<AliSigma0ParticleV0> > fLambdaMixedBinned[10][6];  //!
+  deque<vector<AliSigma0ParticleV0> > fPhotonMixedBinned[10][6];  //!
+  float fTreeVariables[4];                                        //!
 
   AliSigma0V0Cuts *fLambdaCuts;  //
   AliSigma0V0Cuts *fPhotonCuts;  //
@@ -116,12 +124,13 @@ class AliSigma0PhotonMotherCuts : public TObject {
   float fArmenterosAlphaLow;  //
   float fArmenterosAlphaUp;   //
 
+  float fMCHighMultThreshold;  //
+
   // Histograms
   // =====================================================================
   TProfile *fHistCutBooking;  //!
 
   TH1F *fHistNSigma;                   //!
-  TH1F *fHistPt;                       //!
   TH1F *fHistMassCutPt;                //!
   TH1F *fHistInvMass;                  //!
   TH1F *fHistInvMassBeforeArmenteros;  //!
@@ -132,25 +141,25 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistInvMassPt;                //!
   TH2F *fHistInvMassEta;               //!
   TH2F *fHistEtaPhi;                   //!
-  TH1F *fHistRapidity;                 //!
   TH2F *fHistPtY[22];                  //!
   TH2F *fHistArmenterosBefore;         //!
   TH2F *fHistArmenterosAfter;          //!
-  TH1F *fHistMixedPt;                  //!
-  TH1F *fHistMixedInvMass;             //!
   TH2F *fHistMixedPtY[22];             //!
   TH2F *fHistMixedInvMassPt;           //!
-  TH2F *fHistMixedInvMassEta;          //!
+  TH2F *fHistMixedInvMassBinnedPt;     //!
 
-  TH1F *fHistMCTruthPt;                   //!
-  TH2F *fHistMCTruthPtY;                  //!
-  TH2F *fHistMCTruthPtEta;                //!
-  TH1F *fHistMCTruthDaughterPt;           //!
-  TH2F *fHistMCTruthDaughterPtY;          //!
-  TH2F *fHistMCTruthDaughterPtEta;        //!
-  TH1F *fHistMCTruthDaughterPtAccept;     //!
-  TH2F *fHistMCTruthDaughterPtYAccept;    //!
-  TH2F *fHistMCTruthDaughterPtEtaAccept;  //!
+  TH2F *fHistMCTruthPtY;                          //!
+  TH2F *fHistMCTruthPtEta;                        //!
+  TH2F *fHistMCTruthDaughterPtY;                  //!
+  TH2F *fHistMCTruthDaughterPtEta;                //!
+  TH2F *fHistMCTruthDaughterPtYAccept;            //!
+  TH2F *fHistMCTruthDaughterPtEtaAccept;          //!
+  TH2F *fHistMCTruthPtYHighMult;                  //!
+  TH2F *fHistMCTruthPtEtaHighMult;                //!
+  TH2F *fHistMCTruthDaughterPtYHighMult;          //!
+  TH2F *fHistMCTruthDaughterPtEtaHighMult;        //!
+  TH2F *fHistMCTruthDaughterPtYAcceptHighMult;    //!
+  TH2F *fHistMCTruthDaughterPtEtaAcceptHighMult;  //!
 
   TH1F *fHistMCV0Pt;    //!
   TH1F *fHistMCV0Mass;  //!
