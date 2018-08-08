@@ -232,7 +232,7 @@ void AliAnalysisTaskCheckEvSel::UserCreateOutputObjects()
 
   PostData(1,fOutput);
   
-  if(fHistZVertexSPDBadTrackVert) {
+  if(fEnableVertexNtuple) {
     OpenFile(3); // 3 is the slot number of the ntuple
     
     fNtupleZvtxDistVsWhyRej = new TNtuple("fNtupleZvtxDistVsWhyRej","fNtupleZvtxDistVsWhyRej","zSPDvertex:zTRKvertex:NcontributorszSPD:NcontributorszTRK:whyrejection:vtxtype");
