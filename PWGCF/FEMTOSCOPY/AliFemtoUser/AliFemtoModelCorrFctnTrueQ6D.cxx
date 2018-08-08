@@ -50,8 +50,12 @@ AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const HistType &hist,
   , fManager(mgr)
   , fHistogram(reinterpret_cast<HistType*>(hist.Clone()))
   , fRng(new TRandom())
+  , fBinMethod(kRecGenOSL)
+  , fIgnoreZeroMassParticles(true)
+  , fUseFemtoWeight(true)
 {
   UpdateQlimits();
+  fBinMethod = GuessBinMethod(*fHistogram);
 }
 
 AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(HistType *&hist, AliFemtoModelManager *mgr)
@@ -59,10 +63,14 @@ AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(HistType *&hist, AliF
   , fManager(mgr)
   , fHistogram(hist)
   , fRng(new TRandom())
+  , fBinMethod(kRecGenOSL)
+  , fIgnoreZeroMassParticles(true)
+  , fUseFemtoWeight(true)
 {
   // take ownership of the pointer
   hist = nullptr;
   UpdateQlimits();
+  fBinMethod = GuessBinMethod(*fHistogram);
 }
 
 template <typename T>
@@ -108,6 +116,39 @@ std::array<T, 6> sort_q(AliFemtoModelCorrFctnTrueQ6D::BinMethod bm,
   return result;
 }
 
+inline AliFemtoModelCorrFctnTrueQ6D::BinMethod
+AliFemtoModelCorrFctnTrueQ6D::GuessBinMethod(const HistType &hist)
+{
+  using Method = AliFemtoModelCorrFctnTrueQ6D::BinMethod;
+
+  std::array<TString, 6> titles {{ hist.GetAxis(0)->GetTitle(),
+                                   hist.GetAxis(1)->GetTitle(),
+                                   hist.GetAxis(2)->GetTitle(),
+                                   hist.GetAxis(3)->GetTitle(),
+                                   hist.GetAxis(4)->GetTitle(),
+                                   hist.GetAxis(5)->GetTitle() }};
+
+  const Method methods[] = {
+    Method::kGenRecLSO,
+    Method::kGenRecOSL,
+    Method::kGenLSORecOSL,
+    Method::kRecGenLSO,
+    Method::kRecGenOSL,
+    Method::kRecLSOGenOSL,
+    Method::kGroupedAxisOSL,
+    Method::kGroupedAxisLSO
+  };
+
+  for (auto method : methods) {
+    if (titles == sort_q(method, TString("q_{o}"), TString("q_{s}"), TString("q_{l}"),
+                                 TString("q_{t,o}"), TString("q_{t,s}"), TString("q_{t,l}"))) {
+      return method;
+    }
+  }
+
+ return Method::kGenLSORecOSL;
+}
+
 AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const TString &title)
   : AliFemtoModelCorrFctnTrueQ6D(title, 120, 0.3)
 {
@@ -130,6 +171,7 @@ AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const TString &name,
   , fRng(new TRandom())
   , fBinMethod(kRecGenOSL)
   , fIgnoreZeroMassParticles(true)
+  , fUseFemtoWeight(true)
 {
   std::vector<Int_t> nbins_v(6, static_cast<Int_t>(nbins));
   std::vector<double> hist_min(6, qmin), hist_max(6, qmax);
@@ -170,6 +212,7 @@ AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const AliFemtoModelCo
   , fRng(new TRandom())
   , fBinMethod(orig.fBinMethod)
   , fIgnoreZeroMassParticles(orig.fIgnoreZeroMassParticles)
+  , fUseFemtoWeight(orig.fUseFemtoWeight)
 {
   fQlimits[0] = orig.fQlimits[0];
   fQlimits[1] = orig.fQlimits[1];
@@ -191,6 +234,7 @@ AliFemtoModelCorrFctnTrueQ6D::operator=(const AliFemtoModelCorrFctnTrueQ6D& rhs)
     fHistogram = static_cast<HistType*>(rhs.fHistogram->Clone());
     fBinMethod = rhs.fBinMethod;
     fIgnoreZeroMassParticles = rhs.fIgnoreZeroMassParticles;
+    fUseFemtoWeight = rhs.fUseFemtoWeight;
     fQlimits[0] = rhs.fQlimits[0];
     fQlimits[1] = rhs.fQlimits[1];
     fQlimits[2] = rhs.fQlimits[2];
@@ -244,7 +288,9 @@ Qcms(const AliFemtoLorentzVector &p1, const AliFemtoLorentzVector &p2)
 }
 
 void
-AliFemtoModelCorrFctnTrueQ6D::AddPair(const AliFemtoParticle &particle1, const AliFemtoParticle &particle2)
+AliFemtoModelCorrFctnTrueQ6D::AddPair(const AliFemtoParticle &particle1,
+                                      const AliFemtoParticle &particle2,
+                                      double femto_weight /* = 1.0 */)
 {
   // Fill reconstructed histogram with "standard" particle momentum
   Double_t q_out, q_side, q_long;
@@ -293,7 +339,8 @@ AliFemtoModelCorrFctnTrueQ6D::AddPair(const AliFemtoParticle &particle1, const A
   auto q = sort_q(fBinMethod,
                   q_out, q_side, q_long,
                   true_q_out, true_q_side, true_q_long);
-  fHistogram->Fill(q.data());
+
+  fHistogram->Fill(q.data(), femto_weight);
 }
 
 void
@@ -306,7 +353,9 @@ AliFemtoModelCorrFctnTrueQ6D::AddRealPair(AliFemtoPair *pair)
   if (fRng->Uniform() >= 0.5) {
     std::swap(p1, p2);
   }
-  AddPair(*p1, *p2);
+
+  Double_t femto_weight = fUseFemtoWeight ? fManager->GetWeight(pair) : 1.0;
+  AddPair(*p1, *p2, femto_weight);
 }
 
 void
