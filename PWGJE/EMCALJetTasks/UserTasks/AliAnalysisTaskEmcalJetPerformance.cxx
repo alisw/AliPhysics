@@ -1323,13 +1323,19 @@ void AliAnalysisTaskEmcalJetPerformance::DoTriggerSimulation()
   fHistManager.FillTH2(histname.Data(), nBkgPatchesDCal, kDCal);
   
   // Fill max patch response and total EMCal energy response, if requested
-  if (fGeneratorLevel && fDoTriggerResponse && maxPatch) {
+  if (fGeneratorLevel && fDoTriggerResponse) {
     
-    Double_t phiMinMaxPatch = maxPatch->GetPhiMin();
-    Double_t phiMaxMaxPatch = maxPatch->GetPhiMax();
-    Double_t etaMinMaxPatch = maxPatch->GetEtaMin();
-    Double_t etaMaxMaxPatch = maxPatch->GetEtaMax();
+    Double_t phiMinMaxPatch;
+    Double_t phiMaxMaxPatch;
+    Double_t etaMinMaxPatch;
+    Double_t etaMaxMaxPatch;
     Double_t truthEnergyPatch = 0;
+    if (maxPatch) {
+      phiMinMaxPatch = maxPatch->GetPhiMin();
+      phiMaxMaxPatch = maxPatch->GetPhiMax();
+      etaMinMaxPatch = maxPatch->GetEtaMin();
+      etaMaxMaxPatch = maxPatch->GetEtaMax();
+    }
     
     Double_t phiMinEMCal = fGeom->GetArm1PhiMin() * TMath::DegToRad(); // 80
     Double_t phiMaxEMCal = fGeom->GetEMCALPhiMax() * TMath::DegToRad(); // ~188
@@ -1346,9 +1352,11 @@ void AliAnalysisTaskEmcalJetPerformance::DoTriggerSimulation()
       partEta = part.Eta();
       partPhi = part.Phi_0_2pi();
       partE = part.E();
-      if (partPhi < phiMaxMaxPatch && partPhi > phiMinMaxPatch) {
-        if (partEta < etaMaxMaxPatch && partEta > etaMinMaxPatch) {
-          truthEnergyPatch += partE;
+      if (maxPatch) {
+        if (partPhi < phiMaxMaxPatch && partPhi > phiMinMaxPatch) {
+          if (partEta < etaMaxMaxPatch && partEta > etaMinMaxPatch) {
+            truthEnergyPatch += partE;
+          }
         }
       }
       if (partPhi < phiMaxEMCal && partPhi > phiMinEMCal) {
@@ -1378,8 +1386,10 @@ void AliAnalysisTaskEmcalJetPerformance::DoTriggerSimulation()
       }
     }
     
-    histname = "TriggerSimHistograms/hMaxPatchResponseMatrix";
-    fHistManager.FillTH2(histname.Data(), maxPatchEnergy, truthEnergyPatch);
+    if (maxPatch) {
+      histname = "TriggerSimHistograms/hMaxPatchResponseMatrix";
+      fHistManager.FillTH2(histname.Data(), maxPatchEnergy, truthEnergyPatch);
+    }
     
     histname = "TriggerSimHistograms/hEMCalEnergyResponseMatrix";
     fHistManager.FillTH2(histname.Data(), detEnergyEMCal, truthEnergyEMCal);
