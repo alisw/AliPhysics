@@ -49,6 +49,7 @@ AliAnalysisTaskDmesonMCPerform::AliAnalysisTaskDmesonMCPerform():
   fNPtBins(16),
   fMinPt(0.),
   fMaxPt(16.),
+  fEnableExtraHistos(kFALSE),
   fAODProtection(1),
   fRDHFCuts(0x0),
   fRDHFCutsDplus(0x0)
@@ -96,6 +97,14 @@ AliAnalysisTaskDmesonMCPerform::~AliAnalysisTaskDmesonMCPerform()
       delete fHistXvtxResVsPt[j];
       delete fHistYvtxResVsPt[j];
       delete fHistZvtxResVsPt[j];
+      delete fHistXvtxResRotVsPt[j];
+      delete fHistYvtxResRotVsPt[j];
+      delete fHistXvtxResVsPhi[j];
+      delete fHistYvtxResVsPhi[j];
+      delete fHistZvtxResVsPhi[j];
+      delete fHistXvtxResVsDecLenVsPt[j];
+      delete fHistYvtxResVsDecLenVsPt[j];
+      delete fHistZvtxResVsDecLenVsPt[j];
       delete fHistInvMassVsPt[j];
       delete fHistDecLenVsPt[j];
       delete fHistNormDLxyVsPt[j];
@@ -180,6 +189,25 @@ void AliAnalysisTaskDmesonMCPerform::UserCreateOutputObjects()
       fOutput->Add(fHistDecLenVsPt[index]);
       fOutput->Add(fHistNormDLxyVsPt[index]);
       fOutput->Add(fHistCosPointVsPt[index]);
+      
+      if(fEnableExtraHistos){
+	fHistXvtxResRotVsPt[index]=new TH2F(Form("hXvtxResRotVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; x'_{v}(rec)-x'_{v}(gen) (#mum)",fNPtBins,fMinPt,fMaxPt,100,-500.,500.);
+	fHistYvtxResRotVsPt[index]=new TH2F(Form("hYvtxResRotVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; y'_{v}(rec)-y'_{v}(gen) (#mum)",fNPtBins,fMinPt,fMaxPt,100,-500.,500.);
+	fHistXvtxResVsPhi[index]=new TH2F(Form("hXvtxResVsPhi%s%s",type[i].Data(),fPartName[j].Data())," ;  #varphi (rad) ; x_{v}(rec)-x_{v}(gen) (#mum)",36,0.,2*TMath::Pi(),100,-500.,500.);
+	fHistYvtxResVsPhi[index]=new TH2F(Form("hYvtxResVsPhi%s%s",type[i].Data(),fPartName[j].Data())," ;  #varphi (rad) ; y_{v}(rec)-y_{v}(gen) (#mum)",36,0.,2*TMath::Pi(),100,-500.,500.);
+	fHistZvtxResVsPhi[index]=new TH2F(Form("hZvtxResVsPhi%s%s",type[i].Data(),fPartName[j].Data())," ;  #varphi (rad) ; z_{v}(rec)-z_{v}(gen) (#mum)",36,0.,2*TMath::Pi(),100,-500.,500.);
+	fOutput->Add(fHistXvtxResRotVsPt[index]);
+	fOutput->Add(fHistYvtxResRotVsPt[index]);
+	fOutput->Add(fHistXvtxResVsPhi[index]);
+	fOutput->Add(fHistYvtxResVsPhi[index]);
+	fOutput->Add(fHistZvtxResVsPhi[index]);
+	fHistXvtxResVsDecLenVsPt[index]=new TH3F(Form("hXvtxResVsDecLenVsPt%s%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c)  ; dec. len. (#mum) ; x_{v}(rec)-x_{v}(gen) (#mum)",fNPtBins,fMinPt,fMaxPt,100,0.,5000.,100,-500.,500.);
+	fHistYvtxResVsDecLenVsPt[index]=new TH3F(Form("hYvtxResVsDecLenVsPt%s%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c)  ; dec. len. (#mum) ; y_{v}(rec)-y_{v}(gen) (#mum)",fNPtBins,fMinPt,fMaxPt,100,0.,5000.,100,-500.,500.);
+	fHistZvtxResVsDecLenVsPt[index]=new TH3F(Form("hZvtxResVsDecLenVsPt%s%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c)  ; dec. len. (#mum) ; z_{v}(rec)-z_{v}(gen) (#mum)",fNPtBins,fMinPt,fMaxPt,100,0.,5000.,100,-500.,500.);
+	fOutput->Add(fHistXvtxResVsDecLenVsPt[index]);
+	fOutput->Add(fHistYvtxResVsDecLenVsPt[index]);
+	fOutput->Add(fHistZvtxResVsDecLenVsPt[index]);
+     }
     }
   }
 
@@ -452,6 +480,7 @@ void AliAnalysisTaskDmesonMCPerform::FillCandLevelHistos(Int_t idCase, AliAODEve
     if(labD>=0 && iSpec>=0){
       AliAODMCParticle *partD = (AliAODMCParticle*)arrayMC->At(labD);
       Double_t ptgen=partD->Pt();
+      Double_t phigen=partD->Phi();
       Double_t ygen=partD->Y();
       Double_t ptreco=d->Pt();
       Double_t dlen=d->DecayLength()*10000.; //um
@@ -483,6 +512,22 @@ void AliAnalysisTaskDmesonMCPerform::FillCandLevelHistos(Int_t idCase, AliAODEve
       fHistDecLenVsPt[indexh]->Fill(ptreco,dlen);
       fHistNormDLxyVsPt[indexh]->Fill(ptreco,ndlenxy);
       fHistCosPointVsPt[indexh]->Fill(ptreco,cosp);
+      if(fEnableExtraHistos){
+	fHistXvtxResVsPhi[indexh]->Fill(phigen,dx);
+	fHistYvtxResVsPhi[indexh]->Fill(phigen,dy);
+	fHistZvtxResVsPhi[indexh]->Fill(phigen,dz);
+	fHistXvtxResVsDecLenVsPt[indexh]->Fill(ptreco,dlen,dx);
+ 	fHistYvtxResVsDecLenVsPt[indexh]->Fill(ptreco,dlen,dy);
+ 	fHistZvtxResVsDecLenVsPt[indexh]->Fill(ptreco,dlen,dz);
+	Double_t xgenrot=partD->Xv()*TMath::Cos(phigen)-partD->Yv()*TMath::Sin(phigen);
+	Double_t ygenrot=partD->Xv()*TMath::Sin(phigen)+partD->Yv()*TMath::Cos(phigen);
+	Double_t xrecrot=d->Xv()*TMath::Cos(phigen)-d->Yv()*TMath::Sin(phigen);
+	Double_t yrecrot=d->Xv()*TMath::Sin(phigen)+d->Yv()*TMath::Cos(phigen);
+	Double_t dxrot=(xrecrot-xgenrot)*10000.;
+	Double_t dyrot=(yrecrot-ygenrot)*10000.;
+	fHistXvtxResRotVsPt[indexh]->Fill(ptreco,dxrot);
+	fHistYvtxResRotVsPt[indexh]->Fill(ptreco,dyrot);
+      }
     }
   }
   delete vHF;
