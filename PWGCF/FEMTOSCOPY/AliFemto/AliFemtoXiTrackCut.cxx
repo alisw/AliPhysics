@@ -30,6 +30,8 @@ AliFemtoXiTrackCut::AliFemtoXiTrackCut():
   , fMaxDecayLengthXi(100.0)
   , fInvMassXiMin(0)
   , fInvMassXiMax(1000)
+  , fInvMassRejectMin(0)
+  , fInvMassRejectMax(1000) 
   , fParticleTypeXi(kXiMinus)
   , fRadiusXiMin(0.)
   , fRadiusXiMax(99999.0)
@@ -66,6 +68,8 @@ AliFemtoXiTrackCut::AliFemtoXiTrackCut(const AliFemtoXiTrackCut& aCut) :
   , fMaxDecayLengthXi(aCut.fMaxDecayLengthXi)
   , fInvMassXiMin(aCut.fInvMassXiMin)
   , fInvMassXiMax(aCut.fInvMassXiMax)
+  , fInvMassRejectMin(aCut.fInvMassRejectMin)
+  , fInvMassRejectMax(aCut.fInvMassRejectMax) 
   , fParticleTypeXi(aCut.fParticleTypeXi)
   , fRadiusXiMin(aCut.fRadiusXiMin)
   , fRadiusXiMax(aCut.fRadiusXiMax)
@@ -102,6 +106,8 @@ AliFemtoXiTrackCut& AliFemtoXiTrackCut::operator=(const AliFemtoXiTrackCut& aCut
   fMaxDecayLengthXi = aCut.fMaxDecayLengthXi;
   fInvMassXiMin = aCut.fInvMassXiMin;
   fInvMassXiMax = aCut.fInvMassXiMax;
+  fInvMassRejectMin = aCut.fInvMassRejectMin;
+  fInvMassRejectMax = aCut.fInvMassRejectMax; 
   fParticleTypeXi = aCut.fParticleTypeXi;
   fRadiusXiMin = aCut.fRadiusXiMin;
   fRadiusXiMax = aCut.fRadiusXiMax;
@@ -210,8 +216,6 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
   if(fParticleTypeXi == kAll)
     return true;
 
-
-
   bool pid_check=false;
   // Looking for Xi
   if (fParticleTypeXi == kXiMinus || fParticleTypeXi == kXiPlus) {
@@ -219,7 +223,6 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
 	{
 	  pid_check=true;
 	}
-
   }
 
   if (!pid_check) return false;
@@ -229,12 +232,17 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
 
   if(fBuildPurityAidXi) {fMinvPurityAidHistoXi->Fill(aXi->MassXi());}
 
-   //invariant mass Xi
+  //invariant mass Xi
   if(aXi->MassXi()<fInvMassXiMin || aXi->MassXi()>fInvMassXiMax)
-     {
-       return false;
-     }
-  
+    {
+      return false;
+    }
+
+  //removing particles in the given Minv window (e.g. to reject omegas in Xi sample)
+ if(aXi->MassXi()>fInvMassRejectMin && aXi->MassXi()>fInvMassRejectMax)
+    {
+      return false;
+    }
   
   return true;
 }
@@ -309,6 +317,13 @@ void AliFemtoXiTrackCut::SetInvariantMassXi(double min, double max)
 {
   fInvMassXiMin = min;
   fInvMassXiMax = max;
+
+}
+
+void AliFemtoXiTrackCut::SetInvariantMassReject(double min, double max)
+{
+  fInvMassRejectMin = min;
+  fInvMassRejectMax = max;
 
 }
 
