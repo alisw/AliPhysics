@@ -53,7 +53,7 @@ public:
   void SetNdofBac(double x);
   void SetStatusBac(unsigned long x);
   void SetInvariantMassXi(double min, double max);
-  void SetInvariantMassReject(double min, double max);
+  void SetInvariantMassRejectOmega(double min, double max);
   void SetMaxDcaXi(double x);
   void SetMinDcaXiBac(double x);
   void SetMaxDcaXiDaughters(double x);

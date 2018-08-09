@@ -21,10 +21,10 @@ AliFemtoXiTrackCut::AliFemtoXiTrackCut():
   , fMaxPtBac(100)
   , fTPCNclsBac(0)
   , fNdofBac(100)
-  , fStatusBac(0)
-  , fMaxDcaXi(0)
+  , fStatusBac(1)
+  , fMaxDcaXi(1000)
   , fMinDcaXiBac(0)
-  , fMaxDcaXiDaughters(0)
+  , fMaxDcaXiDaughters(1000)
   , fMinCosPointingAngleXi(0)
   , fMinCosPointingAngleV0toXi(0)
   , fMaxDecayLengthXi(100.0)
@@ -140,7 +140,7 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
   // test the particle and return 
   // true if it meets all the criteria
   // false if it doesn't meet at least one of the criteria
-   
+
   Float_t pt = aXi->PtXi();
   Float_t eta = aXi->EtaXi();
   
@@ -175,23 +175,21 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
 	  return true;  
 	} 
     }
-
-
+    
     //quality cuts
     if(aXi->StatusBac() == 999) return false;
-    if(aXi->TPCNclsBac()<fTPCNclsBac) return false;
+    if(aXi->TPCNclsBac()<fTPCNclsBac) return false; 
     if(aXi->NdofBac()>fNdofBac) return false;
-    if(!(aXi->StatusBac()&fStatusBac)) return false;
-
-
+    if(!(aXi->StatusBac()&fStatusBac)) return false; 
+    
     //DCA Xi to prim vertex
     if(TMath::Abs(aXi->DcaXiToPrimVertex())>fMaxDcaXi)
       return false;
-
+    
     //DCA Xi bachelor to prim vertex
     if(TMath::Abs(aXi->DcaBacToPrimVertex())<fMinDcaXiBac)
       return false;
-
+    
     //DCA Xi daughters
     if(TMath::Abs(aXi->DcaXiDaughters())>fMaxDcaXiDaughters)
       return false;
@@ -212,7 +210,6 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
     if(aXi->RadiusXi()<fRadiusXiMin || aXi->RadiusXi()>fRadiusXiMax)
       return false;
     
- 
   if(fParticleTypeXi == kAll)
     return true;
 
@@ -230,6 +227,7 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
   if(!AliFemtoV0TrackCut::Pass(aXi))
     return false;
 
+  
   if(fBuildPurityAidXi) {fMinvPurityAidHistoXi->Fill(aXi->MassXi());}
 
   //invariant mass Xi
@@ -237,13 +235,13 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
     {
       return false;
     }
-
+  
   //removing particles in the given Minv window (e.g. to reject omegas in Xi sample)
- if(aXi->MassXi()>fInvMassRejectMin && aXi->MassXi()>fInvMassRejectMax)
+ if(aXi->MassOmega()>fInvMassRejectMin && aXi->MassOmega()>fInvMassRejectMax)
     {
       return false;
     }
-  
+
   return true;
 }
 //------------------------------
@@ -320,7 +318,7 @@ void AliFemtoXiTrackCut::SetInvariantMassXi(double min, double max)
 
 }
 
-void AliFemtoXiTrackCut::SetInvariantMassReject(double min, double max)
+void AliFemtoXiTrackCut::SetInvariantMassRejectOmega(double min, double max)
 {
   fInvMassRejectMin = min;
   fInvMassRejectMax = max;
