@@ -1294,8 +1294,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00010113","2446600040012300000","0163103100000010"); // INT7 NCells 2
     cuts.AddCut("00010113","2446600044013300000","0163103100000010"); // INT7 w/ TM NCells 3
     cuts.AddCut("00010113","2446600044012300000","0163103100000010"); // INT7 w/ TM NCells 2
-
-
+  } else if (trainConfig ==806){//Comparing CellQA Config from GammaConv
+      cuts.AddCut("00010113","2446600000013300000","0163103100000010"); // INT7
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
