@@ -439,7 +439,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					tXiCut[aniter]->SetMinCosPointingAngleXi(0.97); //++ bylo 0.99
 					tXiCut[aniter]->SetMaxDecayLengthXi(100.);
 					tXiCut[aniter]->SetMaxDcaXi(100);
-					//++ omega rejection od 1.667 do 1.677 !!!
+					tXiCut[aniter]->SetInvariantMassReject(1.667,1.677);//++ NEW: omega rejection od 1.667 do 1.677 !
 					
 					//XiDaughters
 					tXiCut[aniter]->SetMaxDcaXiDaughters(1.6);//++ bylo 0.3 
@@ -503,12 +503,13 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					tAXiCut[aniter]->SetMinCosPointingAngleXi(0.97);
 					tAXiCut[aniter]->SetMaxDecayLengthXi(100.0);
 					tAXiCut[aniter]->SetMaxDcaXi(100);
-					//++ omega rejection od 1.667 do 1.677 !!!
+					tAXiCut[aniter]->SetInvariantMassReject(1.667,1.677);//++ NEW: omega rejection od 1.667 do 1.677 !
+					
 					
 					//XiDaughters
 					tAXiCut[aniter]->SetMaxDcaXiDaughters(1.6);
-					tXiCut[aniter]->SetRadiusXiMin(0.8); //++ NEW!
-					tXiCut[aniter]->SetRadiusXiMax(200); //++ NEW!
+					tAXiCut[aniter]->SetRadiusXiMin(0.8); //++ NEW!
+					tAXiCut[aniter]->SetRadiusXiMax(200); //++ NEW!
 					
 					//Bachelor cuts (here = PiP)
 					tAXiCut[aniter]->SetMinDcaXiBac(0.05);
