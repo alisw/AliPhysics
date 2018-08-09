@@ -80,7 +80,6 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   phi(0),
   pt(0),        
   charge(0.),   
-  enh(0),
   NCrossedRowsTPC(0), 
   NClustersTPC(0),        
   HasSPDfirstHit(0),        
@@ -130,7 +129,13 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   MCphi(0),        
   MCvertx(0),
   MCverty(0),
-  MCvertz(0),        
+  MCvertz(0),
+  glabel(0),
+  gLabelFirstMother(0),
+  gLabelMinFirstMother(0),
+  gLabelMaxFirstMother(0),
+  iGenIndex(0),
+  iPdgFirstMother(0),        
   dcar(),
   dcaz(), 
   vertx(0),
@@ -149,10 +154,7 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   chi2GlobalvsTPC(0),
   fCutMaxChi2TPCConstrainedVsGlobalVertexType(0),
   pdg(0),
-  pdgmother(0),
-  hasmother(0),
-  label(0),      
-  motherlabel(0),
+  pdgmother(0),        
   fmean(0),
   fwidth(0), 
   fuseCorr(kFALSE),      
@@ -178,7 +180,6 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   phi(0),
   pt(0),        
   charge(0.),   
-  enh(0),
   NCrossedRowsTPC(0), 
   NClustersTPC(0),        
   HasSPDfirstHit(0),        
@@ -228,7 +229,13 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   MCphi(0),        
   MCvertx(0),
   MCverty(0),
-  MCvertz(0),        
+  MCvertz(0), 
+  glabel(0),
+  gLabelFirstMother(0),
+  gLabelMinFirstMother(0),
+  gLabelMaxFirstMother(0),
+  iGenIndex(0),
+  iPdgFirstMother(0),         
   dcar(),
   dcaz(), 
   vertx(0),
@@ -247,9 +254,8 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   chi2GlobalvsTPC(0),
   fCutMaxChi2TPCConstrainedVsGlobalVertexType(0),
   pdg(0),
-  pdgmother(0),
+  pdgmother(0),        
   hasmother(0),
-  label(0),      
   motherlabel(0),
   fmean(0),
   fwidth(0), 
@@ -293,9 +299,11 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   fList->SetName("output_Tlist");
   fList->SetOwner();
    
+  AliInfo("Try to get PIDResponse");
   fPIDResponse = inputHandler->GetPIDResponse();
+  
      if (!fPIDResponse){
-	   
+	   AliError("Failed to get PIDResponse - return");
 	   return;}
   
   if (man->GetMCtruthEventHandler()!=0x0) hasMC=kTRUE;
@@ -353,12 +361,10 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   
   if(hasMC) {
       
-    fTree->Branch("Pdg", &pdg);
     fTree->Branch("Pdg_Mother", &pdgmother);
     fTree->Branch("Mother_label", &motherlabel);
-    fTree->Branch("Label", &label);      
     fTree->Branch("Has_Mother", &hasmother);
-    fTree->Branch("IsEnh", &enh);
+    fTree->Branch("Pdg_Mother", &pdgmother);
   
     fTree->Branch("MCpt", &MCpt);
     fTree->Branch("MCeta", &MCeta);
@@ -367,6 +373,15 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
     fTree->Branch("MCTrack_vertx", &MCvertx);
     fTree->Branch("MCTrack_verty", &MCverty);
     fTree->Branch("MCTrack_vertz", &MCvertz);
+    
+    fTree->Branch("Pdg", &pdg);
+    fTree->Branch("Label", &glabel);
+    fTree->Branch("LabelFirstMother", &gLabelFirstMother);
+    fTree->Branch("LabelMinFirstMother", &gLabelMinFirstMother);
+    fTree->Branch("LabelMaxFirstMother", &gLabelMaxFirstMother);
+    fTree->Branch("GenIndex", &iGenIndex);
+    fTree->Branch("PdgFirstMother", &iPdgFirstMother);   
+    
   }
   
   PostData(1, fList);
@@ -374,7 +389,7 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   AliInfo("Finished setting up the Output");
   TH1::AddDirectory(oldStatus);
   
-  TString generatorName = "Hijing_0";//;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia B_8;Pythia BB_8";
+  TString generatorName = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia BB_8;Pythia B_8";
  
 
   TObjArray arr = *(generatorName.Tokenize(";"));
@@ -530,10 +545,15 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
   motherlabel.clear();
   label.clear();  
   charge.clear();
-  enh.clear();
   MCvertx.clear();
   MCverty.clear();
   MCvertz.clear();
+  glabel.clear();
+  gLabelFirstMother.clear();
+  gLabelMinFirstMother.clear();
+  gLabelMaxFirstMother.clear();
+  iGenIndex.clear();
+  iPdgFirstMother.clear();
   ITS1S.clear();
   ITS2S.clear();
   ITS3S.clear();
@@ -615,8 +635,6 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
         AliAODMCParticle* mcTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
 
         pdg.push_back( mcTrack->PdgCode());
-        if(Rej) enh.push_back(1);
-        else enh.push_back(0);
         
         MCpt.push_back(mcTrack->Pt());
         MCeta.push_back(mcTrack->Eta());
@@ -646,6 +664,80 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
           pdgmother.push_back( -9999);
           motherlabel.push_back(-9999);
         }
+          
+     // infos of first mother:
+      Int_t gMotherIndex = mcTrack->GetMother();
+      Int_t tempFirstMotherIndex    = 666666666;
+      Int_t tempLabelFirstMother=-1;
+      Int_t tempPdgFirstMother=-99;
+      Int_t tempLabelMinFirstMother=-1;
+      Int_t tempLabelMaxFirstMother=-1;
+      Int_t nParticles = mcEvent->GetNumberOfTracks();
+
+      AliMCParticle* firstMotherTrack = NULL;
+      
+      if(gMotherIndex != -1) {
+	
+  	AliMCParticle* motherTrack = (AliMCParticle*)(mcEvent->GetTrack(gMotherIndex));
+  	Int_t temppdgmother = motherTrack->PdgCode();
+
+  	// find first mother
+  	tempFirstMotherIndex = motherTrack->GetMother();
+
+  	while(tempFirstMotherIndex>0){
+  	  tempLabelFirstMother = tempFirstMotherIndex;
+  	  firstMotherTrack = (AliMCParticle*)(mcEvent->GetTrack(tempLabelFirstMother));
+  	  tempFirstMotherIndex = firstMotherTrack->GetMother();
+  	}
+
+  	if(tempLabelFirstMother != -1) { 	  // if grandmother not primary!
+  	  tempPdgFirstMother = firstMotherTrack->PdgCode();
+  	}
+  	else{     // if grandmother already primary!
+  	  tempLabelFirstMother = gMotherIndex; // set mother to first mother
+  	  tempPdgFirstMother = temppdgmother;
+  	}
+
+  	// find range of -1 - minimum
+  	tempLabelMinFirstMother = tempLabelFirstMother;
+
+  	while(tempFirstMotherIndex<0){	
+  	  tempLabelMinFirstMother--;
+  	  if(tempLabelMinFirstMother<0){
+  	    tempFirstMotherIndex = 0;
+  	  }
+  	  else{
+  	    firstMotherTrack = (AliMCParticle*)(mcEvent->GetTrack(tempLabelMinFirstMother));
+  	    tempFirstMotherIndex = firstMotherTrack->GetMother();
+  	  }
+  	}
+  	tempLabelMinFirstMother ++; // set back by one
+  	tempFirstMotherIndex = -1; // set back to -1
+
+  	// find range of -1 - maximum
+  	tempLabelMaxFirstMother = tempLabelFirstMother;
+  	while(tempFirstMotherIndex<0){
+  	  tempLabelMaxFirstMother++;
+  	  if(tempLabelMaxFirstMother > nParticles){
+  	    tempFirstMotherIndex = 0;
+  	  }
+  	  else{
+  	    firstMotherTrack = (AliMCParticle*)(mcEvent->GetTrack(tempLabelMaxFirstMother));
+  	    tempFirstMotherIndex = firstMotherTrack->GetMother();
+  	  }
+
+  	}
+  	tempLabelMaxFirstMother --; // set back by one     
+          
+      }
+      
+      glabel.push_back(mcTrack->GetLabel());
+      gLabelFirstMother.push_back(tempLabelFirstMother);
+      gLabelMinFirstMother.push_back(tempLabelMinFirstMother);
+      gLabelMaxFirstMother.push_back(tempLabelMaxFirstMother);
+      iGenIndex.push_back(CheckGenerator(TMath::Abs(track->GetLabel())));  
+      iPdgFirstMother.push_back(tempPdgFirstMother);
+               
       } //End if hasMC 
       
                         
@@ -797,24 +889,25 @@ void AliAnalysisTaskMLTreeMaker::SetupEventCuts(AliDielectronEventCuts* f)
 
 
 
-bool AliAnalysisTaskMLTreeMaker::CheckGenerator(Int_t trackID){     //check if the generator is on the list of generators
-  if (fGeneratorHashs.size() == 0) return true;
+int AliAnalysisTaskMLTreeMaker::CheckGenerator(Int_t trackID){     //check if the generator is on the list of generators
+  if (fGeneratorHashs.size() == 0) return -1;
   TString genname;
   Bool_t hasGenerator = fMcArray->GetCocktailGenerator(TMath::Abs(trackID), genname); // fMC is AliMCEvent
-  // std::cout << genname << std::endl;
+  
     if(!hasGenerator) {
 
     Printf("no cocktail header list was found for this track");
-    return false;
+    return -2;
   }
   else{
 
-    for (unsigned int i = 0; i < fGeneratorHashs.size(); ++i){
+    for ( int i = 0; i < fGeneratorHashs.size(); ++i){
       // std::cout << genname.Hash() << " " << fGeneratorHashs[i] << std::endl;
-      if (genname.Hash() == fGeneratorHashs[i]) return true;
+      if (genname.Hash() == fGeneratorHashs[i]) return i;
 
     }
-    return false;
+    std::cout << genname << std::endl;
+    return -3;
   }
-  return false; // should not happen
+  return -4; // should not happen
 }
