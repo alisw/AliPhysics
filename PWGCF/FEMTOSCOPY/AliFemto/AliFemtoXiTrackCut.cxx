@@ -30,6 +30,8 @@ AliFemtoXiTrackCut::AliFemtoXiTrackCut():
   , fMaxDecayLengthXi(100.0)
   , fInvMassXiMin(0)
   , fInvMassXiMax(1000)
+  , fInvMassRejectMin(0)
+  , fInvMassRejectMax(1000) 
   , fParticleTypeXi(kXiMinus)
   , fRadiusXiMin(0.)
   , fRadiusXiMax(99999.0)
@@ -66,6 +68,8 @@ AliFemtoXiTrackCut::AliFemtoXiTrackCut(const AliFemtoXiTrackCut& aCut) :
   , fMaxDecayLengthXi(aCut.fMaxDecayLengthXi)
   , fInvMassXiMin(aCut.fInvMassXiMin)
   , fInvMassXiMax(aCut.fInvMassXiMax)
+  , fInvMassRejectMin(aCut.fInvMassRejectMin)
+  , fInvMassRejectMax(aCut.fInvMassRejectMax) 
   , fParticleTypeXi(aCut.fParticleTypeXi)
   , fRadiusXiMin(aCut.fRadiusXiMin)
   , fRadiusXiMax(aCut.fRadiusXiMax)
@@ -102,6 +106,8 @@ AliFemtoXiTrackCut& AliFemtoXiTrackCut::operator=(const AliFemtoXiTrackCut& aCut
   fMaxDecayLengthXi = aCut.fMaxDecayLengthXi;
   fInvMassXiMin = aCut.fInvMassXiMin;
   fInvMassXiMax = aCut.fInvMassXiMax;
+  fInvMassRejectMin = aCut.fInvMassRejectMin;
+  fInvMassRejectMax = aCut.fInvMassRejectMax; 
   fParticleTypeXi = aCut.fParticleTypeXi;
   fRadiusXiMin = aCut.fRadiusXiMin;
   fRadiusXiMax = aCut.fRadiusXiMax;
