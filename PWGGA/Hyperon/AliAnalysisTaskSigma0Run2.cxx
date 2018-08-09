@@ -245,32 +245,32 @@ void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
   fQA->Add(fHistCutBooking);
   fHistCutBooking->Fill(0.f, fV0PercentileMax);
 
+  fV0Reader =
+      (AliV0ReaderV1 *)AliAnalysisManager::GetAnalysisManager()->GetTask(
+          fV0ReaderName.Data());
+  if (!fV0Reader) {
+    AliError("No V0 reader");
+    return;
+  }
+
+  if (fV0Reader->GetEventCuts() &&
+      fV0Reader->GetEventCuts()->GetCutHistograms()) {
+    fOutputContainer->Add(fV0Reader->GetEventCuts()->GetCutHistograms());
+  }
+  if (fV0Reader->GetConversionCuts() &&
+      fV0Reader->GetConversionCuts()->GetCutHistograms()) {
+    fOutputContainer->Add(fV0Reader->GetConversionCuts()->GetCutHistograms());
+  }
+  if (fV0Reader->GetProduceV0FindingEfficiency() &&
+      fV0Reader->GetV0FindingEfficiencyHistograms()) {
+    fOutputContainer->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
+  }
+  if (fV0Reader->GetProduceImpactParamHistograms()) {
+    fOutputContainer->Add(fV0Reader->GetImpactParamHistograms());
+  }
+
   if (!fIsLightweight) {
     fAliEventCuts.AddQAplotsToList(fQA);
-
-    fV0Reader =
-        (AliV0ReaderV1 *)AliAnalysisManager::GetAnalysisManager()->GetTask(
-            fV0ReaderName.Data());
-    if (!fV0Reader) {
-      AliError("No V0 reader");
-      return;
-    }
-
-    if (fV0Reader->GetEventCuts() &&
-        fV0Reader->GetEventCuts()->GetCutHistograms()) {
-      fOutputContainer->Add(fV0Reader->GetEventCuts()->GetCutHistograms());
-    }
-    if (fV0Reader->GetConversionCuts() &&
-        fV0Reader->GetConversionCuts()->GetCutHistograms()) {
-      fOutputContainer->Add(fV0Reader->GetConversionCuts()->GetCutHistograms());
-    }
-    if (fV0Reader->GetProduceV0FindingEfficiency() &&
-        fV0Reader->GetV0FindingEfficiencyHistograms()) {
-      fOutputContainer->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
-    }
-    if (fV0Reader->GetProduceImpactParamHistograms()) {
-      fOutputContainer->Add(fV0Reader->GetImpactParamHistograms());
-    }
 
     fHistCentralityProfileBefore =
         new TH1F("fHistCentralityProfileBefore", "; V0 percentile (%); Entries",
