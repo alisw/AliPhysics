@@ -183,6 +183,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	Reader->SetMinPlpContribSPD(minPlpContribSPD);
 	Reader->SetIsPileUpEvent(ifIsPileUp);
 	Reader->SetReadV0(kTRUE);
+	Reader->SetReadCascade(kTRUE);
 
 	AliFemtoManager* Manager = new AliFemtoManager();
 	Manager->SetEventReader(Reader);
@@ -435,11 +436,13 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					tXiCut[aniter]->SetPtXi(0.5,100);
 					tXiCut[aniter]->SetEtaXi(0.8);
 					tXiCut[aniter]->SetMass(XiMass);
+					
 					tXiCut[aniter]->SetInvariantMassXi(XiMass-0.005,XiMass+0.005); //++ bylo 006
+					
 					tXiCut[aniter]->SetMinCosPointingAngleXi(0.97); //++ bylo 0.99
 					tXiCut[aniter]->SetMaxDecayLengthXi(100.);
 					tXiCut[aniter]->SetMaxDcaXi(100);
-					tXiCut[aniter]->SetInvariantMassReject(1.667,1.677);//++ NEW: omega rejection od 1.667 do 1.677 !
+					tXiCut[aniter]->SetInvariantMassRejectOmega(1.667,1.677);//++ NEW: omega rejection od 1.667 do 1.677 !
 					
 					//XiDaughters
 					tXiCut[aniter]->SetMaxDcaXiDaughters(1.6);//++ bylo 0.3 
@@ -482,6 +485,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 					tXiCut[aniter]->SetMinvPurityAidHistoXi("XiPurityAid","XiMinvBeforeFinalCut",100,XiMass-0.035,XiMass+0.035);
 					tXiCut[aniter]->SetMinvPurityAidHistoV0("LambdaPurityAid","LambdaMinvBeforeFinalCut",100,LambdaMass-0.035,LambdaMass+0.035);		
+					
 
 					//antiXi cut
 					//NOTE: the SetMass call actually is important
@@ -500,12 +504,11 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					tAXiCut[aniter]->SetEtaXi(0.8);
 					tAXiCut[aniter]->SetMass(XiMass);
 					tAXiCut[aniter]->SetInvariantMassXi(XiMass-0.005,XiMass+0.005);
+					
 					tAXiCut[aniter]->SetMinCosPointingAngleXi(0.97);
 					tAXiCut[aniter]->SetMaxDecayLengthXi(100.0);
 					tAXiCut[aniter]->SetMaxDcaXi(100);
-					tAXiCut[aniter]->SetInvariantMassReject(1.667,1.677);//++ NEW: omega rejection od 1.667 do 1.677 !
-					
-					
+					tAXiCut[aniter]->SetInvariantMassRejectOmega(1.667,1.677);//++ NEW: omega rejection od 1.667 do 1.677 !
 					//XiDaughters
 					tAXiCut[aniter]->SetMaxDcaXiDaughters(1.6);
 					tAXiCut[aniter]->SetRadiusXiMin(0.8); //++ NEW!
