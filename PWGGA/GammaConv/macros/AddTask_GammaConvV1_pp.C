@@ -858,6 +858,50 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00045113", "00200009227300008250400000", "0152101500000000"); // TRD HJT trigger with INT7
     cuts.AddCut("00047113", "00200009227300008250400000", "0152101500000000"); // TRD HQU trigger with INT7
 
+
+  //---------configs for V0AND 13TeVLowB --------------------------//
+  } else if (trainConfig == 360) {
+    cuts.AddCut("00010113", "00200089227300008250400000", "0152103500000000"); //New standard cut for 13TeVLowB analysis V0AND with double counting cut, TOF removed
+    cuts.AddCut("00010013", "00200089227300008250400000", "0152103500000000"); // no SPD pileup cut
+    cuts.AddCut("00010113", "00100089227300008250400000", "0152103500000000"); // R cut 2.8 -180 cm
+    cuts.AddCut("00010113", "00500089227300008250400000", "0152103500000000"); // R cut 10. -180 cm
+  } else if (trainConfig == 361) {
+    cuts.AddCut("00010113", "00200069227300008250400000", "0152103500000000"); // min pT 40 MeV
+    cuts.AddCut("00010113", "00200049227300008250400000", "0152103500000000"); // min pT 75 MeV
+    cuts.AddCut("00010113", "00200019227300008250400000", "0152103500000000"); // min pT 100MeV
+  } else if (trainConfig == 362) {
+    cuts.AddCut("00010113", "00200088227300008250400000", "0152103500000000"); // TPC cluster 35%
+    cuts.AddCut("00010113", "00200086227300008250400000", "0152103500000000"); // TPC cluster 70%
+    cuts.AddCut("00010113", "00200089227300008250600000", "0152103500000000"); // cosPA 0.9
+    cuts.AddCut("00010113", "00200089227300008250300000", "0152103500000000"); // cosPA 0.75
+  } else if (trainConfig == 363) {
+    cuts.AddCut("00010113", "00200089327300008250400000", "0152103500000000"); // nsig electron   -4,5
+    cuts.AddCut("00010113", "00200089627300008250400000", "0152103500000000"); // nsig electron -2.5,4
+    cuts.AddCut("00010113", "00200089257300008250400000", "0152103500000000"); // nsig pion 2,-10
+    cuts.AddCut("00010113", "00200089217300008250400000", "0152103500000000"); // nsig pion 0,-10
+  } else if (trainConfig == 364) {
+    cuts.AddCut("00010113", "00200089220300008250400000", "0152103500000000"); // pion nsig min mom 0.50 GeV/c
+    cuts.AddCut("00010113", "00200089226300008250400000", "0152103500000000"); // pion nsig min mom 0.25 GeV/c
+    cuts.AddCut("00010113", "00200089227600008250400000", "0152103500000000"); // pion nsig max mom 2.00 GeV/c
+    cuts.AddCut("00010113", "00200089227100008250400000", "0152103500000000"); // pion nsig max mom 5.00 GeV/c
+  } else if (trainConfig == 365) {
+    cuts.AddCut("00010113", "00200089227300003250400000", "0152103500000000"); // qT max 0.05 1D
+    cuts.AddCut("00010113", "00200089227300002250400000", "0152103500000000"); // qT max 0.06 2D
+    cuts.AddCut("00010113", "00200089227300009250400000", "0152103500000000"); // qT max 0.03 2D
+  } else if (trainConfig == 366) {
+    cuts.AddCut("00010113", "00200089227300008150400000", "0152103500000000"); // chi2 50
+    cuts.AddCut("00010113", "00200089227300008850400000", "0152103500000000"); // chi2 20
+    cuts.AddCut("00010113", "00200089227300008250400000", "0252103500000000"); // variation BG scheme track mult
+    cuts.AddCut("00010113", "00200089227300008250406000", "0152103500000000"); // double count with open angle 0.04
+  } else if (trainConfig == 367) {
+    cuts.AddCut("00010113", "00200089227300008210400000", "0152103500000000"); // Psi pair 0.1  1D
+    cuts.AddCut("00010113", "00200089227300008260400000", "0152103500000000"); // Psi pair 0.05 2D
+    cuts.AddCut("00010113", "00200089227300008280400000", "0152103500000000"); // Psi pair 0.2  2D
+  } else if (trainConfig == 368) {
+    cuts.AddCut("00010113", "00200089227300008250400000", "0152103500000000"); //New standard cut for 13TeVLowB analysis V0AND with double counting cut, TOF removed
+    cuts.AddCut("00010213", "00200089227300008250400000", "0152103500000000"); //same as above + maximum past future rejection
+    cuts.AddCut("00010513", "00200089227300008250400000", "0152103500000000"); //same as above + medium past future rejection
+
   // ---------------------------------- cut selection for pp 5 TeV 2017 ------------------------------------
   } else if (trainConfig == 400){
     cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND

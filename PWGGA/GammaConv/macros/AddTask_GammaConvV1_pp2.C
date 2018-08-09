@@ -352,6 +352,10 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
     cuts.AddCut("00089113", "00200009227300008250404000", "0163103100000000","3885500060032220000"); //DG2
   } else if (trainConfig == 74) { // DCAL triggers -50, +30 ns
     cuts.AddCut("0008b113", "00200009227300008250404000", "0163103100000000","3885500060032220000"); //DG1
+
+   //----------------------------- configuration for run 2 analysis 13 TeVLowB --------------------------------------------
+  } else if (trainConfig == 80) { //
+    cuts.AddCut("00010113", "00200089227300008250400000", "0152103500000000"); //standard cut
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
