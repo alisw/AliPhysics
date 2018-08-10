@@ -150,7 +150,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void                        FillTriggerSimHistograms()                        ;
   void                        FillMatchedJetHistograms()                        ;
   void                        ComputeJetMatches()                               ;
-  AliEmcalJet*                GetMatchedJet(AliEmcalJet* jet)                   ;
+  AliEmcalJet*                GetMatchedJet(AliEmcalJet* jet, Float_t detJetPt) ;
   void                        PlotNumberOfJetMatchingCandidates()               ;
   
   // Utility functions
@@ -219,7 +219,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetPerformance &operator=(const AliAnalysisTaskEmcalJetPerformance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetPerformance, 16);
+  ClassDef(AliAnalysisTaskEmcalJetPerformance, 17);
   /// \endcond
 };
 #endif
