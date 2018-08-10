@@ -26,6 +26,10 @@
 #include <AliAODTrack.h>
 #include <TClonesArray.h>
 
+#include <TFile.h>
+#include <TGrid.h>
+#include <TSystem.h>
+
 
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliAnalysisTaskChargedJetsHadronToy.h"
@@ -33,19 +37,28 @@
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskChargedJetsHadronToy)
 /// \endcond
-
 //_____________________________________________________________________________________________________
 AliAnalysisTaskChargedJetsHadronToy::AliAnalysisTaskChargedJetsHadronToy() :
-  AliAnalysisTaskEmcalJet("AliAnalysisTaskChargedJetsHadronToy", kTRUE), fDistributionMultiplicity(0), fDistributionPt(0), fDistributionEtaPhi(0), fMinCentrality(0), fMaxCentrality(10), fDistributionV2(0), fDistributionV3(0), fDistributionV4(0), fDistributionV5(0), fInputArrayName(""), fOutputArrayName(""), fInputArray(0), fOutputArray(0), fRandom(), fToyCent(0), fRandomPsi3(0), fRandomPsi4(0), fRandomPsi5(0)
+  AliAnalysisTaskEmcalJet("AliAnalysisTaskChargedJetsHadronToy", kTRUE), fDistributionMultiplicity(0), fDistributionPt(0), fDistributionEtaPhi(0), fMinCentrality(0), fMaxCentrality(10), fDistributionV2(0), fDistributionV3(0), fDistributionV4(0), fDistributionV5(0), fUseMixedEvent(0), fMixedEvent_Tree(0), fMixedEvent_CurrentFile(0), fMixedEvent_CurrentFileID(-1), fMixedEvent_BaseFolder(""), fMixedEvent_TreeName("ME_tree"), fMixedEvent_CurrentEventID(0), fMixedEvent_NumTotalFiles(30), fBuffer_NumTracks(0), fBuffer_TrackPt(0), fBuffer_TrackPhi(0), fBuffer_TrackEta(0), fBuffer_TrackCharge(0), fInputArrayName(""), fOutputArrayName(""), fInputArray(0), fOutputArray(0), fRandom(), fToyCent(0), fRandomPsi3(0), fRandomPsi4(0), fRandomPsi5(0)
 {
-// constructor
+  // constructor
+  fBuffer_TrackPt = new Float_t[10000];
+  fBuffer_TrackPhi = new Float_t[10000];
+  fBuffer_TrackEta = new Float_t[10000];
+  fBuffer_TrackCharge = new Short_t[10000];
+  
 }
+
 
 //_____________________________________________________________________________________________________
 AliAnalysisTaskChargedJetsHadronToy::AliAnalysisTaskChargedJetsHadronToy(const char* name) :
-  AliAnalysisTaskEmcalJet(name, kTRUE), fDistributionMultiplicity(0), fDistributionPt(0), fDistributionEtaPhi(0), fMinCentrality(0), fMaxCentrality(10), fDistributionV2(0), fDistributionV3(0), fDistributionV4(0), fDistributionV5(0), fInputArrayName(""), fOutputArrayName(""), fInputArray(0), fOutputArray(0), fRandom(), fToyCent(0), fRandomPsi3(0), fRandomPsi4(0), fRandomPsi5(0)
+  AliAnalysisTaskEmcalJet(name, kTRUE), fDistributionMultiplicity(0), fDistributionPt(0), fDistributionEtaPhi(0), fMinCentrality(0), fMaxCentrality(10), fDistributionV2(0), fDistributionV3(0), fDistributionV4(0), fDistributionV5(0), fUseMixedEvent(0), fMixedEvent_Tree(0), fMixedEvent_CurrentFile(0), fMixedEvent_CurrentFileID(-1), fMixedEvent_BaseFolder(""), fMixedEvent_TreeName("ME_tree"), fMixedEvent_CurrentEventID(0), fMixedEvent_NumTotalFiles(30), fBuffer_NumTracks(0), fBuffer_TrackPt(0), fBuffer_TrackPhi(0), fBuffer_TrackEta(0), fBuffer_TrackCharge(0), fInputArrayName(""), fOutputArrayName(""), fInputArray(0), fOutputArray(0), fRandom(), fToyCent(0), fRandomPsi3(0), fRandomPsi4(0), fRandomPsi5(0)
 {
-// constructor
+  // constructor
+  fBuffer_TrackPt = new Float_t[10000];
+  fBuffer_TrackPhi = new Float_t[10000];
+  fBuffer_TrackEta = new Float_t[10000];
+  fBuffer_TrackCharge = new Short_t[10000];
 }
 
 //_____________________________________________________________________________________________________
@@ -58,6 +71,12 @@ AliAnalysisTaskChargedJetsHadronToy::~AliAnalysisTaskChargedJetsHadronToy()
     delete fDistributionPt;
   if(fDistributionEtaPhi)
     delete fDistributionEtaPhi;
+
+  delete fBuffer_TrackPt;
+  delete fBuffer_TrackPhi;
+  delete fBuffer_TrackEta;
+  delete fBuffer_TrackCharge;
+
 }
 
 
@@ -149,34 +168,72 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
   }
 
   // ################# 3. Create toy event
-  Int_t multiplicity = (Int_t)fDistributionMultiplicity->GetRandom();
-  for(Int_t i=0;i<multiplicity; i++)
+  if(fUseMixedEvent) // get underlying event from mixed event files
   {
-    Double_t trackPt = fDistributionPt->GetRandom();
-    Double_t trackEta = 0;
-    Double_t trackPhi = 0;
-    static_cast<TH2*>(fDistributionEtaPhi)->GetRandom2(trackPhi, trackEta);
-    Double_t trackTheta = 2.*atan(exp(-trackEta));
-    Double_t trackCharge = fRandom->Rndm() - 0.5;
+    // if input tree not loaded or index at the end, get next tree file
+    if( !fMixedEvent_Tree || (fMixedEvent_CurrentEventID >= fMixedEvent_Tree->GetEntries()) )
+    {
+      fMixedEvent_Tree = GetNextMixedEventTree();
+      if (!fMixedEvent_Tree)
+      {
+        AliError(Form("Could not get tree %s in file!", fMixedEvent_TreeName.Data()));
+        return;
+      }
+    }
 
-    if(trackCharge>0) trackCharge = 1; else trackCharge = -1;
+    fBuffer_NumTracks = 0; // Failsafe: Set num tracks to 0 if it is not read by GetEntry
+    fMixedEvent_Tree->GetEntry(fMixedEvent_CurrentEventID);
 
-    // Add flow to particle
-    if(fDistributionV2 || fDistributionV3 || fDistributionV4 || fDistributionV5)
-      trackPhi = AddFlow(trackPhi, trackPt);
+    // Loop over tracks from event
+    for(Int_t j=0; j<fBuffer_NumTracks; j++)
+    {
+      Float_t trackTheta = 2.*atan(exp(-fBuffer_TrackEta[j]));
+
+      // Add basic particle to event
+      new ((*fOutputArray)[particleCount]) AliAODTrack();
+      static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetPt(fBuffer_TrackPt[j]);
+      static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetPhi(fBuffer_TrackPhi[j]);
+      static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetTheta(trackTheta); // AliAODTrack cannot set eta directly
+      static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetCharge(fBuffer_TrackCharge[j]);
+      static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetLabel(100000 + j);
+      static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetIsHybridGlobalConstrainedGlobal();
+      particleCount++;
+    }
+
+    fMixedEvent_CurrentEventID++;
+  }
+  else // Simple toy
+  {
+    Int_t multiplicity = (Int_t)fDistributionMultiplicity->GetRandom();
+    for(Int_t i=0;i<multiplicity; i++)
+    {
+      Double_t trackPt = fDistributionPt->GetRandom();
+      Double_t trackEta = 0;
+      Double_t trackPhi = 0;
+      static_cast<TH2*>(fDistributionEtaPhi)->GetRandom2(trackPhi, trackEta);
+      Double_t trackTheta = 2.*atan(exp(-trackEta));
+      Double_t trackCharge = fRandom->Rndm() - 0.5;
+
+      if(trackCharge>0) trackCharge = 1; else trackCharge = -1;
+
+      // Add flow to particle
+      if(fDistributionV2 || fDistributionV3 || fDistributionV4 || fDistributionV5)
+        trackPhi = AddFlow(trackPhi, trackPt);
 
 
-    // Add basic particle to event
-    new ((*fOutputArray)[particleCount]) AliAODTrack();
-    static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetPt(trackPt);
-    static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetPhi(trackPhi);
-    static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetTheta(trackTheta); // AliAODTrack cannot set eta directly
-    static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetCharge(trackCharge);
-    static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetLabel(100000 + i);
-    static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetIsHybridGlobalConstrainedGlobal();
-    particleCount++;
+      // Add basic particle to event
+      new ((*fOutputArray)[particleCount]) AliAODTrack();
+      static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetPt(trackPt);
+      static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetPhi(trackPhi);
+      static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetTheta(trackTheta); // AliAODTrack cannot set eta directly
+      static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetCharge(trackCharge);
+      static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetLabel(100000 + i);
+      static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetIsHybridGlobalConstrainedGlobal();
+      particleCount++;
+    }
   }
 
+  
 }
 
 //_____________________________________________________________________________________________________
@@ -191,6 +248,46 @@ void AliAnalysisTaskChargedJetsHadronToy::CreateQAPlots()
   FillHistogram("hMultiplicity", fOutputArray->GetEntries());
 }
 
+//_____________________________________________________________________________________________________
+TTree* AliAnalysisTaskChargedJetsHadronToy::GetNextMixedEventTree() 
+{
+  // ## Form file name
+  fMixedEvent_CurrentFileID = TMath::Nint(fRandom->Rndm()*(fMixedEvent_NumTotalFiles-1));
+  TString fileName;
+  fileName = Form("%s%d.root", fMixedEvent_BaseFolder.Data(), fMixedEvent_CurrentFileID); 
+
+  // ## Check if file exists
+  if (fileName.BeginsWith("alien://") && !gGrid)
+  {
+    AliInfo("Trying to connect to AliEn ...");
+    TGrid::Connect("alien://");
+  }
+  if (gSystem->AccessPathName(fileName)) {
+    AliError(Form("File %s does not exist!", fileName.Data()));
+    return 0;
+  }
+
+  // ## Open mixed event file and get tree object
+  if (fMixedEvent_CurrentFile) fMixedEvent_CurrentFile->Close(); 
+
+  fMixedEvent_CurrentFile = TFile::Open(fileName);
+  if (!fMixedEvent_CurrentFile || fMixedEvent_CurrentFile->IsZombie())
+  {
+    AliError(Form("Unable to open file: %s!", fileName.Data()));
+    return 0;
+  }
+  TTree* tree = static_cast<TTree*>(fMixedEvent_CurrentFile->Get(fMixedEvent_TreeName.Data()));
+  if(tree)
+  {
+    tree->SetBranchAddress("NumTracks", &fBuffer_NumTracks);
+    tree->SetBranchAddress("Track_Pt", fBuffer_TrackPt);
+    tree->SetBranchAddress("Track_Phi", fBuffer_TrackPhi);
+    tree->SetBranchAddress("Track_Eta", fBuffer_TrackEta);
+    tree->SetBranchAddress("Track_Charge", fBuffer_TrackCharge);
+  }
+
+  return tree;
+}
 
 //_____________________________________________________________________________________________________
 Double_t AliAnalysisTaskChargedJetsHadronToy::AddFlow(Double_t phi, Double_t pt)
