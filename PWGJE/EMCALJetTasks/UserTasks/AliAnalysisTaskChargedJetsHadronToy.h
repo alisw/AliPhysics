@@ -6,11 +6,12 @@
 class TClonesArray;
 class TString;
 class TRandom3;
+class TTree;
 
 // Toy model to create an event containing tracks
-
 class AliAnalysisTaskChargedJetsHadronToy : public AliAnalysisTaskEmcalJet {
 public:
+
   AliAnalysisTaskChargedJetsHadronToy();
   AliAnalysisTaskChargedJetsHadronToy(const char* name);
   virtual ~AliAnalysisTaskChargedJetsHadronToy();
@@ -31,6 +32,10 @@ public:
   void                        SetInputArrayName(const char* val)              {fInputArrayName = val;}
   void                        SetOutputArrayName(const char* val)             {fOutputArrayName = val;}
 
+  void                        SetUseMixedEvent(const char* baseFolder)        {fMixedEvent_BaseFolder = baseFolder; fUseMixedEvent = kTRUE;}
+  void                        SetMixedEventTreeName(const char* val)          {fMixedEvent_TreeName = val;}
+  void                        SetMixedEventTotalFiles(Int_t val)              {fMixedEvent_NumTotalFiles = val;}
+
 protected:
   // ### Settings
   TH1*                        fDistributionMultiplicity;          // histogram for multiplicity distribution
@@ -44,6 +49,23 @@ protected:
   TH2*                        fDistributionV4;                    /// Distribution for v4 in bins of pt and centrality
   TH2*                        fDistributionV5;                    /// Distribution for v5 in bins of pt and centrality
 
+  // ### Mixed event settings
+  Bool_t                      fUseMixedEvent;                     //  ME: use mixed event (instead of toy)
+  
+  TTree*                      fMixedEvent_Tree;                   //! ME: The tree of the mixed event
+  TFile*                      fMixedEvent_CurrentFile;            //! ME: open file
+  Int_t                       fMixedEvent_CurrentFileID;          //  ME: open file ID
+  TString                     fMixedEvent_BaseFolder;             //  ME: base folder from which we copy the files from
+  TString                     fMixedEvent_TreeName;               //  ME: name of tree from file
+  Int_t                       fMixedEvent_CurrentEventID;         //  ME: current event in tree
+  Int_t                       fMixedEvent_NumTotalFiles;          //  ME: number total files
+  
+  Int_t                       fBuffer_NumTracks;                  //  number tracks in event
+  Float_t*                    fBuffer_TrackPt;                    //! buffer for track pt array
+  Float_t*                    fBuffer_TrackPhi;                   //! buffer for track phi array
+  Float_t*                    fBuffer_TrackEta;                   //! buffer for track eta array
+  Short_t*                    fBuffer_TrackCharge;                //! buffer for track charge array
+  
   // ### Input/output settings+arrays
   TString                     fInputArrayName;                    // Name of the TClonesArray that will be loaded
   TString                     fOutputArrayName;                   // Name of the TClonesArray that will be loaded
@@ -60,6 +82,7 @@ protected:
   Bool_t                      Run();
   void                        AssembleEvent();
   void                        CreateQAPlots();
+  TTree*                      GetNextMixedEventTree();
   Double_t                    AddFlow(Double_t phi, Double_t pt);
   void                        ExecOnce();
 
