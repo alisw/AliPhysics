@@ -1319,22 +1319,11 @@ void AliAnalysisTaskEmcalJetPerformance::DoTriggerSimulation()
   // Fill max patch response and total EMCal energy response, if requested
   if (fGeneratorLevel && fDoTriggerResponse) {
     
-    Double_t phiMinMaxPatch;
-    Double_t phiMaxMaxPatch;
-    Double_t etaMinMaxPatch;
-    Double_t etaMaxMaxPatch;
-    Double_t truthEnergyPatch = 0;
-    if (maxPatch) {
-      phiMinMaxPatch = maxPatch->GetPhiMin();
-      phiMaxMaxPatch = maxPatch->GetPhiMax();
-      etaMinMaxPatch = maxPatch->GetEtaMin();
-      etaMaxMaxPatch = maxPatch->GetEtaMax();
-    }
-    
     Double_t phiMinEMCal = fGeom->GetArm1PhiMin() * TMath::DegToRad(); // 80
     Double_t phiMaxEMCal = fGeom->GetEMCALPhiMax() * TMath::DegToRad(); // ~188
     Double_t detEnergyEMCal = 0;
     Double_t truthEnergyEMCal = 0;
+    Double_t truthEnergyPatch = 0;
     
     AliTLorentzVector part;
     Double_t partEta;
@@ -1347,8 +1336,8 @@ void AliAnalysisTaskEmcalJetPerformance::DoTriggerSimulation()
       partPhi = part.Phi_0_2pi();
       partE = part.E();
       if (maxPatch) {
-        if (partPhi < phiMaxMaxPatch && partPhi > phiMinMaxPatch) {
-          if (partEta < etaMaxMaxPatch && partEta > etaMinMaxPatch) {
+        if (partPhi < maxPatch->GetPhiMax() && partPhi > maxPatch->GetPhiMin()) {
+          if (partEta < maxPatch->GetEtaMax() && partEta > maxPatch->GetEtaMin()) {
             truthEnergyPatch += partE;
           }
         }
