@@ -233,18 +233,18 @@ void AliAnalysisTaskClusterQA::UserCreateOutputObjects()
 
   if(fSaveCells)
   {
-    fClusterTree->Branch("Cluster_Cells_ID",                fBuffer_Cells_ID,                         "Cluster_Cells_ID[Cluster_NumCells]/S");
-    fClusterTree->Branch("Cluster_Cells_E",                 fBuffer_Cells_E,                          "Cluster_Cells_E[Cluster_NumCells]/F");
-    fClusterTree->Branch("Cluster_Cells_RelativeRow",       fBuffer_Cells_RelativeRow,                "Cluster_Cells_RelativeRow[Cluster_NumCells]/S");
-    fClusterTree->Branch("Cluster_Cells_RelativeColumn",    fBuffer_Cells_RelativeColumn,             "Cluster_Cells_RelativeColumn[Cluster_NumCells]/S");
+    fClusterTree->Branch("Cluster_Cells_ID",                fBuffer_Cells_ID,                         "Cluster_Cells_ID[100]/S");
+    fClusterTree->Branch("Cluster_Cells_E",                 fBuffer_Cells_E,                          "Cluster_Cells_E[100]/F");
+    fClusterTree->Branch("Cluster_Cells_RelativeRow",       fBuffer_Cells_RelativeRow,                "Cluster_Cells_RelativeRow[100]/S");
+    fClusterTree->Branch("Cluster_Cells_RelativeColumn",    fBuffer_Cells_RelativeColumn,             "Cluster_Cells_RelativeColumn[100]/S");
   }
 
   if(fSaveSurroundingCells)
   {
-    fClusterTree->Branch("Surrounding_Cells_ID",            fBuffer_Surrounding_Cells_ID,             "Surrounding_Cells_ID[Event_NumActiveCells]/S");
-    fClusterTree->Branch("Surrounding_Cells_E",             fBuffer_Surrounding_Cells_E,              "Surrounding_Cells_E[Event_NumActiveCells]/F");
-    fClusterTree->Branch("Surrounding_Cells_RelativeRow",   fBuffer_Surrounding_Cells_RelativeRow,    "Surrounding_Cells_RelativeRow[Event_NumActiveCells]/S");
-    fClusterTree->Branch("Surrounding_Cells_RelativeColumn",fBuffer_Surrounding_Cells_RelativeColumn, "Surrounding_Cells_RelativeColumn[Event_NumActiveCells]/S");
+    fClusterTree->Branch("Surrounding_Cells_ID",            fBuffer_Surrounding_Cells_ID,             "Surrounding_Cells_ID[500]/S");
+    fClusterTree->Branch("Surrounding_Cells_E",             fBuffer_Surrounding_Cells_E,              "Surrounding_Cells_E[500]/F");
+    fClusterTree->Branch("Surrounding_Cells_RelativeRow",   fBuffer_Surrounding_Cells_RelativeRow,    "Surrounding_Cells_RelativeRow[500]/S");
+    fClusterTree->Branch("Surrounding_Cells_RelativeColumn",fBuffer_Surrounding_Cells_RelativeColumn, "Surrounding_Cells_RelativeColumn[500]/S");
   }
 
   if(fSaveMCInformation)
@@ -387,8 +387,10 @@ void AliAnalysisTaskClusterQA::ProcessQATreeCluster(AliVEvent *event, AliVCluste
   AliVCaloCells* cells                    = NULL;
   if(cluster->IsEMCAL())
     cells                                 = event->GetEMCALCells();
-  else if(cluster->IsPHOS())
-    cells                                 = event->GetPHOSCells();
+  else
+    return;
+  // else if(cluster->IsPHOS())
+  //   cells                                 = event->GetPHOSCells();
     
   // Determine all cells in the event
   fBuffer_Event_NumActiveCells            = cells->GetNumberOfCells();
@@ -406,33 +408,37 @@ void AliAnalysisTaskClusterQA::ProcessQATreeCluster(AliVEvent *event, AliVCluste
     
   // Treat the remaining cells of the cluster and get their relative position compared to the leading cell
   for(Int_t iCell=0;iCell<nCellCluster;iCell++){
-    fBuffer_Cells_ID[iCell]               = cluster->GetCellAbsId(iCell);
-    fBuffer_Cells_E[iCell]                = cells->GetCellAmplitude(cluster->GetCellAbsId(iCell));
-    Int_t row=0, column=0;
-    GetRowAndColumnFromAbsCellID(fBuffer_Cells_ID[iCell], row, column);
-    fBuffer_Cells_RelativeRow[iCell]      = row-rowLeading;
-    fBuffer_Cells_RelativeColumn[iCell]   = column-columnLeading;
+    if(iCell<100){ // maximum number of cells for a cluster is set to 100
+      fBuffer_Cells_ID[iCell]               = cluster->GetCellAbsId(iCell);
+      fBuffer_Cells_E[iCell]                = cells->GetCellAmplitude(cluster->GetCellAbsId(iCell));
+      Int_t row=0, column=0;
+      GetRowAndColumnFromAbsCellID(fBuffer_Cells_ID[iCell], row, column);
+      fBuffer_Cells_RelativeRow[iCell]      = row-rowLeading;
+      fBuffer_Cells_RelativeColumn[iCell]   = column-columnLeading;
+    }
   }
   
   // fill surrounding cell buffer
   for(Int_t aCell=0;aCell<cells->GetNumberOfCells();aCell++){
-    // Define necessary variables
-    Short_t cellNumber                    = 0;
-    Double_t cellAmplitude = 0,  cellTime = 0, cellEFrac = 0;
-    Int_t cellMCLabel = 0, row = 0, column = 0;
-    
-    // Get Cell ID
-    cells->GetCell(aCell,cellNumber,cellAmplitude,cellTime,cellMCLabel,cellEFrac);
-    
-    // Get row and column for each cell
-    GetRowAndColumnFromAbsCellID(cellNumber, row, column);
-    
-    // Select those cells that are within fNSurroundingCells of the leading cluster cell
-    if( (TMath::Abs(row-rowLeading)<fNSurroundingCells) && (TMath::Abs(column-columnLeading))<fNSurroundingCells){
-      fBuffer_Surrounding_Cells_RelativeRow[aCell]    =  row-rowLeading;
-      fBuffer_Surrounding_Cells_RelativeColumn[aCell] = column-columnLeading;
-      fBuffer_Surrounding_Cells_E[aCell]              = cells->GetCellAmplitude(cellNumber);
-      fBuffer_Surrounding_Cells_ID[aCell]             = cellNumber;
+    if(aCell<1000){ // maxium tree entries are 500 for the sourrounding cells (~22*22)
+      // Define necessary variables
+      Short_t cellNumber                    = 0;
+      Double_t cellAmplitude = 0,  cellTime = 0, cellEFrac = 0;
+      Int_t cellMCLabel = 0, row = 0, column = 0;
+      
+      // Get Cell ID
+      cells->GetCell(aCell,cellNumber,cellAmplitude,cellTime,cellMCLabel,cellEFrac);
+      
+      // Get row and column for each cell
+      GetRowAndColumnFromAbsCellID(cellNumber, row, column);
+      
+      // Select those cells that are within fNSurroundingCells of the leading cluster cell
+      if( (TMath::Abs(row-rowLeading)<fNSurroundingCells) && (TMath::Abs(column-columnLeading))<fNSurroundingCells){
+        fBuffer_Surrounding_Cells_RelativeRow[aCell]    =  row-rowLeading;
+        fBuffer_Surrounding_Cells_RelativeColumn[aCell] = column-columnLeading;
+        fBuffer_Surrounding_Cells_E[aCell]              = cells->GetCellAmplitude(cellNumber);
+        fBuffer_Surrounding_Cells_ID[aCell]             = cellNumber;
+      }
     }
   }
   if(fIsMC) fBuffer_Cluster_MC_Label = MakePhotonCandidates(cluster, cells,indexCluster);
