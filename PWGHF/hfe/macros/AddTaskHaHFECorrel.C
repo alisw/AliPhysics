@@ -88,6 +88,21 @@ AliAnalysisTaskHaHFECorrel *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEv
   TH1::AddDirectory(kTRUE);
 
 
+  TH1::AddDirectory(kFALSE);
+  printf("Loading NonTagCorr\n");
+  TString NonTagFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/NonTagCorrHist.root";
+  TFile *NonTagFile = TFile::Open(NonTagFileName.Data());
+  NonTagFile->ls();
+  if (NonTagFile) {    
+    TH1F * NonTagCorr = (TH1F*)NonTagFile->Get("NonTagCorr");
+    if (NonTagCorr) taskMB->SetNonTagCorr(*NonTagCorr);
+    else printf("Could not load NonTagCorr\n");
+  }
+  else printf("Could not open NonTag correction file \n");
+  TH1::AddDirectory(kTRUE);
+
+
+
 
 
   mgr->AddTask(taskMB);
