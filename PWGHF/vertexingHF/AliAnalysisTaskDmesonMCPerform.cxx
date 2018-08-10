@@ -486,13 +486,17 @@ void AliAnalysisTaskDmesonMCPerform::FillCandLevelHistos(Int_t idCase, AliAODEve
       Double_t dlen=d->DecayLength()*10000.; //um
       Double_t ndlenxy=d->NormalizedDecayLengthXY();
       Double_t cosp=d->CosPointingAngle();
-      Double_t dx=(d->Xv()-partD->Xv())*10000.;
-      Double_t dy=(d->Yv()-partD->Yv())*10000.;
-      Double_t dz=(d->Zv()-partD->Zv())*10000.;
+      Int_t iDau=partD->GetFirstDaughter();
+      AliAODMCParticle *dauD=0x0;
+      if(iDau>=0) dauD=(AliAODMCParticle*)arrayMC->At(iDau);
+      if(!dauD) continue;
+      Double_t dx=(d->Xv()-dauD->Xv())*10000.;
+      Double_t dy=(d->Yv()-dauD->Yv())*10000.;
+      Double_t dz=(d->Zv()-dauD->Zv())*10000.;
       Int_t orig=AliVertexingHFUtils::CheckOrigin(arrayMC,partD,kTRUE);//Prompt = 4, FeedDown = 5
       if(orig<4 || orig>5) continue;
       Int_t indexh=iSpec*2+(orig-4);
-      if(iSpec==1 && charge==-1){
+      if(fEnableExtraHistos && iSpec==1 && charge==-1){
 	//D- kept separate
 	indexh=2*5+(orig-4);
       }
@@ -519,8 +523,8 @@ void AliAnalysisTaskDmesonMCPerform::FillCandLevelHistos(Int_t idCase, AliAODEve
 	fHistXvtxResVsDecLenVsPt[indexh]->Fill(ptreco,dlen,dx);
  	fHistYvtxResVsDecLenVsPt[indexh]->Fill(ptreco,dlen,dy);
  	fHistZvtxResVsDecLenVsPt[indexh]->Fill(ptreco,dlen,dz);
-	Double_t xgenrot=partD->Xv()*TMath::Cos(phigen)-partD->Yv()*TMath::Sin(phigen);
-	Double_t ygenrot=partD->Xv()*TMath::Sin(phigen)+partD->Yv()*TMath::Cos(phigen);
+	Double_t xgenrot=dauD->Xv()*TMath::Cos(phigen)-dauD->Yv()*TMath::Sin(phigen);
+	Double_t ygenrot=dauD->Xv()*TMath::Sin(phigen)+dauD->Yv()*TMath::Cos(phigen);
 	Double_t xrecrot=d->Xv()*TMath::Cos(phigen)-d->Yv()*TMath::Sin(phigen);
 	Double_t yrecrot=d->Xv()*TMath::Sin(phigen)+d->Yv()*TMath::Cos(phigen);
 	Double_t dxrot=(xrecrot-xgenrot)*10000.;
