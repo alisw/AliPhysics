@@ -7,6 +7,14 @@
 // Authors: Jitendra Kumar, Zaida Conesa del Valle
 //
 
+#if (!defined(__CLING__) && !defined(__CINT__)) || defined(__ROOTCLING__) || defined(__ROOTCINT__)
+#include "AliCFSingleTrackEfficiencyTask.h"
+#endif
+
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+#include "PWGPP/EvTrkSelection/macros/AddSingleTrackEfficiencyTask.C"
+#endif
+
 AliAnalysisTask *AddSingleTrackEfficiencyTaskForAutomaticQA(const Bool_t readAOD = 0, // Flag to read AOD:1 or ESD:0
                                            ULong64_t triggerMask=AliVEvent::kAnyINT,
                                            Bool_t useCentrality = kFALSE)
@@ -15,7 +23,10 @@ AliAnalysisTask *AddSingleTrackEfficiencyTaskForAutomaticQA(const Bool_t readAOD
     Info("AliCFSingleTrackEfficiencyTaskForAutomaticQA","Setting up instances");
     
     // The AddTask
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+#else
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EvTrkSelection/macros/AddSingleTrackEfficiencyTask.C");
+#endif
     
     // Charged particles, filter bit 0
     AliCFSingleTrackEfficiencyTask * nchFB0 = AddSingleTrackEfficiencyTask(readAOD,"NchFbit0",AliPID::kPion,0,triggerMask,useCentrality);
@@ -38,5 +49,5 @@ AliAnalysisTask *AddSingleTrackEfficiencyTaskForAutomaticQA(const Bool_t readAOD
     AliCFSingleTrackEfficiencyTask * electrons = AddSingleTrackEfficiencyTask(readAOD,"ElectronFbit0",AliPID::kElectron,11,triggerMask,useCentrality);
 
     
-    return;
+    return NULL;
 }
