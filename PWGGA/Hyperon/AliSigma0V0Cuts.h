@@ -316,7 +316,7 @@ class AliSigma0V0Cuts : public TObject {
   TH2F *fHistSingleParticlePID[2];                         //!
 
  private:
-  ClassDef(AliSigma0V0Cuts, 5)
+  ClassDef(AliSigma0V0Cuts, 6)
 };
 
 #endif

@@ -157,16 +157,18 @@ void AliAnalysisTaskSigma0Run2::UserExec(Option_t * /*option*/) {
 
 //____________________________________________________________________________________________________
 bool AliAnalysisTaskSigma0Run2::AcceptEvent(AliVEvent *event) {
-  fHistRunNumber->Fill(0.f, event->GetRunNumber());
-  if (!fIsLightweight) FillTriggerHisto(fHistTriggerBefore);
-
+  if (!fIsLightweight) {
+    fHistRunNumber->Fill(0.f, event->GetRunNumber());
+    FillTriggerHisto(fHistTriggerBefore);
+  }
   fHistCutQA->Fill(0);
 
   // EVENT SELECTION
   if (!fAliEventCuts.AcceptEvent(event)) return false;
+  if (!fIsLightweight) {
+    FillTriggerHisto(fHistTriggerAfter);
+  }
   fHistCutQA->Fill(1);
-
-  if (!fIsLightweight) FillTriggerHisto(fHistTriggerAfter);
 
   Float_t lPercentile = 300;
   AliMultSelection *MultSelection = 0x0;
@@ -183,7 +185,9 @@ bool AliAnalysisTaskSigma0Run2::AcceptEvent(AliVEvent *event) {
   // MULTIPLICITY SELECTION
   if (fTrigger == AliVEvent::kHighMultV0 && fV0PercentileMax < 100.f) {
     if (lPercentile > fV0PercentileMax) return false;
-    if (!fIsLightweight) fHistCentralityProfileAfter->Fill(lPercentile);
+    if (!fIsLightweight) {
+      fHistCentralityProfileAfter->Fill(lPercentile);
+    }
     fHistCutQA->Fill(2);
   }
   if (!fIsLightweight) fHistCentralityProfileCoarseAfter->Fill(lPercentile);
@@ -230,21 +234,6 @@ void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
     fAliEventCuts.fTriggerMask = fTrigger;
   }
 
-  fHistRunNumber = new TProfile("fHistRunNumber", ";;Run Number", 1, 0, 1);
-  fQA->Add(fHistRunNumber);
-
-  fHistCutQA = new TH1F("fHistCutQA", ";;Entries", 5, 0, 5);
-  fHistCutQA->GetXaxis()->SetBinLabel(1, "Event");
-  fHistCutQA->GetXaxis()->SetBinLabel(2, "AliEventCuts");
-  fHistCutQA->GetXaxis()->SetBinLabel(3, "Multiplicity selection");
-  fHistCutQA->GetXaxis()->SetBinLabel(4, "AliConversionCuts");
-  fQA->Add(fHistCutQA);
-
-  fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 1, 0, 1);
-  fHistCutBooking->GetXaxis()->SetBinLabel(1, "V0 percentile");
-  fQA->Add(fHistCutBooking);
-  fHistCutBooking->Fill(0.f, fV0PercentileMax);
-
   fV0Reader =
       (AliV0ReaderV1 *)AliAnalysisManager::GetAnalysisManager()->GetTask(
           fV0ReaderName.Data());
@@ -269,7 +258,22 @@ void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
     fOutputContainer->Add(fV0Reader->GetImpactParamHistograms());
   }
 
+  fHistCutQA = new TH1F("fHistCutQA", ";;Entries", 5, 0, 5);
+  fHistCutQA->GetXaxis()->SetBinLabel(1, "Event");
+  fHistCutQA->GetXaxis()->SetBinLabel(2, "AliEventCuts");
+  fHistCutQA->GetXaxis()->SetBinLabel(3, "Multiplicity selection");
+  fHistCutQA->GetXaxis()->SetBinLabel(4, "AliConversionCuts");
+  fQA->Add(fHistCutQA);
+
   if (!fIsLightweight) {
+    fHistRunNumber = new TProfile("fHistRunNumber", ";;Run Number", 1, 0, 1);
+    fQA->Add(fHistRunNumber);
+
+    fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 1, 0, 1);
+    fHistCutBooking->GetXaxis()->SetBinLabel(1, "V0 percentile");
+    fQA->Add(fHistCutBooking);
+    fHistCutBooking->Fill(0.f, fV0PercentileMax);
+
     fAliEventCuts.AddQAplotsToList(fQA);
 
     fHistCentralityProfileBefore =

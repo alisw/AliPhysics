@@ -167,7 +167,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TTree *fOutputTree;  //!
 
  private:
-  ClassDef(AliSigma0PhotonMotherCuts, 5)
+  ClassDef(AliSigma0PhotonMotherCuts, 6)
 };
 
 #endif

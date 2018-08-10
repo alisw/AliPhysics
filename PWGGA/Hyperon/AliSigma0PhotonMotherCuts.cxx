@@ -726,52 +726,52 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
   fHistInvMassPt = new TH2F("fHistInvMassPt",
                             "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
                             "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
-                            100, 0, 10, 1000, 1., 1.5);
+                            100, 0, 10, 500, 1., 1.5);
   fHistograms->Add(fHistInvMassPt);
   fHistMixedInvMassPt = new TH2F("fHistMixedInvMassPt",
                                  "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
                                  "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
-                                 100, 0, 10, 1000, 1., 1.5);
+                                 100, 0, 10, 500, 1., 1.5);
   fHistograms->Add(fHistMixedInvMassPt);
   fHistMixedInvMassBinnedPt =
       new TH2F("fHistMixedInvMassBinnedPt",
                "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
                "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
-               100, 0, 10, 1000, 1., 1.5);
+               100, 0, 10, 500, 1., 1.5);
   fHistograms->Add(fHistMixedInvMassBinnedPt);
 
   if (!fIsLightweight) {
     fHistNSigma =
-        new TH1F("fHistNSigma", ";# #Sigma candidates; Entries", 20, 0, 20);
+        new TH1F("fHistNSigma", ";# #Sigma candidates; Entries", 10, 0, 10);
     fHistMassCutPt = new TH1F(
         "fHistMassCutPt", "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); Entries",
-        200, 0, 20);
+        100, 0, 10);
     fHistInvMass = new TH1F("fHistInvMass",
                             "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries",
-                            300, 1.15, 1.3);
+                            150, 1.15, 1.3);
     fHistInvMassBeforeArmenteros = new TH1F(
         "fHistInvMassBeforeArmenteros",
-        "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries", 300, 1.15, 1.3);
+        "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries", 150, 1.15, 1.3);
 
     fHistInvMassBeforeRapidity = new TH1F(
         "fHistInvMassBeforeRapidity",
-        "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries", 300, 1.15, 1.3);
+        "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries", 150, 1.15, 1.3);
 
     fHistInvMassRecPhoton = new TH2F("fHistInvMassRecPhoton",
                                      "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
                                      "M_{#Lambda#gamma_{rec}} (GeV/#it{c}^{2})",
-                                     50, 0, 10, 300, 1.15, 1.3);
+                                     50, 0, 10, 150, 1.15, 1.3);
     fHistInvMassRecLambda = new TH2F("fHistInvMassRecLambda",
                                      "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
                                      "M_{#Lambda_{rec}#gamma} (GeV/#it{c}^{2})",
-                                     50, 0, 10, 300, 1.15, 1.3);
+                                     50, 0, 10, 150, 1.15, 1.3);
     fHistInvMassRec = new TH2F("fHistInvMassRec",
                                "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
                                "M_{#Lambda_{rec}#gamma_{rec}} (GeV/#it{c}^{2})",
-                               50, 0, 10, 300, 1.15, 1.3);
+                               50, 0, 10, 150, 1.15, 1.3);
     fHistInvMassEta = new TH2F("fHistInvMassEta",
                                "; #eta; M_{#Lambda#gamma} (GeV/#it{c}^{2})",
-                               250, -1, 1, 300, 1.15, 1.3);
+                               250, -1, 1, 150, 1.15, 1.3);
     fHistArmenterosBefore =
         new TH2F("fHistArmenterosBefore", " ; #alpha; #it{q}_{T} (GeV/#it{c})",
                  200, -1, 1, 100, 0, 0.5);
@@ -800,13 +800,13 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
                    Form("%.2f < y < %.2f ; #it{p}_{T} (GeV/#it{c}); "
                         "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
                         rapBins[i], rapBins[i + 1]),
-                   100, 0, 10, 500, 1.15, 1.3);
+                   100, 0, 10, 150, 1.15, 1.3);
       fHistMixedPtY[i] =
           new TH2F(Form("fHistMixedPtY_%.2f_%.2f", rapBins[i], rapBins[i + 1]),
                    Form("%.2f < y < %.2f ; #it{p}_{T} (GeV/#it{c}); "
                         "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
                         rapBins[i], rapBins[i + 1]),
-                   100, 0, 10, 500, 1.15, 1.3);
+                   100, 0, 10, 150, 1.15, 1.3);
       fHistograms->Add(fHistPtY[i]);
       fHistograms->Add(fHistMixedPtY[i]);
     }
@@ -824,48 +824,48 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     }
 
     fHistMCTruthPtY =
-        new TH2F("fHistMCTruthPtY", "; y; #it{p}_{T} (GeV/#it{c})", 1000, -10,
-                 10, 500, 0, 10);
+        new TH2F("fHistMCTruthPtY", "; y; #it{p}_{T} (GeV/#it{c})", 100, -10,
+                 10, 100, 0, 10);
     fHistMCTruthPtEta =
-        new TH2F("fHistMCTruthPtEta", "; #eta; #it{p}_{T} (GeV/#it{c})", 500,
-                 -10, 10, 500, 0, 10);
+        new TH2F("fHistMCTruthPtEta", "; #eta; #it{p}_{T} (GeV/#it{c})", 100,
+                 -10, 10, 100, 0, 10);
     fHistMCTruthDaughterPtY =
-        new TH2F("fHistMCTruthDaughterPtY", "; y; #it{p}_{T} (GeV/#it{c})",
-                 1000, -10, 10, 500, 0, 10);
+        new TH2F("fHistMCTruthDaughterPtY", "; y; #it{p}_{T} (GeV/#it{c})", 100,
+                 -10, 10, 100, 0, 10);
     fHistMCTruthDaughterPtEta =
         new TH2F("fHistMCTruthDaughterPtEta", "; #eta; #it{p}_{T} (GeV/#it{c})",
-                 500, -10, 10, 500, 0, 10);
+                 100, -10, 10, 100, 0, 10);
     fHistMCTruthDaughterPtYAccept =
         new TH2F("fHistMCTruthDaughterPtYAccept",
-                 "; y; #it{p}_{T} (GeV/#it{c})", 1000, -10, 10, 500, 0, 10);
+                 "; y; #it{p}_{T} (GeV/#it{c})", 100, -10, 10, 100, 0, 10);
     fHistMCTruthDaughterPtEtaAccept =
         new TH2F("fHistMCTruthDaughterPtEtaAccept",
-                 "; #eta; #it{p}_{T} (GeV/#it{c})", 500, -10, 10, 500, 0, 10);
+                 "; #eta; #it{p}_{T} (GeV/#it{c})", 100, -10, 10, 100, 0, 10);
     fHistMCTruthPtYHighMult =
-        new TH2F("fHistMCTruthPtYHighMult", "; y; #it{p}_{T} (GeV/#it{c})",
-                 1000, -10, 10, 500, 0, 10);
+        new TH2F("fHistMCTruthPtYHighMult", "; y; #it{p}_{T} (GeV/#it{c})", 100,
+                 -10, 10, 100, 0, 10);
     fHistMCTruthPtEtaHighMult =
         new TH2F("fHistMCTruthPtEtaHighMult", "; #eta; #it{p}_{T} (GeV/#it{c})",
-                 500, -10, 10, 500, 0, 10);
+                 100, -10, 10, 100, 0, 10);
     fHistMCTruthDaughterPtYHighMult =
         new TH2F("fHistMCTruthDaughterPtYHighMult",
-                 "; y; #it{p}_{T} (GeV/#it{c})", 1000, -10, 10, 500, 0, 10);
+                 "; y; #it{p}_{T} (GeV/#it{c})", 100, -10, 10, 100, 0, 10);
     fHistMCTruthDaughterPtEtaHighMult =
         new TH2F("fHistMCTruthDaughterPtEtaHighMult",
-                 "; #eta; #it{p}_{T} (GeV/#it{c})", 500, -10, 10, 500, 0, 10);
+                 "; #eta; #it{p}_{T} (GeV/#it{c})", 100, -10, 10, 100, 0, 10);
     fHistMCTruthDaughterPtYAcceptHighMult =
         new TH2F("fHistMCTruthDaughterPtYAcceptHighMult",
-                 "; y; #it{p}_{T} (GeV/#it{c})", 1000, -10, 10, 500, 0, 10);
+                 "; y; #it{p}_{T} (GeV/#it{c})", 100, -10, 10, 100, 0, 10);
     fHistMCTruthDaughterPtEtaAcceptHighMult =
         new TH2F("fHistMCTruthDaughterPtEtaAcceptHighMult",
-                 "; #eta; #it{p}_{T} (GeV/#it{c})", 500, -10, 10, 500, 0, 10);
+                 "; #eta; #it{p}_{T} (GeV/#it{c})", 100, -10, 10, 100, 0, 10);
 
     fHistMCV0Pt = new TH1F("fHistMCV0Pt",
                            "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); Entries",
-                           500, 0, 20);
+                           100, 0, 10);
     fHistMCV0Mass =
         new TH1F("fHistMCV0Mass",
-                 "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries", 2000, 1., 2.);
+                 "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries", 500, 1., 1.5);
 
     fHistogramsMC->Add(fHistMCTruthPtY);
     fHistogramsMC->Add(fHistMCTruthPtEta);
