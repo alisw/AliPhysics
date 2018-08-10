@@ -1359,7 +1359,14 @@ void WriteFitFunctionsToFile(AliHFInvMassFitter *fitter, TString meth, Int_t iPt
   nameh.Form("FitFuncBkg_%s_PtBin%d",meth.Data(),iPtBin);
   fBkg->SetRange(1.6,2.2);
   fBkg->SetNpx(500);
-  fBkg->Write(nameh.Data());  
+  fBkg->Write(nameh.Data());
+  if(meson=="Dzero"){
+    TF1* fBkgR=fitter->GetBkgPlusReflFunc();
+    nameh.Form("FitFuncBkgRefl_%s_PtBin%d",meth.Data(),iPtBin);
+    fBkgR->SetRange(1.6,2.2);
+    fBkgR->SetNpx(500);
+    fBkgR->Write(nameh.Data());
+  }
   return;
 }
 
