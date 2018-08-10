@@ -106,6 +106,7 @@ ClassImp(AliSigma0V0Cuts)
       fHistMCTruthDaughterPtEtaAcceptHighMult(nullptr),
       fHistMCV0Pt(nullptr),
       fHistV0Mother(nullptr),
+      fHistV0MotherTrue(nullptr),
       fHistV0MassPtTrue(nullptr),
       fHistDecayVertexXTrue(nullptr),
       fHistDecayVertexYTrue(nullptr),
@@ -286,6 +287,7 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fHistMCTruthDaughterPtEtaAcceptHighMult(nullptr),
       fHistMCV0Pt(nullptr),
       fHistV0Mother(nullptr),
+      fHistV0MotherTrue(nullptr),
       fHistV0MassPtTrue(nullptr),
       fHistDecayVertexXTrue(nullptr),
       fHistDecayVertexYTrue(nullptr),
@@ -498,6 +500,11 @@ void AliSigma0V0Cuts::SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent,
       v0Candidate.ProcessMCInfo(mcParticle, fMCEvent);
 
       fHistMCV0Pt->Fill(v0->Pt());
+
+      const int pdgMother = static_cast<AliMCParticle *>(
+                                fMCEvent->GetTrack(mcParticle->GetMother()))
+                                ->PdgCode();
+      fHistV0Mother->Fill(v0->Pt(), std::abs(pdgMother));
     }
 
     v0Candidate.SetPDGMass(fDataBasePDG.GetParticle(fPID)->Mass());
@@ -1279,7 +1286,7 @@ void AliSigma0V0Cuts::CheckCutsMC() const {
       const int pdgMother = static_cast<AliMCParticle *>(
                                 fMCEvent->GetTrack(mcParticle->GetMother()))
                                 ->PdgCode();
-      fHistV0Mother->Fill(pt, std::abs(pdgMother));
+      fHistV0MotherTrue->Fill(pt, std::abs(pdgMother));
       if (std::abs(pdgMother) == 3212) {
         fHistV0MassPtTrueSigma->Fill(pt, invMass);
         fHistDecayVertexXTrueSigma->Fill(pt, decayVertexV0[0]);
@@ -2142,6 +2149,10 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
     fHistMCV0Pt = new TH1F("fHistMCV0Pt", "; #it{p}_{T} (GeV/#it{c}); Entries",
                            100, 0, 10);
 
+    fHistV0Mother =
+        new TH2F("fHistV0Mother", "; #it{p}_{T} (GeV/#it{c}); PDG code mother",
+                 100, 0, 10, 4000, 0, 4000);
+
     fHistogramsMC->Add(fHistMCTruthV0PtY);
     fHistogramsMC->Add(fHistMCTruthV0PtEta);
     fHistogramsMC->Add(fHistMCTruthV0DaughterPtY);
@@ -2155,13 +2166,14 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
     fHistogramsMC->Add(fHistMCTruthDaughterPtYAcceptHighMult);
     fHistogramsMC->Add(fHistMCTruthDaughterPtEtaAcceptHighMult);
     fHistogramsMC->Add(fHistMCV0Pt);
+    fHistogramsMC->Add(fHistV0Mother);
 
     if (fCheckCutsMC) {
       // TRUE V0
-      fHistV0Mother = new TH2F("fHistV0Mother",
-                               "; #it{p}_{T} (GeV/#it{c}); PDG code mother",
-                               100, 0, 10, 4000, 0, 4000);
-      fHistogramsMC->Add(fHistV0Mother);
+      fHistV0MotherTrue = new TH2F("fHistV0MotherTrue",
+                                   "; #it{p}_{T} (GeV/#it{c}); PDG code mother",
+                                   100, 0, 10, 4000, 0, 4000);
+      fHistogramsMC->Add(fHistV0MotherTrue);
 
       fHistV0MassPtTrue =
           new TH2F("fHistV0MassPtTrue",

@@ -71,6 +71,9 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fHistMCTruthDaughterPtEtaAcceptHighMult(nullptr),
       fHistMCV0Pt(nullptr),
       fHistMCV0Mass(nullptr),
+      fHistMCV0Mother(nullptr),
+      fHistMCV0Check(nullptr),
+      fHistMCV0MotherCheck(nullptr),
       fOutputTree(nullptr) {}
 
 //____________________________________________________________________________________________________
@@ -139,6 +142,9 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fHistMCTruthDaughterPtEtaAcceptHighMult(nullptr),
       fHistMCV0Pt(nullptr),
       fHistMCV0Mass(nullptr),
+      fHistMCV0Mother(nullptr),
+      fHistMCV0Check(nullptr),
+      fHistMCV0MotherCheck(nullptr),
       fOutputTree(nullptr) {}
 
 //____________________________________________________________________________________________________
@@ -242,15 +248,43 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
         fTreeVariables[2] = rap;
         fTreeVariables[3] = lPercentile;
         if (fIsTreeOutput) fOutputTree->Fill();
-
-        if (fIsMC) {
-          const int label =
-              sigma.MatchToMC(fMCEvent, fPDG, {{fPDGDaughter1, fPDGDaughter2}});
-          if (label > 0) {
-            fHistMCV0Pt->Fill(sigma.GetPt());
-            fHistMCV0Mass->Fill(invMass);
-          }
+      }
+      if (fIsMC) {
+        int pdgLambdaMother = 0;
+        int pdgPhotonMother = 0;
+        const int label =
+            sigma.MatchToMC(fMCEvent, fPDG, {{fPDGDaughter1, fPDGDaughter2}},
+                            pdgLambdaMother, pdgPhotonMother);
+        if (label > 0) {
+          fHistMCV0Pt->Fill(sigma.GetPt());
+          fHistMCV0Mass->Fill(invMass);
         }
+
+        // let's where the other particle comes from if one of them stems from
+        // a Sigma0
+        if (std::abs(pdgLambdaMother) == 3212 &&
+            std::abs(pdgLambdaMother) != 3212) {
+          fHistMCV0Mother->Fill(invMass, std::abs(pdgPhotonMother));
+        }
+        if (std::abs(pdgLambdaMother) == 3212 &&
+            std::abs(pdgLambdaMother) != 3212) {
+          fHistMCV0Mother->Fill(invMass, std::abs(pdgLambdaMother));
+        }
+        fHistMCV0MotherCheck->Fill(std::abs(pdgLambdaMother),
+                                   std::abs(pdgPhotonMother));
+
+        const int labV0 = photon.GetMCLabelV0();
+        const int labPhoton = lambda.GetMCLabelV0();
+        if (labV0 < 0 || labPhoton < 0) continue;
+
+        AliMCParticle *partV0 =
+            static_cast<AliMCParticle *>(fMCEvent->GetTrack(labV0));
+        AliMCParticle *partPhoton =
+            static_cast<AliMCParticle *>(fMCEvent->GetTrack(labPhoton));
+        if (!partV0 || !partPhoton) continue;
+
+        fHistMCV0Check->Fill(std::abs(partV0->PdgCode()),
+                             std::abs(partPhoton->PdgCode()));
       }
     }
     if (!fIsLightweight) fHistNSigma->Fill(nSigma);
@@ -866,6 +900,18 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     fHistMCV0Mass =
         new TH1F("fHistMCV0Mass",
                  "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries", 500, 1., 1.5);
+    fHistMCV0Mother =
+        new TH2F("fHistMCV0Mother",
+                 "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); PDG code mother", 250,
+                 1., 2., 4000, 0, 4000);
+    fHistMCV0Check =
+        new TH2F("fHistMCV0Check",
+                 "; PDG code #Lambda candidate; PDG code #gamma candidate",
+                 4000, 0, 4000, 4000, 0, 4000);
+    fHistMCV0MotherCheck =
+        new TH2F("fHistMCV0MotherCheck",
+                 "; PDG code #Lambda mother; PDG code #gamma mother", 4000, 0,
+                 4000, 4000, 0, 4000);
 
     fHistogramsMC->Add(fHistMCTruthPtY);
     fHistogramsMC->Add(fHistMCTruthPtEta);
@@ -881,6 +927,9 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     fHistogramsMC->Add(fHistMCTruthDaughterPtEtaAcceptHighMult);
     fHistogramsMC->Add(fHistMCV0Pt);
     fHistogramsMC->Add(fHistMCV0Mass);
+    fHistogramsMC->Add(fHistMCV0Mother);
+    fHistogramsMC->Add(fHistMCV0Check);
+    fHistogramsMC->Add(fHistMCV0MotherCheck);
 
     fHistograms->Add(fHistogramsMC);
   }

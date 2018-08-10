@@ -161,13 +161,16 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistMCTruthDaughterPtYAcceptHighMult;    //!
   TH2F *fHistMCTruthDaughterPtEtaAcceptHighMult;  //!
 
-  TH1F *fHistMCV0Pt;    //!
-  TH1F *fHistMCV0Mass;  //!
+  TH1F *fHistMCV0Pt;           //!
+  TH1F *fHistMCV0Mass;         //!
+  TH2F *fHistMCV0Mother;       //!
+  TH2F *fHistMCV0Check;        //!
+  TH2F *fHistMCV0MotherCheck;  //!
 
   TTree *fOutputTree;  //!
 
  private:
-  ClassDef(AliSigma0PhotonMotherCuts, 6)
+  ClassDef(AliSigma0PhotonMotherCuts, 7)
 };
 
 #endif

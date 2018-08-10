@@ -91,7 +91,8 @@ AliSigma0ParticlePhotonMother &AliSigma0ParticlePhotonMother::operator=(
 //____________________________________________________________________________________________________
 int AliSigma0ParticlePhotonMother::MatchToMC(
     const AliMCEvent *mcEvent, const int PIDmother,
-    const std::vector<int> PIDdaughters) const {
+    const std::vector<int> PIDdaughters, int &pdgLambdaMother,
+    int &pdgPhotonMother) const {
   const int labV0 = fV0.GetMCLabelV0();
   const int labPhoton = fPhoton.GetMCLabelV0();
   if (labV0 < 0 || labPhoton < 0) return -1;
@@ -111,9 +112,9 @@ int AliSigma0ParticlePhotonMother::MatchToMC(
       static_cast<AliMCParticle *>(mcEvent->GetTrack(labMotherPhoton));
   if (!partMotherV0 || !partMotherPhoton) return -1;
 
-  const int pdgMotherV0 = partMotherV0->PdgCode();
-  const int pdgMotherPhoton = partMotherPhoton->PdgCode();
-  if ((pdgMotherV0 != PIDmother) || pdgMotherV0 != PIDmother) {
+  pdgLambdaMother = partMotherV0->PdgCode();
+  pdgPhotonMother = partMotherPhoton->PdgCode();
+  if ((pdgLambdaMother != PIDmother) || pdgPhotonMother != PIDmother) {
     return -1;
   }
 

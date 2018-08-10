@@ -234,6 +234,7 @@ class AliSigma0V0Cuts : public TObject {
   TH1F *fHistMCV0Pt;                              //!
 
   TH2F *fHistV0Mother;                                        //!
+  TH2F *fHistV0MotherTrue;                                    //!
   TH2F *fHistV0MassPtTrue;                                    //!
   TH2F *fHistDecayVertexXTrue;                                //!
   TH2F *fHistDecayVertexYTrue;                                //!
@@ -316,7 +317,7 @@ class AliSigma0V0Cuts : public TObject {
   TH2F *fHistSingleParticlePID[2];                         //!
 
  private:
-  ClassDef(AliSigma0V0Cuts, 6)
+  ClassDef(AliSigma0V0Cuts, 7)
 };
 
 #endif
