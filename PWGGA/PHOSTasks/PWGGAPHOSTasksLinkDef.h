@@ -129,6 +129,7 @@
 #pragma link C++ class AliPP13NonlinearitySelection+;
 #pragma link C++ class AliPP13KaonToPionRatioMC+;
 #pragma link C++ class AliPP13EpRatioSelection+;
+#pragma link C++ class AliPP13FeeddownSelection+;
 #pragma link C++ class AliPP13MixingSample+;
 #pragma link C++ class AliAnalysisTaskPP13+;
 
