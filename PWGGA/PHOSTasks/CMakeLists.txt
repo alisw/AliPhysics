@@ -87,6 +87,7 @@ set(SRCS
     PHOS_LHC16_pp/AliPP13EfficiencySelectionMC.cxx
     PHOS_LHC16_pp/AliPP13EfficiencySelectionSPMC.cxx
     PHOS_LHC16_pp/AliPP13EpRatioSelection.cxx
+    PHOS_LHC16_pp/AliPP13FeeddownSelection.cxx
     PHOS_LHC16_pp/AliPP13MesonSelectionMC.cxx
     PHOS_LHC16_pp/AliPP13MixingSample.cxx
     PHOS_LHC16_pp/AliPP13NonlinearityScanSelection.cxx

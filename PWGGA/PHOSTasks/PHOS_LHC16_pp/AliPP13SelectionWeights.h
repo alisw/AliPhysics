@@ -8,6 +8,8 @@
 #include <TLorentzVector.h>
 #include <TObject.h>
 #include <TF1.h>
+#include <TH1.h>
+#include <TList.h>
 
 // --- AliRoot header files ---
 #include <AliAODMCParticle.h>
@@ -78,6 +80,14 @@ struct AliPP13SelectionWeights: TObject
 		return 1.0;
 	}
 
+	virtual void Report(TList * listOfHistos) const
+	{
+		TString weights = "No weights";
+		listOfHistos->AddFirst(
+			new TH1C("selection_weighs", weights, 1, 0, 1)
+		); 
+	}
+
 	// TODO: Use Shared_ptr
 	static AliPP13SelectionWeights & Init(Mode m);
 protected:
@@ -106,7 +116,15 @@ struct AliPP13SelectionWeightsTOF: public AliPP13SelectionWeights
 
 
 	virtual Double_t TofEfficiency(Double_t energy) const;
+	virtual void Report(TList * listOfHistos) const
+	{
+		const char * lab = "TOF logA = %.4g, logB = %.4g, logS = %.4g, ExpA = %.4g, ExpAlpha = %.4g";
+		TString weights = Form(lab, fLogA, fLogB, fLogScale, fExpA, fExpAlpha);
+		listOfHistos->AddFirst(
+			new TH1C("selection_tof", weights, 1, 0, 1)
+		);
 
+	}
 	// Parameters for TOF cut efficiency
 	Double_t fLogA;
 	Double_t fLogB;
@@ -131,6 +149,14 @@ struct AliPP13SelectionWeightsMC: public AliPP13SelectionWeights
 	}
 
 	virtual Double_t Nonlinearity(Double_t x) const;
+	virtual void Report(TList * listOfHistos) const
+	{
+		const char * lab = "Nonlinearity parameters; NonGlobal = %.6g, NonA = %.6g, NonSigma = %.6g";
+		TString weights = Form(lab, fNonGlobal, fNonA, fNonSigma);
+		listOfHistos->AddFirst(
+			new TH1C("selection_nonlinearity", weights, 1, 0, 1)
+		);
+	}
 
 	// Parameters for Nonlinearity
 	Double_t fNonGlobal;
@@ -155,7 +181,21 @@ struct AliPP13SelectionWeightsSPMC: public AliPP13SelectionWeightsMC
 	{
 	}
 	virtual Double_t Weights(Double_t x, const EventFlags & eflags) const;
+	virtual void Report(TList * listOfHistos) const
+	{
+		const char * lab = "Nonlinearity parameters; NonGlobal = %.6g, NonA = %.6g, NonSigma = %.6g";
+		TString weights = Form(lab, fNonGlobal, fNonA, fNonSigma);
+		listOfHistos->AddFirst(
+			new TH1C("selection_nonlinearity", weights, 1, 0, 1)
+		);
 
+		const char * labt = "Tsallis parameters for Single Particle MC; fW0 = %.4g, fW1 = %.4g, fW2 = %.4g, fW3 = %.4g, fW4 = %.4g";
+		TString weightst = Form(labt, fW0, fW1, fW2, fW3, fW4);
+		listOfHistos->AddFirst(
+			new TH1C("selection_weighs", weightst, 1, 0, 1)
+		);
+
+	}
 	// TODO: Use Shared_ptr
 	static AliPP13SelectionWeights & SinglePi0();
 	static AliPP13SelectionWeights & SingleEta();
