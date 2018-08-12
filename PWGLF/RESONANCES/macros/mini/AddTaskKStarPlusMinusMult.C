@@ -176,9 +176,11 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusMult
     if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3){
         cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
         if(!MultBins){
-            cutEventUtils->SetCheckIncompleteDAQ();
-            cutEventUtils->SetCheckSPDClusterVsTrackletBG();
-			  	cutEventUtils->SetCheckInelGt0MC(kFALSE);
+        	cutEventUtils->SetRemovePileUppA2013(kFALSE);
+            cutEventUtils->SetCheckAcceptedMultSelection();
+            //cutEventUtils->SetCheckIncompleteDAQ();
+            //cutEventUtils->SetCheckSPDClusterVsTrackletBG();
+			 // 	cutEventUtils->SetCheckInelGt0MC(kFALSE);
         }else{
             //cutEventUtils->SetCheckInelGt0SPDtracklets();
             cutEventUtils->SetRemovePileUppA2013(kFALSE);
