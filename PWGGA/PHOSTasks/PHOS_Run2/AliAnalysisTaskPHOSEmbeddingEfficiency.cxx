@@ -131,7 +131,6 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::UserCreateOutputObjects()
 
   }//end of particle loop
 
-
   PostData(1,fOutputContainer);
 
 }
@@ -343,11 +342,9 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::UserExec(Option_t *option)
   //If no photons in current event - no need to add it to mixed
   if(fPHOSClusterArray->GetEntriesFast() > 0){
     TClonesArray *clone = new TClonesArray(*fPHOSClusterArray);
-
-    //prevPHOS->AddFirst(fPHOSClusterArray);
     prevPHOS->AddFirst(clone);
-    //fPHOSClusterArray=0;
-    //clone = 0;
+    //delete clone;
+    clone = 0;
 
     if(prevPHOS->GetSize() > fNMixed){//Remove redundant events
       TClonesArray * tmp = static_cast<TClonesArray*>(prevPHOS->Last());
@@ -451,33 +448,6 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::SetWeightToClusters()
 
 }
 //________________________________________________________________________
-Int_t AliAnalysisTaskPHOSEmbeddingEfficiency::FindCommonParent(Int_t iPart, Int_t jPart)
-{
-  //check if there is a common parent for particles i and j
-  // -1: no common parent or wrong iPart/jPart
-
-  Int_t ntrack = fMCArray->GetEntriesFast();
-  if(iPart==-1 || iPart>=ntrack || jPart==-1 || jPart>=ntrack) return -1;
-
-  Int_t iprim1 = iPart;
-
-  while(iprim1>-1){
-    Int_t iprim2=jPart;
-
-    while(iprim2>-1){
-      if(iprim1==iprim2) return iprim1;
-      //iprim2 = GetParticle(iprim2)->GetMother();
-      iprim2 = dynamic_cast<AliAODMCParticle*>(fMCArray->At(iprim2))->GetMother();
-    }
-
-    //iprim1 = GetParticle(iprim1)->GetMother();
-    //iprim1 = (AliAODMCParticle*)(fMCArray->At(iprim1))->GetMother();
-    iprim1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At(iprim1))->GetMother();
-  }
-
-  return -1;
-}
-//________________________________________________________________________
 void AliAnalysisTaskPHOSEmbeddingEfficiency::GetEmbeddedMCInfo()
 {
   fMCArray = 0x0;
@@ -519,8 +489,6 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillPhoton()
     }
 
     if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;//criterion fTRFM == kRFE is not needed.
-
-
 
     weight = 1.;
     if(fIsMC){

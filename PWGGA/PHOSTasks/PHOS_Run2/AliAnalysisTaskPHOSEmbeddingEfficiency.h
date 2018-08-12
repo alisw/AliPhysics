@@ -30,7 +30,6 @@ class AliAnalysisTaskPHOSEmbeddingEfficiency : public AliAnalysisTaskPHOSPi0EtaT
 
     virtual void ProcessMC();
     void SetWeightToClusters();
-    Int_t FindCommonParent(Int_t iPart, Int_t jPart);
 
     void FillPhoton();
     void FillMgg();
@@ -46,7 +45,7 @@ class AliAnalysisTaskPHOSEmbeddingEfficiency : public AliAnalysisTaskPHOSPi0EtaT
     AliAnalysisTaskPHOSEmbeddingEfficiency(const AliAnalysisTaskPHOSEmbeddingEfficiency&); // not implemented
     AliAnalysisTaskPHOSEmbeddingEfficiency& operator=(const AliAnalysisTaskPHOSEmbeddingEfficiency&); // not implemented
 
-    ClassDef(AliAnalysisTaskPHOSEmbeddingEfficiency, 10); // example of analysis
+    ClassDef(AliAnalysisTaskPHOSEmbeddingEfficiency, 11); // example of analysis
 };
 
 #endif
