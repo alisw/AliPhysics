@@ -145,6 +145,7 @@ private:
 	AliJTH1D fh_eta;//! // for eta dist of tracks
 	AliJTH1D fh_phi;//! // for phi dist [ic][isub]
 	AliJTH2D fh_phieta;//!
+	AliJTH3D fh_phietaz;//!
 	//AliJTH1D fh_Qvector;//! // for Q-Vector dist [ic][isub][ih]
 
 	AliJTH1D fh_ntracks;//! // for number of tracks dist

@@ -1,5 +1,6 @@
 #include <TH1D.h>
 #include <TH2D.h>
+#include <TH3D.h>
 #include <TMath.h>
 #include <TComplex.h>
 #include <TClonesArray.h>
@@ -53,6 +54,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	fh_eta(),
 	fh_phi(),
 	fh_phieta(),
+	fh_phietaz(),
 	//fh_Qvector(),
 	fh_ntracks(),
 	fh_vn(),
@@ -96,6 +98,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	fh_eta(),
 	fh_phi(),
 	fh_phieta(),
+	fh_phietaz(),
 	//fh_Qvector(),
 	fh_ntracks(),
 	fh_vn(),
@@ -148,6 +151,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
 	fh_eta(a.fh_eta),
 	fh_phi(a.fh_phi),
 	fh_phieta(a.fh_phieta),
+	fh_phietaz(a.fh_phietaz),
 	//fh_Qvector(a.fh_Qvector),
 	fh_ntracks(a.fh_ntracks),
 	fh_vn(a.fh_vn),
@@ -237,6 +241,10 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< "END" ;
 	fh_phieta
 		<< TH2D("h_phieta","h_phieta",50,-TMath::Pi(),TMath::Pi(),40,-2.0,2.0)
+		<< fHistCentBin
+		<< "END";
+	fh_phietaz
+		<< TH3D("h_phietaz","h_phietaz",50,-TMath::Pi(),TMath::Pi(),40,-2.0,2.0,20,-10.0,10.0)
 		<< fHistCentBin
 		<< "END";
 	/*fh_Qvector
@@ -719,6 +727,7 @@ void AliJFFlucAnalysis::Fill_QA_plot( Double_t eta1, Double_t eta2 )
 		Double_t phi = itrack->Phi();
 
 		fh_phieta[fCBin]->Fill(phi,eta);
+		fh_phietaz[fCBin]->Fill(phi,eta,fVertex[2]);
 
 		if(TMath::Abs(eta) < eta1 || TMath::Abs(eta) > eta2)
 			continue;

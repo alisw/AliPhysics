@@ -373,13 +373,22 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, flo
 
 				Int_t pdg = track->GetPdgCode();
 				Char_t ch = (Char_t) track->Charge();
-				// partile charge selection
+				/*// partile charge selection
 				if( fPcharge != 0){ // fPcharge : 0 all particle
 					if( fPcharge==1 && ch<0 )
 						continue; // 1 for + charge
 					if( fPcharge==-1 && ch>0)
 						continue; // -1 for - charge
-				}
+				}*/
+				if(ch < 0){
+					if(fPcharge == 1)
+						continue;
+				}else
+				if(ch > 0){
+					if(fPcharge == -1)
+						continue;
+				}else continue;
+
 				Int_t label = track->GetLabel();
 				AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
 				itrack->SetLabel( label );
@@ -398,7 +407,6 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, flo
 				continue;
 			}
 			if(track->TestFilterBit( fFilterBit )){ //
-				Char_t ch = (Char_t)track->Charge();
 				if( fPt_min > 0){
 					double Pt = track->Pt();
 					if( Pt < fPt_min || Pt > fPt_max )
@@ -415,12 +423,22 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, flo
 					}
 				}
 
-				if( fPcharge !=0){ // fPcharge 0 : all particle
+				Char_t ch = (Char_t)track->Charge();
+				/*if( fPcharge !=0){ // fPcharge 0 : all particle
 					if( fPcharge==1 && ch<0)
 						continue; // 1 for + particle
 					if( fPcharge==-1 && ch>0)
 						continue; // -1 for - particle
-				}
+				}*/
+				if(ch < 0){
+					if(fPcharge == 1)
+						continue;
+				}else
+				if(ch > 0){
+					if(fPcharge == -1)
+						continue;
+				}else continue;
+
 				AliJBaseTrack *itrack = new( (*TrackList)[ntrack++]) AliJBaseTrack;
 				//itrack->SetID( track->GetID() );
 				itrack->SetID( TrackList->GetEntriesFast() );
@@ -653,12 +671,21 @@ void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList
 
 			Int_t pdg = particle->GetPdgCode();
 			Char_t ch = (Char_t) track->Charge();
-			if(fPcharge != 0){ // fPcharge 0 : all particle
+			/*if(fPcharge != 0){ // fPcharge 0 : all particle
 				if(fPcharge == 1 && ch < 0)
 					continue; // 1 for + particle
 				if(fPcharge == -1 && ch > 0)
 					continue; // -1 for - particle
-			}
+			}*/
+			if(ch < 0){
+				if(fPcharge == 1)
+					continue;
+			}else
+			if(ch > 0){
+				if(fPcharge == -1)
+					continue;
+			}else continue;
+
 			Int_t label = track->GetLabel();
 			AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
 			itrack->SetLabel( label );
