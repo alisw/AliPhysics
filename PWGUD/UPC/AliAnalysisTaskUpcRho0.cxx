@@ -456,9 +456,15 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 	SPDOuter[(ITSModuleOuter_T[1]-80)/4]++;
   
 	ChipCut_T = 0;
-	if ((fFOmodules[ITSModuleInner_T[0]] == 0)||(fFOmodules[ITSModuleOuter_T[0]] == 0)
+	if ((fTriggerName == "CCUP9-B") &&
+		((fFOmodules[ITSModuleInner_T[0]] == 0)||(fFOmodules[ITSModuleOuter_T[0]] == 0)
 		||(fFOmodules[ITSModuleInner_T[1]] == 0)||(fFOmodules[ITSModuleOuter_T[1]] == 0)
-		|| !Is0STPfired(SPDInner,SPDOuter)) ChipCut_T = 1;
+		|| !Is0STPfired(SPDInner,SPDOuter))) ChipCut_T = 1;
+
+	if ((fTriggerName == "CCUP2-B") &&
+		((fFOmodules[ITSModuleInner_T[0]] == 0)||(fFOmodules[ITSModuleOuter_T[0]] == 0)
+		||(fFOmodules[ITSModuleInner_T[1]] == 0)||(fFOmodules[ITSModuleOuter_T[1]] == 0)
+		)) ChipCut_T = 1;
 
     Int_t fFOcounter = 0;
   	for(Int_t chipkey=0;chipkey<1200;chipkey++){
@@ -540,7 +546,9 @@ Bool_t AliAnalysisTaskUpcRho0::IsTriggered(AliESDEvent *esd)
 	// 0SM2 - Two hits on outer layer
 	if (nOuter > 1) SM2 = kTRUE;
 	// 0SH1 - More then 6 hits on outer layer
-	if (nOuter >= 7) SH1 = kTRUE;
+	// if (nOuter >= 7) SH1 = kTRUE;
+	//0SH1 2017 - Two hits on inner and outer layer
+	if (nInner >= 2 && nOuter >= 2) SH1 = kTRUE;
 	// V0
 	V0A = esd->GetHeader()->IsTriggerInputFired("0VBA");
 	V0C = esd->GetHeader()->IsTriggerInputFired("0VBC");
