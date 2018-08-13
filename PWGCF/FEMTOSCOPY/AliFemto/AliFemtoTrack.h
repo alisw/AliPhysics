@@ -148,7 +148,7 @@ public:
   void SetPidProbKaon(const float& x);
   void SetPidProbProton(const float& x);
   void SetPidProbMuon(const float& x);
-  void SetTofExpectedTimes(const float& tpi, const float& tkn, const float& tpr);
+  void SetTofExpectedTimes(const float& tpi, const float& tkn, const float& tpr, const float& ttof);
 
 
   void SetP(const AliFemtoThreeVector& p);
@@ -398,7 +398,7 @@ public:
 
   AliFemtoHiddenInfo* fHiddenInfo;              //!< hidden info containing MC data
 
-  AliFemtoThreeVector   *fTrueMomentum;         ///< True (simulated) momentum
+  AliFemtoThreeVector   *fTrueMomentum;         ///< True (simulated) momentumfse
   AliFemtoLorentzVector *fEmissionPoint;        ///< Emission point coordinates
   Int_t                  fPDGPid;               ///< True PID of the particle
   Double_t               fMass;                 ///< True particle mass

@@ -443,7 +443,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKineKK::ReturnHbtEvent()
       esdtrack->GetIntegratedTimes(esdpid);
     }
 
-    trackCopy->SetTofExpectedTimes(tTOF-esdpid[2], tTOF-esdpid[3], tTOF-esdpid[4]);
+   trackCopy->SetTofExpectedTimes(tTOF-esdpid[2], tTOF-esdpid[3], tTOF-esdpid[4],tTOF);
 
 
     //////  TPC ////////////////////////////////////////////
