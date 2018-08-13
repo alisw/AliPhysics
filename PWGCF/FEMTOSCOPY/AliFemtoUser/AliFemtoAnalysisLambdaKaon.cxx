@@ -48,6 +48,7 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AliFemtoAnalysisLambdaKao
   fIsMCRun(aIsMCRun),
   fIsMBAnalysis(kFALSE),
   fBuildMultHist(kFALSE),
+  fBuildmTBinned(true),
   fMinCent(-1000),
   fMaxCent(1000),
 
@@ -141,6 +142,7 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
   fIsMCRun(aAnParams.isMCRun),
   fIsMBAnalysis(aAnParams.isMBAnalysis),
   fBuildMultHist(aAnParams.buildMultHist),
+  fBuildmTBinned(aAnParams.buildmTBinned),
   fMinCent(-1000),
   fMaxCent(1000),
 
@@ -336,6 +338,7 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(const AliFemtoAnalysisLam
   fIsMCRun(a.fIsMCRun),
   fIsMBAnalysis(a.fIsMBAnalysis),
   fBuildMultHist(a.fBuildMultHist),
+  fBuildmTBinned(a.fBuildmTBinned),
   fMinCent(a.fMinCent),
   fMaxCent(a.fMaxCent),
 
@@ -392,6 +395,7 @@ AliFemtoAnalysisLambdaKaon& AliFemtoAnalysisLambdaKaon::operator=(const AliFemto
   fIsMCRun = a.fIsMCRun;
   fIsMBAnalysis = a.fIsMBAnalysis;
   fBuildMultHist = a.fBuildMultHist;
+  fBuildmTBinned = a.fBuildmTBinned;
   fMinCent = a.fMinCent;
   fMaxCent = a.fMaxCent;
   fCollectionOfCfs = NULL;
@@ -1436,7 +1440,7 @@ AliFemtoCorrFctnKStar* AliFemtoAnalysisLambdaKaon::CreateCorrFctnKStar(const cha
   AliFemtoCorrFctnKStar *cf = new AliFemtoCorrFctnKStar(TString::Format("KStarCf_%s",name),bins,min,max);
     cf->SetCalculatePairKinematics(fWritePairKinematics);
     cf->SetBuildkTBinned(false);
-    cf->SetBuildmTBinned(true);
+    cf->SetBuildmTBinned(fBuildmTBinned);
     cf->SetBuild3d(false);
   return cf;
 }
@@ -1808,6 +1812,7 @@ AliFemtoAnalysisLambdaKaon::DefaultAnalysisParams()
   tReturnParams.isMCRun = false;
   tReturnParams.isMBAnalysis = false;
   tReturnParams.buildMultHist = false;
+  tReturnParams.buildmTBinned = true;
   tReturnParams.implementVertexCorrections = true;
   tReturnParams.removeMisidentifiedMCParticles = false;
   tReturnParams.setV0SharedDaughterCut = true;

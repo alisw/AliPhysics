@@ -102,6 +102,7 @@ struct AnalysisParams
   bool isMCRun;
   bool isMBAnalysis;
   bool buildMultHist;
+  bool buildmTBinned;
   bool implementVertexCorrections;
   bool removeMisidentifiedMCParticles;
   bool setV0SharedDaughterCut;
@@ -413,6 +414,7 @@ protected:
   bool fIsMCRun;
   bool fIsMBAnalysis;
   bool fBuildMultHist;
+  bool fBuildmTBinned;
 
   double fMinCent, fMaxCent;
 
