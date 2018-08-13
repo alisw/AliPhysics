@@ -31,6 +31,8 @@ class AliSigma0PhotonMotherCuts : public TObject {
       AliVEvent *inputEvent, AliMCEvent *mcEvent,
       const std::vector<AliSigma0ParticleV0> &photonCandidates,
       const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
+  void SingleV0QA(const std::vector<AliSigma0ParticleV0> &photonCandidates,
+                  const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
   void SigmaToLambdaGamma(
       const std::vector<AliSigma0ParticleV0> &photonCandidates,
       const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
@@ -148,6 +150,13 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistMixedInvMassPt;           //!
   TH2F *fHistMixedInvMassBinnedPt;     //!
 
+  TH2F *fHistLambdaPtPhi;  //!
+  TH2F *fHistLambdaPtEta;  //!
+  TH2F *fHistLambdaMassPt; //!
+  TH2F *fHistPhotonPtPhi;  //!
+  TH2F *fHistPhotonPtEta;  //!
+  TH2F *fHistPhotonMassPt; //!
+
   TH2F *fHistMCTruthPtY;                          //!
   TH2F *fHistMCTruthPtEta;                        //!
   TH2F *fHistMCTruthDaughterPtY;                  //!
@@ -170,7 +179,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TTree *fOutputTree;  //!
 
  private:
-  ClassDef(AliSigma0PhotonMotherCuts, 7)
+  ClassDef(AliSigma0PhotonMotherCuts, 8)
 };
 
 #endif

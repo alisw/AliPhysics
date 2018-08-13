@@ -57,6 +57,12 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fHistMixedPtY(),
       fHistMixedInvMassPt(nullptr),
       fHistMixedInvMassBinnedPt(nullptr),
+      fHistLambdaPtPhi(nullptr),
+      fHistLambdaPtEta(nullptr),
+      fHistLambdaMassPt(nullptr),
+      fHistPhotonPtPhi(nullptr),
+      fHistPhotonPtEta(nullptr),
+      fHistPhotonMassPt(nullptr),
       fHistMCTruthPtY(nullptr),
       fHistMCTruthPtEta(nullptr),
       fHistMCTruthDaughterPtY(nullptr),
@@ -128,6 +134,12 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fHistMixedPtY(),
       fHistMixedInvMassPt(nullptr),
       fHistMixedInvMassBinnedPt(nullptr),
+      fHistLambdaPtPhi(nullptr),
+      fHistLambdaPtEta(nullptr),
+      fHistLambdaMassPt(nullptr),
+      fHistPhotonPtPhi(nullptr),
+      fHistPhotonPtEta(nullptr),
+      fHistPhotonMassPt(nullptr),
       fHistMCTruthPtY(nullptr),
       fHistMCTruthPtEta(nullptr),
       fHistMCTruthDaughterPtY(nullptr),
@@ -177,12 +189,32 @@ void AliSigma0PhotonMotherCuts::SelectPhotonMother(
         (AliV0ReaderV1 *)AliAnalysisManager::GetAnalysisManager()->GetTask(
             fV0ReaderName.Data());
   }
+  if (!fIsLightweight) SingleV0QA(photonCandidates, lambdaCandidates);
 
   // Particle pairing
   SigmaToLambdaGamma(photonCandidates, lambdaCandidates);
   SigmaToLambdaGammaMixedEvent(photonCandidates, lambdaCandidates);
   SigmaToLambdaGammaMixedEventBinned(photonCandidates, lambdaCandidates);
   FillEventBuffer(photonCandidates, lambdaCandidates);
+}
+
+//____________________________________________________________________________________________________
+void AliSigma0PhotonMotherCuts::SingleV0QA(
+    const std::vector<AliSigma0ParticleV0> &photonCandidates,
+    const std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
+  // Photon QA - keep track of kinematics
+  for (const auto &photon : photonCandidates) {
+    fHistPhotonPtPhi->Fill(photon.GetPt(), photon.GetPhi());
+    fHistPhotonPtEta->Fill(photon.GetPt(), photon.GetEta());
+    fHistPhotonMassPt->Fill(photon.GetPt(), photon.GetMass());
+  }
+
+  for (const auto &lambda : lambdaCandidates) {
+    // Lambda QA - keep track of kinematics
+    fHistLambdaPtPhi->Fill(lambda.GetPt(), lambda.GetPhi());
+    fHistLambdaPtEta->Fill(lambda.GetPt(), lambda.GetEta());
+    fHistLambdaMassPt->Fill(lambda.GetPt(), lambda.GetMass());
+  }
 }
 
 //____________________________________________________________________________________________________
@@ -844,6 +876,32 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
       fHistograms->Add(fHistPtY[i]);
       fHistograms->Add(fHistMixedPtY[i]);
     }
+
+    fHistLambdaPtPhi =
+        new TH2F("fHistLambdaPtPhi", "; #it{p}_{T} (GeV/#it{c}); #phi (rad)",
+                 100, 0, 10, 100, 0, 2.f * TMath::Pi());
+    fHistLambdaPtEta =
+        new TH2F("fHistLambdaPtEta", "; #it{p}_{T} (GeV/#it{c}); #eta", 100, 0,
+                 10, 100, -1, 1);
+    fHistLambdaMassPt =
+        new TH2F("fHistLambdaMassPt", "; #it{p}_{T} (GeV/#it{c}); M_{p#pi}",
+                 100, 0, 10, 250, 1., 1.5);
+    fHistPhotonPtPhi =
+        new TH2F("fHistPhotonPtPhi", "; #it{p}_{T} (GeV/#it{c}); #phi (rad)",
+                 100, 0, 10, 100, 0, 2.f * TMath::Pi());
+    fHistPhotonPtEta =
+        new TH2F("fHistPhotonPtEta", "; #it{p}_{T} (GeV/#it{c}); #eta", 100, 0,
+                 10, 100, -1, 1);
+    fHistPhotonMassPt =
+        new TH2F("fHistPhotonMassPt", "; #it{p}_{T} (GeV/#it{c}); M_{p#pi}",
+                 100, 0, 10, 250, 0., 0.1);
+
+    fHistograms->Add(fHistLambdaPtPhi);
+    fHistograms->Add(fHistLambdaPtEta);
+    fHistograms->Add(fHistLambdaMassPt);
+    fHistograms->Add(fHistPhotonPtPhi);
+    fHistograms->Add(fHistPhotonPtEta);
+    fHistograms->Add(fHistPhotonMassPt);
   }
 
   if (fIsMC) {
