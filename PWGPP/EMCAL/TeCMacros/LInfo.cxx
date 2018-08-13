@@ -8,13 +8,13 @@
 #include <TMap.h>
 #include <TNtuple.h>
 
-void LInfo::Compute()  
-{ 
+void LInfo::Compute()
+{
   if (fIsComputed)
     return;
 
   char id[100];
-  char title[100]; 
+  char title[100];
   const char *sideStr[] = {"A", "C"};
   const Int_t kNCol     = NCol();
   const Int_t kNRow     = NRow();
@@ -22,67 +22,67 @@ void LInfo::Compute()
 
   for (Int_t iSM=0; iSM<kNSM; ++iSM) {
     Int_t isector = iSM/2;
-    Int_t iside = iSM%2; 
+    Int_t iside = iSM%2;
     for (Int_t igain=0; igain<2; ++igain) {
       if (!fhAmpOverMon[iSM][igain]) {
-	sprintf(id, "hAmpOverMon%02d%d", iSM, igain);
-	sprintf(title, "LED amplitude over LEDMON: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
-	fhAmpOverMon[iSM][igain] = new TH2F(id, title, kNCol, -0.5, kNCol-0.5, kNRow, -0.5, kNRow - 0.5);   
-	fhAmpOverMon[iSM][igain]->SetDirectory(0);
-	sprintf(id, "hStripRmsOverMean%02d%d", iSM, igain);
-	sprintf(title, "LedMon rms  over mean: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
-	fhStripRmsOverMean[iSM][igain] = new TH1F(id, title, kNCol, -0.5, kNCol-0.5);
-	fhStripRmsOverMean[iSM][igain]->SetDirectory(0);
-	sprintf(id, "hLedRmsOverMean%02d%d", iSM, igain);
-	sprintf(title, "Led rms  over mean: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
-	fhLedRmsOverMean[iSM][igain] = new TH2F(id, title, kNCol, -0.5, kNCol-0.5, kNRow, -0.5, kNRow-0.5);
-	fhLedRmsOverMean[iSM][igain]->SetDirectory(0);
+        sprintf(id, "hAmpOverMon%02d%d", iSM, igain);
+        sprintf(title, "LED amplitude over LEDMON: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
+        fhAmpOverMon[iSM][igain] = new TH2F(id, title, kNCol, -0.5, kNCol-0.5, kNRow, -0.5, kNRow - 0.5);
+        fhAmpOverMon[iSM][igain]->SetDirectory(0);
+        sprintf(id, "hStripRmsOverMean%02d%d", iSM, igain);
+        sprintf(title, "LedMon rms  over mean: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
+        fhStripRmsOverMean[iSM][igain] = new TH1F(id, title, kNCol, -0.5, kNCol-0.5);
+        fhStripRmsOverMean[iSM][igain]->SetDirectory(0);
+        sprintf(id, "hLedRmsOverMean%02d%d", iSM, igain);
+        sprintf(title, "Led rms  over mean: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
+        fhLedRmsOverMean[iSM][igain] = new TH2F(id, title, kNCol, -0.5, kNCol-0.5, kNRow, -0.5, kNRow-0.5);
+        fhLedRmsOverMean[iSM][igain]->SetDirectory(0);
       } else {
-	fhAmpOverMon[iSM][igain]->Reset();
-	fhStripRmsOverMean[iSM][igain]->Reset();
-	fhLedRmsOverMean[iSM][igain]->Reset();
+        fhAmpOverMon[iSM][igain]->Reset();
+        fhStripRmsOverMean[iSM][igain]->Reset();
+        fhLedRmsOverMean[iSM][igain]->Reset();
       }
     }
   }
 
   for (Int_t iSM=0; iSM<kNSM; ++iSM) {
     Int_t isector = iSM/2;
-    Int_t iside = iSM%2; 
+    Int_t iside = iSM%2;
     for (Int_t igain=0; igain<2; ++igain) {
       for (Int_t col=0;col<kNCol;++col) {
-	Int_t strip = col / 2;
-	Int_t mbin = fhStrip[iSM][igain]->FindBin(strip);
-	Double_t ledMonAmp = fhStrip[iSM][igain]->GetBinContent(mbin);
-	for (Int_t row=0;row<kNRow;++row) {
-	  Int_t lbin = fhLed[iSM][igain]->FindBin(col,row);
-	  Double_t ledAmp = fhLed[iSM][igain]->GetBinContent(lbin);
-	  if (ledMonAmp!=0) {
-	    Double_t weightf = ledAmp/ledMonAmp;
-	    fhAmpOverMon[iSM][igain]->SetBinContent(lbin,weightf);
-	  }
-	  Double_t ledRms = fhLedCount[iSM][igain]->GetBinContent(lbin);
-	  if (ledAmp>0) {
-	    fhLedRmsOverMean[iSM][igain]->SetBinContent(lbin,ledRms/ledAmp);
-	  }
-	}
+        Int_t strip = col / 2;
+        Int_t mbin = fhStrip[iSM][igain]->FindBin(strip);
+        Double_t ledMonAmp = fhStrip[iSM][igain]->GetBinContent(mbin);
+        for (Int_t row=0;row<kNRow;++row) {
+          Int_t lbin = fhLed[iSM][igain]->FindBin(col,row);
+          Double_t ledAmp = fhLed[iSM][igain]->GetBinContent(lbin);
+          if (ledMonAmp!=0) {
+            Double_t weightf = ledAmp/ledMonAmp;
+            fhAmpOverMon[iSM][igain]->SetBinContent(lbin,weightf);
+          }
+          Double_t ledRms = fhLedCount[iSM][igain]->GetBinContent(lbin);
+          if (ledAmp>0) {
+            fhLedRmsOverMean[iSM][igain]->SetBinContent(lbin,ledRms/ledAmp);
+          }
+        }
       }
       for (Int_t strip=0;strip<kNStrip;++strip) {
-	Int_t bin = fhStrip[iSM][igain]->FindBin(strip);
-	Double_t mean = fhStrip[iSM][igain]->GetBinContent(bin);
-	Double_t rms = fhStripCount[iSM][igain]->GetBinContent(bin);
-	if (mean>0)
-	  fhStripRmsOverMean[iSM][igain]->SetBinContent(bin,rms/mean);
+        Int_t bin = fhStrip[iSM][igain]->FindBin(strip);
+        Double_t mean = fhStrip[iSM][igain]->GetBinContent(bin);
+        Double_t rms = fhStripCount[iSM][igain]->GetBinContent(bin);
+        if (mean>0)
+          fhStripRmsOverMean[iSM][igain]->SetBinContent(bin,rms/mean);
       }
     }
   }
   fIsComputed = 1;
 }
 
-void LInfo::CreateHistograms()  
-{ 
+void LInfo::CreateHistograms()
+{
   // book histograms
   char id[100];
-  char title[100]; 
+  char title[100];
   const char *sideStr[] = {"A", "C"};
   const Int_t kNCol     = NCol();
   const Int_t kNRow     = NRow();
@@ -90,7 +90,7 @@ void LInfo::CreateHistograms()
 
   for (Int_t iSM=0; iSM<kNSM; ++iSM) {
     Int_t isector = iSM/2;
-    Int_t iside = iSM%2; 
+    Int_t iside = iSM%2;
     for (Int_t igain=0; igain<2; ++igain) {
       sprintf(id, "hStrip%02d%d", iSM, igain);
       sprintf(title, "LEDMon Amplitude: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
@@ -121,7 +121,7 @@ void LInfo::CreateHistograms()
 
 void LInfo::FillLed(Int_t mod,Int_t gain, Int_t col, Int_t row, Double_t amp, Double_t rms)
 {
-  fhLed[mod][gain]->Fill(col, row, amp);  
+  fhLed[mod][gain]->Fill(col, row, amp);
   fhLedCount[mod][gain]->Fill(col, row, rms);
 }
 
@@ -178,7 +178,7 @@ TCanvas *LInfo::DrawHist(Int_t which, Int_t gain, const char *opt) const
       h = GetLedOverMonHist(sm,gain);
       name = Form("LedOverMonHist_%d_%d",gain,fRunNo);
       hopt = "colz";
-    } 
+    }
     if (opt)
       h->Draw(opt);
     else
@@ -204,17 +204,17 @@ Double_t LInfo::FracLeds(Int_t sm, Int_t gain) const
     if (sm>=0&&iSM!=sm)
       continue;
     Int_t ncols=NCol();
-    if (iSM>11 && iSM<18) 
+    if (iSM>11 && iSM<18)
       ncols=32;
     Int_t nrows=NRow();
     if (iSM==10||iSM==11||iSM==18||iSM==19)
       nrows=8;
     for (Int_t col=0;col<ncols;++col) {
       for (Int_t row=0;row<nrows;++row) {
-	++all;
-	Int_t bin=fhLed[iSM][kGain]->GetBin(col,row);
-	if (fhLed[iSM][kGain]->GetBinContent(bin)>0.)
-	++ret;
+        ++all;
+        Int_t bin=fhLed[iSM][kGain]->GetBin(col,row);
+        if (fhLed[iSM][kGain]->GetBinContent(bin)>0.)
+        ++ret;
       }
     }
   }
@@ -231,12 +231,12 @@ Double_t LInfo::FracStrips(Int_t sm, Int_t gain) const
     if (sm>=0&&iSM!=sm)
       continue;
     Int_t nstrips=NStrip();
-    if (iSM>11 && iSM<18) 
+    if (iSM>11 && iSM<18)
       nstrips=32/2;
     for (Int_t strip=1; strip<=nstrips; ++strip) {
       ++all;
       if (fhStrip[iSM][kstripGain]->GetBinContent(strip)>0.)
-	++ret;
+        ++ret;
     }
   }
   if (all>0)
@@ -244,7 +244,7 @@ Double_t LInfo::FracStrips(Int_t sm, Int_t gain) const
   return 0;
 }
 
-void LInfo::Print(Option_t *option) const 
-{ 
+void LInfo::Print(Option_t *option) const
+{
   cout << "Runno: " << fRunNo << endl;
 }

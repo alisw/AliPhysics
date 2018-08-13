@@ -605,6 +605,24 @@ void read_LHC18e(Bool_t loc=0, Bool_t test=0)
   readLed(runs,nruns,"lhc18e");
 }
 
+void read_LHC18fLEDOnly(Bool_t loc=0, Bool_t test=0)
+{
+    Int_t runs[] = {287995, 287997, 287998, 287999, 288000, 288004, 288006, 288007, 288008, 288009, 288010, 288012, 288015, 288016, 288017, 288018, 288019, 288020, 288022, 288023, 288030, 288042, 288043, 288044, 288045, 288046, 288048, 288049, 288054, 288055, 288056, 288057, 288058, 288059, 288060, 288063, 288064, 288067, 288068, 288069, 288070, 288073, 288074, 288076, 288078, 288079, 288082, 288083, 288084};
+
+    Int_t nruns = sizeof(runs)/sizeof(Int_t);
+    if (test)
+        nruns=3;
+
+    if (loc) {
+        AliCDBManager*  cdb = AliCDBManager::Instance();
+        cdb->SetDefaultStorage("local:///opt/alice/OCDB/2018/");
+    }
+
+    readTemp(runs,nruns,"lhc18fLED");
+    readLed(runs,nruns,"lhc18fLED");
+}
+
+
 
 void read_all(Bool_t loc=0, Bool_t test=0)
 {
