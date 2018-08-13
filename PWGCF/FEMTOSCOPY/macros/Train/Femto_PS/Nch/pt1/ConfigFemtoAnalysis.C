@@ -71,7 +71,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	
 	const int numOfMultBins = 10;	
 	const int numOfChTypes = 3;
-	const int numOfkTbins = 7;
+	const int numOfkTbins = 6;
 
 	bool performSharedDaughterCut = true;
 	bool enablePairMonitors = true;
@@ -150,7 +150,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 	
 	
-	double ktrng[numOfkTbins+1] = {0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
+	double ktrng[numOfkTbins+1] = {0.13, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7};
 
 
 	int runqinv = 1;
