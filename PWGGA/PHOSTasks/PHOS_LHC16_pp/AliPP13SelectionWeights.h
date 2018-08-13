@@ -56,7 +56,7 @@ struct EventFlags
 
 struct AliPP13SelectionWeights: TObject
 {
-	enum Mode {kData, kMC, kSinglePi0MC, kSingleEtaMC, kPlain};
+	enum Mode {kData, kMC, kFeeddown, kSinglePi0MC, kSingleEtaMC, kPlain};
 
 	// NB: One needs default constructor for IO readsons
 	AliPP13SelectionWeights(): TObject() {}
@@ -140,7 +140,7 @@ protected:
 struct AliPP13SelectionWeightsMC: public AliPP13SelectionWeights
 {
 	// NB: One needs default constructor for IO readsons
-	AliPP13SelectionWeightsMC(Double_t a = -0.06, Double_t s = 0.7, Double_t g = 1.015):
+	AliPP13SelectionWeightsMC(Double_t a = -0.035, Double_t s = 0.95, Double_t g = 1.02):
 		AliPP13SelectionWeights(),
 		fNonGlobal(g),
 		fNonA(a),
@@ -168,10 +168,50 @@ protected:
 
 };
 
+struct AliPP13SelectionWeightsFeeddown: public AliPP13SelectionWeightsMC
+{
+	// NB: One needs default constructor for IO readsons
+	AliPP13SelectionWeightsFeeddown(Double_t a = -0.035, Double_t s = 0.95, Double_t g = 1.02):
+		AliPP13SelectionWeightsMC(a, s, g),
+		fDataMCRatio(0)
+	{
+		fDataMCRatio =  new TF1(
+			"feeddown_ratio",
+            "[3] * x *(([4] + [5]) * x - [5]) + [0] * (1 + [1] * TMath::Exp(-x * x/ [2]))", 0, 100);
+        fDataMCRatio->SetParameter(0, 1.53561e+00);
+        fDataMCRatio->SetParameter(1, -4.69350e-01);
+        fDataMCRatio->SetParameter(2, 2.38042e-01);
+        fDataMCRatio->SetParameter(3, -8.01155e-02);
+        fDataMCRatio->SetParameter(4, 6.30860e-01);
+        fDataMCRatio->SetParameter(5, -7.21683e-01);
+	}
+
+	virtual Double_t Weights(Double_t x, const EventFlags & eflags) const;
+	virtual void Report(TList * listOfHistos) const
+	{
+		const char * lab = "Nonlinearity parameters; NonGlobal = %.6g, NonA = %.6g, NonSigma = %.6g";
+		TString weights = Form(lab, fNonGlobal, fNonA, fNonSigma);
+		listOfHistos->AddFirst(
+			new TH1C("selection_nonlinearity", weights, 1, 0, 1)
+		);
+		fDataMCRatio->SetNpx(1000);
+		TH1 * mcratio = fDataMCRatio->GetHistogram();
+		mcratio->SetName("selection_weights");
+		listOfHistos->AddFirst(mcratio);
+	}
+
+	// Parameters for Nonlinearity
+	TF1 * fDataMCRatio;
+
+protected:
+	ClassDef(AliPP13SelectionWeightsFeeddown, 2)
+
+};
+
 struct AliPP13SelectionWeightsSPMC: public AliPP13SelectionWeightsMC
 {
 	// NB: One needs default constructor for IO readsons
-	AliPP13SelectionWeightsSPMC(Double_t a = -0.06, Double_t s = 0.7, Double_t g = 1.015):
+	AliPP13SelectionWeightsSPMC(Double_t a = -0.035, Double_t s = 0.95, Double_t g = 1.02):
 		AliPP13SelectionWeightsMC(g, a, s),
 		fW0(0.014875782846110793),
 		fW1(0.28727403800708634),
