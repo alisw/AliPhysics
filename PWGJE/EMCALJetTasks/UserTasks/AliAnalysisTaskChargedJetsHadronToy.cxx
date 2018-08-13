@@ -25,6 +25,7 @@
 #include "AliAODVertex.h"
 #include <AliAODTrack.h>
 #include <TClonesArray.h>
+#include <AliAODMCParticle.h>
 
 #include <TFile.h>
 #include <TGrid.h>
@@ -142,17 +143,36 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
   {
     for(Int_t iPart=0; iPart<fInputArray->GetEntries(); iPart++)
     {
-      AliAODTrack* inputParticle = static_cast<AliAODTrack*>(fInputArray->At(iPart));
-      new ((*fOutputArray)[particleCount]) AliAODTrack(*inputParticle);
-      particleCount++;
+      // Load AOD tracks or AOD MC particles (for MC gen train)
+      AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(fInputArray->At(iPart));
+      AliAODMCParticle* aodMCParticle = dynamic_cast<AliAODMCParticle*>(fInputArray->At(iPart));
+
+      if(aodTrack)
+      {
+        new ((*fOutputArray)[particleCount]) AliAODTrack(*aodTrack);
+        particleCount++;
+      }
+      else if(aodMCParticle)
+      {
+        Float_t trackTheta = 2.*atan(exp(-aodMCParticle->Eta()));
+        new ((*fOutputArray)[particleCount]) AliAODTrack();
+        static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetPt(aodMCParticle->Pt());
+        static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetPhi(aodMCParticle->Phi());
+        static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetTheta(trackTheta); // AliAODTrack cannot set eta directly
+        static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetCharge(aodMCParticle->Charge());
+        static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetLabel(aodMCParticle->GetLabel());
+        static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetIsHybridGlobalConstrainedGlobal();
+        particleCount++;
+      }
     }
   }
 
   // ################# 2. Create a vertex if there is none (needed by some tasks)
   if(dynamic_cast<AliESDEvent*>(InputEvent()))
   {
-    if(!(dynamic_cast<AliESDEvent*>(InputEvent()))->GetPrimaryVertexTracks()->GetNContributors())
-      static_cast<AliESDEvent*>(fInputEvent)->SetPrimaryVertexTracks(new AliESDVertex(0.,0., 100));
+    if((dynamic_cast<AliESDEvent*>(InputEvent()))->GetPrimaryVertexTracks())
+      if(!(dynamic_cast<AliESDEvent*>(InputEvent()))->GetPrimaryVertexTracks()->GetNContributors())
+        static_cast<AliESDEvent*>(fInputEvent)->SetPrimaryVertexTracks(new AliESDVertex(0.,0., 100));
   }
   else if(dynamic_cast<AliAODEvent*>(InputEvent()))
   {
