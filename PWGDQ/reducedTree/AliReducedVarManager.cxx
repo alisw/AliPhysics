@@ -1139,6 +1139,13 @@ void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values, TRACK* leg
       values[kRapMCAbs] = TMath::Abs(p->RapidityMC(fgkPairMass[AliReducedPairInfo::kJpsiToEE]));
   }
 
+  if(fgUsedVars[kPseudoProperDecayTimeMC]){
+     if(fgEvent->IsA()==EVENT::Class()){
+     EVENT* eventInfo = (EVENT*)fgEvent;
+     Double_t lxyMC = ( (p->MCFreezeout(0) - eventInfo->VertexMC(0)) * p->MCmom(0) + (p->MCFreezeout(1) - eventInfo->VertexMC(1)) * p->MCmom(1) ) / p->PtMC();
+     values[kPseudoProperDecayTimeMC] = lxyMC * (fgkPairMass[AliReducedPairInfo::kJpsiToEE])/p->PtMC();
+     }
+  }
    // compute MC truth variables from decay legs, e.g. from the 2 electrons of a J/psi decay
    // NOTE: this may be different from the kinematics of the mother, if not all decay legs are considered / tracked
    Bool_t requestMCfromLegs = kFALSE;
@@ -1539,6 +1546,7 @@ void AliReducedVarManager::FillPairInfo(PAIR* p, Float_t* values) {
   
   values[kCandidateId]   = p->CandidateId();
   values[kPairType]      = p->PairType();
+  values[kPairTypeSPD]      = p->PairTypeSPD();
   values[kPairChisquare] = p->Chi2();
   if(fgUsedVars[kMass]) {
     values[kMass] = p->Mass();
@@ -1588,6 +1596,11 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
   else if(t1->Charge()>0)         p.PairType(0);
   else                            p.PairType(2);
   values[kPairType] = p.PairType();
+  values[kPairTypeSPD] = -1.;
+  if(t1->IsA()==TRACK::Class() && t2->IsA()==TRACK::Class() ){
+   TRACK* ti1=(TRACK*)t1; TRACK* ti2=(TRACK*)t2;
+   values[kPairTypeSPD] = ti1->ITSLayerHit(0)+ti2->ITSLayerHit(0);
+  }
   values[kCandidateId] = type;
   values[kPairChisquare] = -999.;
   
@@ -1868,7 +1881,13 @@ void AliReducedVarManager::FillPairInfoME(BASETRACK* t1, BASETRACK* t2, Int_t ty
   PAIR p;
   p.PxPyPz(t1->Px()+t2->Px(), t1->Py()+t2->Py(), t1->Pz()+t2->Pz());
   p.CandidateId(type);
-    
+ 
+  values[kPairTypeSPD] = -1.;
+   if(t1->IsA()==TRACK::Class() && t2->IsA()==TRACK::Class() ){
+   TRACK* ti1=(TRACK*)t1; TRACK* ti2=(TRACK*)t2;
+   values[kPairTypeSPD] = ti1->ITSLayerHit(0)+ti2->ITSLayerHit(0);
+   }
+   
   if(t1->Charge()*t2->Charge()<0) p.PairType(1);
   else if(t1->Charge()>0)         p.PairType(0);
   else                            p.PairType(2);
@@ -2589,6 +2608,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
   
   fgVariableNames[kCandidateId]       = "pair id.";              fgVariableUnits[kCandidateId]       = "";
   fgVariableNames[kPairType]          = "pair type";             fgVariableUnits[kPairType]          = "";
+  fgVariableNames[kPairTypeSPD]          = "pair type spd legs";             fgVariableUnits[kPairTypeSPD]          = "";
   fgVariableNames[kMassV0]            = "m_{K^{0}_{S}}";         fgVariableUnits[kMassV0]            = "GeV/c^{2}";
   fgVariableNames[kMassV0+1]          = "m_{#Lambda^{0}}";       fgVariableUnits[kMassV0+1]          = "GeV/c^{2}";
   fgVariableNames[kMassV0+2]          = "m_{#bar{#Lambda^{0}}}"; fgVariableUnits[kMassV0+2]          = "GeV/c^{2}";
@@ -2596,6 +2616,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kPairChisquare]     = "pair #chi^{2}";         fgVariableUnits[kPairChisquare]     = "";
   fgVariableNames[kPairLxy]           = "L_{xy}";                fgVariableUnits[kPairLxy]           = "cm.";
   fgVariableNames[kPseudoProperDecayTime]  = "t";                fgVariableUnits[kPseudoProperDecayTime]  = "cm./c";
+  fgVariableNames[kPseudoProperDecayTimeMC]  = "t_{MC}";              fgVariableUnits[kPseudoProperDecayTimeMC]  = "cm./c";
   fgVariableNames[kPairOpeningAngle]  = "pair opening angle";    fgVariableUnits[kPairOpeningAngle]  = "rad.";    
   fgVariableNames[kPairPointingAngle] = "#theta_{pointing}";     fgVariableUnits[kPairPointingAngle] = "rad.";
   fgVariableNames[kPairThetaCS]       = "cos(#theta^{*}_{CS})";  fgVariableUnits[kPairThetaCS]       = "";  

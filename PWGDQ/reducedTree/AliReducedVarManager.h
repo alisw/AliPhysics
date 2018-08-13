@@ -472,10 +472,12 @@ class AliReducedVarManager : public TObject {
     // Pair-only variables
     kCandidateId=kTPCuQsine+6,
     kPairType,                  // 0 ++; 1 +-; 2 --    
+    kPairTypeSPD,               // 2 (both); 1 (one) 0 (none) of the legs has an hit in the first SPD layer;     
     kMassV0,                    // masses for all 4 V0 assumptions (0-K0s, 1-Lambda, 2-ALambda, 3-Gamma)
     kPairChisquare=kMassV0+4,     
     kPairLxy,           
     kPseudoProperDecayTime,
+    kPseudoProperDecayTimeMC,
     kPairOpeningAngle,  
     kPairPointingAngle, 
     kPairThetaCS,                // cos (theta*) in Collins-Soper frame       
