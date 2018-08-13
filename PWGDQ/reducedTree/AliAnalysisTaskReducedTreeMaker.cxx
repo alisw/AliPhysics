@@ -1554,6 +1554,9 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
       trackInfo->fMCMom[0] = particle->Px();
       trackInfo->fMCMom[1] = particle->Py();
       trackInfo->fMCMom[2] = particle->Pz();
+      trackInfo->fMCFreezeout[0] = particle->Xv();
+      trackInfo->fMCFreezeout[1] = particle->Yv();
+      trackInfo->fMCFreezeout[2] = particle->Zv();
       
       AliVParticle* mother = event->GetTrack(particle->GetMother());
       if(mother) {
