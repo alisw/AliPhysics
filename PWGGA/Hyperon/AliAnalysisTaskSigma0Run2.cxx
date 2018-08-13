@@ -28,9 +28,6 @@ ClassImp(AliAnalysisTaskSigma0Run2)
       fIsLightweight(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
-      fLambdaContainer(),
-      fAntiLambdaContainer(),
-      fPhotonV0Container(),
       fGammaArray(nullptr),
       fOutputContainer(nullptr),
       fQA(nullptr),
@@ -64,9 +61,6 @@ AliAnalysisTaskSigma0Run2::AliAnalysisTaskSigma0Run2(const char *name)
       fIsLightweight(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
-      fLambdaContainer(),
-      fAntiLambdaContainer(),
-      fPhotonV0Container(),
       fGammaArray(nullptr),
       fOutputContainer(nullptr),
       fQA(nullptr),
@@ -123,13 +117,13 @@ void AliAnalysisTaskSigma0Run2::UserExec(Option_t * /*option*/) {
   if (!AcceptEvent(fInputEvent)) return;
 
   // LAMBDA SELECTION
-  fV0Cuts->SelectV0(fInputEvent, fMCEvent, fLambdaContainer);
+  fV0Cuts->SelectV0(fInputEvent, fMCEvent);
 
   // LAMBDA SELECTION
-  fAntiV0Cuts->SelectV0(fInputEvent, fMCEvent, fAntiLambdaContainer);
+  fAntiV0Cuts->SelectV0(fInputEvent, fMCEvent);
 
   // PHOTON V0 SELECTION
-  fPhotonV0Cuts->SelectV0(fInputEvent, fMCEvent, fPhotonV0Container);
+  fPhotonV0Cuts->SelectV0(fInputEvent, fMCEvent);
 
   // PHOTON SELECTION
   fGammaArray = fV0Reader->GetReconstructedGammas();  // Gammas from default Cut
@@ -138,19 +132,19 @@ void AliAnalysisTaskSigma0Run2::UserExec(Option_t * /*option*/) {
 
   // Sigma0 selection
   fSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, gammaConvContainer,
-                                 fLambdaContainer);
+                                 fV0Cuts->GetV0s());
 
   // Sigma0 selection
   fAntiSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, gammaConvContainer,
-                                     fAntiLambdaContainer);
+                                     fAntiV0Cuts->GetV0s());
 
   // Sigma0 selection
-  fSigmaPhotonCuts->SelectPhotonMother(fInputEvent, fMCEvent,
-                                       fPhotonV0Container, fLambdaContainer);
+  fSigmaPhotonCuts->SelectPhotonMother(
+      fInputEvent, fMCEvent, fPhotonV0Cuts->GetV0s(), fV0Cuts->GetV0s());
 
   // Sigma0 selection
   fAntiSigmaPhotonCuts->SelectPhotonMother(
-      fInputEvent, fMCEvent, fPhotonV0Container, fAntiLambdaContainer);
+      fInputEvent, fMCEvent, fPhotonV0Cuts->GetV0s(), fAntiV0Cuts->GetV0s());
   // flush the data
   PostData(1, fOutputContainer);
 }

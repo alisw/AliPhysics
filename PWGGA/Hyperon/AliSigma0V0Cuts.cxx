@@ -18,6 +18,7 @@ ClassImp(AliSigma0V0Cuts)
       fInputEvent(nullptr),
       fMCEvent(nullptr),
       fDataBasePDG(),
+      fV0Container(),
       fIsLightweight(false),
       fCheckCutsMC(false),
       fV0cut(0),
@@ -199,6 +200,7 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fInputEvent(nullptr),
       fMCEvent(nullptr),
       fDataBasePDG(),
+      fV0Container(),
       fIsLightweight(false),
       fCheckCutsMC(false),
       fV0cut(0),
@@ -426,8 +428,7 @@ AliSigma0V0Cuts *AliSigma0V0Cuts::PhotonCuts() {
 }
 
 //____________________________________________________________________________________________________
-void AliSigma0V0Cuts::SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent,
-                               std::vector<AliSigma0ParticleV0> &V0Container) {
+void AliSigma0V0Cuts::SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent) {
   // Get the PID manager from the input event handler
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputHandler =
@@ -436,7 +437,7 @@ void AliSigma0V0Cuts::SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent,
   fMCEvent = mcEvent;
   fInputEvent = static_cast<AliESDEvent *>(inputEvent);
 
-  V0Container.clear();
+  fV0Container.clear();
 
   if (fIsMC) {
     ProcessMC();
@@ -514,9 +515,9 @@ void AliSigma0V0Cuts::SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent,
       v0Candidate.SetRecMass(massPhoton);
     }
 
-    V0Container.push_back(v0Candidate);
+    fV0Container.push_back(v0Candidate);
   }
-  if (!fIsLightweight) fHistNV0->Fill(V0Container.size());
+  if (!fIsLightweight) fHistNV0->Fill(fV0Container.size());
 }
 
 //____________________________________________________________________________________________________

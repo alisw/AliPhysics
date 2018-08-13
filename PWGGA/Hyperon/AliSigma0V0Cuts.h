@@ -38,8 +38,7 @@ class AliSigma0V0Cuts : public TObject {
   static AliSigma0V0Cuts *LambdaCuts();
   static AliSigma0V0Cuts *PhotonCuts();
 
-  void SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent,
-                std::vector<AliSigma0ParticleV0> &V0Container);
+  void SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent);
   bool V0QualityCuts(const AliESDv0 *v0) const;
   bool V0PID(const AliESDv0 *v0, const AliESDtrack *pos,
              const AliESDtrack *neg) const;
@@ -122,6 +121,8 @@ class AliSigma0V0Cuts : public TObject {
   void InitCutHistograms(TString appendix = TString(""));
   TList *GetCutHistograms() const { return fHistograms; }
 
+  std::vector<AliSigma0ParticleV0> &GetV0s() { return fV0Container; }
+
  protected:
   TList *fHistograms;        //!
   TList *fHistogramsMC;      //!
@@ -133,6 +134,8 @@ class AliSigma0V0Cuts : public TObject {
   AliESDEvent *fInputEvent;   //!
   AliMCEvent *fMCEvent;       //!
   TDatabasePDG fDataBasePDG;  //!
+
+  std::vector<AliSigma0ParticleV0> fV0Container;  //!
 
   bool fIsLightweight;  //
   bool fCheckCutsMC;    //
@@ -317,7 +320,7 @@ class AliSigma0V0Cuts : public TObject {
   TH2F *fHistSingleParticlePID[2];                         //!
 
  private:
-  ClassDef(AliSigma0V0Cuts, 7)
+  ClassDef(AliSigma0V0Cuts, 8)
 };
 
 #endif
