@@ -535,8 +535,8 @@ void AliAnalysisTaskDmesonMCPerform::FillCandLevelHistos(Int_t idCase, AliAODEve
 	//	Double_t yorigrot=-partD->Xv()*TMath::Sin(phidecvert)+partD->Yv()*TMath::Cos(phidecvert);
 	Double_t xdecgenrot=dauD->Xv()*TMath::Cos(phidecvert)+dauD->Yv()*TMath::Sin(phidecvert);
 	Double_t ydecgenrot=-dauD->Xv()*TMath::Sin(phidecvert)+dauD->Yv()*TMath::Cos(phidecvert);
-	Double_t xdecrecrot=d->Xv()*TMath::Cos(phidecvert)-d->Yv()*TMath::Sin(phidecvert);
-	Double_t ydecrecrot=d->Xv()*TMath::Sin(phidecvert)+d->Yv()*TMath::Cos(phidecvert);
+	Double_t xdecrecrot=d->Xv()*TMath::Cos(phidecvert)+d->Yv()*TMath::Sin(phidecvert);
+	Double_t ydecrecrot=-d->Xv()*TMath::Sin(phidecvert)+d->Yv()*TMath::Cos(phidecvert);
 	Double_t dxrot=(xdecrecrot-xdecgenrot)*10000.;
 	Double_t dyrot=(ydecrecrot-ydecgenrot)*10000.;
 	fHistXvtxResRotVsPt[indexh]->Fill(ptreco,dxrot);
