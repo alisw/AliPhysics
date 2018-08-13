@@ -256,6 +256,7 @@ TTree* AliAnalysisTaskChargedJetsHadronToy::GetNextMixedEventTree()
   TString fileName;
   fileName = Form("%s%d.root", fMixedEvent_BaseFolder.Data(), fMixedEvent_CurrentFileID); 
 
+  AliInfo(Form("Opening mixed event file: %s", fileName.Data()));
   // ## Check if file exists
   if (fileName.BeginsWith("alien://") && !gGrid)
   {
@@ -285,6 +286,8 @@ TTree* AliAnalysisTaskChargedJetsHadronToy::GetNextMixedEventTree()
     tree->SetBranchAddress("Track_Eta", fBuffer_TrackEta);
     tree->SetBranchAddress("Track_Charge", fBuffer_TrackCharge);
   }
+
+  fMixedEvent_CurrentEventID = 0;
 
   return tree;
 }
