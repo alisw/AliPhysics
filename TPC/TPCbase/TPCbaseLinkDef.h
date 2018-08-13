@@ -113,6 +113,11 @@
 #pragma link C++ class AliTPCSpaceCharge+;             // Distortions due to space charge in the TPC - rotational symetric
 #pragma link C++ class AliTPCSpaceCharge3D+;           // Distortions due to space charge in the TPC - full 3D calculation
 #pragma link C++ class AliTPCSpaceCharge2D2D+;         // Distortions due to space charge in the TPC - 2Dx2D calculation
+
+#ifdef HAVE_ALITPCCOMMON
+#pragma link C++ class AliTPCSpaceCharge3DDriftLine+;
+#endif
+
 #pragma link C++ class AliTPCCorrectionLookupTable+;   // Lookup table created from distortions
 #pragma link C++ class AliTPCExBEffective+;            // Cover ExB effect of non-explained physical model - not used
                                                        // --- still used in CalibMacros --- move to attic if removed there
@@ -143,13 +148,6 @@
 #pragma link C++ class AliTPCTrackPoint2+;    // defined in AliComplexCluster.h - moved from TPCrec
 #pragma link C++ class AliTPCSAMPAEmulator+;   //UTIL SAMPA emulator
 
-#pragma link C++ class AliTPC3DCylindricalInterpolator+;
-#pragma link C++ class AliTPC3DCylindricalInterpolatorIrregular+;
-#pragma link C++ class AliTPCLookUpTable3DInterpolatorD+;
-#pragma link C++ class AliTPCLookUpTable3DInterpolatorIrregularD+;
-#pragma link C++ class AliTPCPoissonSolver+;
-#pragma link C++ class AliTPCSpaceCharge3DDriftLine+;
-
 
 
 #pragma link C++ class AliTPCChebCorr+;       // Wrapper for Chebyshev-parameterized corrections
@@ -166,4 +164,3 @@
 #pragma link C++ class AliTPCChebDist+;       // Wrapper for Chebyshev-parameterized distortions
 
 #endif
-
