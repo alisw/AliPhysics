@@ -41,6 +41,7 @@
 #include "AliAODTrack.h"
 #include "AliVParticle.h"
 #include "TRandom3.h"
+#include "AliEmcalPythiaInfo.h"
 #include "AliAnalysisTaskEmcalJet.h"
 
 #include "AliHFJetsTaggingVertex.h"
@@ -85,7 +86,7 @@ AliEmcalJetTree::AliEmcalJetTree(const char* name) : TNamed(name, name), fJetTre
 
 //________________________________________________________________________
 Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Float_t vertexX, Float_t vertexY, Float_t vertexZ, Float_t centrality, Long64_t eventID, Float_t magField,
-  AliTrackContainer* trackCont, Int_t motherParton, Int_t motherHadron, Float_t matchedPt, Float_t truePtFraction, Float_t ptHard,
+  AliTrackContainer* trackCont, Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchedPt, Float_t truePtFraction, Float_t ptHard,
   Float_t* trackPID_ITS, Float_t* trackPID_TPC, Float_t* trackPID_TOF, Float_t* trackPID_TRD, Short_t* trackPID_Reco, Short_t* trackPID_Truth,
   Float_t* trackIP_d0, Float_t* trackIP_z0, Float_t* trackIP_d0cov, Float_t* trackIP_z0cov,
   Int_t numSecVertices, Float_t* secVtx_X, Float_t* secVtx_Y, Float_t* secVtx_Z, Float_t* secVtx_Mass, Float_t* secVtx_Lxy, Float_t* secVtx_SigmaLxy, Float_t* secVtx_Chi2, Float_t* secVtx_Dispersion)
@@ -205,6 +206,7 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Floa
   {
     fBuffer_Jet_MC_MotherParton = motherParton;
     fBuffer_Jet_MC_MotherHadron = motherHadron;
+    fBuffer_Jet_MC_MotherIC = partonInitialCollision;
     fBuffer_Jet_MC_MatchedPt = matchedPt;
     fBuffer_Jet_MC_TruePtFraction = truePtFraction;
   }
@@ -291,6 +293,7 @@ void AliEmcalJetTree::InitializeTree()
   {
     fJetTree->Branch("Jet_MC_MotherParton",&fBuffer_Jet_MC_MotherParton,"Jet_MC_MotherParton/I");
     fJetTree->Branch("Jet_MC_MotherHadron",&fBuffer_Jet_MC_MotherHadron,"Jet_MC_MotherHadron/I");
+    fJetTree->Branch("Jet_MC_MotherIC",&fBuffer_Jet_MC_MotherIC,"Jet_MC_MotherIC/I");
     fJetTree->Branch("Jet_MC_MatchedPt",&fBuffer_Jet_MC_MatchedPt,"Jet_MC_MatchedPt/F");
     fJetTree->Branch("Jet_MC_TruePtFraction",&fBuffer_Jet_MC_TruePtFraction,"Jet_MC_TruePtFraction/F");
   }
@@ -486,10 +489,11 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     Double_t truePtFraction = 0;
     Int_t currentJetType_HM = 0;
     Int_t currentJetType_PM = 0;
+    Int_t currentJetType_IC = 0;
     if(fJetTree->GetSaveMCInformation())
     {
       // Get jet type from MC (hadron matching, parton matching definition - for HF jets)
-      GetJetType(jet, currentJetType_HM, currentJetType_PM);
+      GetJetType(jet, currentJetType_HM, currentJetType_PM, currentJetType_IC);
       // Get true pT estimators
       GetJetTruePt(jet, matchedJetPt, truePtFraction);
     }
@@ -524,7 +528,7 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
 
     // Fill jet to tree
     Bool_t accepted = fJetTree->AddJetToTree(jet, fJetsCont->GetRhoVal(), vtxX, vtxY, vtxZ, fCent, eventID, InputEvent()->GetMagneticField(), fTracksCont,
-              currentJetType_PM,currentJetType_HM,matchedJetPt,truePtFraction,fPtHard,
+              currentJetType_PM,currentJetType_HM,currentJetType_IC,matchedJetPt,truePtFraction,fPtHard,
               vecSigITS, vecSigTPC, vecSigTOF, vecSigTRD, vecRecoPID, vecTruePID,
               vec_d0, vec_z0, vec_d0cov, vec_z0cov,
               secVtx_X, secVtx_Y, secVtx_Z, secVtx_Mass, secVtx_Lxy, secVtx_SigmaLxy, secVtx_Chi2, secVtx_Dispersion);
@@ -606,8 +610,9 @@ void AliAnalysisTaskJetExtractor::GetJetTruePt(AliEmcalJet* jet, Double_t& match
 
 }
 
+
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractor::GetJetType(AliEmcalJet* jet, Int_t& typeHM, Int_t& typePM)
+void AliAnalysisTaskJetExtractor::GetJetType(AliEmcalJet* jet, Int_t& typeHM, Int_t& typePM, Int_t& typeIC)
 {
   Double_t radius = fHadronMatchingRadius;
 
@@ -643,6 +648,38 @@ void AliAnalysisTaskJetExtractor::GetJetType(AliEmcalJet* jet, Int_t& typeHM, In
   // Set flavour of AliEmcalJet object (set ith bit while i corresponds to type)
   if(fSetEmcalJetFlavour)
     jet->AddFlavourTag(static_cast<Int_t>(TMath::Power(2, typeHM)));
+
+
+  const AliEmcalPythiaInfo* partonsInfo = GetPythiaInfo();
+  typeIC = 0;
+  if (partonsInfo)
+  {
+    // Get primary partons directions 
+    Double_t parton1phi = partonsInfo->GetPartonPhi6();
+    Double_t parton1eta = partonsInfo->GetPartonEta6();
+    Double_t parton2phi = partonsInfo->GetPartonPhi7();
+    Double_t parton2eta = partonsInfo->GetPartonEta7();
+
+
+    Double_t delta1Eta = (parton1eta-jet->Eta());
+    Double_t delta1Phi = TMath::Min(TMath::Abs(parton1phi-jet->Phi()),TMath::TwoPi() - TMath::Abs(parton1phi-jet->Phi()));
+    Double_t delta1R   = TMath::Sqrt(delta1Eta*delta1Eta + delta1Phi*delta1Phi);
+    Double_t delta2Eta = (parton2eta-jet->Eta());
+    Double_t delta2Phi = TMath::Min(TMath::Abs(parton2phi-jet->Phi()),TMath::TwoPi() - TMath::Abs(parton2phi-jet->Phi()));
+    Double_t delta2R   = TMath::Sqrt(delta2Eta*delta2Eta + delta2Phi*delta2Phi);
+
+    // Check if one of the partons if closer than matching criterion
+    Bool_t matched = (delta1R < fJetsCont->GetJetRadius()/2.) || (delta2R < fJetsCont->GetJetRadius()/2.);
+
+    // Matching criterion fulfilled -> Set flag to closest
+    if(matched)
+    {
+      if(delta1R < delta2R)
+        typeIC = partonsInfo->GetPartonFlag6();
+      else
+        typeIC = partonsInfo->GetPartonFlag7();
+    }
+  }
 }
 
 //________________________________________________________________________
