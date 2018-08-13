@@ -61,21 +61,21 @@ TInfo *readOCDB_Temperature(Int_t runNb, Bool_t debug)
   UInt_t lTime = 0;
   for (Int_t isensor=0; isensor<kNumSens; isensor++) {
     AliEMCALSensorTemp *o = arr->GetSensor(isensor);
-    if (!o) 
+    if (!o)
       continue;
 
     UInt_t startt = o->GetStartTime();
     UInt_t stopt  = o->GetEndTime();
 
     if (debug)
-      cout << "Sensor " << isensor 
-	   << " " << o->GetStringID() << ":" 
-	   << " side " << o->GetSide()
-	   << " sector " << o->GetSector()
-	   << " num " << o->GetNum()
-	   << " startTime " << startt
-	   << " endTime " << stopt
-	   << endl;
+      cout  << "Sensor " << isensor
+            << " " << o->GetStringID() << ":"
+            << " side " << o->GetSide()
+            << " sector " << o->GetSector()
+            << " num " << o->GetNum()
+            << " startTime " << startt
+            << " endTime " << stopt
+            << endl;
 
     np[isensor]  = 0;
     min[isensor] = +100;
@@ -85,62 +85,62 @@ TInfo *readOCDB_Temperature(Int_t runNb, Bool_t debug)
     if (f) {
       np[isensor] = f->GetKnots();
       if (debug)
-	cout << " np " << np[isensor] << endl;
+        cout << " np " << np[isensor] << endl;
       Double_t *x = f->GetX();
       Double_t *y0 = f->GetY0();
       Double_t *y1 = f->GetY1();
       for (Int_t i=0; i<np[isensor]; ++i) {
-	if (debug)
-	  cout << " i " << i
-	       << " x " << x[i]
-	       << " y0 " << y0[i]
-	       << " y1 " << y1[i]
-	       << endl;
-	
-	if (min[isensor]>y0[i]) min[isensor]=y0[i];
-	if (max[isensor]<y0[i]) max[isensor]=y0[i];
+        if (debug)
+          cout  << " i " << i
+                << " x " << x[i]
+                << " y0 " << y0[i]
+                << " y1 " << y1[i]
+                << endl;
+
+        if (min[isensor]>y0[i]) min[isensor]=y0[i];
+        if (max[isensor]<y0[i]) max[isensor]=y0[i];
       }
     } else {
       TGraph *g = o->GetGraph();
       if (g) {
-	np[isensor] = g->GetN();
-	if (debug)
-	  cout << " np " << np[isensor] << endl;
-	Double_t *x = g->GetX();
-	Double_t *y0 = g->GetY();
-	for (Int_t i=0; i<np[isensor]; i++) {
-	  if (debug)
-	    cout << " i " << i
-		 << " x " << x[i]
-	       << " y0 " << y0[i]
-		 << endl;
-	  if (min[isensor]>y0[i]) min[isensor]=y0[i];
-	  if (max[isensor]<y0[i]) max[isensor]=y0[i];
-	}
+        np[isensor] = g->GetN();
+        if (debug)
+          cout << " np " << np[isensor] << endl;
+        Double_t *x = g->GetX();
+        Double_t *y0 = g->GetY();
+        for (Int_t i=0; i<np[isensor]; i++) {
+          if (debug)
+            cout  << " i " << i
+                  << " x " << x[i]
+                  << " y0 " << y0[i]
+                  << endl;
+          if (min[isensor]>y0[i]) min[isensor]=y0[i];
+          if (max[isensor]<y0[i]) max[isensor]=y0[i];
+        }
       }
     }
 
     if (np[isensor]>0) {
       if (debug)
-	cout << "Min Temp: " << min[isensor] << " Max Temp: " << max[isensor] << endl;
+        cout << "Min Temp: " << min[isensor] << " Max Temp: " << max[isensor] << endl;
       info->Set(isensor, min[isensor], max[isensor]);
       avTime += startt + stopt;
       if (startt<fTime)
-	fTime=startt;
+        fTime=startt;
       if (stopt>lTime)
-	lTime=stopt;
+        lTime=stopt;
     }
 
     if (0)
-      cout << "Tree: " << runNb 
-	   << " " << isensor
-	   << " " << o->GetSide() 
-	   << " " << o->GetSector()
-	   << " " << o->GetNum()
-	   << " " << o->GetStartTime()
-	   << " " << o->GetEndTime()
-           << " " << min[isensor] 
-	   << " " << max[isensor] << endl;
+      cout  << "Tree: " << runNb
+            << " " << isensor
+            << " " << o->GetSide()
+            << " " << o->GetSector()
+            << " " << o->GetNum()
+            << " " << o->GetStartTime()
+            << " " << o->GetEndTime()
+            << " " << min[isensor]
+            << " " << max[isensor] << endl;
   }
   Int_t nv = info->Nvalid();
   if (nv>0) {
