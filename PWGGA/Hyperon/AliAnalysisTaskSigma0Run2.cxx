@@ -203,6 +203,9 @@ void AliAnalysisTaskSigma0Run2::CastToVector(
         dynamic_cast<AliAODConversionPhoton *>(fGammaArray->At(iGamma));
     if (!PhotonCandidate) continue;
     AliSigma0ParticleV0 phot(PhotonCandidate, inputEvent);
+    if(fIsMC) {
+      const int label = phot.MatchToMC(fMCEvent, 22, {{11, -11}});
+    }
     container.push_back(phot);
   }
 }
