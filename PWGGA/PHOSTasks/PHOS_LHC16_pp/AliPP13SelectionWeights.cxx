@@ -10,6 +10,7 @@
 ClassImp(AliPP13SelectionWeights);
 ClassImp(AliPP13SelectionWeightsTOF);
 ClassImp(AliPP13SelectionWeightsMC);
+ClassImp(AliPP13SelectionWeightsFeeddown);
 ClassImp(AliPP13SelectionWeightsSPMC);
 
 //________________________________________________________________
@@ -48,6 +49,13 @@ Double_t AliPP13SelectionWeightsSPMC::Weights(Double_t pT, const EventFlags & ef
 }
 
 //________________________________________________________________
+Double_t AliPP13SelectionWeightsFeeddown::Weights(Double_t pT, const EventFlags & eflags) const
+{
+    (void) eflags;
+    return fDataMCRatio->Eval(pT);
+}
+
+//________________________________________________________________
 AliPP13SelectionWeights & AliPP13SelectionWeightsSPMC::SinglePi0()
 {
     AliPP13SelectionWeightsSPMC & ws = * new AliPP13SelectionWeightsSPMC();
@@ -75,9 +83,9 @@ AliPP13SelectionWeights & AliPP13SelectionWeightsSPMC::SinglePi0()
     ws.fW3 = 0.135;
     ws.fW4 = 0.135;
 
-    ws.fNonA = -0.06;
-    ws.fNonSigma = 0.7;
-    ws.fNonGlobal = 1.015;
+    // ws.fNonA = -0.035;
+    // ws.fNonSigma = 0.95;
+    // ws.fNonGlobal = 1.02;
     return ws;
 }
 
@@ -96,9 +104,9 @@ AliPP13SelectionWeights & AliPP13SelectionWeightsSPMC::SingleEta()
     ws.fW4 = 0.547;
 
     // The latest nonlinarity tested on the simples data
-    ws.fNonA = -0.06;
-    ws.fNonSigma = 0.7;
-    ws.fNonGlobal = 1.015;
+    // ws.fNonA = -0.035;
+    // ws.fNonSigma = 0.95;
+    // ws.fNonGlobal = 1.02;
     return ws;
 }
 
@@ -111,6 +119,9 @@ AliPP13SelectionWeights & AliPP13SelectionWeights::Init(Mode m)
 
     if (m == kSingleEtaMC)
         return AliPP13SelectionWeightsSPMC::SingleEta();
+
+    if (m == kFeeddown)
+        return * new AliPP13SelectionWeightsFeeddown();
 
     if (m == kMC)
         return * new AliPP13SelectionWeightsMC();
