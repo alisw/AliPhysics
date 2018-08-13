@@ -102,6 +102,8 @@ public:
 
 	void SetDoImprovedDCACut(Bool_t value){fDoImprovedDCACut = value;}
 
+	void SetMaxFactorPtHardJet(Double_t value){fMaxFactorPtHardJet = value;}
+
 	// B jet tracks selection
 	void SetTrackMinPt(Double_t val){ fTCMinTrackPt = val;}
 	void SetTPCClusterMin(Int_t val){ fTCMinClusTPC = val;}
@@ -170,6 +172,8 @@ private:
 	Double_t fTCMaxIPz;//
 	Double_t fTCMaxDecayLength;//
 	Double_t fTCMaxDCATrackJet;//
+
+	Double_t fMaxFactorPtHardJet;//
 	
 	TH1D * fhistInclusiveJetCuts;//!
 	TH1D * fhistbJetCuts;//!
@@ -413,7 +417,7 @@ private:
 	TH2D* fh2dLamdaRecPtVsGenPt;//!
 	TH2D* fh2dAnLamdaRecPtVsGenPt;//!
 
-	TH2D* fh2dPhotonMassVsPt;//!
+	TH1D* fh1dPhotonPt;//!
 
 	TH1D* fh1dKshortPtMC;//!
 	TH1D* fh1dLamdaPtMC;//!
