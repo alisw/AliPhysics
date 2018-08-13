@@ -183,6 +183,21 @@ AliFemtoModelCorrFctnTrueQ6D::~AliFemtoModelCorrFctnTrueQ6D()
   delete fRng;
 }
 
+AliFemtoModelCorrFctnTrueQ6D&
+AliFemtoModelCorrFctnTrueQ6D::operator=(const AliFemtoModelCorrFctnTrueQ6D& rhs)
+{
+  if (this != &rhs) {
+    delete fHistogram;
+    fHistogram = static_cast<HistType*>(rhs.fHistogram->Clone());
+    fBinMethod = rhs.fBinMethod;
+    fIgnoreZeroMassParticles = rhs.fIgnoreZeroMassParticles;
+    fQlimits[0] = rhs.fQlimits[0];
+    fQlimits[1] = rhs.fQlimits[1];
+    fQlimits[2] = rhs.fQlimits[2];
+  }
+  return *this;
+}
+
 
 TList*
 AliFemtoModelCorrFctnTrueQ6D::GetOutputList()

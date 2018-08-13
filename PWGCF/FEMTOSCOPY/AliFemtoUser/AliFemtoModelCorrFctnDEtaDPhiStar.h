@@ -113,6 +113,10 @@ public:
   /// Return struct containing the values of interest from a pair of particles.
   virtual EtaPhiStar GetDeltaEtaDeltaPhiStar(const AliFemtoTrack&, const AliFemtoTrack&);
 
+private:
+  AliFemtoModelCorrFctnDEtaDPhiStar(const AliFemtoModelCorrFctnDEtaDPhiStar&);
+  AliFemtoModelCorrFctnDEtaDPhiStar& operator=(const AliFemtoModelCorrFctnDEtaDPhiStar&);
+
 protected:
 
   /// Radius in meters to the phi calculation point
