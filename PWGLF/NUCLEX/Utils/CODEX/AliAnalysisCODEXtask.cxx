@@ -37,6 +37,7 @@ AliAnalysisCODEXtask::AliAnalysisCODEXtask(const char* name) :
   mNsigmaTOFselectionPOI{10.},
   mStartingPtTOFselection{1.e4},
   mSkipEmptyEvents{false},
+  mITSstandalone{false},
   mOutput{nullptr},
   mTree{nullptr},
   mPIDresponse{nullptr},
@@ -48,8 +49,8 @@ AliAnalysisCODEXtask::AliAnalysisCODEXtask(const char* name) :
   Cuts.SetMinNClustersTPC(60);
   Cuts.SetMaxChi2PerClusterTPC(6);
   Cuts.SetAcceptKinkDaughters(false);
-  Cuts.SetRequireTPCRefit(true);
   Cuts.SetRequireITSRefit(true);
+  mITSstandalone ? Cuts.SetRequireTPCRefit(false) : Cuts.SetRequireTPCRefit(true);
   Cuts.SetMaxDCAToVertexZ(2);
   Cuts.SetMaxDCAToVertexXY(1.5);
   Cuts.SetMaxChi2PerClusterITS(36);
@@ -127,7 +128,9 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
   const AliESDVertex *vertex = static_cast<const AliESDVertex*>(mEventCuts.GetPrimaryVertex());
   mHeader.SetVertexZposition(vertex->GetZ());
 
-  const unsigned short standard_mask = (Cuts.GetRequireTPCRefit()) ? kTPCrefit : 0;
+  // qui va fatta la modifica per dirmi se è TPCrefit o no
+  // const unsigned short standard_mask = (Cuts.GetRequireTPCRefit()) ? kTPCrefit : 0;
+  const unsigned short standard_mask = ((track->GetStatus() & AliESDtrack::kTPCrefit) == AliESDtrack::kTPCrefit)) ? kTPCrefit : 0;
 
   float cent = mEventCuts.GetCentrality(0);
   mHeader.SetCentrality(cent);
