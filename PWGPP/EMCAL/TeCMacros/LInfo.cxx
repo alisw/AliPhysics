@@ -2,11 +2,11 @@
 #include <TCanvas.h>
 #include <TDatime.h>
 #include <TFile.h>
-#include <TFile.h>
 #include <TGrid.h>
 #include <TH2F.h>
 #include <TMap.h>
 #include <TNtuple.h>
+#include <TProfile2D.h>
 
 void LInfo::Compute()
 {
@@ -87,6 +87,7 @@ void LInfo::CreateHistograms()
   const Int_t kNCol     = NCol();
   const Int_t kNRow     = NRow();
   const Int_t kNStrip   = NStrip();
+  const char *opt = "S";
 
   for (Int_t iSM=0; iSM<kNSM; ++iSM) {
     Int_t isector = iSM/2;
@@ -94,23 +95,33 @@ void LInfo::CreateHistograms()
     for (Int_t igain=0; igain<2; ++igain) {
       sprintf(id, "hStrip%02d%d", iSM, igain);
       sprintf(title, "LEDMon Amplitude: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
-      fhStrip[iSM][igain] = new TH1F(id, title, kNStrip, -0.5, kNStrip-0.5);
+      fhStrip[iSM][igain] = new TProfile(id, title, kNStrip, -0.5, kNStrip-0.5, opt);
       fhStrip[iSM][igain]->SetDirectory(0);
 
       sprintf(id, "hStripCount%02d%d", iSM, igain);
       sprintf(title, "LEDMon Entries: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
-      fhStripCount[iSM][igain] = new TH1F(id, title, kNStrip, -0.5, kNStrip-0.5);
+      fhStripCount[iSM][igain] = new TProfile(id, title, kNStrip, -0.5, kNStrip-0.5, opt);
       fhStripCount[iSM][igain]->SetDirectory(0);
+
+      sprintf(id, "hStripWeighted%02d%d", iSM, igain);
+      sprintf(title, "LEDMon Weighted Amplitude: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
+      fhStripWeighted[iSM][igain] = new TProfile(id, title, kNStrip, -0.5, kNStrip-0.5, opt);
+      fhStripWeighted[iSM][igain]->SetDirectory(0);
 
       sprintf(id, "hLed%02d%d", iSM, igain);
       sprintf(title, "Led Amplitude: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
-      fhLed[iSM][igain] = new TH2F(id, title, kNCol, -0.5, kNCol-0.5, kNRow, -0.5, kNRow - 0.5);
+      fhLed[iSM][igain] = new TProfile2D(id, title, kNCol, -0.5, kNCol-0.5, kNRow, -0.5, kNRow - 0.5, opt);
       fhLed[iSM][igain]->SetDirectory(0);
 
       sprintf(id, "hLedCount%02d%d", iSM, igain);
       sprintf(title, "Led Entries: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
-      fhLedCount[iSM][igain] = new TH2F(id, title, kNCol, -0.5, kNCol-0.5, kNRow, -0.5, kNRow - 0.5);
+      fhLedCount[iSM][igain] = new TProfile2D(id, title, kNCol, -0.5, kNCol-0.5, kNRow, -0.5, kNRow - 0.5, opt);
       fhLedCount[iSM][igain]->SetDirectory(0);
+
+      sprintf(id, "hLedWeighted%02d%d", iSM, igain);
+      sprintf(title, "Led Weighted Amplitude: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
+      fhLedWeighted[iSM][igain] = new TProfile2D(id, title, kNCol, -0.5, kNCol-0.5, kNRow, -0.5, kNRow - 0.5, opt);
+      fhLedWeighted[iSM][igain]->SetDirectory(0);
 
       fhAmpOverMon[iSM][igain]       = 0;
       fhLedRmsOverMean[iSM][igain]   = 0;
@@ -119,10 +130,11 @@ void LInfo::CreateHistograms()
   }
 }
 
-void LInfo::FillLed(Int_t mod,Int_t gain, Int_t col, Int_t row, Double_t amp, Double_t rms)
+void LInfo::FillLed(Int_t mod, Int_t gain, Int_t col, Int_t row, Double_t amp, Double_t rms)
 {
   fhLed[mod][gain]->Fill(col, row, amp);
   fhLedCount[mod][gain]->Fill(col, row, rms);
+  fhLedWeighted[mod][gain]->Fill(col, row, amp, rms);
 }
 
 TCanvas *LInfo::DrawHist(Int_t which, Int_t gain, const char *opt) const
@@ -194,6 +206,7 @@ void LInfo::FillStrip(Int_t mod, Int_t gain, Int_t strip, Double_t amp, Double_t
 {
   fhStrip[mod][gain]->Fill(strip, amp);
   fhStripCount[mod][gain]->Fill(strip, rms);
+  fhStripWeighted[mod][gain]->Fill(strip, amp, rms);
 }
 
 Double_t LInfo::FracLeds(Int_t sm, Int_t gain) const
