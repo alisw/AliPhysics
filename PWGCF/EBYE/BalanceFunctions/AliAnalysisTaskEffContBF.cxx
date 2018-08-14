@@ -515,11 +515,26 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 	
 	AliCentrality *centrality = headerAOD->GetCentralityP();
 	nCentrality =centrality->GetCentralityPercentile(fCentralityEstimator.Data());
+
+        if (nCentrality!=-1){
 	
 	if(!centrality->IsEventInCentralityClass(fCentralityPercentileMin,
 						 fCentralityPercentileMax,
 						 fCentralityEstimator.Data()))
 	  return;
+        }
+
+	else if (nCentrality==-1){
+
+        AliMultSelection *multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
+        if(!multSelection) {
+          AliWarning("AliMultSelection object not found!");
+        }
+        
+        nCentrality = multSelection->GetMultiplicityPercentile(fCentralityEstimator, kFALSE);
+	if ((nCentrality < fCentralityPercentileMin) || (nCentrality >= fCentralityPercentileMax)) return;
+	}	
+
       }
       
       else {
