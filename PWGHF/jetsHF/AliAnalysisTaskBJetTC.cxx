@@ -65,7 +65,6 @@ fTCMaxIPxy(1.),
 fTCMaxIPz(5.),
 fTCMaxDecayLength(5),
 fTCMaxDCATrackJet(0.07),
-fMaxFactorPtHardJet(10.0),
 fhistInclusiveJetCuts(0x0),
 fhistbJetCuts(0x0),
 fhistcJetCuts(0x0),
@@ -421,7 +420,6 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fTCMaxIPz(5.),
 		fTCMaxDecayLength(5),
 		fTCMaxDCATrackJet(0.07),
-		fMaxFactorPtHardJet(10.0),
 		fhistInclusiveJetCuts(0x0),
 		fhistbJetCuts(0x0),
 		fhistcJetCuts(0x0),
@@ -2199,78 +2197,27 @@ Bool_t AliAnalysisTaskBJetTC::IsSelected(Int_t &WhyRejected,ULong_t &RejectionBi
     		accept=kFALSE;
   	}
 
-	/*if(fIsPythia){
-
-		TList *EventHeadersList         = 0x0;
-		AliGenEventHeader* eventHeader     = 0;
-		Float_t ptHard;
-		AliEmcalJet* jet = 0x0;
-		AliJetContainer* JetContainerMC = static_cast<AliJetContainer*>(fJetCollArray.At(1));
-		Int_t Njets = JetContainerMC->GetNJets();
-
-		EventHeadersList = MCEvent()->GetCocktailList(); //get list of MC cocktail headers 
-		
-		if(EventHeadersList){
-		      for(Int_t i = 0; i<EventHeadersList->GetEntries(); i++){
-			 eventHeader = (AliGenEventHeader*)EventHeadersList->At(i);
-
-			 AliGenPythiaEventHeader* fGenPythiaEventHeader= dynamic_cast<AliGenPythiaEventHeader*>(eventHeader);
-
-			 if(fGenPythiaEventHeader){
-			    ptHard = fGenPythiaEventHeader->GetPtHard();
-
-			    for(Int_t ijet = 0; ijet < Njets; ijet++) {
-			       jet = (AliEmcalJet*)JetContainerMC->GetJet(ijet);
-			       if (!jet) continue;
-
-			       //Compare jet pT and pt Hard
-			       if(jet->Pt() > 2 * ptHard){
-				  	AliInfo(Form("Reject event with : pT Hard %2.2f, jet pT %2.2f", ptHard, jet->Pt()));
-					RejectionBits+=1<<kSelPtHardBin;
-					accept=kFALSE;
-			       }
-			    }
-			 }
-		      }
-		}
-	}*/
 
 	if(fIsPythia){
-		AliGenEventHeader * eventHeader = dynamic_cast<AliGenEventHeader*>(MCEvent()->GenEventHeader());
-		TString eventHeaderName     = eventHeader->ClassName();
-		if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0){
-			AliGenPythiaEventHeader* fGenPythiaEventHeader = dynamic_cast<AliGenPythiaEventHeader*>(eventHeader);
-			if ( fGenPythiaEventHeader ){
-				Int_t nTriggerJets =  fGenPythiaEventHeader->NTriggerJets();
-			  	Float_t ptHard = fGenPythiaEventHeader->GetPtHard();
-			  	TParticle * jet =  0;
-			 	Float_t tmpjet[]={0,0,0,0};
-
-				if(nTriggerJets>0){
-				  	fGenPythiaEventHeader->TriggerJet(0, tmpjet);
-				  	jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
-
-				  	//Compare jet pT and pt Hard
-				  	if(jet->Pt() > fMaxFactorPtHardJet * ptHard)
-				  	{
-						cout<<"This event was rejected due large Pthard \n";
-				  		AliInfo(Form("Reject jet event with : pT Hard %2.2f, pycell jet pT %2.2f", ptHard, jet->Pt()));
-					    	RejectionBits+=1<<kSelPtHardBin;
-					    	accept=kFALSE;
-				  	}
+		if(!CheckMCOutliers()) {
+			 	RejectionBits+=1<<kSelPtHardBin;
+				accept=kFALSE;
+		}
+		if (fPtHardAndTrackPtFactor > 0.) {
+			AliParticleContainer* mcpartcont = dynamic_cast<AliParticleContainer*>(fParticleCollArray.At(0));
+			if ((Bool_t)mcpartcont) {
+			      for (auto mctrack : mcpartcont->all()) {// Not cuts applied ; use accept for cuts
+				Float_t trackpt = mctrack->Pt();
+				if (trackpt > (fPtHardAndTrackPtFactor * fPtHard) ) {
+				  AliInfo(Form("Reject : track %2.2f, factor %2.2f, ptHard %f", trackpt, fPtHardAndTrackPtFactor, fPtHard));
+				  RejectionBits+=1<<kSelPtHardBin;
+				  accept=kFALSE;
 				}
-
-			  	if(jet) delete jet;
-
-				fGenPythiaEventHeader = 0x0;
-				delete fGenPythiaEventHeader;
-			} // pythia header
-
-
-	  	}
-		eventHeader=0x0;
-		delete eventHeader;
-	}
+			      }
+			}
+			mcpartcont=NULL; delete mcpartcont;
+		}
+	}	
 
 
 return accept;
