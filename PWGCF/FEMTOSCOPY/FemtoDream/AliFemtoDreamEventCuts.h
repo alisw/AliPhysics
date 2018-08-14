@@ -13,6 +13,8 @@
 class AliFemtoDreamEventCuts {
  public:
   AliFemtoDreamEventCuts();
+  AliFemtoDreamEventCuts(const AliFemtoDreamEventCuts& cuts);
+  AliFemtoDreamEventCuts& operator=(const AliFemtoDreamEventCuts& cuts);
   virtual ~AliFemtoDreamEventCuts();
   void SetMinimalBooking(bool doIt) {fMinimalBooking=doIt;};
   bool GetMinimalBooking() {return fMinimalBooking;};

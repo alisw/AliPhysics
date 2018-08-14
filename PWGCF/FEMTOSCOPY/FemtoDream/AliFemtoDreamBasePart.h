@@ -16,6 +16,8 @@
 class AliFemtoDreamBasePart {
  public:
   AliFemtoDreamBasePart();
+  AliFemtoDreamBasePart(const AliFemtoDreamBasePart& part);
+  AliFemtoDreamBasePart &operator=(const AliFemtoDreamBasePart &obj);
   virtual ~AliFemtoDreamBasePart();
   enum PartOrigin {
     kPhysPrimary=0,
@@ -25,7 +27,6 @@ class AliFemtoDreamBasePart {
     kContamination=4,
     kUnknown=5
   };
-  AliFemtoDreamBasePart &operator=(const AliFemtoDreamBasePart &obj);
   void SetMCParticle(AliAODMCParticle *mcPart,AliMCEvent *evt);
   void ResetMCInfo();
   void SetMomentum(float px,float py,float pz) {fP.SetXYZ(px,py,pz);};

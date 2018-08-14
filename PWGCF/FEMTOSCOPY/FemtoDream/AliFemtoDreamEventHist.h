@@ -16,6 +16,8 @@ class AliFemtoDreamEventHist {
  public:
   AliFemtoDreamEventHist();
   AliFemtoDreamEventHist(bool centVsMultPlot);
+  AliFemtoDreamEventHist(const AliFemtoDreamEventHist& hists);
+  AliFemtoDreamEventHist& operator=(const AliFemtoDreamEventHist& hists);
   virtual ~AliFemtoDreamEventHist();
   void FillEvtCounter(int iBin){fEvtCounter->Fill(iBin);};
   void FillCuts(int iBin,float val){fCutConfig->Fill(iBin,val);};
