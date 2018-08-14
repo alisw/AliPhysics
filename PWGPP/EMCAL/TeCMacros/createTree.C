@@ -32,7 +32,7 @@ class TCalCell : public TObject {
   Double32_t fMonR; //[0,0,16] mon rms
   Double32_t fLocT; //[0,0,16] loc T
   Double32_t fSMT;  //[0,0,16] sm T
-  ClassDef(TCalCell, 1); // CalCell class
+  ClassDef(TCalCell, 2); // CalCell class
 };
 
 class TCalInfo : public TObject {
