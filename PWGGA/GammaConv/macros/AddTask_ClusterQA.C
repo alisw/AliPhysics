@@ -169,10 +169,10 @@ void AddTask_ClusterQA( TString   V0ReaderEventCutNumber        = "00000003",
   fQA->SetV0ReaderName(V0ReaderName);
   mgr->AddTask(fQA);
 
-  AliAnalysisDataContainer *coutput =
-  mgr->CreateContainer(Form("GammaCaloQA_%s_%s_%s", TaskEventCutnumber.Data(), TaskClusterCutnumberEMC.Data(),TaskClusterCutnumberEMC.Data()), TList::Class(), AliAnalysisManager::kOutputContainer,"ClusterTree.root");
-  mgr->ConnectOutput(fQA,  1, coutput);
-  mgr->ConnectInput(fQA,   0, cinput);
+
+  mgr->ConnectInput  (fQA, 0,  cinput );
+  mgr->ConnectOutput (fQA, 1, mgr->CreateContainer(Form("GammaCaloQA_%s_%s_%s", TaskEventCutnumber.Data(), TaskClusterCutnumberEMC.Data(),TaskClusterCutnumberEMC.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:GammaCaloQA_%s_%s_%s", mgr->GetCommonFileName(), TaskEventCutnumber.Data(), TaskClusterCutnumberEMC.Data(),TaskClusterCutnumberEMC.Data())) );
+  mgr->ConnectOutput (fQA, 2, mgr->CreateContainer("ClusterTree", TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()) );
 
   return;
 }
