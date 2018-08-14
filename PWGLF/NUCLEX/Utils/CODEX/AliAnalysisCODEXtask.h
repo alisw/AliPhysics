@@ -41,6 +41,7 @@ class AliAnalysisCODEXtask : public AliAnalysisTaskSE {
     double          mNsigmaTOFselectionPOI; /// Maximum number of sigmas in the TPC from the expected signal of a POI
     double          mStartingPtTOFselection;/// pt at which the TOF selection starts
     bool            mSkipEmptyEvents;       /// If true events without any tracks are not stored in the output tree
+    bool            mITSstandalone;         /// If true ITS standalone PID is provided
 
     void Discard(const TString discard) { mToDiscard = discard;};
 
