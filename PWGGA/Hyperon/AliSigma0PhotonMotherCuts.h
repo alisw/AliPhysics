@@ -31,6 +31,8 @@ class AliSigma0PhotonMotherCuts : public TObject {
       AliVEvent *inputEvent, AliMCEvent *mcEvent,
       const std::vector<AliSigma0ParticleV0> &photonCandidates,
       const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
+  void SingleV0QA(const std::vector<AliSigma0ParticleV0> &photonCandidates,
+                  const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
   void SigmaToLambdaGamma(
       const std::vector<AliSigma0ParticleV0> &photonCandidates,
       const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
@@ -57,7 +59,16 @@ class AliSigma0PhotonMotherCuts : public TObject {
 
   void SetSigmaMass(float mass) { fMassSigma = mass; }
   void SetMixingDepth(short mixDepth) { fMixingDepth = mixDepth; }
+
+  // For the tree output
+  void SetSigmaMassCutTree(float cut) { fSigmaMassCutTree = cut; }
+
+  // For the containers for Femto
   void SetSigmaMassCut(float cut) { fSigmaMassCut = cut; }
+  void SetSigmaSideband(float down, float up) {
+    fSidebandCutDown = down, fSidebandCutUp = up;
+  }
+
   void SetPhotonMinPt(float minpT) { fPhotonPtMin = minpT; }
   void SetPhotonMaxPt(float maxpT) { fPhotonPtMax = maxpT; }
   void SetArmenterosCut(float qtLow, float qtUp, float alphaLow,
@@ -84,6 +95,14 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TList *GetCutHistograms() const { return fHistograms; }
   TTree *GetSigmaTree() const { return fOutputTree; }
 
+  std::vector<AliSigma0ParticlePhotonMother> &GetSigma() { return fSigma; }
+  std::vector<AliSigma0ParticlePhotonMother> &GetSidebandUp() {
+    return fSidebandUp;
+  }
+  std::vector<AliSigma0ParticlePhotonMother> &GetSidebandDown() {
+    return fSidebandDown;
+  }
+
  protected:
   TList *fHistograms;    //!
   TList *fHistogramsMC;  //!
@@ -95,6 +114,10 @@ class AliSigma0PhotonMotherCuts : public TObject {
   AliVEvent *fInputEvent;     //!
   AliMCEvent *fMCEvent;       //!
   TDatabasePDG fDataBasePDG;  //!
+
+  std::vector<AliSigma0ParticlePhotonMother> fSigma;         //!
+  std::vector<AliSigma0ParticlePhotonMother> fSidebandUp;    //!
+  std::vector<AliSigma0ParticlePhotonMother> fSidebandDown;  //!
 
   deque<vector<AliSigma0ParticleV0> > fLambdaMixed;               //!
   deque<vector<AliSigma0ParticleV0> > fPhotonMixed;               //!
@@ -112,11 +135,14 @@ class AliSigma0PhotonMotherCuts : public TObject {
   int fPDGDaughter1;   //
   int fPDGDaughter2;   //
 
-  float fMassSigma;     //
-  float fSigmaMassCut;  //
-  float fPhotonPtMin;   //
-  float fPhotonPtMax;   //
-  float fRapidityMax;   //
+  float fMassSigma;         //
+  float fSigmaMassCutTree;  //
+  float fSigmaMassCut;      //
+  float fSidebandCutUp;     //
+  float fSidebandCutDown;   //
+  float fPhotonPtMin;       //
+  float fPhotonPtMax;       //
+  float fRapidityMax;       //
 
   float fArmenterosCut;       //
   float fArmenterosQtLow;     //
@@ -148,6 +174,13 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistMixedInvMassPt;           //!
   TH2F *fHistMixedInvMassBinnedPt;     //!
 
+  TH2F *fHistLambdaPtPhi;  //!
+  TH2F *fHistLambdaPtEta;  //!
+  TH2F *fHistLambdaMassPt; //!
+  TH2F *fHistPhotonPtPhi;  //!
+  TH2F *fHistPhotonPtEta;  //!
+  TH2F *fHistPhotonMassPt; //!
+
   TH2F *fHistMCTruthPtY;                          //!
   TH2F *fHistMCTruthPtEta;                        //!
   TH2F *fHistMCTruthDaughterPtY;                  //!
@@ -161,13 +194,16 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistMCTruthDaughterPtYAcceptHighMult;    //!
   TH2F *fHistMCTruthDaughterPtEtaAcceptHighMult;  //!
 
-  TH1F *fHistMCV0Pt;    //!
-  TH1F *fHistMCV0Mass;  //!
+  TH1F *fHistMCV0Pt;           //!
+  TH1F *fHistMCV0Mass;         //!
+  TH2F *fHistMCV0Mother;       //!
+  TH2F *fHistMCV0Check;        //!
+  TH2F *fHistMCV0MotherCheck;  //!
 
   TTree *fOutputTree;  //!
 
  private:
-  ClassDef(AliSigma0PhotonMotherCuts, 5)
+  ClassDef(AliSigma0PhotonMotherCuts, 9)
 };
 
 #endif

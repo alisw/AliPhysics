@@ -72,10 +72,7 @@ class AliAnalysisTaskSigma0Run2 : public AliAnalysisTaskSE {
   float fV0PercentileMax;  //
   UInt_t fTrigger;         //
 
-  std::vector<AliSigma0ParticleV0> fLambdaContainer;      //!
-  std::vector<AliSigma0ParticleV0> fAntiLambdaContainer;  //!
-  std::vector<AliSigma0ParticleV0> fPhotonV0Container;    //!
-  TClonesArray *fGammaArray;                              //!
+  TClonesArray *fGammaArray;  //!
 
   // Histograms
   // =====================================================================

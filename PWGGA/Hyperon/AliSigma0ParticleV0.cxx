@@ -168,6 +168,15 @@ AliSigma0ParticleV0 &AliSigma0ParticleV0::operator=(
   fTrackLabelNeg = obj.GetTrackLabelNeg();
   fCosAlpha = obj.GetCosineAlpha();
 
+  fMCLabelPos = obj.GetMCLabelPos();
+  fMCLabelNeg = obj.GetMCLabelNeg();
+  fMCLabelV0 = obj.GetMCLabelV0();
+  fTrackPos = obj.GetPosDaughter();
+  fTrackNeg = obj.GetNegDaughter();
+
+  fRecMass = obj.GetRecMass();
+  fPDGMass = obj.GetPDGMass();
+
   return (*this);
 }
 

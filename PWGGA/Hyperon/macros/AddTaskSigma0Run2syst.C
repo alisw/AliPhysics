@@ -1,6 +1,7 @@
-AliAnalysisTaskSE *AddTaskSigma0Run2syst(bool isMC = false, bool isHeavyIon = false,
-                                     TString trigger = "kINT7",
-                                     const char *cutVariation = "19") {
+AliAnalysisTaskSE *AddTaskSigma0Run2syst(bool isMC = false,
+                                         bool isHeavyIon = false,
+                                         TString trigger = "kINT7",
+                                         const char *cutVariation = "19") {
   TString suffix;
   suffix.Form("%s", cutVariation);
 
@@ -19,24 +20,17 @@ AliAnalysisTaskSE *AddTaskSigma0Run2syst(bool isMC = false, bool isHeavyIon = fa
   TString cutnumberPhoton;
   cutnumberPhoton = "10200008400000002282000000";
 
-  //Standard
-//if (suffix == "00") cutnumberPhoton = "10200008400000002280920000";
-  //Tighter TPCCLsFind. 0.60 On-and Offline Reader and Lambda-Cut
-  if (suffix == "89") cutnumberPhoton = "10200009400000002280920000";
-  if (suffix == "88") cutnumberPhoton = "00200009400000002280920000";
-  if (suffix == "87") cutnumberPhoton = "10200009400000002280920000";
-  //Still tighter TPCCLsFind. 0.70 On-and Offline Reader and Lambda-Cut
-  if (suffix == "86") cutnumberPhoton = "10200006400000002280920000";
-  if (suffix == "85") cutnumberPhoton = "00200006400000002280920000";
-  if (suffix == "84") cutnumberPhoton = "10200006400000002280920000";
-  //No Triangle Cut but same value for Chi2=30 On-and Offline Reader and Lambda-Cut
-  if (suffix == "83") cutnumberPhoton = "10200008400000002240920000";
-  if (suffix == "82") cutnumberPhoton = "00200008400000002240920000";
-  if (suffix == "81") cutnumberPhoton = "10200008400000002240920000";
-  //No Triangle Cut but bigger value for Chi2=100 On-and Offline Reader and Lambda-Cut
-  if (suffix == "80") cutnumberPhoton = "10200008400000002040920000";
-  if (suffix == "79") cutnumberPhoton = "00200008400000002040920000";
-  if (suffix == "78") cutnumberPhoton = "10200008400000002040920000";
+  // Standard
+  // if (suffix == "00") cutnumberPhoton = "00200008400000002280920000";
+  // Lower pT requirement for e (0|40) and gamma (0|10)
+  if (suffix == "77") cutnumberPhoton = "00200078400000002280920000";
+  if (suffix == "76") cutnumberPhoton = "00200068400000002280920000";
+  // Lower Cos PA 0.98 and -1
+  if (suffix == "75") cutnumberPhoton = "00200008400000002280820000";
+  if (suffix == "74") cutnumberPhoton = "00200008400000002280020000";
+  // Smaller Conversion-Radius 0 and 2.8
+  if (suffix == "73") cutnumberPhoton = "00000008400000002280920000";
+  if (suffix == "72") cutnumberPhoton = "00100008400000002280920000";
 
   TString cutnumberEvent = "00000000";
   TString periodNameV0Reader = "";
@@ -173,46 +167,66 @@ AliAnalysisTaskSE *AddTaskSigma0Run2syst(bool isMC = false, bool isHeavyIon = fa
     v0Cuts->SetLightweight(false);
     antiv0Cuts->SetLightweight(false);
   }
-  if (suffix == "87") {
-     v0Cuts->SetK0Rejection(0., 0.);
-     antiv0Cuts->SetK0Rejection(0., 0.);
-     v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-     antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-     v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
-     antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
-     v0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
-     antiv0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
- }
-  if (suffix == "84") {
-     v0Cuts->SetK0Rejection(0., 0.);
-     antiv0Cuts->SetK0Rejection(0., 0.);
-     v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-     antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-     v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
-     antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
-     v0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
-     antiv0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
- }
-  if (suffix == "81") {
-     v0Cuts->SetK0Rejection(0., 0.);
-     antiv0Cuts->SetK0Rejection(0., 0.);
-     v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-     antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-     v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
-     antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
-     v0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
-     antiv0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
- }
-  if (suffix == "78") {
-     v0Cuts->SetK0Rejection(0., 0.);
-     antiv0Cuts->SetK0Rejection(0., 0.);
-     v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-     antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-     v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
-     antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
-     v0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
-     antiv0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
- }
+  if (suffix == "77") {
+    v0Cuts->SetK0Rejection(0., 0.);
+    antiv0Cuts->SetK0Rejection(0., 0.);
+    v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
+    antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
+    v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
+    antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
+    v0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
+    antiv0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
+  }
+  if (suffix == "76") {
+    v0Cuts->SetK0Rejection(0., 0.);
+    antiv0Cuts->SetK0Rejection(0., 0.);
+    v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
+    antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
+    v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
+    antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
+    v0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
+    antiv0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
+  }
+  if (suffix == "75") {
+    v0Cuts->SetK0Rejection(0., 0.);
+    antiv0Cuts->SetK0Rejection(0., 0.);
+    v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
+    antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
+    v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
+    antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
+    v0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
+    antiv0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
+  }
+  if (suffix == "74") {
+    v0Cuts->SetK0Rejection(0., 0.);
+    antiv0Cuts->SetK0Rejection(0., 0.);
+    v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
+    antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
+    v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
+    antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
+    v0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
+    antiv0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
+  }
+  if (suffix == "73") {
+    v0Cuts->SetK0Rejection(0., 0.);
+    antiv0Cuts->SetK0Rejection(0., 0.);
+    v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
+    antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
+    v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
+    antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
+    v0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
+    antiv0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
+  }
+  if (suffix == "72") {
+    v0Cuts->SetK0Rejection(0., 0.);
+    antiv0Cuts->SetK0Rejection(0., 0.);
+    v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
+    antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
+    v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
+    antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
+    v0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
+    antiv0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
+  }
   AliSigma0V0Cuts *photonV0Cuts = AliSigma0V0Cuts::PhotonCuts();
   photonV0Cuts->SetIsMC(isMC);
   photonV0Cuts->SetPID(22);
@@ -229,70 +243,7 @@ AliAnalysisTaskSE *AddTaskSigma0Run2syst(bool isMC = false, bool isHeavyIon = fa
     photonV0Cuts->SetCheckCutsMC(true);
     photonV0Cuts->SetLightweight(false);
   }
-  if (suffix == "89") {
-    photonV0Cuts->SetV0OnFlyStatus(false);
-    photonV0Cuts->SetArmenterosCut(0, 0.06, -1, 1);
-    photonV0Cuts->SetV0RadiusMax(180.f);
-    photonV0Cuts->SetV0RadiusMin(5.f);
-    photonV0Cuts->SetTPCRatioFindable(0.6f);
-    photonV0Cuts->SetV0CosPAMin(0.99);
-    photonV0Cuts->SetChi2Max(5);
-  }
-  if (suffix == "88") {
-    photonV0Cuts->SetV0OnFlyStatus(true);
-    photonV0Cuts->SetArmenterosCut(0, 0.06, -1, 1);
-    photonV0Cuts->SetV0RadiusMax(180.f);
-    photonV0Cuts->SetV0RadiusMin(5.f);
-    photonV0Cuts->SetTPCRatioFindable(0.6f);
-    photonV0Cuts->SetV0CosPAMin(0.99);
-    photonV0Cuts->SetChi2Max(5);
-  }
-  if (suffix == "87") {
-    photonV0Cuts->SetV0OnFlyStatus(false);
-    photonV0Cuts->SetArmenterosCut(0, 0.06, -1, 1);
-    photonV0Cuts->SetV0RadiusMax(180.f);
-    photonV0Cuts->SetV0RadiusMin(5.f);
-    photonV0Cuts->SetTPCRatioFindable(0.6f);
-    photonV0Cuts->SetV0CosPAMin(0.99);
-    photonV0Cuts->SetChi2Max(5);
-  }
-  if (suffix == "86") {
-    photonV0Cuts->SetV0OnFlyStatus(false);
-    photonV0Cuts->SetArmenterosCut(0, 0.06, -1, 1);
-    photonV0Cuts->SetV0RadiusMax(180.f);
-    photonV0Cuts->SetV0RadiusMin(5.f);
-    photonV0Cuts->SetTPCRatioFindable(0.7f);
-    photonV0Cuts->SetV0CosPAMin(0.99);
-    photonV0Cuts->SetChi2Max(5);
-  }
-  if (suffix == "85") {
-    photonV0Cuts->SetV0OnFlyStatus(true);
-    photonV0Cuts->SetArmenterosCut(0, 0.06, -1, 1);
-    photonV0Cuts->SetV0RadiusMax(180.f);
-    photonV0Cuts->SetV0RadiusMin(5.f);
-    photonV0Cuts->SetTPCRatioFindable(0.7f);
-    photonV0Cuts->SetV0CosPAMin(0.99);
-    photonV0Cuts->SetChi2Max(5);
-  }
-  if (suffix == "84") {
-    photonV0Cuts->SetV0OnFlyStatus(false);
-    photonV0Cuts->SetArmenterosCut(0, 0.06, -1, 1);
-    photonV0Cuts->SetV0RadiusMax(180.f);
-    photonV0Cuts->SetV0RadiusMin(5.f);
-    photonV0Cuts->SetTPCRatioFindable(0.7f);
-    photonV0Cuts->SetV0CosPAMin(0.99);
-    photonV0Cuts->SetChi2Max(5);
-  }
-  if (suffix == "83") {
-    photonV0Cuts->SetV0OnFlyStatus(false);
-    photonV0Cuts->SetArmenterosCut(0, 0.06, -1, 1);
-    photonV0Cuts->SetV0RadiusMax(180.f);
-    photonV0Cuts->SetV0RadiusMin(5.f);
-    photonV0Cuts->SetTPCRatioFindable(0.35f);
-    photonV0Cuts->SetV0CosPAMin(0.99);
-    photonV0Cuts->SetChi2Max(5);
-  }
-  if (suffix == "82") {
+  if (suffix == "77") {
     photonV0Cuts->SetV0OnFlyStatus(true);
     photonV0Cuts->SetArmenterosCut(0, 0.06, -1, 1);
     photonV0Cuts->SetV0RadiusMax(180.f);
@@ -301,38 +252,47 @@ AliAnalysisTaskSE *AddTaskSigma0Run2syst(bool isMC = false, bool isHeavyIon = fa
     photonV0Cuts->SetV0CosPAMin(0.99);
     photonV0Cuts->SetChi2Max(5);
   }
-  if (suffix == "81") {
-    photonV0Cuts->SetV0OnFlyStatus(false);
-    photonV0Cuts->SetArmenterosCut(0, 0.06, -1, 1);
-    photonV0Cuts->SetV0RadiusMax(180.f);
-    photonV0Cuts->SetV0RadiusMin(5.f);
-    photonV0Cuts->SetTPCRatioFindable(0.35f);
-    photonV0Cuts->SetV0CosPAMin(0.99);
-    photonV0Cuts->SetChi2Max(5);
-  }
-  if (suffix == "80") {
-    photonV0Cuts->SetV0OnFlyStatus(false);
-    photonV0Cuts->SetArmenterosCut(0, 0.06, -1, 1);
-    photonV0Cuts->SetV0RadiusMax(180.f);
-    photonV0Cuts->SetV0RadiusMin(5.f);
-    photonV0Cuts->SetTPCRatioFindable(0.35f);
-    photonV0Cuts->SetV0CosPAMin(0.99);
-    photonV0Cuts->SetChi2Max(5);
-  }
-  if (suffix == "79") {
+  if (suffix == "76") {
     photonV0Cuts->SetV0OnFlyStatus(true);
     photonV0Cuts->SetArmenterosCut(0, 0.06, -1, 1);
     photonV0Cuts->SetV0RadiusMax(180.f);
     photonV0Cuts->SetV0RadiusMin(5.f);
     photonV0Cuts->SetTPCRatioFindable(0.35f);
     photonV0Cuts->SetV0CosPAMin(0.99);
-    photonV0Cuts->SetChi2Max(100);
+    photonV0Cuts->SetChi2Max(5);
   }
-  if (suffix == "78") {
-    photonV0Cuts->SetV0OnFlyStatus(false);
+  if (suffix == "75") {
+    photonV0Cuts->SetV0OnFlyStatus(true);
     photonV0Cuts->SetArmenterosCut(0, 0.06, -1, 1);
     photonV0Cuts->SetV0RadiusMax(180.f);
     photonV0Cuts->SetV0RadiusMin(5.f);
+    photonV0Cuts->SetTPCRatioFindable(0.35f);
+    photonV0Cuts->SetV0CosPAMin(0.98);
+    photonV0Cuts->SetChi2Max(5);
+  }
+  if (suffix == "74") {
+    photonV0Cuts->SetV0OnFlyStatus(true);
+    photonV0Cuts->SetArmenterosCut(0, 0.06, -1, 1);
+    photonV0Cuts->SetV0RadiusMax(180.f);
+    photonV0Cuts->SetV0RadiusMin(5.f);
+    photonV0Cuts->SetTPCRatioFindable(0.35f);
+    photonV0Cuts->SetV0CosPAMin(-1);
+    photonV0Cuts->SetChi2Max(5);
+  }
+  if (suffix == "73") {
+    photonV0Cuts->SetV0OnFlyStatus(true);
+    photonV0Cuts->SetArmenterosCut(0, 0.06, -1, 1);
+    photonV0Cuts->SetV0RadiusMax(180.f);
+    photonV0Cuts->SetV0RadiusMin(0.f);
+    photonV0Cuts->SetTPCRatioFindable(0.35f);
+    photonV0Cuts->SetV0CosPAMin(0.99);
+    photonV0Cuts->SetChi2Max(5);
+  }
+  if (suffix == "72") {
+    photonV0Cuts->SetV0OnFlyStatus(true);
+    photonV0Cuts->SetArmenterosCut(0, 0.06, -1, 1);
+    photonV0Cuts->SetV0RadiusMax(180.f);
+    photonV0Cuts->SetV0RadiusMin(2.8f);
     photonV0Cuts->SetTPCRatioFindable(0.35f);
     photonV0Cuts->SetV0CosPAMin(0.99);
     photonV0Cuts->SetChi2Max(5);
