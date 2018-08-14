@@ -135,6 +135,7 @@ set(SRCS
   AliFemtoV0PurityBgdEstimator.cxx
   AliFemtoPairCutRadialDistanceKKdist.cxx
   AliFemtoKKTrackCutTest.cxx # new class
+  AliFemtoCorrFctnInvMass.cxx
   )
 
 
