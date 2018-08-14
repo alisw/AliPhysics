@@ -2354,14 +2354,14 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
     if(doWeighting){
       cout << "INFO enabeling pT weighting" << endl;
       if(periodNameAnchor.CompareTo("LHC15o")==0){
-	TString cutNumber = cuts.GetEventCut(i);
-	TString centCut   = cutNumber(0,3);             // first three digits of event cut
+	TString eventCutString  = cuts.GetEventCut(i);
+	TString eventCutShort   = eventCutString(0,6);   // first six digits
 	weightPi0         = kTRUE;
-	histoNameMCPi0PT  = Form("Pi0_LHC16h4_AP_5TeV_%s",centCut.Data());  // added particle MC
-	fitNamePi0PT      = Form("Pi0_Data_5TeV_%s",centCut.Data());        // fit to data
+	histoNameMCPi0PT  = Form("Pi0_%s_5TeV_%s",   periodName.Data(), eventCutString.Data());  // MC
+	fitNamePi0PT      = Form("Pi0_Data_5TeV_%s", eventCutShort.Data());                      // fit to data
 	weightEta         = kTRUE;
-	histoNameMCEtaPT  = Form("Eta_LHC16h4_AP_5TeV_%s",centCut.Data());
-	fitNameEtaPT      = Form("Eta_Data_5TeV_%s",centCut.Data());
+	histoNameMCEtaPT  = Form("Eta_%s_5TeV_%s",   periodName.Data(), eventCutString.Data());
+	fitNameEtaPT      = Form("Eta_Data_5TeV_%s", eventCutShort.Data());
 
       }
       analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(weightPi0, weightEta, weightK0s, fileNameInputForWeighting, histoNameMCPi0PT, histoNameMCEtaPT, histoNameMCK0sPT, fitNamePi0PT, fitNameEtaPT, fitNameK0sPT);
