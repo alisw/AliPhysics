@@ -1,5 +1,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <AliEMCALGeometry.h>
+#include <AliOADBContainer.h>
+
 #include <TCanvas.h>
 #include <TClonesArray.h>
 #include <TDatime.h>
@@ -14,15 +16,18 @@
 #include <TProfile.h>
 #include <TProfile2D.h>
 #include <TSystem.h>
+#include <TString.h>
 #include "createTree.C"
 #endif
+
 
 void anaTree(
               const char *ifile     ="treefile.root",
               const char *ofile     ="outhist.root",
               Bool_t applyDurLimit  = kFALSE,         // bolean to switch on duration limit
               Float_t durMin        = 0,              // minimum length of a run in minutes
-              Float_t durMax        = 10000           // maximum length of a run in minutes
+              Float_t durMax        = 10000,          // maximum length of a run in minutes
+              Bool_t appBC          = kFALSE          // boolean to switch on bad channel
             )
 {
   AliEMCALGeometry *g=AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
@@ -98,17 +103,46 @@ void anaTree(
   }
 
 
+  Int_t runno=-1;
+  TObjArray *arrayBC=0;
+  TString badpath("$ALICE_ROOT/OADB/EMCAL");
+  TH2I *badmaps[kSM];
+  for (Int_t i=0;i<kSM;++i)
+    badmaps[i]=0;
+
   Int_t Nev=tt->GetEntries();
   for (Int_t i=0;i<Nev;++i) {
     tt->GetEvent(i);
-    Float_t deltaTime = ((Float_t)info->fLastTime-(Float_t)info->fFirstTime)/60.;         // run duration in minutes
+    Float_t deltaTime = ((Float_t)info->fLastTime-(Float_t)info->fFirstTime)/60.; // run duration in minutes
     cout << info->fRunNo << "\t" << info->fFirstTime << "\t"<<info->fLastTime << "\t"<< deltaTime<<  endl;
+    
+    if (info->fRunNo!=runno && appBC) {
+      runno=info->fRunNo;
+      AliOADBContainer *contBC = new AliOADBContainer("");
+      contBC->InitFromFile(Form("%s/EMCALBadChannels.root",badpath.Data()),"AliEMCALBadChannels");
+      if (!contBC) {
+	cerr << "Could not load bc map for run " << runno << endl;
+      } else {
+	TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runno);
+	for (Int_t i=0; i<kSM; ++i) {
+	  delete badmaps[i];
+	  badmaps[i] = (TH2I*)arrayBC->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
+	  badmaps[i]->SetDirectory(0);
+	}
+	delete contBC;
+      }
+    }
+
+    if (1)
+      continue; //do faster testing
+
     if (applyDurLimit){
       if (deltaTime < durMin || deltaTime > durMax){
         cout << "INFO: skipped run due to mismatch in run length" << endl;
         continue;
       }
     }
+
     TClonesArray &cells = info->fCells;
     for (Int_t j=0;j<cells.GetEntries();++j) {
       TCalCell *cell = static_cast<TCalCell*>(cells.At(j));
@@ -120,6 +154,10 @@ void anaTree(
       Double_t monR = cell->fMonR;
       Double_t locT = cell->fLocT;
       Double_t smT  = cell->fSMT;
+
+      Bool_t badcell = 0;
+      if (appBC && badmaps[sm])
+	badcell = badmaps[sm]->GetBinContent(cell->fCol,cell->fRow); 
 
       Double_t T = smT; // use local or SM T, change here
       if ((T<5)||(T>45))
