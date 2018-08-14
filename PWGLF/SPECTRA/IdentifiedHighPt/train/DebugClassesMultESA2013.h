@@ -122,6 +122,7 @@ class DeDxEvent : public TObject
   Short_t   vtxstatus;   // Vtx status (-1=no vtx, 0 = outside, 1 = inside cuts)
   Short_t   trackmult;   // Track mult (no cuts)
   Short_t   n;           // Number of added tracks 
+  Short_t   nTracks;
   Short_t   trackmultMC; // MC track mult (primary tracks)
   Short_t   nMC;         // MC number of added tracks 
   Short_t   process;     // MC process: -1=invalid, 0=data, 1=ND, 2=SD, 3=DD

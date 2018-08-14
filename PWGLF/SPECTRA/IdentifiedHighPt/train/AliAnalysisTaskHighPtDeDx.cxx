@@ -24,7 +24,9 @@
   * 10 jul 2018: clean-up
   * 10 jul 2018: removed analysisMode == kTPCTrk and TPCBranch
   * 10 jul 2018: found and corrected bug:  if(pPid){nncl = nPid->GetTPCsignalN();}->if(nPid){nncl = nPid->GetTPCsignalN();}
-
+  * 13 aug 2018: fill tree with AliAODEvent::GetNumberOfTracks() so I can plot is vs centrality
+                 and: switch to use AliMultSelection instead of AliCentrality: CentFramework(CentFrameworkAliCen) kTRUE: use AliCentrality, kFALSE: use AliMultSelection
+  
   Remiders:
   * For pp: remove pile up thing
   * For 2011 MC or 2010 DT: remove hardcoded trigger conditions!
@@ -60,6 +62,7 @@
 #include <AliESDVZERO.h>
 #include <AliAODVZERO.h>
 #include "AliMultSelectionTask.h"
+#include "AliMultSelection.h"
 #include <AliMCEventHandler.h>
 #include <AliMCEvent.h>
 #include <AliStack.h>
@@ -75,7 +78,7 @@
 #include <AliAODPid.h> 
 #include <AliAODMCHeader.h> 
 #include <iostream>
- 
+
 // STL includes
 #include <iostream>
 using namespace std;
@@ -99,6 +102,7 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   fTrackFilterTPC(0x0),
   fAnalysisType("AOD"),
   fAnalysisMC(kFALSE),
+  fCentFrameworkAliCen(kFALSE),
   fAnalysisPbPb(kFALSE),
   fVZEROBranch(kFALSE),
   fRandom(0x0),
@@ -155,6 +159,7 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx(const char *name):
   fTrackFilterTPC(0x0),
   fAnalysisType("AOD"),
   fAnalysisMC(kFALSE),
+  fCentFrameworkAliCen(kFALSE),
   fAnalysisPbPb(kFALSE),
   fVZEROBranch(kFALSE),
   fRandom(0x0),
@@ -549,10 +554,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   }
   
   Float_t centralityV0M = -10;
-  // Float_t centralityV0A = -10;
-  // Float_t centralityZNA = -10;
-  // Float_t centralityCL1 = -10;
-
+ 
   // only analyze triggered events
   if(fTriggeredEventMB){
     
@@ -561,9 +563,6 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
       if(fAnalysisPbPb){
 	AliCentrality *centObject = fESD->GetCentrality();
 	centralityV0M = centObject->GetCentralityPercentile("V0M");
-	// centralityV0A = centObject->GetCentralityPercentile("V0A");
- 	// centralityZNA = centObject->GetCentralityPercentile("ZNA");
- 	// centralityCL1 = centObject->GetCentralityPercentile("CL1");
 	if((centralityV0M>fMaxCent)||(centralityV0M<fMinCent))return; 
       }//pbpb
 
@@ -571,24 +570,35 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
       AnalyzeESD(fESD);
 
     }else{ // AOD
+
+      //13/08-18:
       
       if(fAnalysisPbPb){
-	AliCentrality *centObject = fAOD->GetCentrality();
-	if(centObject){
-	  centralityV0M = centObject->GetCentralityPercentile("V0M"); 
-	  // centralityV0A = centObject->GetCentralityPercentile("V0A");
-	  // centralityZNA = centObject->GetCentralityPercentile("ZNA");
-	  // centralityCL1 = centObject->GetCentralityPercentile("CL1");
+	if(fCentFrameworkAliCen){ // CentFramework in AliCentrality (tested: it works)
+	  
+	  AliCentrality *centObject =  fAOD->GetCentrality();
+	  if(centObject) centralityV0M = centObject->GetCentralityPercentile("V0M"); 
+	  
+	}else{ // CentFramework in AliMultSelection (tested: it DOESN'T work)
+	  
+	  AliMultSelection* centObject = 0x0; 
+	  centObject = (AliMultSelection*)fAOD->FindListObject("MultSelection");
+	  if(centObject){
+	    centralityV0M = centObject->GetMultiplicityPercentile("V0M");
+	  }
+	  if(!centObject) cout<<"no centObject: please check that the AliMultSelectionTask actually ran (before your task) "<<endl; 
 	}
-	if((centralityV0M>fMaxCent)||(centralityV0M<fMinCent))return;
+	
+	if((centralityV0M>fMaxCent)||(centralityV0M<fMinCent))return;	
+	
       }//pbpb
-
+      
       fcent->Fill(centralityV0M);
       AnalyzeAOD(fAOD);
-
+      
     }
   }//if triggered
-
+  
   
   // store MC event data
   if(fAnalysisMC){
@@ -599,7 +609,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   fEvent->process = fMcProcessType;
   fEvent->trig    = fTriggeredEventMB;
   fEvent->zvtxMC  = fZvtxMC;
-  fEvent->cent      = centralityV0M;
+  fEvent->cent    = centralityV0M;
   //fEvent->centV0A      = centralityV0A;
   //fEvent->centZNA      = centralityZNA;
   //fEvent->centCL1      = centralityCL1;
@@ -671,7 +681,7 @@ void AliAnalysisTaskHighPtDeDx::AnalyzeAOD(AliAODEvent* aodEvent)
     fEvents->Fill(0);
     
     //if(fVtxStatus!=1) return; // accepted vertex
-    //Int_t nAODTracks = aodEvent->GetNumberOfTracks();  
+    //    Int_t nAODTracks = aodEvent->GetNumberOfTracks();
 
     ProduceArrayTrksAOD( aodEvent, kGlobalTrk );
     ProduceArrayV0AOD( aodEvent, kGlobalTrk );
@@ -1175,7 +1185,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
   Int_t trackmult = 0; // no pt cuts
   Int_t nadded = 0;
   Int_t nAODTracks = AODevent->GetNumberOfTracks();
-
+  
   if(fTrackArrayGlobalPar) fTrackArrayGlobalPar->Clear();
     
   //const AliAODVertex*	vertexSPD= (AliAODVertex*)AODevent->GetPrimaryVertexSPD();//GetPrimaryVertex()
@@ -1317,9 +1327,9 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
   }//end of track loop
 
   Sort(fTrackArrayGlobalPar, kFALSE);
-  fEvent->trackmult = trackmult;
-  fEvent->n         = nadded;
-      
+  fEvent->trackmult  = trackmult;
+  fEvent->n          = nadded;
+  fEvent->nTracks    = nAODTracks;//13/08-18
 }
 
 // ################################
