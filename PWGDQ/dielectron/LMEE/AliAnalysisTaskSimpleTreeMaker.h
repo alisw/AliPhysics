@@ -251,7 +251,12 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		Int_t iPdgMother;
 		Bool_t HasMother;
 		Int_t motherLabel;
-		Bool_t isInj; // If track is injected (MC only)
+		Bool_t isInj; // If track is injected 
+		// Pdg and label for initial particle in decay chain
+		Int_t iPdgFirstMother;
+		Int_t gLabelFirstMother;
+		Int_t gLabelMinFirstMother;
+		Int_t gLabelMaxFirstMother;
 		//V0 features
 		Double_t pointingAngle;
 		Double_t daughtersDCA;
