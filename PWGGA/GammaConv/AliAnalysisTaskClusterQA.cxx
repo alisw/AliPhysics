@@ -94,14 +94,14 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA() : AliAnalysisTaskSE(),
   fBuffer_Surrounding_Cells_RelativeColumn(0),
   fBuffer_Cluster_MC_Label(-10)
 {
-  fBuffer_Cells_ID                = new Short_t[kMaxActiveCells];
+  fBuffer_Cells_ID                = new Int_t[kMaxActiveCells];
   fBuffer_Cells_E                 = new Float_t[kMaxActiveCells];
-  fBuffer_Cells_RelativeRow       = new Short_t[kMaxActiveCells];
-  fBuffer_Cells_RelativeColumn    = new Short_t[kMaxActiveCells];
-  fBuffer_Surrounding_Cells_ID              = new Short_t[kMaxActiveCells];
+  fBuffer_Cells_RelativeRow       = new Int_t[kMaxActiveCells];
+  fBuffer_Cells_RelativeColumn    = new Int_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_ID              = new Int_t[kMaxActiveCells];
   fBuffer_Surrounding_Cells_E               = new Float_t[kMaxActiveCells];
-  fBuffer_Surrounding_Cells_RelativeRow     = new Short_t[kMaxActiveCells];
-  fBuffer_Surrounding_Cells_RelativeColumn  = new Short_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_RelativeRow     = new Int_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_RelativeColumn  = new Int_t[kMaxActiveCells];
 }
 
 AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalysisTaskSE(name),
@@ -159,18 +159,19 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalys
   fBuffer_Surrounding_Cells_RelativeColumn(0),
   fBuffer_Cluster_MC_Label(-10)
 {
-  fBuffer_Cells_ID                = new Short_t[kMaxActiveCells];
+  fBuffer_Cells_ID                = new Int_t[kMaxActiveCells];
   fBuffer_Cells_E                 = new Float_t[kMaxActiveCells];
-  fBuffer_Cells_RelativeRow       = new Short_t[kMaxActiveCells];
-  fBuffer_Cells_RelativeColumn    = new Short_t[kMaxActiveCells];
-  fBuffer_Surrounding_Cells_ID              = new Short_t[kMaxActiveCells];
+  fBuffer_Cells_RelativeRow       = new Int_t[kMaxActiveCells];
+  fBuffer_Cells_RelativeColumn    = new Int_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_ID              = new Int_t[kMaxActiveCells];
   fBuffer_Surrounding_Cells_E               = new Float_t[kMaxActiveCells];
-  fBuffer_Surrounding_Cells_RelativeRow     = new Short_t[kMaxActiveCells];
-  fBuffer_Surrounding_Cells_RelativeColumn  = new Short_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_RelativeRow     = new Int_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_RelativeColumn  = new Int_t[kMaxActiveCells];
   // Default constructor
 
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -208,6 +209,7 @@ void AliAnalysisTaskClusterQA::UserCreateOutputObjects()
     if(((AliConversionMesonCuts*)fMesonCuts)->GetCutHistograms()){
       fOutputList->Add(((AliConversionMesonCuts*)fMesonCuts)->GetCutHistograms());
     }
+    PostData(1, fOutputList);
   }
   
   fClusterTree = new TTree("ClusterQA","ClusterQA");
@@ -216,10 +218,10 @@ void AliAnalysisTaskClusterQA::UserCreateOutputObjects()
   fClusterTree->Branch("Cluster_Phi",                       &fBuffer_ClusterPhi,                      "Cluster_Phi/F");
   fClusterTree->Branch("Cluster_Eta",                       &fBuffer_ClusterEta,                      "Cluster_Eta/F");
   fClusterTree->Branch("Cluster_IsEMCAL",                   &fBuffer_ClusterIsEMCAL,                  "Cluster_IsEMCAL/O");
-  fClusterTree->Branch("Cluster_NumCells",                  &fBuffer_ClusterNumCells,                 "Cluster_NumCells/S");
-  fClusterTree->Branch("Cluster_LeadingCell_ID",            &fBuffer_LeadingCell_ID,                  "Cluster_LeadingCell_ID/S");
-  fClusterTree->Branch("Cluster_LeadingCell_Row",           &fBuffer_LeadingCell_Row,                 "Cluster_LeadingCell_Row/S");
-  fClusterTree->Branch("Cluster_LeadingCell_Column",        &fBuffer_LeadingCell_Column,              "Cluster_LeadingCell_Column/S");
+  fClusterTree->Branch("Cluster_NumCells",                  &fBuffer_ClusterNumCells,                 "Cluster_NumCells/I");
+  fClusterTree->Branch("Cluster_LeadingCell_ID",            &fBuffer_LeadingCell_ID,                  "Cluster_LeadingCell_ID/I");
+  fClusterTree->Branch("Cluster_LeadingCell_Row",           &fBuffer_LeadingCell_Row,                 "Cluster_LeadingCell_Row/I");
+  fClusterTree->Branch("Cluster_LeadingCell_Column",        &fBuffer_LeadingCell_Column,              "Cluster_LeadingCell_Column/I");
   fClusterTree->Branch("Cluster_M02",                       &fBuffer_ClusterM02,                      "Cluster_M02/F");
   fClusterTree->Branch("Cluster_M20",                       &fBuffer_ClusterM20,                      "Cluster_M20/F");
   if(fSaveEventProperties)
@@ -228,35 +230,33 @@ void AliAnalysisTaskClusterQA::UserCreateOutputObjects()
     fClusterTree->Branch("Event_Vertex_Y",                  &fBuffer_Event_Vertex_Y,                  "Event_Vertex_Y/F");
     fClusterTree->Branch("Event_Vertex_Z",                  &fBuffer_Event_Vertex_Z,                  "Event_Vertex_Z/F");
     fClusterTree->Branch("Event_Multiplicity",              &fBuffer_Event_Multiplicity,              "Event_Multiplicity/F");
-    fClusterTree->Branch("Event_NumActiveCells",            &fBuffer_Event_NumActiveCells,            "Event_NumActiveCells/S");
+    fClusterTree->Branch("Event_NumActiveCells",            &fBuffer_Event_NumActiveCells,            "Event_NumActiveCells/I");
   }
-
+  
   if(fSaveCells)
   {
-    fClusterTree->Branch("Cluster_Cells_ID",                fBuffer_Cells_ID,                         "Cluster_Cells_ID[100]/S");
-    fClusterTree->Branch("Cluster_Cells_E",                 fBuffer_Cells_E,                          "Cluster_Cells_E[100]/F");
-    fClusterTree->Branch("Cluster_Cells_RelativeRow",       fBuffer_Cells_RelativeRow,                "Cluster_Cells_RelativeRow[100]/S");
-    fClusterTree->Branch("Cluster_Cells_RelativeColumn",    fBuffer_Cells_RelativeColumn,             "Cluster_Cells_RelativeColumn[100]/S");
+    fClusterTree->Branch("Cluster_Cells_ID",                fBuffer_Cells_ID,                         "Cluster_Cells_ID[Cluster_NumCells]/I");
+    fClusterTree->Branch("Cluster_Cells_E",                 fBuffer_Cells_E,                          "Cluster_Cells_E[Cluster_NumCells]/F");
+    fClusterTree->Branch("Cluster_Cells_RelativeRow",       fBuffer_Cells_RelativeRow,                "Cluster_Cells_RelativeRow[Cluster_NumCells]/I");
+    fClusterTree->Branch("Cluster_Cells_RelativeColumn",    fBuffer_Cells_RelativeColumn,             "Cluster_Cells_RelativeColumn[Cluster_NumCells]/I");
   }
-
+  
   if(fSaveSurroundingCells)
   {
-    fClusterTree->Branch("Surrounding_Cells_ID",            fBuffer_Surrounding_Cells_ID,             "Surrounding_Cells_ID[500]/S");
-    fClusterTree->Branch("Surrounding_Cells_E",             fBuffer_Surrounding_Cells_E,              "Surrounding_Cells_E[500]/F");
-    fClusterTree->Branch("Surrounding_Cells_RelativeRow",   fBuffer_Surrounding_Cells_RelativeRow,    "Surrounding_Cells_RelativeRow[500]/S");
-    fClusterTree->Branch("Surrounding_Cells_RelativeColumn",fBuffer_Surrounding_Cells_RelativeColumn, "Surrounding_Cells_RelativeColumn[500]/S");
+    fClusterTree->Branch("Surrounding_Cells_ID",            fBuffer_Surrounding_Cells_ID,             "Surrounding_Cells_ID[Event_NumActiveCells]/I");
+    fClusterTree->Branch("Surrounding_Cells_E",             fBuffer_Surrounding_Cells_E,              "Surrounding_Cells_E[Event_NumActiveCells]/F");
+    fClusterTree->Branch("Surrounding_Cells_RelativeRow",   fBuffer_Surrounding_Cells_RelativeRow,    "Surrounding_Cells_RelativeRow[Event_NumActiveCells]/I");
+    fClusterTree->Branch("Surrounding_Cells_RelativeColumn",fBuffer_Surrounding_Cells_RelativeColumn, "Surrounding_Cells_RelativeColumn[Event_NumActiveCells]/I");
   }
 
   if(fSaveMCInformation)
   {
-    fClusterTree->Branch("Cluster_MC_Label",                &fBuffer_Cluster_MC_Label,                         "Cluster_MC_Label/S");
+    fClusterTree->Branch("Cluster_MC_Label",                &fBuffer_Cluster_MC_Label,                         "Cluster_MC_Label/I");
   }
-    
-  fOutputList->Add(fClusterTree);
 
   fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
-
-  PostData(1, fOutputList);
+  OpenFile(2);
+  PostData(2, fClusterTree);
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskClusterQA::Notify()
@@ -419,26 +419,25 @@ void AliAnalysisTaskClusterQA::ProcessQATreeCluster(AliVEvent *event, AliVCluste
   }
   
   // fill surrounding cell buffer
+  // fBuffer_Event_NumActiveCellsAboveThreshold = 0;
   for(Int_t aCell=0;aCell<cells->GetNumberOfCells();aCell++){
-    if(aCell<1000){ // maxium tree entries are 500 for the sourrounding cells (~22*22)
-      // Define necessary variables
-      Short_t cellNumber                    = 0;
-      Double_t cellAmplitude = 0,  cellTime = 0, cellEFrac = 0;
-      Int_t cellMCLabel = 0, row = 0, column = 0;
+    // Define necessary variables
+    Short_t cellNumber                    = 0;
+    Double_t cellAmplitude = 0,  cellTime = 0, cellEFrac = 0;
+    Int_t cellMCLabel = 0, row = 0, column = 0;
       
-      // Get Cell ID
-      cells->GetCell(aCell,cellNumber,cellAmplitude,cellTime,cellMCLabel,cellEFrac);
+    // Get Cell ID
+    cells->GetCell(aCell,cellNumber,cellAmplitude,cellTime,cellMCLabel,cellEFrac);
       
-      // Get row and column for each cell
-      GetRowAndColumnFromAbsCellID(cellNumber, row, column);
+    // Get row and column for each cell
+    GetRowAndColumnFromAbsCellID(cellNumber, row, column);
       
-      // Select those cells that are within fNSurroundingCells of the leading cluster cell
-      if( (TMath::Abs(row-rowLeading)<fNSurroundingCells) && (TMath::Abs(column-columnLeading))<fNSurroundingCells){
-        fBuffer_Surrounding_Cells_RelativeRow[aCell]    =  row-rowLeading;
-        fBuffer_Surrounding_Cells_RelativeColumn[aCell] = column-columnLeading;
-        fBuffer_Surrounding_Cells_E[aCell]              = cells->GetCellAmplitude(cellNumber);
-        fBuffer_Surrounding_Cells_ID[aCell]             = cellNumber;
-      }
+    // Select those cells that are within fNSurroundingCells of the leading cluster cell
+    if( (TMath::Abs(row-rowLeading)<fNSurroundingCells) && (TMath::Abs(column-columnLeading))<fNSurroundingCells){
+      fBuffer_Surrounding_Cells_RelativeRow[aCell]    =  row-rowLeading;
+      fBuffer_Surrounding_Cells_RelativeColumn[aCell] = column-columnLeading;
+      fBuffer_Surrounding_Cells_E[aCell]              = cells->GetCellAmplitude(cellNumber);
+      fBuffer_Surrounding_Cells_ID[aCell]             = cellNumber;
     }
   }
   if(fIsMC) fBuffer_Cluster_MC_Label = MakePhotonCandidates(cluster, cells,indexCluster);

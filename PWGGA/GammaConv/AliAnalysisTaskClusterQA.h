@@ -106,9 +106,9 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     AliConvEventCuts*           fEventCuts;                 // Cuts used by the V0Reader
     AliCaloPhotonCuts*          fClusterCutsEMC;               // Cuts used by the V0Reader
     AliCaloPhotonCuts*          fClusterCutsDMC;               // Cuts used by the V0Reader
-    AliConversionMesonCuts*          fMesonCuts;               // Cuts used by the V0Reader
-    Int_t           fMinNLMCut;                   ///< save MC information
-    Int_t           fMaxNLMCut;                   ///< save MC information
+    AliConversionMesonCuts*     fMesonCuts;               // Cuts used by the V0Reader
+    Int_t                       fMinNLMCut;                   ///< save MC information
+    Int_t                       fMaxNLMCut;                   ///< save MC information
     AliVEvent*                  fInputEvent;                //
     AliMCEvent*                 fMCEvent;                   //
     Double_t                    fWeightJetJetMC;                                      // weight for Jet-Jet MC
@@ -137,11 +137,11 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Float_t         fBuffer_ClusterPhi;                   //!<! array buffer
     Float_t         fBuffer_ClusterEta;                   //!<! array buffer
     Bool_t          fBuffer_ClusterIsEMCAL;                   //!<! array buffer
-    Short_t         fBuffer_MC_Cluster_Flag;                   //!<! array buffer
-    Short_t         fBuffer_ClusterNumCells;              //!<! array buffer
-    Short_t         fBuffer_LeadingCell_ID;              //!<! array buffer
-    Short_t         fBuffer_LeadingCell_Row;              //!<! array buffer
-    Short_t         fBuffer_LeadingCell_Column;              //!<! array buffer
+    Int_t           fBuffer_MC_Cluster_Flag;                   //!<! array buffer
+    Int_t           fBuffer_ClusterNumCells;              //!<! array buffer
+    Int_t           fBuffer_LeadingCell_ID;              //!<! array buffer
+    Int_t           fBuffer_LeadingCell_Row;              //!<! array buffer
+    Int_t           fBuffer_LeadingCell_Column;              //!<! array buffer
     Float_t         fBuffer_ClusterM02;              //!<! array buffer
     Float_t         fBuffer_ClusterM20;              //!<! array buffer
 
@@ -149,27 +149,25 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Float_t         fBuffer_Event_Vertex_Y;               //!<! array buffer
     Float_t         fBuffer_Event_Vertex_Z;               //!<! array buffer
     Float_t         fBuffer_Event_Multiplicity;             //!<! array buffer
-    Short_t         fBuffer_Event_NumActiveCells;          //!<! array buffer
+    Int_t           fBuffer_Event_NumActiveCells;          //!<! array buffer
 
-    Short_t*        fBuffer_Cells_ID;                      //!<! array buffer
+    Int_t*          fBuffer_Cells_ID;                      //!<! array buffer
     Float_t*        fBuffer_Cells_E;                      //!<! array buffer
-    Short_t*        fBuffer_Cells_RelativeRow;                      //!<! array buffer
-    Short_t*        fBuffer_Cells_RelativeColumn;                      //!<! array buffer
+    Int_t*          fBuffer_Cells_RelativeRow;                      //!<! array buffer
+    Int_t*          fBuffer_Cells_RelativeColumn;                      //!<! array buffer
 
-    Short_t*        fBuffer_Surrounding_Cells_ID;                //!<! array buffer
+    Int_t*          fBuffer_Surrounding_Cells_ID;                //!<! array buffer
     Float_t*        fBuffer_Surrounding_Cells_E;                //!<! array buffer
-    Short_t*        fBuffer_Surrounding_Cells_RelativeRow;              //!<! array buffer
-    Short_t*        fBuffer_Surrounding_Cells_RelativeColumn;              //!<! array buffer
+    Int_t*          fBuffer_Surrounding_Cells_RelativeRow;              //!<! array buffer
+    Int_t*          fBuffer_Surrounding_Cells_RelativeColumn;              //!<! array buffer
     
     
-    Short_t        fBuffer_Cluster_MC_Label;              //!<! array buffer
+    Int_t           fBuffer_Cluster_MC_Label;              //!<! array buffer
 
     
     ClassDef(AliAnalysisTaskClusterQA, 1);
 };
 
-static std::vector<Float_t> DEFAULT_VECTOR_FLOAT;
-static std::vector<Short_t> DEFAULT_VECTOR_SHORT;
 const Int_t kMaxActiveCells = 500;
 
 #endif
