@@ -210,6 +210,7 @@ AliFemtoEventReaderAOD::~AliFemtoEventReaderAOD()
 //   }
 }
 
+
 //__________________
 AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventReaderAOD &aReader)
 { // assignment operator
@@ -1611,7 +1612,9 @@ AliFemtoV0 *AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
         tFemtoV0->SetNegNSigmaTOFK(fAODpidUtil->NumberOfSigmasTOF(trackneg, AliPID::kKaon));
         tFemtoV0->SetNegNSigmaTOFP(fAODpidUtil->NumberOfSigmasTOF(trackneg, AliPID::kProton));
         tFemtoV0->SetNegNSigmaTOFPi(fAODpidUtil->NumberOfSigmasTOF(trackneg, AliPID::kPion));
-      }
+      }      
+
+      
       double TOFSignalPos = trackpos->GetTOFsignal();
       double TOFSignalNeg = trackneg->GetTOFsignal();
       TOFSignalPos -= fAODpidUtil->GetTOFResponse().GetStartTime(trackpos->P());
@@ -1620,7 +1623,8 @@ AliFemtoV0 *AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
       double pidNeg[5];
       trackpos->GetIntegratedTimes(pidPos);
       trackneg->GetIntegratedTimes(pidNeg);
-
+	
+      
       tFemtoV0->SetTOFPionTimePos(TOFSignalPos - pidPos[2]);
       tFemtoV0->SetTOFKaonTimePos(TOFSignalPos - pidPos[3]);
       tFemtoV0->SetTOFProtonTimePos(TOFSignalPos - pidPos[4]);
@@ -1637,7 +1641,6 @@ AliFemtoV0 *AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
   tFemtoV0->SetOnFlyStatusV0(tAODv0->GetOnFlyStatus());
   return tFemtoV0;
 }
-
 
 
 AliFemtoXi *AliFemtoEventReaderAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
@@ -1838,6 +1841,7 @@ AliFemtoXi *AliFemtoEventReaderAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
 void AliFemtoEventReaderAOD::SetFilterBit(UInt_t ibit)
 {
   fFilterBit = (1 << (ibit));
+
 }
 
 
@@ -2074,18 +2078,23 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
     nsigmaTOFA = fAODpidUtil->NumberOfSigmasTOF(tAodTrack, AliPID::kAlpha);
     /*********************************************************************/
 
-    Double_t len = 200; // esdtrack->GetIntegratedLength(); !!!!!
-    Double_t tof = tAodTrack->GetTOFsignal();
-    if (tof > 0.) vp = len / tof / 0.03;
+    
+    Double_t trackLength=tAodTrack->GetIntegratedLength();
+    Double_t trackTime=tAodTrack->GetTOFsignal()-fAODpidUtil->GetTOFResponse().GetStartTime(tAodTrack->P());
+    //  double trackTime=tAodTrack->GetTOFsignal();
+
+    Double_t vp=trackLength/trackTime;
+    if (trackTime > 0.) vp = trackLength / trackTime /0.03;
+      tFemtoTrack->SetVTOF(vp);
   }
 
-  tFemtoTrack->SetVTOF(vp);
+  
   tFemtoTrack->SetNSigmaTOFPi(nsigmaTOFPi);
   tFemtoTrack->SetNSigmaTOFK(nsigmaTOFK);
   tFemtoTrack->SetNSigmaTOFP(nsigmaTOFP);
-  tFemtoTrack->SetNSigmaTOFE(nsigmaTOFE);
+  tFemtoTrack->SetNSigmaTOFE(nsigmaTOFE); 
   
-
+    
   /*****************************************/
   tFemtoTrack->SetNSigmaTOFD(nsigmaTOFD);
   tFemtoTrack->SetNSigmaTOFT(nsigmaTOFT);
@@ -2177,7 +2186,7 @@ void AliFemtoEventReaderAOD::GetGlobalPositionAtGlobalRadiiThroughTPC(AliAODTrac
       radius_index--; // decrement to fill current location with default value
       break;
     }
-
+ 
     // store the global position
     globalPositionsAtRadii[radius_index][0] = pos_buffer[0];
     globalPositionsAtRadii[radius_index][1] = pos_buffer[1];

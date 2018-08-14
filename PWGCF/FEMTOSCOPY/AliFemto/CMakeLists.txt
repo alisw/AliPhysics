@@ -70,6 +70,7 @@ set(SRCS
   AliFemtoCutMonitorParticleYPt.cxx
   AliFemtoCutMonitorParticleVertPos.cxx
   AliFemtoCutMonitorParticlePID.cxx
+  AliFemtoCutMonitorParticlePIDBeta.cxx
   AliFemtoCutMonitorEventMult.cxx
   AliFemtoCutMonitorEventVertex.cxx
   AliFemtoKTPairCut.cxx
