@@ -145,6 +145,26 @@ AliFemtoModelCorrFctnQinv::Clone() const
 };
 
 
+AliFemtoModelCorrFctnQinv&
+AliFemtoModelCorrFctnQinv::operator=(const AliFemtoModelCorrFctnQinv &rhs)
+{
+  if (this == &rhs) {
+    return *this;
+  }
+
+  fPairType = rhs.fPairType;
+
+  fExpectedTrack1Code = rhs.fExpectedTrack1Code;
+  fExpectedTrack2Code = rhs.fExpectedTrack2Code;
+
+  *fRecNum = *rhs.fRecNum;
+  *fTrueNum = *rhs.fTrueNum;
+  *fRecDen = *rhs.fRecDen;
+  *fTrueDen = *rhs.fTrueDen;
+
+  return *this;
+}
+
 AliFemtoModelCorrFctnQinv::~AliFemtoModelCorrFctnQinv()
 {
   delete fRecNum;

@@ -119,7 +119,7 @@ public:
   void Set4DCorrectionsLambdas(THnSparse *h1);
   void Set4DCorrectionsLambdasMinus(THnSparse *h1);
 
-private:
+protected:
   AliESDEvent          *fESD;          //!<! ESD object
   AliESDpid            *fESDpid;       //!<! ESDpid object
   AliAODEvent          *fAOD;          //!<! AOD object

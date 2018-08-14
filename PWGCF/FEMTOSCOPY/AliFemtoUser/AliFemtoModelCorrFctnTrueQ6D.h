@@ -75,6 +75,8 @@ public:
     {
     }
 
+    Builder(const Builder&);
+    Builder& operator=(const Builder&);
     Builder(AliFemtoConfigObject);
 
     Builder Title(const TString& title) const
@@ -201,7 +203,7 @@ public:
   AliFemtoModelCorrFctnTrueQ6D(const AliFemtoModelCorrFctnTrueQ6D&);
 
   /// Assignment Operator - unused
-  //   AliFemtoModelCorrFctnTrueQ6D& operator=(const AliFemtoModelCorrFctnTrueQ6D& aCorrFctn);
+  AliFemtoModelCorrFctnTrueQ6D& operator=(const AliFemtoModelCorrFctnTrueQ6D&);
 
   /// Destructor - histograms destroyed, ModelManager is NOT
   virtual ~AliFemtoModelCorrFctnTrueQ6D();

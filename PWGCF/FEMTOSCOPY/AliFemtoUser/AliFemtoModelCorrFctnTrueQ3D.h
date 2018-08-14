@@ -80,6 +80,9 @@ public:
   /// Destructor - histograms destroyed, ModelManager is NOT
   virtual ~AliFemtoModelCorrFctnTrueQ3D();
 
+
+  AliFemtoModelCorrFctnTrueQ3D& operator=(const AliFemtoModelCorrFctnTrueQ3D&);
+
   /// Set the MC model manager
   virtual void SetManager(AliFemtoModelManager *);
 

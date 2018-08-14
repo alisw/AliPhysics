@@ -64,6 +64,11 @@ namespace AliFemtoPionLambdaCutMonitor {
     virtual void Fill(const AliFemtoParticleCollection *,
                       const AliFemtoParticleCollection *);
 
+  private:
+    Event(const Event &);
+    Event& operator=(const Event &);
+
+
   protected:
     TH1F *_centrality;
     TH1F *_multiplicity;
@@ -89,6 +94,10 @@ namespace AliFemtoPionLambdaCutMonitor {
          const bool suffix_output=kFALSE);
     virtual TList* GetOutputList();
     virtual void Fill(const AliFemtoTrack* aEvent);
+
+  private:
+    Pion(const Pion &);
+    Pion& operator=(const Pion &);
 
   protected:
 
@@ -122,6 +131,11 @@ namespace AliFemtoPionLambdaCutMonitor {
     virtual TList* GetOutputList();
     virtual void Fill(const AliFemtoV0* aEvent);
 
+  private:
+    Lambda(const Lambda &);
+    Lambda& operator=(const Lambda &);
+
+
   protected:
     AliFemtoAnalysisPionLambda::LambdaType fLambdaType;
 
@@ -145,6 +159,10 @@ namespace AliFemtoPionLambdaCutMonitor {
 
     virtual TList* GetOutputList();
     virtual void Fill(const AliFemtoPair* aEvent);
+
+  private:
+    Pair(const Pair &);
+    Pair& operator=(const Pair &);
 
   protected:
 
