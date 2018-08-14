@@ -419,8 +419,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 					if (runktdep) {
 					  int ktm;
-					  for (int ikt=0; ikt<7; ikt++) {
-					    ktm = aniter*7 + ikt;
+					  for (int ikt=0; ikt<6; ikt++) {
+					    ktm = aniter*6 + ikt;
 					    ktpcuts[ktm] = new AliFemtoKTPairCut(ktrng[ikt], ktrng[ikt+1]);
 					    
 					    cylmkttpc[ktm] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%ikT%i", chrgs[ichg], imult, ikt),3, nbinssh, 0.0, shqmax, runshlcms);
