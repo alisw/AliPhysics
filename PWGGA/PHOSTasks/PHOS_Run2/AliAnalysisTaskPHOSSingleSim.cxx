@@ -345,33 +345,6 @@ void AliAnalysisTaskPHOSSingleSim::SetWeightToClusters()
 
 }
 //________________________________________________________________________
-Int_t AliAnalysisTaskPHOSSingleSim::FindCommonParent(Int_t iPart, Int_t jPart)
-{
-  //check if there is a common parent for particles i and j
-  // -1: no common parent or wrong iPart/jPart
-
-  Int_t ntrack = fMCArrayAOD->GetEntriesFast();
-  if(iPart==-1 || iPart>=ntrack || jPart==-1 || jPart>=ntrack) return -1;
-
-  Int_t iprim1 = iPart;
-
-  while(iprim1>-1){
-    Int_t iprim2=jPart;
-
-    while(iprim2>-1){
-      if(iprim1==iprim2) return iprim1;
-      //iprim2 = GetParticle(iprim2)->GetMother();
-      iprim2 = dynamic_cast<AliAODMCParticle*>(fMCArrayAOD->At(iprim2))->GetMother();
-    }
-
-    //iprim1 = GetParticle(iprim1)->GetMother();
-    //iprim1 = (AliAODMCParticle*)(fMCArray->At(iprim1))->GetMother();
-    iprim1 = dynamic_cast<AliAODMCParticle*>(fMCArrayAOD->At(iprim1))->GetMother();
-  }
-
-  return -1;
-}
-//________________________________________________________________________
 void AliAnalysisTaskPHOSSingleSim::GetMCInfo()
 {
   fMCArray = 0x0;
