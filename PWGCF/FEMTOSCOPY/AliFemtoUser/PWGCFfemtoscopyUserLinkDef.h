@@ -143,3 +143,5 @@
 #pragma link C++ class AliFemtoPairCutRadialDistanceKKdist;
 // AliFemtoKKTrackCutTest class:
 #pragma link C++ class AliFemtoKKTrackCutTest;
+
+#pragma link C++ class AliFemtoCorrFctnInvMass;
