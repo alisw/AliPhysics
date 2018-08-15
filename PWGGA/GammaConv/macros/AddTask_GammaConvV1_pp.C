@@ -89,7 +89,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
                               Int_t   enableMatBudWeightsPi0          = 0,                      // 1 = three radial bins, 2 = 10 radial bins
                               TString filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root",
                               Bool_t    enableElecDeDxPostCalibration = kFALSE,
-                              TString   fileNameElecDeDxPostCalibration = "dEdxCorrectionMap_Period_Pass.root", 
+                              TString   fileNameElecDeDxPostCalibration = "dEdxCorrectionMap_Period_Pass.root",
                              TString   additionalTrainConfig         = "0"                     // additional counter for trainconfig, this has to be always the last parameter
                             ) {
 
@@ -929,7 +929,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00062113", "00200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - PHI7
   // systematic variations for 5 TeV 2017
   } else if (trainConfig == 405){
-    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); // New standard cut for pp 5 TeV analysis VAND
+    cuts.AddCut("00010113", "00200009a27300008250904120", "0152103500000000"); //cosPA, 0.99 eta 0.9
     cuts.AddCut("00010113", "00200079227300008250404000", "0152103500000000"); // min pT no cut
     cuts.AddCut("00010113", "00200049227300008250404000", "0152103500000000"); // min pT 75 MeV
     cuts.AddCut("00010113", "00200019227300008250404000", "0152103500000000"); // min pT 100 MeV
