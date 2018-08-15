@@ -113,6 +113,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t MesonIsSelectedMCDalitz(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma,Double_t fRapidityShift=0.);
     Bool_t MesonIsSelectedAODMCDalitz(AliAODMCParticle *MCMother,TClonesArray *AODMCArray, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma,Double_t fRapidityShift=0.);
     Bool_t MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelGamma, Double_t fRapidityShift=0);
+    Bool_t MesonIsSelectedMCPiPlPiMiEta(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift=0);
     Bool_t MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift=0);
     Bool_t MesonIsSelectedMCPiZeroGamma(TParticle *fMCMother, AliMCEvent *mcEvent, Int_t &labelNeutPion, Int_t &labelGamma, Double_t fRapidityShift=0);
     Bool_t MesonIsSelectedMCChiC(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &, Int_t &, Int_t &, Double_t fRapidityShift=0. );
@@ -277,7 +278,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,24)
+    ClassDef(AliConversionMesonCuts,25)
     /// \endcond
 };
 

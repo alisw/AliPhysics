@@ -93,10 +93,16 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance() :
   fMedianEMCal(0.),
   fMedianDCal(0.),
   fkEMCEJE(kFALSE),
+  fDoTriggerResponse(kFALSE),
+  fDoJetMatchingGeometrical(kFALSE),
+  fDoJetMatchingMCFraction(kFALSE),
   fEmbeddingQA(),
   fMCJetContainer(nullptr),
   fDetJetContainer(nullptr),
+  fDetJetContainerPPIntermediate(nullptr),
   fJetMatchingR(0.),
+  fMinSharedMomentumFraction(0.5),
+  fMCJetMinMatchingPt(0.15),
   fPlotJetMatchCandThresh(1.),
   fUseAliEventCuts(kTRUE),
   fEventCuts(0),
@@ -141,10 +147,16 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance(const cha
   fMedianEMCal(0.),
   fMedianDCal(0.),
   fkEMCEJE(kFALSE),
+  fDoTriggerResponse(kFALSE),
+  fDoJetMatchingGeometrical(kFALSE),
+  fDoJetMatchingMCFraction(kFALSE),
   fEmbeddingQA(),
   fMCJetContainer(nullptr),
   fDetJetContainer(nullptr),
+  fDetJetContainerPPIntermediate(nullptr),
   fJetMatchingR(0.),
+  fMinSharedMomentumFraction(0.5),
+  fMCJetMinMatchingPt(0.15),
   fPlotJetMatchCandThresh(1.),
   fUseAliEventCuts(kTRUE),
   fEventCuts(0),
@@ -230,26 +242,62 @@ void AliAnalysisTaskEmcalJetPerformance::UserCreateOutputObjects()
   // Get the MC particle branch, in case it exists
   fGeneratorLevel = GetMCParticleContainer("mcparticles");
   
-  // Get MC jet container, in order to check the jet acceptance criteria
+  // Get jet containers, in order to check the jet acceptance criteria
+  // For geometrical matching, it is expected that there is one det-level and one truth-level container
+  // For MC fraction matching, it is expected that there is one Pb-Pb det-level, one pp det-level, and one pp truth-level container
   if (fPlotMatchedJetHistograms) {
-    for (Int_t i=0; i<2; i++) {
-      auto jetCont = GetJetContainer(i);
-      TString jetContName = jetCont->GetName();
-      if (jetContName.Contains("mcparticles")) {
-        fMCJetContainer = jetCont;
+    
+    if (fDoJetMatchingGeometrical) {
+      Printf("Geometrical jet matching enabled.");
+      
+      for (Int_t i=0; i<2; i++) {
+        auto jetCont = GetJetContainer(i);
+        TString jetContName = jetCont->GetName();
+        if (jetContName.Contains("mcparticles")) {
+          fMCJetContainer = jetCont;
+        }
+        else {
+          fDetJetContainer = jetCont;
+        }
       }
-      else {
-        fDetJetContainer = jetCont;
-      }
+      
     }
+    else if (fDoJetMatchingMCFraction) {
+      Printf("MC-fraction jet matching enabled.");
+      
+      for (Int_t i=0; i<3; i++) {
+        auto jetCont = GetJetContainer(i);
+        TString jetContName = jetCont->GetName();
+        if (jetContName.Contains("mcparticles")) {
+          fMCJetContainer = jetCont;
+        }
+        else if (jetContName.Contains("Combined")) {
+          fDetJetContainer = jetCont;
+        }
+        else {
+          fDetJetContainerPPIntermediate = jetCont;
+        }
+      }
+      
+    }
+    
     if (!fMCJetContainer) {
       Printf("No MC jet container found!");
     }
     Printf("mcJetContainer: %s", fMCJetContainer->GetName());
+    
     if (!fDetJetContainer) {
       Printf("No det-level jet container found!");
     }
     Printf("det-level JetContainer: %s", fDetJetContainer->GetName());
+    
+    if (fDoJetMatchingMCFraction) {
+      if (!fDetJetContainerPPIntermediate) {
+        Printf("No intermediate pp det-level jet container found, despite MC-fraction matching enabled!");
+      }
+      Printf("Intermediate pp det-level JetContainer: %s", fDetJetContainerPPIntermediate->GetName());
+    }
+  
   }
   
   // Allocate histograms
@@ -307,7 +355,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
   TIter nextJetColl(&fJetCollArray);
   while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
     
-    if (fPlotMatchedJetHistograms && jets != fMCJetContainer) {
+    if (fPlotMatchedJetHistograms && fDoJetMatchingMCFraction && jets != fMCJetContainer) {
       continue; // don't plot det-level histograms if embedding
     }
     
@@ -904,6 +952,16 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateTriggerSimHistograms()
   title = histname + ";Centrality (%);#it{E}_{patch,med} (GeV);type";
   fHistManager.CreateTH3(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 50, 2, -0.5, 1.5);
   
+  if (fDoTriggerResponse) {
+    histname = "TriggerSimHistograms/hMaxPatchResponseMatrix";
+    title = histname + ";#it{E}_{maxpatch,det} (GeV);#it{E}_{maxpatch,truth} (GeV)";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), 400, 0, 200, 400, 0, 200);
+    
+    histname = "TriggerSimHistograms/hEMCalEnergyResponseMatrix";
+    title = histname + ";#Sigma#it{E}_{clus,EMCal} (GeV);#it{E}_{EMCal,truth} (GeV)";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), 500, 0, 500, 500, 0, 500);
+  }
+  
   //----------------------------------------------
   // Jet histograms for "triggered" events
   AliJetContainer* jets = 0;
@@ -1018,7 +1076,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateMatchedJetHistograms()
   }
   else {
     title = histname + ";#it{p}_{T,corr}^{det} (GeV/#it{c});#it{p}_{T}^{truth} (GeV/#it{c})";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nbinsy, miny, maxy, nbinsz, minz, maxz);
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nbinsy, miny, maxy, nbinsy, miny, maxy);
   }
   
   if (fPlotDCal) {
@@ -1090,26 +1148,49 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateMatchedJetHistograms()
     fHistManager.CreateTH2(histname.Data(), title.Data(), nbinsy, miny, maxy, nbinsz, minz, maxz);
   }
   
-  // Matching distance, (centrality, pT-truth, R)
-  nbinsx = 20; minx = 0; maxx = 100;
-  nbinsy = nPtBinsTruth2; miny = 0; maxy = fMaxPt;
-  nbinsz = 50; minz = 0; maxz = 1.;
-  
-  histname = "MatchedJetHistograms/hMatchingDistance";
-  if (fForceBeamType != kpp) {
-    title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});R";
+  if (fDoJetMatchingGeometrical) {
+   
+    // Matching distance, (pT-det, pT-truth, deltaR)
+    nbinsx = nPtBins1; minx = fMinPt; maxx = fMaxPt;
+    nbinsy = nPtBinsTruth2; miny = 0; maxy = fMaxPt;
+    nbinsz = 100; minz = 0; maxz = 4.;
+    histname = "MatchedJetHistograms/hMatchingDistance";
+    title = histname + ";#it{p}_{T}^{det} (GeV/#it{c});#it{p}_{T}^{truth} (GeV/#it{c});R";
     fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
-  }
-  else {
-    title = histname + ";#it{p}_{T}^{truth} (GeV/#it{c});R";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nbinsy, miny, maxy, nbinsz, minz, maxz);
+    
+    // Jet matching QA (copied from AliAnalysisTaskEmcalJetHCorrelations.cxx)
+    histname = "MatchedJetHistograms/fHistJetMatchingQA";
+    title = histname;
+    std::vector<std::string> binLabels = {"noMatch", "matchedJet", "uniqueMatch", "jetDistance", "passedAllCuts"};
+    auto histMatchedJetCuts = fHistManager.CreateTH1(histname.Data(), title.Data(), binLabels.size(), 0, binLabels.size());
+    // Set label names
+    for (unsigned int i = 1; i <= binLabels.size(); i++) {
+      histMatchedJetCuts->GetXaxis()->SetBinLabel(i, binLabels.at(i-1).c_str());
+    }
+    histMatchedJetCuts->GetYaxis()->SetTitle("Number of jets");
   }
   
-  // Number of jet matching candidates, (pT-truth, Ntruth candidates, Ndet candidates)
-  nbinsx = nPtBinsTruth2; minx = 0; maxx = fMaxPt;
-  histname = "MatchedJetHistograms/hNumberMatchingCandidates";
-  title = histname + ";#it{p}_{T}^{truth} (GeV/#it{c});N_{truth} matches; N_{det} matches";
-  fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, 11, -1.5, 9.5, 11, -1.5, 9.5);
+  if (fDoJetMatchingMCFraction) {
+    
+    // (det pT, shared MC fraction, deltaR) of closest jets
+    nbinsx = nPtBins1; minx = fMinPt; maxx = fMaxPt;
+    nbinsy = 20; miny = 0; maxy = 1.;
+    nbinsz = 100; minz = 0; maxz = 4.;
+    histname = "MatchedJetHistograms/hMatchingDistanceVsMCFraction";
+    title = histname + ";#it{p}_{T}^{det} (GeV/#it{c});MC fraction;#DeltaR";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+    
+    // Jet matching QA (copied from AliAnalysisTaskEmcalJetHCorrelations.cxx)
+    histname = "MatchedJetHistograms/fHistJetMatchingQA";
+    title = histname;
+    std::vector<std::string> binLabels = {"noMatch", "matchedJet", "sharedMomentumFraction", "partLevelMatchedJet", "jetDistance", "passedAllCuts"};
+    auto histMatchedJetCuts = fHistManager.CreateTH1(histname.Data(), title.Data(), binLabels.size(), 0, binLabels.size());
+    // Set label names
+    for (unsigned int i = 1; i <= binLabels.size(); i++) {
+      histMatchedJetCuts->GetXaxis()->SetBinLabel(i, binLabels.at(i-1).c_str());
+    }
+    histMatchedJetCuts->GetYaxis()->SetTitle("Number of jets");
+  }
 
 }
 
@@ -1266,22 +1347,31 @@ void AliAnalysisTaskEmcalJetPerformance::DoTriggerSimulation()
   // Compute patches in EMCal, DCal (I want offline simple trigger patch, i.e. patch calculated using FEE energy)
   std::vector<Double_t> vecEMCal;
   std::vector<Double_t> vecDCal;
+  Double_t maxPatchEnergy = 0.;
+  Double_t patchE;
+  AliEMCALTriggerPatchInfo *maxPatch = nullptr;
   for(auto p : *fTriggerPatchInfo){
     AliEMCALTriggerPatchInfo *recpatch = static_cast<AliEMCALTriggerPatchInfo *>(p);
     if (recpatch) {
       
       if(!recpatch->IsJetHighSimple()) continue;
       
+      patchE = recpatch->GetPatchE();
+      
       histname = "TriggerSimHistograms/hEtaVsPhi";
       fHistManager.FillTH2(histname.Data(), recpatch->GetEtaGeo(), recpatch->GetPhiGeo());
       
       histname = "TriggerSimHistograms/hPatchE";
-      fHistManager.FillTH2(histname.Data(), fCent, recpatch->GetPatchE());
+      fHistManager.FillTH2(histname.Data(), fCent, patchE);
       
       if (recpatch->IsEMCal()) {
-        vecEMCal.push_back(recpatch->GetPatchE());
+        vecEMCal.push_back(patchE);
+        if (patchE > maxPatchEnergy) {
+          maxPatchEnergy = patchE;
+          maxPatch = recpatch;
+        }
       } else {
-        vecDCal.push_back(recpatch->GetPatchE());
+        vecDCal.push_back(patchE);
       }
       
     }
@@ -1300,6 +1390,69 @@ void AliAnalysisTaskEmcalJetPerformance::DoTriggerSimulation()
   histname = "TriggerSimHistograms/hNPatches";
   fHistManager.FillTH2(histname.Data(), nBkgPatchesEMCal, kEMCal);
   fHistManager.FillTH2(histname.Data(), nBkgPatchesDCal, kDCal);
+  
+  // Fill max patch response and total EMCal energy response, if requested
+  if (fGeneratorLevel && fDoTriggerResponse) {
+    
+    Double_t phiMinEMCal = fGeom->GetArm1PhiMin() * TMath::DegToRad(); // 80
+    Double_t phiMaxEMCal = fGeom->GetEMCALPhiMax() * TMath::DegToRad(); // ~188
+    Double_t detEnergyEMCal = 0;
+    Double_t truthEnergyEMCal = 0;
+    Double_t truthEnergyPatch = 0;
+    
+    AliTLorentzVector part;
+    Double_t partEta;
+    Double_t partPhi;
+    Double_t partE;
+    for (auto mcpart:fGeneratorLevel->accepted_momentum()) {
+      part.Clear();
+      part = mcpart.first;
+      partEta = part.Eta();
+      partPhi = part.Phi_0_2pi();
+      partE = part.E();
+      if (maxPatch) {
+        if (partPhi < maxPatch->GetPhiMax() && partPhi > maxPatch->GetPhiMin()) {
+          if (partEta < maxPatch->GetEtaMax() && partEta > maxPatch->GetEtaMin()) {
+            truthEnergyPatch += partE;
+          }
+        }
+      }
+      if (partPhi < phiMaxEMCal && partPhi > phiMinEMCal) {
+        if (partEta < 0.7 && partEta > -0.7) {
+          truthEnergyEMCal += partE;
+        }
+      }
+    }
+    
+    AliTLorentzVector clusFourVec;
+    const AliVCluster* clus;
+    Double_t clusEta;
+    Double_t clusPhi;
+    AliClusterContainer* clusters = GetClusterContainer(0);
+    for (auto clusIterator : clusters->accepted_momentum() ) {
+      clusFourVec.Clear();
+      clusFourVec = clusIterator.first;
+      clusEta = clusFourVec.Eta();
+      clusPhi = clusFourVec.Phi_0_2pi();
+      clus = clusIterator.second;
+      if (clus->IsEMCAL()) {
+        if (clusPhi < phiMaxEMCal && clusPhi > phiMinEMCal) {
+          if (clusEta < 0.7 && clusEta > -0.7) {
+            detEnergyEMCal += clusFourVec.E();
+          }
+        }
+      }
+    }
+    
+    if (maxPatch) {
+      histname = "TriggerSimHistograms/hMaxPatchResponseMatrix";
+      fHistManager.FillTH2(histname.Data(), maxPatchEnergy, truthEnergyPatch);
+    }
+    
+    histname = "TriggerSimHistograms/hEMCalEnergyResponseMatrix";
+    fHistManager.FillTH2(histname.Data(), detEnergyEMCal, truthEnergyEMCal);
+
+  }
   
   // Then compute background subtracted patches, by subtracting from each patch the median patch E from the opposite hemisphere
   // If a patch is above threshold, the event is "triggered"
@@ -1368,7 +1521,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillJetHistograms()
   while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
     TString jetContName = jets->GetName();
     
-    if (fPlotMatchedJetHistograms && jets != fMCJetContainer) {
+    if (fPlotMatchedJetHistograms && fDoJetMatchingMCFraction && jets != fMCJetContainer) {
       continue; // don't plot det-level histograms if embedding
     }
     
@@ -2359,37 +2512,42 @@ void AliAnalysisTaskEmcalJetPerformance::FillTriggerSimHistograms()
 }
 
 /**
- * This function fills histograms for matched truth-det jets in the case of embedding.
- * The jet matching will be filled below, geometrically.
+ * This function performs matching of det-level jets to truth-level jets, and fills relevant histograms.
+ * There are two matching approaches implemented, each of which expect a certain set of jet containers to be attached:
+ * (1) fDoJetMatchingGeometrical: Do geometrical matching, with two jet containers fMCJetContainer and fDetJetContainer.
+ *     This is appropriate for pp and p-Pb.
+ * (2) fDoJetMatchingMCFraction: Do MC fraction based jet matching, with pp-truth, pp-det, and combined-det jet containers.
+ *     This is appropriate for Pb-Pb.
  */
 void AliAnalysisTaskEmcalJetPerformance::FillMatchedJetHistograms()
 {
-  TString histname;
-  const AliEmcalJet* matchedPartLevelJet = nullptr;
-    
+  // Loop over all jets and fill the ClosestJet(), i.e. the matching candidate.
+  // Note: Allow truth jets to be outside of EMCALfid or fail 5 GeV requirement, since these can still contribute accepted det-jets
+  //       (but for the jet reconstruction efficiency denominator, the criteria should be enforced).
+  if (fDoJetMatchingGeometrical) {
+    ComputeJetMatches(fDetJetContainer, fMCJetContainer, kFALSE);
+  }
+  else if (fDoJetMatchingMCFraction) {
+    ComputeJetMatches(fDetJetContainer, fDetJetContainerPPIntermediate, kTRUE); // First match PbPb-det to pp-det
+    ComputeJetMatches(fDetJetContainerPPIntermediate, fMCJetContainer, kFALSE);  // Then match pp-det to pp-truth
+  }
+  
+  // Loop through accepted det-level jets, and retrieve matching candidate.
+  // It match passes criteria (i.e. matching distance, uniqueness, MC fraction), fill matching histos.
   Double_t rhoVal = 0;
   if (fDetJetContainer->GetRhoParameter()) {
     rhoVal = fDetJetContainer->GetRhoVal();
   }
-  
-  // Fill jet matches, assuming fMCJetContainer and fDetJetContainer are properly assigned
-  ComputeJetMatches();
-  PlotNumberOfJetMatchingCandidates();
-  
-  // Loop through accepted det-level jets, and if match passes criteria, fill matching histos.
   for (auto jet : fDetJetContainer->accepted()) {
     
-    // Get the matched part-level jet, based on geometrical criteria and uniqueness (doesn't use any MC fraction requirement)
-    matchedPartLevelJet = GetMatchedJet(jet);
+    Float_t detPt = GetJetPt(jet, rhoVal);
     
-    // Check that the matched jet exists, and is accepted
+    // Get the matched part-level jet
+    const AliEmcalJet* matchedPartLevelJet = GetMatchedPartLevelJet(jet, detPt);
     if (!matchedPartLevelJet) {
       continue;
     }
-    UInt_t rejectionReason = 0;
-    if (!fMCJetContainer->AcceptJet(matchedPartLevelJet, rejectionReason)) {
-      continue;
-    }
+    Float_t truthPt = matchedPartLevelJet->Pt();
     
     // compute jet acceptance type
     Double_t type = GetJetType(jet);
@@ -2399,10 +2557,8 @@ void AliAnalysisTaskEmcalJetPerformance::FillMatchedJetHistograms()
       }
     }
     
-    Float_t detPt = GetJetPt(jet, rhoVal);
-    Float_t truthPt = matchedPartLevelJet->Pt();
-    
     // Fill response matrix (centrality, pT-truth, pT-det)
+    TString histname;
     if (type == kEMCal) {
       histname = "MatchedJetHistograms/hResponseMatrixEMCal";
     }
@@ -2456,107 +2612,175 @@ void AliAnalysisTaskEmcalJetPerformance::FillMatchedJetHistograms()
 }
 
 /*
- * Fill jet matches of accepted jets to closest det/truth accepted jet (no additional criteria here).
- * Note: Assumes truth-level and det-level jet containers are assigned properly to fMCJetContainer, fDetJetContainer.
+ * Loop over jets of two specified jet collections, and fill the ClosestJet(), i.e. the matching candidate.
+ * The first collection always uses the container acceptance criteria.
+ * The second collection can be configured to use the container acceptance criteria or not.
  */
-void AliAnalysisTaskEmcalJetPerformance::ComputeJetMatches() {
+void AliAnalysisTaskEmcalJetPerformance::ComputeJetMatches(AliJetContainer* jetCont1, AliJetContainer* jetCont2, Bool_t bUseJetCont2Acceptance) {
 
-  Double_t deltaR;
-  for (auto truthJet : fMCJetContainer->accepted()) {
-    truthJet->ResetMatching();
+  for (auto jet1 : jetCont1->all()) {
+    jet1->ResetMatching();
   }
-  for (auto detJet : fDetJetContainer->accepted()) {
-    detJet->ResetMatching();
+  for (auto jet2 : jetCont2->all()) {
+    jet2->ResetMatching();
+  }
+
+  for (auto jet1 : jetCont1->accepted()) {
     
-    for (auto truthJet : fMCJetContainer->accepted()) {
-      deltaR = detJet->DeltaR(truthJet);
-      if (deltaR > 0.) {
-        
-        if (deltaR < detJet->ClosestJetDistance()) {
-          detJet->SetClosestJet(truthJet, deltaR);
-        
-          if (deltaR < truthJet->ClosestJetDistance()) {
-            truthJet->SetClosestJet(detJet, deltaR);
-          }
+    if (bUseJetCont2Acceptance) {
+      for (auto jet2 : jetCont2->accepted()) {
+        SetJetClosestCandidate(jet1, jet2);
+      }
+    }
+    else {
+      for (auto jet2 : jetCont2->all()) {
+        if (jet2->Pt() < fMCJetMinMatchingPt) {
+          continue;
         }
+        SetJetClosestCandidate(jet1, jet2);
       }
     }
   }
 }
-  
+          
 /*
- * Plot how many accepted jet candidates there are within deltaR=1.0 of the leading jets.
- * That is, given the leading accepted truth jet, how many det jets are within deltaR=1.0,
- * and given the leading accepted det-jet, how many truth jets are within deltaR=1.0.
- * Note: Only fill when there is an accepted truth-level jet.
+ * Given two jets, set them as closest if they are closer than the current closest jets.
  */
-void AliAnalysisTaskEmcalJetPerformance::PlotNumberOfJetMatchingCandidates() {
-  
-  AliEmcalJet* leadDetJet = fDetJetContainer->GetLeadingJet("rho");
-  Int_t nTruthMatches = 0;
-  if (leadDetJet) {
-    Double_t deltaR = 0.;
-    for (auto truthJet : fMCJetContainer->accepted()) {
-      deltaR = leadDetJet->DeltaR(truthJet);
-      if (deltaR > 0. && deltaR < fPlotJetMatchCandThresh) {
-        nTruthMatches++;
-      }
-    }
-  }
-  else {
-    nTruthMatches = -1;
-  }
-  
-  AliEmcalJet* leadTruthJet = fMCJetContainer->GetLeadingJet();
-  Int_t nDetMatches = 0;
-  if (leadTruthJet) {
-    Double_t deltaR = 0.;
-    for (auto detJet : fDetJetContainer->accepted()) {
-      deltaR = leadTruthJet->DeltaR(detJet);
-      if (deltaR > 0. && deltaR < fPlotJetMatchCandThresh) {
-        nDetMatches++;
-      }
+void AliAnalysisTaskEmcalJetPerformance::SetJetClosestCandidate(AliEmcalJet* jet1, AliEmcalJet* jet2) {
+          
+  Double_t deltaR = jet1->DeltaR(jet2);
+  if (deltaR > 0.) {
+    
+    if (deltaR < jet1->ClosestJetDistance()) {
+      jet1->SetClosestJet(jet2, deltaR);
     }
     
-    // (pT-truth, Ntruth candidates, Ndet candidates)
-    TString histname = "MatchedJetHistograms/hNumberMatchingCandidates";
-    fHistManager.FillTH3(histname, leadTruthJet->Pt(), nTruthMatches, nDetMatches);
+    if (deltaR < jet2->ClosestJetDistance()) {
+      jet2->SetClosestJet(jet1, deltaR);
+    }
   }
-
 }
  
 /*
- * Check if closest jet satisfies matching criteria: (1) within R = fJetMatchingR, (2) unique match.
+ * Return a pointer to the matched truth-level jet, if it passes the matching criteria.
+ * For fDoJetMatchingGeometrical, this means (1) within R = fJetMatchingR, (2) unique match.
+ * For fDoJetMatchingMCFraction, this means also shared MC fraction requirement. That is, if the jet (combined jet)
+ * is matched to a pp det-level jet, which is matched to a pp truth-level jet -- it must satisfy
+ * (1) The shared momentum fraction being larger than some minimum value fMinSharedMomentumFraction, and
+ * (2) Their matched distance being below the max matching distance fMaxMatchedJetDistance
+ *
+ * @param[in] detJet det-level jet to be checked for a successful truth-level match.
+ * @return Pointer to truth-level matched jet, if it exists. False otherwise.
 */
-AliEmcalJet* AliAnalysisTaskEmcalJetPerformance::GetMatchedJet(AliEmcalJet* detJet) {
+const AliEmcalJet* AliAnalysisTaskEmcalJetPerformance::GetMatchedPartLevelJet(const AliEmcalJet* detJet, Double_t detJetPt) {
 
-  AliEmcalJet* matchedTruthJetCand = detJet->ClosestJet();
+  // Track in histogram how many matches pass each distinct matching criteria
+  TString histNameQA = "MatchedJetHistograms/fHistJetMatchingQA";
   
-  // Check that matched truth jet exists and is a unique match
-  if (!matchedTruthJetCand) {
-    return 0;
-  }
-  if (matchedTruthJetCand->ClosestJet() != detJet) {
-    return 0;
+  // Geometrical matching case (pp, p-Pb)
+  if (fDoJetMatchingGeometrical) {
+    
+    bool returnValue = false;
+    const AliEmcalJet* partLevelJet = detJet->ClosestJet();
+    if (partLevelJet) {
+      fHistManager.FillTH1(histNameQA, "matchedJet");
+      returnValue = true;
+      
+      // Check if match is unique
+      if (partLevelJet->ClosestJet() != detJet) {
+        returnValue = false;
+      }
+      else {
+        fHistManager.FillTH1(histNameQA, "uniqueMatch");
+        
+        // Fill matching distance between unique matches, without imposing deltaR cut (centrality, pT-truth, R)
+        TString histname = "MatchedJetHistograms/hMatchingDistance";
+        fHistManager.FillTH3(histname, detJetPt, partLevelJet->Pt(), detJet->ClosestJetDistance());
+      }
+      
+      // Check if the matching distance cut is passed
+      double matchedJetDistance = detJet->ClosestJetDistance();
+      if (matchedJetDistance > fJetMatchingR) {
+        returnValue = false;
+      }
+      else {
+        fHistManager.FillTH1(histNameQA, "jetDistance");
+      }
+      
+      // Record all cuts passed
+      if (returnValue == true) {
+        fHistManager.FillTH1(histNameQA, "passedAllCuts");
+      }
+    }
+    else {
+      fHistManager.FillTH1(histNameQA, "noMatch");
+      returnValue = false;
+    }
+    
+    if (returnValue) {
+      return partLevelJet;
+    }
   }
   
-  // Fill matching distance between combined jet and pp det-level jet, before imposing deltaR cut (centrality, pT-truth, R)
-  TString histname = "MatchedJetHistograms/hMatchingDistance";
-  if (fForceBeamType != kpp) {
-    fHistManager.FillTH3(histname, fCent, matchedTruthJetCand->Pt(), detJet->ClosestJetDistance());
+  // Shared MC fraction matching case (Pb-Pb)
+  else if (fDoJetMatchingMCFraction) { // This function is essentially copied from AliAnalysisTaskEmcalJetHCorrelations::CheckForMatchedJet
+    
+    bool returnValue = false;
+    const AliEmcalJet* partLevelJet = nullptr;
+    
+    // First, check if combined jet has a pp det-level match assigned
+    if (detJet->ClosestJet()) {
+      fHistManager.FillTH1(histNameQA, "matchedJet");
+      returnValue = true;
+      
+      // Check shared momentum fraction.
+      double sharedFraction = fDetJetContainer->GetFractionSharedPt(detJet, nullptr);
+      if (sharedFraction < fMinSharedMomentumFraction) {
+        returnValue = false;
+      }
+      else {
+        fHistManager.FillTH1(histNameQA, "sharedMomentumFraction");
+      }
+    
+      // Check that the combined jet has a particle-level match
+      AliEmcalJet * detLevelJetPP = detJet->ClosestJet();
+      partLevelJet = detLevelJetPP->ClosestJet();
+      if (!partLevelJet) {
+        returnValue = false;
+      }
+      else {
+        fHistManager.FillTH1(histNameQA, "partLevelMatchedJet");
+      }
+      
+      // Check the matching distance between the combined and pp det-level jets
+      double matchedJetDistance = detJet->ClosestJetDistance();
+      if (matchedJetDistance > fJetMatchingR) {
+        returnValue = false;
+      }
+      else {
+        fHistManager.FillTH1(histNameQA, "jetDistance");
+      }
+      
+      // Record all cuts passed
+      if (returnValue == true) {
+        fHistManager.FillTH1(histNameQA, "passedAllCuts");
+      }
+      
+      // Fill (det pT, shared MC fraction, deltaR) of closest jets
+      TString histname = "MatchedJetHistograms/hMatchingDistanceVsMCFraction";
+      fHistManager.FillTH3(histname, detJetPt, sharedFraction, matchedJetDistance);
+      
+    }
+    else {
+      fHistManager.FillTH1(histNameQA, "noMatch");
+      returnValue = false;
+    }
+    
+    if (returnValue) {
+      return partLevelJet;
+    }
   }
-  else {
-    fHistManager.FillTH2(histname, matchedTruthJetCand->Pt(), detJet->ClosestJetDistance());
-  }
-  
-  // Check if deltaR cut is passed
-  if (detJet->ClosestJetDistance() > fJetMatchingR || matchedTruthJetCand->ClosestJetDistance() > fJetMatchingR) {
-    return 0;
-  }
-  
-  // Match found!
-  return matchedTruthJetCand;
-  
+  return 0;
 }
 
 /*

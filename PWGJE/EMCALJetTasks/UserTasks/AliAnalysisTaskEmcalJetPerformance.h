@@ -120,8 +120,13 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void SetTrackMatchingDeltaEtaMax(Double_t deta)           { fTrackMatchingDeltaEtaMax = deta; }
   void SetTrackMatchingDeltaPhiMax(Double_t dphi)           { fTrackMatchingDeltaPhiMax = dphi; }
   void SetPlotDCal(Bool_t b)                                { fPlotDCal = b; }
+  void SetDoJetMatchingGeometrical(Bool_t b)                { fDoJetMatchingGeometrical = b; }
+  void SetDoJetMatchingMCFraction(Bool_t b)                 { fDoJetMatchingMCFraction = b; }
   void SetJetMatchingR(Double_t r)                          { fJetMatchingR = r; }
+  void SetMinimumSharedMomentumFraction(double d)           { fMinSharedMomentumFraction = d; }
+  void SetMCJetMinMatchingPt(Double_t min)                  { fMCJetMinMatchingPt = min; }
   void SetPlotJetMatchCandThresh(Double_t r)                { fPlotJetMatchCandThresh = r; };
+  void SetDoTriggerResponse(Bool_t b)                       { fDoTriggerResponse = b; };
 
  protected:
   void                        ExecOnce()                                        ;
@@ -148,9 +153,9 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void                        DoTriggerSimulation()                             ;
   void                        FillTriggerSimHistograms()                        ;
   void                        FillMatchedJetHistograms()                        ;
-  void                        ComputeJetMatches()                               ;
-  AliEmcalJet*                GetMatchedJet(AliEmcalJet* jet)                   ;
-  void                        PlotNumberOfJetMatchingCandidates()               ;
+  void                        ComputeJetMatches(AliJetContainer* jetCont1, AliJetContainer* jetCont2, Bool_t bUseJetCont2Acceptance);
+  void                        SetJetClosestCandidate(AliEmcalJet* jet1, AliEmcalJet* jet2);
+  const AliEmcalJet*          GetMatchedPartLevelJet(const AliEmcalJet* jet, Double_t detJetPt);
   
   // Utility functions
   Double_t                    GetJetPt(const AliEmcalJet* jet, Double_t rho);
@@ -192,12 +197,18 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   Double_t                    fMedianEMCal;                         //!<! median patch energy in EMCal, per event
   Double_t                    fMedianDCal;                          //!<! median patch energy in DCal, per event
   Bool_t                      fkEMCEJE;                             //!<! flag telling whether the event is "triggered" or not in "simulation"
+  Bool_t                      fDoTriggerResponse;                   ///< flag whether to compute max patch response, in case of MC
   
   // Embedding parameters
+  Bool_t                      fDoJetMatchingGeometrical;            ///< Do geometrical matching between det-level and truth-level jet container
+  Bool_t                      fDoJetMatchingMCFraction;             ///< Do MC-fraction based matching using PbPb det-level, pp det-level, and pp truth-level jet containers
   AliEmcalEmbeddingQA         fEmbeddingQA;                         //!<! QA hists for embedding (will only be added if embedding)
   AliJetContainer*            fMCJetContainer;                      //!<!Pointer to jet container of truth-level jets
   AliJetContainer*            fDetJetContainer;                     //!<!Pointer to jet container of det-level jets
+  AliJetContainer*            fDetJetContainerPPIntermediate;       //!<!Pointer to jet container of intermediate pp det-level jets, if MC-fraction matching
   Double_t                    fJetMatchingR;                        ///< Jet matching R threshold
+  Double_t                    fMinSharedMomentumFraction;           ///< Minimum shared momentum (pp det-level track pT in combined jet) / (pp det-level track pT)
+  Double_t                    fMCJetMinMatchingPt;                  ///< Min jet pT for MC jets being matched, for when container criteria is not applied
   Double_t                    fPlotJetMatchCandThresh;              ///< Threshold for jet R to count candidates, affects plotting only
   
   // Event selection
@@ -217,7 +228,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetPerformance &operator=(const AliAnalysisTaskEmcalJetPerformance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetPerformance, 16);
+  ClassDef(AliAnalysisTaskEmcalJetPerformance, 18);
   /// \endcond
 };
 #endif

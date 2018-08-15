@@ -356,9 +356,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     NbinQxy  = 200;
   }
 
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsNormQ1",fEstimator.Data()),Form("Centrality %s vs. |Q_{1}|;centrality (%%);|Q_{1}|",fEstimator.Data()),100,0,100,NbinQxy,-Qxylimit,Qxylimit));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsNormQ2",fEstimator.Data()),Form("Centrality %s vs. |Q_{2}|;centrality (%%);|Q_{2}|",fEstimator.Data()),100,0,100,NbinQxy,-Qxylimit,Qxylimit));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsNormQ3",fEstimator.Data()),Form("Centrality %s vs. |Q_{3}|;centrality (%%);|Q_{3}|",fEstimator.Data()),100,0,100,NbinQxy,-Qxylimit,Qxylimit));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsNormQ1",fEstimator.Data()),Form("Centrality %s vs. |Q_{1}|;centrality (%%);|Q_{1}|",fEstimator.Data()),100,0,100,NbinQxy,0,2. * Qxylimit));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsNormQ2",fEstimator.Data()),Form("Centrality %s vs. |Q_{2}|;centrality (%%);|Q_{2}|",fEstimator.Data()),100,0,100,NbinQxy,0,2. * Qxylimit));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsNormQ3",fEstimator.Data()),Form("Centrality %s vs. |Q_{3}|;centrality (%%);|Q_{3}|",fEstimator.Data()),100,0,100,NbinQxy,0,2. * Qxylimit));
 
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ1x",fEstimator.Data()),Form("Centrality %s vs. Q_{1x};centrality (%%);Q_{1x}",fEstimator.Data()),100,0,100,NbinQxy,-Qxylimit,Qxylimit));
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ1y",fEstimator.Data()),Form("Centrality %s vs. Q_{1y};centrality (%%);Q_{1y}",fEstimator.Data()),100,0,100,NbinQxy,-Qxylimit,Qxylimit));
@@ -370,6 +370,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane12",fEstimator.Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane23",fEstimator.Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane31",fEstimator.Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSinDeltaEventPlane12",fEstimator.Data()),Form("Centrality %s vs. sin(%d #Delta#Psi_{EP});centrality (%%);sin(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSinDeltaEventPlane23",fEstimator.Data()),Form("Centrality %s vs. sin(%d #Delta#Psi_{EP});centrality (%%);sin(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSinDeltaEventPlane31",fEstimator.Data()),Form("Centrality %s vs. sin(%d #Delta#Psi_{EP});centrality (%%);sin(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
 
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsPHOSClusterMultiplicityMC" ,fEstimator.Data()),Form("Centrality %s vs. Cluster Multiplicity;centrality (%%);Ncluster"             ,fEstimator.Data()),100,0,100,201,-0.5,200.5));
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsPHOSClusterMultiplicity"   ,fEstimator.Data()),Form("Centrality %s vs. Cluster Multiplicity;centrality (%%);Ncluster"             ,fEstimator.Data()),100,0,100,201,-0.5,200.5));
@@ -397,7 +401,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
 
   for(Int_t itype=0;itype<Ntype;itype++){
     fOutputContainer->Add(new TH1F(Form("h%sTrackMult"   ,tracktype[itype].Data()),Form("Number of %s track;track multiplicity"                         ,tracktype[itype].Data()),400,0,4000));
-    fOutputContainer->Add(new TH1F(Form("h%sTrackPt"     ,tracktype[itype].Data()),Form("%s track p_{T};p_{T} (GeV/c)"                                  ,tracktype[itype].Data()),1000,0,100));
+    fOutputContainer->Add(new TH1F(Form("h%sTrackPt"     ,tracktype[itype].Data()),Form("%s track p_{T};p_{T} (GeV/c)"                                  ,tracktype[itype].Data()),100,0,100));
     fOutputContainer->Add(new TH2F(Form("h%sTrackEtaPhi" ,tracktype[itype].Data()),Form("%s track #eta vs. #phi;#phi;#eta"                              ,tracktype[itype].Data()),100,0,TwoPi,40,-1,1));
     fOutputContainer->Add(new TH2F(Form("h%sTrackDCA"    ,tracktype[itype].Data()),Form("%s track DCA;DCA_{xy} (cm);DCA_{z} (cm)"                       ,tracktype[itype].Data()),100,-5,5,100,-5,5));
     fOutputContainer->Add(new TH2F(Form("h%sTrackTPCdEdx",tracktype[itype].Data()),Form("%s TPC dE/dx vs. track momentum;p^{track} (GeV/c);dE/dx (a.u.)",tracktype[itype].Data()),200,0,20,200,0,200));
@@ -4458,7 +4462,10 @@ Bool_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::ExtractQnVector()
   //for event plane resolution
   FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane12",fEstimator.Data()),fCentralityMain,TMath::Cos(fHarmonics * (fEventPlane - EP2)));
   FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane23",fEstimator.Data()),fCentralityMain,TMath::Cos(fHarmonics * (EP2         - EP3)));
-  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane31",fEstimator.Data()),fCentralityMain,TMath::Cos(fHarmonics * (fEventPlane - EP3)));
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane31",fEstimator.Data()),fCentralityMain,TMath::Cos(fHarmonics * (EP3 - fEventPlane)));
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSinDeltaEventPlane12",fEstimator.Data()),fCentralityMain,TMath::Sin(fHarmonics * (fEventPlane - EP2)));
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSinDeltaEventPlane23",fEstimator.Data()),fCentralityMain,TMath::Sin(fHarmonics * (EP2         - EP3)));
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSinDeltaEventPlane31",fEstimator.Data()),fCentralityMain,TMath::Sin(fHarmonics * (EP3 - fEventPlane)));
 
   return kTRUE;
 }

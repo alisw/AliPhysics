@@ -30,6 +30,8 @@ class AliHistogramManager : public TObject {
   AliHistogramManager(const Char_t* name, Int_t nvars);
   virtual ~AliHistogramManager();
   
+  void SetName(const Char_t* name) {fName = name;}
+  
   void AddHistClass(const Char_t* histClass);
   void AddHistogram(const Char_t* histClass,
 		    const Char_t* name, const Char_t* title, Bool_t isProfile,

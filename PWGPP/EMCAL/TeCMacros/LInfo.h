@@ -3,9 +3,7 @@
 #include <TArrayF.h>
 #include <TObject.h>
 #include <TString.h>
-
-class TH1;
-class TH2;
+#include <TProfile2D.h>
 class TCanvas;
 
 #ifndef _LINFO_
@@ -42,15 +40,17 @@ class LInfo : public TObject {
  protected:
   void         CreateHistograms();
   Int_t        fRunNo;                      // run number
-  TH1         *fhStrip[kNSM][2];            // LedMon info
-  TH1         *fhStripCount[kNSM][2];       // LedMon counts
-  TH2         *fhLed[kNSM][2];              // Led info
-  TH2         *fhLedCount[kNSM][2];         // Led counts
+  TProfile    *fhStrip[kNSM][2];            // LedMon average
+  TProfile    *fhStripCount[kNSM][2];       // LedMon rms
+  TProfile    *fhStripWeighted[kNSM][2];    // LedMon weighted average
+  TProfile2D  *fhLed[kNSM][2];              // Led average
+  TProfile2D  *fhLedCount[kNSM][2];         // Led rms
+  TProfile2D  *fhLedWeighted[kNSM][2];      // Led weighted average
   TH2         *fhAmpOverMon[kNSM][2];       //! Led/LedMon ratio
   TH1         *fhStripRmsOverMean[kNSM][2]; //! RMS over Mean for LedMon
   TH2         *fhLedRmsOverMean[kNSM][2];   //! RMS over Mean for Led
   Bool_t       fIsComputed;                 //! =1 if computed
-  ClassDef(LInfo, 2); // LED info class
+  ClassDef(LInfo, 3); // LED info class
 };
 #endif
 #endif

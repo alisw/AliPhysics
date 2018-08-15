@@ -110,6 +110,7 @@
 #pragma link C++ class AliPP13SelectionWeights+;
 #pragma link C++ class AliPP13SelectionWeightsTOF+;
 #pragma link C++ class AliPP13SelectionWeightsMC+;
+#pragma link C++ class AliPP13SelectionWeightsFeeddown+;
 #pragma link C++ class AliPP13SelectionWeightsSPMC+;
 #pragma link C++ class AliPP13DetectorHistogram+;
 #pragma link C++ class AliPP13PhotonSelection+;
@@ -129,6 +130,7 @@
 #pragma link C++ class AliPP13NonlinearitySelection+;
 #pragma link C++ class AliPP13KaonToPionRatioMC+;
 #pragma link C++ class AliPP13EpRatioSelection+;
+#pragma link C++ class AliPP13FeeddownSelection+;
 #pragma link C++ class AliPP13MixingSample+;
 #pragma link C++ class AliAnalysisTaskPP13+;
 

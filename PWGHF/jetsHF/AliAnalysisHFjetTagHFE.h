@@ -41,9 +41,12 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void SetHybridTrack(Bool_t Hybrid){iHybrid = Hybrid;};
   void SetMinSig(Double_t mimSig){fmimSig = mimSig;};
   void SetMinEop(Double_t mimEop){fmimEop = mimEop;};
+  void SetMinM20(Double_t mimM20){fmimM20 = mimM20;};
+  void SetMaxM20(Double_t maxM20){fmaxM20 = maxM20;};
   void SetMCdata(Bool_t mcData) {fmcData = mcData;};
   void SetInvMassCut0(Double_t InvmassCut) {fInvmassCut = InvmassCut;};
   void SetInvMassCut1(Double_t ptAssocut) {fptAssocut = ptAssocut;};
+  void SetMCcorr(Bool_t MCcorr){iMCcorr = MCcorr;};
 
  protected:
   void                        ExecOnce();
@@ -65,9 +68,12 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Bool_t iHybrid;
     Double_t fmimSig; // max. centrality
     Double_t fmimEop; // max. centrality
+    Double_t fmimM20; // max. centrality
+    Double_t fmaxM20; // max. centrality
     Double_t fInvmassCut;  
     Double_t fptAssocut;  
     Bool_t fmcData;
+    Bool_t iMCcorr;
     Int_t NembMCpi0;
     Int_t NembMCeta;
     Int_t NpureMCproc;
@@ -95,6 +101,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fHistTPCnSigma_eMC;
   TH2F                        *fHistEopNsig;
   TH2F                        *fHistEop;
+  TH2F                        *fHistEopHFE;
   TH2F                        *fHistEopHad;
   TH2F                        *fHistEopHFjet;
   TH1F                        *fHistJetOrg;

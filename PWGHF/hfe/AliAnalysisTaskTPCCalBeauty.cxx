@@ -926,7 +926,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
     ///////////////////
     //Loop over Stack//
     ///////////////////
-    if (fFlagFillMCHistos && !fFlagRunStackLoop) {
+    /*if (fFlagFillMCHistos && !fFlagRunStackLoop) {
         Int_t TrackPDG = -999;
         Int_t ilabelM = -99;
         for(int i=0; i<(fMCarray->GetEntries()); i++)
@@ -957,7 +957,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 }
             }
         }
-    }
+    }*/
     
     
     if (fFlagFillMCHistos && fFlagRunStackLoop) {

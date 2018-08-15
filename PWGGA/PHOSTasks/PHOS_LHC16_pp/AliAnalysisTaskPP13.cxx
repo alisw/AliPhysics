@@ -160,7 +160,6 @@ void AliAnalysisTaskPP13::UserExec(Option_t *)
 //________________________________________________________________
 TClonesArray * AliAnalysisTaskPP13::GetMCParticles(const AliVEvent * event) const
 {
-	// TODO: Handle the ESD case here
 	const AliAODEvent * aodevent = dynamic_cast<const AliAODEvent*>(event);
 
 	if (!aodevent)

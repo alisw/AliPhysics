@@ -265,27 +265,33 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17LowB,           //!< pp 13 TeV low B field
         kLHC17n,              //!< Xe-Xe 5.44 TeV
         kLHC17pq,             //!< pp 5 TeV
+        // MC Xe-Xe
         kLHC17j7,             //!< MC for Xe-Xe 5.44 TeV HIJING
         kLHC17XeXeHi,         //!< MC for Xe-Xe 5.44 TeV HIJING
+        // 5 TeV MC 2016
         kLHC17l3b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3,
         kLHC17l4b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4,
         kLHC18b8,             //!< anchored LHC17p/q pass 1 - jet-jet MC w/GEANT3,
         kLHC17P1PHO,          //!< anchored LHC17p only low Intensity Phojet 5 TeV
-        //13 TeV LHC2017
-        kLHC17k1,               //!LHC17g added dielectrons from HF
-        kLHC17k4,               //!LHC17i
-        kLHC17h11,              //!LHC17j
-        kLHC17h7b,              //!LHC17j
-        kLHC17h7a,              //!LHC17j
-        kLHC17j5a,              //!LHC17k Strangeness enhanced
-        kLHC17j5b,              //!LHC17l Strangeness enhanced
-        kLHC17j5c,              //!LHC17o Strangeness enhanced
-        kLHC17h1,               //!< anchored LHC17c pass 1 - general purpose MC
-        kLHC17h3,               //!< anchored LHC17g pass 1 - general purpose MC
-        kLHC17l5,               //!< anchored LHC17m pass 1 - general purpose MC
+        //13 TeV MC 2017
+        kLHC17P1Pyt8NomB,     //!LHC17x Pythia8 MB productions nom B anchored to LHC17x
+        kLHC17P1Pyt6NomB,     //!LHC17x Pythia8 MB productions nom B anchored to LHC17x
+        kLHC17P1PHONomB13TeV, //!LHC17x Phojet MB productions nom B anchored to LHC17x
+        kLHC17P1Pyt8LowB,     //!LHC17x Pythia8 MB productions low B anchored to LHC17g
+        kLHC17j5a,            //!LHC17k Strangeness enhanced
+        kLHC17j5b,            //!LHC17l Strangeness enhanced
+        kLHC17j5c,            //!LHC17o Strangeness enhanced
         //13 TeV LHC2017 JJ
-        kLHC17P1JJ,              //!LHC17k JJ
-        kLHC17P1JJLowB,          //!LHC17k JJ
+        kLHC17P1JJ,           //!LHC17k JJ
+        kLHC17P1JJLowB,       //!LHC17k JJ
+        // 2018
+        kLHC18NomB,           //!< pp 13 TeV nominal B field
+        kLHC18LowB,           //!< pp 13 TeV low B field
+
+        //13 TeV LHC2018
+        kLHC18P1Pyt8NomB,     //!LHC18x Pythia8 MB productions nom B anchored to LHC18x
+        kLHC18P1Pyt8LowB,     //!LHC18x Pythia8 MB productions low B anchored to LHC18c
+
         kUnknownPeriod//!< kUnknownPeriod
       };
 

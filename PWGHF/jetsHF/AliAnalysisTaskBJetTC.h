@@ -413,7 +413,7 @@ private:
 	TH2D* fh2dLamdaRecPtVsGenPt;//!
 	TH2D* fh2dAnLamdaRecPtVsGenPt;//!
 
-	TH2D* fh2dPhotonMassVsPt;//!
+	TH1D* fh1dPhotonPt;//!
 
 	TH1D* fh1dKshortPtMC;//!
 	TH1D* fh1dLamdaPtMC;//!

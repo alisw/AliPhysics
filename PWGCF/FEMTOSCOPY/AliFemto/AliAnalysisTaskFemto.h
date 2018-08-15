@@ -108,8 +108,18 @@ public:
   void Set1DCorrectionsAll(TH1D *h1);
   void Set1DCorrectionsLambdas(TH1D *h1);
   void Set1DCorrectionsLambdasMinus(TH1D *h1);
+  
+  void Set4DCorrectionsPions(THnSparse *h1);
+  void Set4DCorrectionsKaons(THnSparse *h1);
+  void Set4DCorrectionsProtons(THnSparse *h1);
+  void Set4DCorrectionsPionsMinus(THnSparse *h1);
+  void Set4DCorrectionsKaonsMinus(THnSparse *h1);
+  void Set4DCorrectionsProtonsMinus(THnSparse *h1);
+  void Set4DCorrectionsAll(THnSparse *h1);
+  void Set4DCorrectionsLambdas(THnSparse *h1);
+  void Set4DCorrectionsLambdasMinus(THnSparse *h1);
 
-private:
+protected:
   AliESDEvent          *fESD;          //!<! ESD object
   AliESDpid            *fESDpid;       //!<! ESDpid object
   AliAODEvent          *fAOD;          //!<! AOD object
@@ -124,6 +134,7 @@ private:
   TString              fConfigMacro;   ///<  Config macro location
   TString              fConfigParams;  ///<  Config macro parameters
   Bool_t               fVerbose;
+  
   TH1D                 *f1DcorrectionsPions; //file with corrections, pT dependant
   TH1D                 *f1DcorrectionsKaons; //file with corrections, pT dependant
   TH1D                 *f1DcorrectionsProtons; //file with corrections, pT dependant
@@ -133,6 +144,16 @@ private:
   TH1D                 *f1DcorrectionsAll; //file with corrections, pT dependant
   TH1D                 *f1DcorrectionsLambdas; //file with corrections, pT dependant
   TH1D                 *f1DcorrectionsLambdasMinus; //file with corrections, pT dependant
+
+  THnSparse            *f4DcorrectionsPions; //file with corrections, pT dependant
+  THnSparse            *f4DcorrectionsKaons; //file with corrections, pT dependant
+  THnSparse            *f4DcorrectionsProtons; //file with corrections, pT dependant
+  THnSparse            *f4DcorrectionsPionsMinus; //file with corrections, pT dependant
+  THnSparse            *f4DcorrectionsKaonsMinus; //file with corrections, pT dependant
+  THnSparse            *f4DcorrectionsProtonsMinus; //file with corrections, pT dependant
+  THnSparse            *f4DcorrectionsAll; //file with corrections, pT dependant
+  THnSparse            *f4DcorrectionsLambdas; //file with corrections, pT dependant
+  THnSparse            *f4DcorrectionsLambdasMinus; //file with corrections, pT dependant
 
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskFemto, 3);
@@ -163,7 +184,16 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto():
   f1DcorrectionsProtonsMinus(NULL),
   f1DcorrectionsAll(NULL),
   f1DcorrectionsLambdas(NULL),
-  f1DcorrectionsLambdasMinus(NULL)
+  f1DcorrectionsLambdasMinus(NULL),
+  f4DcorrectionsPions(NULL),
+  f4DcorrectionsKaons(NULL),
+  f4DcorrectionsProtons(NULL),
+  f4DcorrectionsPionsMinus(NULL),
+  f4DcorrectionsKaonsMinus(NULL),
+  f4DcorrectionsProtonsMinus(NULL),
+  f4DcorrectionsAll(NULL),
+  f4DcorrectionsLambdas(NULL),
+  f4DcorrectionsLambdasMinus(NULL)
 {
   /* no-op */
 }

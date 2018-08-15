@@ -11,7 +11,7 @@ Float_t TInfo::AbsMinT(Int_t type) const
 {
   Float_t min=1e9;
   for (Int_t i=0;i<NSensors();++i) {
-    if (!IsValid(i)) 
+    if (!IsValid(i))
       continue;
     Float_t val = T(i,type);
     if (val<min)
@@ -24,7 +24,7 @@ Float_t TInfo::AbsMaxT(Int_t type) const
 {
   Float_t max=-1e9;
   for (Int_t i=0;i<NSensors();++i) {
-    if (!IsValid(i)) 
+    if (!IsValid(i))
       continue;
     Float_t val = T(i,type);
     if (val>max)
@@ -35,11 +35,14 @@ Float_t TInfo::AbsMaxT(Int_t type) const
 
 Float_t TInfo::AvgT(Int_t sm) const
 {
+  Int_t nActiveSensors = 8;
   Double_t temp = 0;
   for (Int_t i=sm*8;i<(sm+1)*8;++i) {
+    if (T(i,3) == 0)
+      nActiveSensors--;
     temp += T(i,3);
   }
-  temp /= 8;
+  temp /= nActiveSensors;
   return temp;
 }
 
@@ -63,25 +66,25 @@ TH2 *TInfo::GetHist(Int_t type) const
   return h;
 }
 
-void TInfo::Print(Option_t *option) const 
-{ 
+void TInfo::Print(Option_t *option) const
+{
   cout << "Runno: " << fRunNo << " with average time " << fAvTime << " and " << Nvalid() << " entries" << endl;
   for (Int_t i=0;i<NSensors();++i) {
-    if (IsValid(i)) 
+    if (IsValid(i))
       cout << "  " << i << " minT=" << fMinT.At(i) << ", maxT=" << fMaxT.At(i) << ", diff=" << Diff(i) << endl;
-  } 
+  }
 }
 
 Float_t TInfo::T(Int_t ns, Int_t type) const
 {
   Double_t val = 0;
-  if (type==1) 
+  if (type==1)
     val = MinT(ns);
-  else if (type==2) 
+  else if (type==2)
     val = MaxT(ns);
-  else if (type==3) 
+  else if (type==3)
     val = (MinT(ns)+MaxT(ns))/2;
-  else 
+  else
     val = Diff(ns);
   return val;
 }
@@ -267,7 +270,7 @@ Int_t TInfo::GetBin(Int_t ns)
   case 159: return h->GetBin(5,1); break;
   }
   return 0;
-} 
+}
 
 Int_t TInfo::SensId(Int_t sm, Int_t row, Int_t col)
 {
@@ -275,7 +278,7 @@ Int_t TInfo::SensId(Int_t sm, Int_t row, Int_t col)
 
   Int_t nrows=12;
   Int_t ncols=12;
-  if (sm>11 && sm<18){ 
+  if (sm>11 && sm<18){
     ncols=16;
   }
   if (sm==10||sm==11||sm==18||sm==19) {

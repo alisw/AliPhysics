@@ -113,8 +113,12 @@ public:
     void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
         fkDoExtraEvSels = lUseExtraEvSels;
     }
-    AliEventCuts* GetEventCuts (){
-        return &fEventCuts; //adddress of this object for manipulation at runtime
+    void SetPileupRejectionMode ( Int_t lMode = 1 ){
+        //mode switch
+        // 0 -> no rejection
+        // 1 -> Ionut
+        // 2 -> Anti-Ionut
+        fkPileupRejectionMode = lMode;
     }
     void SetUseOldCentrality ( Bool_t lUseOldCent = kTRUE) {
         fkUseOldCentrality = lUseOldCent;
@@ -257,8 +261,6 @@ public:
                   Double_t gg[3]); //second derivatives
     Double_t GetErrorInPosition(AliExternalTrackParam *t1) const;
     //---------------------------------------------------------------------------------------
-    //Implementation of event selection utility
-    AliEventCuts fEventCuts; /// Event cuts class
     
 private:
     // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -280,7 +282,8 @@ private:
     AliESDtrackCuts *fESDtrackCutsGlobal2015; // ESD track cuts used for global track definition
     AliAnalysisUtils *fUtils;         // analysis utils (for MV pileup selection)
     
-
+    AliEventCuts fEventCuts;                 /// Event cuts class
+    AliEventCuts fEventCutsStrictAntipileup; /// Event cuts class
     
     TRandom3 *fRand;
     
@@ -300,6 +303,7 @@ private:
     Bool_t fkDebugParenthood; //if true, add extra info to TTrees (full parenthood) for debugging
     Bool_t fkDebugOOBPileup; // if true, add extra information to TTrees for pileup study
     Bool_t fkDoExtraEvSels; //use AliEventCuts for event selection
+    Int_t fkPileupRejectionMode; //pileup rejection mode (0=none, 1=ionut, 2=anti-ionut)
     Bool_t fkUseOldCentrality; //if true, use AliCentrality instead of AliMultSelection
     
     Bool_t fkSaveCascadeTree;         //if true, save TTree

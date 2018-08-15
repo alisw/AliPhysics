@@ -39,7 +39,9 @@ public:
     if(opt>=0 && opt<=3) fCutOnzVertexSPD=opt;
     else AliError("Wrong option for cut on zVertexSPD");
   }
-
+  
+  void SetEnableVertexNtuple(Bool_t dontuple) {fEnableVertexNtuple=dontuple;}
+  
 private:
 
   void ConfigureEvSelAxis(TAxis* ax);
@@ -74,12 +76,14 @@ private:
   TH2F* fHistZVertexSPDBeforeSPDCut;     //!<! z-vertex distr.
   TH2F* fHistZVertexSPDAfterCuts;        //!<! z-vertex distr.
   TH2F* fHistZVertexSPDBadTrackVert;     //!<! z-vertex distr.
+  TNtuple* fNtupleZvtxDistVsWhyRej;      //!<! ntuple of ZvtxTRK vs. ZvtxSPD vs. Ncontributors vs. whyrej flag
+  Bool_t fEnableVertexNtuple;            /// flag to enable ntuple for primary vertex studies
 
   AliNormalizationCounter* fCounter;  //!<!Counter for normalization
 
   AliRDHFCutsD0toKpi *fAnalysisCuts;  /// Cuts for candidates
 
-  ClassDef(AliAnalysisTaskCheckEvSel,1); 
+  ClassDef(AliAnalysisTaskCheckEvSel,2);
 };
 
 #endif

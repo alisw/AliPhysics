@@ -91,7 +91,7 @@ fh1dJetGenPtudsg(0x0),
 fh1dJetGenPtc(0x0),
 fh1dJetGenPtb(0x0),
 fh1dJetRecPt(0x0),
-fh2dPhotonMassVsPt(0x0),
+fh1dPhotonPt(0x0),
 fh2dKshortMassVsPt(0x0),
 fh2dLamdaMassVsPt(0x0),
 fh2dAnLamdaMassVsPt(0x0),
@@ -425,7 +425,7 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fhistcJetCuts(0x0),
 		fhistlfJetCuts(0x0),
 		//____
-		fh2dPhotonMassVsPt(0x0),
+		fh1dPhotonPt(0x0),
 		fh2dKshortMassVsPt(0x0),
 		fh2dLamdaMassVsPt(0x0),
 		fh2dAnLamdaMassVsPt(0x0),
@@ -809,13 +809,25 @@ Bool_t AliAnalysisTaskBJetTC::Notify()
 Bool_t AliAnalysisTaskBJetTC::Run()
 {
 
-	fMCArray     	 = NULL;
-	AliAODMCHeader* headerMC = 0; // MC header
-  	Double_t dPrimVtxMCX = 0., dPrimVtxMCY = 0., dPrimVtxMCZ = 0.; // position of the MC primary vertex
+	fMCArray = NULL;
+
 
 	if(fIsPythia){
   		fJetContainerMC = static_cast<AliJetContainer*>(fJetCollArray.At(1));
 		fMCArray= dynamic_cast<TClonesArray*>(fAODIn->FindListObject(AliAODMCParticle::StdBranchName()));
+	}
+
+
+	if(fApplyV0Rec) SelectV0CandidateVIT();
+
+
+
+  	Double_t dPrimVtxMCX = 0., dPrimVtxMCY = 0., dPrimVtxMCZ = 0.; // position of the MC primary vertex
+
+	if(fApplyV0RejectionAll){
+
+		AliAODMCHeader* headerMC = 0; // MC header
+
 		headerMC = (AliAODMCHeader*)fAODIn->FindListObject(AliAODMCHeader::StdBranchName());
 		if(!headerMC)
 		{
@@ -826,16 +838,6 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 	       dPrimVtxMCX = headerMC->GetVtxX();
 	       dPrimVtxMCY = headerMC->GetVtxY();
 	       dPrimVtxMCZ = headerMC->GetVtxZ();
-	}
-
-
-
-
-
-	if(fApplyV0Rec) SelectV0CandidateVIT();
-
-
-	if(fApplyV0RejectionAll){
 
   		AliAODMCParticle *pAOD = 0;
 	  	for (Int_t i=0; i<fMCArray->GetEntriesFast(); i++) {
@@ -906,7 +908,12 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				
 
 			   }
+
+			   jetMC=NULL;
+			   delete jetMC;
 	    	}
+		headerMC=NULL;
+		delete headerMC;
 	}
 
 	if(fEnableV0GammaRejection){
@@ -922,7 +929,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 		    TVector3 vV0;
 	    	    if (PhotonCandidate) vV0.SetXYZ(PhotonCandidate->GetPx(), PhotonCandidate->GetPy(), PhotonCandidate->GetPz());
 
-		    if(IsV0InJet(vV0,5.)) {fh2dPhotonMassVsPt->Fill(PhotonCandidate->GetPhotonPt(), PhotonCandidate->GetPhotonMass(), fPythiaEventWeight);}
+		    if(IsV0InJet(vV0,5.)) {fh1dPhotonPt->Fill(PhotonCandidate->GetPhotonPt(), fPythiaEventWeight);}
 
 		}
 		if(fIsPythia && fInputEvent->IsA()==AliAODEvent::Class() && !(fV0Reader->AreAODsRelabeled())){
@@ -981,6 +988,8 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 			fh1dTracksImpParXYZResidualTruth->Fill(residualxyz,fPythiaEventWeight);
 		}
 	}
+	trackAOD = NULL;
+	delete trackAOD;
 
 	// Main part jet analysis
 	//preparation
@@ -990,27 +999,25 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 	if(JetContName.Contains("PicoTracks")) fUsePicoTracks = kTRUE;
 	else fUsePicoTracks = kFALSE;
 
-	// SetContainer
-	AliEmcalJet * jetgen  = 0x0;
-	AliAODMCParticle* partonAOD = NULL;
-
 	Double_t randomConePt = GetDeltaPtRandomCone();
 	f2histRhoVsDeltaPt->Fill(randomConePt, fJetContainerData->GetRhoVal(), fPythiaEventWeight);
 
 
 	if(fIsPythia)
 	{
+		// SetContainer
+		AliEmcalJet * jetgen  = 0x0;
+		AliAODMCParticle* partonAOD = NULL;
+
 		if(!MatchJetsGeometricDefault()) cout << "Error running jet matching!" << endl;
 		fJetContainerMC->ResetCurrentID();
+
 		// Fill gen. level jet histograms
 		while ((jetgen = fJetContainerMC->GetNextAcceptJet()))
 		{
 			if (!jetgen) continue;
 			Int_t MCJetflavour =0;
 			Int_t partonpdg=0;
-
-			//if(!(fJetCutsHF->IsJetSelected(jetgen))) continue;
-
 			
 			partonAOD = fHFJetUtils->IsMCJetParton(fMCArray, jetgen, 0.4);
 			if(!(partonAOD)) MCJetflavour =0;
@@ -1032,6 +1039,11 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 			else if(MCJetflavour ==3)
 				fh1dJetGenPtb->Fill(jetgen->Pt(),fPythiaEventWeight);
 		}
+		jetgen = 0x0;
+		delete jetgen;
+
+		partonAOD=NULL;
+		delete partonAOD;
 	}
 
 	// loop rec level jets
@@ -1048,8 +1060,6 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 	if(fDoPtRelAnalysis) fCaloClusters = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("caloClusters"));
 
 	if(fDoPtRelAnalysis && fResolutionFunction[0] && fDoSelectionPtRel){
-
-        	fCaloClusters = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("caloClusters"));
 
 		Bool_t ElecJet(0), TagJet(0);
 		double IPxy[2] = {-99999,-99999};
@@ -1089,6 +1099,10 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 		}
 		if(PtRelSample) fhistPtRelEvents->Fill(0.5);
 
+		selJet = 0x0;
+		trackAOD = NULL;
+		delete selJet; delete trackAOD;
+
 		fJetContainerData->ResetCurrentID();	
 	}
 	//######################
@@ -1125,6 +1139,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 			jetmatched = 0x0;
 			jetmatched =jetrec->MatchedJet();
 
+			AliAODMCParticle* partonAOD = NULL;
 			partonAOD = NULL;
 
 			if(jetmatched){
@@ -1138,6 +1153,9 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 					else if(partonpdg==5)fJetFlavor=3;
 				}
 			}
+
+			partonAOD=NULL;
+			delete partonAOD;
 		}
 		//	Printf("%s:%i",__FUNCTION__,__LINE__);
 
@@ -1899,8 +1917,13 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 
 		fJetPt = 0.;
 		fJetMass=0.;
+		trackAOD = 0x0;
+		delete trackAOD;
 
 	}//End jet loop
+	jetrec = 0x0; jetmatched=0x0;
+	delete jetmatched; delete jetrec;
+	
 
 	if(fEnableV0GammaRejection){
 		if( fIsPythia > 0 && fInputEvent->IsA()==AliAODEvent::Class() && !(fV0Reader->AreAODsRelabeled())){
@@ -2174,35 +2197,27 @@ Bool_t AliAnalysisTaskBJetTC::IsSelected(Int_t &WhyRejected,ULong_t &RejectionBi
     		accept=kFALSE;
   	}
 
+
 	if(fIsPythia){
-		AliGenEventHeader * eventHeader = dynamic_cast<AliGenEventHeader*>(MCEvent()->GenEventHeader());
-		TString eventHeaderName     = eventHeader->ClassName();
-		if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0){
-			AliGenPythiaEventHeader* fGenPythiaEventHeader = dynamic_cast<AliGenPythiaEventHeader*>(eventHeader);
-			if ( fGenPythiaEventHeader ){
-				Int_t nTriggerJets =  fGenPythiaEventHeader->NTriggerJets();
-			  	Float_t ptHard = fGenPythiaEventHeader->GetPtHard();
-			  	TParticle * jet =  0;
-			 	Float_t tmpjet[]={0,0,0,0};
-
-				if(nTriggerJets>0){
-				  	fGenPythiaEventHeader->TriggerJet(0, tmpjet);
-				  	jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
-
-				  	//Compare jet pT and pt Hard
-				  	if(jet->Pt() > 4 * ptHard)
-				  	{
-				  		AliInfo(Form("Reject jet event with : pT Hard %2.2f, pycell jet pT %2.2f", ptHard, jet->Pt()));
-					    	RejectionBits+=1<<kSelPtHardBin;
-					    	accept=kFALSE;
-				  	}
+		if(!CheckMCOutliers()) {
+			 	RejectionBits+=1<<kSelPtHardBin;
+				accept=kFALSE;
+		}
+		if (fPtHardAndTrackPtFactor > 0.) {
+			AliParticleContainer* mcpartcont = dynamic_cast<AliParticleContainer*>(fParticleCollArray.At(0));
+			if ((Bool_t)mcpartcont) {
+			      for (auto mctrack : mcpartcont->all()) {// Not cuts applied ; use accept for cuts
+				Float_t trackpt = mctrack->Pt();
+				if (trackpt > (fPtHardAndTrackPtFactor * fPtHard) ) {
+				  AliInfo(Form("Reject : track %2.2f, factor %2.2f, ptHard %f", trackpt, fPtHardAndTrackPtFactor, fPtHard));
+				  RejectionBits+=1<<kSelPtHardBin;
+				  accept=kFALSE;
 				}
-
-			  	if(jet) delete jet;
-			} // pythia header
-
-	  	}
-	}
+			      }
+			}
+			mcpartcont=NULL; delete mcpartcont;
+		}
+	}	
 
 
 return accept;
@@ -2321,14 +2336,17 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 	const Int_t nBins3dSignificance =500;
 	const Int_t nBins2d=250;
 	const Int_t nBins3d =250;
-	fHFJetUtils = new AliHFJetsTagging("fHFJetUtils");
+
+	if(fIsPythia) fHFJetUtils = new AliHFJetsTagging("fHFJetUtils");
 
 	if (!fOutput) fOutput = new AliEmcalList();
 	fOutput->SetOwner(kTRUE);
 
-	AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-	AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-	fRespoPID = inputHandler->GetPIDResponse();
+	if(fApplyV0Rec || fEnableV0GammaRejection || fDoPtRelAnalysis){
+		AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+		AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+		fRespoPID = inputHandler->GetPIDResponse();
+	}
 
 	
 	  // binning in jets
@@ -2445,7 +2463,7 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 	    	}
 	}
 
-	if(fEnableV0GammaRejection) fh2dPhotonMassVsPt = new TH2D("fh2dPhotonMassVsPt","Photon Mass Vs Pt;p_{T,photon} (GeV/c);Mass (GeV/c^2)",200,0,20,100,0,0.05);
+	if(fEnableV0GammaRejection) fh1dPhotonPt = new TH1D("fh1dPhotonPt","Photon Mass Vs Pt;p_{T,photon} (GeV/c)",200,0,20);
 
 	if(fApplyV0RejectionAll){
 		fh1dKshortPtMC = new TH1D("fh1dKshortPtMC","KShort Pt MC;p_{T} (GeV/c)",200,0,50);
@@ -2898,7 +2916,7 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 		fOutput->Add(fh2dAnLamdaPtVsJetPtMC);
 	}
 
-	if(fEnableV0GammaRejection) fOutput->Add(fh2dPhotonMassVsPt);
+	if(fEnableV0GammaRejection) fOutput->Add(fh1dPhotonPt);
 
 	//PtRel
 	if(fDoPtRelAnalysis){
@@ -3302,10 +3320,12 @@ Bool_t AliAnalysisTaskBJetTC::CalculateTrackImpactParameterTruth(AliAODTrack * t
 	AliExternalTrackParam trackparam(xpart,ppart,cv,(TMath::Sign((Short_t)1,(Short_t)pMC->Charge())));
 	if(trackparam.PropagateToDCA(vtxAODNew,fAODIn->GetMagneticField(),3.,impar,cov))
 	{
+		pMC=NULL; delete pMC;
 		delete vtxAODNew;
 		return kTRUE;
 	}
 	else{
+		pMC=NULL; delete pMC;
 		delete vtxAODNew;
 		return kFALSE;
 
@@ -3579,6 +3599,9 @@ Bool_t AliAnalysisTaskBJetTC::MatchJetsGeometricDefault()
 		jet1->SetMatchedToClosest(1);
 		jet2->SetMatchedToClosest(1);
 	}
+	jet1=NULL; delete jet1;
+	jets1=NULL; jets2=NULL;
+	delete jets1; delete jets2;
 	return kTRUE;
 }
 // ######################################################################################## Jet matching 2/4
@@ -3602,6 +3625,11 @@ void AliAnalysisTaskBJetTC::DoJetLoop()
 			SetMatchingLevel(jet1, jet2, 1);
 		} // jet2 loop
 	} // jet1 loop
+
+	jet1=NULL; jet2=NULL;
+	delete jet1; delete jet2;
+	jets1=NULL; jets2=NULL;
+	delete jets1; delete jets2;
 }
 // ######################################################################################## Jet matching 3/4
 void AliAnalysisTaskBJetTC::SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, int matching)
@@ -4405,6 +4433,8 @@ Bool_t AliAnalysisTaskBJetTC::IsV0InJet(TVector3 vV0, Double_t dJetPtMin)
     if (vJet.DeltaR(vV0)<dJetRadius) return kTRUE;
     pJet = fJetContainerData->GetNextAcceptJet();
   }
+  pJet=NULL;
+  delete pJet;
 
   return kFALSE;
 }
@@ -4583,26 +4613,61 @@ Double_t AliAnalysisTaskBJetTC::GetDeltaPtRandomCone()
 	Double_t tmpConePt = -1.;
 
 	AliEmcalJet* LeadingJet = NULL;
+	AliEmcalJet* SubLeadingJet = NULL;
 	Double_t LJeta = 999;
 	Double_t LJphi = 999;
 
+	Double_t SLJeta = 999;
+	Double_t SLJphi = 999;
+
 	if (fJetContainerData){
-		LeadingJet = fJetContainerData->GetLeadingJet();
+
+		Float_t maxJetPts[] = { 0,  0};
+
+		fJetContainerData->ResetCurrentID();
+
+  		AliEmcalJet * jet  = 0x0;
+
+		while ((jet = fJetContainerData->GetNextAcceptJet())){
+
+			if (!jet)  continue;
+
+			if (jet->Pt() > maxJetPts[0]) {
+				maxJetPts[1] = maxJetPts[0];
+				SubLeadingJet = LeadingJet;
+				maxJetPts[0] = jet->Pt();
+				LeadingJet = jet;
+			} else if (jet->Pt() > maxJetPts[1]) {
+				maxJetPts[1] = jet->Pt();
+				SubLeadingJet = jet;
+			}
+		}
+
 		if(LeadingJet){
 			LJeta = LeadingJet->Eta();
 			LJphi = LeadingJet->Phi();
 		}
+		if(SubLeadingJet){
+			SLJeta = SubLeadingJet->Eta();
+			SLJphi = SubLeadingJet->Phi();
+		}
 	}
+
+	LeadingJet=NULL; SubLeadingJet=NULL;
+	delete LeadingJet; delete SubLeadingJet;
+
   	Double_t dLJ = 0;
+  	Double_t dSLJ = 0;
   	Int_t repeats = 0;
 
 	do {
 	    tmpRandConeEta = minEta + fRandom->Rndm() * (maxEta - minEta);
 	    tmpRandConePhi = fRandom->Rndm() * TMath::TwoPi();
 	    dLJ = TMath::Sqrt((LJeta - tmpRandConeEta) * (LJeta - tmpRandConeEta) + (LJphi - tmpRandConePhi) * (LJphi - tmpRandConePhi));
+	    dSLJ = TMath::Sqrt((SLJeta - tmpRandConeEta) * (SLJeta - tmpRandConeEta) + (SLJphi - tmpRandConePhi) * (SLJphi - tmpRandConePhi));
 	    repeats++;
 
-	  } while (dLJ < 0.45);
+	  } while (dLJ < 0.45 || dSLJ < 0.45);
 
 	for(Int_t i = 0; i < partcont->GetNParticles(); i++) {
 
@@ -4621,6 +4686,10 @@ Double_t AliAnalysisTaskBJetTC::GetDeltaPtRandomCone()
 			tmpConePt += tmpTrack->Pt();
 		}
 	}
+
+	partcont=NULL;
+	delete partcont;
+
 	if(tmpConePt > 0) {
 		deltaPt = tmpConePt - jetradius * jetradius * TMath::Pi() * fJetContainerData->GetRhoVal();
 		return deltaPt;

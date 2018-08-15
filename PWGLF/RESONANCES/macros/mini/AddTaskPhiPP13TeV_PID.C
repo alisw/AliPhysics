@@ -1,5 +1,5 @@
 /***************************************************************************
-              Anders Knospe - last modified on 31 August 2016
+              Anders Knospe
 
 //Launches phi analysis with rsn mini package
 //Allows basic configuration of pile-up check and event cuts
@@ -30,7 +30,7 @@ enum eventCutSet { kEvtDefault=0,
 		   kNoVzCut, //=7
 		   kNoEvtSel, //=8
 		   kINEL10, //=9
-           kIGZ10 //10
+		   kIGZ10 //10
                  };
 
 enum eventMixConfig { kDisabled = -1,
@@ -116,7 +116,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
     return NULL;
   }
 
-  // create the task and configure 
+  // create the task and configure
   TString taskName=Form("phi%s%s_%i",(isPP? "pp" : "PbPb"),(isMC ? "MC" : "Data"),(Int_t)cutKaCandidate);
   AliRsnMiniAnalysisTask* task=new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
   if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kINEL10 && evtCutSetID!=eventCutSet::kIGZ10){
@@ -126,7 +126,8 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
 
   if(isPP){
     if(MultBins==1) task->UseMultiplicity("AliMultSelection_V0M");
-    else if(MultBins==2) task->UseMultiplicity("AliMultSelection_RefMult08");
+    else if(MultBins==2) task->UseMultiplicity("AliMultSelection_SPDTracklets08");
+    else if(MultBins==3) task->UseMultiplicity("AliMultSelection_SPDTracklets08to15");
     else task->UseMultiplicity("QUALITY");
   }else task->UseCentrality("V0M");
 
@@ -176,8 +177,8 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
     }
   }
 
-  if(isPP && (!isMC) && cutVertex){ 
-    cutVertex->SetCheckPileUp(rejectPileUp);// set the check for pileup  
+  if(isPP && (!isMC) && cutVertex){
+    cutVertex->SetCheckPileUp(rejectPileUp);// set the check for pileup
     ::Info("AddTaskPhiPP13TeV_PID", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
   }
 

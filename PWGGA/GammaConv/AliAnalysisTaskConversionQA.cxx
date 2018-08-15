@@ -458,7 +458,7 @@ Bool_t AliAnalysisTaskConversionQA::Notify()
     }  
  
   
-  if(!fEventCuts->GetDoEtaShift()) return kTRUE;; // No Eta Shift requested, continue
+  if(!fEventCuts->GetDoEtaShift()) return kTRUE; // No Eta Shift requested, continue
     
   if(fEventCuts->GetEtaShift() == 0.0){ // Eta Shift requested but not set, get shift automatically
     fEventCuts->GetCorrectEtaShiftFromPeriod();

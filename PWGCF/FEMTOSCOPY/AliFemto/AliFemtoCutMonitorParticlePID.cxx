@@ -36,7 +36,7 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID():
 
 }
 
-AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const char *aName, Int_t aTOFParticle):
+AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const char *aName, Int_t aTOFParticle, Double_t yTOFTimeMin, Double_t yTOFTimeMax):
   AliFemtoCutMonitor()
   , fTOFParticle(aTOFParticle)
   , fIfUsePt(false)
@@ -51,7 +51,7 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const char *aName, 
 {
   // Normal constructor
   fTPCdEdx        = new TH2D(TString::Format("TPCdEdx%s", aName), "TPC dEdx vs. momentum", 200, 0.1, 4.0, 250, 0.0, 500.0);
-  fTOFTime        = new TH2D(TString::Format("TOFTime%s", aName), "TOF Time vs. momentum", 100, 0.1, 5.0, 400, -4000.0, 4000.0);
+  fTOFTime        = new TH2D(TString::Format("TOFTime%s", aName), "TOF Time vs. momentum", 100, 0.1, 5.0, 400, yTOFTimeMin, yTOFTimeMax);
   fTOFNSigma      = new TH2D(TString::Format("TOFNSigma%s", aName), "TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
   fTPCNSigma      = new TH2D(TString::Format("TPCNSigma%s", aName), "TPC NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
   fTPCTOFNSigma   = new TH2D(TString::Format("TPCTOFNSigma%s", aName), "TPC & TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, 0.0, 10.0);
@@ -129,7 +129,8 @@ void AliFemtoCutMonitorParticlePID::Fill(const AliFemtoTrack* aTrack)
   if (fTOFParticle == 0) tTOF = aTrack->TOFpionTime();
   if (fTOFParticle == 1) tTOF = aTrack->TOFkaonTime();
   if (fTOFParticle == 2) tTOF = aTrack->TOFprotonTime();
-  if (fTOFParticle == 3) tTOF = aTrack->TOFdeuteronTime();
+  if (fTOFParticle == 3) {tTOF = aTrack->TOFdeuteronTime();
+  }
 
   fTPCdEdx->Fill(tMom, tdEdx);
   fTOFTime->Fill(tMom, tTOF);

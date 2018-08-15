@@ -30,7 +30,7 @@ AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
     double binBorder;
     vector<double> vecCentBins;
     ss >> binBorder;
-    while (ss.good()) {
+    while (!ss.fail()) {
         vecCentBins.push_back(binBorder);
         ss >> binBorder;
     }

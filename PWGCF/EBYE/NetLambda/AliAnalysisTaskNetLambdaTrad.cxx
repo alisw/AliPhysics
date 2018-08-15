@@ -1,7 +1,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-// Updated Jul 31: change DCA VO PV
+// Updated AUG 6: change DCA VO PV*2 H9
 // Parts of the code taken from:
 // AliEbyEPidEfficiencyContamination.cxx
 // AliAnalysisTaskStrangenessVsMultiplicityMCRun2.cxx
@@ -559,7 +559,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         
         if( ontheflystat == 0 )
         {
-            if(dcaV0ToVertex < 0.35 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
+            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
             {
                 f2fHistInvMassVsPtLambda->Fill(invMassLambda,V0pt);
                 f2fHistRecCentVsPtLambda->Fill(fCentrality,V0pt);
@@ -568,7 +568,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                 {f2fHistmassctLambda->Fill(invMassLambda,V0pt);
                     ptCh[iptbin] += 1;}
             }
-            if(dcaV0ToVertex < 0.35 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
+            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
             {
                 f2fHistInvMassVsPtAntiLambda->Fill(invMassAntiLambda,V0pt);
                 f2fHistRecCentVsPtAntiLambda->Fill(fCentrality,V0pt);
@@ -618,7 +618,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                     }
                     
                     
-                    if(dcaV0ToVertex < 0.35 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
+                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
                     {
                         if(fTreeVariablePID == 3122)
                         {
@@ -627,7 +627,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         }
                     }
                     
-                    if(dcaV0ToVertex < 0.35 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
+                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
                     {
                         if(fTreeVariablePID == -3122)
                         {
@@ -670,7 +670,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                     }
                     
                     
-                    if(dcaV0ToVertex < 0.35 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
+                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
                     {
                         if(fTreeVariablePID == 3122)
                         {
@@ -679,7 +679,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         }
                     }
                     
-                    if(dcaV0ToVertex < 0.35 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
+                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
                     {
                         if(fTreeVariablePID == -3122)
                         {

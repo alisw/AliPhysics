@@ -22,6 +22,7 @@
 #pragma link C++ class AliFemtoEventCut+;
 #pragma link C++ class AliFemtoSphericityEventCut+;
 #pragma link C++ class AliFemtoSpherocityEventCut+;
+#pragma link C++ class AliFemtoResultStorage+;
 #pragma link C++ class AliFemtoEventReader+;
 #pragma link C++ class AliFemtoEventReaderStandard+;
 #pragma link C++ class AliFemtoKinkCut+;
@@ -67,6 +68,7 @@
 #pragma link C++ class AliFemtoCutMonitorParticleYPt+;
 #pragma link C++ class AliFemtoCutMonitorParticleVertPos+;
 #pragma link C++ class AliFemtoCutMonitorParticlePID+;
+#pragma link C++ class AliFemtoCutMonitorParticlePIDBeta+;
 #pragma link C++ class AliFemtoCutMonitorEventMult+;
 #pragma link C++ class AliFemtoCutMonitorEventVertex+;
 #pragma link C++ class AliFemtoEventReaderAOD+;

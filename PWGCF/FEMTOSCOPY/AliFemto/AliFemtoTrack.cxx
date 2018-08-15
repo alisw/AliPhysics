@@ -378,7 +378,7 @@ void AliFemtoTrack::SetPidProbPion(const float& x){fPidProbPion = x;}
 void AliFemtoTrack::SetPidProbKaon(const float& x){fPidProbKaon = x;}
 void AliFemtoTrack::SetPidProbProton(const float& x){fPidProbProton = x;}
 void AliFemtoTrack::SetPidProbMuon(const float& x){fPidProbMuon = x;}
-void AliFemtoTrack::SetTofExpectedTimes(const float& tpi, const float& tkn, const float& tpr){fTofPionTime = tpi; fTofKaonTime = tkn; fTofProtonTime = tpr;}
+void AliFemtoTrack::SetTofExpectedTimes(const float& tpi, const float& tkn, const float& tpr, const float& ttof){fTofPionTime = tpi; fTofKaonTime = tkn; fTofProtonTime = tpr; fTofDeuteronTime=ttof;fTofTritonTime=ttof, fTofHe3Time=ttof;fTofAlphaTime=ttof;}
 
 void AliFemtoTrack::SetP(const AliFemtoThreeVector& p){fP = p;}
 void AliFemtoTrack::SetPt(const float& pt){fPt = pt;}

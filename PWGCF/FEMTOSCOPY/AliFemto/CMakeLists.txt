@@ -70,6 +70,7 @@ set(SRCS
   AliFemtoCutMonitorParticleYPt.cxx
   AliFemtoCutMonitorParticleVertPos.cxx
   AliFemtoCutMonitorParticlePID.cxx
+  AliFemtoCutMonitorParticlePIDBeta.cxx
   AliFemtoCutMonitorEventMult.cxx
   AliFemtoCutMonitorEventVertex.cxx
   AliFemtoKTPairCut.cxx
@@ -96,6 +97,7 @@ set(SRCS
   AliFemtoXiSharedDaughterCut.cxx
   AliFemtoSphericityEventCut.cxx
   AliFemtoSpherocityEventCut.cxx
+  AliFemtoResultStorage.cxx
   AliFemtoCorrFctnDPhiStarDEta.cxx
   AliFemtoCorrFctnDPhiStarDEtaStar.cxx
   AliFemtoCorrFctnDPhiStarKStarMergedFraction.cxx

@@ -8,8 +8,6 @@
 // as it should be a lightweight class
 
 
-// TODO: Derive a new version for photon analysis
-//       
 struct AliPP13ClusterCuts
 {
 

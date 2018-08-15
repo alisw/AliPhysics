@@ -523,6 +523,7 @@ AliJetSubstructureData AliAnalysisTaskEmcalJetSubstructureTree::MakeJetSubstruct
   bool isMC = dynamic_cast<const AliMCParticleContainer *>(tracks);
   AliDebugStream(2) << "Make new jet substrucutre for " << (isMC ? "MC" : "data") << " jet: Number of tracks " << jet.GetNumberOfTracks() << ", clusters " << jet.GetNumberOfClusters() << std::endl;
   if(tracks && (fUseChargedConstituents || isMC)){                    // Neutral particles part of particle container in case of MC
+    AliDebugStream(1) << "Jet substructure: Using charged constituents" << std::endl;
     for(int itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++){
       auto track = jet.TrackAt(itrk, tracks->GetArray());
       if(!track->Charge() && !fUseNeutralConstituents) continue;      // Reject neutral constituents in case of using only charged consituents
@@ -534,6 +535,7 @@ AliJetSubstructureData AliAnalysisTaskEmcalJetSubstructureTree::MakeJetSubstruct
   }
 
   if(clusters && fUseNeutralConstituents){
+    AliDebugStream(1) << "Jet substructure: Using neutral constituents" << std::endl;
     for(int icl = 0; icl < jet.GetNumberOfClusters(); icl++) {
       auto cluster = jet.ClusterAt(icl, clusters->GetArray());
       TLorentzVector clustervec;
@@ -604,6 +606,7 @@ Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakeAngularity(const AliEmcalJ
   Double_t den(0.), num(0.);
   bool isMC = dynamic_cast<const AliMCParticleContainer *>(tracks);
   if(tracks && (fUseChargedConstituents || isMC)){
+    AliDebugStream(1) << "Angularity: Using charged constituents" << std::endl;
     for(UInt_t itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++) {
       auto track = jet.TrackAt(itrk, tracks->GetArray());
       if(!track){
@@ -619,6 +622,7 @@ Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakeAngularity(const AliEmcalJ
     }
   }
   if(clusters && fUseNeutralConstituents) {
+    AliDebugStream(1) << "Using neutral constituents" << std::endl;
     for(UInt_t icl = 0; icl < jet.GetNumberOfClusters(); icl++){
       auto clust = jet.ClusterAt(icl, clusters->GetArray());
       if(!clust) {
@@ -641,6 +645,7 @@ Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakePtD(const AliEmcalJet &jet
   Double_t den(0.), num(0.);
   bool isMC = dynamic_cast<const AliMCParticleContainer *>(particles);
   if(particles && (fUseChargedConstituents || isMC)){
+    AliDebugStream(1) << "Using charged constituents" << std::endl;
     for(UInt_t itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++) {
       auto trk = jet.TrackAt(itrk, particles->GetArray());
       if(!trk){
@@ -654,6 +659,7 @@ Double_t AliAnalysisTaskEmcalJetSubstructureTree::MakePtD(const AliEmcalJet &jet
     }
   }
   if(clusters && fUseNeutralConstituents){
+    AliDebugStream(1) << "Using neutral constituents" << std::endl;
     for(UInt_t icl = 0; icl < jet.GetNumberOfClusters(); icl++){
       auto clust = jet.ClusterAt(icl, clusters->GetArray());
       if(!clust) {
