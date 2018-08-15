@@ -158,13 +158,13 @@ def plotPWGJEQA(inputFile, outputDir, referenceFile, fileFormat):
   if clusterQAList:
     plotCaloQA(ispp, isRun2, includePhos, clusterQAList, cellQAList, nEvents, outputDir, clusterQAListRef, cellQAListRef, nEventsRef, fileFormat)
   if chargedJetList:
-    plotChargedJetQA(ispp, chargedJetList, outputDir, chargedJetListRef, nEvents, nEventsRef, fileFormat)
+    plotChargedJetQA(ispp, isPtHard, chargedJetList, outputDir, chargedJetListRef, nEvents, nEventsRef, fileFormat)
   if fullJetList:
-    plotFullJetQA(ispp, isRun2, includePhos, fullJetList, outputDir, fullJetListRef, nEvents, nEventsRef, fileFormat)
+    plotFullJetQA(ispp, isPtHard, isRun2, includePhos, fullJetList, outputDir, fullJetListRef, nEvents, nEventsRef, fileFormat)
   if qaList.FindObject("eventQA"):
     plotEventQA(ispp, isRun2, includePhos, qaList, outputDir, fileFormat)
   if isPtHard:
-    plotPtHard(f, qaList, outputDir, fileFormat)
+    plotPtHard(f, qaList,nEvents, qaListRef ,nEventsRef, outputDir, fileFormat)
 
 def determineQATaskName(qaTaskBaseName, f, isPtHard):
     """ Determine the task name based on a wide variety of possible names.
@@ -267,6 +267,8 @@ def plotTrackQA(ispp, isMC, trackTHnSparse, generatorTrackThnName, matchedTrackT
   hPhiGlobal.GetYaxis().SetRangeUser(0,15.)
   if ispp:
     hPhiGlobal.GetYaxis().SetRangeUser(0,0.2)
+    if isMC:
+      hPhiGlobal.GetYaxis().SetRangeUser(0,0.25)
   ROOT.gPad.SetLeftMargin(0.15)
   ROOT.gPad.SetRightMargin(0.05)
   ROOT.gPad.SetBottomMargin(0.13)
@@ -538,6 +540,7 @@ def plotTrackQA(ispp, isMC, trackTHnSparse, generatorTrackThnName, matchedTrackT
         hTrackingEfficiency.Draw("colz")
       else:
         hTrackingEfficiency.GetYaxis().SetTitle("Tracking Efficiency")
+        hTrackingEfficiency.GetYaxis().SetRangeUser(0.6,1)
         hTrackingEfficiency.GetXaxis().SetRangeUser(0,50)
         hTrackingEfficiency.Draw("P")
 
@@ -587,6 +590,8 @@ def plotTrackQA(ispp, isMC, trackTHnSparse, generatorTrackThnName, matchedTrackT
   hEtaGlobal.GetYaxis().SetRangeUser(0,20.)
   if ispp:
     hEtaGlobal.GetYaxis().SetRangeUser(0,0.2)
+    if isMC:
+      hEtaGlobal.GetYaxis().SetRangeUser(0,0.3)
   ROOT.gPad.SetLeftMargin(0.15)
   ROOT.gPad.SetRightMargin(0.05)
   ROOT.gPad.SetBottomMargin(0.13)
@@ -677,12 +682,14 @@ def plotCaloQA(ispp, isRun2, includePhos, clusterQAList, cellQAList, nEvents, ou
 
   # Project to (Eta, Phi)
   if ispp:
+    #clusterTHnSparse.GetAxis(3).SetRange(1,1) #ELIANE
+    clusterTHnSparse.GetAxis(0).SetRangeUser(20,50) # 10 GeV ELIANE
     hClusPhiEta = clusterTHnSparse.Projection(2,1)
   else:
     hClusPhiEta = clusterTHnSparse.Projection(3,2)
   hClusPhiEta.SetName("clusterEMCalObservables_proj_eta_phi")
   outputFilename = os.path.join(outputDirClusters, "hClusPhiEta" + fileFormat)
-  hClusPhiEta.GetXaxis().SetRangeUser(-0.8,0.8)
+  hClusPhiEta.GetXaxis().SetRangeUser(-1.5,0.8)#ELIANE -0.8,0.8
   hClusPhiEta.GetYaxis().SetRangeUser(1.2,5.8)
   plotHist(hClusPhiEta, outputFilename, "colz")
 
@@ -988,7 +995,7 @@ def plotCaloQA(ispp, isRun2, includePhos, clusterQAList, cellQAList, nEvents, ou
 ########################################################################################################
 # Plot charged jet histograms    #######################################################################
 ########################################################################################################
-def plotChargedJetQA(ispp, chargedJetList, outputDir, chargedJetListRef, nEvents, nEventsRef, fileFormat):
+def plotChargedJetQA(ispp, isPtHard, chargedJetList, outputDir, chargedJetListRef, nEvents, nEventsRef, fileFormat):
   
   # Create subdirectory for Jets
   outputDirJets = outputDir + "Jets/"
@@ -1058,18 +1065,6 @@ def plotChargedJetQA(ispp, chargedJetList, outputDir, chargedJetListRef, nEvents
   else:
     chargedJetTHnSparse.GetAxis(3).SetRange(1, maxJetPtBin)
 
-  # Plot charged jet pT leading particle vs. jet pT
-  if ispp:
-    hChargedJetPtLeadjetPt = chargedJetTHnSparse.Projection(3,2)
-  else:
-    hChargedJetPtLeadjetPt = chargedJetTHnSparse.Projection(5,3)
-  hChargedJetPtLeadjetPt.SetName("fHistChJetObservables_proj_pt_leadpt")
-  hChargedJetPtLeadjetPt.SetTitle("Leading pT vs. Jet pT, Charged Jets")
-  outputFilename = os.path.join(outputDirJets, "hChargedJetPtLeadjetPt" + fileFormat)
-  plotHist(hChargedJetPtLeadjetPt, outputFilename, "colz", "", True)
-
-  ROOT.gStyle.SetOptTitle(0)
-
   # Plot charged jet pT
   if ispp:
     hChargedJetPt = chargedJetTHnSparse.Projection(2)
@@ -1094,6 +1089,21 @@ def plotChargedJetQA(ispp, chargedJetList, outputDir, chargedJetListRef, nEvents
   ratioYAxisTitle = "Ratio: run / all runs"
   
   plotSpectra(hChargedJetPt, hChargedJetPtRef, 0, 0, nEvents, nEventsRef, ispp, xRangeMax, yAxisTitle, legendTitle, legendRunLabel, legendRefLabel, ratioYAxisTitle, outputFilename)
+
+  # Plot charged jet pT leading particle vs. jet pT
+  if ispp:
+    hChargedJetPtLeadjetPt = chargedJetTHnSparse.Projection(3,2)
+  else:
+    hChargedJetPtLeadjetPt = chargedJetTHnSparse.Projection(5,3)
+  hChargedJetPtLeadjetPt.SetName("fHistChJetObservables_proj_pt_leadpt")
+  hChargedJetPtLeadjetPt.SetTitle("Leading pT vs. Jet pT, Charged Jets")
+  outputFilename = os.path.join(outputDirJets, "hChargedJetPtLeadjetPt" + fileFormat)
+  if isPtHard:
+    yMin= hChargedJetPt.GetBinContent(hChargedJetPt.FindBin(200)) #find entry in bin at 200 GeV to get the right y-Axis scale
+    plotHist(hChargedJetPtLeadjetPt, outputFilename, "colz", "", True, yMin)
+  else:
+    plotHist(hChargedJetPtLeadjetPt, outputFilename, "colz", "", True)
+  ROOT.gStyle.SetOptTitle(0)
 
   # Plot charged jet pT, background-subtracted
   if not ispp:
@@ -1161,7 +1171,7 @@ def plotChargedJetQA(ispp, chargedJetList, outputDir, chargedJetListRef, nEvents
 ########################################################################################################
 # Plot full jet histograms     ##############################################################################
 ########################################################################################################
-def plotFullJetQA(ispp, isRun2, includePhos, fullJetList, outputDir, fullJetListRef, nEvents, nEventsRef, fileFormat):
+def plotFullJetQA(ispp, isPtHard, isRun2, includePhos, fullJetList, outputDir, fullJetListRef, nEvents, nEventsRef, fileFormat):
   
   # Create subdirectory for Jets
   outputDirJets = outputDir + "Jets/"
@@ -1268,21 +1278,8 @@ def plotFullJetQA(ispp, isRun2, includePhos, fullJetList, outputDir, fullJetList
   else:
     fullJetTHnSparse.GetAxis(3).SetRange(1, maxJetPtBin)
 
-  # Plot full jet pT leading particle vs. jet pT
-  if ispp:
-    hFullJetPtLeadjetPt = fullJetTHnSparse.Projection(3,2)
-  else:
-    hFullJetPtLeadjetPt = fullJetTHnSparse.Projection(5,3)
-  hFullJetPtLeadjetPt.SetName("fHistFuJetObservables_proj_pt_leadpt")
-  hFullJetPtLeadjetPt.SetTitle("Leading pT vs. Jet pT, Full Jets")
-  outputFilename = os.path.join(outputDirJets, "hFullJetPtLeadjetPt" + fileFormat)
-  if ispp:
-    hFullJetPtLeadjetPt.GetXaxis().SetRangeUser(0,200)
-    hFullJetPtLeadjetPt.GetYaxis().SetRangeUser(0,100)
-  plotHist(hFullJetPtLeadjetPt, outputFilename, "colz", "", True)
 
   ROOT.gStyle.SetOptTitle(0)
-
 
 
   # Plot full jet pT
@@ -1309,6 +1306,23 @@ def plotFullJetQA(ispp, isRun2, includePhos, fullJetList, outputDir, fullJetList
   ratioYAxisTitle = "Ratio: run / all runs"
   
   plotSpectra(hFullJetPt, hFullJetPtRef, 0, 0, nEvents, nEventsRef, ispp, xRangeMax, yAxisTitle, legendTitle, legendRunLabel, legendRefLabel, ratioYAxisTitle, outputFilename)
+
+  # Plot full jet pT leading particle vs. jet pT
+  if ispp:
+    hFullJetPtLeadjetPt = fullJetTHnSparse.Projection(3,2)
+  else:
+    hFullJetPtLeadjetPt = fullJetTHnSparse.Projection(5,3)
+  hFullJetPtLeadjetPt.SetName("fHistFuJetObservables_proj_pt_leadpt")
+  hFullJetPtLeadjetPt.SetTitle("Leading pT vs. Jet pT, Full Jets")
+  outputFilename = os.path.join(outputDirJets, "hFullJetPtLeadjetPt" + fileFormat)
+  if ispp:
+    hFullJetPtLeadjetPt.GetXaxis().SetRangeUser(0,200)
+    hFullJetPtLeadjetPt.GetYaxis().SetRangeUser(0,100)
+  if isPtHard:
+    yMin= hFullJetPt.GetBinContent(hFullJetPt.FindBin(200)) #find entry in bin at 200 GeV to get the right y-Axis scale
+    plotHist(hFullJetPtLeadjetPt, outputFilename, "colz", "", True, yMin)
+  else:
+    plotHist(hFullJetPtLeadjetPt, outputFilename, "colz", "", True)
 
   # Plot full jet pT, background subtracted
   if not ispp:
@@ -1605,19 +1619,21 @@ def plotEventQA(ispp, isRun2, includePhos, qaList, outputDir, fileFormat):
     plotHist(hEventLeadClusECentrality, outputFilename, "colz", False, True)
 
   # Event rejection reasons
-  hEventReject = qaList.FindObject("fHistEventRejection")
-  hEventReject.GetYaxis().SetTitle("N events rejected")
+  EventCutList = qaList.FindObject("EventCutOutput")
+
+  hEventReject = EventCutList.FindObject("fCutStats")
+  hEventReject.GetYaxis().SetTitle("N events accepted")
   outputFilename = os.path.join(outputDirEventQA, "hEventReject" + fileFormat)
   textNEvents = ROOT.TLatex()
   textNEvents.SetNDC()
   textNEvents.DrawLatex(0.65,0.87,"#it{N}_{events} = %d" % nEvents)
 
-  plotHist(hEventReject, outputFilename, "hist", True)
+  plotHist(hEventReject, outputFilename, "hist", False)
 
 ########################################################################################################
 # Plot Pt-hard histograms   ##############################################################################
 ########################################################################################################
-def plotPtHard(f, qaList, outputDir, fileFormat):
+def plotPtHard(f, qaList, nEvents, qaListRef, nEventsRef, outputDir, fileFormat):
   
   # Note: errors have not been propagated correctly for Pt-hard histos, so we do not plot them.
   
@@ -1628,7 +1644,7 @@ def plotPtHard(f, qaList, outputDir, fileFormat):
   
   ROOT.gStyle.SetOptTitle(1)
 
-  hNEvents = f.Get("hNEvents")
+  hNEvents = f.Get("hNEventsAcc")
   outputFilename = os.path.join(outputDirPtHard, "hPtHardNEvents" + fileFormat)
   plotHist(hNEvents, outputFilename, "hist")
   
@@ -1651,10 +1667,28 @@ def plotPtHard(f, qaList, outputDir, fileFormat):
   outputFilename = os.path.join(outputDirPtHard, "hPtHard" + fileFormat)
   plotHist(hPtHard, outputFilename, "hist", True)
 
+  #if a reference is provided
+  if qaListRef:
+  
+    hPtHardRef = qaListRef.FindObject("hPtHard")
+  
+    outputFilename = os.path.join(outputDirPtHard, "hPtHard_Ratio" + fileFormat)
+    xRangeMax = 100
+    yAxisTitle = "#frac{1}{N_{evts}}#frac{dN}{dp_{T}} [GeV^{-1}]"
+    legendTitle = "pT Hard production"
+    legendRunLabel = "hPtHard this run"
+    legendRefLabel = "hPtHard all runs"
+    ratioYAxisTitle = "Ratio: run / all runs"
+    hPtHardRef.SetLineColor(1)
+
+    ispp=1
+    if nEventsRef!=0:
+      plotSpectra(hPtHard, hPtHardRef,0x0, 0x0, nEvents, nEventsRef, ispp, xRangeMax, yAxisTitle, legendTitle, legendRunLabel, legendRefLabel, ratioYAxisTitle, outputFilename, "1", "2", "3")
+
 ########################################################################################################
 # Plot basic histogram    ##############################################################################
 ########################################################################################################
-def plotHist(h, outputFilename, drawOptions = "", setLogy = False, setLogz = False):
+def plotHist(h, outputFilename, drawOptions = "", setLogy = False, setLogz = False, yMin=-1):
  
   c = ROOT.TCanvas("c","c: hist",600,450)
   c.cd()
@@ -1662,6 +1696,14 @@ def plotHist(h, outputFilename, drawOptions = "", setLogy = False, setLogz = Fal
     c.SetLogy()
   if setLogz:
     c.SetLogz()
+  maxBin=h.GetBinContent(h.GetMaximumBin())
+  if yMin!=-1:
+    if setLogy:
+      h.GetYaxis.SetRangeUser(yMin,maxBin*1.1)
+    if setLogz:
+      #h.GetZaxis.SetRangeUser(yMin,maxBin*1.1)
+      h.SetMinimum(yMin);
+      h.SetMaximum(maxBin*1.1);
   h.Draw(drawOptions)
   c.SaveAs(outputFilename)
   c.Close()
