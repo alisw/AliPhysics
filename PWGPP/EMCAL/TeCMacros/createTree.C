@@ -1,5 +1,6 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <AliEMCALGeometry.h>
+#include <AliOADBContainer.h>
 #include <TCanvas.h>
 #include <TClonesArray.h>
 #include <TClonesArray.h>
@@ -26,6 +27,7 @@ class TCalCell : public TObject {
   Short_t  fSM;   //         super module index
   Short_t  fRow;  //         row (phi) index
   Short_t  fCol;  //         col (eta) index
+  Short_t  fBad;  //         bad cell
   Double32_t fLedM; //[0,0,16] led mean
   Double32_t fLedR; //[0,0,16] led rms
   Double32_t fMonM; //[0,0,16] mon mean
@@ -54,12 +56,22 @@ class TCalInfo : public TObject {
 };
 #endif
 
-void createTree(const char *period, const char *ofile="treeout.root",Bool_t doprint=0)
-{
+void createTree(
+                    const char *period,
+                    const char *ofile     = "treeout.root",
+                    Bool_t doprint        = 0,
+                    Bool_t appBC          = kFALSE,                   // boolean to switch on bad channel
+                    TString badpath       = "$ALICE_ROOT/OADB/EMCAL"  // location of bad channel map
+               ){
+
   TDraw td(period);
   td.Compute();
   LDraw ld(period);
   ld.Compute();
+
+  if (appBC){
+    cout << "INFO: will be using bad channel map from: " << badpath.Data() << endl;
+  }
 
   TObjArray *ta = td.GetArray();
   if (!ta) {
@@ -90,6 +102,14 @@ void createTree(const char *period, const char *ofile="treeout.root",Bool_t dopr
   TClonesArray &carr = info->fCells;
   Int_t l = 0;
   Int_t t = 0;
+
+  Int_t runno = -1;
+  Int_t idx   = -1;
+  TObjArray *arrayBC=0;
+  TH2I *badmaps[kSM];
+  for (Int_t i=0;i<kSM;++i)
+    badmaps[i]=0;
+
   for (Int_t i=0;i<rns;++i) {
     l++;
     t++;
@@ -142,6 +162,37 @@ void createTree(const char *period, const char *ofile="treeout.root",Bool_t dopr
       avg[sm]=tinfo->AvgT(sm);
     }
 
+    if (runt!=runno && appBC) {
+      runno=runt;
+      AliOADBContainer *contBC = new AliOADBContainer("");
+      contBC->InitFromFile(Form("%s/EMCALBadChannels.root",badpath.Data()),"AliEMCALBadChannels");
+      if (!contBC) {
+        cerr << "Could not load bc map for run " << runno << endl;
+      } else {
+        Int_t idxCurr     =contBC->GetIndexForRun(runno);
+        if ( idx != idxCurr ){
+          cout << "INFO: need to switch bad channel map" << endl;
+          TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runno);
+          if (!arrayBC){
+            cout << "WARNING: missing bad channel map for run: " << runno << " Will continue without using bad channel map!"<< endl;
+          }
+          for (Int_t i=0; i<kSM; ++i) {
+            delete badmaps[i];
+            if (!arrayBC){
+              badmaps[i] = NULL;
+            } else {
+              badmaps[i] = (TH2I*)arrayBC->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
+              badmaps[i]->SetDirectory(0);
+            }
+          }
+          delete contBC;
+          idx = idxCurr;
+        } else {
+          delete contBC;
+        }
+      }
+    }
+
     for (Int_t sm=0; sm<kSM; ++sm) {
       Int_t nrow = g->GetNumberOfCellsInPhiDirection(sm);
       Int_t ncol = g->GetNumberOfCellsInEtaDirection(sm);
@@ -157,9 +208,15 @@ void createTree(const char *period, const char *ofile="treeout.root",Bool_t dopr
           Int_t ns = TInfo::SensId(sm,row,col);
           TCalCell *cell = (TCalCell*)carr.At(id);
           cell->fId = id;
+
+          Int_t badcell = 0;
+          if (appBC && badmaps[sm])
+            badcell = badmaps[sm]->GetBinContent(col,row);
+
           cell->fSM = sm;
           cell->fRow = row;
           cell->fCol = col;
+          cell->fBad = badcell;
           cell->fLedM = hledm->GetBinContent(hledm->FindBin(col,row));
           cell->fLedR = hledr->GetBinContent(hledr->FindBin(col,row));
           cell->fMonM = hmonm->GetBinContent(hmonm->FindBin(col/2));
@@ -171,6 +228,7 @@ void createTree(const char *period, const char *ofile="treeout.root",Bool_t dopr
     }
     fTree->Fill();
   }
+  out->cd();
   fTree->Write();
   out->Close();
 }

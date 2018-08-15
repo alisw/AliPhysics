@@ -42,7 +42,8 @@ Float_t TInfo::AvgT(Int_t sm) const
       nActiveSensors--;
     temp += T(i,3);
   }
-  temp /= nActiveSensors;
+  if (nActiveSensors != 0)
+    temp /= nActiveSensors;
   return temp;
 }
 

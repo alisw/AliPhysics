@@ -508,6 +508,7 @@ TH1 *TDraw::GetTSM(Int_t sm, Int_t type) const
     if (!tinfo)
       continue;
     Double_t val = tinfo->AvgT(sm);
+    cout <<  i << "\t" << sm << "\t" << val << endl;
     ret->Fill(i,val);
   }
   return ret;
