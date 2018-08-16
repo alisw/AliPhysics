@@ -17,7 +17,9 @@
 class AliFemtoDreamCorrHists {
  public:
   AliFemtoDreamCorrHists();
+  AliFemtoDreamCorrHists(const AliFemtoDreamCorrHists& hists);
   AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,bool MinimalBooking);
+  AliFemtoDreamCorrHists &operator=(const AliFemtoDreamCorrHists& hists);
   virtual ~AliFemtoDreamCorrHists();
   bool GetDoMultBinning(){return fDoMultBinning;};
   bool GetDoCentBinning(){return fDoCentBinning;};

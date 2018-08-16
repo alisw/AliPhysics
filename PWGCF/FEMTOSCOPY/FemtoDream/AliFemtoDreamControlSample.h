@@ -12,7 +12,9 @@
 class AliFemtoDreamControlSample {
  public:
   AliFemtoDreamControlSample();
+  AliFemtoDreamControlSample(const AliFemtoDreamControlSample& samp);
   AliFemtoDreamControlSample(AliFemtoDreamCollConfig *conf, bool minimalBooking = false);
+  AliFemtoDreamControlSample& operator=(const AliFemtoDreamControlSample& samp);
   virtual ~AliFemtoDreamControlSample();
 
   void SetEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &Particles, float mult);

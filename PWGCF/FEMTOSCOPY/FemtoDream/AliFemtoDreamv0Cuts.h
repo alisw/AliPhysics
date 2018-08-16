@@ -15,6 +15,8 @@
 class AliFemtoDreamv0Cuts {
  public:
   AliFemtoDreamv0Cuts();
+  AliFemtoDreamv0Cuts(const AliFemtoDreamv0Cuts& cuts);
+  AliFemtoDreamv0Cuts& operator=(const AliFemtoDreamv0Cuts& cuts);
   virtual ~AliFemtoDreamv0Cuts();
   static AliFemtoDreamv0Cuts* LambdaCuts(bool isMC,bool CPAPlots,
                                          bool SplitContrib);

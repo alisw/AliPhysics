@@ -19,6 +19,8 @@ class AliFemtoDreamv0Hist {
   AliFemtoDreamv0Hist(
       int MassNBins,float MassMin,float MassMax,bool CPAPlots,bool perRunnumber, int iRunMin, int iRunMax);
   AliFemtoDreamv0Hist(TString MinimalBooking,int MassNBins,float MassMin,float MassMax);
+  AliFemtoDreamv0Hist(const AliFemtoDreamv0Hist& hists);
+  AliFemtoDreamv0Hist& operator=(const AliFemtoDreamv0Hist& hists);
   virtual ~AliFemtoDreamv0Hist();
   void FillConfig(int iBin,float val){if(!fMinimalBooking)fConfig->Fill(iBin,val);};
   void FillTrackCounter(int iBin){if(!fMinimalBooking)fCutCounter->Fill(iBin);};

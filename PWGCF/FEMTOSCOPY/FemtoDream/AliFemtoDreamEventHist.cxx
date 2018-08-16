@@ -203,24 +203,26 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(const AliFemtoDreamEventHist& his
 AliFemtoDreamEventHist& AliFemtoDreamEventHist::operator=(
     const AliFemtoDreamEventHist& hists)
 {
-  this->fEventCutList=hists.fEventCutList;
-  this->fEvtCounter=hists.fEvtCounter;
-  this->fCutConfig=hists.fCutConfig;
-  this->fCentVsMultPlots=hists.fCentVsMultPlots;
-  this->fCentVsV0A=hists.fCentVsV0A;
-  this->fCentVsV0M=hists.fCentVsV0M;
-  this->fCentVsV0C=hists.fCentVsV0C;
-  this->fCentVsRefMult=hists.fCentVsRefMult;
-  for (int i=0;i<2;++i) {
-    this->fEvtNCont[i]=hists.fEvtNCont[i];
-    this->fEvtVtxX[i]=hists.fEvtVtxX[i];
-    this->fEvtVtxY[i]=hists.fEvtVtxY[i];
-    this->fEvtVtxZ[i]=hists.fEvtVtxZ[i];
-    this->fSPDTrklCls[i]=hists.fSPDTrklCls[i];
-    this->fMultDistSPD[i]=hists.fMultDistSPD[i];
-    this->fMultDistV0A[i]=hists.fMultDistV0A[i];
-    this->fMultDistV0C[i]=hists.fMultDistV0C[i];
-    this->fMultDistRef08[i]=hists.fMultDistRef08[i];
+  if (this!=&hists) {
+    this->fEventCutList=hists.fEventCutList;
+    this->fEvtCounter=hists.fEvtCounter;
+    this->fCutConfig=hists.fCutConfig;
+    this->fCentVsMultPlots=hists.fCentVsMultPlots;
+    this->fCentVsV0A=hists.fCentVsV0A;
+    this->fCentVsV0M=hists.fCentVsV0M;
+    this->fCentVsV0C=hists.fCentVsV0C;
+    this->fCentVsRefMult=hists.fCentVsRefMult;
+    for (int i=0;i<2;++i) {
+      this->fEvtNCont[i]=hists.fEvtNCont[i];
+      this->fEvtVtxX[i]=hists.fEvtVtxX[i];
+      this->fEvtVtxY[i]=hists.fEvtVtxY[i];
+      this->fEvtVtxZ[i]=hists.fEvtVtxZ[i];
+      this->fSPDTrklCls[i]=hists.fSPDTrklCls[i];
+      this->fMultDistSPD[i]=hists.fMultDistSPD[i];
+      this->fMultDistV0A[i]=hists.fMultDistV0A[i];
+      this->fMultDistV0C[i]=hists.fMultDistV0C[i];
+      this->fMultDistRef08[i]=hists.fMultDistRef08[i];
+    }
   }
   return *this;
 }

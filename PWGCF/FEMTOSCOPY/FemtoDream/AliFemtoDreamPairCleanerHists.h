@@ -15,7 +15,10 @@
 class AliFemtoDreamPairCleanerHists {
  public:
   AliFemtoDreamPairCleanerHists();
+  AliFemtoDreamPairCleanerHists(const AliFemtoDreamPairCleanerHists& hists);
   AliFemtoDreamPairCleanerHists(int nTrackDecays,int nDecayDecays,int nInvMassPairs);
+  AliFemtoDreamPairCleanerHists& operator=(
+      const AliFemtoDreamPairCleanerHists& hists);
   virtual ~AliFemtoDreamPairCleanerHists();
   void FillDaughtersSharedTrack(int Hist,int counter) {
     fTrackDecays[Hist]->Fill(counter);

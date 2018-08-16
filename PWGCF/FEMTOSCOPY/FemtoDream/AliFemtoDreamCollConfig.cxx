@@ -38,6 +38,37 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
   //should not be used, since we need a name to deal with root objects
 }
 
+AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
+    const AliFemtoDreamCollConfig& config)
+:TNamed(config)
+,fMultBinning(config.fMultBinning)
+,fCentBinning(config.fCentBinning)
+,fkTBinning(config.fkTBinning)
+,fmTBinning(config.fmTBinning)
+,fMomentumResolution(config.fMomentumResolution)
+,fPhiEtaBinning(config.fPhiEtaBinning)
+,fdPhidEtaPlots(config.fdPhidEtaPlots)
+,fMixedEventStatistics(config.fMixedEventStatistics)
+,fGetTheControlSampel(config.fGetTheControlSampel)
+,fInvMassPairs(config.fInvMassPairs)
+,fMinimalBookingME(config.fMinimalBookingME)
+,fMinimalBookingSample(config.fMinimalBookingSample)
+,fNumberRadii(config.fNumberRadii)
+,fZVtxBins(config.fZVtxBins)
+,fMultBins(config.fMultBins)
+,fPDGParticleSpecies(config.fPDGParticleSpecies)
+,fNBinsHists(config.fNBinsHists)
+,fMinK_rel(config.fMinK_rel)
+,fMaxK_rel(config.fMaxK_rel)
+,fCentBins(config.fCentBins)
+,fMixingDepth(config.fMixingDepth)
+,fSpinningDepth(config.fSpinningDepth)
+,fkTCentrality(config.fkTCentrality)
+,fMCCommonAncestor(config.fMCCommonAncestor)
+,fEst(config.fEst)
+{
+}
+
 AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
                                                  const char *title)
 :TNamed(name,title)
@@ -54,6 +85,13 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
 ,fMinimalBookingME(false)
 ,fMinimalBookingSample(false)
 ,fNumberRadii(0)
+,fZVtxBins(nullptr)
+,fMultBins(nullptr)
+,fPDGParticleSpecies(nullptr)
+,fNBinsHists(nullptr)
+,fMinK_rel(nullptr)
+,fMaxK_rel(nullptr)
+,fCentBins(nullptr)
 ,fMixingDepth(0)
 ,fSpinningDepth(0)
 ,fkTCentrality(false)
@@ -67,6 +105,39 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
   fMinK_rel=new TNtuple("MinK_rel","MinK_rel","minkRel");
   fMaxK_rel=new TNtuple("MaxK_rel","MaxK_rel","maxkRel");
   fCentBins=new TNtuple("CentBins","CentBins","centBin");
+}
+AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
+    const AliFemtoDreamCollConfig& config)
+{
+  if(this != &config){
+    TNamed::operator=(config);
+    this->fMultBinning=config.fMultBinning;
+    this->fCentBinning=config.fCentBinning;
+    this->fkTBinning=config.fkTBinning;
+    this->fmTBinning=config.fmTBinning;
+    this->fMomentumResolution=config.fMomentumResolution;
+    this->fPhiEtaBinning=config.fPhiEtaBinning;
+    this->fdPhidEtaPlots=config.fdPhidEtaPlots;
+    this->fMixedEventStatistics=config.fMixedEventStatistics;
+    this->fGetTheControlSampel=config.fGetTheControlSampel;
+    this->fInvMassPairs=config.fInvMassPairs;
+    this->fMinimalBookingME=config.fMinimalBookingME;
+    this->fMinimalBookingSample=config.fMinimalBookingSample;
+    this->fNumberRadii=config.fNumberRadii;
+    this->fZVtxBins=config.fZVtxBins;
+    this->fMultBins=config.fMultBins;
+    this->fPDGParticleSpecies=config.fPDGParticleSpecies;
+    this->fNBinsHists=config.fNBinsHists;
+    this->fMinK_rel=config.fMinK_rel;
+    this->fMaxK_rel=config.fMaxK_rel;
+    this->fCentBins=config.fCentBins;
+    this->fMixingDepth=config.fMixingDepth;
+    this->fSpinningDepth=config.fSpinningDepth;
+    this->fkTCentrality=config.fkTCentrality;
+    this->fMCCommonAncestor=config.fMCCommonAncestor;
+    this->fEst=config.fEst;
+  }
+  return *this;
 }
 
 AliFemtoDreamCollConfig::~AliFemtoDreamCollConfig() {

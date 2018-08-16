@@ -15,6 +15,8 @@
 class AliFemtoDreamTrackCuts {
  public:
   AliFemtoDreamTrackCuts();
+  AliFemtoDreamTrackCuts(const AliFemtoDreamTrackCuts& cuts);
+  AliFemtoDreamTrackCuts &operator=(const AliFemtoDreamTrackCuts& cuts);
   virtual ~AliFemtoDreamTrackCuts();
   static AliFemtoDreamTrackCuts *PrimProtonCuts(bool isMC,bool DCAPlots,
                                                 bool CombSigma,

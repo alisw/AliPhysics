@@ -7,25 +7,54 @@
 ClassImp(AliFemtoDreamControlSample)
 
 AliFemtoDreamControlSample::AliFemtoDreamControlSample()
-: fHists(nullptr),
-  fPDGParticleSpecies(),
-  fMultBins(),
-  fRandom(),
-  fPi(TMath::Pi()),
-  fSpinningDepth(0) {
+:fHists(nullptr)
+,fPDGParticleSpecies()
+,fMultBins()
+,fRandom()
+,fPi(TMath::Pi())
+,fSpinningDepth(0)
+{
+  fRandom.SetSeed(0);
+}
+
+AliFemtoDreamControlSample::AliFemtoDreamControlSample(
+    const AliFemtoDreamControlSample& samp)
+:fHists(samp.fHists)
+,fPDGParticleSpecies(samp.fPDGParticleSpecies)
+,fMultBins(samp.fMultBins)
+,fRandom()
+,fPi(TMath::Pi())
+,fSpinningDepth(samp.fSpinningDepth)
+{
   fRandom.SetSeed(0);
 }
 
 AliFemtoDreamControlSample::AliFemtoDreamControlSample(
     AliFemtoDreamCollConfig *conf, bool minimalBooking)
-:fHists(new AliFemtoDreamCorrHists(conf,minimalBooking)),
- fPDGParticleSpecies(conf->GetPDGCodes()),
- fMultBins(conf->GetMultBins()),
- fRandom(),
- fPi(TMath::Pi()),
- fSpinningDepth(0) {
+:fHists(new AliFemtoDreamCorrHists(conf,minimalBooking))
+,fPDGParticleSpecies(conf->GetPDGCodes())
+,fMultBins(conf->GetMultBins())
+,fRandom()
+,fPi(TMath::Pi())
+,fSpinningDepth(0)
+{
   fSpinningDepth = conf->GetSpinningDepth();
   fRandom.SetSeed(0);
+}
+
+AliFemtoDreamControlSample& AliFemtoDreamControlSample::operator=(
+    const AliFemtoDreamControlSample& samp)
+{
+  if(this == &samp){
+    return *this;
+  }
+  this->fHists=samp.fHists;
+  this->fPDGParticleSpecies=samp.fPDGParticleSpecies;
+  this->fMultBins=samp.fMultBins;
+  this->fRandom.SetSeed(0);
+  this->fPi=TMath::Pi();
+  this->fSpinningDepth=samp.fSpinningDepth;
+  return *this;
 }
 
 AliFemtoDreamControlSample::~AliFemtoDreamControlSample() {}

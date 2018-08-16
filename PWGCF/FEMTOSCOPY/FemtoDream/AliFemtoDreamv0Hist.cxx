@@ -8,6 +8,7 @@
 #include "AliFemtoDreamv0Hist.h"
 #include "TMath.h"
 ClassImp(AliFemtoDreamv0Hist)
+
 AliFemtoDreamv0Hist::AliFemtoDreamv0Hist()
 :fMinimalBooking(false)
 ,fHistList(0)
@@ -203,14 +204,14 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(
   }
 
   if (CPAPlots) {
-      fCPAPtBins=new TH2F("CPAPtBinsTot","CPAPtBinsTot",
-                          8,0.3,4.3,1000,0.90,1.);
-      fCPAPtBins->Sumw2();
-      fCPAPtBins->GetXaxis()->SetTitle("P_{T}");
-      fCPAPtBins->GetYaxis()->SetTitle("CPA");
-      fHistList->Add(fCPAPtBins);
+    fCPAPtBins=new TH2F("CPAPtBinsTot","CPAPtBinsTot",
+                        8,0.3,4.3,1000,0.90,1.);
+    fCPAPtBins->Sumw2();
+    fCPAPtBins->GetXaxis()->SetTitle("P_{T}");
+    fCPAPtBins->GetYaxis()->SetTitle("CPA");
+    fHistList->Add(fCPAPtBins);
   } else {
-      fCPAPtBins=nullptr;
+    fCPAPtBins=nullptr;
   }
   if (perRunnumber) {
     int nBins=iRunMax-iRunMin;
@@ -259,6 +260,67 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(TString MinimalBooking,int MassNBins,fl
   fInvMassPt->GetXaxis()->SetTitle("P_{T}");
   fInvMassPt->GetYaxis()->SetTitle("m_{Pair}");
   fHistList->Add(fInvMassPt);
+}
+
+AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(const AliFemtoDreamv0Hist& hists)
+:fMinimalBooking(hists.fMinimalBooking)
+,fHistList(hists.fHistList)
+,fConfig(hists.fConfig)
+,fCutCounter(hists.fCutCounter)
+,fInvMassBefKaonRej(hists.fInvMassBefKaonRej)
+,fInvMassKaon(hists.fInvMassKaon)
+,fInvMassBefSelection(hists.fInvMassBefSelection)
+,fInvMassPt(hists.fInvMassPt)
+,fCPAPtBins(hists.fCPAPtBins)
+,fInvMassPerRunNumber(hists.fInvMassPerRunNumber)
+{
+  for (int i=0;i<2;++i) {
+    fv0CutQA[i]=hists.fv0CutQA[i];
+    fOnFly[i]=hists.fOnFly[i];
+    fpTDist[i]                =hists.fpTDist[i];
+    fetaDist[i]               =hists.fetaDist[i];
+    fDecayVtxv0X[i]           =hists.fDecayVtxv0X[i];
+    fDecayVtxv0Y[i]           =hists.fDecayVtxv0Y[i];
+    fDecayVtxv0Z[i]           =hists.fDecayVtxv0Z[i];
+    fTransRadius[i]           =hists.fTransRadius[i];
+    fDCAPosDaugToPrimVtx[i]   =hists.fDCAPosDaugToPrimVtx[i];
+    fDCANegDaugToPrimVtx[i]   =hists.fDCANegDaugToPrimVtx[i];
+    fDCADaugToVtx[i]          =hists.fDCADaugToVtx[i];
+    fCPA[i]                   =hists.fCPA[i];
+    fInvMass[i]               =hists.fInvMass[i];
+  }
+}
+
+AliFemtoDreamv0Hist& AliFemtoDreamv0Hist::operator=(const AliFemtoDreamv0Hist& hists)
+{
+  if (this!=&hists) {
+    this->fMinimalBooking=hists.fMinimalBooking;
+    this->fHistList=hists.fHistList;
+    this->fConfig=hists.fConfig;
+    this->fCutCounter=hists.fCutCounter;
+    this->fInvMassBefKaonRej=hists.fInvMassBefKaonRej;
+    this->fInvMassKaon=hists.fInvMassKaon;
+    this->fInvMassBefSelection=hists.fInvMassBefSelection;
+    this->fInvMassPt=hists.fInvMassPt;
+    this->fCPAPtBins=hists.fCPAPtBins;
+    this->fInvMassPerRunNumber=hists.fInvMassPerRunNumber;
+    for (int i=0;i<2;++i) {
+      this->fv0CutQA[i]=hists.fv0CutQA[i];
+      this->fOnFly[i]=hists.fOnFly[i];
+      this->fpTDist[i]                =hists.fpTDist[i];
+      this->fetaDist[i]               =hists.fetaDist[i];
+      this->fDecayVtxv0X[i]           =hists.fDecayVtxv0X[i];
+      this->fDecayVtxv0Y[i]           =hists.fDecayVtxv0Y[i];
+      this->fDecayVtxv0Z[i]           =hists.fDecayVtxv0Z[i];
+      this->fTransRadius[i]           =hists.fTransRadius[i];
+      this->fDCAPosDaugToPrimVtx[i]   =hists.fDCAPosDaugToPrimVtx[i];
+      this->fDCANegDaugToPrimVtx[i]   =hists.fDCANegDaugToPrimVtx[i];
+      this->fDCADaugToVtx[i]          =hists.fDCADaugToVtx[i];
+      this->fCPA[i]                   =hists.fCPA[i];
+      this->fInvMass[i]               =hists.fInvMass[i];
+    }
+  }
+  return *this;
 }
 
 AliFemtoDreamv0Hist::~AliFemtoDreamv0Hist() {

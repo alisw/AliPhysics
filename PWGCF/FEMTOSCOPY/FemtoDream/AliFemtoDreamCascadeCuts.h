@@ -17,6 +17,8 @@
 class AliFemtoDreamCascadeCuts {
  public:
   AliFemtoDreamCascadeCuts();
+  AliFemtoDreamCascadeCuts(const AliFemtoDreamCascadeCuts& cuts);
+  AliFemtoDreamCascadeCuts &operator=(const AliFemtoDreamCascadeCuts& cuts);
   virtual ~AliFemtoDreamCascadeCuts();
   static AliFemtoDreamCascadeCuts *XiCuts(bool isMC,bool contribSplitting);
   void SetMinimalBooking(bool doIt) {fMinimalBooking=doIt;};

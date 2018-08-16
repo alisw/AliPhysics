@@ -53,8 +53,90 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
 }
 
 AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
-    AliFemtoDreamCollConfig *conf,bool MinimalBooking) {
-  fMinimalBooking=MinimalBooking;
+    const AliFemtoDreamCorrHists& hists)
+:fQA(hists.fQA)
+,fResults(hists.fResults)
+,fPairs(hists.fPairs)
+,fPairQA(hists.fPairQA)
+,fMinimalBooking(hists.fMinimalBooking)
+,fMomentumResolution(hists.fMomResolution)
+,fPhiEtaPlots(hists.fPhiEtaPlots)
+,fSameEventDist(hists.fSameEventDist)
+,fSameEventCommonAncestDist(hists.fSameEventCommonAncestDist)
+,fSameEventNonCommonAncestDist(hists.fSameEventNonCommonAncestDist)
+,fSameEventMultDist(hists.fSameEventMultDist)
+,fSameEventCentDist(hists.fSameEventCentDist)
+,fSameEventmTDist(hists.fSameEventmTDist)
+,fSameEventkTDist(hists.fSameEventkTDist)
+,fSameEventkTCentDist(hists.fSameEventkTCentDist)
+,fPairCounterSE(hists.fPairCounterSE)
+,fMixedEventDist(hists.fMixedEventDist)
+,fMixedEventMultDist(hists.fMixedEventMultDist)
+,fMixedEventCentDist(hists.fMixedEventCentDist)
+,fMixedEventmTDist(hists.fMixedEventmTDist)
+,fMixedEventkTDist(hists.fMixedEventkTDist)
+,fMixedEventkTCentDist(hists.fMixedEventkTCentDist)
+,fPairCounterME(hists.fPairCounterME)
+,fMomResolution(hists.fMomResolution)
+,fMomResolutionDist(hists.fMomResolutionDist)
+,fRadiiEtaPhiSE(hists.fRadiiEtaPhiSE)
+,fRadiiEtaPhiME(hists.fRadiiEtaPhiME)
+,fdEtadPhiSE(hists.fdEtadPhiSE)
+,fdEtadPhiME(hists.fdEtadPhiME)
+,fEffMixingDepth(hists.fEffMixingDepth)
+,fDoMultBinning(hists.fDoMultBinning)
+,fDoCentBinning(hists.fDoCentBinning)
+,fDokTBinning(hists.fDokTBinning)
+,fDomTBinning(hists.fDomTBinning)
+,fDokTCentralityBins(hists.fDokTCentralityBins)
+,fDoMCCommonAncest(hists.fDoMCCommonAncest)
+,fdPhidEtaPlots(hists.fdPhidEtaPlots)
+,fCentBins(hists.fCentBins)
+{
+}
+
+AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
+    AliFemtoDreamCollConfig *conf,bool MinimalBooking)
+:fQA(nullptr)
+,fResults(nullptr)
+,fPairs(nullptr)
+,fPairQA(nullptr)
+,fMinimalBooking(MinimalBooking)
+,fMomentumResolution(false)
+,fPhiEtaPlots(false)
+,fSameEventDist(nullptr)
+,fSameEventCommonAncestDist(nullptr)
+,fSameEventNonCommonAncestDist(nullptr)
+,fSameEventMultDist(nullptr)
+,fSameEventCentDist(nullptr)
+,fSameEventmTDist(nullptr)
+,fSameEventkTDist(nullptr)
+,fSameEventkTCentDist(nullptr)
+,fPairCounterSE(nullptr)
+,fMixedEventDist(nullptr)
+,fMixedEventMultDist(nullptr)
+,fMixedEventCentDist(nullptr)
+,fMixedEventmTDist(nullptr)
+,fMixedEventkTDist(nullptr)
+,fMixedEventkTCentDist(nullptr)
+,fPairCounterME(nullptr)
+,fMomResolution(nullptr)
+,fMomResolutionDist(nullptr)
+,fRadiiEtaPhiSE(nullptr)
+,fRadiiEtaPhiME(nullptr)
+,fdEtadPhiSE(nullptr)
+,fdEtadPhiME(nullptr)
+,fEffMixingDepth(nullptr)
+,fDoMultBinning(false)
+,fDoCentBinning(false)
+,fDokTBinning(false)
+,fDomTBinning(false)
+,fDokTCentralityBins(false)
+,fDoMCCommonAncest(false)
+,fdPhidEtaPlots(false)
+,fCentBins(0)
+{
+//  fMinimalBooking=MinimalBooking;
   fMomentumResolution=conf->GetDoMomResolution();
   fDoMultBinning=conf->GetDoMultBinning();
   fDoCentBinning=conf->GetDoCentBinning();
@@ -234,22 +316,22 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       }
 
       if (fDoCentBinning) {
-//        pp 13 TeV
-//        Mult (%)  Class η dNch/dη sys AN  Paper
-//        0 - 1 INEL>0  |η|<0.5 26.22 ±0.28 link  in preparation
-//        0 - 0.01      36.75 ±0.48
-//        0.01 - 0.05     32.43 ±0.37
-//        0.05 - 0.1      30.50 ±0.34
-//        0.1 - 1     25.59 ±0.27
-//        1 - 5     20.05 ±0.21
-//        5 - 10      16.18 ±0.17
-//        10 - 15     13.78 ±015
-//        15 - 20     12.02 ±0.13
-//        20 - 30     10.02 ±0.11
-//        30 - 40     7.93  ±0.08
-//        40 - 50     6.29  ±0.07
-//        50 - 70     4.45  ±0.05
-//        70 - 100      2.42  ±0.03
+        //        pp 13 TeV
+        //        Mult (%)  Class η dNch/dη sys AN  Paper
+        //        0 - 1 INEL>0  |η|<0.5 26.22 ±0.28 link  in preparation
+        //        0 - 0.01      36.75 ±0.48
+        //        0.01 - 0.05     32.43 ±0.37
+        //        0.05 - 0.1      30.50 ±0.34
+        //        0.1 - 1     25.59 ±0.27
+        //        1 - 5     20.05 ±0.21
+        //        5 - 10      16.18 ±0.17
+        //        10 - 15     13.78 ±015
+        //        15 - 20     12.02 ±0.13
+        //        20 - 30     10.02 ±0.11
+        //        30 - 40     7.93  ±0.08
+        //        40 - 50     6.29  ±0.07
+        //        50 - 70     4.45  ±0.05
+        //        70 - 100      2.42  ±0.03
         Double_t centBins [14] = {0,0.01,0.05,0.1,1,5,10,15,20,30,40,50,70,100} ;
         TString SameCentEventName=
             Form("SECentDist_Particle%d_Particle%d",iPar1,iPar2);
@@ -476,7 +558,51 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
     }
   }
 }
-
+AliFemtoDreamCorrHists &AliFemtoDreamCorrHists::operator=(
+    const AliFemtoDreamCorrHists& hists)
+{
+  if (this!=&hists) {
+    this->fQA=hists.fQA;
+    this->fResults=hists.fResults;
+    this->fPairs=hists.fPairs;
+    this->fPairQA=hists.fPairQA;
+    this->fMinimalBooking=hists.fMinimalBooking;
+    this->fMomentumResolution=hists.fMomResolution;
+    this->fPhiEtaPlots=hists.fPhiEtaPlots;
+    this->fSameEventDist=hists.fSameEventDist;
+    this->fSameEventCommonAncestDist=hists.fSameEventCommonAncestDist;
+    this->fSameEventNonCommonAncestDist=hists.fSameEventNonCommonAncestDist;
+    this->fSameEventMultDist=hists.fSameEventMultDist;
+    this->fSameEventCentDist=hists.fSameEventCentDist;
+    this->fSameEventmTDist=hists.fSameEventmTDist;
+    this->fSameEventkTDist=hists.fSameEventkTDist;
+    this->fSameEventkTCentDist=hists.fSameEventkTCentDist;
+    this->fPairCounterSE=hists.fPairCounterSE;
+    this->fMixedEventDist=hists.fMixedEventDist;
+    this->fMixedEventMultDist=hists.fMixedEventMultDist;
+    this->fMixedEventCentDist=hists.fMixedEventCentDist;
+    this->fMixedEventmTDist=hists.fMixedEventmTDist;
+    this->fMixedEventkTDist=hists.fMixedEventkTDist;
+    this->fMixedEventkTCentDist=hists.fMixedEventkTCentDist;
+    this->fPairCounterME=hists.fPairCounterME;
+    this->fMomResolution=hists.fMomResolution;
+    this->fMomResolutionDist=hists.fMomResolutionDist;
+    this->fRadiiEtaPhiSE=hists.fRadiiEtaPhiSE;
+    this->fRadiiEtaPhiME=hists.fRadiiEtaPhiME;
+    this->fdEtadPhiSE=hists.fdEtadPhiSE;
+    this->fdEtadPhiME=hists.fdEtadPhiME;
+    this->fEffMixingDepth=hists.fEffMixingDepth;
+    this->fDoMultBinning=hists.fDoMultBinning;
+    this->fDoCentBinning=hists.fDoCentBinning;
+    this->fDokTBinning=hists.fDokTBinning;
+    this->fDomTBinning=hists.fDomTBinning;
+    this->fDokTCentralityBins=hists.fDokTCentralityBins;
+    this->fDoMCCommonAncest=hists.fDoMCCommonAncest;
+    this->fdPhidEtaPlots=hists.fdPhidEtaPlots;
+    this->fCentBins=hists.fCentBins;
+  }
+  return *this;
+}
 AliFemtoDreamCorrHists::~AliFemtoDreamCorrHists() {
   if (fPairs) {
     delete [] fPairs;

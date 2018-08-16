@@ -26,6 +26,9 @@
 class AliFemtoDreamAnalysis {
  public:
   AliFemtoDreamAnalysis();
+  AliFemtoDreamAnalysis(const AliFemtoDreamAnalysis& analysis);
+  AliFemtoDreamAnalysis& operator=(const AliFemtoDreamAnalysis& analysis);
+  virtual ~AliFemtoDreamAnalysis();
   void SetMVPileUp(bool mvPileUp){fMVPileUp=mvPileUp;};
   void SetEvtCutQA(bool setQA){fEvtCutQA=setQA;};
   void SetEventCuts(AliFemtoDreamEventCuts *cuts){fEvtCuts=cuts;};
@@ -59,7 +62,6 @@ class AliFemtoDreamAnalysis {
   TString ClassName() {return "AliFemtoDreamAnalysis";};
   void Make(AliAODEvent *evt);
   void Make(AliESDEvent *evt);
-  virtual ~AliFemtoDreamAnalysis();
  private:
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliAODTrack *track);

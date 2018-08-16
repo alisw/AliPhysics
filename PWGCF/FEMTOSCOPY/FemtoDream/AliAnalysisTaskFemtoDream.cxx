@@ -106,6 +106,89 @@ AliAnalysisTaskFemtoDream::AliAnalysisTaskFemtoDream(const char *name,bool isESD
   }
 }
 
+AliAnalysisTaskFemtoDream::AliAnalysisTaskFemtoDream(const AliAnalysisTaskFemtoDream& task)
+:AliAnalysisTaskSE(task)
+,fTrackBufferSize(task.fTrackBufferSize)
+,fESDAnalysis(task.fESDAnalysis)
+,fMinBookingME(task.fMinBookingME)
+,fMinBookingSample(task.fMinBookingSample)
+,fMVPileUp(task.fMVPileUp)
+,fEvtCutQA(task.fEvtCutQA)
+,fIsMC(task.fIsMC)
+,fAnalysis(task.fAnalysis)
+,fQA(task.fQA)
+,fEvtCuts(task.fEvtCuts)
+,fEvtHistList(task.fEvtHistList)
+,fTrackCuts(task.fTrackCuts)
+,fTrackCutHistList(task.fTrackCutHistList)
+,fTrackCutHistMCList(task.fTrackCutHistMCList)
+,fAntiTrackCuts(task.fAntiTrackCuts)
+,fAntiTrackCutHistList(task.fAntiTrackCutHistList)
+,fAntiTrackCutHistMCList(task.fAntiTrackCutHistMCList)
+,fv0Cuts(task.fv0Cuts)
+,fv0CutHistList(task.fv0CutHistList)
+,fv0CutHistMCList(task.fv0CutHistMCList)
+,fAntiv0Cuts(task.fAntiv0Cuts)
+,fAntiv0CutHistList(task.fAntiv0CutHistList)
+,fAntiv0CutHistMCList(task.fAntiv0CutHistMCList)
+,fCascCuts(task.fCascCuts)
+,fCascCutList(task.fCascCutList)
+,fCascCutMCList(task.fCascCutMCList)
+,fAntiCascCuts(task.fAntiCascCuts)
+,fAntiCascCutList(task.fAntiCascCutList)
+,fAntiCascCutMCList(task.fAntiCascCutMCList)
+,fConfig(task.fConfig)
+,fResults(task.fResults)
+,fResultQA(task.fResultQA)
+,fResultsSample(task.fResultsSample)
+,fResultQASample(task.fResultQASample)
+{
+}
+
+
+AliAnalysisTaskFemtoDream& AliAnalysisTaskFemtoDream::operator=(
+    const AliAnalysisTaskFemtoDream& task)
+{
+  if (this!=&task) {
+    AliAnalysisTaskSE::operator=(task);
+    this->fTrackBufferSize=task.fTrackBufferSize;
+    this->fESDAnalysis=task.fESDAnalysis;
+    this->fMinBookingME=task.fMinBookingME;
+    this->fMinBookingSample=task.fMinBookingSample;
+    this->fMVPileUp=task.fMVPileUp;
+    this->fEvtCutQA=task.fEvtCutQA;
+    this->fIsMC=task.fIsMC;
+    this->fAnalysis=task.fAnalysis;
+    this->fQA=task.fQA;
+    this->fEvtCuts=task.fEvtCuts;
+    this->fEvtHistList=task.fEvtHistList;
+    this->fTrackCuts=task.fTrackCuts;
+    this->fTrackCutHistList=task.fTrackCutHistList;
+    this->fTrackCutHistMCList=task.fTrackCutHistMCList;
+    this->fAntiTrackCuts=task.fAntiTrackCuts;
+    this->fAntiTrackCutHistList=task.fAntiTrackCutHistList;
+    this->fAntiTrackCutHistMCList=task.fAntiTrackCutHistMCList;
+    this->fv0Cuts=task.fv0Cuts;
+    this->fv0CutHistList=task.fv0CutHistList;
+    this->fv0CutHistMCList=task.fv0CutHistMCList;
+    this->fAntiv0Cuts=task.fAntiv0Cuts;
+    this->fAntiv0CutHistList=task.fAntiv0CutHistList;
+    this->fAntiv0CutHistMCList=task.fAntiv0CutHistMCList;
+    this->fCascCuts=task.fCascCuts;
+    this->fCascCutList=task.fCascCutList;
+    this->fCascCutMCList=task.fCascCutMCList;
+    this->fAntiCascCuts=task.fAntiCascCuts;
+    this->fAntiCascCutList=task.fAntiCascCutList;
+    this->fAntiCascCutMCList=task.fAntiCascCutMCList;
+    this->fConfig=task.fConfig;
+    this->fResults=task.fResults;
+    this->fResultQA=task.fResultQA;
+    this->fResultsSample=task.fResultsSample;
+    this->fResultQASample=task.fResultQASample;
+  }
+  return *this;
+}
+
 AliAnalysisTaskFemtoDream::~AliAnalysisTaskFemtoDream() {
   if (fAnalysis) {
     delete fAnalysis;

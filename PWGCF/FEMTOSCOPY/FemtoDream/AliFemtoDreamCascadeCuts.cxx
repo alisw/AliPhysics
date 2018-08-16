@@ -68,6 +68,131 @@ AliFemtoDreamCascadeCuts::AliFemtoDreamCascadeCuts()
 {
 }
 
+AliFemtoDreamCascadeCuts::AliFemtoDreamCascadeCuts(const AliFemtoDreamCascadeCuts& cuts)
+:fHist(cuts.fHist)
+,fMCHist(cuts.fMCHist)
+,fNegCuts(cuts.fNegCuts)
+,fPosCuts(cuts.fPosCuts)
+,fBachCuts(cuts.fBachCuts)
+,fHistList(cuts.fHistList)
+,fMCHistList(cuts.fMCHistList)
+,fMinimalBooking(cuts.fMinimalBooking)
+,fMCData(cuts.fMCData)
+,fContribSplitting(cuts.fContribSplitting)
+,fRunNumberQA(cuts.fRunNumberQA)
+,fMinRunNumber(cuts.fMinRunNumber)
+,fMaxRunNumber(cuts.fMaxRunNumber)
+,fCutPt(cuts.fCutPt)
+,fPtMin(cuts.fPtMin)
+,fPtMax(cuts.fPtMax)
+,fCutPtv0(cuts.fCutPtv0)
+,fPtMinv0(cuts.fPtMinv0)
+,fPtMaxv0(cuts.fPtMaxv0)
+,fcutXiMass(cuts.fcutXiMass)
+,fXiMass(cuts.fXiMass)
+,fXiMassWidth(cuts.fXiMassWidth)
+,fcutXiCharge(cuts.fcutXiCharge)
+,fXiCharge(cuts.fXiCharge)
+,fcutDCAXiDaug(cuts.fcutDCAXiDaug)
+,fMaxDCAXiDaug(cuts.fMaxDCAXiDaug)
+,fcutMinDistVtxBach(cuts.fcutMinDistVtxBach)
+,fMinDistVtxBach(cuts.fMinDistVtxBach)
+,fcutCPAXi(cuts.fcutCPAXi)
+,fCPAXi(cuts.fCPAXi)
+,fcutXiTransRadius(cuts.fcutXiTransRadius)
+,fMinXiTransRadius(cuts.fMinXiTransRadius)
+,fMaxXiTransRadius(cuts.fMaxXiTransRadius)
+,fcutv0Mass(cuts.fcutv0Mass)
+,fv0Mass(cuts.fv0Mass)
+,fv0Width(cuts.fv0Width)
+,fcutv0MaxDCADaug(cuts.fcutv0MaxDCADaug)
+,fv0MaxDCADaug(cuts.fv0MaxDCADaug)
+,fcutCPAv0(cuts.fcutCPAv0)
+,fCPAv0(cuts.fCPAv0)
+,fcutv0TransRadius(cuts.fcutv0TransRadius)
+,fMinv0TransRadius(cuts.fMinv0TransRadius)
+,fMaxv0TransRadius(cuts.fMaxv0TransRadius)
+,fcutv0MinDistVtx(cuts.fcutv0MinDistVtx)
+,fv0MinDistVtx(cuts.fv0MinDistVtx)
+,fcutv0DaugMinDistVtx(cuts.fcutv0DaugMinDistVtx)
+,fv0DaugMinDistVtx(cuts.fv0DaugMinDistVtx)
+,fRejOmega(cuts.fRejOmega)
+,fRejOmegaMass(cuts.fRejOmegaMass)
+,fRejOmegaWidth(cuts.fRejOmegaWidth)
+,fPDGCasc(cuts.fPDGCasc)
+,fPDGv0(cuts.fPDGv0)
+,fPDGPosDaug(cuts.fPDGPosDaug)
+,fPDGNegDaug(cuts.fPDGNegDaug)
+,fPDGBachDaug(cuts.fPDGBachDaug)
+{
+}
+
+AliFemtoDreamCascadeCuts& AliFemtoDreamCascadeCuts::operator=(
+    const AliFemtoDreamCascadeCuts& cuts)
+{
+  if(this == &cuts){
+    return *this;
+  }
+
+  this->fHist=cuts.fHist;
+  this->fMCHist=cuts.fMCHist;
+  this->fNegCuts=cuts.fNegCuts;
+  this->fPosCuts=cuts.fPosCuts;
+  this->fBachCuts=cuts.fBachCuts;
+  this->fHistList=cuts.fHistList;
+  this->fMCHistList=cuts.fMCHistList;
+  this->fMinimalBooking=cuts.fMinimalBooking;
+  this->fMCData=cuts.fMCData;
+  this->fContribSplitting=cuts.fContribSplitting;
+  this->fRunNumberQA=cuts.fRunNumberQA;
+  this->fMinRunNumber=cuts.fMinRunNumber;
+  this->fMaxRunNumber=cuts.fMaxRunNumber;
+  this->fCutPt=cuts.fCutPt;
+  this->fPtMin=cuts.fPtMin;
+  this->fPtMax=cuts.fPtMax;
+  this->fCutPtv0=cuts.fCutPtv0;
+  this->fPtMinv0=cuts.fPtMinv0;
+  this->fPtMaxv0=cuts.fPtMaxv0;
+  this->fcutXiMass=cuts.fcutXiMass;
+  this->fXiMass=cuts.fXiMass;
+  this->fXiMassWidth=cuts.fXiMassWidth;
+  this->fcutXiCharge=cuts.fcutXiCharge;
+  this->fXiCharge=cuts.fXiCharge;
+  this->fcutDCAXiDaug=cuts.fcutDCAXiDaug;
+  this->fMaxDCAXiDaug=cuts.fMaxDCAXiDaug;
+  this->fcutMinDistVtxBach=cuts.fcutMinDistVtxBach;
+  this->fMinDistVtxBach=cuts.fMinDistVtxBach;
+  this->fcutCPAXi=cuts.fcutCPAXi;
+  this->fCPAXi=cuts.fCPAXi;
+  this->fcutXiTransRadius=cuts.fcutXiTransRadius;
+  this->fMinXiTransRadius=cuts.fMinXiTransRadius;
+  this->fMaxXiTransRadius=cuts.fMaxXiTransRadius;
+  this->fcutv0Mass=cuts.fcutv0Mass;
+  this->fv0Mass=cuts.fv0Mass;
+  this->fv0Width=cuts.fv0Width;
+  this->fcutv0MaxDCADaug=cuts.fcutv0MaxDCADaug;
+  this->fv0MaxDCADaug=cuts.fv0MaxDCADaug;
+  this->fcutCPAv0=cuts.fcutCPAv0;
+  this->fCPAv0=cuts.fCPAv0;
+  this->fcutv0TransRadius=cuts.fcutv0TransRadius;
+  this->fMinv0TransRadius=cuts.fMinv0TransRadius;
+  this->fMaxv0TransRadius=cuts.fMaxv0TransRadius;
+  this->fcutv0MinDistVtx=cuts.fcutv0MinDistVtx;
+  this->fv0MinDistVtx=cuts.fv0MinDistVtx;
+  this->fcutv0DaugMinDistVtx=cuts.fcutv0DaugMinDistVtx;
+  this->fv0DaugMinDistVtx=cuts.fv0DaugMinDistVtx;
+  this->fRejOmega=cuts.fRejOmega;
+  this->fRejOmegaMass=cuts.fRejOmegaMass;
+  this->fRejOmegaWidth=cuts.fRejOmegaWidth;
+  this->fPDGCasc=cuts.fPDGCasc;
+  this->fPDGv0=cuts.fPDGv0;
+  this->fPDGPosDaug=cuts.fPDGPosDaug;
+  this->fPDGNegDaug=cuts.fPDGNegDaug;
+  this->fPDGBachDaug=cuts.fPDGBachDaug;
+
+  return *this;
+}
+
 AliFemtoDreamCascadeCuts::~AliFemtoDreamCascadeCuts() {
   if (fNegCuts) {
     delete fNegCuts;
