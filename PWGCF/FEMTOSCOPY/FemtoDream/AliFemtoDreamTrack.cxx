@@ -174,7 +174,7 @@ void AliFemtoDreamTrack::SetESDTrackingInformation() {
       fESDTPCOnlyTrack->GetTPCInnerParam()->GetXYZ(rDCA);
     }
     // get the DCA to the vertex:
-    fESDTPCOnlyTrack->GetImpactParametersTPC(dDCA,cDCA);
+    fESDTrack->GetImpactParameters(dDCA,cDCA);
     // set the constrained parameters to the track
     fESDTPCOnlyTrack->Set(
         exParam.GetX(),exParam.GetAlpha(),
@@ -190,7 +190,7 @@ void AliFemtoDreamTrack::SetESDTrackingInformation() {
   this->SetPhi(fESDTPCOnlyTrack->Phi());
   this->SetTheta(fESDTPCOnlyTrack->Theta());
   this->SetCharge(fESDTPCOnlyTrack->Charge());
-  this->SetMomTPC(fESDTPCOnlyTrack->GetTPCmomentum());
+  this->SetMomTPC(fESDTrack->GetTPCmomentum());
   this->SetMomentum(p[0],p[1],p[2]);
   this->SetPt(fESDTPCOnlyTrack->Pt());
 
@@ -201,19 +201,19 @@ void AliFemtoDreamTrack::SetESDTrackingInformation() {
     fChi2ITS = fESDTrack->GetITSchi2()/Float_t(fESDnClusterITS);
   }
 
-  fESDnClusterTPC = fESDTrack->GetTPCclusters(0);
-  fTPCCrossedRows = fESDTrack->GetTPCCrossedRows();
-  if (fESDTrack->GetTPCNclsF()>0) {
-    fRatioCR = fTPCCrossedRows / fESDTrack->GetTPCNclsF();
+  fESDnClusterTPC = fESDTPCOnlyTrack->GetTPCclusters(0);
+  fTPCCrossedRows = fESDTPCOnlyTrack->GetTPCCrossedRows();
+  if (fESDTPCOnlyTrack->GetTPCNclsF()>0) {
+    fRatioCR = fTPCCrossedRows / fESDTPCOnlyTrack->GetTPCNclsF();
   }
-  fTPCClsS=fESDTrack->GetTPCnclsS();
+  fTPCClsS=fESDTPCOnlyTrack->GetTPCnclsS();
   if (fESDnClusterTPC!=0) {
-    fChi2TPC = fESDTrack->GetTPCchi2()/Float_t(fESDnClusterTPC);
+    fChi2TPC = fESDTPCOnlyTrack->GetTPCchi2()/Float_t(fESDnClusterTPC);
     fTPCClsSRatio = Float_t(fTPCClsS)/Float_t(fESDnClusterTPC);
   }
-  fNClsTPC = fESDTrack->GetTPCNcls();
+  fNClsTPC = fESDTPCOnlyTrack->GetTPCNcls();
   if ( fNClsTPC > 5) {
-    fChi2=fESDTrack->GetTPCchi2()/Float_t(fNClsTPC - 5);
+    fChi2=fESDTPCOnlyTrack->GetTPCchi2()/Float_t(fNClsTPC - 5);
   } else {
     fChi2= -1.;
   }
