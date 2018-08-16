@@ -10,6 +10,7 @@
 #include "AliLog.h"
 #include <iostream>
 ClassImp(AliFemtoDreamTrackCuts)
+
 AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
 :fMCHists(nullptr)
 ,fHists(nullptr)
@@ -57,6 +58,109 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
 ,fPIDPTPCThreshold(0)
 ,fRejectPions(false)
 {}
+
+AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts(const AliFemtoDreamTrackCuts& cuts)
+:fMCHists(cuts.fMCHists)
+,fHists(cuts.fHists)
+,fMinimalBooking(cuts.fMinimalBooking)
+,fMCData(cuts.fMCData)
+,fDCAPlots(cuts.fDCAPlots)
+,fCombSigma(cuts.fCombSigma)
+,fContribSplitting(cuts.fContribSplitting)
+,fFillQALater(cuts.fFillQALater)
+,fCheckFilterBit(cuts.fCheckFilterBit)
+,fCheckESDFiltering(cuts.fCheckESDFiltering)
+,fCheckPileUpITS(cuts.fCheckPileUpITS)
+,fCheckPileUpTOF(cuts.fCheckPileUpTOF)
+,fCheckPileUp(cuts.fCheckPileUp)
+,fFilterBit(cuts.fFilterBit)
+,fpTmin(cuts.fpTmin)
+,fpTmax(cuts.fpTmax)
+,fcutPt(cuts.fcutPt)
+,fetamin(cuts.fetamin)
+,fetamax(cuts.fetamax)
+,fcutEta(cuts.fcutEta)
+,fcutCharge(cuts.fcutCharge)
+,fCharge(cuts.fCharge)
+,fnTPCCls(cuts.fnTPCCls)
+,fcutnTPCCls(cuts.fcutnTPCCls)
+,fMaxSharedClsTPC(cuts.fMaxSharedClsTPC)
+,fCutSharedClsTPC(cuts.fCutSharedClsTPC)
+,fCutChi2(cuts.fCutChi2)
+,fMinCutChi2(cuts.fMinCutChi2)
+,fMaxCutChi2(cuts.fMaxCutChi2)
+,fDCAProp(cuts.fDCAProp)
+,fDCAToVertexXY(cuts.fDCAToVertexXY)
+,fCutDCAToVtxXY(cuts.fCutDCAToVtxXY)
+,fDCAToVertexZ(cuts.fDCAToVertexZ)
+,fCutDCAToVtxZ(cuts.fCutDCAToVtxZ)
+,fCutSharedCls(cuts.fCutSharedCls)
+,fCheckTPCRefit(cuts.fCheckTPCRefit)
+,fCutTPCCrossedRows(cuts.fCutTPCCrossedRows)
+,fCrossedRows(cuts.fCrossedRows)
+,fRatioCrossedRows(cuts.fRatioCrossedRows)
+,fCutPID(cuts.fCutPID)
+,fCutHighPtSig(cuts.fCutHighPtSig)
+,fParticleID(cuts.fParticleID)
+,fNSigValue(cuts.fNSigValue)
+,fPIDPTPCThreshold(cuts.fPIDPTPCThreshold)
+,fRejectPions(cuts.fRejectPions)
+{
+}
+
+AliFemtoDreamTrackCuts &AliFemtoDreamTrackCuts::operator =(
+    const AliFemtoDreamTrackCuts& cuts)
+{
+  if(this == &cuts){
+    return *this;
+  }
+  this->fMCHists=cuts.fMCHists;
+  this->fHists=cuts.fHists;
+  this->fMinimalBooking=cuts.fMinimalBooking;
+  this->fMCData=cuts.fMCData;
+  this->fDCAPlots=cuts.fDCAPlots;
+  this->fCombSigma=cuts.fCombSigma;
+  this->fContribSplitting=cuts.fContribSplitting;
+  this->fFillQALater=cuts.fFillQALater;
+  this->fCheckFilterBit=cuts.fCheckFilterBit;
+  this->fCheckESDFiltering=cuts.fCheckESDFiltering;
+  this->fCheckPileUpITS=cuts.fCheckPileUpITS;
+  this->fCheckPileUpTOF=cuts.fCheckPileUpTOF;
+  this->fCheckPileUp=cuts.fCheckPileUp;
+  this->fFilterBit=cuts.fFilterBit;
+  this->fpTmin=cuts.fpTmin;
+  this->fpTmax=cuts.fpTmax;
+  this->fcutPt=cuts.fcutPt;
+  this->fetamin=cuts.fetamin;
+  this->fetamax=cuts.fetamax;
+  this->fcutEta=cuts.fcutEta;
+  this->fcutCharge=cuts.fcutCharge;
+  this->fCharge=cuts.fCharge;
+  this->fnTPCCls=cuts.fnTPCCls;
+  this->fcutnTPCCls=cuts.fcutnTPCCls;
+  this->fMaxSharedClsTPC=cuts.fMaxSharedClsTPC;
+  this->fCutSharedClsTPC=cuts.fCutSharedClsTPC;
+  this->fCutChi2=cuts.fCutChi2;
+  this->fMinCutChi2=cuts.fMinCutChi2;
+  this->fMaxCutChi2=cuts.fMaxCutChi2;
+  this->fDCAProp=cuts.fDCAProp;
+  this->fDCAToVertexXY=cuts.fDCAToVertexXY;
+  this->fCutDCAToVtxXY=cuts.fCutDCAToVtxXY;
+  this->fDCAToVertexZ=cuts.fDCAToVertexZ;
+  this->fCutDCAToVtxZ=cuts.fCutDCAToVtxZ;
+  this->fCutSharedCls=cuts.fCutSharedCls;
+  this->fCheckTPCRefit=cuts.fCheckTPCRefit;
+  this->fCutTPCCrossedRows=cuts.fCutTPCCrossedRows;
+  this->fCrossedRows=cuts.fCrossedRows;
+  this->fRatioCrossedRows=cuts.fRatioCrossedRows;
+  this->fCutPID=cuts.fCutPID;
+  this->fCutHighPtSig=cuts.fCutHighPtSig;
+  this->fParticleID=cuts.fParticleID;
+  this->fNSigValue=cuts.fNSigValue;
+  this->fPIDPTPCThreshold=cuts.fPIDPTPCThreshold;
+  this->fRejectPions=cuts.fRejectPions;
+  return *this;
+}
 
 AliFemtoDreamTrackCuts::~AliFemtoDreamTrackCuts() {
   if (fMCHists) {

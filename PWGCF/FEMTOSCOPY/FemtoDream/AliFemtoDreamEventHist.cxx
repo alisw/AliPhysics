@@ -155,7 +155,7 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
 
     TString SPDtrklClsName=Form("SPDTrackletsVsCluster_%s",sName[i].Data());
     fSPDTrklCls[i]=new TH2F(SPDtrklClsName.Data(),SPDtrklClsName.Data(),
-                        250,0,250,1000,0,1000);
+                            250,0,250,1000,0,1000);
     fSPDTrklCls[i]->Sumw2();
     fSPDTrklCls[i]->GetXaxis()->SetTitle("SPD Tracklets");
     fSPDTrklCls[i]->GetYaxis()->SetTitle("SPD Cluster");
@@ -171,11 +171,60 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
 
     TString SPDTrkZVtxDisplName=Form("SPDTrackZVtxDisplacement%s",sName[i].Data());
     fSPDTrkZVtxDispl[i]=new TH1F(SPDTrkZVtxDisplName.Data(),SPDTrkZVtxDisplName.Data(),
-                              300,0,1.5);
+                                 300,0,1.5);
     fSPDTrkZVtxDispl[i]->Sumw2();
     fSPDTrkZVtxDispl[i]->GetXaxis()->SetTitle("zVtx Position |SPD - Tracks|");
     fEvtCutQA[i]->Add(fSPDTrkZVtxDispl[i]);
   }
+}
+
+AliFemtoDreamEventHist::AliFemtoDreamEventHist(const AliFemtoDreamEventHist& hists)
+:fEventCutList(hists.fEventCutList)
+,fEvtCounter(hists.fEvtCounter)
+,fCutConfig(hists.fCutConfig)
+,fCentVsMultPlots(hists.fCentVsMultPlots)
+,fCentVsV0A(hists.fCentVsV0A)
+,fCentVsV0M(hists.fCentVsV0M)
+,fCentVsV0C(hists.fCentVsV0C)
+,fCentVsRefMult(hists.fCentVsRefMult)
+{
+  for (int i=0;i<2;++i) {
+    fEvtNCont[i]=hists.fEvtNCont[i];
+    fEvtVtxX[i]=hists.fEvtVtxX[i];
+    fEvtVtxY[i]=hists.fEvtVtxY[i];
+    fEvtVtxZ[i]=hists.fEvtVtxZ[i];
+    fSPDTrklCls[i]=hists.fSPDTrklCls[i];
+    fMultDistSPD[i]=hists.fMultDistSPD[i];
+    fMultDistV0A[i]=hists.fMultDistV0A[i];
+    fMultDistV0C[i]=hists.fMultDistV0C[i];
+    fMultDistRef08[i]=hists.fMultDistRef08[i];
+  }
+}
+AliFemtoDreamEventHist& AliFemtoDreamEventHist::operator=(
+    const AliFemtoDreamEventHist& hists)
+{
+  if (this!=&hists) {
+    this->fEventCutList=hists.fEventCutList;
+    this->fEvtCounter=hists.fEvtCounter;
+    this->fCutConfig=hists.fCutConfig;
+    this->fCentVsMultPlots=hists.fCentVsMultPlots;
+    this->fCentVsV0A=hists.fCentVsV0A;
+    this->fCentVsV0M=hists.fCentVsV0M;
+    this->fCentVsV0C=hists.fCentVsV0C;
+    this->fCentVsRefMult=hists.fCentVsRefMult;
+    for (int i=0;i<2;++i) {
+      this->fEvtNCont[i]=hists.fEvtNCont[i];
+      this->fEvtVtxX[i]=hists.fEvtVtxX[i];
+      this->fEvtVtxY[i]=hists.fEvtVtxY[i];
+      this->fEvtVtxZ[i]=hists.fEvtVtxZ[i];
+      this->fSPDTrklCls[i]=hists.fSPDTrklCls[i];
+      this->fMultDistSPD[i]=hists.fMultDistSPD[i];
+      this->fMultDistV0A[i]=hists.fMultDistV0A[i];
+      this->fMultDistV0C[i]=hists.fMultDistV0C[i];
+      this->fMultDistRef08[i]=hists.fMultDistRef08[i];
+    }
+  }
+  return *this;
 }
 
 AliFemtoDreamEventHist::~AliFemtoDreamEventHist() {

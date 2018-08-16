@@ -13,6 +13,14 @@ AliFemtoDreamPairCleaner::AliFemtoDreamPairCleaner()
 ,fHists(0)
 {
 }
+
+AliFemtoDreamPairCleaner::AliFemtoDreamPairCleaner(
+    const AliFemtoDreamPairCleaner& cleaner)
+:fMinimalBooking(cleaner.fMinimalBooking)
+,fHists(cleaner.fHists)
+{
+}
+
 AliFemtoDreamPairCleaner::AliFemtoDreamPairCleaner(
     int nTrackDecayChecks, int nDecayDecayChecks,bool MinimalBooking)
 {
@@ -29,6 +37,18 @@ AliFemtoDreamPairCleaner::~AliFemtoDreamPairCleaner() {
   }
 }
 
+AliFemtoDreamPairCleaner& AliFemtoDreamPairCleaner::operator=(
+    const AliFemtoDreamPairCleaner& cleaner)
+{
+  if(this == &cleaner){
+    return *this;
+  }
+  this->fMinimalBooking=cleaner.fMinimalBooking;
+  this->fParticles=cleaner.fParticles;
+  this->fHists=cleaner.fHists;
+  return *this;
+}
+
 void AliFemtoDreamPairCleaner::CleanTrackAndDecay(
     std::vector<AliFemtoDreamBasePart> *Tracks,
     std::vector<AliFemtoDreamBasePart> *Decay, int histnumber)
@@ -43,7 +63,7 @@ void AliFemtoDreamPairCleaner::CleanTrackAndDecay(
         std::vector<int> IDDaug=itDecay->GetIDTracks();
         for (auto itIDs=IDDaug.begin();itIDs!=IDDaug.end();++itIDs) {
           //std::cout <<"ID of Track: "<<IDTrack.at(0)<<" IDs of Daughter: "
-//              <<*itIDs<<'\n';
+          //              <<*itIDs<<'\n';
           if (*itIDs==IDTrack.at(0)) {
             itDecay->SetUse(false);
             counter++;
@@ -106,7 +126,7 @@ void AliFemtoDreamPairCleaner::CleanDecay(
           for (auto itID1s=IDDaug1.begin();itID1s!=IDDaug1.end();++itID1s) {
             for (auto itID2s=IDDaug2.begin();itID2s!=IDDaug2.end();++itID2s) {
               //std::cout <<"ID of Daug v01: "<<*itID1s<<" ID of Daug v02: "
-//                  <<*itID2s<<'\n';
+              //                  <<*itID2s<<'\n';
               if (*itID1s==*itID2s) {
                 if (itDecay1->GetCPA() < itDecay2->GetCPA()) {
                   itDecay1->SetUse(false);
@@ -154,7 +174,7 @@ void AliFemtoDreamPairCleaner::FillInvMassPair(
   for (const auto &it1:Part1) {
     for (const auto &it2:Part2) {
       float invMass=InvMassPair(it1.GetMomentum(),PDGCode1,
-                                 it2.GetMomentum(),PDGCode2);
+                                it2.GetMomentum(),PDGCode2);
       fHists->FillPairInvMass(histnumber,invMass);
       float relMom = RelativePairMomentum(it1.GetMomentum(),PDGCode1,
                                           it2.GetMomentum(),PDGCode2);
@@ -167,9 +187,9 @@ void AliFemtoDreamPairCleaner::FillInvMassPair(
 
 
 float AliFemtoDreamPairCleaner::RelativePairMomentum(TVector3 Part1Momentum,
-                                                           int PDGPart1,
-                                                           TVector3 Part2Momentum,
-                                                           int PDGPart2)
+                                                     int PDGPart1,
+                                                     TVector3 Part2Momentum,
+                                                     int PDGPart2)
 {
   if(PDGPart1 == 0 || PDGPart2== 0){
     printf("Invalid PDG Code");

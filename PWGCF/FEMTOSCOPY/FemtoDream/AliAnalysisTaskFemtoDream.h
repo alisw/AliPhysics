@@ -19,6 +19,8 @@ class AliAnalysisTaskFemtoDream : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskFemtoDream();
   AliAnalysisTaskFemtoDream(const char *name,bool isESD,bool isMC);
+  AliAnalysisTaskFemtoDream(const AliAnalysisTaskFemtoDream& task);
+  AliAnalysisTaskFemtoDream& operator=(const AliAnalysisTaskFemtoDream& task);
   virtual ~AliAnalysisTaskFemtoDream();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);

@@ -20,8 +20,11 @@
 class AliFemtoDreamPartCollection {
  public:
   AliFemtoDreamPartCollection();
+  AliFemtoDreamPartCollection(const AliFemtoDreamPartCollection& coll);
   AliFemtoDreamPartCollection(
       AliFemtoDreamCollConfig *conf,bool MinimalBooking);
+  AliFemtoDreamPartCollection& operator=(
+      const AliFemtoDreamPartCollection& coll);
   virtual ~AliFemtoDreamPartCollection();
   void SetEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
                 float ZVtx,float Mult,float cent);

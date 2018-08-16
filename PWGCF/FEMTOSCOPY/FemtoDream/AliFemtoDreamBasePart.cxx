@@ -38,10 +38,40 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart()
 {
 }
 
-AliFemtoDreamBasePart::~AliFemtoDreamBasePart() {
+AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliFemtoDreamBasePart& part)
+:fIsReset(part.fIsReset)
+,fGTI(part.fGTI)
+,fTrackBufferSize(part.fTrackBufferSize)
+,fP(part.fP)
+,fMCP(part.fMCP)
+,fPt(part.fPt)
+,fMCPt(part.fMCPt)
+,fP_TPC(part.fP_TPC)
+,fEta(part.fEta)
+,fTheta(part.fTheta)
+,fMCTheta(part.fMCTheta)
+,fPhi(part.fPhi)
+,fPhiAtRadius(part.fPhiAtRadius)
+,fMCPhi(part.fMCPhi)
+,fIDTracks(part.fIDTracks)
+,fCharge(part.fCharge)
+,fCPA(part.fCPA)
+,fOrigin(part.fOrigin)
+,fPDGCode(part.fPDGCode)
+,fMCPDGCode(part.fMCPDGCode)
+,fPDGMotherWeak(part.fPDGMotherWeak)
+,fMotherID(part.fMotherID)
+,fEvtNumber(part.fEvtNumber)
+,fIsMC(part.fIsMC)
+,fUse(part.fUse)
+,fIsSet(part.fIsSet)
+{
 }
 
-AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(const AliFemtoDreamBasePart &obj){
+
+AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(
+    const AliFemtoDreamBasePart &obj)
+{
   if(this == &obj){
     return *this;
   }
@@ -70,6 +100,9 @@ AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(const AliFemtoDreamBaseP
   fUse=obj.fUse;
   fIsSet=obj.fIsSet;
   return (*this);
+}
+
+AliFemtoDreamBasePart::~AliFemtoDreamBasePart() {
 }
 
 void AliFemtoDreamBasePart::SetMCParticle(

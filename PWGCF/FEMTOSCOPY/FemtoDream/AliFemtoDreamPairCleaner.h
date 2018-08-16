@@ -17,8 +17,10 @@
 class AliFemtoDreamPairCleaner {
  public:
   AliFemtoDreamPairCleaner();
+  AliFemtoDreamPairCleaner(const AliFemtoDreamPairCleaner& cleaner);
   AliFemtoDreamPairCleaner(
       int nTrackDecayChecks, int nDecayDecayChecks,bool MinimalBooking);
+  AliFemtoDreamPairCleaner& operator=(const AliFemtoDreamPairCleaner& cleaner);
   virtual ~AliFemtoDreamPairCleaner();
   void CleanTrackAndDecay(std::vector<AliFemtoDreamBasePart> *Tracks,
                           std::vector<AliFemtoDreamBasePart> *Decay,

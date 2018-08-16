@@ -19,6 +19,18 @@ AliFemtoDreamPartCollection::AliFemtoDreamPartCollection()
 {
 
 }
+
+AliFemtoDreamPartCollection::AliFemtoDreamPartCollection(
+    const AliFemtoDreamPartCollection& coll)
+:fResults(coll.fResults)
+,fNSpecies(coll.fNSpecies)
+,fDoMCAncestorCheck(coll.fDoMCAncestorCheck)
+,fZVtxMultBuffer(coll.fZVtxMultBuffer)
+,fValuesZVtxBins(coll.fValuesZVtxBins)
+,fValuesMultBins(coll.fValuesMultBins)
+{
+
+}
 AliFemtoDreamPartCollection::AliFemtoDreamPartCollection(
     AliFemtoDreamCollConfig *conf,bool MinimalBooking)
 :fResults(new AliFemtoDreamCorrHists(conf,MinimalBooking))
@@ -33,6 +45,21 @@ AliFemtoDreamPartCollection::AliFemtoDreamPartCollection(
 {
 }
 
+AliFemtoDreamPartCollection& AliFemtoDreamPartCollection::operator=(
+    const AliFemtoDreamPartCollection& coll)
+{
+  if (this!=&coll) {
+    this->fResults=coll.fResults;
+    this->fNSpecies=coll.fNSpecies;
+    this->fDoMCAncestorCheck=coll.fDoMCAncestorCheck;
+    this->fZVtxMultBuffer=coll.fZVtxMultBuffer;
+    this->fValuesZVtxBins=coll.fValuesZVtxBins;
+    this->fValuesMultBins=coll.fValuesMultBins;
+  }
+
+  return *this;
+}
+
 AliFemtoDreamPartCollection::~AliFemtoDreamPartCollection() {
 }
 
@@ -42,7 +69,7 @@ void AliFemtoDreamPartCollection::SetEvent(
 {
   if (Particles.size()!=fNSpecies) {
     TString fatalOut=
-        Form("Too few Species %d for %d",Particles.size(),(int)fNSpecies);
+        Form("Too few Species %d for %d",(int)Particles.size(),(int)fNSpecies);
     AliFatal(fatalOut.Data());
   }
   int bins[2] = {0,0};

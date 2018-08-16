@@ -27,6 +27,52 @@ AliFemtoDreamEventCuts::AliFemtoDreamEventCuts()
 {
 }
 
+AliFemtoDreamEventCuts::AliFemtoDreamEventCuts(const AliFemtoDreamEventCuts& cuts)
+:fHist(cuts.fHist)
+,fMinimalBooking(cuts.fMinimalBooking)
+,fCutMinContrib(cuts.fCutMinContrib)
+,fMinContrib(cuts.fMinContrib)
+,fCutZVtx(cuts.fCutZVtx)
+,fzVtxLow(cuts.fzVtxLow)
+,fzVtxUp(cuts.fzVtxUp)
+,fPileUpRejection(cuts.fPileUpRejection)
+,fUseMVPileUpRej(cuts.fUseMVPileUpRej)
+,fCleanEvtMult(cuts.fCleanEvtMult)
+,fUseSPDMult(cuts.fUseSPDMult)
+,fUseV0AMult(cuts.fUseV0AMult)
+,fUseV0CMult(cuts.fUseV0CMult)
+,fUseRef08Mult(cuts.fUseRef08Mult)
+,fUseAliEvtCuts(cuts.fUseAliEvtCuts)
+,fCentVsMultPlots(cuts.fCentVsMultPlots)
+{
+}
+
+AliFemtoDreamEventCuts& AliFemtoDreamEventCuts::operator=(
+    const AliFemtoDreamEventCuts& cuts)
+{
+  if(this == &cuts){
+    return *this;
+  }
+  this->fHist=cuts.fHist;
+  this->fMinimalBooking=cuts.fMinimalBooking;
+  this->fCutMinContrib=cuts.fCutMinContrib;
+  this->fMinContrib=cuts.fMinContrib;
+  this->fCutZVtx=cuts.fCutZVtx;
+  this->fzVtxLow=cuts.fzVtxLow;
+  this->fzVtxUp=cuts.fzVtxUp;
+  this->fPileUpRejection=cuts.fPileUpRejection;
+  this->fUseMVPileUpRej=cuts.fUseMVPileUpRej;
+  this->fCleanEvtMult=cuts.fCleanEvtMult;
+  this->fUseSPDMult=cuts.fUseSPDMult;
+  this->fUseV0AMult=cuts.fUseV0AMult;
+  this->fUseV0CMult=cuts.fUseV0CMult;
+  this->fUseRef08Mult=cuts.fUseRef08Mult;
+  this->fUseAliEvtCuts=cuts.fUseAliEvtCuts;
+  this->fCentVsMultPlots=cuts.fCentVsMultPlots;
+
+  return *this;
+}
+
 AliFemtoDreamEventCuts::~AliFemtoDreamEventCuts() {
 
 }

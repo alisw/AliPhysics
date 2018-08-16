@@ -55,6 +55,102 @@ AliFemtoDreamv0Cuts::AliFemtoDreamv0Cuts()
 {
 }
 
+AliFemtoDreamv0Cuts::AliFemtoDreamv0Cuts(const AliFemtoDreamv0Cuts& cuts)
+:fHistList(cuts.fHistList)
+,fMCHistList(cuts.fMCHistList)
+,fMCHist(cuts.fMCHist)
+,fHist(cuts.fHist)
+,fPosCuts(cuts.fPosCuts)
+,fNegCuts(cuts.fNegCuts)
+,fMinimalBooking(cuts.fMinimalBooking)
+,fMCData(cuts.fMCData)
+,fCPAPlots(cuts.fCPAPlots)
+,fContribSplitting(cuts.fContribSplitting)
+,fRunNumberQA(cuts.fRunNumberQA)
+,fMinRunNumber(cuts.fMinRunNumber)
+,fMaxRunNumber(cuts.fMaxRunNumber)
+,fCutOnFlyStatus(cuts.fCutOnFlyStatus)
+,fOnFlyStatus(cuts.fOnFlyStatus)
+,fCutCharge(cuts.fCutCharge)
+,fCharge(cuts.fCharge)
+,fCutPt(cuts.fCutPt)
+,fpTmin(cuts.fpTmin)
+,fpTmax(cuts.fpTmax)
+,fKaonRejection(cuts.fKaonRejection)
+,fKaonRejLow(cuts.fKaonRejLow)
+,fKaonRejUp(cuts.fKaonRejUp)
+,fCutDecayVtxXYZ(cuts.fCutDecayVtxXYZ)
+,fMaxDecayVtxXYZ(cuts.fMaxDecayVtxXYZ)
+,fCutTransRadius(cuts.fCutTransRadius)
+,fMinTransRadius(cuts.fMinTransRadius)
+,fMaxTransRadius(cuts.fMaxTransRadius)
+,fCutMinDCADaugPrimVtx(cuts.fCutMinDCADaugPrimVtx)
+,fMinDCADaugToPrimVtx(cuts.fMinDCADaugToPrimVtx)
+,fCutMaxDCADaugToDecayVtx(cuts.fCutMaxDCADaugToDecayVtx)
+,fMaxDCADaugToDecayVtx(cuts.fMaxDCADaugToDecayVtx)
+,fCutCPA(cuts.fCutCPA)
+,fMinCPA(cuts.fMinCPA)
+,fCutInvMass(cuts.fCutInvMass)
+,fInvMassCutWidth(cuts.fInvMassCutWidth)
+,fAxisMinMass(cuts.fAxisMinMass)
+,fAxisMaxMass(cuts.fAxisMaxMass)
+,fNumberXBins(cuts.fNumberXBins)
+,fPDGv0(cuts.fPDGv0)
+,fPDGDaugP(cuts.fPDGDaugP)
+,fPDGDaugN(cuts.fPDGDaugN)
+{
+}
+
+AliFemtoDreamv0Cuts& AliFemtoDreamv0Cuts::operator=(
+    const AliFemtoDreamv0Cuts& cuts)
+{
+if (this!=&cuts) {
+  this->fHistList=cuts.fHistList;
+  this->fMCHistList=cuts.fMCHistList;
+  this->fMCHist=cuts.fMCHist;
+  this->fHist=cuts.fHist;
+  this->fPosCuts=cuts.fPosCuts;
+  this->fNegCuts=cuts.fNegCuts;
+  this->fMinimalBooking=cuts.fMinimalBooking;
+  this->fMCData=cuts.fMCData;
+  this->fCPAPlots=cuts.fCPAPlots;
+  this->fContribSplitting=cuts.fContribSplitting;
+  this->fRunNumberQA=cuts.fRunNumberQA;
+  this->fMinRunNumber=cuts.fMinRunNumber;
+  this->fMaxRunNumber=cuts.fMaxRunNumber;
+  this->fCutOnFlyStatus=cuts.fCutOnFlyStatus;
+  this->fOnFlyStatus=cuts.fOnFlyStatus;
+  this->fCutCharge=cuts.fCutCharge;
+  this->fCharge=cuts.fCharge;
+  this->fCutPt=cuts.fCutPt;
+  this->fpTmin=cuts.fpTmin;
+  this->fpTmax=cuts.fpTmax;
+  this->fKaonRejection=cuts.fKaonRejection;
+  this->fKaonRejLow=cuts.fKaonRejLow;
+  this->fKaonRejUp=cuts.fKaonRejUp;
+  this->fCutDecayVtxXYZ=cuts.fCutDecayVtxXYZ;
+  this->fMaxDecayVtxXYZ=cuts.fMaxDecayVtxXYZ;
+  this->fCutTransRadius=cuts.fCutTransRadius;
+  this->fMinTransRadius=cuts.fMinTransRadius;
+  this->fMaxTransRadius=cuts.fMaxTransRadius;
+  this->fCutMinDCADaugPrimVtx=cuts.fCutMinDCADaugPrimVtx;
+  this->fMinDCADaugToPrimVtx=cuts.fMinDCADaugToPrimVtx;
+  this->fCutMaxDCADaugToDecayVtx=cuts.fCutMaxDCADaugToDecayVtx;
+  this->fMaxDCADaugToDecayVtx=cuts.fMaxDCADaugToDecayVtx;
+  this->fCutCPA=cuts.fCutCPA;
+  this->fMinCPA=cuts.fMinCPA;
+  this->fCutInvMass=cuts.fCutInvMass;
+  this->fInvMassCutWidth=cuts.fInvMassCutWidth;
+  this->fAxisMinMass=cuts.fAxisMinMass;
+  this->fAxisMaxMass=cuts.fAxisMaxMass;
+  this->fNumberXBins=cuts.fNumberXBins;
+  this->fPDGv0=cuts.fPDGv0;
+  this->fPDGDaugP=cuts.fPDGDaugP;
+  this->fPDGDaugN=cuts.fPDGDaugN;
+}
+return *this;
+}
+
 AliFemtoDreamv0Cuts::~AliFemtoDreamv0Cuts() {
   if (fHist) {
     delete fHist;

@@ -38,6 +38,62 @@ AliFemtoDreamAnalysis::AliFemtoDreamAnalysis()
 
 }
 
+AliFemtoDreamAnalysis::AliFemtoDreamAnalysis(const AliFemtoDreamAnalysis& analysis)
+:fMVPileUp(analysis.fMVPileUp)
+,fEvtCutQA(analysis.fEvtCutQA)
+,fQA(nullptr)
+,fFemtoTrack(nullptr)
+,fFemtov0(nullptr)
+,fFemtoCasc(nullptr)
+,fEvent(nullptr)
+,fEvtCuts(analysis.fEvtCuts)
+,fTrackCuts(analysis.fTrackCuts)
+,fAntiTrackCuts(analysis.fAntiTrackCuts)
+,fv0Cuts(analysis.fv0Cuts)
+,fAntiv0Cuts(analysis.fAntiv0Cuts)
+,fCascCuts(analysis.fCascCuts)
+,fAntiCascCuts(analysis.fAntiCascCuts)
+,fPairCleaner(nullptr)
+,fControlSample(nullptr)
+,fTrackBufferSize(analysis.fTrackBufferSize)
+,fGTI(nullptr)
+,fConfig(analysis.fConfig)
+,fPartColl(nullptr)
+,fIsMC(analysis.fIsMC)
+{
+  Init(fIsMC,AliVEvent::kINT7);
+}
+
+AliFemtoDreamAnalysis& AliFemtoDreamAnalysis::operator=(
+    const AliFemtoDreamAnalysis& analysis)
+{
+  if (this!=&analysis) {
+    this->fMVPileUp=analysis.fMVPileUp;
+    this->fEvtCutQA=analysis.fEvtCutQA;
+    this->fQA=nullptr;
+    this->fFemtoTrack=nullptr;
+    this->fFemtov0=nullptr;
+    this->fFemtoCasc=nullptr;
+    this->fEvent=nullptr;
+    this->fEvtCuts=analysis.fEvtCuts;
+    this->fTrackCuts=analysis.fTrackCuts;
+    this->fAntiTrackCuts=analysis.fAntiTrackCuts;
+    this->fv0Cuts=analysis.fv0Cuts;
+    this->fAntiv0Cuts=analysis.fAntiv0Cuts;
+    this->fCascCuts=analysis.fCascCuts;
+    this->fAntiCascCuts=analysis.fAntiCascCuts;
+    this->fPairCleaner=nullptr;
+    this->fControlSample=nullptr;
+    this->fTrackBufferSize=analysis.fTrackBufferSize;
+    this->fGTI=nullptr;
+    this->fConfig=analysis.fConfig;
+    this->fPartColl=nullptr;
+    this->fIsMC=analysis.fIsMC;
+    this->Init(this->fIsMC,AliVEvent::kINT7);
+  }
+  return *this;
+}
+
 AliFemtoDreamAnalysis::~AliFemtoDreamAnalysis() {
   if (fEvent) {
     delete fEvent;
@@ -62,7 +118,7 @@ AliFemtoDreamAnalysis::~AliFemtoDreamAnalysis() {
   }
 }
 
-void AliFemtoDreamAnalysis::Init(bool isMonteCarlo,UInt_t trigger) {
+void AliFemtoDreamAnalysis::Init(bool isMonteCarlo, UInt_t trigger) {
   fIsMC=isMonteCarlo;
   fFemtoTrack=new AliFemtoDreamTrack();
   fFemtoTrack->SetUseMCInfo(isMonteCarlo);

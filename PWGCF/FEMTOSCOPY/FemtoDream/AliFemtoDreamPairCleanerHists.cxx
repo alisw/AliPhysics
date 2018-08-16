@@ -17,6 +17,16 @@ AliFemtoDreamPairCleanerHists::AliFemtoDreamPairCleanerHists()
 }
 
 AliFemtoDreamPairCleanerHists::AliFemtoDreamPairCleanerHists(
+    const AliFemtoDreamPairCleanerHists& hists)
+:fTrackDecays(hists.fTrackDecays)
+,fDecayDecays(hists.fDecayDecays)
+,fPairInvMass(hists.fPairInvMass)
+,fPairTuple(hists.fPairTuple)
+,fOutput(hists.fOutput)
+{
+}
+
+AliFemtoDreamPairCleanerHists::AliFemtoDreamPairCleanerHists(
     int nTrackDecays,int nDecayDecays,int nInvMassPairs)
 {
   fOutput = new TList();
@@ -49,6 +59,20 @@ AliFemtoDreamPairCleanerHists::AliFemtoDreamPairCleanerHists(
     fPairTuple[i] = new TNtuple(histName.Data(),histName.Data(),"mass:relMom");
     fOutput->Add(fPairTuple[i]);
   }
+}
+
+
+AliFemtoDreamPairCleanerHists& AliFemtoDreamPairCleanerHists::operator=(
+    const AliFemtoDreamPairCleanerHists& hists)
+{
+  if (this!=&hists) {
+    this->fTrackDecays=hists.fTrackDecays;
+    this->fDecayDecays=hists.fDecayDecays;
+    this->fPairInvMass=hists.fPairInvMass;
+    this->fPairTuple=hists.fPairTuple;
+    this->fOutput=hists.fOutput;
+  }
+  return *this;
 }
 
 AliFemtoDreamPairCleanerHists::~AliFemtoDreamPairCleanerHists() {

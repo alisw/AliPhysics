@@ -16,7 +16,9 @@
 class AliFemtoDreamCollConfig : public TNamed {
  public:
   AliFemtoDreamCollConfig();
+  AliFemtoDreamCollConfig(const AliFemtoDreamCollConfig& config);
   AliFemtoDreamCollConfig(const char *name, const char *title);
+  AliFemtoDreamCollConfig &operator=(const AliFemtoDreamCollConfig& config);
   virtual ~AliFemtoDreamCollConfig();
   void SetMultBinning(bool doIt){fMultBinning=doIt;};
   void SetCentBinning(bool doIt){fCentBinning=doIt;};
