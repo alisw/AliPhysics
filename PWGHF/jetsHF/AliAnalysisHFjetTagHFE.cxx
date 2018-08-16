@@ -153,6 +153,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   feJetCorr(0),
   HFjetCorr0(0),
   HFjetCorr1(0),
+  HFjetCorr2(0),
+  HFjetCorr3(0),
   HFjetParticle(0),
   fQAHistJetPhi(0),
   fQAHistTrPhiJet(0),
@@ -289,6 +291,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   feJetCorr(0),
   HFjetCorr0(0),
   HFjetCorr1(0),
+  HFjetCorr2(0),
+  HFjetCorr3(0),
   HFjetParticle(0),
   fQAHistJetPhi(0),
   fQAHistTrPhiJet(0),
@@ -637,6 +641,14 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   HFjetCorr1 = new THnSparseD("HFjetCorr1","HF MC Corr;p_{T}^{reco}; p_{T}^{MC}; jet_{reco}; jet_{MC};  jet_{particle}; R match; pThard;", 7, nBine, mimHFj, maxHFj);
   HFjetCorr1->Sumw2();
   fOutput->Add(HFjetCorr1);
+
+  HFjetCorr2 = new THnSparseD("HFjetCorr2","HF MC Corr (trk eff reduced);p_{T}^{reco}; p_{T}^{MC}; jet_{reco}; jet_{MC};  jet_{particle}; R match; pThard;", 7, nBine, mimHFj, maxHFj);
+  HFjetCorr2->Sumw2();
+  fOutput->Add(HFjetCorr2);
+
+  HFjetCorr3 = new THnSparseD("HFjetCorr3","HF MC Corr (trk eff reduced);p_{T}^{reco}; p_{T}^{MC}; jet_{reco}; jet_{MC};  jet_{particle}; R match; pThard;", 7, nBine, mimHFj, maxHFj);
+  HFjetCorr3->Sumw2();
+  fOutput->Add(HFjetCorr3);
 
   HFjetParticle = new THnSparseD("HFjetParticle","HF particle;p_{T}^{reco}; p_{T}^{MC}; jet_{reco}; jet_{MC};  jet_{particle}; R match; pThard;", 7, nBine, mimHFj, maxHFj);
   HFjetParticle->Sumw2();
@@ -1521,7 +1533,17 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                        HFjetVals[0]=track->Pt(); HFjetVals[1]=0.0; HFjetVals[2] = corrPt; HFjetVals[3] = pTeJet; HFjetVals[4] = pTeJetTrue; HFjetVals[5] = 0.0; HFjetVals[6] = 0.0;
                        HFjetCorr1->Fill(HFjetVals); 
  
+                       Double_t reducedJetPt0 = ReduceJetEnergyScale( jet, epTarray, 0.04) - pTeJetBG ;                       
+                       double HFjetVals2[7];
+                       HFjetVals2[0]=track->Pt(); HFjetVals2[1]=0.0; HFjetVals2[2] = reducedJetPt0; HFjetVals2[3] = pTeJet; HFjetVals2[4] = pTeJetTrue; HFjetVals2[5] = 0.0; HFjetVals2[6] = 0.0;
+                       HFjetCorr2->Fill(HFjetVals2); 
+
+                       Double_t reducedJetPt1 = ReduceJetEnergyScale( jet, epTarray, 0.05) - pTeJetBG ;                       
+                       double HFjetVals3[7];
+                       HFjetVals3[0]=track->Pt(); HFjetVals3[1]=0.0; HFjetVals3[2] = reducedJetPt1; HFjetVals3[3] = pTeJet; HFjetVals3[4] = pTeJetTrue; HFjetVals3[5] = 0.0; HFjetVals3[6] = 0.0;
+                       HFjetCorr3->Fill(HFjetVals3); 
                        
+
                        for (unsigned j = 0; j< jet->GetNumberOfTracks(); j++) 
                            {
                             AliVParticle *HFjetcont;
@@ -1628,6 +1650,37 @@ Bool_t AliAnalysisHFjetTagHFE::tagHFjet(AliEmcalJet* jetC, double *epT, int MCpi
  return HFjetTag;
 }
 
+
+Double_t AliAnalysisHFjetTagHFE::ReduceJetEnergyScale(AliEmcalJet* jetC, double *epT, double effval)
+{
+  Double_t JetpTreduce = 0.0;  
+
+  for (unsigned j = 0; j< jetC->GetNumberOfTracks(); j++) 
+      {
+       AliVParticle *jetcont;
+       jetcont = static_cast<AliVParticle*>(jetC->TrackAt(j, fTracks));
+       if(!jetcont) continue;
+
+       double Rmom[3];
+       Rmom[0] = epT[0]-jetcont->Px();
+       Rmom[1] = epT[1]-jetcont->Py();
+       Rmom[2] = epT[2]-jetcont->Pz();
+       double Rmatch = sqrt(pow(Rmom[0],2)+pow(Rmom[1],2)+pow(Rmom[2],2));
+       Double_t trkeff = generator->Uniform(0.0,1.0);
+
+       if(Rmatch<1e-8)
+         {
+          JetpTreduce =+ jetcont->Pt();
+         }
+       else
+        {
+         if(trkeff>effval)JetpTreduce =+ jetcont->Pt();
+        }
+      }
+
+ return JetpTreduce;
+
+}
 
 void AliAnalysisHFjetTagHFE::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec)
 {
