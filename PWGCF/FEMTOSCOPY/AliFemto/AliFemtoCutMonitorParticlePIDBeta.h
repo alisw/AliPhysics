@@ -7,14 +7,20 @@
 #ifndef AliFemtoCutMonitorParticlePIDBeta_hh
 #define AliFemtoCutMonitorParticlePIDBeta_hh
 
+class AliFemtoEvent;
 class AliFemtoTrack;
+class AliFemtoV0;
+class AliFemtoKink;
+class AliFemtoPair; // Gael 12/04/02
+class TH1D;
 class TH2D;
 class TList;
+
 
 #include "AliFemtoString.h"
 #include "AliFemtoParticleCollection.h"
 #include "AliFemtoCutMonitorParticlePID.h"
-
+#include "AliFemtoCutMonitor.h"
 class AliFemtoCutMonitorParticlePIDBeta : public AliFemtoCutMonitorParticlePID{
 
 public:
@@ -25,6 +31,9 @@ public:
   AliFemtoCutMonitorParticlePIDBeta& operator=(const AliFemtoCutMonitorParticlePIDBeta& aCut);
 
   virtual void Fill(const AliFemtoTrack* aTrack);
+
+
+
   void Write();
   virtual TList *GetOutputList();
 
