@@ -1633,7 +1633,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             if((M20<0.01) || (M20>fMaxM20Cut)) continue;
             fElecEoPnoSig->Fill(track->Pt(),EovP);
             
-            if((nsigma>fMinNSigCut) && (nsigma>3)) fInclElecEoP->Fill(track->Pt(),EovP);
+            if((nsigma>fMinNSigCut) && (nsigma<3)) fInclElecEoP->Fill(track->Pt(),EovP);
             
             //Apply E/p Cut for electrons
             if((EovP<fMinEoPCut) || (EovP>1.2)) continue;
