@@ -58,13 +58,13 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
   /// histos
   void     DefineHistograms();
 
-  /// selection and reconstruction
+ /// selection and reconstruction
   void     B0toDStarPiSignalTracksInMC(TClonesArray * mcTrackArray,AliAODEvent*  aodevent,TMatrix * B0toDStarPiLabelMatrix, TList *listout);
-  Bool_t   D0FirstDaughterSelection(AliAODTrack* aodTrack, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * B0toDStarPiLabelMatrix);
-  Bool_t   D0SecondDaughterSelection(AliAODTrack* aodTrack, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * B0toDStarPiLabelMatrix);
-  void     DStarPionSelection(AliAODEvent* aodEvent, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * B0toDStarPiLabelMatrix);
-  void     B0PionSelection(AliAODEvent* aodEvent, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * B0toDStarPiLabelMatrix);  
-  void     D0Selection(AliAODEvent* aodEvent, AliAODVertex *primaryVertex, Double_t bz,TClonesArray * mcTrackArray,TMatrix *  B0toDStarPiLabelMatrix, TClonesArray * D0TracksFromFriendFile);
+  Bool_t   D0FirstDaughterSelection(AliAODTrack* aodTrack, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * B0toDStarPiLabelMatrix, AliAODMCHeader * header);
+  Bool_t   D0SecondDaughterSelection(AliAODTrack* aodTrack, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * B0toDStarPiLabelMatrix, AliAODMCHeader * header);
+  void     DStarPionSelection(AliAODEvent* aodEvent, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * B0toDStarPiLabelMatrix, AliAODMCHeader * header);
+  void     B0PionSelection(AliAODEvent* aodEvent, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * B0toDStarPiLabelMatrix, AliAODMCHeader * header);  
+  void     D0Selection(AliAODEvent* aodEvent, AliAODVertex *primaryVertex, Double_t bz,TClonesArray * mcTrackArray,TMatrix *  B0toDStarPiLabelMatrix, TClonesArray * D0TracksFromFriendFile, AliAODMCHeader * header);
   void     DStarAndB0Selection(AliAODEvent* aodEvent, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * B0toDStarPiLabelMatrix, TClonesArray * D0TracksFromFriendFile, AliAODMCHeader * header);
   Int_t    IsTrackInjected(AliAODTrack *part,AliAODMCHeader *header,TClonesArray *arrayMC);
   Bool_t   IsCandidateInjected(AliAODRecoDecayHF2Prong *part, AliAODMCHeader *header,TClonesArray *arrayMC);
@@ -83,7 +83,7 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
   Double_t DeltaInvMassDStarKpipi(AliAODRecoDecayHF2Prong * DStar) const;
   Double_t DeltaInvMassB0Kpipipi(AliAODRecoDecayHF2Prong * B0) const;
 
-  void     SetQuickSignalAnalysis(Bool_t value){fQuickSignalAnalysis = value;}
+  void     SetQuickSignalAnalysis(Int_t value){fQuickSignalAnalysis = value;}
   void     SetGetCutInfo(Bool_t value){fGetCutInfo = value;}
 
   void     SetShowMask(Bool_t bShowMask) {fShowMask = bShowMask;}
@@ -101,6 +101,15 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
   void     SetHistMassWindow(Double_t value) {fHistMassWindow = value;}
   Double_t GetHistMassWindow() const {return fHistMassWindow;}
 
+  void     SetDegreePerRotation(Int_t value) {fDegreePerRotation = value;}
+  Int_t    GetDegreePerRotation() const {return fDegreePerRotation;}
+
+  void     SetNumberOfRotations(Int_t value) {fNumberOfRotations = value;}
+  Int_t    GetNumberOfRotations() const {return fNumberOfRotations;}
+
+  void     SetCheckBackground(Bool_t value) {fCheckBackground = value;}
+  Bool_t   GetCheckBackground() const {return fCheckBackground;}
+
  private:
   
   AliAnalysisTaskSEB0toDStarPi(const AliAnalysisTaskSEB0toDStarPi &source);
@@ -110,11 +119,14 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
   Bool_t fUseMCInfo;                         //  Use MC info
   Bool_t fShowMask;                          //
   Bool_t fShowRejection;                     //
-  Bool_t fQuickSignalAnalysis;               //
+  Int_t  fQuickSignalAnalysis;               //
   Bool_t fGetCutInfo;                        //
   Bool_t fUse3DHistograms;                   //
   Int_t  fUpgradeSetting;                    //
   Double_t fHistMassWindow;                  //  
+  Int_t  fDegreePerRotation;                 //
+  Int_t  fNumberOfRotations;                 //
+  Bool_t fCheckBackground;                   //
 
   TList *fOutput;                            //!<!  User output
   TList *fListCuts;                          //!<!  User output
@@ -161,7 +173,7 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
   TH3F* fMotherHistogramArray3D[6][99][60];  //!
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEB0toDStarPi,4);  // class for B0 spectra
+  ClassDef(AliAnalysisTaskSEB0toDStarPi,5);  // class for B0 spectra
   /// \endcond
 };
 
