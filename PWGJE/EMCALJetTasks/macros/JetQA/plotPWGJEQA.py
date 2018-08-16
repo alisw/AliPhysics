@@ -682,8 +682,6 @@ def plotCaloQA(ispp, isRun2, includePhos, clusterQAList, cellQAList, nEvents, ou
 
   # Project to (Eta, Phi)
   if ispp:
-    #clusterTHnSparse.GetAxis(3).SetRange(1,1) #ELIANE
-    clusterTHnSparse.GetAxis(0).SetRangeUser(20,50) # 10 GeV ELIANE
     hClusPhiEta = clusterTHnSparse.Projection(2,1)
   else:
     hClusPhiEta = clusterTHnSparse.Projection(3,2)
@@ -1319,8 +1317,11 @@ def plotFullJetQA(ispp, isPtHard, isRun2, includePhos, fullJetList, outputDir, f
     hFullJetPtLeadjetPt.GetXaxis().SetRangeUser(0,200)
     hFullJetPtLeadjetPt.GetYaxis().SetRangeUser(0,100)
   if isPtHard:
-    yMin= hFullJetPt.GetBinContent(hFullJetPt.FindBin(200)) #find entry in bin at 200 GeV to get the right y-Axis scale
-    plotHist(hFullJetPtLeadjetPt, outputFilename, "colz", "", True, yMin)
+    yMin  = hFullJetPt.GetBinContent(hFullJetPt.FindBin(200)) #find entry in bin at 200 GeV to get the right y-Axis scale
+    maxBin= hFullJetPt.GetBinContent(hFullJetPt.GetMaximumBin())
+    hFullJetPt.SetMinimum(yMin);
+    hFullJetPt.SetMaximum(maxBin*1.1);
+    plotHist(hFullJetPtLeadjetPt, outputFilename, "colz", "", True)
   else:
     plotHist(hFullJetPtLeadjetPt, outputFilename, "colz", "", True)
 
@@ -1688,7 +1689,7 @@ def plotPtHard(f, qaList, nEvents, qaListRef, nEventsRef, outputDir, fileFormat)
 ########################################################################################################
 # Plot basic histogram    ##############################################################################
 ########################################################################################################
-def plotHist(h, outputFilename, drawOptions = "", setLogy = False, setLogz = False, yMin=-1):
+def plotHist(h, outputFilename, drawOptions = "", setLogy = False, setLogz = False):
  
   c = ROOT.TCanvas("c","c: hist",600,450)
   c.cd()
@@ -1696,14 +1697,7 @@ def plotHist(h, outputFilename, drawOptions = "", setLogy = False, setLogz = Fal
     c.SetLogy()
   if setLogz:
     c.SetLogz()
-  maxBin=h.GetBinContent(h.GetMaximumBin())
-  if yMin!=-1:
-    if setLogy:
-      h.GetYaxis.SetRangeUser(yMin,maxBin*1.1)
-    if setLogz:
-      #h.GetZaxis.SetRangeUser(yMin,maxBin*1.1)
-      h.SetMinimum(yMin);
-      h.SetMaximum(maxBin*1.1);
+
   h.Draw(drawOptions)
   c.SaveAs(outputFilename)
   c.Close()

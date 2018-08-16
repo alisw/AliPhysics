@@ -43,10 +43,15 @@ def scalePtHardHistos(referenceFile):
     if referenceFile:
       if "PWGJEQA" in name or "Jet" in name or "Emcal" in name: # For the case of using reference scale factors, we want essentially all user tasks
         qaListNames.append(name)
+      else:
+        print("Nothing added to qaListNames from reference file")
+        print(name)
     else:
       if "PWGJEQA" in name: # For the case of computing the scale factors, we want only the PWGJEQA task
         qaListNames.append(name)
-
+      else:
+        print("Nothing added to qaListNames")
+        print(name)
     # Get a list that has the event histograms
     if "PWGJEQA" in name or "JetPerformance" in name:
         eventList = name
@@ -115,15 +120,7 @@ def scalePtHardHistos(referenceFile):
         RadiusName=""
         for obj in qaList:
           name = obj.GetName()
-          if "AKTFullR020" in name:
-           RadiusName="AKTFullR020"
-          if "AKTFullR030" in name:
-           RadiusName="AKTFullR030"
-          if "AKTFullR040" in name:
-           RadiusName="AKTFullR040"
-          if "AKTFullR050" in name:
-           RadiusName="AKTFullR050"
-          ScaleAllHistograms(obj, scaleFactor * eventScaleFactorAcc, f, bRemoveOutliers,outlierLimit, outlierNBinsThreshold, bin, RadiusName)
+          ScaleAllHistograms(obj, scaleFactor * eventScaleFactorAcc, f, bRemoveOutliers,outlierLimit, outlierNBinsThreshold, bin, name)
         
         # Write the histograms to file
         qaList.Write("%sScaled" % qaListName, ROOT.TObject.kSingleKey)
@@ -195,15 +192,7 @@ def scalePtHardHistos(referenceFile):
       RadiusName=""
       for obj in qaList:
         name = obj.GetName()
-        if "AKTFullR020" in name:
-          RadiusName="AKTFullR020"
-        if "AKTFullR030" in name:
-          RadiusName="AKTFullR030"
-        if "AKTFullR040" in name:
-          RadiusName="AKTFullR040"
-        if "AKTFullR050" in name:
-          RadiusName="AKTFullR050"
-        ScaleAllHistograms(obj, scaleFactor * eventScaleFactorAcc, f, bRemoveOutliers, outlierLimit, outlierNBinsThreshold,bin, RadiusName)
+        ScaleAllHistograms(obj, scaleFactor * eventScaleFactorAcc, f, bRemoveOutliers, outlierLimit, outlierNBinsThreshold,bin, name)
 
       # Write the histograms to file
       hXSecPerEvent.Write()
@@ -394,8 +383,8 @@ def removeOutliers(pTHardBin, hist, limit=2, nBinsThreshold=4, dimension =3, nam
   (postMean, postMedian) = GetHistMeanAndMedian(histToCheckAfter)
   print("Pre  outliers removal mean: {}, median: {}".format(preMean, preMedian))
   print("Post outliers removal mean: {}, median: {}".format(postMean, postMedian))
-  plotHist(histToCheck,histToCheckAfter, pTHardBin, "./POST_{0}_{1}.pdf".format(hist.GetName(),name), "hist E", True)
-  # plotHist(histToCheck, "./PRE_{}.pdf".format(histToCheck.GetName()), "hist E", True)
+  plotOutlierPDF(histToCheck,histToCheckAfter, pTHardBin, "./POST_{0}_{1}.pdf".format(hist.GetName(),name), "hist E", True)
+  # plotOutlierPDF(histToCheck, "./PRE_{}.pdf".format(histToCheck.GetName()), "hist E", True)
   print("................................................................")
 
 
@@ -440,7 +429,7 @@ def MovingAverage(hist, index, numberOfCountsBelowIndex = 0, numberOfCountsAbove
 ########################################################################################################
 # Plot basic histogram    ##############################################################################
 ########################################################################################################
-def plotHist(h,hAfter, pTHardBin, outputFilename, drawOptions = "", setLogy = False):
+def plotOutlierPDF(h,hAfter, pTHardBin, outputFilename, drawOptions = "", setLogy = False):
   
   c = ROOT.TCanvas("c","c: hist",600,450)
   c.cd()
