@@ -56,7 +56,7 @@ AliFemtoCutMonitorParticlePIDBeta& AliFemtoCutMonitorParticlePIDBeta::operator=(
     return *this;
 
   AliFemtoCutMonitorParticlePID::operator=(aCut);
-
+ 
   *fBeta = *aCut.fBeta;
   *fMass = *aCut.fMass;
   return *this;
@@ -66,19 +66,14 @@ AliFemtoCutMonitorParticlePIDBeta& AliFemtoCutMonitorParticlePIDBeta::operator=(
 void AliFemtoCutMonitorParticlePIDBeta::Fill(const AliFemtoTrack* aTrack)
 {
   // Fill in the monitor histograms with the values from the current track
-  float tMom = (fIfUsePt) ? aTrack->Pt() : aTrack->P().Mag();
+  float tMom = ( AliFemtoCutMonitorParticlePID::fIfUsePt) ? aTrack->Pt() : aTrack->P().Mag();
   float c=1;
   AliFemtoCutMonitorParticlePID::Fill(aTrack);
   double beta =aTrack->VTOF();
-  if (fTOFParticle == 0) fBeta->Fill(tMom, beta);
-  if (fTOFParticle == 1) fBeta->Fill(tMom, beta);
-  if (fTOFParticle == 2) fBeta->Fill(tMom, beta);
-  if (fTOFParticle == 3) fBeta->Fill(tMom, beta);  
+  fBeta->Fill(tMom, beta);
+  if(beta!=0)
+    fMass->Fill(tMom, tMom*tMom/c/c*(1/(beta*beta)-1));
 
-  if (fTOFParticle == 0) fMass->Fill(tMom, tMom*tMom/c/c*(1/(beta*beta)-1));
-  if (fTOFParticle == 1) fMass->Fill(tMom, tMom*tMom/c/c*(1/(beta*beta)-1));
-  if (fTOFParticle == 2) fMass->Fill(tMom, tMom*tMom/c/c*(1/(beta*beta)-1));
-  if (fTOFParticle == 3) fMass->Fill(tMom, tMom*tMom/c/c*(1/(beta*beta)-1));   
 }
 
 void AliFemtoCutMonitorParticlePIDBeta::Write()
@@ -94,7 +89,6 @@ TList *AliFemtoCutMonitorParticlePIDBeta::GetOutputList()
   TList *tOutputList = AliFemtoCutMonitorParticlePID::GetOutputList();
   tOutputList->Add(fBeta);
   tOutputList->Add(fMass);
-  tOutputList->Add(fParticleOrigin);
 
   return tOutputList;
 }

@@ -1897,6 +1897,7 @@ AliAODMCParticle *AliFemtoEventReaderAOD::GetParticleWithLabel(TClonesArray *mcP
 
 void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemtoTrack *tFemtoTrack)
 {
+
   // A cache which maps vertices to the number of tracks used to determine the vertex
   // Added due to slow calculation in AliAODVertex::GetNContributors - if that changes, remove this.
   static std::map<Short_t, Int_t> _vertex_NContributors_cache;
@@ -2062,6 +2063,9 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
   float nsigmaTOFA = -1000.;
   //
   /*******************************/
+  Double_t trackLength=tAodTrack->GetIntegratedLength();
+  Double_t trackTime=tAodTrack->GetTOFsignal()-fAODpidUtil->GetTOFResponse().GetStartTime(tAodTrack->P());
+  
   if (((status & AliVTrack::kTOFout) == AliVTrack::kTOFout)
       && ((status & AliVTrack::kTIME) == AliVTrack::kTIME)
       && probMis < 0.01) {
@@ -2078,16 +2082,13 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
     nsigmaTOFA = fAODpidUtil->NumberOfSigmasTOF(tAodTrack, AliPID::kAlpha);
     /*********************************************************************/
 
-    
-    Double_t trackLength=tAodTrack->GetIntegratedLength();
-    Double_t trackTime=tAodTrack->GetTOFsignal()-fAODpidUtil->GetTOFResponse().GetStartTime(tAodTrack->P());
     //  double trackTime=tAodTrack->GetTOFsignal();
 
-    Double_t vp=trackLength/trackTime;
-    if (trackTime > 0.) vp = trackLength / trackTime /0.03;
-      tFemtoTrack->SetVTOF(vp);
   }
-
+    if (trackTime > 0.){
+      vp = trackLength / trackTime /0.03;
+      tFemtoTrack->SetVTOF(vp);
+    }
   
   tFemtoTrack->SetNSigmaTOFPi(nsigmaTOFPi);
   tFemtoTrack->SetNSigmaTOFK(nsigmaTOFK);
