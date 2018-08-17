@@ -959,8 +959,12 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
 
   } else if (trainConfig == 409){
     cuts.AddCut("00010113", "0d200009247000008250404000", "0152103500000000"); //
+    cuts.AddCut("00010113", "0d200009287000008250404000", "0152103500000000"); //
+    cuts.AddCut("00010113", "0d200009297000008250404000", "0152103500000000"); //
   } else if (trainConfig == 410){
     cuts.AddCut("00010113", "0d200009247000008250404000", "0152103500000000"); // to be used for MBW
+    cuts.AddCut("00010113", "0d200009287000008250404000", "0152103500000000"); // to be used for MBW
+    cuts.AddCut("00010113", "0d200009297000008250404000", "0152103500000000"); // to be used for MBW
 
   } else if (trainConfig == 440){ // as 400 to be used MBW
     cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
