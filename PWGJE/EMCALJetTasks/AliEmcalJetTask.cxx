@@ -82,6 +82,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fIsInit(0),
   fIsPSelSet(0),
   fIsEmcPart(0),
+  fEnableAliBasicParticleCompatibility(kFALSE),
   fLegacyMode(kFALSE),
   fFillGhost(kFALSE),
   fJets(0),
@@ -121,6 +122,7 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fIsInit(0),
   fIsPSelSet(0),
   fIsEmcPart(0),
+  fEnableAliBasicParticleCompatibility(kFALSE),
   fLegacyMode(kFALSE),
   fFillGhost(kFALSE),
   fJets(0),
@@ -539,9 +541,10 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
       Double_t cEta = t->Eta();
       Double_t cPhi = t->Phi();
       Double_t cPt  = t->Pt();
-      Double_t cP   = t->P();
       if (t->Charge() == 0) {
-        neutralE += cP;
+        if (!fEnableAliBasicParticleCompatibility) {
+          neutralE += t->P();
+        }
         ++nneutral;
         if (cPt > maxNe) maxNe = cPt;
       } else {
@@ -550,7 +553,9 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
       }
 
       // check if MC particle
-      if (TMath::Abs(t->GetLabel()) > fMinMCLabel) mcpt += cPt;
+      if (!fEnableAliBasicParticleCompatibility) {
+        if (TMath::Abs(t->GetLabel()) > fMinMCLabel) mcpt += cPt;
+      }
 
       if (fGeom) {
         if (cPhi < 0) cPhi += TMath::TwoPi();
