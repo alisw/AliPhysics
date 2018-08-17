@@ -22,6 +22,8 @@
 
 Bool_t writeDetailed  = kFALSE;       // switch on detailed information storing
 Int_t debugInfo       = 1;            // enable different levels of debuggin information
+Bool_t useWeight      = kTRUE;
+Int_t nBinsT          = 1000;
 
 void anaTree(
               const char *ifile     ="treefile.root",
@@ -56,6 +58,15 @@ void anaTree(
   TTree *tt = (TTree*)in->Get("tcal");
   tt->SetBranchAddress("event",&info);
   tt->Branch("event", &info, 32000, 99);
+  Int_t Nev=tt->GetEntries();
+
+  Int_t minRunNo = 1e6;
+  Int_t maxRunNo = -1;
+  for (Int_t i=0;i<Nev;++i) {
+    tt->GetEvent(i);
+    if (info->fRunNo < minRunNo) minRunNo = info->fRunNo;
+    if (info->fRunNo > maxRunNo) maxRunNo = info->fRunNo;
+  }
 
   TProfile *gLedVsT[20];
   TProfile *gLedMonVsT[20];
@@ -66,24 +77,34 @@ void anaTree(
   hRefRunCellIdVsRat->SetName("ReferenceRunRatios");
   TH1D* hRefSMVsT = new TH1D("", "T Ref run; SM", 20, -0.5, 20-0.5);
   hRefSMVsT->SetName("ReferenceRunTemperatures");
+  TH1F* hAverageT[20];
+  TH1F* hAverageTSorted[20];
 
-
+  const char* opt = ""; //"S" for spread
   for (Int_t i=0;i<20;++i) {
-    gLedVsT[i] = new TProfile("","Led info;T;",1250,15,40);
-    gLedVsT[i]->Sumw2();
+    gLedVsT[i] = new TProfile("","Led info;T;",nBinsT,15,40,opt);
     gLedVsT[i]->SetName(Form("ledsm%d",i));
-    gLedMonVsT[i] = new TProfile("","Led info;T;",1250,15,40);
-    gLedMonVsT[i]->Sumw2();
+    gLedMonVsT[i] = new TProfile("","Led info;T;",nBinsT,15,40,opt);
     gLedMonVsT[i]->SetName(Form("ledmonsm%d",i));
-    gRatVsT[i] = new TProfile("","Led/LedMon;T",1250,15,40);
-    gRatVsT[i]->Sumw2();
+    gRatVsT[i] = new TProfile("","Led/LedMon;T",nBinsT,15,40,opt);
     gRatVsT[i]->SetName(Form("ledovermonsm%d",i));
     hLedVsLength[i]     = new TH2F ("","Led info; t [h];",500,0,20, 20000, 0, 20000);
-    hLedVsLength[i]->Sumw2();
     hLedVsLength[i]->SetName(Form("ledVsLength%d",i));
     hLedMonVsLength[i]  = new TH2F ("","Led Mon info; t [h];",500,0,20, 20000, 0, 40000);
-    hLedMonVsLength[i]->Sumw2();
     hLedMonVsLength[i]->SetName(Form("ledMonVsLength%d",i));
+    hAverageT[i]     = new TH1F ("",Form("T SM %d ; run ID; T",i),Nev,0.5,Nev+0.5);
+    hAverageT[i]->SetName(Form("TAverageSM%dvsRunId",i));
+    hAverageTSorted[i]     = new TH1F ("",Form("T SM %d ; run number; T",i),maxRunNo-minRunNo+1,minRunNo-0.5,maxRunNo+0.5);
+    hAverageTSorted[i]->SetName(Form("TAverageSM%dvsRunNumber",i));
+  }
+
+  TH1F* hSensorsT[160];
+  TH1F* hSensorsTSorted[160];
+  for (Int_t sens = 0; sens< 160; sens++){
+    hSensorsT[sens]     = new TH1F ("",Form("T sensor %d ; run ID; T",sens),Nev,0.5,Nev+0.5);
+    hSensorsT[sens]->SetName(Form("Tsensor%dvsRunId",sens));
+    hSensorsTSorted[sens]     = new TH1F ("",Form("T sensor %d ; run number; T",sens),maxRunNo-minRunNo+1,minRunNo-0.5,maxRunNo+0.5);
+    hSensorsTSorted[sens]->SetName(Form("Tsensor%dvsRunNumber",sens));
   }
 
   TProfile *gLedCellVsT[kNcells+1];
@@ -91,33 +112,31 @@ void anaTree(
   TProfile *gLedMonCellVsT[kNcells+1];
   TProfile *gLedMonCellRMSDiffMeanVsT[kNcells+1];
   TProfile *gRatCellVsT[kNcells+1];
+  TProfile *gRatECellVsT[kNcells+1];
 
   cout << "Initializing cell histos" << endl;
   for (Int_t j=0;j<kNcells+1;++j) {
     if (j%500 == 0) cout << "-->next 500: " << j << endl;
     if (writeDetailed){
-      gLedCellVsT[j] = new TProfile("",Form("Led info cell ID%i ;T;",j),1250,15,40);
-      gLedCellVsT[j]->Sumw2();
+      gLedCellVsT[j] = new TProfile("",Form("Led info cell ID%i ;T;",j),nBinsT,15,40,opt);
       gLedCellVsT[j]->SetName(Form("ledCell%d",j));
-      gLedMonCellVsT[j] = new TProfile("",Form("LedMon info cell ID%i ;T;",j),1250,15,40);
-      gLedMonCellVsT[j]->Sumw2();
+      gLedMonCellVsT[j] = new TProfile("",Form("LedMon info cell ID%i ;T;",j),nBinsT,15,40,opt);
       gLedMonCellVsT[j]->SetName(Form("ledMonCell%d",j));
+      gLedCellRMSDiffMeanVsT[j] = new TProfile("",Form("Led rms/mean info cell ID%i ;T;",j),nBinsT,15,40,opt);
+      gLedCellRMSDiffMeanVsT[j]->SetName(Form("ledCellRMSDiffMean%d",j));
+      gLedMonCellRMSDiffMeanVsT[j] = new TProfile("",Form("LedMon rms/mean info cell ID%i ;T;",j),nBinsT,15,40,opt);
+      gLedMonCellRMSDiffMeanVsT[j]->SetName(Form("ledMonRMSDiffMeanCell%d",j));
     }
-    gLedCellRMSDiffMeanVsT[j] = new TProfile("",Form("Led rms/mean info cell ID%i ;T;",j),1250,15,40);
-    gLedCellRMSDiffMeanVsT[j]->Sumw2();
-    gLedCellRMSDiffMeanVsT[j]->SetName(Form("ledCellRMSDiffMean%d",j));
-    gLedMonCellRMSDiffMeanVsT[j] = new TProfile("",Form("LedMon rms/mean info cell ID%i ;T;",j),1250,15,40);
-    gLedMonCellRMSDiffMeanVsT[j]->Sumw2();
-    gLedMonCellRMSDiffMeanVsT[j]->SetName(Form("ledMonRMSDiffMeanCell%d",j));
-    gRatCellVsT[j] = new TProfile("",Form("Led/LedMon cell ID%i ;T;",j),1250,15,40);
-    gRatCellVsT[j]->Sumw2();
+    gRatCellVsT[j] = new TProfile("",Form("Led/LedMon cell ID%i ;T;",j),nBinsT,15,40,opt);
     gRatCellVsT[j]->SetName(Form("ledovermonCell%d",j));
+    gRatECellVsT[j] = new TProfile("",Form("Led/LedMon Error cell ID%i ;T;",j),nBinsT,15,40,opt);
+    gRatECellVsT[j]->SetName(Form("ledovermonECell%d",j));
   }
   cout << "-> done initializing histos" << endl;
 
   Bool_t isRefRun   = kFALSE;
   Bool_t hadRefRun  = kFALSE;
-  Int_t Nev=tt->GetEntries();
+
   for (Int_t i=0;i<Nev;++i) {
     tt->GetEvent(i);
     Float_t deltaTime = ((Float_t)info->fLastTime-(Float_t)info->fFirstTime)/60.; // run duration in minutes
@@ -136,6 +155,30 @@ void anaTree(
         continue;
       }
     }
+
+    TClonesArray &sms = info->fSMs;
+    for (Int_t sm=0;sm<sms.GetEntries();++sm) {
+      TCalSM *smInfot = static_cast<TCalSM*>(sms.At(sm));
+      hAverageT[sm]->SetBinContent(i+1,smInfot->fAvgT);
+      hAverageTSorted[sm]->SetBinContent(hAverageTSorted[sm]->FindBin(info->fRunNo),smInfot->fAvgT);
+      hSensorsT[sm*8]->SetBinContent(i+1,smInfot->fT1);
+      hSensorsT[sm*8+1]->SetBinContent(i+1,smInfot->fT2);
+      hSensorsT[sm*8+2]->SetBinContent(i+1,smInfot->fT3);
+      hSensorsT[sm*8+3]->SetBinContent(i+1,smInfot->fT4);
+      hSensorsT[sm*8+4]->SetBinContent(i+1,smInfot->fT5);
+      hSensorsT[sm*8+5]->SetBinContent(i+1,smInfot->fT6);
+      hSensorsT[sm*8+6]->SetBinContent(i+1,smInfot->fT7);
+      hSensorsT[sm*8+7]->SetBinContent(i+1,smInfot->fT8);
+      hSensorsTSorted[sm*8]->SetBinContent(hSensorsTSorted[sm*8]->FindBin(info->fRunNo),smInfot->fT1);
+      hSensorsTSorted[sm*8+1]->SetBinContent(hSensorsTSorted[sm*8]->FindBin(info->fRunNo),smInfot->fT2);
+      hSensorsTSorted[sm*8+2]->SetBinContent(hSensorsTSorted[sm*8]->FindBin(info->fRunNo),smInfot->fT3);
+      hSensorsTSorted[sm*8+3]->SetBinContent(hSensorsTSorted[sm*8]->FindBin(info->fRunNo),smInfot->fT4);
+      hSensorsTSorted[sm*8+4]->SetBinContent(hSensorsTSorted[sm*8]->FindBin(info->fRunNo),smInfot->fT5);
+      hSensorsTSorted[sm*8+5]->SetBinContent(hSensorsTSorted[sm*8]->FindBin(info->fRunNo),smInfot->fT6);
+      hSensorsTSorted[sm*8+6]->SetBinContent(hSensorsTSorted[sm*8]->FindBin(info->fRunNo),smInfot->fT7);
+      hSensorsTSorted[sm*8+7]->SetBinContent(hSensorsTSorted[sm*8]->FindBin(info->fRunNo),smInfot->fT8);
+    }
+
 
     TClonesArray &cells = info->fCells;
     for (Int_t j=0;j<cells.GetEntries();++j) {
@@ -158,28 +201,40 @@ void anaTree(
       Double_t T = smT; // use local or SM T, change here
       if ((T<5)||(T>45))
         continue;
+
+      if (isRefRun){
+        if (hRefSMVsT->GetBinContent(sm+1) < 5) hRefSMVsT->SetBinContent(sm+1,smT);
+      }
+
       if ((ledM<=0)||(ledR<=0))
         continue;
       if ((monM<=0)||(monR<=0))
         continue;
-      Double_t w        = ledR;
+      Double_t w        = 1./(ledR*ledR);
+      if (!useWeight) w = 1;
       gLedVsT[sm]->Fill(T,ledM,w);
-      if (writeDetailed) gLedCellVsT[cellID]->Fill(smT,ledM,w);
-      gLedCellRMSDiffMeanVsT[cellID]->Fill(smT,ledR/ledM,1);
-      Double_t w3       = monR;
+      if (writeDetailed){
+        gLedCellVsT[cellID]->Fill(smT,ledM,w);
+        gLedCellRMSDiffMeanVsT[cellID]->Fill(smT,ledR/ledM,1);
+      }
+      Double_t w3       = 1./(monR*monR);
+      if (!useWeight) w3 = 1;
       gLedMonVsT[sm]->Fill(T,monM,w3);
-      if (writeDetailed) gLedMonCellVsT[cellID]->Fill(smT,monM,w3);
-      gLedMonCellRMSDiffMeanVsT[cellID]->Fill(smT,monR/monM,1);
-      Double_t w2=TMath::Sqrt(ledR*ledR+monR*monR);
+      if (writeDetailed){
+        gLedMonCellVsT[cellID]->Fill(smT,monM,w3);
+        gLedMonCellRMSDiffMeanVsT[cellID]->Fill(smT,monR/monM,1);
+      }
       Double_t ratErr = ledM/monM * TMath::Sqrt((ledR*ledR)/(ledM*ledM)+(monR*monR)/(monM*monM));
-      gRatVsT[sm]->Fill(T,ledM/monM,ratErr);
+      Double_t w2=1./(ratErr*ratErr);
+      if (!useWeight) w2 = 1;
+      gRatVsT[sm]->Fill(T,ledM/monM,w2);
       gRatCellVsT[cellID]->Fill(smT,ledM/monM,w2);
+      gRatECellVsT[cellID]->Fill(smT,ratErr,w2);
       hLedVsLength[sm]->Fill(deltaTime/60,ledM,w);
       hLedMonVsLength[sm]->Fill(deltaTime/60,monM,w);
       if (isRefRun){
         hRefRunCellIdVsRat->SetBinContent(cellID+1,ledM/monM);
         hRefRunCellIdVsRat->SetBinError(cellID+1,ratErr);
-        if (hRefSMVsT->GetBinContent(sm+1) < 5) hRefSMVsT->SetBinContent(sm+1,smT);
       }
     }
   }
@@ -193,11 +248,18 @@ void anaTree(
     gRatVsT[i]->Write();
     hLedVsLength[i]->Write();
     hLedMonVsLength[i]->Write();
+    hAverageT[i]->Write();
+    hAverageTSorted[i]->Write();
   }
   if (hadRefRun){
     hRefRunCellIdVsRat->Write();
     hRefSMVsT->Write();
   }
+  for (Int_t sens = 0; sens < 160; sens++){
+    hSensorsT[sens]->Write();
+    hSensorsTSorted[sens]->Write();
+  }
+
   Int_t smcurr          = -1;
   Int_t cellIDFirstInSM = 0;
   for (Int_t j=0;j<kNcells+1;++j) {
@@ -216,14 +278,14 @@ void anaTree(
         gLedCellVsT[j]->Write();
       if (gLedMonCellVsT[j]->GetEntries() > 0)
         gLedMonCellVsT[j]->Write();
+      if (gLedCellRMSDiffMeanVsT[j]->GetEntries() > 0)
+        gLedCellRMSDiffMeanVsT[j]->Write();
+      if (gLedMonCellRMSDiffMeanVsT[j]->GetEntries() > 0)
+        gLedMonCellRMSDiffMeanVsT[j]->Write();
     }
-    if (gLedCellRMSDiffMeanVsT[j]->GetEntries() > 0)
-      gLedCellRMSDiffMeanVsT[j]->Write();
-    if (gLedMonCellRMSDiffMeanVsT[j]->GetEntries() > 0)
-      gLedMonCellRMSDiffMeanVsT[j]->Write();
     if (gRatCellVsT[j]->GetEntries() > 0)
       gRatCellVsT[j]->Write();
-
-
+    if (gRatECellVsT[j]->GetEntries() > 0)
+      gRatECellVsT[j]->Write();
   }
 }

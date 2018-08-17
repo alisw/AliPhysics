@@ -3,7 +3,6 @@
 #include <AliOADBContainer.h>
 #include <TCanvas.h>
 #include <TClonesArray.h>
-#include <TClonesArray.h>
 #include <TDatime.h>
 #include <TFile.h>
 #include <TGrid.h>
@@ -21,7 +20,7 @@
 
 class TCalCell : public TObject {
  public:
-  TCalCell() : fLedM(0), fLedR(0), fMonM(0), fMonR(0), fLocT(0), fSMT(0) {;}
+  TCalCell() : fId(0), fSM(0), fLedM(0), fLedR(0), fMonM(0), fMonR(0), fLocT(0), fSMT(0) {;}
   virtual ~TCalCell() {;}
   Short_t  fId;   //         cell id
   Short_t  fSM;   //         super module index
@@ -37,9 +36,29 @@ class TCalCell : public TObject {
   ClassDef(TCalCell, 2); // CalCell class
 };
 
+class TCalSM : public TObject {
+public:
+  TCalSM() : fSM(0), fAvgT(0), fT1(0), fT2(0), fT3(0), fT4(0), fT5(0), fT6(0), fT7(0), fFracLed(0), fFracMon(0) {;}
+  virtual ~TCalSM() {;}
+  Short_t  fSM;   //         super module index
+  Double32_t fAvgT; //[0,0,16] sm T
+  Double32_t fT1; //[0,0,16] sensor T 1
+  Double32_t fT2; //[0,0,16] sensor T 2
+  Double32_t fT3; //[0,0,16] sensor T 3
+  Double32_t fT4; //[0,0,16] sensor T 4
+  Double32_t fT5; //[0,0,16] sensor T 5
+  Double32_t fT6; //[0,0,16] sensor T 6
+  Double32_t fT7; //[0,0,16] sensor T 7
+  Double32_t fT8; //[0,0,16] sensor T 8
+  Double32_t fFracLed;   // fraction led info for each SM
+  Double32_t fFracMon;   // fraction mon info for each SM
+  ClassDef(TCalSM, 1); // CalSM class
+};
+
+
 class TCalInfo : public TObject {
  public:
-  TCalInfo() : fRunNo(0), fAvTime(0), fFirstTime(0), fLastTime(0), fMinT(0), fMaxT(0), fFracS(0), fAvgTemp(160), fFracLed(20), fFracMon(20), fCells("TCalCell") {}
+   TCalInfo() : fRunNo(0), fAvTime(0), fFirstTime(0), fLastTime(0), fMinT(0), fMaxT(0), fFracS(0), fSMs("TCalSM"), fCells("TCalCell") {}
   virtual ~TCalInfo() {;}
   Int_t        fRunNo;     // run number
   UInt_t       fAvTime;    // average start time
@@ -48,12 +67,12 @@ class TCalInfo : public TObject {
   Float_t      fMinT;      // min temperature
   Float_t      fMaxT;      // max temperature
   Float_t      fFracS;     // fraction good sensors
-  TArrayF      fAvgTemp;   // average temp for each sensor
-  TArrayF      fFracLed;   // fraction led info for each SM
-  TArrayF      fFracMon;   // fraction mon info for each SM
+  TClonesArray fSMs;       // array with SM infos
   TClonesArray fCells;     // array with cells
-  ClassDef(TCalInfo, 1); // CalInfo class
+  ClassDef(TCalInfo, 2); // CalInfo class
 };
+
+
 #endif
 
 void createTree(
@@ -99,7 +118,8 @@ void createTree(
   fTree->SetDirectory(out);
   fTree->Branch("event", &info, 32000, 99);
 
-  TClonesArray &carr = info->fCells;
+  TClonesArray &carr    = info->fCells;
+  TClonesArray &cSMarr  = info->fSMs;
   Int_t l = 0;
   Int_t t = 0;
 
@@ -145,15 +165,27 @@ void createTree(
     info->fMinT      = tinfo->AbsMinT();
     info->fMaxT      = tinfo->AbsMaxT();
     info->fFracS     = tinfo->Fraction();
-    for (Int_t sm=0; sm<kSM; ++sm) {
-      info->fFracLed.SetAt(sm,linfo->FracLeds(sm,gain));
-      info->fFracMon.SetAt(sm,linfo->FracStrips(sm,gain));
-    }
-    for (Int_t n=0; n<160; ++n) {
-      info->fAvgTemp.SetAt(n,tinfo->T(n,3));
+
+    cSMarr.Clear();
+    cSMarr.ExpandCreate(kSM);
+
+    for (Int_t sm=0; sm<kSM; sm++) {
+      cout << "SM  "<< sm << ":\t"<< tinfo->AvgT(sm) << endl;
+      TCalSM *smInfo    = (TCalSM*)cSMarr.At(sm);
+      smInfo->fSM       = sm;
+      smInfo->fAvgT     = tinfo->AvgT(sm);
+      smInfo->fT1       = tinfo->T(sm*8,3);
+      smInfo->fT2       = tinfo->T(sm*8+1,3);
+      smInfo->fT3       = tinfo->T(sm*8+2,3);
+      smInfo->fT4       = tinfo->T(sm*8+3,3);
+      smInfo->fT5       = tinfo->T(sm*8+4,3);
+      smInfo->fT6       = tinfo->T(sm*8+5,3);
+      smInfo->fT7       = tinfo->T(sm*8+6,3);
+      smInfo->fT8       = tinfo->T(sm*8+7,3);
+      smInfo->fFracLed  = linfo->FracLeds(sm,gain);
+      smInfo->fFracMon  = linfo->FracStrips(sm,gain);
     }
 
-    Int_t ncells = 0;
     carr.Clear();
     carr.ExpandCreate(kNcells);
 
@@ -185,11 +217,9 @@ void createTree(
               badmaps[i]->SetDirectory(0);
             }
           }
-          delete contBC;
           idx = idxCurr;
-        } else {
-          delete contBC;
         }
+        delete contBC;
       }
     }
 
@@ -218,9 +248,9 @@ void createTree(
           cell->fCol = col;
           cell->fBad = badcell;
           cell->fLedM = hledm->GetBinContent(hledm->FindBin(col,row));
-          cell->fLedR = hledr->GetBinContent(hledr->FindBin(col,row));
+          cell->fLedR = hledm->GetBinError(hledm->FindBin(col,row));
           cell->fMonM = hmonm->GetBinContent(hmonm->FindBin(col/2));
-          cell->fMonR = hmonr->GetBinContent(hmonr->FindBin(col/2));
+          cell->fMonR = hmonm->GetBinError(hmonm->FindBin(col/2));
           cell->fLocT = tinfo->T(ns,3);
           cell->fSMT  = avg[sm];
         }
