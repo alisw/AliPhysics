@@ -37,6 +37,8 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fGammaArray(nullptr),
       fOutputContainer(nullptr),
       fQA(nullptr),
+      fHistoProton(nullptr),
+      fHistoAntiProton(nullptr),
       fHistCutQA(nullptr),
       fHistRunNumber(nullptr),
       fHistCutBooking(nullptr),
@@ -76,6 +78,8 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
       fGammaArray(nullptr),
       fOutputContainer(nullptr),
       fQA(nullptr),
+      fHistoProton(nullptr),
+      fHistoAntiProton(nullptr),
       fHistCutQA(nullptr),
       fHistRunNumber(nullptr),
       fHistCutBooking(nullptr),
@@ -88,6 +92,8 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
+  DefineOutput(3, TList::Class());
+  DefineOutput(4, TList::Class());
 }
 
 //____________________________________________________________________________________________________
@@ -231,6 +237,9 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
 
   // flush the data
   PostData(1, fOutputContainer);
+  PostData(2, fOutputTree);
+  PostData(3, fHistoProton);
+  PostData(4, fHistoAntiProton);
 }
 
 //____________________________________________________________________________________________________
@@ -504,19 +513,27 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
   fOutputContainer->Add(fQA);
 
   if (fTrackCutsPartProton && fTrackCutsPartProton->GetQAHists()) {
-    fOutputContainer->Add(fTrackCutsPartProton->GetQAHists());
+    fHistoProton = fTrackCutsPartProton->GetQAHists();
     if (fIsMC && fTrackCutsPartProton->GetMCQAHists()) {
       fTrackCutsPartProton->SetMCName("MC_Proton");
-      fOutputContainer->Add(fTrackCutsPartProton->GetMCQAHists());
+      fHistoProton->Add(fTrackCutsPartProton->GetMCQAHists());
     }
+  } else {
+    fHistoProton = new TList();
+    fHistoProton->SetName("Proton");
+    fHistoProton->SetOwner();
   }
 
   if (fTrackCutsPartAntiProton && fTrackCutsPartAntiProton->GetQAHists()) {
-    fOutputContainer->Add(fTrackCutsPartAntiProton->GetQAHists());
+    fHistoAntiProton = fTrackCutsPartAntiProton->GetQAHists();
     if (fIsMC && fTrackCutsPartAntiProton->GetMCQAHists()) {
       fTrackCutsPartAntiProton->SetMCName("MC_Anti-proton");
-      fOutputContainer->Add(fTrackCutsPartAntiProton->GetMCQAHists());
+      fHistoAntiProton->Add(fTrackCutsPartAntiProton->GetMCQAHists());
     }
+  } else {
+    fHistoAntiProton = new TList();
+    fHistoAntiProton->SetName("Anti-proton");
+    fHistoAntiProton->SetOwner();
   }
 
   if (fV0Cuts) fV0Cuts->InitCutHistograms(TString("Lambda"));
@@ -596,6 +613,8 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
 
   PostData(1, fOutputContainer);
   PostData(2, fOutputTree);
+  PostData(3, fHistoProton);
+  PostData(4, fHistoAntiProton);
 }
 
 //____________________________________________________________________________________________________

@@ -314,9 +314,25 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
       name, TList::Class(), AliAnalysisManager::kOutputContainer,
       containerName.Data());
 
+  name = "proton_";
+  if (trigger == "kHighMultV0") name += "HighMultV0_";
+  name += suffix;
+  AliAnalysisDataContainer *cProtonOutputList = mgr->CreateContainer(
+      name, TList::Class(), AliAnalysisManager::kOutputContainer,
+      containerName.Data());
+
+  name = "antiproton_";
+  if (trigger == "kHighMultV0") name += "HighMultV0_";
+  name += suffix;
+  AliAnalysisDataContainer *cAntiProtonOutputList = mgr->CreateContainer(
+      name, TList::Class(), AliAnalysisManager::kOutputContainer,
+      containerName.Data());
+
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, cOutputList);
   mgr->ConnectOutput(task, 2, cOutputTree);
+  mgr->ConnectOutput(task, 3, cProtonOutputList);
+  mgr->ConnectOutput(task, 4, cAntiProtonOutputList);
 
   return task;
 }

@@ -102,6 +102,8 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
 
   TList *fOutputContainer;                  //!
   TList *fQA;                               //!
+  TList *fHistoProton;                      //!
+  TList *fHistoAntiProton;                  //!
   TH1F *fHistCutQA;                         //!
   TProfile *fHistRunNumber;                 //!
   TProfile *fHistCutBooking;                //!
