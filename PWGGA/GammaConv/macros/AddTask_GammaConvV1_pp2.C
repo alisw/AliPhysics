@@ -355,7 +355,7 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
 
    //----------------------------- configuration for run 2 analysis 13 TeVLowB --------------------------------------------
   } else if (trainConfig == 80) { //
-    cuts.AddCut("00010113", "00200089227300008250400000", "0152103500000000"); //standard cut
+    cuts.AddCut("00010113", "00200089227300008280404000", "0152103500000000"); //standard cut
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

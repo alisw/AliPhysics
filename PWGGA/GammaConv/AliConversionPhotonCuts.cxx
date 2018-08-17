@@ -3337,6 +3337,17 @@ Bool_t AliConversionPhotonCuts::SetPsiPairCut(Int_t psiCut) {
       fDo2DPsiPairChi2 = kTRUE;
       fIncludeRejectedPsiPair = kTRUE;
       break;
+
+  case 10:
+    fPsiPairCut = 0.25; //
+    fDo2DPsiPairChi2 = kTRUE; //
+    break;
+
+  case 11:
+    fPsiPairCut = 0.3; //
+    fDo2DPsiPairChi2 = kTRUE; //
+    break;
+
     // } else {
     //   fPsiPairCut = 0.5; //
     //   break;
