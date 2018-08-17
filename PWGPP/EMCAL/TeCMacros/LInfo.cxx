@@ -133,9 +133,13 @@ void LInfo::CreateHistograms()
 
 void LInfo::FillLed(Int_t mod, Int_t gain, Int_t col, Int_t row, Double_t amp, Double_t rms)
 {
+  if ((amp<0)||(amp>1500))
+    return;
   fhLed[mod][gain]->Fill(col, row, amp);
-  fhLedCount[mod][gain]->Fill(col, row, rms);
-  fhLedWeighted[mod][gain]->Fill(col, row, amp, 1./TMath::Power(rms,2));
+  if (rms>0) {
+    fhLedCount[mod][gain]->Fill(col, row, rms);
+    fhLedWeighted[mod][gain]->Fill(col, row, amp, 1./TMath::Power(rms,2));
+  }
 }
 
 TCanvas *LInfo::DrawHist(Int_t which, Int_t gain, const char *opt) const
@@ -205,9 +209,13 @@ TCanvas *LInfo::DrawHist(Int_t which, Int_t gain, const char *opt) const
 
 void LInfo::FillStrip(Int_t mod, Int_t gain, Int_t strip, Double_t amp, Double_t rms)
 {
+  if ((amp<0)||(amp>1500))
+    return;
   fhStrip[mod][gain]->Fill(strip, amp);
-  fhStripCount[mod][gain]->Fill(strip, rms);
-  fhStripWeighted[mod][gain]->Fill(strip, amp, 1./TMath::Power(rms,2));
+  if (rms>0) {
+    fhStripCount[mod][gain]->Fill(strip, rms);
+    fhStripWeighted[mod][gain]->Fill(strip, amp, 1./TMath::Power(rms,2));
+  }
 }
 
 Double_t LInfo::FracLeds(Int_t sm, Int_t gain) const
