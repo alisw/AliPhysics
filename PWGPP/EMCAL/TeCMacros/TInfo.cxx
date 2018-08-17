@@ -38,11 +38,13 @@ Float_t TInfo::AvgT(Int_t sm) const
   Int_t nActiveSensors = 8;
   Double_t temp = 0;
   for (Int_t i=sm*8;i<(sm+1)*8;++i) {
-    if (T(i,3) == 0)
+    if (T(i,3) <= 15 || T(i,3) > 27 ) // take out sensors which are nonesense
       nActiveSensors--;
-    temp += T(i,3);
+    else
+      temp += T(i,3);
   }
-  temp /= nActiveSensors;
+  if (nActiveSensors != 0)
+    temp /= nActiveSensors;
   return temp;
 }
 
