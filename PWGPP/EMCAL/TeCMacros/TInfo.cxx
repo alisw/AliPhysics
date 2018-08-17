@@ -329,5 +329,9 @@ const char *TInfo::Type(Int_t type)
     title="MaxT";
   else if (type==3)
     title="AvgT";
+  else if (type==4)
+    title="RmsT";
+  else if (type==5)
+    title="AvgMinMaxT";
   return Form("%s",title.Data());
 }
