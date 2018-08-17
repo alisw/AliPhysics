@@ -317,10 +317,12 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
 
   fProtonTrack = new AliFemtoDreamTrack();
   fProtonTrack->SetUseMCInfo(fIsMC);
-  fTrackCutsPartProton->Init();
-  fTrackCutsPartProton->SetName("Proton");
-  fTrackCutsPartAntiProton->Init();
-  fTrackCutsPartAntiProton->SetName("Anti-proton");
+  fTrackCutsPartProton->Init("Proton");
+  fTrackCutsPartProton->SetName(
+      "Proton");  // necessary for the non-min booking case
+  fTrackCutsPartAntiProton->Init("Anti-proton");
+  fTrackCutsPartAntiProton->SetName(
+      "Anti-proton");  // necessary for the non-min booking case
 
   fPairCleaner = new AliFemtoDreamPairCleaner(6, 0, false);
   fPartColl = new AliFemtoDreamPartCollection(fConfig, false);
@@ -503,16 +505,16 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
 
   if (fTrackCutsPartProton && fTrackCutsPartProton->GetQAHists()) {
     fOutputContainer->Add(fTrackCutsPartProton->GetQAHists());
-    if (fTrackCutsPartProton->GetIsMonteCarlo()) {
-      fTrackCutsPartProton->SetMCName("MC_Proton");  // same as above
+    if (fIsMC && fTrackCutsPartProton->GetMCQAHists()) {
+      fTrackCutsPartProton->SetMCName("MC_Proton");
       fOutputContainer->Add(fTrackCutsPartProton->GetMCQAHists());
     }
   }
 
   if (fTrackCutsPartAntiProton && fTrackCutsPartAntiProton->GetQAHists()) {
     fOutputContainer->Add(fTrackCutsPartAntiProton->GetQAHists());
-    if (fTrackCutsPartAntiProton->GetIsMonteCarlo()) {
-      fTrackCutsPartAntiProton->SetMCName("MC_Anti-proton");  // same as above
+    if (fIsMC && fTrackCutsPartAntiProton->GetMCQAHists()) {
+      fTrackCutsPartAntiProton->SetMCName("MC_Anti-proton");
       fOutputContainer->Add(fTrackCutsPartAntiProton->GetMCQAHists());
     }
   }
