@@ -357,9 +357,10 @@ AliAnalysisTaskSE *AddTaskSigma0Run2syst(bool isMC = false,
       new AliAnalysisTaskSigma0Run2("AnalysisTaskSigma0");
   if (trigger == "kINT7") {
     task->SetTrigger(AliVEvent::kINT7);
+    task->SelectCollisionCandidates(AliVEvent::kINT7);
   } else if (trigger == "kHighMultV0") {
     task->SetTrigger(AliVEvent::kHighMultV0);
-    task->SetV0Percentile(0.1);
+    task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
   }
   task->SetV0ReaderName(V0ReaderName.Data());
   task->SetIsHeavyIon(isHeavyIon);

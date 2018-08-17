@@ -147,6 +147,7 @@ void AliAnalysisTaskSigma0Run2::UserExec(Option_t * /*option*/) {
       fInputEvent, fMCEvent, fPhotonV0Cuts->GetV0s(), fAntiV0Cuts->GetV0s());
   // flush the data
   PostData(1, fOutputContainer);
+  PostData(2, fOutputTree);
 }
 
 //____________________________________________________________________________________________________
@@ -184,12 +185,13 @@ bool AliAnalysisTaskSigma0Run2::AcceptEvent(AliVEvent *event) {
     }
     fHistCutQA->Fill(2);
   }
-  if (!fIsLightweight) fHistCentralityProfileCoarseAfter->Fill(lPercentile);
 
   bool isConversionEventSelected =
       ((AliConvEventCuts *)fV0Reader->GetEventCuts())
           ->EventIsSelected(event, static_cast<AliMCEvent *>(fMCEvent));
   if (!isConversionEventSelected) return false;
+
+  if (!fIsLightweight) fHistCentralityProfileCoarseAfter->Fill(lPercentile);
 
   fHistCutQA->Fill(3);
   return true;
