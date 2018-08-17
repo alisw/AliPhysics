@@ -526,7 +526,7 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
 //________________________________________________________________________
 void AliHFInvMassMultiTrialFit::SaveToRoot(TString fileName, TString option) const{
   // save histos in a root file for further analysis
-  const Int_t nCases=kNBkgFuncCases*kNFitConfCases;
+  const Int_t nCases=kNBkgFuncCases*kNFitConfCases*kNSigFuncCases;
   TFile outHistos(fileName.Data(),option.Data());
   if (outHistos.IsZombie()) {
     Printf("Could not open file '%s'!", fileName.Data());
