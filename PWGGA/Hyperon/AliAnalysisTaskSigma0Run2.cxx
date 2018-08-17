@@ -147,6 +147,7 @@ void AliAnalysisTaskSigma0Run2::UserExec(Option_t * /*option*/) {
       fInputEvent, fMCEvent, fPhotonV0Cuts->GetV0s(), fAntiV0Cuts->GetV0s());
   // flush the data
   PostData(1, fOutputContainer);
+  PostData(2, fOutputTree);
 }
 
 //____________________________________________________________________________________________________
