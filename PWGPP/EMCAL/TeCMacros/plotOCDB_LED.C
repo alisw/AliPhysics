@@ -191,12 +191,12 @@ void test_geo()
   for (Int_t i=0;i<kSM;++i) {
     Int_t nrow = g->GetNumberOfCellsInPhiDirection(i);
     Int_t ncol = g->GetNumberOfCellsInEtaDirection(i);
-    cout << i << ": " << nrow << " " << ncol << endl;
+    cout << i << ": nrow(neta)=" << nrow << ", ncol(nphi)=" << ncol << endl;
     continue;
     TH2 *h2f = new TH2F(Form("hsm%d",i),Form(";col;row"), ncol, -0.5, ncol-0.5, nrow, -0.5, nrow-0.5);
     for (Int_t col=0;col<ncol;++col) {
       for (Int_t row=0;row<nrow;++row) {
-	Int_t  id = g->GetAbsCellIdFromCellIndexes(i,row,col)-24*48;
+	Int_t  id = g->GetAbsCellIdFromCellIndexes(i,row,col);
 	cout << "Id " << id << " " << col << " " << row << endl;
 	Int_t bin = h2f->FindBin(col,row);
 	h2f->SetBinContent(bin,id);
@@ -204,9 +204,17 @@ void test_geo()
     }
     h2f->Draw("text");
     break;
+  }
 
+  Int_t sm=18;
+  Int_t nrow = g->GetNumberOfCellsInPhiDirection(sm);
+  Int_t ncol = g->GetNumberOfCellsInEtaDirection(sm);
+  cout << "sm " << sm << ": " << nrow << " " << ncol << endl;
+  for (Int_t col=0;col<ncol;++col) {
+    for (Int_t row=0;row<nrow;++row) {
+      Int_t  id = g->GetAbsCellIdFromCellIndexes(sm,row,col);
+      cout << "Id " << id << " " << col << " " << row << endl;
+    }
   }
 }
 #endif
-
-
