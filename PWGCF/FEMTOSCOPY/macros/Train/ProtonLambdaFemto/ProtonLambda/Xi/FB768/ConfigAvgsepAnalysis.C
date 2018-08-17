@@ -150,7 +150,7 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
 
       if(XitrackPairCut)
 	{
-	  //if(mcAnalysis) XitrackPairCut->AddCutMonitor(pairOriginPass[anIter], pairOriginFail[anIter]);
+	  if(mcAnalysis) XitrackPairCut->AddCutMonitor(pairOriginPass[anIter], pairOriginFail[anIter]);
 
 	  femtoAnalysis[anIter]->SetPairCut(XitrackPairCut);
 	}
