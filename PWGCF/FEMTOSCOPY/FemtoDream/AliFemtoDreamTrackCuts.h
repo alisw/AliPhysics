@@ -84,7 +84,7 @@ class AliFemtoDreamTrackCuts {
   void FillGenerated(float pT) {if (fMCHists) fMCHists->FillMCGen(pT);};
   //  void FillSharedClusterQA(AliFemtoDreamTrack *Track);
   //Histogram things
-  void Init();
+  void Init(TString name = TString("MinimalBooking"));
   TList *GetQAHists() {return fHists->GetHistList();};
   TList *GetMCQAHists() {return fMCHists->GetHistList();};
   TString ClassName() {return "AliFemtoDreamTrackCuts";};
