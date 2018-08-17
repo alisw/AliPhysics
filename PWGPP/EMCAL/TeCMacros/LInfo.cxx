@@ -5,6 +5,7 @@
 #include <TGrid.h>
 #include <TH2F.h>
 #include <TMap.h>
+#include <TMath.h>
 #include <TNtuple.h>
 #include <TProfile2D.h>
 
@@ -134,7 +135,7 @@ void LInfo::FillLed(Int_t mod, Int_t gain, Int_t col, Int_t row, Double_t amp, D
 {
   fhLed[mod][gain]->Fill(col, row, amp);
   fhLedCount[mod][gain]->Fill(col, row, rms);
-  fhLedWeighted[mod][gain]->Fill(col, row, amp, rms);
+  fhLedWeighted[mod][gain]->Fill(col, row, amp, 1./TMath::Power(rms,2));
 }
 
 TCanvas *LInfo::DrawHist(Int_t which, Int_t gain, const char *opt) const
@@ -206,7 +207,7 @@ void LInfo::FillStrip(Int_t mod, Int_t gain, Int_t strip, Double_t amp, Double_t
 {
   fhStrip[mod][gain]->Fill(strip, amp);
   fhStripCount[mod][gain]->Fill(strip, rms);
-  fhStripWeighted[mod][gain]->Fill(strip, amp, rms);
+  fhStripWeighted[mod][gain]->Fill(strip, amp, 1./TMath::Power(rms,2));
 }
 
 Double_t LInfo::FracLeds(Int_t sm, Int_t gain) const
