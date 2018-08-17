@@ -170,10 +170,10 @@ void createTree(
     cSMarr.ExpandCreate(kSM);
 
     for (Int_t sm=0; sm<kSM; sm++) {
-      cout << "SM  "<< sm << ":\t"<< tinfo->AvgT(sm) << endl;
+      cout << "SM  "<< sm << ":\t"<< tinfo->AvgTempSM(sm) << endl;
       TCalSM *smInfo    = (TCalSM*)cSMarr.At(sm);
       smInfo->fSM       = sm;
-      smInfo->fAvgT     = tinfo->AvgT(sm);
+      smInfo->fAvgT     = tinfo->AvgTempSM(sm);
       smInfo->fT1       = tinfo->T(sm*8,3);
       smInfo->fT2       = tinfo->T(sm*8+1,3);
       smInfo->fT3       = tinfo->T(sm*8+2,3);
@@ -191,7 +191,7 @@ void createTree(
 
     Double_t avg[20];
     for (Int_t sm=0; sm<kSM; ++sm) {
-      avg[sm]=tinfo->AvgT(sm);
+      avg[sm]=tinfo->AvgTempSM(sm);
     }
 
     if (runt!=runno && appBC) {
