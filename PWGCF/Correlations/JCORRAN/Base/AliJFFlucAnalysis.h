@@ -47,7 +47,7 @@ public:
 		fQC_eta_gap_half = QC_eta_gap_half;
 		cout<<"setting eta range for QC" << fQC_eta_cut_min << "~" << fQC_eta_cut_max << endl;
 	}
-	void SetPhiWeights(TH2D *p){
+	void SetPhiWeights(TH3D *p){
 		pPhiWeights = p;
 	}
 
@@ -101,7 +101,7 @@ private:
 	TClonesArray *fInputList;
 	AliJEfficiency *fEfficiency;
 	const double *fVertex;//!
-	TH2D *pPhiWeights;//!
+	TH3D *pPhiWeights;//!
 	Float_t	fCent;
 	Float_t	fImpactParameter;
 	int fCBin;

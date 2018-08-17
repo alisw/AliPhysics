@@ -278,7 +278,7 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 		if(flags & FLUC_PHI_CORRECTION){
 			int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
 			if(cbin != -1){
-				std::map<UInt_t, TH2D *>::const_iterator m = PhiWeightMap[cbin].find(fRunNum);
+				std::map<UInt_t, TH3D *>::const_iterator m = PhiWeightMap[cbin].find(fRunNum);
 				if(m != PhiWeightMap[cbin].end())
 					fFFlucAna->SetPhiWeights(m->second);
 			}
@@ -749,7 +749,7 @@ void AliJFFlucTask::EnablePhiCorrection(const TString fname){
 	for(const auto &&m: *plist){
 		UInt_t cent, run;
 		sscanf(m->GetName(),"PhiWeights_%u_%02u",&run,&cent);
-		PhiWeightMap[cent][run] = (TH2D*)pDataFile[1]->Get(Form("PhiWeights/%s",m->GetName()));
+		PhiWeightMap[cent][run] = (TH3D*)pDataFile[1]->Get(Form("PhiWeights/%s",m->GetName()));
 	}
 }
 
