@@ -129,7 +129,7 @@ Bool_t ConfigPhiPP5TeV_PID
     // else out->AddAxis(centID,161,-0.5,160.5);
 
     if(!isPP) out->AddAxis(centID,100,0.,100.); //ST
-    else out->AddAxis(centID,100,0.,200); //ST
+    else out->AddAxis(centID,200,0.,200); //ST
 
      out->AddAxis(SpherocityID,200,-0.5,1.5); //ST
     // axis W: pseudorapidity
