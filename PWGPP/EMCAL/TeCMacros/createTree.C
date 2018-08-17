@@ -22,11 +22,11 @@ class TCalCell : public TObject {
  public:
   TCalCell() : fId(0), fSM(0), fLedM(0), fLedR(0), fMonM(0), fMonR(0), fLocT(0), fSMT(0) {;}
   virtual ~TCalCell() {;}
-  Short_t  fId;   //         cell id
-  Short_t  fSM;   //         super module index
-  Short_t  fRow;  //         row (phi) index
-  Short_t  fCol;  //         col (eta) index
-  Short_t  fBad;  //         bad cell
+  Short_t    fId;   //         cell id
+  Short_t    fSM;   //         super module index
+  Short_t    fRow;  //         row (phi) index
+  Short_t    fCol;  //         col (eta) index
+  Short_t    fBad;  //         bad cell
   Double32_t fLedM; //[0,0,16] led mean
   Double32_t fLedR; //[0,0,16] led rms
   Double32_t fMonM; //[0,0,16] mon mean
@@ -40,21 +40,20 @@ class TCalSM : public TObject {
 public:
   TCalSM() : fSM(0), fAvgT(0), fT1(0), fT2(0), fT3(0), fT4(0), fT5(0), fT6(0), fT7(0), fFracLed(0), fFracMon(0) {;}
   virtual ~TCalSM() {;}
-  Short_t  fSM;   //         super module index
-  Double32_t fAvgT; //[0,0,16] sm T
-  Double32_t fT1; //[0,0,16] sensor T 1
-  Double32_t fT2; //[0,0,16] sensor T 2
-  Double32_t fT3; //[0,0,16] sensor T 3
-  Double32_t fT4; //[0,0,16] sensor T 4
-  Double32_t fT5; //[0,0,16] sensor T 5
-  Double32_t fT6; //[0,0,16] sensor T 6
-  Double32_t fT7; //[0,0,16] sensor T 7
-  Double32_t fT8; //[0,0,16] sensor T 8
-  Double32_t fFracLed;   // fraction led info for each SM
-  Double32_t fFracMon;   // fraction mon info for each SM
+  Short_t    fSM;       // super module index
+  Double32_t fAvgT;     //[0,0,16] sm T
+  Double32_t fT1;       //[0,0,16] sensor T 1
+  Double32_t fT2;       //[0,0,16] sensor T 2
+  Double32_t fT3;       //[0,0,16] sensor T 3
+  Double32_t fT4;       //[0,0,16] sensor T 4
+  Double32_t fT5;       //[0,0,16] sensor T 5
+  Double32_t fT6;       //[0,0,16] sensor T 6
+  Double32_t fT7;       //[0,0,16] sensor T 7
+  Double32_t fT8;       //[0,0,16] sensor T 8
+  Double32_t fFracLed;  // fraction led info for each SM
+  Double32_t fFracMon;  // fraction mon info for each SM
   ClassDef(TCalSM, 1); // CalSM class
 };
-
 
 class TCalInfo : public TObject {
  public:
@@ -71,24 +70,20 @@ class TCalInfo : public TObject {
   TClonesArray fCells;     // array with cells
   ClassDef(TCalInfo, 2); // CalInfo class
 };
-
-
 #endif
 
-void createTree(
-                    const char *period,
-                    const char *ofile     = "treeout.root",
-                    Bool_t doprint        = 0,
-                    Bool_t appBC          = kFALSE,                   // boolean to switch on bad channel
-                    TString badpath       = "$ALICE_ROOT/OADB/EMCAL"  // location of bad channel map
-               ){
-
+void createTree(const char *period,
+		const char *ofile     = "treeout.root",
+		Bool_t doprint        = 0,
+		Bool_t appBC          = kFALSE,                   // boolean to switch on bad channel
+		TString badpath       = "$ALICE_ROOT/OADB/EMCAL") // location of bad channel map
+{
   TDraw td(period);
   td.Compute();
   LDraw ld(period);
   ld.Compute();
 
-  if (appBC){
+  if (appBC) {
     cout << "INFO: will be using bad channel map from: " << badpath.Data() << endl;
   }
 
@@ -170,10 +165,10 @@ void createTree(
     cSMarr.ExpandCreate(kSM);
 
     for (Int_t sm=0; sm<kSM; sm++) {
-      cout << "SM  "<< sm << ":\t"<< tinfo->AvgT(sm) << endl;
+      cout << "SM  "<< sm << ":\t"<< tinfo->AvgTempSM(sm) << endl;
       TCalSM *smInfo    = (TCalSM*)cSMarr.At(sm);
       smInfo->fSM       = sm;
-      smInfo->fAvgT     = tinfo->AvgT(sm);
+      smInfo->fAvgT     = tinfo->AvgTempSM(sm);
       smInfo->fT1       = tinfo->T(sm*8,3);
       smInfo->fT2       = tinfo->T(sm*8+1,3);
       smInfo->fT3       = tinfo->T(sm*8+2,3);
@@ -191,7 +186,7 @@ void createTree(
 
     Double_t avg[20];
     for (Int_t sm=0; sm<kSM; ++sm) {
-      avg[sm]=tinfo->AvgT(sm);
+      avg[sm]=tinfo->AvgTempSM(sm);
     }
 
     if (runt!=runno && appBC) {
@@ -235,22 +230,25 @@ void createTree(
       for (Int_t col=0; col<ncol; ++col) {
         for (Int_t row=0; row<nrow; ++row) {
           Int_t  id = g->GetAbsCellIdFromCellIndexes(sm,row,col);
-          Int_t ns = TInfo::SensId(sm,row,col);
           TCalCell *cell = (TCalCell*)carr.At(id);
           cell->fId = id;
-
           Int_t badcell = 0;
           if (appBC && badmaps[sm])
             badcell = badmaps[sm]->GetBinContent(col,row);
-
           cell->fSM = sm;
           cell->fRow = row;
           cell->fCol = col;
           cell->fBad = badcell;
-          cell->fLedM = hledm->GetBinContent(hledm->FindBin(col,row));
-          cell->fLedR = hledm->GetBinError(hledm->FindBin(col,row));
-          cell->fMonM = hmonm->GetBinContent(hmonm->FindBin(col/2));
-          cell->fMonR = hmonm->GetBinError(hmonm->FindBin(col/2));
+
+	  Int_t orow=row;
+	  Int_t ocol=col;
+	  // shift to online col(phi)/row(eta0
+	  g->ShiftOfflineToOnlineCellIndexes(sm, ocol, orow);
+          Int_t ns = TInfo::SensId(sm,orow,ocol);
+          cell->fLedM = hledm->GetBinContent(hledm->FindBin(ocol,orow));
+          cell->fLedR = hledm->GetBinError(hledm->FindBin(ocol,orow));
+          cell->fMonM = hmonm->GetBinContent(hmonm->FindBin(ocol/2));
+          cell->fMonR = hmonm->GetBinError(hmonm->FindBin(ocol/2));
           cell->fLocT = tinfo->T(ns,3);
           cell->fSMT  = avg[sm];
         }

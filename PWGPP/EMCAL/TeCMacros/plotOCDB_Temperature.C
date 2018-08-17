@@ -507,7 +507,7 @@ TH1 *TDraw::GetTSM(Int_t sm, Int_t type) const
     TInfo *tinfo = dynamic_cast<TInfo*>(fArr->At(i));
     if (!tinfo)
       continue;
-    Double_t val = tinfo->AvgT(sm);
+    Double_t val = tinfo->AvgTempSM(sm);
     cout <<  i << "\t" << sm << "\t" << val << endl;
     ret->Fill(i,val);
   }

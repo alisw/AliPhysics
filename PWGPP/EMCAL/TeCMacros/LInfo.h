@@ -14,17 +14,20 @@ class LInfo : public TObject {
   virtual     ~LInfo() {;}
   void         Compute();
   TCanvas     *DrawHist(Int_t which, Int_t gain=1, const char *opt=0) const;
-  TH1         *GetStripHist(Int_t sm, Int_t gain=1)       const { return fhStrip[sm][gain]; }
-  TH1         *GetStripRmsHist(Int_t sm, Int_t gain=1)    const { return fhStripCount[sm][gain]; }
-  TH1         *GetLedMonHist(Int_t sm, Int_t gain=1)      const { return fhStrip[sm][gain]; }
-  TH1         *GetLedMonRmsHist(Int_t sm, Int_t gain=1)   const { return fhStripCount[sm][gain]; }
-  TH2         *GetLedHist(Int_t sm, Int_t gain=1)         const { return fhLed[sm][gain]; }
-  TH2         *GetLedRmsHist(Int_t sm, Int_t gain=1)      const { return fhLedCount[sm][gain]; }
-  TH2         *GetLedOverMonHist(Int_t sm, Int_t gain=1)  const { return fhAmpOverMon[sm][gain]; }
-  TH1         *GetLedMonDispHist(Int_t sm, Int_t gain=1)  const { return fhStripRmsOverMean[sm][gain]; }
-  TH2         *GetLedDispHist(Int_t sm, Int_t gain=1)     const { return fhLedRmsOverMean[sm][gain]; }
-  const char  *GetName()                                  const { return Form("LEDInfo_%d",fRunNo); }
-  Int_t        GetRunNo()                                 const { return fRunNo; }
+  TProfile    *GetStripHist(Int_t sm, Int_t gain=1)         const { return fhStrip[sm][gain]; }
+  TProfile    *GetStripRmsHist(Int_t sm, Int_t gain=1)      const { return fhStripCount[sm][gain]; }
+  TProfile    *GetStripWeightedHist(Int_t sm, Int_t gain=1) const { return fhStripWeighted[sm][gain]; }
+  TProfile    *GetLedMonHist(Int_t sm, Int_t gain=1)        const { return GetStripHist(sm,gain); }
+  TProfile    *GetLedMonRmsHist(Int_t sm, Int_t gain=1)     const { return GetStripRmsHist(sm,gain); }
+  TProfile    *GetLedMonWeightedHist(Int_t sm, Int_t gain=1)const { return GetStripWeightedHist(sm,gain); }
+  TProfile2D  *GetLedHist(Int_t sm, Int_t gain=1)           const { return fhLed[sm][gain]; }
+  TProfile2D  *GetLedRmsHist(Int_t sm, Int_t gain=1)        const { return fhLedCount[sm][gain]; }
+  TProfile2D  *GetLedWeightedHist(Int_t sm, Int_t gain=1)   const { return fhLedWeighted[sm][gain]; }
+  TH2         *GetLedOverMonHist(Int_t sm, Int_t gain=1)    const { return fhAmpOverMon[sm][gain]; }
+  TH1         *GetLedMonDispHist(Int_t sm, Int_t gain=1)    const { return fhStripRmsOverMean[sm][gain]; }
+  TH2         *GetLedDispHist(Int_t sm, Int_t gain=1)       const { return fhLedRmsOverMean[sm][gain]; }
+  const char  *GetName()                                    const { return Form("LEDInfo_%d",fRunNo); }
+  Int_t        GetRunNo()                                   const { return fRunNo; }
   void         FillLed(Int_t mod,Int_t gain, Int_t col, Int_t row, Double_t amp, Double_t rms);
   void         FillStrip(Int_t mod,Int_t gain, Int_t strip, Double_t amp, Double_t rms);
   Double_t     FracLeds(Int_t sm, Int_t gain=1) const;

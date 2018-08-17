@@ -33,12 +33,12 @@ Float_t TInfo::AbsMaxT(Int_t type) const
   return max;
 }
 
-Float_t TInfo::AvgT(Int_t sm) const
+Float_t TInfo::AvgTempSM(Int_t sm, Int_t type) const
 {
   Int_t nActiveSensors = 8;
   Double_t temp = 0;
   for (Int_t i=sm*8;i<(sm+1)*8;++i) {
-    if (T(i,3) <= 15 || T(i,3) > 27 ) // take out sensors which are nonesense
+    if (T(i,type) <= 15 || T(i,type) > 27 ) // take out sensors which are nonesense
       nActiveSensors--;
     else
       temp += T(i,3);
@@ -73,7 +73,7 @@ void TInfo::Print(Option_t *option) const
   cout << "Runno: " << fRunNo << " with average time " << fAvTime << " and " << Nvalid() << " entries" << endl;
   for (Int_t i=0;i<NSensors();++i) {
     if (IsValid(i))
-      cout << "  " << i << " minT=" << fMinT.At(i) << ", maxT=" << fMaxT.At(i) << ", diff=" << Diff(i) << endl;
+      cout << "  " << i << " avgT=" << fAvgT.At(i) << ", rmsT=" << fRmsT.At(i) << ", minT=" << fMinT.At(i) << ", maxT=" << fMaxT.At(i) << ", diff=" << Diff(i) << endl;
   }
 }
 
@@ -85,6 +85,10 @@ Float_t TInfo::T(Int_t ns, Int_t type) const
   else if (type==2)
     val = MaxT(ns);
   else if (type==3)
+    val = AvgT(ns);
+  else if (type==4)
+    val = RmsT(ns);
+  else if (type==5)
     val = (MinT(ns)+MaxT(ns))/2;
   else
     val = Diff(ns);
@@ -325,5 +329,9 @@ const char *TInfo::Type(Int_t type)
     title="MaxT";
   else if (type==3)
     title="AvgT";
+  else if (type==4)
+    title="RmsT";
+  else if (type==5)
+    title="AvgMinMaxT";
   return Form("%s",title.Data());
 }
