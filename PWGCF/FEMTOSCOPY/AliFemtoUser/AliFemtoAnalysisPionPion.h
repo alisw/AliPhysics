@@ -281,6 +281,7 @@ struct AliFemtoAnalysisPionPion::CutParams {
   Float_t pair_max_share_quality,
           pair_max_share_fraction;
   Bool_t pair_remove_same_label;
+  Int_t pair_algorithm;
 
 };
 
