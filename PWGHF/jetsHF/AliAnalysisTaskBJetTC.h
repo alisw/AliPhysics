@@ -3,6 +3,7 @@
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliV0ReaderV1.h"
 #include "AliConvEventCuts.h"
+#include "AliAnalysisTaskWeakDecayVertexer.h"
 class AliEmcalJet;
 class AliAODVertex;
 class AliAODTrack;
@@ -19,6 +20,7 @@ class TRandom3;
 class AliPIDResponse;
 class AliHFJetsTaggingVertex;
 class AliRDHFJetsCutsVertex;
+class AliVertexerTracks;
 
 
 
@@ -102,6 +104,10 @@ public:
 
 	void SetDoImprovedDCACut(Bool_t value){fDoImprovedDCACut = value;}
 
+	void SetMaxFactorPtHardJet(Double_t value){fMaxFactorPtHardJet = value;}
+
+	void SetCalculateDCATruth(Bool_t value){fCalcDCATruth = value;}
+
 	// B jet tracks selection
 	void SetTrackMinPt(Double_t val){ fTCMinTrackPt = val;}
 	void SetTPCClusterMin(Int_t val){ fTCMinClusTPC = val;}
@@ -149,6 +155,10 @@ private:
 	Bool_t fEnableV0GammaRejection;//
 	Float_t fPythiaEventWeight;//!
 	Bool_t fDoImprovedDCACut;//
+	Bool_t fVertexConstraint;//!
+
+	AliESDVertex* fDiamond;//!
+	AliVertexerTracks *fVertexer;//!
 
   	AliPIDResponse   *fRespoPID;//!
 
@@ -170,6 +180,8 @@ private:
 	Double_t fTCMaxIPz;//
 	Double_t fTCMaxDecayLength;//
 	Double_t fTCMaxDCATrackJet;//
+
+	Double_t fMaxFactorPtHardJet;//
 	
 	TH1D * fhistInclusiveJetCuts;//!
 	TH1D * fhistbJetCuts;//!
@@ -584,6 +596,10 @@ private:
   Int_t    fJetFlavor;//!
   Double_t fValJetProb;//!
   Double_t fLogJetProb;//!
+
+  Bool_t fCalcDCATruth;//
+
+  AliAnalysisTaskWeakDecayVertexer* fDecayVertex;//!
 
   static const Double_t fgkMassPion;    //
   static const Double_t fgkMassKshort;  //

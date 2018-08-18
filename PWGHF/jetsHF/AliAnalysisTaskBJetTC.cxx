@@ -53,6 +53,9 @@ fHFJetUtils(0x0),
 fRespoPID(0x0),
 fPythiaEventWeight(1.0),
 fDoImprovedDCACut(kTRUE),
+fVertexConstraint(kFALSE),
+fDiamond(0x0),
+fVertexer(0x0),
 fDoJetProbabilityAnalysis(kFALSE),
 fDoPtRelAnalysis(0),
 fDoSelectionPtRel(0),
@@ -65,6 +68,7 @@ fTCMaxIPxy(1.),
 fTCMaxIPz(5.),
 fTCMaxDecayLength(5),
 fTCMaxDCATrackJet(0.07),
+fMaxFactorPtHardJet(10.0),
 fhistInclusiveJetCuts(0x0),
 fhistbJetCuts(0x0),
 fhistcJetCuts(0x0),
@@ -376,6 +380,8 @@ fJetPt(0.),
 fJetFlavor(0),
 fValJetProb(-1),
 fLogJetProb(-1.),
+fCalcDCATruth(kFALSE),
+fDecayVertex(0x0),
 fHistSV2Prong(0x0),
 fHistSV2ProngUnidentified(0x0),
 fHistSV2Prongb(0x0),
@@ -411,6 +417,9 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fRespoPID(0x0),
 		fPythiaEventWeight(1.0),
 		fDoImprovedDCACut(kTRUE),
+		fVertexConstraint(kFALSE),
+		fDiamond(0x0),
+		fVertexer(0x0),
 		//Bjet Cuts
 		fTCMinTrackPt(0.5),
 		fTCMinClusTPC(80),
@@ -420,6 +429,7 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fTCMaxIPz(5.),
 		fTCMaxDecayLength(5),
 		fTCMaxDCATrackJet(0.07),
+		fMaxFactorPtHardJet(10.0),
 		fhistInclusiveJetCuts(0x0),
 		fhistbJetCuts(0x0),
 		fhistcJetCuts(0x0),
@@ -733,6 +743,8 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fJetFlavor(0),
 		fValJetProb(-1),
 		fLogJetProb(-1.),
+		fCalcDCATruth(kFALSE),
+		fDecayVertex(0x0),
 		fHistSV2Prong(0x0),
 		fHistSV2ProngUnidentified(0x0),
 		fHistSV2Prongb(0x0),
@@ -766,12 +778,23 @@ AliAnalysisTaskBJetTC::~AliAnalysisTaskBJetTC()
 	//Destructor
 	delete fCaloClusters;
 	delete fReaderGammas;
+	delete fV0Reader;
+	delete fV0CandidateArray;
 	delete fMCArray;
 	delete fOutput;
 	delete fJetContainerMC;
 	delete fJetContainerData;
 	delete fAODIn;
 	delete fPrimaryVertex;
+	delete fDecayVertex;
+	delete fVtxTagger3Prong;
+	delete fVtxTagger2Prong;
+	delete fHFJetUtils;
+	delete fRespoPID;
+	delete fUtils;
+	delete fRandom;
+	delete fVertexer;
+	delete fDiamond;
 }
 // #################################################################################
 Bool_t AliAnalysisTaskBJetTC::Notify()
@@ -818,9 +841,19 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 	}
 
 
-	if(fApplyV0Rec) SelectV0CandidateVIT();
+	fVertexer = new AliVertexerTracks(fAODIn->GetMagneticField());
+	fVertexer->SetITSMode();
+	fVertexer->SetMinClusters(3);
+	fVertexer->SetConstraintOn();
 
-
+	if(fVertexConstraint) {
+		Float_t diamondcovxy[3];
+		fAODIn->GetDiamondCovXY(diamondcovxy);
+		Double_t pos[3]={fAODIn->GetDiamondX(),fAODIn->GetDiamondY(),0.};
+		Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
+		fDiamond = new AliESDVertex(pos,cov,1.,1);
+		fVertexer->SetVtxStart(fDiamond);
+	}
 
   	Double_t dPrimVtxMCX = 0., dPrimVtxMCY = 0., dPrimVtxMCZ = 0.; // position of the MC primary vertex
 
@@ -840,6 +873,9 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 	       dPrimVtxMCZ = headerMC->GetVtxZ();
 
   		AliAODMCParticle *pAOD = 0;
+		AliEmcalJet * jetMC  = 0x0;
+		double fJetPt=0;
+
 	  	for (Int_t i=0; i<fMCArray->GetEntriesFast(); i++) {
 
 	    		pAOD = dynamic_cast<AliAODMCParticle*>(fMCArray->At(i));
@@ -878,9 +914,6 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 			 if(id==310) {fh1dKshortPtMC->Fill(pAOD->Pt(), fPythiaEventWeight);}
 			 if(id==3122) { fh1dLamdaPtMC->Fill(pAOD->Pt(), fPythiaEventWeight);}
 			 if(id==-3122) { fh1dAnLamdaPtMC->Fill(pAOD->Pt(), fPythiaEventWeight);}
-
-			  AliEmcalJet * jetMC  = 0x0;
-			  double fJetPt=0;
 			 
 			  fJetContainerMC->ResetCurrentID();
 
@@ -907,11 +940,14 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				}
 				
 
-			   }
+			 }
 
-			   jetMC=NULL;
-			   delete jetMC;
+
 	    	}
+		jetMC=NULL;
+		delete jetMC;
+		pAOD=NULL;
+		delete pAOD;
 		headerMC=NULL;
 		delete headerMC;
 	}
@@ -920,10 +956,11 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 
 	  	fReaderGammas = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
 
+		AliAODConversionPhoton* PhotonCandidate = 0x0;
 		// Loop over Photon Candidates allocated by ReaderV1
 		for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
 
-		    AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(i);
+		    PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(i);
 		    if(!PhotonCandidate) continue;
 
 		    TVector3 vV0;
@@ -935,7 +972,8 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 		if(fIsPythia && fInputEvent->IsA()==AliAODEvent::Class() && !(fV0Reader->AreAODsRelabeled())){
 		    fV0Reader->RelabelAODs(kTRUE);
 		}
-
+		PhotonCandidate=NULL;
+		delete PhotonCandidate;
 	}
 
 	//Main loop over AOD tracks with filterbit 4  || or ESD tracks with filter
@@ -945,51 +983,53 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 
 	AliAODTrack * trackAOD =  NULL;
 
-	for(int itrack= 0; itrack<nTracksInEvent;++itrack)
-	{
+	if(fCalcDCATruth){
+		for(int itrack= 0; itrack<nTracksInEvent;++itrack)
+		{
 		
-		trackAOD = (AliAODTrack*)fAODIn->GetTrack(itrack);
-		if (!trackAOD) continue;
+			trackAOD = (AliAODTrack*)fAODIn->GetTrack(itrack);
+			if (!trackAOD) continue;
 
-		fh1dTracksAccepeted->SetBinContent(1,fh1dTracksAccepeted->GetBinContent(1)+1);
+			fh1dTracksAccepeted->SetBinContent(1,fh1dTracksAccepeted->GetBinContent(1)+1);
 
-		if(!IsTrackAccepted(trackAOD)) {
-			fh1dTracksAccepeted->SetBinContent(3,fh1dTracksAccepeted->GetBinContent(3)+1);
-			continue;
-		}
+			if(!IsTrackAccepted(trackAOD)) {
+				fh1dTracksAccepeted->SetBinContent(3,fh1dTracksAccepeted->GetBinContent(3)+1);
+				continue;
+			}
 
-		fh1dTracksAccepeted->SetBinContent(2,fh1dTracksAccepeted->GetBinContent(2)+1);
-		//Calculate impact parameters and fill histograms
-		double dca[2] = {-99999,-99999};
-		double cov[3] = {-99999,-99999,-99999};
+			fh1dTracksAccepeted->SetBinContent(2,fh1dTracksAccepeted->GetBinContent(2)+1);
+			//Calculate impact parameters and fill histograms
+			double dca[2] = {-99999,-99999};
+			double cov[3] = {-99999,-99999,-99999};
 
-		if (!CalculateTrackImpactParameter(trackAOD,dca,cov)) continue;
+			if (!CalculateTrackImpactParameter(trackAOD,dca,cov)) continue;
 
-		fh1dTracksImpParXY->Fill(GetValImpactParameter(kXY,dca,cov),fPythiaEventWeight);
-		fh1dTracksImpParXYZ->Fill(GetValImpactParameter(kXYZ,dca,cov),fPythiaEventWeight);
-		fh1dTracksImpParXYSignificance->Fill(GetValImpactParameter(kXYSig,dca,cov),fPythiaEventWeight);
-		fh1dTracksImpParXYZSignificance->Fill(GetValImpactParameter(kXYZSig,dca,cov),fPythiaEventWeight);
+			fh1dTracksImpParXY->Fill(GetValImpactParameter(kXY,dca,cov),fPythiaEventWeight);
+			fh1dTracksImpParXYZ->Fill(GetValImpactParameter(kXYZ,dca,cov),fPythiaEventWeight);
+			fh1dTracksImpParXYSignificance->Fill(GetValImpactParameter(kXYSig,dca,cov),fPythiaEventWeight);
+			fh1dTracksImpParXYZSignificance->Fill(GetValImpactParameter(kXYZSig,dca,cov),fPythiaEventWeight);
 
-		if(fIsPythia){
+			if(fIsPythia){
 			
-			double dcaMC[2] = {-99999,-99999};
-			double covMC[3] = {-99999,-99999,-99999};
+				double dcaMC[2] = {-99999,-99999};
+				double covMC[3] = {-99999,-99999,-99999};
 
-			if(!CalculateTrackImpactParameterTruth(trackAOD,dcaMC,covMC)) continue;
+				if(!CalculateTrackImpactParameterTruth(trackAOD,dcaMC,covMC)) continue;
 
-			fh1dTracksImpParXYTruth->Fill(GetValImpactParameter(kXY,dcaMC,covMC),fPythiaEventWeight);
-			fh1dTracksImpParXYZTruth->Fill(GetValImpactParameter(kXYZ,dcaMC,covMC),fPythiaEventWeight);
-			// Fill residual plots
-			double residualxy = TMath::Abs(GetValImpactParameter(kXY,dca,cov)) - TMath::Abs(GetValImpactParameter(kXY,dcaMC,covMC));
-			residualxy /= TMath::Sqrt(cov[0]);
-			fh1dTracksImpParXYResidualTruth->Fill(residualxy,fPythiaEventWeight);
-			double residualxyz = TMath::Abs(GetValImpactParameter(kXYZ,dca,cov)) - TMath::Abs(GetValImpactParameter(kXYZ,dcaMC,covMC));
-			residualxyz /= 	GetValImpactParameter(kXYZSigmaOnly,dca,cov);
-			fh1dTracksImpParXYZResidualTruth->Fill(residualxyz,fPythiaEventWeight);
+				fh1dTracksImpParXYTruth->Fill(GetValImpactParameter(kXY,dcaMC,covMC),fPythiaEventWeight);
+				fh1dTracksImpParXYZTruth->Fill(GetValImpactParameter(kXYZ,dcaMC,covMC),fPythiaEventWeight);
+				// Fill residual plots
+				double residualxy = TMath::Abs(GetValImpactParameter(kXY,dca,cov)) - TMath::Abs(GetValImpactParameter(kXY,dcaMC,covMC));
+				residualxy /= TMath::Sqrt(cov[0]);
+				fh1dTracksImpParXYResidualTruth->Fill(residualxy,fPythiaEventWeight);
+				double residualxyz = TMath::Abs(GetValImpactParameter(kXYZ,dca,cov)) - TMath::Abs(GetValImpactParameter(kXYZ,dcaMC,covMC));
+				residualxyz /= 	GetValImpactParameter(kXYZSigmaOnly,dca,cov);
+				fh1dTracksImpParXYZResidualTruth->Fill(residualxyz,fPythiaEventWeight);
+			}
 		}
+		trackAOD = NULL;
+		delete trackAOD;
 	}
-	trackAOD = NULL;
-	delete trackAOD;
 
 	// Main part jet analysis
 	//preparation
@@ -1001,6 +1041,9 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 
 	Double_t randomConePt = GetDeltaPtRandomCone();
 	f2histRhoVsDeltaPt->Fill(randomConePt, fJetContainerData->GetRhoVal(), fPythiaEventWeight);
+
+
+	if(fApplyV0Rec) SelectV0CandidateVIT();
 
 
 	if(fIsPythia)
@@ -1070,11 +1113,12 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 
 		PtRelSample = kFALSE;
 
+		AliAODTrack* trackAOD = 0x0;
+
 		while ((selJet = fJetContainerData->GetNextAcceptJet()))
 		{
 			//if(!(fJetCutsHF->IsJetSelected(selJet))) continue;
 
-			AliAODTrack* trackAOD = 0x0;
 			Int_t ntracks = (Int_t)selJet->GetNumberOfTracks();
 
 			for(Int_t itrack = 0; itrack < ntracks; ++itrack)
@@ -1107,6 +1151,9 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 	}
 	//######################
 
+	AliAODMCParticle* partonAOD = NULL;
+
+	std::vector<double> sImpParXY,sImpParXYZ,sImpParXYSig,sImpParXYZSig;
 
 	while ((jetrec = fJetContainerData->GetNextJet()))
 	{
@@ -1120,7 +1167,6 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 		}
 
 		// make inclusive signed imp. parameter constituent histograms
-		AliAODTrack* trackAOD = 0x0;
 		Int_t ntracks = (Int_t)jetrec->GetNumberOfTracks();
 
 		double dca[2] = {-99999,-99999};
@@ -1139,9 +1185,6 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 			jetmatched = 0x0;
 			jetmatched =jetrec->MatchedJet();
 
-			AliAODMCParticle* partonAOD = NULL;
-			partonAOD = NULL;
-
 			if(jetmatched){
 				partonAOD = fHFJetUtils->IsMCJetParton(fMCArray, jetmatched, 0.4);
 
@@ -1153,9 +1196,6 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 					else if(partonpdg==5)fJetFlavor=3;
 				}
 			}
-
-			partonAOD=NULL;
-			delete partonAOD;
 		}
 		//	Printf("%s:%i",__FUNCTION__,__LINE__);
 
@@ -1231,8 +1271,6 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 		    			}
 				}
         		}
-
-			std::vector<double> sImpParXY,sImpParXYZ,sImpParXYSig,sImpParXYZSig;
 
 			for(Int_t itrack = 0; itrack < ntracks; ++itrack)
 			{
@@ -1921,9 +1959,10 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 		delete trackAOD;
 
 	}//End jet loop
+	partonAOD=NULL;
+	delete partonAOD;
 	jetrec = 0x0; jetmatched=0x0;
 	delete jetmatched; delete jetrec;
-	
 
 	if(fEnableV0GammaRejection){
 		if( fIsPythia > 0 && fInputEvent->IsA()==AliAODEvent::Class() && !(fV0Reader->AreAODsRelabeled())){
@@ -2136,6 +2175,7 @@ Bool_t AliAnalysisTaskBJetTC::IsSelected(Int_t &WhyRejected,ULong_t &RejectionBi
 	    		  RejectionBits+=1<<kNoVertexTracks;
 
 	    	}
+		if(vtxTtl.Contains("WithConstraint")) fVertexConstraint = kTRUE;
 	    	if(trkVtx->GetNContributors()<1)	{
 	    	    		 accept=kFALSE;
 	    	    		 RejectionBits+=1<<kTooFewVtxContrib;
@@ -2273,6 +2313,15 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 
 	  fVtxTagger2Prong = new AliHFJetsTaggingVertex();
 	  fVtxTagger2Prong->SetCuts(jetCuts2Prong);
+
+	  delete esdTrackCuts;
+	  delete jetCuts3Prong;
+	  delete jetCuts2Prong;
+  }
+
+  if(fDoImprovedDCACut){
+	fDecayVertex = new AliAnalysisTaskWeakDecayVertexer();
+	fDecayVertex->SetDoImprovedDCAV0DauPropagation(kTRUE);
   }
 
   if(fEnableV0GammaRejection){
@@ -3238,34 +3287,17 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 // ######################################################################################## Calculate impact parameters
 Bool_t AliAnalysisTaskBJetTC::CalculateTrackImpactParameter(AliAODTrack * track,double *impar, double * cov)
 {
-	AliAODVertex *vtxAODNew=fPrimaryVertex;
-	TString title=fPrimaryVertex->GetTitle();
-	if(!title.Contains("VertexerTracks")) return kFALSE;
+	AliAODVertex *vtxAODNew=0x0;
 	AliESDVertex *vtxESDNew =0x0;
 	Bool_t recalculate = kFALSE;
 	if( fPrimaryVertex->GetNContributors() < 30){
 		recalculate=kTRUE;
-		AliVertexerTracks *vertexer = new AliVertexerTracks(fAODIn->GetMagneticField());
-		Int_t ndg = 1;
-		vertexer->SetITSMode();
-		vertexer->SetMinClusters(3);
-		vertexer->SetConstraintOff();
-		if(title.Contains("WithConstraint")) {
-			Float_t diamondcovxy[3];
-			fAODIn->GetDiamondCovXY(diamondcovxy);
-			Double_t pos[3]={fAODIn->GetDiamondX(),fAODIn->GetDiamondY(),0.};
-			Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
-			AliESDVertex *diamond = new AliESDVertex(pos,cov,1.,1);
-			vertexer->SetVtxStart(diamond);
-			delete diamond; diamond=NULL;
-		}
 		Int_t skipped[1] = {-1};
 		Int_t id = (Int_t)track->GetID();
 		if(id<0) return kFALSE;
 		skipped[0] = id;
-		vertexer->SetSkipTracks(1,skipped);
-		vtxESDNew = vertexer->FindPrimaryVertex(fAODIn);
-		delete vertexer; vertexer=NULL;
+		fVertexer->SetSkipTracks(1,skipped);
+		vtxESDNew = fVertexer->FindPrimaryVertex(fAODIn);
 		if(!vtxESDNew) return kFALSE;
 		if(vtxESDNew->GetNContributors()<=0) {
 			delete vtxESDNew; vtxESDNew=NULL;
@@ -3338,32 +3370,15 @@ Bool_t AliAnalysisTaskBJetTC::CalculateTrackImpactParameterTruth(AliAODTrack * t
 
 Bool_t AliAnalysisTaskBJetTC::CalculateJetSignedTrackImpactParameter(AliAODTrack * track,AliEmcalJet * jet ,double *impar, double * cov, double &sign, double &dcajetrack, double &lineardecaylength){
 
-	TString title=fPrimaryVertex->GetTitle();
-	if(!title.Contains("VertexerTracks")) return kFALSE;
-	AliVertexerTracks *vertexer = new AliVertexerTracks(fAODIn->GetMagneticField());
-	Int_t ndg = 1;
-	vertexer->SetITSMode();
-	vertexer->SetMinClusters(3);
-	vertexer->SetConstraintOn();
-	if(title.Contains("WithConstraint")) {
-		Float_t diamondcovxy[3];
-		fAODIn->GetDiamondCovXY(diamondcovxy);
-		Double_t pos[3]={fAODIn->GetDiamondX(),fAODIn->GetDiamondY(),0.};
-		Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
-		AliESDVertex *diamond = new AliESDVertex(pos,cov,1.,1);
-		vertexer->SetVtxStart(diamond);
-		delete diamond; diamond=NULL;
-	}
 	Int_t skipped[1] = {-1};
 	Int_t id = (Int_t)track->GetID();
 	if(id<0) return kFALSE;
 	skipped[0] = id;
-	vertexer->SetSkipTracks(1,skipped);
-	AliESDVertex *vtxESDNew = vertexer->FindPrimaryVertex(fAODIn);
-	delete vertexer; vertexer=NULL;
+	fVertexer->SetSkipTracks(1,skipped);
+	AliESDVertex *vtxESDNew = fVertexer->FindPrimaryVertex(fAODIn);
 	if(!vtxESDNew) return kFALSE;
 	if(vtxESDNew->GetNContributors()<=0) {
-		delete vtxESDNew; vtxESDNew=NULL;
+		vtxESDNew=NULL; delete vtxESDNew; 
 		return kFALSE;
 	}
 	// convert to AliAODVertex
@@ -3392,9 +3407,7 @@ Bool_t AliAnalysisTaskBJetTC::CalculateJetSignedTrackImpactParameter(AliAODTrack
 		if(!fDoImprovedDCACut){
 			bjetparam.GetDCA(&etp, fAODIn->GetMagneticField(), xa, xb);
 		}else{
-			AliAnalysisTaskWeakDecayVertexer* DecayVertex = new AliAnalysisTaskWeakDecayVertexer();
-			DecayVertex->SetDoImprovedDCAV0DauPropagation(kTRUE);
-			DecayVertex->GetDCAV0Dau(&bjetparam, &etp, xa, xb, fAODIn->GetMagneticField() );
+			fDecayVertex->GetDCAV0Dau(&bjetparam, &etp, xa, xb, fAODIn->GetMagneticField() );
 		}
 		Double_t xyz[3] = { 0., 0., 0. };
 		Double_t xyzb[3] = { 0., 0., 0. };
@@ -3582,16 +3595,16 @@ Bool_t AliAnalysisTaskBJetTC::IsTrackAcceptedQuality(AliAODTrack* track ,AliEmca
 // ######################################################################################## Jet matching 1/4
 Bool_t AliAnalysisTaskBJetTC::MatchJetsGeometricDefault()
 {
-	AliJetContainer *jets1 = static_cast<AliJetContainer*>(fJetCollArray.At(0));
-	AliJetContainer *jets2 = static_cast<AliJetContainer*>(fJetCollArray.At(1));
 	double matchingpar1 =0.25;
 	double matchingpar2 =0.25;
-	if (!jets1 || !jets1->GetArray() || !jets2 || !jets2->GetArray()) return kFALSE;
+	if (!fJetContainerData || !fJetContainerData->GetArray() || !fJetContainerMC || !fJetContainerMC->GetArray()) return kFALSE;
 	DoJetLoop();
 	AliEmcalJet* jet1 = 0;
-	jets1->ResetCurrentID();
-	while ((jet1 = jets1->GetNextJet())) {
-		AliEmcalJet *jet2 = jet1->ClosestJet();
+	AliEmcalJet *jet2 = 0;
+
+	fJetContainerData->ResetCurrentID();
+	while ((jet1 = fJetContainerData->GetNextJet())) {
+		jet2 = jet1->ClosestJet();
 		if (!jet2) continue;
 		if (jet2->ClosestJet() != jet1) continue;
 		if (jet1->ClosestJetDistance() > matchingpar1 || jet2->ClosestJetDistance() > matchingpar2) continue;
@@ -3600,8 +3613,7 @@ Bool_t AliAnalysisTaskBJetTC::MatchJetsGeometricDefault()
 		jet2->SetMatchedToClosest(1);
 	}
 	jet1=NULL; delete jet1;
-	jets1=NULL; jets2=NULL;
-	delete jets1; delete jets2;
+	jet2=NULL; delete jet2;
 	return kTRUE;
 }
 // ######################################################################################## Jet matching 2/4
@@ -3609,27 +3621,23 @@ void AliAnalysisTaskBJetTC::DoJetLoop()
 {
 	// Do the jet loop.
 	double minjetpt =1.;
-	AliJetContainer *jets1 = static_cast<AliJetContainer*>(fJetCollArray.At(0));
-	AliJetContainer *jets2 = static_cast<AliJetContainer*>(fJetCollArray.At(1));
-	if (!jets1 || !jets1->GetArray() || !jets2 || !jets2->GetArray()) return;
+
 	AliEmcalJet* jet1 = 0;
 	AliEmcalJet* jet2 = 0;
-	jets2->ResetCurrentID();
-	while ((jet2 = jets2->GetNextJet())) jet2->ResetMatching();
-	jets1->ResetCurrentID();
-	while ((jet1 = jets1->GetNextJet())) {
+	fJetContainerMC->ResetCurrentID();
+	while ((jet2 = fJetContainerMC->GetNextJet())) jet2->ResetMatching();
+	fJetContainerData->ResetCurrentID();
+	while ((jet1 = fJetContainerData->GetNextJet())) {
 		jet1->ResetMatching();
 		if (jet1->MCPt() < minjetpt) continue;
-		jets2->ResetCurrentID();
-		while ((jet2 = jets2->GetNextJet())) {
+		fJetContainerMC->ResetCurrentID();
+		while ((jet2 = fJetContainerMC->GetNextJet())) {
 			SetMatchingLevel(jet1, jet2, 1);
 		} // jet2 loop
 	} // jet1 loop
 
 	jet1=NULL; jet2=NULL;
 	delete jet1; delete jet2;
-	jets1=NULL; jets2=NULL;
-	delete jets1; delete jets2;
 }
 // ######################################################################################## Jet matching 3/4
 void AliAnalysisTaskBJetTC::SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, int matching)
@@ -3699,10 +3707,11 @@ Bool_t AliAnalysisTaskBJetTC::IsV0PhotonFromBeamPipeDaughter(const AliAODTrack* 
 
 	fReaderGammas = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
 
+	AliAODConversionPhoton* PhotonCandidate = 0;
 	// Loop over Photon Candidates allocated by ReaderV1
 	for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
 
-		    AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(i);
+		    PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(i);
 		    if(!PhotonCandidate) continue;
 
 		    posid = PhotonCandidate->GetLabel1();
@@ -3754,7 +3763,6 @@ Bool_t AliAnalysisTaskBJetTC::IsV0Daughter(const AliAODTrack* track)
 Bool_t AliAnalysisTaskBJetTC::SelectV0CandidateVIT()
 {
   AliAODv0* v0 = 0; // pointer to V0 candidates
-  TVector3 vecV0Momentum; // 3D vector of V0 momentum
   Double_t dMassV0K0s = 0; // invariant mass of the K0s candidate
   Double_t dMassV0Lambda = 0; // invariant mass of the Lambda candidate
   Double_t dMassV0ALambda = 0; // invariant mass of the Lambda candidate
@@ -3842,7 +3850,6 @@ const Double_t fgkdMassLambdaMax = 1.25; // [GeV/c^2]
     iCutIndex++;
 
     Double_t dPtV0 = TMath::Sqrt(v0->Pt2V0()); // transverse momentum of V0
-    vecV0Momentum = TVector3(v0->Px(), v0->Py(), v0->Pz()); // set the vector of V0 momentum
 
     // Sigma of the mass peak window
     Double_t dMassPeakWindowK0s = dNSigmaMassMax * ( 0.0044 + 0.0004 * (dPtV0 - 1.) );
@@ -3918,6 +3925,7 @@ const Double_t fgkdMassLambdaMax = 1.25; // [GeV/c^2]
     AliAODVertex* prodVtxDaughterNeg = (AliAODVertex*)(trackNeg->GetProdVertex()); // production vertex of the negative daughter track
     Char_t cTypeVtxProdNeg = prodVtxDaughterNeg->GetType(); // type of the production vertex
 
+    delete prodVtxDaughterPos; delete prodVtxDaughterNeg;
 
     //===== Start of reconstruction cutting =====
 
@@ -4248,6 +4256,7 @@ const Double_t fgkdMassLambdaMax = 1.25; // [GeV/c^2]
 
    }
   fJetContainerData->ResetCurrentID();
+  jetrec=NULL; delete jetrec;
 
   if(bIsCandidateK0s || bIsCandidateLambda || bIsCandidateALambda)
 	 new((*fV0CandidateArray)[fV0CandidateArray->GetEntriesFast()]) AliAODv0(*v0);
@@ -4643,6 +4652,8 @@ Double_t AliAnalysisTaskBJetTC::GetDeltaPtRandomCone()
 			}
 		}
 
+		jet=NULL; delete jet;
+
 		if(LeadingJet){
 			LJeta = LeadingJet->Eta();
 			LJphi = LeadingJet->Phi();
@@ -4669,11 +4680,14 @@ Double_t AliAnalysisTaskBJetTC::GetDeltaPtRandomCone()
 
 	  } while (dLJ < 0.45 || dSLJ < 0.45);
 
+	AliVTrack* tmpTrack = 0x0;
+	AliAODTrack* trackAOD = 0x0;
+
 	for(Int_t i = 0; i < partcont->GetNParticles(); i++) {
 
 		if(!partcont->GetParticle(i)) continue;
-		AliVTrack* tmpTrack = static_cast<AliVTrack*>(partcont->GetParticle(i));
-		AliAODTrack* trackAOD = (AliAODTrack*)partcont->GetParticle(i);
+		tmpTrack = static_cast<AliVTrack*>(partcont->GetParticle(i));
+		trackAOD = (AliAODTrack*)partcont->GetParticle(i);
 		if(!((trackAOD)->TestFilterBit(1 << 4)) && !((trackAOD)->TestFilterBit(1 << 9)) ) continue;
 
 		if(fabs(tmpTrack->Eta()) > 0.9) continue;
@@ -4686,6 +4700,8 @@ Double_t AliAnalysisTaskBJetTC::GetDeltaPtRandomCone()
 			tmpConePt += tmpTrack->Pt();
 		}
 	}
+	tmpTrack=NULL; trackAOD=NULL;
+	delete tmpTrack; delete trackAOD;
 
 	partcont=NULL;
 	delete partcont;
