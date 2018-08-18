@@ -260,6 +260,8 @@ struct CutConfig_Pair {
   Bool_t remove_same_label { kFALSE },
          TPCOnly { kTRUE };
 
+  Int_t algorithm_code { 2 };
+
   CutConfig_Pair(){};
 };
 
@@ -587,6 +589,7 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
   , default_pair.max_share_quality
   , default_pair.max_share_fraction
   , default_pair.remove_same_label
+  , default_pair.algorithm_code
   };
 
   // sanity checks
@@ -731,6 +734,8 @@ AliFemtoAnalysisPionPion::BuildPairCut(const CutParams &p) const
   cut->SetShareQualityMax(p.pair_max_share_quality);
   cut->SetShareFractionMax(p.pair_max_share_fraction);
   cut->SetRemoveSameLabel(p.pair_remove_same_label);
+
+  cut->SetAlternativeAlgorithm(p.pair_algorithm);
 
   return cut;
 }
