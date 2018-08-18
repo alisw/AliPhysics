@@ -79,6 +79,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   void                   SetRecombScheme(ERecoScheme_t scheme)      { if (IsLocked()) return; fRecombScheme     = scheme; }
   void                   SetTrackEfficiency(Double_t t)             { if (IsLocked()) return; fTrackEfficiency  = t     ; }
   void                   SetTrackEfficiencyOnlyForEmbedding(Bool_t b) { if (IsLocked()) return; fTrackEfficiencyOnlyForEmbedding = b     ; }
+  void                   SetEnableAliBasicParticleCompatibility(Bool_t b) { if (IsLocked()) return; fEnableAliBasicParticleCompatibility = b; }
   void                   SetLegacyMode(Bool_t mode)                 { if (IsLocked()) return; fLegacyMode       = mode  ; }
   void                   SetFillGhost(Bool_t b=kTRUE)               { if (IsLocked()) return; fFillGhost        = b     ; }
   void                   SetRadius(Double_t r)                      { if (IsLocked()) return; fRadius           = r     ; }
@@ -195,6 +196,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   Bool_t                 fIsInit;                 //!<!=true if already initialized
   Bool_t                 fIsPSelSet;              //!<!=true if physics selection was set
   Bool_t                 fIsEmcPart;              //!<!=true if emcal particles are given as input (for clusters)
+  Bool_t                 fEnableAliBasicParticleCompatibility; ///< Flag to allow compatibility with AliBasicParticle constituents
   Bool_t                 fLegacyMode;             //!<!=true to enable FJ 2.x behavior
   Bool_t                 fFillGhost;              ///< =true ghost particles will be filled in AliEmcalJet obj
 
@@ -214,7 +216,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalJetTask, 28);
+  ClassDef(AliEmcalJetTask, 29);
   /// \endcond
 };
 #endif
