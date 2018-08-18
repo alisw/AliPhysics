@@ -217,6 +217,8 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fMeanPtNTaggedA(0)
 ,fMeanPtNTaggedB(0)
 ,fMeanPtNTaggedC(0)
+,fPt2Tagged(0)
+,fPt2NTagged(0)
 ,fMothMCThrustTagged(0)
 ,fMothMCSpherTagged(0)
 ,fMothRecLPTagged(0)
@@ -389,7 +391,9 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fMCElecHaNoPartner(0)
 ,fMCElecHaRemovedPartner(0)
 ,fMCElecHaTruePartnerTrigger(0)
+,fMCElecHaTruePartnerTriggerWW(0)
 ,fMCElecHaNoPartnerTrigger(0)
+,fMCElecHaNoPartnerTriggerWW(0)
 ,fMCElecHaRemovedPartnerTrigger(0)
 ,fElecHaMixedEvent(0)
 ,fLSElecHaMixedEvent(0)
@@ -601,6 +605,8 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fMeanPtNTaggedA(0)
 ,fMeanPtNTaggedB(0)
 ,fMeanPtNTaggedC(0)
+,fPt2Tagged(0)
+,fPt2NTagged(0)
 ,fMothMCThrustTagged(0)
 ,fMothMCSpherTagged(0)
 ,fMothRecLPTagged(0)
@@ -773,7 +779,9 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fMCElecHaNoPartner(0)
 ,fMCElecHaRemovedPartner(0)
 ,fMCElecHaTruePartnerTrigger(0)
+,fMCElecHaTruePartnerTriggerWW(0)
 ,fMCElecHaNoPartnerTrigger(0)
+,fMCElecHaNoPartnerTriggerWW(0)
 ,fMCElecHaRemovedPartnerTrigger(0)
 ,fElecHaMixedEvent(0)
 ,fLSElecHaMixedEvent(0)
@@ -1266,6 +1274,7 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 	AliAODMCParticle *MCMother = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(MCMotherLabel));  
 	MCMotherPDG = abs(MCMother->GetPdgCode());
 	MCGMotherLabel = abs(MCMother->GetMother());
+	MotherPt=MCMother->Pt();
 	//     cout << "GMother " << MCGMotherLabel << endl;
       }
       if (MCGMotherLabel>0) {
@@ -1297,6 +1306,8 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
       
       if (!RedTrack->IsPhotonic()) continue;
       if (RedTrack->TruePartner()) {
+	fPt2Tagged->Fill(RedTrack->Pt(), RedTrack->TruePartnerMCPt(), LPtrack->Pt());
+	
 	//	fMCThrustTagged->Fill(RedTrack->Pt(), ThrustVar[0], Case);
 	fMCSpherTagged->Fill(RedTrack->Pt(), SpherVar, Case);
 	if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fRecLPTagged->Fill(RedTrack->Pt(), LPtrack->Pt(), Case);
@@ -1310,7 +1321,7 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 	fMeanPtTaggedB->Fill(RedTrack->Pt(), AverageMCPt[2], Case);
 	fMeanPtTaggedC->Fill(RedTrack->Pt(), AverageMCPt[3], Case);
 	
-	fPt2Tagged->Fill(RedTrack->Pt(), RedTrack->TruePartnerMCPt(), LPtrack->Pt());
+
 
 
 	//	fMothMCThrustTagged->Fill(MotherPt, ThrustVar[0]);
@@ -1332,9 +1343,13 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 	  // fMothMultCorrTaggedH->Fill(MotherPt, nTrAccCorrMax);
 	  fMothNHadTaggedH->Fill(MotherPt, MCnHadrons[0]);
 	  fMothMeanPtTaggedH->Fill(MotherPt, AverageMCPt[0]);
+	
 	}
       }
       else {
+
+	fPt2NTagged->Fill(RedTrack->Pt(), RedTrack->TruePartnerMCPt(), LPtrack->Pt());
+	
 	//	fMCThrustNTagged->Fill(RedTrack->Pt(), ThrustVar[0], Case);
 	fMCSpherNTagged->Fill(RedTrack->Pt(), SpherVar, Case);
 	if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fRecLPNTagged->Fill(RedTrack->Pt(), LPtrack->Pt(), Case);
@@ -1348,7 +1363,7 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 	fMeanPtNTaggedB->Fill(RedTrack->Pt(), AverageMCPt[2], Case);
 	fMeanPtNTaggedC->Fill(RedTrack->Pt(), AverageMCPt[3], Case);
 
-	fPt2NTagged->Fill(RedTrack->Pt(), RedTrack->TruePartnerMCPt(), LPtrack->Pt());
+
 
 
 	//	fMothMCThrustNTagged->Fill(MotherPt, ThrustVar[0]);
