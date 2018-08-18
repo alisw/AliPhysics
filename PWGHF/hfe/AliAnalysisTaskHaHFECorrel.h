@@ -66,9 +66,9 @@ public:
     virtual void   Terminate(Option_t *);
     
     //******************** ANALYSIS
-    AliVTrack* FindLPAndHFE(TObjArray* RedTracksHFE, const AliVVertex *pVtx, Int_t nMother, Int_t listMother[], Double_t mult, Bool_t &EvContTP, Bool_t &EvContNTP, Double_t &MotherPt);
-    void FindPhotonicPartner(Int_t iTracks, AliVTrack* track,  const AliVVertex *pVtx, Int_t nMother, Int_t listMother[], Int_t &LSPartner, Int_t &ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID,  Float_t *LSPartnerWeight, Float_t *ULSPartnerWeight, Bool_t &trueULSPartner, Bool_t &isPhotonic, Double_t &recTruePairMass);
-    void CheckPhotonicPartner(AliVTrack* Vtrack, Bool_t Tagged, Double_t &MotherPt, Double_t recTruePairMass);
+    AliVTrack* FindLPAndHFE(TObjArray* RedTracksHFE, const AliVVertex *pVtx, Int_t nMother, Int_t listMother[], Double_t mult, Bool_t &EvContTP, Bool_t &EvContNTP);
+    void FindPhotonicPartner(Int_t iTracks, AliVTrack* track,  const AliVVertex *pVtx, Int_t nMother, Int_t listMother[], Int_t &LSPartner, Int_t &ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID,  Float_t *LSPartnerWeight, Float_t *ULSPartnerWeight, Bool_t &trueULSPartner, Bool_t &isPhotonic, Float_t &MCPartnerPt, Float_t &RecPartnerPt);
+    void CheckPhotonicPartner(AliVTrack* Vtrack, Bool_t Tagged, Float_t& MCPartnerPt, Float_t RecPartnerPt);
     void CorrelateElectron(TObjArray* RedTracksHFE);
 
     void CorrelateLP(AliVTrack* LPtrack,  const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], TObjArray* RedTracksHFE);
@@ -98,7 +98,7 @@ public:
     Bool_t PhotElecTrackCuts(const AliVVertex *pVtx,AliVTrack *aetrack, Int_t nMother, Int_t listMother[]);
     
     void EvaluateTaggingEfficiency(AliVTrack * track, Int_t LSPartner, Int_t ULSPartner, Bool_t trueULSPartner); 
-    Bool_t CloneAndReduceTrackList(TObjArray* RedTracks, AliVTrack* track, Int_t LSPartner, Int_t ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID, Float_t *LSPartnerWeight, Float_t *ULSPartnerWeight, Bool_t trueULSPartner, Bool_t isPhotonic, Bool_t isHadron);
+    Bool_t CloneAndReduceTrackList(TObjArray* RedTracks, AliVTrack* track, Int_t LSPartner, Int_t ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID, Float_t *LSPartnerWeight, Float_t *ULSPartnerWeight, Bool_t trueULSPartner, Float_t MCPartnerPt, Float_t RecPartnerPt, Bool_t isPhotonic, Bool_t isHadron);
 
     void BinLogX(TAxis *axis);
     void SetPDGAxis(TAxis *axis, std::vector<TString> PDGLabel);
@@ -141,6 +141,7 @@ public:
     void SetPhotElecPtCut (Double_t AssPtCut) {fPhotElecPtCut = AssPtCut;};
     void SetPhotElecTPCnCut (Int_t AssTPCnCut) {fPhotElecTPCnCut = AssTPCnCut;};
     void SetPhotElecITSrefitCut(Bool_t AssITSrefitCut) {fPhotElecITSrefitCut = AssITSrefitCut;};  
+    void SetPhotCorrCase(Int_t PhotCorrCase) {fPhotCorrCase = PhotCorrCase;};
 
     void SetHTPCnCut(Int_t HTPCnCut) {fHTPCnCut = HTPCnCut;}
     void SetHITSrefitCut(Bool_t HITSrefitCut) {fHITSrefitCut = HITSrefitCut;};   
@@ -195,7 +196,7 @@ public:
     Double_t              Eta2y(Double_t pt, Double_t m, Double_t eta) const;
     Double_t              GetHadronRecEff(Double_t pt, Double_t phi, Double_t eta, Double_t zVtx);
     Double_t              GetElectronRecEff(Double_t pt, Double_t phi, Double_t eta, Double_t zVtx);
-    Double_t              GetNonTagCorr(Double_t ptTrack, Double_t ptAsso, Double_t mass);
+    Double_t              GetNonTagCorr(Double_t ptTrack, Double_t ptAsso);
 
     Double_t              Sphericity(const TObjArray* tracks, Double_t MaxEta, Double_t MinPt);
     Bool_t                Thrust(const TObjArray* tracks, Double_t t[2], Double_t MaxEta, Double_t MinPt);
@@ -229,7 +230,7 @@ public:
     Double_t              fPhotElecSigmaTPCcut;          //
     Int_t                 fPhotElecTPCnCut;              // TPC number of clusters for associated electron
     Bool_t                fPhotElecITSrefitCut;          // ITS refit for associated electron
-    
+    Int_t                 fPhotCorrCase;           //
 
     // Associate Hadron (non Electron)
     Double_t              fAssNonEleTPCcut;         //  
@@ -334,7 +335,8 @@ public:
     TH3F                 *fMeanPtNTaggedB; //!
     TH3F                 *fMeanPtNTaggedC; //!
 
-
+    TH3F *fPt2Tagged; //!
+    TH3F *fPt2NTagged; //!
    TH2F                  *fMothMCThrustTagged; //!
     TH2F                  *fMothMCSpherTagged; //! 
     TH2F                  *fMothRecLPTagged; //!
@@ -436,6 +438,12 @@ public:
     TH2F                  *fPhotPt1Pt2Only;         //!
     THnSparseF            *fPhotPt1Pt2Corr;         //!
     THnSparseF            *fPhotPt1Pt2MC;           //!
+    THnSparseF            *fPhotPt1RecPt2;         //!
+    THnSparseF            *fPhotPt1RecPt2Corr;         //!
+    THnSparseF            *fPhotPt1RecPt2Rec;         //!
+    THnSparseF            *fPhotPt1RecPt2RecCorr;         //!
+    THnSparseF            *fPhotPt1Pt2Rec;         //!
+    THnSparseF            *fPhotPt1Pt2RecCorr;         //!
     TH2F                  *fPhotPt2MCRec;           //!
     THnSparseF            *fPhotPt1E;               //!
     THnSparseF            *fPhotPt1Pt2E;            //!
@@ -536,7 +544,9 @@ public:
     THnSparse             *fMCElecHaNoPartner;      //!
     THnSparse             *fMCElecHaRemovedPartner; //!
     TH2F                  *fMCElecHaTruePartnerTrigger;        //!
+    TH2F                  *fMCElecHaTruePartnerTriggerWW;        //!
     TH2F                  *fMCElecHaNoPartnerTrigger;          //!
+    TH2F                  *fMCElecHaNoPartnerTriggerWW;          //!
     TH2F                  *fMCElecHaRemovedPartnerTrigger; //!
     THnSparse             *fElecHaMixedEvent;       //!
     THnSparse             *fLSElecHaMixedEvent;     //!
@@ -657,10 +667,10 @@ class AliBasicParticleHaHFE : public AliVParticle
 {
  public:
  AliBasicParticleHaHFE() 
-   : fID(0), fEta(0), fPhi(0), fpT(0), fCharge(0), fULSpartner(0), fLSpartner(0) , fIDLSPartner(0), fIDULSPartner(0), fWeightLSPartner(0), fWeightULSPartner(0), fTrueULSPartner(kFALSE), fIsPhotonic(kFALSE), fIsHadron(kFALSE), fLabel(0)
+   : fID(0), fEta(0), fPhi(0), fpT(0), fCharge(0), fULSpartner(0), fLSpartner(0) , fIDLSPartner(0), fIDULSPartner(0), fWeightLSPartner(0), fWeightULSPartner(0), fTrueULSPartner(kFALSE), fTruePartnerMCPt(-999), fTruePartnerRecPt(-999), fIsPhotonic(kFALSE), fIsHadron(kFALSE), fLabel(0)
     {}
- AliBasicParticleHaHFE(Int_t id, Float_t eta, Float_t phi, Float_t pt, Short_t charge, Short_t LS, Short_t ULS, Int_t *LSPartner, Int_t *ULSPartner, Float_t *LSPartnerWeight, Float_t *ULSPartnerWeight, Bool_t trueULSPartner, Bool_t isPhotonic, Bool_t isHadron, Int_t label)
-   : fID(id), fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fULSpartner(ULS), fLSpartner(LS), fIDLSPartner(0), fIDULSPartner(0),  fWeightLSPartner(0), fWeightULSPartner(0),  fTrueULSPartner(trueULSPartner), fIsPhotonic(isPhotonic), fIsHadron(isHadron), fLabel(label)
+ AliBasicParticleHaHFE(Int_t id, Float_t eta, Float_t phi, Float_t pt, Short_t charge, Short_t LS, Short_t ULS, Int_t *LSPartner, Int_t *ULSPartner, Float_t *LSPartnerWeight, Float_t *ULSPartnerWeight, Bool_t trueULSPartner, Float_t truePartnerMCPt, Float_t truePartnerRecPt, Bool_t isPhotonic, Bool_t isHadron, Int_t label)
+   : fID(id), fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fULSpartner(ULS), fLSpartner(LS), fIDLSPartner(0), fIDULSPartner(0),  fWeightLSPartner(0), fWeightULSPartner(0),  fTrueULSPartner(trueULSPartner), fTruePartnerMCPt(truePartnerMCPt), fTruePartnerRecPt(truePartnerRecPt), fIsPhotonic(isPhotonic), fIsHadron(isHadron), fLabel(label)
   {
     fIDLSPartner = new Int_t[LS];
     fIDULSPartner = new Int_t[ULS];
@@ -682,7 +692,7 @@ class AliBasicParticleHaHFE : public AliVParticle
     if (fWeightULSPartner) delete[] fWeightULSPartner;
   }
   AliBasicParticleHaHFE(const AliBasicParticleHaHFE &CopyClass) 
-    : fID(CopyClass.fID), fEta(CopyClass.fEta), fPhi(CopyClass.fPhi), fpT(CopyClass.fpT), fCharge(CopyClass.fCharge), fULSpartner(CopyClass.fULSpartner), fLSpartner(CopyClass.fLSpartner), fIDLSPartner(0), fIDULSPartner(0), fWeightLSPartner(0), fWeightULSPartner(0), fTrueULSPartner(CopyClass.fTrueULSPartner), fIsPhotonic(CopyClass.fIsPhotonic), fIsHadron(CopyClass.fIsHadron), fLabel(CopyClass.fLabel)
+    : fID(CopyClass.fID), fEta(CopyClass.fEta), fPhi(CopyClass.fPhi), fpT(CopyClass.fpT), fCharge(CopyClass.fCharge), fULSpartner(CopyClass.fULSpartner), fLSpartner(CopyClass.fLSpartner), fIDLSPartner(0), fIDULSPartner(0), fWeightLSPartner(0), fWeightULSPartner(0), fTrueULSPartner(CopyClass.fTrueULSPartner), fTruePartnerMCPt(CopyClass.fTruePartnerMCPt),fTruePartnerRecPt(CopyClass.fTruePartnerRecPt),fIsPhotonic(CopyClass.fIsPhotonic), fIsHadron(CopyClass.fIsHadron), fLabel(CopyClass.fLabel)
     {
       fIDLSPartner = new Int_t[CopyClass.fLSpartner];
       fIDULSPartner = new Int_t[CopyClass.fULSpartner];
@@ -708,6 +718,8 @@ class AliBasicParticleHaHFE : public AliVParticle
       fULSpartner=CopyClass.fULSpartner;
       fLSpartner=CopyClass.fLSpartner;
       fTrueULSPartner=CopyClass.fTrueULSPartner;
+      fTruePartnerMCPt=CopyClass.fTruePartnerMCPt;
+      fTruePartnerRecPt=CopyClass.fTruePartnerRecPt;
       fIsPhotonic=CopyClass.fIsPhotonic;
       fIsHadron=CopyClass.fIsHadron;
       fIDLSPartner = new Int_t[CopyClass.fLSpartner];
@@ -760,6 +772,8 @@ class AliBasicParticleHaHFE : public AliVParticle
   virtual Float_t  LSPartnerWeight(Int_t i)   const {return fWeightLSPartner[i];}
   virtual Float_t  ULSPartnerWeight(Int_t i)  const {return fWeightULSPartner[i];}
   virtual Bool_t TruePartner() const {return fTrueULSPartner;}
+  virtual Float_t TruePartnerMCPt() const {return fTruePartnerMCPt;}
+  virtual Float_t TruePartnerRecPt() const {return fTruePartnerRecPt;}
   virtual Bool_t IsPhotonic() const {return fIsPhotonic;}
   virtual Bool_t IsHadron() const {return fIsHadron;}
   //  virtual Int_t  PDG() const {return fPDG;}
@@ -779,11 +793,13 @@ class AliBasicParticleHaHFE : public AliVParticle
   Float_t*  fWeightLSPartner;    //! CorrWeight for NoPartner
   Float_t*  fWeightULSPartner;   //! CorrWeight for NoPartner
   Bool_t  fTrueULSPartner; // check if true partner was tagged
+  Float_t fTruePartnerMCPt; // only for
+  Float_t fTruePartnerRecPt; //
   Bool_t  fIsPhotonic;     //
   Bool_t  fIsHadron;       // only for MC
   Int_t   fLabel;
 
-  ClassDef(AliBasicParticleHaHFE, 4); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
+  ClassDef(AliBasicParticleHaHFE, 5); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
 };
 
 
