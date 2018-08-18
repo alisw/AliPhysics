@@ -40,7 +40,6 @@
 #include <AliVCluster.h>
 #include <AliVParticle.h>
 #include <AliLog.h>
-
 #include "AliAnalysisManager.h"
 #include <AliVEventHandler.h>
 #include "AliTLorentzVector.h"
@@ -75,6 +74,7 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance() :
   fPlotMatchedJetHistograms(kFALSE),
   fComputeMBDownscaling(kFALSE),
   fPlotDCal(kFALSE),
+  fDoClosureTest(kFALSE),
   fMinPt(-100),
   fMaxPt(250),
   fNEtaBins(40),
@@ -129,6 +129,7 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance(const cha
   fPlotMatchedJetHistograms(kFALSE),
   fComputeMBDownscaling(kFALSE),
   fPlotDCal(kFALSE),
+  fDoClosureTest(kFALSE),
   fMinPt(-100),
   fMaxPt(250),
   fNEtaBins(40),
@@ -356,7 +357,9 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
   while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
     
     if (fPlotMatchedJetHistograms && fDoJetMatchingMCFraction && jets != fMCJetContainer) {
-      continue; // don't plot det-level histograms if embedding
+      if (!fDoClosureTest) {
+        continue; // don't plot det-level histograms if embedding
+      }
     }
     
     // Jet rejection reason
@@ -374,10 +377,8 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     // Rho vs. Centrality
     if (!jets->GetRhoName().IsNull()) {
       histname = TString::Format("%s/JetHistograms/hRhoVsCent", jets->GetArrayName().Data());
-      if (fForceBeamType != kpp) {
-        title = histname + ";Centrality (%);#rho (GeV/#it{c});counts";
-        fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 500);
-      }
+      title = histname + ";Centrality (%);#rho (GeV/#it{c});counts";
+      fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 500);
     }
     
     // (Centrality, pT, NEF)
@@ -1522,7 +1523,9 @@ void AliAnalysisTaskEmcalJetPerformance::FillJetHistograms()
     TString jetContName = jets->GetName();
     
     if (fPlotMatchedJetHistograms && fDoJetMatchingMCFraction && jets != fMCJetContainer) {
-      continue; // don't plot det-level histograms if embedding
+      if (!fDoClosureTest) {
+        continue; // don't plot det-level histograms if embedding
+      }
     }
     
     Double_t rhoVal = 0;
@@ -2241,10 +2244,9 @@ void AliAnalysisTaskEmcalJetPerformance::ComputeBackground()
     while ((partCont = static_cast<AliParticleContainer*>(nextPartCont()))) {
       
       TString partContName = partCont->GetName();
-      if (!partContName.CompareTo("tracks")) {
+      if (!partContName.CompareTo("tracks") || !partContName.CompareTo("thermalparticles")) {
         
-        AliTrackContainer* trackCont = dynamic_cast<AliTrackContainer*>(partCont);
-        for (auto trackIterator : trackCont->accepted_momentum() ) {
+        for (auto trackIterator : partCont->accepted_momentum() ) {
           
           track.Clear();
           track = trackIterator.first;

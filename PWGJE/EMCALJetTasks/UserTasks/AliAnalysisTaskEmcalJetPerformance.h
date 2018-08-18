@@ -127,6 +127,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void SetMCJetMinMatchingPt(Double_t min)                  { fMCJetMinMatchingPt = min; }
   void SetPlotJetMatchCandThresh(Double_t r)                { fPlotJetMatchCandThresh = r; };
   void SetDoTriggerResponse(Bool_t b)                       { fDoTriggerResponse = b; };
+  void SetDoClosureTest(Bool_t b)                           { fDoClosureTest = b; }
 
  protected:
   void                        ExecOnce()                                        ;
@@ -173,6 +174,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   Bool_t                      fPlotMatchedJetHistograms;            ///< Set whether to plot matched jet histograms
   Bool_t                      fComputeMBDownscaling;                ///< Set whether to compute and plot MB downscaling factors
   Bool_t                      fPlotDCal;                            ///< Set whether to enable several DCal-specific histograms
+  Bool_t                      fDoClosureTest;                       ///< Set whether to do thermal model closure test
   
   // Plotting parameters
   Double_t                    fMinPt;                               ///< Histogram min pT limit
@@ -228,7 +230,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetPerformance &operator=(const AliAnalysisTaskEmcalJetPerformance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetPerformance, 18);
+  ClassDef(AliAnalysisTaskEmcalJetPerformance, 19);
   /// \endcond
 };
 #endif
