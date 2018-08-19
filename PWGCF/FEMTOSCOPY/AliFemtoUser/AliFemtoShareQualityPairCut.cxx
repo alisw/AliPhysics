@@ -67,11 +67,11 @@ bool AliFemtoShareQualityPairCut::Pass(const AliFemtoPair* pair)
 
     const unsigned int n_bits = track1->TPCclusters().GetNbits();
 
-    const auto tpc_clusters_1 = track1->TPCclusters(),
-               tpc_clusters_2 = track2->TPCclusters();
+    const auto &tpc_clusters_1 = track1->TPCclusters(),
+               &tpc_clusters_2 = track2->TPCclusters();
 
-    const auto tpc_sharing_1 = track1->TPCsharing(),
-               tpc_sharing_2 = track2->TPCsharing();
+    const auto &tpc_sharing_1 = track1->TPCsharing(),
+               &tpc_sharing_2 = track2->TPCsharing();
 
     // equivalent methods of determining the share quality and fraction
     if (fAlternativeAlgorithm == 1) {
