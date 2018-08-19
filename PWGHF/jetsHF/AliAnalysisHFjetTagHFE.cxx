@@ -1670,11 +1670,11 @@ Double_t AliAnalysisHFjetTagHFE::ReduceJetEnergyScale(AliEmcalJet* jetC, double 
 
        if(Rmatch<1e-8)
          {
-          JetpTreduce =+ jetcont->Pt();
+          JetpTreduce += jetcont->Pt();
          }
        else
         {
-         if(trkeff>effval)JetpTreduce =+ jetcont->Pt();
+         if(trkeff>effval)JetpTreduce += jetcont->Pt();
         }
       }
 
