@@ -10,6 +10,7 @@
 #include "AliFemtoCutMonitorEventMult.h"
 #include "AliFemtoCutMonitorV0.h"
 #include "AliFemtoCutMonitorXi.h"
+#include "AliFemtoCutMonitorEventVertex.h"
 
 #include "AliFemtoBasicTrackCut.h"
 #include "AliFemtoESDTrackCut.h"

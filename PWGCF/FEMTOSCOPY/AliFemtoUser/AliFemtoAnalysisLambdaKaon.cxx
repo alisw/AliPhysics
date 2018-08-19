@@ -1580,6 +1580,9 @@ void AliFemtoAnalysisLambdaKaon::AddCutMonitors(AliFemtoEventCut* aEventCut, Ali
   aEventCut->AddCutMonitorPass(new AliFemtoCutMonitorEventPartCollSize("_Part1",100,0,100,"_Part2",100,0,100));
   if(!fAnalysisParams.monitorEvCutPassOnly) aEventCut->AddCutMonitorFail(new AliFemtoCutMonitorEventMult("_EvFail"));
 
+  aEventCut->AddCutMonitorPass(new AliFemtoCutMonitorEventVertex("_EvPass"));
+  if(!fAnalysisParams.monitorEvCutPassOnly) aEventCut->AddCutMonitorFail(new AliFemtoCutMonitorEventVertex("_EvFail"));
+
   TString tPartName1, tPartName2;
 
   int tPartType1 = -1;  //Only used if ESD track
