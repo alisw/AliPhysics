@@ -16,6 +16,10 @@
 import ROOT
 import argparse
 import ctypes
+import os
+
+# Prevent ROOT from stealing focus when plotting
+ROOT.gROOT.SetBatch(True)
 
 ###################################################################################
 # Main function
@@ -27,15 +31,18 @@ def scalePtHardHistos(referenceFile):
   
   # Option to remove outliers from specified histograms (see below)
   bRemoveOutliers = False
-  #bRemoveOutliers = True
   outlierLimit=2
   outlierNBinsThreshold=4
+  
+  # Option to print out detailed info about scaling and outlier removal
+  verbose = False
   
   # Get a list of all the output list names, in order to scale all of them
   f = ROOT.TFile("1/AnalysisResultsPtHard1.root", "READ")
   qaListKeys = f.GetListOfKeys()
   qaListNames = []
   eventList = ""
+  print("Scaling the following lists:")
   for key in qaListKeys:
     name = key.GetName()
     
@@ -43,25 +50,22 @@ def scalePtHardHistos(referenceFile):
     if referenceFile:
       if "PWGJEQA" in name or "Jet" in name or "Emcal" in name: # For the case of using reference scale factors, we want essentially all user tasks
         qaListNames.append(name)
-      else:
-        print("Nothing added to qaListNames from reference file")
-        print(name)
+        print("    {}".format(name))
     else:
       if "PWGJEQA" in name: # For the case of computing the scale factors, we want only the PWGJEQA task
         qaListNames.append(name)
-      else:
-        print("Nothing added to qaListNames")
-        print(name)
+        print("    {}".format(name))
     # Get a list that has the event histograms
     if "PWGJEQA" in name or "JetPerformance" in name:
         eventList = name
     # Note: In the case of embedding, we assume that we only need the number of accepted events, and that internal event selection
     # is activated, in which case the event count can be read from any task that has the internal event selection applied
 
+  print("")
+  print("......... Get the Number of events .........")
   print("Using " + eventList + " for event list.")
   f.Close()
 
-  print("......... Get the Number of events .........")
   # Create histogram of NEvents accepted and NEvents acc+rej, as a function of pT-hard bin
   hNEventsAcc = ROOT.TH1F("hNEventsAcc", "hNEventsAccepted", PtHardBins+1, 0, PtHardBins+1)
   hNEventsTot = ROOT.TH1F("hNEventsTot", "hNEventsTotal", PtHardBins+1, 0, PtHardBins+1)
@@ -71,22 +75,23 @@ def scalePtHardHistos(referenceFile):
     hNEventsAcc.GetXaxis().SetBinLabel(bin+1, "%d-%d" % (ptHardLo[bin],ptHardHi[bin]))
     hNEventsTot.GetXaxis().SetBinLabel(bin+1, "%d-%d" % (ptHardLo[bin],ptHardHi[bin]))
   for bin in range(0,PtHardBins):
-    nNEventsTot= GetNEvents(eventList, bin, hNEventsTot, bAcceptedEventsOnly=False)
-    nEventsAcc = GetNEvents(eventList, bin, hNEventsAcc, bAcceptedEventsOnly=True)
+    nNEventsTot= GetNEvents(eventList, bin, hNEventsTot, verbose, bAcceptedEventsOnly=False)
+    nEventsAcc = GetNEvents(eventList, bin, hNEventsAcc, verbose, bAcceptedEventsOnly=True)
     nEventsAccSum += nEventsAcc
     nEventsTotSum += nNEventsTot
   nEventsAccAvg = nEventsAccSum/PtHardBins
   nNEventsTotAvg= nEventsTotSum/PtHardBins
 
+  print("")
   print("......... Start the scaling .........")
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # If a reference file is provided, get the scale factors from there, and scale histos
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if referenceFile:
-    print("ooo Get Scale Factors from merged Reference")
-    print("ooo file: " + referenceFile)
+    print("Get Scale Factors from Reference file: {}".format(referenceFile))
     controlFile = open('ControlTable.txt', 'w') # This is a measure to check the factors used for the single bins
     controlFile.write('| *Bin* | *pT-hard range (!GeV)* | *Factor From File* | *Factor Applied (xEvtFactor)* |\n')
+    controlFile.close()
     for bin in range(0,PtHardBins):
       
       # Open ref file and get scale factor for given bin
@@ -97,7 +102,7 @@ def scalePtHardHistos(referenceFile):
       
       # Open input file and get relevant lists
       inputFile = "{0}/AnalysisResultsPtHard{0}.root".format(bin+1)
-      print("................................................................")
+      print("")
       print("ooo Scaling Pt-hard bin %d" % (bin+1))
       f = ROOT.TFile(inputFile, "UPDATE")
  
@@ -110,17 +115,20 @@ def scalePtHardHistos(referenceFile):
       print("ooo scaleFactor: {0}".format(scaleFactor))
       print("ooo eventScaleFactor: {0}".format(eventScaleFactorAcc))
       print("ooo combined ScaleFactor: {0}".format(eventScaleFactorAcc*scaleFactor))
-      print("| *{0}* | {1} - {2} | {3} | {4} |".format((bin+1), ptHardLo[bin], ptHardHi[bin], scaleFactor, scaleFactor*eventScaleFactorAcc),file=controlFile)
+      controlFile = open('ControlTable.txt', 'a')
+      controlFile.write("| *{0}* | {1} - {2} | {3} | {4} |".format((bin+1), ptHardLo[bin], ptHardHi[bin], scaleFactor, scaleFactor*eventScaleFactorAcc))
+      controlFile.close()
 
       for qaListName in qaListNames:
         qaList = f.Get(qaListName)
       
         # Now, scale all the histograms
+        print("")
         print("Scaling list: " + qaList.GetName())
         RadiusName=""
         for obj in qaList:
           name = obj.GetName()
-          ScaleAllHistograms(obj, scaleFactor * eventScaleFactorAcc, f, bRemoveOutliers,outlierLimit, outlierNBinsThreshold, bin, name)
+          ScaleAllHistograms(obj, scaleFactor * eventScaleFactorAcc, f, verbose, bRemoveOutliers, outlierLimit, outlierNBinsThreshold, bin, name, qaList.GetName())
         
         # Write the histograms to file
         qaList.Write("%sScaled" % qaListName, ROOT.TObject.kSingleKey)
@@ -141,6 +149,7 @@ def scalePtHardHistos(referenceFile):
     twikifile = open('twikiTableoutput.txt', 'w') # This is to be added to https://twiki.cern.ch/twiki/bin/viewauth/ALICE/JetMCProductionsCrossSections
     twikifile.write('This is to be added to https://twiki.cern.ch/twiki/bin/viewauth/ALICE/JetMCProductionsCrossSections \n')  # python will convert \n to os.linesep
     twikifile.write('| *Bin* | *pT-hard range (!GeV)* | *Factor xSec* | *Event Scale Factor (Acc)* | *Event Scale Factor (Tot)* |\n')
+    twikifile.close()
 
     for bin in range(0,PtHardBins):
       # Label histograms
@@ -181,7 +190,10 @@ def scalePtHardHistos(referenceFile):
       print("ooo eventScaleFactor Acc: {0}".format(eventScaleFactorAcc))
       print("ooo eventScaleFactor All: {0}".format(eventScaleFactorTot))
       print("ooo combined ScaleFactor: {0}".format(eventScaleFactorAcc*scaleFactor))
-      print("| *{0}* | {1} - {2} | {3} | {4} | {5} |".format((bin+1), ptHardLo[bin], ptHardHi[bin], scaleFactor, eventScaleFactorAcc, eventScaleFactorTot ),file=twikifile)
+      print("")
+      twikifile = open('twikiTableoutput.txt', 'a')
+      twikifile.write("| *{0}* | {1} - {2} | {3} | {4} | {5} |".format((bin+1), ptHardLo[bin], ptHardHi[bin], scaleFactor, eventScaleFactorAcc, eventScaleFactorTot ))
+      twikifile.close()
 
       hXSecPerEvent.Fill(bin+0.5, xsec)
       hNTrialsPerEvent.Fill(bin+0.5, trials)
@@ -192,7 +204,7 @@ def scalePtHardHistos(referenceFile):
       RadiusName=""
       for obj in qaList:
         name = obj.GetName()
-        ScaleAllHistograms(obj, scaleFactor * eventScaleFactorAcc, f, bRemoveOutliers, outlierLimit, outlierNBinsThreshold,bin, name)
+        ScaleAllHistograms(obj, scaleFactor * eventScaleFactorAcc, f, verbose, bRemoveOutliers, outlierLimit, outlierNBinsThreshold,bin, name, qaList.GetName())
 
       # Write the histograms to file
       hXSecPerEvent.Write()
@@ -209,13 +221,7 @@ def scalePtHardHistos(referenceFile):
 ###################################################################################
 # Given event list name eventList, pT-hard bin number, and histogram hNEvents of appropriate form, this function fills
 # the number of events (accepted events only if bAcceptedEventsOnly=True, otherwise all events)
-def GetNEvents(eventList, bin, hNEvents, bAcceptedEventsOnly = True):
-  
-  if bin is 0:
-    if bAcceptedEventsOnly:
-      print("Getting accepted number of events...")
-    else:
-      print("Getting total (acc+rej) number of events...")
+def GetNEvents(eventList, bin, hNEvents, verbose, bAcceptedEventsOnly = True):
   
   inputFile = "{0}/AnalysisResultsPtHard{0}.root".format(bin+1)
   f = ROOT.TFile(inputFile, "UPDATE")
@@ -234,7 +240,10 @@ def GetNEvents(eventList, bin, hNEvents, bAcceptedEventsOnly = True):
     else:
       nEvents = hNEventsPtHard.GetBinContent(1)
     if bin is 0:
-      print("from EventCutOutput.")
+      if bAcceptedEventsOnly:
+        print("Getting accepted number of events from EventCutOutput.")
+      else:
+        print("Getting total (acc+rej) number of events from EventCutOutput.")
   else:
     hNEventsPtHard = qaList.FindObject("fHistEventCount")
     if bAcceptedEventsOnly:
@@ -242,13 +251,16 @@ def GetNEvents(eventList, bin, hNEvents, bAcceptedEventsOnly = True):
     else:
       nEvents = hNEventsPtHard.GetBinContent(1) + hNEventsPtHard.GetBinContent(2)
     if bin is 0:
-      print("from fHistEventCount.")
+      if bAcceptedEventsOnly:
+        print("Getting accepted number of events from fHistEventCount.")
+      else:
+        print("Getting total (acc+rej) number of events from fHistEventCount.")
 
-#print("Events in bin %d = %d" % (bin+1) % nEvents )
-  if bAcceptedEventsOnly:
-    print("Acc. Events in bin {0} = {1}".format((bin+1), nEvents))
-  else:
-    print("All Events in bin {0} = {1}".format((bin+1), nEvents))
+  if verbose:
+    if bAcceptedEventsOnly:
+      print("Acc. Events in bin {0} = {1}".format((bin+1), nEvents))
+    else:
+      print("All Events in bin {0} = {1}".format((bin+1), nEvents))
 
   hNEvents.Fill(bin+0.5, nEvents)
   hNEvents.Write()
@@ -259,19 +271,21 @@ def GetNEvents(eventList, bin, hNEvents, bAcceptedEventsOnly = True):
 
 ###################################################################################
 # Function to iterate recursively through an object to scale all TH1/TH2/THnSparse
-def ScaleAllHistograms(obj, scaleFactor, f, bRemoveOutliers=False, limit=2, nBinsThreshold=4, pTHardBin=0, radiusName=""):
+def ScaleAllHistograms(obj, scaleFactor, f, verbose, bRemoveOutliers=False, limit=2, nBinsThreshold=4, pTHardBin=0, listName="", taskName=""):
   
   if obj.InheritsFrom(ROOT.TProfile.Class()):
-    print("TProfile %s not scaled..." % obj.GetName())
+    if verbose:
+      print("TProfile %s not scaled..." % obj.GetName())
   # mostly for PbPb case
   elif obj.InheritsFrom(ROOT.TH3.Class()):
     obj.Sumw2()
     if bRemoveOutliers:
       name = obj.GetName()
       if "JESshiftEMCal" in name or "ResponseMatrixEMCal" in name or "hNEFVsPtEMCal" in name:
-        removeOutliers(pTHardBin, obj, limit, nBinsThreshold, 3, radiusName)
+        removeOutliers(pTHardBin, obj, verbose, limit, nBinsThreshold, 3, listName, taskName)
     obj.Scale(scaleFactor)
-    print("TH3 %s was scaled..." % obj.GetName())
+    if verbose:
+      print("TH3 %s was scaled..." % obj.GetName())
 
   # mostly for pp case
   elif obj.InheritsFrom(ROOT.TH2.Class()):
@@ -279,35 +293,38 @@ def ScaleAllHistograms(obj, scaleFactor, f, bRemoveOutliers=False, limit=2, nBin
     if bRemoveOutliers:
       name = obj.GetName()
       if "JESshiftEMCal" in name or "ResponseMatrixEMCal" in name or "hNEFVsPtEMCal" in name:
-        removeOutliers(pTHardBin, obj, limit, nBinsThreshold, 2, radiusName)
+        removeOutliers(pTHardBin, obj, verbose, limit, nBinsThreshold, 2, listName, taskName)
     obj.Scale(scaleFactor)
-    print("TH2 %s was scaled..." % obj.GetName())
+    if verbose:
+      print("TH2 %s was scaled..." % obj.GetName())
   elif obj.InheritsFrom(ROOT.TH1.Class()):
     obj.Sumw2()
     obj.Scale(scaleFactor)
-    print("TH1 %s was scaled..." % obj.GetName())
+    if verbose:
+      print("TH1 %s was scaled..." % obj.GetName())
   elif obj.InheritsFrom(ROOT.THnSparse.Class()):
     obj.Sumw2()
     obj.Scale(scaleFactor)
-    print("THnSparse %s was scaled..." % obj.GetName())
+    if verbose:
+      print("THnSparse %s was scaled..." % obj.GetName())
   else:
-    print("Not a histogram!")
-    print(obj.GetName())
+    if verbose:
+      print("Not a histogram!")
+      print(obj.GetName())
     for subobj in obj:
-      ScaleAllHistograms(subobj, scaleFactor, f, bRemoveOutliers, limit, nBinsThreshold, pTHardBin, radiusName)
+      ScaleAllHistograms(subobj, scaleFactor, f, verbose, bRemoveOutliers, limit, nBinsThreshold, pTHardBin, listName, taskName)
 
 ###################################################################################
 # Function to remove outliers from a TH3 (i.e. truncate the spectrum), based on projecting to the y-axis
 # It truncates the 3D histogram based on when the 1D projection 4-bin moving average has been above
 # "limit" for "nBinsThreshold" bins.
-def removeOutliers(pTHardBin, hist, limit=2, nBinsThreshold=4, dimension =3, name=""):
-  print("................................................................")
-  print("Performing outlier removal on {}".format(hist.GetName()))
+def removeOutliers(pTHardBin, hist, verbose, limit=2, nBinsThreshold=4, dimension =3, listName="", taskName=""):
+  print("--> Performing outlier removal on {}".format(hist.GetName()))
 
   if dimension==3:
-    histToCheck = hist.ProjectionY("{histName}_projBefore".format(histName = hist.GetName()))
+    histToCheck = hist.ProjectionY("{}_projBefore_{}_{}".format(hist.GetName(), listName, taskName))
   if dimension==2:
-    histToCheck = hist.ProjectionX("{histName}_projBefore".format(histName = hist.GetName()))
+    histToCheck = hist.ProjectionX("{}_projBefore_{}_{}".format(hist.GetName(), listName, taskName))
   
   # Check with moving average
   foundAboveLimit = False
@@ -316,13 +333,16 @@ def removeOutliers(pTHardBin, hist, limit=2, nBinsThreshold=4, dimension =3, nam
   cutIndex = -1
   nBinsBelowLimitAfterLimit = 0
   # nBinsThreshold= n bins that are below threshold before all bins are cut
-  
-  (preMean, preMedian) = GetHistMeanAndMedian(histToCheck)
+
+  if verbose:
+    (preMean, preMedian) = GetHistMeanAndMedian(histToCheck)
     
   for index in range(0, histToCheck.GetNcells()):
-    print("---------")
+    if verbose:
+      print("---------")
     avg = MovingAverage(histToCheck, index = index, numberOfCountsBelowIndex = 2, numberOfCountsAboveIndex = 2)
-    print("Index: {0}, Avg: {1}, BinContent: {5}, foundAboveLimit: {2}, cutIndex: {3}, cutLimitReached: {4}".format(index, avg, foundAboveLimit, cutIndex, cutLimitReached, histToCheck.GetBinContent(index)))
+    if verbose:
+      print("Index: {0}, Avg: {1}, BinContent: {5}, foundAboveLimit: {2}, cutIndex: {3}, cutLimitReached: {4}".format(index, avg, foundAboveLimit, cutIndex, cutLimitReached, histToCheck.GetBinContent(index)))
     if avg > limit:
       foundAboveLimit = True
         
@@ -340,15 +360,17 @@ def removeOutliers(pTHardBin, hist, limit=2, nBinsThreshold=4, dimension =3, nam
       if nBinsBelowLimitAfterLimit > nBinsThreshold:
         cutLimitReached = True
         break #no need to continue the loop - we found our cut index
-        
+
   # Do not perform removal here because then we miss values between the avg going below
   # the limit and crossing the nBinsThreshold
-  
-  print("Hist checked: {0}, cut index: {1}".format(histToCheck.GetName(), cutIndex))
+
+  if verbose:
+    print("Hist checked: {0}, cut index: {1}".format(histToCheck.GetName(), cutIndex))
   
   # Use on both TH1 and TH2 since we don't start removing immediately, but instead only after the limit
   if cutLimitReached:
-    print("--> --> --> Removing outliers")
+    if verbose:
+      print("--> --> --> Removing outliers")
     # Check for values above which they should be removed by translating the global index
     x = ctypes.c_int(0)
     y = ctypes.c_int(0)
@@ -360,33 +382,35 @@ def removeOutliers(pTHardBin, hist, limit=2, nBinsThreshold=4, dimension =3, nam
       if dimension==3:
         if y.value >= cutIndex:
           if hist.GetBinContent(index) > 1e-3:
-            print("Cutting for index {}. y bin {}. Cut index: {}".format(index, y, cutIndex))
+            if verbose:
+              print("Cutting for index {}. y bin {}. Cut index: {}".format(index, y, cutIndex))
             hist.SetBinContent(index, 0)
             hist.SetBinError(index, 0)
       #pp case
       if dimension==2:
         if x.value >= cutIndex:
           if hist.GetBinContent(index) > 1e-3:
-            print("Cutting for index {}. x bin {}. Cut index: {}".format(index, x, cutIndex))
+            if verbose:
+              print("Cutting for index {}. x bin {}. Cut index: {}".format(index, x, cutIndex))
             hist.SetBinContent(index, 0)
             hist.SetBinError(index, 0)
   else:
-    print("Hist {} did not have any outliers to cut".format(hist.GetName()))
-  
+    if verbose:
+      print("Hist {} did not have any outliers to cut".format(hist.GetName()))
+
   # Check the mean and median
   # Use another temporary hist
   if dimension==3:
-    histToCheckAfter = hist.ProjectionY("{histName}_projAfter".format(histName = hist.GetName()))
+    histToCheckAfter = hist.ProjectionY("{}_projAfter_{}_{}".format(hist.GetName(), listName, taskName))
   if dimension==2:
-    histToCheckAfter = hist.ProjectionX("{histName}_projAfter".format(histName = hist.GetName()))
+    histToCheckAfter = hist.ProjectionX("{}_projAfter_{}_{}".format(hist.GetName(), listName, taskName))
 
-  (postMean, postMedian) = GetHistMeanAndMedian(histToCheckAfter)
-  print("Pre  outliers removal mean: {}, median: {}".format(preMean, preMedian))
-  print("Post outliers removal mean: {}, median: {}".format(postMean, postMedian))
-  plotOutlierPDF(histToCheck,histToCheckAfter, pTHardBin, "./POST_{0}_{1}.pdf".format(hist.GetName(),name), "hist E", True)
-  # plotOutlierPDF(histToCheck, "./PRE_{}.pdf".format(histToCheck.GetName()), "hist E", True)
-  print("................................................................")
-
+  if verbose:
+    (postMean, postMedian) = GetHistMeanAndMedian(histToCheckAfter)
+    print("Pre  outliers removal mean: {}, median: {}".format(preMean, preMedian))
+    print("Post outliers removal mean: {}, median: {}".format(postMean, postMedian))
+  outlierFilename = os.path.join(str(pTHardBin+1), "POST_{}_{}___{}.pdf".format(hist.GetName(),listName[:15], taskName[-35:-7]))
+  plotOutlierPDF(histToCheck,histToCheckAfter, pTHardBin, outlierFilename, verbose, "hist E", True)
 
 ########################################################################################################
 def GetHistMeanAndMedian(hist):
@@ -429,7 +453,7 @@ def MovingAverage(hist, index, numberOfCountsBelowIndex = 0, numberOfCountsAbove
 ########################################################################################################
 # Plot basic histogram    ##############################################################################
 ########################################################################################################
-def plotOutlierPDF(h,hAfter, pTHardBin, outputFilename, drawOptions = "", setLogy = False):
+def plotOutlierPDF(h, hAfter, pTHardBin, outputFilename, verbose, drawOptions = "", setLogy = False):
   
   c = ROOT.TCanvas("c","c: hist",600,450)
   c.cd()
@@ -451,20 +475,23 @@ def plotOutlierPDF(h,hAfter, pTHardBin, outputFilename, drawOptions = "", setLog
   leg1.Draw("same")
 
   if pTHardBin==0:
-    print("Add first pT Hard bin to pdf with name: {0}".format(outputFilename))
-    c.Print("{0}(".format(outputFilename))
+    if verbose:
+      print("Add first pT Hard bin to pdf with name: {0}".format(outputFilename))
+    c.Print("{}".format(outputFilename))
   elif pTHardBin==19:
-    print("Add last pT Hard bin to pdf with name: {0}".format(outputFilename))
-    c.Print("{0})".format(outputFilename))
+    if verbose:
+      print("Add last pT Hard bin to pdf with name: {0}".format(outputFilename))
+    c.Print("{}".format(outputFilename))
   elif pTHardBin>0:
-    print("Add further pT Hard bin to pdf with name: {0}".format(outputFilename))
-    c.Print("{0}".format(outputFilename))
-  #c.SaveAs(outputFilename)
-  #c.Close()
+    if verbose:
+      print("Add further pT Hard bin to pdf with name: {0}".format(outputFilename))
+    c.Print("{}".format(outputFilename))
+  c.Close()
 
 #---------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
   print("Executing scalePtHardHistos.py...")
+  print("")
   
   # Define arguments
   parser = argparse.ArgumentParser(description="Scale pT-hard bins")
