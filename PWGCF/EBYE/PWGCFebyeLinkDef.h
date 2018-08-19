@@ -82,6 +82,7 @@
 #pragma link C++ class AliAnalysisTaskNetLambdaIdent+;
 #pragma link C++ class AliLightV0+;
 #pragma link C++ class AliLightGenV0+;
+#pragma link C++ class AliLightV0track+;
 
 #pragma link C++ class AliAnalysisTaskEbyeCharge+;
 

@@ -12,6 +12,8 @@
 class TList;
 class AliESDEvent;
 class AliESDtrack;
+class AliAODTrack;
+//class AliExternalTrackParam;
 class AliAnalysisUtils;
 class AliPIDResponse;
 class TTree;
@@ -19,8 +21,14 @@ class TH1;
 class TH2;
 class TH3;
 class TH3F;
+class TOBjArray;
+class AliVVertex;
+class AliAODv0;
+class AliESDv0;
+class AliEventPoolManager;
 class AliLightV0;
 #include "AliEventCuts.h"
+#include "AliExternalTrackParam.h"
 
 class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
  public:
@@ -29,20 +37,26 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
 
+  void Tracks2V0vertices(TObjArray* ev1, TObjArray* ev2, AliVVertex *vtxT3D, Double_t b);
+  Bool_t TrackCutsForTreeAOD(AliAODTrack* trk);
+  Bool_t TrackCutsForTreeESD(AliESDtrack* trk);
+  Bool_t V0CutsForTreeAOD(AliAODv0* v0, Double_t* vt);
+  Bool_t V0CutsForTreeESD(AliESDv0* v0, Double_t* vt, AliExternalTrackParam* ptrk, AliExternalTrackParam* ntrk, Double_t b);
+
   void SetCentCut(Float_t cut){centcut = cut;};
   void SetPtMinLambda(Float_t pt){ptminlambda = pt;};
   void SetEtaCutLambda(Float_t eta){etacutlambda = eta;};
   void SetCosPACut(Float_t cut){cospacut = cut;};
   void SetMinimumRadius(Float_t cut){minradius = cut;};
-  void SetCrossedRowsCut(Float_t rows, Float_t ratio){ncrossedrows = rows; crossedrowsclustercut = ratio;};
+  void SetCrossedRowsCut(Float_t rows, Float_t ratio){ncrossedrowscut = rows; crossedrowsclustercut = ratio;};
   
   void SetIsMC(Bool_t val){fIsMC = val;};
   Bool_t GetIsMC(){return fIsMC;};
   void SetIsAOD(Bool_t val){fIsAOD = val;};
   Bool_t GetIsAOD(){return fIsAOD;};
   void SetEventSelection(UInt_t val) {fEvSel = val;}
-  void MakeK0STree(Bool_t val){fK0STree = val;  Printf("************************* setting fK0STree = %i *************************",fK0STree);};
   void MakeLambdaTree(Bool_t val){fLambdaTree = val;};
+  void MakeEventMixingTree(Bool_t val){fEventMixingTree = val;};
 
  protected:
   AliAnalysisTaskNetLambdaIdent(const  AliAnalysisTaskNetLambdaIdent &task);
@@ -57,6 +71,8 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   TTree* fTree;                 //! output tree
 
   TH1I*  hEventStatistics;      //! cut-by-cut counter of events
+
+  AliEventPoolManager*     fPoolMgr;         // event pool manager
   
   TH1F* hGenPt;
   TH1F* hGenPhi;
@@ -66,6 +82,8 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   TH1F* hTrackEta;
   TH2F* hNSigmaProton;
   TH2F* hArmPod;
+
+  TH2F* hVxVy;
       
   TH1F*  hLambdaPtGen;
   TH1F*  hAntiLambdaPtGen;
@@ -102,7 +120,7 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   Float_t etacutlambda;
   Float_t cospacut;
   Float_t minradius;
-  Float_t ncrossedrows;
+  Float_t ncrossedrowscut;
   Float_t crossedrowsclustercut;
 
   Float_t fCentV0M;
@@ -114,12 +132,13 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   TClonesArray *fAcceptV0;
   TClonesArray *fGenLambda;
   TClonesArray *fGenCascade;
+  TClonesArray *fMixV0;
 
   Bool_t fIsMC;
   Bool_t fIsAOD;
   UInt_t fEvSel;
-  Bool_t fK0STree;
   Bool_t fLambdaTree;
+  Bool_t fEventMixingTree;
   
   const Float_t massPi = 0.139570;
   const Float_t massP = 0.938272;
@@ -128,7 +147,7 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   //AliMCEvent*              fMcEvent;    //! MC event
   //AliInputEventHandler*    fMcHandler;  //! MCEventHandler 
  
-  ClassDef(AliAnalysisTaskNetLambdaIdent,5);
+  ClassDef(AliAnalysisTaskNetLambdaIdent,6);
 };
 
 //_____________________________________________________________________________
@@ -242,5 +261,23 @@ class AliLightGenV0 : public TObject
   
   ClassDef(AliLightGenV0, 2);
 };
-#endif
 
+//_____________________________________________________________________________
+class AliLightV0track : public TObject
+{
+ public:
+ AliLightV0track() : extparam(), prpid(-999) {};
+ AliLightV0track(AliExternalTrackParam& inparam, Float_t inpid) : extparam(inparam), prpid(inpid) {};
+  virtual ~AliLightV0track(){};
+
+  //void Set(AliVTrack* trk, Float_t val){extparam = AliExternalParam(trk); prpid = val;};
+  AliExternalTrackParam *GetExtParam(){return &extparam;};
+  Float_t GetProtonPID(){return prpid;};
+  
+ private:
+  AliExternalTrackParam extparam;
+  Float_t prpid;
+  
+  ClassDef(AliLightV0track, 1);
+};
+#endif
