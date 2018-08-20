@@ -23,7 +23,7 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskSigma0Femto();
   AliAnalysisTaskSigma0Femto(const char *name);
-  virtual ~AliAnalysisTaskSigma0Femto() {}
+  virtual ~AliAnalysisTaskSigma0Femto();
 
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
@@ -102,8 +102,7 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
 
   TList *fOutputContainer;                  //!
   TList *fQA;                               //!
-  TList *fHistoProton;                      //!
-  TList *fHistoAntiProton;                  //!
+  TList *fOutputFemto;                      //!
   TH1F *fHistCutQA;                         //!
   TProfile *fHistRunNumber;                 //!
   TProfile *fHistCutBooking;                //!
@@ -115,6 +114,6 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
 
   TList *fOutputTree;  //!
 
-  ClassDef(AliAnalysisTaskSigma0Femto, 5)
+  ClassDef(AliAnalysisTaskSigma0Femto, 6)
 };
 #endif

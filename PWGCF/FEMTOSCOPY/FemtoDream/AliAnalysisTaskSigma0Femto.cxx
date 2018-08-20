@@ -37,8 +37,7 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fGammaArray(nullptr),
       fOutputContainer(nullptr),
       fQA(nullptr),
-      fHistoProton(nullptr),
-      fHistoAntiProton(nullptr),
+      fOutputFemto(nullptr),
       fHistCutQA(nullptr),
       fHistRunNumber(nullptr),
       fHistCutBooking(nullptr),
@@ -78,8 +77,7 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
       fGammaArray(nullptr),
       fOutputContainer(nullptr),
       fQA(nullptr),
-      fHistoProton(nullptr),
-      fHistoAntiProton(nullptr),
+      fOutputFemto(nullptr),
       fHistCutQA(nullptr),
       fHistRunNumber(nullptr),
       fHistCutBooking(nullptr),
@@ -93,7 +91,13 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
   DefineOutput(3, TList::Class());
-  DefineOutput(4, TList::Class());
+}
+
+//____________________________________________________________________________________________________
+AliAnalysisTaskSigma0Femto::~AliAnalysisTaskSigma0Femto() {
+  delete fPartColl;
+  delete fPairCleaner;
+  delete fProtonTrack;
 }
 
 //____________________________________________________________________________________________________
@@ -238,8 +242,7 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
   // flush the data
   PostData(1, fOutputContainer);
   PostData(2, fOutputTree);
-  PostData(3, fHistoProton);
-  PostData(4, fHistoAntiProton);
+  PostData(3, fOutputFemto);
 }
 
 //____________________________________________________________________________________________________
@@ -324,17 +327,14 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     fOutputContainer->SetOwner(kTRUE);
   }
 
-  fProtonTrack = new AliFemtoDreamTrack();
-  fProtonTrack->SetUseMCInfo(fIsMC);
-  fTrackCutsPartProton->Init("Proton");
-  fTrackCutsPartProton->SetName(
-      "Proton");  // necessary for the non-min booking case
-  fTrackCutsPartAntiProton->Init("Anti-proton");
-  fTrackCutsPartAntiProton->SetName(
-      "Anti-proton");  // necessary for the non-min booking case
-
-  fPairCleaner = new AliFemtoDreamPairCleaner(6, 0, false);
-  fPartColl = new AliFemtoDreamPartCollection(fConfig, false);
+  if (fOutputFemto != nullptr) {
+    delete fOutputFemto;
+    fOutputFemto = nullptr;
+  }
+  if (fOutputFemto == nullptr) {
+    fOutputFemto = new TList();
+    fOutputFemto->SetOwner(kTRUE);
+  }
 
   fQA = new TList();
   fQA->SetName("EventCuts");
@@ -512,28 +512,31 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
 
   fOutputContainer->Add(fQA);
 
+  fProtonTrack = new AliFemtoDreamTrack();
+  fProtonTrack->SetUseMCInfo(fIsMC);
+
+  fTrackCutsPartProton->Init("Proton");
+  // necessary for the non-min booking case
+  fTrackCutsPartProton->SetName("Proton");
+
   if (fTrackCutsPartProton && fTrackCutsPartProton->GetQAHists()) {
-    fHistoProton = fTrackCutsPartProton->GetQAHists();
+    fOutputFemto->Add(fTrackCutsPartProton->GetQAHists());
     if (fIsMC && fTrackCutsPartProton->GetMCQAHists()) {
       fTrackCutsPartProton->SetMCName("MC_Proton");
-      fHistoProton->Add(fTrackCutsPartProton->GetMCQAHists());
+      fOutputFemto->Add(fTrackCutsPartProton->GetMCQAHists());
     }
-  } else {
-    fHistoProton = new TList();
-    fHistoProton->SetName("Proton");
-    fHistoProton->SetOwner();
   }
 
+  fTrackCutsPartAntiProton->Init("Anti-proton");
+  // necessary for the non-min booking case
+  fTrackCutsPartAntiProton->SetName("Anti-proton");
+
   if (fTrackCutsPartAntiProton && fTrackCutsPartAntiProton->GetQAHists()) {
-    fHistoAntiProton = fTrackCutsPartAntiProton->GetQAHists();
+    fOutputFemto->Add(fTrackCutsPartAntiProton->GetQAHists());
     if (fIsMC && fTrackCutsPartAntiProton->GetMCQAHists()) {
       fTrackCutsPartAntiProton->SetMCName("MC_Anti-proton");
-      fHistoAntiProton->Add(fTrackCutsPartAntiProton->GetMCQAHists());
+      fOutputFemto->Add(fTrackCutsPartAntiProton->GetMCQAHists());
     }
-  } else {
-    fHistoAntiProton = new TList();
-    fHistoAntiProton->SetName("Anti-proton");
-    fHistoAntiProton->SetOwner();
   }
 
   if (fV0Cuts) fV0Cuts->InitCutHistograms(TString("Lambda"));
@@ -574,16 +577,21 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     fOutputContainer->Add(fAntiSigmaPhotonCuts->GetCutHistograms());
   }
 
-  if (fPairCleaner && fPairCleaner->GetHistList()) {
-    fOutputContainer->Add(fPairCleaner->GetHistList());
+  fPairCleaner =
+      new AliFemtoDreamPairCleaner(6, 0, fConfig->GetMinimalBookingME());
+  fPartColl =
+      new AliFemtoDreamPartCollection(fConfig, fConfig->GetMinimalBookingME());
+
+  if (!fConfig->GetMinimalBookingME() && fPairCleaner &&
+      fPairCleaner->GetHistList()) {
+    fOutputFemto->Add(fPairCleaner->GetHistList());
   }
 
   if (fPartColl && fPartColl->GetHistList()) {
-    fOutputContainer->Add(fPartColl->GetHistList());
+    fOutputFemto->Add(fPartColl->GetHistList());
   }
-
-  if (fPartColl && fPartColl->GetQAList()) {
-    fOutputContainer->Add(fPartColl->GetQAList());
+  if (!fConfig->GetMinimalBookingME() && fPartColl && fPartColl->GetQAList()) {
+    fOutputFemto->Add(fPartColl->GetQAList());
   }
 
   if (fOutputTree != nullptr) {
@@ -613,8 +621,7 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
 
   PostData(1, fOutputContainer);
   PostData(2, fOutputTree);
-  PostData(3, fHistoProton);
-  PostData(4, fHistoAntiProton);
+  PostData(3, fOutputFemto);
 }
 
 //____________________________________________________________________________________________________
