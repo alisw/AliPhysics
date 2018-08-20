@@ -23,7 +23,7 @@ ROOT.gROOT.SetBatch(True)
 
 ###################################################################################
 # Main function
-def scalePtHardHistos(referenceFile):
+def scalePtHardHistos(referenceFile, suffix):
 
   PtHardBins = 20
   ptHardLo = [ 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235 ]
@@ -31,6 +31,7 @@ def scalePtHardHistos(referenceFile):
   
   # Option to remove outliers from specified histograms (see below)
   bRemoveOutliers = False
+
   outlierLimit=2
   outlierNBinsThreshold=4
   
@@ -38,7 +39,7 @@ def scalePtHardHistos(referenceFile):
   verbose = False
   
   # Get a list of all the output list names, in order to scale all of them
-  f = ROOT.TFile("1/AnalysisResultsPtHard1.root", "READ")
+  f = ROOT.TFile("1/AnalysisResultsPtHard1{0}.root".format(suffix), "READ")
   qaListKeys = f.GetListOfKeys()
   qaListNames = []
   eventList = ""
@@ -75,8 +76,8 @@ def scalePtHardHistos(referenceFile):
     hNEventsAcc.GetXaxis().SetBinLabel(bin+1, "%d-%d" % (ptHardLo[bin],ptHardHi[bin]))
     hNEventsTot.GetXaxis().SetBinLabel(bin+1, "%d-%d" % (ptHardLo[bin],ptHardHi[bin]))
   for bin in range(0,PtHardBins):
-    nNEventsTot= GetNEvents(eventList, bin, hNEventsTot, verbose, bAcceptedEventsOnly=False)
-    nEventsAcc = GetNEvents(eventList, bin, hNEventsAcc, verbose, bAcceptedEventsOnly=True)
+    nNEventsTot= GetNEvents(eventList, bin, hNEventsTot, verbose, False, suffix)
+    nEventsAcc = GetNEvents(eventList, bin, hNEventsAcc, verbose, True, suffix)
     nEventsAccSum += nEventsAcc
     nEventsTotSum += nNEventsTot
   nEventsAccAvg = nEventsAccSum/PtHardBins
@@ -101,8 +102,8 @@ def scalePtHardHistos(referenceFile):
       refFile.Close()
       
       # Open input file and get relevant lists
-      inputFile = "{0}/AnalysisResultsPtHard{0}.root".format(bin+1)
-      print("")
+      inputFile = "{0}/AnalysisResultsPtHard{0}{1}.root".format(bin+1,suffix)
+      print("................................................................")
       print("ooo Scaling Pt-hard bin %d" % (bin+1))
       f = ROOT.TFile(inputFile, "UPDATE")
  
@@ -161,7 +162,7 @@ def scalePtHardHistos(referenceFile):
     for bin in range(0,PtHardBins):
       
       # Open input file and get relevant lists
-      inputFile = "{0}/AnalysisResultsPtHard{0}.root".format(bin+1)
+      inputFile = "{0}/AnalysisResultsPtHard{0}{1}.root".format(bin+1,suffix)
       print("ooo Scaling Pt-hard bin %d" % (bin+1))
       f = ROOT.TFile(inputFile, "UPDATE")
 
@@ -221,9 +222,9 @@ def scalePtHardHistos(referenceFile):
 ###################################################################################
 # Given event list name eventList, pT-hard bin number, and histogram hNEvents of appropriate form, this function fills
 # the number of events (accepted events only if bAcceptedEventsOnly=True, otherwise all events)
-def GetNEvents(eventList, bin, hNEvents, verbose, bAcceptedEventsOnly = True):
+def GetNEvents(eventList, bin, hNEvents, verbose, bAcceptedEventsOnly = True, suffix=""):
   
-  inputFile = "{0}/AnalysisResultsPtHard{0}.root".format(bin+1)
+  inputFile = "{0}/AnalysisResultsPtHard{0}{1}.root".format(bin+1,suffix)
   f = ROOT.TFile(inputFile, "UPDATE")
   
   qaList = f.Get(eventList)
@@ -499,8 +500,12 @@ if __name__ == '__main__':
                       type=str, metavar="referenceFile",
                       default="",
                       help="Reference file to get pT-hard scale factors from")
-  
+  parser.add_argument("-s", "--suffix", action="store",
+                      type=str, metavar="suffix",
+                      default="",
+                      help="suffix for the file name, "" for general pT hard bin, _Part1 or _Part2 for half of the statistic")
+
   # Parse the arguments
   args = parser.parse_args()
   
-  scalePtHardHistos(args.referenceFile)
+  scalePtHardHistos(args.referenceFile, args.suffix)
