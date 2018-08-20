@@ -206,24 +206,31 @@ void anaTree(
         if (hRefSMVsT->GetBinContent(sm+1) < 5) hRefSMVsT->SetBinContent(sm+1,smT);
       }
 
-      if ((ledM<=0)||(ledR<=0))
-        continue;
-      if ((monM<=0)||(monR<=0))
-        continue;
-      Double_t w        = 1./(ledR*ledR);
-      if (!useWeight) w = 1;
-      gLedVsT[sm]->Fill(T,ledM,w);
-      if (writeDetailed){
-        gLedCellVsT[cellID]->Fill(smT,ledM,w);
-        gLedCellRMSDiffMeanVsT[cellID]->Fill(smT,ledR/ledM,1);
+      Double_t w        = 1;
+      if (ledR != 0 && useWeight)
+        w               = 1./(ledR*ledR);
+      Double_t w3       = 1.;
+      if (monR != 0 && useWeight)
+        w3              = 1./(monR*monR);;
+
+      if (!((ledM<=0)||(ledR<=0)) ){
+        if (writeDetailed){
+          gLedCellVsT[cellID]->Fill(smT,ledM,w);
+          gLedCellRMSDiffMeanVsT[cellID]->Fill(smT,ledR/ledM,1);
+        }
+        gLedVsT[sm]->Fill(T,ledM,w);
       }
-      Double_t w3       = 1./(monR*monR);
-      if (!useWeight) w3 = 1;
-      gLedMonVsT[sm]->Fill(T,monM,w3);
-      if (writeDetailed){
-        gLedMonCellVsT[cellID]->Fill(smT,monM,w3);
-        gLedMonCellRMSDiffMeanVsT[cellID]->Fill(smT,monR/monM,1);
+
+      if (!((monM<=0)||(monR<=0)) ){
+        if (writeDetailed){
+          gLedMonCellVsT[cellID]->Fill(smT,monM,w3);
+          gLedMonCellRMSDiffMeanVsT[cellID]->Fill(smT,monR/monM,1);
+        }
+        gLedMonVsT[sm]->Fill(T,monM,w3);
       }
+      if ( (ledM<=0)||(ledR<=0) || (monM<=0)||(monR<=0) )
+        continue;
+
       Double_t ratErr = ledM/monM * TMath::Sqrt((ledR*ledR)/(ledM*ledM)+(monR*monR)/(monM*monM));
       Double_t w2=1./(ratErr*ratErr);
       if (!useWeight) w2 = 1;
