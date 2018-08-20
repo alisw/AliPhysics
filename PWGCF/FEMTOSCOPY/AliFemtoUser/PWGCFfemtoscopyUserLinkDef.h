@@ -30,6 +30,7 @@
 #pragma link C++ class AliFemtoModelCorrFctnQinv;
 #pragma link C++ class AliFemtoModelCorrFctnTrueQ;
 #pragma link C++ class AliFemtoModelCorrFctnKK;
+#pragma link C++ class AliFemtoModelCorrFctnKpKp;
 #pragma link C++ class AliFemtoModelCorrFctnNonIdDR;
 #pragma link C++ class AliFemtoModelCorrFctn3DSpherical;
 #pragma link C++ class AliFemtoModelCorrFctn3DLCMSSpherical;
