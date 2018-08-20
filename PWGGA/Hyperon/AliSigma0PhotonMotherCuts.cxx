@@ -23,6 +23,7 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fLambdaMixedBinned(),
       fPhotonMixedBinned(),
       fTreeVariables(),
+      fIsTrueSigma(false),
       fLambdaCuts(nullptr),
       fPhotonCuts(nullptr),
       fV0Reader(nullptr),
@@ -106,6 +107,7 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fLambdaMixed(),
       fPhotonMixed(),
       fTreeVariables(),
+      fIsTrueSigma(false),
       fLambdaCuts(nullptr),
       fPhotonCuts(nullptr),
       fV0Reader(nullptr),
@@ -278,6 +280,19 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
           fHistMassCutPt->Fill(pT);
           fHistEtaPhi->Fill(sigma.GetEta(), sigma.GetPhi());
         }
+        if (fIsMC) {
+          int pdgLambdaMother = 0;
+          int pdgPhotonMother = 0;
+          const int label =
+              sigma.MatchToMC(fMCEvent, fPDG, {{fPDGDaughter1, fPDGDaughter2}},
+                              pdgLambdaMother, pdgPhotonMother);
+          if (label > 0) {
+            fIsTrueSigma = true;
+          } else {
+            fIsTrueSigma = false;
+          }
+        }
+
         fTreeVariables[0] = invMass;
         fTreeVariables[1] = pT;
         fTreeVariables[2] = rap;
@@ -1047,5 +1062,8 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     fOutputTree->Branch("pT", &fTreeVariables[1], "pT/f");
     fOutputTree->Branch("Rapidity", &fTreeVariables[2], "Rapidity/f");
     fOutputTree->Branch("Multiplicity", &fTreeVariables[3], "Multiplicity/f");
+    if (fIsMC) {
+      fOutputTree->Branch("MCTruth", &fIsTrueSigma, "MCTruth/O");
+    }
   }
 }

@@ -124,6 +124,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   deque<vector<AliSigma0ParticleV0> > fLambdaMixedBinned[10][6];  //!
   deque<vector<AliSigma0ParticleV0> > fPhotonMixedBinned[10][6];  //!
   float fTreeVariables[4];                                        //!
+  bool fIsTrueSigma;                                              //!
 
   AliSigma0V0Cuts *fLambdaCuts;  //
   AliSigma0V0Cuts *fPhotonCuts;  //
@@ -174,12 +175,12 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistMixedInvMassPt;           //!
   TH2F *fHistMixedInvMassBinnedPt;     //!
 
-  TH2F *fHistLambdaPtPhi;  //!
-  TH2F *fHistLambdaPtEta;  //!
-  TH2F *fHistLambdaMassPt; //!
-  TH2F *fHistPhotonPtPhi;  //!
-  TH2F *fHistPhotonPtEta;  //!
-  TH2F *fHistPhotonMassPt; //!
+  TH2F *fHistLambdaPtPhi;   //!
+  TH2F *fHistLambdaPtEta;   //!
+  TH2F *fHistLambdaMassPt;  //!
+  TH2F *fHistPhotonPtPhi;   //!
+  TH2F *fHistPhotonPtEta;   //!
+  TH2F *fHistPhotonMassPt;  //!
 
   TH2F *fHistMCTruthPtY;                          //!
   TH2F *fHistMCTruthPtEta;                        //!
@@ -203,7 +204,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TTree *fOutputTree;  //!
 
  private:
-  ClassDef(AliSigma0PhotonMotherCuts, 9)
+  ClassDef(AliSigma0PhotonMotherCuts, 10)
 };
 
 #endif
