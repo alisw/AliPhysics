@@ -154,44 +154,40 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
 class AliLightV0 : public TObject
 {
  public:
- AliLightV0() : pt(-999), eta(-999), phi(-999), invmassL(-999), invmassAL(-999),
-    cospt(-999), decayr(-999), decayl(-999), dcadaughters(-999), mcstatus(0),
-    ppt(-999), peta(-999), pphi(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nphi(-999), nnsigmapr(-999), ndca(-999), genpt(-999), geneta(-999), cascpt(-999), casceta(-999) {};
- AliLightV0(Float_t ptin, Float_t etain, Float_t phiin) : pt(ptin), eta(etain), phi(phiin), invmassL(-999), invmassAL(-999),
-    cospt(-999), decayr(-999), decayl(-999), dcadaughters(-999), mcstatus(0),
-    ppt(-999), peta(-999), pphi(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nphi(-999), nnsigmapr(-999), ndca(-999), genpt(-999), geneta(-999), cascpt(-999), casceta(-999) {};
- AliLightV0(Float_t ptin, Float_t etain, Float_t phiin, Float_t invmassLin, Float_t invmassALin,
-	    Float_t cosptin, Float_t decayrin, Float_t decaylin) : pt(ptin), eta(etain), phi(phiin), invmassL(invmassLin),
-    invmassAL(invmassALin), cospt(cosptin), decayr(decayrin), decayl(decaylin), dcadaughters(-999), mcstatus(0),
-    ppt(-999), peta(-999), pphi(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nphi(-999), nnsigmapr(-999), ndca(-999), genpt(-999), geneta(-999), cascpt(-999), casceta(-999) {};
+ AliLightV0() : pt(-999), eta(-999), invmass(-999),
+    cospt(-999), decayr(-999), proplife(-999), dcadaughters(-999), mcstatus(0),
+    ppt(-999), peta(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nnsigmapr(-999), ndca(-999), genpt(-999), geneta(-999), cascpt(-999), casceta(-999) {};
+ AliLightV0(Float_t ptin, Float_t etain) : pt(ptin), eta(etain), invmass(-999),
+    cospt(-999), decayr(-999), proplife(-999), dcadaughters(-999), mcstatus(0),
+    ppt(-999), peta(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nnsigmapr(-999), ndca(-999), genpt(-999), geneta(-999), cascpt(-999), casceta(-999) {};
+ AliLightV0(Float_t ptin, Float_t etain, Float_t invmassin,
+	    Float_t cosptin, Float_t decayrin, Float_t proplifein) : pt(ptin), eta(etain), invmass(invmassin),
+    cospt(cosptin), decayr(decayrin), proplife(proplifein), dcadaughters(-999), mcstatus(0),
+    ppt(-999), peta(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nnsigmapr(-999), ndca(-999), genpt(-999), geneta(-999), cascpt(-999), casceta(-999) {};
   virtual ~AliLightV0(){};
   void SetPt(Float_t val){pt = val;};
   void SetEta(Float_t val){eta = val;};
-  void SetPhi(Float_t val){phi = val;};
-  void SetInvMassLambda(Float_t val){invmassL = val;};
-  void SetInvMassAntiLambda(Float_t val){invmassAL = val;};
+  void SetInvMass(Float_t val){invmass = val;};
   void SetCosPointingAngle(Float_t val){cospt = val;};
   void SetDecayR(Float_t val){decayr = val;};
-  void SetDecayL(Float_t val){decayl = val;};
+  void SetProperLifetime(Float_t val){proplife = val;};
   void SetDCADaughters(Float_t val){dcadaughters = val;};
   void SetMcStatus(Int_t val){mcstatus = val;};
-  void SetPosDaughter(Float_t ptin, Float_t etain, Float_t phiin, Float_t nsigma, Float_t dca){ppt = ptin; peta = etain; pphi = phiin; pnsigmapr = nsigma; pdca = dca;};
-  void SetNegDaughter(Float_t ptin, Float_t etain, Float_t phiin, Float_t nsigma, Float_t dca){npt = ptin; neta = etain; nphi = phiin; nnsigmapr = nsigma; ndca = dca;};
+  void SetPosDaughter(Float_t ptin, Float_t etain, Float_t nsigma, Float_t dca){ppt = ptin; peta = etain; pnsigmapr = nsigma; pdca = dca;};
+  void SetNegDaughter(Float_t ptin, Float_t etain, Float_t nsigma, Float_t dca){npt = ptin; neta = etain; nnsigmapr = nsigma; ndca = dca;};
   void SetGenPtEta(Float_t ptin, Float_t etain){genpt = ptin; geneta = etain;};
   void SetCascadePtEta(Float_t ptin, Float_t etain){cascpt = ptin; casceta = etain;};
   
   Float_t GetPt(){return pt;};
   Float_t GetEta(){return eta;};
-  Float_t GetPhi(){return phi;};
-  Float_t GetInvMassLambda(){return invmassL;};
-  Float_t GetInvMassAntiLambda(){return invmassAL;};
+  Float_t GetInvMass(){return invmass;};
   Float_t GetCosPointingAngle(){return cospt;};
   Float_t GetDecayR(){return decayr;};
-  Float_t GetDecayL(){return decayl;};
+  Float_t GetProperLifetime(){return proplife;};
   Float_t GetDCADaughters(){return dcadaughters;};
   Int_t   GetMcStatus(){return mcstatus;};
-  void    GetPosDaughter(Float_t& ptout, Float_t& etaout, Float_t& phiout, Float_t& nsigma, Float_t& dca){ptout = ppt; etaout = peta; phiout = pphi; nsigma = pnsigmapr; dca = pdca;};
-  void    GetNegDaughter(Float_t& ptout, Float_t& etaout, Float_t& phiout, Float_t& nsigma, Float_t& dca){ptout = npt; etaout = neta; phiout = nphi; nsigma = nnsigmapr; dca = ndca;};
+  void    GetPosDaughter(Float_t& ptout, Float_t& etaout, Float_t& nsigma, Float_t& dca){ptout = ppt; etaout = peta; nsigma = pnsigmapr; dca = pdca;};
+  void    GetNegDaughter(Float_t& ptout, Float_t& etaout, Float_t& nsigma, Float_t& dca){ptout = npt; etaout = neta; nsigma = nnsigmapr; dca = ndca;};
   Float_t GetGenPt(){return genpt;};
   Float_t GetGenEta(){return geneta;};
   Float_t GetCascadePt(){return cascpt;};
@@ -200,22 +196,18 @@ class AliLightV0 : public TObject
  private:
   Float_t   pt;
   Float_t   eta;
-  Float_t   phi;
-  Float_t   invmassL;
-  Float_t   invmassAL;
+  Float_t   invmass;
   Float_t   cospt;
   Float_t   decayr;
-  Float_t   decayl;
+  Float_t   proplife;
   Float_t   dcadaughters;
   Int_t     mcstatus;
   Float_t   ppt; // positive daughter properties
   Float_t   peta;
-  Float_t   pphi;
   Float_t   pnsigmapr;
   Float_t   pdca;
   Float_t   npt; // negative daughter properties
   Float_t   neta;
-  Float_t   nphi;
   Float_t   nnsigmapr;
   Float_t   ndca;
   Float_t   genpt;
@@ -223,43 +215,38 @@ class AliLightV0 : public TObject
   Float_t   cascpt;
   Float_t   casceta;
   
-  ClassDef(AliLightV0, 4);
+  ClassDef(AliLightV0, 5);
 };
 
 //_____________________________________________________________________________
 class AliLightGenV0 : public TObject
 {
  public:
- AliLightGenV0() : pt(-999), eta(-999), phi(-999), id(-999), ppt(-999), peta(-999), pphi(-999), npt(-999), neta(-999), nphi(-999) {};
- AliLightGenV0(Float_t ptin, Float_t etain, Float_t phiin, Int_t idin) : pt(ptin), eta(etain), phi(phiin), id(idin), ppt(-999), peta(-999), pphi(-999), npt(-999), neta(-999), nphi(-999) {};
+ AliLightGenV0() : pt(-999), eta(-999), id(-999), ppt(-999), peta(-999), npt(-999), neta(-999) {};
+ AliLightGenV0(Float_t ptin, Float_t etain, Int_t idin) : pt(ptin), eta(etain), id(idin), ppt(-999), peta(-999), npt(-999), neta(-999) {};
   virtual ~AliLightGenV0(){};
   void SetPt(Float_t val){pt = val;};
   void SetEta(Float_t val){eta = val;};
-  void SetPhi(Float_t val){phi = val;};
   void SetId(Int_t val){id = val;}
-  void SetPosDaughter(Float_t ptin, Float_t etain, Float_t phiin){ppt = ptin; peta = etain; pphi = phiin;};
-  void SetNegDaughter(Float_t ptin, Float_t etain, Float_t phiin){npt = ptin; neta = etain; nphi = phiin;};
+  void SetPosDaughter(Float_t ptin, Float_t etain){ppt = ptin; peta = etain;};
+  void SetNegDaughter(Float_t ptin, Float_t etain){npt = ptin; neta = etain;};
   
   Float_t GetPt(){return pt;};
   Float_t GetEta(){return eta;};
-  Float_t GetPhi(){return phi;};
   Int_t   GetId(){return id;};
-  void    GetPosDaughter(Float_t& ptout, Float_t& etaout, Float_t& phiout){ptout = ppt; etaout = peta; phiout = pphi;};
-  void    GetNegDaughter(Float_t& ptout, Float_t& etaout, Float_t& phiout){ptout = npt; etaout = neta; phiout = nphi;};
+  void    GetPosDaughter(Float_t& ptout, Float_t& etaout){ptout = ppt; etaout = peta;};
+  void    GetNegDaughter(Float_t& ptout, Float_t& etaout){ptout = npt; etaout = neta;};
 
  private:
   Float_t   pt;
   Float_t   eta;
-  Float_t   phi;
   Int_t     id;
   Float_t   ppt; // positive daughter properties
   Float_t   peta;
-  Float_t   pphi;
   Float_t   npt; // negative daughter properties
   Float_t   neta;
-  Float_t   nphi;
   
-  ClassDef(AliLightGenV0, 2);
+  ClassDef(AliLightGenV0, 3);
 };
 
 //_____________________________________________________________________________
