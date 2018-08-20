@@ -1,5 +1,7 @@
 AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
                                       bool isHeavyIon = false,
+                                      bool MomRes = false,
+                                      bool etaPhiPlotsAtTPCRadii = false,
                                       TString trigger = "kINT7",
                                       const char *cutVariation = "0") {
   TString suffix;
@@ -19,6 +21,9 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton;
   cutnumberPhoton = "00200008400000002280920000";
+  if (suffix == "7") {
+    cutnumberPhoton = "10200008400000002280920000";
+  }
   TString cutnumberEvent = "00000000";
   TString periodNameV0Reader = "";
   Bool_t enableV0findingEffi = kFALSE;
@@ -114,6 +119,28 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
     v0Cuts->SetLightweight(true);
     antiv0Cuts->SetLightweight(true);
   }
+  if (suffix == "1") {
+    v0Cuts->SetV0OnFlyStatus(true);
+    antiv0Cuts->SetV0OnFlyStatus(true);
+  }
+  if (suffix == "2") {
+    v0Cuts->SetK0Rejection(0., 0.);
+    antiv0Cuts->SetK0Rejection(0., 0.);
+    v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
+    antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
+    v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
+    antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
+    v0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
+    antiv0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
+  }
+  if (suffix == "3") {
+    v0Cuts->SetK0Rejection(0., 0.);
+    antiv0Cuts->SetK0Rejection(0., 0.);
+    v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
+    antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
+    v0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
+    antiv0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
+  }
 
   if (suffix == "999") {
     v0Cuts->SetCheckCutsMC(true);
@@ -144,6 +171,15 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
     sigmaCuts->SetLightweight(true);
     sigmaCuts->SetTreeOutput(false);
   }
+  if (suffix == "4") {
+    sigmaCuts->SetPhotonMaxPt(3);
+  }
+  if (suffix == "5") {
+    sigmaCuts->SetPhotonMaxPt(5);
+  }
+  if (suffix == "6") {
+    sigmaCuts->SetPhotonMaxPt(10);
+  }
 
   AliSigma0PhotonMotherCuts *antiSigmaCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
@@ -154,6 +190,15 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   if (suffix != "0" && suffix != "999") {
     antiSigmaCuts->SetLightweight(true);
     antiSigmaCuts->SetTreeOutput(false);
+  }
+  if (suffix == "4") {
+    antiSigmaCuts->SetPhotonMaxPt(3);
+  }
+  if (suffix == "5") {
+    antiSigmaCuts->SetPhotonMaxPt(5);
+  }
+  if (suffix == "6") {
+    antiSigmaCuts->SetPhotonMaxPt(10);
   }
 
   AliSigma0PhotonMotherCuts *sigmaPhotonCuts =
@@ -166,6 +211,15 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
     sigmaPhotonCuts->SetLightweight(true);
     sigmaPhotonCuts->SetTreeOutput(false);
   }
+  if (suffix == "4") {
+    sigmaPhotonCuts->SetPhotonMaxPt(3);
+  }
+  if (suffix == "5") {
+    sigmaPhotonCuts->SetPhotonMaxPt(5);
+  }
+  if (suffix == "6") {
+    sigmaPhotonCuts->SetPhotonMaxPt(10);
+  }
 
   AliSigma0PhotonMotherCuts *antiSigmaPhotonCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
@@ -176,6 +230,15 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   if (suffix != "0" && suffix != "999") {
     antiSigmaPhotonCuts->SetLightweight(true);
     antiSigmaPhotonCuts->SetTreeOutput(false);
+  }
+  if (suffix == "4") {
+    antiSigmaPhotonCuts->SetPhotonMaxPt(3);
+  }
+  if (suffix == "5") {
+    antiSigmaPhotonCuts->SetPhotonMaxPt(5);
+  }
+  if (suffix == "6") {
+    antiSigmaPhotonCuts->SetPhotonMaxPt(10);
   }
 
   // Femto Collection
@@ -229,14 +292,9 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   MultBins.push_back(80);
   config->SetMultBins(MultBins);
   config->SetMultBinning(true);
-  config->SetkTBinning(false);
-  config->SetmTBinning(false);
-  config->SetkTCentralityBinning(false);
-  config->SetInvMassPairs(false);
 
   config->SetZBins(ZVtxBins);
-  bool MomReso = false;
-  if (MomReso) {
+  if (MomRes) {
     if (isMC) {
       config->SetMomentumResolution(true);
     } else {
@@ -244,7 +302,6 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
                    "MC Info; fix it wont work! \n";
     }
   }
-  bool etaPhiPlotsAtTPCRadii = false;
   if (etaPhiPlotsAtTPCRadii) {
     if (isMC) {
       config->SetPhiEtaBinnign(true);
@@ -259,15 +316,14 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetMixingDepth(10);
-  config->SetSpinningDepth(10);
   config->SetUseEventMixing(true);
-  config->SetUsePhiSpinning(true);
-  config->SetMinimalBookingME(false);
-  config->SetMinimalBookingSample(true);
-  config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
+  config->SetMultiplicityEstimator(AliFemtoDreamEvent::kSPD);
+  if (suffix != "0") {
+    config->SetMinimalBookingME(true);
+  }
 
   AliAnalysisTaskSigma0Femto *task =
-      new AliAnalysisTaskSigma0Femto("AnalysisTaskSigma0");
+      new AliAnalysisTaskSigma0Femto("AnalysisTaskSigma0Femto");
   if (trigger == "kINT7") {
     task->SetTrigger(AliVEvent::kINT7);
     task->SelectCollisionCandidates(AliVEvent::kINT7);
@@ -296,7 +352,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   mgr->AddTask(task);
 
   TString containerName = mgr->GetCommonFileName();
-  containerName += ":AnalysisTaskSigma0_";
+  containerName += ":Sigma0_Femto_";
   if (trigger == "kHighMultV0") containerName += "HighMultV0_";
   containerName += suffix;
 
@@ -314,25 +370,17 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
       name, TList::Class(), AliAnalysisManager::kOutputContainer,
       containerName.Data());
 
-  name = "proton_";
+  name = "femto_";
   if (trigger == "kHighMultV0") name += "HighMultV0_";
   name += suffix;
-  AliAnalysisDataContainer *cProtonOutputList = mgr->CreateContainer(
-      name, TList::Class(), AliAnalysisManager::kOutputContainer,
-      containerName.Data());
-
-  name = "antiproton_";
-  if (trigger == "kHighMultV0") name += "HighMultV0_";
-  name += suffix;
-  AliAnalysisDataContainer *cAntiProtonOutputList = mgr->CreateContainer(
+  AliAnalysisDataContainer *cFemtoOutputList = mgr->CreateContainer(
       name, TList::Class(), AliAnalysisManager::kOutputContainer,
       containerName.Data());
 
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, cOutputList);
   mgr->ConnectOutput(task, 2, cOutputTree);
-  mgr->ConnectOutput(task, 3, cProtonOutputList);
-  mgr->ConnectOutput(task, 4, cAntiProtonOutputList);
+  mgr->ConnectOutput(task, 3, cFemtoOutputList);
 
   return task;
 }
