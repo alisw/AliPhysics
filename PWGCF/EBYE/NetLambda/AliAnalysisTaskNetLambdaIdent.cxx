@@ -35,6 +35,7 @@
 #include "AliV0vertexer.h"
 #include "AliESDv0Cuts.h"
 #include "AliMultSelection.h"
+#include "AliEventPoolManager.h"
 // root
 #include "TMath.h"
 #include "TFile.h"
@@ -61,6 +62,7 @@ AliAnalysisTaskSE(name),
     fListOfHistos(0x0),
     fTree(0x0),
     hEventStatistics(0x0),
+    fPoolMgr(0x0),
     hGenPt(0x0),
     hGenPhi(0x0),
     hGenEta(0x0),
@@ -69,6 +71,7 @@ AliAnalysisTaskSE(name),
     hTrackEta(0x0),
     hNSigmaProton(0x0),
     hArmPod(0x0),
+    hVxVy(0x0),
     hLambdaPtGen(0x0),
     hAntiLambdaPtGen(0x0),
     hLambdaPtReco(0x0),
@@ -99,7 +102,7 @@ AliAnalysisTaskSE(name),
     etacutlambda(0.8),
     cospacut(0.95),
     minradius(5.),
-    ncrossedrows(70),
+    ncrossedrowscut(70),
     crossedrowsclustercut(0.8),
     fCentV0M(-1),
     fCentCL1(-1),
@@ -110,11 +113,12 @@ AliAnalysisTaskSE(name),
     fAcceptV0(0x0),
     fGenLambda(0x0),
     fGenCascade(0x0),
+    fMixV0(0x0),
     fIsMC(kFALSE),
     fIsAOD(kTRUE),
     fEvSel(AliVEvent::kINT7),
-    fK0STree(kFALSE),
-    fLambdaTree(kTRUE)
+    fLambdaTree(kTRUE),
+    fEventMixingTree(kFALSE)
 {
   Info("AliAnalysisTaskNetLambdaIdent","Calling Constructor");
 
@@ -137,6 +141,15 @@ void AliAnalysisTaskNetLambdaIdent::UserCreateOutputObjects(){
   hEventStatistics = new TH1I("hEventStatistics","",20,0,20);
   //hEventStatistics->SetBit(TH1::kCanRebin);
   fListOfHistos->Add(hEventStatistics);
+
+  Int_t ncentbinspool = 10;
+  Double_t centbinspool[11] = {0,10,20,30,40,50,60,70,80,90,100.1};
+  //Int_t nzvtxbinspool = 10;
+  //Double_t zvtxbinspool[11] = {-10,-8,-6,-4,-2,0,2,4,6,8,10};
+  Int_t nzvtxbinspool = 20;
+  Double_t zvtxbinspool[21] = {-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10};
+  fPoolMgr = new AliEventPoolManager(5,1000, ncentbinspool, centbinspool, nzvtxbinspool, zvtxbinspool);
+  fPoolMgr->SetTargetValues(1000, 0.1, 2);
   
   // single-track QA plots
   hTrackPt = new TH1F("hTrackPt","track p_{T};p_{T} (GeV/c);",100,0,10);
@@ -151,6 +164,9 @@ void AliAnalysisTaskNetLambdaIdent::UserCreateOutputObjects(){
   fListOfHistos->Add(hGenPhi);
   hGenEta = new TH1F("hGenEta","generated #eta;#eta;",100,-0.8,0.8);
   fListOfHistos->Add(hGenEta);
+
+  hVxVy = new TH2F("hVxVy","vx vs vy;v_{x};v_{y}",50,0.073,0.083,50,0.331,0.341);
+  fListOfHistos->Add(hVxVy);
 
   // PID QA
   hNSigmaProton = new TH2F("hNSigmaProton","n#sigma for protons;p_{T};n#sigma",100,-10,10,100,-10,10);
@@ -227,6 +243,10 @@ void AliAnalysisTaskNetLambdaIdent::UserCreateOutputObjects(){
       fGenLambda = new TClonesArray("AliLightGenV0",1000);
       fGenCascade = new TClonesArray("AliLightGenV0",1000);
     }
+  if(fEventMixingTree)
+    {
+      fMixV0 = new TClonesArray("AliLightV0",1000);
+    }
   
   // create file-resident tree
   TDirectory *owd = gDirectory;
@@ -244,6 +264,10 @@ void AliAnalysisTaskNetLambdaIdent::UserCreateOutputObjects(){
     {
       fTree->Branch("fGenLambda",&fGenLambda);
       fTree->Branch("fGenCascade",&fGenCascade);
+    }
+  if(fEventMixingTree)
+    {
+      fTree->Branch("fMixV0",&fMixV0);
     }
   
   //fUtils = new AliAnalysisUtils();
@@ -333,12 +357,12 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       fVtx[0] = vvertex->GetX();
       fVtx[1] = vvertex->GetY();
       fVtx[2] = vvertex->GetZ();
-  
-  hEventStatistics->Fill("found primary vertex",1);
+      hEventStatistics->Fill("found primary vertex",1);
 
   if(fVtx[2] < -10. || fVtx[2] > 10.) return;
   hEventStatistics->Fill("vz cut",1);
   fVtxZ = fVtx[2];
+  hVxVy->Fill(fVtx[0],fVtx[1]);
 
   fCentCL1 = MultSelection->GetMultiplicityPercentile("CL1");
   fCentV0M = MultSelection->GetMultiplicityPercentile("V0M");
@@ -362,6 +386,15 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
   
   if (!fEventCuts.AcceptEvent(fInputEvent)) return;
   hEventStatistics->Fill("AliEventCuts",1);
+
+  TObjArray* mixtracks = 0x0, *mixprotons;
+  if(fEventMixingTree)
+    {
+      mixtracks = new TObjArray();
+      mixtracks->SetOwner(kTRUE);
+      mixprotons = new TObjArray();
+      mixprotons->SetOwner(kTRUE);
+    }
   
   // loop over reconstructed tracks
   Int_t nTracks = 0;
@@ -392,6 +425,20 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	  pt = track->Pt();
 	  eta = track->Eta();
 	  phi = track->Phi();
+
+	  if(fEventMixingTree)
+	    {
+	      if(TrackCutsForTreeESD(track) && (track->GetStatus() & AliESDtrack::kTPCrefit))
+		{
+		  AliLightV0track* lighttrack = new AliLightV0track(*track,fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton));
+		  mixtracks->Add(lighttrack);
+		  if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton)) < 5.)
+		    {
+		      AliLightV0track* lightproton = new AliLightV0track(*track,fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton));
+		      mixprotons->Add(lightproton);
+		    }
+		}
+	    }
 	}
       hTrackPt->Fill(pt);
       hTrackPhi->Fill(phi);
@@ -455,34 +502,27 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 
 	  if(abseta > etacutlambda) continue;
 	  
-	  if(fK0STree)
-	    {
-	      if(abspid == 310 && pt >= ptminlambda) AliLightGenV0* tempGenK0S = new((*fGenLambda)[fGenLambda->GetEntriesFast()]) AliLightGenV0(pt,eta,phi,0);
-	      continue;
-	    }
-
-
 	  // cascades for feeddown correction
 	      AliLightGenV0* tempGenCascade = 0x0;
 	      if(pid == -3312) // xi+
 		{
 		  hXiPlus->Fill(pt,eta,fCentV0M);
-		  tempGenCascade = new((*fGenCascade)[fGenCascade->GetEntriesFast()]) AliLightGenV0(pt,eta,phi,1);
+		  tempGenCascade = new((*fGenCascade)[fGenCascade->GetEntriesFast()]) AliLightGenV0(pt,eta,1);
 		}
 	      else if(pid == 3312) // xi-
 		{
 		  hXiMinus->Fill(pt,eta,fCentV0M);
-		  tempGenCascade = new((*fGenCascade)[fGenCascade->GetEntriesFast()]) AliLightGenV0(pt,eta,phi,-1);
+		  tempGenCascade = new((*fGenCascade)[fGenCascade->GetEntriesFast()]) AliLightGenV0(pt,eta,-1);
 		}
 	      else if(pid == 3322) // xi0
 		{
 		  hXiZero->Fill(pt,eta,fCentV0M);
-		  tempGenCascade = new((*fGenCascade)[fGenCascade->GetEntriesFast()]) AliLightGenV0(pt,eta,phi,-2);
+		  tempGenCascade = new((*fGenCascade)[fGenCascade->GetEntriesFast()]) AliLightGenV0(pt,eta,-2);
 		}
 	      else if(pid == -3322) // anti-xi0
 		{
 		  hXiZeroAnti->Fill(pt,eta,fCentV0M);
-		  tempGenCascade = new((*fGenCascade)[fGenCascade->GetEntriesFast()]) AliLightGenV0(pt,eta,phi,2);
+		  tempGenCascade = new((*fGenCascade)[fGenCascade->GetEntriesFast()]) AliLightGenV0(pt,eta,2);
 		}
 
 	  
@@ -495,7 +535,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	      hLambdaPtGen->Fill(pt);
 	      if(pt >= ptminlambda)
 		{
-		  tempGenLambda = new((*fGenLambda)[fGenLambda->GetEntriesFast()]) AliLightGenV0(pt,eta,phi,1);
+		  tempGenLambda = new((*fGenLambda)[fGenLambda->GetEntriesFast()]) AliLightGenV0(pt,eta,1);
 		}
 	    }
 	  else if(pid == -3122)
@@ -503,19 +543,19 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	      hAntiLambdaPtGen->Fill(pt);
 	      if(pt >= ptminlambda)
 		{
-		  tempGenLambda = new((*fGenLambda)[fGenLambda->GetEntriesFast()]) AliLightGenV0(pt,eta,phi,-1);
+		  tempGenLambda = new((*fGenLambda)[fGenLambda->GetEntriesFast()]) AliLightGenV0(pt,eta,-1);
 		}
 	    }
 
 	  if(tempGenLambda)
 	    {
-	      tempGenLambda->SetPosDaughter(-999,-999,-999);
-	      tempGenLambda->SetNegDaughter(-999,-999,-999);
+	      tempGenLambda->SetPosDaughter(-999,-999);
+	      tempGenLambda->SetNegDaughter(-999,-999);
 	    }
 	  else if(tempGenCascade)
 	    {
-	      tempGenCascade->SetPosDaughter(-999,-999,-999);
-	      tempGenCascade->SetNegDaughter(-999,-999,-999);
+	      tempGenCascade->SetPosDaughter(-999,-999);
+	      tempGenCascade->SetNegDaughter(-999,-999);
 	    }
 	  else
 	    {
@@ -563,42 +603,42 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	    {
 	      if(pid == 3122 && pdg1 == 2212 && pdg2 == -211) // daughter 1 is proton, daughter 2 is pi-, mother is lambda
 		{
-		  tempGenLambda->SetPosDaughter(pt1,eta1,phi1);
-		  tempGenLambda->SetNegDaughter(pt2,eta2,phi2);
+		  tempGenLambda->SetPosDaughter(pt1,eta1);
+		  tempGenLambda->SetNegDaughter(pt2,eta2);
 		}
 	      else if(pid == -3122 && pdg1 == -2212 && pdg2 == 211) // daughter 1 is antiproton, daughter 2 is pi+, mother is anti-lambda
 		{
-		  tempGenLambda->SetNegDaughter(pt1,eta1,phi1);
-		  tempGenLambda->SetPosDaughter(pt2,eta2,phi2);
+		  tempGenLambda->SetNegDaughter(pt1,eta1);
+		  tempGenLambda->SetPosDaughter(pt2,eta2);
 		}
 	      else if(pid == 3122 && pdg1 == -211 && pdg2 == 2212) // daughter 1 is pi-, daughter 2 is proton, mother is lambda
 		{
-		  tempGenLambda->SetNegDaughter(pt1,eta1,phi1);
-		  tempGenLambda->SetPosDaughter(pt2,eta2,phi2);
+		  tempGenLambda->SetNegDaughter(pt1,eta1);
+		  tempGenLambda->SetPosDaughter(pt2,eta2);
 		}
 	      else if(pid == -3122 && pdg1 == 211 && pdg2 == -2212) // daughter 1 is pi+, daughter 2 is antiproton, mother is anti-lambda
 		{
-		  tempGenLambda->SetPosDaughter(pt1,eta1,phi1);
-		  tempGenLambda->SetNegDaughter(pt2,eta2,phi2);
+		  tempGenLambda->SetPosDaughter(pt1,eta1);
+		  tempGenLambda->SetNegDaughter(pt2,eta2);
 		}
 	    }
 	  if(tempGenCascade)
 	    {
 	      if(TMath::Abs(pdg1) == 3122 && (TMath::Abs(pdg2) == 211 || TMath::Abs(pdg2) == 111)) // daughter 1 is lambda, daughter 2 is pion
 		{
-		  tempGenCascade->SetPosDaughter(pt1,eta1,phi1);
-		  tempGenCascade->SetNegDaughter(pt2,eta2,phi2);
+		  tempGenCascade->SetPosDaughter(pt1,eta1);
+		  tempGenCascade->SetNegDaughter(pt2,eta2);
 		}
 	      else if(TMath::Abs(pdg2) == 3122 && (TMath::Abs(pdg1) == 211 || TMath::Abs(pdg1) == 111)) // daughter 1 is pion, daughter 2 is lambda
 		{
-		  tempGenCascade->SetPosDaughter(pt2,eta2,phi2);
-		  tempGenCascade->SetNegDaughter(pt1,eta1,phi1);
+		  tempGenCascade->SetPosDaughter(pt2,eta2);
+		  tempGenCascade->SetNegDaughter(pt1,eta1);
 		}
 	    }
 	} // end loop over generated particles
     }
 
-    /*AliESDv0Cuts* v0cuts = new AliESDv0Cuts();
+  /*AliESDv0Cuts* v0cuts = new AliESDv0Cuts();
   v0cuts->SetMinDcaPosToVertex(0.05);
   v0cuts->SetMinDcaNegToVertex(0.05);
   v0cuts->SetMaxChi2(33.);
@@ -635,14 +675,13 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 
       Double_t  secvtx[3];
 
-      Float_t invMassLambda = -999, invMassAntiLambda = -999, invMassK0S = -999;
+      Float_t invMassLambda = -999, invMassAntiLambda = -999;
       Float_t alpha = -999, ptarm = -999;
       Float_t pt = -999, phi = -999, eta = -999, pmom = -999;
       Float_t ppt = -999, pphi = -999, peta = -999, pnsigmapr = -999;
       Float_t npt = -999, nphi = -999, neta = -999, nnsigmapr = -999;
       Bool_t swapflag = kFALSE, ontheflystat = kFALSE;
       Float_t /*dcaV0ToVertex = -999,*/ dcaPosToVertex = -999, dcaNegToVertex = -999, dcaDaughters = -999, cosPointingAngle = -999;
-      Float_t ncrossedrowsPos = -999, ncrossedratioPos = -999, ncrossedrowsNeg = -999, ncrossedratioNeg = -999;
       
       if(fIsAOD) // aod
 	{
@@ -653,12 +692,15 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	  v0vtx->GetPosition(secvtx);
 	  aodTrackPos = (AliAODTrack*)v0vtx->GetDaughter(0);
 	  if(!aodTrackPos) continue;
+	  if(!TrackCutsForTreeAOD(aodTrackPos)) continue;
 	  aodTrackNeg = (AliAODTrack*)v0vtx->GetDaughter(1);
 	  if(!aodTrackNeg) continue;
+	  if(!TrackCutsForTreeAOD(aodTrackNeg)) continue;
+
+	  if(!V0CutsForTreeAOD(aodv0,fVtx)) continue;
 
 	  invMassLambda = aodv0->MassLambda();
 	  invMassAntiLambda = aodv0->MassAntiLambda();
-	  invMassK0S = aodv0->MassK0Short();
 	  alpha = aodv0->AlphaV0();
 	  ptarm = aodv0->PtArmV0();
 
@@ -698,11 +740,6 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	  dcaNegToVertex = aodv0->DcaNegToPrimVertex();
 	  cosPointingAngle = aodv0->CosPointingAngle(fVtx);
 	  dcaDaughters = aodv0->DcaV0Daughters();
-
-	  ncrossedrowsPos = aodTrackPos->GetTPCNCrossedRows();
-	  if(aodTrackPos->GetTPCNclsF() > 0) ncrossedratioPos = aodTrackPos->GetTPCNCrossedRows()/Float_t(aodTrackPos->GetTPCNclsF());
-	  ncrossedrowsNeg = aodTrackNeg->GetTPCNCrossedRows();
-	  if(aodTrackNeg->GetTPCNclsF() > 0) ncrossedratioNeg = aodTrackNeg->GetTPCNCrossedRows()/Float_t(aodTrackNeg->GetTPCNclsF());
 	}
       else // esd
 	{
@@ -712,12 +749,16 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	  esdv0->GetXYZ(secvtx[0], secvtx[1], secvtx[2]);
 	  esdTrackPos =  (AliESDtrack*)fESD->GetTrack(TMath::Abs(esdv0->GetPindex()));
 	  if(!esdTrackPos) continue;
+	  if(!TrackCutsForTreeESD(esdTrackPos)) continue;
 	  esdTrackNeg = (AliESDtrack*)fESD->GetTrack(TMath::Abs(esdv0->GetNindex()));
 	  if(!esdTrackNeg) continue;
+	  if(!TrackCutsForTreeESD(esdTrackNeg)) continue;
+
+	  if(!V0CutsForTreeESD(esdv0,fVtx,esdTrackPos,esdTrackNeg,fInputEvent->GetMagneticField())) continue;
 
 	  invMassLambda = esdv0->GetEffMass(4,2);
 	  invMassAntiLambda = esdv0->GetEffMass(2,4);
-	  invMassK0S = esdv0->GetEffMass(2,2);
+	  //invMassK0S = esdv0->GetEffMass(2,2);
 	  alpha = esdv0->AlphaV0();
 	  ptarm = esdv0->PtArmV0();
 	  
@@ -761,16 +802,9 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	  dcaNegToVertex = TMath::Sqrt(d1*d1+d2*d2);
 	  cosPointingAngle = esdv0->GetV0CosineOfPointingAngle();
 	  dcaDaughters = esdv0->GetDcaV0Daughters();
-	  
-	  ncrossedrowsPos = esdTrackPos->GetTPCCrossedRows();
-	  if(esdTrackPos->GetTPCNclsF() > 0) ncrossedratioPos = esdTrackPos->GetTPCCrossedRows()/Float_t(esdTrackPos->GetTPCNclsF());
-	  ncrossedrowsNeg = esdTrackNeg->GetTPCCrossedRows();
-	  if(esdTrackNeg->GetTPCNclsF() > 0) ncrossedratioNeg = esdTrackNeg->GetTPCCrossedRows()/Float_t(esdTrackNeg->GetTPCNclsF());
-	}
+      	}
 
       if(TMath::Abs(eta) > etacutlambda) continue;
-      if(!(TMath::Abs(peta) < 1.)) continue;
-      if(!(TMath::Abs(neta) < 1.)) continue;
      
       if(ontheflystat == kTRUE)
 	{
@@ -791,65 +825,36 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 					   TMath::Power(secvtx[2] - fVtx[2],2 ));
 
       if(!swapflag) hArmPod->Fill(alpha,ptarm);
-
-      // put some basic cuts to reduce data volume here 
-      if(!fIsAOD) // (esd only)
-	{
-	  if(cosPointingAngle < cospacut) continue; // looser cut than in AODs
-	  if(v0Radius < minradius) continue; // stricter cut than in AODs
-	  if(dcaPosToVertex < 0.05) continue; // these cuts are the same as in AODs
-	  if(dcaNegToVertex < 0.05) continue;
-	  if(dcaDaughters > 1.5) continue;
-	  if(v0Radius > 200.) continue;
-	}
-      if(ncrossedrowsPos < ncrossedrows) continue;
-      if(ncrossedrowsNeg < ncrossedrows) continue;
-      if(ncrossedratioPos < crossedrowsclustercut) continue;
-      if(ncrossedratioNeg < crossedrowsclustercut) continue;
       
       AliLightV0* tempLightV0 = 0x0;
       // make tree      
-      if(pt >= ptminlambda)
+      if(invMassLambda < 1.16 && TMath::Abs(pnsigmapr) < 5.) // lambda candidate
 	{
-	  if(fK0STree)
-	    {
-	      if(invMassK0S < 0.65 && invMassK0S > 0.35)
-		{
-		  tempLightV0 = new((*fAcceptV0)[fAcceptV0->GetEntriesFast()]) AliLightV0(pt,eta,phi);
-		  tempLightV0->SetInvMassLambda(invMassK0S);
-		  tempLightV0->SetInvMassAntiLambda(invMassK0S);
-		  tempLightV0->SetCosPointingAngle(cosPointingAngle);
-		  tempLightV0->SetDecayR(v0Radius);
-		  tempLightV0->SetDecayL(pmom > 0. ? v0DecayLength/pmom : 0.);
-		  //tempLightV0->SetDCAV0(dcaV0ToVertex);
-		  tempLightV0->SetDCADaughters(dcaDaughters);
-		  tempLightV0->SetMcStatus(0);
-		  tempLightV0->SetPosDaughter(ppt,peta,pphi, 0, dcaPosToVertex);
-		  tempLightV0->SetNegDaughter(npt,neta,nphi, 0, dcaNegToVertex);
-		}
-	    }
-	  else
-	    {
-	      if(invMassLambda < 1.16 || invMassAntiLambda < 1.16)
-		{
-		  if(TMath::Abs(pnsigmapr) < 5 || TMath::Abs(nnsigmapr) < 5)
-		  {
-		      tempLightV0 = new((*fAcceptV0)[fAcceptV0->GetEntriesFast()]) AliLightV0(pt,eta,phi);
-		      tempLightV0->SetInvMassLambda(invMassLambda);
-		      tempLightV0->SetInvMassAntiLambda(invMassAntiLambda);
-		      tempLightV0->SetCosPointingAngle(cosPointingAngle);
-		      tempLightV0->SetDecayR(v0Radius);
-		      tempLightV0->SetDecayL(pmom > 0. ? v0DecayLength/pmom : 0.);
-		      //tempLightV0->SetDCAV0(dcaV0ToVertex);
-		      tempLightV0->SetDCADaughters(dcaDaughters);
-		      tempLightV0->SetMcStatus(0);
-		      tempLightV0->SetPosDaughter(ppt,peta,pphi, pnsigmapr, dcaPosToVertex);
-		      tempLightV0->SetNegDaughter(npt,neta,nphi, nnsigmapr, dcaNegToVertex);
-		  }
-		}
-	    }
+	  tempLightV0 = new((*fAcceptV0)[fAcceptV0->GetEntriesFast()]) AliLightV0(pt,eta);
+	  tempLightV0->SetInvMass(invMassLambda);
+	  tempLightV0->SetCosPointingAngle(cosPointingAngle);
+	  tempLightV0->SetDecayR(v0Radius);
+	  tempLightV0->SetProperLifetime(pmom > 0. ? invMassLambda*v0DecayLength/pmom : 0.);
+	  //tempLightV0->SetDCAV0(dcaV0ToVertex);
+	  tempLightV0->SetDCADaughters(dcaDaughters);
+	  tempLightV0->SetMcStatus(0);
+	  tempLightV0->SetPosDaughter(ppt,peta,pnsigmapr, dcaPosToVertex);
+	  tempLightV0->SetNegDaughter(npt,neta,nnsigmapr, dcaNegToVertex);
 	}
-
+      if(invMassAntiLambda < 1.16 && TMath::Abs(nnsigmapr) < 5.) // anti-lambda candidate
+	{
+	  tempLightV0 = new((*fAcceptV0)[fAcceptV0->GetEntriesFast()]) AliLightV0(pt,eta);
+	  tempLightV0->SetInvMass(-1.*invMassAntiLambda);
+	  tempLightV0->SetCosPointingAngle(cosPointingAngle);
+	  tempLightV0->SetDecayR(v0Radius);
+	  tempLightV0->SetProperLifetime(pmom > 0. ? invMassAntiLambda*v0DecayLength/pmom : 0.);
+	  //tempLightV0->SetDCAV0(dcaV0ToVertex);
+	  tempLightV0->SetDCADaughters(dcaDaughters);
+	  tempLightV0->SetMcStatus(0);
+	  tempLightV0->SetPosDaughter(ppt,peta,pnsigmapr, dcaPosToVertex);
+	  tempLightV0->SetNegDaughter(npt,neta,nnsigmapr, dcaNegToVertex);
+	}
+      
       //Armenteros-Podolanski plot
       //calculate variables manually
       /*Float_t pLplus = trackPos->Px()*v0cand->Px()+trackPos->Py()*v0cand->Py()+trackPos->Pz()*v0cand->Pz();
@@ -999,15 +1004,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	      //else Printf("mid = %i  mL = %.4lf  mAL = %.4lf  pt = %.4lf",mpid,invMassLambda,invMassAntiLambda,pt);
 	      }*/
 	  
-	  
-	  if(fK0STree)
-	    {
-	      if(TMath::Abs(mpid) != 310) continue;
-	    }
-	  else
-	    {
-	      if(TMath::Abs(mpid) != 3122) continue;
-	    }
+	  if(TMath::Abs(mpid) != 3122) continue;
 	  
 	  Int_t mcstatus = 1;
       
@@ -1033,11 +1030,6 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	  
 	  //if(!(stack->IsPhysicalPrimary(m1))) continue;
 	  if(!isPrim) mcstatus += 1; // mcstatus = 2 means secondary
-	  
-	  if(fK0STree)
-	    {
-	      if(tempLightV0) tempLightV0->SetMcStatus(mcstatus); 
-	    }
 
 	  if(tempLightV0) tempLightV0->SetGenPtEta(mpt,meta);
 	  
@@ -1065,6 +1057,24 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	    }
 	}
     }
+
+  // event mixing
+  if(fEventMixingTree)
+    {
+      fMixV0->Clear();
+      AliEventPool* pool = fPoolMgr->GetEventPool(fCentV0M,fVtxZ);
+      if (pool->IsReady())
+	{
+	  //Printf("found pool for cent %lf vz %lf with %i entries",fCentV0M,fVtxZ,pool->GetCurrentNEvents());
+	  for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) 
+	    {
+	      Tracks2V0vertices(mixtracks,pool->GetEvent(jMix),vvertex,fInputEvent->GetMagneticField());
+	    }
+	}
+      pool->UpdatePool(mixprotons);
+      mixtracks->Clear();
+    }
+
   fTree->Fill();
   
   hEventStatistics->Fill("after event loop",1);
@@ -1072,3 +1082,224 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
   PostData(1,fListOfHistos);
   PostData(2,fTree);
 }
+
+// copied from AliRoot/STEER/ESD/AliV0vertexer.cxx and modified
+void AliAnalysisTaskNetLambdaIdent::Tracks2V0vertices(TObjArray* ev1, TObjArray* ev2, AliVVertex *vtxT3D, Double_t b)
+{
+  //--------------------------------------------------------------------
+  //This function reconstructs V0 vertices
+  //--------------------------------------------------------------------
+
+  //A set of very loose cuts
+  Double_t fChi2max=33.; //max chi2
+  Double_t fDNmin=0.05;  //min imp parameter for the 1st daughter
+  Double_t fDPmin=0.05;  //min imp parameter for the 2nd daughter
+  Double_t fDCAmax=1.5;  //max DCA between the daughter tracks
+  Double_t fCPAmin=0.9;  //min cosine of V0's pointing angle
+  Double_t fRmin=0.2;    //min radius of the fiducial volume
+  Double_t fRmax=200.;   //max radius of the fiducial volume
+  
+  //const AliESDVertex *vtxT3D=event->GetPrimaryVertex();
+  Double_t primVtx[3] = {vtxT3D->GetX(),vtxT3D->GetY(),vtxT3D->GetZ()};
+
+  AliExternalTrackParam *ntrk, *ptrk, *temptrk;
+  Float_t pnsigmapr, nnsigmapr;
+  
+  for(Int_t i = 0; i < ev1->GetEntries(); i++)
+    {
+      temptrk = ((AliLightV0track*)ev1->At(i))->GetExtParam();
+      Int_t trksign = temptrk->GetSign();
+      
+      if(trksign > 0)
+	{
+	  ptrk = temptrk;
+	  pnsigmapr = ((AliLightV0track*)ev1->At(i))->GetProtonPID();
+	}
+      else if(trksign < 0)
+	{
+	  ntrk = temptrk;
+	  nnsigmapr = ((AliLightV0track*)ev1->At(i))->GetProtonPID();
+	}
+      else continue;
+
+      for(Int_t k = 0; k < ev2->GetEntries(); k++)
+	{
+	  temptrk = (AliExternalTrackParam*)((AliLightV0track*)ev2->At(k))->GetExtParam();
+	  
+	  if(trksign == temptrk->GetSign()) continue;
+	  if(trksign > 0)
+	    {
+	      ntrk = temptrk;
+	      nnsigmapr = ((AliLightV0track*)ev2->At(k))->GetProtonPID();
+	    }
+	  else
+	    {
+	      ptrk = temptrk;
+	      pnsigmapr = ((AliLightV0track*)ev2->At(k))->GetProtonPID();
+	    }
+	  
+	  if (TMath::Abs(ntrk->GetD(primVtx[0],primVtx[1],b))<fDNmin)
+	    if (TMath::Abs(ptrk->GetD(primVtx[0],primVtx[1],b))<fDPmin) continue;
+	  
+	  Double_t xn, xp;
+	  Double_t dca = ntrk->GetDCA(ptrk,b,xn,xp);
+	  if (dca > fDCAmax) continue;
+	  if ((xn+xp) > 2*fRmax) continue;
+	  if ((xn+xp) < 2*fRmin) continue;
+	  
+	  //AliExternalTrackParam nt(*ntrk), pt(*ptrk);
+	  Bool_t corrected=kFALSE;
+	  if ((ntrk->GetX() > 3.) && (xn < 3.))
+	    {
+	      //correct for the beam pipe material
+	      corrected=kTRUE;
+	    }
+	  if ((ptrk->GetX() > 3.) && (xp < 3.))
+	    {
+	      //correct for the beam pipe material
+	      corrected=kTRUE;
+	    }
+	  if (corrected)
+	    {
+	      dca = ntrk->GetDCA(ptrk,b,xn,xp);
+	      if (dca > fDCAmax) continue;
+	      if ((xn+xp) > 2*fRmax) continue;
+	      if ((xn+xp) < 2*fRmin) continue;
+	    }
+	  
+	  ntrk->PropagateTo(xn,b); // check this
+	  ptrk->PropagateTo(xp,b);
+
+	  AliESDv0 vertex(*ntrk,i,*ptrk,k);
+	  if (vertex.GetChi2V0() > fChi2max) continue;
+	  
+	  Double_t x = vertex.Xv(), y=vertex.Yv(), z=vertex.Zv();
+	  Double_t r2 = x*x + y*y;
+	  if (r2 < fRmin*fRmin) continue;
+	  if (r2 > fRmax*fRmax) continue;
+
+	  Double_t v0DecayLength = TMath::Sqrt(TMath::Power(x - primVtx[0],2) +
+					       TMath::Power(y - primVtx[1],2) +
+					       TMath::Power(z - primVtx[2],2 ));
+	  
+	  Float_t cpa = vertex.GetV0CosineOfPointingAngle(primVtx[0],primVtx[1],primVtx[2]);
+	  vertex.SetV0CosineOfPointingAngle(cpa);
+	  vertex.SetDcaV0Daughters(dca);
+	  const Double_t pThr=1.5;
+	  Double_t pv0 = vertex.P();
+	  if (pv0<pThr)
+	    {
+	      //Below the threshold "pThr", try a momentum dependent cos(PA) cut 
+	      const Double_t bend=0.03; // approximate Xi bending angle
+	      const Double_t qt=0.211;  // max Lambda pT in Omega decay
+	      const Double_t cpaThr=TMath::Cos(TMath::ATan(qt/pThr) + bend);
+	      Double_t 
+		cpaCut=(fCPAmin/cpaThr)*TMath::Cos(TMath::ATan(qt/pv0) + bend); 
+	      if (cpa < cpaCut) continue;
+	    }
+	  else
+	    {
+	      if (cpa < fCPAmin) continue;
+	    }
+	  
+	  if(!V0CutsForTreeESD(&vertex,primVtx,ptrk,ntrk,b)) continue;
+	  
+	  if(vertex.GetEffMass(4,2) < 1.16 && TMath::Abs(pnsigmapr) < 5.) // mixed lambda candidate
+	    {
+	      AliLightV0 *tempLightV0 = new((*fMixV0)[fMixV0->GetEntriesFast()]) AliLightV0(vertex.Pt(),vertex.Eta());
+	      tempLightV0->SetInvMass(vertex.GetEffMass(4,2));
+	      tempLightV0->SetCosPointingAngle(cpa);
+	      tempLightV0->SetDecayR(TMath::Sqrt(r2));
+	      tempLightV0->SetProperLifetime(vertex.P() > 0. ? vertex.GetEffMass(4,2)*v0DecayLength/vertex.P() : 0.);
+	      tempLightV0->SetDCADaughters(dca);
+	      tempLightV0->SetMcStatus(0);
+	      tempLightV0->SetPosDaughter(ptrk->Pt(),ptrk->Eta(),pnsigmapr,TMath::Abs(ptrk->GetD(primVtx[0],primVtx[1],b)));
+	      tempLightV0->SetNegDaughter(ntrk->Pt(),ntrk->Eta(),nnsigmapr,TMath::Abs(ntrk->GetD(primVtx[0],primVtx[1],b)));
+	    }
+	  if(vertex.GetEffMass(2,4) < 1.16 && TMath::Abs(nnsigmapr) < 5.) // mixed anti-lambda candidate
+	    {
+	      AliLightV0 *tempLightV0 = new((*fMixV0)[fMixV0->GetEntriesFast()]) AliLightV0(vertex.Pt(),vertex.Eta());
+	      tempLightV0->SetInvMass(-1.*vertex.GetEffMass(2,4));
+	      tempLightV0->SetCosPointingAngle(cpa);
+	      tempLightV0->SetDecayR(TMath::Sqrt(r2));
+	      tempLightV0->SetProperLifetime(vertex.P() > 0. ? vertex.GetEffMass(2,4)*v0DecayLength/vertex.P() : 0.);
+	      tempLightV0->SetDCADaughters(dca);
+	      tempLightV0->SetMcStatus(0);
+	      tempLightV0->SetPosDaughter(ptrk->Pt(),ptrk->Eta(),pnsigmapr,TMath::Abs(ptrk->GetD(primVtx[0],primVtx[1],b)));
+	      tempLightV0->SetNegDaughter(ntrk->Pt(),ntrk->Eta(),nnsigmapr,TMath::Abs(ntrk->GetD(primVtx[0],primVtx[1],b)));
+	    }
+	}
+    }
+  
+  return;
+}
+
+Bool_t AliAnalysisTaskNetLambdaIdent::TrackCutsForTreeAOD(AliAODTrack* trk)
+{
+  if(TMath::Abs(trk->Eta()) > 1.) return kFALSE;
+  if(TMath::Abs(trk->Pt()) < 0.15) return kFALSE;
+  if(trk->GetTPCNCrossedRows() < ncrossedrowscut) return kFALSE;
+  if(trk->GetTPCNclsF() <= 0) return kFALSE;
+  if(trk->GetTPCNCrossedRows()/Float_t(trk->GetTPCNclsF()) < crossedrowsclustercut) return kFALSE;
+
+  return kTRUE;
+}
+
+Bool_t AliAnalysisTaskNetLambdaIdent::TrackCutsForTreeESD(AliESDtrack* trk)
+{
+  if(TMath::Abs(trk->Eta()) > 1.) return kFALSE;
+  if(TMath::Abs(trk->Pt()) < 0.15) return kFALSE;
+  if(trk->GetTPCCrossedRows() < ncrossedrowscut) return kFALSE;
+  if(trk->GetTPCNclsF() <= 0) return kFALSE;
+  if(trk->GetTPCCrossedRows()/Float_t(trk->GetTPCNclsF()) < crossedrowsclustercut) return kFALSE;
+
+  return kTRUE;
+}
+
+Bool_t AliAnalysisTaskNetLambdaIdent::V0CutsForTreeAOD(AliAODv0* v0, Double_t* vt)
+{
+  if(v0->Pt() < ptminlambda) return kFALSE;
+	    
+  if(v0->CosPointingAngle(vt) < cospacut) return kFALSE;
+  if(v0->DcaV0Daughters() > 1.5) return kFALSE; // these are default cuts from AODs
+  if(v0->DcaPosToPrimVertex() < 0.05) return kFALSE;
+  if(v0->DcaNegToPrimVertex() < 0.05) return kFALSE;
+
+  Double_t sv[3];
+  v0->GetSecondaryVtx()->GetPosition(sv);
+  Float_t v0Radius2 = sv[0]*sv[0]+sv[1]*sv[1];
+  if(v0Radius2 < minradius*minradius) return kFALSE;
+  if(v0Radius2 > 200.*200.) return kFALSE;
+  
+  return kTRUE;
+}
+
+Bool_t AliAnalysisTaskNetLambdaIdent::V0CutsForTreeESD(AliESDv0* v0, Double_t* vt, AliExternalTrackParam* ptrk, AliExternalTrackParam* ntrk, Double_t b)
+{
+  if(v0->Pt() < ptminlambda) return kFALSE;
+  
+  if(v0->GetV0CosineOfPointingAngle() < cospacut) return kFALSE;
+  if(v0->GetDcaV0Daughters() > 1.5) return kFALSE; // these are default cuts from AODs
+
+  Float_t pd1, pd2, nd1, nd2;
+  ptrk->GetImpactParameters(pd1,pd2);
+  ntrk->GetImpactParameters(nd1,nd2);
+  if(pd1 == 0 && nd1 == 0)
+    {
+      nd1 = ntrk->GetD(vt[0],vt[1],b);
+      pd1 = ptrk->GetD(vt[0],vt[1],b);
+    }
+  if(pd1*pd1+pd2*pd2 < 0.05*0.05) return kFALSE;
+  if(nd1*nd1+nd2*nd2 < 0.05*0.05) return kFALSE;
+
+  Double_t sv[3];
+  v0->GetXYZ(sv[0], sv[1], sv[2]);
+  Float_t v0Radius2 = sv[0]*sv[0]+sv[1]*sv[1];
+  if(v0Radius2 < minradius*minradius) return kFALSE;
+  if(v0Radius2 > 200.*200.) return kFALSE;
+  
+  return kTRUE;
+}
+
+
+//enum kCutBits{kDecayRadius4,kDecayRadius5,kDecayRadius6,kProperLifetimeLambda30,kProperLifetimeLambda25,kProperLifetimeLambda20,kProperLifetimeAntiLambda30,kProperLifetimeAntiLambda25,kProperLifetimeAntiLambda20,kMcStatus
