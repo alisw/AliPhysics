@@ -97,11 +97,11 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fTriggerEfficiency(0x0),
   fESDtrackCutsGlobal(0x0),
   fESDtrackCutsGlobalConstrained(0x0),
-  fAdditionalPi0PtWeight(),
-  fAdditionalEtaPtWeight(),
-  fAdditionalGammaPtWeight(),
-  fAdditionalK0SPtWeight(),
-  fAdditionalL0PtWeight(),
+  //fAdditionalPi0PtWeight(),
+  //fAdditionalEtaPtWeight(),
+  //fAdditionalGammaPtWeight(),
+  //fAdditionalK0SPtWeight(),
+  //fAdditionalL0PtWeight(),
   fCentArrayPi0(0x0),
   fCentArrayEta(0x0),
   fCentArrayGamma(0x0),
@@ -176,6 +176,14 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
     for(Int_t j=0;j<7;j++){
       fNonLin[i][j] = 0x0;
     }
+  }
+
+  for(Int_t i=0;i<11;i++){
+    fAdditionalPi0PtWeight[i]   = 0x0;
+    fAdditionalEtaPtWeight[i]   = 0x0;
+    fAdditionalGammaPtWeight[i] = 0x0;
+    fAdditionalK0SPtWeight[i]   = 0x0;
+    fAdditionalL0PtWeight[i]    = 0x0;
   }
 
   fTPCEPName[0] = "TPC";
