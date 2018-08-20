@@ -252,7 +252,6 @@ ClassImp(AliAnalysisTaskQAHighPtDeDxTest)
 
 	}
 
-
 	//default constructor
 	for(Int_t cent=0;cent<11;++cent){
 		for(Int_t pid=0;pid<7;++pid){
@@ -263,8 +262,24 @@ ClassImp(AliAnalysisTaskQAHighPtDeDxTest)
 			hMcOutNeg[cent][pid]=0;
 			hMcOutPos[cent][pid]=0;
 		}
-
 	}
+
+	for(Int_t cent=0;cent<10;++cent){
+		for(Int_t pid=0;pid<7;++pid){
+			for(Int_t q=0;q<3;++q){
+				hDCApTPrim[cent][pid][q]=0;
+				hDCApTWDec[cent][pid][q]=0;
+				hDCApTMate[cent][pid][q]=0;
+
+				hDCApTPrim2[cent][pid][q]=0;
+				hDCApTWDec2[cent][pid][q]=0;
+				hDCApTMate2[cent][pid][q]=0;
+			}
+		}
+	}
+
+
+
 
 }
 
@@ -379,7 +394,6 @@ AliAnalysisTaskQAHighPtDeDxTest::AliAnalysisTaskQAHighPtDeDxTest(const char *nam
 
 	}
 
-
 	// Default constructor (should not be used)
 	for(Int_t cent=0; cent<11; ++cent){
 		for(Int_t pid=0; pid<7; ++pid){
@@ -389,6 +403,20 @@ AliAnalysisTaskQAHighPtDeDxTest::AliAnalysisTaskQAHighPtDeDxTest(const char *nam
 			hMcInPos[cent][pid]=0;
 			hMcOutNeg[cent][pid]=0;
 			hMcOutPos[cent][pid]=0;
+		}
+	}
+
+	for(Int_t cent=0;cent<10;++cent){
+		for(Int_t pid=0;pid<7;++pid){
+			for(Int_t q=0;q<3;++q){
+				hDCApTPrim[cent][pid][q]=0;
+				hDCApTWDec[cent][pid][q]=0;
+				hDCApTMate[cent][pid][q]=0;
+
+				hDCApTPrim2[cent][pid][q]=0;
+				hDCApTWDec2[cent][pid][q]=0;
+				hDCApTMate2[cent][pid][q]=0;
+			}
 		}
 	}
 
@@ -1425,26 +1453,6 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayTrksESD( AliESDEvent *ESDevent
 				hDCAxyVsPtPPos[Cent]->Fill(pt,dcaxy);
 		}
 
-		//==========================  DCAxy cut
-
-		cout<<"DCA before::  "<<dcaxy<<endl;
-		if( TMath::Abs(dcaxy) > GetMaxDCApTDep(fcutDCAxy,pt) )
-			continue;
-
-
-		//TOF
-		Bool_t IsTOFout=kFALSE;
-		if ((esdTrack->GetStatus()&AliESDtrack::kTOFout)==0)
-			IsTOFout=kTRUE;
-		Float_t lengthtrack=esdTrack->GetIntegratedLength();
-		Float_t timeTOF=esdTrack->GetTOFsignal();
-		Double_t inttime[5]={0,0,0,0,0};
-		esdTrack->GetIntegratedTimes(inttime);// Returns the array with integrated times for each particle hypothesis
-		Float_t beta = -99;
-		if ( !IsTOFout ){
-			if ( ( lengthtrack != 0 ) && ( timeTOF != 0) )
-				beta = inttime[0] / timeTOF;
-		}
 
 		Short_t pidCode     = 0;
 		if(fAnalysisMC) {
@@ -1463,11 +1471,13 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayTrksESD( AliESDEvent *ESDevent
 
 				if( fMCStack->IsPhysicalPrimary(label) ){
 
-					hMcOut[Cent][0]->Fill(esdTrack->Pt());
-					hMcOut[Cent][pidCode]->Fill(esdTrack->Pt());
+					if( TMath::Abs(dcaxy) < GetMaxDCApTDep(fcutDCAxy,pt) ){
+						hMcOut[Cent][0]->Fill(esdTrack->Pt());
+						hMcOut[Cent][pidCode]->Fill(esdTrack->Pt());
 
-					hMcOut[10][0]->Fill(esdTrack->Pt());
-					hMcOut[10][pidCode]->Fill(esdTrack->Pt());
+						hMcOut[10][0]->Fill(esdTrack->Pt());
+						hMcOut[10][pidCode]->Fill(esdTrack->Pt());
+					}
 
 					hDCApTPrim[Cent][0][0]->Fill(pt,dcaxy);
 					hDCApTPrim[Cent][pidCode][0]->Fill(pt,dcaxy);
@@ -1476,11 +1486,14 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayTrksESD( AliESDEvent *ESDevent
 					hDCApTPrim2[Cent][pidCode][0]->Fill(pt,dcaxy);
 
 					if( esdTrack->Charge() < 0.0 ){
-						hMcOutNeg[Cent][0]->Fill(esdTrack->Pt());
-						hMcOutNeg[Cent][pidCode]->Fill(esdTrack->Pt());
 
-						hMcOutNeg[10][0]->Fill(esdTrack->Pt());
-						hMcOutNeg[10][pidCode]->Fill(esdTrack->Pt());
+						if( TMath::Abs(dcaxy) < GetMaxDCApTDep(fcutDCAxy,pt) )  {
+							hMcOutNeg[Cent][0]->Fill(esdTrack->Pt());
+							hMcOutNeg[Cent][pidCode]->Fill(esdTrack->Pt());
+
+							hMcOutNeg[10][0]->Fill(esdTrack->Pt());
+							hMcOutNeg[10][pidCode]->Fill(esdTrack->Pt());
+						}
 
 						hDCApTPrim[Cent][0][1]->Fill(pt,dcaxy);
 						hDCApTPrim[Cent][pidCode][1]->Fill(pt,dcaxy);
@@ -1489,11 +1502,14 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayTrksESD( AliESDEvent *ESDevent
 						hDCApTPrim2[Cent][pidCode][1]->Fill(pt,dcaxy);
 					}
 					else{
-						hMcOutPos[Cent][0]->Fill(esdTrack->Pt());
-						hMcOutPos[Cent][pidCode]->Fill(esdTrack->Pt());
 
-						hMcOutPos[10][0]  ->Fill(esdTrack->Pt());
-						hMcOutPos[10][pidCode]  ->Fill(esdTrack->Pt());
+						if( TMath::Abs(dcaxy) < GetMaxDCApTDep(fcutDCAxy,pt) ){
+							hMcOutPos[Cent][0]->Fill(esdTrack->Pt());
+							hMcOutPos[Cent][pidCode]->Fill(esdTrack->Pt());
+
+							hMcOutPos[10][0]  ->Fill(esdTrack->Pt());
+							hMcOutPos[10][pidCode]  ->Fill(esdTrack->Pt());
+						}
 
 						hDCApTPrim[Cent][0][2]->Fill(pt,dcaxy);
 						hDCApTPrim[Cent][pidCode][2]->Fill(pt,dcaxy);
@@ -1560,6 +1576,27 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayTrksESD( AliESDEvent *ESDevent
 				}	// Material Inte MC
 			}	//mcTrack
 		}	//fAnalysis MC
+
+		//==========================  DCAxy cut
+
+		cout<<"DCA before::  "<<dcaxy<<endl;
+		if( TMath::Abs(dcaxy) > GetMaxDCApTDep(fcutDCAxy,pt) )
+			continue;
+
+
+		//TOF
+		Bool_t IsTOFout=kFALSE;
+		if ((esdTrack->GetStatus()&AliESDtrack::kTOFout)==0)
+			IsTOFout=kTRUE;
+		Float_t lengthtrack=esdTrack->GetIntegratedLength();
+		Float_t timeTOF=esdTrack->GetTOFsignal();
+		Double_t inttime[5]={0,0,0,0,0};
+		esdTrack->GetIntegratedTimes(inttime);// Returns the array with integrated times for each particle hypothesis
+		Float_t beta = -99;
+		if ( !IsTOFout ){
+			if ( ( lengthtrack != 0 ) && ( timeTOF != 0) )
+				beta = inttime[0] / timeTOF;
+		}
 
 		if(!fdEdxCalibrated){
 			//			cout<<"PreCalibration"<<endl;
