@@ -163,7 +163,6 @@ void createTree(const char *period,
 
     cSMarr.Clear();
     cSMarr.ExpandCreate(kSM);
-
     for (Int_t sm=0; sm<kSM; sm++) {
       cout << "SM  "<< sm << ":\t"<< tinfo->AvgTempSM(sm) << endl;
       TCalSM *smInfo    = (TCalSM*)cSMarr.At(sm);
@@ -242,8 +241,8 @@ void createTree(const char *period,
 
 	  Int_t orow=row;
 	  Int_t ocol=col;
-	  // shift to online col(phi)/row(eta0
-	  g->ShiftOfflineToOnlineCellIndexes(sm, ocol, orow);
+	  // shift to online row(phi)/col(eta)
+	  g->ShiftOfflineToOnlineCellIndexes(sm, orow, ocol);
           Int_t ns = TInfo::SensId(sm,orow,ocol);
           cell->fLedM = hledm->GetBinContent(hledm->FindBin(ocol,orow));
           cell->fLedR = hledm->GetBinError(hledm->FindBin(ocol,orow));

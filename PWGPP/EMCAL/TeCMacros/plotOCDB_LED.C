@@ -191,13 +191,13 @@ void test_geo()
   for (Int_t i=0;i<kSM;++i) {
     Int_t nrow = g->GetNumberOfCellsInPhiDirection(i);
     Int_t ncol = g->GetNumberOfCellsInEtaDirection(i);
-    cout << i << ": nrow(neta)=" << nrow << ", ncol(nphi)=" << ncol << endl;
+    cout << i << ": nrow(nphi)=" << nrow << ", ncol(neta)=" << ncol << endl;
     continue;
     TH2 *h2f = new TH2F(Form("hsm%d",i),Form(";col;row"), ncol, -0.5, ncol-0.5, nrow, -0.5, nrow-0.5);
     for (Int_t col=0;col<ncol;++col) {
       for (Int_t row=0;row<nrow;++row) {
-	Int_t  id = g->GetAbsCellIdFromCellIndexes(i,row,col);
-	cout << "Id " << id << " " << col << " " << row << endl;
+	Int_t  id = g->GetAbsCellIdFromCellIndexes(i,row,col); 
+	cout << "Id " << id << " " << row << " " << col << endl;
 	Int_t bin = h2f->FindBin(col,row);
 	h2f->SetBinContent(bin,id);
       }
@@ -206,6 +206,7 @@ void test_geo()
     break;
   }
 
+  //row==phi, col==eta
   Int_t sm=18;
   Int_t nrow = g->GetNumberOfCellsInPhiDirection(sm);
   Int_t ncol = g->GetNumberOfCellsInEtaDirection(sm);
@@ -213,7 +214,10 @@ void test_geo()
   for (Int_t col=0;col<ncol;++col) {
     for (Int_t row=0;row<nrow;++row) {
       Int_t  id = g->GetAbsCellIdFromCellIndexes(sm,row,col);
-      cout << "Id " << id << " " << col << " " << row << endl;
+      Int_t ocol=col, orow=row;
+      g->ShiftOfflineToOnlineCellIndexes(sm, orow, ocol);
+      if ((orow!=row) || (ocol!=col))
+	cout << "SM " << sm << " id " << id << ": " << row << " " << col << " - " << orow << " " << ocol << endl;
     }
   }
 }
