@@ -118,7 +118,8 @@ AliAnalysisTaskSE(name),
     fIsAOD(kTRUE),
     fEvSel(AliVEvent::kINT7),
     fLambdaTree(kTRUE),
-    fEventMixingTree(kFALSE)
+    fEventMixingTree(kFALSE),
+    nmaxmixevents(1000)
 {
   Info("AliAnalysisTaskNetLambdaIdent","Calling Constructor");
 
@@ -148,8 +149,8 @@ void AliAnalysisTaskNetLambdaIdent::UserCreateOutputObjects(){
   //Double_t zvtxbinspool[11] = {-10,-8,-6,-4,-2,0,2,4,6,8,10};
   Int_t nzvtxbinspool = 20;
   Double_t zvtxbinspool[21] = {-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10};
-  fPoolMgr = new AliEventPoolManager(5,1000, ncentbinspool, centbinspool, nzvtxbinspool, zvtxbinspool);
-  fPoolMgr->SetTargetValues(1000, 0.1, 2);
+  fPoolMgr = new AliEventPoolManager(5,nmaxmixevents, ncentbinspool, centbinspool, nzvtxbinspool, zvtxbinspool);
+  fPoolMgr->SetTargetValues(nmaxmixevents, 0.1, 2);
   
   // single-track QA plots
   hTrackPt = new TH1F("hTrackPt","track p_{T};p_{T} (GeV/c);",100,0,10);
