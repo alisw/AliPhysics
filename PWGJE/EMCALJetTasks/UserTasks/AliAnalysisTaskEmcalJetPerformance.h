@@ -122,6 +122,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void SetPlotDCal(Bool_t b)                                { fPlotDCal = b; }
   void SetDoJetMatchingGeometrical(Bool_t b)                { fDoJetMatchingGeometrical = b; }
   void SetDoJetMatchingMCFraction(Bool_t b)                 { fDoJetMatchingMCFraction = b; }
+  void SetRequireMatchedJetAccepted(Bool_t b)               { fRequireMatchedJetAccepted = b; }
   void SetJetMatchingR(Double_t r)                          { fJetMatchingR = r; }
   void SetMinimumSharedMomentumFraction(double d)           { fMinSharedMomentumFraction = d; }
   void SetMCJetMinMatchingPt(Double_t min)                  { fMCJetMinMatchingPt = min; }
@@ -208,6 +209,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliJetContainer*            fMCJetContainer;                      //!<!Pointer to jet container of truth-level jets
   AliJetContainer*            fDetJetContainer;                     //!<!Pointer to jet container of det-level jets
   AliJetContainer*            fDetJetContainerPPIntermediate;       //!<!Pointer to jet container of intermediate pp det-level jets, if MC-fraction matching
+  Bool_t                      fRequireMatchedJetAccepted;           ///< Flag to require matched truth jet to be accepted (aside from geometrical acceptance)
   Double_t                    fJetMatchingR;                        ///< Jet matching R threshold
   Double_t                    fMinSharedMomentumFraction;           ///< Minimum shared momentum (pp det-level track pT in combined jet) / (pp det-level track pT)
   Double_t                    fMCJetMinMatchingPt;                  ///< Min jet pT for MC jets being matched, for when container criteria is not applied
@@ -230,7 +232,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetPerformance &operator=(const AliAnalysisTaskEmcalJetPerformance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetPerformance, 19);
+  ClassDef(AliAnalysisTaskEmcalJetPerformance, 20);
   /// \endcond
 };
 #endif

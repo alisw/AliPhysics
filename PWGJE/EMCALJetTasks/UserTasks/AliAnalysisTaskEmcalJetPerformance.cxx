@@ -100,6 +100,7 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance() :
   fMCJetContainer(nullptr),
   fDetJetContainer(nullptr),
   fDetJetContainerPPIntermediate(nullptr),
+  fRequireMatchedJetAccepted(kFALSE),
   fJetMatchingR(0.),
   fMinSharedMomentumFraction(0.5),
   fMCJetMinMatchingPt(0.15),
@@ -155,6 +156,7 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance(const cha
   fMCJetContainer(nullptr),
   fDetJetContainer(nullptr),
   fDetJetContainerPPIntermediate(nullptr),
+  fRequireMatchedJetAccepted(kFALSE),
   fJetMatchingR(0.),
   fMinSharedMomentumFraction(0.5),
   fMCJetMinMatchingPt(0.15),
@@ -2530,8 +2532,19 @@ void AliAnalysisTaskEmcalJetPerformance::FillMatchedJetHistograms()
     ComputeJetMatches(fDetJetContainer, fMCJetContainer, kFALSE);
   }
   else if (fDoJetMatchingMCFraction) {
-    ComputeJetMatches(fDetJetContainer, fDetJetContainerPPIntermediate, kTRUE); // First match PbPb-det to pp-det
-    ComputeJetMatches(fDetJetContainerPPIntermediate, fMCJetContainer, kFALSE);  // Then match pp-det to pp-truth
+    // First match PbPb-det to pp-det
+    ComputeJetMatches(fDetJetContainer, fDetJetContainerPPIntermediate, kTRUE);
+    
+    // Then match pp-det to pp-truth
+    if (fRequireMatchedJetAccepted) { // Require pp-truth be accepted (i.e. leading track req), but still allow geometrical acceptance migration
+      fMCJetContainer->SetJetAcceptanceType(AliEmcalJet::kTPC);
+      ComputeJetMatches(fDetJetContainerPPIntermediate, fMCJetContainer, kTRUE);
+      fMCJetContainer->SetJetAcceptanceType(AliEmcalJet::kEMCALfid);
+    }
+    else{ // Don't require pp-truth jet to be accepted
+      ComputeJetMatches(fDetJetContainerPPIntermediate, fMCJetContainer, kFALSE);
+    }
+
   }
   
   // Loop through accepted det-level jets, and retrieve matching candidate.
