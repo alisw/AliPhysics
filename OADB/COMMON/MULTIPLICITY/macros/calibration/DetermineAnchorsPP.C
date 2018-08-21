@@ -224,6 +224,7 @@ void DetermineAnchorsPP( TString lPeriodName = "LHC16k", TString lPass = "pass1"
         TFitResultPtr fitr = hEstimator->Fit(fturnon, "RQM");
         fturnon->Draw("lsame");
         TString fitstatus = gMinuit->fCstatu;
+        cEstimator->Flush();
         cEstimator->Update();
         cout << "   - fit status....................: " << fitstatus << endl;
         if( !fitstatus.Contains("OK") ) {
@@ -235,9 +236,9 @@ void DetermineAnchorsPP( TString lPeriodName = "LHC16k", TString lPass = "pass1"
                 fprintf(fap, "%d %d %.2lf %lf\n", runnumber, runnumber, -1., -1.);
                 continue;
             }
-            cout << "     - Please, provide an anchor percentile to continue: " << endl;
-            cout << "       (entering a negative value will skip this run)" << endl;
-            cout << "       >>>> anchor percentile: "; 
+            cout << "   - Please, provide an anchor percentile to continue: " << endl;
+            cout << "     (entering a negative value will skip this run)" << endl;
+            cout << "     >>>> anchor percentile: "; 
             cin >> anchor_percentile;
             if(anchor_percentile<0.) {
                 cout << "   ---> Warning: percentile provided is negative -- skipping this run..." << endl;;
@@ -265,13 +266,6 @@ void DetermineAnchorsPP( TString lPeriodName = "LHC16k", TString lPass = "pass1"
                 }
             }
         }
-        if(anchor_percentile<lMinimumAnchorPercentile) {
-            cout << "   ---> Warning: anchor percentile too low -- skipping this run..." << endl;
-            nfiles++;
-            // write anchors for this run to a txt file
-            fprintf(fap, "%d %d %.2lf %lf\n", runnumber, runnumber, -1., -1.);
-            continue; 
-        }
         //fturnon->DrawCopy("lsame");
         fpol0_hi->SetRange(0.005, range_max);
         fpol0_hi->DrawCopy("lsame");
@@ -290,6 +284,29 @@ void DetermineAnchorsPP( TString lPeriodName = "LHC16k", TString lPass = "pass1"
             }
         }
         cout << "   - corresponding anchor point....: " << anchor_point << endl;
+
+        // please, confirm
+        cEstimator->Update();
+        Bool_t isOk = kFALSE;
+        cout << "   ---> Is this Ok? (0->no; 1->yes): ";
+        cin >> isOk;
+        if(!isOk) {
+            cout << "   - Please, provide an anchor percentile to continue: " << endl;
+            cout << "     (entering a negative value will skip this run)" << endl;
+            cout << "     >>>> anchor percentile: "; 
+            cin >> anchor_percentile;
+            anchorLine->SetLineStyle(1);
+            anchorLine->DrawLine(anchor_percentile, 0., anchor_percentile, y_max);
+            cEstimator->Update();
+        }
+
+        if(anchor_percentile<lMinimumAnchorPercentile) {
+            cout << "   ---> Warning: anchor percentile too low -- skipping this run..." << endl;
+            nfiles++;
+            // write anchors for this run to a txt file
+            fprintf(fap, "%d %d %.2lf %lf\n", runnumber, runnumber, -1., -1.);
+            continue; 
+        }
 
         latex->SetTextAlign(31);
         latex->SetTextSize(0.04);

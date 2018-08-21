@@ -192,7 +192,7 @@ CalibratePeriodPP(TString lPeriodName = "LHC16k",
     // --- Definition of Input/Output ---
     //============================================================
 
-    lCalib -> SetInputFile  ( Form("AnalysisResults_%s.root", lWhichData.Data()) );
+    lCalib -> SetInputFile  ( Form("../%s/AnalysisResults.root", lWhichData.Data()) );
     lCalib -> SetBufferFile ( Form("buffer-%s-%s.root", lPeriodName.Data(), lWhichData.Data()) );
     lCalib -> SetOutputFile ( Form("OADB-%s-%s.root", lPeriodName.Data(), lWhichData.Data()) );
     lCalib -> Calibrate     ();
