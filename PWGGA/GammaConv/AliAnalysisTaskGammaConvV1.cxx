@@ -2098,6 +2098,13 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
             fEtaPhoton = PhotonCandidate->GetPhotonEta();
             iCatPhoton = PhotonCandidate->GetPhotonQuality();
             tESDConvGammaPtDcazCat[fiCut]->Fill();
+            } else if ( ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetSingleElectronPtCut() < 0.04 && PhotonCandidate->Pt() > 0.099 && PhotonCandidate->Pt() < 16.){
+            fPtGamma = PhotonCandidate->Pt();
+            fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
+            fRConvPhoton = PhotonCandidate->GetConversionRadius();
+            fEtaPhoton = PhotonCandidate->GetPhotonEta();
+            iCatPhoton = PhotonCandidate->GetPhotonQuality();
+            tESDConvGammaPtDcazCat[fiCut]->Fill();
           } else if ( PhotonCandidate->Pt() > 0.299 && PhotonCandidate->Pt() < 16.){
             fPtGamma = PhotonCandidate->Pt();
             fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
@@ -2170,6 +2177,13 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
               fEtaPhoton = PhotonCandidate->GetPhotonEta();
               iCatPhoton = PhotonCandidate->GetPhotonQuality();
               tESDConvGammaPtDcazCat[fiCut]->Fill();
+            } else if ( ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetSingleElectronPtCut() < 0.04 && PhotonCandidate->Pt() > 0.099 && PhotonCandidate->Pt() < 16.){
+              fPtGamma = PhotonCandidate->Pt();
+              fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
+              fRConvPhoton = PhotonCandidate->GetConversionRadius();
+              fEtaPhoton = PhotonCandidate->GetPhotonEta();
+              iCatPhoton = PhotonCandidate->GetPhotonQuality();
+              tESDConvGammaPtDcazCat[fiCut]->Fill();
             } else if ( PhotonCandidate->Pt() > 0.299 && PhotonCandidate->Pt() < 16.){
               fPtGamma = PhotonCandidate->Pt();
               fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
@@ -2228,6 +2242,13 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
         }
         if (fDoPhotonQA == 2){
           if (fIsHeavyIon == 1 && PhotonCandidate->Pt() > 0.399 && PhotonCandidate->Pt() < 12.){
+            fPtGamma = PhotonCandidate->Pt();
+            fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
+            fRConvPhoton = PhotonCandidate->GetConversionRadius();
+            fEtaPhoton = PhotonCandidate->GetPhotonEta();
+            iCatPhoton = PhotonCandidate->GetPhotonQuality();
+            tESDConvGammaPtDcazCat[fiCut]->Fill();
+          } else if ( ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetSingleElectronPtCut() < 0.04 && PhotonCandidate->Pt() > 0.099 && PhotonCandidate->Pt() < 16.){
             fPtGamma = PhotonCandidate->Pt();
             fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
             fRConvPhoton = PhotonCandidate->GetConversionRadius();
@@ -3202,6 +3223,8 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
             if (fIsHeavyIon == 1 && fPt > 0.399 && fPt < 20. ) {
               if (fInvMass > 0.08 && fInvMass < 0.2) tESDMesonsInvMassPtDcazMinDcazMaxFlag[fiCut]->Fill();
               if ((fInvMass > 0.45 && fInvMass < 0.6) &&  (fPt > 0.999 && fPt < 20.) )tESDMesonsInvMassPtDcazMinDcazMaxFlag[fiCut]->Fill();
+            } else if (((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetSingleElectronPtCut() < 0.04 && fPt > 0.099 && fPt < 20. )  {
+              if ( (fInvMass > 0.08 && fInvMass < 0.6) ) tESDMesonsInvMassPtDcazMinDcazMaxFlag[fiCut]->Fill();
             } else if (fPt > 0.299 && fPt < 20. )  {
               if ( (fInvMass > 0.08 && fInvMass < 0.6) ) tESDMesonsInvMassPtDcazMinDcazMaxFlag[fiCut]->Fill();
             }
