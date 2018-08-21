@@ -57,7 +57,8 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   void SetEventSelection(UInt_t val) {fEvSel = val;}
   void MakeLambdaTree(Bool_t val){fLambdaTree = val;};
   void MakeEventMixingTree(Bool_t val){fEventMixingTree = val;};
-  void SetMaxMixTracks(Int_t val){nmaxmixevents = val;};
+  void SetMaxMixTracks(Int_t val){nmaxmixtracks = val;};
+  void SetMaxMixEvents(Int_t val){nmaxmixevents = val;};
 
  protected:
   AliAnalysisTaskNetLambdaIdent(const  AliAnalysisTaskNetLambdaIdent &task);
@@ -140,6 +141,7 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   UInt_t fEvSel;
   Bool_t fLambdaTree;
   Bool_t fEventMixingTree;
+  Int_t nmaxmixtracks;
   Int_t nmaxmixevents;
   
   const Float_t massPi = 0.139570;
@@ -149,7 +151,7 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   //AliMCEvent*              fMcEvent;    //! MC event
   //AliInputEventHandler*    fMcHandler;  //! MCEventHandler 
  
-  ClassDef(AliAnalysisTaskNetLambdaIdent,7);
+  ClassDef(AliAnalysisTaskNetLambdaIdent,8);
 };
 
 //_____________________________________________________________________________

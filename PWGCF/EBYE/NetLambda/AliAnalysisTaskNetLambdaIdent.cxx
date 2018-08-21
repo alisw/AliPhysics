@@ -119,7 +119,8 @@ AliAnalysisTaskSE(name),
     fEvSel(AliVEvent::kINT7),
     fLambdaTree(kTRUE),
     fEventMixingTree(kFALSE),
-    nmaxmixevents(1000)
+    nmaxmixtracks(1000),
+    nmaxmixevents(5)
 {
   Info("AliAnalysisTaskNetLambdaIdent","Calling Constructor");
 
@@ -149,8 +150,8 @@ void AliAnalysisTaskNetLambdaIdent::UserCreateOutputObjects(){
   //Double_t zvtxbinspool[11] = {-10,-8,-6,-4,-2,0,2,4,6,8,10};
   Int_t nzvtxbinspool = 20;
   Double_t zvtxbinspool[21] = {-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10};
-  fPoolMgr = new AliEventPoolManager(5,nmaxmixevents, ncentbinspool, centbinspool, nzvtxbinspool, zvtxbinspool);
-  fPoolMgr->SetTargetValues(nmaxmixevents, 0.1, 2);
+  fPoolMgr = new AliEventPoolManager(nmaxmixevents,nmaxmixtracks, ncentbinspool, centbinspool, nzvtxbinspool, zvtxbinspool);
+  fPoolMgr->SetTargetValues(nmaxmixtracks, 0.1, 2);
   
   // single-track QA plots
   hTrackPt = new TH1F("hTrackPt","track p_{T};p_{T} (GeV/c);",100,0,10);
@@ -393,8 +394,8 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
     {
       mixtracks = new TObjArray();
       mixtracks->SetOwner(kTRUE);
-      mixprotons = new TObjArray();
-      mixprotons->SetOwner(kTRUE);
+      //mixprotons = new TObjArray();
+      //mixprotons->SetOwner(kTRUE);
     }
   
   // loop over reconstructed tracks
@@ -433,11 +434,11 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 		{
 		  AliLightV0track* lighttrack = new AliLightV0track(*track,fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton));
 		  mixtracks->Add(lighttrack);
-		  if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton)) < 5.)
-		    {
-		      AliLightV0track* lightproton = new AliLightV0track(*track,fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton));
-		      mixprotons->Add(lightproton);
-		    }
+		  //if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton)) < 5.)
+		  //{
+		  //AliLightV0track* lightproton = new AliLightV0track(*track,fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton));
+		  //mixprotons->Add(lightproton);
+		  //}
 		}
 	    }
 	}
@@ -1067,13 +1068,14 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       if (pool->IsReady())
 	{
 	  //Printf("found pool for cent %lf vz %lf with %i entries",fCentV0M,fVtxZ,pool->GetCurrentNEvents());
-	  for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) 
+	  for (Int_t jMix=0; jMix<TMath::Min(nmaxmixevents,pool->GetCurrentNEvents()); jMix++) 
 	    {
 	      Tracks2V0vertices(mixtracks,pool->GetEvent(jMix),vvertex,fInputEvent->GetMagneticField());
 	    }
 	}
-      pool->UpdatePool(mixprotons);
-      mixtracks->Clear();
+      //pool->UpdatePool(mixprotons);
+      //mixtracks->Clear();
+      pool->UpdatePool(mixtracks);
     }
 
   fTree->Fill();
@@ -1109,38 +1111,49 @@ void AliAnalysisTaskNetLambdaIdent::Tracks2V0vertices(TObjArray* ev1, TObjArray*
   for(Int_t i = 0; i < ev1->GetEntries(); i++)
     {
       temptrk = ((AliLightV0track*)ev1->At(i))->GetExtParam();
+
+      Double_t dn = TMath::Abs(temptrk->GetD(primVtx[0],primVtx[1],b));
+      if (dn<fDNmin) continue;
+      if (dn>fRmax) continue;
+      
       Int_t trksign = temptrk->GetSign();
+      Bool_t isProtonCand = kFALSE;
       
       if(trksign > 0)
 	{
 	  ptrk = temptrk;
 	  pnsigmapr = ((AliLightV0track*)ev1->At(i))->GetProtonPID();
+	  if(TMath::Abs(pnsigmapr) < 5.) isProtonCand = kTRUE;
 	}
       else if(trksign < 0)
 	{
 	  ntrk = temptrk;
 	  nnsigmapr = ((AliLightV0track*)ev1->At(i))->GetProtonPID();
+	  if(TMath::Abs(nnsigmapr) < 5.) isProtonCand = kTRUE;
 	}
       else continue;
 
       for(Int_t k = 0; k < ev2->GetEntries(); k++)
 	{
 	  temptrk = (AliExternalTrackParam*)((AliLightV0track*)ev2->At(k))->GetExtParam();
+
+	  Double_t dp = TMath::Abs(temptrk->GetD(primVtx[0],primVtx[1],b));
+	  if (dp<fDPmin) continue;
+	  if (dp>fRmax) continue;
 	  
 	  if(trksign == temptrk->GetSign()) continue;
 	  if(trksign > 0)
 	    {
 	      ntrk = temptrk;
 	      nnsigmapr = ((AliLightV0track*)ev2->At(k))->GetProtonPID();
+	      if(!isProtonCand){if(TMath::Abs(nnsigmapr) > 5.) continue;}
 	    }
 	  else
 	    {
 	      ptrk = temptrk;
 	      pnsigmapr = ((AliLightV0track*)ev2->At(k))->GetProtonPID();
+	      if(!isProtonCand){if(TMath::Abs(pnsigmapr) > 5.) continue;}
 	    }
-	  
-	  if (TMath::Abs(ntrk->GetD(primVtx[0],primVtx[1],b))<fDNmin)
-	    if (TMath::Abs(ptrk->GetD(primVtx[0],primVtx[1],b))<fDPmin) continue;
 	  
 	  Double_t xn, xp;
 	  Double_t dca = ntrk->GetDCA(ptrk,b,xn,xp);
@@ -1184,8 +1197,6 @@ void AliAnalysisTaskNetLambdaIdent::Tracks2V0vertices(TObjArray* ev1, TObjArray*
 					       TMath::Power(z - primVtx[2],2 ));
 	  
 	  Float_t cpa = vertex.GetV0CosineOfPointingAngle(primVtx[0],primVtx[1],primVtx[2]);
-	  vertex.SetV0CosineOfPointingAngle(cpa);
-	  vertex.SetDcaV0Daughters(dca);
 	  const Double_t pThr=1.5;
 	  Double_t pv0 = vertex.P();
 	  if (pv0<pThr)
@@ -1202,6 +1213,8 @@ void AliAnalysisTaskNetLambdaIdent::Tracks2V0vertices(TObjArray* ev1, TObjArray*
 	    {
 	      if (cpa < fCPAmin) continue;
 	    }
+	  vertex.SetV0CosineOfPointingAngle(cpa);
+	  vertex.SetDcaV0Daughters(dca);
 	  
 	  if(!V0CutsForTreeESD(&vertex,primVtx,ptrk,ntrk,b)) continue;
 	  
@@ -1282,16 +1295,19 @@ Bool_t AliAnalysisTaskNetLambdaIdent::V0CutsForTreeESD(AliESDv0* v0, Double_t* v
   if(v0->GetV0CosineOfPointingAngle() < cospacut) return kFALSE;
   if(v0->GetDcaV0Daughters() > 1.5) return kFALSE; // these are default cuts from AODs
 
-  Float_t pd1, pd2, nd1, nd2;
-  ptrk->GetImpactParameters(pd1,pd2);
-  ntrk->GetImpactParameters(nd1,nd2);
-  if(pd1 == 0 && nd1 == 0)
+  Float_t nd[2] = {0,0};
+  Float_t pd[2] = {0,0};
+  ptrk->GetImpactParameters(pd[0],pd[1]);
+  ntrk->GetImpactParameters(nd[0],nd[1]);
+  if(pd[0] == 0 && nd[0] == 0)
     {
-      nd1 = ntrk->GetD(vt[0],vt[1],b);
-      pd1 = ptrk->GetD(vt[0],vt[1],b);
+      ntrk->GetDZ(vt[0],vt[1],vt[2],b,nd);
+      ptrk->GetDZ(vt[0],vt[1],vt[2],b,pd);
     }
-  if(pd1*pd1+pd2*pd2 < 0.05*0.05) return kFALSE;
-  if(nd1*nd1+nd2*nd2 < 0.05*0.05) return kFALSE;
+  
+  if(pd[0]*pd[0]+pd[1]*pd[1] < 0.05*0.05) return kFALSE;
+  if(nd[0]*nd[0]+nd[1]*nd[1] < 0.05*0.05) return kFALSE;
+
 
   Double_t sv[3];
   v0->GetXYZ(sv[0], sv[1], sv[2]);
@@ -1301,6 +1317,3 @@ Bool_t AliAnalysisTaskNetLambdaIdent::V0CutsForTreeESD(AliESDv0* v0, Double_t* v
   
   return kTRUE;
 }
-
-
-//enum kCutBits{kDecayRadius4,kDecayRadius5,kDecayRadius6,kProperLifetimeLambda30,kProperLifetimeLambda25,kProperLifetimeLambda20,kProperLifetimeAntiLambda30,kProperLifetimeAntiLambda25,kProperLifetimeAntiLambda20,kMcStatus
