@@ -93,6 +93,7 @@ public:
     void SetUseMonteCarloWeighingLinus(TH1F *Pi0 ,TH1F *Eta,TH1F *EtaP,TH1F *Rho,TH1F *Phi,TH1F *Omega,TH1F *K0s,TH1F *Lambda,TH1F *ChargedPi,
                                        TH1F *ChargedKaon,TH1F *Proton,TH1F *D0,TH1F *DPlus,TH1F *DStarPlus,
                                        TH1F *DSPlus,TH1F *LambdaC,TH1F *BPlus,TH1F *B0,TH1F *LambdaB,TH1F *BStarPlus);
+    void SetFlukaFactor(TGraph* GraphOmega, TGraph* GraphXi, TGraph* K0Star, TGraph* Phi);
     void localtoglobal(double alpha, double *local, double *global);
     Bool_t FillTrackHistograms(AliVTrack * track, double * dca , double *cov,double weight);
     void EventwiseCleanup();
@@ -323,7 +324,7 @@ private:
 
 
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 26)
+    ClassDef(AliAnalysisTaskHFJetIPQA, 27)
 };
 
 #endif
