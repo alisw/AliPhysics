@@ -311,7 +311,6 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 
 
       float ipidmax = 0.0;
-
     //****N Sigma Method****
 	if(fPIDMethod==0){
 	  // Looking for pions
@@ -333,7 +332,7 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 	  
 	  //
 	  if (fMostProbable == 13) {
-	    if (IsDeuteronNSigma(track->P().Mag(), track->NSigmaTPCD(), track->NSigmaTOFD()))
+	    if (IsDeuteronNSigma(track->P().Mag(),track->MassTOFDPG(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD()))
 	      imost = 13;
 	  }
 	  else if (fMostProbable == 14) {
@@ -1068,12 +1067,12 @@ bool AliFemtoESDTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsig
 
 
 /***********************************************************************/
-bool AliFemtoESDTrackCut::IsDeuteronNSigma(float mom, float nsigmaTPCD, float nsigmaTOFD)
+bool AliFemtoESDTrackCut::IsDeuteronNSigma(float mom, float massTOFPDG,float sigmaMass, float nsigmaTPCD, float nsigmaTOFD)
 {
   if (fNsigmaTPCTOF) {
     if (mom > 1) {  //if TOF avaliable: && (nsigmaTOFD != -1000) --> always TOF!
       //if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP )/TMath::Sqrt(2) < 3.0)
-      if (TMath::Hypot( nsigmaTOFD, nsigmaTPCD ) < fNsigma)
+      if ((TMath::Hypot( nsigmaTOFD, nsigmaTPCD ) < fNsigma) && (massTOFPDG<sigmaMass))
 	return true;
     }
     else {
@@ -1139,6 +1138,10 @@ void AliFemtoESDTrackCut::SetNsigmaTPConly(Bool_t nsigma)
 void AliFemtoESDTrackCut::SetNsigma(Double_t nsigma)
 {
   fNsigma = nsigma;
+}
+void AliFemtoESDTrackCut::SetNsigmaMass(Double_t nsigma)
+{
+  fNsigmaMass = nsigma;
 }
 
 

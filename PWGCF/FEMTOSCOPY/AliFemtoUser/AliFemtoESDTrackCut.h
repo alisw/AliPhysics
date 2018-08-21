@@ -71,6 +71,7 @@ public:
   void SetNsigmaTPCTOF(Bool_t);
   void SetNsigmaTPConly(Bool_t);
   void SetNsigma(Double_t);
+  void SetNsigmaMass(Double_t);
   void SetClusterRequirementITS(AliESDtrackCuts::Detector det, AliESDtrackCuts::ITSClusterRequirement req = AliESDtrackCuts::kOff);
 
   void SetMomRangeTOFpidIs(const float& minp, const float& maxp);
@@ -105,6 +106,7 @@ public:
   bool GetDualNsigma() const { return fNsigmaTPCTOF; }
   bool GetNsigmaTPConly() const { return fNsigmaTPConly; }
   double GetNsigma() const { return fNsigma; }
+  double GetNsigmaMass() const { return fNsigmaMass; }
   bool GetRemoveKinks() const { return fRemoveKinks; }
   bool GetRemoveITSFake() const { return fRemoveITSFake; }
   int GetMostProbable() const { return fMostProbable; }
@@ -145,6 +147,7 @@ protected:   // here are the quantities I want to cut on...
   Bool_t            fNsigmaTPCTOF;       ///< true if squared nsigma from TPC and TOF, false if separately from TPC and TOF
   Bool_t            fNsigmaTPConly;      ///< true if nsigma from TPC only
   Double_t          fNsigma;             ///< number of sigmas - 3 by default
+  Double_t          fNsigmaMass;             ///< number of sigmas in mass condition (deuterons)
 
   short             fminTPCclsF;         ///< min number of findable clusters in the TPC
   short             fminTPCncls;         ///< min number of clusters in the TPC
@@ -207,7 +210,7 @@ protected:   // here are the quantities I want to cut on...
   bool IsProtonNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
   bool IsElectron(float nsigmaTPCE, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP);
   //
-  bool IsDeuteronNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
+  bool IsDeuteronNSigma(float mom,float massTOFDPG, float sigmaMass, float nsigmaTPC, float nsigmaTOF);
   bool IsTritonNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
   bool IsHe3NSigma(float mom, float nsigmaTPC, float nsigmaTOF);
   bool IsAlphaNSigma(float mom, float nsigmaTPC, float nsigmaTOF);

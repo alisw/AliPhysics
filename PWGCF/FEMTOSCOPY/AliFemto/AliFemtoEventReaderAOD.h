@@ -127,6 +127,8 @@ public:
   void SetAlphaAnalysis(Bool_t aSetAlphaAna);
   //Special MC analysis for pi,K,p,e slected by PDG code <--
   
+  
+
 protected:
   virtual AliFemtoEvent *CopyAODtoFemtoEvent();
   virtual AliFemtoTrack *CopyAODtoFemtoTrack(AliAODTrack *tAodTrack
@@ -230,4 +232,3 @@ private:
 };
 
 #endif
-

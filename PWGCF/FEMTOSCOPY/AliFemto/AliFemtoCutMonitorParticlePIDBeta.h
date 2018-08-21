@@ -41,6 +41,7 @@ protected:
 
   TH2D *fBeta;           ///< Beta
   TH2D *fMass;           ///< Mass
+  TH1D *fDifference;           ///< Mass
 
 };
 
