@@ -58,6 +58,7 @@
 #pragma link C++ class AliAnalysisTaskAllPtcv2+;
 /// * NucleiKine
 #pragma link C++ class AliAnalysisTaskNucleiKine+;
+#pragma link C++ class AliAnalysisTaskNucleiKineCor+;
 
 /// Hypernuclei
 /// * Hyp2body
