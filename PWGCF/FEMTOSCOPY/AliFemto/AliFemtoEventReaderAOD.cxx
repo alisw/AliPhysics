@@ -2085,9 +2085,12 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
     //  double trackTime=tAodTrack->GetTOFsignal();
 
   }
+  double deuteronPDG =1.8756;//GeV
     if (trackTime > 0.){
       vp = trackLength / trackTime /0.03;
       tFemtoTrack->SetVTOF(vp);
+      double massTof= tFemtoTrack->P().Mag()*tFemtoTrack->P().Mag()*(1/(vp*vp)-1);
+      tFemtoTrack->SetMassTOFDPG(massTof-deuteronPDG*deuteronPDG); 
     }
   
   tFemtoTrack->SetNSigmaTOFPi(nsigmaTOFPi);
@@ -2104,6 +2107,8 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
   /******************************************/
   //////////////////////////////////////
 }
+
+
 
 void AliFemtoEventReaderAOD::SetCentralityPreSelection(double min, double max)
 {
