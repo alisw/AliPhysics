@@ -1072,7 +1072,7 @@ bool AliFemtoESDTrackCut::IsDeuteronNSigma(float mom, float massTOFPDG,float sig
   if (fNsigmaTPCTOF) {
     if (mom > 1) {  //if TOF avaliable: && (nsigmaTOFD != -1000) --> always TOF!
       //if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP )/TMath::Sqrt(2) < 3.0)
-      if ((TMath::Hypot( nsigmaTOFD, nsigmaTPCD ) < fNsigma) && (massTOFPDG<sigmaMass))
+      if ((TMath::Hypot( nsigmaTOFD, nsigmaTPCD ) < fNsigma) && (TMath::Abs(massTOFPDG)<sigmaMass))
 	return true;
     }
     else {
