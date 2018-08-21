@@ -23,7 +23,7 @@ ROOT.gROOT.SetBatch(True)
 
 ###################################################################################
 # Main function
-def scalePtHardHistos(referenceFile, suffix):
+def scalePtHardHistos(referenceFile):
 
   PtHardBins = 20
   ptHardLo = [ 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235 ]
@@ -39,10 +39,11 @@ def scalePtHardHistos(referenceFile, suffix):
   verbose = False
   
   # Get a list of all the output list names, in order to scale all of them
-  f = ROOT.TFile("1/AnalysisResultsPtHard1{0}.root".format(suffix), "READ")
+  f = ROOT.TFile("1/AnalysisResultsPtHard1.root", "READ")
   qaListKeys = f.GetListOfKeys()
   qaListNames = []
   eventList = ""
+  print("Open root file: {}".format(f.GetName()))
   print("Scaling the following lists:")
   for key in qaListKeys:
     name = key.GetName()
@@ -76,8 +77,8 @@ def scalePtHardHistos(referenceFile, suffix):
     hNEventsAcc.GetXaxis().SetBinLabel(bin+1, "%d-%d" % (ptHardLo[bin],ptHardHi[bin]))
     hNEventsTot.GetXaxis().SetBinLabel(bin+1, "%d-%d" % (ptHardLo[bin],ptHardHi[bin]))
   for bin in range(0,PtHardBins):
-    nNEventsTot= GetNEvents(eventList, bin, hNEventsTot, verbose, False, suffix)
-    nEventsAcc = GetNEvents(eventList, bin, hNEventsAcc, verbose, True, suffix)
+    nNEventsTot= GetNEvents(eventList, bin, hNEventsTot, verbose, False)
+    nEventsAcc = GetNEvents(eventList, bin, hNEventsAcc, verbose, True)
     nEventsAccSum += nEventsAcc
     nEventsTotSum += nNEventsTot
   nEventsAccAvg = nEventsAccSum/PtHardBins
@@ -102,7 +103,7 @@ def scalePtHardHistos(referenceFile, suffix):
       refFile.Close()
       
       # Open input file and get relevant lists
-      inputFile = "{0}/AnalysisResultsPtHard{0}{1}.root".format(bin+1,suffix)
+      inputFile = "{0}/AnalysisResultsPtHard{0}.root".format(bin+1)
       print("................................................................")
       print("ooo Scaling Pt-hard bin %d" % (bin+1))
       f = ROOT.TFile(inputFile, "UPDATE")
@@ -117,14 +118,14 @@ def scalePtHardHistos(referenceFile, suffix):
       print("ooo eventScaleFactor: {0}".format(eventScaleFactorAcc))
       print("ooo combined ScaleFactor: {0}".format(eventScaleFactorAcc*scaleFactor))
       controlFile = open('ControlTable.txt', 'a')
-      controlFile.write("| *{0}* | {1} - {2} | {3} | {4} |".format((bin+1), ptHardLo[bin], ptHardHi[bin], scaleFactor, scaleFactor*eventScaleFactorAcc))
+      controlFile.write("| *{0}* | {1} - {2} | {3} | {4} | \n".format((bin+1), ptHardLo[bin], ptHardHi[bin], scaleFactor, scaleFactor*eventScaleFactorAcc))
       controlFile.close()
-
+        
+      print("")
       for qaListName in qaListNames:
         qaList = f.Get(qaListName)
       
         # Now, scale all the histograms
-        print("")
         print("Scaling list: " + qaList.GetName())
         RadiusName=""
         for obj in qaList:
@@ -162,7 +163,7 @@ def scalePtHardHistos(referenceFile, suffix):
     for bin in range(0,PtHardBins):
       
       # Open input file and get relevant lists
-      inputFile = "{0}/AnalysisResultsPtHard{0}{1}.root".format(bin+1,suffix)
+      inputFile = "{0}/AnalysisResultsPtHard{0}.root".format(bin+1)
       print("ooo Scaling Pt-hard bin %d" % (bin+1))
       f = ROOT.TFile(inputFile, "UPDATE")
 
@@ -193,7 +194,7 @@ def scalePtHardHistos(referenceFile, suffix):
       print("ooo combined ScaleFactor: {0}".format(eventScaleFactorAcc*scaleFactor))
       print("")
       twikifile = open('twikiTableoutput.txt', 'a')
-      twikifile.write("| *{0}* | {1} - {2} | {3} | {4} | {5} |".format((bin+1), ptHardLo[bin], ptHardHi[bin], scaleFactor, eventScaleFactorAcc, eventScaleFactorTot ))
+      twikifile.write("| *{0}* | {1} - {2} | {3} | {4} | {5} | \n".format((bin+1), ptHardLo[bin], ptHardHi[bin], scaleFactor, eventScaleFactorAcc, eventScaleFactorTot ))
       twikifile.close()
 
       hXSecPerEvent.Fill(bin+0.5, xsec)
@@ -222,46 +223,47 @@ def scalePtHardHistos(referenceFile, suffix):
 ###################################################################################
 # Given event list name eventList, pT-hard bin number, and histogram hNEvents of appropriate form, this function fills
 # the number of events (accepted events only if bAcceptedEventsOnly=True, otherwise all events)
-def GetNEvents(eventList, bin, hNEvents, verbose, bAcceptedEventsOnly = True, suffix=""):
+def GetNEvents(eventList, bin, hNEvents, verbose, bAcceptedEventsOnly = True):
   
-  inputFile = "{0}/AnalysisResultsPtHard{0}{1}.root".format(bin+1,suffix)
+  inputFile = "{0}/AnalysisResultsPtHard{0}.root".format(bin+1)
   f = ROOT.TFile(inputFile, "UPDATE")
   
   qaList = f.Get(eventList)
   nEvents = 0
   if not qaList:
-    print("ERROR no list found")
-
-  # Look for the EventCutOutput from AliEventCuts, and if it doesn't exist, look for histo fHistEventCount
-  eventCutList = qaList.FindObject("EventCutOutput")
-  if eventCutList:
-    hNEventsPtHard = eventCutList.FindObject("fCutStats")
-    if bAcceptedEventsOnly:
-      nEvents = hNEventsPtHard.GetBinContent(16)
-    else:
-      nEvents = hNEventsPtHard.GetBinContent(1)
-    if bin is 0:
-      if bAcceptedEventsOnly:
-        print("Getting accepted number of events from EventCutOutput.")
-      else:
-        print("Getting total (acc+rej) number of events from EventCutOutput.")
+    print("ERROR no {} list found in {}".format(eventList, f.GetName))
+    return 0
   else:
-    hNEventsPtHard = qaList.FindObject("fHistEventCount")
-    if bAcceptedEventsOnly:
-      nEvents = hNEventsPtHard.GetBinContent(1)
-    else:
-      nEvents = hNEventsPtHard.GetBinContent(1) + hNEventsPtHard.GetBinContent(2)
-    if bin is 0:
+    # Look for the EventCutOutput from AliEventCuts, and if it doesn't exist, look for histo fHistEventCount
+    eventCutList = qaList.FindObject("EventCutOutput")
+    if eventCutList:
+      hNEventsPtHard = eventCutList.FindObject("fCutStats")
       if bAcceptedEventsOnly:
-        print("Getting accepted number of events from fHistEventCount.")
+        nEvents = hNEventsPtHard.GetBinContent(16)
       else:
-        print("Getting total (acc+rej) number of events from fHistEventCount.")
-
-  if verbose:
-    if bAcceptedEventsOnly:
-      print("Acc. Events in bin {0} = {1}".format((bin+1), nEvents))
+        nEvents = hNEventsPtHard.GetBinContent(1)
+      if bin is 0:
+        if bAcceptedEventsOnly:
+          print("Getting accepted number of events from EventCutOutput.")
+        else:
+          print("Getting total (acc+rej) number of events from EventCutOutput.")
     else:
-      print("All Events in bin {0} = {1}".format((bin+1), nEvents))
+      hNEventsPtHard = qaList.FindObject("fHistEventCount")
+      if bAcceptedEventsOnly:
+        nEvents = hNEventsPtHard.GetBinContent(1)
+      else:
+        nEvents = hNEventsPtHard.GetBinContent(1) + hNEventsPtHard.GetBinContent(2)
+      if bin is 0:
+        if bAcceptedEventsOnly:
+          print("Getting accepted number of events from fHistEventCount.")
+        else:
+          print("Getting total (acc+rej) number of events from fHistEventCount.")
+
+    if verbose:
+      if bAcceptedEventsOnly:
+        print("Acc. Events in bin {0} = {1}".format((bin+1), nEvents))
+      else:
+        print("All Events in bin {0} = {1}".format((bin+1), nEvents))
 
   hNEvents.Fill(bin+0.5, nEvents)
   hNEvents.Write()
@@ -410,7 +412,8 @@ def removeOutliers(pTHardBin, hist, verbose, limit=2, nBinsThreshold=4, dimensio
     (postMean, postMedian) = GetHistMeanAndMedian(histToCheckAfter)
     print("Pre  outliers removal mean: {}, median: {}".format(preMean, preMedian))
     print("Post outliers removal mean: {}, median: {}".format(postMean, postMedian))
-  outlierFilename = os.path.join(str(pTHardBin+1), "POST_{}_{}___{}.pdf".format(hist.GetName(),listName[:15], taskName[-35:-7]))
+  outlierFilename = "POST_{}_{}___{}.pdf".format(hist.GetName(),listName[:15], taskName[-35:-7])
+  #outlierFilename = os.path.join(str(pTHardBin+1), "POST_{}_{}___{}.pdf".format(hist.GetName(),listName[:15], taskName[-35:-7]))
   plotOutlierPDF(histToCheck,histToCheckAfter, pTHardBin, outlierFilename, verbose, "hist E", True)
 
 ########################################################################################################
@@ -475,14 +478,15 @@ def plotOutlierPDF(h, hAfter, pTHardBin, outputFilename, verbose, drawOptions = 
   leg1.AddEntry(hAfter, "after", "l")
   leg1.Draw("same")
 
+  #create ONE SINGLE pdf for each histogram type with one page per pT Hard bin
   if pTHardBin==0:
     if verbose:
       print("Add first pT Hard bin to pdf with name: {0}".format(outputFilename))
-    c.Print("{}".format(outputFilename))
+    c.Print("{}(".format(outputFilename))
   elif pTHardBin==19:
     if verbose:
       print("Add last pT Hard bin to pdf with name: {0}".format(outputFilename))
-    c.Print("{}".format(outputFilename))
+    c.Print("{})".format(outputFilename))
   elif pTHardBin>0:
     if verbose:
       print("Add further pT Hard bin to pdf with name: {0}".format(outputFilename))
@@ -500,12 +504,7 @@ if __name__ == '__main__':
                       type=str, metavar="referenceFile",
                       default="",
                       help="Reference file to get pT-hard scale factors from")
-  parser.add_argument("-s", "--suffix", action="store",
-                      type=str, metavar="suffix",
-                      default="",
-                      help="suffix for the file name, "" for general pT hard bin, _Part1 or _Part2 for half of the statistic")
-
   # Parse the arguments
   args = parser.parse_args()
   
-  scalePtHardHistos(args.referenceFile, args.suffix)
+  scalePtHardHistos(args.referenceFile)
