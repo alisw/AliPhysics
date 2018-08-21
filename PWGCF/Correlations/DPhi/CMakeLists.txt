@@ -46,6 +46,7 @@ set(SRCS
     AlianalysisTaskDptPIDpPb.cxx    
     AliAnalysisTaskDptDptQA.cxx
     AlianalysisTaskDptPID.cxx
+    AliAnalysisTaskHadronPhiCorr.cxx
     AliAnalysisTaskLeadingTrackUE.cxx
     AliAnalysisTaskLongRangeCorrelations.cxx
     AliAnalysisTaskMinijet.cxx
