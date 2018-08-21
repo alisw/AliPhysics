@@ -1109,6 +1109,11 @@ void AliAnalysisTaskNetLambdaIdent::Tracks2V0vertices(TObjArray* ev1, TObjArray*
   for(Int_t i = 0; i < ev1->GetEntries(); i++)
     {
       temptrk = ((AliLightV0track*)ev1->At(i))->GetExtParam();
+
+      Double_t dn = TMath::Abs(temptrk->GetD(primVtx[0],primVtx[1],b));
+      if (dn<fDNmin) continue;
+      if (dn>fRmax) continue;
+      
       Int_t trksign = temptrk->GetSign();
       
       if(trksign > 0)
@@ -1126,6 +1131,10 @@ void AliAnalysisTaskNetLambdaIdent::Tracks2V0vertices(TObjArray* ev1, TObjArray*
       for(Int_t k = 0; k < ev2->GetEntries(); k++)
 	{
 	  temptrk = (AliExternalTrackParam*)((AliLightV0track*)ev2->At(k))->GetExtParam();
+
+	  Double_t dp = TMath::Abs(temptrk->GetD(primVtx[0],primVtx[1],b));
+	  if (dp<fDPmin) continue;
+	  if (dp>fRmax) continue;
 	  
 	  if(trksign == temptrk->GetSign()) continue;
 	  if(trksign > 0)
@@ -1184,8 +1193,6 @@ void AliAnalysisTaskNetLambdaIdent::Tracks2V0vertices(TObjArray* ev1, TObjArray*
 					       TMath::Power(z - primVtx[2],2 ));
 	  
 	  Float_t cpa = vertex.GetV0CosineOfPointingAngle(primVtx[0],primVtx[1],primVtx[2]);
-	  vertex.SetV0CosineOfPointingAngle(cpa);
-	  vertex.SetDcaV0Daughters(dca);
 	  const Double_t pThr=1.5;
 	  Double_t pv0 = vertex.P();
 	  if (pv0<pThr)
@@ -1202,6 +1209,8 @@ void AliAnalysisTaskNetLambdaIdent::Tracks2V0vertices(TObjArray* ev1, TObjArray*
 	    {
 	      if (cpa < fCPAmin) continue;
 	    }
+	  vertex.SetV0CosineOfPointingAngle(cpa);
+	  vertex.SetDcaV0Daughters(dca);
 	  
 	  if(!V0CutsForTreeESD(&vertex,primVtx,ptrk,ntrk,b)) continue;
 	  
@@ -1282,16 +1291,19 @@ Bool_t AliAnalysisTaskNetLambdaIdent::V0CutsForTreeESD(AliESDv0* v0, Double_t* v
   if(v0->GetV0CosineOfPointingAngle() < cospacut) return kFALSE;
   if(v0->GetDcaV0Daughters() > 1.5) return kFALSE; // these are default cuts from AODs
 
-  Float_t pd1, pd2, nd1, nd2;
-  ptrk->GetImpactParameters(pd1,pd2);
-  ntrk->GetImpactParameters(nd1,nd2);
-  if(pd1 == 0 && nd1 == 0)
+  Float_t nd[2] = {0,0};
+  Float_t pd[2] = {0,0};
+  ptrk->GetImpactParameters(pd[0],pd[1]);
+  ntrk->GetImpactParameters(nd[0],nd[1]);
+  if(pd[0] == 0 && nd[0] == 0)
     {
-      nd1 = ntrk->GetD(vt[0],vt[1],b);
-      pd1 = ptrk->GetD(vt[0],vt[1],b);
+      ntrk->GetDZ(vt[0],vt[1],vt[2],b,nd);
+      ptrk->GetDZ(vt[0],vt[1],vt[2],b,pd);
     }
-  if(pd1*pd1+pd2*pd2 < 0.05*0.05) return kFALSE;
-  if(nd1*nd1+nd2*nd2 < 0.05*0.05) return kFALSE;
+  
+  if(pd[0]*pd[0]+pd[1]*pd[1] < 0.05*0.05) return kFALSE;
+  if(nd[0]*nd[0]+nd[1]*nd[1] < 0.05*0.05) return kFALSE;
+
 
   Double_t sv[3];
   v0->GetXYZ(sv[0], sv[1], sv[2]);
