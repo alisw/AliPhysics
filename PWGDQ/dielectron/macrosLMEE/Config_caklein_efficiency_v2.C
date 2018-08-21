@@ -2,7 +2,7 @@
 // TString names=("kPbPb2015_Pt400_looseTOFif;kPbPb2015_Pt400_tightTOFreq;NewPID;kPbPb2015_Pt400_looseTOFif_0SITSCl;kPbPb2015_Pt400_tightTOFreq_0SITSCl;NewPID_0SITSCl;kPbPb2015_Pt400_looseTOFif_ITSMAP;kPbPb2015_Pt400_tightTOFreq_ITSMAP;NewPID_ITSMAP");
 // TString names=("cut1_pt400;cut2_pt400;cut3_pt400;cut4_pt400;cut5_pt400;cut6_pt400;cut7_pt400;cut8_pt400;cut9_pt400;cut10_pt400;cut11_pt400;cut12_pt400;cut13_pt400;cut14_pt400;cut15_pt400;cut16_pt400;cut17_pt400;cut18_pt400;cut19_pt400;cut20_pt400");
 // TString names=("cut5_pt200;kPbPb2015_Pt200_PID_cutoff_pion_kaon_proton;cut5_pt200_TOFreq");
-TString names=("cut5_pt200;cut5_pt200_woSCcut;cut5_pt200_looserPionRejection;cut5_pt200_looserPionRejection_woSCcut");
+TString names=("cut5_pt200_noPIDcuts;cut5_pt200;cut5_pt200_woSCcut");
 
 // TString names=("cut1_pt200;cut2_pt200;cut3_pt200;cut4_pt200;cut5_pt200;cut6_pt200;cut7_pt200;cut8_pt200;cut9_pt200;cut10_pt200;cut11_pt200;cut12_pt200;cut13_pt200;cut14_pt200;cut15_pt200;cut16_pt200;cut17_pt200;cut18_pt200;cut19_pt200;cut20_pt200");
 // TString names=("cut1_pt200_woSCcut;cut2_pt200_woSCcut;cut3_pt200_woSCcut;cut4_pt200_woSCcut;cut5_pt200_woSCcut;cut6_pt200_woSCcut;cut7_pt200_woSCcut;cut8_pt200_woSCcut;cut9_pt200_woSCcut;cut10_pt200_woSCcut;cut11_pt200_woSCcut;cut12_pt200_woSCcut;cut13_pt200_woSCcut;cut14_pt200_woSCcut;cut15_pt200_woSCcut;cut16_pt200_woSCcut;cut17_pt200_woSCcut;cut18_pt200_woSCcut;cut19_pt200_woSCcut;cut20_pt200_woSCcut");
@@ -13,10 +13,12 @@ TString names=("cut5_pt200;cut5_pt200_woSCcut;cut5_pt200_looserPionRejection;cut
 // TString names=("cut5_openKinematicCuts_without_CrossedOverFindableCut");
 // TString names=("kPbPb2015_Pt100_ResolutionCuts");
 
+// TString generatorName = "Hijing";
+
 // TString generatorName = "";
 // TString generatorName = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia B_8;Pythia BB_8";
 // TString generatorName = "pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia B_8;Pythia BB_8";
-TString generatorName = "Hijing_0";
+// TString generatorName = "Hijing_0;Hijing";
 // TString generatorName = "pizero_1";
 // TString generatorName = "eta_2";
 // TString generatorName = "etaprime_3";
@@ -29,16 +31,20 @@ TString generatorName = "Hijing_0";
 // TString generatorName = "Hijing_0";
 // TString generatorName = "Jpsi2ee_1";
 
+TString generatorNameForMCSignal  = "pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7";
+// TString generatorNameForMCSignal  = "Hijing_0";
+TString generatorNameForULSSignal = "Hijing;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Hijing_0;Pythia CC_8;Pythia B_8;Pythia BB_8";
 
 
 Bool_t SetTPCCorrection = kFALSE;
-Bool_t SetITSCorrection = kFALSE;
-Bool_t SetTOFCorrection = kFALSE;
+Bool_t SetITSCorrection = kTRUE;
+Bool_t SetTOFCorrection = kTRUE;
 
-bool SetGeneratedSmearingHistos = true;
+bool SetGeneratedSmearingHistos = false;
 
 bool DoPairing = true;
 bool DoULSLS   = true;
+bool DeactivateLS   = true;
 
 bool GetResolutionFromAlien = kTRUE;
 // std::string resoFilename = "resolution_PbPb2015_0080_deltaXvsP_cut5_noKinematicCuts.root";
@@ -60,7 +66,7 @@ std::string centralityFilenameFromAlien = "/alice/cern.ch/user/c/cklein/data/cen
 
 const Int_t triggerNames = AliVEvent::kMB;
 
-const int nMCSignal = 1;
+const int nMCSignal = 0;
 const int nCutsetting = 0;
 
 
@@ -91,7 +97,7 @@ const Int_t nBinsPt =  ( sizeof(ptBins) / sizeof(ptBins[0]) )-1;
 
 const double minPtBin = 0;
 const double maxPtBin = 8;
-const int    stepsPtBin = 800;
+const int    stepsPtBin = 400;
 
 const double minEtaBin = -1.0;
 const double maxEtaBin =  1.0;
@@ -99,7 +105,7 @@ const int    stepsEtaBin = 20;
 
 const double minPhiBin = 0;
 const double maxPhiBin =  6.3;
-const int    stepsPhiBin = 30;
+const int    stepsPhiBin = 20;
 
 const double minThetaBin = 0;
 const double maxThetaBin =  TMath::TwoPi();
@@ -143,6 +149,7 @@ void GetCentrality(const int centrality, double& CentMin, double& CentMax){
   else if (centrality == 7) {CentMin = 40; CentMax = 50;}
   else if (centrality == 8) {CentMin = 50; CentMax = 60;}
   else if (centrality == 9) {CentMin = 60; CentMax = 80;}
+
   else if (centrality == 10) {CentMin = 0; CentMax = 10;}
   else if (centrality == 11) {CentMin = 10; CentMax = 20;}
   else if (centrality == 12) {CentMin = 20; CentMax = 30;}
@@ -152,6 +159,23 @@ void GetCentrality(const int centrality, double& CentMin, double& CentMax){
   else if (centrality == 16) {CentMin = 60; CentMax = 70;}
   else if (centrality == 17) {CentMin = 70; CentMax = 80;}
   else if (centrality == 18) {CentMin = 80; CentMax = 90;}
+
+  else if (centrality == 20) {CentMin = 0; CentMax = 1;}
+  else if (centrality == 21) {CentMin = 1; CentMax = 2;}
+  else if (centrality == 22) {CentMin = 2; CentMax = 3;}
+  else if (centrality == 23) {CentMin = 3; CentMax = 4;}
+  else if (centrality == 24) {CentMin = 4; CentMax = 5;}
+  else if (centrality == 25) {CentMin = 5; CentMax = 6;}
+  else if (centrality == 26) {CentMin = 6; CentMax = 7;}
+  else if (centrality == 27) {CentMin = 7; CentMax = 8;}
+  else if (centrality == 28) {CentMin = 8; CentMax = 9;}
+  else if (centrality == 29) {CentMin = 9; CentMax = 10;}
+
+  else if (centrality == 30) {CentMin = 0; CentMax = 5;}
+  else if (centrality == 31) {CentMin = 5; CentMax = 10;}
+  else if (centrality == 32) {CentMin = 10; CentMax = 15;}
+  else if (centrality == 33) {CentMin = 15; CentMax = 20;}
+
   else                      {CentMin = 0;  CentMax = 0;}
   return;
 }
@@ -238,6 +262,12 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
   if (cutDefinition == "kPbPb2015_Pt100_ResolutionCuts"){
     AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt100_ResolutionCuts);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kResolutionTrackCuts);
+    AnaCut.SetCentrality(centrality);
+    AnaCut.SetStandardCut();
+  }
+  else if (cutDefinition == "cut5_pt200_noPIDcuts"){
+    AnaCut.SetPIDAna(LMEECutLib::kPDGelectron);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kTRACKcut_5);
     AnaCut.SetCentrality(centrality);
     AnaCut.SetStandardCut();
   }
@@ -911,11 +941,11 @@ std::vector<bool> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* task
   eleFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
   eleFinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
 
-  AliDielectronSignalMC eleFinalStateFromPion("eleFinalStateFromPion","eleFinalStateFromPion");
-  eleFinalStateFromPion.SetLegPDGs(11,1);//dummy second leg (never MCtrue)\n"
-  eleFinalStateFromPion.SetCheckBothChargesLegs(kTRUE,kTRUE);
-  eleFinalStateFromPion.SetMotherPDGs(111, 111); // open charm mesons and baryons together
-  eleFinalStateFromPion.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  AliDielectronSignalMC eleFinalStateFromSameMotherMeson("eleFinalStateFromSameMotherMeson","eleFinalStateFromSameMotherMeson");
+  eleFinalStateFromSameMotherMeson.SetLegPDGs(11,1);//dummy second leg (never MCtrue)\n"
+  eleFinalStateFromSameMotherMeson.SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleFinalStateFromSameMotherMeson.SetMotherPDGs(600, 600); // open charm mesons and baryons together
+  eleFinalStateFromSameMotherMeson.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
   //
   AliDielectronSignalMC eleFinalStateFromD("eleFinalStateFromD","eleFinalStateFromD");
   eleFinalStateFromD.SetLegPDGs(11,1);//dummy second leg (never MCtrue)\n"
@@ -947,13 +977,16 @@ std::vector<bool> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* task
   task->AddSingleLegMCSignal(eleFinalState);
   // task->AddSingleLegMCSignal(eleFinalStateFromPion);
   task->AddSingleLegMCSignal(eleFinalStateFromD);
-  // task->AddSingleLegMCSignal(eleFinalStateFromB);
+  task->AddSingleLegMCSignal(eleFinalStateFromB);
+  // task->AddSingleLegMCSignal(eleFinalStateFromSameMotherMeson);
 
   // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
   // ordering is according to MCSignals of single legs
  std::vector<bool> DielectronsPairNotFromSameMother;
  DielectronsPairNotFromSameMother.push_back(false);
  DielectronsPairNotFromSameMother.push_back(true);
+ DielectronsPairNotFromSameMother.push_back(true);
+ // DielectronsPairNotFromSameMother.push_back(false);
  return DielectronsPairNotFromSameMother;
 }
 
@@ -1051,6 +1084,6 @@ void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
     // task->AddPairMCSignal(pair_sameMother_omega);
     // task->AddPairMCSignal(pair_sameMother_phi);
     // task->AddPairMCSignal(pair_sameMother_jpsi);
-    task->AddPairMCSignal(pair_sameMother_CharmedMesonsWithSameMother);
+    // task->AddPairMCSignal(pair_sameMother_CharmedMesonsWithSameMother);
     // task->AddPairMCSignal(pair_conversion);
 }
