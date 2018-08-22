@@ -10,6 +10,8 @@
 ClassImp(AliFemtoDreamTrackHist)
 AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
 :fMinimalBooking(false)
+,fMultRangeLow(27)
+,fMultRangeHigh(55)
 ,fHistList(0)
 ,fConfig(0)
 ,fCutCounter(0)
@@ -42,6 +44,8 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
 }
 AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist,bool CombSig)
 :fMinimalBooking(false)
+,fMultRangeLow(27)
+,fMultRangeHigh(55)
 {
   TString sName[2] = {"before", "after"};
   float ptmin = 0;
@@ -316,6 +320,22 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist,bool CombSig)
     fDCAXYPtBins->GetXaxis()->SetTitle("P#_{T}");
     fDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fHistList->Add(fDCAXYPtBins);
+
+    dcaPtBinName = Form("DCAXYPtMult_0_%i", fMultRangeLow);
+    fDCAXYPtBinsMult[0] = new TH2F(dcaPtBinName.Data(), Form("0 < mult < %i;P#_{T};dca_{XY}", fMultRangeLow),20,0.5,4.05,500,-5,5);
+    fDCAXYPtBinsMult[0]->Sumw2();
+
+    dcaPtBinName = Form("DCAXYPtMult_%i_%i", fMultRangeLow, fMultRangeHigh);
+    fDCAXYPtBinsMult[1] = new TH2F(dcaPtBinName.Data(), Form("%i < mult < %i;P#_{T};dca_{XY}", fMultRangeLow, fMultRangeHigh),20,0.5,4.05,500,-5,5);
+    fDCAXYPtBinsMult[1]->Sumw2();
+
+    dcaPtBinName = Form("DCAXYPtMult_%i_inf", fMultRangeHigh);
+    fDCAXYPtBinsMult[2] = new TH2F(dcaPtBinName.Data(), Form("mult > %i;P#_{T};dca_{XY}", fMultRangeHigh),20,0.5,4.05,500,-5,5);
+    fDCAXYPtBinsMult[2]->Sumw2();
+
+    fHistList->Add(fDCAXYPtBinsMult[0]);
+    fHistList->Add(fDCAXYPtBinsMult[1]);
+    fHistList->Add(fDCAXYPtBinsMult[2]);
   } else {
     fDCAXYPtBins=0;
   }
@@ -323,6 +343,8 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist,bool CombSig)
 
 AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(TString MinimalBooking)
 :fMinimalBooking(true)
+,fMultRangeLow(27)
+,fMultRangeHigh(55)
 ,fConfig(0)
 ,fCutCounter(0)
 ,fDCAXYPtBins(0)
@@ -370,6 +392,15 @@ void AliFemtoDreamTrackHist::FillNSigComb(
   if(!fMinimalBooking)fNSigCom->Fill(pT,nSigTPC,nSigTOF);
 }
 
-void AliFemtoDreamTrackHist::FillDCAXYPtBins(float pT,float dcaxy) {
-  if(!fMinimalBooking)fDCAXYPtBins->Fill(pT,dcaxy);
+void AliFemtoDreamTrackHist::FillDCAXYPtBins(float pT,float dcaxy, int multiplicity) {
+  if(!fMinimalBooking) {
+    fDCAXYPtBins->Fill(pT,dcaxy);
+    if (multiplicity < fMultRangeLow) {
+	  fDCAXYPtBinsMult[0]->Fill(pT,dcaxy);
+	} else if (multiplicity >= fMultRangeLow && multiplicity < fMultRangeHigh) {
+	  fDCAXYPtBinsMult[1]->Fill(pT,dcaxy);
+	} else {
+	  fDCAXYPtBinsMult[2]->Fill(pT,dcaxy);
+	}
+  }
 }

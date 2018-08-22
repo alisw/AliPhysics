@@ -12,6 +12,8 @@ ClassImp(AliFemtoDreamv0Hist)
 AliFemtoDreamv0Hist::AliFemtoDreamv0Hist()
 :fMinimalBooking(false)
 ,fHistList(0)
+,fMultRangeLow(27)
+,fMultRangeHigh(55)
 ,fConfig(0)
 ,fCutCounter(0)
 ,fInvMassBefKaonRej(0)
@@ -19,6 +21,7 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist()
 ,fInvMassBefSelection(0)
 ,fInvMassPt(0)
 ,fCPAPtBins(0)
+,fCPAPtBinsMult()
 ,fInvMassPerRunNumber()
 {
   for (int i=0;i<2;++i) {
@@ -41,6 +44,8 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist()
 AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(
     int MassNBins,float MassMin,float MassMax,bool CPAPlots,bool perRunnumber, int iRunMin=0, int iRunMax=0)
 :fMinimalBooking(false)
+,fMultRangeLow(27)
+,fMultRangeHigh(55)
 {
   TString sName[2]={"before","after"};
 
@@ -210,6 +215,40 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(
     fCPAPtBins->GetXaxis()->SetTitle("P_{T}");
     fCPAPtBins->GetYaxis()->SetTitle("CPA");
     fHistList->Add(fCPAPtBins);
+
+	TString cpaPtBinName = "CPAPtBinsMult_0_";
+	cpaPtBinName += fMultRangeLow;
+	TString cpaAxisName = "0 < mult < ";
+	cpaAxisName += fMultRangeLow;
+	cpaAxisName += ";P#_{T};CPA";
+    fCPAPtBinsMult[0] = new TH2F(cpaPtBinName.Data(), cpaAxisName.Data(),8,0.3,4.3,1000,0.90,1.);
+    fCPAPtBinsMult[0]->Sumw2();
+
+	cpaPtBinName = "CPAPtBinsMult_";
+	cpaPtBinName += fMultRangeLow;
+	cpaPtBinName += "_";
+	cpaPtBinName += fMultRangeHigh;
+	cpaAxisName = fMultRangeLow;
+	cpaAxisName += "0 < mult < ";
+	cpaAxisName += fMultRangeHigh;
+	cpaAxisName += ";P#_{T};CPA";
+	fCPAPtBinsMult[1] = new TH2F(cpaPtBinName.Data(), cpaAxisName.Data(),8,0.3,4.3,1000,0.90,1.);
+	fCPAPtBinsMult[1]->Sumw2();
+
+	cpaPtBinName = "CPAPtBinsMult_";
+	cpaPtBinName += fMultRangeHigh;
+	cpaPtBinName += "_inf";
+	cpaAxisName = "mult > ";
+	cpaAxisName += fMultRangeHigh;
+	cpaAxisName += ";P#_{T};CPA";
+	fCPAPtBinsMult[2] = new TH2F(cpaPtBinName.Data(),cpaAxisName.Data(),8,0.3,4.3,1000,0.90,1.);
+	fCPAPtBinsMult[2]->Sumw2();
+
+	fHistList->Add(fCPAPtBinsMult[0]);
+	fHistList->Add(fCPAPtBinsMult[1]);
+	fHistList->Add(fCPAPtBinsMult[2]);
+
+
   } else {
     fCPAPtBins=nullptr;
   }
@@ -226,6 +265,8 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(
 
 AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(TString MinimalBooking,int MassNBins,float MassMin,float MassMax)
 :fMinimalBooking(true)
+,fMultRangeLow(27)
+,fMultRangeHigh(55)
 ,fConfig(0)
 ,fCutCounter(0)
 ,fInvMassBefKaonRej(0)
@@ -233,6 +274,7 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(TString MinimalBooking,int MassNBins,fl
 ,fInvMassBefSelection(0)
 ,fInvMassPt(0)
 ,fCPAPtBins(0)
+,fCPAPtBinsMult()
 ,fInvMassPerRunNumber()
 {
   for (int i=0;i<2;++i) {
@@ -265,6 +307,8 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(TString MinimalBooking,int MassNBins,fl
 AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(const AliFemtoDreamv0Hist& hists)
 :fMinimalBooking(hists.fMinimalBooking)
 ,fHistList(hists.fHistList)
+,fMultRangeLow(hists.fMultRangeLow)
+,fMultRangeHigh(hists.fMultRangeHigh)
 ,fConfig(hists.fConfig)
 ,fCutCounter(hists.fCutCounter)
 ,fInvMassBefKaonRej(hists.fInvMassBefKaonRej)
@@ -289,13 +333,32 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(const AliFemtoDreamv0Hist& hists)
     fCPA[i]                   =hists.fCPA[i];
     fInvMass[i]               =hists.fInvMass[i];
   }
+  for (int i=0; i<3; ++i) {
+	fCPAPtBinsMult[i] = hists.fCPAPtBinsMult[i];
+  }
 }
+
+void AliFemtoDreamv0Hist::FillCPAPtBins(float pT,float cpa, int multiplicity){
+  if(!fMinimalBooking){
+	fCPAPtBins->Fill(pT,cpa);
+    if (multiplicity < fMultRangeLow) {
+      fCPAPtBinsMult[0]->Fill(pT,cpa);
+	} else if (multiplicity >= fMultRangeLow && multiplicity < fMultRangeHigh) {
+	  fCPAPtBinsMult[1]->Fill(pT,cpa);
+	} else {
+	  fCPAPtBinsMult[2]->Fill(pT,cpa);
+	}
+  }
+}
+
 
 AliFemtoDreamv0Hist& AliFemtoDreamv0Hist::operator=(const AliFemtoDreamv0Hist& hists)
 {
   if (this!=&hists) {
     this->fMinimalBooking=hists.fMinimalBooking;
     this->fHistList=hists.fHistList;
+    this->fMultRangeLow=hists.fMultRangeLow;
+    this->fMultRangeHigh=hists.fMultRangeHigh;
     this->fConfig=hists.fConfig;
     this->fCutCounter=hists.fCutCounter;
     this->fInvMassBefKaonRej=hists.fInvMassBefKaonRej;
@@ -318,6 +381,9 @@ AliFemtoDreamv0Hist& AliFemtoDreamv0Hist::operator=(const AliFemtoDreamv0Hist& h
       this->fDCADaugToVtx[i]          =hists.fDCADaugToVtx[i];
       this->fCPA[i]                   =hists.fCPA[i];
       this->fInvMass[i]               =hists.fInvMass[i];
+    }
+    for (int i=0; i<3; ++i) {
+  	  fCPAPtBinsMult[i] = hists.fCPAPtBinsMult[i];
     }
   }
   return *this;

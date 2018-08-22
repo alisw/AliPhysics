@@ -70,8 +70,9 @@ AliFemtoDreamTrack::~AliFemtoDreamTrack() {
   }
 }
 
-void AliFemtoDreamTrack::SetTrack(AliAODTrack *track) {
+void AliFemtoDreamTrack::SetTrack(AliAODTrack *track, const int multiplicity) {
   this->Reset();
+  SetEventMultiplicity(multiplicity);
   fAODTrack=track;
   int trackID=fAODTrack->GetID();
   if (trackID<0) {
@@ -104,8 +105,9 @@ void AliFemtoDreamTrack::SetTrack(AliAODTrack *track) {
   }
 }
 
-void AliFemtoDreamTrack::SetTrack(AliESDtrack *track) {
+void AliFemtoDreamTrack::SetTrack(AliESDtrack *track, const int multiplicity) {
   this->Reset();
+  SetEventMultiplicity(multiplicity);
   fESDTrack=track;
   if (fESDTrack) {
     this->fIsReset=false;

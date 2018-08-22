@@ -45,15 +45,19 @@ class AliFemtoDreamv0Hist {
   void FillInvMassKaon(float mass){if(!fMinimalBooking)fInvMassKaon->Fill(mass);};
   void Fillv0MassDist(float mass){if(!fMinimalBooking)fInvMassBefSelection->Fill(mass);};
   void FillInvMassPtBins(float pT,float mass){fInvMassPt->Fill(pT,mass);};
-  void FillCPAPtBins(float pT,float cpa){if(!fMinimalBooking)fCPAPtBins->Fill(pT,cpa);};
+  void FillCPAPtBins(float pT,float cpa, int multiplicity);
   void FillInvMassPerRunNumber(int RunNumber,float mass){
     if(!fMinimalBooking)fInvMassPerRunNumber->Fill(RunNumber,mass);};
   void SetName(TString name){fHistList->SetName(name.Data());};
+  void SetMultRangeLow(int range) {fMultRangeLow = range;}
+  void SetMultRangeHigh(int range) {fMultRangeHigh = range;}
   TList *GetHistList(){return fHistList;};
  private:
   bool fMinimalBooking;
   TList *fHistList;
   TList *fv0CutQA[2];
+  float fMultRangeLow; //!
+  float fMultRangeHigh; //!
   TProfile *fConfig;
   TH1F *fCutCounter;
   TH1F *fOnFly[2];
@@ -74,8 +78,9 @@ class AliFemtoDreamv0Hist {
   TH1F *fInvMassBefSelection;
   TH2F *fInvMassPt;
   TH2F *fCPAPtBins;
+  TH2F *fCPAPtBinsMult[3]; //!
   TH2F *fInvMassPerRunNumber;
-  ClassDef(AliFemtoDreamv0Hist,2)
+  ClassDef(AliFemtoDreamv0Hist,3)
 };
 
 #endif /* ALIFEMTODREAMV0HIST_H_ */

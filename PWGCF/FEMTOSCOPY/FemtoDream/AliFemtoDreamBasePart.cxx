@@ -37,6 +37,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart()
 ,fIsMC(false)
 ,fUse(true)
 ,fIsSet(true)
+,fEvtMultiplicity(-1)
 {
 }
 
@@ -67,6 +68,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliFemtoDreamBasePart& part)
 ,fIsMC(part.fIsMC)
 ,fUse(part.fUse)
 ,fIsSet(part.fIsSet)
+,fEvtMultiplicity(part.fEvtMultiplicity)
 {
 }
 
@@ -101,6 +103,7 @@ AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(
   fIsMC=obj.fIsMC;
   fUse=obj.fUse;
   fIsSet=obj.fIsSet;
+  fEvtMultiplicity=obj.fEvtMultiplicity;
   return (*this);
 }
 
@@ -131,6 +134,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliSigma0ParticlePhotonMother
 ,fIsMC(false)
 ,fUse(true)
 ,fIsSet(true)
+,fEvtMultiplicity(-1)
 {
 	fEta.push_back(mother.GetV0().GetPosDaughter().GetEta());
 	fEta.push_back(mother.GetPhoton().GetPosDaughter().GetEta());

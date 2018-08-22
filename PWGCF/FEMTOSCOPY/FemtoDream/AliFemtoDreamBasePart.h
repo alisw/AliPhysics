@@ -77,6 +77,8 @@ class AliFemtoDreamBasePart {
   bool UseParticle() const {return fUse;};
   void SetGlobalTrackInfo(AliAODTrack **GTI, Int_t size)
   {fGTI = GTI; fTrackBufferSize = size;};
+  int GetEventMultiplicity() const {return fEvtMultiplicity;}
+  void SetEventMultiplicity(int evtMulti) {fEvtMultiplicity=evtMulti;}
  protected:
   bool fIsReset;
   AliAODTrack **fGTI;
@@ -106,9 +108,10 @@ class AliFemtoDreamBasePart {
   bool fIsMC;
   bool fUse;    //passes cuts
   bool fIsSet;  //has all the attributes set properly
+  int fEvtMultiplicity;
  private:
 //  AliFemtoDreamBasePart(const AliFemtoDreamBasePart&);
-  ClassDef(AliFemtoDreamBasePart,2);
+  ClassDef(AliFemtoDreamBasePart,3);
 };
 
 #endif /* ALIFEMTODREAMBASEPART_H_ */

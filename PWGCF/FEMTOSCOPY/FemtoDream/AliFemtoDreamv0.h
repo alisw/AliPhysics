@@ -17,7 +17,7 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
  public:
   AliFemtoDreamv0();
   virtual ~AliFemtoDreamv0();
-  void Setv0(AliAODEvent *evt,AliAODv0 *v0);
+  void Setv0(AliAODEvent *evt,AliAODv0 *v0, const int multiplicity = -1);
   bool GetOnlinev0() const {return fOnlinev0;};
   bool GetHasDaughters() const {return fHasDaughter;};
   AliFemtoDreamTrack* GetPosDaughter() const {return fpDaug;};
