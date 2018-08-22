@@ -47,6 +47,10 @@ public:
     void            SetSSCut(Double_t maxM20Cut) {fMaxM20Cut = maxM20Cut;};
     void            SetEoP(Double_t eopCut) {fMinEoPCut = eopCut;};
     void            SetNSig(Double_t nSigCut) {fMinNSigCut = nSigCut;};
+    
+    void            SetNSigAsso(Double_t nSigAssoCut) {fMinNSigAssoCut = nSigAssoCut;};
+    void            SetPtAsso(Double_t ptAssoCut) {fMinPtAssoCut = ptAssoCut;};
+    
     void            SetDCABinSize(Double_t dcaBinning) {fDCABinSize = dcaBinning;};
     void            SetStackLoop(Bool_t runStackLoop) {fFlagRunStackLoop = runStackLoop;};
     void            SetTPCClus(Int_t nTPCclusters) {fNclusTPC = nTPCclusters;};
@@ -83,6 +87,10 @@ private:
     Double_t            fMaxM20Cut;      // set eID M20 cut
     Double_t            fMinEoPCut;      // set eID E/p cut
     Double_t            fMinNSigCut;     // set eID nSig cut
+    
+    Double_t            fMinNSigAssoCut; // set nSig cut for asso track
+    Double_t            fMinPtAssoCut;   // set min pt for asso track
+    
     Double_t            fDCABinSize;     // set DCA bin size for systematics
     Bool_t              fFlagFillSprs; //switch to fill electron eid sparse
     Bool_t              fFlagFillMCHistos; // switch to fill histos that require MC pid
@@ -172,7 +180,13 @@ private:
     TF1                 *fEtaWeight;    //! Function to weight enhanced eta
     //TF1                 *fPi0EtaWeight; //! Function to weight enhanced eta+pi0
     TH1F                *fDWeight; //!
+    TH1F                *fDWeightNew; //!
+    TH1F                *fDWeightVar1; //!
+    TH1F                *fDWeightVar2; //!
     TH1F                *fBWeight; //!
+    TH1F                *fBWeightNew; //!
+    TH1F                *fBWeightVar1; //!
+    TH1F                *fBWeightVar2; //!
     
     
     Double_t            fWeight;        //!
@@ -230,9 +244,16 @@ private:
     
     TH2F                *fDTemplateWeight; //!
     TH2F                *fDTemplateNoWeight; //!
+    TH2F                *fDTemplateWeightNew; //!
+    TH2F                *fDTemplateWeightVar1; //!
+    TH2F                *fDTemplateWeightVar2; //!
     
     TH2F                *fBTemplateWeight; //!
     TH2F                *fBTemplateNoWeight; //!
+    TH2F                *fBTemplateWeightNew; //!
+    TH2F                *fBTemplateWeightVar1; //!
+    TH2F                *fBTemplateWeightVar2; //!
+    
     TH1F                *fAllElecStack; //!
     TH1F                *fHFElecStack; //!
     TH1F                *fBElecStack; //!
