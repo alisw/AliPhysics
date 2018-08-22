@@ -99,7 +99,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   AntiTrackCuts->SetDCAReCalculation(false);
   AntiTrackCuts->SetCutCharge(-1);
 
-  if (suffix != "0") {
+  if (suffix != "0" && suffix != "999") {
     TrackCuts->SetMinimalBooking(true);
     AntiTrackCuts->SetMinimalBooking(true);
   }
@@ -277,20 +277,52 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   AliFemtoDreamCollConfig *config =
       new AliFemtoDreamCollConfig("Femto", "Femto");
   std::vector<int> MultBins;
-  MultBins.push_back(0);
-  MultBins.push_back(4);
-  MultBins.push_back(8);
-  MultBins.push_back(12);
-  MultBins.push_back(16);
-  MultBins.push_back(20);
-  MultBins.push_back(24);
-  MultBins.push_back(28);
-  MultBins.push_back(32);
-  MultBins.push_back(36);
-  MultBins.push_back(40);
-  MultBins.push_back(60);
-  MultBins.push_back(80);
-  config->SetMultBins(MultBins);
+  if (trigger == "kHighMultV0") {
+    std::vector<int> MultBins;
+    MultBins.push_back(0);
+    MultBins.push_back(4);
+    MultBins.push_back(8);
+    MultBins.push_back(12);
+    MultBins.push_back(16);
+    MultBins.push_back(20);
+    MultBins.push_back(24);
+    MultBins.push_back(28);
+    MultBins.push_back(32);
+    MultBins.push_back(36);
+    MultBins.push_back(40);
+    MultBins.push_back(44);
+    MultBins.push_back(48);
+    MultBins.push_back(52);
+    MultBins.push_back(56);
+    MultBins.push_back(60);
+    MultBins.push_back(64);
+    MultBins.push_back(68);
+    MultBins.push_back(72);
+    MultBins.push_back(76);
+    MultBins.push_back(80);
+    MultBins.push_back(84);
+    MultBins.push_back(88);
+    MultBins.push_back(92);
+    MultBins.push_back(96);
+    MultBins.push_back(100);
+    config->SetMultBins(MultBins);
+  } else {
+    std::vector<int> MultBins;
+    MultBins.push_back(0);
+    MultBins.push_back(4);
+    MultBins.push_back(8);
+    MultBins.push_back(12);
+    MultBins.push_back(16);
+    MultBins.push_back(20);
+    MultBins.push_back(24);
+    MultBins.push_back(28);
+    MultBins.push_back(32);
+    MultBins.push_back(36);
+    MultBins.push_back(40);
+    MultBins.push_back(60);
+    MultBins.push_back(80);
+    config->SetMultBins(MultBins);
+  }
   config->SetMultBinning(true);
 
   config->SetZBins(ZVtxBins);
