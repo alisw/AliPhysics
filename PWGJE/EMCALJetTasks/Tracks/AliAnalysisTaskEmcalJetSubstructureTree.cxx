@@ -685,7 +685,7 @@ void AliAnalysisTaskEmcalJetSubstructureTree::DoConstituentQA(const AliEmcalJet 
     auto clust = jet->ClusterAt(icl, clusters->GetArray());
     AliDebugStream(3) << "cluster time " << clust->GetTOF() << std::endl;
     fQAHistos->FillTH2("hClusterConstE", jet->Pt(),clust->GetUserDefEnergy(clusters->GetDefaultClusterEnergy()));
-    fQAHistos->FillTH2("hClusterConstTime", jet->Pt(), clust->GetTOF()*1e6);    // convert to nanoseconds
+    fQAHistos->FillTH2("hClusterConstTime", jet->Pt(), clust->GetTOF()*1e9);    // convert to nanoseconds
     fQAHistos->FillTH2("hClusterConstM02", jet->Pt(), clust->GetM02());
     fQAHistos->FillTH2("hClusterConstNcell", jet->Pt(), clust->GetNCells());
     fQAHistos->FillTH2("hClusterConstExotics", jet->Pt(), clust->GetIsExotic() ? 1. : 0.);
