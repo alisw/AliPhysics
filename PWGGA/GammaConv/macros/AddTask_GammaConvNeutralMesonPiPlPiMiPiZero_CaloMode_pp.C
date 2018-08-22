@@ -397,10 +397,12 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
     cuts.AddCut("00000113","2444400043012300000","40b440708","0103563200000000","0153503000000000"); // no NonLin
     cuts.AddCut("00000113","2444401043012300000","40b440708","0103563200000000","0153503000000000"); // ext PHOS NonLin
     cuts.AddCut("00000113","2444412043012300000","40b440708","0103563200000000","0153503000000000"); // const NonLin
+  } else if( trainConfig == 44)  { // thesis cuts PHOS
+    cuts.AddCut("00000113","2444411043012300000","302010708","0103603200000000","0153503000000000"); // PCM-PHOS nonLin
 
     // EMCal 7 TeV Sys
   } else if( trainConfig == 50)  { // Standard
-    cuts.AddCut("00000113","1111111047032230000","302010708","0103603800000000","0153503000000000");
+    cuts.AddCut("00000113","1111111047032230000","302010708","0103603900000000","0153503000000000");
 
     // *************Variations in AliConvEventCuts**************************
   } else if( trainConfig == 51)  { // RemovePileUp

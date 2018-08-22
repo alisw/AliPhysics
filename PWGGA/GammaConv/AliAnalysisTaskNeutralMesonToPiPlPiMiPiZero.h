@@ -185,6 +185,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     TH2F**                            fHistoPionTPCdEdx;                                  // array of histos of pion, p, TPC dEdx
     TH2F**                            fHistoPionPionInvMassPt;                            // array of histos of pion pion, invMass, pT_{pi+pi-}
     TH2F**                            fHistoGammaGammaInvMassPt;                          // array of histos of gamma-gamma, invMass, pT_{gamma gamma}
+    TH2F**                            fHistoGammaGammaInvMassPtBeforeCuts;                // array of histos of gamma-gamma, invMass, pT_{gamma gamma} before neutral meson cuts
     TH2F**                            fHistoMotherInvMassPt;                              // array of histos of pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
     TH2F**                            fHistoMotherInvMassPtRejectedKinematic;             // array of histos of rejected pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
     TH2F**                            fHistoBackInvMassPtGroup1;                          // Event mixing background group 1 (pi+ and pi- from same event)
@@ -308,7 +309,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 22);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 23);
 };
 
 #endif // ALIANALYSISTASKNEUTRALMESONTOPIPLPIMIPIZERO_H
