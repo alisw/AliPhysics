@@ -1,4 +1,10 @@
-AliGenerator* AddMCGenPythia8(Float_t e_cms = 2760., Bool_t kCR = kTRUE, Int_t kF = 1,Int_t kProcess=0,Double_t ptHardMin=0,Double_t ptHardMax=1.) 
+AliGenerator* AddMCGenPythia8(Float_t e_cms = 2760., 
+                              Bool_t kCR = kTRUE, 
+                              Int_t kF = 1,
+                              Int_t kProcess=0,
+                              Double_t ptHardMin=0,
+                              Double_t ptHardMax=1., 
+                              Int_t tune=14) 
 {
   // Add Pythia 8 generator: 
   //    -kProcess=0  MB generation
@@ -14,7 +20,14 @@ AliGenerator* AddMCGenPythia8(Float_t e_cms = 2760., Bool_t kCR = kTRUE, Int_t k
   return genP;
 }
 
-AliGenerator* CreatePythia8Gen(Float_t e_cms, Bool_t kCR, Int_t kF,Int_t kProcess,Double_t ptHardMin,Double_t ptHardMax) {
+AliGenerator* CreatePythia8Gen(Float_t e_cms, 
+			       Bool_t kCR, 
+			       Int_t kF,
+			       Int_t kProcess,
+			       Double_t ptHardMin,
+			       Double_t ptHardMax, 
+			       Int_t tune) 
+{
     
    gSystem->Load("libpythia6");
    // loaded automatically -> gSystem->Load("libpythia8");
@@ -27,12 +40,12 @@ AliGenerator* CreatePythia8Gen(Float_t e_cms, Bool_t kCR, Int_t kF,Int_t kProces
   AliGenPythiaPlus* gener = new AliGenPythiaPlus(AliPythia8::Instance());
 
   // set process (MB)
-  if(kProcess==0) gener->SetProcess(kPyMbDefault);
-   
- 
-  if(kProcess==1) {gener->SetProcess(kPyJets);
-   if(ptHardMin>0.)
-    gener->SetPtHard(ptHardMin,ptHardMax);
+  if (kProcess==0) 
+    gener->SetProcess(kPyMbDefault);
+  else if(kProcess==1) {
+    gener->SetProcess(kPyJets);
+    if(ptHardMin>0.)
+      gener->SetPtHard(ptHardMin,ptHardMax);
   } 
 
   //Centre of mass energy 
@@ -42,7 +55,7 @@ AliGenerator* CreatePythia8Gen(Float_t e_cms, Bool_t kCR, Int_t kF,Int_t kProces
   gener->SetEventListRange(-1, 2);
 
   // color reconnection
-  (AliPythia8::Instance())->ReadString("Tune:pp = 5");//CR
+  (AliPythia8::Instance())->ReadString(Form("Tune:pp = %d",tune)); 
 
   //random seed based on time
   AliPythia8::Instance()->ReadString("Random:setSeed = on");
