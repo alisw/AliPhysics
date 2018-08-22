@@ -107,7 +107,7 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
   }
 
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton = "00000000000000000500000000";
+  TString cutnumberPhoton = "00000000000000000500004000";
   //"00200008400000002200000000";
 
   TString cutnumberEvent = "00000103";
