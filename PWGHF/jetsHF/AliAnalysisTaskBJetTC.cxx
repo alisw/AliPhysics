@@ -1155,6 +1155,8 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 
 	std::vector<double> sImpParXY,sImpParXYZ,sImpParXYSig,sImpParXYZSig;
 
+	Bool_t TaggedFirst(0), TaggedSecond(0), TaggedThird(0);
+
 	while ((jetrec = fJetContainerData->GetNextJet()))
 	{
 		//	Printf("%s:%i",__FUNCTION__,__LINE__);
@@ -1441,7 +1443,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				fh2dJetSignedImpParXYZSignificanceFirst->Fill(fJetPt,sImpParXYZSig.at(0),fPythiaEventWeight);
 
 				if(sImpParXY.at(0) > fThresholdIP)
-					f2histRhoVsDeltaPtFirst->Fill( randomConePt , fJetContainerData->GetRhoVal(), fPythiaEventWeight);
+					TaggedFirst = kTRUE;
 
 				if(fDoPtRelAnalysis && PtRelSample && sImpParXY.at(0) > fThresholdIP){
 					for(int e=0; e<ntracks; e++){
@@ -1527,7 +1529,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				fh2dJetSignedImpParXYZSignificanceSecond->Fill(fJetPt,sImpParXYZSig.at(1),fPythiaEventWeight);
 
 				if(sImpParXY.at(1) > fThresholdIP)
-					f2histRhoVsDeltaPtSecond->Fill( randomConePt , fJetContainerData->GetRhoVal(), fPythiaEventWeight);
+					TaggedSecond = kTRUE;
 
 				if(fDoPtRelAnalysis && PtRelSample && sImpParXY.at(1) >= fThresholdIP){
 					for(int e=0; e<ntracks; e++){
@@ -1613,7 +1615,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				fh2dJetSignedImpParXYZSignificanceThird->Fill(fJetPt,sImpParXYZSig.at(2),fPythiaEventWeight);
 
 				if(sImpParXY.at(2) > fThresholdIP)
-					f2histRhoVsDeltaPtThird->Fill( randomConePt , fJetContainerData->GetRhoVal(), fPythiaEventWeight);
+					TaggedThird = kTRUE;
 
 				if(fDoPtRelAnalysis && PtRelSample && sImpParXY.at(2) >= fThresholdIP){
 					for(int e=0; e<ntracks; e++){
@@ -1963,6 +1965,13 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 	delete partonAOD;
 	jetrec = 0x0; jetmatched=0x0;
 	delete jetmatched; delete jetrec;
+
+	if(TaggedFirst)
+		f2histRhoVsDeltaPtFirst->Fill( randomConePt , fJetContainerData->GetRhoVal(), fPythiaEventWeight);
+	if(TaggedSecond)
+		f2histRhoVsDeltaPtSecond->Fill( randomConePt , fJetContainerData->GetRhoVal(), fPythiaEventWeight);
+	if(TaggedThird)
+		f2histRhoVsDeltaPtThird->Fill( randomConePt , fJetContainerData->GetRhoVal(), fPythiaEventWeight);
 
 	if(fEnableV0GammaRejection){
 		if( fIsPythia > 0 && fInputEvent->IsA()==AliAODEvent::Class() && !(fV0Reader->AreAODsRelabeled())){
