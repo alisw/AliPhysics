@@ -1186,7 +1186,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateMatchedJetHistograms()
     // Jet matching QA (copied from AliAnalysisTaskEmcalJetHCorrelations.cxx)
     histname = "MatchedJetHistograms/fHistJetMatchingQA";
     title = histname;
-    std::vector<std::string> binLabels = {"noMatch", "matchedJet", "sharedMomentumFraction", "partLevelMatchedJet", "jetDistance", "passedAllCuts"};
+    std::vector<std::string> binLabels = {"noMatch", "matchedJet", "sharedMomentumFraction", "partLevelMatchedJet", "jetDistancePPdet", "jetDistancePPtruth", "passedAllCuts"};
     auto histMatchedJetCuts = fHistManager.CreateTH1(histname.Data(), title.Data(), binLabels.size(), 0, binLabels.size());
     // Set label names
     for (unsigned int i = 1; i <= binLabels.size(); i++) {
@@ -2529,7 +2529,14 @@ void AliAnalysisTaskEmcalJetPerformance::FillMatchedJetHistograms()
   // Note: Allow truth jets to be outside of EMCALfid or fail 5 GeV requirement, since these can still contribute accepted det-jets
   //       (but for the jet reconstruction efficiency denominator, the criteria should be enforced).
   if (fDoJetMatchingGeometrical) {
-    ComputeJetMatches(fDetJetContainer, fMCJetContainer, kFALSE);
+    if (fRequireMatchedJetAccepted) {
+      fMCJetContainer->SetJetAcceptanceType(AliEmcalJet::kTPC);
+      ComputeJetMatches(fDetJetContainer, fMCJetContainer, kTRUE);
+      fMCJetContainer->SetJetAcceptanceType(AliEmcalJet::kEMCALfid);
+    }
+    else {
+      ComputeJetMatches(fDetJetContainer, fMCJetContainer, kFALSE);
+    }
   }
   else if (fDoJetMatchingMCFraction) {
     // First match PbPb-det to pp-det
@@ -2773,7 +2780,18 @@ const AliEmcalJet* AliAnalysisTaskEmcalJetPerformance::GetMatchedPartLevelJet(co
         returnValue = false;
       }
       else {
-        fHistManager.FillTH1(histNameQA, "jetDistance");
+        fHistManager.FillTH1(histNameQA, "jetDistancePPdet");
+      }
+      
+      // Check the matching distance between the combined and pp truth-level jets
+      if (partLevelJet) {
+        Double_t deltaR = detJet->DeltaR(partLevelJet);
+        if (deltaR > fJetMatchingR) {
+          returnValue = false;
+        }
+        else {
+          fHistManager.FillTH1(histNameQA, "jetDistancePPtruth");
+        }
       }
       
       // Record all cuts passed
