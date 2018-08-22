@@ -170,9 +170,11 @@ void AliAnalysisTaskEmcalJetSubstructureTree::UserCreateOutputObjects() {
   // Make QA for constituent clusters
   TLinearBinning jetptbinning(9, 20, 200),
                  clusterenergybinning(200, 0., 200),
+                 cellenergybinning(1000, 0., 100),
                  timebinning(1000, -500., 500.),
                  m02binning(100, 0., 1.),
-                 ncellbinning(101, -0.5, 100.5);
+                 ncellbinning(101, -0.5, 100.5),
+                 exoticsbinning(2, -0.5, 1.5);
   fQAHistos = new THistManager("QAhistos");
   fQAHistos->CreateTH1("hEventCounter", "Event counter", 1, 0.5, 1.5);
   fQAHistos->CreateTH1("hTriggerClusterCounter", "Event counter separating into trigger clusters", 7, -1.5, 5.5);
@@ -180,6 +182,9 @@ void AliAnalysisTaskEmcalJetSubstructureTree::UserCreateOutputObjects() {
   fQAHistos->CreateTH2("hClusterConstTime", "EMCAL cluster time vs. jet pt; p_{t, jet} (GeV/c); t_{cl} (ns)", jetptbinning, timebinning);
   fQAHistos->CreateTH2("hClusterConstM02", "EMCAL cluster M02 vs. jet pt; p{t, jet} (GeV/c); M02", jetptbinning, m02binning);
   fQAHistos->CreateTH2("hClusterConstNcell", "EMCAL cluster ncell vs. jet pt; p{t, jet} (GeV/c); Number of cells", jetptbinning, ncellbinning);
+  fQAHistos->CreateTH2("hClusterConstExotics", "EMCAL cluster exotics cut vs jet pt; p{t, jet} (GeV/c); Cluster exotics", jetptbinning, exoticsbinning);
+  fQAHistos->CreateTH2("hClusterConstMinCellEnergy", "EMCAL Cluster const min cell energy; p{t, jet} (GeV/c); E_{cell} (GeV/c)", jetptbinning, cellenergybinning);
+  fQAHistos->CreateTH2("hClusterConstMaxCellEnergy", "EMCAL Cluster const max (seed) cell energy; p{t, jet} (GeV/c); E_{cell} (GeV/c)", jetptbinning, cellenergybinning);
 
   // Test of constituent QA
 #ifdef EXPERIMENTAL_JETCONSTITUENTS
@@ -680,9 +685,19 @@ void AliAnalysisTaskEmcalJetSubstructureTree::DoConstituentQA(const AliEmcalJet 
     auto clust = jet->ClusterAt(icl, clusters->GetArray());
     AliDebugStream(3) << "cluster time " << clust->GetTOF() << std::endl;
     fQAHistos->FillTH2("hClusterConstE", jet->Pt(),clust->GetUserDefEnergy(clusters->GetDefaultClusterEnergy()));
-    fQAHistos->FillTH2("hClusterConstTime", jet->Pt(), clust->GetTOF());
+    fQAHistos->FillTH2("hClusterConstTime", jet->Pt(), clust->GetTOF()*1e6);    // convert to nanoseconds
     fQAHistos->FillTH2("hClusterConstM02", jet->Pt(), clust->GetM02());
     fQAHistos->FillTH2("hClusterConstNcell", jet->Pt(), clust->GetNCells());
+    fQAHistos->FillTH2("hClusterConstExotics", jet->Pt(), clust->GetIsExotic() ? 1. : 0.);
+
+    double mincell(100000.), maxcell(0.);
+    for(int icell = 0; icell < clust->GetNCells(); icell++){
+      double ecell = clust->E() * clust->GetCellAmplitudeFraction(icell);
+      if(ecell < mincell) mincell = ecell;
+      if(ecell > maxcell) maxcell = ecell;
+    }
+    fQAHistos->FillTH2("hClusterConstMinCellEnergy", jet->Pt(), mincell);
+    fQAHistos->FillTH2("hClusterConstMaxCellEnergy", jet->Pt(), maxcell);
 
 #ifdef EXPERIMENTAL_JETCONSTITUENTS
     fQAHistos->FillTH2("hClusterIndexENLC", jet->Pt(), clust->GetNonLinCorrEnergy());
