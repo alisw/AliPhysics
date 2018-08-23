@@ -4853,6 +4853,19 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
   if (PDGCode ==  111 || PDGCode ==  221){
     if (functionResultData != 0. && functionResultMC != 0. && isfinite(functionResultData) && isfinite(functionResultMC)){
       weight = functionResultData/functionResultMC;
+      if ( kCaseGen == 3){   // never true ?
+        if (PDGCode ==  111){
+	  if (!(fDoReweightHistoMCPi0 && hReweightMCHistPi0!= 0x0 && PDGCode ==  111)){
+	    weight = 1.;
+	  }
+        }
+        if (PDGCode ==  221){
+	  if (!(fDoReweightHistoMCEta && hReweightMCHistEta!= 0x0 && PDGCode ==  221)){
+	    weight = 1.;
+	  }
+        }
+      }
+      if (!isfinite(functionResultData)) weight = 1.;
       if (!isfinite(weight)) weight = 1.;
     }
   } else if (PDGCode ==  310 && functionResultMC != 0 && isfinite(functionResultMC)){
