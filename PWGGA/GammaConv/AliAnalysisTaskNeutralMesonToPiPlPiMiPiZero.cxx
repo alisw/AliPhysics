@@ -224,7 +224,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fIsMC(kFALSE),
   fDoLightOutput(kFALSE),
   fNeutralPionMode(0),
-  fTolerance(-1)
+  fTolerance(-1),
+  fTrackMatcherRunningMode(0)
 {
 
 }
@@ -400,7 +401,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fIsMC(kFALSE),
   fDoLightOutput(kFALSE),
   fNeutralPionMode(0),
-  fTolerance(-1)
+  fTolerance(-1),
+  fTrackMatcherRunningMode(0)
 {
   DefineOutput(1, TList::Class());
 }
@@ -1337,7 +1339,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
   }
 
   for(Int_t iMatcherTask = 0; iMatcherTask < 3; iMatcherTask++){
-    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i",iMatcherTask)));
+    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i_%i",iMatcherTask,fTrackMatcherRunningMode)));
     if(temp) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
   }
 

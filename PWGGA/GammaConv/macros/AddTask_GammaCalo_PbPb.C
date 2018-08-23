@@ -79,6 +79,7 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
                               TString   additionalTrainConfig           = "0"                   // additional counter for trainconfig
                 ) {
 
+  Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
   Bool_t doTreeEOverP = kFALSE; // switch to produce EOverP tree
   TH1S* histoAcc = 0x0;         // histo for modified acceptance
   TString corrTaskSetting = ""; // select which correction task setting to use
@@ -110,6 +111,11 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
         cout << "INFO: AddTask_GammaCalo_PbPb will use custom branch from Correction Framework!" << endl;
         corrTaskSetting = tempStr;
         corrTaskSetting.Replace(0,2,"");
+      }else if(tempStr.BeginsWith("TM")){
+        TString tempType = tempStr;
+        tempType.Replace(0,2,"");
+        trackMatcherRunningMode = tempType.Atoi();
+        cout << Form("INFO: AddTask_GammaCalo_PbPb will use running mode '%i' for the TrackMatcher!",trackMatcherRunningMode) << endl;
       }
     }
   }
@@ -214,6 +220,7 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
   task->SetV0ReaderName(V0ReaderName);
   task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetLightOutput(runLightOutput);
+  task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
 
   //create cut handler
   CutHandlerCalo cuts;
@@ -1212,9 +1219,9 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
     //create AliCaloTrackMatcher instance, if there is none present
     TString caloCutPos = cuts.GetClusterCut(i);
     caloCutPos.Resize(1);
-    TString TrackMatcherName = Form("CaloTrackMatcher_%s",caloCutPos.Data());
+    TString TrackMatcherName = Form("CaloTrackMatcher_%s_%i",caloCutPos.Data(),trackMatcherRunningMode);
     if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
-      AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
+      AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi(),trackMatcherRunningMode);
       fTrackMatcher->SetV0ReaderName(V0ReaderName);
       fTrackMatcher->SetCorrectionTaskSetting(corrTaskSetting);
       mgr->AddTask(fTrackMatcher);

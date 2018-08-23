@@ -93,6 +93,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
                              TString   additionalTrainConfig         = "0"                     // additional counter for trainconfig, this has to be always the last parameter
                             ) {
 
+  Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
   Int_t isHeavyIon = 0;
   TString corrTaskSetting = ""; // select which correction task setting to use
   //parse additionalTrainConfig flag
@@ -129,6 +130,11 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
         cout << "INFO: AddTask_GammaCalo_pp will use custom branch from Correction Framework!" << endl;
         corrTaskSetting = tempStr;
         corrTaskSetting.Replace(0,2,"");
+      } else if(tempStr.BeginsWith("TM")){
+        TString tempType = tempStr;
+        tempType.Replace(0,2,"");
+        trackMatcherRunningMode = tempType.Atoi();
+        cout << Form("INFO: AddTask_GammaConvV1_pp will use running mode '%i' for the TrackMatcher!",trackMatcherRunningMode) << endl;
       }
     }
   }
@@ -1328,9 +1334,9 @@ if(!cuts.AreValid()){
     if ( (trainConfig > 24 && trainConfig < 29) || ( trainConfig > 69 && trainConfig < 73 ) || (trainConfig > 319 && trainConfig < 350 ) ){
         TString caloCutPos = cuts.GetClusterCut(i);
         caloCutPos.Resize(1);
-        TString TrackMatcherName = Form("CaloTrackMatcher_%s",caloCutPos.Data());
+        TString TrackMatcherName = Form("CaloTrackMatcher_%s_%i",caloCutPos.Data(),trackMatcherRunningMode);
         if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
-          AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
+          AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi(),trackMatcherRunningMode);
           fTrackMatcher->SetV0ReaderName(V0ReaderName);
           fTrackMatcher->SetCorrectionTaskSetting(corrTaskSetting);
           mgr->AddTask(fTrackMatcher);

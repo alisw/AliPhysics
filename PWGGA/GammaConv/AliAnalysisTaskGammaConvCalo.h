@@ -139,6 +139,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
         // Function to enable MC label sorting
     void SetEnableSortingOfMCClusLabels (Bool_t enableSort) { fEnableSortForClusMC   = enableSort;}
 
+    void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
 
   protected:
     AliV0ReaderV1*                      fV0Reader;              // basic photon Selection Task
@@ -472,12 +473,13 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TTree*                  tBrokenFiles;                                       // tree for keeping track of broken files
     TObjString*             fFileNameBroken;                                    // string object for broken file name
     Bool_t                  fAllowOverlapHeaders;                               // enable overlapping headers for cluster selection
+    Int_t                   fTrackMatcherRunningMode;                           // CaloTrackMatcher running mode
 
   private:
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 45);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 46);
 };
 
 #endif
