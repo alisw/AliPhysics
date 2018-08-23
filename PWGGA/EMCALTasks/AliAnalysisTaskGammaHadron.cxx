@@ -152,7 +152,7 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 	Double_t fZtStep =1.0/(7-1.0);  // Bin width for the zT histograms
 	Double_t fXiStep =2.5/(8-1.0);  // Bin width for the Xi histograms
 
-	Double_t fArray_G_BinsValue[kNoGammaBins+1] ={5,7,9,11,14,17,22,30,60,90};
+	Double_t fArray_G_BinsValue[kNoGammaBins+1] ={5,7,9,11,14,17,20,23,30,60};
 	Double_t fArray_ZT_BinsValue[kNoZtBins+1]   ={0,fZtStep,2*fZtStep,3*fZtStep,4*fZtStep,5*fZtStep,6*fZtStep,20};
 	Double_t fArray_XI_BinsValue[kNoXiBins+1]   ={-10,0,fXiStep,2*fXiStep,3*fXiStep,4*fXiStep,5*fXiStep,6*fXiStep,10};
 
@@ -541,12 +541,18 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "M_{#gamma#gamma}";
-    nBinsThnPi0[dimThnPi0] = 750;
+    nBinsThnPi0[dimThnPi0] = 1000;
+    Double_t mGGArray[1000+1];
+    binEdgesThnPi0[dimThnPi0] = mGGArray;
+    GenerateFixedBinArray(1000,0,1.0,mGGArray);
+    minThnPi0[dimThnPi0] = 0;
+    maxThnPi0[dimThnPi0] = 1.0;
+/*    nBinsThnPi0[dimThnPi0] = 750;
     Double_t mGGArray[750+1];
     binEdgesThnPi0[dimThnPi0] = mGGArray;
     GenerateFixedBinArray(750,0,0.75,mGGArray);
     minThnPi0[dimThnPi0] = 0;
-    maxThnPi0[dimThnPi0] = 0.75;
+    maxThnPi0[dimThnPi0] = 0.75;*/
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "Opening Angle [rad]";
@@ -568,12 +574,16 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "Min Cluster Energy";
-    nBinsThnPi0[dimThnPi0] = 5;
+    nBinsThnPi0[dimThnPi0] = 3;
+    Double_t MinClusEnergyArray[3+1] = {1,1.5,2,100};
+    binEdgesThnPi0[dimThnPi0] = MinClusEnergyArray;
+    minThnPi0[dimThnPi0] = 1;
+    maxThnPi0[dimThnPi0] = 100;
+/*    nBinsThnPi0[dimThnPi0] = 5;
     Double_t MinClusEnergyArray[5+1] = {0.3,0.5,1,1.5,2,100};
     binEdgesThnPi0[dimThnPi0] = MinClusEnergyArray;
-   // GenerateFixedBinArray(5,0,);
     minThnPi0[dimThnPi0] = 0.3;
-    maxThnPi0[dimThnPi0] = 100;
+    maxThnPi0[dimThnPi0] = 100;*/
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "Asymmetry";
@@ -1876,7 +1886,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 					if(!tracks)  return 0;
 					Int_t NoOfTracksInEvent =tracks->GetNParticles();
 					AliVParticle* track=0;
-					if(NoOfTracksInEvent!=0) FillTriggerHist(aliCaloClusterVecpi0,Weight);
+					FillTriggerHist(aliCaloClusterVecpi0,Weight);
 
 					for(Int_t NoTrack = 0; NoTrack < NoOfTracksInEvent; NoTrack++)
 					{
