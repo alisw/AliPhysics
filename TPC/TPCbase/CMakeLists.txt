@@ -13,10 +13,27 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
+set(SRCS)
+set(LIBDEPS)
+if(ALIROOT_ONLINE_MODE)
+    message(WARNING "Online build. Disabling TPC space-charge base library.")
+else()
+  if(DEFINED ALITPCCOMMON_DIR)
+    set(ALITPCCOMMON_BUILD_TYPE "ALIROOT")
+    add_subdirectory(${ALITPCCOMMON_DIR}/sources/TPCSpaceChargeBase TPCSpaceChargeBase)
+    include_directories(${ALITPCCOMMON_DIR}/sources/TPCSpaceChargeBase)
+    add_definitions(-DHAVE_ALITPCCOMMON)
+  else()
+    message(FATAL_ERROR "cmake variable ALITPCCOMMON_DIR is not defined")
+  endif()
+  add_subdirectory(test)
+  set(SRCS ${SRCS} AliTPCSpaceCharge3DDriftLine.cxx)
+  set(LIBDEPS ${LIBDEPS} AliTPCSpaceChargeBase)
+endif()
+
 # Module
 set(MODULE TPCbase)
 add_definitions(-D_MODULE_="${MODULE}")
-add_subdirectory(test)
 
 # Module include folder
 include_directories(${AliRoot_SOURCE_DIR}/TPC/${MODULE})
@@ -35,7 +52,7 @@ include_directories(${ROOT_INCLUDE_DIR}
                    )
 
 # Sources in alphabetical order
-set(SRCS
+set(SRCS ${SRCS}
     AliClusters.cxx
     AliComplexCluster.cxx
     AliDetectorParam.cxx
@@ -111,12 +128,6 @@ set(SRCS
     AliTransform.cxx
     AliXRDPROOFtoolkit.cxx
     AliTPCSAMPAEmulator.cxx
-    AliTPC3DCylindricalInterpolator.cxx
-    AliTPC3DCylindricalInterpolatorIrregular.cxx
-    AliTPCLookUpTable3DInterpolatorD.cxx
-    AliTPCLookUpTable3DInterpolatorIrregularD.cxx
-    AliTPCPoissonSolver.cxx
-    AliTPCSpaceCharge3DDriftLine.cxx
    )
 
 # Headers from sources
@@ -132,7 +143,7 @@ set(ALIROOT_DEPENDENCIES STEERBase STAT STEER CDB ESD RAWDatabase RAWDatarec)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+set(LIBDEPS ${LIBDEPS} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
@@ -147,7 +158,7 @@ add_dependencies(${MODULE}-object ${ALIROOT_DEPENDENCIES})
 add_library(${MODULE} SHARED $<TARGET_OBJECTS:TPCbase-object>)
 
 # Linking
-target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
