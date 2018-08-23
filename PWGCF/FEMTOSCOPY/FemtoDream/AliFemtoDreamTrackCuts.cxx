@@ -436,9 +436,9 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
   }
   if (pass&&fDCAPlots&&!fMinimalBooking) {
     if (fDCAProp) {
-      fHists->FillDCAXYPtBins(Track->GetPt(),Track->GetDCAXYProp());
+      fHists->FillDCAXYPtBins(Track->GetPt(),Track->GetDCAXYProp(),Track->GetEventMultiplicity());
     } else {
-      fHists->FillDCAXYPtBins(Track->GetPt(),Track->GetDCAXY());
+      fHists->FillDCAXYPtBins(Track->GetPt(),Track->GetDCAXY(),Track->GetEventMultiplicity());
     }
     if (fMCData) {
       if (fDCAPlots) {
@@ -446,12 +446,14 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
           fMCHists->FillMCDCAXYPtBins(Track->GetParticleOrigin(),
                                       Track->GetMotherWeak(),
                                       Track->GetPt(),
-                                      Track->GetDCAXYProp());
+                                      Track->GetDCAXYProp(),
+									  Track->GetEventMultiplicity());
         } else {
           fMCHists->FillMCDCAXYPtBins(Track->GetParticleOrigin(),
                                       Track->GetMotherWeak(),
                                       Track->GetPt(),
-                                      Track->GetDCAXY());
+                                      Track->GetDCAXY(),
+									  Track->GetEventMultiplicity());
         }
       }
     }

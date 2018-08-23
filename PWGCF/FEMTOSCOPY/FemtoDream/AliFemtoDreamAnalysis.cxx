@@ -296,7 +296,7 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
       AliFatal("No Standard AOD");
       return;
     }
-    fFemtoTrack->SetTrack(track);
+    fFemtoTrack->SetTrack(track, fEvent->GetMultiplicity());
     if (fTrackCuts->isSelected(fFemtoTrack)) {
       Particles.push_back(*fFemtoTrack);
     }
@@ -315,7 +315,7 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
   int entriesV0= v01->GetEntriesFast();
   for (int iv0=0; iv0<entriesV0; iv0++) {
     AliAODv0 *v0 = evt->GetV0(iv0);
-    fFemtov0->Setv0(evt, v0);
+    fFemtov0->Setv0(evt, v0, fEvent->GetMultiplicity());
     if (fv0Cuts->isSelected(fFemtov0)) {
       Decays.push_back(*fFemtov0);
     }
@@ -418,8 +418,7 @@ void AliFemtoDreamAnalysis::Make(AliESDEvent *evt) {
   std::vector<AliFemtoDreamBasePart> AntiParticles;
   for (int iTrack=0;iTrack<evt->GetNumberOfTracks();++iTrack) {
     AliESDtrack *track=static_cast<AliESDtrack *>(evt->GetTrack(iTrack));
-    fFemtoTrack->SetTrack(track);
-    fFemtoTrack->SetTrack(track);
+    fFemtoTrack->SetTrack(track, fEvent->GetMultiplicity());
     if (fTrackCuts->isSelected(fFemtoTrack)) {
       Particles.push_back(*fFemtoTrack);
     }

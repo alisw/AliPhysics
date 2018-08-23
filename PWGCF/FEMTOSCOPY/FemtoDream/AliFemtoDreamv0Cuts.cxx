@@ -361,10 +361,10 @@ bool AliFemtoDreamv0Cuts::CPAandMassCuts(AliFemtoDreamv0 *v0) {
     }
   }
   if (massPass&&fCPAPlots&&!fMinimalBooking) {
-    fHist->FillCPAPtBins(v0->GetPt(),v0->GetCPA());
+    fHist->FillCPAPtBins(v0->GetPt(),v0->GetCPA(), v0->GetEventMultiplicity());
     if (fMCData) {
       fMCHist->FillMCCPAPtBins(
-          v0->GetParticleOrigin(),v0->GetPt(),v0->GetCPA());
+          v0->GetParticleOrigin(),v0->GetPt(),v0->GetCPA(), v0->GetEventMultiplicity());
     }
   }
   if (massPass) {

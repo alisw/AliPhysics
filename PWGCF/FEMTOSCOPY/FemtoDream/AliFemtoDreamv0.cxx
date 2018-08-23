@@ -39,13 +39,14 @@ AliFemtoDreamv0::~AliFemtoDreamv0() {
   }
 }
 
-void AliFemtoDreamv0::Setv0(AliAODEvent *evt,AliAODv0* v0) {
+void AliFemtoDreamv0::Setv0(AliAODEvent *evt,AliAODv0* v0, const int multiplicity) {
   if (!fGTI) {
     AliFatal("no GTI Array set");
   }
   if (!v0) {
     AliFatal("SetProng No v0 to work with");
   }
+  SetEventMultiplicity(multiplicity);
   Reset();
   if (v0->GetNProngs()==2&&v0->GetNDaughters()==2) {
     fIsReset=false;

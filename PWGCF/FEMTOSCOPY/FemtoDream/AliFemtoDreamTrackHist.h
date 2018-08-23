@@ -57,7 +57,7 @@ class AliFemtoDreamTrackHist {
     if(!fMinimalBooking)fTOFStatus[i]->Fill(statusTOF);
   };
   void FillNSigComb(float pT, float nSigTPC, float nSigTOF);
-  void FillDCAXYPtBins(float pT, float dcaxy);
+  void FillDCAXYPtBins(float pT, float dcaxy, int multiplicity);
   void FillTPCClsCPileUp(int i,int iCrit,float TPCClsC){
     if(!fMinimalBooking)fTPCClsCPiluUp[i]->Fill(iCrit,TPCClsC);
   }
@@ -68,12 +68,17 @@ class AliFemtoDreamTrackHist {
     if(!fMinimalBooking)fTrackChi2[i]->Fill(pT,chi2);
   }
 
+  void SetMultRangeLow(int range) {fMultRangeLow = range;}
+  void SetMultRangeHigh(int range) {fMultRangeHigh = range;}
+
   void SetName(TString name){fHistList->SetName(name.Data());};
   TList *GetHistList(){return fHistList;};
  private:
   AliFemtoDreamTrackHist &operator=(const AliFemtoDreamTrackHist &obj);
   AliFemtoDreamTrackHist(const AliFemtoDreamTrackHist&);
   bool fMinimalBooking;     //!
+  int fMultRangeLow;		//!
+  int fMultRangeHigh;		//!
   TList *fHistList;         //!
   TList *fTrackCutQA[2];    //!
   TProfile *fConfig;        //!
@@ -87,6 +92,7 @@ class AliFemtoDreamTrackHist {
   TH2F *fDCAxy[2];          //!
   TH2F *fDCAz[2];           //!
   TH2F *fDCAXYPtBins;       //!
+  TH2F *fDCAXYPtBinsMult[3]; //!
   TH1F *fTPCCrossedRows[2]; //!
   TH1F *fTPCRatio[2];       //!
   TH1F *fTPCClsS[2];        //!
@@ -100,7 +106,7 @@ class AliFemtoDreamTrackHist {
   TH3F *fNSigCom;           //!
   TH2F *fTPCClsCPiluUp[2];  //!
   TH2F *fITShrdClsPileUp[2];//!
-  ClassDef(AliFemtoDreamTrackHist,3);
+  ClassDef(AliFemtoDreamTrackHist,4);
 };
 
 #endif /* ALIFEMTODREAMTRACKHIST_H_ */

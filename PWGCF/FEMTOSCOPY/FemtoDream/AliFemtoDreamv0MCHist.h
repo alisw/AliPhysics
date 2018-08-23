@@ -52,7 +52,9 @@ class AliFemtoDreamv0MCHist {
   void FillMCInvMass(int i, float massVal){
     fMCInvMass[i]->Fill(massVal);};
   void FillMCCPAPtBins(
-      AliFemtoDreamBasePart::PartOrigin org, float pT,float cpa);
+      AliFemtoDreamBasePart::PartOrigin org, float pT,float cpa, int multiplicity);
+  void FillMultiplicityHistos(int multiplicity, float pT, float cpa,
+		  	  	  	  	  	  TH2F *histo1, TH2F *histo2, TH2F *histo3);
   void FillMCBachDCAToPV(int i, float pT, float val){fMCBachDCAToPV[i]->Fill(pT,val);};
   void FillMCv0DecayLength(int i, float pT, float val){fMCv0DecayLength[i]->Fill(pT,val);};
   void FillMCv0CPA(int i, float pT, float val){fMCv0CPA[i]->Fill(pT,val);};
@@ -65,6 +67,10 @@ class AliFemtoDreamv0MCHist {
   void FillMCPtResolution(float pTTrue, float pTReco);
   void FillMCThetaResolution(float ThetaTrue, float ThetaReco, float pTTrue);
   void FillMCPhiResolution(float PhiTrue, float PhiReco, float pTTrue);
+
+  void SetMultRangeLow(int range) {fMultRangeLow = range;}
+  void SetMultRangeHigh(int range) {fMultRangeHigh = range;}
+
   void SetName(TString name){fMCList->SetName(name.Data());};
   TList *GetHistList(){return fMCList;};
   TString ClassName() {return "AliFemtoDreamv0MCHist";};
@@ -74,6 +80,8 @@ class AliFemtoDreamv0MCHist {
   TList *fMCList;
   TList *fCPAPlots;
   TList *fMCQAPlots[5];
+  float fMultRangeLow; //!
+  float fMultRangeHigh; //!
   TH1F *fMCCorrPt;
   TH1F *fMCIdentPt;
   TH1F *fMCGenPt;
@@ -106,11 +114,15 @@ class AliFemtoDreamv0MCHist {
   TH2F *fMCMaterialCPAPtBins;
   TH2F *fMCSecondaryCPAPtBins;
   TH2F *fMCContCPAPtBins;
+  TH2F *fMCPrimCPAPtBinsMult[3];
+  TH2F *fMCMaterialCPAPtBinsMult[3];
+  TH2F *fMCSecondaryCPAPtBinsMult[3];
+  TH2F *fMCContCPAPtBinsMult[3];
   TH2F *fPtResolution;            //!
   TH2F *fThetaResolution;         //!
   TH2F *fPhiResolution;           //!
 
-  ClassDef(AliFemtoDreamv0MCHist,2)
+  ClassDef(AliFemtoDreamv0MCHist,3)
 };
 
 #endif /* ALIFEMTODREAMV0MCHIST_H_ */

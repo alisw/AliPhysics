@@ -17,8 +17,8 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
  public:
   AliFemtoDreamTrack();
   virtual ~AliFemtoDreamTrack();
-  void SetTrack(AliAODTrack *track);
-  void SetTrack(AliESDtrack *track);
+  void SetTrack(AliAODTrack *track, const int multiplicity = -1);
+  void SetTrack(AliESDtrack *track, const int multiplicity = -1);
   UInt_t GetilterMap() const {return fFilterMap;};
   bool TestFilterBit(UInt_t filterBit)
   {return (bool) ((filterBit & fFilterMap) != 0);}

@@ -20,7 +20,8 @@ class AliFemtoDreamTrackMCHist {
   AliFemtoDreamTrackMCHist(bool contribSplitting,bool DCADist);
   virtual ~AliFemtoDreamTrackMCHist();
   void FillMCDCAXYPtBins(AliFemtoDreamBasePart::PartOrigin org,
-                         int PDGCodeMoth,float pT,float dcaxy);
+                         int PDGCodeMoth,float pT,float dcaxy,
+						 int multiplicity);
   void FillMCCorr(float pT){fMCCorrPt->Fill(pT);};
   void FillMCIdent(float pT){fMCIdentPt->Fill(pT);};
   void FillMCGen(float pT){fMCGenPt->Fill(pT);};
@@ -62,6 +63,12 @@ class AliFemtoDreamTrackMCHist {
   void FillMCPtResolution(float pTTrue, float pTReco);
   void FillMCThetaResolution(float ThetaTrue, float ThetaReco, float pTTrue);
   void FillMCPhiResolution(float PhiTrue, float PhiReco, float pTTrue);
+  void FillMultiplicityHistos(int multiplicity, float pT, float dcaxy,
+		  	  	  	  	  	  TH2F *histo1, TH2F *histo2, TH2F *histo3);
+
+  void SetMultRangeLow(int range) {fMultRangeLow = range;}
+  void SetMultRangeHigh(int range) {fMultRangeHigh = range;}
+
   void SetName(TString name){fMCList->SetName(name.Data());};
   TList *GetHistList() const {return fMCList;};
   TString ClassName() {return "AliFemtoDreamTrackMCHist";};
@@ -71,6 +78,8 @@ class AliFemtoDreamTrackMCHist {
   float fpTmin;                  //!
   float fpTmax;                  //!
   float fpTbins;                 //!
+  float fMultRangeLow;			 //!
+  float fMultRangeHigh;			 //!
   bool fDoSplitting;              //!
   bool fDoDCAPlots;               //!
 
@@ -92,6 +101,12 @@ class AliFemtoDreamTrackMCHist {
   TH2F *fMCSecLambdaDCAXYPtBins;  //!
   TH2F *fMCSecSigmaDCAXYPtBins;   //!
 
+  TH2F *fMCPrimDCAXYPtBinsMult[3];       //!
+  TH2F *fMCMaterialDCAXYPtBinsMult[3];   //!
+  TH2F *fMCSecondaryDCAXYPtBinsMult[3];  //!
+  TH2F *fMCSecLambdaDCAXYPtBinsMult[3];  //!
+  TH2F *fMCSecSigmaDCAXYPtBinsMult[3];   //!
+
   TH1F *fMCpTPCDist[4];           //!
   TH1F *fMCetaDist[4];            //!
   TH1F *fMCphiDist[4];            //!
@@ -110,7 +125,7 @@ class AliFemtoDreamTrackMCHist {
   TH2F *fPtResolution;            //!
   TH2F *fThetaResolution;         //!
   TH2F *fPhiResolution;           //!
-  ClassDef(AliFemtoDreamTrackMCHist,2);
+  ClassDef(AliFemtoDreamTrackMCHist,3);
 };
 
 #endif /* ALIFEMTODREAMTRACKMCHIST_H_ */

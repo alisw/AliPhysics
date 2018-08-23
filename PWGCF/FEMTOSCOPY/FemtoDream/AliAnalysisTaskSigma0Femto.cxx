@@ -521,7 +521,8 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
 
   if (fTrackCutsPartProton && fTrackCutsPartProton->GetQAHists()) {
     fOutputFemto->Add(fTrackCutsPartProton->GetQAHists());
-    if (fIsMC && fTrackCutsPartProton->GetMCQAHists()) {
+    if (fIsMC && !fTrackCutsPartProton->GetMinimalBooking() &&
+        fTrackCutsPartProton->GetMCQAHists()) {
       fTrackCutsPartProton->SetMCName("MC_Proton");
       fOutputFemto->Add(fTrackCutsPartProton->GetMCQAHists());
     }
@@ -533,7 +534,8 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
 
   if (fTrackCutsPartAntiProton && fTrackCutsPartAntiProton->GetQAHists()) {
     fOutputFemto->Add(fTrackCutsPartAntiProton->GetQAHists());
-    if (fIsMC && fTrackCutsPartAntiProton->GetMCQAHists()) {
+    if (fIsMC && !fTrackCutsPartAntiProton->GetMinimalBooking() &&
+        fTrackCutsPartAntiProton->GetMCQAHists()) {
       fTrackCutsPartAntiProton->SetMCName("MC_Anti-proton");
       fOutputFemto->Add(fTrackCutsPartAntiProton->GetMCQAHists());
     }
