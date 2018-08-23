@@ -105,7 +105,7 @@ void AliFemtoDreamTrack::SetTrack(AliAODTrack *track, const int multiplicity) {
   }
 }
 
-void AliFemtoDreamTrack::SetTrack(AliESDtrack *track, const int multiplicity) {
+void AliFemtoDreamTrack::SetTrack(AliESDtrack *track, AliMCEvent *mcEvent, const int multiplicity) {
   this->Reset();
   SetEventMultiplicity(multiplicity);
   fESDTrack=track;
@@ -119,9 +119,9 @@ void AliFemtoDreamTrack::SetTrack(AliESDtrack *track, const int multiplicity) {
     this->SetESDTrackingInformation();
     if (this->fIsSet) {
       this->SetESDPIDInformation();
-//      if (fIsMC) {
-//        this->SetMCInformation();
-//      }
+      if (fIsMC) {
+        this->SetMCInformation(mcEvent);
+      }
     }
     if (fESDTPCOnlyTrack) {
       delete fESDTPCOnlyTrack;
@@ -460,6 +460,38 @@ void AliFemtoDreamTrack::SetMCInformation() {
       } else if(mcPart->IsSecondaryFromWeakDecay() && !mcPart->IsSecondaryFromMaterial()) {
         this->SetParticleOrigin(AliFemtoDreamBasePart::kWeak);
         this->SetPDGMotherWeak(((AliAODMCParticle*)mcarray->At(mcPart->GetMother()))->PdgCode());
+      } else if (mcPart->IsSecondaryFromMaterial()) {
+        this->SetParticleOrigin(AliFemtoDreamBasePart::kMaterial);
+      } else {
+        this->SetParticleOrigin(AliFemtoDreamBasePart::kUnknown);
+      }
+    }
+  } else {
+    this->fIsSet =false; //if we don't have MC Information, don't use that track
+  }
+}
+
+void AliFemtoDreamTrack::SetMCInformation(AliMCEvent *mcEvent) {
+  if(!mcEvent) {
+    AliError("SPTrack: MC Event not found");
+  }
+  if (fESDTrack->GetLabel()>0) {
+    AliMCParticle * mcPart = (AliMCParticle*)mcEvent->GetTrack(fESDTrack->GetLabel());
+    if (!(mcPart)) {
+      this->fIsSet=false;
+    } else {
+      this->SetMCPhi(mcPart->Phi());
+      this->SetMCTheta(mcPart->Theta());
+      this->SetMCPDGCode(mcPart->PdgCode());
+      this->SetMCPt(mcPart->Pt());
+      this->SetMCMomentum(mcPart->Px(),mcPart->Py(),mcPart->Pz());
+
+      //check for secondary and set origin and mother
+      if (mcPart->IsPhysicalPrimary() && !mcPart->IsSecondaryFromWeakDecay()) {
+        this->SetParticleOrigin(AliFemtoDreamBasePart::kPhysPrimary);
+      } else if(mcPart->IsSecondaryFromWeakDecay() && !mcPart->IsSecondaryFromMaterial()) {
+        this->SetParticleOrigin(AliFemtoDreamBasePart::kWeak);
+        this->SetPDGMotherWeak(((AliMCParticle*)mcEvent->GetTrack(mcPart->GetMother()))->PdgCode());
       } else if (mcPart->IsSecondaryFromMaterial()) {
         this->SetParticleOrigin(AliFemtoDreamBasePart::kMaterial);
       } else {
