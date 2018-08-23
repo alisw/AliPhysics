@@ -66,7 +66,7 @@ AliAnalysisTaskHFv1 *AddTaskHFv1(Int_t harm, Bool_t separateD0D0bar, TString fil
   
   TF1* eff = 0x0;
   TFile* fileeff = 0x0;
-  if(scaling)
+  if(scaling) {
     fileeff = TFile::Open(fileeffname.Data());
     if(!fileeff || (fileeff && !fileeff->IsOpen())) {
       AliWarning("Efficiency file not found, setting efficiency TF1 to default.");
@@ -80,7 +80,7 @@ AliAnalysisTaskHFv1 *AddTaskHFv1(Int_t harm, Bool_t separateD0D0bar, TString fil
       if(!eff) AliFatal("Input efficiency file not found: check your input file for efficiency re-weighting");
     }
   }
-    
+
   // Analysis task
   AliAnalysisTaskHFv1 *v2Task = new AliAnalysisTaskHFv1("HFvnAnalysis",analysiscuts,decCh);
     
