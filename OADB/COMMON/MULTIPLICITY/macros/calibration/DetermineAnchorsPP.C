@@ -7,7 +7,10 @@
 //
 ////////////////////////////////////////////////////////////
 
-void DetermineAnchorsPP( TString lPeriodName = "LHC16k", TString lPass = "pass1" ) {
+// global pointer to calib histogram
+TH1D *hCalib = 0x0;
+
+void DetermineAnchorsPP( TString lPeriodName = "LHC18f", TString lPass = "pass1" ) {
 
     Bool_t lUseDefaultAnchorPercentile = kFALSE;
     Double_t  lDefaultAnchorPercentile = 0.10;
@@ -51,8 +54,8 @@ void DetermineAnchorsPP( TString lPeriodName = "LHC16k", TString lPass = "pass1"
     // cout << i << "\t[ " << lDesiredBoundaries[i] << " , " << lDesiredBoundaries[i+1] << " ]\t" << lDesiredBoundaries[i+1]-lDesiredBoundaries[i] << endl;
     
 
-    // open list with path to AnalysisResults files run-by-run (for VHM sample)
-    TString lRunlistFile = Form("%s_%s_VHM.list", lPeriodName.Data(), lPass.Data()); 
+    // open file hashed.txt to get the run numbers
+    TString lRunlistFile = "../hashed.txt"; 
     FILE *flist = fopen(lRunlistFile.Data(), "r");
     if(flist==NULL) { Error(0, "Could not open list file %s", lRunlistFile.Data()); return; }
 
@@ -85,26 +88,24 @@ void DetermineAnchorsPP( TString lPeriodName = "LHC16k", TString lPass = "pass1"
     fturnon->SetParLimits(2, -1.e15, 0.);
     fturnon->SetLineColor(1);
 
+    // open input AnalysisResults.root file for the VHM sample
+    TFile *fin = TFile::Open("../VHM/AnalysisResults.root", "READ");
+    TTree *treeEvent = (TTree*)fin->Get("MultSelection/fTreeEvent");
+
     // loop over the files and determine anchors
     Char_t buffer[500];
     Int_t nfiles = 0;
     Int_t nfailed = 0;
     while(fgets(buffer, 500, flist)) {
 
-        TString analysisResultsFile = buffer;
-        analysisResultsFile.ReplaceAll("\n", "");
-        Int_t runnumber = ((((TObjString*)analysisResultsFile.Tokenize("/")->Last())->String()).ReplaceAll("AnalysisResults_", "")).ReplaceAll(".root", "").Atoi();
+        cout << "-------------------------------------------------" << endl;
 
-        // open root file and fill percentile histogram
-        cout << "   -------------------------------------------------" << endl;
-        cout << "   Opening file " << analysisResultsFile << endl;
-        cout << "   - file number...................: " << nfiles << endl;;
+        TString bufferStr = buffer;
+        bufferStr.ReplaceAll("\n", "");
+        Int_t runnumber = (((TObjString*)bufferStr.Tokenize("/")->At(4))->String()).Atoi();
         cout << "   - run number....................: " << runnumber << endl;
-        //
-        TFile *fin = TFile::Open(analysisResultsFile.Data(), "READ");
-        TTree *treeEvent = (TTree*)fin->Get("MultSelection/fTreeEvent");
 
-        // define estimator histo
+        // define estimator histo for this run
         TH1D* hEstimator = new TH1D(Form("hEstimator_%d", runnumber), "", lNDesiredBoundaries, lDesiredBoundaries);
         hEstimator->Sumw2();
         hEstimator->GetXaxis()->SetTitle("V0M Percentile");
@@ -112,7 +113,7 @@ void DetermineAnchorsPP( TString lPeriodName = "LHC16k", TString lPass = "pass1"
         hEstimator->SetStats(0);
         hEstimator->SetLineColor(kRed);
 
-        // get calibration histogram from OADB
+        // get corresponding calibration histogram from OADB
         AliOADBMultSelection* lOADB = (AliOADBMultSelection*)lOADBcontainer->GetObject( runnumber, "Default" );
         if( (Int_t)lOADBcontainer->GetIndexForRun( runnumber )<0 ) {
             cout << "   ---> Warning: no calibration histo found for this run - skipping..." << endl;
@@ -121,59 +122,16 @@ void DetermineAnchorsPP( TString lPeriodName = "LHC16k", TString lPass = "pass1"
             fprintf(fap, "%d %d %.2lf %lf\n", runnumber, runnumber, -1., -1.);
             continue;
         }
-        TH1D *hCalib = (TH1D*)lOADB->GetCalibHisto( "hCalib_V0M" );;
+        //TH1D *hCalib = (TH1D*)lOADB->GetCalibHisto( "hCalib_V0M" );;
 
-        // declare minimal set of variables in memory
-        Float_t fAmplitude_V0A = 0;
-        Float_t fAmplitude_V0C = 0;
-        Float_t fAmplitude_V0Apartial = 0;
-        Float_t fAmplitude_V0Cpartial = 0;
-        Float_t fAmplitude_V0AEq = 0;
-        Float_t fAmplitude_V0CEq = 0;
-        // event Selection Variables
-        Bool_t fEvSel_IsNotPileupInMultBins      = kFALSE ;
-        Bool_t fEvSel_Triggered                  = kFALSE ;
-        Bool_t fEvSel_INELgtZERO                 = kFALSE ;
-        Bool_t fEvSel_PassesTrackletVsCluster    = kFALSE ;
-        Bool_t fEvSel_HasNoInconsistentVertices  = kFALSE ;
-        Float_t fEvSel_VtxZ                      = 10.0 ;
-        Int_t fRefMultEta8;
-        Int_t fRunNumber;
-        Int_t fnContributors;
-        // setBranchAddresses
-        treeEvent->SetBranchAddress("fAmplitude_V0A",                  &fAmplitude_V0A);
-        treeEvent->SetBranchAddress("fAmplitude_V0C",                  &fAmplitude_V0C);
-        treeEvent->SetBranchAddress("fAmplitude_V0Apartial",           &fAmplitude_V0Apartial);
-        treeEvent->SetBranchAddress("fAmplitude_V0Cpartial",           &fAmplitude_V0Cpartial);
-        treeEvent->SetBranchAddress("fAmplitude_V0AEq",                &fAmplitude_V0AEq);
-        treeEvent->SetBranchAddress("fAmplitude_V0CEq",                &fAmplitude_V0CEq);
-        treeEvent->SetBranchAddress("fEvSel_IsNotPileupInMultBins",    &fEvSel_IsNotPileupInMultBins);
-        treeEvent->SetBranchAddress("fEvSel_PassesTrackletVsCluster",  &fEvSel_PassesTrackletVsCluster);
-        treeEvent->SetBranchAddress("fEvSel_HasNoInconsistentVertices",&fEvSel_HasNoInconsistentVertices);
-        treeEvent->SetBranchAddress("fEvSel_Triggered",                &fEvSel_Triggered);
-        treeEvent->SetBranchAddress("fEvSel_INELgtZERO",               &fEvSel_INELgtZERO);
-        treeEvent->SetBranchAddress("fEvSel_VtxZ",                     &fEvSel_VtxZ);
-        treeEvent->SetBranchAddress("fRunNumber",                      &fRunNumber);
-        treeEvent->SetBranchAddress("fRefMultEta8",                    &fRefMultEta8);
-        treeEvent->SetBranchAddress("fnContributors",                  &fnContributors);
+        // set the pointer to the calib histo for this run
+        hCalib = (TH1D*)lOADB->GetCalibHisto( "hCalib_V0M" );;
+
         //
-        Double_t nall = 0.;
-        for(int iev=0; iev<treeEvent->GetEntries(); ++iev) {
-            treeEvent->GetEntry(iev);
-            if( runnumber != fRunNumber ) continue; // skip if not desired run
-            nall += 1.;
-            if( !fEvSel_Triggered ) continue;
-            if( !fEvSel_IsNotPileupInMultBins ) continue;
-            if( !fEvSel_PassesTrackletVsCluster ) continue;
-            if( !fEvSel_INELgtZERO ) continue ;
-            if( !fEvSel_HasNoInconsistentVertices ) continue ;
-            if( TMath::Abs(fEvSel_VtxZ) > 10. ) continue;
-            Float_t amplitude = ((fAmplitude_V0A)+(fAmplitude_V0C));
-            Float_t percentile = hCalib->GetBinContent( hCalib->FindBin( amplitude ) );
-            if( percentile>0. && percentile<100. ) { 
-                hEstimator->Fill( percentile );
-            }
-        }
+        Double_t nall = treeEvent->Draw(Form("get_percentile(fAmplitude_V0A+fAmplitude_V0C)>>hEstimator_%d", runnumber), 
+                                        Form("fRunNumber==%d && fEvSel_Triggered && fEvSel_IsNotPileupInMultBins && fEvSel_PassesTrackletVsCluster && fEvSel_INELgtZERO && fEvSel_HasNoInconsistentVertices && TMath::Abs(fEvSel_VtxZ)<=10.0", runnumber),
+                                        "goff"); 
+
         hEstimator->Scale(1., "width");
         Double_t nevents = (Double_t)hEstimator->GetEntries();
         cout << "   - number of events (selected)...: " << nevents << endl;
@@ -307,6 +265,17 @@ void DetermineAnchorsPP( TString lPeriodName = "LHC16k", TString lPass = "pass1"
             fprintf(fap, "%d %d %.2lf %lf\n", runnumber, runnumber, -1., -1.);
             continue; 
         }
+        
+        // find corresponding anchor point
+        Double_t anchor_point = -1.; 
+        for(Int_t i=0; i<hCalib->GetNbinsX(); ++i) {
+            if(hCalib->GetBinContent( i+1 ) < anchor_percentile ) {
+                anchor_point = hCalib->GetBinLowEdge( i+1 );
+                break;
+            }
+        }
+        cout << "   - confirmed anchor point........: " << anchor_point << endl;
+
 
         latex->SetTextAlign(31);
         latex->SetTextSize(0.04);
@@ -343,6 +312,17 @@ void DetermineAnchorsPP( TString lPeriodName = "LHC16k", TString lPass = "pass1"
     }
 
 }
+
+// function to get V0M percentile
+Double_t get_percentile(Double_t amplitude) 
+{
+    
+    Double_t percentile = hCalib->GetBinContent( hCalib->FindBin( amplitude ) );
+
+    return percentile;
+
+}
+
 
 // function to fit high-mult. trigger turn-on curve
 Double_t func_turnon(Double_t *x, Double_t *par)
