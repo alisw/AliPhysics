@@ -327,7 +327,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fCloseHighPtClusters(NULL),
   fLocalDebugFlag(0),
   fAllowOverlapHeaders(kTRUE),
-  fNCurrentClusterBasic(0)
+  fNCurrentClusterBasic(0),
+  fTrackMatcherRunningMode(0)
 {
 
 }
@@ -598,7 +599,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fCloseHighPtClusters(NULL),
   fLocalDebugFlag(0),
   fAllowOverlapHeaders(kTRUE),
-  fNCurrentClusterBasic(0)
+  fNCurrentClusterBasic(0),
+  fTrackMatcherRunningMode(0)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -2353,7 +2355,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fOutputContainer->Add(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetCutHistograms());
 
   for(Int_t iMatcherTask = 0; iMatcherTask < 3; iMatcherTask++){
-    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i",iMatcherTask)));
+    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i_%i",iMatcherTask,fTrackMatcherRunningMode)));
     if(temp) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
   }
 

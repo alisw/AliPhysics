@@ -9,7 +9,7 @@ void AddTask_GammaCaloDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
                   Bool_t 	doWeighting = kFALSE,							// enables weighting
                   Bool_t 	enableV0findingEffi = kFALSE
                 ) {
-
+  Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
   Int_t isHeavyIon = 0;
 
   // ================== GetAnalysisManager ===============================
@@ -133,7 +133,8 @@ void AddTask_GammaCaloDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   task= new AliAnalysisTaskGammaCaloDalitzV1(Form("GammaCaloDalitz_%i",trainConfig));
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
-    task->SetV0ReaderName(V0ReaderName);
+  task->SetV0ReaderName(V0ReaderName);
+  task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
 
   // Cut Numbers to use in Analysis
   Int_t numberOfCuts = 2;
@@ -224,9 +225,9 @@ void AddTask_GammaCaloDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     //create AliCaloTrackMatcher instance, if there is none present
     TString caloCutPos = clusterCutArray[i];
     caloCutPos.Resize(1);
-    TString TrackMatcherName = Form("CaloTrackMatcher_%s",caloCutPos.Data());
+    TString TrackMatcherName = Form("CaloTrackMatcher_%s_%i",caloCutPos.Data(),trackMatcherRunningMode);
     if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
-      AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
+      AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi(),trackMatcherRunningMode);
       fTrackMatcher->SetV0ReaderName(V0ReaderName);
       mgr->AddTask(fTrackMatcher);
       mgr->ConnectInput(fTrackMatcher,0,cinput);
