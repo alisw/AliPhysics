@@ -509,7 +509,9 @@ public:
 
    
     TH1F                  *fNoPartnerNoT; //!
+    THnSparse              *fNoPartnerNoTPt2; //!
     TH1F                  *fTPartnerNoT; //!
+    THnSparse              *fTPartnerNoTPt2; //!
     TH3F                  *fElecHadTrigger;         //!
     TH2F                  *fElecHadTriggerLS;         //!
     TH2F                  *fElecHadTriggerULS;         //!
