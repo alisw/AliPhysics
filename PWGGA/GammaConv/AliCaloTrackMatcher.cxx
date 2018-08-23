@@ -48,8 +48,9 @@ using namespace std;
 ClassImp(AliCaloTrackMatcher)
 
 //________________________________________________________________________
-AliCaloTrackMatcher::AliCaloTrackMatcher(const char *name, Int_t clusterType) : AliAnalysisTaskSE(name),
+AliCaloTrackMatcher::AliCaloTrackMatcher(const char *name, Int_t clusterType, Int_t runningMode) : AliAnalysisTaskSE(name),
   fClusterType(clusterType),
+  fRunningMode(runningMode),
   fV0ReaderName(""),
   fCorrTaskSetting(""),
   fAnalysisTrainMode("Grid"),
@@ -123,11 +124,11 @@ void AliCaloTrackMatcher::UserCreateOutputObjects(){
   if(fListHistos == NULL){
     fListHistos = new TList();
     fListHistos->SetOwner(kTRUE);
-    fListHistos->SetName(Form("CaloTrackMatcher_%i",fClusterType));
+    fListHistos->SetName(Form("CaloTrackMatcher_%i_%i",fClusterType,fRunningMode));
   }
 
   // Create User Output Objects
-  fHistControlMatches  = new TH2F(Form("ControlMatches_%i",fClusterType),Form("ControlMatches_%i",fClusterType),7,-0.5,6.5,50,0.15,200);
+  fHistControlMatches  = new TH2F(Form("ControlMatches_%i_%i",fClusterType,fRunningMode),Form("ControlMatches_%i_%i",fClusterType,fRunningMode),7,-0.5,6.5,50,0.15,200);
   SetLogBinningYTH2(fHistControlMatches);
   fHistControlMatches->GetYaxis()->SetTitle("track pT (GeV/c)");
   fHistControlMatches->GetXaxis()->SetBinLabel(1,"nTr in");
@@ -139,7 +140,7 @@ void AliCaloTrackMatcher::UserCreateOutputObjects(){
   fHistControlMatches->GetXaxis()->SetBinLabel(7,"nTr out, w/ match");
   fListHistos->Add(fHistControlMatches);
 
-  fSecHistControlMatches  = new TH2F(Form("ControlSecMatches_%i",fClusterType),Form("ControlSecMatches_%i",fClusterType),7,-0.5,6.5,50,0.15,200);
+  fSecHistControlMatches  = new TH2F(Form("ControlSecMatches_%i_%i",fClusterType,fRunningMode),Form("ControlSecMatches_%i_%i",fClusterType,fRunningMode),7,-0.5,6.5,50,0.15,200);
   SetLogBinningYTH2(fSecHistControlMatches);
   fSecHistControlMatches->GetYaxis()->SetTitle("track pT (GeV/c)");
   fSecHistControlMatches->GetXaxis()->SetBinLabel(1,"nTr in");
@@ -229,8 +230,8 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
   static AliESDtrackCuts *EsdTrackCuts = 0x0;
   static int prevRun = -1;
   // Using standard function for setting Cuts
-  Int_t runNumber = fInputEvent->GetRunNumber();
-  if (esdev){
+  if (fRunningMode == 0 && esdev){
+    Int_t runNumber = fInputEvent->GetRunNumber();
     if (prevRun!=runNumber) {
       delete EsdTrackCuts;
       EsdTrackCuts = 0;
@@ -277,11 +278,15 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
     if(esdev){
       inTrack = esdev->GetTrack(itr);
       if(!inTrack) continue;
-      if(TMath::Abs(inTrack->Eta())>0.8 && (fClusterType==1 || fClusterType==3 )) continue;
-      if(TMath::Abs(inTrack->Eta())>0.3 && fClusterType==2 ) continue;
-      if(inTrack->Pt()<0.5) continue;
       AliESDtrack *esdt = dynamic_cast<AliESDtrack*>(inTrack);
-      if(!EsdTrackCuts->AcceptTrack(esdt)) continue;
+
+      if(fRunningMode == 0){
+        if(TMath::Abs(inTrack->Eta())>0.8 && (fClusterType == 1 || fClusterType == 3 )) continue;
+        if(TMath::Abs(inTrack->Eta())>0.3 &&  fClusterType == 2 ) continue;
+        if(inTrack->Pt()<0.5) continue;
+        if(!EsdTrackCuts->AcceptTrack(esdt)) continue;
+      }
+
       fHistControlMatches->Fill(0.,inTrack->Pt());
 
       const AliExternalTrackParam *in = esdt->GetInnerParam();
@@ -290,15 +295,16 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
     } else if(aodev) {
       inTrack = dynamic_cast<AliVTrack*>(aodev->GetTrack(itr));
       if(!inTrack) continue;
-      if(inTrack->GetID()<0) continue; // Avoid double counting of tracks
-
-      if(TMath::Abs(inTrack->Eta())>0.8 && (fClusterType==1 || fClusterType==3 )) continue;
-      if(TMath::Abs(inTrack->Eta())>0.3 && fClusterType==2 ) continue;
-      if(inTrack->Pt()<0.5) continue;
-
-
       AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(inTrack);
-      if(!aodt->IsHybridGlobalConstrainedGlobal()) continue;
+
+      if(fRunningMode == 0){
+        if(inTrack->GetID()<0) continue; // Avoid double counting of tracks
+        if(TMath::Abs(inTrack->Eta())>0.8 && (fClusterType == 1 || fClusterType == 3 )) continue;
+        if(TMath::Abs(inTrack->Eta())>0.3 &&  fClusterType == 2 ) continue;
+        if(inTrack->Pt()<0.5) continue;
+        if(!aodt->IsHybridGlobalConstrainedGlobal()) continue;
+      }
+
       Double_t xyz[3] = {0}, pxpypz[3] = {0}, cv[21] = {0};
       aodt->GetPxPyPz(pxpypz);
       aodt->GetXYZ(xyz);
@@ -316,9 +322,9 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
 
         // conditions for run2
         if( nModules > 12 ){
-          if (fClusterType == 3 && ( aodt->GetTrackPhiOnEMCal() < 250*TMath::DegToRad() || aodt->GetTrackPhiOnEMCal() > 340*TMath::DegToRad()))
+          if( fClusterType == 3 && ( aodt->GetTrackPhiOnEMCal() < 250*TMath::DegToRad() || aodt->GetTrackPhiOnEMCal() > 340*TMath::DegToRad()) )
             continue;
-          if( fClusterType == 1 && ( aodt->GetTrackPhiOnEMCal() < 70*TMath::DegToRad() || aodt->GetTrackPhiOnEMCal() > 190*TMath::DegToRad()))
+          if( fClusterType == 1 && ( aodt->GetTrackPhiOnEMCal() < 70*TMath::DegToRad() || aodt->GetTrackPhiOnEMCal() > 190*TMath::DegToRad()) )
             continue;
         }
       }
@@ -378,8 +384,8 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
     Float_t clsPos[3] = {0.,0.,0.};
     Double_t exPos[3] = {0.,0.,0.};
     if (!emcParam.GetXYZ(exPos)){
-      fHistControlMatches->Fill(2.,inTrack->Pt());
       delete trackParam;
+      fHistControlMatches->Fill(2.,inTrack->Pt());
       continue;
     }
 

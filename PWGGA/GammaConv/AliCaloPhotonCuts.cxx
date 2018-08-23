@@ -112,7 +112,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fIsCurrentClusterAcceptedBeforeTM(kFALSE),
   fV0ReaderName("V0ReaderV1"),
   fCorrTaskSetting(""),
-  fCaloTrackMatcherName("CaloTrackMatcher_1"),
+  fCaloTrackMatcherName("CaloTrackMatcher_1_0"),
   fPeriodName(""),
   fCurrentMC(kNoMC),
   fClusterType(0),
