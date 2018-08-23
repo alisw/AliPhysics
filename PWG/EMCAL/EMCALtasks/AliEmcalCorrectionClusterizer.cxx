@@ -29,6 +29,7 @@
 #include "AliEMCALClusterizerNxN.h"
 #include "AliEMCALClusterizerv1.h"
 #include "AliEMCALClusterizerv2.h"
+#include "AliEMCALClusterizerv3.h"
 #include "AliEMCALClusterizerFixedWindow.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALGeometry.h"
@@ -55,6 +56,7 @@ const std::map <std::string, AliEMCALRecParam::AliEMCALClusterizerFlag> AliEmcal
   {"kClusterizerv1", AliEMCALRecParam::kClusterizerv1 },
   {"kClusterizerNxN", AliEMCALRecParam::kClusterizerNxN },
   {"kClusterizerv2", AliEMCALRecParam::kClusterizerv2 },
+  {"kClusterizerv3", AliEMCALRecParam::kClusterizerv3 },
   {"kClusterizerFW", AliEMCALRecParam::kClusterizerFW }
 };
 
@@ -865,6 +867,8 @@ void AliEmcalCorrectionClusterizer::Init()
   }
   else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv2)
     fClusterizer = new AliEMCALClusterizerv2(fGeom);
+  else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv3)
+    fClusterizer = new AliEMCALClusterizerv3(fGeom);
   else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerFW) {
     AliEMCALClusterizerFixedWindow *clusterizer = new AliEMCALClusterizerFixedWindow(fGeom);
     clusterizer->SetNphi(fNPhi);
