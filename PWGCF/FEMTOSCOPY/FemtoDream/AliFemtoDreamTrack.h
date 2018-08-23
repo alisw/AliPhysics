@@ -18,7 +18,7 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   AliFemtoDreamTrack();
   virtual ~AliFemtoDreamTrack();
   void SetTrack(AliAODTrack *track, const int multiplicity = -1);
-  void SetTrack(AliESDtrack *track, const int multiplicity = -1);
+  void SetTrack(AliESDtrack *track, AliMCEvent *mcEvent = nullptr, const int multiplicity = -1);
   UInt_t GetilterMap() const {return fFilterMap;};
   bool TestFilterBit(UInt_t filterBit)
   {return (bool) ((filterBit & fFilterMap) != 0);}
@@ -63,6 +63,7 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   void SetAODPIDInformation();
   void SetESDPIDInformation();
   void SetMCInformation();
+  void SetMCInformation(AliMCEvent *mcEvent);
   AliPIDResponse *fPIDResponse;
   AliPIDResponse::EDetPidStatus fstatusTPC;
   AliPIDResponse::EDetPidStatus fstatusTOF;

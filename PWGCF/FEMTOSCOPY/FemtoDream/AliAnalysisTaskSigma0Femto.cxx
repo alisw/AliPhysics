@@ -151,7 +151,9 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
   const AliESDEvent *evt = static_cast<AliESDEvent *>(fInputEvent);
   for (int iTrack = 0; iTrack < evt->GetNumberOfTracks(); ++iTrack) {
     AliESDtrack *track = static_cast<AliESDtrack *>(evt->GetTrack(iTrack));
-    fProtonTrack->SetTrack(track);
+    fProtonTrack->SetTrack(track, fMCEvent,
+                           AliESDtrackCuts::GetReferenceMultiplicity(
+                               evt, AliESDtrackCuts::kTrackletsITSTPC, 0.8, 0));
     if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
       particles.push_back(*fProtonTrack);
     }

@@ -406,7 +406,7 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
 }
 
 
-void AliFemtoDreamAnalysis::Make(AliESDEvent *evt) {
+void AliFemtoDreamAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent) {
   if (!evt) {
     AliFatal("No Input Event");
   }
@@ -418,7 +418,7 @@ void AliFemtoDreamAnalysis::Make(AliESDEvent *evt) {
   std::vector<AliFemtoDreamBasePart> AntiParticles;
   for (int iTrack=0;iTrack<evt->GetNumberOfTracks();++iTrack) {
     AliESDtrack *track=static_cast<AliESDtrack *>(evt->GetTrack(iTrack));
-    fFemtoTrack->SetTrack(track, fEvent->GetMultiplicity());
+    fFemtoTrack->SetTrack(track, mcEvent, fEvent->GetMultiplicity());
     if (fTrackCuts->isSelected(fFemtoTrack)) {
       Particles.push_back(*fFemtoTrack);
     }

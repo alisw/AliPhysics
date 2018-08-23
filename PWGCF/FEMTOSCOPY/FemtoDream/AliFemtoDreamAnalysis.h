@@ -61,7 +61,7 @@ class AliFemtoDreamAnalysis {
   void Init(bool isMonteCarlo, UInt_t trigger);
   TString ClassName() {return "AliFemtoDreamAnalysis";};
   void Make(AliAODEvent *evt);
-  void Make(AliESDEvent *evt);
+  void Make(AliESDEvent *evt, AliMCEvent *mcEvent);
  private:
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliAODTrack *track);
