@@ -13,20 +13,29 @@ class AliFemtoDreamControlSample {
  public:
   AliFemtoDreamControlSample();
   AliFemtoDreamControlSample(const AliFemtoDreamControlSample& samp);
-  AliFemtoDreamControlSample(AliFemtoDreamCollConfig *conf, bool minimalBooking = false);
+  AliFemtoDreamControlSample(AliFemtoDreamCollConfig *conf,
+                             bool minimalBooking = false);
   AliFemtoDreamControlSample& operator=(const AliFemtoDreamControlSample& samp);
   virtual ~AliFemtoDreamControlSample();
 
-  void SetEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &Particles, float mult);
+  void SetEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
+                float mult);
 
   float RelativePairMomentum(TVector3 Part1Momentum, int PDGPart1,
-                             TVector3 Part2Momentum, int PDGPart2,
-                             bool random = false);
+                             TVector3 Part2Momentum, int PDGPart2, bool random =
+                                 false);
   int FindBin(float Multiplicity);
-  TString ClassName() { return "Control sample leaking"; };
+  TString ClassName() {
+    return "Control sample leaking";
+  }
+  ;
 
-  TList* GetHistList() { return fHists->GetHistList(); }
-  TList* GetQAList() { return fHists->GetQAHists(); }
+  TList* GetHistList() {
+    return fHists->GetHistList();
+  }
+  TList* GetQAList() {
+    return fHists->GetQAHists();
+  }
 
  private:
   AliFemtoDreamCorrHists *fHists;
@@ -36,7 +45,7 @@ class AliFemtoDreamControlSample {
   double fPi;
   int fSpinningDepth;
 
-  ClassDef(AliFemtoDreamControlSample, 1)
+ClassDef(AliFemtoDreamControlSample, 1)
 };
 
 #endif

@@ -16,29 +16,35 @@ class AliFemtoDreamPairCleanerHists {
  public:
   AliFemtoDreamPairCleanerHists();
   AliFemtoDreamPairCleanerHists(const AliFemtoDreamPairCleanerHists& hists);
-  AliFemtoDreamPairCleanerHists(int nTrackDecays,int nDecayDecays,int nInvMassPairs);
+  AliFemtoDreamPairCleanerHists(int nTrackDecays, int nDecayDecays,
+                                int nInvMassPairs);
   AliFemtoDreamPairCleanerHists& operator=(
       const AliFemtoDreamPairCleanerHists& hists);
   virtual ~AliFemtoDreamPairCleanerHists();
-  void FillDaughtersSharedTrack(int Hist,int counter) {
+  void FillDaughtersSharedTrack(int Hist, int counter) {
     fTrackDecays[Hist]->Fill(counter);
-  };
-  void FillDaughtersSharedDaughter(int Hist,int counter) {
+  }
+  ;
+  void FillDaughtersSharedDaughter(int Hist, int counter) {
     fDecayDecays[Hist]->Fill(counter);
-  };
+  }
+  ;
   void FillPairInvMass(int Hist, float mass) {
     fPairInvMass[Hist]->Fill(mass);
   }
   void FillPairTuple(int nTuple, float mass, float relMom) {
-    fPairTuple[nTuple]->Fill(mass,relMom);
-  };
-  TList *GetHistList(){return fOutput;};
+    fPairTuple[nTuple]->Fill(mass, relMom);
+  }
+  ;
+  TList *GetHistList() {
+    return fOutput;
+  }
+  ;
   TH1F **fTrackDecays;
   TH1F **fDecayDecays;
   TH1F **fPairInvMass;
   TNtuple **fPairTuple;
-  TList *fOutput;
-  ClassDef(AliFemtoDreamPairCleanerHists,2)
+  TList *fOutput;ClassDef(AliFemtoDreamPairCleanerHists,2)
 };
 
 #endif /* ALIFEMTODREAMPAIRCLEANERHISTS_H_ */

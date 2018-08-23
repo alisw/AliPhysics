@@ -8,134 +8,130 @@
 #include "AliFemtoDreamCollConfig.h"
 ClassImp(AliFemtoDreamCollConfig)
 AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
-:TNamed()
-,fMultBinning(false)
-,fCentBinning(false)
-,fkTBinning(false)
-,fmTBinning(false)
-,fMomentumResolution(false)
-,fPhiEtaBinning(false)
-,fdPhidEtaPlots(false)
-,fMixedEventStatistics(true)
-,fGetTheControlSampel(false)
-,fInvMassPairs(false)
-,fMinimalBookingME(false)
-,fMinimalBookingSample(false)
-,fNumberRadii(0)
-,fZVtxBins(0)
-,fMultBins(0)
-,fPDGParticleSpecies(0)
-,fNBinsHists(0)
-,fMinK_rel(0)
-,fMaxK_rel(0)
-,fCentBins(0)
-,fMixingDepth(0)
-,fSpinningDepth(0)
-,fkTCentrality(false)
-,fMCCommonAncestor(false)
-,fEst(AliFemtoDreamEvent::kSPD)
-{
+    : TNamed(),
+      fMultBinning(false),
+      fCentBinning(false),
+      fkTBinning(false),
+      fmTBinning(false),
+      fMomentumResolution(false),
+      fPhiEtaBinning(false),
+      fdPhidEtaPlots(false),
+      fMixedEventStatistics(true),
+      fGetTheControlSampel(false),
+      fInvMassPairs(false),
+      fMinimalBookingME(false),
+      fMinimalBookingSample(false),
+      fNumberRadii(0),
+      fZVtxBins(0),
+      fMultBins(0),
+      fPDGParticleSpecies(0),
+      fNBinsHists(0),
+      fMinK_rel(0),
+      fMaxK_rel(0),
+      fCentBins(0),
+      fMixingDepth(0),
+      fSpinningDepth(0),
+      fkTCentrality(false),
+      fMCCommonAncestor(false),
+      fEst(AliFemtoDreamEvent::kSPD) {
   //should not be used, since we need a name to deal with root objects
 }
 
 AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
     const AliFemtoDreamCollConfig& config)
-:TNamed(config)
-,fMultBinning(config.fMultBinning)
-,fCentBinning(config.fCentBinning)
-,fkTBinning(config.fkTBinning)
-,fmTBinning(config.fmTBinning)
-,fMomentumResolution(config.fMomentumResolution)
-,fPhiEtaBinning(config.fPhiEtaBinning)
-,fdPhidEtaPlots(config.fdPhidEtaPlots)
-,fMixedEventStatistics(config.fMixedEventStatistics)
-,fGetTheControlSampel(config.fGetTheControlSampel)
-,fInvMassPairs(config.fInvMassPairs)
-,fMinimalBookingME(config.fMinimalBookingME)
-,fMinimalBookingSample(config.fMinimalBookingSample)
-,fNumberRadii(config.fNumberRadii)
-,fZVtxBins(config.fZVtxBins)
-,fMultBins(config.fMultBins)
-,fPDGParticleSpecies(config.fPDGParticleSpecies)
-,fNBinsHists(config.fNBinsHists)
-,fMinK_rel(config.fMinK_rel)
-,fMaxK_rel(config.fMaxK_rel)
-,fCentBins(config.fCentBins)
-,fMixingDepth(config.fMixingDepth)
-,fSpinningDepth(config.fSpinningDepth)
-,fkTCentrality(config.fkTCentrality)
-,fMCCommonAncestor(config.fMCCommonAncestor)
-,fEst(config.fEst)
-{
+    : TNamed(config),
+      fMultBinning(config.fMultBinning),
+      fCentBinning(config.fCentBinning),
+      fkTBinning(config.fkTBinning),
+      fmTBinning(config.fmTBinning),
+      fMomentumResolution(config.fMomentumResolution),
+      fPhiEtaBinning(config.fPhiEtaBinning),
+      fdPhidEtaPlots(config.fdPhidEtaPlots),
+      fMixedEventStatistics(config.fMixedEventStatistics),
+      fGetTheControlSampel(config.fGetTheControlSampel),
+      fInvMassPairs(config.fInvMassPairs),
+      fMinimalBookingME(config.fMinimalBookingME),
+      fMinimalBookingSample(config.fMinimalBookingSample),
+      fNumberRadii(config.fNumberRadii),
+      fZVtxBins(config.fZVtxBins),
+      fMultBins(config.fMultBins),
+      fPDGParticleSpecies(config.fPDGParticleSpecies),
+      fNBinsHists(config.fNBinsHists),
+      fMinK_rel(config.fMinK_rel),
+      fMaxK_rel(config.fMaxK_rel),
+      fCentBins(config.fCentBins),
+      fMixingDepth(config.fMixingDepth),
+      fSpinningDepth(config.fSpinningDepth),
+      fkTCentrality(config.fkTCentrality),
+      fMCCommonAncestor(config.fMCCommonAncestor),
+      fEst(config.fEst) {
 }
 
 AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
                                                  const char *title)
-:TNamed(name,title)
-,fMultBinning(false)
-,fCentBinning(false)
-,fkTBinning(false)
-,fmTBinning(false)
-,fMomentumResolution(false)
-,fPhiEtaBinning(false)
-,fdPhidEtaPlots(false)
-,fMixedEventStatistics(true)
-,fGetTheControlSampel(false)
-,fInvMassPairs(false)
-,fMinimalBookingME(false)
-,fMinimalBookingSample(false)
-,fNumberRadii(0)
-,fZVtxBins(nullptr)
-,fMultBins(nullptr)
-,fPDGParticleSpecies(nullptr)
-,fNBinsHists(nullptr)
-,fMinK_rel(nullptr)
-,fMaxK_rel(nullptr)
-,fCentBins(nullptr)
-,fMixingDepth(0)
-,fSpinningDepth(0)
-,fkTCentrality(false)
-,fMCCommonAncestor(false)
-,fEst(AliFemtoDreamEvent::kSPD)
-{
-  fZVtxBins=new TNtuple("ZBins","ZBins","zvtx");
-  fMultBins=new TNtuple("MultBins","MultBins","mult");
-  fPDGParticleSpecies=new TNtuple("PDGCodes","PDGCodes","PDGCodes");
-  fNBinsHists=new TNtuple("NmbBins","NmbBins","NmbBins");
-  fMinK_rel=new TNtuple("MinK_rel","MinK_rel","minkRel");
-  fMaxK_rel=new TNtuple("MaxK_rel","MaxK_rel","maxkRel");
-  fCentBins=new TNtuple("CentBins","CentBins","centBin");
+    : TNamed(name, title),
+      fMultBinning(false),
+      fCentBinning(false),
+      fkTBinning(false),
+      fmTBinning(false),
+      fMomentumResolution(false),
+      fPhiEtaBinning(false),
+      fdPhidEtaPlots(false),
+      fMixedEventStatistics(true),
+      fGetTheControlSampel(false),
+      fInvMassPairs(false),
+      fMinimalBookingME(false),
+      fMinimalBookingSample(false),
+      fNumberRadii(0),
+      fZVtxBins(nullptr),
+      fMultBins(nullptr),
+      fPDGParticleSpecies(nullptr),
+      fNBinsHists(nullptr),
+      fMinK_rel(nullptr),
+      fMaxK_rel(nullptr),
+      fCentBins(nullptr),
+      fMixingDepth(0),
+      fSpinningDepth(0),
+      fkTCentrality(false),
+      fMCCommonAncestor(false),
+      fEst(AliFemtoDreamEvent::kSPD) {
+  fZVtxBins = new TNtuple("ZBins", "ZBins", "zvtx");
+  fMultBins = new TNtuple("MultBins", "MultBins", "mult");
+  fPDGParticleSpecies = new TNtuple("PDGCodes", "PDGCodes", "PDGCodes");
+  fNBinsHists = new TNtuple("NmbBins", "NmbBins", "NmbBins");
+  fMinK_rel = new TNtuple("MinK_rel", "MinK_rel", "minkRel");
+  fMaxK_rel = new TNtuple("MaxK_rel", "MaxK_rel", "maxkRel");
+  fCentBins = new TNtuple("CentBins", "CentBins", "centBin");
 }
 AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
-    const AliFemtoDreamCollConfig& config)
-{
-  if(this != &config){
+    const AliFemtoDreamCollConfig& config) {
+  if (this != &config) {
     TNamed::operator=(config);
-    this->fMultBinning=config.fMultBinning;
-    this->fCentBinning=config.fCentBinning;
-    this->fkTBinning=config.fkTBinning;
-    this->fmTBinning=config.fmTBinning;
-    this->fMomentumResolution=config.fMomentumResolution;
-    this->fPhiEtaBinning=config.fPhiEtaBinning;
-    this->fdPhidEtaPlots=config.fdPhidEtaPlots;
-    this->fMixedEventStatistics=config.fMixedEventStatistics;
-    this->fGetTheControlSampel=config.fGetTheControlSampel;
-    this->fInvMassPairs=config.fInvMassPairs;
-    this->fMinimalBookingME=config.fMinimalBookingME;
-    this->fMinimalBookingSample=config.fMinimalBookingSample;
-    this->fNumberRadii=config.fNumberRadii;
-    this->fZVtxBins=config.fZVtxBins;
-    this->fMultBins=config.fMultBins;
-    this->fPDGParticleSpecies=config.fPDGParticleSpecies;
-    this->fNBinsHists=config.fNBinsHists;
-    this->fMinK_rel=config.fMinK_rel;
-    this->fMaxK_rel=config.fMaxK_rel;
-    this->fCentBins=config.fCentBins;
-    this->fMixingDepth=config.fMixingDepth;
-    this->fSpinningDepth=config.fSpinningDepth;
-    this->fkTCentrality=config.fkTCentrality;
-    this->fMCCommonAncestor=config.fMCCommonAncestor;
-    this->fEst=config.fEst;
+    this->fMultBinning = config.fMultBinning;
+    this->fCentBinning = config.fCentBinning;
+    this->fkTBinning = config.fkTBinning;
+    this->fmTBinning = config.fmTBinning;
+    this->fMomentumResolution = config.fMomentumResolution;
+    this->fPhiEtaBinning = config.fPhiEtaBinning;
+    this->fdPhidEtaPlots = config.fdPhidEtaPlots;
+    this->fMixedEventStatistics = config.fMixedEventStatistics;
+    this->fGetTheControlSampel = config.fGetTheControlSampel;
+    this->fInvMassPairs = config.fInvMassPairs;
+    this->fMinimalBookingME = config.fMinimalBookingME;
+    this->fMinimalBookingSample = config.fMinimalBookingSample;
+    this->fNumberRadii = config.fNumberRadii;
+    this->fZVtxBins = config.fZVtxBins;
+    this->fMultBins = config.fMultBins;
+    this->fPDGParticleSpecies = config.fPDGParticleSpecies;
+    this->fNBinsHists = config.fNBinsHists;
+    this->fMinK_rel = config.fMinK_rel;
+    this->fMaxK_rel = config.fMaxK_rel;
+    this->fCentBins = config.fCentBins;
+    this->fMixingDepth = config.fMixingDepth;
+    this->fSpinningDepth = config.fSpinningDepth;
+    this->fkTCentrality = config.fkTCentrality;
+    this->fMCCommonAncestor = config.fMCCommonAncestor;
+    this->fEst = config.fEst;
   }
   return *this;
 }
@@ -153,16 +149,17 @@ AliFemtoDreamCollConfig::~AliFemtoDreamCollConfig() {
 void AliFemtoDreamCollConfig::SetZBins(std::vector<float> ZBins) {
   //Make sure to set the entries in ascending order!
   //Todo: maybe build in a check for this
-  for (std::vector<float>::iterator it=ZBins.begin();it!=ZBins.end();++it) {
+  for (std::vector<float>::iterator it = ZBins.begin(); it != ZBins.end();
+      ++it) {
     fZVtxBins->Fill(*it);
   }
 }
 std::vector<float> AliFemtoDreamCollConfig::GetZVtxBins() {
   //Make sure to set the entries in ascending order!
   std::vector<float> ZBins;
-  float out=0;
-  fZVtxBins->SetBranchAddress("zvtx",&out);
-  for (int iBins=0;iBins<fZVtxBins->GetEntries();++iBins) {
+  float out = 0;
+  fZVtxBins->SetBranchAddress("zvtx", &out);
+  for (int iBins = 0; iBins < fZVtxBins->GetEntries(); ++iBins) {
     fZVtxBins->GetEntry(iBins);
     ZBins.push_back(out);
   }
@@ -172,16 +169,16 @@ void AliFemtoDreamCollConfig::SetMultBins(std::vector<int> MultBins) {
   //Make sure to set the entries in ascending order! The last bin to infinite
   //is implicit
   //Todo: maybe build in a check for this
-  for (std::vector<int>::iterator it=MultBins.begin();it!=MultBins.end();++it)
-  {
+  for (std::vector<int>::iterator it = MultBins.begin(); it != MultBins.end();
+      ++it) {
     fMultBins->Fill(*it);
   }
 }
 std::vector<int> AliFemtoDreamCollConfig::GetMultBins() {
   std::vector<int> MultBins;
-  float out=0;
-  fMultBins->SetBranchAddress("mult",&out);
-  for (int iBins=0;iBins<fMultBins->GetEntries();++iBins) {
+  float out = 0;
+  fMultBins->SetBranchAddress("mult", &out);
+  for (int iBins = 0; iBins < fMultBins->GetEntries(); ++iBins) {
     fMultBins->GetEntry(iBins);
     MultBins.push_back(out);
   }
@@ -190,29 +187,29 @@ std::vector<int> AliFemtoDreamCollConfig::GetMultBins() {
 void AliFemtoDreamCollConfig::SetPDGCodes(std::vector<int> PDGCodes) {
   //the order needs to correspond the first particle array in your vector that
   //you hand over in the AliFemtoDreamPartCollection::SetEvent Method!
-  for (std::vector<int>::iterator it=PDGCodes.begin();it!=PDGCodes.end();++it)
-  {
+  for (std::vector<int>::iterator it = PDGCodes.begin(); it != PDGCodes.end();
+      ++it) {
     fPDGParticleSpecies->Fill(*it);
   }
 }
 std::vector<int> AliFemtoDreamCollConfig::GetPDGCodes() {
   std::vector<int> PDGCodes;
-  float out=0;
-  fPDGParticleSpecies->SetBranchAddress("PDGCodes",&out);
-  for (int iBins=0;iBins<fPDGParticleSpecies->GetEntries();++iBins) {
+  float out = 0;
+  fPDGParticleSpecies->SetBranchAddress("PDGCodes", &out);
+  for (int iBins = 0; iBins < fPDGParticleSpecies->GetEntries(); ++iBins) {
     fPDGParticleSpecies->GetEntry(iBins);
     PDGCodes.push_back(out);
   }
   return PDGCodes;
 }
-int AliFemtoDreamCollConfig::GetNParticleCombinations(){
+int AliFemtoDreamCollConfig::GetNParticleCombinations() {
   //The possible number of combinations for pairing two particles species
   //with itself and all other species is for n species given by:
   //-Combinations within the same species n
   //-Combinations with all other species Binominal(n,2)
-  int comb=fPDGParticleSpecies->GetEntries();
-  if(comb>1){
-    comb+=TMath::Binomial(comb,2);
+  int comb = fPDGParticleSpecies->GetEntries();
+  if (comb > 1) {
+    comb += TMath::Binomial(comb, 2);
   }
   return comb;
 }
@@ -229,16 +226,15 @@ void AliFemtoDreamCollConfig::SetNBinsHist(std::vector<int> NBins) {
   //in your vector that you hand over in the
   //AliFemtoDreamPartCollection::SetEvent Method, X2 to the second and so on.
   //Same binning and ranges for Same Event and Mixed Event Distribution
-  for (std::vector<int>::iterator it=NBins.begin();it!=NBins.end();++it)
-  {
+  for (std::vector<int>::iterator it = NBins.begin(); it != NBins.end(); ++it) {
     fNBinsHists->Fill(*it);
   }
 }
 std::vector<int> AliFemtoDreamCollConfig::GetNBinsHist() {
   std::vector<int> NBinsHist;
-  float out=0;
-  fNBinsHists->SetBranchAddress("NmbBins",&out);
-  for (int iBins=0;iBins<fNBinsHists->GetEntries();++iBins) {
+  float out = 0;
+  fNBinsHists->SetBranchAddress("NmbBins", &out);
+  for (int iBins = 0; iBins < fNBinsHists->GetEntries(); ++iBins) {
     fNBinsHists->GetEntry(iBins);
     NBinsHist.push_back(out);
   }
@@ -246,16 +242,16 @@ std::vector<int> AliFemtoDreamCollConfig::GetNBinsHist() {
 }
 void AliFemtoDreamCollConfig::SetMinKRel(std::vector<float> minKRel) {
   //See SetNBinsHist
-  for (std::vector<float>::iterator it=minKRel.begin();it!=minKRel.end();++it)
-  {
+  for (std::vector<float>::iterator it = minKRel.begin(); it != minKRel.end();
+      ++it) {
     fMinK_rel->Fill(*it);
   }
 }
 std::vector<float> AliFemtoDreamCollConfig::GetMinKRel() {
   std::vector<float> MinKRel;
-  float out=0;
-  fMinK_rel->SetBranchAddress("minkRel",&out);
-  for (int iBins=0;iBins<fMinK_rel->GetEntries();++iBins) {
+  float out = 0;
+  fMinK_rel->SetBranchAddress("minkRel", &out);
+  for (int iBins = 0; iBins < fMinK_rel->GetEntries(); ++iBins) {
     fMinK_rel->GetEntry(iBins);
     MinKRel.push_back(out);
   }
@@ -263,16 +259,16 @@ std::vector<float> AliFemtoDreamCollConfig::GetMinKRel() {
 }
 void AliFemtoDreamCollConfig::SetMaxKRel(std::vector<float> maxKRel) {
   //See SetNBinsHist
-  for (std::vector<float>::iterator it=maxKRel.begin();it!=maxKRel.end();++it)
-  {
+  for (std::vector<float>::iterator it = maxKRel.begin(); it != maxKRel.end();
+      ++it) {
     fMaxK_rel->Fill(*it);
   }
 }
 std::vector<float> AliFemtoDreamCollConfig::GetMaxKRel() {
   std::vector<float> MaxKRel;
-  float out=0;
-  fMaxK_rel->SetBranchAddress("maxkRel",&out);
-  for (int iBins=0;iBins<fMaxK_rel->GetEntries();++iBins) {
+  float out = 0;
+  fMaxK_rel->SetBranchAddress("maxkRel", &out);
+  for (int iBins = 0; iBins < fMaxK_rel->GetEntries(); ++iBins) {
     fMaxK_rel->GetEntry(iBins);
     MaxKRel.push_back(out);
   }
@@ -280,16 +276,16 @@ std::vector<float> AliFemtoDreamCollConfig::GetMaxKRel() {
 }
 void AliFemtoDreamCollConfig::SetCentBins(std::vector<float> CentBins) {
   //Set Centrality Bins for the kT Centrality Binning
-  for (std::vector<float>::iterator it=CentBins.begin();it!=CentBins.end();++it)
-  {
+  for (std::vector<float>::iterator it = CentBins.begin(); it != CentBins.end();
+      ++it) {
     fCentBins->Fill(*it);
   }
 }
 std::vector<float> AliFemtoDreamCollConfig::GetCentBins() {
   std::vector<float> CentBins;
-  float out=0;
-  fCentBins->SetBranchAddress("centBin",&out);
-  for (int iBins=0;iBins<fCentBins->GetEntries();++iBins) {
+  float out = 0;
+  fCentBins->SetBranchAddress("centBin", &out);
+  for (int iBins = 0; iBins < fCentBins->GetEntries(); ++iBins) {
     fCentBins->GetEntry(iBins);
     CentBins.push_back(out);
   }
