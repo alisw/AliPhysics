@@ -18,37 +18,113 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   AliFemtoDreamTrack();
   virtual ~AliFemtoDreamTrack();
   void SetTrack(AliAODTrack *track, const int multiplicity = -1);
-  void SetTrack(AliESDtrack *track, AliMCEvent *mcEvent = nullptr, const int multiplicity = -1);
-  UInt_t GetilterMap() const {return fFilterMap;};
-  bool TestFilterBit(UInt_t filterBit)
-  {return (bool) ((filterBit & fFilterMap) != 0);}
-  bool PassESDFiltering() const {return fPassFiltering;};
-  float GetDCAXY() const {  return fdcaXY;};
-  float GetDCAXYProp() const {return fdcaXYProp;};
-  float GetDCAZ() const {return fdcaZ;};
-  float GetDCAZProp() const {return fdcaZProp;};
-  float GetChiSquare() const { return fChi2; }
+  void SetTrack(AliESDtrack *track, AliMCEvent *mcEvent = nullptr,
+                const int multiplicity = -1);
+  UInt_t GetilterMap() const {
+    return fFilterMap;
+  }
+  ;
+  bool TestFilterBit(UInt_t filterBit) {
+    return (bool) ((filterBit & fFilterMap) != 0);
+  }
+  bool PassESDFiltering() const {
+    return fPassFiltering;
+  }
+  ;
+  float GetDCAXY() const {
+    return fdcaXY;
+  }
+  ;
+  float GetDCAXYProp() const {
+    return fdcaXYProp;
+  }
+  ;
+  float GetDCAZ() const {
+    return fdcaZ;
+  }
+  ;
+  float GetDCAZProp() const {
+    return fdcaZProp;
+  }
+  ;
+  float GetChiSquare() const {
+    return fChi2;
+  }
 
   //Quality Varaibles of the track
-  float GetNClsTPC() const {return fNClsTPC;};
-  float GetTPCCrossedRows() const {return fTPCCrossedRows;};
-  float GetRatioCr() const {return fRatioCR;};
-  bool isnoSharedClst() const {return fnoSharedClst;};
-  float GetTPCClsC() const {return fTPCClsS;};
-  bool GetSharedClusterITS(int i)const{return fSharedClsITSLayer.at(i);};
-  bool GetHasSharedClsITS()const{return fHasSharedClsITSLayer;};
-  bool GetHasITSHit() const {return fHasITSHit;};
-  bool GetITSHit(int i) const {return fITSHit.at(i);};
-  bool GetTOFTimingReuqirement() const {return fTOFTiming;};
-  bool GetHasTPCRefit()const{return fTPCRefit;};
+  float GetNClsTPC() const {
+    return fNClsTPC;
+  }
+  ;
+  float GetTPCCrossedRows() const {
+    return fTPCCrossedRows;
+  }
+  ;
+  float GetRatioCr() const {
+    return fRatioCR;
+  }
+  ;
+  bool isnoSharedClst() const {
+    return fnoSharedClst;
+  }
+  ;
+  float GetTPCClsC() const {
+    return fTPCClsS;
+  }
+  ;
+  bool GetSharedClusterITS(int i) const {
+    return fSharedClsITSLayer.at(i);
+  }
+  ;
+  bool GetHasSharedClsITS() const {
+    return fHasSharedClsITSLayer;
+  }
+  ;
+  bool GetHasITSHit() const {
+    return fHasITSHit;
+  }
+  ;
+  bool GetITSHit(int i) const {
+    return fITSHit.at(i);
+  }
+  ;
+  bool GetTOFTimingReuqirement() const {
+    return fTOFTiming;
+  }
+  ;
+  bool GetHasTPCRefit() const {
+    return fTPCRefit;
+  }
+  ;
   //PID Getters
-  AliPIDResponse::EDetPidStatus   GetstatusTOF() const {return fstatusTOF;};
-  AliPIDResponse::EDetPidStatus   GetstatusTPC() const {return fstatusTPC;};
-  float GetdEdxTPC() const {return fdEdxTPC;};
-  float GetbetaTOF() const {return fbetaTOF;};
-  float GetnSigmaTPC(Int_t i) const {return fnSigmaTPC[i];};
-  float GetnSigmaTOF(Int_t i) const {return fnSigmaTOF[i];};
-  TString ClassName(){return "TrackCuts";};
+  AliPIDResponse::EDetPidStatus GetstatusTOF() const {
+    return fstatusTOF;
+  }
+  ;
+  AliPIDResponse::EDetPidStatus GetstatusTPC() const {
+    return fstatusTPC;
+  }
+  ;
+  float GetdEdxTPC() const {
+    return fdEdxTPC;
+  }
+  ;
+  float GetbetaTOF() const {
+    return fbetaTOF;
+  }
+  ;
+  float GetnSigmaTPC(Int_t i) const {
+    return fnSigmaTPC[i];
+  }
+  ;
+  float GetnSigmaTOF(Int_t i) const {
+    return fnSigmaTOF[i];
+  }
+  ;
+  TString ClassName() {
+    return "TrackCuts";
+  }
+  ;
  private:
   AliFemtoDreamTrack &operator=(const AliFemtoDreamTrack &obj);
   AliFemtoDreamTrack(const AliFemtoDreamTrack&);
@@ -99,8 +175,7 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   AliESDtrack *fESDTPCOnlyTrack;
   AliESDtrackCuts *fESDTrackCuts;
   AliAODTrack *fAODTrack;
-  AliAODTrack *fAODGlobalTrack;
-  ClassDef(AliFemtoDreamTrack,3)
+  AliAODTrack *fAODGlobalTrack;ClassDef(AliFemtoDreamTrack,3)
 };
 
 #endif /* ALIFEMTODREAMTRACK_H_ */
