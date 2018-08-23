@@ -2918,14 +2918,15 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
       //only for safety mergin, 240 cm is used.
 
       if(pdg == 22) FillHistogramTH1(fOutputContainer,"hPurityGamma_noPID",pT,weight);
+
       else if(TMath::Abs(pdg) == 11){
         FillHistogramTH2(fOutputContainer,"hElectronRxy_noPID",pT,Rxy,weight);
-        if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_noPID",pT,weight);
         if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
           FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_noPID",pT,Rxy,weight);
-          if(Rxy > Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityGamma_noPID",pT,weight);
+          if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_noPID",pT,weight);
+          else              FillHistogramTH1(fOutputContainer,"hPurityGamma_noPID",pT,weight);
         }
-        else FillHistogramTH1(fOutputContainer,"hPurityOthers_noPID",pT,weight);
+        else FillHistogramTH1(fOutputContainer,"hPurityElectron_noPID",pT,weight);
       }
       else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_noPID",pT,weight);
       else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_noPID",pT,weight);
@@ -2940,12 +2941,12 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
         if(pdg == 22) FillHistogramTH1(fOutputContainer,"hPurityGamma_CPV",pT,weight);
         else if(TMath::Abs(pdg) == 11){
           FillHistogramTH2(fOutputContainer,"hElectronRxy_CPV",pT,Rxy,weight);
-          if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_CPV",pT,weight);
           if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
             FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_CPV",pT,Rxy,weight);
-            if(Rxy > Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityGamma_CPV",pT,weight);
+            if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_CPV",pT,weight);
+            else              FillHistogramTH1(fOutputContainer,"hPurityGamma_CPV",pT,weight);
           }
-          else FillHistogramTH1(fOutputContainer,"hPurityOthers_CPV",pT,weight);
+          else FillHistogramTH1(fOutputContainer,"hPurityElectron_CPV",pT,weight);
         }
         else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_CPV",pT,weight);
         else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_CPV",pT,weight);
@@ -2961,12 +2962,12 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
         if(pdg == 22)                   FillHistogramTH1(fOutputContainer,"hPurityGamma_Disp",pT,weight);
         else if(TMath::Abs(pdg) == 11){
           FillHistogramTH2(fOutputContainer,"hElectronRxy_Disp",pT,Rxy,weight);
-          if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_Disp",pT,weight);
           if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
             FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_Disp",pT,Rxy,weight);
-            if(Rxy > Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityGamma_Disp",pT,weight);
+            if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_Disp",pT,weight);
+            else              FillHistogramTH1(fOutputContainer,"hPurityGamma_Disp",pT,weight);
           }
-          else FillHistogramTH1(fOutputContainer,"hPurityOthers_Disp",pT,weight);
+          else FillHistogramTH1(fOutputContainer,"hPurityElectron_Disp",pT,weight);
         }
         else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_Disp",pT,weight);
         else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_Disp",pT,weight);
@@ -2982,12 +2983,12 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
         if(pdg == 22)                   FillHistogramTH1(fOutputContainer,"hPurityGamma_PID",pT,weight);
         else if(TMath::Abs(pdg) == 11){
           FillHistogramTH2(fOutputContainer,"hElectronRxy_PID",pT,Rxy,weight);
-          if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_PID",pT,weight);
           if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
             FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_PID",pT,Rxy,weight);
-            if(Rxy > Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityGamma_PID",pT,weight);
+            if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_PID",pT,weight);
+            else              FillHistogramTH1(fOutputContainer,"hPurityGamma_PID",pT,weight);
           }
-          else FillHistogramTH1(fOutputContainer,"hPurityOthers_PID",pT,weight);
+          else FillHistogramTH1(fOutputContainer,"hPurityElectron_PID",pT,weight);
         }
         else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_PID",pT,weight);
         else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_PID",pT,weight);
