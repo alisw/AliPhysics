@@ -8,12 +8,13 @@
 #include <cmath>
 #include "TH2F.h"
 #include "TFile.h"
+
 using namespace std;
 
 //_____________________________________________________________________
 AliForwardGenericFramework::AliForwardGenericFramework()
 {
-  Int_t rbins[4] = {2, 6, 5, 2} ; // kind (real or imaginary), n, p, eta
+  Int_t rbins[4] = {2, 6, 5, 1} ; // kind (real or imaginary), n, p, eta
   Int_t dimensions = 4;
   if (fSettings.fFlowFlags & fSettings.kEtaGap) {
      rbins[3] = 2 ; // two bins in eta for gap
@@ -87,9 +88,6 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
       }
       if (weight == 0) continue;
 
-    //fAutoRef.Fill(eta, TMath::Gamma(weight+1)/TMath::Gamma(weight-1));
-    //fAutoDiff.Fill(eta, TMath::Gamma(weight+1)/TMath::Gamma(weight-1));
-    
     if (weight == 0) continue;
     for (Int_t n = 0; n <= 5; n++) {         
       for (Int_t p = 1; p <= 4; p++) {
@@ -102,18 +100,24 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
         if (doDiffFlow){
           fpvector->Fill(re, realPart);
           fpvector->Fill(im, imPart);
-
-          if (!(fSettings.fFlowFlags & fSettings.kEtaGap)){
+          
+          if (!(fSettings.fFlowFlags & fSettings.kEtaGap) & doRefFlow){
             fqvector->Fill(re, realPart);
             fqvector->Fill(im, imPart);
+            if (weight > 1.00001 ){
+              fAutoDiff.Fill(eta, TMath::Gamma(weight+1)/TMath::Gamma(weight-1));
+            }
           }
         }
 
-        if (doRefFlow && fabs(eta)>fSettings.gap){
+        if (doRefFlow && fabs(eta)>=fSettings.gap){
           Double_t req[4] = {0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
           Double_t imq[4] = {-0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
           fQvector->Fill(req, realPart);
           fQvector->Fill(imq, imPart);
+          if (weight > 1.00001){
+            fAutoRef.Fill(eta, TMath::Gamma(weight+1)/TMath::Gamma(weight-1));
+          }
         }
 
       } // end p loop
@@ -130,8 +134,8 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
   TList* stdQCList = static_cast<TList*>(outputList->FindObject("GF"));
   TList* refList = static_cast<TList*>(stdQCList->FindObject("Reference"));
   TList* autoList = static_cast<TList*>(stdQCList->FindObject("AutoCorrection"));
-  TH1F*  fQcorrfactor = static_cast<TH1F*>(autoList->FindObject("fQcorrfactor"));
-  TH1F*  fpcorrfactor = static_cast<TH1F*>(autoList->FindObject("fpcorrfactor"));
+  THnD*  fQcorrfactor = static_cast<THnD*>(autoList->FindObject("fQcorrfactor"));
+  THnD*  fpcorrfactor = static_cast<THnD*>(autoList->FindObject("fpcorrfactor"));
   TList* difList = static_cast<TList*>(stdQCList->FindObject("Differential"));
   
   THnD* cumuRef = 0;
@@ -168,7 +172,10 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
           // REFERENCE FLOW --------------------------------------------------------------------------------
           if (prevRefEtaBin){ // only used once
 
-            if (!(fSettings.fFlowFlags & fSettings.kEtaGap)) fQcorrfactor->Fill(eta, fAutoRef.GetBinContent(etaBin));
+            if (!(fSettings.fFlowFlags & fSettings.kEtaGap)){
+              Double_t z[5] = {noSamples, vertexpos, refEtaA, cent, fSettings.kW2Two};
+              fQcorrfactor->Fill(z, fAutoRef.GetBinContent(etaBin));
+            }
             // two-particle cumulant
             double two = Two(n, -n, refEtaBinA, refEtaBinB).Re();
             double dn2 = Two(0,0, refEtaBinA, refEtaBinB).Re();
@@ -191,8 +198,10 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
             prevRefEtaBin = kFALSE;
           }
           // DIFFERENTIAL FLOW -----------------------------------------------------------------------------
-          //if (n == 2 && (!(fSettings.fFlowFlags & fSettings.kEtaGap))) fpcorrfactor->Fill(eta, fAutoDiff.GetBinContent(etaBin));
-          
+          if (n == 2 && (!(fSettings.fFlowFlags & fSettings.kEtaGap))){ 
+            Double_t k[5] = {noSamples, vertexpos, eta, cent, fSettings.kW2Two};
+            fpcorrfactor->Fill(k, fAutoDiff.GetBinContent(etaBin));
+          }
           // two-particle cumulant
           double twodiff = TwoDiff(n, -n, refEtaBinB, etaBin).Re();
           double dn2diff = TwoDiff(0,0, refEtaBinB, etaBin).Re();

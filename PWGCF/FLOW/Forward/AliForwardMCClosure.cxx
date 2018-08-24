@@ -123,7 +123,7 @@ AliForwardMCClosure::AliForwardMCClosure() : AliAnalysisTaskSE(),
   fEventList->Add(new TH2F("hOutliers","Maximum #sigma from mean N_{ch} pr. bin", 
      20, 0., 100., 500, 0., 5.)); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram 
   fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
-  fEventList->Add(new TH1D("dNdeta","dNdeta",fSettings.fNDiffEtaBins,-6,6));
+  fEventList->Add(new TH1D("dNdeta","dNdeta",fSettings.fNDiffEtaBins,-4,6));
   fEventList->SetName("EventInfo");
 
   fStdQCList->Add(new TList());
@@ -138,8 +138,8 @@ AliForwardMCClosure::AliForwardMCClosure() : AliAnalysisTaskSE(),
   static_cast<TList*>(fGFList->At(1))->SetName("Differential"); 
   static_cast<TList*>(fGFList->At(2))->SetName("AutoCorrection"); 
 
-    static_cast<TList*>(fGFList->At(2))->Add(new TH1F("fQcorrfactor", "fQcorrfactor", 1, -6.0, 6.0)); //(eta, n)
-    static_cast<TList*>(fGFList->At(2))->Add(new TH1F("fpcorrfactor", "fpcorrfactor", fSettings.fNDiffEtaBins, -6.0, 6.0)); //(eta, n)
+    static_cast<TList*>(fGFList->At(2))->Add(new TH1F("fQcorrfactor", "fQcorrfactor", 1, -4.0, 6.0)); //(eta, n)
+    static_cast<TList*>(fGFList->At(2))->Add(new TH1F("fpcorrfactor", "fpcorrfactor", fSettings.fNDiffEtaBins, -4.0, 6.0)); //(eta, n)
 
     fOutputList->Add(fStdQCList);
     fOutputList->Add(fGFList);
@@ -155,7 +155,7 @@ AliForwardMCClosure::AliForwardMCClosure() : AliAnalysisTaskSE(),
 
       Int_t dbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, fSettings.kSinphi1phi2phi3p+1} ;
       Int_t rbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, fSettings.kSinphi1phi2phi3p+1} ;
-      Double_t xmin[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -6.0, 0, 0};
+      Double_t xmin[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -4.0, 0, 0};
       Double_t xmax[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 6, 100, static_cast<Double_t>(fSettings.kSinphi1phi2phi3p+1)};
 
 
@@ -277,6 +277,7 @@ std::cout << "noTracks = " << nTracks << std::endl;
 
   Bool_t truth_run = true;
   // AODs
+  /*
     for (Int_t iTr = 0; iTr < nTracks; iTr++) {
       AliAODMCParticle* p = static_cast< AliAODMCParticle* >(this->MCEvent()->GetTrack(iTr));
       //if (!p->IsPhysicalPrimary()) continue;
@@ -290,10 +291,9 @@ std::cout << "noTracks = " << nTracks << std::endl;
         dNdeta->Fill(p->Eta(),1);
       }
     }
+    */
   
-  //ESDs
-/*
-
+  //ESDs w. primary
     for (Int_t iTr = 0; iTr < nTracks; iTr++) {
       AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
         if (!p->IsPhysicalPrimary()) continue;
@@ -311,7 +311,25 @@ std::cout << "noTracks = " << nTracks << std::endl;
 
       }
     }
-*/
+    //ESDs w. secondary
+    for (Int_t iTr = 0; iTr < nTracks; iTr++) {
+      AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
+       // if (!p->IsPhysicalPrimary()) continue;
+
+      if (AliTrackReference *ref = this->IsHitFMD(p)){
+        if (p->Charge() != 0) {
+          forwarddNdedp.Fill(p->Eta(),p->Phi(),1);
+          dNdeta->Fill(p->Eta(),1)
+        }
+      }
+      if (AliTrackReference *ref = this->IsHitTPC(p)) {
+          //if (p->Pt()>=0.2 && p->Pt()<5) 
+        spddNdedp.Fill(p->Eta(),p->Phi(),1);
+        dNdeta->Fill(p->Eta(),1)
+
+      }
+    }
+
         //if (p->Pt()>0.2 && p->Pt() < 2) centralDiff.Fill(p->Eta(),p->Phi(),1);
 
 

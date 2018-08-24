@@ -135,8 +135,8 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
     static_cast<TList*>(fGFList->At(1))->SetName("Differential"); 
     static_cast<TList*>(fGFList->At(2))->SetName("AutoCorrection"); 
 
-    static_cast<TList*>(fGFList->At(2))->Add(new TH1F("fQcorrfactor", "fQcorrfactor", 1, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge)); //(eta, n)
-    static_cast<TList*>(fGFList->At(2))->Add(new TH1F("fpcorrfactor", "fpcorrfactor", fSettings.fNDiffEtaBins, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge)); //(eta, n)
+    //static_cast<TList*>(fGFList->At(2))->Add(new TH1F("fQcorrfactor", "fQcorrfactor", 1, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge)); //(eta, n)
+    //static_cast<TList*>(fGFList->At(2))->Add(new TH1F("fpcorrfactor", "fpcorrfactor", fSettings.fNDiffEtaBins, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge)); //(eta, n)
 
     fOutputList->Add(fStdQCList);
     fOutputList->Add(fGFList);
@@ -150,6 +150,10 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
     Int_t rbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, fSettings.kSinphi1phi2phi3p+1} ;
     Double_t xmin[5] = {0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 0};
     Double_t xmax[5] = {10,fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 100, static_cast<Double_t>(fSettings.kSinphi1phi2phi3p+1)};
+
+    static_cast<TList*>(fGFList->At(2))->Add(new THnD("fQcorrfactor", "fQcorrfactor", dimensions, rbins, xmin, xmax)); //(eta, n)
+    static_cast<TList*>(fGFList->At(2))->Add(new THnD("fpcorrfactor","fpcorrfactor", dimensions, dbins, xmin, xmax)); //(eta, n)
+
 
     // create a THn for each harmonic
     for (Int_t n = 2; n <= fMaxMoment; n++) {

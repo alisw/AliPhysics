@@ -126,6 +126,8 @@ public:
     kNORIGINTYPES
     };
   };
+Double_t WrapPi(Double_t phi);
+  Double_t GetTrackReferenceEta(AliTrackReference* tr);
 
   Bool_t AddMotherIfFirstTimeSeen(AliMCParticle* p, std::vector<Int_t> v);
 
@@ -159,12 +161,9 @@ public:
 
   //private:
   TList*                  fOutputList;    //! output list
-  TList*    fStdQCList; //! 
-  TList*    fGFList; //!
   //TList* fDiffList; //! 
   TList* fEventList; //! 
-  TList* fGammaList; //!
-TList* fAutoCorrection;//!
+  TList* fDeltaList; //!
   TRandom fRandom;
   
   // A class combining all the settings for this analysis

@@ -106,7 +106,7 @@ void AliForwardQCumulantRun2::CumulantsAccumulate(TH2D& dNdetadphi, TList* outpu
         //  fCumuDiff.Fill(eta, sinBin, sinnPhi);
         //}
         //else if (fabs(eta) < 1.7 && detType == "central"){
-        //  fCumuDiff.Fill(eta, cosBin, cosnPhi);         
+          fCumuDiff.Fill(eta, cosBin, cosnPhi);         
           fCumuDiff.Fill(eta, sinBin, sinnPhi); 
         //}
 
