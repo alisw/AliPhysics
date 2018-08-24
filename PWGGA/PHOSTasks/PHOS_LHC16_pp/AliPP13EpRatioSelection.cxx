@@ -61,7 +61,7 @@ void AliPP13EpRatioSelection::InitSelectionHistograms()
 		);
 	}
 
-	fTPCSignal[0] = new TH2F("hEpRatioNSigmaElectron", "E/p ratio vs. N_{#sigma}^{electron}; E/p; n#sigma^{electron}", nM, mMin, mMax, 20, -5, 5);
+	fTPCSignal[0] = new TH2F("hEpRatioNSigmaElectron", "E/p ratio vs. N_{#sigma}^{electron}; E/p; n#sigma^{electron}", nM, mMin, mMax, 40, -5, 5);
 	fTPCSignal[1] = new TH2F("hTPCSignal_Electron", "TPC dE/dx vs. electron momentum; p^{track}, GeV/c; dE/dx, a.u.", 40, 0, 20, 200, 0, 200);
 	fTPCSignal[2] = new TH2F("hTPCSignal_Non-Electron", "TPC dE/dx vs. non-electron momentum; p^{track}, GeV/c; dE/dx, a.u.", 40, 0, 20, 200, 0, 200);
 	fTPCSignal[3] = new TH2F("hTPCSignal_All", "TPC dE/dx vs. all particles momentum; p^{track}, GeV/c; dE/dx, a.u.", 40, 0, 20, 200, 0, 200);
@@ -106,6 +106,8 @@ void AliPP13EpRatioSelection::InitSelectionHistograms()
 //________________________________________________________________
 void AliPP13EpRatioSelection::FillClusterHistograms(const AliVCluster * cluster, const EventFlags & eflags)
 {
+	Float_t nsigma_min = -1.5;
+	Float_t nsigma_max = 3;
 
 	// Don't do anything if pidresponse wasn't defined
 	if (!eflags.fPIDResponse)
@@ -146,7 +148,7 @@ void AliPP13EpRatioSelection::FillClusterHistograms(const AliVCluster * cluster,
 	Double_t dEdx = track->GetTPCsignal();
 	Double_t EpRatio = energy / trackP;
 
-	fTPCSignal[1]->Fill(trackP, dEdx);
+	fTPCSignal[3]->Fill(trackP, dEdx);
 
 	// TODO: Accept electron cuts
 	// TODO: Ensure not neutra particles ?
@@ -155,7 +157,7 @@ void AliPP13EpRatioSelection::FillClusterHistograms(const AliVCluster * cluster,
 	Double_t nSigma = eflags.fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
 
 	fTPCSignal[0]->Fill(EpRatio, nSigma);
-	Bool_t isElectron = (-2 < nSigma && nSigma < 3) ;
+	Bool_t isElectron = (nsigma_min < nSigma && nSigma < nsigma_max) ;
 
 
 
@@ -163,15 +165,15 @@ void AliPP13EpRatioSelection::FillClusterHistograms(const AliVCluster * cluster,
 	{
 		fEpE[0]->FillAll(sm, sm, EpRatio, energy);
 		fEpPt[0]->FillAll(sm, sm, EpRatio, trackPt);
-		fTPCSignal[2]->Fill(trackP, dEdx);
+		fTPCSignal[1]->Fill(trackP, dEdx);
         if(0.8 < energy / trackP && energy / trackP < 1.2) 
 			fPosition[3]->FillAll(sm, sm, local.Z(), dz, trackPt);
 	}
-	else if (nSigma < -3 || 5 < nSigma)
+	if (!isElectron)
 	{
 		fEpE[1]->FillAll(sm, sm, EpRatio, energy);
 		fEpPt[1]->FillAll(sm, sm, EpRatio, trackPt);
-		fTPCSignal[3]->Fill(trackP, dEdx);
+		fTPCSignal[2]->Fill(trackP, dEdx);
 	}
 }
 
