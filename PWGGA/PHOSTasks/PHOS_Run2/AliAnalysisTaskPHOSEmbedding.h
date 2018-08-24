@@ -28,7 +28,13 @@ class AliAnalysisTaskPHOSEmbedding : public AliAnalysisTaskSE {
     void SetInputFileArray(TObjArray *array) {fAODPathArray = array;}//array of path to MC AOD.
     void SetParticle(TString par) {fParticle = par;}//Pi0/Eta/Gamma
     void SetSignalCalibration(Double_t corr) {fSignalECorrection=corr;}
-    void SetUserNonlinearity(TF1 *f1) {fUserNonLin = f1;}
+    void SetUserNonlinearity(TF1 *f1) {
+      if(fUserNonLin){
+        delete fUserNonLin;
+        fUserNonLin = 0x0;
+      }
+      fUserNonLin = f1;
+    }
     void SetZSThreshold(Bool_t apply, Double_t threshold){
       fApplyZS = apply;
       fZSThreshold = threshold;
@@ -89,7 +95,7 @@ class AliAnalysisTaskPHOSEmbedding : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSEmbedding(const AliAnalysisTaskPHOSEmbedding&);
     AliAnalysisTaskPHOSEmbedding& operator=(const AliAnalysisTaskPHOSEmbedding&);
 
-    ClassDef(AliAnalysisTaskPHOSEmbedding, 8);
+    ClassDef(AliAnalysisTaskPHOSEmbedding, 9);
 };
 
 #endif

@@ -111,14 +111,11 @@ AliAnalysisTaskPHOSEmbedding::AliAnalysisTaskPHOSEmbedding(const char *name):
 {
   // Constructor
 
-  //fRandom3 = new TRandom3(1);//0 is not preferable.
-
   AliCDBManager *cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage("raw://");
   cdb->SetRun(246982);//dummy run number//necessary run number is set in Init()
   fUserNonLin = new TF1("fUserNonLin","1.",0,100);
 
-  //fEventCuts = new AliEventCuts(kFALSE); 
   // Define input and output slots here
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
@@ -130,12 +127,15 @@ AliAnalysisTaskPHOSEmbedding::AliAnalysisTaskPHOSEmbedding(const char *name):
 //____________________________________________________________________________________________________________________________________
 AliAnalysisTaskPHOSEmbedding::~AliAnalysisTaskPHOSEmbedding()
 {
-  delete fRandom3;
-  fRandom3 = 0x0;
+  if(fRandom3){
+    delete fRandom3;
+    fRandom3 = 0x0;
+  }
 
-  delete fUserNonLin;
-  fUserNonLin = 0x0;
-
+  if(fUserNonLin){
+    delete fUserNonLin;
+    fUserNonLin = 0x0;
+  }
 
   if(fPHOSReconstructor){
     delete fPHOSReconstructor;
@@ -504,6 +504,10 @@ Bool_t AliAnalysisTaskPHOSEmbedding::UserNotify()
   UInt_t seed = UInt_t(runNum * 1e+4) + UInt_t(fileID);
   AliInfo(Form("seed is %u",seed));
 
+  if(fRandom3){
+    delete fRandom3;
+    fRandom3 = 0x0;
+  }
   fRandom3 = new TRandom3(seed);
 
   return kTRUE;
@@ -557,6 +561,8 @@ Bool_t AliAnalysisTaskPHOSEmbedding::OpenAODFile()
     }//end of 2nd trial
 
   }//end of 1st trial
+
+  AliInfo(Form("%d files are stored in fAODPathArray.",Nfile));
 
   fAODTree = (TTree*)fAODInput->Get("aodTree");
   if(!fAODTree){
@@ -625,6 +631,11 @@ void AliAnalysisTaskPHOSEmbedding::Init()
   Int_t runNum = event->GetRunNumber();
   AliCDBManager::Instance()->SetRun(runNum);
   //AliCDBManager::Instance()->SetDefaultStorage("raw://");
+
+  if(fPHOSReconstructor){
+    delete fPHOSReconstructor;
+    fPHOSReconstructor = 0x0;
+  }
   fPHOSReconstructor = new AliPHOSReconstructor("Run2");
 
   AliCDBPath path("PHOS","Calib","RecoParam");
