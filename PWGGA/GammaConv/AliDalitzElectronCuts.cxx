@@ -997,6 +997,11 @@ Bool_t AliDalitzElectronCuts::SetTPCdEdxCutElectronLine(Int_t ededxSigmaCut){
       fPIDnSigmaBelowElectronLineTPC=-2;
       fPIDnSigmaAboveElectronLineTPC=3.5;
       break;
+    case 9: // -3,4
+      fDodEdxSigmaTPCCut = kTRUE;
+      fPIDnSigmaBelowElectronLineTPC=-3;
+      fPIDnSigmaAboveElectronLineTPC=4;
+      break;
     default:
       cout<<"Warning: TPCdEdxCutElectronLine not defined"<<ededxSigmaCut<<endl;
       return kFALSE;
@@ -1844,13 +1849,30 @@ Bool_t AliDalitzElectronCuts::SetMassCut(Int_t massCut)
       fDoMassMinCut = kFALSE;
       break;
     case 10:
-      fMassCutPtMin  = 0.547;   //GeV
-      fMassCutLowPt  = 0.025; //GeV/c^2
-      fMassCutHighPt = 0.035; //GeV/c^2
+      fMassCutPtMin  = 1.0;   //GeV
+      fMassCutLowPt  = 0.02; //GeV/c^2
+      fMassCutHighPt = 0.03; //GeV/c^2
       fMassMinCut = -999;
       fDoMassCut = kTRUE;
       fDoMassMinCut = kFALSE;
       break;
+    case 11:
+      fMassCutPtMin  = 1.0;   //GeV
+      fMassCutLowPt  = 0.027; //GeV/c^2
+      fMassCutHighPt = 0.054; //GeV/c^2
+      fMassMinCut = -999;
+      fDoMassCut = kTRUE;
+      fDoMassMinCut = kFALSE;
+      break;
+    case 12:
+      fMassCutPtMin  = 1.0;   //GeV
+      fMassCutLowPt  = 0.02; //GeV/c^2
+      fMassCutHighPt = 0.02; //GeV/c^2
+      fMassMinCut = -999;
+      fDoMassCut = kTRUE;
+      fDoMassMinCut = kFALSE;
+      break;
+
     default:
       cout<<"Warning: MassCut not defined "<<massCut<<endl;
       return kFALSE;
