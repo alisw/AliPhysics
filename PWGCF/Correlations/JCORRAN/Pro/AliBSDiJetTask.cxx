@@ -659,11 +659,16 @@ void AliBSDiJetTask::MeasureBgDensity(AliJetContainer* ktContainer){
 	TLorentzVector1D rhoarray;
 	Double1D Sumpt;
 	Double1D Summ;
+	TLorentzVector leadingkt;
+	Bool_t isfirstdijet = true;
+
 	for( auto j : ktContainer->accepted() ){
 		if (Abs(j->Eta())>0.7)  continue;
 		double lpt = 0;
 		double sumpt = 0;
 		double summ = 0;
+		TLorentzVector sumkt (0,0,0,0);
+
 
 		for( int it=0; it<j->GetNumberOfTracks(); it++ ) {
 			auto trk =  j->Track(it);
@@ -671,17 +676,29 @@ void AliBSDiJetTask::MeasureBgDensity(AliJetContainer* ktContainer){
 			TLorentzVector temp;
 			temp.SetXYZM(trk->Px(),trk->Py(),trk->Pz(),pionmass);
 			if( lpt < temp.Pt() )  lpt = temp.Pt();
+			sumkt += temp;
 			sumpt += temp.Pt();
 			summ += (sqrt(pionmass*pionmass+temp.Pt()*temp.Pt())-temp.Pt());
 		}
 		sumpt /= j->Area();
 		summ /= j->Area();
-		//if( lpt < fLeadingParticlePtMin ) continue;
-		if (n>=2) {//remove leading and subleading jets
-			Sumpt.push_back(sumpt);
-			Summ.push_back(summ);
+
+		if (n==0) { //remove leading kt jet
+			leadingkt = sumkt;
+			n++;
+			continue;
 		}
+		//remove back-subleading kt jet
+		else if (Abs(sumkt.DeltaPhi(leadingkt))>pi/2. && isfirstdijet){
+			n++;
+			isfirstdijet = false;
+			continue;
+		}
+		Sumpt.push_back(sumpt);
+		Summ.push_back(summ);
+
 		n++;
+
 	}
 
 	Double_t rhopt[Sumpt.size()];
