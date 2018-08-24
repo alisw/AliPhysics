@@ -113,7 +113,7 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   Double_t            fL; //integrated track lenght
   Double_t            fMatchingMomCut;//minimum pT cut for matching eff vs eta, phi
   Double_t            fMatchingEtaCut;//simmetric eta cut for matching eff vs pt, eta, phi
-  Double_t            fTof;
+  Double_t            fTof;// Signal measured by TOF in ps
   Short_t             fMCTOFMatch; //status of matching in MC
   TString             fOCDBLocation;       // ocdb path
   AliTOFChannelOnlineStatusArray * fChannelArray; //array of channel status

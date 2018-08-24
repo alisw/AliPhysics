@@ -1080,7 +1080,7 @@ void AliAnalysisTaskTOFqaID::AddStartTimeHisto(THashList *list, TString suffix)
   CreateH(hT0CvsNtrk, TH2F, "Event timeZero estimated by T0C vs. TOF-matching tracks;  N_{TOF}; t0 (ps)", 700, 0., 700., 140, -700., 700.);
   HistogramMakeUp(hT0CvsNtrk, kGreen + 2, 1, "colz");
 
-  labels = "fill_t0,tof_t0,T0AC,T0AC & tof_t0,T0A,T0A & tof_t0,T0C,T0C & tof_t0";
+  labels = "fill_t0,tof_t0,T0A,T0A & tof_t0,T0C,T0C & tof_t0,T0AC,T0AC & tof_t0";
   labels_arr = labels.Tokenize(",");
   const Double_t startTimeMomBins[13] = { 0.0, 0.3, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.2, 1.5, 2., 3., 10. };
   CreateH(hStartTimeMaskMatched, TH2F, "Start Time Mask vs p bin for matched tracks; p(GeV/#it{c});", 12, startTimeMomBins, 8, 0., 8.);
@@ -1090,6 +1090,7 @@ void AliAnalysisTaskTOFqaID::AddStartTimeHisto(THashList *list, TString suffix)
   CreateH(hStartTimeMask, TH2F, "Start Time Mask vs p bin for primary tracks; p(GeV/#it{c});", 12, startTimeMomBins, 8, 0., 8.);
   SetBinLabels(hStartTimeMask);
   HistogramMakeUp(hStartTimeMask, kRed + 2, 1, "colz");
+#undef SetBinLabels
 }
 #undef CreateH
 
