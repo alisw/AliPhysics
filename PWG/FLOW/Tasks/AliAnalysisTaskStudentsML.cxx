@@ -313,7 +313,7 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
    nCounter += 1;
   } */
  
- if(fParticles>=kNumber)
+ if(fParticles>=8) //do the correlation only if there are more than 8 particles in the event
  { 
 
    if(ams->GetMultiplicityPercentile("V0M") >= fMinCentrality && ams->GetMultiplicityPercentile("V0M") < fMaxCentrality)
@@ -358,7 +358,7 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
   */
 
 
- } //if(fParticles>=kNumber)
+ } //if(fParticles>=8)
 
  
 
