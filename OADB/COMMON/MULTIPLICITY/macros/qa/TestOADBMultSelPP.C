@@ -61,7 +61,7 @@ void TestOADBMultSelPP(TString lPeriodName = "LHC18f", Int_t run = 287784 ) {
     
     //Input file here!
     //TString fInputFileName = "AnalysisTest.root" ;
-    TString fInputFileName = Form("../MB/files/AnalysisResults_%d.root", run); 
+    TString fInputFileName = "../MB/AnalysisResults.root"; 
     
     cout<<" Offline Calibration Test "<<endl;
     cout<<" * Input File.....: "<<fInputFileName.Data()<<endl;

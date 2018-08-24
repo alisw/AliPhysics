@@ -8,8 +8,11 @@
 #include "AliOADBContainer.h"
 #endif
 
-void TestStitchedOADB(TString lPeriodName = "LHC18c",
-                      Long_t         lRun = 285957 ) {
+// global pointer to calib histogram
+TH1D *hCalib = 0x0;
+
+void TestStitchedOADB(TString lPeriodName = "LHC18f",
+                      Int_t          lRun = 287071 ) {
     // Code to test OADB in Offline Mode
     // Further developments needed!
     //
@@ -46,14 +49,15 @@ void TestStitchedOADB(TString lPeriodName = "LHC18c",
     
 
     //FIXME: Substitute with loop over several estimators, as needed
-    TH1F *hCalibV0M = oadbMultSelection->GetCalibHisto(0);
+    //TH1F *hCalibV0M = oadbMultSelection->GetCalibHisto(0);
+    hCalib = (TH1D*)oadbMultSelection->GetCalibHisto(0);
     
     AliMultSelection *fSelection = (AliMultSelection*) oadbMultSelection->GetMultSelection();
     
     fSelection->PrintInfo();
     
     TCanvas *c1 = new TCanvas("c1", "",800,600);
-    hCalibV0M->Draw(); 
+    hCalib->Draw(); 
     
     //
     // set percentile boundaries for the estimator histos
@@ -105,13 +109,9 @@ void TestStitchedOADB(TString lPeriodName = "LHC18c",
     // cout << i << "\t[ " << lDesiredBoundaries[i] << " , " << lDesiredBoundaries[i+1] << " ]\t" << lDesiredBoundaries[i+1]-lDesiredBoundaries[i] << endl;
 
     
-    TH1F* hTestPercentileMB = new TH1F("hTestPercentileMB", "", lNDesiredBoundaries, lDesiredBoundaries);
-    TH1F* hTestPercentileHM = new TH1F("hTestPercentileHM", "", lNDesiredBoundaries, lDesiredBoundaries);
-    TH1F* hTestPercentileHM_anchored = new TH1F("hTestPercentileHM_anchored", "", lNDesiredBoundaries, lDesiredBoundaries);
-    
     //Input file here!
-    TString fInputFileNameMB = Form("../MB/files/AnalysisResults_%d.root", lRun); 
-    TString fInputFileNameHM = Form("../VHM/files/AnalysisResults_%d.root", lRun); 
+    TString fInputFileNameMB = "../MB/AnalysisResults.root"; 
+    TString fInputFileNameHM = "../VHM/AnalysisResults.root"; 
     
     cout<<" Offline Calibration Test "<<endl;
     cout<<" * Input File MB.....: "<<fInputFileNameMB.Data()<<endl;
@@ -121,26 +121,8 @@ void TestStitchedOADB(TString lPeriodName = "LHC18c",
     oadbMultSelection->GetEventCuts()->Print();
     cout<<endl;
 
-    //Declare minimal set of variables in memory
-    Float_t fAmplitude_V0A = 0;
-    Float_t fAmplitude_V0C = 0;
-    Float_t fAmplitude_V0Apartial = 0;
-    Float_t fAmplitude_V0Cpartial = 0;
-    Float_t fAmplitude_V0AEq = 0;
-    Float_t fAmplitude_V0CEq = 0;
-    //Event Selection Variables
-    Bool_t fEvSel_IsNotPileupInMultBins      = kFALSE ;
-    Bool_t fEvSel_Triggered                  = kFALSE ;
-    Bool_t fEvSel_INELgtZERO                 = kFALSE ;
-    Bool_t fEvSel_PassesTrackletVsCluster    = kFALSE ;
-    Bool_t fEvSel_HasNoInconsistentVertices  = kFALSE ;
-    Float_t fEvSel_VtxZ                      = 10.0 ;
-    UInt_t fEvSel_TriggerMask                = 0;
-    Int_t fRefMultEta8;
-    Int_t fRunNumber;
-    Int_t fnContributors; 
-    
-    
+    // MB part ********************************************************
+
     // STEP 1: Basic I/O
     cout<<"(1) Opening File MB"<<endl;
     
@@ -156,53 +138,22 @@ void TestStitchedOADB(TString lPeriodName = "LHC18c",
         AliWarning("fTreeEvent object not found!" );
         return kFALSE;
     }
-    //SetBranchAddresses
-    fTreeMB->SetBranchAddress("fAmplitude_V0A",&fAmplitude_V0A);
-    fTreeMB->SetBranchAddress("fAmplitude_V0C",&fAmplitude_V0C);
-    fTreeMB->SetBranchAddress("fAmplitude_V0Apartial",&fAmplitude_V0Apartial);
-    fTreeMB->SetBranchAddress("fAmplitude_V0Cpartial",&fAmplitude_V0Cpartial);
-    fTreeMB->SetBranchAddress("fAmplitude_V0AEq",&fAmplitude_V0AEq);
-    fTreeMB->SetBranchAddress("fAmplitude_V0CEq",&fAmplitude_V0CEq);
-    
-    fTreeMB->SetBranchAddress("fEvSel_IsNotPileupInMultBins",&fEvSel_IsNotPileupInMultBins);
-    fTreeMB->SetBranchAddress("fEvSel_PassesTrackletVsCluster",&fEvSel_PassesTrackletVsCluster);
-    fTreeMB->SetBranchAddress("fEvSel_HasNoInconsistentVertices",&fEvSel_HasNoInconsistentVertices);
-    fTreeMB->SetBranchAddress("fEvSel_Triggered",&fEvSel_Triggered);
-    fTreeMB->SetBranchAddress("fEvSel_INELgtZERO",&fEvSel_INELgtZERO);
-    fTreeMB->SetBranchAddress("fEvSel_VtxZ",&fEvSel_VtxZ);
-    
-    fTreeMB->SetBranchAddress("fRunNumber",&fRunNumber);
-    fTreeMB->SetBranchAddress("fRefMultEta8",&fRefMultEta8);
-    fTreeMB->SetBranchAddress("fnContributors",&fnContributors);
-    
+
+    TH1D* hTestPercentileMB = new TH1D("hTestPercentileMB", "", lNDesiredBoundaries, lDesiredBoundaries);
+
     Long64_t lNEv = fTreeMB->GetEntries();
     cout<<"(1) File opened, event count is "<<lNEv<<endl;
     
-    Long_t lSelectedMB = 0;
-    Long_t lAllMB = 0;
-    
-    for(Long64_t iEv = 0; iEv<lNEv; iEv++) {
-
-        fTreeMB->GetEntry(iEv); //Look at next event
-        if ( lRun != fRunNumber ) continue; //skip if not desired run
-        lAllMB++;
-
-        if ( !fEvSel_Triggered ) continue; 
-        if ( !fEvSel_IsNotPileupInMultBins ) continue; 
-        if ( !fEvSel_PassesTrackletVsCluster ) continue; 
-        if ( !fEvSel_INELgtZERO ) continue ;
-        if ( !fEvSel_HasNoInconsistentVertices ) continue ; 
-        if ( TMath::Abs(fEvSel_VtxZ) > 10. ) continue; 
-        lSelectedMB++;
-
-        Float_t lRawValue = ((fAmplitude_V0A)+(fAmplitude_V0C));
-        Float_t lPercentile = hCalibV0M->GetBinContent( hCalibV0M->FindBin ( lRawValue ) );
-        if( TMath::Abs( fEvSel_VtxZ )<10 ) hTestPercentileMB->Fill( lPercentile );
-    }
+    Long64_t lSelectedMB = fTreeMB->Draw("get_percentile(fAmplitude_V0A+fAmplitude_V0C)>>hTestPercentileMB", 
+                                         Form("fRunNumber==%d && fEvSel_Triggered && fEvSel_IsNotPileupInMultBins && fEvSel_PassesTrackletVsCluster && fEvSel_INELgtZERO && fEvSel_HasNoInconsistentVertices && TMath::Abs(fEvSel_VtxZ)<=10.0", lRun),
+                                         "goff");
+    Long64_t lAllMB = lNEv;
     
     cout<<"All     : "<<lAllMB<<endl;
     cout<<"Selected: "<<lSelectedMB<<endl;
     cout<<endl;
+
+    // VHM part *******************************************************
 
     // STEP 2: Basic I/O
     cout<<"(2) Opening File VHM"<<endl;
@@ -219,53 +170,23 @@ void TestStitchedOADB(TString lPeriodName = "LHC18c",
         AliWarning("fTreeEvent object not found!" );
         return kFALSE;
     }
-    //SetBranchAddresses
-    fTreeHM->SetBranchAddress("fAmplitude_V0A",&fAmplitude_V0A);
-    fTreeHM->SetBranchAddress("fAmplitude_V0C",&fAmplitude_V0C);
-    fTreeHM->SetBranchAddress("fAmplitude_V0Apartial",&fAmplitude_V0Apartial);
-    fTreeHM->SetBranchAddress("fAmplitude_V0Cpartial",&fAmplitude_V0Cpartial);
-    fTreeHM->SetBranchAddress("fAmplitude_V0AEq",&fAmplitude_V0AEq);
-    fTreeHM->SetBranchAddress("fAmplitude_V0CEq",&fAmplitude_V0CEq);
     
-    fTreeHM->SetBranchAddress("fEvSel_IsNotPileupInMultBins",&fEvSel_IsNotPileupInMultBins);
-    fTreeHM->SetBranchAddress("fEvSel_PassesTrackletVsCluster",&fEvSel_PassesTrackletVsCluster);
-    fTreeHM->SetBranchAddress("fEvSel_HasNoInconsistentVertices",&fEvSel_HasNoInconsistentVertices);
-    fTreeHM->SetBranchAddress("fEvSel_Triggered",&fEvSel_Triggered);
-    fTreeHM->SetBranchAddress("fEvSel_INELgtZERO",&fEvSel_INELgtZERO);
-    fTreeHM->SetBranchAddress("fEvSel_VtxZ",&fEvSel_VtxZ);
-    
-    fTreeHM->SetBranchAddress("fRunNumber",&fRunNumber);
-    fTreeHM->SetBranchAddress("fRefMultEta8",&fRefMultEta8);
-    fTreeHM->SetBranchAddress("fnContributors",&fnContributors);
+    TH1D* hTestPercentileHM = new TH1D("hTestPercentileHM", "", lNDesiredBoundaries, lDesiredBoundaries);
+    TH1D* hTestPercentileHM_anchored = new TH1D("hTestPercentileHM_anchored", "", lNDesiredBoundaries, lDesiredBoundaries);
     
     lNEv = fTreeHM->GetEntries();
     cout<<"(2) File opened, event count is "<<lNEv<<endl;
     
-    Long_t lSelectedHM = 0;
-    Long_t lAllHM = 0;
-    
-    for(Long64_t iEv = 0; iEv<lNEv; iEv++) {
-
-        fTreeHM->GetEntry(iEv); //Look at next event
-        if ( lRun != fRunNumber ) continue; //skip if not desired run
-        lAllHM++;
-
-        if ( !fEvSel_Triggered ) continue; 
-        if ( !fEvSel_IsNotPileupInMultBins ) continue; 
-        if ( !fEvSel_PassesTrackletVsCluster ) continue; 
-        if ( !fEvSel_INELgtZERO ) continue ;
-        if ( !fEvSel_HasNoInconsistentVertices ) continue ; 
-        if ( TMath::Abs(fEvSel_VtxZ) > 10. ) continue; 
-        lSelectedHM++;
-
-        Float_t lRawValue = ((fAmplitude_V0A)+(fAmplitude_V0C));
-        Float_t lPercentile = hCalibV0M->GetBinContent( hCalibV0M->FindBin ( lRawValue ) );
-        if( TMath::Abs( fEvSel_VtxZ )<10 ) hTestPercentileHM->Fill( lPercentile );
-        if( TMath::Abs( fEvSel_VtxZ )<10 && lPercentile<anchor_percentile) hTestPercentileHM_anchored->Fill( lPercentile );
-    }
+    Long64_t lSelectedHM = fTreeHM->Draw(Form("get_percentile(fAmplitude_V0A+fAmplitude_V0C)>>hTestPercentileHM"), 
+                                         Form("fRunNumber==%d && fEvSel_Triggered && fEvSel_IsNotPileupInMultBins && fEvSel_PassesTrackletVsCluster && fEvSel_INELgtZERO && fEvSel_HasNoInconsistentVertices && TMath::Abs(fEvSel_VtxZ)<=10.0", lRun),
+                                         "goff");
+    Long64_t lSelectedHM_anchored = fTreeHM->Draw(Form("get_percentile(fAmplitude_V0A+fAmplitude_V0C)>>hTestPercentileHM_anchored"), 
+                                                  Form("get_percentile(fAmplitude_V0A+fAmplitude_V0C)<%lf && fRunNumber==%d && fEvSel_Triggered && fEvSel_IsNotPileupInMultBins && fEvSel_PassesTrackletVsCluster && fEvSel_INELgtZERO && fEvSel_HasNoInconsistentVertices && TMath::Abs(fEvSel_VtxZ)<=10.0", anchor_percentile, lRun),
+                                                  "goff");
+    Long64_t lAllHM = lNEv;
     
     cout<<"All     : "<<lAllHM<<endl;
-    cout<<"Selected: "<<lSelectedHM<<endl;
+    cout<<"Selected: "<<lSelectedHM<<" ("<<lSelectedHM_anchored<<" anchored)"<<endl;
     cout<<endl;
     
     gStyle->SetOptStat(0); 
@@ -359,7 +280,13 @@ void TestStitchedOADB(TString lPeriodName = "LHC18c",
     
 }
 
+// function to get V0M percentile
+Double_t get_percentile(Double_t amplitude) 
+{
     
+    Double_t percentile = hCalib->GetBinContent( hCalib->FindBin( amplitude ) );
 
-    
-    
+    return percentile;
+
+}
+
