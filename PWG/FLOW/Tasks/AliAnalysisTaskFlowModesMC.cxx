@@ -702,7 +702,7 @@ void AliAnalysisTaskFlowModesMC::UserCreateOutputObjects()
     
     // flow histograms & profiles
     // weights
-    if(fAnalType == kAOD && fFlowFillWeights || fRunMode == kFillWeights)
+    if(fAnalType == kAOD && (fFlowFillWeights || fRunMode == kFillWeights))
     {
         fh3BeforeNUAWeightsRefs = new TH3D("fh3BeforeNUAWeightsRefs","Weights: Refs; #varphi; #eta; Prim. vtx_{z} (cm)", 100,0,TMath::TwoPi(), 151,-1.5,1.5, 20, -10,10);
         fh3BeforeNUAWeightsRefs->Sumw2();
@@ -3499,7 +3499,7 @@ Short_t AliAnalysisTaskFlowModesMC::GetCentralityIndex()
     // If a valid multiplicity estimator is specified, centrality percentile is estimated via AliMultSelection
     // otherwise -1 is returned (and event is skipped)
     // *************************************************************
-    if(fAnalType = kAOD){
+    if(fAnalType == kAOD){
         fMultEstimator.ToUpper();
         //cout<<"++++++++++++++++++GetCentralityIndex+++++++++++++++++"<<endl;
         if(
