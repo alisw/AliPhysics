@@ -51,6 +51,7 @@ public AliDecayer
     void     ForceLambda();
     void     SwitchOffHeavyFlavour();
     void     ForceBeautyUpgrade();
+    void     ForceHFYellowReport();
     Float_t  GetBraPart(Int_t kf);
     void     Copy(TObject &decayer) const;
 
@@ -69,7 +70,7 @@ public AliDecayer
     Bool_t      fPi0;             //! Flag for pi0 decay 
     static Bool_t fgInit;         //! initialization flag 
     
-    ClassDef(AliDecayerPythia, 6) // AliDecayer implementation using Pythia  
+    ClassDef(AliDecayerPythia, 7) // AliDecayer implementation using Pythia  
 };
 #endif
 

@@ -561,6 +561,9 @@ void AliDecayerPythia::ForceDecay()
     case kBeautyUpgrade:
         ForceBeautyUpgrade();
         break;
+    case kHFYellowReport:
+        ForceHFYellowReport();
+        break;
     case kLcpKpi:
         ForceHadronicD(0,0,1);
         break;
@@ -581,6 +584,26 @@ void  AliDecayerPythia::SwitchOffHeavyFlavour()
     fPythia->SetMSTJ(45, 3);	
     // Switch off g->QQbar splitting in decay table
     for (Int_t i = 156; i <= 160; i++) fPythia->SetMDME(i, 1, 0);
+}
+
+void  AliDecayerPythia::ForceHFYellowReport()
+{
+ //
+ // Force dedicated decay channels of signals interesting
+ // for the ITS upgrade and specifically the yellow report
+ //
+
+   // Lb: 100% of them in Lc  in final state
+  
+   ForceParticleDecay( 5122, 4122, 1);
+  
+   // B0 -> D-e+nu
+   const Int_t prod[3]={411,11,12};
+   Int_t mult[3]={1,1,1};
+  
+   ForceParticleDecay(511,prod,mult,3,1);
+    ForceHadronicD(0,0,0);
+ 
 }
 
 void  AliDecayerPythia::ForceBeautyUpgrade()
@@ -641,12 +664,15 @@ void AliDecayerPythia::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, In
   Int_t productsX[3] = {3312, 211,211}, multX[3] = {1, 1, 1};
   ForceParticleDecay(Xic, productsX, multX, 3);
 //
-// Force golden D decay modes
+
+
+  // Force golden D decay modes
 //
   const Int_t kNHadrons = 5;
   Int_t channel;
   Int_t hadron[kNHadrons] = {411,  421, 431, 4112, 4122};
 
+ 
   // for D+ -> K0* (-> K- pi+) pi+
   Int_t iKstar0    =  313;
   Int_t iKstarbar0 = -313;
