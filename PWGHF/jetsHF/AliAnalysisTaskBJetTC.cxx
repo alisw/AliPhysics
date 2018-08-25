@@ -3934,6 +3934,7 @@ const Double_t fgkdMassLambdaMax = 1.25; // [GeV/c^2]
     AliAODVertex* prodVtxDaughterNeg = (AliAODVertex*)(trackNeg->GetProdVertex()); // production vertex of the negative daughter track
     Char_t cTypeVtxProdNeg = prodVtxDaughterNeg->GetType(); // type of the production vertex
 
+    prodVtxDaughterPos=NULL; prodVtxDaughterNeg=NULL;
     delete prodVtxDaughterPos; delete prodVtxDaughterNeg;
 
     //===== Start of reconstruction cutting =====
