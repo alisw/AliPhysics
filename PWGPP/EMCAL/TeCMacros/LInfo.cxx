@@ -206,11 +206,13 @@ TCanvas *LInfo::DrawHist(Int_t which, Int_t gain, const char *opt) const
   return c;
 }
 
-
 void LInfo::FillStrip(Int_t mod, Int_t gain, Int_t strip, Double_t amp, Double_t rms)
 {
   if ((amp<0)||(amp>1500))
     return;
+  Int_t spos = strip;
+  if (mod%2==1)
+    spos = 23-strip;
   fhStrip[mod][gain]->Fill(strip, amp);
   if (rms>0) {
     fhStripCount[mod][gain]->Fill(strip, rms);
