@@ -45,6 +45,7 @@ public:
   void                        SetSavePool(Bool_t input)                             { fSavePool        = input  ; }
   void                        SetPlotMore(Int_t input)                              { fPlotQA          = input  ; }
   void                        SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
+	void                        SetPi0MassSelection(Int_t input)                      { fPi0MassSelection= input  ; }
   void                        SetTriggerPtCut(Double_t input)                       { fTriggerPtCut    = input; }
   void                        SetSubDetector(Int_t input)                           { fSubDetector     = input; }
   void                        SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
@@ -171,6 +172,7 @@ public:
   vector<vector<Double_t> >   fEventPoolOutputList;      //!<! ???vector representing a list of pools (given by value range) that will be saved
   //..Event selection types
   UInt_t                      fTriggerType;              ///<  Event types that are used for the trigger (gamma or pi0)
+	Int_t                       fPi0MassSelection;         ///<  Selection of (mass,sigma) set used for pi0 Mass windows.
   UInt_t                      fMixingEventType;          ///<  Event types that are used for the tracks in the mixed event
   UInt_t                      fCurrentEventTrigger;      //!<! Trigger of the current event
   UInt_t                      fVetoTrigger;              //!<! Trigger that is vetoed in Mixed Events to avoid bias.  Default is EMCAL Gamma Trigger
