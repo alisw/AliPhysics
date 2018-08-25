@@ -117,9 +117,19 @@ Bool_t AliTRDdigitsTask::UserNotify()
 
 
 //________________________________________________________________________
-//void AliTRDdigitsTask::UserCreateOutputObjects()
-//{
-//}
+void AliTRDdigitsTask::UserCreateOutputObjects()
+{
+
+  // create list for output (QA) stuff
+  fOutputList = new TList();
+  fOutputList->SetOwner(kTRUE);
+
+  // At this point, additional histograms can be created, maybe via a
+  // virtual function.
+
+  
+  PostData(1, fOutputList);
+}
 
 
 

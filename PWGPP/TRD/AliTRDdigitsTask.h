@@ -1,9 +1,34 @@
 #ifndef ALITRDDIGITSTASK_H
 #define ALITRDDIGITSTASK_H
 
-// example of an analysis task to analyse TRD digits 
+// example and base class for an analysis task to analyse TRD digits 
 // Authors: Tom Dietel
 // based on the AliAnalysisTaskPt
+
+// This class provides basic functionality to analyse TRD digits in
+// the context of an ESD event:
+//
+//  - Read and write TRD.Digits.root files
+//  - Provide e,pi reference samples via AliESDv0KineCuts
+//  - Match ESD tracks to TRD digits. 
+//
+// The class requires the presence of an AliESDs.root and a
+// TRD.Digits.root file. AODs have not been tested, because matching
+// of tracks to TRD digits seemed easier with some ESD-only features.
+//
+// The TRD.Digits.root files are opened in the UserNotify() method,
+// i.e. every time that a new ESD (or AOD) file is opened. The file
+// contains digits trees, numbered according to the event number in
+// the corresponding ESD file. Missing digits are allowed, to support
+// filtered digits trees with only a subset of events.
+//
+// The class has basic support to identify electrons and pions (and in
+// principle also protons) via V0 decays. It might need an option to
+// tighten/tune the default cuts of the AliESDv0KineCuts class.
+//
+// The methods FindDigits and FindDigitsTrkl can be used to find the
+// digits for a given track without the need to go via offline
+// tracklets.
 
 class AliTRDdigitsManager;
 //class AliESDv0KineCuts;
@@ -14,17 +39,11 @@ class AliESDEvent;
 
 class AliTRDdigitsTask : public AliAnalysisTaskSE {
 public:
-  //AliTRDdigitsTask()
-  //   : AliAnalysisTaskSE(),
-  //     fDigitsInputFileName("TRD.Digits.root"), fDigitsInputFile(0),
-  //     fDigitsOutputFileName(""), fDigitsOutputFile(0),
-  //     fDigMan(0),fGeo(0), fEventNoInFile(-2), fDigitsLoadedFlag(kFALSE)
-  // {}
 
   AliTRDdigitsTask(const char *name);
-  //virtual ~AliTRDdigitsTask() {}
+  virtual ~AliTRDdigitsTask() {}
   
-  //virtual void   UserCreateOutputObjects();
+  virtual void   UserCreateOutputObjects();
   virtual Bool_t UserNotify();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
