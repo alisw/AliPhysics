@@ -3813,7 +3813,7 @@ void AliAnalysisTaskHaHFECorrel::CorrelateHadron(TObjArray* RedTracksHFE,  const
     Bool_t TPNoT = kTRUE;
     if (RedTrack->IsPhotonic()) {
       for (Int_t AssPtBin=0; AssPtBin<fAssPtHad_Nbins; AssPtBin++) {
-	Double_t fillSparse[4]={RedTrack->Pt(), RedTrack->TruePartnerRecPt(), RedTrack->TruePartnerMCPt(), AssPtBin};
+	Double_t fillSparse[4]={RedTrack->Pt(), RedTrack->TruePartnerRecPt(), RedTrack->TruePartnerMCPt(), 1.0*AssPtBin};
 	if (PhotElecWPartnerTrigger[l][AssPtBin])  fTPartnerNoTPt2->Fill(fillSparse, MotherWeight[l]);
 	if (PhotElecWoPartnerTrigger[l][AssPtBin]) fNoPartnerNoTPt2->Fill(fillSparse, MotherWeight[l]);
 
@@ -4194,7 +4194,7 @@ void AliAnalysisTaskHaHFECorrel::CorrelateLP(AliVTrack* LPtrack,  const AliVVert
     if (recEffE<0) continue;
     for (Int_t AssPtBin=0; AssPtBin<fAssPtHad_Nbins; AssPtBin++) {
       if (ElectronIsTrigger[l][AssPtBin]) {
-	fElecLPTrigger->Fill(ElectronIsTriggerPt[l], AssPtBin, RedTrack->Eta(), 1./recEffE);
+	fElecLPTrigger->Fill(ElectronIsTriggerPt[l], AssPtBin, RedTrack->Eta(), 1.0/recEffE);
 	if( RedTrack->LS()>0)  fElecLPTriggerULS->Fill(ElectronIsTriggerPt[l], AssPtBin,   -RedTrack->LS()/recEffE);
 	if( RedTrack->ULS()>0) fElecLPTriggerULS->Fill(ElectronIsTriggerPt[l], AssPtBin,  RedTrack->ULS()/recEffE);
       }
