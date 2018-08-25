@@ -5,10 +5,12 @@
 #include <TFile.h>
 #include <TGrid.h>
 #include <TH2F.h>
+#include <TKey.h>
 #include <TLegend.h>
 #include <TMap.h>
 #include <TNtuple.h>
 #include <TProfile.h>
+#include <TROOT.h>
 #include "LInfo.h"
 
 class LDraw : public TNamed {
@@ -180,6 +182,39 @@ void plotL_period(const char *period, Bool_t doprint=0)
 void plotOCDB_LED(const char *period="lhc18d")
 {
   plotL_period(period);
+}
+
+void plot_OCDB_LED_all()
+{
+  LInfo lall;
+  TFile *fin = TFile::Open("ledinfo.root");
+  TIter next(fin->GetListOfKeys());
+  TKey *key=0;
+  TObjArray objs;
+  while ((key = (TKey*)next())) {
+    TClass *cl = gROOT->GetClass(key->GetClassName());
+    if (!cl->InheritsFrom("TObjArray")) 
+      continue;
+    TObjArray *arr=dynamic_cast<TObjArray*>(key->ReadObj());
+    objs.AddAll(arr);
+  }
+  for (Int_t sm=0;sm<20;sm++) {
+    for (Int_t i=0;i<objs.GetEntries();++i) {
+      LInfo *l = (LInfo*)objs.At(i);
+      lall.GetLedHist(sm)->Add(l->GetLedHist(sm));
+      lall.GetLedMonHist(sm)->Add(l->GetLedMonHist(sm));
+    }
+    TString n(Form("c%d",sm));
+    TCanvas *c = new TCanvas(n,n,1600,600);
+    c->Divide(1,2);
+    c->cd(1);
+    lall.GetLedHist(sm)->SetStats(0);
+    lall.GetLedHist(sm)->Draw("colz");
+    c->cd(2);
+    lall.GetLedMonHist(sm)->SetStats(0);
+    lall.GetLedMonHist(sm)->Draw("colz");
+    c->Print(Form("%s.pdf",c->GetName()));
+  }
 }
 
 #if 0
