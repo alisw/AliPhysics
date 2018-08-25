@@ -211,10 +211,13 @@ void LInfo::FillStrip(Int_t mod, Int_t gain, Int_t strip, Double_t amp, Double_t
 {
   if ((amp<0)||(amp>1500))
     return;
-  fhStrip[mod][gain]->Fill(strip, amp);
+  Int_t spos = strip;
+  if (mod%2==1)
+    spos = 23-strip;
+  fhStrip[mod][gain]->Fill(spos, amp);
   if (rms>0) {
-    fhStripCount[mod][gain]->Fill(strip, rms);
-    fhStripWeighted[mod][gain]->Fill(strip, amp, 1./TMath::Power(rms,2));
+    fhStripCount[mod][gain]->Fill(spos, rms);
+    fhStripWeighted[mod][gain]->Fill(spos, amp, 1./TMath::Power(rms,2));
   }
 }
 
