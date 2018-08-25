@@ -27,8 +27,7 @@ AliAnalysisTaskNucleiKineCor::AliAnalysisTaskNucleiKineCor(const char* name) :
   fParticleNames{"#pi^{+}", "#pi^{-}", "K^{+}", "K^{-}", "p", "#bar{p}", "n", "#bar{n}", "d", "#bar{d}",
       "#Lambda", "#bar{#Lambda}", "#Xi^{+}", "#Xi^{-}", "#Omega^{+}", "#Omega^{-}"},
   fPt(5),
-  fOutputList{nullptr}
-  //  fEventCounter{nullptr},
+  fOutputList(0)
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -36,7 +35,8 @@ AliAnalysisTaskNucleiKineCor::AliAnalysisTaskNucleiKineCor(const char* name) :
 
 AliAnalysisTaskNucleiKineCor::~AliAnalysisTaskNucleiKineCor() 
 {
-  if(fOutputList) delete fOutputList;
+  if (fOutputList) 
+    delete fOutputList;
 }
 
 void AliAnalysisTaskNucleiKineCor::UserCreateOutputObjects() 
@@ -114,7 +114,7 @@ void AliAnalysisTaskNucleiKineCor::UserCreateOutputObjects()
   fHists[99]->Sumw2();
   fOutputList->Add(fHists[99]);
 
-  PostData(1,fOutputList);
+  PostData(1, fOutputList);
 }
 
 void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*) 
@@ -303,5 +303,3 @@ Double_t AliAnalysisTaskNucleiKineCor::DeltaPhi(Double_t phia, Double_t phib, Do
   
   return dphi;
 }
-
-
