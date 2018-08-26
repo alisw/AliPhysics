@@ -17,13 +17,14 @@
 #include <TProfile2D.h>
 #include <TSystem.h>
 #include <TString.h>
+#include <TRandom3.h>
 #include "createTree.C"
 #endif
 
 Bool_t writeDetailed  = kFALSE;       // switch on detailed information storing
 Int_t debugInfo       = 1;            // enable different levels of debuggin information
 Bool_t useWeight      = kTRUE;
-Int_t nBinsT          = 1000;
+Bool_t runWithRand    = kTRUE;
 
 void anaTree(
               const char *ifile     ="treefile.root",
@@ -32,7 +33,8 @@ void anaTree(
               Float_t durMin        = 0,                        // minimum length of a run in minutes
               Float_t durMax        = 10000,                    // maximum length of a run in minutes
               Bool_t appBC          = kFALSE,                   // boolean to switch on bad channel
-              Int_t referenceRun    = -1                        // define reference run to which all are being calibrated
+              Int_t referenceRun    = -1,                       // define reference run to which all are being calibrated
+              Int_t nBinsT          = 1000                      // number of bins in Temperature
             )
 {
   // Load EMCAL geometry for run 2
@@ -79,14 +81,16 @@ void anaTree(
   hRefSMVsT->SetName("ReferenceRunTemperatures");
   TH1F* hAverageT[20];
   TH1F* hAverageTSorted[20];
-
-  const char* opt = ""; //"S" for spread
+  TH2F* hAverageTPerSM      = new TH2F("","T per SM; SM; T", 20, -0.5, 19.5, nBinsT, 15, 40);
+  hAverageTPerSM->SetName("MeanSMTemperature");
+  hAverageTPerSM->Sumw2();
+  const char* opt = "S"; //"S" for spread
   for (Int_t i=0;i<20;++i) {
-    gLedVsT[i] = new TProfile("","Led info;T;",nBinsT,15,40,opt);
+    gLedVsT[i] = new TProfile("","Led info;T;",nBinsT,15,40);
     gLedVsT[i]->SetName(Form("ledsm%d",i));
-    gLedMonVsT[i] = new TProfile("","Led info;T;",nBinsT,15,40,opt);
+    gLedMonVsT[i] = new TProfile("","Led info;T;",nBinsT,15,40);
     gLedMonVsT[i]->SetName(Form("ledmonsm%d",i));
-    gRatVsT[i] = new TProfile("","Led/LedMon;T",nBinsT,15,40,opt);
+    gRatVsT[i] = new TProfile("","Led/LedMon;T",nBinsT,15,40);
     gRatVsT[i]->SetName(Form("ledovermonsm%d",i));
     hLedVsLength[i]     = new TH2F ("","Led info; t [h];",500,0,20, 20000, 0, 20000);
     hLedVsLength[i]->SetName(Form("ledVsLength%d",i));
@@ -139,15 +143,9 @@ void anaTree(
 
   for (Int_t i=0;i<Nev;++i) {
     tt->GetEvent(i);
-    Float_t deltaTime = ((Float_t)info->fLastTime-(Float_t)info->fFirstTime)/60.; // run duration in minutes
+    UInt_t deltaTimeS = ((UInt_t)info->fLastTime-(UInt_t)info->fFirstTime)/10;         // run duration in seconds
+    Float_t deltaTime = ((Float_t)info->fLastTime-(Float_t)info->fFirstTime)/60.;   // run duration in minutes
     cout << info->fRunNo << "\t" << info->fFirstTime << "\t"<<info->fLastTime << "\t"<< deltaTime<<  endl;
-
-    if (referenceRun != -1 && referenceRun == info->fRunNo){
-      isRefRun  = kTRUE;
-      hadRefRun = kTRUE;
-    } else {
-      isRefRun  = kFALSE;
-    }
 
     if (applyDurLimit){
       if (deltaTime < durMin || deltaTime > durMax){
@@ -161,6 +159,7 @@ void anaTree(
       TCalSM *smInfot = static_cast<TCalSM*>(sms.At(sm));
       hAverageT[sm]->SetBinContent(i+1,smInfot->fAvgT);
       hAverageTSorted[sm]->SetBinContent(hAverageTSorted[sm]->FindBin(info->fRunNo),smInfot->fAvgT);
+      hAverageTPerSM->Fill(sm,smInfot->fAvgT,deltaTime/60);
       hSensorsT[sm*8]->SetBinContent(i+1,smInfot->fT1);
       hSensorsT[sm*8+1]->SetBinContent(i+1,smInfot->fT2);
       hSensorsT[sm*8+2]->SetBinContent(i+1,smInfot->fT3);
@@ -179,6 +178,8 @@ void anaTree(
       hSensorsTSorted[sm*8+7]->SetBinContent(hSensorsTSorted[sm*8]->FindBin(info->fRunNo),smInfot->fT8);
     }
 
+    TRandom3 ledRandom(1289790);
+    TRandom3 ledMonRandom(909088);
 
     TClonesArray &cells = info->fCells;
     for (Int_t j=0;j<cells.GetEntries();++j) {
@@ -202,46 +203,68 @@ void anaTree(
       if ((T<5)||(T>45))
         continue;
 
-      if (isRefRun){
-        if (hRefSMVsT->GetBinContent(sm+1) < 5) hRefSMVsT->SetBinContent(sm+1,smT);
-      }
-
-      Double_t w        = 1;
-      if (ledR != 0 && useWeight)
-        w               = 1./(ledR*ledR);
-      Double_t w3       = 1.;
-      if (monR != 0 && useWeight)
-        w3              = 1./(monR*monR);;
-
-      if (!((ledM<=0)||(ledR<=0)) ){
-        if (writeDetailed){
-          gLedCellVsT[cellID]->Fill(smT,ledM,w);
-          gLedCellRMSDiffMeanVsT[cellID]->Fill(smT,ledR/ledM,1);
+      if (runWithRand){
+        for ( UInt_t s = 0; s < deltaTimeS; s++){
+          Double_t ledcurrent     = 0;
+          Double_t ledMoncurrent  = 0;
+          if (!((ledM<=0)||(ledR<=0)) ){
+            ledcurrent              = ledRandom.Gaus(ledM,ledR);
+            if (writeDetailed){
+              gLedCellVsT[cellID]->Fill(smT,ledcurrent);
+              if (s==0) gLedCellRMSDiffMeanVsT[cellID]->Fill(smT,ledR/ledM,1);
+            }
+            gLedVsT[sm]->Fill(T,ledcurrent);
+          }
+          if (!((monM<=0)||(monR<=0)) ){
+            ledMoncurrent         = ledMonRandom.Gaus(monM,monR);
+            if (writeDetailed){
+              gLedMonCellVsT[cellID]->Fill(smT,ledMoncurrent);
+              if (s==0) gLedMonCellRMSDiffMeanVsT[cellID]->Fill(smT,monR/monM,1);
+            }
+            gLedMonVsT[sm]->Fill(T,ledMoncurrent);
+          }
+          if ( (ledcurrent<=0) || (ledMoncurrent<=0) )
+            continue;
+          gRatVsT[sm]->Fill(T,ledcurrent/ledMoncurrent);
+          gRatCellVsT[cellID]->Fill(smT,ledcurrent/ledMoncurrent);
+          gRatECellVsT[cellID]->Fill(smT,1);
+          hLedVsLength[sm]->Fill(deltaTime/60,ledcurrent);
+          hLedMonVsLength[sm]->Fill(deltaTime/60,ledMoncurrent);
         }
-        gLedVsT[sm]->Fill(T,ledM,w);
-      }
+      } else {
+        Double_t w        = 1;
+        if (ledR != 0 && useWeight)
+          w               = 1./(ledR*ledR);
+        Double_t w3       = 1.;
+        if (monR != 0 && useWeight)
+          w3              = 1./(monR*monR);;
 
-      if (!((monM<=0)||(monR<=0)) ){
-        if (writeDetailed){
-          gLedMonCellVsT[cellID]->Fill(smT,monM,w3);
-          gLedMonCellRMSDiffMeanVsT[cellID]->Fill(smT,monR/monM,1);
+        if (!((ledM<=0)||(ledR<=0)) ){
+          if (writeDetailed){
+            gLedCellVsT[cellID]->Fill(smT,ledM,w);
+            gLedCellRMSDiffMeanVsT[cellID]->Fill(smT,ledR/ledM,1);
+          }
+          gLedVsT[sm]->Fill(T,ledM,w);
         }
-        gLedMonVsT[sm]->Fill(T,monM,w3);
-      }
-      if ( (ledM<=0)||(ledR<=0) || (monM<=0)||(monR<=0) )
-        continue;
 
-      Double_t ratErr = ledM/monM * TMath::Sqrt((ledR*ledR)/(ledM*ledM)+(monR*monR)/(monM*monM));
-      Double_t w2=1./(ratErr*ratErr);
-      if (!useWeight) w2 = 1;
-      gRatVsT[sm]->Fill(T,ledM/monM,w2);
-      gRatCellVsT[cellID]->Fill(smT,ledM/monM,w2);
-      gRatECellVsT[cellID]->Fill(smT,ratErr,w2);
-      hLedVsLength[sm]->Fill(deltaTime/60,ledM,w);
-      hLedMonVsLength[sm]->Fill(deltaTime/60,monM,w);
-      if (isRefRun){
-        hRefRunCellIdVsRat->SetBinContent(cellID+1,ledM/monM);
-        hRefRunCellIdVsRat->SetBinError(cellID+1,ratErr);
+        if (!((monM<=0)||(monR<=0)) ){
+          if (writeDetailed){
+            gLedMonCellVsT[cellID]->Fill(smT,monM,w3);
+            gLedMonCellRMSDiffMeanVsT[cellID]->Fill(smT,monR/monM,1);
+          }
+          gLedMonVsT[sm]->Fill(T,monM,w3);
+        }
+        if ( (ledM<=0)||(ledR<=0) || (monM<=0)||(monR<=0) )
+          continue;
+
+        Double_t ratErr = ledM/monM * TMath::Sqrt((ledR*ledR)/(ledM*ledM)+(monR*monR)/(monM*monM));
+        Double_t w2=1./(ratErr*ratErr);
+        if (!useWeight) w2 = 1;
+        gRatVsT[sm]->Fill(T,ledM/monM,w2);
+        gRatCellVsT[cellID]->Fill(smT,ledM/monM,w2);
+        gRatECellVsT[cellID]->Fill(smT,ratErr,w2);
+        hLedVsLength[sm]->Fill(deltaTime/60,ledM,w);
+        hLedMonVsLength[sm]->Fill(deltaTime/60,monM,w);
       }
     }
   }
@@ -258,6 +281,7 @@ void anaTree(
     hAverageT[i]->Write();
     hAverageTSorted[i]->Write();
   }
+  hAverageTPerSM->Write();
   if (hadRefRun){
     hRefRunCellIdVsRat->Write();
     hRefSMVsT->Write();

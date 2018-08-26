@@ -15,7 +15,7 @@
 
 class LDraw : public TNamed {
  public:
-  LDraw(const char *name, const char *fname="tempinfo.root"); 
+  LDraw(const char *name, const char *fname="tempinfo.root");
   virtual ~LDraw() {;}
   TObjArray *GetArray()                          { return fArr; }
   void       Compute();
@@ -27,7 +27,7 @@ class LDraw : public TNamed {
   TH1       *GetFracRun(Int_t sm, Int_t t) const;
   Int_t      GetRunNo(Int_t run)           const { return (static_cast<LInfo*>(fArr->At(run)))->GetRunNo(); }
   TObjArray *fArr;     // array with info
-  Bool_t     fDoPrint; // if true then print canvases  
+  Bool_t     fDoPrint; // if true then print canvases
   ClassDef(LDraw, 1); // Led draw class
 };
 #endif
@@ -50,11 +50,11 @@ void LDraw::Compute()
     if (fDoPrint) {
       linfo->Print();
       cout << "fraction good strips ";
-      for (Int_t i=0;i<20;++i) 
+      for (Int_t i=0;i<20;++i)
 	cout << linfo->FracStrips(i) << " ";
       cout << endl;
       cout << "fraction good towers ";
-      for (Int_t i=0;i<20;++i) 
+      for (Int_t i=0;i<20;++i)
 	cout << linfo->FracLeds(i) << " ";
       cout << endl;
     }
@@ -91,7 +91,7 @@ void LDraw::DrawAll()
 TCanvas *LDraw::DrawFrac(Int_t type) const
 {
   const char *tname="Led";
-  if (type==0) 
+  if (type==0)
     tname = "LedMon";
   TString lab(Form("cLedFrac_%s_%s",tname,GetName()));
   TCanvas *c = new TCanvas(lab,lab,1200,800);
@@ -157,7 +157,7 @@ TH1 *LDraw::GetFracRun(Int_t sm, Int_t t) const
     if (!linfo)
       continue;
     Double_t val = 0;
-    if (t==0) 
+    if (t==0)
       val = linfo->FracStrips(sm);
     else
       val = linfo->FracLeds(sm);
@@ -166,7 +166,7 @@ TH1 *LDraw::GetFracRun(Int_t sm, Int_t t) const
   return ret;
 }
 
-void plotL_period(const char *period, Bool_t doprint=0) 
+void plotL_period(const char *period, Bool_t doprint=0)
 {
   LDraw d(period);
   d.SetPrint(doprint);
@@ -175,7 +175,7 @@ void plotL_period(const char *period, Bool_t doprint=0)
   if (0) {
     d.DrawFrac(0);
     d.DrawFrac(1);
-  } else 
+  } else
     d.DrawAll();
 }
 
@@ -193,7 +193,7 @@ void plot_OCDB_LED_all()
   TObjArray objs;
   while ((key = (TKey*)next())) {
     TClass *cl = gROOT->GetClass(key->GetClassName());
-    if (!cl->InheritsFrom("TObjArray")) 
+    if (!cl->InheritsFrom("TObjArray"))
       continue;
     TObjArray *arr=dynamic_cast<TObjArray*>(key->ReadObj());
     objs.AddAll(arr);
@@ -217,8 +217,8 @@ void plot_OCDB_LED_all()
   }
 }
 
-#if 0
-void test_geo()
+#if 1
+void test_geo( Int_t smIn )
 {
   AliEMCALGeometry *g=AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
   Int_t kSM=g->GetNumberOfSuperModules();
@@ -231,10 +231,10 @@ void test_geo()
     TH2 *h2f = new TH2F(Form("hsm%d",i),Form(";col;row"), ncol, -0.5, ncol-0.5, nrow, -0.5, nrow-0.5);
     for (Int_t col=0;col<ncol;++col) {
       for (Int_t row=0;row<nrow;++row) {
-	Int_t  id = g->GetAbsCellIdFromCellIndexes(i,row,col); 
-	cout << "Id " << id << " " << row << " " << col << endl;
-	Int_t bin = h2f->FindBin(col,row);
-	h2f->SetBinContent(bin,id);
+        Int_t  id = g->GetAbsCellIdFromCellIndexes(i,row,col);
+        cout << "Id " << id << " " << row << " " << col << endl;
+        Int_t bin = h2f->FindBin(col,row);
+        h2f->SetBinContent(bin,id);
       }
     }
     h2f->Draw("text");
@@ -242,9 +242,10 @@ void test_geo()
   }
 
   //row==phi, col==eta
-  Int_t sm=18;
+  Int_t sm=smIn;
   Int_t nrow = g->GetNumberOfCellsInPhiDirection(sm);
   Int_t ncol = g->GetNumberOfCellsInEtaDirection(sm);
+  cout << "testing" << endl;
   cout << "sm " << sm << ": " << nrow << " " << ncol << endl;
   for (Int_t col=0;col<ncol;++col) {
     for (Int_t row=0;row<nrow;++row) {
@@ -252,7 +253,7 @@ void test_geo()
       Int_t ocol=col, orow=row;
       g->ShiftOfflineToOnlineCellIndexes(sm, orow, ocol);
       if ((orow!=row) || (ocol!=col))
-	cout << "SM " << sm << " id " << id << ": " << row << " " << col << " - " << orow << " " << ocol << endl;
+        cout << "SM " << sm << " id " << id << ": " << row << " " << col << " - " << orow << " " << ocol << endl;
     }
   }
 }
