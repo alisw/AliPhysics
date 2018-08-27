@@ -162,8 +162,8 @@ void AliAnalysisTaskPHOSTriggerQA::UserExec(Option_t *)
     FillHistogram("hNev",1.); // triggered events
   
   TString trigClasses = event->GetFiredTriggerClasses();
-  printf("\nEvent %d: %d non-zero trigger digits %s\n",
-	 fEventCounter,trgESD->GetEntries(),trigClasses.Data());
+  // printf("\nEvent %d: %d non-zero trigger digits %s\n",
+	 // fEventCounter,trgESD->GetEntries(),trigClasses.Data());
 
   // Get PHOS rotation matrices from ESD and set them to the PHOS geometry
   char key[55] ;  
