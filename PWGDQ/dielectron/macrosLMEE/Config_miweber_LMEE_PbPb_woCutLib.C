@@ -964,6 +964,14 @@ void SetupAODtrackCutsRun3_FT2_ESD(AliDielectron *die)
   fesdTrackCuts->SetMinNClustersTPC(70);	
   fesdTrackCuts->SetMaxChi2PerClusterTPC(3.5);
 
+   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv TRACK CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
+  AliDielectronVarCuts *varCuts    = new AliDielectronVarCuts("VarCuts","VarCuts");
+  
+  // kinematic cuts
+  varCuts->AddCut(AliDielectronVarManager::kPt,           0.2, 200.);
+  varCuts->AddCut(AliDielectronVarManager::kEta,         -0.8, 0.8);
+  
+
    /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv PID CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
 
   AliDielectronPID *pidCuts        = new AliDielectronPID("PIDCuts","PIDCuts");
@@ -983,6 +991,8 @@ void SetupAODtrackCutsRun3_FT2_ESD(AliDielectron *die)
   // activate the cut sets (order might be CPU timewise important)
   cuts->AddCut(pidCutsMC); // commented in for the moment -> only true electrons
   die->GetTrackFilter().AddCuts(pidCutsMC);
+  cuts->AddCut(varCuts);
+  die->GetTrackFilter().AddCuts(varCuts);
   cuts->AddCut(fesdTrackCuts);
   die->GetTrackFilter().AddCuts(fesdTrackCuts);
   cuts->AddCut(pidCuts);
@@ -1087,6 +1097,13 @@ void SetupAODtrackCutsRun3_FT2_noPID_ESD(AliDielectron *die)
   fesdTrackCuts->SetRequireTPCRefit(kTRUE);
   fesdTrackCuts->SetMinNClustersTPC(70);	
   fesdTrackCuts->SetMaxChi2PerClusterTPC(3.5);
+  
+  /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv TRACK CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
+  AliDielectronVarCuts *varCuts    = new AliDielectronVarCuts("VarCuts","VarCuts");
+  
+  // kinematic cuts
+  varCuts->AddCut(AliDielectronVarManager::kPt,           0.2, 200.);
+  varCuts->AddCut(AliDielectronVarManager::kEta,         -0.8, 0.8);
 
 
    /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv MC PID CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
@@ -1099,6 +1116,8 @@ void SetupAODtrackCutsRun3_FT2_noPID_ESD(AliDielectron *die)
   // activate the cut sets (order might be CPU timewise important)
   cuts->AddCut(pidCutsMC); // commented in for the moment -> only true electrons
   die->GetTrackFilter().AddCuts(pidCutsMC);
+  cuts->AddCut(varCuts);
+  die->GetTrackFilter().AddCuts(varCuts);
   cuts->AddCut(fesdTrackCuts);
   die->GetTrackFilter().AddCuts(fesdTrackCuts);
   
