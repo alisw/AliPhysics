@@ -28,15 +28,18 @@ else()
     if(DEFINED ALITPCCOMMON_DIR)
         set(ALITPCCOMMON_BUILD_TYPE "ALIROOT")
         add_subdirectory(${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking TPCCAGPUTracking)
+#        add_subdirectory(${ALITPCCOMMON_DIR}/sources/TPCFastTransformation TPCFastTransformation)
         include_directories(${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/SliceTracker
                             ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/Merger
                             ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/GlobalTracker
-                            ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/DataCompression)
+                            ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/DataCompression
+                            ${ALITPCCOMMON_DIR}/sources/TPCFastTransformation)
         add_definitions(-DHAVE_ALITPCCOMMON)
     else()
         message(FATAL_ERROR "cmake variable ALITPCCOMMON_DIR is not defined")
     endif()
     set(LIBDEPS ${LIBDEPS} AliTPCCAGPUTracking)
+#    set(LIBDEPS ${LIBDEPS} AliTPCFastTransformation)
 endif()
 
 # Module
