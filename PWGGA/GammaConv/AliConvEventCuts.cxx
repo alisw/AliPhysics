@@ -985,6 +985,7 @@ void AliConvEventCuts::PrintCutsWithValues() {
     printf("%d",fCuts[ic]);
   }
   printf("\n\n");
+  printf("EnergyVar-enum: '%i', PeriodVar-enum: '%i' \n", fEnergyEnum, fPeriodEnum );
   if (fIsHeavyIon == 0) {
     printf("Running in pp mode \n");
     if (fSpecialTrigger == 0){
