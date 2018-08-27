@@ -68,6 +68,11 @@ public:
     fFixRflOverSig=kTRUE;
   }
   void SetReflVnOption(Int_t opt) {fVnRflOpt=opt;}
+  void SetReflVnParLimits(Double_t min, Double_t max) {
+    fVnRflLimited=kTRUE;
+    fVnRflMin=min;
+    fVnRflMax=max;
+  }
   void IncludeSecondGausPeak(Double_t mass, Bool_t fixm, Double_t width, Bool_t fixw, Bool_t doVn){
     fSecondPeak=kTRUE; fSecMass=mass; fSecWidth=width;
     fFixSecMass=fixm;  fFixSecWidth=fixw;
@@ -208,6 +213,9 @@ private:
   Bool_t              fSmoothRfl;                   /// switch for smoothing of reflection template
   Double_t            fRawYieldHelp;                /// internal variable for fit with reflections
   Int_t               fVnRflOpt;                    /// option for reflection vn type
+  Bool_t              fVnRflLimited;                /// flag to limit or not the vn of reflections
+  Double_t            fVnRflMin;                    /// minimum vn of reflections
+  Double_t            fVnRflMax;                    /// maximum vn of reflections
   Bool_t              fSecondPeak;                  /// switch off/on second peak (for D+->KKpi in Ds)
   TF1*                fMassSecPeakFunc;             /// fit function for second peak
   Int_t               fNParsSec;                    /// number of parameters in second peak fit function
@@ -221,7 +229,7 @@ private:
   Int_t               fHarmonic;                    /// harmonic number for drawing
 
     /// \cond CLASSDEF
-  ClassDef(AliHFVnVsMassFitter,3);
+  ClassDef(AliHFVnVsMassFitter,4);
     /// \endcond
 };
 #endif //ALIHFVNVSMASSFITTER
