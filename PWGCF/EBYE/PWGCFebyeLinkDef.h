@@ -88,7 +88,7 @@
 #pragma link C++ class AliAnalysisTaskNetLambdaMCTrad+;
 #pragma link C++ class AliAnalysisTaskNetLambdaTrad+;
 
-#pragma link C++ classAliAnalysisTaskEbyeNetChargeFluctuations+;
+#pragma link C++ class AliAnalysisTaskEbyeNetChargeFluctuations+;
 
 
 #endif
