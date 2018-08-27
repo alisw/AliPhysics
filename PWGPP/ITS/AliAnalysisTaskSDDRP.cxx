@@ -95,6 +95,8 @@ AliAnalysisTaskSDDRP::AliAnalysisTaskSDDRP() : AliAnalysisTaskSE("SDD RecPoints"
   fProfTrPtsLay4VsTime(0),
   fProfFracTrRecLay3VsTime(0),
   fProfFracTrRecLay4VsTime(0),
+  fProfFracTrkWithPntLay3VsTime(0),
+  fProfFracTrkWithPntLay4VsTime(0),
   fResp(0),
   fTrigConfig(0),
   fUseITSsaTracks(kFALSE),
@@ -345,6 +347,10 @@ void AliAnalysisTaskSDDRP::UserCreateOutputObjects() {
   fProfRecPtsLay4VsTime = new TProfile("profRecPtsLay4VsTime"," ; time (sec) ; nRecPts Layer4",500,0.,1000.*60);
   fOutput->Add(fProfRecPtsLay3VsTime);
   fOutput->Add(fProfRecPtsLay4VsTime);
+  fProfFracTrkWithPntLay3VsTime = new TProfile("profFracTrkWithPntLay3VsTime"," ; time (sec) ; frac of tracks with point in Layer3",500,0.,1000.*60);
+  fProfFracTrkWithPntLay4VsTime = new TProfile("profFracTrkWithPntLay4VsTime"," ; time (sec) ; frac of tracks with point in Layer4",500,0.,1000.*60);
+  fOutput->Add(fProfFracTrkWithPntLay3VsTime);
+  fOutput->Add(fProfFracTrkWithPntLay4VsTime);
   fProfTrPtsLay3VsTime = new TProfile("profTrPtsLay3VsTime"," ; time (sec) ; nTrPts Layer3",500,0.,1000.*60);
   fProfTrPtsLay4VsTime = new TProfile("profTrPtsLay4VsTime"," ; time (sec) ; nTrPts Layer4",500,0.,1000.*60);
   fOutput->Add(fProfTrPtsLay3VsTime);
@@ -462,6 +468,8 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
   fProfTrPtsLay4VsTime->SetName(Form("profTrPtsLay4VsTimeRun%d",esd->GetRunNumber()));
   fProfFracTrRecLay3VsTime->SetName(Form("profFracTrRecLay3VsTimeRun%d",esd->GetRunNumber()));
   fProfFracTrRecLay4VsTime->SetName(Form("profFracTrRecLay4VsTimeRun%d",esd->GetRunNumber()));
+  fProfFracTrkWithPntLay3VsTime->SetName(Form("profFracTrkWithPntLay3VsTime%d",esd->GetRunNumber()));
+  fProfFracTrkWithPntLay4VsTime->SetName(Form("profFracTrkWithPntLay4VsTime%d",esd->GetRunNumber()));
   PostData(1, fOutput);
 
   fHistNEvents->Fill(-1);
@@ -498,6 +506,9 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
   Int_t ntracks = esd->GetNumberOfTracks();
   Int_t nTrPtsLay3=0;
   Int_t nTrPtsLay4=0;
+  Int_t nTrWithPtIn3=0;
+  Int_t nTrWithPtIn4=0;
+  Int_t nAccTr=0;
   for (Int_t itrack=0; itrack < ntracks; itrack++) {
     AliESDtrack * track = esd->GetTrack(itrack);
     if (!track) continue;
@@ -521,9 +532,15 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
     for(Int_t iBit=0; iBit<6; iBit++){
       if(clumap&(1<<iBit)) fHistCluInLay->Fill(iBit);
     }
-    if(clumap&(1<<2)) fEtaPhiTracksLay3->Fill(eta,phi);
-    if(clumap&(1<<3)) fEtaPhiTracksLay4->Fill(eta,phi);
-
+    nAccTr++;
+    if(clumap&(1<<2)){
+      fEtaPhiTracksLay3->Fill(eta,phi);
+      nTrWithPtIn3++;
+    }
+    if(clumap&(1<<3)){
+      fEtaPhiTracksLay4->Fill(eta,phi);
+      nTrWithPtIn4++;
+    }
 
     Double_t dedx[4];
     track->GetITSdEdxSamples(dedx);
@@ -603,12 +620,20 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
 
   fProfTrPtsLay3VsTime->Fill(tevsec,nTrPtsLay3);
   fProfTrPtsLay4VsTime->Fill(tevsec,nTrPtsLay4);
-  Double_t frac3=0;
-  if(nRecPtsLay3>0) frac3=(Double_t)nTrPtsLay3/(Double_t)nRecPtsLay3;
-  Double_t frac4=0;
-  if(nRecPtsLay4>0) frac4=(Double_t)nTrPtsLay4/(Double_t)nRecPtsLay4;
-  fProfFracTrRecLay3VsTime->Fill(tevsec,frac3);
-  fProfFracTrRecLay4VsTime->Fill(tevsec,frac4);
+  if(nRecPtsLay3>0){
+    Double_t frac3=(Double_t)nTrPtsLay3/(Double_t)nRecPtsLay3;
+    fProfFracTrRecLay3VsTime->Fill(tevsec,frac3);
+  }
+  if(nRecPtsLay4>0){
+    Double_t frac4=(Double_t)nTrPtsLay4/(Double_t)nRecPtsLay4;
+    fProfFracTrRecLay4VsTime->Fill(tevsec,frac4);
+  }
+  if(nAccTr>0){
+    Double_t fracTrPt3=(Double_t)nTrWithPtIn3/(Double_t)nAccTr;
+    Double_t fracTrPt4=(Double_t)nTrWithPtIn4/(Double_t)nAccTr;
+    fProfFracTrkWithPntLay3VsTime->Fill(tevsec,fracTrPt3);
+    fProfFracTrkWithPntLay4VsTime->Fill(tevsec,fracTrPt4);
+  }
 
   AliESDInputHandlerRP *hand = dynamic_cast<AliESDInputHandlerRP*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   TTree* tR = 0;
