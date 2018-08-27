@@ -93,7 +93,7 @@ public:
   float NSigmaTOFH() const;
   float NSigmaTOFA() const;
 
-  float MassTOFDPG() const;
+  float MassTOF() const;
   //
   /**************************/
 
@@ -202,7 +202,7 @@ public:
   void SetNSigmaTOFH(const float& x);
   void SetNSigmaTOFA(const float& x);
 
-  void SetMassTOFDPG(const float& x);
+  void SetMassTOF(const float& x);
   //
   /**************************************************/
   
@@ -381,7 +381,7 @@ public:
   float fNSigmaTOFT;      ///< nsigma TPC for triton
   float fNSigmaTOFH;      ///< nsigma TPC for he3
   float fNSigmaTOFA;      ///< nsigma TPC for alpha
-  float fMassTOFDPG;      ///< 
+  float fMassTOF;      ///< 
   //
   /******************************************************/
   

@@ -102,6 +102,8 @@ public:
   float GetMaxTPCchiNdof() const { return fMaxTPCchiNdof; }
   float GetMaxSigmaToVertex() const { return fMaxSigmaToVertex; }
 
+
+
   /// Use TPC & TOF information
   bool GetDualNsigma() const { return fNsigmaTPCTOF; }
   bool GetNsigmaTPConly() const { return fNsigmaTPConly; }
@@ -239,7 +241,6 @@ inline void AliFemtoESDTrackCut::SetPidProbPion(const float& lo,const float& hi)
 inline void AliFemtoESDTrackCut::SetPidProbKaon(const float& lo,const float& hi){fPidProbKaon[0]=lo; fPidProbKaon[1]=hi;}
 inline void AliFemtoESDTrackCut::SetPidProbProton(const float& lo,const float& hi){fPidProbProton[0]=lo; fPidProbProton[1]=hi;}
 inline void AliFemtoESDTrackCut::SetPidProbMuon(const float& lo,const float& hi){fPidProbMuon[0]=lo; fPidProbMuon[1]=hi;}
-
 
 
 inline void AliFemtoESDTrackCut::SetLabel(const bool& flag){fLabel=flag;}

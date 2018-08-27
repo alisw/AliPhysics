@@ -332,7 +332,7 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 	  
 	  //
 	  if (fMostProbable == 13) {
-	    if (IsDeuteronNSigma(track->P().Mag(),track->MassTOFDPG(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD()))
+	     if (IsDeuteronNSigma(track->P().Mag(),track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD()))
 	      imost = 13;
 	  }
 	  else if (fMostProbable == 14) {
@@ -1032,6 +1032,7 @@ bool AliFemtoESDTrackCut::IsPionNSigma(float mom, float nsigmaTPCPi, float nsigm
 }
 
 
+
 bool AliFemtoESDTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP)
 {
   if (fNsigmaTPCTOF) {
@@ -1067,12 +1068,15 @@ bool AliFemtoESDTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsig
 
 
 /***********************************************************************/
+
+
 bool AliFemtoESDTrackCut::IsDeuteronNSigma(float mom, float massTOFPDG,float sigmaMass, float nsigmaTPCD, float nsigmaTOFD)
 {
+  double massPDGD=1.8756;
   if (fNsigmaTPCTOF) {
-    if (mom > 1) {  //if TOF avaliable: && (nsigmaTOFD != -1000) --> always TOF!
+    if (mom > 1) {  //if TOF avaliable: && (nsigmaTOFD != -1000) --> always TOF
       //if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP )/TMath::Sqrt(2) < 3.0)
-      if ((TMath::Hypot( nsigmaTOFD, nsigmaTPCD ) < fNsigma) && (TMath::Abs(massTOFPDG)<sigmaMass))
+      if ((TMath::Hypot( nsigmaTOFD, nsigmaTPCD ) < fNsigma) && (TMath::Abs(massTOFPDG-massPDGD*massPDGD)<sigmaMass))
 	return true;
     }
     else {
@@ -1083,6 +1087,7 @@ bool AliFemtoESDTrackCut::IsDeuteronNSigma(float mom, float massTOFPDG,float sig
 
   return false;
 }
+
 
 bool AliFemtoESDTrackCut::IsTritonNSigma(float mom, float nsigmaTPCT, float nsigmaTOFT)
 {
