@@ -3,6 +3,7 @@
 #include <TCanvas.h>
 #include <TDatime.h>
 #include <TFile.h>
+#include <TKey.h>
 #include <TGrid.h>
 #include <TH2F.h>
 #include <TKey.h>
@@ -192,9 +193,9 @@ void plot_OCDB_LED_all()
   TKey *key=0;
   TObjArray objs;
   while ((key = (TKey*)next())) {
-    TClass *cl = gROOT->GetClass(key->GetClassName());
-    if (!cl->InheritsFrom("TObjArray"))
-      continue;
+//     TClass *cl = gROOT->GetClass(key->GetClassName());
+//     if (!cl->InheritsFrom("TObjArray"))
+//       continue;
     TObjArray *arr=dynamic_cast<TObjArray*>(key->ReadObj());
     objs.AddAll(arr);
   }
