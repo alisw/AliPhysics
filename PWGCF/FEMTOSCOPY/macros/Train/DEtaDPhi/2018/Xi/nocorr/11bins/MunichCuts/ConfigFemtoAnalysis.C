@@ -266,7 +266,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 					aniter = ichg * numOfMultBins + imult;
 					anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(zvertbino, -10.0, 10.0, multbino, multbins[imult], multbins[imult+1]);
-					anetaphitpc[aniter]->SetNumEventsToMix(10);
+					anetaphitpc[aniter]->SetNumEventsToMix(5);
 					anetaphitpc[aniter]->SetMinSizePartCollection(1);
 					anetaphitpc[aniter]->SetVerboseMode(kFALSE);//~~~~~~~~~~~~~~~~
 
