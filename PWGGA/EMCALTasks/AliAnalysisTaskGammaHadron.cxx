@@ -1494,7 +1494,6 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 			//..get number of current events in pool
 			Int_t nMix = pool->GetCurrentNEvents();
 
-			printf("     MHO: Using the Pool!  %d events in pool.\n",nMix);
 //			cout<<"number of events in pool: "<<nMix<<endl;
 			for(Int_t jMix=0; jMix<nMix; jMix++)
 			{
