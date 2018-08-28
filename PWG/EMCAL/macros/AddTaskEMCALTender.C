@@ -31,7 +31,8 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   Bool_t enableMCGenRemovTrack= 1,        // apply the MC generators rejection also for track matching  
   TString removeMCGen1        = "",       // name of generator input to be accepted
   TString removeMCGen2        = "",       // name of generator input to be accepted
-  TString customBCmap         = ""        // location of custom bad channel map (full path including file)
+  TString customBCmap         = "",       // location of custom bad channel map (full path including file)
+  Bool_t useRWTempCalibRun2   = kFALSE    // switch for usage of temperature calib in run2
 ) 
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -74,7 +75,8 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
     configbuilder << (updateCellOnly ? "kTRUE" : "kFALSE") << ", ";
     configbuilder << timeMin << ", ";
     configbuilder << timeMax << ", ";
-    configbuilder << timeCut;
+    configbuilder << timeCut << ", ";
+    configbuilder << diffEAggregation;
     configbuilder << ")";
     std::string configbuilderstring = configbuilder.str();
     std::cout << "Running config macro " << configbuilderstring << std::endl;
@@ -90,8 +92,10 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
 
   if (pass) 
     EMCALSupply->SetPass(pass);
-  if (customBCmap!="") 
+  if (customBCmap!="")
     EMCALSupply->SetCustomBC(customBCmap);
+  if (useRWTempCalibRun2)
+    EMCALSupply->SwitchUseRunDepTempCalibRun2(useRWTempCalibRun2);
 
   if (evhand->InheritsFrom("AliESDInputHandler")) {
     #ifdef __CLING__
