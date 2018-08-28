@@ -251,7 +251,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
       continue;
 
     for (const auto &lambda : lambdaCandidates) {
-      const AliSigma0ParticlePhotonMother sigma(lambda, photon, fInputEvent);
+      AliSigma0ParticlePhotonMother sigma(lambda, photon, fInputEvent);
       const float invMass = sigma.GetMass();
       const float armAlpha = sigma.GetArmenterosAlpha();
       const float armQt = sigma.GetArmenterosQt();
@@ -377,7 +377,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
       for (auto Photon : photonCandidates) {
         if (Photon.GetPt() > fPhotonPtMax || Photon.GetPt() < fPhotonPtMin)
           continue;
-        const AliSigma0ParticlePhotonMother sigma(Lambda, Photon, fInputEvent);
+        AliSigma0ParticlePhotonMother sigma(Lambda, Photon, fInputEvent);
         // Armenteros cut
         const float armAlpha = sigma.GetArmenterosAlpha();
         const float armQt = sigma.GetArmenterosQt();
@@ -406,7 +406,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
         continue;
       for (const auto &Lambda : lambdaCandidates) {
         if (!Lambda.GetIsUse()) continue;
-        const AliSigma0ParticlePhotonMother sigma(Lambda, Photon, fInputEvent);
+        AliSigma0ParticlePhotonMother sigma(Lambda, Photon, fInputEvent);
         // Armenteros cut
         const float armAlpha = sigma.GetArmenterosAlpha();
         const float armQt = sigma.GetArmenterosQt();
@@ -456,7 +456,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEventBinned(
       for (auto Photon : photonCandidates) {
         if (Photon.GetPt() > fPhotonPtMax || Photon.GetPt() < fPhotonPtMin)
           continue;
-        const AliSigma0ParticlePhotonMother sigma(Lambda, Photon, fInputEvent);
+        AliSigma0ParticlePhotonMother sigma(Lambda, Photon, fInputEvent);
         // Armenteros cut
         const float armAlpha = sigma.GetArmenterosAlpha();
         const float armQt = sigma.GetArmenterosQt();
@@ -481,7 +481,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEventBinned(
         continue;
       for (const auto &Lambda : lambdaCandidates) {
         if (!Lambda.GetIsUse()) continue;
-        const AliSigma0ParticlePhotonMother sigma(Lambda, Photon, fInputEvent);
+        AliSigma0ParticlePhotonMother sigma(Lambda, Photon, fInputEvent);
         // Armenteros cut
         const float armAlpha = sigma.GetArmenterosAlpha();
         const float armQt = sigma.GetArmenterosQt();
