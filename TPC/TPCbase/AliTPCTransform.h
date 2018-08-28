@@ -92,6 +92,14 @@ public:
   
   AliHLTTPCReverseTransformInfoV1* GetReverseTransformInfo();
 
+  Double_t GetTBinOffset() const { return fTBinOffset; }
+  Double_t GetDriftCorrPT() const { return fDriftCorrPT; }
+  Double_t GetVDCorrectionTime() const{ return fVDCorrectionTime; }
+  Double_t GetVDCorrectionTimeGY() const{ return fVDCorrectionTimeGY; }
+  Double_t GetTime0CorrTime() const{ return fTime0CorrTime; }
+  Double_t GetDeltaZCorrTime() const { return fDeltaZCorrTime; }
+  const Double_t* GetPrimVertex() const { return fPrimVtx; }
+
   //
 private:
   enum {  // time tolerances for various cache updates

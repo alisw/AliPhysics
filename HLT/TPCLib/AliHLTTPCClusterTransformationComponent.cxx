@@ -38,6 +38,8 @@
 #include "AliCDBEntry.h"
 #include "AliTPCcalibDB.h"
 
+//#include "TPCFastTransformQA.h"
+
 #include "TMath.h"
 #include "TObjString.h" 
 #include <cstdlib>
@@ -197,6 +199,9 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
   }
 
   //fgTransform.GetFastTransformNonConst().WriteQATree("fastTransformQA.root");
+  
+  //ali_tpc_common::tpc_fast_transformation::TPCFastTransformQA qa;
+  //qa.doQA( GetTimeStamp() );
 
   return iResult;
 } // end DoInit()
