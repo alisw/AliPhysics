@@ -819,13 +819,13 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00000113","1111111047032230000","0163503800000000");
 
   //multiple std dirGAMMA cuts for different studies
-  } else if (trainConfig == 281){ // EMCAL clusters pp 8 TeV
+  } else if (trainConfig == 281){ // EMCAL clusters pp 7 TeV
     cuts.AddCut("00000113","11111110b70322l0000","01631031000000d0"); // std
-  } else if (trainConfig == 282){ // EMCAL clusters pp 8 TeV
+  } else if (trainConfig == 282){ // EMCAL clusters pp 7 TeV
     cuts.AddCut("00000113","11111110b70322l0000","01631031000000d0"); // std
-  } else if (trainConfig == 283){ // EMCAL clusters pp 8 TeV
+  } else if (trainConfig == 283){ // EMCAL clusters pp 7 TeV
     cuts.AddCut("00000113","11111110b70322l0000","01631031000000d0"); // std
-  } else if (trainConfig == 284){ // EMCAL clusters pp 8 TeV
+  } else if (trainConfig == 284){ // EMCAL clusters pp 7 TeV
     cuts.AddCut("00000113","11111110b70322l0000","01631031000000d0"); // std
 
 
