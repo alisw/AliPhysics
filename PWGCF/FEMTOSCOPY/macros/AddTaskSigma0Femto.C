@@ -150,14 +150,17 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
     sigmaCuts->SetLightweight(true);
     sigmaCuts->SetTreeOutput(false);
   }
+  if (suffix == "2") {
+    sigmaCuts->SetSigmaSideband(0.005, 0.025);
+  }
+  if (suffix == "3") {
+    sigmaCuts->SetSigmaSideband(0.025, 0.05);
+  }
   if (suffix == "4") {
-    sigmaCuts->SetPhotonMaxPt(3);
+    sigmaCuts->SetSigmaSideband(0.025, 0.1);
   }
   if (suffix == "5") {
-    sigmaCuts->SetPhotonMaxPt(5);
-  }
-  if (suffix == "6") {
-    sigmaCuts->SetPhotonMaxPt(10);
+    sigmaCuts->SetSigmaSideband(0.05, 0.1);
   }
 
   AliSigma0PhotonMotherCuts *antiSigmaCuts =
@@ -170,14 +173,17 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
     antiSigmaCuts->SetLightweight(true);
     antiSigmaCuts->SetTreeOutput(false);
   }
+  if (suffix == "2") {
+    antiSigmaCuts->SetSigmaSideband(0.005, 0.025);
+  }
+  if (suffix == "3") {
+    antiSigmaCuts->SetSigmaSideband(0.025, 0.05);
+  }
   if (suffix == "4") {
-    antiSigmaCuts->SetPhotonMaxPt(3);
+    antiSigmaCuts->SetSigmaSideband(0.025, 0.1);
   }
   if (suffix == "5") {
-    antiSigmaCuts->SetPhotonMaxPt(5);
-  }
-  if (suffix == "6") {
-    antiSigmaCuts->SetPhotonMaxPt(10);
+    antiSigmaCuts->SetSigmaSideband(0.05, 0.1);
   }
 
   AliSigma0PhotonMotherCuts *sigmaPhotonCuts =
@@ -190,14 +196,17 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
     sigmaPhotonCuts->SetLightweight(true);
     sigmaPhotonCuts->SetTreeOutput(false);
   }
+  if (suffix == "2") {
+    sigmaPhotonCuts->SetSigmaSideband(0.005, 0.025);
+  }
+  if (suffix == "3") {
+    sigmaPhotonCuts->SetSigmaSideband(0.025, 0.05);
+  }
   if (suffix == "4") {
-    sigmaPhotonCuts->SetPhotonMaxPt(3);
+    sigmaPhotonCuts->SetSigmaSideband(0.025, 0.1);
   }
   if (suffix == "5") {
-    sigmaPhotonCuts->SetPhotonMaxPt(5);
-  }
-  if (suffix == "6") {
-    sigmaPhotonCuts->SetPhotonMaxPt(10);
+    sigmaPhotonCuts->SetSigmaSideband(0.05, 0.1);
   }
 
   AliSigma0PhotonMotherCuts *antiSigmaPhotonCuts =
@@ -210,14 +219,17 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
     antiSigmaPhotonCuts->SetLightweight(true);
     antiSigmaPhotonCuts->SetTreeOutput(false);
   }
+  if (suffix == "2") {
+    antiSigmaPhotonCuts->SetSigmaSideband(0.005, 0.025);
+  }
+  if (suffix == "3") {
+    antiSigmaPhotonCuts->SetSigmaSideband(0.025, 0.05);
+  }
   if (suffix == "4") {
-    antiSigmaPhotonCuts->SetPhotonMaxPt(3);
+    antiSigmaPhotonCuts->SetSigmaSideband(0.025, 0.1);
   }
   if (suffix == "5") {
-    antiSigmaPhotonCuts->SetPhotonMaxPt(5);
-  }
-  if (suffix == "6") {
-    antiSigmaPhotonCuts->SetPhotonMaxPt(10);
+    antiSigmaPhotonCuts->SetSigmaSideband(0.05, 0.1);
   }
 
   // Femto Collection
