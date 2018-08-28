@@ -21,9 +21,6 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton;
   cutnumberPhoton = "00200008400000002280920000";
-  if (suffix == "7") {
-    cutnumberPhoton = "10200008400000002280920000";
-  }
   TString cutnumberEvent = "00000000";
   TString periodNameV0Reader = "";
   Bool_t enableV0findingEffi = kFALSE;
@@ -120,26 +117,8 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
     antiv0Cuts->SetLightweight(true);
   }
   if (suffix == "1") {
-    v0Cuts->SetV0OnFlyStatus(true);
-    antiv0Cuts->SetV0OnFlyStatus(true);
-  }
-  if (suffix == "2") {
-    v0Cuts->SetK0Rejection(0., 0.);
-    antiv0Cuts->SetK0Rejection(0., 0.);
-    v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-    antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-    v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
-    antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
-    v0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
-    antiv0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
-  }
-  if (suffix == "3") {
-    v0Cuts->SetK0Rejection(0., 0.);
-    antiv0Cuts->SetK0Rejection(0., 0.);
-    v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-    antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-    v0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
-    antiv0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
+    v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::BothDaughtersCombined);
+    antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::BothDaughtersCombined);
   }
 
   if (suffix == "999") {
