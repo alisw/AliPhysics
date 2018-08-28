@@ -101,6 +101,7 @@
 #pragma link C++ class AliFemtoBetaTPairCut+;
 #pragma link C++ class AliFemtoCutMonitorPairBetaT+;
 #pragma link C++ class AliFemtoCutMonitorXi+;
+#pragma link C++ class AliFemtoTrioDEtaDPhiFctn+;
 
 #pragma link C++ class AliFemtoConfigObject-;
 #pragma link C++ class AliFemtoConfigObject::Painter;
