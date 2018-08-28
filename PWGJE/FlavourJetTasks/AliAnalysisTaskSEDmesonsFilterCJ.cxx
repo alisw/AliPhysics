@@ -1410,12 +1410,16 @@ void AliAnalysisTaskSEDmesonsFilterCJ::AddEventTracks(TClonesArray* coll, AliPar
     }
    
     if (allDaughters.Remove(track) == 0) {
-      new ((*coll)[n]) AliEmcalParticle(track);
-      n++;
-      AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is included", tracks->GetCurrentID(), track->Pt(), track->Eta(), track->Phi()));
+	if(fUseRejTracks){
+      	   if(fRan->Rndm() < fTrackIneff) continue;
+        }
+
+      	new ((*coll)[n]) AliEmcalParticle(track);
+      	n++;
+      	AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is included", tracks->GetCurrentID(), track->Pt(), track->Eta(), track->Phi()));
     }
     else {
-      AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is excluded", tracks->GetCurrentID(), track->Pt(), track->Eta(), track->Phi()));
+      	AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is excluded", tracks->GetCurrentID(), track->Pt(), track->Eta(), track->Phi()));
     }
   }
 }
@@ -1485,9 +1489,9 @@ void AliAnalysisTaskSEDmesonsFilterCJ::AddMCEventTracks(TClonesArray* coll, AliP
       
         
         if (allMCDaughters.Remove(mcpart) == 0) {
-            if(fUseRejTracks){
-              if(fRan->Rndm() < fTrackIneff) continue;
-            }
+           // if(fUseRejTracks){
+           //   if(fRan->Rndm() < fTrackIneff) continue;
+           // }
             new ((*coll)[n]) AliAODMCParticle(*mcpart);
             n++;
             AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is included", mctracks->GetCurrentID(), mcpart->Pt(), mcpart->Eta(), mcpart->Phi()));
