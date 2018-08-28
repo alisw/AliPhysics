@@ -834,6 +834,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 					//**** Correlation functions *******	
 					//***without corrections*****
+					/*
 					if(ichg >= 13)
 					  cdedpetaphinocorr[aniter] = new AliFemtoCorrFctnDEtaDPhiSimple(Form("cdedpnocorr%stpcM%i", chrgs[ichg], imult),23, 23);
 					else
@@ -849,10 +850,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					  cnonidtpc[aniter] = new AliFemtoCorrFctnNonIdDR(Form("cnonid%stpcM%i", chrgs[ichg], imult), nbinssh, 0.0,shqmax); //for non-identical partcles
 					  anetaphitpc[aniter]->AddCorrFctn(cnonidtpc[aniter]);
                                         }
+                    */
 
 
 					//***with corrections****
-					/*
 					if(ichg >= 13)
 					  cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections(Form("cdedp%stpcM%i", chrgs[ichg], imult),23, 23);
 					else
@@ -897,7 +898,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 					
 					anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);
-					*/
+					
 						       							
 					Manager->AddAnalysis(anetaphitpc[aniter]);
 				}
