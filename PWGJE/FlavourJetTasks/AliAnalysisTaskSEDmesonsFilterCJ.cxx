@@ -1489,9 +1489,6 @@ void AliAnalysisTaskSEDmesonsFilterCJ::AddMCEventTracks(TClonesArray* coll, AliP
       
         
         if (allMCDaughters.Remove(mcpart) == 0) {
-           // if(fUseRejTracks){
-           //   if(fRan->Rndm() < fTrackIneff) continue;
-           // }
             new ((*coll)[n]) AliAODMCParticle(*mcpart);
             n++;
             AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is included", mctracks->GetCurrentID(), mcpart->Pt(), mcpart->Eta(), mcpart->Phi()));
