@@ -9,6 +9,8 @@ ClassImp(AliSigma0ParticlePhotonMother)
       fRecMassPhoton(0),
       fRecMassLambda(0),
       fRecMass(0),
+      fMCLabelMother(-1),
+      fPDGCode(-1),
       fV0(),
       fPhoton() {}
 
@@ -21,6 +23,8 @@ AliSigma0ParticlePhotonMother::AliSigma0ParticlePhotonMother(
       fRecMassPhoton(0),
       fRecMassLambda(0),
       fRecMass(0),
+      fMCLabelMother(-1),
+      fPDGCode(-1),
       fV0(),
       fPhoton() {
   TLorentzVector track1, track2;
@@ -92,7 +96,7 @@ AliSigma0ParticlePhotonMother &AliSigma0ParticlePhotonMother::operator=(
 int AliSigma0ParticlePhotonMother::MatchToMC(
     const AliMCEvent *mcEvent, const int PIDmother,
     const std::vector<int> PIDdaughters, int &pdgLambdaMother,
-    int &pdgPhotonMother) const {
+    int &pdgPhotonMother) {
   const int labV0 = fV0.GetMCLabelV0();
   const int labPhoton = fPhoton.GetMCLabelV0();
   if (labV0 < 0 || labPhoton < 0) return -1;
@@ -117,6 +121,13 @@ int AliSigma0ParticlePhotonMother::MatchToMC(
   if ((pdgLambdaMother != PIDmother) || pdgPhotonMother != PIDmother) {
     return -1;
   }
+
+  fMCLabelMother = labMotherV0;
+  fPDGCode = pdgLambdaMother;
+
+  fPMC[0] = partMotherV0->Px();
+  fPMC[1] = partMotherV0->Py();
+  fPMC[2] = partMotherV0->Pz();
 
   return labMotherV0;
 }

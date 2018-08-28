@@ -9,8 +9,7 @@
 #include "AliSigma0ParticleV0.h"
 
 #include <iostream>
-ClassImp(AliFemtoDreamBasePart)
-AliFemtoDreamBasePart::AliFemtoDreamBasePart()
+ClassImp(AliFemtoDreamBasePart) AliFemtoDreamBasePart::AliFemtoDreamBasePart()
     : fIsReset(false),
       fGTI(0),
       fTrackBufferSize(0),
@@ -37,10 +36,9 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart()
       fIsMC(false),
       fUse(true),
       fIsSet(true),
-      fEvtMultiplicity(-1) {
-}
+      fEvtMultiplicity(-1) {}
 
-AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliFemtoDreamBasePart& part)
+AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliFemtoDreamBasePart &part)
     : fIsReset(part.fIsReset),
       fGTI(part.fGTI),
       fTrackBufferSize(part.fTrackBufferSize),
@@ -67,8 +65,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliFemtoDreamBasePart& part)
       fIsMC(part.fIsMC),
       fUse(part.fUse),
       fIsSet(part.fIsSet),
-      fEvtMultiplicity(part.fEvtMultiplicity) {
-}
+      fEvtMultiplicity(part.fEvtMultiplicity) {}
 
 AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(
     const AliFemtoDreamBasePart &obj) {
@@ -111,24 +108,24 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
       fP(TVector3(mother.GetPx(), mother.GetPy(), mother.GetPz())),
       fMCP(TVector3(mother.GetPxMC(), mother.GetPyMC(), mother.GetPzMC())),
       fPt(mother.GetPt()),
-      fMCPt(0),
+      fMCPt(mother.GetPtMC()),
       fP_TPC(0),
       fEta(),
-      fTheta(0),
-      fMCTheta(0),
+      fTheta(),
+      fMCTheta(),
       fPhi(),
       fPhiAtRadius(0),
-      fMCPhi(0),
+      fMCPhi(),
       fIDTracks(),
       fCharge(0),
       fCPA(0),
       fOrigin(kUnknown),
-      fPDGCode(0),
+      fPDGCode(mother.GetPDGCode()),
       fMCPDGCode(0),
       fPDGMotherWeak(0),
-      fMotherID(0),
+      fMotherID(mother.GetMCLabelMother()),
       fEvtNumber(0),
-      fIsMC(false),
+      fIsMC((mother.GetMCLabelMother() > 0)),
       fUse(true),
       fIsSet(true),
       fEvtMultiplicity(-1) {
@@ -137,10 +134,25 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
   fEta.push_back(mother.GetV0().GetNegDaughter().GetEta());
   fEta.push_back(mother.GetPhoton().GetNegDaughter().GetEta());
 
+  fTheta.push_back(mother.GetV0().GetPosDaughter().GetTheta());
+  fTheta.push_back(mother.GetPhoton().GetPosDaughter().GetTheta());
+  fTheta.push_back(mother.GetV0().GetNegDaughter().GetTheta());
+  fTheta.push_back(mother.GetPhoton().GetNegDaughter().GetTheta());
+
+  fMCTheta.push_back(mother.GetV0().GetPosDaughter().GetThetaMC());
+  fMCTheta.push_back(mother.GetPhoton().GetPosDaughter().GetThetaMC());
+  fMCTheta.push_back(mother.GetV0().GetNegDaughter().GetThetaMC());
+  fMCTheta.push_back(mother.GetPhoton().GetNegDaughter().GetThetaMC());
+
   fPhi.push_back(mother.GetV0().GetPosDaughter().GetPhi());
   fPhi.push_back(mother.GetPhoton().GetPosDaughter().GetPhi());
   fPhi.push_back(mother.GetV0().GetNegDaughter().GetPhi());
   fPhi.push_back(mother.GetPhoton().GetNegDaughter().GetPhi());
+
+  fMCPhi.push_back(mother.GetV0().GetPosDaughter().GetPhiMC());
+  fMCPhi.push_back(mother.GetPhoton().GetPosDaughter().GetPhiMC());
+  fMCPhi.push_back(mother.GetV0().GetNegDaughter().GetPhiMC());
+  fMCPhi.push_back(mother.GetPhoton().GetNegDaughter().GetPhiMC());
 
   fIDTracks.push_back(mother.GetV0().GetTrackLabelPos());
   fIDTracks.push_back(mother.GetV0().GetTrackLabelNeg());
@@ -148,8 +160,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
   fIDTracks.push_back(mother.GetPhoton().GetTrackLabelNeg());
 }
 
-AliFemtoDreamBasePart::~AliFemtoDreamBasePart() {
-}
+AliFemtoDreamBasePart::~AliFemtoDreamBasePart() {}
 
 void AliFemtoDreamBasePart::SetMCParticle(AliAODMCParticle *mcPart,
                                           AliMCEvent *evt) {
@@ -163,7 +174,7 @@ void AliFemtoDreamBasePart::SetMCParticle(AliAODMCParticle *mcPart,
   this->fIsSet = true;
   this->SetUse(true);
   this->fIsReset = false;
-  //find the original mother in the mc stack.
+  // find the original mother in the mc stack.
   int motherID = mcPart->GetMother();
   int lastMother = motherID;
   while (motherID != -1) {
@@ -175,7 +186,7 @@ void AliFemtoDreamBasePart::SetMCParticle(AliAODMCParticle *mcPart,
 
 void AliFemtoDreamBasePart::ResetMCInfo() {
   this->SetPt(0);
-  //a change
+  // a change
   this->SetEta(0);
   this->SetTheta(0);
   this->SetPhi(0);

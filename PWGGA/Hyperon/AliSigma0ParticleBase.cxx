@@ -17,6 +17,9 @@ ClassImp(AliSigma0ParticleBase)
       fMClabel(0),
       fPhi(0),
       fEta(0),
+      fTheta(0),
+      fPhiMC(0),
+      fThetaMC(0),
       fCharge(0),
       fDCAz(0.f),
       fDCAr(0.f),
@@ -38,6 +41,9 @@ AliSigma0ParticleBase::AliSigma0ParticleBase(const AliESDtrack *track, int pdg,
       fMClabel(0),
       fPhi(0),
       fEta(0),
+      fTheta(0),
+      fPhiMC(0),
+      fThetaMC(0),
       fCharge(0),
       fDCAz(0.f),
       fDCAr(0.f),
@@ -59,6 +65,7 @@ AliSigma0ParticleBase::AliSigma0ParticleBase(const AliESDtrack *track, int pdg,
   fTrackLabel = (filterbit == 128) ? -track->GetID() - 1 : track->GetID();
   fPhi = track->Phi();
   fEta = track->Eta();
+  fTheta = track->Theta();
   fUse = true;
 }
 
@@ -82,6 +89,9 @@ AliSigma0ParticleBase &AliSigma0ParticleBase::operator=(
   fTrackLabel = -obj.GetTrackLabel() - 1;  // for filterbit 128
   fPhi = obj.GetPhi();
   fEta = obj.GetEta();
+  fTheta = obj.GetTheta();
+  fPhiMC = obj.GetPhiMC();
+  fThetaMC = obj.GetThetaMC();
 
   fUse = obj.GetIsUse();
 
@@ -175,6 +185,8 @@ void AliSigma0ParticleBase::ProcessMCInfo(AliMCParticle *mcParticle,
   fPMC[2] = mcParticle->Pz();
   fPDGCode = mcParticle->PdgCode();
   fMClabel = mcParticle->GetLabel();
+  fPhiMC = mcParticle->Phi();
+  fThetaMC = mcParticle->Theta();
 
   if (mcParticle->GetMother() != 0) {
     AliMCParticle *mcMother = static_cast<AliMCParticle *>(
