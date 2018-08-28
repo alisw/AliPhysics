@@ -388,6 +388,7 @@ install(DIRECTORY benchmark DESTINATION PWGPP USE_SOURCE_PERMISSIONS)
 install(DIRECTORY EvTrkSelection/macros DESTINATION PWGPP/EvTrkSelection FILES_MATCHING PATTERN "*.C")
 install(FILES EvTrkSelection/macros/AddTaskTrackingUncert.C
 	      EvTrkSelection/macros/AddSingleTrackEfficiencyTaskForAutomaticQA.C
+	      EvTrkSelection/macros/main_AddSingleTrackEfficiencyTaskForAutomaticQA.C
 	      DESTINATION PWGPP/EvTrkSelection)
 install(FILES CalibMacros/CPass0/LoadLibraries.C
 	      CalibMacros/CPass0/ConfigCalibTrain.C
