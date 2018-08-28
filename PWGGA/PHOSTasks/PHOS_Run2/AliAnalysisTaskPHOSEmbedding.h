@@ -69,10 +69,7 @@ class AliAnalysisTaskPHOSEmbedding : public AliAnalysisTaskSE {
     TFile *fAODInput;//external AOD MC input.
     TTree *fAODTree;//aodTree of external AOD MC.
     AliAODEvent *fAODEvent;//AOD MC event
-    Int_t fNEvents;//event counter for real event loop
     Int_t fEventCounter;//event counter for real event loop
-    Int_t fEventLoopMin;
-    Int_t fEventLoopMax;
     AliAODCaloCells *fCellsPHOS;
     TTree *fDigitsTree ;  //! Digits
     TTree *fClustersTree; //! Clusters 
@@ -95,7 +92,7 @@ class AliAnalysisTaskPHOSEmbedding : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSEmbedding(const AliAnalysisTaskPHOSEmbedding&);
     AliAnalysisTaskPHOSEmbedding& operator=(const AliAnalysisTaskPHOSEmbedding&);
 
-    ClassDef(AliAnalysisTaskPHOSEmbedding, 9);
+    ClassDef(AliAnalysisTaskPHOSEmbedding, 10);
 };
 
 #endif

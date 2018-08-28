@@ -87,10 +87,7 @@ AliAnalysisTaskPHOSEmbedding::AliAnalysisTaskPHOSEmbedding(const char *name):
   fAODInput(0x0),
   fAODTree(0x0),
   fAODEvent(0x0),
-  fNEvents(0),
   fEventCounter(0),
-  fEventLoopMin(0),
-  fEventLoopMax(0),
   fCellsPHOS(0x0),
   fDigitsTree(0x0),
   fClustersTree(0x0),
@@ -188,34 +185,29 @@ void AliAnalysisTaskPHOSEmbedding::UserExec(Option_t *option)
     return;
   }
 
-
   if(fRunNumber != fEvent->GetRunNumber()){
     fRunNumber = fEvent->GetRunNumber();
     Init();
   }
 
-
-  if(fEventLoopMax > fEventCounter + fEventLoopMin){
-    fEventCounter++;
+  if(fAODInput){
+    AliInfo("fAODInput exists. No need to open external MC file.");
   }
-  else{//fEventCounter reaches Nevent in input AOD MC tree. go to next file.
-    AliInfo("fEventCounter reaches at fEventLoopMax. Go to next external MC file.");
-    Bool_t IsFileOK = OpenAODFile();//fNEvents are set here. //fEventCounter is reset here.
+  else{
+    AliInfo("fAODInput does not exist. Get fAODInput from external MC file.");
+    Bool_t IsFileOK = OpenAODFile();//fEventCounter is reset here.
     if(!IsFileOK){
       AliError(Form("external file (%s) could not be opened. return.",fAODPath.Data()));
       return;
     }
   }
 
-  AliInfo(Form("fEventCounter = %d in current MC AOD input.",fEventCounter));
-
-  fAODTree->GetEvent(fEventCounter + fEventLoopMin);
+  const Int_t Nev = fAODTree->GetEntries();
+  Int_t evID = Int_t((Nev-1) * fRandom3->Rndm());
+  AliInfo(Form("Extract event ID %d from %s.",evID,fAODPath.Data()));
+  fAODTree->GetEvent(evID);
 
   ConvertAODtoESD();
-
-  //To do
-  //SetPHOSCells
-  //SetClusters
 
   //start embedding
   CopyRecalibrateDigits();
@@ -282,7 +274,6 @@ void AliAnalysisTaskPHOSEmbedding::UserExec(Option_t *option)
     new((*fDigitsArr)[ndigit]) AliPHOSDigit(-1,idLong,float(amp),float(time),ndigit);
     ndigit++;
   }
-
 
   //Add Digits from Signal
   TClonesArray sdigits("AliPHOSDigit",0) ;
@@ -479,6 +470,7 @@ void AliAnalysisTaskPHOSEmbedding::Terminate(Option_t *option)
 {
   //Called once at the end of the query
   //In principle, this function is not needed...
+  if(fAODInput && fAODInput->IsOpen()) fAODInput->Close();
 
   AliInfo(Form("%s is done.",GetName()));
 
@@ -501,14 +493,11 @@ Bool_t AliAnalysisTaskPHOSEmbedding::UserNotify()
   TString runstr = ((TObjString *)(tx->At(5)))->String();
   Int_t runNum = runstr.Atoi();
 
-  UInt_t seed = UInt_t(runNum * 1e+4) + UInt_t(fileID);
-  AliInfo(Form("seed is %u",seed));
-
-  if(fRandom3){
-    delete fRandom3;
-    fRandom3 = 0x0;
+  if(!fRandom3){
+    UInt_t seed = UInt_t(runNum * 1e+4) + UInt_t(fileID);
+    AliInfo(Form("seed is %u",seed));
+    fRandom3 = new TRandom3(seed);
   }
-  fRandom3 = new TRandom3(seed);
 
   return kTRUE;
 }
@@ -577,18 +566,8 @@ Bool_t AliAnalysisTaskPHOSEmbedding::OpenAODFile()
   }
   fAODEvent = new AliAODEvent();
   fAODEvent->ReadFromTree(fAODTree);
-  fNEvents = fAODTree->GetEntries();
-
-  AliInfo(Form("%d events are stored in %s.",fNEvents,fAODPath.Data()));
-  fEventCounter = 0;//reset counter.
-
-  Int_t index1 = Int_t(fNEvents * fRandom3->Rndm());
-  Int_t index2 = Int_t(fNEvents * fRandom3->Rndm());
-
-  fEventLoopMin = TMath::Min(index1,index2);
-  fEventLoopMax = TMath::Max(index1,index2);
-  
-  AliInfo(Form("Event loop in external MC file will run over %d - %d.",fEventLoopMin,fEventLoopMax));
+  Int_t Nev = fAODTree->GetEntries();
+  AliInfo(Form("%d events are stored in %s.",Nev,fAODPath.Data()));
 
   return kTRUE;
 }
