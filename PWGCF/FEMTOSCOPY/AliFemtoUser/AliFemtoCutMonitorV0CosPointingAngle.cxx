@@ -226,7 +226,7 @@ void AliFemtoCutMonitorV0CosPointingAngle::SetBuildCosPointingAnglewParentInfo(b
     fCosPointingAnglewParentInfo->Sumw2();
   }
 
-  fCosPointingAngle = new TH1F(fCosPointingAnglewParentInfo->GetName(), fCosPointingAnglewParentInfo->GetTitle(),
+  fCosPointingAngle = new TH1F(fCosPointingAngle->GetName(), fCosPointingAngle->GetTitle(),
                                aNbins, aCosMin, aCosMax);
   fCosPointingAngle->Sumw2();
 }
