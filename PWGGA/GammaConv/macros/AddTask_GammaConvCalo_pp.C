@@ -484,6 +484,10 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
 
 
   // only std cuts
+  } else if ( trainConfig == 128){ // EMCAL clusters 8 TeV LHC12
+    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010"); // std
+  } else if ( trainConfig == 129){ // EMCAL clusters 8 TeV LHC12
+    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010"); // std
   } else if ( trainConfig == 130){ // EMCAL clusters 8 TeV LHC12
     cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010"); // std
   } else if ( trainConfig == 131){ // EMCAL clusters 8 TeV LHC12
@@ -590,6 +594,8 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163106100000010"); // std/
 
   // only std cuts
+  } else if ( trainConfig == 158){ //std EMC7
+    cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010"); // only EMC7
   } else if ( trainConfig == 159){ //std EMC7
     cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010"); // only EMC7
 
@@ -694,6 +700,8 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     cuts.AddCut("00081113","00200009327000008250403000","1111111067032230000","0163103100000010"); //
   // only std cuts
   } else if ( trainConfig == 181){ //std EGA
+    cuts.AddCut("00081113","00200009327000008250400000","1111111067032230000","0163103100000010"); // only EGA
+  } else if ( trainConfig == 182){ //std EGA
     cuts.AddCut("00081113","00200009327000008250400000","1111111067032230000","0163103100000010"); // only EGA
 
   //multiple std cuts for different studies
