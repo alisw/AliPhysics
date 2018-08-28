@@ -54,6 +54,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
       if (periodNameV0Reader.CompareTo("") != 0)
         fEventCuts->SetPeriodEnum(periodNameV0Reader);
       fV0ReaderV1->SetEventCuts(fEventCuts);
+      fEventCuts->SetFillCutHistograms("",kTRUE);
     }
 
     // Set AnalysisCut Number
