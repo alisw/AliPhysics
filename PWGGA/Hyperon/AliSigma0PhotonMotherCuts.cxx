@@ -23,7 +23,6 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fLambdaMixedBinned(),
       fPhotonMixedBinned(),
       fTreeVariables(),
-      fIsTrueSigma(false),
       fLambdaCuts(nullptr),
       fPhotonCuts(nullptr),
       fV0Reader(nullptr),
@@ -51,7 +50,6 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fHistMassCutPt(nullptr),
       fHistInvMass(nullptr),
       fHistInvMassBeforeArmenteros(nullptr),
-      fHistInvMassBeforeRapidity(nullptr),
       fHistInvMassRecPhoton(nullptr),
       fHistInvMassRecLambda(nullptr),
       fHistInvMassRec(nullptr),
@@ -107,7 +105,6 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fLambdaMixed(),
       fPhotonMixed(),
       fTreeVariables(),
-      fIsTrueSigma(false),
       fLambdaCuts(nullptr),
       fPhotonCuts(nullptr),
       fV0Reader(nullptr),
@@ -135,7 +132,6 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fHistMassCutPt(nullptr),
       fHistInvMass(nullptr),
       fHistInvMassBeforeArmenteros(nullptr),
-      fHistInvMassBeforeRapidity(nullptr),
       fHistInvMassRecPhoton(nullptr),
       fHistInvMassRecLambda(nullptr),
       fHistInvMassRec(nullptr),
@@ -271,7 +267,6 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
           continue;
       }
       const float rap = sigma.GetRapidity();
-      if (!fIsLightweight) fHistInvMassBeforeRapidity->Fill(invMass);
 
       // Now write out the stuff to the tree
       if (invMass < fMassSigma + fSigmaMassCutTree &&
@@ -287,9 +282,9 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
               sigma.MatchToMC(fMCEvent, fPDG, {{fPDGDaughter1, fPDGDaughter2}},
                               pdgLambdaMother, pdgPhotonMother);
           if (label > 0) {
-            fIsTrueSigma = true;
+            fTreeVariables[4] = true;
           } else {
-            fIsTrueSigma = false;
+            fTreeVariables[4] = false;
           }
         }
 
@@ -315,11 +310,12 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
         fSidebandDown.push_back(sigma);
       }
 
+      fHistInvMass->Fill(invMass);
+
       if (std::abs(rap) > fRapidityMax) continue;
       const int rapBin = GetRapidityBin(rap);
       if (!fIsLightweight) {
         fHistArmenterosAfter->Fill(armAlpha, armQt);
-        fHistInvMass->Fill(invMass);
         fHistInvMassRecPhoton->Fill(pT, sigma.GetRecMassPhoton());
         fHistInvMassRecLambda->Fill(pT, sigma.GetRecMassLambda());
         fHistInvMassRec->Fill(pT, sigma.GetRecMass());
@@ -833,8 +829,8 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
 
   fHistCutBooking->Fill(0.f, fSigmaMassCutTree);
   fHistCutBooking->Fill(1.f, fSigmaMassCut);
-  fHistCutBooking->Fill(2.f, fSidebandCutUp);
-  fHistCutBooking->Fill(3.f, fSidebandCutDown);
+  fHistCutBooking->Fill(2.f, fSidebandCutDown);
+  fHistCutBooking->Fill(3.f, fSidebandCutUp);
   fHistCutBooking->Fill(4.f, fPhotonPtMin);
   fHistCutBooking->Fill(5.f, fPhotonPtMax);
   fHistCutBooking->Fill(6.f, fMixingDepth);
@@ -862,21 +858,20 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
                100, 0, 10, 500, 1., 1.5);
   fHistograms->Add(fHistMixedInvMassBinnedPt);
 
+  fHistInvMass = new TH1F("fHistInvMass",
+                          "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries",
+                          150, 1.15, 1.3);
+  fHistograms->Add(fHistInvMass);
+
   if (!fIsLightweight) {
     fHistNSigma =
         new TH1F("fHistNSigma", ";# #Sigma candidates; Entries", 10, 0, 10);
     fHistMassCutPt = new TH1F(
         "fHistMassCutPt", "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); Entries",
         100, 0, 10);
-    fHistInvMass = new TH1F("fHistInvMass",
-                            "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries",
-                            150, 1.15, 1.3);
+
     fHistInvMassBeforeArmenteros = new TH1F(
         "fHistInvMassBeforeArmenteros",
-        "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries", 150, 1.15, 1.3);
-
-    fHistInvMassBeforeRapidity = new TH1F(
-        "fHistInvMassBeforeRapidity",
         "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries", 150, 1.15, 1.3);
 
     fHistInvMassRecPhoton = new TH2F("fHistInvMassRecPhoton",
@@ -905,9 +900,7 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
 
     fHistograms->Add(fHistNSigma);
     fHistograms->Add(fHistMassCutPt);
-    fHistograms->Add(fHistInvMass);
     fHistograms->Add(fHistInvMassBeforeArmenteros);
-    fHistograms->Add(fHistInvMassBeforeRapidity);
     fHistograms->Add(fHistInvMassRecPhoton);
     fHistograms->Add(fHistInvMassRecLambda);
     fHistograms->Add(fHistInvMassRec);
@@ -1063,7 +1056,7 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     fOutputTree->Branch("Rapidity", &fTreeVariables[2], "Rapidity/f");
     fOutputTree->Branch("Multiplicity", &fTreeVariables[3], "Multiplicity/f");
     if (fIsMC) {
-      fOutputTree->Branch("MCTruth", &fIsTrueSigma, "MCTruth/O");
+      fOutputTree->Branch("MCTruth", &fTreeVariables[4], "MCTruth/O");
     }
   }
 }
