@@ -371,9 +371,13 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
           } else if (mcEvent->IsPhysicalPrimary(ilab)) {
             v0part.SetStatus(MCparticle::kPrimary);
             fHistMCctPrimary[idx]->Fill(dist * part->GetMass() / part->P());
-          } else {
+          } else if (mcEvent->IsSecondaryFromMaterial(ilab)) {
+            v0part.SetStatus(MCparticle::kSecondaryFromWeakDecay);
             fHistMCctSecondaryFromMaterial[idx]->Fill(dist * part->GetMass() / part->P());
-            continue;
+          } else {
+            ::Fatal("AliAnalysisTaskStrangenessLifetimes::UserExec",
+              "A particle that is not primary, not secondary from weak decay nor from material."
+              "It does know only what it is not.");
           }
           mcMap[ilab] = fMCvector.size();
           fMCvector.push_back(v0part);
