@@ -97,23 +97,25 @@ typedef std::pair<Float_t, Float_t> RangeF_t;
 template <>
 AliFemtoConfigObject AliFemtoAnalysisPionPion::GetConfigurationOf<AliFemtoEventCut>(const AliFemtoEventCut &cut)
 {
+  #define TRY_CONSTRUCTING_CFG(__name) if (auto ptr = dynamic_cast<const __name*>(&cut)) { return Configuration<__name>::GetConfigurationOf(*ptr); }
+    TRY_CONSTRUCTING_CFG(AliFemtoBasicEventCut)
+    TRY_CONSTRUCTING_CFG(AliFemtoEventCutCentrality)
+  #undef TRY_CONSTRUCTING_CFG
+
   auto *cls = TClass::GetClass(typeid(cut));
   TString classname(cls->GetName());
 
+  /*
   if (cls->GetMethodAny("GetConfigObjectPtr")) {
 
-    auto cmd = TString::Format("reinterpret_cast<%s*>(%p)->GetConfigObjectPtr()", classname.Data(), &cut);
+    auto cmd = TString::Format("dynamic_cast<const %s*>(%p)->GetConfigObjectPtr();", classname.Data(), &cut);
     AliFemtoConfigObject *cfg = (AliFemtoConfigObject*)gROOT->ProcessLine(cmd);
 
     AliFemtoConfigObject results(*cfg);
     delete cfg;
     return results;
   }
-
-  #define TRY_CONSTRUCTING_CFG(__name) if (auto ptr = dynamic_cast<const __name*>(&cut)) { return Configuration<__name>::GetConfigurationOf(*ptr); }
-    TRY_CONSTRUCTING_CFG(AliFemtoBasicEventCut)
-    TRY_CONSTRUCTING_CFG(AliFemtoEventCutCentrality)
-  #undef TRY_CONSTRUCTING_CFG
+  */
 
   return AliFemtoConfigObject::BuildMap()
     ("class", classname)
@@ -123,6 +125,11 @@ AliFemtoConfigObject AliFemtoAnalysisPionPion::GetConfigurationOf<AliFemtoEventC
 template <>
 AliFemtoConfigObject AliFemtoAnalysisPionPion::GetConfigurationOf<AliFemtoTrackCut>(const AliFemtoTrackCut &cut)
 {
+  #define TRY_CONSTRUCTING_CFG(__name) if (auto ptr = dynamic_cast<const __name*>(&cut)) { return Configuration<__name>::GetConfigurationOf(*ptr); }
+    TRY_CONSTRUCTING_CFG(AliFemtoESDTrackCut)
+    // TRY_CONSTRUCTING_CFG(AliFemtoAODTrackCut)
+  #undef TRY_CONSTRUCTING_CFG
+
   auto *cls = TClass::GetClass(typeid(cut));
   if (!cls) {
     return AliFemtoConfigObject::Parse("{class: 'AliFemtoTrackCut'}");
@@ -130,6 +137,7 @@ AliFemtoConfigObject AliFemtoAnalysisPionPion::GetConfigurationOf<AliFemtoTrackC
 
   TString classname(cls->GetName());
 
+  /*
   if (cls->GetMethodAny("GetConfigObjectPtr")) {
 
     auto cmd = TString::Format("reinterpret_cast<%s*>(%p)->GetConfigObjectPtr()", classname.Data(), &cut);
@@ -139,10 +147,7 @@ AliFemtoConfigObject AliFemtoAnalysisPionPion::GetConfigurationOf<AliFemtoTrackC
     delete cfg;
     return results;
   }
-
-  #define TRY_CONSTRUCTING_CFG(__name) if (auto ptr = dynamic_cast<const __name*>(&cut)) { return Configuration<__name>::GetConfigurationOf(*ptr); }
-    TRY_CONSTRUCTING_CFG(AliFemtoESDTrackCut)
-  #undef TRY_CONSTRUCTING_CFG
+  */
 
   return AliFemtoConfigObject::BuildMap()
     ("class", classname)
@@ -153,6 +158,11 @@ AliFemtoConfigObject AliFemtoAnalysisPionPion::GetConfigurationOf<AliFemtoTrackC
 template <>
 AliFemtoConfigObject AliFemtoAnalysisPionPion::GetConfigurationOf<AliFemtoPairCut>(const AliFemtoPairCut &cut)
 {
+  #define TRY_CONSTRUCTING_CFG(__name) if (auto ptr = dynamic_cast<const __name*>(&cut)) { return Configuration<__name>::GetConfigurationOf(*ptr); }
+    TRY_CONSTRUCTING_CFG(AliFemtoPairCutDetaDphi)
+    TRY_CONSTRUCTING_CFG(AliFemtoShareQualityPairCut)
+  #undef TRY_CONSTRUCTING_CFG
+
   auto *cls = TClass::GetClass(typeid(cut));
   if (!cls) {
     return AliFemtoConfigObject::Parse("{class: 'AliFemtoPairCut'}");
@@ -160,6 +170,7 @@ AliFemtoConfigObject AliFemtoAnalysisPionPion::GetConfigurationOf<AliFemtoPairCu
 
   TString classname(cls->GetName());
 
+  /*
   if (cls->GetMethodAny("GetConfigObjectPtr")) {
 
     auto cmd = TString::Format("reinterpret_cast<%s*>(%p)->GetConfigObjectPtr()", classname.Data(), &cut);
@@ -169,11 +180,7 @@ AliFemtoConfigObject AliFemtoAnalysisPionPion::GetConfigurationOf<AliFemtoPairCu
     delete cfg;
     return results;
   }
-
-  #define TRY_CONSTRUCTING_CFG(__name) if (auto ptr = dynamic_cast<const __name*>(&cut)) { return Configuration<__name>::GetConfigurationOf(*ptr); }
-    TRY_CONSTRUCTING_CFG(AliFemtoPairCutDetaDphi)
-    TRY_CONSTRUCTING_CFG(AliFemtoShareQualityPairCut)
-  #undef TRY_CONSTRUCTING_CFG
+  */
 
   return AliFemtoConfigObject::BuildMap()
     ("class", classname)
@@ -264,17 +271,6 @@ struct CutConfig_Pair {
 
   CutConfig_Pair(){};
 };
-
-template<>
-AliFemtoPairCutDetaDphi*
-AliFemtoConfigObject::Construct<AliFemtoPairCutDetaDphi>() const
-{
-  CutConfig_Pion cfg;
-
-
-  auto cut = new AliFemtoPairCutDetaDphi();
-  return cut;
-}
 
 template<>
 AliFemtoESDTrackCut*
@@ -392,92 +388,16 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
     SetPairCut(BuildPairCut(cut_params));
   }
 
-  TString eventcut_classname = "UNKNOWN",
-          trackcut_classname = "UNKNOWN",
-          paircut_classname = "UNKNOWN";
+  auto event_cut_cfg = GetConfigurationOf(*fEventCut);
+  auto track_cut_cfg = GetConfigurationOf(static_cast<const AliFemtoTrackCut&>(*fFirstParticleCut));
+  auto pair_cut_cfg = GetConfigurationOf(*fPairCut);
 
-  if (fEventCut)
-  if (auto cls = TClass::GetClass(typeid(*fEventCut))) {
-    eventcut_classname = cls->GetName();
-  }
-  TString event_cut_cfg = fEventCut ? GetConfigurationOf(*fEventCut).Stringify() : "{}";
-
-  if (fFirstParticleCut)
-  if (auto cls = TClass::GetClass(typeid(*fFirstParticleCut))) {
-    trackcut_classname = cls->GetName();
-  }
-  TString track_cut_cfg = fFirstParticleCut ? GetConfigurationOf(*fFirstParticleCut).Stringify() : "{}";
-
-  if (fPairCut)
-  if (auto cls = TClass::GetClass(typeid(*fPairCut))) {
-    paircut_classname = cls->GetName();
-  }
-  TString pair_cut_cfg = fPairCut ? GetConfigurationOf(*fPairCut).Stringify() : "{}";
-
-  fConfiguration = AliFemtoConfigObject::Parse(TString::Format(R"#({
-    class: 'AliFemtoAnalysisPionPion',
-    is_mc: %d,
-    event: {
-      class: '%s',
-      multiplicity: %d:%d,
-      centrality: %f:%f,
-      zVertex: %f:%f,
-      trigger: %d,
-      accept_bad_vertex: %s,
-      accept_only_physics: %s,
-    },
-    track: {
-      class: '%s',
-      pt: %f:%f,
-      eta: %f:%f,
-      DCA: %f:%f,
-      nSigma: %f:%f,
-      impact_xy: %f,
-      impact_z: %f,
-      min_tpc_ncls: %d,
-      remove_kinks: %s,
-      set_label: %s,
-    },
-    pair: {
-      class: '%s',
-      max_share_quality: %f,
-      max_share_fraction: %f,
-      delta_eta_min: %f,
-      delta_phi_min: %f,
-      phi_star_radius: %f,
-      tpc_only: %d,
-    },
-    event_cut: %s,
-    track_cut: %s,
-    pair_cut: %s,
-  })#",
-    fMCAnalysis,
-    eventcut_classname.Data(),
-    cut_params.event_MultMin, cut_params.event_MultMax,
-    cut_params.event_CentralityMin, cut_params.event_CentralityMax,
-    cut_params.event_VertexZMin, cut_params.event_VertexZMax,
-    cut_params.event_TriggerSelection,
-    (cut_params.event_AcceptBadVertex ? "true" : "false"),
-    (cut_params.event_AcceptOnlyPhysics ? "true" : "false"),
-
-    trackcut_classname.Data(),
-    cut_params.pion_1_PtMin, cut_params.pion_1_PtMax,
-    cut_params.pion_1_EtaMin, cut_params.pion_1_EtaMax,
-    cut_params.pion_1_DCAMin, cut_params.pion_1_DCAMax,
-    cut_params.pion_1_NSigmaMin, cut_params.pion_1_NSigmaMax,
-    cut_params.pion_1_max_impact_xy, cut_params.pion_1_max_impact_z,
-    cut_params.pion_1_min_tpc_ncls,
-    (cut_params.pion_1_remove_kinks ? "true" : "false"),
-    (cut_params.pion_1_set_label ? "true" : "false"),
-
-    paircut_classname.Data(),
-    cut_params.pair_max_share_quality, cut_params.pair_max_share_fraction,
-    cut_params.pair_delta_eta_min, cut_params.pair_delta_phi_min,
-    cut_params.pair_phi_star_radius, cut_params.pair_TPCOnly
-    , event_cut_cfg.Data()
-    , track_cut_cfg.Data()
-    , pair_cut_cfg.Data()
-  ).Data());
+  fConfiguration = AliFemtoConfigObject::BuildMap()
+    ("class", "AliFemtoAnalysisPionPion")
+    ("is_mc", fMCAnalysis)
+    ("event_cut", event_cut_cfg)
+    ("track_cut", track_cut_cfg)
+    ("pair_cut", pair_cut_cfg);
 }
 
 AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const AliFemtoConfigObject &cfg)
