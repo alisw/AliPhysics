@@ -1693,16 +1693,16 @@ void AliFemtoAnalysisLambdaKaon::AddCutMonitors(AliFemtoEventCut* aEventCut, Ali
 
   switch(fGeneralAnalysisType) {
   case AliFemtoAnalysisLambdaKaon::kV0V0:
-    aPartCut1->AddCutMonitorPass(new AliFemtoCutMonitorV0CosPointingAngle(tNamePass1, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
-    if(!fAnalysisParams.monitorPart1CutPassOnly) aPartCut1->AddCutMonitorFail(new AliFemtoCutMonitorV0CosPointingAngle(tNameFail1, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
+    aPartCut1->AddCutMonitorPass(new AliFemtoCutMonitorV0CosPointingAngle(tNamePass1, fParticlePDGType1, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
+    if(!fAnalysisParams.monitorPart1CutPassOnly) aPartCut1->AddCutMonitorFail(new AliFemtoCutMonitorV0CosPointingAngle(tNameFail1, fParticlePDGType1, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
 
-    aPartCut2->AddCutMonitorPass(new AliFemtoCutMonitorV0CosPointingAngle(tNamePass2, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
-    if(!fAnalysisParams.monitorPart2CutPassOnly) aPartCut2->AddCutMonitorFail(new AliFemtoCutMonitorV0CosPointingAngle(tNameFail2, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
+    aPartCut2->AddCutMonitorPass(new AliFemtoCutMonitorV0CosPointingAngle(tNamePass2, fParticlePDGType2, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
+    if(!fAnalysisParams.monitorPart2CutPassOnly) aPartCut2->AddCutMonitorFail(new AliFemtoCutMonitorV0CosPointingAngle(tNameFail2, fParticlePDGType2, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
     break;
 
   case AliFemtoAnalysisLambdaKaon::kV0Track:
-    aPartCut1->AddCutMonitorPass(new AliFemtoCutMonitorV0CosPointingAngle(tNamePass1, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
-    if(!fAnalysisParams.monitorPart1CutPassOnly) aPartCut1->AddCutMonitorFail(new AliFemtoCutMonitorV0CosPointingAngle(tNameFail1, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
+    aPartCut1->AddCutMonitorPass(new AliFemtoCutMonitorV0CosPointingAngle(tNamePass1, fParticlePDGType1, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
+    if(!fAnalysisParams.monitorPart1CutPassOnly) aPartCut1->AddCutMonitorFail(new AliFemtoCutMonitorV0CosPointingAngle(tNameFail1, fParticlePDGType1, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
 
     aPartCut2->AddCutMonitorPass(new AliFemtoCutMonitorParticleYPt(tNamePass2,tPartMass2));
     aPartCut2->AddCutMonitorPass(new AliFemtoCutMonitorParticlePID(tNamePass2,tPartType2));
@@ -1730,8 +1730,8 @@ void AliFemtoAnalysisLambdaKaon::AddCutMonitors(AliFemtoEventCut* aEventCut, Ali
     aPartCut1->AddCutMonitorPass(new AliFemtoCutMonitorXi(tNamePass1));
     if(!fAnalysisParams.monitorPart1CutPassOnly) aPartCut1->AddCutMonitorFail(new AliFemtoCutMonitorXi(tNameFail1));
 
-    aPartCut2->AddCutMonitorPass(new AliFemtoCutMonitorV0CosPointingAngle(tNamePass2, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
-    if(!fAnalysisParams.monitorPart2CutPassOnly) aPartCut2->AddCutMonitorFail(new AliFemtoCutMonitorV0CosPointingAngle(tNameFail2, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
+    aPartCut2->AddCutMonitorPass(new AliFemtoCutMonitorV0CosPointingAngle(tNamePass2, fParticlePDGType2, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
+    if(!fAnalysisParams.monitorPart2CutPassOnly) aPartCut2->AddCutMonitorFail(new AliFemtoCutMonitorV0CosPointingAngle(tNameFail2, fParticlePDGType2, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
     break;
 
   case AliFemtoAnalysisLambdaKaon::kTrackTrack:
