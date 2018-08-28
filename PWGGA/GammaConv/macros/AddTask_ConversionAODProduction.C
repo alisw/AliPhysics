@@ -23,11 +23,11 @@ AliAnalysisTask *AddTask_ConversionAODProduction( Int_t dataset                 
     //get CDB entry
     AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
     if(!entry){
-      AliInfo("AddTask_ConversionAODProduction", "cannot get AliCDBEntry for GRP/GRP/Data");
+      Info("AddTask_ConversionAODProduction", "cannot get AliCDBEntry for GRP/GRP/Data");
     }else{
       const AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry->GetObject());
       if(!grpData){
-        AliInfo("AddTask_ConversionAODProduction", "cannot get AliCDBEntry for GRP/GRP/Data");
+        Info("AddTask_ConversionAODProduction", "cannot get AliCDBEntry for GRP/GRP/Data");
       }else{
         Float_t fL3current = grpData->GetL3Current((AliGRPObject::Stats)0);
         if(TMath::Abs(fL3current) < 15000) lowBfield = kTRUE;
