@@ -506,6 +506,7 @@ struct Configuration<AliFemtoAODTrackCut> : AbstractConfiguration<AliFemtoPartic
 
   Configuration(AliFemtoConfigObject cfg)
   {
+    /*
     cfg.pop_all()
       ("charge", charge)
       ("pt", pt)
@@ -525,22 +526,22 @@ struct Configuration<AliFemtoAODTrackCut> : AbstractConfiguration<AliFemtoPartic
     LOAD_PROB_RANGE(pid_prob_proton)
 
     #undef LOAD_PROB_RANGE
-
+    */
   }
 
-  void Configure(AliFemtoESDTrackCut &cut) const
+  void Configure(AliFemtoAODTrackCut &cut) const
   {
     Super::Configure(cut);
     cut.SetCharge(charge);
     cut.SetPt(pt.first, pt.second);
-    cut.SetEta(eta.first, eta.second);
+    // cut.SetEta(eta.first, eta.second);
     cut.SetRapidity(rapidity.first, rapidity.second);
     cut.SetMaxSigmaToVertex(max_sigma_to_vertex);
-    cut.SetProbElectron(pid_prob_electron.first, pid_prob_electron.second);
-    cut.SetProbProton(pid_prob_proton.first, pid_prob_proton.second);
-    cut.SetProbPion(pid_prob_pion.first, pid_prob_pion.second);
-    cut.SetProbKaon(pid_prob_kaon.first, pid_prob_kaon.second);
-    cut.SetProbMuon(pid_prob_muon.first, pid_prob_muon.second);
+    // cut.SetProbElectron(pid_prob_electron.first, pid_prob_electron.second);
+    // cut.SetProbProton(pid_prob_proton.first, pid_prob_proton.second);
+    // cut.SetProbPion(pid_prob_pion.first, pid_prob_pion.second);
+    // cut.SetProbKaon(pid_prob_kaon.first, pid_prob_kaon.second);
+    // cut.SetProbMuon(pid_prob_muon.first, pid_prob_muon.second);
   }
 
   virtual operator AliFemtoParticleCut*() const
@@ -550,6 +551,27 @@ struct Configuration<AliFemtoAODTrackCut> : AbstractConfiguration<AliFemtoPartic
     return cut;
   }
 
+  static void ReadConfigurationInto(AliFemtoConfigObject &dest, const AliFemtoAODTrackCut &cut)
+  {
+    auto result = AliFemtoConfigObject::BuildMap();
+
+    TList *settings = const_cast<AliFemtoAODTrackCut&>(cut).ListSettings();
+    TIter next(settings);
+    while (auto *obj = (TObjString*)next()) {
+      const auto s = obj->GetString();
+      if (s.Contains("mass")) {
+        result("mass", 0.0);
+      }
+    }
+    dest.Update(result);
+  }
+
+  static AliFemtoConfigObject GetConfigurationOf(const AliFemtoAODTrackCut &cut)
+  {
+    AliFemtoConfigObject result = AliFemtoConfigObject::BuildMap();
+    ReadConfigurationInto(result, cut);
+    return result;
+  }
 };
 #endif
 
