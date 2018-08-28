@@ -9,6 +9,7 @@
 #include "AliFemtoEventCutEstimators.h"
 #include "AliFemtoCutMonitorEventMult.h"
 #include "AliFemtoCutMonitorV0.h"
+#include "AliFemtoCutMonitorV0CosPointingAngle.h"
 #include "AliFemtoCutMonitorXi.h"
 #include "AliFemtoCutMonitorEventVertex.h"
 
@@ -183,6 +184,8 @@ struct V0CutParams
          radiusV0Max;
 
   bool ignoreOnFlyStatus;
+
+  bool buildCosPointingAnglewParentInfo;
 };
 
 struct ESDCutParams
@@ -416,6 +419,7 @@ protected:
   bool fIsMBAnalysis;
   bool fBuildMultHist;
   bool fBuildmTBinned;
+  bool fBuildCosPointingAnglewParentInfo;
 
   double fMinCent, fMaxCent;
 
