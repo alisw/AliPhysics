@@ -75,6 +75,7 @@ AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
       fUseLightVertexer{true},
       fHistMCct{nullptr},
       fHistMCctPrimary{nullptr},
+      fHistMCctSecondaryFromMaterial{nullptr},
       fHistV0radius{nullptr},
       fHistV0pt{nullptr},
       fHistV0eta{nullptr},
@@ -229,6 +230,11 @@ void AliAnalysisTaskStrangenessLifetimes::UserCreateOutputObjects() {
     fHistMCctPrimary[1] = new TH1D("fHistMCctPrimaryLambda", ";MC ct (cm); Counts", 4000, 0, 20);
     fListHist->Add(fHistMCctPrimary[0]);
     fListHist->Add(fHistMCctPrimary[1]);
+
+    fHistMCctSecondaryFromMaterial[0] = new TH1D("fHistMCctSecondaryFromMaterialK0s", ";MC ct (cm); Counts", 4000, 0, 20);
+    fHistMCctSecondaryFromMaterial[1] = new TH1D("fHistMCctSecondaryFromMaterialLambda", ";MC ct (cm); Counts", 4000, 0, 20);
+    fListHist->Add(fHistMCctSecondaryFromMaterial[0]);
+    fListHist->Add(fHistMCctSecondaryFromMaterial[1]);
   }
 
   fListHist->Add(fHistV0radius);
@@ -366,6 +372,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
             v0part.SetStatus(MCparticle::kPrimary);
             fHistMCctPrimary[idx]->Fill(dist * part->GetMass() / part->P());
           } else {
+            fHistMCctSecondaryFromMaterial[idx]->Fill(dist * part->GetMass() / part->P());
             continue;
           }
           mcMap[ilab] = fMCvector.size();
