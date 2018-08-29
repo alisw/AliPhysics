@@ -1,29 +1,11 @@
-#if !defined(__CINT__) || defined(__MAKECINT_)
-#include "AliFemtoManager.h"
-#include "AliFemtoModelManager.h"
-#include "AliFemtoEventReaderAODMultSelection.h"
-#include "AliFemtoTrioAnalysis.h"
-#include "AliFemtoBasicEventCut.h"
-#include "AliFemtoESDTrackCut.h"
-#include "AliFemtoTrioMinvFctn.h"
-#include "AliFemtoTrioCut.h"
-#include "AliFemtoTrio.h"
-#include "AliESDtrack.h"
-#endif
-
-
 enum ESys  { kPIpPIpPIp, kPImPImPIm, kPIpPImPIm, kPPP, kAPAPAP, kPAPAP,nSys };
 
 const char *sysNames[nSys]      = { "PIpPIpPIp", "PImPImPIm", "PIpPImPIm","PPP","APAPAP","PAPAP"};
 const bool runSys[nSys]         = {   1  ,   1  ,   1   ,    1   ,    1  ,   1  };
 
-
-
-
 const int nMultBins = 1;
-const int multBins[nMultBins+1] = {0, 200};
+const int multBins[nMultBins+1] = {3, 2000};
 const int runMult[nMultBins]    = {1};
-
 
 const int vertZMin = -10;
 const int vertZMax = 10;
@@ -33,7 +15,6 @@ const  double KaonMass = 0.493677;
 const  double ProtonMass = 0.938272013;
 const  double LambdaMass = 1.115683;
 const  double XiMass = 1.32171;
-
 
 
 AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis);
@@ -69,20 +50,20 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
   }
   
   // declare necessary objects
-  /*AliFemtoTrioAnalysis  *trioAnalysis[nSys*nMultBins*nVertZbins*(nDecaysPionPion+nDecaysPionKaon+1)];
-  AliFemtoBasicEventCut     *eventCut[nSys*nMultBins*nVertZbins*(nDecaysPionPion+nDecaysPionKaon+1)];
-  
-  AliFemtoTrioMinvFctn    *distribution[nSys*nMultBins*nVertZbins*(nDecaysPionPion+nDecaysPionKaon+1)];*/
-  AliFemtoTrioAnalysis      *trioAnalysis[500];
+  AliFemtoTrioAnalysis         *trioAnalysis[500];
   AliFemtoBasicEventCut     *eventCut[500];
 
+  AliFemtoCutMonitorEventMult   *monitorEventMultPass[500];
+  AliFemtoCutMonitorEventMult   *monitorEventMultFail[500];
+  AliFemtoCutMonitorCollections  *monitorCollPass[500];
+  AliFemtoCutMonitorCollections  *monitorCollFail[500];
+  
   AliFemtoCutMonitorParticlePID   *monitorPIDPass[500];
   AliFemtoCutMonitorParticlePID   *monitorPIDFail[500];
   AliFemtoCutMonitorParticleYPt   *monitorYPtPass[500];
   AliFemtoCutMonitorParticleYPt   *monitorYPtFail[500];
   	
-  
-  AliFemtoTrioDEtaDPhiFctn  *detadphifctn[5000];
+  AliFemtoTrioDEtaDPhiFctn         *detadphifctn[5000];
   
   
   // setup analysis
@@ -90,93 +71,116 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
   
   AliFemtoTrio::EPart firstParticle, secondParticle, thirdParticle;
   
-  for (int iSys=0; iSys<nSys; iSys++){
-    if (!runSys[iSys]) continue;
+  for (int iSys=0; iSys<nSys; iSys++)
+    {
+      if (!runSys[iSys]) continue;
     
-    // get particle cuts
-    GetParticlesForSystem((ESys)iSys,firstParticle,secondParticle, thirdParticle);
-    AliFemtoMJTrackCut *firstTrackCut  = GetTrackCut(firstParticle);
-    AliFemtoMJTrackCut *secondTrackCut = GetTrackCut(secondParticle);
-    AliFemtoMJTrackCut *thirdTrackCut  = GetTrackCut(thirdParticle);
+      // get particle cuts
+      GetParticlesForSystem((ESys)iSys,firstParticle,secondParticle, thirdParticle);
+      AliFemtoMJTrackCut *firstTrackCut  = GetTrackCut(firstParticle);
+      AliFemtoMJTrackCut *secondTrackCut = GetTrackCut(secondParticle);
+      AliFemtoMJTrackCut *thirdTrackCut  = GetTrackCut(thirdParticle);
 
 
     
-    for(int iMult=0;iMult<nMultBins;iMult++){
-      if(!runMult[iMult]) continue;
-      
-        
-        
-      //-----------------------------------------------------------------------------------
-      // main distribution with all cuts applied
-      //-----------------------------------------------------------------------------------
-        
-      // create new analysis
-      trioAnalysis[anIter] = GetAnalysis(eventMixing);
-        
-      // get event cut
-      eventCut[anIter] = GetEventCut(multBins[iMult],multBins[iMult+1],vertZMin,vertZMax);
-        
-      // setup anallysis cuts
-      trioAnalysis[anIter]->SetEventCut(eventCut[anIter]);
-      trioAnalysis[anIter]->SetV0SharedDaughterCut(true);
-
-
-
-      
-      trioAnalysis[anIter]->SetFirstParticleCut(firstTrackCut);
-      trioAnalysis[anIter]->SetSecondParticleCut(secondTrackCut);
-      trioAnalysis[anIter]->SetThirdParticleCut(thirdTrackCut);
-
-
-      if(doMonitors)
+      for(int iMult=0;iMult<nMultBins;iMult++)
 	{
-	  if(iSys==0 || iSys==1) //PI
-	    {
-	      monitorPIDPass[anIter] = new AliFemtoCutMonitorParticlePID(Form("monitorPIDPass%sM%i", sysNames[iSys], iMult),0);//0-pion,1-kaon,2-proton
-	      monitorPIDFail[anIter] = new AliFemtoCutMonitorParticlePID(Form("monitorPIDFail%sM%i", sysNames[iSys], iMult),0);//0-pion,1-kaon,2-proton
-	      firstTrackCut->AddCutMonitor(monitorPIDPass[anIter],monitorPIDFail[anIter]);
+	  if(!runMult[iMult]) continue;
+     
+	  // create new analysis
+	  trioAnalysis[anIter] = GetAnalysis(eventMixing);
+        
+	  // get event cut
+	  eventCut[anIter] = GetEventCut(multBins[iMult],multBins[iMult+1],vertZMin,vertZMax);
 
-	      monitorYPtPass[anIter] = new AliFemtoCutMonitorParticleYPt(Form("monitorYPtPass%sM%i", sysNames[iSys], iMult),PionMass);
-	      monitorYPtFail[anIter] = new AliFemtoCutMonitorParticleYPt(Form("monitorYPtFail%sM%i", sysNames[iSys], iMult),PionMass);
-	      firstTrackCut->AddCutMonitor(monitorYPtPass[anIter],monitorYPtFail[anIter]);
-	    }
-	  if(iSys==3 || iSys==4) //P
+	  // event monitors
+	  if(doMonitors)
 	    {
-	      monitorPIDPass[anIter] = new AliFemtoCutMonitorParticlePID(Form("monitorPIDPass%sM%i", sysNames[iSys], iMult),2);//0-pion,1-kaon,2-proton
-	      monitorPIDFail[anIter] = new AliFemtoCutMonitorParticlePID(Form("monitorPIDFail%sM%i", sysNames[iSys], iMult),2);//0-pion,1-kaon,2-proton
-	      firstTrackCut->AddCutMonitor(monitorPIDPass[anIter],monitorPIDFail[anIter]);
-
-	      monitorYPtPass[anIter] = new AliFemtoCutMonitorParticleYPt(Form("monitorYPtPass%sM%i", sysNames[iSys], iMult),ProtonMass);
-	      monitorYPtFail[anIter] = new AliFemtoCutMonitorParticleYPt(Form("monitorYPtFail%sM%i", sysNames[iSys], iMult),ProtonMass);
-	      firstTrackCut->AddCutMonitor(monitorYPtPass[anIter],monitorYPtFail[anIter]);
+	      monitorEventMultPass[anIter] = new AliFemtoCutMonitorEventMult(Form("monitorEventMultPass%sM%i", sysNames[iSys], iMult));
+	      monitorEventMultFail[anIter] = new AliFemtoCutMonitorEventMult(Form("monitorEventMultFail%sM%i", sysNames[iSys], iMult));
+	      eventCut[anIter]->AddCutMonitor(monitorEventMultPass[anIter], monitorEventMultFail[anIter]);
+	      
+	      monitorCollPass[anIter] = new AliFemtoCutMonitorCollections(Form("monitorCollPass%sM%i", sysNames[iSys], iMult));
+	      monitorCollFail[anIter] = new AliFemtoCutMonitorCollections(Form("monitorCollFail%sM%i", sysNames[iSys], iMult));
+	      eventCut[anIter]->AddCutMonitor(monitorCollPass[anIter], monitorCollFail[anIter]);
 	    }
-	}
+	  
+	  // setup anallysis cuts
+	  trioAnalysis[anIter]->SetEventCut(eventCut[anIter]);
+	  trioAnalysis[anIter]->SetV0SharedDaughterCut(true);
+
+
+
+	  if(iSys == kPIpPIpPIp || iSys == kPImPImPIm || iSys == kPPP || iSys == kAPAPAP)
+	    {
+	      trioAnalysis[anIter]->SetFirstParticleCut(firstTrackCut);
+	  
+	      trioAnalysis[anIter]->SetCollection1type(firstParticle);
+	    }
+	  else if(iSys == kPIpPImPIm || iSys == kPAPAP)
+	    {
+	      trioAnalysis[anIter]->SetFirstParticleCut(firstTrackCut);
+	      trioAnalysis[anIter]->SetSecondParticleCut(secondTrackCut);
+	  
+	      trioAnalysis[anIter]->SetCollection1type(firstParticle);
+	      trioAnalysis[anIter]->SetCollection2type(secondParticle);
+	    }
+	  else // not used at the moment
+	    {
+	      trioAnalysis[anIter]->SetFirstParticleCut(firstTrackCut);
+	      trioAnalysis[anIter]->SetSecondParticleCut(secondTrackCut);
+	      trioAnalysis[anIter]->SetThirdParticleCut(thirdTrackCut);
+
+	      trioAnalysis[anIter]->SetCollection1type(firstParticle);
+	      trioAnalysis[anIter]->SetCollection2type(secondParticle);
+	      trioAnalysis[anIter]->SetCollection3type(thirdParticle);
+	    }
+
+
+
+	  if(doMonitors)
+	    {
+	      if(iSys == kPIpPIpPIp || iSys == kPImPImPIm) //PI
+		{
+		  monitorPIDPass[anIter] = new AliFemtoCutMonitorParticlePID(Form("monitorPIDPass%sM%i", sysNames[iSys], iMult),0);//0-pion,1-kaon,2-proton
+		  monitorPIDFail[anIter] = new AliFemtoCutMonitorParticlePID(Form("monitorPIDFail%sM%i", sysNames[iSys], iMult),0);//0-pion,1-kaon,2-proton
+		  firstTrackCut->AddCutMonitor(monitorPIDPass[anIter],monitorPIDFail[anIter]);
+
+		  monitorYPtPass[anIter] = new AliFemtoCutMonitorParticleYPt(Form("monitorYPtPass%sM%i", sysNames[iSys], iMult),PionMass);
+		  monitorYPtFail[anIter] = new AliFemtoCutMonitorParticleYPt(Form("monitorYPtFail%sM%i", sysNames[iSys], iMult),PionMass);
+		  firstTrackCut->AddCutMonitor(monitorYPtPass[anIter],monitorYPtFail[anIter]);
+		}
+	      if(iSys == kPPP || iSys == kAPAPAP) //P
+		{
+		  monitorPIDPass[anIter] = new AliFemtoCutMonitorParticlePID(Form("monitorPIDPass%sM%i", sysNames[iSys], iMult),2);//0-pion,1-kaon,2-proton
+		  monitorPIDFail[anIter] = new AliFemtoCutMonitorParticlePID(Form("monitorPIDFail%sM%i", sysNames[iSys], iMult),2);//0-pion,1-kaon,2-proton
+		  firstTrackCut->AddCutMonitor(monitorPIDPass[anIter],monitorPIDFail[anIter]);
+
+		  monitorYPtPass[anIter] = new AliFemtoCutMonitorParticleYPt(Form("monitorYPtPass%sM%i", sysNames[iSys], iMult),ProtonMass);
+		  monitorYPtFail[anIter] = new AliFemtoCutMonitorParticleYPt(Form("monitorYPtFail%sM%i", sysNames[iSys], iMult),ProtonMass);
+		  firstTrackCut->AddCutMonitor(monitorYPtPass[anIter],monitorYPtFail[anIter]);
+		}
+	    }
         
-      trioAnalysis[anIter]->SetCollection1type(firstParticle);
-      trioAnalysis[anIter]->SetCollection2type(secondParticle);
-      trioAnalysis[anIter]->SetCollection3type(thirdParticle);
+
         
-      bool doMinv = true;
+	  bool doMinv = true;
         
-      // create m_inv distribution and add to the analysis
+	  // create m_inv distribution and add to the analysis
         
-      // get trio cut
-      AliFemtoTrioCut *trioCut = GetTrioCut((ESys)iSys);
-      detadphifctn[anIter] = new AliFemtoTrioDEtaDPhiFctn(Form("cdedpnocorr%stpcM%i", sysNames[iSys], iMult),29, 29);
-      detadphifctn[anIter]->SetTrioCut(trioCut);
-      trioAnalysis[anIter]->AddTrioFctn(detadphifctn[anIter]);
-        
-            
-        
-      // add analysis to the manager
-      Manager->AddAnalysis(trioAnalysis[anIter]);
-      anIter++;
-        
-        
+	  // get trio cut
+	  AliFemtoTrioCut *trioCut = GetTrioCut((ESys)iSys);
+	  detadphifctn[anIter] = new AliFemtoTrioDEtaDPhiFctn(Form("cdedpnocorr%stpcM%i", sysNames[iSys], iMult),29, 29);
+	  detadphifctn[anIter]->SetTrioCut(trioCut);
+	  trioAnalysis[anIter]->AddTrioFctn(detadphifctn[anIter]);
+                        
+	  // add analysis to the manager
+	  Manager->AddAnalysis(trioAnalysis[anIter]);
+	  anIter++;
 
       
+	}
     }
-  }
   return Manager;
 }
 
@@ -224,6 +228,7 @@ AliFemtoTrioAnalysis* GetAnalysis(bool doEventMixing)
 {
   AliFemtoTrioAnalysis *analysis = new AliFemtoTrioAnalysis();
   analysis->SetDoEventMixing(doEventMixing);
+  analysis->SetMinSizePartCollection(3);
   // here one can put some additional analysis settings in the future
   
   return analysis;
@@ -234,7 +239,7 @@ AliFemtoBasicEventCut* GetEventCut(int multMin,int multMax,int zVertMin,int zVer
   AliFemtoBasicEventCut *eventCut = new AliFemtoBasicEventCut();
   eventCut->SetEventMult(multMin,multMax);
   eventCut->SetVertZPos(zVertMin,zVertMax);
-  eventCut->SetEPVZERO(-TMath::Pi()/2.,TMath::Pi()/2.);
+  //eventCut->SetEPVZERO(-TMath::Pi()/2.,TMath::Pi()/2.);
   
   return eventCut;
 }
