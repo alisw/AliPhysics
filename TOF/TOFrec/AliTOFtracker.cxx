@@ -554,7 +554,7 @@ void AliTOFtracker::MatchTracks( Int_t mLastStep){
     fTOFtrackPoints->Delete();
 
     for (Int_t ii=0; ii<kNclusterMax; ii++)
-      global[ii] = 0x0;
+      global[ii].Clear();
     AliTOFtrack *track =(AliTOFtrack*)fTracks->UncheckedAt(iseed);
     AliESDtrack *t =(AliESDtrack*)fSeeds->At(track->GetSeedIndex());
     //if ( t->GetTOFsignal()>0. ) continue;
