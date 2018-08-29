@@ -221,18 +221,18 @@ void AliAnalysisTaskStrangenessLifetimes::UserCreateOutputObjects() {
 
 
   if (man->GetMCtruthEventHandler()) {
-    fHistMCct[0] = new TH1D("fHistMCctK0s", ";MC ct (cm); Counts", 4000, 0, 20);
-    fHistMCct[1] = new TH1D("fHistMCctLambda", ";MC ct (cm); Counts", 4000, 0, 20);
+    fHistMCct[0] = new TH1D("fHistMCctK0s", ";MC ct (cm); Counts", 4000, 0, 40);
+    fHistMCct[1] = new TH1D("fHistMCctLambda", ";MC ct (cm); Counts", 4000, 0, 40);
     fListHist->Add(fHistMCct[0]);
     fListHist->Add(fHistMCct[1]);
 
-    fHistMCctPrimary[0] = new TH1D("fHistMCctPrimaryK0s", ";MC ct (cm); Counts", 4000, 0, 20);
-    fHistMCctPrimary[1] = new TH1D("fHistMCctPrimaryLambda", ";MC ct (cm); Counts", 4000, 0, 20);
+    fHistMCctPrimary[0] = new TH1D("fHistMCctPrimaryK0s", ";MC ct (cm); Counts", 4000, 0, 40);
+    fHistMCctPrimary[1] = new TH1D("fHistMCctPrimaryLambda", ";MC ct (cm); Counts", 4000, 0, 40);
     fListHist->Add(fHistMCctPrimary[0]);
     fListHist->Add(fHistMCctPrimary[1]);
 
-    fHistMCctSecondaryFromMaterial[0] = new TH1D("fHistMCctSecondaryFromMaterialK0s", ";MC ct (cm); Counts", 4000, 0, 20);
-    fHistMCctSecondaryFromMaterial[1] = new TH1D("fHistMCctSecondaryFromMaterialLambda", ";MC ct (cm); Counts", 4000, 0, 20);
+    fHistMCctSecondaryFromMaterial[0] = new TH1D("fHistMCctSecondaryFromMaterialK0s", ";MC ct (cm); Counts", 4000, 0, 40);
+    fHistMCctSecondaryFromMaterial[1] = new TH1D("fHistMCctSecondaryFromMaterialLambda", ";MC ct (cm); Counts", 4000, 0, 40);
     fListHist->Add(fHistMCctSecondaryFromMaterial[0]);
     fListHist->Add(fHistMCctSecondaryFromMaterial[1]);
   }
@@ -346,6 +346,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
               sVtx[0] = dau->Vx();
               sVtx[1] = dau->Vy();
               sVtx[2] = dau->Vz();
+              break;
             }
           }
           double dist = Distance(mcV->GetX() - sVtx[0], mcV->GetY() - sVtx[1], mcV->GetZ() - sVtx[2]);
@@ -619,7 +620,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
     }
   }
 
-  if (fV0vector.size()) fTreeV0->Fill();
+  if (fV0vector.size() || fMCvector.size()) fTreeV0->Fill();
 
   PostData(1, fListHist);
   PostData(2, fTreeV0);
