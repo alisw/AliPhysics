@@ -213,6 +213,8 @@ class AliBalancePsi : public TObject {
   TH2D *GetQAHistHBTafter() {return fHistHBTafter;}
   TH2D *GetQAHistPhiStarHBTbefore() {return fHistPhiStarHBTbefore;}
   TH2D *GetQAHistPhiStarHBTafter() {return fHistPhiStarHBTafter;}
+  TH2D *GetQAHistSameLabelMCCutBefore() {return fHistSameLabelMCCutBefore;}
+  TH2D *GetQAHistSameLabelMCCutAfter() {return fHistSameLabelMCCutAfter;}
   TH3D *GetQAHistConversionbefore() {return fHistConversionbefore;}
   TH3D *GetQAHistConversionafter() {return fHistConversionafter;}
   TH2D *GetQAHistPsiMinusPhi() {return fHistPsiMinusPhi;}
