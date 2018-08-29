@@ -444,10 +444,10 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     Double_t *binEdgesThn[20] = {0};
 
     titleThn[dimThn] = "#Delta #varphi";
-    nbinsThn[dimThn] = 45;
-    Double_t deltaPhiArray[45+1];
+    nbinsThn[dimThn] = 50;
+    Double_t deltaPhiArray[50+1];
     binEdgesThn[dimThn] = deltaPhiArray;
-    GenerateFixedBinArray(45,-pi/2.,3.*pi/2.,deltaPhiArray);
+    GenerateFixedBinArray(50,-pi/2.,3.*pi/2.,deltaPhiArray);
     minThn[dimThn] = -pi/2.;
     maxThn[dimThn] = 3.*pi/2.;
     dimThn++;
