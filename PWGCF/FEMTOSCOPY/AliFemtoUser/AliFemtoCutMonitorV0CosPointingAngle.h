@@ -8,8 +8,8 @@ class TH2F;
 
 class AliFemtoCutMonitorV0CosPointingAngle : public AliFemtoCutMonitorV0 {
 public:
-  AliFemtoCutMonitorV0CosPointingAngle(bool aBuildCosPointingAnglewParentInfo=false, int aNbins=100, double aCosMin=0.99, double aCosMax=1.0);
-  AliFemtoCutMonitorV0CosPointingAngle(const char *aName, bool aBuildCosPointingAnglewParentInfo=false, int aNbins=100, double aCosMin=0.99, double aCosMax=1.0);
+  AliFemtoCutMonitorV0CosPointingAngle(int aPrimaryPID, bool aBuildCosPointingAnglewParentInfo=false, int aNbins=100, double aCosMin=0.99, double aCosMax=1.0);
+  AliFemtoCutMonitorV0CosPointingAngle(const char *aName, int aPrimaryPID, bool aBuildCosPointingAnglewParentInfo=false, int aNbins=100, double aCosMin=0.99, double aCosMax=1.0);
   AliFemtoCutMonitorV0CosPointingAngle(const AliFemtoCutMonitorV0CosPointingAngle &aCut);
   virtual ~AliFemtoCutMonitorV0CosPointingAngle();
 

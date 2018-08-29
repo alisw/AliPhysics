@@ -6,32 +6,34 @@
 #include <TList.h>
 #include "AliFemtoModelHiddenInfo.h"
 
-AliFemtoCutMonitorV0CosPointingAngle::AliFemtoCutMonitorV0CosPointingAngle(bool aBuildCosPointingAnglewParentInfo, int aNbins, double aCosMin, double aCosMax):
+AliFemtoCutMonitorV0CosPointingAngle::AliFemtoCutMonitorV0CosPointingAngle(int aPrimaryPID, bool aBuildCosPointingAnglewParentInfo, int aNbins, double aCosMin, double aCosMax):
   AliFemtoCutMonitorV0(),
   fNbinsCPA(aNbins),
   fMinCPA(aCosMin), 
   fMaxCPA(aCosMax), 
-  fPrimaryPID(-1),
+  fPrimaryPID(aPrimaryPID),
   fBuildCosPointingAnglewParentInfo(true),
   fParentPIDInfoVec(0),
   fCosPointingAnglewParentInfo(nullptr)
 {
   //if fBuildCosPointingAnglewParentInfo=false, the following line will simple rebin fCosPointingAngle
   SetBuildCosPointingAnglewParentInfo(fBuildCosPointingAnglewParentInfo, fNbinsCPA, fMinCPA, fMaxCPA);
+  if(fBuildCosPointingAnglewParentInfo) CreateDefaultParentPIDInfoVec();
 }
 
-AliFemtoCutMonitorV0CosPointingAngle::AliFemtoCutMonitorV0CosPointingAngle(const char *aName, bool aBuildCosPointingAnglewParentInfo, int aNbins, double aCosMin, double aCosMax):
+AliFemtoCutMonitorV0CosPointingAngle::AliFemtoCutMonitorV0CosPointingAngle(const char *aName, int aPrimaryPID, bool aBuildCosPointingAnglewParentInfo, int aNbins, double aCosMin, double aCosMax):
   AliFemtoCutMonitorV0(aName),
   fNbinsCPA(aNbins),
   fMinCPA(aCosMin), 
   fMaxCPA(aCosMax), 
-  fPrimaryPID(-1),
+  fPrimaryPID(aPrimaryPID),
   fBuildCosPointingAnglewParentInfo(true),
   fParentPIDInfoVec(0),
   fCosPointingAnglewParentInfo(nullptr)
 {
   //if fBuildCosPointingAnglewParentInfo=false, the following line will simple rebin fCosPointingAngle
   SetBuildCosPointingAnglewParentInfo(fBuildCosPointingAnglewParentInfo, fNbinsCPA, fMinCPA, fMaxCPA);
+  if(fBuildCosPointingAnglewParentInfo) CreateDefaultParentPIDInfoVec();
 }
 
 AliFemtoCutMonitorV0CosPointingAngle::AliFemtoCutMonitorV0CosPointingAngle(const AliFemtoCutMonitorV0CosPointingAngle &aCut):
@@ -144,7 +146,15 @@ void AliFemtoCutMonitorV0CosPointingAngle::CreateDefaultParentPIDInfoVec()
   ParentPIDInfo tPIDInfo;
 
   tPIDInfo.parentName = TString("Primary");
+  tPIDInfo.parentPID = fPrimaryPID;
+  fParentPIDInfoVec.push_back(tPIDInfo);
+
+  tPIDInfo.parentName = TString("#Lambda");
   tPIDInfo.parentPID = 3122;
+  fParentPIDInfoVec.push_back(tPIDInfo);
+
+  tPIDInfo.parentName = TString("K^{0}_{S}");
+  tPIDInfo.parentPID = 310;
   fParentPIDInfoVec.push_back(tPIDInfo);
 
   tPIDInfo.parentName = TString("#Sigma^{0}");
@@ -178,8 +188,6 @@ void AliFemtoCutMonitorV0CosPointingAngle::CreateDefaultParentPIDInfoVec()
   tPIDInfo.parentName = TString("K^{*+}");
   tPIDInfo.parentPID = 323;
   fParentPIDInfoVec.push_back(tPIDInfo);
-
-  fPrimaryPID = fParentPIDInfoVec[0].parentPID;
 }
 
 void AliFemtoCutMonitorV0CosPointingAngle::AddParentToPIDInfoVec(TString aName, int aPID)
@@ -196,14 +204,17 @@ void AliFemtoCutMonitorV0CosPointingAngle::CreateNewParentPIDInfoVec(vector<TStr
 {
   fParentPIDInfoVec.clear();
   ParentPIDInfo tPIDInfo;
+
+  tPIDInfo.parentName = TString("Primary");
+  tPIDInfo.parentPID = fPrimaryPID;
+  fParentPIDInfoVec.push_back(tPIDInfo);
+
   for(unsigned int i=0; i<aNames.size(); i++) 
   {
     tPIDInfo.parentName = aNames[i];
     tPIDInfo.parentPID = aPIDs[i];
     fParentPIDInfoVec.push_back(tPIDInfo);
   }
-
-  fPrimaryPID = fParentPIDInfoVec[0].parentPID;
 }
 
 
