@@ -28,7 +28,7 @@ AliFemtoTrioDEtaDPhiFctn::AliFemtoTrioDEtaDPhiFctn(const char* title, const int&
   // set up denominator DPhi
   char tTitDenPhi[101] = "DenTrioDPhi";
   strncat(tTitDenPhi,title, 100);
-  fRealDPhi = new TH2D(tTitDenPhi,title,aPhiBins,fphiL,fphiT,aPhiBins,fphiL,fphiT);
+  fMixedDPhi = new TH2D(tTitDenPhi,title,aPhiBins,fphiL,fphiT,aPhiBins,fphiL,fphiT);
 
   
   // set up numerator DEta
@@ -48,6 +48,37 @@ AliFemtoTrioDEtaDPhiFctn::AliFemtoTrioDEtaDPhiFctn(const char* title, const int&
   
 }
 
+AliFemtoTrioDEtaDPhiFctn::AliFemtoTrioDEtaDPhiFctn(const AliFemtoTrioDEtaDPhiFctn& aTrioFctn) :
+  fRealDPhi(aTrioFctn.fRealDPhi),
+  fMixedDPhi(aTrioFctn.fMixedDPhi),
+  fRealDEta(aTrioFctn.fRealDEta),
+  fMixedDEta(aTrioFctn.fMixedDEta),
+  fphiL(aTrioFctn.fphiL),
+  fphiT(aTrioFctn.fphiT),
+  fEtaBins(aTrioFctn.fEtaBins),
+  fPhiBins(aTrioFctn.fPhiBins),
+  fTitle(aTrioFctn.fTitle)
+{
+  // copy constructor
+  if (aTrioFctn.fRealDPhi)
+    fRealDPhi = new TH2D(*aTrioFctn.fRealDPhi);
+  else
+    fRealDPhi = 0;
+  if (aTrioFctn.fMixedDPhi)
+    fMixedDPhi = new TH2D(*aTrioFctn.fMixedDPhi);
+  else
+    fMixedDPhi = 0;
+  if (aTrioFctn.fRealDEta)
+    fRealDEta = new TH2D(*aTrioFctn.fRealDEta);
+  else
+    fRealDEta = 0;
+  if (aTrioFctn.fMixedDEta)
+    fMixedDPhi = new TH2D(*aTrioFctn.fMixedDEta);
+  else
+    fMixedDEta = 0;
+}
+
+
 AliFemtoTrioDEtaDPhiFctn::~AliFemtoTrioDEtaDPhiFctn()
 {
   if(fRealDPhi) delete fRealDPhi;
@@ -55,6 +86,40 @@ AliFemtoTrioDEtaDPhiFctn::~AliFemtoTrioDEtaDPhiFctn()
   if(fRealDEta) delete fRealDEta;
   if(fMixedDEta) delete fMixedDEta;
   
+}
+
+
+AliFemtoTrioDEtaDPhiFctn& AliFemtoTrioDEtaDPhiFctn::operator=(const AliFemtoTrioDEtaDPhiFctn& aTrioFctn)
+{
+  // assignment operator
+  if (this == &aTrioFctn)
+    return *this;
+
+  fEtaBins = aTrioFctn.fEtaBins;
+  fPhiBins = aTrioFctn.fPhiBins;
+
+  fTitle = aTrioFctn.fTitle;
+
+  if (aTrioFctn.fRealDPhi)
+    fRealDPhi = new TH2D(*aTrioFctn.fRealDPhi);
+  else
+    fRealDPhi = 0;
+  if (aTrioFctn.fMixedDPhi)
+    fMixedDPhi = new TH2D(*aTrioFctn.fMixedDPhi);
+  else
+    fMixedDPhi = 0;
+  if (aTrioFctn.fRealDEta)
+    fRealDEta = new TH2D(*aTrioFctn.fRealDEta);
+  else
+    fRealDEta = 0;
+  if (aTrioFctn.fMixedDEta)
+    fMixedDPhi = new TH2D(*aTrioFctn.fMixedDEta);
+  else
+    fMixedDEta = 0;
+
+
+
+  return *this;
 }
 
 void AliFemtoTrioDEtaDPhiFctn::AddRealTrio(AliFemtoTrio *trio)

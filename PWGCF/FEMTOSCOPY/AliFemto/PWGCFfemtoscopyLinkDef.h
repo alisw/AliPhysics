@@ -4,11 +4,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliFemtoBaryoniaAnalysis+;
-#pragma link C++ class AliFemtoMultCorrAnalysis+;
-#pragma link C++ class AliFemtoTrio+;
-#pragma link C++ class AliFemtoTrioCut+;
-#pragma link C++ class AliFemtoTrioMinvFctn+;
+
 #pragma link C++ class AliFemtoAnalysis+;
 #pragma link C++ class AliFemtoLikeSignAnalysis+;
 #pragma link C++ class AliFemtoVertexAnalysis+;
@@ -101,7 +97,14 @@
 #pragma link C++ class AliFemtoBetaTPairCut+;
 #pragma link C++ class AliFemtoCutMonitorPairBetaT+;
 #pragma link C++ class AliFemtoCutMonitorXi+;
+#pragma link C++ class AliFemtoMultCorrAnalysis+;
+#pragma link C++ class AliFemtoTrioAnalysis+;
+#pragma link C++ class AliFemtoTrio+;
+#pragma link C++ class AliFemtoTrioCut+;
+#pragma link C++ class AliFemtoTrioFctn+;
+#pragma link C++ class AliFemtoTrioMinvFctn+;
 #pragma link C++ class AliFemtoTrioDEtaDPhiFctn+;
+
 
 #pragma link C++ class AliFemtoConfigObject-;
 #pragma link C++ class AliFemtoConfigObject::Painter;
