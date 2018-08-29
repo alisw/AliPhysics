@@ -38,9 +38,12 @@ AliDielectronTMVACuts::AliDielectronTMVACuts() :
 AliAnalysisCuts(),
   TMVAReader(0),
   TMVAReaderName(""),
-  nInputFeatureActive(0),
+  TMVAWeightFileName(""),
   fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
-  mvaCutValue(0.)
+  fIsSpectator(new TBits(nInputFeatureMax)),
+  nInputFeatureActive(0),
+  mvaCutValue(0.),
+  isInitialized(kFALSE)
 {
   //
   // Default Constructor
@@ -61,9 +64,12 @@ AliDielectronTMVACuts::AliDielectronTMVACuts(const char* name, const char* title
 	     AliAnalysisCuts(name, title),
 	     TMVAReader(0),
 	     TMVAReaderName(""),
-	     nInputFeatureActive(0),
+	     TMVAWeightFileName(""),
 	     fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
-	     mvaCutValue(0.)
+	     fIsSpectator(new TBits(nInputFeatureMax)),
+	     nInputFeatureActive(0),
+	     mvaCutValue(0.),
+	     isInitialized(kFALSE)
 {
   //
   // Named Constructor
@@ -88,6 +94,42 @@ AliDielectronTMVACuts::~AliDielectronTMVACuts()
   if (TMVAReader) delete TMVAReader;
   if (fUsedVars)  delete fUsedVars;
 
+}
+
+//______________________________________________
+void AliDielectronTMVACuts::InitTMVAReader()
+{
+  //
+  // TMVA reader initialization (needed for GRID running)
+  //
+
+  AliInfo("Initialize TMVA Reader");
+
+  if(!TMVAReader){
+    AliFatal("TMVA reader not available");
+    return;
+  }
+
+  for(Int_t i = 0; i < nInputFeatureActive; i++){
+
+    // adding spectator value to TMVA reader
+    if(fIsSpectator->TestBitNumber(i)){
+      AliInfo(Form("Input spectator %d = %s (%s)",i,inputFeatureName[i].Data(),AliDielectronVarManager::GetValueName(inputFeatureNumber[i])));
+      TMVAReader->AddSpectator(inputFeatureName[i].Data(), &inputFeature[i]);
+    }
+    // adding feature value to TMVA reader
+    else{
+      AliInfo(Form("Input feature %d = %s (%s)",i,inputFeatureName[i].Data(),AliDielectronVarManager::GetValueName(inputFeatureNumber[i])));
+      TMVAReader->AddVariable(inputFeatureName[i].Data(), &inputFeature[i]);
+    }
+  }
+
+  // initialize reader (add weight file location)
+  AliInfo(Form("Initialize TMVA reader %s with weight file %s",TMVAReaderName.Data(),TMVAWeightFileName.Data()));
+  TMVAReader->BookMVA(TMVAReaderName.Data(),TMVAWeightFileName.Data());
+
+  // set to initialized
+  isInitialized = kTRUE;
 }
 
 
@@ -115,14 +157,14 @@ void AliDielectronTMVACuts::AddTMVAInput(TString featureName, AliDielectronVarMa
     return;
   }
 
+  // specifying name of input feature in weight file
+  inputFeatureName[nInputFeatureActive]   = featureName;
+  
   // specifying location of input feature in AliDielectronVarManager::ValueTypes
   inputFeatureNumber[nInputFeatureActive] = dielectronVar;
 
   // setting bit map of used features
   fUsedVars->SetBitNumber((UInt_t)dielectronVar,kTRUE);
-
-  // adding feature value to TMVA reader
-  TMVAReader->AddVariable(featureName.Data(), &inputFeature[nInputFeatureActive]);
 
   // count input features
   nInputFeatureActive++;
@@ -153,15 +195,18 @@ void AliDielectronTMVACuts::AddTMVASpectator(TString featureName, AliDielectronV
     return;
   }
 
+  // specifying name of input feature in weight file
+  inputFeatureName[nInputFeatureActive]   = featureName;
+
   // specifying location of input feature in AliDielectronVarManager::ValueTypes
   inputFeatureNumber[nInputFeatureActive] = dielectronVar;
   
   // setting bit map of used features
   fUsedVars->SetBitNumber((UInt_t)dielectronVar,kTRUE);
 
-  // adding spectator value to TMVA reader
-  TMVAReader->AddSpectator(featureName.Data(), &inputFeature[nInputFeatureActive]);
-
+  // setting bit map of spectators in input feature array
+  fIsSpectator->SetBitNumber(nInputFeatureActive,kTRUE);
+  
   // count input features
   nInputFeatureActive++;
   
@@ -185,9 +230,12 @@ void AliDielectronTMVACuts::SetTMVAWeights(TString TMVAName, TString weightName)
     AliWarning(Form("Missing TMVA name (%s) or weight input file name (%s) --> Do not add input",TMVAName.Data(),weightName.Data()));
     return;
   }
-  
-  TMVAReader->BookMVA(TMVAName.Data(),weightName.Data());
+
+  // set name of the reader
   TMVAReaderName = TMVAName;
+
+  // set location of input weight file
+  TMVAWeightFileName = weightName;
 }
 
 //______________________________________________
@@ -196,6 +244,10 @@ Bool_t AliDielectronTMVACuts::IsSelected(TObject* track)
   //
   // Apply configured cuts
   //
+
+  // first check if TMVA reader is initialized (needed for running on GRID)
+  if(!isInitialized)
+    InitTMVAReader();
 
   AliVTrack *vtrack=dynamic_cast<AliVTrack*>(track);
   if (!vtrack) return kFALSE;
@@ -211,6 +263,10 @@ Bool_t AliDielectronTMVACuts::IsSelected(TObject* track)
     AliWarning("TMVA Reader not set up properly");
     return kFALSE;
   }
+
+  // // Just testing....
+  // TMVAReader->BookMVA(TMVAReaderName.Data(),"TMVA_e_0_05_05_05_electron0555first.weights.xml");
+
 
   // set input features
   Double_t values[AliDielectronVarManager::kNMaxValues];

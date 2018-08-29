@@ -46,17 +46,25 @@ public:
   AliDielectronTMVACuts(const AliDielectronTMVACuts &c);
   AliDielectronTMVACuts &operator=(const AliDielectronTMVACuts &c);
 
+  void InitTMVAReader();                                         // TMVA reader initialization (for GRID running)
+
   static const Int_t nInputFeatureMax = 20;                      // maximum number of input features
   
   TMVA::Reader* TMVAReader;                                      // TMVA reader
   TString TMVAReaderName;                                        // TMVA Reader Name
-  
-  Int_t nInputFeatureActive;                                     // number of active input features
+  TString TMVAWeightFileName;                                    // TMVA weight file location
+
   TBits* fUsedVars;                                              // used variables in AliDielectronVarManager::ValueTypes
+  TBits* fIsSpectator;                                           // spectators in input feature array
+  Int_t nInputFeatureActive;                                     // number of active input features
   Float_t inputFeature[nInputFeatureMax];                        // input feature array, to be filled track-by-track from AliDielectronVarManager
+  TString inputFeatureName[nInputFeatureMax];                    // input feature name array (corresponding to feature names in weight file)
   AliDielectronVarManager::ValueTypes inputFeatureNumber[nInputFeatureMax];    // input feature number array (corresponding to AliDielectronVarManager::ValueTypes)
   
   Float_t mvaCutValue;                                           // cut value to be used for TMVA output value
+
+  Bool_t isInitialized;                                          // flag to mark the first decision and start the TMVA reader initialization (for GRID running)
+  
   
   ClassDef(AliDielectronTMVACuts,1)                              // Dielectron TMVACuts
 };
