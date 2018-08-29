@@ -49,7 +49,10 @@ Bool_t AliEmcalCorrectionCellEnergy::Initialize()
   AliWarning("Init EMCAL cell recalibration");
   
   if(fFilepass.Contains("LHC14a1a")) fUseAutomaticRecalib = kTRUE;
-  
+
+  // check the YAML configuration if the Run2 calibration is requested (default is false)
+  GetProperty("enableRun2TempCalib",fUseRunDepTempCalibRun2);
+
   if (!fRecoUtils)
     fRecoUtils  = new AliEMCALRecoUtils;
     
@@ -222,18 +225,16 @@ Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
 
   Int_t runRC = fEventManager.InputEvent()->GetRunNumber();
 
+  // init default maps first
+  if (!fRecoUtils->GetEMCALRecalibrationFactorsArray())
+    fRecoUtils->InitEMCALRecalibrationFactors();
+
   // Treat Run2 calibration differently. Loading of two OADB objects required for calibration
   // Calibration can be turned on or off via: doTempCalibRun2: true in the YAML configuration
   if(runRC > 197692){
 
     AliInfo("Initialising Run2 recalibration factors");
 
-    // init default maps first
-    if (!fRecoUtils->GetEMCALRecalibrationFactorsArray())
-      fRecoUtils->InitEMCALRecalibrationFactors() ;
-
-    // check the YAML configuration if the Run2 calibration is requested (default is false)
-    GetProperty("doTempCalibRun2",fUseRunDepTempCalibRun2);
     if(!fUseRunDepTempCalibRun2){
       AliInfo("Temperature calibration for Run2 not requested");
       return 0;
@@ -247,49 +248,55 @@ Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
 
     if (fBasePath!="")
     { //if fBasePath specified in the ->SetBasePath()
-      runDepTemperatureFile             = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALTemperatureCalibSM.root",fBasePath.Data()),"read"));
+      runDepTemperatureFile = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALTemperatureCalibSM.root",fBasePath.Data()),"read"));
       if (!runDepTemperatureFile || runDepTemperatureFile->IsZombie()) {
         AliFatal(Form("EMCALTemperatureCalibSM.root not found in %s",fBasePath.Data()));
         return 0;
       }
 
-      temperatureCalibParamFile  = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALTemperatureCalibParam.root",fBasePath.Data()),"read"));
+      temperatureCalibParamFile = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALTemperatureCalibParam.root",fBasePath.Data()),"read"));
       if (!temperatureCalibParamFile || temperatureCalibParamFile->IsZombie()) {
         AliFatal(Form("EMCALTemperatureCalibParam.root not found in %s",fBasePath.Data()));
         return 0;
       }
 
       contTemperature = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(runDepTemperatureFile->Get("AliEMCALTemperatureCalibSM")));
-      contParams      = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(temperatureCalibParamFile->Get("AliEMCALTemperatureCalibParam")));
+      contParams = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(temperatureCalibParamFile->Get("AliEMCALTemperatureCalibParam")));
     }
     else
     { // Else choose the one in the $ALICE_PHYSICS directory or on EOS via the wrapper function
-      runDepTemperatureFile= std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALTemperatureCalibSM.root").data(),"read"));
+      runDepTemperatureFile = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALTemperatureCalibSM.root").data(),"read"));
       if (!runDepTemperatureFile || runDepTemperatureFile->IsZombie()) {
         AliFatal("OADB/EMCAL/EMCALTemperatureCalibSM.root was not found");
         return 0;
       }
 
-      temperatureCalibParamFile= std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALTemperatureCalibParam.root").data(),"read"));
+      temperatureCalibParamFile = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALTemperatureCalibParam.root").data(),"read"));
       if (!temperatureCalibParamFile || temperatureCalibParamFile->IsZombie()) {
         AliFatal("OADB/EMCAL/EMCALTemperatureCalibParam.root was not found");
         return 0;
       }
 
       contTemperature = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(runDepTemperatureFile->Get("AliEMCALTemperatureCalibSM")));
-      contParams      = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(temperatureCalibParamFile->Get("AliEMCALTemperatureCalibParam")));
+      contParams = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(temperatureCalibParamFile->Get("AliEMCALTemperatureCalibParam")));
     }
 
+    if(!contTemperature || !contParams) {
+      AliError("Temperature or parametrization OADB container not found");
+      return 0;
+    }
+    contTemperature->SetOwner(true);
+    contParams->SetOwner(true);
 
     TObjArray *arrayParams=(TObjArray*)contParams->GetObject(runRC);
     if (!arrayParams)
     {
-      AliError(Form("No calibration parameters can be found for run number: %d", runRC));
+      AliError(Form("No temperature calibration parameters can be found for run number: %d", runRC));
       return 0;
     }
     TH1D *hRundepTemp = (TH1D*)contTemperature->GetObject(runRC);
     TH1F *hSlopeParam = (TH1F*)arrayParams->FindObject("hParamSlope");
-    TH1F *hA0Param    = (TH1F*)arrayParams->FindObject("hParamA0");
+    TH1F *hA0Param = (TH1F*)arrayParams->FindObject("hParamA0");
 
     if (!hRundepTemp || !hSlopeParam || !hA0Param)
     {
@@ -325,10 +332,6 @@ Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
 
     AliInfo("Initialising recalibration factors");
 
-    // init default maps first
-    if (!fRecoUtils->GetEMCALRecalibrationFactorsArray())
-      fRecoUtils->InitEMCALRecalibrationFactors() ;
-
     std::unique_ptr<AliOADBContainer> contRF;
     std::unique_ptr<TFile> runDepRecalibFile;
     if (fBasePath!="")
@@ -345,7 +348,7 @@ Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
       contRF = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(runDepRecalibFile->Get("AliEMCALRunDepTempCalibCorrections")));
     }
     else
-    { // Else choose the one in the $ALICE_PHYSICS directory
+    { // Else choose the one in the $ALICE_PHYSICS directory or on EOS via the wrapper function
       AliInfo("Loading Recalib OADB from OADB/EMCAL");
 
       runDepRecalibFile = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALTemperatureCorrCalib.root").data(),"read"));
@@ -389,15 +392,6 @@ Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
     }
 
     Int_t nSM = fGeom->GetEMCGeometry()->GetNumberOfSuperModules();
-    Int_t nbins = rundeprecal->GetNbinsX();
-
-    // Avoid use of Run1 param for Run2
-    if(nSM > 12 && nbins < 12288)
-    {
-      AliError(Form("Total SM is %d but T corrections available for %d channels, skip Init of T recalibration factors",nSM,nbins));
-
-      return 2;
-    }
 
     //AliDebug(1, rundeprecal->Print());
 

@@ -38,7 +38,7 @@ CellEnergy:
     createHistos: true
 CellEnergy_defaultSetting:
     enabled: true
-    doTempCalibRun2: false
+    enableRun2TempCalib: true
 
 CellBadChannel:
     createHistos: true
