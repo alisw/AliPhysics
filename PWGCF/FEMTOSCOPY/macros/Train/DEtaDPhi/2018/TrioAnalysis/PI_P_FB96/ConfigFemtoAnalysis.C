@@ -1,0 +1,344 @@
+#if !defined(__CINT__) || defined(__MAKECINT_)
+#include "AliFemtoManager.h"
+#include "AliFemtoModelManager.h"
+#include "AliFemtoEventReaderAODMultSelection.h"
+#include "AliFemtoTrioAnalysis.h"
+#include "AliFemtoBasicEventCut.h"
+#include "AliFemtoESDTrackCut.h"
+#include "AliFemtoTrioMinvFctn.h"
+#include "AliFemtoTrioCut.h"
+#include "AliFemtoTrio.h"
+#include "AliESDtrack.h"
+#endif
+
+
+enum ESys  { kPIpPIpPIp, kPImPImPIm, kPIpPImPIm, kPPP, kAPAPAP, kPAPAP,nSys };
+
+const char *sysNames[nSys]      = { "PIpPIpPIp", "PImPImPIm", "PIpPImPIm","PPP","APAPAP","PAPAP"};
+const bool runSys[nSys]         = {   1  ,   1  ,   1   ,    1   ,    1  ,   1  };
+
+
+
+
+const int nMultBins = 1;
+const int multBins[nMultBins+1] = {0, 200};
+const int runMult[nMultBins]    = {1};
+
+
+const int vertZMin = -10;
+const int vertZMax = 10;
+
+const  double PionMass = 0.13956995;
+const  double KaonMass = 0.493677;
+const  double ProtonMass = 0.938272013;
+const  double LambdaMass = 1.115683;
+const  double XiMass = 1.32171;
+
+
+
+AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis);
+AliFemtoEventReaderAODChain* GetReader2011(bool mcAnalysis);
+AliFemtoEventReaderAODChain* GetReaderPP(bool mcAnalysis);
+AliFemtoTrioAnalysis* GetAnalysis(bool doEventMixing);
+AliFemtoBasicEventCut* GetEventCut(int multMin=3,int multMax=100000,int zVertMin=-8.0,int zVertMax=8.0);
+AliFemtoESDTrackCut* GetTrackCut(AliFemtoTrio::EPart particle);
+void GetParticlesForSystem(ESys system, AliFemtoTrio::EPart &firstParticle, AliFemtoTrio::EPart &secondParticle, AliFemtoTrio::EPart &thirdParticle);
+
+//________________________________________________________________________
+AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, int year=2015, bool ppAnalysis=false, bool eventMixing=false, bool doMonitors=true)
+{
+
+  
+
+  // create analysis managers
+  AliFemtoManager* Manager = new AliFemtoManager();
+  AliFemtoModelManager *modelMgr = new AliFemtoModelManager();
+  
+  // add event reader
+  if(ppAnalysis){
+    AliFemtoEventReaderAODChain* ReaderPP = GetReaderPP(mcAnalysis);
+    Manager->SetEventReader(ReaderPP);
+  }
+  else if(year==2015){
+    AliFemtoEventReaderAODMultSelection* Reader2015 = GetReader2015(mcAnalysis);
+    Manager->SetEventReader(Reader2015);
+  }
+  else if(year==2011){
+    AliFemtoEventReaderAODChain* Reader2011 = GetReader2011(mcAnalysis);
+    Manager->SetEventReader(Reader2011);
+  }
+  
+  // declare necessary objects
+  /*AliFemtoTrioAnalysis  *trioAnalysis[nSys*nMultBins*nVertZbins*(nDecaysPionPion+nDecaysPionKaon+1)];
+  AliFemtoBasicEventCut     *eventCut[nSys*nMultBins*nVertZbins*(nDecaysPionPion+nDecaysPionKaon+1)];
+  
+  AliFemtoTrioMinvFctn    *distribution[nSys*nMultBins*nVertZbins*(nDecaysPionPion+nDecaysPionKaon+1)];*/
+  AliFemtoTrioAnalysis      *trioAnalysis[500];
+  AliFemtoBasicEventCut     *eventCut[500];
+
+  AliFemtoCutMonitorParticlePID   *monitorPIDPass[500];
+  AliFemtoCutMonitorParticlePID   *monitorPIDFail[500];
+  AliFemtoCutMonitorParticleYPt   *monitorYPtPass[500];
+  AliFemtoCutMonitorParticleYPt   *monitorYPtFail[500];
+  	
+  
+  AliFemtoTrioDEtaDPhiFctn  *detadphifctn[5000];
+  
+  
+  // setup analysis
+  int anIter = 0;
+  
+  AliFemtoTrio::EPart firstParticle, secondParticle, thirdParticle;
+  
+  for (int iSys=0; iSys<nSys; iSys++){
+    if (!runSys[iSys]) continue;
+    
+    // get particle cuts
+    GetParticlesForSystem((ESys)iSys,firstParticle,secondParticle, thirdParticle);
+    AliFemtoMJTrackCut *firstTrackCut  = GetTrackCut(firstParticle);
+    AliFemtoMJTrackCut *secondTrackCut = GetTrackCut(secondParticle);
+    AliFemtoMJTrackCut *thirdTrackCut  = GetTrackCut(thirdParticle);
+
+
+    
+    for(int iMult=0;iMult<nMultBins;iMult++){
+      if(!runMult[iMult]) continue;
+      
+        
+        
+      //-----------------------------------------------------------------------------------
+      // main distribution with all cuts applied
+      //-----------------------------------------------------------------------------------
+        
+      // create new analysis
+      trioAnalysis[anIter] = GetAnalysis(eventMixing);
+        
+      // get event cut
+      eventCut[anIter] = GetEventCut(multBins[iMult],multBins[iMult+1],vertZMin,vertZMax);
+        
+      // setup anallysis cuts
+      trioAnalysis[anIter]->SetEventCut(eventCut[anIter]);
+      trioAnalysis[anIter]->SetV0SharedDaughterCut(true);
+
+
+
+      
+      trioAnalysis[anIter]->SetFirstParticleCut(firstTrackCut);
+      trioAnalysis[anIter]->SetSecondParticleCut(secondTrackCut);
+      trioAnalysis[anIter]->SetThirdParticleCut(thirdTrackCut);
+
+
+      if(doMonitors)
+	{
+	  if(iSys==0 || iSys==1) //PI
+	    {
+	      monitorPIDPass[anIter] = new AliFemtoCutMonitorParticlePID(Form("monitorPIDPass%sM%i", sysNames[iSys], iMult),0);//0-pion,1-kaon,2-proton
+	      monitorPIDFail[anIter] = new AliFemtoCutMonitorParticlePID(Form("monitorPIDFail%sM%i", sysNames[iSys], iMult),0);//0-pion,1-kaon,2-proton
+	      firstTrackCut->AddCutMonitor(monitorPIDPass[anIter],monitorPIDFail[anIter]);
+
+	      monitorYPtPass[anIter] = new AliFemtoCutMonitorParticleYPt(Form("monitorYPtPass%sM%i", sysNames[iSys], iMult),PionMass);
+	      monitorYPtFail[anIter] = new AliFemtoCutMonitorParticleYPt(Form("monitorYPtFail%sM%i", sysNames[iSys], iMult),PionMass);
+	      firstTrackCut->AddCutMonitor(monitorYPtPass[anIter],monitorYPtFail[anIter]);
+	    }
+	  if(iSys==3 || iSys==4) //P
+	    {
+	      monitorPIDPass[anIter] = new AliFemtoCutMonitorParticlePID(Form("monitorPIDPass%sM%i", sysNames[iSys], iMult),2);//0-pion,1-kaon,2-proton
+	      monitorPIDFail[anIter] = new AliFemtoCutMonitorParticlePID(Form("monitorPIDFail%sM%i", sysNames[iSys], iMult),2);//0-pion,1-kaon,2-proton
+	      firstTrackCut->AddCutMonitor(monitorPIDPass[anIter],monitorPIDFail[anIter]);
+
+	      monitorYPtPass[anIter] = new AliFemtoCutMonitorParticleYPt(Form("monitorYPtPass%sM%i", sysNames[iSys], iMult),ProtonMass);
+	      monitorYPtFail[anIter] = new AliFemtoCutMonitorParticleYPt(Form("monitorYPtFail%sM%i", sysNames[iSys], iMult),ProtonMass);
+	      firstTrackCut->AddCutMonitor(monitorYPtPass[anIter],monitorYPtFail[anIter]);
+	    }
+	}
+        
+      trioAnalysis[anIter]->SetCollection1type(firstParticle);
+      trioAnalysis[anIter]->SetCollection2type(secondParticle);
+      trioAnalysis[anIter]->SetCollection3type(thirdParticle);
+        
+      bool doMinv = true;
+        
+      // create m_inv distribution and add to the analysis
+        
+      // get trio cut
+      AliFemtoTrioCut *trioCut = GetTrioCut((ESys)iSys);
+      detadphifctn[anIter] = new AliFemtoTrioDEtaDPhiFctn(Form("cdedpnocorr%stpcM%i", sysNames[iSys], iMult),29, 29);
+      detadphifctn[anIter]->SetTrioCut(trioCut);
+      trioAnalysis[anIter]->AddTrioFctn(detadphifctn[anIter]);
+        
+            
+        
+      // add analysis to the manager
+      Manager->AddAnalysis(trioAnalysis[anIter]);
+      anIter++;
+        
+        
+
+      
+    }
+  }
+  return Manager;
+}
+
+AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis)
+{
+  AliFemtoEventReaderAODMultSelection* Reader = new AliFemtoEventReaderAODMultSelection();
+  Reader->SetFilterBit(7);
+  Reader->SetReadV0(1);
+  Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
+  Reader->SetEPVZERO(kTRUE);
+  Reader->SetCentralityFlattening(kTRUE);
+  Reader->SetReadMC(mcAnalysis);
+  
+  return Reader;
+}
+
+AliFemtoEventReaderAODChain* GetReader2011(bool mcAnalysis)
+{
+  AliFemtoEventReaderAODChain* Reader = new AliFemtoEventReaderAODChain();
+  Reader->SetFilterBit(7);
+  Reader->SetReadV0(1);
+  Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
+  Reader->SetEPVZERO(kTRUE);
+  Reader->SetCentralityFlattening(kTRUE);
+  Reader->SetReadMC(mcAnalysis);
+  
+  return Reader;
+}
+
+AliFemtoEventReaderAODChain* GetReaderPP(bool mcAnalysis)
+{
+  AliFemtoEventReaderAODChain* Reader = new AliFemtoEventReaderAODChain();
+  Reader->SetFilterMask(96);
+  Reader->SetReadV0(true);
+  Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kReference);
+  Reader->SetMinPlpContribSPD(3);
+  Reader->SetIsPileUpEvent(true);
+  Reader->SetReadMC(mcAnalysis);
+
+  
+  return Reader;
+}
+
+AliFemtoTrioAnalysis* GetAnalysis(bool doEventMixing)
+{
+  AliFemtoTrioAnalysis *analysis = new AliFemtoTrioAnalysis();
+  analysis->SetDoEventMixing(doEventMixing);
+  // here one can put some additional analysis settings in the future
+  
+  return analysis;
+}
+
+AliFemtoBasicEventCut* GetEventCut(int multMin,int multMax,int zVertMin,int zVertMax)
+{
+  AliFemtoBasicEventCut *eventCut = new AliFemtoBasicEventCut();
+  eventCut->SetEventMult(multMin,multMax);
+  eventCut->SetVertZPos(zVertMin,zVertMax);
+  eventCut->SetEPVZERO(-TMath::Pi()/2.,TMath::Pi()/2.);
+  
+  return eventCut;
+}
+
+AliFemtoMJTrackCut* GetTrackCut(AliFemtoTrio::EPart particle)
+{
+
+  AliFemtoMJTrackCut *particleCut = new AliFemtoMJTrackCut();
+  particleCut->SetPt(0.15,2.5);
+
+  if(particle == AliFemtoTrio::kPionPlus || particle==AliFemtoTrio::kPionMinus){
+    particleCut->SetMostProbable(19);
+    particleCut->SetMass(PionMass);
+  }
+  else  if(particle == AliFemtoTrio::kKaonPlus || particle==AliFemtoTrio::kKaonMinus){
+    particleCut->SetMostProbable(20);
+    particleCut->SetMass(KaonMass);
+  }
+  else if(particle == AliFemtoTrio::kProton || particle==AliFemtoTrio::kAntiProton)
+    {
+      particleCut->SetMostProbable(21);
+      particleCut->SetMass(ProtonMass);
+      particleCut->SetPt(0.5,2.5);
+    }
+  
+  if(particle == AliFemtoTrio::kKaonPlus || particle == AliFemtoTrio::kPionPlus || particle == AliFemtoTrio::kProton)
+    { particleCut->SetCharge( 1.0); }
+  else
+    { particleCut->SetCharge(-1.0); }
+
+
+  double ProtonMass = 0.938272013;
+  
+  //particleCut->SetMostProbable(18);
+  //particleCut->SetMass(ProtonMass);
+  particleCut->SetEta(-0.8, 0.8);
+  //particleCut->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
+  //particleCut->SetminTPCncls(80);
+  //particleCut->SetRemoveKinks(kTRUE);
+  //particleCut->SetLabel(kFALSE);
+  //particleCut->SetMaxTPCChiNdof(4.0);
+  //particleCut->SetMaxImpactXY(2.8);
+  //particleCut->SetMaxImpactZ(3.2);
+  particleCut->SetNsigma(3.0);
+  particleCut->SetNsigma2(3.0);
+  particleCut->SetNsigmaTPCTOF(kTRUE);
+  particleCut->SetElectronRejection(kTRUE);
+  //particleCut->SetCharge(particle == kEProton ? 1.0 : -1.0);
+  
+
+
+  return particleCut;
+}
+
+
+AliFemtoTrioCut* GetTrioCut(ESys system)
+{
+  AliFemtoTrioCut *trioCut = new AliFemtoTrioCut();
+  
+  
+  return trioCut;
+}
+
+
+void GetParticlesForSystem(ESys system, AliFemtoTrio::EPart &firstParticle, AliFemtoTrio::EPart &secondParticle, AliFemtoTrio::EPart &thirdParticle)
+{
+  if(system == kPIpPIpPIp){
+    firstParticle  = AliFemtoTrio::kPionPlus;
+    secondParticle = AliFemtoTrio::kPionPlus;
+    thirdParticle  = AliFemtoTrio::kPionPlus;
+  }
+  if(system == kPImPImPIm){
+    firstParticle  = AliFemtoTrio::kPionMinus;
+    secondParticle = AliFemtoTrio::kPionMinus;
+    thirdParticle  = AliFemtoTrio::kPionMinus;
+  }
+  if(system == kPIpPImPIm){
+    firstParticle  = AliFemtoTrio::kPionPlus;
+    secondParticle = AliFemtoTrio::kPionMinus;
+    thirdParticle  = AliFemtoTrio::kPionMinus;
+  }
+  if(system == kPPP){
+    firstParticle  = AliFemtoTrio::kProton;
+    firstParticle  = AliFemtoTrio::kProton;
+    firstParticle  = AliFemtoTrio::kProton;
+  }
+  if(system == kAPAPAP){
+    firstParticle  = AliFemtoTrio::kAntiProton;
+    firstParticle  = AliFemtoTrio::kAntiProton;
+    firstParticle  = AliFemtoTrio::kAntiProton;
+  }
+  if(system == kPAPAP){
+    firstParticle  = AliFemtoTrio::kProton;
+    firstParticle  = AliFemtoTrio::kAntiProton;
+    firstParticle  = AliFemtoTrio::kAntiProton;
+  }
+}
+
+
+
+
+
+
+
+
+
+
