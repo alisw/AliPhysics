@@ -1,7 +1,7 @@
-enum ESys  { kPIpPIpPIp, kPImPImPIm, kPIpPImPIm, kPPP, kAPAPAP, kPAPAP,nSys };
+enum ESys  { kPIpPIpPIp, kPImPImPIm, kPIpPImPIm, kKpKpKp, kKmKmKm, kKpKmKm, kPPP, kAPAPAP, kPAPAP,nSys };
 
-const char *sysNames[nSys]      = { "PIpPIpPIp", "PImPImPIm", "PIpPImPIm","PPP","APAPAP","PAPAP"};
-const bool runSys[nSys]         = {   1  ,   1  ,   1   ,    1   ,    1  ,   1  };
+const char *sysNames[nSys]      = {"PIpPIpPIp", "PImPImPIm", "PIpPImPIm", "KpKpKp", "KmKmKm", "KpKmKm", "PPP","APAPAP","PAPAP"};
+const bool runSys[nSys]         = {1, 1, 1, 1,1, 1, 1, 1, 1};
 
 const int nMultBins = 1;
 const int multBins[nMultBins+1] = {3, 2000};
@@ -111,13 +111,13 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
 
 
 
-	  if(iSys == kPIpPIpPIp || iSys == kPImPImPIm || iSys == kPPP || iSys == kAPAPAP)
+	  if(iSys == kPIpPIpPIp || iSys == kPImPImPIm || iSys == kKpKpKp || iSys == kKmKmKm || iSys == kPPP || iSys == kAPAPAP)
 	    {
 	      trioAnalysis[anIter]->SetFirstParticleCut(firstTrackCut);
 	  
 	      trioAnalysis[anIter]->SetCollection1type(firstParticle);
 	    }
-	  else if(iSys == kPIpPImPIm || iSys == kPAPAP)
+	  else if(iSys == kPIpPImPIm || iSys == kKpKmKm || iSys == kPAPAP)
 	    {
 	      trioAnalysis[anIter]->SetFirstParticleCut(firstTrackCut);
 	      trioAnalysis[anIter]->SetSecondParticleCut(secondTrackCut);
@@ -148,6 +148,16 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
 
 		  monitorYPtPass[anIter] = new AliFemtoCutMonitorParticleYPt(Form("monitorYPtPass%sM%i", sysNames[iSys], iMult),PionMass);
 		  monitorYPtFail[anIter] = new AliFemtoCutMonitorParticleYPt(Form("monitorYPtFail%sM%i", sysNames[iSys], iMult),PionMass);
+		  firstTrackCut->AddCutMonitor(monitorYPtPass[anIter],monitorYPtFail[anIter]);
+		}
+	      if(iSys == kKpKpKp || iSys == kKmKmKm) //K
+		{
+		  monitorPIDPass[anIter] = new AliFemtoCutMonitorParticlePID(Form("monitorPIDPass%sM%i", sysNames[iSys], iMult),1);//0-pion,1-kaon,2-proton
+		  monitorPIDFail[anIter] = new AliFemtoCutMonitorParticlePID(Form("monitorPIDFail%sM%i", sysNames[iSys], iMult),1);//0-pion,1-kaon,2-proton
+		  firstTrackCut->AddCutMonitor(monitorPIDPass[anIter],monitorPIDFail[anIter]);
+
+		  monitorYPtPass[anIter] = new AliFemtoCutMonitorParticleYPt(Form("monitorYPtPass%sM%i", sysNames[iSys], iMult),KaonMass);
+		  monitorYPtFail[anIter] = new AliFemtoCutMonitorParticleYPt(Form("monitorYPtFail%sM%i", sysNames[iSys], iMult),KaonMass);
 		  firstTrackCut->AddCutMonitor(monitorYPtPass[anIter],monitorYPtFail[anIter]);
 		}
 	      if(iSys == kPPP || iSys == kAPAPAP) //P
@@ -320,6 +330,21 @@ void GetParticlesForSystem(ESys system, AliFemtoTrio::EPart &firstParticle, AliF
     firstParticle  = AliFemtoTrio::kPionPlus;
     secondParticle = AliFemtoTrio::kPionMinus;
     thirdParticle  = AliFemtoTrio::kPionMinus;
+  }
+  if(system == kKpKpKp){
+    firstParticle  = AliFemtoTrio::kKaonPlus;
+    secondParticle = AliFemtoTrio::kKaonPlus;
+    thirdParticle  = AliFemtoTrio::kKaonPlus;
+  }
+  if(system == kKmKmKm){
+    firstParticle  = AliFemtoTrio::kKaonMinus;
+    secondParticle = AliFemtoTrio::kKaonMinus;
+    thirdParticle  = AliFemtoTrio::kKaonMinus;
+  }
+  if(system == kKpKmKm){
+    firstParticle  = AliFemtoTrio::kKaonPlus;
+    secondParticle = AliFemtoTrio::kKaonMinus;
+    thirdParticle  = AliFemtoTrio::kKaonMinus;
   }
   if(system == kPPP){
     firstParticle  = AliFemtoTrio::kProton;
