@@ -350,12 +350,14 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
             }
           }
           double dist = Distance(mcV->GetX() - sVtx[0], mcV->GetY() - sVtx[1], mcV->GetZ() - sVtx[2]);
+          double radius = std::hypot(sVtx[0], sVtx[1]);
 
           MCparticle v0part;
           v0part.SetPDGcode(currentPDG);
           v0part.SetEta(part->Eta());
           v0part.SetPt(part->Pt());
           v0part.SetDistOverP(dist / part->P());
+          v0part.SetRadius(radius);
           bool isSecondary = mcEvent->IsSecondaryFromWeakDecay(ilab);
           fHistMCct[idx]->Fill(dist * part->GetMass() / part->P());
           TParticle* mother = mcEvent->Particle(part->GetFirstMother());
@@ -363,11 +365,13 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
             v0part.SetStatus(MCparticle::kSecondaryFromWeakDecay);
 
             double motherDist = Distance(mcV->GetX() - part->Vx(), mcV->GetY() - part->Vy(), mcV->GetZ() - part->Vz());
+            double motherR = std::hypot(part->Vx(), part->Vy());
             MCparticle motherPart;
             motherPart.SetPDGcode(mother->GetPdgCode());
             motherPart.SetEta(mother->Eta());
             motherPart.SetPt(mother->Pt());
             motherPart.SetDistOverP(motherDist / mother->P());
+            motherPart.SetRadius(motherR);
             fMCvector.push_back(motherPart);
           } else if (mcEvent->IsPhysicalPrimary(ilab)) {
             v0part.SetStatus(MCparticle::kPrimary);
