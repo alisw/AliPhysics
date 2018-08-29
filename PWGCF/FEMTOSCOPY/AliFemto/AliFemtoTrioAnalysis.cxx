@@ -1,8 +1,8 @@
 ///
-/// \file AliFemtoBaryoniaAnalysis.cxx
+/// \file AliFemtoTrioAnalysis.cxx
 /// \author Jeremi Niedziela
 
-#include "AliFemtoBaryoniaAnalysis.h"
+#include "AliFemtoTrioAnalysis.h"
 #include "AliFemtoPicoEvent.h"
 
 #include <iostream>
@@ -10,7 +10,7 @@
 
 #ifdef __ROOT__
 /// \cond CLASSIMP
-ClassImp(AliFemtoBaryoniaAnalysis);
+ClassImp(AliFemtoTrioAnalysis);
 /// \endcond
 #endif
 
@@ -23,19 +23,21 @@ extern void FillHbtParticleCollection(AliFemtoParticleCut* partCut,
                                       AliFemtoParticleCollection* partCollection,
                                       bool performSharedDaughterCut=kFALSE);
 
-AliFemtoBaryoniaAnalysis::AliFemtoBaryoniaAnalysis():
-  AliFemtoSimpleAnalysis(),
+AliFemtoTrioAnalysis::AliFemtoTrioAnalysis():
+AliFemtoSimpleAnalysis(),
 fTrioFctnCollection(NULL),
 fEventCut(NULL),
 fFirstParticleCut(NULL),
 fSecondParticleCut(NULL),
+fThirdParticleCut(NULL),
+fNeventsProcessed(0),
 fNeventsPassed(0),
 fPicoEvent(nullptr),
 fPerformSharedDaughterCut(kFALSE),
+fDoEventMixing(false),
 fCollection1type(AliFemtoTrio::kUnknown),
 fCollection2type(AliFemtoTrio::kUnknown),
-fCollection3type(AliFemtoTrio::kUnknown),
-fDoEventMixing(false)
+fCollection3type(AliFemtoTrio::kUnknown)
 {
   // Default constructor
   fTrioFctnCollection = new AliFemtoTrioFctnCollection();
@@ -44,9 +46,9 @@ fDoEventMixing(false)
   }
 }
 
-AliFemtoBaryoniaAnalysis::~AliFemtoBaryoniaAnalysis()
+AliFemtoTrioAnalysis::~AliFemtoTrioAnalysis()
 {
-  cout << " AliFemtoBaryoniaAnalysis::~AliFemtoBaryoniaAnalysis()" << endl;
+  cout << " AliFemtoTrioAnalysis::~AliFemtoTrioAnalysis()" << endl;
   
   if(fEventCut)           delete fEventCut;
   if(fFirstParticleCut)   delete fFirstParticleCut;
@@ -65,7 +67,7 @@ AliFemtoBaryoniaAnalysis::~AliFemtoBaryoniaAnalysis()
   }
 }
 
-void AliFemtoBaryoniaAnalysis::ProcessEvent(const AliFemtoEvent* currentEvent)
+void AliFemtoTrioAnalysis::ProcessEvent(const AliFemtoEvent* currentEvent)
 {
   fPicoEvent = nullptr;
   EventBegin(currentEvent);
@@ -83,7 +85,7 @@ void AliFemtoBaryoniaAnalysis::ProcessEvent(const AliFemtoEvent* currentEvent)
   AliFemtoParticleCollection *collection3 = fPicoEvent->ThirdParticleCollection();
   
   if (!collection1 || !collection2 || !collection3){
-    cout << "E-AliFemtoBaryoniaAnalysis::ProcessEvent: new PicoEvent is missing particle collections!\n";
+    cout << "E-AliFemtoTrioAnalysis::ProcessEvent: new PicoEvent is missing particle collections!\n";
     EventEnd(currentEvent);  // cleanup for EbyE
     if(fPicoEvent) delete fPicoEvent;
     return;
@@ -154,7 +156,7 @@ void AliFemtoBaryoniaAnalysis::ProcessEvent(const AliFemtoEvent* currentEvent)
 }
 
 //_________________________
-void AliFemtoBaryoniaAnalysis::AddParticles(AliFemtoParticleCollection *collection1,
+void AliFemtoTrioAnalysis::AddParticles(AliFemtoParticleCollection *collection1,
                                             AliFemtoParticleCollection *collection2,
                                             AliFemtoParticleCollection *collection3,
                                             bool mixing)
@@ -171,10 +173,10 @@ void AliFemtoBaryoniaAnalysis::AddParticles(AliFemtoParticleCollection *collecti
         trio->SetTrack3((AliFemtoParticle *)(*iPart3),fCollection3type);
         
         for (AliFemtoTrioFctnIterator iFun = fTrioFctnCollection->begin();iFun != fTrioFctnCollection->end();++iFun){
-          AliFemtoTrioMinvFctn *distribution = *iFun;
+          AliFemtoTrioFctn *triofctn = *iFun;
     
-          if(mixing)  distribution->AddMixedTrio(trio);
-          else        distribution->AddRealTrio(trio);
+          if(mixing)  triofctn->AddMixedTrio(trio);
+          else        triofctn->AddRealTrio(trio);
         }
       }
     }
@@ -182,7 +184,38 @@ void AliFemtoBaryoniaAnalysis::AddParticles(AliFemtoParticleCollection *collecti
   if(trio) delete trio;
 }
 
-TList* AliFemtoBaryoniaAnalysis::GetOutputList()
+
+AliFemtoEventCut*      AliFemtoTrioAnalysis::EventCut(){return fEventCut;}
+AliFemtoParticleCut*   AliFemtoTrioAnalysis::FirstParticleCut(){return fFirstParticleCut;}
+AliFemtoParticleCut*   AliFemtoTrioAnalysis::SecondParticleCut(){return fSecondParticleCut;}
+AliFemtoParticleCut*   AliFemtoTrioAnalysis::ThirdParticleCut(){return fThirdParticleCut;}
+
+void AliFemtoTrioAnalysis::AddTrioFctn(AliFemtoTrioFctn* function){fTrioFctnCollection->push_back(function);}
+
+void AliFemtoTrioAnalysis::SetEventCut(AliFemtoEventCut* cut){fEventCut = cut;cut->SetAnalysis(this);}
+void AliFemtoTrioAnalysis::SetFirstParticleCut(AliFemtoParticleCut* cut){fFirstParticleCut = cut;cut->SetAnalysis(this);}
+void AliFemtoTrioAnalysis::SetSecondParticleCut(AliFemtoParticleCut* cut){fSecondParticleCut = cut;cut->SetAnalysis(this);}
+void AliFemtoTrioAnalysis::SetThirdParticleCut(AliFemtoParticleCut* cut){fThirdParticleCut = cut;cut->SetAnalysis(this);}
+
+void AliFemtoTrioAnalysis::SetCollection1type(AliFemtoTrio::EPart type){fCollection1type=type;}
+void AliFemtoTrioAnalysis::SetCollection2type(AliFemtoTrio::EPart type){fCollection2type=type;}
+void AliFemtoTrioAnalysis::SetCollection3type(AliFemtoTrio::EPart type){fCollection3type=type;}
+
+void AliFemtoTrioAnalysis::SetDoEventMixing(bool mix){fDoEventMixing = mix;}
+
+
+void AliFemtoTrioAnalysis::SetV0SharedDaughterCut(bool perform){fPerformSharedDaughterCut = perform;}
+bool AliFemtoTrioAnalysis::V0SharedDaughterCut(){return fPerformSharedDaughterCut;}
+
+
+AliFemtoString AliFemtoTrioAnalysis::Report(){return "Report";}
+int AliFemtoTrioAnalysis::GetNeventsProcessed(){return fNeventsProcessed;}
+TList* AliFemtoTrioAnalysis::ListSettings(){return nullptr;}
+
+void AliFemtoTrioAnalysis::EventBegin(const AliFemtoEvent* TheEventToBegin){};
+void AliFemtoTrioAnalysis::EventEnd(const AliFemtoEvent* TheEventToWrapUp){};
+
+TList* AliFemtoTrioAnalysis::GetOutputList()
 {
   TList *outputList = new TList();
   
