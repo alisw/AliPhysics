@@ -3165,42 +3165,48 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
   gStyle->SetTitleSize(0.08,"XYZ");
   gStyle->SetTitleOffset(0.5,"XYZ");
   AliTPCcalibDB *calibDB = AliTPCcalibDB::Instance();
+  // reprocess active channel map creation with QA info
+  calibDB->FillQAInfo();
+
   TVectorD   value(72), valueNorm(72),valueRMS(72), roc(72);  
   AliTPCdataQA*  dataQA= calibDB->GetDataQA();
   for (Int_t isec=0; isec<72; isec++) roc[isec]=isec;
   //
   //
-  AliTPCCalPad * padActive=calibDB->GetPadGainFactor();
-  AliTPCCalPad * padLocalMax=dataQA->GetNLocalMaxima();
-  AliTPCCalPad * padNoThreshold=dataQA->GetNoThreshold();
-  AliTPCCalPad * padMaxCharge=dataQA->GetMaxCharge();
-//   AliTPCCalPad * padMeanCharge=dataQA->GetMeanCharge();
+  AliTPCCalPad *padActive      = calibDB->GetPadGainFactor();
+  AliTPCCalPad *padLocalMax    = dataQA->GetNLocalMaxima();
+  AliTPCCalPad *padMaskedHV    = calibDB->GetMaskedChannelMapHV(); 
+  AliTPCCalPad *padMaskedAltro = calibDB->GetMaskedChannelMapAltro(); 
+  AliTPCCalPad *padMaskedDDL   = calibDB->GetMaskedChannelMapDDL(); 
+  AliTPCCalPad *padMaskedSCD   = calibDB->GetMaskedChannelMapSCD(); 
+
   AliCDBManager *man = AliCDBManager::Instance();
   AliCDBEntry * entry=  man->Get("TPC/Calib/QA");
   static Bool_t hasRawQA = entry->GetId().GetFirstRun()== man->GetRun();
 
 
-  const char   *typeNames[5]={"ActiveChannelMap", "LocaleMaxima", "NoThreshold",   "MaxCharge"  };
-  AliTPCCalPad *padInput [5]={ padActive,          padLocalMax,    padNoThreshold,  padMaxCharge};
-  TGraphErrors *grRaw[8]={0};
-  TGraphErrors *grStatus[8]={0};
+  const Int_t nTypes = 6;
+  const char   *typeNames[nTypes]={"ActiveChannelMap", "LocaleMaxima", "HV_Mask",   "Altro_Mask",   "DDL_Mask",   "SCD_Mask"};
+  AliTPCCalPad *padInput [nTypes]={ padActive,          padLocalMax,   padMaskedHV, padMaskedAltro, padMaskedDDL, padMaskedSCD};
+  TGraphErrors *grRaw[nTypes*2]={0};
   const char * side[2]={"A","C"};
-  Int_t kcolors[5]={1,2,4,3,6};
-  Int_t kmarkers[5]={21,25,20,24,26};
+  Int_t kcolors[nTypes] ={kBlack, kRed+2, kOrange+1, kGreen+2, kAzure+10, kBlue+2};
+  Int_t kmarkers[nTypes]={21, 25, 20, 24, 23, 32};
    
-  for (Int_t itype=0; itype<4; itype++){
+  for (Int_t itype=0; itype<nTypes; ++itype){
     if (!padInput[itype]) {
       ::Error("AliTPCPerformanceSummary::MakeRawOCDBQAPlot","Could not get input for type %d: %s", itype, typeNames[itype]);
     }
 
     for (Int_t isec=0; isec<72; isec++) {
       value[isec]              =padInput[itype]&&padInput[itype]->GetCalROC(isec)?padInput[itype]->GetCalROC(isec)->GetMedian():-1;
-      if (itype==0) value[isec]=padInput[itype]&&padInput[itype]->GetCalROC(isec)?padInput[itype]->GetCalROC(isec)->GetMean()  :-1;
-      if (itype==2) value[isec]=padInput[itype]&&padInput[itype]->GetCalROC(isec)?padInput[itype]->GetCalROC(isec)->GetMedian():-1;
+      if (itype==0 || itype>1) value[isec]=padInput[itype]&&padInput[itype]->GetCalROC(isec)?padInput[itype]->GetCalROC(isec)->GetMean()  :-1;
+      if (itype>1) value[isec] = 1-value[isec]; //for type 2-5 masked channels are given
       valueRMS[isec]=padInput[itype]&&padInput[itype]->GetCalROC(isec)?padInput[itype]->GetCalROC(isec)->GetRMS():-1;
-      if (value[isec]>0)valueRMS[isec]/=value[isec];
-      if (padInput[itype]&&padInput[itype]->GetCalROC(isec)) valueRMS[isec]/=TMath::Sqrt( 16*padInput[itype]->GetCalROC(isec)->GetNchannels()/padInput[itype]->GetCalROC(isec)->GetNrows());
+      if (value[isec]>0) valueRMS[isec]/=value[isec];
+      if (padInput[itype] && padInput[itype]->GetCalROC(isec)) valueRMS[isec]/=TMath::Sqrt( 16*padInput[itype]->GetCalROC(isec)->GetNchannels()/padInput[itype]->GetCalROC(isec)->GetNrows());
     }
+
     for (Int_t isec=0; isec<72; isec++) {
       Int_t offset=36*(isec/36);
       Double_t norm,rms;
@@ -3208,6 +3214,7 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
       valueNorm[isec]=1;
       if (norm>0) valueNorm[isec]=value[isec]/norm;  // if norm==0 means values not defined - we defineed normalized values in that case==1
     }
+
     grRaw[itype]= new TGraphErrors(72,roc.GetMatrixArray(),valueNorm.GetMatrixArray(),0,valueRMS.GetMatrixArray());
     grRaw[itype]->SetMarkerColor(kcolors[itype]);
     grRaw[itype]->SetMarkerStyle(kmarkers[itype]);
@@ -3220,7 +3227,7 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
 
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(1);
-  TCanvas *canvasRawQA0 = new TCanvas("canvasRawQA0","canvasRawQA0",1400,700);
+  TCanvas *canvasRawQA0 = new TCanvas("canvasRawQA0", "canvasRawQA0", nTypes*700, 700);
   for (Int_t itype=0; itype<4; itype++){
     for (Int_t iplot=0; iplot<2; iplot++){
       canvasRawQA0->cd()->SetLogz();
@@ -3249,8 +3256,8 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
   pad->cd();
   TLegend * legend = new TLegend(0.2,0.70,0.5,0.89,"Raw data QA (normalized to median))");
   legend->SetBorderSize(0);
-  legend->SetNColumns(2);
-  for (Int_t itype=0; itype<4; itype++){
+  legend->SetNColumns(nTypes/2);
+  for (Int_t itype=0; itype<nTypes; itype++){
     if (itype==0) grRaw[itype]->Draw("ap");
     grRaw[itype]->Draw("p");
     legend->AddEntry(grRaw[itype], typeNames[itype],"p");
@@ -3266,9 +3273,11 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
   canvasRawQA0->SaveAs("rawQAInformation.png");
   static Int_t clusterCounter= dataQA->GetClusterCounter();
   static Int_t signalCounter= dataQA->GetSignalCounter();
+
   //
   // add aso HV status
   //
+  TGraphErrors *grStatus[5]={0};
   for (Int_t itype=0; itype<5; itype++){
     for (Int_t isec=0; isec<72; isec++){
       if (itype==0) valueNorm[isec]=calibDB->GetChamberHVStatus(isec);
@@ -3327,8 +3336,10 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
       "grOCDBStatus.="<<grRaw[0]<<              // OCDB status as used in Reco         - LTM:calibDB->GetPadGainFactor();
       //
       "grRawLocalMax.="<<grRaw[1]<<             // RAW QA OCDB local cluster counter   - LTM:calibDB->GetDataQA()->GetNLocalMaxima();
-      "grRawAboveThr.="<<grRaw[2]<<             // RAW QA OCDB above threshold counter - LTM:calibDB->GetDataQA->GetNoThreshold(); 
-      "grRawQMax.="<<grRaw[3]<<                 // RAQ QA OCDB max charge              - LTM:calibDB->GetDataQA()->GetMaxCharge();
+      "grActiveHV.="   <<grRaw[2]<<             // OCDB normalized active channels due to HV
+      "grActiveAltro.="<<grRaw[3]<<             // OCDB normalized active channels due to the Altro config
+      "grActiveDDL.="  <<grRaw[4]<<             // OCDB normalized active channels due to the DDL status
+      "grActiveSCD.="  <<grRaw[5]<<             // OCDB normalized active channels due to the space-charge distortions
       //
       "grROCHVStatus.="<<grStatus[0]<<          // ROC HV status - enable/disable chambers beacus of LOW HV
       "grROCHVTimeFraction.="<<grStatus[1]<<    // ROC HV fraction of time disabled
