@@ -48,8 +48,7 @@ fCollection3type(AliFemtoTrio::kUnknown)
 
 AliFemtoTrioAnalysis::~AliFemtoTrioAnalysis()
 {
-  cout << " AliFemtoTrioAnalysis::~AliFemtoTrioAnalysis()" << endl;
-  
+ 
   if(fEventCut)           delete fEventCut;
   if(fFirstParticleCut)   delete fFirstParticleCut;
   if(fSecondParticleCut)  delete fSecondParticleCut;
@@ -92,37 +91,75 @@ void AliFemtoTrioAnalysis::ProcessEvent(const AliFemtoEvent* currentEvent)
   }
 
   
+
+  fEventCut->FillCutMonitor(currentEvent, tmpPassEvent);
+
+  bool coll_1_size_passes = kFALSE;
+  bool coll_2_size_passes = kFALSE;
+  bool coll_3_size_passes = kFALSE;
+  
   if(fFirstParticleCut && fSecondParticleCut && fThirdParticleCut)
     {
       FillHbtParticleCollection(fFirstParticleCut, currentEvent,collection1,fPerformSharedDaughterCut);
-      FillHbtParticleCollection(fSecondParticleCut,currentEvent,collection2,fPerformSharedDaughterCut);
+      FillHbtParticleCollection(fSecondParticleCut, currentEvent,collection2,fPerformSharedDaughterCut);
       FillHbtParticleCollection(fThirdParticleCut, currentEvent,collection3,fPerformSharedDaughterCut);
+
+      coll_1_size_passes = (collection1->size() >= fMinSizePartCollection);
+      coll_2_size_passes = (collection2->size() >= fMinSizePartCollection);
+      coll_3_size_passes = (collection3->size() >= fMinSizePartCollection);
+
+      fEventCut->FillCutMonitor(collection1, collection2);
     }
   if(fFirstParticleCut && fSecondParticleCut && fThirdParticleCut==NULL)
     {
       FillHbtParticleCollection(fFirstParticleCut, currentEvent,collection1,fPerformSharedDaughterCut);
-      FillHbtParticleCollection(fSecondParticleCut,currentEvent,collection2,fPerformSharedDaughterCut);
+      FillHbtParticleCollection(fSecondParticleCut, currentEvent,collection2,fPerformSharedDaughterCut);
       FillHbtParticleCollection(fSecondParticleCut, currentEvent,collection3,fPerformSharedDaughterCut);
+
+      coll_1_size_passes = (collection1->size() >= fMinSizePartCollection);
+      coll_2_size_passes = (collection2->size() >= fMinSizePartCollection);
+      coll_3_size_passes = kTRUE;
+
+      fEventCut->FillCutMonitor(collection1, collection2);
     }
   if(fFirstParticleCut && fSecondParticleCut==NULL && fThirdParticleCut==NULL)
     {
       FillHbtParticleCollection(fFirstParticleCut, currentEvent,collection1,fPerformSharedDaughterCut);
-      FillHbtParticleCollection(fFirstParticleCut,currentEvent,collection2,fPerformSharedDaughterCut);
+      FillHbtParticleCollection(fFirstParticleCut, currentEvent,collection2,fPerformSharedDaughterCut);
       FillHbtParticleCollection(fFirstParticleCut, currentEvent,collection3,fPerformSharedDaughterCut);
+
+      coll_1_size_passes = (collection1->size() >= fMinSizePartCollection);
+      coll_2_size_passes = kTRUE;
+      coll_3_size_passes = kTRUE;
+
+      fEventCut->FillCutMonitor(collection1, collection1);
     }
-
-
-  fEventCut->FillCutMonitor(currentEvent, tmpPassEvent);
+  
+  // passes only if the sizes are above min
+  tmpPassEvent = tmpPassEvent && coll_1_size_passes && coll_2_size_passes && coll_3_size_passes;
 
   if (!tmpPassEvent){
     EventEnd(currentEvent);
     if(fPicoEvent) delete fPicoEvent;
     return;
   }
+
   
   // add real events
+  if(fFirstParticleCut && fSecondParticleCut && fThirdParticleCut)
+    {
+      AddParticles(collection1,collection2,collection3);
+    }
+  if(fFirstParticleCut && fSecondParticleCut && fThirdParticleCut==NULL)
+    {
+      AddParticles(collection1,collection2);
+    }
+  if(fFirstParticleCut && fSecondParticleCut==NULL && fThirdParticleCut==NULL)
+    {
+      AddParticles(collection1);
+    }
+  
   bool mixing = false;
-  AddParticles(collection1,collection2,collection3,mixing);
   // add mixed events (if enough entries in the mixing buffer)
   if(fDoEventMixing){
     if(fNeventsPassed>2){
@@ -174,76 +211,67 @@ void AliFemtoTrioAnalysis::ProcessEvent(const AliFemtoEvent* currentEvent)
 
 //_________________________
 void AliFemtoTrioAnalysis::AddParticles(AliFemtoParticleCollection *collection1,
-                                            AliFemtoParticleCollection *collection2,
-                                            AliFemtoParticleCollection *collection3,
-                                            bool mixing)
+					AliFemtoParticleCollection *collection2,
+					AliFemtoParticleCollection *collection3,
+					bool mixing)
 {
   AliFemtoTrio *trio = new AliFemtoTrio();
 
   // All three collections (particles) are the same
   if(collection1 && collection2==NULL && collection3==NULL)
     {
-
       // We have three loops - outer, middle, and inner
-      AliFemtoParticleConstIterator tStartOuterLoop = collection2->begin(),
-	tEndOuterLoop = collection2->end(),
+      AliFemtoParticleConstIterator tStartOuterLoop = collection1->begin(),
+	tEndOuterLoop = collection1->end(),
 	tStartMiddleLoop,
-	tEndMiddleLoop  = collection2->end(),
+	tEndMiddleLoop  = collection1->end(),
 	tStartInnerLoop,
-	tEndInnerLoop;
+	tEndInnerLoop = collection1->end();
       
       tEndOuterLoop--; tEndOuterLoop--;   //   Outer loop goes to next-to-next-to-last particle (2nd from the last)
-      tEndMiddleLoop--;
-      tEndInnerLoop = collection2->end() ;     //   Inner loop goes to last particle
+      tEndMiddleLoop--;                            //   Middle loop goes to next-to-last particle (1st from the last) 
+      tEndInnerLoop = collection1->end() ;     //   Inner loop goes to last particle
 
-	  // Begin the outer loop
-	  for (AliFemtoParticleConstIterator tPartIter1 = tStartOuterLoop;  tPartIter1 != tEndOuterLoop; ++tPartIter1)
+      
+      // Begin the outer loop
+      for (AliFemtoParticleConstIterator tPartIter1 = tStartOuterLoop;  tPartIter1 != tEndOuterLoop; ++tPartIter1)
+	{
+	  // start middle loop at the particle
+	  // after the current outer loop position, (loops until end)
+	  tStartMiddleLoop = tPartIter1;
+	  tStartMiddleLoop++;
+
+
+	  // Begin the middle loop
+	  for (AliFemtoParticleConstIterator tPartIter2 = tStartMiddleLoop;  tPartIter2 != tEndMiddleLoop; ++tPartIter2)
 	    {
-
-
 	      // start middle loop at the particle
 	      // after the current outer loop position, (loops until end)
-	      tStartMiddleLoop = tPartIter1;
-	      tStartMiddleLoop++;
-
+	      tStartInnerLoop = tPartIter2;
+	      tStartInnerLoop++;
 	      
-	      // Begin the middle loop
-	      for (AliFemtoParticleConstIterator tPartIter2 = tStartMiddleLoop;  tPartIter2 != tEndMiddleLoop; ++tPartIter2)
-		{
-		  
-		  // start middle loop at the particle
-		  // after the current outer loop position, (loops until end)
-		  tStartInnerLoop = tPartIter2;
-		  tStartInnerLoop++;
-		  
+	      // Begin the inner loop
+	      for (AliFemtoParticleConstIterator tPartIter3 = tStartInnerLoop;  tPartIter3 != tEndInnerLoop; ++tPartIter3)
+		{	  
+		  // Swap between first and second particles to avoid biased ordering -- TO DO
+		  trio->SetTrack1(*tPartIter1,fCollection1type);
+		  trio->SetTrack2(*tPartIter2,fCollection1type);
+		  trio->SetTrack3(*tPartIter3,fCollection1type);
+		  //swpart = !swpart;      
 
-		  // Begin the inner loop
-		  for (AliFemtoParticleConstIterator tPartIter3 = tStartInnerLoop;  tPartIter3 != tEndInnerLoop; ++tPartIter3)
-		    {	  
-
-
-		      // Swap between first and second particles to avoid biased ordering -- TO DO
-		      trio->SetTrack1(*tPartIter2,fCollection1type);
-		      trio->SetTrack2(*tPartIter2,fCollection1type);
-		      trio->SetTrack3(*tPartIter3,fCollection1type);
-		      //swpart = !swpart;
-
+		  for (AliFemtoTrioFctnIterator iFun = fTrioFctnCollection->begin();iFun != fTrioFctnCollection->end();++iFun)
+		    {
+		      AliFemtoTrioFctn *triofctn = *iFun;
 		      
+		      if(mixing)  triofctn->AddMixedTrio(trio);
+		      else        triofctn->AddRealTrio(trio);
+		    }
 
-		      for (AliFemtoTrioFctnIterator iFun = fTrioFctnCollection->begin();iFun != fTrioFctnCollection->end();++iFun)
-			{
-			  AliFemtoTrioFctn *triofctn = *iFun;
-		      
-			  if(mixing)  triofctn->AddMixedTrio(trio);
-			  else        triofctn->AddRealTrio(trio);
-			}
+		} // end of inner loop
 
+	    } // end of middle loop
 
-		    } // end of inner loop
-		  
-		} // end of middle loop
-
-	    } //end of outer loop
+	} //end of outer loop
     }
 
 
@@ -255,7 +283,6 @@ void AliFemtoTrioAnalysis::AddParticles(AliFemtoParticleCollection *collection1,
   // collections 2 and 3 are the same
   if(collection1 && collection2 && collection3==NULL)
     {
-      
       for (AliFemtoParticleConstIterator iPart1 = collection1->begin();iPart1 != collection1->end();++iPart1)
 	{
 	  trio->SetTrack1((AliFemtoParticle *)(*iPart1),fCollection1type);
@@ -305,7 +332,7 @@ void AliFemtoTrioAnalysis::AddParticles(AliFemtoParticleCollection *collection1,
 		    
 		      if(mixing)  triofctn->AddMixedTrio(trio);
 		      else        triofctn->AddRealTrio(trio);
-		  }
+		    }
 
 		  
 		}    // loop over second particle
@@ -316,7 +343,7 @@ void AliFemtoTrioAnalysis::AddParticles(AliFemtoParticleCollection *collection1,
   // The three collections are different (we take three different particles)
   if(collection1 && collection2 && collection3)
     {
-      
+      //cout<<"Collections not  the same"<<endl;
       for (AliFemtoParticleConstIterator iPart1 = collection1->begin();iPart1 != collection1->end();++iPart1){
 	trio->SetTrack1((AliFemtoParticle *)(*iPart1),fCollection1type);
     
