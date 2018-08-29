@@ -21,6 +21,9 @@
 
 ClassImp(AliAnalysisTaskNucleiKineCor);
 
+using std::cout;
+using std::endl;
+
 AliAnalysisTaskNucleiKineCor::AliAnalysisTaskNucleiKineCor(const char* name) :
   AliAnalysisTaskSE{name},
   fPdgCodes{211, -211, 321, -321, 2212, -2212, 2112, -2112, 1000010020, -1000010020,3122,-3122,3312,-3312,3334,-3334},
