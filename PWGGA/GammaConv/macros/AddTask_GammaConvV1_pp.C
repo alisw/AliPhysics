@@ -595,6 +595,9 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   } else if (trainConfig == 93) {
     cuts.AddCut("00000113", "00200009227300008250404000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR with double counting cut, TOF removed
 
+  //----------------QA omega analysis---------------------------------------//
+  } else if (trainConfig == 94) {
+    cuts.AddCut("00000113", "00200009227000008250400000", "0152103500000000"); // std conv cut used in omega analysis
 
   // ------------------------- run 2 High mult triggers --------------------------------------
   } else if (trainConfig == 100) {
