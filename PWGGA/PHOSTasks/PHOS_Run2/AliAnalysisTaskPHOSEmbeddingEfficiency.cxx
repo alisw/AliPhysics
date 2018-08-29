@@ -341,7 +341,14 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::UserExec(Option_t *option)
   //Now we either add current events to stack or remove
   //If no photons in current event - no need to add it to mixed
   if(fPHOSClusterArray->GetEntriesFast() > 0){
-    prevPHOS->AddFirst(fPHOSClusterArray);
+    //don't call fPHOSClucster=0; this will affect original array provided from PHOSbjectCreator.
+    //prevPHOS->AddFirst(fPHOSClusterArray);
+    //fPHOSClusterArray=0;
+
+    TClonesArray *clone = new TClonesArray(*fPHOSClusterArray);
+    prevPHOS->AddFirst(clone);
+    //delete clone;
+    clone = 0;
 
     if(prevPHOS->GetSize() > fNMixed){//Remove redundant events
       TClonesArray * tmp = static_cast<TClonesArray*>(prevPHOS->Last());
