@@ -27,6 +27,7 @@ AliAnalysisTaskNucleiKineCor::AliAnalysisTaskNucleiKineCor(const char* name) :
   fParticleNames{"#pi^{+}", "#pi^{-}", "K^{+}", "K^{-}", "p", "#bar{p}", "n", "#bar{n}", "d", "#bar{d}",
       "#Lambda", "#bar{#Lambda}", "#Xi^{+}", "#Xi^{-}", "#Omega^{+}", "#Omega^{-}"},
   fPt(5),
+  fP0(0),
   fOutputList(0)
 {
   DefineInput(0, TChain::Class());
@@ -114,6 +115,10 @@ void AliAnalysisTaskNucleiKineCor::UserCreateOutputObjects()
   fHists[99]->Sumw2();
   fOutputList->Add(fHists[99]);
 
+  if (fP0>0) {
+    fAfterBurner.SetNucleusPdgCode(1000010020);
+    fAfterBurner.SetCoalescenceMomentum(fP0);
+  }
   PostData(1, fOutputList);
 }
 
@@ -127,15 +132,50 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
   if (!stack)
     AliFatal("Missing stack.");
 
-  int nstack = stack->GetNtrack();
+  Int_t nstack = stack->GetNtrack();
   fEvents->Fill(nstack);
+
+  cout << "---------------------- working --------------------" << GetName() << " stack " << nstack << " " << stack->GetNprimary() << endl;
+
+  // find nucleons and anti-nucleons
+  TObjArray keepParticles;
+  if (fP0>0) {
+    cout << "Print list " << fP0 << " kpr " << kProton << endl;
+    for (Int_t i=0; i < stack->GetNprimary(); ++i) {
+      TParticle* iParticle = stack->Particle(i);
+      if (iParticle->GetStatusCode() != 1)
+	continue;
+      switch (iParticle->GetPdgCode()) {
+      case 2212: //kProton:
+	iParticle->Print();
+	keepParticles.Add(iParticle);
+	break;
+      case 2112: //kNeutron:
+	iParticle->Print();
+	keepParticles.Add(iParticle);
+	break;
+      case -2212: //kProtonBar:
+	keepParticles.Add(iParticle);
+	break;
+      case -2112: //kNeutronBar:
+	keepParticles.Add(iParticle);
+	break;
+      default:
+	break;
+      }
+    }
+    fAfterBurner.SetStack(stack);
+    fAfterBurner.Generate();
+  }
 
   TParticle *leadP = 0;
   Double_t ptl     = 0;
   TObjArray arrh;
   TObjArray arrp;
   TObjArray arrd;
-  for (int iTracks = 0; iTracks < nstack; ++iTracks) {
+  Int_t nstack2 = stack->GetNtrack();
+
+  for (int iTracks = 0; iTracks < nstack2; ++iTracks) {
     TParticle* track = stack->Particle(iTracks);
     if (!track) 
       continue;
@@ -274,16 +314,43 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
   if ((nd>0)&&(ntrigs>0))
     fHists[99]->Fill(3);  
 
-  AliGenCocktailEventHeader *hd = dynamic_cast<AliGenCocktailEventHeader*>(mcEvent->GenEventHeader());
-  if (!hd) 
-    AliFatal("Missing cocktail header");
-  AliGenPythiaEventHeader *hp = dynamic_cast<AliGenPythiaEventHeader*>(hd->GetHeaders()->At(0));
-  Double_t xsec = hp->GetXsection();
-  Int_t trials = hp->Trials();
-  TProfile* pr = (TProfile*)fHists[97];
-  pr->Fill(0.,xsec);
-  pr = (TProfile*)fHists[98];
-  pr->Fill(0.,trials);
+  AliGenPythiaEventHeader *hp = 0;
+  if (fP0>0) {
+    hp = dynamic_cast<AliGenPythiaEventHeader*>(mcEvent->GenEventHeader());
+  } else {
+    AliGenCocktailEventHeader *hd = dynamic_cast<AliGenCocktailEventHeader*>(mcEvent->GenEventHeader());
+    if (!hd) 
+      AliFatal("Missing cocktail header");
+    hp = dynamic_cast<AliGenPythiaEventHeader*>(hd->GetHeaders()->At(0));
+  }
+  if (hp) {
+    Double_t xsec = hp->GetXsection();
+    Int_t trials = hp->Trials();
+    TProfile* pr = (TProfile*)fHists[97];
+    pr->Fill(0.,xsec);
+    pr = (TProfile*)fHists[98];
+    pr->Fill(0.,trials);
+  }
+
+  // reset nucleons and anti-nucleons
+  if (fP0>0) {
+    cout << "looping through list " << endl;
+    for (Int_t i=0; i<keepParticles.GetEntries(); ++i) {
+      TParticle *p = dynamic_cast<TParticle*>(keepParticles.At(i));
+      if (!p) 
+	continue;
+      p->SetStatusCode(1);
+    }
+    for (Int_t i=nstack;i<nstack2;++i) {
+      TParticle* iParticle = stack->Particle(i);
+      if (iParticle->GetPdgCode()==1000010020) {
+	iParticle->SetPdgCode(0);
+	iParticle->SetStatusCode(201);
+      }
+    }
+    stack->SetNtrack(nstack);
+    stack->SetHighWaterMark(nstack);
+  }
 
   PostData(1, fOutputList);
 }
