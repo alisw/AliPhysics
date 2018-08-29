@@ -47,7 +47,7 @@ public:
   void AddParticles(AliFemtoParticleCollection *collection1,
                     AliFemtoParticleCollection *collection2=NULL,
                     AliFemtoParticleCollection *collection3=NULL,
-                    bool mixing=kTRUE);
+                    bool mixing=kFALSE);
   
   void SetV0SharedDaughterCut(bool perform);
   bool V0SharedDaughterCut();
