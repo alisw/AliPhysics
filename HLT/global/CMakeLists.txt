@@ -113,7 +113,8 @@ if(DEFINED ALITPCCOMMON_DIR)
   set(SRCS ${SRCS} AliHLTGlobalPromptRecoQAComponent.cxx)
   include_directories(${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/SliceTracker
   ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/TRDTracking
-  ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/Merger)
+  ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/Merger
+  ${ALITPCCOMMON_DIR}/sources/Common)
 endif()
 
 if(ZEROMQ_FOUND)
