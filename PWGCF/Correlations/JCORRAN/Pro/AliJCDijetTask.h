@@ -51,7 +51,7 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
   AliJCatalystTask *GetJCatalystTask() {return fJCatalystTask;}
   void    SetCentralityBins( vector<double> centralityBins ) {fcentralityBins=centralityBins; }
   void    SetJetConeSize(double jetCone, double ktjetCone) {fjetCone=jetCone; fktJetCone=ktjetCone; }
-  void    SetBGSubtrSettings(int ktScheme, Bool_t usePionMasskt) {fktScheme=ktScheme; fusePionMassInktjets=usePionMasskt; }
+  void    SetBGSubtrSettings(int ktScheme, Bool_t usePionMasskt, Bool_t useDeltaPhiBGSubtr) {fktScheme=ktScheme; fusePionMassInktjets=usePionMasskt; fuseDeltaPhiBGSubtr=useDeltaPhiBGSubtr; }
   Bool_t  IsMC()const{ return fIsMC; }
   void    SetIsMC(Bool_t b) { fIsMC=b; }
   void    SetCuts(double particleEta, double particlePt, double leadingJet, double subleadingJet, double constituent, double deltaPhi) {fparticleEtaCut=particleEta; fparticlePtCut=particlePt; fleadingJetCut=leadingJet; fsubleadingJetCut=subleadingJet; fconstituentCut=constituent; fdeltaPhiCut=deltaPhi;}
@@ -59,20 +59,19 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
   //double  GetSubleadingJetCut() {return fsubleadingJetCut;}
   //double  GetConstituentCut() {return fconstituentCut;}
   void CalculateJetsDijets(TClonesArray *inList,
-                           int lDebug,
-                           int lCBin,
+                           int    lDebug,
+                           int    lCBin,
                            double lParticleEtaCut,
                            double lParticlePtCut,
                            double lJetCone,
                            double lktJetCone,
                            int    lktScheme,
                            bool   lusePionMassInkt,
+                           bool   luseDeltaPhiBGSubtr,
                            double lConstituentCut,
                            double lLeadingJetCut,
                            double lSubleadingJetCut,
                            double lDeltaPhiCut);
-
-
 
   // Methods specific for this class
   void SetJCatalystTaskName(TString name){ fJCatalystTaskName=name; } // Setter for filter task name
@@ -86,6 +85,7 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
   double fktJetCone;
   int  fktScheme;
   Bool_t fusePionMassInktjets;
+  Bool_t fuseDeltaPhiBGSubtr;
   Bool_t fIsMC;       // MC data or real data
   double fparticleEtaCut;
   double fparticlePtCut;
