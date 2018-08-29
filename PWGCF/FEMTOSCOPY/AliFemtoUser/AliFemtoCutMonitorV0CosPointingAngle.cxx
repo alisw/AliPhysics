@@ -4,7 +4,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TList.h>
-#include "AliFemtoModelHiddenInfo.h"
+
 
 AliFemtoCutMonitorV0CosPointingAngle::AliFemtoCutMonitorV0CosPointingAngle(int aPrimaryPID, bool aBuildCosPointingAnglewParentInfo, int aNbins, double aCosMin, double aCosMax):
   AliFemtoCutMonitorV0(),
@@ -92,15 +92,19 @@ AliFemtoString AliFemtoCutMonitorV0CosPointingAngle::Report(){
   return returnThis;
 }
 
-double AliFemtoCutMonitorV0CosPointingAngle::GetMotherBin(int aPID, int aMotherPID)
+double AliFemtoCutMonitorV0CosPointingAngle::GetMotherBin(AliFemtoModelHiddenInfo *aInfo)
 {
+  int tPID = TMath::Abs(aInfo->GetPDGPid());
+  int tMotherPID = TMath::Abs(aInfo->GetMotherPdgCode());
+
   //Note: subtract 0.5 from return value to place it within bin, instead of at boundary
-  if(aPID==fPrimaryPID)
+  if(aInfo->GetOrigin()==2) return fParentPIDInfoVec.size()+3-0.5;
+  if(tPID==fPrimaryPID)
   {
-    if(aMotherPID==0) return 1-0.5;
+    if(tMotherPID==0) return 1-0.5;
     for(unsigned int i=1; i<fParentPIDInfoVec.size(); i++)
     {
-      if(aMotherPID==fParentPIDInfoVec[i].parentPID) return (i+1)-0.5;
+      if(tMotherPID==fParentPIDInfoVec[i].parentPID) return (i+1)-0.5;
     }
     return fParentPIDInfoVec.size()+1-0.5;
   }
@@ -117,10 +121,7 @@ void AliFemtoCutMonitorV0CosPointingAngle::Fill(const AliFemtoV0* aV0)
   {
     AliFemtoModelHiddenInfo *tInfo = (AliFemtoModelHiddenInfo*)aV0->GetHiddenInfo();
     if(tInfo!=NULL) {
-      Int_t partID = TMath::Abs(tInfo->GetPDGPid());
-      Int_t motherID = TMath::Abs(tInfo->GetMotherPdgCode());
-
-      double tMotherBin = GetMotherBin(partID, motherID);
+      double tMotherBin = GetMotherBin(tInfo);
       fCosPointingAnglewParentInfo->Fill(aV0->CosPointingAngle(), tMotherBin);
     }
   }
@@ -230,13 +231,14 @@ void AliFemtoCutMonitorV0CosPointingAngle::SetBuildCosPointingAnglewParentInfo(b
     int tNbinsPID = fParentPIDInfoVec.size();
     fCosPointingAnglewParentInfo = new TH2F(tName, tName, 
                                             aNbins, aCosMin, aCosMax,
-                                            tNbinsPID+2, 0, tNbinsPID+2);
+                                            tNbinsPID+3, 0, tNbinsPID+3);
     for(int i=0; i<tNbinsPID; i++)
     {
       fCosPointingAnglewParentInfo->GetYaxis()->SetBinLabel(i+1, fParentPIDInfoVec[i].parentName);
     }
     fCosPointingAnglewParentInfo->GetYaxis()->SetBinLabel(tNbinsPID+1, "Other");
     fCosPointingAnglewParentInfo->GetYaxis()->SetBinLabel(tNbinsPID+2, "Fake");
+    fCosPointingAnglewParentInfo->GetYaxis()->SetBinLabel(tNbinsPID+3, "Material");
 
     fCosPointingAnglewParentInfo->Sumw2();
   }
