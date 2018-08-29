@@ -16,7 +16,7 @@ public:
   AliFemtoCutMonitorV0CosPointingAngle& operator=(const AliFemtoCutMonitorV0CosPointingAngle& aCut);
 
   virtual AliFemtoString Report();
-  int GetMotherBin(int aPID, int aMotherPID);
+  double GetMotherBin(int aPID, int aMotherPID);
   virtual void Fill(const AliFemtoV0* aV0);
   void Write();
 
@@ -33,7 +33,7 @@ public:
   void CreateDefaultParentPIDInfoVec();
   void AddParentToPIDInfoVec(TString aName, int aPID);
   void CreateNewParentPIDInfoVec(vector<TString> &aNames, vector<int> &aPIDs);
-  void SetBuildCosPointingAnglewParentInfo(bool aBuild, int aNbins=100, double aCosMin=0.99, double aCosMax=1.0);
+  void SetBuildCosPointingAnglewParentInfo(bool aBuild, TString aName="", int aNbins=100, double aCosMin=0.99, double aCosMax=1.0);
 
 protected:
   int fNbinsCPA;

@@ -16,9 +16,10 @@ AliFemtoCutMonitorV0CosPointingAngle::AliFemtoCutMonitorV0CosPointingAngle(int a
   fParentPIDInfoVec(0),
   fCosPointingAnglewParentInfo(nullptr)
 {
-  //if fBuildCosPointingAnglewParentInfo=false, the following line will simple rebin fCosPointingAngle
-  SetBuildCosPointingAnglewParentInfo(fBuildCosPointingAnglewParentInfo, fNbinsCPA, fMinCPA, fMaxCPA);
+  //if fBuildCosPointingAnglewParentInfo=false, the following line will simply rebin fCosPointingAngle
+  //which is good, as the default binning isn't very useful
   if(fBuildCosPointingAnglewParentInfo) CreateDefaultParentPIDInfoVec();
+  SetBuildCosPointingAnglewParentInfo(fBuildCosPointingAnglewParentInfo, "", fNbinsCPA, fMinCPA, fMaxCPA);
 }
 
 AliFemtoCutMonitorV0CosPointingAngle::AliFemtoCutMonitorV0CosPointingAngle(const char *aName, int aPrimaryPID, bool aBuildCosPointingAnglewParentInfo, int aNbins, double aCosMin, double aCosMax):
@@ -32,8 +33,9 @@ AliFemtoCutMonitorV0CosPointingAngle::AliFemtoCutMonitorV0CosPointingAngle(const
   fCosPointingAnglewParentInfo(nullptr)
 {
   //if fBuildCosPointingAnglewParentInfo=false, the following line will simple rebin fCosPointingAngle
-  SetBuildCosPointingAnglewParentInfo(fBuildCosPointingAnglewParentInfo, fNbinsCPA, fMinCPA, fMaxCPA);
+  //which is good, as the default binning isn't very useful
   if(fBuildCosPointingAnglewParentInfo) CreateDefaultParentPIDInfoVec();
+  SetBuildCosPointingAnglewParentInfo(fBuildCosPointingAnglewParentInfo, TString(aName), fNbinsCPA, fMinCPA, fMaxCPA);
 }
 
 AliFemtoCutMonitorV0CosPointingAngle::AliFemtoCutMonitorV0CosPointingAngle(const AliFemtoCutMonitorV0CosPointingAngle &aCut):
@@ -90,18 +92,19 @@ AliFemtoString AliFemtoCutMonitorV0CosPointingAngle::Report(){
   return returnThis;
 }
 
-int AliFemtoCutMonitorV0CosPointingAngle::GetMotherBin(int aPID, int aMotherPID)
+double AliFemtoCutMonitorV0CosPointingAngle::GetMotherBin(int aPID, int aMotherPID)
 {
+  //Note: subtract 0.5 from return value to place it within bin, instead of at boundary
   if(aPID==fPrimaryPID)
   {
-    if(aMotherPID==0) return 1;
+    if(aMotherPID==0) return 1-0.5;
     for(unsigned int i=1; i<fParentPIDInfoVec.size(); i++)
     {
-      if(aMotherPID==fParentPIDInfoVec[i].parentPID) return (i+1);
+      if(aMotherPID==fParentPIDInfoVec[i].parentPID) return (i+1)-0.5;
     }
-    return fParentPIDInfoVec.size()+1;
+    return fParentPIDInfoVec.size()+1-0.5;
   }
-  else return fParentPIDInfoVec.size()+2;
+  else return fParentPIDInfoVec.size()+2-0.5;
 }
 
 
@@ -117,7 +120,7 @@ void AliFemtoCutMonitorV0CosPointingAngle::Fill(const AliFemtoV0* aV0)
       Int_t partID = TMath::Abs(tInfo->GetPDGPid());
       Int_t motherID = TMath::Abs(tInfo->GetMotherPdgCode());
 
-      int tMotherBin = GetMotherBin(partID, motherID);
+      double tMotherBin = GetMotherBin(partID, motherID);
       fCosPointingAnglewParentInfo->Fill(aV0->CosPointingAngle(), tMotherBin);
     }
   }
@@ -218,13 +221,14 @@ void AliFemtoCutMonitorV0CosPointingAngle::CreateNewParentPIDInfoVec(vector<TStr
 }
 
 
-void AliFemtoCutMonitorV0CosPointingAngle::SetBuildCosPointingAnglewParentInfo(bool aBuild, int aNbins, double aCosMin, double aCosMax)
+void AliFemtoCutMonitorV0CosPointingAngle::SetBuildCosPointingAnglewParentInfo(bool aBuild, TString aName, int aNbins, double aCosMin, double aCosMax)
 {
   fBuildCosPointingAnglewParentInfo = aBuild;
   if(fBuildCosPointingAnglewParentInfo)
   {
+    TString tName = TString::Format("CosPointingAnglewParentInfo%s", aName.Data());
     int tNbinsPID = fParentPIDInfoVec.size();
-    fCosPointingAnglewParentInfo = new TH2F("CosPointingAnglewParentInfo", "CosPointingAnglewParentInfo", 
+    fCosPointingAnglewParentInfo = new TH2F(tName, tName, 
                                             aNbins, aCosMin, aCosMax,
                                             tNbinsPID+2, 0, tNbinsPID+2);
     for(int i=0; i<tNbinsPID; i++)
