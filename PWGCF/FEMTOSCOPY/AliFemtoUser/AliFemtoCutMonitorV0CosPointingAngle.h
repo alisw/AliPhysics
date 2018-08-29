@@ -8,6 +8,7 @@
 
 class TH2F;
 #include "AliFemtoCutMonitorV0.h"
+#include "AliFemtoModelHiddenInfo.h"
 
 class AliFemtoCutMonitorV0CosPointingAngle : public AliFemtoCutMonitorV0 {
 public:
@@ -19,7 +20,7 @@ public:
   AliFemtoCutMonitorV0CosPointingAngle& operator=(const AliFemtoCutMonitorV0CosPointingAngle& aCut);
 
   virtual AliFemtoString Report();
-  double GetMotherBin(int aPID, int aMotherPID);
+  double GetMotherBin(AliFemtoModelHiddenInfo *aInfo);
   virtual void Fill(const AliFemtoV0* aV0);
   void Write();
 
