@@ -1964,25 +1964,25 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     }    
   }
 
-  fInclElecPtEta = new TH2F("fInclElePtEta", "fInclElePtEta",NBinsElectronRed, XBinsElectronRed,NBinsEta, -0.9, 0.9 );
+  fInclElecPtEta = new TH2F("fInclElePtEta", "fInclElePtEta",NBinsElectron,XminElectron, XmaxElectron, NBinsEta, -0.9, 0.9 );
   fOutputListMain->Add(fInclElecPtEta);
 
-  fInclElecPtEtaWW = new TH2F("fInclElePtEtaWW", "fInclElePtEtaWW",NBinsElectronRed, XBinsElectronRed, NBinsEta, -0.9, 0.9 );
+  fInclElecPtEtaWW = new TH2F("fInclElePtEtaWW", "fInclElePtEtaWW",NBinsElectron,XminElectron, XmaxElectron,  NBinsEta, -0.9, 0.9 );
   fOutputListMain->Add(fInclElecPtEtaWW);
 
   // fInclElecP = new TH1F("fInclEleP", "fInclEleP",NBinsElectronRed, XBinsElectronRed);
   // fOutputListMain->Add(fInclElecP);
 
-  fULSElecPt = new TH1F("fULSElePt", "fULSElePt",NBinsElectronRed, XBinsElectronRed);
+  fULSElecPt = new TH1F("fULSElePt", "fULSElePt",NBinsElectron,XminElectron, XmaxElectron);
   fOutputListMain->Add(fULSElecPt);
     
-  fULSElecPtWW = new TH1F("fULSElePtWW", "fULSElePtWW",NBinsElectronRed, XBinsElectronRed);
+  fULSElecPtWW = new TH1F("fULSElePtWW", "fULSElePtWW",NBinsElectron,XminElectron, XmaxElectron);
   fOutputListMain->Add(fULSElecPtWW);
     
-  fLSElecPt = new TH1F("fLSElePt", "fLSElePt",NBinsElectronRed, XBinsElectronRed);
+  fLSElecPt = new TH1F("fLSElePt", "fLSElePt",NBinsElectron,XminElectron, XmaxElectron);
   fOutputListMain->Add(fLSElecPt);
 
-  fLSElecPtWW = new TH1F("fLSElePtWW", "fLSElePtWW",NBinsElectronRed, XBinsElectronRed);
+  fLSElecPtWW = new TH1F("fLSElePtWW", "fLSElePtWW",NBinsElectron,XminElectron, XmaxElectron);
   fOutputListMain->Add(fLSElecPtWW);
     
     
