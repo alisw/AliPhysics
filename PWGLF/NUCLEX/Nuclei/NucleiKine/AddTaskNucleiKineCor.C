@@ -10,9 +10,9 @@ AliAnalysisTaskNucleiKineCor* AddTaskNucleiKineCor(Double_t trigpt=5, Double_t p
       return 0;
     }
     TString par1(obj->At(1)->GetName());
-    trigpt=par1.Atof();
+    trigpt=0.01*par1.Atoi();
     TString par2(obj->At(2)->GetName());
-    p0=par2.Atof();
+    p0=0.01*par2.Atoi();
     delete obj;
     cout << "Found parameters: " << trigpt << " " << p0 << endl;
   }
