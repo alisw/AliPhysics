@@ -282,9 +282,9 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
               sigma.MatchToMC(fMCEvent, fPDG, {{fPDGDaughter1, fPDGDaughter2}},
                               pdgLambdaMother, pdgPhotonMother);
           if (label > 0) {
-            fTreeVariables[4] = true;
+            fTreeVariables[4] = 1.f;
           } else {
-            fTreeVariables[4] = false;
+            fTreeVariables[4] = 0.f;
           }
         }
 
@@ -1056,7 +1056,7 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     fOutputTree->Branch("Rapidity", &fTreeVariables[2], "Rapidity/f");
     fOutputTree->Branch("Multiplicity", &fTreeVariables[3], "Multiplicity/f");
     if (fIsMC) {
-      fOutputTree->Branch("MCTruth", &fTreeVariables[4], "MCTruth/O");
+      fOutputTree->Branch("MCinfo", &fTreeVariables[4], "MCinfo/f");
     }
   }
 }
