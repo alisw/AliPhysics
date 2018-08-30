@@ -30,7 +30,6 @@ fEventCut(NULL),
 fFirstParticleCut(NULL),
 fSecondParticleCut(NULL),
 fThirdParticleCut(NULL),
-fNeventsProcessed(0),
 fNeventsPassed(0),
 fPicoEvent(nullptr),
 fPerformSharedDaughterCut(kFALSE),
@@ -72,6 +71,10 @@ AliFemtoTrioAnalysis::~AliFemtoTrioAnalysis()
 void AliFemtoTrioAnalysis::ProcessEvent(const AliFemtoEvent* currentEvent)
 {
   fPicoEvent = nullptr;
+
+  // increment number of events processed
+  AddEventProcessed();
+  
   EventBegin(currentEvent);
   bool tmpPassEvent = fEventCut->Pass(currentEvent);
   
@@ -220,9 +223,14 @@ void AliFemtoTrioAnalysis::AddParticles(AliFemtoParticleCollection *collection1,
 {
   AliFemtoTrio *trio = new AliFemtoTrio();
 
+  //we have to swap particles in trio in order to avoid any implicit ordering of particles in collections
+  int swpart3= fNeventsProcessed % 3;
+  bool swpart2= fNeventsProcessed % 2;
+  
   // All three collections (particles) are the same
   if(collection1 && collection2==NULL && collection3==NULL)
     {
+      
       // We have three loops - outer, middle, and inner
       AliFemtoParticleConstIterator tStartOuterLoop = collection1->begin(),
 	tEndOuterLoop = collection1->end(),
@@ -256,12 +264,30 @@ void AliFemtoTrioAnalysis::AddParticles(AliFemtoParticleCollection *collection1,
 	      // Begin the inner loop
 	      for (AliFemtoParticleConstIterator tPartIter3 = tStartInnerLoop;  tPartIter3 != tEndInnerLoop; ++tPartIter3)
 		{	  
-		  // Swap between first and second particles to avoid biased ordering -- TO DO
-		  trio->SetTrack1(*tPartIter1,fCollection1type);
-		  trio->SetTrack2(*tPartIter2,fCollection1type);
-		  trio->SetTrack3(*tPartIter3,fCollection1type);
-		  //swpart = !swpart;      
+		  // Swap between all three particles to avoid biased ordering		  
+		  if(swpart3 == 0)
+		    {
+		      trio->SetTrack1(*tPartIter1,fCollection1type);
+		      trio->SetTrack2(*tPartIter2,fCollection1type);
+		      trio->SetTrack3(*tPartIter3,fCollection1type);
+		      swpart3++;
+		    }
+		  else if(swpart3 == 1)
+		    {
+		      trio->SetTrack1(*tPartIter3,fCollection1type);
+		      trio->SetTrack2(*tPartIter1,fCollection1type);
+		      trio->SetTrack3(*tPartIter2,fCollection1type);
+		      swpart3++;
+		    }
+		  else
+		    {
+		      trio->SetTrack1(*tPartIter2,fCollection1type);
+		      trio->SetTrack2(*tPartIter3,fCollection1type);
+		      trio->SetTrack3(*tPartIter1,fCollection1type);
+		      swpart3 = 0;
+		    }
 
+		  
 		  for (AliFemtoTrioFctnIterator iFun = fTrioFctnCollection->begin();iFun != fTrioFctnCollection->end();++iFun)
 		    {
 		      AliFemtoTrioFctn *triofctn = *iFun;
@@ -275,6 +301,7 @@ void AliFemtoTrioAnalysis::AddParticles(AliFemtoParticleCollection *collection1,
 	    } // end of middle loop
 
 	} //end of outer loop
+
     }
 
 
@@ -288,7 +315,7 @@ void AliFemtoTrioAnalysis::AddParticles(AliFemtoParticleCollection *collection1,
     {
       for (AliFemtoParticleConstIterator iPart1 = collection1->begin();iPart1 != collection1->end();++iPart1)
 	{
-	  trio->SetTrack1((AliFemtoParticle *)(*iPart1),fCollection1type);
+	  trio->SetTrack1(*iPart1,fCollection1type);
 	  // Setup iterator ranges
 	  //
 	  // The outer loop alway starts at beginning of particle collection 1.
@@ -324,10 +351,10 @@ void AliFemtoTrioAnalysis::AddParticles(AliFemtoParticleCollection *collection1,
 		{
 
 
-		  // Swap between first and second particles to avoid biased ordering -- TO DO
-		  trio->SetTrack2(*tPartIter2,fCollection2type);
-		  trio->SetTrack3(*tPartIter3,fCollection2type);
-		  //swpart = !swpart;
+		  // Swap between first and second particles to avoid biased ordering
+		  trio->SetTrack2(swpart2 ? *tPartIter2 : *tPartIter3,fCollection2type);
+		  trio->SetTrack3(swpart2 ? *tPartIter3 : *tPartIter2,fCollection2type);
+		  swpart2 = !swpart2;
 
 		  for (AliFemtoTrioFctnIterator iFun = fTrioFctnCollection->begin();iFun != fTrioFctnCollection->end();++iFun)
 		    {
@@ -404,7 +431,6 @@ bool AliFemtoTrioAnalysis::V0SharedDaughterCut(){return fPerformSharedDaughterCu
 
 
 AliFemtoString AliFemtoTrioAnalysis::Report(){return "Report";}
-int AliFemtoTrioAnalysis::GetNeventsProcessed(){return fNeventsProcessed;}
 TList* AliFemtoTrioAnalysis::ListSettings(){return nullptr;}
 
 void AliFemtoTrioAnalysis::EventBegin(const AliFemtoEvent* TheEventToBegin){};

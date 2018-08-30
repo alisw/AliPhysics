@@ -47,7 +47,7 @@ bool AliFemtoTrioCut::Pass(AliFemtoTrio *trio)
   double pairMinv=0;
   double mass;
   double delta;
-  
+
   for(unsigned int i=0;i<fExcludedPairsMasses.size();i++){
     pairType[0] = fExcludedPairsType1[i];
     pairType[1] = fExcludedPairsType2[i];
