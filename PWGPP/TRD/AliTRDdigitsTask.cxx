@@ -83,7 +83,8 @@ TFile* AliTRDdigitsTask::OpenDigitsFile(TString inputfile,
   // open the file
   AliInfo( "opening digits file " + inputfile
            + " with option \"" + opt + "\"");
-  TFile* dfile = new TFile(inputfile, opt);
+  //TFile* dfile = new TFile(inputfile, opt);
+  TFile* dfile = TFile::Open(inputfile, opt);
   if (!dfile) {
     AliWarning("digits file '" + inputfile + "' cannot be opened");
   }
