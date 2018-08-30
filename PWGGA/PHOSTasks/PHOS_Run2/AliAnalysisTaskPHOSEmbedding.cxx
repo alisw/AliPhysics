@@ -79,6 +79,8 @@ ClassImp(AliAnalysisTaskPHOSEmbedding)
 AliAnalysisTaskPHOSEmbedding::AliAnalysisTaskPHOSEmbedding(const char *name):
   AliAnalysisTaskSE(name),
   //AliAnalysisTaskESDfilter(name),
+  fOutputContainer(0x0),
+  fHistoID(0x0),
   fParticle(""),
   fEvent(0x0),
   fRandom3(0x0),
@@ -88,6 +90,8 @@ AliAnalysisTaskPHOSEmbedding::AliAnalysisTaskPHOSEmbedding(const char *name):
   fAODTree(0x0),
   fAODEvent(0x0),
   fEventCounter(0),
+  fNeventMC(0),
+  fStartEventID(-1),
   fCellsPHOS(0x0),
   fDigitsTree(0x0),
   fClustersTree(0x0),
@@ -118,7 +122,7 @@ AliAnalysisTaskPHOSEmbedding::AliAnalysisTaskPHOSEmbedding(const char *name):
   DefineInput(0, TChain::Class());
   // Output slot #0 id reserved by the base class for AOD
   // Output slot #1 writes into a TH1 container
-  //DefineOutput(1, THashList::Class());
+  DefineOutput(1, THashList::Class());
 
 }
 //____________________________________________________________________________________________________________________________________
@@ -154,6 +158,18 @@ AliAnalysisTaskPHOSEmbedding::~AliAnalysisTaskPHOSEmbedding()
     fEmbeddedCells = 0x0;
   }
 
+  if(fAODEvent){
+    //remove previous input MC event
+    delete fAODEvent;
+    fAODEvent = 0x0;
+  }
+
+
+  if(fHistoID){
+    delete fHistoID;
+    fHistoID = 0x0;
+  }
+
 }
 //____________________________________________________________________________________________________________________________________
 void AliAnalysisTaskPHOSEmbedding::UserCreateOutputObjects()
@@ -161,8 +177,13 @@ void AliAnalysisTaskPHOSEmbedding::UserCreateOutputObjects()
   // Create histograms
   // Called once
 
-  //fOutputContainer = new THashList();
-  //fOutputContainer->SetOwner(kTRUE);
+  fOutputContainer = new THashList();
+  fOutputContainer->SetOwner(kTRUE);
+
+  const Int_t Nev = 30e+3;
+  fHistoID = new TH1F(Form("hEventID_%s",fParticle.Data()),Form("event index in MC AOD %s;event ID;Number of events",fParticle.Data()),Nev+1,-0.5,Nev+0.5);
+  fOutputContainer->Add(fHistoID);
+
   fMCArray = new TClonesArray("AliAODMCParticle",0);
 
   fEmbeddedClusterArray = new TClonesArray("AliAODCaloCluster",0);
@@ -171,7 +192,7 @@ void AliAnalysisTaskPHOSEmbedding::UserCreateOutputObjects()
   fEmbeddedCells = new AliAODCaloCells();
   //fEmbeddedCells->SetName(Form("Embedded%sPHOScells",fParticle.Data()));
   
-  //PostData(1,fOutputContainer);
+  PostData(1,fOutputContainer);
 
 }
 //____________________________________________________________________________________________________________________________________
@@ -202,9 +223,9 @@ void AliAnalysisTaskPHOSEmbedding::UserExec(Option_t *option)
     }
   }
 
-  const Int_t Nev = fAODTree->GetEntries();
-  Int_t evID = Int_t((Nev-1) * fRandom3->Rndm());
-  AliInfo(Form("Extract event ID %d from %s.",evID,fAODPath.Data()));
+  Int_t evID = (fStartEventID + fEventCounter) % fNeventMC;
+  fHistoID->Fill(evID);
+  AliInfo(Form("fStartEventID = %d , fEventCounter = %d , Extract event ID %d from %s.",fStartEventID,fEventCounter,evID,fAODPath.Data()));
   fAODTree->GetEvent(evID);
 
   ConvertAODtoESD();
@@ -463,6 +484,8 @@ void AliAnalysisTaskPHOSEmbedding::UserExec(Option_t *option)
     input->AddObject(fEmbeddedCells);
   }
 
+  fEventCounter++;
+
   //PostData(1, fOutputContainer);
 }
 //____________________________________________________________________________________________________________________________________
@@ -566,8 +589,9 @@ Bool_t AliAnalysisTaskPHOSEmbedding::OpenAODFile()
   }
   fAODEvent = new AliAODEvent();
   fAODEvent->ReadFromTree(fAODTree);
-  Int_t Nev = fAODTree->GetEntries();
-  AliInfo(Form("%d events are stored in %s.",Nev,fAODPath.Data()));
+  fNeventMC = fAODTree->GetEntries();
+  AliInfo(Form("%d events are stored in %s.",fNeventMC,fAODPath.Data()));
+  fStartEventID = (Int_t)(fNeventMC * fRandom3->Rndm());
 
   return kTRUE;
 }
