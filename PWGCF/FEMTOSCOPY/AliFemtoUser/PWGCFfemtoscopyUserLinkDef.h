@@ -146,3 +146,7 @@
 #pragma link C++ class AliFemtoKKTrackCutTest;
 
 #pragma link C++ class AliFemtoCorrFctnInvMass;
+
+#pragma link C++ class AliFemtoCutMonitorV0CosPointingAngle+;
+#pragma link C++ class AliFemtoCutMonitorV0CosPointingAngle::ParentPIDInfo+;
+

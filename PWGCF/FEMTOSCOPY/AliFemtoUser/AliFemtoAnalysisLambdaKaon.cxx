@@ -49,6 +49,7 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AliFemtoAnalysisLambdaKao
   fIsMBAnalysis(kFALSE),
   fBuildMultHist(kFALSE),
   fBuildmTBinned(true),
+  fBuildCosPointingAnglewParentInfo(false),
   fMinCent(-1000),
   fMaxCent(1000),
 
@@ -143,6 +144,7 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
   fIsMBAnalysis(aAnParams.isMBAnalysis),
   fBuildMultHist(aAnParams.buildMultHist),
   fBuildmTBinned(aAnParams.buildmTBinned),
+  fBuildCosPointingAnglewParentInfo(false),
   fMinCent(-1000),
   fMaxCent(1000),
 
@@ -226,6 +228,9 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
   AliFemtoV0TrackCutNSigmaFilter* tV0Cut2 = CreateV0Cut(aV0CutParams2);
   AliFemtoV0PairCut* tV0PairCut = CreateV0PairCut(aPairCutParams);
 
+  fBuildCosPointingAnglewParentInfo = aV0CutParams1.buildCosPointingAnglewParentInfo;
+  if(!fIsMCRun) fBuildCosPointingAnglewParentInfo = false;
+
   if(aAnParams.isMBAnalysis)
   {
     AliFemtoBasicEventCut* tBasicEvCut = CreateBasicEventCut(aEvCutParams);
@@ -246,6 +251,9 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
   AliFemtoV0TrackCutNSigmaFilter* tV0Cut1 = CreateV0Cut(aV0CutParams1);
   AliFemtoESDTrackCutNSigmaFilter* tESDCut2 = CreateESDCut(aESDCutParams2);
   AliFemtoV0TrackPairCut* tV0TrackPairCut = CreateV0TrackPairCut(aPairCutParams);
+
+  fBuildCosPointingAnglewParentInfo = aV0CutParams1.buildCosPointingAnglewParentInfo;
+  if(!fIsMCRun) fBuildCosPointingAnglewParentInfo = false;
 
   if(aAnParams.isMBAnalysis)
   {
@@ -286,6 +294,9 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
   AliFemtoXiTrackCutNSigmaFilter* tXiCut1 = CreateXiCut(aXiCutParams1);
   AliFemtoV0TrackCutNSigmaFilter* tV0Cut1 = CreateV0Cut(aV0CutParams1);
   AliFemtoXiV0PairCut* tXiV0PairCut = CreateXiV0PairCut(aPairCutParams);
+
+  fBuildCosPointingAnglewParentInfo = aV0CutParams1.buildCosPointingAnglewParentInfo;
+  if(!fIsMCRun) fBuildCosPointingAnglewParentInfo = false;
 
   if(aAnParams.isMBAnalysis)
   {
@@ -339,6 +350,7 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(const AliFemtoAnalysisLam
   fIsMBAnalysis(a.fIsMBAnalysis),
   fBuildMultHist(a.fBuildMultHist),
   fBuildmTBinned(a.fBuildmTBinned),
+  fBuildCosPointingAnglewParentInfo(a.fBuildCosPointingAnglewParentInfo),
   fMinCent(a.fMinCent),
   fMaxCent(a.fMaxCent),
 
@@ -396,6 +408,7 @@ AliFemtoAnalysisLambdaKaon& AliFemtoAnalysisLambdaKaon::operator=(const AliFemto
   fIsMBAnalysis = a.fIsMBAnalysis;
   fBuildMultHist = a.fBuildMultHist;
   fBuildmTBinned = a.fBuildmTBinned;
+  fBuildCosPointingAnglewParentInfo = a.fBuildCosPointingAnglewParentInfo;
   fMinCent = a.fMinCent;
   fMaxCent = a.fMaxCent;
   fCollectionOfCfs = NULL;
@@ -1674,18 +1687,22 @@ void AliFemtoAnalysisLambdaKaon::AddCutMonitors(AliFemtoEventCut* aEventCut, Ali
   TString tNamePass2 = tPartName2 + TString("_Pass");
   TString tNameFail2 = tPartName2 + TString("_Fail");
 
+  int tNbinsCPA = 100;
+  double tMinCPA = 0.99;
+  double tMaxCPA = 1.0;
+
   switch(fGeneralAnalysisType) {
   case AliFemtoAnalysisLambdaKaon::kV0V0:
-    aPartCut1->AddCutMonitorPass(new AliFemtoCutMonitorV0(tNamePass1));
-    if(!fAnalysisParams.monitorPart1CutPassOnly) aPartCut1->AddCutMonitorFail(new AliFemtoCutMonitorV0(tNameFail1));
+    aPartCut1->AddCutMonitorPass(new AliFemtoCutMonitorV0CosPointingAngle(tNamePass1, fParticlePDGType1, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
+    if(!fAnalysisParams.monitorPart1CutPassOnly) aPartCut1->AddCutMonitorFail(new AliFemtoCutMonitorV0CosPointingAngle(tNameFail1, fParticlePDGType1, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
 
-    aPartCut2->AddCutMonitorPass(new AliFemtoCutMonitorV0(tNamePass2));
-    if(!fAnalysisParams.monitorPart2CutPassOnly) aPartCut2->AddCutMonitorFail(new AliFemtoCutMonitorV0(tNameFail2));
+    aPartCut2->AddCutMonitorPass(new AliFemtoCutMonitorV0CosPointingAngle(tNamePass2, fParticlePDGType2, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
+    if(!fAnalysisParams.monitorPart2CutPassOnly) aPartCut2->AddCutMonitorFail(new AliFemtoCutMonitorV0CosPointingAngle(tNameFail2, fParticlePDGType2, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
     break;
 
   case AliFemtoAnalysisLambdaKaon::kV0Track:
-    aPartCut1->AddCutMonitorPass(new AliFemtoCutMonitorV0(tNamePass1));
-    if(!fAnalysisParams.monitorPart1CutPassOnly) aPartCut1->AddCutMonitorFail(new AliFemtoCutMonitorV0(tNameFail1));
+    aPartCut1->AddCutMonitorPass(new AliFemtoCutMonitorV0CosPointingAngle(tNamePass1, fParticlePDGType1, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
+    if(!fAnalysisParams.monitorPart1CutPassOnly) aPartCut1->AddCutMonitorFail(new AliFemtoCutMonitorV0CosPointingAngle(tNameFail1, fParticlePDGType1, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
 
     aPartCut2->AddCutMonitorPass(new AliFemtoCutMonitorParticleYPt(tNamePass2,tPartMass2));
     aPartCut2->AddCutMonitorPass(new AliFemtoCutMonitorParticlePID(tNamePass2,tPartType2));
@@ -1713,8 +1730,8 @@ void AliFemtoAnalysisLambdaKaon::AddCutMonitors(AliFemtoEventCut* aEventCut, Ali
     aPartCut1->AddCutMonitorPass(new AliFemtoCutMonitorXi(tNamePass1));
     if(!fAnalysisParams.monitorPart1CutPassOnly) aPartCut1->AddCutMonitorFail(new AliFemtoCutMonitorXi(tNameFail1));
 
-    aPartCut2->AddCutMonitorPass(new AliFemtoCutMonitorV0(tNamePass2));
-    if(!fAnalysisParams.monitorPart2CutPassOnly) aPartCut2->AddCutMonitorFail(new AliFemtoCutMonitorV0(tNameFail2));
+    aPartCut2->AddCutMonitorPass(new AliFemtoCutMonitorV0CosPointingAngle(tNamePass2, fParticlePDGType2, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
+    if(!fAnalysisParams.monitorPart2CutPassOnly) aPartCut2->AddCutMonitorFail(new AliFemtoCutMonitorV0CosPointingAngle(tNameFail2, fParticlePDGType2, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
     break;
 
   case AliFemtoAnalysisLambdaKaon::kTrackTrack:
@@ -1909,6 +1926,8 @@ AliFemtoAnalysisLambdaKaon::DefaultLambdaCutParams()
 
   tReturnParams.ignoreOnFlyStatus = false;
 
+  tReturnParams.buildCosPointingAnglewParentInfo = true;
+
   return tReturnParams;
 }
 
@@ -1968,6 +1987,8 @@ AliFemtoAnalysisLambdaKaon::DefaultAntiLambdaCutParams()
 
   tReturnParams.ignoreOnFlyStatus = false;
 
+  tReturnParams.buildCosPointingAnglewParentInfo = true;
+
   return tReturnParams;
 }
 
@@ -2026,6 +2047,8 @@ AliFemtoAnalysisLambdaKaon::DefaultK0ShortCutParams()
   tReturnParams.radiusV0Max = 99999.0;
 
   tReturnParams.ignoreOnFlyStatus = false;
+
+  tReturnParams.buildCosPointingAnglewParentInfo = true;
 
   return tReturnParams;
 }

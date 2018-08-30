@@ -115,7 +115,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	TGrid::Connect("alien://");
 
 	int runmults[numOfMultBins] = {0, 0, 0, 0, 1};
-	int multbins[numOfMultBins+1] = {2, 20, 50,150,2,1500};
+	int multbins[numOfMultBins+1] = {2, 20, 50,150,2,15000};
 	
 	int runch[numOfChTypes] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "all", "plus", "minus", "mixed",  "V0PL","V0PAL","V0APL","V0APAL","V0LL","V0ALAL","V0LAL" };

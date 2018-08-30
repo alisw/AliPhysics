@@ -26,6 +26,9 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t*);
 
   // Task Configuration: trigger selection
+  void SetUseOnTheFlyV0s(bool useThem = true) {
+    fUseOnTheFly = useThem;
+  }
   void SetUseLightVertexers(bool lUseLightVertexers = true) {
     fUseLightVertexer = lUseLightVertexers;
   }
@@ -94,10 +97,12 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   bool fDoV0Refit;
   bool fMC;
   bool fUseLightVertexer;
+  bool fUseOnTheFly;
 
   /// Control histograms to monitor the filtering
   TH1D* fHistMCct[2];               //! MC ct
   TH1D* fHistMCctPrimary[2];        //! MC ct only for primary particles
+  TH1D* fHistMCctSecondaryFromMaterial[2]; //! MC ct for secondaries from material
   TH1D* fHistV0radius;              //! V0 decay vertex radius
   TH1D* fHistV0pt;                  //! V0 transverse momentum
   TH1D* fHistV0eta;                 //! V0 pseudorapidity

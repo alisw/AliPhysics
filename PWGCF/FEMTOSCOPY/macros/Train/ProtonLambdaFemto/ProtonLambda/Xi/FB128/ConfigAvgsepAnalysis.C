@@ -4,7 +4,7 @@
 #include "AliFemtoEventReaderAODMultSelection.h"
 #include "AliFemtoSimpleAnalysis.h"
 #include "AliFemtoBasicEventCut.h"
-#include "AliFemtoESDTrackCut.h"
+#include "AliFemtoMJTrackCut.h"
 #include "AliFemtoCorrFctn.h"
 #include "AliFemtoQinvCorrFctn.h"
 #include "AliFemtoVertexMultAnalysis.h"
@@ -40,9 +40,8 @@ AliFemtoVertexMultAnalysis* GetAnalysis(double multMin, double multMax);
 AliFemtoBasicEventCut* GetEventCut();
 AliFemtoXiTrackCut* GetXiTrackCut(EPart particle);
 AliFemtoV0TrackCut* GetV0TrackCut(EPart particle);
-AliFemtoESDTrackCut* GetESDTrackCut(EPart particle);
+AliFemtoMJTrackCut* GetMJTrackCut(EPart particle);
 AliFemtoV0PairCut* GetV0PairCut(ESys system);
-AliFemtoESDTrackCut* GetESDTrackCut(EPart particle);
 AliFemtoV0PairCut* GetV0PairCut(ESys system);
 AliFemtoV0TrackPairCut* GetV0TrackPairCut(ESys system);
 AliFemtoPairCutRadialDistance* GetTracksPairCut(ESys system);
@@ -109,8 +108,8 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
       AliFemtoXiTrackCut  *secondXiTrackCut   = GetXiTrackCut(secondParticle);  
       AliFemtoV0TrackCut  *firstV0TrackCut    = GetV0TrackCut(firstParticle);
       AliFemtoV0TrackCut  *secondV0TrackCut   = GetV0TrackCut(secondParticle);
-      AliFemtoESDTrackCut *firstESDTrackCut   = GetESDTrackCut(firstParticle);
-      AliFemtoESDTrackCut *secondESDTrackCut  = GetESDTrackCut(secondParticle);
+      AliFemtoMJTrackCut *firstMJTrackCut   = GetMJTrackCut(firstParticle);
+      AliFemtoMJTrackCut *secondMJTrackCut  = GetMJTrackCut(secondParticle);
       
       // get pair cut
       AliFemtoV0PairCut               *V0pairCut      = GetV0PairCut((ESys)iSys);
@@ -138,13 +137,13 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
       else if(firstV0TrackCut)
         femtoAnalysis[anIter]->SetFirstParticleCut(firstV0TrackCut);
       else
-        femtoAnalysis[anIter]->SetFirstParticleCut(firstESDTrackCut);
+        femtoAnalysis[anIter]->SetFirstParticleCut(firstMJTrackCut);
       if(secondXiTrackCut)
         femtoAnalysis[anIter]->SetSecondParticleCut(secondXiTrackCut);
       else if(secondV0TrackCut)
         femtoAnalysis[anIter]->SetSecondParticleCut(secondV0TrackCut);
       else
-        femtoAnalysis[anIter]->SetSecondParticleCut(secondESDTrackCut);
+        femtoAnalysis[anIter]->SetSecondParticleCut(secondMJTrackCut);
 
 
 
@@ -175,6 +174,7 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
       }
             
       // add Average Separation correlation function
+      /*
       avgSepCF[anIter] = new AliFemtoAvgSepCorrFctn(Form("Avgsep%stpcM%iPsi6", sysNames[iSys], imult),5000,0,500);
       
       if(iSys == kLL || iSys == kALAL || iSys == kLAL)
@@ -185,7 +185,7 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
         avgSepCF[anIter]->SetPairType(AliFemtoAvgSepCorrFctn::kTracks);
       
       femtoAnalysis[anIter]->AddCorrFctn(avgSepCF[anIter]);
-      
+      */
       // add femtoscopic correlation function (identical or non-identical masses)
       if(iSys == kPXim || iSys == kAPXim || iSys == kPXip || iSys == kAPXip || iSys==kPL || iSys==kAPL || iSys==kPAL || iSys==kAPAL)
       {
@@ -225,6 +225,7 @@ AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis)
   Reader->SetEPVZERO(kTRUE);
   Reader->SetCentralityFlattening(kTRUE);
   Reader->SetReadCascade(kTRUE);
+  Reader->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
   if(mcAnalysis) Reader->SetReadMC(kTRUE);
   
   return Reader;
@@ -239,6 +240,7 @@ AliFemtoEventReaderAODChain* GetReader2011(bool mcAnalysis)
   Reader->SetEPVZERO(kTRUE);
   Reader->SetCentralityFlattening(kTRUE);
   Reader->SetReadCascade(kTRUE);
+  Reader->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
   if(mcAnalysis) Reader->SetReadMC(kTRUE);
   
   return Reader;
@@ -340,6 +342,7 @@ AliFemtoXiTrackCut* GetXiTrackCut(EPart particle)
       tXiCut->SetEtaDaughters(0.8);    //++
       tXiCut->SetPtPosDaughter(0.3,99); //++
       tXiCut->SetPtNegDaughter(0.3,99); //++
+
       tXiCut->SetTPCnclsDaughters(70); //++
       tXiCut->SetStatusDaughters(AliESDtrack::kTPCrefit);  //yes or no?
       tXiCut->SetNsigmaPosDaughter(5.0); //++
@@ -403,7 +406,7 @@ AliFemtoV0TrackCut* GetV0TrackCut(EPart particle)
   particleCut->SetEta(0.8);
   particleCut->SetPt(0.5, 5.0);
   particleCut->SetEtaDaughters(0.8);
-  particleCut->SetTPCnclsDaughters(80);
+  //particleCut->SetTPCnclsDaughters(80);
   particleCut->SetNdofDaughters(4.0);
   particleCut->SetStatusDaughters(AliESDtrack::kTPCrefit);
   particleCut->SetOnFlyStatus(kFALSE);
@@ -431,24 +434,27 @@ AliFemtoV0TrackCut* GetV0TrackCut(EPart particle)
   return particleCut;
 }
 
-AliFemtoESDTrackCut* GetESDTrackCut(EPart particle)
+AliFemtoMJTrackCut* GetMJTrackCut(EPart particle)
 {
   if(particle != kEProton && particle != kEAntiProton) return 0;
   
-  AliFemtoESDTrackCut *particleCut = new AliFemtoESDTrackCut();
+  AliFemtoMJTrackCut *particleCut = new AliFemtoMJTrackCut();
+  double ProtonMass = 0.938272013;
   
-  particleCut->SetMostProbableProton();
-  particleCut->SetMass(0.938272013);
+  particleCut->SetMostProbable(18);
+  particleCut->SetMass(ProtonMass);
   particleCut->SetEta(-0.8, 0.8);
-  particleCut->SetStatus(AliESDtrack::kTPCin);
-  particleCut->SetminTPCncls(80);
-  particleCut->SetRemoveKinks(kTRUE);
-  particleCut->SetLabel(kFALSE);
-  particleCut->SetMaxTPCChiNdof(4.0);
-  particleCut->SetMaxImpactXY(2.8);
-  particleCut->SetMaxImpactZ(3.2);
+  //particleCut->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
+  //particleCut->SetminTPCncls(80);
+  //particleCut->SetRemoveKinks(kTRUE);
+  //particleCut->SetLabel(kFALSE);
+  //particleCut->SetMaxTPCChiNdof(4.0);
+  //particleCut->SetMaxImpactXY(2.8);
+  //particleCut->SetMaxImpactZ(3.2);
   particleCut->SetNsigma(3.0);
+  particleCut->SetNsigma2(3.0);
   particleCut->SetNsigmaTPCTOF(kTRUE);
+  particleCut->SetElectronRejection(kTRUE);
   particleCut->SetCharge(particle == kEProton ? 1.0 : -1.0);
   particleCut->SetPt(0.7, particle == kEProton ? 4.0 : 5.0);
   

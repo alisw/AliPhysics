@@ -26,6 +26,7 @@ public:
   float GetMass() const;
   int GetPDGcode() const { return fPDGcode; }
   float GetPt() const { return fPt; }
+  float GetRadius() const { return fRadius; }
   int GetRecoIndex() const { return fRecoIndex; }
   float GetY() const;
   bool IsPrimary() const { return fStatus & kPrimary; }
@@ -36,6 +37,7 @@ public:
   void SetEta(float eta) { fEta = eta; }
   void SetPt(float pt) { fPt = pt; }
   void SetPDGcode(int pdg) { fPDGcode = pdg; }
+  void SetRadius(float r) { fRadius = r; }
   void SetRecoIndex(int idx) { fRecoIndex = idx; }
   void SetStatus(Status st) { fStatus = st; }
 
@@ -43,6 +45,7 @@ private:
   float fPt;
   float fEta;
   float fDistOverTotMom;
+  float fRadius;
   int fPDGcode;
   int fRecoIndex;
   unsigned char fStatus;

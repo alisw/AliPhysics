@@ -35,7 +35,8 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
 
   void                        ActivateTrueJetMatching(const char* arrayName, const char* rhoName, const char* partArrayName = "mcparticles") 
                                 {fTruthJetsArrayName = arrayName; fTruthJetsRhoName = rhoName; fTruthParticleArrayName = partArrayName;}
-  void                        SetHadronMatchingRadius(Double_t val)               { fHadronMatchingRadius = val; }
+  void                        SetHadronMatchingRadius(Double_t val)               { fHadronMatchingRadius  = val; }
+  void                        SetTrueJetMatchingRadius(Double_t val)              { fTrueJetMatchingRadius = val; }
   void                        SetSecondaryVertexMaxChi2(Double_t val   )          { fSecondaryVertexMaxChi2 = val; }
   void                        SetSecondaryVertexMaxDispersion(Double_t val)       { fSecondaryVertexMaxDispersion = val; }
   void                        SetCalculateSecondaryVertices(Bool_t val)           { fCalculateSecondaryVertices = val; }
@@ -62,6 +63,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   AliEmcalJetTree*            fJetTree;
   AliHFJetsTaggingVertex*     fVtxTagger;                               //!<! class for sec. vertexing
   Double_t                    fHadronMatchingRadius;                    ///< Matching radius to search for beauty/charm hadrons around jet
+  Double_t                    fTrueJetMatchingRadius;                   ///< Matching radius to true jet
   Double_t                    fSecondaryVertexMaxChi2;                  ///< Max chi2 of secondary vertex (others will be discarded)
   Double_t                    fSecondaryVertexMaxDispersion;            ///< Max dispersion of secondary vertex (others will be discarded)
   Bool_t                      fCalculateSecondaryVertices;              ///< Calculate the secondary vertices (instead of loading)

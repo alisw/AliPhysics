@@ -25,6 +25,8 @@ AliGenerator* AddMCGenLightNuclei(const TString& generator="PYTHIA8",
     genSrc = dynamic_cast<AliGenerator*>(genExt);
   } else { // Pythia8
     genSrc = AddMCGenPythia8(energyCMS, kTRUE, 1, kProcess, ptHardMin, ptHardMax);
+    if (generator.Contains("ONLY"))
+      return genSrc;
   }
   
   AliGenLightNuclei* aft = new AliGenLightNuclei();
