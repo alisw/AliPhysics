@@ -26,6 +26,9 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t*);
 
   // Task Configuration: trigger selection
+  void SetUseOnTheFlyV0s(bool useThem = true) {
+    fUseOnTheFly = useThem;
+  }
   void SetUseLightVertexers(bool lUseLightVertexers = true) {
     fUseLightVertexer = lUseLightVertexers;
   }
@@ -94,6 +97,7 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   bool fDoV0Refit;
   bool fMC;
   bool fUseLightVertexer;
+  bool fUseOnTheFly;
 
   /// Control histograms to monitor the filtering
   TH1D* fHistMCct[2];               //! MC ct
