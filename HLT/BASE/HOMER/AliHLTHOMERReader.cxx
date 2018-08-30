@@ -43,6 +43,7 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTHOMERReader.h"
+#include <sys/ipc.h>
 //#include <stdio.h>
 #ifdef __SUNPRO_CC
 #include <string.h>
