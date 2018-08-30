@@ -135,23 +135,18 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
   Int_t nstack = stack->GetNtrack();
   fEvents->Fill(nstack);
 
-  cout << "---------------------- working --------------------" << GetName() << " stack " << nstack << " " << stack->GetNprimary() << endl;
-
   // find nucleons and anti-nucleons
   TObjArray keepParticles;
   if (fP0>0) {
-    cout << "Print list " << fP0 << " kpr " << kProton << endl;
     for (Int_t i=0; i < stack->GetNprimary(); ++i) {
       TParticle* iParticle = stack->Particle(i);
       if (iParticle->GetStatusCode() != 1)
 	continue;
       switch (iParticle->GetPdgCode()) {
       case 2212: //kProton:
-	iParticle->Print();
 	keepParticles.Add(iParticle);
 	break;
       case 2112: //kNeutron:
-	iParticle->Print();
 	keepParticles.Add(iParticle);
 	break;
       case -2212: //kProtonBar:
@@ -334,7 +329,6 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
 
   // reset nucleons and anti-nucleons
   if (fP0>0) {
-    cout << "looping through list " << endl;
     for (Int_t i=0; i<keepParticles.GetEntries(); ++i) {
       TParticle *p = dynamic_cast<TParticle*>(keepParticles.At(i));
       if (!p) 
