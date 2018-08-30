@@ -31,7 +31,7 @@ AliAnalysisTaskNucleiKineCor* AddTaskNucleiKineCor(Double_t trigpt=5, Double_t p
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
 
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("output_%.1f_%.1f",trigpt,p0), 
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("output_%.2f_%.2f",trigpt,p0), 
 							   TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
 
   //connect containers
