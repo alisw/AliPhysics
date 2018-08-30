@@ -1,7 +1,7 @@
-enum ESys  { kPIpPIpPIp, kPImPImPIm, kPIpPImPIm, kKpKpKp, kKmKmKm, kKpKmKm, kPPP, kAPAPAP, kPAPAP,nSys };
+enum ESys  { kPIpPIpPIp, kPImPImPIm, kPIpPImPIm, kKpKpKp, kKmKmKm, kKpKmKm, kPPP, kAPAPAP, kPAPAP, kPKpKp, kPKmKm, kAPKpKp, kAPKmKm, nSys };
 
-const char *sysNames[nSys]      = {"PIpPIpPIp", "PImPImPIm", "PIpPImPIm", "KpKpKp", "KmKmKm", "KpKmKm", "PPP","APAPAP","PAPAP"};
-const bool runSys[nSys]         = {1, 1, 1, 1,1, 1, 1, 1, 1};
+const char *sysNames[nSys]      = {"PIpPIpPIp", "PImPImPIm", "PIpPImPIm", "KpKpKp", "KmKmKm", "KpKmKm", "PPP","APAPAP","PAPAP", "PKpKp","PKmKm","APKpKp","APKmKm"};
+const bool runSys[nSys]         = {1, 1, 1, 1,1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 const int nMultBins = 1;
 const int multBins[nMultBins+1] = {3, 2000};
@@ -116,14 +116,19 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
 	      trioAnalysis[anIter]->SetFirstParticleCut(firstTrackCut);
 	  
 	      trioAnalysis[anIter]->SetCollection1type(firstParticle);
+	      
+	      trioAnalysis[anIter]->SetMinSizePart1Collection(3);
 	    }
-	  else if(iSys == kPIpPImPIm || iSys == kKpKmKm || iSys == kPAPAP)
+	  else if(iSys == kPIpPImPIm || iSys == kKpKmKm || iSys == kPAPAP || iSys == kPKpKp || iSys == kPKmKm || iSys == kAPKpKp || iSys == kAPKmKm)
 	    {
 	      trioAnalysis[anIter]->SetFirstParticleCut(firstTrackCut);
 	      trioAnalysis[anIter]->SetSecondParticleCut(secondTrackCut);
 	  
 	      trioAnalysis[anIter]->SetCollection1type(firstParticle);
 	      trioAnalysis[anIter]->SetCollection2type(secondParticle);
+
+	      trioAnalysis[anIter]->SetMinSizePart1Collection(1);
+	      trioAnalysis[anIter]->SetMinSizePart2Collection(2);
 	    }
 	  else // not used at the moment
 	    {
@@ -134,6 +139,11 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
 	      trioAnalysis[anIter]->SetCollection1type(firstParticle);
 	      trioAnalysis[anIter]->SetCollection2type(secondParticle);
 	      trioAnalysis[anIter]->SetCollection3type(thirdParticle);
+
+	      trioAnalysis[anIter]->SetMinSizePart1Collection(1);
+	      trioAnalysis[anIter]->SetMinSizePart2Collection(1);
+	      trioAnalysis[anIter]->SetMinSizePart3Collection(1);
+	      //collection min size by default is 1
 	    }
 
 
@@ -238,7 +248,6 @@ AliFemtoTrioAnalysis* GetAnalysis(bool doEventMixing)
 {
   AliFemtoTrioAnalysis *analysis = new AliFemtoTrioAnalysis();
   analysis->SetDoEventMixing(doEventMixing);
-  analysis->SetMinSizePartCollection(3);
   // here one can put some additional analysis settings in the future
   
   return analysis;
@@ -348,19 +357,43 @@ void GetParticlesForSystem(ESys system, AliFemtoTrio::EPart &firstParticle, AliF
   }
   if(system == kPPP){
     firstParticle  = AliFemtoTrio::kProton;
-    firstParticle  = AliFemtoTrio::kProton;
-    firstParticle  = AliFemtoTrio::kProton;
+    secondParticle  = AliFemtoTrio::kProton;
+    thirdParticle  = AliFemtoTrio::kProton;
   }
   if(system == kAPAPAP){
     firstParticle  = AliFemtoTrio::kAntiProton;
-    firstParticle  = AliFemtoTrio::kAntiProton;
-    firstParticle  = AliFemtoTrio::kAntiProton;
+    secondParticle  = AliFemtoTrio::kAntiProton;
+    thirdParticle  = AliFemtoTrio::kAntiProton;
   }
   if(system == kPAPAP){
     firstParticle  = AliFemtoTrio::kProton;
-    firstParticle  = AliFemtoTrio::kAntiProton;
-    firstParticle  = AliFemtoTrio::kAntiProton;
+    secondParticle  = AliFemtoTrio::kAntiProton;
+    thirdParticle  = AliFemtoTrio::kAntiProton;
   }
+  if(system == kPKpKp)
+    {
+      firstParticle  = AliFemtoTrio::kProton;
+      secondParticle  = AliFemtoTrio::kKaonPlus;
+      thirdParticle  = AliFemtoTrio::kKaonPlus;
+    }
+  if(system == kPKmKm)
+    {
+      firstParticle  = AliFemtoTrio::kProton;
+      secondParticle  = AliFemtoTrio::kKaonMinus;
+      thirdParticle  = AliFemtoTrio::kKaonMinus;
+    }
+  if(system == kAPKpKp)
+    {
+      firstParticle  = AliFemtoTrio::kAntiProton;
+      secondParticle  = AliFemtoTrio::kKaonPlus;
+      thirdParticle  = AliFemtoTrio::kKaonPlus;
+    }
+  if(system == kAPKmKm)
+    {
+      firstParticle  = AliFemtoTrio::kAntiProton;
+      secondParticle  = AliFemtoTrio::kKaonMinus;
+      thirdParticle  = AliFemtoTrio::kKaonMinus;
+    }
 }
 
 
