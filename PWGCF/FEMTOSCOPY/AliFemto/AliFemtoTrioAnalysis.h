@@ -77,7 +77,6 @@ protected:
   AliFemtoParticleCut*         fSecondParticleCut;   ///< select particles of type #2
   AliFemtoParticleCut*         fThirdParticleCut;    ///< select particles of type #3
   
-  unsigned int fNeventsProcessed;                    ///< How many events processed so far
   int fNeventsPassed;
   AliFemtoPicoEvent *fPicoEvent;
   
