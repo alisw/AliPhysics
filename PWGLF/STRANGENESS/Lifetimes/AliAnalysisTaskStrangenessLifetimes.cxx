@@ -73,6 +73,7 @@ AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
       fDoV0Refit{true},
       fMC{mc},
       fUseLightVertexer{true},
+      fUseOnTheFly{false},
       fHistMCct{nullptr},
       fHistMCctPrimary{nullptr},
       fHistMCctSecondaryFromMaterial{nullptr},
@@ -293,29 +294,31 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
   fMultiplicity = fEventCuts.GetCentrality();
   fEventCuts.GetPrimaryVertex()->GetXYZ(primaryVertex);
 
-  // Only reset if not using on-the-fly (or else nothing passes)
-  esdEvent->ResetV0s();
+  if (!fUseOnTheFly) {
+    // Only reset if not using on-the-fly (or else nothing passes)
+    esdEvent->ResetV0s();
 
-  // Decide between regular and light vertexer (default: light)
-  if (!fUseLightVertexer) {
-    // Instantiate vertexer object
-    AliV0vertexer lV0vtxer;
-    // Set Cuts
-    lV0vtxer.SetDefaultCuts(fV0VertexerSels);
-    lV0vtxer.SetCuts(fV0VertexerSels);
-    // Redo
-    lV0vtxer.Tracks2V0vertices(esdEvent);
-  } else {
-    // Instantiate vertexer object
-    AliLightV0vertexer lV0vtxer;
-    // Set do or don't do V0 refit for improved precision
-    lV0vtxer.SetDoRefit(false);
-    if (fDoV0Refit) lV0vtxer.SetDoRefit(true);
-    // Set Cuts
-    lV0vtxer.SetDefaultCuts(fV0VertexerSels);
-    lV0vtxer.SetCuts(fV0VertexerSels);
-    // Redo
-    lV0vtxer.Tracks2V0vertices(esdEvent);
+    // Decide between regular and light vertexer (default: light)
+    if (!fUseLightVertexer) {
+      // Instantiate vertexer object
+      AliV0vertexer lV0vtxer;
+      // Set Cuts
+      lV0vtxer.SetDefaultCuts(fV0VertexerSels);
+      lV0vtxer.SetCuts(fV0VertexerSels);
+      // Redo
+      lV0vtxer.Tracks2V0vertices(esdEvent);
+    } else {
+      // Instantiate vertexer object
+      AliLightV0vertexer lV0vtxer;
+      // Set do or don't do V0 refit for improved precision
+      lV0vtxer.SetDoRefit(false);
+      if (fDoV0Refit) lV0vtxer.SetDoRefit(true);
+      // Set Cuts
+      lV0vtxer.SetDefaultCuts(fV0VertexerSels);
+      lV0vtxer.SetCuts(fV0VertexerSels);
+      // Redo
+      lV0vtxer.Tracks2V0vertices(esdEvent);
+    }
   }
 
   std::unordered_map<int,int> mcMap;
@@ -398,7 +401,8 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
                  // V0s)
     AliESDv0 *v0 = ((AliESDEvent *)esdEvent)->GetV0(iV0);
     if (!v0) continue;
-    if (v0->GetOnFlyStatus() != 0) continue;
+    if (v0->GetOnFlyStatus() != 0 && !fUseOnTheFly) continue;
+    if (fUseOnTheFly && v0->GetOnFlyStatus() == 0) continue;
 
     // Remove like-sign (will not affect offline V0 candidates!)
     if (v0->GetParamN()->Charge() * v0->GetParamP()->Charge() > 0) continue;

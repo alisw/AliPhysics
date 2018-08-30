@@ -24,7 +24,7 @@ const float MiniV0::fgkDCAProng2PV_w =
 
 const int MiniV0::fgkDCAProngs_n = 250;
 const float MiniV0::fgkDCAProngs_f = 0.f;
-const float MiniV0::fgkDCAProngs_l = 5.f;
+const float MiniV0::fgkDCAProngs_l = 2.f;
 const float MiniV0::fgkDCAProngs_w =
     (MiniV0::fgkDCAProngs_l - MiniV0::fgkDCAProngs_f) /
     MiniV0::fgkDCAProngs_n;
