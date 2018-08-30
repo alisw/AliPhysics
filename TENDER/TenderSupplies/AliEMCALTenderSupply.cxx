@@ -86,6 +86,8 @@ AliEMCALTenderSupply::AliEMCALTenderSupply() :
   ,fPhicut(-1)
   ,fBasePath("")
   ,fCustomBC("")
+  ,fCustomTempCalibSM("")
+  ,fCustomTempCalibParams("")
   ,fReClusterize(kFALSE)
   ,fClusterizer(0)
   ,fGeomMatrixSet(kFALSE)
@@ -158,6 +160,8 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, const AliTender *te
   ,fPhicut(-1)  
   ,fBasePath("")
   ,fCustomBC("")
+  ,fCustomTempCalibSM("")
+  ,fCustomTempCalibParams("")
   ,fReClusterize(kFALSE)
   ,fClusterizer(0)
   ,fGeomMatrixSet(kFALSE)
@@ -230,6 +234,8 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, AliAnalysisTaskSE *
   ,fPhicut(-1)  
   ,fBasePath("")
   ,fCustomBC("")
+  ,fCustomTempCalibSM("")
+  ,fCustomTempCalibParams("")
   ,fReClusterize(kFALSE)
   ,fClusterizer(0)
   ,fGeomMatrixSet(kFALSE)
@@ -392,7 +398,9 @@ void AliEMCALTenderSupply::Init()
     AliInfo("------------ Variables -------------------------"); 
     AliInfo(Form("DebugLevel : %d", fDebugLevel)); 
     AliInfo(Form("BasePath : %s", fBasePath.Data())); 
-    AliInfo(Form("CustomBCFile : %s", fCustomBC.Data())); 
+    AliInfo(Form("CustomBCFile : %s", fCustomBC.Data()));
+    AliInfo(Form("CustomSMTempFile : %s", fCustomTempCalibSM.Data()));
+    AliInfo(Form("CustomTempParamFile : %s", fCustomTempCalibParams.Data()));
     AliInfo(Form("ConfigFileName : %s", fConfigName.Data())); 
     AliInfo(Form("EMCALGeometryName : %s", fEMCALGeoName.Data())); 
     AliInfo(Form("NonLinearityFunction : %d", fNonLinearFunc)); 
@@ -1230,6 +1238,28 @@ Int_t AliEMCALTenderSupply::InitRunDepRecalib()
 
       contTemperature->InitFromFile(Form("%s/EMCALTemperatureCalibSM.root",fBasePath.Data()),"AliEMCALTemperatureCalibSM");
       contParams->InitFromFile(Form("%s/EMCALTemperatureCalibParam.root",fBasePath.Data()),"AliEMCALTemperatureCalibParam");
+    }
+    else if (fCustomTempCalibSM!="" && fCustomTempCalibParams!="" )
+    { //if fBasePath specified in the ->SetBasePath()
+      if (fDebugLevel>0)  AliInfo(Form("Loading custom recalib OADB from given paths %s and %s",fCustomTempCalibSM.Data(),fCustomTempCalibParams.Data()));
+
+      TFile *fRunDepTemperature       = new TFile(Form("%s",fCustomTempCalibSM.Data()),"read");
+      if (!fRunDepTemperature || fRunDepTemperature->IsZombie()) {
+        AliFatal(Form("SM-wise temperature file %s not found",fCustomTempCalibSM.Data()));
+        return 0;
+      }
+      if (fRunDepTemperature) delete fRunDepTemperature;
+
+      TFile *fTemperatureCalibParam   = new TFile(Form("%s",fCustomTempCalibParams.Data()),"read");
+      if (!fTemperatureCalibParam || fTemperatureCalibParam->IsZombie()) {
+        AliFatal(Form("Temp calibration params file %s not found",fCustomTempCalibParams.Data()));
+        return 0;
+      }
+
+      if (fTemperatureCalibParam) delete fTemperatureCalibParam;
+
+      contTemperature->InitFromFile(Form("%s",fCustomTempCalibSM.Data()),"AliEMCALTemperatureCalibSM");
+      contParams->InitFromFile(Form("%s",fCustomTempCalibParams.Data()),"AliEMCALTemperatureCalibParam");
     }
     else
     { // Else choose the one in the $ALICE_PHYSICS directory

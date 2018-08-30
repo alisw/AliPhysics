@@ -32,7 +32,9 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   TString removeMCGen1        = "",       // name of generator input to be accepted
   TString removeMCGen2        = "",       // name of generator input to be accepted
   TString customBCmap         = "",       // location of custom bad channel map (full path including file)
-  Bool_t useRWTempCalibRun2   = kFALSE    // switch for usage of temperature calib in run2
+  Bool_t useRWTempCalibRun2   = kFALSE,   // switch for usage of temperature calib in run2
+  TString customSMtemps       = "",       // location of custom SM-wise temperature OADB file (full path including file)
+  TString customTempParams    = ""        // location of custom temperature calibration parameters OADB file (full path including file)
 ) 
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -96,7 +98,8 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
     EMCALSupply->SetCustomBC(customBCmap);
   if (useRWTempCalibRun2)
     EMCALSupply->SwitchUseRunDepTempCalibRun2(useRWTempCalibRun2);
-
+  if(customSMtemps!="" && customTempParams!="")
+    EMCALSupply->SetCustomTimeCalibration(customSMtemps,customTempParams);
   if (evhand->InheritsFrom("AliESDInputHandler")) {
     #ifdef __CLING__
         AliTender* alitender = dynamic_cast<AliTender *>(mgr->GetTopTasks()->FindObject("AliTender"));
