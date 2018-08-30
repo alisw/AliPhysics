@@ -18,12 +18,10 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include <limits.h>
-#include <sys/ipc.h>
+//#include <sys/ipc.h>
 #include <sys/shm.h>
 #include "AliHLTHOMERData.h"
 #include <TObject.h>
-
-
 
 /**
  * @class AliHLTMonitoringReader
