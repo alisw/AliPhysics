@@ -52,7 +52,7 @@
 #include "AliStack.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliVertexingHFUtils.h"
-
+#include "AliNormalizationCounter.h"
 #include "AliAnalysisTaskSEDmesonsFilterCJ.h"
 
 ClassImp(AliAnalysisTaskSEDmesonsFilterCJ)
@@ -83,6 +83,7 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ() :
   fKeepOnlyDfromB(kFALSE),
   fAodEvent(0),
   fMCHeader(0),
+  fCounter(0),
   fRan(0),
   fArrayDStartoD0pi(0),
   fMCarray(0),
@@ -159,6 +160,7 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
   fKeepOnlyDfromB(kFALSE),
   fAodEvent(0),
   fMCHeader(0),
+  fCounter(0),
   fRan(0),
   fArrayDStartoD0pi(0),
   fMCarray(0),
@@ -256,6 +258,7 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
   DefineOutput(5, TClonesArray::Class()); //array of candidates and event tracks
   DefineOutput(6, TClonesArray::Class()); //array of SB candidates and event tracks
   DefineOutput(7, TClonesArray::Class()); //array of MC D and event MC particles
+  DefineOutput(8, AliNormalizationCounter::Class()); // normalization counte; // normalization counter
 }
 
 //_______________________________________________________________________________
@@ -293,6 +296,12 @@ AliAnalysisTaskSEDmesonsFilterCJ::~AliAnalysisTaskSEDmesonsFilterCJ()
     delete fCombinedDmesonsBkg;
     fCombinedDmesonsBkg = 0;
   }
+
+  if (fCounter){
+    delete fCounter;
+    fCounter=0;
+  }
+
 }
 
 //_______________________________________________________________________________
@@ -383,12 +392,16 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserCreateOutputObjects()
   fMCCombinedDmesons->SetOwner();
   fMCCombinedDmesons->SetName(GetOutputSlot(7)->GetContainer()->GetName());
 
+  fCounter = new AliNormalizationCounter("NormalizationCounter");
+  fCounter->Init();
+
   PostData(1, fOutput);
   PostData(3, fCandidateArray);
   PostData(4, fSideBandArray);
   PostData(5, fCombinedDmesons);
   PostData(6, fCombinedDmesonsBkg);
   PostData(7, fMCCombinedDmesons);
+  PostData(8, fCounter);
 
   Info("UserCreateOutputObjects","Data posted for task %s", GetName());
 }
@@ -501,6 +514,7 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::Run()
   AliDebug(2, "TClonesArray cleared");
 
   fHistStat->Fill(0);
+  fCounter->StoreEvent(fAodEvent,fCuts,fUseMCInfo);
 
   // fix for temporary bug in ESDfilter
   // the AODs with null vertex pointer didn't pass the PhysSel
@@ -730,6 +744,7 @@ else {
   PostData(5, fCombinedDmesons);
   PostData(6, fCombinedDmesonsBkg);
   PostData(7, fMCCombinedDmesons);
+  PostData(8, fCounter);
 
   AliDebug(2, "Exiting method");
 
