@@ -34,6 +34,9 @@ fNeventsProcessed(0),
 fNeventsPassed(0),
 fPicoEvent(nullptr),
 fPerformSharedDaughterCut(kFALSE),
+fMinSizePart1Collection(1),
+fMinSizePart2Collection(1),
+fMinSizePart3Collection(1),
 fDoEventMixing(false),
 fCollection1type(AliFemtoTrio::kUnknown),
 fCollection2type(AliFemtoTrio::kUnknown),
@@ -104,9 +107,9 @@ void AliFemtoTrioAnalysis::ProcessEvent(const AliFemtoEvent* currentEvent)
       FillHbtParticleCollection(fSecondParticleCut, currentEvent,collection2,fPerformSharedDaughterCut);
       FillHbtParticleCollection(fThirdParticleCut, currentEvent,collection3,fPerformSharedDaughterCut);
 
-      coll_1_size_passes = (collection1->size() >= fMinSizePartCollection);
-      coll_2_size_passes = (collection2->size() >= fMinSizePartCollection);
-      coll_3_size_passes = (collection3->size() >= fMinSizePartCollection);
+      coll_1_size_passes = (collection1->size() >= fMinSizePart1Collection);
+      coll_2_size_passes = (collection2->size() >= fMinSizePart2Collection);
+      coll_3_size_passes = (collection3->size() >= fMinSizePart3Collection);
 
       fEventCut->FillCutMonitor(collection1, collection2);
     }
@@ -116,8 +119,8 @@ void AliFemtoTrioAnalysis::ProcessEvent(const AliFemtoEvent* currentEvent)
       FillHbtParticleCollection(fSecondParticleCut, currentEvent,collection2,fPerformSharedDaughterCut);
       FillHbtParticleCollection(fSecondParticleCut, currentEvent,collection3,fPerformSharedDaughterCut);
 
-      coll_1_size_passes = (collection1->size() >= fMinSizePartCollection);
-      coll_2_size_passes = (collection2->size() >= fMinSizePartCollection);
+      coll_1_size_passes = (collection1->size() >= fMinSizePart1Collection);
+      coll_2_size_passes = (collection2->size() >= fMinSizePart2Collection);
       coll_3_size_passes = kTRUE;
 
       fEventCut->FillCutMonitor(collection1, collection2);
@@ -128,7 +131,7 @@ void AliFemtoTrioAnalysis::ProcessEvent(const AliFemtoEvent* currentEvent)
       FillHbtParticleCollection(fFirstParticleCut, currentEvent,collection2,fPerformSharedDaughterCut);
       FillHbtParticleCollection(fFirstParticleCut, currentEvent,collection3,fPerformSharedDaughterCut);
 
-      coll_1_size_passes = (collection1->size() >= fMinSizePartCollection);
+      coll_1_size_passes = (collection1->size() >= fMinSizePart1Collection);
       coll_2_size_passes = kTRUE;
       coll_3_size_passes = kTRUE;
 
@@ -384,6 +387,14 @@ void AliFemtoTrioAnalysis::SetThirdParticleCut(AliFemtoParticleCut* cut){fThirdP
 void AliFemtoTrioAnalysis::SetCollection1type(AliFemtoTrio::EPart type){fCollection1type=type;}
 void AliFemtoTrioAnalysis::SetCollection2type(AliFemtoTrio::EPart type){fCollection2type=type;}
 void AliFemtoTrioAnalysis::SetCollection3type(AliFemtoTrio::EPart type){fCollection3type=type;}
+
+void AliFemtoTrioAnalysis::SetMinSizePart1Collection(unsigned int minSize)
+{ fMinSizePart1Collection = minSize; }
+void AliFemtoTrioAnalysis::SetMinSizePart2Collection(unsigned int minSize)
+{ fMinSizePart2Collection = minSize; }
+void AliFemtoTrioAnalysis::SetMinSizePart3Collection(unsigned int minSize)
+{ fMinSizePart3Collection = minSize; }
+
 
 void AliFemtoTrioAnalysis::SetDoEventMixing(bool mix){fDoEventMixing = mix;}
 

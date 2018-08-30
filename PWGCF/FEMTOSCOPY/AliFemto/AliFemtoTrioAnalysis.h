@@ -42,6 +42,10 @@ public:
   void SetCollection2type(AliFemtoTrio::EPart type);
   void SetCollection3type(AliFemtoTrio::EPart type);
   
+  void SetMinSizePart1Collection(unsigned int minSize);
+  void SetMinSizePart2Collection(unsigned int minSize);
+  void SetMinSizePart3Collection(unsigned int minSize);
+  
   void SetDoEventMixing(bool mix);
   
   void AddParticles(AliFemtoParticleCollection *collection1,
@@ -79,7 +83,10 @@ protected:
   
   AliFemtoPicoEvent *fMixingBuffer[3];        ///< mixing buffer
   Bool_t fPerformSharedDaughterCut;
-  
+  unsigned int fMinSizePart1Collection;
+  unsigned int fMinSizePart2Collection;
+  unsigned int fMinSizePart3Collection;///< Don't use event if it has fewer than this many particles passing ParticleCuts, for each collection separately, default 1
+    
 private:
   bool fDoEventMixing;
   
