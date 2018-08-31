@@ -318,8 +318,9 @@ Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
           Float_t offset  = 0;
           slope           = hSlopeParam->GetBinContent(absID+1);
           offset          = hA0Param->GetBinContent(absID+1);
+          // Correction is the inverse of the calculated factor
           if(slope || offset)
-            factor = offset + (slope * temperature) ; // correction dependent on T
+            factor = 1 / (offset + (slope * temperature) ); // correction dependent on T
           fRecoUtils->SetEMCALChannelRecalibrationFactor(ism,icol,irow,factor);
         } // columns
       } // rows
