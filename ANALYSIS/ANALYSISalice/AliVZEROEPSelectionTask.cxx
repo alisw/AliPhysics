@@ -13,15 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//*****************************************************
-//   Class AliVZEROEPSelectionTask
-//   author: Cvetan Cheshkov
-//   30/01/2012
-//   This analysis task reads the OADB and
-//   provides the parameters needed to flatten
-//   the VZERO event plane in AliEventplane
-//*****************************************************
-
 #include "AliVZEROEPSelectionTask.h"
 
 #include <TList.h>
@@ -61,8 +52,9 @@ AliVZEROEPSelectionTask::AliVZEROEPSelectionTask(const char *name):
   fUseVZEROCentrality(kFALSE),
   fVZEROEPContainer(0)
 {
-  // Default constructor
-  // Initialize pointers
+  /// Default constructor
+  /// Initialize pointers
+
   AliInfo("Event Plane Selection enabled.");
   for(Int_t i = 0; i < 11; ++i) fX2In[i] = fY2In[i] = fX2Y2In[i] = fCos8PsiIn[i] = NULL;
 }
@@ -70,8 +62,9 @@ AliVZEROEPSelectionTask::AliVZEROEPSelectionTask(const char *name):
 //________________________________________________________________________
 AliVZEROEPSelectionTask::~AliVZEROEPSelectionTask()
 {
-  // Destructor
-  // ...
+  /// Destructor
+  /// ...
+
   if (fUserParams) {
     for(Int_t i = 0; i < 11; ++i) {
       delete fX2In[i];
@@ -93,9 +86,9 @@ AliVZEROEPSelectionTask::~AliVZEROEPSelectionTask()
 //________________________________________________________________________
 void AliVZEROEPSelectionTask::UserCreateOutputObjects()
 {  
-  // Create the output containers (none in this case)
-  // Open the OADB file
-  
+  /// Create the output containers (none in this case)
+  /// Open the OADB file
+
   if(!fUserParams) {
     TString oadbFileName = Form("%s/COMMON/EVENTPLANE/data/vzero.root", AliAnalysisManager::GetOADBPath());
     TFile *fOADB = TFile::Open(oadbFileName); 
@@ -113,9 +106,9 @@ void AliVZEROEPSelectionTask::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliVZEROEPSelectionTask::UserExec(Option_t */*option*/)
 { 
-  // Execute analysis for current event:
-  // Fill the flatenning parameters in
-  // AliEventplane object
+  /// Execute analysis for current event:
+  /// Fill the flatenning parameters in
+  /// AliEventplane object
 
   AliVEvent* event = InputEvent();
   if (!(fRunNumber == event->GetRunNumber())) {
@@ -132,16 +125,18 @@ void AliVZEROEPSelectionTask::UserExec(Option_t */*option*/)
 //________________________________________________________________________
 void AliVZEROEPSelectionTask::Terminate(Option_t */*option*/)
 {
-  // Terminate analysis
-  // Nothing here
+  /// Terminate analysis
+  /// Nothing here
+
 }
 
 //________________________________________________________________________
 void AliVZEROEPSelectionTask::SetEventplaneParams(AliEventplane *esdEP,Float_t percentile)
 {
-  // Read the OADB histograms and
-  // prepare parameters used in order to
-  // flatten the event-plane
+  /// Read the OADB histograms and
+  /// prepare parameters used in order to
+  /// flatten the event-plane
+
   if(!esdEP)
     AliFatal("No event plane received");
 
@@ -205,8 +200,8 @@ void AliVZEROEPSelectionTask::SetUserParams(const char* inFileName, const char* 
 //__________________________________________________________________________
 void AliVZEROEPSelectionTask::SetHistograms(TList *list)
 {
-  // Set the flatenning parameters
-  // histograms from a given list
+  /// Set the flatenning parameters
+  /// histograms from a given list
 
   for(Int_t i = 0; i < 11; ++i) {
     if (fX2In[i]) delete fX2In[i];

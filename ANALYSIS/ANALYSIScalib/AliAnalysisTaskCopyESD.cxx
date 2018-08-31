@@ -13,15 +13,6 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-/* $Id$ */
-
-/////////////////////////////////////////////////////////////////////////
-//
-// Task to Copy ESDs
-//
-////////////////////////////////////////////////////////////////////////
-
-
 #include <TTree.h>
 
 #include "AliAnalysisTaskFilter.h"
@@ -50,20 +41,23 @@ AliAnalysisTaskCopyESD::AliAnalysisTaskCopyESD(const char* name):
 	fESDEvent(0x0),
 	fESDfriend(0x0)
 {
-	// Constructor
+ /// Constructor
+
 }
 
 //-------------------------------------------------------------------------------
 void AliAnalysisTaskCopyESD::UserCreateOutputObjects()
 {
-	// Create the output container
+ /// Create the output container
+
 	AliInfo("In UserCreateOuptputObject");
 }
 
 //-------------------------------------------------------------------------------
 void AliAnalysisTaskCopyESD::Init()
 {
-	// Initialization
+ /// Initialization
+
 	if (fDebug > 1) AliInfo("Init() \n");
 }
 
@@ -71,9 +65,8 @@ void AliAnalysisTaskCopyESD::Init()
 //-------------------------------------------------------------------------------
 void AliAnalysisTaskCopyESD::UserExec(Option_t */*option*/)
 {
-	// Execute analysis for current event
-	//
-	
+ /// Execute analysis for current event
+
 	AliInfo("Copying event");	
 	AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
 	fESDEvent = ESDEvent(); // get the output ESD
@@ -90,8 +83,8 @@ void AliAnalysisTaskCopyESD::UserExec(Option_t */*option*/)
 //-------------------------------------------------------------------------------
 void AliAnalysisTaskCopyESD::Terminate(Option_t */*option*/)
 {
-	// Terminate analysis
-	//
+ /// Terminate analysis
+
 	if (fDebug > 1) printf("AnalysisCopyESD: Terminate() \n");
 }
 

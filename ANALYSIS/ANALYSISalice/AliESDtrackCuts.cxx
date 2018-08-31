@@ -32,7 +32,8 @@
 #include <TF1.h>
 #include <TBits.h>
 
-//____________________________________________________________________
+/// \file AliESDtrackCuts.cxx
+
 ClassImp(AliESDtrackCuts)
 
 // Cut names
@@ -160,9 +161,7 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) :
   fhCutStatistics(0),
   fhCutCorrelation(0)
 {
-  //
-  // constructor
-  //
+  /// constructor
 
   Init();
 
@@ -282,18 +281,14 @@ AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) :
   fhCutStatistics(0),
   fhCutCorrelation(0)
 {
-  //
-  // copy constructor
-  //
+  /// copy constructor
 
   ((AliESDtrackCuts &) c).Copy(*this);
 }
 
 AliESDtrackCuts::~AliESDtrackCuts()
 {
-  //
-  // destructor
-  //
+  /// destructor
 
   for (Int_t i=0; i<2; i++) {
 
@@ -381,9 +376,7 @@ AliESDtrackCuts::~AliESDtrackCuts()
 
 void AliESDtrackCuts::Init()
 {
-  //
-  // sets everything to zero
-  //
+  /// sets everything to zero
 
   fCutMinNClusterTPC = 0;
   fCutMinNClusterITS = 0;
@@ -501,9 +494,7 @@ void AliESDtrackCuts::Init()
 //_____________________________________________________________________________
 AliESDtrackCuts &AliESDtrackCuts::operator=(const AliESDtrackCuts &c)
 {
-  //
-  // Assignment operator
-  //
+  /// Assignment operator
 
   if (this != &c) ((AliESDtrackCuts &) c).Copy(*this);
   return *this;
@@ -512,9 +503,7 @@ AliESDtrackCuts &AliESDtrackCuts::operator=(const AliESDtrackCuts &c)
 //_____________________________________________________________________________
 void AliESDtrackCuts::Copy(TObject &c) const
 {
-  //
-  // Copy function
-  //
+  /// Copy function
 
   AliESDtrackCuts& target = (AliESDtrackCuts &) c;
 
@@ -651,8 +640,9 @@ void AliESDtrackCuts::Copy(TObject &c) const
 
 //_____________________________________________________________________________
 Long64_t AliESDtrackCuts::Merge(TCollection* list) {
-  // Merge a list of AliESDtrackCuts objects with this (needed for PROOF)
-  // Returns the number of merged objects (including this)
+  /// Merge a list of AliESDtrackCuts objects with this (needed for PROOF)
+  /// Returns the number of merged objects (including this)
+
   if (!list)
     return 0;
   if (list->IsEmpty())
@@ -732,9 +722,7 @@ Bool_t AliESDtrackCuts::IsSelected(TObject *o) {
 
 void AliESDtrackCuts::SetMinNClustersTPCPtDep(TFormula *f1, Float_t ptmax)
 {
-  //
-  // Sets the pT dependent NClustersTPC cut
-  //
+  /// Sets the pT dependent NClustersTPC cut
 
   if(f1){
     delete f1CutMinNClustersTPCPtDep;
@@ -744,15 +732,14 @@ void AliESDtrackCuts::SetMinNClustersTPCPtDep(TFormula *f1, Float_t ptmax)
 }
 
 void AliESDtrackCuts::SetCutGeoNcrNcl(Float_t deadZoneWidth,Float_t cutGeoNcrNclLength, Float_t cutGeoNcrNclGeom1Pt, Float_t cutGeoNcrNclFractionNcr,  Float_t cutGeoNcrNclFractionNcl){
-  //
-  // Set combination of the TPC geometrical cut, cut on number of crossed rows and cut on the clusters
-  // The goal of cut is to avoid of the dead zone regions
-  //   - pointer to WIKI to put here
-  //   - JIRA discussion and links to presenttions -  https://alice.its.cern.ch/jira/browse/ATO-233
-  // Cut to be used for measurement where the homogenous coverage are not required
-  // In case good momentum resolution and description of the matching efficiency needed, also for analysis reuiring homogenous phi coverage - this cut to be condered
-  // Note this is repalcemnt of single cut
-  //
+  /// Set combination of the TPC geometrical cut, cut on number of crossed rows and cut on the clusters
+  /// The goal of cut is to avoid of the dead zone regions
+  ///   - pointer to WIKI to put here
+  ///   - JIRA discussion and links to presenttions -  https://alice.its.cern.ch/jira/browse/ATO-233
+  /// Cut to be used for measurement where the homogenous coverage are not required
+  /// In case good momentum resolution and description of the matching efficiency needed, also for analysis reuiring homogenous phi coverage - this cut to be condered
+  /// Note this is repalcemnt of single cut
+
   fDeadZoneWidth=deadZoneWidth;
   fCutGeoNcrNclLength=cutGeoNcrNclLength;
   fCutGeoNcrNclGeom1Pt=cutGeoNcrNclGeom1Pt;
@@ -766,7 +753,7 @@ void AliESDtrackCuts::SetCutGeoNcrNcl(Float_t deadZoneWidth,Float_t cutGeoNcrNcl
 //____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardTPCOnlyTrackCuts()
 {
-  // creates an AliESDtrackCuts object and fills it with standard (pre data-taking) values for TPC-only cuts
+  /// creates an AliESDtrackCuts object and fills it with standard (pre data-taking) values for TPC-only cuts
 
   AliInfoClass("Creating track cuts for TPC-only.");
 
@@ -786,7 +773,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardTPCOnlyTrackCuts()
 //____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPrimaries)
 {
-  // creates an AliESDtrackCuts object and fills it with standard values for ITS-TPC cuts for pp 2009 data
+  /// creates an AliESDtrackCuts object and fills it with standard values for ITS-TPC cuts for pp 2009 data
 
   AliInfoClass("Creating track cuts for ITS+TPC (2009 definition).");
 
@@ -820,10 +807,10 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPrima
 //____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(Bool_t selPrimaries, Int_t clusterCut)
 {
-  // creates an AliESDtrackCuts object and fills it with standard values for ITS-TPC cuts for pp 2011 data
-  // if clusterCut = 1, the cut on the number of clusters is replaced by
-  // a cut on the number of crossed rows and on the ration crossed
-  // rows/findable clusters
+  /// creates an AliESDtrackCuts object and fills it with standard values for ITS-TPC cuts for pp 2011 data
+  /// if clusterCut = 1, the cut on the number of clusters is replaced by
+  /// a cut on the number of crossed rows and on the ration crossed
+  /// rows/findable clusters
 
   AliInfoClass("Creating track cuts for ITS+TPC (2011 definition).");
 
@@ -862,12 +849,11 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(Bool_t selPrima
 
 //____________________________________________________________________
 AliESDtrackCuts*  AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(Bool_t selPrimaries/*=kTRUE*/, Int_t clusterCut/*=1*/, Bool_t cutAcceptanceEdges/*=kTRUE*/, Bool_t removeDistortedRegions/*=kFALSE*/) {
-  //
-  // creates an AliESDtrackCuts object and fills it with standard values for ITS-TPC cuts for PbPb 2015 data
-  // if clusterCut = 1, the cut on the number of clusters is replaced by
-  // a cut on the number of crossed rows and on the ration crossed
-  // rows/findable clusters
-  //
+  /// creates an AliESDtrackCuts object and fills it with standard values for ITS-TPC cuts for PbPb 2015 data
+  /// if clusterCut = 1, the cut on the number of clusters is replaced by
+  /// a cut on the number of crossed rows and on the ration crossed
+  /// rows/findable clusters
+
   AliInfoClass("Creating track cuts for ITS+TPC (2015 Pb-Pb run definition).");
   AliWarningClass("THIS TRACK-CUT SET HAS NOT YET BEEN VALIDATED AND IS NOT YET FROZEN. TO BE USED FOR TESTING PURPOSES ONLY.");
   //
@@ -914,10 +900,10 @@ AliESDtrackCuts*  AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(Bool_t sel
 //____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(Bool_t selPrimaries,Int_t clusterCut)
 {
-  // creates an AliESDtrackCuts object and fills it with standard values for ITS-TPC cuts for pp 2010 data
-  // if clusterCut = 1, the cut on the number of clusters is replaced by
-  // a cut on the number of crossed rows and on the ration crossed
-  // rows/findable clusters
+  /// creates an AliESDtrackCuts object and fills it with standard values for ITS-TPC cuts for pp 2010 data
+  /// if clusterCut = 1, the cut on the number of clusters is replaced by
+  /// a cut on the number of crossed rows and on the ration crossed
+  /// rows/findable clusters
 
   AliInfoClass("Creating track cuts for ITS+TPC (2010 definition).");
 
@@ -957,7 +943,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(Bool_t selPrima
 //____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSPureSATrackCuts2009(Bool_t selPrimaries, Bool_t useForPid)
 {
-  // creates an AliESDtrackCuts object and fills it with standard values for ITS pure SA tracks
+  /// creates an AliESDtrackCuts object and fills it with standard values for ITS pure SA tracks
 
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
   esdTrackCuts->SetRequireITSPureStandAlone(kTRUE);
@@ -980,7 +966,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSPureSATrackCuts2009(Bool_t selPr
 //____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(Bool_t selPrimaries, Bool_t useForPid)
 {
-  // creates an AliESDtrackCuts object and fills it with standard values for ITS pure SA tracks - pp 2010
+  /// creates an AliESDtrackCuts object and fills it with standard values for ITS pure SA tracks - pp 2010
 
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
   esdTrackCuts->SetRequireITSPureStandAlone(kTRUE);
@@ -1003,7 +989,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(Bool_t selPr
 //____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSSATrackCuts2009(Bool_t selPrimaries, Bool_t useForPid)
 {
-  // creates an AliESDtrackCuts object and fills it with standard values for ITS pure SA tracks
+  /// creates an AliESDtrackCuts object and fills it with standard values for ITS pure SA tracks
 
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
   esdTrackCuts->SetRequireITSStandAlone(kTRUE);
@@ -1027,7 +1013,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSSATrackCuts2009(Bool_t selPrimar
 //____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSSATrackCuts2010(Bool_t selPrimaries, Bool_t useForPid)
 {
-  // creates an AliESDtrackCuts object and fills it with standard values for ITS pure SA tracks --pp 2010
+  /// creates an AliESDtrackCuts object and fills it with standard values for ITS pure SA tracks --pp 2010
 
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
   esdTrackCuts->SetRequireITSStandAlone(kTRUE);
@@ -1051,7 +1037,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSSATrackCuts2010(Bool_t selPrimar
 //____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSSATrackCutsPbPb2010(Bool_t selPrimaries, Bool_t useForPid)
 {
-  // creates an AliESDtrackCuts object and fills it with standard values for ITS pure SA tracks -- PbPb 2010
+  /// creates an AliESDtrackCuts object and fills it with standard values for ITS pure SA tracks -- PbPb 2010
 
   AliESDtrackCuts* esdTrackCuts = GetStandardITSSATrackCuts2010(selPrimaries, useForPid);
   esdTrackCuts->SetMaxNOfMissingITSPoints(1);
@@ -1062,7 +1048,8 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSSATrackCutsPbPb2010(Bool_t selPr
 
 AliESDtrackCuts* AliESDtrackCuts::GetStandardV0DaughterCuts()
 {
-  // creates a AliESDtrackCuts object and fills it with standard cuts for V0 daughters
+  /// creates a AliESDtrackCuts object and fills it with standard cuts for V0 daughters
+
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
   esdTrackCuts->SetMinNClustersTPC(70);
@@ -1072,15 +1059,14 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardV0DaughterCuts()
 
 //____________________________________________________________________
 Bool_t  AliESDtrackCuts::IsTrackInDistortedTpcRegion(const AliESDtrack * esdTrack) {
-  //
-  // Returns kTRUE if the track crosses on of the regions in the TPC 
-  // in which the field is distorted. For the time being, this is a 
-  // purely geometric cut which will be further refined in the future
-  // based on NDregression analysis.
-  // 
-  // For the time being, the cuts are hardwired, but will be probably 
-  // moved to the OADB.
-  //
+  /// Returns kTRUE if the track crosses on of the regions in the TPC
+  /// in which the field is distorted. For the time being, this is a
+  /// purely geometric cut which will be further refined in the future
+  /// based on NDregression analysis.
+  ///
+  /// For the time being, the cuts are hardwired, but will be probably
+  /// moved to the OADB.
+
   if (!esdTrack->GetInnerParam()) return kFALSE; // non-tpc tracks are not affected
   //
   Double_t eta = esdTrack->Eta(); 
@@ -1103,11 +1089,11 @@ Bool_t  AliESDtrackCuts::IsTrackInDistortedTpcRegion(const AliESDtrack * esdTrac
 //____________________________________________________________________
 Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, Bool_t tpcOnly)
 {
-  // Gets reference multiplicity following the standard cuts and a defined fiducial volume
-  // tpcOnly = kTRUE -> consider TPC-only tracks
-  //         = kFALSE -> consider global tracks
-  //
-  // DEPRECATED Use GetReferenceMultiplicity with the enum as second argument instead
+  /// Gets reference multiplicity following the standard cuts and a defined fiducial volume
+  /// tpcOnly = kTRUE -> consider TPC-only tracks
+  /// = kFALSE -> consider global tracks
+  ///
+  /// DEPRECATED Use GetReferenceMultiplicity with the enum as second argument instead
 
   if (!tpcOnly)
   {
@@ -1131,7 +1117,7 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, Bool_t t
 //____________________________________________________________________
 Float_t AliESDtrackCuts::GetSigmaToVertex(const AliESDtrack* const esdTrack)
 {
-  // Calculates the number of sigma to the vertex.
+  /// Calculates the number of sigma to the vertex.
 
   Float_t b[2];
   Float_t bRes[2];
@@ -1175,9 +1161,9 @@ Float_t AliESDtrackCuts::GetSigmaToVertex(const AliESDtrack* const esdTrack)
 //____________________________________________________________________
 Float_t AliESDtrackCuts::GetSigmaToVertexVTrack(const AliVTrack* const vTrack)
 {
-  // Calculates the number of sigma to the vertex.
-  // This method utilizes AliVTracks, so it can be used
-  // for ESDs or flat ESDs.
+  /// Calculates the number of sigma to the vertex.
+  /// This method utilizes AliVTracks, so it can be used
+  /// for ESDs or flat ESDs.
 
   Float_t b[2] = {0.,0.};
   Float_t bRes[2] = {0.,0.};
@@ -1220,7 +1206,7 @@ Float_t AliESDtrackCuts::GetSigmaToVertexVTrack(const AliVTrack* const vTrack)
 
 void AliESDtrackCuts::EnableNeededBranches(TTree* tree)
 {
-  // enables the branches needed by AcceptTrack, for a list see comment of AcceptTrack
+  /// enables the branches needed by AcceptTrack, for a list see comment of AcceptTrack
 
   tree->SetBranchStatus("fTracks.fFlags", 1);
   tree->SetBranchStatus("fTracks.fITSncls", 1);
@@ -1241,12 +1227,11 @@ void AliESDtrackCuts::EnableNeededBranches(TTree* tree)
 //____________________________________________________________________
 Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
 {
-  //
-  // figure out if the tracks survives all the track cuts defined
-  //
-  // the different quality parameter and kinematic values are first
-  // retrieved from the track. then it is found out what cuts the
-  // track did not survive and finally the cuts are imposed.
+  /// figure out if the tracks survives all the track cuts defined
+  ///
+  /// the different quality parameter and kinematic values are first
+  /// retrieved from the track. then it is found out what cuts the
+  /// track did not survive and finally the cuts are imposed.
 
   // this function needs the following branches:
   // fTracks.fFlags
@@ -1700,19 +1685,18 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
 //____________________________________________________________________
 Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
 {
-  //
-  // figure out if the tracks survives all the track cuts defined
-  // Wrapper function designed to handle either AliESDtrack or
-  // AliFlatESDTrack objects using the AliVTrack interface as an
-  // intermediary. AliESDtracks will be shunted to AcceptTrack,
-  // while AliFlatESDtracks will continue in AcceptVTrack using
-  // a smaller subset of cuts (because many of the cuts can't be
-  // tested using the limited members contained within
-  // AliFlatESDtrack)
-  //
-  // the different quality parameter and kinematic values are first
-  // retrieved from the track. then it is found out what cuts the
-  // track did not survive and finally the cuts are imposed.
+  /// figure out if the tracks survives all the track cuts defined
+  /// Wrapper function designed to handle either AliESDtrack or
+  /// AliFlatESDTrack objects using the AliVTrack interface as an
+  /// intermediary. AliESDtracks will be shunted to AcceptTrack,
+  /// while AliFlatESDtracks will continue in AcceptVTrack using
+  /// a smaller subset of cuts (because many of the cuts can't be
+  /// tested using the limited members contained within
+  /// AliFlatESDtrack)
+  ///
+  /// the different quality parameter and kinematic values are first
+  /// retrieved from the track. then it is found out what cuts the
+  /// track did not survive and finally the cuts are imposed.
 
   // this function needs the following branches:
   // fTracks.fFlags
@@ -2204,7 +2188,7 @@ Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
 //____________________________________________________________________
 Bool_t AliESDtrackCuts::CheckITSClusterRequirement(ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2)
 {
-  // checks if the cluster requirement is fullfilled (in this case: return kTRUE)
+  /// checks if the cluster requirement is fullfilled (in this case: return kTRUE)
 
   switch (req)
   {
@@ -2224,15 +2208,15 @@ Bool_t AliESDtrackCuts::CheckITSClusterRequirement(ITSClusterRequirement req, Bo
 //____________________________________________________________________
 AliESDtrack* AliESDtrackCuts::GetTPCOnlyTrack(const AliESDEvent* esd, Int_t iTrack)
 {
-  // Utility function to create a TPC only track from the given esd track
-  //
-  // IMPORTANT: The track has to be deleted by the user
-  //
-  // NB. most of the functionality to get a TPC only track from an ESD track is in AliESDtrack, where it should be
-  // there are only missing propagations here that are needed for old data
-  // this function will therefore become obsolete
-  //
-  // adapted from code provided by CKB
+  /// Utility function to create a TPC only track from the given esd track
+  ///
+  /// IMPORTANT: The track has to be deleted by the user
+  ///
+  /// NB. most of the functionality to get a TPC only track from an ESD track is in AliESDtrack, where it should be
+  /// there are only missing propagations here that are needed for old data
+  /// this function will therefore become obsolete
+  ///
+  /// adapted from code provided by CKB
 
   if (!esd->GetPrimaryVertexTPC())
     return 0; // No TPC vertex no TPC tracks
@@ -2259,15 +2243,15 @@ AliESDtrack* AliESDtrackCuts::GetTPCOnlyTrack(const AliESDEvent* esd, Int_t iTra
 //____________________________________________________________________
 AliESDtrack* AliESDtrackCuts::GetTPCOnlyTrackFromVEvent(const AliVEvent* vEvent, Int_t iTrack)
 {
-  // Utility function to create a TPC only track from the given track in a VEvent.  This will return 0 if the VEvent isnt an ESDEvent
-  //
-  // IMPORTANT: The track has to be deleted by the user
-  //
-  // NB. most of the functionality to get a TPC only track from an ESD track is in AliESDtrack, where it should be
-  // there are only missing propagations here that are needed for old data
-  // this function will therefore become obsolete
-  //
-  // adapted from code provided by CKB
+  /// Utility function to create a TPC only track from the given track in a VEvent.  This will return 0 if the VEvent isnt an ESDEvent
+  ///
+  /// IMPORTANT: The track has to be deleted by the user
+  ///
+  /// NB. most of the functionality to get a TPC only track from an ESD track is in AliESDtrack, where it should be
+  /// there are only missing propagations here that are needed for old data
+  /// this function will therefore become obsolete
+  ///
+  /// adapted from code provided by CKB
 
   if (!vEvent->GetPrimaryVertexTPC())
     return 0; // No TPC vertex no TPC tracks
@@ -2296,12 +2280,11 @@ AliESDtrack* AliESDtrackCuts::GetTPCOnlyTrackFromVEvent(const AliVEvent* vEvent,
 //____________________________________________________________________
 TObjArray* AliESDtrackCuts::GetAcceptedTracks(const AliESDEvent* esd, Bool_t bTPC)
 {
-  //
-  // returns an array of all tracks that pass the cuts
-  // or an array of TPC only tracks (propagated to the TPC vertex during reco)
-  // tracks that pass the cut
-  //
-  // NOTE: List has to be deleted by the user
+  /// returns an array of all tracks that pass the cuts
+  /// or an array of TPC only tracks (propagated to the TPC vertex during reco)
+  /// tracks that pass the cut
+  ///
+  /// NOTE: List has to be deleted by the user
 
   TObjArray* acceptedTracks = new TObjArray();
 
@@ -2335,9 +2318,7 @@ TObjArray* AliESDtrackCuts::GetAcceptedTracks(const AliESDEvent* esd, Bool_t bTP
 //____________________________________________________________________
 Int_t AliESDtrackCuts::CountAcceptedTracks(const AliESDEvent* const esd)
 {
-  //
-  // returns an the number of tracks that pass the cuts
-  //
+  /// returns an the number of tracks that pass the cuts
 
   Int_t count = 0;
 
@@ -2353,9 +2334,7 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(const AliESDEvent* const esd)
 
 //____________________________________________________________________
  void AliESDtrackCuts::DefineHistograms(Int_t color) {
-   //
-   // diagnostics histograms are defined
-   //
+   /// diagnostics histograms are defined
 
    fHistogramsOn=kTRUE;
 
@@ -2483,10 +2462,8 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(const AliESDEvent* const esd)
 //____________________________________________________________________
 Bool_t AliESDtrackCuts::LoadHistograms(const Char_t* dir)
 {
-  //
-  // loads the histograms from a file
-  // if dir is empty a directory with the name of this object is taken (like in SaveHistogram)
-  //
+  /// loads the histograms from a file
+  /// if dir is empty a directory with the name of this object is taken (like in SaveHistogram)
 
   if (!dir)
     dir = GetName();
@@ -2550,9 +2527,7 @@ Bool_t AliESDtrackCuts::LoadHistograms(const Char_t* dir)
 
 //____________________________________________________________________
 void AliESDtrackCuts::SaveHistograms(const Char_t* dir) {
-  //
-  // saves the histograms in a directory (dir)
-  //
+  /// saves the histograms in a directory (dir)
 
   if (!fHistogramsOn) {
     AliDebug(0, "Histograms not on - cannot save histograms!!!");
@@ -2623,7 +2598,7 @@ void AliESDtrackCuts::SaveHistograms(const Char_t* dir) {
 //____________________________________________________________________
 void AliESDtrackCuts::DrawHistograms()
 {
-  // draws some histograms
+  /// draws some histograms
 
   TCanvas* canvas1 = new TCanvas(Form("%s_1", GetName()), "Track Quality Results1", 800, 800);
   canvas1->Divide(2, 2);
@@ -2755,9 +2730,7 @@ void AliESDtrackCuts::DrawHistograms()
 }
 //--------------------------------------------------------------------------
 void AliESDtrackCuts::SetPtDepDCACuts(Double_t pt) {
-  //
-  // set the pt-dependent DCA cuts
-  //
+  /// set the pt-dependent DCA cuts
 
   if(f1CutMaxDCAToVertexXYPtDep) {
      fCutMaxDCAToVertexXY=f1CutMaxDCAToVertexXYPtDep->Eval(pt);
@@ -2783,9 +2756,8 @@ void AliESDtrackCuts::SetPtDepDCACuts(Double_t pt) {
 
 //--------------------------------------------------------------------------
 Bool_t AliESDtrackCuts::CheckPtDepDCA(TString dist,Bool_t print) const {
-  //
-  // Check the correctness of the string syntax
-  //
+  /// Check the correctness of the string syntax
+
   Bool_t retval=kTRUE;
 
   if(!dist.Contains("pt")) {
@@ -2871,10 +2843,10 @@ Bool_t AliESDtrackCuts::CheckPtDepDCA(TString dist,Bool_t print) const {
 
 AliESDtrackCuts* AliESDtrackCuts::GetMultEstTrackCuts(MultEstTrackCuts cut)
 {
-  // returns the multiplicity estimator track cuts objects to allow for user configuration
-  // upon first call the objects are created
-  //
-  // the cut defined here correspond to GetStandardITSTPCTrackCuts2010 (apart from the one for without SPD)
+  /// returns the multiplicity estimator track cuts objects to allow for user configuration
+  /// upon first call the objects are created
+  ///
+  /// the cut defined here correspond to GetStandardITSTPCTrackCuts2010 (apart from the one for without SPD)
 
   if (!fgMultEstTrackCuts[kMultEstTrackCutGlobal])
   {
@@ -2910,24 +2882,24 @@ AliESDtrackCuts* AliESDtrackCuts::GetMultEstTrackCuts(MultEstTrackCuts cut)
 
 Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstTrackType trackType, Float_t etaRange, Float_t etaCent)
 {
-  // Get multiplicity estimate based on TPC/ITS tracks and tracklets
-  // Adapted for AliESDtrackCuts from a version developed by: Ruben Shahoyan, Anton Alkin, Arvinder Palaha
-  //
-  // Returns a negative value if no reliable estimate can be provided:
-  //   -1 SPD vertex missing
-  //   -2 SPD VertexerZ dispersion too large
-  //   -3 Track vertex missing (not checked for kTracklets)
-  //   -4 Distance between SPD and track vertices too large (not checked for kTracklets)
-  //
-  // WARNING This functions does not cut on the z vtx. Depending on the eta range requested, you need to restrict your z vertex range!
-  //
-  // Strategy for combined estimators
-  //   1. Count global tracks and flag them
-  //   2. Count ITSSA as complementaries for ITSTPC+ or as main tracks
-  //   3. Count the complementary SPD tracklets
-  //
-  // Estimator is calculated for etaCent-etaRange : etaCent+etaRange
-  //
+  /// Get multiplicity estimate based on TPC/ITS tracks and tracklets
+  /// Adapted for AliESDtrackCuts from a version developed by: Ruben Shahoyan, Anton Alkin, Arvinder Palaha
+  ///
+  /// Returns a negative value if no reliable estimate can be provided:
+  ///   -1 SPD vertex missing
+  ///   -2 SPD VertexerZ dispersion too large
+  ///   -3 Track vertex missing (not checked for kTracklets)
+  ///   -4 Distance between SPD and track vertices too large (not checked for kTracklets)
+  ///
+  /// WARNING This functions does not cut on the z vtx. Depending on the eta range requested, you need to restrict your z vertex range!
+  ///
+  /// Strategy for combined estimators
+  ///   1. Count global tracks and flag them
+  ///   2. Count ITSSA as complementaries for ITSTPC+ or as main tracks
+  ///   3. Count the complementary SPD tracklets
+  ///
+  /// Estimator is calculated for etaCent-etaRange : etaCent+etaRange
+
   const AliESDVertex* vertices[2];
   vertices[0] = esd->GetPrimaryVertexSPD();
   vertices[1] = esd->GetPrimaryVertexTracks();
@@ -3137,7 +3109,7 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstT
 //____________________________________________________________________
 void AliESDtrackCuts::SetRequireStandardTOFmatchCuts(){
 
-	// setting the TOF cuts flags (kTOFout = TOF matching distance) to true, to include the selection on the standard TOF matching
+ /// setting the TOF cuts flags (kTOFout = TOF matching distance) to true, to include the selection on the standard TOF matching
 
 	SetRequireTOFout(kTRUE);
 	SetFlagCutTOFdistance(kTRUE);

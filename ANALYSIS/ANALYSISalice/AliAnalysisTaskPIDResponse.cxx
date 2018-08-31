@@ -32,7 +32,8 @@
 
 ClassImp(AliAnalysisTaskPIDResponse)
 
-//______________________________________________________________________________
+/// \file AliAnalysisTaskPIDResponse.cxx
+
 AliAnalysisTaskPIDResponse::AliAnalysisTaskPIDResponse():
 AliAnalysisTaskSE(),
 fIsMC(kFALSE),
@@ -85,26 +86,22 @@ fUseTRDCentralityCorrection(kTRUE),
 fUserDataRecoPass(-1),
 fRandomSeed(0)
 {
-  //
-  // Default constructor
-  //
+  /// Default constructor
+
   DefineInput(0,TChain::Class());
 }
 
 //______________________________________________________________________________
 AliAnalysisTaskPIDResponse::~AliAnalysisTaskPIDResponse()
 {
-  //
-  // Destructor
-  //
+  /// Destructor
+
 }
 
 //______________________________________________________________________________
 void AliAnalysisTaskPIDResponse::UserCreateOutputObjects()
 {
-  //
-  // Create the output QA objects
-  //
+  /// Create the output QA objects
 
   AliLog::SetClassDebugLevel("AliAnalysisTaskPIDResponse",10);
 
@@ -165,8 +162,8 @@ void AliAnalysisTaskPIDResponse::UserCreateOutputObjects()
 //______________________________________________________________________________
 void AliAnalysisTaskPIDResponse::UserExec(Option_t */*option*/)
 {
-  // Setup the PID response functions and fill the QA histograms
-  //
+  /// Setup the PID response functions and fill the QA histograms
+
   AliVEvent *event=InputEvent();
   if (!event) return;
   fRun=event->GetRunNumber();
@@ -200,9 +197,7 @@ void AliAnalysisTaskPIDResponse::UserExec(Option_t */*option*/)
 //______________________________________________________________________________
 void AliAnalysisTaskPIDResponse::SetRecoInfo()
 {
-  //
-  // Set reconstruction information
-  //
+  /// Set reconstruction information
 
   //reset information
   fRecoPass=0;

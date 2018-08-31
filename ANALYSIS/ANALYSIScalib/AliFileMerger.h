@@ -4,13 +4,38 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+/// \class AliFileMerger
+/// \brief AliFileMerger - Utilities for file merging
+///
+/// Utilities for file merging.
+/// Additional functionality on top of the standard TFileMerger:
+///
+/// 1. Possibility to Set the reject/accept list.
+///   1.a)  Only entries selected in accept list are merged. By default all entries are selected
+/// use AddAccept 0 to specify your desired entry
+///   1.b)  Entries selected in reject list are not merged. By default the reject list is empty.
+///
+/// 2. syswatch.log is created diring mergin procedure.
+///   Memeory consumption - for reading and for merging can be monitored
+///
+///  RS: Changed merger to respect the structure of files being merged (directories, collections...)
+///      Additional option: SetNoTrees (default false) to not merge any tree
+///      The code mostly taken from root's hadd.cxx
+///
+/// Usage:
+/// Libraries for all classes to be merged should be loaded before using the class
+///  gSystem->Load("libANALYSIS");
+///  gSystem->Load("libANALYSIScalib");
+///  gSystem->Load("libTPCcalib"); 
+///  TH1::AddDirectory(0);
+///
+/// Example usage starting from the input data list in text file:
+///
+///  AliFileMerger merger;
+///  merger.AddReject("esdFriend");
+///  merger.IterTXT("calib.list","CalibObjects.root",kFALSE);
+/// \author marian.ivanov@cern.ch
 
-//////////////////////////////////////////////////////////////////////////
-//
-//  Utilities for file merging
-//
-//////////////////////////////////////////////////////////////////////////
 
 class TObjString;
 
@@ -49,11 +74,11 @@ protected:
   int OpenNextChunks(const TList* namesList, TList* filesList, Int_t from, Int_t to);
   void CheckTitle(TObject* tgt, TObject* src);
 protected:
-  TObjArray * fRejectMask;  // mask of the objects to be rejected
-  TObjArray * fAcceptMask;    // mask of the objects to be accepted
-  Int_t       fMaxFilesOpen;  // max number of open files
-  Bool_t      fNoTrees;       // do we merge trees
-  Bool_t      fCheckTitle;    // if source obj. title is empty, override it by eventual valid title
+  TObjArray * fRejectMask;  ///< mask of the objects to be rejected
+  TObjArray * fAcceptMask;    ///< mask of the objects to be accepted
+  Int_t       fMaxFilesOpen;  ///< max number of open files
+  Bool_t      fNoTrees;       ///< do we merge trees
+  Bool_t      fCheckTitle;    ///< if source obj. title is empty, override it by eventual valid title
 private:
   AliFileMerger(const AliFileMerger&);
   AliFileMerger& operator=(const AliFileMerger& other);

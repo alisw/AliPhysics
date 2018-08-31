@@ -37,7 +37,6 @@ ClassImp(AliESDpidCuts)
 
 const Int_t AliESDpidCuts::kNcuts = 3;
 
-//_____________________________________________________________________
 AliESDpidCuts::AliESDpidCuts(const Char_t *name, const Char_t *title):
     AliAnalysisCuts(name, title)
   , fPIDresponse(NULL)
@@ -48,10 +47,8 @@ AliESDpidCuts::AliESDpidCuts(const Char_t *name, const Char_t *title):
   , fHcutStatistics(NULL)
   , fHcutCorrelation(NULL)
 {
-  //
-  // Default constructor
-  //
-  
+  /// Default constructor
+
   memset(fCutTPCnSigma, 0, sizeof(Float_t)* AliPID::kSPECIES * 2);
   memset(fCutTOFnSigma, 0, sizeof(Float_t)* AliPID::kSPECIES * 2);
 
@@ -71,9 +68,8 @@ AliESDpidCuts::AliESDpidCuts(const AliESDpidCuts &ref):
   , fHcutStatistics(NULL)
   , fHcutCorrelation(NULL)
 {
-  //
-  // Copy constructor
-  //
+  /// Copy constructor
+
   fPIDresponse = ref.fPIDresponse;
   memcpy(fCutTPCnSigma, ref.fCutTPCnSigma, sizeof(Float_t) * AliPID::kSPECIES * 2);
   memcpy(fCutTOFnSigma, ref.fCutTOFnSigma, sizeof(Float_t) * AliPID::kSPECIES * 2);
@@ -91,9 +87,8 @@ AliESDpidCuts::AliESDpidCuts(const AliESDpidCuts &ref):
 
 //_____________________________________________________________________
 AliESDpidCuts &AliESDpidCuts::operator=(const AliESDpidCuts &ref){
-  //
-  // Assignment operator
-  //
+  /// Assignment operator
+
   if(this != &ref)
     ref.Copy(*this);
   return *this;
@@ -101,9 +96,7 @@ AliESDpidCuts &AliESDpidCuts::operator=(const AliESDpidCuts &ref){
 
 //_____________________________________________________________________
 AliESDpidCuts::~AliESDpidCuts(){
-  //
-  // Destructor
-  //
+  /// Destructor
 
   delete fHcutCorrelation;
   for(Int_t imode = 0; imode < 2; imode++){
@@ -117,9 +110,8 @@ AliESDpidCuts::~AliESDpidCuts(){
 
 //_____________________________________________________________________
 void AliESDpidCuts::Init(){
-  //
-  // Init function, get PID response from the Analysis Manager
-  //
+  /// Init function, get PID response from the Analysis Manager
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(mgr){
     AliInputEventHandler *handler = dynamic_cast<AliInputEventHandler*>(mgr->GetInputEventHandler());
@@ -131,9 +123,8 @@ void AliESDpidCuts::Init(){
 
 //_____________________________________________________________________
 Bool_t AliESDpidCuts::IsSelected(TObject *obj){
-  //
-  // Select Track
-  // 
+  /// Select Track
+
   AliESDtrack * trk = dynamic_cast<AliESDtrack*>(obj);
   if(!trk){
     AliError("Provided object is not AliESDtrack!");
@@ -149,9 +140,8 @@ Bool_t AliESDpidCuts::IsSelected(TObject *obj){
 
 //_____________________________________________________________________
 void AliESDpidCuts::Copy(TObject &c) const {
-  //
-  // Copy function
-  //
+  /// Copy function
+
   AliESDpidCuts &target = dynamic_cast<AliESDpidCuts &>(c);
 
   target.fPIDresponse = fPIDresponse;
@@ -180,9 +170,8 @@ void AliESDpidCuts::Copy(TObject &c) const {
 
 //_____________________________________________________________________
 Long64_t AliESDpidCuts::Merge(TCollection *coll){
-  //
-  // Merge Cut objects
-  //
+  /// Merge Cut objects
+
   if(!coll) return 0;
   if(coll->IsEmpty())   return 1;
   if(!HasHistograms())  return 0;
@@ -212,9 +201,8 @@ Long64_t AliESDpidCuts::Merge(TCollection *coll){
 
 //_____________________________________________________________________
 void AliESDpidCuts::DefineHistograms(Color_t color){
-  //
-  // Swich on QA and create the histograms
-  //
+  /// Swich on QA and create the histograms
+
   SetBit(kHasHistograms, kTRUE);
   fHcutStatistics = new TH1I("fHcutStatistics", "Cut Statistics", kNcuts, 0, kNcuts);
   fHcutStatistics->SetLineColor(color);
@@ -243,9 +231,8 @@ void AliESDpidCuts::DefineHistograms(Color_t color){
 
 //_____________________________________________________________________
 Bool_t AliESDpidCuts::AcceptTrack(const AliESDtrack *track, const AliESDEvent *event){
-  //
-  // Check whether the tracks survived the cuts
-  //
+  /// Check whether the tracks survived the cuts
+
   if(!fPIDresponse){
     Init();
     if (!fPIDresponse)
@@ -328,9 +315,8 @@ Bool_t AliESDpidCuts::AcceptTrack(const AliESDtrack *track, const AliESDEvent *e
 
 //_____________________________________________________________________
 void AliESDpidCuts::SaveHistograms(const Char_t * location){
-  //
-  // Save the histograms to a file
-  //
+  /// Save the histograms to a file
+
   if(!HasHistograms()){
     AliError("Histograms not on - Exiting");
     return;
@@ -363,9 +349,8 @@ void AliESDpidCuts::SaveHistograms(const Char_t * location){
 
 //_____________________________________________________________________
 void AliESDpidCuts::DrawHistograms(){
-  //
-  // Draw the Histograms
-  //
+  /// Draw the Histograms
+
   TCanvas *stat = new TCanvas("cutStat", "Cut Statistics", 640, 480);
   stat->cd();
   fHcutStatistics->SetStats(kFALSE);

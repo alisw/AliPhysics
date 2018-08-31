@@ -1,11 +1,7 @@
-//
-// Class AliMultiInputEventHandler
-//
-// Multi input event handler
-// TODO example
-// author:
-//        Martin Vala (martin.vala@cern.ch)
-//
+/// \class AliMultiInputEventHandler
+/// \brief Class AliMultiInputEventHandler
+/// Multi input event handler
+/// \author Martin Vala (martin.vala@cern.ch)
 
 #ifndef ALIMULTIINPUTEVENTHANDLER_H
 #define ALIMULTIINPUTEVENTHANDLER_H
@@ -48,9 +44,9 @@ public:
 
 protected:
 
-   Int_t                   fBufferSize;    // Size of the buffer
-   TObjArray               fInputHandlers; // buffer of input handlers
-   Option_t               *fAnalysisType;  //! local, proof, grid
+   Int_t                   fBufferSize;    ///< Size of the buffer
+   TObjArray               fInputHandlers; ///< buffer of input handlers
+   Option_t               *fAnalysisType;  //!<! local, proof, grid
 private:
    AliMultiInputEventHandler(const AliMultiInputEventHandler& handler);
    AliMultiInputEventHandler &operator=(const AliMultiInputEventHandler &handler);

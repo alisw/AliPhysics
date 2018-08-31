@@ -4,12 +4,8 @@
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/*$Id$*/
-
-//*************************************************************************
-// Class AliAnalysisTaskFilterFriendSecond
-// Test Task 
-//*************************************************************************
+/// \class AliAnalysisTaskFilterFriendSecond
+/// \brief Class AliAnalysisTaskFilterFriendSecond
 
 #include <TString.h>
 #include "AliAnalysisTaskFilter.h"
@@ -36,8 +32,8 @@ class AliAnalysisTaskFilterFriendSecond : public AliAnalysisTaskFilter
   AliAnalysisTaskFilterFriendSecond(const AliAnalysisTaskFilterFriendSecond &);
   AliAnalysisTaskFilterFriendSecond& operator=(const AliAnalysisTaskFilterFriendSecond&);
 
-  AliESDEvent  *fESDInput;        // ESD input object
-  AliESDfriend *fESDfriendInput;  // ESD input friend object
+  AliESDEvent  *fESDInput;        ///< ESD input object
+  AliESDfriend *fESDfriendInput;  ///< ESD input friend object
   ClassDef(AliAnalysisTaskFilterFriendSecond,1); 
 };
 

@@ -1,10 +1,12 @@
+/// \class AliAnalysisTaskCopyESD
+/// \brief Task to Copy ESDs
+
 #ifndef ALIANALYSISTASKCOPYESD_H
 #define ALIANALYSISTASKCOPYESD_H
  
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
 
 #include "AliAnalysisTaskFilter.h"
 #include "AliESDtrack.h"

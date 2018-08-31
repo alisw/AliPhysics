@@ -13,14 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*$Id$*/
-
-/////////////////////////////////////////////////////////////
-//
-//   Test task
-//
-// /////////////////////////////////////////////////////////////
-
 #include <TTree.h>
 #include <TChain.h>
 
@@ -58,8 +50,8 @@ AliAnalysisTaskFilter(name),
 fESDInput(0),
 fESDfriendInput(0)
 {
-	// Constructor
-	
+ /// Constructor
+
 	// Define input and output slots here
 	// Input slot #0 works with a TChain
 	DefineInput(0, TChain::Class());
@@ -71,25 +63,23 @@ fESDfriendInput(0)
 AliAnalysisTaskFilterFriend::~AliAnalysisTaskFilterFriend()
 {
 
-	// dtor
+ /// dtor
 
 }  
 
 //________________________________________________________________________
 void AliAnalysisTaskFilterFriend::Init()
 {
-	// Initialization
-	
+ /// Initialization
+
 	return;
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskFilterFriend::UserCreateOutputObjects()
 {
-	//
-	// Create the output container
-	//
-	
+ /// Create the output container
+
 	return;
 }
 
@@ -97,9 +87,7 @@ void AliAnalysisTaskFilterFriend::UserCreateOutputObjects()
 void AliAnalysisTaskFilterFriend::UserExec(Option_t */*option*/)
 {
 
-	//
-	// Filtering
-	//
+ /// Filtering
 
 	fESDInput = dynamic_cast<AliESDEvent*>(InputEvent()); // get the input ESD
 	fESDfriendInput = InputFriend(); // get the input friend
@@ -144,8 +132,8 @@ void AliAnalysisTaskFilterFriend::UserExec(Option_t */*option*/)
 //________________________________________________________________________
 void AliAnalysisTaskFilterFriend::Terminate(Option_t */*option*/)
 {
-	// Terminate analysis
-	//
+ /// Terminate analysis
+
 	AliDebug(2,"AliAnalysisTaskFilterFriend: Terminate() \n");
 	
 	return;
@@ -153,9 +141,7 @@ void AliAnalysisTaskFilterFriend::Terminate(Option_t */*option*/)
 //________________________________________________________________________
 Bool_t AliAnalysisTaskFilterFriend::UserSelectESDfriendForCurrentEvent()
 {
-	// 
-	// Selecting or discarding current event
-	//
+ /// Selecting or discarding current event
 
 	
 	fESDInput = dynamic_cast<AliESDEvent*>(InputEvent()); // get the input ESD

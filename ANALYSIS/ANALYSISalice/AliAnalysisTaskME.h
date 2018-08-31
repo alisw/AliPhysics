@@ -1,10 +1,10 @@
+/// \class AliAnalysisTaskME
+
 #ifndef ALIANALYSISTASKME_H
 #define ALIANALYSISTASKME_H
  
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-
-/* $Id$ */
 
 #include "AliAnalysisTask.h"
 #include "AliVEvent.h"
@@ -45,14 +45,14 @@ class AliAnalysisTaskME : public AliAnalysisTask
     virtual const char*    CurrentFileName();
     
   protected:
-    Int_t                      fDebug;           //  Debug flag
-    Int_t                      fEntry;           //  Current entry in the chain
-    Bool_t                     fFreshBufferOnly; //  Flag for Exec call for fresh buffer only
-    AliMultiEventInputHandler* fInputHandler;    //! Input Handler
-    AliAODEvent*               fOutputAOD;       //! AOD out 
-    TTree*                     fTreeA;           //  AOD output Tree
+    Int_t                      fDebug;           ///< Debug flag
+    Int_t                      fEntry;           ///< Current entry in the chain
+    Bool_t                     fFreshBufferOnly; ///< Flag for Exec call for fresh buffer only
+    AliMultiEventInputHandler* fInputHandler;    //!<! Input Handler
+    AliAODEvent*               fOutputAOD;       //!<! AOD out
+    TTree*                     fTreeA;           ///< AOD output Tree
     // Event Selection
-    UInt_t fOfflineTriggerMask;   //  Task processes collision candidates only
+    UInt_t fOfflineTriggerMask;   ///< Task processes collision candidates only
 
     ClassDef(AliAnalysisTaskME, 1); // Analysis task for standard jet analysis
 };

@@ -13,18 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*$Id$
-
-*/
-
-/////////////////////////////////////////////////////////////
-//
-//   Filtering task:  
-//   Selection of only 1% of the events for which to keep  
-//   the ESD friend
-//
-// /////////////////////////////////////////////////////////////
-
 #include <TTree.h>
 #include <TChain.h>
 
@@ -65,8 +53,8 @@ fFraction(0.01),
 fESDInput(0),
 fESDfriendInput(0)
 {
-	// Constructor
-	
+ /// Constructor
+
 	// Define input and output slots here
 	// Input slot #0 works with a TChain
 	DefineInput(0, TChain::Class());
@@ -78,25 +66,23 @@ fESDfriendInput(0)
 AliAnalysisTaskFilterSteer::~AliAnalysisTaskFilterSteer()
 {
 
-	// dtor
+ /// dtor
 
 }  
 
 //________________________________________________________________________
 void AliAnalysisTaskFilterSteer::Init()
 {
-	// Initialization
-	
+ /// Initialization
+
 	return;
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskFilterSteer::UserCreateOutputObjects()
 {
-	//
-	// Create the output container
-	//
-	
+ /// Create the output container
+
 	return;
 }
 
@@ -104,8 +90,7 @@ void AliAnalysisTaskFilterSteer::UserCreateOutputObjects()
 void AliAnalysisTaskFilterSteer::UserExec(Option_t */*option*/)
 {
 
-	// 
-	// Applying random selection of the events
+ /// Applying random selection of the events
 
 	fESDInput = dynamic_cast<AliESDEvent*>(InputEvent()); // get the input ESD
 	fESDfriendInput = InputFriend();  // get the input friend
@@ -143,8 +128,8 @@ void AliAnalysisTaskFilterSteer::UserExec(Option_t */*option*/)
 //________________________________________________________________________
 void AliAnalysisTaskFilterSteer::Terminate(Option_t */*option*/)
 {
-	// Terminate analysis
-	//
+ /// Terminate analysis
+
 	AliDebug(2,"AliAnalysisTaskFilterSteer: Terminate() \n");
 	
 	return;
@@ -152,9 +137,8 @@ void AliAnalysisTaskFilterSteer::Terminate(Option_t */*option*/)
 //________________________________________________________________________
 Bool_t AliAnalysisTaskFilterSteer::UserSelectESDfriendForCurrentEvent()
 {
-	// 
-	// Selecting or discarding current event
-	//
+ /// Selecting or discarding current event
+
 	Double_t number = gRandom->Rndm();
 	if (number<fFraction){
 		// keeping event

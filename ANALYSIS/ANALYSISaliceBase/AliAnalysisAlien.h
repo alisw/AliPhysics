@@ -3,12 +3,12 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// Author: Mihaela Gheata, 01/09/2008
-
-//==============================================================================
-//   AliAnalysisAlien - AliEn utility class. Provides interface for creating
-// a personalized JDL, finding and creating a dataset.
-//==============================================================================
+/// \class AliAnalysisAlien
+/// \brief AliAnalysisAlien
+/// AliEn utility class. Provides interface for creating
+/// a personalized JDL, finding and creating a dataset.
+/// \author Mihaela Gheata
+/// \date 01/09/2008
 
 #ifndef ALIANALYSISGRID_H
 #include "AliAnalysisGrid.h"
@@ -231,82 +231,82 @@ protected:
    Bool_t              CheckFileCopy(const char *alienpath);
 
 private:
-   TGridJDL        *fGridJDL;         //! JDL maker
-   TGridJDL        *fMergingJDL;      //! JDL maker
-   Int_t            fPrice;           // Grid price for the job;
-   Int_t            fTTL;             // Time to live.
-   Int_t            fSplitMaxInputFileNumber; // Maximum number of files to be processed per subjob
-   Int_t            fMaxInitFailed;   // Maximum initial consecutive subjobs accepted to fail
-   Int_t            fMasterResubmitThreshold; // Failed jobs will be resubmitted until this DONE ratio
-   Int_t            fNtestFiles;      // Number of files used in the testing case
-   Int_t            fRunRange[2];     // Run range
-   Int_t            fNrunsPerMaster;  // Number of runs per masterjob
-   Int_t            fMaxMergeFiles;   // Maximum number of files to be merged in one chunk
-   Int_t            fMaxMergeStages;  // Maximum number of merging stages
-   Int_t            fNsubmitted;      // Number of jobs submitted
-   Int_t            fProductionMode;  // Production mode (0-off, 1-on)
-   Int_t            fOutputToRunNo;   // Use run number as output directory
-   Int_t            fMergeViaJDL;     // Enable merging via automatic JDL
-   Int_t            fFastReadOption;  // Use xrootd tweaks to reduce timeouts in file access
-   Int_t            fOverwriteMode;   // Overwrite existing files if any
-   Int_t            fNreplicas;       // Number of replicas for the output files
-   Int_t            fNproofWorkers;   // Number of workers in proof mode
-   Int_t            fNproofWorkersPerSlave; // Max number of workers per slave in proof mode
-   Int_t            fProofReset;      // Proof reset mode: 0=no reset, 1=soft, 2=hard
-   Int_t            fNMCevents;       // Number of MC events in MC loop mode
-   Int_t            fNMCjobs;         // Number of MC jobs in MC loop mode
-   TString          fRunNumbers;      // List of runs to be processed
-   TString          fExecutable;      // Executable script for AliEn job
-   TString          fExecutableCommand;  // Command(s) to be executed in the executable script
-   TString          fArguments;       // Arguments for the executable script
-   TString          fExecutableArgs;  // arguments added to the executable script after the analysis macro
-   TString          fAnalysisMacro;   // Root macro steering the analysis
-   TString          fAnalysisSource;  // User analysis implementation (.cxx) file(s)
-   TString          fValidationScript; // Name of the validation script
-   TString          fAdditionalRootLibs;  // List (separated by blacs) of additional libraries needed for/before analysis libs/par file compilation
-   TString          fAdditionalLibs;  // List (separated by blacs) of additional libraries needed for the analysis loaded AFTER all par files
-   TString          fGeneratorLibs;   // Extra libraries needed by the generator
-   TString          fSplitMode;       // Job split mode
-   TString          fAPIVersion;      // API version
-   TString          fROOTVersion;     // ROOT version
-   TString          fAliROOTVersion;  // AliROOT version
-   TString          fAliPhysicsVersion; // AliPhysics version
-   TString          fExternalPackages; // External packages
-   TString          fUser;            // AliEn user name
-   TString          fGridWorkingDir;  // AliEn directory containing the input packages
-   TString          fGridDataDir;     // AliEn data production directory
-   TString          fDataPattern;     // Data pattern for 'find' command
-   TString          fGridOutputDir;   // AliEn directory (wrt work dir) where the output should be written
-   TString          fOutputArchive;   // List of output archives separated by blancs
-   TString          fOutputFiles;     // List of output files separated by blancs
-   TString          fInputFormat;     // Input format (xml-single)
-   TString          fDatasetName;     // Dataset xml file to be created
-   TString          fJDLName;         // JDL file to be generated
-   TString          fTerminateFiles;  // List of output files produced during Terminate
-   TString          fMergeExcludes;   // List of output files excluded from merging
-   TString          fRegisterExcludes; // List of liles not to be registered/merged
-   TString          fIncludePath;     // Include path
-   TString          fCloseSE;         // Preffered storage element. Taken from alien_CLOSE_SE environment.
-   TString          fFriendChainName; // File name to construct friend chain (for AOD)
-   TString          fJobTag;          // Job tag
-   TString          fOutputSingle;    // Directory name for the output when split is per file
-   TString          fRunPrefix;       // Run prefix to be applied to run numbers
-   TString          fProofCluster;    // Proof cluster name
-   TString          fProofDataSet;    // Proof dataset to be used
-   TString          fFileForTestMode; // .txt file for the chain to be used in PROOF test mode
-   TString          fAliRootMode;     // AliRoot mode among the list supported by the proof cluster
-   TString          fProofProcessOpt; // Option passed to proof process
-   TString          fMergeDirName;    // Name of the directory that should be added to the output directory
-   TObjArray       *fInputFiles;      // List of input files to be processed by the job
-   TObjArray       *fPackages;        // List of packages to be used
-   TObjArray       *fModules;         // List of AliAnalysisTaskCfg modules
-   TMap             fProofParam;      // Key-value pairs for proof mode
-   Bool_t           fDropToShell;     // If true, execute aliensh on start
-   Bool_t           fMCLoop;          // MC loop flag
-   TString          fGridJobIDs;      // List of last committed jobs
-   TString          fGridStages;      // List of last committed jobs
-   TString          fFriendLibs;      // List of libs (separated by blacs) needed for friends processing
-   TString          fTreeName;        // Name of the tree to be analyzed
+   TGridJDL        *fGridJDL;         //!<! JDL maker
+   TGridJDL        *fMergingJDL;      //!<! JDL maker
+   Int_t            fPrice;           ///< Grid price for the job;
+   Int_t            fTTL;             ///< Time to live.
+   Int_t            fSplitMaxInputFileNumber; ///< Maximum number of files to be processed per subjob
+   Int_t            fMaxInitFailed;   ///< Maximum initial consecutive subjobs accepted to fail
+   Int_t            fMasterResubmitThreshold; ///< Failed jobs will be resubmitted until this DONE ratio
+   Int_t            fNtestFiles;      ///< Number of files used in the testing case
+   Int_t            fRunRange[2];     ///< Run range
+   Int_t            fNrunsPerMaster;  ///< Number of runs per masterjob
+   Int_t            fMaxMergeFiles;   ///< Maximum number of files to be merged in one chunk
+   Int_t            fMaxMergeStages;  ///< Maximum number of merging stages
+   Int_t            fNsubmitted;      ///< Number of jobs submitted
+   Int_t            fProductionMode;  ///< Production mode (0-off, 1-on)
+   Int_t            fOutputToRunNo;   ///< Use run number as output directory
+   Int_t            fMergeViaJDL;     ///< Enable merging via automatic JDL
+   Int_t            fFastReadOption;  ///< Use xrootd tweaks to reduce timeouts in file access
+   Int_t            fOverwriteMode;   ///< Overwrite existing files if any
+   Int_t            fNreplicas;       ///< Number of replicas for the output files
+   Int_t            fNproofWorkers;   ///< Number of workers in proof mode
+   Int_t            fNproofWorkersPerSlave; ///< Max number of workers per slave in proof mode
+   Int_t            fProofReset;      ///< Proof reset mode: 0=no reset, 1=soft, 2=hard
+   Int_t            fNMCevents;       ///< Number of MC events in MC loop mode
+   Int_t            fNMCjobs;         ///< Number of MC jobs in MC loop mode
+   TString          fRunNumbers;      ///< List of runs to be processed
+   TString          fExecutable;      ///< Executable script for AliEn job
+   TString          fExecutableCommand;  ///< Command(s) to be executed in the executable script
+   TString          fArguments;       ///< Arguments for the executable script
+   TString          fExecutableArgs;  ///< arguments added to the executable script after the analysis macro
+   TString          fAnalysisMacro;   ///< Root macro steering the analysis
+   TString          fAnalysisSource;  ///< User analysis implementation (.cxx) file(s)
+   TString          fValidationScript; ///< Name of the validation script
+   TString          fAdditionalRootLibs;  ///< List (separated by blacs) of additional libraries needed for/before analysis libs/par file compilation
+   TString          fAdditionalLibs;  ///< List (separated by blacs) of additional libraries needed for the analysis loaded AFTER all par files
+   TString          fGeneratorLibs;   ///< Extra libraries needed by the generator
+   TString          fSplitMode;       ///< Job split mode
+   TString          fAPIVersion;      ///< API version
+   TString          fROOTVersion;     ///< ROOT version
+   TString          fAliROOTVersion;  ///< AliROOT version
+   TString          fAliPhysicsVersion; ///< AliPhysics version
+   TString          fExternalPackages; ///< External packages
+   TString          fUser;            ///< AliEn user name
+   TString          fGridWorkingDir;  ///< AliEn directory containing the input packages
+   TString          fGridDataDir;     ///< AliEn data production directory
+   TString          fDataPattern;     ///< Data pattern for 'find' command
+   TString          fGridOutputDir;   ///< AliEn directory (wrt work dir) where the output should be written
+   TString          fOutputArchive;   ///< List of output archives separated by blancs
+   TString          fOutputFiles;     ///< List of output files separated by blancs
+   TString          fInputFormat;     ///< Input format (xml-single)
+   TString          fDatasetName;     ///< Dataset xml file to be created
+   TString          fJDLName;         ///< JDL file to be generated
+   TString          fTerminateFiles;  ///< List of output files produced during Terminate
+   TString          fMergeExcludes;   ///< List of output files excluded from merging
+   TString          fRegisterExcludes; ///< List of liles not to be registered/merged
+   TString          fIncludePath;     ///< Include path
+   TString          fCloseSE;         ///< Preffered storage element. Taken from alien_CLOSE_SE environment.
+   TString          fFriendChainName; ///< File name to construct friend chain (for AOD)
+   TString          fJobTag;          ///< Job tag
+   TString          fOutputSingle;    ///< Directory name for the output when split is per file
+   TString          fRunPrefix;       ///< Run prefix to be applied to run numbers
+   TString          fProofCluster;    ///< Proof cluster name
+   TString          fProofDataSet;    ///< Proof dataset to be used
+   TString          fFileForTestMode; ///< .txt file for the chain to be used in PROOF test mode
+   TString          fAliRootMode;     ///< AliRoot mode among the list supported by the proof cluster
+   TString          fProofProcessOpt; ///< Option passed to proof process
+   TString          fMergeDirName;    ///< Name of the directory that should be added to the output directory
+   TObjArray       *fInputFiles;      ///< List of input files to be processed by the job
+   TObjArray       *fPackages;        ///< List of packages to be used
+   TObjArray       *fModules;         ///< List of AliAnalysisTaskCfg modules
+   TMap             fProofParam;      ///< Key-value pairs for proof mode
+   Bool_t           fDropToShell;     ///< If true, execute aliensh on start
+   Bool_t           fMCLoop;          ///< MC loop flag
+   TString          fGridJobIDs;      ///< List of last committed jobs
+   TString          fGridStages;      ///< List of last committed jobs
+   TString          fFriendLibs;      ///< List of libs (separated by blacs) needed for friends processing
+   TString          fTreeName;        ///< Name of the tree to be analyzed
 
    ClassDef(AliAnalysisAlien, 27)   // Class providing some AliEn utilities
 };

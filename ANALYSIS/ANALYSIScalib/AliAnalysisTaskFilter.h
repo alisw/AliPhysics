@@ -4,13 +4,8 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
-//////////////////////////////////////////////////////////////////////////
-//
-//  Base class for filtering friends
-//
-//////////////////////////////////////////////////////////////////////////
+/// \class AliAnalysisTaskFilter
+/// \brief Base class for filtering friends
 
 #include "AliAnalysisTask.h"
 class AliVEvent;
@@ -56,13 +51,13 @@ class AliAnalysisTaskFilter : public AliAnalysisTask
 	void SkipFriendTrackAt(Int_t index);
 
  protected:
-	Int_t                 fDebug;           //  Debug flag
-	Int_t                 fEntry;           //  Current entry in the chain
-	AliVEvent*            fInputEvent;      //! VEvent Input
-	AliInputEventHandler* fInputHandler;    //! Input Handler
-	AliESDfriend*         fOutputESDfriend; //! ESD friend out 
-	TTree*                fTreeEF;          //  ESD friend output Tree
-	AliESDfriend*         fInputESDfriend;  //! ESD friend input
+	Int_t                 fDebug;           ///< Debug flag
+	Int_t                 fEntry;           ///< Current entry in the chain
+	AliVEvent*            fInputEvent;      //!<! VEvent Input
+	AliInputEventHandler* fInputHandler;    //!<! Input Handler
+	AliESDfriend*         fOutputESDfriend; //!<! ESD friend out
+	TTree*                fTreeEF;          ///< ESD friend output Tree
+	AliESDfriend*         fInputESDfriend;  //!<! ESD friend input
 	
 	ClassDef(AliAnalysisTaskFilter, 3); // Analysis task for filtering friends
 };

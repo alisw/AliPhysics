@@ -1,3 +1,9 @@
+/// \class AliKineTrackCuts
+/// \brief AliKineTrackCuts
+/// Class for simple Kinematic cuts on
+/// particles (tracks) from Kinematic stack (TParticle)
+/// MC Simulation
+
 #ifndef ALIKINETRACKCUTS_H
 #define ALIKINETRACKCUTS_H
 
@@ -32,16 +38,16 @@ public:
                   
 protected:        
                   
-           Bool_t    fOnlyFinalParticles;   // true => skip part with GetStatusCode()!=1
-           Bool_t    fOnlyPrimary;          // Only Primary Particles
+           Bool_t    fOnlyFinalParticles;   ///< true => skip part with GetStatusCode()!=1
+           Bool_t    fOnlyPrimary;          ///< Only Primary Particles
   // kinematics cuts
-           Float_t   fPMin,   fPMax;        // definition of the range of the P
-           Float_t   fPtMin,  fPtMax;       // definition of the range of the Pt
-           Float_t   fPxMin,  fPxMax;       // definition of the range of the Px
-           Float_t   fPyMin,  fPyMax;       // definition of the range of the Py
-           Float_t   fPzMin,  fPzMax;       // definition of the range of the Pz
-           Float_t   fEtaMin, fEtaMax;      // definition of the range of the eta
-           Float_t   fRapMin, fRapMax;      // definition of the range of the y
+           Float_t   fPMin,   fPMax;        ///< definition of the range of the P
+           Float_t   fPtMin,  fPtMax;       ///< definition of the range of the Pt
+           Float_t   fPxMin,  fPxMax;       ///< definition of the range of the Px
+           Float_t   fPyMin,  fPyMax;       ///< definition of the range of the Py
+           Float_t   fPzMin,  fPzMax;       ///< definition of the range of the Pz
+           Float_t   fEtaMin, fEtaMax;      ///< definition of the range of the eta
+           Float_t   fRapMin, fRapMax;      ///< definition of the range of the y
   
   
   ClassDef(AliKineTrackCuts, 1)

@@ -14,10 +14,8 @@
  **************************************************************************/
 #include <AliTrackSelectionFactory.h>
 
-/// \cond CLASSIMP
 ClassImp(AliTrackSelectionFactory)
-/// \endcond
-///
+
 /**
  * Default constructor
  */

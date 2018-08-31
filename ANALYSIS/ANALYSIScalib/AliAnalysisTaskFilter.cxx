@@ -13,14 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-//////////////////////////////////////////////////////////////////////////
-//
-//  Base class for filtering friends
-//
-//////////////////////////////////////////////////////////////////////////
- 
 #include <TChain.h>
 #include <TFile.h>
 #include <TList.h>
@@ -69,9 +61,7 @@ AliAnalysisTaskFilter::AliAnalysisTaskFilter(const char* name):
 	fTreeEF(0x0),
 	fInputESDfriend(0x0)
 {
-	//
-	// Default constructor
-	//
+ /// Default constructor
 
 	DefineInput (0, TChain::Class());
 	DefineOutput(0,  TTree::Class());
@@ -89,9 +79,7 @@ AliAnalysisTaskFilter::AliAnalysisTaskFilter(const AliAnalysisTaskFilter& obj):
 	fTreeEF(0x0),
 	fInputESDfriend(0x0)
 {
-	//
-	// Copy constructor
-	//
+ /// Copy constructor
 
 	fDebug        = obj.fDebug;
 	fEntry        = obj.fEntry;
@@ -107,9 +95,7 @@ AliAnalysisTaskFilter::AliAnalysisTaskFilter(const AliAnalysisTaskFilter& obj):
 
 AliAnalysisTaskFilter& AliAnalysisTaskFilter::operator=(const AliAnalysisTaskFilter& other)
 {
-	//
-	// Assignment
-	//
+ /// Assignment
 
 	if (&other != this) {
 		AliAnalysisTask::operator=(other);
@@ -129,9 +115,7 @@ AliAnalysisTaskFilter& AliAnalysisTaskFilter::operator=(const AliAnalysisTaskFil
 
 void AliAnalysisTaskFilter::ConnectInputData(Option_t* /*option*/)
 {
-	//
-	// Connect the input data
-	//
+ /// Connect the input data
 
 	if (fDebug > 1) printf("AnalysisTaskFilter::ConnectInputData() \n");
 	fInputHandler = (AliInputEventHandler*) 
@@ -158,9 +142,7 @@ void AliAnalysisTaskFilter::ConnectInputData(Option_t* /*option*/)
 
 void AliAnalysisTaskFilter::CreateOutputObjects()
 {
-	//
-	// Create the output container
-	//
+ /// Create the output container
 
 	if (fDebug > 1) printf("AnalysisTaskFilter::CreateOutPutData() \n");
 
@@ -180,9 +162,7 @@ void AliAnalysisTaskFilter::CreateOutputObjects()
 
 void AliAnalysisTaskFilter::Exec(Option_t* option)
 {
-	//
-	// Exec analysis of one event
-	//
+ /// Exec analysis of one event
 
 	if (fDebug > 1) AliInfo("AliAnalysisTaskFilter::Exec() \n");
 
@@ -221,7 +201,8 @@ void AliAnalysisTaskFilter::Exec(Option_t* option)
 
 const char* AliAnalysisTaskFilter::CurrentFileName()
 {
-	// Returns the current file name    
+ /// Returns the current file name
+
 	if( fInputHandler ){
 		return fInputHandler->GetTree()->GetCurrentFile()->GetName();
 	}
@@ -232,10 +213,8 @@ const char* AliAnalysisTaskFilter::CurrentFileName()
 
 void AliAnalysisTaskFilter::AddFriendTrackAt(AliESDfriendTrack* t, Int_t index)
 {
-	//
-	// Adds the friend track at the i-th position in the TClonesArray
-	// of the ESD friend tracks
-	//
+ /// Adds the friend track at the i-th position in the TClonesArray
+ /// of the ESD friend tracks
 
 	AliESDfriendTrack* currentTrack = (AliESDfriendTrack*)fOutputESDfriend->GetTrack(index);
 	if(currentTrack){
@@ -260,10 +239,8 @@ void AliAnalysisTaskFilter::AddFriendTrackAt(AliESDfriendTrack* t, Int_t index)
 
 void AliAnalysisTaskFilter::SkipFriendTrackAt(Int_t index)
 {
-	//
-	// Skip the friend track at the i-th position in the TClonesArray
-	// of the ESD friend tracks
-	//
+ /// Skip the friend track at the i-th position in the TClonesArray
+ /// of the ESD friend tracks
 
 	AliESDfriendTrack* currentTrack = (AliESDfriendTrack*)fOutputESDfriend->GetTrack(index);
 	if (currentTrack){

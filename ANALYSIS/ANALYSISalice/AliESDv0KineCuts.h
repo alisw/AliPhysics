@@ -1,8 +1,10 @@
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-/*
- * plesae see source file for more details
- */
+/// \class AliESDv0KineCuts
+/// \brief AliESDv0KineCuts
+/// Description: This class allows with purely kinematical cuts
+/// to select clean samples of electrons, pions and protons from the
+/// V0 online finder ESD V0 candidates for PID and dectector resonse
+/// studies.
+
 #ifndef ALIESDV0KINECUTS_H
 #define ALIESDV0KINECUTS_H
 
@@ -149,40 +151,40 @@ class AliESDv0KineCuts : public TObject{
   Bool_t    GammaEffCuts(AliESDv0 * const v0);  // set of cuts optimized for high gamma efficiency
 
  private:
-  AliESDEvent           *fEvent;          // current event
-  AliKFVertex           *fPrimaryVertex;  // primary vertex
+  AliESDEvent           *fEvent;          ///< current event
+  AliKFVertex           *fPrimaryVertex;  ///< primary vertex
 
-  Int_t                 fType;            // data type: p-p or Pb-Pb
-  Int_t                 fMode;            // current operation mode
+  Int_t                 fType;            ///< data type: p-p or Pb-Pb
+  Int_t                 fMode;            ///< current operation mode
 
   // single track cuts
-  Int_t                 fTPCNcls;          // number of TPC clusters
-  Bool_t                fTPCrefit;         // TPC refit - yes [kTRUE] or do not care [kFALSE]
-  Float_t               fTPCchi2perCls;    // max. chi2 per TPC cluster
-  Float_t               fTPCclsRatio;      // min. TPC cluster ratio
-  Bool_t                fNoKinks;          // kinks - no [kTRUE] or do not care [kFalse]
+  Int_t                 fTPCNcls;          ///< number of TPC clusters
+  Bool_t                fTPCrefit;         ///< TPC refit - yes [kTRUE] or do not care [kFALSE]
+  Float_t               fTPCchi2perCls;    ///< max. chi2 per TPC cluster
+  Float_t               fTPCclsRatio;      ///< min. TPC cluster ratio
+  Bool_t                fNoKinks;          ///< kinks - no [kTRUE] or do not care [kFalse]
 
   // gamma cut values
-  Float_t               fGcutChi2NDF;      // Chi2NF cut value for the AliKFparticle gamma
-  Float_t               fGcutCosPoint[2];  // cos of the pointing angle [min, max]
-  Float_t               fGcutDCA[2];       // DCA between the daughter tracks [min, max]
-  Float_t               fGcutVertexR[2];   // radius of the conversion point [min, max]
-  Float_t               fGcutPsiPair[2];   // value of the psi pair cut [min, max]
-  Float_t               fGcutInvMass;      // upper value on the gamma invariant mass
+  Float_t               fGcutChi2NDF;      ///< Chi2NF cut value for the AliKFparticle gamma
+  Float_t               fGcutCosPoint[2];  ///< cos of the pointing angle [min, max]
+  Float_t               fGcutDCA[2];       ///< DCA between the daughter tracks [min, max]
+  Float_t               fGcutVertexR[2];   ///< radius of the conversion point [min, max]
+  Float_t               fGcutPsiPair[2];   ///< value of the psi pair cut [min, max]
+  Float_t               fGcutInvMass;      ///< upper value on the gamma invariant mass
   // K0 cut values
-  Float_t               fK0cutChi2NDF;     // Chi2NF cut value for the AliKFparticle K0
-  Float_t               fK0cutCosPoint[2]; // cos of the pointing angle [min, max]
-  Float_t               fK0cutDCA[2];      // DCA between the daughter tracks [min, max]
-  Float_t               fK0cutVertexR[2];  // radius of the decay point [min, max]
-  Float_t               fK0cutInvMass[2];  // invariant mass window
+  Float_t               fK0cutChi2NDF;     ///< Chi2NF cut value for the AliKFparticle K0
+  Float_t               fK0cutCosPoint[2]; ///< cos of the pointing angle [min, max]
+  Float_t               fK0cutDCA[2];      ///< DCA between the daughter tracks [min, max]
+  Float_t               fK0cutVertexR[2];  ///< radius of the decay point [min, max]
+  Float_t               fK0cutInvMass[2];  ///< invariant mass window
   // Lambda & anti-Lambda cut values
-  Float_t               fLcutChi2NDF;      // Chi2NF cut value for the AliKFparticle K0
-  Float_t               fLcutCosPoint[2];  // cos of the pointing angle [min, max]
-  Float_t               fLcutDCA[2];       // DCA between the daughter tracks [min, max]
-  Float_t               fLcutVertexR[2];   // radius of the decay point [min, max]
-  Float_t               fLcutInvMass[2];   // invariant mass window
-  Bool_t		fUseExternalVertex; // Is kTRUE if Vertex is set via SetPrimaryVertex()
-  Bool_t		fDeleteVertex;	    // Is kTRUE if Vertex has been created in SetEvent() function
+  Float_t               fLcutChi2NDF;      ///< Chi2NF cut value for the AliKFparticle K0
+  Float_t               fLcutCosPoint[2];  ///< cos of the pointing angle [min, max]
+  Float_t               fLcutDCA[2];       ///< DCA between the daughter tracks [min, max]
+  Float_t               fLcutVertexR[2];   ///< radius of the decay point [min, max]
+  Float_t               fLcutInvMass[2];   ///< invariant mass window
+  Bool_t		fUseExternalVertex; ///< Is kTRUE if Vertex is set via SetPrimaryVertex()
+  Bool_t		fDeleteVertex;	    ///< Is kTRUE if Vertex has been created in SetEvent() function
   
   ClassDef(AliESDv0KineCuts, 0);
 

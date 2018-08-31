@@ -3,13 +3,15 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-// Author: Andrei Gheata, 20/12/2010
+/// \class AliAnalysisTaskStat
+/// \brief AliAnalysisTaskStat
+/// AliAnalysisTaskStat - basic task that attaches a AliAnalysisTaskstatistics 
+/// object to the analysis manager. Use: AliAnalysisManager::AddStatisticsTask
+/// to attach to a train.
+/// \author Andrei Gheata
+/// \date 20/12/2010
 
-//==============================================================================
-//   AliAnalysisTaskStat - Analysis task that ataches an AliAnalysisStatistics
-//      to the analysis manager
-//==============================================================================
+
 
 #ifndef ALIANALYSISTASKSE_H
 #include "AliAnalysisTaskSE.h"
@@ -21,8 +23,8 @@ class AliAnalysisTaskStat : public AliAnalysisTaskSE
 {
 
 protected:
-  AliAnalysisStatistics      *fStatistics; // Statistics object
-  TList                      *fOutputList; // Output list
+  AliAnalysisStatistics      *fStatistics; ///< Statistics object
+  TList                      *fOutputList; ///< Output list
 
 private:
   AliAnalysisTaskStat(const AliAnalysisTaskStat& other);

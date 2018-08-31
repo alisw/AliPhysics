@@ -8,16 +8,17 @@
 #include "AliLog.h"
 #include <AliVParticle.h>
 
-// Generic event mixing classes
-//
-// Stores a buffer of tracks that updates continuously. The track type
-// contained by the pools can be anything inheriting from
-// TObject. Pools are updated based on maintaining a minimum fixed
-// number of tracks. Multiplicity/centrality and z-vertex bins must be
-// passed in at initialization. For example of implementation, see
-// $ALICE_ROOT/PWGCF/Correlations/DPhi/AliAnalysisTaskPhiCorrelations.cxx
-//
-// Authors: A. Adare and C. Loizides
+/// \class AliEventPoolManager
+/// \brief Generic event mixing classes
+///
+/// Stores a buffer of tracks that updates continuously. The track type
+/// contained by the pools can be anything inheriting from
+/// TObject. Pools are updated based on maintaining a minimum fixed
+/// number of tracks. Multiplicity/centrality and z-vertex bins must be
+/// passed in at initialization. For example of implementation, see
+/// $ALICE_ROOT/PWGCF/Correlations/DPhi/AliAnalysisTaskPhiCorrelations.cxx
+///
+/// \author A. Adare and C. Loizides
 
 using std::deque;
 
@@ -164,27 +165,27 @@ class AliEventPool : public TObject
 protected:
   Bool_t      IsReady(Int_t tracks, Int_t events) const { return ((tracks >= fTargetFraction * fTargetTrackDepth) || ((fTargetEvents > 0) && (events >= fTargetEvents)));}
   
-  deque<TObjArray*>     fEvents;              //Holds TObjArrays of MyTracklets
-  deque<int>            fNTracksInEvent;      //Tracks in event
-  deque<int>            fEventIndex;          //Original event index
-  Int_t                 fMixDepth;            //Number of evts. to mix with
-  Double_t              fMultMin, fMultMax;   //Track multiplicity bin range
-  Double_t              fZvtxMin, fZvtxMax;   //Event z-vertex bin range
-  Double_t              fPsiMin, fPsiMax;     //Event plane angle (Psi) bin range
-  Double_t              fPtMin, fPtMax;       //Particle pt bin range
-  Bool_t                fWasUpdated;          //Evt. succesfully passed selection?
-  Int_t                 fMultBinIndex;        //Multiplicity bin
-  Int_t                 fZvtxBinIndex;        //Zvertex bin
-  Int_t                 fPsiBinIndex;         //Event plane angle (Psi) bin
-  Int_t                 fPtBinIndex;          //Particle pt bin
-  Int_t                 fDebug;               //If 1 then debug on
-  Int_t                 fTargetTrackDepth;    //Number of tracks, once full
-  Bool_t                fFirstFilled;         //Init to false
-  Bool_t                fLockFlag;            //if locked, no update is allowed. Useful for external pools
-  Bool_t                fSaveFlag;            //flag whether to save the pool to the output file or not
-  Int_t                 fNTimes;              //Number of times init. condition reached
-  Float_t               fTargetFraction;      //fraction of fTargetTrackDepth at which pool is ready (default: 1.0)
-  Int_t                 fTargetEvents;        //if non-zero: number of filled events after which pool is ready regardless of fTargetTrackDepth (default: 0)
+  deque<TObjArray*>     fEvents;              ///< Holds TObjArrays of MyTracklets
+  deque<int>            fNTracksInEvent;      ///< Tracks in event
+  deque<int>            fEventIndex;          ///< Original event index
+  Int_t                 fMixDepth;            ///< Number of evts. to mix with
+  Double_t              fMultMin, fMultMax;   ///< Track multiplicity bin range
+  Double_t              fZvtxMin, fZvtxMax;   ///< Event z-vertex bin range
+  Double_t              fPsiMin, fPsiMax;     ///< Event plane angle (Psi) bin range
+  Double_t              fPtMin, fPtMax;       ///< Particle pt bin range
+  Bool_t                fWasUpdated;          ///< Evt. succesfully passed selection?
+  Int_t                 fMultBinIndex;        ///< Multiplicity bin
+  Int_t                 fZvtxBinIndex;        ///< Zvertex bin
+  Int_t                 fPsiBinIndex;         ///< Event plane angle (Psi) bin
+  Int_t                 fPtBinIndex;          ///< Particle pt bin
+  Int_t                 fDebug;               ///< If 1 then debug on
+  Int_t                 fTargetTrackDepth;    ///< Number of tracks, once full
+  Bool_t                fFirstFilled;         ///< Init to false
+  Bool_t                fLockFlag;            ///< if locked, no update is allowed. Useful for external pools
+  Bool_t                fSaveFlag;            ///< flag whether to save the pool to the output file or not
+  Int_t                 fNTimes;              ///< Number of times init. condition reached
+  Float_t               fTargetFraction;      ///< fraction of fTargetTrackDepth at which pool is ready (default: 1.0)
+  Int_t                 fTargetEvents;        ///< if non-zero: number of filled events after which pool is ready regardless of fTargetTrackDepth (default: 0)
 
   ClassDef(AliEventPool,4) // Event pool class
 };
@@ -252,19 +253,19 @@ public:
   void        SetSaveFlag(Double_t minCent, Double_t maxCent,  Double_t minZvtx, Double_t maxZvtx, Double_t minPsi, Double_t maxPsi, Double_t minPt, Double_t maxPt);
 
  protected:
-  Int_t      fDebug;                                    // If 1 then debug on
-  Int_t      fNMultBins;                                // number mult bins
-  Int_t      fNZvtxBins;                                // number vertex bins
-  Int_t      fNPsiBins;                                 // number Event plane angle (Psi) bins
-  Int_t      fNPtBins;                                  // number pt bins
+  Int_t      fDebug;                                    ///< If 1 then debug on
+  Int_t      fNMultBins;                                ///< number mult bins
+  Int_t      fNZvtxBins;                                ///< number vertex bins
+  Int_t      fNPsiBins;                                 ///< number Event plane angle (Psi) bins
+  Int_t      fNPtBins;                                  ///< number pt bins
 
-  std::vector<Double_t> fMultBins;                      // mult bins
-  std::vector<Double_t> fZvtxBins;                      // vertex bins
-  std::vector<Double_t> fPsiBins;                       // Event plane angle (Psi) bins
-  std::vector<Double_t> fPtBins;                        // pt bins
+  std::vector<Double_t> fMultBins;                      ///< mult bins
+  std::vector<Double_t> fZvtxBins;                      ///< vertex bins
+  std::vector<Double_t> fPsiBins;                       ///< Event plane angle (Psi) bins
+  std::vector<Double_t> fPtBins;                        ///< pt bins
 
-  std::vector<AliEventPool*> fEvPool;                   // pool in bins of [fNMultBin][fNZvtxBin][fNPsiBin][fNPtBins]
-  Int_t      fTargetTrackDepth;                         // Required track size, same for all pools.
+  std::vector<AliEventPool*> fEvPool;                   ///< pool in bins of [fNMultBin][fNZvtxBin][fNPsiBin][fNPtBins]
+  Int_t      fTargetTrackDepth;                         ///< Required track size, same for all pools.
 
   Int_t       GetBinIndex(Int_t iMult, Int_t iZvtx, Int_t iPsi, Int_t iPt) const {return fNZvtxBins*fNPsiBins*fNPtBins*iMult + fNPsiBins*fNPtBins*iZvtx + fNPtBins*iPsi + iPt;}
   Double_t*   GetBinning(const char* configuration, const char* tag, Int_t& nBins) const;

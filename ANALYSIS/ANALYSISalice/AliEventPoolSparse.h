@@ -3,12 +3,11 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
-// Event pool based on THnSparseI
-// This class is needed by the AnalysisManager to steer a mixing analysis.
-// Author: Peter Hristov
-// Peter.Hristov@cern.ch
+/// \class AliEventPoolSparse
+/// \brief Event pool based on THnSparseI
+///
+/// This class is needed by the AnalysisManager to steer a mixing analysis.
+/// \author Peter Hristov <Peter.Hristov@cern.ch>
 
 #include <THnSparse.h>
 #include <TEntryList.h>
@@ -39,24 +38,28 @@ class AliEventPoolSparse : public AliVEventPool {
   virtual void  Init();
 
   TEntryList * GetNextPool(Int_t i) {
-    // Returns the array associated with bin "i"
+    /// Returns the array associated with bin "i"
+
     return fPool ? fPool[i] : 0x0;
   }
 
   TEntryList * GetEvents(const Double_t * x) {
-    // Returns the array associated with the bin
-    // that corresponds to vector "x"
+    /// Returns the array associated with the bin
+    /// that corresponds to vector "x"
+
     Int_t bin = fHnSparseI.GetBin(x,kFALSE);
     return fPool ? fPool[bin] : 0x0;
   }
 
   void SetTagChain(TChain * chain){
-    // Input tag chain
+    /// Input tag chain
+
     fTagChain = chain;
   }
 
   TChain * GetTagChain() const {
-    // Return the input tag chain
+    /// Return the input tag chain
+
     return fTagChain;
   }
 
@@ -88,25 +91,25 @@ class AliEventPoolSparse : public AliVEventPool {
   AliEventPoolSparse(const AliEventPoolSparse& source); // Not implemented
   AliEventPoolSparse& operator = (const AliEventPoolSparse& source); // Not implemented
 
-  THnSparseI fHnSparseI; // Sparse histogram to 
-  Int_t fChunkSize;      //! Cached chunk size since the getter is protected
-  Int_t fN;              // Size of the array fPool
-  TEntryList ** fPool;   // Arrays of pointers to the TEntryList containing the event IDs
-  Int_t fCurrentBin;     //! Current bin
-  TChain * fTagChain;    //! Input chain of tags
+  THnSparseI fHnSparseI; ///< Sparse histogram to
+  Int_t fChunkSize;      //!<! Cached chunk size since the getter is protected
+  Int_t fN;              ///< Size of the array fPool
+  TEntryList ** fPool;   ///< Arrays of pointers to the TEntryList containing the event IDs
+  Int_t fCurrentBin;     //!<! Current bin
+  TChain * fTagChain;    //!<! Input chain of tags
 
-  TTreeFormula ** fVars; // Array of variables used to create the pools 
-  TTreeFormula * fRunCut;// Run selection
-  TTreeFormula * fLHCCut;// LNC-based selection
-  TTreeFormula * fDetCut;// Detector-based selection
-  TTreeFormula * fEvCut; // Event-based selection
+  TTreeFormula ** fVars; ///< Array of variables used to create the pools
+  TTreeFormula * fRunCut;///< Run selection
+  TTreeFormula * fLHCCut;///< LNC-based selection
+  TTreeFormula * fDetCut;///< Detector-based selection
+  TTreeFormula * fEvCut; ///< Event-based selection
 
-  AliRunTagCuts *fRunTagCut; // RunTag class cut
-  AliEventTagCuts *fEventTagCut; // EventTag class cut
-  AliDetectorTagCuts *fDetectorTagCut; // DetectorTag class cut
-  AliLHCTagCuts *fLHCTagCut; // LHCTag class cut
+  AliRunTagCuts *fRunTagCut; ///< RunTag class cut
+  AliEventTagCuts *fEventTagCut; ///< EventTag class cut
+  AliDetectorTagCuts *fDetectorTagCut; ///< DetectorTag class cut
+  AliLHCTagCuts *fLHCTagCut; ///< LHCTag class cut
 
-  Int_t fBinNumber;      // Current bin
+  Int_t fBinNumber;      ///< Current bin
   
   ClassDef(AliEventPoolSparse,2)  // 
 };

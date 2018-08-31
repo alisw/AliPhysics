@@ -1,19 +1,3 @@
-//-------------------------------------------------------------------------
-//           Implementation of Class AliHEPDataParser
-//
-//  This class is used to save the content of hisograms/graphs in the
-//  HEP data format and viceversa. The HEP data format is not strictly
-//  defined and there are many variants, the class only support a few
-//  of them. More will be added as needed.  The input can be a set of
-//  2 TH1, TGraphAsymmErrors or TGraphErrors (one for the stat and one
-//  for the syst error). If the second one is a null pointer, only the
-//  stat error is printed. The class can also import hepdata ascii
-//  file (very preliminary)
-// 
-//  Author: Michele Floris, CERN
-//-------------------------------------------------------------------------
-
-
 #include "AliHEPDataParser.h"
 #include "AliLog.h"
 #include "TGraphAsymmErrors.h"
@@ -37,7 +21,8 @@ AliHEPDataParser::AliHEPDataParser() : TObject(), fHistStat(0),  fHistSyst(0),  
 
 AliHEPDataParser::AliHEPDataParser(TH1 * hStat, TH1 * hSyst): TObject(), fHistStat(0),  fHistSyst(0),  fGraphStat(0),  fGraphSyst(0),  fHEPDataFileLines(0), fValueName("y"), fXaxisName(""), fTitle(""), fReaction(""), fEnergy(""), fRapidityRange(""), fPrecision(5)
 {
-  //ctor
+  /// ctor
+
   fHistStat = hStat;
   fHistSyst = hSyst;
   fHEPDataFileLines = new TObjArray;
@@ -45,7 +30,8 @@ AliHEPDataParser::AliHEPDataParser(TH1 * hStat, TH1 * hSyst): TObject(), fHistSt
 }
 AliHEPDataParser::AliHEPDataParser(TGraph * grStat, TGraph * grSyst): TObject(), fHistStat(0),  fHistSyst(0),  fGraphStat(0),  fGraphSyst(0),  fHEPDataFileLines(0), fValueName(""), fXaxisName(""), fTitle(""), fReaction(""), fEnergy(""), fRapidityRange(""), fPrecision(5)
 {
-  // ctor
+  /// ctor
+
   fGraphStat = grStat;
   fGraphSyst = grSyst;
   fHEPDataFileLines = new TObjArray;
@@ -53,8 +39,9 @@ AliHEPDataParser::AliHEPDataParser(TGraph * grStat, TGraph * grSyst): TObject(),
 
 AliHEPDataParser::AliHEPDataParser(const char * hepfileName): TObject(), fHistStat(0),  fHistSyst(0),  fGraphStat(0),  fGraphSyst(0),  fHEPDataFileLines(0), fValueName("y"), fXaxisName(""), fTitle(""), fReaction(""), fEnergy(""), fRapidityRange(""), fPrecision(5)
 {
-  //ctor
-  // Put results in graphs
+  /// ctor
+  /// Put results in graphs
+
   fGraphSyst = new TGraphAsymmErrors();
   fGraphStat = new TGraphAsymmErrors();
   ifstream infile;
@@ -117,7 +104,8 @@ AliHEPDataParser::AliHEPDataParser(const char * hepfileName): TObject(), fHistSt
 }
 
 AliHEPDataParser::~AliHEPDataParser(){
-  // dtor
+  /// dtor
+
   if(fHistStat) delete fHistStat;
   if(fHistSyst) delete fHistSyst;
   if(fGraphStat) delete fGraphStat;
@@ -127,7 +115,8 @@ AliHEPDataParser::~AliHEPDataParser(){
   
 void AliHEPDataParser::SaveHEPDataFile(const char * hepfileName, Bool_t trueUseGraphFalesUseHisto) {
 
-  // Fills fHEPDataFileLines and saves its content to a file
+  /// Fills fHEPDataFileLines and saves its content to a file
+
   if(!fHEPDataFileLines)   fHEPDataFileLines = new TObjArray;
   // Write headers if relevant
   if(fTitle.Length())         fHEPDataFileLines->Add(new TObjString(fTitle));
@@ -276,10 +265,11 @@ void AliHEPDataParser::SaveHEPDataFile(const char * hepfileName, Bool_t trueUseG
 
 
 Double_t AliHEPDataParser::RoundToSignificantFigures(double num, int n) {
-  // Rounds num to n significant digits.
-  // Recipe from :http://stackoverflow.com/questions/202302/rounding-to-an-arbitrary-number-of-significant-digits
-  // Basically the log is used to determine the number of leading 0s, than convert to an integer by multipliing by the expo, 
-  // round the integer and shift back.
+  /// Rounds num to n significant digits.
+  /// Recipe from :http://stackoverflow.com/questions/202302/rounding-to-an-arbitrary-number-of-significant-digits
+  /// Basically the log is used to determine the number of leading 0s, than convert to an integer by multipliing by the expo,
+  /// round the integer and shift back.
+
   if(num == 0) {
     return 0;
   }
@@ -295,7 +285,8 @@ Double_t AliHEPDataParser::RoundToSignificantFigures(double num, int n) {
 
 TString AliHEPDataParser::GetFixWidthCol(Double_t number, Int_t width) {
 
-  // Formats a column to fixed width
+  /// Formats a column to fixed width
+
   TString col;
   char format[100];
   snprintf(format,100,"%%%d#g", fPrecision);

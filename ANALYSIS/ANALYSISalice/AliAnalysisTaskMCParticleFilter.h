@@ -4,10 +4,10 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//
-//  Analysis task for Kinematic filtering
-//  Fill AOD tracks from Kinematic stack
-//
+/// \class AliAnalysisTaskMCParticleFilter
+/// \brief Analysis task for Kinematic filtering
+///
+/// Fill AOD tracks from Kinematic stack
 
 #include "AliAnalysisTaskSE.h"
 
@@ -47,10 +47,10 @@ class AliAnalysisTaskMCParticleFilter : public AliAnalysisTaskSE
     void PrintMCParticle(const AliMCParticle *mcp,Int_t np);
 
 
-    AliAnalysisFilter*  fTrackFilterMother;   //  Track Filter
-    AliAODMCHeader *fAODMcHeader;                 // ! MC Header
-    TClonesArray *fAODMcParticles;            // ! tclones array of MC Particles
-    TList *fHistList;                         // list to store e histograms, only as exchange
+    AliAnalysisFilter*  fTrackFilterMother;   ///< Track Filter
+    AliAODMCHeader *fAODMcHeader;                 ///< ! MC Header
+    TClonesArray *fAODMcParticles;            ///< ! tclones array of MC Particles
+    TList *fHistList;                         ///< list to store e histograms, only as exchange
 
     ClassDef( AliAnalysisTaskMCParticleFilter, 4 ); // Analysis task for Kinematic filtering
 };

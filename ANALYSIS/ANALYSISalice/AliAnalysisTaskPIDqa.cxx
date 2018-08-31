@@ -55,7 +55,8 @@
 
 ClassImp(AliAnalysisTaskPIDqa)
 
-//______________________________________________________________________________
+/// \file AliAnalysisTaskPIDqa.cxx
+
 AliAnalysisTaskPIDqa::AliAnalysisTaskPIDqa():
 AliAnalysisTaskSE(),
 fPIDResponse(0x0),
@@ -136,9 +137,8 @@ fListQAV0(0x0),
 fListQAinfo(0x0),
 fTPChistogramOffsets(kMaxHistOffset)
 {
-  //
-  // Default constructor
-  //
+  /// Default constructor
+
   DefineInput(0,TChain::Class());
   DefineOutput(1,TList::Class());
 }
@@ -146,9 +146,7 @@ fTPChistogramOffsets(kMaxHistOffset)
 //______________________________________________________________________________
 AliAnalysisTaskPIDqa::~AliAnalysisTaskPIDqa()
 {
-  //
-  // Destructor
-  //
+  /// Destructor
 
   delete fV0cuts;
   delete fV0electrons;
@@ -162,9 +160,7 @@ AliAnalysisTaskPIDqa::~AliAnalysisTaskPIDqa()
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::UserCreateOutputObjects()
 {
-  //
-  // Create the output QA objects
-  //
+  /// Create the output QA objects
 
   AliLog::SetClassDebugLevel("AliAnalysisTaskPIDqa",10);
 
@@ -275,9 +271,7 @@ void AliAnalysisTaskPIDqa::UserCreateOutputObjects()
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::UserExec(Option_t */*option*/)
 {
-  //
-  // Setup the PID response functions and fill the QA histograms
-  //
+  /// Setup the PID response functions and fill the QA histograms
 
   AliVEvent *event=InputEvent();
   if (!event||!fPIDResponse) return;
@@ -309,9 +303,7 @@ void AliAnalysisTaskPIDqa::UserExec(Option_t */*option*/)
 //______________________________________________________________________________
 void  AliAnalysisTaskPIDqa::FillV0PIDlist(){
 
-  //
-  // Fill the PID object arrays holding the pointers to identified particle tracks
-  //
+  /// Fill the PID object arrays holding the pointers to identified particle tracks
 
   // Dynamic cast to ESD events (DO NOTHING for AOD events)
   AliESDEvent *event = dynamic_cast<AliESDEvent *>(InputEvent());
@@ -389,9 +381,7 @@ void  AliAnalysisTaskPIDqa::FillV0PIDlist(){
 //______________________________________________________________________________
 void  AliAnalysisTaskPIDqa::ClearV0PIDlist(){
 
-  //
-  // Clear the PID object arrays
-  //
+  /// Clear the PID object arrays
 
   fV0electrons->Clear();
   fV0pions->Clear();
@@ -402,9 +392,7 @@ void  AliAnalysisTaskPIDqa::ClearV0PIDlist(){
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillITSqa()
 {
-  //
-  // Fill PID qa histograms for the ITS
-  //
+  /// Fill PID qa histograms for the ITS
 
   AliVEvent *event=InputEvent();
   
@@ -451,9 +439,7 @@ void AliAnalysisTaskPIDqa::FillITSqa()
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillTPCHistogramsSignal(TList *sublist, Int_t scenario, AliVTrack *track, Int_t mult)
 {
-  //
-  // Fill PID qa histograms for the TPC: Fill the histograms for the TPC signal for different settings
-  //
+  /// Fill PID qa histograms for the TPC: Fill the histograms for the TPC signal for different settings
 
   // List of possible scenarios with the numbering scheme (for information only):
   // scenario ==  0 : Basic
@@ -744,9 +730,7 @@ void AliAnalysisTaskPIDqa::FillTPCHistogramsSignal(TList *sublist, Int_t scenari
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillTPCHistogramsNsigma(TList *sublist, Int_t scenario, AliVTrack *track, Int_t mult)
 {
-  //
-  // Fill PID qa histograms for the TPC: Fill the histograms for TPC Nsigma for different settings
-  //
+  /// Fill PID qa histograms for the TPC: Fill the histograms for TPC Nsigma for different settings
 
   // List of possible scenarios with the numbering scheme (for information only):
   // scenario ==  0 : Basic
@@ -941,9 +925,7 @@ void AliAnalysisTaskPIDqa::FillTPCHistogramsNsigma(TList *sublist, Int_t scenari
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillTPCqa()
 {
-  //
-  // Fill PID qa histograms for the TPC
-  //
+  /// Fill PID qa histograms for the TPC
 
   // switches for the different scenarios
   Bool_t scBasic=1;     // default/basic
@@ -1237,9 +1219,8 @@ void AliAnalysisTaskPIDqa::FillTPCqa()
 
 Bool_t TrackIsAccepted(AliVTrack* track)
 {
-    //
-    //basic track cuts
-    //
+    /// basic track cuts
+
     ULong64_t status=track->GetStatus();
     // not that nice. status bits not in virtual interface
     // TPC refit + ITS refit + TPC pid + TRD out
@@ -1265,9 +1246,7 @@ Bool_t TrackIsAccepted(AliVTrack* track)
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillTRDHistogramsBasic(TList *sublistTRD, Int_t scenario, AliVTrack *track)
 {
-  //
-  // Fill PID qa histograms for the TRD: Fill the histograms for TRD Nsigma for different settings
-  //
+  /// Fill PID qa histograms for the TRD: Fill the histograms for TRD Nsigma for different settings
 
   // List of possible scenarios with the numbering scheme (for information only):
   // scenario ==  0 : Basic
@@ -1411,9 +1390,7 @@ void AliAnalysisTaskPIDqa::FillTRDHistogramsBasic(TList *sublistTRD, Int_t scena
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillTRDHistogramsLikelihood(TList *sublistTRD, Int_t scenario, AliVTrack *track, Float_t centrality)
 {
-  //
-  // Fill PID qa histograms for the TRD: Fill the histograms for TRD Nsigma for different settings
-  //
+  /// Fill PID qa histograms for the TRD: Fill the histograms for TRD Nsigma for different settings
 
   // List of possible scenarios with the numbering scheme (for information only):
   // scenario ==  0 : Basic
@@ -1594,9 +1571,7 @@ void AliAnalysisTaskPIDqa::FillTRDHistogramsLikelihood(TList *sublistTRD, Int_t 
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillTRDHistogramsNsigma(TList *sublistTRD, Int_t scenario, AliVTrack *track, Float_t cent)
 {
-  //
-  // Fill PID qa histograms for the TRD: Fill the histograms for TRD Nsigma for different settings
-  //
+  /// Fill PID qa histograms for the TRD: Fill the histograms for TRD Nsigma for different settings
 
   // List of possible scenarios with the numbering scheme (for information only):
   // scenario ==  0 : Basic
@@ -1718,9 +1693,7 @@ void AliAnalysisTaskPIDqa::FillTRDHistogramsNsigma(TList *sublistTRD, Int_t scen
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillTRDHistogramsSignal(TList *sublistTRD, Int_t scenario, AliVTrack *track)
 {
-  //
-  // Fill PID qa histograms for the TRD: Fill the histograms for TRD Nsigma for different settings
-  //
+  /// Fill PID qa histograms for the TRD: Fill the histograms for TRD Nsigma for different settings
 
   // List of possible scenarios with the numbering scheme (for information only):
   // scenario ==  0 : Basic
@@ -1754,9 +1727,7 @@ void AliAnalysisTaskPIDqa::FillTRDHistogramsSignal(TList *sublistTRD, Int_t scen
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillTRDqa()
 {
-  //
-  // Fill PID qa histograms for the TRD
-  //
+  /// Fill PID qa histograms for the TRD
 
     // switches for the different scenarios
     Bool_t scBasic=1;     // default/basic
@@ -1879,9 +1850,8 @@ void AliAnalysisTaskPIDqa::FillTRDqa()
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillTOFqa()
 {
-  //
-  // Fill TOF information
-  //
+  /// Fill TOF information
+
   AliVEvent *event=InputEvent();
 
   Int_t ntracks=event->GetNumberOfTracks();
@@ -1971,9 +1941,8 @@ void AliAnalysisTaskPIDqa::FillTOFqa()
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillT0qa()
 {
-  //
-  // Fill TOF information
-  //
+  /// Fill TOF information
+
   AliVEvent *event=InputEvent();
 
   Int_t ntracks=event->GetNumberOfTracks();
@@ -2031,9 +2000,7 @@ void AliAnalysisTaskPIDqa::FillT0qa()
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillEMCALqa()
 {
-  //
-  // Fill PID qa histograms for the EMCAL
-  //
+  /// Fill PID qa histograms for the EMCAL
 
   AliVEvent *event=InputEvent();
   
@@ -2187,10 +2154,8 @@ void AliAnalysisTaskPIDqa::FillEMCALqa()
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillHMPIDqa()
 {
-  //
-  // Fill PID qa histograms for the HMPID
-  //
-  
+  /// Fill PID qa histograms for the HMPID
+
   AliVEvent *event=InputEvent();
   
   Int_t ntracks=event->GetNumberOfTracks();
@@ -2238,10 +2203,8 @@ void AliAnalysisTaskPIDqa::FillHMPIDqa()
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillTOFHMPIDqa()
 {
-  //
-  // Fill PID qa histograms for the HMPID
-  //
-  
+  /// Fill PID qa histograms for the HMPID
+
   AliVEvent *event=InputEvent();
   
   Int_t ntracks=event->GetNumberOfTracks();
@@ -2294,10 +2257,8 @@ void AliAnalysisTaskPIDqa::FillTOFHMPIDqa()
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillTPCTOFqa()
 {
-  //
-  // Fill PID qa histograms for the TOF
-  //   Here also the TPC histograms after TOF selection are filled
-  //
+  /// Fill PID qa histograms for the TOF
+  ///   Here also the TPC histograms after TOF selection are filled
 
   AliVEvent *event=InputEvent();
 
@@ -2379,9 +2340,7 @@ void AliAnalysisTaskPIDqa::FillTPCTOFqa()
 //_____________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillQAinfo()
 {
-  //
-  // Fill the QA information
-  //
+  /// Fill the QA information
 
 
   //TPC QA info
@@ -2423,10 +2382,8 @@ void AliAnalysisTaskPIDqa::FillQAinfo()
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::SetupITSqa()
 {
-  //
-  // Create the ITS qa objects
-  //
-  
+  /// Create the ITS qa objects
+
   TVectorD *vX=MakeLogBinning(200,.1,30);
   
   //ITS+TPC tracks
@@ -2477,9 +2434,7 @@ void AliAnalysisTaskPIDqa::SetupITSqa()
 //_____________________________________________________________________________
 void AliAnalysisTaskPIDqa::AddTPCHistogramsSignal(TList *sublist, const char *scenario, Int_t scnumber)
 {
-  //
-  // Create the TPC qa objects: create histograms for the TPC signal for different settings
-  //
+  /// Create the TPC qa objects: create histograms for the TPC signal for different settings
 
   TVectorD *vX=MakeLogBinning(200,.1,30);
   Int_t nBinsMult = 38;
@@ -2654,9 +2609,7 @@ void AliAnalysisTaskPIDqa::AddTPCHistogramsSignal(TList *sublist, const char *sc
 //_____________________________________________________________________________
 void AliAnalysisTaskPIDqa::AddTPCHistogramsNsigma(TList *sublist, const char *scenario, Int_t scnumber)
 {
-  //
-  // Create the TPC qa objects: create histograms for TPC Nsigma for different settings
-  //
+  /// Create the TPC qa objects: create histograms for TPC Nsigma for different settings
 
   TVectorD *vX=MakeLogBinning(200,.1,30.);
   Int_t nBinsMult = 38;
@@ -2758,10 +2711,8 @@ void AliAnalysisTaskPIDqa::AddTPCHistogramsNsigma(TList *sublist, const char *sc
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::SetupTPCqa(Bool_t fillMC, Bool_t fill11h, Bool_t fillV0)
 {
-  //
-  // Create the TPC qa objects
-  //
-  
+  /// Create the TPC qa objects
+
   // Set up the multiplicity binning
   Int_t nBinsMult = 38;
   Double_t xBinsMult[39] = {0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 
@@ -2858,9 +2809,7 @@ void AliAnalysisTaskPIDqa::SetupTPCqa(Bool_t fillMC, Bool_t fill11h, Bool_t fill
 //_____________________________________________________________________________
 void AliAnalysisTaskPIDqa::AddTRDHistogramsBasic(TList *sublistTRD, const char *scenario,Int_t scnumber)
 {
-  //
-  // Create the TRD qa objects: create histograms for TRD Basci
-  //
+  /// Create the TRD qa objects: create histograms for TRD Basci
 
     TVectorD *vX=MakeLinBinning(20,.0,10);
     TVectorD *vY=MakeLinBinning(300,.0,30000);
@@ -2918,9 +2867,7 @@ void AliAnalysisTaskPIDqa::AddTRDHistogramsBasic(TList *sublistTRD, const char *
 //_____________________________________________________________________________
 void AliAnalysisTaskPIDqa::AddTRDHistogramsLikelihood(TList *sublistTRD, const char *scenario,Int_t scnumber)
 {
-  //
-  // Create the TRD qa objects: create histograms for TRD Likelihood
-  //
+  /// Create the TRD qa objects: create histograms for TRD Likelihood
 
   TVectorD *vX=MakeLinBinning(20,.0,10);
   TVectorD *vY=MakeLinBinning(140,-7,7);
@@ -3009,9 +2956,7 @@ void AliAnalysisTaskPIDqa::AddTRDHistogramsLikelihood(TList *sublistTRD, const c
 //_____________________________________________________________________________
 void AliAnalysisTaskPIDqa::AddTRDHistogramsNsigma(TList *sublistTRD, const char *scenario,Int_t scnumber)
 {
-  //
-  // Create the TRD qa objects: create histograms for TRD Nsigma
-  //
+  /// Create the TRD qa objects: create histograms for TRD Nsigma
 
   TVectorD *vX=MakeLogBinning(50,.1,10.);
   TVectorD *vY=MakeLinBinning(140,-7,7);
@@ -3103,9 +3048,7 @@ void AliAnalysisTaskPIDqa::AddTRDHistogramsNsigma(TList *sublistTRD, const char 
 //_____________________________________________________________________________
 void AliAnalysisTaskPIDqa::AddTRDHistogramsSignal(TList *sublistTRD, const char *scenario, Int_t scnumber)
 {
-  //
-  // Create the TRD qa objects: create histograms for the TRD signal for different settings
-  //
+  /// Create the TRD qa objects: create histograms for the TRD signal for different settings
 
   TVectorD *vX=MakeLogBinning(50,.1,10.);
   // TRD signal vs. p
@@ -3124,9 +3067,7 @@ void AliAnalysisTaskPIDqa::AddTRDHistogramsSignal(TList *sublistTRD, const char 
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::SetupTRDqa(Bool_t fillMC, Bool_t fillBasic, Bool_t fillV0)
 {
-  //
-  // Create the TRD qa objects
-  //
+  /// Create the TRD qa objects
 
     fListQAtrdBasic=new TList;
     fListQAtrdBasic->SetOwner();
@@ -3204,10 +3145,8 @@ void AliAnalysisTaskPIDqa::SetupTRDqa(Bool_t fillMC, Bool_t fillBasic, Bool_t fi
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::SetupTOFqa()
 {
-  //
-  // Create the TOF qa objects
-  //
-  
+  /// Create the TOF qa objects
+
   TVectorD *vX=MakeLogBinning(200,.1,30);
 
   for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
@@ -3261,10 +3200,8 @@ void AliAnalysisTaskPIDqa::SetupTOFqa()
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::SetupT0qa()
 {
-  //
-  // Create the T0 qa objects
-  //
-  
+  /// Create the T0 qa objects
+
   // these are similar to plots inside TOFqa, but these are for all events
   TH1F *hStartTimeAT0 = new TH1F("hStartTimeA_T0","StartTime from T0A [ps]",1000,-1000,1000);
   fListQAt0->Add(hStartTimeAT0);
@@ -3290,9 +3227,7 @@ void AliAnalysisTaskPIDqa::SetupT0qa()
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::SetupEMCALqa()
 {
-  //
-  // Create the EMCAL qa objects
-  //
+  /// Create the EMCAL qa objects
 
   TVectorD *vX=MakeLogBinning(200,.1,30);
   
@@ -3333,9 +3268,7 @@ void AliAnalysisTaskPIDqa::SetupEMCALqa()
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::SetupHMPIDqa()
 {
-  //
-  // Create the HMPID qa objects
-  //
+  /// Create the HMPID qa objects
 
   TVectorD *vX=MakeLogBinning(200,.1,30);
 
@@ -3363,10 +3296,8 @@ void AliAnalysisTaskPIDqa::SetupHMPIDqa()
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::SetupTOFHMPIDqa()
 {
-  //
-  // Create the HMPID qa objects
-  //
-  
+  /// Create the HMPID qa objects
+
   TH2F *hCkovAnglevsMomPion   = new TH2F("hCkovAnglevsMom_pion",  "Cherenkov angle vs momentum for pions",500,0,5.,500,0,1);
   fListQAtofhmpid->Add(hCkovAnglevsMomPion);
   
@@ -3382,10 +3313,8 @@ void AliAnalysisTaskPIDqa::SetupTOFHMPIDqa()
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::SetupTPCTOFqa()
 {
-  //
-  // Create the qa objects for TPC + TOF combination
-  //
-  
+  /// Create the qa objects for TPC + TOF combination
+
   TVectorD *vX=MakeLogBinning(200,.1,30);
 
   //TPC signals after TOF cut
@@ -3420,10 +3349,8 @@ void AliAnalysisTaskPIDqa::SetupTPCTOFqa()
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::SetupV0qa()
 {
-  //
-  // Create the qa objects for V0 Kine cuts
-  //
-  
+  /// Create the qa objects for V0 Kine cuts
+
   TH2F *hArmenteros  = new TH2F("hArmenteros",  "Armenteros plot",200,-1.,1.,200,0.,0.4);
   fListQAV0->Add(hArmenteros);
  
@@ -3431,9 +3358,7 @@ void AliAnalysisTaskPIDqa::SetupV0qa()
 
 //_____________________________________________________________________________
 void AliAnalysisTaskPIDqa::SetupQAinfo(){
-  //
-  // Setup the info of QA objects
-  //
+  /// Setup the info of QA objects
 
   TObjArray *arr=new TObjArray;
   arr->SetName("TPC_info");
@@ -3444,11 +3369,9 @@ void AliAnalysisTaskPIDqa::SetupQAinfo(){
 //______________________________________________________________________________
 TVectorD* AliAnalysisTaskPIDqa::MakeLogBinning(Int_t nbinsX, Double_t xmin, Double_t xmax)
 {
-  //
-  // Make logarithmic binning
-  // the user has to delete the array afterwards!!!
-  //
-  
+  /// Make logarithmic binning
+  /// the user has to delete the array afterwards!!!
+
   //check limits
   if (xmin<1e-20 || xmax<1e-20){
     AliError("For Log binning xmin and xmax must be > 1e-20. Using linear binning instead!");
@@ -3472,10 +3395,9 @@ TVectorD* AliAnalysisTaskPIDqa::MakeLogBinning(Int_t nbinsX, Double_t xmin, Doub
 //______________________________________________________________________________
 TVectorD* AliAnalysisTaskPIDqa::MakeLinBinning(Int_t nbinsX, Double_t xmin, Double_t xmax)
 {
-  //
-  // Make linear binning
-  // the user has to delete the array afterwards!!!
-  //
+  /// Make linear binning
+  /// the user has to delete the array afterwards!!!
+
   if (xmax<xmin){
     Double_t tmp=xmin;
     xmin=xmax;
@@ -3494,9 +3416,8 @@ TVectorD* AliAnalysisTaskPIDqa::MakeLinBinning(Int_t nbinsX, Double_t xmin, Doub
 //_____________________________________________________________________________
 TVectorD* AliAnalysisTaskPIDqa::MakeArbitraryBinning(const char* bins)
 {
-  //
-  // Make arbitrary binning, bins separated by a ','
-  //
+  /// Make arbitrary binning, bins separated by a ','
+
   TString limits(bins);
   if (limits.IsNull()){
     AliError("Bin Limit string is empty, cannot add the variable");

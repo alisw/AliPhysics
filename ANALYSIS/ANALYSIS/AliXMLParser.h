@@ -1,13 +1,4 @@
-/* 
-Author : Harsh Arora (harsh.arora@cern.ch)
-
-   
-AliXMLParser
----------
-
-AliXMLParser is a tool to parse XML file and store it in trees
-
-*/
+/// \class AliXMLParser
 
 #ifndef ALIXMLPARSER_H
 #define ALIXMLPARSER_H
@@ -52,14 +43,14 @@ public:
 private:
  
    int      GetEntryIndex(TString entry_name); //Reverse search for index of entry by name
-   TList*   fTreeList; //List of Trees made from tables
-   TString  fTableTag; //Identifier for new table
-   Bool_t   fInsideTree; //True if table_tag is identified
-   Int_t    fNumTokens; //Number of Attributes
-   TList*   fEntries; //List of Entries in a table
-   TList*   fVal; //Corresponding values of Entries in a Table
-   Int_t    fNumTrees; //Number of Trees
-   Bool_t   fError; //True if error in XML is encountered
+   TList*   fTreeList; ///< List of Trees made from tables
+   TString  fTableTag; ///< Identifier for new table
+   Bool_t   fInsideTree; ///< True if table_tag is identified
+   Int_t    fNumTokens; ///< Number of Attributes
+   TList*   fEntries; ///< List of Entries in a table
+   TList*   fVal; ///< Corresponding values of Entries in a Table
+   Int_t    fNumTrees; ///< Number of Trees
+   Bool_t   fError; ///< True if error in XML is encountered
 
    ClassDef(AliXMLParser,0);
 

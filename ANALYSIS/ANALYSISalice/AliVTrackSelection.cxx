@@ -19,9 +19,7 @@
 #include <AliVTrackSelection.h>
 #include "AliVCuts.h"
 
-/// \cond CLASSIMP
 ClassImp(AliVTrackSelection)
-/// \endcond
 
 /**
  * Default consturctor, initialising objects with NULL,

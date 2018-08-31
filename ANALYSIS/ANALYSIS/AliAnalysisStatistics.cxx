@@ -13,16 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-// Author: Andrei Gheata, 20/12/2010
-
-//==============================================================================
-// AliAnalysisStatistics - basic class for storing statistics for the processed
-//   events. The object is mergeable and can be used for general purpose. In case
-//   a AliAnalysisTaskStat is used, this will set the global statistics object
-//   to the analysis manager and will update it for the accepted events.
-//==============================================================================
-
 #include "AliAnalysisStatistics.h"
 
 #include "Riostream.h"
@@ -68,7 +58,8 @@ AliAnalysisStatistics::AliAnalysisStatistics(const AliAnalysisStatistics &other)
 //______________________________________________________________________________
 AliAnalysisStatistics &AliAnalysisStatistics::operator=(const AliAnalysisStatistics &other)
 {
-// Assignment.
+/// Assignment.
+
   if (&other == this) return *this;
   fNinput       = other.fNinput;
   fNprocessed   = other.fNprocessed;
@@ -99,7 +90,8 @@ AliAnalysisStatistics &AliAnalysisStatistics::operator=(const AliAnalysisStatist
 //______________________________________________________________________________
 void AliAnalysisStatistics::StartTimer(Int_t itask, const char *name, const char *classname)
 {
-// Measure the CPU time done by this task in the interval
+/// Measure the CPU time done by this task in the interval
+
   if (!fTaskTimer) {
     // Create the arrays with timings with the initial size
     if (!fMaxTasks) fMaxTasks = 100;
@@ -145,7 +137,8 @@ void AliAnalysisStatistics::StartTimer(Int_t itask, const char *name, const char
 //______________________________________________________________________________
 void AliAnalysisStatistics::StopTimer()
 {
-// Stop the current task timing.
+/// Stop the current task timing.
+
   if (fCurrentTask>=0) {
     fTaskTimer->Stop();
     fTaskTimeReal[fCurrentTask] += fTaskTimer->RealTime();
@@ -157,7 +150,8 @@ void AliAnalysisStatistics::StopTimer()
 //______________________________________________________________________________
 Long64_t AliAnalysisStatistics::Merge(TCollection* list)
 {
-// Merge statistics objets from list on top of this.
+/// Merge statistics objets from list on top of this.
+
   TIter next(list);
   AliAnalysisStatistics *current;
   Long64_t count = 1;
@@ -177,7 +171,8 @@ Long64_t AliAnalysisStatistics::Merge(TCollection* list)
 //______________________________________________________________________________
 void AliAnalysisStatistics::Print(const Option_t *) const
 {
-// Print info about the processed statistics.
+/// Print info about the processed statistics.
+
   cout << "### Input events                 : " << fNinput << endl;
   cout << "### Processed events w/o errors  : " << fNprocessed << endl;
   cout << "### Failed events                : " << fNfailed << endl;
@@ -195,7 +190,8 @@ void AliAnalysisStatistics::Print(const Option_t *) const
 //______________________________________________________________________________
 const char *AliAnalysisStatistics::GetMaskAsString(UInt_t mask)
 {
-// Returns a string corresponding to the offline mask.
+/// Returns a string corresponding to the offline mask.
+
    static TString smask;
    smask = "ALL EVT.";
    if (!mask) return smask.Data();
@@ -220,7 +216,8 @@ const char *AliAnalysisStatistics::GetMaskAsString(UInt_t mask)
 //______________________________________________________________________________
 const char *AliAnalysisStatistics::GetTaskName(Int_t itask) const
 {
-// Returns task name
+/// Returns task name
+
   if (!fTaskNames || !fTaskNames->At(itask)) return 0;
   return fTaskNames->At(itask)->GetName();
 }

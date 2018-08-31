@@ -3,14 +3,16 @@
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//#########################################################
-//#                                                       # 
-//#        Task for testing the combined PID              #
-//#                                                       #
-//#  Pietro Antonioli, INFN / Pietro.Antonioli@bo.infn.it #
-//#  Jens Wiechula, Uni Tübingen / Jens.Wiechula@cern.ch  #
-//#                                                       #
-//#########################################################
+/// \class AliAnalysisTaskPIDCombined
+/// \brief Basic Analysis Task for PID Analysis
+/// #########################################################
+/// #                                                       # 
+/// #        Task for testing the combined PID              #
+/// #                                                       #
+/// #  Pietro Antonioli, INFN / Pietro.Antonioli@bo.infn.it #
+/// #  Jens Wiechula, Uni Tübingen / Jens.Wiechula@cern.ch  #
+/// #                                                       #
+/// #########################################################
 
 #include <AliPID.h>
 #include <AliPIDResponse.h>
@@ -42,28 +44,28 @@ public:
 
 private:
 
-  TList fHistList;                   //! list of histograms
-  TH2D *fProbTPCnSigma[AliPID::kSPECIES];    //! probabilities vs nSigma in the TPC
-  TH2D *fProbTOFnSigma[AliPID::kSPECIES];    //! probabilities vs nSigma  the TOF
-  TH2D *fProbTPCTOFnSigmaTPC[AliPID::kSPECIES];    //! comb. probabilities vs nSigma TPC
-  TH2D *fProbTPC[AliPID::kSPECIES];          //! probabilities vs mom in the TPC
-  TH2D *fProbTOF[AliPID::kSPECIES];          //! probabilities vs mom in the TOF
-  TH2D *fProbTPCTOF[AliPID::kSPECIES];       //! combined probabilities vs mom TPC-TOF
-  TH1F *fPriors[AliPID::kSPECIES];           //! priors
+  TList fHistList;                   //!<! list of histograms
+  TH2D *fProbTPCnSigma[AliPID::kSPECIES];    //!<! probabilities vs nSigma in the TPC
+  TH2D *fProbTOFnSigma[AliPID::kSPECIES];    //!<! probabilities vs nSigma  the TOF
+  TH2D *fProbTPCTOFnSigmaTPC[AliPID::kSPECIES];    //!<! comb. probabilities vs nSigma TPC
+  TH2D *fProbTPC[AliPID::kSPECIES];          //!<! probabilities vs mom in the TPC
+  TH2D *fProbTOF[AliPID::kSPECIES];          //!<! probabilities vs mom in the TOF
+  TH2D *fProbTPCTOF[AliPID::kSPECIES];       //!<! combined probabilities vs mom TPC-TOF
+  TH1F *fPriors[AliPID::kSPECIES];           //!<! priors
 
-  TH2D *fProbTPCTOFnSigTPCMom[kPtBins][AliPID::kSPECIES];  // prob. x mom. bins
-  TH2D *fProbTPCnSigTPCMom[kPtBins][AliPID::kSPECIES];     // prob. x mom. bins
-  TH2D *fProbTOFnSigTOFMom[kPtBins][AliPID::kSPECIES];     // prob. x mom. bins
+  TH2D *fProbTPCTOFnSigTPCMom[kPtBins][AliPID::kSPECIES];  ///< prob. x mom. bins
+  TH2D *fProbTPCnSigTPCMom[kPtBins][AliPID::kSPECIES];     ///< prob. x mom. bins
+  TH2D *fProbTOFnSigTOFMom[kPtBins][AliPID::kSPECIES];     ///< prob. x mom. bins
 
-  TH2D *fPriorsUsed[AliPID::kSPECIES];       //! priors used
+  TH2D *fPriorsUsed[AliPID::kSPECIES];       //!<! priors used
 
-  const AliPIDResponse *fPIDResponse;     //! PID response object
-  AliPIDCombined       *fPIDCombined;     //! combined PID object
-  AliESDtrackCuts      *fTrackCuts;            //! track selection
-  AliAnalysisFilter    *fTrackFilter;         //! track filter
+  const AliPIDResponse *fPIDResponse;     //!<! PID response object
+  AliPIDCombined       *fPIDCombined;     //!<! combined PID object
+  AliESDtrackCuts      *fTrackCuts;            //!<! track selection
+  AliAnalysisFilter    *fTrackFilter;         //!<! track filter
 
-  TH2D *fDeDx;                              //! histo with the dedx
-  TH2D *fDeDxTuned;                         //! histo to check the dedx tuning in MC
+  TH2D *fDeDx;                              //!<! histo with the dedx
+  TH2D *fDeDxTuned;                         //!<! histo to check the dedx tuning in MC
 
 
   AliAnalysisTaskPIDCombined(const AliAnalysisTaskPIDCombined &c);

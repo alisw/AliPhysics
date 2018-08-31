@@ -3,15 +3,14 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-// Author: Andrei Gheata, 31/05/2006
-
-//==============================================================================
-//   AliAnalysysManager - Manager analysis class. Allows creation of several
-// analysis tasks and data containers storing their input/output. Allows 
-// connecting/chaining tasks via shared data containers. Serializes the current
-// event for all tasks depending only on initial input data.
-//==============================================================================
+/// \class AliAnalysisManager
+/// \brief AliAnalysysManager
+/// Manager analysis class. Allows creation of several
+/// analysis tasks and data containers storing their input/output. Allows 
+/// connecting/chaining tasks via shared data containers. Serializes the current
+/// event for all tasks depending only on initial input data.
+/// \author Andrei Gheata
+/// \date 31/05/2006
 
 #ifndef ROOT_TNamed
 #include <TNamed.h>
@@ -238,59 +237,59 @@ protected:
    void                 DoLoadBranch(const char *name);
 
 private:
-   TTree                  *fTree;                //! Input tree in case of TSelector model
-   AliVEventHandler       *fInputEventHandler;   //  Optional common input  event handler
-   AliVEventHandler       *fOutputEventHandler;  //  Optional common output event handler
-   AliVEventHandler       *fMCtruthEventHandler; //  Optional common MC Truth event handler
-   AliVEventPool          *fEventPool;           //  Event pool for mixing analysis
-   Long64_t                fCurrentEntry;        //! Current processed entry in the tree
-   Long64_t                fNSysInfo;            // Event frequency for collecting system information
-   EAliAnalysisExecMode    fMode;                // Execution mode
-   Bool_t                  fInitOK;              // Initialisation done
-   Bool_t                  fMustClean;           // Flag to let ROOT do cleanup
-   Bool_t                  fIsRemote;            //! Flag is set for remote analysis
-   Bool_t                  fLocked;              //! Lock for the manager and handlers
-   Bool_t                  fMCLoop;              // External MC generator loop
-   UInt_t                  fDebug;               // Debug level
-   TString                 fSpecialOutputLocation; // URL/path where the special outputs will be copied
-   TObjArray              *fTasks;               // List of analysis tasks
-   TObjArray              *fTopTasks;            // List of top tasks
-   TObjArray              *fZombies;             // List of zombie tasks
-   TObjArray              *fContainers;          // List of all containers
-   TObjArray              *fInputs;              // List of containers with input data
-   TObjArray              *fOutputs;             // List of containers with results
-   TObjArray              *fParamCont;           // List of containers with parameters
-   TObjArray              *fExchangeCont;        // List of exchange containers
-   TObjArray              *fDebugOptions;        // List of debug options
-   TObjArray              *fFileDescriptors;     //! List of file descriptors
-   AliAnalysisFileDescriptor *fCurrentDescriptor; //! Current file descriptor
-   AliAnalysisDataContainer *fCommonInput;       // Common input container
-   AliAnalysisDataContainer *fCommonOutput;      // Common output container
-   AliAnalysisSelector    *fSelector;            //! Current selector
-   AliAnalysisGrid        *fGridHandler;         //! Grid handler plugin
-   TString                 fExtraFiles;          // List of extra files to be merged
-   TString                 fFileInfoLog;         // File name for fileinfo logs
-   Bool_t                  fAutoBranchHandling;  // def=kTRUE, turn off if you use LoadBranch
-   Bool_t                  fAsyncReading;        // Enable async reading
-   THashTable              fTable;               // keep branch ptrs in case of manual branch loading
-   Int_t                   fRunFromPath;         // Run number retrieved from path to input data
-   Int_t                   fNcalls;              // Total number of calls (events) of ExecAnalysis
-   Long64_t                fMaxEntries;          // Maximum number of entries
-   Long64_t                fCacheSize;           // Cache size in bytes
-   static Int_t            fPBUpdateFreq;        // Progress bar update freq.
-   TString                 fStatisticsMsg;       // Statistics user message
-   TString                 fRequestedBranches;   // Requested branch names
-   AliAnalysisStatistics  *fStatistics;          // Statistics info about input events
-   TMap                   *fGlobals;             // Map with global variables
-   TStopwatch             *fIOTimer;             //! Timer for I/O + deserialization
-   TStopwatch             *fCPUTimer;            //! Timer for useful processing
-   TStopwatch             *fInitTimer;           //! Timer for initialization
-   Double_t                fIOTime;              //! Cumulated time in IO
-   Double_t                fCPUTime;             //! Cumulated time in Exec
-   Double_t                fInitTime;            //! Cumulated time in initialization
-   static TString          fgCommonFileName;     //! Common output file name (not streamed)
-   static TString          fgMacroNames;         //! Loaded macro names
-   static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
+   TTree                  *fTree;                //!<! Input tree in case of TSelector model
+   AliVEventHandler       *fInputEventHandler;   ///< Optional common input  event handler
+   AliVEventHandler       *fOutputEventHandler;  ///< Optional common output event handler
+   AliVEventHandler       *fMCtruthEventHandler; ///< Optional common MC Truth event handler
+   AliVEventPool          *fEventPool;           ///< Event pool for mixing analysis
+   Long64_t                fCurrentEntry;        //!<! Current processed entry in the tree
+   Long64_t                fNSysInfo;            ///< Event frequency for collecting system information
+   EAliAnalysisExecMode    fMode;                ///< Execution mode
+   Bool_t                  fInitOK;              ///< Initialisation done
+   Bool_t                  fMustClean;           ///< Flag to let ROOT do cleanup
+   Bool_t                  fIsRemote;            //!<! Flag is set for remote analysis
+   Bool_t                  fLocked;              //!<! Lock for the manager and handlers
+   Bool_t                  fMCLoop;              ///< External MC generator loop
+   UInt_t                  fDebug;               ///< Debug level
+   TString                 fSpecialOutputLocation; ///< URL/path where the special outputs will be copied
+   TObjArray              *fTasks;               ///< List of analysis tasks
+   TObjArray              *fTopTasks;            ///< List of top tasks
+   TObjArray              *fZombies;             ///< List of zombie tasks
+   TObjArray              *fContainers;          ///< List of all containers
+   TObjArray              *fInputs;              ///< List of containers with input data
+   TObjArray              *fOutputs;             ///< List of containers with results
+   TObjArray              *fParamCont;           ///< List of containers with parameters
+   TObjArray              *fExchangeCont;        ///< List of exchange containers
+   TObjArray              *fDebugOptions;        ///< List of debug options
+   TObjArray              *fFileDescriptors;     //!<! List of file descriptors
+   AliAnalysisFileDescriptor *fCurrentDescriptor; //!<! Current file descriptor
+   AliAnalysisDataContainer *fCommonInput;       ///< Common input container
+   AliAnalysisDataContainer *fCommonOutput;      ///< Common output container
+   AliAnalysisSelector    *fSelector;            //!<! Current selector
+   AliAnalysisGrid        *fGridHandler;         //!<! Grid handler plugin
+   TString                 fExtraFiles;          ///< List of extra files to be merged
+   TString                 fFileInfoLog;         ///< File name for fileinfo logs
+   Bool_t                  fAutoBranchHandling;  ///< def=kTRUE, turn off if you use LoadBranch
+   Bool_t                  fAsyncReading;        ///< Enable async reading
+   THashTable              fTable;               ///< keep branch ptrs in case of manual branch loading
+   Int_t                   fRunFromPath;         ///< Run number retrieved from path to input data
+   Int_t                   fNcalls;              ///< Total number of calls (events) of ExecAnalysis
+   Long64_t                fMaxEntries;          ///< Maximum number of entries
+   Long64_t                fCacheSize;           ///< Cache size in bytes
+   static Int_t            fPBUpdateFreq;        ///< Progress bar update freq.
+   TString                 fStatisticsMsg;       ///< Statistics user message
+   TString                 fRequestedBranches;   ///< Requested branch names
+   AliAnalysisStatistics  *fStatistics;          ///< Statistics info about input events
+   TMap                   *fGlobals;             ///< Map with global variables
+   TStopwatch             *fIOTimer;             //!<! Timer for I/O + deserialization
+   TStopwatch             *fCPUTimer;            //!<! Timer for useful processing
+   TStopwatch             *fInitTimer;           //!<! Timer for initialization
+   Double_t                fIOTime;              //!<! Cumulated time in IO
+   Double_t                fCPUTime;             //!<! Cumulated time in Exec
+   Double_t                fInitTime;            //!<! Cumulated time in initialization
+   static TString          fgCommonFileName;     //!<! Common output file name (not streamed)
+   static TString          fgMacroNames;         //!<! Loaded macro names
+   static AliAnalysisManager *fgAnalysisManager; //!<! static pointer to object instance
    ClassDef(AliAnalysisManager, 21)  // Analysis manager class
 };   
 #endif

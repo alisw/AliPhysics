@@ -13,8 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-// Author: Andrei Gheata, 31/05/2006
 
 //==============================================================================
 //   AliAnalysysDataContainer - Container of data of arbitrary type deriving
@@ -94,7 +92,8 @@ AliAnalysisDataContainer::AliAnalysisDataContainer(const char *name, TClass *typ
                           fProducer(NULL),
                           fConsumers(NULL)
 {
-// Default constructor.
+/// Default constructor.
+
    SetTitle(fType->GetName());
 }
 
@@ -111,7 +110,8 @@ AliAnalysisDataContainer::AliAnalysisDataContainer(const AliAnalysisDataContaine
                           fProducer(cont.fProducer),
                           fConsumers(NULL)
 {
-// Copy ctor.
+/// Copy ctor.
+
    GetType();
    if (cont.fConsumers) {
       fConsumers = new TObjArray(2);
@@ -123,7 +123,8 @@ AliAnalysisDataContainer::AliAnalysisDataContainer(const AliAnalysisDataContaine
 //______________________________________________________________________________
 AliAnalysisDataContainer::~AliAnalysisDataContainer()
 {
-// Destructor. Deletes data ! (What happens if data is a container ???)
+/// Destructor. Deletes data ! (What happens if data is a container ???)
+
    if (fData && fOwnedData) delete fData;
    if (fConsumers) delete fConsumers;
 }
@@ -131,7 +132,8 @@ AliAnalysisDataContainer::~AliAnalysisDataContainer()
 //______________________________________________________________________________
 AliAnalysisDataContainer &AliAnalysisDataContainer::operator=(const AliAnalysisDataContainer &cont)
 {
-// Assignment.
+/// Assignment.
+
    if (&cont != this) {
       TNamed::operator=(cont);
       fDataReady = cont.fDataReady;
@@ -154,7 +156,7 @@ AliAnalysisDataContainer &AliAnalysisDataContainer::operator=(const AliAnalysisD
 //______________________________________________________________________________
 void AliAnalysisDataContainer::Streamer(TBuffer &R__b)
 {
-   // Stream an object of class AliAnalysisDataContainer.
+   /// Stream an object of class AliAnalysisDataContainer.
 
    if (R__b.IsReading()) {
       R__b.ReadClassBuffer(AliAnalysisDataContainer::Class(),this);
@@ -167,7 +169,8 @@ void AliAnalysisDataContainer::Streamer(TBuffer &R__b)
 //______________________________________________________________________________
 void AliAnalysisDataContainer::AddConsumer(AliAnalysisTask *consumer, Int_t islot)
 {
-// Add a consumer for contained data;
+/// Add a consumer for contained data;
+
    AliAnalysisDataSlot *slot = consumer->GetInputSlot(islot);
    if (!slot || !slot->GetType()) {
      cout<<"Consumer task "<< consumer->GetName()<<" does not have an input/type #"<<islot<<endl;
@@ -190,7 +193,8 @@ void AliAnalysisDataContainer::AddConsumer(AliAnalysisTask *consumer, Int_t islo
 //______________________________________________________________________________
 Bool_t AliAnalysisDataContainer::ClientsExecuted() const
 {
-// Check if all client tasks have executed.
+/// Check if all client tasks have executed.
+
    TIter next(fConsumers);
    AliAnalysisTask *task;
    while ((task=(AliAnalysisTask*)next())) {
@@ -202,7 +206,8 @@ Bool_t AliAnalysisDataContainer::ClientsExecuted() const
 //______________________________________________________________________________
 void AliAnalysisDataContainer::DeleteData()
 {
-// Delete data if not needed anymore.
+/// Delete data if not needed anymore.
+
    if (!fDataReady || !ClientsExecuted()) {
      cout<<"Data not ready or not all clients of container "<<GetName()<<" executed. Data not deleted."<<endl;
      //AliWarning(Form("Data not ready or not all clients of container %s executed. Data not deleted.", GetName()));
@@ -221,7 +226,8 @@ void AliAnalysisDataContainer::DeleteData()
 //______________________________________________________________________________
 TClass *AliAnalysisDataContainer::GetType() const
 {
-// Get class type for this slot.
+/// Get class type for this slot.
+
    AliAnalysisDataContainer *cont = (AliAnalysisDataContainer*)this;
    if (!fType) cont->SetType(gROOT->GetClass(fTitle.Data()));
    if (!fType) printf("AliAnalysisDataContainer: Unknown class: %s\n", GetTitle());
@@ -231,8 +237,9 @@ TClass *AliAnalysisDataContainer::GetType() const
 //______________________________________________________________________________
 void AliAnalysisDataContainer::GetEntry(Long64_t ientry)
 {
-// If data is ready and derives from TTree or from TBranch, this will get the
-// requested entry in memory if not already loaded.
+/// If data is ready and derives from TTree or from TBranch, this will get the
+/// requested entry in memory if not already loaded.
+
    if (!fDataReady || !GetType()) return;
    Bool_t istree = fType->InheritsFrom(TTree::Class());
    if (istree) {
@@ -251,8 +258,9 @@ void AliAnalysisDataContainer::GetEntry(Long64_t ientry)
 //______________________________________________________________________________
 Long64_t AliAnalysisDataContainer::Merge(TCollection *list)
 {
-// Merge a list of containers with this one. Containers in the list must have
-// data of the same type.
+/// Merge a list of containers with this one. Containers in the list must have
+/// data of the same type.
+
    if (!list || !fData) return 0;
    AliInfo(Form("Merging %d containers %s\n", list->GetEntries(), GetName()));
    TMethodCall callEnv;
@@ -291,7 +299,8 @@ Long64_t AliAnalysisDataContainer::Merge(TCollection *list)
 //______________________________________________________________________________
 void AliAnalysisDataContainer::PrintContainer(Option_t *option, Int_t indent) const
 {
-// Print info about this container.
+/// Print info about this container.
+
    TString ind;
    for (Int_t i=0; i<indent; i++) ind += " ";
    TString opt(option);
@@ -324,8 +333,9 @@ void AliAnalysisDataContainer::PrintContainer(Option_t *option, Int_t indent) co
 //______________________________________________________________________________
 Bool_t AliAnalysisDataContainer::SetData(TObject *data, Option_t *)
 {
-// Set the data as READY only if it was published by the producer.
-   // If there is no producer declared, this is a top level container.
+/// Set the data as READY only if it was published by the producer.
+/// If there is no producer declared, this is a top level container.
+
    AliAnalysisTask *task;
    Bool_t init = kFALSE;
    Int_t i, nc;
@@ -365,10 +375,11 @@ Bool_t AliAnalysisDataContainer::SetData(TObject *data, Option_t *)
 //______________________________________________________________________________
 void AliAnalysisDataContainer::SetFileName(const char *filename)
 {
-// The filename field can be actually composed by the actual file name followed
-// by :dirname (optional):
-// filename = file_name[:dirname]
-// No slashes (/) allowed
+/// The filename field can be actually composed by the actual file name followed
+/// by :dirname (optional):
+/// filename = file_name[:dirname]
+/// No slashes (/) allowed
+
   fFileName = filename;
   fFolderName = "";
   Int_t index = fFileName.Index(":");
@@ -386,7 +397,8 @@ void AliAnalysisDataContainer::SetFileName(const char *filename)
 //______________________________________________________________________________
 void AliAnalysisDataContainer::SetProducer(AliAnalysisTask *prod, Int_t islot)
 {
-// Set the producer of data. The slot number is required for data type checking.
+/// Set the producer of data. The slot number is required for data type checking.
+
    if (fProducer) {
      cout<<"Data container "<<GetName()<<" already has a producer: "<<fProducer->GetName()<<endl;
      //AliWarning(Form("Data container %s already has a producer: %s",GetName(),fProducer->GetName()));
@@ -420,7 +432,8 @@ void AliAnalysisDataContainer::SetProducer(AliAnalysisTask *prod, Int_t islot)
 //______________________________________________________________________________
 AliAnalysisDataWrapper *AliAnalysisDataContainer::ExportData() const
 {
-// Wraps data for sending it through the net.
+/// Wraps data for sending it through the net.
+
    AliAnalysisDataWrapper *pack = 0;
    if (!fData) {
       Error("ExportData", "Container %s - No data to be wrapped !", GetName());
@@ -436,7 +449,8 @@ AliAnalysisDataWrapper *AliAnalysisDataContainer::ExportData() const
 //______________________________________________________________________________
 void AliAnalysisDataContainer::ImportData(AliAnalysisDataWrapper *pack)
 {
-// Unwraps data from a data wrapper.
+/// Unwraps data from a data wrapper.
+
    if (pack) {
       fData = pack->Data();
       if (!fData) {

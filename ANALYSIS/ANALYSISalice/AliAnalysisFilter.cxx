@@ -13,15 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-//
-// Manager class for filter decisions based on cuts
-// The filter contains a list of sets of cuts.
-// A bit field is filled in order to store the decision of each cut-set. 
-// Author: Andreas Morsch
-// andreas.morsch@cern.ch
-
 #include <TObject.h>
 #include <TList.h>
 #include "AliAnalysisFilter.h"
@@ -44,27 +35,31 @@ AliAnalysisFilter::AliAnalysisFilter(const char* name, const char* title):
     TNamed(name, title),
     fCuts(new TList())
 {
-  // Constructor
+  /// Constructor
+
 }
 
 AliAnalysisFilter::AliAnalysisFilter(const AliAnalysisFilter& obj):
     TNamed(obj),
     fCuts(0)
 {
-// Copy constructor
+/// Copy constructor
+
     fCuts = obj.fCuts;
 }
 
 AliAnalysisFilter::~AliAnalysisFilter()
 {
-// Destructor
+/// Destructor
+
    if (fCuts) fCuts->Delete("slow");
    delete fCuts;
 }   
 
 AliAnalysisFilter& AliAnalysisFilter::operator=(const AliAnalysisFilter& other)
 {
-// Assignment
+/// Assignment
+
    if (&other != this) {
 	   TNamed::operator=(other);
 	   fCuts = other.fCuts;
@@ -74,9 +69,9 @@ AliAnalysisFilter& AliAnalysisFilter::operator=(const AliAnalysisFilter& other)
    
 UInt_t AliAnalysisFilter::IsSelected(TObject* obj)
 {
-    //
-    // Loop over all set of cuts
-    // and store the decision
+    /// Loop over all set of cuts
+    /// and store the decision
+
     UInt_t result = 0;
     UInt_t filterMask;
     
@@ -99,9 +94,9 @@ UInt_t AliAnalysisFilter::IsSelected(TObject* obj)
 
 UInt_t AliAnalysisFilter::IsSelected(TList* list)
 {
-    //
-    // Loop over all set of cuts
-    // and store the decision
+    /// Loop over all set of cuts
+    /// and store the decision
+
     UInt_t result = 0;
     UInt_t filterMask;
 
@@ -124,8 +119,8 @@ UInt_t AliAnalysisFilter::IsSelected(TList* list)
 
 void AliAnalysisFilter::Init()
 {
-    //
-    // Loop over all set of cuts and call Init
+    /// Loop over all set of cuts and call Init
+
     TIter next(fCuts);
     AliAnalysisCuts *cuts;
     while((cuts = (AliAnalysisCuts*)next())) cuts->Init();
@@ -133,14 +128,15 @@ void AliAnalysisFilter::Init()
 
 void AliAnalysisFilter::AddCuts(AliAnalysisCuts* cuts)
 {
-    // Add a set of cuts
+    /// Add a set of cuts
+
     fCuts->Add(cuts);
 }
 
 Bool_t AliAnalysisFilter::IsSelected(char* name)
 {
-    //
-    // Returns current result for cut with name
+    /// Returns current result for cut with name
+
     AliAnalysisCuts* cut = (AliAnalysisCuts*) (fCuts->FindObject(name));
     if (cut) {
       return (cut->Selected());

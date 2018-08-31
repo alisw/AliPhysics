@@ -2,15 +2,10 @@
 #define ALITAGANALYSIS_H
 /*  See cxx source for full Copyright notice */
 
-
-/* $Id$ */
-
-//-------------------------------------------------------------------------
-//                          Class AliTagAnalysis
-//   This is the AliTagAnalysis class for the tag analysis
-//
-//    Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
-//-------------------------------------------------------------------------
+/// \class AliTagAnalysis
+/// \brief Class AliTagAnalysis
+///
+/// \author Panos Christakoglou, UOA-CERN <Panos.Christakoglou@cern.ch>
 
 
 
@@ -77,11 +72,11 @@ class AliTagAnalysis : public TObject {
   TEntryList *GetGlobalList() {return fGlobalList;}
   //____________________________________________________//
  protected:
-  TGridResult *ftagresult;    //the results from the tag grid query     
-  TString      fTagDirName;   //the location of the locally stored tags
-  TChain      *fChain;        //tag chain 
-  TString      fAnalysisType; //define the type of analysis (esd or aod)
-  TEntryList  *fGlobalList;   //global TEntryList
+  TGridResult *ftagresult;    ///< the results from the tag grid query
+  TString      fTagDirName;   ///< the location of the locally stored tags
+  TChain      *fChain;        ///< tag chain
+  TString      fAnalysisType; ///< define the type of analysis (esd or aod)
+  TEntryList  *fGlobalList;   ///< global TEntryList
   
   //____________________________________________________//
  private:

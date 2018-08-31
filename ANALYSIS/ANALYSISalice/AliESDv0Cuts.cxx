@@ -28,7 +28,6 @@
 #include <TCanvas.h>
 #include <TDirectory.h>
 
-//____________________________________________________________________
 ClassImp(AliESDv0Cuts)
 
 // Cut names
@@ -74,9 +73,7 @@ AliESDv0Cuts::AliESDv0Cuts(const Char_t* name, const Char_t* title) : AliAnalysi
   fhCutStatistics(0),         
   fhCutCorrelation(0)
 {
-  //
-  // constructor
-  //
+  /// constructor
 
   Init();
 
@@ -125,18 +122,14 @@ AliESDv0Cuts::AliESDv0Cuts(const AliESDv0Cuts &c) : AliAnalysisCuts(c),
   fhCutStatistics(0),         
   fhCutCorrelation(0)
 {
-  //
-  // copy constructor
-  //
+  /// copy constructor
 
   ((AliESDv0Cuts &) c).Copy(*this);
 }
 
 AliESDv0Cuts::~AliESDv0Cuts()
 {
-  //
-  // destructor
-  //
+  /// destructor
 
   for (Int_t i=0; i<2; i++) {
     
@@ -168,9 +161,8 @@ AliESDv0Cuts::~AliESDv0Cuts()
 
 void AliESDv0Cuts::Init()
 {
-  //
-  // sets everything to zero
-  //
+  /// sets everything to zero
+
   fCutMinDcaPosToVertex      = 0;
   fCutMinDcaNegToVertex      = 0;
   fCutMaxChi2                = 0;
@@ -214,9 +206,7 @@ void AliESDv0Cuts::Init()
 //_____________________________________________________________________________
 AliESDv0Cuts &AliESDv0Cuts::operator=(const AliESDv0Cuts &c)
 {
-  //
-  // Assignment operator
-  //
+  /// Assignment operator
 
   if (this != &c) ((AliESDv0Cuts &) c).Copy(*this);
   return *this;
@@ -225,9 +215,7 @@ AliESDv0Cuts &AliESDv0Cuts::operator=(const AliESDv0Cuts &c)
 //_____________________________________________________________________________
 void AliESDv0Cuts::Copy(TObject &c) const
 {
-  //
-  // Copy function
-  //
+  /// Copy function
 
   AliESDv0Cuts& target = (AliESDv0Cuts &) c;
 
@@ -277,8 +265,8 @@ void AliESDv0Cuts::Copy(TObject &c) const
 
 //_____________________________________________________________________________
 Long64_t AliESDv0Cuts::Merge(TCollection* list) {
-  // Merge a list of AliESDv0Cuts objects with this (needed for PROOF)
-  // Returns the number of merged objects (including this)
+  /// Merge a list of AliESDv0Cuts objects with this (needed for PROOF)
+  /// Returns the number of merged objects (including this)
 
   if (!list)
     return 0;
@@ -328,7 +316,7 @@ Long64_t AliESDv0Cuts::Merge(TCollection* list) {
 
 void AliESDv0Cuts::EnableNeededBranches(TTree* tree)
 {
-  // enables the branches needed by AcceptV0, for a list see comment of AcceptV0
+  /// enables the branches needed by AcceptV0, for a list see comment of AcceptV0
 
   tree->SetBranchStatus("fV0s.fDcaV0Daughters", 1);
   tree->SetBranchStatus("fV0s.fChi2V0", 1);
@@ -343,7 +331,8 @@ void AliESDv0Cuts::EnableNeededBranches(TTree* tree)
 //____________________________________________________________________
 Bool_t
 AliESDv0Cuts::IsSelected(TList* listObj) {
-// Selection cuts
+/// Selection cuts
+
   if(listObj->GetSize()!=4) return kFALSE;
   AliESDv0           *esdV0     = (AliESDv0*)listObj->At(0);
   AliESDtrack        *trackPos  = (AliESDtrack*)listObj->At(1);
@@ -355,12 +344,11 @@ AliESDv0Cuts::IsSelected(TList* listObj) {
 //____________________________________________________________________
 Bool_t
 AliESDv0Cuts::AcceptV0(AliESDv0* const esdV0, AliESDtrack* const trackPos, AliESDtrack* const trackNeg, const AliESDVertex* esdVertex) {
-  // 
-  // figure out if the v0s survives all the v0 cuts defined
-  //
-  // the different quality parameter and kinematic values are first
-  // retrieved from the v0. then it is found out what cuts the
-  // v0 did not survive and finally the cuts are imposed.
+  /// figure out if the v0s survives all the v0 cuts defined
+  ///
+  /// the different quality parameter and kinematic values are first
+  /// retrieved from the v0. then it is found out what cuts the
+  /// v0 did not survive and finally the cuts are imposed.
 
   // this function needs the following branches... but this is not enough
   // fV0s.fDcaV0Daughters
@@ -501,9 +489,7 @@ AliESDv0Cuts::AcceptV0(AliESDv0* const esdV0, AliESDtrack* const trackPos, AliES
 //____________________________________________________________________
 TObjArray* AliESDv0Cuts::GetAcceptedV0s(const AliESD* esd)
 {
-  //
-  // returns an array of all v0s that pass the cuts
-  //
+  /// returns an array of all v0s that pass the cuts
 
   TObjArray* acceptedV0s = new TObjArray();
   //  const AliESDVertex *spdVertex = esd->GetVertex();
@@ -529,9 +515,7 @@ TObjArray* AliESDv0Cuts::GetAcceptedV0s(const AliESD* esd)
 //____________________________________________________________________
 Int_t AliESDv0Cuts::CountAcceptedV0s(const AliESD* esd)
 {
-  //
-  // returns an the number of v0s that pass the cuts
-  //
+  /// returns an the number of v0s that pass the cuts
 
   Int_t count = 0;
   //  const AliESDVertex *spdVertex = esd->GetVertex();
@@ -585,9 +569,7 @@ TObjArray* AliESDv0Cuts::GetAcceptedV0s(const AliESDEvent* esd)
 //____________________________________________________________________
 Int_t AliESDv0Cuts::CountAcceptedV0s(const AliESDEvent* esd)
 {
-  //
-  // returns an the number of v0s that pass the cuts
-  //
+  /// returns an the number of v0s that pass the cuts
 
   Int_t count = 0;
   //  const AliESDVertex *spdVertex = esd->GetVertex();
@@ -612,9 +594,7 @@ Int_t AliESDv0Cuts::CountAcceptedV0s(const AliESDEvent* esd)
 
 //____________________________________________________________________
  void AliESDv0Cuts::DefineHistograms(Int_t color) {
-   // 
-   // diagnostics histograms are defined
-   // 
+   /// diagnostics histograms are defined
 
    fHistogramsOn=kTRUE;
    
@@ -683,10 +663,8 @@ Int_t AliESDv0Cuts::CountAcceptedV0s(const AliESDEvent* esd)
 //____________________________________________________________________
 Bool_t AliESDv0Cuts::LoadHistograms(const Char_t* dir)
 {
-  //
-  // loads the histograms from a file
-  // if dir is empty a directory with the name of this object is taken (like in SaveHistogram)
-  //
+  /// loads the histograms from a file
+  /// if dir is empty a directory with the name of this object is taken (like in SaveHistogram)
 
   if (!dir)
     dir = GetName();
@@ -731,9 +709,7 @@ Bool_t AliESDv0Cuts::LoadHistograms(const Char_t* dir)
 
 //____________________________________________________________________
 void AliESDv0Cuts::SaveHistograms(const Char_t* dir) {
-  //
-  // saves the histograms in a directory (dir)
-  //
+  /// saves the histograms in a directory (dir)
 
   if (!fHistogramsOn) {
     AliDebug(0, "Histograms not on - cannot save histograms!!!");
@@ -778,7 +754,7 @@ void AliESDv0Cuts::SaveHistograms(const Char_t* dir) {
 //____________________________________________________________________
 void AliESDv0Cuts::DrawHistograms()
 {
-  // draws some histograms
+  /// draws some histograms
 
   TCanvas* canvas1 = new TCanvas(Form("%s_1", GetName()), "V0 Quality Results1", 800, 800);
   canvas1->Divide(2, 2);

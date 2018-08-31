@@ -27,7 +27,7 @@ Bool_t AliEventPool::EventMatchesBin(Int_t mult, Double_t zvtx, Double_t psi, Do
 
 Bool_t AliEventPool::EventMatchesBin(Double_t mult, Double_t zvtx, Double_t psi, Double_t pt) const
 {
-  // Lower bin limit included; upper limit excluded.
+  /// Lower bin limit included; upper limit excluded.
 
   Bool_t multOK = (mult >= fMultMin && mult < fMultMax);
   Bool_t zvtxOK = (zvtx >= fZvtxMin && zvtx < fZvtxMax);
@@ -39,8 +39,8 @@ Bool_t AliEventPool::EventMatchesBin(Double_t mult, Double_t zvtx, Double_t psi,
 
 Int_t AliEventPool::NTracksInPool() const
 {
-  // Number of tracks for this cent, zvtx bin; possibly includes many
-  // events.
+  /// Number of tracks for this cent, zvtx bin; possibly includes many
+  /// events.
 
   Int_t ntrk=0;
   for (Int_t i=0; i<(Int_t)fEvents.size(); ++i) {
@@ -86,7 +86,7 @@ Int_t AliEventPool::SetEventPtRange(Double_t ptMin, Double_t ptMax)
 
 Int_t AliEventPool::GlobalEventIndex(Int_t j) const
 {
-  // Index returned from passing local pool event index.
+  /// Index returned from passing local pool event index.
 
   if (j < 0 || j >= (Int_t)fEventIndex.size()) {
     cout << "ERROR in AliEventPool::GlobalEventIndex(): "
@@ -98,10 +98,10 @@ Int_t AliEventPool::GlobalEventIndex(Int_t j) const
 
 Int_t AliEventPool::UpdatePool(TObjArray *trk)
 {
-  // A rolling buffer (a double-ended queue) is updated by removing
-  // the oldest event, and appending the newest.
-  //
-  // the ownership of <trk> is delegated to this class
+  /// A rolling buffer (a double-ended queue) is updated by removing
+  /// the oldest event, and appending the newest.
+  ///
+  /// the ownership of <trk> is delegated to this class
 
   if(fLockFlag)
   {
@@ -198,8 +198,9 @@ Long64_t AliEventPool::Merge(TCollection* hlist)
 
 void AliEventPool::Clear(Option_t * option)
 {
-  // Clear the pool without deleting the object
-  // Don't touch lock or save flag here to be fully flexible
+  /// Clear the pool without deleting the object
+  /// Don't touch lock or save flag here to be fully flexible
+
   fEvents.clear();
   fNTracksInEvent.clear();
   fEventIndex.clear();
@@ -212,7 +213,7 @@ void AliEventPool::Clear(Option_t * option)
 
 TObject* AliEventPool::GetRandomTrack() const
 {
-  // Get any random track from the pool, sampled with uniform probability.
+  /// Get any random track from the pool, sampled with uniform probability.
 
   UInt_t ranEvt = gRandom->Integer(fEvents.size());
   TObjArray *tca = fEvents.at(ranEvt);
@@ -242,7 +243,7 @@ TObjArray* AliEventPool::GetRandomEvent() const
 
 Int_t AliEventPool::NTracksInEvent(Int_t iEvent) const
 {
-  // Return number of tracks in iEvent, which is the local pool index.
+  /// Return number of tracks in iEvent, which is the local pool index.
 
   Int_t n = -1;
   Int_t curEvent = fEventIndex.back();

@@ -13,14 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-// Author: Andrei Gheata, 31/05/2006
-
-//==============================================================================
-//   AliAnalysisSelector - A transparent selector to be created by 
-// AliAnalysisManager to handle analysis.
-//==============================================================================
-
 #include <Riostream.h>
 #include <TProcessID.h>
 #include <TROOT.h>
@@ -51,24 +43,27 @@ AliAnalysisSelector::AliAnalysisSelector(AliAnalysisManager *mgr)
                      fInitialized(kFALSE),
                      fAnalysis(mgr)
 {
-// Constructor. Called by AliAnalysisManager which registers itself on the
-// selector running on the master.
+/// Constructor. Called by AliAnalysisManager which registers itself on the
+/// selector running on the master.
+
    mgr->SetSelector(this);
 }
 
 //______________________________________________________________________________
 AliAnalysisSelector::~AliAnalysisSelector()
 {
-// Dtor. The analysis manager object is sent in the input list and duplicated
-// on the workers - it needs to be deleted (?)
-//   if (fAnalysis) delete fAnalysis;
+/// Dtor. The analysis manager object is sent in the input list and duplicated
+/// on the workers - it needs to be deleted (?)
+///   if (fAnalysis) delete fAnalysis;
+
 }
 
 //______________________________________________________________________________
 void AliAnalysisSelector::Init(TTree *tree)
 {
-// Called after Begin/SlaveBegin, assumes that fAnalysis is already initialized.
-// Is Init called on workers in case of PROOF.
+/// Called after Begin/SlaveBegin, assumes that fAnalysis is already initialized.
+/// Is Init called on workers in case of PROOF.
+
    if (!fAnalysis) {
       Error("Init", "Analysis manager NULL !");
       Abort("Cannot initialize without analysis manager. Aborting.");
@@ -99,7 +94,8 @@ void AliAnalysisSelector::Init(TTree *tree)
 //______________________________________________________________________________
 void AliAnalysisSelector::Begin(TTree *)
 {
-// Assembly the input list.
+/// Assembly the input list.
+
    RestoreAnalysisManager();
    if (fAnalysis && fAnalysis->GetDebugLevel()>1) {
       cout << "->AliAnalysisSelector->Begin: Analysis manager restored" << endl;
@@ -110,7 +106,8 @@ void AliAnalysisSelector::Begin(TTree *)
 //______________________________________________________________________________
 void AliAnalysisSelector::SlaveBegin(TTree *tree)
 {
-// Called on each worker. We "unpack" analysis manager here and call InitAnalysis.
+/// Called on each worker. We "unpack" analysis manager here and call InitAnalysis.
+
    RestoreAnalysisManager();
    if (fAnalysis) {
       gROOT->SetMustClean(fAnalysis->MustClean());
@@ -127,11 +124,12 @@ void AliAnalysisSelector::SlaveBegin(TTree *tree)
 //______________________________________________________________________________
 Bool_t AliAnalysisSelector::Notify()
 {
-   // The Notify() function is called when a new file is opened. This
-   // can be either for a new TTree in a TChain or when when a new TTree
-   // is started when using PROOF. It is normaly not necessary to make changes
-   // to the generated code, but the routine can be extended by the
-   // user if needed. The return value is currently not used.
+   /// The Notify() function is called when a new file is opened. This
+   /// can be either for a new TTree in a TChain or when when a new TTree
+   /// is started when using PROOF. It is normaly not necessary to make changes
+   /// to the generated code, but the routine can be extended by the
+   /// user if needed. The return value is currently not used.
+
    if (fAnalysis) return fAnalysis->Notify();
    return kFALSE;
 }
@@ -139,7 +137,8 @@ Bool_t AliAnalysisSelector::Notify()
 //______________________________________________________________________________
 Bool_t AliAnalysisSelector::Process(Long64_t entry)
 {
-// Event loop.
+/// Event loop.
+
    static Int_t count = 0;
    count++;
    if (fAnalysis->GetDebugLevel() > 1) {
@@ -172,7 +171,8 @@ Bool_t AliAnalysisSelector::Process(Long64_t entry)
 //______________________________________________________________________________
 void AliAnalysisSelector::RestoreAnalysisManager()
 {
-// Restores analysis manager from the input list.
+/// Restores analysis manager from the input list.
+
    if (!fAnalysis) {
       TIter next(fInput);
       TObject *obj;
@@ -196,9 +196,10 @@ void AliAnalysisSelector::RestoreAnalysisManager()
 //______________________________________________________________________________
 void AliAnalysisSelector::SlaveTerminate()
 {
-  // The SlaveTerminate() function is called after all entries or objects
-  // have been processed. When running with PROOF SlaveTerminate() is called
-  // on each slave server.
+  /// The SlaveTerminate() function is called after all entries or objects
+  /// have been processed. When running with PROOF SlaveTerminate() is called
+  /// on each slave server.
+
    gROOT->SetMustClean(kTRUE);
    if (fStatus == -1) return;  // TSelector won't abort...
    if (fAnalysis->GetAnalysisType() == AliAnalysisManager::kMixingAnalysis) return;
@@ -214,9 +215,10 @@ void AliAnalysisSelector::SlaveTerminate()
 //______________________________________________________________________________
 void AliAnalysisSelector::Terminate()
 {
-  // The Terminate() function is the last function to be called during
-  // a query. It always runs on the client, it can be used to present
-  // the results graphically or save the results to file.
+  /// The Terminate() function is the last function to be called during
+  /// a query. It always runs on the client, it can be used to present
+  /// the results graphically or save the results to file.
+
    gROOT->SetMustClean(kTRUE);
    if (fStatus == -1) return;  // TSelector won't abort...
    if (!fAnalysis) {

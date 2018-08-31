@@ -15,12 +15,6 @@
 
 /* $Id: AliAnalysisTaskBaseLine.cxx 46301 2011-01-06 14:25:27Z agheata $ */
 
-//
-//
-// This empty task is used for the analysis train to estimate the memory and CPU consumption without any user code
-//
-//
-
 #include "AliAnalysisTaskBaseLine.h"
 #include "TChain.h"
 
@@ -35,16 +29,19 @@ AliAnalysisTaskBaseLine::AliAnalysisTaskBaseLine()
 AliAnalysisTaskBaseLine::AliAnalysisTaskBaseLine(const char *name)
    :AliAnalysisTaskSE(name)
 {
-  // constructor
+  /// constructor
+
   DefineInput(0, TChain::Class());
 }
 
 AliAnalysisTaskBaseLine::~AliAnalysisTaskBaseLine()
 {
-   // destructor
+   /// destructor
+
 }
 
 void AliAnalysisTaskBaseLine::UserExec(Option_t *) 
 {
-  // empty exec
+  /// empty exec
+
 }

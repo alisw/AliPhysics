@@ -11,14 +11,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-//-----------------------------------------------------------------
-//           AliTagAnalysis class
-//   This is the class to deal with the tag analysis
-//   Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
-//-----------------------------------------------------------------
-
 //ROOT
 #include <Riostream.h>
 #include <TSystem.h>
@@ -66,12 +58,14 @@ AliTagAnalysis::AliTagAnalysis(const char* type):
   fChain(0x0),
   fAnalysisType(type),
   fGlobalList(0) {
-  //constructor for a AliTagAnalysis
+  /// constructor for a AliTagAnalysis
+
 }
 
 //___________________________________________________________________________
 AliTagAnalysis::~AliTagAnalysis() {
-  //Default destructor for a AliTagAnalysis
+  /// Default destructor for a AliTagAnalysis
+
   if(ftagresult) delete ftagresult;
   if(fChain) delete fChain;
   if(fGlobalList) delete fGlobalList;
@@ -86,7 +80,7 @@ AliTagAnalysis::AddTagsFile(const char* alienUrl, Bool_t checkFile)
   /// If checkFile=kTRUE (default) the file is opened to check
   /// it can be and that it contains data.
   /// It's safer but a lot longer...
-  
+
   if (!fChain) fChain = new TChain("T");
 
   if ( checkFile )
@@ -102,8 +96,9 @@ AliTagAnalysis::AddTagsFile(const char* alienUrl, Bool_t checkFile)
 
 //___________________________________________________________________________
 void AliTagAnalysis::ChainLocalTags(const char *dirname) {
-  //Searches the entries of the provided direcory
-  //Chains the tags that are stored locally
+  /// Searches the entries of the provided direcory
+  /// Chains the tags that are stored locally
+
   fTagDirName = dirname;
   TString fTagFilename;
   
@@ -137,8 +132,9 @@ void AliTagAnalysis::ChainLocalTags(const char *dirname) {
 
 //___________________________________________________________________________
 TChain * AliTagAnalysis::ChainGridTags(TGridResult *res) {
-  //Loops overs the entries of the TGridResult
-   //Chains the tags that are stored in the GRID
+  /// Loops overs the entries of the TGridResult
+  /// Chains the tags that are stored in the GRID
+
   ftagresult = res;
   Int_t nEntries = ftagresult->GetEntries();
  
@@ -160,9 +156,10 @@ TChain *AliTagAnalysis::QueryTags(AliRunTagCuts *runTagCuts,
 				  AliLHCTagCuts *lhcTagCuts, 
 				  AliDetectorTagCuts *detTagCuts, 
 				  AliEventTagCuts *evTagCuts) {
-  //Queries the tag chain using the defined 
-  //event tag cuts from the AliEventTagCuts object
-  //and returns a TChain along with the associated TEventList
+  /// Queries the tag chain using the defined
+  /// event tag cuts from the AliEventTagCuts object
+  /// and returns a TChain along with the associated TEventList
+
   AliInfo(Form("Querying the tags........"));
 
   TString aliceFile;
@@ -248,9 +245,10 @@ TChain *AliTagAnalysis::QueryTags(const char *fRunCut,
 				  const char *fLHCCut, 
 				  const char *fDetectorCut, 
 				  const char *fEventCut) { 	 
-  //Queries the tag chain using the defined 	 
-  //event tag cuts from the AliEventTagCuts object 	 
-  //and returns a TChain along with the associated TEventList 	 
+  /// Queries the tag chain using the defined
+  /// event tag cuts from the AliEventTagCuts object
+  /// and returns a TChain along with the associated TEventList
+
   AliInfo(Form("Querying the tags........")); 	 
 
   TString aliceFile;
@@ -340,7 +338,7 @@ AliTagAnalysis::CreateXMLCollection(const char* name,
   /// and create a XML collection named "name.xml"
   /// if any of the runTagCuts, lhcTagCuts, detTagCuts or evTagCuts is NULL
   /// check on that object will be skipped.
-  
+
   AliInfo(Form("Creating the collection........"));
   
   if (!fChain) 
@@ -476,9 +474,10 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name,
 					   const char *fLHCCut, 
 					   const char *fDetectorCut, 
 					   const char *fEventCut) {
-  //Queries the tag chain using the defined 
-  //event tag cuts from the AliEventTagCuts object
-  //and returns a XML collection
+  /// Queries the tag chain using the defined
+  /// event tag cuts from the AliEventTagCuts object
+  /// and returns a XML collection
+
   AliInfo(Form("Creating the collection........"));
 
 
@@ -578,9 +577,10 @@ Bool_t AliTagAnalysis::CreateXMLCollection(const char* name,
 
 //___________________________________________________________________________
 TChain *AliTagAnalysis::GetInputChain(const char* system, const char *wn) {
-  //returns the chain+event list - used in batch sessions
-  // this function will be removed once the new root 
-  // improvements are committed
+  /// returns the chain+event list - used in batch sessions
+  /// this function will be removed once the new root
+  /// improvements are committed
+
   TString fsystem = system;
   Int_t iAccepted = 0;
 

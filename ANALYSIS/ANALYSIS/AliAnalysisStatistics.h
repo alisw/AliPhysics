@@ -3,13 +3,14 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-// Author: Andrei Gheata, 20/12/2010
-
-//==============================================================================
-//   AliAnalysisStatistics - Class holding statistics information regarding the
-//      number of events processed, failed and accepted.
-//==============================================================================
+/// \class AliAnalysisStatistics
+/// \brief AliAnalysisStatistics
+/// basic class for storing statistics for the processed
+/// events. The object is mergeable and can be used for general purpose. In case
+/// a AliAnalysisTaskStat is used, this will set the global statistics object
+/// to the analysis manager and will update it for the accepted events.
+/// \author Andrei Gheata
+/// \date 20/12/2010
 
 #ifndef ROOT_TNamed
 #include "TNamed.h"
@@ -21,18 +22,20 @@ class TStopwatch;
 class AliAnalysisStatistics : public TNamed {
 
 protected:
-  Long64_t                    fNinput;            // Total number of input events
-  Long64_t                    fNprocessed;        // Number of events processed
-  Long64_t                    fNfailed;           // Number of events for which reading failed
-  Long64_t                    fNaccepted;         // Number of events that passed filtering criteria
-  UInt_t                      fOfflineMask;       // Offline mask used for accepted events
-  Int_t                       fMaxTasks;          // Allocated size for the task timing arrays
-  Int_t                       fNtasks;            // Number of tasks
-  Int_t                       fCurrentTask;       // Current task being timed
-  Double_t                   *fTaskTimeReal;      //[fNtasks] Cumulated CPU time per task
-  Double_t                   *fTaskTimeCPU;       //[fNtasks] Cumulated CPU time per task
-  TObjArray                  *fTaskNames;         // Task names
-  TStopwatch                 *fTaskTimer;         //! Stopwatch for task timing
+  Long64_t                    fNinput;            ///< Total number of input events
+  Long64_t                    fNprocessed;        ///< Number of events processed
+  Long64_t                    fNfailed;           ///< Number of events for which reading failed
+  Long64_t                    fNaccepted;         ///< Number of events that passed filtering criteria
+  UInt_t                      fOfflineMask;       ///< Offline mask used for accepted events
+  Int_t                       fMaxTasks;          ///< Allocated size for the task timing arrays
+  Int_t                       fNtasks;            ///< Number of tasks
+  Int_t                       fCurrentTask;       ///< Current task being timed
+  /// Cumulated CPU time per task
+  Double_t                   *fTaskTimeReal;      //[fNtasks]
+  /// Cumulated CPU time per task
+  Double_t                   *fTaskTimeCPU;       //[fNtasks]
+  TObjArray                  *fTaskNames;         ///< Task names
+  TStopwatch                 *fTaskTimer;         //!<! Stopwatch for task timing
   
 public:
   AliAnalysisStatistics() : TNamed(),fNinput(0),fNprocessed(0),fNfailed(0),

@@ -13,13 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliUnfolding.cxx 31168 2009-02-23 15:18:45Z jgrosseo $ */
-
-// This class allows 1-dimensional unfolding.
-// Methods that are implemented are chi2 minimization and bayesian unfolding.
-//
-//  Author: Jan.Fiete.Grosse-Oetringhaus@cern.ch
-
 #include "AliUnfolding.h"
 #include <TH1F.h>
 #include <TH2F.h>
@@ -89,7 +82,8 @@ ClassImp(AliUnfolding)
 //____________________________________________________________________
 void AliUnfolding::SetUnfoldingMethod(MethodType methodType)
 {
-  // set unfolding method
+  /// set unfolding method
+
   fgMethodType = methodType; 
   
   const char* name = 0;
@@ -106,8 +100,8 @@ void AliUnfolding::SetUnfoldingMethod(MethodType methodType)
 //____________________________________________________________________
 void AliUnfolding::SetCreateOverflowBin(Float_t overflowBinLimit) 
 { 
-  // enable the creation of a overflow bin that includes all statistics below the given limit
-  
+  /// enable the creation of a overflow bin that includes all statistics below the given limit
+
   fgOverflowBinLimit = overflowBinLimit; 
   
   Printf("AliUnfolding::SetCreateOverflowBin: overflow bin limit set to %f", overflowBinLimit);
@@ -116,8 +110,8 @@ void AliUnfolding::SetCreateOverflowBin(Float_t overflowBinLimit)
 //____________________________________________________________________
 void AliUnfolding::SetSkipBinsBegin(Int_t nBins)
 {
-  // set number of skipped bins in regularization
-  
+  /// set number of skipped bins in regularization
+
   fgSkipBinsBegin = nBins;
   
   Printf("AliUnfolding::SetSkipBinsBegin: skipping %d bins at the beginning of the spectrum in the regularization.", fgSkipBinsBegin);
@@ -126,7 +120,8 @@ void AliUnfolding::SetSkipBinsBegin(Int_t nBins)
 //____________________________________________________________________
 void AliUnfolding::SetNbins(Int_t nMeasured, Int_t nUnfolded) 
 { 
-  // set number of bins in the input (measured) distribution and in the unfolded distribution
+  /// set number of bins in the input (measured) distribution and in the unfolded distribution
+
   fgMaxInput = nMeasured; 
   fgMaxParams = nUnfolded; 
   
@@ -177,9 +172,7 @@ void AliUnfolding::SetNbins(Int_t nMeasured, Int_t nUnfolded)
 //____________________________________________________________________
 void AliUnfolding::SetChi2Regularization(RegularizationType type, Float_t weight)
 {
-  //
-  // sets the parameters for chi2 minimization
-  //
+  /// sets the parameters for chi2 minimization
 
   fgRegularizationType = type;
   fgRegularizationWeight = weight;
@@ -190,9 +183,7 @@ void AliUnfolding::SetChi2Regularization(RegularizationType type, Float_t weight
 //____________________________________________________________________
 void AliUnfolding::SetBayesianParameters(Float_t smoothing, Int_t nIterations)
 {
-  //
-  // sets the parameters for Bayesian unfolding
-  //
+  /// sets the parameters for Bayesian unfolding
 
   fgBayesianSmoothing = smoothing;
   fgBayesianIterations = nIterations;
@@ -203,8 +194,8 @@ void AliUnfolding::SetBayesianParameters(Float_t smoothing, Int_t nIterations)
 //____________________________________________________________________
 void AliUnfolding::SetFunction(TF1* function)
 {
-  // set function for unfolding with a fit function
-  
+  /// set function for unfolding with a fit function
+
   fgFitFunction = function;
   
   Printf("AliUnfolding::SetFunction: Set fit function with %d parameters.", function->GetNpar());
@@ -213,17 +204,17 @@ void AliUnfolding::SetFunction(TF1* function)
 //____________________________________________________________________
 Int_t AliUnfolding::Unfold(TH2* correlation, TH1* efficiency, TH1* measured, TH1* initialConditions, TH1* result, Bool_t check)
 {
-  // unfolds with unfolding method fgMethodType
-  //
-  // parameters:
-  //  correlation: response matrix as measured vs. generated
-  //  efficiency:  (optional) efficiency that is applied on the unfolded spectrum, i.e. it has to be in unfolded variables. If 0 no efficiency is applied.
-  //  measured:    the measured spectrum
-  //  initialConditions: (optional) initial conditions for the unfolding. if 0 the measured spectrum is used as initial conditions.
-  //  result:      target for the unfolded result
-  //  check:       depends on the unfolding method, see comments in specific functions
-  //
-  //  return code: see UnfoldWithMinuit/UnfoldWithBayesian/UnfoldWithFunction
+  /// unfolds with unfolding method fgMethodType
+  ///
+  /// parameters:
+  ///  correlation: response matrix as measured vs. generated
+  ///  efficiency:  (optional) efficiency that is applied on the unfolded spectrum, i.e. it has to be in unfolded variables. If 0 no efficiency is applied.
+  ///  measured:    the measured spectrum
+  ///  initialConditions: (optional) initial conditions for the unfolding. if 0 the measured spectrum is used as initial conditions.
+  ///  result:      target for the unfolded result
+  ///  check:       depends on the unfolding method, see comments in specific functions
+  ///
+  ///  return code: see UnfoldWithMinuit/UnfoldWithBayesian/UnfoldWithFunction
 
   if (fgMaxInput == -1)
   {
@@ -262,7 +253,7 @@ Int_t AliUnfolding::Unfold(TH2* correlation, TH1* efficiency, TH1* measured, TH1
 //____________________________________________________________________
 void AliUnfolding::SetStaticVariables(TH2* correlation, TH1* measured, TH1* efficiency)
 {
-  // fill static variables needed for minuit fit
+  /// fill static variables needed for minuit fit
 
   if (!fgCorrelationMatrix)
     fgCorrelationMatrix = new TMatrixD(fgMaxInput, fgMaxParams);
@@ -365,17 +356,15 @@ void AliUnfolding::SetStaticVariables(TH2* correlation, TH1* measured, TH1* effi
 //____________________________________________________________________
 Int_t AliUnfolding::UnfoldWithMinuit(TH2* correlation, TH1* efficiency, TH1* measured, TH1* initialConditions, TH1* result, Bool_t check)
 {
-  //
-  // implementation of unfolding (internal function)
-  //
-  // unfolds <measured> using response from <correlation> and effiency <efficiency>
-  // output is in <result>
-  // <initialConditions> set the initial values for the minimization, if 0 <measured> is used
-  //   negative values in initialConditions mean that the given parameter is fixed to the absolute of the value
-  // if <check> is true no unfolding is made, instead only the chi2 without unfolding is printed
-  //
-  // returns minuit status (0 = success), (-1 when check was set)
-  //
+  /// implementation of unfolding (internal function)
+  ///
+  /// unfolds <measured> using response from <correlation> and effiency <efficiency>
+  /// output is in <result>
+  /// <initialConditions> set the initial values for the minimization, if 0 <measured> is used
+  ///   negative values in initialConditions mean that the given parameter is fixed to the absolute of the value
+  /// if <check> is true no unfolding is made, instead only the chi2 without unfolding is printed
+  ///
+  /// returns minuit status (0 = success), (-1 when check was set)
 
   SetStaticVariables(correlation, measured, efficiency);
   
@@ -538,10 +527,8 @@ Int_t AliUnfolding::UnfoldWithMinuit(TH2* correlation, TH1* efficiency, TH1* mea
 //____________________________________________________________________
 Int_t AliUnfolding::UnfoldWithBayesian(TH2* correlation, TH1* aEfficiency, TH1* measured, TH1* initialConditions, TH1* aResult)
 {
-  //
-  // unfolds a spectrum using the Bayesian method
-  //
-  
+  /// unfolds a spectrum using the Bayesian method
+
   if (measured->Integral() <= 0)
   {
     Printf("AliUnfolding::UnfoldWithBayesian: ERROR: The measured spectrum is empty");
@@ -875,11 +862,12 @@ Int_t AliUnfolding::UnfoldWithBayesian(TH2* correlation, TH1* aEfficiency, TH1* 
 //____________________________________________________________________
 Double_t AliUnfolding::RegularizationPol0(TVectorD& params)
 {
-  // homogenity term for minuit fitting
-  // pure function of the parameters
-  // prefers constant function (pol0)
-  //
-  // Does not take into account efficiency
+  /// homogenity term for minuit fitting
+  /// pure function of the parameters
+  /// prefers constant function (pol0)
+  ///
+  /// Does not take into account efficiency
+
   Double_t chi2 = 0;
 
   for (Int_t i=1+fgSkipBinsBegin; i<fgMaxParams; ++i)
@@ -900,11 +888,12 @@ Double_t AliUnfolding::RegularizationPol0(TVectorD& params)
 //____________________________________________________________________
 Double_t AliUnfolding::RegularizationPol1(TVectorD& params)
 {
-  // homogenity term for minuit fitting
-  // pure function of the parameters
-  // prefers linear function (pol1)
-  //
-  // Does not take into account efficiency
+  /// homogenity term for minuit fitting
+  /// pure function of the parameters
+  /// prefers linear function (pol1)
+  ///
+  /// Does not take into account efficiency
+
   Double_t chi2 = 0;
 
   for (Int_t i=2+fgSkipBinsBegin; i<fgMaxParams; ++i)
@@ -930,11 +919,11 @@ Double_t AliUnfolding::RegularizationPol1(TVectorD& params)
 //____________________________________________________________________
 Double_t AliUnfolding::RegularizationLog(TVectorD& params)
 {
-  // homogenity term for minuit fitting
-  // pure function of the parameters
-  // prefers logarithmic function (log)
-  //
-  // Does not take into account efficiency
+  /// homogenity term for minuit fitting
+  /// pure function of the parameters
+  /// prefers logarithmic function (log)
+  ///
+  /// Does not take into account efficiency
 
   Double_t chi2 = 0;
 
@@ -963,12 +952,12 @@ Double_t AliUnfolding::RegularizationLog(TVectorD& params)
 //____________________________________________________________________
 Double_t AliUnfolding::RegularizationTotalCurvature(TVectorD& params)
 {
-  // homogenity term for minuit fitting
-  // pure function of the parameters
-  // minimizes the total curvature (from Unfolding Methods In High-Energy Physics Experiments,
-  // V. Blobel (Hamburg U.) . DESY 84/118, Dec 1984. 40pp.
-  //
-  // Does not take into account efficiency
+  /// homogenity term for minuit fitting
+  /// pure function of the parameters
+  /// minimizes the total curvature (from Unfolding Methods In High-Energy Physics Experiments,
+  /// V. Blobel (Hamburg U.) . DESY 84/118, Dec 1984. 40pp.
+  ///
+  /// Does not take into account efficiency
 
   Double_t chi2 = 0;
 
@@ -992,12 +981,12 @@ Double_t AliUnfolding::RegularizationTotalCurvature(TVectorD& params)
 //____________________________________________________________________
 Double_t AliUnfolding::RegularizationEntropy(TVectorD& params)
 {
-  // homogenity term for minuit fitting
-  // pure function of the parameters
-  // calculates entropy, from
-  // The method of reduced cross-entropy (M. Schmelling 1993)
-  //
-  // Does not take into account efficiency
+  /// homogenity term for minuit fitting
+  /// pure function of the parameters
+  /// calculates entropy, from
+  /// The method of reduced cross-entropy (M. Schmelling 1993)
+  ///
+  /// Does not take into account efficiency
 
   Double_t paramSum = 0;
   
@@ -1023,10 +1012,10 @@ Double_t AliUnfolding::RegularizationEntropy(TVectorD& params)
 //____________________________________________________________________
 Double_t AliUnfolding::RegularizationRatio(TVectorD& params)
 {
-  // homogenity term for minuit fitting
-  // pure function of the parameters
-  //
-  // Does not take into account efficiency
+  /// homogenity term for minuit fitting
+  /// pure function of the parameters
+  ///
+  /// Does not take into account efficiency
 
   Double_t chi2 = 0;
 
@@ -1055,11 +1044,11 @@ Double_t AliUnfolding::RegularizationRatio(TVectorD& params)
 //____________________________________________________________________
 Double_t AliUnfolding::RegularizationPowerLaw(TVectorD& params)
 {
-  // homogenity term for minuit fitting
-  // pure function of the parameters
-  // prefers power law with n = -5
-  //
-  // Does not take into account efficiency
+  /// homogenity term for minuit fitting
+  /// pure function of the parameters
+  /// prefers power law with n = -5
+  ///
+  /// Does not take into account efficiency
 
   Double_t chi2 = 0;
 
@@ -1099,11 +1088,11 @@ Double_t AliUnfolding::RegularizationPowerLaw(TVectorD& params)
 //____________________________________________________________________
 Double_t AliUnfolding::RegularizationLogLog(TVectorD& params)
 {
-  // homogenity term for minuit fitting
-  // pure function of the parameters
-  // prefers a powerlaw (linear on a log-log scale)
-  //
-  // The calculation takes into account the efficiencies
+  /// homogenity term for minuit fitting
+  /// pure function of the parameters
+  /// prefers a powerlaw (linear on a log-log scale)
+  ///
+  /// The calculation takes into account the efficiencies
 
   Double_t chi2 = 0;
 
@@ -1135,11 +1124,9 @@ Double_t AliUnfolding::RegularizationLogLog(TVectorD& params)
 //____________________________________________________________________
 void AliUnfolding::Chi2Function(Int_t&, Double_t*, Double_t& chi2, Double_t *params, Int_t)
 {
-  //
-  // fit function for minuit
-  // does: (m - Ad)W(m - Ad) where m = measured, A correlation matrix, d = guess, W = covariance matrix
-  //
-  
+  /// fit function for minuit
+  /// does: (m - Ad)W(m - Ad) where m = measured, A correlation matrix, d = guess, W = covariance matrix
+
   // TODO use static members for the variables here to speed up processing (no construction/deconstruction)
 
   // d = guess
@@ -1280,14 +1267,14 @@ void AliUnfolding::MakePads() {
 //____________________________________________________________________
 void AliUnfolding::DrawResults(TH2* correlation, TH1* efficiency, TH1* measured, TH1* initialConditions, TCanvas *canv, Int_t reuseHists,TH1 *unfolded)
 {
-  // Draw histograms of
-  //   - Result folded with response
-  //   - Penalty factors
-  //   - Chisquare contributions
-  // (Useful for debugging/sanity checks and the interactive unfolder)
-  //
-  // If a canvas pointer is given (canv != 0), it will be used for all
-  // plots; 3 pads are made if needed.
+  /// Draw histograms of
+  ///   - Result folded with response
+  ///   - Penalty factors
+  ///   - Chisquare contributions
+  /// (Useful for debugging/sanity checks and the interactive unfolder)
+  ///
+  /// If a canvas pointer is given (canv != 0), it will be used for all
+  /// plots; 3 pads are made if needed.
 
 
   Int_t blankCanvas = 0;
@@ -1372,19 +1359,17 @@ void AliUnfolding::DrawResults(TH2* correlation, TH1* efficiency, TH1* measured,
 }
 //____________________________________________________________________
 void AliUnfolding::RedrawInteractive() {
-  // 
-  // Helper function for interactive unfolding
-  //
+  /// Helper function for interactive unfolding
+
   DrawResults(fghCorrelation,fghEfficiency,fghMeasured,fghUnfolded,fgCanvas,1,fghUnfolded);
 }
 //____________________________________________________________________
 void AliUnfolding::InteractiveUnfold(TH2* correlation, TH1* efficiency, TH1* measured, TH1* initialConditions) 
 {
-  //
-  // Function to do interactive unfolding
-  // A canvas is drawn with the unfolding result
-  // Change the histogram with your mouse and all histograms 
-  // will be updated automatically
+  /// Function to do interactive unfolding
+  /// A canvas is drawn with the unfolding result
+  /// Change the histogram with your mouse and all histograms
+  /// will be updated automatically
 
   fgCanvas = new TCanvas("UnfoldingCanvas","Interactive unfolding",500,800);
   fgCanvas->cd();
@@ -1423,9 +1408,7 @@ void AliUnfolding::InteractiveUnfold(TH2* correlation, TH1* efficiency, TH1* mea
 //____________________________________________________________________
 void AliUnfolding::DrawGuess(Double_t *params, TVirtualPad *pfolded, TVirtualPad *pres, TVirtualPad *ppen, Int_t reuseHists,TH1* unfolded)
 {
-  //
-  // draws residuals of solution suggested by params and effect of regularization
-  //
+  /// draws residuals of solution suggested by params and effect of regularization
 
   if (pfolded == 0)
     pfolded = new TCanvas;
@@ -1519,10 +1502,8 @@ void AliUnfolding::DrawGuess(Double_t *params, TVirtualPad *pfolded, TVirtualPad
 //____________________________________________________________________
 TH1* AliUnfolding::GetResidualsPlot(TH1* corrected)
 {
-  //
-  // MvL: THIS MUST BE INCORRECT. 
-  // Need heff to calculate params from TH1 'corrected'
-  //
+  /// MvL: THIS MUST BE INCORRECT.
+  /// Need heff to calculate params from TH1 'corrected'
 
   //
   // fill residuals histogram of solution suggested by params and effect of regularization
@@ -1543,9 +1524,7 @@ TH1* AliUnfolding::GetResidualsPlot(TH1* corrected)
 //____________________________________________________________________
 TH1* AliUnfolding::GetResidualsPlot(Double_t* params)
 {
-  //
-  // fill residuals histogram of solution suggested by params and effect of regularization
-  //
+  /// fill residuals histogram of solution suggested by params and effect of regularization
 
   // d
   TVectorD paramsVector(fgMaxParams);
@@ -1595,7 +1574,7 @@ TH1* AliUnfolding::GetResidualsPlot(Double_t* params)
 //____________________________________________________________________
 TH1* AliUnfolding::GetPenaltyPlot(TH1* corrected)
 {
-  // draws the penalty factors as function of multiplicity of the current selected regularization
+  /// draws the penalty factors as function of multiplicity of the current selected regularization
 
   Double_t* params = new Double_t[fgMaxParams];
   for (Int_t i=0; i<fgMaxParams; i++)
@@ -1614,8 +1593,8 @@ TH1* AliUnfolding::GetPenaltyPlot(TH1* corrected)
 //____________________________________________________________________
 TH1* AliUnfolding::GetPenaltyPlot(Double_t* params)
 {
-  // draws the penalty factors as function of multiplicity of the current selected regularization
-  
+  /// draws the penalty factors as function of multiplicity of the current selected regularization
+
   //TH1* penalty = new TH1F("penalty", ";unfolded multiplicity;penalty factor", fgMaxParams, -0.5, fgMaxParams - 0.5);
   //  TH1* penalty = new TH1F("penalty", ";unfolded pos;penalty factor", fgMaxParams, fgUnfoldedAxis->GetBinCenter(0)-0.5*fgUnfoldedAxis->GetBinWidth(0),fgUnfoldedAxis->GetBinCenter(fgMaxParams)+0.5*fgUnfoldedAxis->GetBinWidth(fgMaxParams) );
 
@@ -1738,10 +1717,8 @@ TH1* AliUnfolding::GetPenaltyPlot(Double_t* params)
 //____________________________________________________________________
 void AliUnfolding::TF1Function(Int_t& unused1, Double_t* unused2, Double_t& chi2, Double_t *params, Int_t unused3)
 {
-  //
-  // fit function for minuit
-  // uses the TF1 stored in fgFitFunction
-  //
+  /// fit function for minuit
+  /// uses the TF1 stored in fgFitFunction
 
   for (Int_t i=0; i<fgFitFunction->GetNpar(); i++)
     fgFitFunction->SetParameter(i, params[i]);
@@ -1762,10 +1739,8 @@ void AliUnfolding::TF1Function(Int_t& unused1, Double_t* unused2, Double_t& chi2
 //____________________________________________________________________
 Int_t AliUnfolding::UnfoldWithFunction(TH2* correlation, TH1* efficiency, TH1* measured, TH1* /* initialConditions */, TH1* aResult)
 {
-  //
-  // correct spectrum using minuit chi2 method applying a functional fit
-  //
-  
+  /// correct spectrum using minuit chi2 method applying a functional fit
+
   if (!fgFitFunction)
   {
     Printf("AliUnfolding::UnfoldWithFunction: ERROR fit function not set. Exiting.");
@@ -1822,9 +1797,9 @@ Int_t AliUnfolding::UnfoldWithFunction(TH2* correlation, TH1* efficiency, TH1* m
 //____________________________________________________________________
 void AliUnfolding::CreateOverflowBin(TH2* correlation, TH1* measured)
 {
-  // Finds the first bin where the content is below fgStatLimit and combines all values for this bin and larger bins
-  // The same limit is applied to the correlation  
-  
+  /// Finds the first bin where the content is below fgStatLimit and combines all values for this bin and larger bins
+  /// The same limit is applied to the correlation
+
   Int_t lastBin = 0;
   for (Int_t i=1; i<=measured->GetNbinsX(); ++i)
   {
@@ -1899,11 +1874,11 @@ void AliUnfolding::CreateOverflowBin(TH2* correlation, TH1* measured)
 
 Int_t AliUnfolding::UnfoldGetBias(TH2* correlation, TH1* efficiency, TH1* measured, TH1* initialConditions, TH1* result)
 {
-  // unfolds and assigns bias as errors with Eq. 19 of Cowan, "a survey of unfolding methods for particle physics"
-  // b_i = sum_j dmu_i/dn_j (nu_j - n_j) with nu_j as folded guess, n_j as data
-  // dmu_i/dn_j is found numerically by changing the bin content and re-unfolding
-  //
-  // return code: 0 (success) -1 (error: from Unfold(...) )
+  /// unfolds and assigns bias as errors with Eq. 19 of Cowan, "a survey of unfolding methods for particle physics"
+  /// b_i = sum_j dmu_i/dn_j (nu_j - n_j) with nu_j as folded guess, n_j as data
+  /// dmu_i/dn_j is found numerically by changing the bin content and re-unfolding
+  ///
+  /// return code: 0 (success) -1 (error: from Unfold(...) )
 
   if (Unfold(correlation, efficiency, measured, initialConditions, result) != 0)
     return -1;

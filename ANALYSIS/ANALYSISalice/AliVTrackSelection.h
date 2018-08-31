@@ -1,14 +1,19 @@
-/**
- * \file AliVTrackSelection.h
- * \brief Declartion of class AliVTrackSelection
- *
- * In this header file the class AliVTrackSelection, which handles the
- * track selection in a transparent way for ESD and AOD Tracks, is declared.
- *
- * \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
- * \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
- * \date Jan 30, 2016
- */
+/// \class AliVTrackSelection
+/// \brief Declartion of class AliVTrackSelection
+///
+/// In this header file the class AliVTrackSelection, which handles the
+/// track selection in a transparent way for ESD and AOD Tracks, is declared.
+/// Interface for track selection within the EMCAL framework. Enables transparent track selection
+/// for ESDs and AODs by implementing a wrapper derived from this class. The following abstract
+/// functions need to be implemented by inheriting classes:
+/// - GetAcceptedTracks (with TClonesArray and AliVEvent as parameters)
+/// - IsTrackAccepted (with AliVTrackCuts)
+/// - GenerateTrackCuts
+///
+/// \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
+/// \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
+/// \date Jan 30, 2016
+
 #ifndef ALIVTRACKSELECTION_H_
 #define ALIVTRACKSELECTION_H_
 /* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
@@ -23,17 +28,6 @@ class AliVCuts;
 class AliVEvent;
 class AliVTrack;
 
-/**
- * \class AliVTrackSelection
- * \brief Interface for virtual track selection
- *
- * Interface for track selection within the EMCAL framework. Enables transparent track selection
- * for ESDs and AODs by implementing a wrapper derived from this class. The following abstract
- * functions need to be implemented by inheriting classes:
- * - GetAcceptedTracks (with TClonesArray and AliVEvent as parameters)
- * - IsTrackAccepted (with AliVTrackCuts)
- * - GenerateTrackCuts
- */
 class AliVTrackSelection : public TObject {
 public:
 	AliVTrackSelection();
@@ -63,9 +57,7 @@ protected:
 	TObjArray    *fListOfCuts;           ///< List of track cut objects
 	Bool_t        fSelectionModeAny;     ///< Accept track if any of the cuts is fulfilled
 
-	/// \cond CLASSIMP
 	ClassDef(AliVTrackSelection, 1);
-	/// \endcond
 };
 
 #endif /* ALIVTRACKSELECTION_H_ */

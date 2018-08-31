@@ -1,12 +1,8 @@
-//
-// Class AliPIDResponseInputHandler
-//
-// AliPIDResponseInputHandler
-// TODO example
-// authors:
-//        Jens Wiechula (jens.wiechula@cern.ch)
-//        Martin Vala (martin.vala@cern.ch)
-//
+/// \class AliPIDResponseInputHandler
+/// \brief Class AliPIDResponseInputHandler
+/// Handler to set up the PID response object and
+/// initialise it correctly for each event
+/// \author Jens Wiechula <jens.wiechula@cern.ch>, Martin Vala <martin.vala@cern.ch>
 
 #ifndef ALIPIDRESPONSEINPUTHANDLER_H
 #define ALIPIDRESPONSEINPUTHANDLER_H
@@ -33,14 +29,14 @@ public:
   void SetIsMC(Bool_t isMC=kTRUE) { fIsMC=isMC; }
 private:
   
-  Bool_t fIsMC;                        //  If we run on MC data
+  Bool_t fIsMC;                        ///< If we run on MC data
   
-  AliPIDResponse *fPIDResponse;        //! PID response Handler
-  Int_t   fRun;                        //! current run number
-  Int_t   fOldRun;                     //! current run number
-  Int_t   fRecoPass;                   //! reconstruction pass
+  AliPIDResponse *fPIDResponse;        //!<! PID response Handler
+  Int_t   fRun;                        //!<! current run number
+  Int_t   fOldRun;                     //!<! current run number
+  Int_t   fRecoPass;                   //!<! reconstruction pass
   
-  AliMultiInputEventHandler *fMCurrentMutliIH;  //! input handler
+  AliMultiInputEventHandler *fMCurrentMutliIH;  //!<! input handler
   
   //
   void SetRecoInfo();

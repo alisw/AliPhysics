@@ -3,12 +3,12 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// Author: Mihaela Gheata, 01/09/2008
-
-//==============================================================================
-//   AliAnalysisGrid - Base grid utility class. Provides interface for creating
-// a personalized JDL, finding and creating a dataset.
-//==============================================================================
+/// \class AliAnalysisGrid
+/// \brief AliAnalysisGrid
+/// Base grid utility class. Provides interface for creating
+/// a personalized JDL, finding and creating a dataset.
+/// \author Mihaela Gheata
+/// \date 01/09/2008
 
 #ifndef ROOT_TNamed
 #include <TNamed.h>
@@ -160,7 +160,7 @@ protected:
    void     InvertSpecialBit(UInt_t f) { fSpecialBits ^= f & kBitMask32; }
 
 protected:
-   UInt_t              fSpecialBits; // special bits
+   UInt_t              fSpecialBits; ///< special bits
   
 
    ClassDef(AliAnalysisGrid, 2)   // Base class for GRID utilities

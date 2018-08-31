@@ -13,14 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*$Id$*/
-
-/////////////////////////////////////////////////////////////
-//
-//   Test task to add an object to the new AliESDfriends file
-//
-// /////////////////////////////////////////////////////////////
-
 #include <TTree.h>
 #include <TChain.h>
 #include <TFile.h>
@@ -59,8 +51,8 @@ fESDfriendInput(0),
 fESDhandler(0x0),
 fh(0x0)
 {
-	// Constructor
-	
+ /// Constructor
+
 	// Define input and output slots here
 	// Input slot #0 works with a TChain
 	DefineInput(0, TChain::Class());
@@ -74,7 +66,8 @@ fh(0x0)
 AliAnalysisTaskAddObject::~AliAnalysisTaskAddObject()
 {
 
-	// dtor
+ /// dtor
+
 	if (fh){
 		delete fh;
 		fh = 0x0;
@@ -84,9 +77,7 @@ AliAnalysisTaskAddObject::~AliAnalysisTaskAddObject()
 //______________________________________________________________________________
 void AliAnalysisTaskAddObject::ConnectInputData(Option_t* /*option*/)
 {
-	//
-	// Connect the input data
-	//
+ /// Connect the input data
 
 	printf("AliAnalysisTaskAddObject::ConnectInputData()\n");
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -102,10 +93,10 @@ void AliAnalysisTaskAddObject::ConnectInputData(Option_t* /*option*/)
 //________________________________________________________________________
 void AliAnalysisTaskAddObject::CreateOutputObjects()
 {
-	//
-	// Create the output container
-	//
-	//OpenFile(0,"UPDATE");
+ /// Create the output container
+ ///
+ /// OpenFile(0,"UPDATE");
+
 	fh = new TH1D("fh1","Integrated Length",100,0,1000);
 	return;
 }
@@ -114,7 +105,8 @@ void AliAnalysisTaskAddObject::CreateOutputObjects()
 void AliAnalysisTaskAddObject::Exec(Option_t */*option*/)
 {
 
-	//	if (fDebug > 1) {
+ /// if (fDebug > 1) {
+
 	Long64_t entry = fESDhandler->GetReadEntry();
 	AliDebug(2,Form("AliAnalysisTaskAddObject::Exec() %s ==> processing event %lld", fESDhandler->GetTree()->GetCurrentFile()->GetName(),entry));
 	//}  
@@ -135,8 +127,8 @@ void AliAnalysisTaskAddObject::Exec(Option_t */*option*/)
 //________________________________________________________________________
 void AliAnalysisTaskAddObject::Terminate(Option_t */*option*/)
 {
-	// Terminate analysis
-	//
+ /// Terminate analysis
+
 	AliDebug(2,"AliAnalysisTaskAddObject: Terminate() \n");
 	
 	return;

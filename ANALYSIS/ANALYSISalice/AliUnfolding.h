@@ -1,18 +1,19 @@
-/* $Id$ */
-
 #ifndef ALIUNFOLDING_H
 #define ALIUNFOLDING_H
 
-//
-// class that implements several unfolding methods
-// I.e. chi2 minimization and bayesian unfolding
-// The whole class is static and not thread-safe (due to the fact that MINUIT unfolding is not thread-safe)
-//
-
-// TMatrixD, TVectorD defined here, because it does not seem possible to predeclare these (or i do not know how)
-// -->
-// $ROOTSYS/include/TVectorDfwd.h:21: conflicting types for `typedef struct TVectorT<Double_t> TVectorD'
-// PWG0/AliUnfolding.h:21: previous declaration as `struct TVectorD'
+/// \class AliUnfolding
+/// \brief class that implements several unfolding methods
+///
+/// I.e. chi2 minimization and bayesian unfolding
+/// The whole class is static and not thread-safe (due to the fact that MINUIT unfolding is not thread-safe)
+/// TMatrixD, TVectorD defined here, because it does not seem possible to predeclare these (or i do not know how)
+/// -->
+/// $ROOTSYS/include/TVectorDfwd.h:21: conflicting types for `typedef struct TVectorT<Double_t> TVectorD'
+/// PWG0/AliUnfolding.h:21: previous declaration as `struct TVectorD'
+///
+/// Methods that are implemented are chi2 minimization and bayesian unfolding.
+///
+/// \author Jan Fiete Grosse-Oetringhaus <Jan.Fiete.Grosse-Oetringhaus@cern.ch>
 
 #include "TObject.h"
 #include <TMatrixD.h>
@@ -94,62 +95,62 @@ class AliUnfolding : public TObject
     static void TF1Function(Int_t& unused1, Double_t* unused2, Double_t& chi2, Double_t *params, Int_t unused3);
 
     // static variable to be accessed by MINUIT
-    static TMatrixD* fgCorrelationMatrix;            // contains fCurrentCorrelation in matrix form
-    static TMatrixD* fgCorrelationMatrixSquared;     // contains squared fCurrentCorrelation in matrix form
-    static TMatrixD* fgCorrelationCovarianceMatrix;  // contains the errors of fCurrentESD
-    static TVectorD* fgCurrentESDVector;             // contains fCurrentESD
-    static TVectorD* fgEntropyAPriori;               // a-priori distribution for entropy regularization
-    static TVectorD* fgEfficiency;                   // efficiency
+    static TMatrixD* fgCorrelationMatrix;            ///< contains fCurrentCorrelation in matrix form
+    static TMatrixD* fgCorrelationMatrixSquared;     ///< contains squared fCurrentCorrelation in matrix form
+    static TMatrixD* fgCorrelationCovarianceMatrix;  ///< contains the errors of fCurrentESD
+    static TVectorD* fgCurrentESDVector;             ///< contains fCurrentESD
+    static TVectorD* fgEntropyAPriori;               ///< a-priori distribution for entropy regularization
+    static TVectorD* fgEfficiency;                   ///< efficiency
     /*
     static TVectorD* fgBinWidths;                    // bin widths to be taken into account in regularization
     static TVectorD* fgBinPos;                       // bin positions of unfolded
     */
-    static TAxis *fgUnfoldedAxis;                    // bin widths and positions for unfolded
-    static TAxis *fgMeasuredAxis;                    // bin widths and positions for measured
+    static TAxis *fgUnfoldedAxis;                    ///< bin widths and positions for unfolded
+    static TAxis *fgMeasuredAxis;                    ///< bin widths and positions for measured
 
-    static TF1* fgFitFunction;                       // fit function
+    static TF1* fgFitFunction;                       ///< fit function
 
     // --- configuration params follow ---
-    static MethodType fgMethodType;                  // unfolding method to be used
-    static Int_t fgMaxParams;                        // bins in unfolded histogram = number of fit params
-    static Int_t fgMaxInput;                         // bins in measured histogram
-    static Float_t fgOverflowBinLimit;               // to fix fluctuations at high multiplicities, all entries above the limit are summarized in one bin
+    static MethodType fgMethodType;                  ///< unfolding method to be used
+    static Int_t fgMaxParams;                        ///< bins in unfolded histogram = number of fit params
+    static Int_t fgMaxInput;                         ///< bins in measured histogram
+    static Float_t fgOverflowBinLimit;               ///< to fix fluctuations at high multiplicities, all entries above the limit are summarized in one bin
 
-    static RegularizationType fgRegularizationType;  // regularization that is used during Chi2 method
-    static Float_t fgRegularizationWeight;           // factor for regularization term
-    static Int_t fgSkipBinsBegin;                    // (optional) skip the given number of bins in the regularization
-    static Float_t fgMinuitStepSize;                 // (usually not needed to be changed) step size in minimization
-    static Float_t fgMinuitPrecision;                // precision used by minuit. default = 1e-6
-    static Int_t   fgMinuitMaxIterations;            // maximum number of iterations used by minuit. default = 5000
-    static Double_t fgMinuitStrategy;                // minuit strategy: 0 (low), 1 (default), 2 (high)
-    static Bool_t fgMinimumInitialValue;             // set all initial values at least to the smallest value among the initial values
-    static Float_t fgMinimumInitialValueFix;         // use this as the minimum initial value instead of determining it automatically
-    static Bool_t fgNormalizeInput;                  // normalize input spectrum
-    static Float_t fgNotFoundEvents;                 // constraint on the total number of not found events sum(guess * (1/eff -1))
-    static Bool_t fgSkipBin0InChi2;                  // skip bin 0 (= 0 measured) in chi2 function
+    static RegularizationType fgRegularizationType;  ///< regularization that is used during Chi2 method
+    static Float_t fgRegularizationWeight;           ///< factor for regularization term
+    static Int_t fgSkipBinsBegin;                    ///< (optional) skip the given number of bins in the regularization
+    static Float_t fgMinuitStepSize;                 ///< (usually not needed to be changed) step size in minimization
+    static Float_t fgMinuitPrecision;                ///< precision used by minuit. default = 1e-6
+    static Int_t   fgMinuitMaxIterations;            ///< maximum number of iterations used by minuit. default = 5000
+    static Double_t fgMinuitStrategy;                ///< minuit strategy: 0 (low), 1 (default), 2 (high)
+    static Bool_t fgMinimumInitialValue;             ///< set all initial values at least to the smallest value among the initial values
+    static Float_t fgMinimumInitialValueFix;         ///< use this as the minimum initial value instead of determining it automatically
+    static Bool_t fgNormalizeInput;                  ///< normalize input spectrum
+    static Float_t fgNotFoundEvents;                 ///< constraint on the total number of not found events sum(guess * (1/eff -1))
+    static Bool_t fgSkipBin0InChi2;                  ///< skip bin 0 (= 0 measured) in chi2 function
 
-    static Float_t fgBayesianSmoothing;              // smoothing parameter (0 = no smoothing)
-    static Int_t   fgBayesianIterations;             // number of iterations in Bayesian method
+    static Float_t fgBayesianSmoothing;              ///< smoothing parameter (0 = no smoothing)
+    static Int_t   fgBayesianIterations;             ///< number of iterations in Bayesian method
 
-    static Bool_t fgDebug;                           // debug flag
+    static Bool_t fgDebug;                           ///< debug flag
     // --- end of configuration ---
     
-    static Int_t fgCallCount;                        // call count to chi2 function
+    static Int_t fgCallCount;                        ///< call count to chi2 function
 
-    static Int_t fgPowern;                           // power of power law for regularization with power law
+    static Int_t fgPowern;                           ///< power of power law for regularization with power law
 
-    static Double_t fChi2FromFit;                    // Chi2 from fit at current iteration
-    static Double_t fPenaltyVal;                     // Penalty value at current iteration (\beta * PU)
-    static Double_t fAvgResidual;                    // Sum residuals / nbins
+    static Double_t fChi2FromFit;                    ///< Chi2 from fit at current iteration
+    static Double_t fPenaltyVal;                     ///< Penalty value at current iteration (\beta * PU)
+    static Double_t fAvgResidual;                    ///< Sum residuals / nbins
 
-    static Int_t fgPrintChi2Details;                 // debug for chi2 calc
+    static Int_t fgPrintChi2Details;                 ///< debug for chi2 calc
 
     // Pointers for interactive unfolder
-    static TCanvas *fgCanvas;                        // Canvas for interactive unfolder
-    static TH1 *fghUnfolded;                         // Unfolding result for interactive unfolder
-    static TH2 *fghCorrelation;                      // Response matrix for interactive unfolder
-    static TH1 *fghEfficiency;                       // Efficiency histo for interactive unfolder
-    static TH1 *fghMeasured;                         // Measured distribution for interactive unfolder
+    static TCanvas *fgCanvas;                        ///< Canvas for interactive unfolder
+    static TH1 *fghUnfolded;                         ///< Unfolding result for interactive unfolder
+    static TH2 *fghCorrelation;                      ///< Response matrix for interactive unfolder
+    static TH1 *fghEfficiency;                       ///< Efficiency histo for interactive unfolder
+    static TH1 *fghMeasured;                         ///< Measured distribution for interactive unfolder
 
 private:
     AliUnfolding(const AliUnfolding&);

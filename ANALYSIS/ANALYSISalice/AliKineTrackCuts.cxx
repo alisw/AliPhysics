@@ -19,12 +19,6 @@
 
 #include "AliKineTrackCuts.h"
 
-//
-//  Class for simple Kinematic cuts on
-//  particles (tracks) from Kinematic stack (TParticle)
-//  MC Simulation
-//
-
 
 //____________________________________________________________________
 ClassImp(AliKineTrackCuts)

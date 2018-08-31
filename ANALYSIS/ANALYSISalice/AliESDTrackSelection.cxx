@@ -24,9 +24,7 @@
 #include "AliLog.h"
 #include "AliVCuts.h"
 
-/// \cond CLASSIMP
 ClassImp(AliESDTrackSelection)
-/// \endcond
 
 /**
  * Default constructor
