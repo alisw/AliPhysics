@@ -1638,6 +1638,9 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                       else if( particleSpecies == 2 )
                         { if( TMath::Abs( particle -> GetPdgCode() ) != 2212 )  continue; }
 		      //cout << "step 4 Au-Au: pion ID: " << particle -> GetPdgCode() << endl;
+			  
+		      if( particle -> IsSecondaryFromWeakDecay() )  continue;
+                      if( particle -> IsSecondaryFromMaterial() )  continue;
 		    }
 		
 		  if ( particleSpecies == 0 )  mass = mpion;
@@ -1874,6 +1877,8 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	      }
 
 	      if( !t -> IsPhysicalPrimary() ) continue;
+	      if( t -> IsSecondaryFromWeakDecay() )  continue;
+              if( t -> IsSecondaryFromMaterial() )  continue;
 	    
 	      q      = t -> Charge();
 
@@ -1963,10 +1968,16 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		      if( pdgCodeOfMother == 311 || pdgCodeOfMother == -311 // K0
 			  || pdgCodeOfMother == 310 // K_Short
 			  || pdgCodeOfMother == 130 // K_Long
+			  || pdgCodeOfMother == 313 // K_Star_0
+                          || pdgCodeOfMother == 323 // K_Star_+
 			  || pdgCodeOfMother == 333 // phi
 			  || pdgCodeOfMother == 3122 || pdgCodeOfMother == -3122 // Lambda
 			  || pdgCodeOfMother == 111 // pi0
 			  || pdgCodeOfMother == 22 // photon
+			  || pdgCodeOfMother == 2224 // Delta_++
+                          || pdgCodeOfMother == 2214 // Delta_+
+                          || pdgCodeOfMother == 2114 // Delta_0
+                          || pdgCodeOfMother == 1114 // Delta_-
 			  ) continue;
 		    }
 		  }
