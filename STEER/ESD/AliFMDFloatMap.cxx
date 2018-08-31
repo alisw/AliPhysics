@@ -162,6 +162,36 @@ AliFMDFloatMap::operator()(UShort_t det,
   return fData[CalcIndex(det, ring, sec, str)];
 }
 
+inline AliFMDFloatMap
+operator*(const AliFMDMap& lhs, const AliFMDMap& rhs)
+{
+  AliFMDFloatMap r(lhs);
+  r *= rhs;
+  return r;
+}
+inline AliFMDFloatMap
+operator/(const AliFMDMap& lhs, const AliFMDMap& rhs)
+{
+  AliFMDFloatMap r(lhs);
+  r /= rhs;
+  return r;
+}
+inline AliFMDFloatMap
+operator+(const AliFMDMap& lhs, const AliFMDMap& rhs)
+{
+  AliFMDFloatMap r(lhs);
+  r += rhs;
+  return r;
+}
+inline AliFMDFloatMap
+operator-(const AliFMDMap& lhs, const AliFMDMap& rhs)
+{
+  AliFMDFloatMap r(lhs);
+  r -= rhs;
+  return r;
+}
+
+
 //__________________________________________________________
 // 
 // EOF
