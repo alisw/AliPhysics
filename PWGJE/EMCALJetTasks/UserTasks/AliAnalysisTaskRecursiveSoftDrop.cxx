@@ -74,7 +74,8 @@ AliAnalysisTaskRecursiveSoftDrop::AliAnalysisTaskRecursiveSoftDrop() :
   fTreeRecursive_True(0),
   fAddMedScat(kFALSE),
   fAddMedScatPtFrac(1),
-  fAddMedScatN(100)
+  fAddMedScatN(100),
+  fDoSubJetAreaSub(kFALSE)
 
 {
   for(Int_t i=0;i<5;i++){
@@ -107,7 +108,9 @@ AliAnalysisTaskRecursiveSoftDrop::AliAnalysisTaskRecursiveSoftDrop(const char *n
   fTreeRecursive_True(0),
   fAddMedScat(kFALSE),
   fAddMedScatPtFrac(1),
-  fAddMedScatN(100)
+  fAddMedScatN(100),
+  fDoSubJetAreaSub(kFALSE)
+
 {
   // Standard constructor.
   for(Int_t i=0;i<5;i++){
@@ -391,8 +394,12 @@ void AliAnalysisTaskRecursiveSoftDrop::RecursiveParents(AliEmcalJet *fJet,AliJet
     while(jj.has_parents(j1,j2)){
       n++;
       if(j1.perp() < j2.perp()) swap(j1,j2);
+      double area1 = j1.area();
+      double area2 = j2.area();
       double delta_R=j1.delta_R(j2);
-      double z=j2.perp()/(j1.perp()+j2.perp());
+      double z = 0;
+      if(fJetShapeSub==kNoSub && fDoSubJetAreaSub == kTRUE) z = (j2.perp()-area2*GetRhoVal(0))/((j1.perp()-area1*GetRhoVal(0))+(j2.perp()-area2*GetRhoVal(0)));
+      else z=j2.perp()/(j1.perp()+j2.perp());
       if(bTruth) {
 	fShapesVar_True[0]=jet_pT;
 	fShapesVar_True[1]=z;
