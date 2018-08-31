@@ -364,8 +364,8 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
           DoConstituentQA(jet, tracks, clusters);
           AliJetSubstructureData structureData =  MakeJetSubstructure(*jet, datajets->GetJetRadius() * 2., tracks, clusters, {softdropSettings, nsubjettinessSettings}),
                                  structureMC = fFillPart ? MakeJetSubstructure(*associatedJet, mcjets->GetJetRadius() * 2, particles, nullptr, {softdropSettings, nsubjettinessSettings}) : AliJetSubstructureData();
-          if(fKineRec) *fKineRec = MakeJetKineParameters(*jet);
-          if(fKineSim) *fKineSim = MakeJetKineParameters(*associatedJet);
+          if(fKineRec) *fKineRec = MakeJetKineParameters(*jet, kDetLevel, tracks, clusters);
+          if(fKineSim) *fKineSim = MakeJetKineParameters(*associatedJet, kPartLevel, particles, nullptr);
           if(fSoftDropMeasured) *fSoftDropMeasured = structureData.fSoftDrop;
           if(fSoftDropTrue) *fSoftDropTrue = structureMC.fSoftDrop;
           if(fNSubMeasured) *fNSubMeasured = structureData.fNsubjettiness;
@@ -383,7 +383,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
         try {
           DoConstituentQA(jet, tracks, clusters);
           AliJetSubstructureData structure = MakeJetSubstructure(*jet, 0.4, tracks, clusters, {softdropSettings, nsubjettinessSettings});
-          if(fKineRec) *fKineRec = MakeJetKineParameters(*jet);
+          if(fKineRec) *fKineRec = MakeJetKineParameters(*jet, kDetLevel, tracks, clusters);
           if(fSoftDropMeasured) *fSoftDropMeasured = structure.fSoftDrop;
           if(fNSubMeasured) *fNSubMeasured = structure.fNsubjettiness;
           if(fJetStructureMeasured) *fJetStructureMeasured = {MakeAngularity(*jet, tracks, clusters), MakePtD(*jet, tracks, clusters)};
@@ -403,7 +403,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
         AliEmcalJet *mcjet = static_cast<AliEmcalJet *>(j);
         try {
           AliJetSubstructureData structure = MakeJetSubstructure(*mcjet, mcjets->GetJetRadius() * 2., particles, nullptr,{softdropSettings, nsubjettinessSettings});
-          if(this->fKineSim) *fKineSim = MakeJetKineParameters(*mcjet);
+          if(this->fKineSim) *fKineSim = MakeJetKineParameters(*mcjet, kPartLevel, particles, nullptr);
           if(fSoftDropTrue) *fSoftDropTrue = structure.fSoftDrop;
           if(fNSubTrue) *fNSubTrue = structure.fNsubjettiness;
           if(fJetStructureTrue) *fJetStructureTrue = {MakeAngularity(*mcjet, particles, nullptr), MakePtD(*mcjet, particles, nullptr)};
@@ -508,7 +508,7 @@ void AliAnalysisTaskEmcalJetSubstructureTree::FillLuminosity() {
   }
 }
 
-AliJetKineParameters AliAnalysisTaskEmcalJetSubstructureTree::MakeJetKineParameters(const AliEmcalJet &jet) const {
+AliJetKineParameters AliAnalysisTaskEmcalJetSubstructureTree::MakeJetKineParameters(const AliEmcalJet &jet, JetRecType_t rectype, const AliParticleContainer *const tracks, const AliClusterContainer *const clusters) const {
   AliJetKineParameters result;
   result.fPt = TMath::Abs(jet.Pt());
   result.fE = jet.E();
@@ -519,6 +519,42 @@ AliJetKineParameters AliAnalysisTaskEmcalJetSubstructureTree::MakeJetKineParamet
   result.fNEF = jet.NEF();
   result.fNCharged = jet.GetNumberOfTracks();
   result.fNNeutral = jet.GetNumberOfClusters();
+  std::vector<double> zcharged, zneutral;
+  if(tracks) {
+    // Find the leading track
+    for(auto icharged = 0; icharged < jet.GetNumberOfTracks(); icharged++){
+      auto trk = jet.TrackAt(icharged, tracks->GetArray());
+      bool charged = true;
+      if(rectype == kPartLevel){
+        if(!trk->Charge()) charged = false;
+      }
+      auto z = jet.GetZ(trk);
+      if(charged) zcharged.push_back(z);
+      else zneutral.push_back(z);
+    }
+  } 
+  if(clusters) {
+    for(auto iclust = 0; iclust < jet.GetNumberOfClusters(); iclust++){
+      auto clust = jet.ClusterAt(iclust, clusters->GetArray());
+      TLorentzVector clustervec;
+      clust->GetMomentum(clustervec, fVertex, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
+      auto z = jet.GetZ(clustervec.Px(), clustervec.Py(), clustervec.Pz());
+      zneutral.push_back(z);
+    }
+  }
+  result.fZLeading = -1.;
+  result.fZLeadingCharged = -1.;
+  result.fZLeadingNeutral = -1;
+  if(zcharged.size()) {
+    std::sort(zcharged.begin(), zcharged.end(), std::greater<double>());
+    result.fZLeadingCharged = zcharged[0];
+    result.fZLeading = result.fZLeadingCharged;
+  }
+  if(zneutral.size()){
+    std::sort(zneutral.begin(), zneutral.end(), std::greater<double>());
+    result.fZLeadingNeutral = zneutral[0];
+    if(result.fZLeadingNeutral > result.fZLeading) result.fZLeading = result.fZLeadingNeutral;
+  }
   return result;
 }
 
@@ -927,6 +963,9 @@ void AliJetKineParameters::LinkJetTreeBranches(TTree *jettree, const char *tag){
   LinkBranch(jettree, &fNEF, Form("NEF%s", tag), "D");
   LinkBranch(jettree, &fNCharged, Form("NCharged%s", tag), "I");
   LinkBranch(jettree, &fNNeutral, Form("NNeutral%s", tag), "I");
+  LinkBranch(jettree, &fZLeading, Form("ZLeading%s", tag), "D");
+  LinkBranch(jettree, &fZLeadingCharged, Form("ZLeadingCharged%s", tag), "D");
+  LinkBranch(jettree, &fZLeadingNeutral, Form("ZLeadingNeutral%s", tag), "D");
 }
 
 void AliJetTreeGlobalParameters::LinkJetTreeBranches(TTree *jettree, bool fillRho) {
