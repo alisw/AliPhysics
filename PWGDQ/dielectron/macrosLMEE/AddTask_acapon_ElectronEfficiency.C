@@ -1,24 +1,22 @@
-AliAnalysisTask *AddTask_acapon_ElectronEfficiency(Bool_t hasITS = kTRUE,
-                                                     Double_t CentMin = -2,
-                                                     Double_t CentMax = 102,
-																										 TString directoryBaseName = "acapon",
+AliAnalysisTask *AddTask_acapon_ElectronEfficiency_v2(TString configFile="Config_acapon_ElectronEfficiency_v2.C",
+                                                     Double_t centMin=0, Double_t centMax=90,
                                                      Bool_t getFromAlien=kFALSE,
-                                                     TString cFileName = "Config_acapon_ElectronEfficiency.C",
-                                                     Char_t* outputFileName="LMEE_output.root",
-                                                     Bool_t deactivateTree=kFALSE, // enabling this has priority over 'writeTree'! (needed for LEGO trains)
-                                                     TString resolutionfile = "" //Resolution_pp_16l_eta.root
+                                                     Bool_t deactivateTree=kFALSE, // enabling this has priority over 'writeTree' in config file! (enable for LEGO trains)
+                                                     Char_t* outputFileName="acapon_ElectronEfficiency.root",
+                                                     Bool_t forcePhysSelAndTrigMask=kTRUE, // possibility to activate UsePhysicsSelection and SetTriggerMask for MC (may be needed for new MC productions according to Mahmut) as well as for AOD data.
+                                                     Int_t triggerNames=(AliVEvent::kMB),
+                                                     Int_t collCands=AliVEvent::kMB,
+                                                     Int_t cutlibPreloaded=0
                                                      )
 {
+  // get the current analysis manager
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    Error("AddTask_acapon_ElectronEfficiency_v2", "No analysis manager found.");
+    return 0;
+  }
 
-	//get the current analysis manager
-	AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
-	if(!mgr){
-		
-		Error("AddTask_acapon_ElectronEfficiency", "No analysis manager found.");
-		return 0;
-	}
-
-	//Base Directory for GRID / LEGO Train  
+	// Base Directory for GRID / LEGO Train  
 	TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
 	if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/a/acapon/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data()))) ){
 		
@@ -37,31 +35,73 @@ AliAnalysisTask *AddTask_acapon_ElectronEfficiency(Bool_t hasITS = kTRUE,
 		std::cout << "config not found: " << configFilePath.Data() << std::endl;
 		return 0; // if return is not called, the job will fail instead of running wihout this task... (good for local tests, bad for train)
 	}
-		
-	std::cout << "computing binning..." << std::endl;
 
-	Double_t EtaBins[nBinsEta+1];
-	for(Int_t i=0;i<=nBinsEta;i++){
-		EtaBins[i] = EtaMin + i*(EtaMax-EtaMin)/nBinsEta; 
+  std::cout << "computing binning..." << std::endl;
+  Double_t EtaBins[nBinsEta+1];
+  for(Int_t i = 0; i <= nBinsEta; i++){
+		EtaBins[i] = EtaMin + i*(EtaMax-EtaMin)/nBinsEta;
 	}
-
-	Double_t PhiBins[nBinsPhi+1];
-	for(Int_t i=0;i<=nBinsPhi;i++){
+  Double_t PhiBins[nBinsPhi+1];
+  for(Int_t i = 0; i <= nBinsPhi; i++){
 		PhiBins[i] = PhiMin + i*(PhiMax-PhiMin)/nBinsPhi;
 	}
 
-	const Int_t nBinsPt = (sizeof(PtBins)/sizeof(PtBins[0]))-1;
+  const Int_t nBinsPt =  ( sizeof(PtBins) / sizeof(PtBins[0]) )-1;
 
-	//Do we have an MC handler?
-	Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() != 0x0);
-	std::cout << "hasMC = " << hasMC << std::endl;
+  Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
+  if (mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()){
+    ::Info("AddTaskElectronEfficiency","running on AODs.");
+  }
+  else if (mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class()){
+    ::Info("AddTaskElectronEfficiency","switching on ESD specific code, make sure ESD cuts are used.");
+    bESDANA=kTRUE;
+  }
+  //Do we have an MC handler?
+  Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() != 0x0);
+  std::cout << "hasMC = " << hasMC << std::endl;
 
-	// Electron efficiency task
-	AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency("acapon_ElectronEfficiency");
-	std::cout << "task created: " << task->GetName() << std::endl;
+  // Electron efficiency task
+  AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency("acapon_ElectronEfficiency_v2");
+  std::cout << "task created: " << task->GetName() << std::endl;
+  task->SetUseMultSelection(kTRUE);
 
+  // Event related
+  // Note: event cuts are identical for all analysis 'cutInstance's that run together!
+  if(!hasMC) task->UsePhysicsSelection();
+  if(!hasMC) task->SetTriggerMask(triggerNames);
+	// Next should be kFALSE by default! (may be needed for new MC productions according to Mahmut)
+  if(forcePhysSelAndTrigMask){ 
+    task->UsePhysicsSelection();
+    task->SetTriggerMask(triggerNames);
+  }
+  task->SelectCollisionCandidates(collCands); // didnt check its meaning and effect...!
+  //---
+  task->SetEventFilter(SetupEventCuts()); //returns eventCuts from Config.
+  task->SetCentralityRange(centMin, centMax);
+  task->SetNminEleInEventForRej(NminEleInEventForRej);
+  //track related
+  task->SetEtaRangeGEN(EtaMinGEN, EtaMaxGEN);
+  task->SetPtRangeGEN(PtMinGEN, PtMaxGEN);
+  task->SetCalcEfficiencyPoslabel(CalcEfficiencyPoslabel);
 
-	if(CalcEfficiencyRec && !resolutionfile.IsNull()){
+  // Resolution calculation
+  task->SetCalcResolution(CalcResolution);
+  if(CalcResolution || CalcEfficiencyRec){
+		task->SetResolutionCuts(SetupTrackCutsAndSettings("TTree_Cuts"));
+	}
+  if(CalcResolution){
+    task->SetDeltaMomBinning(NbinsDeltaMom,DeltaMomMin,DeltaMomMax);
+    task->SetRelMomBinning(NbinsRelMom,RelMomMin,RelMomMax);
+    task->SetDeltaEtaBinning(NbinsDeltaEta,DeltaEtaMin,DeltaEtaMax);
+    task->SetDeltaThetaBinning(NbinsDeltaTheta,DeltaThetaMin,DeltaThetaMax);
+    task->SetDeltaPhiBinning(NbinsDeltaPhi,DeltaPhiMin,DeltaPhiMax);
+  }
+  // resolution usage
+  task->SetCalcEfficiencyRec(CalcEfficiencyRec);
+  if(resolutionfile.Contains("CENTRALITY")){
+		resolutionfile.ReplaceAll("CENTRALITY",Form("%02.0f%02.0f",centMin,centMax));
+	}
+  if(CalcEfficiencyRec && !resolutionfile.IsNull()){
 		if( (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/a/acapon/ResolutionFiles/%s .",resolutionfile.Data()))) ){
 			TFile *fRes = TFile::Open(Form("%s/%s",gSystem->pwd(),resolutionfile.Data()),"READ");
 			if(!fRes){
@@ -90,102 +130,81 @@ AliAnalysisTask *AddTask_acapon_ElectronEfficiency(Bool_t hasITS = kTRUE,
 			return 0;
 		}
 	}
-    
-	task->SetCalcEfficiencyRec(CalcEfficiencyRec);
-	//task->SetCalcEfficiencyPoslabel(CalcEfficiencyPoslabel);
 
-	AliDielectronSignalMC* eleFinalState = new AliDielectronSignalMC("eleFinalState","eleFinalState");
-	eleFinalState->SetFillPureMCStep(kFALSE);
-	eleFinalState->SetLegPDGs(11,1);//dummy second leg (never MCtrue)
-	eleFinalState->SetCheckBothChargesLegs(kTRUE,kTRUE);
-	eleFinalState->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-	eleFinalState->SetMotherSources(AliDielectronSignalMC::kPrimary, AliDielectronSignalMC::kPrimary);//equiv. to IsPrimary();
-	task->AddSignalMC(eleFinalState);
-
-	//event related
-	task->SetEventFilter(SetupEventCuts()); //returns eventCuts from Config
-
-	task->SetUseMultSelection(kTRUE); // for Run 2, MultSelection task is needed
-	task->SetCentralityRange(CentMin, CentMax);  
-
-	//generated values
-	task->SetEtaRangeGEN(EtaMinGEN, EtaMaxGEN);
-	task->SetPtRangeGEN(PtMinGEN, PtMaxGEN);
-    
-	//MC related
-	//task->SetCutInjectedSignal(CutInjectedSignals);
-	// resolution calculation
-
-	task->SetCalcResolution(CalcResolution);
-	if(CalcResolution){
-		task->SetResolutionCuts(SetupTrackCutsAndSettings(-1));
-		task->SetMakeResolutionSparse(MakeResolutionSparse);
-	}
-
-	task->SetMomBinning(NbinsMom,MomMin,MomMax);
-	task->SetDeltaMomBinning(NbinsDeltaMom,DeltaMomMin,DeltaMomMax);
-	task->SetRelMomBinning(NbinsRelMom,RelMomMin,RelMomMax);
-	task->SetDeltaEtaBinning(NbinsDeltaEta,DeltaEtaMin,DeltaEtaMax);
-	task->SetDeltaThetaBinning(NbinsDeltaTheta,DeltaThetaMin,DeltaThetaMax);
-	task->SetDeltaPhiBinning(NbinsDeltaPhi,DeltaPhiMin,DeltaPhiMax);
-	task->SetDeltaAngleBinning(NbinsDeltaAngle,DeltaAngleMin,DeltaAngleMax);
-    
-	//pair efficiency
-	if(doPairing){
-		task->SetKineTrackCuts(SetupTrackCutsAndSettings(100));
-		//task->SetPairCuts(SetupTrackCutsAndSettings(101));
-		SetupTrackCutsAndSettings(101);
-		task->SetPairCutMee(rejCutMee);
-		task->SetPairCutTheta(rejCutTheta);
-		task->SetPairCutPhiV(rejCutPhiV);
-		task->SetBins(nBinsPt,PtBins,nBinsEta,EtaBins,nBinsPhi,PhiBins,nBinsMee,MeeBins,nBinsPtee,PteeBins);
-		task->SetDoPairing(kTRUE);
-	}
-	else{
-		task->SetBins(nBinsPt,PtBins,nBinsEta,EtaBins,nBinsPhi,PhiBins);
-	}
-	task->SetRunBins(sRuns);
-	if(deactivateTree){
+  // pair efficiency
+  task->SetDoPairing(doPairing);
+  if(doPairing){
+    task->SetPtCut(PtMinCut, PtMaxCut);
+    task->SetEtaCut(EtaMinCut, EtaMaxCut);
+    task->SetKineTrackCuts(SetupTrackCutsAndSettings(0));
+    //task->SetPairCuts(SetupTrackCutsAndSettings(101));
+    // SetupTrackCutsAndSettings(101); // this fills the pair cuts into rejCutMee,rejCutTheta,rejCutPhiV
+    task->SetPairCutMee(rejCutMee);
+    task->SetPairCutTheta(rejCutTheta);
+    task->SetPairCutPhiV(rejCutPhiV);
+    Double_t MeeBins[nBinsMee+1];
+    for(Int_t i=0;i<=nBinsMee;i++){
+			MeeBins[i] = MeeMin + i*(MeeMax-MeeMin)/nBinsMee;
+		}
+    Double_t PteeBins[nBinsPtee+1];
+    for(Int_t i=0;i<=nBinsPtee;i++){
+			PteeBins[i] = PteeMin + i*(PteeMax-PteeMin)/nBinsPtee;
+		}
+    task->SetBins(nBinsPt,PtBins,nBinsEta,EtaBins,nBinsPhi,PhiBins,nBinsMee,MeeBins,nBinsPtee,PteeBins);
+  }else{
+    task->SetBins(nBinsPt,PtBins,nBinsEta,EtaBins,nBinsPhi,PhiBins);
+  }
+  //output related
+  task->SetRunBins(sRuns);
+  if(deactivateTree){
 		task->SetWriteTree(kFALSE);
-	}
-  	else{               
+	}else{
 		task->SetWriteTree(writeTree);
 	}
-	task->SetSupportedCutInstance(supportedCutInstance);
-	task->CreateHistoGen();
-    
-  
+  task->SetSupportedCutInstance(supportedCutInstance);
+  task->CreateHistoGen();
+
+  // Post PID correction
+  /* SetupITSSigmaEleCorrection(task); */
+  /* SetupTPCSigmaEleCorrection(task); */
+
+  // Monte Carlo Signals
+  SetupMCSignals(task);
+
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
-    AliAnalysisFilter *trackCuts = SetupTrackCutsAndSettings(i, hasITS); // main function in config file
-    if (!trackCuts) { std::cout << "WARNING: no TrackCuts given - skipping this Cutset ('"<<arrNames->At(i)->GetName()<<"')!" << std::endl; continue; }
-    if (isPrefilterCutset) {
-      Int_t success = SetupPrefilterPairCuts(i);
-      if (!success) { std::cout << "WARNING: no/bad Prefilter PairCuts given - skipping this Cutset ('"<<arrNames->At(i)->GetName()<<"')!" << std::endl; continue; }
-    }
-    //
+    TString cutDefinition(arrNames->At(i)->GetName());
+    std::cout << "##############################" << std::endl;
+    std::cout << "NEW CUT SETTING WITH CUT NAME: " << cutDefinition << std::endl;
+    Bool_t IsTOFreqCut = false;
+    AliAnalysisFilter *trackCuts = SetupTrackCutsAndSettings(cutDefinition); // main function in config file
+    if(!trackCuts){
+			std::cout << "WARNING: no TrackCuts given - skipping this Cutset ('"<<arrNames->At(i)->GetName()<<"')!" << std::endl;
+			continue;
+		}
+    
     // fill std vectors with all information which is individual per track setting:
     task->AttachTrackCuts(trackCuts);
-    task->AttachDoPrefilterEff(isPrefilterCutset);
     task->AttachRejCutMee(rejCutMee);
     task->AttachRejCutTheta(rejCutTheta);
     task->AttachRejCutPhiV(rejCutPhiV);
-    
+
     task->CreateHistograms(names,i);
+    std::cout << "Cutsetting added\n##############################" << std::endl;
   }
-  
+
   mgr->AddTask(task);
 
   //
   // Create containers for input/output
   //
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(TString::Format("%s_ElectronEfficiency", directoryBaseName.Data()), TList::Class(),
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("acapon_ElectronEfficiency_v2_%d", cutlibPreloaded), TList::Class(),
                                                            AliAnalysisManager::kOutputContainer,outputFileName);
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(TString::Format("%s_supportHistos", directoryBaseName.Data()), TList::Class(),
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("acapon_supportHistos_%d", cutlibPreloaded), TList::Class(),
                                                             AliAnalysisManager::kOutputContainer,outputFileName);
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(TString::Format("%s_EffTree", directoryBaseName.Data()), TTree::Class(),
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("acapon_EffTree_%d", cutlibPreloaded), TTree::Class(),
                                                             AliAnalysisManager::kOutputContainer,outputFileName);
-  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(TString::Format("%s_stats", directoryBaseName.Data()), TH1D::Class(),
-                                                            AliAnalysisManager::kOutputContainer,outputFileName);                                                          
+  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(Form("acapon_stats_%d", cutlibPreloaded), TH1D::Class(),
+                                                            AliAnalysisManager::kOutputContainer,outputFileName);
 
   //connect input/output
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
@@ -193,6 +212,8 @@ AliAnalysisTask *AddTask_acapon_ElectronEfficiency(Bool_t hasITS = kTRUE,
   mgr->ConnectOutput(task,2,coutput2);
   mgr->ConnectOutput(task,3,coutput3);
   mgr->ConnectOutput(task,4,coutput4);
+
+  printf("ADDTASK RUN SUCCESSFULL\n");
 
   return task;
 
