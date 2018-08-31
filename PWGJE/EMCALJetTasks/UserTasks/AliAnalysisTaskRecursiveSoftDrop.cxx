@@ -393,9 +393,11 @@ void AliAnalysisTaskRecursiveSoftDrop::RecursiveParents(AliEmcalJet *fJet,AliJet
     Double_t jet_pT=jj.perp();
     while(jj.has_parents(j1,j2)){
       n++;
-      if((j1.perp()-area1*GetRhoVal(0)) < (j2.perp()-area2*GetRhoVal(0))) swap(j1,j2);
       double area1 = j1.area();
       double area2 = j2.area();
+      if((j1.perp()-area1*GetRhoVal(0)) < (j2.perp()-area2*GetRhoVal(0))) swap(j1,j2);
+      area1 = j1.area();
+      area2 = j2.area();
       double delta_R=j1.delta_R(j2);
       double z = 0;
       if(fJetShapeSub==kNoSub && fDoSubJetAreaSub == kTRUE) z = (j2.perp()-area2*GetRhoVal(0))/((j1.perp()-area1*GetRhoVal(0))+(j2.perp()-area2*GetRhoVal(0)));
