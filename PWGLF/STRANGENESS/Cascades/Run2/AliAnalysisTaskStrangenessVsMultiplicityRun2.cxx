@@ -797,6 +797,7 @@ fTreeCascVarNegTrack(0x0),
 fTreeCascVarMagneticField(0),
 //Histos
 fHistEventCounter(0),
+fHistEventCounterDifferential(0),
 fHistCentrality(0)
 {
     
@@ -1306,6 +1307,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         fListHist->Add(fHistEventCounter);
     }
     
+    if(! fHistEventCounterDifferential ) {
+        //Histogram Output: Event-by-Event
+        fHistEventCounterDifferential = new TH1D( "fHistEventCounterDifferential", ";Evt. Sel. Step;Count",2,0,2);
+        fHistEventCounterDifferential->GetXaxis()->SetBinLabel(1, "Processed");
+        fHistEventCounterDifferential->GetXaxis()->SetBinLabel(2, "Selected");
+        fListHist->Add(fHistEventCounterDifferential);
+    }
+    
     if(! fHistCentrality ) {
         //Histogram Output: Event-by-Event
         fHistCentrality = new TH1D( "fHistCentrality", "WARNING: no pileup rejection applied!;Centrality;Event Count",100,0,100);
@@ -1571,9 +1580,23 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
             }
         }
         if ( fkPileupRejectionMode == 2) {
+            /****************************************************************************
+            
             //Warning: this purposefully selects pileup for further study!
             //  -> will pass if event accepted by regular evsel but rejected in pileup!
-            if( !fEventCuts.AcceptEvent(ev) && fEventCutsStrictAntipileup.AcceptEvent(ev) ) {
+            
+             Possibilities
+                A - Pass Old, Pass New     = not interesting
+                B - Reject Old, Reject New = not interesting
+                C - Pass Old, Reject New   = interesting
+                D - Reject Old, Pass New   = impossible, new is less restrictive
+             
+             ****************************************************************************/
+            if(
+               (!fEventCuts.AcceptEvent(ev) && !fEventCutsStrictAntipileup.AcceptEvent(ev)) || // this line rejects B
+               (!fEventCuts.AcceptEvent(ev) &&  fEventCutsStrictAntipileup.AcceptEvent(ev))    // this line rejects A
+                ) {
+            
                 //Regular Output: Slots 1-6
                 PostData(1, fListHist    );
                 PostData(2, fListV0      );
