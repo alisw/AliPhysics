@@ -1,5 +1,6 @@
 void InitHistograms(AliDielectron *die, Int_t cutDefinition);
-void SetupCuts(AliDielectron *die, Int_t cutDefinition);
+void SetupCuts(AliDielectron *die, Int_t cutDefinition, TString userPathWeightFile, Double_t userTMVACutValue);
+void SetupAODtrackCutsTMVAPIDFirst(AliDielectron *die, Bool_t bMCPID, Bool_t bTMVAPID, TString userPathWeightFile, Double_t userTMVACutValue);
 void SetTPCCorr(AliDielectron *die);
 const AliDielectronEventCuts *GetEventCuts();
 void SetupMCsignals(AliDielectron* die);
@@ -11,14 +12,16 @@ Bool_t kNoPairing   = kTRUE;
 Bool_t randomizeDau = kTRUE;
 
 // available cut defintions
-const Int_t nMax = 1; 
+const Int_t nMax = 3; 
 const Int_t nPF  = 999; // use prefiltering for cuts > nPF
 
-AliDielectron* Config_miweber_LMEE_TMVA(Int_t cutDefinition=1,
-        Bool_t bESDANA = kFALSE,
-        Bool_t bCutQA = kFALSE,
-        Bool_t isRandomRej=kFALSE,
-        Bool_t useTPCCorr=kFALSE)
+AliDielectron* Config_miweber_LMEE_TMVA(Double_t userTMVACutValue = 0.0,
+					Int_t cutDefinition=1,
+					TString userPathWeightFile="",
+					Bool_t bESDANA = kFALSE,
+					Bool_t bCutQA = kFALSE,
+					Bool_t isRandomRej=kFALSE,
+					Bool_t useTPCCorr=kFALSE)
 {
   //
   // Setup the instance of AliDielectron
@@ -77,7 +80,7 @@ AliDielectron* Config_miweber_LMEE_TMVA(Int_t cutDefinition=1,
 
 
   // set track cuts
-  SetupCuts(die,cutDefinition,bESDANA);
+  SetupCuts(die,cutDefinition,bESDANA,userPathWeightFile,userTMVACutValue);
   
   if(useTPCCorr)  SetTPCCorr(die);
  
@@ -102,7 +105,7 @@ AliDielectron* Config_miweber_LMEE_TMVA(Int_t cutDefinition=1,
 }
 
 //______________________________________________________________________________________
-void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA = kFALSE)
+void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA = kFALSE, TString userPathWeightFile = "", Double_t userTMVACutValue)
 {
   // Setup the track cuts
 
@@ -110,16 +113,28 @@ void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA = kFALSE)
   die->SetUseKF(kFALSE);
 
   if( cutDefinition == 0 ){
-  // first set of cuts to test TMVA usage for PID
+  // first set of cuts to test TMVA usage for PID (only MC PID)
+    if(!bESDANA){
+      SetupAODtrackCutsTMVAPIDFirst(die,kTRUE,kFALSE,userPathWeightFile,userTMVACutValue);
+    }
+  }
+  else if( cutDefinition == 1 ){
+  // first set of cuts to test TMVA usage for PID (MC + TMVA PID)
     if(!bESDANA){      
-      SetupAODtrackCutsTMVAPIDFirst(die);
+      SetupAODtrackCutsTMVAPIDFirst(die,kTRUE,kTRUE,userPathWeightFile,userTMVACutValue);
+    }
+  }
+  else if( cutDefinition == 2 ){
+  // first set of cuts to test TMVA usage for PID (only TMVA PID)
+    if(!bESDANA){      
+      SetupAODtrackCutsTMVAPIDFirst(die,kFALSE,kTRUE,userPathWeightFile,userTMVACutValue);
     }
   }
 }
 
 
 //______________________________________________________________________________________
-void SetupAODtrackCutsTMVAPIDFirst(AliDielectron *die)
+void SetupAODtrackCutsTMVAPIDFirst(AliDielectron *die, Bool_t bMCPID, Bool_t bTMVAPID, TString userPathWeightFile, Double_t userTMVACutValue)
 {
   //
   // Setup the track cuts
@@ -163,8 +178,15 @@ void SetupAODtrackCutsTMVAPIDFirst(AliDielectron *die)
   // additional 
   varCuts2->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.95, 1.05);
 
-  /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv PID CUTS (TMVA) vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
+  // /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv PID CUTS (TMVA) vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
 
+  // Copy xml file to local directory first
+  TString path="alien:///alice/cern.ch/user/m/miweber/TMVA_weights/TMVA_e_0_05_05_05_electron0555first.weights.xml";
+  if(userPathWeightFile!="")
+    path = userPathWeightFile;
+  Printf("Copy TMVA weight input file from Alien: %s",path.Data());
+  gSystem->Exec(TString::Format("alien_cp %s .",path.Data()));
+  
   AliDielectronTMVACuts *pidCuts = new AliDielectronTMVACuts("PIDCutsTMVA","PIDCutsTMVA");
   pidCuts->AddTMVAInput("pt", AliDielectronVarManager::kPt);
   pidCuts->AddTMVAInput("nsigITSe", AliDielectronVarManager::kITSnSigmaEle);
@@ -175,10 +197,22 @@ void SetupAODtrackCutsTMVAPIDFirst(AliDielectron *die)
   pidCuts->AddTMVAInput("nsigTOFpi", AliDielectronVarManager::kTOFnSigmaPio);
   pidCuts->AddTMVASpectator("pdg", AliDielectronVarManager::kPdgCode);
   pidCuts->SetTMVAWeights("BDT method", "TMVA_e_0_05_05_05_electron0555first.weights.xml");
-  pidCuts->SetTMVACutValue(0.0);
 
-    
+  Printf("Use TMVA cut value = %f",userTMVACutValue);
+  pidCuts->SetTMVACutValue(userTMVACutValue);
+
+  /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv MC PID CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
+  AliDielectronVarCuts *pidCutsMC = new AliDielectronVarCuts("PIDCutsMC","PIDCutsMC");
+  pidCutsMC->SetCutType(AliDielectronVarCuts::kAny);
+  //pidCutsMC->SetCutOnMCtruth(kTRUE);//un-comment to use only positive labels
+  pidCutsMC->AddCut(AliDielectronVarManager::kPdgCode, -11.1, -10.9);
+  pidCutsMC->AddCut(AliDielectronVarManager::kPdgCode, +10.9, +11.1);
+
   // activate the cut sets (order might be CPU timewise important)
+  if(bMCPID){
+    cuts->AddCut(pidCutsMC); 
+    die->GetTrackFilter().AddCuts(pidCutsMC);
+  }
   cuts->AddCut(trkFilter);
   die->GetTrackFilter().AddCuts(trkFilter);
   cuts->AddCut(varCuts);
@@ -187,9 +221,10 @@ void SetupAODtrackCutsTMVAPIDFirst(AliDielectron *die)
   die->GetTrackFilter().AddCuts(trkCuts);
   cuts->AddCut(varCuts2);
   die->GetTrackFilter().AddCuts(varCuts2);
-  cuts->AddCut(pidCuts);
-  die->GetTrackFilter().AddCuts(pidCuts);
-
+  if(bTMVAPID){
+    cuts->AddCut(pidCuts);
+    die->GetTrackFilter().AddCuts(pidCuts);
+  }
   cuts->Print();
 
 }

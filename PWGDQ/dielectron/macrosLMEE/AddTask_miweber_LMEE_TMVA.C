@@ -1,10 +1,12 @@
-AliAnalysisTask *AddTask_miweber_LMEE_TMVA(Int_t cutDefinition = 0,
-        TString outputFileName = "AnalysisResult.root",
-        TString directoryBaseName = "miweber_LMEE_TMVA",
-        Bool_t isNano = kFALSE,
-        Bool_t bCutQA = kTRUE,
-        Bool_t useTPCCorr=kFALSE){
-
+AliAnalysisTask *AddTask_miweber_LMEE_TMVA(Double_t userTMVACutValue = 0.0,
+					   Int_t cutDefinition = 0,
+					   TString userPathWeightFile="",
+					   TString outputFileName = "AnalysisResult.root",
+					   TString directoryBaseName = "miweber_LMEE_TMVA",
+					   Bool_t isNano = kFALSE,
+					   Bool_t bCutQA = kTRUE,
+					   Bool_t useTPCCorr=kFALSE){
+  
 
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -61,7 +63,7 @@ AliAnalysisTask *AddTask_miweber_LMEE_TMVA(Int_t cutDefinition = 0,
   mgr->AddTask(task);
   
   //add dielectron analysis with selected cut to the task
-  AliDielectron *diel_low = Config_miweber_LMEE_TMVA(cutDefinition,bESDANA,bCutQA,kFALSE,useTPCCorr);
+  AliDielectron *diel_low = Config_miweber_LMEE_TMVA(userTMVACutValue,cutDefinition,userPathWeightFile,bESDANA,bCutQA,kFALSE,useTPCCorr);
   if(diel_low){
     AliDielectronVarCuts *eventplaneCuts = new AliDielectronVarCuts("eventplaneCuts","eventplaneCuts");
     // use event plane cuts only for this cut set
