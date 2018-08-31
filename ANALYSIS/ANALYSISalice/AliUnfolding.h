@@ -6,10 +6,6 @@
 ///
 /// I.e. chi2 minimization and bayesian unfolding
 /// The whole class is static and not thread-safe (due to the fact that MINUIT unfolding is not thread-safe)
-/// TMatrixD, TVectorD defined here, because it does not seem possible to predeclare these (or i do not know how)
-/// -->
-/// $ROOTSYS/include/TVectorDfwd.h:21: conflicting types for `typedef struct TVectorT<Double_t> TVectorD'
-/// PWG0/AliUnfolding.h:21: previous declaration as `struct TVectorD'
 ///
 /// Methods that are implemented are chi2 minimization and bayesian unfolding.
 ///

@@ -19,8 +19,8 @@
 #include "AliTRDseedV1.h"
 #endif
 
-template <typename Value> class TVectorT;
-typedef class TVectorT<Double_t> TVectorD;
+#include <TVectorD.h>
+
 class AliESDtrack;
 class AliTRDcluster;
 class AliTRDReconstructor;
