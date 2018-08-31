@@ -622,6 +622,7 @@ private:
 //===========================================================================================
 
     TH1D *fHistEventCounter; //!
+    TH1D *fHistEventCounterDifferential; //!
     TH1D *fHistCentrality; //!
 
     AliAnalysisTaskStrangenessVsMultiplicityRun2(const AliAnalysisTaskStrangenessVsMultiplicityRun2&);            // not implemented
