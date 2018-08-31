@@ -61,6 +61,10 @@ class AliFemtoDreamCollConfig : public TNamed {
     fGetTheControlSampel = use;
   }
   ;
+  void SetUseStravinskyMethod(bool use) {
+    fStravinsky = use;
+  }
+  ;
   void SetZBins(std::vector<float> ZBins);
   void SetMultBins(std::vector<int> MultBins);
   void SetPDGCodes(std::vector<int> PDGCodes);
@@ -136,6 +140,10 @@ class AliFemtoDreamCollConfig : public TNamed {
     return fGetTheControlSampel;
   }
   ;
+  bool GetDoStravinsky() {
+    return fStravinsky;
+  }
+  ;
   bool GetdPhidEtaPlots() {
     return fdPhidEtaPlots;
   }
@@ -198,6 +206,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fdPhidEtaPlots;          //
   bool fMixedEventStatistics;   //
   bool fGetTheControlSampel;    //
+  bool fStravinsky;             //
   bool fInvMassPairs;           //
   bool fMinimalBookingME;       //
   bool fMinimalBookingSample;   //

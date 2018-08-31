@@ -12,7 +12,8 @@ AliFemtoDreamControlSample::AliFemtoDreamControlSample()
       fMultBins(),
       fRandom(),
       fPi(TMath::Pi()),
-      fSpinningDepth(0) {
+      fSpinningDepth(0),
+      fStravinsky(false) {
   fRandom.SetSeed(0);
 }
 
@@ -23,7 +24,8 @@ AliFemtoDreamControlSample::AliFemtoDreamControlSample(
       fMultBins(samp.fMultBins),
       fRandom(),
       fPi(TMath::Pi()),
-      fSpinningDepth(samp.fSpinningDepth) {
+      fSpinningDepth(samp.fSpinningDepth),
+      fStravinsky(false) {
   fRandom.SetSeed(0);
 }
 
@@ -34,8 +36,13 @@ AliFemtoDreamControlSample::AliFemtoDreamControlSample(
       fMultBins(conf->GetMultBins()),
       fRandom(),
       fPi(TMath::Pi()),
-      fSpinningDepth(0) {
-  fSpinningDepth = conf->GetSpinningDepth();
+      fSpinningDepth(0),
+      fStravinsky(conf->GetDoStravinsky()) {
+  if (fStravinsky) {
+    fSpinningDepth = 1;
+  } else {
+    fSpinningDepth = conf->GetSpinningDepth();
+  }
   fRandom.SetSeed(0);
 }
 
@@ -127,6 +134,13 @@ float AliFemtoDreamControlSample::RelativePairMomentum(TVector3 Part1Momentum,
     // Do the randomization here
     SPtrack.SetPhi(SPtrack.Phi() + fRandom.Uniform(2 * fPi));
     TPProng.SetPhi(TPProng.Phi() + fRandom.Uniform(2 * fPi));
+  }
+  if (fStravinsky) {
+    if (fRandom.Uniform() < 0.5) {
+      SPtrack.SetPhi(SPtrack.Phi() + fPi);
+    } else {
+      TPProng.SetPhi(TPProng.Phi() + fPi);
+    }
   }
   trackSum = SPtrack + TPProng;
 

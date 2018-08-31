@@ -44,6 +44,7 @@ class AliFemtoDreamControlSample {
   TRandom3 fRandom;
   double fPi;
   int fSpinningDepth;
+  bool fStravinsky;
 
 ClassDef(AliFemtoDreamControlSample, 1)
 };
