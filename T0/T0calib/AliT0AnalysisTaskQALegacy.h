@@ -1,5 +1,5 @@
-#ifndef AliT0AnalysisTaskQA_cxx
-#define AliT0AnalysisTaskQA_cxx
+#ifndef AliT0AnalysisTaskQALegacyLegacy_cxx
+#define AliT0AnalysisTaskQALegacy_cxx
 
 // task determines mean and sigma of T0 signals  ORA, ORC, ORA-ORC, ORA+ORC/2  
 // Authors: FK  
@@ -13,11 +13,11 @@ class TH2F;
 
 #include "AliAnalysisTaskSE.h"
 
-class AliT0AnalysisTaskQA : public AliAnalysisTaskSE {
+class AliT0AnalysisTaskQALegacy : public AliAnalysisTaskSE {
  public:
-  AliT0AnalysisTaskQA();
-  AliT0AnalysisTaskQA(const char *name);
-  virtual ~AliT0AnalysisTaskQA(); 
+  AliT0AnalysisTaskQALegacy();
+  AliT0AnalysisTaskQALegacy(const char *name);
+  virtual ~AliT0AnalysisTaskQALegacy(); 
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -40,10 +40,10 @@ class AliT0AnalysisTaskQA : public AliAnalysisTaskSE {
   TH2F        *fT0vsNtracks; //! T0A vs Ntracks
   
  
-  AliT0AnalysisTaskQA(const AliT0AnalysisTaskQA&); // not implemented
-  AliT0AnalysisTaskQA& operator=(const AliT0AnalysisTaskQA&); // not implemented
+  AliT0AnalysisTaskQALegacy(const AliT0AnalysisTaskQALegacy&); // not implemented
+  AliT0AnalysisTaskQALegacy& operator=(const AliT0AnalysisTaskQALegacy&); // not implemented
   
-  ClassDef(AliT0AnalysisTaskQA, 1); // example of analysis
+  ClassDef(AliT0AnalysisTaskQALegacy, 1); // example of analysis
 };
 
 #endif
