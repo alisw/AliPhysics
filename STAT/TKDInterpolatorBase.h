@@ -18,10 +18,6 @@
 //
 ///////////////////////////////////////////////////////////////
 
-template <typename Value> class TVectorT;
-typedef class TVectorT<Double_t> TVectorD;
-template <typename Value> class TMatrixT;
-typedef class TMatrixT<Double_t> TMatrixD;
 template <typename Index, typename Value> class TKDTree;
 typedef class TKDTree<Int_t, Float_t> TKDTreeIF;
 class TLinearFitter;

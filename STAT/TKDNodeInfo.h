@@ -21,10 +21,9 @@
 #include "TMarker.h"
 #endif
 
-template <typename Value> class TVectorT;
-typedef class TVectorT<Double_t> TVectorD;
-template <typename Value> class TMatrixT;
-typedef class TMatrixT<Double_t> TMatrixD;
+#include <TVectorD.h>
+#include <TMatrixD.h>
+
 class TKDNodeInfo : public TObject
 {
 public:
