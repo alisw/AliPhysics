@@ -52,35 +52,6 @@ protected:
   ClassDef(AliFMDFloatMap,3) // Map of floats
 };
 
-inline AliFMDFloatMap
-operator*(const AliFMDMap& lhs, const AliFMDMap& rhs)
-{
-  AliFMDFloatMap r(lhs);
-  r *= rhs;
-  return r;
-}
-inline AliFMDFloatMap
-operator/(const AliFMDMap& lhs, const AliFMDMap& rhs)
-{
-  AliFMDFloatMap r(lhs);
-  r /= rhs;
-  return r;
-}
-inline AliFMDFloatMap
-operator+(const AliFMDMap& lhs, const AliFMDMap& rhs)
-{
-  AliFMDFloatMap r(lhs);
-  r += rhs;
-  return r;
-}
-inline AliFMDFloatMap
-operator-(const AliFMDMap& lhs, const AliFMDMap& rhs)
-{
-  AliFMDFloatMap r(lhs);
-  r -= rhs;
-  return r;
-}
-
 #endif
 //____________________________________________________________________
 //
