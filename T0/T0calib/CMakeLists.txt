@@ -33,7 +33,7 @@ include_directories(${ROOT_INCLUDE_DIR}
 
 # Sources in alphabetical order
 set(SRCS
-    AliT0AnalysisTaskQA.cxx
+    AliT0AnalysisTaskQALegacy.cxx
     AliT0CalibAnalysisTask.cxx
     AliT0CalibOffsetChannelsTask.cxx
     AliT0PreprocessorOffline.cxx

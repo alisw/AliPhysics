@@ -12,7 +12,7 @@
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 
-#include "AliT0AnalysisTaskQA.h"
+#include "AliT0AnalysisTaskQALegacy.h"
 
 //#include "AliCDBMetaData.h"
 //#include "AliCDBId.h"
@@ -23,9 +23,9 @@
 // Task should calculate channels offset 
 // Authors: Alla 
 
-ClassImp(AliT0AnalysisTaskQA)
+ClassImp(AliT0AnalysisTaskQALegacy)
 //________________________________________________________________________
-AliT0AnalysisTaskQA::AliT0AnalysisTaskQA() 
+AliT0AnalysisTaskQALegacy::AliT0AnalysisTaskQALegacy() 
   : AliAnalysisTaskSE(),  fESD(0x0), fTzeroObject(0x0),
   fTzeroORA(0x0), fTzeroORC(0x0), fResolution(0x0), fTzeroORAplusORC(0x0),
     fRunNumber(0),fTimeVSAmplitude(0x0),fCFDVSPmtId(0x0),fSPDVertexVST0Vertex(0x0),
@@ -43,7 +43,7 @@ AliT0AnalysisTaskQA::AliT0AnalysisTaskQA()
 
 
 //________________________________________________________________________
-AliT0AnalysisTaskQA::AliT0AnalysisTaskQA(const char *name) 
+AliT0AnalysisTaskQALegacy::AliT0AnalysisTaskQALegacy(const char *name) 
   : AliAnalysisTaskSE(name),  fESD(0x0), fTzeroObject(0x0),
   fTzeroORA(0x0), fTzeroORC(0x0), fResolution(0x0), fTzeroORAplusORC(0x0),
     fRunNumber(0),fTimeVSAmplitude(0x0),fCFDVSPmtId(0x0),fSPDVertexVST0Vertex(0x0),
@@ -59,7 +59,7 @@ AliT0AnalysisTaskQA::AliT0AnalysisTaskQA(const char *name)
 }
 
 //________________________________________________________________________
-AliT0AnalysisTaskQA::~AliT0AnalysisTaskQA() 
+AliT0AnalysisTaskQALegacy::~AliT0AnalysisTaskQALegacy() 
 {
   // Destructor
   // printf("AliT0CalibOffsetChannels~AliT0CalibOffsetChannels() ");
@@ -78,7 +78,7 @@ AliT0AnalysisTaskQA::~AliT0AnalysisTaskQA()
 }
 
 //------------------------------------------------------------------
-void AliT0AnalysisTaskQA::UserCreateOutputObjects()
+void AliT0AnalysisTaskQALegacy::UserCreateOutputObjects()
 {
   // Create histograms
  fTimeVSAmplitude = new TH2F*[NPMT0];
@@ -118,7 +118,7 @@ void AliT0AnalysisTaskQA::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliT0AnalysisTaskQA::UserExec(Option_t *) 
+void AliT0AnalysisTaskQALegacy::UserExec(Option_t *) 
 {
   // Main loop
   // Called for each event
@@ -183,7 +183,7 @@ void AliT0AnalysisTaskQA::UserExec(Option_t *)
   PostData(1, fTzeroObject);
 }      
  //________________________________________________________________________
-void AliT0AnalysisTaskQA::Terminate(Option_t *) 
+void AliT0AnalysisTaskQALegacy::Terminate(Option_t *) 
 {
   
    // Called once at the end of the query
