@@ -13,8 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
 #include <Riostream.h>
 
 #include <TChain.h>
@@ -40,7 +38,7 @@ using std::endl;
 using std::ofstream;
 ClassImp(AliAnalysisTaskTagCreator)
 
-////////////////////////////////////////////////////////////////////////
+/// \file AliAnalysisTaskTagCreator.cxx
 
 AliAnalysisTaskTagCreator::AliAnalysisTaskTagCreator():
     AliAnalysisTaskSE(),
@@ -65,13 +63,15 @@ AliAnalysisTaskTagCreator::AliAnalysisTaskTagCreator(const char* name):
     fAODFileName(""),
     fGUID(0)
 {
-  // Constructor
+  /// Constructor
+
     DefineOutput(1, TTree::Class()); 	
 }
 
 void AliAnalysisTaskTagCreator::UserCreateOutputObjects()
 {
-// Create the output container
+/// Create the output container
+
     OpenFile(1);
     fTreeT  = new TTree("T", "AOD Tags");
     fRunTag = new AliRunTag();
@@ -88,7 +88,8 @@ void AliAnalysisTaskTagCreator::Init()
 
 void AliAnalysisTaskTagCreator::ConnectInputData(Option_t * /*option*/)
 {
-    // Initialization
+    /// Initialization
+
     const char* turl = gSystem->Getenv("ALIEN_JDL_OUTPUTDIR");
     TString sturl = turl;
     
@@ -102,7 +103,8 @@ void AliAnalysisTaskTagCreator::ConnectInputData(Option_t * /*option*/)
 void AliAnalysisTaskTagCreator::UserExec(Option_t */*option*/)
 {
 
-    // Create Tags for the current event
+    /// Create Tags for the current event
+
     AliEventTag* evtTag = new AliEventTag();
     fTagCreator->FillEventTag(AODEvent(), evtTag);
     // Reference to the input file
@@ -143,15 +145,16 @@ void AliAnalysisTaskTagCreator::UserExec(Option_t */*option*/)
 
 void AliAnalysisTaskTagCreator::FinishTaskOutput()
 {
-// Terminate analysis
-//
+/// Terminate analysis
+
     if (fInputHandler->GetRunTag()) fRunTag->CopyStandardContent(fInputHandler->GetRunTag());	    
     fTreeT->Fill();
 }
 
 Bool_t AliAnalysisTaskTagCreator::Notify()
 {
-    // Notify file change
+    /// Notify file change
+
     fInputHandler = (AliInputEventHandler*) 
       ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
     return kTRUE;
@@ -159,7 +162,8 @@ Bool_t AliAnalysisTaskTagCreator::Notify()
 
 
 void AliAnalysisTaskTagCreator::GetGUID(TString &guid) {
-    // Get the guid of the AliAOD.root file
+    /// Get the guid of the AliAOD.root file
+
     ofstream myfile ("guid.txt");
     if (myfile.is_open()) {
 	TFile *f = TFile::Open("AliAOD.root","read");
@@ -179,8 +183,8 @@ void AliAnalysisTaskTagCreator::GetGUID(TString &guid) {
 
 void AliAnalysisTaskTagCreator::Terminate(Option_t */*option*/)
 {
-// Terminate analysis
-//
+/// Terminate analysis
+
     if (fDebug > 1) printf("AnalysisTagCreator: Terminate() \n");
 }
 

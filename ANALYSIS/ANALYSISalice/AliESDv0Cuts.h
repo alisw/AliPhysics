@@ -1,7 +1,5 @@
-//
-//  Class for handling of ESD v0 cuts.
-//
-//
+/// \class AliESDv0Cuts
+/// \brief Class for handling of ESD v0 cuts.
 
 #ifndef ALIESDV0CUTS_H
 #define ALIESDV0CUTS_H
@@ -77,42 +75,53 @@ protected:
 
   //######################################################
   // esd v0 quality cuts
-  static const Char_t* fgkCutNames[kNCuts]; //! names of cuts (for internal use)
+  static const Char_t* fgkCutNames[kNCuts]; //!<! names of cuts (for internal use)
 
-  Float_t fCutMinDcaPosToVertex;      // min dca of the positive daughter to the primary vertex
-  Float_t fCutMinDcaNegToVertex;      // min dca of the negative daughter to the primary vertex
-  Float_t fCutMaxChi2;                // max chi2
-  Float_t fCutMaxDcaV0Daughters;      // max dca between the two v0 daughters
-  Float_t fCutMinRadius;              // min reconstruction radius (fiducial volume)
-  Float_t fCutMaxRadius;              // max reconstruction radius (fiducial volume)
-  Float_t fCutMinCosinePointingAngle; // min cosine of pointing angle
-  Bool_t  fCutRequireOnFlyStatus;     // require on fly status
-  Float_t fCutMaxDcaV0ToVertex;       // max dca of the v0 to the primary vertex
+  Float_t fCutMinDcaPosToVertex;      ///< min dca of the positive daughter to the primary vertex
+  Float_t fCutMinDcaNegToVertex;      ///< min dca of the negative daughter to the primary vertex
+  Float_t fCutMaxChi2;                ///< max chi2
+  Float_t fCutMaxDcaV0Daughters;      ///< max dca between the two v0 daughters
+  Float_t fCutMinRadius;              ///< min reconstruction radius (fiducial volume)
+  Float_t fCutMaxRadius;              ///< max reconstruction radius (fiducial volume)
+  Float_t fCutMinCosinePointingAngle; ///< min cosine of pointing angle
+  Bool_t  fCutRequireOnFlyStatus;     ///< require on fly status
+  Float_t fCutMaxDcaV0ToVertex;       ///< max dca of the v0 to the primary vertex
 
   // v0 kinematics cuts
-  Float_t fPMin,   fPMax;             // definition of the range of the P
-  Float_t fPtMin,  fPtMax;            // definition of the range of the Pt
-  Float_t fPxMin,  fPxMax;            // definition of the range of the Px
-  Float_t fPyMin,  fPyMax;            // definition of the range of the Py
-  Float_t fPzMin,  fPzMax;            // definition of the range of the Pz
+  Float_t fPMin,   fPMax;             ///< definition of the range of the P
+  Float_t fPtMin,  fPtMax;            ///< definition of the range of the Pt
+  Float_t fPxMin,  fPxMax;            ///< definition of the range of the Px
+  Float_t fPyMin,  fPyMax;            ///< definition of the range of the Py
+  Float_t fPzMin,  fPzMax;            ///< definition of the range of the Pz
 
   //######################################################
   // diagnostics histograms
-  Bool_t fHistogramsOn;               // histograms on/off
+  Bool_t fHistogramsOn;               ///< histograms on/off
 
+  /// 
   TH1F* fhDcaPosToVertex[2];          //->
+  /// 
   TH1F* fhDcaNegToVertex[2];          //->
+  /// 
   TH1F* fhChi2[2];                    //->
+  /// 
   TH1F* fhDcaV0Daughters[2];          //->
+  /// 
   TH1F* fhRadius[2];                  //->
+  /// 
   TH1F* fhCosinePointingAngle[2];     //->
+  /// 
   TH1F* fhOnFlyStatus[2];             //->
+  /// 
   TH1F* fhDcaV0ToVertex[2];           //->
   
-  TH1F* fhPt[2];                      //-> pt of esd v0s
+  /// pt of esd v0s
+  TH1F* fhPt[2];                      //->
 
-  TH1F* fhCutStatistics;              //-> statistics of what cuts the v0s did not survive
-  TH2F* fhCutCorrelation;             //-> 2d statistics plot
+  /// statistics of what cuts the v0s did not survive
+  TH1F* fhCutStatistics;              //->
+  /// 2d statistics plot
+  TH2F* fhCutCorrelation;             //->
 
   ClassDef(AliESDv0Cuts, 1)
 };

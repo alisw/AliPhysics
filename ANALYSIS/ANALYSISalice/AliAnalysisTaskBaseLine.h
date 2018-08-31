@@ -1,11 +1,9 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliAnalysisTaskBaseLine.cxx 46301 2011-01-06 14:25:27Z agheata $ */
-
-//
-// This empty task is used for the analysis train to estimate the memory and CPU consumption without any user code
-//
+/// \class AliAnalysisTaskBaseLine
+///
+/// This empty task is used for the analysis train to estimate the memory and CPU consumption without any user code
 
 #ifndef ALIANALYSISTASKBASELINE_H
 #define ALIANALYSISTASKBASELINE_H

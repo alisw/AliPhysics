@@ -4,15 +4,10 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliAnalysisTaskPIDqa.h 43642 2010-09-17 15:50:04Z wiechula $ */
-// Author: Jens Wiechula, 24/02/2011
-
-//==============================================================================
-//
-//
-//
-//
-//==============================================================================
+/// \class AliAnalysisTaskPIDqa
+/// \brief \author Jens Wiechula
+///
+/// \date 24/02/2011
 
 #include <TVectorDfwd.h>
 
@@ -41,43 +36,43 @@ public:
 
   
 private: 
-  AliPIDResponse *fPIDResponse;             //! PID response Handler
-  AliESDv0KineCuts *fV0cuts;                //! ESD V0 cuts
+  AliPIDResponse *fPIDResponse;             //!<! PID response Handler
+  AliESDv0KineCuts *fV0cuts;                //!<! ESD V0 cuts
 
-  TObjArray *fV0electrons;                  //! array with pointer to identified particles from V0 decays (electrons)
-  TObjArray *fV0pions;                      //! array with pointer to identified particles from V0 decays (pions)
-  TObjArray *fV0kaons;                      //! array with pointer to identified particles from V0 decays (kaons)
-  TObjArray *fV0protons;                    //! array with pointer to identified particles from V0 decays (ptotons)
+  TObjArray *fV0electrons;                  //!<! array with pointer to identified particles from V0 decays (electrons)
+  TObjArray *fV0pions;                      //!<! array with pointer to identified particles from V0 decays (pions)
+  TObjArray *fV0kaons;                      //!<! array with pointer to identified particles from V0 decays (kaons)
+  TObjArray *fV0protons;                    //!<! array with pointer to identified particles from V0 decays (ptotons)
 
-  TList                 *fListQA;           //! list with all QA histograms
-  TList                 *fListQAits;        //! List with ITS QA histograms
-  TList                 *fListQAitsSA;      //! List with ITS SA QA histograms
-  TList                 *fListQAitsPureSA;  //! List with ITS pure SA QA histograms
-  TList                 *fListQAtpc;        //! List with TPC QA histograms
-  TList                 *fListQAtpcBasic;   //! Sub-list with TPC QA histograms - basic
-  TList                 *fListQAtpcMCtruth; //! Sub-list with TPC QA histograms - only MC truth identified particles
+  TList                 *fListQA;           //!<! list with all QA histograms
+  TList                 *fListQAits;        //!<! List with ITS QA histograms
+  TList                 *fListQAitsSA;      //!<! List with ITS SA QA histograms
+  TList                 *fListQAitsPureSA;  //!<! List with ITS pure SA QA histograms
+  TList                 *fListQAtpc;        //!<! List with TPC QA histograms
+  TList                 *fListQAtpcBasic;   //!<! Sub-list with TPC QA histograms - basic
+  TList                 *fListQAtpcMCtruth; //!<! Sub-list with TPC QA histograms - only MC truth identified particles
 //  TList                 *fListQAtpcHybrid;  //! Sub-list with TPC QA histograms - the "hybrid" scenario -> not used and commented for now
 //  TList                 *fListQAtpcOROChigh;//! Sub-list with TPC QA histograms - the "OROChigh" scenario -> not used and commented for now
-  TList                 *fListQAtpcV0;      //! Sub-list with TPC QA histograms - V0s
-  TList                 *fListQAtrd;        //! List with TRD QA histograms 
-  TList                 *fListQAtrdBasic;        //! List with TRD QA histograms - basic
-  TList                 *fListQAtrdLikelihood;     //! List with TRD QA histograms - likelihood
-  TList                 *fListQAtrdTruncatedMean;  //! List with TRD QA histograms - truncated mean
-  TList                 *fListQAtrdMCtruth; //! List with TRD QA histograms - mc truth
-  TList                 *fListQAtrdV0;      //! List with TRD QA histograms - V0s
-  TList                 *fListQAtrdBasicV0;        //! List with TRD QA histograms - basic
-  TList                 *fListQAtrdLikelihoodV0;     //! List with TRD QA histograms - likelihood
-  TList                 *fListQAtrdTruncatedMeanV0;  //! List with TRD QA histograms - truncated mean
-  TList                 *fListQAtof;        //! List with TOF QA histograms
-  TList                 *fListQAt0;         //! List with T0 QA histograms
-  TList                 *fListQAemcal;      //! List with EMCAL QA histograms
-  TList                 *fListQAhmpid;      //! List with EMCAL QA histograms
-  TList                 *fListQAtofhmpid;   //! List with EMCAL QA histograms
-  TList                 *fListQAtpctof;     //! List with combined PID from TPC + TOF
-  TList                 *fListQAV0;         //! List with V0 kine cuts QA histograms
-  TList                 *fListQAinfo;       //! List with information about loaded splines etc.
+  TList                 *fListQAtpcV0;      //!<! Sub-list with TPC QA histograms - V0s
+  TList                 *fListQAtrd;        //!<! List with TRD QA histograms
+  TList                 *fListQAtrdBasic;        //!<! List with TRD QA histograms - basic
+  TList                 *fListQAtrdLikelihood;     //!<! List with TRD QA histograms - likelihood
+  TList                 *fListQAtrdTruncatedMean;  //!<! List with TRD QA histograms - truncated mean
+  TList                 *fListQAtrdMCtruth; //!<! List with TRD QA histograms - mc truth
+  TList                 *fListQAtrdV0;      //!<! List with TRD QA histograms - V0s
+  TList                 *fListQAtrdBasicV0;        //!<! List with TRD QA histograms - basic
+  TList                 *fListQAtrdLikelihoodV0;     //!<! List with TRD QA histograms - likelihood
+  TList                 *fListQAtrdTruncatedMeanV0;  //!<! List with TRD QA histograms - truncated mean
+  TList                 *fListQAtof;        //!<! List with TOF QA histograms
+  TList                 *fListQAt0;         //!<! List with T0 QA histograms
+  TList                 *fListQAemcal;      //!<! List with EMCAL QA histograms
+  TList                 *fListQAhmpid;      //!<! List with EMCAL QA histograms
+  TList                 *fListQAtofhmpid;   //!<! List with EMCAL QA histograms
+  TList                 *fListQAtpctof;     //!<! List with combined PID from TPC + TOF
+  TList                 *fListQAV0;         //!<! List with V0 kine cuts QA histograms
+  TList                 *fListQAinfo;       //!<! List with information about loaded splines etc.
 
-  TArrayI                fTPChistogramOffsets; //! Histogram offsets for different histogram groups
+  TArrayI                fTPChistogramOffsets; //!<! Histogram offsets for different histogram groups
 
   
   void ExecNewRun();

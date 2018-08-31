@@ -3,13 +3,38 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// Author: Andrei Gheata, 12/08/2011
-
-//==============================================================================
-//   AliAnalysysTaskCfg - Class embedding the configuration needed to run
-// a given analysis task: libraries to be loaded, location and name of the macro
-// used to add the task to the analysis manager, dependencies.
-//==============================================================================
+/// \class AliAnalysisTaskCfg
+/// \brief AliAnalysisTaskCfg
+/// ==============================================================================
+///   AliAnalysysTaskCfg - Class embedding the configuration needed to run
+/// a given analysis task: libraries to be loaded, location and name of the macro
+/// used to add the task to the analysis manager, dependencies.
+/// ==============================================================================
+/// This class is used to fully describe how to run a given analysis task. It
+/// requires that the user creates an AddTask macro for his task and defines:
+///  - The needed libs separated by commas,
+///  - The full path to the AddTask macro (starting with $ALICE_ROOT if needed)
+///  - The list of arguments to be provided to the AddTask macro. One can use
+///    here only constants that can be interpreted.
+///  - The list of dependencies (other modules required to run this task). These
+///    must be names of other AliAnalysisTaskCfg objects, separated by commas.
+///  - Data types supported by the task (e.g. ESD, AOD, MC)
+/// The class has normal ROOT IO, but it can also read from and write to text files.
+/// An example:
+/// Content of file: QAsym.cfg
+/// The following special variable names can be used:
+/// __R_ADDTASK__ = the return value of the AddTask macro included
+/// __R_ESDH__    = pointer to ESD handler
+/// __R_AODH__    = pointer to AOD handler
+/// __R_MCH__     = pointer to MC handler
+/// The static method ExtractModulesFrom(const char *filename) allows reading
+/// several task configuration modules from the same text file and returning
+/// them in a TObjArray.
+///
+/// A list of configuration modules representing a train should be injected in
+/// the right order in the grid handler to generate train macros.
+/// \author Andrei Gheata
+/// \date 12/08/2011
 
 #ifndef ROOT_TNamed
 #include "TNamed.h"
@@ -24,17 +49,17 @@ enum ETaskCfgFlags {
   kLoaded      = BIT(14)
 }; 
 protected:
-  TString                   fMacroName;     // Full path to AddTask macro
-  TString                   fMacroArgs;     // Arguments to run the macro
-  TString                   fLibs;          // List of custom libs needed to run the task (comma separated)
-  TString                   fDeps;          // List of tasks this module depends on
-  TString                   fDataTypes;     // List of supported data types (ESD, AOD, MC)
-  TString                   fOutputFile;    // Desired output file name (via SetCommonFileName)
-  TString                   fTerminateFile; // Custom output file written in Terminate
-  TMacro                   *fMacro;         // Embedded AddTask macro
-  TMacro                   *fConfigDeps;    // Macro used to configure the dependecies
+  TString                   fMacroName;     ///< Full path to AddTask macro
+  TString                   fMacroArgs;     ///< Arguments to run the macro
+  TString                   fLibs;          ///< List of custom libs needed to run the task (comma separated)
+  TString                   fDeps;          ///< List of tasks this module depends on
+  TString                   fDataTypes;     ///< List of supported data types (ESD, AOD, MC)
+  TString                   fOutputFile;    ///< Desired output file name (via SetCommonFileName)
+  TString                   fTerminateFile; ///< Custom output file written in Terminate
+  TMacro                   *fMacro;         ///< Embedded AddTask macro
+  TMacro                   *fConfigDeps;    ///< Macro used to configure the dependecies
                                             // (utility tasks or input handlers). The data type is passed as argument.
-  TObject                  *fRAddTask;      // Object returned by AddTask method
+  TObject                  *fRAddTask;      ///< Object returned by AddTask method
 public:  
   AliAnalysisTaskCfg();
   AliAnalysisTaskCfg(const char *name);

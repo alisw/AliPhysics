@@ -13,16 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
- 
-
-// Realisation of an AliVEventPool which allows the user to
-// run the analysis in a loop, i.e. passing several times over 
-// the same event chain.
-// Author Andreas Morsch
-// andreas.morsch@cern.ch
-
-
 #include "AliEventPoolLoop.h"
 #include <TChain.h>
 #include <TFile.h>
@@ -48,7 +38,8 @@ AliEventPoolLoop::AliEventPoolLoop(Int_t nit):
     fNIteration(1),
     fChainClone(0)
 {
-  // Default constructor
+  /// Default constructor
+
 }
 
 AliEventPoolLoop::AliEventPoolLoop(const char* name, const char* title):
@@ -57,7 +48,8 @@ AliEventPoolLoop::AliEventPoolLoop(const char* name, const char* title):
     fNIteration(1),
     fChainClone(0)
 {
-  // Constructor
+  /// Constructor
+
 }
 
 
@@ -67,12 +59,14 @@ AliEventPoolLoop::AliEventPoolLoop(const AliEventPoolLoop& obj):
     fNIteration(obj.fNIteration),
     fChainClone(0)
 {
-    // Copy constructor
+    /// Copy constructor
+
 }
 
 AliEventPoolLoop& AliEventPoolLoop::operator=(const AliEventPoolLoop& other)
 {
-// Assignment operator
+/// Assignment operator
+
     AliVEventPool::operator=(other);
     fMaxIterations = other.fMaxIterations;
     fNIteration    = other.fNIteration;
@@ -82,7 +76,7 @@ AliEventPoolLoop& AliEventPoolLoop::operator=(const AliEventPoolLoop& other)
 
 void AliEventPoolLoop::Init()
 {
-// Initialisation
+/// Initialisation
 
     fMaxIterations = 0;
     fNIteration    = 1;
@@ -90,7 +84,8 @@ void AliEventPoolLoop::Init()
 
 TChain* AliEventPoolLoop::GetNextChain()
 {
-    // Get the next chain
+    /// Get the next chain
+
     if (fNIteration > fMaxIterations) {
 	return (0);
     } else {
@@ -118,12 +113,14 @@ TChain* AliEventPoolLoop::GetNextChain()
 
 void  AliEventPoolLoop::GetCurrentBin(Float_t* /*bin*/)
 {
-    //
+    ///
+
 }
 
 Int_t AliEventPoolLoop::GetDimension()
 {
-    //
+    ///
+
     return (0);
 }
 

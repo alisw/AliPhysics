@@ -13,19 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//
-// MC bad chunk identifier 
-// --- david.dobrigkeit.chinellato@cern.ch
-//
-// Loops over all chunks and fills a TTree object with a TString locating 
-// chunk name for each event and a "number of global tracks" variable. 
-//
-// TTree is filled event-by-event but has only very few data members, 
-// so memory consumption should still be reasonable. 
-//
-// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
 class TTree;
 class TParticle;
 
@@ -69,8 +56,9 @@ AliAnalysisTaskBadChunkID::AliAnalysisTaskBadChunkID(const char *name)
     fNGlobalTracks(0),
     fNTracks(0)
 {
-  // Constructor
-  // Output slot #0 writes into a TList container (Cascade)
+  /// Constructor
+  /// Output slot #0 writes into a TList container (Cascade)
+
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
 }
@@ -78,9 +66,7 @@ AliAnalysisTaskBadChunkID::AliAnalysisTaskBadChunkID(const char *name)
 
 AliAnalysisTaskBadChunkID::~AliAnalysisTaskBadChunkID()
 {
-//------------------------------------------------
-// DESTRUCTOR
-//------------------------------------------------
+/// DESTRUCTOR
 
    if (fList){
       delete fList;
@@ -99,7 +85,8 @@ void AliAnalysisTaskBadChunkID::UserCreateOutputObjects()
 {
 
    
-   // Create histograms
+   /// Create histograms
+
    OpenFile(1);
    fList = new TList();
    fList->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
@@ -141,8 +128,8 @@ void AliAnalysisTaskBadChunkID::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskBadChunkID::UserExec(Option_t *) 
 {
-  // Main loop
-  // Called for each event
+  /// Main loop
+  /// Called for each event
 
    AliESDEvent *lESDevent = 0x0;
    //AliMCEvent  *lMCevent  = 0x0;
@@ -218,8 +205,8 @@ void AliAnalysisTaskBadChunkID::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskBadChunkID::Terminate(Option_t *)
 {
-   // Draw result to the screen
-   // Called once at the end of the query
+   /// Draw result to the screen
+   /// Called once at the end of the query
 
    // Not interesting at this point.
 }

@@ -4,12 +4,11 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
-//
-// Manager class for filter decisions based on cuts
-// Author: Andreas Morsch
-// andreas.morsch@cern.ch
+/// \class AliAnalysisFilter
+/// \brief Manager class for filter decisions based on cuts
+/// The filter contains a list of sets of cuts.
+/// A bit field is filled in order to store the decision of each cut-set.
+/// \author Andreas Morsch
 
 #include <TNamed.h>
 
@@ -32,7 +31,7 @@ class AliAnalysisFilter : public TNamed
     TList*  GetCuts() const {return fCuts;}
 	    
  private:
-    TList* fCuts;    // List of cuts
+    TList* fCuts;    ///< List of cuts
     ClassDef(AliAnalysisFilter, 2); // Manager class for filter decisions
 };
  

@@ -12,8 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/* $Id$ */
  
 #include <TROOT.h>
 #include <TSystem.h>
@@ -34,7 +32,7 @@
 
 ClassImp(AliAnalysisTaskME)
 
-////////////////////////////////////////////////////////////////////////
+/// \file AliAnalysisTaskME.cxx
 
 AliAnalysisTaskME::AliAnalysisTaskME():
     AliAnalysisTask(),
@@ -59,7 +57,8 @@ AliAnalysisTaskME::AliAnalysisTaskME(const char* name):
     fTreeA(0x0),
     fOfflineTriggerMask(0)
 {
-  // Default constructor
+  /// Default constructor
+
     DefineInput (0, TChain::Class());
     DefineOutput(0,  TTree::Class());
 }
@@ -74,7 +73,8 @@ AliAnalysisTaskME::AliAnalysisTaskME(const AliAnalysisTaskME& obj):
     fTreeA(0x0),
     fOfflineTriggerMask(0)
 {
-// Copy constructor
+/// Copy constructor
+
     fDebug        = obj.fDebug;
     fEntry        = obj.fEntry;
     fInputHandler = obj.fInputHandler;
@@ -86,7 +86,8 @@ AliAnalysisTaskME::AliAnalysisTaskME(const AliAnalysisTaskME& obj):
 
 AliAnalysisTaskME& AliAnalysisTaskME::operator=(const AliAnalysisTaskME& other)
 {
-// Assignment
+/// Assignment
+
     if (this != &other) {
 	AliAnalysisTask::operator=(other);
 	fDebug           = other.fDebug;
@@ -103,7 +104,8 @@ AliAnalysisTaskME& AliAnalysisTaskME::operator=(const AliAnalysisTaskME& other)
 
 void AliAnalysisTaskME::ConnectInputData(Option_t* /*option*/)
 {
-// Connect the input data
+/// Connect the input data
+
     if (fDebug > 1) printf("AnalysisTaskME::ConnectInputData() \n");
 //
 //  Multi AOD
@@ -124,9 +126,10 @@ void AliAnalysisTaskME::ConnectInputData(Option_t* /*option*/)
 
 void AliAnalysisTaskME::CreateOutputObjects()
 {
-// Create the output container
-//
-//  Default AOD
+/// Create the output container
+///
+///  Default AOD
+
     if (fDebug > 1) printf("AnalysisTaskME::CreateOutPutData() \n");
 
     AliAODHandler* handler = (AliAODHandler*) 
@@ -143,8 +146,7 @@ void AliAnalysisTaskME::CreateOutputObjects()
 
 void AliAnalysisTaskME::Exec(Option_t* option)
 {
-//
-// Exec analysis of one event
+/// Exec analysis of one event
 
     if (fDebug > 1) AliInfo("AliAnalysisTaskME::Exec() \n");
     if( fInputHandler ) 
@@ -189,7 +191,8 @@ void AliAnalysisTaskME::Exec(Option_t* option)
 
 const char* AliAnalysisTaskME::CurrentFileName()
 {
-// Returns the current file name    
+/// Returns the current file name
+
     if(fInputHandler )
 	return fInputHandler->GetTree()->GetCurrentFile()->GetName();
     else return "";
@@ -197,7 +200,8 @@ const char* AliAnalysisTaskME::CurrentFileName()
 
 void AliAnalysisTaskME::AddAODBranch(const char* cname, void* addobj, const char *fname)
 {
-    // Add a new branch to the aod tree
+    /// Add a new branch to the aod tree
+
     AliAODHandler* handler = (AliAODHandler*) 
 	((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
     if (handler) {
@@ -207,7 +211,8 @@ void AliAnalysisTaskME::AddAODBranch(const char* cname, void* addobj, const char
 
 AliVEvent*  AliAnalysisTaskME::GetEvent(Int_t iev)
 {
-    // Get an event from the input handler
+    /// Get an event from the input handler
+
     return (fInputHandler->GetEvent(iev));
 }
 

@@ -4,13 +4,12 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
-// Realisation of an AliVEventPool which allows the user to
-// run the analysis in a loop, i.e. passing several times over 
-// the same event chain.
-// Author Andreas Morsch
-// andreas.morsch@cern.ch
+/// \class AliEventPoolLoop
+/// \brief AliEventPoolLoop
+/// Realisation of an AliVEventPool which allows the user to
+/// run the analysis in a loop, i.e. passing several times over
+/// the same event chain.
+/// \author Andreas Morsch <andreas.morsch@cern.ch>
 
 #include <AliVEventPool.h>
 class AliRunTagCuts;
@@ -39,9 +38,9 @@ class AliEventPoolLoop : public AliVEventPool
     AliEventPoolLoop(const AliEventPoolLoop& obj);
     AliEventPoolLoop& operator=(const AliEventPoolLoop& other);
  protected:
-    Int_t fMaxIterations; // Maximum number of iterations 
-    Int_t fNIteration;    // Number of iterations
-    TChain* fChainClone; // Clone of the original 
+    Int_t fMaxIterations; ///< Maximum number of iterations
+    Int_t fNIteration;    ///< Number of iterations
+    TChain* fChainClone; ///< Clone of the original
     ClassDef(AliEventPoolLoop, 0); 
 };
  

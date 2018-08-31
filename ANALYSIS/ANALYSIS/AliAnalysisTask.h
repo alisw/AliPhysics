@@ -3,14 +3,90 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-// Author: Andrei Gheata, 31/05/2006
+/// \class AliAnalysisTask
+/// \brief 
+///==============================================================================
+///   AliAnalysysTask - Class representing a basic analysis task. Any
+/// user-defined task should derive from it and implement the Exec() virtual
+/// method.
+///==============================================================================
+///
+/// A specific user analysis task have to derive from this class. The list of
+/// specific input and output slots have to be defined in the derived class ctor:
+///
+///   UserTask::UserTask(name, title)
+///   {
+///      DefineInput(0, TTree::Class());
+///      DefineInput(1, TH1::Class());
+///      ...
+///      DefineOutput(0, TTree::Class());
+///      DefineOutput(1, MyObject::Class());
+///      ...
+///   }
+///
+/// An existing data contaner (AliAnalysisDataContainer) can be connected to the
+/// input/output slots of an analysis task. Containers should not be defined and
+/// connected by the derived analysis task, but from the level of AliAnalysisManager:
+///
+///   AliAnalysisManager::ConnectInput(AliAnalysisTask *task, Int_t islot,
+///                                   AliAnalysisDataContainer *cont)
+///   AliAnalysisManager::ConnectOutput(AliAnalysisTask *task, Int_t islot,
+///                                    AliAnalysisDataContainer *cont)
+/// To connect a slot to a data container, the data types declared by both must
+/// match.
+///
+/// The method ConnectInputData() has to be overloaded by the derived class in order to
+/// set the branch address or connect to a branch address in case the input
+/// slots are connected to trees.
+/// Example:
+/// MyAnalysisTask::ConnectInputData(Option_t *)
+/// {
+///  // One should first check if the branch address was taken by some other task
+///    char ** address = (char **)GetBranchAddress(0, "ESD");
+///    if (address) {
+///      fESD = (AliESD*)(*address);
+///    } else {
+///      fESD = new AliESD();
+///      SetBranchAddress(0, "ESD", &fESD);
+///    }
+/// }
+/// 
+/// The method LocalInit() may be implemented to call locally (on the client)
+/// all initialization methods of the class. It is not mandatory and was created
+/// in order to minimize the complexity and readability of the analysis macro.
+/// DO NOT create in this method the histigrams or task output objects that will
+/// go in the task output containers. Use CreateOutputObjects for that.
+///
+/// The method CreateOutputObjects() has to be implemented an will contain the
+/// objects that should be created only once per session (e.g. output
+/// histograms)
+///
+/// void MyAnalysisTask::CreateOutputObjects()
+/// {
+/// create histograms 
+///  fhPt = new TH1F("fhPt","This is the Pt distribution",15,0.1,3.1);
+///  fhPt->SetStats(kTRUE);
+///  fhPt->GetXaxis()->SetTitle("P_{T} [GeV]");
+///  fhPt->GetYaxis()->SetTitle("#frac{dN}{dP_{T}}");
+///  fhPt->GetXaxis()->SetTitleColor(1);
+///  fhPt->SetMarkerStyle(kFullCircle);
+/// }
+///
+/// The method Terminate() will be called by the framework once at the end of
+/// data processing. Overload this if needed. DO NOT ASSUME that the pointers
+/// to histograms defined in  CreateOutputObjects() are valid, since this is
+/// not true in case of PROOF. Restore the pointer values like:
+///
+/// void MyAnalysisTask::Terminate(Option_t *) 
+/// {
+///  fhPt = (TH1F*)GetOutputData(0);
+/// ...
+/// }
 
+//
 //==============================================================================
-//   AliAnalysysTask - Class representing a basic analysis task. Any
-// user-defined task should derive from it and implement the Exec() virtual
-// method.
-//==============================================================================
+/// \author Andrei Gheata
+/// \date 31/05/2006
 
 #ifndef ROOT_TTask
 #include "TTask.h"
@@ -41,15 +117,16 @@ class AliAnalysisTask : public TTask {
   //=====================================================================
   
  protected:
-  Bool_t                    fReady;         // Flag if the task is ready
-  Bool_t                    fInitialized;   // True if Init() was called
-  Int_t                     fNinputs;       // Number of inputs
-  Int_t                     fNoutputs;      // Number of outputs
-  Bool_t                   *fOutputReady;   //[fNoutputs] Flags for output readyness
-  TObject                  *fPublishedData; //! published data
-  TObjArray                *fInputs;        // Array of input slots
-  TObjArray                *fOutputs;       // Array of output slots
-  TString                   fBranchNames;   // List of input branches that need to be loaded for this task
+  Bool_t                    fReady;         ///< Flag if the task is ready
+  Bool_t                    fInitialized;   ///< True if Init() was called
+  Int_t                     fNinputs;       ///< Number of inputs
+  Int_t                     fNoutputs;      ///< Number of outputs
+  /// Flags for output readyness
+  Bool_t                   *fOutputReady;   //[fNoutputs]
+  TObject                  *fPublishedData; //!<! published data
+  TObjArray                *fInputs;        ///< Array of input slots
+  TObjArray                *fOutputs;       ///< Array of output slots
+  TString                   fBranchNames;   ///< List of input branches that need to be loaded for this task
 
   // Define the input/output slots (called by user in the ctor of the derived class)
   //=== CALL IN THE CONSTRUCTOR OF DERIVED CLASS TO DEFINE INPUTS/OUTPUTS ===

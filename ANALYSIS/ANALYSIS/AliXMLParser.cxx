@@ -1,13 +1,4 @@
-/* 
-Author : Harsh Arora (harsh.arora@cern.ch)
-
-   
-AliXMLParser
----------
-
-AliXMLParser is a tool to parse XML file from URL or path and store it in trees.
-
-*/
+/// \file AliXMLParser.cxx
 
 #include "AliXMLParser.h"
 
@@ -36,7 +27,7 @@ AliXMLParser::AliXMLParser():
    fNumTrees(0),
    fError(kFALSE)
 {
-   //Default Contructor
+   /// Default Contructor
 
    fEntries = new TList();
    fVal = new TList();
@@ -61,7 +52,8 @@ AliXMLParser::AliXMLParser(const AliXMLParser& obj):
    fNumTrees(0),
    fError(kFALSE)
 {
-   //Copy Contructor
+   /// Copy Contructor
+
    fTreeList = obj.fTreeList;
    fTableTag = obj.fTableTag;
    fInsideTree = obj.fInsideTree;
@@ -74,7 +66,8 @@ AliXMLParser::AliXMLParser(const AliXMLParser& obj):
 
 AliXMLParser& AliXMLParser::operator=(const AliXMLParser& other)
 {
-   //Assignment
+   /// Assignment
+
    if(this != &other)
    {
       fTreeList = other.fTreeList;
@@ -167,7 +160,8 @@ void AliXMLParser::OnStartElement(const char *name, const TList *attributes) //S
    
 void AliXMLParser::OnEndElement(const char *name)
 {
-   //if tag closes, re-initialize everything for a new tree
+   /// if tag closes, re-initialize everything for a new tree
+
    if(fTableTag.EqualTo(name))
    {
       fInsideTree = kFALSE;

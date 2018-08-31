@@ -12,8 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/* $Id$ */
  
 #include <Riostream.h>
 #include <TChain.h>
@@ -70,8 +68,6 @@
 using std::cout;
 using std::endl;
 ClassImp(AliAnalysisTaskESDfilter)
-
-////////////////////////////////////////////////////////////////////////
 
 AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
   AliAnalysisTaskSE(),
@@ -221,7 +217,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name, Bool_t addP
   fv0Histos(NULL),
   fHistov0List(NULL)
 {
-  // Constructor
+  /// Constructor
 
   fV0Cuts[0] =  33.   ;   // max allowed chi2
   fV0Cuts[1] =   0.1  ;   // min allowed impact parameter for the 1st daughter
@@ -255,9 +251,8 @@ AliAnalysisTaskESDfilter::~AliAnalysisTaskESDfilter()
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::UserCreateOutputObjects()
 {
-  //
-  // Create Output Objects conenct filter to outputtree
-  //
+  /// Create Output Objects conenct filter to outputtree
+
   if (fAddPCMv0s){
     fHistov0List = new TList();
     fHistov0List->SetName("PCMv0Checks");
@@ -292,14 +287,16 @@ void AliAnalysisTaskESDfilter::UserCreateOutputObjects()
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::Init()
 {
-  // Initialization
+  /// Initialization
+
   if (fDebug > 1) AliInfo("Init() \n");
 }
 
 //______________________________________________________________________________
 Bool_t AliAnalysisTaskESDfilter::Notify()
 {
-  // Notify method.
+  /// Notify method.
+
   AddMetadataToUserInfo();
   return kTRUE;
 }   
@@ -307,7 +304,8 @@ Bool_t AliAnalysisTaskESDfilter::Notify()
 //______________________________________________________________________________
 Bool_t AliAnalysisTaskESDfilter::AddMetadataToUserInfo()
 {
-  // Copy metadata to AOD user info.
+  /// Copy metadata to AOD user info.
+
   static Bool_t copyFirst = kFALSE;
   if (!copyFirst) {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -332,7 +330,8 @@ Bool_t AliAnalysisTaskESDfilter::AddMetadataToUserInfo()
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::PrintTask(Option_t *option, Int_t indent) const
 {
-  // Print selection task information
+  /// Print selection task information
+
   AliInfo("");
   
   AliAnalysisTaskSE::PrintTask(option,indent);
@@ -359,8 +358,8 @@ void AliAnalysisTaskESDfilter::PrintTask(Option_t *option, Int_t indent) const
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::UserExec(Option_t */*option*/)
 {
-  // Execute analysis for current event
-					    
+  /// Execute analysis for current event
+
   Long64_t ientry = Entry();
   if (fDebug > 0) {
     printf("Filter: Analysing event # %5d\n", (Int_t) ientry);
@@ -405,7 +404,7 @@ TClonesArray& AliAnalysisTaskESDfilter::Vertices()
 //______________________________________________________________________________
 AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
 {
-  // Convert header information
+  /// Convert header information
 
   AliCodeTimerAuto("",0);
   AliAODHeader* header = dynamic_cast<AliAODHeader*>(AODEvent()->GetHeader());
@@ -509,9 +508,9 @@ AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd) 
 {
-  // Convert the cascades part of the ESD.
-  // Return the number of cascades
- 
+  /// Convert the cascades part of the ESD.
+  /// Return the number of cascades
+
   AliCodeTimerAuto("",0);
   
   // Create vertices starting from the most complex objects
@@ -909,8 +908,8 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertV0s(const AliESDEvent& esd)
 {
-  // Access to the AOD container of V0s
-  
+  /// Access to the AOD container of V0s
+
   AliCodeTimerAuto("",0);
 
   //
@@ -1171,19 +1170,19 @@ void AliAnalysisTaskESDfilter::ConvertV0s(const AliESDEvent& esd)
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
 {
-  // Convert TPC only tracks
-  // Here we have wo hybrid appraoch to remove fakes
-  // ******* ITSTPC ********
-  // Uses a cut on the ITS properties to select global tracks
-  // which are than marked as HybdridITSTPC for the remainder 
-  // the TPC only tracks are flagged as HybridITSTPConly. 
-  // Note, in order not to get fakes back in the TPC cuts, one needs 
-  // two "ITS" cuts one tight (1) (to throw out fakes) and one lose (2) (to NOT flag the trakcs in the TPC only)
-  // using cut number (3)
-  // so fHybridFilterMask == (1)|(2) fTPCFilterMask = (3), Usercode needs to slect with mask = (1)|(3) and track->IsHybridITSTPC()
-  // ******* TPC ********
-  // Here, only TPC tracks are flagged that pass the tight ITS cuts and tracks that pass the TPC cuts and NOT the loose ITS cuts
-  // the ITS cuts neeed to be added to the filter as extra cuts, since here the selections info is reset in the global and put to the TPC only track
+  /// Convert TPC only tracks
+  /// Here we have wo hybrid appraoch to remove fakes
+  /// ******* ITSTPC ********
+  /// Uses a cut on the ITS properties to select global tracks
+  /// which are than marked as HybdridITSTPC for the remainder
+  /// the TPC only tracks are flagged as HybridITSTPConly.
+  /// Note, in order not to get fakes back in the TPC cuts, one needs
+  /// two "ITS" cuts one tight (1) (to throw out fakes) and one lose (2) (to NOT flag the trakcs in the TPC only)
+  /// using cut number (3)
+  /// so fHybridFilterMask == (1)|(2) fTPCFilterMask = (3), Usercode needs to slect with mask = (1)|(3) and track->IsHybridITSTPC()
+  /// ******* TPC ********
+  /// Here, only TPC tracks are flagged that pass the tight ITS cuts and tracks that pass the TPC cuts and NOT the loose ITS cuts
+  /// the ITS cuts neeed to be added to the filter as extra cuts, since here the selections info is reset in the global and put to the TPC only track
 
   AliCodeTimerAuto("",0);
   
@@ -1338,10 +1337,10 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertGlobalConstrainedTracks(const AliESDEvent& esd)
 {
-  // Here we have the option to store the complement from global constraint information
-  // to tracks passing tight cuts (1) in order not to get fakes back in, one needs 
-  // two sets of cuts one tight (1) (to throw out fakes) and one lose (2) (fakes/bad tracks would pass (2) but not (1))
-  // using cut number (3) selects the tracks that complement (1) e.g. tracks witout ITS refit or cluster requirement
+  /// Here we have the option to store the complement from global constraint information
+  /// to tracks passing tight cuts (1) in order not to get fakes back in, one needs
+  /// two sets of cuts one tight (1) (to throw out fakes) and one lose (2) (fakes/bad tracks would pass (2) but not (1))
+  /// using cut number (3) selects the tracks that complement (1) e.g. tracks witout ITS refit or cluster requirement
 
   AliCodeTimerAuto("",0);
   
@@ -1477,7 +1476,7 @@ void AliAnalysisTaskESDfilter::ConvertGlobalConstrainedTracks(const AliESDEvent&
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertTracks(const AliESDEvent& esd)
 {
-  // Tracks (primary and orphan)
+  /// Tracks (primary and orphan)
 
   AliCodeTimerAuto("",0);
   
@@ -1554,7 +1553,8 @@ void AliAnalysisTaskESDfilter::ConvertTracks(const AliESDEvent& esd)
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertPmdClusters(const AliESDEvent& esd)
 {
-  // Convert PMD Clusters 
+  /// Convert PMD Clusters
+
   AliCodeTimerAuto("",0);
   Int_t jPmdClusters=0;
   // Access to the AOD container of PMD clusters
@@ -1575,7 +1575,8 @@ void AliAnalysisTaskESDfilter::ConvertPmdClusters(const AliESDEvent& esd)
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertCaloClusters(const AliESDEvent& esd)
 {
-  // Convert Calorimeter Clusters
+  /// Convert Calorimeter Clusters
+
   AliCodeTimerAuto("",0);
   
   // Access to the AOD container of clusters
@@ -1705,7 +1706,8 @@ void AliAnalysisTaskESDfilter::ConvertCaloTrigger(TString calo, const AliESDEven
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertEMCALCells(const AliESDEvent& esd)
 {
-  // Convert EMCAL Cells
+  /// Convert EMCAL Cells
+
   AliCodeTimerAuto("",0);
 
   // fill EMCAL cell info
@@ -1727,7 +1729,8 @@ void AliAnalysisTaskESDfilter::ConvertEMCALCells(const AliESDEvent& esd)
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertPHOSCells(const AliESDEvent& esd)
 {
-  // Convert PHOS Cells
+  /// Convert PHOS Cells
+
   AliCodeTimerAuto("",0);
 
   // fill PHOS cell info
@@ -1750,7 +1753,8 @@ void AliAnalysisTaskESDfilter::ConvertPHOSCells(const AliESDEvent& esd)
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertTracklets(const AliESDEvent& esd)
 {
-  // tracklets    
+  /// tracklets
+
   AliCodeTimerAuto("",0);
 
   AliAODTracklets &SPDTracklets = *(AODEvent()->GetTracklets());
@@ -2041,7 +2045,8 @@ void AliAnalysisTaskESDfilter::ConvertPrimaryVertices(const AliESDEvent& esd)
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertVZERO(const AliESDEvent& esd)
 {
-  // Convert VZERO data
+  /// Convert VZERO data
+
   AliAODVZERO* vzeroData = AODEvent()->GetVZEROData();
   *vzeroData = *(esd.GetVZEROData());
 }
@@ -2049,7 +2054,8 @@ void AliAnalysisTaskESDfilter::ConvertVZERO(const AliESDEvent& esd)
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertTZERO(const AliESDEvent& esd)
 {
-  // Convert TZERO data
+  /// Convert TZERO data
+
   const AliESDTZERO* esdTzero = esd.GetESDTZERO(); 
   AliAODTZERO* aodTzero = AODEvent()->GetTZEROData();
 
@@ -2103,7 +2109,8 @@ void AliAnalysisTaskESDfilter::ConvertTZERO(const AliESDEvent& esd)
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertZDC(const AliESDEvent& esd)
 {
-  // Convert ZDC data
+  /// Convert ZDC data
+
   AliESDZDC* esdZDC = esd.GetZDCData();
   
   const Double_t zem1Energy = esdZDC->GetZEM1Energy();
@@ -2193,7 +2200,8 @@ void AliAnalysisTaskESDfilter::ConvertZDC(const AliESDEvent& esd)
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertAD(const AliESDEvent& esd)
 {
-  // Convert AD data
+  /// Convert AD data
+
   AliAODAD* adData = AODEvent()->GetADData();
   if (adData && esd.GetADData())
     *adData = *(esd.GetADData());
@@ -2201,11 +2209,9 @@ void AliAnalysisTaskESDfilter::ConvertAD(const AliESDEvent& esd)
 //_____________________________________________________________________________
 Int_t AliAnalysisTaskESDfilter::ConvertHMPID(const AliESDEvent& esd) // clm
 {
-  //
-  // Convtert ESD HMPID info to AOD and return the number of good tracks with HMPID signal.
-  // We need to return an int since there is no signal counter in the ESD.
-  //
-  
+  /// Convtert ESD HMPID info to AOD and return the number of good tracks with HMPID signal.
+  /// We need to return an int since there is no signal counter in the ESD.
+
   AliCodeTimerAuto("",0);
   
   Int_t cntHmpidGoodTracks = 0;
@@ -2259,8 +2265,8 @@ Int_t AliAnalysisTaskESDfilter::ConvertHMPID(const AliESDEvent& esd) // clm
 
 void AliAnalysisTaskESDfilter::ConvertTRD(const AliESDEvent& esd)
 {
-  // fill TRD on-line tracks with assiocated tracklets
-  // as used for the TRD level-1 triggers
+  /// fill TRD on-line tracks with assiocated tracklets
+  /// as used for the TRD level-1 triggers
 
   const Int_t nTrdTracks = esd.GetNumberOfTrdTracks();
   const Int_t nLayers = 6;
@@ -2365,8 +2371,8 @@ void AliAnalysisTaskESDfilter::ConvertTRD(const AliESDEvent& esd)
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertESDtoAOD() 
 {
-  // ESD Filter analysis task executed for each event
-  
+  /// ESD Filter analysis task executed for each event
+
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
   
   if(!esd)return;
@@ -2558,9 +2564,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aodtrack, AliAODPid *detpid)
 {
-  //
-  // Setter for the raw PID detector signals
-  //
+  /// Setter for the raw PID detector signals
 
   // Save PID object for candidate electrons
   Bool_t pidSave = kFALSE;
@@ -2595,7 +2599,7 @@ void AliAnalysisTaskESDfilter::SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aod
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtrack *track)
 {
-  // Assignment of the detector signals (AliXXXesdPID inspired)
+  /// Assignment of the detector signals (AliXXXesdPID inspired)
 
   if(!track) {
     AliInfo("no ESD track found. .....exiting");
@@ -2655,7 +2659,7 @@ void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtr
 
 Double_t AliAnalysisTaskESDfilter::Chi2perNDF(AliESDtrack* track)
 {
-  // Calculate chi2 per ndf for track
+  /// Calculate chi2 per ndf for track
 
   Int_t  nClustersTPC = track->GetTPCNcls();
   if ( nClustersTPC > 5) {
@@ -2668,7 +2672,7 @@ Double_t AliAnalysisTaskESDfilter::Chi2perNDF(AliESDtrack* track)
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::Terminate(Option_t */*option*/)
 {
-  // Terminate analysis
+  /// Terminate analysis
 
   if (fDebug > 1) printf("AnalysisESDfilter: Terminate() \n");
 }
@@ -2676,7 +2680,8 @@ void AliAnalysisTaskESDfilter::Terminate(Option_t */*option*/)
 //______________________________________________________________________________
 void  AliAnalysisTaskESDfilter::PrintMCInfo(AliStack *pStack,Int_t label)
 {
-  // Print MC info
+  /// Print MC info
+
   if (!pStack) return;
   label = TMath::Abs(label);
   TParticle *part = pStack->Particle(label);
@@ -2699,7 +2704,8 @@ void  AliAnalysisTaskESDfilter::PrintMCInfo(AliStack *pStack,Int_t label)
 //______________________________________________________________________________
 void  AliAnalysisTaskESDfilter::CopyCaloProps(AliESDtrack *tre, AliAODTrack *tra) 
 {
-  // Copy calo properties from ESD track to AOD track
+  /// Copy calo properties from ESD track to AOD track
+
   tra->SetTrackPhiEtaPtOnEMCal(tre->GetTrackPhiOnEMCal(),tre->GetTrackEtaOnEMCal(),tre->GetTrackPtOnEMCal());
   if (tre->IsEMCAL()) tra->SetEMCALcluster(tre->GetEMCALcluster());
   if (tre->IsPHOS())  tra->SetPHOScluster(tre->GetPHOScluster());
@@ -2725,9 +2731,10 @@ void AliAnalysisTaskESDfilter::CopyChi2TPCConstrainedVsGlobal(AliESDtrack *esdt,
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::SetRefitVertexTracks(Int_t algo, Double_t* cuts)
 {
-  // request vertexTrack reprocessing from ESDtracks
-  // if algo>=0 and cuts==0 then algo is interpreted as the algorithm ID to be run with default cuts
-  // otherwise it is number of cuts to digest
+  /// request vertexTrack reprocessing from ESDtracks
+  /// if algo>=0 and cuts==0 then algo is interpreted as the algorithm ID to be run with default cuts
+  /// otherwise it is number of cuts to digest
+
   fRefitVertexTracks = algo;
   if (algo>0 && cuts) {
     fRefitVertexTracksCuts = new Double_t[fRefitVertexTracks];
@@ -2741,7 +2748,7 @@ void AliAnalysisTaskESDfilter::SetMuonCaloPass()
 {
   /// For a MuonCalo pass, due to the absence of TPC, TRD, TOF and PMD
   /// a bunch of things can be disabled for sure.
-  
+
   fIsMuonCaloPass = kTRUE;
 
   DisableCascades();
@@ -2754,9 +2761,10 @@ void AliAnalysisTaskESDfilter::SetMuonCaloPass()
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::AdjustCutsForEvent(const AliESDEvent& esd, TList& modifiedCuts, bool revert)
 {
-  // adjust cut for specific events
-  // At the moment, if event has no TPC (therefore only ITS pureSA tracks are present),
-  // and there are cuts asking for complementary ITS_SA tracks, force cuts to accept pureSA instead
+  /// adjust cut for specific events
+  /// At the moment, if event has no TPC (therefore only ITS pureSA tracks are present),
+  /// and there are cuts asking for complementary ITS_SA tracks, force cuts to accept pureSA instead
+
   if (!fTrackFilter) return;
   if (revert) {
     TIter next(&modifiedCuts);

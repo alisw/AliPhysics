@@ -1,10 +1,10 @@
+/// \class AliAnalysisTaskTagCreator
+
 #ifndef ALIANALYSISTASKTAGCREATOR_H
 #define ALIANALYSISTASKTAGCREATOR_H
  
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-
-/* $Id$ */
 
 #include "AliAnalysisTaskSE.h"
 class AliRunTag;
@@ -33,13 +33,13 @@ class AliAnalysisTaskTagCreator : public AliAnalysisTaskSE
     void GetGUID(TString &guid);
     
  private:
-    Bool_t                   fCreateTags;             //  Flag for tag creation
-    Bool_t                   fFirstFile;              //! To flag the first file   
-    AliRunTag               *fRunTag;                 //! Pointer to run tag
-    TTree                   *fTreeT;                  //! tree for  aod tags
-    AliAODTagCreator        *fTagCreator;             //! The tag creator
-    TString                  fAODFileName;            //! Name of the AOD file
-    TString                  fGUID;                   //! GUID of the AOD file
+    Bool_t                   fCreateTags;             ///< Flag for tag creation
+    Bool_t                   fFirstFile;              //!<! To flag the first file
+    AliRunTag               *fRunTag;                 //!<! Pointer to run tag
+    TTree                   *fTreeT;                  //!<! tree for  aod tags
+    AliAODTagCreator        *fTagCreator;             //!<! The tag creator
+    TString                  fAODFileName;            //!<! Name of the AOD file
+    TString                  fGUID;                   //!<! GUID of the AOD file
     ClassDef(AliAnalysisTaskTagCreator, 1); // Analysis task for standard ESD filtering
 };
  

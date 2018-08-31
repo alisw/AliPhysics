@@ -1,10 +1,10 @@
+/// \class AliAnalysisTaskESDfilter
+
 #ifndef ALIANALYSISTASKESDFILTER_H
 #define ALIANALYSISTASKESDFILTER_H
  
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-
-/* $Id$ */
 
 #include <TList.h> 
 #include <TF1.h> 
@@ -120,69 +120,70 @@ private:
   TClonesArray& Cascades();
   
   // Filtering
-  AliAnalysisFilter* fTrackFilter;                 // Track   Filter
-  AliAnalysisFilter* fKinkFilter;                  // Kink    Filter
-  AliAnalysisFilter* fV0Filter;                    // V0      Filter
-  AliAnalysisFilter* fCascadeFilter;               // Cascade Filter
-  Double_t           fHighPthreshold;              // Pt threshold for detector signal setting
-  TF1 *              fPtshape;                     // Pt spectrum distribution
-  Bool_t             fEnableFillAOD;               // value that decides if this task activates AOD filling
-  Bool_t*            fUsedTrack;                   //! indices of used tracks
-  UInt_t*            fUsedTrackCopy;               //! filterbits of tracks for which a copy was added to the AODs
-  Bool_t*            fUsedKink;                    //! indices of used kinks
-  Bool_t*            fUsedV0;                      //! indices of used V0s
-  TRefArray*         fAODTrackRefs;                // array of track references
-  TRefArray*         fAODV0VtxRefs;                // array of v0 vertices references
-  TRefArray*         fAODV0Refs;                   // array of v0s references
-  AliMCEventHandler* fMChandler;                   // pointer to MC handler (if any)
-  Int_t              fNumberOfTracks;              // current number of tracks
-  Int_t              fNumberOfPositiveTracks;      // current number of positive tracks
-  Int_t              fNumberOfV0s;                 // current number of v0s
-  Int_t              fNumberOfVertices;            // current number of vertices
-  Int_t              fNumberOfCascades;            // current number of cascades
-  Int_t              fNumberOfKinks;               // current number of kinks
-  Bool_t             fOldESDformat;                // is the ESD in old format ?
-  AliAODVertex*      fPrimaryVertex;               // pointer to primary vertex of the event
-  UInt_t             fTPCConstrainedFilterMask;    // Filter Mask used to select and store refitted TPC only tracks
-  UInt_t             fHybridFilterMaskTPCCG;       // Filter Mask used to mark global tracks as hybrid
-  Bool_t             fWriteHybridTPCCOnly;         // write only the complent tracks not all global constrained
-  UInt_t             fGlobalConstrainedFilterMask; // Filter Mask used to select and store refitted TPC only tracks
-  UInt_t             fHybridFilterMaskGCG;         // Filter Mask used to mark global tracks as hybrid
-  Bool_t             fWriteHybridGCOnly;           // write only the complent tracks not all global constrained
-  Bool_t             fIsVZEROEnabled;              // whether or not to fill the vzero branch (true by default)
-  Bool_t             fIsTZEROEnabled;              // whether or not to fill the tzero branch (true by default)
-  Bool_t             fIsZDCEnabled;                // whether or not to fill the zdc branch (true by default)
-  Bool_t             fIsADEnabled;                 // whether or not to fill the ad branch (true by default) 
-  Bool_t             fIsHMPIDEnabled;              // whether or not to fill the hmpid branch (true by default) 
-  Bool_t             fIsV0CascadeRecoEnabled;      // whether or not to reconstruct again V0s and cascades (false by default)
-  Bool_t             fAreCascadesEnabled;          // whether or not to fill the cascades branch (true by default)
-  Bool_t             fAreV0sEnabled;               // whether or not to fill the v0 branch (true by default)
-  Bool_t             fAreKinksEnabled;             // whether or not to fill the kinks (true by default)
-  Bool_t             fAreTracksEnabled;            // whether or not to fill the (central) tracks branch (true by default)
-  Bool_t             fArePmdClustersEnabled;       // whether or not to fill the pmd clusters (true by default)
-  Bool_t             fAreCaloClustersEnabled;      // whether or not to fill the calo clusters (true by default)
-  Bool_t             fAreEMCALCellsEnabled;        // whether or not to fill the emcal cells (true by default)
-  Bool_t             fArePHOSCellsEnabled;         // whether or not to fill the phos cells (true by default)
-  Bool_t             fAreEMCALTriggerEnabled;      // whether or not to fill the emcal trigger (true by default)
-  Bool_t             fArePHOSTriggerEnabled;       // whether or not to fill the phos trigger (true by default)
-  Bool_t             fAreTrackletsEnabled;         // whether or not to fill the tracklets (true by default)
-  Bool_t             fIsTRDEnabled;                // whether or not to fill on-line tracklets and tracks from TRD (true by default)
-  AliESDpid*         fESDpid;                      // esd pid
-  Bool_t             fIsPidOwner;                  // whether we own fESDpid
-  AliESDtrackCuts*   fTPCaloneTrackCuts;           // TPC stand-alone track cuts
-  Double_t           fV0Cuts[7];                   // Array to store the values for the different reco selections V0 related
-  Double_t           fCascadeCuts[8];              // Array to store the values for the different reco selections cascades related
-  Bool_t             fDoPropagateTrackToEMCal;     // whether or not to propagate the tracks to the EMCal surface -- true by default
-  Double_t           fEMCalSurfaceDistance;        // EMCal surface distance from the center of the detector (r = 440 by default)
-  Int_t              fRefitVertexTracks;           // request to refit the vertex if >=0 (algoID if cuts not supplied, otherwise ncuts)
-  Int_t              fRefitVertexTracksNCuts;      // number of cut parameters
-  Double_t*          fRefitVertexTracksCuts;       //[fRefitVertexTracksNCuts] optional cuts for vertex refit
-  Bool_t fIsMuonCaloPass; /// whether or not this filtering is used on a muon_calo ESD
-  Bool_t	     fAddPCMv0s;		   // Add pcm v0s when v0filter is switched on
-  TBits* 	     fbitfieldPCMv0sA;		   // Bitfield with PCM v0s from on-fly v0 finder
-  TBits* 	     fbitfieldPCMv0sB;		   // Bitfield with PCM v0s from offline v0 finder
-  TH1D*		     fv0Histos; 		   // v0 histos for PCM consistency checks
-  TList*	     fHistov0List;		  // TList containing PCM histos
+  AliAnalysisFilter* fTrackFilter;                 ///< Track   Filter
+  AliAnalysisFilter* fKinkFilter;                  ///< Kink    Filter
+  AliAnalysisFilter* fV0Filter;                    ///< V0      Filter
+  AliAnalysisFilter* fCascadeFilter;               ///< Cascade Filter
+  Double_t           fHighPthreshold;              ///< Pt threshold for detector signal setting
+  TF1 *              fPtshape;                     ///< Pt spectrum distribution
+  Bool_t             fEnableFillAOD;               ///< value that decides if this task activates AOD filling
+  Bool_t*            fUsedTrack;                   //!<! indices of used tracks
+  UInt_t*            fUsedTrackCopy;               //!<! filterbits of tracks for which a copy was added to the AODs
+  Bool_t*            fUsedKink;                    //!<! indices of used kinks
+  Bool_t*            fUsedV0;                      //!<! indices of used V0s
+  TRefArray*         fAODTrackRefs;                ///< array of track references
+  TRefArray*         fAODV0VtxRefs;                ///< array of v0 vertices references
+  TRefArray*         fAODV0Refs;                   ///< array of v0s references
+  AliMCEventHandler* fMChandler;                   ///< pointer to MC handler (if any)
+  Int_t              fNumberOfTracks;              ///< current number of tracks
+  Int_t              fNumberOfPositiveTracks;      ///< current number of positive tracks
+  Int_t              fNumberOfV0s;                 ///< current number of v0s
+  Int_t              fNumberOfVertices;            ///< current number of vertices
+  Int_t              fNumberOfCascades;            ///< current number of cascades
+  Int_t              fNumberOfKinks;               ///< current number of kinks
+  Bool_t             fOldESDformat;                ///< is the ESD in old format ?
+  AliAODVertex*      fPrimaryVertex;               ///< pointer to primary vertex of the event
+  UInt_t             fTPCConstrainedFilterMask;    ///< Filter Mask used to select and store refitted TPC only tracks
+  UInt_t             fHybridFilterMaskTPCCG;       ///< Filter Mask used to mark global tracks as hybrid
+  Bool_t             fWriteHybridTPCCOnly;         ///< write only the complent tracks not all global constrained
+  UInt_t             fGlobalConstrainedFilterMask; ///< Filter Mask used to select and store refitted TPC only tracks
+  UInt_t             fHybridFilterMaskGCG;         ///< Filter Mask used to mark global tracks as hybrid
+  Bool_t             fWriteHybridGCOnly;           ///< write only the complent tracks not all global constrained
+  Bool_t             fIsVZEROEnabled;              ///< whether or not to fill the vzero branch (true by default)
+  Bool_t             fIsTZEROEnabled;              ///< whether or not to fill the tzero branch (true by default)
+  Bool_t             fIsZDCEnabled;                ///< whether or not to fill the zdc branch (true by default)
+  Bool_t             fIsADEnabled;                 ///< whether or not to fill the ad branch (true by default)
+  Bool_t             fIsHMPIDEnabled;              ///< whether or not to fill the hmpid branch (true by default)
+  Bool_t             fIsV0CascadeRecoEnabled;      ///< whether or not to reconstruct again V0s and cascades (false by default)
+  Bool_t             fAreCascadesEnabled;          ///< whether or not to fill the cascades branch (true by default)
+  Bool_t             fAreV0sEnabled;               ///< whether or not to fill the v0 branch (true by default)
+  Bool_t             fAreKinksEnabled;             ///< whether or not to fill the kinks (true by default)
+  Bool_t             fAreTracksEnabled;            ///< whether or not to fill the (central) tracks branch (true by default)
+  Bool_t             fArePmdClustersEnabled;       ///< whether or not to fill the pmd clusters (true by default)
+  Bool_t             fAreCaloClustersEnabled;      ///< whether or not to fill the calo clusters (true by default)
+  Bool_t             fAreEMCALCellsEnabled;        ///< whether or not to fill the emcal cells (true by default)
+  Bool_t             fArePHOSCellsEnabled;         ///< whether or not to fill the phos cells (true by default)
+  Bool_t             fAreEMCALTriggerEnabled;      ///< whether or not to fill the emcal trigger (true by default)
+  Bool_t             fArePHOSTriggerEnabled;       ///< whether or not to fill the phos trigger (true by default)
+  Bool_t             fAreTrackletsEnabled;         ///< whether or not to fill the tracklets (true by default)
+  Bool_t             fIsTRDEnabled;                ///< whether or not to fill on-line tracklets and tracks from TRD (true by default)
+  AliESDpid*         fESDpid;                      ///< esd pid
+  Bool_t             fIsPidOwner;                  ///< whether we own fESDpid
+  AliESDtrackCuts*   fTPCaloneTrackCuts;           ///< TPC stand-alone track cuts
+  Double_t           fV0Cuts[7];                   ///< Array to store the values for the different reco selections V0 related
+  Double_t           fCascadeCuts[8];              ///< Array to store the values for the different reco selections cascades related
+  Bool_t             fDoPropagateTrackToEMCal;     ///< whether or not to propagate the tracks to the EMCal surface -- true by default
+  Double_t           fEMCalSurfaceDistance;        ///< EMCal surface distance from the center of the detector (r = 440 by default)
+  Int_t              fRefitVertexTracks;           ///< request to refit the vertex if >=0 (algoID if cuts not supplied, otherwise ncuts)
+  Int_t              fRefitVertexTracksNCuts;      ///< number of cut parameters
+  /// optional cuts for vertex refit
+  Double_t*          fRefitVertexTracksCuts;       //[fRefitVertexTracksNCuts]
+  Bool_t fIsMuonCaloPass; ///< whether or not this filtering is used on a muon_calo ESD
+  Bool_t	     fAddPCMv0s;		   ///< Add pcm v0s when v0filter is switched on
+  TBits* 	     fbitfieldPCMv0sA;		   ///< Bitfield with PCM v0s from on-fly v0 finder
+  TBits* 	     fbitfieldPCMv0sB;		   ///< Bitfield with PCM v0s from offline v0 finder
+  TH1D*		     fv0Histos; 		   ///< v0 histos for PCM consistency checks
+  TList*	     fHistov0List;		  ///< TList containing PCM histos
   
   ClassDef(AliAnalysisTaskESDfilter, 21); // Analysis task for standard ESD filtering
 };

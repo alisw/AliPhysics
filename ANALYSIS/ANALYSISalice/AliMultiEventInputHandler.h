@@ -3,13 +3,12 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
-//----------------------------------------------------------------------------
-//     Multi VEvent Input Handler realisation of the AliVEventHandler interface.
-//     This class handles multiple events for mixing.
-//     Author: Andreas Morsch, CERN
-//----------------------------------------------------------------------------
+/// \class AliMultiEventInputHandler
+/// \brief Multi VEvent Input Handler realisation of the AliVEventHandler interface.
+///
+/// This class handles multiple events for mixing.
+///
+/// \author Andreas Morsch, CERN
 
 #include "AliInputEventHandler.h"
 class AliVEventPool;
@@ -45,16 +44,16 @@ class AliMultiEventInputHandler : public AliInputEventHandler {
     AliMultiEventInputHandler(const AliMultiEventInputHandler& handler);             
     AliMultiEventInputHandler& operator=(const AliMultiEventInputHandler& handler);  
  private:
-    Int_t          fBufferSize;   // Size of the buffer
-    Int_t          fFormat;       // 0: ESD 1: AOD
-    Int_t          fNBuffered;    // Number of events actually buffered
-    Int_t          fIndex;        // Pointer to most recent event
-    Int_t          fCurrentBin;   // Current bin from the pool
-    Int_t          fCurrentEvt;   // Current event
-    Bool_t         fInit;         // Current event
-    AliVEventPool* fEventPool;    // Pointer to the pool
-    AliVEvent**    fEventBuffer;  //! The event buffer
-    Bool_t         fEventSkipped; // User requires event to be skip
+    Int_t          fBufferSize;   ///< Size of the buffer
+    Int_t          fFormat;       ///< 0: ESD 1: AOD
+    Int_t          fNBuffered;    ///< Number of events actually buffered
+    Int_t          fIndex;        ///< Pointer to most recent event
+    Int_t          fCurrentBin;   ///< Current bin from the pool
+    Int_t          fCurrentEvt;   ///< Current event
+    Bool_t         fInit;         ///< Current event
+    AliVEventPool* fEventPool;    ///< Pointer to the pool
+    AliVEvent**    fEventBuffer;  //!<! The event buffer
+    Bool_t         fEventSkipped; ///< User requires event to be skip
     ClassDef(AliMultiEventInputHandler, 1);
 };
 

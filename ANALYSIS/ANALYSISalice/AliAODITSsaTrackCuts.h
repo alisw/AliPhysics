@@ -3,14 +3,12 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
-// This class applies the ITSsa cuts at the AOD level.
-// Needed for MuonCalo pass where the FilterBit information was not properly saved.
-// It contains also some quality cuts which can be modifed by user.
-//
-// Author: Igor Lakomov <Igor.Lakomov@cern.ch>
-//
+/// \class AliAODITSsaTrackCuts
+/// \brief This class applies the ITSsa cuts at the AOD level.
+/// Needed for MuonCalo pass where the FilterBit information was not properly saved.
+/// It contains also some quality cuts which can be modifed by user.
+///
+/// \author Igor Lakomov <Igor.Lakomov@cern.ch>
 
 #include <TMath.h>
 #include <TFormula.h>
@@ -52,11 +50,11 @@ class AliAODITSsaTrackCuts : public AliVCuts
   TFormula* GetDCAZCut() {return fdcazcut;}					//returns TFormula defining the pt-dependent cut on DCAZ
 
  private:
-  Double_t fMinNClustersITS;							//minimum number of ITS clusters
-  Double_t fMaxChi2PerClustersITS;						//max chi2 per ITS cluster
-  TFormula *fdcaxycut;								//TFormula defining the pt-dependent cut on DCAXY
-  TFormula *fdcazcut;								//TFormula defining the pt-dependent cut on DCAZ
-  const AliVVertex* fPrimaryVertex;						//! Primary vertex
+  Double_t fMinNClustersITS;							///< minimum number of ITS clusters
+  Double_t fMaxChi2PerClustersITS;						///< max chi2 per ITS cluster
+  TFormula *fdcaxycut;								///< TFormula defining the pt-dependent cut on DCAXY
+  TFormula *fdcazcut;								///< TFormula defining the pt-dependent cut on DCAZ
+  const AliVVertex* fPrimaryVertex;						//!<! Primary vertex
 
   ClassDef(AliAODITSsaTrackCuts,1)
 };

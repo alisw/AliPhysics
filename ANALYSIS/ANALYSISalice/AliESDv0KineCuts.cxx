@@ -13,16 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
- * author: M.Kalisky@gsi.de
- * 08/Dec/2010
- *
- * Description: This class allows with purely kinematical cuts
- * to select clean samples of electrons, pions and protons from the
- * V0 online finder ESD V0 candidates for PID and dectector resonse
- * studies.
- */
-
 #include <TVector3.h>
 #include <TDatabasePDG.h>
 
@@ -39,7 +29,8 @@
 
 ClassImp(AliESDv0KineCuts)
 
-//____________________________________________________________________
+/// \file AliESDv0KineCuts.cxx
+
 AliESDv0KineCuts::AliESDv0KineCuts() :
   fEvent(0x0)
   , fPrimaryVertex(0x0)
@@ -104,9 +95,7 @@ AliESDv0KineCuts::AliESDv0KineCuts() :
 }
 //____________________________________________________________________
 AliESDv0KineCuts::~AliESDv0KineCuts(){
-  //
-  // Destructor
-  //
+  /// Destructor
 
 
 }
@@ -129,26 +118,21 @@ AliESDv0KineCuts::AliESDv0KineCuts(const AliESDv0KineCuts &ref):
   , fUseExternalVertex(kFALSE)
   , fDeleteVertex(kFALSE)
 {
-  //
-  // Copy operator
-  //
+  /// Copy operator
 
   ref.Copy(*this);
 }
 //____________________________________________________________________
 AliESDv0KineCuts &AliESDv0KineCuts::operator=(const AliESDv0KineCuts &ref){
-  //
-  // assignment operator
-  //
+  /// assignment operator
+
   if(this != &ref)
     ref.Copy(*this);
   return *this; 
 }
 //____________________________________________________________________
 void AliESDv0KineCuts::Copy(TObject &ref) const {
-  //
-  // Performs the copying of the object
-  //
+  /// Performs the copying of the object
 
   TObject::Copy(ref);
 
@@ -187,9 +171,7 @@ void AliESDv0KineCuts::Copy(TObject &ref) const {
 //____________________________________________________________________
 Bool_t  AliESDv0KineCuts::ProcessV0(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN) const 
 {
-  //
-  // main user function
-  //
+  /// main user function
 
   if(!v0) return kFALSE;
   if(!fEvent){
@@ -223,9 +205,7 @@ Bool_t  AliESDv0KineCuts::ProcessV0(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdg
 //____________________________________________________________________
 Bool_t  AliESDv0KineCuts::ProcessV0(AliESDv0* const v0, Int_t &pdgP, Int_t &pdgN) const 
 {
-  //
-  // main user function, simplified if the V0 identity is not necessary
-  //
+  /// main user function, simplified if the V0 identity is not necessary
 
   if(!v0) return kFALSE;
   if(!fEvent){
@@ -240,14 +220,12 @@ Bool_t  AliESDv0KineCuts::ProcessV0(AliESDv0* const v0, Int_t &pdgP, Int_t &pdgN
 //____________________________________________________________________
 Int_t AliESDv0KineCuts::PreselectV0(AliESDv0* const v0) const 
 {
-  //
-  // Make a preselection (exclusive) of the V0 cadidates based on
-  // Armenteros plot
-  // the armenteros cut values are currently fixed and user is not able to set them via
-  // set funcions. The reason is that these cuts are optimized and furneter changes should 
-  // not be necessary. To prove otherwise please study in detail before changing the values
-  //
- 
+  /// Make a preselection (exclusive) of the V0 cadidates based on
+  /// Armenteros plot
+  /// the armenteros cut values are currently fixed and user is not able to set them via
+  /// set funcions. The reason is that these cuts are optimized and furneter changes should
+  /// not be necessary. To prove otherwise please study in detail before changing the values
+
   Float_t ap[2] = {-1., -1.};
   Armenteros(v0, ap);
   // for clarity
@@ -312,10 +290,8 @@ Int_t AliESDv0KineCuts::PreselectV0(AliESDv0* const v0) const
 //____________________________________________________________________
 Bool_t  AliESDv0KineCuts::SingleTrackCuts(AliESDv0 * const v0) const 
 {
-  //
-  // apply single track cuts
-  // correct sign not relevat here
-  //
+  /// apply single track cuts
+  /// correct sign not relevat here
 
   if(!v0) return kFALSE;
   
@@ -357,9 +333,7 @@ Bool_t  AliESDv0KineCuts::SingleTrackCuts(AliESDv0 * const v0) const
 //____________________________________________________________________
 Bool_t AliESDv0KineCuts::CaseGamma(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN) const 
 {
-  //
-  // process the gamma conversion candidate
-  //
+  /// process the gamma conversion candidate
 
   if(!v0) return kFALSE;
 
@@ -444,9 +418,7 @@ Bool_t AliESDv0KineCuts::CaseGamma(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP
 }
 //____________________________________________________________________
 Bool_t  AliESDv0KineCuts::CaseK0(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN) const {
-  //
-  // process the K0 candidate
-  //
+  /// process the K0 candidate
 
   if(!v0) return kFALSE;
   
@@ -521,10 +493,8 @@ Bool_t  AliESDv0KineCuts::CaseK0(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, 
 }
 //____________________________________________________________________
 Bool_t  AliESDv0KineCuts::CaseLambda(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN, Int_t id) const {
-  //
-  // process teh Lambda and Anti-Lambda candidate
-  //
-  
+  /// process teh Lambda and Anti-Lambda candidate
+
   if(!v0) return kFALSE;
 
     const Double_t cL0mass=TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();  // PDG lambda mass
@@ -665,9 +635,7 @@ Bool_t  AliESDv0KineCuts::CaseLambda(AliESDv0* const v0, Int_t &pdgV0, Int_t &pd
 //____________________________________________________________________
 Bool_t  AliESDv0KineCuts::V0CutsCommon(const AliESDv0 * const v0) const 
 {
-  //
-  // V0 cuts common to all V0s
-  //
+  /// V0 cuts common to all V0s
 
   AliESDtrack* dN, *dP; 
  
@@ -686,12 +654,10 @@ Bool_t  AliESDv0KineCuts::V0CutsCommon(const AliESDv0 * const v0) const
 //____________________________________________________________________
 void AliESDv0KineCuts::Armenteros(AliESDv0* const v0, Float_t val[2]) const 
 {
-  //
-  // computes the Armenteros variables for given V0
-  // fills the histogram
-  // returns the values via "val"
-  //
-  
+  /// computes the Armenteros variables for given V0
+  /// fills the histogram
+  /// returns the values via "val"
+
   Double_t mn[3] = {0,0,0};
   Double_t mp[3] = {0,0,0};  
   Double_t mm[3] = {0,0,0};  
@@ -726,11 +692,9 @@ void AliESDv0KineCuts::Armenteros(AliESDv0* const v0, Float_t val[2]) const
 //____________________________________________________________________
 Bool_t AliESDv0KineCuts::CheckSigns(AliESDv0* const v0) const 
 {
-  //
-  // check wheter the sign was correctly applied to 
-  // V0 daughter tracks
-  //
-  
+  /// check wheter the sign was correctly applied to
+  /// V0 daughter tracks
+
   Bool_t correct = kFALSE;
 
   Int_t pIndex = 0, nIndex = 0;
@@ -757,9 +721,7 @@ Bool_t AliESDv0KineCuts::CheckSigns(AliESDv0* const v0) const
 //________________________________________________________________
 Double_t AliESDv0KineCuts::PsiPair(AliESDv0* const v0) const 
 {
-  //
-  // Angle between daughter momentum plane and plane 
-  // 
+  /// Angle between daughter momentum plane and plane
 
   if(!fEvent) return -1.;
 
@@ -829,9 +791,7 @@ Double_t AliESDv0KineCuts::PsiPair(AliESDv0* const v0) const
 //___________________________________________________________________
 Bool_t  AliESDv0KineCuts::GetConvPosXY(AliESDtrack * const ptrack, AliESDtrack * const ntrack, Double_t convpos[2]) const
 {
-  //
-  // recalculate the gamma conversion XY postition
-  //
+  /// recalculate the gamma conversion XY postition
 
   const Double_t b = fEvent->GetMagneticField();
 
@@ -862,10 +822,8 @@ Bool_t  AliESDv0KineCuts::GetConvPosXY(AliESDtrack * const ptrack, AliESDtrack *
 //___________________________________________________________________
 Bool_t  AliESDv0KineCuts::GetHelixCenter(AliESDtrack * const track, Double_t b,Int_t charge, Double_t center[2]) const
 {
-  //
-  // computes the center of the track helix
-  //
-  
+  /// computes the center of the track helix
+
   Double_t pi = TMath::Pi();
   
   Double_t  helix[6];
@@ -916,9 +874,8 @@ Bool_t  AliESDv0KineCuts::GetHelixCenter(AliESDtrack * const track, Double_t b,I
 //___________________________________________________________________
 AliKFParticle *AliESDv0KineCuts::CreateMotherParticle(const AliVTrack* const pdaughter, const AliVTrack* const ndaughter, Int_t pspec, Int_t nspec) const
 {
-  //
-  // Creates a mother particle
-  //
+  /// Creates a mother particle
+
   AliKFParticle pkfdaughter(*pdaughter, pspec);
   AliKFParticle nkfdaughter(*ndaughter, nspec);
   
@@ -949,9 +906,8 @@ AliKFParticle *AliESDv0KineCuts::CreateMotherParticle(const AliVTrack* const pda
 }
 //____________________________________________________________________
 void  AliESDv0KineCuts::SetEvent(AliESDEvent* const event){
-  //
-  // direct setter of ESD event
-  //
+  /// direct setter of ESD event
+
   fEvent = event;
   if(!fEvent){
     AliErrorClass("Invalid input event pointer");
@@ -972,9 +928,7 @@ else{
 }
 //____________________________________________________________________
 void  AliESDv0KineCuts::SetEvent(AliVEvent* const event){
-  //
-  // direct setter of ESD event
-  //
+  /// direct setter of ESD event
 
   fEvent = dynamic_cast<AliESDEvent*>(event);
   if(!fEvent){
@@ -996,9 +950,8 @@ void  AliESDv0KineCuts::SetEvent(AliVEvent* const event){
 
 //________________________________________________________________
 void	 AliESDv0KineCuts::UseExternalVertex(Bool_t use_external){
-	//
-	// Reenable primary Vertex from ESD event
-	//
+ /// Reenable primary Vertex from ESD event
+
 	if (use_external) fUseExternalVertex =kTRUE;
 	else fUseExternalVertex =kFALSE;
 }
@@ -1008,9 +961,8 @@ void	 AliESDv0KineCuts::UseExternalVertex(Bool_t use_external){
 
 //________________________________________________________________
 void AliESDv0KineCuts::SetPrimaryVertex(AliKFVertex* const v){
-  //
-  // set the primary vertex of the event
-  //
+  /// set the primary vertex of the event
+
   	if(fPrimaryVertex && fDeleteVertex){   
 		delete 	fPrimaryVertex;
 		fPrimaryVertex =0x0;
@@ -1025,19 +977,17 @@ void AliESDv0KineCuts::SetPrimaryVertex(AliKFVertex* const v){
 }
 //___________________________________________________________________
 void AliESDv0KineCuts::SetMode(Int_t mode, Int_t type){
-  //
-  // this function allows the user to select (prior running the 'ProcessV0' function)
-  // to select different approaches to V0 selection - the 'mode'
-  // - and -
-  // different systems (pp, PbPb) - 'type' 
-  //
-  // To see the cut values for different modes please refer to the
-  // function SetCuts()
-  //
-  // Important notice: based on the parameters particular sets of cuts will
-  // be activated for teh V0 selection. If some additional changes to single
-  // cuts are needed please us the SetXXXcut function (see the header file)
-  // 
+  /// this function allows the user to select (prior running the 'ProcessV0' function)
+  /// to select different approaches to V0 selection - the 'mode'
+  /// - and -
+  /// different systems (pp, PbPb) - 'type'
+  ///
+  /// To see the cut values for different modes please refer to the
+  /// function SetCuts()
+  ///
+  /// Important notice: based on the parameters particular sets of cuts will
+  /// be activated for teh V0 selection. If some additional changes to single
+  /// cuts are needed please us the SetXXXcut function (see the header file)
 
   switch(mode){
   case kPurity:
@@ -1066,10 +1016,8 @@ void AliESDv0KineCuts::SetMode(Int_t mode, Int_t type){
 }
 //___________________________________________________________________
 void AliESDv0KineCuts::SetMode(Int_t mode, const char* type){
-  //
-  // overloaded function - please see above
-  // 
-  
+  /// overloaded function - please see above
+
   Int_t t = -1;
 
   if(!strcmp("pp", type)) t = kPP;
@@ -1084,13 +1032,11 @@ void AliESDv0KineCuts::SetMode(Int_t mode, const char* type){
 }
 //___________________________________________________________________
 void AliESDv0KineCuts::SetCuts(){
-  //
-  // this funciton sets the default cut values based on the selected
-  // fMode and fType.
-  // please note that only the cuts that have different values than the default
-  // cuts are updated here
-  //
-  
+  /// this funciton sets the default cut values based on the selected
+  /// fMode and fType.
+  /// please note that only the cuts that have different values than the default
+  /// cuts are updated here
+
   // last update: 14/02/2011
   // as a very preliminary  - the only change to default cuts is to apply
   // less restricting gamma conversion selection in PreselectV0() function

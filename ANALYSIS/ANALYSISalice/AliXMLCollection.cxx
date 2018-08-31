@@ -13,14 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-//-----------------------------------------------------------------
-//           Implementation of the AliXMLCollection class
-//   This is the class that creates XML collections after querying the tags
-//   Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
-//-----------------------------------------------------------------
-
 #include <cstdlib>
 //ROOT
 #include <Riostream.h>
@@ -71,8 +63,8 @@ AliXMLCollection::AliXMLCollection(const char *localcollectionfile) :
     fRejectedDet(0),
     fRejectedEvt(0)
  {
-   // Create Alien event collection, by reading collection for the specified
-   // file.
+   /// Create Alien event collection, by reading collection for the specified
+   /// file.
 
    fEventList = new TList();
    fEventList->SetOwner(kTRUE);
@@ -99,7 +91,7 @@ AliXMLCollection::AliXMLCollection(const AliXMLCollection& collection):
   fRejectedDet(0),
   fRejectedEvt(0)
 {
-  //copy constructor
+  /// copy constructor
 
   if (collection.fEventList) fEventList = new TList();
   if (collection.fEventListIter) fEventListIter = new TIter(fEventList);
@@ -109,14 +101,15 @@ AliXMLCollection::AliXMLCollection(const AliXMLCollection& collection):
 //___________________________________________________________________________
 AliXMLCollection::~AliXMLCollection() 
 {
-  //Destructor
+  /// Destructor
+
   delete fEventList;
   delete fEventListIter;
 }
 
 //___________________________________________________________________________
 Bool_t AliXMLCollection::WriteHeader() {
-  //Creates the xml output file
+  /// Creates the xml output file
 
   TString xmlName = fCollectionName;
   xmlName += ".xml";
@@ -139,7 +132,7 @@ Bool_t AliXMLCollection::WriteHeader() {
 //___________________________________________________________________________
 Bool_t AliXMLCollection::WriteSummary(Int_t aTotal, Int_t aAccepted, Int_t aRejRun, Int_t aRejLHC, Int_t aRejDet, Int_t aRejEvt)
 {
-  // Write selection summary
+  /// Write selection summary
 
   TString collectionSummary = "<summary";
   collectionSummary += " acceptedEvents=\"";
@@ -165,7 +158,8 @@ Bool_t AliXMLCollection::WriteSummary(Int_t aTotal, Int_t aAccepted, Int_t aRejR
 //___________________________________________________________________________
 Bool_t AliXMLCollection::WriteBody(Int_t counter, const char* guid, const char* lfn, const char* turl, TEntryList* list) 
 {
-  //Writes the body of the xml collection
+  /// Writes the body of the xml collection
+
   TString listline;
   for(Int_t i = 0; i < list->GetN(); i++) {
     listline += list->GetEntry(i);
@@ -201,7 +195,8 @@ Bool_t AliXMLCollection::WriteBody(Int_t counter, const char* guid, const char* 
 //___________________________________________________________________________
 Bool_t AliXMLCollection::WriteBody(Int_t counter, const char* guid, const char *lfn, const char *turl, TEntryList* list, Int_t accSum, Int_t rejSum)
 {
-  //Writes the body of the xml collection with tag cuts summary
+  /// Writes the body of the xml collection with tag cuts summary
+
   TString listline;
   for(Int_t i = 0; i < list->GetN(); i++) {
     listline += list->GetEntry(i);
@@ -242,7 +237,8 @@ Bool_t AliXMLCollection::WriteBody(Int_t counter, const char* guid, const char *
 }
 //___________________________________________________________________________
 Bool_t AliXMLCollection::Export() {
-  //Closes the stream
+  /// Closes the stream
+
   fout<<"  "<<"</collection>\n";
   fout<<"</alien>\n";
 
@@ -253,24 +249,24 @@ Bool_t AliXMLCollection::Export() {
 
 //___________________________________________________________________________
 void AliXMLCollection::Reset() {
-  // Reset file iterator.
-  
+  /// Reset file iterator.
+
   fEventListIter->Reset();
   fCurrent = 0;
 }
 
 //___________________________________________________________________________
 TMap *AliXMLCollection::Next() {
-  // Return next event file map.
-  
+  /// Return next event file map.
+
   fCurrent = (TMap*)fEventListIter->Next();
   return fCurrent;
 }
 
 //___________________________________________________________________________
 const char *AliXMLCollection::GetTURL(const char* filename) {
-  // Get a file's transport URL (TURL). Returns 0 in case of error.
-  
+  /// Get a file's transport URL (TURL). Returns 0 in case of error.
+
   if (fCurrent) {
     TMap *obj = (TMap*)fCurrent->GetValue(filename);
     if (obj) {
@@ -285,8 +281,8 @@ const char *AliXMLCollection::GetTURL(const char* filename) {
 
 //___________________________________________________________________________
 const char *AliXMLCollection::GetGUID(const char* filename) {
-  // Get a file's transport UID. Returns 0 in case of error.
-  
+  /// Get a file's transport UID. Returns 0 in case of error.
+
   if (fCurrent) {
     TMap *obj = (TMap*)fCurrent->GetValue(filename);
     if (obj) {
@@ -301,7 +297,7 @@ const char *AliXMLCollection::GetGUID(const char* filename) {
 
 //___________________________________________________________________________
 TEntryList *AliXMLCollection::GetEventList(const char *filename) const {
-  // Get a file's event list. Returns 0 in case of error.
+  /// Get a file's event list. Returns 0 in case of error.
 
   if (fCurrent) {
     TMap *obj = (TMap *) fCurrent->GetValue(filename);
@@ -317,7 +313,8 @@ TEntryList *AliXMLCollection::GetEventList(const char *filename) const {
 
 //___________________________________________________________________________
 Bool_t AliXMLCollection::Remove(TMap * map) {
-  // Return next event file map.
+  /// Return next event file map.
+
   if (fEventList->Remove(map)) {
     return kTRUE;
   } else {
@@ -327,8 +324,8 @@ Bool_t AliXMLCollection::Remove(TMap * map) {
 
 //___________________________________________________________________________
 const char *AliXMLCollection::GetLFN(const char* ) {
-  // Get a file's LFN. Returns 0 in case of error.
-  
+  /// Get a file's LFN. Returns 0 in case of error.
+
   if (fCurrent) {
     TMap *obj = (TMap *) fCurrent->GetValue("");
     if (obj) {
@@ -343,8 +340,8 @@ const char *AliXMLCollection::GetLFN(const char* ) {
 
 //__________________________________________________________________________
 const char *AliXMLCollection::GetCutSumm() {
-  // Get a file's tag cuts summary. Returns 0 in case of error.
-  
+  /// Get a file's tag cuts summary. Returns 0 in case of error.
+
   if (fCurrent) {
     TMap *obj = (TMap *) fCurrent->GetValue("");
     if (obj) {
@@ -359,7 +356,8 @@ const char *AliXMLCollection::GetCutSumm() {
 }
 //__________________________________________________________________________
 Bool_t AliXMLCollection::OverlapCollection(TGridCollection * comparator) {
-  // return kTRUE if comparator overlaps with this
+  /// return kTRUE if comparator overlaps with this
+
   if ((!comparator)) return kFALSE;
   
  loopagain:
@@ -389,17 +387,17 @@ Bool_t AliXMLCollection::OverlapCollection(TGridCollection * comparator) {
 
 //___________________________________________________________________________
 AliXMLCollection *AliXMLCollection::Open(const char *localcollectionfile) {
-  // Static method used to create an Alien event collection, by reading
-  // collection for the specified file.
-  
+  /// Static method used to create an Alien event collection, by reading
+  /// collection for the specified file.
+
   AliXMLCollection *collection = new AliXMLCollection(localcollectionfile);
   return collection;
 }
 
 //___________________________________________________________________________
 void AliXMLCollection::ParseXML() {
-  // Parse event file collection XML file.
-  
+  /// Parse event file collection XML file.
+
   TXMLEngine xml;
   
   XMLDocPointer_t xdoc = xml.ParseFile(fXmlFile);
@@ -504,7 +502,8 @@ void AliXMLCollection::ParseXML() {
 
 Bool_t AliXMLCollection::GetCollectionSummary(Int_t  *aTot, Int_t  *aAcc, Int_t  *aRejRun, Int_t  *aRejLHC, Int_t  *aRejDet, Int_t  *aRejEvt) const
 {
-  // Return read list summary
+  /// Return read list summary
+
   *aTot = fTotalEvents;
   *aAcc = fAcceptedEvents;
   *aRejRun = fRejectedRun;

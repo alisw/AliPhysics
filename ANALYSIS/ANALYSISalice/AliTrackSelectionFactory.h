@@ -1,9 +1,7 @@
-/**
- * \file AliTrackSelectionFactory.h
- * \brief Declaration of AliTrackSelectionFactory
- * \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
- * \since Feb. 24, 2015
- */
+/// \class AliTrackSelectionFactory
+/// \brief Declaration of AliTrackSelectionFactory
+/// \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
+
 #ifndef ALITRACKSELECTIONFACTORY_H_
 #define ALITRACKSELECTIONFACTORY_H_
 /* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
@@ -13,10 +11,6 @@
 
 class AliVTrackSelection;
 
-/**
- * \class AliTrackSelectionFactory
- * \brief Base class for track selection generators
- */
 class AliTrackSelectionFactory : public TObject {
 public:
   /**

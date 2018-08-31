@@ -3,12 +3,12 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-// Author: Andrei Gheata, 31/05/2006
-
-//==============================================================================
-//   AliAnalysisSelector - Transparent selector class instantiated by an
-// analysis manager object.
-//==============================================================================
+/// \class AliAnalysisSelector
+/// \brief AliAnalysisSelector
+/// Transparent selector class instantiated by an
+/// analysis manager object.
+/// \author Andrei Gheata
+/// \date 31/05/2006
 
 #ifndef ROOT_TSelector
 #include "TSelector.h"
@@ -19,8 +19,8 @@ class AliAnalysisManager;
 class AliAnalysisSelector : public TSelector {
 
 protected:
-   Bool_t              fInitialized; // Flag that initialization was done
-   AliAnalysisManager *fAnalysis;    // Analysis manager to be processed
+   Bool_t              fInitialized; ///< Flag that initialization was done
+   AliAnalysisManager *fAnalysis;    ///< Analysis manager to be processed
    
 private:
    AliAnalysisSelector(const AliAnalysisSelector&);            // not implemented

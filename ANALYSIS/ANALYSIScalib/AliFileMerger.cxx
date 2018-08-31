@@ -13,43 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-//////////////////////////////////////////////////////////////////////////
-//  marian.ivanov@cern.ch
-//  Utilities for file merging.
-//  Additional functionality on top of the standard TFileMerger:
-//
-//  1. Possibility to Set the reject/accept list.
-//     1.a)  Only entries selected in accept list are merged. By default all entries are selected
-//           use AddAccept 0 to specify your desired entry
-//     1.b)  Entries selected in reject list are not merged. By default the reject list is empty.
-//
-//  2. syswatch.log is created diring mergin procedure. 
-//     Memeory consumption - for reading and for merging can be monitored
-
-//  RS: Changed merger to respect the structure of files being merged (directories, collections...)
-//      Additional option: SetNoTrees (default false) to not merge any tree
-//      The code mostly taken from root's hadd.cxx
-/*
-  Usage:
-  // Libraries for all classes to be merged should be loaded before using the class
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSIScalib");
-  gSystem->Load("libTPCcalib"); 
-  TH1::AddDirectory(0);
-
-  //Example usage starting from the input data list in text file:
-  //
-  AliFileMerger merger;
-  merger.AddReject("esdFriend");
-  merger.IterTXT("calib.list","CalibObjects.root",kFALSE);
-  //
-
-*/
-//////////////////////////////////////////////////////////////////////////
- 
-
 #include <fstream>
 #include <THashList.h>
 #include <TChain.h>
@@ -86,9 +49,8 @@ AliFileMerger::AliFileMerger():
   fNoTrees(kFALSE),
   fCheckTitle(kTRUE)
 {
-  //
-  // Default constructor
-  //
+  /// Default constructor
+
 }
 
 //______________________________________________________________________
@@ -100,24 +62,23 @@ AliFileMerger::AliFileMerger(const char* name):
   fNoTrees(kFALSE),
   fCheckTitle(kTRUE)
 {
-  //
-  // 
-  //
+  ///
+
 }
 
 //______________________________________________________________________
 AliFileMerger::~AliFileMerger()
 {
-  // d-tor
+  /// d-tor
+
   delete fRejectMask;
   delete fAcceptMask;
 }
 
 void AliFileMerger::IterAlien(const char* outputDir, const char* outputFileName, const char* pattern, Bool_t dontOverwrite){
 
-  //
-  // Merge the files coming out of the calibration job
-  // 
+  /// Merge the files coming out of the calibration job
+
   TString command;
   // looking for files to be merged in the output directory
   command = Form("find %s/ *%s", outputDir, pattern);
@@ -149,8 +110,8 @@ void AliFileMerger::IterAlien(const char* outputDir, const char* outputFileName,
 
 void AliFileMerger::IterList(const TList* namesList, const char* outputFileName, Bool_t dontOverwrite)
 {
-  // merge in steps or in one go
-  //
+  /// merge in steps or in one go
+
   gSystem->GetProcInfo(&procInfo);
   AliInfo(Form(">> memory usage %ld %ld", procInfo.fMemResident, procInfo.fMemVirtual));
   //
@@ -215,10 +176,10 @@ void AliFileMerger::IterList(const TList* namesList, const char* outputFileName,
 
 void AliFileMerger::IterTXT( const char * fileList,  const char* outputFileName, Bool_t dontOverwrite){
   
-  // Merge the files indicated in the list - fileList
-  // ASCII file option example: 
-  // find `pwd`/ | grep AliESDfriends_v1.root > calib.list
-  
+  /// Merge the files indicated in the list - fileList
+  /// ASCII file option example:
+  /// find `pwd`/ | grep AliESDfriends_v1.root > calib.list
+
   // Open the input stream
   ifstream in;
   in.open(fileList);
@@ -240,9 +201,8 @@ void AliFileMerger::IterTXT( const char * fileList,  const char* outputFileName,
 }
 
 void AliFileMerger::StoreResults(TObjArray * array, const char* outputFileName){
-  //
-  // Storing the results in one single file
-  //
+  /// Storing the results in one single file
+
   TFile *f = new TFile(outputFileName,"recreate");
   for (Int_t i=0; i<array->GetEntries(); i++){
     TObject *object0 = array->At(i);
@@ -255,9 +215,8 @@ void AliFileMerger::StoreResults(TObjArray * array, const char* outputFileName){
 
 
 void AliFileMerger::StoreSeparateResults(TObjArray * array, const char* outputFileName){
-  //
-  // Store the results in separate files (one per object)
-  //
+  /// Store the results in separate files (one per object)
+
   for (Int_t i=0; i<array->GetEntries(); i++){
     TObject *object0 = array->At(i);
     if (!object0) continue;
@@ -269,9 +228,8 @@ void AliFileMerger::StoreSeparateResults(TObjArray * array, const char* outputFi
 }
 
 void AliFileMerger::Merge(TFile* fileIn, TObjArray * array){
-  //
-  // Merging procedure
-  //
+  /// Merging procedure
+
   if (!array) return;
   static Int_t counter=-1;
   counter++;
@@ -335,13 +293,12 @@ void AliFileMerger::Merge(TFile* fileIn, TObjArray * array){
 }
 
 Bool_t AliFileMerger::IsAccepted(TString name){
-  //
-  // Accept/reject logic
-  // name - name of the entry
-  //
-  //  if fAcceptMask specified   - entry has to be in list of selected
-  //  if fRejectMask speciefied  - entry with name speciief in the list are rejected 
-  //
+  /// Accept/reject logic
+  /// name - name of the entry
+  ///
+  ///  if fAcceptMask specified   - entry has to be in list of selected
+  ///  if fRejectMask speciefied  - entry with name speciief in the list are rejected
+
   Bool_t accept=kTRUE;
   if (fAcceptMask){
     //
@@ -362,10 +319,9 @@ Bool_t AliFileMerger::IsAccepted(TString name){
 }
 
 Bool_t AliFileMerger::IsRejected(TString name){
-  //
-  // check is the name is explicitly in the rejection list
-  //  if fRejectMask speciefied  - entry with name speciief in the list are rejected 
-  //
+  /// check is the name is explicitly in the rejection list
+  ///  if fRejectMask speciefied  - entry with name speciief in the list are rejected
+
   Bool_t reject=kFALSE;
   if (fRejectMask){
     //
@@ -380,9 +336,8 @@ Bool_t AliFileMerger::IsRejected(TString name){
 
 void AliFileMerger::AddReject(const char *reject)
 {
-  //
-  // add reject string to the list of entries to be rejected for merging
-  //
+  /// add reject string to the list of entries to be rejected for merging
+
   if (!fRejectMask) {
     fRejectMask = new TObjArray();
     fRejectMask->SetOwner(kTRUE);
@@ -392,9 +347,8 @@ void AliFileMerger::AddReject(const char *reject)
 
 void AliFileMerger::AddAccept(const char *accept)
 {
-  //
-  // add reject string to the list of entries to be rejected for merging
-  //
+  /// add reject string to the list of entries to be rejected for merging
+
   if (!fAcceptMask) {
     fAcceptMask = new TObjArray();
     fAcceptMask->SetOwner(kTRUE);
@@ -405,8 +359,9 @@ void AliFileMerger::AddAccept(const char *accept)
 //___________________________________________________________________________
 int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist, Bool_t nameFiltering)
 {
-  // Merge all objects in a directory
-  // modified version of root's hadd.cxx
+  /// Merge all objects in a directory
+  /// modified version of root's hadd.cxx
+
   gSystem->GetProcInfo(&procInfo);
   AliInfo(Form(">> memory usage %ld %ld", procInfo.fMemResident, procInfo.fMemVirtual));
   //
@@ -687,8 +642,9 @@ int AliFileMerger::OpenNextChunks(const TList* namesList, TList* filesList, Int_
 //___________________________________________________________________________
 int AliFileMerger::AddFile(TList* namesList, std::string entry)
 {
-  // add a new file to the list of files
-  //  static int count(0);
+  /// add a new file to the list of files
+  ///  static int count(0);
+
   if( entry.empty() ) return 0;
   size_t j =entry.find_first_not_of(' ');
   if( j==std::string::npos ) return 0;
@@ -714,9 +670,10 @@ int AliFileMerger::AddFile(TList* namesList, std::string entry)
 //___________________________________________________________________________
 void AliFileMerger::CheckTitle(TObject* tgt, TObject* src)
 {
-  // if tgt has no title but src has, assign from src
-  //
-  // for TCollections use recursive check
+  /// if tgt has no title but src has, assign from src
+  ///
+  /// for TCollections use recursive check
+
   if (tgt->InheritsFrom(TCollection::Class())) {
     TCollection* tgtCol = (TCollection*)tgt;
     TCollection* srcCol = (TCollection*)src;

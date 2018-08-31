@@ -4,12 +4,12 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
-// Realisation of an AliVEventPool via
-// on the flight (OTF) generation of the bin using AliTagAnalysis.
-// Author Andreas Morsch
-// andreas.morsch@cern.ch
+/// \class AliEventPoolOTF
+/// \brief Realisation of an AliVEventPool via
+///
+/// on the flight (OTF) generation of the bin using AliTagAnalysis.
+/// andreas.morsch@cern.ch
+/// \author Andreas Morsch
 
 #include <AliVEventPool.h>
 class AliRunTagCuts;
@@ -58,23 +58,23 @@ class AliEventPoolOTF : public AliVEventPool
     void InitArrays();
     
  protected:
-    AliTagAnalysis*      fTagAnalysis;   // Pointer to tag analysis
-    AliRunTagCuts*       fRunCuts;       // Run      cuts
-    AliLHCTagCuts*       fLHCCuts;       // LHC      cuts
-    AliDetectorTagCuts*  fDetectorCuts;  // Detector cuts
-    AliEventTagCuts*     fEventCuts;     // Event    cuts
-    TGridResult*         fGridTags;      // Tags from a grid file collection
-    TChain*              fChain;         // Current chain
-    const char*          fTagDirectory;  // Directory with local tag files
+    AliTagAnalysis*      fTagAnalysis;   ///< Pointer to tag analysis
+    AliRunTagCuts*       fRunCuts;       ///< Run      cuts
+    AliLHCTagCuts*       fLHCCuts;       ///< LHC      cuts
+    AliDetectorTagCuts*  fDetectorCuts;  ///< Detector cuts
+    AliEventTagCuts*     fEventCuts;     ///< Event    cuts
+    TGridResult*         fGridTags;      ///< Tags from a grid file collection
+    TChain*              fChain;         ///< Current chain
+    const char*          fTagDirectory;  ///< Directory with local tag files
     // Common pool cuts
     // Multiplicity
-    Float_t              fValueMin[10];  // Minimum value
-    Float_t              fValueMax[10];  // Maximum value
-    Float_t              fValueStep[10]; // Step size
-    Float_t              fValue[10];     // Current value
+    Float_t              fValueMin[10];  ///< Minimum value
+    Float_t              fValueMax[10];  ///< Maximum value
+    Float_t              fValueStep[10]; ///< Step size
+    Float_t              fValue[10];     ///< Current value
     //
-    Int_t                fBinNumber;    // Current bin number
-    Bool_t               fNoMore;       // No more bins 
+    Int_t                fBinNumber;    ///< Current bin number
+    Bool_t               fNoMore;       ///< No more bins
     
     ClassDef(AliEventPoolOTF, 0); 
 };

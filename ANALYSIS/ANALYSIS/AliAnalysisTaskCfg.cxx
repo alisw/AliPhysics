@@ -25,54 +25,6 @@
 #include "TObjString.h"
 #include "TList.h"
 
-// Author: Andrei Gheata, 12/08/2011
-
-//==============================================================================
-//   AliAnalysysTaskCfg - Class embedding the configuration needed to run
-// a given analysis task: libraries to be loaded, location and name of the macro
-// used to add the task to the analysis manager, dependencies.
-//==============================================================================
-
-// This class is used to fully describe how to run a given analysis task. It
-// requires that the user creates an AddTask macro for his task and defines:
-//  - The needed libs separated by commas,
-//  - The full path to the AddTask macro (starting with $ALICE_ROOT if needed)
-//  - The list of arguments to be provided to the AddTask macro. One can use
-//    here only constants that can be interpreted.
-//  - The list of dependencies (other modules required to run this task). These
-//    must be names of other AliAnalysisTaskCfg objects, separated by commas.
-//  - Data types supported by the task (e.g. ESD, AOD, MC)
-// The class has normal ROOT IO, but it can also read from and write to text files.
-// An example:
-// Content of file: QAsym.cfg
-/*
-# Lines that do not start with #Module are ignored, except those in embedded
-  macro blocks
-#Module.Begin        QAsym
-#Module.Libs         PWGPP
-#Module.Deps         PhysicsSelection
-#Module.DataTypes    ESD, AOD, MC
-#Module.MacroName    $ALICE_ROOT/PWGPP/PilotTrain/AddTaskQAsym.C
-#Module.MacroArgs    0, AliVEvent::kAnyINT, AliVEvent::kHighMult, AliVEvent::kEMC7, AliVEvent::kMUU7
-#Module.OutputFile   
-#Module.TerminateFile
-#Module.StartConfig  
-__R_ADDTASK__->SelectCollisionCandidates();
-#Module.EndConfig
-*/
-// The following special variable names can be used:
-// __R_ADDTASK__ = the return value of the AddTask macro included
-// __R_ESDH__    = pointer to ESD handler
-// __R_AODH__    = pointer to AOD handler
-// __R_MCH__     = pointer to MC handler
-// The static method ExtractModulesFrom(const char *filename) allows reading
-// several task configuration modules from the same text file and returning
-// them in a TObjArray.
-//
-// A list of configuration modules representing a train should be injected in
-// the right order in the grid handler to generate train macros.
-
-
 using std::cout;
 using std::endl;
 using std::ios;
@@ -111,8 +63,9 @@ AliAnalysisTaskCfg::AliAnalysisTaskCfg(const char *name)
                     fConfigDeps(0),
                     fRAddTask(0)
 {
-// Constructor. All configuration objects need to be named since they are looked
-// for by name.
+/// Constructor. All configuration objects need to be named since they are looked
+/// for by name.
+
 }
 
 //______________________________________________________________________________
@@ -129,7 +82,8 @@ AliAnalysisTaskCfg::AliAnalysisTaskCfg(const AliAnalysisTaskCfg &other)
                     fConfigDeps(0),
                     fRAddTask(0)
 {
-// Copy constructor.
+/// Copy constructor.
+
    if (other.fMacro) fMacro = new TMacro(*other.fMacro);
    if (other.fConfigDeps) fConfigDeps = new TMacro(*other.fConfigDeps);
 }   
@@ -137,7 +91,8 @@ AliAnalysisTaskCfg::AliAnalysisTaskCfg(const AliAnalysisTaskCfg &other)
 //______________________________________________________________________________
 AliAnalysisTaskCfg::~AliAnalysisTaskCfg()
 {
-// Destructor.
+/// Destructor.
+
    delete fMacro;
    delete fConfigDeps;
 }
@@ -145,7 +100,8 @@ AliAnalysisTaskCfg::~AliAnalysisTaskCfg()
 //______________________________________________________________________________
 AliAnalysisTaskCfg& AliAnalysisTaskCfg::operator=(const AliAnalysisTaskCfg &other)
 {
-// Assignment operator.
+/// Assignment operator.
+
    if (&other == this) return *this;
    TNamed::operator=(other);
    fMacroName = other.fMacroName;
@@ -164,9 +120,10 @@ AliAnalysisTaskCfg& AliAnalysisTaskCfg::operator=(const AliAnalysisTaskCfg &othe
 //______________________________________________________________________________
 TMacro *AliAnalysisTaskCfg::OpenMacro(const char *name)
 {
-// Opens the specified macro if name is not empty. In case of success updates
-// fMacroName, creates the maco object and returns its pointer.
-   // Clean-up previous macro if any
+/// Opens the specified macro if name is not empty. In case of success updates
+/// fMacroName, creates the maco object and returns its pointer.
+/// Clean-up previous macro if any
+
    if (fMacro) {
       delete fMacro;
       fMacro = 0;
@@ -190,8 +147,9 @@ TMacro *AliAnalysisTaskCfg::OpenMacro(const char *name)
 //______________________________________________________________________________
 void AliAnalysisTaskCfg::SetMacro(TMacro *macro)
 {
-// Set the AddTask macro from outside. This will discard the existing macro if
-// any. The provided macro will be owned by this object.
+/// Set the AddTask macro from outside. This will discard the existing macro if
+/// any. The provided macro will be owned by this object.
+
    if (fMacro) delete fMacro;
    fMacro = macro;
 }   
@@ -199,10 +157,11 @@ void AliAnalysisTaskCfg::SetMacro(TMacro *macro)
 //______________________________________________________________________________
 Long64_t AliAnalysisTaskCfg::ExecuteMacro(const char *newargs)
 {
-// Execute AddTask macro. Opens first the macro pointed by fMacroName if not yet
-// done. Checks if the requested libraries are loaded, else loads them. Executes 
-// with stored fMacroArgs unless new arguments are provided. The flag IsLoaded
-// is set once the macro was successfully executed.
+/// Execute AddTask macro. Opens first the macro pointed by fMacroName if not yet
+/// done. Checks if the requested libraries are loaded, else loads them. Executes
+/// with stored fMacroArgs unless new arguments are provided. The flag IsLoaded
+/// is set once the macro was successfully executed.
+
    if (IsLoaded()) return kTRUE;
    if (!fMacro && !OpenMacro()) {
       Error("ExecuteMacro", "Cannot execute this macro");
@@ -257,7 +216,8 @@ Long64_t AliAnalysisTaskCfg::ExecuteMacro(const char *newargs)
 //______________________________________________________________________________
 Int_t AliAnalysisTaskCfg::GetNlibs() const
 {
-// Returns number of requested libraries.
+/// Returns number of requested libraries.
+
    if (fLibs.IsNull()) return 0;
    TObjArray *list  = fLibs.Tokenize(",");
    Int_t nlibs = list->GetEntriesFast();
@@ -268,7 +228,8 @@ Int_t AliAnalysisTaskCfg::GetNlibs() const
 //______________________________________________________________________________
 const char *AliAnalysisTaskCfg::GetLibrary(Int_t i) const
 {
-// Returns library name for the i-th library.
+/// Returns library name for the i-th library.
+
    Int_t nlibs = GetNlibs();
    if (i>=nlibs) return 0;
    static TString libname;
@@ -284,8 +245,9 @@ const char *AliAnalysisTaskCfg::GetLibrary(Int_t i) const
 //______________________________________________________________________________
 Bool_t AliAnalysisTaskCfg::CheckLoadLibraries() const
 {
-// Check if all requested libraries were loaded, otherwise load them. If some
-// library cannot be loaded return false.
+/// Check if all requested libraries were loaded, otherwise load them. If some
+/// library cannot be loaded return false.
+
    TString library;
    Int_t nlibs = GetNlibs();
    for (Int_t i=0; i<nlibs; i++) {
@@ -306,7 +268,8 @@ Bool_t AliAnalysisTaskCfg::CheckLoadLibraries() const
 //______________________________________________________________________________
 Bool_t AliAnalysisTaskCfg::NeedsLibrary(const char *lib) const
 {
-// Check if a given library is needed by the module.
+/// Check if a given library is needed by the module.
+
    TString libname = lib;
    libname.ReplaceAll(".so","");
    if (libname.BeginsWith("lib")) libname.Remove(0, 3);
@@ -316,7 +279,8 @@ Bool_t AliAnalysisTaskCfg::NeedsLibrary(const char *lib) const
 //______________________________________________________________________________
 Int_t AliAnalysisTaskCfg::GetNdeps() const
 {
-// Returns number of requested libraries.
+/// Returns number of requested libraries.
+
    if (fDeps.IsNull()) return 0;
    Int_t ndeps = fDeps.CountChar(',')+1;
    return ndeps;
@@ -325,7 +289,8 @@ Int_t AliAnalysisTaskCfg::GetNdeps() const
 //______________________________________________________________________________
 const char *AliAnalysisTaskCfg::GetDependency(Int_t i) const
 {
-// Returns library name for the i-th library.
+/// Returns library name for the i-th library.
+
    Int_t ndeps = GetNdeps();
    if (i>=ndeps) return 0;
    static TString depname;
@@ -339,7 +304,8 @@ const char *AliAnalysisTaskCfg::GetDependency(Int_t i) const
 //______________________________________________________________________________
 Bool_t AliAnalysisTaskCfg::NeedsDependency(const char *dep) const
 {
-// Check if a given library is needed by the module.
+/// Check if a given library is needed by the module.
+
    Int_t indmin = 0;
    Int_t indmax = 0;
    Int_t len = fDeps.Length();
@@ -358,7 +324,8 @@ Bool_t AliAnalysisTaskCfg::NeedsDependency(const char *dep) const
 //______________________________________________________________________________
 TMacro *AliAnalysisTaskCfg::OpenConfigMacro(const char *name)
 {
-// Opens the specified macro if name is not empty.
+/// Opens the specified macro if name is not empty.
+
    if (fConfigDeps) {
       delete fConfigDeps;
       fConfigDeps = 0;
@@ -380,8 +347,9 @@ TMacro *AliAnalysisTaskCfg::OpenConfigMacro(const char *name)
 //______________________________________________________________________________
 void AliAnalysisTaskCfg::SetConfigMacro(TMacro *macro)
 {
-// Set the macro for configuring deps from outside. This will discard the 
-// existing macro if any. The provided macro will be owned by this object.
+/// Set the macro for configuring deps from outside. This will discard the
+/// existing macro if any. The provided macro will be owned by this object.
+
    if (fConfigDeps) delete fConfigDeps;
    fConfigDeps = macro;
 }   
@@ -389,7 +357,8 @@ void AliAnalysisTaskCfg::SetConfigMacro(TMacro *macro)
 //______________________________________________________________________________
 Long64_t AliAnalysisTaskCfg::ExecuteConfigMacro()
 {
-// Execute macro to configure dependencies. No arguments are supported.
+/// Execute macro to configure dependencies. No arguments are supported.
+
    if (!fConfigDeps) {
       Error("ExecuteConfigMacro", "Call OpenConfigMacro() first");
       return -1;
@@ -411,7 +380,8 @@ Long64_t AliAnalysisTaskCfg::ExecuteConfigMacro()
 //______________________________________________________________________________
 void AliAnalysisTaskCfg::SetDataTypes(const char *types)
 {
-// Sets the data types supported by the module. Stored in upper case.
+/// Sets the data types supported by the module. Stored in upper case.
+
    fDataTypes = types;
    fDataTypes.ToUpper();
 }
@@ -419,7 +389,8 @@ void AliAnalysisTaskCfg::SetDataTypes(const char *types)
 //______________________________________________________________________________
 Bool_t AliAnalysisTaskCfg::SupportsData(const char *type) const
 {
-// Checks if the given data type is supported.
+/// Checks if the given data type is supported.
+
    TString stype = type;
    stype.ToUpper();
    return fDataTypes.Contains(stype);
@@ -428,7 +399,8 @@ Bool_t AliAnalysisTaskCfg::SupportsData(const char *type) const
 //______________________________________________________________________________
 void AliAnalysisTaskCfg::Print(Option_t * option) const
 {
-// Print content of the module.
+/// Print content of the module.
+
    TString opt(option);
    Bool_t full = (opt.Length())?kTRUE:kFALSE;
    printf("====================================================================\n");
@@ -454,8 +426,9 @@ void AliAnalysisTaskCfg::Print(Option_t * option) const
 //______________________________________________________________________________
 void AliAnalysisTaskCfg::SaveAs(const char *filename, Option_t *option) const
 {
-// Save the configuration module as text file in the form key:value. The
-// option can be APPEND, otherwise the file gets overwritten.
+/// Save the configuration module as text file in the form key:value. The
+/// option can be APPEND, otherwise the file gets overwritten.
+
    TString opt(option);
    opt.ToUpper();
    ios::openmode mode = ios::out;
@@ -483,7 +456,8 @@ void AliAnalysisTaskCfg::SaveAs(const char *filename, Option_t *option) const
 //______________________________________________________________________________
 const char *AliAnalysisTaskCfg::DecodeValue(TString &line)
 {
-// Decode the value string from the line
+/// Decode the value string from the line
+
    static TString value;
    value = line(line.Index(' '),line.Length());
    value = value.Strip(TString::kLeading,' ');
@@ -494,9 +468,10 @@ const char *AliAnalysisTaskCfg::DecodeValue(TString &line)
 //______________________________________________________________________________
 TObjArray *AliAnalysisTaskCfg::ExtractModulesFrom(const char *filename)
 {
-// Read all modules from a text file and add them to an object array. The
-// caller must delete the array at the end. Any module must start with a line
-// containing: #Module.Begin
+/// Read all modules from a text file and add them to an object array. The
+/// caller must delete the array at the end. Any module must start with a line
+/// containing: #Module.Begin
+
    TString expname = gSystem->ExpandPathName(filename);
    if (gSystem->AccessPathName(expname)) {
       ::Error("ExtractModulesFrom", "Cannot open file %s", filename);

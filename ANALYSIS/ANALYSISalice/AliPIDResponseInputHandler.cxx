@@ -13,18 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliPIDResponseInputHandler 46193 2010-12-21 09:00:14Z wiechula $ */
-
-//-----------------------------------------------------------------
-//        Handler to set up the PID response object and
-//         initialise it correctly for each event
-//
-//      Origin:
-//        Jens Wiechula (jens.wiechula@cern.ch)
-//        Martin Vala (martin.vala@cern.ch)
-
-//-----------------------------------------------------------------
-
 
 #include <TFile.h>
 #include <TPRegexp.h>
@@ -60,9 +48,8 @@ AliPIDResponseInputHandler::AliPIDResponseInputHandler(const char *name) :
 //_____________________________________________________________________________
 AliPIDResponseInputHandler::~AliPIDResponseInputHandler()
 {
-//
-// Destructor
-//
+/// Destructor
+
    AliDebug(AliLog::kDebug + 10, "<-");
 // 	delete fArrPidResponseMaster;
    AliDebug(AliLog::kDebug + 10, "->");
@@ -71,9 +58,8 @@ AliPIDResponseInputHandler::~AliPIDResponseInputHandler()
 //_____________________________________________________________________________
 Bool_t AliPIDResponseInputHandler::Init(Option_t *opt)
 {
-//
-// Init() is called for all mix input handlers.
-//
+/// Init() is called for all mix input handlers.
+
    AliDebug(AliLog::kDebug + 5, Form("<- opt=%s", opt));
 
    AliDebug(AliLog::kDebug + 5, Form("->"));
@@ -82,10 +68,9 @@ Bool_t AliPIDResponseInputHandler::Init(Option_t *opt)
 //_____________________________________________________________________________
 Bool_t AliPIDResponseInputHandler::Init(TTree *tree, Option_t *opt)
 {
-//
-// Init(const char*path) is called for all mix input handlers.
-// Create event pool if needed
-//
+/// Init(const char*path) is called for all mix input handlers.
+/// Create event pool if needed
+
    AliDebug(AliLog::kDebug + 5, Form("<- %p %s opt=%s", (void *) tree, tree->GetName(), opt));
 
    if (fParentHandler) {
@@ -109,9 +94,8 @@ Bool_t AliPIDResponseInputHandler::Init(TTree *tree, Option_t *opt)
 //_____________________________________________________________________________
 Bool_t AliPIDResponseInputHandler::Notify()
 {
-//
-// Notify() is called for all mix input handlers
-//
+/// Notify() is called for all mix input handlers
+
    AliDebug(AliLog::kDebug + 5, Form("<-"));
    AliDebug(AliLog::kDebug + 5, Form("->"));
    return kTRUE;
@@ -120,9 +104,8 @@ Bool_t AliPIDResponseInputHandler::Notify()
 //_____________________________________________________________________________
 Bool_t AliPIDResponseInputHandler::Notify(const char *path)
 {
-//
-// Notify(const char*path) is called for all mix input handlers
-//
+/// Notify(const char*path) is called for all mix input handlers
+
    AliDebug(AliLog::kDebug + 5, Form("<- %s", path));
    AliDebug(AliLog::kDebug + 5, "->");
    return kTRUE;
@@ -130,9 +113,8 @@ Bool_t AliPIDResponseInputHandler::Notify(const char *path)
 //_____________________________________________________________________________
 Bool_t AliPIDResponseInputHandler::BeginEvent(Long64_t entry)
 {
-//
-// BeginEvent(Long64_t entry) is called for all mix input handlers
-//
+/// BeginEvent(Long64_t entry) is called for all mix input handlers
+
    AliDebug(AliLog::kDebug + 5, Form("<- %lld", entry));
 
    if (fParentHandler) {
@@ -175,9 +157,8 @@ Bool_t AliPIDResponseInputHandler::GetEntry()
 //_____________________________________________________________________________
 Bool_t AliPIDResponseInputHandler::FinishEvent()
 {
-   //
-   // FinishEvent() is called for all mix input handlers
-   //
+   /// FinishEvent() is called for all mix input handlers
+
    AliDebug(AliLog::kDebug + 5, Form("<-"));
    AliDebug(AliLog::kDebug + 5, Form("->"));
    return kTRUE;
@@ -186,10 +167,8 @@ Bool_t AliPIDResponseInputHandler::FinishEvent()
 //_____________________________________________________________________________
 void AliPIDResponseInputHandler::SetRecoInfo()
 {
-  //
-  // Set reconstruction information
-  //
-  
+  /// Set reconstruction information
+
   //reset information
   fRecoPass=0;
   

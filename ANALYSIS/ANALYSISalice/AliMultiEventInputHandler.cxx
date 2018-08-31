@@ -13,14 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-//-------------------------------------------------------------------------
-//     Event handler for multiple VEvent input.
-//     This class handles multiple inputs for event mixing. 
-//     Author: Andreas Morsch, CERN
-//-------------------------------------------------------------------------
-
 #include "AliMultiEventInputHandler.h"
 #include "AliVEvent.h"
 #include "AliAODEvent.h"
@@ -66,7 +58,8 @@ AliMultiEventInputHandler::AliMultiEventInputHandler(Int_t size, Int_t format) :
     fEventBuffer(0),
     fEventSkipped(0)
 {
-  // constructor
+  /// constructor
+
 }
 
 //______________________________________________________________________________
@@ -83,19 +76,21 @@ AliMultiEventInputHandler::AliMultiEventInputHandler(const char* name, const cha
     fEventBuffer(0),
     fEventSkipped(0)
 {
-    // Constructor
+    /// Constructor
 
 }
 
 //______________________________________________________________________________
 AliMultiEventInputHandler::~AliMultiEventInputHandler() 
 {
-// Destructor
+/// Destructor
+
 }
 
 Bool_t AliMultiEventInputHandler::Init(TTree* tree, Option_t* /*opt*/)
 {
-    // Initialisation necessary for each new tree
+    /// Initialisation necessary for each new tree
+
     if (!fEventBuffer) {
 	fEventBuffer = new AliVEvent*[fBufferSize];
 	
@@ -124,7 +119,7 @@ Bool_t AliMultiEventInputHandler::Init(TTree* tree, Option_t* /*opt*/)
 
 Bool_t AliMultiEventInputHandler::Notify(const char */*path*/)
 {
-    // Connect to new tree
+    /// Connect to new tree
 
     TList* connectedList = (TList*) (fTree->GetUserInfo()->FindObject("AODObjectsConnectedToTree"));   
     if (connectedList && !fInit) {
@@ -141,10 +136,10 @@ Bool_t AliMultiEventInputHandler::Notify(const char */*path*/)
 
 Bool_t AliMultiEventInputHandler::BeginEvent(Long64_t /*entry*/)
 {
-    // Actions before analysis of each event 
-    //
-    // Reset the number of events buffered for this bin to 0
-    
+    /// Actions before analysis of each event
+    ///
+    /// Reset the number of events buffered for this bin to 0
+
     if (fCurrentBin != (fEventPool->BinNumber())) {
 	fCurrentBin = fEventPool->BinNumber();
 	fNBuffered = 0;
@@ -164,8 +159,8 @@ Bool_t AliMultiEventInputHandler::BeginEvent(Long64_t /*entry*/)
 
 Bool_t AliMultiEventInputHandler::FinishEvent()
 {
-    // 
-    // Connect the next event in the buffer to the tree
+    /// Connect the next event in the buffer to the tree
+
     if (!fEventSkipped) fIndex++;
     fIndex %= fBufferSize;
     AliInfo(Form("Connecting buffer entry %5d", fIndex));
@@ -198,7 +193,8 @@ Bool_t AliMultiEventInputHandler::FinishEvent()
 
 AliVEvent* AliMultiEventInputHandler::GetEvent(Int_t iev) const
 {
-    // Get event number iev from buffer
+    /// Get event number iev from buffer
+
     if ((iev < 0) || (iev >= fBufferSize))
     {
 	AliWarning(Form("Event number out of range: %10d", iev));

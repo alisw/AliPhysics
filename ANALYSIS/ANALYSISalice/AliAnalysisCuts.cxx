@@ -13,12 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
- 
-// Base class for analysis cuts
-// Author Andreas Morsch
-// andreas.morsch@cern.ch
-
 #include <TObject.h>
 #include "AliAnalysisCuts.h"
 
@@ -37,7 +31,8 @@ AliAnalysisCuts::AliAnalysisCuts():
 AliAnalysisCuts::AliAnalysisCuts(const char* name, const char* title):
     AliVCuts(name, title), fFilterMask(0), fSelected(kFALSE)
 {
-  // Constructor
+  /// Constructor
+
 }
 
 AliAnalysisCuts::AliAnalysisCuts(const AliAnalysisCuts& obj):
@@ -47,7 +42,8 @@ AliAnalysisCuts::AliAnalysisCuts(const AliAnalysisCuts& obj):
 
 AliAnalysisCuts& AliAnalysisCuts::operator=(const AliAnalysisCuts& obj)
 {
-  // Assignment operator
+  /// Assignment operator
+
   if ( this != &obj ) { 
     AliVCuts::operator=(obj);
     fFilterMask = obj.fFilterMask;

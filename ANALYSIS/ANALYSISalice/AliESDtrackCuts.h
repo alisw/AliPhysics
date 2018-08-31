@@ -1,22 +1,20 @@
-//
-//  Class for handling of ESD track cuts.
-//
-//  The class manages a number of track quality cuts, a
-//  track-to-vertex cut and a number of kinematic cuts. Two methods
-//  can be used to figure out if an ESD track survives the cuts:
-//  AcceptTrack which takes a single AliESDtrack as argument and
-//  returns kTRUE/kFALSE or GetAcceptedTracks which takes an AliESDEvent
-//  object and returns an TObjArray (of AliESDtracks) with the tracks
-//  in the ESD that survived the cuts.
-//
-//
-//  TODO:
-//  - add functionality to save and load cuts
-//  - add histograms for kinematic cut variables?
-//  - upper and lower cuts for all (non-boolean) cuts
-//  - update print method
-//  - put comments to each variable
-//
+/// \class AliESDtrackCuts
+/// \brief Class for handling of ESD track cuts.
+///
+/// The class manages a number of track quality cuts, a
+/// track-to-vertex cut and a number of kinematic cuts. Two methods
+/// can be used to figure out if an ESD track survives the cuts:
+/// AcceptTrack which takes a single AliESDtrack as argument and
+/// returns kTRUE/kFALSE or GetAcceptedTracks which takes an AliESDEvent
+/// object and returns an TObjArray (of AliESDtracks) with the tracks
+/// in the ESD that survived the cuts.
+///
+/// TODO:
+/// - add functionality to save and load cuts
+/// - add histograms for kinematic cut variables?
+/// - upper and lower cuts for all (non-boolean) cuts
+/// - update print method
+/// - put comments to each variable
 
 #ifndef ALIESDTRACKCUTS_H
 #define ALIESDTRACKCUTS_H
@@ -227,133 +225,162 @@ protected:
 
   //######################################################
   // esd track quality cuts
-  static const Char_t* fgkCutNames[kNCuts]; //! names of cuts (for internal use)
-  static AliESDtrackCuts* fgMultEstTrackCuts[kNMultEstTrackCuts]; //! track cuts used for the multiplicity estimate
+  static const Char_t* fgkCutNames[kNCuts]; //!<! names of cuts (for internal use)
+  static AliESDtrackCuts* fgMultEstTrackCuts[kNMultEstTrackCuts]; //!<! track cuts used for the multiplicity estimate
 
-  Int_t   fCutMinNClusterTPC;         // min number of tpc clusters
-  Int_t   fCutMinNClusterITS;         // min number of its clusters
-  Float_t   fCutMinNCrossedRowsTPC;     // min number of tpc crossed rows
-  Float_t fCutMinRatioCrossedRowsOverFindableClustersTPC; // min ratio crossed rows / findable clusters
-  TFormula *f1CutMinNClustersTPCPtDep; // pt dependent tpc clusters cut
-  Float_t fCutMaxPtDepNClustersTPC;     // maximum pt for pt dependend TPC cluster cut. For pt=>ptmax NClusterMin = f1CutMinNClustersTPCPtDep->Eval(fCutMaxPtDepNClustersTPC).
-  Float_t fCutMinLengthActiveVolumeTPC; // mininum length (in cm) over which the track is sampled in the active volume of the TPC (outside boundaries)
-  Float_t fDeadZoneWidth;             // width of the TPC dead zone (missing pads + PRF +ExB)
+  Int_t   fCutMinNClusterTPC;         ///< min number of tpc clusters
+  Int_t   fCutMinNClusterITS;         ///< min number of its clusters
+  Float_t   fCutMinNCrossedRowsTPC;     ///< min number of tpc crossed rows
+  Float_t fCutMinRatioCrossedRowsOverFindableClustersTPC; ///< min ratio crossed rows / findable clusters
+  TFormula *f1CutMinNClustersTPCPtDep; ///< pt dependent tpc clusters cut
+  Float_t fCutMaxPtDepNClustersTPC;     ///< maximum pt for pt dependend TPC cluster cut. For pt=>ptmax NClusterMin = f1CutMinNClustersTPCPtDep->Eval(fCutMaxPtDepNClustersTPC).
+  Float_t fCutMinLengthActiveVolumeTPC; ///< mininum length (in cm) over which the track is sampled in the active volume of the TPC (outside boundaries)
+  Float_t fDeadZoneWidth;             ///< width of the TPC dead zone (missing pads + PRF +ExB)
   // TPC geometrical cut combined with cut on crossed rows and number of clusters    
-  Float_t fCutGeoNcrNclLength;        // cut on the geometical length  condition Ngeom(cm)>cutGeoNcrNclLength default=130
-  Float_t fCutGeoNcrNclGeom1Pt;       // 1/pt dependence slope  cutGeoNcrNclLength:=fCutGeoNcrNclLength-abs(1/pt)^fCutGeoNcrNclGeom1Pt
-  Float_t fCutGeoNcrNclFractionNcr;   // relative fraction cut Ncr  condition Ncr>cutGeoNcrNclFractionNcr*fCutGeoNcrNclLength
-  Float_t fCutGeoNcrNclFractionNcl;   // ralative fraction cut Ncr  condition Ncl>cutGeoNcrNclFractionNcl
+  Float_t fCutGeoNcrNclLength;        ///< cut on the geometical length  condition Ngeom(cm)>cutGeoNcrNclLength default=130
+  Float_t fCutGeoNcrNclGeom1Pt;       ///< 1/pt dependence slope  cutGeoNcrNclLength:=fCutGeoNcrNclLength-abs(1/pt)^fCutGeoNcrNclGeom1Pt
+  Float_t fCutGeoNcrNclFractionNcr;   ///< relative fraction cut Ncr  condition Ncr>cutGeoNcrNclFractionNcr*fCutGeoNcrNclLength
+  Float_t fCutGeoNcrNclFractionNcl;   ///< ralative fraction cut Ncr  condition Ncl>cutGeoNcrNclFractionNcl
   // TPC distorted regions
-  Bool_t  fCutOutDistortedRegionTPC;  // flag if distorted regions in the TPC should be cut out
+  Bool_t  fCutOutDistortedRegionTPC;  ///< flag if distorted regions in the TPC should be cut out
 
 
-  ITSClusterRequirement fCutClusterRequirementITS[3];  // detailed ITS cluster requirements for (SPD, SDD, SSD)
+  ITSClusterRequirement fCutClusterRequirementITS[3];  ///< detailed ITS cluster requirements for (SPD, SDD, SSD)
 
-  Float_t fCutMaxChi2PerClusterTPC;   // max tpc fit chi2 per tpc cluster
-  Float_t fCutMaxChi2PerClusterITS;   // max its fit chi2 per its cluster
-  Float_t fCutMaxChi2TPCConstrainedVsGlobal; // max chi2 TPC track constrained with vtx vs. global track
-  Int_t fCutMaxChi2TPCConstrainedVsGlobalVertexType; // vertex type for max chi2 TPC track constrained with vtx vs. global track (can be configured to accept several vertex types)
-  Int_t   fCutMaxMissingITSPoints;    // max n. of missing ITS points
+  Float_t fCutMaxChi2PerClusterTPC;   ///< max tpc fit chi2 per tpc cluster
+  Float_t fCutMaxChi2PerClusterITS;   ///< max its fit chi2 per its cluster
+  Float_t fCutMaxChi2TPCConstrainedVsGlobal; ///< max chi2 TPC track constrained with vtx vs. global track
+  Int_t fCutMaxChi2TPCConstrainedVsGlobalVertexType; ///< vertex type for max chi2 TPC track constrained with vtx vs. global track (can be configured to accept several vertex types)
+  Int_t   fCutMaxMissingITSPoints;    ///< max n. of missing ITS points
 
-  Float_t fCutMaxC11;                 // max cov. matrix diag. elements (res. y^2)
-  Float_t fCutMaxC22;                 // max cov. matrix diag. elements (res. z^2)
-  Float_t fCutMaxC33;                 // max cov. matrix diag. elements (res. sin(phi)^2)
-  Float_t fCutMaxC44;                 // max cov. matrix diag. elements (res. tan(theta_dip)^2)
-  Float_t fCutMaxC55;                 // max cov. matrix diag. elements (res. 1/pt^2)
+  Float_t fCutMaxC11;                 ///< max cov. matrix diag. elements (res. y^2)
+  Float_t fCutMaxC22;                 ///< max cov. matrix diag. elements (res. z^2)
+  Float_t fCutMaxC33;                 ///< max cov. matrix diag. elements (res. sin(phi)^2)
+  Float_t fCutMaxC44;                 ///< max cov. matrix diag. elements (res. tan(theta_dip)^2)
+  Float_t fCutMaxC55;                 ///< max cov. matrix diag. elements (res. 1/pt^2)
 
-  Float_t fCutMaxRel1PtUncertainty;   // max relative uncertainty of 1/pt
+  Float_t fCutMaxRel1PtUncertainty;   ///< max relative uncertainty of 1/pt
 
-  Bool_t  fCutAcceptKinkDaughters;    // accepting kink daughters?
-  Bool_t  fCutAcceptSharedTPCClusters;// accepting shared clusters in TPC?
-  Float_t fCutMaxFractionSharedTPCClusters; //Maximum fraction of shared clusters in TPC
-  Bool_t  fCutRequireTPCRefit;        // require TPC refit
-  Bool_t  fCutRequireTPCStandAlone;   // require TPC standalone tracks
-  Bool_t  fCutRequireITSRefit;        // require ITS refit
-  Bool_t  fCutRequireITSPid;          // require ITS pid
-  Bool_t  fCutRequireITSStandAlone;   // require ITS standalone tracks (remove pure SA)
-  Bool_t  fCutRequireITSpureSA;       // require ITS pure standalone tracks (found using all ITS clusters)
+  Bool_t  fCutAcceptKinkDaughters;    ///< accepting kink daughters?
+  Bool_t  fCutAcceptSharedTPCClusters;///< accepting shared clusters in TPC?
+  Float_t fCutMaxFractionSharedTPCClusters; ///< Maximum fraction of shared clusters in TPC
+  Bool_t  fCutRequireTPCRefit;        ///< require TPC refit
+  Bool_t  fCutRequireTPCStandAlone;   ///< require TPC standalone tracks
+  Bool_t  fCutRequireITSRefit;        ///< require ITS refit
+  Bool_t  fCutRequireITSPid;          ///< require ITS pid
+  Bool_t  fCutRequireITSStandAlone;   ///< require ITS standalone tracks (remove pure SA)
+  Bool_t  fCutRequireITSpureSA;       ///< require ITS pure standalone tracks (found using all ITS clusters)
 
 
   // track to vertex cut
-  Float_t fCutNsigmaToVertex;         // max number of estimated sigma from track-to-vertex
-  Bool_t  fCutSigmaToVertexRequired;  // cut track if sigma from track-to-vertex could not be calculated
-  Float_t fCutMaxDCAToVertexXY;       // track-to-vertex cut in max absolute distance in xy-plane
-  Float_t fCutMaxDCAToVertexZ;        // track-to-vertex cut in max absolute distance in z-plane
-  Float_t fCutMinDCAToVertexXY;       // track-to-vertex cut on min absolute distance in xy-plane
-  Float_t fCutMinDCAToVertexZ;        // track-to-vertex cut on min absolute distance in z-plane
+  Float_t fCutNsigmaToVertex;         ///< max number of estimated sigma from track-to-vertex
+  Bool_t  fCutSigmaToVertexRequired;  ///< cut track if sigma from track-to-vertex could not be calculated
+  Float_t fCutMaxDCAToVertexXY;       ///< track-to-vertex cut in max absolute distance in xy-plane
+  Float_t fCutMaxDCAToVertexZ;        ///< track-to-vertex cut in max absolute distance in z-plane
+  Float_t fCutMinDCAToVertexXY;       ///< track-to-vertex cut on min absolute distance in xy-plane
+  Float_t fCutMinDCAToVertexZ;        ///< track-to-vertex cut on min absolute distance in z-plane
   // 
-  TString fCutMaxDCAToVertexXYPtDep;  // pt-dep track-to-vertex cut in max absolute distance in xy-plane
-  TString fCutMaxDCAToVertexZPtDep;   // pt-dep track-to-vertex cut in max absolute distance in z-plane
-  TString fCutMinDCAToVertexXYPtDep;  // pt-dep track-to-vertex cut on min absolute distance in xy-plane
-  TString fCutMinDCAToVertexZPtDep;   // pt-dep track-to-vertex cut on min absolute distance in z-plane
+  TString fCutMaxDCAToVertexXYPtDep;  ///< pt-dep track-to-vertex cut in max absolute distance in xy-plane
+  TString fCutMaxDCAToVertexZPtDep;   ///< pt-dep track-to-vertex cut in max absolute distance in z-plane
+  TString fCutMinDCAToVertexXYPtDep;  ///< pt-dep track-to-vertex cut on min absolute distance in xy-plane
+  TString fCutMinDCAToVertexZPtDep;   ///< pt-dep track-to-vertex cut on min absolute distance in z-plane
 
   // only internal use, set via strings above
-  TFormula *f1CutMaxDCAToVertexXYPtDep;  // pt-dep track-to-vertex cut in max absolute distance in xy-plane
-  TFormula *f1CutMaxDCAToVertexZPtDep;   // pt-dep track-to-vertex cut in max absolute distance in z-plane
-  TFormula *f1CutMinDCAToVertexXYPtDep;  // pt-dep track-to-vertex cut on min absolute distance in xy-plane
-  TFormula *f1CutMinDCAToVertexZPtDep;   // pt-dep track-to-vertex cut on min absolute distance in z-plane
+  TFormula *f1CutMaxDCAToVertexXYPtDep;  ///< pt-dep track-to-vertex cut in max absolute distance in xy-plane
+  TFormula *f1CutMaxDCAToVertexZPtDep;   ///< pt-dep track-to-vertex cut in max absolute distance in z-plane
+  TFormula *f1CutMinDCAToVertexXYPtDep;  ///< pt-dep track-to-vertex cut on min absolute distance in xy-plane
+  TFormula *f1CutMinDCAToVertexZPtDep;   ///< pt-dep track-to-vertex cut on min absolute distance in z-plane
 
-  Bool_t  fCutDCAToVertex2D;          // if true a 2D DCA cut is made. Tracks are accepted if sqrt((DCAXY / fCutMaxDCAToVertexXY)^2 + (DCAZ / fCutMaxDCAToVertexZ)^2) < 1 AND sqrt((DCAXY / fCutMinDCAToVertexXY)^2 + (DCAZ / fCutMinDCAToVertexZ)^2) > 1
+  Bool_t  fCutDCAToVertex2D;          ///< if true a 2D DCA cut is made. Tracks are accepted if sqrt((DCAXY / fCutMaxDCAToVertexXY)^2 + (DCAZ / fCutMaxDCAToVertexZ)^2) < 1 AND sqrt((DCAXY / fCutMinDCAToVertexXY)^2 + (DCAZ / fCutMinDCAToVertexZ)^2) > 1
 
   // esd kinematics cuts
-  Float_t fPMin,   fPMax;             // definition of the range of the P
-  Float_t fPtMin,  fPtMax;            // definition of the range of the Pt
-  Float_t fPxMin,  fPxMax;            // definition of the range of the Px
-  Float_t fPyMin,  fPyMax;            // definition of the range of the Py
-  Float_t fPzMin,  fPzMax;            // definition of the range of the Pz
-  Float_t fEtaMin, fEtaMax;           // definition of the range of the eta
-  Float_t fRapMin, fRapMax;           // definition of the range of the y
+  Float_t fPMin,   fPMax;             ///< definition of the range of the P
+  Float_t fPtMin,  fPtMax;            ///< definition of the range of the Pt
+  Float_t fPxMin,  fPxMax;            ///< definition of the range of the Px
+  Float_t fPyMin,  fPyMax;            ///< definition of the range of the Py
+  Float_t fPzMin,  fPzMax;            ///< definition of the range of the Pz
+  Float_t fEtaMin, fEtaMax;           ///< definition of the range of the eta
+  Float_t fRapMin, fRapMax;           ///< definition of the range of the y
 
-  Bool_t  fCutRequireTOFout;        // require TOF out 
-  Bool_t  fFlagCutTOFdistance;       // cut on TOFdistance? --> yes by default!
-  Float_t fCutTOFdistance;           // value of the cut on TOFdistance
-  static Char_t fgBeamTypeFlag;      // -1 --> no check done on the beam type yet
+  Bool_t  fCutRequireTOFout;        ///< require TOF out
+  Bool_t  fFlagCutTOFdistance;       ///< cut on TOFdistance? --> yes by default!
+  Float_t fCutTOFdistance;           ///< value of the cut on TOFdistance
+  static Char_t fgBeamTypeFlag;      ///< -1 --> no check done on the beam type yet
                                      // 0 --> beam type != "A-A"
                                      // 1  --> beam type == "A-A"
    
   //######################################################
   // diagnostics histograms
-  Bool_t fHistogramsOn;               // histograms on/off
+  Bool_t fHistogramsOn;               ///< histograms on/off
 
+  /// 
   TH1F* fhNClustersITS[2];            //->
+  /// 
   TH1F* fhNClustersTPC[2];            //->
+  /// 
   TH1F* fhNSharedClustersTPC[2];      //->
+  /// 
   TH1F* fhNCrossedRowsTPC[2];         //->
-  TH1F* fhRatioCrossedRowsOverFindableClustersTPC[2]; // ->
+  TH1F* fhRatioCrossedRowsOverFindableClustersTPC[2]; ///< ->
 
+  /// 
   TH1F* fhChi2PerClusterITS[2];       //->
+  /// 
   TH1F* fhChi2PerClusterTPC[2];       //->
+  /// 
   TH1F* fhChi2TPCConstrainedVsGlobal[2];       //->
-  TH1F* fhNClustersForITSPID[2];      //-> number of points in SDD+SSD (ITS PID selection)
-  TH1F* fhNMissingITSPoints[2];       //-> number of missing ITS points
+  /// number of points in SDD+SSD (ITS PID selection)
+  TH1F* fhNClustersForITSPID[2];      //->
+  /// number of missing ITS points
+  TH1F* fhNMissingITSPoints[2];       //->
 
+  /// 
   TH1F* fhC11[2];                     //->
+  /// 
   TH1F* fhC22[2];                     //->
+  /// 
   TH1F* fhC33[2];                     //->
+  /// 
   TH1F* fhC44[2];                     //->
+  /// 
   TH1F* fhC55[2];                     //->
 
-  TH1F* fhRel1PtUncertainty[2];       //-> rel. uncertainty of 1/pt
+  /// rel. uncertainty of 1/pt
+  TH1F* fhRel1PtUncertainty[2];       //->
 
+  /// 
   TH1F* fhDXY[2];                     //->
+  /// 
   TH1F* fhDZ[2];                      //->
-  TH1F* fhDXYDZ[2];                   //-> absolute distance sqrt(dxy**2 + dz**2) to vertex; if 2D cut is set, normalized to given values
+  /// absolute distance sqrt(dxy**2 + dz**2) to vertex; if 2D cut is set, normalized to given values
+  TH1F* fhDXYDZ[2];                   //->
+  /// 
   TH2F* fhDXYvsDZ[2];                 //->
 
+  /// 
   TH1F* fhDXYNormalized[2];           //->
+  /// 
   TH1F* fhDZNormalized[2];            //->
+  /// 
   TH2F* fhDXYvsDZNormalized[2];       //->
+  /// 
   TH1F* fhNSigmaToVertex[2];          //->
 
-  TH1F* fhPt[2];                      //-> pt of esd tracks
-  TH1F* fhEta[2];                     //-> eta of esd tracks
+  /// pt of esd tracks
+  TH1F* fhPt[2];                      //->
+  /// eta of esd tracks
+  TH1F* fhEta[2];                     //->
 
-  TF1*  ffDTheoretical;               //-> theoretical distance to vertex normalized (2d gauss)
+  /// theoretical distance to vertex normalized (2d gauss)
+  TF1*  ffDTheoretical;               //->
 
-  TH1F*  fhCutStatistics;             //-> statistics of what cuts the tracks did not survive
-  TH2F*  fhCutCorrelation;            //-> 2d statistics plot
+  /// statistics of what cuts the tracks did not survive
+  TH1F*  fhCutStatistics;             //->
+  /// 2d statistics plot
+  TH2F*  fhCutCorrelation;            //->
 
-  TH2F* fhTOFdistance[2];            //-> TOF signal distance dx vs dz
+  /// TOF signal distance dx vs dz
+  TH2F* fhTOFdistance[2];            //->
 
   ClassDef(AliESDtrackCuts, 23)
 };

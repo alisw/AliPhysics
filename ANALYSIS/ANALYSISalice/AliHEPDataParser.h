@@ -5,13 +5,19 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//-------------------------------------------------------------------------
-//                      Implementation of   Class AliHEPDataParser
-//
-//  This class is used to save the content of hisograms/graphs in the
-//  HEP data format and viceversa
-//  Author: Michele Floris, CERN
-//-------------------------------------------------------------------------
+/// \class AliHEPDataParser
+/// \brief Implementation of Class AliHEPDataParser
+///
+/// This class is used to save the content of hisograms/graphs in the
+/// HEP data format and viceversa. The HEP data format is not strictly
+/// defined and there are many variants, the class only support a few
+/// of them. More will be added as needed.  The input can be a set of
+/// 2 TH1, TGraphAsymmErrors or TGraphErrors (one for the stat and one
+/// for the syst error). If the second one is a null pointer, only the
+/// stat error is printed. The class can also import hepdata ascii
+/// file (very preliminary)
+///
+/// \author Michele Floris, CERN
 
 #include "TObject.h"
 #include "TString.h"
@@ -51,18 +57,18 @@ protected:
   TString GetFixWidthCol(Double_t number, Int_t width) ;
 
 
-  TH1 * fHistStat; // statistical errors (hist)
-  TH1 * fHistSyst; // systematic errors (hist) 
-  TGraph * fGraphStat; // statistical errors (hist)
-  TGraph * fGraphSyst; // systematic errors (hist)  
-  TObjArray * fHEPDataFileLines;// TClones array of TObjString
-  TString fValueName; // title for the y axis on the ascii file
-  TString fXaxisName; // title for the y axis
-  TString fTitle; // title for the HEP DATA file
-  TString fReaction; // Raction ,e.g. RE : Pb + Pb --> pbar + X
-  TString fEnergy; // Raction ,e.g. sqrts : 2760 GeV
-  TString fRapidityRange; // Rapidity ABS(YRAP) : 0.5'
-  Int_t   fPrecision; // number of significant figures for rounding
+  TH1 * fHistStat; ///< statistical errors (hist)
+  TH1 * fHistSyst; ///< systematic errors (hist)
+  TGraph * fGraphStat; ///< statistical errors (hist)
+  TGraph * fGraphSyst; ///< systematic errors (hist)
+  TObjArray * fHEPDataFileLines;///< TClones array of TObjString
+  TString fValueName; ///< title for the y axis on the ascii file
+  TString fXaxisName; ///< title for the y axis
+  TString fTitle; ///< title for the HEP DATA file
+  TString fReaction; ///< Raction ,e.g. RE : Pb + Pb --> pbar + X
+  TString fEnergy; ///< Raction ,e.g. sqrts : 2760 GeV
+  TString fRapidityRange; ///< Rapidity ABS(YRAP) : 0.5'
+  Int_t   fPrecision; ///< number of significant figures for rounding
 
   ClassDef(AliHEPDataParser, 2);
     

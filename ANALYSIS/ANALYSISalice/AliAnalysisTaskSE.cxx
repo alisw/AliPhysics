@@ -12,8 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/* $Id$ */
  
 #include <TROOT.h>
 #include <TSystem.h>
@@ -59,7 +57,8 @@
 
 ClassImp(AliAnalysisTaskSE)
 
-////////////////////////////////////////////////////////////////////////
+/// \file AliAnalysisTaskSE.cxx
+
 AliAODHeader*    AliAnalysisTaskSE::fgAODHeader         = NULL;
 AliTOFHeader*    AliAnalysisTaskSE::fgTOFHeader         = NULL;
 AliAODVZERO*     AliAnalysisTaskSE::fgAODVZERO          = NULL;
@@ -97,7 +96,8 @@ AliAnalysisTaskSE::AliAnalysisTaskSE():
     fTrackSelectionFactory(0),
     fTrackSelection(0)
 {
-  // Default constructor
+  /// Default constructor
+
 }
 
 AliAnalysisTaskSE::AliAnalysisTaskSE(const char* name):
@@ -118,7 +118,8 @@ AliAnalysisTaskSE::AliAnalysisTaskSE(const char* name):
     fTrackSelectionFactory(0),
     fTrackSelection(0)
 {
-  // Default constructor
+  /// Default constructor
+
     DefineInput (0, TChain::Class());
     DefineOutput(0,  TTree::Class());
 }
@@ -141,7 +142,8 @@ AliAnalysisTaskSE::AliAnalysisTaskSE(const AliAnalysisTaskSE& obj):
     fTrackSelectionFactory(obj.fTrackSelectionFactory),
     fTrackSelection(obj.fTrackSelection)
 {
-// Copy constructor
+/// Copy constructor
+
     fDebug            = obj.fDebug;
     fEntry            = obj.fEntry;
     fInputEvent       = obj.fInputEvent;
@@ -158,7 +160,8 @@ AliAnalysisTaskSE::AliAnalysisTaskSE(const AliAnalysisTaskSE& obj):
 
 AliAnalysisTaskSE& AliAnalysisTaskSE::operator=(const AliAnalysisTaskSE& other)
 {
-// Assignment
+/// Assignment
+
   if(&other == this) return *this;
   AliAnalysisTask::operator=(other);
 
@@ -184,7 +187,8 @@ AliAnalysisTaskSE& AliAnalysisTaskSE::operator=(const AliAnalysisTaskSE& other)
 //______________________________________________________________________________
 void AliAnalysisTaskSE::ConnectInputData(Option_t* /*option*/)
 {
-// Connect the input data
+/// Connect the input data
+
     if (fDebug > 1) printf("AnalysisTaskSE::ConnectInputData() \n");
 
    // Connect input handlers (multi input handler is handled)
@@ -208,9 +212,10 @@ void AliAnalysisTaskSE::ConnectInputData(Option_t* /*option*/)
 
 void AliAnalysisTaskSE::CreateOutputObjects()
 {
-// Create the output container
-//
-//  Default AOD
+/// Create the output container
+///
+///  Default AOD
+
     if (fDebug > 1) printf("AnalysisTaskSE::CreateOutPutData() \n");
 
     AliAODHandler* handler = dynamic_cast<AliAODHandler*> 
@@ -360,9 +365,8 @@ void AliAnalysisTaskSE::CreateOutputObjects()
 
 void AliAnalysisTaskSE::Exec(Option_t* option)
 {
-//
-// Exec analysis of one event
-    
+/// Exec analysis of one event
+
     ConnectMultiHandler();
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (mgr->GetDebugLevel() > 1) {
@@ -798,7 +802,8 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 
 const char* AliAnalysisTaskSE::CurrentFileName()
 {
-// Returns the current file name    
+/// Returns the current file name
+
     if( fInputHandler )
       return fInputHandler->GetTree()->GetCurrentFile()->GetName();
     else if( fMCEvent )
@@ -808,7 +813,8 @@ const char* AliAnalysisTaskSE::CurrentFileName()
 
 void AliAnalysisTaskSE::AddAODBranch(const char* cname, void* addobj, const char *fname)
 {
-    // Add a new branch to the aod tree
+    /// Add a new branch to the aod tree
+
     AliAODHandler* handler = dynamic_cast<AliAODHandler*> 
 	((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
     if (handler) {
@@ -818,8 +824,9 @@ void AliAnalysisTaskSE::AddAODBranch(const char* cname, void* addobj, const char
 
 Bool_t AliAnalysisTaskSE::IsStandardAOD() const
 {
-// Check if the output AOD handler is configured for standard or delta AOD.
-// Users should first check that AODEvent() returns non-null.
+/// Check if the output AOD handler is configured for standard or delta AOD.
+/// Users should first check that AODEvent() returns non-null.
+
     AliAODHandler* handler = dynamic_cast<AliAODHandler*> 
          ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
     if (!handler) {
@@ -836,7 +843,8 @@ Bool_t AliAnalysisTaskSE::Notify()
 
 const AliEventTag *AliAnalysisTaskSE::EventTag() const
 {
-// Returns tag for the current event, if any. The return value should always be checked by the user.
+/// Returns tag for the current event, if any. The return value should always be checked by the user.
+
    if (!fInputHandler) {
       Error("EventTag", "Input handler not yet available. Call this in UserExec");
       return NULL;
@@ -846,8 +854,9 @@ const AliEventTag *AliAnalysisTaskSE::EventTag() const
 
 void AliAnalysisTaskSE::LoadBranches() const
 {
-// Load all branches declared in fBranchNames data member of the parent class.
-// Should be called in UserExec.
+/// Load all branches declared in fBranchNames data member of the parent class.
+/// Should be called in UserExec.
+
   if (!fInputHandler) {
      Error("LoadBranches", "Input handler not available yet. Call this in UserExec");
      return;
@@ -868,9 +877,8 @@ void AliAnalysisTaskSE::LoadBranches() const
 //_________________________________________________________________________________________________
 void AliAnalysisTaskSE::ConnectMultiHandler()
 {
-   //
-   // Connect MultiHandler
-   //
+   /// Connect MultiHandler
+
    fInputHandler = (AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler();
    fMultiInputHandler = dynamic_cast<AliMultiInputEventHandler *>(fInputHandler);
    if (fMultiInputHandler) {
@@ -885,9 +893,8 @@ void AliAnalysisTaskSE::ConnectMultiHandler()
 //_________________________________________________________________________________________________
 void AliAnalysisTaskSE::DisconnectMultiHandler()
 {
-   //
-   // Disconnect MultiHandler
-   //
+   /// Disconnect MultiHandler
+
    if (fMultiInputHandler) fInputHandler = fMultiInputHandler;
 }
 

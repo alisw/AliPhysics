@@ -13,18 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-// Author: Andrei Gheata, 31/05/2006
-
-//==============================================================================
-//   AliAnalysisManager - Manager analysis class. Allows creation of several
-// analysis tasks and data containers storing their input/output. Allows
-// connecting/chaining tasks via shared data containers. Serializes the current
-// event for all tasks depending only on initial input data.
-//==============================================================================
-//
-//==============================================================================
-
 #include "AliAnalysisManager.h"
 
 #include <cerrno>
@@ -122,7 +110,8 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fCPUTime(0),
                     fInitTime(0)
 {
-// Default constructor.
+/// Default constructor.
+
    fgAnalysisManager = this;
    fgCommonFileName  = "AnalysisResults.root";
    if (TClass::IsCallingNew() != TClass::kDummyNew) {
@@ -195,7 +184,8 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                     fCPUTime(0),
                     fInitTime(0)
 {
-// Copy constructor.
+/// Copy constructor.
+
    fTasks      = new TObjArray(*other.fTasks);
    fTopTasks   = new TObjArray(*other.fTopTasks);
    fZombies    = new TObjArray(*other.fZombies);
@@ -211,7 +201,8 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
 //______________________________________________________________________________
 AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& other)
 {
-// Assignment
+/// Assignment
+
    if (&other != this) {
       TNamed::operator=(other);
       fInputEventHandler   = other.fInputEventHandler;
@@ -270,7 +261,8 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
 //______________________________________________________________________________
 AliAnalysisManager::~AliAnalysisManager()
 {
-// Destructor.
+/// Destructor.
+
    if (fTasks) {fTasks->Delete(); delete fTasks;}
    delete fTopTasks;
    delete fZombies;
@@ -296,7 +288,8 @@ AliAnalysisManager::~AliAnalysisManager()
 //______________________________________________________________________________
 void AliAnalysisManager::CreateReadCache()
 {
-// Create cache for reading according fCacheSize and fAsyncReading.
+/// Create cache for reading according fCacheSize and fAsyncReading.
+
    if (!fTree || !fTree->GetCurrentFile()) {
       Error("CreateReadCache","Current tree or tree file not yet defined");
       return;
@@ -329,11 +322,12 @@ void AliAnalysisManager::CreateReadCache()
 //______________________________________________________________________________
 Bool_t AliAnalysisManager::EventLoop(Long64_t nevents)
 {
-// Initialize an event loop where the data producer is the input handler
-// The handler must implement MakeTree creating the tree of events (likely
-// memory resident) and generate the current event in the method BeginEvent.
-// If the tree is memory resident, the handler should never call TTree::Fill
-// method.
+/// Initialize an event loop where the data producer is the input handler
+/// The handler must implement MakeTree creating the tree of events (likely
+/// memory resident) and generate the current event in the method BeginEvent.
+/// If the tree is memory resident, the handler should never call TTree::Fill
+/// method.
+
    cout << "===== RUNNING IN EVENT LOOP MODE: " << GetName() << endl;
    if (!fInputEventHandler) {
      Error("EventLoop", "No input handler: exiting");
@@ -355,7 +349,8 @@ Bool_t AliAnalysisManager::EventLoop(Long64_t nevents)
 //______________________________________________________________________________
 Int_t AliAnalysisManager::GetEntry(Long64_t entry, Int_t getall)
 {
-// Read one entry of the tree or a whole branch.
+/// Read one entry of the tree or a whole branch.
+
    fCurrentEntry = entry;
    if (!fAutoBranchHandling)
      return 123456789;
@@ -370,15 +365,15 @@ Int_t AliAnalysisManager::GetEntry(Long64_t entry, Int_t getall)
 //______________________________________________________________________________
 Int_t AliAnalysisManager::GetRunFromAlienPath(const char *path)
 {
-// Attempt to extract run number from input data path. Works only for paths to
-// ALICE data in AliEn. It extracts the first number between slashes (/) greater
-// than or equal to 18000 that appears after the /LHC.../ directory. This covers
-// also some borderline cases, apart from the conventional ones:
-//
-//  * Simulation: /alice/sim/ <production>/run_no/...
-//  * Data: /alice/data/ year/period/000run_no/... (ESD or AOD)
-//
-// Returns -9999 in case of error, or the run number on success.
+/// Attempt to extract run number from input data path. Works only for paths to
+/// ALICE data in AliEn. It extracts the first number between slashes (/) greater
+/// than or equal to 18000 that appears after the /LHC.../ directory. This covers
+/// also some borderline cases, apart from the conventional ones:
+///
+///  * Simulation: /alice/sim/ <production>/run_no/...
+///  * Data: /alice/data/ year/period/000run_no/... (ESD or AOD)
+///
+/// Returns -9999 in case of error, or the run number on success.
 
    Int_t run;
    TString spath(path);
@@ -437,11 +432,12 @@ Int_t AliAnalysisManager::GetRunFromAlienPath(const char *path)
 //______________________________________________________________________________
 Bool_t AliAnalysisManager::Init(TTree *tree)
 {
-  // The Init() function is called when the selector needs to initialize
-  // a new tree or chain. Typically here the branch addresses of the tree
-  // will be set. It is normaly not necessary to make changes to the
-  // generated code, but the routine can be extended by the user if needed.
-  // Init() will be called many times when running with PROOF.
+  /// The Init() function is called when the selector needs to initialize
+  /// a new tree or chain. Typically here the branch addresses of the tree
+  /// will be set. It is normaly not necessary to make changes to the
+  /// generated code, but the routine can be extended by the user if needed.
+  /// Init() will be called many times when running with PROOF.
+
    Bool_t init = kFALSE;
    if (!tree) return kFALSE; // Should not happen - protected in selector caller
    if (fDebug > 1) {
@@ -520,9 +516,10 @@ Bool_t AliAnalysisManager::Init(TTree *tree)
 //______________________________________________________________________________
 void AliAnalysisManager::SlaveBegin(TTree *tree)
 {
-  // The SlaveBegin() function is called after the Begin() function.
-  // When running with PROOF SlaveBegin() is called on each slave server.
-  // The tree argument is deprecated (on PROOF 0 is passed).
+  /// The SlaveBegin() function is called after the Begin() function.
+  /// When running with PROOF SlaveBegin() is called on each slave server.
+  /// The tree argument is deprecated (on PROOF 0 is passed).
+
    if (fDebug > 1) printf("->AliAnalysisManager::SlaveBegin()\n");
    // Init timer should be already started
    // Apply debug options
@@ -616,11 +613,12 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
 //______________________________________________________________________________
 Bool_t AliAnalysisManager::Notify()
 {
-   // The Notify() function is called when a new file is opened. This
-   // can be either for a new TTree in a TChain or when when a new TTree
-   // is started when using PROOF. It is normaly not necessary to make changes
-   // to the generated code, but the routine can be extended by the
-   // user if needed. The return value is currently not used.
+   /// The Notify() function is called when a new file is opened. This
+   /// can be either for a new TTree in a TChain or when when a new TTree
+   /// is started when using PROOF. It is normaly not necessary to make changes
+   /// to the generated code, but the routine can be extended by the
+   /// user if needed. The return value is currently not used.
+
    fIOTimer->Start(kTRUE); 
    if (!fTree) return kFALSE;
    if (!TObject::TestBit(AliAnalysisManager::kTrueNotify)) return kFALSE;
@@ -674,17 +672,17 @@ Bool_t AliAnalysisManager::Notify()
 //______________________________________________________________________________
 Bool_t AliAnalysisManager::Process(Long64_t)
 {
-  // The Process() function is called for each entry in the tree (or possibly
-  // keyed object in the case of PROOF) to be processed. The entry argument
-  // specifies which entry in the currently loaded tree is to be processed.
-  // It can be passed to either TTree::GetEntry() or TBranch::GetEntry()
-  // to read either all or the required parts of the data. When processing
-  // keyed objects with PROOF, the object is already loaded and is available
-  // via the fObject pointer.
-  //
-  // This function should contain the "body" of the analysis. It can contain
-  // simple or elaborate selection criteria, run algorithms on the data
-  // of the event and typically fill histograms.
+  /// The Process() function is called for each entry in the tree (or possibly
+  /// keyed object in the case of PROOF) to be processed. The entry argument
+  /// specifies which entry in the currently loaded tree is to be processed.
+  /// It can be passed to either TTree::GetEntry() or TBranch::GetEntry()
+  /// to read either all or the required parts of the data. When processing
+  /// keyed objects with PROOF, the object is already loaded and is available
+  /// via the fObject pointer.
+  ///
+  /// This function should contain the "body" of the analysis. It can contain
+  /// simple or elaborate selection criteria, run algorithms on the data
+  /// of the event and typically fill histograms.
 
   // WARNING when a selector is used with a TChain, you must use
   //  the pointer to the current TTree to call GetEntry(entry).
@@ -699,8 +697,9 @@ Bool_t AliAnalysisManager::Process(Long64_t)
 //______________________________________________________________________________
 void AliAnalysisManager::PackOutput(TList *target)
 {
-  // Pack all output data containers in the output list. Called at SlaveTerminate
-  // stage in PROOF case for each slave.
+  /// Pack all output data containers in the output list. Called at SlaveTerminate
+  /// stage in PROOF case for each slave.
+
    if (fDebug > 1) printf("->AliAnalysisManager::PackOutput()\n");
    fIOTimer->Start(kTRUE);
    std::ofstream out;
@@ -959,7 +958,8 @@ void AliAnalysisManager::PackOutput(TList *target)
 //______________________________________________________________________________
 void AliAnalysisManager::ImportWrappers(TList *source)
 {
-// Import data in output containers from wrappers coming in source.
+/// Import data in output containers from wrappers coming in source.
+
    if (fDebug > 1) printf("->AliAnalysisManager::ImportWrappers()\n");
    fIOTimer->Start(kTRUE);
    TIter next(fOutputs);
@@ -1039,7 +1039,8 @@ void AliAnalysisManager::ImportWrappers(TList *source)
 //______________________________________________________________________________
 void AliAnalysisManager::UnpackOutput(TList *source)
 {
-  // Called by AliAnalysisSelector::Terminate only on the client.
+  /// Called by AliAnalysisSelector::Terminate only on the client.
+
    fIOTimer->Start(kTRUE);
    if (fDebug > 1) printf("->AliAnalysisManager::UnpackOutput()\n");
    if (!source) {
@@ -1081,9 +1082,10 @@ void AliAnalysisManager::UnpackOutput(TList *source)
 //______________________________________________________________________________
 void AliAnalysisManager::Terminate()
 {
-  // The Terminate() function is the last function to be called during
-  // a query. It always runs on the client, it can be used to present
-  // the results graphically.
+  /// The Terminate() function is the last function to be called during
+  /// a query. It always runs on the client, it can be used to present
+  /// the results graphically.
+
    if (fDebug > 1) printf("->AliAnalysisManager::Terminate()\n");
    fInitTimer->Start(kTRUE);
    TDirectory *cdir = gDirectory;
@@ -1345,7 +1347,8 @@ void AliAnalysisManager::Terminate()
 //______________________________________________________________________________
 void AliAnalysisManager::ProfileTask(Int_t itop, const char *option) const
 {
-// Profiles the task having the itop index in the list of top (first level) tasks.
+/// Profiles the task having the itop index in the list of top (first level) tasks.
+
    AliAnalysisTask *task = (AliAnalysisTask*)fTopTasks->At(itop);
    if (!task) {
       Error("ProfileTask", "There are only %d top tasks in the manager", fTopTasks->GetEntries());
@@ -1357,8 +1360,9 @@ void AliAnalysisManager::ProfileTask(Int_t itop, const char *option) const
 //______________________________________________________________________________
 void AliAnalysisManager::ProfileTask(const char *name, const char */*option*/) const
 {
-// Profile a managed task after the execution of the analysis in case NSysInfo
-// was used.
+/// Profile a managed task after the execution of the analysis in case NSysInfo
+/// was used.
+
    if (gSystem->AccessPathName("syswatch.root")) {
       Error("ProfileTask", "No file syswatch.root found in the current directory");
       return;
@@ -1422,7 +1426,8 @@ void AliAnalysisManager::ProfileTask(const char *name, const char */*option*/) c
 //______________________________________________________________________________
 void AliAnalysisManager::AddTask(AliAnalysisTask *task)
 {
-// Adds a user task to the global list of tasks.
+/// Adds a user task to the global list of tasks.
+
    if (fInitOK) {
       Error("AddTask", "Cannot add task %s since InitAnalysis was already called", task->GetName());
       return;
@@ -1439,7 +1444,8 @@ void AliAnalysisManager::AddTask(AliAnalysisTask *task)
 //______________________________________________________________________________
 AliAnalysisTask *AliAnalysisManager::GetTask(const char *name) const
 {
-// Retreive task by name.
+/// Retreive task by name.
+
    if (!fTasks) return NULL;
    return (AliAnalysisTask*)fTasks->FindObject(name);
 }
@@ -1447,7 +1453,8 @@ AliAnalysisTask *AliAnalysisManager::GetTask(const char *name) const
 //______________________________________________________________________________
 Int_t AliAnalysisManager::GetTaskIndex(const AliAnalysisTask *task) const
 {
-// Returns task inded in the manager's list, -1 if not registered.
+/// Returns task inded in the manager's list, -1 if not registered.
+
    if (!fTasks) return -1;
    return fTasks->IndexOf(task);
 }  
@@ -1456,12 +1463,13 @@ Int_t AliAnalysisManager::GetTaskIndex(const AliAnalysisTask *task) const
 AliAnalysisDataContainer *AliAnalysisManager::CreateContainer(const char *name, 
                                 TClass *datatype, EAliAnalysisContType type, const char *filename)
 {
-// Create a data container of a certain type. Types can be:
-//   kExchangeContainer  = 0, used to exchange data between tasks
-//   kInputContainer   = 1, used to store input data
-//   kOutputContainer  = 2, used for writing result to a file
-// filename: composed by file#folder (e.g. results.root#INCLUSIVE) - will write
-// the output object to a folder inside the output file
+/// Create a data container of a certain type. Types can be:
+///   kExchangeContainer  = 0, used to exchange data between tasks
+///   kInputContainer   = 1, used to store input data
+///   kOutputContainer  = 2, used for writing result to a file
+/// filename: composed by file#folder (e.g. results.root#INCLUSIVE) - will write
+/// the output object to a folder inside the output file
+
    if (fContainers->FindObject(name)) {
       Error("CreateContainer","A container named %s already defined !",name);
       return NULL;
@@ -1499,7 +1507,8 @@ AliAnalysisDataContainer *AliAnalysisManager::CreateContainer(const char *name,
 Bool_t AliAnalysisManager::ConnectInput(AliAnalysisTask *task, Int_t islot,
                                         AliAnalysisDataContainer *cont)
 {
-// Connect input of an existing task to a data container.
+/// Connect input of an existing task to a data container.
+
    if (!task) {
       Error("ConnectInput", "Task pointer is NULL");
       return kFALSE;
@@ -1516,7 +1525,8 @@ Bool_t AliAnalysisManager::ConnectInput(AliAnalysisTask *task, Int_t islot,
 Bool_t AliAnalysisManager::ConnectOutput(AliAnalysisTask *task, Int_t islot,
                                         AliAnalysisDataContainer *cont)
 {
-// Connect output of an existing task to a data container.
+/// Connect output of an existing task to a data container.
+
    if (!task) {
       Error("ConnectOutput", "Task pointer is NULL");
       return kFALSE;
@@ -1532,7 +1542,8 @@ Bool_t AliAnalysisManager::ConnectOutput(AliAnalysisTask *task, Int_t islot,
 //______________________________________________________________________________
 void AliAnalysisManager::CleanContainers()
 {
-// Clean data from all containers that have already finished all client tasks.
+/// Clean data from all containers that have already finished all client tasks.
+
    TIter next(fContainers);
    AliAnalysisDataContainer *cont;
    while ((cont=(AliAnalysisDataContainer *)next())) {
@@ -1545,9 +1556,10 @@ void AliAnalysisManager::CleanContainers()
 //______________________________________________________________________________
 Bool_t AliAnalysisManager::InitAnalysis()
 {
-// Initialization of analysis chain of tasks. Should be called after all tasks
-// and data containers are properly connected
-   // Reset flag and remove valid_outputs file if exists
+/// Initialization of analysis chain of tasks. Should be called after all tasks
+/// and data containers are properly connected
+/// Reset flag and remove valid_outputs file if exists
+
    if (fInitOK) return kTRUE;
    if (!gSystem->AccessPathName("outputs_valid"))
       gSystem->Unlink("outputs_valid");
@@ -1671,7 +1683,8 @@ Bool_t AliAnalysisManager::InitAnalysis()
 //______________________________________________________________________________
 void AliAnalysisManager::AddBranches(const char *branches)
 {
-// Add branches to the existing fRequestedBranches.
+/// Add branches to the existing fRequestedBranches.
+
    TString br(branches);
    TObjArray *arr = br.Tokenize(",");
    TIter next(arr);
@@ -1688,7 +1701,8 @@ void AliAnalysisManager::AddBranches(const char *branches)
 //______________________________________________________________________________
 void AliAnalysisManager::CheckBranches(Bool_t load)
 {
-// The method checks the input branches to be loaded during the analysis.
+/// The method checks the input branches to be loaded during the analysis.
+
    if (fAutoBranchHandling || fRequestedBranches.IsNull() || !fTree) return;   
    TObjArray *arr = fRequestedBranches.Tokenize(",");
    TIter next(arr);
@@ -1713,7 +1727,8 @@ void AliAnalysisManager::CheckBranches(Bool_t load)
 //______________________________________________________________________________
 Bool_t AliAnalysisManager::CheckTasks() const
 {
-// Check consistency of tasks.
+/// Check consistency of tasks.
+
    Int_t ntasks = fTasks->GetEntries();
    if (!ntasks) {
       Error("CheckTasks", "No tasks connected to the manager. This may be due to forgetting to compile the task or to load their library.");
@@ -1737,7 +1752,8 @@ Bool_t AliAnalysisManager::CheckTasks() const
 //______________________________________________________________________________
 void AliAnalysisManager::PrintStatus(Option_t *option) const
 {
-// Print task hierarchy.
+/// Print task hierarchy.
+
    if (!fInitOK) {
       Info("PrintStatus", "Analysis manager %s not initialized : call InitAnalysis() first", GetName());
       return;
@@ -1779,7 +1795,8 @@ void AliAnalysisManager::PrintStatus(Option_t *option) const
 //______________________________________________________________________________
 void AliAnalysisManager::ResetAnalysis()
 {
-// Reset all execution flags and clean containers.
+/// Reset all execution flags and clean containers.
+
    TIter nextTask(fTasks);
    AliAnalysisTask *task;
    while ((task=(AliAnalysisTask*)nextTask())) {
@@ -1792,7 +1809,8 @@ void AliAnalysisManager::ResetAnalysis()
 //______________________________________________________________________________
 void AliAnalysisManager::RunLocalInit()
 {
-// Run LocalInit method for all tasks.
+/// Run LocalInit method for all tasks.
+
    TDirectory *cdir = gDirectory;
    if (IsTrainInitialized()) return;
    TIter nextTask(fTasks);
@@ -1808,7 +1826,8 @@ void AliAnalysisManager::RunLocalInit()
 //______________________________________________________________________________
 void AliAnalysisManager::InputFileFromTree(TTree * const tree, TString &fname)
 {
-// Retrieves name of the file from tree
+/// Retrieves name of the file from tree
+
    fname = "";
    if (!tree) return;
    TFile *file = tree->GetCurrentFile();
@@ -1827,7 +1846,8 @@ void AliAnalysisManager::InputFileFromTree(TTree * const tree, TString &fname)
 //______________________________________________________________________________
 Long64_t AliAnalysisManager::StartAnalysis(const char *type, Long64_t nentries, Long64_t firstentry)
 {
-// Start analysis having a grid handler.
+/// Start analysis having a grid handler.
+
    if (!fGridHandler) {
       Error("StartAnalysis", "Cannot start analysis providing just the analysis type without a grid handler.");
       Info("===", "Add an AliAnalysisAlien object as plugin for this manager and configure it.");
@@ -1840,8 +1860,9 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, Long64_t nentries, 
 //______________________________________________________________________________
 Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree, Long64_t nentries, Long64_t firstentry)
 {
-// Start analysis for this manager. Analysis task can be: LOCAL, PROOF, GRID or
-// MIX. Process nentries starting from firstentry
+/// Start analysis for this manager. Analysis task can be: LOCAL, PROOF, GRID or
+/// MIX. Process nentries starting from firstentry
+
    Long64_t retv = 0;
    // Backup current directory and make sure gDirectory points to gROOT
    TDirectory *cdir = gDirectory;
@@ -2075,8 +2096,9 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
 //______________________________________________________________________________
 Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset, Long64_t nentries, Long64_t firstentry)
 {
-// Start analysis for this manager on a given dataset. Analysis task can be: 
-// LOCAL, PROOF or GRID. Process nentries starting from firstentry.
+/// Start analysis for this manager on a given dataset. Analysis task can be:
+/// LOCAL, PROOF or GRID. Process nentries starting from firstentry.
+
    if (!fInitOK) {
       Error("StartAnalysis","Analysis manager was not initialized !");
       return -1;
@@ -2138,9 +2160,9 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset
 //______________________________________________________________________________
 Long64_t AliAnalysisManager::StartAnalysis(const char *type, TFileCollection* dataset, Long64_t nentries, Long64_t firstentry)
 {
-  // Start analysis for this manager on a given dataset. Analysis task can be:
-  // LOCAL, PROOF or GRID. Process nentries starting from firstentry.
-  
+  /// Start analysis for this manager on a given dataset. Analysis task can be:
+  /// LOCAL, PROOF or GRID. Process nentries starting from firstentry.
+
   AliInfo("Using the new direct TFileCollection interface !!!!");
   
   if (!fInitOK) {
@@ -2193,10 +2215,11 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TFileCollection* da
 //______________________________________________________________________________
 TFile *AliAnalysisManager::OpenFile(AliAnalysisDataContainer *cont, const char *option, Bool_t ignoreProof)
 {
-// Opens according the option the file specified by cont->GetFileName() and changes
-// current directory to cont->GetFolderName(). If the file was already opened, it
-// checks if the option UPDATE was preserved. File open via TProofOutputFile can
-// be optionally ignored.
+/// Opens according the option the file specified by cont->GetFileName() and changes
+/// current directory to cont->GetFolderName(). If the file was already opened, it
+/// checks if the option UPDATE was preserved. File open via TProofOutputFile can
+/// be optionally ignored.
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   TString filename = cont->GetFileName();
   TFile *f = NULL;
@@ -2240,7 +2263,8 @@ TFile *AliAnalysisManager::OpenFile(AliAnalysisDataContainer *cont, const char *
 //______________________________________________________________________________
 TFile *AliAnalysisManager::OpenProofFile(AliAnalysisDataContainer *cont, const char *option, const char *extaod)
 {
-// Opens a special output file used in PROOF.
+/// Opens a special output file used in PROOF.
+
   TString line;
   TString filename = cont->GetFileName();
   if (cont == fCommonOutput) {
@@ -2346,7 +2370,8 @@ TFile *AliAnalysisManager::OpenProofFile(AliAnalysisDataContainer *cont, const c
 //______________________________________________________________________________
 void AliAnalysisManager::ExecAnalysis(Option_t *option)
 {
-// Execute analysis.
+/// Execute analysis.
+
    static Long64_t nentries = 0;
    static TTree *lastTree = 0;
    static TStopwatch *timer = new TStopwatch();
@@ -2494,7 +2519,8 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
 //______________________________________________________________________________
 Bool_t AliAnalysisManager::IsPipe(std::ostream &out)
 {
-// Check if the stdout is connected to a pipe (C.Holm)
+/// Check if the stdout is connected to a pipe (C.Holm)
+
   Bool_t ispipe = kFALSE;
   out.seekp(0, std::ios_base::cur);
   if (out.fail()) {
@@ -2507,7 +2533,8 @@ Bool_t AliAnalysisManager::IsPipe(std::ostream &out)
 //______________________________________________________________________________
 void AliAnalysisManager::SetInputEventHandler(AliVEventHandler* const handler)
 {
-// Set the input event handler and create a container for it.
+/// Set the input event handler and create a container for it.
+
    Changed();
    fInputEventHandler   = handler;
    if (!fCommonInput) fCommonInput = CreateContainer("cAUTO_INPUT", TChain::Class(), AliAnalysisManager::kInputContainer);
@@ -2516,7 +2543,8 @@ void AliAnalysisManager::SetInputEventHandler(AliVEventHandler* const handler)
 //______________________________________________________________________________
 void AliAnalysisManager::SetOutputEventHandler(AliVEventHandler* const handler)
 {
-// Set the input event handler and create a container for it.
+/// Set the input event handler and create a container for it.
+
    Changed();
    fOutputEventHandler   = handler;
    if (!fCommonOutput) fCommonOutput = CreateContainer("cAUTO_OUTPUT", TTree::Class(), AliAnalysisManager::kOutputContainer, "default");
@@ -2526,7 +2554,8 @@ void AliAnalysisManager::SetOutputEventHandler(AliVEventHandler* const handler)
 //______________________________________________________________________________
 void AliAnalysisManager::SetDebugLevel(UInt_t level)
 {
-// Set verbosity of the analysis manager. If the progress bar is used, the call is ignored
+/// Set verbosity of the analysis manager. If the progress bar is used, the call is ignored
+
    if (TObject::TestBit(kUseProgressBar)) {
       Info("SetDebugLevel","Ignored. Disable the progress bar first.");
       return;
@@ -2537,7 +2566,8 @@ void AliAnalysisManager::SetDebugLevel(UInt_t level)
 //______________________________________________________________________________
 void AliAnalysisManager::SetUseProgressBar(Bool_t flag, Int_t freq)
 {
-// Enable a text mode progress bar. Resets debug level to 0.
+/// Enable a text mode progress bar. Resets debug level to 0.
+
    Info("SetUseProgressBar", "Progress bar enabled, updated every %d events.\n  ### NOTE: Debug level reset to 0 ###", freq);
    TObject::SetBit(kUseProgressBar,flag);
    fPBUpdateFreq = freq;
@@ -2547,10 +2577,11 @@ void AliAnalysisManager::SetUseProgressBar(Bool_t flag, Int_t freq)
 //______________________________________________________________________________
 void AliAnalysisManager::RegisterExtraFile(const char *fname)
 {
-// This method is used externally to register output files which are not
-// connected to any output container, so that the manager can properly register,
-// retrieve or merge them when running in distributed mode. The file names are
-// separated by blancs. The method has to be called in MyAnalysisTask::LocalInit().
+/// This method is used externally to register output files which are not
+/// connected to any output container, so that the manager can properly register,
+/// retrieve or merge them when running in distributed mode. The file names are
+/// separated by blancs. The method has to be called in MyAnalysisTask::LocalInit().
+
    if (fExtraFiles.Contains(fname)) return;
    if (fExtraFiles.Length()) fExtraFiles += " ";
    fExtraFiles += fname;
@@ -2559,7 +2590,8 @@ void AliAnalysisManager::RegisterExtraFile(const char *fname)
 //______________________________________________________________________________
 Bool_t AliAnalysisManager::GetFileFromWrapper(const char *filename, const TList *source)
 {
-// Copy a file from the location specified ina the wrapper with the same name from the source list.
+/// Copy a file from the location specified ina the wrapper with the same name from the source list.
+
    char fullPath[512];
    char chUrl[512];
    char tmp[1024];
@@ -2599,7 +2631,8 @@ Bool_t AliAnalysisManager::GetFileFromWrapper(const char *filename, const TList 
 //______________________________________________________________________________
 void AliAnalysisManager::GetAnalysisTypeString(TString &type) const
 {
-// Fill analysis type in the provided string.
+/// Fill analysis type in the provided string.
+
    switch (fMode) {
       case kLocalAnalysis:
          type = "local";
@@ -2618,7 +2651,8 @@ void AliAnalysisManager::GetAnalysisTypeString(TString &type) const
 //______________________________________________________________________________
 Bool_t AliAnalysisManager::ValidateOutputFiles() const
 {
-// Validate all output files.
+/// Validate all output files.
+
    TIter next(fOutputs);
    AliAnalysisDataContainer *output;
    TDirectory *cdir = gDirectory;
@@ -2658,7 +2692,8 @@ Bool_t AliAnalysisManager::ValidateOutputFiles() const
 //______________________________________________________________________________
 void AliAnalysisManager::ProgressBar(const char *opname, Long64_t current, Long64_t size, TStopwatch * const watch, Bool_t last, Bool_t refresh)
 {
-// Implements a nice text mode progress bar.
+/// Implements a nice text mode progress bar.
+
    static Long64_t icount = 0;
    static TString oname;
    static TString nname;
@@ -2756,7 +2791,8 @@ void AliAnalysisManager::ProgressBar(const char *opname, Long64_t current, Long6
 //______________________________________________________________________________
 void AliAnalysisManager::DoLoadBranch(const char *name) 
 {
-  // Get tree and load branch if needed.
+  /// Get tree and load branch if needed.
+
   static Long64_t crtEntry = -100;
 
   if (fAutoBranchHandling || !fTree)
@@ -2790,7 +2826,8 @@ void AliAnalysisManager::DoLoadBranch(const char *name)
 //______________________________________________________________________________
 void AliAnalysisManager::AddStatisticsTask(UInt_t offlineMask)
 {
-// Add the statistics task to the manager.
+/// Add the statistics task to the manager.
+
   if (fStatistics) {
      Info("AddStatisticsTask", "Already added");
      return;
@@ -2803,7 +2840,8 @@ void AliAnalysisManager::AddStatisticsTask(UInt_t offlineMask)
 //______________________________________________________________________________
 void AliAnalysisManager::CountEvent(Int_t ninput, Int_t nprocessed, Int_t nfailed, Int_t naccepted)
 {
-// Bookkeep current event;
+/// Bookkeep current event;
+
    if (!fStatistics) return;
    fStatistics->AddInput(ninput);
    fStatistics->AddProcessed(nprocessed);
@@ -2814,9 +2852,10 @@ void AliAnalysisManager::CountEvent(Int_t ninput, Int_t nprocessed, Int_t nfaile
 //______________________________________________________________________________
 void AliAnalysisManager::AddStatisticsMsg(const char *line)
 {
-// Add a line in the statistics message. If available, the statistics message is written
-// at the end of the SlaveTerminate phase on workers AND at the end of Terminate
-// on the client.
+/// Add a line in the statistics message. If available, the statistics message is written
+/// at the end of the SlaveTerminate phase on workers AND at the end of Terminate
+/// on the client.
+
    if (!strlen(line)) return;
    if (!fStatisticsMsg.IsNull()) fStatisticsMsg += "\n";
    fStatisticsMsg += line;
@@ -2825,7 +2864,8 @@ void AliAnalysisManager::AddStatisticsMsg(const char *line)
 //______________________________________________________________________________
 void AliAnalysisManager::WriteStatisticsMsg(Int_t)
 {
-// If fStatistics is present, write the file in the format ninput_nprocessed_nfailed_naccepted.stat
+/// If fStatistics is present, write the file in the format ninput_nprocessed_nfailed_naccepted.stat
+
    static Bool_t done = kFALSE;
    if (done) return;
    done = kTRUE;
@@ -2845,8 +2885,8 @@ void AliAnalysisManager::WriteStatisticsMsg(Int_t)
 //______________________________________________________________________________
 const char* AliAnalysisManager::GetOADBPath()
 {
-// returns the path of the OADB
-// this static function just depends on environment variables
+/// returns the path of the OADB
+/// this static function just depends on environment variables
 
    static TString oadbPath;
 
@@ -2863,8 +2903,9 @@ const char* AliAnalysisManager::GetOADBPath()
 //______________________________________________________________________________
 void AliAnalysisManager::SetGlobalStr(const char *key, const char *value)
 {
-// Define a custom string variable mapped to a global unique name. The variable
-// can be then retrieved by a given analysis macro via GetGlobalStr(key).
+/// Define a custom string variable mapped to a global unique name. The variable
+/// can be then retrieved by a given analysis macro via GetGlobalStr(key).
+
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
       AliErrorClass("No analysis manager defined");
@@ -2882,7 +2923,8 @@ void AliAnalysisManager::SetGlobalStr(const char *key, const char *value)
 //______________________________________________________________________________
 const char *AliAnalysisManager::GetGlobalStr(const char *key, Bool_t &valid)
 {
-// Static method to retrieve a global variable defined via SetGlobalStr.
+/// Static method to retrieve a global variable defined via SetGlobalStr.
+
    valid = kFALSE;
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) return 0;
@@ -2895,8 +2937,9 @@ const char *AliAnalysisManager::GetGlobalStr(const char *key, Bool_t &valid)
 //______________________________________________________________________________
 void AliAnalysisManager::SetGlobalInt(const char *key, Int_t value)
 {
-// Define a custom integer variable mapped to a global unique name. The variable
-// can be then retrieved by a given analysis macro via GetGlobalInt(key).
+/// Define a custom integer variable mapped to a global unique name. The variable
+/// can be then retrieved by a given analysis macro via GetGlobalInt(key).
+
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
       AliErrorClass("No analysis manager defined");
@@ -2914,7 +2957,8 @@ void AliAnalysisManager::SetGlobalInt(const char *key, Int_t value)
 //______________________________________________________________________________
 Int_t AliAnalysisManager::GetGlobalInt(const char *key, Bool_t &valid)
 {
-// Static method to retrieve a global variable defined via SetGlobalInt.
+/// Static method to retrieve a global variable defined via SetGlobalInt.
+
    valid = kFALSE;
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) return 0;
@@ -2928,8 +2972,9 @@ Int_t AliAnalysisManager::GetGlobalInt(const char *key, Bool_t &valid)
 //______________________________________________________________________________
 void AliAnalysisManager::SetGlobalDbl(const char *key, Double_t value)
 {
-// Define a custom double precision variable mapped to a global unique name. The variable
-// can be then retrieved by a given analysis macro via GetGlobalInt(key).
+/// Define a custom double precision variable mapped to a global unique name. The variable
+/// can be then retrieved by a given analysis macro via GetGlobalInt(key).
+
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
       AliErrorClass("No analysis manager defined");
@@ -2947,7 +2992,8 @@ void AliAnalysisManager::SetGlobalDbl(const char *key, Double_t value)
 //______________________________________________________________________________
 Double_t AliAnalysisManager::GetGlobalDbl(const char *key, Bool_t &valid)
 {
-// Static method to retrieve a global variable defined via SetGlobalDbl.
+/// Static method to retrieve a global variable defined via SetGlobalDbl.
+
    valid = kFALSE;
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) return 0;
@@ -2961,7 +3007,7 @@ Double_t AliAnalysisManager::GetGlobalDbl(const char *key, Bool_t &valid)
 //______________________________________________________________________________
 void AliAnalysisManager::AddClassDebug(const char *className, Int_t debugLevel)
 {
-// Sets Class debug level
+/// Sets Class debug level
 
    if (!fDebugOptions) {
       fDebugOptions = new TObjArray();
@@ -2987,7 +3033,7 @@ void AliAnalysisManager::AddClassDebug(const char *className, Int_t debugLevel)
 //______________________________________________________________________________
 void AliAnalysisManager::ApplyDebugOptions()
 {
-// Apply debug options
+/// Apply debug options
 
    if (!fDebugOptions) return;
    
@@ -3004,15 +3050,17 @@ void AliAnalysisManager::ApplyDebugOptions()
 //______________________________________________________________________________
 Bool_t AliAnalysisManager::IsMacroLoaded(const char * filename)
 {
-// Check if a macro was loaded.
+/// Check if a macro was loaded.
+
    return fgMacroNames.Contains(filename);
 }
    
 //______________________________________________________________________________
 Int_t AliAnalysisManager::LoadMacro(const char *filename, Int_t *error, Bool_t check)
 {
-// Redirection of gROOT->LoadMacro which makes sure the same macro is not loaded 
-// twice
+/// Redirection of gROOT->LoadMacro which makes sure the same macro is not loaded
+/// twice
+
    TString macroName = gSystem->BaseName(filename);
    // Strip appended +, ++, +g, +O
    Int_t index = macroName.Index("+");
@@ -3035,8 +3083,9 @@ Int_t AliAnalysisManager::LoadMacro(const char *filename, Int_t *error, Bool_t c
 //______________________________________________________________________________
 void AliAnalysisManager::Lock()
 {
-// Security lock. This is to detect NORMAL user errors and not really to
-// protect against intentional hacks.
+/// Security lock. This is to detect NORMAL user errors and not really to
+/// protect against intentional hacks.
+
    if (fLocked) return;
    fLocked = kTRUE;
    if (fInputEventHandler)  fInputEventHandler->Lock();
@@ -3048,7 +3097,8 @@ void AliAnalysisManager::Lock()
 //______________________________________________________________________________
 void AliAnalysisManager::UnLock()
 {
-// Verbose unlocking. Hackers will be punished ;-) ... 
+/// Verbose unlocking. Hackers will be punished ;-) ...
+
    if (!fLocked) return;
    fLocked = kFALSE;
    if (fInputEventHandler)  fInputEventHandler->UnLock();
@@ -3060,8 +3110,9 @@ void AliAnalysisManager::UnLock()
 //______________________________________________________________________________
 void AliAnalysisManager::Changed()
 {
-// All critical setters pass through the Changed method that throws an exception 
-// in case the lock was set.
+/// All critical setters pass through the Changed method that throws an exception
+/// in case the lock was set.
+
    if (fLocked) Fatal("Changed","Critical setter called in locked mode");
 }
 
@@ -3069,9 +3120,9 @@ void AliAnalysisManager::Changed()
 void AliAnalysisManager::InitInputData(AliVEvent* esdEvent, AliVfriendEvent* esdFriend)
 {
 
-// Method to propagte to all the connected tasks the HLT event.
-// This method expects that the input hanlder is of type HLT, should 
-// not be used otherwise
+/// Method to propagte to all the connected tasks the HLT event.
+/// This method expects that the input hanlder is of type HLT, should
+/// not be used otherwise
 
   if (fInputEventHandler)  {
     TString classInputHandler = fInputEventHandler->ClassName();

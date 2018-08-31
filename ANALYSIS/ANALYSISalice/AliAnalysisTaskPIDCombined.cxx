@@ -13,13 +13,6 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-//                        Basic Analysis Task                            //
-//                      for PID        Analysis                          //
-//                                                                       //
-///////////////////////////////////////////////////////////////////////////
-
 #include <TChain.h>
 #include <TH1D.h>
 #include <TH2D.h>
@@ -95,9 +88,8 @@ AliAnalysisTaskPIDCombined::AliAnalysisTaskPIDCombined(const char *name) :
   fDeDx(NULL),
   fDeDxTuned(NULL)
 {
-  //
-  // Constructor
-  //
+  /// Constructor
+
   DefineInput(0,TChain::Class());
   DefineOutput(1, TList::Class());
 }
@@ -105,9 +97,7 @@ AliAnalysisTaskPIDCombined::AliAnalysisTaskPIDCombined(const char *name) :
 //_________________________________________________________________________________
 void AliAnalysisTaskPIDCombined::UserCreateOutputObjects()
 {
-  //
-  // Initialise the framework objects
-  //
+  /// Initialise the framework objects
 
 
   // ------- track cuts
@@ -239,9 +229,8 @@ void AliAnalysisTaskPIDCombined::UserCreateOutputObjects()
 //_________________________________________________________________________________
 void AliAnalysisTaskPIDCombined::UserExec(Option_t *)
 {
-  //
-  // Main loop. Called for every event
-  //
+  /// Main loop. Called for every event
+
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse=inputHandler->GetPIDResponse();
@@ -323,18 +312,16 @@ void AliAnalysisTaskPIDCombined::UserExec(Option_t *)
 //_________________________________________________________________________________
 void AliAnalysisTaskPIDCombined::FillHistogram(const char* name, Double_t x, Double_t weight)
 {
-  //
-  // Fill 1D histogram by name
-  //
+  /// Fill 1D histogram by name
+
   ((TH1*)fHistList.FindObject(name))->Fill(x,weight);
 }
 
 //_________________________________________________________________________________
 void AliAnalysisTaskPIDCombined::FillHistogram(const char* name, Double_t x, Double_t y, Double_t weight)
 {
-  //
-  // Fill 2D histogram by name
-  //
+  /// Fill 2D histogram by name
+
   ((TH2*)fHistList.FindObject(name))->Fill(x,y,weight);
 }
 
@@ -342,9 +329,8 @@ void AliAnalysisTaskPIDCombined::FillHistogram(const char* name, Double_t x, Dou
 //_________________________________________________________________________________
 Int_t AliAnalysisTaskPIDCombined::GetMomBin(Float_t mom)
 {
-  //
-  // Given momentum return histogram to be filled
-  //
+  /// Given momentum return histogram to be filled
+
   if (mom>0. && mom < 0.5) return 0;
   if (mom>=0.5 && mom < 0.7) return 1;
   if (mom>=0.7 && mom < 1.0) return 2;

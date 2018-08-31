@@ -13,25 +13,18 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-//
-// This class applies the ITSsa cuts at the AOD level.
-// Needed for MuonCalo pass where the FilterBit information was not properly saved.
-// It contains also some quality cuts which can be modifed by user.
-//
-// Author: Igor Lakomov <Igor.Lakomov@cern.ch>
-//
-
 #include "AliAODITSsaTrackCuts.h"
 
 AliAODITSsaTrackCuts::AliAODITSsaTrackCuts() : fMinNClustersITS(0), fMaxChi2PerClustersITS(0), fdcaxycut(0), fdcazcut(0), fPrimaryVertex(0)
 {
-//constructor
+/// constructor
+
 }
 
 AliAODITSsaTrackCuts::~AliAODITSsaTrackCuts()
 {
-//destructor
+/// destructor
+
   delete fdcaxycut;
   delete fdcazcut;
   // Do not delete, not owner  delete fPrimaryVertex;

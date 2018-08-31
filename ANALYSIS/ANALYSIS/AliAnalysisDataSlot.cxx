@@ -13,32 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-// Author: Andrei Gheata, 31/05/2006
-
-//==============================================================================
-//   AliAnalysysDataSlot - Class representing a data slot of an analysis task.
-//      An analysis slot enforces a certain data type required by the Exec()
-//      method of the analysis task. The slot must be connected to a data 
-//      container with data of the same type.
-//
-// The class should not be directly created by users - it is created by
-// each AliAnalysisTask when defining its input/output slots using:
-//
-//    AliAnalysisTask::SetInput(Int_t index, TClass *type);
-//    AliAnalysisTask::SetOutput(TClass *type);
-//
-// An existing data contaner (AliAnalysisDataContainer) can be connected to the
-// input/output slots of an analysis task using:
-//
-//   AliAnalysisModule::ConnectInput(AliAnalysisTask *task, Int_t islot,
-//                                   AliAnalysisDataContainer *cont)
-//   AliAnalysisModule::ConnectOutput(AliAnalysisTask *task,
-//                                    AliAnalysisDataContainer *cont)
-// To connect a slot to a data container, the data types declared by both must
-// match.
-//==============================================================================
-
 #include <Riostream.h>
 #include <TROOT.h>
 #include <TClass.h>

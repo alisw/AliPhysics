@@ -4,12 +4,10 @@
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/*$Id$*/
-
-//*************************************************************************
-// Class AliAnalysisTaskAddObject
-// Test Task to add an object to the new ESDfriends file 
-//*************************************************************************
+/// \class AliAnalysisTaskAddObject
+/// \brief Class AliAnalysisTaskAddObject
+///
+/// Test Task to add an object to the new ESDfriends file
 
 class TH1D;
 
@@ -37,10 +35,10 @@ class AliAnalysisTaskAddObject : public AliAnalysisTask
 	AliAnalysisTaskAddObject(const AliAnalysisTaskAddObject &);
 	AliAnalysisTaskAddObject& operator=(const AliAnalysisTaskAddObject&);
 	
-	AliESDEvent  *fESDInput;        // ESD input object
-	AliESDfriend *fESDfriendInput;  // ESD input friend object
-	AliESDInputHandler *fESDhandler;     // Pointer to ESD input handler
-	TH1D* fh; // histogram
+	AliESDEvent  *fESDInput;        ///< ESD input object
+	AliESDfriend *fESDfriendInput;  ///< ESD input friend object
+	AliESDInputHandler *fESDhandler;     ///< Pointer to ESD input handler
+	TH1D* fh; ///< histogram
 	
  ClassDef(AliAnalysisTaskAddObject,1); // AliAnalysisTask to create an extra object
 };

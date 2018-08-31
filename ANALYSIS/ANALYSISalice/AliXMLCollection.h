@@ -3,15 +3,12 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-
-/* $Id$ */
-
-//-------------------------------------------------------------------------
-//                          Class AliXMLCollection
-//   This is the class that creates XML collections after querying the tags
-//
-//    Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
-//-------------------------------------------------------------------------
+/// \class AliXMLCollection
+/// \brief Class AliXMLCollection
+///
+/// This is the class that creates XML collections after querying the tags
+///
+/// \author Panos Christakoglou, UOA-CERN, <Panos.Christakoglou@cern.ch>
 
 #include <TString.h>
 #include <TGridCollection.h>
@@ -63,20 +60,20 @@ class AliXMLCollection : public TGridCollection {
  protected:
   virtual void ParseXML();
 
-  TString  fXmlFile;        // collection XML file
-  TList   *fEventList;      // list with event file maps
-  TIter   *fEventListIter;  // event file list iterator
-  TMap    *fCurrent;        // current event file map
-  TString  fCollectionName;   //the name of the xml file
-  ofstream fout; // The output stream
+  TString  fXmlFile;        ///< collection XML file
+  TList   *fEventList;      ///< list with event file maps
+  TIter   *fEventListIter;  ///< event file list iterator
+  TMap    *fCurrent;        ///< current event file map
+  TString  fCollectionName;   ///< the name of the xml file
+  ofstream fout; ///< The output stream
 
   // List summary information
-  Int_t    fTotalEvents;    // Total no. of events in collection
-  Int_t    fAcceptedEvents; // No. of accepted events in collection
-  Int_t    fRejectedRun;    // No. of events rejected by Run cuts
-  Int_t    fRejectedLHC;    // No. of events rejected by LHC cuts
-  Int_t    fRejectedDet;    // No. of events rejected by Detector cuts
-  Int_t    fRejectedEvt;    // No. of events rejected by Event cuts
+  Int_t    fTotalEvents;    ///< Total no. of events in collection
+  Int_t    fAcceptedEvents; ///< No. of accepted events in collection
+  Int_t    fRejectedRun;    ///< No. of events rejected by Run cuts
+  Int_t    fRejectedLHC;    ///< No. of events rejected by LHC cuts
+  Int_t    fRejectedDet;    ///< No. of events rejected by Detector cuts
+  Int_t    fRejectedEvt;    ///< No. of events rejected by Event cuts
   
   AliXMLCollection & operator=(const AliXMLCollection & ) {return *this;}
 

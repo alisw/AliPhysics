@@ -1,10 +1,10 @@
+/// \class AliAnalysisTaskSE
+
 #ifndef ALIANALYSISTASKSE_H
 #define ALIANALYSISTASKSE_H
  
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-
-/* $Id$ */
 
 #include "AliAnalysisTask.h"
 #include "AliVEvent.h"
@@ -85,44 +85,44 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     TObjArray *GetAcceptedTracks();
 
   protected:
-    Int_t                 fDebug;           //  Debug flag
+    Int_t                 fDebug;           ///< Debug flag
     // IO
-    Int_t                 fEntry;           //  Current entry in the chain
-    AliVEvent*            fInputEvent;      //! VEvent Input
-    AliVfriendEvent*      fESDfriend;       //! ESD friend
-    AliVEventHandler* fInputHandler;    //! Input Handler
-    AliAODEvent*          fOutputAOD;       //! AOD out 
-    AliMCEvent*           fMCEvent;         //! MC
-    TTree*                fTreeA;           //  AOD output Tree
-    Int_t                 fCurrentRunNumber;//! Current run number
+    Int_t                 fEntry;           ///< Current entry in the chain
+    AliVEvent*            fInputEvent;      //!<! VEvent Input
+    AliVfriendEvent*      fESDfriend;       //!<! ESD friend
+    AliVEventHandler* fInputHandler;    //!<! Input Handler
+    AliAODEvent*          fOutputAOD;       //!<! AOD out
+    AliMCEvent*           fMCEvent;         //!<! MC
+    TTree*                fTreeA;           ///< AOD output Tree
+    Int_t                 fCurrentRunNumber;//!<! Current run number
     // Output histos for QA
-    TList*                fHistosQA;        //! Output histos for QA
+    TList*                fHistosQA;        //!<! Output histos for QA
     // Provisions for replication
-    static AliAODHeader*    fgAODHeader;        //! Header for replication
-    static AliTOFHeader*    fgTOFHeader;        //! TOFHeader for replication
-    static AliAODVZERO*     fgAODVZERO;         //! VZERO for replication
-    static TClonesArray*    fgAODTracks;        //! Tracks for replication
-    static TClonesArray*    fgAODVertices;      //! Vertices for replication
-    static TClonesArray*    fgAODV0s;           //! V0s for replication
-    static TClonesArray*    fgAODPMDClusters;   //! PMDClusters for replication
-    static TClonesArray*    fgAODJets;          //! Jets for replication
-    static TClonesArray*    fgAODFMDClusters;   //! FMDClusters for replication
-    static TClonesArray*    fgAODCaloClusters;  //! CaloClusters for replication
-    static AliAODCaloTrigger* fgAODEMCALTrigger; //! Emcal Trigger for replication
-    static AliAODCaloTrigger* fgAODPHOSTrigger;  //! Phos Trigger for replication
-    static TClonesArray*    fgAODMCParticles;   //! MC Particles for replicatio
-    static AliAODTracklets* fgAODTracklets;     //! Tracklets for replication
-    static AliAODCaloCells* fgAODEmcalCells;    //! Emcal Cell replication
-    static AliAODCaloCells* fgAODPhosCells;     //! Phos  Cell replication
-    static TClonesArray*    fgAODDimuons;       //! Dimuons replication
-    static TClonesArray*    fgAODHmpidRings;    //! HMPID replication
+    static AliAODHeader*    fgAODHeader;        //!<! Header for replication
+    static AliTOFHeader*    fgTOFHeader;        //!<! TOFHeader for replication
+    static AliAODVZERO*     fgAODVZERO;         //!<! VZERO for replication
+    static TClonesArray*    fgAODTracks;        //!<! Tracks for replication
+    static TClonesArray*    fgAODVertices;      //!<! Vertices for replication
+    static TClonesArray*    fgAODV0s;           //!<! V0s for replication
+    static TClonesArray*    fgAODPMDClusters;   //!<! PMDClusters for replication
+    static TClonesArray*    fgAODJets;          //!<! Jets for replication
+    static TClonesArray*    fgAODFMDClusters;   //!<! FMDClusters for replication
+    static TClonesArray*    fgAODCaloClusters;  //!<! CaloClusters for replication
+    static AliAODCaloTrigger* fgAODEMCALTrigger; //!<! Emcal Trigger for replication
+    static AliAODCaloTrigger* fgAODPHOSTrigger;  //!<! Phos Trigger for replication
+    static TClonesArray*    fgAODMCParticles;   //!<! MC Particles for replicatio
+    static AliAODTracklets* fgAODTracklets;     //!<! Tracklets for replication
+    static AliAODCaloCells* fgAODEmcalCells;    //!<! Emcal Cell replication
+    static AliAODCaloCells* fgAODPhosCells;     //!<! Phos  Cell replication
+    static TClonesArray*    fgAODDimuons;       //!<! Dimuons replication
+    static TClonesArray*    fgAODHmpidRings;    //!<! HMPID replication
     // Event Selection
-    UInt_t fOfflineTriggerMask;   //  Task processes collision candidates only
+    UInt_t fOfflineTriggerMask;   ///< Task processes collision candidates only
     // Event Mixing
-    AliMultiInputEventHandler *fMultiInputHandler;  //! pointer to multihandler
-    AliInputEventHandler      *fMCEventHandler;     //! pointer to MCEventHandler
-    AliTrackSelectionFactory  *fTrackSelectionFactory; /// track selection factory
-    AliVTrackSelection        *fTrackSelection;        /// track selection
+    AliMultiInputEventHandler *fMultiInputHandler;  //!<! pointer to multihandler
+    AliInputEventHandler      *fMCEventHandler;     //!<! pointer to MCEventHandler
+    AliTrackSelectionFactory  *fTrackSelectionFactory; ///< track selection factory
+    AliVTrackSelection        *fTrackSelection;        ///< track selection
     ClassDef(AliAnalysisTaskSE, 5); // Analysis task for standard jet analysis
 };
  

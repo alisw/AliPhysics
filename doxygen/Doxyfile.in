@@ -811,6 +811,12 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/STEER/AOD \
                          @CMAKE_SOURCE_DIR@/STEER/CDB \
                          @CMAKE_SOURCE_DIR@/STEER/ESD \
+			 @CMAKE_SOURCE_DIR@/ANALYSIS \
+			 @CMAKE_SOURCE_DIR@/ANALYSIS/ANALYSIS \
+			 @CMAKE_SOURCE_DIR@/ANALYSIS/ANALYSISalice \
+			 @CMAKE_SOURCE_DIR@/ANALYSIS/ANALYSISaliceBase \
+			 @CMAKE_SOURCE_DIR@/ANALYSIS/ANALYSIScalib \
+			 @CMAKE_SOURCE_DIR@/ANALYSIS/ESDfilter \
                          @CMAKE_SOURCE_DIR@/EMCAL \
                          @CMAKE_SOURCE_DIR@/EMCAL/DA \
                          @CMAKE_SOURCE_DIR@/EMCAL/EMCALbase \

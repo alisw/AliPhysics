@@ -13,13 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// Author: Mihaela Gheata, 01/09/2008
-
-//==============================================================================
-//   AliAnalysisAlien - AliEn utility class. Provides interface for creating
-// a personalized JDL, finding and creating a dataset.
-//==============================================================================
-
 #include "AliAnalysisAlien.h"
 
 #include <Compression.h>		

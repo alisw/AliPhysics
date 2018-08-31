@@ -13,14 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
- 
-
-// Realisation of an AliVEventPool via
-// on the flight (OTF) generation of the bin using AliTagAnalysis.
-// Author Andreas Morsch
-// andreas.morsch@cern.ch
-
 #include "AliEventPoolOTF.h"
 
 #include "AliRunTagCuts.h"
@@ -78,7 +70,8 @@ AliEventPoolOTF::AliEventPoolOTF(const char* name, const char* title):
     fNoMore(0)
 
 {
-  // Constructor
+  /// Constructor
+
     InitArrays();
 }
 
@@ -100,14 +93,16 @@ AliEventPoolOTF::AliEventPoolOTF(const AliEventPoolOTF& obj):
     fBinNumber(0),
     fNoMore(0)
 {
-    // Copy constructor
+    /// Copy constructor
+
     InitArrays();
 }
 
 
 AliEventPoolOTF::~AliEventPoolOTF()
 {
-    // Destructor
+    /// Destructor
+
     delete fTagAnalysis;
     delete fRunCuts;
     delete fEventCuts;
@@ -118,7 +113,8 @@ AliEventPoolOTF::~AliEventPoolOTF()
 
 AliEventPoolOTF& AliEventPoolOTF::operator=(const AliEventPoolOTF& other)
 {
-// Assignment operator
+/// Assignment operator
+
     AliVEventPool::operator=(other);
     return *this;
 }
@@ -126,7 +122,8 @@ AliEventPoolOTF& AliEventPoolOTF::operator=(const AliEventPoolOTF& other)
 
 void AliEventPoolOTF::Init()
 {
-    // Initialisation
+    /// Initialisation
+
     if (!fGridTags) {
 	fTagAnalysis->ChainLocalTags(fTagDirectory);
     } else {
@@ -139,7 +136,8 @@ void AliEventPoolOTF::Init()
 
 TChain* AliEventPoolOTF::GetNextChain()
 {
-    // Get Next Chain
+    /// Get Next Chain
+
     if (fChain) {
 	delete fChain;
 	fChain = 0;
@@ -185,19 +183,21 @@ TChain* AliEventPoolOTF::GetNextChain()
 
 void  AliEventPoolOTF::GetCurrentBin(Float_t* /*bin*/)
 {
-    //
+    ///
+
 }
 
 Int_t AliEventPoolOTF::GetDimension()
 {
-    //
+    ///
+
     return (5);
 }
 
 void AliEventPoolOTF::InitArrays()
 {
-    // Initializes the pool axis
-    
+    /// Initializes the pool axis
+
     SetMultiplicityBinning(0, 20000, 20000);
     SetZVertexBinning(-1000., 1000., 2000.);
     SetEventPlaneBinning(-1000., 1000., 2000.);

@@ -13,15 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-// Author: Andrei Gheata, 20/12/2010
-
-//==============================================================================
-// AliAnalysisTaskStat - basic task that attaches a AliAnalysisTaskstatistics 
-// object to the analysis manager. Use: AliAnalysisManager::AddStatisticsTask
-// to attach to a train.
-//==============================================================================
-
 #include "AliAnalysisTaskStat.h"
 
 #include <TList.h>
@@ -47,7 +38,8 @@ AliAnalysisTaskStat::AliAnalysisTaskStat(const char *name)
 //______________________________________________________________________________
 AliAnalysisTaskStat::~AliAnalysisTaskStat()
 {
-// Destructor.
+/// Destructor.
+
   if (fOutputList) {
     if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fOutputList;
   } else {
@@ -58,7 +50,8 @@ AliAnalysisTaskStat::~AliAnalysisTaskStat()
 //______________________________________________________________________________
 AliAnalysisTaskStat *AliAnalysisTaskStat::AddToManager(UInt_t offlineMask)
 {
-// Add this task to the analysis manager. By default it selects MB events.
+/// Add this task to the analysis manager. By default it selects MB events.
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AliAnalysisTaskStat::AddToManager", "You need a manager first");
@@ -85,7 +78,8 @@ AliAnalysisTaskStat *AliAnalysisTaskStat::AddToManager(UInt_t offlineMask)
 //______________________________________________________________________________
 void  AliAnalysisTaskStat::UserCreateOutputObjects()
 {
-// Create the output list.
+/// Create the output list.
+
   if (!fStatistics) {
     Fatal("UserCreateOutputObjects", "You are not allowed to create this task using the dummy constructor. Use the named one.");
   }
@@ -98,14 +92,16 @@ void  AliAnalysisTaskStat::UserCreateOutputObjects()
 //______________________________________________________________________________
 void  AliAnalysisTaskStat::UserExec(Option_t *)
 {
-// Event loop.
+/// Event loop.
+
   fStatistics->AddAccepted();
 }
 
 //______________________________________________________________________________
 void  AliAnalysisTaskStat::Terminate(Option_t *)
 {
-// Get the statistics from its container and copy to manager.
+/// Get the statistics from its container and copy to manager.
+
   fOutputList = dynamic_cast<TList*>(GetOutputData(1));
   if (!fOutputList) {
     Error("Terminate", "Cannot get output list from container");

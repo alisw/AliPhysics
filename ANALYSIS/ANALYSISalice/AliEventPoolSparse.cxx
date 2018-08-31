@@ -41,7 +41,9 @@ void testpool(const char * dirname = ".", const char * pattern = "Run180001") {
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
 
-  // Create a chain
+/// \file AliEventPoolSparse.cxx
+/// \brief Create a chain
+
   TChain * fChain = new TChain("T");
 
 
@@ -158,11 +160,11 @@ AliEventPoolSparse::AliEventPoolSparse(const char* name, const char* title, TCha
   fDetectorTagCut(0x0),
   fLHCTagCut(0x0),
   fBinNumber(0){
-  // Constructor. Initializes the THnSparseI,
-  // the initial size of the pool array and the array itself
-  // It uses the provided array of variables to create TTreeFormulas
-  // that are used when the pools are filled. This is the reason to require the input
-  // tag chain in the constructor.
+  /// Constructor. Initializes the THnSparseI,
+  /// the initial size of the pool array and the array itself
+  /// It uses the provided array of variables to create TTreeFormulas
+  /// that are used when the pools are filled. This is the reason to require the input
+  /// tag chain in the constructor.
 
   fN = fChunkSize;
   fPool = new TEntryList * [fN];
@@ -180,8 +182,9 @@ AliEventPoolSparse::AliEventPoolSparse(const char* name, const char* title, TCha
 
 // _________________________________________________________________________
 AliEventPoolSparse::~AliEventPoolSparse() {
-  // Destructor. Delete the pool, the array of TTreeFormula
-  // and the pointers to cuts
+  /// Destructor. Delete the pool, the array of TTreeFormula
+  /// and the pointers to cuts
+
   for (Int_t i=0; i<fN; ++i) delete fPool[i];
   if (fN>0) delete [] fPool;
 
@@ -205,8 +208,9 @@ AliEventPoolSparse::~AliEventPoolSparse() {
 // Implementation of the interface functions
 // _________________________________________________________________________
 TChain* AliEventPoolSparse::GetNextChain(){
-  // Return the chains one by one. The output is 0x0 if the pool is not initialized
-  // or the last chain is already reached
+  /// Return the chains one by one. The output is 0x0 if the pool is not initialized
+  /// or the last chain is already reached
+
   if (fCurrentBin<0) {
     AliError("The event pool is not initialized");
     return 0x0;
@@ -225,7 +229,7 @@ TChain* AliEventPoolSparse::GetNextChain(){
 
 // _________________________________________________________________________
 void  AliEventPoolSparse::GetCurrentBin(Float_t* xbin) {
-  // This method fills the center of the current bin in xbin
+  /// This method fills the center of the current bin in xbin
 
   if (fCurrentBin<0) {
     AliError("The event pool is not initialized");
@@ -245,10 +249,10 @@ void  AliEventPoolSparse::GetCurrentBin(Float_t* xbin) {
 
 // _________________________________________________________________________
 void  AliEventPoolSparse::Init(){
-  // Loop on the tag chain and select the events according
-  // to the Run, LHC, detector, and event cuts.
-  // Fill the THnSparse bin and add the event to the corresponding pool
-  // Taken and modified from AliAnalysisTag
+  /// Loop on the tag chain and select the events according
+  /// to the Run, LHC, detector, and event cuts.
+  /// Fill the THnSparse bin and add the event to the corresponding pool
+  /// Taken and modified from AliAnalysisTag
 
   if (!fTagChain) {
     AliError("Please provide a tag chain!");
@@ -436,28 +440,32 @@ void  AliEventPoolSparse::Init(){
 
 // _________________________________________________________________________
 void AliEventPoolSparse::SetRunCut(const char * cut){
-  // Run selection cuts
+  /// Run selection cuts
+
   if (fRunCut) delete fRunCut;
   fRunCut = new TTreeFormula("fRun",cut,fTagChain);
 }
 
 // _________________________________________________________________________
 void AliEventPoolSparse::SetLHCCut(const char * cut){
-  // LHC selection cuts
+  /// LHC selection cuts
+
   if (fLHCCut) delete fLHCCut;
   fLHCCut = new TTreeFormula("fLHC",cut,fTagChain);
 }
 
 // _________________________________________________________________________
 void AliEventPoolSparse::SetDetCut(const char * cut){
-  // Detector selection cuts
+  /// Detector selection cuts
+
   if (fDetCut) delete fDetCut;
   fDetCut = new TTreeFormula("fDet",cut,fTagChain);
 }
 
 // _________________________________________________________________________
 void AliEventPoolSparse::SetEventCut(const char * cut){
-  // Event selection cuts
+  /// Event selection cuts
+
   if (fEvCut) delete fEvCut;
   fEvCut = new TTreeFormula("fEv",cut,fTagChain);
 }
@@ -485,10 +493,10 @@ void AliEventPoolSparse::SetLHCCut(AliLHCTagCuts* cut)
 
 // _________________________________________________________________________
 void AliEventPoolSparse::Set(Int_t n){
-  // Set size of the array of pointers to n.
-  // A new array is created, the old contents copied to the new array,
-  // then the old array is deleted.
-  // This function is taken from TArrayI
+  /// Set size of the array of pointers to n.
+  /// A new array is created, the old contents copied to the new array,
+  /// then the old array is deleted.
+  /// This function is taken from TArrayI
 
   if (n < 0) return;
   if (n != fN) {

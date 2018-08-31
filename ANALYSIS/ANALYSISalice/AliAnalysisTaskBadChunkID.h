@@ -13,14 +13,19 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//
-// Modified version of AliAnalysisTaskCheckCascade.h
-// Used bits of code from AliAnalysisTaskCheckPerformanceStrange
-//
-// --- David Dobrigkeit Chinellato
-//
-// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+/// \class AliAnalysisTaskBadChunkID
+/// \brief AliAnalysisTaskBadChunkID
+///
+/// Modified version of AliAnalysisTaskCheckCascade.h
+/// Used bits of code from AliAnalysisTaskCheckPerformanceStrange
+///
+/// Loops over all chunks and fills a TTree object with a TString locating
+/// chunk name for each event and a "number of global tracks" variable.
+///
+/// TTree is filled event-by-event but has only very few data members,
+/// so memory consumption should still be reasonable.
+///
+/// \author David Dobrigkeit Chinellato
 
 #ifndef AliAnalysisTaskBadChunkID_H
 #define AliAnalysisTaskBadChunkID_H
@@ -48,15 +53,15 @@ private:
   // your data member object is created on the worker nodes and streaming is not needed.
   // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
   
-  TList  *fList;  //! List of Control plots
-  TTree  *fTree;  //! Output Tree
+  TList  *fList;  //!<! List of Control plots
+  TTree  *fTree;  //!<! Output Tree
   
-  TH1F      *fHistNEvents;    //! Keeping track of N(events)
+  TH1F      *fHistNEvents;    //!<! Keeping track of N(events)
   
-  Int_t fRunNumber;       //! Run Number
-  TString fFileName;      //! Chunk Number
-  Int_t fNGlobalTracks;   //! Number of kITSrefit tracks
-  Int_t fNTracks;         //! Number of tracks
+  Int_t fRunNumber;       //!<! Run Number
+  TString fFileName;      //!<! Chunk Number
+  Int_t fNGlobalTracks;   //!<! Number of kITSrefit tracks
+  Int_t fNTracks;         //!<! Number of tracks
   
   //Objects Controlling Task Behaviour
   

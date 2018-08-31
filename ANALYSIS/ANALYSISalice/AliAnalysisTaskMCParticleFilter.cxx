@@ -13,11 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//
-//  Analysis task for Kinematic filtering
-//  Fill AODtrackMC tracks from Kinematic stack
-//
- 
 #include <TChain.h>
 #include <TFile.h>
 #include "TParticle.h"
@@ -72,10 +67,9 @@ AliAnalysisTaskMCParticleFilter::AliAnalysisTaskMCParticleFilter():
 
 Bool_t AliAnalysisTaskMCParticleFilter::Notify()
 {
-  //
-  // Implemented Notify() to read the cross sections
-  // from pyxsec.root
-  // 
+  /// Implemented Notify() to read the cross sections
+  /// from pyxsec.root
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   TTree *tree = mgr->GetTree();
   Double_t xsection = 0;
@@ -133,7 +127,8 @@ AliAnalysisTaskMCParticleFilter::AliAnalysisTaskMCParticleFilter(const char* nam
     fAODMcParticles(0x0),
     fHistList(0x0)
 {
-  // Default constructor
+  /// Default constructor
+
   DefineOutput(1, TList::Class());  
 }
 
@@ -174,8 +169,8 @@ AliAnalysisTaskMCParticleFilter& AliAnalysisTaskMCParticleFilter::operator=(cons
 //____________________________________________________________________
 void AliAnalysisTaskMCParticleFilter::UserCreateOutputObjects()
 {
-  // Create the output container
-  
+  /// Create the output container
+
 
     if (OutputTree()&&fTrackFilterMother) 
 	OutputTree()->GetUserInfo()->Add(fTrackFilterMother);
@@ -230,9 +225,8 @@ void AliAnalysisTaskMCParticleFilter::UserCreateOutputObjects()
 //____________________________________________________________________
 void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
 {
-  // Execute analysis for current event
-  //
-  
+  /// Execute analysis for current event
+
   // Fill AOD tracks from Kinematic stack
   PostData(1,fHistList);
   
@@ -428,9 +422,7 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
 }
 
 void AliAnalysisTaskMCParticleFilter::Terminate(Option_t */*option*/){
-  //
-  // Terminate the execution save the PYTHIA x_section to the UserInfo()
-  //
+  /// Terminate the execution save the PYTHIA x_section to the UserInfo()
 
 
   fHistList = (TList*)GetOutputData(1);
@@ -452,8 +444,8 @@ void AliAnalysisTaskMCParticleFilter::Terminate(Option_t */*option*/){
 
 Bool_t AliAnalysisTaskMCParticleFilter::Select(TParticle* part, Float_t rv, Float_t zv)
 {
-  // Selection accoring to eta of the mother and production point
-  // This has to be refined !!!!!!
+  /// Selection accoring to eta of the mother and production point
+  /// This has to be refined !!!!!!
 
   // Esp if we don't have collisison in the central barrel but e.g. beam gas
   //  return kTRUE;

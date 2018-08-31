@@ -23,9 +23,7 @@
 #include <AliESDtrack.h>
 #include <AliESDtrackCuts.h>
 
-/// \cond CLASSIMP
 ClassImp(AliAODTrackSelection)
-/// \endcond
 
 /**
  * Main constructor, initialises fields with 0 (or NULL). For ROOT I/O, not intended
