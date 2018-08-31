@@ -1,6 +1,6 @@
 void InitHistograms(AliDielectron *die, Int_t cutDefinition);
-void SetupCuts(AliDielectron *die, Int_t cutDefinition);
-void SetupAODtrackCutsTMVAPIDFirst(AliDielectron *die, Bool_t bMCPID, Bool_t bTMVAPID)
+void SetupCuts(AliDielectron *die, Int_t cutDefinition, TString userPathWeightFile, Double_t userTMVACutValue);
+void SetupAODtrackCutsTMVAPIDFirst(AliDielectron *die, Bool_t bMCPID, Bool_t bTMVAPID, TString userPathWeightFile, Double_t userTMVACutValue);
 void SetTPCCorr(AliDielectron *die);
 const AliDielectronEventCuts *GetEventCuts();
 void SetupMCsignals(AliDielectron* die);
@@ -17,6 +17,7 @@ const Int_t nPF  = 999; // use prefiltering for cuts > nPF
 
 AliDielectron* Config_miweber_LMEE_TMVA(Double_t userTMVACutValue = 0.0,
 					Int_t cutDefinition=1,
+					TString userPathWeightFile="",
 					Bool_t bESDANA = kFALSE,
 					Bool_t bCutQA = kFALSE,
 					Bool_t isRandomRej=kFALSE,
@@ -79,7 +80,7 @@ AliDielectron* Config_miweber_LMEE_TMVA(Double_t userTMVACutValue = 0.0,
 
 
   // set track cuts
-  SetupCuts(die,cutDefinition,bESDANA);
+  SetupCuts(die,cutDefinition,bESDANA,userPathWeightFile,userTMVACutValue);
   
   if(useTPCCorr)  SetTPCCorr(die);
  
@@ -104,7 +105,7 @@ AliDielectron* Config_miweber_LMEE_TMVA(Double_t userTMVACutValue = 0.0,
 }
 
 //______________________________________________________________________________________
-void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA = kFALSE)
+void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA = kFALSE, TString userPathWeightFile = "", Double_t userTMVACutValue)
 {
   // Setup the track cuts
 
@@ -114,26 +115,26 @@ void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA = kFALSE)
   if( cutDefinition == 0 ){
   // first set of cuts to test TMVA usage for PID (only MC PID)
     if(!bESDANA){
-      SetupAODtrackCutsTMVAPIDFirst(die,kTRUE,kFALSE);
+      SetupAODtrackCutsTMVAPIDFirst(die,kTRUE,kFALSE,userPathWeightFile,userTMVACutValue);
     }
   }
   else if( cutDefinition == 1 ){
   // first set of cuts to test TMVA usage for PID (MC + TMVA PID)
     if(!bESDANA){      
-      SetupAODtrackCutsTMVAPIDFirst(die,kTRUE,kTRUE);
+      SetupAODtrackCutsTMVAPIDFirst(die,kTRUE,kTRUE,userPathWeightFile,userTMVACutValue);
     }
   }
   else if( cutDefinition == 2 ){
   // first set of cuts to test TMVA usage for PID (only TMVA PID)
     if(!bESDANA){      
-      SetupAODtrackCutsTMVAPIDFirst(die,kFALSE,kTRUE);
+      SetupAODtrackCutsTMVAPIDFirst(die,kFALSE,kTRUE,userPathWeightFile,userTMVACutValue);
     }
   }
 }
 
 
 //______________________________________________________________________________________
-void SetupAODtrackCutsTMVAPIDFirst(AliDielectron *die, Bool_t bMCPID, Bool_t bTMVAPID)
+void SetupAODtrackCutsTMVAPIDFirst(AliDielectron *die, Bool_t bMCPID, Bool_t bTMVAPID, TString userPathWeightFile, Double_t userTMVACutValue)
 {
   //
   // Setup the track cuts
@@ -181,8 +182,10 @@ void SetupAODtrackCutsTMVAPIDFirst(AliDielectron *die, Bool_t bMCPID, Bool_t bTM
 
   // Copy xml file to local directory first
   TString path="alien:///alice/cern.ch/user/m/miweber/TMVA_weights/TMVA_e_0_05_05_05_electron0555first.weights.xml";
-  gSystem->Exec(TString::Format("alien_cp %s .",path.Data()));
+  if(userPathWeightFile!="")
+    path = userPathWeightFile;
   Printf("Copy TMVA weight input file from Alien: %s",path.Data());
+  gSystem->Exec(TString::Format("alien_cp %s .",path.Data()));
   
   AliDielectronTMVACuts *pidCuts = new AliDielectronTMVACuts("PIDCutsTMVA","PIDCutsTMVA");
   pidCuts->AddTMVAInput("pt", AliDielectronVarManager::kPt);
@@ -194,6 +197,8 @@ void SetupAODtrackCutsTMVAPIDFirst(AliDielectron *die, Bool_t bMCPID, Bool_t bTM
   pidCuts->AddTMVAInput("nsigTOFpi", AliDielectronVarManager::kTOFnSigmaPio);
   pidCuts->AddTMVASpectator("pdg", AliDielectronVarManager::kPdgCode);
   pidCuts->SetTMVAWeights("BDT method", "TMVA_e_0_05_05_05_electron0555first.weights.xml");
+
+  Printf("Use TMVA cut value = %f",userTMVACutValue);
   pidCuts->SetTMVACutValue(userTMVACutValue);
 
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv MC PID CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
