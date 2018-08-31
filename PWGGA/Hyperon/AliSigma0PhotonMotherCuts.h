@@ -107,9 +107,9 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TList *fHistograms;    //!
   TList *fHistogramsMC;  //!
 
-  bool fIsMC;
-  bool fIsLightweight;
-  bool fIsTreeOutput;
+  bool fIsMC;           //
+  bool fIsLightweight;  //
+  bool fIsTreeOutput;   //
 
   AliVEvent *fInputEvent;     //!
   AliMCEvent *fMCEvent;       //!
@@ -202,7 +202,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TTree *fOutputTree;  //!
 
  private:
-  ClassDef(AliSigma0PhotonMotherCuts, 10)
+  ClassDef(AliSigma0PhotonMotherCuts, 11)
 };
 
 #endif
