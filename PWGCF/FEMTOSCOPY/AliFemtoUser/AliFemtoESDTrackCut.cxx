@@ -329,14 +329,20 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 		 )
 	      imost = 4;
 	  }
+
+
+
 	  
 	  //
-	  if (fMostProbable == 13) {
-	     if (IsDeuteronNSigma(track->P().Mag(),track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD()))
+	  if (fMostProbable == 13) {	    
+	    if (IsDeuteronNSigma(track->P().Mag(),track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD()))
 	      imost = 13;
+	    if((track->P().Mag() < 1) &&!(IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal())))
+	       imost = 0;
+	       
 	  }
-	  else if (fMostProbable == 14) {
-	    if (IsTritonNSigma(track->P().Mag(), track->NSigmaTPCT(), track->NSigmaTOFT())){
+	    else if (fMostProbable == 14) {
+	      if (IsTritonNSigma(track->P().Mag(), track->NSigmaTPCT(), track->NSigmaTOFT())){
 	      imost = 14;
 	    }
 	  }
@@ -512,7 +518,19 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 	      }
 	    }
 	  }
-	  
+
+
+	  /**********************************/
+	 else if (fMostProbable == 13) {
+	    //       if (imost == 3) {
+	    // Using the TPC to reject non-deuterons
+	    if (track->P().Mag() < 1) {
+	      if (!(IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal())))
+		imost = 0;
+	      else imost = 13;
+	    }
+	  }
+	  /*************************************/
 
 	}
     if (imost != fMostProbable) return false;
@@ -814,6 +832,19 @@ bool AliFemtoESDTrackCut::IsKaonTPCdEdx(float mom, float dEdx)
 
   return true;
 
+}
+
+bool AliFemtoESDTrackCut::IsDeuteronTPCdEdx(float mom, float dEdx)
+{
+  double a1 = -250.0,  b1 = 400.0;
+  double a2 = 0.0,      b2 = 30.0;
+
+  if (mom < 1) {
+    if (dEdx < a1*mom+b1) return false;
+  }
+  //if (dEdx < a2*mom+b2) return true;
+
+  return true;
 }
 
 bool AliFemtoESDTrackCut::IsProtonTPCdEdx(float mom, float dEdx)
