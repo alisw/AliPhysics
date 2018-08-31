@@ -281,11 +281,11 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
           const int label =
               sigma.MatchToMC(fMCEvent, fPDG, {{fPDGDaughter1, fPDGDaughter2}},
                               pdgLambdaMother, pdgPhotonMother);
-          if (label > 0) {
-            fTreeVariables[4] = 1.f;
-          } else {
-            fTreeVariables[4] = 0.f;
-          }
+//          if (label > 0) {
+//            fTreeVariables[4] = 1.f;
+//          } else {
+//            fTreeVariables[4] = 0.f;
+//          }
         }
 
         fTreeVariables[0] = invMass;
@@ -1055,8 +1055,8 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     fOutputTree->Branch("pT", &fTreeVariables[1], "pT/f");
     fOutputTree->Branch("Rapidity", &fTreeVariables[2], "Rapidity/f");
     fOutputTree->Branch("Multiplicity", &fTreeVariables[3], "Multiplicity/f");
-    if (fIsMC) {
-      fOutputTree->Branch("MCinfo", &fTreeVariables[4], "MCinfo/f");
-    }
+//    if (fIsMC) {
+//      fOutputTree->Branch("MCinfo", &fTreeVariables[4], "MCinfo/f");
+//    }
   }
 }
