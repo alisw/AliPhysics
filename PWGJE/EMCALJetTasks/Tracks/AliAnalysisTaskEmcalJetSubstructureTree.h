@@ -122,6 +122,9 @@ struct AliJetKineParameters {
   Double_t fNEF;                             ///< Jet Neutral Energy Fraction
   Int_t    fNCharged;                        ///< Number of charged constituents
   Int_t    fNNeutral;                        ///< Number of neutral constituents
+  Double_t fZLeading;                        ///< z of the leading constituent
+  Double_t fZLeadingCharged;                 ///< z of the leading charged constituent
+  Double_t fZLeadingNeutral;                 ///< z of the leading neutral constituent
 
   void LinkJetTreeBranches(TTree *jettree, const char *tag);
 };
@@ -182,6 +185,11 @@ public:
     kAKTAlgo = 2
   };
 
+  enum JetRecType_t {
+    kDetLevel = 0,
+    kPartLevel = 1
+  };
+
 	AliAnalysisTaskEmcalJetSubstructureTree();
 	AliAnalysisTaskEmcalJetSubstructureTree(const char *name);
 	virtual ~AliAnalysisTaskEmcalJetSubstructureTree();
@@ -225,7 +233,7 @@ protected:
 
 	AliNSubjettinessParameters MakeNsubjettinessParameters(const fastjet::PseudoJet &jet, const AliNSubjettinessDefinition &cut) const;
   
-  AliJetKineParameters MakeJetKineParameters(const AliEmcalJet &jet) const;
+  AliJetKineParameters MakeJetKineParameters(const AliEmcalJet &jet, JetRecType_t rectype, const AliParticleContainer *const particles, const AliClusterContainer *const clusters) const;
 
 	Double_t MakeAngularity(const AliEmcalJet &jet, const AliParticleContainer *tracks, const AliClusterContainer *clusters) const;
 
