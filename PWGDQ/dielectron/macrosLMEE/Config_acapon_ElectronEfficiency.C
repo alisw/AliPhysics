@@ -114,10 +114,10 @@ AliAnalysisCuts* SetupEventCuts()
   // event cuts are identical for all analysis 'cutInstance's that run together!
 	AliDielectronEventCuts *eventCuts = new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
 
-  /* eventCuts->SetVertexType(AliDielectronEventCuts::kVtxSPD); // AOD */
-	/* eventCuts->SetRequireVertex(); */
-	/* eventCuts->SetMinVtxContributors(1); */
-	/* eventCuts->SetVertexZ(-10.,10.); */
+  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxSPD); // AOD
+	eventCuts->SetRequireVertex();
+	eventCuts->SetMinVtxContributors(1);
+	eventCuts->SetVertexZ(-10.,10.);
 
 	return eventCuts;}
 
