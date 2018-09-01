@@ -25,6 +25,8 @@ Detailed description
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
+#include "TSystem.h"
+
 #include "TMVA/Tools.h"
 #include "TMVA/Reader.h"
 
@@ -38,6 +40,7 @@ AliDielectronTMVACuts::AliDielectronTMVACuts() :
 AliAnalysisCuts(),
   TMVAReader(0),
   TMVAReaderName(""),
+  TMVAWeightPathName(""),
   TMVAWeightFileName(""),
   fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
   fIsSpectator(new TBits(nInputFeatureMax)),
@@ -64,6 +67,7 @@ AliDielectronTMVACuts::AliDielectronTMVACuts(const char* name, const char* title
 	     AliAnalysisCuts(name, title),
 	     TMVAReader(0),
 	     TMVAReaderName(""),
+	     TMVAWeightPathName(""),
 	     TMVAWeightFileName(""),
 	     fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
 	     fIsSpectator(new TBits(nInputFeatureMax)),
@@ -124,10 +128,11 @@ void AliDielectronTMVACuts::InitTMVAReader()
     }
   }
 
-  // initialize reader (add weight file location)
-  AliInfo(Form("Initialize TMVA reader %s with weight file %s",TMVAReaderName.Data(),TMVAWeightFileName.Data()));
+  // initialize reader (copy weight file and add weight file name)
+  AliInfo(Form("Initialize TMVA reader %s with weight file %s from path %s",TMVAReaderName.Data(),TMVAWeightFileName.Data(),TMVAWeightPathName.Data()));
+  gSystem->Exec(Form("alien_cp %s/%s .",TMVAWeightPathName.Data(),TMVAWeightFileName.Data()));
   TMVAReader->BookMVA(TMVAReaderName.Data(),TMVAWeightFileName.Data());
-
+  
   // set to initialized
   isInitialized = kTRUE;
 }
@@ -231,11 +236,36 @@ void AliDielectronTMVACuts::SetTMVAWeights(TString TMVAName, TString weightName)
     return;
   }
 
+  if(weightName.Contains("alien://")){
+    AliInfo(Form("Use TMVA weight input file from Alien: %s",weightName.Data()));
+  }
+  else{
+    AliWarning(Form("TMVA weight input file not from Alien? Not supported at the moment: %s",weightName.Data()));
+    return;
+  }
+
   // set name of the reader
   TMVAReaderName = TMVAName;
 
   // set location of input weight file
-  TMVAWeightFileName = weightName;
+  TObjArray* strings = weightName.Tokenize("/");  
+  if(strings->GetEntriesFast()) {
+    TIter iString(strings);
+    TObjString* oString = NULL;
+    Int_t i = 0;
+    TMVAWeightPathName = "alien:///";
+    
+    while ((oString = (TObjString*)iString()) && i < strings->GetEntriesFast()-1) {
+
+      // need this due to special treatment of first token
+      if(!oString->GetString().Contains("alien"))
+	TMVAWeightPathName.Append(Form("%s/",oString->GetString().Data()));
+      i++;
+    }
+    
+    TMVAWeightFileName = oString->GetString().Data();
+
+  }
 }
 
 //______________________________________________
