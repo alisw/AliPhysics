@@ -1588,7 +1588,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
              Possibilities
                 A - 00 - Pass nothing                 -> reject
                 B - 10 - Pass open, reject strict     -> interesting!
-                C - 01 - Nos pass open, reject strict -> impossible!
+                C - 01 - Not pass open, reject strict -> impossible!
                 D - 11 - Pass everything              -> reject
              ****************************************************************************/
             if(
