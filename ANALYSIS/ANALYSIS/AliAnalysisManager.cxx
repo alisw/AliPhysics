@@ -1727,8 +1727,8 @@ void AliAnalysisManager::CheckBranches(Bool_t load)
 //______________________________________________________________________________
 Bool_t AliAnalysisManager::CheckTasks() const
 {
-/// Check consistency of tasks.
-
+   /// Check consistency of tasks.
+   #if ROOT_VERSION_CODE < ROOT_VERSION(5, 99, 0)
    Int_t ntasks = fTasks->GetEntries();
    if (!ntasks) {
       Error("CheckTasks", "No tasks connected to the manager. This may be due to forgetting to compile the task or to load their library.");
@@ -1746,8 +1746,9 @@ Bool_t AliAnalysisManager::CheckTasks() const
          return kFALSE;
       }
    }
-   return kTRUE;      
-}   
+   #endif
+   return kTRUE;
+}
 
 //______________________________________________________________________________
 void AliAnalysisManager::PrintStatus(Option_t *option) const
