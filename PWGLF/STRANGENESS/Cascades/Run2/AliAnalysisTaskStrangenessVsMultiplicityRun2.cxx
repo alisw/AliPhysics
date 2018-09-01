@@ -1586,15 +1586,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
             //  -> will pass if event accepted by regular evsel but rejected in pileup!
             
              Possibilities
-                A - Pass Old, Pass New     = not interesting
-                B - Reject Old, Reject New = not interesting
-                C - Pass Old, Reject New   = interesting
-                D - Reject Old, Pass New   = impossible, new is less restrictive
-             
+                A - 00 - Pass nothing                 -> reject
+                B - 10 - Pass open, reject strict     -> interesting!
+                C - 01 - Not pass open, reject strict -> impossible!
+                D - 11 - Pass everything              -> reject
              ****************************************************************************/
             if(
-               (!fEventCuts.AcceptEvent(ev) && !fEventCutsStrictAntipileup.AcceptEvent(ev)) || // this line rejects B
-               (!fEventCuts.AcceptEvent(ev) &&  fEventCutsStrictAntipileup.AcceptEvent(ev))    // this line rejects A
+               (!fEventCuts.AcceptEvent(ev) && !fEventCutsStrictAntipileup.AcceptEvent(ev)) || // this line rejects A
+               ( fEventCuts.AcceptEvent(ev) &&  fEventCutsStrictAntipileup.AcceptEvent(ev))    // this line rejects D
                 ) {
             
                 //Regular Output: Slots 1-6
