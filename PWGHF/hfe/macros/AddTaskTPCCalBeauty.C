@@ -6,7 +6,7 @@
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
 
-AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Double_t m20Cut = 0.35, Double_t minEoPCut = 0.9, Double_t minNSig = -1.0, Double_t dcaBinSize = 0.002, Bool_t fillElecSprs = kFALSE, Bool_t isMC=kFALSE, Bool_t runStackLoop = kFALSE, Int_t nClsTPC=80, TString ContNameExt = " ", Double_t ptAsso = 0.3, Double_t minNSigAsso = -3.)
+AliAnalysisTask* AddTaskTPCCalBeautyCurrent(Double_t centMin=0, Double_t centMax=10, Double_t m20Cut = 0.35, Double_t minEoPCut = 0.9, Double_t minNSig = -1.0, Double_t dcaBinSize = 0.002, Bool_t fillElecSprs = kFALSE, Bool_t isMC=kFALSE, Bool_t runStackLoop = kFALSE, Int_t nClsTPC=80, TString ContNameExt = " ", Double_t ptAsso = 0.3, Double_t minNSigAsso = -3., Double_t trkMatch=0.05)
 {
     // get the manager via the static access member
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -25,7 +25,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Do
 
     //FOR EMCAL CLUSTERS.......................................................................
     
-    AliAnalysisTaskTPCCalBeauty* taskBFEemc = new AliAnalysisTaskTPCCalBeauty("bfeemc");
+    AliAnalysisTaskTPCCalBeautyCurrent* taskBFEemc = new AliAnalysisTaskTPCCalBeautyCurrent("bfeemc");
     if(!taskBFEemc) return 0x0;
     // add your task to the manager
     mgr->AddTask(taskBFEemc);
@@ -35,6 +35,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Do
     taskBFEemc->SetEoP(minEoPCut);
     taskBFEemc->SetNSig(minNSig);
     taskBFEemc->SetNSigAsso(minNSigAsso);
+    taskBFEemc->SetTrkMatch(trkMatch);
     taskBFEemc->SetPtAsso(ptAsso);
     taskBFEemc->SetDCABinSize(dcaBinSize);
     taskBFEemc->SetStackLoop(runStackLoop);
@@ -56,7 +57,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Do
     
     //FOR DCAL CLUSTERS....................................................................
     
-    AliAnalysisTaskTPCCalBeauty* taskBFEdc = new AliAnalysisTaskTPCCalBeauty("bfedc");
+    AliAnalysisTaskTPCCalBeautyCurrent* taskBFEdc = new AliAnalysisTaskTPCCalBeautyCurrent("bfedc");
     if(!taskBFEdc) return 0x0;
     // add your task to the manager
     mgr->AddTask(taskBFEdc);
@@ -66,6 +67,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Do
     taskBFEdc->SetEoP(minEoPCut);
     taskBFEdc->SetNSig(minNSig);
     taskBFEdc->SetNSigAsso(minNSigAsso);
+    taskBFEdc->SetTrkMatch(trkMatch);
     taskBFEdc->SetPtAsso(ptAsso);
     taskBFEdc->SetDCABinSize(dcaBinSize);
     taskBFEdc->SetStackLoop(runStackLoop);
@@ -89,7 +91,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Do
     //////////
     //  MB  //
     //////////
-    AliAnalysisTaskTPCCalBeauty* taskBFEmb = new AliAnalysisTaskTPCCalBeauty("bfemb");
+    AliAnalysisTaskTPCCalBeautyCurrent* taskBFEmb = new AliAnalysisTaskTPCCalBeautyCurrent("bfemb");
     if(!taskBFEmb) return 0x0;
     // add your task to the manager
     mgr->AddTask(taskBFEmb);
@@ -119,7 +121,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Do
         //EMCAL TRIGGERED, EMCAL CLUSTERS.........................................................
         
         
-        AliAnalysisTaskTPCCalBeauty* taskBFEeg01emc = new AliAnalysisTaskTPCCalBeauty("bfeeg01emc");
+        AliAnalysisTaskTPCCalBeautyCurrent* taskBFEeg01emc = new AliAnalysisTaskTPCCalBeautyCurrent("bfeeg01emc");
         if(!taskBFEeg01emc) return 0x0;
         // add your task to the manager
         mgr->AddTask(taskBFEeg01emc);
@@ -129,6 +131,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Do
         taskBFEeg01emc->SetEoP(minEoPCut);
         taskBFEeg01emc->SetNSig(minNSig);
         taskBFEeg01emc->SetNSigAsso(minNSigAsso);
+        taskBFEeg01emc->SetTrkMatch(trkMatch);
         taskBFEeg01emc->SetPtAsso(ptAsso);
         taskBFEeg01emc->SetDCABinSize(dcaBinSize);
         taskBFEeg01emc->SetStackLoop(runStackLoop);
@@ -151,7 +154,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Do
         
         //EMCAL TRIGGERED, DCAL CLUSTERS..........................................................
         
-        /*AliAnalysisTaskTPCCalBeauty* taskBFEeg01dc = new AliAnalysisTaskTPCCalBeauty("bfeeg01dc");
+        /*AliAnalysisTaskTPCCalBeautyCurrent* taskBFEeg01dc = new AliAnalysisTaskTPCCalBeautyCurrent("bfeeg01dc");
          if(!taskBFEeg01dc) return 0x0;
          // add your task to the manager
          mgr->AddTask(taskBFEeg01dc);
@@ -173,7 +176,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Do
          
          //DCAL TRIGGERED, EMCAL CLUSTERS.........................................................
          
-         AliAnalysisTaskTPCCalBeauty* taskBFEdg01emc = new AliAnalysisTaskTPCCalBeauty("bfedg01emc");
+         AliAnalysisTaskTPCCalBeautyCurrent* taskBFEdg01emc = new AliAnalysisTaskTPCCalBeautyCurrent("bfedg01emc");
          if(!taskBFEdg01emc) return 0x0;
          // add your task to the manager
          mgr->AddTask(taskBFEdg01emc);
@@ -196,7 +199,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Do
         
         //DCAL TRIGGERED, DCAL CLUSTERS............................................................
         
-        AliAnalysisTaskTPCCalBeauty* taskBFEdg01dc = new AliAnalysisTaskTPCCalBeauty("bfedg01dc");
+        AliAnalysisTaskTPCCalBeautyCurrent* taskBFEdg01dc = new AliAnalysisTaskTPCCalBeautyCurrent("bfedg01dc");
         if(!taskBFEdg01dc) return 0x0;
         // add your task to the manager
         mgr->AddTask(taskBFEdg01dc);
@@ -206,6 +209,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Do
         taskBFEdg01dc->SetEoP(minEoPCut);
         taskBFEdg01dc->SetNSig(minNSig);
         taskBFEdg01dc->SetNSigAsso(minNSigAsso);
+        taskBFEdg01dc->SetTrkMatch(trkMatch);
         taskBFEdg01dc->SetPtAsso(ptAsso);
         taskBFEdg01dc->SetDCABinSize(dcaBinSize);
         taskBFEdg01dc->SetStackLoop(runStackLoop);
