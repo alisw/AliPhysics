@@ -52,7 +52,8 @@ public:
   
   TMVA::Reader* TMVAReader;                                      // TMVA reader
   TString TMVAReaderName;                                        // TMVA Reader Name
-  TString TMVAWeightFileName;                                    // TMVA weight file location
+  TString TMVAWeightPathName;                                    // TMVA weight file path 
+  TString TMVAWeightFileName;                                    // TMVA weight file name
 
   TBits* fUsedVars;                                              // used variables in AliDielectronVarManager::ValueTypes
   TBits* fIsSpectator;                                           // spectators in input feature array

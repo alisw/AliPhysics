@@ -209,7 +209,7 @@ public:
     void AddTopologicalQACascade(Int_t lRecNumberOfSteps = 100);
     // 3 - Standard analysis configurations + systematics
     void AddStandardV0Configuration(Bool_t lUseFull = kFALSE, Bool_t lDoSweep = kFALSE);
-    void AddStandardCascadeConfiguration(Bool_t lUseFull = kFALSE);
+    void AddStandardCascadeConfiguration(Bool_t lUseFull = kFALSE, Bool_t lDoSystematics = kTRUE);
     void AddCascadeConfiguration276TeV(); //Adds old 2.76 PbPb cut level analyses
 //---------------------------------------------------------------------------------------
     Float_t GetDCAz(AliESDtrack *lTrack);

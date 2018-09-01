@@ -56,6 +56,7 @@ public:
     void            SetTPCClus(Int_t nTPCclusters) {fNclusTPC = nTPCclusters;};
     void            SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void            SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
+    void            SetTrkMatch(Double_t maxTrkMatch) {fTrkMatch = maxTrkMatch;};
     
     void            SetCentralitySelection(Double_t centMin, Double_t centMax){fCentralityMin = centMin; fCentralityMax = centMax;};
     Double_t        CheckCentrality(AliAODEvent* fAOD, Bool_t &centralitypass);
@@ -98,6 +99,8 @@ private:
     Int_t               fNclusTPC;       // set number of TPC clusters
     Bool_t              fFlagClsTypeEMC; // switch to select EMC clusters
     Bool_t              fFlagClsTypeDCAL;// switch to select DCAL clusters
+    Double_t            fTrkMatch; //set distance to cluster
+    
     Bool_t              fUseTender;      // switch to add tender
     Bool_t              fFlagULS;        // flag ULS
     Bool_t              fFlagLS;         // flag LS
@@ -241,6 +244,8 @@ private:
     THnSparse           *fSprsPi0EtaWeightCal;  //! Sparse for pi0,eta weight calc
     THnSparse           *fSprsTemplatesNoWeight;  //! Sparse for templates
     THnSparse           *fSprsTemplatesWeight;  //! Sparse for templates
+    THnSparse           *fSprsTemplatesWeightVar1;  //! Sparse for templates
+    THnSparse           *fSprsTemplatesWeightVar2;  //! Sparse for templates
     
     TH2F                *fDTemplateWeight; //!
     TH2F                *fDTemplateNoWeight; //!
