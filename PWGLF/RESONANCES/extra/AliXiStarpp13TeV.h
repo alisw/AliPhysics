@@ -35,7 +35,7 @@ class AliXiStarpp13TeV : public AliAnalysisTaskSE {
 public:
     
     AliXiStarpp13TeV();
-    AliXiStarpp13TeV(const char *name, Bool_t AODdecision, Bool_t MCdecision, Int_t CutListOption=0, Bool_t DevelopmentMode = kFALSE, Bool_t fHMTrigger = kFALSE, Bool_t fPIDOption = kFALSE);
+    AliXiStarpp13TeV(const char *name, Bool_t AODdecision, Bool_t MCdecision, Int_t CutListOption=0, Bool_t DevelopmentMode = kFALSE, Bool_t fHMTrigger = kFALSE, Bool_t fPIDOption = kFALSE, Bool_t SetSystematic = kTRUE);
 
     virtual ~AliXiStarpp13TeV();
     AliXiStarpp13TeV(const AliXiStarpp13TeV &obj );
@@ -142,6 +142,7 @@ private:
     Bool_t fDevelopeMode;
     Bool_t fHMTrigger;
     Bool_t fPIDOption;
+    Bool_t fSetSystematic;
     Int_t fEventCounter;// The event counter
     ULong64_t fEventNumber; // calcuate event number
 

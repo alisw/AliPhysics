@@ -24,7 +24,7 @@
 //  Modified by: Jihye Song (jihye.song@cern.ch)
 //  Last Modified by: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //
-//  Last Modified Date: 2018/08/31
+//  Last Modified Date: 2018/09/01
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -96,6 +96,7 @@ AliXiStarpp13TeV::AliXiStarpp13TeV():
     fDevelopeMode(0),
     fHMTrigger(0),
     fPIDOption(0),
+    fSetSystematic(0),
 
     fTempStruct(0x0),
     fZvertexBins(0),
@@ -155,7 +156,7 @@ AliXiStarpp13TeV::AliXiStarpp13TeV():
 
 }
 //________________________________________________________________________
-AliXiStarpp13TeV::AliXiStarpp13TeV(const char *name, Bool_t AODdecision,  Bool_t MCdecision, Int_t CutListOption, Bool_t DevelopmentMode, Bool_t HMTrigger, Bool_t PIDOption)
+AliXiStarpp13TeV::AliXiStarpp13TeV(const char *name, Bool_t AODdecision,  Bool_t MCdecision, Int_t CutListOption, Bool_t DevelopmentMode, Bool_t HMTrigger, Bool_t PIDOption, Bool_t SetSystematic)
     : AliAnalysisTaskSE(name),
       fname(name),
       fESD(0x0),
@@ -182,6 +183,7 @@ AliXiStarpp13TeV::AliXiStarpp13TeV(const char *name, Bool_t AODdecision,  Bool_t
       fTrueMassK(0),
       fTrueMassLam(0),
       fTrueMassXi(0),
+      fSetSystematic(SetSystematic),
 
       fESDTrack4(0x0),
       fXiTrack(0x0),
@@ -475,8 +477,6 @@ void AliXiStarpp13TeV::XiStarInit()
     fCutValues[18][10] = 1.41;
     fCutValues[19][11] = 0.99;
     fCutValues[20][12] = 0.985;
-
-
 
 
     // PDG mass values
@@ -820,9 +820,8 @@ void AliXiStarpp13TeV::UserCreateOutputObjects()
     fOutputList->Add(fQATPCNSigPion2);
 
 
-
     for(Int_t cv=0; cv<kNCutVariations; cv++) {
-
+        if(!fSetSystematic && cv > 0) continue;
         if(cv==0) {
             TString *nameXi=new TString("fXi_");
             TString *nameXibar=new TString("fXibar_");
@@ -1097,6 +1096,15 @@ void AliXiStarpp13TeV::Exec(Option_t *)
     }
     if(fDevelopeMode)std::cout << "Multiplicity: " << lPerc << std::endl;
     ((TH1F*)fOutputList->FindObject("fMultDist_pp"))->Fill(lPerc);
+
+
+    // Pile-Up rejection
+    AliAnalysisUtils * utils = new AliAnalysisUtils();
+    if (utils->IsPileUpSPD(fESD)) {
+        if(fDevelopeMode)std::cout << "Reject: IsPileUpSPD" << std::endl;;
+        return;
+    }
+    ((TH1F*)fOutputList->FindObject("fMultDist_pp_afterPileUpReject"))->Fill(lPerc);
 
     // After the AliMulti
     ((TH1F*)fOutputList->FindObject("hNumberOfEvent"))->Fill(1);
@@ -1734,7 +1742,7 @@ void AliXiStarpp13TeV::Exec(Option_t *)
                 ((TH1F*)fOutputList->FindObject("fQAXiStarYDist"))->Fill(xiStarY);
 
                 for(int cv=0; cv<kNCutVariations; cv++) {
-
+                    if(!fSetSystematic && cv > 0) continue;
 
                     if(fDecayParameters[0] < fCutValues[cv][0]) continue;// Nclus proton
                     if(fDecayParameters[1] < fCutValues[cv][1]) continue;// Nclus pion first
