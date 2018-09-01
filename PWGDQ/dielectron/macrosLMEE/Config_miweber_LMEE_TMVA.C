@@ -181,11 +181,10 @@ void SetupAODtrackCutsTMVAPIDFirst(AliDielectron *die, Bool_t bMCPID, Bool_t bTM
   // /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv PID CUTS (TMVA) vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
 
   // Copy xml file to local directory first
-  TString path="alien:///alice/cern.ch/user/m/miweber/TMVA_weights/TMVA_e_0_05_05_05_electron0555first.weights.xml";
+  TString weightFile="alien:///alice/cern.ch/user/m/miweber/TMVA_weights/TMVA_e_0_05_05_05_electron0555first.weights.xml";
   if(userPathWeightFile!="")
-    path = userPathWeightFile;
-  Printf("Copy TMVA weight input file from Alien: %s",path.Data());
-  gSystem->Exec(TString::Format("alien_cp %s .",path.Data()));
+    weightFile = userPathWeightFile;
+  Printf("Use TMVA weight input file from Alien: %s",weightFile.Data());
   
   AliDielectronTMVACuts *pidCuts = new AliDielectronTMVACuts("PIDCutsTMVA","PIDCutsTMVA");
   pidCuts->AddTMVAInput("pt", AliDielectronVarManager::kPt);
@@ -196,7 +195,7 @@ void SetupAODtrackCutsTMVAPIDFirst(AliDielectron *die, Bool_t bMCPID, Bool_t bTM
   pidCuts->AddTMVAInput("nsigTPCpi", AliDielectronVarManager::kTPCnSigmaPio);
   pidCuts->AddTMVAInput("nsigTOFpi", AliDielectronVarManager::kTOFnSigmaPio);
   pidCuts->AddTMVASpectator("pdg", AliDielectronVarManager::kPdgCode);
-  pidCuts->SetTMVAWeights("BDT method", "TMVA_e_0_05_05_05_electron0555first.weights.xml");
+  pidCuts->SetTMVAWeights("BDT method", weightFile.Data());
 
   Printf("Use TMVA cut value = %f",userTMVACutValue);
   pidCuts->SetTMVACutValue(userTMVACutValue);
