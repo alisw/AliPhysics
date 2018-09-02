@@ -3367,6 +3367,7 @@ void  AliESDtrack::ReplaceTOFTrackID(int oldID, int newID)
   // replace the ID in TOF clusters references to this track
   if (!fNtofClusters || !GetESDEvent()) return;
   TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+  if (!tofclArray || tofclArray->GetEntries()<1) return;
   for (int it=fNtofClusters;it--;) {
     AliESDTOFCluster* clTOF = (AliESDTOFCluster*)tofclArray->At(fTOFcluster[it]);
     clTOF->ReplaceMatchedTrackID(oldID,newID);
