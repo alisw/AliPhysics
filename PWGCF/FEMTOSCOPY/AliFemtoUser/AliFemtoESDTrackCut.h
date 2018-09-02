@@ -20,7 +20,6 @@ public:
 
   enum PIDMethodType {knSigma=0, kContour=1};
   typedef enum PIDMethodType ReadPIDMethodType;
-
   AliFemtoESDTrackCut();
   virtual ~AliFemtoESDTrackCut();
 
@@ -188,7 +187,7 @@ protected:   // here are the quantities I want to cut on...
   bool IsPionTPCdEdx(float mom, float dEdx);
   bool IsKaonTPCdEdx(float mom, float dEdx);
   bool IsProtonTPCdEdx(float mom, float dEdx);
-
+  bool IsDeuteronTPCdEdx(float mom, float dEdx);
 
   
   bool IsPionTOFTime(float mom, float ttof);
