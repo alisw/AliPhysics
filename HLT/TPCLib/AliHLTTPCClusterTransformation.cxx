@@ -43,6 +43,9 @@
 #include <iomanip>
 #include <TGeoGlobalMagField.h>
 
+#include "TPCFastTransform.h"
+#include "TPCFastTransformManager.h"
+
 using namespace std;
 
 ClassImp(AliHLTTPCClusterTransformation) //ROOT macro for the implementation of ROOT specific class methods
@@ -52,7 +55,11 @@ AliRecoParam AliHLTTPCClusterTransformation::fOfflineRecoParam;
 AliHLTTPCClusterTransformation::AliHLTTPCClusterTransformation()
 :
   fError(),
+  fTransformKind( TransformationKind::OldFastTransform ),
+  fOrigTransform(NULL),
   fFastTransform(),
+  fFastTransformIRS(new ali_tpc_common::tpc_fast_transformation::TPCFastTransform),
+  fFastTransformManager( new ali_tpc_common::tpc_fast_transformation::TPCFastTransformManager ),
   fIsMC(0)
 {
   // see header file for class documentation
@@ -65,13 +72,24 @@ AliHLTTPCClusterTransformation::AliHLTTPCClusterTransformation()
 AliHLTTPCClusterTransformation::~AliHLTTPCClusterTransformation() 
 { 
   // see header file for class documentation
+  delete fFastTransformManager;
+  delete fFastTransformIRS;
+}
+
+int  AliHLTTPCClusterTransformation::Init( double /*FieldBz*/, Long_t TimeStamp, bool isMC, int useOrigTransform )
+{
+  TransformationKind kind = OldFastTransform;
+  if( useOrigTransform ) kind = Original;
+  return Init( TimeStamp, isMC, kind );
 }
 
 
-int  AliHLTTPCClusterTransformation::Init( double FieldBz, Long_t TimeStamp, bool isMC, int useOrigTransform )
+int  AliHLTTPCClusterTransformation::Init( Long_t TimeStamp, bool isMC, TransformationKind transformKind )
 {
   // Initialisation
-  
+
+  fTransformKind = transformKind;
+
   fIsMC = isMC;
  
   if(!AliGeomManager::GetGeometry()){
@@ -153,13 +171,24 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, Long_t TimeStamp, boo
   if (fIsMC && !recParam->GetUseCorrectionMap()) TimeStamp = 0;
  
   pCalib->GetTransform()->SetCurrentRecoParam(recParam);
+  
 
   // set current time stamp and initialize the fast transformation
+  bool useOrigTransform = ( fTransformKind==TransformationKind::Original);
   int err = fFastTransform.Init( pCalib->GetTransform(), TimeStamp, useOrigTransform );
-
   if( err!=0 ){
-    return Error(-10,Form( "AliHLTTPCClusterTransformation::Init: Initialisation of Fast Transformation failed with error %d :%s",err,fFastTransform.GetLastError()) );
+    return Error(-10,Form( "AliHLTTPCClusterTransformation::Init: Initialisation of Fast Transformation failed with error %d :%s",err,fFastTransform.GetLastError()) );    
   }
+
+  if( fTransformKind == TransformationKind::FastIRS ){
+    err = fFastTransformManager->create( *fFastTransformIRS, pCalib->GetTransform(), TimeStamp );
+    if( err!=0 ){
+      return Error(-10,Form( "AliHLTTPCClusterTransformation::Init: Initialisation of Fast Transformation failed with error %d :%s",err,fFastTransformManager->getLastError()) );    
+    }
+  }
+  
+  // offline transformation is already initialised in fFastTransform or in fFastTransformManager
+  fOrigTransform = pCalib->GetTransform();
 
   return 0;
 }
@@ -168,7 +197,9 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, Long_t TimeStamp, boo
 Int_t  AliHLTTPCClusterTransformation::Init( const AliHLTTPCFastTransformObject &obj )
 {
   // Initialisation
-  
+ 
+  fTransformKind = OldFastTransform;
+ 
   if(!AliGeomManager::GetGeometry()){
     AliGeomManager::LoadGeometry();
   }
@@ -217,7 +248,18 @@ Int_t AliHLTTPCClusterTransformation::SetCurrentTimeStamp( Long_t TimeStamp )
   if( err!=0 ){
     return Error(-4,Form( "AliHLTTPCClusterTransformation::SetCurrentTimeStamp: SetCurrentTimeStamp to the Fast Transformation failed with error %d :%s",err,fFastTransform.GetLastError()) );
   }
-  return 0;
+
+  if( fTransformKind == TransformationKind::FastIRS ){
+    err = fFastTransformManager->updateCalibration( *fFastTransformIRS, TimeStamp );
+    if( err!=0 ){
+      return Error(-10,Form( "AliHLTTPCClusterTransformation::SetCurrentTimeStamp: Initialisation of Fast Transformation failed with error %d :%s",err,fFastTransformManager->getLastError()) );    
+    }
+  }
+
+  // time stamp for the offline transformation is already set in fFastTransform or in fFastTransformManager
+  fOrigTransform = pCalib->GetTransform();
+
+ return 0;
 }
 
 void AliHLTTPCClusterTransformation::Print(const char* /*option*/) const
@@ -232,4 +274,33 @@ Int_t AliHLTTPCClusterTransformation::GetSize() const
   // total size of the object
   int size = sizeof(AliHLTTPCClusterTransformation) - sizeof(AliHLTTPCFastTransform) + fFastTransform.GetSize();
   return size;
+}
+
+
+Int_t  AliHLTTPCClusterTransformation::Transform( int Slice, int Row, float Pad, float Time, float XYZ[] )
+{
+  //static int st=0;
+  //st++;
+  if( fTransformKind == TransformationKind::FastIRS ){
+    //if( st<100) cout<<"IRS"<<endl;
+    int err = fFastTransformIRS->Transform( Slice, Row, Pad, Time, XYZ[0], XYZ[1], XYZ[2]);    
+    if( err!=0 ) return Error(-1,Form( "AliHLTTPCClusterTransformation::Transform: Fast Transformation failed with error %d ",err) );    
+  } else  if( fTransformKind == TransformationKind::Original ){
+    //if( st<100) cout<<"orig"<<endl;
+    Int_t sector=-99, thisrow=-99;  
+    AliHLTTPCGeometry::Slice2Sector( Slice, Row, sector, thisrow);
+    Int_t is[]={sector};
+    Double_t xx[]={static_cast<Double_t>(Row),Pad,Time};
+    fOrigTransform->Transform(xx,is,0,1);
+    for (int i = 0;i < 3;i++) XYZ[i] = xx[i];
+  } else {
+    //if( st<100) cout<<"old"<<endl;
+    // Convert row, pad, time to X Y Z   	   
+    Int_t sector=-99, thisrow=-99;  
+    AliHLTTPCGeometry::Slice2Sector( Slice, Row, sector, thisrow);
+    int err = fFastTransform.Transform(sector, thisrow, Pad, Time, XYZ);
+    if( err!=0 ) return Error(-1,Form( "AliHLTTPCClusterTransformation::Transform: Fast Transformation failed with error %d :%s",err,fFastTransform.GetLastError()) );
+  }
+  
+  return 0;
 }

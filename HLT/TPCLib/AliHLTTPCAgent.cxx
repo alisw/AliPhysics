@@ -109,6 +109,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 
     bool isRawHLTOUT = 1;
     int tpcInputMode = 0;
+    TString transformArg;
     if( pHLT ){
       TString hltoptions = pHLT->GetConfigurationString();
       TObjArray* pTokens=hltoptions.Tokenize(" ");
@@ -121,6 +122,8 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	    isRawHLTOUT = 0;
 	  } else if (token.CompareTo("run-online-config")==0) {
 	    isRawHLTOUT = 0;
+	  } else if (token.Contains("TPC-transform:")) {
+	    transformArg = token.ReplaceAll("TPC-transform:", "");	  
 	  } else if (token.Contains("TPC-input=")) {
 	    TString param=token.ReplaceAll("TPC-input=", "");
 	    if (param == "default") {
@@ -223,9 +226,10 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
  
     TString hwcfDecoder = "TPC-HWCFDecoder";
     handler->CreateConfiguration(hwcfDecoder.Data(), "TPCHWClusterDecoder",hwclustOutput.Data(), "");
-	
-	arg="-offline-mode";
-	if (!bPublishRaw) arg+=" -do-mc -offline-keep-initial-timestamp";
+
+    arg = transformArg;
+    arg+=" -offline-mode";
+    if (!bPublishRaw) arg+=" -do-mc -offline-keep-initial-timestamp";
 
     TString clusterTransformation = "TPC-ClusterTransformation";
     handler->CreateConfiguration(clusterTransformation.Data(), "TPCClusterTransformation",hwcfDecoder.Data(), arg.Data() );

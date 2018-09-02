@@ -64,7 +64,7 @@ fInitializeByObjectInDoEvent(0),
 fInitialized(0),
 fTPCPresent(0),
 fIsMC(0),
-fUseOrigTransform(0),
+fTransformKind( AliHLTTPCClusterTransformation::TransformationKind::OldFastTransform ),
 fBenchmark("ClusterTransformation")
 {
   // see header file for class documentation
@@ -84,7 +84,6 @@ AliHLTTPCClusterTransformationComponent::~AliHLTTPCClusterTransformationComponen
 
 const char* AliHLTTPCClusterTransformationComponent::GetComponentID() { 
 // see header file for class documentation
-
   return "TPCClusterTransformation";
 }
 
@@ -143,7 +142,7 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
   if (iResult>=0 && argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);
     
-  if (fUseOrigTransform)
+  if ( fTransformKind == AliHLTTPCClusterTransformation::TransformationKind::Original )
   {
     fOfflineMode = 1;
     fInitializeByObjectInDoEvent = 0;
@@ -165,8 +164,8 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
           HLTInfo( "Cluster Transformation will initialize on the fly in DoEvent loop via FastTransformation Data Object, skipping initialization." );
     }
     else if( fOfflineMode ) {
-      err = fgTransform.Init( GetBz(), GetTimeStamp(), fIsMC, fUseOrigTransform );
-	  fInitialized = true;
+      err = fgTransform.Init( GetTimeStamp(), fIsMC, fTransformKind );
+      fInitialized = true;
     } else {
        const char* defaultNotify = "";
        const char* cdbEntry = "HLT/ConfigTPC/TPCFastTransform";
@@ -246,8 +245,12 @@ int AliHLTTPCClusterTransformationComponent::ScanConfigurationArgument(int argc,
       HLTDebug("Processing Monte Carlo Data.");
       iRet++;
     } else if (argument.CompareTo("-use-orig-transform")==0){
-      fUseOrigTransform = 1;
+      fTransformKind = AliHLTTPCClusterTransformation::TransformationKind::Original;
       HLTInfo("Running unmodified original TPC transformation.");
+      iRet++;
+    } else if (argument.CompareTo("-use-irs-transform")==0){ 
+      fTransformKind = AliHLTTPCClusterTransformation::TransformationKind::FastIRS;
+      HLTInfo("Running TPC transformation with irregular splines");      
       iRet++;
     } else if (argument.CompareTo("-offline-keep-initial-timestamp")==0){
       fOfflineKeepInitialTimestamp = 1;

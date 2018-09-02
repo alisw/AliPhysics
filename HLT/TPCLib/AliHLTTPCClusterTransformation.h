@@ -29,6 +29,13 @@ class AliTPCParam;
 class AliRecoParam;
 class AliHLTTPCReverseTransformInfoV1;
 
+namespace ali_tpc_common{
+  namespace tpc_fast_transformation{
+    class TPCFastTransform;
+    class TPCFastTransformManager;
+  }
+}
+
 /**
  * @class AliHLTTPCClusterTransformation
  *
@@ -42,6 +49,13 @@ class AliHLTTPCClusterTransformation{
     
  public:
 
+  /// Enumeration of transformation kinds
+  enum  TransformationKind  { 
+    OldFastTransform = 0,    ///< old fast transfrom with splines
+    Original         = 1,    ///< original
+    FastIRS          = 2     ///< new fast transform with irregular splines from AliTPCCommon
+   };
+
   /** standard constructor */    
   AliHLTTPCClusterTransformation();           
   /** destructor */
@@ -52,6 +66,9 @@ class AliHLTTPCClusterTransformation{
  
   /** Initialisation  */
   Int_t  Init( const AliHLTTPCFastTransformObject &obj );
+
+  /** Initialisation  transformation kind: fast, original, newfast */
+  Int_t  Init( Long_t TimeStamp, bool isMC, TransformationKind transformKind );
 
   /** Initialised flag */
    Bool_t IsInitialised() const;
@@ -102,7 +119,12 @@ class AliHLTTPCClusterTransformation{
 
   TString fError; // Last error message
 
-  AliHLTTPCFastTransform fFastTransform;// fast transformation object
+  TransformationKind fTransformKind;
+
+  AliTPCTransform * fOrigTransform;  // offline transformation
+  AliHLTTPCFastTransform fFastTransform; // fast transformation object
+  ali_tpc_common::tpc_fast_transformation::TPCFastTransform *fFastTransformIRS; // new fast transform with irregular splines 
+  ali_tpc_common::tpc_fast_transformation::TPCFastTransformManager *fFastTransformManager; // manager
   
   bool fIsMC; //Do we process MC?
 
@@ -116,15 +138,8 @@ inline Int_t AliHLTTPCClusterTransformation::Error(Int_t code, const char *msg)
   return code;
 }
 
-inline Int_t  AliHLTTPCClusterTransformation::Transform( int Slice, int Row, float Pad, float Time, float XYZ[] )
-{
-  // Convert row, pad, time to X Y Z   	   
-  Int_t sector=-99, thisrow=-99;  
-  AliHLTTPCGeometry::Slice2Sector( Slice, Row, sector, thisrow);
-  int err = fFastTransform.Transform(sector, thisrow, Pad, Time, XYZ);
-  if( err!=0 ) return Error(-1,Form( "AliHLTTPCClusterTransformation::Transform: Fast Transformation failed with error %d :%s",err,fFastTransform.GetLastError()) );
-  return 0;
-}
+
+
 
 inline Int_t  AliHLTTPCClusterTransformation::ReverseAlignment( float XYZ[], int slice, int padrow)
 {
