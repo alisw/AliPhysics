@@ -49,9 +49,6 @@ public:
       kKstar0,
       kPhi,
       kLambdastar,
-       kKstarpm,
-       kSigmastarp,
-       kSigmastarm,
       kUnknown
    };
 
@@ -228,10 +225,7 @@ inline AliRsnDaughter::ERefType AliRsnDaughter::RefType(ESpecies species)
       case kKstar0:
       case kPhi:
       case kLambdastar:
-      case kKstarpm:
-      case kSigmastarp:
-      case kSigmastarm:
-         return kResonance;
+	 return kResonance;
       default:
          return kNoType;
    }

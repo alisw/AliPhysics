@@ -24,7 +24,6 @@ void AliRsnMiniParticle::Clear(Option_t *)
 // Clears particle
 //
    fIndex = -1;
-   fIndexDaughters[0] = fIndexDaughters[1] = fIndexDaughters[2] = -1;
    fCharge = 0;
    fPDG = 0;
    fMother = 0;
@@ -53,7 +52,7 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
    fIsQuarkFound = kFALSE;
    fCutBits = 0x0;
    fPsim[0] = fPrec[0] = fPmother[0] = fPsim[1] = fPrec[1] = fPmother[1] = fPsim[2] = fPrec[2] = fPmother[2] = 0.0;
-   fIndexDaughters[0] = fIndexDaughters[1] = fIndexDaughters[2] = -1;
+   fIndexV0[0] = fIndexV0[1] = -1;
    fMass[0] = fMass[1] = -1.0;
 
    // charge
@@ -88,23 +87,23 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
    }
    if (event->IsAOD()){
      // DCA to Primary Vertex for AOD
-     AliAODTrack *track = daughter->Ref2AODtrack();
-     AliAODv0 *v0 = daughter->Ref2AODv0();
+     AliAODTrack *track = daughter->Ref2AODtrack();  
+     AliAODv0 *v0 = daughter->Ref2AODv0();     
      AliAODEvent *aodEvent = (AliAODEvent*) event->GetRefAOD();
      if (track && aodEvent) {
        AliVVertex *vertex = (AliVVertex*) aodEvent->GetPrimaryVertex();
-       Double_t b[2], cov[3];
+       Double_t b[2], cov[3]; 
        if (vertex) {
 	 if ( !((track->GetStatus() & AliESDtrack::kTPCin) == 0) && !((track->GetStatus() & AliESDtrack::kTPCrefit) == 0) && !((track->GetStatus() & AliESDtrack::kITSrefit) == 0) ){
 	   if (track->PropagateToDCA(vertex, aodEvent->GetMagneticField(), kVeryBig, b, cov))
 	     fDCA = b[0];
 	 }
-       }
+       } 
      }
       if (v0 && aodEvent) {
-          fIndexDaughters[0] = v0->GetPosID();
-          fIndexDaughters[1] = v0->GetNegID();
-          // Printf("!!!!!!!! RSN index=%d v0Pos=%d v0Neg=%d", fIndex, fIndexDaughters[0], fIndexDaughters[1]);
+          fIndexV0[0] = v0->GetPosID();
+          fIndexV0[1] = v0->GetNegID();
+          // Printf("!!!!!!!! RSN index=%d v0Pos=%d v0Neg=%d", fIndex, fIndexV0[0], fIndexV0[1]);
        }
      // Number of Daughters from MC and Momentum of the Mother
      if (event->GetRefMC()) {
@@ -142,22 +141,22 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
    } else {
      if (event->IsESD()){
        //DCA to Primary Vertex for ESD
-       AliESDtrack *track = daughter->Ref2ESDtrack();
-       AliESDv0 *v0 = daughter->Ref2ESDv0();
+       AliESDtrack *track = daughter->Ref2ESDtrack(); 
+       AliESDv0 *v0 = daughter->Ref2ESDv0();    
        AliESDEvent *esdEvent = (AliESDEvent*) event->GetRefESD();
        if (track && esdEvent) {
 	 AliVVertex *vertex = (AliVVertex*) esdEvent->GetPrimaryVertex();
-	 Double_t b[2], cov[3];
+	 Double_t b[2], cov[3]; 
 	 if (vertex) {
 	   if ( !((track->GetStatus() & AliESDtrack::kTPCin) == 0) && !((track->GetStatus() & AliESDtrack::kTPCrefit) == 0) && !((track->GetStatus() & AliESDtrack::kITSrefit) == 0) ){
 	     if (track->PropagateToDCA(vertex, esdEvent->GetMagneticField(), kVeryBig, b, cov))
 	       fDCA = b[0];
 	   }
-	 }
+	 }      
        }
        if (v0 && esdEvent) {
-          fIndexDaughters[0] = v0->GetPindex();
-          fIndexDaughters[1] = v0->GetNindex();
+          fIndexV0[0] = v0->GetPindex();
+          fIndexV0[1] = v0->GetNindex();
        }
        // Number of Daughters from MC and Momentum of the Mother
        if (event->GetRefMC()) {

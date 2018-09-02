@@ -92,8 +92,9 @@ public:
    AliRsnMiniOutput   *CreateOutput(const char *name, AliRsnMiniOutput::EOutputType type, AliRsnMiniOutput::EComputation src);
    AliRsnMiniOutput   *CreateOutput(const char *name, const char *outType, const char *compType);
 
-   Int_t               AddResonanceFinder(AliRsnMiniResonanceFinder* f);
-   Int_t               GetNResonanceFinders() {return fResonanceFinders.GetEntries();}
+   Int_t               SetResonanceFinder(AliRsnMiniResonanceFinder* f, Int_t j = -1);
+   AliRsnMiniResonanceFinder* GetResonanceFinder(UShort_t j = 0) {return ((j==0) ? fResonanceFinder[0] : fResonanceFinder[1]);}
+   Int_t               GetNResonanceFinders() {return ((Int_t) fNResonanceFinders);}
 
 private:
    Char_t   CheckCurrentEvent();
@@ -169,9 +170,11 @@ private:
    Bool_t               fRsnTreeInFile;  // flag rsn tree should be saved in file instead of memory
    Bool_t               fComputeSpherocity; // compute spherocity, false by default since spherocity calculation is time-consuming
    Double_t             fSpherocity; // stores value of spherocity
-   TObjArray            fResonanceFinders; // list of AliRsnMiniResonanceFinder objects
 
-   ClassDef(AliRsnMiniAnalysisTask, 18);   // AliRsnMiniAnalysisTask
+   UShort_t             fNResonanceFinders; // number of AliRsnMiniResonanceFinder objects
+   AliRsnMiniResonanceFinder* fResonanceFinder[2]; // pointers to AliRsnMiniResonanceFinder objects
+
+   ClassDef(AliRsnMiniAnalysisTask, 17);   // AliRsnMiniAnalysisTask
 };
 
 
