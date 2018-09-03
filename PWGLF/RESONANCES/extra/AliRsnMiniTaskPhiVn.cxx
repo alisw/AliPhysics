@@ -778,8 +778,8 @@ void AliRsnMiniTaskPhiVn::UserExec(Option_t *)
          Double_t dPtCharged = tracktr->Pt();
          Double_t dEtaCharged = tracktr->Eta();
          Double_t dPhiCharged = tracktr->Phi();
-         Double_t dEnergyCharged = tracktr->E();
-         Double_t dPCharged = tracktr->P();
+         //Double_t dEnergyCharged = tracktr->E();
+         //Double_t dPCharged = tracktr->P();
 
 
          if (dPtCharged > 9.9 || dPtCharged < 0.0)
