@@ -169,7 +169,7 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     if (track->Pt() < mPtCut) continue;
 
     /// PID cuts
-    float sig[8] = {999.f};
+    float sig[8] = {999.f,999.f,999.f,999.f,999.f,999.f,999.f,999.f};
     bool reject = !mMCtrue; /// In the MC the cut on the TPC pid is replaced by a cut on the true MC particle
     bool tpcRefit = (track->GetStatus() & AliESDtrack::kTPCrefit) == AliESDtrack::kTPCrefit;
     for (int iS = 0; iS < 8; ++iS) {
