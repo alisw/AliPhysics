@@ -136,6 +136,7 @@ public:
     void SetTPCnCut(Int_t TPCnCut) {fTPCnCut = TPCnCut;};
     void SetTPCnCutdEdx(Int_t TPCnCutdEdx) {fTPCndEdxCut = TPCnCutdEdx;};
     void SetITSnCut (Int_t ITSnCut) {fITSnCut = ITSnCut;};
+    void SetITSSharedClusterCut (Float_t ITSSharedCluster) {fITSSharedClusterCut=ITSSharedCluster;};
    
 
     void SetPhotElecPtCut (Double_t AssPtCut) {fPhotElecPtCut = AssPtCut;};
@@ -218,6 +219,7 @@ public:
     Int_t                 fTPCnCut;                 // TPC number of clusters for tagged electron
     Int_t                 fTPCndEdxCut;             //
     Int_t                 fITSnCut;                 // ITs number of clusters for tagged electrons 
+    Float_t               fITSSharedClusterCut;      //
 
     Bool_t                fUseTRD;                  //
     Bool_t                fUseITS;                  //
@@ -390,7 +392,8 @@ public:
     TH3F                  *fElectronTrackITSLayer;   //!
     TH3F                  *fElectronTrackRefit;     //!
     TH3F                  *fElectronTrackDCA;       //! 
-    
+    THnSparseF*           fElectronTrackITSCuts; //!
+    THnSparseF*           fPhotTrackITSCuts; //!
     TH2F                  *fHadronTrackTPCNcls;   //! 
     TH3F                  *fHadronTrackRefit;     //!
     TH3F                  *fHadronTrackDCA;       //! 
@@ -422,12 +425,12 @@ public:
 
   
     TH2F                  *fInclElecPtEta;          //! inclusive electron p
-    TH2F                  *fInclElecPtEtaWW;        //! inclusive electron p
+    TH2F                  *fInclElecPtEtaWRecEff;        //! inclusive electron p
     TH1F                  *fInclElecP;              //! inclusive electron p
     TH1F                  *fULSElecPt;              //! ULS electron pt (after IM cut)
-    TH1F                  *fULSElecPtWW;            //! ULS electron pt (after IM cut)
+    TH1F                  *fULSElecPtWRecEff;            //! ULS electron pt (after IM cut)
     TH1F                  *fLSElecPt;               //! LS electron pt (after IM cut)
-    TH1F                  *fLSElecPtWW;             //! LS electron pt (after IM cut)
+    TH1F                  *fLSElecPtWRecEff;             //! LS electron pt (after IM cut)
     TH2F                  *fInvmassLS;              //! Inv mass of LS (e,e)
     TH2F                  *fInvmassULS;             //! Inv mass of ULS (e,e)
     TH3F                  *fInvmassMCTrue;          //! Inv mass of ULS (e,e)
@@ -595,12 +598,13 @@ public:
     THnSparse             *fMCHadPtEtaPhiVtx;        //!
     THnSparse             *fRecHadMCPtEtaPhiVtx;     //!
     THnSparse             *fRecHadPtEtaPhiVtx;       //!
-    THnSparse             *fRecHadPtEtaPhiVtxwW;       //!
+    THnSparse             *fRecHadPtEtaPhiVtxWRecEff; //!
 
     TH2F                  *fCheckMCPtvsRecPtEle;     //!
+    TH1F                  *fRecHFE; //!
     THnSparse             *fMCElecPtEtaPhiVtx;       //!
     THnSparse             *fRecElecPtEtaPhiVtx;      //!
-    THnSparse             *fRecElecPtEtaPhiVtxwW;    //!
+    THnSparse             *fRecElecPtEtaPhiVtxWRecEff;  //!
     THnSparse             *fRecElecMCPtEtaPhiVtx;    //!
     TH1F                  *fMCElecPDG;               //!
     THnSparse             *fMCElecPtEtaPhiStrictVtx; //!
@@ -625,7 +629,7 @@ public:
     TH3F                  *fTrueMCElecLPTriggerEventCuts; //!
     TH3F                  *fTrueMCElecLPTrigger; //!
     TH2F                  *fTrueElectronEta; //!
-    TH2F                  *fRecElectronEta; //!
+    TH2F                  *fRecElectronEtaWRecEff; //!
     TH2F                  *fTrueLPinAcceptanceEta; //!
     TH2F                  *fTrueLPEta; //!
     TH2F                  *fRecLPEta; //!
