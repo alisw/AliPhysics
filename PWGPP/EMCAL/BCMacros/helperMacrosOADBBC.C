@@ -485,7 +485,7 @@ void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString cellList=""
 
 	//......................................................
 	//..Settings
-	const Int_t nBlocks=1; //..number of different runblocks of the period
+	const Int_t nBlocks=2; //..number of different runblocks of the period
 
 	Int_t zoomRange=20;
 	Double_t range=5; //10 GeV
@@ -559,13 +559,22 @@ void Plot_CellList(TString period="LHC15n",Int_t trainNo=603,TString cellList=""
 		//..16k
 		//if(iBlock==0)rootFileName[iBlock]= Form("Version0/%s_INT7_Histograms_V0.root",period.Data());
 		//..17n
-		if(iBlock==0)rootFileName[iBlock]= Form("Version1OADB/%s_INT7_Histograms_V1.root",period.Data());
+		//if(iBlock==0)rootFileName[iBlock]= Form("Version2/%s_INT7_Histograms_V2.root",period.Data());
 
+		if(iBlock==0)rootFileName[iBlock]= "Version2/LHC16i_INT7_Histograms_V1.root";
+		if(iBlock==1)rootFileName[iBlock]= "Version2/LHC16i_INT7_Histograms_V2.root";
+
+		cout<<"Look for filename: "<<rootFileName[iBlock]<<endl;
+		cout<<"in path: "<<path<<endl;
 		outputRoot[iBlock]   = TFile::Open(Form("%s/%s",path.Data(),rootFileName[iBlock].Data()));
 		if(!outputRoot[iBlock])cout<<"File "<<outputRoot[iBlock]->GetName()<<" does not exist"<<endl;
+		else cout<<"open File "<<outputRoot[iBlock]->GetName()<<endl;
 		h2DAmp[iBlock]     =(TH2F*)outputRoot[iBlock]->Get("hCellAmplitude");
 		h2DRatio[iBlock]   =(TH2F*)outputRoot[iBlock]->Get("ratio2DAmp");
 		h2DCellTime[iBlock]=(TH2F*)outputRoot[iBlock]->Get("hCellTime");
+		if(!h2DAmp[iBlock])cout<<"Problem 1"<<endl;
+		if(!h2DRatio[iBlock])cout<<"Problem 2"<<endl;
+		if(!h2DCellTime[iBlock])cout<<"Problem 3"<<endl;
 	}
 
 	TCanvas *c1 = new TCanvas(1);
