@@ -1215,8 +1215,8 @@ Int_t  AliESDEvent::AddTrack(const AliESDtrack *t)
     // Add track
     TClonesArray &ftr = *fTracks;
     AliESDtrack * track = new(ftr[fTracks->GetEntriesFast()])AliESDtrack(*t);
-    track->SetID(fTracks->GetEntriesFast()-1);
     track->SetESDEvent(this);
+    track->SetID(fTracks->GetEntriesFast()-1);
     return  track->GetID();    
 }
 
