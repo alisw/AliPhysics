@@ -32,6 +32,7 @@
 
 #include <AliVCluster.h>
 #include <AliVParticle.h>
+#include "AliAODTrack.h"
 #include <AliLog.h>
 
 #include "AliTLorentzVector.h"
@@ -221,19 +222,12 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateClusterHistograms()
     TString histname;
     TString histtitle;
     TString groupname;
-    Double_t pi = TMath::Pi();
     AliClusterContainer* clusCont = 0;
     TIter next(&fClusterCollArray);
     while ((clusCont = static_cast<AliClusterContainer*>(next()))) {
         groupname = clusCont->GetName();
         fHistManager.CreateHistoGroup(groupname);
         
-        histname = TString::Format("%s/fhnClusSparse", groupname.Data());
-        histtitle = histname + ";Multiplicity;#it{E}_{clus}{had.corr.} (GeV);#it{E}_{clus}^{non-lin.corr} (GeV); #it{E}_{clus}^{corr} (GeV);#it{p}_{trk,matched} (GeV/#it{c});E_{clus}^{non-lin.corr}/P_{trk}^{sum};#eta_{clus};#phi_{clus};M02;M20;Dumb}";
-        Int_t nbins10[11]  = {300, fNbins,fNbins,fNbins,fNbins,120,24,72,100,100,0};
-        Double_t min10[11] = {0,fMinBinPt,fMinBinPt,fMinBinPt,fMinBinPt,0,-1.2, -0.5*pi,0,0,0};
-        Double_t max10[11] = {300,fMaxBinPt,fMaxBinPt,fMaxBinPt,fMaxBinPt,1.2,1.2,1.5*pi,1,1,0};
-        fHistManager.CreateTHnSparse(histname.Data(), histtitle.Data(), 11, nbins10, min10, max10, "s");
         
         for (Int_t cent = 0; cent < fNcentBins; cent++) {
             histname = TString::Format("%s/histClusterEnergy_%d", groupname.Data(), cent);
@@ -352,19 +346,12 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateTrackHistograms()
     TString histname;
     TString histtitle;
     TString groupname;
-    Double_t pi = TMath::Pi();
     AliParticleContainer* partCont = 0;
     TIter next(&fParticleCollArray);
     while ((partCont = static_cast<AliParticleContainer*>(next()))) {
         groupname = partCont->GetName();
         fHistManager.CreateHistoGroup(groupname);
         
-        histname = TString::Format("%s/fhnTrkSparse", groupname.Data());
-        histtitle = histname + ";Multiplicity;#it{p}_{T,trk} (GeV/#it{c});#it{p}_{trk} (GeV/#it{c});#eta_{trk};#phi_{trk};TPCnClusters}";
-        Int_t nbins6[6]  = {300, fNbins, fNbins,24,72,100};
-        Double_t min6[6] = {0,fMinBinPt,fMinBinPt,-1.2, -0.5*pi,0};
-        Double_t max6[6] = {300,fMaxBinPt,fMaxBinPt,1.2,1.5*pi,100};
-        fHistManager.CreateTHnSparse(histname.Data(), histtitle.Data(), 6, nbins6, min6, max6, "s");
         
         for (Int_t cent = 0; cent < fNcentBins; cent++) {
             histname = TString::Format("%s/histTrackPt_%d", groupname.Data(), cent);
@@ -380,6 +367,15 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateTrackHistograms()
             fHistManager.CreateTH1(histname, histtitle, fNbins / 6, -1, 1, "s");
             
             if (TClass(partCont->GetClassName()).InheritsFrom("AliVTrack")) {
+                
+                histname = TString::Format("%s/fHistTrackResolution_%d", groupname.Data(), cent);
+                histtitle = TString::Format("%s;#sigma(#it{p}_{T}) / #it{p}_{T};counts", histname.Data());
+                fHistManager.CreateTH1(histname, histtitle, 100, 0, 1);
+                
+                histname = TString::Format("%s/fHistCovMatrix_%d", groupname.Data(), cent);
+                histtitle = TString::Format("%s; #it{p}_{T}; #sigma(#it{p}_{T}) / #it{p}_{T}; counts", histname.Data());
+                fHistManager.CreateTH2(histname, histtitle, 150, 0, 150, 100,0,1);
+                
                 histname = TString::Format("%s/fHistDeltaEtaPt_%d", groupname.Data(), cent);
                 histtitle = TString::Format("%s;#it{p}_{T,track}^{vertex} (GeV/#it{c});#it{#eta}_{track}^{vertex} - #it{#eta}_{track}^{EMCal};counts", histname.Data());
                 fHistManager.CreateTH2(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt, 50, -0.5, 0.5);
@@ -429,17 +425,12 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateJetHistograms()
         groupname = jetCont->GetName();
         fHistManager.CreateHistoGroup(groupname);
         
-        //histname = TString::Format("%s/fhnJetSparse", groupname.Data());
-        //histtitle = histname + TString::Format("%s;#it{p}_{T,jet} (GeV/#it{c});counts", histname.Data());
-        //fHistManager.CreateTHnSparse(histname.Data(), histtitle.Data());
-        
-        
         histname = TString::Format("%s/fhnJetSparse", groupname.Data());
-        histtitle = histname + ";Multiplicity;#it{p}_{T,jet}^{uncorr} (GeV/#it{c});#it{p}_{T,leading} (GeV/#it{c};#it{E}_{leading} (GeV);#eta_{jet};#phi_{jet};#it{F}_{cross};#it{z}_{leading};#it{A}_{jet};#it{NEF};#it{N}_{constit};#it{N}_{neu};#it{N}_{chrg}";
-        Int_t nbins13[13]  = {300, fNbins, fNbins, fNbins,24,72,20,20,20,20,100,100,100};
-        Double_t min13[13] = {0,fMinBinPt,fMinBinPt,fMinBinPt,-1.2, -0.5*pi,0,0,0,0,0,0,0};
-        Double_t max13[13] = {300,fMaxBinPt, fMaxBinPt, fMaxBinPt,1.2,1.5*pi,1,1,1,1,1,1,1};
-        fHistManager.CreateTHnSparse(histname.Data(), histtitle.Data(), 13, nbins13, min13, max13, "s");
+        histtitle = histname + ";Multiplicity;#it{p}_{T,jet}^{uncorr} (GeV/#it{c});#it{p}_{T,leading} (GeV/#it{c};#it{E}_{leading} (GeV);#eta_{jet};#phi_{jet};m#it{z}_{leading};#it{A}_{jet};#it{NEF};#it{N}_{constit}";
+        Int_t nbins13[10]  = {300, fNbins, fNbins, fNbins,24,36,20,20,20,100};
+        Double_t min13[10] = {0,fMinBinPt,fMinBinPt,fMinBinPt,-1.2, -0.5*pi,0,0,0,0};
+        Double_t max13[10] = {300,fMaxBinPt, fMaxBinPt, fMaxBinPt,1.2,1.5*pi,1,1,1,1};
+        fHistManager.CreateTHnSparse(histname.Data(), histtitle.Data(), 10, nbins13, min13, max13, "s");
         
         
         for (Int_t cent = 0; cent < fNcentBins; cent++) {
@@ -525,6 +516,14 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateJetHistograms()
             histtitle = TString::Format("%s;#it{E_{GA,patch}};#it{E_{Jet,UnCorr}};counts", histname.Data());
             fHistManager.CreateTH2(histname, histtitle, 400, 0, 200, 400, 0, 200);
             //  End Matched Trigger Histos
+            
+            histname = TString::Format("%s/fHistJetTrackResolution_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;#sigma(#it{p}_{T}) / #it{p}_{T};counts", histname.Data());
+            fHistManager.CreateTH1(histname, histtitle, 100, 0, 1);
+            
+            histname = TString::Format("%s/fHistJetCovMatrix_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s; #it{p}_{T}; #sigma(#it{p}_{T}) / #it{p}_{T}; counts", histname.Data());
+            fHistManager.CreateTH2(histname, histtitle, 150, 0, 150, 100,0,1);
             
             histname = TString::Format("%s/histJetArea_%d", groupname.Data(), cent);
             histtitle = TString::Format("%s;#it{A}_{jet};counts", histname.Data());
@@ -699,12 +698,33 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
                 for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
                     AliVParticle *JetTrk = jet->TrackAt(it, tracks->GetArray());
                     if (JetTrk) {
-                        //AliVTrack *Vtrack = dynamic_cast<AliVTrack*>(track);
+                        
+                        AliVTrack *Vtrack = dynamic_cast<AliVTrack*>(JetTrk);
+                        const AliAODTrack* AODJetTrack = static_cast<const AliAODTrack*>(Vtrack);
+                        
+                        if(!AODJetTrack) AliFatal("Not a standard AOD");
+                        
+                        AliExternalTrackParam exParam;
+                        Double_t sigma = 0;
+                        
+                        //get covariance matrix
+                        Double_t cov[21] = {0,};
+                        AODJetTrack->GetCovMatrix(cov);
+                        Double_t pxpypz[3] = {0,};
+                        AODJetTrack->PxPyPz(pxpypz);
+                        Double_t xyz[3] = {0,};
+                        AODJetTrack->GetXYZ(xyz);
+                        Short_t sign = AODJetTrack->Charge();
+                        exParam.Set(xyz,pxpypz,cov,sign);
+                        sigma = TMath::Sqrt(exParam.GetSigma1Pt2());
+                        Z_part = Vtrack->Pt() / jet->Pt();
+                        
+                        histname = TString::Format("%s/fHistJetTrackResolution_%d", groupname.Data(), fCentBin);
+                        fHistManager.FillTH1(histname, sigma);
+                        histname = TString::Format("%s/fHistJetCovMatrix_%d", groupname.Data(), fCentBin);
+                        fHistManager.FillTH2(histname, Vtrack->Pt(), sigma);
                         histname = TString::Format("%s/histJetTrkPt_%d", groupname.Data(), fCentBin);
                         fHistManager.FillTH1(histname, JetTrk->Pt());
-                        
-                        //Z_part = GetZ(JetTrk->Px(),JetTrk->Py(),JetTrk->Pz(),jet->Px(),jet->Py(),jet->Pz());
-                        Z_part = 1.;
                         histname = TString::Format("%s/histJetZvJetPt_%d", groupname.Data(), fCentBin);
                         fHistManager.FillTH2(histname,jet->Pt(),Z_part);
                         
@@ -760,9 +780,7 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
             AliTrackContainer * Globaltracks = static_cast<AliTrackContainer * >(GetParticleContainer("tracks"));
             Double_t TrackMultiplicity = Globaltracks->GetNTracks();
             Double_t Numb = jet->N();
-            Double_t NumbNeu = jet->Nn();
-            Double_t NumbChrg = jet->Nch();
-            Double_t x[13]={TrackMultiplicity,jet->Pt(),leadingtrackpT,leadingclusterE,jet->Eta(),jet->Phi(),JetFCrossLeading,z,jet->Area(),jet->NEF(),Numb,NumbNeu,NumbChrg};
+            Double_t x[10]={TrackMultiplicity,jet->Pt(),leadingtrackpT,leadingclusterE,jet->Eta(),jet->Phi(),z,jet->Area(),jet->NEF(),Numb};
             histname = TString::Format("%s/fhnJetSparse", groupname.Data());
             fHistManager.FillTHnSparse(histname, x);
             
@@ -784,17 +802,26 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoTrackLoop()
 {
     AliClusterContainer* clusCont = GetClusterContainer(0);
     
+    AliTrackContainer* trackCont = GetTrackContainer("tracks");
+   
     TString histname;
     TString groupname;
     AliParticleContainer* partCont = 0;
     TIter next(&fParticleCollArray);
+    
+    for (auto trackIt : trackCont->accepted_momentum() ) {
+        
+    }
     while ((partCont = static_cast<AliParticleContainer*>(next()))) {
         groupname = partCont->GetName();
         UInt_t count = 0;
+        
+        
         for(auto part : partCont->accepted()) {
             if (!part) continue;
             count++;
             
+
             histname = TString::Format("%s/histTrackPt_%d", groupname.Data(), fCentBin);
             fHistManager.FillTH1(histname, part->Pt());
             
@@ -804,8 +831,33 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoTrackLoop()
             histname = TString::Format("%s/histTrackEta_%d", groupname.Data(), fCentBin);
             fHistManager.FillTH1(histname, part->Eta());
             
+
+            
             if (partCont->GetLoadedClass()->InheritsFrom("AliVTrack")) {
                 const AliVTrack* track = static_cast<const AliVTrack*>(part);
+                const AliAODTrack* AODTrack = static_cast<const AliAODTrack*>(track);
+                
+                if(!AODTrack) AliFatal("Not a standard AOD");
+                
+                AliExternalTrackParam exParam;
+                Double_t sigma = 0;
+                
+                //get covariance matrix
+                Double_t cov[21] = {0,};
+                AODTrack->GetCovMatrix(cov);
+                Double_t pxpypz[3] = {0,};
+                AODTrack->PxPyPz(pxpypz);
+                Double_t xyz[3] = {0,};
+                AODTrack->GetXYZ(xyz);
+                Short_t sign = AODTrack->Charge();
+                exParam.Set(xyz,pxpypz,cov,sign);
+                sigma = TMath::Sqrt(exParam.GetSigma1Pt2());
+                
+                histname = TString::Format("%s/fHistTrackResolution_%d", groupname.Data(), fCentBin);
+                fHistManager.FillTH1(histname, sigma);
+                
+                histname = TString::Format("%s/fHistCovMatrix_%d", groupname.Data(), fCentBin);
+                fHistManager.FillTH2(histname, track->Pt(), sigma);
                 
                 histname = TString::Format("%s/fHistDeltaEtaPt_%d", groupname.Data(), fCentBin);
                 fHistManager.FillTH1(histname, track->Pt(), track->Eta() - track->GetTrackEtaOnEMCal());
@@ -816,9 +868,6 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoTrackLoop()
                 histname = TString::Format("%s/fHistDeltaPtvsPt_%d", groupname.Data(), fCentBin);
                 fHistManager.FillTH1(histname, track->Pt(), track->Pt() - track->GetTrackPtOnEMCal());
                 
-                Double_t x[6]={0.0,track->Pt(),track->P(),track->Eta(),track->Phi(),0.0};
-                histname = TString::Format("%s/fhnTrkSparse", groupname.Data());
-                fHistManager.FillTHnSparse(histname,x);
                 
                 if (clusCont) {
                     Int_t iCluster = track->GetEMCALcluster();
@@ -845,7 +894,7 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoTrackLoop()
  */
 void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoClusterLoop()
 {
-    Double_t TrkPt = 0.0, EovP = 0.0, TrackMultiplicity =0.0, trkpSum = 0.0;
+    Double_t TrkPt = 0.0, EovP = 0.0, trkpSum = 0.0;
     TString histname;
     TString groupname;
     AliClusterContainer* clusCont = 0;
@@ -904,13 +953,7 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoClusterLoop()
               }
             }
             
-            
-              Double_t x[10]={TrackMultiplicity,cluster->GetHadCorrEnergy(),cluster->GetNonLinCorrEnergy(),cluster->E(),TrkPt,EovP,nPart.Eta(),nPart.Phi_0_2pi(),cluster->GetM02(),cluster->GetM20()};
-              histname = TString::Format("%s/fhnClusSparse", groupname.Data());
-              fHistManager.FillTHnSparse(histname, x);
-            
-            
-            
+
             
         }
         
@@ -1176,18 +1219,8 @@ Double_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::GetFcross(const AliVCluste
     
     return Fcross;
 }
+
 */
-//Double_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::GetSmearedTrackPt(AliVTrack *track)
-//{
-    //
-    // Smear track momentum
-    //
-    
-    //Double_t resolution = track->Pt()*track->Pt()*TMath::Sqrt(track->GetSigma1Pt2());
-    //Double_t smear = resolution*TMath::Sqrt((1+fVaryTrkPtRes)*(1+fVaryTrkPtRes)-1);
-  //  return fRandomGen->Gaus(0, smear);
-    
-//}
 THnSparse* AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::NewTHnSparseF(const char* name, UInt_t entries)
 {
     Int_t count = 0;
