@@ -46,7 +46,7 @@
 #include "AliTRDseedV1.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDgeometry.h"
-#include "info/AliTRDpidInfo.h"
+#include "AliTRDpidInfo.h"
 #include "AliAnalysisManager.h"
 
 ClassImp(AliTRDpidRefMakerLQ)
