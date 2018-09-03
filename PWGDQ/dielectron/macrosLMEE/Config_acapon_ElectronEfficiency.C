@@ -5,7 +5,7 @@ const Int_t nDie=arrNames->GetEntriesFast();
 
 // main task settings
 // fill resolutions for one cutInstance (step 1).
-const Bool_t CalcResolution   = kTRUE;
+const Bool_t CalcResolution   = kFALSE;
 // use previously extracted resolutions (step 2).
 TString resolutionfile = "";
 Bool_t CalcEfficiencyRec      = kFALSE;  // use given resolution file to smear the kinematics.

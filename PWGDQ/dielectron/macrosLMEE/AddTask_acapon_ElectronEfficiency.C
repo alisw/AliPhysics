@@ -1,12 +1,13 @@
-AliAnalysisTask *AddTask_acapon_ElectronEfficiency_v2(TString configFile="Config_acapon_ElectronEfficiency_v2.C",
+AliAnalysisTask *AddTask_acapon_ElectronEfficiency(TString configFile="Config_acapon_ElectronEfficiency.C",
                                                      Double_t centMin=0, Double_t centMax=90,
                                                      Bool_t getFromAlien=kFALSE,
                                                      Bool_t deactivateTree=kFALSE, // enabling this has priority over 'writeTree' in config file! (enable for LEGO trains)
                                                      Char_t* outputFileName="acapon_ElectronEfficiency.root",
                                                      Bool_t forcePhysSelAndTrigMask=kTRUE, // possibility to activate UsePhysicsSelection and SetTriggerMask for MC (may be needed for new MC productions according to Mahmut) as well as for AOD data.
-                                                     Int_t triggerNames=(AliVEvent::kMB),
-                                                     Int_t collCands=AliVEvent::kMB,
-                                                     Int_t cutlibPreloaded=0
+                                                     Int_t triggerNames=(AliVEvent::kINT7),
+                                                     Int_t collCands=AliVEvent::kINT7,
+                                                     Int_t cutlibPreloaded=0,
+																										 Bool_t SDDstatus = kTRUE
                                                      )
 {
   // get the current analysis manager
@@ -16,26 +17,33 @@ AliAnalysisTask *AddTask_acapon_ElectronEfficiency_v2(TString configFile="Config
     return 0;
   }
 
-	// Base Directory for GRID / LEGO Train  
-	TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-	if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/a/acapon/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data()))) ){
-		
-		configBasePath=Form("%s/",gSystem->pwd());
+ //TString configBasePath("/home/aaron/analyses/LHC16q/eeFrameworkQA/"); //Local
+	TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/"); //AliPhysics
+	TString configFile("Config_acapon_ElectronEfficiency.C");
+	TString configLMEECutLib("LMEECutLib_acapon.C");
+
+	//Load updated macros from private ALIEN path
+	TString myConfig ="alien_cp alien:///alice/cern.ch/user/a/acapon/dielectronShizzle/Config_acapon_ElectronEfficiency.C .";
+	TString myCutLib ="alien_cp alien:///alice/cern.ch/user/a/acapon/dielectronShizzle/LMEECutLib_acapon.C ."; 
+	if (getFromAlien && (!gSystem->Exec(myConfig)) && (!gSystem->Exec(myCutLib))){
+
+			std::cout << "Copy config from Alien" << std::endl;
+			configBasePath=Form("%s/",gSystem->pwd());
 	}
 
-	TString configFilePath(configBasePath+cFileName);
-	std::cout << "Configpath:  " << configFilePath << std::endl;
+	TString configFilePath(configBasePath+configFile);
+	TString configLMEECutLibPath(configBasePath+configLMEECutLib);
 
-	if(gSystem->Exec(Form("ls %s", configFilePath.Data()))==0){
-
-		std::cout << "loading config: " << configFilePath.Data() << std::endl;
-		gROOT->LoadMacro(configFilePath.Data());
-	} 
-	else{
-		std::cout << "config not found: " << configFilePath.Data() << std::endl;
-		return 0; // if return is not called, the job will fail instead of running wihout this task... (good for local tests, bad for train)
+	//load dielectron configuration files
+	if(!gROOT->GetListOfGlobalFunctions()->FindObject(configLMEECutLib.Data())){
+			gROOT->LoadMacro(configLMEECutLibPath.Data());
+	}
+	if(!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data())){
+			gROOT->LoadMacro(configFilePath.Data());
 	}
 
+    // cut lib
+    LMEECutLib* cutlib = new LMEECutLib(SDDstatus);
   std::cout << "computing binning..." << std::endl;
   Double_t EtaBins[nBinsEta+1];
   for(Int_t i = 0; i <= nBinsEta; i++){
@@ -61,7 +69,7 @@ AliAnalysisTask *AddTask_acapon_ElectronEfficiency_v2(TString configFile="Config
   std::cout << "hasMC = " << hasMC << std::endl;
 
   // Electron efficiency task
-  AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency("acapon_ElectronEfficiency_v2");
+  AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency("acapon_ElectronEfficiency");
   std::cout << "task created: " << task->GetName() << std::endl;
   task->SetUseMultSelection(kTRUE);
 
@@ -197,7 +205,7 @@ AliAnalysisTask *AddTask_acapon_ElectronEfficiency_v2(TString configFile="Config
   //
   // Create containers for input/output
   //
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("acapon_ElectronEfficiency_v2_%d", cutlibPreloaded), TList::Class(),
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("acapon_ElectronEfficiency_%d", cutlibPreloaded), TList::Class(),
                                                            AliAnalysisManager::kOutputContainer,outputFileName);
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("acapon_supportHistos_%d", cutlibPreloaded), TList::Class(),
                                                             AliAnalysisManager::kOutputContainer,outputFileName);
