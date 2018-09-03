@@ -360,7 +360,8 @@ Int_t AliESDtools::CalculateEventVariables() {
     if (tofOK) {  // TOF
       (*fCacheTrackCounters)[3]++;
       (*fCacheTrackNcl)[3] += 1;   // dummy for the moment
-      (*fCacheTrackChi2)[3]+= 1;   //
+      (*fCacheTrackChi2)[3]+= 1;   ///
+      (*fCacheTrackMatchEff)[1]+=  itsOK;
     }
   } // end of track LOOP
 
@@ -382,6 +383,9 @@ Int_t AliESDtools::CalculateEventVariables() {
     (*fCacheTrackMatchEff)[0]/=(*fCacheTrackCounters)[2];
     (*fCacheTrackChi2)[5]/=(*fCacheTrackCounters)[2];
   } //ITS if TRD
+  if ((*fCacheTrackCounters)[3]>0) {
+    (*fCacheTrackMatchEff)[1]/=(*fCacheTrackCounters)[2];
+  }  // ITS if TOF
   (*fCacheTrackCounters)[9]=fEvent->GetNumberOfTracks();  // original number of ESDtracks
   return 1;
 }
