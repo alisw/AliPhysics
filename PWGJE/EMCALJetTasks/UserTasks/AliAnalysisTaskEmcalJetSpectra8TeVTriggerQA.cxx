@@ -809,9 +809,9 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoTrackLoop()
     AliParticleContainer* partCont = 0;
     TIter next(&fParticleCollArray);
     
-    for (auto trackIt : trackCont->accepted_momentum() ) {
+    //for (auto trackIt : trackCont->accepted_momentum() ) {
         
-    }
+    //}
     while ((partCont = static_cast<AliParticleContainer*>(next()))) {
         groupname = partCont->GetName();
         UInt_t count = 0;
