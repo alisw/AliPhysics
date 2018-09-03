@@ -14,7 +14,7 @@ Bool_t bUseEtaResolution      = kTRUE; // kFALSE means using theta instead of et
 // determine efficiency from only positive label tracks (in addition to using all labels).
 Bool_t CalcEfficiencyPoslabel = kFALSE;
 // determine pair efficiency for all cutInstances. (Consider high combinatorics if not only MC-true electrons are selected.)
-const Bool_t doPairing = kFALSE;
+const Bool_t doPairing = kTRUE;
 // specify for which "cutInstance" the support histos should be filled!
 const Int_t     supportedCutInstance = 0;
 // specify if track tree shall be filled and written to file (only recommended for small checks!)
