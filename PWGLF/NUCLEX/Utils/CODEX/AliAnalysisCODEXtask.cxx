@@ -171,10 +171,11 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     /// PID cuts
     float sig[8] = {999.f};
     bool reject = !mMCtrue; /// In the MC the cut on the TPC pid is replaced by a cut on the true MC particle
+    bool tpcRefit = (track->GetStatus() & AliESDtrack::kTPCrefit) == AliESDtrack::kTPCrefit;
     for (int iS = 0; iS < 8; ++iS) {
-      if ((track->GetStatus() & AliESDtrack::kTPCrefit) == AliESDtrack::kTPCrefit && track->GetInnerParam() && track->GetTPCNcls() > 60) {
+      if (tpcRefit && track->GetInnerParam() && track->GetTPCNcls() > 60) {
         sig[iS] = mPIDresponse->NumberOfSigmas(AliPIDResponse::kTPC,track,particle_species[iS]);
-      } else if (track->Pt() < mITSsaPtCut) {
+      } else if (mITSstandalone && !tpcRefit && track->Pt() < mITSsaPtCut) {
         sig[iS] = mPIDresponse->NumberOfSigmas(AliPIDResponse::kITS,track,particle_species[iS]);
       }
       if (std::abs(sig[iS]) < mNsigmaTPCselectionPOI) {
