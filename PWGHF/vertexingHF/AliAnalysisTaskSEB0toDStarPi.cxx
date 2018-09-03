@@ -2179,16 +2179,6 @@ void AliAnalysisTaskSEB0toDStarPi::B0toDStarPiSignalTracksInMC(TClonesArray * mc
 
     // Next, we save the labels to our array
     if(mcPionB0Present && mcPionDStarPresent && mcPionD0Present && mcKaonPresent){
-      Int_t rows = B0toDStarPiLabelMatrix->GetNrows();
-
-      B0toDStarPiLabelMatrix->ResizeTo(rows+1,7);
-      particleMatrix(rows,0) = mcLabelPionB0;
-      particleMatrix(rows,1) = mcLabelPionDStar;
-      particleMatrix(rows,2) = mcLabelPionD0;
-      particleMatrix(rows,3) = mcLabelKaon;
-      particleMatrix(rows,4) = mcLabelD0;
-      particleMatrix(rows,5) = mcLabelDStar;
-      particleMatrix(rows,6) = mcLabelB0;
 
       // We also save information on the amount of signal tracks that exist in the MC dataset
       TString fillthis= "B0s_in_analysis";
@@ -2245,62 +2235,97 @@ void AliAnalysisTaskSEB0toDStarPi::B0toDStarPiSignalTracksInMC(TClonesArray * mc
       fillthis= "mc_D0_kaon_pseudorapidity_true";
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(pseudoYMC[6]);
 
-    }
-  }
+      // We check if the tracks are in acceptance
+      if(ptMC[1] < 0.1 || TMath::Abs(pseudoYMC[1]) > 0.9 ) continue;
+      if(ptMC[3] < 0.1 || TMath::Abs(pseudoYMC[3]) > 0.9 ) continue;
+      if(ptMC[5] < 0.1 || TMath::Abs(pseudoYMC[5]) > 0.9 ) continue;
+      if(ptMC[6] < 0.1 || TMath::Abs(pseudoYMC[6]) > 0.9 ) continue;
 
-  // Not all the tracks can be/are detected by the detector. We are only interested in tracks that lie within the acceptance of the detector.
-  // We remove the undetectable tracks from the array in order to get accurate information on the amount of signal that lies within the acceptance of our detector.
-  Int_t numberOfB0s = 0;
-  TArrayI correctLabelArray; 
-  for (Int_t i = 0; i < B0toDStarPiLabelMatrix->GetNrows(); i++)
-  {
-    Int_t particleCounter = 0;
-    for (Int_t j = 0; j < 4; j++)
-    {
-      Int_t labelParticleInList = (Int_t)particleMatrix(i,j);
-      for (Int_t k=0; k<aodevent->GetNumberOfTracks(); k++)
-      { 
-        AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(aodevent->GetTrack(k));
-        if(!aodTrack) AliFatal("Not a standard AOD");
-        if(TMath::Abs(aodTrack->Eta())>0.8) continue;
-        if(aodTrack->GetLabel() == labelParticleInList) 
-        {
-          particleCounter++;
-          break;
-        }
-      }
-    }
+      // We check if the B0 is in the fiducial region
+      if(TMath::Abs(yMC[0]) > 0.8) continue;
 
-    if (particleCounter==4)
-    {
-      TString fillthis= "B0s_in_analysis";
+      Int_t rows = B0toDStarPiLabelMatrix->GetNrows();
+
+      B0toDStarPiLabelMatrix->ResizeTo(rows+1,7);
+      particleMatrix(rows,0) = mcLabelPionB0;
+      particleMatrix(rows,1) = mcLabelPionDStar;
+      particleMatrix(rows,2) = mcLabelPionD0;
+      particleMatrix(rows,3) = mcLabelKaon;
+      particleMatrix(rows,4) = mcLabelD0;
+      particleMatrix(rows,5) = mcLabelDStar;
+      particleMatrix(rows,6) = mcLabelB0;
+
+      fillthis= "B0s_in_analysis";
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(2);
-      numberOfB0s++;
-      correctLabelArray.Set(numberOfB0s);
-      correctLabelArray.AddAt(i,numberOfB0s-1);
 
-      Int_t labelParticle = (Int_t)particleMatrix(i,0);
-      AliAODMCParticle * B0track = dynamic_cast< AliAODMCParticle*>(mcTrackArray->At(labelParticle));
 
       fillthis= "B0s_per_bin_in_Acc";
       for (Int_t j = 0; j < fnPtBins; ++j)
       {
-        if(fPtBinLimits[j] < B0track->Pt() && B0track->Pt() < fPtBinLimits[j+1]) {((TH1F*)(listout->FindObject(fillthis)))->Fill(j); break;}    
+        if(fPtBinLimits[j] < ptMC[0] && ptMC[0] < fPtBinLimits[j+1]) {((TH1F*)(listout->FindObject(fillthis)))->Fill(j); break;}
       }
+
     }
   }
 
-  for (Int_t i = 0; i < correctLabelArray.GetSize(); i++)
-  {
-    particleMatrix(i,0) = (Int_t)particleMatrix(correctLabelArray[i],0);
-    particleMatrix(i,1) = (Int_t)particleMatrix(correctLabelArray[i],1);
-    particleMatrix(i,2) = (Int_t)particleMatrix(correctLabelArray[i],2);
-    particleMatrix(i,3) = (Int_t)particleMatrix(correctLabelArray[i],3);
-    particleMatrix(i,4) = (Int_t)particleMatrix(correctLabelArray[i],4);
-    particleMatrix(i,5) = (Int_t)particleMatrix(correctLabelArray[i],5);
-    particleMatrix(i,6) = (Int_t)particleMatrix(correctLabelArray[i],6);
-  }
-  B0toDStarPiLabelMatrix->ResizeTo(correctLabelArray.GetSize(),7);
+  //old method
+
+  // Not all the tracks can be/are detected by the detector. We are only interested in tracks that lie within the acceptance of the detector.
+  // We remove the undetectable tracks from the array in order to get accurate information on the amount of signal that lies within the acceptance of our detector.
+  // Int_t numberOfB0s = 0;
+  // TArrayI correctLabelArray; 
+  // for (Int_t i = 0; i < B0toDStarPiLabelMatrix->GetNrows(); i++)
+  // {
+  //   std::cout << "loop at row = " << i << std::endl;
+  //   Int_t particleCounter = 0;
+  //   for (Int_t j = 0; j < 4; j++)
+  //   {
+  //     Int_t labelParticleInList = (Int_t)particleMatrix(i,j);
+  //     for (Int_t k=0; k<aodevent->GetNumberOfTracks(); k++)
+  //     { 
+  //       AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(aodevent->GetTrack(k));
+  //       if(!aodTrack) AliFatal("Not a standard AOD");
+  //       if(TMath::Abs(aodTrack->Eta())>0.8) continue;
+  //       if(aodTrack->GetLabel() == labelParticleInList) 
+  //       {
+  //         particleCounter++;
+  //         break;
+  //       }
+  //     }
+  //   }
+  //   if(particleCounter==4) std::cout << "found 4" << std::endl;
+  //   if (particleCounter==4)
+  //   {
+  //     TString fillthis= "B0s_in_analysis";
+  //     ((TH1F*)(listout->FindObject(fillthis)))->Fill(2);
+  //     numberOfB0s++;
+  //     correctLabelArray.Set(numberOfB0s);
+  //     correctLabelArray.AddAt(i,numberOfB0s-1);
+
+  //     Int_t labelParticle = (Int_t)particleMatrix(i,0);
+  //     AliAODMCParticle * B0track = dynamic_cast< AliAODMCParticle*>(mcTrackArray->At(labelParticle));
+
+  //     fillthis= "B0s_per_bin_in_Acc";
+  //     for (Int_t j = 0; j < fnPtBins; ++j)
+  //     {
+  //       if(fPtBinLimits[j] < B0track->Pt() && B0track->Pt() < fPtBinLimits[j+1]) {((TH1F*)(listout->FindObject(fillthis)))->Fill(j); break;} 
+  //     }
+  //   }
+  // }
+
+  // std::cout << "Number of B0 = " << numberOfB0s << std::endl;
+
+  // for (Int_t i = 0; i < correctLabelArray.GetSize(); i++)
+  // {
+  //   particleMatrix(i,0) = (Int_t)particleMatrix(correctLabelArray[i],0);
+  //   particleMatrix(i,1) = (Int_t)particleMatrix(correctLabelArray[i],1);
+  //   particleMatrix(i,2) = (Int_t)particleMatrix(correctLabelArray[i],2);
+  //   particleMatrix(i,3) = (Int_t)particleMatrix(correctLabelArray[i],3);
+  //   particleMatrix(i,4) = (Int_t)particleMatrix(correctLabelArray[i],4);
+  //   particleMatrix(i,5) = (Int_t)particleMatrix(correctLabelArray[i],5);
+  //   particleMatrix(i,6) = (Int_t)particleMatrix(correctLabelArray[i],6);
+  // }
+  // B0toDStarPiLabelMatrix->ResizeTo(correctLabelArray.GetSize(),7);
   return;
 }
 //-------------------------------------------------------------------------------------
@@ -3561,8 +3586,6 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
         UShort_t idProng1 = twoProngdaughter1->GetID();
         
         if(trackB0Pion->GetID() == trackFirstDaughter->GetID() || trackB0Pion->GetID() == idProng0 || trackB0Pion->GetID() == idProng1) continue;
-        
-
 
         //we check if the charges of the tracks are correct // later change this for like sign analysis.
         Bool_t bSameSign = kFALSE;
@@ -3791,6 +3814,14 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
           trackB0.GetSecondaryVtx()->AddDaughter(&trackDStar);
           trackB0.SetPrimaryVtxRef((AliAODVertex*)aodEvent->GetPrimaryVertex());
           trackB0.SetProngIDs(2,id);
+
+          // Fiducial cut
+          if(TMath::Abs(trackB0.Y(511)) > 0.8) {
+            delete vertexMother; vertexMother = nullptr; 
+            delete vertexDStar; vertexDStar = nullptr; 
+            delete trackB0PionRotated; trackB0PionRotated = nullptr; 
+            continue;
+          }
 
           ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////<<
           //
@@ -6385,9 +6416,6 @@ Int_t AliAnalysisTaskSEB0toDStarPi::MatchCandidateToMonteCarlo(Int_t pdgabs, Ali
   Int_t ndg = candidate->GetNDaughters();
   if(!ndg) { AliError("No daughters available"); return -1;}
   if(ndg != 2) return -1;
-
-  // Skip if there is no signal in the event
-  if(B0toDStarPiLabelMatrix->GetNrows() == 0) return -1;
 
   // loop on daughters and write the labels
   Int_t dgLabels[2] = {-1};
