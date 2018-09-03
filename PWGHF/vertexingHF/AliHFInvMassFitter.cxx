@@ -1140,7 +1140,9 @@ Double_t AliHFInvMassFitter::GetRawYieldBinCounting(Double_t& errRyBC, Double_t 
     Double_t cntRefl=0;
     if(option==1 && fRflFunc) cntRefl=fRflFunc->Integral(fHistoInvMass->GetBinLowEdge(jb),fHistoInvMass->GetBinLowEdge(jb)+fHistoInvMass->GetBinWidth(jb))/fHistoInvMass->GetBinWidth(jb);
     //Double_t cntBkg=fbackground->Eval(fHistoInvMass->GetBinCenter(jb));
-    cntSig+=(cntTot-cntBkg-cntRefl);
+    Double_t cntSecPeak=0;
+    if(option==1 && fSecondPeak && fSecFunc) cntSecPeak=fSecFunc->Integral(fHistoInvMass->GetBinLowEdge(jb),fHistoInvMass->GetBinLowEdge(jb)+fHistoInvMass->GetBinWidth(jb))/fHistoInvMass->GetBinWidth(jb);
+    cntSig+=(cntTot-cntBkg-cntRefl-cntSecPeak);
     cntErr+=(fHistoInvMass->GetBinError(jb)*fHistoInvMass->GetBinError(jb));
   }
   errRyBC=TMath::Sqrt(cntErr);
