@@ -989,10 +989,18 @@ void AliConvEventCuts::PrintCutsWithValues() {
   if (fIsHeavyIon == 0) {
     printf("Running in pp mode \n");
     if (fSpecialTrigger == 0){
-      if (fSpecialSubTrigger == 0){
-        printf("\t only events triggered by V0OR will be analysed \n");
-      } else if (fSpecialSubTrigger == 1){
-        printf("\t only events where SDD was present will be analysed \n");
+      if(fSpecialTriggerName.Contains("INT7")){
+        printf("\t only events triggered by V0AND will be analysed \n");
+      }else if(fSpecialTriggerName.Contains("INT8")){
+        printf("\t only events triggered by T0AND will be analysed \n");
+      }else if(!fSpecialTriggerName.IsNull()){
+        printf("\t only events triggered by %s will be analysed \n", fSpecialTriggerName.Data());
+      }else{
+        if (fSpecialSubTrigger == 0){
+          printf("\t only events triggered by V0OR will be analysed \n");
+        } else if (fSpecialSubTrigger == 1){
+          printf("\t only events where SDD was present will be analysed \n");
+        }
       }
     } else if (fSpecialTrigger == 1){
       if (fSpecialSubTrigger == 0){
