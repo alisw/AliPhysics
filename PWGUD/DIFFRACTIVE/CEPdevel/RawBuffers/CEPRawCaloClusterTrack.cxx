@@ -107,32 +107,40 @@ void CEPRawCaloClusterTrack::SetCaloClusterVariables(AliESDCaloCluster* ClusterO
         // /////////////////////////////////////////////////////////////////////////////
         // -------------- get the distance to the nearest track ------------------------
         // contruct the track-TObjArray here
-        TObjArray* track_arr = new TObjArray();
-        track_arr->SetOwner(kFALSE);
-        AliESDtrack* trk = 0x0;
-        for (Int_t kk(0); kk<ESDobj->GetNumberOfTracks(); kk++){
-            trk = (AliESDtrack*) ESDobj->GetTrack(kk); 
-            if (!trk) continue;
-            track_arr->Add(trk);
-        }
-        Double_t dPhiEtaMin = 999.;
+        //TObjArray* track_arr = new TObjArray();
+        //track_arr->SetOwner(kFALSE);
+        //AliESDtrack* trk = 0x0;
+        //for (Int_t kk(0); kk<ESDobj->GetNumberOfTracks(); kk++){
+        //    trk = (AliESDtrack*) ESDobj->GetTrack(kk); 
+        //    if (!trk) continue;
+        //    track_arr->Add(trk);
+        //}
+        AliESDtrack *tmptrk = NULL;
         Float_t x[3];
         ClusterObj->GetPosition(x);
-        TVector3 v3(x[0], x[1], x[2]);
+        
         // v3 phi is in the range [-pi,pi) -> map it to [0, 2pi)
+        TVector3 v3(x[0], x[1], x[2]);
         Double_t cluster_phi = (v3.Phi()>0.) ? v3.Phi() : v3.Phi() + 2.*TMath::Pi();
         Double_t cluster_eta = v3.Eta();
+        
+        Double_t dPhiEtaMin = 999.;
         for (Int_t kk(0); kk<TTindices->GetSize(); kk++) {
             Int_t trkIndex = TTindices->At(kk);
-            AliESDtrack *tmptrk = (AliESDtrack*) track_arr->At(trkIndex);
+            tmptrk = (AliESDtrack*) ESDobj->GetTrack(trkIndex); 
+            if (!tmptrk) continue;
+            
             // track position on emcal
             Double_t trkPhiOnEmc = tmptrk->GetTrackPhiOnEMCal();
+            
             // Map phi to [0,2pi)
             trkPhiOnEmc = (trkPhiOnEmc>0.) ? trkPhiOnEmc : trkPhiOnEmc+2.*TMath::Pi();
             if (trkPhiOnEmc<0.) trkPhiOnEmc=-999.;
             Double_t trkEtaOnEmc = tmptrk->GetTrackEtaOnEMCal();
+            
             // no matching if at least one has value -999.
             if (trkPhiOnEmc==-999. || trkEtaOnEmc==-999.) continue;
+            
             // in case of track on emcal: calculate distance in phi and eta
             Double_t dEta = trkEtaOnEmc - cluster_eta;
             Double_t dPhi = trkPhiOnEmc - cluster_phi;
@@ -143,11 +151,7 @@ void CEPRawCaloClusterTrack::SetCaloClusterVariables(AliESDCaloCluster* ClusterO
         fPhiEtaDistToNearestTrack = dPhiEtaMin;
         fHasTrackToMatch = (dPhiEtaMin==999.) ? kFALSE : kTRUE;
         // clear tracks
-        if (track_arr) {
-            track_arr->Clear();
-            delete track_arr;
-            track_arr = 0x0;
-        }
+
     } 
 }
 
