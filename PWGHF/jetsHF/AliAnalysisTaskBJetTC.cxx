@@ -54,6 +54,7 @@ fRespoPID(0x0),
 fPythiaEventWeight(1.0),
 fDoImprovedDCACut(kTRUE),
 fVertexConstraint(kFALSE),
+fThresholdIP(0.008),
 fDiamond(0x0),
 fVertexer(0x0),
 fDoJetProbabilityAnalysis(kFALSE),
@@ -418,6 +419,7 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fPythiaEventWeight(1.0),
 		fDoImprovedDCACut(kTRUE),
 		fVertexConstraint(kFALSE),
+		fThresholdIP(0.008),
 		fDiamond(0x0),
 		fVertexer(0x0),
 		//Bjet Cuts
@@ -1095,7 +1097,6 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 	fJetContainerData->ResetCurrentID();
 	fJetPt=0;
 	double jetptmc=0;
-	Double_t fThresholdIP = 0.01;
 
 	//########################## Electron Enriched Sample
 	Bool_t PtRelSample = kTRUE; 
@@ -2390,8 +2391,8 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
           fV0CandidateArray->Delete();//Reset the TClonesArray
   }
 
-	const Int_t nBins2dSignificance =500;
-	const Int_t nBins3dSignificance =500;
+	const Int_t nBins2dSignificance =250;
+	const Int_t nBins3dSignificance =250;
 	const Int_t nBins2d=250;
 	const Int_t nBins3d =250;
 
