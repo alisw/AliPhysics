@@ -856,15 +856,10 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
       isSelected = kTRUE;
    }
 
-   AliRsnCutEventUtils* evtUtils=new AliRsnCutEventUtils("temporary_cutEventUtils");
-   evtUtils->IsSelected(&fRsnEvent);
-
-   AliRsnCutPrimaryVertex* cutPrimaryVertex=new AliRsnCutPrimaryVertex("temporary_cutPrimaryVertex");
-   cutPrimaryVertex->IsSelected(&fRsnEvent);
-
    // if the above exit point is not taken, the event is accepted
    AliDebugClass(2, Form("Stats: %s", msg.Data()));
    if (isSelected) {
+     
      fHEventStat->Fill(3.1);
      Double_t multi = ComputeCentrality((output == 'E'));
      Double_t tracklets = ComputeTracklets();
@@ -877,33 +872,37 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
      if(fHAEventMultiCent) fHAEventMultiCent->Fill(multi,ComputeMultiplicity(output == 'E', fHAEventMultiCent->GetYaxis()->GetTitle()));
      if(fHAEventRefMultiCent) fHAEventRefMultiCent->Fill(refmulti, ComputeReferenceMultiplicity(output == 'E', fHAEventRefMultiCent->GetYaxis()->GetTitle()));
      if(fHAEventPlane) fHAEventPlane->Fill(multi,ComputeAngle());
-     SafeDelete(evtUtils);
-     SafeDelete(cutPrimaryVertex);
-      return output;
+     return output;
+     
    } else {
+
      fHEventStat->Fill(4.1);
-     AliAnalysisUtils *utils = new AliAnalysisUtils();
      const AliVVertex *vertex = fInputEvent->GetPrimaryVertex();
-     if (!vertex) fHEventStat->Fill(5.1);
-     else {
+     if (!vertex) {
+       fHEventStat->Fill(5.1);
+     } else {
        TString title=vertex->GetTitle();
+       AliRsnCutEventUtils* evtUtils = new AliRsnCutEventUtils("temporary_cutEventUtils");
+       evtUtils->IsSelected(&fRsnEvent);
+       AliRsnCutPrimaryVertex* cutPrimaryVertex = new AliRsnCutPrimaryVertex("temporary_cutPrimaryVertex");
+       cutPrimaryVertex->IsSelected(&fRsnEvent);
+       
        if( (title.Contains("Z")) || (title.Contains("3D")) || vertex->GetNContributors()<1.) {
 	 if( (title.Contains("Z")) || (title.Contains("3D")) ) fHEventStat->Fill(5.1);
 	 if(vertex->GetNContributors()<1.) fHEventStat->Fill(6.1);
        }
        else if(TMath::Abs(vertex->GetZ())>10.) fHEventStat->Fill(7.1);
-       else if(utils->IsPileUpEvent(fInputEvent)) fHEventStat->Fill(8.1);
+       else if(((AliAnalysisUtils *)evtUtils->GetAnalysisUtils())->IsPileUpEvent(fInputEvent)) fHEventStat->Fill(8.1);
        else if(!cutPrimaryVertex->GoodZResolutionSPD()) fHEventStat->Fill(9.1);
        else if(!cutPrimaryVertex->GoodDispersionSPD()) fHEventStat->Fill(10.1);
        else if(!cutPrimaryVertex->GoodZDifferenceSPDTrack()) fHEventStat->Fill(11.1);
        else if(evtUtils->IsIncompleteDAQ()) fHEventStat->Fill(12.1);
        else if(evtUtils->FailsPastFuture()) fHEventStat->Fill(13.1);
-       else if(utils->IsSPDClusterVsTrackletBG(fInputEvent)) fHEventStat->Fill(14.1);
+       else if(evtUtils->IsSPDClusterVsTrackletBG(fInputEvent)) fHEventStat->Fill(14.1);
+       SafeDelete(evtUtils);
+       SafeDelete(cutPrimaryVertex);  
      }
-
-    SafeDelete(evtUtils);
-    SafeDelete(cutPrimaryVertex);
-    SafeDelete(utils);
+     
      return 0;
    }
 }
