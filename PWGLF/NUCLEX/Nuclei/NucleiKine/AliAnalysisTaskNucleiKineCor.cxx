@@ -179,7 +179,7 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
       continue;
     if (!stack->IsPhysicalPrimary(iTracks)) 
       continue;
-    if (TMath::Abs(track->Y()) <= 1) 
+    if (TMath::Abs(track->Y()) > 1) 
       continue;
     const int pdg = track->GetPdgCode();
     const int apg = TMath::Abs(pdg);
