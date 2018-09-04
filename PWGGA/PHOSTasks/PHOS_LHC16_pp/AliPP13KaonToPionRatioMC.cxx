@@ -68,14 +68,3 @@ void AliPP13KaonToPionRatioMC::ConsiderGeneratedParticles(const EventFlags & fla
 			fPrimary[code]->Fill(pt);
 	}
 }
-
-
-//________________________________________________________________
-Bool_t AliPP13KaonToPionRatioMC::IsPrimary(const AliAODMCParticle * particle) const
-{
-	// Look what particle left vertex (e.g. with vertex with radius <1 cm)
-	Double_t rcut = 1.;
-	Double_t r2 = particle->Xv() * particle->Xv() + particle->Yv() * particle->Yv()	;
-	return r2 < rcut * rcut;
-}
-

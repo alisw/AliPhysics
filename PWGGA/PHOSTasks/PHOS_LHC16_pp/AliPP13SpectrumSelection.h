@@ -1,8 +1,8 @@
-#ifndef ALIPP13PHYSPHOTONSELECTION_H
-#define ALIPP13PHYSPHOTONSELECTION_H
+#ifndef ALIPP13SPECTRUMSELECTION_H
+#define ALIPP13SPECTRUMSELECTION_H
 
 // --- Custom header files ---
-#include "AliPP13PhotonSelection.h"
+#include "AliPP13PhysicsSelection.h"
 #include "AliPP13DetectorHistogram.h"
 #include "AliPP13SelectionWeights.h"
 	
@@ -14,23 +14,23 @@
 // --- AliRoot header files ---
 #include <AliVCluster.h>
 
-class AliPP13PhysPhotonSelection : public AliPP13PhotonSelection
+class AliPP13SpectrumSelection : public AliPP13PhysicsSelection
 {
 public:
-	AliPP13PhysPhotonSelection():
-		AliPP13PhotonSelection(),
+	AliPP13SpectrumSelection():
+		AliPP13PhysicsSelection(),
 		fInvariantMass(),
 		fClusters(0)
 	{}
 
-	AliPP13PhysPhotonSelection(const char * name, const char * title, AliPP13ClusterCuts cuts,
+	AliPP13SpectrumSelection(const char * name, const char * title, AliPP13ClusterCuts cuts,
 			AliPP13SelectionWeights * w):
-		AliPP13PhotonSelection(name, title, cuts, w),
+		AliPP13PhysicsSelection(name, title, cuts, w),
 		fInvariantMass(),
 		fClusters(0)
 	{}
 
-	virtual ~AliPP13PhysPhotonSelection()
+	virtual ~AliPP13SpectrumSelection()
 	{
 		// NB: Don't use this 
 		// delete [] fInvariantMass;
@@ -48,12 +48,12 @@ protected:
 	virtual void FillClusterHistograms(const AliVCluster * clus, const EventFlags & eflags);
 	virtual void ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags);
 
-	AliPP13PhysPhotonSelection(const AliPP13PhysPhotonSelection &);
-	AliPP13PhysPhotonSelection & operator = (const AliPP13PhysPhotonSelection &);
+	AliPP13SpectrumSelection(const AliPP13SpectrumSelection &);
+	AliPP13SpectrumSelection & operator = (const AliPP13SpectrumSelection &);
 
 private:
 	AliPP13DetectorHistogram * fInvariantMass[2]; //!
 	TH1 * fClusters; //!
-	ClassDef(AliPP13PhysPhotonSelection, 2)
+	ClassDef(AliPP13SpectrumSelection, 2)
 };
 #endif
