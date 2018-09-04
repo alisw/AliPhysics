@@ -18,6 +18,7 @@
 #include "AliHLTCaloDigitDataStruct.h"
 
 AliHLTCaloClusterReader::AliHLTCaloClusterReader(): 
+  AliHLTLogging(),
   fCurrentClusterPtr(0),
   fIsSetMemory(false),
   fMaxCnt(0),
@@ -65,11 +66,7 @@ AliHLTCaloClusterReader::NextCluster()
 //      fCurrentClusterPtr = (AliHLTCaloClusterDataStruct*)((UChar_t*)fCurrentClusterPtr 
 //							      + sizeof(AliHLTCaloClusterDataStruct) 
 //							      + (fCurrentClusterPtr->fNCells-1)*(sizeof(Float_t) + sizeof(Short_t)));
-      fCurrentClusterPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>(reinterpret_cast<UChar_t*>(fCurrentClusterPtr)
-							      + sizeof(AliHLTCaloClusterDataStruct) 
-							      + sizeof(AliHLTCaloCellDataStruct)*(fCurrentClusterPtr->fNCells - 1));;
-							      //+ (fCurrentClusterPtr->fNCells-1)*(sizeof(Float_t) + sizeof(Short_t))
-							      //- sizeof(Short_t)); //TODO: Why?;
+      fCurrentClusterPtr++;
 						
 							      
       // return the cluster
@@ -106,12 +103,21 @@ AliHLTCaloClusterReader::GetCell(AliHLTCaloClusterDataStruct *clusterPtr, UShort
 void
 AliHLTCaloClusterReader::SetMemory(const AliHLTCaloClusterHeaderStruct* clusterHeaderPtr)
 {
+  HLTError("ERROR: Function is not adapted yet to new data format.");
   //See header file for documentation
   //printf("CR: Number of clusters in event: %d, Number of digits in event: %d\n", clusterHeaderPtr->fNClusters, clusterHeaderPtr->fNDigits);
   fMaxCnt = clusterHeaderPtr->fNClusters;
   fCurrentClusterPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>((UChar_t*)(clusterHeaderPtr) + sizeof(AliHLTCaloClusterHeaderStruct) + sizeof(AliHLTCaloDigitDataStruct)*clusterHeaderPtr->fNDigits);
   fNDigits = clusterHeaderPtr->fNDigits;
   fDigitsPointer = reinterpret_cast<AliHLTCaloDigitDataStruct*>((UChar_t*)(clusterHeaderPtr) + sizeof(AliHLTCaloClusterHeaderStruct));
+  fIsSetMemory = true;
+}
+
+void
+AliHLTCaloClusterReader::SetMemoryNew(AliHLTCaloClusterDataStruct* clusterPtr, Int_t nClusters)
+{
+  fMaxCnt = nClusters;
+  fCurrentClusterPtr = clusterPtr;
   fIsSetMemory = true;
 }
 

@@ -87,7 +87,10 @@ struct AliHLTCaloRecPointDataStruct
   Int_t fDigits;                              //COMMENT
   
   /** Time of the maximum digit */
-  //Int_t fTime;  			      //COMMENT
+  Float_t fTime;                              //COMMENT
+
+  /** Leading cell ID */
+  Int_t fLeadingCellID;                       //COMMENT
 
 };
 

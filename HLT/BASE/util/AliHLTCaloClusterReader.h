@@ -18,6 +18,7 @@
  **************************************************************************/
 
 #include "Rtypes.h"
+#include "AliHLTLogging.h"
 
 struct AliHLTCaloClusterDataStruct;
 class AliHLTCaloClusterHeaderStruct;
@@ -28,7 +29,7 @@ class AliHLTCaloDigitDataStruct;
  *
  * @ingroup alihlt_phos
  */
-class  AliHLTCaloClusterReader
+class  AliHLTCaloClusterReader : public AliHLTLogging
 {
 public:
   /** Default constructor */
@@ -56,9 +57,15 @@ public:
 
   /** 
    * Set the memory buffer containing the clusters
+   * (function is deprecated, only left for compilability)
    * @param clusterHeaderPtr pointer the the first entry in the buffer, the header
    */
   void SetMemory(const AliHLTCaloClusterHeaderStruct* clusterHeaderPtr);
+
+  /** 
+   * Set the memory buffer containing the clusters
+   */
+  void SetMemoryNew(AliHLTCaloClusterDataStruct* clusterPtr, Int_t nClusters);
 
   /**
    * Reset the memory pointer and number of counts

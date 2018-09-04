@@ -23,12 +23,13 @@
 
 
 /**
- * Clusterizer component for PHOS HLT
+ * Clusterizer component for EMCALL/DCAL HLT
  *
  * @file   AliHLTCaloClusterizerComponent.h
  * @author Oystein Djuvsland
+ * @author Rudiger Haake (Yale), adapted to EMCAL/DCAL clusterizer
  * @date
- * @brief  A clusterizer component for PHOS HLT
+ * @brief  A clusterizer component for EMCAL/DCAL HLT
 */
 
 // see below for class documentation
@@ -42,11 +43,10 @@
 
 class AliHLTCaloRecoParamHandler;
 class AliHLTCaloDigitDataStruct;
-class AliHLTCaloDigitContainerDataStruct;
 class AliHLTCaloClusterizer;
 class AliHLTCaloClusterAnalyser;
 class AliHLTCaloRecPointDataStruct;
-class AliHLTPHOSHistoProdClusterEnergy;
+class AliHLTEMCALGeometry;
 
 /**
  * @class AliHLTCaloClusterizerComponent
@@ -156,11 +156,14 @@ class AliHLTCaloClusterizerComponent : public AliHLTCaloProcessor, public AliHLT
     AliHLTCaloClusterAnalyser *fAnalyserPtr;                         //! transient
     
     /** Pointer to reconstruction parameters handler */
-    AliHLTCaloRecoParamHandler *fRecoParamsPtr; //! transient
+    AliHLTCaloRecoParamHandler *fRecoParamsPtr;                   //! transient
     
     /** Pointer to the clusterizer it self */
     AliHLTCaloClusterizer* fClusterizerPtr;                       //! transient
-    
+
+    /** EMCAL geometry data */
+    AliHLTEMCALGeometry* fGeometry;                   //! Transient
+
   private:
 
     /** Array of pointers to our digits */

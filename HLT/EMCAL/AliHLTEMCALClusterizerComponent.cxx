@@ -18,6 +18,9 @@
 
 #include "AliHLTEMCALClusterizerComponent.h"
 #include "AliHLTCaloRecPointDataStruct.h"
+#include "AliHLTCaloClusterDataStruct.h"
+#include "AliHLTCaloDigitDataStruct.h"
+
 #include "AliHLTCaloRecPointHeaderStruct.h"
 #include "AliHLTEMCALGeometry.h"
 #include "AliHLTEMCALRecoParamHandler.h"
@@ -77,11 +80,10 @@ AliHLTEMCALClusterizerComponent::GetOutputDataType()
 
 void
 AliHLTEMCALClusterizerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
-
 {
   //See headerfile for documentation
-  constBase = sizeof(AliHLTCaloRecPointHeaderStruct) + sizeof(AliHLTCaloRecPointDataStruct) + (sizeof(AliHLTCaloDigitDataStruct) << 7); //Reasonable estimate... ;
-  inputMultiplier = 2.0;
+  constBase = 0;
+  inputMultiplier = sizeof(AliHLTCaloClusterDataStruct)/sizeof(AliHLTCaloDigitDataStruct);
 }
 
 

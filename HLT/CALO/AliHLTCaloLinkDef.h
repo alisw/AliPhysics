@@ -16,6 +16,7 @@
 #pragma link C++ class AliHLTCaloConstantsHandler+;
 #pragma link C++ class AliHLTCaloClusterizer+;
 #pragma link C++ class AliHLTCaloClusterizerNbyN+;
+#pragma link C++ class AliHLTClusterFinder+;
 #pragma link C++ class AliHLTCaloClusterizerComponent+;
 #pragma link C++ class AliHLTCaloDigitMaker+;
 #pragma link C++ class AliHLTCaloClusterAnalyser+;

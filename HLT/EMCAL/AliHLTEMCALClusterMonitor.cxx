@@ -30,11 +30,14 @@ ClassImp(AliHLTEMCALClusterMonitor);
 AliHLTEMCALClusterMonitor::AliHLTEMCALClusterMonitor():
   fClusterReaderPtr(0),
   hList(0),
-	hClusterEne(0),
+	hClusterEneEMCAL(0),
+	hClusterEneDCAL(0),
 	hClusterEneVsTime(0),
 	hClusterCells(0),
 	hClusterEneVsCells(0),
-	hClusterEtaVsPhi(0)
+	hClusterEtaVsPhi(0),
+	hClusterM02(0),
+	hClusterM20(0)
 
 {
   // See header file for documentation
@@ -44,8 +47,10 @@ AliHLTEMCALClusterMonitor::AliHLTEMCALClusterMonitor():
   // Booking histograms
   hList = new TObjArray;
 
-	hClusterEne = new TH1F("hClusterEne", "ClusterEnergy (GeV)", 200, 0, 100);
-	hList->Add(hClusterEne);
+	hClusterEneEMCAL = new TH1F("hClusterEneEMCAL", "ClusterEnergy (GeV)", 200, 0, 100);
+	hList->Add(hClusterEneEMCAL);
+	hClusterEneDCAL = new TH1F("hClusterEneDCAL", "ClusterEnergy (GeV)", 200, 0, 100);
+	hList->Add(hClusterEneDCAL);
 
 	hClusterEneVsTime = new TH2F("hClusterEneVsTime", "ClusterEnergy vs Time", 200, 0, 100, 40, -0.5, 39.5);
 	hList->Add(hClusterEneVsTime);
@@ -56,7 +61,12 @@ AliHLTEMCALClusterMonitor::AliHLTEMCALClusterMonitor():
 	hClusterEneVsCells = new TH2F("hClusterEneCells", "# of cells per cluster vs cluster energy", 200, 0, 100, 50, -0.5, 49.5);
 	hList->Add(hClusterEneVsCells);
 
-	hClusterEtaVsPhi = new TH2F("hClusterEtaVsPhi", "Cluster position in #eta#phi", 100, -0.7, 0.7, 100, 1.38, 3.15);
+  hClusterM02 = new TH1F("hClusterM02", "Cluster M02", 200, 0, 10);
+	hList->Add(hClusterM02);
+  hClusterM20 = new TH1F("hClusterM20", "Cluster M20", 200, 0, 10);
+	hList->Add(hClusterM20);
+
+	hClusterEtaVsPhi = new TH2F("hClusterEtaVsPhi", "Cluster position in #eta#phi", 100, -0.7, 0.7, 100, 0, TMath::Pi()*2);
 	hClusterEtaVsPhi->GetXaxis()->SetTitle("#eta");
 	hClusterEtaVsPhi->GetYaxis()->SetTitle("#phi");
 	hList->Add(hClusterEtaVsPhi);
@@ -76,40 +86,50 @@ TObjArray* AliHLTEMCALClusterMonitor::GetHistograms()
 }
 
 
-Int_t AliHLTEMCALClusterMonitor::MakeHisto(AliHLTCaloClusterHeaderStruct *caloClusterHeaderPtr)
+Int_t AliHLTEMCALClusterMonitor::MakeHisto(AliHLTCaloClusterDataStruct *caloClusterStructPtr, Int_t nClusters)
 {
-
-	// Cluster variables
-	// Pointer to Cluster struture
-	AliHLTCaloClusterDataStruct* caloClusterStructPtr = 0;
-
 	float clusterEne, clusterTime, clusterEta, clusterPhi, clusterX, clusterY, clusterZ;
-	int nCells;
-	if (caloClusterHeaderPtr) {
-	  
-	  // stuff to handle clusters here
-	  fClusterReaderPtr->SetMemory(caloClusterHeaderPtr);
-	  
-	  while((caloClusterStructPtr = fClusterReaderPtr->NextCluster()) != 0) {
-			clusterX = caloClusterStructPtr->fGlobalPos[0];
-			clusterY = caloClusterStructPtr->fGlobalPos[1];
-			clusterZ = caloClusterStructPtr->fGlobalPos[2];
+  int nCells;
+  
+  // stuff to handle clusters here
+  fClusterReaderPtr->SetMemoryNew(caloClusterStructPtr, nClusters);
+  
+  // Define second cluster reader/ptr to iterate over two clusters at the same time
+  AliHLTCaloClusterReader* clusterReaderPtr2 = new AliHLTCaloClusterReader();
+  AliHLTCaloClusterDataStruct* caloClusterStructPtr2 = caloClusterStructPtr;
+  clusterReaderPtr2->SetMemoryNew(caloClusterStructPtr2, nClusters);
 
-			nCells = caloClusterStructPtr->fNCells;
-			clusterEne = caloClusterStructPtr->fEnergy;
-			clusterTime = caloClusterStructPtr->fTOF;
-	  	hClusterEne->Fill(clusterEne);
-	  	hClusterEneVsTime->Fill(clusterEne, clusterTime);
-	  	hClusterCells->Fill(nCells);
-	  	hClusterEneVsCells->Fill(clusterEne, nCells);
-			float r = TMath::Sqrt(clusterX*clusterX + clusterY*clusterY + clusterZ*clusterZ);
-			clusterEta = 0.5*TMath::Log( (r+clusterZ)/(r-clusterZ) );
-			clusterPhi = TMath::ATan2(clusterY, clusterX);
-	  	hClusterEtaVsPhi->Fill(clusterEta, clusterPhi);
 
-	    }
+  while((caloClusterStructPtr = fClusterReaderPtr->NextCluster()) != 0) {
+    clusterX = caloClusterStructPtr->fGlobalPos[0];
+    clusterY = caloClusterStructPtr->fGlobalPos[1];
+    clusterZ = caloClusterStructPtr->fGlobalPos[2];
+
+    nCells = caloClusterStructPtr->fNCells;
+    clusterEne = caloClusterStructPtr->fEnergy;
+    clusterTime = caloClusterStructPtr->fTOF;
+    hClusterEneVsTime->Fill(clusterEne, clusterTime);
+    hClusterCells->Fill(nCells);
+    hClusterEneVsCells->Fill(clusterEne, nCells);
+    float r = TMath::Sqrt(clusterX*clusterX + clusterY*clusterY + clusterZ*clusterZ);
+    clusterEta = 0.5*TMath::Log( (r+clusterZ)/(r-clusterZ) );
+    clusterPhi = TMath::ATan2(clusterY, clusterX);
+    if(clusterPhi < 4)
+      hClusterEneEMCAL->Fill(clusterEne);
+    else
+      hClusterEneDCAL->Fill(clusterEne);
+
+    hClusterEtaVsPhi->Fill(clusterEta, clusterPhi);
+    hClusterM02->Fill(caloClusterStructPtr->fM02);
+    hClusterM20->Fill(caloClusterStructPtr->fM20);
+
+    // Invariant mass plots
+    while((caloClusterStructPtr2 = clusterReaderPtr2->NextCluster()) != 0) {
+      //TODO: Fill invariant mass plots
+    }
+
+  }
 	  
-	}
 
 return 0; 
 }
