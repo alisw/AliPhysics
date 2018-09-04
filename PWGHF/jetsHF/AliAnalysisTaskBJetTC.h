@@ -610,7 +610,7 @@ private:
   static const Double_t fgkMassProton;  //
   static const Int_t fgkiNCategV0 = 18; // number of V0 selection steps
 
-	ClassDef(AliAnalysisTaskBJetTC, 50)
+	ClassDef(AliAnalysisTaskBJetTC, 51)
 };
 #endif
  //
