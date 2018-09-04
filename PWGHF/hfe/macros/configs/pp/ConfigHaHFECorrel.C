@@ -1,5 +1,5 @@
 
-AliAnalysisTaskHaHFECorrel * ConfigHaHFECorrel(Int_t period, Double_t MinPtEvent, Double_t MaxPtEvent, Bool_t TRDQA, Bool_t TagEff, Bool_t RecEff, Bool_t CorrHadron, Bool_t CorrLP, Bool_t MCTruth,  Bool_t IsMC,Bool_t IsAOD, Bool_t UseTender, Double_t EtaMax, Int_t ITSnCut, Int_t TPCnCut, Int_t TPCnCutdEdx, Double_t PhotElecPtCut, Int_t PhotElecTPCnCut, Bool_t PhotElecITSrefitCut, Int_t PhotCorrCase, Double_t InvmassCut, Int_t HTPCnCut,Bool_t HITSrefitCut, Bool_t HTPCrefitCut,Bool_t UseITS, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, const char * ID="")
+AliAnalysisTaskHaHFECorrel * ConfigHaHFECorrel(Int_t period, Double_t MinPtEvent, Double_t MaxPtEvent, Bool_t TRDQA, Bool_t TagEff, Bool_t RecEff, Bool_t CorrHadron, Bool_t CorrLP, Bool_t MCTruth,  Bool_t IsMC,Bool_t IsAOD, Bool_t UseTender, Double_t EtaMax, Int_t ITSnCut, Float_t ITSSharedCluster, Int_t TPCnCut, Int_t TPCnCutdEdx, Double_t PhotElecPtCut, Int_t PhotElecTPCnCut, Bool_t PhotElecITSrefitCut, Int_t PhotCorrCase, Double_t InvmassCut, Int_t HTPCnCut,Bool_t HITSrefitCut, Bool_t HTPCrefitCut,Bool_t UseITS, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, const char * ID="")
 {
 
   //AliHFEcuts *hfecuts = new AliHFECuts("name", "title");
@@ -46,6 +46,9 @@ AliAnalysisTaskHaHFECorrel * ConfigHaHFECorrel(Int_t period, Double_t MinPtEvent
 
   task->SetITSnCut(ITSnCut);
   printf("\nElectron ITSNclsCut: %i", ITSnCut);
+
+  task->SetITSSharedClusterCut(ITSSharedCluster);
+  printf("\nElectron ITSSharedClusterCut: %f", ITSSharedCluster); 
 
   task->SetTPCnCut(TPCnCut);
   printf("\nElectron TPCNclsCut: %i", TPCnCut);
