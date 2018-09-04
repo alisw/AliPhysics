@@ -108,6 +108,8 @@ public:
 
 	void SetCalculateDCATruth(Bool_t value){fCalcDCATruth = value;}
 
+	void SetTaggerWorkingPoint(Double_t value){fThresholdIP = value;}
+
 	// B jet tracks selection
 	void SetTrackMinPt(Double_t val){ fTCMinTrackPt = val;}
 	void SetTPCClusterMin(Int_t val){ fTCMinClusTPC = val;}
@@ -156,6 +158,7 @@ private:
 	Float_t fPythiaEventWeight;//!
 	Bool_t fDoImprovedDCACut;//
 	Bool_t fVertexConstraint;//!
+	Double_t fThresholdIP;//
 
 	AliESDVertex* fDiamond;//!
 	AliVertexerTracks *fVertexer;//!
