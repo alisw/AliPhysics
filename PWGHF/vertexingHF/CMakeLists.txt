@@ -197,9 +197,13 @@ install(FILES
             ConfigVertexingHF_Pb_AllCent_NoLS.C
             ConfigVertexingHF_DplustoK0s_DstoK0s.C
             ConfigVertexingHF_pPbRHF_DplustoK0s_DstoK0s.C
-	    upgrade/ConfigVertexingHF_Pb_Upgrade2018.C
         DESTINATION
             PWGHF/vertexingHF/)
+
+install(FILES
+	    upgrade/ConfigVertexingHF_Pb_Upgrade2018.C
+        DESTINATION
+            PWGHF/vertexingHF/upgrade)
 
 install(DIRECTORY
             macros
