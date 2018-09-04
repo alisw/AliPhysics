@@ -773,10 +773,10 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       /***************************************************/
       //
       
-      if (fIsDeuteronAnalysis == true && TMath::Abs(pdg) != 700201) trackAccept = false;
-      if (fIsTritonAnalysis == true && TMath::Abs(pdg) != 700301) trackAccept = false;
-      if (fIsHe3Analysis == true && TMath::Abs(pdg) != 700302)    trackAccept = false;
-      if (fIsAlphaAnalysis == true && TMath::Abs(pdg) != 700202) trackAccept = false;
+      if (fIsDeuteronAnalysis == true && TMath::Abs(pdg) != 1000010020) trackAccept = false;
+      if (fIsTritonAnalysis == true && TMath::Abs(pdg) != 1000010040) trackAccept = false;
+      if (fIsHe3Analysis == true && TMath::Abs(pdg) != 700302)    trackAccept = false;//temporary pdg
+      if (fIsAlphaAnalysis == true && TMath::Abs(pdg) != 700202) trackAccept = false;//temporary pdg
       //
       /*****************************************************/
       if (trackAccept == true && ptrue > 0) {    

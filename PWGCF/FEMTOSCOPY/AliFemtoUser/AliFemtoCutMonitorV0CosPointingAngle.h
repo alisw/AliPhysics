@@ -46,6 +46,7 @@ protected:
   bool fBuildCosPointingAnglewParentInfo;
   vector<ParentPIDInfo> fParentPIDInfoVec;
   TH2F *fCosPointingAnglewParentInfo;
+  TH2F *fDcaV0ToPrimVertexwParentInfo;
 
 #ifdef __ROOT__
   ClassDef(AliFemtoCutMonitorV0CosPointingAngle, 1);

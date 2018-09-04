@@ -14,7 +14,8 @@ AliFemtoCutMonitorV0CosPointingAngle::AliFemtoCutMonitorV0CosPointingAngle(int a
   fPrimaryPID(aPrimaryPID),
   fBuildCosPointingAnglewParentInfo(true),
   fParentPIDInfoVec(0),
-  fCosPointingAnglewParentInfo(nullptr)
+  fCosPointingAnglewParentInfo(nullptr),
+  fDcaV0ToPrimVertexwParentInfo(nullptr)
 {
   //if fBuildCosPointingAnglewParentInfo=false, the following line will simply rebin fCosPointingAngle
   //which is good, as the default binning isn't very useful
@@ -30,7 +31,8 @@ AliFemtoCutMonitorV0CosPointingAngle::AliFemtoCutMonitorV0CosPointingAngle(const
   fPrimaryPID(aPrimaryPID),
   fBuildCosPointingAnglewParentInfo(true),
   fParentPIDInfoVec(0),
-  fCosPointingAnglewParentInfo(nullptr)
+  fCosPointingAnglewParentInfo(nullptr),
+  fDcaV0ToPrimVertexwParentInfo(nullptr)
 {
   //if fBuildCosPointingAnglewParentInfo=false, the following line will simple rebin fCosPointingAngle
   //which is good, as the default binning isn't very useful
@@ -46,7 +48,8 @@ AliFemtoCutMonitorV0CosPointingAngle::AliFemtoCutMonitorV0CosPointingAngle(const
   fPrimaryPID(aCut.fPrimaryPID),
   fBuildCosPointingAnglewParentInfo(aCut.fBuildCosPointingAnglewParentInfo),
   fParentPIDInfoVec(aCut.fParentPIDInfoVec),
-  fCosPointingAnglewParentInfo(nullptr)
+  fCosPointingAnglewParentInfo(nullptr),
+  fDcaV0ToPrimVertexwParentInfo(nullptr)
 {
   /// copy constructor
 
@@ -54,12 +57,20 @@ AliFemtoCutMonitorV0CosPointingAngle::AliFemtoCutMonitorV0CosPointingAngle(const
   fCosPointingAnglewParentInfo = new TH2F(*aCut.fCosPointingAnglewParentInfo);
   fCosPointingAnglewParentInfo->Sumw2();
 
+  if (fDcaV0ToPrimVertexwParentInfo) delete fDcaV0ToPrimVertexwParentInfo;
+  fDcaV0ToPrimVertexwParentInfo = new TH2F(*aCut.fDcaV0ToPrimVertexwParentInfo);
+  fDcaV0ToPrimVertexwParentInfo->Sumw2();
+
 }
 
 AliFemtoCutMonitorV0CosPointingAngle::~AliFemtoCutMonitorV0CosPointingAngle()
 {
   /// Destructor
-  if(fBuildCosPointingAnglewParentInfo) delete fCosPointingAnglewParentInfo;
+  if(fBuildCosPointingAnglewParentInfo) 
+  {
+    delete fCosPointingAnglewParentInfo;
+    delete fDcaV0ToPrimVertexwParentInfo;
+  }
 }
 
 AliFemtoCutMonitorV0CosPointingAngle& AliFemtoCutMonitorV0CosPointingAngle::operator=(const AliFemtoCutMonitorV0CosPointingAngle& aCut)
@@ -80,6 +91,10 @@ AliFemtoCutMonitorV0CosPointingAngle& AliFemtoCutMonitorV0CosPointingAngle::oper
   if (fCosPointingAnglewParentInfo) delete fCosPointingAnglewParentInfo;
   fCosPointingAnglewParentInfo = new TH2F(*aCut.fCosPointingAnglewParentInfo);
   fCosPointingAnglewParentInfo->Sumw2();
+
+  if (fDcaV0ToPrimVertexwParentInfo) delete fDcaV0ToPrimVertexwParentInfo;
+  fDcaV0ToPrimVertexwParentInfo = new TH2F(*aCut.fDcaV0ToPrimVertexwParentInfo);
+  fDcaV0ToPrimVertexwParentInfo->Sumw2();
 
   return *this;
 }
@@ -123,6 +138,7 @@ void AliFemtoCutMonitorV0CosPointingAngle::Fill(const AliFemtoV0* aV0)
     if(tInfo!=NULL) {
       double tMotherBin = GetMotherBin(tInfo);
       fCosPointingAnglewParentInfo->Fill(aV0->CosPointingAngle(), tMotherBin);
+      fDcaV0ToPrimVertexwParentInfo->Fill(aV0->DcaV0ToPrimVertex(), tMotherBin);
     }
   }
 }
@@ -131,14 +147,22 @@ void AliFemtoCutMonitorV0CosPointingAngle::Write()
 {
   /// Write out the relevant histograms
   AliFemtoCutMonitorV0::Write();
-  if(fBuildCosPointingAnglewParentInfo) fCosPointingAnglewParentInfo->Write();
+  if(fBuildCosPointingAnglewParentInfo) 
+  {
+    fCosPointingAnglewParentInfo->Write();
+    fDcaV0ToPrimVertexwParentInfo->Write();
+  }
 }
 
 TList *AliFemtoCutMonitorV0CosPointingAngle::GetOutputList()
 {
   /// Get the list of histograms to write
   TList *tOutputList = AliFemtoCutMonitorV0::GetOutputList();
-  if(fBuildCosPointingAnglewParentInfo) tOutputList->Add(fCosPointingAnglewParentInfo);
+  if(fBuildCosPointingAnglewParentInfo) 
+  {
+    tOutputList->Add(fCosPointingAnglewParentInfo);
+    tOutputList->Add(fDcaV0ToPrimVertexwParentInfo);
+  }
 
   return tOutputList;
 }
@@ -227,20 +251,33 @@ void AliFemtoCutMonitorV0CosPointingAngle::SetBuildCosPointingAnglewParentInfo(b
   fBuildCosPointingAnglewParentInfo = aBuild;
   if(fBuildCosPointingAnglewParentInfo)
   {
-    TString tName = TString::Format("CosPointingAnglewParentInfo%s", aName.Data());
+    TString tNameCPA = TString::Format("CosPointingAnglewParentInfo%s", aName.Data());
     int tNbinsPID = fParentPIDInfoVec.size();
-    fCosPointingAnglewParentInfo = new TH2F(tName, tName, 
+    fCosPointingAnglewParentInfo = new TH2F(tNameCPA, tNameCPA, 
                                             aNbins, aCosMin, aCosMax,
                                             tNbinsPID+3, 0, tNbinsPID+3);
+
+    TString tNameDCA = TString::Format("DcaV0ToPrimVertexwParentInfo%s", aName.Data());
+    fDcaV0ToPrimVertexwParentInfo = new TH2F(tNameDCA, tNameDCA, 
+                                             fDcaV0ToPrimVertex->GetNbinsX(), 
+                                             fDcaV0ToPrimVertex->GetXaxis()->GetBinLowEdge(1), 
+                                             fDcaV0ToPrimVertex->GetXaxis()->GetBinUpEdge(fDcaV0ToPrimVertex->GetNbinsX()),
+                                             tNbinsPID+3, 0, tNbinsPID+3);
+
     for(int i=0; i<tNbinsPID; i++)
     {
       fCosPointingAnglewParentInfo->GetYaxis()->SetBinLabel(i+1, fParentPIDInfoVec[i].parentName);
+      fDcaV0ToPrimVertexwParentInfo->GetYaxis()->SetBinLabel(i+1, fParentPIDInfoVec[i].parentName);
     }
     fCosPointingAnglewParentInfo->GetYaxis()->SetBinLabel(tNbinsPID+1, "Other");
     fCosPointingAnglewParentInfo->GetYaxis()->SetBinLabel(tNbinsPID+2, "Fake");
     fCosPointingAnglewParentInfo->GetYaxis()->SetBinLabel(tNbinsPID+3, "Material");
-
     fCosPointingAnglewParentInfo->Sumw2();
+
+    fDcaV0ToPrimVertexwParentInfo->GetYaxis()->SetBinLabel(tNbinsPID+1, "Other");
+    fDcaV0ToPrimVertexwParentInfo->GetYaxis()->SetBinLabel(tNbinsPID+2, "Fake");
+    fDcaV0ToPrimVertexwParentInfo->GetYaxis()->SetBinLabel(tNbinsPID+3, "Material");
+    fDcaV0ToPrimVertexwParentInfo->Sumw2();
   }
 
   fCosPointingAngle = new TH1F(fCosPointingAngle->GetName(), fCosPointingAngle->GetTitle(),

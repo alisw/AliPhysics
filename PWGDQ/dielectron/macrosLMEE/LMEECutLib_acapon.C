@@ -605,60 +605,36 @@ AliAnalysisCuts* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 			break;
 		case kTTreeCutsESD:
 
-			varCutsFilter->AddCut(AliDielectronVarManager::kEta, -0.80, 0.80);
-			varCutsFilter->AddCut(AliDielectronVarManager::kPt, 0.2, 10.);
-			//TPC cuts
-			//Clusters
-			varCutsFilter->AddCut(AliDielectronVarManager::kNclsTPC,      70.0, 200.); 
-			//Crossed rows
-			varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCr,      60.0, 200.); 
-			//Crossed rows over findable
-			varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.3, 1.1); 
-			//DCA
-			varCutsFilter->AddCut(AliDielectronVarManager::kImpactParXY,  - 3.0, 3.0);
-			varCutsFilter->AddCut(AliDielectronVarManager::kImpactParZ,   - 4.0, 4.0);
-			//ITS cuts
-			if(wSDD){
-				varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,  3.0, 100.0); // < 3
-			}else{
-				varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,  1.0, 100.0); // < 1
-			}
-			varCutsFilter->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0, 36.);
+			AliESDtrackCuts* fesdTrackCuts = new AliESDtrackCuts();
+	
 			
 			// TTrees created from AODs, so need to implement cuts that come with
 			// FilterBit4 (eff. calc naturally doesn't run over AODs)
 			//trackCutsFilter->SetAODFilterBit(16);//or 1<<4
 			//Refits	
-			trackCutsFilter->SetRequireITSRefit(kTRUE);
-			trackCutsFilter->SetRequireTPCRefit(kTRUE);
-
-			AliDielectronCutGroup* trackCuts2 = new AliDielectronCutGroup("trackCuts2", "trackCuts2", 
-																												AliDielectronCutGroup::kCompAND);
-			/* trackCuts2->AddCut(varCutsFilter); */
-			/* trackCuts2->AddCut(trackCutsFilter); */
-			/* trackCuts2->AddCut(GetPIDCuts(PIDcuts)); */
-			trackCuts = trackCuts2;
-
+			fesdTrackCuts->SetRequireITSRefit(kTRUE);
+			fesdTrackCuts->SetRequireTPCRefit(kTRUE);
 
 			//TTree cuts sourced from LMEECutLib_acapon "TTreeCuts"
-				// FilterBit 4 used to filter AODs
-				// It uses GetStandardITSTPCTrackCuts 2011(kFALSE, 1)
-				// These are the cuts implemented with the above function
-				/* fesdTrackCuts->SetMinNCrossedRowsTPC(70); */
-				/* fesdTrackCuts->SetMaxChi2PerClusterTPC(4); */
-				/* fesdTrackCuts->SetAcceptKinkDaughters(kFALSE); */
-				/* fesdTrackCuts->SetRequireSigmaToVertex(kFALSE); */
-				/* fesdTrackCuts->SetRequireTPCRefit(kTRUE); */
-				/* fesdTrackCuts->SetRequireITSRefit(kTRUE); */
-				/* fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny); */
-				/* fesdTrackCuts->SetRequireSigmaToVertex(kFALSE); */
-				/* fesdTrackCuts->SetMaxChi2PerClusterITS(36); */
+			// FilterBit 4 used to filter AODs
+			// It uses GetStandardITSTPCTrackCuts 2011(kFALSE, 1)
+			// These are the cuts implemented with the above function
+			fesdTrackCuts->SetMinNCrossedRowsTPC(70);
+			fesdTrackCuts->SetMaxChi2PerClusterTPC(4);
+			fesdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+			fesdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+			fesdTrackCuts->SetRequireTPCRefit(kTRUE);
+			fesdTrackCuts->SetRequireITSRefit(kTRUE);
+			fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+			fesdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+			fesdTrackCuts->SetMaxChi2PerClusterITS(36);
 
-				/* // Further cuts implemented by filter bit 4 */
-				/* fesdTrackCuts->SetMaxDCAToVertexXY(2.4); */ 
-				/* fesdTrackCuts->SetMaxDCAToVertexZ(3.2); */ 
-				/* fesdTrackCuts->SetDCAToVertex2D(kTRUE); */
+			// Further cuts implemented by filter bit 4
+			fesdTrackCuts->SetMaxDCAToVertexXY(2.4); 
+			fesdTrackCuts->SetMaxDCAToVertexZ(3.2); 
+			fesdTrackCuts->SetDCAToVertex2D(kTRUE);
 
+			return fesdTrackCuts;
 			break;
 		case kV0_TPCcorr:
 		case kV0_ITScorr:
