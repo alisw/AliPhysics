@@ -322,10 +322,12 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fOpeningAngleLS(0)
 ,fOpeningAngleULS(0)
 ,fCheckLSULS(0)
+,fTagEtaPt1Pt2(0)
 ,fTagEtaPhiPt(0)
 ,fTagEtaZvtxPt(0)
 ,fTagEtaPhiPtwW(0)
 ,fTagEtaZvtxPtwW(0)
+,fNonTagEtaPt1Pt2(0)
 ,fNonTagEtaPhiPt(0)
 ,fNonTagEtaZvtxPt(0)
 ,fNonTagEtaPhiPtwW(0)
@@ -716,10 +718,12 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fOpeningAngleLS(0)
 ,fOpeningAngleULS(0)
 ,fCheckLSULS(0)
+,fTagEtaPt1Pt2(0)
 ,fTagEtaPhiPt(0)
 ,fTagEtaZvtxPt(0)
 ,fTagEtaPhiPtwW(0)
 ,fTagEtaZvtxPtwW(0)
+,fNonTagEtaPt1Pt2(0)
 ,fNonTagEtaPhiPt(0)
 ,fNonTagEtaZvtxPt(0)
 ,fNonTagEtaPhiPtwW(0)
@@ -1324,13 +1328,13 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 	if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fRecLPTagged->Fill(RedTrack->Pt(), LPtrack->Pt(), Case);
 	//	fMultCorrTagged->Fill(RedTrack->Pt(), nTrAccCorrMax, Case);
 	fNHadTagged->Fill(RedTrack->Pt(), MCnHadrons[0], Case);
-	fNHadTaggedA->Fill(RedTrack->Pt(), MCnHadrons[1], Case);
+	//	fNHadTaggedA->Fill(RedTrack->Pt(), MCnHadrons[1], Case);
 	fNHadTaggedB->Fill(RedTrack->Pt(), MCnHadrons[2], Case);
-	fNHadTaggedC->Fill(RedTrack->Pt(), MCnHadrons[3], Case);
+	//fNHadTaggedC->Fill(RedTrack->Pt(), MCnHadrons[3], Case);
 	fMeanPtTagged->Fill(RedTrack->Pt(), AverageMCPt[0], Case);
-	fMeanPtTaggedA->Fill(RedTrack->Pt(), AverageMCPt[1], Case);
+	//	fMeanPtTaggedA->Fill(RedTrack->Pt(), AverageMCPt[1], Case);
 	fMeanPtTaggedB->Fill(RedTrack->Pt(), AverageMCPt[2], Case);
-	fMeanPtTaggedC->Fill(RedTrack->Pt(), AverageMCPt[3], Case);
+	//fMeanPtTaggedC->Fill(RedTrack->Pt(), AverageMCPt[3], Case);
 	
 
 
@@ -1366,13 +1370,13 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 	if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fRecLPNTagged->Fill(RedTrack->Pt(), LPtrack->Pt(), Case);
 	//	fMultCorrNTagged->Fill(RedTrack->Pt(), nTrAccCorrMax, Case);
 	fNHadNTagged->Fill(RedTrack->Pt(), MCnHadrons[0], Case);
-	fNHadNTaggedA->Fill(RedTrack->Pt(), MCnHadrons[1], Case);
+	//	fNHadNTaggedA->Fill(RedTrack->Pt(), MCnHadrons[1], Case);
 	fNHadNTaggedB->Fill(RedTrack->Pt(), MCnHadrons[2], Case);
-	fNHadNTaggedC->Fill(RedTrack->Pt(), MCnHadrons[3], Case);
+	//	fNHadNTaggedC->Fill(RedTrack->Pt(), MCnHadrons[3], Case);
 	fMeanPtNTagged->Fill(RedTrack->Pt(), AverageMCPt[0], Case);
-	fMeanPtNTaggedA->Fill(RedTrack->Pt(), AverageMCPt[1], Case);
+	//	fMeanPtNTaggedA->Fill(RedTrack->Pt(), AverageMCPt[1], Case);
 	fMeanPtNTaggedB->Fill(RedTrack->Pt(), AverageMCPt[2], Case);
-	fMeanPtNTaggedC->Fill(RedTrack->Pt(), AverageMCPt[3], Case);
+	//	fMeanPtNTaggedC->Fill(RedTrack->Pt(), AverageMCPt[3], Case);
 
 
 
@@ -1663,26 +1667,26 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     fNHadTagged = new TH3F("fNHadTagged", "NHadrons for tagged; ptElectron; nHad", 44, 0.5, 6., 150, -0.5, 149.5, 8, -0.5, 7.5);
     fOutputListQA->Add(fNHadTagged);
 
-    fNHadTaggedA = new TH3F("fNHadTaggedA", "NHadrons for tagged; ptElectron; nHad", 44, 0.5, 6., 150, -0.5, 149.5, 8, -0.5, 7.5);
-    fOutputListQA->Add(fNHadTaggedA);
+    //    fNHadTaggedA = new TH3F("fNHadTaggedA", "NHadrons for tagged; ptElectron; nHad", 44, 0.5, 6., 150, -0.5, 149.5, 8, -0.5, 7.5);
+    //fOutputListQA->Add(fNHadTaggedA);
 
     fNHadTaggedB = new TH3F("fNHadTaggedB", "NHadrons for tagged; ptElectron; nHad", 44, 0.5, 6., 150, -0.5, 149.5, 8, -0.5, 7.5);
     fOutputListQA->Add(fNHadTaggedB);
 
-    fNHadTaggedC = new TH3F("fNHadTaggedC", "NHadrons for tagged; ptElectron; nHad", 44, 0.5, 6., 150, -0.5, 149.5, 8, -0.5, 7.5);
-    fOutputListQA->Add(fNHadTaggedC);
+    //fNHadTaggedC = new TH3F("fNHadTaggedC", "NHadrons for tagged; ptElectron; nHad", 44, 0.5, 6., 150, -0.5, 149.5, 8, -0.5, 7.5);
+    //fOutputListQA->Add(fNHadTaggedC);
 
     fMeanPtTagged = new TH3F("fMeanPtTagged", "Mean pt for tagged; ptElectron; average pt", 44, 0.5, 6., 100, 0, 10, 8, -0.5, 7.5);
     fOutputListQA->Add(fMeanPtTagged);
 
-    fMeanPtTaggedA = new TH3F("fMeanPtTaggedA", "Mean pt for tagged; ptElectron; average pt", 44, 0.5, 6., 100, 0, 10, 8, -0.5, 7.5);
-    fOutputListQA->Add(fMeanPtTaggedA);
+    //   fMeanPtTaggedA = new TH3F("fMeanPtTaggedA", "Mean pt for tagged; ptElectron; average pt", 44, 0.5, 6., 100, 0, 10, 8, -0.5, 7.5);
+    //   fOutputListQA->Add(fMeanPtTaggedA);
 
     fMeanPtTaggedB = new TH3F("fMeanPtTaggedB", "Mean pt for tagged; ptElectron; average pt", 44, 0.5, 6., 100, 0, 10, 8, -0.5, 7.5);
     fOutputListQA->Add(fMeanPtTaggedB);
 
-    fMeanPtTaggedC = new TH3F("fMeanPtTaggedC", "Mean pt for tagged; ptElectron; average pt", 44, 0.5, 6., 100, 0, 10, 8, -0.5, 7.5);
-    fOutputListQA->Add(fMeanPtTaggedC);
+    //fMeanPtTaggedC = new TH3F("fMeanPtTaggedC", "Mean pt for tagged; ptElectron; average pt", 44, 0.5, 6., 100, 0, 10, 8, -0.5, 7.5);
+    // fOutputListQA->Add(fMeanPtTaggedC);
 
     // fMCThrustNTagged = new TH3F("fMCThrustNTagged", "Thrust of NTagged; ptElectron; Thrust", 44, 0.5, 6., 100, 0., 1., 8, -0.5, 7.5);
     // fOutputListQA->Add(fMCThrustNTagged);
@@ -1699,26 +1703,26 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     fNHadNTagged = new TH3F("fNHadNTagged", "NHadrons for tagged; ptElectron; nHad", 44, 0.5, 6., 150, -0.5, 149.5, 8, -0.5, 7.5);
     fOutputListQA->Add(fNHadNTagged);
 
-    fNHadNTaggedA = new TH3F("fNHadNTaggedA", "NHadrons for tagged; ptElectron; nHad", 44, 0.5, 6., 150, -0.5, 149.5, 8, -0.5, 7.5);
-    fOutputListQA->Add(fNHadNTaggedA);
+    //  fNHadNTaggedA = new TH3F("fNHadNTaggedA", "NHadrons for tagged; ptElectron; nHad", 44, 0.5, 6., 150, -0.5, 149.5, 8, -0.5, 7.5);
+    // fOutputListQA->Add(fNHadNTaggedA);
 
     fNHadNTaggedB = new TH3F("fNHadNTaggedB", "NHadrons for tagged; ptElectron; nHad", 44, 0.5, 6., 150, -0.5, 149.5, 8, -0.5, 7.5);
     fOutputListQA->Add(fNHadNTaggedB);
 
-    fNHadNTaggedC = new TH3F("fNHadNTaggedC", "NHadrons for tagged; ptElectron; nHad", 44, 0.5, 6., 150, -0.5, 149.5, 8, -0.5, 7.5);
-    fOutputListQA->Add(fNHadNTaggedC);
+    //fNHadNTaggedC = new TH3F("fNHadNTaggedC", "NHadrons for tagged; ptElectron; nHad", 44, 0.5, 6., 150, -0.5, 149.5, 8, -0.5, 7.5);
+    //fOutputListQA->Add(fNHadNTaggedC);
 
     fMeanPtNTagged = new TH3F("fMeanPtNTagged", "Mean pt for tagged; ptElectron; average pt", 44, 0.5, 6., 100, 0, 10, 8, -0.5, 7.5);
     fOutputListQA->Add(fMeanPtNTagged);
 
-    fMeanPtNTaggedA = new TH3F("fMeanPtNTaggedA", "Mean pt for tagged; ptElectron; average pt", 44, 0.5, 6., 100, 0, 10, 8, -0.5, 7.5);
-    fOutputListQA->Add(fMeanPtNTaggedA);
+    // fMeanPtNTaggedA = new TH3F("fMeanPtNTaggedA", "Mean pt for tagged; ptElectron; average pt", 44, 0.5, 6., 100, 0, 10, 8, -0.5, 7.5);
+    //   fOutputListQA->Add(fMeanPtNTaggedA);
 
     fMeanPtNTaggedB = new TH3F("fMeanPtNTaggedB", "Mean pt for tagged; ptElectron; average pt", 44, 0.5, 6., 100, 0, 10, 8, -0.5, 7.5);
     fOutputListQA->Add(fMeanPtNTaggedB);
 
-    fMeanPtNTaggedC = new TH3F("fMeanPtNTaggedC", "Mean pt for tagged; ptElectron; average pt", 44, 0.5, 6., 100, 0, 10, 8, -0.5, 7.5);
-    fOutputListQA->Add(fMeanPtNTaggedC);
+    //fMeanPtNTaggedC = new TH3F("fMeanPtNTaggedC", "Mean pt for tagged; ptElectron; average pt", 44, 0.5, 6., 100, 0, 10, 8, -0.5, 7.5);
+    //fOutputListQA->Add(fMeanPtNTaggedC);
 
 
 
@@ -1966,9 +1970,9 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     fHadContPPhiEtaTPC = new THnSparseF("fHadContPPhiEtaTPC", "HadCont; P; Phi; Eta; TPC", 4, binHC, xminHC, xmaxHC);
     fOutputListMain->Add(fHadContPPhiEtaTPC);
     
-    Int_t    binHC2[4] =  {NBinsElectron  ,20   , 20 ,100}; //p, ITS, TOF, TPC
-    Double_t xminHC2[4] = {XminElectron   ,-10  ,-10 ,-10};
-    Double_t xmaxHC2[4] = {XmaxElectron   ,10   , 10 ,10};  
+    Int_t    binHC2[4] =  {NBinsElectron  ,10   , 20 ,100}; //p, ITS, TOF, TPC
+    Double_t xminHC2[4] = {XminElectron   ,-5  ,-10 ,-10};
+    Double_t xmaxHC2[4] = {XmaxElectron   ,5   , 10 ,10};  
     fHadContamination = new THnSparseF("fHadContamination", "HadCont; P; ITS; TOF; TPC", 4, binHC2, xminHC2, xmaxHC2);
     fOutputListMain->Add(fHadContamination);
 
@@ -2060,8 +2064,8 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
 
     */
 
-    fPhotPt1Pt2Rec = new THnSparseF("fPhotPt1Pt2Rec", "fPhotPt1Pt2Rec; Pt1Rec; Pt2Rec; PtMotherMC; IdMother; PrimSec",  5, PhotBins, PhotXMin, PhotXMax);
-    fOutputListMain->Add(fPhotPt1Pt2Rec);
+    //  fPhotPt1Pt2Rec = new THnSparseF("fPhotPt1Pt2Rec", "fPhotPt1Pt2Rec; Pt1Rec; Pt2Rec; PtMotherMC; IdMother; PrimSec",  5, PhotBins, PhotXMin, PhotXMax);
+    // fOutputListMain->Add(fPhotPt1Pt2Rec);
 
     
     PhotXMin[1]=-0.24;
@@ -2069,10 +2073,10 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     PhotBins[2]=24;
     PhotBins[3]=2;
     PhotBins[4]=1;
-    fPhotPt1E = new THnSparseF("fPhotPt1E", "fPhotPt1; Pt1Rec;InvMass;PtMothMC;IDMoth",  5, PhotBins, PhotXMin, PhotXMax);
-    fOutputListMain->Add(fPhotPt1E);
-    fPhotPt1ECorr = new THnSparseF("fPhotPt1ECorr", "fPhotPt1E; Pt1Rec; InvMass; PtMotherMC; IdMother",  5, PhotBins, PhotXMin, PhotXMax);
-    fOutputListMain->Add(fPhotPt1ECorr);
+    // fPhotPt1E = new THnSparseF("fPhotPt1E", "fPhotPt1; Pt1Rec;InvMass;PtMothMC;IDMoth",  5, PhotBins, PhotXMin, PhotXMax);
+    //  fOutputListMain->Add(fPhotPt1E);
+    //  fPhotPt1ECorr = new THnSparseF("fPhotPt1ECorr", "fPhotPt1E; Pt1Rec; InvMass; PtMotherMC; IdMother",  5, PhotBins, PhotXMin, PhotXMax);
+    //  fOutputListMain->Add(fPhotPt1ECorr);
 
     PhotBins[2]=60;
     PhotXMin[2]=0.;
@@ -2092,7 +2096,10 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     
   fCheckLSULS = new TH2F("fCheckLSULS", "LSULS",5,0,5,5,0,5);
   fOutputListMain->Add(fCheckLSULS);
- 
+   
+  fTagEtaPt1Pt2 = new TH3F("fTagEtaPt1Pt2", "Tagged; Eta; Pt1; Pt2", 36, -0.9, 0.9, NBinsElectron/2, XminElectron, XmaxElectron, 30, 0, 1.5);
+  fOutputList->Add(fTagEtaPt1Pt2);
+
   /*
   fTagEtaPhiPt = new TH3F("fTagEtaPhiPt", "Tagged: Eta, Phi, Pt", 72, -0.9, 0.9, 64, 0, TMath::TwoPi(), NBinsElectron, XminElectron, XmaxElectron);
   fOutputList->Add(fTagEtaPhiPt);
@@ -2108,6 +2115,9 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
   */
 
   if (fIsMC && fTagEff) {
+
+    fNonTagEtaPt1Pt2 = new TH3F("fNonTagEtaPt1Pt2", "NonTagged; Eta; Pt1; Pt2", 36, -0.9, 0.9, NBinsElectron/2, XminElectron, XmaxElectron, 30, 0, 1.5);
+    fOutputList->Add(fNonTagEtaPt1Pt2);
     /*
     fNonTagEtaPhiPt = new TH3F("fNonTagEtaPhiPt", "Tagged: Eta, Phi, Pt", 72, -0.9, 0.9, 64, 0, TMath::TwoPi(), NBinsElectron, XminElectron, XmaxElectron);
     fOutputList->Add(fNonTagEtaPhiPt);
@@ -2203,8 +2213,6 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     fOutputListMain->Add(fTagEffULSWoWeight);
 
 
-
-
     fTagTruePairsWoWeight = new THnSparseF("fTagTruePairsWoWeight", "ULS true pairs tag.eff. woW:  Pt; IsElectron; PDGMother; PDGGMother; PDGGGMIsNonHF", 5, binTagEff, xminTagEff, xmaxTagEff);
     //    SetPDGAxis(fTagTruePairsWoWeight->GetAxis(1), PDGLabel);
     SetPDGAxis(fTagTruePairsWoWeight->GetAxis(2), PDGLabel);
@@ -2260,9 +2268,9 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     fNoPartnerNoT = new TH1F("fNoPartnerNoT", "fNoParnterNoT", bin[1], xmin[1], xmax[1]);
     fOutputListHadron->Add(fNoPartnerNoT);
 
-    Int_t TriggerBin[4]={10, 30, 60, fAssPtHad_Nbins};
+    Int_t TriggerBin[4]={5, 30, 30, fAssPtHad_Nbins};
     Double_t TrigMinBin[4]={0.5, 0., 0., -0.5};
-    Double_t TrigMaxBin[4]={3., 3., 3., fAssPtHad_Nbins-0.5};
+    Double_t TrigMaxBin[4]={3., 1.5, 1.5, fAssPtHad_Nbins-0.5};
     fNoPartnerNoTPt2 = new THnSparseF("fNoPartnerNoTPt2", "fNoParnterNoTPt2; Pt1; Pt2Rec; Pt2MCm; AssHadBin", 4, TriggerBin, TrigMinBin, TrigMaxBin);
     fOutputListHadron->Add(fNoPartnerNoTPt2);
   
@@ -2293,7 +2301,6 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     fElecHadTriggerULSNoPCorr = new TH2F("fElecHadTriggerULSNoPCorr", "fElecHadTriggerULSNoPCorr ULS-LS; ptE; AssPtHad", bin[1], xmin[1], xmax[1],  fAssPtHad_Nbins, -0.5, fAssPtHad_Nbins-0.5);
     fOutputListHadron->Add(fElecHadTriggerULSNoPCorr);				      		      
 
-
     fElecHadTriggerULSNoPCorrTrue = new TH2F("fElecHadTriggerULSNoPCorrTrue", "fElecHadTriggerULSNoPCorrTrue ULS-LS; ptE; AssPtHad", bin[1], xmin[1], xmax[1],  fAssPtHad_Nbins, -0.5, fAssPtHad_Nbins-0.5);
     fOutputListHadron->Add(fElecHadTriggerULSNoPCorrTrue);	
 
@@ -2314,7 +2321,6 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
 
     fMCElecHaNoPartnerTriggerWW = new TH2F("fMCElecHaNoPartnerTriggerWW", "fMCElecHaNoPartnerTriggerWW; PtE; AssPtHad", bin[1], xmin[1], xmax[1],  fAssPtHad_Nbins, -0.5, fAssPtHad_Nbins-0.5);
     fOutputListHadron->Add(fMCElecHaNoPartnerTriggerWW);
-
 
     fHadElecTrigger = new TH2F("fHadElecTrigger", "fHadElecTrigger; PtH; AssPtE", bin[0], xmin[0], xmax[0],  fAssPtElec_Nbins, -0.5, fAssPtElec_Nbins-0.5);
     fHadElecTrigger->GetXaxis()->Set(NBinsHadRed, XBinsHadRed);
@@ -2392,12 +2398,11 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     fOutputListHadron->Add(fElecHaLSNoPartnerCorrTrue);
     */
 
-    fElecHaULSNoPartnerCorrTrue = new THnSparseF("fEleHaULSNoPartnerCorrTrue", "Sparse for ULSEle-Had with no Partner: PtH, PtE, Dphi, Deta", 5, bin, xmin, xmax);
+    fElecHaULSNoPartnerCorrTrue = new THnSparseF("fEleHaULSNoPartnerCorrTrue", "Sparse for ULSEle-Had with no Partner; PtH; PtE; Dphi; Deta", 5, bin, xmin, xmax);
     fElecHaULSNoPartnerCorrTrue->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
     fElecHaULSNoPartnerCorrTrue->GetAxis(4)->Set(NVertexBins, XVertexBins);
     fOutputListHadron->Add(fElecHaULSNoPartnerCorrTrue);
     
-
 
     if (fIsMC) {
       fMCElecHaTruePartner = new THnSparseF("fMCElecHaTruePartner", "Sparse for MC true photonics with no Partner; PtH; PtE; Dphi; Deta", 5, bin, xmin, xmax);
@@ -2570,6 +2575,11 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
   Int_t  EffHBins[4]={NBinsHadRed, 36, 32, NVertexBins};
   Double_t EffHXmin[4]={XminHadron, -0.9, 0, -10};
   Double_t EffHXmax[4]={XmaxHadron, 0.9, TMath::TwoPi(), 10};
+
+
+  fRecHFE = new TH1F("fRecHFE", "fRecHFE", NBinsElectronRed, XminElectron, XmaxElectron);
+  fOutputListMain->Add(fRecHFE);
+
   
   if (fRecEff) {
 
@@ -2611,9 +2621,7 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     Double_t EffEXmax[4]={XmaxElectron, 0.9, TMath::TwoPi(), 10};
  
  
-    fRecHFE = new TH1F("fRecHFE", "fRecHFE", NBinsElectronRed, XminElectron, XmaxElectron);
-    fOutputListMain->Add(fRecHFE);
-
+   
     fRecElecPtEtaPhiVtx=new THnSparseF("fRecElePtEtaPhi", "Rec electrons w. rec.  pt, eta, phi, vtx", 4, EffEBins, EffEXmin, EffEXmax);
     fRecElecPtEtaPhiVtx->GetAxis(3)->Set(NVertexBins, XVertexBins);
     fRecElecPtEtaPhiVtx->GetAxis(0)->Set(NBinsElectronRed, XBinsElectronRed);
@@ -3042,6 +3050,7 @@ AliVTrack*  AliAnalysisTaskHaHFECorrel::FindLPAndHFE( TObjArray* RedTracks, cons
 	if (isPhotonic) {
 	  if (trueULSPartner) {
 	    NPhotElectronsTagged+=(1./recEffE);
+	    fTagEtaPt1Pt2->Fill(Vtrack->Eta(), Vtrack->Pt(), RecPartnerPt);
 	    // fTagEtaPhiPt->Fill(Vtrack->Eta(), Vtrack->Phi(), Vtrack->Pt());
 	    // fTagEtaZvtxPt->Fill(Vtrack->Eta(), pVtx->GetZ(), Vtrack->Pt());
 	    // fTagEtaPhiPtwW->Fill(Vtrack->Eta(), Vtrack->Phi(), Vtrack->Pt(), 1./recEffE);
@@ -3050,6 +3059,7 @@ AliVTrack*  AliAnalysisTaskHaHFECorrel::FindLPAndHFE( TObjArray* RedTracks, cons
 	  }
 	  else  {
 	    NPhotElectronsUntagged+=(1./recEffE);
+	    fNonTagEtaPt1Pt2->Fill(Vtrack->Eta(), Vtrack->Pt(), RecPartnerPt);
 	    // fNonTagEtaPhiPt->Fill(Vtrack->Eta(), Vtrack->Phi(), Vtrack->Pt());
 	    // fNonTagEtaZvtxPt->Fill(Vtrack->Eta(), pVtx->GetZ(), Vtrack->Pt());
 	    // fNonTagEtaPhiPtwW->Fill(Vtrack->Eta(), Vtrack->Phi(), Vtrack->Pt(), 1./recEffE);
@@ -3494,14 +3504,15 @@ void AliAnalysisTaskHaHFECorrel::CheckPhotonicPartner(AliVTrack* Vtrack, Bool_t 
 
   fillSparse[1]=factor*RecPartnerPt;
   if (factor<0) fillSparse[1]=factor*ptPartner;
-  fPhotPt1Pt2Rec->Fill(fillSparse, PtMotherWeight);
+  //fPhotPt1Pt2Rec->Fill(fillSparse, PtMotherWeight);
  
   // only to check the invariant mass distribution
   fillSparse[1]=mass*factor;
+  /*
   fPhotPt1E->Fill(fillSparse, PtMotherWeight);
   if (factor>0)   fPhotPt1ECorr->Fill(fillSparse, PtMotherWeight*GetNonTagCorr(AODtrack->Pt(), RecPartnerPt));
   else   fPhotPt1ECorr->Fill(fillSparse, PtMotherWeight);
-
+  */
   fillSparse[2]=ptPartner;
   fPhotPt1Pt2E->Fill(fillSparse, PtMotherWeight);
   if (factor>0)   fPhotPt1Pt2ECorr->Fill(fillSparse, PtMotherWeight*GetNonTagCorr(AODtrack->Pt(), RecPartnerPt));
@@ -4509,7 +4520,7 @@ Bool_t AliAnalysisTaskHaHFECorrel::InclElecTrackCuts(const AliVVertex *pVtx,AliV
   else {
     if (ITSFracSharedNCls>fITSSharedClusterCut) return kFALSE;
   }
-  cout << "Cut " << fITSSharedClusterCut << "\t" << ITSNclsShared << endl;
+  // cout << "Cut " << fITSSharedClusterCut << "\t" << ITSNclsShared << endl;
   fElectronTrackCuts->Fill(Vtrack->Pt(), 14); 
  
 

@@ -457,10 +457,12 @@ public:
     TH2F                  *fOpeningAngleLS;         //! opening angle for LS pairs
     TH2F                  *fOpeningAngleULS;        //! opening angle for ULS pairs
     TH2F                  *fCheckLSULS;             //! check no of LS/ULS partner per electron
+    TH3F                  *fTagEtaPt1Pt2;            //!
     TH3F                  *fTagEtaPhiPt;            //!
     TH3F                  *fTagEtaZvtxPt;           //!
     TH3F                  *fTagEtaPhiPtwW;          //!
     TH3F                  *fTagEtaZvtxPtwW;         //!
+    TH3F                  *fNonTagEtaPt1Pt2;            //!
     TH3F                  *fNonTagEtaPhiPt;         //!
     TH3F                  *fNonTagEtaZvtxPt;        //!
     TH3F                  *fNonTagEtaPhiPtwW;       //!
