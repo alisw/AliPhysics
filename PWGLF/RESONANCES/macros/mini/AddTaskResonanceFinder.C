@@ -2483,8 +2483,8 @@ Bool_t Config_kxSigmastar(
     out->SetMotherPDG(3124);
     out->SetMotherMass(mass);
 
-    if(xID==imID) out->AddAxis(imID,260,1.7,3);// axis X: invmass or resolution
-    else out->AddAxis(resID,200,-0.02,0.02);
+    out->AddAxis(imID,260,1.7,3);// axis X: invmass or resolution
+    //out->AddAxis(resID,200,-0.02,0.02);
     out->AddAxis(ptID,50,0.0,20.0);// axis Y: transverse momentum
     out->AddAxis(centID,nmult,multbins);// axis Z: centrality-multiplicity
   }
