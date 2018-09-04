@@ -15,7 +15,7 @@ using namespace std;
 ClassImp(AliPP13TagAndProbeSelection);
 
 //________________________________________________________________
-void AliPP13TagAndProbeSelection::SelectTwoParticleCombinations(const TObjArray & photonCandidates, const EventFlags & flags)
+void AliPP13TagAndProbeSelection::SelectTwoParticleCombinations(const TObjArray & photonCandidates, const EventFlags & eflags)
 {
 	// NB: Nonlinearity is a function of photon energy
 	//     therefore the histograms should be filled for each photon.
@@ -33,8 +33,13 @@ void AliPP13TagAndProbeSelection::SelectTwoParticleCombinations(const TObjArray 
 			if (i == j) // Skip the same clusters
 				continue;
 
-			AliVCluster * proble = dynamic_cast<AliVCluster *> (photonCandidates.At(j));
-			ConsiderPair(tag, proble, flags);
+			AliVCluster * probe = dynamic_cast<AliVCluster *> (photonCandidates.At(j));
+
+			// Appply asymmetry cut for pair
+			if (!fCuts.AcceptPair(tag, probe, eflags))
+				continue;
+
+			ConsiderPair(tag, probe, eflags);
 		} // second cluster loop
 	} // cluster loop}
 }
@@ -80,8 +85,8 @@ void AliPP13TagAndProbeSelection::InitSelectionHistograms()
 	for (Int_t i = 0; i < 2; ++i)
 	{
 		const char * sf = (i == 0) ? "" : "Mix";
-		TH2F * hist1 = new TH2F(Form("h%sMassEnergyAll_", sf), "(M_{#gamma#gamma}, E_{probe}) ; M_{#gamma#gamma}, GeV; E_{proble}, GeV", nM, mMin, mMax, nE, eMin, eMax);
-		TH2F * hist2 = new TH2F(Form("h%sMassEnergyTOF_", sf), "(M_{#gamma#gamma}, E_{probe}) ; M_{#gamma#gamma}, GeV; E_{proble}, GeV", nM, mMin, mMax, nE, eMin, eMax);
+		TH2F * hist1 = new TH2F(Form("h%sMassEnergyAll_", sf), "(M_{#gamma#gamma}, E_{probe}) ; M_{#gamma#gamma}, GeV; E_{probe}, GeV", nM, mMin, mMax, nE, eMin, eMax);
+		TH2F * hist2 = new TH2F(Form("h%sMassEnergyTOF_", sf), "(M_{#gamma#gamma}, E_{probe}) ; M_{#gamma#gamma}, GeV; E_{probe}, GeV", nM, mMin, mMax, nE, eMin, eMax);
 
 		fMassEnergyAll[i] = new AliPP13DetectorHistogram(hist1, fListOfHistos, AliPP13DetectorHistogram::kModules);
 		fMassEnergyTOF[i] = new AliPP13DetectorHistogram(hist2, fListOfHistos, AliPP13DetectorHistogram::kModules);

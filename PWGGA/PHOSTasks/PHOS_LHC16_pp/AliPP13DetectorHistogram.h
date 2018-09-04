@@ -18,7 +18,7 @@ public:
 		fInterModuleHistograms()
 	{}
 
-	AliPP13DetectorHistogram(TH1 * hist, TList * owner, Mode = kInterModules);
+	AliPP13DetectorHistogram(TH1 * hist, TList * owner, Mode = kModules);
 
 	// Default copy constructor will do the job.
 	// as we don't need two copies of the same hists
