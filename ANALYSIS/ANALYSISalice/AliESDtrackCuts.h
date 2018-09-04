@@ -321,7 +321,7 @@ protected:
   TH1F* fhNSharedClustersTPC[2];      //->
   /// 
   TH1F* fhNCrossedRowsTPC[2];         //->
-  TH1F* fhRatioCrossedRowsOverFindableClustersTPC[2]; ///< ->
+  TH1F* fhRatioCrossedRowsOverFindableClustersTPC[2]; //->
 
   /// 
   TH1F* fhChi2PerClusterITS[2];       //->
