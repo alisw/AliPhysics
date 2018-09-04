@@ -81,8 +81,7 @@ ClassImp(AliAnalysisTaskPHOSEmbeddingEfficiency)
 //________________________________________________________________________
 AliAnalysisTaskPHOSEmbeddingEfficiency::AliAnalysisTaskPHOSEmbeddingEfficiency(const char *name):
   AliAnalysisTaskPHOSPi0EtaToGammaGamma(name),
-  fParticleName(""),
-  fMCArray(0x0)
+  fParticleName("")
 {
   // Constructor
 
@@ -121,7 +120,7 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::UserCreateOutputObjects()
     h1Pt->Sumw2();
     fOutputContainer->Add(h1Pt);
 
-    TH2F *h2EtaPhi = new TH2F(Form("hGenEmbedded%sEtaPhi",parname[ipar].Data()),Form("generated %s y vs phi;#phi (rad);rapidity",parname[ipar].Data()),200,-1,1,60,0,TMath::TwoPi());
+    TH2F *h2EtaPhi = new TH2F(Form("hGenEmbedded%sEtaPhi",parname[ipar].Data()),Form("generated %s y vs phi;#phi (rad);rapidity",parname[ipar].Data()),60,0,TMath::TwoPi(),200,-1,1);
     h2EtaPhi->Sumw2();
     fOutputContainer->Add(h2EtaPhi);
 
@@ -276,7 +275,7 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::UserExec(Option_t *option)
 
   GetEmbeddedMCInfo();
 
-  if(!fMCArray){
+  if(!fMCArrayAOD){
     AliError("Could not retrieve AOD event!");
     return;
   }
@@ -379,7 +378,7 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::ProcessMC()
   else if(fParticleName.Contains("Eta"))   f1weight = GetAdditionalEtaPtWeightFunction(fCentralityMain);
   else if(fParticleName.Contains("Gamma")) f1weight = GetAdditionalGammaPtWeightFunction(fCentralityMain);
 
-  AliAODMCParticle *p_origin = (AliAODMCParticle*)fMCArray->At(0);//0 is always generated particle by AliGenBox.
+  AliAODMCParticle *p_origin = (AliAODMCParticle*)fMCArrayAOD->At(0);//0 is always generated particle by AliGenBox.
   Double_t pT_origin = p_origin->Pt();
   Double_t weight = f1weight->Eval(pT_origin) * pT_origin;
 
@@ -387,12 +386,11 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::ProcessMC()
   Double_t pT=0, rapidity=0, phi=0;
   Int_t pdg = 0;
   TString parname = "";
-  TString genname = "";
 
-  const Int_t Ntrack = fMCArray->GetEntriesFast();
+  const Int_t Ntrack = fMCArrayAOD->GetEntriesFast();
 
   for(Int_t i=0;i<Ntrack;i++){
-    AliAODMCParticle *p = (AliAODMCParticle*)fMCArray->At(i);
+    AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(i);
     //genID = p->GetGeneratorIndex();
     pT = p->Pt();
     rapidity = p->Y();
@@ -405,19 +403,20 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::ProcessMC()
     if(TMath::Abs(rapidity) > 0.5) continue;
 
     //printf("pdg = %d , Rho = %e cm\n",pdg,Rho(p));
-    //if(RhoEMB(p) > 1.0) continue;
+    parname = "";
+    if(RAbs(p) > 1.0) continue;//select only primary particles in 2D.
 
     if(pdg==111){//pi0
       parname = "Pi0";
     }
     else if(pdg==221){//eta
       parname = "Eta";
-
     }
     else if(pdg==22){//gamma
       parname = "Gamma";
     }
     else{
+      parname = "";
       continue;
     }
 
@@ -425,7 +424,7 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::ProcessMC()
     //Printf("particle %d is generated at eta = %f , phi = %f and pT = %f.",pdg,eta,phi,pT);
 
     FillHistogramTH1(fOutputContainer,Form("hGenEmbedded%sPt"    ,parname.Data()),pT          ,weight);
-    FillHistogramTH2(fOutputContainer,Form("hGenEmbedded%sEtaPhi",parname.Data()),rapidity,phi,weight);
+    FillHistogramTH2(fOutputContainer,Form("hGenEmbedded%sEtaPhi",parname.Data()),phi,rapidity,weight);
     FillHistogramTH2(fOutputContainer,Form("hGenEmbedded%sEtaPt" ,parname.Data()),rapidity,pT ,weight);
 
   }//end of generated particle loop
@@ -439,7 +438,7 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::SetWeightToClusters()
   else if(fParticleName.Contains("Eta"))   f1weight = GetAdditionalEtaPtWeightFunction(fCentralityMain);
   else if(fParticleName.Contains("Gamma")) f1weight = GetAdditionalGammaPtWeightFunction(fCentralityMain);
 
-  AliAODMCParticle *p_origin = (AliAODMCParticle*)fMCArray->At(0);//0 is always generated particle by AliGenBox.
+  AliAODMCParticle *p_origin = (AliAODMCParticle*)fMCArrayAOD->At(0);//0 is always generated particle by AliGenBox.
   Double_t pT_origin = p_origin->Pt();
   Double_t weight = f1weight->Eval(pT_origin) * pT_origin;
 
@@ -454,14 +453,9 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::SetWeightToClusters()
 //________________________________________________________________________
 void AliAnalysisTaskPHOSEmbeddingEfficiency::GetEmbeddedMCInfo()
 {
-  fMCArray = 0x0;
-  //if(fParticleName.Contains("Pi0"))        fMCArray = (TClonesArray*)fEvent->FindListObject(Form("%s_pi0"  ,AliAODMCParticle::StdBranchName()));
-  //else if(fParticleName.Contains("Eta"))   fMCArray = (TClonesArray*)fEvent->FindListObject(Form("%s_eta"  ,AliAODMCParticle::StdBranchName()));
-  //else if(fParticleName.Contains("Gamma")) fMCArray = (TClonesArray*)fEvent->FindListObject(Form("%s_gamma",AliAODMCParticle::StdBranchName()));
+  fMCArrayAOD = dynamic_cast<TClonesArray*>(fEvent->FindListObject(Form("%s_%s",AliAODMCParticle::StdBranchName(),fParticleName.Data())));
 
-  fMCArray = (TClonesArray*)fEvent->FindListObject(Form("%s_%s",AliAODMCParticle::StdBranchName(),fParticleName.Data()));
-
-  if(!fMCArray){
+  if(!fMCArrayAOD){
     AliError("Could not retrieve AOD event!");
     return;
   }
@@ -888,24 +882,4 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::EstimatePIDCutEfficiency()
 }
 //________________________________________________________________________
 //________________________________________________________________________
-Double_t AliAnalysisTaskPHOSEmbeddingEfficiency::REMB(AliAODMCParticle* p)
-{
-  //Radius of vertex in cylindrical system.
-
-  Double32_t x = p->Xv();
-  Double32_t y = p->Yv();
-  return sqrt(x*x + y*y);
-
-}
-//________________________________________________________________________
-Double_t AliAnalysisTaskPHOSEmbeddingEfficiency::RhoEMB(AliAODMCParticle* p)
-{
-  //Radius of vertex in spherical system.
-
-  Double32_t x = p->Xv();
-  Double32_t y = p->Yv();
-  Double32_t z = p->Zv();
-  return sqrt(x*x + y*y + z*z);
-
-}
 //________________________________________________________________________

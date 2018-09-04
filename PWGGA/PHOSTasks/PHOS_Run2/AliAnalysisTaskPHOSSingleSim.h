@@ -37,13 +37,12 @@ class AliAnalysisTaskPHOSSingleSim : public AliAnalysisTaskPHOSPi0EtaToGammaGamm
 
   protected:
     TString fParticleName;
-    TClonesArray *fMCArray;
 
   private:
     AliAnalysisTaskPHOSSingleSim(const AliAnalysisTaskPHOSSingleSim&); // not implemented
     AliAnalysisTaskPHOSSingleSim& operator=(const AliAnalysisTaskPHOSSingleSim&); // not implemented
 
-    ClassDef(AliAnalysisTaskPHOSSingleSim, 3);
+    ClassDef(AliAnalysisTaskPHOSSingleSim, 4);
 };
 
 #endif
