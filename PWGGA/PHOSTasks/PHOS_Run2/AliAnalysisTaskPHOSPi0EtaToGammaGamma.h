@@ -310,6 +310,8 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     Double_t R(AliAODMCParticle *p);//in cylindrical system
     Double_t Rho(AliAODMCParticle *p);//in sperical system
+    Double_t RAbs(AliAODMCParticle *p);//in cylindrical system
+    Double_t RhoAbs(AliAODMCParticle *p);//in sperical system
     Double_t DeltaPhiIn0Pi(Double_t dphi);//this returns dphi in 0-pi range.
 
     virtual Int_t FindCommonParent(Int_t iPart, Int_t jPart);
@@ -487,7 +489,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 65);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 66);
 };
 
 #endif

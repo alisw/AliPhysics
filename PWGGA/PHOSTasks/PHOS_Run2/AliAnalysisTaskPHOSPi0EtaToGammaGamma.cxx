@@ -3461,7 +3461,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
       Double32_t x = p->Vx() - fVertex[0];
       Double32_t y = p->Vy() - fVertex[1];
       Double32_t z = p->Vz() - fVertex[2];
-      Double32_t Rho = sqrt(x*x + y*y + z*z);
+      //Double32_t Rho = sqrt(x*x + y*y + z*z);
       Double32_t R = sqrt(x*x + y*y);
 
       //if(Rho > 1.0) continue;//3D
@@ -3725,6 +3725,25 @@ Double_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::Rho(AliAODMCParticle* p)
   return sqrt(x*x + y*y + z*z);
 }
 //________________________________________________________________________
+Double_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::RAbs(AliAODMCParticle* p)
+{
+  //Radius of vertex in cylindrical system.
+
+  Double32_t x = p->Xv();
+  Double32_t y = p->Yv();
+  return sqrt(x*x + y*y);
+}
+//________________________________________________________________________
+Double_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::RhoAbs(AliAODMCParticle* p)
+{
+  //Radius of vertex in spherical system.
+
+  Double32_t x = p->Xv();
+  Double32_t y = p->Yv();
+  Double32_t z = p->Zv();
+  return sqrt(x*x + y*y + z*z);
+}
+//________________________________________________________________________
 Double_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::DeltaPhiIn0Pi(Double_t dphi)
 {
   //this returns dphi in 0-pi range in unit of radian.
@@ -3753,7 +3772,7 @@ Bool_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::IsFrom(Int_t label, Double_t &True
     Double32_t x = 999;
     Double32_t y = 999;
     Double32_t z = 999;
-    Double32_t Rho = 999;
+    //Double32_t Rho = 999;
     Double32_t R = 999;
 
     //printf("Nprimary = %d\n",Nprimary);
@@ -3768,7 +3787,7 @@ Bool_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::IsFrom(Int_t label, Double_t &True
       x = mp->Vx() - fVertex[0];
       y = mp->Vy() - fVertex[1];
       z = mp->Vz() - fVertex[2];
-      Rho = sqrt(x*x + y*y + z*z);
+      //Rho = sqrt(x*x + y*y + z*z);
       R = sqrt(x*x + y*y);
 
       //if(TMath::Abs(pdg) == target_pdg && Rho < 1.0){//pi0 from primary vertex

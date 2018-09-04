@@ -62,7 +62,8 @@ class AliAnalysisTaskPHOSEmbedding : public AliAnalysisTaskSE {
 
   protected:
     THashList *fOutputContainer;
-    TH1F *fHistoID;
+    TH1F *fHistoFileID;
+    TH1F *fHistoEventID;
     TString fParticle;
     AliVEvent *fEvent;
     TRandom3 *fRandom3;
@@ -73,7 +74,6 @@ class AliAnalysisTaskPHOSEmbedding : public AliAnalysisTaskSE {
     AliAODEvent *fAODEvent;//AOD MC event
     Int_t fEventCounter;//event counter for real event loop
     Int_t fNeventMC;
-    Int_t fStartEventID;
     AliAODCaloCells *fCellsPHOS;
     TTree *fDigitsTree ;  //! Digits
     TTree *fClustersTree; //! Clusters 
@@ -96,7 +96,7 @@ class AliAnalysisTaskPHOSEmbedding : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSEmbedding(const AliAnalysisTaskPHOSEmbedding&);
     AliAnalysisTaskPHOSEmbedding& operator=(const AliAnalysisTaskPHOSEmbedding&);
 
-    ClassDef(AliAnalysisTaskPHOSEmbedding, 11);
+    ClassDef(AliAnalysisTaskPHOSEmbedding, 12);
 };
 
 #endif
