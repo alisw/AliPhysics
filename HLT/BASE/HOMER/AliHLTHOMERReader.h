@@ -17,9 +17,11 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
+#if !defined(__CLING__) && !defined(__ROOTCLING__)
 #include <limits.h>
-//#include <sys/ipc.h>
+#include <sys/ipc.h>
 #include <sys/shm.h>
+#endif
 #include "AliHLTHOMERData.h"
 #include <TObject.h>
 
@@ -127,6 +129,9 @@ class AliHLTHOMERReader: public AliHLTMonitoringReader, public TObject
 #ifdef USE_ROOT
 	AliHLTHOMERReader();
 #endif
+#if (defined(__CLING__) || defined(__ROOTCLING__)) && !defined(__key_t_defined)
+    struct key_t; //Make CLING happy, which fails processing shm.h / types.h, where this is defined...
+#endif
 
 	/* Constructors & destructors, HOMER specific */
 	/* For reading from a TCP port */
@@ -134,7 +139,7 @@ class AliHLTHOMERReader: public AliHLTMonitoringReader, public TObject
 	/* For reading from multiple TCP ports */
 	AliHLTHOMERReader( unsigned int tcpCnt, const char** hostnames, const unsigned short* ports );
 	/* For reading from a System V shared memory segment */
-	AliHLTHOMERReader( key_t shmKey, int shmSize );
+	AliHLTHOMERReader( key_t* shmKey, int shmSize );
 	/* For reading from multiple System V shared memory segments */
 	AliHLTHOMERReader( unsigned int shmCnt, const key_t* shmKey, const int* shmSize );
 	/* For reading from multiple TCP ports and multiple System V shared memory segments */
@@ -263,22 +268,26 @@ class AliHLTHOMERReader: public AliHLTMonitoringReader, public TObject
     protected:
 
       enum DataSourceType { kUndef=0, kTCP, kShm, kBuf};
-	struct DataSource
-	    {
-	        DataSourceType fType; // source type (TCP or Shm)
-		unsigned fNdx; // This source's index
-		const char* fHostname; // Filled for both Shm and TCP
-	        unsigned short fTCPPort; // port if type TCP
-	        key_t fShmKey; // shm key if type Shm
-	        int fShmSize; // shm size if type Shm
-		int fTCPConnection; // File descriptor for the TCP connection
-		int fShmID; // ID of the shared memory area
-		void* fShmPtr; // Pointer to shared memory area
-		void* fData; // Pointer to data read in for current event from this source
-		unsigned long fDataSize; // Size of data (to be) read in for current event from this source
-		unsigned long fDataRead; // Data actually read for current event
-	    };
 
+#if (defined(__CLING__) || defined(__ROOTCLING__)) && !defined(__key_t_defined)
+    struct DataSource;
+#else
+    struct DataSource
+        {
+            DataSourceType fType; // source type (TCP or Shm)
+        unsigned fNdx; // This source's index
+        const char* fHostname; // Filled for both Shm and TCP
+            unsigned short fTCPPort; // port if type TCP
+            key_t fShmKey; // shm key if type Shm
+            int fShmSize; // shm size if type Shm
+        int fTCPConnection; // File descriptor for the TCP connection
+        int fShmID; // ID of the shared memory area
+        void* fShmPtr; // Pointer to shared memory area
+        void* fData; // Pointer to data read in for current event from this source
+        unsigned long fDataSize; // Size of data (to be) read in for current event from this source
+        unsigned long fDataRead; // Data actually read for current event
+        };
+#endif
 	void Init();
 	
 	bool AllocDataSources( unsigned int sourceCnt );
