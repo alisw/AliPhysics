@@ -42,8 +42,9 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#include "AliHLTHOMERReader.h"
+#include <limits.h>
 #include <sys/ipc.h>
+#include <sys/shm.h>
 //#include <stdio.h>
 #ifdef __SUNPRO_CC
 #include <string.h>
@@ -67,6 +68,9 @@
 #include <Rtypes.h>
 #endif
 
+#define __key_t_defined //Ensure the implementation of AliHLTHOMERReader
+                        //always gets the proper definition of AliHLTHOMERReader::DataSource
+#include "AliHLTHOMERReader.h" //THIS HEADER MUST BE INCLUDED LAST!!!
 
 #define MOD_BIN "MOD BIN\n"
 #define MOD_ASC "MOD ASC\n"
@@ -192,7 +196,7 @@ AliHLTHOMERReader::AliHLTHOMERReader( unsigned int tcpCnt, const char** hostname
 	}
     }
 
-AliHLTHOMERReader::AliHLTHOMERReader( key_t shmKey, int shmSize )
+AliHLTHOMERReader::AliHLTHOMERReader( key_t* shmKey, int shmSize )
   :
   AliHLTMonitoringReader(),
   TObject(),
@@ -219,7 +223,7 @@ AliHLTHOMERReader::AliHLTHOMERReader( key_t shmKey, int shmSize )
 	fConnectionStatus = ENOMEM;
 	return;
 	}
-    fConnectionStatus = AddDataSource( shmKey, shmSize, fDataSources[0] );
+    fConnectionStatus = AddDataSource( *shmKey, shmSize, fDataSources[0] );
     if ( fConnectionStatus )
 	fErrorConnection = 0;
     else
