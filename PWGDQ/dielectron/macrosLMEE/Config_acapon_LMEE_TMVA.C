@@ -166,8 +166,8 @@ void SetupAODtrackCutsTMVAPIDFirst(AliDielectron *die, Bool_t bMCPID, Bool_t bTM
   
   AliDielectronTMVACuts *pidCuts = new AliDielectronTMVACuts("PIDCutsTMVA","PIDCutsTMVA");
   pidCuts->AddTMVAInput("pt", AliDielectronVarManager::kPt);
-  pidCuts->AddTMVAInput("EsigITS", AliDielectronVarManager::kITSnSigmaEle);
   pidCuts->AddTMVAInput("EsigTPC", AliDielectronVarManager::kTPCnSigmaEle);
+  pidCuts->AddTMVAInput("EsigITS", AliDielectronVarManager::kITSnSigmaEle);
   pidCuts->AddTMVAInput("EsigTOF", AliDielectronVarManager::kTOFnSigmaEle);
   pidCuts->AddTMVAInput("PsigTPC", AliDielectronVarManager::kTPCnSigmaPio);
   pidCuts->AddTMVASpectator("pdg", AliDielectronVarManager::kPdgCode);
