@@ -359,7 +359,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                        iPar2);
         fSameEventkTDist[Counter] = new TH2F(SamekTEventName.Data(),
                                              SamekTEventName.Data(), *itNBins,
-                                             *itKMin, *itKMax, *itNBins / 100,
+                                             *itKMin, *itKMax, *itNBins / 10,
                                              *itKMin, *itKMax * 1.5);
         fSameEventkTDist[Counter]->Sumw2();
         fPairs[Counter]->Add(fSameEventkTDist[Counter]);
@@ -368,7 +368,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                         iPar2);
         fMixedEventkTDist[Counter] = new TH2F(MixedkTEventName.Data(),
                                               MixedkTEventName.Data(), *itNBins,
-                                              *itKMin, *itKMax, *itNBins / 100,
+                                              *itKMin, *itKMax, *itNBins / 10,
                                               *itKMin, *itKMax * 1.5);
         fMixedEventkTDist[Counter]->Sumw2();
         fPairs[Counter]->Add(fMixedEventkTDist[Counter]);
@@ -384,7 +384,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
               iPar1, iPar2);
           fSameEventkTCentDist[Counter][iCent] = new TH2F(
               SamekTCentEventName.Data(), SamekTCentEventName.Data(), *itNBins,
-              *itKMin, *itKMax, *itNBins / 100, *itKMin, *itKMax * 1.5);
+              *itKMin, *itKMax, *itNBins / 10, *itKMin, *itKMax * 1.5);
           fSameEventkTCentDist[Counter][iCent]->Sumw2();
           fPairs[Counter]->Add(fSameEventkTCentDist[Counter][iCent]);
 
@@ -393,7 +393,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
               iPar1, iPar2);
           fMixedEventkTCentDist[Counter][iCent] = new TH2F(
               MixedkTCentEventName.Data(), MixedkTCentEventName.Data(), *itNBins,
-              *itKMin, *itKMax, *itNBins / 100, *itKMin, *itKMax * 1.5);
+              *itKMin, *itKMax, *itNBins / 10, *itKMin, *itKMax * 1.5);
           fMixedEventkTCentDist[Counter][iCent]->Sumw2();
           fPairs[Counter]->Add(fMixedEventkTCentDist[Counter][iCent]);
         }
@@ -404,7 +404,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                        iPar2);
         fSameEventmTDist[Counter] = new TH2F(SamemTEventName.Data(),
                                              SamemTEventName.Data(), *itNBins,
-                                             *itKMin, *itKMax, *itNBins / 100,
+                                             *itKMin, *itKMax, *itNBins / 10,
                                              *itKMin, *itKMax * 1.5);
         fSameEventmTDist[Counter]->Sumw2();
         fPairs[Counter]->Add(fSameEventmTDist[Counter]);
@@ -413,7 +413,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                         iPar2);
         fMixedEventmTDist[Counter] = new TH2F(MixedmTEventName.Data(),
                                               MixedmTEventName.Data(), *itNBins,
-                                              *itKMin, *itKMax, *itNBins / 100,
+                                              *itKMin, *itKMax, *itNBins / 10,
                                               *itKMin, *itKMax * 1.5);
         fMixedEventmTDist[Counter]->Sumw2();
         fPairs[Counter]->Add(fMixedEventmTDist[Counter]);
