@@ -107,6 +107,12 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     void SetAdditionalPi0PtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
       Int_t Ncen = centarray->GetSize();
+
+      if(fCentArrayPi0){
+        delete fCentArrayPi0;
+        fCentArrayPi0 = 0x0;
+      }
+
       fCentArrayPi0 = centarray;
 
       for(Int_t i=0;i<11;i++){
@@ -123,6 +129,11 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       Int_t Ncen = centarray->GetSize();
       fCentArrayK0S = centarray;
 
+      if(fCentArrayK0S){
+        delete fCentArrayK0S;
+        fCentArrayK0S = 0x0;
+      }
+
       for(Int_t i=0;i<11;i++){
         delete fAdditionalK0SPtWeight[i];
         fAdditionalK0SPtWeight[i] = 0x0;
@@ -135,6 +146,10 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     void SetAdditionalL0PtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
       Int_t Ncen = centarray->GetSize();
+      if(fCentArrayL0){
+        delete fCentArrayL0;
+        fCentArrayL0 = 0x0;
+      }
       fCentArrayL0 = centarray;
 
       for(Int_t i=0;i<11;i++){
@@ -149,6 +164,10 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     void SetAdditionalEtaPtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
       Int_t Ncen = centarray->GetSize();
+      if(fCentArrayEta){
+        delete fCentArrayEta;
+        fCentArrayEta = 0x0;
+      }
       fCentArrayEta = centarray;
 
       for(Int_t i=0;i<11;i++){
@@ -163,6 +182,10 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     void SetAdditionalGammaPtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
       Int_t Ncen = centarray->GetSize();
+      if(fCentArrayGamma){
+        delete fCentArrayGamma;
+        fCentArrayGamma = 0x0;
+      }
       fCentArrayGamma = centarray;
 
       for(Int_t i=0;i<11;i++){
@@ -489,7 +512,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 66);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 67);
 };
 
 #endif
