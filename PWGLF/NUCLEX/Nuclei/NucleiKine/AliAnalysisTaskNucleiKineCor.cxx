@@ -201,7 +201,9 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
       arrd.Add(track);
     } 
   }
-  fPtLead->Fill(leadP->Pt());
+
+  if (leadP!=0) 
+    fPtLead->Fill(leadP->Pt());
 
   Int_t nh = arrh.GetEntries();
   fHists[0]->Fill(nh);
