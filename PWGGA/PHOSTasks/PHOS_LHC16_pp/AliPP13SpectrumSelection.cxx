@@ -1,5 +1,5 @@
 // --- Custom header files ---
-#include "AliPP13PhysPhotonSelection.h"
+#include "AliPP13SpectrumSelection.h"
 
 // --- ROOT system ---
 #include <TH2F.h>
@@ -12,24 +12,24 @@
 using namespace std;
 
 
-ClassImp(AliPP13PhysPhotonSelection);
+ClassImp(AliPP13SpectrumSelection);
 
 
 //________________________________________________________________
-void AliPP13PhysPhotonSelection::InitSelectionHistograms()
+void AliPP13SpectrumSelection::InitSelectionHistograms()
 {
 	// pi0 mass spectrum
-	Int_t nM       = 750;
-	Double_t mMin  = 0.0;
-	Double_t mMax  = 1.5;
-	Int_t nPt      = 400;
-	Double_t ptMin = 0;
-	Double_t ptMax = 20;
+	//
 
 	for (Int_t i = 0; i < 2; ++i)
 	{
 		const char * s = (i == 0) ? "" : "Mix";
-		TH1 * hist = new TH2F(Form("h%sMassPt", s), "(M,p_{T})_{#gamma#gamma}, ; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax);
+		TH1 * hist = new TH2F(
+			Form("h%sMassPt", s),
+			"(M,p_{T})_{#gamma#gamma}, ; M_{#gamma#gamma}, GeV; p_{T}, GeV/c",
+			fLimits.nM, fLimits.mMin, fLimits.mMax,
+			fLimits.nPt, fLimits.ptMin, fLimits.ptMax
+		);
 		fInvariantMass[i] = new AliPP13DetectorHistogram(hist, fListOfHistos);
 	}
 
@@ -44,12 +44,12 @@ void AliPP13PhysPhotonSelection::InitSelectionHistograms()
 	// Don't do any analysis with these histograms.
 	//
 
-	fClusters = new TH1F("hClusterPt_SM0", "Cluster p_{T} spectrum with default cuts, all modules; p_{T}, GeV/c", nPt, ptMin, ptMax);	
+	fClusters = new TH1F("hClusterPt_SM0", "Cluster p_{T} spectrum with default cuts, all modules; p_{T}, GeV/c", fLimits.nPt, fLimits.ptMin, fLimits.ptMax);	
 	fListOfHistos->Add(fClusters);
 }
 
 //________________________________________________________________
-void AliPP13PhysPhotonSelection::ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags)
+void AliPP13SpectrumSelection::ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags)
 {
 	TLorentzVector p1 = ClusterMomentum(c1, eflags);
 	TLorentzVector p2 = ClusterMomentum(c2, eflags);
@@ -57,10 +57,6 @@ void AliPP13PhysPhotonSelection::ConsiderPair(const AliVCluster * c1, const AliV
 
 	// Pair cuts can be applied here
 	if (psum.M2() < 0)  return;
-
-	// Appply asymmetry cut for pair
-	Double_t asym = TMath::Abs( (p1.E() - p2.E()) / (p1.E() + p2.E()) );
-	if (asym >fCuts.fAsymmetryCut) return;
 
 	Int_t sm1, sm2, x1, z1, x2, z2;
 	if ((sm1 = CheckClusterGetSM(c1, x1, z1)) < 0) return; //  To be sure that everything is Ok
@@ -74,7 +70,7 @@ void AliPP13PhysPhotonSelection::ConsiderPair(const AliVCluster * c1, const AliV
 }
 
 //________________________________________________________________
-void AliPP13PhysPhotonSelection::FillClusterHistograms(const AliVCluster * clus, const EventFlags & eflags)
+void AliPP13SpectrumSelection::FillClusterHistograms(const AliVCluster * clus, const EventFlags & eflags)
 {
 	TLorentzVector p = ClusterMomentum(clus, eflags);
 	

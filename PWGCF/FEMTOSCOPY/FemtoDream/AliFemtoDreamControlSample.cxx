@@ -132,14 +132,15 @@ float AliFemtoDreamControlSample::RelativePairMomentum(TVector3 Part1Momentum,
 
   if (random) {
     // Do the randomization here
-    SPtrack.SetPhi(SPtrack.Phi() + fRandom.Uniform(2 * fPi));
-    TPProng.SetPhi(TPProng.Phi() + fRandom.Uniform(2 * fPi));
-  }
-  if (fStravinsky) {
-    if (fRandom.Uniform() < 0.5) {
-      SPtrack.SetPhi(SPtrack.Phi() + fPi);
+    if (fStravinsky) {
+      if (fRandom.Uniform() < 0.5) {
+        SPtrack.SetPhi(SPtrack.Phi() + fPi);
+      } else {
+        TPProng.SetPhi(TPProng.Phi() + fPi);
+      }
     } else {
-      TPProng.SetPhi(TPProng.Phi() + fPi);
+      SPtrack.SetPhi(SPtrack.Phi() + fRandom.Uniform(2 * fPi));
+      TPProng.SetPhi(TPProng.Phi() + fRandom.Uniform(2 * fPi));
     }
   }
   trackSum = SPtrack + TPProng;

@@ -30,6 +30,8 @@
 
 #include <iostream>
 
+#include "TKey.h"
+
 #include "AliSPDUtils.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
@@ -123,6 +125,9 @@ class AliCEPUtils : public TObject {
       TList *lhh );
 
     static TList* GetEMCQAHists();
+    Double_t CaloClusterTrackdmax (
+      AliESDEvent *Event,
+      TArrayI* TTindices );
     void EMCAnalysis (
       AliESDEvent *Event,
       TList *lhh,
@@ -147,6 +152,8 @@ class AliCEPUtils : public TObject {
     Bool_t TestFiredChips(AliESDEvent *esd, TArrayI *indices);
     
     void EMCALcheck(AliVEvent *Event);
+
+    void GetMyPriors(TString fnPriors, TH1F** mypriors);
 
   private:
 

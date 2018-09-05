@@ -179,7 +179,7 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
       continue;
     if (!stack->IsPhysicalPrimary(iTracks)) 
       continue;
-    if (TMath::Abs(track->Y()) <= 1) 
+    if (TMath::Abs(track->Y()) > 1) 
       continue;
     const int pdg = track->GetPdgCode();
     const int apg = TMath::Abs(pdg);
@@ -201,7 +201,9 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
       arrd.Add(track);
     } 
   }
-  fPtLead->Fill(leadP->Pt());
+
+  if (leadP!=0) 
+    fPtLead->Fill(leadP->Pt());
 
   Int_t nh = arrh.GetEntries();
   fHists[0]->Fill(nh);
