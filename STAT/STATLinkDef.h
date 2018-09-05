@@ -33,17 +33,19 @@
 #pragma link C++ class AliNDFormulaBrowser+;
 
 #pragma link C++ class AliDrawStyle+;
-#pragma link C++ function AliDrawStyle::ObjectApplyStyle(const char*, TGraph *, Int_t, Int_t);
-#pragma link C++ function AliDrawStyle::ObjectApplyStyle(const char*, TH1 *, Int_t, Int_t);
-#pragma link C++ function AliDrawStyle::ObjectApplyStyle(const char*, TF1 *, Int_t, Int_t);
+#pragma link C++ function AliDrawStyle::TObjectApplyStyle(const char*, TGraph *, Int_t, Int_t);
+#pragma link C++ function AliDrawStyle::TObjectApplyStyle(const char*, TH1 *, Int_t, Int_t);
+#pragma link C++ function AliDrawStyle::TObjectApplyStyle(const char*, TF1 *, Int_t, Int_t);
 
 #pragma link C++ class AliPainter+;
-#pragma link C++ function AliPainter::SetFitter(TH1D *, Int_t);
+#pragma link C++ function AliPainter::SetFitter(TH1D *, std::map<TString, TString>, Int_t);
 //#pragma link C++ function AliPainter::SetFitter(TH2D *, Int_t);
 //#pragma link C++ function AliPainter::SetFitter(TH3D *, Int_t);
-#pragma link C++ function AliPainter::SetDrawingOptions(TH1D *&, Int_t);
+#pragma link C++ function AliPainter::SetDrawingOptions(TH1D *&, std::map<TString, TString>, Int_t);
 //#pragma link C++ function AliPainter::SetDrawingOptions(TH2D *&, Int_t);
 //#pragma link C++ function AliPainter::SetDrawingOptions(TH3D *&, Int_t);
+
+#pragma link C++ class AliParser+;
 
 #pragma link C++ class AliElasticSearchRoot++;
 

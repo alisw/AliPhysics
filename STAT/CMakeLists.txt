@@ -44,7 +44,8 @@ set(SRCS
     AliNDFormulaBrowser.cxx
     AliDrawStyle.cxx
     AliPainter.cxx
-    AliElasticSearchRoot.cxx)
+    AliElasticSearchRoot.cxx
+    AliParser.cxx)
 
 # Dependencies (libraries)
 set(LIBDEPS Gui Graf Tree TreePlayer GeomBuilder Minuit)
