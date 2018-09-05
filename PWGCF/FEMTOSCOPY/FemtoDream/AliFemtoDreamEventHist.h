@@ -105,7 +105,7 @@ class AliFemtoDreamEventHist {
   TH2F *fSPDTrklCls[2];     //!
   TH2F *fSPDTrackZVtx[2];   //!
   TH1F *fSPDTrkZVtxDispl[2];   //!
-  TH1F *fBField[i];         //!
+  TH1F *fBField[2];         //!
   bool fCentVsMultPlots;    //!
   TH2F *fCentVsV0A;         //!
   TH2F *fCentVsV0M;         //!
