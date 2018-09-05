@@ -4,7 +4,7 @@
 * Author: The ALICE Off-line Project.                                    *
 * Contributors are mentioned in the code where appropriate.              *
 *                                                                        *
-* Permission to use, copy, modify and distribute this software and its   *
+* Permission to use, copy, modify and distribute this AliAnalysisTaskCEP.cxxsoftware and its   *
 * documentation strictly for non-commercial purposes is hereby granted   *
 * without fee, provided that the above copyright notice appears in all   *
 * copies and that both the copyright notice and this permission notice   *
@@ -25,6 +25,7 @@
 #include <TObject.h>
 #include <TRandom3.h>
 
+#include "TGrid.h"
 #include "AliAnalysisManager.h"
 #include "AliProdInfo.h"
 #include "AliESDInputHandler.h"
@@ -351,7 +352,7 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
   // three types of Bayes PID
   // 1. without priors
   // 2. with default TPC priors
-  // 3. with CEP priors
+  // 3. with own priors
   fPIDCombined1 = new AliPIDCombined;
   fPIDCombined1->SetSelectedSpecies(AliPID::kSPECIES);  // This is default
   
@@ -369,17 +370,11 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
   
  } else {
     
-    // 3. set CEP specific priors
-    //TString fnameMyPriors = TString(gSystem->Getenv("ALICE_PHYSICS"))+
-    //  TString("/PWGUD/DIFFRACTIVE/CEPdevel/priors/");
-    
-    // MC truth
-    //fnameMyPriors += TString("MCTruth_CEPPriors.root");
-      
-    // Pythia8CEP 
-    //fnameMyPriors += TString("Pythia8CEP_CEPPriors.root");
+    // specific priors 
+    TGrid::Connect("alien://");
     TString fnameMyPriors =
-      TString("alien:/alice/cern.ch/user/p/pbuhler/CEP/priors/Pythia8CEP_CEPPriors.root");
+      TString("alien:///alice/cern.ch/user/p/pbuhler/CEP/priors/");
+    fnameMyPriors += TString("MyOwnPriors.root");
     
     TH1F *priordistr[AliPID::kSPECIES];
     fCEPUtil->GetMyPriors(fnameMyPriors,priordistr);
