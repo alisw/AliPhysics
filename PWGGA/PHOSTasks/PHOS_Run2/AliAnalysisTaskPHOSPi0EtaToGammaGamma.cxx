@@ -279,6 +279,27 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::~AliAnalysisTaskPHOSPi0EtaToGammaGamma()
 
   }
 
+  if(fCentArrayPi0){
+    delete fCentArrayPi0;
+    fCentArrayPi0 = 0x0;
+  }
+  if(fCentArrayEta){
+    delete fCentArrayEta;
+    fCentArrayEta = 0x0;
+  }
+  if(fCentArrayGamma){
+    delete fCentArrayGamma;
+    fCentArrayGamma = 0x0;
+  }
+  if(fCentArrayK0S){
+    delete fCentArrayK0S;
+    fCentArrayK0S = 0x0;
+  }
+  if(fCentArrayL0){
+    delete fCentArrayL0;
+    fCentArrayL0 = 0x0;
+  }
+
   delete fTOFEfficiency;
   fTOFEfficiency = 0x0;
 
@@ -3460,7 +3481,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
 
       Double32_t x = p->Vx() - fVertex[0];
       Double32_t y = p->Vy() - fVertex[1];
-      Double32_t z = p->Vz() - fVertex[2];
+      //Double32_t z = p->Vz() - fVertex[2];
       //Double32_t Rho = sqrt(x*x + y*y + z*z);
       Double32_t R = sqrt(x*x + y*y);
 
@@ -3771,7 +3792,7 @@ Bool_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::IsFrom(Int_t label, Double_t &True
 
     Double32_t x = 999;
     Double32_t y = 999;
-    Double32_t z = 999;
+    //Double32_t z = 999;
     //Double32_t Rho = 999;
     Double32_t R = 999;
 
@@ -3786,7 +3807,7 @@ Bool_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::IsFrom(Int_t label, Double_t &True
 
       x = mp->Vx() - fVertex[0];
       y = mp->Vy() - fVertex[1];
-      z = mp->Vz() - fVertex[2];
+      //z = mp->Vz() - fVertex[2];
       //Rho = sqrt(x*x + y*y + z*z);
       R = sqrt(x*x + y*y);
 
