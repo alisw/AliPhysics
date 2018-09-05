@@ -66,6 +66,9 @@ class AliFemtoDreamEventHist {
     fSPDTrackZVtx[i]->Fill(zVtxSPD, zVtxTracks);
     fSPDTrkZVtxDispl[i]->Fill(TMath::Abs(zVtxSPD - zVtxTracks));
   }
+  void FillMagneticField(int i, float bField){
+    fBField[i]->Fill(bField);
+  }
   void FillCentVsMultV0A(float cent, float mult) {
     if (fCentVsMultPlots)
       fCentVsV0A->Fill(cent, mult);
@@ -102,6 +105,7 @@ class AliFemtoDreamEventHist {
   TH2F *fSPDTrklCls[2];     //!
   TH2F *fSPDTrackZVtx[2];   //!
   TH1F *fSPDTrkZVtxDispl[2];   //!
+  TH1F *fBField[2];         //!
   bool fCentVsMultPlots;    //!
   TH2F *fCentVsV0A;         //!
   TH2F *fCentVsV0M;         //!

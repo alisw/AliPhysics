@@ -183,6 +183,11 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
     fSPDTrkZVtxDispl[i]->Sumw2();
     fSPDTrkZVtxDispl[i]->GetXaxis()->SetTitle("zVtx Position |SPD - Tracks|");
     fEvtCutQA[i]->Add(fSPDTrkZVtxDispl[i]);
+
+    TString BFieldName = Form("MagneticFieldkGauss_%s",sName[i].Data());
+    fBField[i] = new TH1F(BFieldName.Data(),BFieldName.Data(),20,-10,10);
+    fBField[i]->Sumw2();
+    fEvtCutQA[i]->Add(fBField[i]);
   }
 }
 
@@ -206,6 +211,7 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(
     fMultDistV0A[i] = hists.fMultDistV0A[i];
     fMultDistV0C[i] = hists.fMultDistV0C[i];
     fMultDistRef08[i] = hists.fMultDistRef08[i];
+    fBField[i] = hists.fBField[i];
   }
 }
 AliFemtoDreamEventHist& AliFemtoDreamEventHist::operator=(
@@ -229,6 +235,7 @@ AliFemtoDreamEventHist& AliFemtoDreamEventHist::operator=(
       this->fMultDistV0A[i] = hists.fMultDistV0A[i];
       this->fMultDistV0C[i] = hists.fMultDistV0C[i];
       this->fMultDistRef08[i] = hists.fMultDistRef08[i];
+      this->fBField[i]=hists.fBField[i];
     }
   }
   return *this;

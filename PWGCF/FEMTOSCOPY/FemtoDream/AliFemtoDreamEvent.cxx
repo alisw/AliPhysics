@@ -22,6 +22,7 @@ AliFemtoDreamEvent::AliFemtoDreamEvent()
       fzVtx(0),
       fzVtxTracks(0),
       fzVtxSPD(0),
+      fBField(-99),
       fSPDMult(0),
       fNSPDCluster(0),
       fRefMult08(0),
@@ -48,6 +49,7 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA,
       fzVtx(0),
       fzVtxTracks(0),
       fzVtxSPD(0),
+      fBField(-99),
       fSPDMult(0),
       fNSPDCluster(0),
       fRefMult08(0),
@@ -107,6 +109,7 @@ AliFemtoDreamEvent &AliFemtoDreamEvent::operator=(
   fzVtx = obj.fzVtx;
   fzVtxTracks = obj.fzVtxTracks;
   fzVtxSPD = obj.fzVtxSPD;
+  fBField = obj.fBField;
   fSPDMult = obj.fSPDMult;
   fNSPDCluster = obj.fNSPDCluster;
   fRefMult08 = obj.fRefMult08;
@@ -136,6 +139,7 @@ void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
     this->fHasMagField = false;
   } else {
     this->fHasMagField = true;
+    this->fBField = evt->GetMagneticField();
   }
   this->fnContrib = vtx->GetNContributors();
   this->fxVtx = vtx->GetX();
@@ -183,6 +187,7 @@ void AliFemtoDreamEvent::SetEvent(AliESDEvent *evt) {
     this->fHasMagField = false;
   } else {
     this->fHasMagField = true;
+    this->fBField = evt->GetMagneticField();
   }
   this->fnContrib = vtx->GetNContributors();
   this->fxVtx = vtx->GetX();
