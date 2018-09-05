@@ -1031,7 +1031,7 @@ void AliXiStarpp13TeV::Exec(Option_t *)
     Double_t xiStarMom;
     Double_t xiMass, xiStarMass;
     Double_t xiPt, xiStarPt;
-    Double_t xiY, xiStarY, MCxiY, MCxiStarY,MCxiYout, MCxiStarYout ;
+    Double_t xiY, xiStarY, MCxiStarY;
     Double_t xiCharge;
     Double_t decayLengthXY;
     Double_t pDaughter1[3];
