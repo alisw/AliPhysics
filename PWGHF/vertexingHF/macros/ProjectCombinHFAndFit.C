@@ -22,15 +22,16 @@
 enum Method{kME,kRot,kLS,kSB};
 
 // input files and pt binning
-TString fileName="DataTrains/AnalysisResults_17pq_FAST_wSDD_train2114.root";
-TString suffix="3SigPID_Pt300_FidY_PilSPD5_EM1";
-//TString fileNameMC="MCTrains/AnalysisResults_LHC17pq_FAST_CENTwSDD_G3_train890-889.root";
-TString fileNameMC="MCTrains/AnalysisResults_LHC17pq_FAST_CENTwSDD_G4_train892-891.root";
+TString fileName="DataTrains/AnalysisResults_17pq_FAST_wSDD_train2201.root";
+TString suffix="3SigPID_Pt300_FidY_PilMV_EM1";
+TString fileNameMC="MCTrains/AnalysisResults_LHC17pq_FAST_CENTwSDD_G3_train890-889.root";
+//TString fileNameMC="MCTrains/AnalysisResults_LHC17pq_FAST_CENTwSDD_G4_train892-891.root";
 TString suffixMC="_Prompt_3SigPID_Pt300_FidY_PilSPD5_EM1";
 
 // TString fileName="DataTrains/AnalysisResults_17pq_FAST_wSDD_train2104.root";
 // TString suffix="2SigPID_Pt300_FidY_PilSPD5_EM1";
-// TString fileNameMC="MCTrains/AnalysisResults_LHC17pq_FAST_CENTwSDD_G4_train870-869.root";
+// //TString fileNameMC="MCTrains/AnalysisResults_LHC17pq_FAST_CENTwSDD_G4_train870-869.root";
+// TString fileNameMC="MCTrains/AnalysisResults_LHC17pq_FAST_CENTwSDD_G3_train868-867.root";
 // TString suffixMC="_Prompt_2SigPID_Pt300_FidY_PilSPD5_EM1";
 
 TString meson="Dzero";
@@ -45,9 +46,11 @@ Int_t saveCanvasAsEps=1;   //0=none, 1=main ones, 2=all
 
 // fit configuration
 Int_t rebin[nPtBins]={4,6,7,8,9,10,10,12};//8,9,10,12,12,12,12};
-Bool_t fixSigma=kFALSE;
+Int_t fixSigmaConf=0; // 0= all free, 1=all fixed, 2=use values per pt bin
+Bool_t fixSigma[nPtBins]={kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
 Double_t tuneSigmaOnData=-1.00; // scaling factor for the Gaussian sigma, if -1. use MC out of the box
-Bool_t fixMean=kFALSE;
+Int_t fixMeanConf=0; // 0= all free, 1=all fixed, 2=use values per pt bin
+Bool_t fixMean[nPtBins]={kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
 Double_t minMass=1.72;
 Double_t maxMass=2.04;
 Int_t optForNorm=1;
@@ -91,8 +94,8 @@ AliHFInvMassFitter* ConfigureFitter(TH1D* histo, Int_t iPtBin, Int_t backcase, D
   fitter->SetFitOption(fitoption.Data());
   fitter->SetInitialGaussianMean(massD);
   fitter->SetInitialGaussianSigma(sigmas[iPtBin]);
-  if(fixSigma) fitter->SetFixGaussianSigma(sigmas[iPtBin]);
-  if(fixMean) fitter->SetFixGaussianMean(massD);
+  if(fixSigmaConf==1 || (fixSigmaConf==2 && fixSigma[iPtBin])) fitter->SetFixGaussianSigma(sigmas[iPtBin]);
+  if(fixMeanConf==1 || (fixMeanConf==2 && fixMean[iPtBin])) fitter->SetFixGaussianMean(massD);
   if(correctForRefl){
     TCanvas *cTest=new TCanvas("cTest","cTest",800,800);    
     TH1F *hmasstemp=fitter->GetHistoClone();
@@ -307,6 +310,21 @@ void ProjectCombinHFAndFit(){
   if(meson=="Dplus") massD=TDatabasePDG::Instance()->GetParticle(411)->Mass();
   else if(meson=="Dzero") massD=TDatabasePDG::Instance()->GetParticle(421)->Mass();
 
+  Int_t nBinsWithFixSig=0;
+  Int_t nBinsWithFixMean=0;
+  Int_t patSig=0;
+  Int_t patMean=0;
+  for(Int_t iPtBin=0; iPtBin<nPtBins; iPtBin++){
+    if(fixSigmaConf==1 || (fixSigmaConf==2 && fixSigma[iPtBin])){ 
+      nBinsWithFixSig++;
+      patSig+=1<<iPtBin;
+    }
+    if(fixMeanConf==1 || (fixMeanConf==2 && fixMean[iPtBin])){
+      nBinsWithFixMean++;
+      patMean+=1<<iPtBin;
+    }
+  }
+
   TFile* fil=new TFile(fileName.Data());
   TDirectoryFile* df=(TDirectoryFile*)fil->Get(dirName.Data());
   
@@ -341,7 +359,7 @@ void ProjectCombinHFAndFit(){
     TDirectoryFile* dfMC=(TDirectoryFile*)filMC->Get(dirNameMC.Data());
     TList* lMC=(TList*)dfMC->Get(lstNameMC.Data());
     hSigmaMC=FitMCInvMassSpectra(lMC);
-    if(fixSigma && !hSigmaMC){
+    if(nBinsWithFixSig>0 && !hSigmaMC){
       printf("Fit to MC inv. mass spectra failed\n");
       return;
     }
@@ -352,9 +370,12 @@ void ProjectCombinHFAndFit(){
   }
 
   TString sigConf="FixedSigma";
-  if(fixSigma && tuneSigmaOnData>0.) sigConf=Form("FixedSigma%d",TMath::Nint(tuneSigmaOnData*100.));
-  if(!fixSigma) sigConf="FreeSigma";
-  if(fixMean) sigConf+="FixedMean";
+  if(nBinsWithFixSig==0) sigConf="FreeSigma";
+  else if(nBinsWithFixSig==nPtBins) sigConf="FixedSigmaAll";
+  else sigConf=Form("FixedSigma%d",patSig);
+  if(nBinsWithFixSig>0 && tuneSigmaOnData>0.) sigConf+=Form("%d",TMath::Nint(tuneSigmaOnData*100.));
+  if(nBinsWithFixMean==nPtBins) sigConf+="FixedMeanAll";
+  else if(nBinsWithFixMean>0) sigConf+=Form("FixedMean%d",patMean);
 
   TCanvas* cem=new TCanvas("cem","Pools",1200,600);
   cem->Divide(2,1);
@@ -1359,13 +1380,13 @@ void WriteFitFunctionsToFile(AliHFInvMassFitter *fitter, TString meth, Int_t iPt
   nameh.Form("FitFuncBkg_%s_PtBin%d",meth.Data(),iPtBin);
   fBkg->SetRange(1.6,2.2);
   fBkg->SetNpx(500);
-  fBkg->Write(nameh.Data());
+  fBkg->Write(nameh.Data());  
   if(meson=="Dzero"){
     TF1* fBkgR=fitter->GetBkgPlusReflFunc();
     nameh.Form("FitFuncBkgRefl_%s_PtBin%d",meth.Data(),iPtBin);
     fBkgR->SetRange(1.6,2.2);
     fBkgR->SetNpx(500);
-    fBkgR->Write(nameh.Data());
+    fBkgR->Write(nameh.Data());  
   }
   return;
 }

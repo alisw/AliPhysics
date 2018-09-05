@@ -46,7 +46,7 @@ AliDielectron* Config_miweber_LMEE_TMVA(Double_t userTMVACutValue = 0.0,
     
 
   // create the actual framework object
-  TString name=Form("PbPbData%d",cutDefinition);
+  TString name=Form("TMVACuts%d",cutDefinition);
   
   AliDielectron *die =
     new AliDielectron(Form("%s",name.Data()),

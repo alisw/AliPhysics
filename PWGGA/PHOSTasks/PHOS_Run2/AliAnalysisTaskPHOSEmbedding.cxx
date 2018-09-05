@@ -80,7 +80,8 @@ AliAnalysisTaskPHOSEmbedding::AliAnalysisTaskPHOSEmbedding(const char *name):
   AliAnalysisTaskSE(name),
   //AliAnalysisTaskESDfilter(name),
   fOutputContainer(0x0),
-  fHistoID(0x0),
+  fHistoFileID(0x0),
+  fHistoEventID(0x0),
   fParticle(""),
   fEvent(0x0),
   fRandom3(0x0),
@@ -91,7 +92,6 @@ AliAnalysisTaskPHOSEmbedding::AliAnalysisTaskPHOSEmbedding(const char *name):
   fAODEvent(0x0),
   fEventCounter(0),
   fNeventMC(0),
-  fStartEventID(-1),
   fCellsPHOS(0x0),
   fDigitsTree(0x0),
   fClustersTree(0x0),
@@ -164,10 +164,14 @@ AliAnalysisTaskPHOSEmbedding::~AliAnalysisTaskPHOSEmbedding()
     fAODEvent = 0x0;
   }
 
+  if(fHistoFileID){                                                                                                                                                                                                                           
+    delete fHistoFileID;
+    fHistoFileID = 0x0;
+  }
 
-  if(fHistoID){
-    delete fHistoID;
-    fHistoID = 0x0;
+  if(fHistoEventID){
+    delete fHistoEventID;
+    fHistoEventID = 0x0;
   }
 
 }
@@ -180,9 +184,12 @@ void AliAnalysisTaskPHOSEmbedding::UserCreateOutputObjects()
   fOutputContainer = new THashList();
   fOutputContainer->SetOwner(kTRUE);
 
+  const Int_t Nfile = 500;
   const Int_t Nev = 30e+3;
-  fHistoID = new TH1F(Form("hEventID_%s",fParticle.Data()),Form("event index in MC AOD %s;event ID;Number of events",fParticle.Data()),Nev+1,-0.5,Nev+0.5);
-  fOutputContainer->Add(fHistoID);
+  fHistoFileID  = new TH1F(Form("hEventFileID_%s",fParticle.Data()) ,Form("file index in MC str array %s;file ID;Number of events",fParticle.Data()),Nfile,-0.5,Nfile+0.5);
+  fHistoEventID = new TH1F(Form("hEventEventID_%s",fParticle.Data()),Form("event index in MC AOD %s;event ID;Number of events",fParticle.Data())    ,Nev+1,-0.5,Nev+0.5);
+  fOutputContainer->Add(fHistoFileID);                                                                                                                                                                                                        
+  fOutputContainer->Add(fHistoEventID);
 
   fMCArray = new TClonesArray("AliAODMCParticle",0);
 
@@ -223,9 +230,9 @@ void AliAnalysisTaskPHOSEmbedding::UserExec(Option_t *option)
     }
   }
 
-  Int_t evID = (fStartEventID + fEventCounter) % fNeventMC;
-  fHistoID->Fill(evID);
-  AliInfo(Form("fStartEventID = %d , fEventCounter = %d , Extract event ID %d from %s.",fStartEventID,fEventCounter,evID,fAODPath.Data()));
+  Int_t evID = Int_t(fNeventMC * fRandom3->Rndm());
+  fHistoEventID->Fill(evID);
+  AliInfo(Form("fEventCounter = %d , Extract event ID %d from %s.",fEventCounter,evID,fAODPath.Data()));
   fAODTree->GetEvent(evID);
 
   ConvertAODtoESD();
@@ -538,6 +545,7 @@ Int_t AliAnalysisTaskPHOSEmbedding::SelectAODFile()
 
   fAODPath = objStr->GetString();
   AliInfo(Form("External MC file is %s.",fAODPath.Data()));
+  fHistoFileID->Fill(ientry);
 
   return Nfile;
 }
@@ -554,25 +562,6 @@ Bool_t AliAnalysisTaskPHOSEmbedding::OpenAODFile()
 
   Int_t Nfile = SelectAODFile();//1st trial
   fAODInput = TFile::Open(fAODPath,"TIMEOUT=180");
-
-  if(!fAODInput){
-    AliError(Form("1/3 trial failed : An external AOD MC input (%s) could not be opened.",fAODPath.Data()));
-    Nfile = SelectAODFile();//2nd trial
-    fAODInput = TFile::Open(fAODPath,"TIMEOUT=180");
-
-    if(!fAODInput){
-      AliError(Form("2/3 trial failed : An external AOD MC input (%s) could not be opened.",fAODPath.Data()));
-      Nfile = SelectAODFile();//3rd trial
-      fAODInput = TFile::Open(fAODPath,"TIMEOUT=180");
-
-      if(!fAODInput){
-        AliError(Form("3/3 trial failed : An external AOD MC input (%s) could not be opened.",fAODPath.Data()));
-        return kFALSE;
-      }//end of 3rd trial
-
-    }//end of 2nd trial
-
-  }//end of 1st trial
 
   AliInfo(Form("%d files are stored in fAODPathArray.",Nfile));
 
@@ -591,7 +580,6 @@ Bool_t AliAnalysisTaskPHOSEmbedding::OpenAODFile()
   fAODEvent->ReadFromTree(fAODTree);
   fNeventMC = fAODTree->GetEntries();
   AliInfo(Form("%d events are stored in %s.",fNeventMC,fAODPath.Data()));
-  fStartEventID = (Int_t)(fNeventMC * fRandom3->Rndm());
 
   return kTRUE;
 }
