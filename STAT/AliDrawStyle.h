@@ -227,13 +227,23 @@
 ///           ![Example after styling](AliDrawStyle_h_example2.png)
 ///         Example is available here: /../AliRoot/STAT/test/AliDrawStyleTutor.css
 
-#include "TObject.h"
+// TODO: Should we use some parser like bison, yacc or boost::spirit?
+// TODO: create macro with handle style for test ApplyCssStyle
+// TODO: change pad global indexes to local
+// TODO: using TString - to be replaced by faster variant with rough pointers
+// TODO: refactor godness function
+// TODO: perhaps I should combine {TString elementID, TString classID, TString objectID, TString localStyle} to the array?
+// TODO: add test for ReadCssString, ApplyCssStyle, WriteCssFile, private methods
+// TODO: combine ElementSearch, ClassSearch, ObjectSearch into one function
+// TODO: add parsing scheme
+
 #include <map>
 #include <vector>
 #include <string>
-#include "TString.h"
 #include <iostream>
 #include <fstream>
+#include "TObject.h"
+#include "TString.h"
 class TPRegexp;
 class TStyle;
 class TPad;
@@ -245,9 +255,9 @@ class TLegend;
 class TMultiGraph;
 class TFrame;
 class TPaveText;
-class AliDrawStyle : public TObject{
 
-  //THE OLD CODE
+class AliDrawStyle: public TObject {
+  //OLD CODE
 public:
   static void ApplyStyle(const char *styleName);
   static const TStyle *GetStyle(const char *styleName) { return fStyleAlice[styleName]; }
@@ -287,10 +297,17 @@ protected:
   static void RegisterDefaultLatexSymbols();                 ///< initialize default LatexSymbols
   static void RegisterDefaultStyle();                        ///< initialize default TStyles
   static void RegisterDefaultMarkers();                      ///< initialize default Markers/Colors
-  //THE OLD CODE
 
+
+  // NEW CODE
 public:
+  static void       RegisterCssStyle(const char *styleName, TObjArray*array ) { fCssStyleAlice[styleName]=array;}
   static const TObjArray *GetCssStyle(const char *styleName) {return fCssStyleAlice[styleName];}
+  static void       WriteCSSFile(TObjArray *cssArray, const char *  outputName, std::fstream *cssOut=nullptr);
+  static TObjArray *ReadCSSFile(const char *inputName, TObjArray * array=nullptr, Int_t verbose=0);
+  static TObjArray *ReadCssString(TString cssString, TObjArray *array=nullptr, Int_t verbose=0);
+  static void       ApplyCssStyle(TPad *pad, const char *styleName, Int_t verbose=0);
+//protected:
   template <typename T>
     static void     TObjectApplyStyle(const char* styleName, T *cObj, Int_t objNum=0, Int_t verbose=0);
   static void       TGraphApplyStyle(const char* styleName, TGraph *cGraph, Int_t objNum=0, Int_t verbose=0);
@@ -299,31 +316,28 @@ public:
   static void       TLegendApplyStyle(const char* styleName, TLegend *cLegend, Int_t objNum=0, Int_t verbose=0);
   static void       TPadApplyStyle(const char* styleName, TPad *cPad, Int_t verbose=0);
   static void       TCanvasApplyCssStyle(const char* styleName, TCanvas *cCanvas, Int_t verbose=0);
-  static void       ApplyCssStyle(TPad *pad, const char* styleName, Int_t verbose=0);
-  static void       RegisterCssStyle(const char *styleName, TObjArray*array ) { fCssStyleAlice[styleName]=array;}
+
+//public:
+  static void       GetIds(TObject *cObj, TString &elementID, TString &classID, TString &objectID, TString &localStyle, Int_t verbose=0);
+  static Float_t    PrepareValue(const char* styleName, TString propertyName, TString elementID, TString classID, TString objectID,                                        TString localStyle, Bool_t &status, Int_t objNum=0, Int_t verbose=0);
+  static TString    ParseDeclaration(const char *inputDec, const char *propertyName);
+  static TString    GetValue(const char * styleName, TString propertyName, TString elementID, TString classID, TString objectID, TString localStyle=TString(""), Int_t verbose=0);
+  static Bool_t     IsSelected(TString selectors, const TString elementID, const TString classID, const TString objectID, Int_t verbose=0);
   static Bool_t     ElementSearch(const TString selectors, const TString elementID, Int_t verbose=0);
   static Bool_t     ClassSearch(const TString selectors, const TString classID, Int_t verbose=0);
   static Bool_t     ObjectSearch(const TString selectors, const TString objectID, Int_t verbose=0);
-  static Bool_t     IsSelected(TString selectors, const TString elementID, const TString classID, const TString objectID, Int_t verbose=0);
-  static TString    GetValue(const char * styleName, TString propertyName, TString elementID, TString classID, TString objectID, TString localStyle=TString(""), Int_t verbose=0);
-  static TString    ParseDeclaration(const char *inputDec, const char *propertyName);
-  static void       GetIds(TObject *cObj, TString &elementID, TString &classID, TString &objectID, TString &localStyle, Int_t verbose=0);
-  static Float_t   GetNamedTypeAt(const char *inputStr, Bool_t &status, Int_t index=0, const char *propertyName="", Int_t verbose=0, const char sep=',', const char *ignoreBrackets="()");
+  static Float_t    GetNamedTypeAt(const char *inputStr, Bool_t &status, Int_t index=0, const char *propertyName="", Int_t verbose=0, const char sep=',', const char *ignoreBrackets="()");
   static Float_t    ConvertUnit(const char *inputValues, const char * option="", Int_t verbose=0);
   static Int_t      ConvertColor(const char *inputString, Int_t verbose=0);
   static Float_t    PixelsToFloat_t(const char *value, const char *option="", Int_t verbose=0);
   static Float_t    PercentToFloat_t(const char *value, Int_t verbose);
   static Int_t      RgbToColor_t(const char *inputString, Int_t verbose=0);
   static Int_t      HexToColor_t(const char *inputString, Int_t verbose=0);
-  static TObjArray *ReadCSSFile(const char *  inputName, TObjArray * array=nullptr, Int_t verbose=0);
-  static TObjArray *ReadCssString(TString  cssString, TObjArray *array=nullptr, Int_t verbose=0);
-  static void       WriteCSSFile(TObjArray * cssArray, const char *  outputName, std::fstream *cssOut=nullptr);
-  static Float_t   PrepareValue(const char* styleName, TString propertyName, TString elementID, TString classID, TString objectID,                                        TString localStyle, Bool_t &status, Int_t objNum=0, Int_t verbose=0);
-  ClassDef(AliDrawStyle,1);
-private:
+
   static Int_t      padNumber;
   static void       SetPadNumber(Int_t num) {padNumber = num;};
   static Int_t      GetPadNumber() {return padNumber;};
+ClassDef(AliDrawStyle,1);
 };
 
 #endif
