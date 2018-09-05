@@ -296,6 +296,8 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     cuts.AddCut("00010113", "00200009266300008854404000", "0263103100900000", "20875400253202321710");//Primary, change de/dx TPCsigma -2,3.5
     cuts.AddCut("00010113", "00200009266300008854404000", "0263103100900000", "20975400253202321710");//Primary, change de/dx TPCsigma -3,4
 
+ }  else if (trainConfig == 119) {  //118 have to be divided because there is enough statistics to satured the memory and break the train.
+
     cuts.AddCut("00010113", "00200009266300008854404000", "0263103100900000", "20475400253202321a10");//Primary, change <1.0pT & 0.015 mass, >1.0pT & 0.035 mass
     cuts.AddCut("00010113", "00200009266300008854404000", "0263103100900000", "20475400253202321b10");//Primary, change <1.0pT & 0.015 mass, >1.0pT & 0.035 mass
     cuts.AddCut("00010113", "00200009266300008854404000", "0263103100900000", "20475400253202321c10");//Primary, change <1.0pT & 0.015 mass, >1.0pT & 0.035 mass

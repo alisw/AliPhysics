@@ -913,7 +913,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     nBinsClusterPt            = 800;
     minClusterPt              = 0;
     maxClusterPt              = 80;
-    for(Int_t i=0; i<nBinsPt+1;i++){
+    for(Int_t i=0; i<nBinsClusterPt+1;i++){
       arrClusPtBinning[i]     = ((maxClusterPt-minClusterPt)/nBinsClusterPt)*i;
     }
   // Set special pt binning for pPb 5TeV

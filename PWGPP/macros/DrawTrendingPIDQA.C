@@ -1,12 +1,17 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TTree.h>
 #include <TH1.h>
+#include <TH2.h>
 #include <TFile.h>
 #include <TObjString.h>
 #include <TCanvas.h>
+#include <TLegend.h>
+#include <TLegendEntry.h>
+#include "AliPID.h"
 #endif
 
 TH1F* CreateHisto(TString nam, Int_t tote);
+void SetupPadStyle();
 
 Bool_t DrawTrendingPIDQA(TString mergedTrendFile = "trending.root"){
   TFile *fin = TFile::Open(mergedTrendFile.Data());
@@ -99,6 +104,39 @@ Bool_t DrawTrendingPIDQA(TString mergedTrendFile = "trending.root"){
   for(Int_t k=0; k<20; k++) c[k]->SaveAs(Form("%s.png",canname[k].Data()));
   delete [] vect;
 
+  TDirectoryFile* pidtr=(TDirectoryFile*)fin->Get("PIDinTr");
+  if(pidtr){
+    TCanvas* ctrpid=new TCanvas("ctrpid","PID-in-track",1000,700);
+    TCanvas* ctrpidall=new TCanvas("ctrpidall","PID-in-track",1500,700);
+    TLegend* leg=new TLegend(0.7,0.35,0.89,0.87);
+    leg->SetHeader("PID in tracking");
+    ctrpidall->Divide(3,3);
+    Int_t cols[9]={kGreen+2,kGray,1,2,4,kMagenta,kOrange+1,kYellow,kCyan};
+    pidtr->ls();
+    for(Int_t j=0; j<9; j++){
+      TString histoname=Form("hSigP_TPC_TrackedAs_%sforMerge",AliPID::ParticleName(j));
+      TH2* histo = (TH2*)pidtr->Get(histoname.Data());
+      if(histo){
+	TH2* histo2=(TH2*)histo->Clone(Form("%scolor",histoname.Data()));
+	histo2->SetTitle(" ");
+	histo2->SetStats(0);
+	histo2->SetMarkerColor(cols[j]);
+	leg->AddEntry(histo2,Form("%s",AliPID::ParticleName(j)),"")->SetTextColor(histo2->GetMarkerColor());
+	ctrpid->cd();
+	SetupPadStyle();
+	if(j==0) histo2->Draw();
+	else histo2->Draw("same");
+	ctrpidall->cd(j+1);
+	SetupPadStyle();
+	histo->Draw("colz");
+	ctrpidall->Update();
+      }
+    }
+    ctrpid->cd();
+    leg->Draw();
+    ctrpidall->SaveAs("TPCdEdx-PIDinTracking-9pads-AllRuns.png");
+    ctrpid->SaveAs("TPCdEdx-PIDinTracking-AllRuns.png");
+  }
 }
 
 
@@ -107,4 +145,14 @@ TH1F* CreateHisto(TString nam, Int_t tote){
   h->SetStats(0);
   h->SetMarkerStyle(20);
   return h;
+}
+
+void SetupPadStyle()
+{
+  gPad->SetLogx();
+  gPad->SetLogz();
+  gPad->SetGridx();
+  gPad->SetGridy();
+  gPad->SetTickx();
+  gPad->SetTicky();
 }

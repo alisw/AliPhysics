@@ -107,9 +107,9 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TList *fHistograms;    //!
   TList *fHistogramsMC;  //!
 
-  bool fIsMC;
-  bool fIsLightweight;
-  bool fIsTreeOutput;
+  bool fIsMC;           //
+  bool fIsLightweight;  //
+  bool fIsTreeOutput;   //
 
   AliVEvent *fInputEvent;     //!
   AliMCEvent *fMCEvent;       //!
@@ -124,7 +124,6 @@ class AliSigma0PhotonMotherCuts : public TObject {
   deque<vector<AliSigma0ParticleV0> > fLambdaMixedBinned[10][6];  //!
   deque<vector<AliSigma0ParticleV0> > fPhotonMixedBinned[10][6];  //!
   float fTreeVariables[4];                                        //!
-  bool fIsTrueSigma;                                              //!
 
   AliSigma0V0Cuts *fLambdaCuts;  //
   AliSigma0V0Cuts *fPhotonCuts;  //
@@ -161,7 +160,6 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH1F *fHistMassCutPt;                //!
   TH1F *fHistInvMass;                  //!
   TH1F *fHistInvMassBeforeArmenteros;  //!
-  TH1F *fHistInvMassBeforeRapidity;    //!
   TH2F *fHistInvMassRecPhoton;         //!
   TH2F *fHistInvMassRecLambda;         //!
   TH2F *fHistInvMassRec;               //!
@@ -204,7 +202,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TTree *fOutputTree;  //!
 
  private:
-  ClassDef(AliSigma0PhotonMotherCuts, 10)
+  ClassDef(AliSigma0PhotonMotherCuts, 12)
 };
 
 #endif

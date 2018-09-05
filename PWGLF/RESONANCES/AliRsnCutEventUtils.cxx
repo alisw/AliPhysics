@@ -121,6 +121,15 @@ AliRsnCutEventUtils &AliRsnCutEventUtils::operator=(const AliRsnCutEventUtils &c
 	
   return (*this);
 }
+
+//_________________________________________________________________________________________________
+Bool_t AliRsnCutEventUtils::Init(TObject *object)
+{ 
+  // fills data member objects without applying cuts
+  if (!TargetOK(object)) return kFALSE;
+  return kTRUE;
+}
+
 //_________________________________________________________________________________________________
 Bool_t AliRsnCutEventUtils::IsSelected(TObject *object)
 {
@@ -129,7 +138,7 @@ Bool_t AliRsnCutEventUtils::IsSelected(TObject *object)
 //
    // coherence check
    // which also fills data member objects
-   if (!TargetOK(object)) return kFALSE;
+   if (!Init(object)) return kFALSE;
    // retrieve event
 
    AliVEvent *vevt = dynamic_cast<AliVEvent *>(fEvent->GetRef());

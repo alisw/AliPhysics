@@ -4,7 +4,9 @@ AliAnalysisTask *AddTaskTPCcalibResidualPID(TString period = "", Bool_t isPbpOrp
                                             Bool_t cutOnProdRadiusForV0el = kTRUE,
                                             Bool_t correctdEdxEtaDependence = kFALSE, 
                                             Bool_t correctdEdxMultiplicityDependence = kFALSE,
-                                            Bool_t useMCinfo = kTRUE){
+                                            Bool_t useMCinfo = kTRUE,
+                                            Bool_t runInQA = kFALSE
+                                           ){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -91,9 +93,11 @@ AliAnalysisTask *AddTaskTPCcalibResidualPID(TString period = "", Bool_t isPbpOrp
   
   
   //            define output containers
+  TString outputFile = "TPCresidualPID.root";
+  if (runInQA) outputFile = Form("%s:TPCresPID", AliAnalysisManager::GetCommonFileName());
   AliAnalysisDataContainer *coutput1 =
     mgr->CreateContainer("TPCresPID", TObjArray::Class(),
-                         AliAnalysisManager::kOutputContainer,"TPCresidualPID.root");
+                         AliAnalysisManager::kOutputContainer,outputFile);
   
   //           connect containers
   mgr->ConnectInput  (task,  0, mgr->GetCommonInputContainer() );

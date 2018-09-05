@@ -24,7 +24,7 @@
 //  Modified by: Jihye Song (jihye.song@cern.ch)
 //  Last Modified by: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //
-//  Last Modified Date: 2018/06/26
+//  Last Modified Date: 2018/09/01
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -47,6 +47,7 @@
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
+#include "AliAnalysisUtils.h"
 
 
 #include "AliESDEvent.h"
@@ -93,6 +94,9 @@ AliXiStarpp13TeV::AliXiStarpp13TeV():
     fEC(0x0),
     fEvt(0x0),
     fDevelopeMode(0),
+    fHMTrigger(0),
+    fPIDOption(0),
+    fSetSystematic(0),
 
     fTempStruct(0x0),
     fZvertexBins(0),
@@ -152,7 +156,7 @@ AliXiStarpp13TeV::AliXiStarpp13TeV():
 
 }
 //________________________________________________________________________
-AliXiStarpp13TeV::AliXiStarpp13TeV(const char *name, Bool_t AODdecision,  Bool_t MCdecision, Int_t CutListOption, Bool_t DevelopmentMode)
+AliXiStarpp13TeV::AliXiStarpp13TeV(const char *name, Bool_t AODdecision,  Bool_t MCdecision, Int_t CutListOption, Bool_t DevelopmentMode, Bool_t HMTrigger, Bool_t PIDOption, Bool_t SetSystematic)
     : AliAnalysisTaskSE(name),
       fname(name),
       fESD(0x0),
@@ -162,6 +166,8 @@ AliXiStarpp13TeV::AliXiStarpp13TeV(const char *name, Bool_t AODdecision,  Bool_t
       fEC(0x0),
       fEvt(0x0),
       fDevelopeMode(DevelopmentMode),
+      fHMTrigger(HMTrigger),
+      fPIDOption(PIDOption),
       fTempStruct(0x0),
       fZvertexBins(0),
       fEventsToMix(0),
@@ -177,6 +183,7 @@ AliXiStarpp13TeV::AliXiStarpp13TeV(const char *name, Bool_t AODdecision,  Bool_t
       fTrueMassK(0),
       fTrueMassLam(0),
       fTrueMassXi(0),
+      fSetSystematic(SetSystematic),
 
       fESDTrack4(0x0),
       fXiTrack(0x0),
@@ -472,8 +479,6 @@ void AliXiStarpp13TeV::XiStarInit()
     fCutValues[20][12] = 0.985;
 
 
-
-
     // PDG mass values
     fTrueMassPr=.93827, fTrueMassPi=.13957, fTrueMassK=.493677, fTrueMassLam=1.11568, fTrueMassXi=1.32171;
 
@@ -537,15 +542,19 @@ void AliXiStarpp13TeV::UserCreateOutputObjects()
     fMultDist5->GetXaxis()->SetTitle("Multiplicity");
     fOutputList->Add(fMultDist5);
 
-    TH1F *fMultDist_pp = new TH1F("fMultDist_pp","Multiplicity Distribution of PP",1000,0,1000);
-    fMultDist_pp->GetXaxis()->SetTitle("Multiplicity");
+    TH1F *fMultDist_pp = new TH1F("fMultDist_pp","Multiplicity Distribution of PP",300,0,300);
+    fMultDist_pp->GetXaxis()->SetTitle("Multiplicity Percentile");
     fOutputList->Add(fMultDist_pp);
 
+    TH1F *fMultDist_pp_afterPileUpReject = new TH1F("fMultDist_pp_afterPileUpReject","Multiplicity Distribution of PP",300,0,300);
+    fMultDist_pp_afterPileUpReject->GetXaxis()->SetTitle("Multiplicity Percentile");
+    fOutputList->Add(fMultDist_pp_afterPileUpReject);
 
     TH1F *hEventSelecInfo = new TH1F("hEventSelecInfo","hEventSelecInfo",10,0,10);
     fOutputList->Add(hEventSelecInfo);
     hEventSelecInfo->GetXaxis()->SetBinLabel(2,"kMB");
     hEventSelecInfo->GetXaxis()->SetBinLabel(3,"kINT7");
+    hEventSelecInfo->GetXaxis()->SetBinLabel(4,"kHighMultV0");
     hEventSelecInfo->GetXaxis()->SetBinLabel(8,"kAny");
     hEventSelecInfo->GetXaxis()->SetBinLabel(9,"kAndMB");
 
@@ -811,9 +820,8 @@ void AliXiStarpp13TeV::UserCreateOutputObjects()
     fOutputList->Add(fQATPCNSigPion2);
 
 
-
     for(Int_t cv=0; cv<kNCutVariations; cv++) {
-
+        if(!fSetSystematic && cv > 0) continue;
         if(cv==0) {
             TString *nameXi=new TString("fXi_");
             TString *nameXibar=new TString("fXibar_");
@@ -923,13 +931,10 @@ void AliXiStarpp13TeV::UserCreateOutputObjects()
        hV0AC->GetXaxis()->SetTitle("V0A-V0C(ns)");
        hV0AC->GetYaxis()->SetTitle("V0A+V0C(ns)");
        fOutputList->Add(hV0AC);
-
-
        TH2F *hV0ACkMB = new TH2F("hV0ACkMB","V0A and V0C timing kMB select",500,-20,30,800,-30,50);
        hV0ACkMB->GetXaxis()->SetTitle("V0A-V0C(ns)");
        hV0ACkMB->GetYaxis()->SetTitle("V0A+V0C(ns)");
        fOutputList->Add(hV0ACkMB);
-
        TH1F *hV0Info = new TH1F("hV0Info","V0 Fired information",5,0,5);
        fOutputList->Add(hV0Info);
     */
@@ -971,6 +976,9 @@ void AliXiStarpp13TeV::Exec(Option_t *)
     Bool_t isSelectedkINT7 =(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7);
     if(isSelectedkINT7) ((TH1F*)fOutputList->FindObject("hEventSelecInfo"))->Fill(2);
 
+    Bool_t isSelectedkHighMultV0 =(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kHighMultV0);
+    if(isSelectedkHighMultV0) ((TH1F*)fOutputList->FindObject("hEventSelecInfo"))->Fill(3);
+
     Bool_t isSelectedkAny =(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kAny));
     if(isSelectedkAny) ((TH1F*)fOutputList->FindObject("hEventSelecInfo"))->Fill(7);
 
@@ -979,9 +987,17 @@ void AliXiStarpp13TeV::Exec(Option_t *)
     if(isSelected) ((TH1F*)fOutputList->FindObject("hEventSelecInfo"))->Fill(8);
 
 
-    if(!isSelectedkINT7) {
-        if(fDevelopeMode)std::cout<<"Event Rejected"<<std::endl;
-        return;
+    if(fHMTrigger){
+        if(!isSelectedkHighMultV0) {
+            if(fDevelopeMode)std::cout<<"Event Rejected: No kHighMultV0 trigger"<<std::endl;
+            return;
+        }
+    }
+    else{
+        if(!isSelectedkINT7) {
+            if(fDevelopeMode)std::cout<<"Event Rejected: No kINT7 trigger"<<std::endl;
+            return;
+        }
     }
 
 
@@ -993,7 +1009,7 @@ void AliXiStarpp13TeV::Exec(Option_t *)
 
     // ---- AliPIDResponse ---- //
     fPIDResponse = inputHandler->GetPIDResponse();
-    double nSigTPCPID = 100.0;
+    double nSigTPCPID = 3.0;
 
 
     // TClonesArray *mcArray       = 0x0;
@@ -1053,15 +1069,26 @@ void AliXiStarpp13TeV::Exec(Option_t *)
     // Before the AliMulti
     ((TH1F*)fOutputList->FindObject("hNumberOfEvent"))->Fill(0);
 
-    // ESDs
+    // IncompleteDAQ Check
+    if(fESD->IsIncompleteDAQ()) {
+        if(fDevelopeMode)std::cout << "Reject: IsIncompleteDAQ" << std::endl;;
+        return;
+    }
+
+    // Muliplicity Check
     AliMultSelection *MultSelection = (AliMultSelection*) fESD->FindListObject("MultSelection");
     Float_t lPerc = 300; //nonsense
 
     if(MultSelection) {
+        if(!(MultSelection->IsEventSelected())){
+            AliInfo("This event is not selected: AliMultSelection");
+            return;  
+        } 
         lPerc = MultSelection->GetMultiplicityPercentile("V0M");
         //Quality check
-        Int_t lEvSelCode = MultSelection->GetEvSelCode();
-        if(lEvSelCode > 0) lPerc = lEvSelCode; //disregard!
+        //Int_t lEvSelCode = MultSelection->GetEvSelCode();
+        //if(lEvSelCode > 0) lPerc = lEvSelCode; //disregard!
+        //if(lEvSelCode == 0) lPerc = lEvSelCode + 300;
     }
     else {
         //If this happens, re-check if AliMultSelectionTask ran before your task!
@@ -1069,6 +1096,15 @@ void AliXiStarpp13TeV::Exec(Option_t *)
     }
     if(fDevelopeMode)std::cout << "Multiplicity: " << lPerc << std::endl;
     ((TH1F*)fOutputList->FindObject("fMultDist_pp"))->Fill(lPerc);
+
+
+    // Pile-Up rejection
+    AliAnalysisUtils * utils = new AliAnalysisUtils();
+    if (utils->IsPileUpSPD(fESD)) {
+        if(fDevelopeMode)std::cout << "Reject: IsPileUpSPD" << std::endl;;
+        return;
+    }
+    ((TH1F*)fOutputList->FindObject("fMultDist_pp_afterPileUpReject"))->Fill(lPerc);
 
     // After the AliMulti
     ((TH1F*)fOutputList->FindObject("hNumberOfEvent"))->Fill(1);
@@ -1122,12 +1158,44 @@ void AliXiStarpp13TeV::Exec(Option_t *)
         }
     }
 
-    // Vertex systematic study default : 10 , loose : 11 , tight : 9
+    // Vertex systematic study default : 10 , loose : 11 , tight : 9 (cm)
     if(fabs(primaryVtx[2]) > 10.) return; // Z-Vertex Cut
     ((TH1F*)fOutputList->FindObject("hNumberOfEvent"))->Fill(3);
 
+    /*
+    // Vertex z position different cut
+    Double_t            vzTrk = 1000000.0;
+    Double_t            vzSPD = 1000000.0;
+    const AliESDVertex *vTrk  = fESD->GetPrimaryVertexTracks();
+    const AliESDVertex *vSPD  = fESD->GetPrimaryVertexSPD();
+    if(!vTrk || !vSPD) return;
+    if(vTrk) vzTrk = TMath::Abs(vTrk->GetZ());
+    if(vSPD) vzSPD = TMath::Abs(vSPD->GetZ());
+
+    Float_t fMaxZDifferenceSPDTrack = 0.5; // cm
+    if(TMath::Abs(vzTrk - vzSPD)>fMaxZDifferenceSPDTrack) {
+        if(fDevelopeMode)std::cout << "Reject: z position difference: " << TMath::Abs(vzTrk - vzSPD) << std::endl;;
+        return;
+    }
+
+    // Vertex z resolution cut
+    if(!vSPD || !vSPD->GetStatus()) return;
+    Float_t fMaxZResolutionSPD = 0.02; // cm
+    if(vSPD->IsFromVertexerZ() && vSPD->GetZRes()>=fMaxZResolutionSPD){
+        if(fDevelopeMode)std::cout << "Reject: Vertex z resolution: " << vSPD->GetZRes() << std::endl;;
+        return;  
+    } 
+    */
+
     ((TH1F*)fOutputList->FindObject("fMultDist2"))->Fill(fESD->GetNumberOfTracks());
-    if(fESD->IsPileupFromSPD()) return; // Reject Pile-up events
+    
+    /* // Disabled due to this is implimented in AliMultSelection::IsEventSelected()
+    // INEL > 0 Check
+    Int_t nINEL=AliESDtrackCuts::GetReferenceMultiplicity(fESD,AliESDtrackCuts::kTracklets,1.,0.);   
+    if(nINEL<1){        
+        if(fDevelopeMode)std::cout << "Reject: INEL < 1" << std::endl;;
+        return;
+    }*/
 
     ((TH1F*)fOutputList->FindObject("fMultDist3"))->Fill(fESD->GetNumberOfTracks());
     ((TH3F*)fOutputList->FindObject("fVertexDist3"))->Fill(primaryVtx[0], primaryVtx[1], primaryVtx[2]);
@@ -1137,7 +1205,7 @@ void AliXiStarpp13TeV::Exec(Option_t *)
     // multiplicity
 
     if(PrimaryVertexESD->GetNContributors() >= 1) ((TH1F*)fOutputList->FindObject("fMultDist4"))->Fill(fESD->GetNumberOfTracks());
-    if(PrimaryVertexESD->GetNContributors() < 1) return; // Enrico cut
+    if(PrimaryVertexESD->GetNContributors() < 1) return; // Enrico cut // 2018.08.15 -> looks like INEL cut...? right? (blim)
     ((TH1F*)fOutputList->FindObject("hNumberOfEvent"))->Fill(5);
 
     if(fDevelopeMode)std::cout << "There are " << fESD->GetNumberOfTracks() << " tracks in this event" << std::endl;;
@@ -1238,6 +1306,7 @@ void AliXiStarpp13TeV::Exec(Option_t *)
         }
     }
 
+    if(fDevelopeMode)std::cout<<"01"<<std::endl;
 
     ////////////////////////////////////
     // Add event to buffer if > 0 tracks
@@ -1313,7 +1382,7 @@ void AliXiStarpp13TeV::Exec(Option_t *)
     ((TH1F*)fOutputList->FindObject("hNumberOfEvent"))->Fill(7);
     ////////////////////////////////////////////////
     // Reconstruction
-
+    if(fDevelopeMode)std::cout<<"02"<<std::endl;
     for(Int_t i=0; i<fESD->GetNumberOfCascades(); i++) {
 
         AliESDcascade *Xicandidate = fESD->GetCascade(i);
@@ -1421,9 +1490,9 @@ void AliXiStarpp13TeV::Exec(Option_t *)
 
 
         // PID Cuts
-        if(abs(fTPCNSigProton)>nSigTPCPID) continue; // PID for proton
-        if(abs(fTPCNSigPion1)>nSigTPCPID) continue; // PID for 1st pion
-        if(abs(fTPCNSigPion2)>nSigTPCPID) continue; // PID for 2nd pion
+        if(fPIDOption && abs(fTPCNSigProton)>nSigTPCPID) continue; // PID for proton
+        if(fPIDOption && abs(fTPCNSigPion1)>nSigTPCPID) continue; // PID for 1st pion
+        if(fPIDOption && abs(fTPCNSigPion2)>nSigTPCPID) continue; // PID for 2nd pion
 
         ((TH1F*)fOutputList->FindObject("fQATPCNSigProton"))->Fill(fTPCNSigProton);
         ((TH1F*)fOutputList->FindObject("fQATPCNSigPion1"))->Fill(fTPCNSigPion1);
@@ -1533,7 +1602,7 @@ void AliXiStarpp13TeV::Exec(Option_t *)
 
 
 
-
+        if(fDevelopeMode)std::cout<<"001"<<std::endl;
         // MC associaton
         mcXiFilled = kFALSE;
         if(fMCcase ) {
@@ -1588,7 +1657,7 @@ void AliXiStarpp13TeV::Exec(Option_t *)
 
         fXiTrack->Set(xiVtx, xiP, fCovMatrix, Short_t(xiCharge));
 
-
+        if(fDevelopeMode)std::cout<<"002"<<std::endl;
 
         //////////////////////////////////////////////////////////
         // Reconstruct Xi(1530)
@@ -1673,7 +1742,7 @@ void AliXiStarpp13TeV::Exec(Option_t *)
                 ((TH1F*)fOutputList->FindObject("fQAXiStarYDist"))->Fill(xiStarY);
 
                 for(int cv=0; cv<kNCutVariations; cv++) {
-
+                    if(!fSetSystematic && cv > 0) continue;
 
                     if(fDecayParameters[0] < fCutValues[cv][0]) continue;// Nclus proton
                     if(fDecayParameters[1] < fCutValues[cv][1]) continue;// Nclus pion first
@@ -1827,53 +1896,42 @@ Double_t AliXiStarpp13TeV::LinearPropagateToDCA(AliESDtrack *v, AliESDtrack *t, 
     //--------------------------------------------------------------------
     // This function returns the DCA between the V0 and the track
     //--------------------------------------------------------------------
-
     Double_t alpha=t->GetAlpha(), cs1=TMath::Cos(alpha), sn1=TMath::Sin(alpha);
     Double_t r[3]; t->GetXYZ(r);
     Double_t x1=r[0], y1=r[1], z1=r[2];
     Double_t p[3]; t->GetPxPyPz(p);
     Double_t px1=p[0], py1=p[1], pz1=p[2];
-
     Double_t x2[3]={0};
     Double_t p2[3]={0};
     Double_t vx2,vy2,vz2;     // position and momentum of V0
     Double_t px2,py2,pz2;
-
     v->GetXYZ(x2);
     v->GetPxPyPz(p2);
     vx2=x2[0], vy2=x2[1], vz2=x2[2];
     px2=p2[0], py2=p2[1], pz2=p2[2];
-
     // calculation dca
-
     Double_t dd= Det(vx2-x1,vy2-y1,vz2-z1,px1,py1,pz1,px2,py2,pz2);
     Double_t ax= Det(py1,pz1,py2,pz2);
     Double_t ay=-Det(px1,pz1,px2,pz2);
     Double_t az= Det(px1,py1,px2,py2);
-
     Double_t dca=TMath::Abs(dd)/TMath::Sqrt(ax*ax + ay*ay + az*az);
-
     //points of the DCA
     Double_t t1 = Det(vx2-x1,vy2-y1,vz2-z1,px2,py2,pz2,ax,ay,az)/
     Det(px1,py1,pz1,px2,py2,pz2,ax,ay,az);
-
     x1 += px1*t1; y1 += py1*t1; //z1 += pz1*t1;
-
-
     //propagate track to the points of DCA
-
     x1=x1*cs1 + y1*sn1;
     if (!t->PropagateTo(x1,b)) {
         Error("PropagateToDCA","Propagation failed !");
         return 1.e+33;
     }
-
     return dca;
 }
 */
 
 //________________________________________________________________________
-Double_t AliXiStarpp13TeV::Det(Double_t a00, Double_t a01, Double_t a10, Double_t a11) const {// Taken from AliCascadeVertexer
+Double_t AliXiStarpp13TeV::Det(Double_t a00, Double_t a01, Double_t a10, Double_t a11) const {
+// Taken from AliCascadeVertexer
     //--------------------------------------------------------------------
     // This function calculates locally a 2x2 determinant
     //--------------------------------------------------------------------
@@ -1882,13 +1940,10 @@ Double_t AliXiStarpp13TeV::Det(Double_t a00, Double_t a01, Double_t a10, Double_
 //________________________________________________________________________
 Double_t AliXiStarpp13TeV::Det(Double_t a00,Double_t a01,Double_t a02,
                                Double_t a10,Double_t a11,Double_t a12,
-                               Double_t a20,Double_t a21,Double_t a22) const {// Taken from AliCascadeVertexer
+                               Double_t a20,Double_t a21,Double_t a22) const {
+                               // Taken from AliCascadeVertexer
     //--------------------------------------------------------------------
     // This function calculates locally a 3x3 determinant
     //--------------------------------------------------------------------
     return  a00*Det(a11,a12,a21,a22)-a01*Det(a10,a12,a20,a22)+a02*Det(a10,a11,a20,a21);
 }
-//________________________________________________________________________
-
-
-

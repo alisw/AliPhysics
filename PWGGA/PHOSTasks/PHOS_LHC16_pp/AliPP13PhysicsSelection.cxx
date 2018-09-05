@@ -1,5 +1,5 @@
 // --- Custom header files ---
-#include "AliPP13PhotonSelection.h"
+#include "AliPP13PhysicsSelection.h"
 
 // --- ROOT system ---
 #include <TH2F.h>
@@ -14,10 +14,10 @@ using namespace std;
 
 
 
-ClassImp(AliPP13PhotonSelection);
+ClassImp(AliPP13PhysicsSelection);
 
 //________________________________________________________________
-void AliPP13PhotonSelection::FillHistograms(TObjArray * clusArray, TList * pool, const EventFlags & eflags)
+void AliPP13PhysicsSelection::FillHistograms(TObjArray * clusArray, TList * pool, const EventFlags & eflags)
 {
 	// Ensure that we are not doing mixing
 	EventFlags flags = eflags;
@@ -37,7 +37,7 @@ void AliPP13PhotonSelection::FillHistograms(TObjArray * clusArray, TList * pool,
 }
 
 //________________________________________________________________
-void AliPP13PhotonSelection::SelectTwoParticleCombinations(const TObjArray & photonCandidates, const EventFlags & flags)
+void AliPP13PhysicsSelection::SelectTwoParticleCombinations(const TObjArray & photonCandidates, const EventFlags & eflags)
 {
 	// All possible combinations on photon candadates
 	// Int_t counter = 0;
@@ -50,7 +50,11 @@ void AliPP13PhotonSelection::SelectTwoParticleCombinations(const TObjArray & pho
 		{
 			// ++counter;
 			AliVCluster * clus2 = (AliVCluster *) photonCandidates.At(j);
-			ConsiderPair(clus1, clus2, flags);
+
+			if(!fCuts.AcceptPair(clus1, clus2, eflags))
+				continue;
+
+			ConsiderPair(clus1, clus2, eflags);
 		} // second cluster loop
 	} // cluster loop
 
@@ -59,7 +63,7 @@ void AliPP13PhotonSelection::SelectTwoParticleCombinations(const TObjArray & pho
 }
 
 //________________________________________________________________
-void AliPP13PhotonSelection::MixPhotons(TObjArray & photonCandidates, TList * pool, const EventFlags & eflags)
+void AliPP13PhysicsSelection::MixPhotons(TObjArray & photonCandidates, TList * pool, const EventFlags & eflags)
 {
 	// Notify all selections that this is mixing
 	EventFlags mflags = eflags;
@@ -83,13 +87,17 @@ void AliPP13PhotonSelection::MixPhotons(TObjArray & photonCandidates, TList * po
 		for (Int_t i = 0; i < photonCandidates.GetEntriesFast(); ++i)
 		{
 			AliVCluster * clus2 = (AliVCluster *) photonCandidates.At(i);
+
+			if(!fCuts.AcceptPair(clus1, clus2, eflags))
+				continue;
+
 			ConsiderPair(clus1, clus2, mflags);
 		}
 	} // old cluster loop
 }
 
 //________________________________________________________________
-Int_t AliPP13PhotonSelection::CheckClusterGetSM(const AliVCluster * clus, Int_t & x, Int_t & z) const
+Int_t AliPP13PhysicsSelection::CheckClusterGetSM(const AliVCluster * clus, Int_t & x, Int_t & z) const
 {
 	// Apply common cluster cuts and return supermodule number on success.
 	// Return -1 if cuts not passed or an error occured.
@@ -123,7 +131,7 @@ Int_t AliPP13PhotonSelection::CheckClusterGetSM(const AliVCluster * clus, Int_t 
 }
 
 //________________________________________________________________
-TLorentzVector AliPP13PhotonSelection::ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags) const
+TLorentzVector AliPP13PhysicsSelection::ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags) const
 {
 	TLorentzVector p;
 	c1->GetMomentum(p, eflags.vtxBest);
@@ -131,7 +139,7 @@ TLorentzVector AliPP13PhotonSelection::ClusterMomentum(const AliVCluster * c1, c
 }
 
 //________________________________________________________________
-void AliPP13PhotonSelection::InitSummaryHistograms()
+void AliPP13PhysicsSelection::InitSummaryHistograms()
 {
 	// Find better place to apply this
 	fListOfHistos = new TList();
@@ -139,11 +147,12 @@ void AliPP13PhotonSelection::InitSummaryHistograms()
 	InitSelectionHistograms();
 
 	TString cuts = Form(
-	                   ";Cuts: |Z_{vtx}| < 10 cm, no pileup spd, E_{min}^{clu} = %.2g GeV, A =  %.2g, N_{min}^{cell} = %d, t_{clus} = %0.3g ns",
+	                   ";Cuts: |Z_{vtx}| < 10 cm, no pileup spd, E_{min}^{clu} = %.2g GeV, A =  %.2g, N_{min}^{cell} = %d, t_{clus} = %0.3g ns, dist = %.2g",
 	                   fCuts.fClusterMinE,
 	                   fCuts.fAsymmetryCut,
 	                   fCuts.fNCellsCut,
-	                   fCuts.fTimingCut * 1e+9
+	                   fCuts.fTimingCut * 1e+9,
+	                   fCuts.fMinimalDistance
 	               );
 
 	cout << "Adding " << this->GetName() << ": " << this->GetTitle() << endl;
@@ -165,14 +174,14 @@ void AliPP13PhotonSelection::InitSummaryHistograms()
 }
 
 //________________________________________________________________
-void AliPP13PhotonSelection::CountMBEvent()
+void AliPP13PhysicsSelection::CountMBEvent()
 {
 	fEventCounter->Fill(EventFlags::kMB);
 }
 
 
 //________________________________________________________________
-AliPP13PhotonSelection::~AliPP13PhotonSelection()
+AliPP13PhysicsSelection::~AliPP13PhysicsSelection()
 {
 	// if (fWeights)
 	// delete fWeights;
@@ -184,7 +193,7 @@ AliPP13PhotonSelection::~AliPP13PhotonSelection()
 }
 
 //________________________________________________________________
-Bool_t AliPP13PhotonSelection::SelectEvent(const EventFlags & flgs)
+Bool_t AliPP13PhysicsSelection::SelectEvent(const EventFlags & flgs)
 {
 	// All events
 	fEventCounter->Fill(EventFlags::kGood);
@@ -208,7 +217,7 @@ Bool_t AliPP13PhotonSelection::SelectEvent(const EventFlags & flgs)
 }
 
 //________________________________________________________________
-void AliPP13PhotonSelection::SelectPhotonCandidates(const TObjArray * clusArray, TObjArray * candidates, const EventFlags & eflags)
+void AliPP13PhysicsSelection::SelectPhotonCandidates(const TObjArray * clusArray, TObjArray * candidates, const EventFlags & eflags)
 {
 	// Don't return TObjArray: force user to handle candidates lifetime
 	Int_t sm, x, z;

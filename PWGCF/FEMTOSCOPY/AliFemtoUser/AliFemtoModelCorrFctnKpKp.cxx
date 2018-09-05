@@ -334,7 +334,7 @@ void AliFemtoModelCorrFctnKpKp::AddRealPair(AliFemtoPair* aPair)
 
     //if(pdg1 != 321 || pdg2 != -321) cout<<"____________ ++++Kaons : pdg1="<<pdg1<<" pdg2="<<pdg2<<endl;
 
-    if((pdg1 == 321 && pdg2 == -321)||(pdg1 == 321 && pdg2 == 321)) { //to be sure PID does not change MR
+    if((pdg1 == 321 && pdg2 == 321)||(pdg1 == -321 && pdg2 == -321)) { //to be sure PID does not change MR
 
     AliFemtoLorentzVector p_true_1;//true momentum
     AliFemtoThreeVector* temp1 =
@@ -444,7 +444,7 @@ void AliFemtoModelCorrFctnKpKp::AddMixedPair(AliFemtoPair* aPair)
     AliFemtoTrack *inf2 = (AliFemtoTrack *) aPair->Track2()->Track();
     Double_t pdg1 = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetPDGPid();
     Double_t pdg2 = ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetPDGPid();
-    if((pdg1 == 321 && pdg2 == -321)||(pdg1 == 321 && pdg2 == 321)) { //to be sure PID does not change MR
+    if((pdg1 == 321 && pdg2 == 321)||(pdg1 == -321 && pdg2 == -321)) { //to be sure PID does not change MR
 
     //true and recontructed momntum to get delta_p/p -->
     //AliFemtoLorentzVector p_true_1;//true momentum

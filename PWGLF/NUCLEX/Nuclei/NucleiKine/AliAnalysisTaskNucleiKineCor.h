@@ -18,6 +18,7 @@ class AliAnalysisTaskNucleiKineCor : public AliAnalysisTaskSE {
     virtual void UserExec(Option_t *option);
     virtual void Terminate(Option_t *opt) {}
     void SetPt(Double_t pt) {fPt = pt;}
+    void SetP0(Double_t p0) {fP0 = p0;}
 
     std::vector<int> fPdgCodes;
     enum Species {
@@ -29,19 +30,20 @@ class AliAnalysisTaskNucleiKineCor : public AliAnalysisTaskSE {
   protected:
     Double_t DeltaPhi(Double_t phia, Double_t phib,
 		      Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2) const;
-
+    Double_t          fPt;          //  pt of trigger hadron
+    Double_t          fP0;          //  coalescence momentum
+    TList*            fOutputList;  //! output list for histograms
+    TH1D*             fEvents;      //! number of events
+    TH1D*             fPtHist;      //! pt dist
+    TH1D*             fPtLead;      //! leading pt dist
+    TH1D*             fPtPro;       //! proton pt dist
+    TH1D*             fPtDeu;       //! deuteron pt dist
+    TH1*              fHists[999];  //! hists
+    AliGenLightNuclei fAfterBurner; // afterburner
 
     AliAnalysisTaskNucleiKineCor(const AliAnalysisTaskNucleiKineCor& other);
     AliAnalysisTaskNucleiKineCor& operator=(const AliAnalysisTaskNucleiKineCor& other);
-    Double_t fPt;          //  pt of trigger hadron
-    TList* fOutputList;    //! output list for histograms
-    TH1D*  fEvents;        //! number of events
-    TH1D*  fPtHist;        //! pt dist
-    TH1D*  fPtLead;        //! leading pt dist
-    TH1D*  fPtPro;         //! proton pt dist
-    TH1D*  fPtDeu;         //! deuteron pt dist
-    TH1*   fHists[999];    //! hists
 
-    ClassDef(AliAnalysisTaskNucleiKineCor, 1)
+  ClassDef(AliAnalysisTaskNucleiKineCor, 2)
 };
 #endif

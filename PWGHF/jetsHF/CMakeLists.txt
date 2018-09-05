@@ -83,7 +83,7 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 list (APPEND HDRS AliHFJetsUtils.h)
 
 if(FASTJET_FOUND)
-  list(APPEND HDRS ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks/FJ_includes.h)
+  list(APPEND HDRS ../../PWGJE/EMCALJetTasks/FJ_includes.h)
 endif(FASTJET_FOUND)
 
 # Generate the dictionary

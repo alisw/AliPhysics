@@ -20,7 +20,7 @@ AliFemtoCutMonitorParticlePIDBeta::AliFemtoCutMonitorParticlePIDBeta():
   // Default constructor
   fBeta   = new TH2D("Beta", "Beta vs. momentum", 100, 0.0,10.0, 250, 0.0, 1.0);
   fMass     = new TH2D("Mass", "m vs. p", 100, 0.0, 5.0, 250, -1.0, 10.0);
-  fDifference     = new TH1D("Difference", "counts vs. mTOF2-mPDG2", 100, -2.0, 2.0);
+  fDifference     = new TH1D("Difference", "counts vs. mTOF2-mPDG2", 500, -5.0, 5.0);
 }
 
 
@@ -33,7 +33,7 @@ AliFemtoCutMonitorParticlePIDBeta::AliFemtoCutMonitorParticlePIDBeta(const char 
   // Normal constructor
     fBeta     = new TH2D(TString::Format("Beta%s", aName), "Beta vs. momentum", 100, 0.0, 10.0, 250, 0.0, 1.0);
     fMass     = new TH2D(TString::Format("Mass%s", aName), "m2 vs. p", 100, 0.0, 5.0, 250, -1.0, 10.0);
-    fDifference     = new TH1D(TString::Format("Difference%s", aName), "counts vs. mTOF2-mPDG2", 100, -2.0, 2.0);
+    fDifference     = new TH1D(TString::Format("Difference%s", aName), "counts vs. mTOF2-mPDG2", 500, -5.0, 5.0);
 
 }
 
@@ -86,6 +86,7 @@ void AliFemtoCutMonitorParticlePIDBeta::Fill(const AliFemtoTrack* aTrack)
   
   if(beta!=0){
     massTOF= tMom*tMom/c/c*(1/(beta*beta)-1);
+ 
     fMass->Fill(tMom,massTOF);
     if(AliFemtoCutMonitorParticlePID::fTOFParticle==0)
       fDifference->Fill(massTOF-massPDGPi*massPDGPi);
@@ -95,6 +96,8 @@ void AliFemtoCutMonitorParticlePIDBeta::Fill(const AliFemtoTrack* aTrack)
       fDifference->Fill(massTOF-massPDGP*massPDGP);
     else if(AliFemtoCutMonitorParticlePID::fTOFParticle==3)
       fDifference->Fill(massTOF-massPDGD*massPDGD);
+    
+    
   }
 
 }

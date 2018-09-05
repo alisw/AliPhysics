@@ -9,6 +9,7 @@ class LMEECutLib {
 		kMidMult,
 		kLowMult,
 		kTTreeCuts,
+		kTTreeCutsESD,
 		kV0_ITScorr,
 		kV0_TPCcorr,
 		kV0_TOFcorr
@@ -27,9 +28,9 @@ class LMEECutLib {
 	AliDielectronMixingHandler* GetMixingHandler(Int_t cutSet);
 
 	AliDielectronCutGroup* GetPairCuts(Int_t cutSet);
-	AliDielectronCutGroup* GetPIDCuts(Int_t PIDcuts);
+	AliAnalysisCuts* GetPIDCuts(Int_t PIDcuts);
 	//AliDielectronPID* GetPIDCuts(Int_t PIDcuts);
-	AliDielectronCutGroup* GetTrackCuts(Int_t cutSet, Int_t PIDcuts);
+	AliAnalysisCuts* GetTrackCuts(Int_t cutSet, Int_t PIDcuts);
 
 	//PID correction functions used within dielectron framework
   void SetEtaCorrectionTPC(AliDielectron *die, Int_t corrZdim, Int_t corrYdim); //giving default value fails: /* = AliDielectronVarManager::kEta*/
@@ -358,8 +359,8 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts(Int_t cutSet) {
 
 
 //Centrality selection done in Event selection
-AliDielectronCutGroup* LMEECutLib::GetCentralityCuts(Int_t centSel) {
-    AliAnalysisCuts* centCuts = 0x0;
+AliAnalysisCuts* LMEECutLib::GetCentralityCuts(Int_t centSel) {
+    AliDielectronVarCuts* centCuts = 0x0;
     switch(centSel){
         case kAllSpecies:
         case kElectrons:
@@ -367,21 +368,21 @@ AliDielectronCutGroup* LMEECutLib::GetCentralityCuts(Int_t centSel) {
 				case kV0_TPCcorr:
 				case kV0_ITScorr:
 				case kV0_TOFcorr:
+						centCuts = new AliDielectronVarCuts("centCutsHigh","cent0090");
+            centCuts->AddCut(AliDielectronVarManager::kCentralityNew,0.,90.);
+            break;
             break;
         case kHighMult:
-            AliDielectronVarCuts* centCut1 = new AliDielectronVarCuts("centCutsHigh","MultiplicitypPbLHC16qHigh");
-            centCut1->AddCut(AliDielectronVarManager::kCentralityNew,0.,20.);
-            centCuts = centCut1;
+            centCuts = new AliDielectronVarCuts("centCutsHigh","cent0020");
+            centCuts->AddCut(AliDielectronVarManager::kCentralityNew,0.,20.);
             break;
          case kMidMult:
-            AliDielectronVarCuts* centCut2 = new AliDielectronVarCuts("centCutsMid","MultiplicitypPbLHC16qMid");
-            centCut2->AddCut(AliDielectronVarManager::kCentralityNew,20.,60.);
-            centCuts = centCut2;
+            centCuts = new AliDielectronVarCuts("centCutsMid","cent2060");
+            centCuts->AddCut(AliDielectronVarManager::kCentralityNew,20.,60.);
             break;
         case kLowMult:
-            AliDielectronVarCuts* centCut3 = new AliDielectronVarCuts("centCutsLow","MultiplicitypPbLHC16qLow");
-            centCut3->AddCut(AliDielectronVarManager::kCentralityNew,60.,100.);
-            centCuts = centCut3;
+            centCuts  = new AliDielectronVarCuts("centCutsLow","cent6090");
+            centCuts->AddCut(AliDielectronVarManager::kCentralityNew,60.,90.);
             break;
         default: cout << "No Centrality selected" << endl;
     }
@@ -389,29 +390,29 @@ AliDielectronCutGroup* LMEECutLib::GetCentralityCuts(Int_t centSel) {
 }
 
 
-AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet) {
-    AliDielectronMixingHandler* mixingHandler = 0x0;
-    switch (cutSet) {
-        case kAllSpecies:
-        case kElectrons:
-        case kHighMult:
-        case kMidMult:
-        case kLowMult:
-				case kTTreeCuts:
-            mixingHandler = new AliDielectronMixingHandler;
-            mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -7.5, -5., -2.5 , 0., 2.5, 5., 7.5 , 10.");
-            //mixingHandler->AddVariable(AliDielectronVarManager::kNacc,"0,500");
-            mixingHandler->AddVariable(AliDielectronVarManager::kCentralityNew,"0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100");
-            // for using TPC event plane, uncorrected. (also, the old phi range was wrong, now same effective binning.)
-            // mixingHandler->AddVariable(AliDielectronVarManager::kTPCrpH2uc, 6, TMath::Pi()/-2., TMath::Pi()/2.);
-            mixingHandler->SetDepth(20);
-            mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
-            break;
-        //[...]
-        default: cout << "No Mixer defined" << endl;
-    }
-    return mixingHandler;
-}
+/* AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet) { */
+/*     AliDielectronMixingHandler* mixingHandler = 0x0; */
+/*     switch (cutSet) { */
+/*         case kAllSpecies: */
+/*         case kElectrons: */
+/*         case kHighMult: */
+/*         case kMidMult: */
+/*         case kLowMult: */
+/* 				case kTTreeCuts: */
+/*             mixingHandler = new AliDielectronMixingHandler; */
+/*             mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -7.5, -5., -2.5 , 0., 2.5, 5., 7.5 , 10."); */
+/*             //mixingHandler->AddVariable(AliDielectronVarManager::kNacc,"0,500"); */
+/*             mixingHandler->AddVariable(AliDielectronVarManager::kCentralityNew,"0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100"); */
+/*             // for using TPC event plane, uncorrected. (also, the old phi range was wrong, now same effective binning.) */
+/*             // mixingHandler->AddVariable(AliDielectronVarManager::kTPCrpH2uc, 6, TMath::Pi()/-2., TMath::Pi()/2.); */
+/*             mixingHandler->SetDepth(20); */
+/*             mixingHandler->SetMixType(AliDielectronMixingHandler::kAll); */
+/*             break; */
+/*         //[...] */
+/*         default: cout << "No Mixer defined" << endl; */
+/*     } */
+/*     return mixingHandler; */
+/* } */
 
 
 
@@ -443,11 +444,11 @@ AliDielectronCutGroup* LMEECutLib::GetPairCuts(Int_t cutSet)  {
 }
 
 
-AliDielectronCutGroup* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
+AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
   
 	::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> GetPIDCuts() >>>>>>>>>>>>>>>>>>>>>> ");
 
-	AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cutsPID", "cutsPID");
+	AliDielectronCutGroup* cuts = 0x0;
 	AliDielectronPID* cutsPID   = new AliDielectronPID("PID", "PID");
   //-----------------------------------------------
   // PID cuts depend on TPC_inner_p, if not specified
@@ -482,8 +483,8 @@ AliDielectronCutGroup* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
 			// Momentum range relaxed as it cuts on P not Pt. Kinematic cuts applied
 			// separately.
 			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
-			cuts->AddCut(cutsPID);
-			return cuts;
+			//cuts->AddCut(cutsPID);
+			return cutsPID;
 			break;
 		case kV0_TPCcorr:
 			// PID cuts used to select out a very pure sample of V0 electrons using only ITS and TOF
@@ -520,10 +521,10 @@ AliDielectronCutGroup* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
 //**IMPORTANT**: For AODs, select FilterBit
 //the method is ignored for ESDs
 
-AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
+AliAnalysisCuts* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 
 	::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> GetTrackCuts() >>>>>>>>>>>>>>>>>>>>>> ");
-	AliDielectronCutGroup* trackCuts = new AliDielectronCutGroup("trackCuts", "trackCuts", AliDielectronCutGroup::kCompAND);
+	AliDielectronCutGroup* trackCuts = 0x0;
 
 	AliDielectronVarCuts* varCutsFilter     = new AliDielectronVarCuts("varCutsFilter", "varCutsFilter");
 	AliDielectronTrackCuts* trackCutsFilter = new AliDielectronTrackCuts("trackCutsFilter", "trackCutsFilter");
@@ -562,6 +563,11 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 			trackCuts->AddCut(varCutsFilter);
 			
 			trackCuts->AddCut(GetPIDCuts(PIDcuts));
+			AliDielectronCutGroup* trackCuts2 = new AliDielectronCutGroup("trackCuts2", "trackCuts2", 
+																												AliDielectronCutGroup::kCompAND);
+			trackCuts2->AddCut(varCutsFilter);
+			trackCuts2->AddCut(trackCutsFilter);
+			trackCuts = trackCuts2;
 			break;
 		case kTTreeCuts:
 			varCutsFilter->AddCut(AliDielectronVarManager::kEta, -0.80, 0.80);
@@ -590,10 +596,45 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 			trackCutsFilter->SetRequireITSRefit(kTRUE);
 			trackCutsFilter->SetRequireTPCRefit(kTRUE);
 
-			trackCuts->AddCut(trackCutsFilter);
-			trackCuts->AddCut(varCutsFilter);
+			AliDielectronCutGroup* trackCuts2 = new AliDielectronCutGroup("trackCuts2", "trackCuts2", 
+																												AliDielectronCutGroup::kCompAND);
+			trackCuts2->AddCut(varCutsFilter);
+			trackCuts2->AddCut(trackCutsFilter);
+			trackCuts2->AddCut(GetPIDCuts(PIDcuts));
+			trackCuts = trackCuts2;
+			break;
+		case kTTreeCutsESD:
 
-			trackCuts->AddCut(GetPIDCuts(PIDcuts));
+			AliESDtrackCuts* fesdTrackCuts = new AliESDtrackCuts();
+	
+			
+			// TTrees created from AODs, so need to implement cuts that come with
+			// FilterBit4 (eff. calc naturally doesn't run over AODs)
+			//trackCutsFilter->SetAODFilterBit(16);//or 1<<4
+			//Refits	
+			fesdTrackCuts->SetRequireITSRefit(kTRUE);
+			fesdTrackCuts->SetRequireTPCRefit(kTRUE);
+
+			//TTree cuts sourced from LMEECutLib_acapon "TTreeCuts"
+			// FilterBit 4 used to filter AODs
+			// It uses GetStandardITSTPCTrackCuts 2011(kFALSE, 1)
+			// These are the cuts implemented with the above function
+			fesdTrackCuts->SetMinNCrossedRowsTPC(70);
+			fesdTrackCuts->SetMaxChi2PerClusterTPC(4);
+			fesdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+			fesdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+			fesdTrackCuts->SetRequireTPCRefit(kTRUE);
+			fesdTrackCuts->SetRequireITSRefit(kTRUE);
+			fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+			fesdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+			fesdTrackCuts->SetMaxChi2PerClusterITS(36);
+
+			// Further cuts implemented by filter bit 4
+			fesdTrackCuts->SetMaxDCAToVertexXY(2.4); 
+			fesdTrackCuts->SetMaxDCAToVertexZ(3.2); 
+			fesdTrackCuts->SetDCAToVertex2D(kTRUE);
+
+			return fesdTrackCuts;
 			break;
 		case kV0_TPCcorr:
 		case kV0_ITScorr:

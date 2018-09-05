@@ -300,6 +300,7 @@ public:
     // -- custom operator() methods --
 
     BuildMap& operator()(const Key_t &key, const TString &val) { fMap.insert(std::make_pair(key, val.Data())); return *this; };
+    BuildMap& operator()(const Key_t &key, const char* val) { fMap[key] = StringValue_t(val); return *this; }
 
     operator AliFemtoConfigObject() {
       return AliFemtoConfigObject(std::move(fMap));
@@ -449,6 +450,11 @@ public:
     IMPL_INSERT(unsigned int, kINT, fValueInt);
     IMPL_INSERT(Float_t, kFLOAT, fValueFloat);
     IMPL_INSERT(TString, kSTRING, fValueString);
+
+    void insert(const Key_t &key, const AliFemtoConfigObject &obj) {
+      if (!is_map()) { return; }
+      fValueMap[key] = obj;
+    }
 
   #undef IMPL_INSERT
 

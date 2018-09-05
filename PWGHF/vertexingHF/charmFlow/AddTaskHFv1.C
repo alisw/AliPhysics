@@ -69,7 +69,7 @@ AliAnalysisTaskHFv1 *AddTaskHFv1(Int_t harm, Bool_t separateD0D0bar, TString fil
   if(scaling) {
     fileeff = TFile::Open(fileeffname.Data());
     if(!fileeff || (fileeff && !fileeff->IsOpen())) {
-      AliWarning("Efficiency file not found, setting efficiency TF1 to default.");
+      std::cout<<"Warning: efficiency file not found, setting efficiency TF1 to default." << std::endl;
       eff = new TF1("pol2","pol2",3,36);
       eff->SetParameter(0,-0.05);
       eff->SetParameter(1,0.02);

@@ -582,6 +582,8 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   // QA histograms for different cuts
   fList->Add(fBalance->GetQAHistHBTbefore());
   fList->Add(fBalance->GetQAHistHBTafter());
+  fList->Add(fBalance->GetQAHistSameLabelMCCutBefore());
+  fList->Add(fBalance->GetQAHistSameLabelMCCutAfter());
   fList->Add(fBalance->GetQAHistPhiStarHBTbefore());
   fList->Add(fBalance->GetQAHistPhiStarHBTafter());
   fList->Add(fBalance->GetQAHistConversionbefore());

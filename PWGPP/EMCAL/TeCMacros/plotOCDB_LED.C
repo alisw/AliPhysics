@@ -5,10 +5,12 @@
 #include <TFile.h>
 #include <TGrid.h>
 #include <TH2F.h>
+#include <TKey.h>
 #include <TLegend.h>
 #include <TMap.h>
 #include <TNtuple.h>
 #include <TProfile.h>
+#include <TROOT.h>
 #include "LInfo.h"
 
 class LDraw : public TNamed {

@@ -69,7 +69,7 @@ AliFemtoTrack::AliFemtoTrack():
   fNSigmaTOFT(0.0f),
   fNSigmaTOFH(0.0f),
   fNSigmaTOFA(0.0f),
-  fMassTOFDPG(0.0f),
+  fMassTOF(0.0f),
   fSigmaToVertex(0.0f),
   fClusters(159),
   fShared(159),
@@ -170,7 +170,7 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fNSigmaTPCT(t.fNSigmaTPCT),
   fNSigmaTPCH(t.fNSigmaTPCH),
   fNSigmaTPCA(t.fNSigmaTPCA),
-  fMassTOFDPG(t.fMassTOFDPG),
+  fMassTOF(t.fMassTOF),
   fNSigmaTOFPi(t.fNSigmaTOFPi),
   fNSigmaTOFK(t.fNSigmaTOFK),
   fNSigmaTOFP(t.fNSigmaTOFP),
@@ -285,7 +285,7 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   fNSigmaTPCT=aTrack.fNSigmaTPCT;
   fNSigmaTPCH=aTrack.fNSigmaTPCH;
   fNSigmaTPCA=aTrack.fNSigmaTPCA;
-  fMassTOFDPG=aTrack.fMassTOFDPG;
+  fMassTOF=aTrack.fMassTOF;
   fNSigmaTOFPi=aTrack.fNSigmaTOFPi;
   fNSigmaTOFK=aTrack.fNSigmaTOFK;
   fNSigmaTOFP=aTrack.fNSigmaTOFP;
@@ -416,7 +416,7 @@ void AliFemtoTrack::SetNSigmaTPCD(const float& aNSigmaTPCD){fNSigmaTPCD=aNSigmaT
 void AliFemtoTrack::SetNSigmaTPCT(const float& aNSigmaTPCT){fNSigmaTPCT=aNSigmaTPCT;}
 void AliFemtoTrack::SetNSigmaTPCH(const float& aNSigmaTPCH){fNSigmaTPCH=aNSigmaTPCH;}
 void AliFemtoTrack::SetNSigmaTPCA(const float& aNSigmaTPCA){fNSigmaTPCA=aNSigmaTPCA;}
-void AliFemtoTrack::SetMassTOFDPG(const float& aMassTOFDPG){fMassTOFDPG=aMassTOFDPG;}
+void AliFemtoTrack::SetMassTOF(const float& aMassTOF){fMassTOF=aMassTOF;}
 
 void AliFemtoTrack::SetNSigmaTOFPi(const float& aNSigmaTOFPi){fNSigmaTOFPi=aNSigmaTOFPi;}
 void AliFemtoTrack::SetNSigmaTOFK(const float& aNSigmaTOFK){fNSigmaTOFK=aNSigmaTOFK;}
@@ -492,7 +492,7 @@ float AliFemtoTrack::NSigmaTOFD() const{return fNSigmaTOFD;}
 float AliFemtoTrack::NSigmaTOFT() const{return fNSigmaTOFT;}
 float AliFemtoTrack::NSigmaTOFH() const{return fNSigmaTOFH;}
 float AliFemtoTrack::NSigmaTOFA() const{return fNSigmaTOFA;}
-float AliFemtoTrack::MassTOFDPG() const{return fMassTOFDPG;}
+float AliFemtoTrack::MassTOF() const{return fMassTOF;}
 float AliFemtoTrack::SigmaToVertex() const{return fSigmaToVertex;}
 float AliFemtoTrack::TOFpionTime() const{return fTofPionTime;}
 float AliFemtoTrack::TOFkaonTime() const{return fTofKaonTime;}

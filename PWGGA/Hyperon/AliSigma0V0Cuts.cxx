@@ -397,10 +397,11 @@ AliSigma0V0Cuts *AliSigma0V0Cuts::LambdaCuts() {
   v0Cuts->SetEtaMax(0.8);
   v0Cuts->SetDaughterDCAMax(1.5);
   v0Cuts->SetDaughterDCAtoPV(0.05);
-  v0Cuts->SetK0Rejection(0.48, 0.515);
-  v0Cuts->SetLambdaSelection(1.115683 - 0.004, 1.115683 + 0.004);
-  v0Cuts->SetPileUpRejectionMode(BothDaughtersCombined);
+  v0Cuts->SetK0Rejection(0., 0.);
+  v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
+  v0Cuts->SetPileUpRejectionMode(OneDaughterCombined);
   v0Cuts->SetChi2Max(4);
+  v0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
   return v0Cuts;
 }
 

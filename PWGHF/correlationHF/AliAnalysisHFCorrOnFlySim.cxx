@@ -517,7 +517,7 @@ void AliAnalysisHFCorrOnFlySim::CalculateHFHadronCorrelations(){
       
       if(pdgHF==421 || pdgHF==411 || pdgHF==413){ ///D0, D+, D*
 	
-	if(mcPartHF->Pt() <2 || mcPartHF->Pt() >20)continue;
+	if(mcPartHF->Pt() <2 || mcPartHF->Pt() >36)continue;
 	if(TMath::Abs(mcPartHF->Y()) > 0.5)continue;
 	fArraySkipDDaugh->Reset(0);
 	fArraySkipDDaugh->AddAt(jPart,0);
@@ -934,7 +934,7 @@ void AliAnalysisHFCorrOnFlySim::DefineHistoNames(){
     HistogramQA[6]->GetXaxis()->SetBinLabel(3,"-ive Charge");
     HistogramQA[6]->GetXaxis()->SetBinLabel(4,"Neutral Charge");
     
-    HistogramQA[7] = new TH1F("fRemoveDaugh", "Remove Daughters", 20, 0., 20);
+    HistogramQA[7] = new TH1F("fRemoveDaugh", "Remove Daughters", 36, 0., 36);
     HistogramQA[7]->GetXaxis()->SetTitle("N Daughters");
     HistogramQA[7]->GetYaxis()->SetTitle("N_removed");
     HistogramQA[7]->SetMarkerStyle(kFullCircle);
@@ -1074,13 +1074,13 @@ void AliAnalysisHFCorrOnFlySim::DefineHistoNames(){
     //3c. Hadron-Hadron Correlations
     if(fIsCorrOfHadronHadron){
         
-        Int_t     nbinsTrigHH[3] = {   6, 30,  20 };
+        Int_t     nbinsTrigHH[3] = {   6, 36,  20 };
         Double_t binlowTrigHH[3] = {-1.5, 0., -2.};
-        Double_t  binupTrigHH[3] = { 4.5, 30., 2.};
+        Double_t  binupTrigHH[3] = { 4.5, 36., 2.};
         
-        Int_t     nbinsCorrHH[8] = {  6,  30,  20,  6,   30,               72,    20,    6};
+        Int_t     nbinsCorrHH[8] = {  6,  36,  20,  6,   30,               72,    20,    6};
         Double_t binlowCorrHH[8] = {-1.5, 0., -2., 0., -15., -0.5*TMath::Pi(),  -5,  -1.5};
-        Double_t  binupCorrHH[8] = { 4.5, 30., 2., 3.,  15.,  1.5*TMath::Pi(),   5.,  4.5};
+        Double_t  binupCorrHH[8] = { 4.5, 36., 2., 3.,  15.,  1.5*TMath::Pi(),   5.,  4.5};
         
         THnSparseD *trigChargePartPr   = new THnSparseD("ChargeTrgiggerProp","fChargeTrgiggerProp;pdg;ptTrig;etaTrig;",3,nbinsTrigHH,binlowTrigHH,binupTrigHH);
         THnSparseD *trigHHPartCorr = new THnSparseD("2PCorrBtwn_TrgCharge-hadron","HHCorrelations;pdg;ptTrig;etaTrig;ptAss;etaAss;deltaPhi;deltaEta;pdgAss;",8,nbinsCorrHH,binlowCorrHH,binupCorrHH);

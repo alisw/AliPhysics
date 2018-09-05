@@ -64,11 +64,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	double KaonMass = 0.493677;
 	double ProtonMass = 0.938272013;
 	double LambdaMass = 1.115683;
-	double XiMass = 1.32171;
-
 	
 	const int numOfMultBins = 5;	
-	const int numOfChTypes = 38; //34 + 4 xi
+	const int numOfChTypes = 34; //13
 	const int numOfkTbins = 5;
 
 	bool performSharedDaughterCut = true;
@@ -148,10 +146,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 	int runmults[numOfMultBins] = {0, 0, 0, 0, 1};
 	if(runmultdep)	  {runmults[0]=1; runmults[1]=1; runmults[2]=1;	  }
-	int multbins[numOfMultBins+1] = {2, 20, 50,150,2,150};
+	int multbins[numOfMultBins+1] = {2, 20, 50,150,2,150000};
 	
-	int runch[numOfChTypes] = {/*protons*/1, 1, 1, /* kaons */ 1, 1, 1, /* pions */ 1, 1, 1, /* no PID */ 0, 0, 0, 0,/*other*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*p-lam */ 1, 1, 1, 1, /* lambdas */ 1, 1, 1,/* Xis */ 1, 1, 1, 1};
-	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "all", "plus", "minus", "mixed", "V0PLlowPt","V0PALlowPt","V0APLlowPt","V0APALlowPt","V0LLlowPt","V0LALlowPt","V0ALALlowPt", "V0PLhighPt","V0PALhighPt","V0APLhighPt","V0APALhighPt","V0LLhighPt","V0LALhighPt","V0ALALhighPt", "V0PL","V0PAL","V0APL","V0APAL","V0LL","V0LAL","V0ALAL","PXim","aPXim" ,"PXip","aPXip"};
+	int runch[numOfChTypes] = {/*protons*/1, 1, 1, /* kaons */ 1, 1, 1, /* pions */ 1, 1, 1, /* no PID */ 0, 0, 0, 0,/*other*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*p-lam */ 1, 1, 1, 1, /* lambdas */ 1, 1, 1};
+	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "all", "plus", "minus", "mixed", "V0PLlowPt","V0PALlowPt","V0APLlowPt","V0APALlowPt","V0LLlowPt","V0LALlowPt","V0ALALlowPt", "V0PLhighPt","V0PALhighPt","V0APLhighPt","V0APALhighPt","V0LLhighPt","V0LALhighPt","V0ALALhighPt", "V0PL","V0PAL","V0APL","V0APAL","V0LL","V0LAL","V0ALAL" };
 	
 	
 	double ktrng[numOfkTbins+1] = {0.0, 0, 0, 0, 0, 0};
@@ -183,7 +181,6 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	Reader->SetMinPlpContribSPD(minPlpContribSPD);
 	Reader->SetIsPileUpEvent(ifIsPileUp);
 	Reader->SetReadV0(kTRUE);
-	Reader->SetReadCascade(kTRUE);
 
 	AliFemtoManager* Manager = new AliFemtoManager();
 	Manager->SetEventReader(Reader);
@@ -201,8 +198,6 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	AliFemtoMJTrackCut		*dtc3etaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoV0TrackCut              *dtc4etaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoV0TrackCut              *dtc5etaphitpc[numOfMultBins*numOfChTypes];
-	AliFemtoXiTrackCut           *tXiCut[numOfMultBins*numOfChTypes];
-	AliFemtoXiTrackCut           *tAXiCut[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorParticleYPt   *cutPass1YPtetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorParticleYPt   *cutFail1YPtetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorParticlePID   *cutPass1PIDetaphitpc[numOfMultBins*numOfChTypes];
@@ -219,10 +214,6 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	AliFemtoCutMonitorV0            *cutFail1V0[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorV0            *cutPass2V0[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorV0            *cutFail2V0[numOfMultBins*numOfChTypes];
-	AliFemtoCutMonitorXi             *cutPass1Xi[numOfMultBins*numOfChTypes];
-	AliFemtoCutMonitorXi             *cutFail1Xi[numOfMultBins*numOfChTypes];
-	AliFemtoCutMonitorXi             *cutPass2Xi[numOfMultBins*numOfChTypes];
-	AliFemtoCutMonitorXi             *cutFail2Xi[numOfMultBins*numOfChTypes];	
 	//	 AliFemtoShareQualityTPCEntranceSepPairCut			*sqpcetaphitpcsame[numOfMultBins*numOfChTypes];
 	AliFemtoPairCutAntiGamma	*sqpcetaphitpc[numOfMultBins*numOfChTypes];
 	//AliFemtoPairCutRadialDistance			*sqpcetaphitpc[numOfMultBins*numOfChTypes];
@@ -231,10 +222,6 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	AliFemtoV0TrackPairCut          *sqp2cetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoV0TrackPairCut          *sqp3cetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoV0TrackPairCut          *sqp4cetaphitpc[numOfMultBins*numOfChTypes];
-
-	AliFemtoXiTrackPairCut           *tXiTrackPairCut[numOfMultBins*numOfChTypes];
-
-	
 	//	AliFemtoChi2CorrFctn					*cchiqinvetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoPairCutPt               *ktpcuts[numOfMultBins*numOfChTypes*numOfkTbins];
 	AliFemtoQinvCorrFctn		*cqinvkttpc[numOfMultBins*numOfChTypes*numOfkTbins];
@@ -293,7 +280,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc1etaphitpc[aniter]->SetNsigma2(nSigmaVal2);
 					dtc1etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 					dtc1etaphitpc[aniter]->SetElectronRejection(ifElectronRejection);
-					if (ichg == 0 || ichg == 1 ||ichg == 2 || ichg == 13 || ichg == 14 || ichg == 15 || ichg == 16 || ichg == 20 || ichg == 21 || ichg == 22 || ichg == 23 || ichg == 27 || ichg == 28 || ichg == 29 || ichg == 30 || ichg==34 || ichg==36) //protons
+					if (ichg == 0 || ichg == 1 ||ichg == 2 || ichg == 13 || ichg == 14 || ichg == 15 || ichg == 16 || ichg == 20 || ichg == 21 || ichg == 22 || ichg == 23 || ichg == 27 || ichg == 28 || ichg == 29 || ichg == 30) //protons
 					  {
 					    dtc1etaphitpc[aniter]->SetPt(0.5,maxPt); 
 					    dtc1etaphitpc[aniter]->SetMass(ProtonMass);		
@@ -323,7 +310,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc2etaphitpc[aniter]->SetNsigma2(nSigmaVal2);
 					dtc2etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 					dtc2etaphitpc[aniter]->SetElectronRejection(ifElectronRejection);
-					if (ichg == 0 || ichg == 1 ||ichg == 2 || ichg == 13 || ichg == 14 || ichg == 15 || ichg == 16 || ichg == 20 || ichg == 21 || ichg == 22 || ichg == 23 || ichg == 27 || ichg == 28 || ichg == 29 || ichg == 30 || ichg==35 || ichg==37) //antiprotons
+					if (ichg == 0 || ichg == 1 ||ichg == 2 || ichg == 13 || ichg == 14 || ichg == 15 || ichg == 16 || ichg == 20 || ichg == 21 || ichg == 22 || ichg == 23 || ichg == 27 || ichg == 28 || ichg == 29 || ichg == 30) //protons
 					  {
 					    dtc2etaphitpc[aniter]->SetPt(0.5,maxPt); 
 					    dtc2etaphitpc[aniter]->SetMass(ProtonMass);		
@@ -420,115 +407,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc5etaphitpc[aniter]->SetRequireTOFPion(false);
 					dtc5etaphitpc[aniter]->SetRequireTOFProton(false);
 
-					//Cascade cuts
-					//from J. Buxton
-					//xi cut
-					//NOTE: the SetMass call actually is important
-					//      This should be set to the mass of the particle of interest, here the Xi
-					//      Be sure to not accidentally set it again in the Lambda cuts (for instance, when copy/pasting the lambda cuts from above!)
 					
-					//Xi -> Lam Pi-
-					tXiCut[aniter] = new AliFemtoXiTrackCut();
-					// %%%%%%%%%%%%%%%%%%%%%%%% Version 2 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-					
-					tXiCut[aniter]->SetChargeXi(-1);
-					tXiCut[aniter]->SetParticleTypeXi(0);  //kXiMinus = 0
-					tXiCut[aniter]->SetPtXi(0.8,100);
-					tXiCut[aniter]->SetEtaXi(0.8);
-					tXiCut[aniter]->SetMass(XiMass);
-					tXiCut[aniter]->SetInvariantMassXi(XiMass-0.003,XiMass+0.003);
-					tXiCut[aniter]->SetMaxDecayLengthXi(100.);
-					tXiCut[aniter]->SetMinCosPointingAngleXi(0.9992);
-					tXiCut[aniter]->SetMaxDcaXi(100);
-					//XiDaughters
-					tXiCut[aniter]->SetMaxDcaXiDaughters(0.3);
-					
-					
-					//Bachelor cuts (here = PiM)
-					tXiCut[aniter]->SetMinDcaXiBac(0.03);
-					tXiCut[aniter]->SetEtaBac(0.8);
-					tXiCut[aniter]->SetTPCnclsBac(70);
-					tXiCut[aniter]->SetPtBac(0.,100.);
-					tXiCut[aniter]->SetStatusBac(AliESDtrack::kTPCrefit);  //yes or no?
-
-
-					//Lambda cuts (regular V0)
-					tXiCut[aniter]->SetParticleType(0); //0=lambda
-					tXiCut[aniter]->SetMinDcaV0(0.1);
-					tXiCut[aniter]->SetInvariantMassLambda(LambdaMass-0.005,LambdaMass+0.005);
-					tXiCut[aniter]->SetMinCosPointingAngle(0.998);
-					tXiCut[aniter]->SetEta(0.8);
-					tXiCut[aniter]->SetPt(0.0,100);
-					tXiCut[aniter]->SetOnFlyStatus(kFALSE);
-					tXiCut[aniter]->SetMaxV0DecayLength(100.);
-					//Lambda daughter cuts
-					tXiCut[aniter]->SetMinDaughtersToPrimVertex(0.1,0.1);
-					tXiCut[aniter]->SetMaxDcaV0Daughters(0.8);
-					tXiCut[aniter]->SetEtaDaughters(0.8);
-					tXiCut[aniter]->SetPtPosDaughter(0.,99); //0.5 for protons
-					tXiCut[aniter]->SetPtNegDaughter(0.,99); //0.16 for pions
-					tXiCut[aniter]->SetTPCnclsDaughters(70);
-					tXiCut[aniter]->SetStatusDaughters(AliESDtrack::kTPCrefit);  //yes or no?
-					// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-					tXiCut[aniter]->SetMinvPurityAidHistoXi("XiPurityAid","XiMinvBeforeFinalCut",100,XiMass-0.035,XiMass+0.035);
-					tXiCut[aniter]->SetMinvPurityAidHistoV0("LambdaPurityAid","LambdaMinvBeforeFinalCut",100,LambdaMass-0.035,LambdaMass+0.035);		
-
-					//antiXi cut
-					//NOTE: the SetMass call actually is important
-					//      This should be set to the mass of the particle of interest, here the Xi
-					//      Be sure to not accidentally set it again in the Lambda cuts (for instance, when copy/pasting the lambda cuts from above!)
-					
-					//AXi -> ALam Pi+
-
-					tAXiCut[aniter] = new AliFemtoXiTrackCut();
-
-					// %%%%%%%%%%%%%%%%%%%%%%%% Version 2 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-					tAXiCut[aniter]->SetChargeXi(1);
-					tAXiCut[aniter]->SetParticleTypeXi(1); //kXiPlus = 1
-					tAXiCut[aniter]->SetPtXi(0.8,100);
-					tAXiCut[aniter]->SetEtaXi(0.8);
-					tAXiCut[aniter]->SetMass(XiMass);
-					tAXiCut[aniter]->SetInvariantMassXi(XiMass-0.003,XiMass+0.003);
-					tAXiCut[aniter]->SetMaxDecayLengthXi(100.0);
-					tAXiCut[aniter]->SetMinCosPointingAngleXi(0.9992);
-					tAXiCut[aniter]->SetMaxDcaXi(100);
-					//XiDaughters
-					tAXiCut[aniter]->SetMaxDcaXiDaughters(0.3);
-
-
-					//Bachelor cuts (here = PiP)
-					tAXiCut[aniter]->SetMinDcaXiBac(0.03);
-					tAXiCut[aniter]->SetEtaBac(0.8);
-					tAXiCut[aniter]->SetTPCnclsBac(70);
-					tAXiCut[aniter]->SetPtBac(0.,100);
-					tAXiCut[aniter]->SetStatusBac(AliESDtrack::kTPCrefit);  //yes or no?
-					
-
-					//AntiLambda cuts (regular V0)
-					tAXiCut[aniter]->SetParticleType(1); //1=anti-lambda
-					tAXiCut[aniter]->SetMinDcaV0(0.1);
-					tAXiCut[aniter]->SetInvariantMassLambda(LambdaMass-0.005,LambdaMass+0.005);
-					tAXiCut[aniter]->SetMinCosPointingAngle(0.998);
-					tAXiCut[aniter]->SetEta(0.8);
-					tAXiCut[aniter]->SetPt(0.,100);
-					tAXiCut[aniter]->SetOnFlyStatus(kTRUE);  //!!!!!!!!!!!!!!!!!!!!!!! Set to kTRUE!
-					tAXiCut[aniter]->SetMaxV0DecayLength(100.);
-					//Lambda daughter cuts
-					tAXiCut[aniter]->SetMinDaughtersToPrimVertex(0.1,0.1);
-					tAXiCut[aniter]->SetMaxDcaV0Daughters(0.8);
-					tAXiCut[aniter]->SetEtaDaughters(0.8);
-					tAXiCut[aniter]->SetPtPosDaughter(0.,99); //0.16 for pions
-					tAXiCut[aniter]->SetPtNegDaughter(0.,99); //0.5 for anti-protons
-					tAXiCut[aniter]->SetTPCnclsDaughters(70);
-					tAXiCut[aniter]->SetStatusDaughters(AliESDtrack::kTPCrefit);  //yes or no?
-
-					// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-					tAXiCut[aniter]->SetMinvPurityAidHistoXi("AXiPurityAid","AXiMinvBeforeFinalCut",100,XiMass-0.035,XiMass+0.035);
-					tAXiCut[aniter]->SetMinvPurityAidHistoV0("AntiLambdaPurityAid","AntiLambdaMinvBeforeFinalCut",100,LambdaMass-0.035,LambdaMass+0.035);
-
 					
 
 					//****** DCA ******
@@ -622,13 +501,6 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					      if(ichg==7||ichg==11) dtc2etaphitpc[aniter]->AddCutMonitor(cutPass3PIDetaphitpc[aniter], cutFail3PIDetaphitpc[aniter]);
 					      if(ichg==9) dtc3etaphitpc[aniter]->AddCutMonitor(cutPass3PIDetaphitpc[aniter], cutFail3PIDetaphitpc[aniter]);
 					    }
-					    else if(ichg==34||ichg==35||ichg==35) //PXim, aPXim, PXip, aPXip
-					      {
-						cutPass1Xi[aniter] = new AliFemtoCutMonitorXi(Form("cutPass%stpcM%i", chrgs[ichg], imult));
-						cutFail1Xi[aniter] = new AliFemtoCutMonitorXi(Form("cutPass%stpcM%i", chrgs[ichg], imult));
-						if(ichg==34||ichg==35) tXiCut[aniter]->AddCutMonitor(cutPass1Xi[aniter],cutFail1Xi[aniter]);
-						if(ichg==36||ichg==37) tXiCut[aniter]->AddCutMonitor(cutPass1Xi[aniter],cutFail1Xi[aniter]);
-					      }
 
 
 
@@ -701,11 +573,6 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					sqp4cetaphitpc[aniter]->SetTPCEntranceSepMinimum(0.00001);
 					sqp4cetaphitpc[aniter]->SetTPCExitSepMinimum(-1.);
 					//SetMinAvgSeparation w if'ach ponizej
-
-
-					tXiTrackPairCut[aniter] = new AliFemtoXiTrackPairCut(); //xi-proton, all combinations
-
-
 					
 					//***** Setting cuts ***********
 					// setting event cut
@@ -802,33 +669,6 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					    anetaphitpc[aniter]->SetPairCut(sqp3cetaphitpc[aniter]);
 					    //avgsepcorr[aniter]->SetPairType(AliFemtoAvgSepCorrFctn::kTrackV0);
 					  }
-					if(ichg == 34) //PXim
-					  {
-					    anetaphitpc[aniter]->SetFirstParticleCut(tXiCut[aniter]);
-					    anetaphitpc[aniter]->SetSecondParticleCut(dtc1etaphitpc[aniter]);
-					    anetaphitpc[aniter]->SetPairCut(tXiTrackPairCut[aniter]);
-					  }
-					if(ichg == 35) //aPXim
-					  {
-					    anetaphitpc[aniter]->SetFirstParticleCut(tXiCut[aniter]);
-					    anetaphitpc[aniter]->SetSecondParticleCut(dtc2etaphitpc[aniter]);
-					    anetaphitpc[aniter]->SetPairCut(tXiTrackPairCut[aniter]);
-					  }
-					if(ichg == 36) //PXip
-					  {
-					    anetaphitpc[aniter]->SetFirstParticleCut(tAXiCut[aniter]);
-					    anetaphitpc[aniter]->SetSecondParticleCut(dtc1etaphitpc[aniter]);
-					    anetaphitpc[aniter]->SetPairCut(tXiTrackPairCut[aniter]);
-					  }					
-					if(ichg == 37) //aPXip
-					  {
-					    anetaphitpc[aniter]->SetFirstParticleCut(tAXiCut[aniter]);
-					    anetaphitpc[aniter]->SetSecondParticleCut(dtc2etaphitpc[aniter]);
-					    anetaphitpc[aniter]->SetPairCut(tXiTrackPairCut[aniter]);
-					  }		
-
-
-
 
 
 
@@ -844,7 +684,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					  cqinvtpc[aniter] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%i", chrgs[ichg], imult),nbinssh,0.0,shqmax); //femto qinv, for identical mass particles
 					  anetaphitpc[aniter]->AddCorrFctn(cqinvtpc[aniter]);
 					}
-					if(ichg==2 || ichg==27 || ichg==28 || ichg==29 || ichg==30 || ichg==32 || ichg==34 || ichg == 35 || ichg == 36 || ichg == 37) //PaP, PL, APL, PAL, APAL, LAL, PXim, aPXim, PXip, aPXip
+					if(ichg==2 || ichg==27 || ichg==28 || ichg==29 || ichg==30 || ichg==32) //PaP, PL, APL, PAL, APAL, LAL
                                         {
 					  cnonidtpc[aniter] = new AliFemtoCorrFctnNonIdDR(Form("cnonid%stpcM%i", chrgs[ichg], imult), nbinssh, 0.0,shqmax); //for non-identical partcles
 					  anetaphitpc[aniter]->AddCorrFctn(cnonidtpc[aniter]);
@@ -893,12 +733,12 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					  cdedpetaphi[aniter]->SetParticleTypes(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambda, AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambdaMinus);
 					else if (ichg==19 || ichg==26 || ichg==33)
 					  cdedpetaphi[aniter]->SetParticleTypes(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambdaMinus, AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::kLambdaMinus);
-
+				
 
 					
 					anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);
-					*/
-						       							
+						*/
+					
 					Manager->AddAnalysis(anetaphitpc[aniter]);
 				}
 			}

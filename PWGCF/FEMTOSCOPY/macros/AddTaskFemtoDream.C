@@ -18,11 +18,12 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
     bool dPhidEtaPlots=false,//12
     bool eventMixing=true,//13
     bool phiSpin=true,//14
-    bool ContributionSplitting=false,//15
-    bool ContributionSplittingDaug=false,//16
-    bool RunNumberQA=false,//17
-    int FilterBit=128,//18
-    bool InvMassPairs=false)//19
+    bool stravinskyPhiSpin=true,//15
+    bool ContributionSplitting=false,//16
+    bool ContributionSplittingDaug=false,//17
+    bool RunNumberQA=false,//18
+    int FilterBit=128,//19
+    bool InvMassPairs=false)//20
 {
   // 1    2     3     4     5     6     7    8    9      10   11     12   13    14    15    16   17
   //true,true,false,false,false,false,false,true,false,false,true,false,true,false,false,false,true
@@ -359,6 +360,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
   config->SetSpinningDepth(10);
   config->SetUseEventMixing(eventMixing);
   config->SetUsePhiSpinning(phiSpin);
+  config->SetUseStravinskyMethod(stravinskyPhiSpin);
   config->SetMinimalBookingME(false);
   config->SetMinimalBookingSample(true);
   if (!notpp) {

@@ -96,6 +96,7 @@ set(SRCS
   AliRsnMiniMonitorTask.cxx
   AliRsnMiniResonanceFinder.cxx
   AliRsnTrainManager.cxx
+  AliRsnMiniTaskPhiVn.cxx
   )
 
 # Headers from sources

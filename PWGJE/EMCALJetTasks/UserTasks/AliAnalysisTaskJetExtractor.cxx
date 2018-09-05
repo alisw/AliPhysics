@@ -322,6 +322,7 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fJetTree(0),
   fVtxTagger(0),
   fHadronMatchingRadius(0.4),
+  fTrueJetMatchingRadius(0.4),
   fSecondaryVertexMaxChi2(1e10),
   fSecondaryVertexMaxDispersion(0.05),
   fCalculateSecondaryVertices(kTRUE),
@@ -348,6 +349,7 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fJetTree(0),
   fVtxTagger(0),
   fHadronMatchingRadius(0.4),
+  fTrueJetMatchingRadius(0.4),
   fSecondaryVertexMaxChi2(1e10),
   fSecondaryVertexMaxDispersion(0.05),
   fCalculateSecondaryVertices(kTRUE),
@@ -575,7 +577,7 @@ void AliAnalysisTaskJetExtractor::GetJetTruePt(AliEmcalJet* jet, Double_t& match
         Double_t deltaR = TMath::Sqrt(deltaEta*deltaEta + deltaPhi*deltaPhi);
 
         // Cut jets too far away
-        if (deltaR > fJetsCont->GetJetRadius()*2)
+        if (deltaR > fTrueJetMatchingRadius)
           continue;
 
         // Search for the best match

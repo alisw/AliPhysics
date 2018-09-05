@@ -61,6 +61,10 @@ class AliFemtoDreamEvent {
     return fzVtxSPD;
   }
   ;
+  float GetBField() const {
+    return fBField;
+  }
+  ;
   float GetZVertexTracks() const {
     return fzVtxTracks;
   }
@@ -180,6 +184,7 @@ class AliFemtoDreamEvent {
   float fzVtx;                //!
   float fzVtxTracks;          //!
   float fzVtxSPD;             //!
+  float fBField;              //!
   int fSPDMult;               //!
   int fNSPDCluster;           //!
   int fRefMult08;             //!

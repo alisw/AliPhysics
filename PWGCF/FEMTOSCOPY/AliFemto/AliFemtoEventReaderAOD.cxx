@@ -75,6 +75,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fpA2013(kFALSE),
   fisPileUp(kFALSE),
   fMVPlp(kFALSE),
+  fOutOfBunchPlp(kFALSE),
   fMinVtxContr(0),
   fMinPlpContribMV(0),
   fMinPlpContribSPD(0),
@@ -146,6 +147,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fpA2013(aReader.fpA2013),
   fisPileUp(aReader.fisPileUp),
   fMVPlp(aReader.fMVPlp),
+  fOutOfBunchPlp(aReader.fOutOfBunchPlp),
   fMinVtxContr(aReader.fMinVtxContr),
   fMinPlpContribMV(aReader.fMinPlpContribMV),
   fMinPlpContribSPD(aReader.fMinPlpContribSPD),
@@ -242,6 +244,7 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fpA2013 = aReader.fpA2013;
   fisPileUp = aReader.fisPileUp;
   fMVPlp = aReader.fMVPlp;
+  fOutOfBunchPlp = aReader.fOutOfBunchPlp;
   fMinVtxContr = aReader.fMinVtxContr;
   fMinPlpContribMV = aReader.fMinPlpContribMV;
   fMinPlpContribSPD = aReader.fMinPlpContribSPD;
@@ -418,7 +421,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       return NULL;  // Vertex rejection for pA analysis.
     }
     fAnaUtils->SetUseMVPlpSelection(fMVPlp);
-
+    fAnaUtils->SetUseOutOfBunchPileUp(fOutOfBunchPlp);
+    
     if (fMinPlpContribMV) {
       fAnaUtils->SetMinPlpContribMV(fMinPlpContribMV);
     }
@@ -773,10 +777,10 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       /***************************************************/
       //
       
-      if (fIsDeuteronAnalysis == true && TMath::Abs(pdg) != 700201) trackAccept = false;
-      if (fIsTritonAnalysis == true && TMath::Abs(pdg) != 700301) trackAccept = false;
-      if (fIsHe3Analysis == true && TMath::Abs(pdg) != 700302)    trackAccept = false;
-      if (fIsAlphaAnalysis == true && TMath::Abs(pdg) != 700202) trackAccept = false;
+      if (fIsDeuteronAnalysis == true && TMath::Abs(pdg) != 1000010020) trackAccept = false;
+      if (fIsTritonAnalysis == true && TMath::Abs(pdg) != 1000010040) trackAccept = false;
+      if (fIsHe3Analysis == true && TMath::Abs(pdg) != 700302)    trackAccept = false;//temporary pdg
+      if (fIsAlphaAnalysis == true && TMath::Abs(pdg) != 700202) trackAccept = false;//temporary pdg
       //
       /*****************************************************/
       if (trackAccept == true && ptrue > 0) {    
@@ -2085,12 +2089,13 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
     //  double trackTime=tAodTrack->GetTOFsignal();
 
   }
-  double deuteronPDG =1.8756;//GeV
-    if (trackTime > 0.){
+
+    if (trackTime > 0. &&  trackLength>0.){
+
       vp = trackLength / trackTime /0.03;
       tFemtoTrack->SetVTOF(vp);
       double massTof= tFemtoTrack->P().Mag()*tFemtoTrack->P().Mag()*(1/(vp*vp)-1);
-      tFemtoTrack->SetMassTOFDPG(massTof-deuteronPDG*deuteronPDG); 
+      tFemtoTrack->SetMassTOF(massTof); 
     }
   
   tFemtoTrack->SetNSigmaTOFPi(nsigmaTOFPi);
@@ -2283,6 +2288,11 @@ void AliFemtoEventReaderAOD::SetpA2013(Bool_t pa2013)
 void AliFemtoEventReaderAOD::SetUseMVPlpSelection(Bool_t mvplp)
 {
   fMVPlp = mvplp;
+}
+
+void AliFemtoEventReaderAOD::SetUseOutOfBunchPlpSelection(Bool_t outOfBunchPlp)
+{
+  fOutOfBunchPlp=outOfBunchPlp;
 }
 
 void AliFemtoEventReaderAOD::SetIsPileUpEvent(Bool_t ispileup)
