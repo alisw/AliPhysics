@@ -71,6 +71,15 @@ using std::endl;
 using std::exception;
 using std::cerr;
 
+void InjectRoot5Streamers()
+{
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
+  TFile f("$ALICE_ROOT/data/Root5Streamers.root");
+  // it is enough to open and close a file containing objects
+  // with the missing streamers
+#endif
+}
+
 //_____________________________________________________________________________
 int main(int argc, char **argv)
 {
@@ -127,9 +136,11 @@ int main(int argc, char **argv)
       return 0;
     }    
   }
-  
+
+  //CM: add missing ROOT5 streamers for ROOT6 compatibility (TF1 using in AD/Calib/Saturation)
+  InjectRoot5Streamers();
+
   // Create new configuration 
-  
   new AliRun("gAlice","The ALICE Off-line Simulation Framework");
   AliLog::GetRootLogger();  // force AliLog to initialize at start time
   // Start interactive geant
