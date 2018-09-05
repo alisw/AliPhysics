@@ -1,6 +1,6 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-// Updated AUG 27: Change contamination factor
+// Updated Sep 4: Increase mass range
 // Parts of the code taken from:
 // AliEbyEPidEfficiencyContamination.cxx
 // AliAnalysisTaskStrangenessVsMultiplicityMCRun2.cxx
@@ -57,6 +57,8 @@ f2fHistGenCentVsPtAntiLambda(0x0),
 f2fHistRecCentVsPtLambda(0x0),
 f2fHistRecCentVsPtAntiLambda(0x0),
 f2fHistInvMassVsPtLambda(0x0),
+f2fHistInvMassVsPtLambdaRec(0x0),
+f2fHistInvMassVsPtAntiLambda(0x0),
 f2fHistInvMassVsPtAntiLambda(0x0),
 f2fHistRecPrimariesCentVsPtLambda(0x0),
 f2fHistRecPrimariesCentVsPtAntiLambda(0x0),
@@ -137,9 +139,15 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
     f2fHistInvMassVsPtLambda = new TH2F("f2fHistInvMassVsPtLambda","Inv mass #Lambda Vs Pt",100,1.08,1.16,19,1.1,3.1);
     fListHist->Add(f2fHistInvMassVsPtLambda);
     
+    f2fHistInvMassVsPtLambdaRec = new TH2F("f2fHistInvMassVsPtLambdaRec","Inv mass #Lambda Vs Pt",100,1.08,1.16,19,1.1,3.1);
+    fListHist->Add(f2fHistInvMassVsPtLambdaRec);
+    
     f2fHistInvMassVsPtAntiLambda = new TH2F("f2fHistInvMassVsPtAntiLambda","Inv mass #bar{#Lambda} Vs Pt",100,1.08,1.16,19,1.1,3.1);
     fListHist->Add(f2fHistInvMassVsPtAntiLambda);
     
+    f2fHistInvMassVsPtAntiLambdaRec = new TH2F("f2fHistInvMassVsPtAntiLambdaRec","Inv mass #bar{#Lambda} Vs Pt",100,1.08,1.16,19,1.1,3.1);
+    fListHist->Add(f2fHistInvMassVsPtAntiLambdaRec);
+   
     f2fHistmassctLambda = new TH2F("f2fHistmassctLambda","#Lambda masscut",100,1.1,1.14,19,1.1,3.1);
     fListHist->Add(f2fHistmassctLambda);
     
@@ -635,7 +643,8 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                             if(fTreeVariablePID == 3122)
                             {
                                 f2fHistRecPrimariesCentVsPtLambda->Fill(fCentrality,mcpt);
-                                if(invMassLambda > 1.11 && invMassLambda < 1.12)
+                                f2fHistInvMassVsPtLambdaRec->Fill(invMassLambda,mcpt);
+                                if(invMassLambda > 1.104 && invMassLambda < 1.128) //5 sigmas around mean
                                 {
                                     f2fHistmassctLambda->Fill(invMassLambda,V0pt);
                                     ptCh[iptbin] += 1;
@@ -655,7 +664,8 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                             if(fTreeVariablePID == -3122)
                             {
                                 f2fHistRecPrimariesCentVsPtAntiLambda->Fill(fCentrality,mcpt);
-                                if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.12)
+                                f2fHistInvMassVsPtAntiLambdaRec->Fill(invMassAntiLambda,mcpt);
+                                if(invMassAntiLambda > 1.104 && invMassAntiLambda < 1.128)
                                 {
                                     f2fHistmassctAntiLambda->Fill(invMassAntiLambda,V0pt);
                                     ptCh[iptbin+fNptBins] += 1;
@@ -707,7 +717,8 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         if(fTreeVariablePID == 3122)
                         {
                             f2fHistRecPrimariesCentVsPtLambda->Fill(fCentrality,mcpt);
-                            if(invMassLambda > 1.11 && invMassLambda < 1.12)
+                            f2fHistInvMassVsPtLambdaRec->Fill(invMassLambda,mcpt);
+                             if(invMassLambda > 1.104 && invMassLambda <1.128)
                             {
                                 f2fHistmassctLambda->Fill(invMassLambda,V0pt);
                                 ptCh[iptbin] += 1;
@@ -726,7 +737,8 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                           if(fTreeVariablePID == -3122)
                         {
                             f2fHistRecPrimariesCentVsPtAntiLambda->Fill(fCentrality,mcpt);
-                            if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.12)
+                            f2fHistInvMassVsPtAntiLambdaRec->Fill(invMassAntiLambda,mcpt)
+                            if(invMassAntiLambda > 1.104 && invMassAntiLambda < 1.128)
                             {
                                 f2fHistmassctAntiLambda->Fill(invMassAntiLambda,V0pt);
                                 ptCh[iptbin+fNptBins] += 1;
