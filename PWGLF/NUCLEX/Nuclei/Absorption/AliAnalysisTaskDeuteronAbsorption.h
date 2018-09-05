@@ -6,21 +6,15 @@
 #define AliAnalysisTaskDeuteronAbsorption_H
 
 #include "AliAnalysisTaskSE.h"
+#include "AliPID.h"
 #include <string>
 
-class AliESDEvent;
 class AliPIDResponse;
 class TList;
 class TH1F;
 class TH2F;
 class TH3F;
 class AliESDtrackCuts;
-// for Monte Carlo:
-class AliMCEventHandler;
-class AliMCEvent;
-class AliStack;
-//class AliVParticle;
-class AliGenEventHeader;
 
 class AliAnalysisTaskDeuteronAbsorption : public AliAnalysisTaskSE
 {
@@ -32,19 +26,23 @@ public:
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option) {}
 
-  void SetMindEdx(double dedx = 100.) { fMindEdx = dedx; }
   double GetMindEdx() const { return fMindEdx; }
+  void SetMindEdx(double dedx = 100.) { fMindEdx = dedx; }
+
+  double GetMinTPCsignalN() const { return fMinTPCsignalN; }
+  void SetMinTPCsignalN(double signalN = 50) { fMinTPCsignalN = signalN; }
+
+  void SetESDtrackCuts(AliESDtrackCuts * cuts) { fESDtrackCuts = cuts; }
 
   static const AliPID::EParticleType fgkSpecies[4];
   static const std::string fgkParticleNames[4];
 
 private:
   double fMindEdx; /// Cut on the minimum dE/dx in TPC
+  int    fMinTPCsignalN; /// Minimum number of PID clusters in the TPC
 
-  AliESDEvent *fESD;              //! input event
   AliPIDResponse *fPIDResponse;   //! pid response
-                                  //
-  AliESDtrackCuts *fESDtrackCuts; //! input track cuts
+  AliESDtrackCuts *fESDtrackCuts; //-> input track cuts
                                   //
   TList *fOutputList;             //! output list
   //
