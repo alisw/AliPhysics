@@ -45,7 +45,7 @@ class AliHLTCaloDigitMaker;
 class AliHLTCaloDigitContainerDataStruct;
 class AliRawReaderMemory;
 class AliCaloRawStreamV3;
-
+class AliAltroMapping;
 
 
 #include "AliHLTCaloConstantsHandler.h"
@@ -80,6 +80,7 @@ class AliHLTEMCALRawAnalyzerComponentTRU :  public AliHLTCaloProcessor, protecte
   virtual int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
            AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr,
            AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
+  void InitAltroMapping();
 
   /**
    * Do the real processing in the component
@@ -102,6 +103,9 @@ class AliHLTEMCALRawAnalyzerComponentTRU :  public AliHLTCaloProcessor, protecte
  private:
   AliHLTEMCALRawAnalyzerComponentTRU(const AliHLTEMCALRawAnalyzerComponentTRU & );
   AliHLTEMCALRawAnalyzerComponentTRU & operator = (const AliHLTEMCALRawAnalyzerComponentTRU &);
+
+  /** cache for alto mapping, copied from AliCaloRawStreamV3 */
+  AliAltroMapping **fAltroMappingCache;
 
   /** Pointer to the raw data reader which reads from memory */
   //AliRawReaderMemory* fRawReaderMemoryPtr;            //!transient

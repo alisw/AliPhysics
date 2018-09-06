@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
+#include "AliCaloAltroMapping.h"
 #include "AliCaloRawAnalyzer.h"
 #include "AliCaloBunchInfo.h"
 #include "AliCaloFitResults.h"
@@ -31,6 +31,7 @@
 #include "AliHLTCaloChannelRawDataStruct.h"
 #include "AliLog.h"
 #include "TStopwatch.h"
+#include "TSystem.h"
 
 #include "AliCaloRawAnalyzerFactory.h"
 
@@ -48,7 +49,8 @@ ClassImp(AliHLTEMCALRawAnalyzerComponentTRU);
 AliHLTEMCALRawAnalyzerComponentTRU::AliHLTEMCALRawAnalyzerComponentTRU( ):AliHLTCaloProcessor(),
     AliHLTCaloConstantsHandler("EMCAL"),
     fTRUhandler(0),
-    fDebug(false)
+    fDebug(false),
+    fAltroMappingCache(NULL)
 {
   //Constructor
 
@@ -113,6 +115,13 @@ AliHLTEMCALRawAnalyzerComponentTRU::DoDeinit()
 {
   //comment
   if(fTRUhandler) delete fTRUhandler;
+
+  if(fAltroMappingCache){
+    for(int i = 0; i < 20; i++){
+      if(fAltroMappingCache[i]) delete fAltroMappingCache[i];
+    }
+    delete[] fAltroMappingCache;
+  }
 
   return 0;
 }
@@ -235,7 +244,8 @@ AliHLTEMCALRawAnalyzerComponentTRU::DoIt(const AliHLTComponentBlockData* iter, A
   rawReaderMemoryPtr.SetMemory(         reinterpret_cast<UChar_t*>( iter->fPtr ),  static_cast<ULong_t>( iter->fSize )  );
   rawReaderMemoryPtr.SetEquipmentID(    iter->fSpecification + fCaloConstants->GetDDLOFFSET() );
 
-  AliCaloRawStreamV3 altroRawStreamPtr(&rawReaderMemoryPtr, "EMCAL");
+  if(!fAltroMappingCache) InitAltroMapping();
+  AliCaloRawStreamV3 altroRawStreamPtr(&rawReaderMemoryPtr, "EMCAL", fAltroMappingCache);
   rawReaderMemoryPtr.Reset();
   rawReaderMemoryPtr.NextEvent();
 
@@ -270,5 +280,31 @@ AliHLTEMCALRawAnalyzerComponentTRU::DoIt(const AliHLTComponentBlockData* iter, A
   return  tmpsize;
 }
 
+void AliHLTEMCALRawAnalyzerComponentTRU::InitAltroMapping() {
+  fAltroMappingCache = new AliAltroMapping*[20];
+  memset(fAltroMappingCache, 0, sizeof(AliAltroMapping *) * 20);
+  
+  // only care about EMCAL mapping
+  const Int_t nmodules = 1, nrcu = 2, nsides = 2;
+  TString sides[]={"A","C"};
+
+  TString path = gSystem->Getenv("ALICE_ROOT");
+  path += "/EMCAL/mapping/";
+  TString path1, path2;
+  for(Int_t m = 0; m < nmodules; m++) {
+    path1 = path;
+    path1 += "RCU";
+    for(Int_t j = 0; j < nsides; j++){
+	    for(Int_t i = 0; i < nrcu; i++) {
+	      path2 = path1;
+	      path2 += i;
+	      path2 += sides[j];
+	      path2 += ".data";
+	      HLTDebug(2,Form("Mapping file: %s",path2.Data()));
+	      fAltroMappingCache[m*nsides*nrcu + j*nrcu + i] = new AliCaloAltroMapping(path2.Data());
+	    }
+    }
+  }
+}
 
 
