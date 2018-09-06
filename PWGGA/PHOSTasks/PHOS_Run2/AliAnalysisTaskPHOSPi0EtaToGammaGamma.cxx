@@ -902,6 +902,12 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
 
     //converted electrons.
     for(Int_t jp=0;jp<4;jp++){
+      TH1F *h1purity_lce = new TH1F(Form("hPurityLCE_%s",PIDtype[jp].Data()),Form("p_{T} of true late conversion Electron in clusters for purity %s;p_{T} (GeV/c)",PIDtype[jp].Data()),NpTgg-1,pTgg);
+      h1purity_lce->Sumw2();
+      fOutputContainer->Add(h1purity_lce);
+    }
+
+    for(Int_t jp=0;jp<4;jp++){
       TH2F *h2e = new TH2F(Form("hElectronRxy_%s",PIDtype[jp].Data()),Form("p_{T} of true Electron in clusters for purity %s vs. V_{prod};p_{T} (GeV/c);R_{xy} (cm)",PIDtype[jp].Data()),NpTgg-1,pTgg,500,0,500);
       h2e->Sumw2();
       fOutputContainer->Add(h2e);
@@ -2934,7 +2940,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
         if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
           FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_noPID",pT,Rxy,weight);
           if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_noPID",pT,weight);
-          else              FillHistogramTH1(fOutputContainer,"hPurityGamma_noPID",pT,weight);
+          else              FillHistogramTH1(fOutputContainer,"hPurityLCE_noPID",pT,weight);
         }
         else FillHistogramTH1(fOutputContainer,"hPurityElectron_noPID",pT,weight);
       }
@@ -2964,7 +2970,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
           if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
             FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_CPV",pT,Rxy,weight);
             if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_CPV",pT,weight);
-            else              FillHistogramTH1(fOutputContainer,"hPurityGamma_CPV",pT,weight);
+            else              FillHistogramTH1(fOutputContainer,"hPurityLCE_CPV",pT,weight);
           }
           else FillHistogramTH1(fOutputContainer,"hPurityElectron_CPV",pT,weight);
         }
@@ -2998,7 +3004,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
           if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
             FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_Disp",pT,Rxy,weight);
             if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_Disp",pT,weight);
-            else              FillHistogramTH1(fOutputContainer,"hPurityGamma_Disp",pT,weight);
+            else              FillHistogramTH1(fOutputContainer,"hPurityLCE_Disp",pT,weight);
           }
           else FillHistogramTH1(fOutputContainer,"hPurityElectron_Disp",pT,weight);
         }
@@ -3030,7 +3036,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
           if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
             FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_PID",pT,Rxy,weight);
             if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_PID",pT,weight);
-            else              FillHistogramTH1(fOutputContainer,"hPurityGamma_PID",pT,weight);
+            else              FillHistogramTH1(fOutputContainer,"hPurityLCE_PID",pT,weight);
           }
           else FillHistogramTH1(fOutputContainer,"hPurityElectron_PID",pT,weight);
         }
