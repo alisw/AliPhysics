@@ -56,6 +56,11 @@ add_subdirectory(shuttle)
 add_subdirectory(sim)
 add_subdirectory(ZMQ)
 
+if(DEFINED ALITPCCOMMON_DIR)
+    set(ALITPCCOMMON_BUILD_TYPE "ALIROOT")
+    add_subdirectory(${ALITPCCOMMON_DIR}/sources/Common AliTPCCommonBase)
+endif()
+
 if (DIM_FOUND)
     add_subdirectory(createGRP/lib)
 endif()
