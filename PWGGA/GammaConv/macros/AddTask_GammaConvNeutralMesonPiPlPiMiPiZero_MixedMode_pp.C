@@ -408,7 +408,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pp(
     cuts.AddCut("00000113","00200009227000008250400000","2444411043012300000","302010708","0103603600000000","0153503000000000"); //PCM-PHOS non lin
     // PCM-EMCal 7 TeV Sys
   } else if( trainConfig == 50)  { // Standard
-    cuts.AddCut("00000113","00200009227000008250400000","1111111047032230000","302010708","0103603900000000","0153503000000000");
+    cuts.AddCut("00000113","00200009227000008250400000","1111111047032230000","302010708","0103603800000000","0153503000000000");
 
     // *************Variations in AliConvEventCuts**************************
   } else if( trainConfig == 51)  { // RemovePileUp
