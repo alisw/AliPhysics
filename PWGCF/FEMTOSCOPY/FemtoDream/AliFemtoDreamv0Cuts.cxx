@@ -514,6 +514,7 @@ void AliFemtoDreamv0Cuts::BookMC(AliFemtoDreamv0 *v0) {
       fPosCuts->BookMC(v0->GetPosDaughter());
       fNegCuts->BookMC(v0->GetNegDaughter());
       v0->SetParticleOrigin(tmpOrg);
+	  fMCHist->FillMCMother(v0->GetPt(), v0->GetMotherPDG());
     }
   }
 }

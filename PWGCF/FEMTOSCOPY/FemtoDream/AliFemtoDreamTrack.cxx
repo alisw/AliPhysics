@@ -466,6 +466,11 @@ void AliFemtoDreamTrack::SetMCInformation() {
       } else {
         this->SetParticleOrigin(AliFemtoDreamBasePart::kUnknown);
       }
+      AliAODMCParticle *mcMother = (AliAODMCParticle*) mcarray->At(
+    		  mcPart->GetMother());
+      if(mcMother) {
+        this->SetMotherPDG(mcMother->GetPdgCode());
+      }
     }
   } else {
     this->fIsSet = false;  //if we don't have MC Information, don't use that track
