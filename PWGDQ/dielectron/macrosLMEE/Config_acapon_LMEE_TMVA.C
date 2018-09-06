@@ -8,8 +8,7 @@ void SetupMCsignals(AliDielectron* die);
 Bool_t isRandomRejTask=kFALSE;//needed for InitHistograms() //dont change!!!
 Bool_t kRot = kFALSE;
 Bool_t kMix = kTRUE;
-Bool_t kNoPairing   = kTRUE;
-Bool_t randomizeDau = kTRUE;
+Bool_t kNoPairing   = kFALSE;
 
 // available cut defintions
 const Int_t nMax = 3; 
@@ -30,7 +29,7 @@ AliDielectron* Config_acapon_LMEE_TMVA(Double_t userTMVACutValue = 0.05,
   isRandomRejTask=isRandomRej;
 
   // First check if cut definition is defined
-  if(!(cutDefinition >= 0 && cutDefinition < nMax))){
+  if(!(cutDefinition >= 0 && cutDefinition < nMax)){
     Printf("=====================================");
     Printf("Cut set = %d is not available.",cutDefinition);
     Printf("Use [%d,%d[ for cuts",0,nMax);
@@ -51,17 +50,10 @@ AliDielectron* Config_acapon_LMEE_TMVA(Double_t userTMVACutValue = 0.05,
     new AliDielectron(Form("%s",name.Data()),
                       Form("Track cuts: %s",name.Data()));
 
+	//die->SetHasMC(kFALSE);
   if(bCutQA){
     die->SetCutQA(bCutQA);
   }
-  
-  if(kRot){
-    AliDielectronTrackRotator *rot = new AliDielectronTrackRotator;
-    rot->SetConeAnglePhi(TMath::Pi());
-    rot->SetIterations(10);
-    die->SetTrackRotator(rot);
-  }//kRot
-  
   
   if(kMix && !(die->GetHasMC()) ){ // need second since there is a problem when mixing MC events (TRef?)
     AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
@@ -71,9 +63,6 @@ AliDielectron* Config_acapon_LMEE_TMVA(Double_t userTMVACutValue = 0.05,
     mix->SetDepth(15);
     mix->SetMixType(AliDielectronMixingHandler::kAll);
     
-    // using TPC event plane, uncorrected. (also, the old phi range was wrong, now same effective binning.)
-    // mix->AddVariable(AliDielectronVarManager::kQnTPCrpH2, 6, TMath::Pi()/-2., TMath::Pi()/2.);
-        
     die->SetMixingHandler(mix);
   }//kMix
 
@@ -81,19 +70,10 @@ AliDielectron* Config_acapon_LMEE_TMVA(Double_t userTMVACutValue = 0.05,
   // set track cuts
   SetupCuts(die,cutDefinition,bESDANA,userPathWeightFile,userTMVACutValue);
   
-  if(useTPCCorr)  SetTPCCorr(die);
+  if(useTPCCorr){
+		SetTPCCorr(die);
+	}
  
- //
- // histogram setup
- // only if an AliDielectronHistos object is attached to the
- // dielectron framework histograms will be filled
- //
-
- //
- // MC signals setup
- // SetupMCsignals(die);
- //
-
  InitHistograms(die,cutDefinition);
  //  InitCF(die,cutDefinition);
  
@@ -112,6 +92,7 @@ void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA = kFALSE,
   die->SetUseKF(kFALSE);
 	if(!bESDANA){      
 		SetupAODtrackCutsTMVAPIDFirst(die,kFALSE,kTRUE,userPathWeightFile,userTMVACutValue);
+		SetupAODpairCuts(die);
 	}
 }
 
@@ -143,21 +124,32 @@ void SetupAODtrackCutsTMVAPIDFirst(AliDielectron *die, Bool_t bMCPID, Bool_t bTM
   // specific cuts
   trkCuts->SetRequireITSRefit(kTRUE);
   trkCuts->SetRequireTPCRefit(kTRUE); // not useful when using prefilter
+	trkCuts->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD, AliDielectronTrackCuts::kFirst);
 
-  // standard cuts
-  varCuts->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
-  varCuts->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
-  varCuts->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.5);
-  varCuts->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   3.1); // means 0 and 1 shared Cluster
-  varCuts->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 160.0);
-  varCuts->AddCut(AliDielectronVarManager::kPt,           0.2, 10.);
-  varCuts->AddCut(AliDielectronVarManager::kEta,         -0.8,   0.8);
-  varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
-  varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-  varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.);
+	varCuts->AddCut(AliDielectronVarManager::kPt,             0.2,   10.);
+  varCuts->AddCut(AliDielectronVarManager::kEta,            -0.8,  0.8);
+  // ITS cuts
+  varCuts->AddCut(AliDielectronVarManager::kNclsITS,        4.0,   100.0); // > 3
+  varCuts->AddCut(AliDielectronVarManager::kITSchi2Cl,      0.0,   4.5);
+  varCuts->AddCut(AliDielectronVarManager::kNclsSFracITS,   0.0,   0.01);
+	// TPC cuts
+  varCuts->AddCut(AliDielectronVarManager::kNclsTPC,        80.0,  160.0);
+  varCuts->AddCut(AliDielectronVarManager::kNFclsTPCr,      100.0, 160.0);
+	// DCA cuts
+  varCuts->AddCut(AliDielectronVarManager::kImpactParXY,    -1.0,  1.0);
+  varCuts->AddCut(AliDielectronVarManager::kImpactParZ,     -3.0,  3.0);
+	// Further cuts
+  varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,     0.);
 
-  // additional 
+
+  // additional (why new VarCut group? good question...)
   varCuts2->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8, 1.1);
+
+	//VVVVVVVVVVVVVVVVVVVVVVVV PID Cuts (standard) VVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+	// Training was done with weak PID cut applied. Should be same case when
+	// applying classifier. Also should speed up task.
+	AliDielectronPID* cutsPID = new AliDielectronPID("cutsPID", "cutsPID");
+	cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
 
   // /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv PID CUTS (TMVA) vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
 
@@ -197,12 +189,43 @@ void SetupAODtrackCutsTMVAPIDFirst(AliDielectron *die, Bool_t bMCPID, Bool_t bTM
   die->GetTrackFilter().AddCuts(trkCuts);
   cuts->AddCut(varCuts2);
   die->GetTrackFilter().AddCuts(varCuts2);
+	cuts->AddCut(cutsPID);
+	die->GetTrackFilter().AddCuts(cutsPID);
   if(bTMVAPID){
     cuts->AddCut(pidCuts);
     die->GetTrackFilter().AddCuts(pidCuts);
   }
   cuts->Print();
 
+}
+
+// Inverted logic - cuts = SELECTION
+void SetupAODpairCuts(AliDielectron* die){
+
+	AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cuts", "cuts", AliDielectronCutGroup::kCompOR);
+
+	
+	AliDielectronCutGroup* convRejCut = new AliDielectronCutGroup("convRejCut", "convRejCut", AliDielectronCutGroup::kCompAND);
+
+	AliDielectronVarCuts* convMassCut = new AliDielectronVarCuts("convMassCut", "convMassCut");
+	AliDielectronVarCuts* convPhiVCut = new AliDielectronVarCuts("convPhiVCut", "convPhiVCut");
+	convMassCut->AddCut(AliDielectronVarManager::kM, 0.00, 0.1);
+	convPhiVCut->AddCut(AliDielectronVarManager::kPhivPair, 0., 2.);
+	convRejCut->AddCut(convMassCut);
+	convRejCut->AddCut(convPhiVCut);
+
+	//Mass cut to include any pairs with mass greater than 0.1 GeV
+	AliDielectronVarCuts* pairMassCut = new AliDielectronVarCuts("pairMassCut", "pairMassCut");
+	pairMassCut->AddCut(AliDielectronVarManager::kM, 0.1, 5.0);
+
+	cuts->AddCut(convRejCut);
+	cuts->AddCut(pairMassCut);
+
+	die->GetPairFilter().AddCuts(cuts);
+
+	cuts->Print();
+
+	return;
 }
 
 //______________________________________________________________________________________
@@ -322,12 +345,10 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Track","NClusterITS","NClusterITS; NClusterITS ;#tracks",8,-0.5,7.5,AliDielectronVarManager::kNclsITS);
   histos->UserHistogram("Track","ITSchi2perCls","ITSchi2perCls; ITSchi2perCls ;#tracks",100,0.,10.,AliDielectronVarManager::kITSchi2Cl);
 
-  histos->UserHistogram("Track","TPCdEdx_P","dEdx;P [GeV];TPC signal (arb units) vs Momentum;Mom;TPCsignal",     200,0.,10.,150,  0.,150. ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal);  
-  histos->UserHistogram("Track","TPCnSigma_MomEle","TPC number of sigmas Electrons vs Momentum;Mom;TPCsigmaEle", 200,0.,10.,300,-30., 30. ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle);
-  histos->UserHistogram("Track","ITSdEdx_P","dEdx;P [GeV];ITS signal (arb units) vs Momentum;Mom;ITSsignal",     200,0.,10.,150,  0.,150. ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSsignal);
-  histos->UserHistogram("Track","ITSnSigma_MomEle","ITS number of sigmas Electrons vs Momentum;Mom;ITSsigmaEle"                           ,     200,0.,10.,300,-30., 30. ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSnSigmaEle);
-  histos->UserHistogram("Track","TOFbeta_Mom","kTOFbeta vs Momentum;Mom;TOFbeta"                           ,     200,0.,10.,120,  0.,  1.2,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFbeta);
-  histos->UserHistogram("Track","TOFnSigma_MomEle","TOF number of sigmas Electrons vs Momentum;Mom;TOFsigmaEle"                           ,     200,0.,10.,300,-30., 30. ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaEle);
+  histos->UserHistogram("Track", "ITSnSigma_MomEle", "ITS number of sigmas Electrons vs Momentum;Mom;ITSsigmaEle", 200,0.,10.,300,-30., 30.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSnSigmaEle);
+  histos->UserHistogram("Track", "TPCnSigma_MomEle", "TPC number of sigmas Electrons vs Momentum;Mom;TPCsigmaEle", 200,0.,10.,300,-30., 30.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle);
+  histos->UserHistogram("Track", "TOFnSigma_MomEle", "TOF number of sigmas Electrons vs Momentum;Mom;TOFsigmaEle", 200,0.,10.,300,-30., 30.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaEle);
+  histos->UserHistogram("Track", "TOFbeta_Mom",      "kTOFbeta vs Momentum;Mom;TOFbeta",                           200,0.,10.,120,  0., 1.2,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFbeta);
 
   //add histograms to pair classes
   histos->UserHistogram("Pair",
@@ -338,6 +359,10 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Pair","InvMass_PairPt_PhivPair","InvMass:PairPt:PhivPair;Inv. Mass [GeV];Pair Pt [GeV];PhiV",
                         600,0.,6., 600,0.,6., 20,0.,TMath::Pi(),
                         AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPhivPair);  
+  
+	/* histos->UserHistogram("Pair","InvMass_PairPt_Cent","InvMass:PairPt:Cent;Inv. Mass [GeV];Pair Pt [GeV];Cent", */
+                        /* 600, 0., 6., 600, 0., 6., 202, -1., 100., */
+                        /* AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentralityNew); */  
   						
   histos->UserHistogram("Pair",
                         "Eta_phi_pair","Eta vs Phi (pair);Eta;Phi",
