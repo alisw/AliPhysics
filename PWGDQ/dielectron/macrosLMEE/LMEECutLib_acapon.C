@@ -2,7 +2,7 @@ class LMEECutLib {
 
 	public:
 
-	enum LMMECutSet{
+	enum LMEECutSet{
 		kAllSpecies,
 		kElectrons,
 		kHighMult,
