@@ -689,6 +689,7 @@ void AliFemtoDreamTrackCuts::BookMC(AliFemtoDreamTrack *Track) {
         FillMCContributions(Track);
       }
       Track->SetParticleOrigin(tmpOrg);
+	  fMCHists->FillMCMother(Track->GetPt(), Track->GetMotherPDG());
     }
   }
 }
