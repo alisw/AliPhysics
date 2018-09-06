@@ -127,12 +127,13 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     void SetAdditionalK0SPtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
       Int_t Ncen = centarray->GetSize();
-      fCentArrayK0S = centarray;
 
       if(fCentArrayK0S){
         delete fCentArrayK0S;
         fCentArrayK0S = 0x0;
       }
+
+      fCentArrayK0S = centarray;
 
       for(Int_t i=0;i<11;i++){
         delete fAdditionalK0SPtWeight[i];
@@ -512,7 +513,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 67);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 68);
 };
 
 #endif
