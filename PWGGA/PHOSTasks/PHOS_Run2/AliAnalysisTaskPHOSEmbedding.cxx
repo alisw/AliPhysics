@@ -164,7 +164,7 @@ AliAnalysisTaskPHOSEmbedding::~AliAnalysisTaskPHOSEmbedding()
     fAODEvent = 0x0;
   }
 
-  if(fHistoFileID){                                                                                                                                                                                                                           
+  if(fHistoFileID){
     delete fHistoFileID;
     fHistoFileID = 0x0;
   }
@@ -186,9 +186,9 @@ void AliAnalysisTaskPHOSEmbedding::UserCreateOutputObjects()
 
   const Int_t Nfile = 500;
   const Int_t Nev = 30e+3;
-  fHistoFileID  = new TH1F(Form("hEventFileID_%s",fParticle.Data()) ,Form("file index in MC str array %s;file ID;Number of events",fParticle.Data()),Nfile,-0.5,Nfile+0.5);
+  fHistoFileID  = new TH1F(Form("hEventFileID_%s",fParticle.Data()) ,Form("file index in MC str array %s;file ID;Number of events",fParticle.Data()),Nfile+1,-0.5,Nfile+0.5);
   fHistoEventID = new TH1F(Form("hEventEventID_%s",fParticle.Data()),Form("event index in MC AOD %s;event ID;Number of events",fParticle.Data())    ,Nev+1,-0.5,Nev+0.5);
-  fOutputContainer->Add(fHistoFileID);                                                                                                                                                                                                        
+  fOutputContainer->Add(fHistoFileID);
   fOutputContainer->Add(fHistoEventID);
 
   fMCArray = new TClonesArray("AliAODMCParticle",0);
