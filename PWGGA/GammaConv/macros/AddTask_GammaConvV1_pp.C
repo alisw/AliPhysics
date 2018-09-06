@@ -913,30 +913,25 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
 
   // ---------------------------------- cut selection for pp 5 TeV 2017 ------------------------------------
   } else if (trainConfig == 400){
-    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
-    cuts.AddCut("00010113", "0c200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
     cuts.AddCut("00010113", "0d200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
+
   } else if (trainConfig == 401){
-    cuts.AddCut("00010113", "0d200009257300008250404000", "0152103500000000"); // pidEdx 2,-10
-    cuts.AddCut("00010113", "0d200009247300008250404000", "0152103500000000"); // pidEdx 3, 1
-    cuts.AddCut("00010113", "0d200009217300008250404000", "0152103500000000"); // pidEdx 0,-10
-    cuts.AddCut("00010113", "0d200009226300008250404000", "0152103500000000"); // pion nsig min mom 0.25 GeV/c
-    cuts.AddCut("00010113", "0d200009227100008250404000", "0152103500000000"); // pion nsig max mom 5.00 GeV/c
-  } else if (trainConfig == 402){
-    cuts.AddCut("00010113", "0d200009227300008280404000", "0152103500000000"); // Psi pair 0.2  2D
-    cuts.AddCut("00010113", "0d200009227300008860404000", "0152103500000000"); // variation chi2 20 psi pair 0.2 2D
-    cuts.AddCut("00010113", "0d200009227300008150404000", "0152103500000000"); // variation chi2 50 psi pair 0.1 2D
-    cuts.AddCut("00010113", "0d200009227300002250404000", "0152103500000000"); // variation qT max 0.06 2D
-    cuts.AddCut("00010113", "0d200009227300002252404000", "0152103500000000"); // variation qT max 0.06 2D, asym var 1
-  } else if (trainConfig == 403){
-    cuts.AddCut("00010113", "0d200009227300002254404000", "0152103500000000"); // variation qT max 0.06 2D, asym vat 2 pt dep
-    cuts.AddCut("00010113", "0d200009227300002256404000", "0152103500000000"); // variation qT max 0.06 2D, asym var 3
-  } else if (trainConfig == 404){
     cuts.AddCut("00057113", "0d200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - EMC7
     cuts.AddCut("00083113", "0d200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - EG1
     cuts.AddCut("00085113", "0d200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - EG2
     cuts.AddCut("00062113", "0d200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - PHI7
+
   // systematic variations for 5 TeV 2017
+  } else if (trainConfig == 403){
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); // eta < 0.9
+    cuts.AddCut("00010113", "0c200009227300008250404000", "0152103500000000"); // eta < 0.85
+    cuts.AddCut("00010113", "0d200009247300008250404000", "0152103500000000"); // pidEdx 3, 1
+    cuts.AddCut("00010113", "0d200009227100008250404000", "0152103500000000"); // pion nsig max mom 5.00 GeV/c
+  } else if (trainConfig == 404){
+    cuts.AddCut("00010113", "0d200009227300008860404000", "0152103500000000"); // variation chi2 20 psi pair 0.2 2D
+    cuts.AddCut("00010113", "0d200009227300002252404000", "0152103500000000"); // variation qT max 0.06 2D, asym var 1
+    cuts.AddCut("00010113", "0d200009227300002254404000", "0152103500000000"); // variation qT max 0.06 2D, asym vat 2 pt dep
+    cuts.AddCut("00010113", "0d200009227300002256404000", "0152103500000000"); // variation qT max 0.06 2D, asym var 3
   } else if (trainConfig == 405){
     cuts.AddCut("00010113", "0d200009a27300008250904120", "0152103500000000"); //cosPA, 0.99 eta 0.9
     cuts.AddCut("00010113", "0d200079227300008250404000", "0152103500000000"); // min pT no cut
