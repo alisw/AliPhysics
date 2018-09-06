@@ -17,11 +17,11 @@ AliForwardGenericFramework::AliForwardGenericFramework()
   Int_t rbins[4] = {2, 6, 5, 1} ; // kind (real or imaginary), n, p, eta
   Int_t dimensions = 4;
   if (fSettings.fFlowFlags & fSettings.kEtaGap) {
-     rbins[3] = 2 ; // two bins in eta for gap
+     rbins[3] = 2 ; // two bins in eta for gap, one for standard
   }
 
-  Double_t xmin[4] = {-1.0, -0.5, 0.5, fSettings.fEtaLowEdge}; // kind (real or imaginary), n, p, eta
-  Double_t xmax[4] = { 1,   5.5, 4.5,  fSettings.fEtaUpEdge}; // kind (real or imaginary), n, p, eta
+  Double_t xmin[4] = {-1.0, -0.5, 0.5, -6}; // kind (real or imaginary), n, p, eta
+  Double_t xmax[4] = { 1,   5.5, 4.5,  6}; // kind (real or imaginary), n, p, eta SKAL VAERE -6 - 6
 
   fQvector = new THnD("Qvector", "Qvector", dimensions, rbins, xmin, xmax);
   Int_t dbins[4] = {2, 6, 4, fSettings.fNDiffEtaBins} ; // kind (real or imaginary), n, p, eta
@@ -63,16 +63,15 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
 
     for (Int_t phiBin = 1; phiBin <= dNdetadphi.GetNbinsY(); phiBin++) {
       Double_t phi = dNdetadphi.GetYaxis()->GetBinCenter(phiBin);
-
-
-
       Double_t weight = dNdetadphi.GetBinContent(etaBin, phiBin);
-      // holes in the FMD
-      if ((etaBin == 17 || etaBin == 18 || etaBin == 14) && (weight == 0)){
-        if (detType == "forward") weight = 1.; 
-      } 
+
 
       if (fSettings.doNUA){
+        // holes in the FMD
+        if ((etaBin == 17 || etaBin == 18 || etaBin == 14) && (weight == 0)){
+          if (detType == "forward") weight = 1.; 
+        } 
+
         if (detType == "central") {
           Double_t nuaeta = fSettings.nuacentral->GetXaxis()->FindBin(eta);
           Double_t nuaphi = fSettings.nuacentral->GetYaxis()->FindBin(phi);
@@ -110,7 +109,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
           }
         }
 
-        if (doRefFlow && fabs(eta)>=fSettings.gap){
+        if (doRefFlow && fabs(eta)>fSettings.gap){
           Double_t req[4] = {0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
           Double_t imq[4] = {-0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
           fQvector->Fill(req, realPart);

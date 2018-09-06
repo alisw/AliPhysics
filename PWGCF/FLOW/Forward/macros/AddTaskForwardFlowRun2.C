@@ -23,7 +23,7 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2()
 {
   Bool_t etagap = false;
   Int_t mode = kRECON;
-  bool doNUA = true;
+  bool doNUA = false;
   bool mc = false;
 
 

@@ -155,12 +155,23 @@ fDeltaList->SetName("Delta");
     Double_t xmax_eta[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 6, 100, 2*TMath::Pi()}; // 
     Int_t dimensions_eta = 5;
 
+    Int_t bins_phi1[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 21, fSettings.fCentBins, 20} ;
+    Double_t xmin_phi1[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, 0.0};
+    Double_t xmax_phi1[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 2*TMath::Pi()}; // 
+    Int_t dimensions_phi1 = 5;
+
+    Int_t bins_eta1[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 201, fSettings.fCentBins, 200} ;
+    Double_t xmin_eta1[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -4, 0, -4.0};
+    Double_t xmax_eta1[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 6, 100, 6}; // 
+    Int_t dimensions_eta1 = 5;
+
+    fDeltaList->Add(new THnD("delta_phi", "delta_phi",dimensions_phi1,bins_phi1, xmin_phi1, xmax_phi1)); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
+    fDeltaList->Add(new THnD("delta_eta", "delta_eta",dimensions_eta1,bins_eta1, xmin_eta1, xmax_eta1)); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
+    
     fDeltaList->Add(new THnD("delta_phi_mother", "delta_phi_mother",dimensions_phi,bins_phi, xmin_phi, xmax_phi)); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
     fDeltaList->Add(new THnD("delta_phi_tr", "delta_phi_tr",dimensions_phi,bins_phi, xmin_phi, xmax_phi)); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
-    fDeltaList->Add(new THnD("delta_phi_p", "delta_phi_p",dimensions_phi,bins_phi, xmin_phi, xmax_phi)); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
     fDeltaList->Add(new THnD("delta_eta_mother", "delta_eta_mother",dimensions_eta,bins_eta, xmin_eta, xmax_eta));// (samples, vertex,eta_mother - eta_tr ,centrality,phi_mother,phi_tr,phi_p)
     fDeltaList->Add(new THnD("delta_eta_tr", "delta_eta_tr",dimensions_eta,bins_eta, xmin_eta, xmax_eta));// (samples, vertex,eta_mother - eta_tr ,centrality,phi_mother,phi_tr,phi_p)
-    fDeltaList->Add(new THnD("delta_eta_p", "delta_eta_p",dimensions_eta,bins_eta, xmin_eta, xmax_eta));// (samples, vertex,eta_mother - eta_tr ,centrality,phi_mother,phi_tr,phi_p)
 
     static_cast<THnD*>(fDeltaList->FindObject("delta_phi_mother"))->GetAxis(0)->SetName("samples");
     static_cast<THnD*>(fDeltaList->FindObject("delta_phi_mother"))->GetAxis(1)->SetName("vertex");
@@ -237,9 +248,9 @@ void AliForwardSecondariesTask::UserExec(Option_t */*option*/)
     return;
   }
 
-    AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
-    double v0cent = MultSelection->GetMultiplicityPercentile("SPDTracklets");
- //v0cent = 5.;
+    //AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
+    //double v0cent = MultSelection->GetMultiplicityPercentile("SPDTracklets");
+double v0cent = 5.;
 std::cout << "the cent is " << v0cent << std::endl;
     static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(event_vtx_z);
  
@@ -324,8 +335,9 @@ THnD* delta_phi_mother = static_cast<THnD*>(fDeltaList->FindObject("delta_phi_mo
 THnD* delta_eta_mother = static_cast<THnD*>(fDeltaList->FindObject("delta_eta_mother"));
 THnD* delta_phi_tr = static_cast<THnD*>(fDeltaList->FindObject("delta_phi_tr")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
 THnD* delta_eta_tr = static_cast<THnD*>(fDeltaList->FindObject("delta_eta_tr"));
-THnD* delta_phi_p = static_cast<THnD*>(fDeltaList->FindObject("delta_phi_p")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
-THnD* delta_eta_p = static_cast<THnD*>(fDeltaList->FindObject("delta_eta_p"));
+
+THnD* delta_phi = static_cast<THnD*>(fDeltaList->FindObject("delta_phi")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
+THnD* delta_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_eta"));
 
 
   THnD* fnoPrim = static_cast<THnD*>(fDeltaList->FindObject("fnoPrim"));//->Fill(event_vtx_z,event_vtx_z,event_vtx_z);
@@ -373,13 +385,16 @@ THnD* delta_eta_p = static_cast<THnD*>(fDeltaList->FindObject("delta_eta_p"));
       Double_t phi_tr = etaPhi[1];
       Double_t eta_tr = etaPhi[0];
 
-
-      Double_t eta_p = p->Eta();
-      Double_t phi_p = p->Phi();
-      // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)    
+      // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr)    
       Double_t phi[5] = {randomInt,event_vtx_z, WrapPi(phi_mother - phi_tr), v0cent, eta_mother};
       Double_t eta[5] = {randomInt,event_vtx_z, (eta_mother - eta_tr), v0cent, phi_mother};
 
+      Double_t phi1[5] = {randomInt,event_vtx_z, WrapPi(phi_mother - phi_tr), v0cent, phi_tr};
+      Double_t eta1[5] = {randomInt,event_vtx_z, (eta_mother - eta_tr), v0cent, eta_tr};
+      delta_phi->Fill(phi1,1);
+      delta_eta->Fill(eta1,1);
+
+      if (!(fabs(eta_tr - eta_mother) < 0.1)) continue;
       delta_phi_mother->Fill(phi,1);
       delta_eta_mother->Fill(eta,1);
 
@@ -388,15 +403,8 @@ THnD* delta_eta_p = static_cast<THnD*>(fDeltaList->FindObject("delta_eta_p"));
       delta_phi_tr->Fill(phi,1);
       delta_eta_tr->Fill(eta,1);
 
-      phi[4] = eta_p;
-      phi[2] = WrapPi(phi_mother - phi_p);
-      eta[4] = phi_p;
-      eta[2] = eta_mother - eta_p;
-      delta_phi_p->Fill(phi,1);
-      delta_eta_p->Fill(eta,1);
       //if (!hasParticleMaterialInteractionInAncestors(p)) continue;
       //std::cout << "particle is from material" << std::endl;
-
 
       //deltaphi_tr=TMath::ATan2(TMath::Sin(deltaphi_tr), TMath::Cos(deltaphi_tr));
       Double_t x_prim[4] =  {randomInt,event_vtx_z,v0cent,eta_mother};

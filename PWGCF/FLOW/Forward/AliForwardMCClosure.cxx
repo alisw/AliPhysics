@@ -44,8 +44,8 @@
 
 #include "AliStack.h"
 #include "AliMCEvent.h"
-#include "AliAODMCParticle.h"
-#include "AliAODMCParticle.h"
+#include "AliMCParticle.h"
+#include "AliMCParticle.h"
 #include "AliForwardSecondariesTask.h"
 #include "AliGenEventHeaderTunedPbPb.h"
 using namespace std;
@@ -118,12 +118,12 @@ AliForwardMCClosure::AliForwardMCClosure() : AliAnalysisTaskSE(),
 
   fEventList = new TList();
 
-  fEventList->Add(new TH1D("Centrality","Centrality",10,0,100));
+  fEventList->Add(new TH1D("Centrality","Centrality",fSettings.fCentBins,0,100));
   fEventList->Add(new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
   fEventList->Add(new TH2F("hOutliers","Maximum #sigma from mean N_{ch} pr. bin", 
      20, 0., 100., 500, 0., 5.)); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram 
   fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
-  fEventList->Add(new TH1D("dNdeta","dNdeta",fSettings.fNDiffEtaBins,-4,6));
+  fEventList->Add(new TH1D("dNdeta","dNdeta",fSettings.fNDiffEtaBins,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge));
   fEventList->SetName("EventInfo");
 
   fStdQCList->Add(new TList());
@@ -155,8 +155,8 @@ AliForwardMCClosure::AliForwardMCClosure() : AliAnalysisTaskSE(),
 
       Int_t dbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, fSettings.kSinphi1phi2phi3p+1} ;
       Int_t rbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, fSettings.kSinphi1phi2phi3p+1} ;
-      Double_t xmin[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -4.0, 0, 0};
-      Double_t xmax[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 6, 100, static_cast<Double_t>(fSettings.kSinphi1phi2phi3p+1)};
+      Double_t xmin[5] = {0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 0};
+      Double_t xmax[5] = {10,fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 100, static_cast<Double_t>(fSettings.kSinphi1phi2phi3p+1)};
 
 
       static_cast<TList*>(fGFList->At(0))->Add(new THnD(Form("cumuRef_v%d", n), Form("cumuRef_v%d", n), dimensions, rbins, xmin, xmax));
@@ -212,10 +212,12 @@ void AliForwardMCClosure::UserExec(Option_t */*option*/)
     return;
   }
   */
+    /*
     if(!fEventCuts.AcceptEvent(fInputEvent)) {
       PostData(1, fOutputList);
       return;
-    }  
+    } 
+    */ 
 
   // Disregard events without reconstructed vertex
   Float_t zvertex = fAOD->GetPrimaryVertex()->GetZ();
@@ -223,9 +225,9 @@ void AliForwardMCClosure::UserExec(Option_t */*option*/)
     return;
   }
 
-    //AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
-    //double cent = MultSelection->GetMultiplicityPercentile("SPDTracklets");
-double cent = 10;
+    AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
+    double cent = MultSelection->GetMultiplicityPercentile("SPDTracklets");
+//double cent = 10;
 
 
 
@@ -264,7 +266,7 @@ std::cout << cent1 << std::endl;
   //AliAODCentralMult* aodcmult = static_cast<AliAODCentralMult*>(fAOD->FindListObject("CentralClusters")); // only exists if created by user from ESDs
   TH2D spddNdedp = TH2D("spddNdedp","spddNdedp",400,-1.5,1.5,400,0,2*TMath::Pi()); // Histogram to contain the central tracks
   TH2D centralDiff = TH2D("central","central",400,-1.5,1.5,400,0,2*TMath::Pi()); // Histogram to contain the central tracks
-  //  TH2D forwarddNdedp = TH2D("forwarddNdedp","forwarddNdedp",400,-4,6,400,0,2*TMath::Pi()); // also known as dNdetadphi
+  //TH2D forwarddNdedp = TH2D("forwarddNdedp","forwarddNdedp",400,-4,6,400,0,2*TMath::Pi()); // also known as dNdetadphi
   TH2D forwarddNdedp = TH2D("forwarddNdedp","forwarddNdedp",200,-4,6,20,0,2*TMath::Pi()); // also known as dNdetadphi
 
   Int_t nTracks   = fAOD->GetNumberOfTracks();
@@ -279,7 +281,7 @@ std::cout << "noTracks = " << nTracks << std::endl;
   // AODs
   /*
     for (Int_t iTr = 0; iTr < nTracks; iTr++) {
-      AliAODMCParticle* p = static_cast< AliAODMCParticle* >(this->MCEvent()->GetTrack(iTr));
+      AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
       //if (!p->IsPhysicalPrimary()) continue;
       if (fabs(p->Eta())>1.6 && p->Charge() != 0) {
         forwarddNdedp.Fill(p->Eta(),p->Phi(),1);
@@ -294,39 +296,39 @@ std::cout << "noTracks = " << nTracks << std::endl;
     */
   
   //ESDs w. primary
+    /*
     for (Int_t iTr = 0; iTr < nTracks; iTr++) {
       AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
-        if (!p->IsPhysicalPrimary()) continue;
+      if (!p->IsPhysicalPrimary()) continue;
+      if (p->Charge() == 0) continue;
 
-      if (AliTrackReference *ref = this->IsHitFMD(p)){
-        if (p->Charge() != 0) {
+        if ( (p->Eta() < -1.7 && p->Eta() > -3.4) || (p->Eta() > 1.7 && p->Eta() < 5.0) ){
           forwarddNdedp.Fill(p->Eta(),p->Phi(),1);
-          dNdeta->Fill(p->Eta(),1)
+          dNdeta->Fill(p->Eta(),1);
         }
-      }
-      if (AliTrackReference *ref = this->IsHitTPC(p)) {
-          //if (p->Pt()>=0.2 && p->Pt()<5) 
-        spddNdedp.Fill(p->Eta(),p->Phi(),1);
-        dNdeta->Fill(p->Eta(),1)
-
-      }
+        if (p->Pt()>=0.2 && p->Pt()<=5) {
+          if (fabs(p->Eta()) < 1.1) {
+            spddNdedp.Fill(p->Eta(),p->Phi(),1);
+            dNdeta->Fill(p->Eta(),1);
+          }
+        }
     }
+    */
     //ESDs w. secondary
+    
     for (Int_t iTr = 0; iTr < nTracks; iTr++) {
       AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
-       // if (!p->IsPhysicalPrimary()) continue;
+      if (p->Charge() == 0) continue;
 
       if (AliTrackReference *ref = this->IsHitFMD(p)){
-        if (p->Charge() != 0) {
           forwarddNdedp.Fill(p->Eta(),p->Phi(),1);
-          dNdeta->Fill(p->Eta(),1)
-        }
+          dNdeta->Fill(p->Eta(),1);
       }
       if (AliTrackReference *ref = this->IsHitTPC(p)) {
-          //if (p->Pt()>=0.2 && p->Pt()<5) 
-        spddNdedp.Fill(p->Eta(),p->Phi(),1);
-        dNdeta->Fill(p->Eta(),1)
-
+        if (p->Pt()>=0.2 && p->Pt()<=5) {
+            spddNdedp.Fill(p->Eta(),p->Phi(),1);
+            dNdeta->Fill(p->Eta(),1);
+        }
       }
     }
 
@@ -337,7 +339,7 @@ std::cout << "noTracks = " << nTracks << std::endl;
 
     bool useEvent = kTRUE;
   if (nTracks < 10) useEvent = kFALSE;
-  if (!fSettings.ExtraEventCutFMD(forwarddNdedp, cent, true)) useEvent = kFALSE;
+  //if (!fSettings.ExtraEventCutFMD(forwarddNdedp, cent, true)) useEvent = kFALSE;
 
   if (useEvent){
 
@@ -362,101 +364,6 @@ std::cout << "noTracks = " << nTracks << std::endl;
   return;
 }
 
-/*
-
-AliTrackReference* AliForwardMCClosure::IsHitFMD(AliAODMCParticle* p) {
-  //std::cout << "p->GetNumberOfTrackReferences() = " << p->GetNumberOfTrackReferences() << std::endl;
-  for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) { 
-    AliTrackReference* ref = p->GetTrackReference(iTrRef);
-    // Check hit on FMD
-    //std::cout << "ref->DetectorId() = " << ref->DetectorId() << std::endl;
-    //std::cout << "AliTrackReference::kFMD = " << AliTrackReference::kFMD << std::endl; 
-    if (!ref || AliTrackReference::kFMD != ref->DetectorId()) {
-      continue;
-    }
-    else {
-      return ref;
-    }
-  }
-  return 0x0;
-}
-
-AliTrackReference* AliForwardMCClosure::IsHitTPC(AliAODMCParticle* p) {
-  for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) { 
-    AliTrackReference* ref = p->GetTrackReference(iTrRef);
-    // Check hit on FMD
-    if (!ref || AliTrackReference::kTPC != ref->DetectorId()) {
-      continue;
-    }
-    else {
-      return ref;
-    }
-  }
-  return 0x0;
-}
-
-*/
-
-AliAODMCParticle* AliForwardMCClosure::GetMother(AliAODMCParticle* p) {
-  // Recurses until the mother IsPhysicalPrimary
-  // Return NULL if no mother was found
-  AliMCEvent* event = this->MCEvent();
-  // GetLabel() is the index on the Stack!
-  // event->Stack()->IsPhysicalPrimary(p->GetLabel());
-  Bool_t isPP = this->IsRedefinedPhysicalPrimary(p);
-  // Return this particle if it is stable
-  if (isPP) {
-    return p;
-  }
-  else {
-    // No stable particle found and no mother left !?
-    if (p->GetMother() < 0) {
-      return 0x0;
-    }
-    AliAODMCParticle* ancestor = dynamic_cast< AliAODMCParticle* >(event->GetTrack(p->GetMother()));
-    return GetMother(ancestor);
-  }
-}
-
-/*
-Bool_t AliForwardMCClosure::AddMotherIfFirstTimeSeen(AliAODMCParticle* p, std::vector<Int_t> v){
-
-  //Checking if v contains elements (is empty):
-  if(v.empty()){
-     return false;
-  } 
-  Int_t x = p->GetLabel();
-  if(std::find(v.begin(), v.end(), x) != v.end()) {
-      /* v contains x */
-
-//    return true;
-  //} else {
-      /* v does not contain x */
-    //return false;
-  //}
-
-//}
-
-Bool_t AliForwardMCClosure::IsRedefinedPhysicalPrimary(AliAODMCParticle* p) {
-  AliMCEvent* event = this->MCEvent();
-  // Is this a pi0 which was produced as a primary particle?
-  if (TMath::Abs(p->PdgCode()) == 111 &&
-      p->GetLabel() < event->GetNumberOfPrimaries()) {
-    std::cout << "found a pi0" << std::endl;
-    return true;
-  }
-  // Is it a Physical Primary by the standard definition?
-  Bool_t isPPStandardDef = p->IsPhysicalPrimary();
-  AliAODMCParticle *pi0Candidate = dynamic_cast< AliAODMCParticle* >(event->GetTrack(p->GetMother()));
-  // Check if this is a primary originating from a pi0
-  if (isPPStandardDef && pi0Candidate) {
-    if (TMath::Abs(pi0Candidate->PdgCode()) == 111){/*pi0*/
-    std::cout << "found wrong pi0Candidate" << std::endl;
-      return false; // Don't allow stable particles stemming from pi0!
-    }
-  }
-  return isPPStandardDef;
-}
 
 
 AliTrackReference* AliForwardMCClosure::IsHitFMD(AliMCParticle* p) {
@@ -489,6 +396,70 @@ AliTrackReference* AliForwardMCClosure::IsHitTPC(AliMCParticle* p) {
   }
   return 0x0;
 }
+
+
+
+AliMCParticle* AliForwardMCClosure::GetMother(AliMCParticle* p) {
+  // Recurses until the mother IsPhysicalPrimary
+  // Return NULL if no mother was found
+  AliMCEvent* event = this->MCEvent();
+  // GetLabel() is the index on the Stack!
+  // event->Stack()->IsPhysicalPrimary(p->GetLabel());
+  Bool_t isPP = this->IsRedefinedPhysicalPrimary(p);
+  // Return this particle if it is stable
+  if (isPP) {
+    return p;
+  }
+  else {
+    // No stable particle found and no mother left !?
+    if (p->GetMother() < 0) {
+      return 0x0;
+    }
+    AliMCParticle* ancestor = dynamic_cast< AliMCParticle* >(event->GetTrack(p->GetMother()));
+    return GetMother(ancestor);
+  }
+}
+
+/*
+Bool_t AliForwardMCClosure::AddMotherIfFirstTimeSeen(AliMCParticle* p, std::vector<Int_t> v){
+
+  //Checking if v contains elements (is empty):
+  if(v.empty()){
+     return false;
+  } 
+  Int_t x = p->GetLabel();
+  if(std::find(v.begin(), v.end(), x) != v.end()) {
+      /* v contains x */
+
+//    return true;
+  //} else {
+      /* v does not contain x */
+    //return false;
+  //}
+
+//}
+
+Bool_t AliForwardMCClosure::IsRedefinedPhysicalPrimary(AliMCParticle* p) {
+  AliMCEvent* event = this->MCEvent();
+  // Is this a pi0 which was produced as a primary particle?
+  if (TMath::Abs(p->PdgCode()) == 111 &&
+      p->GetLabel() < event->GetNumberOfPrimaries()) {
+    std::cout << "found a pi0" << std::endl;
+    return true;
+  }
+  // Is it a Physical Primary by the standard definition?
+  Bool_t isPPStandardDef = p->IsPhysicalPrimary();
+  AliMCParticle *pi0Candidate = dynamic_cast< AliMCParticle* >(event->GetTrack(p->GetMother()));
+  // Check if this is a primary originating from a pi0
+  if (isPPStandardDef && pi0Candidate) {
+    if (TMath::Abs(pi0Candidate->PdgCode()) == 111){/*pi0*/
+    std::cout << "found wrong pi0Candidate" << std::endl;
+      return false; // Don't allow stable particles stemming from pi0!
+    }
+  }
+  return isPPStandardDef;
+}
+
 
 
 

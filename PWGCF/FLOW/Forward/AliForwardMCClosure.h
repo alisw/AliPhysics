@@ -24,7 +24,7 @@
 class AliAODForwardMult;
 class TH2D;
 class AliESDEvent;
-class AliAODMCParticle;
+class AliMCParticle;
 class THn;
 class AliTrackReference;
 class TParticle;
@@ -95,23 +95,16 @@ public:
 
 // Check if a given particle itself hit the FMD. If so, return the
   // (first) track reference of such a hit
-  AliTrackReference* IsHitFMD(AliAODMCParticle* p);
-
-// Check if a given particle itself hit the FMD. If so, return the
-  // (first) track reference of such a hit
-  AliTrackReference* IsHitTPC(AliAODMCParticle* p);
-
-  Bool_t AddMotherIfFirstTimeSeen(AliAODMCParticle* p, std::vector<Int_t> v);
-  AliAODMCParticle* GetMother(AliAODMCParticle* p);
-  Bool_t IsRedefinedPhysicalPrimary(AliAODMCParticle* p);
-
-// Check if a given particle itself hit the FMD. If so, return the
-  // (first) track reference of such a hit
   AliTrackReference* IsHitFMD(AliMCParticle* p);
 
 // Check if a given particle itself hit the FMD. If so, return the
   // (first) track reference of such a hit
   AliTrackReference* IsHitTPC(AliMCParticle* p);
+
+  Bool_t AddMotherIfFirstTimeSeen(AliMCParticle* p, std::vector<Int_t> v);
+  AliMCParticle* GetMother(AliMCParticle* p);
+  Bool_t IsRedefinedPhysicalPrimary(AliMCParticle* p);
+
 
 
   /** 

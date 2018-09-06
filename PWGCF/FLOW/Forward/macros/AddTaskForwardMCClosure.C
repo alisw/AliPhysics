@@ -59,7 +59,7 @@ AliAnalysisTaskSE* AddTaskForwardMCClosure()
     file->Close(); 
   }
 
-    task->fSettings.fNDiffEtaBins = 48;
+    //task->fSettings.fNDiffEtaBins = 100;
 
   if (etagap){
     // if etagap otherwise comment out, and it will be standard

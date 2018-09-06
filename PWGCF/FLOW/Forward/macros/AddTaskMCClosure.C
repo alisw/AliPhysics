@@ -59,13 +59,13 @@ AliAnalysisTaskSE* AddTaskForwardMCClosure()
     file->Close(); 
   }
 
-    task->fSettings.fNDiffEtaBins = 40;
+    //task->fSettings.fNDiffEtaBins = 40;
 
   if (etagap){
     // if etagap otherwise comment out, and it will be standard
     task->fSettings.fFlowFlags = task->fSettings.kEtaGap;
     task->fSettings.fNRefEtaBins = 1;
-    task->fSettings.gap = 0.5;
+    task->fSettings.gap = 0.0;
   }
   else {
     task->fSettings.fNRefEtaBins = 1; // eller skal det være et andet antal?

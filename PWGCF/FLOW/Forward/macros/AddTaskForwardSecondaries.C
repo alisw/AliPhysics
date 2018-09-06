@@ -59,7 +59,6 @@ AliAnalysisTaskSE* AddTaskForwardSecondaries()
     file->Close(); 
   }
 
-    task->fSettings.fNDiffEtaBins = 20;
 
   if (etagap){
     // if etagap otherwise comment out, and it will be standard
