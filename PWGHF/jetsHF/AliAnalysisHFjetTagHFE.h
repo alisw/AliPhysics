@@ -104,6 +104,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fHistEopHFE;
   TH2F                        *fHistEopHad;
   TH2F                        *fHistEopHFjet;
+  TH2F                        *fHistNsigHFjet;
   TH1F                        *fHistJetOrg;
   TH2F                        *fHistJetOrgArea;
   TH1F                        *fHistJetBG;
