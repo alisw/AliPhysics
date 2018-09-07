@@ -228,6 +228,12 @@ private:
     TH1F                *fCBaryonPt; //!
     
     TH1F                *fBMesonPt; //!
+    TH1F                *fBMesonPtATLAS; //!
+    TH1F                *fBPlusPtATLAS; //!
+    TH1F                *fBMesonPtCMS; //!
+    TH1F                *fBPlusPtCMS; //!
+    TH1F                *fBMesonPtLHCb; //!
+    TH1F                *fBPlusPtLHCb; //!
     TH1F                *fBBaryonPt; //!
     
     TH2F    *fPromptD0DCAWeight; //!
