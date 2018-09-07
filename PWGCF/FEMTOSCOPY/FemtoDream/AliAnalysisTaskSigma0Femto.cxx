@@ -45,8 +45,7 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fHistCentralityProfileAfter(nullptr),
       fHistCentralityProfileCoarseAfter(nullptr),
       fHistTriggerBefore(nullptr),
-      fHistTriggerAfter(nullptr),
-      fOutputTree(nullptr) {}
+      fHistTriggerAfter(nullptr) {}
 
 //____________________________________________________________________________________________________
 AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
@@ -85,12 +84,10 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
       fHistCentralityProfileAfter(nullptr),
       fHistCentralityProfileCoarseAfter(nullptr),
       fHistTriggerBefore(nullptr),
-      fHistTriggerAfter(nullptr),
-      fOutputTree(nullptr) {
+      fHistTriggerAfter(nullptr) {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
-  DefineOutput(3, TList::Class());
 }
 
 //____________________________________________________________________________________________________
@@ -243,8 +240,7 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
 
   // flush the data
   PostData(1, fOutputContainer);
-  PostData(2, fOutputTree);
-  PostData(3, fOutputFemto);
+  PostData(2, fOutputFemto);
 }
 
 //____________________________________________________________________________________________________
@@ -598,34 +594,8 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     fOutputFemto->Add(fPartColl->GetQAList());
   }
 
-  if (fOutputTree != nullptr) {
-    delete fOutputTree;
-    fOutputTree = nullptr;
-  }
-  if (fOutputTree == nullptr) {
-    fOutputTree = new TList();
-    fOutputTree->SetOwner(kTRUE);
-  }
-
-  if (fSigmaCuts && fSigmaCuts->GetSigmaTree()) {
-    fOutputTree->Add(fSigmaCuts->GetSigmaTree());
-  }
-
-  if (fAntiSigmaCuts && fAntiSigmaCuts->GetSigmaTree()) {
-    fOutputTree->Add(fAntiSigmaCuts->GetSigmaTree());
-  }
-
-  if (fSigmaPhotonCuts && fSigmaPhotonCuts->GetSigmaTree()) {
-    fOutputTree->Add(fSigmaPhotonCuts->GetSigmaTree());
-  }
-
-  if (fAntiSigmaPhotonCuts && fAntiSigmaPhotonCuts->GetSigmaTree()) {
-    fOutputTree->Add(fAntiSigmaPhotonCuts->GetSigmaTree());
-  }
-
   PostData(1, fOutputContainer);
-  PostData(2, fOutputTree);
-  PostData(3, fOutputFemto);
+  PostData(2, fOutputFemto);
 }
 
 //____________________________________________________________________________________________________

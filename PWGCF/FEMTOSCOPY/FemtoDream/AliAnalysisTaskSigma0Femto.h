@@ -112,8 +112,6 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   TH1F *fHistTriggerBefore;                 //!
   TH1F *fHistTriggerAfter;                  //!
 
-  TList *fOutputTree;  //!
-
   ClassDef(AliAnalysisTaskSigma0Femto, 6)
 };
 #endif

@@ -88,8 +88,6 @@ class AliAnalysisTaskSigma0Run2 : public AliAnalysisTaskSE {
   TH1F *fHistTriggerBefore;                 //!
   TH1F *fHistTriggerAfter;                  //!
 
-  TList *fOutputTree;  //!
-
-  ClassDef(AliAnalysisTaskSigma0Run2, 5)
+  ClassDef(AliAnalysisTaskSigma0Run2, 6)
 };
 #endif
