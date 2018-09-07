@@ -39,6 +39,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void SetCentralityMaxHFEjet(Int_t centMax) {fcentMax = centMax;};
   void SetDebugHFEjet(Bool_t dbHFEj) {idbHFEj = dbHFEj;};
   void SetHybridTrack(Bool_t Hybrid){iHybrid = Hybrid;};
+  void SetOccCorr(Bool_t OccCorr){iOccCorr = OccCorr;};
   void SetMinSig(Double_t mimSig){fmimSig = mimSig;};
   void SetMinEop(Double_t mimEop){fmimEop = mimEop;};
   void SetMinM20(Double_t mimM20){fmimM20 = mimM20;};
@@ -66,6 +67,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Float_t fcentMax; // max. centrality
     Bool_t idbHFEj;
     Bool_t iHybrid;
+    Bool_t iOccCorr;
     Double_t fmimSig; // max. centrality
     Double_t fmimEop; // max. centrality
     Double_t fmimM20; // max. centrality
@@ -183,6 +185,8 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   //void SetCentralityMim(Int_t centMim) {fcentMim = centMim;};
   //void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
   void GetFakeHadronJet(Double_t pthad, Double_t *hpTarray, Double_t &rho);
+        
+  Double_t CalOccCorrection();
   void FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
   Double_t IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE);
 

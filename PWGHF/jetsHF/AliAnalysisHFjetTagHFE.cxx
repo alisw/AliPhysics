@@ -77,6 +77,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fcentMax(10.0), 
   idbHFEj(kFALSE),
   iHybrid(kTRUE),
+  iOccCorr(kFALSE),
   fmimSig(-1.0),
   fmimEop(0.8),
   fmimM20(0.01),
@@ -218,6 +219,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fcentMax(10.0), 
   idbHFEj(kFALSE),
   iHybrid(kTRUE),
+  iOccCorr(kFALSE),
   fmimSig(-1.0),
   fmimEop(0.8),
   fInvmassCut(0.1),
@@ -1036,6 +1038,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
      double rho = 0.0;
      int Ncon = 0;
      int Njet = 0;
+ 
+
      Double_t ExJetPt[5], ExJetEta[5], ExJetPhi[5];
      for(int i=0; i<5; i++)
         {
@@ -1052,8 +1056,17 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
          fJetsCont->ResetCurrentID();
          AliEmcalJet *jet = fJetsCont->GetNextAcceptJet();
          rho = fJetsCont->GetRhoVal();
-         if(idbHFEj)cout << "rho = " << rho << endl; 
+         //if(idbHFEj)cout << "rho = " << rho << endl; 
+         //cout << "rho = " << rho << endl; 
          
+         if(iOccCorr)
+           { 
+            Double_t occcorr = CalOccCorrection();
+            //cout << "occcorr = " << occcorr << endl;
+            rho*=occcorr;
+             //cout << "rho occcorr = " << rho << endl; 
+           }
+
          AliEmcalJet *jetLead = fJetsCont->GetLeadingJet();
          if(jetLead)
            {
@@ -1457,7 +1470,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                   fHistIncEleInJet0->Fill(pt);  // to do ULS, LS
                  }
 
-            if(fabs(jetEta)<jetEtacut)  // R cut already apply ?
+            if(fabs(jetEta)<jetEtacut && jet->Pt()>1.0)  // pt cut for CMS bg cal. 
               { 
                //Bool_t iTagHFjet = tagHFjet( jet, epTarray, 0, pt);
                if(idbHFEj)cout << "iTagHFjet = " << iTagHFjet << endl;
@@ -2072,6 +2085,38 @@ void AliAnalysisHFjetTagHFE::FindMother(AliAODMCParticle* part, int &label, int 
    } 
    //cout << "Find Mother : label = " << label << " ; pid" << pid << endl;
 }
+
+Double_t AliAnalysisHFjetTagHFE::CalOccCorrection()
+{
+   Double_t TotaljetArea=0;
+   Double_t TotaljetAreaPhys=0;
+
+   fJetsCont->ResetCurrentID();
+   AliEmcalJet *jetOcc = fJetsCont->GetNextAcceptJet();
+
+   Int_t NjetArea = 0;
+
+   while(jetOcc) 
+        {
+         if(NjetArea>1)
+           {
+             TotaljetArea+=jetOcc->Area();
+
+             if(jetOcc->Pt()>0.1){
+                 TotaljetAreaPhys+=jetOcc->Area();
+                }
+            }
+             NjetArea++;
+             jetOcc = fJetsCont->GetNextAcceptJet(); 
+         }
+
+     Double_t OccCorr=0.0;
+     if(TotaljetArea>0) OccCorr=TotaljetAreaPhys/TotaljetArea; 
+     
+     return OccCorr;
+}
+
+
 
 Double_t AliAnalysisHFjetTagHFE::IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta,Double_t MatchclE)
 {
