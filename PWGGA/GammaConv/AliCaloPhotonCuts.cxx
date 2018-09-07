@@ -1203,14 +1203,14 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 
       if(fUseEOverPVetoTM){
         // plot trackP vs. clusterE in case of a match
-        fHistMatchedTrackPClusE  = new TH2F(Form("MatchedTrackPClusE %s",GetCutNumber().Data()), "Matched tracks: #it{P}_{track} vs #it{E}_{cl}",
+        fHistMatchedTrackPClusE  = new TH2F(Form("MatchedTrackPClusE %s",GetCutNumber().Data()), "Matched tracks",
                                             nBinsClusterEOnlyHighPt, arrClusEBinningOnlyHighPt, nBinsClusterEOnlyHighPt, arrClusEBinningOnlyHighPt);
         fHistMatchedTrackPClusE->GetXaxis()->SetTitle("E_{cl} (GeV)");
         fHistMatchedTrackPClusE->GetYaxis()->SetTitle("P_{track} (GeV/c)");
         fHistograms->Add(fHistMatchedTrackPClusE);
 
         // plot trackP vs. clusterE in case of a match AFTER EOverP veto has been applied
-        fHistMatchedTrackPClusEAfterEOverPVeto = new TH2F(Form("MatchedTrackPClusEAfterEOverPVeto  %s",GetCutNumber().Data()), "Matched tracks after EOverP veto: #it{P}_{track} vs #it{E}_{cl}",
+        fHistMatchedTrackPClusEAfterEOverPVeto = new TH2F(Form("MatchedTrackPClusEAfterEOverPVeto  %s",GetCutNumber().Data()), "Matched tracks after EOverP veto",
                                                         nBinsClusterEOnlyHighPt, arrClusEBinningOnlyHighPt, nBinsClusterEOnlyHighPt, arrClusEBinningOnlyHighPt);
         fHistMatchedTrackPClusEAfterEOverPVeto ->GetXaxis()->SetTitle("E_{cl} (GeV)");
         fHistMatchedTrackPClusEAfterEOverPVeto ->GetYaxis()->SetTitle("P_{track} (GeV/c)");
@@ -1368,7 +1368,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistograms->Add(fHistClusETruePi0_Matched);
 
       // plot trackP vs. clusterE in case of a match with pi0
-      fHistMatchedTrackPClusETruePi0Clus  = new TH2F(Form("MatchedTrackPClusETruePi0Clus %s",GetCutNumber().Data()), "Matched tracks to #pi^{0} clusters: #it{P}_{track} vs #it{E}_{cl}",
+      fHistMatchedTrackPClusETruePi0Clus  = new TH2F(Form("MatchedTrackPClusETruePi0Clus %s",GetCutNumber().Data()), "Matched tracks to #pi^{0} clusters",
                                                       nBinsClusterEOnlyHighPt, arrClusEBinningOnlyHighPt, nBinsClusterEOnlyHighPt, arrClusEBinningOnlyHighPt);
       fHistMatchedTrackPClusETruePi0Clus->GetXaxis()->SetTitle("E_{cl} (GeV)");
       fHistMatchedTrackPClusETruePi0Clus->GetYaxis()->SetTitle("P_{track} (GeV/c)");
@@ -3265,15 +3265,15 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
         if(fUseEOverPVetoTM){
           if(!vetoEOverP){
             fVectorMatchedClusterIDs.push_back(cluster->GetID());
-            if(fHistMatchedTrackPClusEAfterEOverPVeto) fHistMatchedTrackPClusEAfterEOverPVeto->Fill(inTrack->P(),cluster->E());
+            if(fHistMatchedTrackPClusEAfterEOverPVeto) fHistMatchedTrackPClusEAfterEOverPVeto->Fill(cluster->E(),inTrack->P());
           }
         }else{
           fVectorMatchedClusterIDs.push_back(cluster->GetID());
         }
-        if(fHistMatchedTrackPClusE && fUseEOverPVetoTM) fHistMatchedTrackPClusE->Fill(inTrack->P(),cluster->E());
+        if(fHistMatchedTrackPClusE && fUseEOverPVetoTM) fHistMatchedTrackPClusE->Fill(cluster->E(),inTrack->P());
         if(fIsMC && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5 ) && fUseEOverPVetoTM){
           if(IsClusterPi0(event, mcEvent, cluster) && fHistMatchedTrackPClusETruePi0Clus)
-            fHistMatchedTrackPClusETruePi0Clus->Fill(inTrack->P(),cluster->E());
+            fHistMatchedTrackPClusETruePi0Clus->Fill(cluster->E(),inTrack->P());
         }
 
         if(isEMCalOnly){
