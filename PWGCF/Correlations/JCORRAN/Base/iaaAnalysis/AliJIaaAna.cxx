@@ -294,6 +294,7 @@ void AliJIaaAna::UserExec(){
 	if(cBin<0) return;
 
 	int zBin        = fcard->GetBin(kZVertType, fZvert); //should be alway >0; checked in fdmg->IsGoodEvent()
+  if (zBin<0) return;
 
 	fhistos->fhZVert[cBin]->Fill(fZvert);
 
