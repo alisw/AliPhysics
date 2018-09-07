@@ -54,7 +54,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
       if (periodNameV0Reader.CompareTo("") != 0)
         fEventCuts->SetPeriodEnum(periodNameV0Reader);
       fV0ReaderV1->SetEventCuts(fEventCuts);
-      fEventCuts->SetFillCutHistograms("",kTRUE);
+      fEventCuts->SetFillCutHistograms("", kTRUE);
     }
 
     // Set AnalysisCut Number
@@ -150,17 +150,11 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   if (suffix != "0" && suffix != "999") {
     sigmaCuts->SetLightweight(true);
   }
-  if (suffix == "2") {
-    sigmaCuts->SetSigmaSideband(0.005, 0.025);
-  }
-  if (suffix == "3") {
+  if (suffix == "2" || suffix == "3") {
     sigmaCuts->SetSigmaSideband(0.025, 0.05);
   }
-  if (suffix == "4") {
+  if (suffix == "4" || suffix == "5") {
     sigmaCuts->SetSigmaSideband(0.025, 0.1);
-  }
-  if (suffix == "5") {
-    sigmaCuts->SetSigmaSideband(0.05, 0.1);
   }
 
   AliSigma0PhotonMotherCuts *antiSigmaCuts =
@@ -172,17 +166,11 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   if (suffix != "0" && suffix != "999") {
     antiSigmaCuts->SetLightweight(true);
   }
-  if (suffix == "2") {
-    antiSigmaCuts->SetSigmaSideband(0.005, 0.025);
-  }
-  if (suffix == "3") {
+  if (suffix == "2" || suffix == "3") {
     antiSigmaCuts->SetSigmaSideband(0.025, 0.05);
   }
-  if (suffix == "4") {
+  if (suffix == "4" || suffix == "5") {
     antiSigmaCuts->SetSigmaSideband(0.025, 0.1);
-  }
-  if (suffix == "5") {
-    antiSigmaCuts->SetSigmaSideband(0.05, 0.1);
   }
 
   AliSigma0PhotonMotherCuts *sigmaPhotonCuts =
@@ -194,17 +182,11 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   if (suffix != "0" && suffix != "999") {
     sigmaPhotonCuts->SetLightweight(true);
   }
-  if (suffix == "2") {
-    sigmaPhotonCuts->SetSigmaSideband(0.005, 0.025);
-  }
-  if (suffix == "3") {
+  if (suffix == "2" || suffix == "3") {
     sigmaPhotonCuts->SetSigmaSideband(0.025, 0.05);
   }
-  if (suffix == "4") {
+  if (suffix == "4" || suffix == "5") {
     sigmaPhotonCuts->SetSigmaSideband(0.025, 0.1);
-  }
-  if (suffix == "5") {
-    sigmaPhotonCuts->SetSigmaSideband(0.05, 0.1);
   }
 
   AliSigma0PhotonMotherCuts *antiSigmaPhotonCuts =
@@ -216,17 +198,11 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   if (suffix != "0" && suffix != "999") {
     antiSigmaPhotonCuts->SetLightweight(true);
   }
-  if (suffix == "2") {
-    antiSigmaPhotonCuts->SetSigmaSideband(0.005, 0.025);
-  }
-  if (suffix == "3") {
+  if (suffix == "2" || suffix == "3") {
     antiSigmaPhotonCuts->SetSigmaSideband(0.025, 0.05);
   }
-  if (suffix == "4") {
+  if (suffix == "4" || suffix == "5") {
     antiSigmaPhotonCuts->SetSigmaSideband(0.025, 0.1);
-  }
-  if (suffix == "5") {
-    antiSigmaPhotonCuts->SetSigmaSideband(0.05, 0.1);
   }
 
   // Femto Collection
@@ -367,6 +343,9 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
 
   if (suffix != "0" && suffix != "999") {
     task->SetLightweight(true);
+  }
+  if (suffix == "1" || suffix == "3" || suffix == "5" || suffix == "6") {
+    task->SetPhotonLegPileUpCut(true);
   }
 
   mgr->AddTask(task);

@@ -66,11 +66,11 @@ class AliAnalysisTaskSigma0Run2 : public AliAnalysisTaskSE {
   AliSigma0PhotonMotherCuts *fSigmaPhotonCuts;  //
   AliSigma0PhotonMotherCuts *fAntiSigmaPhotonCuts;  //
 
-  bool fIsMC;              //
-  bool fIsHeavyIon;        //
-  bool fIsLightweight;     //
-  float fV0PercentileMax;  //
-  UInt_t fTrigger;         //
+  bool fIsMC;                //
+  bool fIsHeavyIon;          //
+  bool fIsLightweight;       //
+  float fV0PercentileMax;    //
+  UInt_t fTrigger;           //
 
   TClonesArray *fGammaArray;  //!
 
@@ -88,6 +88,6 @@ class AliAnalysisTaskSigma0Run2 : public AliAnalysisTaskSE {
   TH1F *fHistTriggerBefore;                 //!
   TH1F *fHistTriggerAfter;                  //!
 
-  ClassDef(AliAnalysisTaskSigma0Run2, 6)
+  ClassDef(AliAnalysisTaskSigma0Run2, 7)
 };
 #endif
