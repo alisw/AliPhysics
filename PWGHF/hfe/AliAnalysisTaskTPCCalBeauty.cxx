@@ -165,6 +165,12 @@ fLambdaCPt(0),
 fEtaCPt(0),
 fCBaryonPt(0),
 fBMesonPt(0),
+fBMesonPtATLAS(0),
+fBPlusPtATLAS(0),
+fBMesonPtCMS(0),
+fBPlusPtCMS(0),
+fBMesonPtLHCb(0),
+fBPlusPtLHCb(0),
 fBBaryonPt(0),
 fPromptD0DCAWeight(0),
 fD0FromDStarDCAWeight(0),
@@ -353,6 +359,12 @@ fLambdaCPt(0),
 fEtaCPt(0),
 fCBaryonPt(0),
 fBMesonPt(0),
+fBMesonPtATLAS(0),
+fBPlusPtATLAS(0),
+fBMesonPtCMS(0),
+fBPlusPtCMS(0),
+fBMesonPtLHCb(0),
+fBPlusPtLHCb(0),
 fBBaryonPt(0),
 fPromptD0DCAWeight(0),
 fD0FromDStarDCAWeight(0),
@@ -805,6 +817,30 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fBMesonPt->Sumw2();
         fOutputList->Add(fBMesonPt);
     
+        fBMesonPtATLAS = new TH1F("fBMesonPtATLAS","ATLAS B Meson Spectrum; p_{T}(GeV/c); counts;",240,0,120.);
+        fBMesonPtATLAS->Sumw2();
+        fOutputList->Add(fBMesonPtATLAS);
+        
+        fBPlusPtATLAS = new TH1F("fBPlusPtATLAS","ATLAS B Plus Spectrum; p_{T}(GeV/c); counts;",240,0,120.);
+        fBPlusPtATLAS->Sumw2();
+        fOutputList->Add(fBPlusPtATLAS);
+        
+        fBMesonPtCMS = new TH1F("fBMesonPtCMS","CMS B Meson Spectrum; p_{T}(GeV/c); counts;",100,0,50.);
+        fBMesonPtCMS->Sumw2();
+        fOutputList->Add(fBMesonPtCMS);
+        
+        fBPlusPtCMS = new TH1F("fBPlusPtCMS","CMS B Plus Spectrum; p_{T}(GeV/c); counts;",100,0,50.);
+        fBPlusPtCMS->Sumw2();
+        fOutputList->Add(fBPlusPtCMS);
+        
+        fBMesonPtLHCb = new TH1F("fBMesonPtLHCb","LHCb B Meson Spectrum; p_{T}(GeV/c); counts;",400,0,40.);
+        fBMesonPtLHCb->Sumw2();
+        fOutputList->Add(fBMesonPtLHCb);
+        
+        fBPlusPtLHCb = new TH1F("fBPlusPtLHCb","LHCb B Plus Spectrum; p_{T}(GeV/c); counts;",400,0,40.);
+        fBPlusPtLHCb->Sumw2();
+        fOutputList->Add(fBPlusPtLHCb);
+        
         fBBaryonPt = new TH1F("fBBaryonPt","Beauty Baryon Spectrum; p_{T}(GeV/c); counts;",100,0,50.);
         fBBaryonPt->Sumw2();
         fOutputList->Add(fBBaryonPt);
@@ -835,7 +871,7 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fOutputList->Add(fSprsPi0EtaWeightCal);
     
         Int_t binTemp[5] = {60,nDCAbins,19,3,50}; //pT, DCA, Mom PID, Mom Gen, mompT
-        Double_t xminTemp[5] = {0.,-0.2,0.5,-0.5,0.,};
+        Double_t xminTemp[5] = {0.,-0.2,0.5,-0.5,0.};
         Double_t xmaxTemp[5] = {30.,0.2,19.5,2.5,50.};
         fSprsTemplatesNoWeight = new THnSparseD("fSprsTemplatesNoWeight","Sparse for Templates, No weight applied;p_{T};DCA;MomPID;MomGen;",5,binTemp,xminTemp,xmaxTemp);
         fOutputList->Add(fSprsTemplatesNoWeight);
@@ -977,16 +1013,6 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
     //PID initialized
     fpidResponse = fInputHandler->GetPIDResponse();
     
-    ////////////////
-    // Centrality //
-    ////////////////
-    Bool_t pass = kFALSE;
-    if(fCentralityMin > -0.5){
-        fCentrality = CheckCentrality(fAOD,pass);
-        if(!pass)return;
-    }
-    fCentCheck->Fill(fCentrality);
-    
     ////////////////////
     // Get MC Headers //
     ////////////////////
@@ -1056,12 +1082,10 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 Bool_t fromDStar = kFALSE;
             
                 AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCarray->At(i);
-                if(TMath::Abs(AODMCtrack->Eta()) > 0.6) continue;
             
                 //-------Get PDG
                 TrackPDG = TMath::Abs(AODMCtrack->GetPdgCode());
                 ilabelM = AODMCtrack->GetMother();
-            
             
                 if(TrackPDG == 11 && AODMCtrack->IsPhysicalPrimary()) {
                     // cout<<"TESTINGGGGGGGGGGGG"<<endl;
@@ -1069,6 +1093,23 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                     eleinStack++;
                 }
                 //
+                if(TMath::Abs(AODMCtrack->Y()) < 2.25) {
+                    if (TrackPDG>500 && TrackPDG<599) fBMesonPtATLAS->Fill(AODMCtrack->Pt());
+                    if (TrackPDG == 521) fBPlusPtATLAS->Fill(AODMCtrack->Pt());
+                }
+                if(TMath::Abs(AODMCtrack->Y()) < 2.4) {
+                    if (TrackPDG>500 && TrackPDG<599) fBMesonPtCMS->Fill(AODMCtrack->Pt());
+                    if (TrackPDG == 521) fBPlusPtCMS->Fill(AODMCtrack->Pt());
+                }
+                if(TMath::Abs(AODMCtrack->Y()) > 2.0 && TMath::Abs(AODMCtrack->Y()) < 4.5) {
+                    if (TrackPDG>500 && TrackPDG<599) fBMesonPtLHCb->Fill(AODMCtrack->Pt());
+                    if (TrackPDG == 521) fBPlusPtLHCb->Fill(AODMCtrack->Pt());
+                }
+                
+                if(TMath::Abs(AODMCtrack->Y()) > 0.6) continue;
+                if(TMath::Abs(AODMCtrack->Y()) > 0.6) continue;
+                
+                if(TMath::Abs(AODMCtrack->Eta()) > 0.6) continue;
                 if (TrackPDG>500 && TrackPDG<599) {
                     fBMesonPt->Fill(AODMCtrack->Pt());
                 }
@@ -1187,6 +1228,16 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             numberofmotherkink++;
         }
     }
+    
+    ////////////////
+    // Centrality //
+    ////////////////
+    Bool_t pass = kFALSE;
+    if(fCentralityMin > -0.5){
+        fCentrality = CheckCentrality(fAOD,pass);
+        if(!pass)return;
+    }
+    fCentCheck->Fill(fCentrality);
     
     ////////////////
     //Cluster loop//
