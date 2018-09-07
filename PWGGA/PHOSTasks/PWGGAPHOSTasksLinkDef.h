@@ -113,6 +113,7 @@
 #pragma link C++ class AliPP13SelectionWeightsFeeddown+;
 #pragma link C++ class AliPP13SelectionWeightsSPMC+;
 #pragma link C++ class AliPP13DetectorHistogram+;
+#pragma link C++ class SelectionLimits+;
 #pragma link C++ class AliPP13PhysicsSelection+;
 #pragma link C++ class AliPP13PhotonSpectrumSelection+;
 #pragma link C++ class AliPP13QualityPhotonSelection+;
