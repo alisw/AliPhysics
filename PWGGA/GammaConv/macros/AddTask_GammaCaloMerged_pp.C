@@ -953,6 +953,16 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00053113","1111111067032200000","1111111067022110002","0163302200000000"); // EMC8
     cuts.AddCut("00082113","1111111067032200000","1111111067022110002","0163302200000000"); // EMC8EGA,
 
+  // standard cuts (with EOverP reference plots) to test effect of new track matching modes (cf. AliCaloTrackMatcher.h)
+  } else if (trainConfig == 183){ // fRunningMode = 5
+    cuts.AddCut("00010113","111111106c032200000","111111106c022700001","0163300000000000"); // INT7
+    cuts.AddCut("00052113","111111106c032200000","111111106c022700001","0163300000000000"); // EMC7
+    cuts.AddCut("00081113","111111106c032200000","111111106c022700001","0163300000000000"); // EGA
+  } else if (trainConfig == 184){ // fRunningMode = 6
+    cuts.AddCut("00010113","111111106c032200000","111111106c022700001","0163300000000000"); // INT7
+    cuts.AddCut("00052113","111111106c032200000","111111106c022700001","0163300000000000"); // EMC7
+    cuts.AddCut("00081113","111111106c032200000","111111106c022700001","0163300000000000"); // EGA
+
 
     // shape definition study (variation of w0): using std cuts + TM off + strong M02 variation
   } else if (trainConfig == 185){
@@ -963,6 +973,26 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00081113","1111111060032200000","1111111060022d00001","0163300000000000"); // min M02 = 0.10 + min M02 = 0.33
     cuts.AddCut("00081113","1111111060032200000","1111111060022e00001","0163300000000000"); // min M02 = 0.10 + min M02 = 0.36
     cuts.AddCut("00081113","1111111060032200000","1111111060022f00001","0163300000000000"); // min M02 = 0.10 + min M02 = 0.39
+
+
+    // standard cuts for cell time variation
+  } else if (trainConfig == 187){ // 200 ns
+    cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300000000000"); // INT7
+    cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300000000000"); // EMC7
+    cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // EGA
+  } else if (trainConfig == 188){ // 100 ns
+    cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300000000000"); // INT7
+    cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300000000000"); // EMC7
+    cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // EGA
+    // minimum cell aggregation energy variation
+  } else if (trainConfig == 189){ // cell min energy 75 MeV
+    cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300000000000"); // INT7
+    cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300000000000"); // EMC7
+    cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // EGA
+  } else if (trainConfig == 190){ // cell min energy 125 MeV
+    cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300000000000"); // INT7
+    cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300000000000"); // EMC7
+    cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // EGA
 
     // multiple standard cuts for supermodule-wise analysis
   } else if (trainConfig == 191){  // M02 cut at 0.27
