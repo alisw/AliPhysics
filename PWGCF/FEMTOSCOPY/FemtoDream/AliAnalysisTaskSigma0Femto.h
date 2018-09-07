@@ -53,6 +53,7 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   void SetAntiSigmaPhotonCuts(AliSigma0PhotonMotherCuts *cuts) {
     fAntiSigmaPhotonCuts = cuts;
   }
+  void SetPhotonLegPileUpCut(bool pileup) { fPhotonLegPileUpCut = pileup; }
   void SetCollectionConfig(AliFemtoDreamCollConfig *config) {
     fConfig = config;
   }
@@ -89,11 +90,12 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   AliFemtoDreamPairCleaner *fPairCleaner;            //!
   AliFemtoDreamPartCollection *fPartColl;            //!
 
-  bool fIsMC;              //
-  bool fIsHeavyIon;        //
-  bool fIsLightweight;     //
-  float fV0PercentileMax;  //
-  UInt_t fTrigger;         //
+  bool fIsMC;                //
+  bool fIsHeavyIon;          //
+  bool fIsLightweight;       //
+  bool fPhotonLegPileUpCut;  //
+  float fV0PercentileMax;    //
+  UInt_t fTrigger;           //
 
   TClonesArray *fGammaArray;  //!
 
@@ -111,8 +113,7 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   TH1F *fHistCentralityProfileCoarseAfter;  //!
   TH1F *fHistTriggerBefore;                 //!
   TH1F *fHistTriggerAfter;                  //!
-
-  TList *fOutputTree;  //!
+  TH2F *fHistPhotonPileUp;                  //!
 
   ClassDef(AliAnalysisTaskSigma0Femto, 6)
 };

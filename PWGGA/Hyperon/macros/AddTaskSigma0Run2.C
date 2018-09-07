@@ -146,7 +146,6 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   sigmaCuts->SetV0ReaderName(V0ReaderName.Data());
   if (suffix != "0" && suffix != "999") {
     sigmaCuts->SetLightweight(true);
-    sigmaCuts->SetTreeOutput(false);
   }
   if (suffix == "4") {
     sigmaCuts->SetPhotonMaxPt(3);
@@ -166,7 +165,6 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   antiSigmaCuts->SetV0ReaderName(V0ReaderName.Data());
   if (suffix != "0" && suffix != "999") {
     antiSigmaCuts->SetLightweight(true);
-    antiSigmaCuts->SetTreeOutput(false);
   }
   if (suffix == "4") {
     antiSigmaCuts->SetPhotonMaxPt(3);
@@ -186,7 +184,6 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   sigmaPhotonCuts->SetLambdaCuts(v0Cuts);
   if (suffix != "0" && suffix != "999") {
     sigmaPhotonCuts->SetLightweight(true);
-    sigmaPhotonCuts->SetTreeOutput(false);
   }
   if (suffix == "4") {
     sigmaPhotonCuts->SetPhotonMaxPt(3);
@@ -206,7 +203,6 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   antiSigmaPhotonCuts->SetLambdaCuts(antiv0Cuts);
   if (suffix != "0" && suffix != "999") {
     antiSigmaPhotonCuts->SetLightweight(true);
-    antiSigmaPhotonCuts->SetTreeOutput(false);
   }
   if (suffix == "4") {
     antiSigmaPhotonCuts->SetPhotonMaxPt(3);
@@ -254,16 +250,8 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
       name, TList::Class(), AliAnalysisManager::kOutputContainer,
       containerName.Data());
 
-  name = "tree_";
-  if (trigger == "kHighMultV0") name += "HighMultV0_";
-  name += suffix;
-  AliAnalysisDataContainer *cOutputTree = mgr->CreateContainer(
-      name, TList::Class(), AliAnalysisManager::kOutputContainer,
-      containerName.Data());
-
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, cOutputList);
-  mgr->ConnectOutput(task, 2, cOutputTree);
 
   return task;
 }
