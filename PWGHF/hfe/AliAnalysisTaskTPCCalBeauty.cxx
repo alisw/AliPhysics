@@ -1106,9 +1106,6 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                     if (TrackPDG == 521) fBPlusPtLHCb->Fill(AODMCtrack->Pt());
                 }
                 
-                if(TMath::Abs(AODMCtrack->Y()) > 0.6) continue;
-                if(TMath::Abs(AODMCtrack->Y()) > 0.6) continue;
-                
                 if(TMath::Abs(AODMCtrack->Eta()) > 0.6) continue;
                 if (TrackPDG>500 && TrackPDG<599) {
                     fBMesonPt->Fill(AODMCtrack->Pt());
