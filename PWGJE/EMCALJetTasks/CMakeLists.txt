@@ -240,7 +240,7 @@ if(FASTJET_FOUND)
         AliJetShape.cxx
 	UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapesMC.cxx
-        UserTasks/AliAnalysisTaskEmcalJetShapeExtra.cxx
+        UserTasks/AliAnalysisTaskEmcalJetShapesExtra.cxx
         UserTasks/AliAnalysisTaskFullpAJets.cxx
         UserTasks/AliAnalysisTaskFullppJet.cxx
         UserTasks/AliAnalysisTaskHJetDphi.cxx
