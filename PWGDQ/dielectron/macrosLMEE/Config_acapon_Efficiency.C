@@ -11,16 +11,16 @@ Bool_t SetTPCCorrection = kFALSE;
 Bool_t SetITSCorrection = kFALSE;
 Bool_t SetTOFCorrection = kFALSE;
 
-Bool_t SetGeneratedSmearingHistos = kFALSE;
+Bool_t SetGeneratedSmearingHistos = kTRUE;
 
 Bool_t DoPairing    = kTRUE;
 Bool_t DoULSLS      = kTRUE;
 Bool_t DeactivateLS = kTRUE;
 
-Bool_t GetResolutionFromAlien = kFALSE;
+Bool_t GetResolutionFromAlien = kTRUE;
 //std::string resoFilename = "resolution_pPb17f2a_0090cent.root";
-std::string resoFilename = "";
-std::string resoFilenameFromAlien = "/alice/cern.ch/user/a/acapon/ResolutionFiles/resolution_pPb17f2a_0090cent.root";
+std::string resoFilename = "/alice/cern.ch/user/a/acapon/ResolutionFiles/resolution_17f2a_deltaVsP_0090cent.root";
+std::string resoFilenameFromAlien = "/alice/cern.ch/user/a/acapon/ResolutionFiles/resolution_17f2a_deltaVsP_0090cent.root";
 
 Bool_t DoCocktailWeighting  = kFALSE;
 Bool_t GetCocktailFromAlien = kFALSE;
@@ -189,7 +189,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
 
   LMEECutLib* LMcutlib = new LMEECutLib(SDDstatus);
   if(cutDefinition == "kTTreeCuts"){
-		anaFilter->AddCuts( LMcutlib->GetTrackCuts(LMEECutLib::kTTreeCuts, LMEECutLib::kTTreeCuts) );
+		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kTTreeCuts, LMEECutLib::kTTreeCuts) );
 		anaFilter->SetName(cutDefinition);
   }
 	else{
