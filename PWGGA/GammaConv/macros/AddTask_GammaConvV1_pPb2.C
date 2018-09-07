@@ -232,6 +232,29 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
   } else if (trainConfig == 22) {
     cuts.AddCut("80010113", "0b200009327000008250400000", "0162103500000000"); //Eta cut -0.9 - -0.2 and 0.2 - 0.9 with LineCut
 
+  // ZNA and CL1 configs
+  } else if (trainConfig == 30) {
+    cuts.AddCut("90010113", "00200009327000008250400000", "0162103500900000");
+  } else if (trainConfig == 31) {
+    cuts.AddCut("90210113", "00200009327000008250400000", "0162103500900000");
+  } else if (trainConfig == 32) {
+    cuts.AddCut("92410113", "00200009327000008250400000", "0162103500900000");
+  } else if (trainConfig == 33) {
+    cuts.AddCut("94610113", "00200009327000008250400000", "0162103500900000");
+  } else if (trainConfig == 34) {
+    cuts.AddCut("96010113", "00200009327000008250400000", "0162103500900000");
+
+  } else if (trainConfig == 35) {
+    cuts.AddCut("e0010113", "00200009327000008250400000", "0162103500900000");
+  } else if (trainConfig == 36) {
+    cuts.AddCut("e0210113", "00200009327000008250400000", "0162103500900000");
+  } else if (trainConfig == 37) {
+    cuts.AddCut("e2410113", "00200009327000008250400000", "0162103500900000");
+  } else if (trainConfig == 38) {
+    cuts.AddCut("e4610113", "00200009327000008250400000", "0162103500900000");
+  } else if (trainConfig == 39) {
+    cuts.AddCut("e6010113", "00200009327000008250400000", "0162103500900000");
+
   //Run 2 pPb
   } else if (trainConfig == 100) {
     cuts.AddCut("80010113", "00200009327000008250404000", "0162103500000000"); // new default for 5TeV
