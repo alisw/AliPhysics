@@ -8,6 +8,10 @@
 #include "TRandom3.h"
 #include "TGrid.h"
 #include "TROOT.h"
+#include "TMath.h"
+#include "TDirectory.h"
+#include "TList.h"
+#include "THashList.h"
 
 #include "AliInputEventHandler.h"
 #include "AliAnalysisManager.h"
@@ -82,6 +86,9 @@ AliAnalysisTaskPHOSEmbedding::AliAnalysisTaskPHOSEmbedding(const char *name):
   fOutputContainer(0x0),
   fHistoFileID(0x0),
   fHistoEventID(0x0),
+  fHistoPt(0x0),
+  fHistoEtaPhi(0x0),
+  fHistoEtaPt(0x0),
   fParticle(""),
   fEvent(0x0),
   fRandom3(0x0),
@@ -174,6 +181,21 @@ AliAnalysisTaskPHOSEmbedding::~AliAnalysisTaskPHOSEmbedding()
     fHistoEventID = 0x0;
   }
 
+  if(fHistoPt){
+    delete fHistoPt;
+    fHistoPt = 0x0;
+  }
+
+  if(fHistoEtaPhi){
+    delete fHistoEtaPhi;
+    fHistoEtaPhi = 0x0;
+  }
+
+  if(fHistoEtaPt){
+    delete fHistoEtaPt;
+    fHistoEtaPt = 0x0;
+  }
+
 }
 //____________________________________________________________________________________________________________________________________
 void AliAnalysisTaskPHOSEmbedding::UserCreateOutputObjects()
@@ -186,14 +208,27 @@ void AliAnalysisTaskPHOSEmbedding::UserCreateOutputObjects()
 
   const Int_t Nfile = 500;
   const Int_t Nev = 30e+3;
-  fHistoFileID  = new TH1F(Form("hEventFileID_%s",fParticle.Data()) ,Form("file index in MC str array %s;file ID;Number of events",fParticle.Data()),Nfile+1,-0.5,Nfile+0.5);
-  fHistoEventID = new TH1F(Form("hEventEventID_%s",fParticle.Data()),Form("event index in MC AOD %s;event ID;Number of events",fParticle.Data())    ,Nev+1,-0.5,Nev+0.5);
+  fHistoFileID  = new TH1F(Form("hEventFileID_%s" ,fParticle.Data()),Form("file index in MC str array %s;file ID;Number of events",fParticle.Data()),Nfile+1,-0.5,Nfile+0.5);
+  fHistoEventID = new TH1F(Form("hEventEventID_%s",fParticle.Data()),Form("event index in MC AOD %s;event ID;Number of events"    ,fParticle.Data()),Nev+1  ,-0.5,Nev+0.5);
   fOutputContainer->Add(fHistoFileID);
   fOutputContainer->Add(fHistoEventID);
 
-  fMCArray = new TClonesArray("AliAODMCParticle",0);
+  fHistoPt     = new TH1F(Form("hMotherPt_%s"    ,fParticle.Data()),Form("p_{T} of %s;p_{T} (GeV/c);Number of counts",fParticle.Data()),500,0,50);
+  fHistoEtaPhi = new TH2F(Form("hMotherEtaPhi_%s",fParticle.Data()),Form("y vs. #phi of %s;#phi (radian);rapidity"   ,fParticle.Data()),60,0,TMath::TwoPi(),200,-1,1);
+  fHistoEtaPt  = new TH2F(Form("hMotherEtaPt_%s" ,fParticle.Data()),Form("y vs p_{T} of %s;rapidity;p_{T} (GeV/c)"   ,fParticle.Data()),200,-1,1,500,0,50);
 
-  fEmbeddedClusterArray = new TClonesArray("AliAODCaloCluster",0);
+  fHistoPt    ->Sumw2();
+  fHistoEtaPhi->Sumw2();
+  fHistoEtaPt ->Sumw2();
+
+  fOutputContainer->Add(fHistoPt    );
+  fOutputContainer->Add(fHistoEtaPhi);
+  fOutputContainer->Add(fHistoEtaPt );
+
+
+  fMCArray = new TClonesArray("AliAODMCParticle",50);
+
+  fEmbeddedClusterArray = new TClonesArray("AliAODCaloCluster",50);
   //fEmbeddedClusterArray->SetName(Form("Embedded%sCaloClusters",fParticle.Data()));
 
   fEmbeddedCells = new AliAODCaloCells();
@@ -304,7 +339,7 @@ void AliAnalysisTaskPHOSEmbedding::UserExec(Option_t *option)
   }
 
   //Add Digits from Signal
-  TClonesArray sdigits("AliPHOSDigit",0) ;
+  TClonesArray sdigits("AliPHOSDigit",56*64*5) ;
   Int_t isdigit=0 ;
   if(fAODEvent){
     AliAODCaloCells* cellsS = fAODEvent->GetPHOSCells();
@@ -319,7 +354,8 @@ void AliAnalysisTaskPHOSEmbedding::UserExec(Option_t *option)
     //Celect digits contributing to fAODEvent clusters and add primary information
     //(it is not stored in CaloCells)
     //------------------------------------------------------------------------------------
-    sdigits.Expand(cellsS->GetNumberOfCells());
+    //sdigits.Expand(cellsS->GetNumberOfCells());
+
     for(Int_t i=0; i<fAODEvent->GetNumberOfCaloClusters(); i++) {
       //cluster from embedded signal
       AliAODCluster *clus = (AliAODCaloCluster*)fAODEvent->GetCaloCluster(i);
@@ -402,6 +438,8 @@ void AliAnalysisTaskPHOSEmbedding::UserExec(Option_t *option)
     }
   }
 
+  sdigits.Clear();
+
   //Change Amp back from Energy to ADC counts
   //Note that Reconstructor uses best ("new") calibration
   for(Int_t i=0; i<ndigit;i++){
@@ -453,14 +491,47 @@ void AliAnalysisTaskPHOSEmbedding::UserExec(Option_t *option)
   const Int_t Npart = mcarray_org->GetEntries();
 
   fMCArray->Clear();
-  fMCArray->Expand(Npart);
+  //fMCArray->Expand(Npart);
 
   for(Int_t i=0;i<Npart;i++){
     AliAODMCParticle* aodpart = (AliAODMCParticle*)mcarray_org->At(i);
     //printf("PDG = %d , X = %e , Y = %e , Z = %e\n",aodpart->GetPdgCode(), aodpart->Xv(),aodpart->Yv(),aodpart->Zv());
-
     new ((*fMCArray)[i]) AliAODMCParticle(*aodpart);
   }
+
+  const Int_t Np = fMCArray->GetEntries();
+  for(Int_t i=0;i<Np;i++){
+    AliAODMCParticle *p = (AliAODMCParticle*)fMCArray->At(i);
+    Double_t pT  = p->Pt();
+    Double_t y   = p->Y();
+    Double_t phi = p->Phi();
+
+    Double_t xv = p->Xv();
+    Double_t yv = p->Yv();
+    Double_t R  = TMath::Sqrt(xv*xv + yv*yv);
+    Int_t pdg   = p->GetPdgCode();
+
+    if(R > 1.) continue;
+
+    if(fParticle.Contains("Pi0",TString::kIgnoreCase) && pdg == 111){
+      fHistoPt->Fill(pT);
+      fHistoEtaPhi->Fill(phi,y);
+      fHistoEtaPt->Fill(y,pT);
+    }
+    else if(fParticle.Contains("Eta",TString::kIgnoreCase) && pdg == 221){
+      fHistoPt->Fill(pT);
+      fHistoEtaPhi->Fill(phi,y);
+      fHistoEtaPt->Fill(y,pT);
+    }
+    else if(fParticle.Contains("Gamma",TString::kIgnoreCase) && pdg == 11){
+      fHistoPt->Fill(pT);
+      fHistoEtaPhi->Fill(phi,y);
+      fHistoEtaPt->Fill(y,pT);
+    }
+
+  }//end of MC particles loop
+
+
 
   AliVEvent* input = InputEvent();
 
@@ -562,6 +633,11 @@ Bool_t AliAnalysisTaskPHOSEmbedding::OpenAODFile()
 
   Int_t Nfile = SelectAODFile();//1st trial
   fAODInput = TFile::Open(fAODPath,"TIMEOUT=180");
+
+  if(!fAODInput){
+    AliInfo(Form("fAODInput (%s) is not properly opened. return kFALSE",fAODPath.Data()));
+    return kFALSE;
+  }
 
   AliInfo(Form("%d files are stored in fAODPathArray.",Nfile));
 
@@ -862,7 +938,7 @@ void AliAnalysisTaskPHOSEmbedding::ConvertESDtoAOD()
   Int_t jClusters = 0;
 
   const Int_t Ncluster = fESDEvent->GetNumberOfCaloClusters();
-  fEmbeddedClusterArray->Expand(Ncluster);
+  //fEmbeddedClusterArray->Expand(Ncluster);
 
   //PHOS + CPV clusters are stored.
   for (Int_t iClust=0; iClust<Ncluster; iClust++) {
