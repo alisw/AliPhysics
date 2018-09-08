@@ -155,7 +155,6 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TList**                             fESDList;               // Array of lists with histograms with reconstructed properties
     TList**                             fBackList;              // Array of lists with BG THnSparseF
     TList**                             fMotherList;            // Array of lists with Signal THnSparseF
-    TList**                             fPhotonDCAList;         // Array of lists with photon dca trees
     TList**                             fGammaERM02;            // Array of lists with conv photon shower shape trees
     TList**                             fInvMassShowerShape;    // Array of lists with invMass shower shape trees
     TList**                             fTrueList;              // Array of lists with histograms with MC validated reconstructed properties
@@ -479,7 +478,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 46);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 47);
 };
 
 #endif

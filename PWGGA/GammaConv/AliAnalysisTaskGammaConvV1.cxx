@@ -73,8 +73,6 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fESDList(NULL),
   fBackList(NULL),
   fMotherList(NULL),
-  fPhotonDCAList(NULL),
-  fMesonDCAList(NULL),
   fTrueList(NULL),
   fMCList(NULL),
   fHeaderNameList(NULL),
@@ -283,8 +281,6 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fESDList(NULL),
   fBackList(NULL),
   fMotherList(NULL),
-  fPhotonDCAList(NULL),
-  fMesonDCAList(NULL),
   fTrueList(NULL),
   fMCList(NULL),
   fHeaderNameList(NULL),
@@ -478,6 +474,14 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
+  DefineOutput(3, TTree::Class());
+  DefineOutput(4, TTree::Class());
+  DefineOutput(5, TTree::Class());
+  DefineOutput(6, TTree::Class());
+  DefineOutput(7, TTree::Class());
+  DefineOutput(8, TTree::Class());
+  DefineOutput(9, TTree::Class());
 }
 
 AliAnalysisTaskGammaConvV1::~AliAnalysisTaskGammaConvV1()
@@ -855,7 +859,6 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fHistoConvGammaPhi          = new TH1F*[fnCuts];
   }
   if (fDoPhotonQA == 2){
-    fPhotonDCAList              = new TList*[fnCuts];
     tESDConvGammaPtDcazCat      = new TTree*[fnCuts];
   }
   if(fDoMesonAnalysis){
@@ -871,7 +874,6 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fHistoMotherEtaPtOpenAngle    = new TH2F*[fnCuts];
     }
     if(fDoMesonQA == 2){
-      fMesonDCAList                         = new TList*[fnCuts];
       tESDMesonsInvMassPtDcazMinDcazMaxFlag = new TTree*[fnCuts];
     }
     if(fDoMesonQA == 3){
@@ -1079,12 +1081,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     }
 
     if (fDoPhotonQA == 2){
-      fPhotonDCAList[iCut]        = new TList();
-      fPhotonDCAList[iCut]->SetName(Form("%s_%s_%s Photon DCA tree", cutstringEvent.Data(), cutstringPhoton.Data(), cutstringMeson.Data()));
-      fPhotonDCAList[iCut]->SetOwner(kTRUE);
-      fCutFolder[iCut]->Add(fPhotonDCAList[iCut]);
-
-      tESDConvGammaPtDcazCat[iCut]= new TTree("ESD_ConvGamma_Pt_Dcaz_R_Eta", "ESD_ConvGamma_Pt_Dcaz_R_Eta_Cat");
+      tESDConvGammaPtDcazCat[iCut]= new TTree(Form("%s_%s_%s Photon DCA tree", cutstringEvent.Data(), cutstringPhoton.Data(), cutstringMeson.Data()), "ESD_ConvGamma_Pt_Dcaz_R_Eta_Cat");
       tESDConvGammaPtDcazCat[iCut]->Branch("Pt",&fPtGamma,"fPtGamma/F");
       tESDConvGammaPtDcazCat[iCut]->Branch("DcaZPhoton",&fDCAzPhoton,"fDCAzPhoton/F");
       tESDConvGammaPtDcazCat[iCut]->Branch("cat",&iCatPhoton,"iCatPhoton/b");
@@ -1094,8 +1091,6 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       if (fIsMC > 1){
         tESDConvGammaPtDcazCat[iCut]->Branch("weightEvent",&fWeightJetJetMC,"fWeightJetJetMC/F");
       }
-
-      fPhotonDCAList[iCut]->Add(tESDConvGammaPtDcazCat[iCut]);
     }
 
     if(fDoPhotonQA > 0 && fIsMC < 2){
@@ -1130,12 +1125,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       }
 
       if(fDoMesonQA == 2){
-        fMesonDCAList[iCut]       = new TList();
-        fMesonDCAList[iCut]->SetName(Form("%s_%s_%s Meson DCA tree",cutstringEvent.Data() ,cutstringPhoton.Data(),cutstringMeson.Data()));
-        fMesonDCAList[iCut]->SetOwner(kTRUE);
-        fCutFolder[iCut]->Add(fMesonDCAList[iCut]);
-
-        tESDMesonsInvMassPtDcazMinDcazMaxFlag[iCut] = new TTree("ESD_Mesons_InvMass_Pt_DcazMin_DcazMax_Flag", "ESD_Mesons_InvMass_Pt_DcazMin_DcazMax_Flag");
+        tESDMesonsInvMassPtDcazMinDcazMaxFlag[iCut] = new TTree(Form("%s_%s_%s Meson DCA tree",cutstringEvent.Data() ,cutstringPhoton.Data(),cutstringMeson.Data()), "ESD_Mesons_InvMass_Pt_DcazMin_DcazMax_Flag");
         tESDMesonsInvMassPtDcazMinDcazMaxFlag[iCut]->Branch("InvMass",&fInvMass,"fInvMass/F");
         tESDMesonsInvMassPtDcazMinDcazMaxFlag[iCut]->Branch("Pt",&fPt,"fPt/F");
         tESDMesonsInvMassPtDcazMinDcazMaxFlag[iCut]->Branch("DcaZMin",&fDCAzGammaMin,"fDCAzGammaMin/F");
@@ -1144,8 +1134,6 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
         if(fIsMC>0){
           tESDMesonsInvMassPtDcazMinDcazMaxFlag[iCut]->Branch("mesonMCInfo",&iMesonMCInfo,"iMesonMCInfo/b");
         }
-        fMesonDCAList[iCut]->Add(tESDMesonsInvMassPtDcazMinDcazMaxFlag[iCut]);
-
       }
       if(fDoMesonQA > 0 ){
         if (fIsMC < 2){
@@ -1755,8 +1743,22 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     tBrokenFiles->Branch("fileName",&fFileNameBroken);
     fOutputContainer->Add(tBrokenFiles);
   }
-
+  OpenFile(1);
   PostData(1, fOutputContainer);
+  Int_t nContainerOutput = 2;
+  for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+    if(fDoPhotonQA == 2){
+      OpenFile(nContainerOutput);
+      PostData(nContainerOutput, tESDConvGammaPtDcazCat[iCut]);
+      nContainerOutput++;
+    }
+    if(fDoMesonQA == 2){
+      OpenFile(nContainerOutput);
+      PostData(nContainerOutput, tESDMesonsInvMassPtDcazMinDcazMaxFlag[iCut]);
+      nContainerOutput++;
+    }
+  }
+
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskGammaConvV1::Notify()
