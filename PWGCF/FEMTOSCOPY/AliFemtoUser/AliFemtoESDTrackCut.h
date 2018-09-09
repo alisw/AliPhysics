@@ -88,7 +88,6 @@ public:
   std::pair<float, float> GetProbProton() const { return std::make_pair(fPidProbProton[0], fPidProbProton[1]); }
   std::pair<float, float> GetProbMuon() const { return std::make_pair(fPidProbMuon[0], fPidProbMuon[1]); }
 
-
   bool GetLabel() const { return fLabel; }
   ULong64_t GetStatus() const { return fStatus; }
   int GetPIDmethod() const { return fPIDMethod; }
