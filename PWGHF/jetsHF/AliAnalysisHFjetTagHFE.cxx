@@ -1445,7 +1445,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
     
      if(idbHFEj)cout << "pTeJetTrue = " << pTeJetTrue << endl;
     
-     if(pTeJetTrue<0.0)continue; // reject jets from uncerlying event (like EPOS)
+     if(fmcData && pTeJetTrue<0.0)continue; // reject jets from uncerlying event (like EPOS)
 
     // reco
     if (fJetsCont) 
