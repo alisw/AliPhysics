@@ -64,6 +64,7 @@ class AliAnalysisTaskPHOSEmbedding : public AliAnalysisTaskSE {
     THashList *fOutputContainer;
     TH1F *fHistoFileID;
     TH1F *fHistoEventID;
+    TH1F *fHistoStatus;
     TH1F *fHistoPt;
     TH2F *fHistoEtaPhi;
     TH2F *fHistoEtaPt;
@@ -99,7 +100,7 @@ class AliAnalysisTaskPHOSEmbedding : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSEmbedding(const AliAnalysisTaskPHOSEmbedding&);
     AliAnalysisTaskPHOSEmbedding& operator=(const AliAnalysisTaskPHOSEmbedding&);
 
-    ClassDef(AliAnalysisTaskPHOSEmbedding, 13);
+    ClassDef(AliAnalysisTaskPHOSEmbedding, 14);
 };
 
 #endif

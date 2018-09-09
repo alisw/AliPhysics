@@ -86,6 +86,7 @@ AliAnalysisTaskPHOSEmbedding::AliAnalysisTaskPHOSEmbedding(const char *name):
   fOutputContainer(0x0),
   fHistoFileID(0x0),
   fHistoEventID(0x0),
+  fHistoStatus(0x0),
   fHistoPt(0x0),
   fHistoEtaPhi(0x0),
   fHistoEtaPt(0x0),
@@ -181,6 +182,11 @@ AliAnalysisTaskPHOSEmbedding::~AliAnalysisTaskPHOSEmbedding()
     fHistoEventID = 0x0;
   }
 
+  if(fHistoStatus){
+    delete fHistoStatus;
+    fHistoStatus = 0x0;
+  }
+
   if(fHistoPt){
     delete fHistoPt;
     fHistoPt = 0x0;
@@ -213,6 +219,9 @@ void AliAnalysisTaskPHOSEmbedding::UserCreateOutputObjects()
   fOutputContainer->Add(fHistoFileID);
   fOutputContainer->Add(fHistoEventID);
 
+  fHistoStatus = new TH1F(Form("hIOStatus_%s",fParticle.Data()),Form("byte count read from MC AOD %s;kbyte;Number of events",fParticle.Data()),502,-2,500);//unit of kilo byte
+  fOutputContainer->Add(fHistoStatus);
+
   fHistoPt     = new TH1F(Form("hMotherPt_%s"    ,fParticle.Data()),Form("p_{T} of %s;p_{T} (GeV/c);Number of counts",fParticle.Data()),500,0,50);
   fHistoEtaPhi = new TH2F(Form("hMotherEtaPhi_%s",fParticle.Data()),Form("y vs. #phi of %s;#phi (radian);rapidity"   ,fParticle.Data()),60,0,TMath::TwoPi(),200,-1,1);
   fHistoEtaPt  = new TH2F(Form("hMotherEtaPt_%s" ,fParticle.Data()),Form("y vs p_{T} of %s;rapidity;p_{T} (GeV/c)"   ,fParticle.Data()),200,-1,1,500,0,50);
@@ -228,7 +237,7 @@ void AliAnalysisTaskPHOSEmbedding::UserCreateOutputObjects()
 
   fMCArray = new TClonesArray("AliAODMCParticle",50);
 
-  fEmbeddedClusterArray = new TClonesArray("AliAODCaloCluster",50);
+  fEmbeddedClusterArray = new TClonesArray("AliAODCaloCluster",200);
   //fEmbeddedClusterArray->SetName(Form("Embedded%sCaloClusters",fParticle.Data()));
 
   fEmbeddedCells = new AliAODCaloCells();
@@ -265,11 +274,20 @@ void AliAnalysisTaskPHOSEmbedding::UserExec(Option_t *option)
     }
   }
 
-  Int_t evID = Int_t(fNeventMC * fRandom3->Rndm());
+  Long64_t evID = Long64_t(fNeventMC * fRandom3->Rndm());
   fHistoEventID->Fill(evID);
-  AliInfo(Form("fEventCounter = %d , Extract event ID %d from %s.",fEventCounter,evID,fAODPath.Data()));
-  fAODTree->GetEvent(evID);
+  Int_t status = fAODTree->GetEvent(evID,0);//second argument is for "getall" in TBranch. //default is 0 (no getall).
 
+  fHistoStatus->Fill((Double_t)status/1.e+3);
+  if(status <= 0){
+    //status is data size in unit of byte read from branch.
+    //if this is less than or equal to 0, I/O problem.
+    //https://root.cern.ch/root/html534/TTree.html#TTree:GetEntry
+    AliInfo("There is I/O problem in external MC AOD file.");
+    return;
+  }
+
+  AliInfo(Form("fEventCounter = %d , Extract event ID %lld , %d byte read-out from %s.",fEventCounter,evID,status,fAODPath.Data()));
   ConvertAODtoESD();
 
   //start embedding
