@@ -76,8 +76,9 @@ void createTree(const char *period,
                 const char *ofile     = "treeout.root",
                 Bool_t doprint        = 0,
                 Bool_t appBC          = kFALSE,                   // boolean to switch on bad channel
-                TString badpath       = "$ALICE_ROOT/OADB/EMCAL") // location of bad channel map
-{
+                TString badpath       = "$ALICE_ROOT/OADB/EMCAL", // location of bad channel map
+                Int_t referenceRun    = 286313                    // define reference run to which all are being calibrated
+) {
   TDraw td(period);
   td.Compute();
   LDraw ld(period);
@@ -101,7 +102,7 @@ void createTree(const char *period,
   const Int_t rns=la->GetEntries();
   cout << "Working on period " << period << " with " << rns << " runs" << endl;
 
-  AliEMCALGeometry *g=AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
+  AliEMCALGeometry *g= AliEMCALGeometry::GetInstanceFromRunNumber(referenceRun);
   const Int_t kSM=g->GetNumberOfSuperModules();
   const Int_t kNcells=g->GetNCells();
   const Int_t gain = 1;

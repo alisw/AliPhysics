@@ -33,12 +33,12 @@ void anaTree(
               Float_t durMin        = 0,                        // minimum length of a run in minutes
               Float_t durMax        = 10000,                    // maximum length of a run in minutes
               Bool_t appBC          = kFALSE,                   // boolean to switch on bad channel
-              Int_t referenceRun    = -1,                       // define reference run to which all are being calibrated
-              Int_t nBinsT          = 1000                      // number of bins in Temperature
+              Int_t referenceRun    = 286313,                   // define reference run to which all are being calibrated
+              Int_t nBinsT          = 1000
             )
 {
-  // Load EMCAL geometry for run 2
-  AliEMCALGeometry *g=AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
+  // Load EMCAL geometry for reference run
+  AliEMCALGeometry *g= AliEMCALGeometry::GetInstanceFromRunNumber(referenceRun);
   const Int_t kSM=g->GetNumberOfSuperModules();
   const Int_t kNcells=g->GetNCells();
   const Int_t gain = 1;
@@ -49,9 +49,6 @@ void anaTree(
   }
   if (appBC){
     cout << "INFO: will be using bad channel map" << endl;
-  }
-  if (referenceRun != -1){
-    cout << "INFO: will be storing ratios from run: " << referenceRun << " as reference numbers" << endl;
   }
 
   // initialize info from tree created by $ALICE_PHYSICS/PWGPP/EMCAL/TeCMacros/createTree.C
@@ -69,28 +66,31 @@ void anaTree(
     if (info->fRunNo < minRunNo) minRunNo = info->fRunNo;
     if (info->fRunNo > maxRunNo) maxRunNo = info->fRunNo;
   }
+  cout << minRunNo << "\t" << maxRunNo << endl;
 
-  TProfile *gLedVsT[20];
-  TProfile *gLedMonVsT[20];
-  TH2F* hLedVsLength[20];
-  TH2F* hLedMonVsLength[20];
-  TProfile *gRatVsT[20];
-  TH1D* hRefRunCellIdVsRat = new TH1D("", "Led/LedMon Ref run; Cell ID", kNcells+1, -0.5, kNcells+1-0.5);
-  hRefRunCellIdVsRat->SetName("ReferenceRunRatios");
-  TH1D* hRefSMVsT = new TH1D("", "T Ref run; SM", 20, -0.5, 20-0.5);
-  hRefSMVsT->SetName("ReferenceRunTemperatures");
-  TH1F* hAverageT[20];
-  TH1F* hAverageTSorted[20];
-  TH2F* hAverageTPerSM      = new TH2F("","T per SM; SM; T", 20, -0.5, 19.5, nBinsT, 15, 40);
+  TProfile *gLedVsT[kSM];
+  TProfile *gLedMonVsT[kSM];
+  TH2F* hLedVsLength[kSM];
+  TH2F* hLedMonVsLength[kSM];
+  TProfile *gRatVsT[kSM];
+  TProfile* gCellIdVsRat = new TProfile("", "Led/LedMon run; Cell ID", kNcells+1, -0.5, kNcells+1-0.5);
+  gCellIdVsRat->SetName("LedDiffLedMonVsCellID");
+  TH2D* gCellIdVsLed = new TH2D("", "Led run; Cell ID", kNcells+1, -0.5, kNcells+1-0.5, 1000, 0, 1000);
+  gCellIdVsLed->SetName("LedVsCellID");
+  TH2D* gCellIdVsLedMon = new TH2D("", "LedMon run; Cell ID", kNcells+1, -0.5, kNcells+1-0.5, 1000, 0, 1000);
+  gCellIdVsLedMon->SetName("LedMonVsCellID");
+  TH1F* hAverageT[kSM];
+  TH1F* hAverageTSorted[kSM];
+  TH2F* hAverageTPerSM      = new TH2F("","T per SM; SM; T", kSM, -0.5, kSM-0.5, nBinsT, 15, 40);
   hAverageTPerSM->SetName("MeanSMTemperature");
   hAverageTPerSM->Sumw2();
   const char* opt = "S"; //"S" for spread
-  for (Int_t i=0;i<20;++i) {
-    gLedVsT[i] = new TProfile("","Led info;T;",nBinsT,15,40);
+  for (Int_t i=0;i<kSM;++i) {
+    gLedVsT[i] = new TProfile("","Led info;T;",nBinsT,17, 27);
     gLedVsT[i]->SetName(Form("ledsm%d",i));
-    gLedMonVsT[i] = new TProfile("","Led info;T;",nBinsT,15,40);
+    gLedMonVsT[i] = new TProfile("","Led info;T;",nBinsT,17, 27);
     gLedMonVsT[i]->SetName(Form("ledmonsm%d",i));
-    gRatVsT[i] = new TProfile("","Led/LedMon;T",nBinsT,15,40);
+    gRatVsT[i] = new TProfile("","Led/LedMon;T",nBinsT,17, 27);
     gRatVsT[i]->SetName(Form("ledovermonsm%d",i));
     hLedVsLength[i]     = new TH2F ("","Led info; t [h];",500,0,20, 20000, 0, 20000);
     hLedVsLength[i]->SetName(Form("ledVsLength%d",i));
@@ -131,9 +131,9 @@ void anaTree(
       gLedMonCellRMSDiffMeanVsT[j] = new TProfile("",Form("LedMon rms/mean info cell ID%i ;T;",j),nBinsT,15,40,opt);
       gLedMonCellRMSDiffMeanVsT[j]->SetName(Form("ledMonRMSDiffMeanCell%d",j));
     }
-    gRatCellVsT[j] = new TProfile("",Form("Led/LedMon cell ID%i ;T;",j),nBinsT,15,40,opt);
+    gRatCellVsT[j] = new TProfile("",Form("Led/LedMon cell ID%i ;T;",j),nBinsT,17, 27,opt);
     gRatCellVsT[j]->SetName(Form("ledovermonCell%d",j));
-    gRatECellVsT[j] = new TProfile("",Form("Led/LedMon Error cell ID%i ;T;",j),nBinsT,15,40,opt);
+    gRatECellVsT[j] = new TProfile("",Form("Led/LedMon Error cell ID%i ;T;",j),nBinsT,17, 27,opt);
     gRatECellVsT[j]->SetName(Form("ledovermonECell%d",j));
   }
   cout << "-> done initializing histos" << endl;
@@ -141,10 +141,14 @@ void anaTree(
   Bool_t isRefRun   = kFALSE;
   Bool_t hadRefRun  = kFALSE;
 
+  cout << "-> there are " << Nev << " contained in this tree, starting to analyse them" << endl;
+
   for (Int_t i=0;i<Nev;++i) {
     tt->GetEvent(i);
     UInt_t deltaTimeS = ((UInt_t)info->fLastTime-(UInt_t)info->fFirstTime)/10;         // run duration in seconds
     Float_t deltaTime = ((Float_t)info->fLastTime-(Float_t)info->fFirstTime)/60.;   // run duration in minutes
+    if (i%50 == 0)
+      cout << "starting with run " << i << "/" << Nev << endl;
     cout << info->fRunNo << "\t" << info->fFirstTime << "\t"<<info->fLastTime << "\t"<< deltaTime<<  endl;
 
     if (applyDurLimit){
@@ -212,8 +216,10 @@ void anaTree(
             if (writeDetailed){
               gLedCellVsT[cellID]->Fill(smT,ledcurrent);
               if (s==0) gLedCellRMSDiffMeanVsT[cellID]->Fill(smT,ledR/ledM,1);
+
             }
             gLedVsT[sm]->Fill(T,ledcurrent);
+            gCellIdVsLed->Fill(cellID,ledcurrent);
           }
           if (!((monM<=0)||(monR<=0)) ){
             ledMoncurrent         = ledMonRandom.Gaus(monM,monR);
@@ -222,9 +228,11 @@ void anaTree(
               if (s==0) gLedMonCellRMSDiffMeanVsT[cellID]->Fill(smT,monR/monM,1);
             }
             gLedMonVsT[sm]->Fill(T,ledMoncurrent);
+            gCellIdVsLedMon->Fill(cellID,ledMoncurrent);
           }
           if ( (ledcurrent<=0) || (ledMoncurrent<=0) )
             continue;
+          gCellIdVsRat->Fill(cellID,ledcurrent/ledMoncurrent);
           gRatVsT[sm]->Fill(T,ledcurrent/ledMoncurrent);
           gRatCellVsT[cellID]->Fill(smT,ledcurrent/ledMoncurrent);
           gRatECellVsT[cellID]->Fill(smT,1);
@@ -272,7 +280,7 @@ void anaTree(
   TFile *out = TFile::Open(ofile,"recreate");
   if (!out)
     out = TFile::Open("dummyfile.root","update");
-  for (Int_t i=0;i<20;++i) {
+  for (Int_t i=0;i<kSM;++i) {
     gLedVsT[i]->Write();
     gLedMonVsT[i]->Write();
     gRatVsT[i]->Write();
@@ -282,10 +290,9 @@ void anaTree(
     hAverageTSorted[i]->Write();
   }
   hAverageTPerSM->Write();
-  if (hadRefRun){
-    hRefRunCellIdVsRat->Write();
-    hRefSMVsT->Write();
-  }
+  gCellIdVsRat->Write();
+  gCellIdVsLed->Write();
+  gCellIdVsLedMon->Write();
   for (Int_t sens = 0; sens < 160; sens++){
     hSensorsT[sens]->Write();
     hSensorsTSorted[sens]->Write();
