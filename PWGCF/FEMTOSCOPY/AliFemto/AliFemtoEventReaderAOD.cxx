@@ -75,6 +75,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fpA2013(kFALSE),
   fisPileUp(kFALSE),
   fMVPlp(kFALSE),
+  fOutOfBunchPlp(kFALSE),
   fMinVtxContr(0),
   fMinPlpContribMV(0),
   fMinPlpContribSPD(0),
@@ -146,6 +147,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fpA2013(aReader.fpA2013),
   fisPileUp(aReader.fisPileUp),
   fMVPlp(aReader.fMVPlp),
+  fOutOfBunchPlp(aReader.fOutOfBunchPlp),
   fMinVtxContr(aReader.fMinVtxContr),
   fMinPlpContribMV(aReader.fMinPlpContribMV),
   fMinPlpContribSPD(aReader.fMinPlpContribSPD),
@@ -242,6 +244,7 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fpA2013 = aReader.fpA2013;
   fisPileUp = aReader.fisPileUp;
   fMVPlp = aReader.fMVPlp;
+  fOutOfBunchPlp = aReader.fOutOfBunchPlp;
   fMinVtxContr = aReader.fMinVtxContr;
   fMinPlpContribMV = aReader.fMinPlpContribMV;
   fMinPlpContribSPD = aReader.fMinPlpContribSPD;
@@ -418,7 +421,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       return NULL;  // Vertex rejection for pA analysis.
     }
     fAnaUtils->SetUseMVPlpSelection(fMVPlp);
-
+    fAnaUtils->SetUseOutOfBunchPileUp(fOutOfBunchPlp);
+    
     if (fMinPlpContribMV) {
       fAnaUtils->SetMinPlpContribMV(fMinPlpContribMV);
     }
@@ -2284,6 +2288,11 @@ void AliFemtoEventReaderAOD::SetpA2013(Bool_t pa2013)
 void AliFemtoEventReaderAOD::SetUseMVPlpSelection(Bool_t mvplp)
 {
   fMVPlp = mvplp;
+}
+
+void AliFemtoEventReaderAOD::SetUseOutOfBunchPlpSelection(Bool_t outOfBunchPlp)
+{
+  fOutOfBunchPlp=outOfBunchPlp;
 }
 
 void AliFemtoEventReaderAOD::SetIsPileUpEvent(Bool_t ispileup)

@@ -382,7 +382,7 @@ void AliFemtoDreamTrack::SetPhiAtRadii() {
   for (int radius = 0; radius < 9; radius++) {
     phiatRadius.push_back(
         phi0
-            + TMath::ASin(
+            - TMath::ASin(
                 0.1 * chg * bfield * 0.3 * TPCradii[radius] * 0.01
                     / (2. * pt)));
   }
@@ -465,6 +465,11 @@ void AliFemtoDreamTrack::SetMCInformation() {
         this->SetParticleOrigin(AliFemtoDreamBasePart::kMaterial);
       } else {
         this->SetParticleOrigin(AliFemtoDreamBasePart::kUnknown);
+      }
+      AliAODMCParticle *mcMother = (AliAODMCParticle*) mcarray->At(
+    		  mcPart->GetMother());
+      if(mcMother) {
+        this->SetMotherPDG(mcMother->GetPdgCode());
       }
     }
   } else {

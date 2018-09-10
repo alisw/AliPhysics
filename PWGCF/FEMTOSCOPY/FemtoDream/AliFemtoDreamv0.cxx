@@ -197,6 +197,11 @@ void AliFemtoDreamv0::SetMCMotherInfo(AliAODEvent *evt, AliAODv0 *v0) {
       } else {
         this->SetParticleOrigin(AliFemtoDreamBasePart::kUnknown);
       }
+      AliAODMCParticle *mcMother = (AliAODMCParticle*) mcarray->At(
+    		  mcPart->GetMother());
+      if(mcMother) {
+        this->SetMotherPDG(mcMother->GetPdgCode());
+      }
     }
   }
 }

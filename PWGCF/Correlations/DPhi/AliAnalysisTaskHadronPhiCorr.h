@@ -40,11 +40,39 @@ public:
         TLorentzVector particle;
     };
 
+    void SetKaonEtaCut(Float_t eta) { KAON_ETA_CUT = eta; };
+    void SetKaonTPCCut(Float_t tpcNSigma) { KAON_TPC_CUT = tpcNSigma; };
+    void SetKaonTOFCut(Float_t tofNSigma) { KAON_TOF_CUT = tofNSigma; };
+    void SetTOFVeto(Bool_t isVeto) { IS_KAON_TOF_VETO = isVeto; };
+
+    void SetZVertexMin(Float_t zvtxMin) { Z_VTX_MIN = zvtxMin; };
+    void SetZVertexMax(Float_t zvtxMax) { Z_VTX_MAX = zvtxMax; };
+    void SetZVertexNbins(Int_t zvtxNbins) { Z_VTX_NBINS = zvtxNbins; };
+
+    void SetCentEstimator(TString centEst) { CENT_ESTIMATOR = centEst; };
+
+    void SetHH(Bool_t isHH) { IS_HH = isHH; };
+
+    void SetMultLow(Float_t multLow) { MULT_LOW = multLow; };
+    void SetMultHigh(Float_t multHigh) { MULT_HIGH = multHigh; };
+
+
 private:
 
     Bool_t IS_HH;
     Float_t MULT_LOW;
     Float_t MULT_HIGH;
+
+    Float_t KAON_ETA_CUT;
+    Float_t KAON_TPC_CUT;
+    Float_t KAON_TOF_CUT;
+    Bool_t IS_KAON_TOF_VETO;
+
+    Float_t Z_VTX_MIN;
+    Float_t Z_VTX_MAX;
+    Int_t Z_VTX_NBINS;
+
+    TString CENT_ESTIMATOR;
 
     enum{
         kAODanalysis = BIT(20),

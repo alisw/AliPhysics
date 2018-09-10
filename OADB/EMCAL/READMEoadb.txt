@@ -17,6 +17,8 @@ Furthermore, the "export" command should be used in addition to adding the path 
 export ALICE_DATA=/path/to/my/local/oadb
 ~~~
 
+The code for the creation of the OADB files as well as for bookkeeping of input files can be found in the following repository: https://gitlab.cern.ch/alice-EMC/EMCCalib
+
 In addition, a short history of changes to the files in EOS will be listed here:
 
 - 20180213: Moved all files to EOS.
@@ -49,5 +51,6 @@ In addition, a short history of changes to the files in EOS will be listed here:
 - 20180730: Update of EMCALBadChannels.root with new maps for LHC16f (nominal and lowB) as well as LHC16g
 - 20180713: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with updated LHC16h time calibrations
 - 20180821: Update of EMCALBadChannels.root with additional cells for LHC17l,m,o
+- 20180910: Update of EMCalBadChannels.root with additional cells for LHC16f, LHC16i, LHC17g and LHC18b
 
 */

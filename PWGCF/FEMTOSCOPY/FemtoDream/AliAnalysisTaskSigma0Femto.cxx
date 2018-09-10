@@ -32,6 +32,7 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fIsMC(false),
       fIsHeavyIon(false),
       fIsLightweight(false),
+      fPhotonLegPileUpCut(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
       fGammaArray(nullptr),
@@ -46,7 +47,7 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fHistCentralityProfileCoarseAfter(nullptr),
       fHistTriggerBefore(nullptr),
       fHistTriggerAfter(nullptr),
-      fOutputTree(nullptr) {}
+      fHistPhotonPileUp(nullptr) {}
 
 //____________________________________________________________________________________________________
 AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
@@ -72,6 +73,7 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
       fIsMC(false),
       fIsHeavyIon(false),
       fIsLightweight(false),
+      fPhotonLegPileUpCut(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
       fGammaArray(nullptr),
@@ -86,11 +88,10 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
       fHistCentralityProfileCoarseAfter(nullptr),
       fHistTriggerBefore(nullptr),
       fHistTriggerAfter(nullptr),
-      fOutputTree(nullptr) {
+      fHistPhotonPileUp(nullptr) {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
-  DefineOutput(3, TList::Class());
 }
 
 //____________________________________________________________________________________________________
@@ -243,8 +244,7 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
 
   // flush the data
   PostData(1, fOutputContainer);
-  PostData(2, fOutputTree);
-  PostData(3, fOutputFemto);
+  PostData(2, fOutputFemto);
 }
 
 //____________________________________________________________________________________________________
@@ -301,6 +301,32 @@ void AliAnalysisTaskSigma0Femto::CastToVector(
     auto *PhotonCandidate =
         dynamic_cast<AliAODConversionPhoton *>(fGammaArray->At(iGamma));
     if (!PhotonCandidate) continue;
+    fHistPhotonPileUp->Fill(PhotonCandidate->Pt(), 0.5);
+
+    // pile up check
+    if (fPhotonLegPileUpCut) {
+      auto pos =
+          (AliESDtrack *)inputEvent->GetTrack(PhotonCandidate->GetLabel1());
+      auto neg =
+          (AliESDtrack *)inputEvent->GetTrack(PhotonCandidate->GetLabel2());
+      if (!pos || !neg) continue;
+
+      bool posTrackITS =
+          (pos->HasPointOnITSLayer(0) || pos->HasPointOnITSLayer(1) ||
+           pos->HasPointOnITSLayer(4) || pos->HasPointOnITSLayer(5));
+      bool negTrackITS =
+          (neg->HasPointOnITSLayer(0) || pos->HasPointOnITSLayer(1) ||
+           neg->HasPointOnITSLayer(4) || pos->HasPointOnITSLayer(5));
+      bool posTrackTOF = pos->GetTOFBunchCrossing() == 0;
+      bool negTrackTOF = neg->GetTOFBunchCrossing() == 0;
+
+      bool posTrackCombined = (posTrackITS || posTrackTOF);
+      bool negTrackCombined = (negTrackITS || negTrackTOF);
+
+      if (!posTrackCombined || !negTrackCombined) continue;
+    }
+    fHistPhotonPileUp->Fill(PhotonCandidate->Pt(), 1.5);
+
     AliSigma0ParticleV0 phot(PhotonCandidate, inputEvent);
     if (fIsMC) {
       const int label = phot.MatchToMC(fMCEvent, 22, {{11, -11}});
@@ -378,6 +404,11 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
   fHistCutQA->GetXaxis()->SetBinLabel(3, "Multiplicity selection");
   fHistCutQA->GetXaxis()->SetBinLabel(4, "AliConversionCuts");
   fQA->Add(fHistCutQA);
+
+  fHistPhotonPileUp = new TH2F("fHistPhotonPileUp", ";#it{p}_{T} (GeV/#it{c}^{2}; PileUp", 100, 0, 10, 2, 0, 2);
+  fHistPhotonPileUp->GetYaxis()->SetBinLabel(1, "Before");
+  fHistPhotonPileUp->GetYaxis()->SetBinLabel(2, "After");
+  fQA->Add(fHistPhotonPileUp);
 
   if (!fIsLightweight) {
     fHistRunNumber = new TProfile("fHistRunNumber", ";;Run Number", 1, 0, 1);
@@ -598,34 +629,8 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     fOutputFemto->Add(fPartColl->GetQAList());
   }
 
-  if (fOutputTree != nullptr) {
-    delete fOutputTree;
-    fOutputTree = nullptr;
-  }
-  if (fOutputTree == nullptr) {
-    fOutputTree = new TList();
-    fOutputTree->SetOwner(kTRUE);
-  }
-
-  if (fSigmaCuts && fSigmaCuts->GetSigmaTree()) {
-    fOutputTree->Add(fSigmaCuts->GetSigmaTree());
-  }
-
-  if (fAntiSigmaCuts && fAntiSigmaCuts->GetSigmaTree()) {
-    fOutputTree->Add(fAntiSigmaCuts->GetSigmaTree());
-  }
-
-  if (fSigmaPhotonCuts && fSigmaPhotonCuts->GetSigmaTree()) {
-    fOutputTree->Add(fSigmaPhotonCuts->GetSigmaTree());
-  }
-
-  if (fAntiSigmaPhotonCuts && fAntiSigmaPhotonCuts->GetSigmaTree()) {
-    fOutputTree->Add(fAntiSigmaPhotonCuts->GetSigmaTree());
-  }
-
   PostData(1, fOutputContainer);
-  PostData(2, fOutputTree);
-  PostData(3, fOutputFemto);
+  PostData(2, fOutputFemto);
 }
 
 //____________________________________________________________________________________________________

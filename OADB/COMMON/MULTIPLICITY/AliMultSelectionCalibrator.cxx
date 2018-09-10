@@ -22,18 +22,21 @@
 #include "AliMultInput.h"
 #include "AliMultSelection.h"
 #include "AliMultSelectionCalibrator.h"
+#include "AliVEvent.h"
 #include "AliESDEvent.h"
 #include "TList.h"
 #include "TFile.h"
 #include "TStopwatch.h"
+#include "TArrayL64.h"
 
 ClassImp(AliMultSelectionCalibrator);
 
-AliMultSelectionCalibrator::AliMultSelectionCalibrator() :
-    TNamed(), fInputFileName(""), fBufferFileName("buffer.root"),
-    fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
-    lNDesiredBoundaries(0), lDesiredBoundaries(0), fRunToUseAsDefault(-1),
-    fNRunRanges(0), fRunRangesMap(), fMultSelectionList(0)
+AliMultSelectionCalibrator::AliMultSelectionCalibrator() : TNamed(), 
+fInput(0), fSelection(0), lDesiredBoundaries(0), lNDesiredBoundaries(0),
+fRunToUseAsDefault(-1), fTrigType(AliVEvent::kAny),
+fNRunRanges(0), fRunRangesMap(), fMultSelectionList(0), 
+fInputFileName(""), fBufferFileName("buffer.root"),
+fOutputFileName(""), fMultSelectionCuts(0), fCalibHists(0)
 {
     // Constructor
 
@@ -57,10 +60,12 @@ AliMultSelectionCalibrator::AliMultSelectionCalibrator() :
 }
 
 AliMultSelectionCalibrator::AliMultSelectionCalibrator(const char * name, const char * title):
-    TNamed(name,title), fInputFileName(""), fBufferFileName("buffer.root"),
-    fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
-    lNDesiredBoundaries(0), lDesiredBoundaries(0), fRunToUseAsDefault(-1),
-    fNRunRanges(0), fRunRangesMap(), fMultSelectionList(0)
+    TNamed(name,title),
+fInput(0), fSelection(0), lDesiredBoundaries(0), lNDesiredBoundaries(0),
+fRunToUseAsDefault(-1), fTrigType(AliVEvent::kAny),
+fNRunRanges(0), fRunRangesMap(), fMultSelectionList(0),
+fInputFileName(""), fBufferFileName("buffer.root"),
+fOutputFileName(""), fMultSelectionCuts(0), fCalibHists(0)
 {
     // Named Constructor
 
@@ -185,12 +190,15 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     //FIXME/CAUTION: non-zero if using tree without that branch
     Int_t fnContributors = 1000;
 
+    UInt_t fEvSel_TriggerMask; //! save full info for checking later
+    
     //SetBranchAddresses for event Selection Variables
     //(multiplicity related will be done automatically!)
     fTree->SetBranchAddress("fEvSel_IsNotPileupInMultBins",&fEvSel_IsNotPileupInMultBins);
     fTree->SetBranchAddress("fEvSel_PassesTrackletVsCluster",&fEvSel_PassesTrackletVsCluster);
     fTree->SetBranchAddress("fEvSel_HasNoInconsistentVertices",&fEvSel_HasNoInconsistentVertices);
     fTree->SetBranchAddress("fEvSel_Triggered",&fEvSel_Triggered);
+    fTree->SetBranchAddress("fEvSel_TriggerMask",&fEvSel_TriggerMask);
     fTree->SetBranchAddress("fEvSel_INELgtZERO",&fEvSel_INELgtZERO);
     fTree->SetBranchAddress("fRunNumber",&fRunNumber);
     fTree->SetBranchAddress("fnContributors", &fnContributors);
@@ -334,6 +342,11 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         fTree->GetEntry(iEv);
         //Perform Event selection
         Bool_t lSaveThisEvent = kTRUE; //let's be optimistic
+        
+        //Apply trigger mask (will only work if not kAny)
+        Bool_t isSelected = 0;
+        isSelected = fEvSel_TriggerMask & fTrigType;
+        if(!isSelected) lSaveThisEvent = kFALSE; 
         
         //Check Selections as they are in the fMultSelectionCuts Object
         if( fMultSelectionCuts->GetTriggerCut()    && ! fEvSel_Triggered  ) lSaveThisEvent = kFALSE;
@@ -497,7 +510,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         }
         sTree[iRun]->SetEstimate(ntot+1);
         // Memory allocation: don't repeat it per estimator! only per run
-        index = new Long64_t[ntot];
+        TArrayL64 index(ntot);
         //Cast Run Number into drawing conditions
         for(Int_t iEst=0; iEst<lNEstimatorsThis; iEst++) {
             if( ! ( fSelection->GetEstimator(iEst)->IsInteger() ) ) {
@@ -505,7 +518,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                 lRunStats[iRun] = sTree[iRun]->Draw(fSelection->GetEstimator(iEst)->GetDefinition(),"","goff");
                 cout<<"--- Sorting estimator "<<fSelection->GetEstimator(iEst)->GetName()<<"..."<<flush;
                 
-                TMath::Sort(ntot,sTree[iRun]->GetV1(),index);
+                TMath::Sort(ntot,sTree[iRun]->GetV1(), index.GetArray() );
                 cout<<" Done! Getting Boundaries... "<<flush;
                 
                 //Special override in case anchored estimator
@@ -702,8 +715,6 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
             //DEFAULT OADB Object saving procedure ENDS here
             //========================================================================
         }
-        //Cleanup: Delete index variable
-        delete[] index;
     }
     
     if( fRunToUseAsDefault < 0 ){

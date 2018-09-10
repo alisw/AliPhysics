@@ -154,8 +154,8 @@ AliRsnMiniTaskPhiVn * AddTaskPhiVn(Bool_t isMC, AliRsnCutSetDaughterParticle::ER
 #if !defined (__CINT__) || defined (__CLING__)
    ConfigPhiVn(task, isMC, outNameSuffix.Data(), cutsPair, aodFilterBit, cutKaCandidate, nsigmaTPC, nsigmaTOF, 15.0, enableMonitor,kTRUE, kFALSE);
 #else
-   //gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiVn.C");
-   gROOT->LoadMacro("ConfigPhiVn.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiVn.C");
+   //gROOT->LoadMacro("ConfigPhiVn.C");
    ConfigPhiVn(task, isMC, outNameSuffix.Data(), cutsPair, aodFilterBit, cutKaCandidate, nsigmaTPC, nsigmaTOF, 15.0, enableMonitor, kTRUE, kFALSE);
 #endif
    

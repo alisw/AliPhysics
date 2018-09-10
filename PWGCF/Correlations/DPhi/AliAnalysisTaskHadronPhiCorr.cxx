@@ -118,6 +118,17 @@ fDphiHHMixed(0)
     MULT_LOW = multLow;
     MULT_HIGH = multHigh;
 
+    KAON_ETA_CUT = 0.8;
+    KAON_TPC_CUT = 3.0;
+    KAON_TOF_CUT = 3.0;
+    IS_KAON_TOF_VETO = kFALSE;
+
+    Z_VTX_MIN = -10.0;
+    Z_VTX_MAX = 10.0;
+    Z_VTX_NBINS = 10;
+
+    CENT_ESTIMATOR = "V0A";
+
 }
 //________________________________________________________________________
 AliAnalysisTaskHadronPhiCorr::AliAnalysisTaskHadronPhiCorr()
@@ -185,6 +196,18 @@ fDphiHHMixed(0)
     IS_HH = kFALSE;
     MULT_LOW = 0.0;
     MULT_HIGH = 100.0;
+
+    KAON_ETA_CUT = 0.8;
+    KAON_TPC_CUT = 3.0;
+    KAON_TOF_CUT = 3.0;
+    IS_KAON_TOF_VETO = kFALSE;
+
+    Z_VTX_MIN = -10.0;
+    Z_VTX_MAX = 10.0;
+    Z_VTX_NBINS = 10;
+
+    CENT_ESTIMATOR = "V0A";
+
 }
 //________________________________________________________________________
 AliAnalysisTaskHadronPhiCorr::~AliAnalysisTaskHadronPhiCorr()
@@ -222,6 +245,16 @@ void AliAnalysisTaskHadronPhiCorr::UserCreateOutputObjects()
     Int_t numVtxZBins = 10;
     //Double_t vtxZBins[11] = {-10.0, -6.15, -3.90, -2.13, -0.59, 0.86, 2.29, 3.77, 5.39, 7.30, 10.0};
     Double_t vtxZBins[11] = {-10.0, -8.0, -6.0, -4.0, -2.0, 0.0, 2.0, 4.0, 6.0, 8.0, 10.0};
+    /*printf("\n\nZ_VTX_NBINS = %d\n\n", Z_VTX_NBINS);
+    Double_t vtxZBins[Z_VTX_NBINS+1];
+    Double_t vtxStepSize = (Z_VTX_MAX - Z_VTX_MIN)/Double_t(Z_VTX_NBINS);
+    for(int ivtx = 0; ivtx < Z_VTX_NBINS+1; ivtx++){
+        vtxZBins[ivtx] = Z_VTX_MIN + vtxStepSize;
+        if(vtxZBins[ivtx] > Z_VTX_MAX){
+            vtxZBins[ivtx] = Z_VTX_MAX;
+        }
+    }
+*/
     Int_t numMultBins = 1;
     Double_t multBins[2] = {MULT_LOW, MULT_HIGH};
 
@@ -345,9 +378,9 @@ void AliAnalysisTaskHadronPhiCorr::UserCreateOutputObjects()
 
     
     // Additional Histograms for US and LS Kaon pairs:
-    Int_t bins[4] = {10, 12, 64, 64}; //pt, invmass, phi, eta
-    Double_t min[4] = {0.1, 0.98, 0, -2.0};
-    Double_t max[4] = {10.1, 1.1, 6.28, 2.0};
+    Int_t bins[4] = {20, 60, 32, 32}; //pt, invmass, phi, eta
+    Double_t min[4] = {0.0, 0.98, 0, -2.0};
+    Double_t max[4] = {10.0, 1.1, 6.28, 2.0};
  
     fKKUSDist = new THnSparseF("fkkUSDist", "Distribution for all US Kaon pairs", 4, bins, min, max);
     fOutputList->Add(fKKUSDist);
@@ -368,7 +401,7 @@ void AliAnalysisTaskHadronPhiCorr::UserCreateOutputObjects()
     fOutputList->Add(fUSpairsPerEvent); 
   
     // Delta-phi histograms for different hadron-particle correlations (trigger pT, correlation pT, delta-phi, delta-eta, inv mass)
-    Int_t dphi_bins[6]=    {10,   18,    64,  64,      10,    32};
+    Int_t dphi_bins[6]=    {10,   18,    64,  64,      10,    64};
     Double_t dphi_min[6] = {2.0,   1.0, -1.57, -2.0, -10.0, 0.99};
     Double_t dphi_max[6] = {12.0, 10.0,  4.71,  2.0, 10.0, 1.07};
 
@@ -564,7 +597,7 @@ void AliAnalysisTaskHadronPhiCorr::UserExec(Option_t *){
  
         fMultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
         if(fMultSelection){
-            multPercentile = fMultSelection->GetMultiplicityPercentile("V0A");
+            multPercentile = fMultSelection->GetMultiplicityPercentile(CENT_ESTIMATOR.Data());
         }else{
             return;
         }
@@ -640,7 +673,7 @@ void AliAnalysisTaskHadronPhiCorr::UserExec(Option_t *){
             if(!esdTrackCutsH->AcceptTrack(eKaonTrack))continue;
 
         // Cut on pT and eta for possible Kaons
-        if(kaonTrack->Pt() > 0.15 && TMath::Abs(kaonTrack->Eta()) < 0.8){
+        if(kaonTrack->Pt() > 0.15 && TMath::Abs(kaonTrack->Eta()) < KAON_ETA_CUT){
             Double_t fTPCnSigma = -999;
             Double_t fTOFnSigma = -999;
             Double_t fpiTPCnSigma = -999;
@@ -651,7 +684,13 @@ void AliAnalysisTaskHadronPhiCorr::UserExec(Option_t *){
             fTPCnSigma = fpidResponse->NumberOfSigmasTPC(kaonTrack, AliPID::kKaon);
             fTOFnSigma = fpidResponse->NumberOfSigmasTOF(kaonTrack, AliPID::kKaon);
             //Cut on kaon candidates
-            if((TMath::Abs(fTPCnSigma) < 3.0) && (TMath::Abs(fTOFnSigma) < 3.0)){
+            Bool_t acceptKaon = kFALSE;
+            if(IS_KAON_TOF_VETO){
+                acceptKaon = ((TMath::Abs(fTPCnSigma) <= KAON_TPC_CUT) && (((TMath::Abs(fTOFnSigma) <= KAON_TOF_CUT)) || ( fTOFnSigma == -999)));
+            }else{
+                acceptKaon = ((TMath::Abs(fTPCnSigma) <= KAON_TPC_CUT) && (TMath::Abs(fTOFnSigma) <= KAON_TOF_CUT));
+            }
+            if(acceptKaon){
                 AliKaonContainer kaon;
                 kaon.trackNum = itrack;
                 kaon.particle.SetPx(kaonTrack->Px());

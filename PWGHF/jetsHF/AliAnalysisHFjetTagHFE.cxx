@@ -77,6 +77,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fcentMax(10.0), 
   idbHFEj(kFALSE),
   iHybrid(kTRUE),
+  iOccCorr(kFALSE),
   fmimSig(-1.0),
   fmimEop(0.8),
   fmimM20(0.01),
@@ -109,6 +110,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistEopHFE(0),
   fHistEopHad(0),
   fHistEopHFjet(0),
+  fHistNsigHFjet(0),
   fHistJetOrg(0),
   fHistJetOrgArea(0),
   fHistJetBG(0),
@@ -217,6 +219,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fcentMax(10.0), 
   idbHFEj(kFALSE),
   iHybrid(kTRUE),
+  iOccCorr(kFALSE),
   fmimSig(-1.0),
   fmimEop(0.8),
   fInvmassCut(0.1),
@@ -247,6 +250,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fHistEopHFE(0),
   fHistEopHad(0),
   fHistEopHFjet(0),
+  fHistNsigHFjet(0),
   fHistJetOrg(0),
   fHistJetOrgArea(0),
   fHistJetBG(0),
@@ -496,6 +500,9 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
 
   fHistEopHFjet = new TH2F("fHistEopHFjet","E/p HFjet ;p_{T}(GeV/c);E/p",10,0.,100.,200,0.,4.);
   fOutput->Add(fHistEopHFjet);
+
+  fHistNsigHFjet = new TH2F("fHistNsigHFjet","E/p HFjet ;p_{T}(GeV/c);Nsigma",10,0.,100.,250,-5,5);
+  fOutput->Add(fHistNsigHFjet);
 
   fHistJetOrg = new TH1F("fHistJetOrg","Inclusive jet org;p_{T}",300,-100.,200.);
   fOutput->Add(fHistJetOrg);
@@ -1031,6 +1038,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
      double rho = 0.0;
      int Ncon = 0;
      int Njet = 0;
+ 
+
      Double_t ExJetPt[5], ExJetEta[5], ExJetPhi[5];
      for(int i=0; i<5; i++)
         {
@@ -1047,8 +1056,17 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
          fJetsCont->ResetCurrentID();
          AliEmcalJet *jet = fJetsCont->GetNextAcceptJet();
          rho = fJetsCont->GetRhoVal();
-         if(idbHFEj)cout << "rho = " << rho << endl; 
+         //if(idbHFEj)cout << "rho = " << rho << endl; 
+         //cout << "rho = " << rho << endl; 
          
+         if(iOccCorr)
+           { 
+            Double_t occcorr = CalOccCorrection();
+            //cout << "occcorr = " << occcorr << endl;
+            rho*=occcorr;
+             //cout << "rho occcorr = " << rho << endl; 
+           }
+
          AliEmcalJet *jetLead = fJetsCont->GetLeadingJet();
          if(jetLead)
            {
@@ -1304,7 +1322,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             // check nSigma Data and MC
             //if(eop>0.85 && eop<1.3 && m20>0.01 && m20<0.35)fHistTPCnSigma_ele->Fill(pt,fTPCnSigma);
             //if(eop>0.2  && eop<0.7 && m20>0.01 && m20<0.35)fHistTPCnSigma_had->Fill(pt,fTPCnSigma);
-            if(eop>0.85 && eop<1.3 && m20>fmimM20 && m20<fmaxM20)fHistTPCnSigma_ele->Fill(pt,fTPCnSigma);
+            if(eop>0.9  && eop<1.3 && m20>fmimM20 && m20<fmaxM20)fHistTPCnSigma_ele->Fill(pt,fTPCnSigma);
             if(eop>0.2  && eop<0.7 && m20>fmimM20 && m20<fmaxM20)fHistTPCnSigma_had->Fill(pt,fTPCnSigma);
             if(abs(MCpdg)==11)fHistTPCnSigma_eMC->Fill(pt,fTPCnSigma);
  
@@ -1410,7 +1428,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
     if(idbHFEj)cout << " ++++++ find e in jet " << endl;
     
     // MC true
-    Double_t pTeJetTrue = 0.0;
+    Double_t pTeJetTrue = -1.0;
     if(fmcData && fJetsContPart)
       {
         //AliEmcalJet *jetPart = fJetsContPart->GetNextAcceptJet(0);  // full or charge ?
@@ -1420,11 +1438,14 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
              {
                Bool_t iTagHFjet = tagHFjet( jetPart, epTarrayMC, 0, pt);
 	       if(iTagHFjet)pTeJetTrue = jetPart->Pt();
+	       if(iTagHFjet)cout << "pTeJetTrue = " << jetPart->Pt() << " ; " << pt  <<endl;
                jetPart = fJetsContPart->GetNextAcceptJet(); 
              }
       }
     
      if(idbHFEj)cout << "pTeJetTrue = " << pTeJetTrue << endl;
+    
+     if(fmcData && pTeJetTrue<0.0)continue; // reject jets from uncerlying event (like EPOS)
 
     // reco
     if (fJetsCont) 
@@ -1449,7 +1470,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                   fHistIncEleInJet0->Fill(pt);  // to do ULS, LS
                  }
 
-            if(fabs(jetEta)<jetEtacut)  // R cut already apply ?
+            if(fabs(jetEta)<jetEtacut && jet->Pt()>1.0)  // pt cut for CMS bg cal. 
               { 
                //Bool_t iTagHFjet = tagHFjet( jet, epTarray, 0, pt);
                if(idbHFEj)cout << "iTagHFjet = " << iTagHFjet << endl;
@@ -1487,6 +1508,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                        fHistHFjet->Fill(pt,corrPt);
                        fHistHFjetOrder->Fill(corrPt,Njet);
                        fHistEopHFjet->Fill(corrPt,eopJet);
+                       fHistNsigHFjet->Fill(corrPt,fTPCnSigma);
                        if(Njet==0 || Njet==1)
                          {
                           Double_t dPhiHFjet_tmp = 0.0;
@@ -1831,7 +1853,7 @@ Double_t AliAnalysisHFjetTagHFE::CalRandomCone(Double_t HFjetPhi[], Double_t HFj
    if(dR0>1.0)
      {
 
-         cout << "check 2 ; " << dR0 << " ; " << PhiRand << " ; " << EtaRand << endl;
+         //cout << "check 2 ; " << dR0 << " ; " << PhiRand << " ; " << EtaRand << endl;
 
       Int_t ntracks = -999; 
       ntracks = ftrack->GetEntries();
@@ -1865,7 +1887,7 @@ Double_t AliAnalysisHFjetTagHFE::CalRandomCone(Double_t HFjetPhi[], Double_t HFj
        }
      }
 
-           cout << "all : pTrand = "<< pTrand << endl; 
+           //cout << "all : pTrand = "<< pTrand << endl; 
 
   return pTrand;
 }
@@ -2063,6 +2085,38 @@ void AliAnalysisHFjetTagHFE::FindMother(AliAODMCParticle* part, int &label, int 
    } 
    //cout << "Find Mother : label = " << label << " ; pid" << pid << endl;
 }
+
+Double_t AliAnalysisHFjetTagHFE::CalOccCorrection()
+{
+   Double_t TotaljetArea=0;
+   Double_t TotaljetAreaPhys=0;
+
+   fJetsCont->ResetCurrentID();
+   AliEmcalJet *jetOcc = fJetsCont->GetNextAcceptJet();
+
+   Int_t NjetArea = 0;
+
+   while(jetOcc) 
+        {
+         if(NjetArea>1)
+           {
+             TotaljetArea+=jetOcc->Area();
+
+             if(jetOcc->Pt()>0.1){
+                 TotaljetAreaPhys+=jetOcc->Area();
+                }
+            }
+             NjetArea++;
+             jetOcc = fJetsCont->GetNextAcceptJet(); 
+         }
+
+     Double_t OccCorr=0.0;
+     if(TotaljetArea>0) OccCorr=TotaljetAreaPhys/TotaljetArea; 
+     
+     return OccCorr;
+}
+
+
 
 Double_t AliAnalysisHFjetTagHFE::IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta,Double_t MatchclE)
 {

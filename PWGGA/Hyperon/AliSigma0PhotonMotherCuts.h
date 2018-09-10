@@ -55,13 +55,9 @@ class AliSigma0PhotonMotherCuts : public TObject {
 
   void SetIsMC(bool isMC) { fIsMC = isMC; }
   void SetLightweight(bool isLightweight) { fIsLightweight = isLightweight; }
-  void SetTreeOutput(bool isTreeOutput) { fIsTreeOutput = isTreeOutput; }
 
   void SetSigmaMass(float mass) { fMassSigma = mass; }
   void SetMixingDepth(short mixDepth) { fMixingDepth = mixDepth; }
-
-  // For the tree output
-  void SetSigmaMassCutTree(float cut) { fSigmaMassCutTree = cut; }
 
   // For the containers for Femto
   void SetSigmaMassCut(float cut) { fSigmaMassCut = cut; }
@@ -93,7 +89,6 @@ class AliSigma0PhotonMotherCuts : public TObject {
 
   void InitCutHistograms(TString appendix = TString(""));
   TList *GetCutHistograms() const { return fHistograms; }
-  TTree *GetSigmaTree() const { return fOutputTree; }
 
   std::vector<AliSigma0ParticlePhotonMother> &GetSigma() { return fSigma; }
   std::vector<AliSigma0ParticlePhotonMother> &GetSidebandUp() {
@@ -109,7 +104,6 @@ class AliSigma0PhotonMotherCuts : public TObject {
 
   bool fIsMC;           //
   bool fIsLightweight;  //
-  bool fIsTreeOutput;   //
 
   AliVEvent *fInputEvent;     //!
   AliMCEvent *fMCEvent;       //!
@@ -123,7 +117,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   deque<vector<AliSigma0ParticleV0> > fPhotonMixed;               //!
   deque<vector<AliSigma0ParticleV0> > fLambdaMixedBinned[10][6];  //!
   deque<vector<AliSigma0ParticleV0> > fPhotonMixedBinned[10][6];  //!
-  float fTreeVariables[5];                                        //!
+  float fTreeVariables[4];                                        //!
 
   AliSigma0V0Cuts *fLambdaCuts;  //
   AliSigma0V0Cuts *fPhotonCuts;  //
@@ -136,7 +130,6 @@ class AliSigma0PhotonMotherCuts : public TObject {
   int fPDGDaughter2;   //
 
   float fMassSigma;         //
-  float fSigmaMassCutTree;  //
   float fSigmaMassCut;      //
   float fSidebandCutUp;     //
   float fSidebandCutDown;   //
@@ -199,10 +192,8 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistMCV0Check;        //!
   TH2F *fHistMCV0MotherCheck;  //!
 
-  TTree *fOutputTree;  //!
-
  private:
-  ClassDef(AliSigma0PhotonMotherCuts, 11)
+  ClassDef(AliSigma0PhotonMotherCuts, 13)
 };
 
 #endif

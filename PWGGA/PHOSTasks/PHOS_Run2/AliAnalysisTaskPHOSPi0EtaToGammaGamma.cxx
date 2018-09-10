@@ -279,6 +279,27 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::~AliAnalysisTaskPHOSPi0EtaToGammaGamma()
 
   }
 
+  if(fCentArrayPi0){
+    delete fCentArrayPi0;
+    fCentArrayPi0 = 0x0;
+  }
+  if(fCentArrayEta){
+    delete fCentArrayEta;
+    fCentArrayEta = 0x0;
+  }
+  if(fCentArrayGamma){
+    delete fCentArrayGamma;
+    fCentArrayGamma = 0x0;
+  }
+  if(fCentArrayK0S){
+    delete fCentArrayK0S;
+    fCentArrayK0S = 0x0;
+  }
+  if(fCentArrayL0){
+    delete fCentArrayL0;
+    fCentArrayL0 = 0x0;
+  }
+
   delete fTOFEfficiency;
   fTOFEfficiency = 0x0;
 
@@ -880,6 +901,12 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     }
 
     //converted electrons.
+    for(Int_t jp=0;jp<4;jp++){
+      TH1F *h1purity_lce = new TH1F(Form("hPurityLCE_%s",PIDtype[jp].Data()),Form("p_{T} of true late conversion Electron in clusters for purity %s;p_{T} (GeV/c)",PIDtype[jp].Data()),NpTgg-1,pTgg);
+      h1purity_lce->Sumw2();
+      fOutputContainer->Add(h1purity_lce);
+    }
+
     for(Int_t jp=0;jp<4;jp++){
       TH2F *h2e = new TH2F(Form("hElectronRxy_%s",PIDtype[jp].Data()),Form("p_{T} of true Electron in clusters for purity %s vs. V_{prod};p_{T} (GeV/c);R_{xy} (cm)",PIDtype[jp].Data()),NpTgg-1,pTgg,500,0,500);
       h2e->Sumw2();
@@ -2913,7 +2940,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
         if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
           FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_noPID",pT,Rxy,weight);
           if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_noPID",pT,weight);
-          else              FillHistogramTH1(fOutputContainer,"hPurityGamma_noPID",pT,weight);
+          else              FillHistogramTH1(fOutputContainer,"hPurityLCE_noPID",pT,weight);
         }
         else FillHistogramTH1(fOutputContainer,"hPurityElectron_noPID",pT,weight);
       }
@@ -2943,7 +2970,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
           if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
             FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_CPV",pT,Rxy,weight);
             if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_CPV",pT,weight);
-            else              FillHistogramTH1(fOutputContainer,"hPurityGamma_CPV",pT,weight);
+            else              FillHistogramTH1(fOutputContainer,"hPurityLCE_CPV",pT,weight);
           }
           else FillHistogramTH1(fOutputContainer,"hPurityElectron_CPV",pT,weight);
         }
@@ -2977,7 +3004,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
           if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
             FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_Disp",pT,Rxy,weight);
             if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_Disp",pT,weight);
-            else              FillHistogramTH1(fOutputContainer,"hPurityGamma_Disp",pT,weight);
+            else              FillHistogramTH1(fOutputContainer,"hPurityLCE_Disp",pT,weight);
           }
           else FillHistogramTH1(fOutputContainer,"hPurityElectron_Disp",pT,weight);
         }
@@ -3009,7 +3036,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
           if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
             FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_PID",pT,Rxy,weight);
             if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_PID",pT,weight);
-            else              FillHistogramTH1(fOutputContainer,"hPurityGamma_PID",pT,weight);
+            else              FillHistogramTH1(fOutputContainer,"hPurityLCE_PID",pT,weight);
           }
           else FillHistogramTH1(fOutputContainer,"hPurityElectron_PID",pT,weight);
         }
@@ -3460,7 +3487,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
 
       Double32_t x = p->Vx() - fVertex[0];
       Double32_t y = p->Vy() - fVertex[1];
-      Double32_t z = p->Vz() - fVertex[2];
+      //Double32_t z = p->Vz() - fVertex[2];
       //Double32_t Rho = sqrt(x*x + y*y + z*z);
       Double32_t R = sqrt(x*x + y*y);
 
@@ -3771,7 +3798,7 @@ Bool_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::IsFrom(Int_t label, Double_t &True
 
     Double32_t x = 999;
     Double32_t y = 999;
-    Double32_t z = 999;
+    //Double32_t z = 999;
     //Double32_t Rho = 999;
     Double32_t R = 999;
 
@@ -3786,7 +3813,7 @@ Bool_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::IsFrom(Int_t label, Double_t &True
 
       x = mp->Vx() - fVertex[0];
       y = mp->Vy() - fVertex[1];
-      z = mp->Vz() - fVertex[2];
+      //z = mp->Vz() - fVertex[2];
       //Rho = sqrt(x*x + y*y + z*z);
       R = sqrt(x*x + y*y);
 

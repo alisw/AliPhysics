@@ -22,18 +22,19 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
+// ROOT
 #include <TString.h>
 #include <TSystem.h>
 #include <TROOT.h>
 
-#include <TString.h>
-#include <TSystem.h>
-#include <TROOT.h>
-
+// Analysis
 #include "AliAnalysisTaskCaloTrackCorrelation.h"
+#include "AliIsolationCut.h"
+
+// Macros
 #include "AddTaskCaloTrackCorrBase.C"
 #include "ConfigureCaloTrackCorrAnalysis.C"
-
+#include "GetAlienGlobalProductionVariables.C"
 #endif
 
 ///
@@ -98,12 +99,19 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelationSelectAnalysi
  const char *trigSuffix = "EMC7"
 )
 {
+  printf("AddTaskGammaHadronCorrelationSelectAnalysis::Start configuration\n");
+
+#if defined(__CINT__)
+  
+  printf("AddTaskGammaHadronCorrelationSelectAnalysis::Load macros\n");
   // Load macros
   //
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/AddTaskCaloTrackCorrBase.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/ConfigureCaloTrackCorrAnalysis.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/GetAlienGlobalProductionVariables.C");
-  
+
+#endif
+
   // First check the ALIEN environment settings
   //
   GetAlienGlobalProductionVariables(simulation,col,period,year,kTRUE);
@@ -128,6 +136,8 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelationSelectAnalysi
   ( anaList, calorimeter, simulation, year, col, analysisString, "", 
    shshMax, isoCone, isoConeMin, isoPtTh, isoMethod, isoContent,
    leading, tm, mixOn, printSettings, debug);
+  
+  printf("AddTaskGammaHadronCorrelationSelectAnalysis::End configuration\n");
   
   return task;
 }
