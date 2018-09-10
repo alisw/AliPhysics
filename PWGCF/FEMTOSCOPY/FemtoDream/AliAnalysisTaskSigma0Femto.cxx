@@ -387,7 +387,9 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
   fHistCutQA->GetXaxis()->SetBinLabel(4, "AliConversionCuts");
   fQA->Add(fHistCutQA);
 
-  fHistPhotonPileUp = new TH2F("fHistPhotonPileUp", ";#it{p}_{T} (GeV/#it{c}^{2}; PileUp", 100, 0, 10, 2, 0, 2);
+  fHistPhotonPileUp =
+      new TH2F("fHistPhotonPileUp", ";#it{p}_{T} (GeV/#it{c}^{2}; PileUp", 100,
+               0, 10, 2, 0, 2);
   fHistPhotonPileUp->GetYaxis()->SetBinLabel(1, "Before");
   fHistPhotonPileUp->GetYaxis()->SetBinLabel(2, "After");
   fQA->Add(fHistPhotonPileUp);
@@ -583,7 +585,7 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
       new AliFemtoDreamPartCollection(fConfig, fConfig->GetMinimalBookingME());
 
   if (!fConfig->GetMinimalBookingME() && fPairCleaner &&
-      fPairCleaner->GetHistList()) {
+      fPairCleaner->GetHistList() && !fIsMC) {
     fOutputFemto->Add(fPairCleaner->GetHistList());
   }
 
