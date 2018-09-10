@@ -91,7 +91,8 @@ class AliStack : public TVirtualMCStack
     void        SetMCEmbeddingFlag(Bool_t v=kTRUE)        {fMCEmbeddingFlag = v;}
     Bool_t      GetMCEmbeddingFlag()                const {return fMCEmbeddingFlag;}
     static const char*   GetEmbeddingBKGPathsKey() {return fgkEmbedPathsKey;}
-
+    static TParticle* GetDummyParticle();
+    
   protected:
     // methods
     void  CleanParents();
@@ -120,7 +121,6 @@ class AliStack : public TVirtualMCStack
     TArrayI        fTrackLabelMap;     //! Map of track labels
     Bool_t         fMCEmbeddingFlag;   //! Flag that this is a top stack of embedded MC
 
-    static TParticle* fgDummyParticle;     // dummy particle returned in Stack::Particle call in embedding mode
     static const Char_t *fgkEmbedPathsKey;       // keyword for embedding paths
 
     ClassDef(AliStack,6) //Particles stack

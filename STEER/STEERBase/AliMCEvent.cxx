@@ -194,7 +194,9 @@ Int_t AliMCEvent::GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*&
       i = FindIndexAndEvent(i, bgEvent);
       return bgEvent->GetParticleAndTR(i,particle,trefs);
     } else {
-      return 0;
+      particle = 0;
+      trefs    = 0;
+      return -1;
     }
   } 
   //  
@@ -553,7 +555,7 @@ AliVParticle* AliMCEvent::GetTrack(Int_t i) const
 	  i = FindIndexAndEvent(i, bgEvent);
 	  return bgEvent->GetTrack(i);
 	} else {
-	    return 0;
+	  return (AliVParticle*)GetDummyTrack();
 	}
     }
     
@@ -785,8 +787,8 @@ Bool_t AliMCEvent::IsPhysicalPrimary(Int_t i) const
 // Delegate to subevent if necesarry 
 
     
-    if (!fSubsidiaryEvents) {
-      return fStack->IsPhysicalPrimary(i,kTRUE);
+    if (!fSubsidiaryEvents) {      
+      return (i >= BgLabelOffset()) ? kFALSE : fStack->IsPhysicalPrimary(i,kTRUE);
     } else {
 	AliMCEvent* evt = 0;
 	Int_t idx = FindIndexAndEvent(i, evt);
@@ -799,7 +801,7 @@ Bool_t AliMCEvent::IsSecondaryFromWeakDecay(Int_t i)
 //
 // Delegate to subevent if necesarry 
     if (!fSubsidiaryEvents) {
-	return fStack->IsSecondaryFromWeakDecay(i,kTRUE);
+      return (i >= BgLabelOffset()) ? kFALSE : fStack->IsSecondaryFromWeakDecay(i,kTRUE);
     } else {
 	AliMCEvent* evt = 0;
 	Int_t idx = FindIndexAndEvent(i, evt);
@@ -812,7 +814,7 @@ Bool_t AliMCEvent::IsSecondaryFromMaterial(Int_t i)
 //
 // Delegate to subevent if necesarry 
     if (!fSubsidiaryEvents) {
-	return fStack->IsSecondaryFromMaterial(i,kTRUE);
+      return (i >= BgLabelOffset()) ? kFALSE : fStack->IsSecondaryFromMaterial(i,kTRUE);
     } else {
 	AliMCEvent* evt = 0;
 	Int_t idx = FindIndexAndEvent(i, evt);
@@ -893,6 +895,7 @@ Bool_t AliMCEvent::IsFromBGEvent(Int_t index)
 {
     // Checks if a particle is from the background events
     // Works for HIJING inside Cocktail
+  if (index >= BgLabelOffset() && !fSubsidiaryEvents) return kTRUE;
     if (fNBG == -1) {
 	AliGenCocktailEventHeader* coHeader = 
 	    dynamic_cast<AliGenCocktailEventHeader*> (GenEventHeader());
@@ -907,29 +910,33 @@ Bool_t AliMCEvent::IsFromBGEvent(Int_t index)
 }
 
 
-    TList* AliMCEvent::GetCocktailList()
-    {
-      //gives the CocktailHeaders when reading ESDs/AODs (corresponding to fExteral=kFALSE/kTRUE)
-      //the AODMC header (and the aodmc array) is passed as an instance to MCEvent by the AliAODInputHandler
-      if(fExternal==kFALSE) { 
-	AliGenCocktailEventHeader* coHeader =dynamic_cast<AliGenCocktailEventHeader*> (GenEventHeader());
-	if(!coHeader) {
-	  return 0;
-	} else {
-	  return (coHeader->GetHeaders());
-	}
-      } else {
-	if(!fAODMCHeader) { 
-	  return 0;
-	} else {
-	  return (fAODMCHeader->GetCocktailHeaders());
-	}
-      }
+TList* AliMCEvent::GetCocktailList()
+{
+  //gives the CocktailHeaders when reading ESDs/AODs (corresponding to fExteral=kFALSE/kTRUE)
+  //the AODMC header (and the aodmc array) is passed as an instance to MCEvent by the AliAODInputHandler
+  if(fExternal==kFALSE) { 
+    AliGenCocktailEventHeader* coHeader =dynamic_cast<AliGenCocktailEventHeader*> (GenEventHeader());
+    if(!coHeader) {
+      return 0;
+    } else {
+      return (coHeader->GetHeaders());
     }
+  } else {
+    if(!fAODMCHeader) { 
+      return 0;
+    } else {
+      return (fAODMCHeader->GetCocktailHeaders());
+    }
+  }
+}
 
 
 TString AliMCEvent::GetGenerator(Int_t index)
 {
+  if (index >= BgLabelOffset() && !fSubsidiaryEvents) {
+    TString retv = "suppressed";
+    return retv;
+  }
   Int_t nsumpart=fNprimaries;
   TList* lh = GetCocktailList();
   if(!lh){ TString noheader="nococktailheader";
@@ -1112,6 +1119,13 @@ Int_t AliMCEvent::GetPrimary(Int_t id)
     parent=Particle(current)->GetFirstMother();
     if(parent<0) return current;
   }
+}
+
+//_________________________________________________________________
+AliMCParticle* AliMCEvent::GetDummyTrack()
+{
+  static AliMCParticle dummy(AliStack::GetDummyParticle(), 0, gkDummyLabel);
+  return &dummy;
 }
 
 ClassImp(AliMCEvent)
