@@ -197,11 +197,20 @@ class AliFemtoDreamCollConfig : public TNamed {
   }
   ;
 
-  void SetDeltaEtaMax(float delta) { fDeltaEtaMax = delta; }
+  void SetDeltaEtaMax(float delta) {
+    fDoDeltaEtaDeltaPhiCut = true;
+    fDeltaEtaMax = delta;
+  }
   float GetDeltaEtaMax() const { return fDeltaEtaMax; }
 
-  void SetDeltaPhiMax(float delta) { fDeltaPhiMax = delta; }
+  void SetDeltaPhiMax(float delta) {
+    fDoDeltaEtaDeltaPhiCut = true;
+    fDeltaPhiMax = delta;
+  }
   float GetDeltaPhiMax() const { return fDeltaPhiMax; }
+
+  void DoDeltaEtaDeltaPhiCut(bool doIt) { fDoDeltaEtaDeltaPhiCut = doIt; }
+  float GetDoDeltaEtaDeltaPhiCut() const { return fDoDeltaEtaDeltaPhiCut; }
 
  private:
   bool fMultBinning;            //
@@ -233,8 +242,9 @@ class AliFemtoDreamCollConfig : public TNamed {
 
   float fDeltaEtaMax;
   float fDeltaPhiMax;
+  bool fDoDeltaEtaDeltaPhiCut;
 
-ClassDef(AliFemtoDreamCollConfig,7)
+ClassDef(AliFemtoDreamCollConfig,8)
   ;
 };
 
