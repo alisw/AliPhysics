@@ -69,6 +69,7 @@ public:
   void SetUseOutOfBunchPlpSelection(Bool_t outOfBunchPlp);
   void SetIsPileUpEvent(Bool_t ispileup);
   void SetCascadePileUpRemoval(Bool_t cascadePileUpRemoval);
+  void SetTrackPileUpRemoval(Bool_t trackPileUpRemoval);
 
   void SetMinVtxContr(Int_t contr = 1) {
     fMinVtxContr = contr;
@@ -171,6 +172,7 @@ private:
   Bool_t fpA2013;          ///< analysis on pA 2013 data
   Bool_t fisPileUp;        ///< pile up rejection on?
   Bool_t fCascadePileUpRemoval;//pile-up removal for cascades (its+tof hits for pos, neg and bac tracks)
+  Bool_t fTrackPileUpRemoval;//pile-up removal for tracks (its+tof hits of tracks)
   Bool_t fMVPlp;           ///< multi-vertex pileup rejection?
   Bool_t fOutOfBunchPlp;   ///out-of-bunch pileup rejection
   Int_t fMinVtxContr;      ///< no of contributors for pA 2013 data
