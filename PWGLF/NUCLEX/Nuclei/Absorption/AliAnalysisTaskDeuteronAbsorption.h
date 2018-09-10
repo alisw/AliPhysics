@@ -36,6 +36,8 @@ public:
 
   static const AliPID::EParticleType fgkSpecies[4];
   static const std::string fgkParticleNames[4];
+  static const double fgkPhiParamPos[4][4];
+  static const double fgkPhiParamNeg[4][4];
 
 private:
   double fMindEdx; /// Cut on the minimum dE/dx in TPC
