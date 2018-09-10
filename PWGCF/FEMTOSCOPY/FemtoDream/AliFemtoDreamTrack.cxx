@@ -466,9 +466,16 @@ void AliFemtoDreamTrack::SetMCInformation() {
       } else {
         this->SetParticleOrigin(AliFemtoDreamBasePart::kUnknown);
       }
-      AliAODMCParticle *mcMother = (AliAODMCParticle*) mcarray->At(
-    		  mcPart->GetMother());
-      if(mcMother) {
+      int motherID = mcPart->GetMother();
+      int lastMother = motherID;
+      AliAODMCParticle *mcMother;
+      while (motherID != -1) {
+        lastMother = motherID;
+        mcMother = (AliAODMCParticle *)mcarray->At(motherID);
+        motherID = mcMother->GetMother();
+      }
+      mcMother = (AliAODMCParticle *)mcarray->At(lastMother);
+      if (mcMother) {
         this->SetMotherPDG(mcMother->GetPdgCode());
       }
     }
