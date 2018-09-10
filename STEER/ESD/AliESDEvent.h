@@ -378,7 +378,7 @@ public:
   
   Bool_t RemoveKink(Int_t i)   const;
   Bool_t RemoveV0(Int_t i)     const;
-  AliESDfriendTrack* RemoveTrack(Int_t i, Bool_t checkPrimVtx) const;
+  AliESDfriendTrack* RemoveTrack(Int_t i, Bool_t checkPrimVtx);
 
   const AliESDVertex *GetPileupVertexSPD(Int_t i) const {
     return (const AliESDVertex *)(fSPDPileupVertices?fSPDPileupVertices->At(i):0x0);
@@ -534,7 +534,9 @@ public:
     return (fTrkPileupVertices?fTrkPileupVertices->GetEntriesFast():0);
   }
   Int_t GetNumberOfTracks()     const {return fTracks?fTracks->GetEntriesFast():0;}
-  Int_t GetNumberOfESDTracks()  const { return GetNumberOfTracks(); }
+  Int_t GetNumberOfESDTracks()  const { return fNumberOfESDTracks<0 ? GetNumberOfTracks() : fNumberOfESDTracks; }
+  void UpdateNumberOfESDTracks() { fNumberOfESDTracks = GetNumberOfTracks(); }
+  void SetNumberOfESDTracks(int ntr) { fNumberOfESDTracks = ntr; }
   Int_t GetNumberOfHLTConfMapTracks()     const {return 0;} 
   // fHLTConfMapTracks->GetEntriesFast();}
   Int_t GetNumberOfHLTHoughTracks()     const {return  0;  }
@@ -675,8 +677,9 @@ protected:
   UInt_t fDAQDetectorPattern; // Detector pattern from DAQ: bit 0 is SPD, bit 4 is TPC, etc. See event.h
   UInt_t fDAQAttributes; // Third word of attributes from DAQ: bit 7 corresponds to HLT decision 
   Int_t  fNTPCClusters;  // number of TPC clusters
-
-  ClassDef(AliESDEvent,27)  //ESDEvent class 
+  Int_t  fNumberOfESDTracks; // number of ESDtracks (unchanged in case of filtering)
+  
+  ClassDef(AliESDEvent,28)  //ESDEvent class 
 };
 #endif 
 
