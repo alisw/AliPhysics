@@ -18,11 +18,8 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fV0ReaderName("NoInit"),
       fV0Cuts(nullptr),
       fAntiV0Cuts(nullptr),
-      fPhotonV0Cuts(nullptr),
       fSigmaCuts(nullptr),
       fAntiSigmaCuts(nullptr),
-      fSigmaPhotonCuts(nullptr),
-      fAntiSigmaPhotonCuts(nullptr),
       fProtonTrack(nullptr),
       fTrackCutsPartProton(nullptr),
       fTrackCutsPartAntiProton(nullptr),
@@ -59,11 +56,8 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
       fV0ReaderName("NoInit"),
       fV0Cuts(nullptr),
       fAntiV0Cuts(nullptr),
-      fPhotonV0Cuts(nullptr),
       fSigmaCuts(nullptr),
       fAntiSigmaCuts(nullptr),
-      fSigmaPhotonCuts(nullptr),
-      fAntiSigmaPhotonCuts(nullptr),
       fProtonTrack(nullptr),
       fTrackCutsPartProton(nullptr),
       fTrackCutsPartAntiProton(nullptr),
@@ -122,7 +116,7 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
     return;
   }
 
-  if (!fV0Cuts || !fAntiV0Cuts || !fPhotonV0Cuts) {
+  if (!fV0Cuts || !fAntiV0Cuts) {
     AliError("V0 Cuts missing");
     return;
   }
@@ -135,8 +129,7 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
     return;
   }
 
-  if (!fSigmaCuts || !fAntiSigmaCuts || !fSigmaPhotonCuts ||
-      !fAntiSigmaPhotonCuts) {
+  if (!fSigmaCuts || !fAntiSigmaCuts) {
     AliError("Sigma0 Cuts missing");
     return;
   }
@@ -169,9 +162,6 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
   // LAMBDA SELECTION
   fAntiV0Cuts->SelectV0(fInputEvent, fMCEvent);
 
-  // PHOTON V0 SELECTION
-  fPhotonV0Cuts->SelectV0(fInputEvent, fMCEvent);
-
   // PHOTON SELECTION
   fGammaArray = fV0Reader->GetReconstructedGammas();  // Gammas from default Cut
   std::vector<AliSigma0ParticleV0> gammaConvContainer;
@@ -184,14 +174,6 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
   // Sigma0 selection
   fAntiSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, gammaConvContainer,
                                      fAntiV0Cuts->GetV0s());
-
-  // Sigma0 selection
-  fSigmaPhotonCuts->SelectPhotonMother(
-      fInputEvent, fMCEvent, fPhotonV0Cuts->GetV0s(), fV0Cuts->GetV0s());
-
-  // Sigma0 selection
-  fAntiSigmaPhotonCuts->SelectPhotonMother(
-      fInputEvent, fMCEvent, fPhotonV0Cuts->GetV0s(), fAntiV0Cuts->GetV0s());
 
   // Convert the Sigma0 into Femto particles
   static std::vector<AliFemtoDreamBasePart> sigma0particles;
@@ -405,7 +387,9 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
   fHistCutQA->GetXaxis()->SetBinLabel(4, "AliConversionCuts");
   fQA->Add(fHistCutQA);
 
-  fHistPhotonPileUp = new TH2F("fHistPhotonPileUp", ";#it{p}_{T} (GeV/#it{c}^{2}; PileUp", 100, 0, 10, 2, 0, 2);
+  fHistPhotonPileUp =
+      new TH2F("fHistPhotonPileUp", ";#it{p}_{T} (GeV/#it{c}^{2}; PileUp", 100,
+               0, 10, 2, 0, 2);
   fHistPhotonPileUp->GetYaxis()->SetBinLabel(1, "Before");
   fHistPhotonPileUp->GetYaxis()->SetBinLabel(2, "After");
   fQA->Add(fHistPhotonPileUp);
@@ -576,13 +560,8 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
 
   if (fV0Cuts) fV0Cuts->InitCutHistograms(TString("Lambda"));
   if (fAntiV0Cuts) fAntiV0Cuts->InitCutHistograms(TString("AntiLambda"));
-  if (fPhotonV0Cuts) fPhotonV0Cuts->InitCutHistograms(TString("Photon"));
   if (fSigmaCuts) fSigmaCuts->InitCutHistograms(TString("Sigma0"));
   if (fAntiSigmaCuts) fAntiSigmaCuts->InitCutHistograms(TString("AntiSigma0"));
-  if (fSigmaPhotonCuts)
-    fSigmaPhotonCuts->InitCutHistograms(TString("Sigma0Photon"));
-  if (fAntiSigmaPhotonCuts)
-    fAntiSigmaPhotonCuts->InitCutHistograms(TString("AntiSigma0Photon"));
 
   if (fV0Cuts && fV0Cuts->GetCutHistograms()) {
     fOutputContainer->Add(fV0Cuts->GetCutHistograms());
@@ -590,10 +569,6 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
 
   if (fAntiV0Cuts && fAntiV0Cuts->GetCutHistograms()) {
     fOutputContainer->Add(fAntiV0Cuts->GetCutHistograms());
-  }
-
-  if (fPhotonV0Cuts && fPhotonV0Cuts->GetCutHistograms()) {
-    fOutputContainer->Add(fPhotonV0Cuts->GetCutHistograms());
   }
 
   if (fSigmaCuts && fSigmaCuts->GetCutHistograms()) {
@@ -604,21 +579,13 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     fOutputContainer->Add(fAntiSigmaCuts->GetCutHistograms());
   }
 
-  if (fSigmaPhotonCuts && fSigmaPhotonCuts->GetCutHistograms()) {
-    fOutputContainer->Add(fSigmaPhotonCuts->GetCutHistograms());
-  }
-
-  if (fAntiSigmaPhotonCuts && fAntiSigmaPhotonCuts->GetCutHistograms()) {
-    fOutputContainer->Add(fAntiSigmaPhotonCuts->GetCutHistograms());
-  }
-
   fPairCleaner =
       new AliFemtoDreamPairCleaner(6, 0, fConfig->GetMinimalBookingME());
   fPartColl =
       new AliFemtoDreamPartCollection(fConfig, fConfig->GetMinimalBookingME());
 
   if (!fConfig->GetMinimalBookingME() && fPairCleaner &&
-      fPairCleaner->GetHistList()) {
+      fPairCleaner->GetHistList() && !fIsMC) {
     fOutputFemto->Add(fPairCleaner->GetHistList());
   }
 

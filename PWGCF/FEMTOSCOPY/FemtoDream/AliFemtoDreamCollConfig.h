@@ -196,6 +196,13 @@ class AliFemtoDreamCollConfig : public TNamed {
     return fSpinningDepth;
   }
   ;
+
+  void SetDeltaEtaMax(float delta) { fDeltaEtaMax = delta; }
+  float GetDeltaEtaMax() const { return fDeltaEtaMax; }
+
+  void SetDeltaPhiMax(float delta) { fDeltaPhiMax = delta; }
+  float GetDeltaPhiMax() const { return fDeltaPhiMax; }
+
  private:
   bool fMultBinning;            //
   bool fCentBinning;            //
@@ -223,7 +230,11 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fkTCentrality;           //
   bool fMCCommonAncestor;  // Setter used in MC Only to obtain the SE distribution for common ancestor and non common ancestor
   AliFemtoDreamEvent::MultEstimator fEst;  //
-ClassDef(AliFemtoDreamCollConfig,6)
+
+  float fDeltaEtaMax;
+  float fDeltaPhiMax;
+
+ClassDef(AliFemtoDreamCollConfig,7)
   ;
 };
 

@@ -42,16 +42,9 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   }
   void SetV0Cuts(AliSigma0V0Cuts *cuts) { fV0Cuts = cuts; }
   void SetAntiV0Cuts(AliSigma0V0Cuts *cuts) { fAntiV0Cuts = cuts; }
-  void SetPhotonV0Cuts(AliSigma0V0Cuts *cuts) { fPhotonV0Cuts = cuts; }
   void SetSigmaCuts(AliSigma0PhotonMotherCuts *cuts) { fSigmaCuts = cuts; }
   void SetAntiSigmaCuts(AliSigma0PhotonMotherCuts *cuts) {
     fAntiSigmaCuts = cuts;
-  }
-  void SetSigmaPhotonCuts(AliSigma0PhotonMotherCuts *cuts) {
-    fSigmaPhotonCuts = cuts;
-  }
-  void SetAntiSigmaPhotonCuts(AliSigma0PhotonMotherCuts *cuts) {
-    fAntiSigmaPhotonCuts = cuts;
   }
   void SetPhotonLegPileUpCut(bool pileup) { fPhotonLegPileUpCut = pileup; }
   void SetCollectionConfig(AliFemtoDreamCollConfig *config) {
@@ -77,11 +70,8 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   TString fV0ReaderName;                        //
   AliSigma0V0Cuts *fV0Cuts;                     //
   AliSigma0V0Cuts *fAntiV0Cuts;                 //
-  AliSigma0V0Cuts *fPhotonV0Cuts;               //
   AliSigma0PhotonMotherCuts *fSigmaCuts;        //
   AliSigma0PhotonMotherCuts *fAntiSigmaCuts;    //
-  AliSigma0PhotonMotherCuts *fSigmaPhotonCuts;  //
-  AliSigma0PhotonMotherCuts *fAntiSigmaPhotonCuts;  //
 
   AliFemtoDreamTrack *fProtonTrack;                  //!
   AliFemtoDreamTrackCuts *fTrackCutsPartProton;      //
@@ -115,6 +105,6 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   TH1F *fHistTriggerAfter;                  //!
   TH2F *fHistPhotonPileUp;                  //!
 
-  ClassDef(AliAnalysisTaskSigma0Femto, 6)
+  ClassDef(AliAnalysisTaskSigma0Femto, 7)
 };
 #endif

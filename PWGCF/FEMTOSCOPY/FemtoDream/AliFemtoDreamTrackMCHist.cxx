@@ -26,6 +26,7 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist()
       fMCMaterialPt(0),
       fMCFeeddownWeakPt(0),
 	  fHistMCMother(0),
+	  fHistMCMotherPDG(0),
       fMCPrimDCAXYPtBins(0),
       fMCMaterialDCAXYPtBins(0),
       fMCSecondaryDCAXYPtBins(0),
@@ -126,6 +127,9 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
   		"; #it{p}_{T} (GeV/#it{c}^{2}); PDG code mother", 100, 0., 10.,
 		4000, 0, 4000);
   fMCList->Add(fHistMCMother);
+
+  fHistMCMotherPDG = new TH1I("fHistMCMotherPDG", "; Entries; PDG code mother", 10000000, 0, 10000000);
+  fMCList->Add(fHistMCMotherPDG);
 
   if (contribSplitting) {
     fMCContPt = new TH1F("ContPt", "ContPt", ptBins, ptmin, ptmax);

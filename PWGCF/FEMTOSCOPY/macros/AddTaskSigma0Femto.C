@@ -129,18 +129,6 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
     antiv0Cuts->SetLightweight(false);
   }
 
-  AliSigma0V0Cuts *photonV0Cuts = AliSigma0V0Cuts::PhotonCuts();
-  photonV0Cuts->SetIsMC(isMC);
-  photonV0Cuts->SetPID(22);
-  photonV0Cuts->SetPosPID(AliPID::kElectron, 11);
-  photonV0Cuts->SetNegPID(AliPID::kElectron, -11);
-  if (suffix != "0") photonV0Cuts->SetLightweight(true);
-
-  if (suffix == "999") {
-    photonV0Cuts->SetCheckCutsMC(true);
-    photonV0Cuts->SetLightweight(false);
-  }
-
   AliSigma0PhotonMotherCuts *sigmaCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
   sigmaCuts->SetIsMC(isMC);
@@ -171,38 +159,6 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   }
   if (suffix == "4" || suffix == "5") {
     antiSigmaCuts->SetSigmaSideband(0.025, 0.1);
-  }
-
-  AliSigma0PhotonMotherCuts *sigmaPhotonCuts =
-      AliSigma0PhotonMotherCuts::DefaultCuts();
-  sigmaPhotonCuts->SetIsMC(isMC);
-  sigmaPhotonCuts->SetPDG(3212, 3122, 22);
-  sigmaPhotonCuts->SetPhotonCuts(photonV0Cuts);
-  sigmaPhotonCuts->SetLambdaCuts(v0Cuts);
-  if (suffix != "0" && suffix != "999") {
-    sigmaPhotonCuts->SetLightweight(true);
-  }
-  if (suffix == "2" || suffix == "3") {
-    sigmaPhotonCuts->SetSigmaSideband(0.025, 0.05);
-  }
-  if (suffix == "4" || suffix == "5") {
-    sigmaPhotonCuts->SetSigmaSideband(0.025, 0.1);
-  }
-
-  AliSigma0PhotonMotherCuts *antiSigmaPhotonCuts =
-      AliSigma0PhotonMotherCuts::DefaultCuts();
-  antiSigmaPhotonCuts->SetIsMC(isMC);
-  antiSigmaPhotonCuts->SetPDG(-3212, -3122, 22);
-  antiSigmaPhotonCuts->SetPhotonCuts(photonV0Cuts);
-  antiSigmaPhotonCuts->SetLambdaCuts(antiv0Cuts);
-  if (suffix != "0" && suffix != "999") {
-    antiSigmaPhotonCuts->SetLightweight(true);
-  }
-  if (suffix == "2" || suffix == "3") {
-    antiSigmaPhotonCuts->SetSigmaSideband(0.025, 0.05);
-  }
-  if (suffix == "4" || suffix == "5") {
-    antiSigmaPhotonCuts->SetSigmaSideband(0.025, 0.1);
   }
 
   // Femto Collection
@@ -334,11 +290,8 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   task->SetAntiProtonCuts(AntiTrackCuts);
   task->SetV0Cuts(v0Cuts);
   task->SetAntiV0Cuts(antiv0Cuts);
-  task->SetPhotonV0Cuts(photonV0Cuts);
   task->SetSigmaCuts(sigmaCuts);
   task->SetAntiSigmaCuts(antiSigmaCuts);
-  task->SetSigmaPhotonCuts(sigmaPhotonCuts);
-  task->SetAntiSigmaPhotonCuts(antiSigmaPhotonCuts);
   task->SetCollectionConfig(config);
 
   if (suffix != "0" && suffix != "999") {

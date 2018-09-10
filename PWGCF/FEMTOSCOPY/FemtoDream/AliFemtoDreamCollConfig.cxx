@@ -34,7 +34,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
       fSpinningDepth(0),
       fkTCentrality(false),
       fMCCommonAncestor(false),
-      fEst(AliFemtoDreamEvent::kSPD) {
+      fEst(AliFemtoDreamEvent::kSPD),
+      fDeltaEtaMax(0.f),
+      fDeltaPhiMax(0.f) {
   //should not be used, since we need a name to deal with root objects
 }
 
@@ -66,7 +68,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fSpinningDepth(config.fSpinningDepth),
       fkTCentrality(config.fkTCentrality),
       fMCCommonAncestor(config.fMCCommonAncestor),
-      fEst(config.fEst) {
+      fEst(config.fEst),
+      fDeltaEtaMax(config.fDeltaEtaMax),
+      fDeltaPhiMax(config.fDeltaPhiMax) {
 }
 
 AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
@@ -97,7 +101,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fSpinningDepth(0),
       fkTCentrality(false),
       fMCCommonAncestor(false),
-      fEst(AliFemtoDreamEvent::kSPD) {
+      fEst(AliFemtoDreamEvent::kSPD),
+      fDeltaEtaMax(0.f),
+      fDeltaPhiMax(0.f) {
   fZVtxBins = new TNtuple("ZBins", "ZBins", "zvtx");
   fMultBins = new TNtuple("MultBins", "MultBins", "mult");
   fPDGParticleSpecies = new TNtuple("PDGCodes", "PDGCodes", "PDGCodes");
@@ -135,6 +141,8 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     this->fkTCentrality = config.fkTCentrality;
     this->fMCCommonAncestor = config.fMCCommonAncestor;
     this->fEst = config.fEst;
+    this->fDeltaEtaMax = config.fDeltaEtaMax;
+    this->fDeltaPhiMax = config.fDeltaPhiMax;
   }
   return *this;
 }
