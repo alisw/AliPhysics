@@ -1,5 +1,6 @@
- 
-AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString name = "name",
+//Names should contain a comma seperated list of cut settings
+//Current options: all, electrons, kCutSet1, TTreeCuts, V0_TPCcorr, V0_ITScorr
+AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names = "kCutSet1",
                                                                 Bool_t isAOD,
                                                                 Bool_t getFromAlien = kFALSE,
                                                                 TString configFile="Config_acapon_Efficiency.C",
@@ -9,6 +10,12 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString name = "n
                                                                 Int_t centrality = 0) {
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
+	
+	TObjArray *arrNames = names.Tokenize(";");
+	Int_t nDie = arrNames->GetEntries();
+	Printf("Number of implemented cuts: %i", nDie);
+
+	Bool_t SDDstatus = kTRUE;
 
   // #########################################################
   // #########################################################
@@ -48,7 +55,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString name = "n
   // #########################################################
   // #########################################################
   // Creating an instance of the task
-  AliAnalysisTaskElectronEfficiencyV2* task = new AliAnalysisTaskElectronEfficiencyV2(Form("%s%d",name.Data(), wagonnr));
+  AliAnalysisTaskElectronEfficiencyV2* task = new AliAnalysisTaskElectronEfficiencyV2(Form("%s%d",names.Data(), wagonnr));
 
   // #########################################################
   // #########################################################
@@ -59,10 +66,12 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString name = "n
 
   // #########################################################
   // #########################################################
+	// Cut lib
+  LMEECutLib* cutlib = new LMEECutLib(SDDstatus);
   // Event selection. Is the same for all the different cutsettings
   task->SetEnablePhysicsSelection(kTRUE);
   task->SetTriggerMask(triggerNames);
-  task->SetEventFilter(SetupEventCuts(isAOD)); //returns eventCuts from Config.
+  task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kAllSpecies)); // All cut sets have same event cuts
 
   Double_t centMin = 0.;
   Double_t centMax = 90.;
@@ -147,23 +156,14 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString name = "n
   std::vector<Bool_t> DielectronsPairNotFromSameMother = AddSingleLegMCSignal(task);
   task->AddMCSignalsWhereDielectronPairNotFromSameMother(DielectronsPairNotFromSameMother);
 
-
-  // #########################################################
-  // #########################################################
-  // Set mean and width correction for ITS, TPC and TOF
-
-
-  // #########################################################
   // #########################################################
   // Adding cutsettings
-  TObjArray*  arrNames = names.Tokenize(";");
-  const Int_t nDie = arrNames->GetEntriesFast();
-
-  for (Int_t iCut = 0; iCut < nDie; ++iCut){
+  for(Int_t iCut = 0; iCut < nDie; ++iCut){
     TString cutDefinition(arrNames->At(iCut)->GetName());
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
     task->AddTrackCuts(filter);
-    DoAdditionalWork(task);
+		Printf("Successfully added task with cut set: %s\n", cutDefinition);
+    //DoAdditionalWork(task);
   }
 
 

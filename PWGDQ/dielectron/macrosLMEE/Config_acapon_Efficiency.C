@@ -1,5 +1,3 @@
-TString names=("kTTreeCuts");
-
 //TString generatorNameForMCSignal  = "pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7";
 TString generatorNameForMCSignal  = "Pythia CC_1;Pythia BB_1;Pythia B_1;Jpsi2ee_1;B2JPsi2ee_1";
 // TString generatorNameForMCSignal  = "Hijing_0";
@@ -11,16 +9,18 @@ Bool_t SetTPCCorrection = kFALSE;
 Bool_t SetITSCorrection = kFALSE;
 Bool_t SetTOFCorrection = kFALSE;
 
-Bool_t SetGeneratedSmearingHistos = kTRUE;
+Bool_t SetGeneratedSmearingHistos = kFALSE;
 
 Bool_t DoPairing    = kTRUE;
 Bool_t DoULSLS      = kTRUE;
 Bool_t DeactivateLS = kTRUE;
 
-Bool_t GetResolutionFromAlien = kTRUE;
+Bool_t GetResolutionFromAlien = kFALSE;
 //std::string resoFilename = "resolution_pPb17f2a_0090cent.root";
-std::string resoFilename = "/alice/cern.ch/user/a/acapon/ResolutionFiles/resolution_17f2a_deltaVsP_0090cent.root";
-std::string resoFilenameFromAlien = "/alice/cern.ch/user/a/acapon/ResolutionFiles/resolution_17f2a_deltaVsP_0090cent.root";
+/* std::string resoFilename = "resolution_17f2a_deltaVsP_0090cent.root"; */
+/* std::string resoFilenameFromAlien = "/alice/cern.ch/user/a/acapon/ResolutionFiles/resolution_17f2a_deltaVsP_0090cent.root"; */
+std::string resoFilename = "";
+std::string resoFilenameFromAlien = "";
 
 Bool_t DoCocktailWeighting  = kFALSE;
 Bool_t GetCocktailFromAlien = kFALSE;
@@ -181,7 +181,6 @@ void DoAdditionalWork(AliAnalysisTaskElectronEfficiencyV2* task){
 
 AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD)
 {
-  std::cout << "TEST" << std::endl;
   std::cout << "SetupTrackCutsAndSettings( cutInstance = " << cutDefinition << " )" <<std::endl;
   AliAnalysisFilter *anaFilter = new AliAnalysisFilter("anaFilter","anaFilter"); // named constructor seems mandatory!
 
@@ -189,9 +188,18 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
 
   LMEECutLib* LMcutlib = new LMEECutLib(SDDstatus);
   if(cutDefinition == "kTTreeCuts"){
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kTTreeCuts, LMEECutLib::kTTreeCuts) );
+		std::cout << "TTree Cuts being set" << std::endl;
+		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kTTreeCuts, LMEECutLib::kTTreeCuts));
 		anaFilter->SetName(cutDefinition);
+		anaFilter->Print();
   }
+	else if(cutDefinition = "kCutSet1"){ //TMVA (unweighted cut at 0.05)
+		std::cout << "Setting up cut set 1 (unweighted TMVA)" << std::endl;
+		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+		anaFilter->AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+		anaFilter->SetName(cutDefinition);
+		anaFilter->Print();
+	}
 	else{
 		std::cout << "Undefined cut definition...." << std::endl;
 		return 0x0;
@@ -203,18 +211,18 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
 
 // #########################################################
 // #########################################################
-AliAnalysisCuts* SetupEventCuts(Bool_t isAOD)
-{
-  std::cout << "Setup Event Cuts" << std::endl;
-  // event cuts are identical for all analysis 'cutInstance's that run together!
-  AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
-  eventCuts->SetRequireVertex();
-  eventCuts->SetMinVtxContributors(1);
-  eventCuts->SetVertexZ(-10.,10.);
-  if(isAOD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxSPD); // AOD
-  eventCuts->Print();
-  return eventCuts;
-}
+/* AliAnalysisCuts* SetupEventCuts(Bool_t isAOD) */
+/* { */
+/*   std::cout << "Setup Event Cuts" << std::endl; */
+/*   // event cuts are identical for all analysis 'cutInstance's that run together! */
+/*   AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0"); */
+/*   eventCuts->SetRequireVertex(); */
+/*   eventCuts->SetMinVtxContributors(1); */
+/*   eventCuts->SetVertexZ(-10.,10.); */
+/*   if(isAOD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxSPD); // AOD */
+/*   eventCuts->Print(); */
+/*   return eventCuts; */
+/* } */
 
 
 
