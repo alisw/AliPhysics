@@ -36,6 +36,16 @@ class AliAnalysisTaskDeuteronAbsorption;
 
 const AliPID::EParticleType AliAnalysisTaskDeuteronAbsorption::fgkSpecies[4] = {AliPID::kKaon, AliPID::kProton, AliPID::kDeuteron, AliPID::kTriton};
 const std::string AliAnalysisTaskDeuteronAbsorption::fgkParticleNames[4] = {"Kaon", "Proton", "Deuteron", "Triton"};
+const double AliAnalysisTaskDeuteronAbsorption::fgkPhiParamPos[4][4] = {
+      {1.38984e+00, -2.10187e+01, 5.81724e-02, 1.91938e+01},
+      {2.02372e+00, -2.44456e+00, 8.99000e-01, 9.22399e-01},
+      {4.21954e+00, -2.56555e+01, 4.17557e-02, 2.40301e+01},
+      {5.17499e+00, -2.69241e+00, 6.97167e-01, 1.25974e+00}};
+const double AliAnalysisTaskDeuteronAbsorption::fgkPhiParamNeg[4][4] = {
+      {2.81984e+00, -1.81497e-01, -2.03494e+00, 2.64148e-01},
+      {5.79322e+00, -5.44966e-02, -1.10803e+00, 1.29737e+00},
+      {5.60000e+00, -2.06000e-01, -1.97130e+00, 2.67181e-01},
+      {9.72180e+00, -4.35801e-02, -1.14550e+00, 1.49160e+00}};
 
 using namespace std; // std namespace: so you can do things like 'cout'
 
@@ -157,31 +167,21 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
   }
   PostData(1, fOutputList); // postdata will notify the analysis manager of changes / updates to the
 
-  double paramsPos[4][4] = {
-      {1.38984e+00, -2.10187e+01, 5.81724e-02, 1.91938e+01},
-      {2.02372e+00, -2.44456e+00, 8.99000e-01, 9.22399e-01},
-      {4.21954e+00, -2.56555e+01, 4.17557e-02, 2.40301e+01},
-      {5.17499e+00, -2.69241e+00, 6.97167e-01, 1.25974e+00}};
   for (int iFunction = 0; iFunction < 4; ++iFunction)
   {
     fTRDboundariesPos[iFunction] = new TF1(Form("f%i", iFunction), "[0]-exp([1]*pow(x,[2])+[3])", 0.2, 10);
     for (int iParam = 0; iParam < 4; ++iParam)
     {
-      fTRDboundariesPos[iFunction]->SetParameter(iParam, paramsPos[iFunction][iParam]);
+      fTRDboundariesPos[iFunction]->SetParameter(iParam, fgkPhiParamPos[iFunction][iParam]);
     }
   }
 
-  double paramsNeg[4][4] = {
-      {2.81984e+00, -1.81497e-01, -2.03494e+00, 2.64148e-01},
-      {5.79322e+00, -5.44966e-02, -1.10803e+00, 1.29737e+00},
-      {5.60000e+00, -2.06000e-01, -1.97130e+00, 2.67181e-01},
-      {9.72180e+00, -4.35801e-02, -1.14550e+00, 1.49160e+00}};
   for (int iFunction = 0; iFunction < 4; ++iFunction)
   {
     fTRDboundariesNeg[iFunction] = new TF1(Form("f%i", iFunction), "[0]-exp([1]*pow(x,[2])+[3])", 0.2, 10);
     for (int iParam = 0; iParam < 4; ++iParam)
     {
-      fTRDboundariesNeg[iFunction]->SetParameter(iParam, paramsNeg[iFunction][iParam]);
+      fTRDboundariesNeg[iFunction]->SetParameter(iParam, fgkPhiParamNeg[iFunction][iParam]);
     }
   }
 }
