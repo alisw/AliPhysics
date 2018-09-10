@@ -23,7 +23,8 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
     bool ContributionSplittingDaug=false,//17
     bool RunNumberQA=false,//18
     int FilterBit=128,//19
-    bool InvMassPairs=false)//20
+    bool InvMassPairs=false, //20
+    bool DeltaEtaDeltaPhiCut = true)//21
 {
   // 1    2     3     4     5     6     7    8    9      10   11     12   13    14    15    16   17
   //true,true,false,false,false,false,false,true,false,false,true,false,true,false,false,false,true
@@ -350,6 +351,10 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
     } else {
       std::cout << "You are trying to request the Eta Phi Plots without MC Info; fix it wont work! \n";
     }
+  }
+  if (DeltaEtaDeltaPhiCut) {
+    config->SetDeltaEtaMax(0.01);
+    config->SetDeltaPhiMax(0.01);
   }
   config->SetdPhidEtaPlots(dPhidEtaPlots);
   config->SetPDGCodes(PDGParticles);

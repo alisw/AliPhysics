@@ -123,14 +123,22 @@ class AliFemtoDreamCorrHists {
       fMomResolutionDist[hist]->Fill(RelKReco - RelKTrue, RelKTrue);
   }
   void FillEtaPhiAtRadiiSE(int hist, int iDaug, int iRad, float dPhi,
-                           float dEta) {
-    if (!fMinimalBooking && fPhiEtaPlots)
+                           float dEta, float relk) {
+    if (!fMinimalBooking && fPhiEtaPlots) {
       fRadiiEtaPhiSE[hist][iDaug][iRad]->Fill(dEta, dPhi);
+      if (relk < fRelKThreshold) {
+        fRadiiEtaPhiSEsmallK[hist][iDaug][iRad]->Fill(dEta, dPhi);
+      }
+    }
   }
   void FillEtaPhiAtRadiiME(int hist, int iDaug, int iRad, float dPhi,
-                           float dEta) {
-    if (!fMinimalBooking && fPhiEtaPlots)
+                           float dEta, float relk) {
+    if (!fMinimalBooking && fPhiEtaPlots) {
       fRadiiEtaPhiME[hist][iDaug][iRad]->Fill(dEta, dPhi);
+      if (relk < fRelKThreshold) {
+        fRadiiEtaPhiMEsmallK[hist][iDaug][iRad]->Fill(dEta, dPhi);
+      }
+    }
   }
   void FilldPhidEtaSE(int iHist, float dPhi, float dEta) {
     if (fdPhidEtaPlots)
@@ -163,6 +171,7 @@ class AliFemtoDreamCorrHists {
   bool fMinimalBooking;
   bool fMomentumResolution;
   bool fPhiEtaPlots;
+  float fRelKThreshold;
   TH1F **fSameEventDist;
   TH1F **fSameEventCommonAncestDist;
   TH1F **fSameEventNonCommonAncestDist;
@@ -183,6 +192,8 @@ class AliFemtoDreamCorrHists {
   TH2F **fMomResolutionDist;
   TH2F ****fRadiiEtaPhiSE;
   TH2F ****fRadiiEtaPhiME;
+  TH2F ****fRadiiEtaPhiSEsmallK;
+  TH2F ****fRadiiEtaPhiMEsmallK;
   TH2F **fdEtadPhiSE;
   TH2F **fdEtadPhiME;
   TH1F **fEffMixingDepth;
@@ -193,7 +204,7 @@ class AliFemtoDreamCorrHists {
   bool fDokTCentralityBins;
   bool fDoMCCommonAncest;
   bool fdPhidEtaPlots;
-  std::vector<float> fCentBins;ClassDef(AliFemtoDreamCorrHists,3)
+  std::vector<float> fCentBins;ClassDef(AliFemtoDreamCorrHists,4)
   ;
 };
 

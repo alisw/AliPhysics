@@ -367,9 +367,7 @@ void AliFemtoDreamTrack::SetAODTrackingInformation() {
     }
   }
   this->fTPCClsS = fAODTrack->GetTPCnclsS();
-  if (fIsMC) {
-    SetPhiAtRadii();
-  }
+  SetPhiAtRadii();
 }
 void AliFemtoDreamTrack::SetPhiAtRadii() {
   float TPCradii[9] = { 85., 105., 125., 145., 165., 185., 205., 225., 245. };
