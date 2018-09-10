@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include "TNamed.h"
+#include "AliVEvent.h"
 //For Run Ranges functionality
 #include <map>
 
@@ -35,6 +36,10 @@ public:
         lDesiredBoundaries = lB;
         lNDesiredBoundaries = lNB;
     }
+    
+    //Task Configuration: trigger selection
+    //This is in addition to the "IsTriggered" functionality. 
+    void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType;}
     
     //Run Ranges Interface
     Long_t GetNRunRanges() const {return fNRunRanges; }
@@ -75,7 +80,9 @@ private:
     Double_t *lDesiredBoundaries;
     Long_t   lNDesiredBoundaries;
     
-    Int_t fRunToUseAsDefault; //Give preference for this run to be the default 
+    Int_t fRunToUseAsDefault; //Give preference for this run to be the default
+    
+    AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type to calibrate
     
     //Run Ranges map - master storage
     Long_t fNRunRanges;
