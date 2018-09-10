@@ -106,7 +106,9 @@ class AliFemtoDreamTrackMCHist {
   void FillMCPhiResolution(float PhiTrue, float PhiReco, float pTTrue);
   void FillMultiplicityHistos(int multiplicity, float pT, float dcaxy,
                               TH2F *histo1, TH2F *histo2, TH2F *histo3);
-  void FillMCMother(float pT, int pdg) { fHistMCMother->Fill(pT, std::abs(pdg)); }
+  void FillMCMother(float pT, int pdg) { fHistMCMother->Fill(pT, std::abs(pdg));
+    fHistMCMotherPDG->Fill(std::abs(pdg));
+  }
 
   void SetMultRangeLow(int range) {
     fMultRangeLow = range;
@@ -150,6 +152,7 @@ class AliFemtoDreamTrackMCHist {
   TH1F *fMCMaterialPt;            //!
   TH2F *fMCFeeddownWeakPt;        //!
   TH2F *fHistMCMother;            //!
+  TH1I *fHistMCMotherPDG;         //!
 
   TH2F *fMCPrimDCAXYPtBins;       //!
   TH2F *fMCMaterialDCAXYPtBins;   //!

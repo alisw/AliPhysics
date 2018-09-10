@@ -21,6 +21,7 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist()
       fMCMaterialPt(0),
       fMCFeeddownWeakPt(0),
 	  fHistMCMother(0),
+	  fHistMCMotherPDG(0),
       fMCPrimCPAPtBins(0),
       fMCMaterialCPAPtBins(0),
       fMCSecondaryCPAPtBins(0),
@@ -115,6 +116,9 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(int MassNBins, float MassMin,
     "; #it{p}_{T} (GeV/#it{c}^{2}); PDG code mother", 100, 0., 10.,
 	4000, 0, 4000);
   fMCList->Add(fHistMCMother);
+
+  fHistMCMotherPDG = new TH1I("fHistMCMotherPDG", ";Entries; PDG code mother", 10000000, 0, 10000000);
+  fMCList->Add(fHistMCMotherPDG);
 
   if (contribSplitting) {
 

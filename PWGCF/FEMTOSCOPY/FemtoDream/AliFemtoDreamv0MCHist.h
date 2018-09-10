@@ -139,6 +139,7 @@ class AliFemtoDreamv0MCHist {
   void FillMCPhiResolution(float PhiTrue, float PhiReco, float pTTrue);
   void FillMCMother(float pT, int pdg) {
 	fHistMCMother->Fill(pT, std::abs(pdg));
+	fHistMCMotherPDG->Fill(std::abs(pdg));
   }
 
   void SetMultRangeLow(int range) {
@@ -176,6 +177,7 @@ class AliFemtoDreamv0MCHist {
   TH1F *fMCMaterialPt;
   TH2F *fMCFeeddownWeakPt;
   TH2F *fHistMCMother;            //!
+  TH1I *fHistMCMotherPDG;         //!
   TH1F *fMCpTDist[5];
   TH1F *fMCetaDist[5];
   TH1F *fMCphiDist[5];
