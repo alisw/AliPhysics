@@ -11,7 +11,7 @@ enum {kMee=0, kMee500, kPtee, kP2D, kRuns, kPhiV, kOpAng, kOpAng2, kEta2D, kEta3
 Bool_t MCenabled = kTRUE; //Needed for LMEEcutlib
 Int_t selectedCuts = -1;
 Int_t selectedPID = -1;
-Bool_t pairCuts = kFALSE;
+Bool_t pairCuts = kTRUE;
 
 Bool_t trackVarPlots = kFALSE;
 Bool_t plotsITS      = kTRUE;
@@ -88,6 +88,14 @@ AliDielectron* Config_acapon(TString cutDefinition,
             die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(selectedCuts) );
         }
     }
+		else if(cutDefinition == "kCutSet1"){
+        selectedCuts = LMEECutLib::kCutSet1;
+				selectedPID = LMEECutLib::kCutSet1;
+        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
+        if(pairCuts){
+					die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(selectedCuts) );
+        }
+		}
     else if(cutDefinition == "highMult"){
         selectedCuts = LMEECutLib::kHighMult;
 				selectedPID = LMEECutLib::kHighMult;
@@ -516,10 +524,9 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing)
         histos->UserHistogram("Pair","PairPt_Centrality",";Pair Pt [GeV];Centrality;#pairs",
                               GetVector(kPtee), BinsToVector(102,-1,101), 
                               AliDielectronVarManager::kPt, AliDielectronVarManager::kCentralityNew);
-				histos->UserHistogram("Pair", "InvMass_Centrality_PairPt", ";Inv. Mass [GeV];Centrality;Pair Pt [GeV]",
-                              GetVector(kMee), BinsToVector(102, -1, 101), GetVector(kPtee),
-															AliDielectronVarManager::kM, AliDielectronVarManager::kCentralityNew, 
-															AliDielectronVarManager::kPt);
+				histos->UserHistogram("Pair", "InvMass_PairPt_Centrality", ";Inv. Mass [GeV];Pair Pt (GeV);Centrality",
+                              GetVector(kMee), GetVector(kPtee), BinsToVector(102, -1, 101),
+															AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentralityNew);
     }//End doMixing histograms
 
     //add histograms to Track classes
