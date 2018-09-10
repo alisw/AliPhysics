@@ -15,7 +15,8 @@ AliFemtoDreamControlSample::AliFemtoDreamControlSample()
       fSpinningDepth(0),
       fStravinsky(false),
       fDeltaEtaMax(0.f),
-      fDeltaPhiMax(0.f) {
+      fDeltaPhiMax(0.f),
+      fDoDeltaEtaDeltaPhiCut(false) {
   fRandom.SetSeed(0);
 }
 
@@ -29,7 +30,8 @@ AliFemtoDreamControlSample::AliFemtoDreamControlSample(
       fSpinningDepth(samp.fSpinningDepth),
       fStravinsky(false),
       fDeltaEtaMax(samp.fDeltaEtaMax),
-      fDeltaPhiMax(samp.fDeltaPhiMax) {
+      fDeltaPhiMax(samp.fDeltaPhiMax),
+      fDoDeltaEtaDeltaPhiCut(samp.fDoDeltaEtaDeltaPhiCut) {
   fRandom.SetSeed(0);
 }
 
@@ -43,7 +45,8 @@ AliFemtoDreamControlSample::AliFemtoDreamControlSample(
       fSpinningDepth(0),
       fStravinsky(conf->GetDoStravinsky()),
       fDeltaEtaMax(conf->GetDeltaEtaMax()),
-      fDeltaPhiMax(conf->GetDeltaPhiMax()) {
+      fDeltaPhiMax(conf->GetDeltaPhiMax()),
+      fDoDeltaEtaDeltaPhiCut(conf->GetDoDeltaEtaDeltaPhiCut()){
   if (fStravinsky) {
     fSpinningDepth = 1;
   } else {
@@ -65,6 +68,7 @@ AliFemtoDreamControlSample& AliFemtoDreamControlSample::operator=(
   this->fSpinningDepth = samp.fSpinningDepth;
   this->fDeltaEtaMax = samp.fDeltaEtaMax;
   this->fDeltaPhiMax = samp.fDeltaPhiMax;
+  this->fDoDeltaEtaDeltaPhiCut = samp.fDoDeltaEtaDeltaPhiCut;
   return *this;
 }
 
@@ -95,13 +99,15 @@ void AliFemtoDreamControlSample::SetEvent(
         while (itPart2 != itSpec2->end()) {
 
           // Delta eta - Delta phi* cut
-          if (ComputeDeltaEta(*itPart1, *itPart2) < fDeltaEtaMax) {
-            ++itPart2;
-            continue;
-          }
-          if (ComputeDeltaPhi(*itPart1, *itPart2) < fDeltaPhiMax) {
-            ++itPart2;
-            continue;
+          if (fDoDeltaEtaDeltaPhiCut) {
+            if (ComputeDeltaEta(*itPart1, *itPart2) < fDeltaEtaMax) {
+              ++itPart2;
+              continue;
+            }
+            if (ComputeDeltaPhi(*itPart1, *itPart2) < fDeltaPhiMax) {
+              ++itPart2;
+              continue;
+            }
           }
 
           // correlated sample
@@ -207,7 +213,7 @@ float AliFemtoDreamControlSample::ComputeDeltaPhi(
   std::vector<float> Phirad2 = part2.GetPhiAtRaidius().at(0);
   std::vector<float> radVector;
   float dphi = 999.f;
-  for (int iRad = 0; iRad < 9; ++iRad) {
+  for (int iRad = 0; iRad < Phirad1.size(); ++iRad) {
     float currentdphi = std::abs(Phirad1.at(iRad) - Phirad2.at(iRad));
     if(currentdphi < dphi) dphi = currentdphi;
   }

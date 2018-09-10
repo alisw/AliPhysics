@@ -53,8 +53,9 @@ class AliFemtoDreamZVtxMultContainer {
 
   float fDeltaEtaMax;
   float fDeltaPhiMax;
+  bool fDoDeltaEtaDeltaPhiCut;
 
-  ClassDef(AliFemtoDreamZVtxMultContainer, 3);
+  ClassDef(AliFemtoDreamZVtxMultContainer, 4);
 };
 
 #endif /* ALIFEMTODREAMZVTXMULTCONTAINER_H_ */
