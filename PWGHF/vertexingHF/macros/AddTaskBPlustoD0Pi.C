@@ -66,7 +66,7 @@ AliAnalysisTaskSEBPlustoD0Pi *AddTaskBPlustoD0Pi(
   task->SetDebugLevel(nDebugLevel);
   task->SetShowRejection(bShowRejection);
   task->SetShowMask(bShowMask);
-  task->SetUse3DHistograms(bUse3DHistograms);
+  // task->SetUse3DHistograms(bUse3DHistograms);
   task->SetCheckBackground(bCheckBackground);
   task->SetUpgradeSetting(nUpgradeSetting);
   task->SetHistMassWindow(fHistMassWindow);

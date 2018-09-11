@@ -55,6 +55,7 @@
 #include "AliAODRecoDecay.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoDecayHF2Prong.h"
+#include "AliAODRecoDecayHF3Prong.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliVertexingHFUtils.h"
 #include "AliESDtrack.h"
@@ -93,8 +94,8 @@ AliAnalysisTaskSEBPlustoD0Pi::AliAnalysisTaskSEBPlustoD0Pi():
   fQuickSignalAnalysis(0),
   fGetCutInfo(0),
   fCEvents(0),     
-  fBPlusPionTracks(0),
-  fD0Tracks(0),
+  fBPlusPionTracks(0x0),
+  fD0Tracks(0x0),
   fShowMask(0),
   fShowRejection(0),
   fnPtBins(0),
@@ -122,7 +123,7 @@ AliAnalysisTaskSEBPlustoD0Pi::AliAnalysisTaskSEBPlustoD0Pi():
 }
 //___________________________________________________________________________
 AliAnalysisTaskSEBPlustoD0Pi::AliAnalysisTaskSEBPlustoD0Pi(const Char_t* name, AliRDHFCutsBPlustoD0Pi* cuts) :
-  AliAnalysisTaskSE(),
+  AliAnalysisTaskSE(name),
   fListCuts(0),
   fEvents(0),
   fUseMCInfo(kFALSE),
@@ -138,8 +139,8 @@ AliAnalysisTaskSEBPlustoD0Pi::AliAnalysisTaskSEBPlustoD0Pi(const Char_t* name, A
   fQuickSignalAnalysis(0),
   fGetCutInfo(0),
   fCEvents(0),     
-  fBPlusPionTracks(0),
-  fD0Tracks(0),
+  fBPlusPionTracks(0x0),
+  fD0Tracks(0x0),
   fShowMask(0),
   fShowRejection(0),
   fnPtBins(0),
@@ -168,8 +169,9 @@ AliAnalysisTaskSEBPlustoD0Pi::AliAnalysisTaskSEBPlustoD0Pi(const Char_t* name, A
 
   fCuts = cuts;
 
+  DefineInput(0,TChain::Class());
   DefineOutput(1, TList::Class()); //conters
-  DefineOutput(2, AliRDHFCutsBPlustoD0Pi::Class());  //My private output
+  DefineOutput(2, TList::Class());  //My private output
   DefineOutput(3, TList::Class()); // D0 pion output
   DefineOutput(4, TList::Class()); // D0 kaon output
   DefineOutput(5, TList::Class()); // BPlus pion output
@@ -266,7 +268,7 @@ void AliAnalysisTaskSEBPlustoD0Pi::UserExec(Option_t *) {
   }
 
   if (fEvents % 50 == 0) {
-    cout << "\r" << "Analysing event number: " << fEvents << endl;
+    std::cout << "\r" << "Analysing event number: " << fEvents << std::endl;
   }
 
   fEvents++;
@@ -580,12 +582,6 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms(){
   fCEvents->GetXaxis()->SetBinLabel(12,"no. of D0 fail to be rec");
   fOutput->Add(fCEvents);
 
-  fTrueDiff2 = new TH2F("DiffDstar_pt","True Reco diff vs pt",200,0,15,900,0,0.3);
-  fOutput->Add(fTrueDiff2);
-
-  fDeltaMassD1 = new TH1F("DeltaMassD1","delta mass d1",600,0,0.8);
-  fOutput->Add(fDeltaMassD1);
-
  //====================================================
 
   TString name_mc_BPlus_pt ="mc_BPlus_pt";
@@ -835,7 +831,7 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms(){
         if(j%2==1) histogram->SetMarkerColor(4);
         TH1F* histogram_Clone = (TH1F*)histogram->Clone();
         listout->Add(histogram_Clone);
-        fDaughterHistogramArray[i][j][k] = (Int_t*)histogram_Clone;
+        fDaughterHistogramArray[i][j][k] = histogram_Clone;
       }
 
       TString numberofparticlesperevent="numberofparticlesperevent";
@@ -848,7 +844,7 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms(){
       hist_numberofparticlesperevent->SetMarkerColor(6);
       TH1F* histogram_numberofparticlesperevent = (TH1F*)hist_numberofparticlesperevent->Clone();
       listout->Add(histogram_numberofparticlesperevent);
-      fDaughterHistogramArray[i][j][10] = (Int_t*)histogram_numberofparticlesperevent;
+      fDaughterHistogramArray[i][j][10] = histogram_numberofparticlesperevent;
     }
 
     TH1F * effectOfCuts = new TH1F("effectOfCuts","Removal counter",18,0,18);
@@ -874,7 +870,7 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms(){
     effectOfCuts->GetXaxis()->SetBinLabel(17,"16");
     effectOfCuts->GetXaxis()->SetBinLabel(18,"17");
     listout->Add(effectOfCuts);
-    fDaughterHistogramArrayExtra[i][0] = (Int_t*)effectOfCuts;
+    fDaughterHistogramArrayExtra[i][0] = effectOfCuts;
 
     TH1F * effectOfCutsMC = new TH1F("effectOfCutsMC","Removal counter",18,0,18);
     effectOfCutsMC->SetStats(kTRUE);
@@ -899,7 +895,7 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms(){
     effectOfCutsMC->GetXaxis()->SetBinLabel(17,"16");
     effectOfCutsMC->GetXaxis()->SetBinLabel(18,"17");
     listout->Add(effectOfCutsMC);
-    fDaughterHistogramArrayExtra[i][1] = (Int_t*)effectOfCutsMC;
+    fDaughterHistogramArrayExtra[i][1] = effectOfCutsMC;
 
     TString name_particle_pdg ="particle_pdg";
     TH1F* hist_particle_pdg = new TH1F(name_particle_pdg.Data(),"Pdg code particle; pdg code; Entries",2000,-0.5,1999.5);
@@ -910,7 +906,7 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms(){
     hist_particle_pdg->SetMarkerColor(6);
     TH1F* histogram_particle_pdg = (TH1F*)hist_particle_pdg->Clone();
     listout->Add(histogram_particle_pdg);
-    fDaughterHistogramArrayExtra[i][2] = (Int_t*)histogram_particle_pdg;
+    fDaughterHistogramArrayExtra[i][2] = histogram_particle_pdg;
 
     TString name_particle_mother_pdg ="particle_mother_pdg";
     TH1F* hist_particle_mother_pdg = new TH1F(name_particle_mother_pdg.Data(),"Pdg code particle mother; pdg code; Entries",2000,-0.5,1999.5);
@@ -921,7 +917,7 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms(){
     hist_particle_mother_pdg->SetMarkerColor(6);
     TH1F* histogram_particle_mother_pdg = (TH1F*)hist_particle_mother_pdg->Clone();
     listout->Add(histogram_particle_mother_pdg);
-    fDaughterHistogramArrayExtra[i][3] = (Int_t*)histogram_particle_mother_pdg;
+    fDaughterHistogramArrayExtra[i][3] = histogram_particle_mother_pdg;
 
     TString name_ptBPlus_vs_ptTrack ="ptBPlus_vs_ptTrackBackground";
     TH2F* hist_ptBPlus_vs_ptTrack = new TH2F(name_ptBPlus_vs_ptTrack.Data(),"Pt BPlus vs Pt ; p_{T} BPlus [GeV/c]; p_{T} track [GeV/c]",100,0,30,100,0,30);
@@ -932,7 +928,7 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms(){
     hist_ptBPlus_vs_ptTrack->SetMarkerColor(6);
     TH2F* histogram_ptBPlus_vs_ptTrack = (TH2F*)hist_ptBPlus_vs_ptTrack->Clone();
     listout->Add(histogram_ptBPlus_vs_ptTrack);
-    fDaughterHistogramArray2D[i][4] = (Int_t*)histogram_ptBPlus_vs_ptTrack;
+    fDaughterHistogramArray2D[i][4] = histogram_ptBPlus_vs_ptTrack;
 
     TString name_ptBPlus_vs_ptTrackSignal ="ptBPlus_vs_ptTrackSignal";
     TH2F* hist_ptBPlus_vs_ptTrackSignal = new TH2F(name_ptBPlus_vs_ptTrackSignal.Data(),"Pt BPlus vs Pt ; p_{T} BPlus [GeV/c]; p_{T} track [GeV/c]",100,0,30,100,0,30);
@@ -943,7 +939,7 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms(){
     hist_ptBPlus_vs_ptTrackSignal->SetMarkerColor(6);
     TH2F* histogram_ptBPlus_vs_ptTrackSignal = (TH2F*)hist_ptBPlus_vs_ptTrackSignal->Clone();
     listout->Add(histogram_ptBPlus_vs_ptTrackSignal);  
-    fDaughterHistogramArray2D[i][5] = (Int_t*)histogram_ptBPlus_vs_ptTrackSignal;  
+    fDaughterHistogramArray2D[i][5] = histogram_ptBPlus_vs_ptTrackSignal;  
   }
 
   //we make the histograms for the reconstructed particles
@@ -1059,7 +1055,7 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms(){
         if(j%2==1) histogram->SetMarkerColor(4);
         TH1F* histogram_Clone = (TH1F*)histogram->Clone();
         listout->Add(histogram_Clone);
-        fMotherHistogramArray[i][j][k] = (Int_t*)histogram_Clone;
+        fMotherHistogramArray[i][j][k] = histogram_Clone;
       }
 
 
@@ -1075,7 +1071,7 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms(){
       //we make the 2D histograms for the reconstructed particles
       Int_t nFirst = 0;
       Int_t nSecond = 1;
-      Int_t nVariables = 8;
+      Int_t nVariables = 10;
       Int_t nHistograms = nVariables * (nVariables - 1) / 2;
 
       TList * list2D = new TList();   
@@ -1170,7 +1166,7 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms(){
     hist_particle_pdg->SetMarkerColor(6);
     TH1F* histogram_particle_pdg = (TH1F*)hist_particle_pdg->Clone();
     listout->Add(histogram_particle_pdg);
-    fMotherHistogramArrayExtra[i][2] = (Int_t*)histogram_particle_pdg;
+    fMotherHistogramArrayExtra[i][2] = histogram_particle_pdg;
 
     TString name_particle_mother_pdg ="particle_mother_pdg";
     TH1F* hist_particle_mother_pdg = new TH1F(name_particle_mother_pdg.Data(),"Pdg code particle mother; pdg code; Entries",2000,-0.5,1999.5);
@@ -1181,7 +1177,7 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms(){
     hist_particle_mother_pdg->SetMarkerColor(6);
     TH1F* histogram_particle_mother_pdg = (TH1F*)hist_particle_mother_pdg->Clone();
     listout->Add(histogram_particle_mother_pdg);
-    fMotherHistogramArrayExtra[i][3] = (Int_t*)histogram_particle_mother_pdg;   
+    fMotherHistogramArrayExtra[i][3] = histogram_particle_mother_pdg;   
 
     TString name_distance_vertex_from_real ="distance_vertex_from_real";
     TH1F* hist_distance_vertex_from_real = new TH1F(name_distance_vertex_from_real.Data(),"Distance reconstructed vertex from real vertex; distance [cm]; Entries",500,0,0.5);
@@ -1192,7 +1188,7 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms(){
     hist_distance_vertex_from_real->SetMarkerColor(6);
     TH1F* histogram_distance_vertex_from_real = (TH1F*)hist_distance_vertex_from_real->Clone();
     listout->Add(histogram_distance_vertex_from_real);
-    fMotherHistogramArrayExtra[i][4] = (Int_t*)histogram_distance_vertex_from_real;
+    fMotherHistogramArrayExtra[i][4] = histogram_distance_vertex_from_real;
 
     TString name_distance_vertex_from_real_new ="distance_vertex_from_real_new";
     TH1F* hist_distance_vertex_from_real_new = new TH1F(name_distance_vertex_from_real_new.Data(),"Distance reconstructed vertex from real vertex; distance [cm]; Entries",500,0,0.5);
@@ -1203,7 +1199,7 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms(){
     hist_distance_vertex_from_real_new->SetMarkerColor(6);
     TH1F* histogram_distance_vertex_from_real_new = (TH1F*)hist_distance_vertex_from_real_new->Clone();
     listout->Add(histogram_distance_vertex_from_real_new);
-    fMotherHistogramArrayExtra[i][5] = (Int_t*)histogram_distance_vertex_from_real_new;
+    fMotherHistogramArrayExtra[i][5] = histogram_distance_vertex_from_real_new;
 
     TString name_momentum_resolution ="momentum_resolution";
     TH1F* hist_momentum_resolution = new TH1F(name_momentum_resolution.Data(),"Momentum resolution; difference between real and reconstructed momentum [GeV/c]; Entries",1000,0,1);
@@ -1214,7 +1210,7 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms(){
     hist_momentum_resolution->SetMarkerColor(6);
     TH1F* histogram_momentum_resolution = (TH1F*)hist_momentum_resolution->Clone();
     listout->Add(histogram_momentum_resolution);
-    fMotherHistogramArrayExtra[i][6] = (Int_t*)histogram_momentum_resolution;    
+    fMotherHistogramArrayExtra[i][6] = histogram_momentum_resolution;    
   }
 
   //we make the histograms for the same sign method histograms and the pt bins
@@ -1658,14 +1654,6 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlustoD0PiSignalTracksInMC(TClonesArray * mc
       }
     }
     if (mcPionBPlusPresent && mcPionD0Present && mcKaonPresent){
-      Int_t rows = BPlustoD0PiLabelMatrix->GetNrows();
-
-      BPlustoD0PiLabelMatrix->ResizeTo(rows+1,5);
-      particleMatrix(rows,0) = mcLabelPionBPlus;
-      particleMatrix(rows,1) = mcLabelPionD0;
-      particleMatrix(rows,2) = mcLabelKaon;
-      particleMatrix(rows,3) = mcLabelD0;
-      particleMatrix(rows,4) = mcLabelBPlus;
 
       TString fillthis= "BPlus_in_analysis";
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(1);
@@ -1720,7 +1708,7 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlustoD0PiSignalTracksInMC(TClonesArray * mc
 
       Int_t rows = BPlustoD0PiLabelMatrix->GetNrows();
 
-      BPlustoD0PiLabelMatrix->ResizeTo(rows+1,7);
+      BPlustoD0PiLabelMatrix->ResizeTo(rows+1,5);
       particleMatrix(rows,0) = mcLabelPionBPlus;
       particleMatrix(rows,1) = mcLabelPionD0;
       particleMatrix(rows,2) = mcLabelKaon;
@@ -2189,7 +2177,7 @@ Bool_t AliAnalysisTaskSEBPlustoD0Pi::D0SecondDaughterSelection(AliAODTrack* aodT
   return kTRUE;
 }
 //-------------------------------------------------------------------------------------
-void AliAnalysisTaskSEBPlustoD0Pi::BPlusPionSelection(AliAODEvent* aodEvent,TClonesArray * mcTrackArray, TMatrix * BPlustoD0PiLabelMatrix, AliAODVertex *primaryVertex, Double_t bz){
+void AliAnalysisTaskSEBPlustoD0Pi::BPlusPionSelection(AliAODEvent* aodEvent, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * BPlustoD0PiLabelMatrix, AliAODMCHeader * header){
   
   //we keep track of the number of particles we could use and how many we actually use after cuts
   Int_t numberofparticles = 0;
@@ -2213,9 +2201,9 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusPionSelection(AliAODEvent* aodEvent,TClo
     if (!aodTrack->GetCovarianceXYZPxPyPz(covtest)) continue;
 
 
-    Int_t mcLabelParticleTest = -1;
+    Int_t mcLabelParticle = -1;
     Int_t pdgParticle = -1;
-    mcLabelParticleTest = aodTrack->GetLabel();
+    mcLabelParticle = aodTrack->GetLabel();
 
     numberofparticles++;
 
@@ -2594,7 +2582,7 @@ void AliAnalysisTaskSEBPlustoD0Pi::D0Selection(AliAODEvent* aodEvent, AliAODVert
   return;
 }
 //-------------------------------------------------------------------------------------
-void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * BPlustoD0PiLabelMatrix) {
+void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * BPlustoD0PiLabelMatrix, TClonesArray * D0TracksFromFriendFile, AliAODMCHeader * header) {
 
   // Int_t iClonesArray = 0;
 
@@ -2628,7 +2616,7 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
 
       if (trackBPlusPion->GetID() == idProng0 || trackBPlusPion->GetID() == idProng1) continue;
 
-      UInt_t prongsD0[2]; //-------------------------------------------------------------------------------------------------------------------
+      UInt_t prongsD0[2];
       prongsD0[0] = 211;
       prongsD0[1] = 321;
 
@@ -2642,7 +2630,8 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
       Double_t invariantMassD02 = trackD0->InvMass(2, prongsD02);
 
       Double_t pdgMassD0 = TDatabasePDG::Instance()->GetParticle(421)->Mass();
-      Double_t massWindowD0 = 0.06; //GeV/c^2   //-----------------------------------------fcuts get mass window and apply below?--------------------------------------------------------------------------
+      Double_t massWindowD0 = 0.06; //GeV/c^2   //-----------------------------------------fcuts get mass window --------------------------------------------------------------------------
+      Int_t pdgD0 = 421;
 
       //we check if the pions have the opposite charge
       Bool_t bWrongSign = kFALSE;
@@ -2654,6 +2643,7 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
         if (TMath::Abs(invariantMassD0 - pdgMassD0) > massWindowD0) continue; 
 
       } else if (trackBPlusPion->Charge() == 1) {
+        pdgD0 = -421;
         if ((fCuts->SelectPID(((AliAODTrack*)trackD0->GetDaughter(0)), 3)) && (fCuts->SelectPID(((AliAODTrack*)trackD0->GetDaughter(1)), 2))) bWrongSign = kFALSE;
         else if ((fCuts->SelectPID(((AliAODTrack*)trackD0->GetDaughter(0)), 2)) && (fCuts->SelectPID(((AliAODTrack*)trackD0->GetDaughter(1)), 3))) bWrongSign = kTRUE;
         else continue;
@@ -2677,13 +2667,13 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
 
         //we use the BPlus pion and D0 tracks to reconstruct the vertex for the BPlus
         AliExternalTrackParam firstTrack;
-        firstTrack.CopyFromVTrack(trackD0);
+        firstTrack.CopyFromVTrack(trackBPlusPionRotated);
         AliExternalTrackParam secondTrack;
-        secondTrack.CopyFromVTrack(trackBPlusPionRotated);
+        secondTrack.CopyFromVTrack(trackD0);
 
         UInt_t prongs[2];
-        prongs[0] = 421;
-        prongs[1] = 211;
+        prongs[1] = 421;
+        prongs[0] = 211;
 
         // we calculate the vertex of the mother candidate
         TObjArray daughterTracks;
@@ -2695,7 +2685,7 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
         if (!vertexMother) 
         {
           delete vertexMother; vertexMother = nullptr; 
-          delete trackBPlusPionRotated; vertexMother = nullptr; 
+          delete trackBPlusPionRotated; trackBPlusPionRotated = nullptr; 
           continue;
         }
 
@@ -2734,8 +2724,9 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
 
         Short_t chargeMother = trackD0->Charge() + trackBPlusPionRotated->Charge();
         // cout << " charge: " << chargeMother << endl;
-        AliAODRecoDecayHF2Prong trackBPlus(vertexMother, chargeMother, px, py, pz, d0, d0err, dca);
+        AliAODRecoDecayHF2Prong trackBPlus(vertexMother, px, py, pz, d0, d0err, dca);
 
+        trackBPlus.SetCharge(chargeMother);
         trackBPlus.GetSecondaryVtx()->AddDaughter(trackBPlusPionRotated);
         trackBPlus.GetSecondaryVtx()->AddDaughter(trackD0);
         trackBPlus.SetPrimaryVtxRef((AliAODVertex*)aodEvent->GetPrimaryVertex());
@@ -2794,12 +2785,12 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
         {
           // We fill the histograms
           histType = 0;
-          FillBPlusHistograms(aodEvent, &trackBPlus, primaryVertex, bz, motherType, histType);
+          FillBPlusHistograms(&trackBPlus, primaryVertex, bz, motherType, histType);
 
           if (isDesiredCandidate)
           {
             histType = 1;
-            FillBPlusHistograms(aodEvent, &trackBPlus, primaryVertex, bz, motherType, histType);
+            FillBPlusHistograms(&trackBPlus, primaryVertex, bz, motherType, histType);
           }
         }
 
@@ -2807,8 +2798,8 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
           // We apply cuts
           Bool_t cutMother = kFALSE;
 
-          Bool_t bCutArray[97] = {0};
-          Int_t numberOfCuts = 97;
+          Bool_t bCutArray[68] = {0};
+          Int_t numberOfCuts = 68;
           Int_t cutReturnValue = fCuts->IsSelected(&trackBPlus, 0, aodEvent, bCutArray);
           if(cutReturnValue == -1) cutMother = kTRUE;
           if(cutReturnValue == 0) cutMother = kTRUE;
@@ -2821,7 +2812,7 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
           Double_t massWindow = fHistMassWindow; //GeV/c^2
           if(fGetCutInfo == kTRUE)
           {
-            for (Int_t n = 0; n < 97; ++n)
+            for (Int_t n = 0; n < 68; ++n)
             {
               if(bCutArray[n] == kTRUE){
                 if(isDesiredCandidate){
@@ -3043,18 +3034,18 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
         if (!bWrongSign)
         {
           histType = 2;
-          FillBPlusHistograms(aodEvent, &trackBPlus, primaryVertex, bz, motherType, histType);
+          FillBPlusHistograms(&trackBPlus, primaryVertex, bz, motherType, histType);
           if (fUseMCInfo && isDesiredCandidate)
           {
             //fill mc histograms
             histType = 3;
-            FillBPlusHistograms(aodEvent, &trackBPlus, primaryVertex, bz, motherType, histType);
+            FillBPlusHistograms(&trackBPlus, primaryVertex, bz, motherType, histType);
           }
         }
 
 
         // pdgMassMother=TDatabasePDG::Instance()->GetParticle(521)->Mass();
-        Double_t massWindow =fHistMassWindow; //GeV/c^2
+        // Double_t massWindow =fHistMassWindow; //GeV/c^2
         if (TMath::Abs(invariantMassMother - pdgMassMother) < massWindow)
         {
           if (!bWrongSign)
@@ -3062,13 +3053,13 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
             FillFinalTrackHistograms(&trackBPlus, primaryVertex, bz, isDesiredCandidate, mcTrackArray);
             if (!isDesiredCandidate)
             {
-              motherType = 0; histType = 4; FillD0Histograms(aodEvent, trackD0, primaryVertex, bz, motherType, histType, pdgD0);
-              motherType = 1; histType = 4; FillBPlusHistograms(aodEvent, &trackBPlus, primaryVertex, bz, motherType, histType);
+              motherType = 0; histType = 4; FillD0Histograms(trackD0, primaryVertex, bz, motherType, histType, pdgD0);
+              motherType = 1; histType = 4; FillBPlusHistograms(&trackBPlus, primaryVertex, bz, motherType, histType);
             }
             if (isDesiredCandidate)
             {
-              motherType = 0; histType = 5; FillD0Histograms(aodEvent, trackD0, primaryVertex, bz, motherType, histType, pdgD0);
-              motherType = 1; histType = 5; FillBPlusHistograms(aodEvent, &trackBPlus, primaryVertex, bz, motherType, histType);
+              motherType = 0; histType = 5; FillD0Histograms(trackD0, primaryVertex, bz, motherType, histType, pdgD0);
+              motherType = 1; histType = 5; FillBPlusHistograms(&trackBPlus, primaryVertex, bz, motherType, histType);
             }
           }
         }
@@ -3080,7 +3071,7 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
         ptBinMother += "_ptbin_"; ptBinMother += fPtBinLimits[ptBin]; ptBinMother += "_to_"; ptBinMother += fPtBinLimits[ptBin+1];
         histType = 6 + 2 * ptBin; 
 
-        Int_t d0PtBin = fCuts->PtBinD0forD0ptbin(selectedD0->Pt());
+        Int_t d0PtBin = fCuts->PtBinD0forD0ptbin(trackD0->Pt());
         Int_t histTypeD0 = 2 * d0PtBin; 
 
 
@@ -3090,17 +3081,17 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
           {
             if (!isDesiredCandidate)
             {
-              motherType = 0; FillD0Histograms(aodEvent, trackD0, primaryVertex, bz, motherType, histType, pdgD0);
-              motherType = 1; FillBPlusHistograms(aodEvent, &trackBPlus, primaryVertex, bz, motherType, histType);
-              motherType = 2; FillD0Histograms(aodEvent, selectedD0, primaryVertex, bz, motherType, d0PtBin, pdgD0);
+              motherType = 0; FillD0Histograms(trackD0, primaryVertex, bz, motherType, histType, pdgD0);
+              motherType = 1; FillBPlusHistograms(&trackBPlus, primaryVertex, bz, motherType, histType);
+              motherType = 2; FillD0Histograms(trackD0, primaryVertex, bz, motherType, d0PtBin, pdgD0);
             }
 
             if (isDesiredCandidate)
             {
               histType += 1;
-              motherType = 0; FillD0Histograms(aodEvent, trackD0, primaryVertex, bz, motherType, histType, pdgD0);
-              motherType = 1; FillBPlusHistograms(aodEvent, &trackBPlus, primaryVertex, bz, motherType, histType);
-              motherType = 2; FillD0Histograms(aodEvent, selectedD0, primaryVertex, bz, motherType, d0PtBin + 1, pdgD0);
+              motherType = 0; FillD0Histograms(trackD0, primaryVertex, bz, motherType, histType, pdgD0);
+              motherType = 1; FillBPlusHistograms(&trackBPlus, primaryVertex, bz, motherType, histType);
+              motherType = 2; FillD0Histograms(trackD0, primaryVertex, bz, motherType, d0PtBin + 1, pdgD0);
             }
           }
         }
@@ -3137,23 +3128,23 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
             fillthis += ptBinMother + "_SignSum";
             ((TH1F*)(fOutputBPlusMC->FindObject(fillthis)))->Fill(invariantMassMother,1);
 
-            fillthis = "invariantMassBPlusSignal_BA";
-            if(isDesiredCandidate) ((TH1F*)(fOutputBPlusMC->FindObject(fillthis)))->Fill(invariantMassMother);
+            // fillthis = "invariantMassBPlusSignal_BA";
+            // if(isDesiredCandidate) ((TH1F*)(fOutputBPlusMC->FindObject(fillthis)))->Fill(invariantMassMother);
 
-            fillthis = "invariantMassBPlusCorrelated_BA";
-            if(bIsCorrelatedBackground) ((TH1F*)(fOutputBPlusMC->FindObject(fillthis)))->Fill(invariantMassMother);
+            // fillthis = "invariantMassBPlusCorrelated_BA";
+            // if(bIsCorrelatedBackground) ((TH1F*)(fOutputBPlusMC->FindObject(fillthis)))->Fill(invariantMassMother);
 
-            fillthis = "invariantMassBPlusBackground_BA";
-            if(!isDesiredCandidate && !bIsCorrelatedBackground) ((TH1F*)(fOutputBPlusMC->FindObject(fillthis)))->Fill(invariantMassMother);
+            // fillthis = "invariantMassBPlusBackground_BA";
+            // if(!isDesiredCandidate && !bIsCorrelatedBackground) ((TH1F*)(fOutputBPlusMC->FindObject(fillthis)))->Fill(invariantMassMother);
 
-            if(bIsCorrelatedBackground511)
-            {
-              fillthis="invariantMassBPlus_correlated511";
-              ((TH1F*)(fOutputBPlusMC->FindObject(fillthis)))->Fill(invariantMassMother);
-              fillthis="invariantMassBPlus";
-              fillthis += ptBinMother + "_correlated511";
-              ((TH1F*)(fOutputBPlusMC->FindObject(fillthis)))->Fill(invariantMassMother);
-            }
+            // if(bIsCorrelatedBackground511)
+            // {
+            //   fillthis="invariantMassBPlus_correlated511";
+            //   ((TH1F*)(fOutputBPlusMC->FindObject(fillthis)))->Fill(invariantMassMother);
+            //   fillthis="invariantMassBPlus";
+            //   fillthis += ptBinMother + "_correlated511";
+            //   ((TH1F*)(fOutputBPlusMC->FindObject(fillthis)))->Fill(invariantMassMother);
+            // }
             
             if(!isDesiredCandidate && !bIsInjected)
             {
@@ -3339,14 +3330,14 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
             fillthis += ptBinMother + "_SignSum";
             ((TH1F*)(fOutputBPlusMC->FindObject(fillthis)))->Fill(invmassDelta,1);
             
-            if(bIsCorrelatedBackground511)
-            {
-              fillthis="deltainvariantMassBPlus_correlated511";
-              ((TH1F*)(fOutputBPlusMC->FindObject(fillthis)))->Fill(invmassDelta);
-              fillthis="deltainvariantMassBPlus";
-              fillthis += ptBinMother + "_correlated511" ;
-              ((TH1F*)(fOutputBPlusMC->FindObject(fillthis)))->Fill(invmassDelta);
-            }
+            // if(bIsCorrelatedBackground511)
+            // {
+            //   fillthis="deltainvariantMassBPlus_correlated511";
+            //   ((TH1F*)(fOutputBPlusMC->FindObject(fillthis)))->Fill(invmassDelta);
+            //   fillthis="deltainvariantMassBPlus";
+            //   fillthis += ptBinMother + "_correlated511" ;
+            //   ((TH1F*)(fOutputBPlusMC->FindObject(fillthis)))->Fill(invmassDelta);
+            // }
 
             if(!isDesiredCandidate && !bIsInjected)
             {
@@ -3500,7 +3491,7 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
         }
 
         //we save the mother to a TClonesArray
-        //if(!bWrongSign) new ((*fBPlusTracks)[iClonesArray++]) AliAODRecoCascadeHF(*trackBPlus);
+        //if(!bWrongSign) new ((*fBPlusTracks)[iClonesArray++]) AliAODRecoDecayHF2Prong(*trackBPlus);
         delete vertexMother; vertexMother = NULL;
         delete trackBPlusPionRotated; trackBPlusPionRotated = nullptr; 
       }
@@ -3514,12 +3505,12 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
   return;
 }
 //-------------------------------------------------------------------------------------
-void AliAnalysisTaskSEBPlustoDStarPi::FillFinalTrackHistograms(AliAODRecoDecayHF2Prong * selectedBPlus, Bool_t isDesiredCandidate,TClonesArray * mcTrackArray){
+void AliAnalysisTaskSEBPlustoD0Pi::FillFinalTrackHistograms(AliAODRecoDecayHF2Prong * selectedBPlus, AliAODVertex *primaryVertex, Double_t bz, Bool_t isDesiredCandidate,TClonesArray * mcTrackArray){
 
   //In this function we fill histograms with the properties of all the daughters of our selected signal candidate
 
   AliAODTrack* selectedBPlusPion = (AliAODTrack*)selectedBPlus->GetDaughter(0);
-  AliAODRecoDecayHF2Prong* selectedD0 = (AliAODRecoDecayHF2Prong*)selectedPlus->GetDaughter(1);
+  AliAODRecoDecayHF2Prong* selectedD0 = (AliAODRecoDecayHF2Prong*)selectedBPlus->GetDaughter(1);
 
   AliAODTrack* selectedD0Pion;
   AliAODTrack* selectedD0Kaon;
@@ -3792,13 +3783,13 @@ void AliAnalysisTaskSEBPlustoDStarPi::FillFinalTrackHistograms(AliAODRecoDecayHF
 
       AliAODMCParticle *mcTrackParticle = (AliAODMCParticle*)mcTrackArray->At(mcLabelParticle);
       pdgCodeParticle = TMath::Abs(mcTrackParticle->GetPdgCode());
-      ((TH1F*)fDaughterHistogramArrayExtra[3][2])->Fill(pdgCodeParticle);
+      ((TH1F*)fDaughterHistogramArrayExtra[daughterType][2])->Fill(pdgCodeParticle);
       mcLabelParticleMother = mcTrackParticle->GetMother();
 
       if(mcLabelParticleMother >= 0){
         AliAODMCParticle *mcTrackParticleMother = (AliAODMCParticle*)mcTrackArray->At(mcLabelParticleMother);
         pdgCodeParticleMother = TMath::Abs(mcTrackParticleMother->GetPdgCode());
-       ((TH1F*)fDaughterHistogramArrayExtra[3][3])->Fill(pdgCodeParticleMother);
+       ((TH1F*)fDaughterHistogramArrayExtra[daughterType][3])->Fill(pdgCodeParticleMother);
       }
     }
   }
@@ -3837,7 +3828,7 @@ void AliAnalysisTaskSEBPlustoDStarPi::FillFinalTrackHistograms(AliAODRecoDecayHF
   return;
 }
 //-------------------------------------------------------------------------------------
-Double_t AliAnalysisTaskSEBPlustoD0Pi::DeltaInvMassBPlusKpipi(AliAODRecoCascadeHF * BPlus) const
+Double_t AliAnalysisTaskSEBPlustoD0Pi::DeltaInvMassBPlusKpipi(AliAODRecoDecayHF2Prong * BPlus) const
 {
   ///
   /// 3 prong invariant mass of the D0 daughters, the soft pion, and the BPlus pion
@@ -3868,7 +3859,7 @@ Double_t AliAnalysisTaskSEBPlustoD0Pi::DeltaInvMassBPlusKpipi(AliAODRecoCascadeH
   return invMassBPlus - invMassD0;
 }
 //-------------------------------------------------------------------------------------
-void AliAnalysisTaskSEBPlustoD0Pi::FillD0Histograms(AliAODEvent* aodEvent, AliAODRecoDecayHF2Prong * selectedMother, AliAODVertex *primaryVertex, Double_t bz, Int_t motherType, Int_t histType, Int_t pdgCodeMother) {
+void AliAnalysisTaskSEBPlustoD0Pi::FillD0Histograms(AliAODRecoDecayHF2Prong * selectedMother, AliAODVertex *primaryVertex, Double_t bz, Int_t motherType, Int_t histType, Int_t pdgCodeMother) {
 
   if(histType<0) return;
 
@@ -4080,7 +4071,7 @@ void AliAnalysisTaskSEBPlustoD0Pi::FillD0Histograms(AliAODEvent* aodEvent, AliAO
   return;
 }
 //-------------------------------------------------------------------------------------
-void AliAnalysisTaskSEBPlustoD0Pi::FillBPlusHistograms(AliAODEvent * aodEvent, AliAODRecoCascadeHF * selectedMother, AliAODVertex *primaryVertex, Double_t bz, Int_t motherType, Int_t histType) {
+void AliAnalysisTaskSEBPlustoD0Pi::FillBPlusHistograms(AliAODRecoDecayHF2Prong * selectedMother, AliAODVertex *primaryVertex, Double_t bz, Int_t motherType, Int_t histType) {
 
   //In this function we fill the histograms of the reconstructed mothers
   Double_t ptMother = 0.0;
@@ -4121,10 +4112,10 @@ void AliAnalysisTaskSEBPlustoD0Pi::FillBPlusHistograms(AliAODEvent * aodEvent, A
   d0[0] = d0z0[0];
 
   //BPlus
-  prongs[0] = 421; prongs[1] = 211;
+  prongs[1] = 421; prongs[0] = 211;
   invmassDelta = DeltaInvMassBPlusKpipi(selectedMother);
-  AliAODTrack * firstDaughter = (AliAODTrack*)selectedMother->GetDaughter(1);
-  AliAODRecoDecay * secondDaughter = (AliAODRecoCascadeHF*)selectedMother->GetDaughter(0);
+  AliAODTrack * firstDaughter = (AliAODTrack*)selectedMother->GetDaughter(0);
+  AliAODRecoDecayHF2Prong * secondDaughter = (AliAODRecoDecayHF2Prong*)selectedMother->GetDaughter(1);
 
   ptFirstDaughter = firstDaughter->Pt();
   ptSecondDaughter = secondDaughter->Pt();
@@ -4292,7 +4283,7 @@ void AliAnalysisTaskSEBPlustoD0Pi::FillBPlusHistograms(AliAODEvent * aodEvent, A
   if (motherType == 1) {
     motherType = motherType - 1;
 
-    AliAODRecoDecay* trackD0 = (AliAODRecoDecay*)selectedMother->GetDaughter(0);
+    AliAODRecoDecay* trackD0 = (AliAODRecoDecay*)selectedMother->GetDaughter(1);
     AliAODTrack * pionD0 = (AliAODTrack*)trackD0->GetDaughter(0);
     AliAODTrack * kaonD0 = (AliAODTrack*)trackD0->GetDaughter(1);
 
@@ -4377,7 +4368,7 @@ void AliAnalysisTaskSEBPlustoD0Pi::TwoTrackCombinationInfo(AliExternalTrackParam
   daughterTracks.Add(secondTrack);
 
   Double_t dispersion = 0;
-  AliAODVertex *vertex = RecalculateVertex(primaryVertex, &daughterTracks, bz, dispersion, prongs, kTRUE);
+  AliAODVertex *vertex = RecalculateVertex(primaryVertex, &daughterTracks, bz, dispersion);
   if (!vertex) {delete vertex; vertex = NULL; return;}
 
   Double_t xdummy = 0., ydummy = 0., dca, e[2];
@@ -4431,7 +4422,7 @@ void AliAnalysisTaskSEBPlustoD0Pi::ThreeTrackCombinationInfo(AliExternalTrackPar
   daughterTracks.Add(thirdTrack);
 
   Double_t dispersion = 0;
-  AliAODVertex *vertex = RecalculateVertex(primaryVertex, &daughterTracks, bz, dispersion, prongs, kTRUE);
+  AliAODVertex *vertex = RecalculateVertex(primaryVertex, &daughterTracks, bz, dispersion);
   if (!vertex) {delete vertex; vertex = NULL; return;}
 
   Double_t xdummy = 0., ydummy = 0., dca[3];
