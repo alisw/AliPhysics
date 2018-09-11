@@ -5,6 +5,7 @@
 #include <TFile.h>
 #include <TObjString.h>
 #include <TCanvas.h>
+#include <TGraph.h>
 #include <TLegend.h>
 #include <TLegendEntry.h>
 #include "AliPID.h"
@@ -12,6 +13,7 @@
 
 TH1F* CreateHisto(TString nam, Int_t tote);
 void SetupPadStyle();
+void DoMakeUp(TH1* h, const TString det, const TString part, const TString partL);//Function to perform style the drawn TH1
 
 Bool_t DrawTrendingPIDQA(TString mergedTrendFile = "trending.root"){
   TFile *fin = TFile::Open(mergedTrendFile.Data());
@@ -55,6 +57,7 @@ Bool_t DrawTrendingPIDQA(TString mergedTrendFile = "trending.root"){
   TCanvas** c=new TCanvas*[20];
   TString detStrings[4]={"ITS","TPC_Basic","TPC_TOF","TOF"};
   TString partStrings[5]={"electron","pion","kaon","proton","deuteron"};
+  const TString partStringslatex[5]={"e^{#pm}","#pi^{#pm}","K^{#pm}","p, #bar{p}","d, #bar{d}"};
   TString canname[20];
   for(Int_t k=0; k<20; k++){ 
     c[k]=new TCanvas(Form("c%d",k),Form("c%d",k),1500,600);
@@ -95,9 +98,9 @@ Bool_t DrawTrendingPIDQA(TString mergedTrendFile = "trending.root"){
 	  if(theDet<=2 && mom>800) thePad+=2;
 	  if(theDet==3 && mom>1100) thePad+=2;
 	  c[theCanv]->cd(thePad);
-	  htr[jvar]->Draw("");
-	  htr[jvar]->Draw("psame");
-	}
+          DoMakeUp(htr[jvar]->DrawCopy(""), detStrings[theDet], partStrings[thePar], partStringslatex[thePar]);
+          htr[jvar]->Draw("psame");
+        }
       }
     }
   }
@@ -137,6 +140,7 @@ Bool_t DrawTrendingPIDQA(TString mergedTrendFile = "trending.root"){
     ctrpidall->SaveAs("TPCdEdx-PIDinTracking-9pads-AllRuns.png");
     ctrpid->SaveAs("TPCdEdx-PIDinTracking-AllRuns.png");
   }
+  return kTRUE;
 }
 
 
@@ -155,4 +159,51 @@ void SetupPadStyle()
   gPad->SetGridy();
   gPad->SetTickx();
   gPad->SetTicky();
+}
+
+TGraph* ShowLimit(const TH1* h) //Function to show if a datapoint out of range is up or down
+{
+  TGraph* g = nullptr;
+  const Double_t lim[2] = { h->GetMinimum(), h->GetMaximum() };
+  for (Int_t i = 1; i <= h->GetNbinsX(); i++) {
+    const Double_t y = h->GetBinContent(i);
+    if (y < lim[1] && y > lim[0])
+      continue;
+    const Double_t x = h->GetXaxis()->GetBinCenter(i);
+    if (!g) {
+      g = new TGraph();
+      g->SetMarkerColor(kRed);
+      g->SetMarkerStyle(27);
+    }
+    if (y > lim[1])
+      g->SetPoint(g->GetN(), x, lim[1]);
+    else
+      g->SetPoint(g->GetN(), x, lim[0]);
+  }
+  if (g)
+    g->Draw("psame");
+  return g;
+}
+
+void DoMakeUp(TH1* h, const TString det, const TString part, const TString partL)
+{
+  const TString hname = h->GetName();
+  if (det.EqualTo("TOF")) { //Setting histogram range for TOF plots + styling
+    if (hname.Contains("meannSigma"))
+      h->GetYaxis()->SetRangeUser(-.5, .5);
+    else if (hname.Contains("signSigma"))
+      h->GetYaxis()->SetRangeUser(.5, 1.5);
+    h->GetYaxis()->SetTitleSize(0.09);
+    h->GetYaxis()->SetTitleOffset(0.6);
+    h->GetYaxis()->SetLabelSize(0.07);
+    TString title = h->GetYaxis()->GetTitle();
+    title.ReplaceAll("_", " ");
+    title.ReplaceAll("meannSigma" + det, "#mu n#sigma" + det);
+    title.ReplaceAll("signSigma" + det, "#sigma n#sigma" + det);
+    title.ReplaceAll(" " + part, "_{" + partL + "}");
+    title.ReplaceAll("p1000MeV", "#it{p} 1.0 GeV/#it{c}");
+    title.ReplaceAll("p2000MeV", "#it{p} 2.0 GeV/#it{c}");
+    h->GetYaxis()->SetTitle(title);
+    ShowLimit(h);
+  }
 }
