@@ -67,7 +67,7 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
   }//kRot
   
   
-  if(kMix && !(die->GetHasMC()) ){ // need second since there is a problem when mixing MC events (TRef?)
+  if(kMix && !(die->GetHasMC()) && !(cutDefinition==674 || cutDefinition==676)){ // need second since there is a problem when mixing MC events (TRef?)
     AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
 
     mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
@@ -82,7 +82,6 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
     
     die->SetMixingHandler(mix);
   }//kMix
-
 
   // set track cuts
   SetupCuts(die,cutDefinition,bESDANA);
@@ -1475,6 +1474,10 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
   //add histograms to pair classes
   histos->UserHistogram("Pair",
+                        "InvMass_pPt_Centrality","Inv.Mass:PairPt:Centrality;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c); Centrality (%)",
+                        500,0.,5.,250,0.,5.,100,0.,100.,
+                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt,AliDielectronVarManager::kCentralityNew);
+  histos->UserHistogram("Pair",
                         "InvMass_pPt","Inv.Mass:PairPt;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c)",
                         500,0.,5.,250,0.,5.,
                         AliDielectronVarManager::kM, AliDielectronVarManager::kPt);
@@ -1553,7 +1556,7 @@ void SetupMCsignals(AliDielectron* die){
   pi0Sig->SetFillPureMCStep(kTRUE);
   die->AddSignalMC(pi0Sig);
 
-  AliDielectronSignalMC* pi0All = new AliDielectronSignalMC("pi0", "pi0All"); ///pi0 dalitz pairs (also from secondary)
+  AliDielectronSignalMC* pi0All = new AliDielectronSignalMC("pi0All", "pi0All"); ///pi0 dalitz pairs (also from secondary)
   pi0All->SetLegPDGs(11,-11);
   pi0All->SetMotherPDGs(111,111);
   pi0All->SetMothersRelation(AliDielectronSignalMC::kSame);
