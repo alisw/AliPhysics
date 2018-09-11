@@ -167,6 +167,8 @@ public:
   Bool_t IsFromSubsidiaryEvent(int id) const;
   void   SetTopEvent(const AliMCEvent* ev) {fTopEvent = ev;}
   const AliMCEvent* GetTopEvent() const {return fTopEvent;}
+
+  static AliMCParticle *GetDummyTrack();
   
 private:
     virtual void      ReorderAndExpandTreeTR();
