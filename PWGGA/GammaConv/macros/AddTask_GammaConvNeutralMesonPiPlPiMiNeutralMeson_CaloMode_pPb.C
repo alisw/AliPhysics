@@ -1,7 +1,7 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
- * Author: Remco de Boer                                                  *
+ * Author: Remco de Boer, Nicolas Schmidt                                 *
  * Version 1.0                                                            *
  *                                                                        *
  *                                                                        *
@@ -93,7 +93,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pPb(
     cout << "INFO: AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
   }
 
-  Int_t isHeavyIon = 0;
+  Int_t isHeavyIon = 2;
   Int_t neutralPionMode = 2;
 
   // ================== GetAnalysisManager ===============================
@@ -121,7 +121,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pPb(
         periodNameV0Reader.CompareTo("LHC16P1JJLowB") == 0 || periodNameV0Reader.CompareTo("LHC16P1Pyt8LowB") == 0 )
     cutnumberPhoton         = "00000088400000000100000000";
 
-  TString cutnumberEvent = "00000003";
+  TString cutnumberEvent = "80000003";
   TString PionCuts      = "000000200";            //Electron Cuts
 
 
