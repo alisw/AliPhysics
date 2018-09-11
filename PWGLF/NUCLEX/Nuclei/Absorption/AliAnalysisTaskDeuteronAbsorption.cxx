@@ -47,11 +47,8 @@ const double AliAnalysisTaskDeuteronAbsorption::fgkPhiParamNeg[4][4] = {
       {5.60000e+00, -2.06000e-01, -1.97130e+00, 2.67181e-01},
       {9.72180e+00, -4.35801e-02, -1.14550e+00, 1.49160e+00}};
 
-using namespace std; // std namespace: so you can do things like 'cout'
-
 ClassImp(AliAnalysisTaskDeuteronAbsorption); // classimp: necessary for root
 
-//_____________________________________________________________________________
 AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char *name) : AliAnalysisTaskSE(name),
                                                                                          fMindEdx{100.},
                                                                                          fMinTPCsignalN{50},
@@ -80,7 +77,6 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                    // if you add more output objects, make sure to call PostData for all of them, and to
 }
 
-//_____________________________________________________________________________
 AliAnalysisTaskDeuteronAbsorption::~AliAnalysisTaskDeuteronAbsorption()
 {
   if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
@@ -99,12 +95,9 @@ AliAnalysisTaskDeuteronAbsorption::~AliAnalysisTaskDeuteronAbsorption()
     delete fOutputList; // at the end of your task, it is deleted from memory by calling this function
 }
 
-//_____________________________________________________________________________
 void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
 {
-  //
   // create output objects
-  //
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   if (man)
   {
@@ -112,10 +105,9 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     if (inputHandler)
       fPIDResponse = inputHandler->GetPIDResponse();
   }
-  //
+
   // histograms used in the analysis
   // to an output file
-  //
   fOutputList = new TList();    // this is a list which will contain all of your histograms
   fOutputList->SetOwner(kTRUE); // memory stuff: the list is owner of all objects it contains and will delete them
   //
@@ -158,9 +150,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
     }
   }
 
-  //
   // create track cuts object
-  //
   if (fESDtrackCuts == nullptr) {
     fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, kTRUE);
     fESDtrackCuts->SetEtaRange(-0.8, 0.8);
@@ -186,12 +176,9 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
   }
 }
 
-//_____________________________________________________________________________
 void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
 {
-  //
   // main loop over events
-  //
   AliESDEvent* esdEvent = dynamic_cast<AliESDEvent *>(InputEvent());
   if (!esdEvent)
     ::Fatal("AliAnalysisTaskDeuteronAbsorption::UserExec","No ESD event found.");  // if the pointer to the event is empty (getting it failed) skip this event
@@ -206,9 +193,8 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
     mcEvent = eventHandlerMC->MCEvent();
     isMC = (mcEvent != nullptr);
   }
-  //
+
   // check for a proper primary vertex and monitor
-  //
   const AliESDVertex *vertex = esdEvent->GetPrimaryVertexTracks();
   if (vertex->GetNContributors() < 1)
   {
@@ -253,13 +239,13 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
     double tof = track->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetStartTime(ptot);
     //
     double beta = -1.;
-    double mass = -99;
+    double mass2 = -1;
     //
     if (hasTOF)
     {
       beta = length / (TMath::C() * 1.e-10 * tof);
       if ((1 - beta * beta) > 0)
-        mass = ptot * TMath::Sqrt(1 - beta * beta) / beta; // using inner TPC mom. as approx.
+        mass2 = ptot * ptot * (1. / (beta * beta) - 1.);
     }
 
     // fill QA histograms
@@ -268,7 +254,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
     if (hasTOF && track->GetTPCsignal() > fMindEdx)
     {
       fHist3TOFpidAll->Fill(ptot * sign, beta, track->Phi());
-      fHist3TOFmassAll->Fill(ptot * sign, mass * mass, track->Phi());
+      fHist3TOFmassAll->Fill(ptot * sign, mass2, track->Phi());
     }
     for (int iSpecies = 0; iSpecies < 4; ++iSpecies)
     {
@@ -279,13 +265,12 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
         if (hasTOF && track->GetTPCsignal() > fMindEdx)
         {
           fHist3TOFpid[iSpecies]->Fill(ptot * sign, beta, track->Phi());
-          fHist3TOFmass[iSpecies]->Fill(ptot * sign, mass * mass, track->Phi());
+          fHist3TOFmass[iSpecies]->Fill(ptot * sign, mass2, track->Phi());
         }
       }
     }
 
     // study using TRDin
-    //
     bool hasTRDin = bool(status & AliESDtrack::kTRDin); // 2D phi pt for TRD
 
     double pt = track->Pt();
@@ -307,7 +292,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       if (std::abs(tpcNsigmas[iSpecies]) < 3.)
       {
         if (track->GetTPCsignal() > fMindEdx)
-          fHist2Matching[iSpecies][positive][withTRD[positive]]->Fill(ptot, mass * mass);
+          fHist2Matching[iSpecies][positive][withTRD[positive]]->Fill(ptot, mass2);
         if (isMC)
         {
           int tofLabel[3]{-1,-1,-1};
