@@ -62,6 +62,7 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          fHist3TOFpidAll{nullptr},
                                                                                          fHist3TOFmass{nullptr},
                                                                                          fHist3TOFmassAll{nullptr},
+                                                                                         fHist1AcceptanceAll{nullptr},
                                                                                          fHist2Matching{nullptr},
                                                                                          fHist2Phi{nullptr},
                                                                                          fHist2MatchingMC{nullptr},
@@ -115,7 +116,8 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
   fOutputList->Add(fHistZv);
   //
 
-  std::string TRDio[2] = {"woTRD", "wTRD"};
+  std::string wTRD[2] = {"woTRD", "wTRD"};
+  std::string wTOF[2] = {"woTOF", "wTOF"};
   std::string pos_neg[2] = {"neg", "pos"};
 
   for (int iSpecies = 0; iSpecies < 4; ++iSpecies)
@@ -138,13 +140,17 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
   {
     for (int iTRD = 0; iTRD < 2; ++iTRD)
     {
-      fHist2Phi[iCharge][iTRD] = new TH2F(Form("fHist2Phi_%s_%s", pos_neg[iCharge].data(), TRDio[iTRD].data()), Form("%s %s; #Phi (rad) ;#it{p}_{T} (Gev/#it{c});", pos_neg[iCharge].data(), TRDio[iTRD].data()), 100, 0, 2 * TMath::Pi(), 100, 0, 7);
+      fHist2Phi[iCharge][iTRD] = new TH2F(Form("fHist2Phi_%s_%s", pos_neg[iCharge].data(), wTRD[iTRD].data()), Form("%s %s; #Phi (rad) ;#it{p}_{T} (Gev/#it{c});", pos_neg[iCharge].data(), wTRD[iTRD].data()), 100, 0, 2 * TMath::Pi(), 100, 0, 7);
       fOutputList->Add(fHist2Phi[iCharge][iTRD]);
+      for (int iTOF = 0; iTOF < 2; ++iTOF) {
+        fHist1AcceptanceAll[iCharge][iTRD][iTOF] = new TH1F(Form("fHist1AcceptanceAll%s_%s_%s", pos_neg[iCharge].data(), wTRD[iTRD].data(), wTOF[iTOF].data()), Form("%s %s %s; #it{p}/#it{z} (Gev/#it{c});", pos_neg[iCharge].data(), wTRD[iTRD].data(), wTOF[iTOF].data()), 200, 0, 10);
+        fOutputList->Add(fHist1AcceptanceAll[iCharge][iTRD][iTOF]);
+      }
       for (int iSpecies = 0; iSpecies < 4; ++iSpecies)
       {
-        fHist2Matching[iSpecies][iCharge][iTRD] = new TH2F(Form("fHist2Matching%s_%s_%s", fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), TRDio[iTRD].data()), Form("%s %s %s; #it{p}/#it{z} (Gev/#it{c}); TOF m^{2} (GeV/#it{c}^{2})^{2}", fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), TRDio[iTRD].data()), 200, 0, 10, 160, 0, 6.5);
+        fHist2Matching[iSpecies][iCharge][iTRD] = new TH2F(Form("fHist2Matching%s_%s_%s", fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), wTRD[iTRD].data()), Form("%s %s %s; #it{p}/#it{z} (Gev/#it{c}); TOF m^{2} (GeV/#it{c}^{2})^{2}", fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), wTRD[iTRD].data()), 200, 0, 10, 160, 0, 6.5);
         fOutputList->Add(fHist2Matching[iSpecies][iCharge][iTRD]);
-        fHist2MatchingMC[iSpecies][iCharge][iTRD] = new TH2F(Form("fHist2MatchingMC%s_%s_%s", fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), TRDio[iTRD].data()), Form("%s %s %s; #it{p}/#it{z} (Gev/#it{c}); TOF m^{2} (GeV/#it{c}^{2})^{2}", fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), TRDio[iTRD].data()), 200, 0, 10, 160, 0, 6.5);
+        fHist2MatchingMC[iSpecies][iCharge][iTRD] = new TH2F(Form("fHist2MatchingMC%s_%s_%s", fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), wTRD[iTRD].data()), Form("%s %s %s; #it{p}/#it{z} (Gev/#it{c}); TOF m^{2} (GeV/#it{c}^{2})^{2}", fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), wTRD[iTRD].data()), 200, 0, 10, 160, 0, 6.5);
         fOutputList->Add(fHist2MatchingMC[iSpecies][iCharge][iTRD]);
       }
     }
@@ -287,6 +293,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
             (phi > fTRDboundariesPos[1]->Eval(pt) && phi < fTRDboundariesPos[2]->Eval(pt)) ||
             phi > fTRDboundariesPos[3]->Eval(pt)};
     bool positive = sign > 0;
+    fHist1AcceptanceAll[positive][withTRD[positive]][hasTOF]->Fill(ptot);
     for (int iSpecies = 0; iSpecies < 4; ++iSpecies)
     {
       if (std::abs(tpcNsigmas[iSpecies]) < 3.)

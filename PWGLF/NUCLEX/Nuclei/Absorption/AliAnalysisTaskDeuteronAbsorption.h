@@ -56,6 +56,7 @@ private:
   TH3F *fHist3TOFmass[4]; //! QA TOF mass per species
   TH3F *fHist3TOFmassAll; //! QA TOF mass no species selection
 
+  TH1F *fHist1AcceptanceAll[2][2][2]; //! Number of tracks vs p, negative (0) and positive (1), without(0) and with (1) TRD, without (0) and with (1) TOF matching
   TH2F *fHist2Matching[4][2][2]; //! TOF mass per species vs p, negative (0) and positive (1), without(0) and with (1) TRD 
   TH2F *fHist2Phi[2][2]; //! phi vs pt, negative (0) and positive (1), without(0) and with (1) TRD
 
