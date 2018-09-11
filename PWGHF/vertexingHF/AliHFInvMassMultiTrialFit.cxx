@@ -254,7 +254,7 @@ Bool_t AliHFInvMassMultiTrialFit::CreateHistos(){
   }
   fNtupleMultiTrials = new TNtuple(Form("ntuMultiTrial%s",fSuffix.Data()),Form("ntuMultiTrial%s",fSuffix.Data()),"rebin:firstb:minfit:maxfit:bkgfunc:sigfunc:confsig:confmean:chi2:signif:mean:emean:sigma:esigma:rawy:erawy",128000);
   fNtupleMultiTrials->SetDirectory(nullptr);
-  fNtupleBinCount = new TNtuple(Form("ntuBinCount%s",fSuffix.Data()),Form("ntuBinCount%s",fSuffix.Data()),"rebin:firstb:minfit:maxfit:bkgfunc:confsig:confmean:chi2:nSigmaBC:rawyBC0:erawyBC0:rawyBC1:erawyBC1",128000);
+  fNtupleBinCount = new TNtuple(Form("ntuBinCount%s",fSuffix.Data()),Form("ntuBinCount%s",fSuffix.Data()),"rebin:firstb:minfit:maxfit:bkgfunc:sigfunc:confsig:confmean:chi2:nSigmaBC:rawyBC0:erawyBC0:rawyBC1:erawyBC1",128000);
   fNtupleBinCount->SetDirectory(nullptr);
   return kTRUE;
 
@@ -274,7 +274,7 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
   fMinYieldGlob=999999.;
   fMaxYieldGlob=0.;
   Float_t xnt[16];
-  Float_t xntBC[13];
+  Float_t xntBC[14];
 
   for(Int_t ir=0; ir<fNumOfRebinSteps; ir++){
     Int_t rebin=fRebinSteps[ir];
@@ -474,7 +474,7 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
 		  fNtupleMultiTrials->Fill(xnt);
 		  if(types==0){
 		    // bin counting done only for 1 case of signal line shape
-		    for(Int_t j=0; j<8; j++) xntBC[j]=xnt[j];
+		    for(Int_t j=0; j<9; j++) xntBC[j]=xnt[j];
 		  
 		  
 		    for(Int_t iStepBC=0; iStepBC<fNumOfnSigmaBinCSteps; iStepBC++){
@@ -486,13 +486,13 @@ Bool_t AliHFInvMassMultiTrialFit::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePa
 			 maxMassBC<(hRebinned->GetXaxis()->GetXmax())){
 			Double_t cnts0,ecnts0;
 			Double_t cnts1,ecnts1;
-			cnts0=fitter->GetRawYieldBinCounting(ecnts0,minMassBC,maxMassBC,0);
-			cnts1=fitter->GetRawYieldBinCounting(ecnts1,minMassBC,maxMassBC,1);
-			xntBC[8]=fnSigmaBinCSteps[iStepBC];
-			xntBC[9]=cnts0;
-			xntBC[10]=ecnts0;
-			xntBC[11]=cnts1;
-			xntBC[12]=ecnts1;
+			cnts0=fitter->GetRawYieldBinCounting(ecnts0,fnSigmaBinCSteps[iStepBC],0,0);
+			cnts1=fitter->GetRawYieldBinCounting(ecnts1,fnSigmaBinCSteps[iStepBC],1,0);
+			xntBC[9]=fnSigmaBinCSteps[iStepBC];
+			xntBC[10]=cnts0;
+			xntBC[11]=ecnts0;
+			xntBC[12]=cnts1;
+			xntBC[13]=ecnts1;
 			++itrialBC;
 			fHistoRawYieldDistBinC0All->Fill(cnts0);
 			fHistoRawYieldTrialBinC0All->SetBinContent(globBin,iStepBC+1,cnts0);
