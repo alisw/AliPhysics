@@ -13,22 +13,28 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
+// ROOT
 #include <TString.h>
 #include <TSystem.h>
 #include <TROOT.h>
 
-#include "AliCaloTrackESDReader.h"
-#include "AliCaloTrackAODReader.h"
-#include "AliCalorimeterUtils.h"
-#include "AliAnalysisTaskCaloTrackCorrelation.h"
-#include "AliAnaCaloTrackCorrMaker.h"
+// AliPhysics
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliVTrack.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
-#include "ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
 #include "AliESDtrackCuts.h"
+
+// CaloTrackCorrelations frame
+#include "AliCaloTrackESDReader.h"
+#include "AliCaloTrackAODReader.h"
+#include "AliCalorimeterUtils.h"
+#include "AliAnalysisTaskCaloTrackCorrelation.h"
+#include "AliAnaCaloTrackCorrMaker.h"
+
+// Macros
+#include "ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
 #include "CreateTrackCutsPWGJE.C"
 #include "CheckActiveEMCalTriggerPerPeriod.C"
 
