@@ -347,6 +347,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH3F                       * fPtVsConeVsEtaBand;              //!<! Energy cone clusters vs tracks test (not normalised)
   TH3F                       * fPtVsNormConeVsNormPhiBand;      //!<!
   TH3F                       * fPtVsNormConeVsNormEtaBand;      //!<!
+  TH3F                       * fPtVsNormConeVsNormExtraPerpCones; //!<!
   TH3F                       * fPtvsM02vsSumUE_Norm;
   TH2F                       * fTestEtaPhiCone;                 //!<! Eta vs phi test for clusters in cone
   TH3F                       * fInvMassM02iso;                  //!<!
