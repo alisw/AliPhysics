@@ -2112,33 +2112,37 @@ void AliHFSystErr::InitDstoKKpi2017pp5TeV(){
   for(Int_t i=4;  i<=4;  i++) fTrackingEff->SetBinContent(i, 0.055); // [3-4]
   for(Int_t i=5;  i<=5; i++) fTrackingEff->SetBinContent(i, 0.06); // [4-5]
   for(Int_t i=6;  i<=6; i++) fTrackingEff->SetBinContent(i, 0.065); // [5-6]
-  for(Int_t i=7; i<=24; i++) fTrackingEff->SetBinContent(i, 0.07); // [12-24]
+  for(Int_t i=7; i<=16; i++) fTrackingEff->SetBinContent(i, 0.07); // [12-16]
+  for(Int_t i=17; i<=24; i++) fTrackingEff->SetBinContent(i, 1.000); // [16-24]
   
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
   for(Int_t i=1;  i<=2;  i++) fRawYield->SetBinContent(i, 1.00); // [0-2]
   for(Int_t i=3;  i<=3;  i++) fRawYield->SetBinContent(i, 0.07); // [2-3]
   for(Int_t i=4;  i<=12;  i++) fRawYield->SetBinContent(i, 0.03); // [3-12]
-  for(Int_t i=13;  i<=24;  i++) fRawYield->SetBinContent(i, 0.05); // [12-16]
+  for(Int_t i=13;  i<=16;  i++) fRawYield->SetBinContent(i, 0.05); // [12-16]
+  for(Int_t i=17; i<=24; i++) fRawYield->SetBinContent(i, 1.00); // [16-24]
   
   // Cuts efficiency
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
   for(Int_t i=1;  i<=2;  i++) fCutsEff->SetBinContent(i, 1.00); // [0-2]
   for(Int_t i=3;  i<=3;  i++) fCutsEff->SetBinContent(i, 0.08); // [2-3]
-  for(Int_t i=4;  i<=24;  i++) fCutsEff->SetBinContent(i, 0.05); // [3-24]
+  for(Int_t i=4;  i<=16;  i++) fCutsEff->SetBinContent(i, 0.05); // [3-16]
+  for(Int_t i=17; i<=24; i++) fCutsEff->SetBinContent(i, 1.00); // [16-24]
   
   // PID efficiency
   fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
   for(Int_t i=1;  i<=2;  i++) fPIDEff->SetBinContent(i, 1.00); // [0-2]
-  for(Int_t i=3;  i<=4;  i++) fPIDEff->SetBinContent(i, 0.025); // [2-4]
-  for(Int_t i=5;  i<=6;  i++) fPIDEff->SetBinContent(i, 0.030); // [4-6]
-  for(Int_t i=7;  i<=24; i++) fPIDEff->SetBinContent(i, 0.00); // [6-24]
+  for(Int_t i=3;  i<=6;  i++) fPIDEff->SetBinContent(i, 0.025); // [2-6]
+  for(Int_t i=7;  i<=16; i++) fPIDEff->SetBinContent(i, 0.00); // [6-16]
+  for(Int_t i=17; i<=24; i++) fPIDEff->SetBinContent(i, 1.00); // [16-24]
   
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-  for(Int_t i=1; i<=2; i++) fMCPtShape->SetBinContent(i,1.); // [0-2]
-  for(Int_t i=3; i<=3; i++) fMCPtShape->SetBinContent(i,0.01); // [2-3]
-  for(Int_t i=4; i<=24; i++) fMCPtShape->SetBinContent(i,0.00); // [3-24]
+  for(Int_t i=1; i<=2; i++) fMCPtShape->SetBinContent(i,1.);
+  for(Int_t i=3; i<=3; i++) fMCPtShape->SetBinContent(i,0.01);
+  for(Int_t i=4; i<=16; i++) fMCPtShape->SetBinContent(i,0.00);
+  for(Int_t i=17; i<=24; i++) fMCPtShape->SetBinContent(i,1.00);
 
   return;
 }
@@ -3480,12 +3484,15 @@ void AliHFSystErr::InitDstartoD0pi2017pp5TeV(){
     for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.013); // 1.3%
     for(Int_t i=1;i<=36;i++) fBR->SetBinError(i,0.);
 
-    // Tracking efficiency (TPC contribution: 0.5% per D0 daughter + 1.0% for soft pion)
+    // Tracking efficiency
+    // 11/07/18: To be updated after implementation new strategy for Dstar
     fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
-    fTrackingEff->SetBinContent(2,0.04);
-    fTrackingEff->SetBinContent(3,0.04);
-    fTrackingEff->SetBinContent(4,0.045);
-    for(Int_t i=5;i<=36;i++) fTrackingEff->SetBinContent(i,0.05);
+    fTrackingEff->SetBinContent(2,0.05);
+    fTrackingEff->SetBinContent(3,0.055);
+    fTrackingEff->SetBinContent(4,0.06);
+    fTrackingEff->SetBinContent(5,0.06);
+    for(Int_t i= 6;i<=16;i++) fTrackingEff->SetBinContent(i,0.065);
+    for(Int_t i=17;i<=36;i++) fTrackingEff->SetBinContent(i,0.07);
     for(Int_t i=1;i<=36;i++) fTrackingEff->SetBinError(i,0.);
 
     // Raw yield extraction
@@ -7013,7 +7020,7 @@ void AliHFSystErr::InitLctopK0S2016pPb() {
 
 }
 
-void AliHFSystErr::InitLctopK0S2015pp() {
+void AliHFSystErr::InitLctopK0S2017pp5TeV() {
   //
   // Lc->pK0S syst errors. Responsible: A. De Caro, E. Meninno
   //  2015 pp 5 TeV sample
