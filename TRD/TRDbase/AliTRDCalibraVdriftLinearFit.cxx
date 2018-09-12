@@ -41,6 +41,7 @@
 #include <TDirectory.h>
 #include <TTreeStream.h>
 #include <TF1.h>
+#include <TSystem.h>
 
 //header file
 #include "AliTRDCalibraVdriftLinearFit.h"
@@ -513,6 +514,10 @@ TGraphErrors* AliTRDCalibraVdriftLinearFit::DrawMS(const TH2 *const h2, Int_t &n
   // Debug function
   //
 
+  // Some rounding errors might lead to FPEs: we ignore them in this function
+  Int_t savedFPEMask = gSystem->GetFPEMask();
+  gSystem->SetFPEMask(kNoneMask);
+
   TF1 fg("fg", "gaus", -10., 30.);
   TGraphErrors *gp = new TGraphErrors();
 
@@ -540,5 +545,6 @@ TGraphErrors* AliTRDCalibraVdriftLinearFit::DrawMS(const TH2 *const h2, Int_t &n
     ig++;
   }
   delete h1;
+  gSystem->SetFPEMask(savedFPEMask);
   return gp;
 }
