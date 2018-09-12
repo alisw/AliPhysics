@@ -7020,7 +7020,7 @@ void AliHFSystErr::InitLctopK0S2016pPb() {
 
 }
 
-void AliHFSystErr::InitLctopK0S2015pp() {
+void AliHFSystErr::InitLctopK0S2017pp5TeV() {
   //
   // Lc->pK0S syst errors. Responsible: A. De Caro, E. Meninno
   //  2015 pp 5 TeV sample
