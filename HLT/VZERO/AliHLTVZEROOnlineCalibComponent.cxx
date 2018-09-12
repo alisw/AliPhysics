@@ -69,6 +69,7 @@ AliHLTVZEROOnlineCalibComponent::AliHLTVZEROOnlineCalibComponent() :
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
   //
   // NOTE: all helper classes should be instantiated in DoInit()
+  fHistMult.SetDirectory(0);
 }
 
 // #################################################################################
