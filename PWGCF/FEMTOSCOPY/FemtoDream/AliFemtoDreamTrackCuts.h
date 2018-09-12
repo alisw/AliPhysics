@@ -201,7 +201,7 @@ class AliFemtoDreamTrackCuts {
   }
   ;
   TList *GetMCQAHists() {
-    return fMCHists->GetHistList();
+    return fMCHists?fMCHists->GetHistList():nullptr;
   }
   ;
   TString ClassName() {

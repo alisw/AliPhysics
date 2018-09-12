@@ -21,7 +21,7 @@ class AliAnalysisTaskGrandma : public AliAnalysisTaskSE {
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
   virtual void Terminate(Option_t *) {
-  }
+  }  //
   ;
   void SetEventCuts(AliFemtoDreamEventCuts *cuts) {
     fEvtCuts = cuts;
@@ -35,9 +35,14 @@ class AliAnalysisTaskGrandma : public AliAnalysisTaskSE {
     fAntiTrackCuts = cuts;
   }
   ;
-  //sadfsdaf
+  void SetTrackBufferSize(int trackBuffer) {
+    fTrackBufferSize = trackBuffer;
+  }
+  ;
+  void StoreGlobalTrackReference(AliAODTrack *track);
+  void ResetGlobalTrackReference();
  private:
-  bool  fIsMC;                              //
+  bool fIsMC;                              //
   TList *fQA;                               //!
   AliFemtoDreamEvent *fEvent;               //!
   AliFemtoDreamEventCuts *fEvtCuts;         // stream this one!
@@ -49,6 +54,11 @@ class AliAnalysisTaskGrandma : public AliAnalysisTaskSE {
   AliFemtoDreamTrackCuts *fAntiTrackCuts;   //
   TList *fAntiTrackCutHistList;             //!
   TList *fAntiTrackCutHistMCList;           //!
+//  AliFemtoDreamPairCleaner *fPairCleaner;   //!
+//  AliFemtoDreamPartCollection *fPartColl;   //!
+//  AliFemtoDreamCollConfig *fConfig;         //!
+  int fTrackBufferSize;                     //
+  AliAODTrack **fGTI;                       //!
 ClassDef(AliAnalysisTaskGrandma,1)
 };
 
