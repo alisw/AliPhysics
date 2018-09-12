@@ -1728,25 +1728,22 @@ void AliAnalysisManager::CheckBranches(Bool_t load)
 Bool_t AliAnalysisManager::CheckTasks() const
 {
    /// Check consistency of tasks.
-   #if ROOT_VERSION_CODE < ROOT_VERSION(5, 99, 0)
    Int_t ntasks = fTasks->GetEntries();
    if (!ntasks) {
       Error("CheckTasks", "No tasks connected to the manager. This may be due to forgetting to compile the task or to load their library.");
       return kFALSE;
    }
-   // Get the pointer to AliAnalysisTaskSE::Class()
-   TClass *badptr = (TClass*)gROOT->ProcessLine("AliAnalysisTaskSE::Class()");
    // Loop all tasks to check if their corresponding library was loaded
    TIter next(fTasks);
    TObject *obj;
    while ((obj=next())) {
-      if (obj->IsA() == badptr) {
+      if (strcmp(obj->ClassName(), "AliAnalysisTaskSE") == 0)
+      {
          Error("CheckTasks", "##################\n \
          Class for task %s NOT loaded. You probably forgot to load the library for this task (or compile it dynamically).\n###########################\n",obj->GetName());
          return kFALSE;
       }
    }
-   #endif
    return kTRUE;
 }
 
