@@ -199,6 +199,7 @@ private:
     TH2F        *fHistRawNitsPhi;//!
     TH2F        *fHistRawNtpcPhi;//!
     TH2F        *fMCcheckMother;//!
+    TH1F        *fMCcheckHFE;//!
     TH2F        *fMCneutral;//!
     TH2F        *fEMCTrkMatch_Phi;//!
     TH2F        *fEMCTrkMatch_Eta;//!
