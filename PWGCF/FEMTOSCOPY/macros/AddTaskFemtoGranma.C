@@ -1,7 +1,7 @@
 #include "TROOT.h"
 #include "TSystem.h"
 
-AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7") {
+AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7", bool DCAPlots=false) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   if (!mgr) {
@@ -21,7 +21,19 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7") {
 
   AliAnalysisTaskGrandma *task = new AliAnalysisTaskGrandma("myFirstTask",
                                                             isMC);
+  task->SetTrackBufferSize(2000);
   task->SetEventCuts(evtCuts);
+  AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
+      isMC, DCAPlots, false, false);
+  TrackCuts->SetCutCharge(1);
+//wanna change something? Do it like this: TrackCuts->SetPtRange(0.3, 4.05);
+
+  task->SetTrackCuts(TrackCuts);
+  AliFemtoDreamTrackCuts *AntiTrackCuts =
+      AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, DCAPlots, false, false);
+  AntiTrackCuts->SetCutCharge(-1);
+  task->SetAntiTrackCuts(AntiTrackCuts);
+
   if (CentEst == "kInt7") {
     task->SelectCollisionCandidates(AliVEvent::kINT7);
     std::cout << "Added kINT7 Trigger \n";
@@ -83,6 +95,16 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7") {
       Form("%s:%s", file.Data(), TrackCutsName.Data()));
   mgr->ConnectOutput(task, 3, couputTrkCuts);
 
+  AliAnalysisDataContainer *coutputAntiTrkCuts;
+  TString AntiTrackCutsName = Form("AntiTrackCuts");
+  coutputAntiTrkCuts = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      AntiTrackCutsName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), AntiTrackCutsName.Data()));
+  mgr->ConnectOutput(task, 4, coutputAntiTrkCuts);
+
   if (isMC) {
     AliAnalysisDataContainer *coutputTrkCutsMC;
     TString TrkCutsMCName = Form("TrkCutsMC");
@@ -92,18 +114,8 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7") {
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 4, coutputTrkCutsMC);
+    mgr->ConnectOutput(task, 5, coutputTrkCutsMC);
   }
-
-  AliAnalysisDataContainer *coutputAntiTrkCuts;
-  TString AntiTrackCutsName = Form("AntiTrackCuts");
-  coutputAntiTrkCuts = mgr->CreateContainer(
-      //@suppress("Invalid arguments") it works ffs
-      AntiTrackCutsName.Data(),
-      TList::Class(),
-      AliAnalysisManager::kOutputContainer,
-      Form("%s:%s", file.Data(), AntiTrackCutsName.Data()));
-  mgr->ConnectOutput(task, 5, coutputAntiTrkCuts);
 
   if (isMC) {
     AliAnalysisDataContainer *coutputAntiTrkCutsMC;
