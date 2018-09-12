@@ -1,6 +1,6 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-// Updated Sep 8: Remove mass cut
+// Updated Sep 11: Acceptance/Daughters/V0radius
 // Parts of the code taken from:
 // AliEbyEPidEfficiencyContamination.cxx
 // AliAnalysisTaskStrangenessVsMultiplicityMCRun2.cxx
@@ -356,7 +356,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             }
             
             abseta = TMath::Abs(eta);
-            // if(abseta > 0.8) continue;
+//             if(abseta > 0.8) continue;
             if (TMath::Abs (lRap) >0.5) continue;
             
             Int_t iptbinMC = GetPtBin(gpt);
@@ -569,12 +569,12 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         
         Float_t v0Radius = TMath::Sqrt(vertx[0]*vertx[0]+vertx[1]*vertx[1]);
         
-        if(TMath::Abs(peta) > 0.8) continue;
-        if(TMath::Abs(neta) > 0.8) continue;
+        if(TMath::Abs(peta) > 1) continue;
+        if(TMath::Abs(neta) > 1) continue;
         if(cosPointingAngle < 0.999) continue;
-        if(dcaDaughters > 0.8) continue;
+        if(dcaDaughters > 1.5) continue;
         if(v0Radius < 5.0) continue;
-        if(v0Radius > 100.) continue;
+        if(v0Radius > 200.) continue;
         
         
         Int_t iptbin = GetPtBin(V0pt);
@@ -644,11 +644,11 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                             {
                                 f2fHistRecPrimariesCentVsPtLambda->Fill(fCentrality,mcpt);
                                 f2fHistInvMassVsPtLambdaRec->Fill(invMassLambda,mcpt);
-//                                if(invMassLambda > 1.104 && invMassLambda < 1.128) //5 sigmas around mean
-//                                {
-//                                    f2fHistmassctLambda->Fill(invMassLambda,mcpt);
-//                                    ptCh[iptbin] += 1;
-//                                }
+                                //                                if(invMassLambda > 1.104 && invMassLambda < 1.128) //5 sigmas around mean
+                                //                                {
+                                //                                    f2fHistmassctLambda->Fill(invMassLambda,mcpt);
+                                //                                    ptCh[iptbin] += 1;
+                                //                                }
                                 ptCh[iptbin] += 1;
                                 
                             }
@@ -667,11 +667,11 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                             {
                                 f2fHistRecPrimariesCentVsPtAntiLambda->Fill(fCentrality,mcpt);
                                 f2fHistInvMassVsPtAntiLambdaRec->Fill(invMassAntiLambda,mcpt);
-//                                if(invMassAntiLambda > 1.104 && invMassAntiLambda < 1.128)
-//                                {
-//                                    f2fHistmassctAntiLambda->Fill(invMassAntiLambda,mcpt);
-//                                    ptCh[iptbin+fNptBins] += 1;
-//                                }
+                                //                                if(invMassAntiLambda > 1.104 && invMassAntiLambda < 1.128)
+                                //                                {
+                                //                                    f2fHistmassctAntiLambda->Fill(invMassAntiLambda,mcpt);
+                                //                                    ptCh[iptbin+fNptBins] += 1;
+                                //                                }
                                 ptCh[iptbin+fNptBins] += 1;
                             }
                             else{f2fHistAntiLambdaMisId->Fill(fCentrality,mcpt);}
@@ -721,12 +721,12 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                             {
                                 f2fHistRecPrimariesCentVsPtLambda->Fill(fCentrality,mcpt);
                                 f2fHistInvMassVsPtLambdaRec->Fill(invMassLambda,mcpt);
-//                                if(invMassLambda > 1.104 && invMassLambda <1.128)
-//                                {
-//                                    f2fHistmassctLambda->Fill(invMassLambda,mcpt);
-//                                    ptCh[iptbin] += 1;
-//                                }
-                                 ptCh[iptbin] += 1;
+                                //                                if(invMassLambda > 1.104 && invMassLambda <1.128)
+                                //                                {
+                                //                                    f2fHistmassctLambda->Fill(invMassLambda,mcpt);
+                                //                                    ptCh[iptbin] += 1;
+                                //                                }
+                                ptCh[iptbin] += 1;
                             }
                             else{f2fHistLambdaMisId->Fill(fCentrality,mcpt);}
                         }
@@ -742,11 +742,11 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                             {
                                 f2fHistRecPrimariesCentVsPtAntiLambda->Fill(fCentrality,mcpt);
                                 f2fHistInvMassVsPtAntiLambdaRec->Fill(invMassAntiLambda,mcpt);
-//                                if(invMassAntiLambda > 1.104 && invMassAntiLambda < 1.128)
-//                                {
-//                                    f2fHistmassctAntiLambda->Fill(invMassAntiLambda,mcpt);
-//                                    ptCh[iptbin+fNptBins] += 1;
-//                                }
+                                //                                if(invMassAntiLambda > 1.104 && invMassAntiLambda < 1.128)
+                                //                                {
+                                //                                    f2fHistmassctAntiLambda->Fill(invMassAntiLambda,mcpt);
+                                //                                    ptCh[iptbin+fNptBins] += 1;
+                                //                                }
                                 ptCh[iptbin+fNptBins] += 1;
                             }
                             else{f2fHistAntiLambdaMisId->Fill(fCentrality,mcpt);}
