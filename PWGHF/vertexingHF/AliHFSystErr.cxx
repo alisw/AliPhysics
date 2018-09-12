@@ -7023,7 +7023,7 @@ void AliHFSystErr::InitLctopK0S2016pPb() {
 void AliHFSystErr::InitLctopK0S2015pp() {
   //
   // Lc->pK0S syst errors. Responsible: A. De Caro, E. Meninno
-  //  2016 p-Pb sample
+  //  2015 pp 5 TeV sample
   //
   SetNameTitle("AliHFSystErr","SystErrLctopK0S2013pPb");
 
