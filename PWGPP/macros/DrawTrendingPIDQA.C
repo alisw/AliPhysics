@@ -163,7 +163,7 @@ void SetupPadStyle()
 
 TGraph* ShowLimit(const TH1* h) //Function to show if a datapoint out of range is up or down
 {
-  TGraph* g = nullptr;
+  TGraph* g = 0x0;
   const Double_t lim[2] = { h->GetMinimum(), h->GetMaximum() };
   for (Int_t i = 1; i <= h->GetNbinsX(); i++) {
     const Double_t y = h->GetBinContent(i);
