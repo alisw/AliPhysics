@@ -7,7 +7,7 @@ Int_t filBIT;
 
 AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
                                    //Bool_t MCthere = kFALSE,                     // DATA
-                                   Bool_t MCthere = kTRUE,                    // MC
+                                   Bool_t MCthere = kFALSE,                    // MC
                                    Bool_t isAOD = kTRUE,
 				   Bool_t kNPERef = kFALSE,                      // PID: TOF+TPC   ---> hardcoded kTRUE in AddTask_hfe_HFEnpePbPb5TeV.C
 				   Bool_t kNPEkAny = kFALSE,
@@ -33,6 +33,7 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
                                    ,Bool_t kTestDifferentFilBIT = kFALSE        // test a different filterbit (mfaggin, 07-Jun-2018)
                                    ,Bool_t kTestWeightSmallerCentBins = kFALSE   // test weights in smaller centrality bins (e.g.: 0-5% and 5-10% instead of 0-10%)
                                    ,Bool_t kTestNewWeights_MBfixedHIJING = kFALSE        // using weights for pi0, eta from MB production with fixed HIJING issues for pi0 decays
+                                   ,Bool_t kTestNewWeights_MBfixedHIJING_asDefault = kTRUE        // using weights for pi0, eta from MB production with fixed HIJING issues for pi0 decays as default
                                    )		   
   
 {
@@ -207,6 +208,9 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
   if(centrMin==30 && centrMax==50)      kWeightMC=k16g1_2_3050;
   if(centrMin==60 && centrMax==80)      kWeightMC=k16g1_2_6080;
   if(centrMin==30 && centrMax==80)      kWeightMC=k16g1_2_all;  // (mfaggin, 22-Jun-2018)
+
+  // using weights for pi0, eta from MB production with fixed HIJING issues for pi0 decays as default
+  if(kTestNewWeights_MBfixedHIJING_asDefault)   kWeightMC=k18e1_fixedHIJING;
   
   // check outputs
   printf("\n\n===== Centrality: %d,%d\n",centrMin,centrMax);
@@ -614,7 +618,7 @@ kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs
 			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
 			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
         
-        if(kTestNewWeights_MBfixedHIJING){
+        if(kTestNewWeights_MBfixedHIJING && !kTestNewWeights_MBfixedHIJING_asDefault){
                 printf("\n#####\n");
                 printf("##### kTestNewWeights_MBfixedHIJING case - fixed HIJING weights tested");
                 printf("\n#####\n");      
