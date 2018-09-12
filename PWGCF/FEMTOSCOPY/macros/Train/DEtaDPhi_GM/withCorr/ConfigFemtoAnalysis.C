@@ -184,8 +184,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	Reader->SetIsPileUpEvent(ifIsPileUp);
 	Reader->SetReadV0(kTRUE);
 	Reader->SetReadCascade(kTRUE);
-	Reader->SetUseOutOfBunchPlpSelection(kTRUE);
-	Reader->SetUseMVPlpSelection(kTRUE);
+	Reader->SetUseOutOfBunchPlpSelection(kFALSE);
+	Reader->SetUseMVPlpSelection(ifIsPileUp);
+	Reader->SetTrackPileUpRemoval(ifIsPileUp);
 
 	AliFemtoManager* Manager = new AliFemtoManager();
 	Manager->SetEventReader(Reader);
@@ -579,7 +580,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					if(ifMonitors)//ichg>8)
 					  {
 
-					    if(0){
+					    if(1){
 					      // //V0 monitors (memory leak problems?)
 					      cutPass1V0[aniter] = new AliFemtoCutMonitorV0(Form("cutPass1%stpcM%i", chrgs[ichg], imult));
 					      cutFail1V0[aniter] = new AliFemtoCutMonitorV0(Form("cutFail1%stpcM%i", chrgs[ichg], imult));
@@ -836,7 +837,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 					//**** Correlation functions *******
 					//***without corrections*****
-					/*
+					
 					if(ichg >= 13)
 					  cdedpetaphinocorr[aniter] = new AliFemtoCorrFctnDEtaDPhiSimple(Form("cdedpnocorr%stpcM%i", chrgs[ichg], imult),23, 23);
 					else
@@ -851,7 +852,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                                         {
 					  cnonidtpc[aniter] = new AliFemtoCorrFctnNonIdDR(Form("cnonid%stpcM%i", chrgs[ichg], imult), nbinssh, 0.0,shqmax); //for non-identical partcles
 					  anetaphitpc[aniter]->AddCorrFctn(cnonidtpc[aniter]);
-					}*/
+					}
 
 
 
