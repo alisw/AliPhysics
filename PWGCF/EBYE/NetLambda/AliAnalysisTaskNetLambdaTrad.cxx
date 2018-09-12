@@ -356,8 +356,8 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             }
             
             abseta = TMath::Abs(eta);
-            if(abseta > 0.8) continue;
-            //             if (TMath::Abs (lRap) >0.5) continue;
+//             if(abseta > 0.8) continue;
+            if (TMath::Abs (lRap) >0.5) continue;
             
             Int_t iptbinMC = GetPtBin(gpt);
             if( iptbinMC < 0 || iptbinMC > fNptBins-1 ) continue;
