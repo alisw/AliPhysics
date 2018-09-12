@@ -184,8 +184,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	Reader->SetIsPileUpEvent(ifIsPileUp);
 	Reader->SetReadV0(kTRUE);
 	Reader->SetReadCascade(kTRUE);
-	Reader->SetUseOutOfBunchPlpSelection(kTRUE);
-	Reader->SetUseMVPlpSelection(kTRUE);
+	Reader->SetUseOutOfBunchPlpSelection(kFALSE);
+	Reader->SetUseMVPlpSelection(ifIsPileUp);
+	Reader->SetTrackPileUpRemoval(ifIsPileUp);
 
 	AliFemtoManager* Manager = new AliFemtoManager();
 	Manager->SetEventReader(Reader);
@@ -836,7 +837,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 					//**** Correlation functions *******
 					//***without corrections*****
-					/*
+					
 					if(ichg >= 13)
 					  cdedpetaphinocorr[aniter] = new AliFemtoCorrFctnDEtaDPhiSimple(Form("cdedpnocorr%stpcM%i", chrgs[ichg], imult),23, 23);
 					else
@@ -851,7 +852,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                                         {
 					  cnonidtpc[aniter] = new AliFemtoCorrFctnNonIdDR(Form("cnonid%stpcM%i", chrgs[ichg], imult), nbinssh, 0.0,shqmax); //for non-identical partcles
 					  anetaphitpc[aniter]->AddCorrFctn(cnonidtpc[aniter]);
-					}*/
+					}
 
 
 
