@@ -1,7 +1,7 @@
 #include "TROOT.h"
 #include "TSystem.h"
 
-AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC) {
+AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7") {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   if (!mgr) {
@@ -19,16 +19,43 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC) {
   evtCuts->CleanUpMult(false, false, false, true);
   evtCuts->SetMultVsCentPlots(true);
 
-  AliAnalysisTaskGrandma *task = new AliAnalysisTaskGrandma("myFirstTask", isMC);
+  AliAnalysisTaskGrandma *task = new AliAnalysisTaskGrandma("myFirstTask",
+                                                            isMC);
   task->SetEventCuts(evtCuts);
+  if (CentEst == "kInt7") {
+    task->SelectCollisionCandidates(AliVEvent::kINT7);
+    std::cout << "Added kINT7 Trigger \n";
+  } else if (CentEst == "kMB") {
+    task->SelectCollisionCandidates(AliVEvent::kMB);
+    std::cout << "Added kMB Trigger \n";
+  } else if (CentEst == "kHM") {
+    task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+    std::cout << "Added kHighMultV0 Trigger \n";
+  } else {
+    std::cout
+        << "====================================================================="
+        << std::endl;
+    std::cout
+        << "====================================================================="
+        << std::endl;
+    std::cout
+        << "Centrality Estimator not set, fix it else your Results will be empty!"
+        << std::endl;
+    std::cout
+        << "====================================================================="
+        << std::endl;
+    std::cout
+        << "====================================================================="
+        << std::endl;
+  }
   mgr->AddTask(task);
 
   TString file = AliAnalysisManager::GetCommonFileName();
 
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+  mgr->ConnectInput(task, 0, cinput);
 
   AliAnalysisDataContainer *coutputEvtCuts;
-
   TString QAName = Form("QA");
   AliAnalysisDataContainer *coutputQA;
   coutputQA = mgr->CreateContainer(

@@ -41,10 +41,10 @@ AliAnalysisTaskGrandma::AliAnalysisTaskGrandma(const char* name, bool isMC)
       fAntiTrackCutHistMCList(nullptr) {
   DefineOutput(1, TList::Class());  //Output for the Event Class and Pair Cleaner
   DefineOutput(2, TList::Class());  //Output for the Event Cuts
-  DefineOutput(3, TList::Class());  //Output for the Event Cuts
-  DefineOutput(4, TList::Class());  //Output for the Event Cuts
-  DefineOutput(5, TList::Class());  //Output for the Event Cuts
-  DefineOutput(6, TList::Class());  //Output for the Event Cuts
+//  DefineOutput(3, TList::Class());  //Output for the Event Cuts
+//  DefineOutput(4, TList::Class());  //Output for the Event Cuts
+//  DefineOutput(5, TList::Class());  //Output for the Event Cuts
+//  DefineOutput(6, TList::Class());  //Output for the Event Cuts
 }
 
 AliAnalysisTaskGrandma::~AliAnalysisTaskGrandma() {
@@ -83,7 +83,6 @@ void AliAnalysisTaskGrandma::UserExec(Option_t *) {
   } else {
     fEvent->SetEvent(Event);
     if (fEvtCuts->isSelected(fEvent)) {
-
     }
   }
   PostData(1, fQA);
