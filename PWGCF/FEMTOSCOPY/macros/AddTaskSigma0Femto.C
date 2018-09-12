@@ -268,6 +268,9 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetMixingDepth(10);
+  if(suffix == "7") {
+    config->SetMixingDepth(25);
+  }
   config->SetUseEventMixing(true);
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kSPD);
   if (suffix != "0") {
