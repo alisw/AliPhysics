@@ -67,6 +67,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fAODpidUtil(NULL),
   fAODheader(NULL),
   fAnaUtils(NULL),
+  fEventCuts(NULL),
+  fUseAliEventCuts(0),
   fInputFile(""),
   fTree(NULL),
   fAodFile(NULL),
@@ -75,6 +77,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fpA2013(kFALSE),
   fisPileUp(kFALSE),
   fCascadePileUpRemoval(kFALSE),
+  fV0PileUpRemoval(kFALSE),
   fTrackPileUpRemoval(kFALSE),
   fMVPlp(kFALSE),
   fOutOfBunchPlp(kFALSE),
@@ -141,6 +144,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fAODpidUtil(aReader.fAODpidUtil),
   fAODheader(aReader.fAODheader),
   fAnaUtils(aReader.fAnaUtils),
+  fEventCuts(aReader.fEventCuts),
+  fUseAliEventCuts(aReader.fUseAliEventCuts),
   fInputFile(aReader.fInputFile),
   fTree(NULL),
   fAodFile(new TFile(aReader.fAodFile->GetName())),
@@ -149,6 +154,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fpA2013(aReader.fpA2013),
   fisPileUp(aReader.fisPileUp),
   fCascadePileUpRemoval(aReader.fCascadePileUpRemoval),
+  fV0PileUpRemoval(aReader.fV0PileUpRemoval),
   fTrackPileUpRemoval(aReader.fTrackPileUpRemoval),
   fMVPlp(aReader.fMVPlp),
   fOutOfBunchPlp(aReader.fOutOfBunchPlp),
@@ -207,6 +213,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
 //__________________
 AliFemtoEventReaderAOD::~AliFemtoEventReaderAOD()
 { // destructor
+  delete fEventCuts;
   delete fTree;
   delete fEvent;
   delete fAodFile;
@@ -240,6 +247,8 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fAODpidUtil = aReader.fAODpidUtil;
   fAODheader = aReader.fAODheader;
   fAnaUtils = aReader.fAnaUtils;
+  fEventCuts = aReader.fEventCuts;
+  fUseAliEventCuts = aReader.fUseAliEventCuts;
   fCentRange[0] = aReader.fCentRange[0];
   fCentRange[1] = aReader.fCentRange[1];
   fUsePreCent = aReader.fUsePreCent;
@@ -248,6 +257,7 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fpA2013 = aReader.fpA2013;
   fisPileUp = aReader.fisPileUp;
   fCascadePileUpRemoval = aReader.fCascadePileUpRemoval;
+  fV0PileUpRemoval = aReader.fV0PileUpRemoval;
   fTrackPileUpRemoval = aReader.fTrackPileUpRemoval;
   fMVPlp = aReader.fMVPlp;
   fOutOfBunchPlp = aReader.fOutOfBunchPlp;
@@ -415,6 +425,14 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   //   }
   // }
 
+  //******* Ali Event Cuts - applied on AOD event ************
+  if(fUseAliEventCuts){
+    if (!fEventCuts->AcceptEvent(fEvent)) {
+      return NULL;
+    }
+  }
+  //**************************************
+  
   // AliAnalysisUtils
   if (fisPileUp || fpA2013) {
     fAnaUtils = new AliAnalysisUtils();
@@ -444,7 +462,12 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   }
 
   // Primary Vertex position
-  const AliAODVertex *aodvertex = (AliAODVertex *) fEvent->GetPrimaryVertex();
+  const AliAODVertex *aodvertex;
+  if(fUseAliEventCuts)
+    aodvertex = (AliAODVertex *) fEventCuts->GetPrimaryVertex();
+  else
+    aodvertex  = (AliAODVertex *) fEvent->GetPrimaryVertex();
+    
   if (!aodvertex || aodvertex->GetNContributors() < 1) {
     delete tEvent;  // Bad vertex, skip event.
     return NULL;
@@ -631,8 +654,9 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       //check ITS refit
       if(!(aodtrackpid->GetStatus()&AliESDtrack::kITSrefit)) continue;
       
-      //loop over the 2 ITS Layrs and check for a hit!
-      for (int i=0;i<2;++i) {
+      //loop over the 4 ITS Layrs and check for a hit!
+      for (int i=0;i<2;++i) { //we use layers 0, 1 /OR/ 0, 1, 4, 5
+	//if(i==2 || i==3) i+=2;
 	if (aodtrackpid->HasPointOnITSLayer(i)) passTrackPileUp=true;
       }
       
@@ -870,6 +894,29 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
         daughterTrackNeg = tmp;
       }
 
+
+    if(fV0PileUpRemoval)
+      {
+	//method which checks if each of the v0 daughters
+	//have at least 1 hit in ITS or TOF.
+	bool passPos = false;
+	bool passNeg = false;
+
+	//does tof timing exist for our track?
+	if (daughterTrackPos->GetTOFBunchCrossing()==0) passPos = true;
+	if (daughterTrackNeg->GetTOFBunchCrossing()==0) passNeg = true;
+
+	//loop over the 4 ITS Layrs and check for a hit!
+	for (int i=0;i<4;++i) { //checking layers 0, 1, 4, 5
+	  if(i==2 || i==3) i+=2;
+	  if (daughterTrackPos->HasPointOnITSLayer(i)) passPos=true;
+	  if (daughterTrackNeg->HasPointOnITSLayer(i)) passNeg=true;
+	}
+	
+	if(!passPos) continue;
+	if(!passNeg) continue;
+      }
+      
       AliFemtoV0 *trackCopyV0 = CopyAODtoFemtoV0(aodv0);
       trackCopyV0->SetMultiplicity(norm_mult);
       trackCopyV0->SetZvtx(fV1[2]);
@@ -2307,6 +2354,14 @@ void AliFemtoEventReaderAOD::SetShiftedPositions(const AliAODTrack *track
   } // End of coarse propagation loop
 }
 
+
+void AliFemtoEventReaderAOD::SetUseAliEventCuts(Bool_t useAliEventCuts)
+{
+  fUseAliEventCuts = useAliEventCuts;
+  fEventCuts = new AliEventCuts(); 
+}
+
+
 void AliFemtoEventReaderAOD::SetpA2013(Bool_t pa2013)
 {
   fpA2013 = pa2013;
@@ -2330,6 +2385,11 @@ void AliFemtoEventReaderAOD::SetIsPileUpEvent(Bool_t ispileup)
 void AliFemtoEventReaderAOD::SetCascadePileUpRemoval(Bool_t cascadePileUpRemoval)
 {
   fCascadePileUpRemoval = cascadePileUpRemoval;
+}
+
+void AliFemtoEventReaderAOD::SetV0PileUpRemoval(Bool_t v0PileUpRemoval)
+{
+  fV0PileUpRemoval = v0PileUpRemoval;
 }
 
 void AliFemtoEventReaderAOD::SetTrackPileUpRemoval(Bool_t trackPileUpRemoval)
