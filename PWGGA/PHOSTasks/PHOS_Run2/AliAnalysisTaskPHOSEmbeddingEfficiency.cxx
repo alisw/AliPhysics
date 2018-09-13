@@ -336,6 +336,7 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::UserExec(Option_t *option)
     FillMixMgg();
   }
   EstimatePIDCutEfficiency();
+  MCPhotonPurity();
 
   //Now we either add current events to stack or remove
   //If no photons in current event - no need to add it to mixed
@@ -881,5 +882,178 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::EstimatePIDCutEfficiency()
 
 }
 //________________________________________________________________________
+void AliAnalysisTaskPHOSEmbeddingEfficiency::MCPhotonPurity()
+{
+  //fill histograms only in MC
+  const Int_t multClust = fPHOSClusterArray->GetEntriesFast();
+
+  Double_t pT=0;
+  Double_t weight = 1.;
+  Int_t primary = -1;
+  const Double_t Rcut_CE = 240.;
+
+  for(Int_t i1=0;i1<multClust;i1++){
+    AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
+    if(!fIsMC && fIsPHOSTriggerAnalysis && !ph->IsTrig()) continue;//it is meaningless to look at non-triggered cluster in PHOS trigger analysis.
+    if(!CheckMinimumEnergy(ph)) continue;
+
+    pT = ph->Pt();
+
+    if(fUseCoreEnergy){
+      pT = (ph->GetMomV2())->Pt();
+    }
+
+    weight = 1.;
+    if(fIsMC){
+      primary = ph->GetPrimary();
+      weight  = ph->GetWeight();
+    }
+
+    if(fIsMC){
+      AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(primary);
+      Int_t pdg = p->PdgCode(); 
+      Double_t x = p->Xv();//absolute coordinate in ALICE
+      Double_t y = p->Yv();//absolute coordinate in ALICE
+      Double_t Rxy = TMath::Sqrt(x*x + y*y);
+
+      Int_t motherid = p->GetMother();
+      Int_t pdg_mother = 0;//0 is not assiend to any particle
+
+      if(motherid > -1){
+        AliAODMCParticle *mp = (AliAODMCParticle*)fMCArrayAOD->At(motherid);
+        pdg_mother = mp->PdgCode();
+      }
+
+      //border of Rxy is 250 cm from (0,0,0) where TPC outer frame is.
+      //only for safety mergin, 240 cm is used.
+
+      if(pdg == 22) FillHistogramTH1(fOutputContainer,"hPurityGamma_noPID",pT,weight);
+
+      else if(TMath::Abs(pdg) == 11){
+        FillHistogramTH2(fOutputContainer,"hElectronRxy_noPID",pT,Rxy,weight);
+        if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
+          FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_noPID",pT,Rxy,weight);
+          if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_noPID",pT,weight);
+          else              FillHistogramTH1(fOutputContainer,"hPurityLCE_noPID",pT,weight);
+        }
+        else FillHistogramTH1(fOutputContainer,"hPurityElectron_noPID",pT,weight);
+      }
+      else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_noPID",pT,weight);
+      else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_noPID",pT,weight);
+      else if(TMath::Abs(pdg) == 130) FillHistogramTH1(fOutputContainer,"hPurityK0L_noPID",pT,weight);
+      else if(pdg ==  2212)           FillHistogramTH1(fOutputContainer,"hPurityProton_noPID",pT,weight);
+      else if(pdg == -2212)           FillHistogramTH1(fOutputContainer,"hPurityAntiProton_noPID",pT,weight);
+      else if(pdg ==  2112)           FillHistogramTH1(fOutputContainer,"hPurityNeutron_noPID",pT,weight);
+      else if(pdg == -2112)           FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_noPID",pT,weight);
+      else{
+        if(pdg == 111){//hadronic interaction
+          //printf("mother pdg of %d is %d and production vertex = %4.3f\n",pdg,pdg_mother,Rxy);
+          if(pdg_mother ==  2212)      FillHistogramTH1(fOutputContainer,"hPurityProton_noPID",pT,weight);
+          else if(pdg_mother == -2212) FillHistogramTH1(fOutputContainer,"hPurityAntiProton_noPID",pT,weight);
+          else if(pdg_mother ==  2112) FillHistogramTH1(fOutputContainer,"hPurityNeutron_noPID",pT,weight);
+          else if(pdg_mother == -2112) FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_noPID",pT,weight);
+          else                         FillHistogramTH1(fOutputContainer,"hPurityOthers_noPID",pT,weight);
+        }
+        else                           FillHistogramTH1(fOutputContainer,"hPurityOthers_noPID",pT,weight);
+      }
+
+      if(fPHOSClusterCuts->IsNeutral(ph)){
+        if(pdg == 22) FillHistogramTH1(fOutputContainer,"hPurityGamma_CPV",pT,weight);
+        else if(TMath::Abs(pdg) == 11){
+          FillHistogramTH2(fOutputContainer,"hElectronRxy_CPV",pT,Rxy,weight);
+          if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
+            FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_CPV",pT,Rxy,weight);
+            if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_CPV",pT,weight);
+            else              FillHistogramTH1(fOutputContainer,"hPurityLCE_CPV",pT,weight);
+          }
+          else FillHistogramTH1(fOutputContainer,"hPurityElectron_CPV",pT,weight);
+        }
+        else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_CPV",pT,weight);
+        else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_CPV",pT,weight);
+        else if(TMath::Abs(pdg) == 130) FillHistogramTH1(fOutputContainer,"hPurityK0L_CPV",pT,weight);
+        else if(pdg ==  2212)           FillHistogramTH1(fOutputContainer,"hPurityProton_CPV",pT,weight);
+        else if(pdg == -2212)           FillHistogramTH1(fOutputContainer,"hPurityAntiProton_CPV",pT,weight);
+        else if(pdg ==  2112)           FillHistogramTH1(fOutputContainer,"hPurityNeutron_CPV",pT,weight);
+        else if(pdg == -2112)           FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_CPV",pT,weight);
+        else{
+          if(pdg == 111){//hadronic interaction
+            if(pdg_mother ==  2212)      FillHistogramTH1(fOutputContainer,"hPurityProton_CPV",pT,weight);
+            else if(pdg_mother == -2212) FillHistogramTH1(fOutputContainer,"hPurityAntiProton_CPV",pT,weight);
+            else if(pdg_mother ==  2112) FillHistogramTH1(fOutputContainer,"hPurityNeutron_CPV",pT,weight);
+            else if(pdg_mother == -2112) FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_CPV",pT,weight);
+            else                         FillHistogramTH1(fOutputContainer,"hPurityOthers_CPV",pT,weight);
+          }
+          else                           FillHistogramTH1(fOutputContainer,"hPurityOthers_CPV",pT,weight);
+        }
+
+      }//end of CPV
+
+      if(fPHOSClusterCuts->AcceptDisp(ph)){
+        if(pdg == 22)                   FillHistogramTH1(fOutputContainer,"hPurityGamma_Disp",pT,weight);
+        else if(TMath::Abs(pdg) == 11){
+          FillHistogramTH2(fOutputContainer,"hElectronRxy_Disp",pT,Rxy,weight);
+          if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
+            FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_Disp",pT,Rxy,weight);
+            if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_Disp",pT,weight);
+            else              FillHistogramTH1(fOutputContainer,"hPurityLCE_Disp",pT,weight);
+          }
+          else FillHistogramTH1(fOutputContainer,"hPurityElectron_Disp",pT,weight);
+        }
+        else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_Disp",pT,weight);
+        else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_Disp",pT,weight);
+        else if(TMath::Abs(pdg) == 130) FillHistogramTH1(fOutputContainer,"hPurityK0L_Disp",pT,weight);
+        else if(pdg ==  2212)           FillHistogramTH1(fOutputContainer,"hPurityProton_Disp",pT,weight);
+        else if(pdg == -2212)           FillHistogramTH1(fOutputContainer,"hPurityAntiProton_Disp",pT,weight);
+        else if(pdg ==  2112)           FillHistogramTH1(fOutputContainer,"hPurityNeutron_Disp",pT,weight);
+        else if(pdg == -2112)           FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_Disp",pT,weight);
+        else{
+          if(pdg == 111){//hadronic interaction
+            if(pdg_mother ==  2212)      FillHistogramTH1(fOutputContainer,"hPurityProton_Disp",pT,weight);
+            else if(pdg_mother == -2212) FillHistogramTH1(fOutputContainer,"hPurityAntiProton_Disp",pT,weight);
+            else if(pdg_mother ==  2112) FillHistogramTH1(fOutputContainer,"hPurityNeutron_Disp",pT,weight);
+            else if(pdg_mother == -2112) FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_Disp",pT,weight);
+            else                         FillHistogramTH1(fOutputContainer,"hPurityOthers_Disp",pT,weight);
+          }
+          else                           FillHistogramTH1(fOutputContainer,"hPurityOthers_Disp",pT,weight);
+        }
+
+      }//end of Disp
+
+      if(fPHOSClusterCuts->AcceptPhoton(ph)){
+        if(pdg == 22)                   FillHistogramTH1(fOutputContainer,"hPurityGamma_PID",pT,weight);
+        else if(TMath::Abs(pdg) == 11){
+          FillHistogramTH2(fOutputContainer,"hElectronRxy_PID",pT,Rxy,weight);
+          if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
+            FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_PID",pT,Rxy,weight);
+            if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_PID",pT,weight);
+            else              FillHistogramTH1(fOutputContainer,"hPurityLCE_PID",pT,weight);
+          }
+          else FillHistogramTH1(fOutputContainer,"hPurityElectron_PID",pT,weight);
+        }
+        else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_PID",pT,weight);
+        else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_PID",pT,weight);
+        else if(TMath::Abs(pdg) == 130) FillHistogramTH1(fOutputContainer,"hPurityK0L_PID",pT,weight);
+        else if(pdg ==  2212)           FillHistogramTH1(fOutputContainer,"hPurityProton_PID",pT,weight);
+        else if(pdg == -2212)           FillHistogramTH1(fOutputContainer,"hPurityAntiProton_PID",pT,weight);
+        else if(pdg ==  2112)           FillHistogramTH1(fOutputContainer,"hPurityNeutron_PID",pT,weight);
+        else if(pdg == -2112)           FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_PID",pT,weight);
+        else{
+          if(pdg == 111){//hadronic interaction
+            if(pdg_mother ==  2212)      FillHistogramTH1(fOutputContainer,"hPurityProton_PID",pT,weight);
+            else if(pdg_mother == -2212) FillHistogramTH1(fOutputContainer,"hPurityAntiProton_PID",pT,weight);
+            else if(pdg_mother ==  2112) FillHistogramTH1(fOutputContainer,"hPurityNeutron_PID",pT,weight);
+            else if(pdg_mother == -2112) FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_PID",pT,weight);
+            else                         FillHistogramTH1(fOutputContainer,"hPurityOthers_PID",pT,weight);
+          }
+          else                           FillHistogramTH1(fOutputContainer,"hPurityOthers_PID",pT,weight);
+        }
+
+      }//end of PID
+
+    }//end of M.C.
+
+  }//end of ph1
+
+}
 //________________________________________________________________________
 //________________________________________________________________________

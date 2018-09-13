@@ -34,6 +34,7 @@ class AliAnalysisTaskPHOSSingleSim : public AliAnalysisTaskPHOSPi0EtaToGammaGamm
     void FillPhoton();
     void FillMgg();
     void FillMixMgg();
+    void MCPhotonPurity();
 
   protected:
     TString fParticleName;
@@ -42,7 +43,7 @@ class AliAnalysisTaskPHOSSingleSim : public AliAnalysisTaskPHOSPi0EtaToGammaGamm
     AliAnalysisTaskPHOSSingleSim(const AliAnalysisTaskPHOSSingleSim&); // not implemented
     AliAnalysisTaskPHOSSingleSim& operator=(const AliAnalysisTaskPHOSSingleSim&); // not implemented
 
-    ClassDef(AliAnalysisTaskPHOSSingleSim, 4);
+    ClassDef(AliAnalysisTaskPHOSSingleSim, 5);
 };
 
 #endif
