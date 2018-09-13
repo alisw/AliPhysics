@@ -178,6 +178,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kReference);
 	Reader->SetReadV0(kTRUE);
 	Reader->SetReadCascade(kTRUE);
+	Reader->SetUseAliEventCuts(kTRUE);
 	Reader->SetIsPileUpEvent(ifIsPileUp);
 	Reader->SetUseMVPlpSelection(ifIsPileUp);
 	Reader->SetTrackPileUpRemoval(ifIsPileUp);
