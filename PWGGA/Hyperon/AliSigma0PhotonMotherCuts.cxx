@@ -266,8 +266,10 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
       if (invMass < fMassSigma + fSigmaMassCut &&
           invMass > fMassSigma - fSigmaMassCut) {
         fSigma.push_back(sigma);
-        fHistMassCutPt->Fill(pT);
-        fHistEtaPhi->Fill(sigma.GetEta(), sigma.GetPhi());
+        if (!fIsLightweight) {
+          fHistMassCutPt->Fill(pT);
+          fHistEtaPhi->Fill(sigma.GetEta(), sigma.GetPhi());
+        }
         ++nSigma;
       }
       if (invMass < fMassSigma + fSidebandCutUp &&
