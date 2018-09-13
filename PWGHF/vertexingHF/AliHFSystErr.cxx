@@ -7025,7 +7025,7 @@ void AliHFSystErr::InitLctopK0S2017pp5TeV() {
   // Lc->pK0S syst errors. Responsible: A. De Caro, E. Meninno
   //  2015 pp 5 TeV sample
   //
-  SetNameTitle("AliHFSystErr","SystErrLctopK0S2013pPb");
+  SetNameTitle("AliHFSystErr","SystErrLctopK0S2017pp5TeV");
 
   const Int_t nBins=8;
   Float_t limits[nBins+1]={1.,2.,3.,4.,5.,6.,8.,12.,24.};
