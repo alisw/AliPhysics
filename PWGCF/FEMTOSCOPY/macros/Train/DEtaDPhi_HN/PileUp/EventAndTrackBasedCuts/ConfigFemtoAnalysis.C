@@ -183,10 +183,11 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 //	Reader->SetMinPlpContribSPD(minPlpContribSPD);
 	Reader->SetUseAliEventCuts(kTRUE);
 
-	Reader->SetIsPileUpEvent(ifIsPileUp);
-  Reader->SetUseMVPlpSelection(ifIsPileUp);
-	Reader->SetTrackPileUpRemoval(ifIsPileUp);
-	// Reader->SetUseOutOfBunchPlpSelection(kTRUE);
+	Reader->SetIsPileUpEvent(kTRUE);
+	Reader->SetUseMVPlpSelection(kTRUE);
+	Reader->SetTrackPileUpRemoval(kTRUE);
+	Reader->SetV0PileUpRemoval(kTRUE); //jesli w analize sa jakies lambdy
+	Reader->SetCascadePileUpRemoval(kTRUE); //jeśli w analizie jest jakieś Xi
 	Reader->SetReadV0(kTRUE);
 	Reader->SetReadCascade(kTRUE);
 
