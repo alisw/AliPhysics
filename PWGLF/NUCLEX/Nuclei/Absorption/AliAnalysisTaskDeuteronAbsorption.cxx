@@ -65,6 +65,7 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          fHist1AcceptanceAll{nullptr},
                                                                                          fHist2Matching{nullptr},
                                                                                          fHist2Phi{nullptr},
+                                                                                         fHist2TPCnSigma{nullptr},
                                                                                          fHist2MatchingMC{nullptr},
                                                                                          fTRDboundariesPos{nullptr},
                                                                                          fTRDboundariesNeg{nullptr}
@@ -152,6 +153,8 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
         fOutputList->Add(fHist2Matching[iSpecies][iCharge][iTRD]);
         fHist2MatchingMC[iSpecies][iCharge][iTRD] = new TH2F(Form("fHist2MatchingMC%s_%s_%s", fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), wTRD[iTRD].data()), Form("%s %s %s; #it{p}/#it{z} (Gev/#it{c}); TOF m^{2} (GeV/#it{c}^{2})^{2}", fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), wTRD[iTRD].data()), 200, 0, 10, 160, 0, 6.5);
         fOutputList->Add(fHist2MatchingMC[iSpecies][iCharge][iTRD]);
+        fHist2TPCnSigma[iSpecies][iCharge][iTRD] = new TH2F(Form("fHist2TPCnSigma%s_%s_%s", fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), wTRD[iTRD].data()), Form("%s %s %s; #it{p}/#it{z} (Gev/#it{c}); TPC n_{#sigma}", fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), wTRD[iTRD].data()), 200, 0, 10, 20, -5, 5);
+        fOutputList->Add(fHist2TPCnSigma[iSpecies][iCharge][iTRD]);
       }
     }
   }
@@ -298,8 +301,10 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
     {
       if (std::abs(tpcNsigmas[iSpecies]) < 3.)
       {
-        if (track->GetTPCsignal() > fMindEdx)
+        if (track->GetTPCsignal() > fMindEdx) {
           fHist2Matching[iSpecies][positive][withTRD[positive]]->Fill(ptot, mass2);
+          fHist2TPCnSigma[iSpecies][positive][withTRD[positive]]->Fill(ptot, tpcNsigmas[iSpecies]);
+        }
         if (isMC)
         {
           int tofLabel[3]{-1,-1,-1};
