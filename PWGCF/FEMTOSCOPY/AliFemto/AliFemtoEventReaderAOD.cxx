@@ -67,6 +67,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fAODpidUtil(NULL),
   fAODheader(NULL),
   fAnaUtils(NULL),
+  fEventCuts(NULL),
+  fUseAliEventCuts(0),
   fInputFile(""),
   fTree(NULL),
   fAodFile(NULL),
@@ -141,6 +143,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fAODpidUtil(aReader.fAODpidUtil),
   fAODheader(aReader.fAODheader),
   fAnaUtils(aReader.fAnaUtils),
+  fEventCuts(aReader.fEventCuts),
+  fUseAliEventCuts(aReader.fUseAliEventCuts),
   fInputFile(aReader.fInputFile),
   fTree(NULL),
   fAodFile(new TFile(aReader.fAodFile->GetName())),
@@ -207,6 +211,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
 //__________________
 AliFemtoEventReaderAOD::~AliFemtoEventReaderAOD()
 { // destructor
+  delete fEventCuts;
   delete fTree;
   delete fEvent;
   delete fAodFile;
@@ -240,6 +245,8 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fAODpidUtil = aReader.fAODpidUtil;
   fAODheader = aReader.fAODheader;
   fAnaUtils = aReader.fAnaUtils;
+  fEventCuts = aReader.fEventCuts;
+  fUseAliEventCuts = aReader.fUseAliEventCuts;
   fCentRange[0] = aReader.fCentRange[0];
   fCentRange[1] = aReader.fCentRange[1];
   fUsePreCent = aReader.fUsePreCent;
@@ -415,6 +422,14 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   //   }
   // }
 
+  //******* Ali Event Cuts - applied on AOD event ************
+  if(fUseAliEventCuts){
+    if (!fEventCuts->AcceptEvent(fEvent)) {
+      return NULL;
+    }
+  }
+  //**************************************
+  
   // AliAnalysisUtils
   if (fisPileUp || fpA2013) {
     fAnaUtils = new AliAnalysisUtils();
@@ -444,7 +459,12 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   }
 
   // Primary Vertex position
-  const AliAODVertex *aodvertex = (AliAODVertex *) fEvent->GetPrimaryVertex();
+  const AliAODVertex *aodvertex;
+  if(fUseAliEventCuts)
+    aodvertex = (AliAODVertex *) fEventCuts->GetPrimaryVertex();
+  else
+    aodvertex  = (AliAODVertex *) fEvent->GetPrimaryVertex();
+    
   if (!aodvertex || aodvertex->GetNContributors() < 1) {
     delete tEvent;  // Bad vertex, skip event.
     return NULL;
@@ -631,8 +651,9 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       //check ITS refit
       if(!(aodtrackpid->GetStatus()&AliESDtrack::kITSrefit)) continue;
       
-      //loop over the 2 ITS Layrs and check for a hit!
-      for (int i=0;i<2;++i) {
+      //loop over the 4 ITS Layrs and check for a hit!
+      for (int i=0;i<2;++i) { //we use layers 0, 1 /OR/ 0, 1, 4, 5
+	//if(i==2 || i==3) i+=2;
 	if (aodtrackpid->HasPointOnITSLayer(i)) passTrackPileUp=true;
       }
       
@@ -2306,6 +2327,14 @@ void AliFemtoEventReaderAOD::SetShiftedPositions(const AliAODTrack *track
     } // End of if roughly reached radius
   } // End of coarse propagation loop
 }
+
+
+void AliFemtoEventReaderAOD::SetUseAliEventCuts(Bool_t useAliEventCuts)
+{
+  fUseAliEventCuts = useAliEventCuts;
+  fEventCuts = new AliEventCuts(); 
+}
+
 
 void AliFemtoEventReaderAOD::SetpA2013(Bool_t pa2013)
 {

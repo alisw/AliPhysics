@@ -27,6 +27,7 @@
 #include "AliAODpidUtil.h"
 #include "AliAODHeader.h"
 #include "AliAnalysisUtils.h"
+#include "AliEventCuts.h"
 
 class AliFemtoEvent;
 class AliFemtoTrack;
@@ -88,6 +89,9 @@ public:
 
   void SetPrimaryVertexCorrectionTPCPoints(bool correctTpcPoints);
   void SetShiftedPositions(const AliAODTrack *track ,const Float_t bfield, Float_t posShifted[3], const Double_t radius=1.25);
+
+  void SetUseAliEventCuts(Bool_t useAliEventCuts);
+  
   void Set1DCorrectionsPions(TH1D *h1);
   void Set1DCorrectionsKaons(TH1D *h1);
   void Set1DCorrectionsProtons(TH1D *h1);
@@ -158,6 +162,8 @@ protected:
   AliAODpidUtil *fAODpidUtil;
   AliAODHeader *fAODheader;
   AliAnalysisUtils *fAnaUtils;
+  AliEventCuts     *fEventCuts;
+  Bool_t           fUseAliEventCuts;
 
 
 private:
