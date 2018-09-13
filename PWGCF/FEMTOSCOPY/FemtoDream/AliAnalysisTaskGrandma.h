@@ -41,6 +41,10 @@ class AliAnalysisTaskGrandma : public AliAnalysisTaskSE {
   ;
   void StoreGlobalTrackReference(AliAODTrack *track);
   void ResetGlobalTrackReference();
+  void SetCollectionConfig(AliFemtoDreamCollConfig* conf) {
+    fConfig = conf;
+  }
+  ;
  private:
   bool fIsMC;                              //
   TList *fQA;                               //!
@@ -54,9 +58,11 @@ class AliAnalysisTaskGrandma : public AliAnalysisTaskSE {
   AliFemtoDreamTrackCuts *fAntiTrackCuts;   //
   TList *fAntiTrackCutHistList;             //!
   TList *fAntiTrackCutHistMCList;           //!
-//  AliFemtoDreamPairCleaner *fPairCleaner;   //!
-//  AliFemtoDreamPartCollection *fPartColl;   //!
-//  AliFemtoDreamCollConfig *fConfig;         //!
+  AliFemtoDreamPairCleaner *fPairCleaner;   //!
+  AliFemtoDreamPartCollection *fPartColl;   //!
+  AliFemtoDreamCollConfig *fConfig;         //
+  TList *fResultList;                       //!
+  TList *fResultQAList;                     //!
   int fTrackBufferSize;                     //
   AliAODTrack **fGTI;                       //!
 ClassDef(AliAnalysisTaskGrandma,1)
