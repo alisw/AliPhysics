@@ -694,10 +694,12 @@ AliAnalysisCuts* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 			trackCutsV0->AddCut(AliDielectronVarManager::kNFclsTPCr, 100.0, 160.0);
 			trackCutsV0->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8, 1.1);
 
-			trackCuts->AddCut(gammaV0cuts);
-			trackCuts->AddCut(trackCutsV0);
-
-			trackCuts->AddCut(GetPIDCuts(PIDcuts));
+			AliDielectronCutGroup* trackCuts2 = new AliDielectronCutGroup("trackCuts2", "trackCuts2", 
+																												AliDielectronCutGroup::kCompAND);
+			trackCuts2->AddCut(gammaV0cuts);
+			trackCuts2->AddCut(trackCutsV0);
+			trackCuts2->AddCut(GetPIDCuts(PIDcuts));
+			trackCuts = trackCuts2;
 			break;
 		default:
 			std::cout << "No Analysis Track Cut defined" << std::endl;
