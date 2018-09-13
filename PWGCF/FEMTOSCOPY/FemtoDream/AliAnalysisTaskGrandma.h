@@ -12,6 +12,9 @@
 #include "AliFemtoDreamEventCuts.h"
 #include "AliFemtoDreamTrack.h"
 #include "AliFemtoDreamTrackCuts.h"
+#include "AliFemtoDreamPairCleaner.h"
+#include "AliFemtoDreamPartCollection.h"
+#include "AliFemtoDreamCollConfig.h"
 #include "TList.h"
 class AliAnalysisTaskGrandma : public AliAnalysisTaskSE {
  public:
