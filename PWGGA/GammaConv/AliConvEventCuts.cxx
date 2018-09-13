@@ -2332,11 +2332,12 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
   else if ( fCentralityMax==0) fCentralityMax=10; //CentralityRange = fCentralityMin-10*multfactor
   Double_t centrality=GetCentrality(event);
   if(centrality<0 && !mcEvent)return kFALSE;
+  Double_t addMarginZNA = (fDetectorCentrality==2) ? 2.0 : 0.0; // For ZNA multiplicity goes up to 101%
 
   Int_t centralityC=0;
   if (fModCentralityClass == 0){
-    centralityC= Int_t(centrality/10);
-    if(centralityC >= fCentralityMin && centralityC < fCentralityMax)
+    centralityC= Int_t(centrality);
+    if(centralityC >= (fCentralityMin*10) && centralityC < (fCentralityMax*10 + addMarginZNA))
       return kTRUE;
     else return kFALSE;
   }
