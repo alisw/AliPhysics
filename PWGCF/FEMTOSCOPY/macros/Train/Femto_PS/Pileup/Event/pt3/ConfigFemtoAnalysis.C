@@ -140,7 +140,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	printf("*** Connect to AliEn ***\n");
 	TGrid::Connect("alien://");
 
-	int runmults[numOfMultBins] = { 0, 0, 0, 0, 0, 0, 1, 1, 0, 0};
+	int runmults[numOfMultBins] = { 0, 0, 0, 0, 1, 1, 0, 0, 0, 0};
 	if(runmultdep)	  {runmults[0]=1; runmults[1]=1; runmults[2]=1;	  }
 	int multbins[numOfMultBins+1] = {2, 11, 16, 22, 29, 36, 44, 57, 150,2,150};
 
@@ -178,9 +178,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	Reader->SetIsPileUpEvent(ifIsPileUp);
 	Reader->SetReadV0(kTRUE);
 	Reader->SetReadCascade(kTRUE);
-	
+
 	Reader->SetUseMVPlpSelection(kTRUE);
-	Reader->SetTrackPileUpRemoval(kTRUE);
+	//Reader->SetTrackPileUpRemoval(kTRUE);
 	
 	Reader->SetUseAliEventCuts(kTRUE);
 
