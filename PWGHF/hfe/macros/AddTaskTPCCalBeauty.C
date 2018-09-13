@@ -6,7 +6,7 @@
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
 
-AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Double_t m20Cut = 0.35, Double_t minEoPCut = 0.9, Double_t minNSig = -1.0, Double_t dcaBinSize = 0.002, Bool_t fillElecSprs = kFALSE, Bool_t isMC=kFALSE, Bool_t runStackLoop = kFALSE, Int_t nClsTPC=80, TString ContNameExt = " ", Double_t ptAsso = 0.3, Double_t minNSigAsso = -3., Double_t trkMatch=0.05)
+AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Double_t m20Cut = 0.35, Double_t minEoPCut = 0.9, Double_t minNSig = -1.0, Double_t dcaBinSize = 0.002, Bool_t fillElecSprs = kFALSE, Bool_t isMC=kFALSE, Bool_t runStackLoop = kFALSE, Int_t nClsTPC=80, TString ContNameExt = " ", Double_t ptAsso = 0.3, Double_t minNSigAsso = -3., Double_t trkMatch=0.05, Bool_t applyCentCut = kTRUE)
 {
     // get the manager via the static access member
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -30,6 +30,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Do
     // add your task to the manager
     mgr->AddTask(taskBFEemc);
     taskBFEemc->SetSSCut(m20Cut);
+    taskBFEemc->SetCentSelection(applyCentCut);
     taskBFEemc->SetFillSprs(fillElecSprs);
     taskBFEemc->SetMC(isMC);
     taskBFEemc->SetEoP(minEoPCut);
@@ -62,6 +63,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Do
     // add your task to the manager
     mgr->AddTask(taskBFEdc);
     taskBFEdc->SetSSCut(m20Cut);
+    taskBFEdc->SetCentSelection(applyCentCut);
     taskBFEdc->SetFillSprs(fillElecSprs);
     taskBFEdc->SetMC(isMC);
     taskBFEdc->SetEoP(minEoPCut);
@@ -126,6 +128,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Do
         // add your task to the manager
         mgr->AddTask(taskBFEeg01emc);
         taskBFEeg01emc->SetSSCut(m20Cut);
+        taskBFEeg01emc->SetCentSelection(applyCentCut);
         taskBFEeg01emc->SetFillSprs(fillElecSprs);
         taskBFEeg01emc->SetMC(isMC);
         taskBFEeg01emc->SetEoP(minEoPCut);
@@ -204,6 +207,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Do
         // add your task to the manager
         mgr->AddTask(taskBFEdg01dc);
         taskBFEdg01dc->SetSSCut(m20Cut);
+        taskBFEdg01dc->SetCentSelection(applyCentCut);
         taskBFEdg01dc->SetFillSprs(fillElecSprs);
         taskBFEdg01dc->SetMC(isMC);
         taskBFEdg01dc->SetEoP(minEoPCut);

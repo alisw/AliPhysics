@@ -52,6 +52,7 @@ fMinNSigCut(0),
 fMinNSigAssoCut(0),
 fMinPtAssoCut(0),
 fDCABinSize(0),
+fApplyCentrality(kTRUE),
 fFlagFillSprs(kFALSE),
 fFlagFillMCHistos(kFALSE),
 fFlagRunStackLoop(kFALSE),
@@ -172,6 +173,8 @@ fBPlusPtCMS(0),
 fBMesonPtLHCb(0),
 fBPlusPtLHCb(0),
 fBBaryonPt(0),
+fBMesonElecPt(0),
+fBBaryonElecPt(0),
 fPromptD0DCAWeight(0),
 fD0FromDStarDCAWeight(0),
 fPromptD0DCANoWeight(0),
@@ -246,6 +249,7 @@ fMinNSigCut(0),
 fMinNSigAssoCut(0),
 fMinPtAssoCut(0),
 fDCABinSize(0),
+fApplyCentrality(kTRUE),
 fFlagFillSprs(kFALSE),
 fFlagFillMCHistos(kFALSE),
 fFlagRunStackLoop(kFALSE),
@@ -366,6 +370,8 @@ fBPlusPtCMS(0),
 fBMesonPtLHCb(0),
 fBPlusPtLHCb(0),
 fBBaryonPt(0),
+fBMesonElecPt(0),
+fBBaryonElecPt(0),
 fPromptD0DCAWeight(0),
 fD0FromDStarDCAWeight(0),
 fPromptD0DCANoWeight(0),
@@ -621,16 +627,16 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fInclElecDCA = new TH2F("fInclElecDCA","Incl Elec DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., nDCAbins,-0.2,0.2);
     fOutputList->Add(fInclElecDCA);
     
-    fnSigaftEoPCut = new TH2F("fnSigaftEoPCut","nSig with 0.9<E/p<1.2; p_{T}(GeV/c); nSigma; counts;", 60,0,30., 160,0,8);
+    fnSigaftEoPCut = new TH2F("fnSigaftEoPCut","nSig with 0.9<E/p<1.2; p_{T}(GeV/c); nSigma; counts;", 60,0,30., 160,-8,8);
     fOutputList->Add(fnSigaftEoPCut);
     
-    fnSigaftSysEoPCut = new TH2F("fnSigaftSysEoPCut","nSig with Sys E/p cut; p_{T}(GeV/c); nSigma; counts;", 60,0,30., 160,0,8);
+    fnSigaftSysEoPCut = new TH2F("fnSigaftSysEoPCut","nSig with Sys E/p cut; p_{T}(GeV/c); nSigma; counts;", 60,0,30., 160,-8,8);
     fOutputList->Add(fnSigaftSysEoPCut);
     
-    fnSigaftM20EoPCut = new TH2F("fnSigaftM20EoPCut","nSig with 0.9<E/p<1.2, 0.01<M20<0.35; p_{T}(GeV/c); nSigma; counts;", 60,0,30., 160,0,8);
+    fnSigaftM20EoPCut = new TH2F("fnSigaftM20EoPCut","nSig with 0.9<E/p<1.2, 0.01<M20<0.35; p_{T}(GeV/c); nSigma; counts;", 60,0,30., 160,-8,8);
     fOutputList->Add(fnSigaftM20EoPCut);
     
-    fnSigaftSysM20EoPCut = new TH2F("fnSigaftSysM20EoPCut","nSig with systematic E/p and M20 cut; p_{T}(GeV/c); nSigma; counts;", 60,0,30., 160,0,8);
+    fnSigaftSysM20EoPCut = new TH2F("fnSigaftSysM20EoPCut","nSig with systematic E/p and M20 cut; p_{T}(GeV/c); nSigma; counts;", 60,0,30., 160,-8,8);
     fOutputList->Add(fnSigaftSysM20EoPCut);
     
     fInclElecDCAnoSign = new TH2F("fInclElecDCAnoSign","Incl Elec DCA (no Charge); p_{T}(GeV/c); DCAxMagField; counts;", 60,0,30., nDCAbins,-0.2,0.2);
@@ -845,6 +851,14 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fBBaryonPt->Sumw2();
         fOutputList->Add(fBBaryonPt);
     
+        fBMesonElecPt = new TH1F("fBMesonElecPt","Beauty Meson->e Spectrum; p_{T}(GeV/c); counts;",100,0,50.);
+        fBMesonElecPt->Sumw2();
+        fOutputList->Add(fBMesonElecPt);
+        
+        fBBaryonElecPt = new TH1F("fBBaryonElecPt","Beauty Baryon->e Spectrum; p_{T}(GeV/c); counts;",100,0,50.);
+        fBBaryonElecPt->Sumw2();
+        fOutputList->Add(fBBaryonElecPt);
+        
         fPromptD0DCAWeight = new TH2F("fPromptD0DCAWeight","Prompt D0 DCA with Weight; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., nDCAbins,-0.2,0.2);
         fOutputList->Add(fPromptD0DCAWeight);
     
@@ -1013,6 +1027,18 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
     //PID initialized
     fpidResponse = fInputHandler->GetPIDResponse();
     
+    ////////////////
+    // Centrality //
+    ////////////////
+    if(fApplyCentrality){
+        Bool_t pass = kFALSE;
+        if(fCentralityMin > -0.5){
+            fCentrality = CheckCentrality(fAOD,pass);
+            if(!pass)return;
+        }
+        fCentCheck->Fill(fCentrality);
+    }
+    
     ////////////////////
     // Get MC Headers //
     ////////////////////
@@ -1073,6 +1099,9 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             GetPi0EtaWeight(fSprsPi0EtaWeightCal);
             Int_t TrackPDG = -999;
             Int_t ilabelM = -99;
+            Int_t ilabelGM = -99;
+            Int_t ilabelGGM = -99;
+            Int_t pidM, pidGM, pidGGM;
             
             for(int i=0; i<(fMCarray->GetEntries()); i++)
             {
@@ -1100,6 +1129,26 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 if(TMath::Abs(AODMCtrack->Y()) < 2.4) {
                     if (TrackPDG>500 && TrackPDG<599) fBMesonPtCMS->Fill(AODMCtrack->Pt());
                     if (TrackPDG == 521) fBPlusPtCMS->Fill(AODMCtrack->Pt());
+                    if(TrackPDG==11 && ilabelM>0){
+                        //cout<<"TESTING2"<<endl;
+                        AliAODMCParticle *momPart = (AliAODMCParticle*)fMCarray->At(ilabelM); //get mom particle
+                        pidM = TMath::Abs(momPart->GetPdgCode());
+                        
+                        if(pidM>500 && pidM<599) fBMesonElecPt->Fill(AODMCtrack->Pt());
+                        if(pidM>5000 && pidM<5999) fBBaryonElecPt->Fill(AODMCtrack->Pt());
+                        
+                        ilabelGM = momPart->GetMother();
+                        if(ilabelGM>0){
+                            pidGM = TMath::Abs(momPart->GetPdgCode());
+                            if(pidGM>500 && pidGM<599) fBMesonElecPt->Fill(AODMCtrack->Pt());
+                            AliAODMCParticle *gMomPart = (AliAODMCParticle*)fMCarray->At(ilabelGM); //get mom particle
+                            ilabelGGM = gMomPart->GetMother();
+                            if(ilabelGGM>0){
+                                pidGGM = TMath::Abs(gMomPart->GetPdgCode());
+                                if(pidGGM>500 && pidGGM<599) fBMesonElecPt->Fill(AODMCtrack->Pt());
+                            }
+                        }
+                    }
                 }
                 if(TMath::Abs(AODMCtrack->Y()) > 2.0 && TMath::Abs(AODMCtrack->Y()) < 4.5) {
                     if (TrackPDG>500 && TrackPDG<599) fBMesonPtLHCb->Fill(AODMCtrack->Pt());
@@ -1117,8 +1166,6 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 //Fill Charm species pT histos
                 if (ilabelM>0) {
                     //cout<<"Test4..................................."<<endl;
-                    AliAODMCParticle *momPart = (AliAODMCParticle*)fMCarray->At(ilabelM); //get mom particle
-                    Int_t pidM = TMath::Abs(momPart->GetPdgCode());
                 
                     if(TrackPDG == 11 && pidM>400 && pidM<600 && AODMCtrack->IsPhysicalPrimary()) {
                         fHFElecStack->Fill(AODMCtrack->Pt());
@@ -1135,10 +1182,11 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                     if (pidM>5000 && pidM<5999) {
                         continue; //reject beauty feed down
                     }
-                    Int_t ilabelGM = momPart->GetMother();
+                    AliAODMCParticle *momPart = (AliAODMCParticle*)fMCarray->At(ilabelM); //get mom particle
+                    ilabelGM = momPart->GetMother();
                     if (ilabelGM>0) {
                         AliAODMCParticle *gmomPart = (AliAODMCParticle*)fMCarray->At(ilabelGM);//get grandma particle
-                        Int_t pidGM = TMath::Abs(gmomPart->GetPdgCode());
+                        pidGM = TMath::Abs(gmomPart->GetPdgCode());
                         if (pidGM>500 && pidGM<599) {
                             continue; //reject beauty feed down
                         }
@@ -1225,16 +1273,6 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             numberofmotherkink++;
         }
     }
-    
-    ////////////////
-    // Centrality //
-    ////////////////
-    Bool_t pass = kFALSE;
-    if(fCentralityMin > -0.5){
-        fCentrality = CheckCentrality(fAOD,pass);
-        if(!pass)return;
-    }
-    fCentCheck->Fill(fCentrality);
     
     ////////////////
     //Cluster loop//
@@ -1540,7 +1578,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                             fSprsTemplatesWeightVar1->Fill(tempValue);
                             fSprsTemplatesWeightVar2->Fill(tempValue);
                         }
-                    
+                        
                         //if electron from D0
                         if(fpidSort==12){
                             ilabelM = fMCparticle->GetMother(); //get MC label for e Mom
