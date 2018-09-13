@@ -553,6 +553,7 @@ void AliAnalysisTaskSEBPlustoD0Pi::UserCreateOutputObjects() {
   DefineHistograms();
 
   PostData(1, fOutput);
+  PostData(2, fListCuts);
   PostData(3, fOutputD0FirstDaughter);
   PostData(4, fOutputD0SecondDaughter);
   PostData(5, fOutputBPlusPion);
@@ -1772,7 +1773,9 @@ Bool_t AliAnalysisTaskSEBPlustoD0Pi::D0FirstDaughterSelection(AliAODTrack* aodTr
     }
   }
 
-  if(IsTrackInjected(aodTrack,header,mcTrackArray) && !isDesiredCandidate && fQuickSignalAnalysis == 2) return kFALSE;
+  if(fUseMCInfo){
+    if(IsTrackInjected(aodTrack,header,mcTrackArray) && !isDesiredCandidate && fQuickSignalAnalysis == 2) return kFALSE;
+  }
 
   Int_t daughterType = 0;
 
@@ -1995,7 +1998,9 @@ Bool_t AliAnalysisTaskSEBPlustoD0Pi::D0SecondDaughterSelection(AliAODTrack* aodT
     }
   }
 
-  if(IsTrackInjected(aodTrack,header,mcTrackArray) && !isDesiredCandidate && fQuickSignalAnalysis == 2) return kFALSE;
+  if(fUseMCInfo){
+    if(IsTrackInjected(aodTrack,header,mcTrackArray) && !isDesiredCandidate && fQuickSignalAnalysis == 2) return kFALSE;
+  }
 
   Int_t daughterType = 1;
 
@@ -2241,7 +2246,9 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusPionSelection(AliAODEvent* aodEvent, Ali
       }
     }
 
-    if(IsTrackInjected(aodTrack,header,mcTrackArray) && !isDesiredCandidate && fQuickSignalAnalysis == 2) continue;
+    if(fUseMCInfo){
+      if(IsTrackInjected(aodTrack,header,mcTrackArray) && !isDesiredCandidate && fQuickSignalAnalysis == 2) continue;
+    }
 
     Int_t daughterType = 2;
 
@@ -2743,11 +2750,13 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusSelection(AliAODEvent* aodEvent, AliAODV
         Bool_t fCheckInjected = kTRUE; //temp
         Bool_t fRemoveInjected = kFALSE; //temp
         Bool_t bIsInjected = kFALSE;
-        if(fCheckInjected) bIsInjected = IsCandidateInjected(&trackBPlus, header,mcTrackArray);
-        if(fCheckInjected && fRemoveInjected && bIsInjected) {
-          delete vertexMother; vertexMother = nullptr; 
-          delete trackBPlusPionRotated; trackBPlusPionRotated = nullptr; 
-          continue;
+        if(fUseMCInfo){
+          if(fCheckInjected) bIsInjected = IsCandidateInjected(&trackBPlus, header,mcTrackArray);
+          if(fCheckInjected && fRemoveInjected && bIsInjected) {
+            delete vertexMother; vertexMother = nullptr; 
+            delete trackBPlusPionRotated; trackBPlusPionRotated = nullptr; 
+            continue;
+          }
         }
 
         // We check if the BPlus candidate is a true signal in Monte Carlo
