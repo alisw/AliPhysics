@@ -549,14 +549,6 @@ void AliMultSelectionTask::UserCreateOutputObjects()
 
     fEvSel_VtxZ = new AliMultVariable("fEvSel_VtxZ");
     
-    fTreeEvent->Branch("fMC_NPart",      &fMC_NPart, "fMC_NPart/I");
-    fTreeEvent->Branch("fMC_NColl",      &fMC_NColl, "fMC_NColl/I");
-    fTreeEvent->Branch("fMC_NchV0A",      &fMC_NchV0A, "fMC_NchV0A/I");
-    fTreeEvent->Branch("fMC_NchV0C",      &fMC_NchV0C, "fMC_NchV0C/I");
-    fTreeEvent->Branch("fMC_NchEta05",      &fMC_NchEta05, "fMC_NchEta05/I");
-    fTreeEvent->Branch("fMC_NchEta08",      &fMC_NchEta08, "fMC_NchEta08/I");
-    fTreeEvent->Branch("fMC_NchEta10",      &fMC_NchEta10, "fMC_NchEta10/I");
-    
     fMC_NPart =         new AliMultVariable("fMC_NPart");
     fMC_NPart->SetIsInteger(kTRUE);
     fMC_NColl =         new AliMultVariable("fMC_NColl");
