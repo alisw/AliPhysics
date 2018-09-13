@@ -12,9 +12,9 @@
 AliAnalysisTaskQAHighPtDeDxTest* AddTaskQAHighPtDeDxTest(
 		Bool_t AnalysisMC = kFALSE,
 		Int_t typerun =1, // 0 for pp and 1 for Pb-Pb or pPb
-//		UInt_t kTriggerInt = AliVEvent::kINT7, //for pPb kINT7, for pp or PbPb kMB
 		Float_t minCent = 0.0, 
 		Float_t maxCent = 5.0,
+		const Int_t ncl = 70,
 		Bool_t ispileuprej = kTRUE,
 		Bool_t PostCalib = kFALSE,
 		Bool_t MakePid = kTRUE,
@@ -72,6 +72,8 @@ AliAnalysisTaskQAHighPtDeDxTest* AddTaskQAHighPtDeDxTest(
 	}
 	else
 		task->SetAnalysisPbPb(kFALSE);
+	
+	task->SetNcl(ncl);
 	task->SetDebugLevel(0);
 	task->SetEtaCut(0.8);
 //	task->SetVtxCut(10.0);
