@@ -42,6 +42,7 @@ public:
     Bool_t          GetEMCalTriggerDG1() { return fDCalDG1; };
     void            SetEMCalTriggerDG1(Bool_t flagTr1) { fDCalDG1=flagTr1; };
     
+    void            SetCentSelection(Bool_t applyCent) {fApplyCentrality = applyCent;};
     void            SetFillSprs(Bool_t fillElecSprs) {fFlagFillSprs = fillElecSprs;};
     void            SetMC(Bool_t setMCfill) {fFlagFillMCHistos = setMCfill;};
     void            SetSSCut(Double_t maxM20Cut) {fMaxM20Cut = maxM20Cut;};
@@ -93,6 +94,7 @@ private:
     Double_t            fMinPtAssoCut;   // set min pt for asso track
     
     Double_t            fDCABinSize;     // set DCA bin size for systematics
+    Bool_t              fApplyCentrality; //apply centrality cut
     Bool_t              fFlagFillSprs; //switch to fill electron eid sparse
     Bool_t              fFlagFillMCHistos; // switch to fill histos that require MC pid
     Bool_t              fFlagRunStackLoop; //switch to run stack loop to get D & B meson species info
@@ -235,6 +237,9 @@ private:
     TH1F                *fBMesonPtLHCb; //!
     TH1F                *fBPlusPtLHCb; //!
     TH1F                *fBBaryonPt; //!
+    
+    TH1F                *fBMesonElecPt; //!
+    TH1F                *fBBaryonElecPt; //!
     
     TH2F    *fPromptD0DCAWeight; //!
     TH2F    *fD0FromDStarDCAWeight; //!
