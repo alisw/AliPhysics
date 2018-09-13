@@ -183,9 +183,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 //	Reader->SetMinPlpContribSPD(minPlpContribSPD);
 	Reader->SetUseAliEventCuts(kTRUE);
 
-	Reader->SetIsPileUpEvent(ifIsPileUp);
-  Reader->SetUseMVPlpSelection(ifIsPileUp);
-	Reader->SetTrackPileUpRemoval(ifIsPileUp);
+	Reader->SetIsPileUpEvent(kTRUE);
+  Reader->SetUseMVPlpSelection(kTRUE);
+	Reader->SetTrackPileUpRemoval(kFALSE);
 	// Reader->SetUseOutOfBunchPlpSelection(kTRUE);
 	Reader->SetReadV0(kTRUE);
 	Reader->SetReadCascade(kTRUE);
