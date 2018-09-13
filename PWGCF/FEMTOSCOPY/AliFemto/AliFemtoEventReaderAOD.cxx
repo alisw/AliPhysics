@@ -77,6 +77,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fpA2013(kFALSE),
   fisPileUp(kFALSE),
   fCascadePileUpRemoval(kFALSE),
+  fV0PileUpRemoval(kFALSE),
   fTrackPileUpRemoval(kFALSE),
   fMVPlp(kFALSE),
   fOutOfBunchPlp(kFALSE),
@@ -153,6 +154,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fpA2013(aReader.fpA2013),
   fisPileUp(aReader.fisPileUp),
   fCascadePileUpRemoval(aReader.fCascadePileUpRemoval),
+  fV0PileUpRemoval(aReader.fV0PileUpRemoval),
   fTrackPileUpRemoval(aReader.fTrackPileUpRemoval),
   fMVPlp(aReader.fMVPlp),
   fOutOfBunchPlp(aReader.fOutOfBunchPlp),
@@ -255,6 +257,7 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fpA2013 = aReader.fpA2013;
   fisPileUp = aReader.fisPileUp;
   fCascadePileUpRemoval = aReader.fCascadePileUpRemoval;
+  fV0PileUpRemoval = aReader.fV0PileUpRemoval;
   fTrackPileUpRemoval = aReader.fTrackPileUpRemoval;
   fMVPlp = aReader.fMVPlp;
   fOutOfBunchPlp = aReader.fOutOfBunchPlp;
@@ -891,6 +894,29 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
         daughterTrackNeg = tmp;
       }
 
+
+    if(fV0PileUpRemoval)
+      {
+	//method which checks if each of the v0 daughters
+	//have at least 1 hit in ITS or TOF.
+	bool passPos = false;
+	bool passNeg = false;
+
+	//does tof timing exist for our track?
+	if (daughterTrackPos->GetTOFBunchCrossing()==0) passPos = true;
+	if (daughterTrackNeg->GetTOFBunchCrossing()==0) passNeg = true;
+
+	//loop over the 4 ITS Layrs and check for a hit!
+	for (int i=0;i<4;++i) { //checking layers 0, 1, 4, 5
+	  if(i==2 || i==3) i+=2;
+	  if (daughterTrackPos->HasPointOnITSLayer(i)) passPos=true;
+	  if (daughterTrackNeg->HasPointOnITSLayer(i)) passNeg=true;
+	}
+	
+	if(!passPos) continue;
+	if(!passNeg) continue;
+      }
+      
       AliFemtoV0 *trackCopyV0 = CopyAODtoFemtoV0(aodv0);
       trackCopyV0->SetMultiplicity(norm_mult);
       trackCopyV0->SetZvtx(fV1[2]);
@@ -2359,6 +2385,11 @@ void AliFemtoEventReaderAOD::SetIsPileUpEvent(Bool_t ispileup)
 void AliFemtoEventReaderAOD::SetCascadePileUpRemoval(Bool_t cascadePileUpRemoval)
 {
   fCascadePileUpRemoval = cascadePileUpRemoval;
+}
+
+void AliFemtoEventReaderAOD::SetV0PileUpRemoval(Bool_t v0PileUpRemoval)
+{
+  fV0PileUpRemoval = v0PileUpRemoval;
 }
 
 void AliFemtoEventReaderAOD::SetTrackPileUpRemoval(Bool_t trackPileUpRemoval)
