@@ -1018,7 +1018,7 @@ TH1F* AliHFInvMassFitter::SetTemplateReflections(const TH1 *h, TString opt,Doubl
     //    f->SetParLimits(0,0,100.*h->Integral());
     f->SetParameter(1,1.865);
     f->SetParameter(2,0.050);
-    fHistoTemplRfl->Fit(f,"REM","");//,h->GetBinLowEdge(1),h->GetXaxis()->GetBinUpEdge(h->GetNbinsX()));
+    fHistoTemplRfl->Fit(f,"REM0","");//,h->GetBinLowEdge(1),h->GetXaxis()->GetBinUpEdge(h->GetNbinsX()));
   }
   else if(opt.EqualTo("2gaus") || opt.EqualTo("doublegaus")){
     printf("   ---> Reflection contribution from double-Gaussian fit to histogram from simulation\n");
@@ -1031,7 +1031,7 @@ TH1F* AliHFInvMassFitter::SetTemplateReflections(const TH1 *h, TString opt,Doubl
     f->SetParameter(2,0.050);
     f->SetParameter(4,1.88);
     f->SetParameter(5,0.050);
-    fHistoTemplRfl->Fit(f,"REM","");//,h->GetBinLowEdge(1),h->GetXaxis()->GetBinUpEdge(h->GetNbinsX()));
+    fHistoTemplRfl->Fit(f,"REM0","");//,h->GetBinLowEdge(1),h->GetXaxis()->GetBinUpEdge(h->GetNbinsX()));
   }
   else if(opt.EqualTo("pol3")){
     printf("   ---> Reflection contribution from pol3 fit to histogram from simulation\n");
@@ -1039,7 +1039,7 @@ TH1F* AliHFInvMassFitter::SetTemplateReflections(const TH1 *h, TString opt,Doubl
     f->SetParameter(0,h->GetMaximum());
     //    f->SetParLimits(0,0,100.*h->Integral());
     // Hard to initialize the other parameters...
-    fHistoTemplRfl->Fit(f,"REM","");
+    fHistoTemplRfl->Fit(f,"REM0","");
     //    Printf("We USED %d POINTS in the Fit",f->GetNumberFitPoints());
   }
   else if(opt.EqualTo("pol6")){
@@ -1048,7 +1048,7 @@ TH1F* AliHFInvMassFitter::SetTemplateReflections(const TH1 *h, TString opt,Doubl
     f->SetParameter(0,h->GetMaximum());
     //    f->SetParLimits(0,0,100.*h->Integral());
     // Hard to initialize the other parameters...
-    fHistoTemplRfl->Fit(f,"RLEMI","");//,h->GetBinLowEdge(1),h->GetXaxis()->GetBinUpEdge(h->GetNbinsX()));
+    fHistoTemplRfl->Fit(f,"RLEMI0","");//,h->GetBinLowEdge(1),h->GetXaxis()->GetBinUpEdge(h->GetNbinsX()));
   }
   else{
     // no good option passed
