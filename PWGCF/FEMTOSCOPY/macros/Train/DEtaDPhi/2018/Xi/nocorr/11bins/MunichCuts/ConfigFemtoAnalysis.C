@@ -180,8 +180,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	Reader->SetFilterMask(filterbit);
 	Reader->SetDCAglobalTrack(ifGlobalTracks); //false for FB7, true for the rest //we do not use DCA at all
 	Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kReference);
-	Reader->SetMinPlpContribSPD(minPlpContribSPD);
+	//Reader->SetMinPlpContribSPD(minPlpContribSPD);
 	Reader->SetIsPileUpEvent(ifIsPileUp);
+	Reader->SetUseMVPlpSelection(ifIsPileUp);
+	Reader->SetTrackPileUpRemoval(ifIsPileUp);
 	Reader->SetReadV0(kTRUE);
 	Reader->SetReadCascade(kTRUE);
 
@@ -465,7 +467,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					tXiCut[aniter]->SetMinCosPointingAngle(0.97); //++ bylo 0.998
 					tXiCut[aniter]->SetEta(0.8);
 					tXiCut[aniter]->SetPt(0.0,100);
-					tXiCut[aniter]->SetOnFlyStatus(kFALSE);
+					//tXiCut[aniter]->SetOnFlyStatus(kFALSE);
 					tXiCut[aniter]->SetMaxV0DecayLength(100.);
 					tXiCut[aniter]->SetRadiusV0Min(1.4); //++ NEW!
 					tXiCut[aniter]->SetRadiusV0Max(200); //++ NEW!
@@ -528,7 +530,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					tAXiCut[aniter]->SetMinCosPointingAngle(0.97);
 					tAXiCut[aniter]->SetEta(0.8);
 					tAXiCut[aniter]->SetPt(0.,100);
-					tAXiCut[aniter]->SetOnFlyStatus(kFALSE);  //CHECK kTRUE STATUS AS WELL?
+					//tAXiCut[aniter]->SetOnFlyStatus(kFALSE);  //CHECK kTRUE STATUS AS WELL?
 					tAXiCut[aniter]->SetMaxV0DecayLength(100.);
 					tAXiCut[aniter]->SetRadiusV0Min(1.4); //++ NEW!
 					tAXiCut[aniter]->SetRadiusV0Max(200); //++ NEW!
