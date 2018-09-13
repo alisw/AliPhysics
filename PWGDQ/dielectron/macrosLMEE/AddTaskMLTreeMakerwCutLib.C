@@ -49,7 +49,7 @@ if(SetTPCCorrection){
 
 task->SelectCollisionCandidates(AliVEvent::kINT7);
 task->SetupTrackCuts(cutlib->GetTrackCuts(0,0));
-task->SetupEventCuts(cutlib->GetEventCuts(1));
+task->SetupEventCuts(cutlib->GetEventCuts());
 
 mgr->AddTask(task);
 
