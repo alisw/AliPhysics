@@ -181,6 +181,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	Reader->SetDCAglobalTrack(ifGlobalTracks); //false for FB7, true for the rest //we do not use DCA at all
 	Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kReference);
 	//Reader->SetMinPlpContribSPD(minPlpContribSPD);
+	Reader->SetUseAliEventCuts(kTRUE);
 	Reader->SetIsPileUpEvent(ifIsPileUp);
 	Reader->SetUseMVPlpSelection(ifIsPileUp);
 	Reader->SetTrackPileUpRemoval(ifIsPileUp);
@@ -450,7 +451,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					tXiCut[aniter]->SetMaxDcaXiDaughters(1.6);//++ bylo 0.3 
 					tXiCut[aniter]->SetRadiusXiMin(0.8); //++ NEW!
 					tXiCut[aniter]->SetRadiusXiMax(200); //++ NEW!
-										
+
+					tXiCut[aniter]->SetIgnoreOnFlyStatus(kTRUE); 
 					//Bachelor cuts (here = PiM)
 					tXiCut[aniter]->SetMinDcaXiBac(0.05); //++ bylo 0.03
 					tXiCut[aniter]->SetEtaBac(0.8);
@@ -511,6 +513,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					tAXiCut[aniter]->SetMaxDecayLengthXi(100.0);
 					tAXiCut[aniter]->SetMaxDcaXi(100);
 					tAXiCut[aniter]->SetInvariantMassRejectOmega(1.667,1.677);//++ NEW: omega rejection od 1.667 do 1.677 !
+
+					tXiCut[aniter]->SetIgnoreOnFlyStatus(kTRUE);
 					//XiDaughters
 					tAXiCut[aniter]->SetMaxDcaXiDaughters(1.6);
 					tAXiCut[aniter]->SetRadiusXiMin(0.8); //++ NEW!
@@ -644,7 +648,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					      if(ichg==7||ichg==11) dtc2etaphitpc[aniter]->AddCutMonitor(cutPass3PIDetaphitpc[aniter], cutFail3PIDetaphitpc[aniter]);
 					      if(ichg==9) dtc3etaphitpc[aniter]->AddCutMonitor(cutPass3PIDetaphitpc[aniter], cutFail3PIDetaphitpc[aniter]);
 					    }
-					    else if(ichg==34||ichg==35||ichg==35) //PXim, aPXim, PXip, aPXip
+					    else if(ichg==34||ichg==35||ichg==36||ichg==37) //PXim, aPXim, PXip, aPXip
 					      {
 						cutPass1Xi[aniter] = new AliFemtoCutMonitorXi(Form("cutPass%stpcM%i", chrgs[ichg], imult));
 						cutFail1Xi[aniter] = new AliFemtoCutMonitorXi(Form("cutFail%stpcM%i", chrgs[ichg], imult));
