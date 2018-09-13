@@ -230,7 +230,7 @@ Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
     fRecoUtils->InitEMCALRecalibrationFactors();
 
   // Treat Run2 calibration differently. Loading of two OADB objects required for calibration
-  // Calibration can be turned on or off via: doTempCalibRun2: true in the YAML configuration
+  // Calibration can be turned on or off via: enableRun2TempCalib: true in the YAML configuration
   if(runRC > 197692){
 
     AliInfo("Initialising Run2 recalibration factors");
@@ -313,14 +313,14 @@ Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
         for (Int_t irow=0; irow<24; ++irow)
         {
           Int_t absID     = fGeom->GetAbsCellIdFromCellIndexes(ism, irow, icol); // original calibration factor
-          Float_t factor  = 1;
+          Float_t factor  = fRecoUtils->GetEMCALChannelRecalibrationFactor(ism,icol,irow);
           Float_t slope   = 0;
           Float_t offset  = 0;
           slope           = hSlopeParam->GetBinContent(absID+1);
           offset          = hA0Param->GetBinContent(absID+1);
           // Correction is the inverse of the calculated factor
           if(slope || offset)
-            factor = 1 / (offset + (slope * temperature) ); // correction dependent on T
+            factor *= 1 / (offset + (slope * temperature) ); // correction dependent on T
           fRecoUtils->SetEMCALChannelRecalibrationFactor(ism,icol,irow,factor);
         } // columns
       } // rows
