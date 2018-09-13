@@ -142,10 +142,6 @@ AliDielectron* Config_acapon(TString cutDefinition,
 				selectedPID = LMEECutLib::kV0_TPCcorr;
         //die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
         die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
-        if(pairCuts){
-            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(selectedCuts) );
-        }
     }
     else if(cutDefinition == "V0_ITScorr"){
 				v0plots = kTRUE;
@@ -153,10 +149,6 @@ AliDielectron* Config_acapon(TString cutDefinition,
 				selectedPID = LMEECutLib::kV0_ITScorr;
         //die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
         die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
-        if(pairCuts){
-            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(selectedCuts) );
-        }
     }
     else if(cutDefinition == "V0_TOFcorr"){
 				v0plots = kTRUE;
@@ -164,10 +156,6 @@ AliDielectron* Config_acapon(TString cutDefinition,
 				selectedPID = LMEECutLib::kV0_TOFcorr;
         //die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
         die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
-        if(pairCuts){
-            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(selectedCuts) );
-        }
     }
     else{
         cout << " =============================== " << endl;
