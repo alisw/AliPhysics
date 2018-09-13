@@ -30,23 +30,19 @@ class AliAnalysisTaskPHOSEmbeddingEfficiency : public AliAnalysisTaskPHOSPi0EtaT
 
     virtual void ProcessMC();
     void SetWeightToClusters();
-    Int_t FindCommonParent(Int_t iPart, Int_t jPart);
 
     void FillPhoton();
     void FillMgg();
     void FillMixMgg();
-    Double_t REMB(AliAODMCParticle *p);//in cylindrical system
-    Double_t RhoEMB(AliAODMCParticle *p);//in sperical system
 
   protected:
     TString fParticleName;
-    TClonesArray *fMCArray;
 
   private:
     AliAnalysisTaskPHOSEmbeddingEfficiency(const AliAnalysisTaskPHOSEmbeddingEfficiency&); // not implemented
     AliAnalysisTaskPHOSEmbeddingEfficiency& operator=(const AliAnalysisTaskPHOSEmbeddingEfficiency&); // not implemented
 
-    ClassDef(AliAnalysisTaskPHOSEmbeddingEfficiency, 10); // example of analysis
+    ClassDef(AliAnalysisTaskPHOSEmbeddingEfficiency, 12); // example of analysis
 };
 
 #endif

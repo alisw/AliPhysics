@@ -58,29 +58,16 @@ LInfo *readOCDB_LED(Int_t runNb, Bool_t debug)
 
   LInfo *ret = new LInfo(runNb);
 
-  TTree *treeAmp = emcCalibSignal->GetTreeAvgAmpVsTime();
-  TTree *treeLEDAmp = emcCalibSignal->GetTreeLEDAvgAmpVsTime();
-  Int_t tea = treeAmp->GetEntries();
-  Int_t tem = treeLEDAmp->GetEntries();
+  TTree *treeLed = emcCalibSignal->GetTreeAvgAmpVsTime();
+  Int_t tea = treeLed->GetEntries();
+  TTree *treeMon = emcCalibSignal->GetTreeLEDAvgAmpVsTime();
+  Int_t tem = treeMon->GetEntries();
   if (debug) {
-    cout << " Tree entries " << tea << endl;
-    cout << " TreeLEDMon entries " << tem << endl;
+    cout << " LED tree entries " << tea << endl;
+    treeLed->Print();
+    cout << " LEDMon entries " << tem << endl;
+    treeMon->Print();
   }
-
-  Int_t    fNum     = 0;
-  Double_t fAvgAmp  = 0;
-  Double_t fHour    = 0;
-  Double_t fRMS     = 0;
-  treeAmp->SetBranchAddress("fChannelNum",&fNum);
-  treeAmp->SetBranchAddress("fHour",&fHour);
-  treeAmp->SetBranchAddress("fAvgAmp",&fAvgAmp);
-  treeAmp->SetBranchAddress("fRMS",&fRMS);
-
-  // associate variables  also for LED
-  treeLEDAmp->SetBranchAddress("fRefNum",&fNum);
-  treeLEDAmp->SetBranchAddress("fHour",&fHour);
-  treeLEDAmp->SetBranchAddress("fAvgAmp",&fAvgAmp);
-  treeLEDAmp->SetBranchAddress("fRMS",&fRMS);
 
   Int_t mod   = 0;
   Int_t col   = 0;
@@ -88,20 +75,38 @@ LInfo *readOCDB_LED(Int_t runNb, Bool_t debug)
   Int_t gain  = 0;
   Int_t strip = 0;
 
+  // associate variables for LEDMON
+  Int_t    fRefMon  = 0;
+  Double_t fAmpMon  = 0;
+  Double_t fRMSMon  = 0;
+  Double_t fHourMon = 0;
+  treeMon->SetBranchAddress("fRefNum",&fRefMon);
+  treeMon->SetBranchAddress("fAvgAmp",&fAmpMon);
+  treeMon->SetBranchAddress("fRMS",&fRMSMon);
+  treeMon->SetBranchAddress("fHour",&fHourMon);
   for (Int_t i=0; i<tem; ++i) {
-    treeLEDAmp->GetEntry(i);
-    emcCalibSignal->DecodeRefNum(fNum, &mod, &strip, &gain);
+    treeMon->GetEntry(i);
+    emcCalibSignal->DecodeRefNum(fRefMon, &mod, &strip, &gain);
     if (debug) 
-      Printf("fRefNum = %d, mod = %d, strip = %d, amp = %f, gain = %d", fNum, mod, strip, fAvgAmp, gain);
-    ret->FillStrip(mod,gain,strip, fAvgAmp, fRMS);
+      Printf("fRefNum=%d, mod= %d, strip=%d, amp=%.3f, rms=%.3f, gain=%d", fRefMon, mod, strip, fAmpMon, fRMSMon, gain);
+    ret->FillStrip(mod, gain, strip, fAmpMon, fRMSMon);
   }
 
+  // associate variables for LED
+  Int_t    fChanLed  = 0;
+  Double_t fAmpLed  = 0;
+  Double_t fRMSLed  = 0;
+  Double_t fHourLed = 0;
+  treeLed->SetBranchAddress("fChannelNum",&fChanLed);
+  treeLed->SetBranchAddress("fHour",&fHourLed);
+  treeLed->SetBranchAddress("fAvgAmp",&fAmpLed);
+  treeLed->SetBranchAddress("fRMS",&fRMSLed);
   for (Int_t i=0; i<tea; ++i) {
-    treeAmp->GetEntry(i);
-    emcCalibSignal->DecodeChannelNum(fNum, &mod, &col, &row, &gain);
+    treeLed->GetEntry(i);
+    emcCalibSignal->DecodeChannelNum(fChanLed, &mod, &col, &row, &gain);
     if (debug)
-      Printf("fChannelNum = %d, mod = %d, col = %d, amp = %f, gain = %d", fNum, mod, col, fAvgAmp, gain);
-    ret->FillLed(mod,gain,col, row, fAvgAmp, fRMS);
+      Printf("fChannelNum=%d, mod=%d, col=%d, row=%d, amp=%.3f, rms=%.3f, gain=%d", fChanLed, mod, col, row, fAmpLed, fRMSLed, gain);
+    ret->FillLed(mod,gain,col, row, fAmpLed, fRMSLed);
   }
 
   return ret;

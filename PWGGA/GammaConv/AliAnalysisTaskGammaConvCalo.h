@@ -139,6 +139,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
         // Function to enable MC label sorting
     void SetEnableSortingOfMCClusLabels (Bool_t enableSort) { fEnableSortForClusMC   = enableSort;}
 
+    void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
 
   protected:
     AliV0ReaderV1*                      fV0Reader;              // basic photon Selection Task
@@ -154,7 +155,6 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TList**                             fESDList;               // Array of lists with histograms with reconstructed properties
     TList**                             fBackList;              // Array of lists with BG THnSparseF
     TList**                             fMotherList;            // Array of lists with Signal THnSparseF
-    TList**                             fPhotonDCAList;         // Array of lists with photon dca trees
     TList**                             fGammaERM02;            // Array of lists with conv photon shower shape trees
     TList**                             fInvMassShowerShape;    // Array of lists with invMass shower shape trees
     TList**                             fTrueList;              // Array of lists with histograms with MC validated reconstructed properties
@@ -472,12 +472,13 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TTree*                  tBrokenFiles;                                       // tree for keeping track of broken files
     TObjString*             fFileNameBroken;                                    // string object for broken file name
     Bool_t                  fAllowOverlapHeaders;                               // enable overlapping headers for cluster selection
+    Int_t                   fTrackMatcherRunningMode;                           // CaloTrackMatcher running mode
 
   private:
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 45);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 47);
 };
 
 #endif

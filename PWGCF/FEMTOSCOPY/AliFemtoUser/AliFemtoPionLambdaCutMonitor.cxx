@@ -36,6 +36,7 @@ AliFemtoPionLambdaCutMonitor::Event::Event(const bool passing,
   , _prev_pion_coll_size(0)
   , _prev_lam_coll_size(0)
 {
+
   const char *title_suffix = (passing ? " (PASS)" : " (FAIL)");
 
   const TString pf(suffix_output ? passing ? "_P" : "_F" : "");

@@ -12,68 +12,220 @@
 #include "AliMCEvent.h"
 #include "Rtypes.h"
 #include "TVector3.h"
+#include "AliSigma0ParticlePhotonMother.h"
 
 class AliFemtoDreamBasePart {
  public:
   AliFemtoDreamBasePart();
+  AliFemtoDreamBasePart(const AliFemtoDreamBasePart& part);
+  AliFemtoDreamBasePart &operator=(const AliFemtoDreamBasePart &obj);
+  AliFemtoDreamBasePart(const AliSigma0ParticlePhotonMother &mother);
   virtual ~AliFemtoDreamBasePart();
   enum PartOrigin {
-    kPhysPrimary=0,
-    kWeak=1,
-    kMaterial=2,
-    kFake=3,
-    kContamination=4,
-    kUnknown=5
+    kPhysPrimary = 0,
+    kWeak = 1,
+    kMaterial = 2,
+    kFake = 3,
+    kContamination = 4,
+    kUnknown = 5
   };
-  AliFemtoDreamBasePart &operator=(const AliFemtoDreamBasePart &obj);
-  void SetMCParticle(AliAODMCParticle *mcPart,AliMCEvent *evt);
+  void SetMCParticle(AliAODMCParticle *mcPart, AliMCEvent *evt);
   void ResetMCInfo();
-  void SetMomentum(float px,float py,float pz) {fP.SetXYZ(px,py,pz);};
-  TVector3 GetMomentum() const {return fP;};
-  void SetMCMomentum(float px,float py,float pz) {fMCP.SetXYZ(px,py,pz);};
-  TVector3 GetMCMomentum() const {return fMCP;};
-  void SetPt(float pT){fPt=pT;};
-  float GetPt() const {return fPt;};
-  void SetMCPt(float pT){fMCPt=pT;};
-  float GetMCPt() const {return fMCPt;};
-  void SetMomTPC(float pTPC){fP_TPC=pTPC;};
-  float GetMomTPC() const {return fP_TPC;};
-  void SetEta(float eta){fEta.push_back(eta);};
-  std::vector<float>  GetEta()  const {return fEta;};
-  void SetTheta(float theta){fTheta.push_back(theta);};
-  std::vector<float>  GetTheta()  const {return fTheta;};
-  void SetMCTheta(float theta){fMCTheta.push_back(theta);};
-  std::vector<float>  GetMCTheta()  const {return fMCTheta;};
-  void SetPhi(float phi){fPhi.push_back(phi);};
-  std::vector<float>  GetPhi()  const {return fPhi;};
-  void SetPhiAtRadius(std::vector<float> phiAtRad) {fPhiAtRadius.push_back(phiAtRad);};
-  std::vector<std::vector<float>> GetPhiAtRaidius() {return fPhiAtRadius;};
-  void SetMCPhi(float phi){fMCPhi.push_back(phi);};
-  std::vector<float>  GetMCPhi()  const {return fMCPhi;};
-  void SetIDTracks(int idTracks) {fIDTracks.push_back(idTracks);};
-  std::vector<int> GetIDTracks() {return fIDTracks;};
-  void SetCharge(int charge){fCharge.push_back(charge);};
-  std::vector<int> GetCharge() const {return fCharge;};
-  void SetCPA(float cpa) {fCPA=cpa;};
-  float GetCPA() const {return fCPA;};
-  void SetParticleOrigin(PartOrigin org){fOrigin=org;};
-  PartOrigin GetParticleOrigin() const {return fOrigin;};
-  void SetPDGCode(int pdgCode) {fPDGCode=pdgCode;};
-  int GetPDGCode() const {return fPDGCode;};
-  void SetMCPDGCode(int pdgCode) {fMCPDGCode=pdgCode;};
-  int GetMCPDGCode() const {return fMCPDGCode;};
-  void SetPDGMotherWeak(int PDGMother){fPDGMotherWeak=PDGMother;};
-  int GetMotherWeak() const {return fPDGMotherWeak;};
-  void SetMotherID(int ID) {fMotherID=ID;};
-  int GetMotherID() const {return fMotherID;};
-  void SetEvtNumber(int evtNumb){fEvtNumber=evtNumb;};
-  int GetEvtNumber() const {return fEvtNumber;};
-  void SetUseMCInfo(bool useMC) {fIsMC=useMC;};
-  bool IsSet() const {return fIsSet;};
-  void SetUse(bool use) {fUse=use;};
-  bool UseParticle() const {return fUse;};
-  void SetGlobalTrackInfo(AliAODTrack **GTI, Int_t size)
-  {fGTI = GTI; fTrackBufferSize = size;};
+  void SetMomentum(float px, float py, float pz) {
+    fP.SetXYZ(px, py, pz);
+  }
+  ;
+  TVector3 GetMomentum() const {
+    return fP;
+  }
+  ;
+  void SetMCMomentum(float px, float py, float pz) {
+    fMCP.SetXYZ(px, py, pz);
+  }
+  ;
+  TVector3 GetMCMomentum() const {
+    return fMCP;
+  }
+  ;
+  void SetPt(float pT) {
+    fPt = pT;
+  }
+  ;
+  float GetPt() const {
+    return fPt;
+  }
+  ;
+  void SetMCPt(float pT) {
+    fMCPt = pT;
+  }
+  ;
+  float GetMCPt() const {
+    return fMCPt;
+  }
+  ;
+  void SetMomTPC(float pTPC) {
+    fP_TPC = pTPC;
+  }
+  ;
+  float GetMomTPC() const {
+    return fP_TPC;
+  }
+  ;
+  void SetEta(float eta) {
+    fEta.push_back(eta);
+  }
+  ;
+  std::vector<float> GetEta() const {
+    return fEta;
+  }
+  ;
+  void SetTheta(float theta) {
+    fTheta.push_back(theta);
+  }
+  ;
+  std::vector<float> GetTheta() const {
+    return fTheta;
+  }
+  ;
+  void SetMCTheta(float theta) {
+    fMCTheta.push_back(theta);
+  }
+  ;
+  std::vector<float> GetMCTheta() const {
+    return fMCTheta;
+  }
+  ;
+  void SetPhi(float phi) {
+    fPhi.push_back(phi);
+  }
+  ;
+  std::vector<float> GetPhi() const {
+    return fPhi;
+  }
+  ;
+  void SetPhiAtRadius(std::vector<float> phiAtRad) {
+    fPhiAtRadius.push_back(phiAtRad);
+  }
+  ;
+  std::vector<std::vector<float>> GetPhiAtRaidius() {
+    return fPhiAtRadius;
+  }
+  ;
+  void SetMCPhi(float phi) {
+    fMCPhi.push_back(phi);
+  }
+  ;
+  std::vector<float> GetMCPhi() const {
+    return fMCPhi;
+  }
+  ;
+  void SetIDTracks(int idTracks) {
+    fIDTracks.push_back(idTracks);
+  }
+  ;
+  std::vector<int> GetIDTracks() {
+    return fIDTracks;
+  }
+  ;
+  void SetCharge(int charge) {
+    fCharge.push_back(charge);
+  }
+  ;
+  std::vector<int> GetCharge() const {
+    return fCharge;
+  }
+  ;
+  void SetCPA(float cpa) {
+    fCPA = cpa;
+  }
+  ;
+  float GetCPA() const {
+    return fCPA;
+  }
+  ;
+  void SetParticleOrigin(PartOrigin org) {
+    fOrigin = org;
+  }
+  ;
+  PartOrigin GetParticleOrigin() const {
+    return fOrigin;
+  }
+  ;
+  void SetPDGCode(int pdgCode) {
+    fPDGCode = pdgCode;
+  }
+  ;
+  int GetPDGCode() const {
+    return fPDGCode;
+  }
+  ;
+  void SetMCPDGCode(int pdgCode) {
+    fMCPDGCode = pdgCode;
+  }
+  ;
+  int GetMCPDGCode() const {
+    return fMCPDGCode;
+  }
+  ;
+  void SetPDGMotherWeak(int PDGMother) {
+    fPDGMotherWeak = PDGMother;
+  }
+  ;
+  int GetMotherWeak() const {
+    return fPDGMotherWeak;
+  }
+  ;
+  void SetMotherID(int ID) {
+    fMotherID = ID;
+  }
+  ;
+  int GetMotherID() const {
+    return fMotherID;
+  }
+  ;
+  void SetMotherPDG(int pdg) {
+    fMotherPDG = pdg;
+  }
+  ;
+  int GetMotherPDG() const {
+    return fMotherPDG;
+  }
+  ;
+  void SetEvtNumber(int evtNumb) {
+    fEvtNumber = evtNumb;
+  }
+  ;
+  int GetEvtNumber() const {
+    return fEvtNumber;
+  }
+  ;
+  void SetUseMCInfo(bool useMC) {
+    fIsMC = useMC;
+  }
+  ;
+  bool IsSet() const {
+    return fIsSet;
+  }
+  ;
+  void SetUse(bool use) {
+    fUse = use;
+  }
+  ;
+  bool UseParticle() const {
+    return fUse;
+  }
+  ;
+  void SetGlobalTrackInfo(AliAODTrack **GTI, Int_t size) {
+    fGTI = GTI;
+    fTrackBufferSize = size;
+  }
+  ;
+  int GetEventMultiplicity() const {
+    return fEvtMultiplicity;
+  }
+  void SetEventMultiplicity(int evtMulti) {
+    fEvtMultiplicity = evtMulti;
+  }
  protected:
   bool fIsReset;
   AliAODTrack **fGTI;
@@ -99,13 +251,16 @@ class AliFemtoDreamBasePart {
   int fMCPDGCode;
   int fPDGMotherWeak;
   int fMotherID;
+  int fMotherPDG;
   int fEvtNumber;
   bool fIsMC;
   bool fUse;    //passes cuts
   bool fIsSet;  //has all the attributes set properly
+  int fEvtMultiplicity;
  private:
 //  AliFemtoDreamBasePart(const AliFemtoDreamBasePart&);
-  ClassDef(AliFemtoDreamBasePart,2);
+ClassDef(AliFemtoDreamBasePart,3)
+  ;
 };
 
 #endif /* ALIFEMTODREAMBASEPART_H_ */

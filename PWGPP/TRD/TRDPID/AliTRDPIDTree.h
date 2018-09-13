@@ -142,7 +142,7 @@ class AliTRDPIDTree : public AliAnalysisTaskSE {
   Float_t fpdg;                        //! particle type (pdg value)
   Int_t frun;                          //! run number
 
-  Bool_t fUseExtraPileupCut;           //! cut on correlation of VZERO multiplicity & TPCout tracks (LHC15o pass1)
+  Bool_t fUseExtraPileupCut;           // cut on correlation of VZERO multiplicity & TPCout tracks (LHC15o pass1)
   
   // TTree stuff for PID References
   Int_t frunnumber;                  //! Tree: Run number

@@ -76,7 +76,6 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fESDList(NULL),
   fBackList(NULL),
   fMotherList(NULL),
-  fPhotonDCAList(NULL),
   fGammaERM02(NULL),
   fInvMassShowerShape(NULL),
   fTrueList(NULL),
@@ -354,7 +353,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fDoInvMassShowerShapeTree(kFALSE),
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
-  fAllowOverlapHeaders(kTRUE)
+  fAllowOverlapHeaders(kTRUE),
+  fTrackMatcherRunningMode(0)
 {
 
 }
@@ -375,7 +375,6 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fESDList(NULL),
   fBackList(NULL),
   fMotherList(NULL),
-  fPhotonDCAList(NULL),
   fGammaERM02(NULL),
   fInvMassShowerShape(NULL),
   fTrueList(NULL),
@@ -653,10 +652,17 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fDoInvMassShowerShapeTree(kFALSE),
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
-  fAllowOverlapHeaders(kTRUE)
+  fAllowOverlapHeaders(kTRUE),
+  fTrackMatcherRunningMode(0)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
+  DefineOutput(3, TTree::Class());
+  DefineOutput(4, TTree::Class());
+  DefineOutput(5, TTree::Class());
+  DefineOutput(6, TTree::Class());
+  DefineOutput(7, TTree::Class());
 }
 
 AliAnalysisTaskGammaConvCalo::~AliAnalysisTaskGammaConvCalo()
@@ -834,7 +840,6 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   }
 
   if (fDoPhotonQA == 2){
-    fPhotonDCAList            = new TList*[fnCuts];
     fTreeConvGammaPtDcazCat   = new TTree*[fnCuts];
   }
 
@@ -911,7 +916,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     nBinsClusterPt            = 800;
     minClusterPt              = 0;
     maxClusterPt              = 80;
-    for(Int_t i=0; i<nBinsPt+1;i++){
+    for(Int_t i=0; i<nBinsClusterPt+1;i++){
       arrClusPtBinning[i]     = ((maxClusterPt-minClusterPt)/nBinsClusterPt)*i;
     }
   // Set special pt binning for pPb 5TeV
@@ -1253,19 +1258,13 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     }
 
     if (fDoPhotonQA == 2 ){
-      fPhotonDCAList[iCut]          = new TList();
-      fPhotonDCAList[iCut]->SetName(Form("%s_%s_%s_%s Photon DCA tree",cutstringEvent.Data(),cutstringPhoton.Data(),cutstringCalo.Data(),cutstringMeson.Data()));
-      fPhotonDCAList[iCut]->SetOwner(kTRUE);
-      fCutFolder[iCut]->Add(fPhotonDCAList[iCut]);
-
-      fTreeConvGammaPtDcazCat[iCut] = new TTree("ESD_ConvGamma_Pt_Dcaz", "ESD_ConvGamma_Pt_Dcaz_Cat");
+      fTreeConvGammaPtDcazCat[iCut] = new TTree(Form("%s_%s_%s_%s Photon DCA tree",cutstringEvent.Data(),cutstringPhoton.Data(),cutstringCalo.Data(),cutstringMeson.Data()), "ESD_ConvGamma_Pt_Dcaz_Cat");
       fTreeConvGammaPtDcazCat[iCut]->Branch("Pt",&fPtGamma,"fPtGamma/s");
       fTreeConvGammaPtDcazCat[iCut]->Branch("DcaZPhoton",&fDCAzPhoton,"fDCAzPhoton/S");
       fTreeConvGammaPtDcazCat[iCut]->Branch("cat",&fCharCatPhoton,"fCharCatPhoton/b");
       if (fIsMC > 1){
         fTreeConvGammaPtDcazCat[iCut]->Branch("weightEvent",&fWeightJetJetMC,"fWeightJetJetMC/f");
       }
-      fPhotonDCAList[iCut]->Add(fTreeConvGammaPtDcazCat[iCut]);
     }
 
     fClusterOutputList[iCut]        = new TList();
@@ -2461,11 +2460,9 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       fOutputContainer->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
 
   for(Int_t iMatcherTask = 0; iMatcherTask < 3; iMatcherTask++){
-    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i",iMatcherTask)));
+    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i_%i",iMatcherTask,fTrackMatcherRunningMode)));
     if(temp) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
   }
-
-
 
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
     if(!((AliConvEventCuts*)fEventCutArray->At(iCut))) continue;
@@ -2502,6 +2499,12 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 
 
   PostData(1, fOutputContainer);
+  if(fDoPhotonQA == 2){
+    for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+      OpenFile(iCut+2);
+      PostData(iCut+2, fTreeConvGammaPtDcazCat[iCut]);
+    }
+  }
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskGammaConvCalo::Notify()

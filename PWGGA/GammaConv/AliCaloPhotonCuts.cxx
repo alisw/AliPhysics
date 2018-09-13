@@ -112,7 +112,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fIsCurrentClusterAcceptedBeforeTM(kFALSE),
   fV0ReaderName("V0ReaderV1"),
   fCorrTaskSetting(""),
-  fCaloTrackMatcherName("CaloTrackMatcher_1"),
+  fCaloTrackMatcherName("CaloTrackMatcher_1_0"),
   fPeriodName(""),
   fCurrentMC(kNoMC),
   fClusterType(0),
@@ -1203,14 +1203,14 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 
       if(fUseEOverPVetoTM){
         // plot trackP vs. clusterE in case of a match
-        fHistMatchedTrackPClusE  = new TH2F(Form("MatchedTrackPClusE %s",GetCutNumber().Data()), "Matched tracks: #it{P}_{track} vs #it{E}_{cl}",
+        fHistMatchedTrackPClusE  = new TH2F(Form("MatchedTrackPClusE %s",GetCutNumber().Data()), "Matched tracks",
                                             nBinsClusterEOnlyHighPt, arrClusEBinningOnlyHighPt, nBinsClusterEOnlyHighPt, arrClusEBinningOnlyHighPt);
         fHistMatchedTrackPClusE->GetXaxis()->SetTitle("E_{cl} (GeV)");
         fHistMatchedTrackPClusE->GetYaxis()->SetTitle("P_{track} (GeV/c)");
         fHistograms->Add(fHistMatchedTrackPClusE);
 
         // plot trackP vs. clusterE in case of a match AFTER EOverP veto has been applied
-        fHistMatchedTrackPClusEAfterEOverPVeto = new TH2F(Form("MatchedTrackPClusEAfterEOverPVeto  %s",GetCutNumber().Data()), "Matched tracks after EOverP veto: #it{P}_{track} vs #it{E}_{cl}",
+        fHistMatchedTrackPClusEAfterEOverPVeto = new TH2F(Form("MatchedTrackPClusEAfterEOverPVeto  %s",GetCutNumber().Data()), "Matched tracks after EOverP veto",
                                                         nBinsClusterEOnlyHighPt, arrClusEBinningOnlyHighPt, nBinsClusterEOnlyHighPt, arrClusEBinningOnlyHighPt);
         fHistMatchedTrackPClusEAfterEOverPVeto ->GetXaxis()->SetTitle("E_{cl} (GeV)");
         fHistMatchedTrackPClusEAfterEOverPVeto ->GetYaxis()->SetTitle("P_{track} (GeV/c)");
@@ -1368,7 +1368,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistograms->Add(fHistClusETruePi0_Matched);
 
       // plot trackP vs. clusterE in case of a match with pi0
-      fHistMatchedTrackPClusETruePi0Clus  = new TH2F(Form("MatchedTrackPClusETruePi0Clus %s",GetCutNumber().Data()), "Matched tracks to #pi^{0} clusters: #it{P}_{track} vs #it{E}_{cl}",
+      fHistMatchedTrackPClusETruePi0Clus  = new TH2F(Form("MatchedTrackPClusETruePi0Clus %s",GetCutNumber().Data()), "Matched tracks to #pi^{0} clusters",
                                                       nBinsClusterEOnlyHighPt, arrClusEBinningOnlyHighPt, nBinsClusterEOnlyHighPt, arrClusEBinningOnlyHighPt);
       fHistMatchedTrackPClusETruePi0Clus->GetXaxis()->SetTitle("E_{cl} (GeV)");
       fHistMatchedTrackPClusETruePi0Clus->GetYaxis()->SetTitle("P_{track} (GeV/c)");
@@ -3265,15 +3265,15 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
         if(fUseEOverPVetoTM){
           if(!vetoEOverP){
             fVectorMatchedClusterIDs.push_back(cluster->GetID());
-            if(fHistMatchedTrackPClusEAfterEOverPVeto) fHistMatchedTrackPClusEAfterEOverPVeto->Fill(inTrack->P(),cluster->E());
+            if(fHistMatchedTrackPClusEAfterEOverPVeto) fHistMatchedTrackPClusEAfterEOverPVeto->Fill(cluster->E(),inTrack->P());
           }
         }else{
           fVectorMatchedClusterIDs.push_back(cluster->GetID());
         }
-        if(fHistMatchedTrackPClusE && fUseEOverPVetoTM) fHistMatchedTrackPClusE->Fill(inTrack->P(),cluster->E());
+        if(fHistMatchedTrackPClusE && fUseEOverPVetoTM) fHistMatchedTrackPClusE->Fill(cluster->E(),inTrack->P());
         if(fIsMC && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5 ) && fUseEOverPVetoTM){
           if(IsClusterPi0(event, mcEvent, cluster) && fHistMatchedTrackPClusETruePi0Clus)
-            fHistMatchedTrackPClusETruePi0Clus->Fill(inTrack->P(),cluster->E());
+            fHistMatchedTrackPClusETruePi0Clus->Fill(cluster->E(),inTrack->P());
         }
 
         if(isEMCalOnly){
@@ -3548,7 +3548,7 @@ void AliCaloPhotonCuts::PrintCutsWithValues(const TString analysisCutSelection) 
   printf("VO Reader name: %s \n",fV0ReaderName.Data());
   TString namePeriod = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
   if (namePeriod.CompareTo("") != 0) fCurrentMC = FindEnumForMCSet(namePeriod);
-  if (fUseNonLinearity) printf("\t Chose NonLinearity cut '%i', Period name: %s, period-enum: %i \n", fSwitchNonLinearity, namePeriod.Data(), fCurrentMC );
+  if (fUseNonLinearity) printf("\t Chose NonLinearity cut '%i', Period name: %s, MCSet: %i \n", fSwitchNonLinearity, namePeriod.Data(), fCurrentMC );
   else printf("\t No NonLinearity Correction on AnalysisTask level has been chosen\n");
 
 }
@@ -5106,11 +5106,15 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.974173, -4.07732, -0.570223);
           if(fClusterType==3) {
             energy /= 0.9872826260;
-            energy /= 0.9930726691;            
+            energy /= 0.9930726691;
           }
-        //pp 13 TeV LHC16
-        } else if ( fCurrentMC==kPP13T16P1Pyt8 ){
+        //pp 13 TeV LHC16 || LHC17 || LHC18
+        } else if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.922912, -2.97895, -0.132756);
+
+        } else if (fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB ){
+          if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.922912, -2.97895, -0.132756);
+          if(fClusterType==2) energy /= FunctionNL_kSDM(energy, 1.00571, -2.03882, -2.12252);
         } else fPeriodNameAvailable = kFALSE;
       }
       break;
@@ -5186,8 +5190,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if(fClusterType==3) energy /= FunctionNL_kSDM(energy, 0.981191, -1.93399, -2.60859);
 
 
-          //pp 13 TeV LHC16
-        } else if ( fCurrentMC==kPP13T16P1Pyt8 ){
+        //pp 13 TeV LHC16 || LHC17 || LHC18
+        } else if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.957323, -3.55283, -0.57881);
 
         } else fPeriodNameAvailable = kFALSE;
@@ -5332,9 +5336,12 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy /= (FunctionNL_DPOW(energy, 1.1343351836,-0.1571288013,-0.0800000607,1.0288066416,-0.0367913727,-0.4995137932));
             energy /= FunctionNL_DPOW(energy, 1.1105555600, -0.1266067088, -0.0800000497, 1.1047136553, -0.1141567995, -0.1573142879);
           }
-        //pp 13 TeV LHC16
-        } else if ( fCurrentMC==kPP13T16P1Pyt8 ){
+        //pp 13 TeV LHC16 || LHC17 || LHC18
+        } else if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 ){
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0496452471, -0.1047424135, -0.2108759639, 1.1740021856, -0.2000000000, -0.1917378883));
+        } else if ( fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB ){
+          if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0496452471, -0.1047424135, -0.2108759639, 1.1740021856, -0.2000000000, -0.1917378883));
+          if(fClusterType==2) energy /= (FunctionNL_DPOW(energy, 1.0167588250, 0.0501002307, -0.8336787497, 0.9500009312, 0.0944118922, -0.1043983134));
         } else fPeriodNameAvailable = kFALSE;
       }
       break;
@@ -5394,8 +5401,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0193460981, -0.0851635674, -0.4984580141, 1.0588985795, -0.0957023147, -0.4999999998));
           if(fClusterType==3) energy /= (FunctionNL_DPOW(energy, 0.9629798154, -0.0178058455, -0.4999999880, 1.1467423891, -0.1999980199, -0.1753999427));
 
-        //pp 13 TeV LHC16
-        } else if ( fCurrentMC==kPP13T16P1Pyt8 ){
+        //pp 13 TeV LHC16 || LHC17 || LHC18
+        } else if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB ){
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0187401756, -0.0857332791, -0.5000000000, 1.1585209386, -0.1999999989, -0.2646540338));
 
         } else fPeriodNameAvailable = kFALSE;
@@ -6075,7 +6082,9 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC17d16") == 0 ||
             namePeriod.CompareTo("LHC17d18") == 0 ||
             namePeriod.CompareTo("LHC17f9") == 0 ||
-            namePeriod.CompareTo("LHC17f9_test") == 0 ) return kPP13T16P1Pyt8;
+            namePeriod.CompareTo("LHC17f9_test") == 0||
+            namePeriod.CompareTo("LHC18f1") == 0 ||
+            namePeriod.CompareTo("LHC18d8") == 0 )      return kPP13T16P1Pyt8;
   else if ( namePeriod.CompareTo("LHC16P1Pyt8LowB") == 0 ||
             namePeriod.CompareTo("LHC17d1") == 0 )      return kPP13T16P1Pyt8LowB;
   else if ( namePeriod.CompareTo("LHC16P1EPOS") == 0 ||
@@ -6129,10 +6138,16 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
 
   //pp 13 TeV LHC17
   else if ( namePeriod.CompareTo("LHC17k1") ==0 )       return k17k1; // HF low B
-  else if ( namePeriod.CompareTo("LHC17k4") ==0 ||
+  else if ( namePeriod.CompareTo("LHC17P1Pyt8NomB") ==0 ||
+            namePeriod.CompareTo("LHC17k4") ==0 ||
             namePeriod.CompareTo("LHC17h11") ==0 ||
             namePeriod.CompareTo("LHC17h1") == 0 ||
-            namePeriod.CompareTo("LHC17l5") == 0 )      return kPP13T17P1Pyt8;
+            namePeriod.CompareTo("LHC17l5") == 0 ||
+            namePeriod.CompareTo("LHC18c13") == 0 ||
+            namePeriod.CompareTo("LHC18a8") == 0 ||
+            namePeriod.CompareTo("LHC18a9") == 0 ||
+            namePeriod.CompareTo("LHC18a1") == 0 ||
+            namePeriod.CompareTo("LHC18c12") == 0 )     return kPP13T17P1Pyt8;
   else if ( namePeriod.CompareTo("LHC17h7b") ==0 )      return kPP13T17P1Pho;
   else if ( namePeriod.CompareTo("LHC17h7a") ==0 )      return kPP13T17P1Pyt6;
 
@@ -6141,13 +6156,24 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC17j5c") ==0 ||
             namePeriod.CompareTo("LHC17j5d") ==0 ||
             namePeriod.CompareTo("LHC17j5e") ==0 )      return kPP13T17P1Pyt8Str;
-  else if ( namePeriod.CompareTo("LHC17h3") == 0 )      return kPP13T17P1Pyt8LowB;
+  else if ( namePeriod.CompareTo("LHC17P1Pyt8LowB") ==0 ||
+            namePeriod.CompareTo("LHC17h3") == 0 )      return kPP13T17P1Pyt8LowB;
+  else if ( namePeriod.CompareTo("LHC17P1JJ") == 0 ||
+            namePeriod.CompareTo("LHC18f5") == 0 )      return kPP13T17P1JJ;
   // XeXe 5.44 TeV 2017 MB MC
   else if ( namePeriod.CompareTo("LHC17j7") == 0 ||
             namePeriod.CompareTo("LHC18d2") == 0 ||
             namePeriod.CompareTo("LHC18d2_1") == 0 ||
             namePeriod.CompareTo("LHC18d2_2") == 0 ||
             namePeriod.CompareTo("LHC18d2_3") == 0 )    return kXeXe5T17HIJING;
+  //pp 13 TeV LHC18
+  else if ( namePeriod.CompareTo("LHC18P1Pyt8NomB") ==0 ||
+            namePeriod.CompareTo("LHC18g4") ==0 ||
+            namePeriod.CompareTo("LHC18g5") ==0 ||
+            namePeriod.CompareTo("LHC18g6") == 0 )      return kPP13T18P1Pyt8;
+  else if ( namePeriod.CompareTo("LHC18P1Pyt8LowB") ==0 ||
+            namePeriod.CompareTo("LHC18h1") ==0  )      return kPP13T18P1Pyt8LowB;
+
 
   // data starts here
   else if ( namePeriod.CompareTo("LHC10b") == 0 ||
@@ -6229,6 +6255,15 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC17p") == 0 ||
             namePeriod.CompareTo("LHC17q") == 0  )      return k17pp5TeV;
   else if ( namePeriod.CompareTo("LHC17n") == 0 )       return k17XeXe5440GeV;
+  else if ( namePeriod.CompareTo("LHC18b") == 0 ||
+            namePeriod.CompareTo("LHC18d") == 0 ||
+            namePeriod.CompareTo("LHC18e") == 0 ||
+            namePeriod.CompareTo("LHC18f") == 0 ||
+            namePeriod.CompareTo("LHC18g") == 0 ||
+            namePeriod.CompareTo("LHC18h") == 0 ||
+            namePeriod.CompareTo("LHC18i") == 0 ||
+            namePeriod.CompareTo("LHC18j") == 0 )       return k18pp13TeV;
+  else if ( namePeriod.CompareTo("LHC18c") == 0 )       return k18pp13TeVLow;
   else return kNoMC;
 }
 

@@ -126,6 +126,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fHistoPionTPCdEdx(NULL),
   fHistoPionPionInvMassPt(NULL),
   fHistoGammaGammaInvMassPt(NULL),
+  fHistoGammaGammaInvMassPtBeforeCuts(NULL),
   fHistoMotherInvMassPt(NULL),
   fHistoMotherInvMassPtRejectedKinematic(NULL),
   fHistoBackInvMassPtGroup1(NULL),
@@ -223,7 +224,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fIsMC(kFALSE),
   fDoLightOutput(kFALSE),
   fNeutralPionMode(0),
-  fTolerance(-1)
+  fTolerance(-1),
+  fTrackMatcherRunningMode(0)
 {
 
 }
@@ -301,6 +303,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fHistoPionTPCdEdx(NULL),
   fHistoPionPionInvMassPt(NULL),
   fHistoGammaGammaInvMassPt(NULL),
+  fHistoGammaGammaInvMassPtBeforeCuts(NULL),
   fHistoMotherInvMassPt(NULL),
   fHistoMotherInvMassPtRejectedKinematic(NULL),
   fHistoBackInvMassPtGroup1(NULL),
@@ -398,7 +401,8 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fIsMC(kFALSE),
   fDoLightOutput(kFALSE),
   fNeutralPionMode(0),
-  fTolerance(-1)
+  fTolerance(-1),
+  fTrackMatcherRunningMode(0)
 {
   DefineOutput(1, TList::Class());
 }
@@ -596,6 +600,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
   }
 
   fHistoGammaGammaInvMassPt               = new TH2F*[fnCuts];
+  fHistoGammaGammaInvMassPtBeforeCuts      = new TH2F*[fnCuts];
   fHistoMotherInvMassPt                   = new TH2F*[fnCuts];
   fHistoMotherInvMassPtRejectedKinematic  = new TH2F*[fnCuts];
   fHistoBackInvMassPtGroup1 = new TH2F*[fnCuts];
@@ -758,10 +763,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
             fHistoPionTPCdEdx[iCut]->GetYaxis()->SetTitle("dE/dx signal (au)");
             fESDList[iCut]->Add(fHistoPionTPCdEdx[iCut]);
         }
-    fHistoGammaGammaInvMassPt[iCut]               = new TH2F("ESD_GammaGamma_InvMass_Pt","ESD_GammaGamma_InvMass_Pt",450,0.,0.45,250,0,25);
+    fHistoGammaGammaInvMassPt[iCut]               = new TH2F("ESD_GammaGamma_InvMass_Pt","ESD_GammaGamma_InvMass_Pt",600,0.,0.6,250,0,25);
     fHistoGammaGammaInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#gamma #gamma} (GeV/c^{2})");
     fHistoGammaGammaInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
     fESDList[iCut]->Add(fHistoGammaGammaInvMassPt[iCut]);
+    fHistoGammaGammaInvMassPtBeforeCuts[iCut]               = new TH2F("ESD_GammaGamma_InvMass_Pt_Before_Cuts","ESD_GammaGamma_InvMass_Pt_Before_Cuts",600,0.,0.6,250,0,25);
+    fHistoGammaGammaInvMassPtBeforeCuts[iCut]->GetXaxis()->SetTitle("M_{#gamma #gamma} (GeV/c^{2})");
+    fHistoGammaGammaInvMassPtBeforeCuts[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fESDList[iCut]->Add(fHistoGammaGammaInvMassPtBeforeCuts[iCut]);
   }
     fHistoMotherInvMassPt[iCut]                   = new TH2F("ESD_Mother_InvMass_Pt","ESD_Mother_InvMass_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
     fHistoMotherInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-} #pi^{0}} (GeV/c^{2})");
@@ -1330,7 +1339,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
   }
 
   for(Int_t iMatcherTask = 0; iMatcherTask < 3; iMatcherTask++){
-    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i",iMatcherTask)));
+    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i_%i",iMatcherTask,fTrackMatcherRunningMode)));
     if(temp) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
   }
 
@@ -1832,10 +1841,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessNeutralPionCandidatesPu
         pi0cand->SetLabels(firstGammaIndex,secondGammaIndex);
 
         pi0cand->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
+
+        if(!fDoLightOutput){
+            fHistoGammaGammaInvMassPtBeforeCuts[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
+        }
         if((((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
-          if(!fDoLightOutput){
-              fHistoGammaGammaInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
-          }
           if(fIsMC){
             if(fInputEvent->IsA()==AliESDEvent::Class())
               ProcessTrueNeutralPionCandidatesPureConversions(pi0cand,gamma0,gamma1);
@@ -1844,13 +1854,25 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessNeutralPionCandidatesPu
           }
           if (((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 0)){
             fNeutralPionCandidates->Add(pi0cand);
+
+            if(!fDoLightOutput){
+                fHistoGammaGammaInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
+            }
           } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()) &&
                     (((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 1))){
             fNeutralPionSidebandCandidates->Add(pi0cand);
+
+            if(!fDoLightOutput){
+                fHistoGammaGammaInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
+            }
           } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixingBothSides()) &&
                     ((((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 2)) ||
                      ((((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 3))))){
             fNeutralPionSidebandCandidates->Add(pi0cand);
+
+            if(!fDoLightOutput){
+                fHistoGammaGammaInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
+            }
           } else{
             delete pi0cand;
             pi0cand=0x0;
@@ -1887,23 +1909,35 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessNeutralPionCandidatesPu
         AliAODConversionMother *pi0cand = new AliAODConversionMother(gamma0,gamma1);
         pi0cand->SetLabels(firstGammaIndex,secondGammaIndex);
 
+        if(!fDoLightOutput){
+            fHistoGammaGammaInvMassPtBeforeCuts[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
+        }
         if((((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
-          if(!fDoLightOutput){
-              fHistoGammaGammaInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
-          }
           if(fIsMC){
             ProcessTrueNeutralPionCandidatesPureCalo(pi0cand,gamma0,gamma1);
           }
 
           if (((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 0)){
             fNeutralPionCandidates->Add(pi0cand);
+
+            if(!fDoLightOutput){
+                fHistoGammaGammaInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
+            }
           } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()) &&
                     (((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 1))){
             fNeutralPionSidebandCandidates->Add(pi0cand);
+
+            if(!fDoLightOutput){
+                fHistoGammaGammaInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
+            }
           } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixingBothSides()) &&
                     ((((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 2)) ||
                       ((((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 3))))){
             fNeutralPionSidebandCandidates->Add(pi0cand);
+
+            if(!fDoLightOutput){
+                fHistoGammaGammaInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
+            }
           }else {
             delete pi0cand;
             pi0cand=0x0;
@@ -2204,23 +2238,36 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessNeutralPionCandidatesMi
         AliAODConversionMother *pi0cand = new AliAODConversionMother(gamma0,gamma1);
         pi0cand->SetLabels(firstGammaIndex,secondGammaIndex);
 
+        if(!fDoLightOutput){
+          fHistoGammaGammaInvMassPtBeforeCuts[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
+        }
+
         if((((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
           if (!matched){
-            if(!fDoLightOutput){
-              fHistoGammaGammaInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
-            }
             if(fIsMC){
               ProcessTrueNeutralPionCandidatesMixedConvCalo(pi0cand,gamma0,gamma1);
             }
             if (((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 0)){
               fNeutralPionCandidates->Add(pi0cand);
+
+              if(!fDoLightOutput){
+                fHistoGammaGammaInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
+              }
             } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()) &&
                       (((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 1))){
               fNeutralPionSidebandCandidates->Add(pi0cand);
+
+              if(!fDoLightOutput){
+                fHistoGammaGammaInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
+              }
             } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixingBothSides()) &&
                       ((((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 2)) ||
                       ((((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 3))))){
               fNeutralPionSidebandCandidates->Add(pi0cand);
+
+              if(!fDoLightOutput){
+                fHistoGammaGammaInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
+              }
             } else{
               delete pi0cand;
               pi0cand=0x0;
@@ -2678,7 +2725,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessMCParticles(){
               Bool_t kNegPionIsPrim = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, labelNegPion, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
               Bool_t kPosPionIsPrim = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, labelPosPion, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
 
-              if (fNeutralPionMode < 2){
+              if (fNeutralPionMode == 0){
                 if( kDaughter0IsPrim && kDaughter1IsPrim && kNegPionIsPrim && kPosPionIsPrim &&
                     ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(gamma1,fMCEvent,kFALSE) &&					// test first daugther of pi0
                     ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(gamma2,fMCEvent,kFALSE) &&					// test second daughter of pi0
@@ -2688,6 +2735,21 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessMCParticles(){
                   if(particle->GetPdgCode() == 221) fHistoMCEtaPiPlPiMiPiZeroInAccPt[fiCut]->Fill(particle->Pt(), weighted ); 		// MC Eta pi+ pi- pi0 with gamma's and e+e- in acc
                   if(particle->GetPdgCode() == 223) fHistoMCOmegaPiPlPiMiPiZeroInAccPt[fiCut]->Fill(particle->Pt(), weighted ); 		// MC Omega pi+ pi- pi0 with gamma's and e+e- in acc
                 }
+              } else if (fNeutralPionMode == 1){ // mixed mode
+                  // check if within PCM acceptance first
+                  if( kDaughter0IsPrim && kDaughter1IsPrim && kNegPionIsPrim && kPosPionIsPrim &&
+                          ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(gamma1,fMCEvent,kFALSE) &&					// test first daugther of pi0
+                          ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedMC(gamma2,fMCEvent,kFALSE) &&					// test second daughter of pi0
+                          ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(labelNegPion,fMCEvent) &&								// test negative pion
+                          ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelectedMC(labelPosPion,fMCEvent) 								// test positive pion
+                          ) {
+                      // check acceptance of clusters as well, true if one of them points into the Calo acceptance
+                      if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(gamma1,fMCEvent) ||
+                              ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(gamma2,fMCEvent) ){
+                          if(particle->GetPdgCode() == 221) fHistoMCEtaPiPlPiMiPiZeroInAccPt[fiCut]->Fill(particle->Pt(), weighted ); 		// MC Eta pi+ pi- pi0 with gamma's and e+e- in acc
+                          if(particle->GetPdgCode() == 223) fHistoMCOmegaPiPlPiMiPiZeroInAccPt[fiCut]->Fill(particle->Pt(), weighted ); 		// MC Omega pi+ pi- pi0 with gamma's and e+e- in acc
+                      }
+                  }
               } else if (fNeutralPionMode == 2){
                 if( kDaughter0IsPrim && kDaughter1IsPrim && kNegPionIsPrim && kPosPionIsPrim &&
                     ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(gamma1,fMCEvent) &&					// test first daugther of pi0

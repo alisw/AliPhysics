@@ -55,6 +55,7 @@ set(SRCS
   AliAnalysisTaskFlowEventforRP.cxx 
   AliAnalysisTaskMixedHarmonics.cxx 
   AliAnalysisTaskFlowModes.cxx
+  AliAnalysisTaskFlowModesMC.cxx
   AliAnalysisTaskNestedLoops.cxx 
   AliAnalysisTaskQAflow.cxx 
   AliAnalysisTaskPIDflowQA.cxx 

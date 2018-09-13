@@ -24,14 +24,19 @@ class AliFemtoDreamPartContainer {
   virtual ~AliFemtoDreamPartContainer();
   void PrintLastEvent();
   void SetEvent(std::vector<AliFemtoDreamBasePart> &Particles);
-  std::deque<std::vector<AliFemtoDreamBasePart>> GetEventBuffer()
-      const {return fPartBuffer;};
+  std::deque<std::vector<AliFemtoDreamBasePart>> GetEventBuffer() const {
+    return fPartBuffer;
+  }
+  ;
   std::vector<AliFemtoDreamBasePart> &GetEvent(int Depth);
-  unsigned int GetMixingDepth() const {return fPartBuffer.size();};
+  unsigned int GetMixingDepth() const {
+    return fPartBuffer.size();
+  }
+  ;
  private:
   std::deque<std::vector<AliFemtoDreamBasePart>> fPartBuffer;
-  unsigned int fMixingDepth;
-  ClassDef(AliFemtoDreamPartContainer,2);
+  unsigned int fMixingDepth;ClassDef(AliFemtoDreamPartContainer,2)
+  ;
 };
 
 #endif /* ALIFEMTODREAMPARTCONTAINER_H_ */

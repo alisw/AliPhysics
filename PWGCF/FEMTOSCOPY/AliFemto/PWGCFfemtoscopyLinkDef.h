@@ -4,11 +4,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliFemtoBaryoniaAnalysis+;
-#pragma link C++ class AliFemtoMultCorrAnalysis+;
-#pragma link C++ class AliFemtoTrio+;
-#pragma link C++ class AliFemtoTrioCut+;
-#pragma link C++ class AliFemtoTrioMinvFctn+;
+
 #pragma link C++ class AliFemtoAnalysis+;
 #pragma link C++ class AliFemtoLikeSignAnalysis+;
 #pragma link C++ class AliFemtoVertexAnalysis+;
@@ -22,6 +18,7 @@
 #pragma link C++ class AliFemtoEventCut+;
 #pragma link C++ class AliFemtoSphericityEventCut+;
 #pragma link C++ class AliFemtoSpherocityEventCut+;
+#pragma link C++ class AliFemtoResultStorage+;
 #pragma link C++ class AliFemtoEventReader+;
 #pragma link C++ class AliFemtoEventReaderStandard+;
 #pragma link C++ class AliFemtoKinkCut+;
@@ -67,6 +64,7 @@
 #pragma link C++ class AliFemtoCutMonitorParticleYPt+;
 #pragma link C++ class AliFemtoCutMonitorParticleVertPos+;
 #pragma link C++ class AliFemtoCutMonitorParticlePID+;
+#pragma link C++ class AliFemtoCutMonitorParticlePIDBeta+;
 #pragma link C++ class AliFemtoCutMonitorEventMult+;
 #pragma link C++ class AliFemtoCutMonitorEventVertex+;
 #pragma link C++ class AliFemtoEventReaderAOD+;
@@ -99,6 +97,14 @@
 #pragma link C++ class AliFemtoBetaTPairCut+;
 #pragma link C++ class AliFemtoCutMonitorPairBetaT+;
 #pragma link C++ class AliFemtoCutMonitorXi+;
+#pragma link C++ class AliFemtoMultCorrAnalysis+;
+#pragma link C++ class AliFemtoTrioAnalysis+;
+#pragma link C++ class AliFemtoTrio+;
+#pragma link C++ class AliFemtoTrioCut+;
+#pragma link C++ class AliFemtoTrioFctn+;
+#pragma link C++ class AliFemtoTrioMinvFctn+;
+#pragma link C++ class AliFemtoTrioDEtaDPhiFctn+;
+
 
 #pragma link C++ class AliFemtoConfigObject-;
 #pragma link C++ class AliFemtoConfigObject::Painter;

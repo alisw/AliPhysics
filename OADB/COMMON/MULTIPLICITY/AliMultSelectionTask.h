@@ -281,13 +281,13 @@ private:
     Float_t fPPVsMultUtilsV0M; //! percentiles from AliPPVsMultUtils (for debugging)
     
     //Data needed for Monte Carlo
-    Int_t fMC_NColl;
-    Int_t fMC_NPart;
-    Int_t fMC_NchV0A;
-    Int_t fMC_NchV0C;
-    Int_t fMC_NchEta05;
-    Int_t fMC_NchEta08;
-    Int_t fMC_NchEta10;
+    AliMultVariable *fMC_NColl;
+    AliMultVariable *fMC_NPart;
+    AliMultVariable *fMC_NchV0A;
+    AliMultVariable *fMC_NchV0C;
+    AliMultVariable *fMC_NchEta05;
+    AliMultVariable *fMC_NchEta08;
+    AliMultVariable *fMC_NchEta10;
     
     //Histograms / Anything else as needed
     TH1D *fHistEventCounter; //!

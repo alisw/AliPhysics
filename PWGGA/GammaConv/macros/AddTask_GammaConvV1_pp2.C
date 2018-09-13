@@ -87,8 +87,50 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
                            ) {
 
   Int_t isHeavyIon = 0;
-  if (additionalTrainConfig.Atoi() > 0){
-    trainConfig = trainConfig + additionalTrainConfig.Atoi();
+
+
+  TString corrTaskSetting = ""; // select which correction task setting to use
+  //parse additionalTrainConfig flag
+  TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
+  if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaConvV1_pp2 during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
+  TObjString* rAdditionalTrainConfig;
+  for(Int_t i = 0; i<rAddConfigArr->GetEntries() ; i++){
+    if(i==0){ rAdditionalTrainConfig = (TObjString*)rAddConfigArr->At(i);
+    } else {
+      TObjString* temp = (TObjString*) rAddConfigArr->At(i);
+      TString tempStr = temp->GetString();
+      cout<< tempStr.Data()<<endl;
+
+      if(tempStr.Contains("MaterialBudgetWeights") && enableMatBudWeightsPi0 > 0){
+         if(tempStr.Contains("MaterialBudgetWeightsNONE")){
+            enableMatBudWeightsPi0 = 0;
+            cout << "INFO:  AddTask_GammaConvV1_pp2 materialBudgetWeights switched off signaled by additionalTrainConfigFlag" << endl;
+         } else {
+            TObjArray *fileNameMatBudWeightsArr = filenameMatBudWeights.Tokenize("/");
+            if(fileNameMatBudWeightsArr->GetEntries()<1 ){
+                cout<<"ERROR: AddTask_GammaConvV1_pp2 when reading material budget weights file name" << filenameMatBudWeights.Data()<< "'" << endl;
+                return;
+            }
+            TObjString * oldMatObjStr = (TObjString*)fileNameMatBudWeightsArr->At( fileNameMatBudWeightsArr->GetEntries()-1);
+            TString  oldfileName  = oldMatObjStr->GetString();
+            TString  newFileName  = Form("MCInputFile%s.root",tempStr.Data());
+            cout<<newFileName.Data()<<endl;
+            if( oldfileName.EqualTo(newFileName.Data()) == 0 ){
+              filenameMatBudWeights.ReplaceAll(oldfileName.Data(),newFileName.Data());
+              cout << "INFO: AddTask_GammaConvV1_pp2 the material budget weights file has been change to " <<filenameMatBudWeights.Data()<<"'"<< endl;
+          }
+        }
+      } else if(tempStr.BeginsWith("CF")){
+        cout << "INFO: AddTask_GammaCalo_pp2 will use custom branch from Correction Framework!" << endl;
+        corrTaskSetting = tempStr;
+        corrTaskSetting.Replace(0,2,"");
+      }
+    }
+  }
+
+  TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
+  if (sAdditionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
   }
 
   // ================== GetAnalysisManager ===============================
@@ -299,7 +341,25 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
     cuts.AddCut("00010113", "00200009a27300008250a04120", "0152103500000000"); //cosPA, 0.995 eta 0.9
   } else if (trainConfig == 62){
     cuts.AddCut("00010113", "0d200009a27300008250a04120", "0152103500000000"); //cosPA, 0.995 eta 0.8
-  
+  //----------------------------- configuration for run 2 analysis 13 TeV Triggers --------------------------------------------
+  } else if (trainConfig == 70) { // EMC triggers -50, +30 ns
+    cuts.AddCut("00010113", "00200009227300008250404000", "0163103100000000","1111100060032220000"); //INT7
+  } else if (trainConfig == 71) { // EMC triggers -50, +30 ns
+    cuts.AddCut("00085113", "00200009227300008250404000", "0163103100000000","1111100060032220000"); //EG2
+  } else if (trainConfig == 72) { // EMC triggers -50, +30 ns
+    cuts.AddCut("00083113", "00200009227300008250404000", "0163103100000000","1111100060032220000"); //EG1
+  } else if (trainConfig == 73) { // DCAL triggers -50, +30 ns
+    cuts.AddCut("00089113", "00200009227300008250404000", "0163103100000000","3885500060032220000"); //DG2
+  } else if (trainConfig == 74) { // DCAL triggers -50, +30 ns
+    cuts.AddCut("0008b113", "00200009227300008250404000", "0163103100000000","3885500060032220000"); //DG1
+
+   //----------------------------- configuration for run 2 analysis 13 TeVLowB --------------------------------------------
+  } else if (trainConfig == 80) { //
+    cuts.AddCut("00010113", "00200089227300008280404000", "0152103500000000"); //standard cut
+
+  } else if (trainConfig == 90) { //Standard cut for pp 5 TeV analysis VAND
+    cuts.AddCut("00010113", "0d200009227300008250404000", "0152103500000000"); //
+
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -317,6 +377,7 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
   TList *EventCutList = new TList();
   TList *ConvCutList = new TList();
   TList *MesonCutList = new TList();
+  TList *ClusterCutList = new TList();
 
   TList *HeaderList = new TList();
   TObjString *Header2 = new TObjString("BOX");
@@ -328,7 +389,9 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
   AliConversionPhotonCuts **analysisCuts = new AliConversionPhotonCuts*[numberOfCuts];
   MesonCutList->SetOwner(kTRUE);
   AliConversionMesonCuts **analysisMesonCuts = new AliConversionMesonCuts*[numberOfCuts];
-
+  ClusterCutList->SetOwner(kTRUE);
+  AliCaloPhotonCuts **analysisClusterCuts     = new AliCaloPhotonCuts*[numberOfCuts];
+  Bool_t enableClustersForTrigger             = kFALSE;
 
   for(Int_t i = 0; i<numberOfCuts; i++){
     analysisEventCuts[i] = new AliConvEventCuts();
@@ -359,6 +422,28 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
+
+    if ( (trainConfig >= 70 && trainConfig <= 79) ){
+        TString caloCutPos = cuts.GetClusterCut(i);
+        caloCutPos.Resize(1);
+        TString TrackMatcherName = Form("CaloTrackMatcher_%s",caloCutPos.Data());
+        if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
+          AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
+          fTrackMatcher->SetV0ReaderName(V0ReaderName);
+          fTrackMatcher->SetCorrectionTaskSetting(corrTaskSetting);
+          mgr->AddTask(fTrackMatcher);
+          mgr->ConnectInput(fTrackMatcher,0,cinput);
+        }
+
+        enableClustersForTrigger  = kTRUE;
+        analysisClusterCuts[i]    = new AliCaloPhotonCuts();
+        analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+        analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
+        analysisClusterCuts[i]->SetLightOutput(runLightOutput);
+        analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
+        ClusterCutList->Add(analysisClusterCuts[i]);
+        analysisClusterCuts[i]->SetFillCutHistograms("");
+    }
 
     analysisCuts[i] = new AliConversionPhotonCuts();
 
@@ -404,6 +489,10 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
   task->SetDoMesonAnalysis(kTRUE);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
+  if (enableClustersForTrigger){
+    task->SetDoClusterSelectionForTriggerNorm(enableClustersForTrigger);
+    task->SetClusterCutList(numberOfCuts,ClusterCutList);
+  }
 
   //connect containers
   AliAnalysisDataContainer *coutput =
@@ -413,6 +502,17 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);
+  Int_t nContainer = 2;
+  for(Int_t i = 0; i<numberOfCuts; i++){
+    if(enableQAPhotonTask>1){
+      mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+      nContainer++;
+    }
+    if(enableQAMesonTask>1){
+      mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+      nContainer++;
+    }
+  }
 
   return;
 

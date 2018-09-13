@@ -215,6 +215,8 @@ void AddTask_GammaHeavyMeson_ConvMode_pPb(  Int_t     selectedMeson             
   } else if (trainConfig == 100){
     cuts.AddCut("80010113","00200009327000008250400000","0163103000000010");
     cuts.AddCut("80210113","00200009327000008250400000","0163103000000010");
+  } else if (trainConfig == 101){ // same as 100, but no 0-20% centrality
+    cuts.AddCut("80010113","00200009327000008250400000","0163103000000010");
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

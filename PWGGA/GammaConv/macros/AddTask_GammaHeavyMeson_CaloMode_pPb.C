@@ -252,6 +252,8 @@ void AddTask_GammaHeavyMeson_CaloMode_pPb(  Int_t     selectedMeson             
   } else if (trainConfig == 300){
     cuts.AddCut("80010113","1111100057032230000","01631030000000d0"); // default MB
     cuts.AddCut("80210113","1111100057032230000","01631030000000d0"); // default 0-20
+  } else if (trainConfig == 301){ // same as 300, but no 0-20% centrality
+    cuts.AddCut("80010113","1111100057032230000","01631030000000d0"); // default MB
 
   //****************************************************************
   // Run 2, DMC
@@ -259,6 +261,8 @@ void AddTask_GammaHeavyMeson_CaloMode_pPb(  Int_t     selectedMeson             
   } else if (trainConfig == 400){
     cuts.AddCut("80010113","3885500057032230000","01631030000000d0"); // default MB
     cuts.AddCut("80210113","3885500057032230000","01631030000000d0"); // default 0-20
+  } else if (trainConfig == 401){ // same as 400, but no 0-20% centrality
+    cuts.AddCut("80010113","3885500057032230000","01631030000000d0"); // default MB
 
   //****************************************************************
   // Run 2, PHOS
@@ -266,6 +270,8 @@ void AddTask_GammaHeavyMeson_CaloMode_pPb(  Int_t     selectedMeson             
   } else if (trainConfig == 500){
     cuts.AddCut("80010113","2446600051013200000","0163103000000010"); // default MB
     cuts.AddCut("80210113","2446600051013200000","0163103000000010"); // default 0-20
+  } else if (trainConfig == 501){ // same as 500, but no 0-20% centrality
+    cuts.AddCut("80010113","2446600051013200000","0163103000000010"); // default MB
 
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i_%i", mesonRecoMode, trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

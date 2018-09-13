@@ -472,10 +472,12 @@ class AliReducedVarManager : public TObject {
     // Pair-only variables
     kCandidateId=kTPCuQsine+6,
     kPairType,                  // 0 ++; 1 +-; 2 --    
+    kPairTypeSPD,               // 2 (both); 1 (one) 0 (none) of the legs has an hit in the first SPD layer;     
     kMassV0,                    // masses for all 4 V0 assumptions (0-K0s, 1-Lambda, 2-ALambda, 3-Gamma)
     kPairChisquare=kMassV0+4,     
     kPairLxy,           
     kPseudoProperDecayTime,
+    kPseudoProperDecayTimeMC,
     kPairOpeningAngle,  
     kPairPointingAngle, 
     kPairThetaCS,                // cos (theta*) in Collins-Soper frame       
@@ -520,7 +522,8 @@ class AliReducedVarManager : public TObject {
     kNclsSFracITS,
     kITSchi2,
     kITSnclsShared,
-    kITSlayerHit,       
+    kITSlayerHit, 
+    kITSlayerShared,
     kITSsignal,         
     kITSnSig,
     kTPCncls=kITSnSig+4,    
@@ -639,6 +642,7 @@ class AliReducedVarManager : public TObject {
   static void FillPairQualityFlag(AliReducedPairInfo* p, UShort_t flag, Float_t* values, UShort_t flag2=999);
   static void FillTrackInfo(AliReducedBaseTrack* p, Float_t* values);
   static void FillITSlayerFlag(AliReducedTrackInfo* track, Int_t layer, Float_t* values);
+  static void FillITSsharedLayerFlag(AliReducedTrackInfo* track, Int_t layer, Float_t* values);
   static void FillTPCclusterBitFlag(AliReducedTrackInfo* track, Int_t bit, Float_t* values);
   static void FillPairInfo(AliReducedPairInfo* p, Float_t* values);
   static void FillPairInfo(AliReducedBaseTrack* t1, AliReducedBaseTrack* t2, Int_t type, Float_t* values);

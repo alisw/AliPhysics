@@ -39,16 +39,16 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
     ::Error("AddTaskPHOSPi0EtaToGammaGamma", "No analysis manager to connect to");
     return NULL;
   }
-  
+
   if (!mgr->GetInputEventHandler()) {
     ::Error("AddTaskPHOSPi0EtaToGammaGamma", "This task requires an input event handler");
     return NULL;
   }
 
-	TString TriggerName="";
-	if     (trigger == (UInt_t)AliVEvent::kAny)  TriggerName = "kAny";
-	else if(trigger == (UInt_t)AliVEvent::kINT7) TriggerName = "kINT7";
-	else if(trigger & AliVEvent::kPHI7) TriggerName = "kPHI7";
+  TString TriggerName="";
+  if     (trigger == (UInt_t)AliVEvent::kAny)  TriggerName = "kAny";
+  else if(trigger == (UInt_t)AliVEvent::kINT7) TriggerName = "kINT7";
+  else if(trigger & AliVEvent::kPHI7) TriggerName = "kPHI7";
 
   //if(trigger == (UInt_t)AliVEvent::kPHI7){
   //  if(triggerinput.Contains("L1") || triggerinput.Contains("L0")){
@@ -136,12 +136,12 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   task->SetCollisionSystem(systemID);//colliions system : pp=0, PbPb=1, pPb (Pbp)=2;
   task->SetJetJetMC(isJJMC);
   task->SetMCType(MCtype);
- 
+
   task->SetNonLinearityStudy(NonLinStudy);
- 
+
   task->SetTenderFlag(usePHOSTender);
   task->SetMCFlag(isMC);
-//  task->SetCoreEnergyFlag(useCoreE);
+  //  task->SetCoreEnergyFlag(useCoreE);
 
   task->SetEventCuts(isMC,pf);
   task->SetClusterCuts(useCoreDisp,NsigmaCPV,NsigmaDisp,useCoreE,distBC);
@@ -203,7 +203,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
     }
   }
 
-    if(isMC){
+  if(isMC){
     //for pi0
     const Int_t Ncen_Pi0 = 11;
     const Double_t centrality_Pi0[Ncen_Pi0] = {0,5,10,20,30,40,50,60,70,80,100};
@@ -245,7 +245,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
 
     task->SetAdditionalK0SPtWeightFunction(centarray_K0S,farray_K0S);
 
-     //for L0
+    //for L0
     const Int_t Ncen_L0 = 7;
     const Double_t centrality_L0[Ncen_L0] = {0,5,10,20,40,60,100};
     TArrayD *centarray_L0 = new TArrayD(Ncen_L0,centrality_L0);
@@ -269,7 +269,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
- 
+
   TString outputFile = AliAnalysisManager::GetCommonFileName();
   TString prefix = Form("hist_%s",taskname.Data());
 

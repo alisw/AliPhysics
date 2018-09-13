@@ -192,8 +192,12 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       kPP13T17P1Pyt6,
       kPP13T17P1Pyt8Str,
       kPP13T17P1Pyt8LowB,
+      kPP13T17P1JJ,
       // Xe-Xe MC
       kXeXe5T17HIJING,
+      //
+      kPP13T18P1Pyt8,
+      kPP13T18P1Pyt8LowB,
 
       // Data starts here
       k10pp7TeV,
@@ -216,7 +220,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k17pp13TeVLow,
       k17pp13TeVNo,
       k17XeXe5440GeV,
-      k17pp5TeV
+      k17pp5TeV,
+      k18pp13TeV,
+      k18pp13TeVLow
     };
 
 

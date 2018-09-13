@@ -14,12 +14,13 @@
 
 class TDraw : public TNamed {
  public:
-  TDraw(const char *name, const char *fname="tempinfo.root"); 
+  TDraw(const char *name, const char *fname="tempinfo.root");
   virtual ~TDraw() {;}
   TObjArray *GetArray()                       { return fArr; }
   void       Compute();
   void       DrawAll();
-  TCanvas   *DrawT(Int_t type=3)        const;
+  TCanvas   *DrawTSensorsPerSM(Int_t type, Int_t sm) const;
+  TCanvas   *DrawTPerSM(Int_t type=3)        const;
   TCanvas   *DrawT2D(Int_t type=3)      const;
   TCanvas   *DrawOccRun()               const;
   TCanvas   *DrawOccSensor2D()          const;
@@ -38,7 +39,8 @@ class TDraw : public TNamed {
   TH1       *GetOccSensor()             const;
   TH2       *GetOccSensor2D()           const;
   TH2       *GetOcc2D()                 const;
-  TH1       *GetT(Int_t ns1, Int_t ns2, Int_t type=3) const;
+  TH1       *GetT(Int_t nsensor, Int_t type=3) const;
+  TH1       *GetTSM(Int_t sm, Int_t type=3) const;
   TH2       *GetT2D(Int_t type=3)       const;
   Bool_t     IsGood(Int_t ns)           const { return (fBad.At(ns)==0); }
   void       Print(Option_t *opt="")    const;
@@ -47,9 +49,9 @@ class TDraw : public TNamed {
  protected:
   TH2       *GetMask()                  const;
   TObjArray *fArr;     // array with info
-  Bool_t     fDoPrint; // if true then print canvases  
+  Bool_t     fDoPrint; // if true then print canvases
   TArrayI    fBad;     // list of bad channels
-  Double_t   fMinFrac; // minimum fraction 
+  Double_t   fMinFrac; // minimum fraction
   ClassDef(TDraw, 1); // Temperature draw class
 };
 #endif
@@ -96,7 +98,7 @@ void TDraw::Compute()
     if (first==0) {
       cout << ns;
       first = 1;
-    } else 
+    } else
       cout << ", " << ns;
   }
   cout << ")" << endl;
@@ -119,7 +121,7 @@ void TDraw::Compute()
     Double_t frac=GetFraction(ns);
     if (!IsGood(ns)) {
       if (frac>0) {
-	cout << "Sensor " << ns << " marked bad, but has fraction: " << frac << endl;
+        cout << "Sensor " << ns << " marked bad, but has fraction: " << frac << endl;
       }
       continue;
     }
@@ -136,8 +138,14 @@ void TDraw::DrawAll()
   c1->Print(Form("%s.pdf",cname.Data()));
   TCanvas *c2=DrawOccSensor2D();
   c2->Print(Form("%s.pdf",cname.Data()));
-  TCanvas *c3=DrawT(3);
+  TCanvas *c3=DrawTPerSM(3);
   c3->Print(Form("%s.pdf",cname.Data()));
+  for (Int_t i=0; i < 20; i++){
+    TCanvas* c5 = DrawTSensorsPerSM(3,i);
+    c5->Print(Form("%s.pdf",cname.Data()));
+    delete c5;
+  }
+
   TString lab(Form("cTemp2D_%s_%s",TInfo::Type(3),GetName()));
   TCanvas *c4 = new TCanvas(lab,lab,1200,800);
   const Int_t rns=fArr->GetEntries();
@@ -198,7 +206,61 @@ TCanvas *TDraw::DrawOcc2D() const
   return c;
 }
 
-TCanvas *TDraw::DrawT(Int_t type) const
+TCanvas *TDraw::DrawTSensorsPerSM(Int_t type, Int_t sm) const
+{
+  TString lab(Form("cTemp_%s_%s_%d",TInfo::Type(type),GetName(),sm));
+  TCanvas *c = new TCanvas(lab,lab,1200,800);
+  Double_t max=GetMaxT(type),maxp=-100;
+  Double_t min=GetMinT(type),minp=+100;
+  TLegend *leg = new TLegend(0.92,0.1,0.99,0.99);
+  TObjArray arr;
+
+  TH1 *hAv=GetTSM(sm,type);
+  hAv->SetMarkerStyle(20);
+  hAv->SetMarkerSize(1.4);
+  hAv->SetMarkerColor(kBlack);
+  hAv->SetLineColor(kBlack);
+  hAv->SetLineWidth(3);
+  hAv->SetName(Form("sm%d",sm));
+  arr.Add(hAv);
+  leg->AddEntry(hAv,hAv->GetName(),"p");
+
+  for (Int_t i=0;i<8;++i) {
+    TH1 *h=GetT(sm*8+i,type);
+    Int_t col=i+2;
+    h->SetMarkerStyle(24+(i%2));
+    h->SetMarkerSize(1.2);
+    h->SetMarkerColor(col);
+    h->SetLineColor(col);
+    h->SetLineWidth(3);
+    h->SetName(Form("sensor%d",i));
+    //h->Draw("same, p, hist");
+
+    if (h->GetMaximum()>-1){
+      arr.Add(h);
+      Double_t minh=h->GetMinimum(-1);
+      if (minh<minp) minp=minh;
+      Double_t maxh=h->GetMaximum();
+      if (maxh>maxp) maxp=maxh;
+      leg->AddEntry(h,h->GetName(),"p");
+    }
+  }
+  minp=0.9*minp; maxp=1.1*maxp;
+  TH2 *h2f = new TH2F("h2f",";run idx;T",1,0,GetNRuns(),1,minp,maxp);
+  h2f->SetTitle(Form("T per sensor in SM%d: run %d to %d, min=%.1f, max=%.1f",sm,GetRunNo(0), GetRunNo(GetNRuns()-1), min, max));
+  h2f->SetStats(0);
+  h2f->Draw();
+  leg->Draw();
+  for (Int_t i=0;i<arr.GetEntries();++i)
+    arr.At(i)->Draw("same, p, hist");
+  c->SetGridx(1);
+  c->SetGridy(1);
+  if (fDoPrint)
+    c->Print(Form("%s.pdf",c->GetName()));
+  return c;
+}
+
+TCanvas *TDraw::DrawTPerSM(Int_t type) const
 {
   TString lab(Form("cTemp_%s_%s",TInfo::Type(type),GetName()));
   TCanvas *c = new TCanvas(lab,lab,1200,800);
@@ -206,23 +268,21 @@ TCanvas *TDraw::DrawT(Int_t type) const
   Double_t min=GetMinT(type),minp=+100;
   TLegend *leg = new TLegend(0.92,0.1,0.99,0.99);
   TObjArray arr;
-  for (Int_t i=0,n1=0,n2=7;i<20;++i) {
-    TH1 *h=GetT(n1,n2,type);
-    n1+=8;
-    n2+=8;
+  for (Int_t i=0;i<20;++i) {
+    TH1 *h=GetTSM(i,type);
     Int_t col=i+1;
     switch (i) {
-    case  9: col=kOrange+2; break;
-    case 10: col=kOrange+10; break;
-    case 11: col=kMagenta+2; break;
-    case 12: col=kCyan+2; break;
-    case 13: col=kYellow+2; break;
-    case 14: col=kGray+2; break;
-    case 15: col=kOrange-2; break;
-    case 16: col=kViolet+2; break;
-    case 17: col=kRed-2; break;
-    case 18: col=kGreen+2; break;
-    case 19: col=kGray+2; break;
+      case  9: col=kOrange+2; break;
+      case 10: col=kOrange+10; break;
+      case 11: col=kMagenta+2; break;
+      case 12: col=kCyan+2; break;
+      case 13: col=kYellow+2; break;
+      case 14: col=kGray+2; break;
+      case 15: col=kOrange-2; break;
+      case 16: col=kViolet+2; break;
+      case 17: col=kRed-2; break;
+      case 18: col=kGreen+2; break;
+      case 19: col=kGray+2; break;
     }
     h->SetMarkerStyle(20+(i%2));
     h->SetMarkerSize(1.2);
@@ -277,9 +337,9 @@ TH2 *TDraw::GetMask() const
     for (Int_t i=0;i<TInfo::NSensors();++i) {
       Double_t bin = TInfo::GetBin(i);
       if (!IsGood(i))
-	h->SetBinContent(bin,-1);
+        h->SetBinContent(bin,-1);
       else
-	h->SetBinContent(bin,-100);
+        h->SetBinContent(bin,-100);
     }
   }
   return h;
@@ -437,22 +497,37 @@ Int_t TDraw::GetNBad() const
   return ret;
 }
 
-TH1 *TDraw::GetT(Int_t ns1, Int_t ns2, Int_t type) const
+TH1 *TDraw::GetTSM(Int_t sm, Int_t type) const
 {
   const Int_t rns=fArr->GetEntries();
-  TProfile *ret = new TProfile(Form("h%d%d%d",ns1,ns2,type),Form(";run idx"),rns,0,rns);
+  TProfile *ret = new TProfile(Form("h%d%d",sm,type),Form(";run idx"),rns,0,rns);
   ret->SetDirectory(0);
   ret->SetStats(0);
   for (Int_t i=0;i<rns;++i) {
     TInfo *tinfo = dynamic_cast<TInfo*>(fArr->At(i));
     if (!tinfo)
       continue;
-    for (Int_t j=ns1;j<=ns2;++j) {
-      if (!tinfo->IsValid(j)) 
-	continue;
-      Double_t val = tinfo->T(j,type);
-      ret->Fill(i,val);
-    }
+    Double_t val = tinfo->AvgTempSM(sm);
+    cout <<  i << "\t" << sm << "\t" << val << endl;
+    ret->Fill(i,val);
+  }
+  return ret;
+}
+
+TH1 *TDraw::GetT(Int_t nsensor, Int_t type) const
+{
+  const Int_t rns=fArr->GetEntries();
+  TProfile *ret = new TProfile(Form("h%d%d",nsensor,type),Form(";run idx"),rns,0,rns);
+  ret->SetDirectory(0);
+  ret->SetStats(0);
+  for (Int_t i=0;i<rns;++i) {
+    TInfo *tinfo = dynamic_cast<TInfo*>(fArr->At(i));
+    if (!tinfo)
+      continue;
+    Double_t val = -1;
+    if (tinfo->IsValid(nsensor))
+      val = tinfo->T(nsensor,type);
+    ret->Fill(i,val);
   }
   return ret;
 }
@@ -469,7 +544,7 @@ TH2 *TDraw::GetT2D(Int_t type) const
     if (!tinfo)
       continue;
     for (Int_t j=0;j<TInfo::NSensors();++j) {
-      if (!tinfo->IsValid(j)) 
+      if (!tinfo->IsValid(j))
 	continue;
       Double_t val = tinfo->T(j,type);
       ret->SetBinContent(ret->FindBin(i,j),val);
@@ -496,19 +571,19 @@ void TDraw::Print(Option_t *opt) const
   const Int_t rns=fArr->GetEntries();
   cout << "Period: " << GetName() << " with " << rns << " runs" << endl;
   if (strlen(opt)>0)
-    for (Int_t ns=0;ns<TInfo::NSensors();++ns) 
+    for (Int_t ns=0;ns<TInfo::NSensors();++ns)
       cout << "Channel " << ns << " " << GetFraction(ns) << endl;
   for (Int_t i=0;i<rns;++i) {
     TInfo *tinfo = dynamic_cast<TInfo*>(fArr->At(i));
     if (!tinfo)
       continue;
-    cout << "-> " << i << ": run=" << tinfo->GetRunNo() << " frac=" << tinfo->Fraction() << " minT=" << tinfo->AbsMinT()<< " maxT=" << tinfo->AbsMaxT() << endl;  
+    cout << "-> " << i << ": run=" << tinfo->GetRunNo() << " frac=" << tinfo->Fraction() << " minT=" << tinfo->AbsMinT()<< " maxT=" << tinfo->AbsMaxT() << endl;
     if (strlen(opt)>0)
       tinfo->Print();
   }
 }
 
-void plotT_period(const char *period, Bool_t doprint=0) 
+void plotT_period(const char *period, Bool_t doprint=0)
 {
   TDraw d(period);
   d.SetPrint(doprint);
@@ -518,8 +593,10 @@ void plotT_period(const char *period, Bool_t doprint=0)
     d.DrawOccRun();
     d.DrawOccSensor2D();
     d.DrawT2D(3);
-    d.DrawT(3);
-  } else 
+    d.DrawTPerSM(3);
+    for (Int_t i = 0; i < 20; i++)
+      d.DrawTSensorsPerSM(3,i);
+  } else
     d.DrawAll();
 }
 

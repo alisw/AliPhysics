@@ -9,7 +9,9 @@
 #include "AliFemtoEventCutEstimators.h"
 #include "AliFemtoCutMonitorEventMult.h"
 #include "AliFemtoCutMonitorV0.h"
+#include "AliFemtoCutMonitorV0CosPointingAngle.h"
 #include "AliFemtoCutMonitorXi.h"
+#include "AliFemtoCutMonitorEventVertex.h"
 
 #include "AliFemtoBasicTrackCut.h"
 #include "AliFemtoESDTrackCut.h"
@@ -102,6 +104,7 @@ struct AnalysisParams
   bool isMCRun;
   bool isMBAnalysis;
   bool buildMultHist;
+  bool buildmTBinned;
   bool implementVertexCorrections;
   bool removeMisidentifiedMCParticles;
   bool setV0SharedDaughterCut;
@@ -181,6 +184,8 @@ struct V0CutParams
          radiusV0Max;
 
   bool ignoreOnFlyStatus;
+
+  bool buildCosPointingAnglewParentInfo;
 };
 
 struct ESDCutParams
@@ -413,6 +418,8 @@ protected:
   bool fIsMCRun;
   bool fIsMBAnalysis;
   bool fBuildMultHist;
+  bool fBuildmTBinned;
+  bool fBuildCosPointingAnglewParentInfo;
 
   double fMinCent, fMaxCent;
 

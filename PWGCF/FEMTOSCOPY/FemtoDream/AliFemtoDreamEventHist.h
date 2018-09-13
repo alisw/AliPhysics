@@ -16,37 +16,79 @@ class AliFemtoDreamEventHist {
  public:
   AliFemtoDreamEventHist();
   AliFemtoDreamEventHist(bool centVsMultPlot);
+  AliFemtoDreamEventHist(const AliFemtoDreamEventHist& hists);
+  AliFemtoDreamEventHist& operator=(const AliFemtoDreamEventHist& hists);
   virtual ~AliFemtoDreamEventHist();
-  void FillEvtCounter(int iBin){fEvtCounter->Fill(iBin);};
-  void FillCuts(int iBin,float val){fCutConfig->Fill(iBin,val);};
-  void FillEvtNCont(int i, float val){fEvtNCont[i]->Fill(val);};
-  void FillEvtVtxX(int i, float val){fEvtVtxX[i]->Fill(val);};
-  void FillEvtVtxY(int i, float val){fEvtVtxY[i]->Fill(val);};
-  void FillEvtVtxZ(int i, float val){fEvtVtxZ[i]->Fill(val);};
-  void FillMultSPD(int i, float val){fMultDistSPD[i]->Fill(val);};
-  void FillMultV0A(int i, float val){fMultDistV0A[i]->Fill(val);};
-  void FillMultV0C(int i, float val){fMultDistV0C[i]->Fill(val);};
-  void FillMultRef08(int i, float val){fMultDistRef08[i]->Fill(val);};
-  void FillSPDTrackletsVsCluster(int i,int spdTrkl,int spdCls) {
-    fSPDTrklCls[i]->Fill(spdTrkl,spdCls);
+  void FillEvtCounter(int iBin) {
+    fEvtCounter->Fill(iBin);
   }
-  void FillEvtVtxZTrackvsSPD(int i, float zVtxSPD,float zVtxTracks) {
-    fSPDTrackZVtx[i]->Fill(zVtxSPD,zVtxTracks);
-    fSPDTrkZVtxDispl[i]->Fill(TMath::Abs(zVtxSPD-zVtxTracks));
+  ;
+  void FillCuts(int iBin, float val) {
+    fCutConfig->Fill(iBin, val);
   }
-  void FillCentVsMultV0A(float cent,float mult){
-    if (fCentVsMultPlots) fCentVsV0A->Fill(cent,mult);
+  ;
+  void FillEvtNCont(int i, float val) {
+    fEvtNCont[i]->Fill(val);
   }
-  void FillCentVsMultV0M(float cent,float mult){
-    if (fCentVsMultPlots) fCentVsV0M->Fill(cent,mult);
+  ;
+  void FillEvtVtxX(int i, float val) {
+    fEvtVtxX[i]->Fill(val);
   }
-  void FillCentVsMultV0C(float cent,float mult){
-    if (fCentVsMultPlots) fCentVsV0C->Fill(cent,mult);
+  ;
+  void FillEvtVtxY(int i, float val) {
+    fEvtVtxY[i]->Fill(val);
   }
-  void FillCentVsMultRef(float cent,float mult){
-    if (fCentVsMultPlots) fCentVsRefMult->Fill(cent,mult);
+  ;
+  void FillEvtVtxZ(int i, float val) {
+    fEvtVtxZ[i]->Fill(val);
   }
-  TList *GetHistList() {return fEventCutList;};
+  ;
+  void FillMultSPD(int i, float val) {
+    fMultDistSPD[i]->Fill(val);
+  }
+  ;
+  void FillMultV0A(int i, float val) {
+    fMultDistV0A[i]->Fill(val);
+  }
+  ;
+  void FillMultV0C(int i, float val) {
+    fMultDistV0C[i]->Fill(val);
+  }
+  ;
+  void FillMultRef08(int i, float val) {
+    fMultDistRef08[i]->Fill(val);
+  }
+  ;
+  void FillSPDTrackletsVsCluster(int i, int spdTrkl, int spdCls) {
+    fSPDTrklCls[i]->Fill(spdTrkl, spdCls);
+  }
+  void FillEvtVtxZTrackvsSPD(int i, float zVtxSPD, float zVtxTracks) {
+    fSPDTrackZVtx[i]->Fill(zVtxSPD, zVtxTracks);
+    fSPDTrkZVtxDispl[i]->Fill(TMath::Abs(zVtxSPD - zVtxTracks));
+  }
+  void FillMagneticField(int i, float bField){
+    fBField[i]->Fill(bField);
+  }
+  void FillCentVsMultV0A(float cent, float mult) {
+    if (fCentVsMultPlots)
+      fCentVsV0A->Fill(cent, mult);
+  }
+  void FillCentVsMultV0M(float cent, float mult) {
+    if (fCentVsMultPlots)
+      fCentVsV0M->Fill(cent, mult);
+  }
+  void FillCentVsMultV0C(float cent, float mult) {
+    if (fCentVsMultPlots)
+      fCentVsV0C->Fill(cent, mult);
+  }
+  void FillCentVsMultRef(float cent, float mult) {
+    if (fCentVsMultPlots)
+      fCentVsRefMult->Fill(cent, mult);
+  }
+  TList *GetHistList() {
+    return fEventCutList;
+  }
+  ;
  private:
   TList *fEventCutList;     //!
   TList *fEvtCutQA[2];      //!
@@ -62,13 +104,14 @@ class AliFemtoDreamEventHist {
   TH1F *fMultDistRef08[2];  //!
   TH2F *fSPDTrklCls[2];     //!
   TH2F *fSPDTrackZVtx[2];   //!
-  TH1F *fSPDTrkZVtxDispl[2];//!
+  TH1F *fSPDTrkZVtxDispl[2];   //!
+  TH1F *fBField[2];         //!
   bool fCentVsMultPlots;    //!
   TH2F *fCentVsV0A;         //!
   TH2F *fCentVsV0M;         //!
   TH2F *fCentVsV0C;         //!
   TH2F *fCentVsRefMult;     //!
-  ClassDef(AliFemtoDreamEventHist,3)
+ClassDef(AliFemtoDreamEventHist,3)
 };
 
 #endif /* ALIFEMTODREAMEVENTHIST_H_ */

@@ -40,7 +40,8 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
 
-  Bool_t   GetAnalysisMC() { return fAnalysisMC; }   
+  Bool_t   GetAnalysisMC() { return fAnalysisMC; }
+  Bool_t   GetCentFrameworkAliCen() { return fCentFrameworkAliCen; }   
   Double_t GetVtxCut() { return fVtxCut; }   
   Double_t GetEtaCut() { return fEtaCut; }     
   Double_t GetEtaCutStack() { return fEtaCutStack; }   
@@ -57,6 +58,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   virtual void  SetProduceVZEROBranch(Bool_t prodvzerob) {fVZEROBranch = prodvzerob;}
   virtual void  SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
   virtual void  SetAnalysisMC(Bool_t isMC) {fAnalysisMC = isMC;}
+  virtual void  SetCentFrameworkAliCen(Bool_t isAliCen) {fCentFrameworkAliCen = isAliCen;}
   virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
   virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
   virtual void  SetEtaCutStack(Double_t etaCutStack){fEtaCutStack = etaCutStack;}
@@ -120,6 +122,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   AliAnalysisFilter* fTrackFilterTPC; // track filter for TPC only tracks
   TString       fAnalysisType;        //  "ESD" or "AOD"
   Bool_t        fAnalysisMC;          //  Real(kFALSE) or MC(kTRUE) flag
+  Bool_t        fCentFrameworkAliCen; //   kTRUE: use AliCentrality, kFALSE: use AliMultSelection
   Bool_t        fAnalysisPbPb;        //  true you want to analyze PbPb data, false for pp
   Bool_t        fVZEROBranch;         //true if you want to store VZERO cells information
   TRandom*      fRandom;              //! random number generator
@@ -156,7 +159,7 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Float_t      fZvtxMC;             // z vertex MC (truth)
   Int_t        fRun;                // run no
   ULong64_t    fEventId;            // unique event id
-              
+    
   //
   // Output objects
   //

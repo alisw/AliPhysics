@@ -79,6 +79,17 @@ class AliHFInvMassMultiTrialFit : public TNamed {
   void SetUsePowerLawBackground(Bool_t opt=kTRUE){fUsePowLawBkg=opt;}
   void SetUsePowerLawTimesExpoBackground(Bool_t opt=kTRUE){fUsePowLawTimesExpoBkg=opt;}
 
+  void SetUse2GausSignal(Bool_t opt=kTRUE, Double_t fixsig=-1., Double_t fixfrac=-1.){
+    fUse2GausSignal=opt;
+    fFixSecondGausSig=fixsig;
+    fFixSecondGausFrac=fixfrac;
+  }
+  void SetUse2GausSigmaRatioSignal(Bool_t opt=kTRUE, Double_t fixrat=-1., Double_t fixfrac=-1.){
+    fUse2GausSigmaRatioSignal=opt;
+    fFixSecondGausSigRat=fixrat;
+    fFixSecondGausFrac=fixfrac;
+  }
+
   void SetUseFixSigUpFreeMean(Bool_t opt=kTRUE) {fUseFixSigUpFreeMean=opt;}
   void SetUseFixSigDownFreeMean(Bool_t opt=kTRUE) {fUseFixSigDownFreeMean=opt;}
   void SetUseFreeS(Bool_t opt=kTRUE) {fUseFreeS=opt;}
@@ -109,6 +120,7 @@ class AliHFInvMassMultiTrialFit : public TNamed {
 
   enum EBkgFuncCases{ kExpoBkg, kLinBkg, kPol2Bkg, kPol3Bkg, kPol4Bkg, kPol5Bkg, kPowBkg, kPowTimesExpoBkg, kNBkgFuncCases };
   enum EFitParamCases{ kFixSigFreeMean, kFixSigUpFreeMean, kFixSigDownFreeMean, kFreeSigFreeMean, kFixSigFixMean, kFreeSigFixMean, kNFitConfCases};
+  enum ESigFuncCases{ kGaus, k2Gaus, k2GausSigmaRatioPar, kNSigFuncCases};
 
  private:
 
@@ -144,6 +156,11 @@ class AliHFInvMassMultiTrialFit : public TNamed {
   Bool_t fUsePol5Bkg;    /// switch for pol5 background
   Bool_t fUsePowLawBkg;  /// switch for power law background
   Bool_t fUsePowLawTimesExpoBkg;  /// switch for power law background
+  Bool_t fUse2GausSignal;   /// swicth for 2 gaus line shape for S
+  Bool_t fUse2GausSigmaRatioSignal;   /// swicth for 2 gaus line shape for S
+  Double_t fFixSecondGausSig;     /// value to fix 2nd gaus sigma
+  Double_t fFixSecondGausFrac;    /// value to fix 2nd gaus area
+  Double_t fFixSecondGausSigRat;  /// value to fix ratio os sigmas
   Bool_t fUseFixSigUpFreeMean;    /// switch for FixSigUpFreeMean
   Bool_t fUseFixSigDownFreeMean;  /// switch for FixSigDownFreeMean
   Bool_t fUseFreeS;              /// switch for FreeSigma
@@ -201,7 +218,7 @@ class AliHFInvMassMultiTrialFit : public TNamed {
   std::vector<AliHFInvMassFitter*> fMassFitters; //!<! Mass fitters
 
   /// \cond CLASSIMP
-  ClassDef(AliHFInvMassMultiTrialFit,3); /// class for multiple trials of invariant mass fit
+  ClassDef(AliHFInvMassMultiTrialFit,4); /// class for multiple trials of invariant mass fit
   /// \endcond
 };
 

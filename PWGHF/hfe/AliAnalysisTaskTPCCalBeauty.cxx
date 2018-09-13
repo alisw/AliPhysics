@@ -49,13 +49,17 @@ fDCalDG1(kFALSE),
 fMaxM20Cut(0),
 fMinEoPCut(0),
 fMinNSigCut(0),
+fMinNSigAssoCut(0),
+fMinPtAssoCut(0),
 fDCABinSize(0),
+fApplyCentrality(kTRUE),
 fFlagFillSprs(kFALSE),
 fFlagFillMCHistos(kFALSE),
 fFlagRunStackLoop(kFALSE),
 fNclusTPC(80),
 fFlagClsTypeEMC(kTRUE),
 fFlagClsTypeDCAL(kTRUE),
+fTrkMatch(0),
 fUseTender(kTRUE),
 fFlagULS(kFALSE),
 fFlagLS(kFALSE),
@@ -128,7 +132,13 @@ fHadronCamDCA(0),
 fPi0Weight(0),
 fEtaWeight(0),
 fDWeight(0),
+fDWeightNew(0),
+fDWeightVar1(0),
+fDWeightVar2(0),
 fBWeight(0),
+fBWeightNew(0),
+fBWeightVar1(0),
+fBWeightVar2(0),
 fEnhEtaDCA(0),
 fEnhEtaWeightedPt(0),
 fEnhPi0DCA(0),
@@ -156,7 +166,15 @@ fLambdaCPt(0),
 fEtaCPt(0),
 fCBaryonPt(0),
 fBMesonPt(0),
+fBMesonPtATLAS(0),
+fBPlusPtATLAS(0),
+fBMesonPtCMS(0),
+fBPlusPtCMS(0),
+fBMesonPtLHCb(0),
+fBPlusPtLHCb(0),
 fBBaryonPt(0),
+fBMesonElecPt(0),
+fBBaryonElecPt(0),
 fPromptD0DCAWeight(0),
 fD0FromDStarDCAWeight(0),
 fPromptD0DCANoWeight(0),
@@ -168,11 +186,19 @@ fNembMCeta(0),
 fSprsPi0EtaWeightCal(0),
 fSprsTemplatesNoWeight(0),
 fSprsTemplatesWeight(0),
+fSprsTemplatesWeightVar1(0),
+fSprsTemplatesWeightVar2(0),
 fDTemplateWeight(0),
 fDTemplateNoWeight(0),
+fDTemplateWeightNew(0),
+fDTemplateWeightVar1(0),
+fDTemplateWeightVar2(0),
 
 fBTemplateWeight(0),
 fBTemplateNoWeight(0),
+fBTemplateWeightNew(0),
+fBTemplateWeightVar1(0),
+fBTemplateWeightVar2(0),
 
 fAllElecStack(0),
 fHFElecStack(0),
@@ -220,13 +246,17 @@ fDCalDG1(kFALSE),
 fMaxM20Cut(0),
 fMinEoPCut(0),
 fMinNSigCut(0),
+fMinNSigAssoCut(0),
+fMinPtAssoCut(0),
 fDCABinSize(0),
+fApplyCentrality(kTRUE),
 fFlagFillSprs(kFALSE),
 fFlagFillMCHistos(kFALSE),
 fFlagRunStackLoop(kFALSE),
 fNclusTPC(80),
 fFlagClsTypeEMC(kTRUE),
 fFlagClsTypeDCAL(kTRUE),
+fTrkMatch(0),
 fUseTender(kTRUE),
 fFlagULS(kFALSE),
 fFlagLS(kFALSE),
@@ -299,7 +329,13 @@ fHadronCamDCA(0),
 fPi0Weight(0),
 fEtaWeight(0),
 fDWeight(0),
+fDWeightNew(0),
+fDWeightVar1(0),
+fDWeightVar2(0),
 fBWeight(0),
+fBWeightNew(0),
+fBWeightVar1(0),
+fBWeightVar2(0),
 fEnhEtaDCA(0),
 fEnhEtaWeightedPt(0),
 fEnhPi0DCA(0),
@@ -327,7 +363,15 @@ fLambdaCPt(0),
 fEtaCPt(0),
 fCBaryonPt(0),
 fBMesonPt(0),
+fBMesonPtATLAS(0),
+fBPlusPtATLAS(0),
+fBMesonPtCMS(0),
+fBPlusPtCMS(0),
+fBMesonPtLHCb(0),
+fBPlusPtLHCb(0),
 fBBaryonPt(0),
+fBMesonElecPt(0),
+fBBaryonElecPt(0),
 fPromptD0DCAWeight(0),
 fD0FromDStarDCAWeight(0),
 fPromptD0DCANoWeight(0),
@@ -339,10 +383,18 @@ fNembMCeta(0),
 fSprsPi0EtaWeightCal(0),
 fSprsTemplatesNoWeight(0),
 fSprsTemplatesWeight(0),
+fSprsTemplatesWeightVar1(0),
+fSprsTemplatesWeightVar2(0),
 fDTemplateWeight(0),
 fDTemplateNoWeight(0),
+fDTemplateWeightNew(0),
+fDTemplateWeightVar1(0),
+fDTemplateWeightVar2(0),
 fBTemplateWeight(0),
 fBTemplateNoWeight(0),
+fBTemplateWeightNew(0),
+fBTemplateWeightVar1(0),
+fBTemplateWeightVar2(0),
 fAllElecStack(0),
 fHFElecStack(0),
 fBElecStack(0),
@@ -575,16 +627,16 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fInclElecDCA = new TH2F("fInclElecDCA","Incl Elec DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., nDCAbins,-0.2,0.2);
     fOutputList->Add(fInclElecDCA);
     
-    fnSigaftEoPCut = new TH2F("fnSigaftEoPCut","nSig with 0.9<E/p<1.2; p_{T}(GeV/c); nSigma; counts;", 60,0,30., 160,0,8);
+    fnSigaftEoPCut = new TH2F("fnSigaftEoPCut","nSig with 0.9<E/p<1.2; p_{T}(GeV/c); nSigma; counts;", 60,0,30., 160,-8,8);
     fOutputList->Add(fnSigaftEoPCut);
     
-    fnSigaftSysEoPCut = new TH2F("fnSigaftSysEoPCut","nSig with Sys E/p cut; p_{T}(GeV/c); nSigma; counts;", 60,0,30., 160,0,8);
+    fnSigaftSysEoPCut = new TH2F("fnSigaftSysEoPCut","nSig with Sys E/p cut; p_{T}(GeV/c); nSigma; counts;", 60,0,30., 160,-8,8);
     fOutputList->Add(fnSigaftSysEoPCut);
     
-    fnSigaftM20EoPCut = new TH2F("fnSigaftM20EoPCut","nSig with 0.9<E/p<1.2, 0.01<M20<0.35; p_{T}(GeV/c); nSigma; counts;", 60,0,30., 160,0,8);
+    fnSigaftM20EoPCut = new TH2F("fnSigaftM20EoPCut","nSig with 0.9<E/p<1.2, 0.01<M20<0.35; p_{T}(GeV/c); nSigma; counts;", 60,0,30., 160,-8,8);
     fOutputList->Add(fnSigaftM20EoPCut);
     
-    fnSigaftSysM20EoPCut = new TH2F("fnSigaftSysM20EoPCut","nSig with systematic E/p and M20 cut; p_{T}(GeV/c); nSigma; counts;", 60,0,30., 160,0,8);
+    fnSigaftSysM20EoPCut = new TH2F("fnSigaftSysM20EoPCut","nSig with systematic E/p and M20 cut; p_{T}(GeV/c); nSigma; counts;", 60,0,30., 160,-8,8);
     fOutputList->Add(fnSigaftSysM20EoPCut);
     
     fInclElecDCAnoSign = new TH2F("fInclElecDCAnoSign","Incl Elec DCA (no Charge); p_{T}(GeV/c); DCAxMagField; counts;", 60,0,30., nDCAbins,-0.2,0.2);
@@ -630,26 +682,51 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     Double_t xbins[14] = {1.,2.,3.,4.,5.,6.,7.,8.,10.,12.,16.,24.,36.,50.};
     //Double_t err[13] = {};
     fDWeight = new TH1F("fDWeight","D^{0}_data/AllD_MC;p_{T} (GeV/c);Weight;",nbins,xbins);
+    fDWeightNew = new TH1F("fDWeightNew","D^{0}_data/AllD_MCNew;p_{T} (GeV/c);Weight;",nbins,xbins);
+    fDWeightVar1 = new TH1F("fDWeightVar1","D^{0}_data/AllD_MC;p_{T} (GeV/c);Weight Var1;",nbins,xbins);
+    fDWeightVar2 = new TH1F("fDWeightVar2","D^{0}_data/AllD_MC;p_{T} (GeV/c);Weight Var2;",nbins,xbins);
     //Double_t ratio[13] = {2.03552,1.0201,0.45925,0.211574,0.11987,0.0898116,0.0631282,0.0546798,0.0477205,0.0410021,0.0307936,0.0398483,0.0175335};
     //Double_t err[13] = {0.541651,0.146443,0.0498454,0.024907,0.01438,0.0107908,0.00848616,0.0061723,0.00587082,0.00566712,0.00597994,0.00811015,0.00693105};
     Double_t ratio[13] = {0.106888,0.0650239,0.0343858,0.0172579,0.00957876,0.00640323,0.00399907,0.00269269,0.00163078,0.000942387,0.000441093,0.000353811,0.000143011};
     Double_t err[13] = {0.0284416,0.0093333,0.00373075,0.00203067,0.00114824,0.000768388,0.00053676,0.000303334,0.000199878,0.000129785,8.53822e-05,7.13313e-05,5.61316e-05};
+    Double_t ratioNew[13] = {0.197449,0.118714,0.0627949,0.0321233,0.0182153,0.0124903,0.00801369,0.00553768,0.00340667,0.00193131,0.00089526,0.000678224,0.00026223};
+    Double_t ratioVar1[13] = {0.249988,0.132914,0.0673368,0.0340132,0.0189431,0.01274,0.00801369,0.00543372,0.00326751,0.00179833,0.000779735,0.000564287,0.000159311};
+    Double_t ratioVar2[13] = {0.144911,0.104514,0.058253,0.0302335,0.0174875,0.0122405,0.00801369,0.00564164,0.00354583,0.00206429,0.00101078,0.00079216,0.000365149};
     for (int idata=1; idata<14; idata++) {
         fDWeight->SetBinContent(idata,ratio[idata-1]);
         fDWeight->SetBinError(idata,err[idata-1]);
+        
+        fDWeightNew->SetBinContent(idata,ratioNew[idata-1]);
+        fDWeightVar1->SetBinContent(idata,ratioVar1[idata-1]);
+        fDWeightVar2->SetBinContent(idata,ratioVar2[idata-1]);
     }
     fDWeight->Sumw2();
     fOutputList->Add(fDWeight);
+    fOutputList->Add(fDWeightNew);
+    fOutputList->Add(fDWeightVar1);
+    fOutputList->Add(fDWeightVar2);
     
     //D Meson pt weighting
     Int_t nbinsB = 250;
     Double_t xbinsB[251] = {0.,0.2,0.4,0.6,0.8,1,1.2,1.4,1.6,1.8,2,2.2,2.4,2.6,2.8,3,3.2,3.4,3.6,3.8,4,4.2,4.4,4.6,4.8,5,5.2,5.4,5.6,5.8,6,6.2,6.4,6.6,6.8,7,7.2,7.4,7.6,7.8,8,8.2,8.4,8.6,8.8,9,9.2,9.4,9.6,9.8,10,10.2,10.4,10.6,10.8,11,11.2,11.4,11.6,11.8,12,12.2,12.4,12.6,12.8,13,13.2,13.4,13.6,13.8,14,14.2,14.4,14.6,14.8,15,15.2,15.4,15.6,15.8,16,16.2,16.4,16.6,16.8,17,17.2,17.4,17.6,17.8,18,18.2,18.4,18.6,18.8,19,19.2,19.4,19.6,19.8,20,20.2,20.4,20.6,20.8,21,21.2,21.4,21.6,21.8,22,22.2,22.4,22.6,22.8,23,23.2,23.4,23.6,23.8,24,24.2,24.4,24.6,24.8,25,25.2,25.4,25.6,25.8,26,26.2,26.4,26.6,26.8,27,27.2,27.4,27.6,27.8,28,28.2,28.4,28.6,28.8,29,29.2,29.4,29.6,29.8,30,30.2,30.4,30.6,30.8,31,31.2,31.4,31.6,31.8,32,32.2,32.4,32.6,32.8,33,33.2,33.4,33.6,33.8,34,34.2,34.4,34.6,34.8,35,35.2,35.4,35.6,35.8,36,36.2,36.4,36.6,36.8,37,37.2,37.4,37.6,37.8,38,38.2,38.4,38.6,38.8,39,39.2,39.4,39.6,39.8,40,40.2,40.4,40.6,40.8,41,41.2,41.4,41.6,41.8,42,42.2,42.4,42.6,42.8,43,43.2,43.4,43.6,43.8,44,44.2,44.4,44.6,44.8,45,45.2,45.4,45.6,45.8,46,46.2,46.4,46.6,46.8,47,47.2,47.4,47.6,47.8,48,48.2,48.4,48.6,48.8,49,49.2,49.4,49.6,49.8,50.};
     fBWeight = new TH1F("fBWeight","TAMU RAA x FONLL/MC;p_{T} (GeV/c);Weight;",nbinsB,xbinsB);
+    fBWeightNew = new TH1F("fBWeightNew","TAMU RAA x FONLL(New)/MC;p_{T} (GeV/c);Weight;",nbinsB,xbinsB);
+    fBWeightVar1 = new TH1F("fBWeightVar1","TAMU RAA(Max) x FONLL(New)/MC;p_{T} (GeV/c);Weight;",nbinsB,xbinsB);
+    fBWeightVar2 = new TH1F("fBWeightVar2","TAMU RAA(Min) x FONLL(New)/MC;p_{T} (GeV/c);Weight;",nbinsB,xbinsB);
     Double_t ratioB[250] = {0.498558,0.62782,0.672398,0.718151,0.731677,0.734297,0.770069,0.776389,0.809054,0.825417,0.859501,0.874636,0.898427,0.923358,0.92293,0.926125,0.926343,0.916683,0.917184,0.911809,0.886661,0.868603,0.852465,0.837679,0.834915,0.813126,0.776888,0.762151,0.745226,0.726064,0.689477,0.675392,0.657326,0.639663,0.610833,0.599204,0.574208,0.551114,0.534405,0.508084,0.503657,0.468409,0.459998,0.447575,0.429903,0.413056,0.396865,0.385802,0.36568,0.358106,0.351127,0.342732,0.324592,0.325566,0.317839,0.306017,0.292589,0.292114,0.28069,0.274267,0.268707,0.260392,0.261063,0.248518,0.245039,0.237828,0.226948,0.221301,0.216985,0.214584,0.210782,0.197669,0.195025,0.190053,0.186186,0.179784,0.171765,0.169136,0.159454,0.161479,0.157118,0.153996,0.14812,0.141091,0.138405,0.137488,0.134021,0.127508,0.126735,0.119841,0.117923,0.11417,0.109935,0.110609,0.106261,0.102496,0.0988583,0.0988566,0.0962846,0.0971962,0.0912081,0.0906153,0.0909837,0.089602,0.0851854,0.0829322,0.0854181,0.0793186,0.0828916,0.079228,0.0765657,0.0755108,0.0746448,0.0749831,0.0726684,0.0741421,0.0725614,0.0725931,0.0708997,0.0691765,0.0675163,0.0638974,0.0636498,0.0696325,0.0621972,0.0654069,0.0613243,0.0604615,0.0588438,0.0602627,0.0602133,0.0562468,0.058719,0.0581855,0.0582384,0.0562759,0.053968,0.053529,0.0549016,0.0524293,0.0523908,0.0529672,0.0515757,0.0493422,0.0481627,0.0482736,0.0459697,0.0458283,0.0453141,0.0433415,0.045522,0.043535,0.0411514,0.0456961,0.0441323,0.0430352,0.0428453,0.0426922,0.0436595,0.040605,0.0381453,0.03843,0.0410627,0.0374946,0.0391381,0.0379844,0.0367569,0.036893,0.0372399,0.0355532,0.0336221,0.0344674,0.0330855,0.0332478,0.0308431,0.0318583,0.0313297,0.03175,0.0314691,0.0320693,0.0312073,0.0297707,0.0285189,0.0289505,0.0291229,0.0291655,0.0305036,0.0281665,0.0276302,0.0291551,0.026976,0.027417,0.027251,0.0245767,0.0246722,0.024308,0.0247152,0.0273125,0.0242685,0.0232144,0.0220058,0.023307,0.0224514,0.0219948,0.0208518,0.0216804,0.0215576,0.0195631,0.0195621,0.0211566,0.0185032,0.0196948,0.0190276,0.0193687,0.0191364,0.0195232,0.0190942,0.0177003,0.0186524,0.0180672,0.017813,0.0173329,0.0163168,0.0163818,0.0158271,0.0169163,0.0164239,0.0157851,0.0169332,0.0180851,0.0152819,0.0149112,0.0141721,0.015732,0.0163534,0.014337,0.0143059,0.014786,0.0140978,0.0145358,0.0145749,0.0134334,0.0130966,0.0138116,0.013262,0.0143179,0.0132258,0.0135375,0.0132521,0.0132662};
+    Double_t ratioBNew[250] = {0.527854,0.676468,0.697991,0.711774,0.722505,0.744184,0.771669,0.791643,0.815676,0.842682,0.869755,0.886323,0.900165,0.921397,0.927047,0.93348,0.936192,0.926124,0.917184,0.909077,0.889903,0.876369,0.858462,0.838199,0.821877,0.805409,0.785763,0.762809,0.741829,0.72182,0.704218,0.683978,0.660144,0.639746,0.617747,0.596334,0.573373,0.553575,0.533483,0.516636,0.49255,0.475004,0.460341,0.441742,0.4269,0.412142,0.40238,0.387698,0.37121,0.360204,0.352943,0.341443,0.332603,0.323606,0.315956,0.305826,0.295788,0.291485,0.28239,0.275661,0.268983,0.260012,0.25416,0.24767,0.24152,0.234847,0.229889,0.2255,0.216294,0.21002,0.204699,0.200694,0.194504,0.189242,0.185419,0.179002,0.173614,0.169286,0.162982,0.158871,0.15605,0.149979,0.146925,0.143822,0.138876,0.135658,0.131925,0.128432,0.125932,0.121191,0.11921,0.116162,0.111859,0.11006,0.106977,0.105162,0.103074,0.100297,0.0993633,0.0962979,0.0940254,0.0921904,0.0906611,0.0891579,0.0880537,0.0863541,0.0855137,0.0817595,0.0811291,0.0799165,0.0793575,0.0781609,0.0766887,0.0750305,0.0738189,0.073269,0.072447,0.0706597,0.0707376,0.0681811,0.0680168,0.0670508,0.065782,0.0663052,0.0645379,0.0638748,0.0625307,0.0614706,0.0613937,0.0600465,0.0599109,0.0578851,0.0589849,0.0577687,0.0577089,0.0564293,0.0548461,0.0541342,0.0537008,0.0534945,0.0522089,0.0527365,0.0517209,0.0505692,0.0501077,0.0491331,0.0493484,0.0485754,0.0477572,0.0471697,0.0461767,0.0455698,0.0463311,0.0454191,0.0441808,0.0445879,0.0432137,0.043078,0.0429534,0.041554,0.0404588,0.040246,0.0399505,0.0400038,0.0393302,0.0378221,0.0377077,0.0375886,0.0364395,0.0361215,0.0359106,0.0354513,0.035101,0.0343332,0.0340229,0.033936,0.0329639,0.0324529,0.0320335,0.0311993,0.0318253,0.0314773,0.0295871,0.0297416,0.0294255,0.0293431,0.0287639,0.028382,0.0275853,0.0278151,0.0270327,0.026975,0.0267576,0.0258747,0.0254334,0.0253068,0.0250752,0.0246926,0.0236031,0.0242901,0.0232739,0.0232222,0.0229169,0.0232431,0.0216698,0.0220481,0.0212689,0.0212692,0.0212703,0.0207071,0.0207659,0.0199056,0.019779,0.0194439,0.0190936,0.0189077,0.0188995,0.017954,0.0178651,0.0179176,0.0177795,0.0169843,0.0170956,0.0171893,0.0168782,0.0165971,0.017014,0.0161936,0.0161965,0.0158903,0.0157885,0.0152633,0.0151995,0.0154153,0.0155522,0.0153605,0.0147381,0.0147705,0.0144276,0.0145398,0.0142471,0.0144064,0.0138917,0.0140977,0.014126,0.0138707,0.0134346,0.0137999,0.013464,0.0130542};
+    Double_t ratioBVar1[250] = {0.54281,0.695606,0.717742,0.731959,0.743084,0.765527,0.794016,0.814866,0.839998,0.86832,0.896867,0.914756,0.930023,0.953155,0.96042,0.968762,0.97354,0.965327,0.958592,0.953066,0.936273,0.925755,0.910985,0.894068,0.881733,0.869652,0.854532,0.83615,0.820235,0.805694,0.794136,0.779845,0.761552,0.747232,0.730978,0.715231,0.697306,0.682818,0.667487,0.655676,0.633963,0.619851,0.608774,0.591691,0.578793,0.565203,0.557723,0.542693,0.524328,0.512981,0.506383,0.493153,0.483236,0.472629,0.463576,0.450508,0.437227,0.432141,0.419709,0.410571,0.401326,0.388495,0.380185,0.370806,0.36184,0.352007,0.344679,0.338147,0.324347,0.314906,0.306865,0.300774,0.291389,0.283384,0.277522,0.267772,0.259559,0.252931,0.243351,0.237051,0.232676,0.22346,0.218746,0.213963,0.206445,0.201502,0.195801,0.190463,0.186603,0.179431,0.176352,0.171701,0.165204,0.162412,0.15773,0.154925,0.151721,0.147509,0.146013,0.14139,0.137937,0.135132,0.132778,0.130467,0.128743,0.126153,0.12482,0.119241,0.118222,0.116358,0.115448,0.113612,0.11138,0.108881,0.107034,0.106149,0.104871,0.1022,0.102228,0.0984524,0.0981344,0.0966614,0.0947546,0.0954302,0.0928108,0.0917825,0.0897781,0.0881844,0.0880027,0.0860019,0.0857383,0.0827723,0.0842771,0.0824731,0.0823216,0.0804317,0.0781125,0.0770371,0.0763594,0.0760055,0.07412,0.0748097,0.0733108,0.0716217,0.070912,0.0694779,0.0697275,0.0685814,0.0673733,0.0664924,0.0650417,0.0641368,0.0651575,0.0638252,0.0620368,0.0625599,0.060585,0.060348,0.0601271,0.0581234,0.0565479,0.0562073,0.0557518,0.0557834,0.0548022,0.0526606,0.0524614,0.0522559,0.05062,0.0501403,0.0498098,0.0491355,0.0486133,0.0475141,0.0470493,0.0468939,0.0455165,0.0447775,0.0441656,0.0429835,0.0438132,0.043302,0.0406715,0.0408535,0.0403895,0.0402465,0.0394231,0.038871,0.037752,0.0380386,0.0369416,0.0368358,0.0365122,0.0352817,0.0346547,0.034457,0.034117,0.0335721,0.0320675,0.0329771,0.0315746,0.0314818,0.0310455,0.0314648,0.029314,0.0298044,0.0287306,0.0287104,0.0286915,0.0279118,0.0279712,0.0267935,0.0266041,0.026135,0.025646,0.0253783,0.0253495,0.0240644,0.0239284,0.023982,0.0237805,0.0227009,0.0228338,0.022943,0.0225121,0.0221218,0.0226618,0.0215541,0.0215431,0.0211211,0.0209714,0.0202598,0.0201613,0.0204336,0.0206009,0.0203331,0.0194958,0.0195254,0.0190591,0.0191943,0.0187951,0.0189924,0.0183014,0.0185603,0.018585,0.0182369,0.0176516,0.0181193,0.0176665,0.0171173};
+    Double_t ratioBVar2[250] = {0.512898,0.65733,0.67824,0.69159,0.701926,0.722841,0.749322,0.768421,0.791354,0.817044,0.842643,0.85789,0.870306,0.889639,0.893675,0.898198,0.898843,0.886921,0.875776,0.865088,0.843533,0.826984,0.80594,0.782329,0.762022,0.741167,0.716994,0.689468,0.663422,0.637946,0.6143,0.588111,0.558735,0.53226,0.504516,0.477438,0.449439,0.424332,0.399479,0.377596,0.351136,0.330158,0.311908,0.291794,0.275008,0.259082,0.247036,0.232703,0.218092,0.207428,0.199503,0.189734,0.181971,0.174584,0.168336,0.161143,0.154349,0.150828,0.145071,0.14075,0.13664,0.131529,0.128135,0.124534,0.121201,0.117687,0.1151,0.112853,0.108241,0.105134,0.102532,0.100614,0.0976182,0.0951008,0.0933164,0.0902324,0.0876688,0.0856413,0.0826121,0.080691,0.0794234,0.0764967,0.0751029,0.0736805,0.0713075,0.0698141,0.0680495,0.0664012,0.0652605,0.0629505,0.0620669,0.0606222,0.0585142,0.0577086,0.0562239,0.0554,0.0544271,0.0530847,0.0527133,0.051206,0.0501136,0.0492492,0.0485438,0.0478486,0.0473641,0.0465557,0.0462072,0.0442785,0.0440359,0.0434749,0.0432671,0.0427093,0.0419975,0.0411799,0.0406037,0.0403892,0.0400228,0.0391198,0.0392472,0.0379098,0.0378991,0.0374402,0.0368093,0.0371801,0.0362649,0.0359672,0.0352834,0.0347569,0.0347848,0.0340911,0.0340835,0.0329978,0.0336927,0.0330643,0.0330962,0.0324268,0.0315796,0.0312313,0.0310422,0.0309835,0.0302978,0.0306634,0.030131,0.0295167,0.0293034,0.0287882,0.0289693,0.0285695,0.0281411,0.027847,0.0273117,0.0270028,0.0275047,0.027013,0.0263247,0.0266158,0.0258425,0.025808,0.0257798,0.0249847,0.0243697,0.0242847,0.0241492,0.0242241,0.0238581,0.0229835,0.022954,0.0229212,0.022259,0.0221028,0.0220115,0.021767,0.0215887,0.0211522,0.0209965,0.0209781,0.0204113,0.0201284,0.0199013,0.0194151,0.0198373,0.0196527,0.0185027,0.0186296,0.0184616,0.0184396,0.0181047,0.017893,0.0174185,0.0175915,0.0171238,0.0171143,0.017003,0.0164678,0.0162122,0.0161565,0.0160335,0.0158132,0.0151387,0.0156032,0.0149732,0.0149626,0.0147882,0.0150214,0.0140256,0.0142919,0.0138073,0.013828,0.0138492,0.0135023,0.0135606,0.0130178,0.0129538,0.0127529,0.0125413,0.012437,0.0124495,0.0118436,0.0118018,0.0118533,0.0117786,0.0112676,0.0113574,0.0114356,0.0112443,0.0110724,0.0113663,0.0108331,0.01085,0.0106594,0.0106056,0.0102667,0.0102377,0.0103971,0.0105035,0.010388,0.00998035,0.0100156,0.00979607,0.0098853,0.00969908,0.0098204,0.00948191,0.00963511,0.00966696,0.00950457,0.0092176,0.0094804,0.00926154,0.00899106};
     for (int idata=1; idata<251; idata++) {
         fBWeight->SetBinContent(idata,ratioB[idata-1]);
+        fBWeightNew->SetBinContent(idata,ratioBNew[idata-1]);
+        fBWeightVar1->SetBinContent(idata,ratioBVar1[idata-1]);
+        fBWeightVar2->SetBinContent(idata,ratioBVar2[idata-1]);
     }
     fOutputList->Add(fBWeight);
+    fOutputList->Add(fBWeightNew);
+    fOutputList->Add(fBWeightVar1);
+    fOutputList->Add(fBWeightVar2);
     
     if (fFlagFillMCHistos) {
         fPi0DCA = new TH2F("fPi0DCA","Pi0 DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., nDCAbins,-0.2,0.2);
@@ -746,10 +823,42 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fBMesonPt->Sumw2();
         fOutputList->Add(fBMesonPt);
     
+        fBMesonPtATLAS = new TH1F("fBMesonPtATLAS","ATLAS B Meson Spectrum; p_{T}(GeV/c); counts;",240,0,120.);
+        fBMesonPtATLAS->Sumw2();
+        fOutputList->Add(fBMesonPtATLAS);
+        
+        fBPlusPtATLAS = new TH1F("fBPlusPtATLAS","ATLAS B Plus Spectrum; p_{T}(GeV/c); counts;",240,0,120.);
+        fBPlusPtATLAS->Sumw2();
+        fOutputList->Add(fBPlusPtATLAS);
+        
+        fBMesonPtCMS = new TH1F("fBMesonPtCMS","CMS B Meson Spectrum; p_{T}(GeV/c); counts;",100,0,50.);
+        fBMesonPtCMS->Sumw2();
+        fOutputList->Add(fBMesonPtCMS);
+        
+        fBPlusPtCMS = new TH1F("fBPlusPtCMS","CMS B Plus Spectrum; p_{T}(GeV/c); counts;",100,0,50.);
+        fBPlusPtCMS->Sumw2();
+        fOutputList->Add(fBPlusPtCMS);
+        
+        fBMesonPtLHCb = new TH1F("fBMesonPtLHCb","LHCb B Meson Spectrum; p_{T}(GeV/c); counts;",400,0,40.);
+        fBMesonPtLHCb->Sumw2();
+        fOutputList->Add(fBMesonPtLHCb);
+        
+        fBPlusPtLHCb = new TH1F("fBPlusPtLHCb","LHCb B Plus Spectrum; p_{T}(GeV/c); counts;",400,0,40.);
+        fBPlusPtLHCb->Sumw2();
+        fOutputList->Add(fBPlusPtLHCb);
+        
         fBBaryonPt = new TH1F("fBBaryonPt","Beauty Baryon Spectrum; p_{T}(GeV/c); counts;",100,0,50.);
         fBBaryonPt->Sumw2();
         fOutputList->Add(fBBaryonPt);
     
+        fBMesonElecPt = new TH1F("fBMesonElecPt","Beauty Meson->e Spectrum; p_{T}(GeV/c); counts;",100,0,50.);
+        fBMesonElecPt->Sumw2();
+        fOutputList->Add(fBMesonElecPt);
+        
+        fBBaryonElecPt = new TH1F("fBBaryonElecPt","Beauty Baryon->e Spectrum; p_{T}(GeV/c); counts;",100,0,50.);
+        fBBaryonElecPt->Sumw2();
+        fOutputList->Add(fBBaryonElecPt);
+        
         fPromptD0DCAWeight = new TH2F("fPromptD0DCAWeight","Prompt D0 DCA with Weight; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., nDCAbins,-0.2,0.2);
         fOutputList->Add(fPromptD0DCAWeight);
     
@@ -776,14 +885,20 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fOutputList->Add(fSprsPi0EtaWeightCal);
     
         Int_t binTemp[5] = {60,nDCAbins,19,3,50}; //pT, DCA, Mom PID, Mom Gen, mompT
-        Double_t xminTemp[5] = {0.,-0.2,0.5,-0.5,0.,};
+        Double_t xminTemp[5] = {0.,-0.2,0.5,-0.5,0.};
         Double_t xmaxTemp[5] = {30.,0.2,19.5,2.5,50.};
-        fSprsTemplatesWeight = new THnSparseD("fSprsTemplatesWeight","Sparse for Templates, D meson weight applied;p_{T};DCA;MomPID;MomGen;",5,binTemp,xminTemp,xmaxTemp);
-        fOutputList->Add(fSprsTemplatesWeight);
-        fSprsTemplatesWeight->Sumw2();
         fSprsTemplatesNoWeight = new THnSparseD("fSprsTemplatesNoWeight","Sparse for Templates, No weight applied;p_{T};DCA;MomPID;MomGen;",5,binTemp,xminTemp,xmaxTemp);
         fOutputList->Add(fSprsTemplatesNoWeight);
         fSprsTemplatesNoWeight->Sumw2();
+        fSprsTemplatesWeight = new THnSparseD("fSprsTemplatesWeight","Sparse for Templates, D meson weight applied;p_{T};DCA;MomPID;MomGen;",5,binTemp,xminTemp,xmaxTemp);
+        fOutputList->Add(fSprsTemplatesWeight);
+        fSprsTemplatesWeight->Sumw2();
+        fSprsTemplatesWeightVar1 = new THnSparseD("fSprsTemplatesWeightVar1","Sparse for Templates, D meson WeightVar1 applied;p_{T};DCA;MomPID;MomGen;",5,binTemp,xminTemp,xmaxTemp);
+        fOutputList->Add(fSprsTemplatesWeightVar1);
+        fSprsTemplatesWeightVar1->Sumw2();
+        fSprsTemplatesWeightVar2 = new THnSparseD("fSprsTemplatesWeightVar2","Sparse for Templates, D meson WeightVar2 applied;p_{T};DCA;MomPID;MomGen;",5,binTemp,xminTemp,xmaxTemp);
+        fOutputList->Add(fSprsTemplatesWeightVar2);
+        fSprsTemplatesWeightVar2->Sumw2();
     
         fDTemplateWeight = new TH2F("fDTemplateWeight","D Meson DCA template", 100,0,50., nDCAbins,-0.2,0.2);
         fOutputList->Add(fDTemplateWeight);
@@ -791,12 +906,26 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fDTemplateNoWeight = new TH2F("fDTemplateNoWeight","D Meson DCA template w/o Weight", 100,0,50., nDCAbins,-0.2,0.2);
         fOutputList->Add(fDTemplateNoWeight);
     
+        fDTemplateWeightNew = new TH2F("fDTemplateWeightNew","New D Meson DCA template", 100,0,50., nDCAbins,-0.2,0.2);
+        fOutputList->Add(fDTemplateWeightNew);
+        fDTemplateWeightVar1 = new TH2F("fDTemplateWeightVar1","D Meson DCA template Var1", 100,0,50., nDCAbins,-0.2,0.2);
+        fOutputList->Add(fDTemplateWeightVar1);
+        fDTemplateWeightVar2 = new TH2F("fDTemplateWeightVar2","D Meson DCA template Var2", 100,0,50., nDCAbins,-0.2,0.2);
+        fOutputList->Add(fDTemplateWeightVar2);
+        
         fBTemplateWeight = new TH2F("fBTemplateWeight","B Meson DCA template w/Weight", 100,0,50., nDCAbins,-0.2,0.2);
         fOutputList->Add(fBTemplateWeight);
     
         fBTemplateNoWeight = new TH2F("fBTemplateNoWeight","B Meson DCA template", 100,0,50., nDCAbins,-0.2,0.2);
         fOutputList->Add(fBTemplateNoWeight);
     
+        fBTemplateWeightNew = new TH2F("fBTemplateWeightNew","B Meson DCA template w/Weight New", 100,0,50., nDCAbins,-0.2,0.2);
+        fOutputList->Add(fBTemplateWeightNew);
+        fBTemplateWeightVar1 = new TH2F("fBTemplateWeightVar1","B Meson DCA template w/Weight Var1", 100,0,50., nDCAbins,-0.2,0.2);
+        fOutputList->Add(fBTemplateWeightVar1);
+        fBTemplateWeightVar2 = new TH2F("fBTemplateWeightVar2","B Meson DCA template w/Weight Var2", 100,0,50., nDCAbins,-0.2,0.2);
+        fOutputList->Add(fBTemplateWeightVar2);
+        
         fAllElecStack = new TH1F("fAllElecStack","All Elec from Stack; p_{T}(GeV/c); counts;",100,0,50.);
         fAllElecStack->Sumw2();
         fOutputList->Add(fAllElecStack);
@@ -901,12 +1030,14 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
     ////////////////
     // Centrality //
     ////////////////
-    Bool_t pass = kFALSE;
-    if(fCentralityMin > -0.5){
-        fCentrality = CheckCentrality(fAOD,pass);
-        if(!pass)return;
+    if(fApplyCentrality){
+        Bool_t pass = kFALSE;
+        if(fCentralityMin > -0.5){
+            fCentrality = CheckCentrality(fAOD,pass);
+            if(!pass)return;
+        }
+        fCentCheck->Fill(fCentrality);
     }
-    fCentCheck->Fill(fCentrality);
     
     ////////////////////
     // Get MC Headers //
@@ -968,6 +1099,9 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             GetPi0EtaWeight(fSprsPi0EtaWeightCal);
             Int_t TrackPDG = -999;
             Int_t ilabelM = -99;
+            Int_t ilabelGM = -99;
+            Int_t ilabelGGM = -99;
+            Int_t pidM, pidGM, pidGGM;
             
             for(int i=0; i<(fMCarray->GetEntries()); i++)
             {
@@ -977,12 +1111,10 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 Bool_t fromDStar = kFALSE;
             
                 AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCarray->At(i);
-                if(TMath::Abs(AODMCtrack->Eta()) > 0.6) continue;
             
                 //-------Get PDG
                 TrackPDG = TMath::Abs(AODMCtrack->GetPdgCode());
                 ilabelM = AODMCtrack->GetMother();
-            
             
                 if(TrackPDG == 11 && AODMCtrack->IsPhysicalPrimary()) {
                     // cout<<"TESTINGGGGGGGGGGGG"<<endl;
@@ -990,6 +1122,40 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                     eleinStack++;
                 }
                 //
+                if(TMath::Abs(AODMCtrack->Y()) < 2.25) {
+                    if (TrackPDG>500 && TrackPDG<599) fBMesonPtATLAS->Fill(AODMCtrack->Pt());
+                    if (TrackPDG == 521) fBPlusPtATLAS->Fill(AODMCtrack->Pt());
+                }
+                if(TMath::Abs(AODMCtrack->Y()) < 2.4) {
+                    if (TrackPDG>500 && TrackPDG<599) fBMesonPtCMS->Fill(AODMCtrack->Pt());
+                    if (TrackPDG == 521) fBPlusPtCMS->Fill(AODMCtrack->Pt());
+                    if(TrackPDG==11 && ilabelM>0){
+                        //cout<<"TESTING2"<<endl;
+                        AliAODMCParticle *momPart = (AliAODMCParticle*)fMCarray->At(ilabelM); //get mom particle
+                        pidM = TMath::Abs(momPart->GetPdgCode());
+                        
+                        if(pidM>500 && pidM<599) fBMesonElecPt->Fill(AODMCtrack->Pt());
+                        if(pidM>5000 && pidM<5999) fBBaryonElecPt->Fill(AODMCtrack->Pt());
+                        
+                        ilabelGM = momPart->GetMother();
+                        if(ilabelGM>0){
+                            pidGM = TMath::Abs(momPart->GetPdgCode());
+                            if(pidGM>500 && pidGM<599) fBMesonElecPt->Fill(AODMCtrack->Pt());
+                            AliAODMCParticle *gMomPart = (AliAODMCParticle*)fMCarray->At(ilabelGM); //get mom particle
+                            ilabelGGM = gMomPart->GetMother();
+                            if(ilabelGGM>0){
+                                pidGGM = TMath::Abs(gMomPart->GetPdgCode());
+                                if(pidGGM>500 && pidGGM<599) fBMesonElecPt->Fill(AODMCtrack->Pt());
+                            }
+                        }
+                    }
+                }
+                if(TMath::Abs(AODMCtrack->Y()) > 2.0 && TMath::Abs(AODMCtrack->Y()) < 4.5) {
+                    if (TrackPDG>500 && TrackPDG<599) fBMesonPtLHCb->Fill(AODMCtrack->Pt());
+                    if (TrackPDG == 521) fBPlusPtLHCb->Fill(AODMCtrack->Pt());
+                }
+                
+                if(TMath::Abs(AODMCtrack->Eta()) > 0.6) continue;
                 if (TrackPDG>500 && TrackPDG<599) {
                     fBMesonPt->Fill(AODMCtrack->Pt());
                 }
@@ -1000,8 +1166,6 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 //Fill Charm species pT histos
                 if (ilabelM>0) {
                     //cout<<"Test4..................................."<<endl;
-                    AliAODMCParticle *momPart = (AliAODMCParticle*)fMCarray->At(ilabelM); //get mom particle
-                    Int_t pidM = TMath::Abs(momPart->GetPdgCode());
                 
                     if(TrackPDG == 11 && pidM>400 && pidM<600 && AODMCtrack->IsPhysicalPrimary()) {
                         fHFElecStack->Fill(AODMCtrack->Pt());
@@ -1018,10 +1182,11 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                     if (pidM>5000 && pidM<5999) {
                         continue; //reject beauty feed down
                     }
-                    Int_t ilabelGM = momPart->GetMother();
+                    AliAODMCParticle *momPart = (AliAODMCParticle*)fMCarray->At(ilabelM); //get mom particle
+                    ilabelGM = momPart->GetMother();
                     if (ilabelGM>0) {
                         AliAODMCParticle *gmomPart = (AliAODMCParticle*)fMCarray->At(ilabelGM);//get grandma particle
-                        Int_t pidGM = TMath::Abs(gmomPart->GetPdgCode());
+                        pidGM = TMath::Abs(gmomPart->GetPdgCode());
                         if (pidGM>500 && pidGM<599) {
                             continue; //reject beauty feed down
                         }
@@ -1275,7 +1440,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             Double_t fPhiDiff = -999, fEtaDiff = -999;
             GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
             
-            if(TMath::Abs(fPhiDiff) > 0.05 || TMath::Abs(fEtaDiff)> 0.05) continue;
+            if(TMath::Abs(fPhiDiff) > fTrkMatch || TMath::Abs(fEtaDiff)> fTrkMatch) continue;
             
             /////////////////////////////////
             //Select EMCAL or DCAL clusters//
@@ -1372,7 +1537,18 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                 dWeight = fDWeight->GetBinContent(fDWeight->FindBin(momPt));
                                 fDTemplateWeight->Fill(track->Pt(), DCA, dWeight);
                                 fDTemplateNoWeight->Fill(track->Pt(), DCA);
+                                
+                                dWeight = fDWeightNew->GetBinContent(fDWeightNew->FindBin(momPt));
                                 fSprsTemplatesWeight->Fill(tempValue,dWeight);
+                                fDTemplateWeightNew->Fill(track->Pt(), DCA, dWeight);
+                                
+                                dWeight = fDWeightVar1->GetBinContent(fDWeightVar1->FindBin(momPt));
+                                fDTemplateWeightVar1->Fill(track->Pt(), DCA, dWeight);
+                                fSprsTemplatesWeightVar1->Fill(tempValue,dWeight);
+                                
+                                dWeight = fDWeightVar2->GetBinContent(fDWeightVar2->FindBin(momPt));
+                                fDTemplateWeightVar2->Fill(track->Pt(), DCA, dWeight);
+                                fSprsTemplatesWeightVar2->Fill(tempValue,dWeight);
                             }
                         }
                         else if (fpidSort==1) {//if from B meson
@@ -1382,14 +1558,27 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                 bWeight = fBWeight->GetBinContent(fBWeight->FindBin(momPt));
                                 fBTemplateWeight->Fill(track->Pt(), DCA, bWeight);
                                 fBTemplateNoWeight->Fill(track->Pt(), DCA);
+                                
+                                bWeight = fBWeightNew->GetBinContent(fBWeightNew->FindBin(momPt));
+                                fBTemplateWeightNew->Fill(track->Pt(), DCA, bWeight);
                                 fSprsTemplatesWeight->Fill(tempValue,bWeight);
+                                
+                                bWeight = fBWeightVar1->GetBinContent(fBWeightVar1->FindBin(momPt));
+                                fBTemplateWeightVar1->Fill(track->Pt(), DCA, bWeight);
+                                fSprsTemplatesWeightVar1->Fill(tempValue,bWeight);
+                                
+                                bWeight = fBWeightVar2->GetBinContent(fBWeightVar2->FindBin(momPt));
+                                fBTemplateWeightVar2->Fill(track->Pt(), DCA, bWeight);
+                                fSprsTemplatesWeightVar2->Fill(tempValue,bWeight);
                             }
                         }
                         else{
                             //cout<<"TESTING7"<<endl;
                             fSprsTemplatesWeight->Fill(tempValue);
+                            fSprsTemplatesWeightVar1->Fill(tempValue);
+                            fSprsTemplatesWeightVar2->Fill(tempValue);
                         }
-                    
+                        
                         //if electron from D0
                         if(fpidSort==12){
                             ilabelM = fMCparticle->GetMother(); //get MC label for e Mom
@@ -1633,9 +1822,10 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             if((M20<0.01) || (M20>fMaxM20Cut)) continue;
             fElecEoPnoSig->Fill(track->Pt(),EovP);
             
+            if((nsigma>fMinNSigCut) && (nsigma<3)) fInclElecEoP->Fill(track->Pt(),EovP);
+            
             //Apply E/p Cut for electrons
             if((EovP<fMinEoPCut) || (EovP>1.2)) continue;
-            fInclElecEoP->Fill(track->Pt(),EovP);
             fnSigaftSysM20EoPCut->Fill(track->Pt(),nsigma);
             
             if(kTruElec == kTRUE) fElecAftEMCeID->Fill(track->Pt());
@@ -2075,9 +2265,11 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckData(int itrack, AliVTrack *track,
         chargeAsso = trackAsso->Charge();
         
         //Some cuts on the associated track
-        if(ptAsso < 0.3) continue;
+        //if(ptAsso < 0.3) continue;
+        if(ptAsso < fMinPtAssoCut) continue;
         if(trackAsso->Eta()<-0.9 || trackAsso->Eta()>0.9) continue;
-        if(nsigmaAsso < -3 || nsigmaAsso > 3) continue;
+        //if(nsigmaAsso < -3 || nsigmaAsso > 3) continue;
+        if(nsigmaAsso < fMinNSigAssoCut || nsigmaAsso > 3) continue;
         
         if(trackAsso->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., d0z0Asso, covAsso))
             if(TMath::Abs(d0z0Asso[0]) > DCAxyCut || TMath::Abs(d0z0Asso[1]) > DCAzCut) continue;
@@ -2151,9 +2343,9 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckMC(int itrack, AliVTrack *track, D
         chargeAsso = trackAsso->Charge();
         
         //Some cuts on the associated track
-        if(ptAsso < 0.3) continue;
+        if(ptAsso < fMinPtAssoCut) continue;
         if(trackAsso->Eta()<-0.9 || trackAsso->Eta()>0.9) continue;
-        if(nsigmaAsso < -3 || nsigmaAsso > 3) continue;
+        if(nsigmaAsso < fMinNSigAssoCut || nsigmaAsso > 3) continue;
         
         if(trackAsso->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., d0z0Asso, covAsso))
             if(TMath::Abs(d0z0Asso[0]) > DCAxyCut || TMath::Abs(d0z0Asso[1]) > DCAzCut) continue;

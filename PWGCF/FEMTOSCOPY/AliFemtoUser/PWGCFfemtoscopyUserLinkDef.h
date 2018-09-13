@@ -30,6 +30,7 @@
 #pragma link C++ class AliFemtoModelCorrFctnQinv;
 #pragma link C++ class AliFemtoModelCorrFctnTrueQ;
 #pragma link C++ class AliFemtoModelCorrFctnKK;
+#pragma link C++ class AliFemtoModelCorrFctnKpKp;
 #pragma link C++ class AliFemtoModelCorrFctnNonIdDR;
 #pragma link C++ class AliFemtoModelCorrFctn3DSpherical;
 #pragma link C++ class AliFemtoModelCorrFctn3DLCMSSpherical;
@@ -45,6 +46,7 @@
 //#pragma link C++ class AliFemtoEventReaderESDKine;
 //#pragma link C++ class AliFemtoEventReaderAllESDKine;
 #pragma link C++ class AliFemtoYlm;
+#pragma link C++ class AliFemtoCorrFctn3DLCMSPosQuad;
 #pragma link C++ class AliFemtoCorrFctnDirectYlm;
 #pragma link C++ class AliFemtoModelCorrFctnDirectYlm;
 #pragma link C++ class AliFemtoCorrFctnTPCNcls;
@@ -142,3 +144,9 @@
 #pragma link C++ class AliFemtoPairCutRadialDistanceKKdist;
 // AliFemtoKKTrackCutTest class:
 #pragma link C++ class AliFemtoKKTrackCutTest;
+
+#pragma link C++ class AliFemtoCorrFctnInvMass;
+
+#pragma link C++ class AliFemtoCutMonitorV0CosPointingAngle+;
+#pragma link C++ class AliFemtoCutMonitorV0CosPointingAngle::ParentPIDInfo+;
+

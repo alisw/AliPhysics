@@ -80,7 +80,7 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
 				Int_t   doDeDxMaps              =  0,
                                 Bool_t 	enableV0findingEffi     = kFALSE,    // enables V0finding efficiency histograms
 				Bool_t    enableElecDeDxPostCalibration = kFALSE,
-				TString   fileNameElecDeDxPostCalibration = "dEdxCorrectionMap_Period_Pass.root", 
+				TString   fileNameElecDeDxPostCalibration = "dEdxCorrectionMap_Period_Pass.root",
 				TString additionalTrainConfig   = "0"       // additional counter for trainconfig, this has to be always the last parameter
                               ){
 
@@ -107,7 +107,7 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
   }
 
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton = "00000000000000000500000000";
+  TString cutnumberPhoton = "00000000000000000500004000";
   //"00200008400000002200000000";
 
   TString cutnumberEvent = "00000103";
@@ -119,7 +119,7 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     enableConstructGamma=kTRUE;
   }
   if (trainConfig>100 && trainConfig<200 ){
-    cutnumberPhoton = "10000000000000000500000000";
+    cutnumberPhoton = "10000000000000000500004000";
   }
 
   if (trainConfig ==  8 || trainConfig ==  10 || trainConfig ==  1008 || trainConfig ==  2008 || trainConfig ==  3008 ) {

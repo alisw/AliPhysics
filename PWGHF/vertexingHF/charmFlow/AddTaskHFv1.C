@@ -1,4 +1,4 @@
-AliAnalysisTaskHFv1 *AddTaskHFv1(Int_t harm, Bool_t separateD0D0bar, TString filename="alien:///alice/cern.ch/user/a/abarbano/DstoKKpiCutsCentrality20to50_strongPID.root",AliAnalysisTaskHFv1::DecChannel decCh=AliAnalysisTaskHFv1::kDstoKKpi,TString cutsobjname="AnalysisCuts", Bool_t readMC=kFALSE, TString suffix="", AliAnalysisTaskHFv1::EventPlaneMeth flagep=AliAnalysisTaskHFv1::kVZERO/*kTPC,kTPCVZERO,kVZEROA,kVZEROC*/,Float_t minC=20.,Float_t maxC=50., Bool_t useNewQnFw=kTRUE, AliAnalysisTaskHFv1::FlowMethod meth=AliAnalysisTaskHFv1::kEP/*kSP,kEvShape*/, TString normMethod="QoverM"/*"QoverQlength","QoverSqrtM"*/,AliAnalysisTaskHFv1::q2Method q2meth=AliAnalysisTaskHFv1::kq2TPC/*kq2PosTPC,kq2NegTPC,kq2VZERO,kq2VZEROA,kq2VZEROC}*/, Int_t useAODProtection=1, Bool_t scaling = kFALSE)
+AliAnalysisTaskHFv1 *AddTaskHFv1(Int_t harm, Bool_t separateD0D0bar, TString filename="alien:///alice/cern.ch/user/a/abarbano/DstoKKpiCutsCentrality20to50_strongPID.root",AliAnalysisTaskHFv1::DecChannel decCh=AliAnalysisTaskHFv1::kDstoKKpi,TString cutsobjname="AnalysisCuts", Bool_t readMC=kFALSE, TString suffix="", AliAnalysisTaskHFv1::EventPlaneMeth flagep=AliAnalysisTaskHFv1::kVZERO/*kTPC,kTPCVZERO,kVZEROA,kVZEROC*/,Float_t minC=20.,Float_t maxC=50., Bool_t useNewQnFw=kTRUE, AliAnalysisTaskHFv1::FlowMethod meth=AliAnalysisTaskHFv1::kEP/*kSP,kEvShape*/, TString normMethod="QoverM"/*"QoverQlength","QoverSqrtM"*/,AliAnalysisTaskHFv1::q2Method q2meth=AliAnalysisTaskHFv1::kq2TPC/*kq2PosTPC,kq2NegTPC,kq2VZERO,kq2VZEROA,kq2VZEROC}*/, Int_t useAODProtection=1, Bool_t scaling = kFALSE, TString fileeffname="", TString funceffname="")
 {
   //
   // Test macro for the AliAnalysisTaskSE for  D
@@ -63,14 +63,24 @@ AliAnalysisTaskHFv1 *AddTaskHFv1(Int_t harm, Bool_t separateD0D0bar, TString fil
   if(!analysiscuts){
     AliFatal("Specific AliRDHFCuts not found");
   }
-    
-    TF1 *eff = new TF1("pol2","pol2",3,36);
-    eff->SetParameter(0,-0.05);
-    eff->SetParameter(1,0.02);
-    eff->SetParameter(2,-0.0003);
-    
-    
-    
+  
+  TF1* eff = 0x0;
+  TFile* fileeff = 0x0;
+  if(scaling) {
+    fileeff = TFile::Open(fileeffname.Data());
+    if(!fileeff || (fileeff && !fileeff->IsOpen())) {
+      std::cout<<"Warning: efficiency file not found, setting efficiency TF1 to default." << std::endl;
+      eff = new TF1("pol2","pol2",3,36);
+      eff->SetParameter(0,-0.05);
+      eff->SetParameter(1,0.02);
+      eff->SetParameter(2,-0.0003);
+    }
+    else {
+      eff = (TF1*)fileeff->Get(funceffname.Data());
+      if(!eff) AliFatal("Input efficiency file not found: check your input file for efficiency re-weighting");
+    }
+  }
+
   // Analysis task
   AliAnalysisTaskHFv1 *v2Task = new AliAnalysisTaskHFv1("HFvnAnalysis",analysiscuts,decCh);
     

@@ -69,6 +69,7 @@ AliFemtoTrack::AliFemtoTrack():
   fNSigmaTOFT(0.0f),
   fNSigmaTOFH(0.0f),
   fNSigmaTOFA(0.0f),
+  fMassTOF(0.0f),
   fSigmaToVertex(0.0f),
   fClusters(159),
   fShared(159),
@@ -169,6 +170,7 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fNSigmaTPCT(t.fNSigmaTPCT),
   fNSigmaTPCH(t.fNSigmaTPCH),
   fNSigmaTPCA(t.fNSigmaTPCA),
+  fMassTOF(t.fMassTOF),
   fNSigmaTOFPi(t.fNSigmaTOFPi),
   fNSigmaTOFK(t.fNSigmaTOFK),
   fNSigmaTOFP(t.fNSigmaTOFP),
@@ -283,7 +285,7 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   fNSigmaTPCT=aTrack.fNSigmaTPCT;
   fNSigmaTPCH=aTrack.fNSigmaTPCH;
   fNSigmaTPCA=aTrack.fNSigmaTPCA;
-
+  fMassTOF=aTrack.fMassTOF;
   fNSigmaTOFPi=aTrack.fNSigmaTOFPi;
   fNSigmaTOFK=aTrack.fNSigmaTOFK;
   fNSigmaTOFP=aTrack.fNSigmaTOFP;
@@ -378,7 +380,7 @@ void AliFemtoTrack::SetPidProbPion(const float& x){fPidProbPion = x;}
 void AliFemtoTrack::SetPidProbKaon(const float& x){fPidProbKaon = x;}
 void AliFemtoTrack::SetPidProbProton(const float& x){fPidProbProton = x;}
 void AliFemtoTrack::SetPidProbMuon(const float& x){fPidProbMuon = x;}
-void AliFemtoTrack::SetTofExpectedTimes(const float& tpi, const float& tkn, const float& tpr){fTofPionTime = tpi; fTofKaonTime = tkn; fTofProtonTime = tpr;}
+void AliFemtoTrack::SetTofExpectedTimes(const float& tpi, const float& tkn, const float& tpr, const float& ttof){fTofPionTime = tpi; fTofKaonTime = tkn; fTofProtonTime = tpr; fTofDeuteronTime=ttof;fTofTritonTime=ttof, fTofHe3Time=ttof;fTofAlphaTime=ttof;}
 
 void AliFemtoTrack::SetP(const AliFemtoThreeVector& p){fP = p;}
 void AliFemtoTrack::SetPt(const float& pt){fPt = pt;}
@@ -414,6 +416,7 @@ void AliFemtoTrack::SetNSigmaTPCD(const float& aNSigmaTPCD){fNSigmaTPCD=aNSigmaT
 void AliFemtoTrack::SetNSigmaTPCT(const float& aNSigmaTPCT){fNSigmaTPCT=aNSigmaTPCT;}
 void AliFemtoTrack::SetNSigmaTPCH(const float& aNSigmaTPCH){fNSigmaTPCH=aNSigmaTPCH;}
 void AliFemtoTrack::SetNSigmaTPCA(const float& aNSigmaTPCA){fNSigmaTPCA=aNSigmaTPCA;}
+void AliFemtoTrack::SetMassTOF(const float& aMassTOF){fMassTOF=aMassTOF;}
 
 void AliFemtoTrack::SetNSigmaTOFPi(const float& aNSigmaTOFPi){fNSigmaTOFPi=aNSigmaTOFPi;}
 void AliFemtoTrack::SetNSigmaTOFK(const float& aNSigmaTOFK){fNSigmaTOFK=aNSigmaTOFK;}
@@ -489,6 +492,7 @@ float AliFemtoTrack::NSigmaTOFD() const{return fNSigmaTOFD;}
 float AliFemtoTrack::NSigmaTOFT() const{return fNSigmaTOFT;}
 float AliFemtoTrack::NSigmaTOFH() const{return fNSigmaTOFH;}
 float AliFemtoTrack::NSigmaTOFA() const{return fNSigmaTOFA;}
+float AliFemtoTrack::MassTOF() const{return fMassTOF;}
 float AliFemtoTrack::SigmaToVertex() const{return fSigmaToVertex;}
 float AliFemtoTrack::TOFpionTime() const{return fTofPionTime;}
 float AliFemtoTrack::TOFkaonTime() const{return fTofKaonTime;}

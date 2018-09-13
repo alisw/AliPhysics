@@ -206,17 +206,17 @@ struct AliFemtoAnalysisPionPion::CutParams {
         event_MultMax;
 
   double event_CentralityMin,
-          event_CentralityMax;
+         event_CentralityMax;
 
   double event_VertexZMin,
-          event_VertexZMax;
+         event_VertexZMax;
 
   double event_EP_VZeroMin,
-          event_EP_VZeroMax;
+         event_EP_VZeroMax;
 
-  Int_t   event_TriggerSelection;
-  Bool_t  event_AcceptBadVertex;
-  Bool_t  event_AcceptOnlyPhysics;
+  Int_t event_TriggerSelection;
+  Bool_t event_AcceptBadVertex;
+  Bool_t event_AcceptOnlyPhysics;
 
   // PION - 1
   Float_t pion_1_PtMin,
@@ -228,20 +228,19 @@ struct AliFemtoAnalysisPionPion::CutParams {
   Float_t pion_1_DCAMin,
           pion_1_DCAMax;
 
-  Float_t pion_1_NSigmaMin
-        , pion_1_NSigmaMax
-        ;
+  // Float_t pion_1_NSigmaMin,
+  //        pion_1_NSigmaMax;
 
-  Float_t pion_1_max_impact_xy
-        , pion_1_max_impact_z
-        , pion_1_max_tpc_chi_ndof
-        , pion_1_max_its_chi_ndof
-        ;
+  Float_t pion_1_sigma;
+
+  Float_t pion_1_max_impact_xy,
+          pion_1_max_impact_z,
+          pion_1_max_tpc_chi_ndof,
+          pion_1_max_its_chi_ndof;
 
   UInt_t pion_1_min_tpc_ncls;
   Bool_t pion_1_remove_kinks,
          pion_1_set_label;
-
 
   // PION - 2
   Float_t pion_2_PtMin,
@@ -281,6 +280,7 @@ struct AliFemtoAnalysisPionPion::CutParams {
   Float_t pair_max_share_quality,
           pair_max_share_fraction;
   Bool_t pair_remove_same_label;
+  Int_t pair_algorithm;
 
 };
 

@@ -97,6 +97,11 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fTriggerEfficiency(0x0),
   fESDtrackCutsGlobal(0x0),
   fESDtrackCutsGlobalConstrained(0x0),
+  //fAdditionalPi0PtWeight(),
+  //fAdditionalEtaPtWeight(),
+  //fAdditionalGammaPtWeight(),
+  //fAdditionalK0SPtWeight(),
+  //fAdditionalL0PtWeight(),
   fCentArrayPi0(0x0),
   fCentArrayEta(0x0),
   fCentArrayGamma(0x0),
@@ -171,6 +176,14 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
     for(Int_t j=0;j<7;j++){
       fNonLin[i][j] = 0x0;
     }
+  }
+
+  for(Int_t i=0;i<11;i++){
+    fAdditionalPi0PtWeight[i]   = 0x0;
+    fAdditionalEtaPtWeight[i]   = 0x0;
+    fAdditionalGammaPtWeight[i] = 0x0;
+    fAdditionalK0SPtWeight[i]   = 0x0;
+    fAdditionalL0PtWeight[i]    = 0x0;
   }
 
   fTPCEPName[0] = "TPC";
@@ -266,6 +279,27 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::~AliAnalysisTaskPHOSPi0EtaToGammaGamma()
 
   }
 
+  if(fCentArrayPi0){
+    delete fCentArrayPi0;
+    fCentArrayPi0 = 0x0;
+  }
+  if(fCentArrayEta){
+    delete fCentArrayEta;
+    fCentArrayEta = 0x0;
+  }
+  if(fCentArrayGamma){
+    delete fCentArrayGamma;
+    fCentArrayGamma = 0x0;
+  }
+  if(fCentArrayK0S){
+    delete fCentArrayK0S;
+    fCentArrayK0S = 0x0;
+  }
+  if(fCentArrayL0){
+    delete fCentArrayL0;
+    fCentArrayL0 = 0x0;
+  }
+
   delete fTOFEfficiency;
   fTOFEfficiency = 0x0;
 
@@ -356,9 +390,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     NbinQxy  = 200;
   }
 
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsNormQ1",fEstimator.Data()),Form("Centrality %s vs. |Q_{1}|;centrality (%%);|Q_{1}|",fEstimator.Data()),100,0,100,NbinQxy,-Qxylimit,Qxylimit));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsNormQ2",fEstimator.Data()),Form("Centrality %s vs. |Q_{2}|;centrality (%%);|Q_{2}|",fEstimator.Data()),100,0,100,NbinQxy,-Qxylimit,Qxylimit));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsNormQ3",fEstimator.Data()),Form("Centrality %s vs. |Q_{3}|;centrality (%%);|Q_{3}|",fEstimator.Data()),100,0,100,NbinQxy,-Qxylimit,Qxylimit));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsNormQ1",fEstimator.Data()),Form("Centrality %s vs. |Q_{1}|;centrality (%%);|Q_{1}|",fEstimator.Data()),100,0,100,NbinQxy,0,2. * Qxylimit));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsNormQ2",fEstimator.Data()),Form("Centrality %s vs. |Q_{2}|;centrality (%%);|Q_{2}|",fEstimator.Data()),100,0,100,NbinQxy,0,2. * Qxylimit));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsNormQ3",fEstimator.Data()),Form("Centrality %s vs. |Q_{3}|;centrality (%%);|Q_{3}|",fEstimator.Data()),100,0,100,NbinQxy,0,2. * Qxylimit));
 
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ1x",fEstimator.Data()),Form("Centrality %s vs. Q_{1x};centrality (%%);Q_{1x}",fEstimator.Data()),100,0,100,NbinQxy,-Qxylimit,Qxylimit));
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ1y",fEstimator.Data()),Form("Centrality %s vs. Q_{1y};centrality (%%);Q_{1y}",fEstimator.Data()),100,0,100,NbinQxy,-Qxylimit,Qxylimit));
@@ -370,6 +404,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane12",fEstimator.Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane23",fEstimator.Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane31",fEstimator.Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSinDeltaEventPlane12",fEstimator.Data()),Form("Centrality %s vs. sin(%d #Delta#Psi_{EP});centrality (%%);sin(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSinDeltaEventPlane23",fEstimator.Data()),Form("Centrality %s vs. sin(%d #Delta#Psi_{EP});centrality (%%);sin(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSinDeltaEventPlane31",fEstimator.Data()),Form("Centrality %s vs. sin(%d #Delta#Psi_{EP});centrality (%%);sin(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
 
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsPHOSClusterMultiplicityMC" ,fEstimator.Data()),Form("Centrality %s vs. Cluster Multiplicity;centrality (%%);Ncluster"             ,fEstimator.Data()),100,0,100,201,-0.5,200.5));
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsPHOSClusterMultiplicity"   ,fEstimator.Data()),Form("Centrality %s vs. Cluster Multiplicity;centrality (%%);Ncluster"             ,fEstimator.Data()),100,0,100,201,-0.5,200.5));
@@ -397,7 +435,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
 
   for(Int_t itype=0;itype<Ntype;itype++){
     fOutputContainer->Add(new TH1F(Form("h%sTrackMult"   ,tracktype[itype].Data()),Form("Number of %s track;track multiplicity"                         ,tracktype[itype].Data()),400,0,4000));
-    fOutputContainer->Add(new TH1F(Form("h%sTrackPt"     ,tracktype[itype].Data()),Form("%s track p_{T};p_{T} (GeV/c)"                                  ,tracktype[itype].Data()),1000,0,100));
+    fOutputContainer->Add(new TH1F(Form("h%sTrackPt"     ,tracktype[itype].Data()),Form("%s track p_{T};p_{T} (GeV/c)"                                  ,tracktype[itype].Data()),100,0,100));
     fOutputContainer->Add(new TH2F(Form("h%sTrackEtaPhi" ,tracktype[itype].Data()),Form("%s track #eta vs. #phi;#phi;#eta"                              ,tracktype[itype].Data()),100,0,TwoPi,40,-1,1));
     fOutputContainer->Add(new TH2F(Form("h%sTrackDCA"    ,tracktype[itype].Data()),Form("%s track DCA;DCA_{xy} (cm);DCA_{z} (cm)"                       ,tracktype[itype].Data()),100,-5,5,100,-5,5));
     fOutputContainer->Add(new TH2F(Form("h%sTrackTPCdEdx",tracktype[itype].Data()),Form("%s TPC dE/dx vs. track momentum;p^{track} (GeV/c);dE/dx (a.u.)",tracktype[itype].Data()),200,0,20,200,0,200));
@@ -859,21 +897,16 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
         h1purity->Sumw2();
         fOutputContainer->Add(h1purity);
 
-        //      TH1F *h1CPV = new TH1F(Form("hPurity%s_CPV",PIDName[ip].Data()),Form("p_{T} of true %s in clusters for purity CPV;p_{T} (GeV/c)",PIDName[ip].Data()),NpTgg-1,pTgg);
-        //      h1CPV->Sumw2();
-        //      fOutputContainer->Add(h1CPV);
-        //
-        //      TH1F *h1Disp = new TH1F(Form("hPurity%s_Disp",PIDName[ip].Data()),Form("p_{T} of true %s in clusters for purity Disp;p_{T} (GeV/c)",PIDName[ip].Data()),NpTgg-1,pTgg);
-        //      h1Disp->Sumw2();
-        //      fOutputContainer->Add(h1Disp);
-        //
-        //      TH1F *h1PID = new TH1F(Form("hPurity%s_PID",PIDName[ip].Data()),Form("p_{T} of true %s in clusters for purity PID;p_{T} (GeV/c)",PIDName[ip].Data()),NpTgg-1,pTgg);
-        //      h1PID->Sumw2();
-        //      fOutputContainer->Add(h1PID);
       }
     }
 
     //converted electrons.
+    for(Int_t jp=0;jp<4;jp++){
+      TH1F *h1purity_lce = new TH1F(Form("hPurityLCE_%s",PIDtype[jp].Data()),Form("p_{T} of true late conversion Electron in clusters for purity %s;p_{T} (GeV/c)",PIDtype[jp].Data()),NpTgg-1,pTgg);
+      h1purity_lce->Sumw2();
+      fOutputContainer->Add(h1purity_lce);
+    }
+
     for(Int_t jp=0;jp<4;jp++){
       TH2F *h2e = new TH2F(Form("hElectronRxy_%s",PIDtype[jp].Data()),Form("p_{T} of true Electron in clusters for purity %s vs. V_{prod};p_{T} (GeV/c);R_{xy} (cm)",PIDtype[jp].Data()),NpTgg-1,pTgg,500,0,500);
       h2e->Sumw2();
@@ -2901,14 +2934,15 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
       //only for safety mergin, 240 cm is used.
 
       if(pdg == 22) FillHistogramTH1(fOutputContainer,"hPurityGamma_noPID",pT,weight);
+
       else if(TMath::Abs(pdg) == 11){
         FillHistogramTH2(fOutputContainer,"hElectronRxy_noPID",pT,Rxy,weight);
-        if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_noPID",pT,weight);
         if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
           FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_noPID",pT,Rxy,weight);
-          if(Rxy > Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityGamma_noPID",pT,weight);
+          if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_noPID",pT,weight);
+          else              FillHistogramTH1(fOutputContainer,"hPurityLCE_noPID",pT,weight);
         }
-        else FillHistogramTH1(fOutputContainer,"hPurityOthers_noPID",pT,weight);
+        else FillHistogramTH1(fOutputContainer,"hPurityElectron_noPID",pT,weight);
       }
       else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_noPID",pT,weight);
       else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_noPID",pT,weight);
@@ -2917,18 +2951,28 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
       else if(pdg == -2212)           FillHistogramTH1(fOutputContainer,"hPurityAntiProton_noPID",pT,weight);
       else if(pdg ==  2112)           FillHistogramTH1(fOutputContainer,"hPurityNeutron_noPID",pT,weight);
       else if(pdg == -2112)           FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_noPID",pT,weight);
-      else                            FillHistogramTH1(fOutputContainer,"hPurityOthers_noPID",pT,weight);
+      else{
+        if(pdg == 111){//hadronic interaction
+          //printf("mother pdg of %d is %d and production vertex = %4.3f\n",pdg,pdg_mother,Rxy);
+          if(pdg_mother ==  2212)      FillHistogramTH1(fOutputContainer,"hPurityProton_noPID",pT,weight);
+          else if(pdg_mother == -2212) FillHistogramTH1(fOutputContainer,"hPurityAntiProton_noPID",pT,weight);
+          else if(pdg_mother ==  2112) FillHistogramTH1(fOutputContainer,"hPurityNeutron_noPID",pT,weight);
+          else if(pdg_mother == -2112) FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_noPID",pT,weight);
+          else                         FillHistogramTH1(fOutputContainer,"hPurityOthers_noPID",pT,weight);
+        }
+        else                           FillHistogramTH1(fOutputContainer,"hPurityOthers_noPID",pT,weight);
+      }
 
       if(fPHOSClusterCuts->IsNeutral(ph)){
         if(pdg == 22) FillHistogramTH1(fOutputContainer,"hPurityGamma_CPV",pT,weight);
         else if(TMath::Abs(pdg) == 11){
           FillHistogramTH2(fOutputContainer,"hElectronRxy_CPV",pT,Rxy,weight);
-          if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_CPV",pT,weight);
           if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
             FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_CPV",pT,Rxy,weight);
-            if(Rxy > Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityGamma_CPV",pT,weight);
+            if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_CPV",pT,weight);
+            else              FillHistogramTH1(fOutputContainer,"hPurityLCE_CPV",pT,weight);
           }
-          else FillHistogramTH1(fOutputContainer,"hPurityOthers_CPV",pT,weight);
+          else FillHistogramTH1(fOutputContainer,"hPurityElectron_CPV",pT,weight);
         }
         else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_CPV",pT,weight);
         else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_CPV",pT,weight);
@@ -2937,19 +2981,32 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
         else if(pdg == -2212)           FillHistogramTH1(fOutputContainer,"hPurityAntiProton_CPV",pT,weight);
         else if(pdg ==  2112)           FillHistogramTH1(fOutputContainer,"hPurityNeutron_CPV",pT,weight);
         else if(pdg == -2112)           FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_CPV",pT,weight);
-        else                            FillHistogramTH1(fOutputContainer,"hPurityOthers_CPV",pT,weight);
+        else{
+          if(pdg == 111){//hadronic interaction
+            if(pdg_mother ==  2212)      FillHistogramTH1(fOutputContainer,"hPurityProton_CPV",pT,weight);
+            else if(pdg_mother == -2212) FillHistogramTH1(fOutputContainer,"hPurityAntiProton_CPV",pT,weight);
+            else if(pdg_mother ==  2112) FillHistogramTH1(fOutputContainer,"hPurityNeutron_CPV",pT,weight);
+            else if(pdg_mother == -2112) FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_CPV",pT,weight);
+            else                         FillHistogramTH1(fOutputContainer,"hPurityOthers_CPV",pT,weight);
+          }
+          else                           FillHistogramTH1(fOutputContainer,"hPurityOthers_CPV",pT,weight);
+        }
+
+
+
+
       }//end of CPV
 
       if(fPHOSClusterCuts->AcceptDisp(ph)){
         if(pdg == 22)                   FillHistogramTH1(fOutputContainer,"hPurityGamma_Disp",pT,weight);
         else if(TMath::Abs(pdg) == 11){
           FillHistogramTH2(fOutputContainer,"hElectronRxy_Disp",pT,Rxy,weight);
-          if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_Disp",pT,weight);
           if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
             FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_Disp",pT,Rxy,weight);
-            if(Rxy > Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityGamma_Disp",pT,weight);
+            if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_Disp",pT,weight);
+            else              FillHistogramTH1(fOutputContainer,"hPurityLCE_Disp",pT,weight);
           }
-          else FillHistogramTH1(fOutputContainer,"hPurityOthers_Disp",pT,weight);
+          else FillHistogramTH1(fOutputContainer,"hPurityElectron_Disp",pT,weight);
         }
         else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_Disp",pT,weight);
         else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_Disp",pT,weight);
@@ -2958,19 +3015,30 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
         else if(pdg == -2212)           FillHistogramTH1(fOutputContainer,"hPurityAntiProton_Disp",pT,weight);
         else if(pdg ==  2112)           FillHistogramTH1(fOutputContainer,"hPurityNeutron_Disp",pT,weight);
         else if(pdg == -2112)           FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_Disp",pT,weight);
-        else                            FillHistogramTH1(fOutputContainer,"hPurityOthers_Disp",pT,weight);
+        else{
+          if(pdg == 111){//hadronic interaction
+            if(pdg_mother ==  2212)      FillHistogramTH1(fOutputContainer,"hPurityProton_Disp",pT,weight);
+            else if(pdg_mother == -2212) FillHistogramTH1(fOutputContainer,"hPurityAntiProton_Disp",pT,weight);
+            else if(pdg_mother ==  2112) FillHistogramTH1(fOutputContainer,"hPurityNeutron_Disp",pT,weight);
+            else if(pdg_mother == -2112) FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_Disp",pT,weight);
+            else                         FillHistogramTH1(fOutputContainer,"hPurityOthers_Disp",pT,weight);
+          }
+          else                           FillHistogramTH1(fOutputContainer,"hPurityOthers_Disp",pT,weight);
+        }
+
+
       }//end of Disp
 
       if(fPHOSClusterCuts->AcceptPhoton(ph)){
         if(pdg == 22)                   FillHistogramTH1(fOutputContainer,"hPurityGamma_PID",pT,weight);
         else if(TMath::Abs(pdg) == 11){
           FillHistogramTH2(fOutputContainer,"hElectronRxy_PID",pT,Rxy,weight);
-          if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_PID",pT,weight);
           if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
             FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_PID",pT,Rxy,weight);
-            if(Rxy > Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityGamma_PID",pT,weight);
+            if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_PID",pT,weight);
+            else              FillHistogramTH1(fOutputContainer,"hPurityLCE_PID",pT,weight);
           }
-          else FillHistogramTH1(fOutputContainer,"hPurityOthers_PID",pT,weight);
+          else FillHistogramTH1(fOutputContainer,"hPurityElectron_PID",pT,weight);
         }
         else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_PID",pT,weight);
         else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_PID",pT,weight);
@@ -2979,7 +3047,17 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
         else if(pdg == -2212)           FillHistogramTH1(fOutputContainer,"hPurityAntiProton_PID",pT,weight);
         else if(pdg ==  2112)           FillHistogramTH1(fOutputContainer,"hPurityNeutron_PID",pT,weight);
         else if(pdg == -2112)           FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_PID",pT,weight);
-        else                            FillHistogramTH1(fOutputContainer,"hPurityOthers_PID",pT,weight);
+        else{
+          if(pdg == 111){//hadronic interaction
+            if(pdg_mother ==  2212)      FillHistogramTH1(fOutputContainer,"hPurityProton_PID",pT,weight);
+            else if(pdg_mother == -2212) FillHistogramTH1(fOutputContainer,"hPurityAntiProton_PID",pT,weight);
+            else if(pdg_mother ==  2112) FillHistogramTH1(fOutputContainer,"hPurityNeutron_PID",pT,weight);
+            else if(pdg_mother == -2112) FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_PID",pT,weight);
+            else                         FillHistogramTH1(fOutputContainer,"hPurityOthers_PID",pT,weight);
+          }
+          else                           FillHistogramTH1(fOutputContainer,"hPurityOthers_PID",pT,weight);
+        }
+
       }//end of PID
 
     }//end of M.C.
@@ -3409,8 +3487,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
 
       Double32_t x = p->Vx() - fVertex[0];
       Double32_t y = p->Vy() - fVertex[1];
-      Double32_t z = p->Vz() - fVertex[2];
-      Double32_t Rho = sqrt(x*x + y*y + z*z);
+      //Double32_t z = p->Vz() - fVertex[2];
+      //Double32_t Rho = sqrt(x*x + y*y + z*z);
       Double32_t R = sqrt(x*x + y*y);
 
       //if(Rho > 1.0) continue;//3D
@@ -3674,6 +3752,25 @@ Double_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::Rho(AliAODMCParticle* p)
   return sqrt(x*x + y*y + z*z);
 }
 //________________________________________________________________________
+Double_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::RAbs(AliAODMCParticle* p)
+{
+  //Radius of vertex in cylindrical system.
+
+  Double32_t x = p->Xv();
+  Double32_t y = p->Yv();
+  return sqrt(x*x + y*y);
+}
+//________________________________________________________________________
+Double_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::RhoAbs(AliAODMCParticle* p)
+{
+  //Radius of vertex in spherical system.
+
+  Double32_t x = p->Xv();
+  Double32_t y = p->Yv();
+  Double32_t z = p->Zv();
+  return sqrt(x*x + y*y + z*z);
+}
+//________________________________________________________________________
 Double_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::DeltaPhiIn0Pi(Double_t dphi)
 {
   //this returns dphi in 0-pi range in unit of radian.
@@ -3701,23 +3798,23 @@ Bool_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::IsFrom(Int_t label, Double_t &True
 
     Double32_t x = 999;
     Double32_t y = 999;
-    Double32_t z = 999;
-    Double32_t Rho = 999;
+    //Double32_t z = 999;
+    //Double32_t Rho = 999;
     Double32_t R = 999;
 
-    printf("Nprimary = %d\n",Nprimary);
+    //printf("Nprimary = %d\n",Nprimary);
 
     while(motherid >= Nprimary){
       mp = (TParticle*)fMCArrayESD->Particle(motherid);
       pT = mp->Pt();
       pdg = mp->GetPdgCode(); 
 
-      printf("IsFrom::motherid = %d\n",motherid);
+      //printf("IsFrom::motherid = %d\n",motherid);
 
       x = mp->Vx() - fVertex[0];
       y = mp->Vy() - fVertex[1];
-      z = mp->Vz() - fVertex[2];
-      Rho = sqrt(x*x + y*y + z*z);
+      //z = mp->Vz() - fVertex[2];
+      //Rho = sqrt(x*x + y*y + z*z);
       R = sqrt(x*x + y*y);
 
       //if(TMath::Abs(pdg) == target_pdg && Rho < 1.0){//pi0 from primary vertex
@@ -4458,7 +4555,10 @@ Bool_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::ExtractQnVector()
   //for event plane resolution
   FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane12",fEstimator.Data()),fCentralityMain,TMath::Cos(fHarmonics * (fEventPlane - EP2)));
   FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane23",fEstimator.Data()),fCentralityMain,TMath::Cos(fHarmonics * (EP2         - EP3)));
-  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane31",fEstimator.Data()),fCentralityMain,TMath::Cos(fHarmonics * (fEventPlane - EP3)));
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane31",fEstimator.Data()),fCentralityMain,TMath::Cos(fHarmonics * (EP3 - fEventPlane)));
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSinDeltaEventPlane12",fEstimator.Data()),fCentralityMain,TMath::Sin(fHarmonics * (fEventPlane - EP2)));
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSinDeltaEventPlane23",fEstimator.Data()),fCentralityMain,TMath::Sin(fHarmonics * (EP2         - EP3)));
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSinDeltaEventPlane31",fEstimator.Data()),fCentralityMain,TMath::Sin(fHarmonics * (EP3 - fEventPlane)));
 
   return kTRUE;
 }

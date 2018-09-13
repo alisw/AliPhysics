@@ -183,6 +183,8 @@ fHistRawNtpcchi2(0),
 fHistRawNitsPhi(0), 
 fHistRawNtpcPhi(0), 
 fMCcheckMother(0),
+fMCcheckDdecay(0),
+fMCcheckBdecay(0),
 fMCneutral(0),
 fEMCTrkMatch_Phi(0),
 fEMCTrkMatch_Eta(0),
@@ -322,6 +324,8 @@ fHistRawNtpcchi2(0),
 fHistRawNitsPhi(0), 
 fHistRawNtpcPhi(0), 
 fMCcheckMother(0),
+fMCcheckDdecay(0),
+fMCcheckBdecay(0),
 fMCneutral(0),
 fEMCTrkMatch_Phi(0),
 fEMCTrkMatch_Eta(0),
@@ -669,7 +673,11 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
      fOutputList->Add(fInvmassPi0Dalitz);
      */
     fMCcheckMother = new TH2F("fMCcheckMother", "Mother MC PDG", 1000,-0.5,999.5,50,0,50);
+    fMCcheckBdecay = new TH1F("fMCcheckBdecay", "p_{T} distribution from B decay",50,0,50);
+    fMCcheckDdecay = new TH1F("fMCcheckDdecay", "p_{T} distribution from D decay",50,0,50);
     fOutputList->Add(fMCcheckMother);
+    fOutputList->Add(fMCcheckBdecay);
+    fOutputList->Add(fMCcheckDdecay);
     
     fMCneutral = new TH2F("fMCneutral","pi0 and eta pT from Hijing and enhance",6,-0.5,5.5,500,0,50);
     fOutputList->Add(fMCneutral);
@@ -1544,6 +1552,10 @@ void AliAnalysisTaskHFEemcQA::CheckMCgen(AliAODMCHeader* fMCheader)
         {
             if(pdgGen==411 || pdgGen==421 || pdgGen==413 || pdgGen==423 || pdgGen==431 || pdgGen==433)fMCcheckMother->Fill(pdgGen,fMCparticle->Pt());
             if(pdgGen==511 || pdgGen==521 || pdgGen==513 || pdgGen==523 || pdgGen==531 || pdgGen==533)fMCcheckMother->Fill(pdgGen,fMCparticle->Pt());
+						if(TMath::Abs(pdgGen)==11){
+            if(pdgMom==411 || pdgMom==421 || pdgMom==413 || pdgMom==423 || pdgMom==431 || pdgMom==433)fMCcheckDdecay->Fill(fMCparticle->Pt());
+            if(pdgMom==511 || pdgMom==521 || pdgMom==513 || pdgMom==523 || pdgMom==531 || pdgMom==533)fMCcheckBdecay->Fill(fMCparticle->Pt());
+						}
         }
         if(iPhoenhance==1)
         {

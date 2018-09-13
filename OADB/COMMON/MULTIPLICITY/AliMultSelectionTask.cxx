@@ -182,13 +182,13 @@ AliMultSelectionTask::AliMultSelectionTask()
       fNDebug(1),
       fAliCentralityV0M(0),
       fPPVsMultUtilsV0M(0),
-      fMC_NColl(-1),
-      fMC_NPart(-1),
-      fMC_NchV0A(-1),
-      fMC_NchV0C(-1),
-      fMC_NchEta05(-1),
-      fMC_NchEta08(-1),
-      fMC_NchEta10(-1),
+      fMC_NColl(0),
+      fMC_NPart(0),
+      fMC_NchV0A(0),
+      fMC_NchV0C(0),
+      fMC_NchEta05(0),
+      fMC_NchEta08(0),
+      fMC_NchEta10(0),
       
       //Histos
       fHistEventCounter(0),
@@ -329,13 +329,13 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
       fNDebug(1),
       fAliCentralityV0M(0),
       fPPVsMultUtilsV0M(0),
-      fMC_NColl(-1),
-      fMC_NPart(-1),
-      fMC_NchV0A(-1),
-      fMC_NchV0C(-1),
-      fMC_NchEta05(-1),
-      fMC_NchEta08(-1),
-      fMC_NchEta10(-1),
+      fMC_NColl(0),
+      fMC_NPart(0),
+      fMC_NchV0A(0),
+      fMC_NchV0C(0),
+      fMC_NchEta05(0),
+      fMC_NchEta08(0),
+      fMC_NchEta10(0),
       
       //Histos
       fHistEventCounter(0),
@@ -548,7 +548,30 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fNPartINELgtONE   =       new AliMultVariable("fNPartINELgtONE");
 
     fEvSel_VtxZ = new AliMultVariable("fEvSel_VtxZ");
-
+    
+    fTreeEvent->Branch("fMC_NPart",      &fMC_NPart, "fMC_NPart/I");
+    fTreeEvent->Branch("fMC_NColl",      &fMC_NColl, "fMC_NColl/I");
+    fTreeEvent->Branch("fMC_NchV0A",      &fMC_NchV0A, "fMC_NchV0A/I");
+    fTreeEvent->Branch("fMC_NchV0C",      &fMC_NchV0C, "fMC_NchV0C/I");
+    fTreeEvent->Branch("fMC_NchEta05",      &fMC_NchEta05, "fMC_NchEta05/I");
+    fTreeEvent->Branch("fMC_NchEta08",      &fMC_NchEta08, "fMC_NchEta08/I");
+    fTreeEvent->Branch("fMC_NchEta10",      &fMC_NchEta10, "fMC_NchEta10/I");
+    
+    fMC_NPart =         new AliMultVariable("fMC_NPart");
+    fMC_NPart->SetIsInteger(kTRUE);
+    fMC_NColl =         new AliMultVariable("fMC_NColl");
+    fMC_NColl->SetIsInteger(kTRUE);
+    fMC_NchV0A =         new AliMultVariable("fMC_NchV0A");
+    fMC_NchV0A->SetIsInteger(kTRUE);
+    fMC_NchV0C =         new AliMultVariable("fMC_NchV0C");
+    fMC_NchV0C->SetIsInteger(kTRUE);
+    fMC_NchEta05 =         new AliMultVariable("fMC_NchEta05");
+    fMC_NchEta05->SetIsInteger(kTRUE);
+    fMC_NchEta08 =         new AliMultVariable("fMC_NchEta08");
+    fMC_NchEta08->SetIsInteger(kTRUE);
+    fMC_NchEta10 =         new AliMultVariable("fMC_NchEta10");
+    fMC_NchEta10->SetIsInteger(kTRUE);
+    
     //Add to AliMultInput Object, will later bind to TTree object in a loop
     fInput->AddVariable( fAmplitude_V0A );
     fInput->AddVariable( fAmplitude_V0A1 );
@@ -600,6 +623,19 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fInput->AddVariable( fNTracksINELgtONE         );
     fInput->AddVariable( fNPartINELgtONE           );
     fInput->AddVariable( fEvSel_VtxZ );
+    
+    if ( fkDebugIsMC ){
+        //Only add to pool of variables in case this is deliberately flagged as MC
+        fInput->AddVariable( fMC_NPart );
+        fInput->AddVariable( fMC_NColl );
+        fInput->AddVariable( fMC_NchV0A );
+        fInput->AddVariable( fMC_NchV0C );
+        fInput->AddVariable( fMC_NchEta05 );
+        fInput->AddVariable( fMC_NchEta08 );
+        fInput->AddVariable( fMC_NchEta10 );
+    }
+    
+    //Add Monte Carlo AliMultVariables for MC selection
 
     if( fkCalibration ) {
         fTreeEvent = new TTree("fTreeEvent","Event");
@@ -627,16 +663,6 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fTreeEvent->Branch("fEvSel_TriggerMask", &fEvSel_TriggerMask, "fEvSel_TriggerMask/i");
         //A.T. FIXME change into AliMultVariable
         fTreeEvent->Branch("fnContributors", &fnContributors, "fnContributors/I");
-
-        if( fkDebugIsMC ) {
-            fTreeEvent->Branch("fMC_NPart",      &fMC_NPart, "fMC_NPart/I");
-            fTreeEvent->Branch("fMC_NColl",      &fMC_NColl, "fMC_NColl/I");
-            fTreeEvent->Branch("fMC_NchV0A",      &fMC_NchV0A, "fMC_NchV0A/I");
-            fTreeEvent->Branch("fMC_NchV0C",      &fMC_NchV0C, "fMC_NchV0C/I");
-            fTreeEvent->Branch("fMC_NchEta05",      &fMC_NchEta05, "fMC_NchEta05/I");
-            fTreeEvent->Branch("fMC_NchEta08",      &fMC_NchEta08, "fMC_NchEta08/I");
-            fTreeEvent->Branch("fMC_NchEta10",      &fMC_NchEta10, "fMC_NchEta10/I");
-        }
 
         //Automatic Loop for linking directly to AliMultInput
         for( Long_t iVar=0; iVar<fInput->GetNVariables(); iVar++) {
@@ -1021,11 +1047,11 @@ void AliMultSelectionTask::UserExec(Option_t *)
     Float_t multADC =0;
     Float_t multAD =0;
 
-    fMC_NchV0A = -1;
-    fMC_NchV0C = -1;
-    fMC_NchEta05 = -1;
-    fMC_NchEta08 = -1;
-    fMC_NchEta10 = -1;
+    fMC_NchV0A->SetValueInteger(-1);
+    fMC_NchV0C->SetValueInteger(-1);
+    fMC_NchEta05->SetValueInteger(-1);
+    fMC_NchEta08->SetValueInteger(-1);
+    fMC_NchEta10->SetValueInteger(-1);
     Float_t npartINELgtONE = -1.;
 
     // Connect to the InputEvent
@@ -1075,15 +1101,19 @@ void AliMultSelectionTask::UserExec(Option_t *)
     //------------------------------------------------
     //Information from MC (thanks to Alberica)
     //Don't forget to set: some of the "ifs" may not be there
-    fMC_NColl = -1;
-    fMC_NPart = -1;
+    fMC_NPart->SetValueInteger(0);
+    fMC_NColl->SetValueInteger(0);
+    fMC_NchV0A->SetValueInteger(0);
+    fMC_NchV0C->SetValueInteger(0);
+    fMC_NchEta05->SetValueInteger(0);
+    fMC_NchEta08->SetValueInteger(0);
+    fMC_NchEta10->SetValueInteger(0);
 
     if ( fkDebugIsMC ) {
         AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
         AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
         AliStack*    stack=0;
         AliMCEvent*  mcEvent=0;
-
 
         if (eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
 
@@ -1105,12 +1135,12 @@ void AliMultSelectionTask::UserExec(Option_t *)
                 dpmHeader = (AliGenDPMjetEventHeader*)mcGenH;
             }
             if(hHijing)   {
-                fMC_NPart = hHijing->ProjectileParticipants()+hHijing->TargetParticipants();
-                fMC_NColl = hHijing->NN()+hHijing->NNw()+hHijing->NwN()+hHijing->NwNw();
+                fMC_NPart ->SetValueInteger( hHijing->ProjectileParticipants()+hHijing->TargetParticipants() );
+                fMC_NColl ->SetValueInteger( hHijing->NN()+hHijing->NNw()+hHijing->NwN()+hHijing->NwNw() );
             }
             if(dpmHeader) {
-                fMC_NPart =dpmHeader->ProjectileParticipants()+dpmHeader->TargetParticipants();
-                fMC_NColl =dpmHeader->NN()+dpmHeader->NNw()+dpmHeader->NwN()+dpmHeader->NwNw();
+                fMC_NPart ->SetValueInteger( dpmHeader->ProjectileParticipants()+dpmHeader->TargetParticipants());
+                fMC_NColl ->SetValueInteger( dpmHeader->NN()+dpmHeader->NNw()+dpmHeader->NwN()+dpmHeader->NwNw());
             }
             
             //check EPOS info, if available
@@ -1120,20 +1150,20 @@ void AliMultSelectionTask::UserExec(Option_t *)
                     lHepMCHeader = (AliGenHepMCEventHeader*)mcGenH;
                 
                 if (lHepMCHeader ){
-                    fMC_NPart = lHepMCHeader->Npart_proj()+lHepMCHeader->Npart_targ();
-                    fMC_NColl = lHepMCHeader->N_Nwounded_collisions() +
+                    fMC_NPart ->SetValueInteger( lHepMCHeader->Npart_proj()+lHepMCHeader->Npart_targ() );
+                    fMC_NColl ->SetValueInteger( lHepMCHeader->N_Nwounded_collisions() +
                                 lHepMCHeader->Nwounded_N_collisions() +
-                                lHepMCHeader->Nwounded_Nwounded_collisions();
+                                lHepMCHeader->Nwounded_Nwounded_collisions() );
                 }
             }
 
             //Nch information in V0A and V0C acceptance
             //Initialize counters to valid!
-            fMC_NchV0A = 0;
-            fMC_NchV0C = 0;
-            fMC_NchEta05 = 0;
-            fMC_NchEta08 = 0;
-            fMC_NchEta10 = 0;
+            Long_t lCounter_NchV0A = 0;
+            Long_t lCounter_NchV0C = 0;
+            Long_t lCounter_NchEta05 = 0;
+            Long_t lCounter_NchEta08 = 0;
+            Long_t lCounter_NchEta10 = 0;
             npartINELgtONE = 0.;
             //----- Loop on Stack ----------------------------------------------------------------
             for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (stack->GetNtrack()); iCurrentLabelStack++)
@@ -1148,14 +1178,19 @@ void AliMultSelectionTask::UserExec(Option_t *)
                 Double_t gpt = particleOne -> Pt();
                 Double_t geta = particleOne -> Eta();
 
-                if( 2.8 < geta && geta < 5.1 ) fMC_NchV0A++;
-                if(-3.7 < geta && geta <-1.7 ) fMC_NchV0C++;
-                if(TMath::Abs( geta ) < 1.0 ) fMC_NchEta10++;
-                if(TMath::Abs( geta ) < 0.8 ) fMC_NchEta08++;
-                if(TMath::Abs( geta ) < 0.5 ) fMC_NchEta05++;
+                if( 2.8 < geta && geta < 5.1 ) lCounter_NchV0A++;
+                if(-3.7 < geta && geta <-1.7 ) lCounter_NchV0C++;
+                if(TMath::Abs( geta ) < 1.0 ) lCounter_NchEta10++;
+                if(TMath::Abs( geta ) < 0.8 ) lCounter_NchEta08++;
+                if(TMath::Abs( geta ) < 0.5 ) lCounter_NchEta05++;
                 if(TMath::Abs( geta ) < 0.8 && gpt>0.4) npartINELgtONE++;
             }//End of loop on tracks
             //----- End Loop on Stack ------------------------------------------------------------
+            fMC_NchV0A->SetValueInteger(lCounter_NchV0A);
+            fMC_NchV0C->SetValueInteger(lCounter_NchV0C);
+            fMC_NchEta05->SetValueInteger(lCounter_NchEta05);
+            fMC_NchEta08->SetValueInteger(lCounter_NchEta08);
+            fMC_NchEta10->SetValueInteger(lCounter_NchEta10);
             fNPartINELgtONE->SetValue(npartINELgtONE);
         }
     }
@@ -2079,6 +2114,16 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     if (sel) {
         sel->SetName(fStoredObjectName.Data());
     }
+    
+    //Full Manual Bypass Mode (DEBUG ONLY)
+    if ( fAlternateOADBFullManualBypassMC.EqualTo("")==kFALSE ) {
+        AliWarning(" Extra option detected: FULL MANUAL BYPASS of MONTE CARLO OADB Location ");
+        AliWarning(" --- Warning: Use with care ---");
+        AliWarning(Form(" New complete path: %s", fAlternateOADBFullManualBypassMC.Data() ));
+        fAlternateOADBForEstimators = Form("%s", fAlternateOADBFullManualBypassMC.Data() );
+        //If bypassed, pass info
+        AliWarning( Form("MC-BYPASS confirmation: %s", fAlternateOADBForEstimators.Data()) );
+    }
 
     //=====================================================================
     //Option to override estimators from alternate oadb file
@@ -2090,6 +2135,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         
         TString fileNameAlter =(Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), fAlternateOADBForEstimators.Data() ));
 
+        /*
         //Full Manual Bypass Mode (DEBUG ONLY)
         if ( fAlternateOADBFullManualBypassMC.EqualTo("")==kFALSE ) {
             AliWarning(" Extra option detected: FULL MANUAL BYPASS of MONTE CARLO OADB Location ");
@@ -2099,6 +2145,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
             //If bypassed, pass info
             lmuOADBref = Form("MC-BYPASS: %s", fAlternateOADBFullManualBypassMC.Data());
         }
+         */
         
         //Managed to open, save name of opened OADB file
         lHistTitle.Append(Form(", muOADB: %s",lmuOADBref.Data()));
@@ -2588,8 +2635,12 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
 
     //2018
     if ( fCurrentRun >= 285008 && fCurrentRun <= 285447 ) lProductionName = "LHC18b"; 
+    if ( fCurrentRun >= 285466 && fCurrentRun <= 285958 ) lProductionName = "LHC18c"; 
     if ( fCurrentRun >= 285978 && fCurrentRun <= 286350 ) lProductionName = "LHC18d"; 
     if ( fCurrentRun >= 286380 && fCurrentRun <= 286937 ) lProductionName = "LHC18e"; 
+    if ( fCurrentRun >= 287000 && fCurrentRun <= 287977 ) lProductionName = "LHC18f"; 
+    if ( fCurrentRun >= 288619 && fCurrentRun <= 288750 ) lProductionName = "LHC18g"; 
+    if ( fCurrentRun >= 288804 && fCurrentRun <= 288806 ) lProductionName = "LHC18h";
     
     //Registered Productions : Run 2 Pb-Pb
     if ( fCurrentRun >= 243395 && fCurrentRun <= 243984 ) lProductionName = "LHC15m";
@@ -2671,9 +2722,13 @@ TString AliMultSelectionTask::GetSystemTypeByRunNumber() const
 
     //2018
     if ( fCurrentRun >= 285008 && fCurrentRun <= 285447 ) lSystemType = "pp"; 
+    if ( fCurrentRun >= 285466 && fCurrentRun <= 285958 ) lSystemType = "pp"; 
     if ( fCurrentRun >= 285978 && fCurrentRun <= 286350 ) lSystemType = "pp"; 
     if ( fCurrentRun >= 286380 && fCurrentRun <= 286937 ) lSystemType = "pp"; 
-    
+    if ( fCurrentRun >= 287000 && fCurrentRun <= 287977 ) lSystemType = "pp"; 
+    if ( fCurrentRun >= 288619 && fCurrentRun <= 288750 ) lSystemType = "pp";
+    if ( fCurrentRun >= 288804 && fCurrentRun <= 288806 ) lSystemType = "pp";
+
     //Registered Productions : Run 2 Pb-Pb
     if ( fCurrentRun >= 243395 && fCurrentRun <= 243984 ) lSystemType = "Pb-Pb";
     if ( fCurrentRun >= 244917 && fCurrentRun <= 246994 ) lSystemType = "Pb-Pb";

@@ -167,6 +167,7 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   TH1F                                *fhPhiTriggerHadronEventPlane;
   TH1F                                *fhPhiTriggerHadronEventPlaneTPC;
   TH1F                                *fhTrackPt;
+  TH1F                                *fhTrackEta;
   TH2F                                *fhGroomedPtvJetPt;
   TH1F                                *fhDroppedBranches;
   TH1F                                *fhDetJetPt_Incl;

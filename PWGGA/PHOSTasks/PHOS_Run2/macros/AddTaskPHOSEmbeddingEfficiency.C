@@ -4,12 +4,15 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
     const UInt_t trigger = AliVEvent::kINT7,
     const TString CollisionSystem = "PbPb",
     const Bool_t isMC = kFALSE,
-    const TString triggerinput = "",//L1H,L1M,L1L,L0
+    const Int_t L1input = -1,//L1H,L1M,L1L
+    const Int_t L0input = -1,//L0
     const Float_t CenMin = 0.,
     const Float_t CenMax = 90.,
     const Int_t NMixed   = 10,
     const Bool_t FlowTask = kFALSE,
     const Int_t harmonics = -1,
+    const Int_t FlowMethod = -1,
+    const Int_t QnDetector = -1,
     const Bool_t useCoreE = kTRUE,
     const Bool_t useCoreDisp = kTRUE,
     const Double_t NsigmaCPV  = 3.0,
@@ -21,7 +24,10 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
     const Double_t distBC = 0.0,//minimum distance to bad channel.
     const Double_t Emin = 0.2,
     const Bool_t isJJMC = kFALSE,
-    const TString MCtype = "MBMC"
+    const TString MCtype = "MBMC",
+    const Bool_t ForceActiveTRU = kFALSE,
+    const Bool_t ApplyTOFTrigger = kFALSE,
+    const AliPHOSEventCuts::PileupFinder pf = AliPHOSEventCuts::kMultiVertexer
     )
 {
   //Add a task AliAnalysisTaskPHOSEmbeddingEfficiency to the analysis train
@@ -44,13 +50,26 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
 	else if(trigger == (UInt_t)AliVEvent::kINT7) TriggerName = "kINT7";
 	else if(trigger == (UInt_t)AliVEvent::kPHI7) TriggerName = "kPHI7";
 
-  if(trigger == (UInt_t)AliVEvent::kPHI7){
-    if(triggerinput.Contains("L1") || triggerinput.Contains("L0")){
-      TriggerName = TriggerName + "_" + triggerinput;
+//  if(trigger == (UInt_t)AliVEvent::kPHI7){
+//    if(triggerinput.Contains("L1") || triggerinput.Contains("L0")){
+//      TriggerName = TriggerName + "_" + triggerinput;
+//
+//    }
+//    else{
+//      ::Error("AddTaskPHOSEmbeddingEfficiency", "PHOS trigger analysis requires at least trigger input (L0 or L1[H,M,L]).");
+//      return NULL;
+//    }
+//  }
 
+  if(trigger & AliVEvent::kPHI7){
+    if(L1input > 0){
+      if(L1input == 7)      TriggerName = TriggerName + "_" + "L1H";
+      else if(L1input == 6) TriggerName = TriggerName + "_" + "L1M";
+      else if(L1input == 5) TriggerName = TriggerName + "_" + "L1L";
     }
+    else if(L0input > 0)    TriggerName = TriggerName + "_" + "L0";
     else{
-      ::Error("AddTaskPHOSEmbeddingEfficiency", "PHOS trigger analysis requires at least trigger input (L0 or L1[H,M,L]).");
+      ::Error("AddTaskPHOSPi0EtaToGammaGamma", "PHOS trigger analysis requires at least 1 trigger input (L0 or L1[H,M,L]).");
       return NULL;
     }
   }
@@ -71,18 +90,48 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
 
   TString taskname = "";
   if(FlowTask){
-     if(harmonics > 0) taskname = Form("%s_%s_%s_%s_Cen%d_%d%s_Harmonics%d_BS%dns_DBC%dcell_Emin%dMeV",name,parname.Data(),CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),harmonics,(Int_t)bs,(Int_t)(distBC),(Int_t)(Emin*1e+3));
-      else{
-        ::Error("AddTaskPHOSEmbeddingEfficiency", "Qn flow vector correction is ON, but you do not set harmonics.");
-        return NULL;
-      }
+    if(harmonics <= 0){
+      ::Error("AddTaskPHOSPi0EtaToGammaGamma", "Qn flow vector correction is ON, but you do not set harmonics.");
+      return NULL;
+    }
+
+    TString FMname = "";
+    if(FlowMethod == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kEP)      FMname = "EP";
+    else if(FlowMethod == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kSP) FMname = "SP";
+
+    TString detname = "";
+    if(QnDetector == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kFullTPC)        detname = "FullTPC";
+    else if(QnDetector == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTPCNegEta) detname = "TPCNegEta";
+    else if(QnDetector == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTPCPosEta) detname = "TPCPosEta";
+    else if(QnDetector == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kFullV0)    detname = "FullV0";
+    else if(QnDetector == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kV0A)       detname = "V0A";
+    else if(QnDetector == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kV0C)       detname = "V0C";
+    else{
+      ::Error("AddTaskPHOSPi0EtaToGammaGamma", "detector to measure Qn vector does not exist.");
+      return NULL;
+    }
+
+    taskname = Form("%s_%s_%s_%s_Cen%d_%d%s_Harmonics%d_%s_%s_BS%dns_DBC%dcell_Emin%dMeV",name,parname.Data(),CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),harmonics,FMname.Data(),detname.Data(),(Int_t)bs,(Int_t)(distBC),(Int_t)(Emin*1e+3));
+
   }
   else taskname = Form("%s_%s_%s_%s_Cen%d_%d%s_BS%dns_DBC%dcell_Emin%dMeV",name,parname.Data(),CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),(Int_t)bs,(Int_t)(distBC),(Int_t)(Emin*1e+3));
+  if((trigger & AliVEvent::kPHI7) && ApplyTOFTrigger) taskname += "_TOFTrigger";
+  if(ForceActiveTRU) taskname += "_ForceActiveTRU";
 
   AliAnalysisTaskPHOSEmbeddingEfficiency* task = new AliAnalysisTaskPHOSEmbeddingEfficiency(taskname);
-  task->SelectCollisionCandidates(trigger);
 
-  if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(triggerinput);
+  Double_t Ethre = 8.0;
+  if(L1input == 7)       Ethre = 8.0;
+  else if(L1input == 6)  Ethre = 4.0;
+  else if(L1input == 5)  Ethre = 4.0;
+  else if(L0input == 9)  Ethre = 0.0;//LHC15n
+  else if(L0input == 17) Ethre = 0.0;//LHC17p
+  if(trigger & AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,ApplyTOFTrigger,-1);
+  if(kMC && (trigger & AliVEvent::kPHI7)) trigger = AliVEvent::kINT7;//change trigger selection in MC when you do PHOS trigger analysis.
+  if(ForceActiveTRU) task->SetForceActiveTRU(L1input,L0input,Ethre,isMC);//this is to measure rejection factor from cluster energy kPHI7/kINT7 with same acceptance.
+
+  task->SelectCollisionCandidates(trigger);
+  task->SetTriggerThreshold(Ethre);
 
   task->SetEmbeddedParticle(parname);
   task->SetCollisionSystem(systemID);//colliions system : pp=0, PbPb=1, pPb (Pbp)=2;
@@ -95,7 +144,7 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
   task->SetMCFlag(isMC);
 //  task->SetCoreEnergyFlag(useCoreE);
 
-  task->SetEventCuts(isMC);
+  task->SetEventCuts(isMC,pf);
   task->SetClusterCuts(useCoreDisp,NsigmaCPV,NsigmaDisp,useCoreE,distBC);
 
   task->SetCentralityMin(CenMin);
@@ -103,6 +152,8 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
   task->SetDepthNMixed(NMixed);
   task->SetQnVectorTask(FlowTask);
   task->SetHarmonics(harmonics);
+  task->SetFlowMethod(FlowMethod);
+  task->SetQnDetector(QnDetector);
 
   //set minimum energy
   task->SetEmin(Emin);
@@ -142,13 +193,22 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
       const Double_t p3[Ncen_Pi0-1] = {3.06202e-01, 3.12875e-01, 3.13599e-01, 3.14247e-01, 3.05660e-01, 3.01051e-01, 2.89748e-01, 2.75489e-01, 2.64481e-01, 2.50078e-01};//T
       const Double_t p4[Ncen_Pi0-1] = {2.73068e+00, 2.72595e+00, 2.70812e+00, 2.68939e+00, 2.64558e+00, 2.61370e+00, 2.56506e+00, 2.53088e+00, 2.51428e+00, 2.43636e+00};//n
 
+      //printf("reading...alien:///alice/cern.ch/user/d/dsekihat/InputPtSpectra/InputPtSpectra_Embedding_PbPb_5.02TeV.root\n");
+      //TFile *rootfile_pi0 = TFile::Open("alien:///alice/cern.ch/user/d/dsekihat/InputPtSpectra/InputPtSpectra_Embedding_PbPb_5.02TeV.root","READ");
+
       for(Int_t icen=0;icen<Ncen_Pi0-1;icen++){
         f1weightPi0[icen] = new TF1(Form("f1weightPi0_%d",icen),"[0] * TMath::Exp(-(TMath::Sqrt(x*x + 0.139*0.139) - 0.139) / [1]) + [2] * TMath::Power(1 + (x*x)/([3]*[3]*[4]) , -[4])",0,100);//TCM fit to PbPb
         f1weightPi0[icen]->SetParameters(p0[icen],p1[icen],p2[icen],p3[icen],p4[icen]);
         f1weightPi0[icen]->SetNpx(1000);
         farray_Pi0->Add(f1weightPi0[icen]);
+
+        //Int_t cen1 = centrality_Pi0[icen];
+        //Int_t cen2 = centrality_Pi0[icen+1];
+        //TF1 *f1weight = (TF1*)rootfile_pi0->Get(Form("f1weightPi0_Cen%d_%d",cen1,cen2));
+        //farray_Pi0->Add(f1weight);
       }
       task->SetAdditionalPi0PtWeightFunction(centarray_Pi0,farray_Pi0);
+      //rootfile_pi0->Close();
     }
 
     else if(parname.Contains("Eta",TString::kIgnoreCase)){

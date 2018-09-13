@@ -30,7 +30,6 @@ class AliAnalysisTaskPHOSSingleSim : public AliAnalysisTaskPHOSPi0EtaToGammaGamm
 
     virtual void ProcessMC();
     void SetWeightToClusters();
-    Int_t FindCommonParent(Int_t iPart, Int_t jPart);
 
     void FillPhoton();
     void FillMgg();
@@ -38,13 +37,12 @@ class AliAnalysisTaskPHOSSingleSim : public AliAnalysisTaskPHOSPi0EtaToGammaGamm
 
   protected:
     TString fParticleName;
-    TClonesArray *fMCArray;
 
   private:
     AliAnalysisTaskPHOSSingleSim(const AliAnalysisTaskPHOSSingleSim&); // not implemented
     AliAnalysisTaskPHOSSingleSim& operator=(const AliAnalysisTaskPHOSSingleSim&); // not implemented
 
-    ClassDef(AliAnalysisTaskPHOSSingleSim, 2);
+    ClassDef(AliAnalysisTaskPHOSSingleSim, 4);
 };
 
 #endif

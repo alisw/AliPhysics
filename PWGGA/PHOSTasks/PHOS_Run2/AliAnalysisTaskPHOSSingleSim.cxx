@@ -81,8 +81,7 @@ ClassImp(AliAnalysisTaskPHOSSingleSim)
 //________________________________________________________________________
 AliAnalysisTaskPHOSSingleSim::AliAnalysisTaskPHOSSingleSim(const char *name):
   AliAnalysisTaskPHOSPi0EtaToGammaGamma(name),
-  fParticleName(""),
-  fMCArray(0x0)
+  fParticleName("")
 {
   // Constructor
 
@@ -107,31 +106,6 @@ void AliAnalysisTaskPHOSSingleSim::UserCreateOutputObjects()
   // Called once
 
   AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects();
-
-//  const Int_t NpTgg = 101;
-//  Double_t pTgg[NpTgg]={};
-//  for(Int_t i=0;i<50;i++)     pTgg[i] = 0.1 * i;            //every 0.1 GeV/c, up to 5 GeV/c
-//  for(Int_t i=50;i<60;i++)    pTgg[i] = 0.5 * (i-50) + 5.0; //every 0.5 GeV/c, up to 10 GeV/c
-//  for(Int_t i=60;i<NpTgg;i++) pTgg[i] = 1.0 * (i-60) + 10.0;//every 1.0 GeV/c, up to 50 GeV/c
-//
-//  const Int_t Npar = 3;
-//  const TString parname[Npar] = {"Pi0","Eta","Gamma"};
-//  for(Int_t ipar=0;ipar<Npar;ipar++){
-//    TH1F *h1Pt = new TH1F(Form("hGenEmbedded%sPt",parname[ipar].Data()        ),Form("generated %s pT",parname[ipar].Data()        ),NpTgg-1,pTgg);
-//    h1Pt->Sumw2();
-//    fOutputContainer->Add(h1Pt);
-//
-//    TH2F *h2EtaPhi = new TH2F(Form("hGenEmbedded%sEtaPhi",parname[ipar].Data()),Form("generated %s eta vs phi",parname[ipar].Data()),200,-1,1,60,0,TMath::TwoPi());
-//    h2EtaPhi->Sumw2();
-//    fOutputContainer->Add(h2EtaPhi);
-//
-//    TH2F *h2EtaPt = new TH2F(Form("hGenEmbedded%sEtaPt",parname[ipar].Data()  ),Form("generated %s eta vs pT",parname[ipar].Data() ),200,-1,1,NpTgg-1,pTgg);
-//    h2EtaPt->Sumw2();
-//    fOutputContainer->Add(h2EtaPt);
-//
-//  }//end of particle loop
-
-
   PostData(1,fOutputContainer);
 
 }
@@ -269,7 +243,6 @@ void AliAnalysisTaskPHOSSingleSim::ProcessMC()
   Double_t pT=0, rapidity=0, phi=0;
   Int_t pdg = 0;
   TString parname = "";
-  TString genname = "";
 
   const Int_t Ntrack = fMCArrayAOD->GetEntriesFast();
 
@@ -288,7 +261,9 @@ void AliAnalysisTaskPHOSSingleSim::ProcessMC()
 
     //printf("pdg = %d , Rho = %e cm\n",pdg,Rho(p));
     //if(RhoEMB(p) > 1.0) continue;
+    if(RAbs(p) > 1.0) continue;//select only primary particles in 2D.
 
+    parname = "";
     if(pdg==111){//pi0
       parname = "Pi0";
       if(Are2GammasInPHOSAcceptance(i)){
@@ -311,6 +286,7 @@ void AliAnalysisTaskPHOSSingleSim::ProcessMC()
       parname = "Gamma";
     }
     else{
+      parname = "";
       continue;
     }
 
@@ -345,36 +321,8 @@ void AliAnalysisTaskPHOSSingleSim::SetWeightToClusters()
 
 }
 //________________________________________________________________________
-Int_t AliAnalysisTaskPHOSSingleSim::FindCommonParent(Int_t iPart, Int_t jPart)
-{
-  //check if there is a common parent for particles i and j
-  // -1: no common parent or wrong iPart/jPart
-
-  Int_t ntrack = fMCArrayAOD->GetEntriesFast();
-  if(iPart==-1 || iPart>=ntrack || jPart==-1 || jPart>=ntrack) return -1;
-
-  Int_t iprim1 = iPart;
-
-  while(iprim1>-1){
-    Int_t iprim2=jPart;
-
-    while(iprim2>-1){
-      if(iprim1==iprim2) return iprim1;
-      //iprim2 = GetParticle(iprim2)->GetMother();
-      iprim2 = dynamic_cast<AliAODMCParticle*>(fMCArrayAOD->At(iprim2))->GetMother();
-    }
-
-    //iprim1 = GetParticle(iprim1)->GetMother();
-    //iprim1 = (AliAODMCParticle*)(fMCArray->At(iprim1))->GetMother();
-    iprim1 = dynamic_cast<AliAODMCParticle*>(fMCArrayAOD->At(iprim1))->GetMother();
-  }
-
-  return -1;
-}
-//________________________________________________________________________
 void AliAnalysisTaskPHOSSingleSim::GetMCInfo()
 {
-  fMCArray = 0x0;
   fMCArrayAOD = (TClonesArray*)GetMCInfoAOD();
 
   if(!fMCArrayAOD){

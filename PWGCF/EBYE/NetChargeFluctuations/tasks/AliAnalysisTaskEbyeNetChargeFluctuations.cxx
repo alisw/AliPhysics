@@ -322,8 +322,8 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::UserCreateOutputObjects()
     fOutputList->Add(fHistNegEffMatrixGen);
     
     // single-track QA plots
-    hTrackPt = new TH1F("hTrackPt","track p_{T};p_{T} (GeV/c);",200,0.0,10.0);
-    hTrackPt->GetXaxis()->SetTitle("P_{T} (GeV/c)");
+    hTrackPt = new TH1F("hTrackPt","track p_{T};p_{T} (GeV/c);",120,0.0,6.0);
+    hTrackPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     hTrackPt->GetYaxis()->SetTitle("Counts");
     fOutputList->Add(hTrackPt);
     hTrackPhi = new TH1F("hTrackPhi","track #varphi;#varphi;",160,0,TMath::TwoPi());
@@ -331,12 +331,12 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::UserCreateOutputObjects()
     hTrackPhi->GetYaxis()->SetTitle("Counts");
     fOutputList->Add(hTrackPhi);
     hTrackEta = new TH1F("hTrackEta","track #eta;#eta;",32, -0.8, 0.8);
-    hTrackEta->GetXaxis()->SetTitle("#Eta ");
+    hTrackEta->GetXaxis()->SetTitle("#eta ");
     hTrackEta->GetYaxis()->SetTitle("Counts");
     fOutputList->Add(hTrackEta);
     
     hTrackPtallrec = new TH1F("hTrackPtallrec","track p_{T};p_{T} (GeV/c);",200,0.0,10.0);
-    hTrackPtallrec->GetXaxis()->SetTitle("P_{T} (GeV/c)");
+    hTrackPtallrec->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     hTrackPtallrec->GetYaxis()->SetTitle("Counts");
     fOutputList->Add(hTrackPtallrec);
     hTrackPhiallrec = new TH1F("hTrackPhiallrec","track #varphi;#varphi;",160,0,TMath::TwoPi());
@@ -344,12 +344,12 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::UserCreateOutputObjects()
     hTrackPhiallrec->GetYaxis()->SetTitle("Counts");
     fOutputList->Add(hTrackPhiallrec);
     hTrackEtaallrec = new TH1F("hTrackEtaallrec","track #eta;#eta;",32, -0.8, 0.8);
-    hTrackEtaallrec->GetXaxis()->SetTitle("#Eta ");
+    hTrackEtaallrec->GetXaxis()->SetTitle("#eta ");
     hTrackEtaallrec->GetYaxis()->SetTitle("Counts");
     fOutputList->Add(hTrackEtaallrec);
     
     hGenPt = new TH1F("hGenPt","generated p_{T};p_{T} (GeV/c);",200,0.0,10.0);
-    hGenPt->GetXaxis()->SetTitle("P_{T} (GeV/c)");
+    hGenPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     hGenPt->GetYaxis()->SetTitle("Counts");
     fOutputList->Add(hGenPt);
     hGenPhi = new TH1F("hGenPhi","generated #varphi;#varphi;",160,0,TMath::TwoPi());
@@ -357,7 +357,7 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::UserCreateOutputObjects()
     hGenPhi->GetYaxis()->SetTitle("Counts");
     fOutputList->Add(hGenPhi);
     hGenEta = new TH1F("hGenEta","generated #eta;#eta;",32, -0.8, 0.8);
-    hGenEta->GetXaxis()->SetTitle("#Eta ");
+    hGenEta->GetXaxis()->SetTitle("#eta ");
     hGenEta->GetYaxis()->SetTitle("Counts");
     fOutputList->Add(hGenEta);
     
@@ -470,22 +470,18 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::doAODEvent(){
     
     fEventStatistics->Fill("found primary vertex",1);
     
-    if (TMath::Abs(zv) > 10.) return;        // vertex cut
-    fEventStatistics->Fill("vz cut",1);
-    
     //===========================Centrality calculation =====================
     fCentrality = -2;
     AliMultSelection *MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
+    if(!MultSelection) return;
     fEventStatistics->Fill("found MultSelection object",1);
+    fCentrality = MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
     
-    if(!MultSelection) {
-        cout << "AliMultSelection object not found!" << endl;
-        return;
-    }
+    if (TMath::Abs(zv) > 10.0) return;
+    fEventStatistics->Fill("vz cut",1);
     
-    else fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
     if(fCentrality < 0 || fCentrality >= 80) return;
-    
+    fHistCentralityMultSelection->Fill(fCentrality);
     fEventStatistics->Fill("centrality selection",1);
     
     fHistZVertexCent->Fill(zv, fCentrality);
@@ -532,20 +528,20 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::doAODEvent(){
                     }
                     
                     if(!AcceptTrack(track)) continue;
+                
+                    if ((track->Eta()<etaDownArray[ieta]) || (track->Eta()>etaUpArray[ieta])) continue;  // eta Cut
                     
                     fpT     = track->Pt();
                     fEta    = track->Eta();
                     fPhi    = track->Phi();
                     fCharge = track->Charge();
                     
-                    if ((fEta<etaDownArray[ieta]) || (fEta>etaUpArray[ieta])) continue;  // eta Cut
-                    
                     hTrackPt->Fill(fpT);
                     hTrackPhi->Fill(fPhi);
                     hTrackEta->Fill(fEta);
                     
                     //===================apply cuts on pt eta and centrality=====================
-                    if ((fpT>=momDownArray[imom])
+                   if ((fpT>=momDownArray[imom])
                         &&(fpT<momUpArray[imom])
                         &&(fCentrality>=centDownArray[icent])
                         &&(fCentrality<centUpArray[icent])){
@@ -554,6 +550,7 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::doAODEvent(){
                         if (fCharge < 0 || fCharge > 0) Nch++;
                         if(fCharge > 0) fPos++;
                         if(fCharge < 0) fNeg++;
+                        
                         trCount++;
                     }
                     
@@ -569,7 +566,7 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::doAODEvent(){
                 fMomentsNeg    = fNeg * fNeg;
                 
                 // Fill the pt eta and centrality check in the tree
-                if ( trCount>0 ){
+               if ( trCount>0 ){
                     if(!fTreeSRedirector) return;
                     (*fTreeSRedirector)<<"Realdata"<<
                     // upper edge of momentum bin
@@ -591,6 +588,9 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::doAODEvent(){
                     "centBin="      << centBin             <<       // centrality bining
                     "etabin="       << etaBin              <<       // eta bin
                     "fRunNumber="   << fRunNumber          <<       // Run Number
+                    "fPt="          << fpT                 <<
+                    "fEta="         << fEta                <<
+                    "fPhi="         << fPhi                <<
                     "\n";
                 } //===========tree filling========
                 
@@ -623,12 +623,6 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::doMCAODEvent(){
     AliAODInputHandler *eventHandler = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     fEventStatistics->Fill("after aod check",1);
     
-    //===========================Centrality calculation =====================
-    fCentrality = -2;
-    AliMultSelection *MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
-    if(!MultSelection) return;
-    fEventStatistics->Fill("found MultSelection object",1);
-    
     //Physics selection
     UInt_t fSelectMask= eventHandler->IsEventSelected();
     Bool_t isINT7selected = fSelectMask& AliVEvent::kINT7; // from https://twiki.cern.ch/twiki/bin/view/ALICE/AliDPGtoolsEventProp
@@ -652,10 +646,16 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::doMCAODEvent(){
     
     fEventStatistics->Fill("found primary vertex",1);
     
+    //===========================Centrality calculation =====================
+    fCentrality = -2;
+    AliMultSelection *MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
+    if(!MultSelection) return;
+    fEventStatistics->Fill("found MultSelection object",1);
+    fCentrality = MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
+    
     if (TMath::Abs(zv) > 10.0) return;
     fEventStatistics->Fill("vz cut",1);
     
-    fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
     if(fCentrality < 0 || fCentrality >= 80) return;
     fHistCentralityMultSelection->Fill(fCentrality);
     fEventStatistics->Fill("centrality selection",1);
@@ -1112,14 +1112,9 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::FillMCEffMatrix(){
     
     AliAODInputHandler *eventHandler = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     
-    //===========================Centrality calculation =====================
-    fCentrality = -2;
-    AliMultSelection *MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
-    if(!MultSelection) return;
-    
     //Physics selection
     UInt_t fSelectMask= eventHandler->IsEventSelected();
-    Bool_t isINT7selected = fSelectMask& AliVEvent::kINT7;  // from https://twiki.cern.ch/twiki/bin/view/ALICE/AliDPGtoolsEventProp
+    Bool_t isINT7selected = fSelectMask& AliVEvent::kINT7; // from https://twiki.cern.ch/twiki/bin/view/ALICE/AliDPGtoolsEventProp
     if(!isINT7selected)return ;
     
     AliAODVertex *fPrimaryVtx = (AliAODVertex*)InputEvent()->GetPrimaryVertex();
@@ -1131,17 +1126,22 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::FillMCEffMatrix(){
     Double_t xv=fPrimaryVtx->GetX();
     Double_t yv=fPrimaryVtx->GetY();
     Double_t zv=fPrimaryVtx->GetZ();
+
+    //===========================Centrality calculation =====================
+    fCentrality = -2;
+    AliMultSelection *MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
+    if(!MultSelection) return;
+    fEventStatistics->Fill("found MultSelection object",1);
+    fCentrality = MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
     
     if (TMath::Abs(zv) > 10.0) return;
     
-    fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
     if(fCentrality < 0 || fCentrality >= 80) return;
     
     fArrayMC = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
     if (!fArrayMC)
         AliFatal("No array of MC particles found !!!");
     
-    //  AliMCEvent* mcEvent = MCEvent();
     AliMCEvent* mcEvent = eventHandler->MCEvent();
     if (!mcEvent) {
         AliError("ERROR: Could not retrieve MC event");
@@ -1165,13 +1165,13 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::FillMCEffMatrix(){
         pdgMom=0, pdgMomPhysicalPrim = 0, pdgMomPrim = 0, pdgPhysicalPrim = 0, pdgPrim = 0;
         
         if (!AcceptTrack(trackReal)) continue;
-        
+
         // get track info
         Float_t fpTRec     = trackReal->Pt();
         Float_t fEtaRec    = trackReal->Eta();
         Float_t fPhiRec    = trackReal->Phi();
         Short_t fChargeRec = trackReal->Charge();
-        Int_t fPartID  = -10;
+        Int_t   fPartID    = -10;
         
         // Eta cut
         if ((trackReal->Eta()<fEtaDown) || (trackReal->Eta()>fEtaUp)) continue;
@@ -1183,12 +1183,13 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::FillMCEffMatrix(){
         if (!trackMCrec->IsPhysicalPrimary()) continue;
         
         Int_t fCentRec = fHistCentralityMultSelection->FindBin(fCentrality)-1; //new sk
-        
+    
         Int_t pdg = trackMCrec->GetPdgCode();
+        
         // get the mother of the daughter particle
         Int_t momlab  = trackMCrec->GetMother();
         AliVParticle *aodMother = mcEvent->GetTrack(momlab);
-        if(aodMother) pdgMom  = aodMother->PdgCode(); // pdg of mother particl
+        if(aodMother) pdgMom  = aodMother->PdgCode(); // pdg of mother particle
     
         // Select Physical primary particles and fill it on the tree
         if (trackMCrec->IsPhysicalPrimary()) {
@@ -1278,8 +1279,8 @@ Bool_t AliAnalysisTaskEbyeNetChargeFluctuations::AcceptTrack(AliAODTrack* aodtra
     if(pt< 0.2) return kFALSE;
     if( aodtrack->Charge() == 0 ) return kFALSE;
     if(!aodtrack->TestFilterBit(768)) return kFALSE;   // for hybrid tracks
-    if(aodtrack->GetTPCNcls() < 80) return kFALSE;
-    if(aodtrack->Chi2perNDF() > 4.0) return kFALSE;
+   // if(aodtrack->GetTPCNcls() < 80) return kFALSE;
+   // if(aodtrack->Chi2perNDF() > 4.0) return kFALSE;
     
     fHistClustersTPC->Fill(aodtrack->GetTPCNcls());
     fHistChi2perNDF->Fill(aodtrack->Chi2perNDF());

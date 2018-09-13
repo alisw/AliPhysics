@@ -213,7 +213,8 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
   fEnableSortForClusMC(kFALSE),
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
-  fDoDetailedM02(NULL)
+  fDoDetailedM02(NULL),
+  fTrackMatcherRunningMode(0)
 {
 
 }
@@ -371,7 +372,8 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
   fEnableSortForClusMC(kFALSE),
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
-  fDoDetailedM02(NULL)
+  fDoDetailedM02(NULL),
+  fTrackMatcherRunningMode(0)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -1217,7 +1219,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
         fOutputContainer->Add(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetCutHistograms());
 
   for(Int_t iMatcherTask = 0; iMatcherTask < 3; iMatcherTask++){
-    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i",iMatcherTask)));
+    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i_%i",iMatcherTask,fTrackMatcherRunningMode)));
     if(temp) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
   }
 

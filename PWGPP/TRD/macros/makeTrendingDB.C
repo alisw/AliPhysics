@@ -9,7 +9,7 @@
 #include "TF1.h"
 #include "TCanvas.h"
 #include "TError.h"
-#include "PWGPP/TRD/info/AliTRDtrendingManager.h"
+#include "AliTRDtrendingManager.h"
 
 #endif
 

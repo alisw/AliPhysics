@@ -108,6 +108,7 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield() :
   fTreeJetInfo(0),
   fhJetArea(0x0),
   fhTrackPt(0x0),
+  fhTrackEta(0x0),
   fhGroomedPtvJetPt(0x0),
   fhDroppedBranches(0x0),
   fhPtTriggerHadron(0x0), 
@@ -193,6 +194,7 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield(const char *name) :
   fTreeJetInfo(0),
   fhJetArea(0x0),
   fhTrackPt(0x0),
+  fhTrackEta(0x0),
   fhGroomedPtvJetPt(0x0),
   fhDroppedBranches(0x0),
   fhPtTriggerHadron(0x0), 
@@ -322,6 +324,8 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
     fOutput->Add(fhJetArea);
     fhTrackPt= new TH1F("fhTrackPt", "Track Pt",600,-0.5,59.5);   
     fOutput->Add(fhTrackPt);
+    fhTrackEta = new TH1F("fhTrackEta","Track Eta ",600,-1.5,1.5);
+    fOutput->Add(fhTrackEta);
     fhGroomedPtvJetPt= new TH2F("fhGroomedPtvJetPt","Groomed Jet p_{T} v Original Jet p_{T}",150,0,150,150,0,150);
     fOutput->Add(fhGroomedPtvJetPt);
     fhDroppedBranches= new TH1F("fhDroppedBranches","Number of Softdropped branches",50,0,50);
@@ -498,7 +502,22 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
             EventCounter=kTRUE;
           }
 	  JetCounter++;
-	  fhJetPt->Fill(Jet1->Pt());
+	  if(fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) fhJetPt->Fill(Jet1->Pt()-(GetRhoVal(0)*Jet1->Area()));
+	  else fhJetPt->Fill(Jet1->Pt());
+	  AliTrackContainer *TrackCont = NULL;
+	  if(fJetShapeSub==kConstSub) TrackCont = GetTrackContainer(1);
+	  else TrackCont = GetTrackContainer(0);
+	  TClonesArray *TracksArray = NULL;
+	  TracksArray = TrackCont->GetArray();
+	  Double_t NTracks = TracksArray->GetEntriesFast();
+	  AliAODTrack *Track = 0x0;
+	  for(Int_t i=0; i < NTracks; i++){
+	    Track = static_cast<AliAODTrack*>(TrackCont->GetAcceptTrack(i));
+	    if (!Track) continue;
+	    fhTrackPt->Fill(Track->Pt());
+	    fhTrackEta->Fill(Track->Eta());
+
+	  }
 	  fhJetArea->Fill(Jet1->Area());
 	  JetPhi=Jet1->Phi();
 	  if(JetPhi < -1*TMath::Pi()) JetPhi += (2*TMath::Pi());
@@ -511,6 +530,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
           fhNumberOfJetTracks->Fill(Jet1->GetNumberOfTracks());
 	  if(fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) fJetInfoVar[0]= Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
 	  else fJetInfoVar[0]=Jet1->Pt();
+	  
 	  fJetInfoVar[1]=0;
 	  if(fDoSoftDrop) {
 	    SoftDrop(Jet1,JetCont,fZCut,fBeta_SD,kFALSE);

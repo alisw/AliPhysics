@@ -71,7 +71,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	
 	const int numOfMultBins = 10;	
 	const int numOfChTypes = 3;
-	const int numOfkTbins = 7;
+	const int numOfkTbins = 6;
 
 	bool performSharedDaughterCut = true;
 	bool enablePairMonitors = true;
@@ -150,7 +150,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 	
 	
-	double ktrng[numOfkTbins+1] = {0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
+	double ktrng[numOfkTbins+1] = {0.13, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7};
 
 
 	int runqinv = 1;
@@ -178,6 +178,12 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	Reader->SetIsPileUpEvent(ifIsPileUp);
 	Reader->SetReadV0(kTRUE);
 	Reader->SetReadCascade(kTRUE);
+	
+	//Reader->SetMinPlpContribSPD(minPlpContribSPD);
+	//Reader->SetIsPileUpEvent(ifIsPileUp);
+	//Reader->SetUseOutOfBunchPlpSelection(kTRUE);
+	Reader->SetUseMVPlpSelection(kTRUE);
+	Reader->SetTrackPileUpRemoval(kTRUE);
 
 	AliFemtoManager* Manager = new AliFemtoManager();
 	Manager->SetEventReader(Reader);
@@ -419,8 +425,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 					if (runktdep) {
 					  int ktm;
-					  for (int ikt=0; ikt<7; ikt++) {
-					    ktm = aniter*7 + ikt;
+					  for (int ikt=0; ikt<6; ikt++) {
+					    ktm = aniter*6 + ikt;
 					    ktpcuts[ktm] = new AliFemtoKTPairCut(ktrng[ikt], ktrng[ikt+1]);
 					    
 					    cylmkttpc[ktm] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%ikT%i", chrgs[ichg], imult, ikt),3, nbinssh, 0.0, shqmax, runshlcms);

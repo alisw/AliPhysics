@@ -398,7 +398,7 @@ void AliBalancePsi::InitHistograms() {
   fHistPhiStarHBTbefore = new TH2D("fHistPhiStarHBTbefore","before PhiStarHBT cut",200,-0.5,0.5,200,-0.5,0.5);
   fHistPhiStarHBTafter  = new TH2D("fHistPhiStarHBTafter","after PhiStarHBT cut",200,-0.5,0.5,200,-0.5,0.5);
   fHistSameLabelMCCutBefore  = new TH2D("fHistSameLabelMCCutBefore","before Same Label MC cut;#Delta#eta;#Delta#phi",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2); 
-  fHistSameLabelMCCutAfter  = new TH2D("fHistSameLabelMCCutBefore","after Same Label MC cut;#Delta#eta;#Delta#phi",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2);
+  fHistSameLabelMCCutAfter  = new TH2D("fHistSameLabelMCCutAfter","after Same Label MC cut;#Delta#eta;#Delta#phi",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2);
   fHistConversionbefore = new TH3D("fHistConversionbefore","before Conversion cut;#Delta#eta;#Delta#phi;M_{inv}^{2}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
   fHistConversionafter  = new TH3D("fHistConversionafter","after Conversion cut;#Delta#eta;#Delta#phi;M_{inv}^{2}",50,-2.0,2.0,50,-TMath::Pi()/2.,3.*TMath::Pi()/2.,300,0,1.5);
   fHistPsiMinusPhi      = new TH2D("fHistPsiMinusPhi","",4,-0.5,3.5,100,0,2.*TMath::Pi());
@@ -460,7 +460,7 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
     secondPt[i]  = ((AliVParticle*) particlesSecond->At(i))->Pt();
     secondCharge[i]  = (Short_t)((AliVParticle*) particlesSecond->At(i))->Charge();
     secondCorrection[i]  = (Double_t)((AliBFBasicParticle*) particlesSecond->At(i))->Correction();   //==========================correction
-    if (fSameLabelMCCut) secondLabel[i]  = (Double_t)((AliBFBasicParticle*) particlesSecond->At(i))->GetLabel(); 
+    if (fSameLabelMCCut) secondLabel[i]  = (Int_t)((AliBFBasicParticle*) particlesSecond->At(i))->GetLabel(); 
   }
   
   //TLorenzVector implementation for resonances
@@ -486,7 +486,7 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
     Float_t firstPhi = firstParticle->Phi();
     Float_t firstPt  = firstParticle->Pt();
     Float_t firstCorrection  = firstParticle->Correction();//==========================correction
-    Float_t firstLabel= 0; 
+    Int_t firstLabel= 0; 
     if (fSameLabelMCCut) firstLabel = firstParticle->GetLabel();
     
     // Event plane (determine psi bin)
@@ -657,7 +657,7 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 	fHistPhiStarHBTafter->Fill(deta,dphistarMiddle);
       }//HBT cut
 
-      if (fSameLabelMCCut){
+      if (!particlesMixed && fSameLabelMCCut){
 
 	if (charge1 * charge2 > 0) {
 	  Double_t deta = firstEta - secondEta[j];
@@ -665,12 +665,11 @@ void AliBalancePsi::CalculateBalance(Double_t gReactionPlane,
 	  
 	  fHistSameLabelMCCutBefore->Fill(deta,dphi);
 	  
-	  if (secondLabel[j] == firstLabel) {
-	    Printf("label1 = %d, second %d", firstLabel, secondLabel[j]);
-		  
+	  if (firstLabel == secondLabel[j]) {
+	    //Printf("label1 = %d, second %d", firstLabel, secondLabel[j]); 
 	    continue;
 	  }
-	    fHistSameLabelMCCutAfter->Fill(deta,dphi);
+	  fHistSameLabelMCCutAfter->Fill(deta,dphi);
 	}
       }
       

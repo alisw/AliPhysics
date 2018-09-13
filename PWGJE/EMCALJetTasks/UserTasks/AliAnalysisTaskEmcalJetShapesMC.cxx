@@ -107,7 +107,7 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC() :
   
 
 {
-  for(Int_t i=0;i<11;i++){
+  for(Int_t i=0;i<13;i++){
     fShapesVar[i]=0;}
   SetMakeGeneralHistograms(kTRUE);
    DefineOutput(1, TList::Class());
@@ -172,7 +172,7 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
   // Standard constructor.
   
   
-  for(Int_t i=0;i<11;i++){
+  for(Int_t i=0;i<13;i++){
     fShapesVar[i]=0;}
   
   SetMakeGeneralHistograms(kTRUE);
@@ -215,7 +215,7 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeObservableTagging = new TTree(nameoutput, nameoutput);
   
-  const Int_t nVar = 11;
+  const Int_t nVar = 13;
 
   TString *fShapesVarNames = new TString [nVar];
   
@@ -236,8 +236,8 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   // fShapesVarNames[11] = "DeltaRMin";
   fShapesVarNames[9] = "SDSymm";
   fShapesVarNames[10] = "scaledptJet";
-  // fShapesVarNames[13] = "SDDeltaR";
-  // fShapesVarNames[14] = "SDGroomedFrac"; 
+   fShapesVarNames[11] = "zg";
+  fShapesVarNames[12] = "rg"; 
   // fShapesVarNames[15] = "SDGroomedN"; 
   // fShapesVarNames[16] = "SDMass";
   // fShapesVarNames[17] = "SDSymmkt";
@@ -499,7 +499,7 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
       fShapesVar[3] = GetJetMass(jet1,0);
       fShapesVar[4] = 1.*GetJetNumberOfConstituents(jet1,0);
       fShapesVar[5] = GetJetAngularity(jet1,0);
-     
+      SoftDrop(jet1,jetCont,0.1,0,0);
      
       RecursiveParents(jet1,jetCont,0,fShapesVar[0]);
       RecursiveParents(jet1,jetCont,1,fShapesVar[0]);
@@ -1258,10 +1258,10 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
   NGroomedBranches=finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count();
   GroomedPt=finaljet.perp();
   GroomedMass=finaljet.m();
-  // if(beta==0){
-  // if(ReclusterAlgo==0){
-  // fShapesVar[12]=SymParam;
-  // fShapesVar[13]=DeltaR;
+ 
+  
+   fShapesVar[11]=SymParam;
+   fShapesVar[12]=DeltaR;
   // fShapesVar[14]=zeta;
   // fShapesVar[15]=angle;
   // fShapesVar[16]=GroomedMass;}

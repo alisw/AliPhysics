@@ -1,4 +1,4 @@
-AliAnalysisTaskHaHFECorrel *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEvent, Double_t MaxPtEvent, Bool_t TRDQA, Bool_t TagEff, Bool_t RecEff, Bool_t CorrHadron, Bool_t CorrLP, Bool_t MCTruth,  Bool_t IsMC, Bool_t IsAOD, Bool_t IsHFE, Bool_t UseTender, Double_t EtaMax, Int_t ITSnCut,  Int_t TPCnCut, Int_t TPCnCutdEdx,   Double_t PhotElecPtCut, Int_t PhotElecTPCnCut,Bool_t PhotElecITSrefitCut,Double_t InvmassCut, Int_t HTPCnCut,   Bool_t HITSrefitCut, Bool_t HTPCrefitCut, Bool_t UseITS, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, const char * ID="")
+AliAnalysisTaskHaHFECorrel *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEvent, Double_t MaxPtEvent, Bool_t TRDQA, Bool_t TagEff, Bool_t RecEff, Bool_t CorrHadron, Bool_t CorrLP, Bool_t MCTruth,  Bool_t IsMC, Bool_t IsAOD, Bool_t IsHFE, Bool_t UseTender, Double_t EtaMax, Int_t ITSnCut, Float_t ITSSharedCluster,  Int_t TPCnCut, Int_t TPCnCutdEdx,   Double_t PhotElecPtCut, Int_t PhotElecTPCnCut,Bool_t PhotElecITSrefitCut, Int_t PhotCorrCase, Double_t InvmassCut, Int_t HTPCnCut,   Bool_t HITSrefitCut, Bool_t HTPCrefitCut, Bool_t UseITS, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, const char * ID="")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -27,7 +27,7 @@ AliAnalysisTaskHaHFECorrel *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEv
 
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pp/ConfigHaHFECorrel.C");
   AliAnalysisTaskHaHFECorrel *taskMB = 
-    ConfigHaHFECorrel(period, MinPtEvent, MaxPtEvent, TRDQA, TagEff, RecEff,  CorrHadron, CorrLP, MCTruth, IsMC, IsAOD, UseTender,EtaMax, ITSnCut, TPCnCut, TPCnCutdEdx, PhotElecPtCut,PhotElecTPCnCut, PhotElecITSrefitCut,  InvmassCut,  HTPCnCut,  HITSrefitCut, HTPCrefitCut, UseITS, SigmaITScut, SigmaTOFcut, SigmaTPCcut, ID);
+    ConfigHaHFECorrel(period, MinPtEvent, MaxPtEvent, TRDQA, TagEff, RecEff,  CorrHadron, CorrLP, MCTruth, IsMC, IsAOD, UseTender,EtaMax, ITSnCut, ITSSharedCluster, TPCnCut, TPCnCutdEdx, PhotElecPtCut,PhotElecTPCnCut, PhotElecITSrefitCut, PhotCorrCase, InvmassCut,  HTPCnCut,  HITSrefitCut, HTPCrefitCut, UseITS, SigmaITScut, SigmaTOFcut, SigmaTPCcut, ID);
   if (!taskMB) {
     Error("AddTaskHaHFECorrel", "No task found.");
   }
@@ -86,6 +86,21 @@ AliAnalysisTaskHaHFECorrel *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEv
   }
   else printf("Could not open RecEff correction file \n");
   TH1::AddDirectory(kTRUE);
+
+
+  TH1::AddDirectory(kFALSE);
+  printf("Loading NonTagCorr\n");
+  TString NonTagFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/NonTagCorrHist.root";
+  TFile *NonTagFile = TFile::Open(NonTagFileName.Data());
+  NonTagFile->ls();
+  if (NonTagFile) {    
+    TH1F * NonTagCorr = (TH1F*)NonTagFile->Get("NonTagCorr");
+    if (NonTagCorr) taskMB->SetNonTagCorr(*NonTagCorr);
+    else printf("Could not load NonTagCorr\n");
+  }
+  else printf("Could not open NonTag correction file \n");
+  TH1::AddDirectory(kTRUE);
+
 
 
 

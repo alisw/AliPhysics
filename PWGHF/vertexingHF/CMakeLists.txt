@@ -200,6 +200,11 @@ install(FILES
         DESTINATION
             PWGHF/vertexingHF/)
 
+install(FILES
+	    upgrade/ConfigVertexingHF_Pb_Upgrade2018.C
+        DESTINATION
+            PWGHF/vertexingHF/upgrade)
+
 install(DIRECTORY
             macros
         DESTINATION PWGHF/vertexingHF/)

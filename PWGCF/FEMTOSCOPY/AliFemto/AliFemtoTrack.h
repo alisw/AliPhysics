@@ -92,6 +92,8 @@ public:
   float NSigmaTOFT() const;
   float NSigmaTOFH() const;
   float NSigmaTOFA() const;
+
+  float MassTOF() const;
   //
   /**************************/
 
@@ -148,7 +150,7 @@ public:
   void SetPidProbKaon(const float& x);
   void SetPidProbProton(const float& x);
   void SetPidProbMuon(const float& x);
-  void SetTofExpectedTimes(const float& tpi, const float& tkn, const float& tpr);
+  void SetTofExpectedTimes(const float& tpi, const float& tkn, const float& tpr, const float& ttof);
 
 
   void SetP(const AliFemtoThreeVector& p);
@@ -199,6 +201,8 @@ public:
   void SetNSigmaTOFT(const float& x);
   void SetNSigmaTOFH(const float& x);
   void SetNSigmaTOFA(const float& x);
+
+  void SetMassTOF(const float& x);
   //
   /**************************************************/
   
@@ -377,6 +381,7 @@ public:
   float fNSigmaTOFT;      ///< nsigma TPC for triton
   float fNSigmaTOFH;      ///< nsigma TPC for he3
   float fNSigmaTOFA;      ///< nsigma TPC for alpha
+  float fMassTOF;      ///< 
   //
   /******************************************************/
   
@@ -398,7 +403,7 @@ public:
 
   AliFemtoHiddenInfo* fHiddenInfo;              //!< hidden info containing MC data
 
-  AliFemtoThreeVector   *fTrueMomentum;         ///< True (simulated) momentum
+  AliFemtoThreeVector   *fTrueMomentum;         ///< True (simulated) momentumfse
   AliFemtoLorentzVector *fEmissionPoint;        ///< Emission point coordinates
   Int_t                  fPDGPid;               ///< True PID of the particle
   Double_t               fMass;                 ///< True particle mass

@@ -301,7 +301,8 @@ AliAnalysisTaskGammaCaloDalitzV1::AliAnalysisTaskGammaCaloDalitzV1(): AliAnalysi
 	fIsFromMBHeader(kTRUE),
 	fIsOverlappingWithOtherHeader(kFALSE),
 	fIsMC(kFALSE),
-	fDoTHnSparse(kTRUE)
+    fDoTHnSparse(kTRUE),
+    fTrackMatcherRunningMode(0)
 {
 
 }
@@ -546,7 +547,8 @@ AliAnalysisTaskGammaCaloDalitzV1::AliAnalysisTaskGammaCaloDalitzV1(const char *n
 	fIsFromMBHeader(kTRUE),
 	fIsOverlappingWithOtherHeader(kFALSE),
 	fIsMC(kFALSE),
-	fDoTHnSparse(kTRUE)
+    fDoTHnSparse(kTRUE),
+    fTrackMatcherRunningMode(0)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -1672,7 +1674,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::UserCreateOutputObjects(){
 				fOutputContainer->Add(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetCutHistograms());
 
     for(Int_t iMatcherTask = 0; iMatcherTask < 3; iMatcherTask++){
-      AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i",iMatcherTask)));
+      AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i_%i",iMatcherTask,fTrackMatcherRunningMode)));
       if(temp) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
     }
 

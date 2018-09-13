@@ -128,62 +128,61 @@ class MiniV0 {
 };
 
 inline float MiniV0::GetV0CosPA() const {
-  return getBinCenter(fV0CosPA, fgkV0cosPA_w, fgkV0cosPA_f, fgkV0cosPA_l);
+  return getBinCenter(fV0CosPA, fgkV0cosPA_w, fgkV0cosPA_f);
 }
 inline float MiniV0::GetV0chi2() const {
-  return getBinCenter(fChi2V0 & 0x7F, fgkV0chi2_w, fgkV0chi2_f, fgkV0chi2_l);
+  return getBinCenter(fChi2V0 & 0x7F, fgkV0chi2_w, fgkV0chi2_f);
 }
 inline float MiniV0::GetNegProngPvDCA() const {
   return getBinCenter(fDcaNeg2PrimaryVertex, fgkDCAProng2PV_w, fgkDCAProng2PV_f,
-                      fgkDCAProng2PV_l, false, true);
+                      false, true);
 }
 inline float MiniV0::GetPosProngPvDCA() const {
   return getBinCenter(fDcaPos2PrimaryVertex, fgkDCAProng2PV_w, fgkDCAProng2PV_f,
-                      fgkDCAProng2PV_l, false, true);
+                      false, true);
 }
 inline float MiniV0::GetProngsDCA() const {
   return getBinCenter(fDcaV0daughters, fgkDCAProngs_w, fgkDCAProngs_f,
-                      fgkDCAProngs_l, false, true);
+                      false, true);
 }
 inline float MiniV0::GetArmenterosAlpha() const {
-  return getBinCenter(fV0armAlpha, fgkArmAlpha_w, fgkArmAlpha_f, fgkArmAlpha_l,
+  return getBinCenter(fV0armAlpha, fgkArmAlpha_w, fgkArmAlpha_f,
                       true, true);
 }
 inline float MiniV0::GetArmenterosPt() const {
-  return getBinCenter(fV0armPt, fgkArmPt_w, fgkArmPt_f, fgkArmPt_l, false,
-                      true);
+  return getBinCenter(fV0armPt, fgkArmPt_w, fgkArmPt_f, false, true);
 }
 inline float MiniV0::GetLeastXedRowsOverFindable() const {
   return getBinCenter(fLeastXedOverFindable, fgkXedOverFindable_w,
-                      fgkXedOverFindable_f, fgkXedOverFindable_l);
+                      fgkXedOverFindable_f);
 }
 inline float MiniV0::GetMaxChi2perCluster() const {
   return getBinCenter(fMaxChi2PerCluster, fgkChi2xCluster_w, fgkChi2xCluster_f,
-                      fgkChi2xCluster_l, false, true);
+                      false, true);
 }
 
 inline float MiniV0::GetNegProngEta() const {
-  return getBinCenter(fEtaNeg, fgkEta_w, fgkEta_f, fgkEta_l, true, true);
+  return getBinCenter(fEtaNeg, fgkEta_w, fgkEta_f, true, true);
 }
 inline float MiniV0::GetPosProngEta() const {
-  return getBinCenter(fEtaPos, fgkEta_w, fgkEta_f, fgkEta_l, true, true);
+  return getBinCenter(fEtaPos, fgkEta_w, fgkEta_f, true, true);
 }
 
 inline float MiniV0::GetNegProngTPCnsigmaPion() const {
   return getBinCenter((fNsigmaNeg & 0xF0) >> 4, fgkTPCsigma_w, fgkTPCsigma_f,
-                      fgkTPCsigma_l, false, true);
+                      false, true);
 }
 inline float MiniV0::GetNegProngTPCnsigmaProton() const {
   return getBinCenter((fNsigmaNeg & 0x0F), fgkTPCsigma_w, fgkTPCsigma_f,
-                      fgkTPCsigma_l, false, true);
+                      false, true);
 }
 inline float MiniV0::GetPosProngTPCnsigmaPion() const {
   return getBinCenter((fNsigmaPos & 0xF0) >> 4, fgkTPCsigma_w, fgkTPCsigma_f,
-                      fgkTPCsigma_l, false, true);
+                      false, true);
 }
 inline float MiniV0::GetPosProngTPCnsigmaProton() const {
   return getBinCenter((fNsigmaPos & 0x0F), fgkTPCsigma_w, fgkTPCsigma_f,
-                      fgkTPCsigma_l, false, true);
+                      false, true);
 }
 
 inline void MiniV0::SetInvMasses(float k0s, float lam) {

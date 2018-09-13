@@ -83,6 +83,7 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
                                   TString   additionalTrainConfig           = "0"                     // additional counter for trainconfig
                                 ) {
 
+  Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
   Bool_t doTreeClusterShowerShape = kFALSE; // enable tree for meson cand EMCal shower shape studies
   TH1S* histoAcc = 0x0;                     // histo for modified acceptance
   TString corrTaskSetting = ""; // select which correction task setting to use
@@ -114,6 +115,11 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
         cout << "INFO: AddTask_GammaConvCalo_PbPb will use custom branch from Correction Framework!" << endl;
         corrTaskSetting = tempStr;
         corrTaskSetting.Replace(0,2,"");
+      }else if(tempStr.BeginsWith("TM")){
+        TString tempType = tempStr;
+        tempType.Replace(0,2,"");
+        trackMatcherRunningMode = tempType.Atoi();
+        cout << Form("INFO: AddTask_GammaConvCalo_PbPb will use running mode '%i' for the TrackMatcher!",trackMatcherRunningMode) << endl;
       }
     }
   }
@@ -214,6 +220,7 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
   task->SetCorrectionTaskSetting(corrTaskSetting);
   if (runLightOutput > 1) task->SetLightOutput(kTRUE);
   task->SetDoPrimaryTrackMatching(doPrimaryTrackMatching);
+  task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
 
   //create cut handler
   CutHandlerConvCalo cuts;
@@ -557,6 +564,12 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
     cuts.AddCut("12410a13","00200009327000008250400000","1111100051032230000","0163103100000010"); //  0-90 calo correction cent dep
     cuts.AddCut("14610a13","00200009327000008250400000","1111100051032230000","0163103100000010"); //  0-90 calo correction cent dep
     cuts.AddCut("16810a13","00200009327000008250400000","1111100051032230000","0163103100000010"); //  0-90 calo correction cent dep
+  } else if (trainConfig == 254){ // EMCAL clusters - 20180718 - default with peripheral corrections
+    cuts.AddCut("10110a13","00200009327000008250400000","1111187051032230000","0163103100000010"); //
+    cuts.AddCut("11210a13","00200009327000008250400000","1111187051032230000","0163103100000010"); //
+    cuts.AddCut("12410a13","00200009327000008250400000","1111187051032230000","0163103100000010"); //
+    cuts.AddCut("14610a13","00200009327000008250400000","1111187051032230000","0163103100000010"); //
+    cuts.AddCut("16810a13","00200009327000008250400000","1111187051032230000","0163103100000010"); //
 
 
   } else if (trainConfig == 290){ // EMCAL clusters - correction convcalo f1
@@ -889,9 +902,9 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
     //create AliCaloTrackMatcher instance, if there is none present
     TString caloCutPos = cuts.GetClusterCut(i);
     caloCutPos.Resize(1);
-    TString TrackMatcherName = Form("CaloTrackMatcher_%s",caloCutPos.Data());
+    TString TrackMatcherName = Form("CaloTrackMatcher_%s_%i",caloCutPos.Data(),trackMatcherRunningMode);
     if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
-      AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
+      AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi(),trackMatcherRunningMode);
       fTrackMatcher->SetV0ReaderName(V0ReaderName);
       fTrackMatcher->SetCorrectionTaskSetting(corrTaskSetting);
       mgr->AddTask(fTrackMatcher);
@@ -1024,6 +1037,9 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);
+  for(Int_t i = 0; i<numberOfCuts; i++){
+    mgr->ConnectOutput(task,2+i,mgr->CreateContainer(Form("%s_%s_%s_%s Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),cuts.GetClusterCut(i).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvCalo_%i.root",trainConfig)) );
+  }
 
   return;
 

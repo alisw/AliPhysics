@@ -129,7 +129,7 @@ Bool_t ConfigPhiPP5TeV_PID
     // else out->AddAxis(centID,161,-0.5,160.5);
 
     if(!isPP) out->AddAxis(centID,100,0.,100.); //ST
-    else out->AddAxis(centID,10,0.,100); //ST
+    else out->AddAxis(centID,200,0.,200); //ST
 
      out->AddAxis(SpherocityID,200,-0.5,1.5); //ST
     // axis W: pseudorapidity
@@ -153,7 +153,7 @@ Bool_t ConfigPhiPP5TeV_PID
     outm->AddAxis(imID,215,0.985,1.2);
     outm->AddAxis(ptID,500,0.,50.);
     if(!isPP) outm->AddAxis(centID,100,0.,100.);
-    else outm->AddAxis(centID,161,-0.5,160.5);
+    else outm->AddAxis(centID,200,0.,200);
     outm->AddAxis(SpherocityID,200,-0.5,1.5); //ST
     if (polarizationOpt.Contains("J")) outm->AddAxis(ctjmID,21,-1.,1.);
     if (polarizationOpt.Contains("T")) outm->AddAxis(cttmID,21,-1.,1.);
@@ -168,7 +168,7 @@ Bool_t ConfigPhiPP5TeV_PID
     outmf->AddAxis(imID,215,0.985,1.2);
     outmf->AddAxis(ptID,300,0.,3.);//fine binning for efficiency weighting
     if(!isPP) outmf->AddAxis(centID,100,0.,100.);
-    else outmf->AddAxis(centID,161,-0.5,160.5);
+    else outmf->AddAxis(centID,200,0.,200);
     outmf->AddAxis(SpherocityID,200,-0.5,1.5); //ST
     if (polarizationOpt.Contains("J")) outmf->AddAxis(ctjmID,21,-1.,1.);
     if (polarizationOpt.Contains("T")) outmf->AddAxis(cttmID,21,-1.,1.);

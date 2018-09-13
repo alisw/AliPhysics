@@ -267,7 +267,7 @@ void AliJIaaCorrelations::FillCorrelationHistograms(fillType fTyp, int CentBin, 
 	fNearSide3D   = vTrigger.Vect().Dot(vAssoc.Vect()) > 0 ? true : false; // Near side definition using half ball around the trigger
 
 	fEtaGapBin     = fcard->GetBinFast( kEtaGapType, fabs(fDeltaEta));
-    fPhiGapBinNear = fcard->GetBin( kPhiGapType, fabs(fDeltaPhiPiPi) );
+  fPhiGapBinNear = fcard->GetBin( kPhiGapType, fabs(fDeltaPhiPiPi) );
 	fRGapBinNear   = fcard->GetBin( kRGapType, fabs(ftk1->DeltaR(*ftk2)));
 	fCentralityBin = CentBin;
 	fZBin = zBin;

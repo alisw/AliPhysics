@@ -73,8 +73,10 @@ AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
       fDoV0Refit{true},
       fMC{mc},
       fUseLightVertexer{true},
+      fUseOnTheFly{false},
       fHistMCct{nullptr},
       fHistMCctPrimary{nullptr},
+      fHistMCctSecondaryFromMaterial{nullptr},
       fHistV0radius{nullptr},
       fHistV0pt{nullptr},
       fHistV0eta{nullptr},
@@ -220,15 +222,20 @@ void AliAnalysisTaskStrangenessLifetimes::UserCreateOutputObjects() {
 
 
   if (man->GetMCtruthEventHandler()) {
-    fHistMCct[0] = new TH1D("fHistMCctK0s", ";MC ct (cm); Counts", 4000, 0, 20);
-    fHistMCct[1] = new TH1D("fHistMCctLambda", ";MC ct (cm); Counts", 4000, 0, 20);
+    fHistMCct[0] = new TH1D("fHistMCctK0s", ";MC ct (cm); Counts", 4000, 0, 40);
+    fHistMCct[1] = new TH1D("fHistMCctLambda", ";MC ct (cm); Counts", 4000, 0, 40);
     fListHist->Add(fHistMCct[0]);
     fListHist->Add(fHistMCct[1]);
 
-    fHistMCctPrimary[0] = new TH1D("fHistMCctPrimaryK0s", ";MC ct (cm); Counts", 4000, 0, 20);
-    fHistMCctPrimary[1] = new TH1D("fHistMCctPrimaryLambda", ";MC ct (cm); Counts", 4000, 0, 20);
+    fHistMCctPrimary[0] = new TH1D("fHistMCctPrimaryK0s", ";MC ct (cm); Counts", 4000, 0, 40);
+    fHistMCctPrimary[1] = new TH1D("fHistMCctPrimaryLambda", ";MC ct (cm); Counts", 4000, 0, 40);
     fListHist->Add(fHistMCctPrimary[0]);
     fListHist->Add(fHistMCctPrimary[1]);
+
+    fHistMCctSecondaryFromMaterial[0] = new TH1D("fHistMCctSecondaryFromMaterialK0s", ";MC ct (cm); Counts", 4000, 0, 40);
+    fHistMCctSecondaryFromMaterial[1] = new TH1D("fHistMCctSecondaryFromMaterialLambda", ";MC ct (cm); Counts", 4000, 0, 40);
+    fListHist->Add(fHistMCctSecondaryFromMaterial[0]);
+    fListHist->Add(fHistMCctSecondaryFromMaterial[1]);
   }
 
   fListHist->Add(fHistV0radius);
@@ -287,29 +294,31 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
   fMultiplicity = fEventCuts.GetCentrality();
   fEventCuts.GetPrimaryVertex()->GetXYZ(primaryVertex);
 
-  // Only reset if not using on-the-fly (or else nothing passes)
-  esdEvent->ResetV0s();
+  if (!fUseOnTheFly) {
+    // Only reset if not using on-the-fly (or else nothing passes)
+    esdEvent->ResetV0s();
 
-  // Decide between regular and light vertexer (default: light)
-  if (!fUseLightVertexer) {
-    // Instantiate vertexer object
-    AliV0vertexer lV0vtxer;
-    // Set Cuts
-    lV0vtxer.SetDefaultCuts(fV0VertexerSels);
-    lV0vtxer.SetCuts(fV0VertexerSels);
-    // Redo
-    lV0vtxer.Tracks2V0vertices(esdEvent);
-  } else {
-    // Instantiate vertexer object
-    AliLightV0vertexer lV0vtxer;
-    // Set do or don't do V0 refit for improved precision
-    lV0vtxer.SetDoRefit(false);
-    if (fDoV0Refit) lV0vtxer.SetDoRefit(true);
-    // Set Cuts
-    lV0vtxer.SetDefaultCuts(fV0VertexerSels);
-    lV0vtxer.SetCuts(fV0VertexerSels);
-    // Redo
-    lV0vtxer.Tracks2V0vertices(esdEvent);
+    // Decide between regular and light vertexer (default: light)
+    if (!fUseLightVertexer) {
+      // Instantiate vertexer object
+      AliV0vertexer lV0vtxer;
+      // Set Cuts
+      lV0vtxer.SetDefaultCuts(fV0VertexerSels);
+      lV0vtxer.SetCuts(fV0VertexerSels);
+      // Redo
+      lV0vtxer.Tracks2V0vertices(esdEvent);
+    } else {
+      // Instantiate vertexer object
+      AliLightV0vertexer lV0vtxer;
+      // Set do or don't do V0 refit for improved precision
+      lV0vtxer.SetDoRefit(false);
+      if (fDoV0Refit) lV0vtxer.SetDoRefit(true);
+      // Set Cuts
+      lV0vtxer.SetDefaultCuts(fV0VertexerSels);
+      lV0vtxer.SetCuts(fV0VertexerSels);
+      // Redo
+      lV0vtxer.Tracks2V0vertices(esdEvent);
+    }
   }
 
   std::unordered_map<int,int> mcMap;
@@ -340,15 +349,18 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
               sVtx[0] = dau->Vx();
               sVtx[1] = dau->Vy();
               sVtx[2] = dau->Vz();
+              break;
             }
           }
           double dist = Distance(mcV->GetX() - sVtx[0], mcV->GetY() - sVtx[1], mcV->GetZ() - sVtx[2]);
+          double radius = std::hypot(sVtx[0], sVtx[1]);
 
           MCparticle v0part;
           v0part.SetPDGcode(currentPDG);
           v0part.SetEta(part->Eta());
           v0part.SetPt(part->Pt());
           v0part.SetDistOverP(dist / part->P());
+          v0part.SetRadius(radius);
           bool isSecondary = mcEvent->IsSecondaryFromWeakDecay(ilab);
           fHistMCct[idx]->Fill(dist * part->GetMass() / part->P());
           TParticle* mother = mcEvent->Particle(part->GetFirstMother());
@@ -356,17 +368,24 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
             v0part.SetStatus(MCparticle::kSecondaryFromWeakDecay);
 
             double motherDist = Distance(mcV->GetX() - part->Vx(), mcV->GetY() - part->Vy(), mcV->GetZ() - part->Vz());
+            double motherR = std::hypot(part->Vx(), part->Vy());
             MCparticle motherPart;
             motherPart.SetPDGcode(mother->GetPdgCode());
             motherPart.SetEta(mother->Eta());
             motherPart.SetPt(mother->Pt());
             motherPart.SetDistOverP(motherDist / mother->P());
+            motherPart.SetRadius(motherR);
             fMCvector.push_back(motherPart);
           } else if (mcEvent->IsPhysicalPrimary(ilab)) {
             v0part.SetStatus(MCparticle::kPrimary);
             fHistMCctPrimary[idx]->Fill(dist * part->GetMass() / part->P());
+          } else if (mcEvent->IsSecondaryFromMaterial(ilab)) {
+            v0part.SetStatus(MCparticle::kSecondaryFromWeakDecay);
+            fHistMCctSecondaryFromMaterial[idx]->Fill(dist * part->GetMass() / part->P());
           } else {
-            continue;
+            ::Fatal("AliAnalysisTaskStrangenessLifetimes::UserExec",
+              "A particle that is not primary, not secondary from weak decay nor from material."
+              "It does know only what it is not.");
           }
           mcMap[ilab] = fMCvector.size();
           fMCvector.push_back(v0part);
@@ -382,7 +401,8 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
                  // V0s)
     AliESDv0 *v0 = ((AliESDEvent *)esdEvent)->GetV0(iV0);
     if (!v0) continue;
-    if (v0->GetOnFlyStatus() != 0) continue;
+    if (v0->GetOnFlyStatus() != 0 && !fUseOnTheFly) continue;
+    if (fUseOnTheFly && v0->GetOnFlyStatus() == 0) continue;
 
     // Remove like-sign (will not affect offline V0 candidates!)
     if (v0->GetParamN()->Charge() * v0->GetParamP()->Charge() > 0) continue;
@@ -608,7 +628,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
     }
   }
 
-  if (fV0vector.size()) fTreeV0->Fill();
+  if (fV0vector.size() || fMCvector.size()) fTreeV0->Fill();
 
   PostData(1, fListHist);
   PostData(2, fTreeV0);

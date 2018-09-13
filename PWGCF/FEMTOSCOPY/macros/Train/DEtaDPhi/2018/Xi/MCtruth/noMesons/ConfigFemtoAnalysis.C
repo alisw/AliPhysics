@@ -304,7 +304,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					  dtc1etaphitpc[aniter]->SetPt(0.6,maxPt); //Xi
 					  dtc1etaphitpc[aniter]->SetCharge(-1.0);
 					  if(ichg == 21 || ichg ==23)
-					    {dtc1etaphitpc[aniter]->SetPDG(3312);
+					    {dtc1etaphitpc[aniter]->SetPDG(-3312);
 					      dtc1etaphitpc[aniter]->SetCharge(1.0);
 					    }
 					  else

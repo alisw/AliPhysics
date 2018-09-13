@@ -1739,6 +1739,82 @@ void AliCEPUtils::InitTrackCuts(Bool_t IsRun1, Int_t clusterCut)
 }
 
 // ------------------------------------------------------------------------------
+// evaluate the distances between the cluster positions and the EMCal hits of
+// the selected tracks.
+// For each cluster find the minimum distance (dPhiEtaMin) and finally return
+// the maximum of these values (dPhiEtaMinMax)
+// Only if this value is small it is assumed, that all EMCal clusters are
+// associated with a charged track and not with a gamma
+Double_t AliCEPUtils::CaloClusterTrackdmax( AliESDEvent *Event, TArrayI* TTindices )
+{
+  
+  // initialisations
+  Float_t x[3];
+  TVector3 v3;
+  Double_t cluster_phi, cluster_eta;
+  AliESDCaloCluster* aliCluster = NULL;
+  Double_t trkPhiOnEmc, trkEtaOnEmc;
+  AliESDtrack *tmptrk = NULL;
+  
+  Double_t dEta, dPhi, dPhiEta;
+  Double_t dPhiEtaMin, dPhiEtaMinMax;
+  
+  // loop over CaloClusters
+  UInt_t nCaloTracks = Event->GetNumberOfCaloClusters();
+  dPhiEtaMinMax = (nCaloTracks>0) ? 999. : 0.;
+  
+  for (UInt_t ii=0; ii<nCaloTracks; ii++) {
+    aliCluster = (AliESDCaloCluster*)Event->GetCaloCluster(ii);
+    
+    // get cluster position
+    aliCluster->GetPosition(x);
+    
+    // v3 phi is in the range [-pi,pi) -> map it to [0, 2pi)
+    v3 = TVector3(x[0], x[1], x[2]);
+    cluster_phi = (v3.Phi()>0.) ? v3.Phi() : v3.Phi() + 2.*TMath::Pi();
+    cluster_eta = v3.Eta();
+    
+    // loop over selected tracks, extrapolate to EMCal and calculate
+    // distance between track hit position and CaloCluster position
+    dPhiEtaMin = 999.;
+    for (Int_t jj=0; jj<TTindices->GetSize(); jj++) {
+      tmptrk = (AliESDtrack*) Event->GetTrack(TTindices->At(jj)); 
+      
+      // track position on emcal
+      trkPhiOnEmc = tmptrk->GetTrackPhiOnEMCal();
+
+      // Map phi to [0,2pi)
+      trkPhiOnEmc = (trkPhiOnEmc>0.) ? trkPhiOnEmc : trkPhiOnEmc+2.*TMath::Pi();
+      if (trkPhiOnEmc<0.) trkPhiOnEmc=-999.;
+      trkEtaOnEmc = tmptrk->GetTrackEtaOnEMCal();
+      
+      // no matching if at least one has value -999.
+      if (trkPhiOnEmc==-999. || TMath::Abs(trkEtaOnEmc)>0.75) continue;
+      
+      // in case of track on emcal: calculate distance in phi and eta
+      dPhi = trkPhiOnEmc - cluster_phi;
+      dEta = trkEtaOnEmc - cluster_eta;
+      dPhiEta = TMath::Sqrt( dEta*dEta + dPhi*dPhi );
+
+      // update dPhiEtaMin
+      dPhiEtaMin = (dPhiEta<dPhiEtaMin) ? dPhiEta : dPhiEtaMin;
+      
+    }
+
+    // update dPhiEtaMinMax
+    if (ii==0) {
+      dPhiEtaMinMax = dPhiEtaMin;
+    } else {
+      dPhiEtaMinMax = (dPhiEtaMin>dPhiEtaMinMax) ? dPhiEtaMin : dPhiEtaMinMax;
+    }
+    
+  }
+      
+  return dPhiEtaMinMax;
+
+}
+
+// ------------------------------------------------------------------------------
 void AliCEPUtils::EMCAnalysis (
   AliESDEvent *Event,
   TList *lhh,
@@ -2018,3 +2094,52 @@ void AliCEPUtils::SetMCTruth (
                       
 }
                   
+//------------------------------------------------------------------------------
+void AliCEPUtils::GetMyPriors( TString fnPriors, TH1F** mypriors )
+{
+  
+  // create leaf names
+  TString priorName;
+
+  // open fnPriors
+  TFile *priorff = TFile::Open(fnPriors.Data(),"READ");
+  if (priorff) {
+    printf("File %s opened!\n",fnPriors.Data());
+    
+    // get list of keys
+    TIter nextkey(priorff->GetListOfKeys());
+    TKey *key;
+    TString ss;
+    Int_t step, laststep = 0;
+    while (key = (TKey*)nextkey()) {
+      TObject *oo = (TObject*) key->ReadObj();
+      if (TString(oo->ClassName()).EqualTo("TH1F")) {
+        ss = TString(oo->GetName());
+        if (ss.Contains("priors") && ss.Contains("step")) {
+          step = TString(ss(ss.Length()-1)).Atoi();
+          //printf("%s: step %i\n",fnPriors.Data(),step);
+          if (step > laststep) laststep = step;
+        }
+      }
+    }
+    
+    // get priors for 5 [e,mu,pi,K,p] particle species
+    for (Int_t ii=0; ii<AliPID::kSPECIES; ii++) {
+      priorName = Form("priors%istep%i",ii,laststep);
+      printf("Trying to get %s - ",priorName.Data());
+      mypriors[ii] = (TH1F*)priorff->Get(priorName);
+      if (mypriors[ii]) {
+        mypriors[ii]->SetLineStyle(kSolid);
+      } else {
+        printf("NOT ");
+      }
+      printf("ok\n");
+
+    }
+  }
+  
+  return;
+
+} 
+
+//------------------------------------------------------------------------------

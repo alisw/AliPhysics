@@ -338,16 +338,17 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
   
-  fHistNEvents = new TH1F("hNEvents", "number of events ",9,-0.5,8.5);
+  fHistNEvents = new TH1F("hNEvents", "number of events ",10,-0.5,9.5);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"n. passing IsEvSelected");
   fHistNEvents->GetXaxis()->SetBinLabel(3,"n. rejected due to trigger");
   fHistNEvents->GetXaxis()->SetBinLabel(4,"n. rejected due to phys sel");
   fHistNEvents->GetXaxis()->SetBinLabel(5,"n. rejected due to not reco vertex");
   fHistNEvents->GetXaxis()->SetBinLabel(6,"n. rejected for contr vertex");
-  fHistNEvents->GetXaxis()->SetBinLabel(7,"n. rejected for vertex out of accept");
-  fHistNEvents->GetXaxis()->SetBinLabel(8,"n. rejected for pileup events");
-  fHistNEvents->GetXaxis()->SetBinLabel(9,"no. of out centrality events");
+  fHistNEvents->GetXaxis()->SetBinLabel(7,"n. rejected for zSPD-zTrack");
+  fHistNEvents->GetXaxis()->SetBinLabel(8,"n. rejected for vertex out of accept");
+  fHistNEvents->GetXaxis()->SetBinLabel(9,"n. rejected for pileup");
+  fHistNEvents->GetXaxis()->SetBinLabel(10,"no. of out centrality events");
   
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
   fHistNEvents->SetMinimum(0);
@@ -615,14 +616,15 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     if(fAnalysisCuts->IsEventRejectedDuePhysicsSelection()) fHistNEvents->Fill(3);
   }else{
     if(fAnalysisCuts->IsEventRejectedDueToCentrality()){
-      fHistNEvents->Fill(8);
+      fHistNEvents->Fill(9);
     }else{
-      if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex() || fAnalysisCuts->IsEventRejectedDueToVertexContributors()){
+      if(fAnalysisCuts->IsEventRejectedDueToBadPrimaryVertex()){
 	if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex())fHistNEvents->Fill(4);
 	if(fAnalysisCuts->IsEventRejectedDueToVertexContributors())fHistNEvents->Fill(5);
+	if(fAnalysisCuts->IsEventRejectedDueToBadTrackVertex())fHistNEvents->Fill(6);
       }else{
-	if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion())fHistNEvents->Fill(6);
-	else if(fAnalysisCuts->IsEventRejectedDueToPileup())fHistNEvents->Fill(7);
+	if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion())fHistNEvents->Fill(7);
+	else if(fAnalysisCuts->IsEventRejectedDueToPileup())fHistNEvents->Fill(8);
       }
     }
   }

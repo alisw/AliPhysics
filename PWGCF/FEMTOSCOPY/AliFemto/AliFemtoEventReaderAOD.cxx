@@ -67,6 +67,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fAODpidUtil(NULL),
   fAODheader(NULL),
   fAnaUtils(NULL),
+  fEventCuts(NULL),
+  fUseAliEventCuts(0),
   fInputFile(""),
   fTree(NULL),
   fAodFile(NULL),
@@ -74,7 +76,11 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fisEPVZ(kTRUE),
   fpA2013(kFALSE),
   fisPileUp(kFALSE),
+  fCascadePileUpRemoval(kFALSE),
+  fV0PileUpRemoval(kFALSE),
+  fTrackPileUpRemoval(kFALSE),
   fMVPlp(kFALSE),
+  fOutOfBunchPlp(kFALSE),
   fMinVtxContr(0),
   fMinPlpContribMV(0),
   fMinPlpContribSPD(0),
@@ -99,6 +105,15 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   f1DcorrectionsAll(0),
   f1DcorrectionsLambdas(0),
   f1DcorrectionsLambdasMinus(0),
+  f4DcorrectionsPions(0),
+  f4DcorrectionsKaons(0),
+  f4DcorrectionsProtons(0),
+  f4DcorrectionsPionsMinus(0),
+  f4DcorrectionsKaonsMinus(0),
+  f4DcorrectionsProtonsMinus(0),
+  f4DcorrectionsAll(0),
+  f4DcorrectionsLambdas(0),
+  f4DcorrectionsLambdasMinus(0),
   fIsKaonAnalysis(kFALSE),
   fIsProtonAnalysis(kFALSE),
   fIsPionAnalysis(kFALSE),
@@ -129,6 +144,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fAODpidUtil(aReader.fAODpidUtil),
   fAODheader(aReader.fAODheader),
   fAnaUtils(aReader.fAnaUtils),
+  fEventCuts(aReader.fEventCuts),
+  fUseAliEventCuts(aReader.fUseAliEventCuts),
   fInputFile(aReader.fInputFile),
   fTree(NULL),
   fAodFile(new TFile(aReader.fAodFile->GetName())),
@@ -136,7 +153,11 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fisEPVZ(aReader.fisEPVZ),
   fpA2013(aReader.fpA2013),
   fisPileUp(aReader.fisPileUp),
+  fCascadePileUpRemoval(aReader.fCascadePileUpRemoval),
+  fV0PileUpRemoval(aReader.fV0PileUpRemoval),
+  fTrackPileUpRemoval(aReader.fTrackPileUpRemoval),
   fMVPlp(aReader.fMVPlp),
+  fOutOfBunchPlp(aReader.fOutOfBunchPlp),
   fMinVtxContr(aReader.fMinVtxContr),
   fMinPlpContribMV(aReader.fMinPlpContribMV),
   fMinPlpContribSPD(aReader.fMinPlpContribSPD),
@@ -161,6 +182,15 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   f1DcorrectionsAll(aReader.f1DcorrectionsAll),
   f1DcorrectionsLambdas(aReader.f1DcorrectionsLambdas),
   f1DcorrectionsLambdasMinus(aReader.f1DcorrectionsLambdasMinus),
+  f4DcorrectionsPions(aReader.f4DcorrectionsPions),
+  f4DcorrectionsKaons(aReader.f4DcorrectionsKaons),
+  f4DcorrectionsProtons(aReader.f4DcorrectionsProtons),
+  f4DcorrectionsPionsMinus(aReader.f4DcorrectionsPionsMinus),
+  f4DcorrectionsKaonsMinus(aReader.f4DcorrectionsKaonsMinus),
+  f4DcorrectionsProtonsMinus(aReader.f4DcorrectionsProtonsMinus),
+  f4DcorrectionsAll(aReader.f4DcorrectionsAll),
+  f4DcorrectionsLambdas(aReader.f4DcorrectionsLambdas),
+  f4DcorrectionsLambdasMinus(aReader.f4DcorrectionsLambdasMinus),
   fIsKaonAnalysis(aReader.fIsKaonAnalysis),
   fIsProtonAnalysis(aReader.fIsProtonAnalysis),
   fIsPionAnalysis(aReader.fIsPionAnalysis),
@@ -183,6 +213,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
 //__________________
 AliFemtoEventReaderAOD::~AliFemtoEventReaderAOD()
 { // destructor
+  delete fEventCuts;
   delete fTree;
   delete fEvent;
   delete fAodFile;
@@ -191,6 +222,7 @@ AliFemtoEventReaderAOD::~AliFemtoEventReaderAOD()
 //     delete fPWG2AODTracks;
 //   }
 }
+
 
 //__________________
 AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventReaderAOD &aReader)
@@ -215,6 +247,8 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fAODpidUtil = aReader.fAODpidUtil;
   fAODheader = aReader.fAODheader;
   fAnaUtils = aReader.fAnaUtils;
+  fEventCuts = aReader.fEventCuts;
+  fUseAliEventCuts = aReader.fUseAliEventCuts;
   fCentRange[0] = aReader.fCentRange[0];
   fCentRange[1] = aReader.fCentRange[1];
   fUsePreCent = aReader.fUsePreCent;
@@ -222,7 +256,11 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fMagFieldSign = aReader.fMagFieldSign;
   fpA2013 = aReader.fpA2013;
   fisPileUp = aReader.fisPileUp;
+  fCascadePileUpRemoval = aReader.fCascadePileUpRemoval;
+  fV0PileUpRemoval = aReader.fV0PileUpRemoval;
+  fTrackPileUpRemoval = aReader.fTrackPileUpRemoval;
   fMVPlp = aReader.fMVPlp;
+  fOutOfBunchPlp = aReader.fOutOfBunchPlp;
   fMinVtxContr = aReader.fMinVtxContr;
   fMinPlpContribMV = aReader.fMinPlpContribMV;
   fMinPlpContribSPD = aReader.fMinPlpContribSPD;
@@ -247,6 +285,15 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   f1DcorrectionsAll = aReader.f1DcorrectionsAll;
   f1DcorrectionsLambdas = aReader.f1DcorrectionsLambdas;
   f1DcorrectionsLambdasMinus = aReader.f1DcorrectionsLambdasMinus;
+  f4DcorrectionsPions = aReader.f4DcorrectionsPions;
+  f4DcorrectionsKaons = aReader.f4DcorrectionsKaons;
+  f4DcorrectionsProtons = aReader.f4DcorrectionsProtons;
+  f4DcorrectionsPionsMinus = aReader.f4DcorrectionsPionsMinus;
+  f4DcorrectionsKaonsMinus = aReader.f4DcorrectionsKaonsMinus;
+  f4DcorrectionsProtonsMinus = aReader.f4DcorrectionsProtonsMinus;
+  f4DcorrectionsAll = aReader.f4DcorrectionsAll;
+  f4DcorrectionsLambdas = aReader.f4DcorrectionsLambdas;
+  f4DcorrectionsLambdasMinus = aReader.f4DcorrectionsLambdasMinus;
   fIsKaonAnalysis = aReader.fIsKaonAnalysis;
   fIsProtonAnalysis = aReader.fIsProtonAnalysis;
   fIsPionAnalysis = aReader.fIsPionAnalysis;
@@ -378,6 +425,14 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   //   }
   // }
 
+  //******* Ali Event Cuts - applied on AOD event ************
+  if(fUseAliEventCuts){
+    if (!fEventCuts->AcceptEvent(fEvent)) {
+      return NULL;
+    }
+  }
+  //**************************************
+  
   // AliAnalysisUtils
   if (fisPileUp || fpA2013) {
     fAnaUtils = new AliAnalysisUtils();
@@ -390,7 +445,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       return NULL;  // Vertex rejection for pA analysis.
     }
     fAnaUtils->SetUseMVPlpSelection(fMVPlp);
-
+    fAnaUtils->SetUseOutOfBunchPileUp(fOutOfBunchPlp);
+    
     if (fMinPlpContribMV) {
       fAnaUtils->SetMinPlpContribMV(fMinPlpContribMV);
     }
@@ -406,7 +462,12 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   }
 
   // Primary Vertex position
-  const AliAODVertex *aodvertex = (AliAODVertex *) fEvent->GetPrimaryVertex();
+  const AliAODVertex *aodvertex;
+  if(fUseAliEventCuts)
+    aodvertex = (AliAODVertex *) fEventCuts->GetPrimaryVertex();
+  else
+    aodvertex  = (AliAODVertex *) fEvent->GetPrimaryVertex();
+    
   if (!aodvertex || aodvertex->GetNContributors() < 1) {
     delete tEvent;  // Bad vertex, skip event.
     return NULL;
@@ -489,6 +550,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       continue;
     }
 
+    
+    
     // Counting particles to set multiplicity
     if (fEstEventMult == kGlobalCount) {
       //if (aodtrack->IsPrimaryCandidate()) //? instead of kinks?
@@ -559,7 +622,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
    
     tEvent->SetNormalizedMult(norm_mult);
 
-    
+
+   
     AliFemtoTrack *trackCopy = CopyAODtoFemtoTrack(aodtrack);
    
     trackCopy->SetMultiplicity(norm_mult);
@@ -576,6 +640,30 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     AliAODTrack *aodtrackpid = dynamic_cast<AliAODTrack *>(fEvent->GetTrack(pid_track_id));
     assert(aodtrackpid && "Not a standard AOD");
 
+
+  //Pile-up removal
+  if(fTrackPileUpRemoval)
+    {
+      //method which checks if track
+      //have at least 1 hit in ITS or TOF.
+      bool passTrackPileUp = false;
+
+      //does tof timing exist for our track?
+      if (aodtrackpid->GetTOFBunchCrossing()==0) passTrackPileUp = true;
+
+      //check ITS refit
+      if(!(aodtrackpid->GetStatus()&AliESDtrack::kITSrefit)) continue;
+      
+      //loop over the 4 ITS Layrs and check for a hit!
+      for (int i=0;i<2;++i) { //we use layers 0, 1 /OR/ 0, 1, 4, 5
+	//if(i==2 || i==3) i+=2;
+	if (aodtrackpid->HasPointOnITSLayer(i)) passTrackPileUp=true;
+      }
+      
+      if(!passTrackPileUp) continue;
+    }
+
+    
     CopyPIDtoFemtoTrack(aodtrackpid, trackCopy);
 
     if (mcP) {
@@ -739,10 +827,10 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       /***************************************************/
       //
       
-      if (fIsDeuteronAnalysis == true && TMath::Abs(pdg) != 700201) trackAccept = false;
-      if (fIsTritonAnalysis == true && TMath::Abs(pdg) != 700301) trackAccept = false;
-      if (fIsHe3Analysis == true && TMath::Abs(pdg) != 700302)    trackAccept = false;
-      if (fIsAlphaAnalysis == true && TMath::Abs(pdg) != 700202) trackAccept = false;
+      if (fIsDeuteronAnalysis == true && TMath::Abs(pdg) != 1000010020) trackAccept = false;
+      if (fIsTritonAnalysis == true && TMath::Abs(pdg) != 1000010040) trackAccept = false;
+      if (fIsHe3Analysis == true && TMath::Abs(pdg) != 700302)    trackAccept = false;//temporary pdg
+      if (fIsAlphaAnalysis == true && TMath::Abs(pdg) != 700202) trackAccept = false;//temporary pdg
       //
       /*****************************************************/
       if (trackAccept == true && ptrue > 0) {    
@@ -806,6 +894,29 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
         daughterTrackNeg = tmp;
       }
 
+
+    if(fV0PileUpRemoval)
+      {
+	//method which checks if each of the v0 daughters
+	//have at least 1 hit in ITS or TOF.
+	bool passPos = false;
+	bool passNeg = false;
+
+	//does tof timing exist for our track?
+	if (daughterTrackPos->GetTOFBunchCrossing()==0) passPos = true;
+	if (daughterTrackNeg->GetTOFBunchCrossing()==0) passNeg = true;
+
+	//loop over the 4 ITS Layrs and check for a hit!
+	for (int i=0;i<4;++i) { //checking layers 0, 1, 4, 5
+	  if(i==2 || i==3) i+=2;
+	  if (daughterTrackPos->HasPointOnITSLayer(i)) passPos=true;
+	  if (daughterTrackNeg->HasPointOnITSLayer(i)) passNeg=true;
+	}
+	
+	if(!passPos) continue;
+	if(!passNeg) continue;
+      }
+      
       AliFemtoV0 *trackCopyV0 = CopyAODtoFemtoV0(aodv0);
       trackCopyV0->SetMultiplicity(norm_mult);
       trackCopyV0->SetZvtx(fV1[2]);
@@ -901,6 +1012,32 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       if (daughterTrackPos == NULL || daughterTrackNeg == NULL || bachTrack == NULL) continue;         // daughter tracks must exist
       if (daughterTrackNeg->Charge() == daughterTrackPos->Charge()) continue;     // and have different charge
 
+
+    if(fCascadePileUpRemoval)
+      {
+	//method which checks if each of the v0 daughters and bachelor
+	//have at least 1 hit in ITS or TOF.
+	bool passPos = false;
+	bool passNeg = false;
+	bool passBac = false;
+
+	//does tof timing exist for our track?
+	if (daughterTrackPos->GetTOFBunchCrossing()==0) passPos = true;
+	if (daughterTrackNeg->GetTOFBunchCrossing()==0) passNeg = true;
+	if (bachTrack->GetTOFBunchCrossing()==0) passBac = true;
+
+	//loop over the 6 ITS Layrs and check for a hit!
+	for (int i=0;i<6;++i) {
+	  if (daughterTrackPos->HasPointOnITSLayer(i)) passPos=true;
+	  if (daughterTrackNeg->HasPointOnITSLayer(i)) passNeg=true;
+	  if (bachTrack->HasPointOnITSLayer(i)) passBac=true;
+	}
+	
+	if(!passPos) continue;
+	if(!passNeg) continue;
+	if(!passBac) continue;
+      }
+      
       AliFemtoXi *trackCopyXi = CopyAODtoFemtoXi(aodxi);
 
       //TODO for now, in AliFemtoHiddenInfo, consider V0 as positive daughter and bachelor pion as negative daughter
@@ -1018,6 +1155,7 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
   tFemtoTrack->SetHelix(helix);
 
 
+  
   // Flags
   tFemtoTrack->SetTrackId(tAodTrack->GetID());
   tFemtoTrack->SetFlags(tAodTrack->GetFlags());
@@ -1114,41 +1252,94 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
   }
 
   //Corrections
+
   if(f1DcorrectionsPions){
     tFemtoTrack->SetCorrectionPion(f1DcorrectionsPions->GetBinContent(f1DcorrectionsPions->FindFixBin(tAodTrack->Pt())));
   }
-  else tFemtoTrack->SetCorrectionPion(1.0);
+  else if(f4DcorrectionsPions){
+    Int_t idx[4] ={f4DcorrectionsPions->GetAxis(0)->FindFixBin(tAodTrack->Eta()),f4DcorrectionsPions->GetAxis(1)->FindFixBin(tAodTrack->Pt()),f4DcorrectionsPions->GetAxis(2)->FindFixBin(tAodTrack->Zv()),f4DcorrectionsPions->GetAxis(3)->FindFixBin(tAodTrack->Phi())};
+    //cout<<"Track with pT "<<tAodTrack->Pt()<<" eta: "<<tAodTrack->Eta()<<" zv: "<<tAodTrack->Zv()<<" phi: "<<tAodTrack->Phi()<<endl;
+    //cout<<"Pion bin: "<<idx[0]<<" "<<idx[1]<<" "<<idx[2]<<" "<<idx[3]<<" val: "<<f4DcorrectionsPions->GetBinContent(idx)<<endl;
+    if(f4DcorrectionsPions->GetBinContent(idx)!=0){
+      tFemtoTrack->SetCorrectionPion(1./f4DcorrectionsPions->GetBinContent(idx));
+      //cout<<"Filling hist with :"<<1./f4DcorrectionsPions->GetBinContent(idx)<<endl;
+    }
+    else
+      tFemtoTrack->SetCorrectionPion(1.0);
+  }
+    else tFemtoTrack->SetCorrectionPion(1.0);
 
   if(f1DcorrectionsKaons){
     tFemtoTrack->SetCorrectionKaon(f1DcorrectionsKaons->GetBinContent(f1DcorrectionsKaons->FindFixBin(tAodTrack->Pt())));
+  }
+  else if(f4DcorrectionsKaons){
+    Int_t idx[4] ={f4DcorrectionsKaons->GetAxis(0)->FindFixBin(tAodTrack->Eta()),f4DcorrectionsKaons->GetAxis(1)->FindFixBin(tAodTrack->Pt()),f4DcorrectionsKaons->GetAxis(2)->FindFixBin(tAodTrack->Zv()),f4DcorrectionsKaons->GetAxis(3)->FindFixBin(tAodTrack->Phi())};
+    if(f4DcorrectionsKaons->GetBinContent(idx)!=0)
+      tFemtoTrack->SetCorrectionKaon(1./f4DcorrectionsKaons->GetBinContent(idx));
+    else
+      tFemtoTrack->SetCorrectionKaon(1.0);
   }
   else tFemtoTrack->SetCorrectionKaon(1.0);
 
   if(f1DcorrectionsProtons){
     tFemtoTrack->SetCorrectionProton(f1DcorrectionsProtons->GetBinContent(f1DcorrectionsProtons->FindFixBin(tAodTrack->Pt())));
   }
+  else if(f4DcorrectionsProtons){
+    Int_t idx[4] ={f4DcorrectionsProtons->GetAxis(0)->FindFixBin(tAodTrack->Eta()),f4DcorrectionsProtons->GetAxis(1)->FindFixBin(tAodTrack->Pt()),f4DcorrectionsProtons->GetAxis(2)->FindFixBin(tAodTrack->Zv()),f4DcorrectionsProtons->GetAxis(3)->FindFixBin(tAodTrack->Phi())};
+    if(f4DcorrectionsProtons->GetBinContent(idx)!=0)
+      tFemtoTrack->SetCorrectionProton(1./f4DcorrectionsProtons->GetBinContent(idx));
+    else
+      tFemtoTrack->SetCorrectionProton(1.0);
+  }
   else tFemtoTrack->SetCorrectionProton(1.0);
 
   if(f1DcorrectionsPionsMinus){
     tFemtoTrack->SetCorrectionPionMinus(f1DcorrectionsPionsMinus->GetBinContent(f1DcorrectionsPionsMinus->FindFixBin(tAodTrack->Pt())));
+  } 
+  else if(f4DcorrectionsPionsMinus){
+    Int_t idx[4] ={f4DcorrectionsPionsMinus->GetAxis(0)->FindFixBin(tAodTrack->Eta()),f4DcorrectionsPionsMinus->GetAxis(1)->FindFixBin(tAodTrack->Pt()),f4DcorrectionsPionsMinus->GetAxis(2)->FindFixBin(tAodTrack->Zv()),f4DcorrectionsPionsMinus->GetAxis(3)->FindFixBin(tAodTrack->Phi())};
+    if(f4DcorrectionsPionsMinus->GetBinContent(idx)!=0)
+      tFemtoTrack->SetCorrectionPionMinus(1./f4DcorrectionsPionsMinus->GetBinContent(idx));
+    else
+      tFemtoTrack->SetCorrectionPionMinus(1.0);
   }
   else tFemtoTrack->SetCorrectionPionMinus(1.0);
 
   if(f1DcorrectionsKaonsMinus){
     tFemtoTrack->SetCorrectionKaonMinus(f1DcorrectionsKaonsMinus->GetBinContent(f1DcorrectionsKaonsMinus->FindFixBin(tAodTrack->Pt())));
   }
+  else if(f4DcorrectionsKaonsMinus){
+    Int_t idx[4] ={f4DcorrectionsKaonsMinus->GetAxis(0)->FindFixBin(tAodTrack->Eta()),f4DcorrectionsKaonsMinus->GetAxis(1)->FindFixBin(tAodTrack->Pt()),f4DcorrectionsKaonsMinus->GetAxis(2)->FindFixBin(tAodTrack->Zv()),f4DcorrectionsKaonsMinus->GetAxis(3)->FindFixBin(tAodTrack->Phi())};
+    if(f4DcorrectionsKaonsMinus->GetBinContent(idx)!=0)
+      tFemtoTrack->SetCorrectionKaonMinus(1./f4DcorrectionsKaonsMinus->GetBinContent(idx));
+    else
+      tFemtoTrack->SetCorrectionKaonMinus(1.0);
+  }
   else tFemtoTrack->SetCorrectionKaonMinus(1.0);
 
   if(f1DcorrectionsProtonsMinus){
     tFemtoTrack->SetCorrectionProtonMinus(f1DcorrectionsProtonsMinus->GetBinContent(f1DcorrectionsProtonsMinus->FindFixBin(tAodTrack->Pt())));
   }
+  else if(f4DcorrectionsProtonsMinus){
+    Int_t idx[4] ={f4DcorrectionsProtonsMinus->GetAxis(0)->FindFixBin(tAodTrack->Eta()),f4DcorrectionsProtonsMinus->GetAxis(1)->FindFixBin(tAodTrack->Pt()),f4DcorrectionsProtonsMinus->GetAxis(2)->FindFixBin(tAodTrack->Zv()),f4DcorrectionsProtonsMinus->GetAxis(3)->FindFixBin(tAodTrack->Phi())};
+    if(f4DcorrectionsProtonsMinus->GetBinContent(idx)!=0)
+      tFemtoTrack->SetCorrectionProtonMinus(1./f4DcorrectionsProtonsMinus->GetBinContent(idx));
+    else
+      tFemtoTrack->SetCorrectionProtonMinus(1.0);
+  }
   else tFemtoTrack->SetCorrectionProtonMinus(1.0);
   
-
   if(f1DcorrectionsAll){
     tFemtoTrack->SetCorrectionAll(f1DcorrectionsAll->GetBinContent(f1DcorrectionsAll->FindFixBin(tAodTrack->Pt())));
   }
-    else tFemtoTrack->SetCorrectionAll(1.0);
+  else if(f4DcorrectionsAll){
+    Int_t idx[4] ={f4DcorrectionsAll->GetAxis(0)->FindFixBin(tAodTrack->Eta()),f4DcorrectionsAll->GetAxis(1)->FindFixBin(tAodTrack->Pt()),f4DcorrectionsAll->GetAxis(2)->FindFixBin(tAodTrack->Zv()),f4DcorrectionsAll->GetAxis(3)->FindFixBin(tAodTrack->Phi())};
+    if(f4DcorrectionsAll->GetBinContent(idx)!=0)
+      tFemtoTrack->SetCorrectionAll(1./f4DcorrectionsAll->GetBinContent(idx));
+    else
+      tFemtoTrack->SetCorrectionAll(1.0);
+  }
+  else tFemtoTrack->SetCorrectionAll(1.0);
 
   /*******************************************************************/
   //
@@ -1157,7 +1348,7 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
   }
   else tFemtoTrack->SetCorrectionDeuteron(1.0);
 
-  if(f1DcorrectionsKaons){
+  if(f1DcorrectionsTritons){
     tFemtoTrack->SetCorrectionTriton(f1DcorrectionsTritons->GetBinContent(f1DcorrectionsTritons->FindFixBin(tAodTrack->Pt())));
   }
   else tFemtoTrack->SetCorrectionTriton(1.0);
@@ -1258,12 +1449,26 @@ AliFemtoV0 *AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
   if(f1DcorrectionsLambdas){
     tFemtoV0->SetCorrectionLambdas(f1DcorrectionsLambdas->GetBinContent(f1DcorrectionsLambdas->FindFixBin(tAODv0->Pt())));
   }
+  else if(f4DcorrectionsLambdas){
+    Int_t idx[4] ={f4DcorrectionsLambdas->GetAxis(0)->FindFixBin(tAODv0->Eta()),f4DcorrectionsLambdas->GetAxis(1)->FindFixBin(tAODv0->Pt()),f4DcorrectionsLambdas->GetAxis(2)->FindFixBin(tAODv0->Zv()),f4DcorrectionsLambdas->GetAxis(3)->FindFixBin(tAODv0->Phi())};
+    if(f4DcorrectionsLambdas->GetBinContent(idx)!=0)
+      tFemtoV0->SetCorrectionLambdas(1./f4DcorrectionsLambdas->GetBinContent(idx));
+    else
+      tFemtoV0->SetCorrectionLambdas(1.0);
+  }
   else {
     tFemtoV0->SetCorrectionLambdas(1.0);
   }
 
-    if(f1DcorrectionsLambdasMinus){
+  if(f1DcorrectionsLambdasMinus){
     tFemtoV0->SetCorrectionLambdasMinus(f1DcorrectionsLambdasMinus->GetBinContent(f1DcorrectionsLambdasMinus->FindFixBin(tAODv0->Pt())));
+  }
+  else if(f4DcorrectionsLambdasMinus){
+    Int_t idx[4] ={f4DcorrectionsLambdasMinus->GetAxis(0)->FindFixBin(tAODv0->Eta()),f4DcorrectionsLambdasMinus->GetAxis(1)->FindFixBin(tAODv0->Pt()),f4DcorrectionsLambdasMinus->GetAxis(2)->FindFixBin(tAODv0->Zv()),f4DcorrectionsLambdasMinus->GetAxis(3)->FindFixBin(tAODv0->Phi())};
+    if(f4DcorrectionsLambdasMinus->GetBinContent(idx)!=0)
+      tFemtoV0->SetCorrectionLambdasMinus(1./f4DcorrectionsLambdasMinus->GetBinContent(idx));
+    else
+      tFemtoV0->SetCorrectionLambdasMinus(1.0);
   }
   else {
     tFemtoV0->SetCorrectionLambdasMinus(1.0);
@@ -1485,7 +1690,9 @@ AliFemtoV0 *AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
         tFemtoV0->SetNegNSigmaTOFK(fAODpidUtil->NumberOfSigmasTOF(trackneg, AliPID::kKaon));
         tFemtoV0->SetNegNSigmaTOFP(fAODpidUtil->NumberOfSigmasTOF(trackneg, AliPID::kProton));
         tFemtoV0->SetNegNSigmaTOFPi(fAODpidUtil->NumberOfSigmasTOF(trackneg, AliPID::kPion));
-      }
+      }      
+
+      
       double TOFSignalPos = trackpos->GetTOFsignal();
       double TOFSignalNeg = trackneg->GetTOFsignal();
       TOFSignalPos -= fAODpidUtil->GetTOFResponse().GetStartTime(trackpos->P());
@@ -1494,7 +1701,8 @@ AliFemtoV0 *AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
       double pidNeg[5];
       trackpos->GetIntegratedTimes(pidPos);
       trackneg->GetIntegratedTimes(pidNeg);
-
+	
+      
       tFemtoV0->SetTOFPionTimePos(TOFSignalPos - pidPos[2]);
       tFemtoV0->SetTOFKaonTimePos(TOFSignalPos - pidPos[3]);
       tFemtoV0->SetTOFProtonTimePos(TOFSignalPos - pidPos[4]);
@@ -1511,7 +1719,6 @@ AliFemtoV0 *AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
   tFemtoV0->SetOnFlyStatusV0(tAODv0->GetOnFlyStatus());
   return tFemtoV0;
 }
-
 
 
 AliFemtoXi *AliFemtoEventReaderAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
@@ -1712,6 +1919,7 @@ AliFemtoXi *AliFemtoEventReaderAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
 void AliFemtoEventReaderAOD::SetFilterBit(UInt_t ibit)
 {
   fFilterBit = (1 << (ibit));
+
 }
 
 
@@ -1767,6 +1975,7 @@ AliAODMCParticle *AliFemtoEventReaderAOD::GetParticleWithLabel(TClonesArray *mcP
 
 void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemtoTrack *tFemtoTrack)
 {
+
   // A cache which maps vertices to the number of tracks used to determine the vertex
   // Added due to slow calculation in AliAODVertex::GetNContributors - if that changes, remove this.
   static std::map<Short_t, Int_t> _vertex_NContributors_cache;
@@ -1875,7 +2084,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
 
 
 
-  tFemtoTrack->SetTofExpectedTimes(tTOF - aodpid[2], tTOF - aodpid[3], tTOF - aodpid[4]);
+  tFemtoTrack->SetTofExpectedTimes(tTOF - aodpid[2], tTOF - aodpid[3], tTOF - aodpid[4], tTOF);
 
    //////  TPC ////////////////////////////////////////////
 
@@ -1932,6 +2141,9 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
   float nsigmaTOFA = -1000.;
   //
   /*******************************/
+  Double_t trackLength=tAodTrack->GetIntegratedLength();
+  Double_t trackTime=tAodTrack->GetTOFsignal()-fAODpidUtil->GetTOFResponse().GetStartTime(tAodTrack->P());
+  
   if (((status & AliVTrack::kTOFout) == AliVTrack::kTOFout)
       && ((status & AliVTrack::kTIME) == AliVTrack::kTIME)
       && probMis < 0.01) {
@@ -1948,18 +2160,24 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
     nsigmaTOFA = fAODpidUtil->NumberOfSigmasTOF(tAodTrack, AliPID::kAlpha);
     /*********************************************************************/
 
-    Double_t len = 200; // esdtrack->GetIntegratedLength(); !!!!!
-    Double_t tof = tAodTrack->GetTOFsignal();
-    if (tof > 0.) vp = len / tof / 0.03;
+    //  double trackTime=tAodTrack->GetTOFsignal();
+
   }
 
-  tFemtoTrack->SetVTOF(vp);
+    if (trackTime > 0. &&  trackLength>0.){
+
+      vp = trackLength / trackTime /0.03;
+      tFemtoTrack->SetVTOF(vp);
+      double massTof= tFemtoTrack->P().Mag()*tFemtoTrack->P().Mag()*(1/(vp*vp)-1);
+      tFemtoTrack->SetMassTOF(massTof); 
+    }
+  
   tFemtoTrack->SetNSigmaTOFPi(nsigmaTOFPi);
   tFemtoTrack->SetNSigmaTOFK(nsigmaTOFK);
   tFemtoTrack->SetNSigmaTOFP(nsigmaTOFP);
-  tFemtoTrack->SetNSigmaTOFE(nsigmaTOFE);
+  tFemtoTrack->SetNSigmaTOFE(nsigmaTOFE); 
   
-
+    
   /*****************************************/
   tFemtoTrack->SetNSigmaTOFD(nsigmaTOFD);
   tFemtoTrack->SetNSigmaTOFT(nsigmaTOFT);
@@ -1968,6 +2186,8 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
   /******************************************/
   //////////////////////////////////////
 }
+
+
 
 void AliFemtoEventReaderAOD::SetCentralityPreSelection(double min, double max)
 {
@@ -2051,7 +2271,7 @@ void AliFemtoEventReaderAOD::GetGlobalPositionAtGlobalRadiiThroughTPC(AliAODTrac
       radius_index--; // decrement to fill current location with default value
       break;
     }
-
+ 
     // store the global position
     globalPositionsAtRadii[radius_index][0] = pos_buffer[0];
     globalPositionsAtRadii[radius_index][1] = pos_buffer[1];
@@ -2134,6 +2354,14 @@ void AliFemtoEventReaderAOD::SetShiftedPositions(const AliAODTrack *track
   } // End of coarse propagation loop
 }
 
+
+void AliFemtoEventReaderAOD::SetUseAliEventCuts(Bool_t useAliEventCuts)
+{
+  fUseAliEventCuts = useAliEventCuts;
+  fEventCuts = new AliEventCuts(); 
+}
+
+
 void AliFemtoEventReaderAOD::SetpA2013(Bool_t pa2013)
 {
   fpA2013 = pa2013;
@@ -2144,9 +2372,29 @@ void AliFemtoEventReaderAOD::SetUseMVPlpSelection(Bool_t mvplp)
   fMVPlp = mvplp;
 }
 
+void AliFemtoEventReaderAOD::SetUseOutOfBunchPlpSelection(Bool_t outOfBunchPlp)
+{
+  fOutOfBunchPlp=outOfBunchPlp;
+}
+
 void AliFemtoEventReaderAOD::SetIsPileUpEvent(Bool_t ispileup)
 {
   fisPileUp = ispileup;
+}
+
+void AliFemtoEventReaderAOD::SetCascadePileUpRemoval(Bool_t cascadePileUpRemoval)
+{
+  fCascadePileUpRemoval = cascadePileUpRemoval;
+}
+
+void AliFemtoEventReaderAOD::SetV0PileUpRemoval(Bool_t v0PileUpRemoval)
+{
+  fV0PileUpRemoval = v0PileUpRemoval;
+}
+
+void AliFemtoEventReaderAOD::SetTrackPileUpRemoval(Bool_t trackPileUpRemoval)
+{
+  fTrackPileUpRemoval= trackPileUpRemoval;
 }
 
 void AliFemtoEventReaderAOD::SetDCAglobalTrack(Int_t dcagt)
@@ -2276,6 +2524,52 @@ void AliFemtoEventReaderAOD::Set1DCorrectionsLambdas(TH1D *h1)
 void AliFemtoEventReaderAOD::Set1DCorrectionsLambdasMinus(TH1D *h1)
 {
   f1DcorrectionsLambdasMinus = h1;
+}
+
+
+
+void AliFemtoEventReaderAOD::Set4DCorrectionsPions(THnSparse *h1)
+{
+  f4DcorrectionsPions = h1;
+}
+
+void AliFemtoEventReaderAOD::Set4DCorrectionsKaons(THnSparse *h1)
+{
+  f4DcorrectionsKaons = h1;
+}
+
+void AliFemtoEventReaderAOD::Set4DCorrectionsProtons(THnSparse *h1)
+{
+  f4DcorrectionsProtons = h1;
+}
+
+void AliFemtoEventReaderAOD::Set4DCorrectionsPionsMinus(THnSparse *h1)
+{
+  f4DcorrectionsPionsMinus = h1;
+}
+
+void AliFemtoEventReaderAOD::Set4DCorrectionsKaonsMinus(THnSparse *h1)
+{
+  f4DcorrectionsKaonsMinus = h1;
+}
+
+void AliFemtoEventReaderAOD::Set4DCorrectionsProtonsMinus(THnSparse *h1)
+{
+  f4DcorrectionsProtonsMinus = h1;
+}
+
+void AliFemtoEventReaderAOD::Set4DCorrectionsLambdas(THnSparse *h1)
+{
+  f4DcorrectionsLambdas = h1;
+}
+
+void AliFemtoEventReaderAOD::Set4DCorrectionsLambdasMinus(THnSparse *h1)
+{
+  f4DcorrectionsLambdasMinus = h1;
+}
+void AliFemtoEventReaderAOD::Set4DCorrectionsAll(THnSparse *h1)
+{
+  f4DcorrectionsAll = h1;
 }
 
 //Special MC analysis for pi,K,p,e selected by PDG code -->

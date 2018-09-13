@@ -66,16 +66,13 @@ class AliAnalysisTaskSigma0Run2 : public AliAnalysisTaskSE {
   AliSigma0PhotonMotherCuts *fSigmaPhotonCuts;  //
   AliSigma0PhotonMotherCuts *fAntiSigmaPhotonCuts;  //
 
-  bool fIsMC;              //
-  bool fIsHeavyIon;        //
-  bool fIsLightweight;     //
-  float fV0PercentileMax;  //
-  UInt_t fTrigger;         //
+  bool fIsMC;                //
+  bool fIsHeavyIon;          //
+  bool fIsLightweight;       //
+  float fV0PercentileMax;    //
+  UInt_t fTrigger;           //
 
-  std::vector<AliSigma0ParticleV0> fLambdaContainer;      //!
-  std::vector<AliSigma0ParticleV0> fAntiLambdaContainer;  //!
-  std::vector<AliSigma0ParticleV0> fPhotonV0Container;    //!
-  TClonesArray *fGammaArray;                              //!
+  TClonesArray *fGammaArray;  //!
 
   // Histograms
   // =====================================================================
@@ -91,8 +88,6 @@ class AliAnalysisTaskSigma0Run2 : public AliAnalysisTaskSE {
   TH1F *fHistTriggerBefore;                 //!
   TH1F *fHistTriggerAfter;                  //!
 
-  TList *fOutputTree;  //!
-
-  ClassDef(AliAnalysisTaskSigma0Run2, 5)
+  ClassDef(AliAnalysisTaskSigma0Run2, 7)
 };
 #endif

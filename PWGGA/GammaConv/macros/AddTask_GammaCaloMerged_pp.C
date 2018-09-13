@@ -80,6 +80,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
                                   Bool_t    runDetailedM02              = kFALSE,             // switch on very detailed M02 distribution
                                   TString   additionalTrainConfig       = "0"                 // additional counter for trainconfig, always has to be last parameter
 ) {
+  Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
   TH1S* histoAcc = 0x0;         // histo for modified acceptance
   TString corrTaskSetting = ""; // sets which correction task setting to use
   //parse additionalTrainConfig flag
@@ -107,6 +108,11 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
         cout << "INFO: AddTask_GammaCaloMerged_pp will use custom branch from Correction Framework!" << endl;
         corrTaskSetting = tempStr;
         corrTaskSetting.Replace(0,2,"");
+      }else if(tempStr.BeginsWith("TM")){
+        TString tempType = tempStr;
+        tempType.Replace(0,2,"");
+        trackMatcherRunningMode = tempType.Atoi();
+        cout << Form("INFO: AddTask_GammaCaloMerged_pp will use running mode '%i' for the TrackMatcher!",trackMatcherRunningMode) << endl;
       }
     }
   }
@@ -205,6 +211,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
   task->SetV0ReaderName(V0ReaderName);
   task->SetLightOutput(runLightOutput);
   task->SetCorrectionTaskSetting(corrTaskSetting);
+  task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
 
   //create cut handler
   CutHandlerCaloMerged cuts;
@@ -946,6 +953,16 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00053113","1111111067032200000","1111111067022110002","0163302200000000"); // EMC8
     cuts.AddCut("00082113","1111111067032200000","1111111067022110002","0163302200000000"); // EMC8EGA,
 
+  // standard cuts (with EOverP reference plots) to test effect of new track matching modes (cf. AliCaloTrackMatcher.h)
+  } else if (trainConfig == 183){ // fRunningMode = 5
+    cuts.AddCut("00010113","111111106c032200000","111111106c022700001","0163300000000000"); // INT7
+    cuts.AddCut("00052113","111111106c032200000","111111106c022700001","0163300000000000"); // EMC7
+    cuts.AddCut("00081113","111111106c032200000","111111106c022700001","0163300000000000"); // EGA
+  } else if (trainConfig == 184){ // fRunningMode = 6
+    cuts.AddCut("00010113","111111106c032200000","111111106c022700001","0163300000000000"); // INT7
+    cuts.AddCut("00052113","111111106c032200000","111111106c022700001","0163300000000000"); // EMC7
+    cuts.AddCut("00081113","111111106c032200000","111111106c022700001","0163300000000000"); // EGA
+
 
     // shape definition study (variation of w0): using std cuts + TM off + strong M02 variation
   } else if (trainConfig == 185){
@@ -957,57 +974,67 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00081113","1111111060032200000","1111111060022e00001","0163300000000000"); // min M02 = 0.10 + min M02 = 0.36
     cuts.AddCut("00081113","1111111060032200000","1111111060022f00001","0163300000000000"); // min M02 = 0.10 + min M02 = 0.39
 
+
+    // standard cuts for cell time variation
+  } else if (trainConfig == 187){ // 200 ns
+    cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300000000000"); // INT7
+    cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300000000000"); // EMC7
+    cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // EGA
+  } else if (trainConfig == 188){ // 100 ns
+    cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300000000000"); // INT7
+    cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300000000000"); // EMC7
+    cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // EGA
+    // minimum cell aggregation energy variation
+  } else if (trainConfig == 189){ // cell min energy 75 MeV
+    cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300000000000"); // INT7
+    cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300000000000"); // EMC7
+    cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // EGA
+  } else if (trainConfig == 190){ // cell min energy 125 MeV
+    cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300000000000"); // INT7
+    cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300000000000"); // EMC7
+    cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // EGA
+
     // multiple standard cuts for supermodule-wise analysis
   } else if (trainConfig == 191){  // M02 cut at 0.27
     cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300000000000"); // INT7
     cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300000000000"); // EMC7
     cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // EGA
-    cuts.AddCut("00091113","1111111067032200000","1111111067022700001","0163300000000000"); // EJE
   } else if (trainConfig == 192){  // M02 cut at 0.27
     cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300000000000"); // INT7
     cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300000000000"); // EMC7
     cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // EGA
-    cuts.AddCut("00091113","1111111067032200000","1111111067022700001","0163300000000000"); // EJE
   } else if (trainConfig == 193){  // M02 cut at 0.27
     cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300000000000"); // INT7
     cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300000000000"); // EMC7
     cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // EGA
-    cuts.AddCut("00091113","1111111067032200000","1111111067022700001","0163300000000000"); // EJE
   } else if (trainConfig == 194){  // M02 cut at 0.27
     cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300000000000"); // INT7
     cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300000000000"); // EMC7
     cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // EGA
-    cuts.AddCut("00091113","1111111067032200000","1111111067022700001","0163300000000000"); // EJE
   } else if (trainConfig == 195){  // M02 cut at 0.27
     cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300000000000"); // INT7
     cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300000000000"); // EMC7
     cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // EGA
-    cuts.AddCut("00091113","1111111067032200000","1111111067022700001","0163300000000000"); // EJE
   } else if (trainConfig == 196){  // M02 cut at 0.27
     cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300000000000"); // INT7
     cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300000000000"); // EMC7
     cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // EGA
-    cuts.AddCut("00091113","1111111067032200000","1111111067022700001","0163300000000000"); // EJE
   } else if (trainConfig == 197){  // M02 cut at 0.27
     cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300000000000"); // INT7
     cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300000000000"); // EMC7
     cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // EGA
-    cuts.AddCut("00091113","1111111067032200000","1111111067022700001","0163300000000000"); // EJE
   } else if (trainConfig == 198){  // M02 cut at 0.27
     cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300000000000"); // INT7
     cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300000000000"); // EMC7
     cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // EGA
-    cuts.AddCut("00091113","1111111067032200000","1111111067022700001","0163300000000000"); // EJE
   } else if (trainConfig == 199){  // M02 cut at 0.27
     cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300000000000"); // INT7
     cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300000000000"); // EMC7
     cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // EGA
-    cuts.AddCut("00091113","1111111067032200000","1111111067022700001","0163300000000000"); // EJE
   } else if (trainConfig == 200){  // M02 cut at 0.27
     cuts.AddCut("00010113","1111111067032200000","1111111067022700001","0163300000000000"); // INT7
     cuts.AddCut("00052113","1111111067032200000","1111111067022700001","0163300000000000"); // EMC7
     cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // EGA
-    cuts.AddCut("00091113","1111111067032200000","1111111067022700001","0163300000000000"); // EJE
 
 
   } else if (trainConfig == 250){  // EMCAL clusters 7 TeV LHC11 TM on
@@ -1202,9 +1229,9 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     //create AliCaloTrackMatcher instance, if there is none present
     TString caloCutPos = cuts.GetClusterCut(i);
     caloCutPos.Resize(1);
-    TString TrackMatcherName = Form("CaloTrackMatcher_%s",caloCutPos.Data());
+    TString TrackMatcherName = Form("CaloTrackMatcher_%s_%i",caloCutPos.Data(),trackMatcherRunningMode);
     if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
-      AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
+      AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi(),trackMatcherRunningMode);
       fTrackMatcher->SetV0ReaderName(V0ReaderName);
       fTrackMatcher->SetCorrectionTaskSetting(corrTaskSetting);
       mgr->AddTask(fTrackMatcher);

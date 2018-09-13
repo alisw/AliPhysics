@@ -3,6 +3,7 @@
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliV0ReaderV1.h"
 #include "AliConvEventCuts.h"
+#include "AliAnalysisTaskWeakDecayVertexer.h"
 class AliEmcalJet;
 class AliAODVertex;
 class AliAODTrack;
@@ -19,6 +20,7 @@ class TRandom3;
 class AliPIDResponse;
 class AliHFJetsTaggingVertex;
 class AliRDHFJetsCutsVertex;
+class AliVertexerTracks;
 
 
 
@@ -102,6 +104,12 @@ public:
 
 	void SetDoImprovedDCACut(Bool_t value){fDoImprovedDCACut = value;}
 
+	void SetMaxFactorPtHardJet(Double_t value){fMaxFactorPtHardJet = value;}
+
+	void SetCalculateDCATruth(Bool_t value){fCalcDCATruth = value;}
+
+	void SetTaggerWorkingPoint(Double_t value){fThresholdIP = value;}
+
 	// B jet tracks selection
 	void SetTrackMinPt(Double_t val){ fTCMinTrackPt = val;}
 	void SetTPCClusterMin(Int_t val){ fTCMinClusTPC = val;}
@@ -149,6 +157,11 @@ private:
 	Bool_t fEnableV0GammaRejection;//
 	Float_t fPythiaEventWeight;//!
 	Bool_t fDoImprovedDCACut;//
+	Bool_t fVertexConstraint;//!
+	Double_t fThresholdIP;//
+
+	AliESDVertex* fDiamond;//!
+	AliVertexerTracks *fVertexer;//!
 
   	AliPIDResponse   *fRespoPID;//!
 
@@ -170,6 +183,8 @@ private:
 	Double_t fTCMaxIPz;//
 	Double_t fTCMaxDecayLength;//
 	Double_t fTCMaxDCATrackJet;//
+
+	Double_t fMaxFactorPtHardJet;//
 	
 	TH1D * fhistInclusiveJetCuts;//!
 	TH1D * fhistbJetCuts;//!
@@ -413,7 +428,7 @@ private:
 	TH2D* fh2dLamdaRecPtVsGenPt;//!
 	TH2D* fh2dAnLamdaRecPtVsGenPt;//!
 
-	TH2D* fh2dPhotonMassVsPt;//!
+	TH1D* fh1dPhotonPt;//!
 
 	TH1D* fh1dKshortPtMC;//!
 	TH1D* fh1dLamdaPtMC;//!
@@ -585,13 +600,17 @@ private:
   Double_t fValJetProb;//!
   Double_t fLogJetProb;//!
 
+  Bool_t fCalcDCATruth;//
+
+  AliAnalysisTaskWeakDecayVertexer* fDecayVertex;//!
+
   static const Double_t fgkMassPion;    //
   static const Double_t fgkMassKshort;  //
   static const Double_t fgkMassLambda;  //
   static const Double_t fgkMassProton;  //
   static const Int_t fgkiNCategV0 = 18; // number of V0 selection steps
 
-	ClassDef(AliAnalysisTaskBJetTC, 50)
+	ClassDef(AliAnalysisTaskBJetTC, 51)
 };
 #endif
  //

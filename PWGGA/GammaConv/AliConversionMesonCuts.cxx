@@ -660,6 +660,64 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCM
 }
 
 //________________________________________________________________________
+Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiEta(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelEtaMeson, Double_t fRapidityShift){
+
+  // Returns true for all pions within acceptance cuts for decay into 2 photons
+  // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
+
+  if( !mcEvent )return kFALSE;
+
+  if( !(fMCMother->GetPdgCode() == 331 ) ) return kFALSE;
+
+  if( fMCMother->R()>fMaxR ) return kFALSE; // cuts on distance from collision point
+
+  Double_t rapidity = 10.;
+
+  if( fMCMother->Energy() - fMCMother->Pz() == 0 || fMCMother->Energy() + fMCMother->Pz() == 0 ){
+    rapidity=8.-fRapidityShift;
+  }
+  else{
+    rapidity = 0.5*(TMath::Log((fMCMother->Energy()+fMCMother->Pz()) / (fMCMother->Energy()-fMCMother->Pz())))-fRapidityShift;
+  }
+
+  // Rapidity Cut
+  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+
+  // min Pt Cut
+  if(fDoMinPtCut && (fMCMother->Pt() < fMinPt)) return kFALSE;
+
+  // Select only -> pi+ pi- pi0
+  if( fMCMother->GetNDaughters() != 3 )return kFALSE;
+
+  TParticle *posPion = 0x0;
+  TParticle *negPion = 0x0;
+  TParticle *etaMeson = 0x0;
+
+//   cout << "\n"<< fMCMother->GetPdgCode() << "\n" << endl;
+  for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
+    if(index < 0) continue;
+    TParticle* temp = (TParticle*)mcEvent->Particle( index );
+//     cout << temp->GetPdgCode() << endl;
+    switch( temp->GetPdgCode() ) {
+    case 211:
+      posPion      =  temp;
+      labelPosPion = index;
+      break;
+    case -211:
+      negPion      =  temp;
+      labelNegPion = index;
+      break;
+    case 221:
+      etaMeson         =  temp;
+      labelEtaMeson    = index;
+      break;
+    }
+  }
+
+  if( posPion && negPion && etaMeson ) return kTRUE;
+  return kFALSE;
+}
+//________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift){
 
   // Returns true for all pions within acceptance cuts for decay into 2 photons
@@ -1412,6 +1470,16 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCut(Int_t selectionCut){
       fSelectionHigh      = 0.155;
       fAcceptMesonMass    = kFALSE;
       break;
+    case 21: //l
+      fSelectionLow       = 0.500;
+      fSelectionHigh      = 0.600;
+      fAcceptMesonMass    = kTRUE;
+      break;
+    case 22: //m
+      fSelectionLow       = 0.400;
+      fSelectionHigh      = 0.700;
+      fAcceptMesonMass    = kTRUE;
+      break;
 
     default:
       cout<<"Warning: SelectionCut not defined "<<selectionCut<<endl;
@@ -2144,6 +2212,36 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fSidebandMixingLeftHigh          = 0.05;
     fSidebandMixingRightLow          = 0.180;
     fSidebandMixingRightHigh         = 0.220;
+    break;
+  case 14: //e mixed event with pi0 sideband candidates (right side of pi0 peak)
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fDoBGProbability            = kFALSE;
+    fBackgroundUseLikeSign      = kFALSE;
+    fBackgroundUseSideband      = kTRUE;
+    fSidebandMixingLow          = 0.600;
+    fSidebandMixingHigh         = 0.650;
+    break;
+  case 15: //f mixed event with pi0 sideband candidates (left side of pi0 peak)
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fDoBGProbability            = kFALSE;
+    fBackgroundUseLikeSign      = kFALSE;
+    fBackgroundUseSideband      = kTRUE;
+    fSidebandMixingLow          = 0.42;
+    fSidebandMixingHigh         = 0.47;
+    break;
+  case 16: //g mixing event with pi0 sideband candidates (both sides of pi0 peak)
+    fUseRotationMethodInBG           = kFALSE;
+    fUseTrackMultiplicityForBG       = kFALSE;
+    fDoBGProbability                 = kFALSE;
+    fBackgroundUseLikeSign           = kFALSE;
+    fBackgroundUseSideband           = kFALSE;
+    fBackgroundUseSidebandBothSides  = kTRUE;
+    fSidebandMixingLeftLow           = 0.42;
+    fSidebandMixingLeftHigh          = 0.47;
+    fSidebandMixingRightLow          = 0.600;
+    fSidebandMixingRightHigh         = 0.650;
     break;
   default:
     cout<<"Warning: BackgroundScheme not defined "<<BackgroundScheme<<endl;

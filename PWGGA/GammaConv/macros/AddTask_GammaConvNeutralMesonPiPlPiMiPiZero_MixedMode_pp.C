@@ -76,6 +76,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pp(
     TString additionalTrainConfig     = "0"                              // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
+  Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
   //parse additionalTrainConfig flag
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
   if(rAddConfigArr->GetEntries()<1){cout << "ERROR during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
@@ -85,7 +86,12 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pp(
     else{
       TObjString* temp = (TObjString*) rAddConfigArr->At(i);
       TString tempStr = temp->GetString();
-      cout << "INFO: nothing to do, no definition available!" << endl;
+      if(tempStr.BeginsWith("TM")){
+        TString tempType = tempStr;
+        tempType.Replace(0,2,"");
+        trackMatcherRunningMode = tempType.Atoi();
+        cout << Form("INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pp will use running mode '%i' for the TrackMatcher!",trackMatcherRunningMode) << endl;
+      }
     }
   }
   TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
@@ -211,8 +217,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pp(
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
   if(runLightOutput>1) task->SetLightOutput(kTRUE);
-
   task->SetTolerance(tolerance);
+  task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
 
   CutHandlerNeutralMixed cuts;
 
@@ -398,7 +404,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pp(
     cuts.AddCut("00000113","00200009327000008250400000","2444400043012300000","40b440708","0103563600000000","0153503000000000"); // no NonLin
     cuts.AddCut("00000113","00200009327000008250400000","2444401043012300000","40b440708","0103563600000000","0153503000000000"); // ext PHOS NonLin
     cuts.AddCut("00000113","00200009327000008250400000","2444412043012300000","40b440708","0103563600000000","0153503000000000"); // const NonLin
-
+  } else if( trainConfig == 44 ) { // thesis cuts PHOS
+    cuts.AddCut("00000113","00200009227000008250400000","2444411043012300000","302010708","0103603600000000","0153503000000000"); //PCM-PHOS non lin
     // PCM-EMCal 7 TeV Sys
   } else if( trainConfig == 50)  { // Standard
     cuts.AddCut("00000113","00200009227000008250400000","1111111047032230000","302010708","0103603800000000","0153503000000000");
@@ -477,6 +484,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pp(
     cuts.AddCut("00000113","00200009227000008250400000","1111111049032230000","302010708","0103603800000000","0153503000000000");
     cuts.AddCut("00000113","00200009227000008250400000","111111104a032230000","302010708","0103603800000000","0153503000000000");
     cuts.AddCut("00000113","00200009227000008250400000","111111104b032230000","302010708","0103603800000000","0153503000000000");
+    cuts.AddCut("00000113","00200009227000008250400000","1111111043032230000","302010708","0103603800000000","0153503000000000"); //non pt dependent
   } else if( trainConfig == 65)  { // MinEnergy (of cluster)
     cuts.AddCut("00000113","00200009227000008250400000","1111111047022230000","302010708","0103603800000000","0153503000000000"); // 0.6
     cuts.AddCut("00000113","00200009227000008250400000","1111111047042230000","302010708","0103603800000000","0153503000000000"); // 0.8
@@ -714,9 +722,9 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pp(
     //create AliCaloTrackMatcher instance, if there is none present
     TString caloCutPos = cuts.GetClusterCut(i);
     caloCutPos.Resize(1);
-    TString TrackMatcherName = Form("CaloTrackMatcher_%s",caloCutPos.Data());
+    TString TrackMatcherName = Form("CaloTrackMatcher_%s_%i",caloCutPos.Data(),trackMatcherRunningMode);
     if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
-      AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
+      AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi(),trackMatcherRunningMode);
       fTrackMatcher->SetV0ReaderName(V0ReaderName);
       mgr->AddTask(fTrackMatcher);
       mgr->ConnectInput(fTrackMatcher,0,cinput);

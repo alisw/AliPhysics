@@ -2348,6 +2348,25 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
       analysisEventCuts[i]->SetUseWeightMultiplicityFromFile(kTRUE, fileNameInputForMultWeighing, dataInputMultHisto, mcInputMultHisto );
     }
 
+    TString histoNameMCPi0PT = "";  TString histoNameMCEtaPT = "";  TString histoNameMCK0sPT = "";    // pT spectra to be weighted
+    TString fitNamePi0PT = "";      TString fitNameEtaPT = "";      TString fitNameK0sPT = "";        // fit to correct shape of pT spectra
+    Bool_t weightPi0 = kFALSE;      Bool_t weightEta = kFALSE;      Bool_t weightK0s = kFALSE;
+    if(doWeighting){
+      cout << "INFO enabeling pT weighting" << endl;
+      if(periodNameAnchor.CompareTo("LHC15o")==0){
+	TString eventCutString  = cuts.GetEventCut(i);
+	TString eventCutShort   = eventCutString(0,6);   // first six digits
+	weightPi0         = kTRUE;
+	histoNameMCPi0PT  = Form("Pi0_%s_5TeV_%s",   periodName.Data(), eventCutString.Data());  // MC
+	fitNamePi0PT      = Form("Pi0_Data_5TeV_%s", eventCutShort.Data());                      // fit to data
+	weightEta         = kTRUE;
+	histoNameMCEtaPT  = Form("Eta_%s_5TeV_%s",   periodName.Data(), eventCutString.Data());
+	fitNameEtaPT      = Form("Eta_Data_5TeV_%s", eventCutShort.Data());
+
+      }
+      analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(weightPi0, weightEta, weightK0s, fileNameInputForWeighting, histoNameMCPi0PT, histoNameMCEtaPT, histoNameMCK0sPT, fitNamePi0PT, fitNameEtaPT, fitNameK0sPT);
+    }
+
     if (  trainConfig == 1   || trainConfig == 5   || trainConfig == 9   || trainConfig == 13   || trainConfig == 17   ||
         trainConfig == 21   || trainConfig == 25   || trainConfig == 29   || trainConfig == 33   || trainConfig == 37  ||
         trainConfig == 300 || trainConfig == 302 || trainConfig == 304){
@@ -2650,6 +2669,17 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);
+  Int_t nContainer = 2;
+  for(Int_t i = 0; i<numberOfCuts; i++){
+    if(enableQAPhotonTask>1){
+      mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+      nContainer++;
+    }
+    if(enableQAMesonTask>1){
+      mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+      nContainer++;
+    }
+  }
 
   return;
 

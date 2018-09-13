@@ -53,6 +53,9 @@ public:
   ///
   AliFemtoModelCorrFctnQinv(const AliFemtoModelCorrFctnQinv &);
 
+  /// assignment operator
+  AliFemtoModelCorrFctnQinv& operator=(const AliFemtoModelCorrFctnQinv &);
+
   /// Return a pointer to a clone of this correlation function.
   ///
   /// This copies the structure of the internal histograms, but clears
@@ -130,6 +133,7 @@ protected:
   TH2F *fTrueDen;
 
 };
+
 
 inline void
 AliFemtoModelCorrFctnQinv::SetPairType(const AliFemtoAvgSepCorrFctn::PairType pairtype)

@@ -4,7 +4,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-
 #pragma link C++ class AliFemtoDreamEvent+;  
 #pragma link C++ class AliFemtoDreamEventHist+;
 #pragma link C++ class AliFemtoDreamEventCuts+;
@@ -30,7 +29,8 @@
 #pragma link C++ class AliFemtoDreamPartCollection+;
 #pragma link C++ class AliFemtoDreamAnalysis+;
 #pragma link C++ class AliAnalysisTaskFemtoDream+;
-#pragma link C++ class AliAnalysisTaskMCFemtoDream+;
+#pragma link C++ class AliAnalysisTaskSigma0Femto+;
+#pragma link C++ class AliAnalysisTaskGrandma+;
 
 #endif
 

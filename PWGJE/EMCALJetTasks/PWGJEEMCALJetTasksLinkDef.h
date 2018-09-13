@@ -76,6 +76,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalDijetImbalance+;
 #pragma link C++ class AliAnalysisTaskEmcalVsPhos+;
 #pragma link C++ class AliAnalysisTaskEmcalJetPerformance+;
+#pragma link C++ class AliAnalysisTaskGenerateThermalBackgroundMC+;
 #pragma link C++ class AliAnalysisTaskEmcalHighMultTrigger+;
 #pragma link C++ namespace EmcalHJetMassAnalysis+;
 #pragma link C++ class EmcalHJetMassAnalysis::AliAnalysisTaskEmcalHJetMass+;
@@ -244,6 +245,7 @@
 #pragma link C++ class AliJetEmbeddingFromPYTHIATask+;
 #pragma link C++ class AliAnalysisTaskEmcalQGTagging+;
 #pragma link C++ class AliAnalysisTaskEmcalJetShapesMC+;
+#pragma link C++ class AliAnalysisTaskEmcalJetShapeExtra+;
 #pragma link C++ class AliAnalysisTaskFullpAJets+;
 #pragma link C++ class AliAnalysisTaskFullppJet;
 #pragma link C++ class AliAnalysisTaskHJetDphi+;

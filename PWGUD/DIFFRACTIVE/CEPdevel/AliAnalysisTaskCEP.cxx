@@ -25,6 +25,7 @@
 #include <TObject.h>
 #include <TRandom3.h>
 
+#include "TGrid.h"
 #include "AliAnalysisManager.h"
 #include "AliProdInfo.h"
 #include "AliESDInputHandler.h"
@@ -84,8 +85,6 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   , fAnalysisStatus(state)
   , fPIDResponse(0x0)
   , fPIDCombined1(0x0)
-  , fPIDCombined2(0x0)
-  , fPIDCombined3(0x0)
   , fTrigger(0x0)
   , fPhysicsSelection(0x0)
   , fEventCuts(0x0)
@@ -147,8 +146,6 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP():
   , fAnalysisStatus(AliCEPBase::kBitConfigurationSet)
   , fPIDResponse(0x0)
   , fPIDCombined1(0x0)
-  , fPIDCombined2(0x0)
-  , fPIDCombined3(0x0)
   , fTrigger(0x0)
   , fPhysicsSelection(0x0)
   , fEventCuts(0x0)
@@ -241,10 +238,6 @@ AliAnalysisTaskCEP::~AliAnalysisTaskCEP()
   if (fPIDCombined1) {
     delete fPIDCombined1;
     fPIDCombined1 = 0x0;
-  }
-  if (fPIDCombined2) {
-    delete fPIDCombined2;
-    fPIDCombined2 = 0x0;
   }
   
   // delete lists of QA histograms
@@ -357,30 +350,38 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
 
   // prepare PID Combined
   // three types of Bayes PID
-  // 1. with priors
-  // 2. without priors
-  // 3. with CEP priors
-  
-  // 1. with priors
+  // 1. without priors
+  // 2. with default TPC priors
+  // 3. with own priors
   fPIDCombined1 = new AliPIDCombined;
   fPIDCombined1->SetSelectedSpecies(AliPID::kSPECIES);  // This is default
-  fPIDCombined1->SetEnablePriors(kTRUE);
-  fPIDCombined1->SetDefaultTPCPriors();
   
-  // 2. without priors
-  fPIDCombined2 = new AliPIDCombined;
-  fPIDCombined2->SetSelectedSpecies(AliPID::kSPECIES);  // This is default
-  fPIDCombined2->SetEnablePriors(kFALSE);               // priors are set to 1
+  Int_t priorcc = 2;
+  if (priorcc==1) {
+    
+    // 1. without priors
+    fPIDCombined1->SetEnablePriors(kFALSE);
   
-  // 3. set CEP specific priors
-  //fPIDCombined3 = new AliPIDCombined;
-  //fPIDCombined3->SetSelectedSpecies(AliPID::kSPECIES);  //This is default
-  //fPIDCombined3->SetEnablePriors(kTRUE);               // priors are set to 1
-  //TString fnameMyPriors = TString("/home/pbuehler/physics/projects/alice/CEP/working/forpass4/res/20160501/MergedPriors.root");
-  //TH1F *priordistr[AliPID::kSPECIES];
-  //GetMyPriors(fnameMyPriors,priordistr);
-  //for (Int_t ii=0; ii<AliPID::kSPECIES; ii++)
-  //  fPIDCombined3->SetPriorDistribution((AliPID::EParticleType)ii,priordistr[ii]);
+  } else if (priorcc==2) {
+  
+     // 2. with TPC priors
+    fPIDCombined1->SetEnablePriors(kTRUE);
+    fPIDCombined1->SetDefaultTPCPriors();
+  
+ } else {
+    
+    // specific priors 
+    TGrid::Connect("alien://");
+    TString fnameMyPriors =
+      TString("alien:///alice/cern.ch/user/p/pbuhler/CEP/priors/");
+    fnameMyPriors += TString("MyOwnPriors.root");
+    
+    TH1F *priordistr[AliPID::kSPECIES];
+    fCEPUtil->GetMyPriors(fnameMyPriors,priordistr);
+    for (Int_t ii=0; ii<AliPID::kSPECIES; ii++)
+      fPIDCombined1->SetPriorDistribution((AliPID::EParticleType)ii,priordistr[ii]);
+  
+  }
   
   // define the detctors to use for PID ...
   // ... only TPC
@@ -405,10 +406,7 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
   //  AliPIDResponse::kDetTOF |
   //  AliPIDResponse::kDetITS |
   //  AliPIDResponse::kDetTRD;
-
   fPIDCombined1->SetDetectorMask(Maskin);
-  fPIDCombined2->SetDetectorMask(Maskin);
-  //fPIDCombined3->SetDetectorMask(Maskin);
 
 
   // CreateOutputObjects
@@ -933,6 +931,10 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   //Int_t nTracksTPCITS = fCEPUtil->countstatus(fTrackStatus,
   //  AliCEPBase::kTTAccITSTPC, AliCEPBase::kTTAccITSTPC, TPCITSindices);
   
+  // check whether all EMCclusters can be associated with a selected track
+  Double_t dPhiEtaMinMax = fCEPUtil->CaloClusterTrackdmax(fESDEvent,TTindices);
+  //printf("dPhiEtaMinMax: %f\n",dPhiEtaMinMax);
+  
   // for test purposes -------------------------------------------------------
   if (kFALSE) {
     
@@ -1129,6 +1131,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       fCEPEvent->SetnCaloCluster(nCaloCluster[ii],ii);
       fCEPEvent->SetCaloEnergy(CaloEnergy[ii],ii);
     }
+    fCEPEvent->SetdPhiEtaMinMax(dPhiEtaMinMax);
   
     // if this is a MC event then get the MC true information
     // and save it into the event buffer
@@ -1195,13 +1198,13 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
         trk->SetMCMass(part->GetMass());
         trk->SetMCMomentum(TVector3(lv.Px(),lv.Py(),lv.Pz()));
 
-        //printf(" %i",part->GetPdgCode());
+        //printf("PDG %i pt %f",part->GetPdgCode(),lv.Perp());
 
       }
 
       // set PID information
       // ... ITS
-      stat = fPIDResponse->ComputePIDProbability(AliPIDResponse::kITS,tmptrk,AliPID::kSPECIES,probs);
+      stat = fPIDResponse->ComputeITSProbability(tmptrk,AliPID::kSPECIES,probs);
       trk->SetPIDITSStatus(stat);
       trk->SetPIDITSSignal(tmptrk->GetITSsignal());
       for (Int_t jj=0; jj<AliPID::kSPECIES; jj++) {
@@ -1212,7 +1215,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       }
       
       // ... TPC
-      stat = fPIDResponse->ComputePIDProbability(AliPIDResponse::kTPC,tmptrk,AliPID::kSPECIES,probs);
+      stat = fPIDResponse->ComputeTPCProbability(tmptrk,AliPID::kSPECIES,probs);
       trk->SetPIDTPCStatus(stat);
       trk->SetPIDTPCSignal(tmptrk->GetTPCsignal());
       //printf(" %f",tmptrk->GetTPCsignal());
@@ -1222,12 +1225,12 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
         trk->SetPIDTPCnSigma(jj,nsig);
         trk->SetPIDTPCProbability(jj,probs[jj]);
         
-        //printf(" %f/%f ",nsig,probs[jj]);
+        //printf(" %i - %f/%f ",jj,nsig,probs[jj]);
       }
       //printf("\n");
       
       // ... TOF
-      stat = fPIDResponse->ComputePIDProbability(AliPIDResponse::kTOF,tmptrk,AliPID::kSPECIES,probs);
+      stat = fPIDResponse->ComputeTOFProbability(tmptrk,AliPID::kSPECIES,probs);
       trk->SetPIDTOFStatus(stat);
       trk->SetPIDTOFSignal(tmptrk->GetTOFsignal());
       for (Int_t jj=0; jj<AliPID::kSPECIES; jj++) {

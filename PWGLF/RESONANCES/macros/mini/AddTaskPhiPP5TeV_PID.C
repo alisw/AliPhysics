@@ -199,9 +199,9 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP5TeV_PID
   task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
 
   //Spherocity
-  if (Sphero) AliRsnMiniAnalysisTask::SetComputeSpherocity(kTRUE);
+  if (Sphero) AliRsnMiniAnalysisTask::SetComputeSpherocity();
 
-  TH2F* hsp=new TH2F("hSpherocityVsCent","",110,0.,110., 200,0.,1.5);
+  TH2F* hsp=new TH2F("hSpherocityVsCent","",110,0.,110., 100.,0.,1.);
   task->SetEventQAHist("spherocitycent",hsp);//plugs this histogram into the fHASpherocityCent data member
 
   // -- PAIR CUTS (common to all resonances) ------------------------------------------------------

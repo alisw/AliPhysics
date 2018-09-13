@@ -95,6 +95,9 @@ public:
                           AliFemtoTrack*&,
                           AliFemtoV0*&);
 
+private:
+  // AliFemtoModelCorrFctnKStar(const AliFemtoModelCorrFctnKStar&);
+  AliFemtoModelCorrFctnKStar& operator=(const AliFemtoModelCorrFctnKStar&);
 protected:
 
   /// The particle class combination types (track, V0, etc...)

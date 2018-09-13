@@ -53,7 +53,6 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE()
   ffillTree(-100),
   ffillHistograms(kFALSE),
   fOutputList(NULL),
-  fTreeList(NULL),
   fESDList(NULL),
   hVertexZ(NULL),
   hNGoodESDTracks(NULL),
@@ -144,7 +143,6 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : Ali
   ffillTree(-100),
   ffillHistograms(kFALSE),
   fOutputList(NULL),
-  fTreeList(NULL),
   fESDList(NULL),
   hVertexZ(NULL),
   hNGoodESDTracks(NULL),
@@ -224,6 +222,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : Ali
 
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -417,16 +416,10 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
       fOutputList->Add(fConversionCuts->GetCutHistograms());
     }
   }
-  
-  if(ffillTree>=1.0){
-    fTreeList = new TList();
-    fTreeList->SetOwner(kTRUE);
-    if(ffillTree>1.0) fTreeList->SetName(Form("TreeList_%f",ffillTree));
-    else fTreeList->SetName("TreeList");
-    fOutputList->Add(fTreeList);
 
-    fTreeQA = new TTree("PhotonQA","PhotonQA");   
-    
+  if(ffillTree>=1.0){
+    fTreeQA = new TTree("PhotonQA","PhotonQA");
+
     fTreeQA->Branch("daughterProp",&fDaughterProp);
     fTreeQA->Branch("recCords",&fGammaConvCoord);
     fTreeQA->Branch("photonProp",&fGammaPhotonProp);
@@ -435,8 +428,7 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
     fTreeQA->Branch("chi2ndf",&fGammaChi2NDF,"fGammaChi2NDF/F");
     if (fIsMC) {
       fTreeQA->Branch("kind",&fKind,"fKind/b");
-    }   
-    fTreeList->Add(fTreeQA);
+    }
   }
 
   fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
@@ -445,8 +437,12 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
     if (fV0Reader->GetV0FindingEfficiencyHistograms())
       fOutputList->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
 
-  
+
   PostData(1, fOutputList);
+  if(ffillTree>=1.0){
+      OpenFile(2);
+      PostData(2, fTreeQA);
+  }
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskConversionQA::Notify()
@@ -458,7 +454,7 @@ Bool_t AliAnalysisTaskConversionQA::Notify()
     }  
  
   
-  if(!fEventCuts->GetDoEtaShift()) return kTRUE;; // No Eta Shift requested, continue
+  if(!fEventCuts->GetDoEtaShift()) return kTRUE; // No Eta Shift requested, continue
     
   if(fEventCuts->GetEtaShift() == 0.0){ // Eta Shift requested but not set, get shift automatically
     fEventCuts->GetCorrectEtaShiftFromPeriod();

@@ -53,6 +53,7 @@ public:
   void SetNdofBac(double x);
   void SetStatusBac(unsigned long x);
   void SetInvariantMassXi(double min, double max);
+  void SetInvariantMassRejectOmega(double min, double max);
   void SetMaxDcaXi(double x);
   void SetMinDcaXiBac(double x);
   void SetMaxDcaXiDaughters(double x);
@@ -93,6 +94,8 @@ public:
   double fMaxDecayLengthXi;
   double fInvMassXiMin;
   double fInvMassXiMax;
+  double fInvMassRejectMin;
+  double fInvMassRejectMax;
   short  fParticleTypeXi;
 
   double fRadiusXiMin;

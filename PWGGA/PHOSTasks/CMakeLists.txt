@@ -87,21 +87,21 @@ set(SRCS
     PHOS_LHC16_pp/AliPP13EfficiencySelectionMC.cxx
     PHOS_LHC16_pp/AliPP13EfficiencySelectionSPMC.cxx
     PHOS_LHC16_pp/AliPP13EpRatioSelection.cxx
+    PHOS_LHC16_pp/AliPP13FeeddownSelection.cxx
+    PHOS_LHC16_pp/AliPP13KaonToPionRatioMC.cxx
     PHOS_LHC16_pp/AliPP13MesonSelectionMC.cxx
     PHOS_LHC16_pp/AliPP13MixingSample.cxx
     PHOS_LHC16_pp/AliPP13NonlinearityScanSelection.cxx
     PHOS_LHC16_pp/AliPP13NonlinearitySelection.cxx
     PHOS_LHC16_pp/AliPP13ParticlesHistogram.cxx
-    PHOS_LHC16_pp/AliPP13PhotonSelection.cxx
-    PHOS_LHC16_pp/AliPP13PhotonSelectionMC.cxx
     PHOS_LHC16_pp/AliPP13PhotonSpectrumSelection.cxx
     PHOS_LHC16_pp/AliPP13PhotonTimecutStudySelection.cxx
-    PHOS_LHC16_pp/AliPP13PhysPhotonSelection.cxx
-    PHOS_LHC16_pp/AliPP13KaonToPionRatioMC.cxx
-    PHOS_LHC16_pp/AliPP13PhysPhotonSelectionMC.cxx
+    PHOS_LHC16_pp/AliPP13PhysicsSelection.cxx
     PHOS_LHC16_pp/AliPP13PythiaInfoSelection.cxx
     PHOS_LHC16_pp/AliPP13QualityPhotonSelection.cxx
     PHOS_LHC16_pp/AliPP13SelectionWeights.cxx
+    PHOS_LHC16_pp/AliPP13SpectrumSelection.cxx
+    PHOS_LHC16_pp/AliPP13SpectrumSelectionMC.cxx
     PHOS_LHC16_pp/AliPP13TagAndProbeSelection.cxx
     PHOS_NeutralMeson/AliAnalysisTaskPHOSNeutralMeson.cxx
     PHOS_PbPb/AliAnalysisTaskPi0Flow.cxx
