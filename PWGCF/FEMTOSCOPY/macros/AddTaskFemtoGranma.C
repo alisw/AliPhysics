@@ -1,7 +1,8 @@
 #include "TROOT.h"
 #include "TSystem.h"
 
-AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7", bool DCAPlots=false) {
+AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
+                                      bool DCAPlots = false) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   if (!mgr) {
@@ -33,6 +34,176 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7", bool
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, DCAPlots, false, false);
   AntiTrackCuts->SetCutCharge(-1);
   task->SetAntiTrackCuts(AntiTrackCuts);
+
+  AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
+                                                                "Femto");
+  std::vector<int> PDGParticles;
+  PDGParticles.push_back(2212);
+  PDGParticles.push_back(2212);
+//  PDGParticles.push_back(3122);
+//  PDGParticles.push_back(3122);
+//  PDGParticles.push_back(3312);
+//  PDGParticles.push_back(3312);
+  config->SetPDGCodes(PDGParticles);
+
+  std::vector<float> ZVtxBins;
+  ZVtxBins.push_back(-10);
+  ZVtxBins.push_back(-8);
+  ZVtxBins.push_back(-6);
+  ZVtxBins.push_back(-4);
+  ZVtxBins.push_back(-2);
+  ZVtxBins.push_back(0);
+  ZVtxBins.push_back(2);
+  ZVtxBins.push_back(4);
+  ZVtxBins.push_back(6);
+  ZVtxBins.push_back(8);
+  ZVtxBins.push_back(10);
+  config->SetZBins(ZVtxBins);
+
+  std::vector<int> MultBins;
+  MultBins.push_back(0);
+  MultBins.push_back(4);
+  MultBins.push_back(8);
+  MultBins.push_back(12);
+  MultBins.push_back(16);
+  MultBins.push_back(20);
+  MultBins.push_back(24);
+  MultBins.push_back(28);
+  MultBins.push_back(32);
+  MultBins.push_back(36);
+  MultBins.push_back(40);
+  MultBins.push_back(44);
+  MultBins.push_back(48);
+  MultBins.push_back(52);
+  MultBins.push_back(56);
+  MultBins.push_back(60);
+  MultBins.push_back(64);
+  MultBins.push_back(68);
+  MultBins.push_back(72);
+  MultBins.push_back(76);
+  MultBins.push_back(80);
+  MultBins.push_back(84);
+  MultBins.push_back(88);
+  MultBins.push_back(92);
+  MultBins.push_back(96);
+  MultBins.push_back(100);
+  config->SetMultBins(MultBins);
+
+  config->SetMultBinning(false);
+  config->SetCentBinning(false);
+  config->SetkTBinning(false);
+  config->SetmTBinning(false);
+
+  std::vector<float> centBins;
+  centBins.push_back(20);
+  centBins.push_back(40);
+  centBins.push_back(90);
+  config->SetCentBins(centBins);
+  config->SetkTCentralityBinning(false);
+
+  config->SetInvMassPairs(false);
+
+  if (isMC) {
+    config->SetMomentumResolution(false);//kstar true vs. kstar reco
+  } else {
+    std::cout
+        << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
+  }
+  if (isMC) {
+    config->SetPhiEtaBinnign(false);  // check for track splitting/merging at various TPC Radii
+  } else {
+    std::cout
+        << "You are trying to request the Eta Phi Plots without MC Info; fix it wont work! \n";
+  }
+//  if (DeltaEtaDeltaPhiCut) {
+//    config->SetDeltaEtaMax(0.01);
+//    config->SetDeltaPhiMax(0.01);
+//  }
+  config->SetdPhidEtaPlots(false);  // warsaw like plots
+
+  std::vector<int> NBins;
+  NBins.push_back(750);  // p p
+  NBins.push_back(750);  // p barp
+//  NBins.push_back(750);  // p Lambda
+//  NBins.push_back(750);  // p barLambda
+//  NBins.push_back(750);  // p Xi
+//  NBins.push_back(750);  // p barXi
+  NBins.push_back(750);  // barp barp
+//  NBins.push_back(750);  // barp Lambda
+//  NBins.push_back(750);  // barp barLambda
+//  NBins.push_back(750);  // barp Xi
+//  NBins.push_back(750);  // barp barXi
+//  NBins.push_back(750);  // Lambda Lambda
+//  NBins.push_back(750);  // Lambda barLambda
+//  NBins.push_back(750);  // Lambda Xi
+//  NBins.push_back(750);  // Lambda barXi
+//  NBins.push_back(750);  // barLambda barLambda
+//  NBins.push_back(750);  // barLambda Xi
+//  NBins.push_back(750);  // barLambda barXi
+//  NBins.push_back(750);  // Xi Xi
+//  NBins.push_back(750);  // Xi barXi
+//  NBins.push_back(750);  // barXi barXi
+  std::vector<float> kMin;
+  kMin.push_back(0.);
+  kMin.push_back(0.);
+  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+//  kMin.push_back(0.);
+  std::vector<float> kMax;
+  kMax.push_back(3.);
+  kMax.push_back(3.);
+  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+//  kMax.push_back(3.);
+  config->SetNBinsHist(NBins);
+  config->SetMinKRel(kMin);
+  config->SetMaxKRel(kMax);
+
+  config->SetUseEventMixing(true);
+  config->SetMixingDepth(10);
+
+  config->SetUsePhiSpinning(false);
+//  config->SetSpinningDepth(10);
+//  config->SetUseStravinskyMethod(false);
+
+  config->SetMinimalBookingME(false);
+  config->SetMinimalBookingSample(true);
+
+  config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
+
+  task->SetCollectionConfig(config);
 
   if (CentEst == "kInt7") {
     task->SelectCollisionCandidates(AliVEvent::kINT7);
@@ -105,6 +276,24 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7", bool
       Form("%s:%s", file.Data(), AntiTrackCutsName.Data()));
   mgr->ConnectOutput(task, 4, coutputAntiTrkCuts);
 
+  AliAnalysisDataContainer *coutputResults;
+  TString ResultsName = Form("Results");
+  coutputResults = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultsName.Data(),
+      TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsName.Data()));
+  mgr->ConnectOutput(task, 5, coutputResults);
+
+  AliAnalysisDataContainer *coutputResultQA;
+  TString ResultQAName = Form("ResultQA");
+  coutputResultQA = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultQAName.Data(),
+      TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultQAName.Data()));
+  mgr->ConnectOutput(task, 6, coutputResultQA);
+
   if (isMC) {
     AliAnalysisDataContainer *coutputTrkCutsMC;
     TString TrkCutsMCName = Form("TrkCutsMC");
@@ -114,10 +303,8 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7", bool
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 5, coutputTrkCutsMC);
-  }
+    mgr->ConnectOutput(task, 7, coutputTrkCutsMC);
 
-  if (isMC) {
     AliAnalysisDataContainer *coutputAntiTrkCutsMC;
     TString AntiTrkCutsMCName = Form("AntiTrkCutsMC");
     coutputAntiTrkCutsMC = mgr->CreateContainer(
@@ -126,7 +313,7 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7", bool
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 6, coutputAntiTrkCutsMC);
+    mgr->ConnectOutput(task, 8, coutputAntiTrkCutsMC);
   }
 
   return task;

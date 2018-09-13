@@ -23,6 +23,11 @@ AliAnalysisTaskGrandma::AliAnalysisTaskGrandma()
       fAntiTrackCuts(nullptr),
       fAntiTrackCutHistList(nullptr),
       fAntiTrackCutHistMCList(nullptr),
+      fPairCleaner(nullptr),
+      fPartColl(nullptr),
+      fConfig(nullptr),
+      fResultList(nullptr),
+      fResultQAList(nullptr),
       fTrackBufferSize(2000),
       fGTI(nullptr) {
 }
@@ -41,14 +46,23 @@ AliAnalysisTaskGrandma::AliAnalysisTaskGrandma(const char* name, bool isMC)
       fAntiTrackCuts(nullptr),
       fAntiTrackCutHistList(nullptr),
       fAntiTrackCutHistMCList(nullptr),
+      fPairCleaner(nullptr),
+      fPartColl(nullptr),
+      fConfig(nullptr),
+      fResultList(nullptr),
+      fResultQAList(nullptr),
       fTrackBufferSize(2000),
       fGTI(nullptr) {
   DefineOutput(1, TList::Class());  //Output for the Event Class and Pair Cleaner
   DefineOutput(2, TList::Class());  //Output for the Event Cuts
   DefineOutput(3, TList::Class());  //Output for the Track Cuts
   DefineOutput(4, TList::Class());  //Output for the Anti Track Cuts
-  if (fIsMC) DefineOutput(5, TList::Class());  //Output for the MC Track Cuts
-  if (fIsMC) DefineOutput(6, TList::Class());  //Output for the MC Anti Track Cuts
+  DefineOutput(5, TList::Class());  //Output for the Results
+  DefineOutput(6, TList::Class());  //Output for the Results QA
+  if (fIsMC)
+    DefineOutput(7, TList::Class());  //Output for the MC Track Cuts
+  if (fIsMC)
+    DefineOutput(8, TList::Class());  //Output for the MC Anti Track Cuts
 }
 
 AliAnalysisTaskGrandma::~AliAnalysisTaskGrandma() {
@@ -63,11 +77,14 @@ void AliAnalysisTaskGrandma::UserCreateOutputObjects() {
   fEvent = new AliFemtoDreamEvent(true, true, GetCollisionCandidates());
   fFemtoTrack = new AliFemtoDreamTrack();
   fFemtoTrack->SetUseMCInfo(fIsMC);
+  //the pair cleaner you have to setup yourself depending on the pairs you want to investigate
+  fPairCleaner = new AliFemtoDreamPairCleaner(0, 0, false);  //false - full booking, true - minimal booking
 
   fQA = new TList();
   fQA->SetOwner();
   fQA->SetName("QA");
   fQA->Add(fEvent->GetEvtCutList());
+  fQA->Add(fPairCleaner->GetHistList());
 
   if (fEvtCuts) {
     fEvtCuts->InitQA();
@@ -100,12 +117,22 @@ void AliAnalysisTaskGrandma::UserCreateOutputObjects() {
   } else {
     AliWarning("Anti Track cuts are missing! \n");
   }
+  if (fConfig->GetUseEventMixing()) {
+    fPartColl = new AliFemtoDreamPartCollection(fConfig,
+                                                fConfig->GetMinimalBookingME());
+    fResultList = fPartColl->GetHistList();
+    fResultQAList = fPartColl->GetQAList();
+  }
   PostData(1, fQA);
   PostData(2, fEvtHistList);
   PostData(3, fTrackCutHistList);
   PostData(4, fAntiTrackCutHistList);
-  if (fIsMC) PostData(5, fTrackCutHistMCList);
-  if (fIsMC) PostData(6, fAntiTrackCutHistMCList);
+  PostData(5, fResultList);
+  PostData(6, fResultQAList);
+  if (fIsMC)
+    PostData(7, fTrackCutHistMCList);
+  if (fIsMC)
+    PostData(8, fAntiTrackCutHistMCList);
 }
 void AliAnalysisTaskGrandma::UserExec(Option_t *) {
   AliAODEvent *Event = static_cast<AliAODEvent*>(fInputEvent);
@@ -140,14 +167,40 @@ void AliAnalysisTaskGrandma::UserExec(Option_t *) {
           AntiParticles.push_back(*fFemtoTrack);
         }
       }
+      fPairCleaner->ResetArray();
+      //  fPairCleaner->CleanTrackAndDecay(&Particles, &Decays, 0);
+      //  fPairCleaner->CleanTrackAndDecay(&Particles, &XiDecays, 2);
+      //  fPairCleaner->CleanTrackAndDecay(&AntiParticles, &AntiDecays, 1);
+      //  fPairCleaner->CleanTrackAndDecay(&AntiParticles, &AntiXiDecays, 3);
+      //
+      //  fPairCleaner->CleanDecay(&Decays, 0);
+      //  fPairCleaner->CleanDecay(&AntiDecays, 1);
+      //  fPairCleaner->CleanDecay(&XiDecays, 2);
+      //  fPairCleaner->CleanDecay(&AntiXiDecays, 3);
+
+      fPairCleaner->StoreParticle(Particles);
+      fPairCleaner->StoreParticle(AntiParticles);
+//        fPairCleaner->StoreParticle(Decays);
+//        fPairCleaner->StoreParticle(AntiDecays);
+      //  fPairCleaner->StoreParticle(XiDecays);
+      //  fPairCleaner->StoreParticle(AntiXiDecays);
+      if (fConfig->GetUseEventMixing()) {
+        fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),
+                            fEvent->GetZVertex(), fEvent->GetMultiplicity(),
+                            fEvent->GetV0MCentrality());
+      }
     }
   }
   PostData(1, fQA);
   PostData(2, fEvtHistList);
   PostData(3, fTrackCutHistList);
   PostData(4, fAntiTrackCutHistList);
-  if (fIsMC) PostData(5, fTrackCutHistMCList);
-  if (fIsMC) PostData(6, fAntiTrackCutHistMCList);
+  PostData(5, fResultList);
+  PostData(6, fResultQAList);
+  if (fIsMC)
+    PostData(7, fTrackCutHistMCList);
+  if (fIsMC)
+    PostData(8, fAntiTrackCutHistMCList);
   return;
 }
 void AliAnalysisTaskGrandma::StoreGlobalTrackReference(AliAODTrack *track) {
