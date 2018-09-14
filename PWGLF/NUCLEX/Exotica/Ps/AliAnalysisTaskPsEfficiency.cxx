@@ -26,6 +26,8 @@ typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float>> FourVector_t ;
 // std includes
 #include <climits>
 
+using std::string;
+
 ///\cond CLASSIMP
 ClassImp(AliAnalysisTaskPsEfficiency);
 ///\endcond
