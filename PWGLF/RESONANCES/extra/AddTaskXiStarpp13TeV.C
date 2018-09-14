@@ -19,7 +19,7 @@ AliXiStarpp13TeV *AddTaskXiStarpp13TeV(bool MCcase=kFALSE, bool AODcase=kFALSE, 
   //==============================================================================
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   outputFileName += ":PWGLF.outputXiStarAnalysis.root";
-  AliAnalysisDataContainer *coutXiStar = mgr->CreateContainer("MyList", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *coutXiStar = mgr->CreateContainer(Form("MyList_%d", HMTrigger), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   mgr->ConnectInput(XiStarTask, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(XiStarTask, 1, coutXiStar);
 
