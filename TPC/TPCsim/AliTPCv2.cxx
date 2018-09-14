@@ -2320,8 +2320,9 @@ void AliTPCv2::StepManager()
   if(!mc->IsTrackAlive()) return; // particle has disappeared
   
   Float_t charge = mc->TrackCharge();
+  Int_t   pdg    = mc->TrackPid();
   
-  if(TMath::Abs(charge)<=0.) return; // take only charged particles
+  if(TMath::Abs(charge)<=0. && pdg!=60000000) return; // take only charged particles (except magnetic monopoles)
   
   // check the sensitive volume
 
@@ -2463,6 +2464,13 @@ void AliTPCv2::StepManager()
       Int_t nel_step = (Int_t)((Edep-Emin)/wIon) + 1;
       nel_step = TMath::Min(nel_step,300); // 300 electrons corresponds to 10 keV
       nel += nel_step;
+    }
+
+    if(pdg==60000000){
+      Printf("Monopole tracking: %d",nel);
+      nel = (Int_t)((mc->Edep()-Emin)/wIon) + 1;
+      nel = TMath::Min(nel,300);// 300 electrons corresponds to 10 keV
+      Printf(".... %d",nel);
     }
     //
     mc->TrackPosition(p);
