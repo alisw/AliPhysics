@@ -713,7 +713,7 @@ void AliTPCDcalibRes::Init()
   //
   AliCDBManager* man = AliCDBManager::Instance();
   // adding mirroring for OCDB files that will be uploaded (Vdrift)
-  TString mirrorsStr("ALICE::CERN::OCDB,ALICE::FZK::SE,ALICE::LLNL::SE");
+  TString mirrorsStr(gSystem->Getenv("MIRRORSE") ? gSystem->Getenv("MIRRORSE") : "ALICE::CERN::OCDB,ALICE::FZK::SE,ALICE::CNAF::SE");
   AliCDBManager::Instance()->SetMirrorSEs(mirrorsStr.Data());
   printf("List of mirror SEs set to: \"%s\"\n",mirrorsStr.Data());
 
