@@ -2467,10 +2467,8 @@ void AliTPCv2::StepManager()
     }
 
     if(pdg==60000000){
-      Printf("Monopole tracking: %d",nel);
       nel = (Int_t)((mc->Edep()-Emin)/wIon) + 1;
       nel = TMath::Min(nel,300);// 300 electrons corresponds to 10 keV
-      Printf(".... %d",nel);
     }
     //
     mc->TrackPosition(p);
