@@ -284,7 +284,10 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
   TString trigger = esd->GetFiredTriggerClasses();
 
   // triggered in data for lumi scalling
-  if(!isMC && trigger.Contains(fTriggerName.Data())) fHistTriggersPerRun->Fill(RunNum_T);
+  if(!isMC && trigger.Contains(fTriggerName.Data())) {
+  	fHistTriggersPerRun->Fill(RunNum_T);
+  	// cout<<trigger<<endl;
+  }
 
   // CCUP9-B - *0VBA *0VBC *0UBA *0UBC 0STP
   if (!isMC) { // data
@@ -298,7 +301,7 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 
   Int_t nGoodTracks=0;
   Int_t TrackIndex[2] = {-1,-1};
-
+// cout<<"starting track loop"<<endl;
   //Track loop - cuts
   for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
     AliESDtrack *trk = esd->GetTrack(itr);
@@ -320,12 +323,13 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 	TrackIndex[nGoodTracks] = itr;
 
     nGoodTracks++;
+    // cout<<nGoodTracks<<" good tracks"<<endl;
 	if(nGoodTracks > 2) break;
 
   }//Track loop end
 
   if(nGoodTracks == 2){ // fill tree variables
- 
+ // cout<<"two good tracks"<<endl;
   	TDatabasePDG *pdgdat = TDatabasePDG::Instance(); 
   	TParticlePDG *partPion = pdgdat->GetParticle( 211 );
   	Double_t pionMass = partPion->Mass();
@@ -480,7 +484,7 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
   fRhoTree ->Fill();
 
   } // end 2 good tracks
-
+// cout<<"saving data"<<endl;
   PostData(1, fRhoTree);
   PostData(2, fListHist);
   if (isMC) PostData(3, fMCTree);
