@@ -75,7 +75,8 @@ namespace AliAnalysisCODEX {
   enum EventMask {
     kMCevent = BIT(0),
     kNegativeB = BIT(1),
-    kInelGt0 = BIT(2)
+    kInelGt0 = BIT(2),
+    kTriggerClasses = BIT(3)
   };
 
   enum ITSbits {

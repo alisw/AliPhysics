@@ -42,6 +42,7 @@
 #define EPS 1.e-16
 
 using TMath::TwoPi;
+using std::string;
 
 ///\cond CLASSIMP
 ClassImp(AliAnalysisTaskNucleiYield);
