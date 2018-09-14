@@ -153,7 +153,6 @@ Double_t AliNonseparationModelFit::MinuitFunction(const Double_t *par) {
   TGraphErrors *g = NULL;
   for (Int_t k=0; k<6; ++k) { // loop over scans
     fChi2Moments[k] = fChi2Rates[k] = fNDFMoments[k] = fNDFRates[k] = 0.0;
-
     t = (TTree*)fMoments.At(k);
     if (!t)
       continue;
@@ -251,7 +250,6 @@ void AliNonseparationModelFit::DoFit(const TString &saveFileName,
     else
       fMuOffsetsY[i/2] = 0.1*fg->GetParameter(1); // conversion mm -> cm
   }
-
   fFitToOffsetScans = !kTRUE;
 
   // (1) fit without rates
@@ -316,7 +314,6 @@ void AliNonseparationModelFit::DoFit(const TString &saveFileName,
   }
   fMinimizer.ReleaseVariable(26);
 
-  SetScaleRateError(1.0/(10*10));
   fMinimizer.Clear();
   fMinimizer.Minimize();
   fMinimizer.PrintResults();
