@@ -99,6 +99,7 @@ private:
     TH1F        *fVtxZ;//!Vertex z
     TH1F        *fVtxX;//!Vertex x
     TH1F        *fVtxY;//!Vertex y
+    TH1F        *fVtxZmixbins;//! Vertex z, mixing bins
     TH2F        *fTrigMulti;//!trigger multiplicity
     TH1F        *fTrkPt;//!track pt
     TH1F        *fTrketa;//!track eta
@@ -135,12 +136,12 @@ private:
     TH1D        *fLSpairsPerEvent;//! LS pairs per Event in mass range
     TH1D        *fUSpairsPerEvent;//! US pairs per Event in mass range
     
-    THnSparseF  *fDphiHPhi;//! delta-phi distribution with unlike sign kaon pairs
-    THnSparseF  *fDphiHKK;//! delta-phi distribution with like sign kaon pairs
-    THnSparseF  *fDphiHPhiMixed;//! hadron-US mixed correlation
-    THnSparseF  *fDphiHKKMixed;//! hadron-LS mixed correlation
-    THnSparseF  *fDphiHH;//! hadron-hadron correlation
-    THnSparseF  *fDphiHHMixed;//! hadron-hadron mixed correlation
+    THnSparseF  **fDphiHPhi;//! delta-phi distribution with unlike sign kaon pairs
+    THnSparseF  **fDphiHKK;//! delta-phi distribution with like sign kaon pairs
+    THnSparseF  **fDphiHPhiMixed;//! hadron-US mixed correlation
+    THnSparseF  **fDphiHKKMixed;//! hadron-LS mixed correlation
+    THnSparseF  **fDphiHH;//! hadron-hadron correlation
+    THnSparseF  **fDphiHHMixed;//! hadron-hadron mixed correlation
 
     AliAnalysisTaskHadronPhiCorr(const AliAnalysisTaskHadronPhiCorr&); // not implemented
     AliAnalysisTaskHadronPhiCorr& operator=(const AliAnalysisTaskHadronPhiCorr&); // not implemented
