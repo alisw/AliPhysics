@@ -1,7 +1,7 @@
-enum ESys  { kPIpPIpPIp, kPImPImPIm, kPIpPImPIm, kKpKpKp, kKmKmKm, kKpKmKm, kPPP, kAPAPAP, kPAPAP, kPIpKpKp, kPIpKmKm, kPPIpPIp, kPPImPIm, kPKpKp, kPKmKm, kAPKpKp, kAPKmKm, kPIpKpP, nSys };
+enum ESys  { kPIpPIpPIp, kPImPImPIm, kPIpPImPIm, kKpKpKp, kKmKmKm, kKpKmKm, kPPP, kAPAPAP, kPAPAP, kPIpKpKp, kPIpKmKm, kPPIpPIp, kPPImPIm, kPKpKp, kPKmKm, kAPKpKp, kAPKmKm, kPIpKpP, kPIpPP, kPImAPAP, kPImPP, kPIpAPAP, nSys };
 
-const char *sysNames[nSys]      = {"PIpPIpPIp", "PImPImPIm", "PIpPImPIm", "KpKpKp", "KmKmKm", "KpKmKm", "PPP","APAPAP","PAPAP", "PIpKpKp", "PIpKmKm", "PPIpPIp", "PPImPIm", "PKpKp","PKmKm","APKpKp","APKmKm", "PIpKpP"};
-const bool runSys[nSys]         = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+const char *sysNames[nSys]      = {"PIpPIpPIp", "PImPImPIm", "PIpPImPIm", "KpKpKp", "KmKmKm", "KpKmKm", "PPP","APAPAP","PAPAP", "PIpKpKp", "PIpKmKm", "PPIpPIp", "PPImPIm", "PKpKp","PKmKm","APKpKp","APKmKm", "PIpKpP", "PIpPP", "PImAPAP", "PImPP", "PIpAPAP"};
+const bool runSys[nSys]         = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 const int nMultBins = 1;
 const int multBins[nMultBins+1] = {3, 2000};
@@ -119,7 +119,7 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
 	      
 	      trioAnalysis[anIter]->SetMinSizePart1Collection(3);
 	    }
-	  else if(iSys == kPIpPImPIm || iSys == kKpKmKm || iSys == kPAPAP || iSys == kPKpKp || iSys == kPKmKm || iSys == kAPKpKp || iSys == kAPKmKm || iSys == kPIpKpKp || iSys == kPIpKmKm || iSys == kPPIpPIp || iSys == kPPImPIm)
+	  else if(iSys == kPIpPImPIm || iSys == kKpKmKm || iSys == kPAPAP || iSys == kPKpKp || iSys == kPKmKm || iSys == kAPKpKp || iSys == kAPKmKm || iSys == kPIpKpKp || iSys == kPIpKmKm || iSys == kPPIpPIp || iSys == kPPImPIm || iSys == kPIpPP || iSys == kPIpAPAP || iSys == kPImPP || iSys == kPImAPAP)
 	    {
 	      trioAnalysis[anIter]->SetFirstParticleCut(firstTrackCut);
 	      trioAnalysis[anIter]->SetSecondParticleCut(secondTrackCut);
@@ -236,10 +236,13 @@ AliFemtoEventReaderAODChain* GetReaderPP(bool mcAnalysis)
   Reader->SetFilterMask(96);
   Reader->SetReadV0(true);
   Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kReference);
-  Reader->SetMinPlpContribSPD(3);
-  Reader->SetIsPileUpEvent(true);
   Reader->SetReadMC(mcAnalysis);
 
+  Reader->SetUseAliEventCuts(true);
+  Reader->SetIsPileUpEvent(true);
+  Reader->SetUseMVPlpSelection(true);
+  Reader->SetTrackPileUpRemoval(true);
+  
   
   return Reader;
 }
@@ -426,6 +429,28 @@ if(system == kPIpKpKp)
       secondParticle  = AliFemtoTrio::kKaonPlus;
       thirdParticle  = AliFemtoTrio::kProton;
     }
- 
-  
+ if(system == kPipPP)
+   {
+     firstParticle  = AliFemtoTrio::kPionPlus;
+     secondParticle  = AliFemtoTrio::kProton;
+     thirdParticle  = AliFemtoTrio::kProton;
+   }
+ if(system == kPimAPAP)
+   {
+     firstParticle  = AliFemtoTrio::kPionMinus;
+     secondParticle  = AliFemtoTrio::kAntiProton;
+     thirdParticle  = AliFemtoTrio::kAntiProton;
+   }
+ if(system == kPimPP)
+   {
+     firstParticle  = AliFemtoTrio::kPionMinus;
+     secondParticle  = AliFemtoTrio::kProton;
+     thirdParticle  = AliFemtoTrio::kProton;
+   }
+ if(system == kPipAPAP)
+   {
+     firstParticle  = AliFemtoTrio::kPionPlus;
+     secondParticle  = AliFemtoTrio::kAntiProton;
+     thirdParticle  = AliFemtoTrio::kAntiProton;
+   }
 }

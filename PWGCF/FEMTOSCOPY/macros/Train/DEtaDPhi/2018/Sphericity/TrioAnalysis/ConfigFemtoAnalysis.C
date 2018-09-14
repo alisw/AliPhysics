@@ -243,8 +243,14 @@ AliFemtoEventReaderAODChain* GetReaderPP(bool mcAnalysis)
   Reader->SetFilterMask(96);
   Reader->SetReadV0(true);
   Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kReference);
-  Reader->SetMinPlpContribSPD(3);
+
+  Reader->SetUseAliEventCuts(true);
   Reader->SetIsPileUpEvent(true);
+  Reader->SetUseMVPlpSelection(true);
+  Reader->SetTrackPileUpRemoval(true);
+  
+  //Reader->SetMinPlpContribSPD(3);
+  
   Reader->SetReadMC(mcAnalysis);
 
   
