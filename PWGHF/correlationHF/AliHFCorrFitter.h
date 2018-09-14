@@ -28,7 +28,7 @@ class AliHFCorrFitter{
  public:
     
   // enums
-  enum FunctionType{kConstwoGaus = 1, kTwoGausPeriodicity =2, kConstThreeGausPeriodicity = 3, kConstThreeGausPeriodicityAS =4, kv2Modulation =5, kTwoGausPeriodicityWithv2Modulation = 6};  
+  enum FunctionType{kConstwoGaus = 1, kTwoGausPeriodicity =2, kConstThreeGausPeriodicity = 3, kConstThreeGausPeriodicityAS =4, kv2Modulation =5, kTwoGausPeriodicityWithv2Modulation = 6, kModifNSGausPeriodicity =7};  
 
   // constructors
   AliHFCorrFitter();
@@ -45,6 +45,7 @@ class AliHFCorrFitter{
   void SetFuncType(FunctionType fittype){fTypeOfFitfunc = fittype;}
   void SetFixBasetype(Int_t fixbasetype){fFixBase=fixbasetype;}
   void SetFixMeanType(Int_t fixmeantype){fFixMean=fixmeantype;}
+  void SetPtRanges(Double_t dmin,Double_t dmax,Double_t assmin,Double_t assmax) {fMinDpt=dmin; fMaxDpt=dmax; fMinAsspt=assmin; fMaxAsspt=assmax;}
   void SetBaselineExt(Double_t baseval){
     fBaseline=baseval;
     fFixBase=6;
@@ -79,13 +80,13 @@ class AliHFCorrFitter{
     if(fTypeOfFitfunc==kConstThreeGausPeriodicity){// THE FOLLOWING FORMULA IS WRONG... FULL ERROR PROPAGATION TO BE DONE
       return TMath::Sqrt(fFit->GetParameter("fract 1g")*fFit->GetParError(fFit->GetParNumber("NS #sigma 1g"))*fFit->GetParError(fFit->GetParNumber("NS #sigma 1g"))+(1.-fFit->GetParameter("fract 1g"))*fFit->GetParError(fFit->GetParNumber("NS #sigma 2g"))*fFit->GetParError(fFit->GetParNumber("NS #sigma 2g")));
     }
-    return fFit->GetParError(fFit->GetParNumber("NS #sigma"));
+    else return fFit->GetParError(fFit->GetParNumber("NS #sigma"));
   }
   Double_t GetASSigmaError(){
     if(fTypeOfFitfunc==kConstThreeGausPeriodicityAS){// THE FOLLOWING FORMULA IS WRONG... FULL ERROR PROPAGATION TO BE DONE
       return TMath::Sqrt(fFit->GetParameter("fract 1g")*fFit->GetParError(fFit->GetParNumber("AS #sigma 1g"))*fFit->GetParError(fFit->GetParNumber("AS #sigma 1g"))+(1.-fFit->GetParameter("fract 1g"))*fFit->GetParError(fFit->GetParNumber("AS #sigma 2g"))*fFit->GetParError(fFit->GetParNumber("AS #sigma 2g")));
     }
-    return fFit->GetParError(fFit->GetParNumber("AS #sigma"));
+    else return fFit->GetParError(fFit->GetParNumber("AS #sigma"));
   }
   Double_t GetNSYieldError(){return fFit->GetParError(fFit->GetParNumber("NS Y"));}
   Double_t GetASYieldError(){return fFit->GetParError(fFit->GetParNumber("AS Y"));}
@@ -137,6 +138,10 @@ class AliHFCorrFitter{
   Int_t        fTypeOfFitfunc;     //type of functions
   Int_t           fDmesonType;
   Bool_t         fIsReflected;  // label to signal if the histogram is in 2pi range or pi (reflected)
-  ClassDef(AliHFCorrFitter,2);
+  Double_t			  fMinDpt;
+  Double_t			  fMaxDpt;
+  Double_t			  fMinAsspt;
+  Double_t			  fMaxAsspt;
+  ClassDef(AliHFCorrFitter,3);
 };
 #endif
