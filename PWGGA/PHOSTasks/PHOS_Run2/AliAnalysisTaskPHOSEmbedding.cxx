@@ -99,6 +99,7 @@ AliAnalysisTaskPHOSEmbedding::AliAnalysisTaskPHOSEmbedding(const char *name):
   fAODTree(0x0),
   fAODEvent(0x0),
   fEventCounter(0),
+  fStartID(0),
   fNeventMC(0),
   fCellsPHOS(0x0),
   fDigitsTree(0x0),
@@ -274,8 +275,10 @@ void AliAnalysisTaskPHOSEmbedding::UserExec(Option_t *option)
     }
   }
 
-  Long64_t evID = Long64_t(fNeventMC * fRandom3->Rndm());
+  Long64_t evID = (fStartID + (Long64_t)fEventCounter) % (Long64_t)fNeventMC;
   fHistoEventID->Fill(evID);
+  //Long64_t evID = Long64_t(fNeventMC * fRandom3->Rndm());
+  //fHistoEventID->Fill(evID);
   Int_t status = fAODTree->GetEvent(evID,0);//second argument is for "getall" in TBranch. //default is 0 (no getall).
 
   fHistoStatus->Fill((Double_t)status/1.e+3);
@@ -287,7 +290,7 @@ void AliAnalysisTaskPHOSEmbedding::UserExec(Option_t *option)
     return;
   }
 
-  AliInfo(Form("fEventCounter = %d , Extract event ID %lld , %d byte read-out from %s.",fEventCounter,evID,status,fAODPath.Data()));
+  AliInfo(Form("fStartID = %lld , fEventCounter = %d , Extract event ID %lld , %d byte read-out from %s.",fStartID,fEventCounter,evID,status,fAODPath.Data()));
   ConvertAODtoESD();
 
   //start embedding
@@ -673,7 +676,10 @@ Bool_t AliAnalysisTaskPHOSEmbedding::OpenAODFile()
   fAODEvent = new AliAODEvent();
   fAODEvent->ReadFromTree(fAODTree);
   fNeventMC = fAODTree->GetEntries();
+  fStartID = Long64_t(fNeventMC * fRandom3->Rndm());
+
   AliInfo(Form("%d events are stored in %s.",fNeventMC,fAODPath.Data()));
+  AliInfo(Form("fStartID = %lld",fStartID));
 
   return kTRUE;
 }
