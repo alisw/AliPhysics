@@ -1627,6 +1627,9 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   if(runNumber>0){
     TFile* fouttree=new TFile("trending.root","recreate");
     trtree->Write();
+    TDirectory* outdir=fouttree->mkdir(df->GetName());
+    outdir->cd();
+    l->Write(l->GetName(),1);
     fouttree->Close();
     delete fouttree;
   }
