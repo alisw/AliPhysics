@@ -3863,7 +3863,7 @@ Double_t AliAnalysisTaskSEBPlustoD0Pi::DeltaInvMassBPlusKpipi(AliAODRecoDecayHF2
 
   if (BPlus->Charge() == -1) {invMassD0 = D0->InvMassD0();}
   else {invMassD0 = D0->InvMassD0bar();}
-  if (invMassD0 == -1) {cout << "wrong invmass delta D0 BPlus" << endl;}
+  if (invMassD0 == -1) {std::cout << "wrong invmass delta D0 BPlus" << std::endl;}
 
   return invMassBPlus - invMassD0;
 }
