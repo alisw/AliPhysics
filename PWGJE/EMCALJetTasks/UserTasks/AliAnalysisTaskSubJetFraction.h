@@ -87,6 +87,40 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   
   void SetNsubUnNormMeasure( Bool_t NsubMeasure)              {fNsubMeasure= NsubMeasure;}
 
+
+
+
+  static AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char * njetsData, //data jets
+								    const char * njetsTrue, //Pyhthia Particle Level
+								    const char * njetsDet,
+								    const char * njetsHybridUs,
+								    const char * njetsHybridS,
+								    const Double_t R,
+								    const char * nrhoBase, 
+								    const char * ntracksData,
+                                                                    const char * ntracksTrue,
+                                                                    const char * ntracksDet, 
+								    const char * ntracksHybridUs,
+								    const char * ntracksHybridS,
+								    const char * nclusters,
+								    const char *type,				      
+								    const char *CentEst,
+								    Double_t fSharedFractionPtMin,
+								    Int_t SubJetAlgorithm,
+								    Float_t SubJetRadius,
+								    Float_t SubJetMinPt,
+								    Int_t       pSel,
+								    TString     trigClass      = "",
+								    TString     kEmcalTriggers = "",
+								    TString     tag            = "",
+								    AliAnalysisTaskSubJetFraction::JetShapeType jetShapeType = AliAnalysisTaskSubJetFraction::kTrue, // tobefixedbyauthor
+								    AliAnalysisTaskSubJetFraction::JetShapeSub jetShapeSub = AliAnalysisTaskSubJetFraction::kNoSub, // tobefixedbyauthor
+								    AliAnalysisTaskSubJetFraction::JetSelectionType jetSelection =AliAnalysisTaskSubJetFraction::kInclusive, // tobefixedbyauthor
+									     Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0., AliAnalysisTaskSubJetFraction::DerivSubtrOrder derivSubtrOrder = AliAnalysisTaskSubJetFraction::kSecondOrder, Int_t SoftDropOn=0);
+
+
+
+
  protected:
   Bool_t                              RetrieveEventObjects();
   Bool_t                              Run();

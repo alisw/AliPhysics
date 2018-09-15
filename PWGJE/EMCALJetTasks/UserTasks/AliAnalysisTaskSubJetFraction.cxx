@@ -464,7 +464,7 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fShapesVarNames[8] = "OpeningAngle";
     fShapesVarNames[9] = "OpeningAngle_Truth";
     //if(fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) fShapesVarNames[9] = "Tau1_ExtraProng_01_30";
-    if(fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) fShapesVarNames[9] = "Tau1_kTTracks_1_2_1";
+    if(fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) fShapesVarNames[9] = "Event_Weight";
     fShapesVarNames[10] = "SubJet2LeadingTrackPt";
     if(fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) fShapesVarNames[10] = "Tau1_ExtraProng_03_10";
     fShapesVarNames[11] = "SubJet2LeadingTrackPt_Truth";
@@ -1275,7 +1275,9 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 
   
   if (fJetShapeType==AliAnalysisTaskSubJetFraction::kSim || fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly){
-    
+
+    const AliEmcalPythiaInfo *PartonsInfo = 0x0;
+    PartonsInfo = GetPythiaInfo();
     AliEmcalJet *Jet1 = NULL; //Original Jet in the event                                                                                                                
     AliJetContainer *JetCont= GetJetContainer(0); //Jet Container for event 
     Int_t JetCounter=0; //Counts number of jets in event  
@@ -1374,7 +1376,8 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  fShapesVar[5]=FjNSubJettinessFastJet(ExtraProng_Jet_01_15,0,1,0,1,0);
 	  fShapesVar[7]=FjNSubJettinessFastJet(ExtraProng_Jet_01_25,0,1,0,1,0);
 	  //fShapesVar[9]=FjNSubJettinessFastJet(ExtraProng_Jet_01_30,0,1,0,1,0);
-	  fShapesVar[9]=FjNSubJettinessFastJet(kTTrack_1_2_1,0,1,0,1,0);
+	  //fShapesVar[9]=FjNSubJettinessFastJet(kTTrack_1_2_1,0,1,0,1,0);
+	  fShapesVar[9]=PartonsInfo->GetPythiaEventWeight();
 	  fShapesVar[11]=FjNSubJettinessFastJet(ExtraProng_Jet_03_15,0,1,0,1,0);
 	  fShapesVar[13]=FjNSubJettinessFastJet(Randomised_Jet,0,2,0,1,0); 
 	  fShapesVar[15]=FjNSubJettinessFastJet(ExtraProng_Jet_01_15,0,2,0,1,0);
