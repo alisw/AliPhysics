@@ -37,6 +37,7 @@
 #include "AliAnalysisManager.h"
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
+#include "AliEmcalPythiaInfo.h"
 //#include "AliPythiaInfo.h"
 #include "TRandom3.h"
 #include "AliPicoTrack.h"
