@@ -226,6 +226,10 @@ AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis)
   Reader->SetCentralityFlattening(kTRUE);
   Reader->SetReadCascade(kTRUE);
   Reader->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
+
+  Reader->SetUseAliEventCuts(kTRUE);
+  Reader->SetTrackPileUpRemoval(kTRUE);
+  
   if(mcAnalysis) Reader->SetReadMC(kTRUE);
   
   return Reader;
@@ -303,6 +307,8 @@ AliFemtoXiTrackCut* GetXiTrackCut(EPart particle)
   tXiCut->SetMaxDecayLengthXi(100.);
   tXiCut->SetMaxDcaXi(100);
   tXiCut->SetInvariantMassRejectOmega(1.667,1.677);//++ NEW: omega rejection od 1.667 do 1.677 !
+
+  tXiCut->SetIgnoreOnFlyStatus(kTRUE); 
   
   //XiDaughters
   tXiCut->SetMaxDcaXiDaughters(1.6);//++ bylo 0.3 
@@ -331,7 +337,7 @@ AliFemtoXiTrackCut* GetXiTrackCut(EPart particle)
       tXiCut->SetMinCosPointingAngle(0.97); //++ bylo 0.998
       tXiCut->SetEta(0.8);
       tXiCut->SetPt(0.0,100);
-      tXiCut->SetOnFlyStatus(kFALSE);
+      //tXiCut->SetOnFlyStatus(kFALSE);
       tXiCut->SetMaxV0DecayLength(100.);
       tXiCut->SetRadiusV0Min(1.4); //++ NEW!
       tXiCut->SetRadiusV0Max(200); //++ NEW!
@@ -370,7 +376,7 @@ AliFemtoXiTrackCut* GetXiTrackCut(EPart particle)
       tXiCut->SetMinCosPointingAngle(0.97);
       tXiCut->SetEta(0.8);
       tXiCut->SetPt(0.,100);
-      tXiCut->SetOnFlyStatus(kFALSE);  //CHECK kTRUE STATUS AS WELL?
+      //tXiCut->SetOnFlyStatus(kFALSE);  //CHECK kTRUE STATUS AS WELL?
       tXiCut->SetMaxV0DecayLength(100.);
       tXiCut->SetRadiusV0Min(1.4); //++ NEW!
       tXiCut->SetRadiusV0Max(200); //++ NEW!
