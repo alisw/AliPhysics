@@ -2028,7 +2028,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         AliWarning("==================================================");
     }
     
-    if ( fAlternateOADBForEstimators.EqualTo("")==kTRUE && lPeriodName.EqualTo(lProductionName.Data()) == kFALSE && GetSystemTypeByRunNumber().EqualTo("pp") ) {
+    if ( fAlternateOADBForEstimators.EqualTo("")==kTRUE && lPeriodName.EqualTo(lProductionName.Data()) == kFALSE && GetSystemTypeByRunNumber().EqualTo("pp")  ) {
         AliWarning("==================================================");
         AliWarning(" Auto-detected that this looks like pp MC.") ;
         AliWarning(" Will now use data OADB as MC OADB, meaning you'll use the same") ;
@@ -2119,7 +2119,9 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
 
     //=====================================================================
     //Option to override estimators from alternate oadb file
-    if ( fAlternateOADBForEstimators.EqualTo("")==kFALSE && fAlternateOADBFullManualBypass.EqualTo("")==kTRUE) {
+    if ( (fAlternateOADBForEstimators.EqualTo("")==kFALSE && fAlternateOADBFullManualBypass.EqualTo("")==kTRUE ) ||
+        fAlternateOADBFullManualBypassMC.EqualTo("")==kFALSE
+        ) {
         AliWarning("Extra option detected: Load estimators from OADB file called: ");
         AliWarning(Form(" path: %s", fAlternateOADBForEstimators.Data() ));
 
