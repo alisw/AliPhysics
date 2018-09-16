@@ -106,6 +106,7 @@ public:
     void SetDebug        ( Bool_t lVar ) { fkDebug       = lVar; } ;
     void SetNDebug       ( Int_t  lVar ) { fNDebug       = lVar; } ;
     void SetHighMultQABinning( Bool_t lVar ) { fkHighMultQABinning = lVar; }
+    void SetGeneratorOnly( Bool_t lVar ) { fkGeneratorOnly = lVar; }
     
     //override for getting estimator definitions from different OADB file
     //FIXME: should preferably be protected, extra functionality required
@@ -145,6 +146,7 @@ private:
     Bool_t fkFilterMB;    //if true, save only kMB events
     Bool_t fkAttached;    //if true, has already attached to ESD (AOD)
     Bool_t fkHighMultQABinning; //if true, use narrow binning for percentile histograms
+    Bool_t fkGeneratorOnly; //if true, skip loading of reco objects
     
     //Debug Options
     Bool_t fkDebug;       //if true, saves percentiles in TTree for debugging

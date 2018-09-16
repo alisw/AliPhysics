@@ -98,313 +98,315 @@ using std::endl;
 ClassImp(AliMultSelectionTask)
 
 AliMultSelectionTask::AliMultSelectionTask()
-    : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),
-      fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkHighMultQABinning(kFALSE), fkDebug(kTRUE),
-      fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ), fkDebugAdditional2DHisto( kFALSE ),
-      fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
-      fDownscaleFactor(2.0), //2.0: no downscaling
-      fRand(0),
-      fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
-      fAlternateOADBFullManualBypass(""),fAlternateOADBFullManualBypassMC(""),
-      //don't change the default, or we'll be in big trouble!
-      fStoredObjectName("MultSelection"),
-      fESDtrackCuts(0), fUtils(0),
-      fAmplitude_V0A(0),
-      fAmplitude_V0A1(0),
-      fAmplitude_V0A2(0),
-      fAmplitude_V0A3(0),
-      fAmplitude_V0A4(0),
-      fAmplitude_V0C(0),
-      fAmplitude_V0C1(0),
-      fAmplitude_V0C2(0),
-      fAmplitude_V0C3(0),
-      fAmplitude_V0C4(0),
-      fAmplitude_V0Apartial(0),
-      fAmplitude_V0Cpartial(0),
-      fAmplitude_V0AEq(0),
-      fAmplitude_V0CEq(0),
-      fAmplitude_OnlineV0A(0),
-      fAmplitude_OnlineV0C(0),
-      fAmplitude_V0AADC(0),
-      fAmplitude_V0CADC(0),
-      fnSPDClusters(0),
-      fnSPDClusters0(0),
-      fnSPDClusters1(0),
-      fnTracklets(0),
-      fnTracklets08(0),
-      fnTracklets15(0),
-      fRefMultEta5(0),
-      fRefMultEta8(0),
-      fMultiplicity_ADA(0),
-      fMultiplicity_ADC(0),
-      fZncEnergy(0),
-      fZpcEnergy(0),
-      fZnaEnergy(0),
-      fZpaEnergy(0),
-      fZem1Energy(0),
-      fZem2Energy(0),
-      fZnaTower(0),
-      fZncTower(0),
-      fZpaTower(0),
-      fZpcTower(0),
-      fEvSel_VtxZ(0),
-      fRunNumber(0),
-      fEvSel_VtxZCut(0),
-      fEvSel_IsNotPileup(0),
-      fEvSel_IsNotPileupMV(0),
-      fEvSel_IsNotPileupInMultBins(0),
-      fEvSel_Triggered(0),
-      fEvSel_INELgtZERO(0),
-      fEvSel_HasNoInconsistentVertices(0),
-      fEvSel_PassesTrackletVsCluster(0),
-      fEvSel_IsNotAsymmetricInVZERO(0),
-      fEvSel_IsNotIncompleteDAQ(0),
-      fEvSel_HasGoodVertex2016(0),
-      fEvSel_TriggerMask(0),
-      fnContributors(0),
-      fTrackCuts(0), fTrackCutsGlobal2015(0), fTrackCutsITSsa2010(0),
-      fTrackCutsFiltBit32(0),
-      fTrackCutsFiltBit64(0),
-      fZnaFired(0),
-      fZncFired(0),
-      fZpaFired(0),
-      fZpcFired(0),
-      fNTracks(0),
-      fNTracksTPCout(0),
-      fNTracksGlobal2015(0),
-      fNTracksGlobal2015Trigger(0),
-      fNTracksITSsa2010(0),
-      fNTracksINELgtONE(0),
-      fNPartINELgtONE(0),
-      fCurrentRun(-1),
-      fQuantiles{0.}, /*added Hans*/
-      fEvSelCode(0),
-      fNDebug(1),
-      fAliCentralityV0M(0),
-      fPPVsMultUtilsV0M(0),
-      fMC_NColl(0),
-      fMC_NPart(0),
-      fMC_NchV0A(0),
-      fMC_NchV0C(0),
-      fMC_NchEta05(0),
-      fMC_NchEta08(0),
-      fMC_NchEta10(0),
-      
-      //Histos
-      fHistEventCounter(0),
-      fHistEventSelections(0), 
-      fHistQA_V0M(0),
-      fHistQA_V0A(0),
-      fHistQA_V0C(0),
-      fHistQA_CL0(0),
-      fHistQA_CL1(0),
-      fHistQA_SPDClusters(0),
-      fHistQA_SPDTracklets(0),
-      fHistQA_ZNA(0),
-      fHistQA_ZNC(0),
-      fHistQA_ZNApp(0),
-      fHistQA_ZNCpp(0),
-      fHistQA_NTracksINELgtONE(0),
-      fHistQA_NPartINELgtONE(0),
-      fHistQA_TrackletsVsV0M(0),
-      fHistQA_TrackletsVsCL0(0),
-      fHistQA_TrackletsVsCL1(0),
-      fHistQASelected_V0M(0),
-      fHistQASelected_V0A(0),
-      fHistQASelected_V0C(0),
-      fHistQASelected_CL0(0),
-      fHistQASelected_CL1(0),
-      fHistQASelected_SPDClusters(0),
-      fHistQASelected_SPDTracklets(0),
-      fHistQASelected_ZNA(0),
-      fHistQASelected_ZNC(0),
-      fHistQASelected_ZNApp(0),
-      fHistQASelected_ZNCpp(0),
-      fHistQASelected_NTracksINELgtONE(0),
-      fHistQASelected_NPartINELgtONE(0),
-      fHistQASelected_TrackletsVsV0M(0),
-      fHistQASelected_TrackletsVsCL0(0),
-      fHistQASelected_TrackletsVsCL1(0),
-      fHistQASelected_NTracksGlobalVsV0M(0),
-      fHistQASelected_NTracksGlobalVsCL0(0),
-      fHistQASelected_NTracksGlobalVsCL1(0),
-      fHistQASelected_PtGlobalVsV0M(0), 
-      fHistQASelected_PtGlobalVsCL0(0), 
-      fHistQASelected_PtGlobalVsCL1(0), 
-      fHistQASelected_NTracksITSsaVsV0M(0),
-      fHistQASelected_NTracksITSsaVsCL0(0),
-      fHistQASelected_NTracksITSsaVsCL1(0),
-      fHistQASelected_PtITSsaVsV0M(0),
-      fHistQASelected_PtITSsaVsCL0(0),
-      fHistQASelected_PtITSsaVsCL1(0),
+: AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),
+fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0),
+fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkDebug(kTRUE),
+fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ), fkDebugAdditional2DHisto( kFALSE ),
+fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
+fDownscaleFactor(2.0), //2.0: no downscaling
+fRand(0),
+fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
+fAlternateOADBFullManualBypass(""),fAlternateOADBFullManualBypassMC(""),
+//don't change the default, or we'll be in big trouble!
+fStoredObjectName("MultSelection"),
+fESDtrackCuts(0), fUtils(0),
+fAmplitude_V0A(0),
+fAmplitude_V0A1(0),
+fAmplitude_V0A2(0),
+fAmplitude_V0A3(0),
+fAmplitude_V0A4(0),
+fAmplitude_V0C(0),
+fAmplitude_V0C1(0),
+fAmplitude_V0C2(0),
+fAmplitude_V0C3(0),
+fAmplitude_V0C4(0),
+fAmplitude_V0Apartial(0),
+fAmplitude_V0Cpartial(0),
+fAmplitude_V0AEq(0),
+fAmplitude_V0CEq(0),
+fAmplitude_OnlineV0A(0),
+fAmplitude_OnlineV0C(0),
+fAmplitude_V0AADC(0),
+fAmplitude_V0CADC(0),
+fnSPDClusters(0),
+fnSPDClusters0(0),
+fnSPDClusters1(0),
+fnTracklets(0),
+fnTracklets08(0),
+fnTracklets15(0),
+fRefMultEta5(0),
+fRefMultEta8(0),
+fMultiplicity_ADA(0),
+fMultiplicity_ADC(0),
+fZncEnergy(0),
+fZpcEnergy(0),
+fZnaEnergy(0),
+fZpaEnergy(0),
+fZem1Energy(0),
+fZem2Energy(0),
+fZnaTower(0),
+fZncTower(0),
+fZpaTower(0),
+fZpcTower(0),
+fEvSel_VtxZ(0),
+fRunNumber(0),
+fEvSel_VtxZCut(0),
+fEvSel_IsNotPileup(0),
+fEvSel_IsNotPileupMV(0),
+fEvSel_IsNotPileupInMultBins(0),
+fEvSel_Triggered(0),
+fEvSel_INELgtZERO(0),
+fEvSel_HasNoInconsistentVertices(0),
+fEvSel_PassesTrackletVsCluster(0),
+fEvSel_IsNotAsymmetricInVZERO(0),
+fEvSel_IsNotIncompleteDAQ(0),
+fEvSel_HasGoodVertex2016(0),
+fEvSel_TriggerMask(0),
+fnContributors(0),
+fTrackCuts(0), fTrackCutsGlobal2015(0), fTrackCutsITSsa2010(0),
+fTrackCutsFiltBit32(0),
+fTrackCutsFiltBit64(0),
+fZnaFired(0),
+fZncFired(0),
+fZpaFired(0),
+fZpcFired(0),
+fNTracks(0),
+fNTracksTPCout(0),
+fNTracksGlobal2015(0),
+fNTracksGlobal2015Trigger(0),
+fNTracksITSsa2010(0),
+fNTracksINELgtONE(0),
+fNPartINELgtONE(0),
+fCurrentRun(-1),
+fQuantiles{0.}, /*added Hans*/
+fEvSelCode(0),
+fNDebug(1),
+fAliCentralityV0M(0),
+fPPVsMultUtilsV0M(0),
+fMC_NColl(0),
+fMC_NPart(0),
+fMC_NchV0A(0),
+fMC_NchV0C(0),
+fMC_NchEta05(0),
+fMC_NchEta08(0),
+fMC_NchEta10(0),
 
-      //Objects
-      fOadbMultSelection(0),
-      fInput(0)
+//Histos
+fHistEventCounter(0),
+fHistEventSelections(0),
+fHistQA_V0M(0),
+fHistQA_V0A(0),
+fHistQA_V0C(0),
+fHistQA_CL0(0),
+fHistQA_CL1(0),
+fHistQA_SPDClusters(0),
+fHistQA_SPDTracklets(0),
+fHistQA_ZNA(0),
+fHistQA_ZNC(0),
+fHistQA_ZNApp(0),
+fHistQA_ZNCpp(0),
+fHistQA_NTracksINELgtONE(0),
+fHistQA_NPartINELgtONE(0),
+fHistQA_TrackletsVsV0M(0),
+fHistQA_TrackletsVsCL0(0),
+fHistQA_TrackletsVsCL1(0),
+fHistQASelected_V0M(0),
+fHistQASelected_V0A(0),
+fHistQASelected_V0C(0),
+fHistQASelected_CL0(0),
+fHistQASelected_CL1(0),
+fHistQASelected_SPDClusters(0),
+fHistQASelected_SPDTracklets(0),
+fHistQASelected_ZNA(0),
+fHistQASelected_ZNC(0),
+fHistQASelected_ZNApp(0),
+fHistQASelected_ZNCpp(0),
+fHistQASelected_NTracksINELgtONE(0),
+fHistQASelected_NPartINELgtONE(0),
+fHistQASelected_TrackletsVsV0M(0),
+fHistQASelected_TrackletsVsCL0(0),
+fHistQASelected_TrackletsVsCL1(0),
+fHistQASelected_NTracksGlobalVsV0M(0),
+fHistQASelected_NTracksGlobalVsCL0(0),
+fHistQASelected_NTracksGlobalVsCL1(0),
+fHistQASelected_PtGlobalVsV0M(0),
+fHistQASelected_PtGlobalVsCL0(0),
+fHistQASelected_PtGlobalVsCL1(0),
+fHistQASelected_NTracksITSsaVsV0M(0),
+fHistQASelected_NTracksITSsaVsCL0(0),
+fHistQASelected_NTracksITSsaVsCL1(0),
+fHistQASelected_PtITSsaVsV0M(0),
+fHistQASelected_PtITSsaVsCL0(0),
+fHistQASelected_PtITSsaVsCL1(0),
+
+//Objects
+fOadbMultSelection(0),
+fInput(0)
 //------------------------------------------------
 // Tree Variables
 {
-
+    
 }
 
 AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptions, Bool_t lCalib, Int_t lNDebugEstimators)
-    : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fTrackCutsGlobal2015(0), fTrackCutsITSsa2010(0), fUtils(0),
-      fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkHighMultQABinning(kFALSE), fkDebug(kTRUE),
-      fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ), fkDebugAdditional2DHisto( kFALSE ),
-      fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
-      fDownscaleFactor(2.0), //2.0: no downscaling
-      fRand(0),
-      fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
-      fAlternateOADBFullManualBypass(""),fAlternateOADBFullManualBypassMC(""),
-      //don't change the default, or we'll be in big trouble!
-      fStoredObjectName("MultSelection"),
-      fZncEnergy(0),
-      fZpcEnergy(0),
-      fZnaEnergy(0),
-      fZpaEnergy(0),
-      fZem1Energy(0),
-      fZem2Energy(0),
-      fZnaTower(0),
-      fZncTower(0),
-      fZpaTower(0),
-      fZpcTower(0),
-      fZnaFired(0),
-      fZncFired(0),
-      fZpaFired(0),
-      fZpcFired(0),
-      fNTracks(0),
-      fNTracksTPCout(0),
-      fNTracksGlobal2015(0),
-      fNTracksGlobal2015Trigger(0),
-      fNTracksITSsa2010(0),
-      fNTracksINELgtONE(0),
-      fNPartINELgtONE(0),
-      fCurrentRun(-1),
-      fMultiplicity_ADA (0),
-      fMultiplicity_ADC (0),
-      fAmplitude_V0A   (0),
-      fAmplitude_V0C   (0),
-      fAmplitude_V0Apartial   (0),
-      fAmplitude_V0Cpartial   (0),
-      fAmplitude_V0AEq (0),
-      fAmplitude_V0CEq (0),
-      fAmplitude_OnlineV0A(0),
-      fAmplitude_OnlineV0C(0),
-      fAmplitude_V0A1(0),
-      fAmplitude_V0A2(0),
-      fAmplitude_V0A3(0),
-      fAmplitude_V0A4(0),
-      fAmplitude_V0C1(0),
-      fAmplitude_V0C2(0),
-      fAmplitude_V0C3(0),
-      fAmplitude_V0C4(0),
-      fAmplitude_V0AADC   (0),
-      fAmplitude_V0CADC   (0),
-      fnSPDClusters(0),
-      fnTracklets(0),
-      fnTracklets08(0),
-      fnTracklets15(0),
-      fnSPDClusters0(0),
-      fnSPDClusters1(0),
-      fnContributors(0),
-      fTrackCutsFiltBit32(0),
-      fTrackCutsFiltBit64(0),
-      fRefMultEta5(0),
-      fRefMultEta8(0),
-      fRunNumber(0),
-      fEvSel_VtxZCut(0),
-      fEvSel_IsNotPileup(0),
-      fEvSel_IsNotPileupMV(0),
-      fEvSel_IsNotPileupInMultBins(0),
-      fEvSel_Triggered(0),
-      fEvSel_INELgtZERO(0),
-      fEvSel_HasNoInconsistentVertices(0),
-      fEvSel_PassesTrackletVsCluster(0),
-      fEvSel_IsNotAsymmetricInVZERO(0),
-      fEvSel_IsNotIncompleteDAQ(0),
-      fEvSel_HasGoodVertex2016(0),
-      fEvSel_VtxZ(0),
-      fEvSel_TriggerMask(0),
-      fEvSelCode(0),
-      fNDebug(1),
-      fAliCentralityV0M(0),
-      fPPVsMultUtilsV0M(0),
-      fMC_NColl(0),
-      fMC_NPart(0),
-      fMC_NchV0A(0),
-      fMC_NchV0C(0),
-      fMC_NchEta05(0),
-      fMC_NchEta08(0),
-      fMC_NchEta10(0),
-      
-      //Histos
-      fHistEventCounter(0),
-      fHistEventSelections(0), 
-      fHistQA_V0M(0),
-      fHistQA_V0A(0),
-      fHistQA_V0C(0),
-      fHistQA_CL0(0),
-      fHistQA_CL1(0),
-      fHistQA_SPDClusters(0),
-      fHistQA_SPDTracklets(0),
-      fHistQA_ZNA(0),
-      fHistQA_ZNC(0),
-      fHistQA_ZNApp(0),
-      fHistQA_ZNCpp(0),
-      fHistQA_NTracksINELgtONE(0),
-      fHistQA_NPartINELgtONE(0),
-      fHistQA_TrackletsVsV0M(0),
-      fHistQA_TrackletsVsCL0(0),
-      fHistQA_TrackletsVsCL1(0),
-      fHistQASelected_V0M(0),
-      fHistQASelected_V0A(0),
-      fHistQASelected_V0C(0),
-      fHistQASelected_CL0(0),
-      fHistQASelected_CL1(0),
-      fHistQASelected_SPDClusters(0),
-      fHistQASelected_SPDTracklets(0),
-      fHistQASelected_ZNA(0),
-      fHistQASelected_ZNC(0),
-      fHistQASelected_ZNApp(0),
-      fHistQASelected_ZNCpp(0),
-      fHistQASelected_NTracksINELgtONE(0),
-      fHistQASelected_NPartINELgtONE(0),
-      fHistQASelected_TrackletsVsV0M(0),
-      fHistQASelected_TrackletsVsCL0(0),
-      fHistQASelected_TrackletsVsCL1(0),
-      fHistQASelected_NTracksGlobalVsV0M(0),
-      fHistQASelected_NTracksGlobalVsCL1(0),
-      fHistQASelected_NTracksGlobalVsCL0(0),
-      fHistQASelected_PtGlobalVsV0M(0), 
-      fHistQASelected_PtGlobalVsCL0(0), 
-      fHistQASelected_PtGlobalVsCL1(0), 
-      fHistQASelected_NTracksITSsaVsV0M(0),
-      fHistQASelected_NTracksITSsaVsCL0(0),
-      fHistQASelected_NTracksITSsaVsCL1(0),
-      fHistQASelected_PtITSsaVsV0M(0),
-      fHistQASelected_PtITSsaVsCL0(0),
-      fHistQASelected_PtITSsaVsCL1(0),
-      
-      //Objects
-      fOadbMultSelection(0),
-      fInput(0)
+: AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fTrackCutsGlobal2015(0), fTrackCutsITSsa2010(0), fUtils(0),
+fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0),
+fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkDebug(kTRUE),
+fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ), fkDebugAdditional2DHisto( kFALSE ),
+fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
+fDownscaleFactor(2.0), //2.0: no downscaling
+fRand(0),
+fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
+fAlternateOADBFullManualBypass(""),fAlternateOADBFullManualBypassMC(""),
+//don't change the default, or we'll be in big trouble!
+fStoredObjectName("MultSelection"),
+fZncEnergy(0),
+fZpcEnergy(0),
+fZnaEnergy(0),
+fZpaEnergy(0),
+fZem1Energy(0),
+fZem2Energy(0),
+fZnaTower(0),
+fZncTower(0),
+fZpaTower(0),
+fZpcTower(0),
+fZnaFired(0),
+fZncFired(0),
+fZpaFired(0),
+fZpcFired(0),
+fNTracks(0),
+fNTracksTPCout(0),
+fNTracksGlobal2015(0),
+fNTracksGlobal2015Trigger(0),
+fNTracksITSsa2010(0),
+fNTracksINELgtONE(0),
+fNPartINELgtONE(0),
+fCurrentRun(-1),
+fMultiplicity_ADA (0),
+fMultiplicity_ADC (0),
+fAmplitude_V0A   (0),
+fAmplitude_V0C   (0),
+fAmplitude_V0Apartial   (0),
+fAmplitude_V0Cpartial   (0),
+fAmplitude_V0AEq (0),
+fAmplitude_V0CEq (0),
+fAmplitude_OnlineV0A(0),
+fAmplitude_OnlineV0C(0),
+fAmplitude_V0A1(0),
+fAmplitude_V0A2(0),
+fAmplitude_V0A3(0),
+fAmplitude_V0A4(0),
+fAmplitude_V0C1(0),
+fAmplitude_V0C2(0),
+fAmplitude_V0C3(0),
+fAmplitude_V0C4(0),
+fAmplitude_V0AADC   (0),
+fAmplitude_V0CADC   (0),
+fnSPDClusters(0),
+fnTracklets(0),
+fnTracklets08(0),
+fnTracklets15(0),
+fnSPDClusters0(0),
+fnSPDClusters1(0),
+fnContributors(0),
+fTrackCutsFiltBit32(0),
+fTrackCutsFiltBit64(0),
+fRefMultEta5(0),
+fRefMultEta8(0),
+fRunNumber(0),
+fEvSel_VtxZCut(0),
+fEvSel_IsNotPileup(0),
+fEvSel_IsNotPileupMV(0),
+fEvSel_IsNotPileupInMultBins(0),
+fEvSel_Triggered(0),
+fEvSel_INELgtZERO(0),
+fEvSel_HasNoInconsistentVertices(0),
+fEvSel_PassesTrackletVsCluster(0),
+fEvSel_IsNotAsymmetricInVZERO(0),
+fEvSel_IsNotIncompleteDAQ(0),
+fEvSel_HasGoodVertex2016(0),
+fEvSel_VtxZ(0),
+fEvSel_TriggerMask(0),
+fEvSelCode(0),
+fNDebug(1),
+fAliCentralityV0M(0),
+fPPVsMultUtilsV0M(0),
+fMC_NColl(0),
+fMC_NPart(0),
+fMC_NchV0A(0),
+fMC_NchV0C(0),
+fMC_NchEta05(0),
+fMC_NchEta08(0),
+fMC_NchEta10(0),
+
+//Histos
+fHistEventCounter(0),
+fHistEventSelections(0),
+fHistQA_V0M(0),
+fHistQA_V0A(0),
+fHistQA_V0C(0),
+fHistQA_CL0(0),
+fHistQA_CL1(0),
+fHistQA_SPDClusters(0),
+fHistQA_SPDTracklets(0),
+fHistQA_ZNA(0),
+fHistQA_ZNC(0),
+fHistQA_ZNApp(0),
+fHistQA_ZNCpp(0),
+fHistQA_NTracksINELgtONE(0),
+fHistQA_NPartINELgtONE(0),
+fHistQA_TrackletsVsV0M(0),
+fHistQA_TrackletsVsCL0(0),
+fHistQA_TrackletsVsCL1(0),
+fHistQASelected_V0M(0),
+fHistQASelected_V0A(0),
+fHistQASelected_V0C(0),
+fHistQASelected_CL0(0),
+fHistQASelected_CL1(0),
+fHistQASelected_SPDClusters(0),
+fHistQASelected_SPDTracklets(0),
+fHistQASelected_ZNA(0),
+fHistQASelected_ZNC(0),
+fHistQASelected_ZNApp(0),
+fHistQASelected_ZNCpp(0),
+fHistQASelected_NTracksINELgtONE(0),
+fHistQASelected_NPartINELgtONE(0),
+fHistQASelected_TrackletsVsV0M(0),
+fHistQASelected_TrackletsVsCL0(0),
+fHistQASelected_TrackletsVsCL1(0),
+fHistQASelected_NTracksGlobalVsV0M(0),
+fHistQASelected_NTracksGlobalVsCL1(0),
+fHistQASelected_NTracksGlobalVsCL0(0),
+fHistQASelected_PtGlobalVsV0M(0),
+fHistQASelected_PtGlobalVsCL0(0),
+fHistQASelected_PtGlobalVsCL1(0),
+fHistQASelected_NTracksITSsaVsV0M(0),
+fHistQASelected_NTracksITSsaVsCL0(0),
+fHistQASelected_NTracksITSsaVsCL1(0),
+fHistQASelected_PtITSsaVsV0M(0),
+fHistQASelected_PtITSsaVsCL0(0),
+fHistQASelected_PtITSsaVsCL1(0),
+
+//Objects
+fOadbMultSelection(0),
+fInput(0)
 {
-
+    
     for( Int_t iq=0; iq<100; iq++ ) fQuantiles[iq] = -1 ;
-
+    
     DefineOutput(1, TList::Class()); // Event Counter Histo
     if (fkCalibration) DefineOutput(2, TTree::Class()); // Event Tree
-
+    
     //Create output slots for debugging estimators
     //Default: Save only first (should typically be V0M, depends on OADB!)
     fNDebug = lNDebugEstimators;
-
+    
     //Special Debug Options (more to be added as needed)
     // A - Debug AliCentrality
     // B - Debug AliPPVsMultUtils
     // M - Extra MC variables
     // T - Extra TH2D N gen particles vs N reco tracks
-
+    
     if ( lExtraOptions.Contains("A") ) fkDebugAliCentrality = kTRUE;
     if ( lExtraOptions.Contains("B") ) fkDebugAliPPVsMultUtils = kTRUE;
     if ( lExtraOptions.Contains("M") ) fkDebugIsMC = kTRUE;
@@ -417,7 +419,7 @@ AliMultSelectionTask::~AliMultSelectionTask()
     //------------------------------------------------
     // DESTRUCTOR
     //------------------------------------------------//
-
+    
     //if (fTreeEvent) {
     //    delete fTreeEvent;
     //    fTreeEvent = 0x0;
@@ -462,10 +464,10 @@ AliMultSelectionTask::~AliMultSelectionTask()
 void AliMultSelectionTask::UserCreateOutputObjects()
 {
     //------------------------------------------------
-
+    
     //Create Input Information
     fInput = new AliMultInput();
-
+    
     //Create input variables in AliMultInput Class
     //V0 related
     fAmplitude_V0A        = new AliMultVariable("fAmplitude_V0A");
@@ -493,11 +495,11 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fnSPDClusters0->SetIsInteger( kTRUE );
     fnSPDClusters1         = new AliMultVariable("fnSPDClusters1");
     fnSPDClusters1->SetIsInteger( kTRUE );
-
+    
     //AD Related
     fMultiplicity_ADA     = new AliMultVariable("fMultiplicity_ADA");
     fMultiplicity_ADC     = new AliMultVariable("fMultiplicity_ADC");
-
+    
     fnTracklets = new AliMultVariable("fnTracklets");
     fnTracklets ->SetIsInteger( kTRUE );
     fnTracklets08 = new AliMultVariable("fnTracklets08");
@@ -509,7 +511,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fRefMultEta5 ->SetIsInteger( kTRUE );
     fRefMultEta8 = new AliMultVariable("fRefMultEta8");
     fRefMultEta8 ->SetIsInteger( kTRUE );
-
+    
     //ZDC Related
     fZncEnergy = new AliMultVariable("fZncEnergy");
     fZpcEnergy = new AliMultVariable("fZpcEnergy");
@@ -517,20 +519,20 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fZpaEnergy = new AliMultVariable("fZpaEnergy");
     fZem1Energy = new AliMultVariable("fZem1Energy");
     fZem2Energy = new AliMultVariable("fZem2Energy");
-
+    
     fZnaTower = new AliMultVariable("fZnaTower");
     fZncTower = new AliMultVariable("fZncTower");
     fZpaTower = new AliMultVariable("fZpaTower");
     fZpcTower = new AliMultVariable("fZpcTower");
-
+    
     //Fired or not booleans (stored as integer for compatibility)
-    fZnaFired = new AliMultVariable("fZnaFired"); 
-    fZnaFired->SetIsInteger(kTRUE); 
+    fZnaFired = new AliMultVariable("fZnaFired");
+    fZnaFired->SetIsInteger(kTRUE);
     fZncFired = new AliMultVariable("fZncFired");
-    fZncFired->SetIsInteger(kTRUE); 
+    fZncFired->SetIsInteger(kTRUE);
     fZpaFired = new AliMultVariable("fZpaFired");
-    fZpaFired->SetIsInteger(kTRUE);  
-    fZpcFired = new AliMultVariable("fZpcFired"); 
+    fZpaFired->SetIsInteger(kTRUE);
+    fZpcFired = new AliMultVariable("fZpcFired");
     fZpcFired->SetIsInteger(kTRUE);
     
     //Track counters (now useable as AliMultVariables as well)
@@ -546,7 +548,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fNTracksITSsa2010->SetIsInteger(kTRUE);
     fNTracksINELgtONE =       new AliMultVariable("fNTracksINELgtONE");
     fNPartINELgtONE   =       new AliMultVariable("fNPartINELgtONE");
-
+    
     fEvSel_VtxZ = new AliMultVariable("fEvSel_VtxZ");
     
     fMC_NPart =         new AliMultVariable("fMC_NPart");
@@ -603,10 +605,10 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fInput->AddVariable( fZncTower );
     fInput->AddVariable( fZpaTower );
     fInput->AddVariable( fZpcTower );
-    fInput->AddVariable( fZnaFired ); 
-    fInput->AddVariable( fZncFired ); 
-    fInput->AddVariable( fZpaFired ); 
-    fInput->AddVariable( fZpcFired ); 
+    fInput->AddVariable( fZnaFired );
+    fInput->AddVariable( fZncFired );
+    fInput->AddVariable( fZpaFired );
+    fInput->AddVariable( fZpcFired );
     fInput->AddVariable( fNTracks                  );
     fInput->AddVariable( fNTracksTPCout            );
     fInput->AddVariable( fNTracksGlobal2015        );
@@ -628,18 +630,18 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     }
     
     //Add Monte Carlo AliMultVariables for MC selection
-
+    
     if( fkCalibration ) {
         fTreeEvent = new TTree("fTreeEvent","Event");
-
+        
         //------------------------------------------------
         // fTree Branch definitions - Event by Event info
         //------------------------------------------------
-
+        
         //-----------BASIC-INFO---------------------------
         //Run Number
         fTreeEvent->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
-
+        
         //Booleans for Event Selection
         fTreeEvent->Branch("fEvSel_VtxZCut", &fEvSel_VtxZCut, "fEvSel_VtxZCut/O");
         fTreeEvent->Branch("fEvSel_IsNotPileup", &fEvSel_IsNotPileup, "fEvSel_IsNotPileup/O");
@@ -655,7 +657,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fTreeEvent->Branch("fEvSel_TriggerMask", &fEvSel_TriggerMask, "fEvSel_TriggerMask/i");
         //A.T. FIXME change into AliMultVariable
         fTreeEvent->Branch("fnContributors", &fnContributors, "fnContributors/I");
-
+        
         //Automatic Loop for linking directly to AliMultInput
         for( Long_t iVar=0; iVar<fInput->GetNVariables(); iVar++) {
             if( !fInput->GetVariable(iVar)->IsInteger()  ) {
@@ -664,7 +666,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
                 fTreeEvent->Branch(fInput->GetVariable(iVar)->GetName(), &fInput->GetVariable(iVar)->GetRValueInteger(), Form("%s/I",fInput->GetVariable(iVar)->GetName()) );
             }
         }
-
+        
         if( fkDebug ) {
             fTreeEvent->Branch("fEvSelCode",      &fEvSelCode, "fEvSelCode/I");
             //Fixme: Save first 5 quantiles, should be enough for debugging
@@ -683,7 +685,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     //------------------------------------------------
     // Set up objects
     //------------------------------------------------
-
+    
     // Multiplicity
     if(! fESDtrackCuts ) {
         fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,kFALSE);
@@ -691,10 +693,10 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fESDtrackCuts->SetEtaRange(-1.0, 1.0);
     }
     
-   
+    
     //Create TPC only track cuts
     if(!fTrackCuts) fTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-
+    
     //Create ITSsa track cuts
     if(!fTrackCutsITSsa2010) fTrackCutsITSsa2010 = AliESDtrackCuts::GetStandardITSSATrackCuts2010();
     
@@ -713,8 +715,8 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     // Multiplicity
     if(! fTrackCutsGlobal2015 ) {
         fTrackCutsGlobal2015 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(kTRUE,kFALSE);
-	//Initial set of cuts - to be adjusted
-        fTrackCutsGlobal2015->SetPtRange(0.15);  
+        //Initial set of cuts - to be adjusted
+        fTrackCutsGlobal2015->SetPtRange(0.15);
         fTrackCutsGlobal2015->SetEtaRange(-1.0, 1.0);
     }
     
@@ -731,11 +733,11 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fTrackCutsFiltBit64->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
         fTrackCutsFiltBit64->SetClusterRequirementITS(AliESDtrackCuts::kSDD,AliESDtrackCuts::kFirst);
     }
-
+    
     AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
     inputHandler->SetNeedField();
-
+    
     //------------------------------------------------
     // Histograms
     //------------------------------------------------
@@ -743,7 +745,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     
     fListHist = new TList();
     fListHist->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
-
+    
     if(! fHistEventCounter ) {
         //Histogram Output: Event-by-Event
         fHistEventCounter = new TH1D( "fHistEventCounter", ";;Count",1,0,1);
@@ -771,7 +773,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fHistEventSelections->GetYaxis()->SetBinLabel(11, "Has Good Vertex 2016");
         fListHist->Add(fHistEventSelections);
     }
-
+    
     //
     // set percentile boundaries (based on what is implemented in the calibration)
     Double_t lDesiredBoundaries[1000];
@@ -779,30 +781,30 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     lDesiredBoundaries[0] = 0.0;
     //From High To Low Multiplicity
     if( fkHighMultQABinning ) {
-      for( Int_t ib = 1; ib < 101; ib++) { // 100 bins  ] 0.0 , 0.1 ]
-        lNDesiredBoundaries++;
-        lDesiredBoundaries[lNDesiredBoundaries] = lDesiredBoundaries[lNDesiredBoundaries-1] + 0.001;
-      }
-      for( Int_t ib = 1; ib < 91; ib++) { // 90 bins  ] 0.1 , 1.0 ]
-        lNDesiredBoundaries++;
-        lDesiredBoundaries[lNDesiredBoundaries] = lDesiredBoundaries[lNDesiredBoundaries-1] + 0.01;
-      }
-      for( Int_t ib = 1; ib < 91; ib++) { // 90 bins ] 1.0 , 10. ]
-        lNDesiredBoundaries++;
-        lDesiredBoundaries[lNDesiredBoundaries] = lDesiredBoundaries[lNDesiredBoundaries-1] + 0.1;
-      }
-      for( Int_t ib = 1; ib < 96; ib++) { // 95 bins ] 10.0 , 105.0 ]
-        lNDesiredBoundaries++;
-        lDesiredBoundaries[lNDesiredBoundaries] = lDesiredBoundaries[lNDesiredBoundaries-1] + 1.0;
-      }
+        for( Int_t ib = 1; ib < 101; ib++) { // 100 bins  ] 0.0 , 0.1 ]
+            lNDesiredBoundaries++;
+            lDesiredBoundaries[lNDesiredBoundaries] = lDesiredBoundaries[lNDesiredBoundaries-1] + 0.001;
+        }
+        for( Int_t ib = 1; ib < 91; ib++) { // 90 bins  ] 0.1 , 1.0 ]
+            lNDesiredBoundaries++;
+            lDesiredBoundaries[lNDesiredBoundaries] = lDesiredBoundaries[lNDesiredBoundaries-1] + 0.01;
+        }
+        for( Int_t ib = 1; ib < 91; ib++) { // 90 bins ] 1.0 , 10. ]
+            lNDesiredBoundaries++;
+            lDesiredBoundaries[lNDesiredBoundaries] = lDesiredBoundaries[lNDesiredBoundaries-1] + 0.1;
+        }
+        for( Int_t ib = 1; ib < 96; ib++) { // 95 bins ] 10.0 , 105.0 ]
+            lNDesiredBoundaries++;
+            lDesiredBoundaries[lNDesiredBoundaries] = lDesiredBoundaries[lNDesiredBoundaries-1] + 1.0;
+        }
     }
     else {
-      for(Int_t ib = 1; ib < 106; ib++) { // 105 bins ] 0.0 , 105.0 ]
-        lNDesiredBoundaries++;
-        lDesiredBoundaries[lNDesiredBoundaries] = lDesiredBoundaries[lNDesiredBoundaries-1] + 1.0;
-      }
+        for(Int_t ib = 1; ib < 106; ib++) { // 105 bins ] 0.0 , 105.0 ]
+            lNDesiredBoundaries++;
+            lDesiredBoundaries[lNDesiredBoundaries] = lDesiredBoundaries[lNDesiredBoundaries-1] + 1.0;
+        }
     }
-
+    
     //QA Histograms - User-side output for cross-checking
     if ( !fHistQA_V0M ) {
         fHistQA_V0M = new TH1D("fHistQA_V0M", ";V0M Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
@@ -870,7 +872,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fListHist->Add(fHistQA_TrackletsVsCL1);
     }
     
-    //Histograms filled with event selection embedded 
+    //Histograms filled with event selection embedded
     if ( !fHistQASelected_V0M ) {
         fHistQASelected_V0M = new TH1D("fHistQASelected_V0M", ";V0M Percentile;Count", lNDesiredBoundaries, lDesiredBoundaries);
         fListHist->Add(fHistQASelected_V0M);
@@ -937,7 +939,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fListHist->Add(fHistQASelected_TrackletsVsCL1);
     }
     
-    //In development: QA with global track information 
+    //In development: QA with global track information
     if ( !fHistQASelected_NTracksGlobalVsV0M ) {
         fHistQASelected_NTracksGlobalVsV0M = new TProfile("fHistQASelected_NTracksGlobalVsV0M", ";V0M Percentile;#LTGlobal Tracks#GT", lNDesiredBoundaries, lDesiredBoundaries);
         fListHist->Add(fHistQASelected_NTracksGlobalVsV0M);
@@ -962,7 +964,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fHistQASelected_PtGlobalVsCL1 = new TProfile("fHistQASelected_PtGlobalVsCL1", ";CL1 Percentile;#LTp_{T}#GT", lNDesiredBoundaries, lDesiredBoundaries);
         fListHist->Add(fHistQASelected_PtGlobalVsCL1);
     }
-
+    
     //In development: QA with ITSsa track information
     if ( !fHistQASelected_NTracksITSsaVsV0M ) {
         fHistQASelected_NTracksITSsaVsV0M = new TProfile("fHistQASelected_NTracksITSsaVsV0M", ";V0M Percentile;#LTITSsa Tracks#GT", lNDesiredBoundaries, lDesiredBoundaries);
@@ -993,10 +995,10 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         TH2D *hist_NpartVsNtracks= new TH2D("hist_NpartVsNtracks", ";N_{charged};N Tracks", 200,0.,200.,200,0.,200.);
         fListHist->Add(hist_NpartVsNtracks);
     }
-
+    
     //List of Histograms: Normal
     PostData(1, fListHist);
-
+    
     //TTree Object: Saved to base directory. Should cache to disk while saving.
     //(Important to avoid excessive memory usage, particularly when merging)
     if ( fkCalibration ) PostData(2, fTreeEvent);
@@ -1008,15 +1010,15 @@ void AliMultSelectionTask::UserExec(Option_t *)
 {
     // Main loop
     // Called for each event
-
+    
     Bool_t lVerbose = kFALSE ;
-
+    
     //Debugging / Memory usage tests
     //gObjectTable->Print();
-
+    
     //Modifications for running on AODs or ESDs
     AliVEvent *lVevent = 0x0;
-
+    
     //Zero all booleans, etc: safe initialization per event
     fEvSel_VtxZCut                = kFALSE;
     fEvSel_IsNotPileup            = kFALSE;
@@ -1034,62 +1036,67 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fnSPDClusters0 -> SetValueInteger( -1) ;
     fnSPDClusters1 -> SetValueInteger( -1) ;
     fEvSel_VtxZ ->SetValue( -100 );
-
+    
     Float_t multADA =0;
     Float_t multADC =0;
     Float_t multAD =0;
-
+    
     fMC_NchV0A->SetValueInteger(-1);
     fMC_NchV0C->SetValueInteger(-1);
     fMC_NchEta05->SetValueInteger(-1);
     fMC_NchEta08->SetValueInteger(-1);
     fMC_NchEta10->SetValueInteger(-1);
     Float_t npartINELgtONE = -1.;
-
+    
     // Connect to the InputEvent
     // Appropriate for ESD analysis ..
-
+    
+    AliVVZERO* lVV0 = 0x0;
+    AliVAD *lVAD = 0x0;
+    
+    
+    
     if(lVerbose) Printf("Casting AliVEvent...");
-
+    
     lVevent = dynamic_cast<AliVEvent*>( InputEvent() );
     if (!lVevent) {
         AliWarning("ERROR: ESD / AOD event not available \n");
         return;
     }
-    if(lVerbose) Printf("Casting AliVVZERO...");
-
-    //Get VZERO Information for multiplicity later
-    AliVVZERO* lVV0 = lVevent->GetVZEROData();
-    if (!lVV0) {
-        AliError("AliVVZERO not available");
-        return;
-    }
-    if(lVerbose) Printf("Casting AliVAD...");
-    //Get AD Multiplicity Information
-    AliVAD *lVAD = lVevent->GetADData();
-    if(!lVAD) {
-        //commented out for smaller logs!
-        //AliWarning("ERROR:lVAD not available\n");
-    }
-
-    //Not Acquired!
-    fAliCentralityV0M = -1;
-    //if requested, grab AliCentrality value for this event
-    if( fkDebugAliCentrality ) {
-        AliCentrality* centrality;
-        centrality = lVevent->GetCentrality();
-        if ( centrality ) {
-            fAliCentralityV0M = centrality->GetCentralityPercentile( "V0M" );
+    
+    if(!fkGeneratorOnly){
+        if(lVerbose) Printf("Casting AliVVZERO...");
+        
+        //Get VZERO Information for multiplicity later
+        lVV0 = lVevent->GetVZEROData();
+        if (!lVV0) {
+            AliError("AliVVZERO not available");
+            return;
+        }
+        if(lVerbose) Printf("Casting AliVAD...");
+        //Get AD Multiplicity Information
+        lVAD = lVevent->GetADData();
+        if(!lVAD) {
+            //commented out for smaller logs!
+            //AliWarning("ERROR:lVAD not available\n");
+        }
+        //Not Acquired!
+        fAliCentralityV0M = -1;
+        //if requested, grab AliCentrality value for this event
+        if( fkDebugAliCentrality ) {
+            AliCentrality* centrality;
+            centrality = lVevent->GetCentrality();
+            if ( centrality ) {
+                fAliCentralityV0M = centrality->GetCentralityPercentile( "V0M" );
+            }
+        }
+        //Not Acquired!
+        fPPVsMultUtilsV0M = -1;
+        //if requested, grab AliCentrality value for this event
+        if( fkDebugAliPPVsMultUtils ) {
+            fPPVsMultUtilsV0M = fUtils->GetMultiplicityPercentile( lVevent, "V0M" );
         }
     }
-
-    //Not Acquired!
-    fPPVsMultUtilsV0M = -1;
-    //if requested, grab AliCentrality value for this event
-    if( fkDebugAliPPVsMultUtils ) {
-        fPPVsMultUtilsV0M = fUtils->GetMultiplicityPercentile( lVevent, "V0M" );
-    }
-
     //------------------------------------------------
     //Information from MC (thanks to Alberica)
     //Don't forget to set: some of the "ifs" may not be there
@@ -1100,15 +1107,15 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fMC_NchEta05->SetValueInteger(0);
     fMC_NchEta08->SetValueInteger(0);
     fMC_NchEta10->SetValueInteger(0);
-
+    
     if ( fkDebugIsMC ) {
         AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
         AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
         AliStack*    stack=0;
         AliMCEvent*  mcEvent=0;
-
+        
         if (eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
-
+            
             //Npart and Ncoll information
             AliGenHijingEventHeader* hHijing=0;
             AliGenDPMjetEventHeader* dpmHeader=0;
@@ -1144,11 +1151,11 @@ void AliMultSelectionTask::UserExec(Option_t *)
                 if (lHepMCHeader ){
                     fMC_NPart ->SetValueInteger( lHepMCHeader->Npart_proj()+lHepMCHeader->Npart_targ() );
                     fMC_NColl ->SetValueInteger( lHepMCHeader->N_Nwounded_collisions() +
-                                lHepMCHeader->Nwounded_N_collisions() +
-                                lHepMCHeader->Nwounded_Nwounded_collisions() );
+                                                lHepMCHeader->Nwounded_N_collisions() +
+                                                lHepMCHeader->Nwounded_Nwounded_collisions() );
                 }
             }
-
+            
             //Nch information in V0A and V0C acceptance
             //Initialize counters to valid!
             Long_t lCounter_NchV0A = 0;
@@ -1166,10 +1173,10 @@ void AliMultSelectionTask::UserExec(Option_t *)
                 Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
                 if(TMath::Abs(lThisCharge)<0.001) continue;
                 if(! (stack->IsPhysicalPrimary(iCurrentLabelStack)) ) continue;
-
+                
                 Double_t gpt = particleOne -> Pt();
                 Double_t geta = particleOne -> Eta();
-
+                
                 if( 2.8 < geta && geta < 5.1 ) lCounter_NchV0A++;
                 if(-3.7 < geta && geta <-1.7 ) lCounter_NchV0C++;
                 if(TMath::Abs( geta ) < 1.0 ) lCounter_NchEta10++;
@@ -1187,443 +1194,449 @@ void AliMultSelectionTask::UserExec(Option_t *)
         }
     }
     //------------------------------------------------
-
+    
     if(lVerbose) Printf("Starting...");
-    fRunNumber = lVevent->GetRunNumber();
-    Double_t lMagneticField = -10;
-    lMagneticField = lVevent->GetMagneticField( );
-
+    
+    if (!fkGeneratorOnly){
+        //Basic properties
+        fRunNumber = lVevent->GetRunNumber();
+        Double_t lMagneticField = -10;
+        lMagneticField = lVevent->GetMagneticField( );
+    }
+    
     //------------------------------------------------
     // Physics Selection
     //------------------------------------------------
-
+    
     fHistEventCounter->Fill(0.5);
-
+    
     //===============================================
     // Event Selection Variables (fEvSel_xxx)
     //===============================================
-
+    
     //------------------------------------------------
     // Done Via one-line functions
     // (static if possible)
     //------------------------------------------------
-    if(lVerbose) Printf("Doing Event Selections...");
-    fEvSel_Triggered                 = IsSelectedTrigger                   (lVevent, fkTrigger);
-    fEvSel_IsNotPileup               = IsNotPileupSPD                      (lVevent);
-    fEvSel_IsNotPileupInMultBins     = IsNotPileupSPDInMultBins            (lVevent);
-    fEvSel_IsNotPileupMV             = IsNotPileupMV                       (lVevent);
-    fEvSel_PassesTrackletVsCluster   = PassesTrackletVsCluster             (lVevent);
-    fEvSel_HasNoInconsistentVertices = HasNoInconsistentSPDandTrackVertices(lVevent);
-    fEvSel_INELgtZERO                = IsINELgtZERO                        (lVevent);
-    fEvSel_IsNotAsymmetricInVZERO    = IsNotAsymmetricInVZERO              (lVevent);
-    fEvSel_IsNotIncompleteDAQ        = IsNotIncompleteDAQ                  (lVevent); 
-    fEvSel_HasGoodVertex2016         = HasGoodVertex2016                   (lVevent);
-    fEvSel_TriggerMask               = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected(); //for full checks later
-    
-    //classical Proton-proton like selection
-    const AliVVertex *lPrimaryBestESDVtx     = lVevent->GetPrimaryVertex();
-    const AliVVertex *lPrimarySPDVtx         = lVevent->GetPrimaryVertexSPD();
-
-    if ( !lPrimaryBestESDVtx || !lPrimarySPDVtx ) { 
-      AliFatal("Primary Vertex information missing! Cannot execute AliMultSectionTask!");       
-    }
-    
-    Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
-    lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
-
-    //Number of contributors from best primary vertex
-    fnContributors = -1;
-    fnContributors = lPrimaryBestESDVtx -> GetNContributors();
-
-    if(TMath::Abs(lBestPrimaryVtxPos[2]) <= 10.0 ) {
-        //FIXME Passed default 10.0cm selection!
-        fEvSel_VtxZCut = kTRUE;
-    }
-    fEvSel_VtxZ -> SetValue( lBestPrimaryVtxPos[2] ); //Set for later use
-
-    //===============================================
-    // End Event Selection Variables Section
-    //===============================================
-    if(lVerbose) Printf("Doing Multiplicity Calculations...");
-    //------------------------------------------------
-    // Multiplicity Information from AD
-    //------------------------------------------------
-    Float_t fMultiplicityAD[16];
-    Float_t fMultiplicityADA[8];
-    Float_t fMultiplicityADC[8];
-    multADA =0;
-    multADC =0;
-    multAD =0;
-
-    if (lVAD) {
-        //Get Multiplicity info per AD 16 channel: C-side : 0-7, A-side 8-15
-        for (Int_t i=0; i<8; i++)
-        {
-            fMultiplicityAD[i]= lVAD->GetMultiplicity(i);
-            fMultiplicityADA[i]= lVAD->GetMultiplicityADA(i);
-            multADA += fMultiplicityADA[i];
-            multAD += fMultiplicityAD[i];
-        }
-        for (Int_t i=8; i<16; i++)
-        {   fMultiplicityAD[i]= lVAD->GetMultiplicity(i);
-            fMultiplicityADC[i]=lVAD->GetMultiplicityADC(i-8);
-            multADC += fMultiplicityADC[i];
-            multAD+=fMultiplicityAD[i];
-        }
-    }
-    //------------------------------------------------
-    // Multiplicity Information Acquistion
-    //------------------------------------------------
-
-    // VZERO PART
-    Float_t  multV0A  = 0;            //  multiplicity from V0 reco side A
-    Float_t  multV0C  = 0;            //  multiplicity from V0 reco side C
-    Float_t  multV0AEq  = 0;          //  multiplicity from V0 reco side A
-    Float_t  multV0CEq  = 0;          //  multiplicity from V0 reco side C
-    Float_t  multV0ACorr  = 0;            //  multiplicity from V0 reco side A
-    Float_t  multV0CCorr  = 0;            //  multiplicity from V0 reco side C
-    Float_t multonlineV0A = 0; //charge
-    Float_t multonlineV0C = 0; //charge
-    //Special Ring selection (for eta symmetry)
-
-    //Selection we want to perform here:
-    // --- V0A Rings 3+4
-    // --- V0C Rings 1+2
-
-    Float_t multV0Apartial = 0;
-    Float_t multV0Cpartial = 0;
-    for(Int_t iCh = 48; iCh < 64; iCh++) {
-        Double_t mult = lVV0->GetMultiplicity(iCh);
-        multV0Apartial += mult;
-    }
-    for(Int_t iCh = 0; iCh < 16; iCh++) {
-        Double_t mult = lVV0->GetMultiplicity(iCh);
-        multV0Cpartial += mult;
-    }
-
-    Float_t multV0A1 = 0;
-    Float_t multV0A2 = 0;
-    Float_t multV0A3 = 0;
-    Float_t multV0A4 = 0;
-    Float_t multV0C1 = 0;
-    Float_t multV0C2 = 0;
-    Float_t multV0C3 = 0;
-    Float_t multV0C4 = 0;
-    for(Int_t iCh = 0; iCh < 8; iCh++) {
-        Double_t mult = lVV0->GetMultiplicity(iCh);
-        multV0C1 += mult;
-    }
-    for(Int_t iCh = 8; iCh < 16; iCh++) {
-        Double_t mult = lVV0->GetMultiplicity(iCh);
-        multV0C2 += mult;
-    }
-    for(Int_t iCh = 16; iCh < 24; iCh++) {
-        Double_t mult = lVV0->GetMultiplicity(iCh);
-        multV0C3 += mult;
-    }
-    for(Int_t iCh = 24; iCh < 32; iCh++) {
-        Double_t mult = lVV0->GetMultiplicity(iCh);
-        multV0C4 += mult;
-    }
-
-    for(Int_t iCh = 32; iCh < 40; iCh++) {
-        Double_t mult = lVV0->GetMultiplicity(iCh);
-        multV0A1 += mult;
-    }
-    for(Int_t iCh = 40; iCh < 48; iCh++) {
-        Double_t mult = lVV0->GetMultiplicity(iCh);
-        multV0A2 += mult;
-    }
-    for(Int_t iCh = 48; iCh < 56; iCh++) {
-        Double_t mult = lVV0->GetMultiplicity(iCh);
-        multV0A3 += mult;
-    }
-    for(Int_t iCh = 56; iCh < 64; iCh++) {
-        Double_t mult = lVV0->GetMultiplicity(iCh);
-        multV0A4 += mult;
-    }
-
-    //Non-Equalized Signal: copy of multV0ACorr and multV0CCorr from AliCentralitySelectionTask
-    //Getters for uncorrected multiplicity
-    multV0A=lVV0->GetMTotV0A();
-    multV0C=lVV0->GetMTotV0C();
-    //charge V0
-    multonlineV0A = lVV0->GetTriggerChargeA(); //charge
-    multonlineV0C = lVV0->GetTriggerChargeC(); //charge
-
-    //Get Z vertex position of SPD vertex (why not Tracking if available?)
-    Float_t zvtx = lPrimarySPDVtx->GetZ();
-
-    //Acquire Corrected multV0A
-    multV0ACorr = AliESDUtils::GetCorrV0A(multV0A,zvtx);
-    multV0CCorr = AliESDUtils::GetCorrV0C(multV0C,zvtx);
-
-    //Set Desired Variables
-
-    fAmplitude_V0A->SetValue(multV0A);
-    fAmplitude_V0C->SetValue(multV0C);
-
-    //Implementation of V0 ADC information
-    // FIXME: THIS ONLY WORKS IN ESDS FOR NOW
-    Float_t  multV0AADC  = 0;            //  multiplicity from V0 reco side A from ADC
-    Float_t  multV0CADC  = 0;            //  multiplicity from V0 reco side C from ADC
-    fAmplitude_V0AADC->SetValue(0);
-    fAmplitude_V0CADC->SetValue(0);
-
-    /* FIXME: THIS DOES NOT WORK !!
-     for(Int_t iCh = 0; iCh < 32; iCh++){
-     Double_t mult = lVV0->GetADC(iCh);
-     multV0CADC += mult;
-     }
-     for(Int_t iCh = 32; iCh < 64; iCh++){
-     Double_t mult = lVV0->GetMultiplicity(iCh);
-     multV0AADC += mult;
-     }
-     */
-
-    fAmplitude_V0AADC->SetValue(multV0AADC);
-    fAmplitude_V0CADC->SetValue(multV0CADC);
-
-    if ( lVerbose ) {
-        Printf(" V0A Amplitude: %.5f", multV0A );
-        Printf(" V0C Amplitude: %.5f", multV0C );
-    }
-
-    fAmplitude_OnlineV0A->SetValue(multonlineV0A);
-    fAmplitude_OnlineV0C->SetValue(multonlineV0C);
-
-    fAmplitude_V0Apartial->SetValue(multV0Apartial);
-    fAmplitude_V0Cpartial->SetValue(multV0Cpartial);
-
-    //A.T. (vertex correction for all rings?!?)
-    fAmplitude_V0A1 -> SetValue( multV0A1 );
-    fAmplitude_V0A2 -> SetValue( multV0A2 );
-    fAmplitude_V0A3 -> SetValue( multV0A3 );
-    fAmplitude_V0A4 -> SetValue( multV0A4 );
-    fAmplitude_V0C1 -> SetValue( multV0C1 );
-    fAmplitude_V0C2 -> SetValue( multV0C2 );
-    fAmplitude_V0C3 -> SetValue( multV0C3 );
-    fAmplitude_V0C4 -> SetValue( multV0C4 );
-
-    //AD scintillator Data added to Event Tree
-    if (lVAD) {
-        fMultiplicity_ADA->SetValue(multADA);
-        fMultiplicity_ADC->SetValue(multADC);
-    }
-
-    // Equalized signals // From AliCentralitySelectionTask // Updated
-    for(Int_t iCh = 32; iCh < 64; ++iCh) {
-        Double_t mult = lVevent->GetVZEROEqMultiplicity(iCh);
-        multV0AEq += mult;
-    }
-    for(Int_t iCh = 0; iCh < 32; ++iCh) {
-        Double_t mult = lVevent->GetVZEROEqMultiplicity(iCh);
-        multV0CEq += mult;
-    }
-    fAmplitude_V0AEq->SetValue(multV0AEq);
-    fAmplitude_V0CEq->SetValue(multV0CEq);
-
-    //Integer Estimators
-    fnTracklets->SetValueInteger(lVevent->GetMultiplicity()->GetNumberOfTracklets());
-    //Tracklets in specific eta windows
-    fnTracklets08->SetValueInteger(AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent*)lVevent, AliESDtrackCuts::kTracklets, 0.8));
-    fnTracklets15->SetValueInteger(AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent*)lVevent, AliESDtrackCuts::kTracklets, 1.5));
-    
-    fnSPDClusters->SetValueInteger(lVevent->GetNumberOfITSClusters(0) + lVevent->GetNumberOfITSClusters(1));
-    fnSPDClusters0 -> SetValueInteger(lVevent->GetNumberOfITSClusters(0));
-    fnSPDClusters1 -> SetValueInteger(lVevent->GetNumberOfITSClusters(1));
-    //===============================================
-    //This part requires separation of AOD and ESD
-    //===============================================
-
-    //Setting variables to non-sense values
-    fRefMultEta5 -> SetValueInteger ( -5 ); //not acquired
-    fRefMultEta8 -> SetValueInteger ( -5 ); //not acquired
-    fNTracks                    -> SetValueInteger( -10 );
-
-    
-    //Set ZDC variables to defaults
-    fZncEnergy->SetValue(-1e6);
-    fZpcEnergy->SetValue(-1e6);
-    fZnaEnergy->SetValue(-1e6);
-    fZpaEnergy->SetValue(-1e6);
-    fZem1Energy->SetValue(-1e6);
-    fZem2Energy->SetValue(-1e6);
-    fZnaTower->SetValue(-1e6);
-    fZncTower->SetValue(-1e6);
-    fZpaTower->SetValue(-1e6);
-    fZpcTower->SetValue(-1e6);
-    fZnaFired->SetValueInteger( 0 );
-    fZncFired->SetValueInteger( 0 );
-    fZpaFired->SetValueInteger( 0 );
-    fZpcFired->SetValueInteger( 0 );
-    
-    //Set Track Counters to zero
-    fNTracksGlobal2015          -> SetValueInteger( 0 );
-    fNTracksGlobal2015Trigger   -> SetValueInteger( 0 );
-    fNTracksITSsa2010           -> SetValueInteger( 0 );
-    
-    //Count tracks with various selections
-    Float_t ntrackINELgtONE=0.;
-    for(Long_t itrack = 0; itrack<lVevent->GetNumberOfTracks(); itrack++) {
-        AliVTrack *track = lVevent -> GetVTrack( itrack );
-        if ( !track ) continue;
+    if(!fkGeneratorOnly){
+        if(lVerbose) Printf("Doing Event Selections...");
+        fEvSel_Triggered                 = IsSelectedTrigger                   (lVevent, fkTrigger);
+        fEvSel_IsNotPileup               = IsNotPileupSPD                      (lVevent);
+        fEvSel_IsNotPileupInMultBins     = IsNotPileupSPDInMultBins            (lVevent);
+        fEvSel_IsNotPileupMV             = IsNotPileupMV                       (lVevent);
+        fEvSel_PassesTrackletVsCluster   = PassesTrackletVsCluster             (lVevent);
+        fEvSel_HasNoInconsistentVertices = HasNoInconsistentSPDandTrackVertices(lVevent);
+        fEvSel_INELgtZERO                = IsINELgtZERO                        (lVevent);
+        fEvSel_IsNotAsymmetricInVZERO    = IsNotAsymmetricInVZERO              (lVevent);
+        fEvSel_IsNotIncompleteDAQ        = IsNotIncompleteDAQ                  (lVevent);
+        fEvSel_HasGoodVertex2016         = HasGoodVertex2016                   (lVevent);
+        fEvSel_TriggerMask               = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected(); //for full checks later
         
-        //Only ITSsa tracks
-        if ( fTrackCutsITSsa2010 -> AcceptVTrack (track) ) {
-            fNTracksITSsa2010 -> SetValueInteger( fNTracksITSsa2010->GetValueInteger() + 1);
+        //classical Proton-proton like selection
+        const AliVVertex *lPrimaryBestESDVtx     = lVevent->GetPrimaryVertex();
+        const AliVVertex *lPrimarySPDVtx         = lVevent->GetPrimaryVertexSPD();
+        
+        if ( !lPrimaryBestESDVtx || !lPrimarySPDVtx ) {
+            AliFatal("Primary Vertex information missing! Cannot execute AliMultSectionTask!");
         }
         
-        // N tracks INEL>1
-        if(lVevent->InheritsFrom("AliESDEvent")){
-          if(fTrackCutsFiltBit32 -> AcceptVTrack (track) || fTrackCutsFiltBit64 -> AcceptVTrack (track)) ntrackINELgtONE+=1.;
+        Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
+        lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
+        
+        //Number of contributors from best primary vertex
+        fnContributors = -1;
+        fnContributors = lPrimaryBestESDVtx -> GetNContributors();
+        
+        if(TMath::Abs(lBestPrimaryVtxPos[2]) <= 10.0 ) {
+            //FIXME Passed default 10.0cm selection!
+            fEvSel_VtxZCut = kTRUE;
+        }
+        fEvSel_VtxZ -> SetValue( lBestPrimaryVtxPos[2] ); //Set for later use
+        
+        //===============================================
+        // End Event Selection Variables Section
+        //===============================================
+        if(lVerbose) Printf("Doing Multiplicity Calculations...");
+        //------------------------------------------------
+        // Multiplicity Information from AD
+        //------------------------------------------------
+        Float_t fMultiplicityAD[16];
+        Float_t fMultiplicityADA[8];
+        Float_t fMultiplicityADC[8];
+        multADA =0;
+        multADC =0;
+        multAD =0;
+        
+        if (lVAD) {
+            //Get Multiplicity info per AD 16 channel: C-side : 0-7, A-side 8-15
+            for (Int_t i=0; i<8; i++)
+            {
+                fMultiplicityAD[i]= lVAD->GetMultiplicity(i);
+                fMultiplicityADA[i]= lVAD->GetMultiplicityADA(i);
+                multADA += fMultiplicityADA[i];
+                multAD += fMultiplicityAD[i];
+            }
+            for (Int_t i=8; i<16; i++)
+            {   fMultiplicityAD[i]= lVAD->GetMultiplicity(i);
+                fMultiplicityADC[i]=lVAD->GetMultiplicityADC(i-8);
+                multADC += fMultiplicityADC[i];
+                multAD+=fMultiplicityAD[i];
+            }
+        }
+        //------------------------------------------------
+        // Multiplicity Information Acquistion
+        //------------------------------------------------
+        
+        // VZERO PART
+        Float_t  multV0A  = 0;            //  multiplicity from V0 reco side A
+        Float_t  multV0C  = 0;            //  multiplicity from V0 reco side C
+        Float_t  multV0AEq  = 0;          //  multiplicity from V0 reco side A
+        Float_t  multV0CEq  = 0;          //  multiplicity from V0 reco side C
+        Float_t  multV0ACorr  = 0;            //  multiplicity from V0 reco side A
+        Float_t  multV0CCorr  = 0;            //  multiplicity from V0 reco side C
+        Float_t multonlineV0A = 0; //charge
+        Float_t multonlineV0C = 0; //charge
+        //Special Ring selection (for eta symmetry)
+        
+        //Selection we want to perform here:
+        // --- V0A Rings 3+4
+        // --- V0C Rings 1+2
+        
+        Float_t multV0Apartial = 0;
+        Float_t multV0Cpartial = 0;
+        for(Int_t iCh = 48; iCh < 64; iCh++) {
+            Double_t mult = lVV0->GetMultiplicity(iCh);
+            multV0Apartial += mult;
+        }
+        for(Int_t iCh = 0; iCh < 16; iCh++) {
+            Double_t mult = lVV0->GetMultiplicity(iCh);
+            multV0Cpartial += mult;
         }
         
-        if ( !fTrackCutsGlobal2015 -> AcceptVTrack (track) ) continue;
-        
-        //Only for accepted tracks
-        fNTracksGlobal2015 -> SetValueInteger( fNTracksGlobal2015->GetValueInteger() + 1);
-        
-        //Count accepted + TOF time window (info from Alberica)
-        //Warning: 30 is a value that is good for Pb-Pb (12.5 is more appropriate for pp)
-        if ( TMath::Abs( track -> GetTOFExpTDiff() ) < 30 )
-            fNTracksGlobal2015Trigger -> SetValueInteger( fNTracksGlobal2015Trigger->GetValueInteger() + 1);
-    }
-    
-    Long_t lNTPCout = 0;
-    fNTracksTPCout->SetValueInteger(lNTPCout);
-    
-    if(lVerbose) Printf("Doing ESD/AOD part...");
-    if (lVevent->InheritsFrom("AliESDEvent")) {
-        AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(lVevent);
-        
-        //Get TPCout counts
-        const Long_t nTracks = esdevent->GetNumberOfTracks();
-          for (int it = 0; it < nTracks; it++) {
-              AliESDtrack* trk = (AliESDtrack*)esdevent->GetTrack(it);
-              if (!trk) continue;
-              if ((trk->GetStatus() & AliESDtrack::kTPCout) &&
-                  trk->GetID() > 0) lNTPCout++;
-          }
-
-        //Standard GetReferenceMultiplicity Estimator (0.5 and 0.8)
-        fRefMultEta5 -> SetValueInteger ( fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTrackletsITSTPC,0.5) );
-        fRefMultEta8 -> SetValueInteger ( fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTrackletsITSTPC,0.8) );
-
-        //Use fallback in case of return value of -3 or -4
-        //This is what will happen in AODs: -3 will use fallback
-        //HOWEVER: -4 will not. Inconsistency requires use of "HasNoInconsistentSPDandTrackVertices"!
-        if ( fRefMultEta5 -> GetValueInteger() < -2 ) {
-            fRefMultEta5 -> SetValueInteger ( fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTracklets,0.5) );
+        Float_t multV0A1 = 0;
+        Float_t multV0A2 = 0;
+        Float_t multV0A3 = 0;
+        Float_t multV0A4 = 0;
+        Float_t multV0C1 = 0;
+        Float_t multV0C2 = 0;
+        Float_t multV0C3 = 0;
+        Float_t multV0C4 = 0;
+        for(Int_t iCh = 0; iCh < 8; iCh++) {
+            Double_t mult = lVV0->GetMultiplicity(iCh);
+            multV0C1 += mult;
         }
-        if ( fRefMultEta8 -> GetValueInteger() < -2 ) {
-            fRefMultEta8 -> SetValueInteger ( fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTracklets,0.8) );
+        for(Int_t iCh = 8; iCh < 16; iCh++) {
+            Double_t mult = lVV0->GetMultiplicity(iCh);
+            multV0C2 += mult;
         }
-
-        //A.T.
-        fNTracks -> SetValueInteger( fTrackCuts ? (Short_t)fTrackCuts->GetReferenceMultiplicity(esdevent,kTRUE):-1 );
-
-        // ***** ZDC info
-        AliESDZDC *lESDZDC = esdevent->GetESDZDC();
-        Float_t CalF=0;
-        if (lESDZDC->AliESDZDC::TestBit(AliESDZDC::kEnergyCalibratedSignal))  CalF=1.0; //! if zdc is calibrated (in pass2)
-        else CalF=8.0;
-
-        fZncEnergy -> SetValue ( (Float_t) (lESDZDC->GetZDCN1Energy())/CalF );
-        fZpcEnergy -> SetValue ( (Float_t) (lESDZDC->GetZDCP1Energy())/CalF );
-        fZnaEnergy -> SetValue ( (Float_t) (lESDZDC->GetZDCN2Energy())/CalF );
-        fZpaEnergy -> SetValue ( (Float_t) (lESDZDC->GetZDCP2Energy())/CalF );
-
-        fZem1Energy -> SetValue ( (Float_t) (lESDZDC->GetZDCEMEnergy(0))/CalF );
-        fZem2Energy -> SetValue ( (Float_t) (lESDZDC->GetZDCEMEnergy(1))/CalF );
-
-        Int_t detCh_ZNA = lESDZDC->GetZNATDCChannel();
-        Int_t detCh_ZNC = lESDZDC->GetZNCTDCChannel();
-        Int_t detCh_ZPA = lESDZDC->GetZPATDCChannel();
-        Int_t detCh_ZPC = lESDZDC->GetZPCTDCChannel();
-
-        for (Int_t j = 0; j < 4; ++j) {
-	   if (lESDZDC->GetZDCTDCData(detCh_ZNA,j) != 0)      fZnaFired -> SetValueInteger(1);
-	   if (lESDZDC->GetZDCTDCData(detCh_ZNC,j) != 0)      fZncFired -> SetValueInteger(1);
-	   if (lESDZDC->GetZDCTDCData(detCh_ZPA,j) != 0)      fZpaFired -> SetValueInteger(1);
-	   if (lESDZDC->GetZDCTDCData(detCh_ZPC,j) != 0)      fZpcFired -> SetValueInteger(1);
+        for(Int_t iCh = 16; iCh < 24; iCh++) {
+            Double_t mult = lVV0->GetMultiplicity(iCh);
+            multV0C3 += mult;
         }
-
-        const Double_t *ZNAtower = lESDZDC->GetZNATowerEnergy();
-        const Double_t *ZNCtower = lESDZDC->GetZNCTowerEnergy();
-        const Double_t *ZPAtower = lESDZDC->GetZPATowerEnergy();
-        const Double_t *ZPCtower = lESDZDC->GetZPCTowerEnergy();
-        fZnaTower -> SetValue ( (Float_t) ZNAtower[0] );
-        fZncTower -> SetValue ( (Float_t) ZNCtower[0] );
-        fZpaTower -> SetValue ( (Float_t) ZPAtower[0] );
-        fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
+        for(Int_t iCh = 24; iCh < 32; iCh++) {
+            Double_t mult = lVV0->GetMultiplicity(iCh);
+            multV0C4 += mult;
+        }
         
-    } else if (lVevent->InheritsFrom("AliAODEvent")) {
-        AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(lVevent);
-        AliAODHeader * header = dynamic_cast<AliAODHeader*>(aodevent->GetHeader());
-    
-        fRefMultEta5 -> SetValueInteger ( header->GetRefMultiplicityComb05() );
-        fRefMultEta8 -> SetValueInteger ( header->GetRefMultiplicityComb08() );
-        
-        for(Long_t itrack = 0; itrack<aodevent->GetNumberOfTracks(); itrack++) {
-            AliAODTrack *aodt=(AliAODTrack*)aodevent->GetTrack(itrack);
-            if ( !aodt )  { continue; }
-            if( (aodt->TestFilterBit(BIT(5)) || aodt->TestFilterBit(BIT(6))) && aodt->Pt()>0.4 && TMath::Abs(aodt->Eta())<0.8 ) ntrackINELgtONE+=1.;
-            if ((aodt->GetStatus() & AliESDtrack::kTPCout) &&
-                aodt->GetID() > 0) lNTPCout++;
+        for(Int_t iCh = 32; iCh < 40; iCh++) {
+            Double_t mult = lVV0->GetMultiplicity(iCh);
+            multV0A1 += mult;
         }
-
-        //FIXME: get ZDC information in AOD in a fully consistent way
-        AliAODZDC *lAODZDC = aodevent->GetZDCData();
-
-        //Only do this bit if the AOD has ZDC data
-        if( lAODZDC ){
-            for (Int_t j = 0; j < 4; ++j) {
-                if (lAODZDC->GetZNATDCm(j) > -998) fZnaFired -> SetValueInteger(1);
-                if (lAODZDC->GetZNCTDCm(j) > -998) fZncFired -> SetValueInteger(1);
-                if (lAODZDC->GetZPATDCm(j) > -998) fZpaFired -> SetValueInteger(1);
-                if (lAODZDC->GetZPCTDCm(j) > -998) fZpcFired -> SetValueInteger(1);
+        for(Int_t iCh = 40; iCh < 48; iCh++) {
+            Double_t mult = lVV0->GetMultiplicity(iCh);
+            multV0A2 += mult;
+        }
+        for(Int_t iCh = 48; iCh < 56; iCh++) {
+            Double_t mult = lVV0->GetMultiplicity(iCh);
+            multV0A3 += mult;
+        }
+        for(Int_t iCh = 56; iCh < 64; iCh++) {
+            Double_t mult = lVV0->GetMultiplicity(iCh);
+            multV0A4 += mult;
+        }
+        
+        //Non-Equalized Signal: copy of multV0ACorr and multV0CCorr from AliCentralitySelectionTask
+        //Getters for uncorrected multiplicity
+        multV0A=lVV0->GetMTotV0A();
+        multV0C=lVV0->GetMTotV0C();
+        //charge V0
+        multonlineV0A = lVV0->GetTriggerChargeA(); //charge
+        multonlineV0C = lVV0->GetTriggerChargeC(); //charge
+        
+        //Get Z vertex position of SPD vertex (why not Tracking if available?)
+        Float_t zvtx = lPrimarySPDVtx->GetZ();
+        
+        //Acquire Corrected multV0A
+        multV0ACorr = AliESDUtils::GetCorrV0A(multV0A,zvtx);
+        multV0CCorr = AliESDUtils::GetCorrV0C(multV0C,zvtx);
+        
+        //Set Desired Variables
+        
+        fAmplitude_V0A->SetValue(multV0A);
+        fAmplitude_V0C->SetValue(multV0C);
+        
+        //Implementation of V0 ADC information
+        // FIXME: THIS ONLY WORKS IN ESDS FOR NOW
+        Float_t  multV0AADC  = 0;            //  multiplicity from V0 reco side A from ADC
+        Float_t  multV0CADC  = 0;            //  multiplicity from V0 reco side C from ADC
+        fAmplitude_V0AADC->SetValue(0);
+        fAmplitude_V0CADC->SetValue(0);
+        
+        /* FIXME: THIS DOES NOT WORK !!
+         for(Int_t iCh = 0; iCh < 32; iCh++){
+         Double_t mult = lVV0->GetADC(iCh);
+         multV0CADC += mult;
+         }
+         for(Int_t iCh = 32; iCh < 64; iCh++){
+         Double_t mult = lVV0->GetMultiplicity(iCh);
+         multV0AADC += mult;
+         }
+         */
+        
+        fAmplitude_V0AADC->SetValue(multV0AADC);
+        fAmplitude_V0CADC->SetValue(multV0CADC);
+        
+        if ( lVerbose ) {
+            Printf(" V0A Amplitude: %.5f", multV0A );
+            Printf(" V0C Amplitude: %.5f", multV0C );
+        }
+        
+        fAmplitude_OnlineV0A->SetValue(multonlineV0A);
+        fAmplitude_OnlineV0C->SetValue(multonlineV0C);
+        
+        fAmplitude_V0Apartial->SetValue(multV0Apartial);
+        fAmplitude_V0Cpartial->SetValue(multV0Cpartial);
+        
+        //A.T. (vertex correction for all rings?!?)
+        fAmplitude_V0A1 -> SetValue( multV0A1 );
+        fAmplitude_V0A2 -> SetValue( multV0A2 );
+        fAmplitude_V0A3 -> SetValue( multV0A3 );
+        fAmplitude_V0A4 -> SetValue( multV0A4 );
+        fAmplitude_V0C1 -> SetValue( multV0C1 );
+        fAmplitude_V0C2 -> SetValue( multV0C2 );
+        fAmplitude_V0C3 -> SetValue( multV0C3 );
+        fAmplitude_V0C4 -> SetValue( multV0C4 );
+        
+        //AD scintillator Data added to Event Tree
+        if (lVAD) {
+            fMultiplicity_ADA->SetValue(multADA);
+            fMultiplicity_ADC->SetValue(multADC);
+        }
+        
+        // Equalized signals // From AliCentralitySelectionTask // Updated
+        for(Int_t iCh = 32; iCh < 64; ++iCh) {
+            Double_t mult = lVevent->GetVZEROEqMultiplicity(iCh);
+            multV0AEq += mult;
+        }
+        for(Int_t iCh = 0; iCh < 32; ++iCh) {
+            Double_t mult = lVevent->GetVZEROEqMultiplicity(iCh);
+            multV0CEq += mult;
+        }
+        fAmplitude_V0AEq->SetValue(multV0AEq);
+        fAmplitude_V0CEq->SetValue(multV0CEq);
+        
+        //Integer Estimators
+        fnTracklets->SetValueInteger(lVevent->GetMultiplicity()->GetNumberOfTracklets());
+        //Tracklets in specific eta windows
+        fnTracklets08->SetValueInteger(AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent*)lVevent, AliESDtrackCuts::kTracklets, 0.8));
+        fnTracklets15->SetValueInteger(AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent*)lVevent, AliESDtrackCuts::kTracklets, 1.5));
+        
+        fnSPDClusters->SetValueInteger(lVevent->GetNumberOfITSClusters(0) + lVevent->GetNumberOfITSClusters(1));
+        fnSPDClusters0 -> SetValueInteger(lVevent->GetNumberOfITSClusters(0));
+        fnSPDClusters1 -> SetValueInteger(lVevent->GetNumberOfITSClusters(1));
+        //===============================================
+        //This part requires separation of AOD and ESD
+        //===============================================
+        
+        //Setting variables to non-sense values
+        fRefMultEta5 -> SetValueInteger ( -5 ); //not acquired
+        fRefMultEta8 -> SetValueInteger ( -5 ); //not acquired
+        fNTracks                    -> SetValueInteger( -10 );
+        
+        
+        //Set ZDC variables to defaults
+        fZncEnergy->SetValue(-1e6);
+        fZpcEnergy->SetValue(-1e6);
+        fZnaEnergy->SetValue(-1e6);
+        fZpaEnergy->SetValue(-1e6);
+        fZem1Energy->SetValue(-1e6);
+        fZem2Energy->SetValue(-1e6);
+        fZnaTower->SetValue(-1e6);
+        fZncTower->SetValue(-1e6);
+        fZpaTower->SetValue(-1e6);
+        fZpcTower->SetValue(-1e6);
+        fZnaFired->SetValueInteger( 0 );
+        fZncFired->SetValueInteger( 0 );
+        fZpaFired->SetValueInteger( 0 );
+        fZpcFired->SetValueInteger( 0 );
+        
+        //Set Track Counters to zero
+        fNTracksGlobal2015          -> SetValueInteger( 0 );
+        fNTracksGlobal2015Trigger   -> SetValueInteger( 0 );
+        fNTracksITSsa2010           -> SetValueInteger( 0 );
+        
+        //Count tracks with various selections
+        Float_t ntrackINELgtONE=0.;
+        for(Long_t itrack = 0; itrack<lVevent->GetNumberOfTracks(); itrack++) {
+            AliVTrack *track = lVevent -> GetVTrack( itrack );
+            if ( !track ) continue;
+            
+            //Only ITSsa tracks
+            if ( fTrackCutsITSsa2010 -> AcceptVTrack (track) ) {
+                fNTracksITSsa2010 -> SetValueInteger( fNTracksITSsa2010->GetValueInteger() + 1);
             }
             
-            const Double_t *ZNAtower = lAODZDC->GetZNATowerEnergy();
-            const Double_t *ZNCtower = lAODZDC->GetZNCTowerEnergy();
-            const Double_t *ZPAtower = lAODZDC->GetZPATowerEnergy();
-            const Double_t *ZPCtower = lAODZDC->GetZPCTowerEnergy();
+            // N tracks INEL>1
+            if(lVevent->InheritsFrom("AliESDEvent")){
+                if(fTrackCutsFiltBit32 -> AcceptVTrack (track) || fTrackCutsFiltBit64 -> AcceptVTrack (track)) ntrackINELgtONE+=1.;
+            }
+            
+            if ( !fTrackCutsGlobal2015 -> AcceptVTrack (track) ) continue;
+            
+            //Only for accepted tracks
+            fNTracksGlobal2015 -> SetValueInteger( fNTracksGlobal2015->GetValueInteger() + 1);
+            
+            //Count accepted + TOF time window (info from Alberica)
+            //Warning: 30 is a value that is good for Pb-Pb (12.5 is more appropriate for pp)
+            if ( TMath::Abs( track -> GetTOFExpTDiff() ) < 30 )
+                fNTracksGlobal2015Trigger -> SetValueInteger( fNTracksGlobal2015Trigger->GetValueInteger() + 1);
+        }
+        
+        Long_t lNTPCout = 0;
+        fNTracksTPCout->SetValueInteger(lNTPCout);
+        
+        if(lVerbose) Printf("Doing ESD/AOD part...");
+        if (lVevent->InheritsFrom("AliESDEvent")) {
+            AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(lVevent);
+            
+            //Get TPCout counts
+            const Long_t nTracks = esdevent->GetNumberOfTracks();
+            for (int it = 0; it < nTracks; it++) {
+                AliESDtrack* trk = (AliESDtrack*)esdevent->GetTrack(it);
+                if (!trk) continue;
+                if ((trk->GetStatus() & AliESDtrack::kTPCout) &&
+                    trk->GetID() > 0) lNTPCout++;
+            }
+            
+            //Standard GetReferenceMultiplicity Estimator (0.5 and 0.8)
+            fRefMultEta5 -> SetValueInteger ( fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTrackletsITSTPC,0.5) );
+            fRefMultEta8 -> SetValueInteger ( fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTrackletsITSTPC,0.8) );
+            
+            //Use fallback in case of return value of -3 or -4
+            //This is what will happen in AODs: -3 will use fallback
+            //HOWEVER: -4 will not. Inconsistency requires use of "HasNoInconsistentSPDandTrackVertices"!
+            if ( fRefMultEta5 -> GetValueInteger() < -2 ) {
+                fRefMultEta5 -> SetValueInteger ( fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTracklets,0.5) );
+            }
+            if ( fRefMultEta8 -> GetValueInteger() < -2 ) {
+                fRefMultEta8 -> SetValueInteger ( fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTracklets,0.8) );
+            }
+            
+            //A.T.
+            fNTracks -> SetValueInteger( fTrackCuts ? (Short_t)fTrackCuts->GetReferenceMultiplicity(esdevent,kTRUE):-1 );
+            
+            // ***** ZDC info
+            AliESDZDC *lESDZDC = esdevent->GetESDZDC();
+            Float_t CalF=0;
+            if (lESDZDC->AliESDZDC::TestBit(AliESDZDC::kEnergyCalibratedSignal))  CalF=1.0; //! if zdc is calibrated (in pass2)
+            else CalF=8.0;
+            
+            fZncEnergy -> SetValue ( (Float_t) (lESDZDC->GetZDCN1Energy())/CalF );
+            fZpcEnergy -> SetValue ( (Float_t) (lESDZDC->GetZDCP1Energy())/CalF );
+            fZnaEnergy -> SetValue ( (Float_t) (lESDZDC->GetZDCN2Energy())/CalF );
+            fZpaEnergy -> SetValue ( (Float_t) (lESDZDC->GetZDCP2Energy())/CalF );
+            
+            fZem1Energy -> SetValue ( (Float_t) (lESDZDC->GetZDCEMEnergy(0))/CalF );
+            fZem2Energy -> SetValue ( (Float_t) (lESDZDC->GetZDCEMEnergy(1))/CalF );
+            
+            Int_t detCh_ZNA = lESDZDC->GetZNATDCChannel();
+            Int_t detCh_ZNC = lESDZDC->GetZNCTDCChannel();
+            Int_t detCh_ZPA = lESDZDC->GetZPATDCChannel();
+            Int_t detCh_ZPC = lESDZDC->GetZPCTDCChannel();
+            
+            for (Int_t j = 0; j < 4; ++j) {
+                if (lESDZDC->GetZDCTDCData(detCh_ZNA,j) != 0)      fZnaFired -> SetValueInteger(1);
+                if (lESDZDC->GetZDCTDCData(detCh_ZNC,j) != 0)      fZncFired -> SetValueInteger(1);
+                if (lESDZDC->GetZDCTDCData(detCh_ZPA,j) != 0)      fZpaFired -> SetValueInteger(1);
+                if (lESDZDC->GetZDCTDCData(detCh_ZPC,j) != 0)      fZpcFired -> SetValueInteger(1);
+            }
+            
+            const Double_t *ZNAtower = lESDZDC->GetZNATowerEnergy();
+            const Double_t *ZNCtower = lESDZDC->GetZNCTowerEnergy();
+            const Double_t *ZPAtower = lESDZDC->GetZPATowerEnergy();
+            const Double_t *ZPCtower = lESDZDC->GetZPCTowerEnergy();
             fZnaTower -> SetValue ( (Float_t) ZNAtower[0] );
             fZncTower -> SetValue ( (Float_t) ZNCtower[0] );
             fZpaTower -> SetValue ( (Float_t) ZPAtower[0] );
             fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
+            
+        } else if (lVevent->InheritsFrom("AliAODEvent")) {
+            AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(lVevent);
+            AliAODHeader * header = dynamic_cast<AliAODHeader*>(aodevent->GetHeader());
+            
+            fRefMultEta5 -> SetValueInteger ( header->GetRefMultiplicityComb05() );
+            fRefMultEta8 -> SetValueInteger ( header->GetRefMultiplicityComb08() );
+            
+            for(Long_t itrack = 0; itrack<aodevent->GetNumberOfTracks(); itrack++) {
+                AliAODTrack *aodt=(AliAODTrack*)aodevent->GetTrack(itrack);
+                if ( !aodt )  { continue; }
+                if( (aodt->TestFilterBit(BIT(5)) || aodt->TestFilterBit(BIT(6))) && aodt->Pt()>0.4 && TMath::Abs(aodt->Eta())<0.8 ) ntrackINELgtONE+=1.;
+                if ((aodt->GetStatus() & AliESDtrack::kTPCout) &&
+                    aodt->GetID() > 0) lNTPCout++;
+            }
+            
+            //FIXME: get ZDC information in AOD in a fully consistent way
+            AliAODZDC *lAODZDC = aodevent->GetZDCData();
+            
+            //Only do this bit if the AOD has ZDC data
+            if( lAODZDC ){
+                for (Int_t j = 0; j < 4; ++j) {
+                    if (lAODZDC->GetZNATDCm(j) > -998) fZnaFired -> SetValueInteger(1);
+                    if (lAODZDC->GetZNCTDCm(j) > -998) fZncFired -> SetValueInteger(1);
+                    if (lAODZDC->GetZPATDCm(j) > -998) fZpaFired -> SetValueInteger(1);
+                    if (lAODZDC->GetZPCTDCm(j) > -998) fZpcFired -> SetValueInteger(1);
+                }
+                
+                const Double_t *ZNAtower = lAODZDC->GetZNATowerEnergy();
+                const Double_t *ZNCtower = lAODZDC->GetZNCTowerEnergy();
+                const Double_t *ZPAtower = lAODZDC->GetZPATowerEnergy();
+                const Double_t *ZPCtower = lAODZDC->GetZPCTowerEnergy();
+                fZnaTower -> SetValue ( (Float_t) ZNAtower[0] );
+                fZncTower -> SetValue ( (Float_t) ZNCtower[0] );
+                fZpaTower -> SetValue ( (Float_t) ZPAtower[0] );
+                fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
+            }
         }
-    }
-    
-    fNTracksTPCout ->SetValueInteger(lNTPCout);
-    
-    fNTracksINELgtONE->SetValue(ntrackINELgtONE);
-    if(fkDebugIsMC && fkDebugAdditional2DHisto) ((TH2D*)(fListHist->FindObject("hist_NpartVsNtracks"))) -> Fill(npartINELgtONE,ntrackINELgtONE);
-    
-    fHistEventSelections -> Fill ( fEvSel_Triggered     , 0.5 ); 
-    fHistEventSelections -> Fill ( fEvSel_VtxZCut       , 1.5 ); 
-    fHistEventSelections -> Fill ( fEvSel_IsNotPileup   , 2.5 ); 
-    fHistEventSelections -> Fill ( fEvSel_IsNotPileupMV         , 3.5 ); 
-    fHistEventSelections -> Fill ( fEvSel_IsNotPileupInMultBins , 4.5 ); 
-    fHistEventSelections -> Fill ( fEvSel_INELgtZERO                , 5.5 ); 
-    fHistEventSelections -> Fill ( fEvSel_HasNoInconsistentVertices , 6.5 ); 
-    fHistEventSelections -> Fill ( fEvSel_PassesTrackletVsCluster   , 7.5 ); 
-    fHistEventSelections -> Fill ( fEvSel_IsNotAsymmetricInVZERO    , 8.5 ); 
-    fHistEventSelections -> Fill ( fEvSel_IsNotIncompleteDAQ        , 9.5 ); 
-    fHistEventSelections -> Fill ( fEvSel_HasGoodVertex2016         , 10.5 );
-    if ( fEvSel_Triggered ) {
-        fHistEventSelections -> Fill ( 2.0 + fEvSel_Triggered     , 0.5 );               
-        fHistEventSelections -> Fill ( 2.0 + fEvSel_VtxZCut       , 1.5 );               
-        fHistEventSelections -> Fill ( 2.0 + fEvSel_IsNotPileup   , 2.5 );               
-        fHistEventSelections -> Fill ( 2.0 + fEvSel_IsNotPileupMV         , 3.5 );      
-        fHistEventSelections -> Fill ( 2.0 + fEvSel_IsNotPileupInMultBins , 4.5 );      
-        fHistEventSelections -> Fill ( 2.0 + fEvSel_INELgtZERO                , 5.5 );  
-        fHistEventSelections -> Fill ( 2.0 + fEvSel_HasNoInconsistentVertices , 6.5 );  
-        fHistEventSelections -> Fill ( 2.0 + fEvSel_PassesTrackletVsCluster   , 7.5 );  
-        fHistEventSelections -> Fill ( 2.0 + fEvSel_IsNotAsymmetricInVZERO    , 8.5 );  
-        fHistEventSelections -> Fill ( 2.0 + fEvSel_IsNotIncompleteDAQ        , 9.5 );  
-        fHistEventSelections -> Fill ( 2.0 + fEvSel_HasGoodVertex2016         , 10.5 ); 
+        
+        fNTracksTPCout ->SetValueInteger(lNTPCout);
+        
+        fNTracksINELgtONE->SetValue(ntrackINELgtONE);
+        if(fkDebugIsMC && fkDebugAdditional2DHisto) ((TH2D*)(fListHist->FindObject("hist_NpartVsNtracks"))) -> Fill(npartINELgtONE,ntrackINELgtONE);
+        
+        fHistEventSelections -> Fill ( fEvSel_Triggered     , 0.5 );
+        fHistEventSelections -> Fill ( fEvSel_VtxZCut       , 1.5 );
+        fHistEventSelections -> Fill ( fEvSel_IsNotPileup   , 2.5 );
+        fHistEventSelections -> Fill ( fEvSel_IsNotPileupMV         , 3.5 );
+        fHistEventSelections -> Fill ( fEvSel_IsNotPileupInMultBins , 4.5 );
+        fHistEventSelections -> Fill ( fEvSel_INELgtZERO                , 5.5 );
+        fHistEventSelections -> Fill ( fEvSel_HasNoInconsistentVertices , 6.5 );
+        fHistEventSelections -> Fill ( fEvSel_PassesTrackletVsCluster   , 7.5 );
+        fHistEventSelections -> Fill ( fEvSel_IsNotAsymmetricInVZERO    , 8.5 );
+        fHistEventSelections -> Fill ( fEvSel_IsNotIncompleteDAQ        , 9.5 );
+        fHistEventSelections -> Fill ( fEvSel_HasGoodVertex2016         , 10.5 );
+        if ( fEvSel_Triggered ) {
+            fHistEventSelections -> Fill ( 2.0 + fEvSel_Triggered     , 0.5 );
+            fHistEventSelections -> Fill ( 2.0 + fEvSel_VtxZCut       , 1.5 );
+            fHistEventSelections -> Fill ( 2.0 + fEvSel_IsNotPileup   , 2.5 );
+            fHistEventSelections -> Fill ( 2.0 + fEvSel_IsNotPileupMV         , 3.5 );
+            fHistEventSelections -> Fill ( 2.0 + fEvSel_IsNotPileupInMultBins , 4.5 );
+            fHistEventSelections -> Fill ( 2.0 + fEvSel_INELgtZERO                , 5.5 );
+            fHistEventSelections -> Fill ( 2.0 + fEvSel_HasNoInconsistentVertices , 6.5 );
+            fHistEventSelections -> Fill ( 2.0 + fEvSel_PassesTrackletVsCluster   , 7.5 );
+            fHistEventSelections -> Fill ( 2.0 + fEvSel_IsNotAsymmetricInVZERO    , 8.5 );
+            fHistEventSelections -> Fill ( 2.0 + fEvSel_IsNotIncompleteDAQ        , 9.5 );
+            fHistEventSelections -> Fill ( 2.0 + fEvSel_HasGoodVertex2016         , 10.5 );
+        }
     }
     
     //===============================================
@@ -1636,11 +1649,11 @@ void AliMultSelectionTask::UserExec(Option_t *)
         //===============================================
         //Make sure OADB is loaded
         SetupRun( lVevent );
-
+        
         //===============================================
         // I/O: Create object for storing, add
         //===============================================
-
+        
         if(lVerbose) Printf( "--- Evaluate -1-");
         //Evaluate Estimators from Variables
         AliMultSelection*     lSelection = fOadbMultSelection->GetMultSelection();
@@ -1652,56 +1665,56 @@ void AliMultSelectionTask::UserExec(Option_t *)
         if(lVerbose) Printf( "--- OUTPUT --- ");
         if(lVerbose) lSelection -> PrintInfo();
         if(lVerbose) Printf( "--- Evaluate -3-");
-
+        
         //Event Selection Code: No need to do this for all estimators ...
         lSelection->SetEvSelCode(0); //No Problem!
-	
-	//Storing of flags (to be improved in the future) 
-	lSelection -> SetThisEventVtxZCut      ( fEvSel_VtxZCut       );  
-	lSelection -> SetThisEventIsNotPileup  ( fEvSel_IsNotPileup   ); 
-	lSelection -> SetThisEventIsNotPileupMV         ( fEvSel_IsNotPileupMV         ); 
-	lSelection -> SetThisEventIsNotPileupInMultBins ( fEvSel_IsNotPileupInMultBins ); 
-	lSelection -> SetThisEventTriggered  ( fEvSel_Triggered  ); 
-	lSelection -> SetThisEventINELgtZERO ( fEvSel_INELgtZERO ); 
-	lSelection -> SetThisEventHasNoInconsistentVertices ( fEvSel_HasNoInconsistentVertices ); 
-	lSelection -> SetThisEventPassesTrackletVsCluster   ( fEvSel_PassesTrackletVsCluster   ); 
-	lSelection -> SetThisEventIsNotAsymmetricInVZERO    ( fEvSel_IsNotAsymmetricInVZERO    ); 
-	lSelection -> SetThisEventIsNotIncompleteDAQ        ( fEvSel_IsNotIncompleteDAQ        ); 
-    lSelection -> SetThisEventHasGoodVertex2016         ( fEvSel_HasGoodVertex2016         );
+        
+        //Storing of flags (to be improved in the future)
+        lSelection -> SetThisEventVtxZCut      ( fEvSel_VtxZCut       );
+        lSelection -> SetThisEventIsNotPileup  ( fEvSel_IsNotPileup   );
+        lSelection -> SetThisEventIsNotPileupMV         ( fEvSel_IsNotPileupMV         );
+        lSelection -> SetThisEventIsNotPileupInMultBins ( fEvSel_IsNotPileupInMultBins );
+        lSelection -> SetThisEventTriggered  ( fEvSel_Triggered  );
+        lSelection -> SetThisEventINELgtZERO ( fEvSel_INELgtZERO );
+        lSelection -> SetThisEventHasNoInconsistentVertices ( fEvSel_HasNoInconsistentVertices );
+        lSelection -> SetThisEventPassesTrackletVsCluster   ( fEvSel_PassesTrackletVsCluster   );
+        lSelection -> SetThisEventIsNotAsymmetricInVZERO    ( fEvSel_IsNotAsymmetricInVZERO    );
+        lSelection -> SetThisEventIsNotIncompleteDAQ        ( fEvSel_IsNotIncompleteDAQ        );
+        lSelection -> SetThisEventHasGoodVertex2016         ( fEvSel_HasGoodVertex2016         );
         
         if( lMultCuts->GetTriggerCut()    && ! fEvSel_Triggered           )
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejTrigger);
-
+        
         if( lMultCuts->GetINELgtZEROCut() && ! fEvSel_INELgtZERO          )
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejINELgtZERO);
-
+        
         if( TMath::Abs(fEvSel_VtxZ->GetValue() ) > lMultCuts->GetVzCut()      )
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejVzCut);
-
+        
         if( lMultCuts->GetRejectPileupInMultBinsCut() && ! fEvSel_IsNotPileupInMultBins      )
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejPileupInMultBins);
-
+        
         if( lMultCuts->GetVertexConsistencyCut()      && ! fEvSel_HasNoInconsistentVertices  )
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejConsistencySPDandTrackVertices);
-
+        
         if( lMultCuts->GetTrackletsVsClustersCut()    && ! fEvSel_PassesTrackletVsCluster    )
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejTrackletsVsClusters);
-
+        
         if( lMultCuts->GetNonZeroNContribs()    && fnContributors < 1    )
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejNonZeroNContribs);
-
+        
         if( lMultCuts->GetIsNotAsymmetricInVZERO()    && ! fEvSel_IsNotAsymmetricInVZERO )
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejAsymmetricInVZERO);
-	
+        
         if( lMultCuts->GetIsNotIncompleteDAQ()    && ! fEvSel_IsNotIncompleteDAQ )
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejIncompleteDAQ);
-    
+        
         if( lMultCuts->GetHasGoodVertex2016()    && ! fEvSel_HasGoodVertex2016 )
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejNotGoodVertex2016);
         
         //Just in case you want to store it for debugging
         fEvSelCode = lSelection->GetEvSelCode();
-
+        
         //Determine Quantiles from calibration histogram
         TH1F *lThisCalibHisto = 0x0;
         TString lThisCalibHistoName;
@@ -1723,10 +1736,10 @@ void AliMultSelectionTask::UserExec(Option_t *)
                 lSelection->GetEstimator(iEst)->SetPercentile(lThisQuantile);
             }
         }
-
+        
         //=============================================================================
         // Fill in quick debug information (available in any execution)
-
+        
         Float_t lV0M = lSelection->GetMultiplicityPercentile("V0M");
         Float_t lV0A = lSelection->GetMultiplicityPercentile("V0A");
         Float_t lV0C = lSelection->GetMultiplicityPercentile("V0C");
@@ -1742,7 +1755,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
         Float_t lINELgtONEtracks = lSelection->GetMultiplicityPercentile("INELgtONETracks");
         Float_t lINELgtONEpart = -1.;
         if(fkDebugIsMC) lINELgtONEpart = lSelection->GetMultiplicityPercentile("INELgtONEParticles");
-
+        
         fHistQA_V0M -> Fill( lV0M );
         fHistQA_V0A -> Fill( lV0A );
         fHistQA_V0C -> Fill( lV0C );
@@ -1760,7 +1773,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
         fHistQA_TrackletsVsV0M -> Fill( lV0M, ltracklets );
         fHistQA_TrackletsVsCL0 -> Fill( lCL0, ltracklets );
         fHistQA_TrackletsVsCL1 -> Fill( lCL1, ltracklets );
-
+        
         lV0M = lSelection->GetMultiplicityPercentile("V0M",kTRUE);
         lV0A = lSelection->GetMultiplicityPercentile("V0A",kTRUE);
         lV0C = lSelection->GetMultiplicityPercentile("V0C",kTRUE);
@@ -1793,23 +1806,26 @@ void AliMultSelectionTask::UserExec(Option_t *)
         fHistQASelected_TrackletsVsCL1 -> Fill( lCL1, ltracklets );
         
         //Track momentum QA
-        for(Long_t itrack = 0; itrack<lVevent->GetNumberOfTracks(); itrack++) {
-            AliVTrack *track = lVevent -> GetVTrack( itrack );
-            if ( !track ) continue;
-            
-            //Only ITSsa tracks
-            if ( fTrackCutsITSsa2010 -> AcceptVTrack (track) ) {
-                fHistQASelected_PtITSsaVsV0M -> Fill( lV0M, track->Pt() );
-                fHistQASelected_PtITSsaVsCL0 -> Fill( lCL0, track->Pt() );
-                fHistQASelected_PtITSsaVsCL1 -> Fill( lCL1, track->Pt() );
+        //requires reco objects
+        if( !fkGeneratorOnly ){
+            for(Long_t itrack = 0; itrack<lVevent->GetNumberOfTracks(); itrack++) {
+                AliVTrack *track = lVevent -> GetVTrack( itrack );
+                if ( !track ) continue;
+                
+                //Only ITSsa tracks
+                if ( fTrackCutsITSsa2010 -> AcceptVTrack (track) ) {
+                    fHistQASelected_PtITSsaVsV0M -> Fill( lV0M, track->Pt() );
+                    fHistQASelected_PtITSsaVsCL0 -> Fill( lCL0, track->Pt() );
+                    fHistQASelected_PtITSsaVsCL1 -> Fill( lCL1, track->Pt() );
+                }
+                
+                if ( !fTrackCutsGlobal2015 -> AcceptVTrack (track) ) continue;
+                
+                //Only for accepted tracks
+                fHistQASelected_PtGlobalVsV0M -> Fill( lV0M, track->Pt() );
+                fHistQASelected_PtGlobalVsCL0 -> Fill( lCL0, track->Pt() );
+                fHistQASelected_PtGlobalVsCL1 -> Fill( lCL1, track->Pt() );
             }
-            
-            if ( !fTrackCutsGlobal2015 -> AcceptVTrack (track) ) continue;
-            
-            //Only for accepted tracks
-            fHistQASelected_PtGlobalVsV0M -> Fill( lV0M, track->Pt() );
-            fHistQASelected_PtGlobalVsCL0 -> Fill( lCL0, track->Pt() );
-            fHistQASelected_PtGlobalVsCL1 -> Fill( lCL1, track->Pt() );
         }
         
         fHistQASelected_NTracksGlobalVsV0M -> Fill( lV0M, fNTracksGlobal2015->GetValueInteger() );
@@ -1830,7 +1846,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
         // reset procedure, so in case the object has disappeared, we
         // need to re-add it.  This is particulary needed on Proof(Lite)
         AliVEvent*        input = InputEvent();
-
+        
         //=============================================================================
         //if on-the-fly AOD generation, save AliMultSelection also there, please!
         AliVEventHandler *lhandler = 0x0;
@@ -1852,7 +1868,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
             }
         }
         //=============================================================================
-
+        
         TObject*          outO  = input->FindListObject(fStoredObjectName.Data());
         AliMultSelection* outS  = 0;
         if (!outO) {
@@ -1882,7 +1898,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
             if( fRand->Uniform() < fDownscaleFactor ) fTreeEvent->Fill() ;
         }
     }
-
+    
     // Post output data.
     PostData(1, fListHist);
     if ( fkCalibration ) PostData(2, fTreeEvent);
@@ -1893,23 +1909,23 @@ void AliMultSelectionTask::Terminate(Option_t *)
 {
     // Draw result to the screen
     // Called once at the end of the query
-
+    
     TList *cRetrievedList = 0x0;
     cRetrievedList = (TList*)GetOutputData(1);
     if(!cRetrievedList) {
         Printf("ERROR - AliMultSelectionTask : ouput data container list not available\n");
         return;
     }
-
+    
     fHistEventCounter = dynamic_cast<TH1D*> (  cRetrievedList->FindObject("fHistEventCounter")  );
     if (!fHistEventCounter) {
         Printf("ERROR - AliMultSelectionTask : fHistEventCounter not available");
         return;
     }
-
+    
     TCanvas *canCheck = new TCanvas("AliMultSelectionTaskQA","Event Counters",10,10,510,510);
     canCheck->cd(1)->SetLogy();
-
+    
     fHistEventCounter->SetMarkerStyle(22);
     fHistEventCounter->DrawCopy("E");
 }
@@ -1918,53 +1934,53 @@ void AliMultSelectionTask::Terminate(Option_t *)
 Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
 {
     // Setup files for run
-
+    
     if (!esd)
         return -1;
-
+    
     // check if something to be done
     if (fCurrentRun == esd->GetRunNumber())
         return 0;
     else
         fCurrentRun = esd->GetRunNumber();
     AliInfoF("Detected run number: %i",fCurrentRun);
-
+    
     TString lPathInput = CurrentFileName();
     
-   
-
+    
+    
     //Autodetect Period Name
     TString lPeriodName     = GetPeriodNameByRunNumber();
     AliWarning("Autodetecting production name via LPM tag...");
     TString lProductionName = GetPeriodNameByLPM("LPMProductionTag");
     if( lProductionName.EqualTo("") ){
-	AliWarning("LPM Tag didn't work, autodetecting via path..."); 
-	lProductionName = GetPeriodNameByPath( lPathInput );
-	if (!lProductionName.Contains("LHC")){
-	   AliWarning("Autodetect via path seems to not have worked?"); 
-	}
+        AliWarning("LPM Tag didn't work, autodetecting via path...");
+        lProductionName = GetPeriodNameByPath( lPathInput );
+        if (!lProductionName.Contains("LHC")){
+            AliWarning("Autodetect via path seems to not have worked?");
+        }
     }
     //Autodetecting event type
     TString lEventType = GetPeriodNameByLPM("LPMInteractionType");
     if( lEventType.EqualTo("") ){
-	AliWarning("LPM Tag didn't work for collision type, set from period name..."); 
-	if(lPeriodName.EqualTo("LHC13b") || lPeriodName.EqualTo("LHC13c") ||
-	   lPeriodName.EqualTo("LHC13d") || lPeriodName.EqualTo("LHC13e") ||	   
-	   lPeriodName.EqualTo("LHC13f") ||
-	   lPeriodName.EqualTo("LHC16q") || lPeriodName.EqualTo("LHC16r") ||
-	   lPeriodName.EqualTo("LHC16s") || lPeriodName.EqualTo("LHC16t")){
-	  lEventType="pA";
-	}else if(lPeriodName.EqualTo("LHC10h") || lPeriodName.EqualTo("LHC11h") ||
-		 lPeriodName.EqualTo("LHC15o")){
-	  lEventType="PbPb";
-	}else{
-	  lEventType="pp";
-	}
+        AliWarning("LPM Tag didn't work for collision type, set from period name...");
+        if(lPeriodName.EqualTo("LHC13b") || lPeriodName.EqualTo("LHC13c") ||
+           lPeriodName.EqualTo("LHC13d") || lPeriodName.EqualTo("LHC13e") ||
+           lPeriodName.EqualTo("LHC13f") ||
+           lPeriodName.EqualTo("LHC16q") || lPeriodName.EqualTo("LHC16r") ||
+           lPeriodName.EqualTo("LHC16s") || lPeriodName.EqualTo("LHC16t")){
+            lEventType="pA";
+        }else if(lPeriodName.EqualTo("LHC10h") || lPeriodName.EqualTo("LHC11h") ||
+                 lPeriodName.EqualTo("LHC15o")){
+            lEventType="PbPb";
+        }else{
+            lEventType="pp";
+        }
     }
     //For now: very trivial way of storing event type
     TString lHistTitle = Form("Event type: %s",lEventType.Data());
     lHistTitle.Append(Form(", Production name: %s",lProductionName.Data()));
- 
+    
     AliWarning("==================================================");
     AliWarning(Form(" Event type: %s",lEventType.Data()));
     AliWarning(Form(" Period Name (by run number)....: %s", lPeriodName.Data()));
@@ -2036,11 +2052,11 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         AliWarning(" care if you really need the same <Nch> as in data! ") ;
         AliWarning("==================================================");
     }
-
+    
     //Determine location of file to open: default OADB
     TString fileName = (Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), lPeriodName.Data() ));
     AliInfo(Form("Setup Multiplicity Selection for run %d with file %s, period: %s\n",fCurrentRun,fileName.Data(),lPeriodName.Data()));
-
+    
     TString lOADBref = lPeriodName.Data();
     
     //Full Manual Bypass Mode (DEBUG ONLY)
@@ -2052,11 +2068,11 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         //If bypassed, pass info
         lOADBref = Form("BYPASS: %s", fAlternateOADBFullManualBypass.Data());
     }
-
+    
     //Open File without calling InitFromFile, don't load it all!
     TFile * foadb = TFile::Open(fileName);
     if(!foadb->IsOpen()) AliFatal(Form("Cannot open OADB file %s", fileName.Data()));
-
+    
     //Managed to open, save name of opened OADB file
     lHistTitle.Append(Form(", OADB: %s",lOADBref.Data()));
     
@@ -2065,9 +2081,9 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     
     //Get Object for this run!
     TObject *lObjAcquired = 0x0;
-
+    
     lObjAcquired = MultContainer->GetObject(fCurrentRun, "Default");
-
+    
     if (!lObjAcquired) {
         if ( fkUseDefaultCalib ) {
             AliWarning("======================================================================");
@@ -2092,15 +2108,15 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         // This should not happen...
         AliFatal("Really cannot find any OADB object - giving up!");
     }
-
+    
     AliOADBMultSelection *lObjTypecast = (AliOADBMultSelection*) lObjAcquired;
-
+    
     fOadbMultSelection = new AliOADBMultSelection(*lObjTypecast);
     // De-couple histograms from the underlying file
     fOadbMultSelection->Dissociate();
     // Update cache map from estimator to histogram for fast look-up
     fOadbMultSelection->Setup();
-
+    
     //Make sure naming convention is followed!
     AliMultSelection* sel = fOadbMultSelection->GetMultSelection();
     if (sel) {
@@ -2116,7 +2132,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         //If bypassed, pass info
         AliWarning( Form("MC-BYPASS confirmation: %s", fAlternateOADBForEstimators.Data()) );
     }
-
+    
     //=====================================================================
     //Option to override estimators from alternate oadb file
     if ( (fAlternateOADBForEstimators.EqualTo("")==kFALSE && fAlternateOADBFullManualBypass.EqualTo("")==kTRUE ) ||
@@ -2124,21 +2140,21 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         ) {
         AliWarning("Extra option detected: Load estimators from OADB file called: ");
         AliWarning(Form(" path: %s", fAlternateOADBForEstimators.Data() ));
-
+        
         TString lmuOADBref = fAlternateOADBForEstimators.Data();
         
         TString fileNameAlter =(Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), fAlternateOADBForEstimators.Data() ));
-
+        
         /*
-        //Full Manual Bypass Mode (DEBUG ONLY)
-        if ( fAlternateOADBFullManualBypassMC.EqualTo("")==kFALSE ) {
-            AliWarning(" Extra option detected: FULL MANUAL BYPASS of MONTE CARLO OADB Location ");
-            AliWarning(" --- Warning: Use with care ---");
-            AliWarning(Form(" New complete path: %s", fAlternateOADBFullManualBypassMC.Data() ));
-            fileNameAlter = Form("%s", fAlternateOADBFullManualBypassMC.Data() );
-            //If bypassed, pass info
-            lmuOADBref = Form("MC-BYPASS: %s", fAlternateOADBFullManualBypassMC.Data());
-        }
+         //Full Manual Bypass Mode (DEBUG ONLY)
+         if ( fAlternateOADBFullManualBypassMC.EqualTo("")==kFALSE ) {
+         AliWarning(" Extra option detected: FULL MANUAL BYPASS of MONTE CARLO OADB Location ");
+         AliWarning(" --- Warning: Use with care ---");
+         AliWarning(Form(" New complete path: %s", fAlternateOADBFullManualBypassMC.Data() ));
+         fileNameAlter = Form("%s", fAlternateOADBFullManualBypassMC.Data() );
+         //If bypassed, pass info
+         lmuOADBref = Form("MC-BYPASS: %s", fAlternateOADBFullManualBypassMC.Data());
+         }
          */
         
         //Managed to open, save name of opened OADB file
@@ -2154,7 +2170,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         
         AliOADBContainer * MultContainerAlter = (AliOADBContainer*) foadbAlter->Get("MultSel");
         if(!MultContainerAlter) AliFatal(Form("OADB file %s does not contain OADBContainer named MultSel, stopping here", fileNameAlter.Data()));
-
+        
         //Get Object for this run
         TObject *lObjAcquiredAlter = 0x0;
         lObjAcquiredAlter = MultContainerAlter->GetObject(fCurrentRun, "Default");
@@ -2181,12 +2197,12 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
             // This should not happen...
             AliFatal("Really cannot find any OADB object - giving up!");
         }
-
+        
         //Actually, it's not required that we keep a copy of this object in memory. We only need to grab
         //the definitions... This can be much optimized!
         AliOADBMultSelection *fOadbMultSelectionAlter = (AliOADBMultSelection*) lObjAcquiredAlter;
         AliMultSelection* selAlter = fOadbMultSelectionAlter->GetMultSelection();
-
+        
         //Sweep all estimators from standard OADB and replace their definitions...
         TString lTempStr;
         for(Int_t iEst=0; iEst<sel->GetNEstimators(); iEst++) {
@@ -2203,13 +2219,13 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         //That should be it...
     }
     //=====================================================================
-
+    
     if (sel) {
         sel->SetName(fStoredObjectName.Data());
         //Optimize evaluation
         sel->Setup(fInput);
     }
-
+    
     AliInfo("---> Successfully set up! Inspect MultSelection:");
     if (sel) {
         sel->PrintInfo();
@@ -2259,13 +2275,13 @@ Bool_t AliMultSelectionTask::IsINELgtZERO(AliVEvent *event)
     else if (event->InheritsFrom("AliAODEvent")) {
         AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(event);
         if (!aodevent) return kFALSE;
-
+        
         //FIXME --- Actually, here we can come up with a workaround.
         // We can check for the reference multiplicity stored and look for error codes!
-
+        
         AliAODHeader * header = dynamic_cast<AliAODHeader*>(aodevent->GetHeader());
         Int_t lStoredRefMult = header->GetRefMultiplicityComb08();
-
+        
         //Get Multiplicity object
         AliAODTracklets *spdmult = aodevent->GetMultiplicity();
         for (Int_t i=0; i<spdmult->GetNumberOfTracklets(); ++i)
@@ -2308,20 +2324,20 @@ Bool_t AliMultSelectionTask::HasNoInconsistentSPDandTrackVertices(AliVEvent *eve
 {
     //It's consistent until proven otherwise...
     Bool_t lReturnValue = kTRUE;
-
+    
     //Getting around to the best vertex -> typecast to ESD/AOD
-
-
+    
+    
     /* get ESD vertex */
     if (event->InheritsFrom("AliESDEvent")) {
         AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(event);
         if (!esdevent) return kFALSE;
         const AliESDVertex *lPrimaryVtxSPD    = NULL;
         const AliESDVertex *lPrimaryVtxTracks = NULL;
-
+        
         lPrimaryVtxSPD    = esdevent->GetPrimaryVertexSPD   ();
         lPrimaryVtxTracks = esdevent->GetPrimaryVertexTracks();
-
+        
         //Only continue if track vertex defined
         if( lPrimaryVtxTracks->GetStatus() && lPrimaryVtxSPD->GetStatus() ) {
             //Copy-paste from refmult estimator
@@ -2336,7 +2352,7 @@ Bool_t AliMultSelectionTask::HasNoInconsistentSPDandTrackVertices(AliVEvent *eve
     else if (event->InheritsFrom("AliAODEvent")) {
         AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(event);
         if (!aodevent) return kFALSE;
-
+        
         //FIXME - Hack to deal with the fact that no
         //        AliAODEvent::GetPrimaryVertexTracks() exists...
         AliAODHeader * header = dynamic_cast<AliAODHeader*>(aodevent->GetHeader());
@@ -2354,11 +2370,11 @@ Bool_t AliMultSelectionTask::IsNotAsymmetricInVZERO(AliVEvent* event)
 {
     //Be optimistic: life is good until proven otherwise...
     Bool_t isEventSelected = kTRUE; // or other event cuts
-
+    
     AliVVZERO* vzero = event->GetVZEROData();
     Double_t v0c012 = vzero->GetMRingV0C(0) + vzero->GetMRingV0C(1) + vzero->GetMRingV0C(2);
     Double_t v0c3   = vzero->GetMRingV0C(3);
-
+    
     isEventSelected &= vzero->GetMTotV0C() < (330. + 100. * TMath::Power(vzero->GetMTotV0A(), .2));
     isEventSelected &= (v0c012 < 160.) || (v0c3 > 12.*TMath::Power(.01*(v0c012 - 160.), 1.7));
     return isEventSelected;
@@ -2371,14 +2387,14 @@ Bool_t AliMultSelectionTask::IsNotIncompleteDAQ(AliVEvent* event)
 {
     //Be optimistic: life is good until proven otherwise...
     Bool_t isEventSelected = kTRUE; // or other event cuts
-
+    
     if (event->InheritsFrom("AliESDEvent")) {
         AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(event);
-        if ( esdevent -> IsIncompleteDAQ() ) isEventSelected = kFALSE; 
+        if ( esdevent -> IsIncompleteDAQ() ) isEventSelected = kFALSE;
     }
     /* get AOD vertex */
     else if (event->InheritsFrom("AliAODEvent")) {
-	//PROBLEM: This does not exist for AODs 
+        //PROBLEM: This does not exist for AODs
     }
     return isEventSelected;
 }
@@ -2392,21 +2408,21 @@ Bool_t AliMultSelectionTask::IsNotPileupSPDInMultBins(AliVEvent *event)
     if (event->InheritsFrom("AliESDEvent")) {
         AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(event);
         if (!esdevent) return kFALSE;
-
+        
         //return kTRUE in case no AliMultiplicity object is present!
         //Warning: this essentially means pileup went unchecked!
         if ( !(esdevent->GetMultiplicity()) ) return kTRUE;
-
+        
         if ( esdevent->IsPileupFromSPDInMultBins() == kTRUE ) lReturnValue = kFALSE;
     }
     else if (event->InheritsFrom("AliAODEvent")) {
         AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(event);
         if (!aodevent) return kFALSE;
-
+        
         //return kTRUE in case no AliMultiplicity object is present!
         //Warning: this essentially means pileup went unchecked!
         if ( !(aodevent->GetTracklets()) ) return kTRUE;
-
+        
         if ( aodevent->IsPileupFromSPDInMultBins() == kTRUE ) lReturnValue = kFALSE;
     }
     return lReturnValue;
@@ -2481,7 +2497,7 @@ TString AliMultSelectionTask::GetPeriodNameByLPM(TString lTag)
     // Setup initial Info
     Bool_t lLocated = kFALSE;
     TString lProductionName = "";
-
+    
     //==================================
     // Get alirootVersion object title
     AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -2525,7 +2541,7 @@ TString AliMultSelectionTask::GetPeriodNameByPath(const TString lPath) const
     //This has to load different settings in case the period name
     //refers to a Monte Carlo production.
     //============================================================
-
+    
     //==================================
     // Setup initial Info
     TString lProductionName = lPath.Data();
@@ -2534,21 +2550,21 @@ TString AliMultSelectionTask::GetPeriodNameByPath(const TString lPath) const
     //==================================
     // Get Production name
     Long_t iOcurrence = 0;
-
+    
     // 1) Check first occurence of LHC
     iOcurrence = lProductionName.Index("LHC");
-
+    
     // 2) Remove Anything prior to this, please
     lProductionName.Remove(0,iOcurrence);
-
+    
     // 3) Check first occurrence of "/" and strip
     iOcurrence = lProductionName.Index("/");
     lProductionName.Remove(iOcurrence, lProductionName.Length() );
-
+    
     // 4) Check first occurrence of "__" (LEGO Train Executions)
     iOcurrence = lProductionName.Index("__");
     lProductionName.Remove(iOcurrence, lProductionName.Length() );
-
+    
     //======================================================================
     //
     // --> More checks to be added for generality ?
@@ -2562,7 +2578,7 @@ TString AliMultSelectionTask::GetPeriodNameByPath(const TString lPath) const
     //     or MC (e.g. LHC15k1_plus) and all will be fine...
     //
     //======================================================================
-
+    
     return lProductionName;
 }
 //______________________________________________________________________
@@ -2576,19 +2592,19 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
     // N.B. This will require some bookkeeping of all enabled productions
     //
     //============================================================
-
+    
     //Will make anything return AliMultSelectionCuts::kNoCalib
     TString lProductionName = "Empty";
-
+    
     //Registered Productions : Run 1 pp
     if ( fCurrentRun >= 114751 && fCurrentRun <= 117222 ) lProductionName = "LHC10b";
     if ( fCurrentRun >= 118903 && fCurrentRun <= 120829 ) lProductionName = "LHC10c";
     if ( fCurrentRun >= 122374 && fCurrentRun <= 126437 ) lProductionName = "LHC10d";
     if ( fCurrentRun >= 127712 && fCurrentRun <= 130840 ) lProductionName = "LHC10e";
-
+    
     //Registered Productions : Run 1 Pb-Pb
     if ( fCurrentRun >= 136851 && fCurrentRun <= 139517 ) lProductionName = "LHC10h";
-
+    
     //Registered Productions : Run 2 pp
     if ( fCurrentRun >= 225000 && fCurrentRun <= 226606 ) lProductionName = "LHC15f";
     if ( fCurrentRun >= 232914 && fCurrentRun <= 234050 ) lProductionName = "LHC15h";
@@ -2610,30 +2626,30 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
     if ( fCurrentRun >= 260218 && fCurrentRun <= 260647 ) lProductionName = "LHC16m";
     if ( fCurrentRun >= 262395 && fCurrentRun <= 264035 ) lProductionName = "LHC16o";
     if ( fCurrentRun >= 264076 && fCurrentRun <= 264347 ) lProductionName = "LHC16p";
-
+    
     //2017
     if ( fCurrentRun >= 270531 && fCurrentRun <= 270667 ) lProductionName = "LHC17c";
     if ( fCurrentRun >= 270822 && fCurrentRun <= 270830 ) lProductionName = "LHC17e";
     if ( fCurrentRun >= 270854 && fCurrentRun <= 270865 ) lProductionName = "LHC17f";
     if ( fCurrentRun >= 270882 && fCurrentRun <= 271777 ) lProductionName = "LHC17g";
     if ( fCurrentRun >= 271868 && fCurrentRun <= 273103 ) lProductionName = "LHC17h";
-    if ( fCurrentRun >= 273591 && fCurrentRun <= 274442 ) lProductionName = "LHC17i"; 
+    if ( fCurrentRun >= 273591 && fCurrentRun <= 274442 ) lProductionName = "LHC17i";
     if ( fCurrentRun >= 274593 && fCurrentRun <= 274671 ) lProductionName = "LHC17j";
     if ( fCurrentRun >= 274690 && fCurrentRun <= 276508 ) lProductionName = "LHC17k";
-    if ( fCurrentRun >= 276551 && fCurrentRun <= 278216 ) lProductionName = "LHC17l"; 
-    if ( fCurrentRun >= 278914 && fCurrentRun <= 280140 ) lProductionName = "LHC17m"; 
-    if ( fCurrentRun >= 280282 && fCurrentRun <= 281961 ) lProductionName = "LHC17o"; 
-    if ( fCurrentRun >= 282008 && fCurrentRun <= 282343 ) lProductionName = "LHC17p"; 
-    if ( fCurrentRun >= 282365 && fCurrentRun <= 282367 ) lProductionName = "LHC17q"; 
-    if ( fCurrentRun >= 282504 && fCurrentRun <= 282704 ) lProductionName = "LHC17r"; 
-
+    if ( fCurrentRun >= 276551 && fCurrentRun <= 278216 ) lProductionName = "LHC17l";
+    if ( fCurrentRun >= 278914 && fCurrentRun <= 280140 ) lProductionName = "LHC17m";
+    if ( fCurrentRun >= 280282 && fCurrentRun <= 281961 ) lProductionName = "LHC17o";
+    if ( fCurrentRun >= 282008 && fCurrentRun <= 282343 ) lProductionName = "LHC17p";
+    if ( fCurrentRun >= 282365 && fCurrentRun <= 282367 ) lProductionName = "LHC17q";
+    if ( fCurrentRun >= 282504 && fCurrentRun <= 282704 ) lProductionName = "LHC17r";
+    
     //2018
-    if ( fCurrentRun >= 285008 && fCurrentRun <= 285447 ) lProductionName = "LHC18b"; 
-    if ( fCurrentRun >= 285466 && fCurrentRun <= 285958 ) lProductionName = "LHC18c"; 
-    if ( fCurrentRun >= 285978 && fCurrentRun <= 286350 ) lProductionName = "LHC18d"; 
-    if ( fCurrentRun >= 286380 && fCurrentRun <= 286937 ) lProductionName = "LHC18e"; 
-    if ( fCurrentRun >= 287000 && fCurrentRun <= 287977 ) lProductionName = "LHC18f"; 
-    if ( fCurrentRun >= 288619 && fCurrentRun <= 288750 ) lProductionName = "LHC18g"; 
+    if ( fCurrentRun >= 285008 && fCurrentRun <= 285447 ) lProductionName = "LHC18b";
+    if ( fCurrentRun >= 285466 && fCurrentRun <= 285958 ) lProductionName = "LHC18c";
+    if ( fCurrentRun >= 285978 && fCurrentRun <= 286350 ) lProductionName = "LHC18d";
+    if ( fCurrentRun >= 286380 && fCurrentRun <= 286937 ) lProductionName = "LHC18e";
+    if ( fCurrentRun >= 287000 && fCurrentRun <= 287977 ) lProductionName = "LHC18f";
+    if ( fCurrentRun >= 288619 && fCurrentRun <= 288750 ) lProductionName = "LHC18g";
     if ( fCurrentRun >= 288804 && fCurrentRun <= 288806 ) lProductionName = "LHC18h";
     
     //Registered Productions : Run 2 Pb-Pb
@@ -2704,25 +2720,25 @@ TString AliMultSelectionTask::GetSystemTypeByRunNumber() const
     if ( fCurrentRun >= 270854 && fCurrentRun <= 270865 ) lSystemType = "pp";
     if ( fCurrentRun >= 270882 && fCurrentRun <= 271777 ) lSystemType = "pp";
     if ( fCurrentRun >= 271868 && fCurrentRun <= 273103 ) lSystemType = "pp";
-    if ( fCurrentRun >= 273591 && fCurrentRun <= 274442 ) lSystemType = "pp"; 
+    if ( fCurrentRun >= 273591 && fCurrentRun <= 274442 ) lSystemType = "pp";
     if ( fCurrentRun >= 274593 && fCurrentRun <= 274671 ) lSystemType = "pp";
     if ( fCurrentRun >= 274690 && fCurrentRun <= 276508 ) lSystemType = "pp";
-    if ( fCurrentRun >= 276551 && fCurrentRun <= 278216 ) lSystemType = "pp"; 
-    if ( fCurrentRun >= 278914 && fCurrentRun <= 280140 ) lSystemType = "pp"; 
-    if ( fCurrentRun >= 280282 && fCurrentRun <= 281961 ) lSystemType = "pp"; 
-    if ( fCurrentRun >= 282008 && fCurrentRun <= 282343 ) lSystemType = "pp"; 
-    if ( fCurrentRun >= 282365 && fCurrentRun <= 282367 ) lSystemType = "pp"; 
-    if ( fCurrentRun >= 282504 && fCurrentRun <= 282704 ) lSystemType = "pp"; 
-
+    if ( fCurrentRun >= 276551 && fCurrentRun <= 278216 ) lSystemType = "pp";
+    if ( fCurrentRun >= 278914 && fCurrentRun <= 280140 ) lSystemType = "pp";
+    if ( fCurrentRun >= 280282 && fCurrentRun <= 281961 ) lSystemType = "pp";
+    if ( fCurrentRun >= 282008 && fCurrentRun <= 282343 ) lSystemType = "pp";
+    if ( fCurrentRun >= 282365 && fCurrentRun <= 282367 ) lSystemType = "pp";
+    if ( fCurrentRun >= 282504 && fCurrentRun <= 282704 ) lSystemType = "pp";
+    
     //2018
-    if ( fCurrentRun >= 285008 && fCurrentRun <= 285447 ) lSystemType = "pp"; 
-    if ( fCurrentRun >= 285466 && fCurrentRun <= 285958 ) lSystemType = "pp"; 
-    if ( fCurrentRun >= 285978 && fCurrentRun <= 286350 ) lSystemType = "pp"; 
-    if ( fCurrentRun >= 286380 && fCurrentRun <= 286937 ) lSystemType = "pp"; 
-    if ( fCurrentRun >= 287000 && fCurrentRun <= 287977 ) lSystemType = "pp"; 
+    if ( fCurrentRun >= 285008 && fCurrentRun <= 285447 ) lSystemType = "pp";
+    if ( fCurrentRun >= 285466 && fCurrentRun <= 285958 ) lSystemType = "pp";
+    if ( fCurrentRun >= 285978 && fCurrentRun <= 286350 ) lSystemType = "pp";
+    if ( fCurrentRun >= 286380 && fCurrentRun <= 286937 ) lSystemType = "pp";
+    if ( fCurrentRun >= 287000 && fCurrentRun <= 287977 ) lSystemType = "pp";
     if ( fCurrentRun >= 288619 && fCurrentRun <= 288750 ) lSystemType = "pp";
     if ( fCurrentRun >= 288804 && fCurrentRun <= 288806 ) lSystemType = "pp";
-
+    
     //Registered Productions : Run 2 Pb-Pb
     if ( fCurrentRun >= 243395 && fCurrentRun <= 243984 ) lSystemType = "Pb-Pb";
     if ( fCurrentRun >= 244917 && fCurrentRun <= 246994 ) lSystemType = "Pb-Pb";
@@ -2748,20 +2764,20 @@ TString AliMultSelectionTask::GetExceptionMapping( TString lProductionName ) con
     //This will capture only productions for which manual intervention
     //has been coded right here! And yes, this is an ugly hack :-(
     
-    TString lReturnString = ""; //I don't know of this exception, return empty 
+    TString lReturnString = ""; //I don't know of this exception, return empty
     
     if ( lProductionName.Contains("LHC17g8a") ) lReturnString = "LHC16q-DefaultMC-EPOSLHC";
     if ( lProductionName.Contains("LHC17g8b") ) lReturnString = "LHC16r-DefaultMC-EPOSLHC";
     if ( lProductionName.Contains("LHC17g8c") ) lReturnString = "LHC16s-DefaultMC-EPOSLHC";
     if ( lProductionName.Contains("LHC17g8a") ) lReturnString = "LHC16t-DefaultMC-EPOSLHC";
-
+    
     if ( lProductionName.Contains("LHC17d13") || lProductionName.Contains("LHC17d15") ) {
         if ( fCurrentRun >= 265115 && fCurrentRun <= 265525 ) lReturnString = "LHC16q-DefaultMC-EPOSLHC";
         if ( fCurrentRun >= 267161 && fCurrentRun <= 267166 ) lReturnString = "LHC16t-DefaultMC-EPOSLHC";
     }
-   
-   //Header mistakes
-   if ( lProductionName.EqualTo("LHC17i2a") ) lReturnString = "LHC17i2";
+    
+    //Header mistakes
+    if ( lProductionName.EqualTo("LHC17i2a") ) lReturnString = "LHC17i2";
     
     return lReturnString;
 }
@@ -2769,9 +2785,9 @@ TString AliMultSelectionTask::GetExceptionMapping( TString lProductionName ) con
 //______________________________________________________________________
 Bool_t AliMultSelectionTask::CheckOADB(TString lProdName) const { 
     //This helper function checks if an OADB exists for the production named lProdName
-    //Determine file name 
+    //Determine file name
     TString fileName = Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), lProdName.Data() );
-
+    
     Bool_t lInverseThis = !gSystem->AccessPathName(fileName.Data());
     return lInverseThis;
 }
@@ -2802,16 +2818,16 @@ Bool_t AliMultSelectionTask::IsHijing() const {
 //______________________________________________________________________
 Bool_t AliMultSelectionTask::IsDPMJet() const { 
     //Function to check if this is DPMJet
-        Bool_t lReturnValue = kFALSE;
-        AliMCEvent*  mcEvent = MCEvent();
-        if (mcEvent) {
-            AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
-            if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
-                //DPMJet Header is there!
-                lReturnValue = kTRUE;
-            }
+    Bool_t lReturnValue = kFALSE;
+    AliMCEvent*  mcEvent = MCEvent();
+    if (mcEvent) {
+        AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
+        if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
+            //DPMJet Header is there!
+            lReturnValue = kTRUE;
         }
-        return lReturnValue;
+    }
+    return lReturnValue;
 }
 
 //______________________________________________________________________
@@ -2842,7 +2858,7 @@ void AliMultSelectionTask::CreateEmptyOADB()
     fOadbMultSelection = new AliOADBMultSelection();
     AliMultSelectionCuts *cuts              = new AliMultSelectionCuts(); //irrelevant
     AliMultSelection *fsels                 = new AliMultSelection    (); //is empty, will return kNoCalib always
-
+    
     fOadbMultSelection->SetEventCuts        ( cuts  );
     fOadbMultSelection->SetMultSelection    ( fsels );
 }
