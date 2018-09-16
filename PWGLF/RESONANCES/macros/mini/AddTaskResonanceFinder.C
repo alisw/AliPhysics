@@ -1032,10 +1032,14 @@ Bool_t Config_k0phi(
   Float_t k0s_pLife=20.;
   Float_t k0s_radiuslow=0.5;
   Float_t k0s_radiushigh=200.;
-  Float_t k0s_massTol=0.02;
+  Float_t k0s_massTolSigma=4;
+  Int_t   k0s_massTolID=0;
+  Float_t k0s_massTol=0.03;
   Float_t k0s_massTolVeto=0.004;
   Bool_t  k0sSwitch=kFALSE;
   Float_t k0sCosPoinAn=0.97;
+    
+  if(TrackCutsK0==1) k0s_massTolID=1;//use pT-dependent mass tolerance cut
     
   AliRsnCutV0* cutK0s=new AliRsnCutV0("cutK0s",kK0Short,AliPID::kPion,AliPID::kPion);
   cutK0s->SetPIDCutPion(k0s_piPIDCut);// PID for the pion daughters of K0S
@@ -1045,6 +1049,8 @@ Bool_t Config_k0phi(
   cutK0s->SetfLife(k0s_pLife);
   cutK0s->SetfLowRadius(k0s_radiuslow);
   cutK0s->SetfHighRadius(k0s_radiushigh);
+  cutK0s->SetpT_Tolerance(k0s_massTolID);
+  cutK0s->SetMassTolSigma(k0s_massTolSigma);
   cutK0s->SetTolerance(k0s_massTol);
   cutK0s->SetToleranceVeto(k0s_massTolVeto);//Rejection range for Competing V0 Rejection
   cutK0s->SetSwitch(k0sSwitch);
@@ -2836,7 +2842,7 @@ Bool_t Config_kxSigmastar(
     out->SetMotherPDG(3124);
     out->SetMotherMass(mass);
 
-    out->AddAxis(imID,260,1.7,3);// axis X: invmass or resolution
+    out->AddAxis(imID,240,1.8,3);// axis X: invmass or resolution
     //out->AddAxis(resID,200,-0.02,0.02);
     out->AddAxis(ptID,50,0.0,20.0);// axis Y: transverse momentum
     out->AddAxis(centID,nmult,multbins);// axis Z: centrality-multiplicity
@@ -2916,7 +2922,7 @@ Bool_t Config_k0Sigmastar(
 
   Double_t mass=0.497611+1.385;
 
-  Int_t V0Cuts=TrackCutsK;
+  Int_t K0sCuts=TrackCutsK;
 
   // selections for V0 daughters
   Int_t v0d_xrows=70;
@@ -2938,10 +2944,14 @@ Bool_t Config_k0Sigmastar(
   Float_t k0s_pLife=20.;
   Float_t k0s_radiuslow=0.5;
   Float_t k0s_radiushigh=200.;
-  Float_t k0s_massTol=0.02;
+  Float_t k0s_massTolSigma=4;
+  Int_t   k0s_massTolID=0;
+  Float_t k0s_massTol=0.03;
   Float_t k0s_massTolVeto=0.004;
   Bool_t  k0sSwitch=kFALSE;
   Float_t k0sCosPoinAn=0.97;
+    
+  if(K0sCuts==1) k0s_massTolID=1;//use pT-dependent mass tolerance cut
     
   AliRsnCutV0* cutK0s=new AliRsnCutV0("cutK0s",kK0Short,AliPID::kPion,AliPID::kPion);
   cutK0s->SetPIDCutPion(k0s_piPIDCut);// PID for the pion daughters of K0S
@@ -2951,6 +2961,8 @@ Bool_t Config_k0Sigmastar(
   cutK0s->SetfLife(k0s_pLife);
   cutK0s->SetfLowRadius(k0s_radiuslow);
   cutK0s->SetfHighRadius(k0s_radiushigh);
+  cutK0s->SetpT_Tolerance(k0s_massTolID);
+  cutK0s->SetMassTolSigma(k0s_massTolSigma);
   cutK0s->SetTolerance(k0s_massTol);
   cutK0s->SetToleranceVeto(k0s_massTolVeto);//Rejection range for Competing V0 Rejection
   cutK0s->SetSwitch(k0sSwitch);
@@ -3338,7 +3350,7 @@ Bool_t Config_k0Sigmastar(
     out->SetMotherPDG(3124);
     out->SetMotherMass(mass);
 
-    out->AddAxis(imID,260,1.7,3);// axis X: invmass or resolution
+    out->AddAxis(imID,240,1.8,3);// axis X: invmass or resolution
     //out->AddAxis(resID,200,-0.02,0.02);
     out->AddAxis(ptID,50,0.0,20.0);// axis Y: transverse momentum
     out->AddAxis(centID,nmult,multbins);// axis Z: centrality-multiplicity
@@ -3886,7 +3898,7 @@ Bool_t Config_kstar0Sigmastar(
     out->SetMotherPDG(3124);
     out->SetMotherMass(mass);
 
-    out->AddAxis(imID,570,2.36,3.5);// axis X: invmass or resolution
+    out->AddAxis(imID,280,2.1,3.5);// axis X: invmass or resolution
     //out->AddAxis(resID,200,-0.02,0.02);
     out->AddAxis(ptID,50,0.0,20.0);// axis Y: transverse momentum
     out->AddAxis(centID,nmult,multbins);// axis Z: centrality-multiplicity
@@ -4036,7 +4048,7 @@ Bool_t Config_kstarxSigmastar(
   // set cuts for K0S from K*
 
   Int_t SidebandKstar=(TrackCutsK/10000)%10;
-  Int_t V0Cuts=TrackCutsK%10000;
+  Int_t K0sCuts=TrackCutsK%10000;
 
   // selections for V0 daughters
   Int_t v0d_xrows=70;
@@ -4058,11 +4070,15 @@ Bool_t Config_kstarxSigmastar(
   Float_t k0s_pLife=20.;
   Float_t k0s_radiuslow=0.5;
   Float_t k0s_radiushigh=200.;
-  Float_t k0s_massTol=0.02;
+  Float_t k0s_massTolSigma=4;
+  Int_t   k0s_massTolID=0;
+  Float_t k0s_massTol=0.03;
   Float_t k0s_massTolVeto=0.004;
   Bool_t  k0sSwitch=kFALSE;
   Float_t k0sCosPoinAn=0.97;
     
+  if(K0sCuts==1) k0s_massTolID=1;//use pT-dependent mass tolerance cut
+
   AliRsnCutV0* cutK0s=new AliRsnCutV0("cutK0s",kK0Short,AliPID::kPion,AliPID::kPion);
   cutK0s->SetPIDCutPion(k0s_piPIDCut);// PID for the pion daughters of K0S
   cutK0s->SetESDtrackCuts(esdTrackCuts);// all the other selections (defined above) for pion daughters of K0S
@@ -4071,6 +4087,8 @@ Bool_t Config_kstarxSigmastar(
   cutK0s->SetfLife(k0s_pLife);
   cutK0s->SetfLowRadius(k0s_radiuslow);
   cutK0s->SetfHighRadius(k0s_radiushigh);
+  cutK0s->SetpT_Tolerance(k0s_massTolID);
+  cutK0s->SetMassTolSigma(k0s_massTolSigma);
   cutK0s->SetTolerance(k0s_massTol);
   cutK0s->SetToleranceVeto(k0s_massTolVeto);//Rejection range for Competing V0 Rejection
   cutK0s->SetSwitch(k0sSwitch);
@@ -4084,6 +4102,8 @@ Bool_t Config_kstarxSigmastar(
   Int_t iCutK0s=task->AddTrackCuts(cutSetK0s);
 
   // set cuts for Lambda from Sigma*
+    
+  Int_t LambdaCuts=TrackCutsS%10000;
 
   // selections for Lambda
   Float_t lambda_piPIDCut=5.;
@@ -4098,8 +4118,8 @@ Bool_t Config_kstarxSigmastar(
   Bool_t  lambdaSwitch=kFALSE;
   Float_t lambdaCosPoinAn=0.99;//0.995 for Lambda analysis
 
-  if(V0Cuts==1) lambdaDCA=1.e10;
-  else if(V0Cuts==2) lambdaDaughDCA=0.5;
+  if(LambdaCuts==1) lambdaDCA=1.e10;
+  else if(LambdaCuts==2) lambdaDaughDCA=0.5;
 
   // selections for the proton and pion daugthers of Lambda
 
@@ -4523,7 +4543,7 @@ Bool_t Config_kstarxSigmastar(
     out->SetMotherPDG(3124);
     out->SetMotherMass(mass);
 
-    out->AddAxis(imID,570,2.36,3.5);// axis X: invmass or resolution
+    out->AddAxis(imID,280,2.1,3.5);// axis X: invmass or resolution
     //out->AddAxis(resID,200,-0.02,0.02);
     out->AddAxis(ptID,50,0.0,20.0);// axis Y: transverse momentum
     out->AddAxis(centID,nmult,multbins);// axis Z: centrality-multiplicity
