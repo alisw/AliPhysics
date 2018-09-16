@@ -54,7 +54,7 @@ TGraph  * AliFFTsmoother::ReplaceOutlierFrequenciesMedian(TH1 *hinput, Double_t 
   ///  3.) Make a back FFT  transformation
   ///  4.) In case specified streamer dump intermediat results for the checking purposes
   TGraph grInput(hinput);
-  Int_t fftLength = hinput->GetNbinsX();  
+  Int_t fftLength = hinput->GetNbinsX();
   TH1D *hm = 0;
   TVirtualFFT::SetTransform(0);
   hm = (TH1D*)hinput->FFT(hm, "MAG");
@@ -90,13 +90,13 @@ TGraph  * AliFFTsmoother::ReplaceOutlierFrequenciesMedian(TH1 *hinput, Double_t 
     if (magMed[ipoint]>0){
       vecDiff[ipoint]=(magFull[ipoint]-magMed[ipoint]);
     }
-  }  
+  }
   for (Int_t ipoint=1; ipoint<fftLength/2-1; ipoint++){
     vecDiff[ipoint]= (magFull[ipoint]-(magMed[ipoint-1]+magMed[ipoint+1])*0.5);
   }
   //
   Double_t meanT, rmsT;
-  TStatToolkit::EvaluateUni(fftLength/2,vecDiff.GetMatrixArray(), meanT, rmsT,  0.95*(fftLength/2));  
+  TStatToolkit::EvaluateUni(fftLength/2,vecDiff.GetMatrixArray(), meanT, rmsT,  0.95*(fftLength/2));
   if (smoothSigma<=0){
     for (Int_t ipoint=0; ipoint<fftLength/2-1; ipoint++){
       reMod[ipoint]=reFull[ipoint];
@@ -104,8 +104,8 @@ TGraph  * AliFFTsmoother::ReplaceOutlierFrequenciesMedian(TH1 *hinput, Double_t 
       if (ipoint<lowBand) continue;
       if (ipoint>=fftLength/2-lowBand) continue;
       if (TMath::Abs(vecDiff[ipoint]-meanT)>rmsT*outlierCut){
-	reMod[ipoint]=magMed[ipoint]*TMath::Cos(phaseFull[ipoint]);
-	imMod[ipoint]=magMed[ipoint]*TMath::Sin(phaseFull[ipoint]);
+        reMod[ipoint]=magMed[ipoint]*TMath::Cos(phaseFull[ipoint]);
+        imMod[ipoint]=magMed[ipoint]*TMath::Sin(phaseFull[ipoint]);
       }
     }
   }else{
@@ -117,30 +117,30 @@ TGraph  * AliFFTsmoother::ReplaceOutlierFrequenciesMedian(TH1 *hinput, Double_t 
       //
       Double_t sumM=0, sumW=0;
       for (Int_t dpoint=-4.*smoothSigma; dpoint<4.*smoothSigma; dpoint++){
-	if (dpoint+ipoint<0) continue;
-	if (dpoint+ipoint>fftLength/2-1) continue;	
-	if (TMath::Abs(vecDiff[ipoint+ipoint]-meanT)>rmsT*outlierCut){
-	  continue;
-	}
-	Double_t w= TMath::Gaus(dpoint);
-	sumM+=magFull[ipoint+dpoint]*w;
-	sumW+=w;
+        if (dpoint+ipoint<0) continue;
+        if (dpoint+ipoint>fftLength/2-1) continue;
+        if (TMath::Abs(vecDiff[ipoint+ipoint]-meanT)>rmsT*outlierCut){
+          continue;
+        }
+        Double_t w= TMath::Gaus(dpoint);
+        sumM+=magFull[ipoint+dpoint]*w;
+        sumW+=w;
       }
       sumM/=sumW;
       reMod[ipoint]=sumM*TMath::Cos(phaseFull[ipoint]);
       imMod[ipoint]=sumM*TMath::Sin(phaseFull[ipoint]);
-    }    
+    }
   }
   //
   //   3.) Make a back FFT  transformation
   //
   TVirtualFFT *fft_back = TVirtualFFT::FFT(1, &fftLength, "C2R M K");
   fft_back->SetPointsComplex(reMod.GetMatrixArray(),imMod.GetMatrixArray());
-  fft_back->Transform();  
+  fft_back->Transform();
   TH1D *hb = 0;
   hb = (TH1D*)(TH1::TransformHisto(fft_back,hb,"Re"));
   hb->SetTitle("The backward transform result");
-  hb->Scale(1./Double_t(fftLength));    
+  hb->Scale(1./Double_t(fftLength));
   TGraph *grOutput = new TGraph(grInput);
   for (Int_t i=0; i<fftLength; i++){
     //hinput->SetBinContent(i, hb->GetBinContent(i-firstBin));
@@ -151,25 +151,101 @@ TGraph  * AliFFTsmoother::ReplaceOutlierFrequenciesMedian(TH1 *hinput, Double_t 
   //
   if (pcstream!=NULL){
     (*pcstream)<<"fft"<<
-      "hinput."<<hinput<<         // input histogram
-      "grInput.="<<&grInput<<     // input graph 
-      "grOutput.="<<grOutput<<    // output graph with removed outlier frequencies
-      //
-      "reFull.="<<&reFull<<       // fft real part for original graph
-      "imFull.="<<&imFull<<       // fft imaginary part for original graph
-      "reMod.="<<&reMod<<
-      "imMod.="<<&imMod<<
-      //
-      "magFull.="<<&magFull<<
-      "magMed.="<<&magMed<<
-      "vecDiff.="<<&vecDiff<<
-      //
-      "meanT="<<meanT<<          // mean difference
-      "rmsT="<<rmsT<<            // rms difference
-      "\n";
+               "hinput."<<hinput<<         // input histogram
+               "grInput.="<<&grInput<<     // input graph
+               "grOutput.="<<grOutput<<    // output graph with removed outlier frequencies
+               //
+               "reFull.="<<&reFull<<       // fft real part for original graph
+               "imFull.="<<&imFull<<       // fft imaginary part for original graph
+               "reMod.="<<&reMod<<
+               "imMod.="<<&imMod<<
+               //
+               "magFull.="<<&magFull<<
+               "magMed.="<<&magMed<<
+               "vecDiff.="<<&vecDiff<<
+               //
+               "meanT="<<meanT<<          // mean difference
+               "rmsT="<<rmsT<<            // rms difference
+               "\n";
   }
   delete hb;
-  return grOutput;  
+  return grOutput;
 }
 
+TGraph  * AliFFTsmoother::BandFilter(TH1 *hinput, Int_t lowBand, Int_t highBand, TTreeSRedirector * pcstream){
+  ///
+  ///   FFT smoothing algorithm. Transform input histogram removing outlier frequency
+  ///   Code used for the analysis of the CE electron transparency measurement
+  ///   authors: Marian + Mesut
+  ///   Current algorithm is sensitive to frequency "aliasing"
+  ///       see detailed discussin in the UnitTest routines
+  ///       parasitic frequency and input histogram binning should be in "sync"
+  ///       e.g having repetetive structure 4 bins nx4 bins hsould be used
+  ///
+  ///   Parameters:
+  ///   hinput              - input histogram
+  ///   pcstream            - ption to dump the intermedait results FFT into tree for further analysis
+  ///
+  /// Algorithm:
+  ///  1.) Make FFT of the input histogram
+  ///  2.) Replace frequencies in low->high band by 0 frequencies
+  ///  3.) Make a back FFT  transformation
+  ///  4.) In case specified streamer dump intermediate results for the checking purposes
+  TGraph grInput(hinput);
+  Int_t fftLength = hinput->GetNbinsX();
+  TH1D *hm = 0;
+  TVirtualFFT::SetTransform(0);
+  hm = (TH1D*)hinput->FFT(hm, "MAG");
+  hm->SetTitle("Magnitude of the 1st transform");
 
+  //
+  //   1.) Make FFT of the input histogram
+  //
+  TVirtualFFT *fft = TVirtualFFT::GetCurrentTransform();
+  TVectorD reFull(fftLength);
+  TVectorD imFull(fftLength);
+  TVectorD magFull(fftLength);
+  fft->GetPointsComplex(reFull.GetMatrixArray(),imFull.GetMatrixArray());
+  for (Int_t ipoint=1; ipoint<fftLength/2-1; ipoint++){
+    magFull[ipoint]=TMath::Sqrt(reFull[ipoint]*reFull[ipoint]+imFull[ipoint]*imFull[ipoint]);
+
+  }
+
+  //
+  //   2.) identify and replace  outlier frequencies
+  ///
+  for (Int_t ipoint=lowBand; ipoint<highBand; ipoint++) {
+    reFull[ipoint] = 0;
+    imFull[ipoint] = 0;
+  }
+  //
+  //   3.) Make a back FFT  transformation
+  //
+  TVirtualFFT *fft_back = TVirtualFFT::FFT(1, &fftLength, "C2R M K");
+  fft_back->SetPointsComplex(reFull.GetMatrixArray(),imFull.GetMatrixArray());
+  fft_back->Transform();
+  TH1D *hb = 0;
+  hb = (TH1D*)(TH1::TransformHisto(fft_back,hb,"Re"));
+  hb->SetTitle("The backward transform result");
+  hb->Scale(1./Double_t(fftLength));
+  TGraph *grOutput = new TGraph(grInput);
+  for (Int_t i=0; i<fftLength; i++){
+    //hinput->SetBinContent(i, hb->GetBinContent(i-firstBin));
+    grOutput->GetY()[i]=hb->GetBinContent(i+1);
+  }
+  //
+  //  4.) in case specified streamer dump intermediat results for the checking purposes
+  //
+  if (pcstream!=NULL){
+    (*pcstream)<<"fft"<<
+               "hinput."<<hinput<<         // input histogram
+               "grInput.="<<&grInput<<     // input graph
+               "grOutput.="<<grOutput<<    // output graph with removed outlier frequencies
+               "reFull.="<<&reFull<<       // fft real part for original graph
+               "imFull.="<<&imFull<<       // fft imaginary part for original graph
+               "magFull.="<<&magFull<<       // fft imaginary part for original graph
+               "\n";
+  }
+  delete hb;
+  return grOutput;
+}
