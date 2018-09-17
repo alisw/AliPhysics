@@ -284,7 +284,10 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
   TString trigger = esd->GetFiredTriggerClasses();
 
   // triggered in data for lumi scalling
-  if(!isMC && trigger.Contains(fTriggerName.Data())) fHistTriggersPerRun->Fill(RunNum_T);
+  if(!isMC && trigger.Contains(fTriggerName.Data())) {
+  	fHistTriggersPerRun->Fill(RunNum_T);
+  	// cout<<trigger<<endl;
+  }
 
   // CCUP9-B - *0VBA *0VBC *0UBA *0UBC 0STP
   if (!isMC) { // data
@@ -298,7 +301,7 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 
   Int_t nGoodTracks=0;
   Int_t TrackIndex[2] = {-1,-1};
-
+// cout<<"starting track loop"<<endl;
   //Track loop - cuts
   for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
     AliESDtrack *trk = esd->GetTrack(itr);
@@ -320,12 +323,13 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 	TrackIndex[nGoodTracks] = itr;
 
     nGoodTracks++;
+    // cout<<nGoodTracks<<" good tracks"<<endl;
 	if(nGoodTracks > 2) break;
 
   }//Track loop end
 
   if(nGoodTracks == 2){ // fill tree variables
- 
+ // cout<<"two good tracks"<<endl;
   	TDatabasePDG *pdgdat = TDatabasePDG::Instance(); 
   	TParticlePDG *partPion = pdgdat->GetParticle( 211 );
   	Double_t pionMass = partPion->Mass();
@@ -456,9 +460,15 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 	SPDOuter[(ITSModuleOuter_T[1]-80)/4]++;
   
 	ChipCut_T = 0;
-	if ((fFOmodules[ITSModuleInner_T[0]] == 0)||(fFOmodules[ITSModuleOuter_T[0]] == 0)
+	if ((fTriggerName == "CCUP9-B") &&
+		((fFOmodules[ITSModuleInner_T[0]] == 0)||(fFOmodules[ITSModuleOuter_T[0]] == 0)
 		||(fFOmodules[ITSModuleInner_T[1]] == 0)||(fFOmodules[ITSModuleOuter_T[1]] == 0)
-		|| !Is0STPfired(SPDInner,SPDOuter)) ChipCut_T = 1;
+		|| !Is0STPfired(SPDInner,SPDOuter))) ChipCut_T = 1;
+
+	if ((fTriggerName == "CCUP2-B") &&
+		((fFOmodules[ITSModuleInner_T[0]] == 0)||(fFOmodules[ITSModuleOuter_T[0]] == 0)
+		||(fFOmodules[ITSModuleInner_T[1]] == 0)||(fFOmodules[ITSModuleOuter_T[1]] == 0)
+		)) ChipCut_T = 1;
 
     Int_t fFOcounter = 0;
   	for(Int_t chipkey=0;chipkey<1200;chipkey++){
@@ -474,7 +484,7 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
   fRhoTree ->Fill();
 
   } // end 2 good tracks
-
+// cout<<"saving data"<<endl;
   PostData(1, fRhoTree);
   PostData(2, fListHist);
   if (isMC) PostData(3, fMCTree);
@@ -540,7 +550,9 @@ Bool_t AliAnalysisTaskUpcRho0::IsTriggered(AliESDEvent *esd)
 	// 0SM2 - Two hits on outer layer
 	if (nOuter > 1) SM2 = kTRUE;
 	// 0SH1 - More then 6 hits on outer layer
-	if (nOuter >= 7) SH1 = kTRUE;
+	// if (nOuter >= 7) SH1 = kTRUE;
+	//0SH1 2017 - Two hits on inner and outer layer
+	if (nInner >= 2 && nOuter >= 2) SH1 = kTRUE;
 	// V0
 	V0A = esd->GetHeader()->IsTriggerInputFired("0VBA");
 	V0C = esd->GetHeader()->IsTriggerInputFired("0VBC");
