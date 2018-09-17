@@ -1,6 +1,6 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-// Updated Sep 11: Acceptance/Daughters/V0radius
+// Updated Sep 16: GenEta/PVtoV0 0.25 to 0.5
 // Parts of the code taken from:
 // AliEbyEPidEfficiencyContamination.cxx
 // AliAnalysisTaskStrangenessVsMultiplicityMCRun2.cxx
@@ -356,8 +356,8 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             }
             
             abseta = TMath::Abs(eta);
-//             if(abseta > 0.8) continue;
-            if (TMath::Abs (lRap) >0.5) continue;
+            if(abseta > 0.8) continue;
+            //             if (TMath::Abs (lRap) >0.5) continue;
             
             Int_t iptbinMC = GetPtBin(gpt);
             if( iptbinMC < 0 || iptbinMC > fNptBins-1 ) continue;
@@ -582,14 +582,14 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         
         if( ontheflystat == 0 )
         {
-            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
+            if(dcaV0ToVertex < 0.5 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
             {
                 f2fHistInvMassVsPtLambda->Fill(invMassLambda,V0pt);
                 f2fHistRecCentVsPtLambda->Fill(fCentrality,V0pt);
                 nRecL += 1.;
                 
             }
-            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
+            if(dcaV0ToVertex < 0.5 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
             {
                 f2fHistInvMassVsPtAntiLambda->Fill(invMassAntiLambda,V0pt);
                 f2fHistRecCentVsPtAntiLambda->Fill(fCentrality,V0pt);
@@ -636,7 +636,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         isPrim = (static_cast<AliAODMCParticle*>(lthisV0))->IsPhysicalPrimary();
                     }
                     
-                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
+                    if(dcaV0ToVertex < 0.5 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
                     {
                         if(isPrim)
                         {
@@ -659,7 +659,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                     }
                     
                     
-                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
+                    if(dcaV0ToVertex < 0.5 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
                     {
                         if(isPrim)
                         {
@@ -713,7 +713,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         
                     }
                     
-                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
+                    if(dcaV0ToVertex < 0.5 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
                     {
                         if(isPrim)
                         {
@@ -734,7 +734,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         else if (isSecFromMaterial) {f2fHistLambdaMaterial->Fill(fCentrality,mcpt);}
                     }
                     
-                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
+                    if(dcaV0ToVertex < 0.5 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
                     {
                         if(isPrim)
                         {
