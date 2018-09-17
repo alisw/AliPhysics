@@ -47,5 +47,6 @@
 #pragma link C++ class AliAnalysisTaskJetHadronCorrelation+;
 #pragma link C++ class AliAnalysisTaskJetHBOM+;
 #pragma link C++ class AliAnalysisTaskFragmentationTriggered+;
+#pragma link C++ class AliAnalysisTaskNtuple+;
 #endif
 #endif

@@ -25,11 +25,14 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW/
                     ${AliPhysics_SOURCE_DIR}/JETAN/JETAN
                     ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
                     ${AliPhysics_SOURCE_DIR}/PWG/TRD
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWG/muon
                     ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/Base # to add dependency
                     ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/DPhi # to add dependency
+		    ${AliPhysics_SOURCE_DIR}/PWGJE/PWGJE/Ntuple
                    )
 
 # Sources in alphabetical order
@@ -67,6 +70,7 @@ if(FASTJET_FOUND)
         ../UserTasks/AliAnalysisTaskJetHBOM.cxx
         AliAnalysisTaskJetFFMoments.cxx
         ../UserTasks/AliAnalysisTaskFragmentationTriggered.cxx
+        AliAnalysisTaskNtuple.cxx
     )
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
     link_directories(${FASTJET_LIBS_DIR})
