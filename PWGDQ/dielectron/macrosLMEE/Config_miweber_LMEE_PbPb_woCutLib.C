@@ -1473,10 +1473,11 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Track","TOFnSigma_MomEle","TOF number of sigmas Electrons vs Momentum;Mom;TOFsigmaEle"                           ,     200,0.,10.,300,-30., 30. ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaEle);
 
   //add histograms to pair classes
-  // histos->UserHistogram("Pair", //removed for the moment for memory consumption?
-  //                       "InvMass_pPt_Centrality","Inv.Mass:PairPt:Centrality;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c); Centrality (%)",
-  //                       500,0.,5.,250,0.,5.,100,0.,100.,
-  //                       AliDielectronVarManager::kM, AliDielectronVarManager::kPt,AliDielectronVarManager::kCentralityNew);
+   histos->UserHistogram("Pair", 
+                         "InvMass_Centrality","Inv.Mass:Centrality;Inv. Mass (GeV/c^{2}); Centrality (%)",
+                         500,0.,5.,10,0.,100.,
+                         AliDielectronVarManager::kM, AliDielectronVarManager::kCentralityNew);
+   
   histos->UserHistogram("Pair",
                         "InvMass_pPt","Inv.Mass:PairPt;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c)",
                         500,0.,5.,250,0.,5.,
