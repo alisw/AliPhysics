@@ -385,7 +385,7 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
   }
 
   if(fIsHeavyIon > 0){
-    hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",400,0,100);
+    hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",420,0,105);
     fHistograms->Add(hCentrality);
   }
 
@@ -2332,7 +2332,7 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
   else if ( fCentralityMax==0) fCentralityMax=10; //CentralityRange = fCentralityMin-10*multfactor
   Double_t centrality=GetCentrality(event);
   if(centrality<0 && !mcEvent)return kFALSE;
-  Double_t addMarginZNA = (fDetectorCentrality==2) ? 2.0 : 0.0; // For ZNA multiplicity goes up to 101%
+  Double_t addMarginZNA = (fDetectorCentrality==2 && fCentralityMax==10) ? 2.0 : 0.0; // For ZNA multiplicity goes up to 101%
 
   Int_t centralityC=0;
   if (fModCentralityClass == 0){
