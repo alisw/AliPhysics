@@ -54,7 +54,7 @@ NO PILEUP CUTS
 #endif
 
 //________________________________________________________________________
-AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
+AliFemtoManager* ConfigFemtoAnalysis3(const char* params) {
 
 	double PionMass = 0.13956995;
 	double KaonMass = 0.493677;
