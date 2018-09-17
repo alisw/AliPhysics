@@ -337,6 +337,7 @@ class AliAODEvent : public AliVEvent {
   AliAODAD   *GetADData() const { return fAODAD; }
 
   virtual AliVEvent::EDataLayoutType GetDataLayoutType() const;
+  void FixCascades();
 
   private :
 

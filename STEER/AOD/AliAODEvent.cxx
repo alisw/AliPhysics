@@ -1118,6 +1118,7 @@ void AliAODEvent::ConnectTracks() {
   TIter next(fTracks);
   while ((track=(AliAODTrack*)next())) track->SetAODEvent(this);
   fTracksConnected = kTRUE;
+
 }
 
 //______________________________________________________________________________
@@ -1170,4 +1171,83 @@ Int_t AliAODEvent::AddDimuon(const AliAODDimuon* dimu)
     return fDimuons->GetEntriesFast()-1;
   }
   return -1;
+}
+
+//______________________________________________________________________________
+void AliAODEvent::FixCascades(){
+
+  // Fix cases in which on-fly V0 was attached as daughter of the cascade.
+  // This is not correct, because only offline V0s are used to build cascades.
+  // These mismatches occurred because in the AOD filtering task
+  //   (AliAnalysisTaskESDfilter::ConvertCascades)
+  // the V0 produced in the cascade decay was found by searching in the
+  // array of V0s the one having daughter indices matching with those
+  // of the cascade, without a protection to exclude the on-fly ones.
+  // Hence, in cases in which the V0 was reconstructed both by
+  // the on-fly and offline algorithms, the on-fly (first found in the array)
+  // was used in the AOD cascade.
+
+
+  Int_t nCasc=GetNumberOfCascades();
+  Int_t nV0s=GetNumberOfV0s();
+  AliAODVertex* vPrim=GetPrimaryVertex();
+  for(Int_t k=0; k<nCasc; k++){
+    AliAODcascade* cc=(AliAODcascade*)fCascades->UncheckedAt(k);
+    AliAODVertex* vCasc=cc->GetDecayVertexXi();
+    AliAODVertex* vV0=cc->GetSecondaryVtx();
+    Int_t v0DauPos=cc->GetPosID();
+    Int_t v0DauNeg=cc->GetNegID();
+    Bool_t onfly=cc->GetOnFlyStatus();
+    if(onfly){
+      // if the V0 is on-the-fly search for the corresponding offline V0
+      for(Int_t j=0; j<nV0s; j++){
+        AliAODv0* curV0=(AliAODv0*)fV0s->UncheckedAt(j);
+        Int_t curPos=curV0->GetPosID();
+        Int_t curNeg=curV0->GetNegID();
+        Bool_t curOnFly=curV0->GetOnFlyStatus();
+        if(curOnFly==kFALSE && curPos==v0DauPos && curNeg==v0DauNeg){
+	  // Replace the on-fly V0 information in the AliAODCascade with the offline one
+	  Double_t momBach[3]={cc->MomBachX(),cc->MomBachY(),cc->MomBachZ()};
+	  Double_t momPos[3]={curV0->MomPosX(),curV0->MomPosY(),curV0->MomPosZ()};
+	  Double_t momNeg[3]={curV0->MomNegX(),curV0->MomNegY(),curV0->MomNegZ()};
+	  Double_t dca[2]={curV0->DcaPosToPrimVertex(),curV0->DcaNegToPrimVertex()};
+	  cc->Fill(cc->GetDecayVertexXi(),
+		   cc->ChargeXi(),
+		   cc->DcaXiDaughters(),
+		   cc->DcaXiToPrimVertex(),
+		   cc->DcaBachToPrimVertex(),
+		   momBach,
+		   curV0->GetSecondaryVtx(),
+		   curV0->DcaV0Daughters(),
+		   curV0->DcaV0ToPrimVertex(),
+		   momPos,
+		   momNeg,
+		   dca);
+	  // Additional data members of AliAODv0 not filled by AliAODV0::Fill
+	  cc->SetOnFlyStatus(curV0->GetOnFlyStatus());
+
+	  // Reset parent and daughters
+	  AliAODVertex* vV02=curV0->GetSecondaryVtx(); // offline V0 vertex
+	  AliAODVertex* parent0=(AliAODVertex*)vV0->GetParent(); // parent of OnFly V0 from AOD
+	  //	  AliAODVertex* parent2=(AliAODVertex*)vV02->GetParent(); // parent of Offline V0 from AOD
+	  if(parent0->GetType()==AliAODVertex::kCascade && vV0->HasParent(vCasc)){
+	    // in cases in which a V0 is used for more thant 1 cascade, the parent-daughter chain i:
+	    // v0 -> Casc1 -> Casc2 -> Casc3 ...
+	    // We have to redo SetParent for the V0 only once: at Casc1
+	    vV02->SetParent(vCasc);
+	    // assign as parent the primary vertex (alternative could be to assign parent2?)
+	    vV0->SetParent(vPrim);
+	  }
+	  if(vCasc->HasDaughter(vV0)){
+	    // should be done only for the cascade which was the parent of the V0
+	    vCasc->RemoveDaughter(vV0);
+	    vCasc->AddDaughter(vV02);
+	  }
+	  if(vPrim->HasDaughter(vV02)) vPrim->RemoveDaughter(vV02);
+	  if(!vPrim->HasDaughter(vV0)) vPrim->AddDaughter(vV0);
+	  break;
+	}
+      }
+    }
+  }
 }
