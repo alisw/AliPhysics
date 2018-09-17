@@ -89,6 +89,7 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF() : AliAnalysisTaskSE(),
     fElectronRejectionNSigma(-1.),
     fElectronRejectionMinPt(0.),
     fElectronRejectionMaxPt(1000.),
+    fExcludeElectronsInMC(kFALSE),
     fPIDCombined(0),
     fUsePIDnSigmaComb(kTRUE),
     fBayesPIDThr(0.8),
@@ -174,6 +175,7 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF(const char *name)
     fElectronRejectionNSigma(-1.),
     fElectronRejectionMinPt(0.),
     fElectronRejectionMaxPt(1000.),
+    fExcludeElectronsInMC(kFALSE),
     fPIDCombined(0),
     fUsePIDnSigmaComb(kTRUE),
     fBayesPIDThr(0.8),
@@ -647,6 +649,14 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 	      // ==============================================================================================
 
 
+		//Exclude electrons with PDG
+                if(fExcludeElectronsInMC){
+
+                  if(TMath::Abs(AODmcTrack->GetPdgCode()) == 11) continue;
+                
+		}
+
+
 		if (fUsePIDFromPDG || fUsePIDstrategy){
 		  Int_t pdgcode = AODmcTrack->GetPdgCode();
 		  if (TMath::Abs(pdgcode) != fPDGCodeWanted) continue;
@@ -707,6 +717,13 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		    
 		  }  
 		}
+
+		//Exclude electrons with PDG
+                if(fExcludeElectronsInMC){
+
+                  if(TMath::Abs(mcTrack->GetPdgCode()) == 11) continue;
+
+                }
 
 		if (fUsePIDFromPDG || fUsePIDstrategy ){
 
@@ -769,6 +786,15 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
                       if((!hasGenerator) || (!generatorName.Contains(fGenToBeKept.Data()))) continue;
                   }
               }
+
+              //Exclude electrons with PDG
+              if(fExcludeElectronsInMC){
+
+		  Int_t label_trackAOD = TMath::Abs(trackAOD->GetLabel());
+                  AliAODMCParticle *trackAODMC = (AliAODMCParticle*) mcEvent->GetTrack(label_trackAOD);
+                  if(TMath::Abs(trackAODMC->GetPdgCode()) == 11) continue;
+
+              } 
 		
               Int_t mcGoods = nMCLabelCounter;
               for (Int_t k = 0; k < mcGoods; k++) {
