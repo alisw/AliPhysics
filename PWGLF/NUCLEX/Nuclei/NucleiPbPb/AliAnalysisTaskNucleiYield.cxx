@@ -372,6 +372,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     if (!track->TestFilterBit(fFilterBit) && fFilterBit) continue;
     if (!AcceptTrack(track,dca)) continue;
     const float beta = HasTOF(track,fPID);
+    if (beta > 1. - EPS) beta = -1;
     const int iTof = beta > EPS ? 1 : 0;
     float pT = track->Pt() * fCharge;
     int pid_mask = PassesPIDSelection(track);
@@ -511,11 +512,8 @@ float AliAnalysisTaskNucleiYield::HasTOF(AliAODTrack *track, AliPIDResponse *pid
   if (!hasTOF) return -1.;
   const float p = track->GetTPCmomentum();
   const float tim = track->GetTOFsignal() - pid->GetTOFResponse().GetStartTime(p);
-  if (tim < len / LIGHT_SPEED) return -1.;
-  else {
-    const float beta = len / (tim * LIGHT_SPEED);
-    return beta;
-  }
+  const float beta = len / (tim * LIGHT_SPEED);
+  return beta;
 }
 
 /// This functions sets the centrality bins used in the analysis
