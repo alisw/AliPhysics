@@ -557,6 +557,11 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
     for (Int_t iV0=0; iV0<esd.GetNumberOfV0s(); ++iV0) {
       
       currentV0 = esd.GetV0(iV0);
+
+      // Fix added on 2018-09-18 (ALIROOT-7980)
+      // cascades are built only from offline V0 -> skip on-fly V0 in this loop
+      if(currentV0->GetOnFlyStatus()==kTRUE) continue;
+
       Int_t posCurrentV0 = currentV0->GetPindex();
       Int_t negCurrentV0 = currentV0->GetNindex();
       
