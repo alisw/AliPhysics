@@ -9,7 +9,8 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisUtils.h"
 #include "THnSparse.h"
-
+#include "AliAODpidUtil.h"
+#include "AliPIDResponse.h"
 class AliAnalysisUtils;
 
 class AliAnalysisTaskParticleEff :public AliAnalysisTaskSE{
