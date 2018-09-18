@@ -1187,8 +1187,16 @@ void AliAODEvent::FixCascades(){
   // the on-fly and offline algorithms, the on-fly (first found in the array)
   // was used in the AOD cascade.
 
-
   Int_t nCasc=GetNumberOfCascades();
+  if(nCasc==0) return;
+
+  AliAODcascade* cascForCheck=(AliAODcascade*)fCascades->UncheckedAt(0);
+  if(cascForCheck->TestBit(AliAODEvent::kCascadesFixed)){
+    // Cascades already fixed -> do nothing
+    // AliInfo("Cascades already fixed -> do nothing");
+    return;
+  }
+
   Int_t nV0s=GetNumberOfV0s();
   AliAODVertex* vPrim=GetPrimaryVertex();
   for(Int_t k=0; k<nCasc; k++){
@@ -1248,5 +1256,6 @@ void AliAODEvent::FixCascades(){
 	}
       }
     }
+    cc->SetBit(AliAODEvent::kCascadesFixed);
   }
 }

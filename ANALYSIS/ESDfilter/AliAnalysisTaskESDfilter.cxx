@@ -900,6 +900,7 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
 								       dcaBachToPrimVertexXY,
 								       momBachAtCascadeVtx,
 								       *aodV0);
+    aodCascade->SetBit(AliAODEvent::kCascadesFixed);
     if (fDebug > 10) {
       printf("---- Cascade / AOD cascade : \n\n");
       aodCascade->PrintXi(fPrimaryVertex->GetX(), fPrimaryVertex->GetY(), fPrimaryVertex->GetZ());
