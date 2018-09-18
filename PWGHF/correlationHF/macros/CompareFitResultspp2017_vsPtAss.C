@@ -8,7 +8,7 @@ Bool_t plotv2unc=kFALSE;
 TString strFitResultPP=""; //  "/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015June7finalPlots/ReflectedPlots/StdRebin/AllPlots/Averages/FitResults";
 TString strFitResultPPb=""; //  "/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015June7finalPlots/ReflectedPlots/StdRebin/AllPlots/Averages/FitResults";
 Double_t canvasheight=1000;
-Double_t resizeTextFactor=1.3;//1.*canvasheight/1200.; // size was tuned for canvasheight =1800. 
+Double_t resizeTextFactor=1.2;//1.*canvasheight/1200.; // size was tuned for canvasheight =1800. 
 Double_t referencePadHeight=0.48; // Do not touch unless the canvas division is changed from 2x3, change canvasheight and resizeTextFactor instead
 Double_t innerPadHeight;// not touch, set internally
 Double_t innerPadWidth;// not touch, set internally
@@ -55,7 +55,7 @@ Double_t minptMC=0.,maxptMC=99.;
 Double_t minptData=0.5,maxptData=3.5; //you have to be tighter than real limits...
 Int_t ncolumns=4;
 Int_t nrows=3;
-Double_t ytitleoffset=4,xtitleoffset=3.4;
+Double_t ytitleoffset=2.7,xtitleoffset=2.2;
 Bool_t skip3to5=kTRUE;
 Double_t markersize=1.2;
 Double_t markersizeMC=1.2;
@@ -99,16 +99,6 @@ void AdaptRangeTGraph(TGraph *gr,Double_t minpt,Double_t maxpt){
 
 void SetDrawSystMC(Bool_t drawsystmc){
   drawSystMC=drawsystmc;
-}
-void Init3x3Settings(){
-  referencePadHeight=0.35;
-  resizeTextFactor=0.85;
-  ytitleoffset=4.8;
-  xtitleoffset=4;
-  ncolumns=3;
-  nrows=3;
-  markersize=1.;
-  markersizeMC=1.;
 }
 
 TString yaxisTitle[5]={"Associated yield","#sigma_{fit,NS} (rad)","Baseline (rad^{-1})","Associated yield","#sigma_{fit,AS} (rad)"};
@@ -258,7 +248,7 @@ void SetPadStyle(TPad *p){
   //  p->SetTopMargin(topMarginCanvas);
 }
 
-void Set4x6PadPositions(TCanvas* c){
+void Set4x2PadPositions(TCanvas* c){
     
   TPad * pd1 =(TPad*) c->GetPad(1);
   TPad * pd2 =(TPad*) c->GetPad(2);
@@ -268,171 +258,135 @@ void Set4x6PadPositions(TCanvas* c){
   TPad * pd6 =(TPad*) c->GetPad(6);
   TPad * pd7 =(TPad*) c->GetPad(7);
   TPad * pd8 =(TPad*) c->GetPad(8);
-  TPad * pd9 =(TPad*) c->GetPad(9);
-  TPad * pd10 =(TPad*) c->GetPad(10);
-  TPad * pd11 =(TPad*) c->GetPad(11);
-  TPad * pd12 =(TPad*) c->GetPad(12);
 
   SetPadStyle(pd1);
+  SetPadStyle(pd2);
+  SetPadStyle(pd3);
+  SetPadStyle(pd4);
+  SetPadStyle(pd5);
+  SetPadStyle(pd6);
+  SetPadStyle(pd7);
+  SetPadStyle(pd8);
 
   Double_t xl,xu,yl,yu;
-  Double_t marginLeft=0.1;
+  Double_t marginLeft=0.06;
   Double_t marginRight=0.02;
   Double_t marginTop=0.04;
-  Double_t marginBottom=0.08;
+  Double_t marginBottom=0.1;
   innerPadWidth=(1-marginLeft-marginRight)/4.;// this is the width w/o margin, not the real pad width!!
-  innerPadHeight=(1-marginTop-marginBottom)/3.;// this is the height w/o margin, not the real pad height, which differs between inner pads and pads at the "boarders"!!
+  innerPadHeight=(1-marginTop-marginBottom)/2.;// this is the height w/o margin, not the real pad height, which differs between inner pads and pads at the "boarders"!!
   Printf("innerPadHeight: %f",innerPadHeight);
   Printf("innerPadWidth: %f",innerPadWidth);
-  Double_t marginLeftForXAxis=0.02;
+  Double_t marginLeftForXAxis=0.0;
   Double_t marginBottomForYAxis=0.0;
 
  // Bottom row
 
-    pd9->GetPadPar(xl,yl,xu,yu);
-    Printf("PAD 7 Original values: xl %f  xu %f  yl  %f  yu %f, gPad->GetwNDC=%f, gPad->GetHNDC=%f",xl,xu,yl,yu,gPad->GetWNDC(),gPad->GetHNDC());
-    pd9->SetPad(0.,0.,innerPadWidth+marginLeft,innerPadHeight+marginBottom);
-    pd9->GetPadPar(xl,yl,xu,yu);
-    Printf("New values: xl %f  xu %f  yl  %f  yu %f, gPad->GetwNDC=%f, gPad->GetHNDC=%f",xl,xu,yl,yu,gPad->GetWNDC(),gPad->GetHNDC());
- 
-    pd9->SetLeftMargin(marginLeft/(marginLeft+innerPadWidth));
-    pd9->SetRightMargin(0);
-    pd9->SetBottomMargin(marginBottom/(marginBottom+innerPadHeight));
-    pd9->SetTopMargin(0.);
-    pd9->Modified();
-    pd9->SetFillStyle(0);
-
-    pd10->GetPadPar(xl,yl,xu,yu);
-    Printf("PAD 10 Original values: xl %f  xu %f  yl  %f  yu %f, gPad->GetwNDC=%f, gPad->GetHNDC=%f",xl,xu,yl,yu,gPad->GetWNDC(),gPad->GetHNDC());
-    pd10->SetPad(innerPadWidth+marginLeft-marginLeftForXAxis,0,2*innerPadWidth+marginLeft,innerPadHeight+marginBottom);
-    pd10->GetPadPar(xl,yl,xu,yu);
-    Printf("New values: xl %f  xu %f  yl  %f  yu %f, gPad->GetwNDC=%f, gPad->GetHNDC=%f",xl,xu,yl,yu,gPad->GetWNDC(),gPad->GetHNDC());
- 
-    pd10->SetLeftMargin(marginLeftForXAxis/(innerPadWidth+marginLeftForXAxis));
-    //pd8->SetLeftMargin(0.004/(1.-innerPadWidth-marginLeft+0.004));
-    pd10->SetRightMargin(0.);
-    pd10->SetBottomMargin(marginBottom/(marginBottom+innerPadHeight));
-    pd10->SetTopMargin(0);
-    pd10->SetFillStyle(0);
-
-    pd10->Modified();
-    pd10->Update();
-
-    pd11->GetPadPar(xl,yl,xu,yu);
-    Printf("PAD 11 Original values: xl %f  xu %f  yl  %f  yu %f, gPad->GetwNDC=%f, gPad->GetHNDC=%f",xl,xu,yl,yu,gPad->GetWNDC(),gPad->GetHNDC());
-  
-    pd11->SetPad(2*innerPadWidth+marginLeft-marginLeftForXAxis,0,3*innerPadWidth+marginLeft,innerPadHeight+marginBottom);
-    pd11->GetPadPar(xl,yl,xu,yu);
-    Printf("New values: xl %f  xu %f  yl  %f  yu %f, gPad->GetwNDC=%f, gPad->GetHNDC=%f",xl,xu,yl,yu,gPad->GetWNDC(),gPad->GetHNDC());
-    pd11->SetLeftMargin(marginLeftForXAxis/(innerPadWidth+marginLeftForXAxis));
-    pd11->SetRightMargin(0);
-    pd11->SetBottomMargin(marginBottom/(marginBottom+innerPadHeight));
-    pd11->SetTopMargin(0.);
-    pd11->SetFillStyle(0);
-
-    pd11->Modified();
-    pd11->Update();
-
-    pd12->GetPadPar(xl,yl,xu,yu);
-    Printf("PAD 12 Original values: xl %f  xu %f  yl  %f  yu %f, gPad->GetwNDC=%f, gPad->GetHNDC=%f",xl,xu,yl,yu,gPad->GetWNDC(),gPad->GetHNDC());
-    pd12->SetPad(3*innerPadWidth+marginLeft-marginLeftForXAxis,0,1.,innerPadHeight+marginBottom);
-    pd12->GetPadPar(xl,yl,xu,yu);
-    Printf("New values: xl %f  xu %f  yl  %f  yu %f, gPad->GetwNDC=%f, gPad->GetHNDC=%f",xl,xu,yl,yu,gPad->GetWNDC(),gPad->GetHNDC());
- 
-    pd12->SetLeftMargin(marginLeftForXAxis/(innerPadWidth+marginLeftForXAxis+marginRight));
-    pd12->SetRightMargin(marginRight/(innerPadWidth+marginRight));
-    pd12->SetBottomMargin(marginBottom/(marginBottom+innerPadHeight));
-    pd12->SetTopMargin(0.);
-    pd12->SetFillStyle(0);
-
-    pd12->Modified();
-    pd12->Update();
-
-    // Middle Row
     pd5->GetPadPar(xl,yl,xu,yu);
-    Printf("Original values: xl %f  xu %f  yl  %f  yu %f",xl,xu,yl,yu);
-    pd5->SetPad(0.,innerPadHeight+marginBottom-marginBottomForYAxis,innerPadWidth+marginLeft,2.*innerPadHeight+marginBottom);
+    Printf("PAD 7 Original values: xl %f  xu %f  yl  %f  yu %f, gPad->GetwNDC=%f, gPad->GetHNDC=%f",xl,xu,yl,yu,gPad->GetWNDC(),gPad->GetHNDC());
+    pd5->SetPad(0.,0.,innerPadWidth+marginLeft,innerPadHeight+marginBottom);
+    pd5->GetPadPar(xl,yl,xu,yu);
+    Printf("New values: xl %f  xu %f  yl  %f  yu %f, gPad->GetwNDC=%f, gPad->GetHNDC=%f",xl,xu,yl,yu,gPad->GetWNDC(),gPad->GetHNDC());
+ 
     pd5->SetLeftMargin(marginLeft/(marginLeft+innerPadWidth));
-    pd5->SetRightMargin(0.);
-    pd5->SetBottomMargin(marginBottomForYAxis/(innerPadHeight+marginBottomForYAxis));
+    pd5->SetRightMargin(0);
+    pd5->SetBottomMargin(marginBottom/(marginBottom+innerPadHeight));
     pd5->SetTopMargin(0.);
+    pd5->Modified();
     pd5->SetFillStyle(0);
 
-    pd5->Modified();
-    pd5->Update();
-
     pd6->GetPadPar(xl,yl,xu,yu);
-    Printf("Original values: xl %f  xu %f  yl  %f  yu %f",xl,xu,yl,yu);
-    pd6->SetPad(innerPadWidth+marginLeft-marginLeftForXAxis,innerPadHeight+marginBottom-marginBottomForYAxis,2*innerPadWidth+marginLeft,2.*innerPadHeight+marginBottom);
+    Printf("PAD 10 Original values: xl %f  xu %f  yl  %f  yu %f, gPad->GetwNDC=%f, gPad->GetHNDC=%f",xl,xu,yl,yu,gPad->GetWNDC(),gPad->GetHNDC());
+    pd6->SetPad(innerPadWidth+marginLeft-marginLeftForXAxis,0,2*innerPadWidth+marginLeft,innerPadHeight+marginBottom);
+    pd6->GetPadPar(xl,yl,xu,yu);
+    Printf("New values: xl %f  xu %f  yl  %f  yu %f, gPad->GetwNDC=%f, gPad->GetHNDC=%f",xl,xu,yl,yu,gPad->GetWNDC(),gPad->GetHNDC());
+ 
     pd6->SetLeftMargin(marginLeftForXAxis/(innerPadWidth+marginLeftForXAxis));
+    //pd8->SetLeftMargin(0.004/(1.-innerPadWidth-marginLeft+0.004));
     pd6->SetRightMargin(0.);
-    pd6->SetBottomMargin(marginBottomForYAxis/(innerPadHeight+marginBottomForYAxis));
-    pd6->SetTopMargin(0.);
+    pd6->SetBottomMargin(marginBottom/(marginBottom+innerPadHeight));
+    pd6->SetTopMargin(0);
     pd6->SetFillStyle(0);
 
     pd6->Modified();
     pd6->Update();
 
     pd7->GetPadPar(xl,yl,xu,yu);
-    Printf("Original values: xl %f  xu %f  yl  %f  yu %f",xl,xu,yl,yu);
-    pd7->SetPad(2*innerPadWidth+marginLeft-marginLeftForXAxis,innerPadHeight+marginBottom-marginBottomForYAxis,3*innerPadWidth+marginLeft,2.*innerPadHeight+marginBottom);
+    Printf("PAD 11 Original values: xl %f  xu %f  yl  %f  yu %f, gPad->GetwNDC=%f, gPad->GetHNDC=%f",xl,xu,yl,yu,gPad->GetWNDC(),gPad->GetHNDC());
+  
+    pd7->SetPad(2*innerPadWidth+marginLeft-marginLeftForXAxis,0,3*innerPadWidth+marginLeft,innerPadHeight+marginBottom);
+    pd7->GetPadPar(xl,yl,xu,yu);
+    Printf("New values: xl %f  xu %f  yl  %f  yu %f, gPad->GetwNDC=%f, gPad->GetHNDC=%f",xl,xu,yl,yu,gPad->GetWNDC(),gPad->GetHNDC());
     pd7->SetLeftMargin(marginLeftForXAxis/(innerPadWidth+marginLeftForXAxis));
-    pd7->SetRightMargin(0.);
-    pd7->SetBottomMargin(marginBottomForYAxis/(innerPadHeight+marginBottomForYAxis));
+    pd7->SetRightMargin(0);
+    pd7->SetBottomMargin(marginBottom/(marginBottom+innerPadHeight));
     pd7->SetTopMargin(0.);
+    pd7->SetFillStyle(0);
 
     pd7->Modified();
     pd7->Update();
 
     pd8->GetPadPar(xl,yl,xu,yu);
-    Printf("Original values: xl %f  xu %f  yl  %f  yu %f",xl,xu,yl,yu);
-    pd8->SetPad(3*innerPadWidth+marginLeft-marginLeftForXAxis,innerPadHeight+marginBottom-marginBottomForYAxis,1.,2.*innerPadHeight+marginBottom);
+    Printf("PAD 12 Original values: xl %f  xu %f  yl  %f  yu %f, gPad->GetwNDC=%f, gPad->GetHNDC=%f",xl,xu,yl,yu,gPad->GetWNDC(),gPad->GetHNDC());
+    pd8->SetPad(3*innerPadWidth+marginLeft-marginLeftForXAxis,0,1.,innerPadHeight+marginBottom);
+    pd8->GetPadPar(xl,yl,xu,yu);
+    Printf("New values: xl %f  xu %f  yl  %f  yu %f, gPad->GetwNDC=%f, gPad->GetHNDC=%f",xl,xu,yl,yu,gPad->GetWNDC(),gPad->GetHNDC());
+ 
     pd8->SetLeftMargin(marginLeftForXAxis/(innerPadWidth+marginLeftForXAxis+marginRight));
     pd8->SetRightMargin(marginRight/(innerPadWidth+marginRight));
-    pd8->SetBottomMargin(marginBottomForYAxis/(innerPadHeight+marginBottomForYAxis));
+    pd8->SetBottomMargin(marginBottom/(marginBottom+innerPadHeight));
     pd8->SetTopMargin(0.);
-    
+    pd8->SetFillStyle(0);
+
     pd8->Modified();
     pd8->Update();
 
-  // Top Row
+    // Top Row
     pd1->GetPadPar(xl,yl,xu,yu);
     Printf("Original values: xl %f  xu %f  yl  %f  yu %f",xl,xu,yl,yu);
-    pd1->SetPad(0,2.*innerPadHeight+marginBottom-marginBottomForYAxis,innerPadWidth+marginLeft,1.);
+    pd1->SetPad(0.,innerPadHeight+marginBottom-marginBottomForYAxis,innerPadWidth+marginLeft,2.*innerPadHeight+marginBottom);
     pd1->SetLeftMargin(marginLeft/(marginLeft+innerPadWidth));
     pd1->SetRightMargin(0.);
-    pd1->SetBottomMargin(marginBottomForYAxis/(innerPadHeight+marginBottomForYAxis+marginTop));
-    pd1->SetTopMargin(marginTop/(innerPadHeight+marginTop));
+    pd1->SetBottomMargin(marginBottomForYAxis/(innerPadHeight+marginBottomForYAxis));
+    pd1->SetTopMargin(0.);
     pd1->SetFillStyle(0);
+
     pd1->Modified();
     pd1->Update();
-    
+
     pd2->GetPadPar(xl,yl,xu,yu);
     Printf("Original values: xl %f  xu %f  yl  %f  yu %f",xl,xu,yl,yu);
-    pd2->SetPad(innerPadWidth+marginLeft-marginLeftForXAxis,2.*innerPadHeight+marginBottom-marginBottomForYAxis,2*innerPadWidth+marginLeft,1);
+    pd2->SetPad(innerPadWidth+marginLeft-marginLeftForXAxis,innerPadHeight+marginBottom-marginBottomForYAxis,2*innerPadWidth+marginLeft,2.*innerPadHeight+marginBottom);
     pd2->SetLeftMargin(marginLeftForXAxis/(innerPadWidth+marginLeftForXAxis));
+    pd2->SetRightMargin(0.);
+    pd2->SetBottomMargin(marginBottomForYAxis/(innerPadHeight+marginBottomForYAxis));
+    pd2->SetTopMargin(0.);
     pd2->SetFillStyle(0);
-    pd2->SetRightMargin(0);
-    pd2->SetBottomMargin(marginBottomForYAxis/(innerPadHeight+marginBottomForYAxis+marginTop));
-    pd2->SetTopMargin(marginTop/(innerPadHeight+marginTop));
+
+    pd2->Modified();
+    pd2->Update();
 
     pd3->GetPadPar(xl,yl,xu,yu);
     Printf("Original values: xl %f  xu %f  yl  %f  yu %f",xl,xu,yl,yu);
-    pd3->SetPad(2*innerPadWidth+marginLeft-marginLeftForXAxis,2.*innerPadHeight+marginBottom-marginBottomForYAxis,3*innerPadWidth+marginLeft,1);
+    pd3->SetPad(2*innerPadWidth+marginLeft-marginLeftForXAxis,innerPadHeight+marginBottom-marginBottomForYAxis,3*innerPadWidth+marginLeft,2.*innerPadHeight+marginBottom);
     pd3->SetLeftMargin(marginLeftForXAxis/(innerPadWidth+marginLeftForXAxis));
-    pd3->SetRightMargin(0);
-    pd3->SetBottomMargin(marginBottomForYAxis/(innerPadHeight+marginBottomForYAxis+marginTop));
-    pd3->SetTopMargin(marginTop/(innerPadHeight+marginTop));
-    pd3->SetFillStyle(0);
- 
+    pd3->SetRightMargin(0.);
+    pd3->SetBottomMargin(marginBottomForYAxis/(innerPadHeight+marginBottomForYAxis));
+    pd3->SetTopMargin(0.);
+
+    pd3->Modified();
+    pd3->Update();
+
     pd4->GetPadPar(xl,yl,xu,yu);
     Printf("Original values: xl %f  xu %f  yl  %f  yu %f",xl,xu,yl,yu);
-    pd4->SetPad(3*innerPadWidth+marginLeft-marginLeftForXAxis,2.*innerPadHeight+marginBottom-marginBottomForYAxis,1,1);
+    pd4->SetPad(3*innerPadWidth+marginLeft-marginLeftForXAxis,innerPadHeight+marginBottom-marginBottomForYAxis,1.,2.*innerPadHeight+marginBottom);
     pd4->SetLeftMargin(marginLeftForXAxis/(innerPadWidth+marginLeftForXAxis+marginRight));
     pd4->SetRightMargin(marginRight/(innerPadWidth+marginRight));
-    pd4->SetBottomMargin(marginBottomForYAxis/(innerPadHeight+marginBottomForYAxis+marginTop));
-    pd4->SetTopMargin(marginTop/(innerPadHeight+marginTop));
-    pd4->SetFillStyle(0);
+    pd4->SetBottomMargin(marginBottomForYAxis/(innerPadHeight+marginBottomForYAxis));
+    pd4->SetTopMargin(0.);
+    
+    pd4->Modified();
+    pd4->Update();
 
     scaleHeightPads=pd1->GetHNDC();
     scaleWidthPads=pd1->GetWNDC();
@@ -483,11 +437,11 @@ TLatex *GetDRapForSystem(Int_t collSystem,Int_t identifier,Int_t includeDEta=0){
     tlrap->SetTextSize(0.03);
   }
   else{
-    if(collSystem==0)tlrap=new TLatex(0.016/gPad->GetWNDC()+gPad->GetLeftMargin(),0.20/gPad->GetHNDC()+gPad->GetBottomMargin(),str.Data()); 
+    if(collSystem==0)tlrap=new TLatex(0.016/gPad->GetWNDC()+gPad->GetLeftMargin(),0.29/gPad->GetHNDC()+gPad->GetBottomMargin(),str.Data()); 
     else if(collSystem==1)tlrap=new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),y/gPad->GetHNDC()+gPad->GetBottomMargin(),str.Data()); 
     tlrap->SetNDC();
     tlrap->SetTextFont(43);
-    tlrap->SetTextSize(24*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
+    tlrap->SetTextSize(27*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
   }  
   tlrap->SetTextAlign(11);
   tlrap->SetName(Form("tlrap_%d",identifier));
@@ -586,10 +540,10 @@ Double_t x=0.21,y=0.390;
     alice->SetTextAlign(11);
   }
   else{
-    alice= new TLatex(0.15/gPad->GetWNDC()+gPad->GetLeftMargin(),0.26/gPad->GetHNDC()+gPad->GetBottomMargin(),"ALICE"); 
+    alice= new TLatex(0.15/gPad->GetWNDC()+gPad->GetLeftMargin(),0.38/gPad->GetHNDC()+gPad->GetBottomMargin(),"ALICE"); 
     alice->SetNDC();
     alice->SetTextFont(43);
-    alice->SetTextSize(32*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);// draft 2 was: 28 *...
+    alice->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);// draft 2 was: 28 *...
     alice->SetTextAlign(11);
   }
 
@@ -625,7 +579,7 @@ TLatex* GetDPtText(Int_t binD,Int_t identifier,Int_t addDEta=1){
   else{
     TString strTot=strPtDCanvas[binD];
     if(addDEta==1)strTot.Append("|#Delta#eta| < 1");
-    tlasspt= new TLatex(0.11/gPad->GetWNDC()+gPad->GetLeftMargin(),0.235/gPad->GetHNDC()+gPad->GetBottomMargin(),strTot.Data()); 
+    tlasspt= new TLatex(0.11/gPad->GetWNDC()+gPad->GetLeftMargin(),0.345/gPad->GetHNDC()+gPad->GetBottomMargin(),strTot.Data()); 
     tlasspt->SetNDC();
     tlasspt->SetTextFont(43);
     tlasspt->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);//  if font 42 is used try this: 0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor) but see notes on top
@@ -662,11 +616,11 @@ TLatex* GetTextSide(Int_t variable,Int_t identifier){
         tlSide->SetTextSize(0.03*resizeTextFactor);
       }
       else{
-        tlSide=new TLatex(0.016/gPad->GetWNDC()+gPad->GetLeftMargin(),0.26/gPad->GetHNDC()+gPad->GetBottomMargin(),"Near side");
+        tlSide=new TLatex(0.016/gPad->GetWNDC()+gPad->GetLeftMargin(),0.38/gPad->GetHNDC()+gPad->GetBottomMargin(),"Near side");
         tlSide->SetNDC();
         tlSide->SetTextAlign(11);
         tlSide->SetTextFont(43);
-        tlSide->SetTextSize(32*innerPadHeight/referencePadHeight*resizeTextFactor);// draft 2 was 28*...
+        tlSide->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);// draft 2 was 28*...
       }
     }
   else {
@@ -678,11 +632,11 @@ TLatex* GetTextSide(Int_t variable,Int_t identifier){
       tlSide->SetTextSize(0.03*resizeTextFactor);
     }
     else{
-      tlSide=new TLatex(0.016/gPad->GetWNDC()+gPad->GetLeftMargin(),0.26/gPad->GetHNDC()+gPad->GetBottomMargin(),"Away side");
+      tlSide=new TLatex(0.016/gPad->GetWNDC()+gPad->GetLeftMargin(),0.38/gPad->GetHNDC()+gPad->GetBottomMargin(),"Away side");
       tlSide->SetNDC();
       tlSide->SetTextFont(43);
       tlSide->SetTextAlign(11);
-      tlSide->SetTextSize(32*innerPadHeight/referencePadHeight*resizeTextFactor);
+      tlSide->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
     }
     
 
@@ -703,8 +657,8 @@ TLegend *GetLegendMCDataPoints(TH1D *hpp,TH1D *hpPb,Int_t identifier,TString str
    Int_t neffmod=CountNmodelsInLegend();
    if(!(strlegendHeader.IsNull()))neffmod++;
    //    yl=0.11;
-    yh=0.22;
-    yl=0.14+(3-neffmod)*0.07/3.;// for neffmod>3 an optimization might be needed
+    yh=0.32;
+    yl=0.22+(3-neffmod)*0.10/3.;// for neffmod>3 an optimization might be needed
     if(neffmod==4&& strlegendHeader.EqualTo(" ")){// is just from optimization to move up the legends on the rightmost panels in the paper 
       yl+=0.07/5.;
       yh+=0.07/5.;
@@ -972,7 +926,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binD,Int_t quantity,TPad *pd
   grData[0]->SetMarkerSize(markersize);
 
   if(textlegendOptions==10){ //Fabiom, only dta legend
-    TLegend *legend= new TLegend(0.35,0.47,0.8,0.54);
+    TLegend *legend= new TLegend(0.24,0.54,0.84,0.62);
     legend->SetLineWidth(0);
     legend->SetLineColor(kWhite);
     legend->AddEntry(hData[0],"pp, #sqrt{#it{s}} = 5.02 TeV","lep");
@@ -1029,7 +983,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binD,Int_t quantity,TPad *pd
   pd->cd();
   TH2D *hDraw;
   if(style==-1){
-    hData[0]->SetXTitle("Associated track #it{p}_{T} (GeV/#it{c})");
+    /*hData[0]->SetXTitle("Assoc. track #it{p}_{T} (GeV/#it{c})");
     hData[0]->SetYTitle(yaxisTitle[quantity].Data());
     hData[0]->GetYaxis()->SetTitleSize(0.04);
     hData[0]->GetYaxis()->SetTitleOffset(1.2);
@@ -1046,7 +1000,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binD,Int_t quantity,TPad *pd
     hData[0]->SetMarkerColor(colSystem[system]);
     hData[0]->SetMarkerStyle(markerStyle[system]);
     hData[0]->SetMarkerSize(markersize);
-    
+    */
   }
   else{
     hDraw=new TH2D(Form("hDraw%d",10*quantity+binD),"",100,0,28,200,0,10);
@@ -1079,20 +1033,20 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binD,Int_t quantity,TPad *pd
     hDraw->GetXaxis()->SetTitleSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
     hDraw->GetXaxis()->SetLabelSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
 
-    if(textlegendOptions%10==2||textlegendOptions%10==3){
+    if(textlegendOptions%10==2||textlegendOptions%10==3||textlegendOptions==10){
       hDraw->SetYTitle(yaxisTitle[quantity].Data());
     }
     else {
       hDraw->GetYaxis()->SetLabelSize(0);
     }
     if(textlegendOptions%10==1||textlegendOptions%10==3){
-      hDraw->SetXTitle("Associated track #it{p}_{T} (GeV/#it{c})");
+      hDraw->SetXTitle("Assoc. track #it{p}_{T} (GeV/#it{c})");
     }
     else {
       hDraw->GetXaxis()->SetLabelSize(0);
     }
-
-    hData[0]->SetXTitle("Associated track #it{p}_{T} (GeV/#it{c})");
+   //the following is always done
+    hData[0]->SetXTitle("Assoc. track #it{p}_{T} (GeV/#it{c})");
     hData[0]->SetYTitle(yaxisTitle[quantity].Data());
     hData[0]->GetYaxis()->SetTitleSize(0.04);
     hData[0]->GetYaxis()->SetTitleOffset(1.2);
@@ -1383,245 +1337,19 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binD,Int_t quantity,TPad *pd
 }
 
 
-void CompareFitResultsPPDataToMC(){
-  
-  TCanvas *c=CompareDatatoModels(0,0,0);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(0,0,1);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(0,0,2);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-
-
-  c=CompareDatatoModels(0,1,0);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(0,1,1);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(0,1,2);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-
-
-  c=CompareDatatoModels(0,2,0);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(0,2,1);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(0,2,2);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-
-}
-
-
-
-void CompareFitResultsPPbDataToMC(){
-  
-  TCanvas *c=CompareDatatoModels(1,0,0,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,0,1,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,0,2,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,0,3,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,0,4,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));  
-
-
-  c=CompareDatatoModels(1,1,0,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,1,1,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,1,2,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,1,3,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,1,4,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-
-
-  c=CompareDatatoModels(1,2,0,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,2,1,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,2,2,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,2,3,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,2,4,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-
-  c=CompareDatatoModels(1,3,0,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,3,1,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,3,2,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,3,3,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,3,4,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-
-  c=CompareDatatoModels(1,4,0,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,4,1,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,4,2,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,4,3,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,4,4,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-
-  c=CompareDatatoModels(1,5,0,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,5,1,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,5,2,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,5,3,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(1,5,4,0x0,999);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-
-}
-
-
-
-void CompareFitResultsDataBothSystemToMCPP(){
-  
-  TCanvas *c=CompareDatatoModels(-1,0,0);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(-1,0,1);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(-1,0,2);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-
-
-  c=CompareDatatoModels(-1,1,0);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(-1,1,1);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(-1,1,2);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-
-
-  c=CompareDatatoModels(-1,2,0);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(-1,2,1);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-  c=CompareDatatoModels(-1,2,2);
-  c->SaveAs(Form("%s.root",c->GetName()));
-  c->SaveAs(Form("%s.eps",c->GetName()));
-  c->SaveAs(Form("%s.png",c->GetName()));
-
-}
-
 void CompareFitResultsPPtoMCUniqueCanvas_vsPtAss() {
   gStyle->SetOptStat(0000);
   TCanvas *cFinalPaperStyle;
-  cFinalPaperStyle=new TCanvas("cPPvsPPbFitResultsFinalPaperStyle","pp vs.pPb fit results ",1550./1200.*canvasheight,canvasheight);
+  cFinalPaperStyle=new TCanvas("cPPvsPPbFitResultsFinalPaperStyle","pp vs.pPb fit results ",1800./1200.*canvasheight,canvasheight);
   //SetPadStyle(cFinalPaperStyle);
   //    cFinalPaperStyle->SetBottomMargin(0);
   //    cFinalPaperStyle->SetTopMargin(0);
-  cFinalPaperStyle->Divide(4,3,0.0,0.0,0);
+  cFinalPaperStyle->Divide(4,2,0.0,0.0,0);
   cFinalPaperStyle->SetTicky();
   cFinalPaperStyle->SetTickx();
   cFinalPaperStyle->SetFrameBorderMode(0);
 
-  Set4x6PadPositions(cFinalPaperStyle);
+  Set4x2PadPositions(cFinalPaperStyle);
   cFinalPaperStyle->Modified();
   cFinalPaperStyle->Update();
   //    Convert3x2Matrix(cFinalPaperStyle,kTRUE); 
@@ -1678,30 +1406,18 @@ void CompareFitResultsPPtoMCUniqueCanvas_vsPtAss() {
   }
   
   for(Int_t jp=0;jp<=3;jp++){
-    Int_t needTitle=0;
+    Int_t needTitle=1;
+    if(jp==0)needTitle=3;
     gStyle->SetOptStat(0000);
     TPad *pd=(TPad*)cFinalPaperStyle->cd(jp+5);
     SetPadStyle(pd);
     pd->cd();
-    if(jp==0)needTitle=2;
     gStyle->SetOptStat(0000);
     CompareDatatoModels(0,orderD[jp],1,pd,needTitle);    
     gStyle->SetOptStat(0000);   
   }
 
-  for(Int_t jp=0;jp<=3;jp++){
-    Int_t needTitle=0;
-    if(jp==0)needTitle=3;
-    else needTitle=1;
-    gStyle->SetOptStat(0000);
-    TPad *pd=(TPad*)cFinalPaperStyle->cd(jp+9);
-    SetPadStyle(pd);
-    pd->cd();
-    gStyle->SetOptStat(0000);
-    CompareDatatoModels(0,orderD[jp],2,pd,needTitle);    
-    gStyle->SetOptStat(0000);   
-  }
-  for(Int_t j=12;j>=1;j--){
+  for(Int_t j=8;j>=1;j--){
     TPad *pd=(TPad*)cFinalPaperStyle->cd(j);
     pd->Draw();
   }
@@ -1730,7 +1446,7 @@ void CompareFitResultsPPbtoMCUniqueCanvas(){
   xtitleoffset=2.5;
   strModelDirLeg[7]="EPOS 3.117, p-Pb simulation";
   if(skip3to5){
-    cFinalPaperStyle=new TCanvas("cPPbvsMCFitResultsFinalPaperStyle","pp vs. MC fit results ",1550./1200.*canvasheight,canvasheight);
+    cFinalPaperStyle=new TCanvas("cPPbvsMCFitResultsFinalPaperStyle","pp vs. MC fit results ",canvasheight,canvasheight);
     //SetPadStyle(cFinalPaperStyle);
     //    cFinalPaperStyle->SetBottomMargin(0);
     //    cFinalPaperStyle->SetTopMargin(0);
@@ -1856,16 +1572,16 @@ void CompareFitResultsPPbtoMCUniqueCanvas(){
 void CompareFitResultsPPtoMCUniqueCanvasAwaySide_vsPtAss(){
   gStyle->SetOptStat(0000);
   TCanvas *cFinalPaperStyle;
-  cFinalPaperStyle=new TCanvas("cPPvsPPbFitResultsFinalPaperStyle","pp vs.pPb fit results ",1550./1200.*canvasheight,canvasheight);
+  cFinalPaperStyle=new TCanvas("cPPvsPPbFitResultsFinalPaperStyle","pp vs.pPb fit results ",1800./1200.*canvasheight,canvasheight);
   //SetPadStyle(cFinalPaperStyle);
   //    cFinalPaperStyle->SetBottomMargin(0);
   //    cFinalPaperStyle->SetTopMargin(0);
-  cFinalPaperStyle->Divide(4,3,0.0,0.0,0);
+  cFinalPaperStyle->Divide(4,2,0.0,0.0,0);
   cFinalPaperStyle->SetTicky();
   cFinalPaperStyle->SetTickx();
   cFinalPaperStyle->SetFrameBorderMode(0);
 
-  Set4x6PadPositions(cFinalPaperStyle);
+  Set4x2PadPositions(cFinalPaperStyle);
   cFinalPaperStyle->Modified();
   cFinalPaperStyle->Update();
   //    Convert3x2Matrix(cFinalPaperStyle,kTRUE); 
@@ -1922,12 +1638,12 @@ void CompareFitResultsPPtoMCUniqueCanvasAwaySide_vsPtAss(){
   }
   
   for(Int_t jp=0;jp<=3;jp++){
-    Int_t needTitle=0;
+    Int_t needTitle=1;
+    if(jp==0)needTitle=3;
     gStyle->SetOptStat(0000);
     TPad *pd=(TPad*)cFinalPaperStyle->cd(jp+5);
     SetPadStyle(pd);
     pd->cd();
-    if(jp==0)needTitle=2;
     gStyle->SetOptStat(0000);
     CompareDatatoModels(0,orderD[jp],4,pd,needTitle);    
 
@@ -1950,19 +1666,7 @@ void CompareFitResultsPPtoMCUniqueCanvasAwaySide_vsPtAss(){
     gStyle->SetOptStat(0000);   
   }
 
-  for(Int_t jp=0;jp<=3;jp++){
-    Int_t needTitle=0;
-    if(jp==0)needTitle=3;
-    else needTitle=1;
-    gStyle->SetOptStat(0000);
-    TPad *pd=(TPad*)cFinalPaperStyle->cd(jp+9);
-    SetPadStyle(pd);
-    pd->cd();
-    gStyle->SetOptStat(0000);
-    CompareDatatoModels(0,orderD[jp],2,pd,needTitle);    
-    gStyle->SetOptStat(0000);   
-  }
-  for(Int_t j=12;j>=1;j--){
+  for(Int_t j=8;j>=1;j--){
     TPad *pd=(TPad*)cFinalPaperStyle->cd(j);
     pd->Draw();
   }
