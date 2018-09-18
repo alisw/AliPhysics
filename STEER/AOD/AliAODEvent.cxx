@@ -1231,20 +1231,19 @@ void AliAODEvent::FixCascades(){
 	  AliAODVertex* parent0=(AliAODVertex*)vV0->GetParent(); // parent of OnFly V0 from AOD
 	  //	  AliAODVertex* parent2=(AliAODVertex*)vV02->GetParent(); // parent of Offline V0 from AOD
 	  if(parent0->GetType()==AliAODVertex::kCascade && vV0->HasParent(vCasc)){
-	    // in cases in which a V0 is used for more thant 1 cascade, the parent-daughter chain i:
-	    // v0 -> Casc1 -> Casc2 -> Casc3 ...
-	    // We have to redo SetParent for the V0 only once: at Casc1
+	    // in cases in which a V0 is used for more thant 1 cascade, the parent-daughter chain is:
+	    // v0 -> CascN -> ... -> Casc2 -> Casc2 -> Primary vertex
+	    // We have to redo SetParent for the V0 only once: at CascN
 	    vV02->SetParent(vCasc);
 	    // assign as parent the primary vertex (alternative could be to assign parent2?)
 	    vV0->SetParent(vPrim);
-	  }
-	  if(vCasc->HasDaughter(vV0)){
-	    // should be done only for the cascade which was the parent of the V0
+	    // fix the daughters of the cascades
 	    vCasc->RemoveDaughter(vV0);
 	    vCasc->AddDaughter(vV02);
+	    // fix the daughters of the primary vertex
+	    vPrim->RemoveDaughter(vV02);
+	    vPrim->AddDaughter(vV0);
 	  }
-	  if(vPrim->HasDaughter(vV02)) vPrim->RemoveDaughter(vV02);
-	  if(!vPrim->HasDaughter(vV0)) vPrim->AddDaughter(vV0);
 	  break;
 	}
       }
