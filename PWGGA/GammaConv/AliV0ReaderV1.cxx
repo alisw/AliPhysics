@@ -99,6 +99,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fNumberOfPrimaryTracks(0),
   fNumberOfTPCoutTracks(0),
   fSphericity(0),
+  fCalcSphericity(kFALSE),
   fPeriodName(""),
   fPtHardBin(0),
   fUseMassToZero(kTRUE),
@@ -631,7 +632,7 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
   CountTPCoutTracks();
 
   // Calculate the Sphericity
-  CalculateSphericity();
+  if(fCalcSphericity) CalculateSphericity();
 
   // Event Cuts
   if(!fEventCuts->EventIsSelected(fInputEvent,fMCEvent)){

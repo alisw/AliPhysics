@@ -129,6 +129,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     Int_t              GetPtHardFromFile()                              {return fPtHardBin;}
     Int_t              GetNumberOfPrimaryTracks()                       {return fNumberOfPrimaryTracks;}
     Double_t           GetSphericity()                                  {return fSphericity;}
+    void               SetCalcSphericity(Bool_t set)                    {fCalcSphericity=set; return;}
     Int_t              GetNumberOfTPCoutTracks()                        {return fNumberOfTPCoutTracks;}
     void               SetUseMassToZero (Bool_t b)                      {if(b){ cout<<"enable set mass to zero for AliAODConversionPhoton"<<endl;}
                                                                          else { cout<<"disable set mass to zero for AliAODConversionPhoton "<<endl;}
@@ -199,6 +200,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     Bool_t         fEventIsSelected;
     Int_t          fNumberOfPrimaryTracks;        // Number of Primary Tracks in AOD or ESD
     Int_t          fNumberOfTPCoutTracks;         // Number of TPC Tracks with TPCout flag
+    Bool_t         fCalcSphericity;               // enable sphericity calculation
     Double_t       fSphericity;                   // Sphericity of the event
     TString        fPeriodName;
     Int_t          fPtHardBin;                    // ptHard bin from file
