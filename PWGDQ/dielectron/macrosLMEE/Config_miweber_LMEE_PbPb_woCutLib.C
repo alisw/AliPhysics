@@ -1448,6 +1448,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
 
   //add histograms to track class
+  histos->UserHistogram("Track","Centrality","Centrality;Centrality (%);#tracks",100,0.,100.,AliDielectronVarManager::kCentralityNew);
   histos->UserHistogram("Track","Pt","Pt;Pt [GeV];#tracks",500,0.,10.,AliDielectronVarManager::kPt);
   histos->UserHistogram("Track","P","P;P [GeV];#tracks",500,0.,10.,AliDielectronVarManager::kP);
   histos->UserHistogram("Track","PIn","PIn;PIn [GeV];#tracks",500,0.,10.,AliDielectronVarManager::kPIn);
