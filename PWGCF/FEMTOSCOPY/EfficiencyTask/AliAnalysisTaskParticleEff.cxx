@@ -1848,7 +1848,8 @@ void AliAnalysisTaskParticleEff::UserExec(Option_t *)
     
     if(aodCascade->ChargeXi() == 0) continue; 
 
-
+    aodCasacde->SetIgnoreOnFlyStatus(kTRUE);
+    
 //******XI MINUS*************************    
     if(aodCascade->ChargeXi() == -1){
       if(!aodCascade) continue; fCutsXim->Fill(cutXim++);
