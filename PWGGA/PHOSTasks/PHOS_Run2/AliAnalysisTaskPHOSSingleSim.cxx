@@ -431,16 +431,21 @@ void AliAnalysisTaskPHOSSingleSim::FillMgg()
   Double_t sp1 = -999;
 
   Double_t weight = 1., w1 = 1.;
+  Double_t TruePt = 0;
 
   for(Int_t i1=0;i1<multClust-1;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
 
+    if(fParticleName.Contains("Eta") && (IsFrom(ph1->GetPrimary(),TruePt,111) || IsFrom(ph1->GetPrimary(),TruePt,211))) continue;//reject cluster from eta->3pi
+
     for(Int_t i2=i1+1;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
       if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
       if(!CheckMinimumEnergy(ph2)) continue;
+
+      if(fParticleName.Contains("Eta") && (IsFrom(ph2->GetPrimary(),TruePt,111) || IsFrom(ph2->GetPrimary(),TruePt,211))) continue;//reject cluster from eta->3pi
 
       if(fIsPHOSTriggerAnalysis){
         if(ph1->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
@@ -515,6 +520,7 @@ void AliAnalysisTaskPHOSSingleSim::FillMgg()
         FillHistogramTH3(fOutputContainer,"hMgg_OA",m12,pt12,oa,weight);
       }
       if(m12 > 0.96) continue;//reduce entry in THnSparse
+
 
       if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMgg_M%d%d",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12,weight * 1/trgeff12);
       FillSparse(fOutputContainer,"hSparseMgg",value,weight * 1/trgeff12);
