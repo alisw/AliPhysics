@@ -4,19 +4,17 @@
 
 
 #define MULTBINS 1
-#define PARTTYPES 5
+#define PARTTYPES 6
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisUtils.h"
-#include "AliEventCuts.h"
 #include "THnSparse.h"
-#include "AliPIDResponse.h"
-#include "AliAODpidUtil.h"
+
 class AliAnalysisUtils;
 
 class AliAnalysisTaskParticleEff :public AliAnalysisTaskSE{
  public:
- AliAnalysisTaskParticleEff() : AliAnalysisTaskSE(),centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fEtaLambda(0),fPtLambda(0), fEtaAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fDCAtoPrimVtx(0), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
+ AliAnalysisTaskParticleEff() : AliAnalysisTaskSE(),centrality(0), fHistoList(0),  fHistEv(0), fpidResponse(0), fAODpidUtil(0)
     {
 
       for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
@@ -57,7 +55,7 @@ class AliAnalysisTaskParticleEff :public AliAnalysisTaskSE{
   //AliESDtrackCuts *fTrackCuts; // ESD track cuts
   TList *fHistoList; // histo list
   //TClonesArray *arrayMC;
-  TH1F *fHistEv[4];
+  TH1F *fHistEv;
  
   TH1F *fHistQA[11];
   TH2F *fHistQA2D[3];
@@ -66,6 +64,10 @@ class AliAnalysisTaskParticleEff :public AliAnalysisTaskSE{
   TH1F* fHistEvCuts[MULTBINS];
   TH2F *fHistQALambdas[2];
   TH2F *fOriginLambdas[5][2];
+
+  TH2F *fHistQAXi[2];
+  TH2F *fOriginXi[5][2];
+
   //TObjArray *recoParticleArray;
   TH2F *fGeneratedMCPrimaries[MULTBINS*PARTTYPES][2];
   TH2F *fMCPrimariesThatAreReconstructed[MULTBINS*PARTTYPES][2];
@@ -118,12 +120,35 @@ class AliAnalysisTaskParticleEff :public AliAnalysisTaskSE{
   TH2D *fRecPtLambdaMC;
   TH2D *fTruePtAntiLambdaMC;
   TH2D *fRecPtAntiLambdaMC;
+
+  //********************Xi*******************
+  TH1D *fMassInvXimPass;
+  TH1D *fMassInvXipPass;
+
+  TH1D *fMassInvXimFail;
+  TH1D *fMassInvXipFail;
+
+  TH1D *fEtaXim;
+  TH1D *fPtXim;
+  TH1D *fEtaXip;
+  TH1D *fPtXip;
+
+
+  TH2D *fTruePtXimMC;
+  TH2D *fRecPtXimMC;
+  TH2D *fTruePtXipMC;
+  TH2D *fRecPtXipMC;
+
+  TH1D *fCutsXim;
+  TH1D *fCutsXip;
+  TH1D *fCutsXibach;
+  //******************************************
+
   
   double fDCAtoPrimVtx;
   
  AliPIDResponse *fpidResponse;
  AliAODpidUtil  *fAODpidUtil;
- AliEventCuts   *fEventCuts;
   ClassDef(AliAnalysisTaskParticleEff, 0);
 
 };
