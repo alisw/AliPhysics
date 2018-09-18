@@ -54,7 +54,7 @@ NO PILEUP CUTS
 #endif
 
 //________________________________________________________________________
-AliFemtoManager* ConfigFemtoAnalysis2(const char* params) {
+AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 	double PionMass = 0.13956995;
 	double KaonMass = 0.493677;
@@ -181,7 +181,8 @@ AliFemtoManager* ConfigFemtoAnalysis2(const char* params) {
 	Reader->SetUseAliEventCuts(kTRUE);
 	Reader->SetIsPileUpEvent(ifIsPileUp);
 	Reader->SetUseMVPlpSelection(ifIsPileUp);
-	Reader->SetTrackPileUpRemoval(kFALSE);
+	Reader->SetTrackPileUpRemoval(ifIsPileUp);
+	Reader->SetV0PileUpRemoval(ifIsPileUp); //jesli w analize sa jakies lambdy
 
 
 	AliFemtoManager* Manager = new AliFemtoManager();
