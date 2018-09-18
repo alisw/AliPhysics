@@ -91,6 +91,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fSpecialSubTrigger(0),
   fRemovePileUp(kFALSE),
   fRemovePileUpSPD(kFALSE),
+  fUseSphericity(0),
   fPastFutureRejectionLow(0),
   fPastFutureRejectionHigh(0),
   fDoPileUpRejectV0MTPCout(0),
@@ -206,6 +207,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fSpecialSubTrigger(ref.fSpecialSubTrigger),
   fRemovePileUp(ref.fRemovePileUp),
   fRemovePileUpSPD(ref.fRemovePileUpSPD),
+  fUseSphericity(ref.fUseSphericity),
   fPastFutureRejectionLow(ref.fPastFutureRejectionLow),
   fPastFutureRejectionHigh(ref.fPastFutureRejectionHigh),
   fDoPileUpRejectV0MTPCout(ref.fDoPileUpRejectV0MTPCout),
@@ -1201,6 +1203,18 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
     fIsHeavyIon=2;
     fDetectorCentrality=2;
     fModCentralityClass=2;
+    break;
+  case 17: // h: pp -> Sphericity < 0.5
+    fIsHeavyIon=0;
+    fUseSphericity=1;
+    break;
+  case 18: // i: pp -> Sphericity > 0.5
+    fIsHeavyIon=0;
+    fUseSphericity=2;
+    break;
+  case 19: // j: pp -> Sphericity > 0.5
+    fIsHeavyIon=0;
+    fUseSphericity=3;
     break;
 
   default:
@@ -4696,6 +4710,18 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
      if( IsPileUpV0MTPCout(event) ){
        return 13;
      }
+  }
+
+  if(fUseSphericity != 0){
+    if(fUseSphericity == 1 && ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()>0.5){
+      return 14;
+    }
+    if(fUseSphericity == 2 && ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()<0.5){
+      return 14;
+    }
+    if(fUseSphericity == 3 && ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()==-1){
+      return 14;
+    }
   }
 
   if(hCentrality)hCentrality->Fill(GetCentrality(event));
