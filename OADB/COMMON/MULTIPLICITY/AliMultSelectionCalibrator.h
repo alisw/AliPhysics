@@ -39,7 +39,7 @@ public:
     
     //Task Configuration: trigger selection
     //This is in addition to the "IsTriggered" functionality. 
-    void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType;}
+    void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType; fCheckTriggerType=kTRUE; }
     
     //Run Ranges Interface
     Long_t GetNRunRanges() const {return fNRunRanges; }
@@ -82,6 +82,7 @@ private:
     
     Int_t fRunToUseAsDefault; //Give preference for this run to be the default
     
+    Bool_t fCheckTriggerType; 
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type to calibrate
     
     //Run Ranges map - master storage

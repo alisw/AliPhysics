@@ -290,6 +290,7 @@ private:
     AliMultVariable *fMC_NchEta05;
     AliMultVariable *fMC_NchEta08;
     AliMultVariable *fMC_NchEta10;
+    AliMultVariable *fMC_NchEta14;
     
     //Histograms / Anything else as needed
     TH1D *fHistEventCounter; //!
@@ -351,7 +352,7 @@ private:
     AliMultSelectionTask(const AliMultSelectionTask&);            // not implemented
     AliMultSelectionTask& operator=(const AliMultSelectionTask&); // not implemented
 
-    ClassDef(AliMultSelectionTask, 6);
+    ClassDef(AliMultSelectionTask, 7);
     //3 - extra QA histograms
 };
 

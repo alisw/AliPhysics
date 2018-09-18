@@ -190,6 +190,7 @@ fMC_NchV0C(0),
 fMC_NchEta05(0),
 fMC_NchEta08(0),
 fMC_NchEta10(0),
+fMC_NchEta14(0),
 
 //Histos
 fHistEventCounter(0),
@@ -338,6 +339,7 @@ fMC_NchV0C(0),
 fMC_NchEta05(0),
 fMC_NchEta08(0),
 fMC_NchEta10(0),
+fMC_NchEta14(0),
 
 //Histos
 fHistEventCounter(0),
@@ -565,6 +567,8 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fMC_NchEta08->SetIsInteger(kTRUE);
     fMC_NchEta10 =         new AliMultVariable("fMC_NchEta10");
     fMC_NchEta10->SetIsInteger(kTRUE);
+    fMC_NchEta14 =         new AliMultVariable("fMC_NchEta14");
+    fMC_NchEta14->SetIsInteger(kTRUE);
     
     //Add to AliMultInput Object, will later bind to TTree object in a loop
     fInput->AddVariable( fAmplitude_V0A );
@@ -627,6 +631,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fInput->AddVariable( fMC_NchEta05 );
         fInput->AddVariable( fMC_NchEta08 );
         fInput->AddVariable( fMC_NchEta10 );
+        fInput->AddVariable( fMC_NchEta14 );
     }
     
     //Add Monte Carlo AliMultVariables for MC selection
@@ -1163,6 +1168,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
             Long_t lCounter_NchEta05 = 0;
             Long_t lCounter_NchEta08 = 0;
             Long_t lCounter_NchEta10 = 0;
+            Long_t lCounter_NchEta14 = 0;
             npartINELgtONE = 0.;
             //----- Loop on Stack ----------------------------------------------------------------
             for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (stack->GetNtrack()); iCurrentLabelStack++)
@@ -1179,6 +1185,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
                 
                 if( 2.8 < geta && geta < 5.1 ) lCounter_NchV0A++;
                 if(-3.7 < geta && geta <-1.7 ) lCounter_NchV0C++;
+                if(TMath::Abs( geta ) < 1.4 ) lCounter_NchEta14++;
                 if(TMath::Abs( geta ) < 1.0 ) lCounter_NchEta10++;
                 if(TMath::Abs( geta ) < 0.8 ) lCounter_NchEta08++;
                 if(TMath::Abs( geta ) < 0.5 ) lCounter_NchEta05++;
