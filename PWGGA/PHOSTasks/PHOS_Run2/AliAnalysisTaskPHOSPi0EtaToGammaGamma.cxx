@@ -2009,31 +2009,46 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
         primary2 = ph2->GetPrimary();
 
         commonID = FindCommonParent(primary1,primary2);
+        if(commonID > -1) AliInfo(Form("commonID is found. primary1 = %d, primary2 = %d, commonID = %d, w1 = %e , w2 = %e",primary1,primary2,commonID,w1,w2));
+
         if(commonID > -1) weight = w1;
         else weight = w1*w2;
 
         if(IsFrom(primary1,TruePi0Pt,111) && IsFrom(primary2,TruePi0Pt,111) && commonID > -1){
+          AliAODMCParticle *p1 = (AliAODMCParticle*)fMCArrayAOD->At(primary1);
+          AliAODMCParticle *p2 = (AliAODMCParticle*)fMCArrayAOD->At(primary2);
+          Int_t pdg1 = p1->PdgCode(); 
+          Int_t pdg2 = p2->PdgCode(); 
+
           AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(commonID);
           Int_t pdg = p->PdgCode(); 
-          if(pdg == 111){
+          if(pdg1 == 22 && pdg2 == 22 && pdg == 111){
             FillHistogramTH2(fOutputContainer,"hMggFromPi0",m12,pt12,weight);
             if(asym < 0.8) FillHistogramTH2(fOutputContainer,"hMggFromPi0_asym08",m12,pt12,weight);
           }
         }
         if(IsFrom(primary1,TrueK0SPt,310) && IsFrom(primary2,TrueK0SPt,310) && commonID > -1){
           //for feed down correction from K0S->pi0 + pi0
+          AliAODMCParticle *p1 = (AliAODMCParticle*)fMCArrayAOD->At(primary1);
+          AliAODMCParticle *p2 = (AliAODMCParticle*)fMCArrayAOD->At(primary2);
+          Int_t pdg1 = p1->PdgCode(); 
+          Int_t pdg2 = p2->PdgCode(); 
           AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(commonID);
           Int_t pdg = p->PdgCode(); 
-          if(pdg == 111){
+          if(pdg1 == 22 && pdg2 == 22 && pdg == 111){
             FillHistogramTH2(fOutputContainer,"hMggFromK0S",m12,pt12,weight);
             if(asym < 0.8) FillHistogramTH2(fOutputContainer,"hMggFromK0S_asym08",m12,pt12,weight);
           }
         }
         if(IsFrom(primary1,TrueL0Pt,3122) && IsFrom(primary2,TrueL0Pt,3122) && commonID > -1){
           //for feed down correction from L0->pi0 + neutron
+          AliAODMCParticle *p1 = (AliAODMCParticle*)fMCArrayAOD->At(primary1);
+          AliAODMCParticle *p2 = (AliAODMCParticle*)fMCArrayAOD->At(primary2);
+          Int_t pdg1 = p1->PdgCode(); 
+          Int_t pdg2 = p2->PdgCode(); 
           AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(commonID);
           Int_t pdg = p->PdgCode(); 
-          if(pdg == 111){
+          if(pdg1 == 22 && pdg2 == 22 && pdg == 111){
             FillHistogramTH2(fOutputContainer,"hMggFromLambda0",m12,pt12,weight);
             if(asym < 0.8) FillHistogramTH2(fOutputContainer,"hMggFromLambda0_asym08",m12,pt12,weight);
           }
@@ -3877,14 +3892,37 @@ Int_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::FindCommonParent(Int_t iPart, Int_t
   Int_t iprim1 = iPart;
 
   while(iprim1>-1){
-    Int_t iprim2=jPart;
-
-    while(iprim2>-1){
-      if(iprim1==iprim2) return iprim1;
-      iprim2 = dynamic_cast<AliAODMCParticle*>(fMCArrayAOD->At(iprim2))->GetMother();
+    AliAODMCParticle *p1 = dynamic_cast<AliAODMCParticle*>(fMCArrayAOD->At(iprim1));
+    Int_t pdg1 = p1->GetPdgCode();
+    if(TMath::Abs(pdg1) <= 6 || TMath::Abs(pdg1) == 21){//reject quarks and gluons as parents.
+      iprim1 = p1->GetMother();
+      continue;
+    }
+    if(iprim1 == 0 || iprim1 == 1){//colliding protons
+      iprim1 = p1->GetMother();
+      continue;
     }
 
-    iprim1 = dynamic_cast<AliAODMCParticle*>(fMCArrayAOD->At(iprim1))->GetMother();
+    Int_t iprim2 = jPart;
+    while(iprim2>-1){
+      AliAODMCParticle *p2 = dynamic_cast<AliAODMCParticle*>(fMCArrayAOD->At(iprim2));
+      Int_t pdg2 = p2->GetPdgCode();
+
+      if(TMath::Abs(pdg2) <= 6 || TMath::Abs(pdg2) == 21){//reject quarks and gluons as parents.
+        iprim2 = p2->GetMother();
+        continue;
+      }
+      if(iprim2 == 0 || iprim2 == 1){//colliding protons
+        iprim2 = p2->GetMother();
+        continue;
+      }
+
+      if(iprim1==iprim2) return iprim1;
+      iprim2 = p2->GetMother();
+
+    }
+
+    iprim1 = p1->GetMother();
   }
 
   return -1;

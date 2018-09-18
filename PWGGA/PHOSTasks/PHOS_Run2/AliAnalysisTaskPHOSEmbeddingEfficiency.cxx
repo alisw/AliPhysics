@@ -561,16 +561,20 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMgg()
   Double_t sp1 = -999;
 
   Double_t weight = 1., w1 = 1.;
+  Double_t TruePt = 0;
 
   for(Int_t i1=0;i1<multClust-1;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
+    if(fParticleName.Contains("Eta") && (IsFrom(ph1->GetPrimary(),TruePt,111) || IsFrom(ph1->GetPrimary(),TruePt,211))) continue;//reject cluster from eta->3pi
 
     for(Int_t i2=i1+1;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
       if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
       if(!CheckMinimumEnergy(ph2)) continue;
+
+      if(fParticleName.Contains("Eta") && (IsFrom(ph2->GetPrimary(),TruePt,111) || IsFrom(ph2->GetPrimary(),TruePt,211))) continue;//reject cluster from eta->3pi
 
       if(fIsPHOSTriggerAnalysis){
         if(ph1->Energy() < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
