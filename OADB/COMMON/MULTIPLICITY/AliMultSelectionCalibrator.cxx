@@ -33,7 +33,7 @@ ClassImp(AliMultSelectionCalibrator);
 
 AliMultSelectionCalibrator::AliMultSelectionCalibrator() : TNamed(), 
 fInput(0), fSelection(0), lDesiredBoundaries(0), lNDesiredBoundaries(0),
-fRunToUseAsDefault(-1), fTrigType(AliVEvent::kAny),
+fRunToUseAsDefault(-1), fCheckTriggerType(kFALSE), fTrigType(AliVEvent::kAny),
 fNRunRanges(0), fRunRangesMap(), fMultSelectionList(0), 
 fInputFileName(""), fBufferFileName("buffer.root"),
 fOutputFileName(""), fMultSelectionCuts(0), fCalibHists(0)
@@ -62,7 +62,7 @@ fOutputFileName(""), fMultSelectionCuts(0), fCalibHists(0)
 AliMultSelectionCalibrator::AliMultSelectionCalibrator(const char * name, const char * title):
     TNamed(name,title),
 fInput(0), fSelection(0), lDesiredBoundaries(0), lNDesiredBoundaries(0),
-fRunToUseAsDefault(-1), fTrigType(AliVEvent::kAny),
+fRunToUseAsDefault(-1), fCheckTriggerType(kFALSE), fTrigType(AliVEvent::kAny),
 fNRunRanges(0), fRunRangesMap(), fMultSelectionList(0),
 fInputFileName(""), fBufferFileName("buffer.root"),
 fOutputFileName(""), fMultSelectionCuts(0), fCalibHists(0)
@@ -346,7 +346,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         //Apply trigger mask (will only work if not kAny)
         Bool_t isSelected = 0;
         isSelected = fEvSel_TriggerMask & fTrigType;
-        if(!isSelected) lSaveThisEvent = kFALSE; 
+        if(!isSelected && fCheckTriggerType) lSaveThisEvent = kFALSE; 
         
         //Check Selections as they are in the fMultSelectionCuts Object
         if( fMultSelectionCuts->GetTriggerCut()    && ! fEvSel_Triggered  ) lSaveThisEvent = kFALSE;
@@ -849,6 +849,21 @@ void AliMultSelectionCalibrator::SetupStandardInput() {
     //vertex-Z
     AliMultVariable *fEvSel_VtxZ = new AliMultVariable("fEvSel_VtxZ");
     
+    AliMultVariable *fMC_NPart =         new AliMultVariable("fMC_NPart");
+    fMC_NPart->SetIsInteger(kTRUE);
+    AliMultVariable *fMC_NColl =         new AliMultVariable("fMC_NColl");
+    fMC_NColl->SetIsInteger(kTRUE);
+    AliMultVariable *fMC_NchV0A =         new AliMultVariable("fMC_NchV0A");
+    fMC_NchV0A->SetIsInteger(kTRUE);
+    AliMultVariable *fMC_NchV0C =         new AliMultVariable("fMC_NchV0C");
+    fMC_NchV0C->SetIsInteger(kTRUE);
+    AliMultVariable *fMC_NchEta05 =         new AliMultVariable("fMC_NchEta05");
+    fMC_NchEta05->SetIsInteger(kTRUE);
+    AliMultVariable *fMC_NchEta08 =         new AliMultVariable("fMC_NchEta08");
+    fMC_NchEta08->SetIsInteger(kTRUE);
+    AliMultVariable *fMC_NchEta10 =         new AliMultVariable("fMC_NchEta10");
+    fMC_NchEta10->SetIsInteger(kTRUE);
+    
     //Add to AliMultInput Object
     fInput->AddVariable( fAmplitude_V0A );
     fInput->AddVariable( fAmplitude_V0A1 );
@@ -897,6 +912,14 @@ void AliMultSelectionCalibrator::SetupStandardInput() {
     fInput->AddVariable( fNTracksINELgtONE );
     fInput->AddVariable( fNPartINELgtONE         );
     fInput->AddVariable( fEvSel_VtxZ  );
+    
+    fInput->AddVariable( fMC_NPart );
+    fInput->AddVariable( fMC_NColl );
+    fInput->AddVariable( fMC_NchV0A );
+    fInput->AddVariable( fMC_NchV0C );
+    fInput->AddVariable( fMC_NchEta05 );
+    fInput->AddVariable( fMC_NchEta08 );
+    fInput->AddVariable( fMC_NchEta10 );
     //============================================================
     
 }
