@@ -16,7 +16,7 @@ public:
     
   }
   static AliDielectronPID* GetPIDCutsAna();
-  AliDielectronCutGroup* GetTrackCuts(int trsel=0, int pidsel=0, Boo_t useAODFilterCuts);
+  AliDielectronCutGroup* GetTrackCuts(int trsel=0, int pidsel=0, Bool_t useAODFilterCuts);
   AliDielectronEventCuts* GetEventCuts(int sel);
   static TH3D SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise);
   static AliDielectronPID* pidFilterCuts;
@@ -107,7 +107,7 @@ static TH3D LMEECutLib::SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int
 
 // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
 AliDielectronEventCuts* LMEECutLib::GetEventCuts() {
-  ::Info("AddTask_slehner_TreeMakeWCutLib","setting event cuts");
+  ::Info("LMEE_CutLib_slehner","setting event cuts");
   
   AliDielectronEventCuts* eventCuts = new AliDielectronEventCuts("eventCuts","evcuts");
   
@@ -122,7 +122,7 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts() {
 
 AliDielectronPID* LMEECutLib::GetPIDCutsAna(int sel, Bool_t useAODFilterCuts) {
     
-
+  ::Info("LMEE_CutLib_slehner","setting PID cuts");
 //  pidFilterCuts = new AliDielectronPID("PIDCuts1","PIDCuts1");
   //nanoAOD Prefilter cuts - should always be applied  if working on nanoAODs in real data, otherwise MC and real data might not use same cuts
   if(useAODFilterCuts){
@@ -178,6 +178,8 @@ AliDielectronPID* LMEECutLib::GetPIDCutsAna(int sel, Bool_t useAODFilterCuts) {
 }
 
 AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID, Bool_t useAODFilterCuts) {
+  
+  ::Info("LMEE_CutLib_slehner","setting Track cuts");
   AliDielectronCutGroup* trackCuts = new AliDielectronCutGroup("CutsAna","CutsAna",AliDielectronCutGroup::kCompAND);
     
   ////Add nanoAOD filter cuts

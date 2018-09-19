@@ -2,12 +2,10 @@
 //Current options: all, electrons, kCutSet1, TTreeCuts, V0_TPCcorr, V0_ITScorr
 AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(Int_t maxTrCut,
                                                                 Int_t maxPIDCut,
-                                                                Bool_t useAODFilterCuts=kTRUE,
-                                                                Bool_t getFromAlien = kFALSE,
-                                                                TString configFile="Config_slehner_Efficiency.C",
-                                                                Int_t wagonnr = 0,
-                                                                Int_t centrality = 0,
-                                                                Bool_t PIDCorr=kFALSE) {
+                                                                Bool_t PIDCorr=kFALSE,
+                                                                Bool_t useAODFilterCuts=kFALSE,
+                                                                TString configFile="Config_slehner_Efficiency.C"
+                                                                ) {
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
 
@@ -24,13 +22,13 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(Int_t ma
 
   // TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
   TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-  //Load updated macros from private ALIEN path
-  if (getFromAlien //&&
-      && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/s/slehner/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data())))
-      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/s/slehner/PWGDQ/dielectron/macrosLMEE/LMEECutLib_slehner.C ."))
-      ) {
-    configBasePath=Form("%s/",gSystem->pwd());
-  }
+//  //Load updated macros from private ALIEN path
+//  if (getFromAlien //&&
+//      && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/s/slehner/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data())))
+//      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/s/slehner/PWGDQ/dielectron/macrosLMEE/LMEECutLib_slehner.C ."))
+//      ) {
+//    configBasePath=Form("%s/",gSystem->pwd());
+//  }
   TString configFilePath(configBasePath+configFile);
   TString configLMEECutLib("LMEECutLib_slehner.C");
   TString configLMEECutLibPath(configBasePath+configLMEECutLib);
@@ -60,8 +58,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(Int_t ma
   task->SetEventFilter(cutlib->GetEventCuts()); // All cut sets have same event cuts
 
   Double_t centMin = 0.;
-  Double_t centMax = 90.;
-  GetCentrality(centrality, centMin, centMax);
+  Double_t centMax = 200.;
+//  GetCentrality(centrality, centMin, centMax);
   std::cout << "CentMin = " << centMin << "  CentMax = " << centMax << std::endl;
   task->SetCentrality(centMin, centMax);
 
@@ -150,10 +148,10 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(Int_t ma
     task->AddTrackCuts(filter);
     }
   }
-  if(PIDCorr) setPIDCorrections(task);
+//  if(PIDCorr) setPIDCorrections(task);
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("efficiency%d", wagonnr), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("efficiency%d", 0), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   return task;
 }
