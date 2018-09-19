@@ -1,16 +1,16 @@
 //TString generatorNameForMCSignal  = "pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7";
-TString generatorNameForMCSignal  = "";
+TString generatorNameForMCSignal  = "Hijing;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Hijing_0;Pythia CC_8;Pythia B_8;Pythia BB_8";
 //TString generatorNameForMCSignal  = "Pythia CC_1;Pythia BB_1;Pythia B_1;Jpsi2ee_1;B2JPsi2ee_1";
 // TString generatorNameForMCSignal  = "Hijing_0";
-//TString generatorNameForULSSignal = "Hijing;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Hijing_0;Pythia CC_8;Pythia B_8;Pythia BB_8";
-TString generatorNameForULSSignal = "";
+TString generatorNameForULSSignal = "Hijing;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Hijing_0;Pythia CC_8;Pythia B_8;Pythia BB_8";
+//TString generatorNameForULSSignal = "";
 
 
 Bool_t SetTPCCorrection = kFALSE;
 Bool_t SetITSCorrection = kFALSE;
 Bool_t SetTOFCorrection = kFALSE;
 
-Bool_t SetGeneratedSmearingHistos = kTRUE;
+Bool_t SetGeneratedSmearingHistos = kFALSE;
 
 Bool_t DoPairing    = kTRUE;
 Bool_t DoULSLS      = kTRUE;
@@ -44,10 +44,7 @@ const Double_t minPtCut  = 0.2;
 const Double_t maxPtCut  = 8.0;
 const Double_t minEtaCut = -0.8;
 const Double_t maxEtaCut = 0.8;
-// const Double_t minPtCut = 0.2;
-// const Double_t maxPtCut = 8.0;
-// const Double_t minEtaCut = -0.8;
-// const Double_t maxEtaCut = 0.8;
+
 
 
 // binning of single leg histograms
@@ -183,7 +180,6 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t selTr, Int_t selPID, Bool_t u
   std::cout<<"SetupTrackCutsAndSettings: "<<selTr<<","<<selPID<<std::endl;
   AliAnalysisFilter *anaFilter = new AliAnalysisFilter("anaFilter","anaFilter"); // named constructor seems mandatory!
 
-
   LMEECutLib* LMcutlib = new LMEECutLib();
 
   std::cout << "Get CutTr: "<<selTr<<" CutPID: "<<selPID<<std::endl;
@@ -255,7 +251,7 @@ std::vector<Bool_t> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* ta
   // eleDontCare.SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
   // task->AddSingleLegMCSignal(eleDontCare);
 
-  // task->AddSingleLegMCSignal(partFinalState);
+//  task->AddSingleLegMCSignal(partFinalState);
   task->AddSingleLegMCSignal(eleFinalState);
   // task->AddSingleLegMCSignal(eleFinalStateFromPion);
   task->AddSingleLegMCSignal(eleFinalStateFromD);
@@ -268,7 +264,7 @@ std::vector<Bool_t> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* ta
  DielectronsPairNotFromSameMother.push_back(kFALSE);
  DielectronsPairNotFromSameMother.push_back(kTRUE);
  DielectronsPairNotFromSameMother.push_back(kTRUE);
- // DielectronsPairNotFromSameMother.push_back(kFALSE);
+// DielectronsPairNotFromSameMother.push_back(kFALSE);
  return DielectronsPairNotFromSameMother;
 }
 
