@@ -90,7 +90,7 @@ private:
   TObjArray *GetAcceptedTracksLeading(AliAODEvent *faod,Bool_t leading);
   TObjArray *GetAcceptedTracksPID(AliAODEvent *faod);
   TObjArray *GetAcceptedV0Tracks(const AliAODEvent *faod);
-  TObjArray *GetAcceptedCascadeTracks(const AliAODEvent *faod);
+  TObjArray *GetAcceptedCascadeTracks(AliAODEvent *faod);
   TObjArray *GetAcceptedTracksAssociated(AliAODEvent *faod);
 
   void  CalculateSP();
