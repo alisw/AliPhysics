@@ -18,6 +18,8 @@ Bool_t Config_k0Sigmastar(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int
 Bool_t Config_kstar0Sigmastar(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
 Bool_t Config_kstarxSigmastar(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
 
+Bool_t Config_pikstar0(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
+
 
 void AddMonitorOutput_P(TString s="",TObjArray* m=0,TString o="",AliRsnLoopDaughter* l=0);
 void AddMonitorOutput_Pt(TString s="",TObjArray* m=0,TString o="",AliRsnLoopDaughter* l=0);
@@ -240,7 +242,11 @@ AliRsnMiniAnalysisTask* AddTaskResonanceFinder(
     Config_kstarxSigmastar(task,lname,isMC,system,EventCuts,TrackCuts1,TrackCuts2);
   }else if(d2==AliRsnDaughter::kKstarpm && (d1==AliRsnDaughter::kSigmastarp || d1==AliRsnDaughter::kSigmastarm)){
     Config_kstarxSigmastar(task,lname,isMC,system,EventCuts,TrackCuts2,TrackCuts1);
-      
+
+  }else if(d1==AliRsnDaughter::kPion && d2==AliRsnDaughter::kKstar0){
+    Config_pikstar0(task,lname,isMC,system,EventCuts,TrackCuts1,TrackCuts2);
+  }else if(d2==AliRsnDaughter::kPion && d1==AliRsnDaughter::kKstar0){
+    Config_pikstar0(task,lname,isMC,system,EventCuts,TrackCuts2,TrackCuts1);
   }
   cerr<<"done configuring"<<endl;
   
@@ -4634,6 +4640,498 @@ Bool_t Config_kstarxSigmastar(
 
     out->AddAxis(imID,150,1.3,1.6);
     out->AddAxis(ptID,50,0.0,20.0);
+    out->AddAxis(centID,nmult,multbins);
+  }
+
+  return kTRUE;
+}
+
+
+//=============================
+
+
+Bool_t Config_pikstar0(
+  AliRsnMiniAnalysisTask *task,
+  TString     lname,
+  Bool_t      isMC,
+  Int_t       system,
+  Int_t       EventCuts,
+  Int_t       TrackCutsPi,
+  Int_t       TrackCutsKstar0 //kstar0
+){
+  bool isPP=false;
+  if(!system) isPP=true;
+  int trigger=EventCuts%10;
+  int MultBins=(EventCuts/10)%10;
+  if(system==1 || system==2) MultBins=1;
+
+  char suffix[1000];
+  sprintf(suffix,"_%s",lname.Data());
+  Bool_t enableMonitor=kTRUE;
+
+  Double_t mass=0.139571+0.895810;//895.81 from PDG 2012 //modified
+  
+  // set daughter cuts :
+  //for all pions
+  if(!(TrackCutsPi%10000)) TrackCutsPi+=3020;//default settings
+  Float_t nsigmaPiTPC=0.1*(TrackCutsPi%100);
+  Float_t nsigmaPiTOF=0.1*((TrackCutsPi/100)%100);
+  Int_t CutTypePi=(TrackCutsPi/10000)%10;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+
+  //for all Kaons
+  if(!(TrackCutsKstar0%10000)) TrackCutsKstar0+=3020;//default settings
+  Float_t nsigmaKTPC=0.1*(TrackCutsKstar0%100);
+  Float_t nsigmaKTOF=0.1*((TrackCutsKstar0/100)%100);
+  Int_t CutTypeK=(TrackCutsKstar0/10000)%10;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+  ////////////////////////////////////
+
+  AliRsnCutTrackQuality* trkQualityCut=new AliRsnCutTrackQuality("myQualityCut");
+  trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
+
+  AliRsnCutSetDaughterParticle* cutSetQ=new AliRsnCutSetDaughterParticle("cutQ",trkQualityCut,
+									 AliRsnCutSetDaughterParticle::kQualityStd2010,AliPID::kPion,-1.);
+
+  AliRsnCutSetDaughterParticle* cutSetPi=0;
+  if(!CutTypePi) cutSetPi=new AliRsnCutSetDaughterParticle(
+							   Form("cutPion_%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,nsigmaPiTPC),
+							   trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,AliPID::kPion,nsigmaPiTPC,nsigmaPiTOF);
+  else if(CutTypePi==1) cutSetPi=new AliRsnCutSetDaughterParticle(
+								  Form("cutPion%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,nsigmaPiTPC),
+								  trkQualityCut,AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,AliPID::kPion,nsigmaPiTPC,-1.);
+  else if(CutTypePi==2) cutSetPi=new AliRsnCutSetDaughterParticle(
+								  Form("cutPion%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kFastTOFpidNsigma,nsigmaPiTOF),
+								  trkQualityCut,AliRsnCutSetDaughterParticle::kFastTOFpidNsigma,AliPID::kPion,-1.,nsigmaPiTOF);
+  if(!cutSetPi){cerr<<"Error in AddTaskResonanceFinder::Config_pikstar0(): missing cutSetPi"<<endl; return kFALSE;}
+
+  AliRsnCutSetDaughterParticle* cutSetK=0;
+  if(!CutTypeK) cutSetK=new AliRsnCutSetDaughterParticle(
+							 Form("cutK%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,nsigmaKTPC),
+							 trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,AliPID::kKaon,nsigmaKTPC,nsigmaKTOF);
+  else if(CutTypeK==1) cutSetK=new AliRsnCutSetDaughterParticle(
+								Form("cutK%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,nsigmaKTPC),
+								trkQualityCut,AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,AliPID::kKaon,nsigmaKTPC,-1.);
+  else if(CutTypeK==2) cutSetK=new AliRsnCutSetDaughterParticle(
+								Form("cutK%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kFastTOFpidNsigma,nsigmaKTOF),
+								trkQualityCut,AliRsnCutSetDaughterParticle::kFastTOFpidNsigma,AliPID::kKaon,-1.,nsigmaKTOF);
+  if(!cutSetK){cerr<<"Error in AddTaskResonanceFinder::Config_pikstar0(): missing cutSetK"<<endl; return kFALSE;}
+
+  Int_t iCutQ=task->AddTrackCuts(cutSetQ);
+  Int_t iCutPi=task->AddTrackCuts(cutSetPi);
+  Int_t iCutK=task->AddTrackCuts(cutSetK);
+
+  // monitoring
+  if(enableMonitor){
+    Printf("======== Monitoring cut AliRsnCutSetDaughterParticle enabled");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
+    AddMonitorOutput(isMC,cutSetQ->GetMonitorOutput());
+    AddMonitorOutput(isMC,cutSetPi->GetMonitorOutput());
+    AddMonitorOutput(isMC,cutSetK->GetMonitorOutput());
+  }
+
+  // AliRsnMiniResonanceFinder//kstar0
+  AliRsnCutMiniPair* cutMassKstar0=new AliRsnCutMiniPair("cutMassKstar0",AliRsnCutMiniPair::kMassRange);
+  //cutMassKstar0->SetRangeD(0.85,0.95);
+  cutMassKstar0->SetRangeD(0.8,0.99);
+  AliRsnCutMiniPair* cutYKstar0=new AliRsnCutMiniPair("cutRapidityKstar0",AliRsnCutMiniPair::kRapidityRange);
+  cutYKstar0->SetRangeD(-0.6,0.6);
+  AliRsnCutSet* cutsKstar0=new AliRsnCutSet("pairCutsKstar0",AliRsnTarget::kMother);
+  cutsKstar0->AddCut(cutMassKstar0);
+  cutsKstar0->AddCut(cutYKstar0);
+  cutsKstar0->SetCutScheme(TString::Format("%s&%s",cutMassKstar0->GetName(),cutYKstar0->GetName()).Data());
+
+  //kstar0
+  AliRsnMiniResonanceFinder* rsnfinder=new AliRsnMiniResonanceFinder(Form("%s_ResonanceFinder",task->GetName()));
+  rsnfinder->SetCutID(0,iCutK);
+  rsnfinder->SetDaughter(0,AliRsnDaughter::kKaon);
+  rsnfinder->SetCharge(0,'+');
+  rsnfinder->SetCutID(1,iCutPi);
+  rsnfinder->SetDaughter(1,AliRsnDaughter::kPion);
+  rsnfinder->SetCharge(1,'-');
+  rsnfinder->SetResonanceMass(0.895810);//kstar0
+  rsnfinder->SetResonancePDG(313);
+  rsnfinder->SetPairCuts(cutsKstar0);
+  Int_t iCutKstar0=task->AddResonanceFinder(rsnfinder);
+  
+  //anti-kstar0
+  AliRsnMiniResonanceFinder* antirsnfinder=new AliRsnMiniResonanceFinder(Form("%s_AntiResonanceFinder",task->GetName()));
+  antirsnfinder->SetCutID(0,iCutK);
+  antirsnfinder->SetDaughter(0,AliRsnDaughter::kKaon);
+  antirsnfinder->SetCharge(0,'-');
+  antirsnfinder->SetCutID(1,iCutPi);
+  antirsnfinder->SetDaughter(1,AliRsnDaughter::kPion);
+  antirsnfinder->SetCharge(1,'+');
+  antirsnfinder->SetResonanceMass(0.895810);
+  antirsnfinder->SetResonancePDG(-313);
+  antirsnfinder->SetPairCuts(cutsKstar0);
+  Int_t iCutantiKstar0=task->AddResonanceFinder(antirsnfinder);
+
+  /////////////////////////////////
+  //like sign K+ pi+
+  AliRsnMiniResonanceFinder* likepprsnfinder=new AliRsnMiniResonanceFinder(Form("%s_LikeppResonanceFinder",task->GetName()));//likesign k plus pion plus
+  likepprsnfinder->SetCutID(0,iCutK);
+  likepprsnfinder->SetDaughter(0,AliRsnDaughter::kKaon);
+  likepprsnfinder->SetCharge(0,'+');
+  likepprsnfinder->SetCutID(1,iCutPi);
+  likepprsnfinder->SetDaughter(1,AliRsnDaughter::kPion);
+  likepprsnfinder->SetCharge(1,'+');
+  likepprsnfinder->SetResonanceMass(0.895810);
+  likepprsnfinder->SetResonancePDG(313);
+  likepprsnfinder->SetPairCuts(cutsKstar0);
+  Int_t iCutlikeppKstar0=task->AddResonanceFinder(likepprsnfinder);
+
+  //like sign K- pi-
+  AliRsnMiniResonanceFinder* likemmrsnfinder=new AliRsnMiniResonanceFinder(Form("%s_LikemmResonanceFinder",task->GetName()));//likesign k minus pion minus
+  likemmrsnfinder->SetCutID(0,iCutK);
+  likemmrsnfinder->SetDaughter(0,AliRsnDaughter::kKaon);
+  likemmrsnfinder->SetCharge(0,'-');
+  likemmrsnfinder->SetCutID(1,iCutPi);
+  likemmrsnfinder->SetDaughter(1,AliRsnDaughter::kPion);
+  likemmrsnfinder->SetCharge(1,'-');
+  likemmrsnfinder->SetResonanceMass(0.895810);
+  likemmrsnfinder->SetResonancePDG(313);
+  likemmrsnfinder->SetPairCuts(cutsKstar0);
+  Int_t iCutlikemmKstar0=task->AddResonanceFinder(likemmrsnfinder);
+
+  ////////////////////////////////
+
+  //side bands
+  AliRsnCutMiniPair* cutMassSB=new AliRsnCutMiniPair("cutMassSB",AliRsnCutMiniPair::kMassRange);
+  //cutMassSB->SetRangeD(0.95,1.05);
+  cutMassSB->SetRangeD(1.037,1.085);
+  AliRsnCutSet* cutsSB=new AliRsnCutSet("pairCutsSB",AliRsnTarget::kMother);
+  cutsSB->AddCut(cutMassSB);
+  cutsSB->AddCut(cutYKstar0);
+  cutsSB->SetCutScheme(TString::Format("%s&%s",cutMassSB->GetName(),cutYKstar0->GetName()).Data());
+
+  AliRsnMiniResonanceFinder* rsnfinderSB=new AliRsnMiniResonanceFinder(Form("%s_ResonanceFinderSB",task->GetName()));
+  rsnfinderSB->SetCutID(0,iCutK);
+  rsnfinderSB->SetDaughter(0,AliRsnDaughter::kKaon);
+  rsnfinderSB->SetCharge(0,'+');
+  rsnfinderSB->SetCutID(1,iCutPi);
+  rsnfinderSB->SetDaughter(1,AliRsnDaughter::kPion);
+  rsnfinderSB->SetCharge(1,'-');
+  rsnfinder->SetResonanceMass(0.895810);
+  rsnfinderSB->SetResonancePDG(313);
+  rsnfinderSB->SetPairCuts(cutsSB);
+  Int_t iCutSB=task->AddResonanceFinder(rsnfinderSB);
+
+  AliRsnMiniResonanceFinder* antirsnfinderSB=new AliRsnMiniResonanceFinder(Form("%s_AntiResonanceFinderSB",task->GetName()));
+  antirsnfinderSB->SetCutID(0,iCutK);
+  antirsnfinderSB->SetDaughter(0,AliRsnDaughter::kKaon);
+  antirsnfinderSB->SetCharge(0,'-');
+  antirsnfinderSB->SetCutID(1,iCutPi);
+  antirsnfinderSB->SetDaughter(1,AliRsnDaughter::kPion);
+  antirsnfinderSB->SetCharge(1,'+');
+  antirsnfinder->SetResonanceMass(0.895810);
+  antirsnfinderSB->SetResonancePDG(-313);
+  antirsnfinderSB->SetPairCuts(cutsSB);
+  Int_t iCutantiSB=task->AddResonanceFinder(antirsnfinderSB);
+  
+  // pair cuts
+  AliRsnCutMiniPair* cutY=new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
+  cutY->SetRangeD(-0.5,0.5);
+  AliRsnCutMiniPair* cutV0=new AliRsnCutMiniPair("cutV0",AliRsnCutMiniPair::kContainsV0Daughter);
+   
+  AliRsnCutSet* cutsPairSame=new AliRsnCutSet("pairCutsSame",AliRsnTarget::kMother);
+  cutsPairSame->AddCut(cutY);
+  cutsPairSame->AddCut(cutV0);
+  cutsPairSame->SetCutScheme(TString::Format("%s&(!%s)",cutY->GetName(),cutV0->GetName()).Data());
+  
+  AliRsnCutSet* cutsPairMix=new AliRsnCutSet("pairCutsMix", AliRsnTarget::kMother);
+  cutsPairMix->AddCut(cutY);
+  cutsPairMix->SetCutScheme(cutY->GetName());
+
+  // multiplicity binning
+  Double_t multbins[200];
+  int j,nmult=0;
+  if(!MultBins){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.e6; nmult++;
+  }else if(!trigger){
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=1.; nmult++;
+    multbins[nmult]=5.; nmult++;
+    multbins[nmult]=10.; nmult++;
+    multbins[nmult]=15.; nmult++;
+    for(j=2;j<=10;j++){multbins[nmult]=j*10; nmult++;}
+  }else{
+    multbins[nmult]=0.; nmult++;
+    multbins[nmult]=0.001; nmult++;
+    multbins[nmult]=0.005; nmult++;
+    multbins[nmult]=0.01; nmult++;
+    multbins[nmult]=0.05; nmult++;
+    multbins[nmult]=0.1; nmult++;
+    multbins[nmult]=1.; nmult++;
+  }
+
+  // -- Values ------------------------------------------------------------------------------------
+  /* invariant mass   */ Int_t imID   = task->CreateValue(AliRsnMiniValue::kInvMass,    kFALSE);
+  /* IM resolution    */ Int_t resID  = task->CreateValue(AliRsnMiniValue::kInvMassRes, kTRUE);
+  /* transv. momentum */ Int_t ptID   = task->CreateValue(AliRsnMiniValue::kPt,         kFALSE);
+  /* centrality       */ Int_t centID = task->CreateValue(AliRsnMiniValue::kMult,       kFALSE);
+  /* pseudorapidity   */ Int_t etaID  = task->CreateValue(AliRsnMiniValue::kEta,        kFALSE);
+  /* rapidity         */ Int_t yID    = task->CreateValue(AliRsnMiniValue::kY,          kFALSE);
+
+  // -- Create all needed outputs -----------------------------------------------------------------
+  // use an array for more compact writing, which are different on mixing and charges
+
+  Int_t i,xID,cut2,pairID,ipdg;
+  TString name,comp;
+  Char_t charge1;
+  AliRsnMiniOutput* out;
+
+  for(i=0;i<16;i++){
+    if(!i){
+      xID=imID;
+      name.Form("PipKstar0");
+      comp.Form("PAIR");
+      charge1='+';
+      cut2=iCutKstar0;
+      pairID=0;
+      ipdg=3124;
+    }else if(i==1){
+      xID=imID;
+      name.Form("PimKstar0");
+      comp.Form("PAIR");
+      charge1='-';
+      cut2=iCutKstar0;
+      pairID=0;
+      ipdg=-3124;
+    }else if(i==2){
+      xID=imID;
+      name.Form("PipSB");
+      comp.Form("PAIR");
+      charge1='+';
+      cut2=iCutSB;
+      pairID=0;
+      ipdg=3124;
+    }else if(i==3){
+      xID=imID;
+      name.Form("PimSB");
+      comp.Form("PAIR");
+      charge1='-';
+      cut2=iCutSB;
+      pairID=0;
+      ipdg=-3124;
+    }else if(i==4){
+      xID=imID;
+      name.Form("PipKstar0Mix");
+      comp.Form("MIX");
+      charge1='+';
+      cut2=iCutKstar0;
+      pairID=1;
+      ipdg=3124;
+    }else if(i==5){
+      xID=imID;
+      name.Form("PimKstar0Mix");
+      comp.Form("MIX");
+      charge1='-';
+      cut2=iCutKstar0;
+      pairID=1;
+      ipdg=-3124;
+    }else if(i==6){
+      xID=imID;
+      name.Form("PipantiKstar0");
+      comp.Form("PAIR");
+      charge1='+';
+      cut2=iCutantiKstar0;
+      pairID=0;
+      ipdg=3124;
+    }else if(i==7){
+      xID=imID;
+      name.Form("PimantiKstar0");
+      comp.Form("PAIR");
+      charge1='-';
+      cut2=iCutantiKstar0;
+      pairID=0;
+      ipdg=-3124;
+    }else if(i==8){
+      xID=imID;
+      name.Form("PipantiSB");
+      comp.Form("PAIR");
+      charge1='+';
+      cut2=iCutantiSB;
+      pairID=0;
+      ipdg=3124;
+    }else if(i==9){
+      xID=imID;
+      name.Form("PimantiSB");
+      comp.Form("PAIR");
+      charge1='-';
+      cut2=iCutantiSB;
+      pairID=0;
+      ipdg=-3124;
+    }else if(i==10){
+      xID=imID;
+      name.Form("PipantiKstar0Mix");
+      comp.Form("MIX");
+      charge1='+';
+      cut2=iCutantiKstar0;
+      pairID=1;
+      ipdg=3124;
+    }else if(i==11){
+      xID=imID;
+      name.Form("PimantiKstar0Mix");
+      comp.Form("MIX");
+      charge1='-';
+      cut2=iCutantiKstar0;
+      pairID=1;
+      ipdg=3124;
+    }else if(i==12){
+      xID=imID;
+      name.Form("PiplikeppKstar0Mix");
+      comp.Form("PAIR");
+      charge1='+';
+      cut2=iCutlikeppKstar0;
+      pairID=0;
+      ipdg=3124;
+    }else if(i==13){
+      xID=imID;
+      name.Form("PimlikeppKstar0Mix");
+      comp.Form("PAIR");
+      charge1='-';
+      cut2=iCutlikeppKstar0;
+      pairID=0;
+      ipdg=3124;
+    }else if(i==14){
+      xID=imID;
+      name.Form("PiplikemmKstar0Mix");
+      comp.Form("PAIR");
+      charge1='+';
+      cut2=iCutlikemmKstar0;
+      pairID=0;
+      ipdg=3124;
+    }else if(i==15){
+      xID=imID;
+      name.Form("PimlikemmKstar0Mix");
+      comp.Form("PAIR");
+      charge1='-';
+      cut2=iCutlikemmKstar0;
+      pairID=0;
+      ipdg=3124;
+    }
+
+    out=task->CreateOutput(Form("pikstar0_%s%s",name.Data(),suffix),"HIST",comp.Data());
+    out->SetDaughter(0,AliRsnDaughter::kPion);
+    out->SetCutID(0,iCutPi);
+    out->SetCharge(0,charge1);
+
+    out->SetDaughter(1,AliRsnDaughter::kKstar0);
+    out->SetCutID(1,cut2);
+    out->SetCharge(1,'0');
+    if(cut2!=iCutSB && cut2!=iCutantiSB) out->SetUseStoredMass(1);
+
+    if(!pairID) out->SetPairCuts(cutsPairSame);
+    else out->SetPairCuts(cutsPairMix);
+    out->SetMotherPDG(ipdg);
+    out->SetMotherMass(mass);
+    if(xID==imID) out->AddAxis(imID,210,0.9,2.0);
+    else out->AddAxis(resID,200,-0.02,0.02);
+    out->AddAxis(ptID,200,0.0,20.0);// axis Y: transverse momentum
+    out->AddAxis(centID,nmult,multbins);// axis Z: centrality-multiplicity
+  }
+
+  // fill monitoring histogram for the resonance (K*0)
+  for(i=0;i<8;i++){
+    if(!i){
+      name.Form("kstar0mass");
+      comp.Form("PAIR");
+      cut2=iCutKstar0;
+    }else if(i==1){
+      name.Form("SBmass");
+      comp.Form("PAIR");
+      cut2=iCutSB;
+    }else if(i==2){
+      if(!isMC) continue;
+      name.Form("kstar0mass_gen");
+      comp.Form("MOTHER");
+      cut2=iCutKstar0;
+    }else if(i==3){
+      if(!isMC) continue;
+      name.Form("kstar0mass_rec");
+      comp.Form("TRUE");
+      cut2=iCutKstar0;
+    }else if(i==4){
+      name.Form("antikstar0mass");
+      comp.Form("PAIR");
+      cut2=iCutantiKstar0;
+    }else if(i==5){
+      name.Form("antiSBmass");
+      comp.Form("PAIR");
+      cut2=iCutantiSB;
+    }else if(i==6){
+      name.Form("likeppkstar0mass");
+      comp.Form("PAIR");
+      cut2=iCutlikeppKstar0;
+    }else if(i==7){
+      name.Form("likemmkstar0mass");
+      comp.Form("PAIR");
+      cut2=iCutlikemmKstar0;
+    }
+
+    out=task->CreateOutput(Form("pikstar0_%s",name.Data()),"HIST",comp.Data());
+    out->SetMotherPDG(313);//fix this
+
+    if(cut2==iCutKstar0){
+      for(j=0;j<2;j++){
+        out->SetDaughter(j,rsnfinder->GetDaughter(j));
+        out->SetCutID(j,rsnfinder->GetCutID(j));
+        out->SetCharge(j,rsnfinder->GetCharge(j));
+      }
+      out->SetMotherMass(rsnfinder->GetResonanceMass());
+      out->SetPairCuts(cutsKstar0);
+    }else if(cut2==iCutSB){
+      for(j=0;j<2;j++){
+        out->SetDaughter(j,rsnfinderSB->GetDaughter(j));
+        out->SetCutID(j,rsnfinderSB->GetCutID(j));
+        out->SetCharge(j,rsnfinderSB->GetCharge(j));
+      }
+      out->SetMotherMass(rsnfinderSB->GetResonanceMass());
+      out->SetPairCuts(cutsSB);
+    }
+    //for anti
+
+    else if(cut2==iCutantiKstar0){
+      for(j=0;j<2;j++){
+        out->SetDaughter(j,antirsnfinder->GetDaughter(j));
+        out->SetCutID(j,antirsnfinder->GetCutID(j));
+        out->SetCharge(j,antirsnfinder->GetCharge(j));
+      }
+      out->SetMotherMass(antirsnfinder->GetResonanceMass());
+      out->SetPairCuts(cutsKstar0);
+    }else if(cut2==iCutantiSB){
+      for(j=0;j<2;j++){
+        out->SetDaughter(j,antirsnfinderSB->GetDaughter(j));
+        out->SetCutID(j,antirsnfinderSB->GetCutID(j));
+        out->SetCharge(j,antirsnfinderSB->GetCharge(j));
+      }
+      out->SetMotherMass(antirsnfinderSB->GetResonanceMass());
+      out->SetPairCuts(cutsSB);
+    }
+
+    else if(cut2==iCutlikeppKstar0){
+      for(j=0;j<2;j++){
+        out->SetDaughter(j,likepprsnfinder->GetDaughter(j));
+        out->SetCutID(j,likepprsnfinder->GetCutID(j));
+        out->SetCharge(j,likepprsnfinder->GetCharge(j));
+      }
+      out->SetMotherMass(likepprsnfinder->GetResonanceMass());
+      out->SetPairCuts(cutsKstar0);
+    }
+
+    else if(cut2==iCutlikemmKstar0){
+      for(j=0;j<2;j++){
+        out->SetDaughter(j,likemmrsnfinder->GetDaughter(j));
+        out->SetCutID(j,likemmrsnfinder->GetCutID(j));
+        out->SetCharge(j,likemmrsnfinder->GetCharge(j));
+      }
+      out->SetMotherMass(likemmrsnfinder->GetResonanceMass());
+      out->SetPairCuts(cutsKstar0);
+    }
+
+    //out->AddAxis(imID,200,0.85,1.05);//including all
+    out->AddAxis(imID,170,0.75,1.09);
+    out->AddAxis(ptID,200,0.0,20.0);
     out->AddAxis(centID,nmult,multbins);
   }
 
