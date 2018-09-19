@@ -1191,7 +1191,7 @@ void AliAODEvent::FixCascades(){
   if(nCasc==0) return;
 
   AliAODcascade* cascForCheck=(AliAODcascade*)fCascades->UncheckedAt(0);
-  if(cascForCheck->TestBit(AliAODEvent::kCascadesFixed)){
+  if(cascForCheck->TestBit(AliAODcascade::kOnFlyCascadesFixed)){
     // Cascades already fixed -> do nothing
     // AliInfo("Cascades already fixed -> do nothing");
     return;
@@ -1256,6 +1256,6 @@ void AliAODEvent::FixCascades(){
 	}
       }
     }
-    cc->SetBit(AliAODEvent::kCascadesFixed);
+    cc->SetBit(AliAODcascade::kOnFlyCascadesFixed);
   }
 }

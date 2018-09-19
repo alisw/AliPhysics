@@ -73,7 +73,6 @@ class AliAODEvent : public AliVEvent {
 		       kAODListN
   };
 
-  enum statusCasc {kCascadesFixed=BIT(14)};
 
   AliAODEvent();
   virtual ~AliAODEvent();
