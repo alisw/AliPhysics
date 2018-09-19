@@ -73,6 +73,7 @@ class AliAODEvent : public AliVEvent {
 		       kAODListN
   };
 
+
   AliAODEvent();
   virtual ~AliAODEvent();
 
@@ -205,9 +206,15 @@ class AliAODEvent : public AliVEvent {
   {new((*fV0s)[fV0s->GetEntriesFast()]) AliAODv0(*v0); return fV0s->GetEntriesFast()-1;}
 
   // Cascades
-  TClonesArray  *GetCascades()            const { return fCascades; }
+  TClonesArray  *GetCascades(){
+    FixCascades();
+    return fCascades;
+  }
   Int_t          GetNumberOfCascades()    const { return fCascades->GetEntriesFast(); }
-  AliAODcascade *GetCascade(Int_t nCasc)  const { return (AliAODcascade*)fCascades->UncheckedAt(nCasc); }
+  AliAODcascade *GetCascade(Int_t nCasc){
+    FixCascades();
+    return (AliAODcascade*)fCascades->UncheckedAt(nCasc);
+  }
   Int_t          AddCascade(const AliAODcascade* cascade)
   {new((*fCascades)[fCascades->GetEntriesFast()]) AliAODcascade(*cascade); return fCascades->GetEntriesFast()-1;}
 
@@ -337,6 +344,7 @@ class AliAODEvent : public AliVEvent {
   AliAODAD   *GetADData() const { return fAODAD; }
 
   virtual AliVEvent::EDataLayoutType GetDataLayoutType() const;
+  void FixCascades();
 
   private :
 

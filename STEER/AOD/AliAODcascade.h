@@ -132,6 +132,8 @@ public:
   Double_t RapXi()          const;
   Double_t RapOmega()       const;
 
+  enum statusCasc {kOnFlyCascadesFixed=BIT(14)};
+
 protected:
 
   TRef          fDecayVertexXi;           ///< ref to decay vertex of the cascade (Xi vertex)
