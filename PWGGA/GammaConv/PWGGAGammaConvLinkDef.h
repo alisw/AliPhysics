@@ -23,6 +23,7 @@
 #pragma link C++ class AliDalitzElectronCuts+;
 #pragma link C++ class AliDalitzElectronSelector+;
 #pragma link C++ class AliCaloTrackMatcher+;
+#pragma link C++ class AliPhotonIsolation+;
 
 // User tasks
 #pragma link C++ class AliAnalysisTaskPi0v2+;
@@ -59,6 +60,7 @@
 #pragma link C++ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson+;
 #pragma link C++ class AliAnalysisTaskGammaConvCalo+;
 #pragma link C++ class AliAnalysisTaskGammaCalo+;
+#pragma link C++ class AliAnalysisTaskGammaCaloIso+;
 #pragma link C++ class AliAnalysisTaskGammaCaloMerged+;
 #pragma link C++ class AliAnalysisTaskGammaConvFlow+;
 

@@ -48,6 +48,7 @@ set(SRCS
     AliAnalysisTaskdPhi.cxx
     AliAnalysisTaskEtaToPiPlPiMiGamma.cxx
     AliAnalysisTaskGammaCalo.cxx
+    AliAnalysisTaskGammaCaloIso.cxx
     AliAnalysisTaskGammaCaloMerged.cxx    
     AliAnalysisTaskGammaConvCalo.cxx
     AliAnalysisTaskGammaConvDalitzV1.cxx
@@ -86,6 +87,7 @@ set(SRCS
     AliGammaConversionAODBGHandler.cxx
     AliKFConversionMother.cxx
     AliKFConversionPhoton.cxx
+    AliPhotonIsolation.cxx
     AliPrimaryPionCuts.cxx
     AliPrimaryPionSelector.cxx
     AliV0ReaderV1.cxx
