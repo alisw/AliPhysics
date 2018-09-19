@@ -2300,6 +2300,7 @@ void AliTPCv2::StepManager()
   // Called for every step in the Time Projection Chamber
   //
 
+  const Int_t   kPdgMonopole = 60000000; // PDG value of a magnetic monopole
   const Int_t   kMaxDistRef =15;     // maximal difference between 2 stored references
   const Float_t kbig = 1.e10;
 
@@ -2322,7 +2323,7 @@ void AliTPCv2::StepManager()
   Float_t charge = mc->TrackCharge();
   Int_t   pdg    = mc->TrackPid();
   
-  if(TMath::Abs(charge)<=0. && pdg!=60000000) return; // take only charged particles (except magnetic monopoles)
+  if(TMath::Abs(charge)<=0. && pdg!=kPdgMonopole) return; // take only charged particles (except magnetic monopoles)
   
   // check the sensitive volume
 
@@ -2454,22 +2455,24 @@ void AliTPCv2::StepManager()
     const Double_t Kmax = TMath::Power(Emax, alpha_p1);
     const Double_t wIon = fTPCParam->GetWmean();
 
-    for(Int_t n = 0; n < nColl; n++) {
-      // Use GEANT3 / NA49 expression:
-      // P(Edep) ~ k * Edep^alpha
-      // Emin(~I) < Edep < Emax(300 electrons)
-      // k fixed so that Int_Emin^EMax P(Edep) = 1.
-      const Double_t rndm = mc->GetRandom()->Rndm();
-      const Double_t Edep = TMath::Power((Kmax - Kmin) * rndm + Kmin, 1.0/alpha_p1);
-      Int_t nel_step = (Int_t)((Edep-Emin)/wIon) + 1;
-      nel_step = TMath::Min(nel_step,300); // 300 electrons corresponds to 10 keV
-      nel += nel_step;
+    // special treatmeant of magnetic monopoles
+    if(pdg==kPdgMonopole){
+      nel = (Int_t)((mc->Edep()-Emin)/wIon) + 1;
+    }
+    else{
+      for(Int_t n = 0; n < nColl; n++) {
+	// Use GEANT3 / NA49 expression:
+	// P(Edep) ~ k * Edep^alpha
+	// Emin(~I) < Edep < Emax(300 electrons)
+	// k fixed so that Int_Emin^EMax P(Edep) = 1.
+	const Double_t rndm = mc->GetRandom()->Rndm();
+	const Double_t Edep = TMath::Power((Kmax - Kmin) * rndm + Kmin, 1.0/alpha_p1);
+	Int_t nel_step = (Int_t)((Edep-Emin)/wIon) + 1;
+	nel_step = TMath::Min(nel_step,300); // 300 electrons corresponds to 10 keV
+	nel += nel_step;
+      }
     }
 
-    if(pdg==60000000){
-      nel = (Int_t)((mc->Edep()-Emin)/wIon) + 1;
-      nel = TMath::Min(nel,300);// 300 electrons corresponds to 10 keV
-    }
     //
     mc->TrackPosition(p);
     hits[0]=p[0];
