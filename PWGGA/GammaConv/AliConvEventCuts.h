@@ -237,6 +237,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17c3b2,         //!< anchored LHC16l pass 1 - heavy flavour MC Pythia6
         kLHC17c3a2,         //!< anchored LHC16l pass 1 - heavy flavour MC Pythia6
         kLHC17i3a1,         //!< anchored LHC16i,j,k,l,o,p GammaJet - EMCal triggered
+        kLHC17i3c1,         //!< anchored LHC16i,j,k,l,o,p JetJet - EMCal triggered
 
         //General purpose- pPb
         kLHC17a3a,            //!< anchored LHC16r pass 1 - general purpose EPOSLHC
