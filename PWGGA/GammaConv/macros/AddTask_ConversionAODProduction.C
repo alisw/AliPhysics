@@ -18,33 +18,48 @@ AliAnalysisTask *AddTask_ConversionAODProduction( Int_t dataset                 
 	}
 
 //========= Add PID Reponse to ANALYSIS manager ====
-	if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
-	gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-	AddTaskPIDResponse(isMC);
-	}
-	
-	TString analysiscut;
-	TString analysiscutEvent;
-	TString analysiscutB;
+    if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
+      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+      AddTaskPIDResponse(isMC);
+    }
 
-	if(dataset == 1){
-		analysiscutEvent = "10000003";
-        analysiscut= "06000008400000001000000000";
-		analysiscutB="16000008400000001000000000";
-	} else if (dataset == 2){
-		analysiscutEvent = "80000003";
-		analysiscut= "06000008400000001000000000";
-		analysiscutB="16000008400000001000000000";
-	} else{
-		analysiscutEvent = "00000003";
-		analysiscut ="06000008400100001000000000";
-		analysiscutB="16000008400100001000000000";
-	}
+    TString analysiscut;
+    TString analysiscutEvent;
+    TString analysiscutB;
 
-	//========= Add V0 Reader to  ANALYSIS manager =====
+    if(dataset == 1){
+      analysiscutEvent = "10000003";
+      if(lowBfield){
+          analysiscut  = "06000088d00000001100000000";
+          analysiscutB = "16000088d00000001100000000";
+      }else{
+          analysiscut  = "06000008d00000001100000000";
+          analysiscutB = "16000008d00000001100000000";
+      }
+    } else if (dataset == 2){
+      analysiscutEvent = "80000003";
+      if(lowBfield){
+          analysiscut  = "06000088d00000001100000000";
+          analysiscutB = "16000088d00000001100000000";
+      }else{
+          analysiscut  = "06000008d00000001100000000";
+          analysiscutB = "16000008d00000001100000000";
+      }
+    } else{
+      analysiscutEvent = "00000003";
+      if(lowBfield){
+          analysiscut  = "06000088d00100001100000000";
+          analysiscutB = "16000088d00100001100000000";
+      }else{
+          analysiscut  = "06000008d00100001100000000";
+          analysiscutB = "16000008d00100001100000000";
+      }
+    }
 
-	AliV0ReaderV1 *fV0Reader=new AliV0ReaderV1("ConvGammaAODProduction");
-	if (periodNameV0Reader.CompareTo("") != 0) fV0Reader->SetPeriodName(periodNameV0Reader);
+    //========= Add V0 Reader to  ANALYSIS manager =====
+
+    AliV0ReaderV1 *fV0Reader=new AliV0ReaderV1("ConvGammaAODProduction");
+    if (periodNameV0Reader.CompareTo("") != 0) fV0Reader->SetPeriodName(periodNameV0Reader);
     fV0Reader->SetCreateAODs(kTRUE);
 	fV0Reader->SetUseOwnXYZCalculation(kTRUE);
 	fV0Reader->SetUseAODConversionPhoton(kTRUE);
