@@ -8,6 +8,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisUtils.h"
+#include "AliEventCuts.h"
 #include "THnSparse.h"
 #include "AliAODpidUtil.h"
 #include "AliPIDResponse.h"
