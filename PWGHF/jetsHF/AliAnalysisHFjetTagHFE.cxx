@@ -1561,7 +1561,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                        HFjetCorr1->Fill(HFjetVals); 
  
                        Double_t JetReso = (pTeJet-pTeJetTrue)/pTeJetTrue;
- 
+                       fHistJetEnergyReso->Fill(pTeJetTrue,JetReso); 
+
                        Double_t reducedJetPt0 = ReduceJetEnergyScale( jet, epTarray, 0.04) - pTeJetBG ;                       
                        double HFjetVals2[7];
                        HFjetVals2[0]=track->Pt(); HFjetVals2[1]=0.0; HFjetVals2[2] = reducedJetPt0; HFjetVals2[3] = pTeJet; HFjetVals2[4] = pTeJetTrue; HFjetVals2[5] = 0.0; HFjetVals2[6] = 0.0;
