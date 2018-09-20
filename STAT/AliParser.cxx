@@ -197,13 +197,13 @@ std::map<TString, TString> AliParser::Parse(const char *iStr, Int_t verbose, std
     TString value = "";
     key = TString(optionStr(0, optionStr.Index("="))).ReplaceAll(" ", "");
     value = TString(optionStr(optionStr.Index("=") + 1, optionStr.Length())).ReplaceAll(" ", "");
-    if (std::find(defKeys.begin(), defKeys.end(), key) == defKeys.end() && key != TString() && defKeys.size() > 0) {
-      TString defaultKeys = "";
-      for (std::vector<TString>::iterator it = defKeys.begin(); it != defKeys.end(); ++it)
-        defaultKeys += *it + ",";
-      ::Warning("AliPainter::DrawHistogram", "key \"%s\" not found in the list of default keys: \"%s\"", key.Data(),
-                defaultKeys.Data());
-    }
+//    if (std::find(defKeys.begin(), defKeys.end(), key) == defKeys.end() && key != TString() && defKeys.size() > 0) {
+//      TString defaultKeys = "";
+//      for (std::vector<TString>::iterator it = defKeys.begin(); it != defKeys.end(); ++it)
+//        defaultKeys += *it + ",";
+//      ::Warning("AliPainter::DrawHistogram", "key \"%s\" not found in the list of default keys: \"%s\"", key.Data(),
+//                defaultKeys.Data());
+//    }
     optMap[key] = value;
   }
   return optMap;
