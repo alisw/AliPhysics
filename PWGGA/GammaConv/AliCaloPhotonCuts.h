@@ -418,7 +418,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t     fClusterType;                             // which cluster do we have
     Float_t   fIsolationRadius;                         // radius of isolation cone
     Float_t   fMomPercentage;                           // percentage of the isolated Photon Pt
-    Bool_t    fPhotonIsolation;                         // is photonisolation turned on
+    Bool_t    fUsePhotonIsolation;                      // is photonisolation turned on
     Double_t  fMinEtaCut;                               // min eta cut
     Double_t  fMinEtaInnerEdge;                         // min eta of inner Edge (DCal)
     Double_t  fMaxEtaCut;                               // max eta cut

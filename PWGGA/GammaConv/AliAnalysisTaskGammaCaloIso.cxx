@@ -66,8 +66,6 @@ ClassImp(AliAnalysisTaskGammaCaloIso)
 AliAnalysisTaskGammaCaloIso::AliAnalysisTaskGammaCaloIso(): AliAnalysisTaskSE(),
   fV0Reader(NULL),
   fV0ReaderName("V0ReaderV1"),
-  fCaloIsolation(NULL),
-  fCaloIsolationName("PhotonIsolation"),
   fCorrTaskSetting(""),
   fBGHandler(NULL),
   fBGHandlerRP(NULL),
@@ -384,8 +382,6 @@ AliAnalysisTaskGammaCaloIso::AliAnalysisTaskGammaCaloIso(const char *name):
   AliAnalysisTaskSE(name),
   fV0Reader(NULL),
   fV0ReaderName("V0ReaderV1"),
-  fCaloIsolation(NULL),
-  fCaloIsolationName("PhotonIsolation"),
   fCorrTaskSetting(""),
   fBGHandler(NULL),
   fBGHandlerRP(NULL),
@@ -2572,9 +2568,8 @@ void AliAnalysisTaskGammaCaloIso::UserCreateOutputObjects(){
     if(temp) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
   }
 
-  fCaloIsolation = (AliPhotonIsolation*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloIsolationName.Data());
-  if(fCaloIsolation) fOutputContainer->Add(fCaloIsolation->GetPhotonIsolationHistograms());
-  if(!fCaloIsolation){ AliFatal("AliPhotonIsolation instance could not be initialized!");}
+  AliPhotonIsolation* temp2 = (AliPhotonIsolation*)AliAnalysisManager::GetAnalysisManager()->GetTask("PhotonIsolation");
+  if(temp2) fOutputContainer->Add(temp2->GetPhotonIsolationHistograms());
 
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
     if(!((AliConvEventCuts*)fEventCutArray->At(iCut))) continue;

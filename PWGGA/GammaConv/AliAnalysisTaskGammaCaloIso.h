@@ -34,7 +34,6 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
     void InitBack();
 
     void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
-    void SetCaloIsolationName(TString name)               { fCaloIsolationName = name; return; }
     void SetIsHeavyIon(Int_t flag){
       fIsHeavyIon = flag;
     }
@@ -111,8 +110,6 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
                                                                                               fnCuts = nCuts                              ;
                                                                                               fMesonCutArray = CutArray                   ;
                                                                                             }
-    AliPhotonIsolation* GetPhotonIsolationInstance()        { return fCaloIsolation; }
-
     // BG HandlerSettings
     void CalculateBackground            ();
     void CalculateBackgroundRP          ();
@@ -149,8 +146,6 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
   protected:
     AliV0ReaderV1*                      fV0Reader;              // basic photon Selection Task
     TString                             fV0ReaderName;
-    AliPhotonIsolation*                 fCaloIsolation;         // pointer to PhotonIsolation
-    TString                             fCaloIsolationName;     // Name of global Isolation instance
     TString                             fCorrTaskSetting;       // Correction Task Special Name
     AliGammaConversionAODBGHandler**    fBGHandler;             // BG handler for Conversion
     AliConversionAODBGHandlerRP**       fBGHandlerRP;           // BG handler for Conversion (possibility to mix with respect to RP)

@@ -121,7 +121,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fClusterType(0),
   fIsolationRadius(0.4),
   fMomPercentage(0.1),
-  fPhotonIsolation(kFALSE),
+  fUsePhotonIsolation(kFALSE),
   fMinEtaCut(-10),
   fMinEtaInnerEdge(0),
   fMaxEtaCut(10),
@@ -311,7 +311,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fClusterType(ref.fClusterType),
   fIsolationRadius(0.4),
   fMomPercentage(0.1),
-  fPhotonIsolation(kFALSE),
+  fUsePhotonIsolation(kFALSE),
   fMinEtaCut(ref.fMinEtaCut),
   fMinEtaInnerEdge(ref.fMinEtaInnerEdge),
   fMaxEtaCut(ref.fMaxEtaCut),
@@ -1509,9 +1509,10 @@ void AliCaloPhotonCuts::InitializeEMCAL(AliVEvent *event){
     fGeomEMCAL              = AliEMCALGeometry::GetInstance();
     if(!fGeomEMCAL){ AliFatal("EMCal geometry not initialized!");}
 
+
     //retrieve pointer to CaloIsolation Instance
-    fCaloIsolation = (AliPhotonIsolation*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloIsolationName.Data());
-    if(!fCaloIsolation){ AliFatal("AliPhotonIsolation instance could not be initialized!");}
+    if(fUsePhotonIsolation) fCaloIsolation = (AliPhotonIsolation*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloIsolationName.Data());
+    if(!fCaloIsolation && fUsePhotonIsolation){ AliFatal("AliPhotonIsolation instance could not be initialized!");}
 
     //retrieve pointer to trackMatcher Instance
     if(fUseDistTrackToCluster) fCaloTrackMatcher = (AliCaloTrackMatcher*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloTrackMatcherName.Data());
@@ -2983,10 +2984,10 @@ Bool_t AliCaloPhotonCuts::AcceptanceCuts(AliVCluster *cluster, AliVEvent* event,
 Bool_t  AliCaloPhotonCuts::ClusterIsIsolated(Int_t clusterID, AliAODConversionPhoton *PhotonCandidate)
 {
 
-  if(fPhotonIsolation){
+  if(fUsePhotonIsolation){
     Float_t ClusterPt = PhotonCandidate->Pt();
-    //Float_t pTCone = fMomPercentage*ClusterPt;
-    Float_t pTCone = 0.05*ClusterPt;
+    Float_t pTCone = fMomPercentage*ClusterPt;
+    //Float_t pTCone = 0.05*ClusterPt;
     //Float_t pTCone = 2;
 
     if(fCaloIsolation->GetIsolation(clusterID,fIsolationRadius,pTCone)){
@@ -3566,10 +3567,10 @@ void AliCaloPhotonCuts::PrintCutsWithValues(const TString analysisCutSelection) 
   if (fUsePhiCut) printf("\t%3.2f < phi_{cluster} < %3.2f\n", fMinPhiCut, fMaxPhiCut );
   if (fUseDistanceToBadChannel>0) printf("\tdistance to bad channel used in mode '%i', distance in cells: %f \n",fUseDistanceToBadChannel, fMinDistanceToBadChannel);
 
-  if (fPhotonIsolation){
+  if (fUsePhotonIsolation){
     printf("PhotonIsolation Cuts: \n");
     if (fClusterType == 1) printf("\tEMCAL calorimeter clusters are used\n");
-    if (fPhotonIsolation) printf("\tPhotonIsolation is turned on\n");
+    if (fUsePhotonIsolation) printf("\tPhotonIsolation is turned on\n");
     if (fIsolationRadius < 0.11 && fIsolationRadius > 0.09) printf("\tIsolation Radius = 0.1\n");
     if (fIsolationRadius < 0.21 && fIsolationRadius > 0.19) printf("\tIsolation Radius = 0.2\n");
     if (fIsolationRadius < 0.31 && fIsolationRadius > 0.29) printf("\tIsolation Radius = 0.3\n");
@@ -3624,25 +3625,25 @@ Bool_t AliCaloPhotonCuts::SetClusterTypeCut(Int_t clusterType)
     fClusterType=1;
     fIsolationRadius=0.1;
     fMomPercentage=0.1;
-    fPhotonIsolation=kTRUE;
+    fUsePhotonIsolation=kTRUE;
     break;
   case 12: //EMCAL clusters with isolation R=0.2 and pTCone=0.1*ET_Cluster, accessible via "c"
     fClusterType=1;
     fIsolationRadius=0.2;
     fMomPercentage=0.1;
-    fPhotonIsolation=kTRUE;
+    fUsePhotonIsolation=kTRUE;
     break;
   case 13: //EMCAL clusters with isolation R=0.3 and pTCone=0.1*ET_Cluster, accessible via "d"
     fClusterType=1;
     fIsolationRadius=0.3;
     fMomPercentage=0.1;
-    fPhotonIsolation=kTRUE;
+    fUsePhotonIsolation=kTRUE;
     break;
   case 14: //EMCAL clusters with isolation R=0.4 and pTCone=0.1*ET_Cluster, accessible via "e"
     fClusterType=1;
     fIsolationRadius=0.4;
     fMomPercentage=0.1;
-    fPhotonIsolation=kTRUE;
+    fUsePhotonIsolation=kTRUE;
     break;
   default:
     AliError(Form("ClusterTypeCut not defined %d",clusterType));
