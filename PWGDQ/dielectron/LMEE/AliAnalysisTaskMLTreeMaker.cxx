@@ -404,12 +404,11 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
 //________________________________________________________________________
 
 void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
-  // Main loop
-
   // Called for each event
-  AliVEvent* event = dynamic_cast<AliVEvent*>(InputEvent()); 
   
   fQAHist->Fill("Events_all",1);
+  
+  AliVEvent* event = dynamic_cast<AliVEvent*>(InputEvent()); 
   
   if(!event) {
     AliError("event not available");
@@ -453,8 +452,9 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
    AliWarning("AliMultSelection object not found!");
   }
   
-  else cent = MultSelection->GetMultiplicityPercentile("V0M");
+  else cent = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
   
+  if(cent<fCentralityPercentileMin || cent>fCentralityPercentileMax) return;
   
  runn = event->GetRunNumber();
 
@@ -462,7 +462,7 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   n= acceptedTracks;
   if(acceptedTracks){
     fTree->Fill();
-    fQAHist->Fill("Events_track_selected",1);
+    fQAHist->Fill("Events_track_and_cent_selected",1);
   }
 
   PostData(1, fList);
