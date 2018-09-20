@@ -28,6 +28,7 @@ public:
   void                        SetDistributionV4(TH2* val)                     {fDistributionV4 = val;}
   void                        SetDistributionV5(TH2* val)                     {fDistributionV5 = val;}
   void                        SetRangeCentrality(Int_t min, Int_t max)        {fMinCentrality = min; fMaxCentrality = max;}
+  void                        SetPhysicalPrimariesOnly(Bool_t val)            {fPhysicalPrimariesOnly = val;}
 
   void                        SetInputArrayName(const char* val)              {fInputArrayName = val;}
   void                        SetOutputArrayName(const char* val)             {fOutputArrayName = val;}
@@ -43,7 +44,8 @@ protected:
   TH1*                        fDistributionEtaPhi;                // histogram for eta/phi distribution
   Int_t                       fMinCentrality;                     // minimum centrality
   Int_t                       fMaxCentrality;                     // maximum centrality
-
+  Bool_t                      fPhysicalPrimariesOnly;             // whether or not to use physical primaries only when running MC
+  
   TH2*                        fDistributionV2;                    /// Distribution for v2 in bins of pt and centrality
   TH2*                        fDistributionV3;                    /// Distribution for v3 in bins of pt and centrality
   TH2*                        fDistributionV4;                    /// Distribution for v4 in bins of pt and centrality
@@ -97,7 +99,7 @@ private:
   AliAnalysisTaskChargedJetsHadronToy &operator=(const AliAnalysisTaskChargedJetsHadronToy&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskChargedJetsHadronToy, 2); // Toy model
+  ClassDef(AliAnalysisTaskChargedJetsHadronToy, 3); // Toy model
   /// \endcond
 };
 
