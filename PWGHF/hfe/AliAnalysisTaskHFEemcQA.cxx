@@ -1548,6 +1548,7 @@ void AliAnalysisTaskHFEemcQA::CheckMCgen(AliAODMCHeader* fMCheader)
         if(pdgMom==-1 && iEnhance)iPhoenhance = 1;  // select particles orogonally from enhance
         if(iEnhance)iHFenhance = 1;  // select particles orogonally from enhance
         
+				cout<<" PdgGen == "<<pdgGen<<endl;
         if(iHFenhance==1)
         {
             if(pdgGen==411 || pdgGen==421 || pdgGen==413 || pdgGen==423 || pdgGen==431 || pdgGen==433)fMCcheckMother->Fill(pdgGen,fMCparticle->Pt());

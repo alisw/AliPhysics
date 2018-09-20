@@ -121,6 +121,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fHistNsigEop;
 		TH2F*                   fEopPt_ele_loose;
 		TH2F*                   fEopPt_ele_tight;
+		TH2F*                   fEopPt_ele_tight_PYTHIA;
 		TH2F*                   fEopPt_had;
 		TH1F*                   fEtadiff;
 		TH1F*                   fPhidiff;
@@ -156,6 +157,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
     Int_t                   NembMCpi0; // # of process in MC (no GEANT process)
     Int_t                   NembMCeta; // # of process in MC (no GEANT process)
     Int_t                   NpureMCproc; // # of process in MC (no GEANT process)
+    Int_t                   NpureMC; // # of process in MC (no GEANT process)
 		TH1D*                   fHistPhoReco0;
 		TH1D*                   fHistPhoReco1;
 		TH1D*                   fHistPhoReco2;
@@ -167,9 +169,13 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
     TF1*                    fEta010;
 		TH1F*               		fHistPt_HFE_MC_D;
 		TH1F*               		fHistPt_HFE_MC_B;
+		TH1F*               		fHistPt_HFE_PYTHIA;
+		TH1F*               		fHistPt_HFE_emb;
+		TH1F*               		fHistPt_HFE_Gen;
 		TH1F*               		fHist_eff_HFE;
 		TH1F*               		fHist_eff_match;
 		TH1F*               		fHist_eff_TPC;
+		TH1F*               		fHist_eff_M20;
 
 
 		AliAnalysisTaskCaloHFEpp(const AliAnalysisTaskCaloHFEpp&); // not implemented
