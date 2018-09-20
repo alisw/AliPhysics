@@ -225,6 +225,28 @@ AliFemtoDreamCascadeCuts* AliFemtoDreamCascadeCuts::XiCuts(
   return XiCuts;
 }
 
+AliFemtoDreamCascadeCuts* AliFemtoDreamCascadeCuts::OmegaCuts(
+    bool isMC, bool contribSplitting) {
+  AliFemtoDreamCascadeCuts *OmegaCuts = new AliFemtoDreamCascadeCuts();
+  OmegaCuts->SetIsMonteCarlo(isMC);
+  OmegaCuts->SetContributionSplitting(contribSplitting);
+  OmegaCuts->SetXiMassRange(1.672, 0.005);
+  OmegaCuts->SetCutXiDaughterDCA(1.3);
+  OmegaCuts->SetCutXiMinDistBachToPrimVtx(0.04);
+
+  OmegaCuts->SetCutXiCPA(0.98);
+  OmegaCuts->SetCutXiTransverseRadius(0.5, 200);
+  OmegaCuts->Setv0MassRange(1.116, 0.006);
+  OmegaCuts->SetCutv0MaxDaughterDCA(1.5);
+  OmegaCuts->SetCutv0CPA(0.97);
+  OmegaCuts->SetCutv0TransverseRadius(1.1, 200);
+  OmegaCuts->SetCutv0MinDistToPrimVtx(0.06);
+  OmegaCuts->SetCutv0MinDaugDistToPrimVtx(0.04);
+  OmegaCuts->SetRejectOmegas(1322, 0.005);
+  OmegaCuts->SetPtRangeXi(0.3, 999.9);
+  return OmegaCuts;
+}
+
 bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
   bool pass = true;
   if (casc->IsSet()) {
