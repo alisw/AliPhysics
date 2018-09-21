@@ -5,10 +5,11 @@
 \code
 .L $AliRoot_SRC/STAT/test/AliPainterTest.C+
 AliPainterTest();
-root.exe -b -q  $AliRoot_SRC/STAT/test/AliPainterTest.C+ | tee AliPainterTest.log
+root.exe -b -q  $AliRoot_SRC/STAT/test/AliPainterTest.C+ 2>&1 | tee AliPainterTest.log
 \endcode
 */
-//TODO: if methods in AliPainter.h will be private we should create new class AliPainterTest inherits from Alipainter. @Boris
+// NOTE: if methods in AliPainter.h will be private we should create new class AliPainterTest inherits from Alipainter. @bdrum
+// NOTE: we can create class AliTest which could use for testing.
 #include "AliPainter.h"
 #include "TError.h"
 #include "TCanvas.h"
@@ -25,278 +26,21 @@ root.exe -b -q  $AliRoot_SRC/STAT/test/AliPainterTest.C+ | tee AliPainterTest.lo
 #include "TH1.h"
 #include "THn.h"
 
-void AliPainterTest_ParseRanges();
-void AliPainterTest_ParseString();
-void AliPainterTest_ParseOptionString();
-void AliPainterTest_ParsePandasString();
 void AliPainterTest_GetNextPad();
 //void AliPainterTest_DivideTPad();
 //void AliPainterTest_SetMultiGraphTimeAxisTest();
 //void AliPainterTest_DrawHistogram();
-void AliPainterTest_SetLimits();
+//void AliPainterTest_SetLimits();
 void AliPainterTest_GenerateDoxyImages();
 
 
 void AliPainterTest() {
-  AliPainterTest_ParseRanges();
-  AliPainterTest_ParseString();
-  AliPainterTest_ParseOptionString();
-  AliPainterTest_ParsePandasString();
   AliPainterTest_GetNextPad();
   //AliPainterTest_DivideTPad();
 //  AliPainterTest_SetMultiGraphTimeAxisTest();
   //AliPainterTest_DrawHistogram();
-  AliPainterTest_SetLimits();
+  //AliPainterTest_SetLimits();
   AliPainterTest_GenerateDoxyImages();
-}
-
-void AliPainterTest_ParseOptionString() {
-  auto result = 0;
-  TString input="gaus,W,fitFunction(1,2,3),E,10,200";
-  std::vector<TString> optValuesHandle;
-  std::vector<TString> optValues;
-  optValuesHandle.push_back(TString("gaus"));
-  optValuesHandle.push_back(TString("W"));
-  optValuesHandle.push_back(TString("fitFunction(1,2,3)"));
-  optValuesHandle.push_back(TString("E"));
-  optValuesHandle.push_back(TString("10"));
-  optValuesHandle.push_back(TString("200"));
-  optValues = AliPainter::ParseOptionString(input, 6);
-  for (Int_t i = 0; i < 6; i++) if (optValuesHandle[i] != optValues[i]) result++;
-  if (result > 0) {
-    ::Error("AliPainterTest","AliPainter::ParseOptionString(\"%s\",6)- FAILED", input.Data());
-    return;
-  }
-  else{
-    ::Info("AliPainterTest","AliPainter::ParseOptionString(\"%s\",6)- IsOK", input.Data());
-  }
-  input="gaus,,fitFunction(),,10.234";
-  optValuesHandle.clear();
-  optValues.clear();
-  optValuesHandle.push_back(TString("gaus"));
-  optValuesHandle.push_back(TString(""));
-  optValuesHandle.push_back(TString("fitFunction()"));
-  optValuesHandle.push_back(TString(""));
-  optValuesHandle.push_back(TString("10.234"));
-  optValuesHandle.push_back(TString(""));
-  optValues = AliPainter::ParseOptionString(input, 6);
-  for (Int_t i = 0; i < 6; i++) if (optValuesHandle[i] != optValues[i]) result++;
-  if (result > 0) {
-    ::Error("AliPainterTest","AliPainter::ParseOptionString(\"%s\",6)- FAILED", input.Data());
-    return;
-  }
-  else{
-    ::Info("AliPainterTest","AliPainter::ParseOptionString(\"%s\",6)- IsOK", input.Data());
-  }
-  input="div=0,class=Mass,drawOpt=E,xlim=[0,10000]";
-  optValuesHandle.clear();
-  optValues.clear();
-  optValuesHandle.push_back(TString("div=0"));
-  optValuesHandle.push_back(TString("class=Mass"));
-  optValuesHandle.push_back(TString("drawOpt=E"));
-  optValuesHandle.push_back(TString("xlim=[0,10000]"));
-  optValuesHandle.push_back(TString(""));
-  optValuesHandle.push_back(TString(""));
-  optValues = AliPainter::ParseOptionString(input,6, ',', "[]");
-  for (Int_t i = 0; i < 6; i++) if (optValuesHandle[i] != optValues[i]) result++;
-  if (result > 0) {
-    ::Error("AliPainterTest","AliPainter::ParseOptionString(\"%s\",6, \',\', \"[]\")- FAILED", input.Data());
-    return;
-  }
-  else{
-    ::Info("AliPainterTest","AliPainter::ParseOptionString(\"%s\",6, \',\', \"[]\")- IsOK", input.Data());
-  }
-  input="";
-  optValuesHandle.clear();
-  optValues.clear();
-  optValues = AliPainter::ParseOptionString(input);
-  if (optValues.size() != 1 && std::strncmp(optValues[0].Data(), "", 1) != 0) {
-    ::Error("AliPainterTest","AliPainter::ParseOptionString(\"%s\",6, \',\', \"[]\")- FAILED", input.Data());
-    return;
-  }
-  else{
-    ::Info("AliPainterTest","AliPainter::ParseOptionString(\"%s\",6, \',\', \"[]\")- IsOK", input.Data());
-  }
-  input = "1;2;3;4";
-  optValues.clear();
-  optValues = AliPainter::ParseOptionString(input);
-  if (optValues.size() != 1 && std::strncmp(optValues[0].Data(), "1;2;3;4", 7) != 0) {
-    ::Error("AliPainterTest","AliPainter::ParseOptionString(\"%s\", 6)- FAILED", input.Data());
-    return;
-  }
-  else{
-    ::Info("AliPainterTest","AliPainter::ParseOptionString(\"%s\", 6)- IsOK", input.Data());
-  }
-
-  input="1,2,3,4,5";
-
-  optValuesHandle.clear();
-  optValues.clear();
-  optValuesHandle.push_back(TString("1"));
-  optValuesHandle.push_back(TString("2"));
-  optValues = AliPainter::ParseOptionString(input,2);
-  for (Int_t i = 0; i < 2; i++) if (optValuesHandle[i] != optValues[i]) result++;
-  if (result > 0) {
-    ::Error("AliPainterTest","AliPainter::ParseOptionString(\"%s\",6, \',\', \"[]\")- FAILED", input.Data());
-    return;
-  }
-  else{
-    ::Info("AliPainterTest","AliPainter::ParseOptionString(\"%s\",6, \',\', \"[]\")- IsOK", input.Data());
-  }
-
-}
-
-void AliPainterTest_ParsePandasString() {
-  AliPainter::RegisterDefaultOptions();
-  TString input="div=0";
-  AliPainter::ParsePandasString(input, AliPainter::drawValues);
-  if (AliPainter::drawValues["div"] != TString("0")) {
-    ::Error("AliPainterTest","AliPainter::PandasOptionParser(\"%s\")- FAILED", input.Data());
-  }
-  else{
-    ::Info("AliPainterTest","AliPainter::PandasOptionParser(\"%s\")- IsOK", input.Data());
-  }
-  input="class=Mass";
-  AliPainter::ParsePandasString(input, AliPainter::drawValues);
-  if (AliPainter::drawValues["class"] != TString("Mass")) {
-    ::Error("AliPainterTest","AliPainter::PandasOptionParser(\"%s\")- FAILED", input.Data());
-  }
-  else{
-    ::Info("AliPainterTest","AliPainter::PandasOptionParser(\"%s\")- IsOK", input.Data());
-  }
-  input="drawOpt=E";
-  AliPainter::ParsePandasString(input, AliPainter::drawValues);
-  if (AliPainter::drawValues["drawOpt"] != TString("E")) {
-    ::Error("AliPainterTest","AliPainter::PandasOptionParser(\"%s\")- FAILED", input.Data());
-  }
-  else{
-    ::Info("AliPainterTest","AliPainter::PandasOptionParser(\"%s\")- IsOK", input.Data());
-  }
-  input="xlim=[10.123,20.435]";
-  AliPainter::ParsePandasString(input, AliPainter::drawValues);
-  if (AliPainter::drawValues["xlim"] != TString("[10.123,20.435]")) {
-    ::Error("AliPainterTest","AliPainter::PandasOptionParser(\"%s\")- FAILED", input.Data());
-  }
-  else{
-    ::Info("AliPainterTest","AliPainter::PandasOptionParser(\"%s\")- IsOK", input.Data());
-  }
-  input="zlim=[]";
-  AliPainter::ParsePandasString(input, AliPainter::drawValues);
-  if (AliPainter::drawValues["zlim"] != TString("[]")) {
-    ::Error("AliPainterTest","AliPainter::PandasOptionParser(\"%s\")- FAILED", input.Data());
-  }
-  else{
-    ::Info("AliPainterTest","AliPainter::PandasOptionParser(\"%s\")- IsOK", input.Data());
-  }
-
-  input="ylim=";
-  AliPainter::ParsePandasString(input, AliPainter::drawValues);
-  if (AliPainter::drawValues["ylim"] != TString("")) {
-    ::Error("AliPainterTest","AliPainter::PandasOptionParser(\"%s\")- FAILED", input.Data());
-  }
-  else{
-    ::Info("AliPainterTest","AliPainter::PandasOptionParser(\"%s\")- IsOK", input.Data());
-  }
-
-  input="zlim=[], xlim=[10.123,20.435], ylim=, class=Mass";
-  AliPainter::ParsePandasString(input, AliPainter::drawValues);
-  if (AliPainter::drawValues["zlim"] != TString("[]") && AliPainter::drawValues["xlim"] != TString("[10.123,20.435]") && \
-      AliPainter::drawValues["ylim"] != TString("") && AliPainter::drawValues["class"] != TString("Mass")) {
-    ::Error("AliPainterTest","AliPainter::PandasOptionParser(\"%s\")- FAILED", input.Data());
-  }
-  else{
-    ::Info("AliPainterTest","AliPainter::PandasOptionParser(\"%s\")- IsOK", input.Data());
-  }
-
-}
-
-void AliPainterTest_ParseRanges() {
-  TString input = "10,20";
-  AliPainter::ParseRanges(input);
-
-  if (AliPainter::rangesVec[0] != input) {
-    ::Error("AliPainterTest","AliPainter::RangesParser(\"%s\")- FAILED", input.Data());
-  }
-  else{
-    ::Info("AliPainterTest","AliPainter::RangesParser(\"%s\")- IsOK", input.Data());
-  }
-  input = "10.23,20,54,32.45,43,65.34";
-  AliPainter::ParseRanges(input);
-  if (AliPainter::rangesVec[0] != input) {
-    ::Error("AliPainterTest","AliPainter::RangesParser(\"%s\")- FAILED", input.Data());
-  }
-  else{
-    ::Info("AliPainterTest","AliPainter::RangesParser(\"%s\")- IsOK", input.Data());
-  }
-  input = "0:20:10:10";
-   AliPainter::ParseRanges(input);
-  std::vector<TString> outPutHandle;
-  outPutHandle.push_back("0,10");
-  outPutHandle.push_back("10,20");
-  auto result = 0;
-  if (outPutHandle.size() != AliPainter::rangesVec.size()) {
-    ::Error("AliPainterTest","AliPainter::RangesParser(\"%s\")- FAILED", input.Data());
-    return;
-  }
-  for (Int_t i = 0; i < (Int_t) outPutHandle.size(); i++) if (outPutHandle[i] != AliPainter::rangesVec[i]) result++;
-  if (result > 0) {
-    ::Error("AliPainterTest","AliPainter::RangesParser(\"%s\")- FAILED", input.Data());
-    return;
-  }
-  else{
-    ::Info("AliPainterTest","AliPainter::RangesParser(\"%s\")- IsOK", input.Data());
-  }
-  input = "10:20:10,0:40:10:20,30,40";
-  AliPainter::ParseRanges(input);
-  outPutHandle.clear();
-  outPutHandle.push_back("10,10,0,20,30,40");
-  outPutHandle.push_back("10,10,10,30,30,40");
-  outPutHandle.push_back("10,10,20,40,30,40");
-  outPutHandle.push_back("20,20,0,20,30,40");
-  outPutHandle.push_back("20,20,10,30,30,40");
-  outPutHandle.push_back("20,20,20,40,30,40");
-  result = 0;
-  if (outPutHandle.size() != AliPainter::rangesVec.size()) {
-    ::Error("AliPainterTest","AliPainter::RangesParser(\"%s\")- FAILED", input.Data());
-    return;
-  }
-  for (Int_t i = 0; i < (Int_t) outPutHandle.size(); i++) if (outPutHandle[i] != AliPainter::rangesVec[i]) result++;
-  if (result > 0) {
-    ::Error("AliPainterTest","AliPainter::RangesParser(\"%s\")- FAILED", input.Data());
-    return;
-  }
-  else{
-    ::Info("AliPainterTest","AliPainter::RangesParser(\"%s\")- IsOK", input.Data());
-  }
-}
-
-void AliPainterTest_ParseString() {
-  TString input="(20,80,0:80:20:20,0,10)(0)(name=gaus,drawOpt=W)(class=Mass,drawOpt=E)";
-  std::vector<TString> args = AliPainter::ParseString(input, "()");
-  if (args[1] == TString("0") && args[0] == TString("20,80,0:80:20:20,0,10") && \
-      args[2] == TString("name=gaus,drawOpt=W") && args[3] == TString("class=Mass,drawOpt=E")) ::Info("AliPainterTest","AliPainter::ParseString(\"%s\")- IsOK", input.Data());
-  else {
-    ::Error("AliPainterTest","AliPainter::ParseString(\"%s\")- FAILED", input.Data());
-    return;
-  }
-
-  input="hisK0DMassQPtTgl(10,20)()()()";
-  args.clear();
-  args = AliPainter::ParseString(input);
-  if (args[0] == TString("10,20") && args[1] == TString() && \
-      args[2] == TString() && args[3] == TString()) ::Info("AliPainterTest","AliPainter::ParseString(\"%s\")- IsOK", input.Data());
-  else {
-    ::Error("AliPainterTest","AliPainter::ParseString(\"%s\")- FAILED", input.Data());
-    return;
-  }
-  input = "<max>+3*<rms>";
-  args.clear();
-  args = AliPainter::ParseString(input.Data(), "<>");
-  if (args[0] == TString("max") && args[1] == TString("rms")) ::Info("AliPainterTest","AliPainter::ParseString(\"%s\")- IsOK", input.Data());
-  else {
-    ::Error("AliPainterTest","AliPainter::ParseString(\"%s\")- FAILED", input.Data());
-    return;
-  }
 }
 
 //void AliPainterTest_DivideTPad() {
@@ -326,19 +70,19 @@ void AliPainterTest_ParseString() {
 //  TCanvas *canvasQA = new TCanvas("canvasQA", "canvasQA", 1200, 800);
 //  AliPainter::DivideTPad(canvasQA, "<horizontal>[1b,1t,1,1]", "Canvas41");
 //  canvasQA->cd(1);
-//  AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,drawOpt=E,class=PtAll)");
-//  AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1,drawOpt=E,class=PtIts)");
-//  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1,drawOpt=E,class=Tgl)");
+//  AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,drawOpt=E0,class=PtAll)");
+//  AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1,drawOpt=E0,class=PtIts)");
+//  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1,drawOpt=E0,class=Tgl)");
 //  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E)");
 //  canvasQA->Print("canvasQADrawHistogramTest.xml");
 //
 //  auto nDiff = gSystem->GetFromPipe("diff canvasQADrawHistogramTest.xml $AliRoot_SRC/STAT/test/canvasQADrawHistogramTestFixed.xml  | wc -l").Atoi();
 //  if (nDiff - 6 <= 0) {
 //    ::Info("AliPainterTest",
-//           "AliPainter::DrawHistogram(\"hisPtAll(0,10)(0)()(div=1,drawOpt=E,class=PtAll)\",hisArray)- IsOK");
+//           "AliPainter::DrawHistogram(\"hisPtAll(0,10)(0)()(div=1,drawOpt=E0,class=PtAll)\",hisArray)- IsOK");
 //  } else {
 //    ::Error("AliPainterTest",
-//            "AliPainter::DrawHistogram(\"hisPtAll(0,10)(0)()(div=1,drawOpt=E,class=PtAll)\",hisArray)- FAILED");
+//            "AliPainter::DrawHistogram(\"hisPtAll(0,10)(0)()(div=1,drawOpt=E0,class=PtAll)\",hisArray)- FAILED");
 //  }
 //}
 
@@ -392,34 +136,34 @@ void AliPainterTest_GetNextPad() {
   }
 }
 
-void AliPainterTest_SetLimits() {
-  TFile::SetCacheFileDir(".");
-  TFile *finput = TFile::Open("http://aliqatrkeos.web.cern.ch/aliqatrkeos/performance/AliPainterTest.root","CACHEREAD");
-  TTree *tree = (TTree *) finput->Get("hisPtAll");
-  TObjArray *hisArray = new TObjArray();
-  TList *keys = finput->GetListOfKeys();
-  for (Int_t iKey = 0; iKey<keys->GetEntries();iKey++) {
-    TObject *o = finput->Get(TString::Format("%s;%d", keys->At(iKey)->GetName(), ((TKey *) keys->At(iKey))->GetCycle()).Data());
-    hisArray->AddLast(o);
-  }
-  THn *hisN = (THn *) hisArray->FindObject("hisK0DMassQPtTgl");
-  TObjArray *keep = NULL;
-  TObjArray *hisArr = AliPainter::PrepareHistogram(hisN, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E,ylim=[<mean>,<max>])", keep);
-  Long64_t comSize = 0;
-  Double_t *combineArray = AliPainter::GetDataArray(hisArr,comSize,4);
-  Double_t mean = TMath::Mean(comSize, combineArray);
-  Double_t max = TMath::MaxElement(comSize, combineArray);
-  AliPainter::SetLimits(hisArr,4);
-
-  if ((Int_t) mean == 2028 && (Int_t) max == 10730) {
-    ::Info("AliPainterTest",
-           "AliPainter::SetLimits()- IsOK");
-  } else {
-    ::Error("AliPainterTest",
-            "AliPainter::SetLimits()- FAILED");
-  }
-
-}
+//void AliPainterTest_SetLimits() {
+//  TFile::SetCacheFileDir(".");
+//  TFile *finput = TFile::Open("http://aliqatrkeos.web.cern.ch/aliqatrkeos/performance/AliPainterTest.root","CACHEREAD");
+//  TTree *tree = (TTree *) finput->Get("hisPtAll");
+//  TObjArray *hisArray = new TObjArray();
+//  TList *keys = finput->GetListOfKeys();
+//  for (Int_t iKey = 0; iKey<keys->GetEntries();iKey++) {
+//    TObject *o = finput->Get(TString::Format("%s;%d", keys->At(iKey)->GetName(), ((TKey *) keys->At(iKey))->GetCycle()).Data());
+//    hisArray->AddLast(o);
+//  }
+//  THn *hisN = (THn *) hisArray->FindObject("hisK0DMassQPtTgl");
+//  TObjArray *keep = NULL;
+//  TObjArray *hisArr = AliPainter::PrepareHistogram(hisN, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E0,ylim=[<mean>,<max>])", keep);
+//  Long64_t comSize = 0;
+//  Double_t *combineArray = AliPainter::GetDataArray(hisArr,comSize,4);
+//  Double_t mean = TMath::Mean(comSize, combineArray);
+//  Double_t max = TMath::MaxElement(comSize, combineArray);
+//  AliPainter::SetLimits(hisArr,4);
+//
+//  if ((Int_t) mean == 2028 && (Int_t) max == 10730) {
+//    ::Info("AliPainterTest",
+//           "AliPainter::SetLimits()- IsOK");
+//  } else {
+//    ::Error("AliPainterTest",
+//            "AliPainter::SetLimits()- FAILED");
+//  }
+//
+//}
 
 void AliPainterTest_GenerateDoxyImages() {
   TFile::SetCacheFileDir(".");
@@ -437,10 +181,10 @@ void AliPainterTest_GenerateDoxyImages() {
 
   AliPainter::DivideTPad(canvasQA, "<horizontal>[1,1,1,1]", "Canvas41");
   canvasQA->cd(1);
-  AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,drawOpt=E,class=PtAll)");
-  AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1,drawOpt=E,class=PtIts)");
-  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1,drawOpt=E,class=Tgl)");
-  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E)");
+  AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,drawOpt=E0,class=PtAll)");
+  AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1,drawOpt=E0,class=PtIts)");
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1,drawOpt=E0,class=Tgl)");
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E0)");
   AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
 
   if (gSystem->GetFromPipe("find $AliRoot_SRC/STAT/ -name imgdoc  | wc -l").Atoi() == 0)
@@ -451,20 +195,20 @@ void AliPainterTest_GenerateDoxyImages() {
 
   AliPainter::DivideTPad(canvasQA, "<vertical>[1,1,1,1]", "Canvas41");
   canvasQA->cd(1);
-  AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,drawOpt=E,class=PtAll)");
-  AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1,drawOpt=E,class=PtIts)");
-  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1,drawOpt=E,class=Tgl)");
-  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E)");
+  AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,drawOpt=E0,class=PtAll)");
+  AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1,drawOpt=E0,class=PtIts)");
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1,drawOpt=E0,class=Tgl)");
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E0)");
   AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
   canvasQA->SaveAs("$AliRoot_SRC/STAT/imgdoc/AliPainter_cxx_example2.png");
   canvasQA->Clear();
 
   AliPainter::DivideTPad(canvasQA, "<vertical>[1r,1l,1r,1l]", "Raw,Error", "");
   canvasQA->cd(1);
-  AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,drawOpt=E,class=PtAll)");
-  AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1,drawOpt=E,class=PtIts)");
-  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1,drawOpt=E,class=Tgl)");
-  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E)");
+  AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,drawOpt=E0,class=PtAll)");
+  AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1,drawOpt=E0,class=PtIts)");
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1,drawOpt=E0,class=Tgl)");
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E0)");
   AliDrawStyle::RegisterCssStyle("figTemplateHex", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/figTemplateHex.css"));
   AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
   canvasQA->SaveAs("$AliRoot_SRC/STAT/imgdoc/AliPainter_cxx_example3.png");
@@ -472,12 +216,12 @@ void AliPainterTest_GenerateDoxyImages() {
 
   AliPainter::DivideTPad(canvasQA, "<vertical>[1,3m,2m,1]", "Raw,Error", "");
   canvasQA->cd(1);
-  AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,drawOpt=E,class=PtAll)");
-  AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1,drawOpt=E,class=PtIts)");
-  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1,drawOpt=E,class=Tgl)");
-  AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,drawOpt=E,class=PtAll)");
-  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(div=1,class=Mass,drawOpt=E)");
-  AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,drawOpt=E,class=PtAll)");
+  AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,drawOpt=E0,class=PtAll)");
+  AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1,drawOpt=E0,class=PtIts)");
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1,drawOpt=E0,class=Tgl)");
+  AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,drawOpt=0E,class=PtAll)");
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(div=1,class=Mass,drawOpt=E0)");
+  AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,drawOpt=E0,class=PtAll)");
   AliDrawStyle::RegisterCssStyle("figTemplateHex", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/figTemplateHex.css"));
   AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
   canvasQA->SaveAs("$AliRoot_SRC/STAT/imgdoc/AliPainter_cxx_example4.png");
@@ -485,9 +229,9 @@ void AliPainterTest_GenerateDoxyImages() {
 
   AliPainter::DivideTPad(canvasQA, "<horizontal>[1rpx200,1,1,1]", "Raw,Error", "");
   canvasQA->cd(1);
-  AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,drawOpt=E,class=PtAll)");
-  AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1,drawOpt=E,class=PtIts)");
-  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1,drawOpt=E,class=Tgl)");
+  AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,drawOpt=E0,class=PtAll)");
+  AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1,drawOpt=E0,class=PtIts)");
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1,drawOpt=E0,class=Tgl)");
   AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E)");
   AliDrawStyle::RegisterCssStyle("figTemplateHex", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/figTemplateHex.css"));
   AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
@@ -508,21 +252,21 @@ void AliPainterTest_GenerateDoxyImages() {
 
   AliPainter::DivideTPad(canvasQA, "<horizontal>[1]", "Canvas1");
   canvasQA->cd(1);
-  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E,ylim=[0,])");
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E0,ylim=[0,])");
   AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
   canvasQA->SaveAs("$AliRoot_SRC/STAT/imgdoc/AliPainter_cxx_example8.png");
   canvasQA->Clear();
 
   AliPainter::DivideTPad(canvasQA, "<horizontal>[1,1]", "Canvas1");
   canvasQA->cd(1);
-  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E,ylim=[0,], div=1)");
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E0,ylim=[0,], div=1)");
   AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
   canvasQA->SaveAs("$AliRoot_SRC/STAT/imgdoc/AliPainter_cxx_example9.png");
   canvasQA->Clear();
 
   AliPainter::DivideTPad(canvasQA, "<horizontal>[1,1]", "Canvas1");
   canvasQA->cd(1);
-  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E,ylim=[<min>+0.5*<mean>,<max>-0.5*<mean>], div=1)");
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E0,ylim=[<min>+0.5*<mean>,<max>-0.5*<mean>], div=1)");
   AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
   canvasQA->SaveAs("$AliRoot_SRC/STAT/imgdoc/AliPainter_cxx_example10.png");
   canvasQA->Clear();

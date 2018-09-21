@@ -469,7 +469,6 @@ TString  AliDrawStyle::ParseDeclaration(const char *inputDec, const char *proper
     (Float_t)1.40000000000000000e+01
  \endcode
  */
- //TODO: remove template because https://github.com/alisw/AliRoot/pull/657#discussion_r185746846
  Float_t AliDrawStyle::GetNamedTypeAt(const char *inputStr, Bool_t &status, int index, const char *propertyName, Int_t verbose, const char sep, const char *ignoreBrackets) {
   TString inputTStr;
   if(TString(propertyName) != TString("")) inputTStr = AliDrawStyle::ParseDeclaration(inputStr,propertyName);
@@ -588,7 +587,7 @@ Float_t AliDrawStyle::PercentToFloat_t(const char *value, Int_t verbose) {
 /// \return \return - Float_t number or -1.0 if something went wrong
 Float_t AliDrawStyle::ConvertUnit(const char *inputValues, const char *option, Int_t verbose) {
   TString value = TString(inputValues);
-  if (value.Contains("px") && option != "")
+  if (value.Contains("px") && TString(option) != TString())
     return AliDrawStyle::PixelsToFloat_t(value, option, verbose);
   else if (value.Contains("%"))
     return AliDrawStyle::PercentToFloat_t(value, verbose);
@@ -720,34 +719,30 @@ Float_t AliDrawStyle::PrepareValue(const char* styleName, TString propertyName, 
     property = localStyle;
     hisNum = 0;
     cProperty = propertyName;
-    if (verbose == 4) ::Info("AliDrawStyle", "1.AliDrawStyle::PrepareValue(\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%d) provided value = \"%s\" ", styleName, propertyName.Data(), elementID.Data(), classID.Data(), objectID.Data(), localStyle.Data(), objNum, property.Data());
   }
   else if (localStyle.Contains(propertyName.Data())) {
     property = AliDrawStyle::ParseDeclaration(localStyle.Data(), propertyName.Data());
     hisNum = 0;
     cProperty = "";
-    if (verbose == 4) ::Info("AliDrawStyle", "2.AliDrawStyle::PrepareValue(\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%d) provided value = \"%s\" ", styleName, propertyName.Data(), elementID.Data(), classID.Data(), objectID.Data(), localStyle.Data(), objNum, property.Data());
   }
   else if (propertyName.Contains("size") || propertyName.Contains("margin")) {
     property = AliDrawStyle::GetValue(styleName, "", elementID, classID, objectID, "", verbose);
     hisNum = objNum;
     cProperty = propertyName + ":";
     if (!property.Contains(cProperty)) {
-      if (verbose == 4) ::Info("AliDrawStyle","AliDrawStyle::PrepareValue(\"%s\", \"%s\", \"%s\", \"%s\", \"%s\") property not found in css file", styleName, propertyName.Data(), elementID.Data(), classID.Data(), objectID.Data());
       return -1.;
     }
-    if (verbose == 4) ::Info("AliDrawStyle", "3.AliDrawStyle::PrepareValue(\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%d) provided value = \"%s\" ", styleName, propertyName.Data(), elementID.Data(), classID.Data(), objectID.Data(), localStyle.Data(), objNum, property.Data());
   }
   else {
     property = AliDrawStyle::GetValue(styleName, propertyName, elementID, classID, objectID, localStyle, verbose);
     hisNum = objNum;
     cProperty = "";
     if (property == TString("")) return -1.;
-    if (verbose == 4) ::Info("AliDrawStyle", "4.AliDrawStyle::PrepareValue(\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%d) provided value = \"%s\" ", styleName, propertyName.Data(), elementID.Data(), classID.Data(), objectID.Data(), localStyle.Data(), objNum, property.Data());
   }
 
   value = AliDrawStyle::GetNamedTypeAt(property.Data(), status, hisNum, cProperty, verbose);
-  if (verbose == 4) ::Info("AliDrawStyle", "5.AliDrawStyle::PrepareValue(\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%d) status is %d and returned value", styleName, propertyName.Data(), elementID.Data(), classID.Data(), objectID.Data(), localStyle.Data(), objNum, status);
+
+  if (verbose == 4) ::Info("AliDrawStyle", "AliDrawStyle::PrepareValue(\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%d) status is %d and returned value is %f", styleName, propertyName.Data(), elementID.Data(), classID.Data(), objectID.Data(), localStyle.Data(), objNum, status, value);
   if (status) return value;
 
   return -1.0;
@@ -783,9 +778,6 @@ TObjArray *AliDrawStyle::ReadCssString(TString inputCSS, TObjArray *cssArray, In
 }
 
 /// Read CSS html like files  (*see also AliRoot modification in CSS)
-/// TODO:
-/// * proper exception  handling (Boris)
-///   * Use ::Error verbosity according debug level
 /// \param inputName     - input file to read (supports environment vars)
 /// \param verbose       - specify verbose level for ::error and ::info (Int_t should be interpreted as an bit-mask)
 /// \return              - TObjArray  with the pairs TNamed of the CSS <Selector, declaration> or  TObjArray (recursive structure like includes)

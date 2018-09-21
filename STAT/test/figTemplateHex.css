@@ -28,7 +28,7 @@ fixme: ApplyStyle doesn't work with huge name of object like this "hisK0DMassQPt
     TCanvas *canvasQA1 = new TCanvas("canvasQA", "canvasQA", 1200, 800);
     AliPainter::DivideTPad(canvasQA1, "<horizontal>[1]", "Canvas1");
     canvasQA1->cd(1);
-    AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E, ylim=[0,])",0,0,0,4);
+    AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E,ylim=[<mean>/2,<mean>*4])",0,0,0,4);
     AliDrawStyle::ApplyCssStyle(canvasQA1, "figTemplateHex");
 }
 */
