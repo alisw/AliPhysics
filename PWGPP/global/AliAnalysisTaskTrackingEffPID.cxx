@@ -249,7 +249,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     if(fPrimarySelectionOpt==2){
       // primary particle selection based on origin of particle
       double pRad2=part->Xv()*part->Xv()+part->Yv()*part->Yv();
-      double distz=part->Zv()-zMCVertex;
+      double distz=TMath::Abs(part->Zv()-zMCVertex);
       if(pRad2>8 || distz>1) continue;
     }
     double arrayForSparse[5]={part->Eta(),part->Phi(),part->Pt(),(double)nTracklets,zMCVertex};
@@ -294,7 +294,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     if(fPrimarySelectionOpt==2){
       // primary particle selection based on origin of particle
       double pRad2=mcPart->Xv()*mcPart->Xv()+mcPart->Yv()*mcPart->Yv();
-      double distz=mcPart->Zv()-zMCVertex;
+      double distz=TMath::Abs(mcPart->Zv()-zMCVertex);
       if(pRad2>8 || distz>1) continue;
     }
     const int iCharge = mcPart->Charge() > 0 ? 1 : 0;
