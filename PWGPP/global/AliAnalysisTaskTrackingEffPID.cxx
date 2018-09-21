@@ -68,6 +68,7 @@ AliAnalysisTaskTrackingEffPID::AliAnalysisTaskTrackingEffPID() :
   fEventCut{false},
   fUseTrackCutsForAOD{false},
   fUseGeneratedKine{true},
+  fPrimarySelectionOpt{1},
   fIsAA{false},
   fFilterBit{4},
   fTrackCuts{0x0},
@@ -244,7 +245,13 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
 
   for (int iMC = 0; iMC < fMCEvent->GetNumberOfTracks(); ++iMC) {
     AliVParticle *part = (AliVParticle*)fMCEvent->GetTrack(iMC);
-    if (!part->IsPhysicalPrimary()) continue;
+    if(fPrimarySelectionOpt==1 && !part->IsPhysicalPrimary()) continue;
+    if(fPrimarySelectionOpt==2){
+      // primary particle selection based on origin of particle
+      double pRad2=part->Xv()*part->Xv()+part->Yv()*part->Yv();
+      double distz=part->Zv()-zMCVertex;
+      if(pRad2>8 || distz>1) continue;
+    }
     double arrayForSparse[5]={part->Eta(),part->Phi(),part->Pt(),(double)nTracklets,zMCVertex};
     const int pdg = std::abs(part->PdgCode());
     const int iCharge = part->Charge() > 0 ? 1 : 0;
@@ -283,7 +290,13 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
 
     AliVParticle *mcPart  = (AliVParticle*)fMCEvent->GetTrack(TMath::Abs(track->GetLabel()));
     if(!mcPart) continue;
-    if (!mcPart->IsPhysicalPrimary()) continue;
+    if (fPrimarySelectionOpt==1 && !mcPart->IsPhysicalPrimary()) continue;
+    if(fPrimarySelectionOpt==2){
+      // primary particle selection based on origin of particle
+      double pRad2=mcPart->Xv()*mcPart->Xv()+mcPart->Yv()*mcPart->Yv();
+      double distz=mcPart->Zv()-zMCVertex;
+      if(pRad2>8 || distz>1) continue;
+    }
     const int iCharge = mcPart->Charge() > 0 ? 1 : 0;
     int iSpecies = -1;
     for (int iS = 0; iS < AliPID::kSPECIESC; ++iS) {

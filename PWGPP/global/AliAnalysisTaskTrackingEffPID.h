@@ -43,6 +43,9 @@ public:
   AliESDtrackCuts* GetTrackCuts() const{
     return fTrackCuts;
   }
+  void SetPrimarySelectionOption(Int_t opt){
+    fPrimarySelectionOpt=opt;
+  }
   void SetCollisionSystem(TString collsy){
     collsy.ToLower();
     collsy.ReplaceAll("-","");
@@ -79,6 +82,7 @@ private:
 
   bool fUseTrackCutsForAOD;       /// flag to switch off/on fTrackCuts for AOD
   bool fUseGeneratedKine;         /// flag to use the generated pt, eta phi
+  int  fPrimarySelectionOpt;      /// 0=no selection, 1=IsPhysicalPrimary, 2= cut on the origin
   bool fIsAA;                     /// flag to control collision system
   int  fFilterBit;                /// filter-bit selection for AOD tracks
   AliESDtrackCuts* fTrackCuts;                            /// cut object
@@ -93,7 +97,7 @@ private:
 
 
   /// \cond CLASSDEF
-  ClassDef(AliAnalysisTaskTrackingEffPID, 1);
+  ClassDef(AliAnalysisTaskTrackingEffPID, 2);
   /// \endcond
 };
 
