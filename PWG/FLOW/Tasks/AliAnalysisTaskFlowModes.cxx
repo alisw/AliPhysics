@@ -1473,8 +1473,7 @@ Bool_t AliAnalysisTaskFlowModes::IsEventSelected_PbPb()
 
   Double_t multESDTPCDif = multEsdn - multTPCn*3.38;
   
-  if (multESDTPCDif > 15000.) return kFALSE;
-  
+  if (multESDTPCDif > 700.) return kFALSE;//15000
   fhEventCounter->Fill("ESD TPC Mult. Diff. OK",1);
 
   Double_t multTrkn = multTrk;
@@ -1656,7 +1655,25 @@ void AliAnalysisTaskFlowModes::FillEventsQA(const Short_t iQAindex)
       }
 
   }// end of for (Int_t it = 0; it < nTracks; it++)
+  if(iQAindex==1){
+	Double_t multTPCn = multTPC;
+  	Double_t multEsdn = multEsd;
+
+  	Double_t multESDTPCDif = multEsdn - multTPCn*3.38;
+
+  	if (multESDTPCDif > 700.) return kFALSE;//15000
+
+  }
   fhQAEventsPileUp[iQAindex]->Fill(multTPC,multEsd);
+  
+
+  if(iQAindex==1){
+  	Double_t multTrkn = multTrk;
+  	Double_t multTrkTOFn = multTrkTOF;
+
+  	if(fExtraPileUp && multTrkTOFn< (-32+ 0.32*multTrkn+0.000037*multTrkn*multTrkn)) return kFALSE;
+  	if(fExtraPileUp && multTrkTOFn> (13+0.46*multTrkn+0.000018*multTrkn*multTrkn)) return kFALSE;	
+  }
   fhEventsMultTOFFilterbit32[iQAindex]->Fill(multTrk,multTrkTOF);
 
   return;
