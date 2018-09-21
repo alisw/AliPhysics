@@ -1661,7 +1661,7 @@ void AliAnalysisTaskFlowModes::FillEventsQA(const Short_t iQAindex)
 
   	Double_t multESDTPCDif = multEsdn - multTPCn*3.38;
 
-  	if (multESDTPCDif > 700.) return kFALSE;//15000
+  	if (multESDTPCDif > 700.) return;//15000
 
   }
   fhQAEventsPileUp[iQAindex]->Fill(multTPC,multEsd);
@@ -1671,8 +1671,8 @@ void AliAnalysisTaskFlowModes::FillEventsQA(const Short_t iQAindex)
   	Double_t multTrkn = multTrk;
   	Double_t multTrkTOFn = multTrkTOF;
 
-  	if(fExtraPileUp && multTrkTOFn< (-32+ 0.32*multTrkn+0.000037*multTrkn*multTrkn)) return kFALSE;
-  	if(fExtraPileUp && multTrkTOFn> (13+0.46*multTrkn+0.000018*multTrkn*multTrkn)) return kFALSE;	
+  	if(fExtraPileUp && multTrkTOFn< (-32+ 0.32*multTrkn+0.000037*multTrkn*multTrkn)) return;
+  	if(fExtraPileUp && multTrkTOFn> (13+0.46*multTrkn+0.000018*multTrkn*multTrkn)) return;	
   }
   fhEventsMultTOFFilterbit32[iQAindex]->Fill(multTrk,multTrkTOF);
 
