@@ -106,7 +106,7 @@ static TH3D LMEECutLib::SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int
 }  
 
 // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
-AliDielectronEventCuts* LMEECutLib::GetEventCuts() {
+AliDielectronEventCuts* LMEECutLib::GetEventCuts(Double_t centMin, Double_t centMax) {
   ::Info("LMEE_CutLib_slehner","setting event cuts");
   
   AliDielectronEventCuts* eventCuts = new AliDielectronEventCuts("eventCuts","evcuts");
@@ -115,7 +115,7 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts() {
   eventCuts->SetRequireVertex();
   eventCuts->SetMinVtxContributors(1);
   eventCuts->SetVertexZ(-10.,+10.);
-    
+  eventCuts->SetCentralityRange(0,80,kTRUE);    //isRun2 = true 
   return eventCuts;
 }
 
