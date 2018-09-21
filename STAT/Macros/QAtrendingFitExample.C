@@ -90,7 +90,7 @@ void makeMVAFits(){
 ///----------------------------
 ///* TODO - Implement real bootstrap ( random sampling with replacement + other methods) in the TMVA (to check with ROOT)
 ///* TODO - DNN example - TO USE DNN (Deep neural network)  BLASS or CBLASS library has to be enabled in ROOT. This is not the case for the default aliBuild recipies
-void makeMVABootstrapMI(Int_t nregression=10){
+void makeMVABootstrapMI(Int_t nRegression=10){
   TFile *f= TFile::Open("TMVAInput.root");
   f->GetObject("MVAInput",treeCache);
   for (Int_t iBoot=0; iBoot<nRegression; iBoot++) {
@@ -103,6 +103,19 @@ void makeMVABootstrapMI(Int_t nregression=10){
   }
 }
 
+void makeMVABootstrapMI2(Int_t nRegression=10){
+  TFile *f= TFile::Open("TMVAInput.root");
+  f->GetObject("MVAInput",treeCache);
+  gSystem->Unlink("TMVA_RegressionOutput2.root");
+  TString output="TMVA_RegressionOutput2.root#";
+  for (Int_t iBoot=0; iBoot<nRegression; iBoot++) {
+    AliNDFunctionInterface::FitMVARegression(output+"resolutionMIP"+iBoot,treeCache, "resolutionMIP", "interactionRate>0", "interactionRate:bz0:qmaxQASum:qmaxQASumR", "BDTRF25_8:BDTRF12_16:KNN", "", 0);
+    AliNDFunctionInterface::FitMVARegression(output+"meanMIPeleR"+iBoot,treeCache, "meanMIPeleR", "interactionRate>0", "interactionRate:bz0:qmaxQASum:qmaxQASumR", "BDTRF25_8:BDTRF12_16:KNN","", 0);
+    AliNDFunctionInterface::FitMVARegression(output+"tpcItsMatchA"+iBoot,treeCache, "tpcItsMatchA", "interactionRate>0", "interactionRate:bz0:qmaxQASum:qmaxQASumR", "BDTRF25_8:BDTRF12_16:KNN","", 0);
+  }
+}
+
+
 ///
 void loadMVAreaders(){
   AliNDFunctionInterface::LoadMVAReader(0,"TMVA_RegressionOutput.root","MLP","dir_resolutionMIP");
@@ -111,6 +124,7 @@ void loadMVAreaders(){
   AliNDFunctionInterface::LoadMVAReader(3,"TMVA_RegressionOutput.root","BDTRF12_16","dir_resolutionMIP");
 }
 
+
 /// Load array of regression  -used later in the array regression evaluation (mean, median, rms)
 ///-------------------------------
 void loadMVAreadersBootstrap() {
@@ -118,6 +132,18 @@ void loadMVAreadersBootstrap() {
   AliNDFunctionInterface::LoadMVAReaderArray(1,"TMVA_RegressionOutput.root","BDTRF25_8",".*resolutionMIP");
   AliNDFunctionInterface::LoadMVAReaderArray(2,"TMVA_RegressionOutput.root","KNN",".*resolutionMIP");
 }
+
+/// Load array of regression  -used later in the array regression evaluation (mean, median, rms)
+///-------------------------------
+void loadMVAreadersBootstrap2() {
+  AliNDFunctionInterface::LoadMVAReaderArray(0,"TMVA_RegressionOutput2.root","BDTRF12_16",".*resolutionMIP");
+  AliNDFunctionInterface::LoadMVAReaderArray(1,"TMVA_RegressionOutput2.root","BDTRF25_8",".*resolutionMIP");
+  AliNDFunctionInterface::LoadMVAReaderArray(2,"TMVA_RegressionOutput2.root","KNN",".*resolutionMIP");
+
+
+}
+
+
 /// QAtrendingFitExample
 /// ----------------------
 void QAtrendingFitExample(){

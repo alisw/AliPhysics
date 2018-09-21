@@ -37,11 +37,17 @@ namespace AliNDFunctionInterface {
   map<int, TMVA::MethodBase *> readerMethodBase;            /// map of registered TMVA::MethodBase
   map<int, TObjArray* > readerMethodBaseArray;              /// map of registered array of TMVA::MethodBase - used to define TMVA statistics (Mean, Median, RMS, quantiles)
   map<std::string, std::string> regressionMethodSetting;    /// map of registered TMVA regression methods
+  map<std::string, std::string> FactorySetting;    /// map of registered TMVA regression methods
   map<std::string, TMVA::Types::EMVA> regressionMethodID;   /// map of registered TMVA regression methods
   void registerDefaultMVAMethods();                         /// example registering default methods ()
+  void registerFactory(std::string factory, std::string content){FactorySetting[factory]=content;}
   void registerMethod(std::string method,  std::string content, TMVA::Types::EMVA id){regressionMethodSetting[method]=content; regressionMethodID[method]=id;}
   Int_t  FitMVA(TTree *tree, const char *varFit, TCut cut, const char * variableList, const char *methodList, const char *weights=NULL, Int_t index=-1);   /// MVA regression
+  Int_t  FitMVAClassification(const char * output , const char *input_trees, const char *cuts ,const char * variableList, const char *methodList, const char * factory_string=""); /// MVA Classification 
+  Int_t  FitMVARegression(const char * output, TTree *tree, const char *varFit, TCut cut, const char * variables, const char *methods,const char * factory_string="", const char *weights=NULL, Int_t index=-1); // new MVA Regression  
+
   TMVA::MethodBase * LoadMVAReader(Int_t id, const char * inputFile, const char *method, const char *dir);
+  TMVA::MethodBase * LoadMVAReader2(Int_t id, const char * inputFile, const char *method, const char *dir);
   Int_t  LoadMVAReaderArray(Int_t id, const char * inputFile, const char *methodMask, const char *dirMask);
   Int_t  AppendMethodToArray(Int_t index, TMVA::MethodBase * method);         /// Append method into array of methods - used e.g for bootstrap statistics
   Double_t   EvalMVAStatArray(int id, int statType, vector<float> point);     /// Evaluate statistic

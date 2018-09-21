@@ -126,6 +126,174 @@ Double_t AliNDFunctionInterface::GetDeltaInterpolationLinear(THn * his, Double_t
   }
   return value;
 }
+Int_t  AliNDFunctionInterface::FitMVAClassification(const char * output, const char *input_trees, const char *cuts, const char * variables, const char *methods, const char * factory_string){
+   TObjArray *dirfile=TString(output).Tokenize("#");
+  	if(dirfile->GetEntries()<=1){
+        	::Error("AliNDFunctionInterface::FitMVA","Empty directory list");
+        	return -1;
+  	}
+  	auto outputFile = TFile::Open(dirfile->At(0)->GetName(), "NEW"); 
+  	TString directory=TString(dirfile->At(1)->GetName());
+   	if(!outputFile){
+    		::Error("AliNDFunctionInterface::FitMVAClassification","Output File already exists");
+	 	return -1;
+   	}
+	TMVA::Factory factory("TMVAMulticlass", outputFile, "!V:!Silent:Color:DrawProgressBar:AnalysisType=multiclass" );
+	// Declare DataLoader 
+	TMVA::DataLoader loader(directory);
+	TObjArray *variableList = TString(variables).Tokenize(":");
+  	if (variableList->GetEntries()<=0){
+    		::Error("AliNDFunctionInterface::FitMVAClassification","Empty variable list");
+    		return -1;
+  	}
+  	for (Int_t i=0; i<variableList->GetEntries(); i++){
+    		loader.AddVariable(variableList->At(i)->GetName());
+  	}
+  	delete variableList;
+
+	TObjArray *treeList = TString(input_trees).Tokenize(":");
+	TObjArray *cutList = TString(cuts).Tokenize(":");
+  	if (treeList->GetEntries()<=1){
+    		::Error("AliNDFunctionInterface::FitMVAClassification","More than one input tree required.");
+    		return -1;
+  	}
+	if (treeList->GetEntries()<cutList->GetEntries()){
+    		::Error("AliNDFunctionInterface::FitMVAClassification","Entries in cut list exceed number of trees.");
+    		return -1;
+  	}
+	
+	TTree * tree_in[treeList->GetEntries()];
+	TFile * input[treeList->GetEntries()];
+	TCut cut[treeList->GetEntries()];
+  	for (Int_t i=0; i<treeList->GetEntries(); i++) cut[i]="";
+	for (Int_t i=0; i<cutList->GetEntries(); i++) cut[i]=cutList->At(i)->GetName();
+  	for (Int_t i=0; i<treeList->GetEntries(); i++){
+		TObjArray * inTree = TString(treeList->At(i)->GetName()).Tokenize("#");
+		input[i] = TFile::Open( TString(inTree->At(0)->GetName() ));
+		tree_in[i] = (TTree*) input[i]->Get(inTree->At(1)->GetName());	
+    	loader.AddTree(tree_in[i],inTree->At(1)->GetName(),1.0,cut[i]);
+		delete inTree;
+  	}
+   
+	loader.PrepareTrainingAndTestTree("", FactorySetting[factory_string]);
+	
+	TObjArray *methodList = TString(methods).Tokenize(":");
+	if (methodList->GetEntries()<=0){
+    		::Error("AliNDFunctionInterface::FitMVAClassification","Empty method list");
+    		return -1;
+  	}
+	for (Int_t i=0; i<methodList->GetEntries(); i++){
+    		std::string methodName=methodList->At(i)->GetName();
+    		printf("Booking method %s\t%d\t%s\n",methodName.data(), regressionMethodID[methodName], regressionMethodSetting[methodName].data());
+		factory.BookMethod(&loader,regressionMethodID[methodName], methodName.data(), regressionMethodSetting[methodName].data());
+	}
+	factory.TrainAllMethods();
+
+	/// Write ascii weight files to root file
+	outputFile->cd(directory);
+	for (Int_t i=0; i<methodList->GetEntries(); i++) {
+	        std::string methodName = methodList->At(i)->GetName();
+	        TString weightFile = TString::Format(directory+"/weights/TMVAMulticlass_%s.weights.xml",methodName.data());
+	        printf("Weight file\t%s\n", weightFile.Data());
+	        TObjString weight(gSystem->GetFromPipe(TString::Format("cat %s",weightFile.Data())));
+	        weight.Write(methodName.data());
+	}
+   TObjString varlist(variables);
+   varlist.Write("variables");
+	delete methodList;
+	factory.TestAllMethods();
+	factory.EvaluateAllMethods();
+	outputFile->Close();
+		
+	return 0;
+}
+
+
+
+
+///  FitMVARegression wrapper = Do TMVA regression and save weigths into output root file
+/// \param output              - output path <file>#directory/
+///                            - output file is opened in update mode - in case key (directory) exist - fit should failed - data are not written (currently it failed)
+/// \param tree                - input tree
+/// \param varFit              - variable to fit (for the moment 1)
+/// \param cut                 - cut formula
+/// \param variables           - : separated list of explanatory variables
+/// \param methods             - : separated list of the regression methods (have to be registred before)
+/// \param factory_string      - factory string (e.g specifying number of training and test samples). Factory string to be registered before. If empty default used
+/// \param weights             - weigths expreesion //TODO  - join with varFit string
+/// \param index               - index // TODO group with the output dir
+/// \return                    - Fit parameters witll be aseved in the output destination - return value 0 in case of success
+Int_t  AliNDFunctionInterface::FitMVARegression(const char * output, TTree *tree, const char *varFit, TCut cut, const char * variables, const char *methods,const char * factory_string, const char *weights, Int_t index){
+  ///  0. Declare Factory
+
+  TObjArray *dirfile=TString(output).Tokenize("#");
+  if(dirfile->GetEntries()<=1){
+	::Error("AliNDFunctionInterface::FitMVA","Empty directory list");
+	return -1;
+  }
+  auto outputFile = TFile::Open(dirfile->At(0)->GetName(), "update");
+  TString directory=TString(dirfile->At(1)->GetName());
+  //if(!outputFile){
+  //  ::Error("AliNDFunctionInterface::FitMVARegression","Output File already exists");
+	// return -1;
+  //}
+  TMVA::Factory factory("TMVARegression", outputFile, "!V:!Silent:Color:DrawProgressBar:AnalysisType=Regression" );
+  TString varNameFit=varFit;
+  if (index>=0) varNameFit=TString::Format("%s[%d]",varFit,index);
+  /// 1.) Declare DataLoader
+  TMVA::DataLoader loader(directory);
+  //  2.) Add the feature variables from the variables list
+  TObjArray *variableList = TString(variables).Tokenize(":");
+  if (variableList->GetEntries()<=0){
+    ::Error("AliNDFunctionInterface::FitMVA","Empty variable list");
+    return -1;
+  }
+  for (Int_t i=0; i<variableList->GetEntries(); i++){
+    loader.AddVariable(variableList->At(i)->GetName());
+    /// TODO check existence - validity of variable - in case of error - exit with error message
+  }
+  delete variableList;
+  loader.AddTarget(varFit);
+  /// 3.) Setup DataSet
+  loader.AddRegressionTree(tree, 1.0);   // link the TTree to the loader, weight for each event  = 1
+  
+  Int_t entries = tree->Draw("1",cut,"goff");
+  loader.PrepareTrainingAndTestTree(cut, FactorySetting[factory_string]);
+  if (weights!=NULL) loader.SetWeightExpression(weights);
+  /// 4.) Book regression methods from the methods list
+  TObjArray *methodList = TString(methods).Tokenize(":");
+  if (methodList->GetEntries()<=0){
+    ::Error("AliNDFunctionInterface::FitMVA","Empty method list");
+    return -1;
+  }
+  for (Int_t i=0; i<methodList->GetEntries(); i++){
+    std::string methodName=methodList->At(i)->GetName();
+    printf("Booking method %s\t%d\t%s\n",methodName.data(), regressionMethodID[methodName], regressionMethodSetting[methodName].data());
+    factory.BookMethod(&loader,regressionMethodID[methodName], methodName.data(), regressionMethodSetting[methodName].data());
+  }
+  /// 5.) Train all methods
+  factory.TrainAllMethods();
+  /// 6.) Write ascii weight files to root file
+  outputFile->cd(directory);
+  for (Int_t i=0; i<methodList->GetEntries(); i++) {
+    std::string methodName = methodList->At(i)->GetName();
+    TString weightFile = TString::Format(directory+"/weights/TMVARegression_%s.weights.xml",methodName.data());
+    printf("Weight file\t%s\n", weightFile.Data());
+    TObjString weight(gSystem->GetFromPipe(TString::Format("cat %s",weightFile.Data())));
+    weight.Write(methodName.data());
+  }
+  
+  TObjString varlist(variables);
+  varlist.Write("variables");
+  delete methodList;
+  // 7.) Evaluate all MVAs using the set of test events             /// TODO - make an option
+  factory.TestAllMethods();
+  // 8.) Evaluate and compare performance of all configured MVAs    /// TODO - make an option
+  factory.EvaluateAllMethods();
+  // Save the output
+  outputFile->Close();
+  return 0;
+}
 
 /// Fit MVA regression
 /// \param tree            - input tree (or chain)
@@ -259,6 +427,56 @@ TMVA::MethodBase * AliNDFunctionInterface::LoadMVAReader(Int_t id/*=0*/, const c
     Float_t value;
     reader->AddVariable(var.Data(),&value);   /// dummy booking  it is not used - TODO - ask TMVA to remove requirement
   }
+  /// write weight from the root file to txt files as it is expected by reader
+  FILE * pFile;
+  pFile = fopen ("weights.xml","w");
+  TObjString *methodWeights= NULL;
+
+  if (dir0==NULL) {
+    ::Error("LoadMVAReader","Object %s not present in  input directory\t%s/%s",  method, inputFile,dir);
+    delete pFile;
+    return NULL;
+  }
+  dir0->GetObject(method,methodWeights);
+  if (methodWeights==NULL){
+    ::Error("LoadMVAReader","Object %s not present in  input directory\t%s/%s",  method, inputFile,dir);
+    delete pFile;
+    return NULL;
+  }
+  fprintf (pFile, "%s",methodWeights->GetName());
+  fclose (pFile);
+  reader->BookMVA( method, "weights.xml");
+  if (id>=0) AliNDFunctionInterface::readerMethodBase[id]=dynamic_cast<TMVA::MethodBase *>(reader->FindMVA(method));
+  return dynamic_cast<TMVA::MethodBase *>(reader->FindMVA(method));
+}
+
+
+
+TMVA::MethodBase * AliNDFunctionInterface::LoadMVAReader2(Int_t id/*=0*/, const char * inputFile/*="TMVA_RegressionOutput.root"*/, const char *method/*="MLP"*/, const char *dir/*="dir_resolutionMIP"*/){
+  TMVA::Reader *reader;
+  reader = new TMVA::Reader( "!Color:!Silent" );
+  auto fin = TFile::Open(inputFile);
+  if (fin==NULL){
+    ::Error("LoadMVAReader","Invalid input file\t%s", inputFile);
+    return NULL;
+  }
+  TDirectoryFile *dir0 = 0,*dirVar=0;
+  fin->GetObject(dir,dir0);
+  if (dir0==NULL) {
+    ::Error("LoadMVAReader","Invalid input directory\t%s\t%s", dir, inputFile);
+    return NULL;
+  }
+  TObjString *varlist; 
+  dir0->GetObject("variables",varlist);
+  TObjArray *variableList = varlist->GetString().Tokenize(":");
+  for (Int_t i=0; i<variableList->GetEntries(); i++){
+       Float_t value;
+       reader->AddVariable(variableList->At(i)->GetName(),&value);
+       /// TODO check existence - validity of variable - in case of error - exit with error message
+  }
+  delete varlist;
+  delete variableList;
+
   /// write weight from the root file to txt files as it is expected by reader
   FILE * pFile;
   pFile = fopen ("weights.xml","w");
