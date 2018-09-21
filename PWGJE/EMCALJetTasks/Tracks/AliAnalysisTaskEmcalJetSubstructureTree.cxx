@@ -476,6 +476,7 @@ void AliAnalysisTaskEmcalJetSubstructureTree::UserExecOnce() {
       std::string clustname = clust->GetName();
       auto iscent = clustname.find("CENT") != std::string::npos, iscalo = clustname.find("CALO") != std::string::npos; 
       if(!(iscalo || iscent)) continue;
+      AliInfoStream() << "Adding trigger cluster " << clustname << " to cluster lumi monitor" << std::endl;
       clusternames.emplace_back(clustname);
    }
 
@@ -497,8 +498,9 @@ void AliAnalysisTaskEmcalJetSubstructureTree::FillLuminosity() {
         auto int7trigger = trigger.IsTriggerClass("INT7");
         auto bunchcrossing = trigger.BunchCrossing() == "B";
         auto nopf = trigger.PastFutureProtection() == "NOPF";
+        bool centcalo = (trigger.Triggercluster().find("CENT") != std::string::npos) || (trigger.Triggercluster().find("CALO") != std::string::npos);
         AliDebugStream(4) << "Full name: " << trigger.ExpandClassName() << ", INT7 trigger:  " << (int7trigger ? "Yes" : "No") << ", bunch crossing: " << (bunchcrossing ? "Yes" : "No") << ", no past-future protection: " << (nopf ? "Yes" : "No")  << ", Cluster: " << trigger.Triggercluster() << std::endl;
-        if(int7trigger && bunchcrossing && nopf) {
+        if(int7trigger && bunchcrossing && nopf && centcalo) {
           double downscale = downscalefactors->GetDownscaleFactorForTriggerClass(trigger.ExpandClassName());
           AliDebugStream(5) << "Using downscale " << downscale << std::endl;
           fLumiMonitor->Fill(trigger.Triggercluster().data(), 1./downscale);
