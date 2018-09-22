@@ -1748,6 +1748,10 @@ void AliCEPUtils::InitTrackCuts(Bool_t IsRun1, Int_t clusterCut)
 Double_t AliCEPUtils::CaloClusterTrackdmax( AliESDEvent *Event, TArrayI* TTindices )
 {
   
+  // time and amplitude cuts
+  Double_t cTimeMax    = 50.;
+  Double_t cellAmplMin =  0.;
+  
   // initialisations
   Double_t dval = 20.;
   Float_t x[3];
@@ -1821,15 +1825,15 @@ Double_t AliCEPUtils::CaloClusterTrackdmax( AliESDEvent *Event, TArrayI* TTindic
   AliESDCaloCells* CaloCells = (AliESDCaloCells*)Event->GetEMCALCells();
 
   TArrayI *cind = new TArrayI();
+  TArrayD *ctim = new TArrayD();
+  TArrayD *camp = new TArrayD();
   TArrayD *ceta = new TArrayD();
   TArrayD *cphi = new TArrayD();
   cnt = -1;
   for (UInt_t ii=0; ii<nCaloTracks; ii++) {
     aliCluster = (AliESDCaloCluster*)Event->GetCaloCluster(ii);
     if (!aliCluster->IsEMCAL()) continue;
-    cnt++;
     
-    printf("cluster %i",cnt);
 
     // determine cluster time = time of cluster cell with largest amplitude
     cellAmpl_max = 0.;
@@ -1841,9 +1845,10 @@ Double_t AliCEPUtils::CaloClusterTrackdmax( AliESDEvent *Event, TArrayI* TTindic
         cellNb_max_ampl = cellNb;
       }
     }
-    cTime = CaloCells->GetCellTime(cellNb_max_ampl);
-    printf(" time %.6f [ns] amplitude %.6f\n",1.E9*cTime, cellAmpl_max);
+    cTime = 1.E9*CaloCells->GetCellTime(cellNb_max_ampl);   // [ns]
     
+    // cut on time and amplitude
+    if (TMath::Abs(cTime)>cTimeMax || cellAmpl_max<cellAmplMin) continue;
     
     // get cluster position
     aliCluster->GetPosition(x);
@@ -1854,12 +1859,20 @@ Double_t AliCEPUtils::CaloClusterTrackdmax( AliESDEvent *Event, TArrayI* TTindic
     cluster_eta = v3.Eta();
     
     // update cluster buffers
+    cnt++;
     cind->Set(cnt+1);
     cind->SetAt(ii,cnt);
+    ctim->Set(cnt+1);
+    ctim->SetAt(cTime,cnt);
+    camp->Set(cnt+1);
+    camp->SetAt(cellAmpl_max,cnt);
     ceta->Set(cnt+1);
     ceta->AddAt(cluster_eta,cnt);
     cphi->Set(cnt+1);
     cphi->AddAt(cluster_phi,cnt);
+    
+    //printf("cluster %i nCells %i",cnt, aliCluster->GetNCells());
+    //printf(" time %.6f [ns] amplitude %.6f\n",cTime, cellAmpl_max);
     
   }
   printf("\n");
@@ -1885,8 +1898,8 @@ Double_t AliCEPUtils::CaloClusterTrackdmax( AliESDEvent *Event, TArrayI* TTindic
         dEta = teta->At(kk) - ceta->At(jj);
         dPhi = tphi->At(kk) - cphi->At(jj);
         dEtaPhi = TMath::Sqrt( dEta*dEta + dPhi*dPhi );
-        //printf("  c %i ceta %.2f cphi %.2f t %i teta %.2f tphi %.2f dEtaPhi %.2f\n",
-        //  jj,ceta->At(jj),cphi->At(jj),kk,teta->At(kk),tphi->At(kk),dEtaPhi);
+        //printf("  c %i time %.2f amp %.4f ceta %.2f cphi %.2f t %i teta %.2f tphi %.2f dEtaPhi %.2f\n",
+        //  jj,ctim->At(jj),camp->At(jj),ceta->At(jj),cphi->At(jj),kk,teta->At(kk),tphi->At(kk),dEtaPhi);
 
         // update dEtaPhiMin
         if (dEtaPhi<dEtaPhiMin) {
@@ -1897,6 +1910,9 @@ Double_t AliCEPUtils::CaloClusterTrackdmax( AliESDEvent *Event, TArrayI* TTindic
       }
     }
     //printf("    cluster %i track %i dEtaPhiMin %.2f\n", cm,tm,dEtaPhiMin);
+    printf("  c %i time %.2f amp %.4f ceta %.2f cphi %.2f t %i teta %.2f tphi %.2f dEtaPhi %.2f\n",
+      cm,ctim->At(cm),camp->At(cm),ceta->At(cm),cphi->At(cm),tm,teta->At(tm),tphi->At(tm),dEtaPhiMin);
+    
     // update cu (clusters used) and tu (tracks used)
     cu->SetAt(1,cm);
     tu->SetAt(1,tm);
@@ -1906,6 +1922,8 @@ Double_t AliCEPUtils::CaloClusterTrackdmax( AliESDEvent *Event, TArrayI* TTindic
   
   // clean up
   delete cind;
+  delete ctim;
+  delete camp;
   delete ceta;
   delete cphi;
   delete tind;
