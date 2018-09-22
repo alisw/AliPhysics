@@ -1875,7 +1875,7 @@ Double_t AliCEPUtils::CaloClusterTrackdmax( AliESDEvent *Event, TArrayI* TTindic
     //printf(" time %.6f [ns] amplitude %.6f\n",cTime, cellAmpl_max);
     
   }
-  printf("\n");
+  //printf("\n");
   
   // find track/cluster matches
   Int_t cm, tm;
@@ -1910,8 +1910,8 @@ Double_t AliCEPUtils::CaloClusterTrackdmax( AliESDEvent *Event, TArrayI* TTindic
       }
     }
     //printf("    cluster %i track %i dEtaPhiMin %.2f\n", cm,tm,dEtaPhiMin);
-    printf("  c %i time %.2f amp %.4f ceta %.2f cphi %.2f t %i teta %.2f tphi %.2f dEtaPhi %.2f\n",
-      cm,ctim->At(cm),camp->At(cm),ceta->At(cm),cphi->At(cm),tm,teta->At(tm),tphi->At(tm),dEtaPhiMin);
+    //printf("  c %i time %.2f amp %.4f ceta %.2f cphi %.2f t %i teta %.2f tphi %.2f dEtaPhi %.2f\n",
+    //  cm,ctim->At(cm),camp->At(cm),ceta->At(cm),cphi->At(cm),tm,teta->At(tm),tphi->At(tm),dEtaPhiMin);
     
     // update cu (clusters used) and tu (tracks used)
     cu->SetAt(1,cm);
