@@ -488,6 +488,10 @@ eventCuts->SetCentralityRange(0, 10);
 
 Note that this alternative approach will **not** work with automatic setup of AliEventCuts!
 
+If wanting to run embedding on only a random subset of events, this can be done via SetRandomRejectionFactor(factor),
+where factor defines a rejection factor. The fraction of events kept is then equal to 1 / factor. This may be useful 
+if only a fraction of events is needed in the analysis and one wishes to reduce the running time.
+
 # Note on jets and jet finding                                                  {#emcEmbeddingJetFinding}
 
 When handling jet finding, a bit more care needs to be applied, especially if applying an artificial tracking
