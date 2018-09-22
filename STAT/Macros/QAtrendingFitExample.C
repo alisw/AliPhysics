@@ -1,5 +1,5 @@
 /// \ingroup Macros
-/// \file    QAtrendingfitExample.C
+/// \file    QAtrendingFitExample.C
 /// \brief   Demo usage of the information from the AliExternalInfo and visualization using the TStatToolkit, AliTreePlayer and AliDrawStyle
 ///
 /// \author  Marian Ivanov
@@ -76,6 +76,7 @@ void RegisterFitters() {
   AliNDFunctionInterface::registerMethod("DNN_CPU",dnnOptions.Data(), TMVA::Types::kDNN);
 }
 
+/*
 /// Make MVA regression example
 ///----------------------------
 void makeMVAFits(){
@@ -85,29 +86,17 @@ void makeMVAFits(){
   AliNDFunctionInterface::FitMVA(treeCache, "meanMIPeleR","interactionRate>0", "interactionRate:bz0:qmaxQASum:qmaxQASumR","BDTRF25_8:BDTRF12_16:MLP:KNN");
   AliNDFunctionInterface::FitMVA(treeCache, "tpcItsMatchA","interactionRate>0", "interactionRate:bz0:qmaxQASum:qmaxQASumR","BDTRF25_8:BDTRF12_16:MLP:KNN");
 }
+*/
 
-///Emulation of the bootstrap - training repeated several time
-///----------------------------
-///* TODO - Implement real bootstrap ( random sampling with replacement + other methods) in the TMVA (to check with ROOT)
-///* TODO - DNN example - TO USE DNN (Deep neural network)  BLASS or CBLASS library has to be enabled in ROOT. This is not the case for the default aliBuild recipes
+
+/// Emulation of the TMVA bootstrap - training repeated several time with different subset of data
+/// TODO - Implement real bootstrap ( random sampling with replacement + other methods) in the TMVA (to check with ROOT)
+/// TODO - DNN example - TO USE DNN (Deep neural network)  BLASS or CBLASS library has to be enabled in ROOT. This is not the case for the default aliBuild recipes
 void makeMVABootstrapMI(Int_t nRegression=10){
   TFile *f= TFile::Open("TMVAInput.root");
   f->GetObject("MVAInput",treeCache);
-  for (Int_t iBoot=0; iBoot<nRegression; iBoot++) {
-    AliNDFunctionInterface::FitMVA(treeCache, "resolutionMIP", "interactionRate>0", "interactionRate:bz0:qmaxQASum:qmaxQASumR", "BDTRF25_8:BDTRF12_16:KNN", 0, iBoot);
-    AliNDFunctionInterface::FitMVA(treeCache, "meanMIPeleR", "interactionRate>0", "interactionRate:bz0:qmaxQASum:qmaxQASumR", "BDTRF25_8:BDTRF12_16:KNN", 0, iBoot);
-    AliNDFunctionInterface::FitMVA(treeCache, "tpcItsMatchA", "interactionRate>0", "interactionRate:bz0:qmaxQASum:qmaxQASumR", "BDTRF25_8:BDTRF12_16:KNN", 0, iBoot);
-    if (useDNN){
-      AliNDFunctionInterface::FitMVA(treeCache, "resolutionMIP", "interactionRate>0", "interactionRate:bz0:qmaxQASum:qmaxQASumR", "DNN_CPU", 0, iBoot);
-    }
-  }
-}
-
-void makeMVABootstrapMI2New(Int_t nRegression=10){
-  TFile *f= TFile::Open("TMVAInput.root");
-  f->GetObject("MVAInput",treeCache);
-  gSystem->Unlink("TMVA_RegressionOutput2.root");
-  TString output="TMVA_RegressionOutput2.root#";
+  gSystem->Unlink("TMVA_RegressionOutput.root");
+  TString output="TMVA_RegressionOutput.root#";
   for (Int_t iBoot=0; iBoot<nRegression; iBoot++) {
     AliNDFunctionInterface::FitMVARegression(output+"resolutionMIP"+iBoot,treeCache, "resolutionMIP", "interactionRate>0", "interactionRate:bz0:qmaxQASum:qmaxQASumR", "BDTRF25_8:BDTRF12_16:KNN", "");
     AliNDFunctionInterface::FitMVARegression(output+"meanMIPeleR"+iBoot,treeCache, "meanMIPeleR", "interactionRate>0", "interactionRate:bz0:qmaxQASum:qmaxQASumR", "BDTRF25_8:BDTRF12_16:KNN","");
@@ -115,13 +104,11 @@ void makeMVABootstrapMI2New(Int_t nRegression=10){
   }
 }
 
-
-///
+/// Load regression and register it for later usage
 void loadMVAReaders(){
-  AliNDFunctionInterface::LoadMVAReader(0,"TMVA_RegressionOutput.root","MLP","dir_resolutionMIP");
-  AliNDFunctionInterface::LoadMVAReader(1,"TMVA_RegressionOutput.root","KNN","dir_resolutionMIP");
-  AliNDFunctionInterface::LoadMVAReader(2,"TMVA_RegressionOutput.root","BDTRF25_8","dir_resolutionMIP");
-  AliNDFunctionInterface::LoadMVAReader(3,"TMVA_RegressionOutput.root","BDTRF12_16","dir_resolutionMIP");
+  AliNDFunctionInterface::LoadMVAReader(0,"TMVA_RegressionOutput.root","BDTRF25_8","resolutionMIP0");
+  AliNDFunctionInterface::LoadMVAReader(1,"TMVA_RegressionOutput.root","BDTRF12_16","resolutionMIP0");
+  AliNDFunctionInterface::LoadMVAReader(2,"TMVA_RegressionOutput.root","KNN","resolutionMIP0");
 }
 
 
@@ -133,21 +120,12 @@ void loadMVAReadersBootstrap() {
   AliNDFunctionInterface::LoadMVAReaderArray(2,"TMVA_RegressionOutput.root","KNN",".*resolutionMIP");
 }
 
-/// Load array of regression  -used later in the array regression evaluation (mean, median, rms)
-///-------------------------------
-void loadMVAReadersBootstrapNew() {
-  AliNDFunctionInterface::LoadMVAReaderArray(10,"TMVA_RegressionOutput2.root","BDTRF12_16",".*resolutionMIP");
-  AliNDFunctionInterface::LoadMVAReaderArray(11,"TMVA_RegressionOutput2.root","BDTRF25_8",".*resolutionMIP");
-  AliNDFunctionInterface::LoadMVAReaderArray(12,"TMVA_RegressionOutput2.root","KNN",".*resolutionMIP");
-}
-
 
 /// QAtrendingFitExample
 /// ----------------------
 void QAtrendingFitExample(){
   /// 0.) Remove regression file
   gSystem->Unlink("TMVA_RegressionOutput.root");
-  gSystem->Unlink("TMVA_RegressionOutput2.root");
   /// 1.) Load Input data
   loadTree();
   /// 2.) Cache tree - TMVA expect variables  - not functions and aliases
@@ -156,13 +134,13 @@ void QAtrendingFitExample(){
   RegisterFitters();
   /// 4.) Make bootstrap regression
   makeMVABootstrapMI(10);
-  makeMVABootstrapMINew(10);
   /// 5.) Load array of regression readers
-  loadMVAReadersBootstrap();
-  loadMVAReadersBootstrapNew();
+  loadMVAReaders();            /// load one of the bootstrap method
+  loadMVAReadersBootstrap();   /// load bootstrap arrays
   ///
   /// 6.) Draw example plots
   /// ===============================
+  tree->Draw("AliNDFunctionInterface::EvalMVAStat(0,1,interactionRate, bz0,qmaxQASum,qmaxQASumR):AliNDFunctionInterface::EvalMVA(0,interactionRate, bz0,qmaxQASum,qmaxQASumR):resolutionMIP","run==QA.EVS.run","colz");
   /// 6.1 Correlation plot - mean regression of resolutionMIP vs observed resolutionMIP
   /// ----------------------------------
   /// \code tree->Draw("AliNDFunctionInterface::EvalMVAStat(0,1,interactionRate, bz0,qmaxQASum,qmaxQASumR):resolutionMIP:run","run==QA.EVS.run","colz"); \endcode
