@@ -3,7 +3,7 @@
 
 /// \ingroup STAT
 /// \namespace AliNDFunctionInterface
-/// \brief  Interface to Ndimension functional representations (THn and TMVA)
+/// \brief  Interface to N-dimensional functional representations (THn and TMVA)
 /// \authors Marian  Ivanov marian.ivanov@cern.ch
 /// see example usage in
 
@@ -29,36 +29,38 @@ namespace AliNDFunctionInterface {
   // Global function interface
   Double_t GetInterpolationLinear(Int_t index, Double_t *xyz, Int_t  verbose){return GetInterpolationLinear(hnMapArrayInt[index], xyz,verbose);}
   Double_t GetDeltaInterpolationLinear(Int_t index, Double_t *xyz, Int_t dIndex, Int_t  verbose) {
-      return GetDeltaInterpolationLinear(hnMapArrayInt[index], xyz, dIndex, verbose);
+    return GetDeltaInterpolationLinear(hnMapArrayInt[index], xyz, dIndex, verbose);
   }
   Double_t GetInterpolationLinear(const char *name, Double_t *xyz, Int_t  verbose){return GetInterpolationLinear(hnMapArrayName[name], xyz,verbose);}
   template<typename T, typename... Args> T EvalTHnLinear(int id, T v, Args... args);        /// variadic function evaluating THn
   /// TMVA interface
   map<int, TMVA::MethodBase *> readerMethodBase;            /// map of registered TMVA::MethodBase
-  map<int, TObjArray* > readerMethodBaseArray;              /// map of registered array of TMVA::MethodBase - used to define TMVA statistics (Mean, Median, RMS, quantiles)
+  map<int, TObjArray* > readerMethodBaseArray;              /// map of registered array of TMVA::MethodBase - used to define TMVA statistics (Mean, Median, RMS, quantile)
   map<std::string, std::string> regressionMethodSetting;    /// map of registered TMVA regression methods
+  map<std::string, std::string> FactorySetting;    /// map of registered TMVA regression methods
   map<std::string, TMVA::Types::EMVA> regressionMethodID;   /// map of registered TMVA regression methods
   void registerDefaultMVAMethods();                         /// example registering default methods ()
+  void registerFactory(std::string factory, std::string content){FactorySetting[factory]=content;}
   void registerMethod(std::string method,  std::string content, TMVA::Types::EMVA id){regressionMethodSetting[method]=content; regressionMethodID[method]=id;}
-  Int_t  FitMVA(TTree *tree, const char *varFit, TCut cut, const char * variableList, const char *methodList, const char *weights=NULL, Int_t index=-1);   /// MVA regression
+  Int_t  FitMVAClassification(const char * output , const char *inputTrees, const char *cuts ,const char * variableList, const char *methodList, const char * factoryString=""); /// MVA Classification
+  Int_t  FitMVARegression(const char * output, TTree *tree, const char *varFit, TCut cut, const char * variables, const char *methods,const char * factoryString=""); /// new MVA Regression
   TMVA::MethodBase * LoadMVAReader(Int_t id, const char * inputFile, const char *method, const char *dir);
   Int_t  LoadMVAReaderArray(Int_t id, const char * inputFile, const char *methodMask, const char *dirMask);
   Int_t  AppendMethodToArray(Int_t index, TMVA::MethodBase * method);         /// Append method into array of methods - used e.g for bootstrap statistics
   Double_t   EvalMVAStatArray(int id, int statType, vector<float> point);     /// Evaluate statistic
   template<typename T, typename... Args> T EvalMVA(int id, T v, Args... args);        /// variadic function evaluating MVA
   template<typename T, typename... Args> T EvalMVAStat(int id, int statType,  T v, Args... args);        /// variadic function evaluating MVA array stat
-
 };
 
 
 /// \brief Helper function to create std vector in variadic function
 template<typename T> vector<T> AliNDFunctionInterface::add_to_vector(vector<T> &z, T v) {z.push_back(v); return z;}
 template<typename T, typename... Args> vector<T> AliNDFunctionInterface::add_to_vector(vector<T> &z, T v, Args... args) {
-    z.push_back(v);return add_to_vector<T>(z, args...);
+  z.push_back(v);return add_to_vector<T>(z, args...);
 }
 /// \brief Variadic function to create an vector (boost implementation )
-/// \tparam T
-/// \tparam Args
+/// \tparam T        - template type
+/// \tparam Args     - list of arguments
 /// \param v
 /// \param args
 /// \return
@@ -68,13 +70,13 @@ template<typename T, typename... Args> vector<T> AliNDFunctionInterface::add_to_
 ///    auto a = AliNDFunctionInterface::make_vector<int>(1, 1, 3);
 /// \endcode
 template<typename T, typename... Args> vector<T> AliNDFunctionInterface::make_vector(T v, Args... args) {
-    vector<T> z; z.push_back(v); return add_to_vector<T>(z, args...);
+  vector<T> z; z.push_back(v); return add_to_vector<T>(z, args...);
 }
 
 /// Variadic function to linearly interpolate THn
-/// \tparam T
-/// \tparam Args
-/// \param id
+/// \tparam T          - template type
+/// \tparam Args       - list of arguments
+/// \param id          - id of the function (e.g using  hash of the name)
 /// \param v
 /// \param args
 /// \return interpolated value
@@ -117,7 +119,7 @@ template<typename T, typename... Args> T AliNDFunctionInterface::EvalMVA(int id,
 };
 
 
-/// Templated variadic function - Evaluate statistic on top of array (readerMethodBaseArray;) of MVA methods
+/// Template variadic function - Evaluate statistic on top of array (readerMethodBaseArray;) of MVA methods
 /// To use the method - array o TMVA methods should be registered before using LoadMVAReaderArray or AppendMethodToArray
 /// \tparam T            - template type - be default float
 /// \tparam Args         -
