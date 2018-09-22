@@ -45,7 +45,7 @@
 //Int_t AliNDFunctionInterface::fVerbose=0;
 ///
 /// \brief Linear interpolation of the bin content
-/// \param his       - input Ndimensional histogram to iterpolate
+/// \param his       - input N-dimensional histogram to interpolate
 /// \param xyz       - NDimensional point where to interpolate
 /// \param verbose   - verbosity flag
 /// \return
@@ -127,18 +127,18 @@ Double_t AliNDFunctionInterface::GetDeltaInterpolationLinear(THn * his, Double_t
   return value;
 }
 Int_t  AliNDFunctionInterface::FitMVAClassification(const char * output, const char *input_trees, const char *cuts, const char * variables, const char *methods, const char * factory_string){
-   TObjArray *dirfile=TString(output).Tokenize("#");
-  	if(dirfile->GetEntries()<=1){
-        	::Error("AliNDFunctionInterface::FitMVA","Empty directory list");
-        	return -1;
-  	}
-  	auto outputFile = TFile::Open(dirfile->At(0)->GetName(), "NEW"); 
-  	TString directory=TString(dirfile->At(1)->GetName());
-   	if(!outputFile){
-    		::Error("AliNDFunctionInterface::FitMVAClassification","Output File already exists");
-	 	return -1;
-   	}
-	TMVA::Factory factory("TMVAMulticlass", outputFile, "!V:!Silent:Color:DrawProgressBar:AnalysisType=multiclass" );
+   TObjArray *dirFile=TString(output).Tokenize("#");
+   if(dirFile->GetEntries()<=1){
+	 ::Error("AliNDFunctionInterface::FitMVAClassification","Empty directory list");
+	 return -1;
+   }
+   auto outputFile = TFile::Open(dirFile->At(0)->GetName(), "update");
+   if(outputFile->GetListOfKeys()->Contains(dirFile->At(1)->GetName())){
+    ::Error("AliNDFunctionInterface::FitMVAClassification","Output directory already exists");
+    return -1;
+   } 
+   TString directory=TString(dirFile->At(1)->GetName());
+	TMVA::Factory factory("TMVAMultiClass", outputFile, "!V:!Silent:Color:DrawProgressBar:AnalysisType=multiclass" );
 	// Declare DataLoader 
 	TMVA::DataLoader loader(directory);
 	TObjArray *variableList = TString(variables).Tokenize(":");
@@ -193,13 +193,13 @@ Int_t  AliNDFunctionInterface::FitMVAClassification(const char * output, const c
 	outputFile->cd(directory);
 	for (Int_t i=0; i<methodList->GetEntries(); i++) {
 	        std::string methodName = methodList->At(i)->GetName();
-	        TString weightFile = TString::Format(directory+"/weights/TMVAMulticlass_%s.weights.xml",methodName.data());
+	        TString weightFile = TString::Format(directory+"/weights/TMVAMultiClass_%s.weights.xml",methodName.data());
 	        printf("Weight file\t%s\n", weightFile.Data());
 	        TObjString weight(gSystem->GetFromPipe(TString::Format("cat %s",weightFile.Data())));
 	        weight.Write(methodName.data());
 	}
-   TObjString varlist(variables);
-   varlist.Write("variables");
+   TObjString varList(variables);
+   varList.Write("variables");
 	delete methodList;
 	factory.TestAllMethods();
 	factory.EvaluateAllMethods();
@@ -211,41 +211,43 @@ Int_t  AliNDFunctionInterface::FitMVAClassification(const char * output, const c
 
 
 
-///  FitMVARegression wrapper = Do TMVA regression and save weigths into output root file
+///  FitMVARegression wrapper = Do TMVA regression and save weights into output root file
 /// \param output              - output path <file>#directory/
 ///                            - output file is opened in update mode - in case key (directory) exist - fit should failed - data are not written (currently it failed)
 /// \param tree                - input tree
 /// \param varFit              - variable to fit (for the moment 1)
 /// \param cut                 - cut formula
 /// \param variables           - : separated list of explanatory variables
-/// \param methods             - : separated list of the regression methods (have to be registred before)
+/// \param methods             - : separated list of the regression methods (have to be registered before)
 /// \param factory_string      - factory string (e.g specifying number of training and test samples). Factory string to be registered before. If empty default used
-/// \param weights             - weigths expreesion //TODO  - join with varFit string
-/// \param index               - index // TODO group with the output dir
-/// \return                    - Fit parameters witll be aseved in the output destination - return value 0 in case of success
-Int_t  AliNDFunctionInterface::FitMVARegression(const char * output, TTree *tree, const char *varFit, TCut cut, const char * variables, const char *methods,const char * factory_string, const char *weights, Int_t index){
+/// \return                    - Fit parameters will be saved in the output destination - return value 0 in case of success
+Int_t  AliNDFunctionInterface::FitMVARegression(const char * output, TTree *tree, const char *varFit, TCut cut, const char * variables, const char *methods,const char * factory_string){
   ///  0. Declare Factory
 
-  TObjArray *dirfile=TString(output).Tokenize("#");
-  if(dirfile->GetEntries()<=1){
-	::Error("AliNDFunctionInterface::FitMVA","Empty directory list");
-	return -1;
+  TObjArray *dirFile=TString(output).Tokenize("#");
+  if(dirFile->GetEntries()<=1){
+	 ::Error("AliNDFunctionInterface::FitMVARegression","Empty directory list");
+	 return -1;
   }
-  auto outputFile = TFile::Open(dirfile->At(0)->GetName(), "update");
-  TString directory=TString(dirfile->At(1)->GetName());
-  //if(!outputFile){
-  //  ::Error("AliNDFunctionInterface::FitMVARegression","Output File already exists");
-	// return -1;
-  //}
+  auto outputFile = TFile::Open(dirFile->At(0)->GetName(), "update");
+  if(outputFile->GetListOfKeys()->Contains(dirFile->At(1)->GetName())){
+    ::Error("AliNDFunctionInterface::FitMVA","Output directory already exists");
+    return -1;
+  } 
+  TString directory=TString(dirFile->At(1)->GetName());
   TMVA::Factory factory("TMVARegression", outputFile, "!V:!Silent:Color:DrawProgressBar:AnalysisType=Regression" );
   TString varNameFit=varFit;
-  if (index>=0) varNameFit=TString::Format("%s[%d]",varFit,index);
   /// 1.) Declare DataLoader
   TMVA::DataLoader loader(directory);
   //  2.) Add the feature variables from the variables list
-  TObjArray *variableList = TString(variables).Tokenize(":");
+  TObjArray *weight_split = TString(variables).Tokenize(";");
+  TObjArray *variableList = TString(weight_split->At(0)->GetName()).Tokenize(":");
+  TString weights = "";
+  if(weight_split->GetEntries()==2){
+    weights = TString(weight_split->At(1)->GetName());
+  }
   if (variableList->GetEntries()<=0){
-    ::Error("AliNDFunctionInterface::FitMVA","Empty variable list");
+    ::Error("AliNDFunctionInterface::FitMVARegression","Empty variable list");
     return -1;
   }
   for (Int_t i=0; i<variableList->GetEntries(); i++){
@@ -259,11 +261,11 @@ Int_t  AliNDFunctionInterface::FitMVARegression(const char * output, TTree *tree
   
   Int_t entries = tree->Draw("1",cut,"goff");
   loader.PrepareTrainingAndTestTree(cut, FactorySetting[factory_string]);
-  if (weights!=NULL) loader.SetWeightExpression(weights);
+  if (weights!="") loader.SetWeightExpression(weights,"Regression");
   /// 4.) Book regression methods from the methods list
   TObjArray *methodList = TString(methods).Tokenize(":");
   if (methodList->GetEntries()<=0){
-    ::Error("AliNDFunctionInterface::FitMVA","Empty method list");
+    ::Error("AliNDFunctionInterface::FitMVARegression","Empty method list");
     return -1;
   }
   for (Int_t i=0; i<methodList->GetEntries(); i++){
@@ -283,8 +285,8 @@ Int_t  AliNDFunctionInterface::FitMVARegression(const char * output, TTree *tree
     weight.Write(methodName.data());
   }
   
-  TObjString varlist(variables);
-  varlist.Write("variables");
+  TObjString varList(weight_split->At(0)->GetName());
+  varList.Write("variables");
   delete methodList;
   // 7.) Evaluate all MVAs using the set of test events             /// TODO - make an option
   factory.TestAllMethods();
@@ -395,7 +397,7 @@ Int_t  AliNDFunctionInterface::FitMVA(TTree *tree, const char *varFit, TCut cut,
 /// * TODO - ASK TMVA team to implement standard IO
 /// * TODO - ASK TMVA team to disable requirement to set variable addresses or find switch to make it
 ///
-/// Example parameters (see also QAtrendingFitExample.C loadMVAreaders())
+/// Example parameters (see also QAtrendingFitExample.C loadMVAReaders())
 ///==================================================================================================================
 /// \code
 ///  AliNDFunctionInterface::LoadMVAReader(0,"TMVA_RegressionOutput.root","MLP","dir_resolutionMIP");
@@ -452,7 +454,7 @@ TMVA::MethodBase * AliNDFunctionInterface::LoadMVAReader(Int_t id/*=0*/, const c
 
 
 
-TMVA::MethodBase * AliNDFunctionInterface::LoadMVAReader2(Int_t id/*=0*/, const char * inputFile/*="TMVA_RegressionOutput.root"*/, const char *method/*="MLP"*/, const char *dir/*="dir_resolutionMIP"*/){
+TMVA::MethodBase * AliNDFunctionInterface::LoadMVAReaderNew(Int_t id/*=0*/, const char * inputFile/*="TMVA_RegressionOutput.root"*/, const char *method/*="MLP"*/, const char *dir/*="dir_resolutionMIP"*/){
   TMVA::Reader *reader;
   reader = new TMVA::Reader( "!Color:!Silent" );
   auto fin = TFile::Open(inputFile);
@@ -466,15 +468,15 @@ TMVA::MethodBase * AliNDFunctionInterface::LoadMVAReader2(Int_t id/*=0*/, const 
     ::Error("LoadMVAReader","Invalid input directory\t%s\t%s", dir, inputFile);
     return NULL;
   }
-  TObjString *varlist; 
-  dir0->GetObject("variables",varlist);
-  TObjArray *variableList = varlist->GetString().Tokenize(":");
+  TObjString *varList;
+  dir0->GetObject("variables",varList);
+  TObjArray *variableList = varList->GetString().Tokenize(":");
   for (Int_t i=0; i<variableList->GetEntries(); i++){
        Float_t value;
        reader->AddVariable(variableList->At(i)->GetName(),&value);
        /// TODO check existence - validity of variable - in case of error - exit with error message
   }
-  delete varlist;
+  delete varList;
   delete variableList;
 
   /// write weight from the root file to txt files as it is expected by reader
@@ -508,10 +510,10 @@ TMVA::MethodBase * AliNDFunctionInterface::LoadMVAReader2(Int_t id/*=0*/, const 
 /// \param dirMask
 /// \return  error code - 0 mean OK
 ///
-/// Example usage in  (see also QAtrendingFitExample.C loadMVAreadersBootstrap())
+/// Example usage in  (see also QAtrendingFitExample.C loadMVAReadersBootstrap())
 ///==================================================================================================================
 /// \code
-/// void loadMVAreadersBootstrap() {
+/// void loadMVAReadersBootstrap() {
 ///  AliNDFunctionInterface::LoadMVAReaderArray(0,"TMVA_RegressionOutput.root","BDTRF12_16",".*resolutionMIP");
 ///  AliNDFunctionInterface::LoadMVAReaderArray(1,"TMVA_RegressionOutput.root","BDTRF25_8",".*resolutionMIP");
 ///  AliNDFunctionInterface::LoadMVAReaderArray(2,"TMVA_RegressionOutput.root","KNN",".*resolutionMIP");
