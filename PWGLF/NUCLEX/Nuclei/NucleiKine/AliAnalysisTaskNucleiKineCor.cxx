@@ -76,6 +76,9 @@ void AliAnalysisTaskNucleiKineCor::UserCreateOutputObjects()
   fHists[2] = new TH1D("hNdeuterons",";Number of deuterons at |Y|<1; Events",15,-0.5,14.5);
   fHists[2]->Sumw2();
   fOutputList->Add(fHists[2]);
+  fHists[3] = new TH1D("hEtaHadrons",";#eta; Events",100,-fAcc,fAcc);
+  fHists[3]->Sumw2();
+  fOutputList->Add(fHists[3]);
 
   fHists[10] = new TH2D("hHadHad","Hadron-hadron correlation;#Delta#varphi;Associated p_{T} (GeV/c)",
 			128,-TMath::Pi()/2,3*TMath::Pi()/2,100,0.,10);
@@ -111,14 +114,49 @@ void AliAnalysisTaskNucleiKineCor::UserCreateOutputObjects()
   fHists[17]->Sumw2();
   fOutputList->Add(fHists[17]);
 
-  fHists[18] = new TH2D("hHadHadAcc","Acceptance correction;#Delta#varphi;Associated p_{T} (GeV/c)",
-			128,-TMath::Pi()/2,3*TMath::Pi()/2,100,0.,10);
+  fHists[18] = new TH3D("hHadHadAcc","Acceptance correction;#Delta#varphi;Associated p_{T} (GeV/c)",
+			128,-TMath::Pi()/2,3*TMath::Pi()/2,128,-fAcc,fAcc,100,0.,10);
   fHists[18]->Sumw2();
   fOutputList->Add(fHists[18]);
   fHists[19] = new TH2D("hHadHadwAcc","Hadron-hadron correlation;#Delta#varphi;Associated p_{T} (GeV/c)",
 			128,-TMath::Pi()/2,3*TMath::Pi()/2,100,0.,10);
   fHists[19]->Sumw2();
   fOutputList->Add(fHists[19]);
+
+  fHists[20] = new TH2D("hHadEta","Hadron;#eta;Associated p_{T} (GeV/c)",
+			128,-fAcc,fAcc,100,0.,10);
+  fHists[20]->Sumw2();
+
+  fOutputList->Add(fHists[20]);
+
+  fHists[21] = new TH2D("hProtEta","Proton correlation;#eta;Associated p_{T} (GeV/c)",
+			128,-fAcc,fAcc,100,0.,10);
+  fHists[21]->Sumw2();
+  fOutputList->Add(fHists[21]);
+
+  fHists[22] = new TH2D("hDeutEta","Deuteron correlation;#eta;Associated p_{T} (GeV/c)",
+			128,-fAcc,fAcc,100,0.,10);
+  fHists[22]->Sumw2();
+  fOutputList->Add(fHists[22]);
+
+  fHists[23] = new TH2D("heHadHad","Hadron-hadron correlation (half #eta);#Delta#varphi;Associated p_{T} (GeV/c)",
+			128,-TMath::Pi()/2,3*TMath::Pi()/2,100,0.,10);
+  fHists[23]->Sumw2();
+  fOutputList->Add(fHists[23]);
+
+  fHists[24] = new TH2D("heHadProt","Hadron-proton correlation (half #eta);#Delta#varphi;Associated p_{T} (GeV/c)",
+			128,-TMath::Pi()/2,3*TMath::Pi()/2,100,0.,10);
+  fHists[24]->Sumw2();
+  fOutputList->Add(fHists[24]);
+
+  fHists[25] = new TH2D("heHadDeut","Hadron-deuteron correlation (half #eta);#Delta#varphi;Associated p_{T} (GeV/c)",
+			128,-TMath::Pi()/2,3*TMath::Pi()/2,100,0.,10);
+  fHists[25]->Sumw2();
+  fOutputList->Add(fHists[25]);
+
+  fHists[26] = new TH1D("feHadTrigs",";Number; Entries",25,-0.5,24.5);
+  fHists[26]->Sumw2();
+  fOutputList->Add(fHists[26]);
 
   fHists[97] = new TProfile("hXsec",";Cross section;;",1,-0.5,0.5,"e");
   fOutputList->Add(fHists[97]);
@@ -231,9 +269,12 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
 
   // hadron - hadron
   TH2 *hh  = (TH2*)fHists[10];
-  TH2 *ac  = (TH2*)fHists[18];
+  TH3 *ac  = (TH3*)fHists[18];
   TH2 *hh2 = (TH2*)fHists[19];
-  Int_t ntrigs = 0;
+  TH2 *hhe = (TH2*)fHists[20];
+  TH2 *hh3 = (TH2*)fHists[23];
+  Int_t ntrigs  = 0;
+  Int_t ntrigs2 = 0;
   for (Int_t i=0;i<nh;++i) {
     TParticle *part1 = (TParticle*)arrh.At(i);
     const double pt1 = part1->Pt();
@@ -241,7 +282,10 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
       continue;
     const double phi1 = part1->Phi();
     const double eta1 = part1->Eta();
+    fHists[3]->Fill(eta1);
     ntrigs++;
+    if (TMath::Abs(eta1)<fAcc/2.)
+      ntrigs2++;
     for (Int_t j=0;j<nh;++j) {
       TParticle *part2 = (TParticle*)arrh.At(j);
       if (part2==part1) 
@@ -249,17 +293,22 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
       const double dphi = DeltaPhi(phi1,part2->Phi());
       const double deta = part2->Eta()-eta1;
       hh->Fill(dphi,part2->Pt());
+      hhe->Fill(part2->Eta(),part2->Pt());
       const double acorr = 1-TMath::Abs(deta)/2/fAcc; 
       if (acorr>0) {
-	ac->Fill(dphi,part2->Pt(),1./acorr);
+	ac->Fill(dphi,deta,part2->Pt());
 	hh2->Fill(dphi,part2->Pt(),1./acorr);
       }
+      if (TMath::Abs(eta1)<fAcc/2.)
+	hh3->Fill(dphi,part2->Pt());
     }
     fHists[11]->Fill(ntrigs);  
+    fHists[26]->Fill(ntrigs2);  
   }
 
   // leading hadron - hadron
   hh = (TH2*)fHists[12];
+  hhe = (TH2*)fHists[21];
   if (ptl>fPt) {
     const double phi1 = leadP->Phi();
     const double eta1 = leadP->Eta();
@@ -270,12 +319,14 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
       const double dphi = DeltaPhi(phi1,part2->Phi());
       const double deta = part2->Eta()-eta1;
       hh->Fill(dphi,part2->Pt());
+      hhe->Fill(part2->Eta(),part2->Pt());
     }
     fHists[13]->Fill(1);  
   }
 
   // hadron - proton
   hh = (TH2*)fHists[14];
+  hh3 = (TH2*)fHists[24];
   for (Int_t i=0;i<nh;++i) {
     TParticle *part1 = (TParticle*)arrh.At(i);
     const double pt1 = part1->Pt();
@@ -290,6 +341,8 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
       const double dphi = DeltaPhi(phi1,part2->Phi());
       const double deta = part2->Eta()-eta1;
       hh->Fill(dphi,part2->Pt());
+      if (TMath::Abs(eta1)<fAcc/2.)
+	hh3->Fill(dphi,part2->Pt());
     }
   }
 
@@ -310,6 +363,8 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
 
   // hadron - deuteron
   hh = (TH2*)fHists[16];
+  hhe = (TH2*)fHists[22];
+  hh3 = (TH2*)fHists[25];
   for (Int_t i=0;i<nh;++i) {
     TParticle *part1 = (TParticle*)arrh.At(i);
     const double pt1 = part1->Pt();
@@ -324,6 +379,9 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
       const double dphi = DeltaPhi(phi1,part2->Phi());
       const double deta = part2->Eta()-eta1;
       hh->Fill(dphi,part2->Pt());
+      hhe->Fill(part2->Eta(),part2->Pt());
+      if (TMath::Abs(eta1)<fAcc/2.)
+	hh3->Fill(dphi,part2->Pt());
     }
   }
 
