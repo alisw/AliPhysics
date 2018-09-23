@@ -154,6 +154,10 @@ void AliAnalysisTaskNucleiKineCor::UserCreateOutputObjects()
   fHists[25]->Sumw2();
   fOutputList->Add(fHists[25]);
 
+  fHists[26] = new TH1D("feHadTrigs",";Number; Entries",25,-0.5,24.5);
+  fHists[26]->Sumw2();
+  fOutputList->Add(fHists[26]);
+
   fHists[97] = new TProfile("hXsec",";Cross section;;",1,-0.5,0.5,"e");
   fOutputList->Add(fHists[97]);
 
@@ -269,7 +273,8 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
   TH2 *hh2 = (TH2*)fHists[19];
   TH2 *hhe = (TH2*)fHists[20];
   TH2 *hh3 = (TH2*)fHists[23];
-  Int_t ntrigs = 0;
+  Int_t ntrigs  = 0;
+  Int_t ntrigs2 = 0;
   for (Int_t i=0;i<nh;++i) {
     TParticle *part1 = (TParticle*)arrh.At(i);
     const double pt1 = part1->Pt();
@@ -279,6 +284,8 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
     const double eta1 = part1->Eta();
     fHists[3]->Fill(eta1);
     ntrigs++;
+    if (TMath::Abs(eta1)<fAcc/2.)
+      ntrigs2++;
     for (Int_t j=0;j<nh;++j) {
       TParticle *part2 = (TParticle*)arrh.At(j);
       if (part2==part1) 
@@ -294,9 +301,9 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
       }
       if (TMath::Abs(eta1)<fAcc/2.)
 	hh3->Fill(dphi,part2->Pt());
-
     }
     fHists[11]->Fill(ntrigs);  
+    fHists[26]->Fill(ntrigs2);  
   }
 
   // leading hadron - hadron
@@ -319,7 +326,7 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
 
   // hadron - proton
   hh = (TH2*)fHists[14];
-  hh3 = (TH2*)fHists[23];
+  hh3 = (TH2*)fHists[24];
   for (Int_t i=0;i<nh;++i) {
     TParticle *part1 = (TParticle*)arrh.At(i);
     const double pt1 = part1->Pt();
@@ -334,6 +341,8 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
       const double dphi = DeltaPhi(phi1,part2->Phi());
       const double deta = part2->Eta()-eta1;
       hh->Fill(dphi,part2->Pt());
+      if (TMath::Abs(eta1)<fAcc/2.)
+	hh3->Fill(dphi,part2->Pt());
     }
   }
 
@@ -355,6 +364,7 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
   // hadron - deuteron
   hh = (TH2*)fHists[16];
   hhe = (TH2*)fHists[22];
+  hh3 = (TH2*)fHists[25];
   for (Int_t i=0;i<nh;++i) {
     TParticle *part1 = (TParticle*)arrh.At(i);
     const double pt1 = part1->Pt();
@@ -370,6 +380,8 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
       const double deta = part2->Eta()-eta1;
       hh->Fill(dphi,part2->Pt());
       hhe->Fill(part2->Eta(),part2->Pt());
+      if (TMath::Abs(eta1)<fAcc/2.)
+	hh3->Fill(dphi,part2->Pt());
     }
   }
 
