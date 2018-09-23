@@ -35,8 +35,10 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
  int    nClusterMin             =  70,
  double eta1Max                 =  0.8, // set y1max acturally if useRapidity==1
  double etaBinWidth             =  0.1, // set yBinWidth acturally if useRapidity==1
- double dcaZMax                 =  3.2,
- double dcaXYMax                =  2.4,
+ double dcaZMax_1               =  3.2,
+ double dcaXYMax_1              =  2.4,
+ double dcaZMax_2               =  3.2,
+ double dcaXYMax_2              =  2.4,
  int nCentrality                =  6,
  int particleID_1               =  0,   // Pion=0, Kaon=1, Proton=2
  int particleID_2               =  1,   // Pion=0, Kaon=1, Proton=2
@@ -80,8 +82,10 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
   double eta2Max                =  eta1Max; // set y2max acturally if useRapidity==1
   double eta1Min                = -eta1Max; // set y1min acturally if useRapidity==1
   double eta2Min                = -eta1Max; // set y2min acturally if useRapidity==1
-  double dcaZMin                = -dcaZMax;
-  double dcaXYMin               = -dcaXYMax;
+  double dcaZMin_1              = -dcaZMax_1;
+  double dcaXYMin_1             = -dcaXYMax_1;
+  double dcaZMin_2              = -dcaZMax_2;
+  double dcaXYMin_2             = -dcaXYMax_2;
   
   
   if      ( System == "PbPb" )                { centralityMethod = 4; trigger = kFALSE; }
@@ -336,9 +340,9 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
     part1Name += "pt";
     part1Name += int(1000*ptMax);
     part1Name += "_";
-    part1Name += int(1000*dcaZMin);
+    part1Name += int(1000*dcaZMin_1);
     part1Name += "DCA";
-    part1Name += int(1000*dcaZMax);
+    part1Name += int(1000*dcaZMax_1);
     part1Name += "_";
     
     part2Name += "eta";
@@ -348,9 +352,9 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
     part2Name += "pt";
     part2Name += int(1000*ptMax);
     part2Name += "_";
-    part2Name += int(1000*dcaZMin);
+    part2Name += int(1000*dcaZMin_2);
     part2Name += "DCA";
-    part2Name += int(1000*dcaZMax);
+    part2Name += int(1000*dcaZMax_2);
     part2Name += "_";
     
     eventName =  "";
@@ -445,10 +449,14 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
     task->SetNPhiBins2(           nBinsPhi        );
     task->SetEtaMin2(             eta2Min         ); // SetYMin2 acturally
     task->SetEtaMax2(             eta2Max         ); // SetYMax2 acturally
-    task->SetDcaZMin(             dcaZMin         );
-    task->SetDcaZMax(             dcaZMax         );
-    task->SetDcaXYMin(            dcaXYMin        );
-    task->SetDcaXYMax(            dcaXYMax        );
+    task->SetDcaZMin_1(           dcaZMin_1       );
+    task->SetDcaZMax_1(           dcaZMax_1       );
+    task->SetDcaXYMin_1(          dcaXYMin_1      );
+    task->SetDcaXYMax_1(          dcaXYMax_1      );
+    task->SetDcaZMin_2(           dcaZMin_2       );
+    task->SetDcaZMax_2(           dcaZMax_2       );
+    task->SetDcaXYMin_2(          dcaXYMin_2      );
+    task->SetDcaXYMax_2(          dcaXYMax_2      );
     task->SetDedxMin(             dedxMin         );
     task->SetDedxMax(             dedxMax         );
     task->SetNClusterMin(         nClusterMin     );
