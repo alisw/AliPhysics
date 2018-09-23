@@ -243,7 +243,7 @@ if(FASTJET_FOUND)
 	UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapesMC.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapeExtra.cxx
-	UserTAsks/AliAnalysisTaskEmcalJetAxisRes.cxx
+	UserTasks/AliAnalysisTaskEmcalJetAxisRes.cxx
         UserTasks/AliAnalysisTaskFullpAJets.cxx
         UserTasks/AliAnalysisTaskFullppJet.cxx
         UserTasks/AliAnalysisTaskHJetDphi.cxx
