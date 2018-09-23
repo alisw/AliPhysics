@@ -107,6 +107,11 @@ void PlotAODvertexQA(TString filename="QAresults_AOD.root", TString suffix="QA",
   Draw2D(hxspd,maxContrib);
   cvs->cd(2);
   Draw2D(hyspd,maxContrib);
+  TLatex* tspd=new TLatex(0.16,0.93,"SPD Vertexer");
+  tspd->SetNDC();
+  tspd->SetTextFont(43);
+  tspd->SetTextSize(26);
+  tspd->Draw();
   cvs->cd(3);
   Draw2D(hzspd,maxContrib);
   cvs->cd(4);
@@ -158,6 +163,11 @@ void PlotAODvertexQA(TString filename="QAresults_AOD.root", TString suffix="QA",
   Draw2D(hxtrk,maxContrib);
   cvt->cd(2);
   Draw2D(hytrk,maxContrib);
+  TLatex* ttrk=new TLatex(0.16,0.93,"Track Vertexer");
+  ttrk->SetNDC();
+  ttrk->SetTextFont(43);
+  ttrk->SetTextSize(26);
+  ttrk->Draw();
   cvt->cd(3);
   Draw2D(hztrk,maxContrib);
   cvt->cd(4);
@@ -201,6 +211,11 @@ void PlotAODvertexQA(TString filename="QAresults_AOD.root", TString suffix="QA",
   Draw2D(hxtpc,maxContrib);
   cvp->cd(2);
   Draw2D(hytpc,maxContrib);
+  TLatex* ttpc=new TLatex(0.16,0.93,"TPC Vertexer");
+  ttpc->SetNDC();
+  ttpc->SetTextFont(43);
+  ttpc->SetTextSize(26);
+  ttpc->Draw();
   cvp->cd(3);
   Draw2D(hztpc,maxContrib);
   cvp->cd(4);
