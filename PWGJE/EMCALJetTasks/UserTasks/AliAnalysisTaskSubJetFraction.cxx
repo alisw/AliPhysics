@@ -37,7 +37,6 @@
 #include "AliAnalysisManager.h"
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
-#include "AliEmcalPythiaInfo.h"
 //#include "AliPythiaInfo.h"
 #include "TRandom3.h"
 #include "AliPicoTrack.h"
@@ -465,7 +464,7 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fShapesVarNames[8] = "OpeningAngle";
     fShapesVarNames[9] = "OpeningAngle_Truth";
     //if(fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) fShapesVarNames[9] = "Tau1_ExtraProng_01_30";
-    if(fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) fShapesVarNames[9] = "Event_Weight";
+    if(fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) fShapesVarNames[9] = "Tau1_kTTracks_1_2_1";
     fShapesVarNames[10] = "SubJet2LeadingTrackPt";
     if(fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) fShapesVarNames[10] = "Tau1_ExtraProng_03_10";
     fShapesVarNames[11] = "SubJet2LeadingTrackPt_Truth";
@@ -1276,9 +1275,7 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 
   
   if (fJetShapeType==AliAnalysisTaskSubJetFraction::kSim || fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly){
-
-    const AliEmcalPythiaInfo *PartonsInfo = 0x0;
-    PartonsInfo = GetPythiaInfo();
+    
     AliEmcalJet *Jet1 = NULL; //Original Jet in the event                                                                                                                
     AliJetContainer *JetCont= GetJetContainer(0); //Jet Container for event 
     Int_t JetCounter=0; //Counts number of jets in event  
@@ -1377,8 +1374,7 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  fShapesVar[5]=FjNSubJettinessFastJet(ExtraProng_Jet_01_15,0,1,0,1,0);
 	  fShapesVar[7]=FjNSubJettinessFastJet(ExtraProng_Jet_01_25,0,1,0,1,0);
 	  //fShapesVar[9]=FjNSubJettinessFastJet(ExtraProng_Jet_01_30,0,1,0,1,0);
-	  //fShapesVar[9]=FjNSubJettinessFastJet(kTTrack_1_2_1,0,1,0,1,0);
-	  fShapesVar[9]=PartonsInfo->GetPythiaEventWeight();
+	  fShapesVar[9]=FjNSubJettinessFastJet(kTTrack_1_2_1,0,1,0,1,0);
 	  fShapesVar[11]=FjNSubJettinessFastJet(ExtraProng_Jet_03_15,0,1,0,1,0);
 	  fShapesVar[13]=FjNSubJettinessFastJet(Randomised_Jet,0,2,0,1,0); 
 	  fShapesVar[15]=FjNSubJettinessFastJet(ExtraProng_Jet_01_15,0,2,0,1,0);
@@ -1859,15 +1855,11 @@ void AliAnalysisTaskSubJetFraction::Terminate(Option_t *)
     fhJetEta->Scale(Eta_Bins/((Eta_Up-Eta_Low)*((fhEventCounter->GetBinContent(1)))));
     fhJetRadius->Scale(100/(fhEventCounter->GetBinContent(4)));  //should this and JetAngularity be divided by Bin 1 or 4???? 
     fhNumberOfJetTracks->Scale(1.0/(fhEventCounter->GetBinContent(4)));
-
     fhJetCounter->Scale(1.0/(fhEventCounter->GetBinContent(1)));  //is the first bin the correct one to look at?
    
-
  fhSubJetCounter->Scale(1.0/(fhEventCounter->GetBinContent(5)));
-
     */
     /*  
-
   fhJetPt->Scale(1.0/(fhEventCounter->GetBinContent(1)));                                      
   fhSubJetPt->Scale(1.0/(fhEventCounter->GetBinContent(5)));                                
   fhJetMass->Scale(1.0/(fhEventCounter->GetBinContent(1)));                                                                                                                     
@@ -2076,4 +2068,3 @@ Double_t AliAnalysisTaskSubJetFraction::FjNSubJettinessFastJet(std::pair<fastjet
   }
   else return -2;
 }
-
