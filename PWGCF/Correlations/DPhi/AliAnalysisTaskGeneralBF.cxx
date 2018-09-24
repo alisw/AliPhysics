@@ -128,10 +128,14 @@ _centralityMin        (  0.),
 _centralityMax        (  0.),
 _requestedCharge_1    (   1),
 _requestedCharge_2    (  -1),
-_dcaZMin              ( -3),
-_dcaZMax              (  3.),
-_dcaXYMin             ( -2.4),
-_dcaXYMax             (  2.4),
+_dcaZMin_1            ( -3),
+_dcaZMax_1            (  3.),
+_dcaXYMin_1           ( -2.4),
+_dcaXYMax_1           (  2.4),
+_dcaZMin_2            ( -3),
+_dcaZMax_2            (  3.),
+_dcaXYMin_2           ( -2.4),
+_dcaXYMax_2           (  2.4),
 _dedxMin              ( 0),
 _dedxMax              ( 100000),
 _nClusterMin          ( 80),
@@ -510,10 +514,14 @@ _centralityMin        (  0.),
 _centralityMax        (  1.),
 _requestedCharge_1    (   1),
 _requestedCharge_2    (  -1),
-_dcaZMin              ( -3),
-_dcaZMax              (  3.),
-_dcaXYMin             ( -2.4),
-_dcaXYMax             (  2.4),
+_dcaZMin_1            ( -3),
+_dcaZMax_1            (  3.),
+_dcaXYMin_1           ( -2.4),
+_dcaXYMax_1           (  2.4),
+_dcaZMin_2            ( -3),
+_dcaZMax_2            (  3.),
+_dcaXYMin_2           ( -2.4),
+_dcaXYMax_2           (  2.4),
 _dedxMin              ( 0),
 _dedxMax              ( 100000),
 _nClusterMin          ( 80),
@@ -1124,8 +1132,8 @@ void  AliAnalysisTaskGeneralBF::createHistograms()
     name = "etadis_before_any_cuts";            _etadis_before_any_cuts   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
     name = "phidis_POI_AliHelperPID";          _phidis_POI_AliHelperPID   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
     name = "phidis_before_any_cuts";            _phidis_before_any_cuts   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
-    name = "DCAz";    _dcaz     = createHisto1F(name,name, 500, -5.0, 5.0, "dcaZ","counts");
-    name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 500, -5.0, 5.0, "dcaXY","counts");
+    name = "DCAz";    _dcaz     = createHisto1F(name,name, 1000, -5.0, 5.0, "dcaZ","counts");
+    name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 1000, -5.0, 5.0, "dcaXY","counts");
     name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
     name = "Nclus2";   _Ncluster2    = createHisto1F(name,name, 200, 0, 200, "Ncluster2","counts");
     name = "T0";       _t0_1d    = createHisto1F(name,name, 20000, -10000, 10000, "T0","counts");
@@ -1567,13 +1575,13 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
         
         Double_t pos[3];
         t -> GetXYZ(pos);
-        Double_t DCAX = pos[0] - vertexX;
-        Double_t DCAY = pos[1] - vertexY;
-        Double_t DCAZ = pos[2] - vertexZ;
-        Double_t DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
-        if (DCAZ     <  _dcaZMin ||
-            DCAZ     >  _dcaZMax ||
-            DCAXY    >  _dcaXYMax ) continue;
+        Double_t DCAX_1 = pos[0] - vertexX;
+        Double_t DCAY_1 = pos[1] - vertexY;
+        Double_t DCAZ_1 = pos[2] - vertexZ;
+        Double_t DCAXY_1 = TMath::Sqrt((DCAX_1*DCAX_1) + (DCAY_1*DCAY_1));
+        if (DCAZ_1     <  _dcaZMin_1 ||
+            DCAZ_1     >  _dcaZMax_1 ||
+            DCAXY_1    >  _dcaXYMax_1 ) continue;
         
         nClus = t -> GetTPCNcls();
         if ( nClus < _nClusterMin ) continue; // Kinematics cuts ends.
@@ -1667,8 +1675,8 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
             // QA for POI
             if ( _singlesOnly )
             {
-              _dcaz                      -> Fill( DCAZ );
-              _dcaxy                     -> Fill( DCAXY );
+              _dcaz                      -> Fill( DCAZ_1 );
+              _dcaxy                     -> Fill( DCAXY_1 );
               _etadis_POI_AliHelperPID   -> Fill( eta );    //Eta dist. for POI distribution after AliHelperPID cuts
               _ydis_POI_AliHelperPID     -> Fill( y );
               _phidis_POI_AliHelperPID   -> Fill( phi );
@@ -1715,8 +1723,8 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
             // QA for POI
             if ( _singlesOnly )
             {
-              _dcaz                      -> Fill( DCAZ );
-              _dcaxy                     -> Fill( DCAXY );
+              _dcaz                      -> Fill( DCAZ_1 );
+              _dcaxy                     -> Fill( DCAXY_1 );
               _etadis_POI_AliHelperPID   -> Fill( eta );
               _phidis_POI_AliHelperPID   -> Fill( phi );
               _dedx_p_POI_AliHelperPID   -> Fill( p, dedx );
@@ -1859,13 +1867,13 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
         
         Double_t pos[3];
         t -> GetXYZ(pos);
-        Double_t DCAX = pos[0] - vertexX;
-        Double_t DCAY = pos[1] - vertexY;
-        Double_t DCAZ = pos[2] - vertexZ;
-        Double_t DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
-        if (DCAZ     <  _dcaZMin ||
-            DCAZ     >  _dcaZMax ||
-            DCAXY    >  _dcaXYMax ) continue;
+        Double_t DCAX_2 = pos[0] - vertexX;
+        Double_t DCAY_2 = pos[1] - vertexY;
+        Double_t DCAZ_2 = pos[2] - vertexZ;
+        Double_t DCAXY_2 = TMath::Sqrt((DCAX_2*DCAX_2) + (DCAY_2*DCAY_2));
+        if (DCAZ_2     <  _dcaZMin_2 ||
+            DCAZ_2     >  _dcaZMax_2 ||
+            DCAXY_2    >  _dcaXYMax_2 ) continue;
         
         nClus = t -> GetTPCNcls();
         if ( nClus < _nClusterMin ) continue; // Kinematics cuts ends.
@@ -1959,8 +1967,8 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
             // QA for POI
             if ( _singlesOnly )
             {
-              _dcaz                      -> Fill( DCAZ );
-              _dcaxy                     -> Fill( DCAXY );
+              _dcaz                      -> Fill( DCAZ_2 );
+              _dcaxy                     -> Fill( DCAXY_2 );
               _etadis_POI_AliHelperPID   -> Fill( eta );    //Eta dist. for POI distribution after AliHelperPID cuts
               _ydis_POI_AliHelperPID     -> Fill( y );
               _phidis_POI_AliHelperPID   -> Fill( phi );
@@ -2007,8 +2015,8 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
             // QA for POI
             if ( _singlesOnly )
             {
-              _dcaz                      -> Fill( DCAZ );
-              _dcaxy                     -> Fill( DCAXY );
+              _dcaz                      -> Fill( DCAZ_2 );
+              _dcaxy                     -> Fill( DCAXY_2 );
               _etadis_POI_AliHelperPID   -> Fill( eta );
               _phidis_POI_AliHelperPID   -> Fill( phi );
               _dedx_p_POI_AliHelperPID   -> Fill( p, dedx );

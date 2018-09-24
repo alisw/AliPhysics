@@ -178,6 +178,8 @@ protected:
     TH1F                                *fPtGenJet;
     TH2F                                *fPhiJet;
     TH2F                                *fEtaJet;
+    TH2F                                *fEtaPhiJet;
+    TH2F                                *fAreaJet;
     TH2F                                *fJetEfficiency;
     TH2F                                *fhpTjetpT;                        //control p[lot fo the recoil analysis
     TH1F                                *fhPt;
@@ -213,10 +215,22 @@ protected:
     TH1F                                *fptTruePE;
     TH1F                                *fptTrueHFE[4];
     TH1F                                *fptWrongPE;
+    TH1F                                *fPtTrack;
     TH2F                                *fPhiTrack;
     TH2F                                *fEtaTrack;
-    TH2F                                *fPhiElec;
-    TH2F                                *fEtaElec;
+    TH2F                                *fEtaPhiTrack;
+    TH2F                                *fPhiRecElec;
+    TH2F                                *fEtaRecElec;
+    TH2F                                *fEtaPhiRecElec;
+    TH2F                                *fPhiTrueElec;
+    TH2F                                *fEtaTrueElec;
+    TH2F                                *fEtaPhiTrueElec;
+    TH2F                                *fnEovPelec;
+    TH2F                                *fnEovPbackg;
+    TH2F                                *fnClsE;
+    TH2F                                *fnM20;
+    TH2F                                *fnM02;
+    TH2F                                *fnClsTime;
     TTree                               *fTreeObservableTagging;            // Tree with tagging variables subtracted MC or true MC or raw
     
 private:

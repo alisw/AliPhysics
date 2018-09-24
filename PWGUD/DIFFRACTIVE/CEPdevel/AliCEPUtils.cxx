@@ -1741,14 +1741,19 @@ void AliCEPUtils::InitTrackCuts(Bool_t IsRun1, Int_t clusterCut)
 // ------------------------------------------------------------------------------
 // evaluate the distances between the cluster positions and the EMCal hits of
 // the selected tracks.
-// For each cluster find the minimum distance (dPhiEtaMin) and finally return
-// the maximum of these values (dPhiEtaMinMax)
+// For each cluster find the minimum distance (dEtaPhiMin) and finally return
+// the maximum of these values (dEtaPhiMinMax)
 // Only if this value is small it is assumed, that all EMCal clusters are
 // associated with a charged track and not with a gamma
 Double_t AliCEPUtils::CaloClusterTrackdmax( AliESDEvent *Event, TArrayI* TTindices )
 {
   
+  // time and amplitude cuts
+  Double_t cTimeMax    = 50.;
+  Double_t cellAmplMin =  0.;
+  
   // initialisations
+  Double_t dval = 20.;
   Float_t x[3];
   TVector3 v3;
   Double_t cluster_phi, cluster_eta;
@@ -1756,15 +1761,93 @@ Double_t AliCEPUtils::CaloClusterTrackdmax( AliESDEvent *Event, TArrayI* TTindic
   Double_t trkPhiOnEmc, trkEtaOnEmc;
   AliESDtrack *tmptrk = NULL;
   
-  Double_t dEta, dPhi, dPhiEta;
-  Double_t dPhiEtaMin, dPhiEtaMinMax;
+  Double_t dEta, dPhi, dEtaPhi;
+  Double_t dEtaPhiMin=0.;
   
-  // loop over CaloClusters
+  // get number of clusters
   UInt_t nCaloTracks = Event->GetNumberOfCaloClusters();
-  dPhiEtaMinMax = (nCaloTracks>0) ? 999. : 0.;
-  
+
+  UInt_t nEMCcluster=0, nPHOScluster=0;
   for (UInt_t ii=0; ii<nCaloTracks; ii++) {
     aliCluster = (AliESDCaloCluster*)Event->GetCaloCluster(ii);
+    if (aliCluster->IsEMCAL() && aliCluster->GetNCells()>1) nEMCcluster++;
+    if (aliCluster->IsPHOS())  nPHOScluster++;
+  }
+  //printf("cluster EMC %i PHOS %i tracks %i",
+  //  nEMCcluster,nPHOScluster,TTindices->GetSize());
+  if (nEMCcluster<=0) {
+    //printf("\n");
+    return 0.;
+  }
+  
+  // get the eta/phi values for all track hits on EMC
+  TArrayI *tind = new TArrayI();
+  TArrayD *teta = new TArrayD();
+  TArrayD *tphi = new TArrayD();
+  Int_t cnt = -1;
+  for (Int_t jj=0; jj<TTindices->GetSize(); jj++) {
+    tmptrk = (AliESDtrack*) Event->GetTrack(TTindices->At(jj)); 
+      
+    // track position on emcal
+    trkEtaOnEmc = tmptrk->GetTrackEtaOnEMCal();
+
+    // Map phi to [0,2pi)
+    trkPhiOnEmc = tmptrk->GetTrackPhiOnEMCal();
+    trkPhiOnEmc = (trkPhiOnEmc>0.) ? trkPhiOnEmc : trkPhiOnEmc+2.*TMath::Pi();
+    
+    if (trkPhiOnEmc>0. && TMath::Abs(trkEtaOnEmc)<0.75) {
+      cnt++;
+      
+      // update cluster buffers
+      tind->Set(cnt+1);
+      tind->SetAt(jj,cnt);
+      teta->Set(cnt+1);
+      teta->AddAt(trkEtaOnEmc,cnt);
+      tphi->Set(cnt+1);
+      tphi->AddAt(trkPhiOnEmc,cnt);
+    }
+    
+  }
+  //printf(" track hits %i\n",tind->GetSize());
+  
+  // check if the number of track hits => number of EMC clusters
+  if (nEMCcluster>tind->GetSize()) {
+    delete tind;
+    delete teta;
+    delete tphi;
+    
+    return dval;
+  }
+  
+  // get the eta/phi values for all EMC clusters
+  Short_t cellNb, cellNb_max_ampl;
+  Double_t cellAmpl, cellAmpl_max, cTime;
+  AliESDCaloCells* CaloCells = (AliESDCaloCells*)Event->GetEMCALCells();
+
+  TArrayI *cind = new TArrayI();
+  TArrayD *ctim = new TArrayD();
+  TArrayD *camp = new TArrayD();
+  TArrayD *ceta = new TArrayD();
+  TArrayD *cphi = new TArrayD();
+  cnt = -1;
+  for (UInt_t ii=0; ii<nCaloTracks; ii++) {
+    aliCluster = (AliESDCaloCluster*)Event->GetCaloCluster(ii);
+    if (!(aliCluster->IsEMCAL() && aliCluster->GetNCells()>1)) continue;
+
+    // determine cluster time = time of cluster cell with largest amplitude
+    cellAmpl_max = 0.;
+    for (UInt_t jj=0; jj<aliCluster->GetNCells(); jj++) {
+      cellNb = aliCluster->GetCellAbsId(jj);
+      cellAmpl = CaloCells->GetCellAmplitude(cellNb);
+      if (cellAmpl>=cellAmpl_max) {
+        cellAmpl_max = cellAmpl;
+        cellNb_max_ampl = cellNb;
+      }
+    }
+    cTime = 1.E9*CaloCells->GetCellTime(cellNb_max_ampl);   // [ns]
+    
+    // cut on time and amplitude
+    if (TMath::Abs(cTime)>cTimeMax || cellAmpl_max<cellAmplMin) continue;
     
     // get cluster position
     aliCluster->GetPosition(x);
@@ -1774,43 +1857,81 @@ Double_t AliCEPUtils::CaloClusterTrackdmax( AliESDEvent *Event, TArrayI* TTindic
     cluster_phi = (v3.Phi()>0.) ? v3.Phi() : v3.Phi() + 2.*TMath::Pi();
     cluster_eta = v3.Eta();
     
-    // loop over selected tracks, extrapolate to EMCal and calculate
-    // distance between track hit position and CaloCluster position
-    dPhiEtaMin = 999.;
-    for (Int_t jj=0; jj<TTindices->GetSize(); jj++) {
-      tmptrk = (AliESDtrack*) Event->GetTrack(TTindices->At(jj)); 
-      
-      // track position on emcal
-      trkPhiOnEmc = tmptrk->GetTrackPhiOnEMCal();
-
-      // Map phi to [0,2pi)
-      trkPhiOnEmc = (trkPhiOnEmc>0.) ? trkPhiOnEmc : trkPhiOnEmc+2.*TMath::Pi();
-      if (trkPhiOnEmc<0.) trkPhiOnEmc=-999.;
-      trkEtaOnEmc = tmptrk->GetTrackEtaOnEMCal();
-      
-      // no matching if at least one has value -999.
-      if (trkPhiOnEmc==-999. || TMath::Abs(trkEtaOnEmc)>0.75) continue;
-      
-      // in case of track on emcal: calculate distance in phi and eta
-      dPhi = trkPhiOnEmc - cluster_phi;
-      dEta = trkEtaOnEmc - cluster_eta;
-      dPhiEta = TMath::Sqrt( dEta*dEta + dPhi*dPhi );
-
-      // update dPhiEtaMin
-      dPhiEtaMin = (dPhiEta<dPhiEtaMin) ? dPhiEta : dPhiEtaMin;
-      
-    }
-
-    // update dPhiEtaMinMax
-    if (ii==0) {
-      dPhiEtaMinMax = dPhiEtaMin;
-    } else {
-      dPhiEtaMinMax = (dPhiEtaMin>dPhiEtaMinMax) ? dPhiEtaMin : dPhiEtaMinMax;
-    }
+    // update cluster buffers
+    cnt++;
+    cind->Set(cnt+1);
+    cind->SetAt(ii,cnt);
+    ctim->Set(cnt+1);
+    ctim->SetAt(cTime,cnt);
+    camp->Set(cnt+1);
+    camp->SetAt(cellAmpl_max,cnt);
+    ceta->Set(cnt+1);
+    ceta->AddAt(cluster_eta,cnt);
+    cphi->Set(cnt+1);
+    cphi->AddAt(cluster_phi,cnt);
+    
+    //printf("cluster %i nCells %i",cnt, aliCluster->GetNCells());
+    //printf(" time %.6f [ns] amplitude %.6f\n",cTime, cellAmpl_max);
     
   }
+  //printf("\n");
+  
+  // find track/cluster matches
+  Int_t cm, tm;
+  TArrayI *cu = new TArrayI(cind->GetSize()); cu->Reset(0);
+  TArrayI *tu = new TArrayI(tind->GetSize()); tu->Reset(0);
+  
+  // loop this (number of clusters) times
+  for (UInt_t ii=0; ii<cind->GetSize(); ii++) {
+    
+    // find minimum dEtaPhi with reminaning clusters and tracks
+    cm = 0;
+    tm = 0;
+    dEtaPhiMin = dval;
+    for (UInt_t jj=0; jj<cind->GetSize(); jj++) {
+      if (cu->At(jj)) continue;
+      for (UInt_t kk=0; kk<tind->GetSize(); kk++) {
+        if (tu->At(kk)) continue;
+  
+        // compute dEtaPhi for given cluster/track pair
+        dEta = teta->At(kk) - ceta->At(jj);
+        dPhi = tphi->At(kk) - cphi->At(jj);
+        dEtaPhi = TMath::Sqrt( dEta*dEta + dPhi*dPhi );
+        //printf("  c %i time %.2f amp %.4f ceta %.2f cphi %.2f t %i teta %.2f tphi %.2f dEtaPhi %.2f\n",
+        //  jj,ctim->At(jj),camp->At(jj),ceta->At(jj),cphi->At(jj),kk,teta->At(kk),tphi->At(kk),dEtaPhi);
+
+        // update dEtaPhiMin
+        if (dEtaPhi<dEtaPhiMin) {
+          cm = jj;
+          tm = kk;
+          dEtaPhiMin = dEtaPhi;
+        }
+      }
+    }
+    //printf("    cluster %i track %i dEtaPhiMin %.2f\n", cm,tm,dEtaPhiMin);
+    //printf("  c %i time %.2f amp %.4f ceta %.2f cphi %.2f t %i teta %.2f tphi %.2f dEtaPhi %.2f\n",
+    //  cm,ctim->At(cm),camp->At(cm),ceta->At(cm),cphi->At(cm),tm,teta->At(tm),tphi->At(tm),dEtaPhiMin);
+    
+    // update cu (clusters used) and tu (tracks used)
+    cu->SetAt(1,cm);
+    tu->SetAt(1,tm);
       
-  return dPhiEtaMinMax;
+  }
+  //printf("  dEtaPhiMinMax %f\n",dEtaPhiMin);
+  
+  // clean up
+  delete cind;
+  delete ctim;
+  delete camp;
+  delete ceta;
+  delete cphi;
+  delete tind;
+  delete teta;
+  delete tphi;
+  delete cu;
+  delete tu;
+  
+  return dEtaPhiMin;
 
 }
 

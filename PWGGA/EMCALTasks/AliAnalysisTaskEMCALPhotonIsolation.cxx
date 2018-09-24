@@ -159,6 +159,7 @@ fPtvsTrackPtvsDeta(0),
 fPtvsTrackPtvsDphi(0),
 fClusEvsClusT(0),
 fPT(0),
+fPTbeforeNonLinScaling(0),
 fE(0),
 fNLM(0),
 fNLM2_NC_Acc(0),
@@ -374,6 +375,7 @@ fPtvsTrackPtvsDeta(0),
 fPtvsTrackPtvsDphi(0),
 fClusEvsClusT(0),
 fPT(0),
+fPTbeforeNonLinScaling(0),
 fE(0),
 fNLM(0),
 fNLM2_NC_Acc(0),
@@ -717,6 +719,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
       case 2:
       {
           // Initialization TH*D/TH*F
+
+	if(fIsMC && fNonLinRecoEnergyScaling){
+	  fPTbeforeNonLinScaling = new TH1F("hPt_BeforeNonLinScaling","#it{p}_{T} distribution for clusters before candidate selection",100,0.,100.);
+	  fPTbeforeNonLinScaling->Sumw2();
+	  fOutput->Add(fPTbeforeNonLinScaling);
+	}
+
 	if(fQA){
 	  fPtaftM02C = new TH1F("hPtaftM02C_NC","#it{p}_{T} distribution for Clusters after shower shape cut",200,0.,100.);
 	  fPtaftM02C->Sumw2();
@@ -1610,6 +1619,10 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     index=coi->GetID();
     TLorentzVector vecCOI;
     coi->GetMomentum(vecCOI, fVertex, AliVCluster::kNonLinCorr);
+
+    if(fIsMC && fNonLinRecoEnergyScaling)
+      fPTbeforeNonLinScaling->Fill(vecCOI.Pt());
+
     if(fIsMC && fNonLinRecoEnergyScaling)
       NonLinRecoEnergyScaling(vecCOI);
 
@@ -1926,7 +1939,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::NonLinRecoEnergyScaling ( TLorentzVect
   fGeom->SuperModuleNumberFromEtaPhi(cluster_vec.Eta(), cluster_vec.Phi(), cluster_SM);  
 
   Int_t    maxSM_withoutTRD       = 4;
-  Double_t scaleFactor_withoutTRD = 0., scaleFactor_withTRD = 0.;
+  Double_t scaleFactor_withoutTRD = 1., scaleFactor_withTRD = 1.;
 
   if      ( fPeriod.Contains("11") ) {
     maxSM_withoutTRD       = 6;

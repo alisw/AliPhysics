@@ -148,6 +148,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fMCcheckMother;
 		TClonesArray*           fMCarray;//! MC array
 		AliAODMCParticle*       fMCparticle;
+		AliAODMCParticle*       fMCTrackpart;
 		AliAODMCHeader*         fMCheader;
 		TH1F*                   fCheckEtaMC;
 		TH2F*                   fHistMCorgPi0;
@@ -172,6 +173,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*               		fHistPt_HFE_PYTHIA;
 		TH1F*               		fHistPt_HFE_emb;
 		TH1F*               		fHistPt_HFE_Gen;
+		TH2F*               		fHistPt_HFE_GenvsReco;
 		TH1F*               		fHist_eff_HFE;
 		TH1F*               		fHist_eff_match;
 		TH1F*               		fHist_eff_TPC;

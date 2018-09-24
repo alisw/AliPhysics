@@ -266,4 +266,3 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   ClassDef(AliAnalysisTaskSubJetFraction, 6)
 };
 #endif
-

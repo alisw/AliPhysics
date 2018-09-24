@@ -33,7 +33,7 @@ ClassImp(AliMultSelectionCalibrator);
 
 AliMultSelectionCalibrator::AliMultSelectionCalibrator() : TNamed(), 
 fInput(0), fSelection(0), lDesiredBoundaries(0), lNDesiredBoundaries(0),
-fRunToUseAsDefault(-1), fCheckTriggerType(kFALSE), fTrigType(AliVEvent::kAny),
+fRunToUseAsDefault(-1), fMaxEventsPerRun(1e+9), fCheckTriggerType(kFALSE), fTrigType(AliVEvent::kAny), fPrefilterOnly(kFALSE),
 fNRunRanges(0), fRunRangesMap(), fMultSelectionList(0), 
 fInputFileName(""), fBufferFileName("buffer.root"),
 fOutputFileName(""), fMultSelectionCuts(0), fCalibHists(0)
@@ -62,7 +62,7 @@ fOutputFileName(""), fMultSelectionCuts(0), fCalibHists(0)
 AliMultSelectionCalibrator::AliMultSelectionCalibrator(const char * name, const char * title):
     TNamed(name,title),
 fInput(0), fSelection(0), lDesiredBoundaries(0), lNDesiredBoundaries(0),
-fRunToUseAsDefault(-1), fCheckTriggerType(kFALSE), fTrigType(AliVEvent::kAny),
+fRunToUseAsDefault(-1), fMaxEventsPerRun(1e+9), fCheckTriggerType(kFALSE), fTrigType(AliVEvent::kAny), fPrefilterOnly(kFALSE),
 fNRunRanges(0), fRunRangesMap(), fMultSelectionList(0),
 fInputFileName(""), fBufferFileName("buffer.root"),
 fOutputFileName(""), fMultSelectionCuts(0), fCalibHists(0)
@@ -389,14 +389,16 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
             }
         }
         if ( lSaveThisEvent ) {
-            sTree [ lIndex ] -> Fill();
+            if( sTree[lIndex]->GetEntries()<fMaxEventsPerRun ){
+                sTree [ lIndex ] -> Fill();
+            }
         }
             
     }
     
     //Write buffer to file
     for(Int_t iRun=0; iRun<lNRuns; iRun++) sTree[iRun]->Write();
-
+    
     if(!lAutoDiscover){
     cout<<"(3) Inspect Run Ranges and corresponding statistics: "<<endl;
     for(Int_t iRun = 0; iRun<fNRunRanges; iRun++) {
@@ -410,6 +412,13 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         }
         cout<<endl;
     }
+    
+    if( fPrefilterOnly ){
+        cout<<"Won't do anything else! But you should have filtered trees now for debugging..."<<endl;
+        fOutput->Write();
+        return 0;
+    }
+    
 
     //FIXME Receive as parameter from the test macro
     Double_t lNrawBoundaries[1000];
