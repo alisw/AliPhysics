@@ -3,7 +3,7 @@
 using Lifetimes::MiniV0;
 
 const int MiniV0::fgkV0cosPA_n = 50000;
-const float MiniV0::fgkV0cosPA_f = 0.95f;
+const float MiniV0::fgkV0cosPA_f = 0.9f;
 const float MiniV0::fgkV0cosPA_l = 1.f;
 const float MiniV0::fgkV0cosPA_w =
     (MiniV0::fgkV0cosPA_l - MiniV0::fgkV0cosPA_f) /
