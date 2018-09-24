@@ -9,13 +9,13 @@
 
 namespace Lifetimes {
 
+template<int n>
 class MiniV0 {
  public:
   float GetV0radius() const { return fV0radius; }
   float GetV0pt() const { return fV0pt; }
   float GetV0eta() const { return fV0eta; }
-  float GetK0sInvMass() const { return fInvMassK0s; }
-  float GetLambdaInvMass() const { return fInvMassLambda; }
+  float GetCandidateInvMass(int i) const { return fInvMass[i]; }
   float GetDistOverP() const { return fDistOverTotMom; }
   float GetV0CosPA() const;
   float GetV0chi2() const;
@@ -38,7 +38,7 @@ class MiniV0 {
   void SetV0radius(float r) { fV0radius = r; }
   void SetV0pt(float pt) { fV0pt = pt; }
   void SetV0eta(float eta) { fV0eta = eta; }
-  void SetInvMasses(float k0s, float lam);
+  void SetInvMass(int i, float m) { fInvMass[i] = m; }
   void SetDistOverP(float distOnP) { fDistOverTotMom = distOnP; }
   void SetV0CosPA(float cospa);
   void SetV0Chi2andCowBoy(float chi2, bool cow);
@@ -51,9 +51,6 @@ class MiniV0 {
   void SetProngsTPCnsigmas(float pPi, float pP, float nPi, float nP);
   void SetProngsEta(float posEta, float negEta);
 
-  /// Static variables required to avoid CINT complains...
-  /// To be changed with constexpr as soon as ROOT6 becomes the
-  /// ALICE standard
   static const int fgkV0cosPA_n;
   static const float fgkV0cosPA_f;
   static const float fgkV0cosPA_l;
@@ -108,8 +105,7 @@ class MiniV0 {
   float fV0radius;                      // V0 decay vertex radius
   float fV0pt;                          // V0 transverse momentum
   float fV0eta;                         // V0 pseudorapidity
-  float fInvMassK0s;                    // Invariant mass for K0s
-  float fInvMassLambda;                 // Invariant mass for (anti-)Lambda
+  float fInvMass[n];          // Invariant mass for the candidate
   float fDistOverTotMom;                // L/p
   unsigned short fV0CosPA;              // V0 cosine of pointing angle
   unsigned char fChi2V0;                // V0 fit chi2
@@ -127,111 +123,130 @@ class MiniV0 {
   unsigned char fEtaNeg;     // Pseudorapidity of the negative prong
 };
 
-inline float MiniV0::GetV0CosPA() const {
+template<int n>
+inline float MiniV0<n>::GetV0CosPA() const {
   return getBinCenter(fV0CosPA, fgkV0cosPA_w, fgkV0cosPA_f);
 }
-inline float MiniV0::GetV0chi2() const {
+template<int n>
+inline float MiniV0<n>::GetV0chi2() const {
   return getBinCenter(fChi2V0 & 0x7F, fgkV0chi2_w, fgkV0chi2_f);
 }
-inline float MiniV0::GetNegProngPvDCA() const {
+template<int n>
+inline float MiniV0<n>::GetNegProngPvDCA() const {
   return getBinCenter(fDcaNeg2PrimaryVertex, fgkDCAProng2PV_w, fgkDCAProng2PV_f,
                       false, true);
 }
-inline float MiniV0::GetPosProngPvDCA() const {
+template<int n>
+inline float MiniV0<n>::GetPosProngPvDCA() const {
   return getBinCenter(fDcaPos2PrimaryVertex, fgkDCAProng2PV_w, fgkDCAProng2PV_f,
                       false, true);
 }
-inline float MiniV0::GetProngsDCA() const {
+template<int n>
+inline float MiniV0<n>::GetProngsDCA() const {
   return getBinCenter(fDcaV0daughters, fgkDCAProngs_w, fgkDCAProngs_f,
                       false, true);
 }
-inline float MiniV0::GetArmenterosAlpha() const {
+template<int n>
+inline float MiniV0<n>::GetArmenterosAlpha() const {
   return getBinCenter(fV0armAlpha, fgkArmAlpha_w, fgkArmAlpha_f,
                       true, true);
 }
-inline float MiniV0::GetArmenterosPt() const {
+template<int n>
+inline float MiniV0<n>::GetArmenterosPt() const {
   return getBinCenter(fV0armPt, fgkArmPt_w, fgkArmPt_f, false, true);
 }
-inline float MiniV0::GetLeastXedRowsOverFindable() const {
+template<int n>
+inline float MiniV0<n>::GetLeastXedRowsOverFindable() const {
   return getBinCenter(fLeastXedOverFindable, fgkXedOverFindable_w,
                       fgkXedOverFindable_f);
 }
-inline float MiniV0::GetMaxChi2perCluster() const {
+template<int n>
+inline float MiniV0<n>::GetMaxChi2perCluster() const {
   return getBinCenter(fMaxChi2PerCluster, fgkChi2xCluster_w, fgkChi2xCluster_f,
                       false, true);
 }
 
-inline float MiniV0::GetNegProngEta() const {
+template<int n>
+inline float MiniV0<n>::GetNegProngEta() const {
   return getBinCenter(fEtaNeg, fgkEta_w, fgkEta_f, true, true);
 }
-inline float MiniV0::GetPosProngEta() const {
+template<int n>
+inline float MiniV0<n>::GetPosProngEta() const {
   return getBinCenter(fEtaPos, fgkEta_w, fgkEta_f, true, true);
 }
 
-inline float MiniV0::GetNegProngTPCnsigmaPion() const {
+template<int n>
+inline float MiniV0<n>::GetNegProngTPCnsigmaPion() const {
   return getBinCenter((fNsigmaNeg & 0xF0) >> 4, fgkTPCsigma_w, fgkTPCsigma_f,
                       false, true);
 }
-inline float MiniV0::GetNegProngTPCnsigmaProton() const {
+template<int n>
+inline float MiniV0<n>::GetNegProngTPCnsigmaProton() const {
   return getBinCenter((fNsigmaNeg & 0x0F), fgkTPCsigma_w, fgkTPCsigma_f,
                       false, true);
 }
-inline float MiniV0::GetPosProngTPCnsigmaPion() const {
+template<int n>
+inline float MiniV0<n>::GetPosProngTPCnsigmaPion() const {
   return getBinCenter((fNsigmaPos & 0xF0) >> 4, fgkTPCsigma_w, fgkTPCsigma_f,
                       false, true);
 }
-inline float MiniV0::GetPosProngTPCnsigmaProton() const {
+template<int n>
+inline float MiniV0<n>::GetPosProngTPCnsigmaProton() const {
   return getBinCenter((fNsigmaPos & 0x0F), fgkTPCsigma_w, fgkTPCsigma_f,
                       false, true);
 }
 
-inline void MiniV0::SetInvMasses(float k0s, float lam) {
-  fInvMassK0s = k0s;
-  fInvMassLambda = lam;
-}
-
-inline void MiniV0::SetV0CosPA(float cospa) {
+template<int n>
+inline void MiniV0<n>::SetV0CosPA(float cospa) {
   fV0CosPA = getBinnedValue<unsigned short>(cospa, fgkV0cosPA_w, fgkV0cosPA_f,
                                             fgkV0cosPA_l);
 }
 
-inline void MiniV0::SetV0Chi2andCowBoy(float chi2, bool cow) {
+template<int n>
+inline void MiniV0<n>::SetV0Chi2andCowBoy(float chi2, bool cow) {
   fChi2V0 = getBinnedValue<char>(chi2, fgkV0chi2_w, fgkV0chi2_l);
   if (cow) fChi2V0 += 1 << 7;
 }
 
-inline void MiniV0::SetProngsPvDCA(float posD, float negD) {
+template<int n>
+inline void MiniV0<n>::SetProngsPvDCA(float posD, float negD) {
   fDcaPos2PrimaryVertex =
       getBinnedValue<unsigned char>(posD, fgkDCAProng2PV_w, fgkDCAProng2PV_l);
   fDcaNeg2PrimaryVertex =
       getBinnedValue<unsigned char>(negD, fgkDCAProng2PV_w, fgkDCAProng2PV_l);
 }
 
-inline void MiniV0::SetProngsDCA(float dca) {
+template<int n>
+inline void MiniV0<n>::SetProngsDCA(float dca) {
   fDcaV0daughters =
       getBinnedValue<unsigned char>(dca, fgkDCAProngs_w, fgkDCAProngs_l);
 }
 
-inline void MiniV0::SetArmenterosVariables(float alpha, float pt) {
+template<int n>
+inline void MiniV0<n>::SetArmenterosVariables(float alpha, float pt) {
   fV0armAlpha = getBinnedValue<unsigned char>(alpha, fgkArmAlpha_w,
                                               fgkArmAlpha_f, fgkArmAlpha_l);
   fV0armPt = getBinnedValue<unsigned char>(pt, fgkArmPt_w, fgkArmPt_l);
 }
 
-inline void MiniV0::SetLeastNumberOfXedRows(unsigned char xedrows) {
+template<int n>
+inline void MiniV0<n>::SetLeastNumberOfXedRows(unsigned char xedrows) {
   fLeastNxedRows = xedrows;
 }
 
-inline void MiniV0::SetLeastXedRowsOverFindable(float ratio) {
+template<int n>
+inline void MiniV0<n>::SetLeastXedRowsOverFindable(float ratio) {
   fLeastXedOverFindable =
       getBinnedValue<unsigned char>(ratio, fgkXedOverFindable_w, fgkXedOverFindable_l);
 }
 
-inline void MiniV0::SetMaxChi2perCluster(float chi2) {
+template<int n>
+inline void MiniV0<n>::SetMaxChi2perCluster(float chi2) {
   fMaxChi2PerCluster = getBinnedValue<unsigned char>(chi2, fgkChi2xCluster_w);
 }
 
-inline void MiniV0::SetProngsTPCnsigmas(float pPi, float pP, float nPi,
+template<int n>
+inline void MiniV0<n>::SetProngsTPCnsigmas(float pPi, float pP, float nPi,
                                         float nP) {
   fNsigmaNeg = (std::abs(nP) > fgkTPCsigma_l)
                    ? 0x0F
@@ -251,10 +266,78 @@ inline void MiniV0::SetProngsTPCnsigmas(float pPi, float pP, float nPi,
       << 4;
 }
 
-inline void MiniV0::SetProngsEta(float posEta, float negEta) {
+template<int n>
+inline void MiniV0<n>::SetProngsEta(float posEta, float negEta) {
   fEtaNeg = getBinnedValue<unsigned char>(negEta, fgkEta_w, fgkEta_f, fgkEta_l);
   fEtaPos = getBinnedValue<unsigned char>(posEta, fgkEta_w, fgkEta_f, fgkEta_l);
 }
+
+template<int n> const int MiniV0<n>::fgkV0cosPA_n = 50000;
+template<int n> const float MiniV0<n>::fgkV0cosPA_f = 0.9f;
+template<int n> const float MiniV0<n>::fgkV0cosPA_l = 1.f;
+template<int n> const float MiniV0<n>::fgkV0cosPA_w = \
+    (MiniV0<n>::fgkV0cosPA_l - MiniV0<n>::fgkV0cosPA_f) / \
+    MiniV0<n>::fgkV0cosPA_n;
+
+template<int n> const int MiniV0<n>::fgkV0chi2_n = 100;
+template<int n> const float MiniV0<n>::fgkV0chi2_f = 0.f;
+template<int n> const float MiniV0<n>::fgkV0chi2_l = 10.f;
+template<int n> const float MiniV0<n>::fgkV0chi2_w = \
+    (MiniV0<n>::fgkV0chi2_l - MiniV0<n>::fgkV0chi2_f) / MiniV0<n>::fgkV0chi2_n;
+
+template<int n> const int MiniV0<n>::fgkDCAProng2PV_n = 250;
+template<int n> const float MiniV0<n>::fgkDCAProng2PV_f = 0.f;
+template<int n> const float MiniV0<n>::fgkDCAProng2PV_l = 0.25f;
+template<int n> const float MiniV0<n>::fgkDCAProng2PV_w = \
+    (MiniV0<n>::fgkDCAProng2PV_l - MiniV0<n>::fgkDCAProng2PV_f) / \
+    MiniV0<n>::fgkDCAProng2PV_n;
+
+template<int n> const int MiniV0<n>::fgkDCAProngs_n = 250;
+template<int n> const float MiniV0<n>::fgkDCAProngs_f = 0.f;
+template<int n> const float MiniV0<n>::fgkDCAProngs_l = 2.f;
+template<int n> const float MiniV0<n>::fgkDCAProngs_w = \
+    (MiniV0<n>::fgkDCAProngs_l - MiniV0<n>::fgkDCAProngs_f) / \
+    MiniV0<n>::fgkDCAProngs_n;
+
+template<int n> const int MiniV0<n>::fgkArmAlpha_n = 250;
+template<int n> const float MiniV0<n>::fgkArmAlpha_f = -1.f;
+template<int n> const float MiniV0<n>::fgkArmAlpha_l = 1.f;
+template<int n> const float MiniV0<n>::fgkArmAlpha_w = \
+    (MiniV0<n>::fgkArmAlpha_l - MiniV0<n>::fgkArmAlpha_f) / \
+    MiniV0<n>::fgkArmAlpha_n;
+
+template<int n> const int MiniV0<n>::fgkArmPt_n = 254;
+template<int n> const float MiniV0<n>::fgkArmPt_f = 0.f;
+template<int n> const float MiniV0<n>::fgkArmPt_l = 0.254f;
+template<int n> const float MiniV0<n>::fgkArmPt_w = \
+    (MiniV0<n>::fgkArmPt_l - MiniV0<n>::fgkArmPt_f) / MiniV0<n>::fgkArmPt_n;
+
+template<int n> const int MiniV0<n>::fgkXedOverFindable_n = 250;
+template<int n> const float MiniV0<n>::fgkXedOverFindable_f = 0.f;
+template<int n> const float MiniV0<n>::fgkXedOverFindable_l = 1.f;
+template<int n> const float MiniV0<n>::fgkXedOverFindable_w = \
+    (MiniV0<n>::fgkXedOverFindable_l - MiniV0<n>::fgkXedOverFindable_f) / \
+    MiniV0<n>::fgkXedOverFindable_n;
+
+template<int n> const int MiniV0<n>::fgkChi2xCluster_n = 250;
+template<int n> const float MiniV0<n>::fgkChi2xCluster_f = 0.f;
+template<int n> const float MiniV0<n>::fgkChi2xCluster_l = 10.f;
+template<int n> const float MiniV0<n>::fgkChi2xCluster_w = \
+    (MiniV0<n>::fgkChi2xCluster_l - MiniV0<n>::fgkChi2xCluster_f) / \
+    MiniV0<n>::fgkChi2xCluster_n;
+
+template<int n> const int MiniV0<n>::fgkTPCsigma_n = 12;
+template<int n> const float MiniV0<n>::fgkTPCsigma_f = 0.f;
+template<int n> const float MiniV0<n>::fgkTPCsigma_l = 6.f;
+template<int n> const float MiniV0<n>::fgkTPCsigma_w = \
+    (MiniV0<n>::fgkTPCsigma_l - MiniV0<n>::fgkTPCsigma_f) / \
+    MiniV0<n>::fgkTPCsigma_n;
+
+template<int n> const int MiniV0<n>::fgkEta_n = 200;
+template<int n> const float MiniV0<n>::fgkEta_f = -1.f;
+template<int n> const float MiniV0<n>::fgkEta_l = 1.f;
+template<int n> const float MiniV0<n>::fgkEta_w = \
+    (MiniV0<n>::fgkEta_l - MiniV0<n>::fgkEta_f) / MiniV0<n>::fgkEta_n;
 
 }  // namespace Lifetimes
 
