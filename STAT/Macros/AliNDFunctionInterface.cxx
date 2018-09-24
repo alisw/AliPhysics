@@ -210,7 +210,14 @@ Int_t  AliNDFunctionInterface::FitMVAClassification(const char * output, const c
   delete variableList;
 
   for (Int_t i=0; i<treeList->GetEntries(); i++){
-    loader.AddTree(tree_in[i],tree_name[i]+Form("%d",i),1.0,cut[i]);
+    TObjArray * inTree = TString(treeList->At(i)->GetName()).Tokenize("#");
+    input[i] = TFile::Open( TString(inTree->At(0)->GetName() ));
+    ::Info("AliNDFunctionInterface::FitMVAClassification","Load file %s",inTree->At(0)->GetName());
+    tree_in[i] = (TTree*) input[i]->Get(inTree->At(1)->GetName());
+    ::Info("AliNDFunctionInterface::FitMVAClassification","Load tree %s",inTree->At(1)->GetName());
+    outputFile->cd();
+    loader.AddTree(tree_in[i],Form("%s_%d",inTree->At(1)->GetName(), i),1.0,cut[i]);
+    delete inTree;
   }
 
   loader.PrepareTrainingAndTestTree("", FactorySetting[factoryString]);
