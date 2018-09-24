@@ -55,6 +55,7 @@ fPythiaEventWeight(1.0),
 fDoImprovedDCACut(kTRUE),
 fVertexConstraint(kFALSE),
 fThresholdIP(0.008),
+fDoDeltaPtWithSignal(kFALSE),
 fDiamond(0x0),
 fVertexer(0x0),
 fDoJetProbabilityAnalysis(kFALSE),
@@ -121,6 +122,10 @@ f2histRhoVsDeltaPt(0x0),
 f2histRhoVsDeltaPtFirst(0x0),
 f2histRhoVsDeltaPtSecond(0x0),
 f2histRhoVsDeltaPtThird(0x0),
+f2histRhoVsDeltaPtWithSignal(0x0),
+f2histRhoVsDeltaPtWithSignalFirst(0x0),
+f2histRhoVsDeltaPtWithSignalSecond(0x0),
+f2histRhoVsDeltaPtWithSignalThird(0x0),
 fRandom(new TRandom3(0)),
 fh1dJetRecEtaPhiAccepted(0x0),
 fh1dJetRecPtUnidentified(0x0),
@@ -420,6 +425,7 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fDoImprovedDCACut(kTRUE),
 		fVertexConstraint(kFALSE),
 		fThresholdIP(0.008),
+		fDoDeltaPtWithSignal(kFALSE),
 		fDiamond(0x0),
 		fVertexer(0x0),
 		//Bjet Cuts
@@ -487,6 +493,10 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		f2histRhoVsDeltaPtFirst(0x0),
 		f2histRhoVsDeltaPtSecond(0x0),
 		f2histRhoVsDeltaPtThird(0x0),
+		f2histRhoVsDeltaPtWithSignal(0x0),
+		f2histRhoVsDeltaPtWithSignalFirst(0x0),
+		f2histRhoVsDeltaPtWithSignalSecond(0x0),
+		f2histRhoVsDeltaPtWithSignalThird(0x0),
 		fh1dJetRecEtaPhiAccepted(0x0),
 		fh1dJetRecPtUnidentified(0x0),
 		fh1dJetRecPtudsg(0x0),
@@ -1042,8 +1052,13 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 	else fUsePicoTracks = kFALSE;
 
 	Double_t randomConePt = GetDeltaPtRandomCone();
+	Double_t randomConePtWithSignal = 0.0;
 	f2histRhoVsDeltaPt->Fill(randomConePt, fJetContainerData->GetRhoVal(), fPythiaEventWeight);
 
+	if(fDoDeltaPtWithSignal){
+		randomConePtWithSignal = GetDeltaPtRandomConeWithSignal();
+		f2histRhoVsDeltaPtWithSignal->Fill(randomConePtWithSignal, fJetContainerData->GetRhoVal(), fPythiaEventWeight);
+	}
 
 	if(fApplyV0Rec) SelectV0CandidateVIT();
 
@@ -1136,8 +1151,10 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 			}
 
               		Double_t value = CalculateJetProb(selJet);
+			if(value==0) value = 1e-5;
+			Double_t LogValue = -1*TMath::Log(value);
 
-			if(value>=0 && value<=0.01) TagJet=kTRUE;
+			if(LogValue>=5) TagJet=kTRUE;
 
 			PtRelSample = (TagJet && ElecJet);
 			if(PtRelSample) break;
@@ -1296,7 +1313,7 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 					if(IsElectronHF(trackAOD)){
 					   PtRel = GetPtRel(trackAOD, jetrec, kFALSE);
 					   if(PtRel>2) PtRel=1.99;
-					   if(CalculateTrackImpactParameter(trackAOD,LepIP,COV)) hasIP=kTRUE;
+					   //if(CalculateTrackImpactParameter(trackAOD,LepIP,COV)) hasIP=kTRUE;
 					   fhistPtRelVsJetPt->Fill(fJetPt, PtRel, fPythiaEventWeight);
 					   if(hasIP) fhistLepIPVsJetPt->Fill(fJetPt, GetValImpactParameter(kXY,LepIP,COV), fPythiaEventWeight);
 					   EleID[ElecNum]=itrack;
@@ -1967,12 +1984,19 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 	jetrec = 0x0; jetmatched=0x0;
 	delete jetmatched; delete jetrec;
 
-	if(TaggedFirst)
+	if(TaggedFirst){
 		f2histRhoVsDeltaPtFirst->Fill( randomConePt , fJetContainerData->GetRhoVal(), fPythiaEventWeight);
-	if(TaggedSecond)
+		if(fDoDeltaPtWithSignal) f2histRhoVsDeltaPtWithSignalFirst->Fill( randomConePtWithSignal , fJetContainerData->GetRhoVal(), fPythiaEventWeight);
+	}
+	if(TaggedSecond){
 		f2histRhoVsDeltaPtSecond->Fill( randomConePt , fJetContainerData->GetRhoVal(), fPythiaEventWeight);
-	if(TaggedThird)
+		if(fDoDeltaPtWithSignal) f2histRhoVsDeltaPtWithSignalSecond->Fill( randomConePtWithSignal , fJetContainerData->GetRhoVal(), fPythiaEventWeight);
+	}
+	if(TaggedThird){
 		f2histRhoVsDeltaPtThird->Fill( randomConePt , fJetContainerData->GetRhoVal(), fPythiaEventWeight);
+		if(fDoDeltaPtWithSignal) f2histRhoVsDeltaPtWithSignalThird->Fill( randomConePtWithSignal , fJetContainerData->GetRhoVal(), fPythiaEventWeight);
+	}
+
 
 	if(fEnableV0GammaRejection){
 		if( fIsPythia > 0 && fInputEvent->IsA()==AliAODEvent::Class() && !(fV0Reader->AreAODsRelabeled())){
@@ -2647,6 +2671,13 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 	f2histRhoVsDeltaPtSecond = new TH2D("f2histRhoVsDeltaPtSecond","Rho Vs Delta Pt N=2 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
 	f2histRhoVsDeltaPtThird = new TH2D("f2histRhoVsDeltaPtThird","Rho Vs Delta Pt N=3 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
 
+	if(fDoDeltaPtWithSignal){
+		f2histRhoVsDeltaPtWithSignal = new TH2D("f2histRhoVsDeltaPtWithSignal","Rho Vs Delta Pt;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
+		f2histRhoVsDeltaPtWithSignalFirst = new TH2D("f2histRhoVsDeltaPtWithSignalFirst","Rho Vs Delta Pt N=1 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
+		f2histRhoVsDeltaPtWithSignalSecond = new TH2D("f2histRhoVsDeltaPtWithSignalSecond","Rho Vs Delta Pt N=2 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
+		f2histRhoVsDeltaPtWithSignalThird = new TH2D("f2histRhoVsDeltaPtWithSignalThird","Rho Vs Delta Pt N=3 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
+	}
+
         
 
 
@@ -3039,6 +3070,13 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 	fOutput->Add(f2histRhoVsDeltaPtFirst);
 	fOutput->Add(f2histRhoVsDeltaPtSecond);
 	fOutput->Add(f2histRhoVsDeltaPtThird);
+
+	if(fDoDeltaPtWithSignal){
+		fOutput->Add(f2histRhoVsDeltaPtWithSignal);
+		fOutput->Add(f2histRhoVsDeltaPtWithSignalFirst);
+		fOutput->Add(f2histRhoVsDeltaPtWithSignalSecond);
+		fOutput->Add(f2histRhoVsDeltaPtWithSignalThird);
+	}
 
 	//JetProbability
 	if(fDoJetProbabilityAnalysis){
@@ -4713,6 +4751,44 @@ Double_t AliAnalysisTaskBJetTC::GetDeltaPtRandomCone()
 
 	partcont=NULL;
 	delete partcont;
+
+	if(tmpConePt > 0) {
+		deltaPt = tmpConePt - jetradius * jetradius * TMath::Pi() * fJetContainerData->GetRhoVal();
+		return deltaPt;
+	}
+	return deltaPt;
+}
+//_________________________________________________________________________
+Double_t AliAnalysisTaskBJetTC::GetDeltaPtRandomConeWithSignal()
+{
+
+	Double_t deltaPt = -1000.;
+	AliParticleContainer* partcont = 0x0;
+	partcont = static_cast<AliParticleContainer*>(fParticleCollArray.At(0));
+	Double_t jetradius = fJetContainerData->GetJetRadius();
+	Double_t minEta = -0.5;
+	Double_t maxEta = 0.5;
+	Double_t tmpRandConeEta = minEta + fRandom->Rndm() * (maxEta - minEta);
+	Double_t tmpRandConePhi = fRandom->Rndm() * TMath::TwoPi();
+	Double_t tmpConePt = -1.;
+
+	for(Int_t i = 0; i < partcont->GetNParticles(); i++) {
+
+		if(!partcont->GetParticle(i)) continue;
+		AliVTrack* tmpTrack = static_cast<AliVTrack*>(partcont->GetParticle(i));
+		AliAODTrack* trackAOD = (AliAODTrack*)partcont->GetParticle(i);
+		if(!((trackAOD)->TestFilterBit(1 << 4)) && !((trackAOD)->TestFilterBit(1 << 9)) ) continue;
+
+		if(fabs(tmpTrack->Eta()) > 0.9) continue;
+
+		if(tmpTrack->Pt() < 0.15) continue;
+
+		if(sqrt((tmpTrack->Eta() - tmpRandConeEta) * (tmpTrack->Eta() - tmpRandConeEta) +
+				TVector2::Phi_mpi_pi((tmpTrack->Phi() - tmpRandConePhi)) *
+				TVector2::Phi_mpi_pi((tmpTrack->Phi() - tmpRandConePhi))) < jetradius) {
+			tmpConePt += tmpTrack->Pt();
+		}
+	}
 
 	if(tmpConePt > 0) {
 		deltaPt = tmpConePt - jetradius * jetradius * TMath::Pi() * fJetContainerData->GetRhoVal();
