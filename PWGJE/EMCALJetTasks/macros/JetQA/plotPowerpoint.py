@@ -259,25 +259,26 @@ def plotPtHardInfo(qa, blank_slide_layout, plotDir, isPbPb):
   tf.fit_text('Calibri', 40)
 
   #top row
-  img_path = plotDir + "/AllRuns/QAoutput/EventQA/hEventReject.png"
+  img_path = plotDir + "AllRuns/QAoutput/EventQA/hEventReject.png"
   left = Inches(leftEdge)
   top = Inches(topEdge)
   width = Inches(imgWidth)
   slide.shapes.add_picture(img_path, left, top, width=width)
 
-  img_path = plotDir + "/AllRuns/QAoutput/PtHard/hPtHardNEvents.png"
+  img_path = plotDir + "AllRuns/QAoutput/PtHard/hPtHardNEvents.png"
   left = Inches(rightEdge)
   top = Inches(topEdge)
   width = Inches(imgWidth)
   slide.shapes.add_picture(img_path, left, top, width=width)
   #bottom row
-  img_path = plotDir + "/AllRuns/QAoutput/PtHard/hPtHardScaleFactor.png"
-  left = Inches(leftEdge)
-  top = Inches(lowEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
+  img_path = plotDir + "AllRuns/QAoutput/PtHard/hPtHardScaleFactor.png"
+  if os.path.exists(img_path):
+    left = Inches(leftEdge)
+    top = Inches(lowEdge)
+    width = Inches(imgWidth)
+    slide.shapes.add_picture(img_path, left, top, width=width)
 
-  img_path = plotDir + "/AllRuns/QAoutput/PtHard/hPtHard.png"
+  img_path = plotDir + "AllRuns/QAoutput/PtHard/hPtHard.png"
   left = Inches(rightEdge)
   top = Inches(lowEdge)
   width = Inches(imgWidth)
