@@ -1739,6 +1739,18 @@ void AliCEPUtils::InitTrackCuts(Bool_t IsRun1, Int_t clusterCut)
 }
 
 // ------------------------------------------------------------------------------
+Bool_t AliCEPUtils::IsGoodEMCCluster (AliESDCaloCluster* Cluster)
+{
+
+  Bool_t goodCluster =
+    Cluster->IsEMCAL() &&
+    Cluster->GetNCells()>1 &&
+    !Cluster->GetIsExotic();
+
+  return goodCluster;
+  
+}
+// ------------------------------------------------------------------------------
 // evaluate the distances between the cluster positions and the EMCal hits of
 // the selected tracks.
 // For each cluster find the minimum distance (dEtaPhiMin) and finally return
@@ -1770,8 +1782,9 @@ Double_t AliCEPUtils::CaloClusterTrackdmax( AliESDEvent *Event, TArrayI* TTindic
   UInt_t nEMCcluster=0, nPHOScluster=0;
   for (UInt_t ii=0; ii<nCaloTracks; ii++) {
     aliCluster = (AliESDCaloCluster*)Event->GetCaloCluster(ii);
-    if (aliCluster->IsEMCAL() && aliCluster->GetNCells()>1) nEMCcluster++;
-    if (aliCluster->IsPHOS())  nPHOScluster++;
+        
+    if (IsGoodEMCCluster(aliCluster)) nEMCcluster++;
+    if (aliCluster->IsPHOS())         nPHOScluster++;
   }
   //printf("cluster EMC %i PHOS %i tracks %i",
   //  nEMCcluster,nPHOScluster,TTindices->GetSize());
@@ -1832,7 +1845,7 @@ Double_t AliCEPUtils::CaloClusterTrackdmax( AliESDEvent *Event, TArrayI* TTindic
   cnt = -1;
   for (UInt_t ii=0; ii<nCaloTracks; ii++) {
     aliCluster = (AliESDCaloCluster*)Event->GetCaloCluster(ii);
-    if (!(aliCluster->IsEMCAL() && aliCluster->GetNCells()>1)) continue;
+    if (!IsGoodEMCCluster(aliCluster)) continue;
 
     // determine cluster time = time of cluster cell with largest amplitude
     cellAmpl_max = 0.;

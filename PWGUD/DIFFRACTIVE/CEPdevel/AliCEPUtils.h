@@ -125,6 +125,7 @@ class AliCEPUtils : public TObject {
       TList *lhh );
 
     static TList* GetEMCQAHists();
+    Bool_t IsGoodEMCCluster (AliESDCaloCluster* Cluster);
     Double_t CaloClusterTrackdmax (
       AliESDEvent *Event,
       TArrayI* TTindices );
