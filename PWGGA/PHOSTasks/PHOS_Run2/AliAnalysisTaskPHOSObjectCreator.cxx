@@ -310,8 +310,8 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
     if(fIsMC){
       Bool_t sure = kTRUE;
       Int_t label = FindPrimary(ph,sure);
-      ph->SetPrimary(cluster->GetLabel());
-      //ph->SetPrimary(label);
+      ph->SetPrimary(label);
+      //ph->SetPrimary(cluster->GetLabel());
     }
 
     ph->SetLambdas(M20,M02);
