@@ -143,7 +143,7 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   float fMaxTPCpionSigma;
   float fMaxTPCprotonSigma;
 
-  std::vector<Lifetimes::MiniV0> fV0vector;
+  std::vector<Lifetimes::MiniV0<2> > fV0vector;
   std::vector<Lifetimes::MCparticle> fMCvector;
   float fMultiplicity;
 
