@@ -1770,7 +1770,7 @@ Double_t AliCEPUtils::CaloClusterTrackdmax( AliESDEvent *Event, TArrayI* TTindic
   UInt_t nEMCcluster=0, nPHOScluster=0;
   for (UInt_t ii=0; ii<nCaloTracks; ii++) {
     aliCluster = (AliESDCaloCluster*)Event->GetCaloCluster(ii);
-    if (aliCluster->IsEMCAL()) nEMCcluster++;
+    if (aliCluster->IsEMCAL() && aliCluster->GetNCells()>1) nEMCcluster++;
     if (aliCluster->IsPHOS())  nPHOScluster++;
   }
   //printf("cluster EMC %i PHOS %i tracks %i",
@@ -1832,8 +1832,7 @@ Double_t AliCEPUtils::CaloClusterTrackdmax( AliESDEvent *Event, TArrayI* TTindic
   cnt = -1;
   for (UInt_t ii=0; ii<nCaloTracks; ii++) {
     aliCluster = (AliESDCaloCluster*)Event->GetCaloCluster(ii);
-    if (!aliCluster->IsEMCAL()) continue;
-    
+    if (!(aliCluster->IsEMCAL() && aliCluster->GetNCells()>1)) continue;
 
     // determine cluster time = time of cluster cell with largest amplitude
     cellAmpl_max = 0.;
