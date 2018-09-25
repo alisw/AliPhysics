@@ -155,9 +155,9 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 	fRhoTree->Branch("PIDTPCPion_T",&PIDTPCPion_T,"PIDTPCPion_T[2]/F");
 	fRhoTree->Branch("PIDTPCElectron_T",&PIDTPCElectron_T,"PIDTPCElectron_T[2]/F");
 	fRhoTree->Branch("TPCsignal_T",&TPCsignal_T,"TPCsignal_T[2]/I");
-	// fRhoTree->Branch("TrackP_T",&TrackP_T,"TrackP_T[2]/F");
-	// fRhoTree->Branch("TrackEta_T",&TrackEta_T,"TrackEta_T[2]/F");
-	// fRhoTree->Branch("TrackPhi_T",&TrackPhi_T,"TrackPhi_T[2]/F");
+	fRhoTree->Branch("TrackP_T",&TrackP_T,"TrackP_T[2]/F");
+	fRhoTree->Branch("TrackEta_T",&TrackEta_T,"TrackEta_T[2]/F");
+	fRhoTree->Branch("TrackPhi_T",&TrackPhi_T,"TrackPhi_T[2]/F");
 	fRhoTree->Branch("TrackPx_T",&TrackPx_T,"TrackPx_T[2]/F");
 	fRhoTree->Branch("TrackPy_T",&TrackPy_T,"TrackPy_T[2]/F");
 	fRhoTree->Branch("TrackPz_T",&TrackPz_T,"TrackPz_T[2]/F");
@@ -285,7 +285,7 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 
   // triggered in data for lumi scalling
   if(!isMC && trigger.Contains(fTriggerName.Data())) {
-  	fHistTriggersPerRun->Fill(RunNum_T);
+  	fHistTriggersPerRun->Fill(esd->GetRunNumber());
   	// cout<<trigger<<endl;
   }
 
