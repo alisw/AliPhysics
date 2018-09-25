@@ -74,13 +74,15 @@ class CutHandlerConvMaterial{
 
 void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,                  // change different set of cuts
                                 Int_t   isMC                    = 0,
-                                TString periodname              = "LHC10b",           // period name
+                                TString periodName              = "",           // period name
                                 TString periodNameV0Reader      = "",
                                 TString periodNameAnchor        = "",
 				Int_t   doDeDxMaps              =  0,
                                 Bool_t 	enableV0findingEffi     = kFALSE,    // enables V0finding efficiency histograms
-				Bool_t    enableElecDeDxPostCalibration = kFALSE,
-				TString   fileNameElecDeDxPostCalibration = "dEdxCorrectionMap_Period_Pass.root",
+				Bool_t  enableElecDeDxPostCalibration = kFALSE,
+				TString fileNameElecDeDxPostCalibration = "dEdxCorrectionMap_Period_Pass.root",
+                                Int_t   doMultiplicityWeighting           = 0,
+				TString fileNameInputForMultWeighing    = "/alice/cern.ch/user/a/amarin/multWeightFile/histosForMultWeighting_pp.root",            //
 				TString additionalTrainConfig   = "0"       // additional counter for trainconfig, this has to be always the last parameter
                               ){
 
@@ -387,8 +389,29 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
   AliConvEventCuts **analysisEventCuts        = new AliConvEventCuts*[numberOfCuts];
   ConvCutList->SetOwner(kTRUE);
   AliConversionPhotonCuts **analysisCuts      = new AliConversionPhotonCuts*[numberOfCuts];
+  cout<<"names"<< periodNameAnchor.Data()<< " " << periodName.Data()<< " " << periodNameV0Reader.Data()<< endl;
   for(Int_t i = 0; i<numberOfCuts; i++){
     analysisEventCuts[i]          = new AliConvEventCuts();
+
+    TString dataInputMultHisto  = "";
+    TString mcInputMultHisto    = "";
+    if (doMultiplicityWeighting>0 && isMC==0){
+      doMultiplicityWeighting = 0;
+    }
+    if (doMultiplicityWeighting>0){
+      cout << "INFO enableling mult weighting" << endl;
+      if( periodNameAnchor.CompareTo("LHC16d")==0  || 
+	  periodNameAnchor.CompareTo("LHC17p")==0  ||  
+	  periodNameAnchor.CompareTo("LHC17q")==0  ){
+	TString cutNumber = cuts.GetEventCut(i);
+	TString centCut = cutNumber(0,3);  // first three digits of event cut
+	dataInputMultHisto = Form("%s_%s", periodNameAnchor.Data(), centCut.Data());
+	mcInputMultHisto   = Form("%s_%s", periodName.Data(), centCut.Data());
+	cout<< "Histogram names data/MC:: "<< dataInputMultHisto.Data()<< " " << mcInputMultHisto.Data()<< endl;
+       }
+      analysisEventCuts[i]->SetUseWeightMultiplicityFromFile(kTRUE, fileNameInputForMultWeighing, dataInputMultHisto, mcInputMultHisto );
+    }
+
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);

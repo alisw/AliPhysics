@@ -51,8 +51,8 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   fAllMCConvGammaList(NULL),
   fPrimVtxZ(0.),
   fNContrVtx(0),
-  fNESDtracksEta09(0),
-  fNESDtracksEta0914(0),
+  fNESDtracksEta08(0),
+  fNESDtracksEta0814(0),
   fNESDtracksEta14(0),
   fGammaMCPt(0.),
   fGammaMCTheta(0.),
@@ -69,10 +69,12 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   fnCuts(0),
   fiCut(0),
   fDoDeDxMaps(0),
+  fDoMultWeights(0),
   hNEvents(NULL),
-  hNGoodESDTracksEta09(NULL),
+  hNGoodESDTracksEta08(NULL),
+  hNGoodESDTracksWeightedEta08(NULL),
   hNGoodESDTracksEta14(NULL),
-  hNGoodESDTracksEta09_14(NULL),
+  hNGoodESDTracksEta08_14(NULL),
   hESDConversionRPhi(NULL),
   hESDConversionRZ(NULL),
   hESDConversionRPt(NULL),
@@ -145,8 +147,8 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   fAllMCConvGammaList(NULL),
   fPrimVtxZ(0.),
   fNContrVtx(0),
-  fNESDtracksEta09(0),
-  fNESDtracksEta0914(0),
+  fNESDtracksEta08(0),
+  fNESDtracksEta0814(0),
   fNESDtracksEta14(0),
   fGammaMCPt(0.),
   fGammaMCTheta(0.),
@@ -163,10 +165,12 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   fnCuts(0),
   fiCut(0),
   fDoDeDxMaps(0),
+  fDoMultWeights(0),
   hNEvents(NULL),
-  hNGoodESDTracksEta09(NULL),
+  hNGoodESDTracksEta08(NULL),
+  hNGoodESDTracksWeightedEta08(NULL),
   hNGoodESDTracksEta14(NULL),
-  hNGoodESDTracksEta09_14(NULL),
+  hNGoodESDTracksEta08_14(NULL),
   hESDConversionRPhi(NULL),
   hESDConversionRZ(NULL),
   hESDConversionRPt(NULL),
@@ -257,9 +261,13 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
     fDeDxMapList            = new TList*[fnCuts];
   }
   hNEvents                  = new TH1F*[fnCuts];
-  hNGoodESDTracksEta09      = new TH1F*[fnCuts];
+  hNGoodESDTracksEta08      = new TH1F*[fnCuts];
+
+  if (fDoMultWeights>0 && fIsMC>0 ) {
+    hNGoodESDTracksWeightedEta08  = new TH1F*[fnCuts];
+  }
   hNGoodESDTracksEta14      = new TH1F*[fnCuts];
-  hNGoodESDTracksEta09_14   = new TH1F*[fnCuts];
+  hNGoodESDTracksEta08_14   = new TH1F*[fnCuts];
   hESDConversionRPhi        = new TH2F*[fnCuts];
   hESDConversionRZ          = new TH2F*[fnCuts];
   hESDConversionRPt         = new TH2F*[fnCuts];
@@ -368,12 +376,18 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
     fESDList[iCut]->Add(hNEvents[iCut]);
 
 
-    hNGoodESDTracksEta09[iCut]      = new TH1F("GoodESDTracksEta09","GoodESDTracksEta09",4000,-0.5,4000-0.5);
-    fESDList[iCut]->Add(hNGoodESDTracksEta09[iCut]);
+    hNGoodESDTracksEta08[iCut]      = new TH1F("GoodESDTracksEta08","GoodESDTracksEta08",4000,-0.5,4000-0.5);
+    fESDList[iCut]->Add(hNGoodESDTracksEta08[iCut]);
+    if(fDoMultWeights && fIsMC>0) {
+      hNGoodESDTracksEta08[iCut]      = new TH1F("GoodESDTracksWeightedEta08","GoodESDTracksWeigthedEta08",4000,-0.5,4000-0.5);
+      hNGoodESDTracksEta08[iCut]->Sumw2();
+      fESDList[iCut]->Add(hNGoodESDTracksWeightedEta08[iCut]);
+    }
+
     hNGoodESDTracksEta14[iCut]      = new TH1F("GoodESDTracksEta14","GoodESDTracksEta14",4000,-0.5,4000-0.5);
     fESDList[iCut]->Add(hNGoodESDTracksEta14[iCut]);
-    hNGoodESDTracksEta09_14[iCut]   = new TH1F("GoodESDTracksEta09_14","GoodESDTracksEta09_14",4000,-0.50,4000-0.5);
-    fESDList[iCut]->Add(hNGoodESDTracksEta09_14[iCut]);
+    hNGoodESDTracksEta08_14[iCut]   = new TH1F("GoodESDTracksEta08_14","GoodESDTracksEta08_14",4000,-0.50,4000-0.5);
+    fESDList[iCut]->Add(hNGoodESDTracksEta08_14[iCut]);
 
     hESDConversionRPhi[iCut]        = new TH2F("ESD_Conversion_RPhi","ESD_Conversion_RPhi",nBinsPhi,0.,2*TMath::Pi(),nBinsR,0.,200.);
     fESDList[iCut]->Add(hESDConversionRPhi[iCut]);
@@ -654,13 +668,20 @@ void AliAnalysisTaskMaterialHistos::UserExec(Option_t *){
       ProcessMCPhotons();
     }
 
-    fNESDtracksEta09 = CountTracks09(); // Estimate Event Multiplicity
-    fNESDtracksEta0914 = CountTracks0914(); // Estimate Event Multiplicity
-    fNESDtracksEta14 = fNESDtracksEta09 + fNESDtracksEta0914;
+    fNESDtracksEta08 = CountTracks08(); // Estimate Event Multiplicity
+    fNESDtracksEta0814 = CountTracks0814(); // Estimate Event Multiplicity
+    fNESDtracksEta14 = fNESDtracksEta08 + fNESDtracksEta0814;
 
-    hNGoodESDTracksEta09[iCut]->Fill(fNESDtracksEta09);
+    Double_t weightMult=1.;   
+
+    hNGoodESDTracksEta08[iCut]->Fill(fNESDtracksEta08);
+    if(fDoMultWeights && fIsMC > 0) {
+      weightMult = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetWeightForMultiplicity(fNESDtracksEta08);
+      hNGoodESDTracksWeightedEta08[iCut]->Fill(fNESDtracksEta08, weightMult);
+    }
+    hNGoodESDTracksEta08[iCut]->Fill(fNESDtracksEta08);
     hNGoodESDTracksEta14[iCut]->Fill(fNESDtracksEta14);
-    hNGoodESDTracksEta09_14[iCut]->Fill(fNESDtracksEta0914);
+    hNGoodESDTracksEta08_14[iCut]->Fill(fNESDtracksEta0814);
 
 
     if(fInputEvent){
@@ -1000,7 +1021,7 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskMaterialHistos::CountTracks09(){
+Int_t AliAnalysisTaskMaterialHistos::CountTracks08(){
 
   Int_t fNumberOfESDTracks = 0;
   if(fInputEvent->IsA()==AliESDEvent::Class()){
@@ -1049,7 +1070,7 @@ Int_t AliAnalysisTaskMaterialHistos::CountTracks09(){
             EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
         }
         EsdTrackCuts->SetMaxDCAToVertexZ(2);
-        EsdTrackCuts->SetEtaRange(-0.9, 0.9);
+        EsdTrackCuts->SetEtaRange(-0.8, 0.8);
         EsdTrackCuts->SetPtRange(0.15);
     }
 
@@ -1076,7 +1097,7 @@ Int_t AliAnalysisTaskMaterialHistos::CountTracks09(){
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskMaterialHistos::CountTracks0914(){
+Int_t AliAnalysisTaskMaterialHistos::CountTracks0814(){
 
   Int_t fNumberOfESDTracks = 0;
   if(fInputEvent->IsA()==AliESDEvent::Class()){
@@ -1128,7 +1149,7 @@ Int_t AliAnalysisTaskMaterialHistos::CountTracks0914(){
         EsdTrackCuts->SetPtRange(0.15);
     }
 
-    EsdTrackCuts->SetEtaRange(0.9, 1.4);
+    EsdTrackCuts->SetEtaRange(0.8, 1.4);
     for(Int_t iTracks = 0; iTracks < fInputEvent->GetNumberOfTracks(); iTracks++){
       AliESDtrack* curTrack = (AliESDtrack*) fInputEvent->GetTrack(iTracks);
       if(!curTrack) continue;
@@ -1143,7 +1164,7 @@ Int_t AliAnalysisTaskMaterialHistos::CountTracks0914(){
       }
     }
 
-    EsdTrackCuts->SetEtaRange(-1.4, -0.9);
+    EsdTrackCuts->SetEtaRange(-1.4, -0.8);
     for(Int_t iTracks = 0; iTracks < fInputEvent->GetNumberOfTracks(); iTracks++){
       AliESDtrack* curTrack =(AliESDtrack*) fInputEvent->GetTrack(iTracks);
       if(!curTrack) continue;
