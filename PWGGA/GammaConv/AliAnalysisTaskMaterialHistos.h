@@ -129,6 +129,8 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		TH2F**            hMCTrueConversionAsymP;          //!
  		TH1F**            hMCTrueConversionRRejSmall;   //!
  		TH1F**            hMCTrueConversionRRejLarge;   //!
+		TH2F**            hMCTruePrimConversionRPt;     //!
+		TH2F**            hMCTrueSecConversionRPt;      //!
 
 		TH2F**            hMCTruePi0DalConversionRPt;   //!
 		TH1F**            hMCTruePi0DalConversionEta;   //!
@@ -150,7 +152,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
 
 
-        ClassDef(AliAnalysisTaskMaterialHistos, 15);
+        ClassDef(AliAnalysisTaskMaterialHistos, 16);
 };
 
 #endif

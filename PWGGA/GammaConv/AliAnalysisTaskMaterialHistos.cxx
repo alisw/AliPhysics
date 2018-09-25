@@ -106,6 +106,8 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   hMCTrueConversionAsymP(NULL),
   hMCTrueConversionRRejSmall(NULL),
   hMCTrueConversionRRejLarge(NULL),
+  hMCTruePrimConversionRPt(NULL),
+  hMCTrueSecConversionRPt(NULL),
   hMCTruePi0DalConversionRPt(NULL),
   hMCTruePi0DalConversionEta(NULL),
   hMCTrueEtaDalConversionRPt(NULL),
@@ -198,6 +200,8 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   hMCTrueConversionAsymP(NULL),
   hMCTrueConversionRRejSmall(NULL),
   hMCTrueConversionRRejLarge(NULL),
+  hMCTruePrimConversionRPt(NULL),
+  hMCTrueSecConversionRPt(NULL),
   hMCTruePi0DalConversionRPt(NULL),
   hMCTruePi0DalConversionEta(NULL),
   hMCTrueEtaDalConversionRPt(NULL),
@@ -307,6 +311,8 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
   hMCTrueConversionRRejLarge = new TH1F*[fnCuts];
   hMCTrueConversionRRejSmall = new TH1F*[fnCuts];
 
+  hMCTruePrimConversionRPt    = new TH2F*[fnCuts];
+  hMCTrueSecConversionRPt    = new TH2F*[fnCuts];
   hMCTruePi0DalConversionRPt = new TH2F*[fnCuts];
   hMCTruePi0DalConversionEta = new TH1F*[fnCuts];
   hMCTrueEtaDalConversionRPt = new TH2F*[fnCuts];
@@ -362,11 +368,11 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
     fESDList[iCut]->Add(hNEvents[iCut]);
 
 
-    hNGoodESDTracksEta09[iCut]      = new TH1F("GoodESDTracksEta09","GoodESDTracksEta09",4000,0,4000);
+    hNGoodESDTracksEta09[iCut]      = new TH1F("GoodESDTracksEta09","GoodESDTracksEta09",4000,-0.5,4000-0.5);
     fESDList[iCut]->Add(hNGoodESDTracksEta09[iCut]);
-    hNGoodESDTracksEta14[iCut]      = new TH1F("GoodESDTracksEta14","GoodESDTracksEta14",4000,0,4000);
+    hNGoodESDTracksEta14[iCut]      = new TH1F("GoodESDTracksEta14","GoodESDTracksEta14",4000,-0.5,4000-0.5);
     fESDList[iCut]->Add(hNGoodESDTracksEta14[iCut]);
-    hNGoodESDTracksEta09_14[iCut]   = new TH1F("GoodESDTracksEta09_14","GoodESDTracksEta09_14",4000,0,4000);
+    hNGoodESDTracksEta09_14[iCut]   = new TH1F("GoodESDTracksEta09_14","GoodESDTracksEta09_14",4000,-0.50,4000-0.5);
     fESDList[iCut]->Add(hNGoodESDTracksEta09_14[iCut]);
 
     hESDConversionRPhi[iCut]        = new TH2F("ESD_Conversion_RPhi","ESD_Conversion_RPhi",nBinsPhi,0.,2*TMath::Pi(),nBinsR,0.,200.);
@@ -464,6 +470,13 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
         fESDList[iCut]->Add(hMCTrueConversionRRejLarge[iCut]);
         hMCTrueConversionRRejSmall[iCut] = new TH1F("ESD_TrueConversion_RSmall","ESD_TrueConversion_RSmall",nBinsR,0.,200.);
         fESDList[iCut]->Add(hMCTrueConversionRRejSmall[iCut]);
+
+	hMCTruePrimConversionRPt[iCut]  = new TH2F("ESD_TruePrimConversion_RPt","ESD_TruePrimConversion_RPt",nBinsPt,0.,20.,nBinsR,0.,200.);
+        fTrueList[iCut]->Add(hMCTruePrimConversionRPt[iCut]);
+
+        hMCTrueSecConversionRPt[iCut]  = new TH2F("ESD_TrueSecConversion_RPt","ESD_TrueSecConversion_RPt",nBinsPt,0.,20.,nBinsR,0.,200.);
+        fTrueList[iCut]->Add(hMCTrueSecConversionRPt[iCut]);
+
 
         hMCTruePi0DalConversionRPt[iCut]   = new TH2F("ESD_TruePi0DalConversion_RPt","ESD_TruePi0DalConversion_RPt",nBinsPt,0.,20.,nBinsR,0.,200.);
         fTrueList[iCut]->Add(hMCTruePi0DalConversionRPt[iCut]);
@@ -941,6 +954,8 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
         hMCTrueConversionRZ[fiCut]->Fill(gamma->GetConversionZ(),gamma->GetConversionRadius());
         hMCTrueConversionREta[fiCut]->Fill(gamma->GetPhotonEta(),gamma->GetConversionRadius());
         hMCTrueConversionRPt[fiCut]->Fill(gamma->GetPhotonPt(),gamma->GetConversionRadius());
+	if(fKind==0) hMCTruePrimConversionRPt[fiCut]->Fill(gamma->GetPhotonPt(),gamma->GetConversionRadius());
+	if(fKind==5) hMCTrueSecConversionRPt[fiCut]->Fill(gamma->GetPhotonPt(),gamma->GetConversionRadius());
         hMCTrueConversionRPtMCRPt[fiCut]->Fill(Photon->Pt(),negDaughter->R());
 
         if(gamma->GetConversionRadius() < 75. || gamma->GetConversionRadius() > 85.) hMCTrueConversionRRejSmall[fiCut]->Fill(gamma->GetConversionRadius());
@@ -954,6 +969,7 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
 	    hMCTrueConversionAsymP[fiCut]->Fill(gamma->GetPhotonP(),negTrack->P()/gamma->GetPhotonP());
 	  }
         }
+
 
 
         if(fInputEvent->IsA()==AliESDEvent::Class()){
