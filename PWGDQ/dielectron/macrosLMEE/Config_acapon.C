@@ -53,7 +53,7 @@ AliDielectron* Config_acapon(TString cutDefinition,
 			v0plots = kTRUE;
 		}
 		if(setTOFcorr){
-			LMcutlib->SetEtaCorrectionITS(die, AliDielectronVarManager::kP,
+			LMcutlib->SetEtaCorrectionTOF(die, AliDielectronVarManager::kP,
                                       AliDielectronVarManager::kEta,
                                       AliDielectronVarManager::kRefMultTPConly, kFALSE);
 

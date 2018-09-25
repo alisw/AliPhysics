@@ -25,8 +25,8 @@ AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root", 
     TString configLMEECutLib("LMEECutLib_acapon.C");
 
     //Load updated macros from private ALIEN path
-    TString myConfig ="alien_cp alien:///alice/cern.ch/user/a/acapon/dielectronShizzle/Config_acapon.C .";
-    TString myCutLib ="alien_cp alien:///alice/cern.ch/user/a/acapon/dielectronShizzle/LMEECutLib_acapon.C ."; 
+    TString myConfig ="alien_cp alien:///alice/cern.ch/user/a/acapon/PWGDQ/dielectron/macrosLMEE/Config_acapon.C .";
+    TString myCutLib ="alien_cp alien:///alice/cern.ch/user/a/acapon/PWGDQ/dielectron/macrosLMEE/LMEECutLib_acapon.C ."; 
     if (getFromAlien && (!gSystem->Exec(myConfig)) && (!gSystem->Exec(myCutLib))){
 
         std::cout << "Copy config from Alien" << std::endl;
