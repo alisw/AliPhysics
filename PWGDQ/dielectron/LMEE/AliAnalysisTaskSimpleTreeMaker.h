@@ -311,7 +311,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		TH3D* fMeanITS;
 
 		// Temp variable (needed for testing MC issues)
-		TBits TOFstartMask;
+		Int_t TOFstartMask;
 
 		// Store list of generator hashes which can be checked against to determine
 		// whether or not the track was injected
