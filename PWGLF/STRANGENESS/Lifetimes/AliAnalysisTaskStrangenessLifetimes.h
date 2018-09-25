@@ -77,9 +77,10 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
     fLambdaMassSigma[3] = -2.58251e+00;
   }
 
-  void SetMaxTPCsigmas(float pi, float proton) {
+  void SetMaxTPCsigmas(float pi, float proton, float he3) {
     fMaxTPCpionSigma = pi;
     fMaxTPCprotonSigma = proton;
+    fMaxTPChe3Sigma = he3;
   }
   // Functions for analysis Bookkeepinp
   // 1- Configure standard vertexing
@@ -142,8 +143,9 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   float fMaxPtToSave;  // maximum pt
   float fMaxTPCpionSigma;
   float fMaxTPCprotonSigma;
+  float fMaxTPChe3Sigma;
 
-  std::vector<Lifetimes::MiniV0<2> > fV0vector;
+  std::vector<Lifetimes::MiniV0<3> > fV0vector;
   std::vector<Lifetimes::MCparticle> fMCvector;
   float fMultiplicity;
 
