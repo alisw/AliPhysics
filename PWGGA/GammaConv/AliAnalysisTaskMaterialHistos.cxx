@@ -379,8 +379,8 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
     hNGoodESDTracksEta08[iCut]      = new TH1F("GoodESDTracksEta08","GoodESDTracksEta08",4000,-0.5,4000-0.5);
     fESDList[iCut]->Add(hNGoodESDTracksEta08[iCut]);
     if(fDoMultWeights && fIsMC>0) {
-      hNGoodESDTracksEta08[iCut]      = new TH1F("GoodESDTracksWeightedEta08","GoodESDTracksWeigthedEta08",4000,-0.5,4000-0.5);
-      hNGoodESDTracksEta08[iCut]->Sumw2();
+      hNGoodESDTracksWeightedEta08[iCut]      = new TH1F("GoodESDTracksWeightedEta08","GoodESDTracksWeigthedEta08",4000,-0.5,4000-0.5);
+      hNGoodESDTracksWeightedEta08[iCut]->Sumw2();
       fESDList[iCut]->Add(hNGoodESDTracksWeightedEta08[iCut]);
     }
 
