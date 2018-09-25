@@ -587,7 +587,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
 
       // Filling the V0 vector
       MiniV0<2> miniV0;
-      miniV0.SetV0pt(v0Pt);
+      miniV0.SetV0ptAndFake(v0Pt, false);
       miniV0.SetV0eta(v0->Eta());
       miniV0.SetLeastNumberOfXedRows(minXedRows);
       miniV0.SetDistOverP(distOverP);
@@ -598,7 +598,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
       miniV0.SetV0Chi2andCowBoy(v0->GetChi2V0(), isCowboy);
       miniV0.SetProngsDCA(v0->GetDcaV0Daughters());
       miniV0.SetProngsPvDCA(dcaPosToPrimVertex, dcaNegToPrimVertex);
-      miniV0.SetV0radius(v0Radius);
+      miniV0.SetV0radiusAndLikeSign(v0Radius);
       miniV0.SetLeastXedRowsOverFindable(minXedRowsOverFindable);
       miniV0.SetMaxChi2perCluster(maxChi2PerCluster);
       miniV0.SetProngsEta(pTrack->Eta(), nTrack->Eta());
