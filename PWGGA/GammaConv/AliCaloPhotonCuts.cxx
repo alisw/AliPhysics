@@ -5061,18 +5061,11 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       }
       break;
 
-    // kPi0MCv1 for MC and kTestBeamv3 for data
+    // kPi0MCv3 for MC and kTestBeamv4 for data (same as case 02, but with new testbeam param. for > 100 gev)
     case 6:
       if (fClusterType == 1|| fClusterType == 3){
-        if(isMC == 0) energy *= FunctionNL_kTestBeamv3(energy);
-        else energy *= FunctionNL_kPi0MCv1(energy);
-      }
-      break;
-    // kPi0MCv1 for MC and kTestBeamv2 for data
-    case 7:
-      if (fClusterType == 1|| fClusterType == 3){
-        if(isMC == 0) energy *= FunctionNL_kTestBeamv2(energy);
-        else energy *= FunctionNL_kPi0MCv1(energy);
+        if(isMC == 0) energy *= FunctionNL_kTestBeamv4(energy);
+        else energy *= FunctionNL_kPi0MCv3(energy);
       }
       break;
 
@@ -5091,6 +5084,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         }
       }
       break;
+
+
 
 //----------------------------------------------------------------------------------------------------------
 
@@ -6015,6 +6010,12 @@ Float_t AliCaloPhotonCuts::FunctionNL_kTestBeamv2(Float_t e){
 Float_t AliCaloPhotonCuts::FunctionNL_kTestBeamv3(Float_t e){
   return ( 0.9615 / ( 0.976941 *( 1. / ( 1. + 0.162310 * exp( -e / 1.08689 ) ) * 1. / ( 1. + 0.0819592 * exp( ( e - 152.338 ) / 30.9594 ) ) ) ) );
 }
+
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_kTestBeamv4(Float_t e){ // supplied by Evi Ganoti, cf. https://alice.its.cern.ch/jira/browse/EMCAL-190
+  return ( 0.97 / ( 0.9892 *( 1. / ( 1. + 0.1976 * exp( -e / 0.865 ) ) * 1. / ( 1. + 0.06775 * exp( ( e - 156.6 ) / 47.18 ) ) ) ) );
+}
+
 
 //************************************************************************
 //________________________________________________________________________
