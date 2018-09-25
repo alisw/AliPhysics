@@ -552,10 +552,10 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
 //**IMPORTANT**: For AODs, select FilterBit
 //the method is ignored for ESDs
 
-AliAnalysisCuts* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
+AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 
 	::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> GetTrackCuts() >>>>>>>>>>>>>>>>>>>>>> ");
-	AliDielectronCutGroup* trackCuts = 0x0;
+	AliDielectronCutGroup* trackCuts = new AliDielectronCutGroup("trackCuts", "trackCuts", AliDielectronCutGroup::kCompAND);
 
 	AliDielectronVarCuts* varCutsFilter     = new AliDielectronVarCuts("varCutsFilter", "varCutsFilter");
 	AliDielectronTrackCuts* trackCutsFilter = new AliDielectronTrackCuts("trackCutsFilter", "trackCutsFilter");
@@ -594,11 +594,7 @@ AliAnalysisCuts* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 			trackCuts->AddCut(varCutsFilter);
 			
 			trackCuts->AddCut(GetPIDCuts(PIDcuts));
-			AliDielectronCutGroup* trackCuts2 = new AliDielectronCutGroup("trackCuts2", "trackCuts2", 
-																												AliDielectronCutGroup::kCompAND);
-			trackCuts2->AddCut(varCutsFilter);
-			trackCuts2->AddCut(trackCutsFilter);
-			trackCuts = trackCuts2;
+			return trackCuts;
 			break;
 		case kTTreeCuts:
 			varCutsFilter->AddCut(AliDielectronVarManager::kEta, -0.80, 0.80);
@@ -627,12 +623,10 @@ AliAnalysisCuts* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 			trackCutsFilter->SetRequireITSRefit(kTRUE);
 			trackCutsFilter->SetRequireTPCRefit(kTRUE);
 
-			AliDielectronCutGroup* trackCuts2 = new AliDielectronCutGroup("trackCuts2", "trackCuts2", 
-																												AliDielectronCutGroup::kCompAND);
-			trackCuts2->AddCut(varCutsFilter);
-			trackCuts2->AddCut(trackCutsFilter);
-			trackCuts2->AddCut(GetPIDCuts(PIDcuts));
-			trackCuts = trackCuts2;
+			trackCuts->AddCut(varCutsFilter);
+			trackCuts->AddCut(trackCutsFilter);
+			trackCuts->AddCut(GetPIDCuts(PIDcuts));
+			return trackCuts;
 			break;
 		case kCutSet1:
 
@@ -655,13 +649,10 @@ AliAnalysisCuts* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 			trackCutsFilter->SetRequireITSRefit(kTRUE);
 			trackCutsFilter->SetRequireTPCRefit(kTRUE);
 	
-			AliDielectronCutGroup* trackCuts2 = new AliDielectronCutGroup("trackCuts2", "trackCuts2", 
-																												AliDielectronCutGroup::kCompAND);
-
-			trackCuts2->AddCut(varCutsFilter);
-			trackCuts2->AddCut(trackCutsFilter);
-			trackCuts2->AddCut(GetPIDCuts(PIDcuts));
-			trackCuts = trackCuts2;
+			trackCuts->AddCut(varCutsFilter);
+			trackCuts->AddCut(trackCutsFilter);
+			trackCuts->AddCut(GetPIDCuts(PIDcuts));
+			return trackCuts;
 			break;
 		case kV0_TPCcorr:
 		case kV0_ITScorr:
@@ -694,16 +685,15 @@ AliAnalysisCuts* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 			trackCutsV0->AddCut(AliDielectronVarManager::kNFclsTPCr, 100.0, 160.0);
 			trackCutsV0->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8, 1.1);
 
-			AliDielectronCutGroup* trackCuts2 = new AliDielectronCutGroup("trackCuts2", "trackCuts2", 
-																												AliDielectronCutGroup::kCompAND);
-			trackCuts2->AddCut(gammaV0cuts);
-			trackCuts2->AddCut(trackCutsV0);
-			trackCuts2->AddCut(GetPIDCuts(PIDcuts));
-			trackCuts = trackCuts2;
+			trackCuts->AddCut(gammaV0cuts);
+			trackCuts->AddCut(trackCutsV0);
+			trackCuts->AddCut(GetPIDCuts(PIDcuts));
+			return trackCuts;
 			break;
 		default:
 			std::cout << "No Analysis Track Cut defined" << std::endl;
 		}
-		return trackCuts;
+		std::cout << "Track cuts not applied...." << std::endl;
+		return 0x0;
 }
 
