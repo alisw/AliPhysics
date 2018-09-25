@@ -19,6 +19,7 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
   evtCuts->SetMultVsCentPlots(true);
+  evtCuts->SetSphericityCuts(0.7,1.0);
 
   AliAnalysisTaskGrandma *task = new AliAnalysisTaskGrandma("myFirstTask",
                                                             isMC);
@@ -27,12 +28,14 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
       isMC, DCAPlots, false, false);
   TrackCuts->SetCutCharge(1);
+  // add here cuts for V0
 //wanna change something? Do it like this: TrackCuts->SetPtRange(0.3, 4.05);
-
   task->SetTrackCuts(TrackCuts);
+
   AliFemtoDreamTrackCuts *AntiTrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, DCAPlots, false, false);
   AntiTrackCuts->SetCutCharge(-1);
+  // add here cuts for Anti-V0
   task->SetAntiTrackCuts(AntiTrackCuts);
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",

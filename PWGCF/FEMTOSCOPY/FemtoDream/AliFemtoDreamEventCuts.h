@@ -71,6 +71,29 @@ class AliFemtoDreamEventCuts {
     return fHist->GetHistList();
   }
   ;
+  void SetDoSphericityCuts(bool doIt) {
+    fDoSpherCuts = doIt;
+  }
+  ;
+  bool GetDoSphericityCuts() const {
+    return fDoSpherCuts;
+  }
+  ;
+  void SetSphericityCuts(float spherlow, float spherup) {
+    fSpherCutsLow = spherlow;
+    fSpherCutsUp = spherup;
+    fDoSpherCuts = true;
+  }
+  ;
+  float GetSphericityCutsLow() const {
+    return fSpherCutsLow;
+  }
+  ;
+  float GetSphericityCutsUp() const {
+    return fSpherCutsUp;
+  }
+  ;
+
  private:
   void BookQA(AliFemtoDreamEvent *evt);
   void BookCuts();
@@ -90,8 +113,11 @@ class AliFemtoDreamEventCuts {
   bool fUseRef08Mult;             //
   //Use evt cuts tuned by expert(don't worry solution)
   bool fUseAliEvtCuts;            //
-  bool fCentVsMultPlots;          //
-ClassDef(AliFemtoDreamEventCuts,3)
+  bool fCentVsMultPlots;    //
+  bool fDoSpherCuts;       //
+  float fSpherCutsLow;      //
+  float fSpherCutsUp;      //
+ClassDef(AliFemtoDreamEventCuts,4)
 };
 
 #endif /* ALIFEMTODREAMEVENTCUTS_H_ */
