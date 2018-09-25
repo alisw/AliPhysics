@@ -287,6 +287,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Float_t     FunctionNL_kSDMv6(Float_t e);
     Float_t     FunctionNL_kTestBeamv2(Float_t e);
     Float_t     FunctionNL_kTestBeamv3(Float_t e);
+    Float_t     FunctionNL_kTestBeamv4(Float_t e);
 
     void        InitCutHistograms(TString name="");
     void        SetFillCutHistograms(TString name="")           {if(!fHistograms){InitCutHistograms(name);} return;}
@@ -593,7 +594,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,66)
+    ClassDef(AliCaloPhotonCuts,67)
 };
 
 #endif
