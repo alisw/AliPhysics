@@ -105,7 +105,7 @@ void GetCentrality(const Int_t centrality, Double_t& CentMin, Double_t& CentMax)
   else if(centrality == 3) {CentMin = 40; CentMax = 60;}
   else if(centrality == 3) {CentMin = 40; CentMax = 100;}
   else if(centrality == 4) {CentMin = 0;  CentMax = 5;}
-  else                      {CentMin = 0; CentMax = 0;}
+  else                      {std::cout << "WARNING::Centrality range not found....." std::endl;}
   return;
 }
 
@@ -115,11 +115,11 @@ void DoAdditionalWork(AliAnalysisTaskElectronEfficiencyV2* task){
   std::cout << "starting DoAdditionalWork()\n";
   if(SetTPCCorrection == kTRUE){
     std::cout << "Loading TPC correction" << std::endl;
-    std::string file_name = "recalib_mc_tpc_nsigmaele.root";
+    std::string file_name = "outputTPC.root";
     TFile* _file = TFile::Open(file_name.c_str());
 
     if(!_file){
-      gSystem->Exec(("alien_cp alien:///alice/cern.ch/user/c/cklein/data/recalibration/" + file_name + " .").c_str());
+      gSystem->Exec(("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/" + file_name + " .").c_str());
       std::cout << "Copy TPC correction from Alien" << std::endl;
       _file = TFile::Open(file_name.c_str());
     }
@@ -135,11 +135,11 @@ void DoAdditionalWork(AliAnalysisTaskElectronEfficiencyV2* task){
   }
   if(SetITSCorrection == kTRUE){
     std::cout << "Loading ITS correction" << std::endl;
-    std::string file_name = "recalib_mc_its_nsigmaele.root";
+    std::string file_name = "outputITS.root";
     TFile* _file = TFile::Open(file_name.c_str());
 
     if(!_file){
-      gSystem->Exec(("alien_cp alien:///alice/cern.ch/user/c/cklein/data/recalibration/" + file_name + " .").c_str());
+      gSystem->Exec(("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/" + file_name + " .").c_str());
       std::cout << "Copy ITS correction from Alien" << std::endl;
       _file = TFile::Open(file_name.c_str());
     }
@@ -155,11 +155,11 @@ void DoAdditionalWork(AliAnalysisTaskElectronEfficiencyV2* task){
   }
   if(SetTOFCorrection == kTRUE){
     std::cout << "Loading TOF correction" << std::endl;
-    std::string file_name = "recalib_mc_tof_nsigmaele.root";
+    std::string file_name = "outputTOF.root";
     TFile* _file = TFile::Open(file_name.c_str());
 
     if(!_file){
-      gSystem->Exec(("alien_cp alien:///alice/cern.ch/user/c/cklein/data/recalibration/" + file_name + " .").c_str());
+      gSystem->Exec(("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/" + file_name + " .").c_str());
       std::cout << "Copy TOF correction from Alien" << std::endl;
       _file = TFile::Open(file_name.c_str());
     }
