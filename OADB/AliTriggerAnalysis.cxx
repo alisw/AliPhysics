@@ -1156,6 +1156,8 @@ Bool_t AliTriggerAnalysis::IsHVdipTPCEvent(const AliVEvent* event) {
   // The function IsDetectorOn is implemented in AliESDEvent and AliAODEvent
   //     by default it returns kTRUE (so also for MC). Therefore no extra treatment is required
   //
+
+  if (fMC) return kFALSE;
   return !event->IsDetectorOn(AliDAQ::kTPC);
 }
 
