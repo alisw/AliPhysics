@@ -161,6 +161,9 @@ void AliGenAmpt::Init()
 {
   // Initialisation
 
+  // Coeffs to go to from cm/s to meter/seconds
+  SetGeneratorUnitsForMeterSecond(1.e-2, 1.); 
+  
   fFrame.Resize(8);
   fTarget.Resize(8);
   fProjectile.Resize(8);

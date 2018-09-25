@@ -33,6 +33,7 @@
 #include "AliRun.h"
 #include "AliGeometry.h"
 #include "AliDecayer.h"
+#include "AliLog.h"
 
 ClassImp(AliGenMC)
 
@@ -57,6 +58,8 @@ AliGenMC::AliGenMC()
      fForceDecay(kAll),
      fMaxLifeTime(1.e-15),
      fDyBoost(0.),
+     fSpace2TimeCoeff(1.),
+     fTime2SpaceCoeff(1.),
      fGeometryAcceptance(0),
      fPdgCodeParticleforAcceptanceCut(0),
      fNumberOfAcceptedParticles(0),
@@ -92,6 +95,8 @@ AliGenMC::AliGenMC(Int_t npart)
      fForceDecay(kAll),
      fMaxLifeTime(1.e-15),
      fDyBoost(0.),
+     fSpace2TimeCoeff(1.),
+     fTime2SpaceCoeff(1.),
      fGeometryAcceptance(0),
      fPdgCodeParticleforAcceptanceCut(0),
      fNumberOfAcceptedParticles(0),
@@ -426,8 +431,8 @@ void AliGenMC::Boost()
 	Double_t vy  = iparticle->Vy();
 	Double_t vz  = iparticle->Vz();
 
-	Double_t ctb = gamma * ct -      gb * vz;
-	Double_t vzb =   -gb * ct +   gamma * vz;
+	Double_t ctb = gamma * ct -      gb * vz * fSpace2TimeCoeff;
+	Double_t vzb =   -gb * ct * fTime2SpaceCoeff +   gamma * vz;
 
 	iparticle->SetProductionVertex(vx, vy, vzb, ctb * c_1);
     }
@@ -481,4 +486,16 @@ void AliGenMC::AddHeader(AliGenEventHeader* header)
     } else {
       if (gAlice) gAlice->SetGenEventHeader(header);	
     }
+}
+
+void AliGenMC::SetGeneratorUnitsForMeterSecond(double lengthC, double timeC)
+{
+  // set scaling coeffs to convert length and time units used by generator to
+  // m and s. We store only their ratio, relevant for the Boost
+  if (timeC<1e-30 || lengthC<1e-30) {
+    AliFatal("Provided lenght and time units must be positive");
+  }
+  AliInfoF("Boost will scale length by %e and time by %e to obtain meter and second",lengthC,timeC);
+  fSpace2TimeCoeff = lengthC/timeC;
+  fTime2SpaceCoeff = timeC/lengthC;
 }

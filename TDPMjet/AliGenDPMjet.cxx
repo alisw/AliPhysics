@@ -176,7 +176,10 @@ AliGenDPMjet::~AliGenDPMjet()
 void AliGenDPMjet::Init()
 {
 // Initialization
-    
+
+    // Coeffs to go from mm / mm to meter / second
+    SetGeneratorUnitsForMeterSecond(1.e-3, 1e-3/TMath::C()); 
+  
     if(fEnergyCMS>0. && fBeamEn<0.1) fBeamEn = fEnergyCMS/2;
     SetMC(new TDPMjet(fProcess, fAProjectile, fZProjectile, fATarget, fZTarget, 
 		      fBeamEn,fEnergyCMS));
