@@ -118,6 +118,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
 		EnSigmaTPC(0),
 		EnSigmaTPCcorr(0),
 		EnSigmaTOF(0),
+		EnSigmaTOFcorr(0),
 		PnSigmaTPC(0),
 		PnSigmaITS(0),
 		PnSigmaTOF(0),
@@ -178,6 +179,9 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
 		fUseITScorr(kFALSE),
 		fWidthITS(0),
 		fMeanITS(0),
+		fUseTOFcorr(kFALSE),
+		fWidthTOF(0),
+		fMeanTOF(0),
 		TOFstartMask(0),
 		fGeneratorHashes(0)
 {
@@ -226,6 +230,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
 		EnSigmaTPC(0),
 		EnSigmaTPCcorr(0),
 		EnSigmaTOF(0),
+		EnSigmaTOFcorr(0),
 		PnSigmaTPC(0),
 		PnSigmaITS(0),
 		PnSigmaTOF(0),
@@ -286,6 +291,9 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
 		fUseITScorr(kFALSE),
 		fWidthITS(0),
 		fMeanITS(0),
+		fUseTOFcorr(kFALSE),
+		fWidthTOF(0),
+		fMeanTOF(0),
 		TOFstartMask(0),
 		fGeneratorHashes(0)
 
@@ -370,6 +378,9 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 		if(fUseTPCcorr){
 			fTree->Branch("EsigTPCcorr",     &EnSigmaTPCcorr);
 		}
+		if(fUseTOFcorr){
+			fTree->Branch("EsigTOFcorr",     &EnSigmaTOFcorr);
+		}
 		fTree->Branch("EsigTOF",           &EnSigmaTOF);
 		fTree->Branch("PsigITS",           &PnSigmaITS);
 		fTree->Branch("PsigTPC",           &PnSigmaTPC);
@@ -429,17 +440,23 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
         fGridPID = -1;
     }
 
-		//Setup TPC correction maps
+		//Setup correction maps
 		if(fUseTPCcorr){
 			AliDielectronPID::SetCentroidCorrFunction( (TH1*)fMeanTPC->Clone() );
 			AliDielectronPID::SetWidthCorrFunction( (TH1*)fWidthTPC->Clone() );
-			//::Info("AliAnalysisTaskSimpleTreeMaker::UserExec","Setting TPC Correction Histos");
+			::Info("AliAnalysisTaskSimpleTreeMaker::UserExec","Setting TPC Correction Histos");
 		}
 
 		if(fUseITScorr){
 			AliDielectronPID::SetCentroidCorrFunctionITS( (TH1*)fMeanITS->Clone() );
 			AliDielectronPID::SetWidthCorrFunctionITS( (TH1*)fWidthITS->Clone() );
-			//::Info("AliAnalysisTaskSimpleTreeMaker::UserExec","Setting ITS Correction Histos");
+			::Info("AliAnalysisTaskSimpleTreeMaker::UserExec","Setting ITS Correction Histos");
+		}
+		
+		if(fUseTOFcorr){
+			AliDielectronPID::SetCentroidCorrFunctionTOF( (TH1*)fMeanTOF->Clone() );
+			AliDielectronPID::SetWidthCorrFunctionTOF( (TH1*)fWidthTOF->Clone() );
+			::Info("AliAnalysisTaskSimpleTreeMaker::UserExec","Setting TOF Correction Histos");
 		}
 
 		//Needed by the dielectron framework
@@ -745,6 +762,11 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 				}
 			}
 			EnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kElectron);
+			if(fUseTOFcorr){
+				EnSigmaTOFcorr = EnSigmaTOF;
+				EnSigmaTOFcorr -= AliDielectronPID::GetCntrdCorrTOF(track);
+				EnSigmaTOFcorr /= AliDielectronPID::GetWdthCorrTOF(track);
+			}
 
 			PnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kPion);
 
