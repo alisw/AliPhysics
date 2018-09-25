@@ -1,6 +1,7 @@
 #ifndef ALIANALYSISTASKEFFCONTBF_H
 #define ALIANALYSISTASKEFFCONTBF_H
 
+
 // ---------------------------------------------------------------------
 //
 // Task for calculating the efficiency and contamination of the Balance 
@@ -190,6 +191,10 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
  
   TH2F        *fHistGeneratedPhiEtaPlusMinus;//!correction map for +- (generated)
   TH2F        *fHistSurvivedPhiEtaPlusMinus;//!correction map +- (survived)
+
+  // check pdg    
+  TH1F        *fHistPdgGen;
+  TH1F        *fHistPdgSurv;
 
   Bool_t  fUseCentrality;// Bool_t use centrality or not
   TString fCentralityEstimator;// "V0M","TRK","TKL","ZDC","FMD"
