@@ -198,6 +198,31 @@ public:
     void SetMassWindowAroundCascade     ( Double_t lMassWin ) {
         fMassWindowAroundCascade = lMassWin;
     }
+    
+//---------------------------------------------------------------------------------------
+    void SetUseImprovedFinding(){
+        fkRunV0Vertexer = kTRUE;
+        fkRunCascadeVertexer = kTRUE;
+        fkDoImprovedDCAV0DauPropagation = kTRUE;
+        fkDoImprovedDCACascDauPropagation = kTRUE;
+        fkDoPureGeometricMinimization = kTRUE;
+        fkDoV0Refit = kTRUE;
+        fkDoCascadeRefit = kTRUE;
+        fkXYCase1 = kTRUE;
+        fkXYCase2 = kTRUE;
+    }
+//---------------------------------------------------------------------------------------
+    void SetUseDefaultFinding(){
+        fkRunV0Vertexer = kTRUE;
+        fkRunCascadeVertexer = kTRUE;
+        fkDoImprovedDCAV0DauPropagation = kFALSE;
+        fkDoImprovedDCACascDauPropagation = kFALSE;
+        fkDoPureGeometricMinimization = kFALSE;
+        fkDoV0Refit = kFALSE;
+        fkDoCascadeRefit = kFALSE;
+        fkXYCase1 = kFALSE;
+        fkXYCase2 = kFALSE;
+    }
 //---------------------------------------------------------------------------------------
     //Functions for analysis Bookkeepinp
     // 1- Configure standard vertexing

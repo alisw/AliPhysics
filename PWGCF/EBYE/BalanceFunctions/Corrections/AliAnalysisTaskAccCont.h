@@ -40,10 +40,12 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
 
   }
 
-  void SetMCRec() {
-    fMCrec = kTRUE;
-    fExcludeSecondariesInMCrec = kTRUE;
-  }
+  void SetMCRec() {fMCrec = kTRUE;}
+
+  void SetExcludeSecondariesInMC() {fExcludeSecondariesInMCrec = kTRUE;}
+ 
+  void SetExcludeElectronsInMC()  {fExcludeElectronsInMCrec = kTRUE;}  
+
 
   void UsePileUpCutsPbPb() {fPbPb = kTRUE;}
 
@@ -150,6 +152,7 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
   TH1F *fHistChi2PerClusterTPC;
   TH1F *fHistDCAToVertexZ;
   TH1F *fHistDCAToVertexXY;
+  TH1F *fHistPdg;
      
   TH3F *fHistEtaPhiCent;
   TH3F *fHistPtEtaCent;
@@ -179,7 +182,7 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
   Bool_t fCheckPileUp;
   Bool_t fMCrec;
   Bool_t fExcludeSecondariesInMCrec;
-
+  Bool_t fExcludeElectronsInMCrec;
   Bool_t fExcludeInjectedSignals; //Flag to reject MC injected signals from MC analysis
   Bool_t fRejectCheckGenName; // Flag to activate the injected signal rejection based on the name of the MC generator 
   TString fGenToBeKept; //String to select the generator name that has to be kept for analysis

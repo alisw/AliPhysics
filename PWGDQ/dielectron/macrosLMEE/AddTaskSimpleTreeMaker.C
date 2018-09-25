@@ -1,7 +1,8 @@
 AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName = "MLtree", 
                                                        Bool_t hasSDD = kTRUE,
-                                                       Bool_t useTPCcorr = kTRUE,
-																											 Bool_t useITScorr = kTRUE,
+                                                       Bool_t useITScorr = kFALSE,
+																											 Bool_t useTPCcorr = kFALSE,
+																											 Bool_t useTOFcorr = kFALSE,
 																											 Bool_t getFromAlien = kFALSE) {				
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -15,7 +16,7 @@ AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName = "MLtre
     TString configLMEECutLib("LMEECutLib_acapon.C");
 
     //Load updated macros from private ALIEN path
-    TString myCutLib ="alien_cp alien:///alice/cern.ch/user/a/acapon/dielectronShizzle/LMEECutLib_acapon.C ."; 
+    TString myCutLib ="alien_cp alien:///alice/cern.ch/user/a/acapon/PWGDQ/dielectron/macrosLMEE/LMEECutLib_acapon.C ."; 
     if (getFromAlien && (!gSystem->Exec(myCutLib))){
 
         std::cout << "Copy config from Alien" << std::endl;
@@ -71,6 +72,18 @@ AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName = "MLtre
                                                AliDielectronVarManager::kRefMultTPConly, kFALSE,2);
 			task->SetUseITScorr(kTRUE);
 			task->SetCorrWidthMeanITS((TH3D*)widthITS.Clone(),(TH3D*)meanITS.Clone());
+
+		}
+		if(useTOFcorr){
+			TH3D meanTOF = cutLib->SetEtaCorrectionTOFTTree(AliDielectronVarManager::kP,
+                                              AliDielectronVarManager::kEta,
+                                              AliDielectronVarManager::kRefMultTPConly, kFALSE,1);
+
+			TH3D widthTOF = cutLib->SetEtaCorrectionTOFTTree(AliDielectronVarManager::kP,
+                                               AliDielectronVarManager::kEta,
+                                               AliDielectronVarManager::kRefMultTPConly, kFALSE,2);
+			task->SetUseTOFcorr(kTRUE);
+			task->SetCorrWidthMeanTOF((TH3D*)widthTOF.Clone(),(TH3D*)meanTOF.Clone());
 
 		}
     //Add event filter

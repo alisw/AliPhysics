@@ -31,6 +31,7 @@ def scalePtHardHistos(referenceFile):
   
   # Option to remove outliers from specified histograms (see below)
   bRemoveOutliers = False
+
   outlierLimit=2
   outlierNBinsThreshold=4
   
@@ -102,7 +103,7 @@ def scalePtHardHistos(referenceFile):
       
       # Open input file and get relevant lists
       inputFile = "{0}/AnalysisResultsPtHard{0}.root".format(bin+1)
-      print("")
+      print("................................................................")
       print("ooo Scaling Pt-hard bin %d" % (bin+1))
       f = ROOT.TFile(inputFile, "UPDATE")
  
@@ -321,10 +322,16 @@ def ScaleAllHistograms(obj, scaleFactor, f, verbose, bRemoveOutliers=False, limi
 def removeOutliers(pTHardBin, hist, verbose, limit=2, nBinsThreshold=4, dimension =3, listName="", taskName=""):
   print("--> Performing outlier removal on {}".format(hist.GetName()))
 
+  #Project to the pT Truth axis
+  #typically for PbPb case
   if dimension==3:
     histToCheck = hist.ProjectionY("{}_projBefore_{}_{}".format(hist.GetName(), listName, taskName))
+  #typically for pp case
   if dimension==2:
-    histToCheck = hist.ProjectionX("{}_projBefore_{}_{}".format(hist.GetName(), listName, taskName))
+    if hist.GetName()=="hResponseMatrixEMCal":
+      histToCheck = hist.ProjectionY("{}_projBefore_{}_{}".format(hist.GetName(), listName, taskName))
+    else:
+      histToCheck = hist.ProjectionX("{}_projBefore_{}_{}".format(hist.GetName(), listName, taskName))
   
   # Check with moving average
   foundAboveLimit = False
@@ -388,6 +395,9 @@ def removeOutliers(pTHardBin, hist, verbose, limit=2, nBinsThreshold=4, dimensio
             hist.SetBinError(index, 0)
       #pp case
       if dimension==2:
+        #for the response matrix the pT Truth is on the y-Axis
+        if hist.GetName()=="hResponseMatrixEMCal":
+          x.value=y.value
         if x.value >= cutIndex:
           if hist.GetBinContent(index) > 1e-3:
             if verbose:
@@ -403,7 +413,10 @@ def removeOutliers(pTHardBin, hist, verbose, limit=2, nBinsThreshold=4, dimensio
   if dimension==3:
     histToCheckAfter = hist.ProjectionY("{}_projAfter_{}_{}".format(hist.GetName(), listName, taskName))
   if dimension==2:
-    histToCheckAfter = hist.ProjectionX("{}_projAfter_{}_{}".format(hist.GetName(), listName, taskName))
+    if hist.GetName()=="hResponseMatrixEMCal":
+      histToCheckAfter = hist.ProjectionY("{}_projAfter_{}_{}".format(hist.GetName(), listName, taskName))
+    else:
+      histToCheckAfter = hist.ProjectionX("{}_projAfter_{}_{}".format(hist.GetName(), listName, taskName))
 
   if verbose:
     (postMean, postMedian) = GetHistMeanAndMedian(histToCheckAfter)
@@ -499,7 +512,6 @@ if __name__ == '__main__':
                       type=str, metavar="referenceFile",
                       default="",
                       help="Reference file to get pT-hard scale factors from")
-  
   # Parse the arguments
   args = parser.parse_args()
   

@@ -82,6 +82,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				EopMax(0),
 				MaxConeR(0),
 				ptAssoMin(0),
+				pTe("name"),
 				//==== basic parameters ====
 				fNevents(0),
 				fHist_VertexZ(0),
@@ -161,7 +162,11 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fHistPhoPi1(0),
 				fHistPhoEta0(0),
 				fHistPhoEta1(0),
+				fPi000(0),
+				fPi005(0),
 				fPi010(0),
+				fEta000(0),
+				fEta005(0),
 				fEta010(0),
 				fHistPt_HFE_MC_D(0),
 				fHistPt_HFE_MC_B(0),
@@ -205,6 +210,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				EopMax(0),
 				MaxConeR(0),
 				ptAssoMin(0),
+				pTe("name"),
 				//==== basic parameters ====
 				fNevents(0),
 				fHist_VertexZ(0),
@@ -284,7 +290,11 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fHistPhoPi1(0),
 				fHistPhoEta0(0),
 				fHistPhoEta1(0),
+				fPi000(0),
+				fPi005(0),
 				fPi010(0),
+				fEta000(0),
+				fEta005(0),
 				fEta010(0),
 				fHistPt_HFE_MC_D(0),
 				fHistPt_HFE_MC_B(0),
@@ -388,14 +398,23 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				/////////////////
 				//pi0 weight			
 				/////////////////
+				fPi000 = new TF1("fPi000","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
+			  fPi000->SetParameters(3.68528e+01,5.43694e-02,1.99270e+00,5.33945e+00,3.08814e+00);
+				fPi005 = new TF1("fPi005","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
+			  fPi005->SetParameters(2.76729e+00,-7.83103e+01,2.62016e+04,4.83336e+00,1.78078e+00);
 				fPi010 = new TF1("fPi010","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
-			  fPi010->SetParameters(3.68528e+01,5.43694e-02,1.99270e+00,5.33945e+00,3.08814e+00);
+			  fPi010->SetParameters(5.31753e+00,-7.43035e+01,3.27764e+04,4.94405e+00,1.93347e+00);
 
 				/////////////////
 				// Eta weight
 				/////////////////
+				fEta000 = new TF1("fEta000","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
+				fEta000->SetParameters(1.50102e+01,2.08498e-01,2.95617e+00,5.05032e+00,2.95377e+00);    
+				fEta005 = new TF1("fEta005","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
+				fEta005->SetParameters(1.82732e+00,-8.08219e+01,8.52420e+03,4.66504e+00,1.75496e+00);    
 				fEta010 = new TF1("fEta010","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
-				fEta010->SetParameters(1.50102e+01,2.08498e-01,2.95617e+00,5.05032e+00,2.95377e+00);    
+				fEta010->SetParameters(1.82736e+00,-8.08208e+01,2.32670e+04,4.66500e+00,1.75496e+00); 
+
 
 				fHist_Mult = new TH2F("fMult","Track multiplicity",100,0,100,20000,0,20000);
 				fHistScatter_EMcal = new TH2F("fHistScatter_EMcal", "EMCAL cluster scatter plot; #eta; #phi", 200,0.,6.,200, -1., 1.);       // create your histogra
@@ -522,6 +541,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				Double_t CutEop[2] = {EopMin,EopMax};
 				Double_t CutEopHad = -3.5;
 				Double_t CutptAsso = ptAssoMin;
+				TString  TriggerPt = pTe;
+				cout<< "!!!!!!!!!!! pTe ;; "<<TriggerPt.Data()<<endl;
 				//################################################################# //
 
 				UInt_t evSelMask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
@@ -875,11 +896,15 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 								if(iEmbPi0)
 								{
-												WeightPho = fPi010->Eval(pTmom);
+												if(TriggerPt=="pte5") {WeightPho = fPi005->Eval(pTmom);}
+												else if(TriggerPt=="pte10"){WeightPho = fPi010->Eval(pTmom);}
+												else {WeightPho = fPi000->Eval(pTmom);}
 								}
 								if(iEmbEta)
 								{
-												WeightPho = fEta010->Eval(pTmom);
+												if(TriggerPt=="pte5") {WeightPho = fEta005->Eval(pTmom);}
+												else if(TriggerPt=="pte10"){WeightPho = fEta010->Eval(pTmom);}
+												else {WeightPho = fEta000->Eval(pTmom);}
 								}
 
 
@@ -996,7 +1021,6 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 												}
 												if(fTPCnSigma>CutNsigma[0] && fTPCnSigma<CutNsigma[1] && m20>CutM20[0] && m20<CutM20[1]){ // TPC nsigma & shower shape cut
 																fEopPt_ele_tight -> Fill(TrkPt,eop);
-																fHist_eff_M20 -> Fill(TrkPt);
 																if(ilabelM<NpureMC){fEopPt_ele_tight_PYTHIA -> Fill(TrkPt,eop);}
 
 																if(eop>CutEop[0] && eop<CutEop[1]){ // E/p cut
@@ -1008,8 +1032,9 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 																								else {fHistPt_HFE_emb -> Fill(track->Pt());}
 																								fHistPt_HFE_Gen -> Fill(fMCTrackpart->Pt());
 																								fHistPt_HFE_GenvsReco -> Fill(TrkPt,fMCTrackpart->Pt());
-																								//cout<<" !!!!!!!!!!! PDG == "<< fMCTrackpart->GetPdgCode()<<" Momther pdg == "<< pidM <<endl; 
+																								fHist_eff_M20 -> Fill(TrkPt);
 																				}
+
 																				fHistPt_Inc->Fill(track->Pt());
 																				fTPCnsig_ele->Fill(fTPCnSigma);
 																				fEop_ele->Fill(eop);

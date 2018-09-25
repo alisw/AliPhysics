@@ -43,21 +43,18 @@ AliDielectron* Config_acapon(TString cutDefinition,
 			LMcutlib->SetEtaCorrectionTPC(die, AliDielectronVarManager::kP,
                                       AliDielectronVarManager::kEta,
                                       AliDielectronVarManager::kRefMultTPConly, kFALSE);
-			v0plots = kTRUE;
 		}
 		if(setITScorr){
 			LMcutlib->SetEtaCorrectionITS(die, AliDielectronVarManager::kP,
                                       AliDielectronVarManager::kEta,
                                       AliDielectronVarManager::kRefMultTPConly, kFALSE);
 
-			v0plots = kTRUE;
 		}
 		if(setTOFcorr){
-			LMcutlib->SetEtaCorrectionITS(die, AliDielectronVarManager::kP,
+			LMcutlib->SetEtaCorrectionTOF(die, AliDielectronVarManager::kP,
                                       AliDielectronVarManager::kEta,
                                       AliDielectronVarManager::kRefMultTPConly, kFALSE);
 
-			v0plots = kTRUE;
 		}
     MCenabled = hasMC;
 

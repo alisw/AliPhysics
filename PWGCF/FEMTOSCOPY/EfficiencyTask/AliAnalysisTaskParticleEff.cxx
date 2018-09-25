@@ -2095,7 +2095,14 @@ void AliAnalysisTaskParticleEff::UserExec(Option_t *)
     bool isProtonNsigmaNeg  = 0;
 
     bool isPionNsigmaBach = 0;
-
+    
+    isPionNsigmaPos = IsPionNSigmaV0TPC5(daughterTrackPos->Pt(),nSigmaTPCPiPos,nSigmaTOFPiPos);
+    isProtonNsigmaPos = IsProtonNSigmaV0TPC5(daughterTrackPos->Pt(),nSigmaTPCPPos,nSigmaTOFPPos);
+    isPionNsigmaNeg = IsPionNSigmaV0TPC5(daughterTrackNeg->Pt(),nSigmaTPCPiNeg,nSigmaTOFPiNeg);
+    isProtonNsigmaNeg = IsProtonNSigmaV0TPC5(daughterTrackNeg->Pt(),nSigmaTPCPNeg,nSigmaTOFPNeg);
+    
+    isPionNsigmaBach = IsPionNSigmaV0TPC5(BachelorTrack->Pt(),nSigmaTPCBach,nSigmaTOFBach);
+    
     bool Xiplus = false;
     bool Ximinus = false;
 

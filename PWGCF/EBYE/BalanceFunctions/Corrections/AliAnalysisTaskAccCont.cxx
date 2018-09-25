@@ -84,6 +84,7 @@ AliAnalysisTaskAccCont::AliAnalysisTaskAccCont(const char *name)
   fMCrec(kFALSE),
   fArrayMC(0),
   fExcludeSecondariesInMCrec(kFALSE),
+  fExcludeElectronsInMCrec(kFALSE),
   fExcludeInjectedSignals(kFALSE),
   fRejectCheckGenName(kFALSE),
   fGenToBeKept("Hijing"),
@@ -110,7 +111,8 @@ AliAnalysisTaskAccCont::AliAnalysisTaskAccCont(const char *name)
   fPIDMomCut(0.7),
   fUtils(0),
   fPIDResponse(0),
-  fPIDCombined(0){
+  fPIDCombined(0),
+  fHistPdg(0){
     // Constructor
     
     // Define input and output slots here
@@ -267,8 +269,10 @@ void AliAnalysisTaskAccCont::UserCreateOutputObjects() {
 
     hBayesProbab = new TH3F("hBayesProbab", "BayesProbab vs p vs pT for ID particles; Probability;p [GeV/c]; p_{T} [GeV/c]", 100, 0.5, 1, 100, 0, 10, 100, 0, 10);
     fListResults->Add(hBayesProbab);
-
-    
+  
+    fHistPdg  = new TH1F("fHistPdg","Pdg code distribution;pdg code;Entries",6401,-3200.5,3200.5);
+    fListResults->Add(fHistPdg);
+     
     // Post output data
     PostData(1, fListQA);
     PostData(2, fListResults);
@@ -454,6 +458,14 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
                                             if (!AODmcTrack->IsPhysicalPrimary())
                                                 continue;
                                         }
+
+					if(fExcludeElectronsInMCrec){
+
+					    Int_t tracklabel = TMath::Abs(aodTrack->GetLabel());
+                 			    AliAODMCParticle *trackAODMC = (AliAODMCParticle*) fArrayMC->At(tracklabel);
+					    if(TMath::Abs(trackAODMC->GetPdgCode()) == 11) continue;
+                 
+ 					}
 					
 					if (fExcludeInjectedSignals){
 					  if (fRejectCheckGenName){
@@ -468,7 +480,7 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
 					    //  Printf("mother =%d, generatorName=%s", label, generatorName.Data()); 
 					  }
 					}
-
+				
 					// AOD track cuts
                                         fHistTrackStats->Fill(gCentrality,aodTrack->GetFilterMap());
                                         //Printf("filterbit is: %i",GetFilterMap());
@@ -818,6 +830,12 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
 					      fHistDCAXYptchargedminus_ext->Fill(pt,eta,dca[0]);
 						}	
 					}
+
+					 if (fMCrec){
+                                        Int_t Label = TMath::Abs(aodTrack->GetLabel());
+                                        AliAODMCParticle *trackAODMCforpdg = (AliAODMCParticle*) fArrayMC->At(Label);
+                                        fHistPdg->Fill(trackAODMCforpdg->GetPdgCode());
+                                        }
 					
                                         nAcceptedTracks += 1;
                                     } //track loop
