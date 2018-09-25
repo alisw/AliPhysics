@@ -211,6 +211,11 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
   fMaterialHistos->SetIsHeavyIon(IsHeavyIon);
   fMaterialHistos->SetV0ReaderName(V0ReaderName);
   fMaterialHistos->SetDoDeDxMaps(doDeDxMaps);
+  if (doMultiplicityWeighting>0 && isMC==0){
+    doMultiplicityWeighting = 0;
+  }
+
+  fMaterialHistos->SetDoMultWeights(doMultiplicityWeighting);
   CutHandlerConvMaterial cuts;
   if(trainConfig == 1){
     cuts.AddCut("00000103", "00000009266302004204400000");
@@ -395,9 +400,6 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
 
     TString dataInputMultHisto  = "";
     TString mcInputMultHisto    = "";
-    if (doMultiplicityWeighting>0 && isMC==0){
-      doMultiplicityWeighting = 0;
-    }
     if (doMultiplicityWeighting>0){
       cout << "INFO enableling mult weighting" << endl;
       if( periodNameAnchor.CompareTo("LHC16d")==0  || 
