@@ -3,7 +3,7 @@
  * analysis, meant as a QA process for two-particle effects				 *
  *																							 *
  * Author: Adam Kisiel (Adam.Kisiel@cern.ch)									 *
- *																							 *
+ *				 																			 *
  *********************************************************************/
 #if !defined(__CINT__) || defined(__MAKECINT_)
 #include "AliFemtoManager.h"
@@ -181,8 +181,12 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	Reader->SetFilterMask(filterbit);
 	Reader->SetDCAglobalTrack(ifGlobalTracks); //false for FB7, true for the rest //we do not use DCA at all
 	Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kReference);
-	Reader->SetMinPlpContribSPD(minPlpContribSPD);
+
+	Reader->SetUseAliEventCuts(ifIsPileUp);
 	Reader->SetIsPileUpEvent(ifIsPileUp);
+	Reader->SetUseMVPlpSelection(ifIsPileUp);
+	Reader->SetTrackPileUpRemoval(ifIsPileUp);
+
 	Reader->SetReadV0(kTRUE);
 	Reader->SetReadCascade(kTRUE);
 

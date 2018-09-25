@@ -153,6 +153,27 @@ AliAnalysisTaskPHOSSingleSim* AddTaskPHOSSingleSim(
       }
       task->SetAdditionalEtaPtWeightFunction(centarray_Eta,farray_Eta);
     }
+    else if(parname=="Gamma"){
+      //for gamma pT weighting
+      const Int_t Ncen_Gamma = 2;
+      const Double_t centrality_Gamma[Ncen_Gamma] = {0,9999};
+      TArrayD *centarray_Gamma = new TArrayD(Ncen_Gamma,centrality_Gamma);
+
+      TObjArray *farray_Gamma = new TObjArray(Ncen_Gamma-1);
+      TF1 *f1weightGamma[Ncen_Gamma-1];
+
+      const Double_t p0[Ncen_Gamma-1] = {2.70};
+      const Double_t p1[Ncen_Gamma-1] = {0.132};
+      const Double_t p2[Ncen_Gamma-1] = {6.64};
+
+      for(Int_t icen=0;icen<Ncen_Gamma-1;icen++){
+        f1weightGamma[icen] = new TF1(Form("f1weightGamma_%d",icen),"1.0 * ([0]/TMath::TwoPi() * ([2]-1)*([2]-2)/([2]*[1]*([2]*[1] + 0.139*([2]-2) )) * TMath::Power(1+(TMath::Sqrt(x*x+0.139*0.139) - 0.139)/([2]*[1]),-[2]))",0,100);//1/2pi x 1/Nev x 1/pT x d2N/dpTdy
+        f1weightGamma[icen]->SetNpx(1000);
+        f1weightGamma[icen]->SetParameters(p0[icen],p1[icen],p2[icen]);
+        farray_Gamma->Add(f1weightGamma[icen]);
+      }
+      task->SetAdditionalGammaPtWeightFunction(centarray_Gamma,farray_Gamma);
+    }
   }
 
   mgr->AddTask(task);

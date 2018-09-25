@@ -1790,6 +1790,7 @@ Int_t AliRDHFCutsBPlustoD0Pi::SelectPID(AliAODTrack *track, Int_t type)
   //  here the PID
     
   Bool_t isParticle=kTRUE;
+  if(!fUsePID) return isParticle;
   Int_t match = fPidHF->GetMatch();
 
   if(match == 1){//n-sigma

@@ -118,6 +118,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fHistNsigEop(0),
 				fEopPt_ele_loose(0),
 				fEopPt_ele_tight(0),
+				fEopPt_ele_tight_PYTHIA(0),
 				fEopPt_had(0),
 				fEtadiff(0),
 				fPhidiff(0),
@@ -142,6 +143,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fMCcheckMother(0),
 				fMCarray(0),
 				fMCparticle(0),
+				fMCTrackpart(0),
 				fMCheader(0),
 				fCheckEtaMC(0),
 				fHistMCorgPi0(0),
@@ -151,6 +153,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				NembMCpi0(0),
 				NembMCeta(0),
 				NpureMCproc(0),
+				NpureMC(0),
 				fHistPhoReco0(0),
 				fHistPhoReco1(0),
 				fHistPhoReco2(0),
@@ -162,9 +165,14 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fEta010(0),
 				fHistPt_HFE_MC_D(0),
 				fHistPt_HFE_MC_B(0),
+				fHistPt_HFE_PYTHIA(0),
+				fHistPt_HFE_emb(0),
+				fHistPt_HFE_Gen(0),
+				fHistPt_HFE_GenvsReco(0),
 				fHist_eff_HFE(0),
 				fHist_eff_match(0),
-				fHist_eff_TPC(0)
+				fHist_eff_TPC(0),
+				fHist_eff_M20(0)
 
 {
 				// default constructor, don't allocate memory here!
@@ -233,6 +241,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fHistNsigEop(0),
 				fEopPt_ele_loose(0),
 				fEopPt_ele_tight(0),
+				fEopPt_ele_tight_PYTHIA(0),
 				fEopPt_had(0),
 				fEtadiff(0),
 				fPhidiff(0),
@@ -257,6 +266,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fMCcheckMother(0),
 				fMCarray(0),
 				fMCparticle(0),
+				fMCTrackpart(0),
 				fMCheader(0),
 				fCheckEtaMC(0),
 				fHistMCorgPi0(0),
@@ -266,6 +276,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				NembMCpi0(0),
 				NembMCeta(0),
 				NpureMCproc(0),
+				NpureMC(0),
 				fHistPhoReco0(0),
 				fHistPhoReco1(0),
 				fHistPhoReco2(0),
@@ -277,9 +288,14 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fEta010(0),
 				fHistPt_HFE_MC_D(0),
 				fHistPt_HFE_MC_B(0),
+				fHistPt_HFE_PYTHIA(0),
+				fHistPt_HFE_emb(0),
+				fHistPt_HFE_Gen(0),
+				fHistPt_HFE_GenvsReco(0),
 				fHist_eff_HFE(0),
 				fHist_eff_match(0),
-				fHist_eff_TPC(0)
+				fHist_eff_TPC(0),
+				fHist_eff_M20(0)
 {
 				// constructor
 				DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -351,6 +367,10 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fHistMCorgB = new TH1F("fHistMCorgB","MC org B",600,0,60);
 				fHistPt_HFE_MC_D  = new TH1F("fHistPt_HFE_MC_D","HFE from D MC",600,0,60);
 				fHistPt_HFE_MC_B  = new TH1F("fHistPt_HFE_MC_B","HFE fron B MC",600,0,60);
+				fHistPt_HFE_PYTHIA = new TH1F("fHistPt_HFE_PYTHIA","HFE fron PYTHIA",600,0,60);
+				fHistPt_HFE_emb    = new TH1F("fHistPt_HFE_emb","HFE fron embedding",600,0,60);
+				fHistPt_HFE_Gen    = new TH1F("fHistPt_HFE_Gen","HFE pt spectrum before reconstruct",600,0,60);
+				fHistPt_HFE_GenvsReco    = new TH2F("fHistPt_HFE_GenvsReco","HFE pt spectrum before reconstruct",600,0,60,600,0,60);
 				fHistPt_Inc = new TH1F("fHistPt_Inc","Inclusive electron",600,0,60);
 				fHistPt_Iso = new TH1F("fHistPt_Iso","Isolated electron",600,0,60);
 				fHistPt_R_Iso = new TH2F("fHistPt_R_Iso","Pt vs riso ",1000,0,100,500,0.,0.5);
@@ -361,6 +381,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fHist_eff_HFE     = new TH1F("fHist_eff_HFE","efficiency :: HFE",600,0,60);
 				fHist_eff_match   = new TH1F("fHist_eff_match","efficiency :: matched cluster",600,0,60);
 				fHist_eff_TPC     = new TH1F("fHist_eff_TPC","efficiency :: TPC cut",600,0,60);
+				fHist_eff_M20     = new TH1F("fHist_eff_M20","efficiency :: shower shape cut",600,0,60);
 
 
 
@@ -389,6 +410,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fM20_2 = new TH2F ("fM20_2","M20 vs pt distribution (-1<nSigma<3 & 0.9<E/p<1.3); pt(GeV/c); M20",500,0,50,400,0,2);
 				fEopPt_ele_loose = new TH2F ("fEopPt_ele_loose","pt vs E/p distribution (-3<nSigma<3); pt(GeV/c); E/p",500,0,50,60,0,3.0);
 				fEopPt_ele_tight = new TH2F ("fEopPt_ele_tight","pt vs E/p distribution (-1<nSigma<3); pt(GeV/c); E/p",500,0,50,60,0,3.0);
+				fEopPt_ele_tight_PYTHIA = new TH2F ("fEopPt_ele_tight_PYTHIA","pt vs E/p distribution (-1<nSigma<3); pt(GeV/c); E/p",500,0,50,60,0,3.0);
 				fEopPt_had = new TH2F ("fEopPt_had","pt vs E/p distribution (nSigma<-3.5); pt(GeV/c); E/p",500,0,50,60,0,3.0);
 				fEop_ele = new TH1F ("fEop_ele"," electron E/p distribution ; E/p ; counts",60,0,3.0);
 				fConeR = new TH1F ("fConeR"," check cone radius; counts",500,0,0.5);
@@ -437,6 +459,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fOutputList->Add(fHistNsigEop);
 				fOutputList->Add(fEopPt_ele_loose);
 				fOutputList->Add(fEopPt_ele_tight);
+				fOutputList->Add(fEopPt_ele_tight_PYTHIA);
 				fOutputList->Add(fEopPt_had);
 				fOutputList->Add(fEtadiff);
 				fOutputList->Add(fPhidiff);
@@ -466,9 +489,14 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fOutputList->Add(fHistPhoEta1);
 				fOutputList->Add(fHistPt_HFE_MC_D);
 				fOutputList->Add(fHistPt_HFE_MC_B);
+				fOutputList->Add(fHistPt_HFE_PYTHIA);
+				fOutputList->Add(fHistPt_HFE_emb);
+				fOutputList->Add(fHistPt_HFE_Gen);
+				fOutputList->Add(fHistPt_HFE_GenvsReco);
 				fOutputList->Add(fHist_eff_HFE); 
 				fOutputList->Add(fHist_eff_match); 
 				fOutputList->Add(fHist_eff_TPC); 
+				fOutputList->Add(fHist_eff_M20); 
 
 
 				PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
@@ -794,10 +822,10 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 								if(ilabel>0 && fMCarray)
 								{
-												fMCparticle = (AliAODMCParticle*) fMCarray->At(ilabel);
-												pdg = fMCparticle->GetPdgCode();
+												fMCTrackpart = (AliAODMCParticle*) fMCarray->At(ilabel);
+												pdg = fMCTrackpart->GetPdgCode();
 												if(TMath::Abs(pdg)==11)pid_ele = 1.0;
-												if(pid_ele==1.0)FindMother(fMCparticle, ilabelM, pidM, pTmom);
+												if(pid_ele==1.0)FindMother(fMCTrackpart, ilabelM, pidM, pTmom);
 
 												pid_eleD = IsDdecay(pidM);
 												pid_eleB = IsBdecay(pidM);
@@ -966,17 +994,26 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 												if(fTPCnSigma<3 && fTPCnSigma>-3 && m20>CutM20[0] && m20<CutM20[1]){
 																fEopPt_ele_loose -> Fill(TrkPt,eop);
 												}
-												if(fTPCnSigma>CutNsigma[0] && fTPCnSigma<CutNsigma[1] && m20>CutM20[0] && m20<CutM20[1]){
+												if(fTPCnSigma>CutNsigma[0] && fTPCnSigma<CutNsigma[1] && m20>CutM20[0] && m20<CutM20[1]){ // TPC nsigma & shower shape cut
 																fEopPt_ele_tight -> Fill(TrkPt,eop);
-																if(eop>CutEop[0] && eop<CutEop[1]){
+																fHist_eff_M20 -> Fill(TrkPt);
+																if(ilabelM<NpureMC){fEopPt_ele_tight_PYTHIA -> Fill(TrkPt,eop);}
+
+																if(eop>CutEop[0] && eop<CutEop[1]){ // E/p cut
 																				if(pid_eleB) fHistPt_HFE_MC_B -> Fill(track->Pt());
 																				if(pid_eleD) fHistPt_HFE_MC_D -> Fill(track->Pt());
+
+																				if(pid_eleB || pid_eleD){
+																								if(ilabelM<NpureMC){fHistPt_HFE_PYTHIA -> Fill(track->Pt());}
+																								else {fHistPt_HFE_emb -> Fill(track->Pt());}
+																								fHistPt_HFE_Gen -> Fill(fMCTrackpart->Pt());
+																								fHistPt_HFE_GenvsReco -> Fill(TrkPt,fMCTrackpart->Pt());
+																								//cout<<" !!!!!!!!!!! PDG == "<< fMCTrackpart->GetPdgCode()<<" Momther pdg == "<< pidM <<endl; 
+																				}
 																				fHistPt_Inc->Fill(track->Pt());
 																				fTPCnsig_ele->Fill(fTPCnSigma);
 																				fEop_ele->Fill(eop);
 																}
-																//if(ilabelM<NpureMC){fHistPt_HFE_PYTHIA -> Fill(track->Pt());}
-																//else {fHistPt_HFE_emb -> Fill(track->Pt());}
 												}
 												if(fTPCnSigma< CutEopHad && m20>CutM20[0] && m20<CutM20[1]){
 																fEopPt_had -> Fill(TrkPt,eop);
@@ -1174,7 +1211,7 @@ void AliAnalysisTaskCaloHFEpp::FindMother(AliAODMCParticle* part, int &label, in
 void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta)
 {
  TList *lh=fMCheader->GetCocktailHeaders();
- Int_t NpureMC = 0;
+ NpureMC = 0;
  NpureMCproc = 0;
  NembMCpi0 = 0;
  NembMCeta = 0;
@@ -1191,9 +1228,9 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
          AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
          if(gh)
            {
-            cout << "<------- imc = "<< gh->GetName() << endl;     
+            //cout << "<------- imc = "<< gh->GetName() << endl;     
             MCgen =  gh->GetName();     
-            cout << "<-------- Ncont = " << gh->NProduced() << endl;
+            //cout << "<-------- Ncont = " << gh->NProduced() << endl;
             if(igene==0)NpureMC = gh->NProduced();  // generate by PYTHIA or HIJING
            
             //if(MCgen.Contains(embpi0))cout << MCgen << endl;
@@ -1226,7 +1263,7 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
       Double_t pdgEta = fMCparticle->Eta(); 
       Double_t pTtrue = fMCparticle->Pt(); 
 			if(imc>=NembMCeta && imc<NpureMCproc){
-			cout<<"!!!!!!!!!!!!!!PGD = "<<pdgGen<<" imc = "<<imc<<endl;
+			//cout<<"!!!!!!!!!!!!!!PGD = "<<pdgGen<<" imc = "<<imc<<endl;
 			}
 
 			//cout << "fetarange = " << fetarange << endl;

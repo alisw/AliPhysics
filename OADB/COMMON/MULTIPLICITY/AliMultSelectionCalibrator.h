@@ -39,7 +39,7 @@ public:
     
     //Task Configuration: trigger selection
     //This is in addition to the "IsTriggered" functionality. 
-    void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType;}
+    void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType; fCheckTriggerType=kTRUE; }
     
     //Run Ranges Interface
     Long_t GetNRunRanges() const {return fNRunRanges; }
@@ -63,8 +63,14 @@ public:
     //Getter for golden run
     Int_t GetRunToUseAsDefault() const { return fRunToUseAsDefault; } 
     
+    //Getter for golden run
+    void SetMaxEventsPerRun(Long_t lVal) { fMaxEventsPerRun = lVal; }
+    
     //Configure standard input
     void SetupStandardInput();
+    
+    //Filter only flag
+    void SetFilterOnly(Bool_t lOpt = kTRUE){ fPrefilterOnly = lOpt; }
     
     //Master Function in this Class: To be called once filenames are set
     Bool_t Calibrate();
@@ -82,7 +88,11 @@ private:
     
     Int_t fRunToUseAsDefault; //Give preference for this run to be the default
     
+    Long_t fMaxEventsPerRun; //Implemented to get a grip on huge runs
+    
+    Bool_t fCheckTriggerType; 
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type to calibrate
+    Bool_t fPrefilterOnly; //stop before calibrating stuff
     
     //Run Ranges map - master storage
     Long_t fNRunRanges;

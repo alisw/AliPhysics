@@ -1026,8 +1026,9 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 	if (daughterTrackNeg->GetTOFBunchCrossing()==0) passNeg = true;
 	if (bachTrack->GetTOFBunchCrossing()==0) passBac = true;
 
-	//loop over the 6 ITS Layrs and check for a hit!
-	for (int i=0;i<6;++i) {
+	//loop over the 4 ITS Layrs and check for a hit!
+	for (int i=0;i<4;++i) {
+	  if(i==2 || i==3) i+=2; //checking layers 0, 1, 4, 5
 	  if (daughterTrackPos->HasPointOnITSLayer(i)) passPos=true;
 	  if (daughterTrackNeg->HasPointOnITSLayer(i)) passNeg=true;
 	  if (bachTrack->HasPointOnITSLayer(i)) passBac=true;

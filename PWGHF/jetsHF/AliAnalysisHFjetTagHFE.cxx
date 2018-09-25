@@ -169,6 +169,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fEMCClsEtaPhi(0),
   fHistBGfrac(0),
   fHistBGfracHFEev(0),
+  fHistJetEnergyReso(0),
   fPi0Weight(0),
   fEtaWeight(0),
   generator(0),
@@ -309,6 +310,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fEMCClsEtaPhi(0),
   fHistBGfrac(0),
   fHistBGfracHFEev(0),
+  fHistJetEnergyReso(0),
   fPi0Weight(0),
   fEtaWeight(0),
   generator(0),
@@ -694,6 +696,9 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
 
   fHistBGfracHFEev = new TH1F("fHistBGfracHFEev", "BG frac; #Delta p_{T}(GeV/c)", 200, -100.0, 100.0);
   fOutput->Add(fHistBGfracHFEev);
+
+  fHistJetEnergyReso = new TH2D("fHistJetENergyReso",";p_{T,ch jet}^{part};<(p_{T,ch,jet}^{det}-p_{T,ch,jet}^{part}/p_{T,ch,jet}^{part})>",100,0,100,200,-1,1);
+  fOutput->Add(fHistJetEnergyReso);
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 
@@ -1555,6 +1560,9 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                        HFjetVals[0]=track->Pt(); HFjetVals[1]=0.0; HFjetVals[2] = corrPt; HFjetVals[3] = pTeJet; HFjetVals[4] = pTeJetTrue; HFjetVals[5] = 0.0; HFjetVals[6] = 0.0;
                        HFjetCorr1->Fill(HFjetVals); 
  
+                       Double_t JetReso = (pTeJet-pTeJetTrue)/pTeJetTrue;
+                       fHistJetEnergyReso->Fill(pTeJetTrue,JetReso); 
+
                        Double_t reducedJetPt0 = ReduceJetEnergyScale( jet, epTarray, 0.04) - pTeJetBG ;                       
                        double HFjetVals2[7];
                        HFjetVals2[0]=track->Pt(); HFjetVals2[1]=0.0; HFjetVals2[2] = reducedJetPt0; HFjetVals2[3] = pTeJet; HFjetVals2[4] = pTeJetTrue; HFjetVals2[5] = 0.0; HFjetVals2[6] = 0.0;

@@ -2800,7 +2800,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedV0Tracks(const AliAODE
 
 
 
-TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedCascadeTracks(const AliAODEvent *fAODEvent) {
+TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedCascadeTracks(AliAODEvent *fAODEvent) {
   // To select Cascade Particle
   TObjArray *tracks = new TObjArray;
   tracks->SetOwner(kTRUE);

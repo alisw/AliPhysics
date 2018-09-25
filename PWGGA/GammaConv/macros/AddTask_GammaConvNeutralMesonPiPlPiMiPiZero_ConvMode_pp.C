@@ -315,7 +315,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
 
   } else if ( trainConfig == 30) { // Standard cut (for now)
     cuts.AddCut("00000113","00200009227000008250400000","302010708","0103603800000000","0153503000000000");
-
+    cuts.AddCut("00000113","00200009227000008250400000","322010708","0103603800000000","0153503000000000"); // with ITS requirement
     // *************Variations in AliConvEventCuts**************************
   } else if ( trainConfig == 31) { // RemovePileup
     cuts.AddCut("00000013","00200009227000008250400000","302010708","0103603800000000","0153503000000000"); // fRemovePileUp = kFALSE

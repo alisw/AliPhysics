@@ -31,6 +31,8 @@ class AliFemtoDreamTrackCuts {
                                                 bool ContribSplitting);
   static AliFemtoDreamTrackCuts *XiBachPionCuts(bool isMC, bool PileUpRej,
                                                 bool ContribSplitting);
+  static AliFemtoDreamTrackCuts *OmegaBachKaonCuts(bool isMC, bool PileUpRej,
+                                                   bool ContribSplitting);
   //  static AliFemtoDreamTrackCuts *OmegaKaonCuts(bool isMC,
   //                                               bool ContribSplitting);
 

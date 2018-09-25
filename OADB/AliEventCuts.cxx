@@ -4,7 +4,7 @@
 #include <array>
 using std::array;
 #include <memory>
-#include <vector>
+using std::string;
 using std::vector;
 
 #include <TClonesArray.h>
@@ -12,6 +12,8 @@ using std::vector;
 #include <TH1I.h>
 #include <TH2D.h>
 #include <TH2F.h>
+#include <TObjArray.h>
+#include <TObjString.h>
 
 #include <AliAnalysisManager.h>
 #include <AliAODMCParticle.h>
@@ -78,6 +80,7 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fVZEROvsTPCoutPolCut{1.e8,0.,0.,0.,0.},
   fRequireExactTriggerMask{false},
   fTriggerMask{AliVEvent::kAny},
+  fTriggerClasses{""},
   fContainer{},
   fkLabels{"raw","selected"},
   fManualMode{false},
@@ -149,6 +152,18 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   unsigned int selected_trigger = handl->IsEventSelected() & fTriggerMask;
   if ((selected_trigger == fTriggerMask && fRequireExactTriggerMask) || (selected_trigger && !fRequireExactTriggerMask))
     fFlag |= BIT(kTrigger);
+
+  /// Use of trigger classes overrides the trigger mask
+  /// (i.e. if trigger mask is not fired but we see the trigger class we want we enable the trigger bit)
+  /// A special bit is set in this case
+  TString classes = ev->GetFiredTriggerClasses();
+  for (const std::string& myClass : fTriggerClasses) {
+    if (classes.Contains(myClass.data())) {
+      fFlag |= BIT(kTrigger);
+      fFlag |= BIT(kTriggerClasses);
+      break;
+    }
+  }
 
   /// Vertex existance
   const AliVVertex* vtTrc = ev->GetPrimaryVertex();
@@ -833,3 +848,13 @@ bool AliEventCuts::IsTrueINELgtZero(AliVEvent *ev, bool chkGenVtxZ) {
   }
   return false;
 }
+
+/// Different trigger classes are comma separated
+void AliEventCuts::SetAcceptedTriggerClasses(TString classes) {
+  TObjArray* classArray = classes.Tokenize(",");
+  for (int iClass = 0; iClass < classArray->GetSize(); ++iClass) {
+    TObjString* thisClass = static_cast<TObjString*>(classArray->At(iClass));
+    fTriggerClasses.push_back(thisClass->GetString().Data());
+  }
+}
+

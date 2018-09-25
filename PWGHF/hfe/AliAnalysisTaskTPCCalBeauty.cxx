@@ -1129,7 +1129,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 if(TMath::Abs(AODMCtrack->Y()) < 2.4) {
                     if (TrackPDG>500 && TrackPDG<599) fBMesonPtCMS->Fill(AODMCtrack->Pt());
                     if (TrackPDG == 521) fBPlusPtCMS->Fill(AODMCtrack->Pt());
-                    if(TrackPDG==11 && ilabelM>0){
+                    /*if(TrackPDG==11 && ilabelM>0){
                         //cout<<"TESTING2"<<endl;
                         AliAODMCParticle *momPart = (AliAODMCParticle*)fMCarray->At(ilabelM); //get mom particle
                         pidM = TMath::Abs(momPart->GetPdgCode());
@@ -1148,7 +1148,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                 if(pidGGM>500 && pidGGM<599) fBMesonElecPt->Fill(AODMCtrack->Pt());
                             }
                         }
-                    }
+                    }*/
                 }
                 if(TMath::Abs(AODMCtrack->Y()) > 2.0 && TMath::Abs(AODMCtrack->Y()) < 4.5) {
                     if (TrackPDG>500 && TrackPDG<599) fBMesonPtLHCb->Fill(AODMCtrack->Pt());
@@ -1172,7 +1172,11 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                     
                     }
                     if(TrackPDG == 11 && pidM>500 && pidM<600 && AODMCtrack->IsPhysicalPrimary()) {
-                    fBElecStack->Fill(AODMCtrack->Pt());
+                        fBElecStack->Fill(AODMCtrack->Pt());
+                        fBMesonElecPt->Fill(AODMCtrack->Pt());
+                    }
+                    if(TrackPDG == 11 && pidM>5000 && pidM<5999 && AODMCtrack->IsPhysicalPrimary()) {
+                        fBBaryonElecPt->Fill(AODMCtrack->Pt());
                     }
                 
                     if (pidM==413) fromDStar = kTRUE;
@@ -1188,10 +1192,19 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                         AliAODMCParticle *gmomPart = (AliAODMCParticle*)fMCarray->At(ilabelGM);//get grandma particle
                         pidGM = TMath::Abs(gmomPart->GetPdgCode());
                         if (pidGM>500 && pidGM<599) {
+                            if(TrackPDG == 11 && AODMCtrack->IsPhysicalPrimary()) fBMesonElecPt->Fill(AODMCtrack->Pt());
                             continue; //reject beauty feed down
                         }
                         if (pidGM>5000 && pidGM<5999) {
                             continue; //reject beauty feed down
+                        }
+                        ilabelGGM = gmomPart->GetMother();
+                        if (ilabelGGM>0) {
+                            AliAODMCParticle *ggmomPart = (AliAODMCParticle*)fMCarray->At(ilabelGGM); //get great grandma particle
+                            pidGGM = TMath::Abs(ggmomPart->GetPdgCode());
+                            if (pidGGM>500 && pidGGM<599) {
+                                if(TrackPDG == 11 && AODMCtrack->IsPhysicalPrimary()) fBMesonElecPt->Fill(AODMCtrack->Pt());
+                            }
                         }
                     }
                 }

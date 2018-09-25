@@ -153,6 +153,9 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     mHeader.mEventMask |= kInelGt0;
   }
 
+  if (mEventCuts.PassedCut(AliEventCuts::kTriggerClasses))
+    mHeader.mEventMask |= kTriggerClasses;
+
   bool EventWithPOI = !bool(mEventPOI);
 
   mTracks.clear();
@@ -239,7 +242,7 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     t.SetTOFsignal(time);
     t.SetIntegratedLength(track->GetIntegratedLength());
 
-    if (track->GetNumberOfTRDClusters() > 0) t.mask |= AliAnalysisCODEX::kTRDout;
+    if (track->GetStatus() & AliVTrack::kTRDout) t.mask |= AliAnalysisCODEX::kTRDout;
 
     /// Put the right information in the right place
     t.eta = track->Eta();

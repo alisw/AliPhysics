@@ -389,6 +389,12 @@ public:
   void SetSmearThreshold(Double_t threshold) { fSmearThreshold = threshold; }
 
   /**
+   * @brief Simulate constant shift of the EMCAL Energy scale
+   * @param scaleshift Constant scale shift applied to each cell. In GeV
+   */
+  void SetScaleShift(Double_t scaleshift) { fScaleShift = scaleshift; }
+
+  /**
    * Check whether the trigger maker has been specially configured. Status has to
    * be set in the functions ConfigureForXX.
    * @return True if the trigger maker kernel is configured, false otherwise
@@ -498,6 +504,7 @@ protected:
   TF1                                       *fSmearModelMean;             ///< Smearing parameterization for the mean
   TF1                                       *fSmearModelSigma;            ///< Smearing parameterization for the width
   Double_t                                  fSmearThreshold;              ///< Smear threshold: Only cell energies above threshold are smeared
+  Double_t                                  fScaleShift;                  ///< Scale shift simulation
 
   const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
   AliEMCALTriggerDataGrid<double>           *fPatchAmplitudes;            //!<! TRU Amplitudes (for L0)

@@ -162,10 +162,14 @@ public:
   virtual     void    SetNPhiBins2( int v)            { _nBins_phi_2       = v; }
   virtual     void    SetEtaMin2(double v)            { _min_eta_2         = v; } // SetYMin2 acturally
   virtual     void    SetEtaMax2(double v)            { _max_eta_2         = v; } // SetYMax2 acturally
-  virtual     void    SetDcaZMin(double v)            { _dcaZMin           = v; }
-  virtual     void    SetDcaZMax(double v)            { _dcaZMax           = v; }
-  virtual     void    SetDcaXYMin(double v)           { _dcaXYMin          = v; }
-  virtual     void    SetDcaXYMax(double v)           { _dcaXYMax          = v; }
+  virtual     void    SetDcaZMin_1(double v)          { _dcaZMin_1         = v; }
+  virtual     void    SetDcaZMax_1(double v)          { _dcaZMax_1         = v; }
+  virtual     void    SetDcaXYMin_1(double v)         { _dcaXYMin_1        = v; }
+  virtual     void    SetDcaXYMax_1(double v)         { _dcaXYMax_1        = v; }
+  virtual     void    SetDcaZMin_2(double v)          { _dcaZMin_2         = v; }
+  virtual     void    SetDcaZMax_2(double v)          { _dcaZMax_2         = v; }
+  virtual     void    SetDcaXYMin_2(double v)         { _dcaXYMin_2        = v; }
+  virtual     void    SetDcaXYMax_2(double v)         { _dcaXYMax_2        = v; }
   virtual     void    SetTPCNclus(int v)              { _tpcnclus          = v; }
   virtual     void    SetChi2PerNDF(double v)         { _chi2ndf           = v; }
   
@@ -246,10 +250,14 @@ protected:
   double   _centralityMax;
   int      _requestedCharge_1;
   int      _requestedCharge_2;
-  double   _dcaZMin;
-  double   _dcaZMax;
-  double   _dcaXYMin;
-  double   _dcaXYMax;
+  double   _dcaZMin_1;
+  double   _dcaZMax_1;
+  double   _dcaXYMin_1;
+  double   _dcaXYMax_1;
+  double   _dcaZMin_2;
+  double   _dcaZMax_2;
+  double   _dcaXYMin_2;
+  double   _dcaXYMax_2;
   double   _dedxMin;
   double   _dedxMax;
   int      _nClusterMin;

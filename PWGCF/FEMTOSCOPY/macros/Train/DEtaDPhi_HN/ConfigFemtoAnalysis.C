@@ -181,10 +181,12 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	Reader->SetDCAglobalTrack(ifGlobalTracks); //false for FB7, true for the rest //we do not use DCA at all
 	Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kReference);
 //	Reader->SetMinPlpContribSPD(minPlpContribSPD);
+	Reader->SetUseAliEventCuts(kTRUE);
+
 	Reader->SetIsPileUpEvent(ifIsPileUp);
-	// Reader->SetUseOutOfBunchPlpSelection(kTRUE);
   Reader->SetUseMVPlpSelection(ifIsPileUp);
 	Reader->SetTrackPileUpRemoval(ifIsPileUp);
+	// Reader->SetUseOutOfBunchPlpSelection(kTRUE);
 	Reader->SetReadV0(kTRUE);
 	Reader->SetReadCascade(kTRUE);
 

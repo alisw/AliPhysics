@@ -165,6 +165,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fEMCClsEtaPhi;
   TH1F                        *fHistBGfrac;
   TH1F                        *fHistBGfracHFEev;
+  TH2D                        *fHistJetEnergyReso;
   TF1                         *fPi0Weight;
   TF1                         *fEtaWeight;
   TRandom                     *generator;

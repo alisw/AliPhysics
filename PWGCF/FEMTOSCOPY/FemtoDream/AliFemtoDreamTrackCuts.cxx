@@ -965,6 +965,27 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::XiBachPionCuts(
   return trackCuts;
 }
 
+AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::OmegaBachKaonCuts(
+    bool isMC, bool PileUpRej, bool ContribSplitting) {
+  AliFemtoDreamTrackCuts *trackCuts = new AliFemtoDreamTrackCuts();
+  trackCuts->SetPlotDCADist(false);
+  trackCuts->SetPlotCombSigma(false);
+  trackCuts->SetPlotContrib(ContribSplitting);
+  trackCuts->SetIsMonteCarlo(isMC);
+  trackCuts->SetFillQALater(true);
+
+  trackCuts->SetCheckPileUp(PileUpRej);
+  trackCuts->SetCheckFilterBit(kFALSE);
+  trackCuts->SetEtaRange(-0.8, 0.8);
+//  trackCuts->SetPtRange(0.3,999);
+  trackCuts->SetCutTPCCrossedRows(true, 70, 0.83);
+  trackCuts->SetDCAReCalculation(kTRUE);
+  trackCuts->SetCutCharge(-1);
+  trackCuts->SetCheckTPCRefit(true);
+  trackCuts->SetPID(AliPID::kKaon, 999., 4);
+  return trackCuts;
+}
+
 int AliFemtoDreamTrackCuts::GetPDGCode() {
   int PDGcode[5] = { 11, 13, 211, 321, 2212 };
   if (fParticleID < 5) {

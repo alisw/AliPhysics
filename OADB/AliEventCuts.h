@@ -4,9 +4,10 @@
 #include <TF1.h>
 #include <TList.h>
 #include <TNamed.h>
+#include <TString.h> /// required to have easy access to tokenize
 #include <cmath>
 #include <string>
-using std::string;
+#include <vector>
 
 #include "AliVEvent.h"
 #include "AliAnalysisUtils.h"
@@ -50,6 +51,7 @@ class AliEventCuts : public TList {
       kDAQincomplete,
       kBfield,
       kTrigger,
+      kTriggerClasses,
       kVertexSPD,
       kVertexTracks,
       kVertex,
@@ -66,7 +68,7 @@ class AliEventCuts : public TList {
 
     enum NormMask {
       kAnyEvent = BIT(kNoCuts),
-      kPassesAllCuts = (BIT(kAllCuts) - 1) ^ (BIT(kVertexPositionSPD) | BIT(kVertexPositionTracks) | BIT(kVertexSPD) | BIT(kVertexTracks)),
+      kPassesAllCuts = (BIT(kAllCuts) - 1) ^ (BIT(kVertexPositionSPD) | BIT(kVertexPositionTracks) | BIT(kVertexSPD) | BIT(kVertexTracks) | BIT(kTriggerClasses)),
       kPassesNonVertexRelatedSelections = kPassesAllCuts ^ (BIT(kVertex) | BIT(kVertexPosition) | BIT(kVertexQuality)),
       kHasReconstructedVertex = kPassesAllCuts ^ BIT(kVertexPosition)
     };
@@ -87,6 +89,7 @@ class AliEventCuts : public TList {
     void   SetupRun1pA(int iPeriod);
     void   SetupRun2pA(int iPeriod);
     void   UseMultSelectionEventSelection(bool useIt = true);
+    void   SetAcceptedTriggerClasses(TString classes);
 
     static bool GoodPrimaryAODVertex(AliVEvent *ev);
 
@@ -151,6 +154,7 @@ class AliEventCuts : public TList {
 
     bool          fRequireExactTriggerMask;       ///< If true the event selection mask is required to be equal to fTriggerMask
     unsigned long fTriggerMask;                   ///< Trigger mask
+    std::vector<std::string> fTriggerClasses;     ///< Trigger classes
 
     AliEventCutsContainer fContainer;       //!<! Local copy of the event cuts container (safe against user changes)
     const std::string  fkLabels[2];                    ///< Histograms labels (raw/selected)
@@ -167,7 +171,7 @@ class AliEventCuts : public TList {
     int           fCurrentRun;                    ///<
     unsigned long fFlag;                          ///< Flag of the passed cuts
 
-    std::string        fCentEstimators[2];             ///< Centrality estimators: the first is used as main estimators, that is correlated with the second to monitor spurious events.
+    std::string   fCentEstimators[2];             ///< Centrality estimators: the first is used as main estimators, that is correlated with the second to monitor spurious events.
     float         fCentPercentiles[2];            ///< Centrality percentiles
     AliVVertex   *fPrimaryVertex;                 //!<! Primary vertex pointer
 
@@ -198,7 +202,7 @@ class AliEventCuts : public TList {
     AliESDtrackCuts* fFB32trackCuts; //!<! Cuts corresponding to FB32 in the ESD (used only for correlations cuts in ESDs)
     AliESDtrackCuts* fTPConlyCuts;   //!<! Cuts corresponding to the standalone TPC cuts in the ESDs (used only for correlations cuts in ESDs)
 
-    ClassDef(AliEventCuts,6)
+    ClassDef(AliEventCuts,7)
 };
 
 template<typename F> F AliEventCuts::PolN(F x,F* coef, int n) {

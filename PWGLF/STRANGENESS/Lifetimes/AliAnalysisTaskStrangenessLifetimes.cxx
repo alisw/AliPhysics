@@ -160,65 +160,65 @@ void AliAnalysisTaskStrangenessLifetimes::UserCreateOutputObjects() {
       new TH1D("fHistDistOverTotMom", ";V0 L/#it{p} (#it{c} cm / GeV); Counts",
                250, 0, 250);
   fHistV0CosPA = new TH1D("fHistV0CosPA", ";V0 cos(#theta_{P}); Counts",
-                          MiniV0::fgkV0cosPA_n, MiniV0::fgkV0cosPA_f + kEps,
-                          MiniV0::fgkV0cosPA_l + kEps);
+                          MiniV0<2>::fgkV0cosPA_n, MiniV0<2>::fgkV0cosPA_f + kEps,
+                          MiniV0<2>::fgkV0cosPA_l + kEps);
   fHistChi2V0 =
-      new TH1D("fHistChi2V0", ";V0 #chi^{2}; Counts", MiniV0::fgkV0chi2_n,
-               MiniV0::fgkV0chi2_f + kEps, MiniV0::fgkV0chi2_l + kEps);
+      new TH1D("fHistChi2V0", ";V0 #chi^{2}; Counts", MiniV0<2>::fgkV0chi2_n,
+               MiniV0<2>::fgkV0chi2_f + kEps, MiniV0<2>::fgkV0chi2_l + kEps);
   fHistDcaNeg2PrimaryVertex =
       new TH1D("fHistDcaNeg2PrimaryVertex", ";Neg prong DCA (cm); Counts",
-               MiniV0::fgkDCAProng2PV_n, MiniV0::fgkDCAProng2PV_f + kEps,
-               MiniV0::fgkDCAProng2PV_l + kEps);
+               MiniV0<2>::fgkDCAProng2PV_n, MiniV0<2>::fgkDCAProng2PV_f + kEps,
+               MiniV0<2>::fgkDCAProng2PV_l + kEps);
   fHistDcaPos2PrimaryVertex =
       new TH1D("fHistDcaPos2PrimaryVertex", ";Pos prong DCA (cm); Counts",
-               MiniV0::fgkDCAProng2PV_n, MiniV0::fgkDCAProng2PV_f + kEps,
-               MiniV0::fgkDCAProng2PV_l + kEps);
+               MiniV0<2>::fgkDCAProng2PV_n, MiniV0<2>::fgkDCAProng2PV_f + kEps,
+               MiniV0<2>::fgkDCAProng2PV_l + kEps);
   fHistDcaV0daughters = new TH1D(
-      "fHistDcaV0daughters", ";Prongs DCA; Counts", MiniV0::fgkDCAProngs_n,
-      MiniV0::fgkDCAProngs_f + kEps, MiniV0::fgkDCAProngs_l + kEps);
+      "fHistDcaV0daughters", ";Prongs DCA; Counts", MiniV0<2>::fgkDCAProngs_n,
+      MiniV0<2>::fgkDCAProngs_f + kEps, MiniV0<2>::fgkDCAProngs_l + kEps);
   fHistV0armAlpha = new TH1D(
-      "fHistV0armAlpha", ";Armenteros #alpha; Counts", MiniV0::fgkArmAlpha_n,
-      MiniV0::fgkArmAlpha_f + kEps, MiniV0::fgkArmAlpha_l + kEps);
+      "fHistV0armAlpha", ";Armenteros #alpha; Counts", MiniV0<2>::fgkArmAlpha_n,
+      MiniV0<2>::fgkArmAlpha_f + kEps, MiniV0<2>::fgkArmAlpha_l + kEps);
   fHistV0armPt = new TH1D(
       "fHistV0armPt", ";Armenteros #it{p}_{T} (GeV/#it{c}); Counts",
-      MiniV0::fgkArmPt_n, MiniV0::fgkArmPt_f + kEps, MiniV0::fgkArmPt_l + kEps);
+      MiniV0<2>::fgkArmPt_n, MiniV0<2>::fgkArmPt_f + kEps, MiniV0<2>::fgkArmPt_l + kEps);
   fHistLeastNxedRows = new TH1D(
       "fHistLeastNxedRows", ";Min # of crossed rows; Counts", 256, -0.5, 255.5);
   fHistLeastXedOverFindable = new TH1D(
       "fHistLeastXedOverFindable",
       ";Min # of crossed rows / findable clusters; Counts",
-      MiniV0::fgkXedOverFindable_n, MiniV0::fgkXedOverFindable_f + kEps,
-      MiniV0::fgkXedOverFindable_l + kEps);
+      MiniV0<2>::fgkXedOverFindable_n, MiniV0<2>::fgkXedOverFindable_f + kEps,
+      MiniV0<2>::fgkXedOverFindable_l + kEps);
   fHistMaxChi2PerCluster =
       new TH1D("fHistMaxChi2PerCluster", ";Min #chi^{2}/TPC clusters; Counts",
-               MiniV0::fgkChi2xCluster_n, MiniV0::fgkChi2xCluster_f + kEps,
-               MiniV0::fgkChi2xCluster_l + kEps);
+               MiniV0<2>::fgkChi2xCluster_n, MiniV0<2>::fgkChi2xCluster_f + kEps,
+               MiniV0<2>::fgkChi2xCluster_l + kEps);
   fHistNsigmaPosPion =
       new TH1D("fHistNsigmaPosPion", ";n_{#sigma} TPC Pos Pion; Counts",
-               MiniV0::fgkTPCsigma_n, MiniV0::fgkTPCsigma_f + kEps,
-               MiniV0::fgkTPCsigma_l + kEps);
+               MiniV0<2>::fgkTPCsigma_n, MiniV0<2>::fgkTPCsigma_f + kEps,
+               MiniV0<2>::fgkTPCsigma_l + kEps);
   fHistNsigmaPosProton =
       new TH1D("fHistNsigmaPosProton", ";n_{#sigma} TPC Pos Proton; Counts",
-               MiniV0::fgkTPCsigma_n, MiniV0::fgkTPCsigma_f + kEps,
-               MiniV0::fgkTPCsigma_l + kEps);
+               MiniV0<2>::fgkTPCsigma_n, MiniV0<2>::fgkTPCsigma_f + kEps,
+               MiniV0<2>::fgkTPCsigma_l + kEps);
   fHistNsigmaNegPion =
       new TH1D("fHistNsigmaNegPion", ";n_{#sigma} TPC Neg Pion; Counts",
-               MiniV0::fgkTPCsigma_n, MiniV0::fgkTPCsigma_f + kEps,
-               MiniV0::fgkTPCsigma_l + kEps);
+               MiniV0<2>::fgkTPCsigma_n, MiniV0<2>::fgkTPCsigma_f + kEps,
+               MiniV0<2>::fgkTPCsigma_l + kEps);
   fHistNsigmaNegProton =
       new TH1D("fHistNsigmaNegProton", ";n_{#sigma} TPC Neg Proton; Counts",
-               MiniV0::fgkTPCsigma_n, MiniV0::fgkTPCsigma_f + kEps,
-               MiniV0::fgkTPCsigma_l + kEps);
+               MiniV0<2>::fgkTPCsigma_n, MiniV0<2>::fgkTPCsigma_f + kEps,
+               MiniV0<2>::fgkTPCsigma_l + kEps);
   fHistEtaPos =
-      new TH1D("fHistEtaPos", ";Pos prong #eta; Counts", MiniV0::fgkEta_n,
-               MiniV0::fgkEta_f + kEps, MiniV0::fgkEta_l + kEps);
+      new TH1D("fHistEtaPos", ";Pos prong #eta; Counts", MiniV0<2>::fgkEta_n,
+               MiniV0<2>::fgkEta_f + kEps, MiniV0<2>::fgkEta_l + kEps);
   fHistEtaNeg =
-      new TH1D("fHistEtaNeg", ";Neg prong #eta; Counts", MiniV0::fgkEta_n,
-               MiniV0::fgkEta_f + kEps, MiniV0::fgkEta_l + kEps);
+      new TH1D("fHistEtaNeg", ";Neg prong #eta; Counts", MiniV0<2>::fgkEta_n,
+               MiniV0<2>::fgkEta_f + kEps, MiniV0<2>::fgkEta_l + kEps);
   fHistArmenteros = new TH2D(
-      "fHistArmenteros", ";#alpha;#it{q}_{T}", MiniV0::fgkArmAlpha_n,
-      MiniV0::fgkArmAlpha_f + kEps, MiniV0::fgkArmAlpha_l + kEps,
-      MiniV0::fgkArmPt_n, MiniV0::fgkArmPt_f + kEps, MiniV0::fgkArmPt_l + kEps);
+      "fHistArmenteros", ";#alpha;#it{q}_{T}", MiniV0<2>::fgkArmAlpha_n,
+      MiniV0<2>::fgkArmAlpha_f + kEps, MiniV0<2>::fgkArmAlpha_l + kEps,
+      MiniV0<2>::fgkArmPt_n, MiniV0<2>::fgkArmPt_f + kEps, MiniV0<2>::fgkArmPt_l + kEps);
 
 
   if (man->GetMCtruthEventHandler()) {
@@ -506,7 +506,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
 
     double cosPA = v0->GetV0CosineOfPointingAngle(
         primaryVertex[0], primaryVertex[1], primaryVertex[2]);
-    if (cosPA < MiniV0::fgkV0cosPA_f) continue;
+    if (cosPA < MiniV0<2>::fgkV0cosPA_f) continue;
 
     // Getting invariant mass infos directly from ESD
     v0->ChangeMassHypothesis(310);
@@ -586,12 +586,13 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
       fHistArmenteros->Fill(v0->AlphaV0(), v0->PtArmV0());
 
       // Filling the V0 vector
-      MiniV0 miniV0;
+      MiniV0<2> miniV0;
       miniV0.SetV0pt(v0Pt);
       miniV0.SetV0eta(v0->Eta());
       miniV0.SetLeastNumberOfXedRows(minXedRows);
       miniV0.SetDistOverP(distOverP);
-      miniV0.SetInvMasses(invMassK0s, invMassLambda);
+      miniV0.SetInvMass(0,invMassK0s);
+      miniV0.SetInvMass(1,invMassLambda);
       miniV0.SetArmenterosVariables(v0->AlphaV0(), v0->PtArmV0());
       miniV0.SetV0CosPA(cosPA);
       miniV0.SetV0Chi2andCowBoy(v0->GetChi2V0(), isCowboy);

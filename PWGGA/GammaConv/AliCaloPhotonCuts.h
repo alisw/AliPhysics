@@ -22,6 +22,7 @@
 #include "TF1.h"
 #include "AliAnalysisManager.h"
 #include "AliCaloTrackMatcher.h"
+#include "AliPhotonIsolation.h"
 #include <vector>
 
 
@@ -259,11 +260,13 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      ClusterIsSelectedElecMC(TParticle *particle,AliMCEvent *mcEvent);
     Bool_t      ClusterIsSelectedElecAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
     Bool_t      ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
+    Bool_t      ClusterIsIsolated(Int_t clusterID, AliAODConversionPhoton *PhotonCandidate);
 
     void        SetLightOutput( Bool_t flag )                  {fDoLightOutput = flag; return;}
     //correct NonLinearity
     void        SetV0ReaderName(TString name)                  {fV0ReaderName = name; return;}
     void        SetCaloTrackMatcherName(TString name)          {fCaloTrackMatcherName = name; return;}
+    void        SetCaloIsolationName(TString name)             {fCaloIsolationName = name; return;}
     MCSet       FindEnumForMCSet(TString namePeriod);
 
     void        ApplyNonLinearity(AliVCluster* cluster, Int_t isMC);
@@ -323,6 +326,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      IsClusterPi0(AliVEvent *event, AliMCEvent *mcEvent, AliVCluster *cluster);
 
     AliCaloTrackMatcher* GetCaloTrackMatcherInstance()          {return fCaloTrackMatcher;}
+    AliPhotonIsolation* GetPhotonIsolationInstance()        { return fCaloIsolation; }
 
     Bool_t      GetIsAcceptedForBasicCounting()                 {return fIsAcceptedForBasic;}
 
@@ -383,6 +387,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TList      *fHistExtQA;
 
     AliCaloTrackMatcher* fCaloTrackMatcher;             // pointer to CaloTrackMatcher
+    AliPhotonIsolation*  fCaloIsolation;                // pointer to PhotonIsolation
     AliEMCALGeometry*   fGeomEMCAL;                     // pointer to EMCAL geometry
     AliEMCALRecoUtils*  fEMCALRecUtils;                 // pointer to EMCAL recUtils
     Bool_t     fEMCALInitialized;                       // flag for EMCal initialization
@@ -405,11 +410,15 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TString   fV0ReaderName;                            // Name of V0Reader
     TString   fCorrTaskSetting;                         // Name of Correction Task Setting
     TString   fCaloTrackMatcherName;                    // Name of global TrackMatching instance
+    TString   fCaloIsolationName;                       // Name of global Isolation instance
     TString   fPeriodName;                              // PeriodName of MC
     MCSet     fCurrentMC;                               // enum for current MC set being processed
 
     //cuts
     Int_t     fClusterType;                             // which cluster do we have
+    Float_t   fIsolationRadius;                         // radius of isolation cone
+    Float_t   fMomPercentage;                           // percentage of the isolated Photon Pt
+    Bool_t    fUsePhotonIsolation;                      // is photonisolation turned on
     Double_t  fMinEtaCut;                               // min eta cut
     Double_t  fMinEtaInnerEdge;                         // min eta of inner Edge (DCal)
     Double_t  fMaxEtaCut;                               // max eta cut
@@ -584,7 +593,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,65)
+    ClassDef(AliCaloPhotonCuts,66)
 };
 
 #endif

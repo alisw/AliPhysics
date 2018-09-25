@@ -1037,6 +1037,17 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00081113","1111111067032200000","1111111067022700001","0163300000000000"); // EGA
 
 
+    // EOverP cuts using the "old" TrackMatching now called fRunningMode = 5 (matching with all tracks) (copied from configs 177,178)
+  } else if (trainConfig == 201){  // fRunningMode = 5 with different E/p cuts
+    cuts.AddCut("00081113","111111106c032200000","111111106c022700001","0163300000000000"); // no E/p cut, but reference histograms for variations
+    cuts.AddCut("00081113","111111106d032200000","111111106d022700001","0163300000000000"); // loosest cut: EOverPMax= 3.0
+    cuts.AddCut("00081113","111111106e032200000","111111106e022700001","0163300000000000"); // EOverPMax= 2.0
+  } else if (trainConfig == 202){  // fRunningMode = 5 with different E/p cuts
+    cuts.AddCut("00081113","111111106f032200000","111111106f022700001","0163300000000000"); // EOverPMax= 1.75
+    cuts.AddCut("00081113","111111106g032200000","111111106g022700001","0163300000000000"); // EOverPMax= 1.5
+    cuts.AddCut("00081113","111111106h032200000","111111106h022700001","0163300000000000"); // hardest cut: EOverPMax= 1.25
+
+
   } else if (trainConfig == 250){  // EMCAL clusters 7 TeV LHC11 TM on
     cuts.AddCut("00010113","1111100067032200000","1111100067022210002","0163302200000000"); // INT7
     cuts.AddCut("00052113","1111100067032200000","1111100067022210002","0163302200000000"); // EMC7

@@ -57,11 +57,12 @@ public:
     Double_t qlong_range_max;
 
     bool ignore_zeromass;
+    bool use_femtoweight;
 
     Builder()
-      : bin_count(120)
-      , qmin(-0.3)
-      , qmax(0.3)
+      : bin_count(59)
+      , qmin(-0.295)
+      , qmax(0.295)
       , bin_method(kRecLSOGenOSL)
       , title("CF_TrueQ6D")
       , mc_manager(NULL)
@@ -72,6 +73,7 @@ public:
       , qlong_range_min(0.0)
       , qlong_range_max(0.0)
       , ignore_zeromass(true)
+      , use_femtoweight(true)
     {
     }
 
@@ -136,26 +138,21 @@ public:
 
 
     #define CREATE_SETTER_METHOD(__name, __type, __target) \
-      Builder __name(__type x) const {                     \
-        Builder b(*this); b. __target = x; return b; }
+      Builder __name(__type x) const                       \
+        { Builder b(*this); b. __target = x; return b; }
 
     CREATE_SETTER_METHOD(NBins, Int_t, bin_count);
     CREATE_SETTER_METHOD(IgnoreZeroMass, Bool_t, ignore_zeromass);
+    CREATE_SETTER_METHOD(UseFemtoWeight, Bool_t, use_femtoweight);
     CREATE_SETTER_METHOD(Binning, BinMethod, bin_method);
 
     #undef CREATE_SETTER_METHOD
 
-
     AliFemtoModelCorrFctnTrueQ6D* IntoCF()
-    {
-      return new AliFemtoModelCorrFctnTrueQ6D(*this);
-    }
+      { return new AliFemtoModelCorrFctnTrueQ6D(*this); }
 
     operator AliFemtoModelCorrFctnTrueQ6D*()
-    {
-      return IntoCF();
-
-    }
+      { return IntoCF(); }
   };
 
   static Builder Build()
@@ -232,6 +229,9 @@ public:
   /// set q range
   void SetQrange(const double out[2], const double s[2], const double l[2]);
 
+  /// try to guess how bins are layed out by axis name
+  static BinMethod GuessBinMethod(const HistType &hist);
+
 protected:
   AliFemtoModelManager *fManager; //!<! Link back to the manager to retrieve weights
 
@@ -243,13 +243,14 @@ protected:
 
   BinMethod fBinMethod;
   Bool_t fIgnoreZeroMassParticles;
+  Bool_t fUseFemtoWeight;
 
   std::pair<double, double> fQlimits[3];
 
   void UpdateQlimits();
 
 private:
-  void AddPair(const AliFemtoParticle &, const AliFemtoParticle &);
+  void AddPair(const AliFemtoParticle &, const AliFemtoParticle &, double weight=1.0);
 };
 
 inline
@@ -257,7 +258,6 @@ void
 AliFemtoModelCorrFctnTrueQ6D::SetManager(AliFemtoModelManager *manager)
 {
   fManager = manager;
-  std::cout << "fManager set to " << fManager << "\n";
 }
 
 inline

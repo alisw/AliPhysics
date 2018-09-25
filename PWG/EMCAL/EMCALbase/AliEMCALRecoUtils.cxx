@@ -884,7 +884,7 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
     case kBeamTestCorrectedv2:
     {
       // From beam test, corrected for material between beam and EMCAL
-      // Different function to kBeamTestCorrected
+      // Different parametrization to kBeamTestCorrected
       //fNonLinearityParams[0] =  0.983504;
       //fNonLinearityParams[1] =  0.210106;
       //fNonLinearityParams[2] =  0.897274;
@@ -899,7 +899,7 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
       
     case kBeamTestCorrectedv3:
     {
-      // Same function as kBeamTestCorrectedv2, different default parametrization.
+      // Same function as kBeamTestCorrected, different default parametrization.
       //fNonLinearityParams[0] =  0.976941;
       //fNonLinearityParams[1] =  0.162310;
       //fNonLinearityParams[2] =  1.08689;
@@ -907,6 +907,29 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
       //fNonLinearityParams[4] =  152.338;
       //fNonLinearityParams[5] =  30.9594;
       //fNonLinearityParams[6] =  0.9615;
+      energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5]))));
+      
+      break;
+    }
+      
+    case kBeamTestCorrectedv4:
+    {
+      // New parametrization of kBeamTestCorrected, 
+      // fitting new points for E>100 GeV.
+      // I should have same performance as v3 in the low energies
+      // See EMCal meeting 21/09/2018 slides
+      // https://indico.cern.ch/event/759154/contributions/3148448/attachments/1721042/2778585/nonLinearityUpdate.pdf
+      //  and jira ticket EMCAL-190
+      // Not very smart copy pasting the same function for each new parametrization, need to think how to do it better.
+      
+//      fNonLinearityParams[0] = 0.9892;
+//      fNonLinearityParams[1] = 0.1976;
+//      fNonLinearityParams[2] = 0.865;
+//      fNonLinearityParams[3] = 0.06775;
+//      fNonLinearityParams[4] = 156.6;
+//      fNonLinearityParams[5] = 47.18;
+//      fNonLinearityParams[6] = 0.97;
+      
       energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5]))));
       
       break;
@@ -1128,7 +1151,7 @@ void AliEMCALRecoUtils::InitNonLinearityParam()
 
   if (fNonLinearityFunction == kBeamTestCorrectedv3) {
     
-    // New parametrization of kBeamTestCorrectedv2
+    // New parametrization of kBeamTestCorrected
     // excluding point at 0.5 GeV from Beam Test Data
     // https://indico.cern.ch/event/438805/contribution/1/attachments/1145354/1641875/emcalPi027August2015.pdf
     
@@ -1141,6 +1164,24 @@ void AliEMCALRecoUtils::InitNonLinearityParam()
     fNonLinearityParams[6] =  0.9615;
   }
 
+  if (fNonLinearityFunction == kBeamTestCorrectedv4) {
+    
+    // New parametrization of kBeamTestCorrected, 
+    // fitting new points for E>100 GeV.
+    // I should have same performance as v3 in the low energies
+    // See EMCal meeting 21/09/2018 slides
+    // https://indico.cern.ch/event/759154/contributions/3148448/attachments/1721042/2778585/nonLinearityUpdate.pdf
+    //  and jira ticket EMCAL-190
+    
+    fNonLinearityParams[0] = 0.9892;
+    fNonLinearityParams[1] = 0.1976;
+    fNonLinearityParams[2] = 0.865;
+    fNonLinearityParams[3] = 0.06775;
+    fNonLinearityParams[4] = 156.6;
+    fNonLinearityParams[5] = 47.18;
+    fNonLinearityParams[6] = 0.97;
+  }
+  
   if (fNonLinearityFunction == kSDMv5) {
     fNonLinearityParams[0] =  1.0;
     fNonLinearityParams[1] =  6.64778e-02;
