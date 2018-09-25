@@ -310,6 +310,9 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		TH3D* fWidthITS;
 		TH3D* fMeanITS;
 
+		// Temp variable (needed for testing MC issues)
+		TBits TOFstartMask;
+
 		// Store list of generator hashes which can be checked against to determine
 		// whether or not the track was injected
 		std::vector<UInt_t> fGeneratorHashes;

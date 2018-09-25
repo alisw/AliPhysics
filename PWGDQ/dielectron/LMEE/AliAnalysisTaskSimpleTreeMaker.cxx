@@ -178,6 +178,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
 		fUseITScorr(kFALSE),
 		fWidthITS(0),
 		fMeanITS(0),
+		TOFstartMask(0),
 		fGeneratorHashes(0)
 {
 
@@ -285,14 +286,12 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
 		fUseITScorr(kFALSE),
 		fWidthITS(0),
 		fMeanITS(0),
+		TOFstartMask(0),
 		fGeneratorHashes(0)
 
 {
-    if(!fIsV0tree){
-        fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
-    }
-    else{
-        fESDtrackCuts = AliESDtrackCuts::GetStandardV0DaughterCuts();
+    if(fIsV0tree){
+      fESDtrackCuts = AliESDtrackCuts::GetStandardV0DaughterCuts();
     }
 
 		// Create hashes of generators used for injected signals in MC
@@ -418,6 +417,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 		fTree->Branch("multiplicityV0C", &multiplicityV0C);
 		fTree->Branch("multiplicityCL1", &multiplicityCL1);
 		fTree->Branch("gridPID",         &fGridPID);
+		fTree->Branch("TOFstartMask", &TOFstartMask);
 
     //Get grid PID which can be used later to assign unique event numbers
     if(fIsGRIDanalysis){
@@ -755,6 +755,10 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 			KnSigmaITS = fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kKaon);
 			KnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kKaon);
 			KnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kKaon);
+
+			// Get TOF start time mask
+			AliTOFPIDResponse TOFresponse = fPIDResponse->GetTOFResponse();
+			TOFstartMask = TOFresponse.GetStartTimeMask((Float_t)track->GetP());
 
 			//Get TPC information
 			//kNclsTPC
