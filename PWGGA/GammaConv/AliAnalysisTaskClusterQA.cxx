@@ -64,8 +64,11 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA() : AliAnalysisTaskSE(),
   fSaveEventProperties(0),
   fSaveCells(0),
   fSaveSurroundingCells(0),
+  fSaveTracks(0),
+  fConeRadius(0),
+  fMinTrackPt(0),
+  fMinClusterEnergy(0),
   fSaveMCInformation(0),
-  fNSurroundingCells(10),
   fExtractionPercentages(),
   fExtractionPercentagePtBins(),
   fBuffer_ClusterE(0),
@@ -75,8 +78,8 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA() : AliAnalysisTaskSE(),
   fBuffer_MC_Cluster_Flag(0),
   fBuffer_ClusterNumCells(0),
   fBuffer_LeadingCell_ID(0),
-  fBuffer_LeadingCell_Row(0),
-  fBuffer_LeadingCell_Column(0),
+  fBuffer_LeadingCell_Eta(0),
+  fBuffer_LeadingCell_Phi(0),
   fBuffer_ClusterM02(0),
   fBuffer_ClusterM20(0),
   fBuffer_Event_Vertex_X(0),
@@ -86,22 +89,34 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA() : AliAnalysisTaskSE(),
   fBuffer_Event_NumActiveCells(0),
   fBuffer_Cells_ID(0),
   fBuffer_Cells_E(0),
-  fBuffer_Cells_RelativeRow(0),
-  fBuffer_Cells_RelativeColumn(0),
+  fBuffer_Cells_RelativeEta(0),
+  fBuffer_Cells_RelativePhi(0),
+  fBuffer_Surrounding_NCells(0),
   fBuffer_Surrounding_Cells_ID(0),
+  fBuffer_Surrounding_Cells_R(0),
   fBuffer_Surrounding_Cells_E(0),
-  fBuffer_Surrounding_Cells_RelativeRow(0),
-  fBuffer_Surrounding_Cells_RelativeColumn(0),
+  fBuffer_Surrounding_Cells_RelativeEta(0),
+  fBuffer_Surrounding_Cells_RelativePhi(0),
+  fBuffer_Surrounding_NTracks(10),
+  fBuffer_Surrounding_Tracks_R(0),
+  fBuffer_Surrounding_Tracks_Pt(0),
+  fBuffer_Surrounding_Tracks_RelativeEta(0),
+  fBuffer_Surrounding_Tracks_RelativePhi(0),
   fBuffer_Cluster_MC_Label(-10)
 {
   fBuffer_Cells_ID                = new Int_t[kMaxActiveCells];
   fBuffer_Cells_E                 = new Float_t[kMaxActiveCells];
-  fBuffer_Cells_RelativeRow       = new Int_t[kMaxActiveCells];
-  fBuffer_Cells_RelativeColumn    = new Int_t[kMaxActiveCells];
+  fBuffer_Cells_RelativeEta               = new Float_t[kMaxActiveCells];
+  fBuffer_Cells_RelativePhi               = new Float_t[kMaxActiveCells];
   fBuffer_Surrounding_Cells_ID              = new Int_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_R               = new Float_t[kMaxActiveCells];
   fBuffer_Surrounding_Cells_E               = new Float_t[kMaxActiveCells];
-  fBuffer_Surrounding_Cells_RelativeRow     = new Int_t[kMaxActiveCells];
-  fBuffer_Surrounding_Cells_RelativeColumn  = new Int_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_RelativeEta           = new Float_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_RelativePhi             = new Float_t[kMaxActiveCells];
+  fBuffer_Surrounding_Tracks_R           = new Float_t[kMaxNTracks];
+  fBuffer_Surrounding_Tracks_Pt           = new Float_t[kMaxNTracks];
+  fBuffer_Surrounding_Tracks_RelativeEta           = new Float_t[kMaxNTracks];
+  fBuffer_Surrounding_Tracks_RelativePhi             = new Float_t[kMaxNTracks];
 }
 
 AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalysisTaskSE(name),
@@ -129,8 +144,11 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalys
   fSaveEventProperties(0),
   fSaveCells(0),
   fSaveSurroundingCells(0),
+  fSaveTracks(0),
+  fConeRadius(0),
+  fMinTrackPt(0),
+  fMinClusterEnergy(0),
   fSaveMCInformation(0),
-  fNSurroundingCells(10),
   fExtractionPercentages(),
   fExtractionPercentagePtBins(),
   fBuffer_ClusterE(0),
@@ -140,8 +158,8 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalys
   fBuffer_MC_Cluster_Flag(0),
   fBuffer_ClusterNumCells(0),
   fBuffer_LeadingCell_ID(0),
-  fBuffer_LeadingCell_Row(0),
-  fBuffer_LeadingCell_Column(0),
+  fBuffer_LeadingCell_Eta(0),
+  fBuffer_LeadingCell_Phi(0),
   fBuffer_ClusterM02(0),
   fBuffer_ClusterM20(0),
   fBuffer_Event_Vertex_X(0),
@@ -151,22 +169,34 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalys
   fBuffer_Event_NumActiveCells(0),
   fBuffer_Cells_ID(0),
   fBuffer_Cells_E(0),
-  fBuffer_Cells_RelativeRow(0),
-  fBuffer_Cells_RelativeColumn(0),
+  fBuffer_Cells_RelativeEta(0),
+  fBuffer_Cells_RelativePhi(0),
+  fBuffer_Surrounding_NCells(0),
   fBuffer_Surrounding_Cells_ID(0),
+  fBuffer_Surrounding_Cells_R(0),
   fBuffer_Surrounding_Cells_E(0),
-  fBuffer_Surrounding_Cells_RelativeRow(0),
-  fBuffer_Surrounding_Cells_RelativeColumn(0),
+  fBuffer_Surrounding_Cells_RelativeEta(0),
+  fBuffer_Surrounding_Cells_RelativePhi(0),
+  fBuffer_Surrounding_NTracks(10),
+  fBuffer_Surrounding_Tracks_R(0),
+  fBuffer_Surrounding_Tracks_Pt(0),
+  fBuffer_Surrounding_Tracks_RelativeEta(0),
+  fBuffer_Surrounding_Tracks_RelativePhi(0),
   fBuffer_Cluster_MC_Label(-10)
 {
   fBuffer_Cells_ID                = new Int_t[kMaxActiveCells];
   fBuffer_Cells_E                 = new Float_t[kMaxActiveCells];
-  fBuffer_Cells_RelativeRow       = new Int_t[kMaxActiveCells];
-  fBuffer_Cells_RelativeColumn    = new Int_t[kMaxActiveCells];
+  fBuffer_Cells_RelativeEta               = new Float_t[kMaxActiveCells];
+  fBuffer_Cells_RelativePhi               = new Float_t[kMaxActiveCells];
   fBuffer_Surrounding_Cells_ID              = new Int_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_R               = new Float_t[kMaxActiveCells];
   fBuffer_Surrounding_Cells_E               = new Float_t[kMaxActiveCells];
-  fBuffer_Surrounding_Cells_RelativeRow     = new Int_t[kMaxActiveCells];
-  fBuffer_Surrounding_Cells_RelativeColumn  = new Int_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_RelativeEta           = new Float_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_RelativePhi             = new Float_t[kMaxActiveCells];
+  fBuffer_Surrounding_Tracks_R           = new Float_t[kMaxNTracks];
+  fBuffer_Surrounding_Tracks_Pt           = new Float_t[kMaxNTracks];
+  fBuffer_Surrounding_Tracks_RelativeEta           = new Float_t[kMaxNTracks];
+  fBuffer_Surrounding_Tracks_RelativePhi             = new Float_t[kMaxNTracks];
   // Default constructor
 
   DefineInput(0, TChain::Class());
@@ -215,13 +245,13 @@ void AliAnalysisTaskClusterQA::UserCreateOutputObjects()
   fClusterTree = new TTree("ClusterQA","ClusterQA");
 
   fClusterTree->Branch("Cluster_E",                         &fBuffer_ClusterE,                        "Cluster_E/F");
-  fClusterTree->Branch("Cluster_Phi",                       &fBuffer_ClusterPhi,                      "Cluster_Phi/F");
   fClusterTree->Branch("Cluster_Eta",                       &fBuffer_ClusterEta,                      "Cluster_Eta/F");
+  fClusterTree->Branch("Cluster_Phi",                       &fBuffer_ClusterPhi,                      "Cluster_Phi/F");
   fClusterTree->Branch("Cluster_IsEMCAL",                   &fBuffer_ClusterIsEMCAL,                  "Cluster_IsEMCAL/O");
   fClusterTree->Branch("Cluster_NumCells",                  &fBuffer_ClusterNumCells,                 "Cluster_NumCells/I");
   fClusterTree->Branch("Cluster_LeadingCell_ID",            &fBuffer_LeadingCell_ID,                  "Cluster_LeadingCell_ID/I");
-  fClusterTree->Branch("Cluster_LeadingCell_Row",           &fBuffer_LeadingCell_Row,                 "Cluster_LeadingCell_Row/I");
-  fClusterTree->Branch("Cluster_LeadingCell_Column",        &fBuffer_LeadingCell_Column,              "Cluster_LeadingCell_Column/I");
+  fClusterTree->Branch("Cluster_LeadingCell_Eta",           &fBuffer_LeadingCell_Eta,                 "Cluster_LeadingCell_Eta/F");
+  fClusterTree->Branch("Cluster_LeadingCell_Phi",           &fBuffer_LeadingCell_Phi,                 "Cluster_LeadingCell_Phi/F");
   fClusterTree->Branch("Cluster_M02",                       &fBuffer_ClusterM02,                      "Cluster_M02/F");
   fClusterTree->Branch("Cluster_M20",                       &fBuffer_ClusterM20,                      "Cluster_M20/F");
   if(fSaveEventProperties)
@@ -237,16 +267,26 @@ void AliAnalysisTaskClusterQA::UserCreateOutputObjects()
   {
     fClusterTree->Branch("Cluster_Cells_ID",                fBuffer_Cells_ID,                         "Cluster_Cells_ID[Cluster_NumCells]/I");
     fClusterTree->Branch("Cluster_Cells_E",                 fBuffer_Cells_E,                          "Cluster_Cells_E[Cluster_NumCells]/F");
-    fClusterTree->Branch("Cluster_Cells_RelativeRow",       fBuffer_Cells_RelativeRow,                "Cluster_Cells_RelativeRow[Cluster_NumCells]/I");
-    fClusterTree->Branch("Cluster_Cells_RelativeColumn",    fBuffer_Cells_RelativeColumn,             "Cluster_Cells_RelativeColumn[Cluster_NumCells]/I");
+    fClusterTree->Branch("Cluster_Cells_RelativeEta",       fBuffer_Cells_RelativeEta,                "Cluster_Cells_RelativeEta[Cluster_NumCells]/F");
+    fClusterTree->Branch("Cluster_Cells_RelativePhi",       fBuffer_Cells_RelativePhi,                "Cluster_Cells_RelativePhi[Cluster_NumCells]/F");
   }
   
   if(fSaveSurroundingCells)
   {
-    fClusterTree->Branch("Surrounding_Cells_ID",            fBuffer_Surrounding_Cells_ID,             "Surrounding_Cells_ID[Event_NumActiveCells]/I");
-    fClusterTree->Branch("Surrounding_Cells_E",             fBuffer_Surrounding_Cells_E,              "Surrounding_Cells_E[Event_NumActiveCells]/F");
-    fClusterTree->Branch("Surrounding_Cells_RelativeRow",   fBuffer_Surrounding_Cells_RelativeRow,    "Surrounding_Cells_RelativeRow[Event_NumActiveCells]/I");
-    fClusterTree->Branch("Surrounding_Cells_RelativeColumn",fBuffer_Surrounding_Cells_RelativeColumn, "Surrounding_Cells_RelativeColumn[Event_NumActiveCells]/I");
+    fClusterTree->Branch("Surrounding_NCells",             &fBuffer_Surrounding_NCells,               "Surrounding_NCells/I");
+    fClusterTree->Branch("Surrounding_Cells_ID",            fBuffer_Surrounding_Cells_ID,             "Surrounding_Cells_ID[Surrounding_NCells]/I");
+    fClusterTree->Branch("Surrounding_Cells_R",             fBuffer_Surrounding_Cells_R,              "Surrounding_Cells_R[Surrounding_NCells]/F");
+    fClusterTree->Branch("Surrounding_Cells_E",             fBuffer_Surrounding_Cells_E,              "Surrounding_Cells_E[Surrounding_NCells]/F");
+    fClusterTree->Branch("Surrounding_Cells_RelativeEta",   fBuffer_Surrounding_Cells_RelativeEta,    "Surrounding_Cells_RelativeEta[Surrounding_NCells]/F");
+    fClusterTree->Branch("Surrounding_Cells_RelativePhi",   fBuffer_Surrounding_Cells_RelativePhi,    "Surrounding_Cells_RelativePhi[Surrounding_NCells]/F");
+  }
+  if(fSaveTracks)
+  {
+    fClusterTree->Branch("Surrounding_NTracks",             &fBuffer_Surrounding_NTracks,             "Surrounding_NTracks/I");
+    fClusterTree->Branch("Surrounding_Tracks_R",            fBuffer_Surrounding_Tracks_R,             "Surrounding_Tracks_R[Surrounding_NTracks]/F");
+    fClusterTree->Branch("Surrounding_Tracks_Pt",           fBuffer_Surrounding_Tracks_Pt,            "Surrounding_Tracks_Pt[Surrounding_NTracks]/F");
+    fClusterTree->Branch("Surrounding_Tracks_RelativeEta",  fBuffer_Surrounding_Tracks_RelativeEta,   "Surrounding_Tracks_RelativeEta[Surrounding_NTracks]/F");
+    fClusterTree->Branch("Surrounding_Tracks_RelativePhi",  fBuffer_Surrounding_Tracks_RelativePhi,   "Surrounding_Tracks_RelativePhi[Surrounding_NTracks]/F");
   }
 
   if(fSaveMCInformation)
@@ -298,14 +338,14 @@ void AliAnalysisTaskClusterQA::UserExec(Option_t *){
   }
 
   if(nclus == 0)  return;
-  
+
   ((AliCaloPhotonCuts*)fClusterCutsEMC)->FillHistogramsExtendedQA(fInputEvent,fIsMC);
   // ((AliCaloPhotonCuts*)fClusterCutsDMC)->FillHistogramsExtendedQA(fInputEvent,fIsMC);
 
   // match tracks to clusters
   ((AliCaloPhotonCuts*)fClusterCutsEMC)->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kTRUE, fMCEvent);
   // ((AliCaloPhotonCuts*)fClusterCutsDMC)->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kTRUE, fMCEvent);
-  
+
   // vertex
   Double_t vertex[3] = {0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
@@ -328,14 +368,17 @@ void AliAnalysisTaskClusterQA::UserExec(Option_t *){
         clus                                = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
     }
     if(!clus) continue;
-    
-    
+
+
     if ( !clus->IsEMCAL()){ // for PHOS: cluster->GetType() == AliVCluster::kPHOSNeutral
       delete clus;
       continue;
     }
-    
-  
+    if ( clus->E() < fMinClusterEnergy){
+      delete clus;
+      continue;
+    }
+
     if(!((AliCaloPhotonCuts*)fClusterCutsEMC)->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC, tempClusterWeight,i) && !((AliCaloPhotonCuts*)fClusterCutsDMC)->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC, tempClusterWeight,i)){
       delete clus;
       continue;
@@ -347,14 +390,14 @@ void AliAnalysisTaskClusterQA::UserExec(Option_t *){
 
 ///________________________________________________________________________
 void AliAnalysisTaskClusterQA::ProcessQATreeCluster(AliVEvent *event, AliVCluster* cluster, Long_t indexCluster){
-  
+
   Float_t clusPos[3]                      = { 0,0,0 };
   cluster->GetPosition(clusPos);
   TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
   Double_t etaCluster                     = clusterVector.Eta();
   Double_t phiCluster                     = clusterVector.Phi();
   if (phiCluster < 0) phiCluster          += 2*TMath::Pi();
-  
+
   // Vertex position x, y, z
   fBuffer_Event_Vertex_X                  = fInputEvent->GetPrimaryVertex()->GetX();
   fBuffer_Event_Vertex_Y                  = fInputEvent->GetPrimaryVertex()->GetY();
@@ -365,7 +408,7 @@ void AliAnalysisTaskClusterQA::ProcessQATreeCluster(AliVEvent *event, AliVCluste
 
   // Properties of the current cluster
   fBuffer_ClusterE                        = cluster->E();
-  
+
   if(etaCluster < 0.67 && etaCluster > -0.67){
     if(phiCluster < 3.2 && phiCluster > 1.4){
       fBuffer_ClusterIsEMCAL = kTRUE;
@@ -377,71 +420,80 @@ void AliAnalysisTaskClusterQA::ProcessQATreeCluster(AliVEvent *event, AliVCluste
       }
     }
   }
-  
+
   fBuffer_ClusterPhi                      = phiCluster;
   fBuffer_ClusterEta                      = etaCluster;
   fBuffer_ClusterM02                      = cluster->GetM02();
   fBuffer_ClusterM20                      = cluster->GetM20();
-  
+
   // Get all cells from the event
   AliVCaloCells* cells                    = NULL;
   if(cluster->IsEMCAL())
     cells                                 = event->GetEMCALCells();
   else
     return;
-  // else if(cluster->IsPHOS())
-  //   cells                                 = event->GetPHOSCells();
-    
+
   // Determine all cells in the event
   fBuffer_Event_NumActiveCells            = cells->GetNumberOfCells();
-  
+
   // Get the number of cells from the current cluster
   Int_t nCellCluster = cluster->GetNCells();
   fBuffer_ClusterNumCells                 = nCellCluster;
-  
+
   // Find the leading cell in the cluster and its position
-  Int_t rowLeading=0, columnLeading=0;
   fBuffer_LeadingCell_ID                  = FindLargestCellInCluster(cluster,fInputEvent);
-  GetRowAndColumnFromAbsCellID(fBuffer_LeadingCell_ID, rowLeading, columnLeading);
-  fBuffer_LeadingCell_Row                 = rowLeading;
-  fBuffer_LeadingCell_Column              = columnLeading;
-    
+  Float_t leadcelleta = 0.;
+  Float_t leadcellphi = 0.;
+  fGeomEMCAL->EtaPhiFromIndex(fBuffer_LeadingCell_ID, leadcelleta, leadcellphi);
+  if ( leadcellphi < 0 ) leadcellphi+=TMath::TwoPi();
+  fBuffer_LeadingCell_Eta                = leadcelleta;
+  fBuffer_LeadingCell_Phi              = leadcellphi;
   // Treat the remaining cells of the cluster and get their relative position compared to the leading cell
   for(Int_t iCell=0;iCell<nCellCluster;iCell++){
     if(iCell<100){ // maximum number of cells for a cluster is set to 100
       fBuffer_Cells_ID[iCell]               = cluster->GetCellAbsId(iCell);
       fBuffer_Cells_E[iCell]                = cells->GetCellAmplitude(cluster->GetCellAbsId(iCell));
-      Int_t row=0, column=0;
-      GetRowAndColumnFromAbsCellID(fBuffer_Cells_ID[iCell], row, column);
-      fBuffer_Cells_RelativeRow[iCell]      = row-rowLeading;
-      fBuffer_Cells_RelativeColumn[iCell]   = column-columnLeading;
+      Float_t celleta = 0.;
+      Float_t cellphi = 0.;
+      fGeomEMCAL->EtaPhiFromIndex(fBuffer_Cells_ID[iCell], celleta, cellphi);
+      if ( cellphi < 0 ) cellphi+=TMath::TwoPi();
+      fBuffer_Cells_RelativeEta[iCell]      = leadcelleta-celleta;
+      fBuffer_Cells_RelativePhi[iCell]   = leadcellphi-cellphi;
     }
   }
-  
+  Int_t nActiveCellsSurroundingInR = 0;
   // fill surrounding cell buffer
-  // fBuffer_Event_NumActiveCellsAboveThreshold = 0;
   for(Int_t aCell=0;aCell<cells->GetNumberOfCells();aCell++){
     // Define necessary variables
     Short_t cellNumber                    = 0;
     Double_t cellAmplitude = 0,  cellTime = 0, cellEFrac = 0;
-    Int_t cellMCLabel = 0, row = 0, column = 0;
-      
+    Int_t cellMCLabel = 0;
+    Float_t surrcelleta = 0.;
+    Float_t surrcellphi = 0.;
     // Get Cell ID
     cells->GetCell(aCell,cellNumber,cellAmplitude,cellTime,cellMCLabel,cellEFrac);
-      
-    // Get row and column for each cell
-    GetRowAndColumnFromAbsCellID(cellNumber, row, column);
-      
-    // Select those cells that are within fNSurroundingCells of the leading cluster cell
-    if( (TMath::Abs(row-rowLeading)<fNSurroundingCells) && (TMath::Abs(column-columnLeading))<fNSurroundingCells){
-      fBuffer_Surrounding_Cells_RelativeRow[aCell]    =  row-rowLeading;
-      fBuffer_Surrounding_Cells_RelativeColumn[aCell] = column-columnLeading;
+
+    // Get eta and phi for the surounding cells
+    fGeomEMCAL->EtaPhiFromIndex(cellNumber, surrcelleta, surrcellphi);
+    Double_t dR2 = pow(leadcelleta-surrcelleta,2) + pow(leadcellphi-surrcellphi,2);
+    // Select those cells that are within fConeRadius of the leading cluster cell
+    if( dR2 < fConeRadius){
       fBuffer_Surrounding_Cells_E[aCell]              = cells->GetCellAmplitude(cellNumber);
       fBuffer_Surrounding_Cells_ID[aCell]             = cellNumber;
+      fBuffer_Surrounding_Cells_R[aCell]             = dR2;
+      Float_t celleta = 0.;
+      Float_t cellphi = 0.;
+      fGeomEMCAL->EtaPhiFromIndex(fBuffer_Surrounding_Cells_ID[aCell], celleta, cellphi);
+      if ( cellphi < 0 ) cellphi+=TMath::TwoPi();
+      fBuffer_Surrounding_Cells_RelativeEta[aCell]      = leadcelleta-celleta;
+      fBuffer_Surrounding_Cells_RelativePhi[aCell]   = leadcellphi-cellphi;
+      nActiveCellsSurroundingInR+=1;
     }
   }
+  fBuffer_Surrounding_NCells = nActiveCellsSurroundingInR;
   if(fIsMC) fBuffer_Cluster_MC_Label = MakePhotonCandidates(cluster, cells,indexCluster);
 
+  ProcessTracksAndMatching(cluster,indexCluster);
   // Add everything to the tree
   if (fClusterTree) fClusterTree->Fill();
 }
@@ -589,7 +641,122 @@ Int_t AliAnalysisTaskClusterQA::MakePhotonCandidates(AliVCluster* clus, AliVCalo
   return -1;
 }
 
+//________________________________________________________________________
+void AliAnalysisTaskClusterQA::ProcessTracksAndMatching(AliVCluster* clus, Long_t indexCluster){
 
+
+  Int_t nTracksInR = 0;
+  Int_t nModules = fGeomEMCAL->GetNumberOfSuperModules();
+
+  AliESDEvent *esdev = dynamic_cast<AliESDEvent*>(fInputEvent);
+  AliESDtrackCuts *EsdTrackCuts = 0x0;
+  // Using standard function for setting Cuts
+  static int prevRun = -1;
+  // Using standard function for setting Cuts
+  if (esdev){
+    Int_t runNumber = fInputEvent->GetRunNumber();
+    if (prevRun!=runNumber) {
+      delete EsdTrackCuts;
+      EsdTrackCuts = 0;
+      prevRun = runNumber;
+    }
+    // if LHC11a or earlier or if LHC13g or if LHC12a-i -> use 2010 cuts
+    if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) || (runNumber>=172440 && runNumber<=193766) ){
+      EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+    // else if run2 data use 2015 PbPb cuts
+    }else if (runNumber>=209122){
+      // hard coded track cuts for the moment, because AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb() gives spams warnings
+      EsdTrackCuts = new AliESDtrackCuts();
+      EsdTrackCuts->AliESDtrackCuts::SetMinNCrossedRowsTPC(70);
+      EsdTrackCuts->AliESDtrackCuts::SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+      EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterTPC(4);
+      EsdTrackCuts->AliESDtrackCuts::SetAcceptKinkDaughters(kFALSE);
+      EsdTrackCuts->AliESDtrackCuts::SetRequireTPCRefit(kTRUE);
+      // ITS
+      EsdTrackCuts->AliESDtrackCuts::SetRequireITSRefit(kTRUE);
+      EsdTrackCuts->AliESDtrackCuts::SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+                                                              AliESDtrackCuts::kAny);
+      EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+      EsdTrackCuts->AliESDtrackCuts::SetMaxChi2TPCConstrainedGlobal(36);
+      EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexZ(2);
+      EsdTrackCuts->AliESDtrackCuts::SetDCAToVertex2D(kFALSE);
+      EsdTrackCuts->AliESDtrackCuts::SetRequireSigmaToVertex(kFALSE);
+      EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterITS(36);
+    // else use 2011 version of track cuts
+    }else{
+      EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+    }
+    EsdTrackCuts->SetMaxDCAToVertexZ(2);
+    EsdTrackCuts->SetEtaRange(-0.8, 0.8);
+    EsdTrackCuts->SetPtRange(0.15);
+  }
+
+  for (Int_t itr=0;itr<fInputEvent->GetNumberOfTracks();itr++){
+    AliVTrack *inTrack = esdev->GetTrack(itr);
+    if(!inTrack) continue;
+    if(inTrack->Pt()<fMinTrackPt) continue;
+    AliESDtrack *esdt = dynamic_cast<AliESDtrack*>(inTrack);
+    // check track cuts
+    if(!EsdTrackCuts->AcceptTrack(esdt)) continue;
+    const AliExternalTrackParam *in = esdt->GetInnerParam();
+    if (!in){AliError("Could not get InnerParam of Track, continue");continue;}
+    AliExternalTrackParam *trackParam =new AliExternalTrackParam(*in);
+    AliExternalTrackParam emcParam(*trackParam);
+    Float_t eta, phi, pt;
+
+    //propagate tracks to emc surfaces
+    if (!AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&emcParam, 440., 0.139, 20., eta, phi, pt)) {
+      delete trackParam;
+      continue;
+    }
+    if( TMath::Abs(eta) > 0.75 ) {
+      delete trackParam;
+      continue;
+    }
+    // Save some time and memory in case of no DCal present
+    if( nModules < 13 && ( phi < 70*TMath::DegToRad() || phi > 190*TMath::DegToRad())){
+      delete trackParam;
+      continue;
+    }
+    // Save some time and memory in case of run2
+    if( nModules > 12 ){
+      if (( phi < 70*TMath::DegToRad() || phi > 190*TMath::DegToRad()) && ( phi < 250*TMath::DegToRad() || phi > 340*TMath::DegToRad())){
+        delete trackParam;
+        continue;
+      }
+    }
+    Float_t dEta=-999, dPhi=-999;
+    Double_t trkPos[3] = {0.,0.,0.};
+    if (!emcParam.GetXYZ(trkPos)){
+      delete trackParam;
+      continue;
+    }
+
+    AliExternalTrackParam trackParamTmp(emcParam);//Retrieve the starting point every time before the extrapolation
+    if(!AliEMCALRecoUtils::ExtrapolateTrackToCluster(&trackParamTmp, clus, 0.139, 5., dEta, dPhi)) continue;
+
+    Float_t dR2 = dPhi*dPhi + dEta*dEta;
+    if(dR2 < fConeRadius){
+      fBuffer_Surrounding_Tracks_R[nTracksInR]=dR2;
+      fBuffer_Surrounding_Tracks_Pt[nTracksInR]=inTrack->Pt();
+      fBuffer_Surrounding_Tracks_RelativeEta[nTracksInR]=dEta;
+      fBuffer_Surrounding_Tracks_RelativePhi[nTracksInR]=dPhi;
+      nTracksInR+=1;
+    }
+  }
+  fBuffer_Surrounding_NTracks = nTracksInR;
+  if(nTracksInR==0){
+    fBuffer_Surrounding_Tracks_R[nTracksInR]=-1;
+    fBuffer_Surrounding_Tracks_Pt[nTracksInR]=-1;
+    fBuffer_Surrounding_Tracks_RelativeEta[nTracksInR]=-1;
+    fBuffer_Surrounding_Tracks_RelativePhi[nTracksInR]=-1;
+  }
+
+  if(EsdTrackCuts){
+    delete EsdTrackCuts;
+    EsdTrackCuts=0x0;
+  }
+}
 
 //________________________________________________________________________
 Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidates(AliAODConversionPhoton *TrueClusterCandidate, Float_t m02,
