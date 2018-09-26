@@ -63,6 +63,8 @@ class AliGenMC : public AliGenerator
     virtual void BeamCrossAngle();
     virtual void AddHeader(AliGenEventHeader* header);
 
+    virtual void SetGeneratorUnitsForMeterSecond(double lengthC=1., double timeC=1.);
+    
  protected:
     // check if particle is selected as parent particle
     Bool_t ParentSelected(Int_t ip) const;
@@ -92,16 +94,18 @@ class AliGenMC : public AliGenerator
     Decay_t      fForceDecay;    // Decay channel forced
     Float_t      fMaxLifeTime;   // Maximum lifetime for unstable particles
     Double_t     fDyBoost;       // dy for boost into lab frame
+    Double_t     fSpace2TimeCoeff;            // coeff to convert lenght/time units used by generator to m/s
+    Double_t     fTime2SpaceCoeff;            // coeff to convert time/length units used by generator to s/m
     AliGeometry* fGeometryAcceptance; // Geometry to which particles must be simulated
     Int_t        fPdgCodeParticleforAcceptanceCut;  // Abs(PDG Code) of the particle to which the GeometryAcceptance must be applied
     Int_t        fNumberOfAcceptedParticles;  // Number of accepted particles in GeometryAcceptance with the right Abs(PdgCode) 
     Int_t        fNprimaries;                 // Number of produced and stored particles
- 
+    
  private:
     AliGenMC(const AliGenMC &MC);
     AliGenMC & operator=(const AliGenMC & rhs);
     
-    ClassDef(AliGenMC,7)       // AliGenerator implementation for generators using MC methods
+    ClassDef(AliGenMC,8)       // AliGenerator implementation for generators using MC methods
 };
 #endif
 

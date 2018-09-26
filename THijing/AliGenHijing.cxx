@@ -166,6 +166,10 @@ AliGenHijing::~AliGenHijing()
 void AliGenHijing::Init()
 {
 // Initialisation
+
+    // Coeffs to go from mm / mm to meter / second
+    SetGeneratorUnitsForMeterSecond(1.e-3, 1e-3/TMath::C()); 
+  
     fFrame.Resize(8);
     fTarget.Resize(8);
     fProjectile.Resize(8);

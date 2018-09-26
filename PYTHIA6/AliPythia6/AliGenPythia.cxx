@@ -394,7 +394,10 @@ void AliGenPythia::SetEventListRange(Int_t eventFirst, Int_t eventLast)
 void AliGenPythia::Init()
 {
 // Initialisation
-    
+
+    // Coeffs to go from mm / mm to meter / second
+    SetGeneratorUnitsForMeterSecond(1.e-3, 1e-3/TMath::C()); 
+  
     SetMC(AliPythia::Instance());
     fPythia=(AliPythia*) fMCEvGen;
     
