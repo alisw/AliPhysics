@@ -9,7 +9,7 @@
 
  */
 
-#include "AliAnalysisUeSpherocityTask.h"
+#include "AliAnalysisTaskUeSpherocity.h"
 
 // ROOT includes
 #include <TList.h>
@@ -53,10 +53,10 @@ using namespace std;
 
 TH1D * hSOMPerc[100];
 TH2D * hSOMAux[100];
-ClassImp(AliAnalysisUeSpherocityTask)
+ClassImp(AliAnalysisTaskUeSpherocity)
 
 	//_____________________________________________________________________________
-	AliAnalysisUeSpherocityTask::AliAnalysisUeSpherocityTask():
+	AliAnalysisTaskUeSpherocity::AliAnalysisTaskUeSpherocity():
 		AliAnalysisTaskSE(),
 		fESD(0x0),
 		fEventCuts(0x0),
@@ -90,7 +90,7 @@ ClassImp(AliAnalysisUeSpherocityTask)
 }
 
 //______________________________________________________________________________
-AliAnalysisUeSpherocityTask::AliAnalysisUeSpherocityTask(const char *name):
+AliAnalysisTaskUeSpherocity::AliAnalysisTaskUeSpherocity(const char *name):
 	AliAnalysisTaskSE(name),
 	fESD(0x0),
 	fEventCuts(0x0),
@@ -127,7 +127,7 @@ AliAnalysisUeSpherocityTask::AliAnalysisUeSpherocityTask(const char *name):
 
 //________________________________________________________________________
 
-void AliAnalysisUeSpherocityTask::Exit(const char *msg) {
+void AliAnalysisTaskUeSpherocity::Exit(const char *msg) {
 
 	Printf("%s", msg);
 	return;
@@ -135,7 +135,7 @@ void AliAnalysisUeSpherocityTask::Exit(const char *msg) {
 
 
 //_____________________________________________________________________________
-AliAnalysisUeSpherocityTask::~AliAnalysisUeSpherocityTask()
+AliAnalysisTaskUeSpherocity::~AliAnalysisTaskUeSpherocity()
 {
 	// Destructor
 	// histograms are in the output list and deleted when the output
@@ -148,7 +148,7 @@ AliAnalysisUeSpherocityTask::~AliAnalysisUeSpherocityTask()
 }
 
 //______________________________________________________________________________
-void AliAnalysisUeSpherocityTask::UserCreateOutputObjects()
+void AliAnalysisTaskUeSpherocity::UserCreateOutputObjects()
 {
 	// This method is called once per worker node
 	// Here we define the output: histograms and debug tree if requested 
@@ -254,7 +254,7 @@ void AliAnalysisUeSpherocityTask::UserCreateOutputObjects()
 }
 
 //______________________________________________________________________________
-void AliAnalysisUeSpherocityTask::UserExec(Option_t *)
+void AliAnalysisTaskUeSpherocity::UserExec(Option_t *)
 {
 
 	// -----------------------------------------------------
@@ -382,7 +382,7 @@ void AliAnalysisUeSpherocityTask::UserExec(Option_t *)
 
 }
 //_____________________________________________________________________________
-void AliAnalysisUeSpherocityTask::MakeESDAnalysis( AliESDEvent *ESDevent, Double_t etaCut ){
+void AliAnalysisTaskUeSpherocity::MakeESDAnalysis( AliESDEvent *ESDevent, Double_t etaCut ){
 
 	const Int_t nESDTracks = ESDevent->GetNumberOfTracks();
 
@@ -413,7 +413,7 @@ void AliAnalysisUeSpherocityTask::MakeESDAnalysis( AliESDEvent *ESDevent, Double
 
 }
 //_____________________________________________________________________________
-Int_t AliAnalysisUeSpherocityTask::GetMultiplicityParticles(Double_t etaCut) 
+Int_t AliAnalysisTaskUeSpherocity::GetMultiplicityParticles(Double_t etaCut) 
 {
 	// Fill the special MC histogram with the MC truth info
 
@@ -449,7 +449,7 @@ Int_t AliAnalysisUeSpherocityTask::GetMultiplicityParticles(Double_t etaCut)
 
 }
 //____________________________________________________________
-Double_t AliAnalysisUeSpherocityTask::GetSpheroPercentile( Double_t valES, Int_t valMult ){
+Double_t AliAnalysisTaskUeSpherocity::GetSpheroPercentile( Double_t valES, Int_t valMult ){
 
 	if(valMult<0)
 		return -1.0;
@@ -471,7 +471,7 @@ Double_t AliAnalysisUeSpherocityTask::GetSpheroPercentile( Double_t valES, Int_t
 
 }
 //___________________________________________________________
-Int_t AliAnalysisUeSpherocityTask::GetSpheroPercentileBin( Double_t valES ){
+Int_t AliAnalysisTaskUeSpherocity::GetSpheroPercentileBin( Double_t valES ){
 
 	Int_t BinSot = -1;
 
@@ -484,7 +484,7 @@ Int_t AliAnalysisUeSpherocityTask::GetSpheroPercentileBin( Double_t valES ){
 	return BinSot;
 }
 //____________________________________________________________
-void AliAnalysisUeSpherocityTask::SetTrackCuts(AliAnalysisFilter* fTrackFilter){
+void AliAnalysisTaskUeSpherocity::SetTrackCuts(AliAnalysisFilter* fTrackFilter){
 
 	AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts();
 	esdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);//

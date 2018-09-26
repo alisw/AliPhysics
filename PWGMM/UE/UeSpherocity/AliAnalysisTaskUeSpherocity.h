@@ -20,15 +20,14 @@
 #include <AliSpherocityUtils.h>
 #include <AliEventCuts.h>
 
-class AliAnalysisUeSpherocityTask : public AliAnalysisTaskSE {
+class AliAnalysisTaskUeSpherocity : public AliAnalysisTaskSE {
 
 	public:
 
 
-		AliAnalysisUeSpherocityTask();
-		AliAnalysisUeSpherocityTask(const char *name);
-
-		virtual ~AliAnalysisUeSpherocityTask();
+		AliAnalysisTaskUeSpherocity();
+		AliAnalysisTaskUeSpherocity(const char *name);
+		virtual ~AliAnalysisTaskUeSpherocity();
 
 		virtual void     UserCreateOutputObjects();
 		virtual void     UserExec(Option_t *option);
@@ -81,7 +80,7 @@ class AliAnalysisUeSpherocityTask : public AliAnalysisTaskSE {
 		TH1D   * hetaso;
 		TH1F   * fn1;
 
-		ClassDef(AliAnalysisUeSpherocityTask, 11);    //Analysis task for high pt analysis 
+		ClassDef(AliAnalysisTaskUeSpherocity, 11);    //Analysis task for high pt analysis 
 
 };
 

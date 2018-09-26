@@ -3,9 +3,9 @@ Author: Antonio Ortiz (aortizve@cern.ch, antonio.ortiz@nucleares.unam.mx)
 Last update: 11/09/2018 
  */
 
-AliAnalysisTask* AddTask(
+AliAnalysisTaskUeSpherocity* AddTaskUeSpherocity(
 		Bool_t AnalysisMC = kTRUE, 
-		const Char_t* taskname = "UeSpherocity", 
+		const Char_t* taskname = "UeSpherocity" 
 		)
 {
 
@@ -35,7 +35,7 @@ AliAnalysisTask* AddTask(
 
 	// Create the task and configure it 
 	//========================================================================
-	AliAnalysisUeSpherocityTask* taskESA = new AliAnalysisUeSpherocityTask("SpherocityTask");
+	AliAnalysisTaskUeSpherocity* taskESA = new AliAnalysisTaskUeSpherocity("SpherocityTask");
 	TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 	taskESA->SetAnalysisType(type);
 	taskESA->SetAnalysisMC(AnalysisMC);
