@@ -117,7 +117,7 @@ AliAnalysisTaskWeakDecayVertexer::AliAnalysisTaskWeakDecayVertexer()
 fTrigType(AliVEvent::kMB),
 fkDoExtraEvSels(kTRUE),
 fMinCentrality(0.0),
-fMaxCentrality(90.0),
+fMaxCentrality(300.0),
 fkRevertexAllEvents(kTRUE),
 //________________________________________________
 //Flags for both V0+cascade vertexer
@@ -167,7 +167,7 @@ AliAnalysisTaskWeakDecayVertexer::AliAnalysisTaskWeakDecayVertexer(const char *n
 fTrigType(AliVEvent::kMB),
 fkDoExtraEvSels(kTRUE),
 fMinCentrality(0.0),
-fMaxCentrality(90.0),
+fMaxCentrality(300.0),
 fkRevertexAllEvents(kTRUE),
 //________________________________________________
 //Flags for both V0+cascade vertexer
