@@ -501,6 +501,7 @@ else()
   endif(TESTSHUTTLE)
 
   add_subdirectory(ALIROOT)
+  add_subdirectory(TFluka)
 
   # List modules with PARfiles
   string(REPLACE ";" " " ALIPARFILES_FLAT "${ALIPARFILES}")
