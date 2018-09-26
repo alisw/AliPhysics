@@ -278,6 +278,7 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCut("00010103", "00000009266300008750404000");
     cuts.AddCut("00010103", "00000009266302008750404000");
     cuts.AddCut("00010103", "00000009266300008650404000");
+    cuts.AddCut("00010103", "0d0000d9266300008850404000");   // increased pT to 60 MeV for e+e-
 
    // Offline V0Finder is used
 
@@ -340,6 +341,7 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCut("00010103", "10000009266300008750404000");
     cuts.AddCut("00010103", "10000009266302008750404000");
     cuts.AddCut("00010103", "10000009266300008650404000");
+    cuts.AddCut("00010103", "1d0000d9266300008850404000");   // increased pT to 60 MeV for e+e-
 
   } else  if(trainConfig == 111){
     cuts.AddCut("00000003", "10000070000000000500004000");
