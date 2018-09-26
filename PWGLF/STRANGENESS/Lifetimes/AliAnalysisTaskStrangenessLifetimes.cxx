@@ -374,7 +374,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
             motherPart.SetPDGcode(mother->GetPdgCode());
             motherPart.SetEta(mother->Eta());
             motherPart.SetPt(mother->Pt());
-            motherPart.SetDistOverP(motherDist / mother->P());
+            motherPart.SetDistOverP(motherDist / mother->P() + 1e-16);
             motherPart.SetRadius(motherR);
             fMCvector.push_back(motherPart);
           } else if (mcEvent->IsPhysicalPrimary(ilab)) {
