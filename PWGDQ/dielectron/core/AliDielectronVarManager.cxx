@@ -55,6 +55,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"ITSchi2PerCluster",      "#chi^{2}/^{}N_{cls}^{ITS}",                          ""},
   {"ITSchi2",                "#chi^{2}_{ITS}",                                     ""}, 
   {"Globalchi2PerNDF",       "Global #chi^{2}/^{}NDF",                             ""},
+  {"NclsTPC",                "N_{cls}^{TPC}",                                      ""},
   {"NclsSTPC",               "N_{shar.cls}^{TPC}",                                 ""},
   {"NclsSFracTPC",           "N_{shar.cls}^{TPC}/^{}N_{cls}^{TPC}",                ""},
   {"NclsSITS",               "N_{shar.cls}^{ITS}",                                 ""},
