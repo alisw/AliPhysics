@@ -50,9 +50,9 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Double_t centMin=0.,
   
   //add dielectron analyses with various cuts to the task
   
-  for(Int_t TrCut = 0; TrCut <= 0; ++TrCut){
-    for(Int_t PIDCut = 0; PIDCut <= 0; ++PIDCut){
-      for(Int_t MVACut = 9; MVACut <= 9; ++MVACut){
+  for(Int_t TrCut = 0; TrCut <= 4; ++TrCut){
+    for(Int_t PIDCut = 0; PIDCut <= 4; ++PIDCut){
+      for(Int_t MVACut = 0; MVACut <= 10; ++MVACut){
         AliDielectron * diel_low = Config_slehner_diele_TMVA(TrCut,PIDCut,MVACut,kFALSE);
         if(!diel_low){
           Printf("=======================================");

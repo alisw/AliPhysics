@@ -145,8 +145,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
 
   // #########################################################
   // Adding cutsettings
-  for(Int_t TrCut = 0; TrCut <= 0; ++TrCut){
-    for(Int_t PIDCut = 0; PIDCut <= 0; ++PIDCut){
+  for(Int_t TrCut = 0; TrCut <= 4; ++TrCut){
+    for(Int_t PIDCut = 0; PIDCut <= 4; ++PIDCut){
     std::cout << "CutTr: "<<TrCut<<" CutPID: "<<PIDCut<<" being added"<< std::endl;
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(TrCut, PIDCut, useAODFilterCuts);
     task->AddTrackCuts(filter);
