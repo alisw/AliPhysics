@@ -36,6 +36,9 @@ class MiniV0 {
   bool IsCowboy() const { return fChi2V0 & (1 << 7); }
   bool IsLikeSign() const { return fV0radius < 0.; } //TODO: switch to signbit with ROOT6
   bool IsFake() const { return fV0pt < 0.; }         //TODO: switch to signbit with ROOT6
+  bool NegativeProngHasTOF() const { return fEtaNeg & (1 << 7); }
+  bool PositiveProngHasTOF() const { return fEtaPos & (1 << 7); }
+  bool OneProngHasTOF() const { return NegativeProngHasTOF() || PositiveProngHasTOF(); }
 
   void SetV0radiusAndLikeSign(float r, bool ls = false) { fV0radius = ls ? -r : r; }
   void SetV0ptAndFake(float pt, bool fake) { fV0pt = fake ? -pt : pt; }
@@ -51,7 +54,7 @@ class MiniV0 {
   void SetLeastXedRowsOverFindable(float ratio);
   void SetMaxChi2perCluster(float chi2);
   void SetProngsTPCnsigmas(float pPi, float pP, float nPi, float nP);
-  void SetProngsEta(float posEta, float negEta);
+  void SetProngsEtaTOF(float posEta, bool posTOF, float negEta, bool negTOF);
 
   static const int fgkV0cosPA_n;
   static const float fgkV0cosPA_f;
@@ -121,8 +124,8 @@ class MiniV0 {
   unsigned char fMaxChi2PerCluster;     // Max chi2 per cluster in TPC
   unsigned char fNsigmaPos;  // # sigma TPC pion/proton for the positive prong
   unsigned char fNsigmaNeg;  // # sigma TPC pion/proton for the negative prong
-  unsigned char fEtaPos;     // Pseudorapidity of the positive prong
-  unsigned char fEtaNeg;     // Pseudorapidity of the negative prong
+  unsigned char fEtaPos;     // Pseudorapidity of the positive prong. MSB is the TOF bit.
+  unsigned char fEtaNeg;     // Pseudorapidity of the negative prong. MSB is the TOF bit.
 };
 
 template<int n>
@@ -170,11 +173,11 @@ inline float MiniV0<n>::GetMaxChi2perCluster() const {
 
 template<int n>
 inline float MiniV0<n>::GetNegProngEta() const {
-  return getBinCenter(fEtaNeg, fgkEta_w, fgkEta_f, true, true);
+  return getBinCenter(fEtaNeg & 0x7F, fgkEta_w, fgkEta_f, true, true);
 }
 template<int n>
 inline float MiniV0<n>::GetPosProngEta() const {
-  return getBinCenter(fEtaPos, fgkEta_w, fgkEta_f, true, true);
+  return getBinCenter(fEtaPos & 0x7F, fgkEta_w, fgkEta_f, true, true);
 }
 
 template<int n>
@@ -269,9 +272,11 @@ inline void MiniV0<n>::SetProngsTPCnsigmas(float pPi, float pP, float nPi,
 }
 
 template<int n>
-inline void MiniV0<n>::SetProngsEta(float posEta, float negEta) {
+inline void MiniV0<n>::SetProngsEtaTOF(float posEta, bool posTOF, float negEta, bool negTOF) {
   fEtaNeg = getBinnedValue<unsigned char>(negEta, fgkEta_w, fgkEta_f, fgkEta_l);
+  if (negTOF) fEtaNeg += 1 << 7;
   fEtaPos = getBinnedValue<unsigned char>(posEta, fgkEta_w, fgkEta_f, fgkEta_l);
+  if (posTOF) fEtaPos += 1 << 7;
 }
 
 template<int n> const int MiniV0<n>::fgkV0cosPA_n = 50000;
@@ -335,7 +340,7 @@ template<int n> const float MiniV0<n>::fgkTPCsigma_w = \
     (MiniV0<n>::fgkTPCsigma_l - MiniV0<n>::fgkTPCsigma_f) / \
     MiniV0<n>::fgkTPCsigma_n;
 
-template<int n> const int MiniV0<n>::fgkEta_n = 200;
+template<int n> const int MiniV0<n>::fgkEta_n = 100;
 template<int n> const float MiniV0<n>::fgkEta_f = -1.f;
 template<int n> const float MiniV0<n>::fgkEta_l = 1.f;
 template<int n> const float MiniV0<n>::fgkEta_w = \
