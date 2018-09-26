@@ -68,6 +68,7 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC() :
   fSwitchSDMinNSub(0),
   fAdditionalTracks(0),
   fHardCutoff(0),
+  fOptionalPartonInfo(0),
   fminpTTrig(20.),
   fmaxpTTrig(50.),
   fangWindowRecoil(0.6),
@@ -132,6 +133,7 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
   fSwitchSDMinNSub(0),
   fAdditionalTracks(0),
   fHardCutoff(0),
+  fOptionalPartonInfo(0),
   fminpTTrig(20.),
   fmaxpTTrig(50.),
   fangWindowRecoil(0.6),
@@ -445,7 +447,7 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
       
       fShapesVar[0] = 0.;
       
-      if (fJetShapeType == kGenShapes){
+      if (fOptionalPartonInfo==1){
         const AliEmcalPythiaInfo *partonsInfo = 0x0;
         partonsInfo = GetPythiaInfo();
         //Printf("partonsInfo=%p",  partonsInfo);

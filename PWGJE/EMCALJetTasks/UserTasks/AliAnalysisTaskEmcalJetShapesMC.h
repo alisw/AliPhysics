@@ -76,6 +76,7 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   void SetSwitchAkT(Int_t c)                                { fSwitchAktNSub   = c   ; }
   void SetAdditionalTracks(Int_t c)                         { fAdditionalTracks =c   ;}
   void SetHardCutoff(Float_t c)                             { fHardCutoff =c   ;} 
+  void SetOptionalPartonInfo(Float_t c)                     { fOptionalPartonInfo; }
   void SetJetPtThreshold(Float_t f)                         { fPtThreshold     = f   ; }
   void SetRMatching(Float_t f)                              { fRMatching = f ;}
   void SetJetRadius(Float_t f)                              { fJetRadius = f ;}
@@ -171,7 +172,8 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   Int_t                               fSwitchSDKtNSub;
   Int_t                               fSwitchSDMinNSub;
   Int_t                               fAdditionalTracks;             //number of extra tracks to stress the grooming
-  Float_t                               fHardCutoff;                  //hard cutoff in the iterative procedure 
+  Float_t                             fHardCutoff;                  //hard cutoff in the iterative procedure 
+  Float_t                             fOptionalPartonInfo;          //parton info only valid for pythia6 
   Float_t                             fminpTTrig;                   //min - max pT for trigger particle in case of recoil jet  
   Float_t                             fmaxpTTrig;
   Float_t                             fangWindowRecoil;             //angular window for btb recoil analysis 
