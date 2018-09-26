@@ -49,6 +49,7 @@ namespace AliNDFunctionInterface {
   Int_t  AppendMethodToArray(Int_t index, TMVA::MethodBase * method);         /// Append method into array of methods - used e.g for bootstrap statistics
   Double_t   EvalMVAStatArray(int id, int statType, vector<float> point);     /// Evaluate statistic
   template<typename T, typename... Args> T EvalMVA(int id, T v, Args... args);        /// variadic function evaluating MVA
+  template<typename T, typename... Args> T EvalMVAClasification(int id, T v, Args... args);        /// variadic function evaluating MVA
   template<typename T, typename... Args> T EvalMVAStat(int id, int statType,  T v, Args... args);        /// variadic function evaluating MVA array stat
 };
 
@@ -116,6 +117,14 @@ template<typename T, typename... Args> T AliNDFunctionInterface::EvalMVA(int id,
   TMVA::MethodBase * method= readerMethodBase[id];
   if (method==NULL) return 0;                      /// some optional verbosity needed
   return method->GetRegressionValues(&event)[0];
+};
+
+template<typename T, typename... Args> T AliNDFunctionInterface::EvalMVAClasification(int id, T v, Args... args){
+  auto a = make_vector<float>(v, args...);
+  TMVA::Event  event = TMVA::Event(a,a.size());
+  TMVA::MethodBase * method= readerMethodBase[id];
+  if (method==NULL) return 0;                      /// some optional verbosity needed
+  return method->GetMvaValue(&event);
 };
 
 

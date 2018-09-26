@@ -97,7 +97,7 @@ void makeMVABootstrapMI(Int_t nRegression=10){
   f->GetObject("MVAInput",treeCache);
   gSystem->Unlink("TMVA_RegressionOutput.root");
   TString output="TMVA_RegressionOutput.root#";
-  for (Int_t iBoot=0; iBoot<nRegression; iBoot++) {
+  for (Long_t iBoot=0; iBoot<nRegression; iBoot++) {
     AliNDFunctionInterface::FitMVARegression(output+"resolutionMIP"+iBoot,treeCache, "resolutionMIP", "interactionRate>0", "interactionRate:bz0:qmaxQASum:qmaxQASumR", "BDTRF25_8:BDTRF12_16:KNN", "");
     AliNDFunctionInterface::FitMVARegression(output+"meanMIPeleR"+iBoot,treeCache, "meanMIPeleR", "interactionRate>0", "interactionRate:bz0:qmaxQASum:qmaxQASumR", "BDTRF25_8:BDTRF12_16:KNN","");
     AliNDFunctionInterface::FitMVARegression(output+"tpcItsMatchA"+iBoot,treeCache, "tpcItsMatchA", "interactionRate>0", "interactionRate:bz0:qmaxQASum:qmaxQASumR", "BDTRF25_8:BDTRF12_16:KNN","");

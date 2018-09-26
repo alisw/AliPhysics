@@ -136,18 +136,67 @@ Double_t AliNDFunctionInterface::GetDeltaInterpolationLinear(THn * his, Double_t
 /// \param factoryString
 /// \return
 Int_t  AliNDFunctionInterface::FitMVAClassification(const char * output, const char *inputTrees, const char *cuts, const char * variables, const char *methods, const char * factoryString){
+
+  TObjArray *treeList = TString(inputTrees).Tokenize(":");
+  TObjArray *cutList = TString(cuts).Tokenize(":");
+
+  TString inputTreesString=TString(inputTrees);
+  if(treeList->GetEntries()==1){
+    for(Int_t i=1;i<cutList->GetEntries() ; i++){
+      inputTreesString+=":"+TString(inputTrees);
+    }
+  }
+  delete treeList;
+  treeList = inputTreesString.Tokenize(":");
+
+  if (treeList->GetEntries()<=1){
+    ::Error("AliNDFunctionInterface::FitMVAClassification","More than one input tree required.");
+    return -1;
+  }
+
+  if (treeList->GetEntries()<cutList->GetEntries()){
+    ::Error("AliNDFunctionInterface::FitMVAClassification","Entries in cut list exceed number of trees.");
+    return -1;
+  }
+  
+  TTree * tree_in[treeList->GetEntries()];
+  TFile * input[treeList->GetEntries()];
+  TCut cut[treeList->GetEntries()];
+  TString tree_name[treeList->GetEntries()];
+  
+  for (Int_t i=0; i<treeList->GetEntries(); i++) cut[i]="";
+  for (Int_t i=0; i<cutList->GetEntries(); i++) cut[i]=cutList->At(i)->GetName();
+  for (Int_t i=0; i<treeList->GetEntries(); i++){
+  	 TObjArray * inTree = TString(treeList->At(i)->GetName()).Tokenize("#");
+ 	 input[i] = TFile::Open( TString(inTree->At(0)->GetName() ));
+    //::Info("AliNDFunctionInterface::FitMVAClassification","Load file %s",inTree->At(0)->GetName());
+ 	 tree_in[i] = (TTree*) input[i]->Get(inTree->At(1)->GetName());
+    ::Info("AliNDFunctionInterface::FitMVAClassification","Load tree %s",inTree->At(1)->GetName());
+    tree_name[i]=inTree->At(1)->GetName();
+    delete inTree;
+  }
+
   TObjArray *dirFile=TString(output).Tokenize("#");
   if(dirFile->GetEntries()<=1){
     ::Error("AliNDFunctionInterface::FitMVAClassification","Empty directory list");
     return -1;
   }
+
   auto outputFile = TFile::Open(dirFile->At(0)->GetName(), "update");
-  if(outputFile->GetListOfKeys()->Contains(dirFile->At(1)->GetName())){
+  if(outputFile==NULL || outputFile->GetListOfKeys()->Contains(dirFile->At(1)->GetName())){
     ::Error("AliNDFunctionInterface::FitMVAClassification","Output directory already exists");
     return -1;
   }
   TString directory=TString(dirFile->At(1)->GetName());
-  TMVA::Factory factory("TMVAMultiClass", outputFile, "!V:!Silent:Color:DrawProgressBar:AnalysisType=multiclass" );
+  TString fstring;
+  if(treeList->GetEntries()==2){
+    fstring="!V:!Silent:Color:DrawProgressBar:AnalysisType=classification";
+  } 
+  else {
+    fstring="!V:!Silent:Color:DrawProgressBar:AnalysisType=multiclass";
+  }
+  TMVA::Factory factory("TMVAMultiClass", outputFile, fstring );
+
   // Declare DataLoader
   TMVA::DataLoader loader(directory);
   TObjArray *variableList = TString(variables).Tokenize(":");
@@ -160,28 +209,8 @@ Int_t  AliNDFunctionInterface::FitMVAClassification(const char * output, const c
   }
   delete variableList;
 
-  TObjArray *treeList = TString(inputTrees).Tokenize(":");
-  TObjArray *cutList = TString(cuts).Tokenize(":");
-  if (treeList->GetEntries()<=1){
-    ::Error("AliNDFunctionInterface::FitMVAClassification","More than one input tree required.");
-    return -1;
-  }
-  if (treeList->GetEntries()<cutList->GetEntries()){
-    ::Error("AliNDFunctionInterface::FitMVAClassification","Entries in cut list exceed number of trees.");
-    return -1;
-  }
-
-  TTree * tree_in[treeList->GetEntries()];
-  TFile * input[treeList->GetEntries()];
-  TCut cut[treeList->GetEntries()];
-  for (Int_t i=0; i<treeList->GetEntries(); i++) cut[i]="";
-  for (Int_t i=0; i<cutList->GetEntries(); i++) cut[i]=cutList->At(i)->GetName();
   for (Int_t i=0; i<treeList->GetEntries(); i++){
-    TObjArray * inTree = TString(treeList->At(i)->GetName()).Tokenize("#");
-    input[i] = TFile::Open( TString(inTree->At(0)->GetName() ));
-    tree_in[i] = (TTree*) input[i]->Get(inTree->At(1)->GetName());
-    loader.AddTree(tree_in[i],inTree->At(1)->GetName(),1.0,cut[i]);
-    delete inTree;
+    loader.AddTree(tree_in[i],tree_name[i]+Form("%d",i),1.0,cut[i]);
   }
 
   loader.PrepareTrainingAndTestTree("", FactorySetting[factoryString]);
