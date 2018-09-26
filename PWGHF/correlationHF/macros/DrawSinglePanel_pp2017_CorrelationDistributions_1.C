@@ -661,6 +661,7 @@ void DrawSinglePanel_CorrelationDistributions_1(){
        
         histo[icoll][kassoc][jmes]->SetMarkerColor(colourSystem[icoll]); 
 	histo[icoll][kassoc][jmes]->SetLineColor(colourSystem[icoll]); 
+        histo[icoll][kassoc][jmes]->SetLineWidth(1); 
 	histo[icoll][kassoc][jmes]->SetMarkerStyle(markerstyle[icoll]); 
 	histo[icoll][kassoc][jmes]->SetMarkerSize(markersize); 
 
@@ -670,6 +671,7 @@ void DrawSinglePanel_CorrelationDistributions_1(){
 	grbase[icoll][kassoc][jmes]->SetFillStyle(fillColourBaselineStyle);
 	grbase[icoll][kassoc][jmes]->SetFillColor(colourSystemBaseUnc[icoll]);// was kRed-7
 	grbase[icoll][kassoc][jmes]->SetLineColor(colourSystemBaseUnc[icoll]);//was kRed-7
+        grbase[icoll][kassoc][jmes]->SetLineWidth(1); 
      
         if(grv2[icoll][kassoc][jmes]){
 	  grv2[icoll][kassoc][jmes]->SetFillStyle(3002);
@@ -678,7 +680,7 @@ void DrawSinglePanel_CorrelationDistributions_1(){
 	suberr[icoll][kassoc][jmes]->SetLineColor(colourSystem[icoll]);
 	    
 	subtractedhisto[icoll][kassoc][jmes]->SetMinimum(minYaxis[kassoc]);
-  subtractedhisto[icoll][kassoc][jmes]->SetMaximum(maxYaxis[kassoc]);
+        subtractedhisto[icoll][kassoc][jmes]->SetMaximum(maxYaxis[kassoc]);
 
       }      
     }
@@ -776,6 +778,7 @@ void DrawSinglePanel_CorrelationDistributions_1(){
       //  box2[4]->Draw("same");
       SetColorGraphs(0,grbase[0][iassoc][jDpt],colourSystemBaseUnc[0]);// redundant...
       grbase[0][iassoc][jDpt]->SetFillStyle(fillColourBaselineStyle);
+      grbase[0][iassoc][jDpt]->SetLineWidth(1);      
       grbase[0][iassoc][jDpt]->Draw("E2"); 
 
       line->Draw(); 
@@ -787,6 +790,7 @@ void DrawSinglePanel_CorrelationDistributions_1(){
 	      ltscale[0][iassoc][jDpt]->SetX(0.077/gPad->GetWNDC()+gPad->GetLeftMargin());
       }
 
+      suberr[0][iassoc][jDpt]->SetLineWidth(1);
       suberr[0][iassoc][jDpt]->Draw("E2");
       subtractedhisto[0][iassoc][jDpt]->Draw("same");
       ltscale[0][iassoc][jDpt]->Draw();//commented

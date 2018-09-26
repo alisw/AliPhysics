@@ -50,9 +50,9 @@ TString basicdir="$PWD";
 TString strquantityFile[5]={"NSYield","NSSigma","Pedestal","ASYield","ASSigma"};
 
 Double_t maxRangePPb[6][5]={
-         {1.8,0.64,13,2.0,1.09},
-         {1.8,0.64,13,2.0,1.09},
-         {1.8,0.64,13,2.0,1.09},
+         {1.85,0.64,13,1.95,1.09},
+         {1.85,0.64,13,1.95,1.09},
+         {1.85,0.64,13,1.95,1.09},
          {1.35,0.64,13,2,1.28},
          {1.35,0.64,13,2,1.28},
          {1.35,0.64,13,2,1.28}};
@@ -326,7 +326,7 @@ void Set4x2PadPositions(TCanvas* c){
   Printf("innerPadHeight: %f",innerPadHeight);
   Printf("innerPadWidth: %f",innerPadWidth);
   Double_t marginLeftForXAxis=0.02;
-  Double_t marginBottomForYAxis=0.0;
+  Double_t marginBottomForYAxis=0.02;
 
  // Bottom row
 
@@ -581,17 +581,17 @@ Double_t x=0.21,y=0.390;
   }
 
   if(style==-1){
-    alice=new TLatex(0.75,0.85,"ALICE");
+    alice=new TLatex(0.75,0.85,"ALICE Preliminary");
     alice->SetNDC();
     alice->SetTextFont(42);
     alice->SetTextSize(0.03);
     alice->SetTextAlign(11);
   }
   else{
-    alice= new TLatex(0.016/gPad->GetWNDC()+gPad->GetLeftMargin(),0.395/gPad->GetHNDC()+gPad->GetBottomMargin(),"ALICE"); 
+    alice= new TLatex(0.0145/gPad->GetWNDC()+gPad->GetLeftMargin(),0.395/gPad->GetHNDC()+gPad->GetBottomMargin(),"ALICE Preliminary"); 
     alice->SetNDC();
     alice->SetTextFont(43);
-    alice->SetTextSize(24*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);// draft 2 was: 28 *...
+    alice->SetTextSize(19*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);// draft 2 was: 28 *...
     alice->SetTextAlign(11);
   }
 
@@ -665,11 +665,11 @@ TLatex* GetTextSide(Int_t variable,Int_t identifier){
 	tlSide->SetTextSize(0.03*resizeTextFactor);
       }
       else{
-	tlSide=new TLatex(0.125/gPad->GetWNDC()+gPad->GetLeftMargin(),0.395/gPad->GetHNDC()+gPad->GetBottomMargin(),"Near side");
+	tlSide=new TLatex(0.15/gPad->GetWNDC()+gPad->GetLeftMargin(),0.395/gPad->GetHNDC()+gPad->GetBottomMargin(),"Near side");
 	tlSide->SetNDC();
 	tlSide->SetTextAlign(11);
 	tlSide->SetTextFont(43);
-	tlSide->SetTextSize(24*innerPadHeight/referencePadHeight*resizeTextFactor);// draft 2 was 28*...
+	tlSide->SetTextSize(19*innerPadHeight/referencePadHeight*resizeTextFactor);// draft 2 was 28*...
       }
     }
   else {
@@ -681,11 +681,11 @@ TLatex* GetTextSide(Int_t variable,Int_t identifier){
       tlSide->SetTextSize(0.03*resizeTextFactor);
     }
     else{
-      tlSide=new TLatex(0.125/gPad->GetWNDC()+gPad->GetLeftMargin(),0.395/gPad->GetHNDC()+gPad->GetBottomMargin(),"Away side");
+      tlSide=new TLatex(0.146/gPad->GetWNDC()+gPad->GetLeftMargin(),0.395/gPad->GetHNDC()+gPad->GetBottomMargin(),"Away side");
       tlSide->SetNDC();
       tlSide->SetTextFont(43);
       tlSide->SetTextAlign(11);
-      tlSide->SetTextSize(24*innerPadHeight/referencePadHeight*resizeTextFactor);
+      tlSide->SetTextSize(19*innerPadHeight/referencePadHeight*resizeTextFactor);
     }
     
 
@@ -733,7 +733,7 @@ TH1D *GetAndPreparePPb(Int_t binD,Int_t quantity,Int_t numsyst,TGraphAsymmErrors
   gr->SetName(Form("%sPPb",gr->GetName()));
   gr->SetMarkerColor(colSystem[numsyst]);
   gr->SetLineColor(colSystem[numsyst]);
-  gr->SetLineWidth(2);
+  gr->SetLineWidth(1);
   gr->SetMarkerStyle(markerStyle[numsyst]);
   gr->SetMarkerSize(markersize);
   for(Int_t iPoint=0;iPoint<3;iPoint++) {
@@ -771,7 +771,7 @@ TH1D *GetAndPreparePPb(Int_t binD,Int_t quantity,Int_t numsyst,TGraphAsymmErrors
     //printf("BinD = %d\n, pp in 0.3-1 is %f\n",binD,hPPbInput1->GetBinContent(binD+3));
   }
   hPPb->SetLineColor(colSystem[numsyst]);
-  hPPb->SetLineWidth(2);
+  hPPb->SetLineWidth(1);
   hPPb->SetMarkerColor(colSystem[numsyst]);
   hPPb->SetMarkerStyle(markerStyle[numsyst]);
   hPPb->SetMarkerSize(markersize);
@@ -830,13 +830,13 @@ TH1D *GetAndPreparePPb(Int_t binass,Int_t quantity,Int_t numsyst,TGraphAsymmErro
   TH1D *hPPb=(TH1D*)c->FindObject(Form("FinalTrend%s",strquantityFile[quantity].Data()));
   hPPb->SetName(Form("%sPPb",hPPb->GetName()));
   hPPb->SetLineColor(colSystem[numsyst]);
-  hPPb->SetLineWidth(2);
+  hPPb->SetLineWidth(1);
   hPPb->SetMarkerColor(colSystem[numsyst]);
   hPPb->SetMarkerStyle(markerStyle[numsyst]);
   hPPb->SetMarkerSize(markersize);
   gr->SetMarkerColor(colSystem[numsyst]);
   gr->SetLineColor(colSystem[numsyst]);
-  gr->SetLineWidth(2);
+  gr->SetLineWidth(1);
   gr->SetMarkerStyle(markerStyle[numsyst]);
   gr->SetMarkerSize(markersize);
 
@@ -1018,28 +1018,28 @@ TCanvas* Compare(Int_t binD,Int_t quantity,TPad *pd,Int_t textlegendOptions){
 
 
   gr_points_PPb1->SetLineColor(colSystem[0]);
-  gr_points_PPb1->SetLineWidth(2);
+  gr_points_PPb1->SetLineWidth(1);
   gr_points_PPb1->SetMarkerColor(colSystem[0]);
   gr_points_PPb1->SetMarkerStyle(markerStyle[0]);
   gr_points_PPb1->SetMarkerSize(markersize);
   gr_points_PPb1->Draw("samePZ");
   
   gr_pointCount_PPb1->SetLineColor(colSystem[0]);
-  gr_pointCount_PPb1->SetLineWidth(2);
+  gr_pointCount_PPb1->SetLineWidth(1);
   gr_pointCount_PPb1->SetMarkerStyle(colSystem[0]);
   gr_pointCount_PPb1->SetMarkerColor(kBlue);
   gr_pointCount_PPb1->SetMarkerSize(markersize);
   gr_pointCount_PPb1->Draw("samePZ");
 
   gr_points_PPb2->SetLineColor(colSystem[1]);
-  gr_points_PPb2->SetLineWidth(2);
+  gr_points_PPb2->SetLineWidth(1);
   gr_points_PPb2->SetMarkerColor(colSystem[1]);
   gr_points_PPb2->SetMarkerStyle(markerStyle[1]);
   gr_points_PPb2->SetMarkerSize(markersize);
   gr_points_PPb2->Draw("samePZ");
   
   gr_pointCount_PPb2->SetLineColor(colSystem[1]);
-  gr_pointCount_PPb2->SetLineWidth(2);
+  gr_pointCount_PPb2->SetLineWidth(1);
   gr_pointCount_PPb2->SetMarkerStyle(colSystem[1]);
   gr_pointCount_PPb2->SetMarkerColor(kRed);
   gr_pointCount_PPb2->SetMarkerSize(markersize);
@@ -1066,13 +1066,17 @@ TCanvas* Compare(Int_t binD,Int_t quantity,TPad *pd,Int_t textlegendOptions){
     }
     if(textlegendOptions%1000>=100){
       TLegend * legend;
-      legend = new TLegend(0.005/gPad->GetWNDC()+gPad->GetLeftMargin(),0.215/gPad->GetHNDC()+gPad->GetBottomMargin(),0.18/gPad->GetWNDC()+gPad->GetLeftMargin(),0.312/gPad->GetHNDC()+gPad->GetBottomMargin());// draft 2 (2 lines only, rapidity on the same line also for p-Pb): 0.002/gPad->GetWNDC()+gPad->GetLeftMargin(),0.23/gPad->GetHNDC()+gPad->GetBottomMargin(),0.15/gPad->GetWNDC()+gPad->GetLeftMargin(),0.30/gPad->GetHNDC()+gPad->GetBottomMargin()
+      legend = new TLegend(0.005/gPad->GetWNDC()+gPad->GetLeftMargin(),0.175/gPad->GetHNDC()+gPad->GetBottomMargin(),0.18/gPad->GetWNDC()+gPad->GetLeftMargin(),0.332/gPad->GetHNDC()+gPad->GetBottomMargin());// draft 2 (2 lines only, rapidity on the same line also for p-Pb): 0.002/gPad->GetWNDC()+gPad->GetLeftMargin(),0.23/gPad->GetHNDC()+gPad->GetBottomMargin(),0.15/gPad->GetWNDC()+gPad->GetLeftMargin(),0.30/gPad->GetHNDC()+gPad->GetBottomMargin()
       legend->SetTextFont(43);
       legend->SetTextAlign(12);
+      legend->SetEntrySeparation(0.3);
       legend->SetLineColor(kWhite);
       legend->SetTextSize(17*innerPadHeight/referencePadHeight*resizeTextFactor);
-      legend->AddEntry(hPPb_1,"pp, #sqrt{s} = 5.02 TeV","lep");
-      legend->AddEntry(hPPb_2,"p-Pb, #sqrt{s_{NN}} = 5.02 TeV","lep");
+      legend->AddEntry(hPPb_1,"pp, #sqrt{s} = 5.02 TeV,","lep");
+      legend->AddEntry((TObject*)0,"|#it{y}^{D}_{cms}| < 0.5","");
+      //legend->AddEntry((TObject*)0,"","");
+      legend->AddEntry(hPPb_2,"p-Pb, #sqrt{s_{NN}} = 5.02 TeV,","lep");
+      legend->AddEntry((TObject*)0,"-0.96 < #it{y}^{D}_{cms} < 0.04","");
       legend->Draw();
 
      /*TLegend *legendSuperimp=GetLegendDataPointsFake(hPP,hPPbSuperimp,10*quantity+binD);
