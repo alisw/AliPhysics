@@ -53,7 +53,7 @@ if(SetTPCCorrection){
 else  task->SetUseCorr(kFALSE);
 
 task->SelectCollisionCandidates(AliVEvent::kINT7);
-task->SetupTrackCuts(cutlib->GetTrackCuts(trackCut,PIDCut,useAODFilterCuts));
+task->SetupTrackCuts(cutlib->GetTrackCuts(trackCut,PIDCut,0,useAODFilterCuts));
 task->SetupEventCuts(cutlib->GetEventCuts(centmin, centmax));
 task->SetCentralityPercentileRange(centmin,centmax);    //maybe redundant
 

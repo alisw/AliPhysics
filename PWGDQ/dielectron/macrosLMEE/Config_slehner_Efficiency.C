@@ -183,7 +183,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t selTr, Int_t selPID, Bool_t u
   LMEECutLib* LMcutlib = new LMEECutLib();
 
   std::cout << "Get CutTr: "<<selTr<<" CutPID: "<<selPID<<std::endl;
-  anaFilter->AddCuts(LMcutlib->GetTrackCuts(selTr, selPID,useAODFilterCuts));
+  anaFilter->AddCuts(LMcutlib->GetTrackCuts(selTr, selPID, 0, useAODFilterCuts));     // Setting MVA cut for efficiency to 0 - no efficiency correction for MVA cut here
   anaFilter->SetName(TString::Format("CutTr%d_PID%d",selTr, selPID));
   anaFilter->Print();
   return anaFilter;
