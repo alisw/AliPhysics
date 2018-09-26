@@ -16,7 +16,7 @@ public:
     
   }
   static AliDielectronPID* GetPIDCutsAna();
-  AliDielectronCutGroup* GetTrackCuts(int trsel=0, int pidsel=0, Bool_t useAODFilterCuts);
+  AliDielectronCutGroup* GetTrackCuts(int trsel=0, int pidsel=0, Int_t MVACut=0, Bool_t useAODFilterCuts, TString TMVAweight="TMVAClassification_BDTG.weights_094.xml");
   AliDielectronEventCuts* GetEventCuts(int sel);
   static TH3D SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise);
   static AliDielectronPID* pidFilterCuts;
@@ -177,10 +177,10 @@ AliDielectronPID* LMEECutLib::GetPIDCutsAna(int sel, Bool_t useAODFilterCuts) {
 
 }
 
-AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID, Bool_t useAODFilterCuts) {
+AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MVACut, Bool_t useAODFilterCuts, TString TMVAweight) {
   
   ::Info("LMEE_CutLib_slehner","setting Track cuts");
-  AliDielectronCutGroup* trackCuts = new AliDielectronCutGroup("CutsAna","CutsAna",AliDielectronCutGroup::kCompAND);
+  AliDielectronCutGroup* trackCuts = new AliDielectronCutGroup(TString::Format("CutTr%d_PID%d_MVA%f",selTr, selPID,MVACut),TString::Format("CutTr%d_PID%d_MVA%f",selTr, selPID,MVACut),AliDielectronCutGroup::kCompAND);
     
   ////Add nanoAOD filter cuts
   AliDielectronVarCuts *varCutsFilter   = new AliDielectronVarCuts("VarCuts","VarCuts");
@@ -258,6 +258,42 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID, Bool_t us
 
   }
   
+  // /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv TMVA vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
+
+//  TString weightFile="alien:///alice/cern.ch/user/s/slehner/TMVAClassification_BDTG.weights_094.xml";
+  AliDielectronTMVACuts *TMVACuts=0;
+  
+  if(MVACut!=0){
+    TString weightFile="alien:///alice/cern.ch/user/s/slehner/TMVAweights/"+TMVAweight;
+
+    Printf("Use TMVA weight input file: %s",weightFile.Data());
+
+    TMVACuts = new AliDielectronTMVACuts(TString::Format("TMVA%d",MVACut),TString::Format("TMVA%d",MVACut));
+    TMVACuts->AddTMVAInput("nITS", (Int_t) AliDielectronVarManager::kNclsITS);
+    TMVACuts->AddTMVAInput("ITS1Shared", (Int_t) AliDielectronVarManager::kClsS1ITS);
+    TMVACuts->AddTMVAInput("ITS2Shared", (Int_t) AliDielectronVarManager::kClsS2ITS);
+    TMVACuts->AddTMVAInput("ITS3Shared", (Int_t) AliDielectronVarManager::kClsS3ITS);
+    TMVACuts->AddTMVAInput("ITS4Shared", (Int_t) AliDielectronVarManager::kClsS4ITS);
+    TMVACuts->AddTMVAInput("ITS5Shared", (Int_t) AliDielectronVarManager::kClsS5ITS);
+    TMVACuts->AddTMVAInput("ITS6Shared", (Int_t) AliDielectronVarManager::kClsS6ITS);
+    TMVACuts->AddTMVAInput("nITSshared_frac",(Float_t) AliDielectronVarManager::kNclsSFracITS);
+    TMVACuts->AddTMVAInput("NCrossedRowsTPC",(Float_t) AliDielectronVarManager::kNclsCrTPC);
+    TMVACuts->AddTMVAInput("NClustersTPC",(Float_t) AliDielectronVarManager::kNclsTPC);
+    TMVACuts->AddTMVAInput("NTPCSignal",(Float_t) AliDielectronVarManager::kTPCsignalN);
+    TMVACuts->AddTMVAInput("log(abs(DCAxy))",(Float_t) AliDielectronVarManager::kLogDCAXY);
+    TMVACuts->AddTMVAInput("log(abs(DCAz))",(Float_t) AliDielectronVarManager::kLogDCAZ);  
+    TMVACuts->AddTMVAInput("chi2GlobalPerNDF",(Float_t) AliDielectronVarManager::kChi2GlobalNDF);
+    TMVACuts->AddTMVAInput("chi2ITS",(Float_t) AliDielectronVarManager::kITSchi2);
+    TMVACuts->AddTMVAInput("eta",(Float_t) AliDielectronVarManager::kEta);
+    TMVACuts->AddTMVAInput("phi",(Float_t) AliDielectronVarManager::kPhi);
+    TMVACuts->AddTMVAInput("pt",(Float_t) AliDielectronVarManager::kPt);  
+    TMVACuts->AddTMVAInput("centrality",(Float_t) AliDielectronVarManager::kCentrality);
+
+    TMVACuts->SetTMVAWeights("BDTG method", weightFile.Data());
+    Printf("Use TMVA cut value = %f _________",-1. + 0.2*MVACut);
+    TMVACuts->SetTMVACutValue(-1. + 0.2*MVACut);
+  }
+  
   AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
   trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA);   //(1<<4) -> error
   trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
@@ -268,13 +304,8 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID, Bool_t us
   }
   trackCuts->AddCut(trackCutsDiel);
   trackCuts->AddCut(trackCutsAOD);
+   if(MVACut!=0) trackCuts->AddCut(TMVACuts);
 
   trackCuts->AddCut(GetPIDCutsAna(selPID,useAODFilterCuts));
   return trackCuts;
 }
-
-
-
-
-
-
