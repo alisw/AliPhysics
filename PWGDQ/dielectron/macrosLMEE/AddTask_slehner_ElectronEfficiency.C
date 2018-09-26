@@ -1,9 +1,9 @@
 //Names should contain a comma seperated list of cut settings
 //Current options: all, electrons, kCutSet1, TTreeCuts, V0_TPCcorr, V0_ITScorr
 AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
-                                                                Int_t trackCut=1,
-                                                                Int_t PIDCut=1,
-                                                                Int_t evCut=1,
+//                                                                Int_t trackCut=1,
+//                                                                Int_t PIDCut=1,
+//                                                                Int_t evCut=1,
                                                                 Double_t centMin=0.,
                                                                 Double_t centMax=100.,
                                                                 Bool_t PIDCorr=kFALSE,
@@ -43,7 +43,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   // #########################################################
   // #########################################################
   // Creating an instance of the task
-  AliAnalysisTaskElectronEfficiencyV2* task = new AliAnalysisTaskElectronEfficiencyV2(TString::Format("MaxTrCut%d_MaxPIDCut%d",trackCut, PIDCut).Data());
+  AliAnalysisTaskElectronEfficiencyV2* task = new AliAnalysisTaskElectronEfficiencyV2(TString::Format("MaxTrCuts_MaxPIDCuts").Data());
 
   // #########################################################
   // #########################################################
@@ -59,11 +59,11 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   // Event selection. Is the same for all the different cutsettings
   task->SetEnablePhysicsSelection(kTRUE);
   task->SetTriggerMask(triggerNames);
-  task->SetEventFilter(cutlib->GetEventCuts()); // All cut sets have same event cuts
+  task->SetEventFilter(cutlib->GetEventCuts(centMin, centMax)); // All cut sets have same event cuts
   task->SelectCollisionCandidates(AliVEvent::kINT7);
   
 
-//  GetCentrality(centrality, centMin, centMax);
+//  maybe redundant since already set in eventcuts above
   std::cout << "CentMin = " << centMin << "  CentMax = " << centMax << std::endl;
   task->SetCentrality(centMin, centMax);
 
@@ -71,10 +71,10 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   // #########################################################
   // Set minimum and maximum values of generated tracks. Only used to save computing power.
   // Do not set here your analysis pt-cuts
-//  task->SetMinPtGen(minGenPt);
-//  task->SetMaxPtGen(maxGenPt);
-//  task->SetMinEtaGen(minGenEta);
-//  task->SetMaxEtaGen(maxGenEta);
+  task->SetMinPtGen(minGenPt);
+  task->SetMaxPtGen(maxGenPt);
+  task->SetMinEtaGen(minGenEta);
+  task->SetMaxEtaGen(maxGenEta);
 
   // #########################################################
   // #########################################################
@@ -145,16 +145,16 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
 
   // #########################################################
   // Adding cutsettings
-//  for(Int_t TrCut = 0; TrCut <= maxTrCut; ++TrCut){
-//    for(Int_t PIDCut = 0; PIDCut <= maxPIDCut; ++PIDCut){
-//    std::cout << "CutTr: "<<TrCut<<" CutPID: "<<PIDCut<<" being added"<< std::endl;
-//    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(TrCut, PIDCut, useAODFilterCuts);
-//    task->AddTrackCuts(filter);
-//    }
-//  }
-  
-  AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, useAODFilterCuts);
-  task->AddTrackCuts(filter);  
+  for(Int_t TrCut = 0; TrCut <= 0; ++TrCut){
+    for(Int_t PIDCut = 0; PIDCut <= 0; ++PIDCut){
+    std::cout << "CutTr: "<<TrCut<<" CutPID: "<<PIDCut<<" being added"<< std::endl;
+    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(TrCut, PIDCut, useAODFilterCuts);
+    task->AddTrackCuts(filter);
+    }
+  }
+//  
+//  AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, useAODFilterCuts);
+//  task->AddTrackCuts(filter);  
   
   if(PIDCorr) setPIDCorrections(task);
 

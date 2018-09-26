@@ -121,16 +121,25 @@ public:
     kNclsITS,                // number of clusters assigned in the ITS
     kITSFakeFlag,            // ITS fake flag
     kITSchi2Cl,              // chi2/cl in the ITS
+    kITSchi2,                // chi2 in the ITS
+    kChi2GlobalNDF,           // chi2/cl for global track
     kNclsTPC,                // number of clusters assigned in the TPC
     kNclsSTPC,               // number of shared clusters assigned in the TPC
     kNclsSFracTPC,           // fraction of shared clusters assigned in the TPC
     kNclsSITS,               // number of shared clusters assigned in the ITS
     kNclsSFracITS,           // fraction of shared clusters assigned in the ITS
     kNclsSMapITS,            // ITS shared cluster map
+    kClsS1ITS,               // ITS shared cluster layer 1
+    kClsS2ITS,               // ITS shared cluster layer 2
+    kClsS3ITS,               // ITS shared cluster layer 3
+    kClsS4ITS,               // ITS shared cluster layer 4
+    kClsS5ITS,               // ITS shared cluster layer 5
+    kClsS6ITS,               // ITS shared cluster layer 6
 
     kNclsTPCiter1,           // number of clusters assigned in the TPC after first iteration
     kNFclsTPC,               // number of findable clusters in the TPC
     kNFclsTPCr,              // number of findable clusters(crossed rows) in the TPC with more robust definition
+    kNclsCrTPC,              // number of crossed rows in the TPC
     kNFclsTPCrFrac,          // number of found/findable clusters in the TPC with more robust definition
     kNFclsTPCfCross,         // fraction crossed rows/findable clusters in the TPC, as done in AliESDtrackCuts
     kChi2TPCConstrainedVsGlobal, // "Golden Chi 2" Chi2 of the TPC track constrained to the global vertex and the global track, in AODs only available for production using AliRoot 7310 or later
@@ -347,6 +356,8 @@ public:
     kOneOverPairEffSq,        // 1 / pair efficiency squared (correction factor)
     kRndmPair,               // radomly created number (used to apply special signal reduction cuts)
     kRndm=kRndmPair,
+    kLogDCAXY,                //TMath::Log(TMath::Abs(DCAxy)) - used as MVA input for conversion rejection
+    kLogDCAZ,                 //TMath::Log(TMath::Abs(DCAz))  - used as MVA input for conversion rejection
     kLeg1DCAsigXY,            //DCA in sigma for first daughter of the pair in xy-plane
     kLeg1DCAabsXY,            //DCA in cm for first daughter of the pair in xy-plane
     kLeg1DCAresXY,            //resolution from kov matrix for first daughter of the pair in xy-plane
@@ -912,6 +923,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kNclsSFracTPC]  = tpcNcls>0?tpcNclsS/tpcNcls:0;
   values[AliDielectronVarManager::kNclsTPCiter1]  = particle->GetTPCNclsIter1(); // TODO: get rid of the plain numbers
   values[AliDielectronVarManager::kNFclsTPC]       = tpcClusFindable;
+  values[AliDielectronVarManager::kNclsCrTPC]      = particle->GetTPCCrossedRows();
   values[AliDielectronVarManager::kNFclsTPCr]      = particle->GetTPCClusterInfo(2,1);
   values[AliDielectronVarManager::kNFclsTPCrFrac]  = particle->GetTPCClusterInfo(2);
   values[AliDielectronVarManager::kNFclsTPCfCross]= (tpcClusFindable>0)?(particle->GetTPCClusterInfo(2,1)/tpcClusFindable):0;
@@ -925,10 +937,24 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kTRDsignal]     = particle->GetTRDsignal();
   values[AliDielectronVarManager::kTPCclsDiff]    = tpcSignalN-tpcNcls;
   values[AliDielectronVarManager::kTPCclsSegments] = 0.0;
-
+  values[AliDielectronVarManager::kClsS1ITS]=0;
+  values[AliDielectronVarManager::kClsS2ITS]=0;
+  values[AliDielectronVarManager::kClsS3ITS]=0;
+  values[AliDielectronVarManager::kClsS4ITS]=0;
+  values[AliDielectronVarManager::kClsS5ITS]=0;
+  values[AliDielectronVarManager::kClsS6ITS]=0;
+  
   Double_t itsNclsS = 0.;
   for(int i=0; i<6; i++){
-    if( particle->HasSharedPointOnITSLayer(i) )   itsNclsS ++;
+    if( particle->HasSharedPointOnITSLayer(i) )   {
+        itsNclsS ++;
+        if(i==0) values[AliDielectronVarManager::kClsS1ITS]=1;
+        if(i==1) values[AliDielectronVarManager::kClsS2ITS]=1;
+        if(i==2) values[AliDielectronVarManager::kClsS3ITS]=1;
+        if(i==3) values[AliDielectronVarManager::kClsS4ITS]=1;
+        if(i==4) values[AliDielectronVarManager::kClsS5ITS]=1;
+        if(i==5) values[AliDielectronVarManager::kClsS6ITS]=1;
+    }
   }
   values[AliDielectronVarManager::kNclsITS]      = itsNcls;
   values[AliDielectronVarManager::kNclsSITS]     = itsNclsS;
@@ -963,6 +989,8 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   if (tpcNcls>0) values[AliDielectronVarManager::kTPCchi2Cl] = particle->GetTPCchi2() / tpcNcls;
   values[AliDielectronVarManager::kITSchi2Cl] = -1;
   if (itsNcls>0) values[AliDielectronVarManager::kITSchi2Cl] = particle->GetITSchi2() / itsNcls;
+  else values[AliDielectronVarManager::kITSchi2Cl] = -99;
+  values[AliDielectronVarManager::kITSchi2] = particle->GetITSchi2();
   //TRD pidProbs
   particle->GetTRDpid(pidProbs);
   values[AliDielectronVarManager::kTRDprobEle]    = pidProbs[AliPID::kElectron];
@@ -977,6 +1005,11 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kImpactParZ]    = impactParZ;
   values[AliDielectronVarManager::kImpactParXYsigma]   = -1.;
   values[AliDielectronVarManager::kImpactParZsigma]    = -1.;
+  
+  if(TMath::Abs(impactParXY)>0)  values[AliDielectronVarManager::kLogDCAXY]   = TMath::Log(TMath::Abs(impactParXY));
+  else                    values[AliDielectronVarManager::kLogDCAXY]   = 0;
+  if(TMath::Abs(impactParZ)>0)   values[AliDielectronVarManager::kLogDCAZ]   = TMath::Log(TMath::Abs(impactParZ));
+  else                    values[AliDielectronVarManager::kLogDCAZ]   = 0;
 
   Float_t dca[2] = {-999.,-999.};
   Float_t dcaRes[3] = {-999.,-999.,-999.};
@@ -1188,6 +1221,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
 
   // Reset AliESDtrack interface specific information
   if(Req(kNclsITS) || Req(kNclsSFracITS))      values[AliDielectronVarManager::kNclsITS]       = particle->GetITSNcls();
+  if(Req(kITSchi2))    values[AliDielectronVarManager::kITSchi2]     = particle->GetITSchi2();
   if(Req(kITSchi2Cl))    values[AliDielectronVarManager::kITSchi2Cl]     = (particle->GetITSNcls()>0)? particle->GetITSchi2() / particle->GetITSNcls() : 0;
   if(Req(kNclsTPC))      values[AliDielectronVarManager::kNclsTPC]       = tpcNcls;
   if(Req(kNclsSTPC) || Req(kNclsSFracTPC))     values[AliDielectronVarManager::kNclsSTPC]      = tpcNclsS;
@@ -1195,6 +1229,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   if(Req(kNclsTPCiter1)) values[AliDielectronVarManager::kNclsTPCiter1]  = tpcNcls; // not really available in AOD
   if(Req(kNFclsTPC)  || Req(kNFclsTPCfCross))  values[AliDielectronVarManager::kNFclsTPC]      = particle->GetTPCNclsF();
   if(Req(kNFclsTPCr) || Req(kNFclsTPCfCross))  values[AliDielectronVarManager::kNFclsTPCr]     = particle->GetTPCClusterInfo(2,1);
+  if(Req(kNclsCrTPC))      values[AliDielectronVarManager::kNclsCrTPC]      = particle->GetTPCCrossedRows();
   if(Req(kNFclsTPCrFrac))  values[AliDielectronVarManager::kNFclsTPCrFrac] = particle->GetTPCClusterInfo(2);
   if(Req(kNFclsTPCfCross)) values[AliDielectronVarManager::kNFclsTPCfCross]= (values[kNFclsTPC]>0)?(values[kNFclsTPCr]/values[kNFclsTPC]):0;
   if(Req(kChi2TPCConstrainedVsGlobal)) values[AliDielectronVarManager::kChi2TPCConstrainedVsGlobal] = particle->GetChi2TPCConstrainedVsGlobal();
@@ -1205,11 +1240,26 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   if(Req(kTRDchi2Trklt))   values[AliDielectronVarManager::kTRDchi2Trklt]  = (particle->GetTRDntrackletsPID()>0 ? particle->GetTRDchi2() / particle->GetTRDntrackletsPID() : -1.);
   if(Req(kTRDsignal))      values[AliDielectronVarManager::kTRDsignal]     = particle->GetTRDsignal();
 
-  if(Req(kNclsSITS) || Req(kNclsSFracITS) || Req(kNclsSMapITS)){
+  if(Req(kNclsSITS) || Req(kNclsSFracITS) || Req(kNclsSMapITS) || Req(kClsS1ITS) || Req(kClsS2ITS) || Req(kClsS3ITS) || Req(kClsS4ITS) || Req(kClsS5ITS) || Req(kClsS6ITS)){
     Double_t itsNclsS = 0.;
+    values[AliDielectronVarManager::kClsS1ITS]=0;
+    values[AliDielectronVarManager::kClsS2ITS]=0;
+    values[AliDielectronVarManager::kClsS3ITS]=0;
+    values[AliDielectronVarManager::kClsS4ITS]=0;
+    values[AliDielectronVarManager::kClsS5ITS]=0;
+    values[AliDielectronVarManager::kClsS6ITS]=0;
     for(int i=0; i<6; i++){
-      if( particle->HasSharedPointOnITSLayer(i) ) itsNclsS ++;
+      if( particle->HasSharedPointOnITSLayer(i) ) {
+        itsNclsS ++;
+        if(i==0) values[AliDielectronVarManager::kClsS1ITS]=1;
+        if(i==1) values[AliDielectronVarManager::kClsS2ITS]=1;
+        if(i==2) values[AliDielectronVarManager::kClsS3ITS]=1;
+        if(i==3) values[AliDielectronVarManager::kClsS4ITS]=1;
+        if(i==4) values[AliDielectronVarManager::kClsS5ITS]=1;
+        if(i==5) values[AliDielectronVarManager::kClsS6ITS]=1;
+      }
     }
+  
     values[AliDielectronVarManager::kNclsSITS]     = itsNclsS;
     if(Req(kNclsSMapITS))  values[AliDielectronVarManager::kNclsSMapITS]  = particle->GetITSSharedClusterMap();  //not implemented in AODs
     if(Req(kNclsSFracITS)) values[AliDielectronVarManager::kNclsSFracITS] = itsNclsS > 0. ? itsNclsS / particle->GetITSNcls() : 0.;
@@ -1254,6 +1304,8 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     if(n>=threshold) values[AliDielectronVarManager::kTPCclsORO] = n;
   }
 
+  if(Req(kChi2GlobalNDF))   values[AliDielectronVarManager::kChi2GlobalNDF]     = particle->Chi2perNDF();
+  
   // it is stored as normalized to tpcNcls-5 (see AliAnalysisTaskESDfilter)
   if(Req(kTPCchi2Cl))   values[AliDielectronVarManager::kTPCchi2Cl]     = (tpcNcls>0)?particle->Chi2perNDF()*(tpcNcls-5)/tpcNcls:-1.;
   if(Req(kTrackStatus)) values[AliDielectronVarManager::kTrackStatus]   = (Double_t)particle->GetStatus();
@@ -1279,7 +1331,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
 
   Double_t d0z0[2]={-999.0,-999.0};
   Double_t dcaRes[3] = {-999.,-999.,-999.};
-  if(Req(kImpactParXY) || Req(kImpactParZ) || Req(kImpactParXYsigma) || Req(kImpactParZsigma) ) GetDCA(particle, d0z0, dcaRes);
+  if(Req(kImpactParXY) || Req(kImpactParZ) || Req(kImpactParXYsigma) || Req(kImpactParZsigma) || Req(kLogDCAXY) || Req(kLogDCAZ)) GetDCA(particle, d0z0, dcaRes);
   values[AliDielectronVarManager::kImpactParXY]   = d0z0[0];
   values[AliDielectronVarManager::kImpactParZ]    = d0z0[1];
   values[AliDielectronVarManager::kImpactParXYsigma] = -999.0;
@@ -1287,7 +1339,12 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   if(dcaRes[0]>0.) values[AliDielectronVarManager::kImpactParXYsigma] = d0z0[0]/TMath::Sqrt(dcaRes[0]);
   if(dcaRes[2]>0.) values[AliDielectronVarManager::kImpactParZsigma]  = d0z0[1]/TMath::Sqrt(dcaRes[2]);
 
-
+  if(TMath::Abs(d0z0[0])>0)  values[AliDielectronVarManager::kLogDCAXY]  = TMath::Log(TMath::Abs(d0z0[0]));
+  else                       values[AliDielectronVarManager::kLogDCAXY]  = 0;
+  if(TMath::Abs(d0z0[1])>0)  values[AliDielectronVarManager::kLogDCAZ]   = TMath::Log(TMath::Abs(d0z0[1]));
+  else                       values[AliDielectronVarManager::kLogDCAZ]   = 0;
+  
+  
   values[AliDielectronVarManager::kPIn]            =  0.;
   values[AliDielectronVarManager::kTPCsignal]      =  0.;
   values[AliDielectronVarManager::kTPCsignalN]     = -1.;
