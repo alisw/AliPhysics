@@ -26,12 +26,12 @@ TString strFitResultMC[2]={"",""};
 
 TString strquantityFile[5]={"NSYield","NSSigma","Pedestal","ASYield","ASSigma"};
 Double_t maxRangePP[6][5]={   //used in L1403. MODIFY THESE!!!
-         {4.3,0.64,3.4,4.7,1.05},
-         {4.3,0.64,3.4,4.7,1.05},
-         {4.3,0.64,3.4,4.7,1.05},
-         {3.1,0.52,0.9,4.3,1.05},
-         {3.1,0.52,0.9,4.3,1.05},
-         {3.1,0.52,0.9,4.3,1.05}};
+         {4.3,0.64,3.4,4.7,1.1},
+         {4.3,0.64,3.4,4.7,1.1},
+         {4.3,0.64,3.4,4.7,1.1},
+         {3.1,0.52,0.85,4.3,1.1},
+         {3.1,0.52,0.85,4.3,1.1},
+         {3.1,0.52,0.85,4.3,1.1}};
 
 Double_t maxRangePPb[6][5]={
          {3.3,0.64,13,4.3,1.28},
@@ -513,15 +513,15 @@ TCanvas* ComparePedestalPPtoPPb(Int_t binass){
 TLatex *GetDRapForSystem(Int_t collSystem,Int_t identifier,Int_t includeDEta=0){
   
   TLatex *tlrap;
-  Double_t x=0.015,y=0.28;
+  Double_t x=0.015,y=0.287;
   if(ncolumns==3){
     x=0.015;// this and the following numbers does not make too much sense, they come just from an optimization
     if(includeDEta)x=0.060; // was 0.065
     if(collSystem==1&&includeDEta)x=0.026;// was 0.048
   }
   if(nrows==3){// these are hard coded number from an optimization
-    if(includeDEta)y=0.25;
-    else y=0.18;
+    if(includeDEta)y=0.247;
+    else y=0.19;
   }
   if(nrows==2){// these are hard coded number from an optimization
     y=0.3850;// was 0.390 at round 1    
@@ -623,13 +623,13 @@ TLatex *GetCollSystem(Int_t collSystem,Int_t identifier){
 
 TLatex *GetALICEtext(Int_t identifier){
   TLatex *alice;
-Double_t x=0.21,y=0.390;
+Double_t x=0.018,y=0.390;
   if(ncolumns==3){
-    x=0.21;
+    x=0.018;
   }
   if(nrows==3){// these are hard coded number from an optimization
     y=0.25;
-    x=0.20;// draft 2 was not present -> above value 0.21
+    x=0.018;// draft 2 was not present -> above value 0.21
   }
   if(nrows==2){// these are hard coded number from an optimization
     y=0.385;// draft 2 was 0.39
@@ -637,17 +637,17 @@ Double_t x=0.21,y=0.390;
   }
 
   if(style==-1){
-    alice=new TLatex(0.75,0.85,"ALICE");
+    alice=new TLatex(0.75,0.85,"ALICE Preliminary");
     alice->SetNDC();
     alice->SetTextFont(42);
     alice->SetTextSize(0.03);
     alice->SetTextAlign(11);
   }
   else{
-    alice= new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),y/gPad->GetHNDC()+gPad->GetBottomMargin(),"ALICE"); 
+    alice= new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),y/gPad->GetHNDC()+gPad->GetBottomMargin(),"ALICE Preliminary"); 
     alice->SetNDC();
     alice->SetTextFont(43);
-    alice->SetTextSize(32*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);// draft 2 was: 28 *...
+    alice->SetTextSize(25*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);// draft 2 was: 28 *...
     alice->SetTextAlign(11);
   }
 
@@ -698,9 +698,9 @@ TLatex* GetAssocPtText(Int_t binassoc,Int_t identifier,Int_t addDEta=1){
 
 TLatex* GetTextSide(Int_t variable,Int_t identifier){
   TLatex *tlSide=new TLatex();    
-  Double_t x=0.015,y=0.390;
+  Double_t x=0.19,y=0.390;
   if(ncolumns==3){
-    x=0.015;
+    x=0.19;
   }
   if(nrows==3){// these are hard coded number from an optimization
     y=0.250;
@@ -724,7 +724,7 @@ TLatex* GetTextSide(Int_t variable,Int_t identifier){
 	tlSide->SetNDC();
 	tlSide->SetTextAlign(11);
 	tlSide->SetTextFont(43);
-	tlSide->SetTextSize(32*innerPadHeight/referencePadHeight*resizeTextFactor);// draft 2 was 28*...
+	tlSide->SetTextSize(25*innerPadHeight/referencePadHeight*resizeTextFactor);// draft 2 was 28*...
       }
     }
   else {
@@ -740,7 +740,7 @@ TLatex* GetTextSide(Int_t variable,Int_t identifier){
       tlSide->SetNDC();
       tlSide->SetTextFont(43);
       tlSide->SetTextAlign(11);
-      tlSide->SetTextSize(32*innerPadHeight/referencePadHeight*resizeTextFactor);
+      tlSide->SetTextSize(25*innerPadHeight/referencePadHeight*resizeTextFactor);
     }
     
 
@@ -938,14 +938,14 @@ TH1D *GetAndPreparePP(Int_t binass,Int_t quantity,TGraphAsymmErrors *&gr){
 
 
   hPP->SetLineColor(colSystem[0]);
-  hPP->SetLineWidth(2);
+  hPP->SetLineWidth(1);
   hPP->SetMarkerColor(colSystem[0]);
   hPP->SetMarkerStyle(markerStyle[0]);
   hPP->SetMarkerSize(markersize);
 
   gr->SetMarkerColor(colSystem[0]);
   gr->SetLineColor(colSystem[0]);
-  gr->SetLineWidth(2);
+  gr->SetLineWidth(1);
   gr->SetMarkerStyle(markerStyle[0]);
   gr->SetMarkerSize(markersize);
 
@@ -969,13 +969,13 @@ TH1D *GetAndPreparePPb(Int_t binass,Int_t quantity,TGraphAsymmErrors *&gr, TGrap
   hPPb->SetName(Form("%sPPb",hPPb->GetName()));
 
   hPPb->SetLineColor(colSystem[1]);
-  hPPb->SetLineWidth(2);
+  hPPb->SetLineWidth(1);
   hPPb->SetMarkerColor(colSystem[1]);
   hPPb->SetMarkerStyle(markerStyle[1]);
   hPPb->SetMarkerSize(markersize);
   gr->SetMarkerColor(colSystem[1]);
   gr->SetLineColor(colSystem[1]);
-  gr->SetLineWidth(2);
+  gr->SetLineWidth(1);
   gr->SetMarkerStyle(markerStyle[1]);
   gr->SetMarkerSize(markersize);
 
@@ -1118,14 +1118,14 @@ TCanvas* ComparePPtoPPb(Int_t binass,Int_t quantity,TPad *pd=0x0,Int_t textlegen
   }
  
 //   hPP->SetLineColor(colSystem[0]);
-//   hPP->SetLineWidth(2);
+//   hPP->SetLineWidth(1);
 //   hPP->SetMarkerColor(colSystem[0]);
 //   hPP->SetMarkerStyle(20);
 //   hPP->SetMarkerSize(markersize);
 
 //   grPP->SetMarkerColor(colSystem[0]);
 //   grPP->SetLineColor(colSystem[0]);
-//   grPP->SetLineWidth(2);
+//   grPP->SetLineWidth(1);
 //   grPP->SetMarkerStyle(20);
 //   grPP->SetMarkerSize(markersize);
   grPP->Draw("E2");
@@ -1167,14 +1167,14 @@ TCanvas* ComparePPtoPPb(Int_t binass,Int_t quantity,TPad *pd=0x0,Int_t textlegen
     ConvertTH1ToTGraphAsymmError2016(hPPb,gr_pointCount_PPb,shift);    
   }
   gr_points_PPb->SetLineColor(colSystem[1]);
-  gr_points_PPb->SetLineWidth(2);
+  gr_points_PPb->SetLineWidth(1);
   gr_points_PPb->SetMarkerColor(colSystem[1]);
   gr_points_PPb->SetMarkerStyle(markerStyle[1]);
   gr_points_PPb->SetMarkerSize(markersize);
   gr_points_PPb->Draw("samePZ");
   
   gr_pointCount_PPb->SetLineColor(colSystem[1]);
-  gr_pointCount_PPb->SetLineWidth(2);
+  gr_pointCount_PPb->SetLineWidth(1);
   gr_pointCount_PPb->SetMarkerStyle(25);
   gr_pointCount_PPb->SetMarkerColor(kRed+1);
   gr_pointCount_PPb->SetMarkerSize(markersize);
@@ -1194,13 +1194,13 @@ TCanvas* ComparePPtoPPb(Int_t binass,Int_t quantity,TPad *pd=0x0,Int_t textlegen
   }
 
 //   hPPb->SetLineColor(colSystem[1]);
-//   hPPb->SetLineWidth(2);
+//   hPPb->SetLineWidth(1);
 //   hPPb->SetMarkerColor(colSystem[1]);
 //   hPPb->SetMarkerStyle(21);
 //   hPPb->SetMarkerSize(markersize);
 //   grPPb->SetMarkerColor(colSystem[1]);
 //   grPPb->SetLineColor(colSystem[1]);
-//   grPPb->SetLineWidth(2);
+//   grPPb->SetLineWidth(1);
 //   grPPb->SetMarkerStyle(21);
 
 //   grPPb->SetMarkerSize(markersize);
@@ -1404,7 +1404,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
     if(system==1)hData[0]->GetYaxis()->SetRangeUser(0,maxRangePPb[binass][quantity]);
     
     hData[0]->SetLineColor(colSystem[system]);
-    hData[0]->SetLineWidth(2);
+    hData[0]->SetLineWidth(1);
     hData[0]->SetMarkerColor(colSystem[system]);
     hData[0]->SetMarkerStyle(markerStyle[system]);
     hData[0]->SetMarkerSize(markersize);
@@ -1414,7 +1414,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
     hDraw=new TH2D(Form("hDraw%d",10*quantity+binass),"",100,0,28,200,0,10);
     hDraw->GetYaxis()->SetTitle("");      
 
-    hDraw->GetXaxis()->SetRangeUser(0,26.5);
+    hDraw->GetXaxis()->SetRangeUser(0,27.2);
     if(system==0){
       hData[0]->GetYaxis()->SetRangeUser(0,maxRangePP[binass][quantity]);  //THIS IS THE LINE WHICH IS CALLED!
       hDraw->GetYaxis()->SetRangeUser(0,maxRangePP[binass][quantity]);
@@ -1485,7 +1485,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
   hData[0]->SetMarkerColor(colSystem[system]);
   grData[0]->SetMarkerColor(colSystem[system]);
   grData[0]->SetLineColor(colSystem[system]);
-  grData[0]->SetLineWidth(2);
+  grData[0]->SetLineWidth(1);
   grData[0]->SetMarkerStyle(markerStyle[system]);
   grData[0]->SetMarkerSize(markersize);
   grData[0]->Draw("E2");
@@ -1499,13 +1499,13 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
     if(collsystem==-1){    
       hData[1]->Draw("same");
       hData[1]->SetLineColor(colSystem[1]);
-      hData[1]->SetLineWidth(2);
+      hData[1]->SetLineWidth(1);
       hData[1]->SetMarkerColor(colSystem[1]);
       hData[1]->SetMarkerStyle(markerStyle[1]);
       hData[1]->SetMarkerSize(markersize);
       grData[1]->SetMarkerColor(colSystem[1]);
       grData[1]->SetLineColor(colSystem[1]);
-      grData[1]->SetLineWidth(2);
+      grData[1]->SetLineWidth(1);
       grData[1]->SetMarkerStyle(markerStyle[1]);
       grData[1]->SetMarkerSize(markersize);
       grData[1]->Draw("E2");
@@ -1577,7 +1577,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
 	hMC[kmc]->Draw("same");
       }
       hMC[kmc]->SetLineColor(modelColors[kmc]);
-      hMC[kmc]->SetLineWidth(2);
+      hMC[kmc]->SetLineWidth(1);
       if(drawMCasLines==1){
 	hMC[kmc]->SetLineStyle(2);
       }
@@ -1586,7 +1586,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binass,Int_t quantity,TPad *
       hMC[kmc]->SetMarkerSize(markersizeMC);
       grMC[kmc]->SetMarkerColor(modelColors[kmc]);
       grMC[kmc]->SetLineColor(modelColors[kmc]);
-      grMC[kmc]->SetLineWidth(2);
+      grMC[kmc]->SetLineWidth(1);
       grMC[kmc]->SetMarkerStyle(modelMarkerStyle[kmc]);
       grMC[kmc]->SetFillStyle(3001+kmc);
       grMC[kmc]->SetFillColor(modelColors[kmc]);

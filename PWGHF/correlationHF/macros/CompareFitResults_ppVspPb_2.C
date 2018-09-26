@@ -69,7 +69,7 @@ Double_t minptMC=0.,maxptMC=99.;
 Double_t minptData=3.5,maxptData=22.; //you have to be tighter than real limits...
 Int_t ncolumns=3;
 Int_t nrows=3;
-Double_t ytitleoffset=2.45,xtitleoffset=1.95;
+Double_t ytitleoffset=2.65,xtitleoffset=2.4;
 Bool_t skip3to5=kFALSE;
 Double_t markersize=1.2;
 Double_t markersizeMC=1.2;
@@ -535,17 +535,17 @@ Double_t x=0.21,y=0.390;
   }
 
   if(style==-1){
-    alice=new TLatex(0.75,0.85,"ALICE");
+    alice=new TLatex(0.75,0.85,"ALICE Preliminary");
     alice->SetNDC();
     alice->SetTextFont(42);
     alice->SetTextSize(0.03);
     alice->SetTextAlign(11);
   }
   else{
-    alice= new TLatex(0.02/gPad->GetWNDC()+gPad->GetLeftMargin(),0.384/gPad->GetHNDC()+gPad->GetBottomMargin(),"ALICE"); 
+    alice= new TLatex(0.018/gPad->GetWNDC()+gPad->GetLeftMargin(),0.384/gPad->GetHNDC()+gPad->GetBottomMargin(),"ALICE Preliminary"); 
     alice->SetNDC();
     alice->SetTextFont(43);
-    alice->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);// draft 2 was: 28 *...
+    alice->SetTextSize(25*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);// draft 2 was: 28 *...
     alice->SetTextAlign(11);
   }
 
@@ -612,18 +612,18 @@ TLatex* GetTextSide(Int_t variable,Int_t identifier){
   else if(variable==0 || variable ==1)
     {
       if(style==-1){
-  tlSide=new TLatex(0.25,0.85,"Near side");
-  tlSide->SetNDC();
-  tlSide->SetTextFont(42);
-  tlSide->SetTextAlign(12);
-  tlSide->SetTextSize(0.03*resizeTextFactor);
+        tlSide=new TLatex(0.25,0.85,"Near side");
+        tlSide->SetNDC();
+        tlSide->SetTextFont(42);
+        tlSide->SetTextAlign(12);
+        tlSide->SetTextSize(0.03*resizeTextFactor);
       }
       else{
-  tlSide=new TLatex(0.18/gPad->GetWNDC()+gPad->GetLeftMargin(),0.384/gPad->GetHNDC()+gPad->GetBottomMargin(),"Near side");
-  tlSide->SetNDC();
-  tlSide->SetTextAlign(11);
-  tlSide->SetTextFont(43);
-  tlSide->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);// draft 2 was 28*...
+        tlSide=new TLatex(0.20/gPad->GetWNDC()+gPad->GetLeftMargin(),0.384/gPad->GetHNDC()+gPad->GetBottomMargin(),"Near side");
+        tlSide->SetNDC();
+        tlSide->SetTextAlign(11);
+        tlSide->SetTextFont(43);
+        tlSide->SetTextSize(25*innerPadHeight/referencePadHeight*resizeTextFactor);// draft 2 was 28*...
       }
     }
   else {
@@ -631,15 +631,15 @@ TLatex* GetTextSide(Int_t variable,Int_t identifier){
       tlSide=new TLatex(0.25,0.85,"Away side");
       tlSide->SetNDC();
       tlSide->SetTextFont(42);
-  tlSide->SetTextAlign(12);
+      tlSide->SetTextAlign(12);
       tlSide->SetTextSize(0.03*resizeTextFactor);
     }
     else{
-      tlSide=new TLatex(0.18/gPad->GetWNDC()+gPad->GetLeftMargin(),0.384/gPad->GetHNDC()+gPad->GetBottomMargin(),"Away side");
+      tlSide=new TLatex(0.20/gPad->GetWNDC()+gPad->GetLeftMargin(),0.384/gPad->GetHNDC()+gPad->GetBottomMargin(),"Away side");
       tlSide->SetNDC();
       tlSide->SetTextFont(43);
       tlSide->SetTextAlign(11);
-      tlSide->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+      tlSide->SetTextSize(25*innerPadHeight/referencePadHeight*resizeTextFactor);
     }
     
 
@@ -666,13 +666,13 @@ TH1D *GetAndPreparePPb(Int_t binass,Int_t quantity,Int_t numsyst,TGraphAsymmErro
   TH1D *hPPb=(TH1D*)c->FindObject(Form("FinalTrend%s",strquantityFile[quantity].Data()));
   hPPb->SetName(Form("%sPPb",hPPb->GetName()));
   hPPb->SetLineColor(colSystem[numsyst]);
-  hPPb->SetLineWidth(2);
+  hPPb->SetLineWidth(1);
   hPPb->SetMarkerColor(colSystem[numsyst]);
   hPPb->SetMarkerStyle(markerStyle[numsyst]);
   hPPb->SetMarkerSize(markersize);
   gr->SetMarkerColor(colSystem[numsyst]);
   gr->SetLineColor(colSystem[numsyst]);
-  gr->SetLineWidth(2);
+  gr->SetLineWidth(1);
   gr->SetMarkerStyle(markerStyle[numsyst]);
   gr->SetMarkerSize(markersize);
 
@@ -853,28 +853,28 @@ TCanvas* Compare(Int_t binass,Int_t quantity,TPad *pd,Int_t textlegendOptions){
    }
 */
   gr_points_PPb1->SetLineColor(colSystem[0]);
-  gr_points_PPb1->SetLineWidth(2);
+  gr_points_PPb1->SetLineWidth(1);
   gr_points_PPb1->SetMarkerColor(colSystem[0]);
   gr_points_PPb1->SetMarkerStyle(markerStyle[0]);
   gr_points_PPb1->SetMarkerSize(markersize);
   gr_points_PPb1->Draw("samePZ");
   
   gr_pointCount_PPb1->SetLineColor(colSystem[0]);
-  gr_pointCount_PPb1->SetLineWidth(2);
+  gr_pointCount_PPb1->SetLineWidth(1);
   gr_pointCount_PPb1->SetMarkerStyle(colSystem[0]);
   gr_pointCount_PPb1->SetMarkerColor(kBlue);
   gr_pointCount_PPb1->SetMarkerSize(markersize);
   gr_pointCount_PPb1->Draw("samePZ");
 
   gr_points_PPb2->SetLineColor(colSystem[1]);
-  gr_points_PPb2->SetLineWidth(2);
+  gr_points_PPb2->SetLineWidth(1);
   gr_points_PPb2->SetMarkerColor(colSystem[1]);
   gr_points_PPb2->SetMarkerStyle(markerStyle[1]);
   gr_points_PPb2->SetMarkerSize(markersize);
   gr_points_PPb2->Draw("samePZ");
   
   gr_pointCount_PPb2->SetLineColor(colSystem[1]);
-  gr_pointCount_PPb2->SetLineWidth(2);
+  gr_pointCount_PPb2->SetLineWidth(1);
   gr_pointCount_PPb2->SetMarkerStyle(colSystem[1]);
   gr_pointCount_PPb2->SetMarkerColor(kRed);
   gr_pointCount_PPb2->SetMarkerSize(markersize);

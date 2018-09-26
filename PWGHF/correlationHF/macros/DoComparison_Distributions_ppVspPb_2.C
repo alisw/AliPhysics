@@ -526,10 +526,11 @@ TLegend *GetLegendDataPoints(TH1D *h1,TH1D *h2,Int_t identifier){
     legend->SetFillStyle(0);
     legend->SetBorderSize(0);
     legend->SetTextFont(43);
-    legend->SetTextSize(25*innerPadHeight/referencePadHeight*resizeTextFactor);
-      // old settings with font 42, still good (0.07/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
-    legend->AddEntry(h1,"pp, #sqrt{s} = 5.02 TeV","lep");
-    legend->AddEntry(h2,"p-Pb, #sqrt{s_{NN}} = 5.02 TeV","lep");
+    legend->SetMargin(0.15);
+    legend->SetTextSize(24*innerPadHeight/referencePadHeight*resizeTextFactor);
+                        // old settings with font 42, still good (0.07/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
+    legend->AddEntry(h1,"pp, #sqrt{s} = 5.02 TeV, |#it{y}^{D}_{cms}| < 0.5","lep");
+    legend->AddEntry(h2,"p-Pb, #sqrt{s_{NN}} = 5.02 TeV, -0.96 < #it{y}^{D}_{cms} < 0.04","lep");
     legend->SetName(Form("LegendDataPPandpPb_%d",identifier));
     return legend;
   }
@@ -543,7 +544,7 @@ TLegend *GetLegendDataPointsFake(TH1D *hpp,TH1D *hpPb,Int_t identifier){
     legend->SetFillStyle(0);
     legend->SetBorderSize(0);
     legend->SetTextFont(43);
-    legend->SetTextSize(25*innerPadHeight/referencePadHeight*resizeTextFactor);
+    legend->SetTextSize(24*innerPadHeight/referencePadHeight*resizeTextFactor);
       // old settings with font 42, still good (0.07/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
     legend->AddEntry(hpp,"","lep");
     legend->AddEntry((TObject*)0,"","");
@@ -582,19 +583,19 @@ TLegend *GetLegendBaselines(TGraphAsymmErrors *g1,TGraphAsymmErrors *g2,Int_t id
 
 
 TPaveText *GetALICEpavetext(Int_t identifier){
-  TPaveText *alice = new TPaveText(0.33/gPad->GetWNDC()+gPad->GetLeftMargin(),0.255/gPad->GetHNDC()+gPad->GetBottomMargin(),0.37/gPad->GetWNDC()+gPad->GetLeftMargin(),0.275/gPad->GetHNDC()+gPad->GetBottomMargin(),"NDC");
+  TPaveText *alice = new TPaveText(0.0005/gPad->GetWNDC()+gPad->GetLeftMargin(),0.255/gPad->GetHNDC()+gPad->GetBottomMargin(),0.37/gPad->GetWNDC()+gPad->GetLeftMargin(),0.275/gPad->GetHNDC()+gPad->GetBottomMargin(),"NDC");
   //  TPaveText *alice = new TPaveText(0.012/gPad->GetWNDC()+gPad->GetLeftMargin(),0.26/gPad->GetHNDC()+gPad->GetBottomMargin(),0.3/gPad->GetWNDC()+gPad->GetLeftMargin(),0.28/gPad->GetHNDC()+gPad->GetBottomMargin(),"NDC");
   SetPaveStyle(alice);
   alice->SetTextFont(43);
   alice->SetTextSize(32*innerPadHeight/referencePadHeight*resizeTextFactor);//old settings with font 42 : 0.08/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
-  alice->AddText("ALICE");//commented
+  alice->AddText("ALICE Preliminary");//commented
   // fitvalueslow->AddText("D meson (average D^{0},D^{+},D^{*+}) - charged particle correlation");
   alice->SetName(Form("paveALICE_%d",identifier));
   return alice;
 }
 
 TPaveText *GetAveragepavetext(Int_t identifier){
-  TPaveText* pvAverage = new TPaveText(0.004/gPad->GetWNDC()+gPad->GetLeftMargin(),0.255/gPad->GetHNDC()+gPad->GetBottomMargin(),0.3/gPad->GetWNDC()+gPad->GetLeftMargin(),0.275/gPad->GetHNDC()+gPad->GetBottomMargin(),"NDC");
+  TPaveText* pvAverage = new TPaveText(0.004/gPad->GetWNDC()+gPad->GetLeftMargin(),0.20/gPad->GetHNDC()+gPad->GetBottomMargin(),0.3/gPad->GetWNDC()+gPad->GetLeftMargin(),0.275/gPad->GetHNDC()+gPad->GetBottomMargin(),"NDC");
   //  TPaveText* pvAverage = new TPaveText(0.012/gPad->GetWNDC()+gPad->GetLeftMargin(),0.23/gPad->GetHNDC()+gPad->GetBottomMargin(),0.3/gPad->GetWNDC()+gPad->GetLeftMargin(),0.25/gPad->GetHNDC()+gPad->GetBottomMargin(),"NDC");
   //0.21,0.83,0.5,0.863,"NDC");
   SetPaveStyle(pvAverage);
@@ -647,7 +648,7 @@ TPaveText *GetPaveKineInfo(TString strPtMeson,TString strPtAssoc,Int_t identifie
     else {
       strall=strPtMeson;
       if(strPtAssoc.IsNull()){
-  pvKineInfo->AddText(strall.Data());
+        pvKineInfo->AddText(strall.Data());
       }
     }
     strname.Append("Dpt");
@@ -684,28 +685,32 @@ void DoComparison_Distributions(){
       for(Int_t jmes=firstDpt;jmes<nbinDpt;jmes++){
   //  if(skip3to5&&jmes==0)continue;
   //  TH1D * GetHistoAndSyst(TString path, Int_t collsyst,TString hname, TString hnamesyst,TGraphAsymmErrors *&gr2, TLatex *&tUncertainty){
-  histo[icoll][kassoc][jmes]=GetHistoAndSyst(filenames[icoll][kassoc][jmes],icoll,"fhDaverage","AverageSystematicUncertainty",err[icoll][kassoc][jmes],ltscale[icoll][kassoc][jmes]); 
+        histo[icoll][kassoc][jmes]=GetHistoAndSyst(filenames[icoll][kassoc][jmes],icoll,"fhDaverage","AverageSystematicUncertainty",err[icoll][kassoc][jmes],ltscale[icoll][kassoc][jmes]); 
        
         histo[icoll][kassoc][jmes]->SetMarkerColor(colourSystem[icoll]); 
-  histo[icoll][kassoc][jmes]->SetLineColor(colourSystem[icoll]); 
-  histo[icoll][kassoc][jmes]->SetMarkerStyle(markerstyle[icoll]); 
-  histo[icoll][kassoc][jmes]->SetMarkerSize(markersize); 
+        histo[icoll][kassoc][jmes]->SetLineColor(colourSystem[icoll]); 
+        histo[icoll][kassoc][jmes]->SetLineWidth(1);  
+        histo[icoll][kassoc][jmes]->SetMarkerStyle(markerstyle[icoll]); 
+        histo[icoll][kassoc][jmes]->SetMarkerSize(markersize); 
 
-  subtractedhisto[icoll][kassoc][jmes] = GetPedestalHistoAndSystAndSubtractPedpPb(icoll,kassoc,jmes,histo[icoll][kassoc][jmes],err[icoll][kassoc][jmes],suberr[icoll][kassoc][jmes],"CanvasBaselineVariationTrendPedestal",grbase[icoll][kassoc][jmes],grv2[icoll][kassoc][jmes]);
-  cout<<"sub -> "<<subtractedhisto[icoll][kassoc][jmes]->GetBinContent(5)<<endl;
-  subtractedhisto[icoll][kassoc][jmes]->GetYaxis()->SetRangeUser(-0.8,3*subtractedhisto[icoll][kassoc][jmes]->GetBinContent(subtractedhisto[icoll][kassoc][jmes]->GetMaximumBin()));    
-  grbase[icoll][kassoc][jmes]->SetFillStyle(fillColourBaselineStyle);
-  grbase[icoll][kassoc][jmes]->SetFillColor(colourSystemBaseUnc[icoll]);// was kRed-7
-  grbase[icoll][kassoc][jmes]->SetLineColor(colourSystemBaseUnc[icoll]);//was kRed-7
+        subtractedhisto[icoll][kassoc][jmes] = GetPedestalHistoAndSystAndSubtractPedpPb(icoll,kassoc,jmes,histo[icoll][kassoc][jmes],err[icoll][kassoc][jmes],suberr[icoll][kassoc][jmes],"CanvasBaselineVariationTrendPedestal",grbase[icoll][kassoc][jmes],grv2[icoll][kassoc][jmes]);
+        cout<<"sub -> "<<subtractedhisto[icoll][kassoc][jmes]->GetBinContent(5)<<endl;
+        subtractedhisto[icoll][kassoc][jmes]->GetYaxis()->SetRangeUser(-0.8,3*subtractedhisto[icoll][kassoc][jmes]->GetBinContent(subtractedhisto[icoll][kassoc][jmes]->GetMaximumBin()));    
+        grbase[icoll][kassoc][jmes]->SetFillStyle(fillColourBaselineStyle);
+        grbase[icoll][kassoc][jmes]->SetFillColor(colourSystemBaseUnc[icoll]);// was kRed-7
+        grbase[icoll][kassoc][jmes]->SetLineColor(colourSystemBaseUnc[icoll]);//was kRed-7
+        grbase[icoll][kassoc][jmes]->SetLineWidth(1);
      
         if(grv2[icoll][kassoc][jmes]){
-    grv2[icoll][kassoc][jmes]->SetFillStyle(3002);
-    grv2[icoll][kassoc][jmes]->SetFillColor(kMagenta);  
-  }
-  suberr[icoll][kassoc][jmes]->SetLineColor(colourSystem[icoll]);
-      
-  subtractedhisto[icoll][kassoc][jmes]->SetMinimum(minYaxis[kassoc]);
-  subtractedhisto[icoll][kassoc][jmes]->SetMaximum(maxYaxis[kassoc]);
+          grv2[icoll][kassoc][jmes]->SetFillStyle(3002);
+          grv2[icoll][kassoc][jmes]->SetFillColor(kMagenta);  
+          grv2[icoll][kassoc][jmes]->SetLineWidth(1);
+        }
+        suberr[icoll][kassoc][jmes]->SetLineColor(colourSystem[icoll]);
+        suberr[icoll][kassoc][jmes]->SetLineWidth(1);
+            
+        subtractedhisto[icoll][kassoc][jmes]->SetMinimum(minYaxis[kassoc]);
+        subtractedhisto[icoll][kassoc][jmes]->SetMaximum(maxYaxis[kassoc]);
 
       }      
     }
@@ -778,10 +783,10 @@ void DoComparison_Distributions(){
       h->GetXaxis()->SetTitleFont(43);
       h->GetYaxis()->SetLabelFont(43);
       h->GetXaxis()->SetLabelFont(43);
-      h->GetYaxis()->SetTitleSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
-      h->GetXaxis()->SetTitleSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
-      h->GetYaxis()->SetLabelSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
-      h->GetXaxis()->SetLabelSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+      h->GetYaxis()->SetTitleSize(36*innerPadHeight/referencePadHeight*resizeTextFactor);
+      h->GetXaxis()->SetTitleSize(36*innerPadHeight/referencePadHeight*resizeTextFactor);
+      h->GetYaxis()->SetLabelSize(36*innerPadHeight/referencePadHeight*resizeTextFactor);
+      h->GetXaxis()->SetLabelSize(36*innerPadHeight/referencePadHeight*resizeTextFactor);
 
       h->GetYaxis()->SetTitleOffset(ytitleoffset*innerPadHeight/referencePadHeight*resizeTextFactor);//0.95*(gPad->GetHNDC())/scaleHeightPads/resizeTextFactor);
       h->GetXaxis()->SetTitleOffset(xtitleoffset*innerPadHeight/referencePadHeight*resizeTextFactor);// not number before, no number was optimized before font 43 was introduced
@@ -852,14 +857,13 @@ void DoComparison_Distributions(){
       TPaveText *pvAverage=GetAveragepavetext((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1);
       Printf("Getting ALICE pave text");
       TPaveText *alice=GetALICEpavetext((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1);  
-      alice->SetX1(0.8);
       TPaveText *pvKineInfo;
 
       if((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1==1){
-  Printf("Getting Pave Kine infos in bin main, aligning left");
+        Printf("Getting Pave Kine infos in bin main, aligning left");
         pvKineInfo=GetPaveKineInfo(strPtMesonText[jDpt],strPtAssocText[iassoc],(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1,22);
-        pvKineInfo->SetY1(0.22/gPad->GetHNDC()+gPad->GetBottomMargin());
-        pvKineInfo->SetY2(0.245/gPad->GetHNDC()+gPad->GetBottomMargin());
+        pvKineInfo->SetY1(0.195/gPad->GetHNDC()+gPad->GetBottomMargin());
+        pvKineInfo->SetY2(0.21/gPad->GetHNDC()+gPad->GetBottomMargin());
         pvKineInfo->SetX1(0.008/gPad->GetWNDC()+gPad->GetLeftMargin());
         pvKineInfo->SetX2(0.23/gPad->GetWNDC()+gPad->GetLeftMargin());
         pvKineInfo->SetTextAlign(12);   
@@ -867,8 +871,8 @@ void DoComparison_Distributions(){
         Printf("Getting Pave Kine infos (DeltaEta) in bin main, aligning left");
         pvKineInfo=GetPaveKineInfo(0x0,0x0,(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1,1);// just a trick to get DeltaEta
         Printf("Delta Eta pave obtained");
-        pvKineInfo->SetY1(0.195/gPad->GetHNDC()+gPad->GetBottomMargin());
-        pvKineInfo->SetY2(0.21/gPad->GetHNDC()+gPad->GetBottomMargin());
+        pvKineInfo->SetY1(0.16/gPad->GetHNDC()+gPad->GetBottomMargin());
+        pvKineInfo->SetY2(0.185/gPad->GetHNDC()+gPad->GetBottomMargin());
         pvKineInfo->SetX1(0.01/gPad->GetWNDC()+gPad->GetLeftMargin());
         pvKineInfo->SetX2(0.18/gPad->GetWNDC()+gPad->GetLeftMargin());
         pvKineInfo->SetTextAlign(12);
