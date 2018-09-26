@@ -117,13 +117,13 @@ AliAnalysisTaskWeakDecayVertexer::AliAnalysisTaskWeakDecayVertexer()
 fTrigType(AliVEvent::kMB),
 fkDoExtraEvSels(kTRUE),
 fMinCentrality(0.0),
-fMaxCentrality(90.0),
+fMaxCentrality(300.0),
 fkRevertexAllEvents(kTRUE),
 //________________________________________________
 //Flags for both V0+cascade vertexer
-fkPreselectDedx ( kTRUE ),
-fkPreselectDedxLambda ( kTRUE ),
-fkExtraCleanup    ( kTRUE ), //extra cleanup: eta, etc
+fkPreselectDedx ( kFALSE ),
+fkPreselectDedxLambda ( kFALSE ),
+fkExtraCleanup    ( kFALSE ), //extra cleanup: eta, etc
 //________________________________________________
 //Flags for V0 vertexer
 fkRunV0Vertexer (kFALSE),
@@ -167,13 +167,13 @@ AliAnalysisTaskWeakDecayVertexer::AliAnalysisTaskWeakDecayVertexer(const char *n
 fTrigType(AliVEvent::kMB),
 fkDoExtraEvSels(kTRUE),
 fMinCentrality(0.0),
-fMaxCentrality(90.0),
+fMaxCentrality(300.0),
 fkRevertexAllEvents(kTRUE),
 //________________________________________________
 //Flags for both V0+cascade vertexer
-fkPreselectDedx ( kTRUE ),
-fkPreselectDedxLambda ( kTRUE ),
-fkExtraCleanup    ( kTRUE ), //extra cleanup: eta, etc
+fkPreselectDedx ( kFALSE ),
+fkPreselectDedxLambda ( kFALSE ),
+fkExtraCleanup    ( kFALSE ), //extra cleanup: eta, etc
 //________________________________________________
 //Flags for V0 vertexer
 fkRunV0Vertexer (kFALSE),
