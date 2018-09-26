@@ -35,7 +35,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
                     ${AliPhysics_SOURCE_DIR}/PWGHF/jetsHF
                     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
-                   )
+		                     )
 
 # Sources in alphabetical order
 set(SRCS
@@ -241,7 +241,7 @@ if(FASTJET_FOUND)
 	UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapesMC.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapeExtra.cxx
-        UserTasks/AliAnalysisTaskFullpAJets.cxx
+	UserTasks/AliAnalysisTaskFullpAJets.cxx
         UserTasks/AliAnalysisTaskFullppJet.cxx
         UserTasks/AliAnalysisTaskHJetDphi.cxx
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
