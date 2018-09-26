@@ -128,7 +128,9 @@ AliAnalysisTaskSEB0toDStarPi::AliAnalysisTaskSEB0toDStarPi():
   fHistMassWindow(0.125),
   fDegreePerRotation(0),
   fNumberOfRotations(0),
-  fCheckBackground(0) 
+  fCheckBackground(0),
+  fCheckInjected(1),
+  fRemoveInjected(0) 
 {
   //
   /// Default ctor
@@ -186,7 +188,9 @@ AliAnalysisTaskSEB0toDStarPi::AliAnalysisTaskSEB0toDStarPi(const Char_t* name, A
   fHistMassWindow(0.125),
   fDegreePerRotation(0),
   fNumberOfRotations(0),
-  fCheckBackground(0)
+  fCheckBackground(0),
+  fCheckInjected(1),
+  fRemoveInjected(0)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -3838,20 +3842,6 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
           //
           ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////<<
 
-          // We check if the signal is injected, optionally we can reject injected signals
-          Bool_t fCheckInjected = kTRUE; //temp
-          Bool_t fRemoveInjected = kFALSE; //temp
-          Bool_t bIsInjected = kFALSE;
-          if(fUseMCInfo){
-            if(fCheckInjected) bIsInjected = IsCandidateInjected(&trackB0, header,mcTrackArray);
-            if(fCheckInjected && fRemoveInjected && bIsInjected) {
-              delete vertexMother; vertexMother = nullptr; 
-              delete vertexDStar; vertexDStar = nullptr; 
-              delete trackB0PionRotated; trackB0PionRotated = nullptr; 
-              continue;
-            }
-          }
-
           // We check if the B0 candidate is a true signal in Monte Carlo
           Bool_t isDesiredCandidate = kFALSE;
           Int_t mcLabelB0 = -1;
@@ -3880,6 +3870,27 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
             }
           }
           
+          // We check if the signal is injected, optionally we can reject injected signals
+          Bool_t bIsInjected = kFALSE;
+          if(fUseMCInfo)
+          {
+            if(fCheckInjected)
+            {
+              bIsInjected = IsCandidateInjected(&trackB0, header,mcTrackArray);
+              if(fRemoveInjected == 1 && isDesiredCandidate == kFALSE && bIsInjected) {
+                delete vertexMother; vertexMother = nullptr; 
+                delete vertexDStar; vertexDStar = nullptr; 
+                delete trackB0PionRotated; trackB0PionRotated = nullptr; 
+                continue;
+              }
+              if(fRemoveInjected == 2 && bIsInjected) {
+                delete vertexMother; vertexMother = nullptr; 
+                delete vertexDStar; vertexDStar = nullptr; 
+                delete trackB0PionRotated; trackB0PionRotated = nullptr; 
+                continue;
+              }
+            } 
+          }
 
           // We fill the DStar histograms
           histType = 0;

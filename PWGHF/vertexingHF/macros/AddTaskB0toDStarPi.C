@@ -13,7 +13,9 @@ AliAnalysisTaskSEB0toDStarPi *AddTaskB0toDStarPi(
                                 Int_t nUpgradeSetting=0,
                                 Int_t nDegreePerRotation=3,
                                 Int_t nNumberOfRotations=0,
-                                Double_t fHistMassWindow=0.125
+                                Double_t fHistMassWindow=0.125,
+                                Bool_t fCheckInjected = 1,
+                                Int_t fRemoveInjected = 1
                                 )
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -72,6 +74,9 @@ AliAnalysisTaskSEB0toDStarPi *AddTaskB0toDStarPi(
   task->SetHistMassWindow(fHistMassWindow);
   task->SetDegreePerRotation(nDegreePerRotation);
   task->SetNumberOfRotations(nNumberOfRotations);
+  task->SetCheckInjected(fCheckInjected);
+  task->SetRemoveInjected(fRemoveInjected);
+
 
   mgr->AddTask(task);
 
