@@ -66,7 +66,10 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     void SetSaveEventProperties             ( Bool_t val  )                               { fSaveEventProperties  = val         ; }
     void SetSaveClusterCells                ( Bool_t val  )                               { fSaveCells            = val         ; }
     void SetSaveSurroundingCells            ( Bool_t val  )                               { fSaveSurroundingCells         = val         ; }
-    void SetNSurroundingCells               ( Int_t val  )                                { fNSurroundingCells    = val         ; }
+    void SetSaveSurroundingTracks            ( Bool_t val  )                               { fSaveTracks         = val         ; }
+    void SetMaxConeRadius                      ( Float_t val  )                                { fConeRadius    = val         ; }
+    void SetMinTrackPt                      ( Float_t val  )                                { fMinTrackPt    = val         ; }
+    void SetMinClusterEnergy                      ( Float_t val  )                                { fMinClusterEnergy    = val         ; }
     void SetMinMaxNLMCut                    ( Int_t valmin, Int_t valmax  )               { fMinNLMCut    = valmin              ;
                                                                                             fMaxNLMCut    = valmax              ; }
     void SetSaveMCInformation               ( Bool_t val  )                               { fSaveMCInformation    = val         ; }
@@ -75,6 +78,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Int_t       FindLargestCellInCluster(AliVCluster* cluster, AliVEvent* event);
     void GetRowAndColumnFromAbsCellID(Int_t cellIndex, Int_t& row, Int_t& column);
     Int_t MakePhotonCandidates(AliVCluster* clus, AliVCaloCells* cells, Long_t indexCluster);
+    void ProcessTracksAndMatching(AliVCluster* clus, Long_t indexCluster);
     Int_t  GetMCClusterFlag(AliVCluster* clus, AliVCaloCells* cells);
   private:
         
@@ -125,8 +129,11 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Bool_t          fSaveEventProperties;                 ///< save general event properties (centrality etc.)
     Bool_t          fSaveCells;                           ///< save arrays of cluster cells
     Bool_t          fSaveSurroundingCells;                        ///< save arrays of all cells in event
+    Bool_t          fSaveTracks;                        ///< save arrays of all cells in event
+    Float_t          fConeRadius;                        ///< save arrays of all cells in event
+    Float_t          fMinTrackPt;                        ///< save arrays of all cells in event
+    Float_t          fMinClusterEnergy;                        ///< save arrays of all cells in event
     Bool_t          fSaveMCInformation;                   ///< save MC information
-    Int_t           fNSurroundingCells;                   ///< save MC information
 
     // Option flags
     std::vector<Float_t> fExtractionPercentages;          ///< Percentages which will be extracted for a given pT bin
@@ -140,8 +147,8 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Int_t           fBuffer_MC_Cluster_Flag;                   //!<! array buffer
     Int_t           fBuffer_ClusterNumCells;              //!<! array buffer
     Int_t           fBuffer_LeadingCell_ID;              //!<! array buffer
-    Int_t           fBuffer_LeadingCell_Row;              //!<! array buffer
-    Int_t           fBuffer_LeadingCell_Column;              //!<! array buffer
+    Float_t         fBuffer_LeadingCell_Eta;              //!<! array buffer
+    Float_t         fBuffer_LeadingCell_Phi;              //!<! array buffer
     Float_t         fBuffer_ClusterM02;              //!<! array buffer
     Float_t         fBuffer_ClusterM20;              //!<! array buffer
 
@@ -153,22 +160,29 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
 
     Int_t*          fBuffer_Cells_ID;                      //!<! array buffer
     Float_t*        fBuffer_Cells_E;                      //!<! array buffer
-    Int_t*          fBuffer_Cells_RelativeRow;                      //!<! array buffer
-    Int_t*          fBuffer_Cells_RelativeColumn;                      //!<! array buffer
+    Float_t*        fBuffer_Cells_RelativeEta;                      //!<! array buffer
+    Float_t*        fBuffer_Cells_RelativePhi;                      //!<! array buffer
 
+    Int_t           fBuffer_Surrounding_NCells;                //!<! array buffer
     Int_t*          fBuffer_Surrounding_Cells_ID;                //!<! array buffer
+    Float_t*        fBuffer_Surrounding_Cells_R;                //!<! array buffer
     Float_t*        fBuffer_Surrounding_Cells_E;                //!<! array buffer
-    Int_t*          fBuffer_Surrounding_Cells_RelativeRow;              //!<! array buffer
-    Int_t*          fBuffer_Surrounding_Cells_RelativeColumn;              //!<! array buffer
-    
+    Float_t*        fBuffer_Surrounding_Cells_RelativeEta;              //!<! array buffer
+    Float_t*        fBuffer_Surrounding_Cells_RelativePhi;              //!<! array buffer
+    Int_t           fBuffer_Surrounding_NTracks;                //!<! array buffer
+    Float_t*        fBuffer_Surrounding_Tracks_R;              //!<! array buffer
+    Float_t*        fBuffer_Surrounding_Tracks_Pt;              //!<! array buffer
+    Float_t*        fBuffer_Surrounding_Tracks_RelativeEta;              //!<! array buffer
+    Float_t*        fBuffer_Surrounding_Tracks_RelativePhi;              //!<! array buffer
     
     Int_t           fBuffer_Cluster_MC_Label;              //!<! array buffer
 
     
-    ClassDef(AliAnalysisTaskClusterQA, 1);
+    ClassDef(AliAnalysisTaskClusterQA, 2);
 };
 
 const Int_t kMaxActiveCells = 500;
+const Int_t kMaxNTracks = 50;
 
 #endif
 

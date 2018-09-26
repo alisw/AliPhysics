@@ -1,8 +1,8 @@
-void AddTask_ClusterQA( TString   V0ReaderEventCutNumber        = "00000003",
-                        TString   V0ReaderPhotonCutNumber       = "060000084001001500000000",
-                        TString   TaskEventCutnumber            = "00000003",
-                        TString   TaskClusterCutnumberEMC       = "1111100017032220000",
-                        TString   TaskClusterCutnumberDMC       = "1111100017032220000",
+void AddTask_ClusterQA( TString   V0ReaderEventCutNumber        = "00010113",
+                        TString   V0ReaderPhotonCutNumber       = "00200009327000008250400000",
+                        TString   TaskEventCutnumber            = "00010113",
+                        TString   TaskClusterCutnumberEMC       = "1111100010022700000",
+                        TString   TaskClusterCutnumberDMC       = "3885500010022700000",
                         TString   TaskMesonCutnumber            = "0163300000000000",
                         Int_t     minNLM                        = 1,
                         Int_t     maxNLM                        = 1,
@@ -16,8 +16,11 @@ void AddTask_ClusterQA( TString   V0ReaderEventCutNumber        = "00000003",
                         TString   periodNameV0Reader            = "",
                         TString   corrTaskSetting = "",
                         Int_t     enableExtMatchAndQA           = 5,
+                        Bool_t    doSaveSurroundingTracks       = 1,
                         Bool_t    doSaveSurroundingCells        = 1,
-                        Int_t     nSurroundingCellsSaved        = 12,
+                        Float_t   minClusterEnergy              = 2.0,
+                        Float_t   maxConeRadius                 = 0.6,
+                        Float_t   minTrackMomentum              = 0.3,
                         Bool_t    doSaveClusterCells            = 1,
                         Bool_t    doSaveEventProp               = 1,
                         Bool_t    enableTriggerOverlapRej       = kTRUE,
@@ -163,8 +166,11 @@ void AddTask_ClusterQA( TString   V0ReaderEventCutNumber        = "00000003",
   if(isMC)
     fQA->SetSaveMCInformation(kTRUE);
   fQA->SetSaveSurroundingCells(doSaveSurroundingCells);
-  fQA->SetNSurroundingCells(nSurroundingCellsSaved);
   fQA->SetSaveClusterCells(doSaveClusterCells);
+  fQA->SetSaveSurroundingTracks(doSaveSurroundingTracks);
+  fQA->SetMaxConeRadius(maxConeRadius);
+  fQA->SetMinTrackPt(minTrackMomentum);
+  fQA->SetMinClusterEnergy(minClusterEnergy);
   fQA->SetSaveEventProperties(doSaveEventProp);
   fQA->SetV0ReaderName(V0ReaderName);
   mgr->AddTask(fQA);
