@@ -62,6 +62,7 @@ void Plot2DCells(TString Block, Int_t runNo, std::vector<Int_t> cellVectorRbR, s
 void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", TString trigger= "AnyINTnoBC", TString listName="runList",Int_t runsUsed=-1)
 {
 	gROOT->ProcessLine("gErrorIgnoreLevel = kWarning;"); //..to supress a lot of standard output
+	gROOT->SetBatch(1); //..Prevent ROOT from stealing focus when plotting
 
 	gStyle->SetOptTitle(0);
 	gStyle->SetOptStat(0);
@@ -1497,6 +1498,7 @@ void CompareTwoBCstrategies(TString period="LHC15n",Int_t trainNo=603,Int_t vers
 {
 	//..this was originally used or LHC15o
 	gROOT->ProcessLine("gErrorIgnoreLevel = kWarning;"); //..to supress a lot of standard output
+	gROOT->SetBatch(1); //..Prevent ROOT from stealing focus when plotting
 	gStyle->SetOptStat(0); //..Do not plot stat boxes
     gStyle->SetPadLeftMargin(0.13);
     gStyle->SetPadRightMargin(0.1);
@@ -1967,6 +1969,7 @@ void CompareTwoBCstrategies(TString period="LHC15n",Int_t trainNo=603,Int_t vers
 //
 void Plot2DCells(TString Block, Int_t runNo, std::vector<Int_t> cellVectorRbR, std::vector<Int_t> cellVectorMerge)
 {
+	gROOT->SetBatch(1); //..Prevent ROOT from stealing focus when plotting
 	//......................................................
 	//..Initialize EMCal/DCal geometry
 	 AliCalorimeterUtils* fCaloUtils = new AliCalorimeterUtils();
@@ -2193,6 +2196,7 @@ Bool_t IsItReallyBadRatio(TH1D* minHistoRatio,TH1D* maxHistoRatio,TH1D* meanHist
 void PlotLowFractionCells(TString pdfName, std::vector<Int_t> cellVector,TH2F* badVsCell[],Int_t nRuns,TH2F* ampID[],TH1D* hCellGoodMean[])
 {
 	gROOT->ProcessLine("gErrorIgnoreLevel = kWarning;"); //..to supress a lot of standard output
+	gROOT->SetBatch(1); //..Prevent ROOT from stealing focus when plotting
 
 	Int_t nRescuableChannels=cellVector.size();
 	Int_t totalperCv = 16;
