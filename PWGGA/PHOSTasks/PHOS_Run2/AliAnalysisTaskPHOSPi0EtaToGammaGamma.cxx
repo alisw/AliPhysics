@@ -97,11 +97,6 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fTriggerEfficiency(0x0),
   fESDtrackCutsGlobal(0x0),
   fESDtrackCutsGlobalConstrained(0x0),
-  //fAdditionalPi0PtWeight(),
-  //fAdditionalEtaPtWeight(),
-  //fAdditionalGammaPtWeight(),
-  //fAdditionalK0SPtWeight(),
-  //fAdditionalL0PtWeight(),
   fCentArrayPi0(0x0),
   fCentArrayEta(0x0),
   fCentArrayGamma(0x0),
@@ -193,11 +188,6 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fV0EPName[0] = "VZERO";
   fV0EPName[1] = "VZEROA";
   fV0EPName[2] = "VZEROC";
-
-  //fPHOSTriggerHelperL0  = new AliPHOSTriggerHelper("L0" ,kFALSE);
-  //fPHOSTriggerHelperL1H = new AliPHOSTriggerHelper("L1H",kFALSE);
-  //fPHOSTriggerHelperL1M = new AliPHOSTriggerHelper("L1M",kFALSE);
-  //fPHOSTriggerHelperL1L = new AliPHOSTriggerHelper("L1L",kFALSE);
 
   for(Int_t i=0;i<11;i++){
     fAdditionalPi0PtWeight[i]   = new TF1(Form("fAdditionalPi0PtWeight_%d",i)  ,"1.",0,100);
@@ -4192,11 +4182,33 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillRejectionFactorMB()
   Int_t L0input  = 17;//LHC17
 
   if(fRunNumber <= 246994)  L0input = 9;
+  const Int_t Nmod=5;//number of mpdules
+  const Bool_t IsPrivateTRUBadMap = fPHOSTriggerHelper->IsPrivateTRUBadMap();
 
-  if(!fPHOSTriggerHelperL0 ) fPHOSTriggerHelperL0  = new AliPHOSTriggerHelper(-1      ,L0input,kFALSE);
-  if(!fPHOSTriggerHelperL1H) fPHOSTriggerHelperL1H = new AliPHOSTriggerHelper(L1Hinput,-1     ,kFALSE);
-  if(!fPHOSTriggerHelperL1M) fPHOSTriggerHelperL1M = new AliPHOSTriggerHelper(L1Minput,-1     ,kFALSE);
-  if(!fPHOSTriggerHelperL1L) fPHOSTriggerHelperL1L = new AliPHOSTriggerHelper(L1Linput,-1     ,kFALSE);
+  if(!fPHOSTriggerHelperL0 ){
+    fPHOSTriggerHelperL0  = new AliPHOSTriggerHelper(-1      ,L0input,kFALSE);
+    if(IsPrivateTRUBadMap){
+      for(Int_t imod=1;imod<Nmod;imod++) fPHOSTriggerHelperL0->SetPHOSTRUBadMap(imod,fPHOSTriggerHelper->GetPHOSTRUBadMap(imod));
+    }
+  }
+  if(!fPHOSTriggerHelperL1H){
+    fPHOSTriggerHelperL1H = new AliPHOSTriggerHelper(L1Hinput,-1     ,kFALSE);
+    if(IsPrivateTRUBadMap){
+      for(Int_t imod=1;imod<Nmod;imod++) fPHOSTriggerHelperL1H->SetPHOSTRUBadMap(imod,fPHOSTriggerHelper->GetPHOSTRUBadMap(imod));
+    }
+  }
+  if(!fPHOSTriggerHelperL1M){
+    fPHOSTriggerHelperL1M = new AliPHOSTriggerHelper(L1Minput,-1     ,kFALSE);
+    if(IsPrivateTRUBadMap){
+      for(Int_t imod=1;imod<Nmod;imod++) fPHOSTriggerHelperL1M->SetPHOSTRUBadMap(imod,fPHOSTriggerHelper->GetPHOSTRUBadMap(imod));
+    }
+  }
+  if(!fPHOSTriggerHelperL1L){
+    fPHOSTriggerHelperL1L = new AliPHOSTriggerHelper(L1Linput,-1     ,kFALSE);
+    if(IsPrivateTRUBadMap){
+      for(Int_t imod=1;imod<Nmod;imod++) fPHOSTriggerHelperL1L->SetPHOSTRUBadMap(imod,fPHOSTriggerHelper->GetPHOSTRUBadMap(imod));
+    }
+  }
 
   Bool_t Is0PH0fired = fEvent->GetHeader()->GetL0TriggerInputs() & 1 << (L0input  - 1);//trigger input -1
   Bool_t Is1PHHfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Hinput - 1);//trigger input -1
