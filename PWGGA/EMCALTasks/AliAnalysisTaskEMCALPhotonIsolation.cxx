@@ -1691,6 +1691,10 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       index=coi->GetID();
       TLorentzVector vecCOI;
       coi->GetMomentum(vecCOI, fVertex, AliVCluster::kNonLinCorr);
+
+      if(fIsMC && fNonLinRecoEnergyScaling)
+	fPTbeforeNonLinScaling->Fill(vecCOI.Pt());
+
       if(fIsMC && fNonLinRecoEnergyScaling)
 	NonLinRecoEnergyScaling(vecCOI);
 
