@@ -61,7 +61,7 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
   mgr->AddTask(task);
   
   //add dielectron analysis with selected cut to the task
-  AliDielectron *diel_low = Config_miweber_LMEE_PbPb_woCutLib(cutDefinition,bESDANA,bCutQA,kFALSE,useTPCCorr);
+  AliDielectron *diel_low = Config_miweber_LMEE_PbPb_woCutLib(cutDefinition,bESDANA,bCutQA,kFALSE,useTPCCorr,hasMC);
   if(diel_low){
     AliDielectronVarCuts *eventplaneCuts = new AliDielectronVarCuts("eventplaneCuts","eventplaneCuts");
     // use event plane cuts only for this cut set
