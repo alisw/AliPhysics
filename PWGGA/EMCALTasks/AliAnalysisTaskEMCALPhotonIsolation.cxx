@@ -157,6 +157,8 @@ fEtaPhiClusAftSel(0),
 fPtvsDetavsDphi(0),
 fPtvsTrackPtvsDeta(0),
 fPtvsTrackPtvsDphi(0),
+fPtTrackClusRatiovsPt(0),
+fPtTrackClusRatiovsPtWithCPV(0),
 fClusEvsClusT(0),
 fPT(0),
 fPTbeforeNonLinScaling(0),
@@ -373,6 +375,8 @@ fEtaPhiClusAftSel(0),
 fPtvsDetavsDphi(0),
 fPtvsTrackPtvsDeta(0),
 fPtvsTrackPtvsDphi(0),
+fPtTrackClusRatiovsPt(0),
+fPtTrackClusRatiovsPtWithCPV(0),
 fClusEvsClusT(0),
 fPT(0),
 fPTbeforeNonLinScaling(0),
@@ -1012,6 +1016,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	fPtvsTrackPtvsDphi = new TH3F("hPtvsTrackPtvsDphi","Cluster-track matching #Delta#varphi vs. track #it{p}_{T} vs. cluster energy", 120, 0., 60., 100, 0., 100., 200, -0.05, 0.05);
 	fPtvsTrackPtvsDphi->Sumw2();
 	fOutput->Add(fPtvsTrackPtvsDphi);
+
+	fPtTrackClusRatiovsPt = new TH2F("hPtTrackClusRatiovsPt","Track #it{p}_{T} over cluster #it{p}_{T} vs. cluster #it{p}_{T}", 120, 0., 60., 300, 0., 15.);
+	fPtTrackClusRatiovsPt->Sumw2();
+	fOutput->Add(fPtTrackClusRatiovsPt);
+
+	fPtTrackClusRatiovsPtWithCPV = new TH2F("hPtTrackClusRatiovsPt","Track #it{p}_{T} over cluster #it{p}_{T} vs. cluster #it{p}_{T} with CPV applied", 120, 0., 60., 300, 0., 15.);
+	fPtTrackClusRatiovsPtWithCPV->Sumw2();
+	fOutput->Add(fPtTrackClusRatiovsPtWithCPV);
       }
       break;
     }
@@ -1886,8 +1898,11 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     if(candidate && fWho == 2){
       if(fQA)
 	fPtvsDetavsDphi->Fill(vecClust.Pt(), deta, dphi);
+
       fPtvsTrackPtvsDeta->Fill(vecClust.Pt(), mt->Pt(), deta);
       fPtvsTrackPtvsDphi->Fill(vecClust.Pt(), mt->Pt(), dphi);
+
+      fPtTrackClusRatiovsPt->Fill(vecClust.Pt(), (mt->Pt()/vecClust.Pt()));
     }
 
     distCT = TMath::Sqrt(deta*deta+dphi*dphi);
@@ -1916,12 +1931,14 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     }
 
     if(TMath::Abs(dphi) < deltaPhi && TMath::Abs(deta) < deltaEta){
-      if(fQA && candidate){
-	if(fWho != 2){
-	  fDeltaETAClusTrackMatch->Fill(deta);
-	  fDeltaPHIClusTrackMatch->Fill(dphi);
-	}
+      if(fQA && candidate && fWho != 2){
+	fDeltaETAClusTrackMatch->Fill(deta);
+	fDeltaPHIClusTrackMatch->Fill(dphi);
       }
+
+      if(candidate && fWho == 2)
+	fPtTrackClusRatiovsPtWithCPV->Fill(vecClust.Pt(), (mt->Pt()/vecClust.Pt()));
+
       matched = kTRUE;
     }
   }
