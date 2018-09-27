@@ -19,6 +19,7 @@
 //  Author: Deepa Thomas, Shingo Sakai      //
 //////////////////////////////////////////////
 
+#include <vector>
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
@@ -185,6 +186,7 @@ fHistRawNtpcPhi(0),
 fMCcheckMother(0),
 fMCcheckDdecay(0),
 fMCcheckBdecay(0),
+fMCcheckHFdecay(0),
 fMCneutral(0),
 fEMCTrkMatch_Phi(0),
 fEMCTrkMatch_Eta(0),
@@ -192,6 +194,8 @@ fCompTrackPt(0),
 fCompTrackPtinEMCreg(0),
 fCompTrackPtMatch(0),
 fCompTrackPtMatchwithEMC(0),
+fMCcheckPi0decay(0),
+fMCcheckEtadecay(0),
 fSparseElectron(0),
 fvalueElectron(0)
 {
@@ -326,6 +330,7 @@ fHistRawNtpcPhi(0),
 fMCcheckMother(0),
 fMCcheckDdecay(0),
 fMCcheckBdecay(0),
+fMCcheckHFdecay(0),
 fMCneutral(0),
 fEMCTrkMatch_Phi(0),
 fEMCTrkMatch_Eta(0),
@@ -333,6 +338,8 @@ fCompTrackPt(0),
 fCompTrackPtinEMCreg(0),
 fCompTrackPtMatch(0),
 fCompTrackPtMatchwithEMC(0),
+fMCcheckPi0decay(0),
+fMCcheckEtadecay(0),
 fSparseElectron(0),
 fvalueElectron(0)
 {
@@ -673,11 +680,13 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
      fOutputList->Add(fInvmassPi0Dalitz);
      */
     fMCcheckMother = new TH2F("fMCcheckMother", "Mother MC PDG", 1000,-0.5,999.5,50,0,50);
-    fMCcheckBdecay = new TH1F("fMCcheckBdecay", "p_{T} distribution from B decay",50,0,50);
-    fMCcheckDdecay = new TH1F("fMCcheckDdecay", "p_{T} distribution from D decay",50,0,50);
+    fMCcheckBdecay = new TH2F("fMCcheckBdecay", "p_{T} distribution from B decay",50,0,50,50,0,50);
+    fMCcheckDdecay = new TH2F("fMCcheckDdecay", "p_{T} distribution from D decay",50,0,50,50,0,50);
+    fMCcheckHFdecay = new TH2F("fMCcheckHFdecay", "p_{T} distribution from D + B decay",10,-0.5,9.5,50,0,50);
     fOutputList->Add(fMCcheckMother);
     fOutputList->Add(fMCcheckBdecay);
     fOutputList->Add(fMCcheckDdecay);
+    fOutputList->Add(fMCcheckHFdecay);
     
     fMCneutral = new TH2F("fMCneutral","pi0 and eta pT from Hijing and enhance",6,-0.5,5.5,500,0,50);
     fOutputList->Add(fMCneutral);
@@ -696,6 +705,12 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     fCompTrackPtMatchwithEMC = new TH1F("fCompTrackPtMatchwithEMC","p_{T} distribution of tracks matched to EMC cluster for comparison;p_{T} (GeV/c);counts",35,ptbinning);
     fOutputList->Add(fCompTrackPtMatchwithEMC);
     
+    fMCcheckPi0decay= new TH2F("fHistpi0_e","electrons from pi0 in enhance",50,0,50,50,0,50);
+    fOutputList->Add(fMCcheckPi0decay);
+
+    fMCcheckEtadecay = new TH2F("fMCcheckEtadecay","electrons from Eta in enhance",50,0,50,50,0,50);
+    fOutputList->Add(fMCcheckEtadecay);
+
     if(fFlagSparse){
     Int_t bins[9]=      {8, 280, 160, 40, 200, 200, 3, 20,  10}; // trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;iSM;cent
     Double_t xmin[9]={-0.5,   2,  -8,   0,   0,   0, -0.5,  0,   0};
@@ -761,8 +776,12 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     
     fMCheader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
     
-    if(fMCarray)CheckMCgen(fMCheader);
     
+    Int_t NpureMC = 0;
+    Int_t NpureMCproc = 0;
+    if(fMCarray)CheckMCgen(fMCheader,NpureMC,NpureMCproc);
+    cout << "NpureMC = "<< NpureMC << " ; " << NpureMCproc << endl;    
+
     ///////////////////
     //PID initialised//
     ///////////////////
@@ -1061,12 +1080,15 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     ///////////////
     //Track loop///
     ///////////////
+
+    std::vector<double> MCinfo = {-1.0,-1.0,-1.0,-1.0,-1.0,-1.0}; 
+
     for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
         
         AliVParticle* Vtrack = 0x0;
         if(!fUseTender) Vtrack  = fVevent->GetTrack(iTracks);
         if(fUseTender) Vtrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(iTracks));
-        
+ 
         if (!Vtrack) {
             printf("ERROR: Could not receive track %d\n", iTracks);
             continue;
@@ -1075,8 +1097,31 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
         AliESDtrack *etrack = dynamic_cast<AliESDtrack*>(Vtrack);
         AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
         
+        for(int i=0; i<6; i++)MCinfo[i] = -1.0;
+
         GetRawTrackInfo(atrack);
+  
+        ///////////////////////
+        // Get MC information//
+        ///////////////////////
+        Int_t ilabel = track->GetLabel();
+        Int_t pdg = -999;
+        Int_t pidM = -1;
+        Double_t pid_ele = 0.0;
+        //Double_t enhance = 0.0;
+        //std::vector<double> MCinfo; 
         
+        if(ilabel>0 && fMCarray)
+        {
+          fMCparticle = (AliAODMCParticle*) fMCarray->At(ilabel);
+          Int_t pdg = fMCparticle->GetPdgCode();
+          if(TMath::Abs(pdg)==11)GetTrackMCinfo(ilabel, MCinfo, NpureMC, NpureMCproc);
+        }
+ 
+         if(TMath::Abs(MCinfo[1])==11.0)pid_ele = 1.0; 
+         pidM = (Int_t)MCinfo[2];
+         //cout << MCinfo[0] << " ; " << MCinfo[1]<< " ; " << MCinfo[2] << " ; " << MCinfo[3]<< endl;        
+      
         ////////////////////////////////
         //Comparison with TPC analysis//
         ////////////////////////////////
@@ -1127,35 +1172,9 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
                 if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) continue;
             //To be done : Add cuts to apply Chi2PerITSCls < 6 and N shared Cls ITS < 4
         }
-        
-        ///////////////////////
-        // Get MC information//
-        ///////////////////////
-        Int_t ilabel = track->GetLabel();
-        Int_t pdg = -999;
-        Int_t pidM = -1;
-        Double_t pid_ele = 0.0;
-        if(ilabel>0 && fMCarray)
-        {
-            fMCparticle = (AliAODMCParticle*) fMCarray->At(ilabel);
-            Int_t pdg = fMCparticle->GetPdgCode();
-            if(TMath::Abs(pdg)==11)pid_ele = 1.0;
-            Int_t ilabelM = -1;
-            if(pid_ele==1.0)FindMother(fMCparticle, ilabelM, pidM);
-            
-            if(ilabelM>0)
-            {
-                AliAODMCParticle* fMCparticleM = (AliAODMCParticle*) fMCarray->At(ilabelM);
-                if(pidM==22) // from pi0 & eta
-                {
-                    AliAODMCParticle* fMCparticleM = (AliAODMCParticle*) fMCarray->At(ilabelM);
-                    FindMother(fMCparticleM, ilabelM, pidM);
-                }
-                Double_t pTmom = fMCparticleM->Pt();
-                //fMCcheckMother->Fill(abs(pidM),pTmom);
-            }
-        }
-        
+  
+        if((MCinfo[5]==1.0 || MCinfo[5]==2.0) && TMath::Abs(MCinfo[1])==11.0)fMCcheckHFdecay->Fill(2,MCinfo[4]);
+     
         ////////////////////
         //Track properties//
         ///////////////////
@@ -1333,7 +1352,8 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
                 fEleCanTPCNpts->Fill(track->Pt(),track->GetTPCsignalN());
                 fEleCanTPCNCls->Fill(track->Pt(),track->GetTPCNcls());
                 
-                
+                if((MCinfo[5]==1.0 || MCinfo[5]==2.0) && TMath::Abs(MCinfo[1])==11.0)fMCcheckHFdecay->Fill(3,MCinfo[4]);
+
                 Int_t fITSncls=0;
                 for(Int_t l=0;l<6;l++) {
                     if(TESTBIT(track->GetITSClusterMap(),l)) {
@@ -1504,11 +1524,11 @@ void AliAnalysisTaskHFEemcQA::FindMother(AliAODMCParticle* part, Int_t &label, I
     }
 }
 
-void AliAnalysisTaskHFEemcQA::CheckMCgen(AliAODMCHeader* fMCheader)
+void AliAnalysisTaskHFEemcQA::CheckMCgen(AliAODMCHeader* fMCheader, Int_t &NpureMC, Int_t &NpureMCproc)
 {
     TList *lh=fMCheader->GetCocktailHeaders();
-    Int_t NpureMC = 0;
-    Int_t NpureMCproc = 0;
+    //Int_t NpureMC = 0;
+    //Int_t NpureMCproc = 0;
     if(lh)
     {
         for(int igene=0; igene<lh->GetEntries(); igene++)
@@ -1516,14 +1536,15 @@ void AliAnalysisTaskHFEemcQA::CheckMCgen(AliAODMCHeader* fMCheader)
             AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
             if(gh)
             {
-                //cout << "<------- imc = "<< gh->GetName() << endl;     
+                cout << "<------- imc = "<< gh->GetName() << endl;     
                 if(igene==0)NpureMC = gh->NProduced();  // generate by PYTHIA or HIJING
                 NpureMCproc += gh->NProduced();
             }
         }
     }
     
-     //cout << "NpureMC = " << NpureMC << endl;
+     cout << "NpureMC = " << NpureMC << endl;
+     cout << "NpureMCproc = " << NpureMCproc << endl;
     //for(int imc=0; imc<fMCarray->GetEntries(); imc++)
     for(int imc=0; imc<NpureMCproc; imc++)
     {
@@ -1548,15 +1569,11 @@ void AliAnalysisTaskHFEemcQA::CheckMCgen(AliAODMCHeader* fMCheader)
         if(pdgMom==-1 && iEnhance)iPhoenhance = 1;  // select particles orogonally from enhance
         if(iEnhance)iHFenhance = 1;  // select particles orogonally from enhance
         
-				cout<<" PdgGen == "<<pdgGen<<endl;
+				//cout<<" PdgGen == "<<pdgGen<<endl;
         if(iHFenhance==1)
         {
             if(pdgGen==411 || pdgGen==421 || pdgGen==413 || pdgGen==423 || pdgGen==431 || pdgGen==433)fMCcheckMother->Fill(pdgGen,fMCparticle->Pt());
             if(pdgGen==511 || pdgGen==521 || pdgGen==513 || pdgGen==523 || pdgGen==531 || pdgGen==533)fMCcheckMother->Fill(pdgGen,fMCparticle->Pt());
-						if(TMath::Abs(pdgGen)==11){
-            if(pdgMom==411 || pdgMom==421 || pdgMom==413 || pdgMom==423 || pdgMom==431 || pdgMom==433)fMCcheckDdecay->Fill(fMCparticle->Pt());
-            if(pdgMom==511 || pdgMom==521 || pdgMom==513 || pdgMom==523 || pdgMom==531 || pdgMom==533)fMCcheckBdecay->Fill(fMCparticle->Pt());
-						}
         }
         if(iPhoenhance==1)
         {
@@ -1628,6 +1645,50 @@ void AliAnalysisTaskHFEemcQA::CheckMCgen(AliAODMCHeader* fMCheader)
     
     return;
 }
+
+void AliAnalysisTaskHFEemcQA::GetTrackMCinfo(Int_t &ilabel, std::vector<double> &MCinfo, Int_t &NpureMC, Int_t &NpureMCproc)
+{
+  Int_t pidM = -1.0;
+  Int_t enhance = 0.0;
+  fMCparticle = (AliAODMCParticle*) fMCarray->At(ilabel);
+  Int_t pdg = fMCparticle->GetPdgCode();
+  Int_t ilabelM = -1;
+  if(TMath::Abs(pdg)==11)FindMother(fMCparticle, ilabelM, pidM);
+           
+  if(ilabelM>0)
+    {
+     cout << ilabelM << " ; " << NpureMC << " ; " << NpureMCproc << " ; " << enhance  << endl;
+
+     AliAODMCParticle* fMCparticleM = (AliAODMCParticle*) fMCarray->At(ilabelM);
+
+     if(pidM==22) // from pi0 & eta
+        {
+         FindMother(fMCparticleM, ilabelM, pidM);
+         if(ilabelM>NpureMC && ilabelM<NpureMCproc)cout << "Conv. ; " << pidM << " ; " << fMCparticleM->Pt() << endl; 
+         fMCparticleM = (AliAODMCParticle*) fMCarray->At(ilabelM);
+        }     
+ 
+          if(ilabelM>NpureMC && ilabelM<NpureMCproc)enhance = 1.0;
+          
+          Double_t pTmom = fMCparticleM->Pt();
+          MCinfo[0] = enhance;
+          MCinfo[1] = pdg;
+          MCinfo[2] = pidM;
+          MCinfo[3] = pTmom;
+          MCinfo[4] = fMCparticle->Pt();
+
+          if(MCinfo[2]==411.0 || MCinfo[2]==421.0 || MCinfo[2]==413.0 || MCinfo[2]==423.0 || MCinfo[2]==431.0 || MCinfo[2]==433.0)MCinfo[5]=1.0;
+          if(MCinfo[2]==511.0 || MCinfo[2]==521.0 || MCinfo[2]==513.0 || MCinfo[2]==523.0 || MCinfo[2]==531.0 || MCinfo[2]==533.0)MCinfo[5]=2.0;
+
+     }
+
+        if(MCinfo[0]==1.0 && MCinfo[1]==11.0 && MCinfo[2]==111.0)fMCcheckPi0decay->Fill(fMCparticle->Pt(),MCinfo[3]);
+        if(MCinfo[0]==1.0 && MCinfo[1]==11.0 && MCinfo[2]==221.0)fMCcheckEtadecay->Fill(fMCparticle->Pt(),MCinfo[3]);
+        if(MCinfo[1]==11.0 && (MCinfo[5]==1.0))fMCcheckDdecay->Fill(fMCparticle->Pt(),MCinfo[3]);
+        if(MCinfo[1]==11.0 && (MCinfo[5]==2.0))fMCcheckBdecay->Fill(fMCparticle->Pt(),MCinfo[3]);
+        if(MCinfo[1]==11.0 && (MCinfo[5]==1.0 || MCinfo[5]==2.0))fMCcheckHFdecay->Fill(1,fMCparticle->Pt());
+
+ }
 
 //_______________________________________________________________________
 void AliAnalysisTaskHFEemcQA::GetRawTrackInfo(AliAODTrack* rtrack)
