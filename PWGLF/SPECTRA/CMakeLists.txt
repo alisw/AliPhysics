@@ -111,6 +111,7 @@ set(SRCS
   AntiprotonToProton/train/AliAnalysisTaskProtonQA.cxx
   AntiprotonToProton/train/AliAnalysisTaskProtonAbsorbtion.cxx
   Spherocity/AliTransverseEventShape.cxx
+  Spherocity/AliSpherocityEstimator.cxx
 )
 
 # Headers from sources
