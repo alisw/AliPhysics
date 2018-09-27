@@ -401,7 +401,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fPi000 = new TF1("fPi000","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
 			  fPi000->SetParameters(3.68528e+01,5.43694e-02,1.99270e+00,5.33945e+00,3.08814e+00);
 				fPi005 = new TF1("fPi005","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
-			  fPi005->SetParameters(2.76729e+00,-7.83103e+01,2.62016e+04,4.83336e+00,1.78078e+00);
+				fPi005->SetParameters(4.03327e+01,-2.14631e+01,9.93386e+02,3.60954e+00,2.34609e+00);
 				fPi010 = new TF1("fPi010","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
 			  fPi010->SetParameters(5.31753e+00,-7.43035e+01,3.27764e+04,4.94405e+00,1.93347e+00);
 
@@ -411,7 +411,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fEta000 = new TF1("fEta000","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
 				fEta000->SetParameters(1.50102e+01,2.08498e-01,2.95617e+00,5.05032e+00,2.95377e+00);    
 				fEta005 = new TF1("fEta005","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
-				fEta005->SetParameters(1.82732e+00,-8.08219e+01,8.52420e+03,4.66504e+00,1.75496e+00);    
+				fEta005->SetParameters(3.00390e+01,-1.76773e+01,7.45941e+00,4.48491e+00,2.41261e+00);
 				fEta010 = new TF1("fEta010","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
 				fEta010->SetParameters(1.82736e+00,-8.08208e+01,2.32670e+04,4.66500e+00,1.75496e+00); 
 
