@@ -378,10 +378,10 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 		if(fUseTPCcorr){
 			fTree->Branch("EsigTPCcorr",     &EnSigmaTPCcorr);
 		}
+		fTree->Branch("EsigTOF",           &EnSigmaTOF);
 		if(fUseTOFcorr){
 			fTree->Branch("EsigTOFcorr",     &EnSigmaTOFcorr);
 		}
-		fTree->Branch("EsigTOF",           &EnSigmaTOF);
 		fTree->Branch("PsigITS",           &PnSigmaITS);
 		fTree->Branch("PsigTPC",           &PnSigmaTPC);
 		fTree->Branch("PsigTOF",           &PnSigmaTOF);
