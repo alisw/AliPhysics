@@ -109,11 +109,12 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
   TString fout = Form("SDDADCCalibResults_%d.root",run);
   TFile *out = new TFile(Form("%s/%s",foldname.Data(),fout.Data()),"recreate");
     
-  //    TCanvas *chdEdxproj = new TCanvas("chdEdxproj","chdEdxproj",1000,800);
+  TCanvas *chdEdxproj = new TCanvas("chdEdxproj","chdEdxproj",1600,800);
   //    TCanvas *cmod       = new TCanvas("cmod","module",600,900);
-  //    chdEdxproj->Divide(4,2);
+  chdEdxproj->Divide(5,2);
   //    cmod->Divide(1,3);
-    
+  Bool_t firstpage=kTRUE;
+
   Char_t path[200];
     
   //    sprintf(path,"alien:///alice/data/%04i/%s/%09i/cpass1_pass1/QAresults_barrel.root",year,period.Data(),run);
@@ -142,15 +143,29 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
     Printf("E: Cannot open TList %s",lname.Data());
     return;
   }
+  TLatex* textTooFew=new TLatex(0.2,0.8,"Too few entries");
+  textTooFew->SetNDC();
+  textTooFew->SetTextFont(63);
+  textTooFew->SetTextColor(2);
+  textTooFew->SetTextSize(28);
+  
+  TLatex* textfldFit=new TLatex(0.2,0.8,"Fit did not converge");
+  textfldFit->SetNDC();
+  textfldFit->SetTextFont(63);
+  textfldFit->SetTextColor(2);
+  textfldFit->SetTextSize(28);
     
-    
-    
+  TLatex* textbadFit=new TLatex(0.2,0.8,"Bad fit params");
+  textbadFit->SetNDC();
+  textbadFit->SetTextFont(63);
+  textbadFit->SetTextColor(2);
+  textbadFit->SetTextSize(28);
+
   //    for(Int_t ihist = 6; ihist < 7; ihist++){//loop on modules
   for(Int_t ihist = 0; ihist < nModules; ihist++){//loop on modules
-        
     Int_t imod = ihist+240;
     hdEdxvsDrTime = (TH2F*)cOutput->FindObject(Form("hSDDdEdxvsDrTime%i",imod));
-    //        chdEdxproj->Clear("D");
+    chdEdxproj->Clear("D");
     printf("Mod. # %i \n",imod);
     hmpv->Reset("ICESM");
     hsig->Reset("ICESM");
@@ -166,16 +181,24 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
     hsig->GetYaxis()->SetTitle("Gaussian #sigma (keV)");
     hsigl->GetYaxis()->SetTitle("Landau #sigma (keV)");
     TH1F *hdEdxproj[nDrTimeBin];
-    Bool_t isTBfilled[nDrTimeBin];
+    Double_t minMPV=999999;
+    Double_t maxMPV=1;
     for(Int_t idEdx = 0; idEdx < nDrTimeBin; idEdx++){//loop on DrTime Bin
             
       int minTimeBin = hdEdxvsDrTime->GetXaxis()->FindBin(drTimeLim[idEdx]);
       int maxTimeBin = hdEdxvsDrTime->GetXaxis()->FindBin(drTimeLim[idEdx+1]);
       hdEdxproj[idEdx] = (TH1F*)hdEdxvsDrTime->ProjectionY(Form("%i",idEdx),minTimeBin,maxTimeBin);
       hdEdxproj[idEdx]->SetTitle(hdEdxvsDrTime->GetTitle());
+      hdEdxproj[idEdx]->GetXaxis()->SetTitle(Form("dE/dx, time interval %d",idEdx));
+      hdEdxproj[idEdx]->GetYaxis()->SetTitle("Events");
+
+      chdEdxproj->cd(idEdx+1);
+      hdEdxproj[idEdx]->Draw();
+
       if(hdEdxproj[idEdx]->GetEntries()<50){
 	printf("Module %d, time bin %d, too few entries, SKIP\n",imod,idEdx);
-	isTBfilled[idEdx]=kFALSE;
+	textTooFew->Draw();
+	chdEdxproj->Update();
 	continue;
       }
       lfun = new TF1(Form("LangausFun%d",imod),LangausFun,50.,300.,4); //Langaus fit on a DrTime slice
@@ -184,45 +207,52 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
       lfun->SetParameter(1,80.);
       lfun->SetParameter(2,hdEdxproj[idEdx]->GetEntries()/10.);
       lfun->SetParameter(3,10.);
-      lfun->SetParLimits(3,0.,20);
-            
-      hdEdxproj[idEdx]->Fit(lfun,"0NQLR");
-      hdEdxproj[idEdx]->GetXaxis()->SetTitle(Form("dE/dx, time interval %d",idEdx));
-      hdEdxproj[idEdx]->GetYaxis()->SetTitle("Events");
+      lfun->SetParLimits(3,1,20);
+
+      Int_t fitstat = hdEdxproj[idEdx]->Fit(lfun,"0NQLR");
+      lfun->Draw("same");
+      chdEdxproj->Update();
+
+      if(fitstat!=0){
+	printf("   Fit failed in time interval %d\n",idEdx);
+	textfldFit->Draw();
+	chdEdxproj->Update();
+	continue;
+      }
       Float_t mpv   = lfun->GetParameter(1);
       Float_t empv  = lfun->GetParError(1);
       Float_t sig   = lfun->GetParameter(3);
       Float_t esig  = lfun->GetParError(3);
       Float_t sigl  = lfun->GetParameter(0);
       Float_t esigl = lfun->GetParError(0);
-      //      printf(" Entries =%.0f  mpv=%f  sig=%f\n",hdEdxproj[idEdx]->GetEntries(),mpv,sig);
+      if(sigl<1.){
+	printf("   Bad fit parameters in time interval %d: sig=%f sigl=%f\n",idEdx,sig,sigl);
+	textbadFit->Draw();
+	chdEdxproj->Update();
+	continue;
+      }
+      printf("   TimeBin %d Entries =%.0f  mpv=%f  sig=%f sigl=%f\n",idEdx,hdEdxproj[idEdx]->GetEntries(),mpv,sig,sigl);
       //filling histos mpv vs DrTime for each module
+      if((mpv+empv)>maxMPV) maxMPV=mpv+empv;
+      if((mpv-empv)<minMPV) minMPV=mpv-empv;
       hmpv->SetBinContent(idEdx+1,mpv);
       hmpv->SetBinError(hmpv->FindBin(0.5*(drTimeLim[idEdx]+drTimeLim[idEdx+1])),empv);
       hsig->SetBinContent(idEdx+1,sig);
       hsig->SetBinError(hsig->FindBin(0.5*(drTimeLim[idEdx]+drTimeLim[idEdx+1])),esig);
       hsigl->SetBinContent(idEdx+1,sigl);
       hsigl->SetBinError(hsigl->FindBin(0.5*(drTimeLim[idEdx]+drTimeLim[idEdx+1])),esigl);
-      isTBfilled[idEdx]=kTRUE;
 
-      //            chdEdxproj->cd(idEdx+1);
-      //            hdEdxproj[idEdx]->Draw();
-      //            lfun->Draw("same");
-      //            chdEdxproj->Update();
     }//end loop on DrTime slices
-
     Double_t maxFit=5400;
     Double_t minFit=1000;
-    if(!isTBfilled[7]) maxFit=4600.;
-    if(!isTBfilled[6]) maxFit=3800.;
-    if(!isTBfilled[5]) maxFit=3000.;
-    if(!isTBfilled[2]) minFit=1800.;
-    if(!isTBfilled[3]) minFit=2600.;
-
+    if(minMPV<maxMPV){
+      hmpv->SetMinimum(0.95*minMPV);
+      hmpv->SetMaximum(1.02*maxMPV);
+    }
     TF1 *pol1mpv = new TF1("pol1mpv","pol1mpv",0,6400);
     //Mod 469 only one part of the dr Time region is full 
-    if(imod==469 && maxFit>3000) maxFit=3000;
-    if(imod!=469 && (maxFit<3500 || hmpv->GetEntries()<=3)) pol1mpv->FixParameter(1,0);
+    if(imod==469) maxFit=3000;
+    if(hmpv->GetEntries()<=3) pol1mpv->FixParameter(1,0);
     if(hmpv->GetEntries()>2){
       hmpv->Fit(pol1mpv,"0NQ","",minFit,maxFit);
     }else{
@@ -232,6 +262,16 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
     if(imod==376) {//Hard coded, bad module
       pol1mpv->SetParameter(0,84);
       pol1mpv->SetParameter(1,0);
+    }
+    chdEdxproj->cd(nDrTimeBin+1);
+    hmpv->Draw();
+    pol1mpv->Draw("same");
+    chdEdxproj->Update();
+    if(firstpage){
+      chdEdxproj->Print("LanGausFits.pdf(");
+      firstpage=kFALSE;
+    }else{
+      chdEdxproj->Print("LanGausFits.pdf");
     }
     out->cd();
     hmpv->Write();
@@ -278,7 +318,7 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
     //        hsigl->Reset("M");
         
   }//end loop on modules
-    
+
   Double_t offset=1.3;
   hmpvModpar0->GetYaxis()->SetTitleOffset(offset);
   hmpvModpar1->GetYaxis()->SetTitleOffset(offset);
@@ -287,21 +327,33 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
   hsiglModpar0->GetYaxis()->SetTitleOffset(offset);
   hsiglModpar1->GetYaxis()->SetTitleOffset(offset);
     
-  TCanvas *chmpvModpar0  = new TCanvas("chmpvModpar0","chmpvModpar0",1000,800);
+  TCanvas *chmpv  = new TCanvas("chmpv","chmpv",1600,800);
+  chmpv->Divide(2,1);
+  chmpv->cd(1);
   hmpvModpar0->Draw();
-  TCanvas *chmpvModpar1  = new TCanvas("chmpvModpar1","chmpvModpar1",1000,800);
+  chmpv->cd(2);
   hmpvModpar1->Draw();
-  TCanvas *chsigModpar0  = new TCanvas("chsigModpar0","chsigModpar0",1000,800);
+  chmpv->Print("LanGausFits.pdf");
+
+
+  TCanvas *chsig  = new TCanvas("chsig","chsig",1600,800);
+  chsig->Divide(2,1);
+  chsig->cd(1);
   hsigModpar0->Draw();
-  TCanvas *chsigModpar1  = new TCanvas("chsigModpar1","chsigModpar1",1000,800);
+  chsig->cd(2);
   hsigModpar1->Draw();
-  TCanvas *chsiglModpar0 = new TCanvas("chsiglModpar0","chsiglModpar0",1000,800);
+  chsig->Print("LanGausFits.pdf");
+
+  TCanvas *chsigl = new TCanvas("chsigl","chsigl",1600,800);
+  chsigl->Divide(2,1);
+  chsigl->cd(1);
   hsiglModpar0->SetMinimum(0);
   hsiglModpar0->SetMaximum(20);
   hsiglModpar0->Draw();
-  TCanvas *chsiglModpar1 = new TCanvas("chsiglModpar1","chsiglModpar1",1000,800);
+  chsigl->cd(2);
   hsiglModpar1->Draw();
-    
+  chsigl->Print("LanGausFits.pdf)");
+   
   out->cd();
   hmpvModpar0->Write();
   hmpvModpar1->Write();
@@ -309,7 +361,6 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
   hsigModpar1->Write();
   hsiglModpar0->Write();
   hsiglModpar1->Write();
-    
   out->Close();
   delete out;
     
