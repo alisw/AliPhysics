@@ -147,6 +147,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Int_t           fBuffer_MC_Cluster_Flag;                   //!<! array buffer
     Int_t           fBuffer_ClusterNumCells;              //!<! array buffer
     Int_t           fBuffer_LeadingCell_ID;              //!<! array buffer
+    Float_t         fBuffer_LeadingCell_E;              //!<! array buffer
     Float_t         fBuffer_LeadingCell_Eta;              //!<! array buffer
     Float_t         fBuffer_LeadingCell_Phi;              //!<! array buffer
     Float_t         fBuffer_ClusterM02;              //!<! array buffer
@@ -178,7 +179,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Int_t           fBuffer_Cluster_MC_Label;              //!<! array buffer
 
     
-    ClassDef(AliAnalysisTaskClusterQA, 2);
+    ClassDef(AliAnalysisTaskClusterQA, 3);
 };
 
 const Int_t kMaxActiveCells = 500;

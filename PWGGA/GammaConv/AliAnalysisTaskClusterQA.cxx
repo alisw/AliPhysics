@@ -78,6 +78,7 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA() : AliAnalysisTaskSE(),
   fBuffer_MC_Cluster_Flag(0),
   fBuffer_ClusterNumCells(0),
   fBuffer_LeadingCell_ID(0),
+  fBuffer_LeadingCell_E(0),
   fBuffer_LeadingCell_Eta(0),
   fBuffer_LeadingCell_Phi(0),
   fBuffer_ClusterM02(0),
@@ -158,6 +159,7 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalys
   fBuffer_MC_Cluster_Flag(0),
   fBuffer_ClusterNumCells(0),
   fBuffer_LeadingCell_ID(0),
+  fBuffer_LeadingCell_E(0),
   fBuffer_LeadingCell_Eta(0),
   fBuffer_LeadingCell_Phi(0),
   fBuffer_ClusterM02(0),
@@ -250,6 +252,7 @@ void AliAnalysisTaskClusterQA::UserCreateOutputObjects()
   fClusterTree->Branch("Cluster_IsEMCAL",                   &fBuffer_ClusterIsEMCAL,                  "Cluster_IsEMCAL/O");
   fClusterTree->Branch("Cluster_NumCells",                  &fBuffer_ClusterNumCells,                 "Cluster_NumCells/I");
   fClusterTree->Branch("Cluster_LeadingCell_ID",            &fBuffer_LeadingCell_ID,                  "Cluster_LeadingCell_ID/I");
+  fClusterTree->Branch("Cluster_LeadingCell_E",             &fBuffer_LeadingCell_E,                   "Cluster_LeadingCell_E/F");
   fClusterTree->Branch("Cluster_LeadingCell_Eta",           &fBuffer_LeadingCell_Eta,                 "Cluster_LeadingCell_Eta/F");
   fClusterTree->Branch("Cluster_LeadingCell_Phi",           &fBuffer_LeadingCell_Phi,                 "Cluster_LeadingCell_Phi/F");
   fClusterTree->Branch("Cluster_M02",                       &fBuffer_ClusterM02,                      "Cluster_M02/F");
@@ -413,7 +416,8 @@ void AliAnalysisTaskClusterQA::ProcessQATreeCluster(AliVEvent *event, AliVCluste
     if(phiCluster < 3.2 && phiCluster > 1.4){
       fBuffer_ClusterIsEMCAL = kTRUE;
     }
-  } else if(etaCluster < 0.67 && etaCluster > -0.67){
+  }
+  if(etaCluster < 0.67 && etaCluster > -0.67){
     if(etaCluster > 0.23 || etaCluster < -0.23){
       if(phiCluster < 5.6 && phiCluster > 4.6){
         fBuffer_ClusterIsEMCAL = kFALSE;
@@ -442,6 +446,7 @@ void AliAnalysisTaskClusterQA::ProcessQATreeCluster(AliVEvent *event, AliVCluste
 
   // Find the leading cell in the cluster and its position
   fBuffer_LeadingCell_ID                  = FindLargestCellInCluster(cluster,fInputEvent);
+  fBuffer_LeadingCell_E                  = cells->GetCellAmplitude(fBuffer_LeadingCell_ID);
   Float_t leadcelleta = 0.;
   Float_t leadcellphi = 0.;
   fGeomEMCAL->EtaPhiFromIndex(fBuffer_LeadingCell_ID, leadcelleta, leadcellphi);
@@ -475,18 +480,15 @@ void AliAnalysisTaskClusterQA::ProcessQATreeCluster(AliVEvent *event, AliVCluste
 
     // Get eta and phi for the surounding cells
     fGeomEMCAL->EtaPhiFromIndex(cellNumber, surrcelleta, surrcellphi);
+    if ( surrcellphi < 0 ) surrcellphi+=TMath::TwoPi();
     Double_t dR2 = pow(leadcelleta-surrcelleta,2) + pow(leadcellphi-surrcellphi,2);
     // Select those cells that are within fConeRadius of the leading cluster cell
     if( dR2 < fConeRadius){
       fBuffer_Surrounding_Cells_E[aCell]              = cells->GetCellAmplitude(cellNumber);
       fBuffer_Surrounding_Cells_ID[aCell]             = cellNumber;
       fBuffer_Surrounding_Cells_R[aCell]             = dR2;
-      Float_t celleta = 0.;
-      Float_t cellphi = 0.;
-      fGeomEMCAL->EtaPhiFromIndex(fBuffer_Surrounding_Cells_ID[aCell], celleta, cellphi);
-      if ( cellphi < 0 ) cellphi+=TMath::TwoPi();
-      fBuffer_Surrounding_Cells_RelativeEta[aCell]      = leadcelleta-celleta;
-      fBuffer_Surrounding_Cells_RelativePhi[aCell]   = leadcellphi-cellphi;
+      fBuffer_Surrounding_Cells_RelativeEta[aCell]      = leadcelleta-surrcelleta;
+      fBuffer_Surrounding_Cells_RelativePhi[aCell]   = leadcellphi-surrcellphi;
       nActiveCellsSurroundingInR+=1;
     }
   }
