@@ -37,18 +37,25 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
 
-  void Tracks2V0vertices(TObjArray* ev1, TObjArray* ev2, AliVVertex *vtxT3D, Double_t b);
+  void Tracks2V0vertices(TClonesArray* fv0s, TObjArray* ev1, TObjArray* ev2, Bool_t mixing, AliVVertex *vtxT3D, Double_t b);
   Bool_t TrackCutsForTreeAOD(AliAODTrack* trk);
   Bool_t TrackCutsForTreeESD(AliESDtrack* trk);
   Bool_t V0CutsForTreeAOD(AliAODv0* v0, Double_t* vt);
   Bool_t V0CutsForTreeESD(AliESDv0* v0, Double_t* vt, AliExternalTrackParam* ptrk, AliExternalTrackParam* ntrk, Double_t b);
+  void IsGenLambda(Int_t poslabel, Int_t neglabel, AliLightV0* tempLightV0L, AliLightV0* tempLightV0AL, Float_t pt, Float_t invMassLambda, Float_t invMassAntiLambda);
 
+  // event cuts
   void SetCentCut(Float_t cut){centcut = cut;};
+  // daughter track cuts
+  void SetCrossedRowsCut(Float_t rows, Float_t ratio){ncrossedrowscut = rows; crossedrowsclustercut = ratio;};
+  void SetImpParamCut(Double_t cut){fDmin = cut;};
+  // v0 cuts
   void SetPtMinLambda(Float_t pt){ptminlambda = pt;};
   void SetEtaCutLambda(Float_t eta){etacutlambda = eta;};
-  void SetCosPACut(Float_t cut){cospacut = cut;};
-  void SetMinimumRadius(Float_t cut){minradius = cut;};
-  void SetCrossedRowsCut(Float_t rows, Float_t ratio){ncrossedrowscut = rows; crossedrowsclustercut = ratio;};
+  void SetCosPACut(Double_t cut){fCPAmin = cut;};
+  void SetRadiusCuts(Double_t mincut, Double_t maxcut){fRmin = mincut; fRmax = maxcut;};
+  void SetDCADaughterCut(Double_t cut){fDCAmax = cut;};
+  void SetChi2Cut(Double_t cut){fChi2max = cut;};
   
   void SetIsMC(Bool_t val){fIsMC = val;};
   Bool_t GetIsMC(){return fIsMC;};
@@ -57,6 +64,7 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   void SetEventSelection(UInt_t val) {fEvSel = val;}
   void MakeLambdaTree(Bool_t val){fLambdaTree = val;};
   void MakeEventMixingTree(Bool_t val){fEventMixingTree = val;};
+  void DoRevertexing(Bool_t val){fRevertex = val;};
   void SetMaxMixTracks(Int_t val){nmaxmixtracks = val;};
   void SetMaxMixEvents(Int_t val){nmaxmixevents = val;};
 
@@ -66,6 +74,7 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   
   AliESDEvent* fESD;
   AliAODEvent* fAOD;
+  AliStack *stack;
   //AliAnalysisUtils* fUtils;   //! analysis utils to detect pileup
   AliPIDResponse* fPIDResponse; // points to class for PID
   AliEventCuts fEventCuts;      /// Event cuts
@@ -103,8 +112,6 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   TH2F*  hInvMassAntiLambdaSecFromMaterial;
   TH2F*  hInvMassLambdaSecFromWeakDecay;
   TH2F*  hInvMassAntiLambdaSecFromWeakDecay;
-  TH2F*  hInvMassLambdaXiMismatch;
-  TH2F*  hInvMassAntiLambdaXiMismatch;
   TH2F*  hInvMassLike;
   TH2F*  hInvMassLambdaK0S;
   TH2F*  hInvMassAntiLambdaK0S;
@@ -113,17 +120,13 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   //TH3F*  hInvMassPtPidLambda;
   //TH3F*  hInvMassPtPidAntiLambda;
 
-  TH2F* hCorrPidPid;
-  TH2F* hCorrMpidMpid;
-  TH2F* hCorrGpidGpid;
-  TH2F* hCorrPidMpid;
-  TH2F* hCorrPidGpid;
-  TH2F* hCorrMpidGpid;
-
   TH3F* hXiPlus;
   TH3F* hXiMinus;
   TH3F* hXiZero;
   TH3F* hXiZeroAnti;
+
+  TH3F* hInvMassLambdaMPidPt;
+  TH3F* hInvMassAntiLambdaMPidPt;
 
   TH2F* hPtResLambda;
   TH2F* hPtResAntiLambda;
@@ -134,8 +137,6 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   Float_t centcut;
   Float_t ptminlambda;
   Float_t etacutlambda;
-  Float_t cospacut;
-  Float_t minradius;
   Float_t ncrossedrowscut;
   Float_t crossedrowsclustercut;
 
@@ -146,6 +147,7 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   Double_t fVtxZ;
   Int_t fRunNumber;
   TClonesArray *fAcceptV0;
+  //TClonesArray *fAcceptV0test;
   TClonesArray *fGenLambda;
   TClonesArray *fGenCascade;
   TClonesArray *fMixV0;
@@ -155,9 +157,17 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   UInt_t fEvSel;
   Bool_t fLambdaTree;
   Bool_t fEventMixingTree;
+  Bool_t fRevertex;
   Int_t nmaxmixtracks;
   Int_t nmaxmixevents;
   Int_t *pidVals;
+
+  Double_t fChi2max;      //max chi2
+  Double_t fDmin;//0.05;  //min imp parameter for the 1st daughter
+  Double_t fDCAmax;//1.5; //max DCA between the daughter tracks
+  Double_t fCPAmin;//0.9; //min cosine of V0's pointing angle
+  Double_t fRmin;         //min radius of the fiducial volume
+  Double_t fRmax;//200.;  //max radius of the fiducial volume
   
   const Float_t massPi = 0.139570;
   const Float_t massP = 0.938272;
@@ -166,32 +176,34 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   //AliMCEvent*              fMcEvent;    //! MC event
   //AliInputEventHandler*    fMcHandler;  //! MCEventHandler 
  
-  ClassDef(AliAnalysisTaskNetLambdaIdent,9);
+  ClassDef(AliAnalysisTaskNetLambdaIdent,10);
 };
 
 //_____________________________________________________________________________
 class AliLightV0 : public TObject
 {
  public:
- AliLightV0() : pt(-999), eta(-999), invmass(-999), invmassK0S(-999),
-    cospt(-999), decayr(-999), proplife(-999), dcadaughters(-999), mcstatus(0),
+ AliLightV0() : pt(-999), eta(-999), invmass(-999), invmassK0S(-999), invmassGamma(-999),
+    cospt(-999), decayr(-999), proplife(-999), dcadaughters(-999), ptarm(-999), alpha(-999), mcstatus(0),
     ppt(-999), peta(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nnsigmapr(-999), ndca(-999), genpt(-999), geneta(-999), cascpt(-999), casceta(-999) {};
- AliLightV0(Float_t ptin, Float_t etain) : pt(ptin), eta(etain), invmass(-999), invmassK0S(-999),
-    cospt(-999), decayr(-999), proplife(-999), dcadaughters(-999), mcstatus(0),
+ AliLightV0(Float_t ptin, Float_t etain) : pt(ptin), eta(etain), invmass(-999), invmassK0S(-999), invmassGamma(-999),
+    cospt(-999), decayr(-999), proplife(-999), dcadaughters(-999), ptarm(-999), alpha(-999), mcstatus(0),
     ppt(-999), peta(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nnsigmapr(-999), ndca(-999), genpt(-999), geneta(-999), cascpt(-999), casceta(-999) {};
- AliLightV0(Float_t ptin, Float_t etain, Float_t invmassin, Float_t invmassK0Sin, 
-	    Float_t cosptin, Float_t decayrin, Float_t proplifein) : pt(ptin), eta(etain), invmass(invmassin), invmassK0S(invmassK0Sin),
-    cospt(cosptin), decayr(decayrin), proplife(proplifein), dcadaughters(-999), mcstatus(0),
+ AliLightV0(Float_t ptin, Float_t etain, Float_t invmassin, Float_t invmassK0Sin, Float_t invmassGammain,  
+		 Float_t cosptin, Float_t decayrin, Float_t proplifein) : pt(ptin), eta(etain), invmass(invmassin), invmassK0S(invmassK0Sin), invmassGamma(invmassGammain),
+    cospt(cosptin), decayr(decayrin), proplife(proplifein), dcadaughters(-999), ptarm(-999), alpha(-999), mcstatus(0),
     ppt(-999), peta(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nnsigmapr(-999), ndca(-999), genpt(-999), geneta(-999), cascpt(-999), casceta(-999) {};
   virtual ~AliLightV0(){};
   void SetPt(Float_t val){pt = val;};
   void SetEta(Float_t val){eta = val;};
   void SetInvMass(Float_t val){invmass = val;};
   void SetInvMassK0S(Float_t val){invmassK0S = val;};
+  void SetInvMassGamma(Float_t val){invmassGamma = val;};
   void SetCosPointingAngle(Float_t val){cospt = val;};
   void SetDecayR(Float_t val){decayr = val;};
   void SetProperLifetime(Float_t val){proplife = val;};
   void SetDCADaughters(Float_t val){dcadaughters = val;};
+  void SetArmPodVars(Float_t ptin, Float_t alphain){ptarm = ptin; alpha = alphain;};
   void SetMcStatus(Int_t val){mcstatus = val;};
   void SetPosDaughter(Float_t ptin, Float_t etain, Float_t nsigma, Float_t dca){ppt = ptin; peta = etain; pnsigmapr = nsigma; pdca = dca;};
   void SetNegDaughter(Float_t ptin, Float_t etain, Float_t nsigma, Float_t dca){npt = ptin; neta = etain; nnsigmapr = nsigma; ndca = dca;};
@@ -202,10 +214,13 @@ class AliLightV0 : public TObject
   Float_t GetEta(){return eta;};
   Float_t GetInvMass(){return invmass;};
   Float_t GetInvMassK0S(){return invmassK0S;};
+  Float_t GetInvMassGamma(){return invmassGamma;};
   Float_t GetCosPointingAngle(){return cospt;};
   Float_t GetDecayR(){return decayr;};
   Float_t GetProperLifetime(){return proplife;};
   Float_t GetDCADaughters(){return dcadaughters;};
+  Float_t GetPtArm(){return ptarm;};
+  Float_t GetAlpha(){return alpha;};
   Int_t   GetMcStatus(){return mcstatus;};
   void    GetPosDaughter(Float_t& ptout, Float_t& etaout, Float_t& nsigma, Float_t& dca){ptout = ppt; etaout = peta; nsigma = pnsigmapr; dca = pdca;};
   void    GetNegDaughter(Float_t& ptout, Float_t& etaout, Float_t& nsigma, Float_t& dca){ptout = npt; etaout = neta; nsigma = nnsigmapr; dca = ndca;};
@@ -219,10 +234,13 @@ class AliLightV0 : public TObject
   Float_t   eta;
   Float_t   invmass;
   Float_t   invmassK0S;
+  Float_t   invmassGamma;
   Float_t   cospt;
   Float_t   decayr;
   Float_t   proplife;
   Float_t   dcadaughters;
+  Float_t   ptarm;
+  Float_t   alpha;
   Int_t     mcstatus;
   Float_t   ppt; // positive daughter properties
   Float_t   peta;
@@ -237,7 +255,7 @@ class AliLightV0 : public TObject
   Float_t   cascpt;
   Float_t   casceta;
   
-  ClassDef(AliLightV0, 6);
+  ClassDef(AliLightV0, 7);
 };
 
 //_____________________________________________________________________________
@@ -275,15 +293,18 @@ class AliLightGenV0 : public TObject
 class AliLightV0track : public TObject
 {
  public:
- AliLightV0track() : extparam(), prpid(-999), vtxx(-999), vtxy(-999), vtxz(-999) {};
+ AliLightV0track() : extparam(), prpid(-999), vtxx(-999), vtxy(-999), vtxz(-999), mclabel(-999) {};
  AliLightV0track(AliExternalTrackParam& inparam, Float_t inpid, Double_t* vertin) : extparam(inparam), prpid(inpid),
-    vtxx(vertin[0]), vtxy(vertin[1]), vtxz(vertin[2]){};
+    vtxx(vertin[0]), vtxy(vertin[1]), vtxz(vertin[2]), mclabel(-999){};
   virtual ~AliLightV0track(){};
+
+  void SetMcLabel(Int_t labelin){mclabel = labelin;};
 
   //void Set(AliVTrack* trk, Float_t val){extparam = AliExternalParam(trk); prpid = val;};
   AliExternalTrackParam *GetExtParam(){return &extparam;};
   Float_t GetProtonPID(){return prpid;};
   void GetPrimaryVertex(Double_t &xin, Double_t &yin, Double_t &zin){xin = vtxx; yin = vtxy; zin = vtxz;};
+  Int_t GetMcLabel(){return mclabel;};
   
  private:
   AliExternalTrackParam extparam;
@@ -291,7 +312,8 @@ class AliLightV0track : public TObject
   Double_t vtxx;
   Double_t vtxy;
   Double_t vtxz;
+  Int_t mclabel;
   
-  ClassDef(AliLightV0track, 2);
+  ClassDef(AliLightV0track, 3);
 };
 #endif
