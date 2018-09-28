@@ -116,6 +116,8 @@ AliAnalysisTaskWeakDecayVertexer::AliAnalysisTaskWeakDecayVertexer()
 //Options for general task operation
 fTrigType(AliVEvent::kMB),
 fkDoExtraEvSels(kTRUE),
+fkForceResetV0s(kFALSE),
+fkForceResetCascades(kFALSE),
 fMinCentrality(0.0),
 fMaxCentrality(300.0),
 fkRevertexAllEvents(kTRUE),
@@ -166,6 +168,8 @@ AliAnalysisTaskWeakDecayVertexer::AliAnalysisTaskWeakDecayVertexer(const char *n
 //Options for general task operation
 fTrigType(AliVEvent::kMB),
 fkDoExtraEvSels(kTRUE),
+fkForceResetV0s(kFALSE),
+fkForceResetCascades(kFALSE),
 fMinCentrality(0.0),
 fMaxCentrality(300.0),
 fkRevertexAllEvents(kTRUE),
@@ -327,6 +331,9 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
         AliWarning("ERROR: lESDevent not available \n");
         return;
     }
+    
+    if(fkForceResetV0s)      lESDevent->ResetV0s();
+    if(fkForceResetCascades) lESDevent->ResetCascades();
     
     Double_t lMagneticField = -10;
     lMagneticField = lESDevent->GetMagneticField( );
