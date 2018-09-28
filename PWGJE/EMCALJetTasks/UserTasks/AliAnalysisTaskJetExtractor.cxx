@@ -349,6 +349,7 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fSetEmcalJetFlavour(0),
   fEventCut_TriggerTrackMinPt(0),
   fEventCut_TriggerTrackMaxPt(0),
+  fEventCut_TriggerTrackMinLabel(0),
   fJetsCont(0),
   fTracksCont(0),
   fTruthParticleArray(0),
@@ -381,6 +382,7 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fSetEmcalJetFlavour(0),
   fEventCut_TriggerTrackMinPt(0),
   fEventCut_TriggerTrackMaxPt(0),
+  fEventCut_TriggerTrackMinLabel(0),
   fJetsCont(0),
   fTracksCont(0),
   fTruthParticleArray(0),
@@ -623,7 +625,7 @@ Bool_t AliAnalysisTaskJetExtractor::IsEventSelected()
     // Go through all tracks and check whether trigger tracks can be found
     fTracksCont->ResetCurrentID();
     while(AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()))
-      if( (track->Pt() >= fEventCut_TriggerTrackMinPt) && (track->Pt() < fEventCut_TriggerTrackMaxPt) )
+      if( (track->GetLabel() >= fEventCut_TriggerTrackMinLabel) && (track->Pt() >= fEventCut_TriggerTrackMinPt) && (track->Pt() < fEventCut_TriggerTrackMaxPt) )
       {
         fTriggerTracks_Pt.push_back(track->Pt());
         fTriggerTracks_Eta.push_back(track->Eta());

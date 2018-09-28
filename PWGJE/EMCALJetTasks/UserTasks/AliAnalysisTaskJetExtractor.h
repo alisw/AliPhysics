@@ -43,8 +43,8 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        SetVertexerCuts(AliRDHFJetsCutsVertex* val)         { fVertexerCuts = val; }
   void                        SetSetEmcalJetFlavour(Bool_t val)                   { fSetEmcalJetFlavour = val; }
 
-  void                        SetEventCutTriggerTrack(Double_t minPt, Double_t maxPt)
-                                { fEventCut_TriggerTrackMinPt = minPt; fEventCut_TriggerTrackMaxPt = maxPt;}
+  void                        SetEventCutTriggerTrack(Double_t minPt, Double_t maxPt, Int_t minLabel=0)
+                                { fEventCut_TriggerTrackMinPt = minPt; fEventCut_TriggerTrackMaxPt = maxPt; fEventCut_TriggerTrackMinLabel = minLabel; }
 
  protected:
   Bool_t                      CreateControlHistograms();
@@ -77,6 +77,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   // ################## EVENT CUTS
   Double_t                    fEventCut_TriggerTrackMinPt;              ///< Event requirement, trigger track min pT
   Double_t                    fEventCut_TriggerTrackMaxPt;              ///< Event requirement, trigger track max pT
+  Int_t                       fEventCut_TriggerTrackMinLabel;           ///< Event requirement, trigger track min label (can be used to selected embedded particles)
 
   // ################## BASIC EVENT VARIABLES
   AliJetContainer            *fJetsCont;                                //!<! Jets
