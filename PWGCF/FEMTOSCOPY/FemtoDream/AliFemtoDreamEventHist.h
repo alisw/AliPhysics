@@ -43,6 +43,10 @@ class AliFemtoDreamEventHist {
     fEvtVtxZ[i]->Fill(val);
   }
   ;
+  void FillEvtSpher(int i, float val) {
+    fEvtSpher[i]->Fill(val);
+  }
+  ;
   void FillMultSPD(int i, float val) {
     fMultDistSPD[i]->Fill(val);
   }
@@ -85,6 +89,7 @@ class AliFemtoDreamEventHist {
     if (fCentVsMultPlots)
       fCentVsRefMult->Fill(cent, mult);
   }
+
   TList *GetHistList() {
     return fEventCutList;
   }
@@ -106,12 +111,13 @@ class AliFemtoDreamEventHist {
   TH2F *fSPDTrackZVtx[2];   //!
   TH1F *fSPDTrkZVtxDispl[2];   //!
   TH1F *fBField[2];         //!
+  TH1F *fEvtSpher[2];         //!
   bool fCentVsMultPlots;    //!
   TH2F *fCentVsV0A;         //!
   TH2F *fCentVsV0M;         //!
   TH2F *fCentVsV0C;         //!
   TH2F *fCentVsRefMult;     //!
-ClassDef(AliFemtoDreamEventHist,3)
+ClassDef(AliFemtoDreamEventHist,4)
 };
 
 #endif /* ALIFEMTODREAMEVENTHIST_H_ */

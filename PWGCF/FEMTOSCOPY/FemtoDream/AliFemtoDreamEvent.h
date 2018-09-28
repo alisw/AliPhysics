@@ -173,9 +173,18 @@ class AliFemtoDreamEvent {
     return "AliFemtoDreamEvent";
   }
   ;
+  void SetSpher(double spher) {
+    fspher = spher;
+  }
+  ;
+  float GetSpher() const {
+    return fspher;
+  }
+  ;
  private:
   AliFemtoDreamEvent(const AliFemtoDreamEvent&);
   int CalculateITSMultiplicity(AliAODEvent *evt);
+  double CalculateSphericityEvent(AliAODEvent *evt);
   AliAnalysisUtils *fUtils;   //!
   AliEventCuts *fEvtCuts;     //!
   TList *fEvtCutList;         //!
@@ -198,7 +207,8 @@ class AliFemtoDreamEvent {
   bool fHasMagField;          //!
   bool fisSelected;           //!
   MultEstimator fEstimator;   //!
-ClassDef(AliFemtoDreamEvent,3)
+  double fspher;            //!
+ClassDef(AliFemtoDreamEvent,4)
 };
 
 #endif /* ALIFEMTODREAMEVENT_H_ */

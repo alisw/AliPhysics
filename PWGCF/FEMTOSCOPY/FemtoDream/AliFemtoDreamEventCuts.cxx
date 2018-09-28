@@ -23,7 +23,10 @@ AliFemtoDreamEventCuts::AliFemtoDreamEventCuts()
       fUseV0CMult(false),
       fUseRef08Mult(false),
       fUseAliEvtCuts(false),
-      fCentVsMultPlots(false) {
+      fCentVsMultPlots(false),
+      fDoSpherCuts(false),
+      fSpherCutsLow(0.f),
+      fSpherCutsUp(1.f)        {
 }
 
 AliFemtoDreamEventCuts::AliFemtoDreamEventCuts(
@@ -43,7 +46,10 @@ AliFemtoDreamEventCuts::AliFemtoDreamEventCuts(
       fUseV0CMult(cuts.fUseV0CMult),
       fUseRef08Mult(cuts.fUseRef08Mult),
       fUseAliEvtCuts(cuts.fUseAliEvtCuts),
-      fCentVsMultPlots(cuts.fCentVsMultPlots) {
+      fCentVsMultPlots(cuts.fCentVsMultPlots),
+      fDoSpherCuts(cuts.fDoSpherCuts),
+      fSpherCutsLow(cuts.fSpherCutsLow),
+      fSpherCutsUp(cuts.fSpherCutsUp) {
 }
 
 AliFemtoDreamEventCuts& AliFemtoDreamEventCuts::operator=(
@@ -67,7 +73,9 @@ AliFemtoDreamEventCuts& AliFemtoDreamEventCuts::operator=(
   this->fUseRef08Mult = cuts.fUseRef08Mult;
   this->fUseAliEvtCuts = cuts.fUseAliEvtCuts;
   this->fCentVsMultPlots = cuts.fCentVsMultPlots;
-
+  this->fDoSpherCuts = cuts.fDoSpherCuts;
+  this->fSpherCutsLow = cuts.fSpherCutsLow;
+  this->fSpherCutsUp = cuts.fSpherCutsUp;
   return *this;
 }
 
@@ -157,6 +165,16 @@ bool AliFemtoDreamEventCuts::isSelected(AliFemtoDreamEvent *evt) {
       }
     }
   }
+
+  if (pass && fDoSpherCuts) {
+    if (evt->GetSpher() <= fSpherCutsLow || evt->GetSpher() > fSpherCutsUp) {
+      pass = false;
+    } else {
+      if (!fMinimalBooking)
+        fHist->FillEvtCounter(10);
+    }
+  }
+
   evt->SetSelectionStatus(pass);
   BookQA(evt);
   return pass;
@@ -203,6 +221,7 @@ void AliFemtoDreamEventCuts::BookQA(AliFemtoDreamEvent *evt) {
         fHist->FillEvtVtxZTrackvsSPD(i, evt->GetZVertexSPD(),
                                      evt->GetZVertexTracks());
         fHist->FillMagneticField(i, evt->GetBField());
+        fHist->FillEvtSpher(i, evt->GetSpher());
       }
     }
 
@@ -272,6 +291,12 @@ void AliFemtoDreamEventCuts::BookCuts() {
     } else {
       fHist->FillCuts(10, 0);
     }
+    if (fDoSpherCuts) {
+      fHist->FillCuts(11, fSpherCutsLow);
+      fHist->FillCuts(12, fSpherCutsUp);
+    } else {
+      fHist->FillCuts(11, 0);
+      fHist->FillCuts(12, 0);
+    }
   }
 }
-
