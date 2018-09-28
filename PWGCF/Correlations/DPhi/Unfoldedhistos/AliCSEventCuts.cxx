@@ -53,10 +53,14 @@ const char *AliCSEventCuts::fgkCutsNames[AliCSEventCuts::kNCuts] = {
 };
 
 Float_t AliCSEventCuts::fgkVertexResolutionThreshold = 0.25;
+Float_t AliCSEventCuts::fgkVertexResolutionThreshold_pPb = 0.25;
 Float_t AliCSEventCuts::fgkVertexDispersionThreshold = 0.03;
 Float_t AliCSEventCuts::fgkSPDTracksVtxDistanceThreshold = 0.2;
+Float_t AliCSEventCuts::fgkSPDTracksVtxDistanceThreshold_pPb = 0.5;
 Float_t AliCSEventCuts::fgkSPDTracksVtxDistanceSigmas = 10.0;
+Float_t AliCSEventCuts::fgkSPDTracksVtxDistanceSigmas_pPb = 1e14;
 Float_t AliCSEventCuts::fgkTrackVertexSigmas = 20.0;
+Float_t AliCSEventCuts::fgkTrackVertexSigmas_pPb = 1e14;
 
 /// Default constructor for serialization
 AliCSEventCuts::AliCSEventCuts() :
@@ -73,6 +77,9 @@ AliCSEventCuts::AliCSEventCuts() :
     fUseSPDTracksVtxDist(kFALSE),
     fVertexResolutionTh(fgkVertexResolutionThreshold),
     fVertexDispersionTh(fgkVertexDispersionThreshold),
+    fSPDTrkVtxDistTh(fgkSPDTracksVtxDistanceThreshold),
+    fSPDTrkVtxDistSigmas(fgkSPDTracksVtxDistanceSigmas),
+    fTrkVtxDistSigmas(fgkTrackVertexSigmas),
     fUseNewMultFramework(kFALSE),
     f2015V0MtoTrkTPCout(NULL),
     fCentOutLowCut(NULL),
@@ -132,6 +139,9 @@ AliCSEventCuts::AliCSEventCuts(const char *name, const char *title) :
     fUseSPDTracksVtxDist(kFALSE),
     fVertexResolutionTh(fgkVertexResolutionThreshold),
     fVertexDispersionTh(fgkVertexDispersionThreshold),
+    fSPDTrkVtxDistTh(fgkSPDTracksVtxDistanceThreshold),
+    fSPDTrkVtxDistSigmas(fgkSPDTracksVtxDistanceSigmas),
+    fTrkVtxDistSigmas(fgkTrackVertexSigmas),
     fUseNewMultFramework(kFALSE),
     f2015V0MtoTrkTPCout(NULL),
     fCentOutLowCut(NULL),
@@ -213,6 +223,9 @@ void AliCSEventCuts::NotifyRun() {
     /* set the trigger according to the data period */
     SetActualActiveTrigger();
 
+    /* configure the vertex quality parameters */
+    SetActualVertexQuality();
+
     /* set the 2015 pileup rejection according to the data period */
     SetActual2015PileUpRemoval();
 
@@ -265,7 +278,7 @@ Bool_t AliCSEventCuts::IsEventAccepted(AliVEvent *fInputEvent) {
         }
       }
       else {
-        if (!fgMCHandler->InitOk() || !fgMCHandler->TreeK() || !fgMCHandler->TreeTR()){
+        if (!fgMCHandler->InitOk() || !fgMCHandler->TreeK()){
           fCutsActivatedMask.SetBitNumber(kMCdataQuality);
           accepted = kFALSE;
         }
@@ -281,6 +294,7 @@ Bool_t AliCSEventCuts::IsEventAccepted(AliVEvent *fInputEvent) {
   }
 
   /* is the event information complete */
+  /* TODO: make it parameterizable */
   if (fInputEvent->IsIncompleteDAQ()) {
     fCutsActivatedMask.SetBitNumber(kDAQIncompleteCut);
     accepted = kFALSE;
@@ -290,6 +304,7 @@ Bool_t AliCSEventCuts::IsEventAccepted(AliVEvent *fInputEvent) {
   StoreEventMultiplicities(fInputEvent);
 
   /* is the event having any track */
+  /* TODO: make it parameterizable */
   if (fReferenceMultiplicity < 0){
     fCutsActivatedMask.SetBitNumber(kNoTracks);
     accepted = kFALSE;
@@ -573,6 +588,8 @@ void AliCSEventCuts::PrintCutWithParams(Int_t paramID) const {
       else
         if (fSystem == kpPb)
           szEstimator = "V0A";
+        else if (fSystem == kPbp)
+          szEstimator = "V0C";
         else
           szEstimator = "V0M";
 
@@ -691,11 +708,12 @@ void AliCSEventCuts::PrintTrigger(UInt_t &printed, UInt_t trigger, const char *n
   if ((fOfflineTriggerMask & trigger) == trigger) {
     printf("%s", name);
     printed = printed | trigger;
-    if ((fOfflineTriggerMask & printed) == fOfflineTriggerMask)
+    if ((fOfflineTriggerMask & printed) == fOfflineTriggerMask) {
       printf("\n"); /* last trigger */
       if (trigger == AliVEvent::kAny) {
         printf("    could depend on data period\n");
       }
+    }
     else
       printf("+"); /* still more triggers to print */
   }
@@ -710,6 +728,7 @@ void AliCSEventCuts::PrintTrigger(UInt_t &printed, UInt_t trigger, const char *n
 ///    |  AliCSEventCuts::kpPb | **p-Pb** system |
 ///    |  AliCSEventCuts::kPbPb  | **Pb-Pb** system |
 ///    |  AliCSEventCuts::kXeXe  | **Xe-Xe** system |
+///    |  AliCSEventCuts::kPbp | **Pb-p** system |
 /// \return kTRUE if a proper and supported system
 Bool_t AliCSEventCuts::SetSystemType(SystemType system) {
   switch(system){
@@ -727,6 +746,9 @@ Bool_t AliCSEventCuts::SetSystemType(SystemType system) {
     break;
   case kXeXe:
     fSystem = kXeXe;
+    break;
+  case kPbp:
+    fSystem = kPbp;
     break;
   default:
     AliError(Form("SetSystemType not defined %d",Int_t(system)));
@@ -755,9 +777,12 @@ void AliCSEventCuts::SetActualSystemType() {
     break;
   case kLHC13bc:
   case kLHC13de:
-  case kLHC13f:
     system = kpPb;
     AliInfo("SYSTEM: p-Pb");
+    break;
+  case kLHC13f:
+    system = kPbp;
+    AliInfo("SYSTEM: Pb-p");
     break;
   case kLHC10h:
   case kLHC11h:
@@ -802,6 +827,8 @@ void AliCSEventCuts::SetActualSystemType() {
 ///   | **p-p** | **V0M** | **CL1** |
 ///   | **p-pB** | **V0A** | **CL1** |
 ///   | **pB-pB** | **V0M** | **CL1** |
+///   | **Xe-Xe** | **V0M** | **CL1** |
+///   | **pB-p** | **V0C** | **CL1** |
 ///
 Bool_t AliCSEventCuts::SetCentralityType(Int_t ctype)
 {   // Set Cut
@@ -1059,7 +1086,11 @@ Float_t AliCSEventCuts::GetEventCentrality(AliVEvent *event) const
         case 0:
           /* default centrality detector */
           if (fSystem == kpPb)
-            return Centrality->GetCentralityPercentile("V0A");
+            /* we don't leave Multiplicity task cuts precede our own */
+            return MultSelection->GetMultiplicityPercentile("V0A", kFALSE);
+          else if (fSystem == kPbp)
+            /* we don't leave Multiplicity task cuts precede our own */
+            return MultSelection->GetMultiplicityPercentile("V0C", kFALSE);
           else
             /* we don't leave Multiplicity task cuts precede our own */
             return MultSelection->GetMultiplicityPercentile("V0M", kFALSE);
@@ -1078,6 +1109,8 @@ Float_t AliCSEventCuts::GetEventCentrality(AliVEvent *event) const
           /* default centrality detector */
           if (fSystem == kpPb)
             return Centrality->GetCentralityPercentile("V0A");
+          else if (fSystem == kPbp)
+            return Centrality->GetCentralityPercentile("V0C");
           else
             return Centrality->GetCentralityPercentile("V0M");
         case 1:
@@ -1107,8 +1140,15 @@ Float_t AliCSEventCuts::GetEventCentrality(AliVEvent *event) const
         switch(fCentralityDetector) {
         case 0:
           /* default centrality detector */
-          /* we don't leave Multiplicity task cuts precede our own */
-          return MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
+          if (fSystem == kpPb)
+            /* we don't leave Multiplicity task cuts precede our own */
+            return MultSelection->GetMultiplicityPercentile("V0A", kFALSE);
+          else if (fSystem == kPbp)
+            /* we don't leave Multiplicity task cuts precede our own */
+            return MultSelection->GetMultiplicityPercentile("V0C", kFALSE);
+          else
+            /* we don't leave Multiplicity task cuts precede our own */
+            return MultSelection->GetMultiplicityPercentile("V0M", kFALSE);
         case 1:
           /* alternative centrality detector */
           /* we don't leave Multiplicity task cuts precede our own */
@@ -1126,6 +1166,8 @@ Float_t AliCSEventCuts::GetEventCentrality(AliVEvent *event) const
               /* default centrality detector */
               if (fSystem == kpPb)
                 return aodCentrality->GetCentralityPercentile("V0A");
+              else if (fSystem == kPbp)
+                return aodCentrality->GetCentralityPercentile("V0C");
               else
                 return aodCentrality->GetCentralityPercentile("V0M");
             case 1:
@@ -1181,7 +1223,11 @@ Float_t AliCSEventCuts::GetEventAltCentrality(AliVEvent *event) const
       case 1:
         /* alternative centrality detector so we use the default one */
         if (fSystem == kpPb)
-          return Centrality->GetCentralityPercentile("V0A");
+          /* we don't leave Multiplicity task cuts precede our own */
+          return MultSelection->GetMultiplicityPercentile("V0A", kFALSE);
+        else if (fSystem == kPbp)
+          /* we don't leave Multiplicity task cuts precede our own */
+          return MultSelection->GetMultiplicityPercentile("V0C", kFALSE);
         else
           /* we don't leave Multiplicity task cuts precede our own */
           return MultSelection->GetMultiplicityPercentile("V0M", kFALSE);
@@ -1199,6 +1245,8 @@ Float_t AliCSEventCuts::GetEventAltCentrality(AliVEvent *event) const
         /* alternative centrality detector so we use the default one */
         if (fSystem == kpPb)
           return Centrality->GetCentralityPercentile("V0A");
+        else if (fSystem == kPbp)
+          return Centrality->GetCentralityPercentile("V0C");
         else
           return Centrality->GetCentralityPercentile("V0M");
       default:
@@ -1222,8 +1270,15 @@ Float_t AliCSEventCuts::GetEventAltCentrality(AliVEvent *event) const
         return MultSelection->GetMultiplicityPercentile("CL1",kFALSE);
       case 1:
         /* alternative centrality detector so we use the default one */
-        /* we don't leave Multiplicity task cuts precede our own */
-        return MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
+        if (fSystem == kpPb)
+          /* we don't leave Multiplicity task cuts precede our own */
+          return MultSelection->GetMultiplicityPercentile("V0A", kFALSE);
+        else if (fSystem == kPbp)
+          /* we don't leave Multiplicity task cuts precede our own */
+          return MultSelection->GetMultiplicityPercentile("V0C", kFALSE);
+        else
+          /* we don't leave Multiplicity task cuts precede our own */
+          return MultSelection->GetMultiplicityPercentile("V0M", kFALSE);
       default:
         AliError("Wrong stored centrality detector");
         return -1.0;
@@ -1240,6 +1295,8 @@ Float_t AliCSEventCuts::GetEventAltCentrality(AliVEvent *event) const
             /* alternative centrality detector so we use the default one */
             if (fSystem == kpPb)
               return aodCentrality->GetCentralityPercentile("V0A");
+            else if (fSystem == kPbp)
+              return aodCentrality->GetCentralityPercentile("V0C");
             else
               return aodCentrality->GetCentralityPercentile("V0M");
           default:
@@ -1275,6 +1332,7 @@ void AliCSEventCuts::GetCentralityEstimatorNames(const char *&sel, const char *&
   /* TODO: when ESD - AOD is supported by the base clas this method needs to be adapted */
   /* so far only considers the ESD case */
   static const char V0A[] = "V0A";
+  static const char V0C[] = "V0C";
   static const char V0M[] = "V0M";
   static const char CL1[] = "CL1";
 
@@ -1288,6 +1346,10 @@ void AliCSEventCuts::GetCentralityEstimatorNames(const char *&sel, const char *&
       sel = V0A;
       alt = CL1;
     }
+    else if (fSystem == kPbp) {
+      sel = V0C;
+      alt = CL1;
+    }
     else {
       sel = V0M;
       alt = CL1;
@@ -1298,6 +1360,10 @@ void AliCSEventCuts::GetCentralityEstimatorNames(const char *&sel, const char *&
     if (fSystem == kpPb) {
       sel = CL1;
       alt = V0A;
+    }
+    else if (fSystem == kPbp) {
+      sel = CL1;
+      alt = V0C;
     }
     else {
       sel = CL1;
@@ -1351,6 +1417,9 @@ void AliCSEventCuts::SetActualActiveTrigger()
     break;
   case 1: /* MB */
     switch (GetGlobalAnchorPeriod()) {
+    case kLHC13bc:
+    case kLHC13de:
+    case kLHC13f:
     case kLHC15oLIR:
     case kLHC15oHIR:
     case kLHC16k:
@@ -1494,30 +1563,87 @@ Bool_t AliCSEventCuts::SetVertexCut(Int_t vtxcut) {
   return kTRUE;
 }
 
+
+/// Sets the actual vertex quality parameters according to the data period
+void AliCSEventCuts::SetActualVertexQuality() {
+
+  switch (GetGlobalAnchorPeriod()) {
+  case kLHC13bc:
+  case kLHC13de:
+  case kLHC13f:
+    fVertexResolutionTh = fgkVertexResolutionThreshold_pPb;
+    fVertexDispersionTh = fgkVertexDispersionThreshold;
+    fSPDTrkVtxDistTh = fgkSPDTracksVtxDistanceThreshold_pPb;
+    fSPDTrkVtxDistSigmas = fgkSPDTracksVtxDistanceSigmas_pPb;
+    fTrkVtxDistSigmas = fgkTrackVertexSigmas_pPb;
+
+    AliInfo("Vertex quality for p-Pb");
+    break;
+  default:
+    fVertexResolutionTh = fgkVertexResolutionThreshold;
+    fVertexDispersionTh = fgkVertexDispersionThreshold;
+    fSPDTrkVtxDistTh = fgkSPDTracksVtxDistanceThreshold;
+    fSPDTrkVtxDistSigmas = fgkSPDTracksVtxDistanceSigmas;
+    fTrkVtxDistSigmas = fgkTrackVertexSigmas;
+
+    AliInfo("Default vertex quality");
+  }
+}
+
+
 /// Gets the number of contributors for the vertex estimation
 /// \param event the current event to analyze
 /// \return the number of vertex contributors
+/// We require both vertexes tracks and SPD be present and
+/// with enough number of contributors each of them.
 Int_t AliCSEventCuts::GetNumberOfVertexContributors(AliVEvent *event) const{
 
   const AliVVertex *vtx = event->GetPrimaryVertex();
 
+  bool goodTrackVertex = kFALSE;
   if (vtx != NULL){
     if(vtx->GetNContributors()>1) {
-      return vtx->GetNContributors();
+      goodTrackVertex = kTRUE;
     }
   }
 
   const AliVVertex *vtxSPD = event->GetPrimaryVertexSPD();
 
-  if(vtxSPD !=NULL)
-    return vtxSPD->GetNContributors();
-  return 0;
+  bool goodSPDVertex = kFALSE;
+  if(vtxSPD !=NULL) {
+    if (vtxSPD->GetNContributors() > 0) {
+      goodSPDVertex = kTRUE;
+    }
+  }
+
+  if (goodTrackVertex && goodSPDVertex) {
+    return vtx->GetNContributors();
+  }
+  else {
+    return -1;
+  }
 }
 
 /// Compare the vertex resolution and dispersion with the stored limits for both of them
 /// \param event the current event to analyze
 /// \return kTRUE if values within limits, kFALSE otherwise
+/// If the event is an AOD event check whether we have a masked missing vertex condition.
 Bool_t AliCSEventCuts::PassVertexResolutionAndDispersionTh(AliVEvent *event) const {
+
+  AliAODEvent *aodEv = dynamic_cast<AliAODEvent*>(event);
+  if (aodEv != NULL) {
+    const AliAODVertex *vtxPrim = aodEv->GetPrimaryVertex();
+    const AliAODVertex *vtxTPC = aodEv->GetPrimaryVertexTPC();
+
+    if (vtxPrim->GetType() != AliAODVertex::kPrimary) {
+      return kFALSE;
+    }
+    if (std::abs(vtxPrim->GetZ()-vtxTPC->GetZ()) < 1e-6 &&
+          std::abs(vtxPrim->GetChi2perNDF()-vtxTPC->GetChi2perNDF()) < 1e-6) {
+        AliWarning("TPC vertex used as primary");
+        return kFALSE;
+    }
+  }
 
   const AliVVertex *vtxSPD = event->GetPrimaryVertexSPD();
   if (vtxSPD != NULL) {
@@ -1544,7 +1670,7 @@ Bool_t AliCSEventCuts::PassVertexResolutionAndDispersionTh(AliVEvent *event) con
     return kFALSE;
 }
 
-/// Check if the distance between SPD and tracks vertex are acceptable by the standar cut
+/// Check if the distance between SPD and tracks vertex are acceptable by the standard cut
 /// \param event the current event to analyze
 /// \return kTRUE if the vertex distance is accepted kFALSE otherwise
 Bool_t AliCSEventCuts::AcceptSPDTracksVtxDist(AliVEvent *event) const {
@@ -1583,7 +1709,7 @@ Bool_t AliCSEventCuts::AcceptSPDTracksVtxDist(AliVEvent *event) const {
   Double_t nsigTot = dz/errTot;
   Double_t nsigTrck = dz/errTrck;
 
-  if (TMath::Abs(dz) > fgkSPDTracksVtxDistanceThreshold || TMath::Abs(nsigTot) > fgkSPDTracksVtxDistanceSigmas || TMath::Abs(nsigTrck) > fgkTrackVertexSigmas)
+  if (TMath::Abs(dz) > fSPDTrkVtxDistTh || TMath::Abs(nsigTot) > fSPDTrkVtxDistSigmas || TMath::Abs(nsigTrck) > fTrkVtxDistSigmas)
      return kFALSE;
 
   return kTRUE;

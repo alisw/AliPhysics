@@ -85,7 +85,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *runMode,Bool_t gridMerge)
       "AliAnalysisTaskCorrelationsStudies.h AliAnalysisTaskCorrelationsStudies.cxx"); */
 
   // alternatively pass a par file with source information
-  plugin->EnablePackage("PWGCFCorrelationsDPhi.par");
+//  plugin->EnablePackage("PWGCFCorrelationsDPhi.par");
 
 // Declare the output file names separated by blanks.
 // (can be like: file.root or file.root@ALICE::Niham::File)
