@@ -57,6 +57,7 @@ AliAnalysisTaskNetLambdaIdent::AliAnalysisTaskNetLambdaIdent(const char* name) :
 AliAnalysisTaskSE(name),
   fESD(0x0),
   fAOD(0x0),
+  stack(0x0),
   fPIDResponse(0x0),
   fEventCuts(0),
   fListOfHistos(0x0),
@@ -87,8 +88,6 @@ AliAnalysisTaskSE(name),
   hInvMassAntiLambdaSecFromMaterial(0x0),
   hInvMassLambdaSecFromWeakDecay(0x0),
   hInvMassAntiLambdaSecFromWeakDecay(0x0),
-  hInvMassLambdaXiMismatch(0x0),
-  hInvMassAntiLambdaXiMismatch(0x0),
   hInvMassLike(0x0),
   hInvMassLambdaK0S(0x0),
   hInvMassAntiLambdaK0S(0x0),
@@ -96,16 +95,12 @@ AliAnalysisTaskSE(name),
   hInvMassAntiLambdaConversions(0x0),
 //hInvMassPtPidLambda(0x0),
 //hInvMassPtPidAntiLambda(0x0),
-  hCorrPidPid(0x0),
-  hCorrMpidMpid(0x0),
-  hCorrGpidGpid(0x0),
-  hCorrPidMpid(0x0),
-  hCorrPidGpid(0x0),
-  hCorrMpidGpid(0x0),
   hXiPlus(0x0),
   hXiMinus(0x0),
   hXiZero(0x0),
   hXiZeroAnti(0x0),
+  hInvMassLambdaMPidPt(0x0),
+  hInvMassAntiLambdaMPidPt(0x0),
   hPtResLambda(0x0),
   hPtResAntiLambda(0x0),
   hPtResLambdaPrim(0x0),
@@ -113,8 +108,6 @@ AliAnalysisTaskSE(name),
   centcut(80.),
   ptminlambda(0.5),
   etacutlambda(0.8),
-  cospacut(0.95),
-  minradius(5.),
   ncrossedrowscut(70),
   crossedrowsclustercut(0.8),
   fCentV0M(-1),
@@ -124,6 +117,7 @@ AliAnalysisTaskSE(name),
   fVtxZ(-20),
   fRunNumber(-1),
   fAcceptV0(0x0),
+//fAcceptV0test(0x0),
   fGenLambda(0x0),
   fGenCascade(0x0),
   fMixV0(0x0),
@@ -132,9 +126,16 @@ AliAnalysisTaskSE(name),
   fEvSel(AliVEvent::kINT7),
   fLambdaTree(kTRUE),
   fEventMixingTree(kFALSE),
+  fRevertex(kFALSE),
   nmaxmixtracks(1000),
   nmaxmixevents(5),
-  pidVals(0x0)
+  pidVals(0x0),
+  fChi2max(33.), //max chi2
+  fDmin(0.1),//0.05;  //min imp parameter for the 1st daughter
+  fDCAmax(1.),//1.5;  //max DCA between the daughter tracks
+  fCPAmin(0.998),//0.9;  //min cosine of V0's pointing angle
+  fRmin(0.9),    //min radius of the fiducial volume
+  fRmax(100)//200.;   //max radius of the fiducial volume
 {
   Info("AliAnalysisTaskNetLambdaIdent","Calling Constructor");
 
@@ -232,55 +233,18 @@ void AliAnalysisTaskNetLambdaIdent::UserCreateOutputObjects(){
   hInvMassAntiLambdaSecFromWeakDecay = new TH2F("hInvMassAntiLambdaSecFromWeakDecay","#bar{#Lambda} from weak decays",100,1.05,1.25,100,0,10);
   fListOfHistos->Add(hInvMassAntiLambdaSecFromWeakDecay);
   
-  hInvMassLambdaXiMismatch = new TH2F("hInvMassLambdaXiMismatch","#Lambda from Xi decay mismatch",100,1.05,1.25,100,0,10);
-  fListOfHistos->Add(hInvMassLambdaXiMismatch);
-  hInvMassAntiLambdaXiMismatch = new TH2F("hInvMassAntiLambdaXiMismatch","#bar{#Lambda} from Xi decay mismatch",100,1.05,1.25,100,0,10);
-  fListOfHistos->Add(hInvMassAntiLambdaXiMismatch);
-  
   hInvMassLambdaK0S = new TH2F("hInvMassLambdaK0S","#Lambda vs K0S invariant mass",100,1.08,1.18,100,0.45,0.55);
   fListOfHistos->Add(hInvMassLambdaK0S);
   hInvMassAntiLambdaK0S = new TH2F("hInvMassAntiLambdaK0S","#bar{#Lambda} vs K0S invariant mass",100,1.08,1.18,100,0.45,0.55);
   fListOfHistos->Add(hInvMassAntiLambdaK0S);
   
-  hInvMassLambdaConversions = new TH2F("hInvMassLambdaConversions","#Lambda vs e+e- invariant mass",100,1.08,1.18,100,0.,0.1);
+  hInvMassLambdaConversions = new TH2F("hInvMassLambdaConversions","#Lambda vs e+e- invariant mass",100,1.08,1.18,100,0.,0.6);
   fListOfHistos->Add(hInvMassLambdaConversions);
-  hInvMassAntiLambdaConversions = new TH2F("hInvMassAntiLambdaConversions","#bar{#Lambda} vs e+e- invariant mass",100,1.08,1.18,100,0.,0.1);
+  hInvMassAntiLambdaConversions = new TH2F("hInvMassAntiLambdaConversions","#bar{#Lambda} vs e+e- invariant mass",100,1.08,1.18,100,0.,0.6);
   fListOfHistos->Add(hInvMassAntiLambdaConversions);
   
   hInvMassLike = new TH2F("hInvMassLike","like-sign pair invariant mass",100,1.05,1.25,100,0,10);
   fListOfHistos->Add(hInvMassLike);
-
-  hCorrPidPid = new TH2F("hCorrPidPid","V0 PID values",25,0.5,25.5,25,0.5,25.5);
-  fListOfHistos->Add(hCorrPidPid);
-  hCorrMpidMpid = new TH2F("hCorrMpidMpid","V0 mother PID values",25,0.5,25.5,25,0.5,25.5);
-  fListOfHistos->Add(hCorrMpidMpid);
-  hCorrGpidGpid = new TH2F("hCorrGpidGpid","V0 grandmother PID values",25,0.5,25.5,25,0.5,25.5);
-  fListOfHistos->Add(hCorrGpidGpid);
-  hCorrPidMpid = new TH2F("hCorrPidMpid","daughter PID vs mother PID",25,0.5,25.5,25,0.5,25.5);
-  fListOfHistos->Add(hCorrPidMpid);
-  hCorrPidGpid = new TH2F("hCorrPidGpid","daughter PID vs grandmother PID",25,0.5,25.5,25,0.5,25.5);
-  fListOfHistos->Add(hCorrPidGpid);
-  hCorrMpidGpid = new TH2F("hCorrMpidGpid","mother PID vs grandmother PID",25,0.5,25.5,25,0.5,25.5);
-  fListOfHistos->Add(hCorrMpidGpid);
-  pidVals = new Int_t[24];
-  Int_t pidValsTemp[24] = { 22,     11,  -11, 13,   -13,  -211, 211,  111,  -111,      -321, 321, 311, -311,     310,  130,  2212, -2212,   3122,    -3122,        3312, -3312, 3322, -3322, 113};
-  TString pidLabels[24]   = {"gamma","e-","e+","mu-","mu+","pi-","pi+","pi0","anti pi0","K-", "K+","K0","anti K0","K0S","K0L","p",  "anti p","lambda","anti lambda","Xi-","Xi+", "Xi0","anti Xi0","rho0"};
-  for(Int_t i = 0; i < 24; i++)
-    {
-      pidVals[i] = pidValsTemp[i];
-      hCorrPidPid->GetXaxis()->SetBinLabel(i+1,pidLabels[i]);
-      hCorrPidPid->GetYaxis()->SetBinLabel(i+1,pidLabels[i]);
-      hCorrMpidMpid->GetXaxis()->SetBinLabel(i+1,pidLabels[i]);
-      hCorrMpidMpid->GetYaxis()->SetBinLabel(i+1,pidLabels[i]);
-      hCorrGpidGpid->GetXaxis()->SetBinLabel(i+1,pidLabels[i]);
-      hCorrGpidGpid->GetYaxis()->SetBinLabel(i+1,pidLabels[i]);
-      hCorrPidMpid->GetXaxis()->SetBinLabel(i+1,pidLabels[i]);
-      hCorrPidMpid->GetYaxis()->SetBinLabel(i+1,pidLabels[i]);
-      hCorrPidGpid->GetXaxis()->SetBinLabel(i+1,pidLabels[i]);
-      hCorrPidGpid->GetYaxis()->SetBinLabel(i+1,pidLabels[i]);
-      hCorrMpidGpid->GetXaxis()->SetBinLabel(i+1,pidLabels[i]);
-      hCorrMpidGpid->GetYaxis()->SetBinLabel(i+1,pidLabels[i]);
-    }
 
   //hInvMassPtPidLambda = new TH3F("hInvMassPtPidLambda","inv mass of lambda candidates",100,1.08,1.15,17,0.6,4,14,-0.5,13.5);
   //fListOfHistos->Add(hInvMassPtPidLambda);
@@ -296,6 +260,25 @@ void AliAnalysisTaskNetLambdaIdent::UserCreateOutputObjects(){
   hXiZeroAnti = new TH3F("hXiZeroAnti","anti-Xi0 vs pt, eta, centrality",100,0,20,20,-1,1,80,0,80);
   fListOfHistos->Add(hXiZeroAnti);
 
+  hInvMassLambdaMPidPt = new TH3F("hInvMassLambdaMPidPt","#Lambda inv mass vs mother pid",100,1.08,1.15,26,0.5,26.5,45,0.5,5);
+  fListOfHistos->Add(hInvMassLambdaMPidPt);
+  hInvMassAntiLambdaMPidPt = new TH3F("hInvMassAntiLambdaMPidPt","#bar{#Lambda} inv mass vs mother pid",100,1.08,1.15,26,0.5,26.5,45,0.5,5);
+  fListOfHistos->Add(hInvMassAntiLambdaMPidPt);
+
+  pidVals = new Int_t[24];
+  Int_t pidValsTemp[24] = { 22,     11,  -11, 13,   -13,  -211, 211,  111,  -111,      -321, 321, 311, -311,     310,  130,  2212, -2212,   3122,    -3122,        3312, -3312, 3322, -3322, 113};
+  TString pidLabels[24]   = {"gamma","e-","e+","mu-","mu+","pi-","pi+","pi0","anti pi0","K-", "K+","K0","anti K0","K0S","K0L","p",  "anti p","lambda","anti lambda","Xi-","Xi+", "Xi0","anti Xi0","rho0"};
+  for(Int_t p = 0; p < 24; p++)
+    {
+      pidVals[p] = pidValsTemp[p];
+      hInvMassLambdaMPidPt->GetYaxis()->SetBinLabel(p+1,pidLabels[p]);
+      hInvMassAntiLambdaMPidPt->GetYaxis()->SetBinLabel(p+1,pidLabels[p]);
+    }
+  hInvMassLambdaMPidPt->GetYaxis()->SetBinLabel(25,"mismatch Xi-");
+  hInvMassAntiLambdaMPidPt->GetYaxis()->SetBinLabel(25,"mismatch Xi-");
+  hInvMassLambdaMPidPt->GetYaxis()->SetBinLabel(26,"mismatch Xi+");
+  hInvMassAntiLambdaMPidPt->GetYaxis()->SetBinLabel(26,"mismatch Xi+");
+  
   hPtResLambda = new TH2F("hPtResLambda","#Lambda pt resolution;gen p_{T};reco p_{T}",100,0,10,100,0,10);
   fListOfHistos->Add(hPtResLambda);
   hPtResAntiLambda = new TH2F("hPtResAntiLambda","#bar{#Lambda} pt resolution;gen p_{T};reco p_{T}",100,0,10,100,0,10);
@@ -310,6 +293,7 @@ void AliAnalysisTaskNetLambdaIdent::UserCreateOutputObjects(){
   if(fLambdaTree)
     {
       fAcceptV0 = new TClonesArray("AliLightV0",1000);
+      //fAcceptV0test = new TClonesArray("AliLightV0",1000);
       if(fIsMC)
 	{
 	  fGenLambda = new TClonesArray("AliLightGenV0",1000);
@@ -381,7 +365,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
   if(!fPIDResponse) return;
   hEventStatistics->Fill("after pid check",1);
 
-  AliStack *stack = 0x0;
+  stack = 0x0;
   if(fIsMC)
     {
       if(!fIsAOD) // esd
@@ -464,12 +448,10 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
   hEventStatistics->Fill("AliEventCuts",1);
 
   TObjArray* mixtracks = 0x0, *mixprotons = 0x0;
-  if(fEventMixingTree)
+  if(fEventMixingTree || fRevertex)
     {
       mixtracks = new TObjArray();
       mixtracks->SetOwner(kTRUE);
-      //mixprotons = new TObjArray();
-      //mixprotons->SetOwner(kTRUE);
     }
 
   Double_t b = fInputEvent->GetMagneticField();
@@ -509,18 +491,14 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	  if((track->GetStatus()&AliESDtrack::kTPCrefit) != 0)
 	    {
 	      nTracksEsd++;
-	      if(fEventMixingTree)
+	      if(fEventMixingTree || fRevertex)
 		{
 		  Double_t dn = TMath::Abs(track->GetD(fVtx[0],fVtx[1],b));
-		  if(dn > 0.1 && dn < 100)
+		  if(dn > fDmin && dn < fRmax)
 		    {
 		      AliLightV0track* lighttrack = new AliLightV0track(*track,fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton),fVtx);
+		      lighttrack->SetMcLabel(TMath::Abs(track->GetLabel()));
 		      mixtracks->Add(lighttrack);
-		      //if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton)) < 5.)
-		      //{
-		      //AliLightV0track* lightproton = new AliLightV0track(*track,fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton),fVtx);
-		      //mixprotons->Add(lightproton);
-		      //}
 		    }
 		}
 	    }
@@ -739,12 +717,16 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
     Int_t nV0 = v0cuts->CountAcceptedV0s(fESD);
     TObjArray* v0array = v0cuts->GetAcceptedV0s(fESD);*/
 
-  if(fLambdaTree) fAcceptV0->Clear();
+  if(fLambdaTree) {fAcceptV0->Clear();/* fAcceptV0test->Clear();*/}
 
   Int_t nV0 = 0;
   //TObjArray *v0array = 0x0;
   if(fIsAOD) nV0 = fAOD->GetNumberOfV0s(); // aod
-  else nV0 = fESD->GetNumberOfV0s(); // esd
+  else if(!fRevertex) nV0 = fESD->GetNumberOfV0s(); // esd
+  else
+    {
+      Tracks2V0vertices(fAcceptV0,mixtracks,mixtracks,kFALSE,vvertex,b);
+    }
   
   AliESDv0 *esdv0 = 0x0;
   AliESDtrack *esdTrackPos = 0x0;
@@ -801,6 +783,8 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	  invMassEplusEminus = aodv0->InvMass2Prongs(0,1,11,11);
 	  alpha = aodv0->AlphaV0();
 	  ptarm = aodv0->PtArmV0();
+	  dcaPosToVertex = aodv0->DcaPosToPrimVertex();
+	  dcaNegToVertex = aodv0->DcaNegToPrimVertex();
 
 	  if(aodTrackPos->Charge() == aodTrackNeg->Charge()) // "like-sign V0s" 
 	    {
@@ -816,6 +800,8 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	      invMassAntiLambda = aodv0->MassLambda();
 	      ptarm = aodv0->QtProng(1);
 	      alpha = -1.*alpha;
+	      dcaPosToVertex = aodv0->DcaNegToPrimVertex();
+	      dcaNegToVertex = aodv0->DcaPosToPrimVertex();
 	    }
 	  
 	  pt = aodv0->Pt();
@@ -832,8 +818,6 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	  nnsigmapr = fPIDResponse->NumberOfSigmasTPC(aodTrackNeg, AliPID::kProton);
 
 	  //dcaV0ToVertex = aodv0->DcaV0ToPrimVertex();
-	  dcaPosToVertex = aodv0->DcaPosToPrimVertex();
-	  dcaNegToVertex = aodv0->DcaNegToPrimVertex();
 	  cosPointingAngle = aodv0->CosPointingAngle(fVtx);
 	  dcaDaughters = aodv0->DcaV0Daughters();
 	}
@@ -943,30 +927,39 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	      tempLightV0L = new((*fAcceptV0)[fAcceptV0->GetEntriesFast()]) AliLightV0(pt,eta);
 	      tempLightV0L->SetInvMass(invMassLambda);
 	      tempLightV0L->SetInvMassK0S(invMassK0S);
+	      tempLightV0L->SetInvMassGamma(invMassEplusEminus);
 	      tempLightV0L->SetCosPointingAngle(cosPointingAngle);
 	      tempLightV0L->SetDecayR(v0Radius);
 	      tempLightV0L->SetProperLifetime(pmom > 0. ? invMassLambda*v0DecayLength/pmom : 0.);
 	      //tempLightV0L->SetDCAV0(dcaV0ToVertex);
 	      tempLightV0L->SetDCADaughters(dcaDaughters);
+	      tempLightV0L->SetArmPodVars(ptarm,alpha);
 	      tempLightV0L->SetMcStatus(0);
 	      tempLightV0L->SetPosDaughter(ppt,peta,pnsigmapr, dcaPosToVertex);
 	      tempLightV0L->SetNegDaughter(npt,neta,nnsigmapr, dcaNegToVertex);
 	      //Printf("pt = %.3lf   eta = %.3lf   minv = %.3lf   cosPA = %.3lf   decayR = %.3lf   propLife = %.3lf   DCAdaughters = %.3lf   posPt = %.3lf   posDCA = %.3lf   posNSigma = %.3lf   posD = %.3lf   negPt = %.3lf   negDCA = %.3lf   negNSigma = %.3lf   negD = %.3lf",pt,eta,invMassLambda,cosPointingAngle,v0Radius,invMassLambda*v0DecayLength/pmom,dcaDaughters,ppt,dcaPosToVertex,pnsigmapr,esdTrackPos->GetD(fVtx[0],fVtx[1],b),npt,dcaNegToVertex,nnsigmapr,esdTrackNeg->GetD(fVtx[0],fVtx[1],b));
+	      //Printf("A   id1 = %i   id2 = %i   pt = %.3lf   eta = %.3lf   minv = %.3lf   cosPA = %.3lf   decayR = %.3lf   propLife = %.3lf   DCAdaughters = %.3lf",esdv0->GetPindex(),esdv0->GetNindex(),pt,eta,invMassLambda,cosPointingAngle,v0Radius,invMassLambda*v0DecayLength/pmom,dcaDaughters);
+	      //Printf("                          posPt = %.3lf   posDCA = %.3lf   posNSigma = %.3lf   posD = %.3lf   negPt = %.3lf   negDCA = %.3lf   negNSigma = %.3lf   negD = %.3lf",ppt,dcaPosToVertex,pnsigmapr,esdTrackPos->GetD(fVtx[0],fVtx[1],b),npt,dcaNegToVertex,nnsigmapr,esdTrackNeg->GetD(fVtx[0],fVtx[1],b));
+	      
 	    }
 	  if(invMassAntiLambda < 1.16 && TMath::Abs(nnsigmapr) < 5.) // anti-lambda candidate
 	    {
 	      tempLightV0AL = new((*fAcceptV0)[fAcceptV0->GetEntriesFast()]) AliLightV0(pt,eta);
 	      tempLightV0AL->SetInvMass(-1.*invMassAntiLambda);
 	      tempLightV0AL->SetInvMassK0S(invMassK0S);
+	      tempLightV0AL->SetInvMassGamma(invMassEplusEminus);
 	      tempLightV0AL->SetCosPointingAngle(cosPointingAngle);
 	      tempLightV0AL->SetDecayR(v0Radius);
 	      tempLightV0AL->SetProperLifetime(pmom > 0. ? invMassAntiLambda*v0DecayLength/pmom : 0.);
 	      //tempLightV0AL->SetDCAV0(dcaV0ToVertex);
 	      tempLightV0AL->SetDCADaughters(dcaDaughters);
+	      tempLightV0AL->SetArmPodVars(ptarm,alpha);
 	      tempLightV0AL->SetMcStatus(0);
 	      tempLightV0AL->SetPosDaughter(ppt,peta,pnsigmapr, dcaPosToVertex);
 	      tempLightV0AL->SetNegDaughter(npt,neta,nnsigmapr, dcaNegToVertex);
 	      //Printf("pt = %.3lf   eta = %.3lf   minv = %.3lf   cosPA = %.3lf   decayR = %.3lf   propLife = %.3lf   DCAdaughters = %.3lf   posPt = %.3lf   posDCA = %.3lf   posNSigma = %.3lf   posD = %.3lf   negPt = %.3lf   negDCA = %.3lf   negNSigma = %.3lf   negD = %.3lf",pt,eta,invMassAntiLambda,cosPointingAngle,v0Radius,invMassAntiLambda*v0DecayLength/pmom,dcaDaughters,ppt,dcaPosToVertex,pnsigmapr,esdTrackPos->GetD(fVtx[0],fVtx[1],b),npt,dcaNegToVertex,nnsigmapr,esdTrackNeg->GetD(fVtx[0],fVtx[1],b));
+	      //Printf("A   id1 = %i   id2 = %i   pt = %.3lf   eta = %.3lf   minv = %.3lf   cosPA = %.3lf   decayR = %.3lf   propLife = %.3lf   DCAdaughters = %.3lf",esdv0->GetPindex(),esdv0->GetNindex(),pt,eta,invMassAntiLambda,cosPointingAngle,v0Radius,invMassAntiLambda*v0DecayLength/pmom,dcaDaughters);
+	      //Printf("                          posPt = %.3lf   posDCA = %.3lf   posNSigma = %.3lf   posD = %.3lf   negPt = %.3lf   negDCA = %.3lf   negNSigma = %.3lf   negD = %.3lf",ppt,dcaPosToVertex,pnsigmapr,esdTrackPos->GetD(fVtx[0],fVtx[1],b),npt,dcaNegToVertex,nnsigmapr,esdTrackNeg->GetD(fVtx[0],fVtx[1],b));
 	    }
 	}
       
@@ -988,253 +981,10 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       // check if V0 corresponds to a real generated lambda
       if(fIsMC)
 	{
-	  Int_t mpid = -999;
-	  Float_t mpt = -999, meta = -999;
-	  Bool_t isPrim = kFALSE, isSecFromMaterial = kFALSE, isSecFromWeakDecay = kFALSE;
-	  Float_t cascpt = -999, casceta = -999;
-	  
-	  if(fIsAOD) // aod
-	    {
-	      if(TMath::Abs(aodTrackPos->GetLabel()) >= nGen || TMath::Abs(aodTrackNeg->GetLabel()) >= nGen) continue;
-	      AliAODMCParticle *aodGenTrackPos = (AliAODMCParticle*)fMCEvent->GetTrack(TMath::Abs(aodTrackPos->GetLabel()));
-	      if(!aodGenTrackPos) continue;
-	      AliAODMCParticle *aodGenTrackNeg = (AliAODMCParticle*)fMCEvent->GetTrack(TMath::Abs(aodTrackNeg->GetLabel()));
-	      if(!aodGenTrackNeg) continue;
-	      Int_t m1 = aodGenTrackPos->GetMother();
-	      if(m1 < 0) continue;
-	      Int_t m2 = aodGenTrackNeg->GetMother();
-	      if(m2 < 0) continue;
-	      
-	      // look for special cases, such as xi->Lambda+pi->p+pi+pi with mismatched pions
-	      if((invMassLambda > 1.08 && invMassLambda < 1.15) || (invMassAntiLambda > 1.08 && invMassAntiLambda < 1.15))
-		{
-		  Int_t pidind1 = 0, pidind2 = 0;
-		  for(Int_t i = 0; i < 24; i++)
-		    {
-		      if(aodGenTrackPos->PdgCode() == pidVals[i]) pidind1 = i+1;
-		      if(aodGenTrackNeg->PdgCode() == pidVals[i]) pidind2 = i+1;
-		    }
-		  hCorrPidPid->Fill(pidind1,pidind2);
-
-		  AliVParticle *aodTestMother1 = fMCEvent->GetTrack(m1);
-		  if(aodTestMother1)
-		    {
-		      AliVParticle *aodTestMother2 = fMCEvent->GetTrack(m2);
-		      if(aodTestMother2)
-			{
-			  Int_t mpid1 = aodTestMother1->PdgCode();
-			  Int_t mpid2 = aodTestMother2->PdgCode();
-
-			  Int_t mpidind1 = 0, mpidind2 = 0;
-			  for(Int_t i = 0; i < 24; i++)
-			    {
-			      if(mpid1 == pidVals[i]) mpidind1 = i+1;
-			      if(mpid2 == pidVals[i]) mpidind2 = i+1;
-			    }
-			  hCorrMpidMpid->Fill(mpidind1,mpidind2);
-			  if(TMath::Abs(aodTrackPos->GetLabel()) == m2) hCorrPidMpid->Fill(aodGenTrackPos->PdgCode(),mpidind2);
-			  if(TMath::Abs(aodTrackNeg->GetLabel()) == m1) hCorrPidMpid->Fill(aodGenTrackNeg->PdgCode(),mpidind1);
-
-			  Int_t gm1 = aodTestMother1->GetMother();
-			  Int_t gm2 = aodTestMother2->GetMother();
-
-			  if(gm1 >= 0)
-			    {
-			      AliVParticle *aodGrandmother1 = fMCEvent->GetTrack(gm1);
-			      if(aodGrandmother1)
-				{
-				  if(gm2 >= 0)
-				    {
-				      AliVParticle *aodGrandmother2 = fMCEvent->GetTrack(gm2);
-				      if(aodGrandmother2)
-					{
-					  Int_t gmpid1 = aodGrandmother1->PdgCode();
-					  Int_t gmpid2 = aodGrandmother2->PdgCode();
-
-					  Int_t gmpidind1 = 0, gmpidind2 = 0;
-					  for(Int_t i = 0; i < 24; i++)
-					    {
-					      if(gmpid1 == pidVals[i]) gmpidind1 = i+1;
-					      if(gmpid2 == pidVals[i]) gmpidind2 = i+1;
-					    }
-					  hCorrGpidGpid->Fill(gmpidind1,gmpidind2);
-					  if(TMath::Abs(aodTrackPos->GetLabel()) == gm2) hCorrPidGpid->Fill(aodGenTrackPos->PdgCode(),gmpidind2);
-					  if(TMath::Abs(aodTrackNeg->GetLabel()) == gm1) hCorrPidGpid->Fill(aodGenTrackNeg->PdgCode(),gmpidind1);
-					  
-					  if(m1 == gm2)
-					    {
-					      hCorrMpidGpid->Fill(mpidind1,gmpidind2);
-					      Printf("mismatch!!   %i -> %i -> %i   %i -> %i",gmpid2,mpid2,aodGenTrackNeg->PdgCode(),mpid1,aodGenTrackPos->PdgCode());
-					      hInvMassLambdaXiMismatch->Fill(invMassLambda,pt);
-					      hInvMassAntiLambdaXiMismatch->Fill(invMassAntiLambda,pt);
-					    } 
-					  if(m2 == gm1)
-					    {
-					      hCorrMpidGpid->Fill(mpidind2,gmpidind1);
-					      Printf("mismatch!!   %i -> %i -> %i   %i -> %i",gmpid1,mpid1,aodGenTrackPos->PdgCode(),mpid2,aodGenTrackNeg->PdgCode());
-					      hInvMassLambdaXiMismatch->Fill(invMassLambda,pt);
-					      hInvMassAntiLambdaXiMismatch->Fill(invMassAntiLambda,pt);
-					    }
-					}
-				    }
-				}
-			    }
-			}
-		    }
-		}
-
-
-		      
-	      if(m1 != m2) continue;
-	      
-	      AliVParticle *aodTestMother = fMCEvent->GetTrack(m1);
-	      if(!aodTestMother) continue;
-	      mpid = aodTestMother->PdgCode();
-	      mpt = aodTestMother->Pt();
-	      meta = aodTestMother->Eta();
-	      isSecFromMaterial = aodTestMother->IsSecondaryFromMaterial();
-	      isSecFromWeakDecay = aodTestMother->IsSecondaryFromWeakDecay();
-	      isPrim = aodTestMother->IsPhysicalPrimary();
-
-	      if(mpid == 3122 || mpid == -3122)
-		{
-		  if(isSecFromWeakDecay)
-		    {
-		      Int_t gm = aodTestMother->GetMother();
-		      if(gm >= 0)
-			{
-			  AliVParticle *aodGrandmother = fMCEvent->GetTrack(gm);
-			  if(aodGrandmother)
-			    {
-			      if(aodGrandmother->IsPhysicalPrimary())
-				{
-				  Int_t gmpid = aodGrandmother->PdgCode();
-				  if(gmpid == 3322 || gmpid == -3322) // xi0
-				    {
-				      cascpt = -1.*aodGrandmother->Pt();
-				      casceta = aodGrandmother->Eta();
-				    }
-				  if(gmpid == 3312 || gmpid == -3312) // xi+, xi-
-				    {
-				      cascpt = aodGrandmother->Pt();
-				      casceta = aodGrandmother->Eta();
-				    }
-				}
-			    }
-			}
-		    }
-		}
-	    }
-	  else // esd
-	    {
-	      if(TMath::Abs(esdTrackPos->GetLabel()) >= nGen || TMath::Abs(esdTrackNeg->GetLabel()) >= nGen) continue;
-	      TParticle *esdGenTrackPos = (TParticle*)stack->Particle(TMath::Abs(esdTrackPos->GetLabel()));
-	      if(!esdGenTrackPos) continue;
-	      TParticle *esdGenTrackNeg = (TParticle*)stack->Particle(TMath::Abs(esdTrackNeg->GetLabel()));
-	      if(!esdGenTrackNeg) continue;
-	      Int_t m1 = esdGenTrackPos->GetMother(0);
-	      if(m1 < 0) continue;
-	      Int_t m2 = esdGenTrackNeg->GetMother(0);
-	      if(m2 < 0) continue;
-	      if(m1 != m2) continue;
-	      
-	      TParticle *esdTestMother = stack->Particle(m1);
-	      if(!esdTestMother) continue;
-	      mpid = esdTestMother->GetPdgCode();
-	      mpt = esdTestMother->Pt();
-	      meta = esdTestMother->Eta();
-	      isSecFromMaterial = stack->IsSecondaryFromMaterial(m1);
-	      isSecFromWeakDecay = stack->IsSecondaryFromWeakDecay(m1);
-	      isPrim = stack->IsPhysicalPrimary(m1);
-
-	      if(mpid == 3122 || mpid == -3122)
-		{
-		  if(isSecFromWeakDecay)
-		    {
-		      Int_t gm1 = esdTestMother->GetMother(0);
-		      if(gm1 >= 0)
-			{
-			  TParticle *esdGrandmother = stack->Particle(gm1);
-			  if(esdGrandmother)
-			    {
-			      if(stack->IsPhysicalPrimary(gm1))
-				{
-				  Int_t gmpid = esdGrandmother->GetPdgCode();
-				  if(gmpid == 3322 || gmpid == -3322) // xi0
-				    {
-				      cascpt = -1.*esdGrandmother->Pt();
-				      casceta = esdGrandmother->Eta();
-				    }
-				  if(gmpid == 3312 || gmpid == -3312) // xi+, xi-
-				    {
-				      cascpt = esdGrandmother->Pt();
-				      casceta = esdGrandmother->Eta();
-				    }
-				}
-			    }
-			}
-		    }
-		}
-	    }
-	  
-	  if(TMath::Abs(mpid) != 3122) continue;
-	  
-	  Int_t mcstatus = 1;
-      
-	  if(TMath::Abs(meta) > etacutlambda) mcstatus += 10; //mcstatus > 10 means it falls outside acceptance
-	  
-	  if(isSecFromMaterial)
-	    {
-	      mcstatus += 1; // mcstatus = 3 means secondary from material
-	      if(mpid == 3122)
-		hInvMassLambdaSecFromMaterial->Fill(invMassLambda,pt);
-	      if(mpid == -3122)
-		hInvMassAntiLambdaSecFromMaterial->Fill(invMassAntiLambda,pt);
-	    }
-	  if(isSecFromWeakDecay)
-	    {
-	      mcstatus += 2; // mcstatus = 4 means secondary from weak decay
-	      if(mpid == 3122)
-		{
-		  hInvMassLambdaSecFromWeakDecay->Fill(invMassLambda,pt);
-		  if(tempLightV0L) tempLightV0L->SetCascadePtEta(cascpt,casceta);
-		}
-	      if(mpid == -3122)
-		{
-		  hInvMassAntiLambdaSecFromWeakDecay->Fill(invMassAntiLambda,pt);
-		  if(tempLightV0AL) tempLightV0AL->SetCascadePtEta(cascpt,casceta);
-		}
-	    }
-	  
-	  //if(!(stack->IsPhysicalPrimary(m1))) continue;
-	  if(!isPrim) mcstatus += 1; // mcstatus = 2 means secondary
-
-	  if(tempLightV0L) tempLightV0L->SetGenPtEta(mpt,meta);
-	  if(tempLightV0AL) tempLightV0AL->SetGenPtEta(mpt,meta);
-	  
-	  if(mpid == 3122)
-	    {
-	      if(tempLightV0L) tempLightV0L->SetMcStatus(mcstatus);
-	      hPtResLambda->Fill(mpt,pt);
-	      if(isPrim) hPtResLambdaPrim->Fill(mpt,pt);
-	      if(TMath::Abs(meta) <= etacutlambda)
-		{
-		  hLambdaPtReco->Fill(mpt);
-		  hInvMassLambdaReco->Fill(invMassLambda,pt);
-		}
-	    }
-	  else if(mpid == -3122)
-	    {
-	      if(tempLightV0AL) tempLightV0AL->SetMcStatus(-1*mcstatus); // mcstatus < 0 means antilambda
-	      hPtResAntiLambda->Fill(mpt,pt);
-	      if(isPrim) hPtResAntiLambdaPrim->Fill(mpt,pt);
-	      if(TMath::Abs(meta) <= etacutlambda)
-		{
-		  hAntiLambdaPtReco->Fill(mpt);
-		  hInvMassAntiLambdaReco->Fill(invMassAntiLambda,pt);
-		}
-	    }
+	  if(fIsAOD) IsGenLambda(TMath::Abs(aodTrackPos->GetLabel()), TMath::Abs(aodTrackNeg->GetLabel()), tempLightV0L, tempLightV0AL,pt,invMassLambda,invMassAntiLambda);
+	  else IsGenLambda(TMath::Abs(esdTrackPos->GetLabel()), TMath::Abs(esdTrackNeg->GetLabel()), tempLightV0L, tempLightV0AL,pt,invMassLambda,invMassAntiLambda);
 	}
+	
     }
 
   //Printf("mixed event");
@@ -1250,7 +1000,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	      //Printf("found pool for cent %lf vz %lf with %i entries",fCentV0M,fVtxZ,pool->GetCurrentNEvents());
 	      for (Int_t jMix=0; jMix<TMath::Min(nmaxmixevents,pool->GetCurrentNEvents()); jMix++) 
 		{
-		  Tracks2V0vertices(mixtracks,pool->GetEvent(jMix),vvertex,b);
+		  Tracks2V0vertices(fMixV0,mixtracks,pool->GetEvent(jMix),kTRUE,vvertex,b);
 		}
 	    }
 	  //pool->UpdatePool(mixprotons);
@@ -1260,6 +1010,12 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       //mixtracks->Clear();
       //Printf("%i  %i",fAcceptV0->GetEntriesFast(),fMixV0->GetEntriesFast()/2);
     }
+
+  //if(fAcceptV0test->GetEntriesFast() != fAcceptV0->GetEntriesFast())
+  //{
+  //Printf("Warning!!!  number of V0s don't match!!!");
+  //Printf("nV0s = %i   calc = %i",fAcceptV0->GetEntriesFast(),fAcceptV0test->GetEntriesFast());
+  //}
   
   fTree->Fill();
   
@@ -1270,19 +1026,11 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 }
 
 // copied from AliRoot/STEER/ESD/AliV0vertexer.cxx and modified
-void AliAnalysisTaskNetLambdaIdent::Tracks2V0vertices(TObjArray* ev1, TObjArray* ev2, AliVVertex *vtxT3D, Double_t b)
+void AliAnalysisTaskNetLambdaIdent::Tracks2V0vertices(TClonesArray* fv0s, TObjArray* ev1, TObjArray* ev2, Bool_t mixing, AliVVertex *vtxT3D, Double_t b)
 {
   //--------------------------------------------------------------------
   //This function reconstructs V0 vertices
   //--------------------------------------------------------------------
-
-  //A set of very loose cuts
-  Double_t fChi2max=33.; //max chi2
-  Double_t fDmin=0.1;//0.05;  //min imp parameter for the 1st daughter
-  Double_t fDCAmax=1.;//1.5;  //max DCA between the daughter tracks
-  Double_t fCPAmin=0.998;//0.9;  //min cosine of V0's pointing angle
-  Double_t fRmin=0.2;    //min radius of the fiducial volume
-  Double_t fRmax=100.;//200.;   //max radius of the fiducial volume
   
   //const AliESDVertex *vtxT3D=event->GetPrimaryVertex();
   Double_t primVtx[3] = {vtxT3D->GetX(),vtxT3D->GetY(),vtxT3D->GetZ()};
@@ -1299,7 +1047,7 @@ void AliAnalysisTaskNetLambdaIdent::Tracks2V0vertices(TObjArray* ev1, TObjArray*
       //if (dn<fDmin) continue;
       //if (dn>fRmax) continue;
 
-      for(Int_t k = 0; k < ev2->GetEntries(); k++)
+      for(Int_t k = (mixing ? 0 : i); k < ev2->GetEntries(); k++)
 	{
 	  temptrk2 = (AliExternalTrackParam*)((AliLightV0track*)ev2->At(k))->GetExtParam();
 	  
@@ -1308,12 +1056,14 @@ void AliAnalysisTaskNetLambdaIdent::Tracks2V0vertices(TObjArray* ev1, TObjArray*
 	  if(TMath::Abs(((AliLightV0track*)ev1->At(i))->GetProtonPID()) > 5. && TMath::Abs(((AliLightV0track*)ev2->At(k))->GetProtonPID()) > 5.) continue;
 	  
 	  AliExternalTrackParam *ntrk = 0x0, *ptrk = 0x0;
-	  Float_t pnsigmapr, nnsigmapr;
+	  Float_t pnsigmapr = -999, nnsigmapr = -999;
+	  Int_t pmclabel = -999, nmclabel = -999; 
 
 	  if(temptrk1->GetSign() > 0 && temptrk2->GetSign() < 0)
 	    {
 	      ntrk = new AliExternalTrackParam(*temptrk2);
 	      nnsigmapr = ((AliLightV0track*)ev2->At(k))->GetProtonPID();
+	      if(fIsMC) nmclabel = ((AliLightV0track*)ev2->At(k))->GetMcLabel();
 	      Double_t diffVtx[3];
 	      ((AliLightV0track*)ev2->At(k))->GetPrimaryVertex(diffVtx[0],diffVtx[1],diffVtx[2]);
 	      //Printf("zvtx1 = %.3lf, zvtx2 = %.3lf   old z1 = %.3lf, old z2 = %.3lf",primVtx[2],diffVtx[2],temptrk1->GetZ(),temptrk2->GetZ());
@@ -1324,7 +1074,7 @@ void AliAnalysisTaskNetLambdaIdent::Tracks2V0vertices(TObjArray* ev1, TObjArray*
 	      diffVtx[1] -= primVtx[1];
 	      diffVtx[2] -= primVtx[2];
 	      //Printf("old D = %.3lf",ntrk->GetD(primVtx[0],primVtx[1],b));
-	      ntrk->Translate(diffVtx,covMat);
+	      if(mixing) ntrk->Translate(diffVtx,covMat);
 	      //Printf("new D = %.3lf",ntrk->GetD(primVtx[0],primVtx[1],b));
 	      //Double_t dp = TMath::Abs(ntrk->GetD(primVtx[0],primVtx[1],b));
 	      //if (dp<fDmin) {delete ntrk; continue;}
@@ -1332,12 +1082,14 @@ void AliAnalysisTaskNetLambdaIdent::Tracks2V0vertices(TObjArray* ev1, TObjArray*
 	      
 	      ptrk = new AliExternalTrackParam(*temptrk1);
 	      pnsigmapr = ((AliLightV0track*)ev1->At(i))->GetProtonPID();
+	      if(fIsMC) pmclabel = ((AliLightV0track*)ev1->At(i))->GetMcLabel();
 	      //Printf("new z1 = %.3lf, old z2 = %.3lf",ptrk->GetZ(),ntrk->GetZ());
 	    }
 	  else if(temptrk1->GetSign() < 0 && temptrk2->GetSign() > 0)
 	    {
 	      ptrk = new AliExternalTrackParam(*temptrk2);
 	      pnsigmapr = ((AliLightV0track*)ev2->At(k))->GetProtonPID();
+	      if(fIsMC) pmclabel = ((AliLightV0track*)ev2->At(k))->GetMcLabel();
 	      Double_t diffVtx[3];
 	      ((AliLightV0track*)ev2->At(k))->GetPrimaryVertex(diffVtx[0],diffVtx[1],diffVtx[2]);
 	      //Printf("zvtx1 = %.3lf, zvtx2 = %.3lf   old z1 = %.3lf, old z2 = %.3lf",primVtx[2],diffVtx[2],temptrk1->GetZ(),temptrk2->GetZ());
@@ -1348,7 +1100,7 @@ void AliAnalysisTaskNetLambdaIdent::Tracks2V0vertices(TObjArray* ev1, TObjArray*
 	      diffVtx[1] -= primVtx[1];
 	      diffVtx[2] -= primVtx[2];
 	      //Printf("old D = %.3lf",ptrk->GetD(primVtx[0],primVtx[1],b));
-	      ptrk->Translate(diffVtx,covMat);
+	      if(mixing) ptrk->Translate(diffVtx,covMat);
 	      //Printf("new D = %.3lf",ptrk->GetD(primVtx[0],primVtx[1],b));
 	      
 	      //Double_t dp = TMath::Abs(ptrk->GetD(primVtx[0],primVtx[1],b));
@@ -1357,6 +1109,7 @@ void AliAnalysisTaskNetLambdaIdent::Tracks2V0vertices(TObjArray* ev1, TObjArray*
 
 	      ntrk = new AliExternalTrackParam(*temptrk1);
 	      nnsigmapr = ((AliLightV0track*)ev1->At(i))->GetProtonPID();
+	      if(fIsMC) nmclabel = ((AliLightV0track*)ev1->At(i))->GetMcLabel();
 	      //Printf("new z1 = %.3lf, old z2 = %.3lf",ntrk->GetZ(),ptrk->GetZ());
 	    }
 	  else continue;
@@ -1386,8 +1139,8 @@ void AliAnalysisTaskNetLambdaIdent::Tracks2V0vertices(TObjArray* ev1, TObjArray*
 	  Float_t cpa = vertex.GetV0CosineOfPointingAngle(primVtx[0],primVtx[1],primVtx[2]);
 	  const Double_t pThr=1.5;
 	  Double_t pv0 = vertex.P();
-
-	  if (pv0<pThr)
+	  
+	  if (!fRevertex && pv0<pThr)
 	    {
 	      //Below the threshold "pThr", try a momentum dependent cos(PA) cut 
 	      const Double_t bend=0.03; // approximate Xi bending angle
@@ -1411,38 +1164,49 @@ void AliAnalysisTaskNetLambdaIdent::Tracks2V0vertices(TObjArray* ev1, TObjArray*
 	  ntrk->GetDZ(primVtx[0],primVtx[1],primVtx[2],b,nd);
 	  ptrk->GetDZ(primVtx[0],primVtx[1],primVtx[2],b,pd);
 
-	  //Double_t alpha = vertex.AlphaV0();
-	  //Double_t ptarm = vertex.PtArmV0();
+	  Double_t alpha = vertex.AlphaV0();
+	  Double_t ptarm = vertex.PtArmV0();
+
+	  AliLightV0 *tempLightV0L = 0x0;
+	  AliLightV0 *tempLightV0AL = 0x0;
 	  
 	  if(vertex.GetEffMass(4,2) < 1.16 && TMath::Abs(pnsigmapr) < 5.) // mixed lambda candidate
 	    {
-	      AliLightV0 *tempLightV0 = new((*fMixV0)[fMixV0->GetEntriesFast()]) AliLightV0(vertex.Pt(),vertex.Eta());
-	      tempLightV0->SetInvMass(vertex.GetEffMass(4,2));
-	      tempLightV0->SetInvMassK0S(vertex.GetEffMass(2,2));
-	      tempLightV0->SetCosPointingAngle(cpa);
-	      tempLightV0->SetDecayR(TMath::Sqrt(r2));
-	      tempLightV0->SetProperLifetime(vertex.P() > 0. ? vertex.GetEffMass(4,2)*v0DecayLength/vertex.P() : 0.);
-	      tempLightV0->SetDCADaughters(dca);
-	      tempLightV0->SetMcStatus(0);
-	      tempLightV0->SetPosDaughter(ptrk->Pt(),ptrk->Eta(),pnsigmapr,TMath::Sqrt(pd[0]*pd[0]+pd[1]*pd[1]));
-	      tempLightV0->SetNegDaughter(ntrk->Pt(),ntrk->Eta(),nnsigmapr,TMath::Sqrt(nd[0]*nd[0]+nd[1]*nd[1]));
+	      tempLightV0L = new((*fv0s)[fv0s->GetEntriesFast()]) AliLightV0(vertex.Pt(),vertex.Eta());
+	      tempLightV0L->SetInvMass(vertex.GetEffMass(4,2));
+	      tempLightV0L->SetInvMassK0S(vertex.GetEffMass(2,2));
+	      tempLightV0L->SetInvMassGamma(vertex.GetEffMass(0,0));
+	      tempLightV0L->SetCosPointingAngle(cpa);
+	      tempLightV0L->SetDecayR(TMath::Sqrt(r2));
+	      tempLightV0L->SetProperLifetime(vertex.P() > 0. ? vertex.GetEffMass(4,2)*v0DecayLength/vertex.P() : 0.);
+	      tempLightV0L->SetDCADaughters(dca);
+	      tempLightV0L->SetArmPodVars(ptarm,alpha);
+	      tempLightV0L->SetMcStatus(0);
+	      tempLightV0L->SetPosDaughter(ptrk->Pt(),ptrk->Eta(),pnsigmapr,TMath::Sqrt(pd[0]*pd[0]+pd[1]*pd[1]));
+	      tempLightV0L->SetNegDaughter(ntrk->Pt(),ntrk->Eta(),nnsigmapr,TMath::Sqrt(nd[0]*nd[0]+nd[1]*nd[1]));
 
-	      //Printf("pt = %.3lf   eta = %.3lf   minv = %.3lf   cosPA = %.3lf   decayR = %.3lf   propLife = %.3lf   DCAdaughters = %.3lf   posPt = %.3lf   posDCA = %.3lf   posNSigma = %.3lf   posD = %.3lf   negPt = %.3lf   negDCA = %.3lf   negNSigma = %.3lf   negD = %.3lf",vertex.Pt(),vertex.Eta(),vertex.GetEffMass(4,2),cpa,TMath::Sqrt(r2),vertex.GetEffMass(4,2)*v0DecayLength/vertex.P(),dca,ptrk->Pt(),TMath::Sqrt(pd[0]*pd[0]+pd[1]*pd[1]),pnsigmapr,ptrk->GetD(primVtx[0],primVtx[1],b),ntrk->Pt(),TMath::Sqrt(nd[0]*nd[0]+nd[1]*nd[1]),nnsigmapr,ntrk->GetD(primVtx[0],primVtx[1],b));
+	      //Printf("B   id1 = %i   id2 = %i   pt = %.3lf   eta = %.3lf   minv = %.3lf   cosPA = %.3lf   decayR = %.3lf   propLife = %.3lf   DCAdaughters = %.3lf",((AliLightV0track*)ev1->At(i))->GetMcLabel(),((AliLightV0track*)ev2->At(k))->GetMcLabel(),vertex.Pt(),vertex.Eta(),vertex.GetEffMass(4,2),cpa,TMath::Sqrt(r2),vertex.GetEffMass(4,2)*v0DecayLength/vertex.P(),dca);
+	      //Printf("                          posPt = %.3lf   posDCA = %.3lf   posNSigma = %.3lf   posD = %.3lf   negPt = %.3lf   negDCA = %.3lf   negNSigma = %.3lf   negD = %.3lf",ptrk->Pt(),TMath::Sqrt(pd[0]*pd[0]+pd[1]*pd[1]),pnsigmapr,ptrk->GetD(primVtx[0],primVtx[1],b),ntrk->Pt(),TMath::Sqrt(nd[0]*nd[0]+nd[1]*nd[1]),nnsigmapr,ntrk->GetD(primVtx[0],primVtx[1],b));
 	    }
 	  if(vertex.GetEffMass(2,4) < 1.16 && TMath::Abs(nnsigmapr) < 5.) // mixed anti-lambda candidate
 	    {
-	      AliLightV0 *tempLightV0 = new((*fMixV0)[fMixV0->GetEntriesFast()]) AliLightV0(vertex.Pt(),vertex.Eta());
-	      tempLightV0->SetInvMass(-1.*vertex.GetEffMass(2,4));
-	      tempLightV0->SetInvMassK0S(vertex.GetEffMass(2,2));
-	      tempLightV0->SetCosPointingAngle(cpa);
-	      tempLightV0->SetDecayR(TMath::Sqrt(r2));
-	      tempLightV0->SetProperLifetime(vertex.P() > 0. ? vertex.GetEffMass(2,4)*v0DecayLength/vertex.P() : 0.);
-	      tempLightV0->SetDCADaughters(dca);
-	      tempLightV0->SetMcStatus(0);
-	      tempLightV0->SetPosDaughter(ptrk->Pt(),ptrk->Eta(),pnsigmapr,TMath::Sqrt(pd[0]*pd[0]+pd[1]*pd[1]));
-	      tempLightV0->SetNegDaughter(ntrk->Pt(),ntrk->Eta(),nnsigmapr,TMath::Sqrt(nd[0]*nd[0]+nd[1]*nd[1]));
-	      //Printf("pt = %.3lf   eta = %.3lf   minv = %.3lf   cosPA = %.3lf   decayR = %.3lf   propLife = %.3lf   DCAdaughters = %.3lf   posPt = %.3lf   posDCA = %.3lf   posNSigma = %.3lf   posD = %.3lf   negPt = %.3lf   negDCA = %.3lf   negNSigma = %.3lf   negD = %.3lf",vertex.Pt(),vertex.Eta(),vertex.GetEffMass(2,4),cpa,TMath::Sqrt(r2),vertex.GetEffMass(2,4)*v0DecayLength/vertex.P(),dca,ptrk->Pt(),TMath::Sqrt(pd[0]*pd[0]+pd[1]*pd[1]),pnsigmapr,ptrk->GetD(primVtx[0],primVtx[1],b),ntrk->Pt(),TMath::Sqrt(nd[0]*nd[0]+nd[1]*nd[1]),nnsigmapr,ntrk->GetD(primVtx[0],primVtx[1],b));
+	      tempLightV0AL = new((*fv0s)[fv0s->GetEntriesFast()]) AliLightV0(vertex.Pt(),vertex.Eta());
+	      tempLightV0AL->SetInvMass(-1.*vertex.GetEffMass(2,4));
+	      tempLightV0AL->SetInvMassK0S(vertex.GetEffMass(2,2));
+	      tempLightV0AL->SetInvMassGamma(vertex.GetEffMass(0,0));
+	      tempLightV0AL->SetCosPointingAngle(cpa);
+	      tempLightV0AL->SetDecayR(TMath::Sqrt(r2));
+	      tempLightV0AL->SetProperLifetime(vertex.P() > 0. ? vertex.GetEffMass(2,4)*v0DecayLength/vertex.P() : 0.);
+	      tempLightV0AL->SetDCADaughters(dca);
+	      tempLightV0AL->SetArmPodVars(ptarm,alpha);
+	      tempLightV0AL->SetMcStatus(0);
+	      tempLightV0AL->SetPosDaughter(ptrk->Pt(),ptrk->Eta(),pnsigmapr,TMath::Sqrt(pd[0]*pd[0]+pd[1]*pd[1]));
+	      tempLightV0AL->SetNegDaughter(ntrk->Pt(),ntrk->Eta(),nnsigmapr,TMath::Sqrt(nd[0]*nd[0]+nd[1]*nd[1]));
+	      //Printf("B   id1 = %i   id2 = %i   pt = %.3lf   eta = %.3lf   minv = %.3lf   cosPA = %.3lf   decayR = %.3lf   propLife = %.3lf   DCAdaughters = %.3lf",((AliLightV0track*)ev1->At(i))->GetMcLabel(),((AliLightV0track*)ev2->At(k))->GetMcLabel(),vertex.Pt(),vertex.Eta(),vertex.GetEffMass(2,4),cpa,TMath::Sqrt(r2),vertex.GetEffMass(2,4)*v0DecayLength/vertex.P(),dca);
+	      //Printf("                          posPt = %.3lf   posDCA = %.3lf   posNSigma = %.3lf   posD = %.3lf   negPt = %.3lf   negDCA = %.3lf   negNSigma = %.3lf   negD = %.3lf",ptrk->Pt(),TMath::Sqrt(pd[0]*pd[0]+pd[1]*pd[1]),pnsigmapr,ptrk->GetD(primVtx[0],primVtx[1],b),ntrk->Pt(),TMath::Sqrt(nd[0]*nd[0]+nd[1]*nd[1]),nnsigmapr,ntrk->GetD(primVtx[0],primVtx[1],b));
 	    }
+	  
+	  if(!mixing && fIsMC && (tempLightV0L || tempLightV0AL)) IsGenLambda(pmclabel, nmclabel, tempLightV0L, tempLightV0AL,vertex.Pt(),vertex.GetEffMass(4,2),vertex.GetEffMass(2,4));
 	}
     }
   
@@ -1476,16 +1240,16 @@ Bool_t AliAnalysisTaskNetLambdaIdent::V0CutsForTreeAOD(AliAODv0* v0, Double_t* v
   if(v0->Pt() < ptminlambda) return kFALSE;
   if(TMath::Abs(v0->Eta()) > etacutlambda) return kFALSE; 
 	    
-  if(v0->CosPointingAngle(vt) < cospacut) return kFALSE;
-  if(v0->DcaV0Daughters() > 1.5) return kFALSE; // these are default cuts from AODs
-  if(v0->DcaPosToPrimVertex() < 0.05) return kFALSE;
-  if(v0->DcaNegToPrimVertex() < 0.05) return kFALSE;
+  if(v0->CosPointingAngle(vt) < fCPAmin) return kFALSE;
+  if(v0->DcaV0Daughters() > fDCAmax) return kFALSE; // these are default cuts from AODs
+  if(v0->DcaPosToPrimVertex() < fDmin) return kFALSE;
+  if(v0->DcaNegToPrimVertex() < fDmin) return kFALSE;
 
   Double_t sv[3];
   v0->GetSecondaryVtx()->GetPosition(sv);
   Float_t v0Radius2 = sv[0]*sv[0]+sv[1]*sv[1];
-  if(v0Radius2 < minradius*minradius) return kFALSE;
-  if(v0Radius2 > 200.*200.) return kFALSE;
+  if(v0Radius2 < fRmin*fRmin) return kFALSE;
+  if(v0Radius2 > fRmax*fRmax) return kFALSE;
   
   return kTRUE;
 }
@@ -1495,23 +1259,262 @@ Bool_t AliAnalysisTaskNetLambdaIdent::V0CutsForTreeESD(AliESDv0* v0, Double_t* v
   if(v0->Pt() < ptminlambda) return kFALSE;
   if(TMath::Abs(v0->Eta()) > etacutlambda) return kFALSE; 
   
-  if(v0->GetV0CosineOfPointingAngle() < cospacut) return kFALSE;
-  if(v0->GetDcaV0Daughters() > 1.5) return kFALSE; // these are default cuts from AODs
+  if(v0->GetV0CosineOfPointingAngle() < fCPAmin) return kFALSE;
+  if(v0->GetDcaV0Daughters() > fDCAmax) return kFALSE; // these are default cuts from AODs
 
   Float_t nd[2] = {0,0};
   Float_t pd[2] = {0,0};
   ntrk->GetDZ(vt[0],vt[1],vt[2],b,nd);
   ptrk->GetDZ(vt[0],vt[1],vt[2],b,pd);
   
-  if(pd[0]*pd[0]+pd[1]*pd[1] < 0.05*0.05) return kFALSE;
-  if(nd[0]*nd[0]+nd[1]*nd[1] < 0.05*0.05) return kFALSE;
+  if(pd[0]*pd[0]+pd[1]*pd[1] < fDmin*fDmin) return kFALSE;
+  if(nd[0]*nd[0]+nd[1]*nd[1] < fDmin*fDmin) return kFALSE;
 
 
   Double_t sv[3] = {0,0,0};
   v0->GetXYZ(sv[0], sv[1], sv[2]);
   Float_t v0Radius2 = sv[0]*sv[0]+sv[1]*sv[1];
-  if(v0Radius2 < minradius*minradius) return kFALSE;
-  if(v0Radius2 > 200.*200.) return kFALSE;
+  if(v0Radius2 < fRmin*fRmin) return kFALSE;
+  if(v0Radius2 > fRmax*fRmax) return kFALSE;
   
   return kTRUE;
+}
+
+void AliAnalysisTaskNetLambdaIdent::IsGenLambda(Int_t poslabel, Int_t neglabel, AliLightV0* tempLightV0L, AliLightV0* tempLightV0AL, Float_t pt, Float_t invMassLambda, Float_t invMassAntiLambda)
+{
+  Int_t mpid = -999, pid1 = -999, pid2 = -999;
+  Float_t mpt = -999, meta = -999;
+  Bool_t isPrim = kFALSE, isSecFromMaterial = kFALSE, isSecFromWeakDecay = kFALSE;
+  Float_t cascpt = -999, casceta = -999;
+
+  Int_t nGen = 0;
+  
+  if(fIsAOD) // aod
+    {
+      nGen = fMCEvent->GetNumberOfTracks();
+      if(poslabel >= nGen || neglabel >= nGen) return;
+      AliAODMCParticle *aodGenTrackPos = (AliAODMCParticle*)fMCEvent->GetTrack(poslabel);
+      if(!aodGenTrackPos) return;
+      AliAODMCParticle *aodGenTrackNeg = (AliAODMCParticle*)fMCEvent->GetTrack(neglabel);
+      if(!aodGenTrackNeg) return;
+      Int_t m1 = aodGenTrackPos->GetMother();
+      if(m1 < 0) return;
+      Int_t m2 = aodGenTrackNeg->GetMother();
+      if(m2 < 0) return;
+      
+      if(m1 != m2) return;
+      
+      pid1 = aodGenTrackPos->GetPdgCode();
+      pid2 = aodGenTrackNeg->GetPdgCode();
+      
+      AliVParticle *aodTestMother = fMCEvent->GetTrack(m1);
+      if(!aodTestMother) return;
+      mpid = aodTestMother->PdgCode();
+      mpt = aodTestMother->Pt();
+      meta = aodTestMother->Eta();
+      isSecFromMaterial = aodTestMother->IsSecondaryFromMaterial();
+      isSecFromWeakDecay = aodTestMother->IsSecondaryFromWeakDecay();
+      isPrim = aodTestMother->IsPhysicalPrimary();
+      
+      if(mpid == 3122 || mpid == -3122)
+	{
+	  if(isSecFromWeakDecay)
+	    {
+	      Int_t gm = aodTestMother->GetMother();
+	      if(gm >= 0)
+		{
+		  AliVParticle *aodGrandmother = fMCEvent->GetTrack(gm);
+		  if(aodGrandmother)
+		    {
+		      if(aodGrandmother->IsPhysicalPrimary())
+			{
+			  Int_t gmpid = aodGrandmother->PdgCode();
+			  if(gmpid == 3322 || gmpid == -3322) // xi0
+			    {
+			      cascpt = -1.*aodGrandmother->Pt();
+			      casceta = aodGrandmother->Eta();
+			    }
+			  if(gmpid == 3312 || gmpid == -3312) // xi+, xi-
+			    {
+			      cascpt = aodGrandmother->Pt();
+			      casceta = aodGrandmother->Eta();
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
+  else // esd
+    {
+      nGen = stack->GetNtrack();
+      if(poslabel >= nGen || neglabel >= nGen) return;
+      TParticle *esdGenTrackPos = (TParticle*)stack->Particle(poslabel);
+      if(!esdGenTrackPos) return;
+      TParticle *esdGenTrackNeg = (TParticle*)stack->Particle(neglabel);
+      if(!esdGenTrackNeg) return;
+      Int_t m1 = esdGenTrackPos->GetMother(0);
+      if(m1 < 0) return;
+      Int_t m2 = esdGenTrackNeg->GetMother(0);
+      if(m2 < 0) return;
+
+      Int_t gm1 = stack->Particle(m1)->GetMother(0);
+      Int_t gm2 = stack->Particle(m2)->GetMother(0);
+      if(gm1 == m2 && gm1 >= 0)
+	{
+	  TParticle *esdMother1 = stack->Particle(m1);
+	  TParticle *esdMother2 = stack->Particle(m2);
+	  TParticle *esdGrandmother1 = stack->Particle(gm1);
+	  if(esdMother1)
+	    if(esdMother2)
+	      if(esdGrandmother1)
+		{
+		  //Printf("%i-->%i-->%i, %i-->%i",esdGrandmother1->GetPdgCode(),esdMother1->GetPdgCode(),esdGenTrackPos->GetPdgCode(),esdMother2->GetPdgCode(),esdGenTrackNeg->GetPdgCode());
+		  if(esdGrandmother1->GetPdgCode() == 3312)
+		    {
+		      hInvMassLambdaMPidPt->Fill(invMassLambda,25,pt);
+		      hInvMassAntiLambdaMPidPt->Fill(invMassAntiLambda,25,pt);
+		    }
+		  else if(esdGrandmother1->GetPdgCode() == -3312)
+		    {
+		      hInvMassLambdaMPidPt->Fill(invMassLambda,26,pt);
+		      hInvMassAntiLambdaMPidPt->Fill(invMassAntiLambda,26,pt);
+		    }
+		}
+	}
+      if(gm2 == m1 && gm2 >= 0)
+	{
+	  TParticle *esdMother1 = stack->Particle(m1);
+	  TParticle *esdMother2 = stack->Particle(m2);
+	  TParticle *esdGrandmother2 = stack->Particle(gm2);
+	  if(esdMother1)
+	    if(esdMother2)
+	      if(esdGrandmother2)
+		{
+		  //Printf("%i-->%i-->%i, %i-->%i",esdGrandmother2->GetPdgCode(),esdMother2->GetPdgCode(),esdGenTrackNeg->GetPdgCode(),esdMother1->GetPdgCode(),esdGenTrackPos->GetPdgCode());
+		  if(esdGrandmother2->GetPdgCode() == 3312)
+		    {
+		      hInvMassLambdaMPidPt->Fill(invMassLambda,25,pt);
+		      hInvMassAntiLambdaMPidPt->Fill(invMassAntiLambda,25,pt);
+		    }
+		  else if(esdGrandmother2->GetPdgCode() == -3312)
+		    {
+		      hInvMassLambdaMPidPt->Fill(invMassLambda,26,pt);
+		      hInvMassAntiLambdaMPidPt->Fill(invMassAntiLambda,26,pt);
+		    }
+		}
+	}
+
+      
+      if(m1 != m2) return;
+
+      pid1 = esdGenTrackPos->GetPdgCode();
+      pid2 = esdGenTrackNeg->GetPdgCode();
+	      
+      TParticle *esdTestMother = stack->Particle(m1);
+      if(!esdTestMother) return;
+      mpid = esdTestMother->GetPdgCode();
+      mpt = esdTestMother->Pt();
+      meta = esdTestMother->Eta();
+      isSecFromMaterial = stack->IsSecondaryFromMaterial(m1);
+      isSecFromWeakDecay = stack->IsSecondaryFromWeakDecay(m1);
+      isPrim = stack->IsPhysicalPrimary(m1);
+
+      if(mpid == 3122 || mpid == -3122)
+	{
+	  if(isSecFromWeakDecay)
+	    {
+	      Int_t gm1 = esdTestMother->GetMother(0);
+	      if(gm1 >= 0)
+		{
+		  TParticle *esdGrandmother = stack->Particle(gm1);
+		  if(esdGrandmother)
+		    {
+		      if(stack->IsPhysicalPrimary(gm1))
+			{
+			  Int_t gmpid = esdGrandmother->GetPdgCode();
+			  if(gmpid == 3322 || gmpid == -3322) // xi0
+			    {
+			      cascpt = -1.*esdGrandmother->Pt();
+			      casceta = esdGrandmother->Eta();
+			    }
+			  if(gmpid == 3312 || gmpid == -3312) // xi+, xi-
+			    {
+			      cascpt = esdGrandmother->Pt();
+			      casceta = esdGrandmother->Eta();
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
+
+  Int_t mpidind = 0;
+  for(Int_t p = 0; p < 24; p++)
+    {
+      if(mpid == pidVals[p]){mpidind = p+1; break;}
+    }
+  if(mpidind == 0) Printf("unknown mother = %i",mpid);
+  hInvMassLambdaMPidPt->Fill(invMassLambda,mpidind,pt);
+  hInvMassAntiLambdaMPidPt->Fill(invMassAntiLambda,mpidind,pt);
+  //if(mpid == 310) Printf("daughter pid = %i %i, invMassL = %.3lf, invMassAL = %.3lf, invmassG = %.3lf, decay radius = %.3lf",pid1,pid2,invMassLambda,invMassAntiLambda,invMassEplusEminus,v0Radius);
+	  
+  if(TMath::Abs(mpid) != 3122) return;
+	  
+  Int_t mcstatus = 1;
+      
+  if(TMath::Abs(meta) > etacutlambda) mcstatus += 10; //mcstatus > 10 means it falls outside acceptance
+	  
+  if(isSecFromMaterial)
+    {
+      mcstatus += 1; // mcstatus = 3 means secondary from material
+      if(mpid == 3122)
+	hInvMassLambdaSecFromMaterial->Fill(invMassLambda,pt);
+      if(mpid == -3122)
+	hInvMassAntiLambdaSecFromMaterial->Fill(invMassAntiLambda,pt);
+    }
+  if(isSecFromWeakDecay)
+    {
+      mcstatus += 2; // mcstatus = 4 means secondary from weak decay
+      if(mpid == 3122)
+	{
+	  hInvMassLambdaSecFromWeakDecay->Fill(invMassLambda,pt);
+	  if(tempLightV0L) tempLightV0L->SetCascadePtEta(cascpt,casceta);
+	}
+      if(mpid == -3122)
+	{
+	  hInvMassAntiLambdaSecFromWeakDecay->Fill(invMassAntiLambda,pt);
+	  if(tempLightV0AL) tempLightV0AL->SetCascadePtEta(cascpt,casceta);
+	}
+    }
+	  
+  //if(!(stack->IsPhysicalPrimary(m1))) return;
+  if(!isPrim) mcstatus += 1; // mcstatus = 2 means secondary
+
+  if(tempLightV0L) tempLightV0L->SetGenPtEta(mpt,meta);
+  if(tempLightV0AL) tempLightV0AL->SetGenPtEta(mpt,meta);
+	  
+  if(mpid == 3122)
+    {
+      if(tempLightV0L) tempLightV0L->SetMcStatus(mcstatus);
+      hPtResLambda->Fill(mpt,pt);
+      if(isPrim) hPtResLambdaPrim->Fill(mpt,pt);
+      if(TMath::Abs(meta) <= etacutlambda)
+	{
+	  hLambdaPtReco->Fill(mpt);
+	  hInvMassLambdaReco->Fill(invMassLambda,pt);
+	}
+    }
+  else if(mpid == -3122)
+    {
+      if(tempLightV0AL) tempLightV0AL->SetMcStatus(-1*mcstatus); // mcstatus < 0 means antilambda
+      hPtResAntiLambda->Fill(mpt,pt);
+      if(isPrim) hPtResAntiLambdaPrim->Fill(mpt,pt);
+      if(TMath::Abs(meta) <= etacutlambda)
+	{
+	  hAntiLambdaPtReco->Fill(mpt);
+	  hInvMassAntiLambdaReco->Fill(invMassAntiLambda,pt);
+	}
+    }
 }
