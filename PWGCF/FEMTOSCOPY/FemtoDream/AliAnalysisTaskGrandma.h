@@ -12,6 +12,8 @@
 #include "AliFemtoDreamEventCuts.h"
 #include "AliFemtoDreamTrack.h"
 #include "AliFemtoDreamTrackCuts.h"
+#include "AliFemtoDreamv0.h"
+#include "AliFemtoDreamv0Cuts.h"
 #include "AliFemtoDreamPairCleaner.h"
 #include "AliFemtoDreamPartCollection.h"
 #include "AliFemtoDreamCollConfig.h"
@@ -38,6 +40,14 @@ class AliAnalysisTaskGrandma : public AliAnalysisTaskSE {
     fAntiTrackCuts = cuts;
   }
   ;
+  void Setv0Cuts(AliFemtoDreamv0Cuts *cuts) {
+    fv0Cuts = cuts;
+  }
+  ;
+  void SetAntiv0Cuts(AliFemtoDreamv0Cuts *cuts){
+    fAntiv0Cuts = cuts;
+  }
+  ;
   void SetTrackBufferSize(int trackBuffer) {
     fTrackBufferSize = trackBuffer;
   }
@@ -61,6 +71,13 @@ class AliAnalysisTaskGrandma : public AliAnalysisTaskSE {
   AliFemtoDreamTrackCuts *fAntiTrackCuts;   //
   TList *fAntiTrackCutHistList;             //!
   TList *fAntiTrackCutHistMCList;           //!
+  AliFemtoDreamv0 *fFemtov0;                //!
+  AliFemtoDreamv0Cuts *fv0Cuts;             //
+  TList *fv0CutHistList;                 //!
+  TList *fv0CutHistMCList;               //!
+  AliFemtoDreamv0Cuts *fAntiv0Cuts;         //
+  TList *fAntiv0CutHistList;             //!
+  TList *fAntiv0CutHistMCList;           //!
   AliFemtoDreamPairCleaner *fPairCleaner;   //!
   AliFemtoDreamPartCollection *fPartColl;   //!
   AliFemtoDreamCollConfig *fConfig;         //
@@ -68,7 +85,7 @@ class AliAnalysisTaskGrandma : public AliAnalysisTaskSE {
   TList *fResultQAList;                     //!
   int fTrackBufferSize;                     //
   AliAODTrack **fGTI;                       //!
-ClassDef(AliAnalysisTaskGrandma,1)
+ClassDef(AliAnalysisTaskGrandma,2)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKGRANDMA_H_ */
