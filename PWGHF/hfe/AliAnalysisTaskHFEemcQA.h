@@ -203,6 +203,7 @@ private:
     TH2F        *fMCcheckBdecay;//!
     TH2F        *fMCcheckDdecay;//!
     TH2F        *fMCcheckHFdecay;//!
+    TH2F        *fHFmomCorr;//!
     TH2F        *fMCneutral;//!
     TH2F        *fEMCTrkMatch_Phi;//!
     TH2F        *fEMCTrkMatch_Eta;//!
