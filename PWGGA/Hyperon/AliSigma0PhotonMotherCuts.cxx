@@ -933,41 +933,41 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     }
 
     fHistMCTruthPtY =
-        new TH2F("fHistMCTruthPtY", "; y; #it{p}_{T} (GeV/#it{c})", 100, -10,
+        new TH2F("fHistMCTruthPtY", "; y; #it{p}_{T} (GeV/#it{c})", 200, -10,
                  10, 100, 0, 10);
     fHistMCTruthPtEta =
-        new TH2F("fHistMCTruthPtEta", "; #eta; #it{p}_{T} (GeV/#it{c})", 100,
+        new TH2F("fHistMCTruthPtEta", "; #eta; #it{p}_{T} (GeV/#it{c})", 200,
                  -10, 10, 100, 0, 10);
     fHistMCTruthDaughterPtY =
-        new TH2F("fHistMCTruthDaughterPtY", "; y; #it{p}_{T} (GeV/#it{c})", 100,
+        new TH2F("fHistMCTruthDaughterPtY", "; y; #it{p}_{T} (GeV/#it{c})", 200,
                  -10, 10, 100, 0, 10);
     fHistMCTruthDaughterPtEta =
         new TH2F("fHistMCTruthDaughterPtEta", "; #eta; #it{p}_{T} (GeV/#it{c})",
-                 100, -10, 10, 100, 0, 10);
+                 200, -10, 10, 100, 0, 10);
     fHistMCTruthDaughterPtYAccept =
         new TH2F("fHistMCTruthDaughterPtYAccept",
-                 "; y; #it{p}_{T} (GeV/#it{c})", 100, -10, 10, 100, 0, 10);
+                 "; y; #it{p}_{T} (GeV/#it{c})", 200, -10, 10, 100, 0, 10);
     fHistMCTruthDaughterPtEtaAccept =
         new TH2F("fHistMCTruthDaughterPtEtaAccept",
-                 "; #eta; #it{p}_{T} (GeV/#it{c})", 100, -10, 10, 100, 0, 10);
+                 "; #eta; #it{p}_{T} (GeV/#it{c})", 200, -10, 10, 100, 0, 10);
     fHistMCTruthPtYHighMult =
-        new TH2F("fHistMCTruthPtYHighMult", "; y; #it{p}_{T} (GeV/#it{c})", 100,
+        new TH2F("fHistMCTruthPtYHighMult", "; y; #it{p}_{T} (GeV/#it{c})", 200,
                  -10, 10, 100, 0, 10);
     fHistMCTruthPtEtaHighMult =
         new TH2F("fHistMCTruthPtEtaHighMult", "; #eta; #it{p}_{T} (GeV/#it{c})",
-                 100, -10, 10, 100, 0, 10);
+                 200, -10, 10, 100, 0, 10);
     fHistMCTruthDaughterPtYHighMult =
         new TH2F("fHistMCTruthDaughterPtYHighMult",
-                 "; y; #it{p}_{T} (GeV/#it{c})", 100, -10, 10, 100, 0, 10);
+                 "; y; #it{p}_{T} (GeV/#it{c})", 200, -10, 10, 100, 0, 10);
     fHistMCTruthDaughterPtEtaHighMult =
         new TH2F("fHistMCTruthDaughterPtEtaHighMult",
-                 "; #eta; #it{p}_{T} (GeV/#it{c})", 100, -10, 10, 100, 0, 10);
+                 "; #eta; #it{p}_{T} (GeV/#it{c})", 200, -10, 10, 100, 0, 10);
     fHistMCTruthDaughterPtYAcceptHighMult =
         new TH2F("fHistMCTruthDaughterPtYAcceptHighMult",
-                 "; y; #it{p}_{T} (GeV/#it{c})", 100, -10, 10, 100, 0, 10);
+                 "; y; #it{p}_{T} (GeV/#it{c})", 200, -10, 10, 100, 0, 10);
     fHistMCTruthDaughterPtEtaAcceptHighMult =
         new TH2F("fHistMCTruthDaughterPtEtaAcceptHighMult",
-                 "; #eta; #it{p}_{T} (GeV/#it{c})", 100, -10, 10, 100, 0, 10);
+                 "; #eta; #it{p}_{T} (GeV/#it{c})", 200, -10, 10, 100, 0, 10);
 
     fHistMCV0Pt = new TH1F("fHistMCV0Pt",
                            "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); Entries",
