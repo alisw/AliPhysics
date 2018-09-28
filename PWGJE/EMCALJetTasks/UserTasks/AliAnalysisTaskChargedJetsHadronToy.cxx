@@ -149,13 +149,21 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
 
       if(aodTrack)
       {
+        if (TMath::Abs(aodTrack->Eta()) > 0.9) // only use ALICE acceptance for jet const.
+          continue;
+
         new ((*fOutputArray)[particleCount]) AliAODTrack(*aodTrack);
         particleCount++;
       }
       else if(aodMCParticle)
       {
-        if (fPhysicalPrimariesOnly && !aodMCParticle->IsPhysicalPrimary())
+        if (fPhysicalPrimariesOnly && !aodMCParticle->IsPhysicalPrimary()) // only physical primaries
           continue;
+        if (aodMCParticle->Charge() == 0) // only charged particles
+          continue;
+        if (TMath::Abs(aodMCParticle->Eta()) > 0.9) // only use ALICE acceptance for jet const.
+          continue;
+
         Float_t trackTheta = 2.*atan(exp(-aodMCParticle->Eta()));
         new ((*fOutputArray)[particleCount]) AliAODTrack();
         static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetPt(aodMCParticle->Pt());
@@ -224,7 +232,7 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
 
     fMixedEvent_CurrentEventID++;
   }
-  else // Simple toy
+  else if(fDistributionMultiplicity && fDistributionPt && fDistributionEtaPhi)// Simple toy
   {
     Int_t multiplicity = (Int_t)fDistributionMultiplicity->GetRandom();
     for(Int_t i=0;i<multiplicity; i++)
