@@ -65,6 +65,7 @@ public:
   void                        SetPi0NSigma(Float_t input)                           { fPi0NSigma         = input;}
   void                        SetPi0AsymCut(Float_t input)                          { fPi0AsymCut        = input;}
   void                        SetApplyPatchCandCut(Bool_t input)                    { fApplyPatchCandCut = input;}
+  void                        SetSidebandChoice(Int_t input)                        { fSidebandChoice    = input;}
 
 
   //..Functions for mixed event purposes
@@ -120,6 +121,7 @@ public:
 
   Int_t                       fGammaOrPi0;               ///< This tells me whether the correltation and the filling of histograms is done for gamma or pi0 or pi0 SB
   Bool_t                      fSEvMEv;                   ///< This option performs the analysis either for same event or for mixed event analysis
+  Int_t                       fSidebandChoice;           ///< This determines which sideband option is used
   Bool_t                      fDebug;			        ///< Can be set for debugging
   Bool_t                      fSavePool;                 ///< Defines whether to save output pools in a root file
   Int_t                       fPlotQA;                   ///< plot additional QA histograms

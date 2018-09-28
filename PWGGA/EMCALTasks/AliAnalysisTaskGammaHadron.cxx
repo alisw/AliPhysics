@@ -50,7 +50,7 @@ ClassImp(AliAnalysisTaskGammaHadron)
 AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron():
 AliAnalysisTaskEmcal("AliAnalysisTaskGammaHadron", kTRUE),
 
-fEventCuts(0),fFiducialCuts(0x0),fFiducialCellCut(0x0),fGammaOrPi0(0),fSEvMEv(0),fDebug(0),
+fEventCuts(0),fFiducialCuts(0x0),fFiducialCellCut(0x0),fGammaOrPi0(0),fSEvMEv(0),fSidebandChoice(0),fDebug(0),
 fSavePool(0),
 fRtoD(0),fSubDetector(0),
 fTriggerPtCut(5.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),fRmvMTrack(0),fTrackMatchEta(0),fTrackMatchPhi(0),fTrackMatchEOverPLow(0.6),fTrackMatchEOverPHigh(1.4),
@@ -79,7 +79,7 @@ fHPoolReady(0x0)
 AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Bool_t InputSeMe,Bool_t InputMCorData):
 AliAnalysisTaskEmcal("AliAnalysisTaskGammaHadron", kTRUE),
 
-fEventCuts(0),fFiducialCuts(0x0),fFiducialCellCut(0x0),fGammaOrPi0(0),fSEvMEv(0),fDebug(0),
+fEventCuts(0),fFiducialCuts(0x0),fFiducialCellCut(0x0),fGammaOrPi0(0),fSEvMEv(0),fSidebandChoice(0),fDebug(0),
 fSavePool(0),
 fRtoD(0),fSubDetector(0),
 fTriggerPtCut(5.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),fRmvMTrack(0),fTrackMatchEta(0),fTrackMatchPhi(0),fTrackMatchEOverPLow(0.6),fTrackMatchEOverPHigh(1.4),
@@ -2504,59 +2504,47 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusPairForAna(AliVCluster* cluster1, AliV
     fMassPtCentPionRej->Fill(vecPi0.M(),vecPi0.Pt(),fCent);
     return 0;
   }
-	// Half SideBands
-  //..if you select the pi0 SB region Version 1
-  if(fGammaOrPi0==2 && (vecPi0.M() < Pi0Mass+3*Pi0Sigma || vecPi0.M()>(0.5-SBsplit)) )
-  {
-    fMassPionRej->Fill(vecPi0.M());
-    fMassPtPionRej->Fill(vecPi0.M(),vecPi0.Pt());
-    fMassPtCentPionRej->Fill(vecPi0.M(),vecPi0.Pt(),fCent);
-    return 0;
-  }
-  //..if you select the pi0 SB region Version 2
-  if(fGammaOrPi0==3 && (vecPi0.M() <= Pi0Mass+3*Pi0Sigma+SBsplit || vecPi0.M()>(0.5)) )
-  {
-	  fMassPionRej->Fill(vecPi0.M());
-    fMassPtPionRej->Fill(vecPi0.M(),vecPi0.Pt());
-    fMassPtCentPionRej->Fill(vecPi0.M(),vecPi0.Pt(),fCent);
-    return 0;
-  }
-	// Full Sideband (pi0Mass + 3 sigma to 0.500 GeV)
-	if(fGammaOrPi0==4 && (vecPi0.M() < Pi0Mass+3*Pi0Sigma || vecPi0.M()>(0.5))) {
-	  fMassPionRej->Fill(vecPi0.M());
-    fMassPtPionRej->Fill(vecPi0.M(),vecPi0.Pt());
-    fMassPtCentPionRej->Fill(vecPi0.M(),vecPi0.Pt(),fCent);
-    return 0;
-	}
-	// Next: the Quarter Sidebands
-	//..if you select pi0 SB 3
-  if(fGammaOrPi0==5 && (vecPi0.M() <= Pi0Mass+3*Pi0Sigma || vecPi0.M()>(0.5-1.5*SBsplit)) ) {
-    fMassPionRej->Fill(vecPi0.M());
-    fMassPtPionRej->Fill(vecPi0.M(),vecPi0.Pt());
-    fMassPtCentPionRej->Fill(vecPi0.M(),vecPi0.Pt(),fCent);
-    return 0;
-	}
-	//..if you select pi0 SB 4
-  if(fGammaOrPi0==6 && (vecPi0.M() <= Pi0Mass+3*Pi0Sigma+0.5*SBsplit || vecPi0.M()>(0.5-SBsplit)) ) {
-    fMassPionRej->Fill(vecPi0.M());
-    fMassPtPionRej->Fill(vecPi0.M(),vecPi0.Pt());
-    fMassPtCentPionRej->Fill(vecPi0.M(),vecPi0.Pt(),fCent);
-    return 0;
-	}
-	//..if you select pi0 SB 5
-  if(fGammaOrPi0==7 && (vecPi0.M() <= Pi0Mass+3*Pi0Sigma+SBsplit || vecPi0.M()>(0.5-0.5*SBsplit)) ) {
-    fMassPionRej->Fill(vecPi0.M());
-    fMassPtPionRej->Fill(vecPi0.M(),vecPi0.Pt());
-    fMassPtCentPionRej->Fill(vecPi0.M(),vecPi0.Pt(),fCent);
-    return 0;
-	}
-	//..if you select pi0 SB 6
-  if(fGammaOrPi0==8 && (vecPi0.M() <= Pi0Mass+3*Pi0Sigma+1.5*SBsplit || vecPi0.M()>(0.5)) )
-  {
-    fMassPionRej->Fill(vecPi0.M());
-    fMassPtPionRej->Fill(vecPi0.M(),vecPi0.Pt());
-    fMassPtCentPionRej->Fill(vecPi0.M(),vecPi0.Pt(),fCent);
-    return 0;
+	// Sidebands
+	if(fGammaOrPi0 >= 2) {  // >= used currently for backwards compatibility.
+    Double_t fSBMin = 0;
+    Double_t fSBMax = 0;
+    switch (fSidebandChoice) {
+      case 0: // Largest sideband
+      default:
+        fSBMin = Pi0Mass + 3*Pi0Sigma;
+        fSBMax = 0.5;
+        break;
+      case 1: // Sideband 1 (1/2 SB 1)
+        fSBMin = Pi0Mass + 3*Pi0Sigma;
+        fSBMax = 0.5 - SBsplit;
+        break;
+      case 2: // Sideband 2 (1/2 SB 2)
+        fSBMin = Pi0Mass+3*Pi0Sigma+SBsplit;
+        fSBMax = 0.5;
+        break;
+      case 3: // Sideband 3 (1/4 SB 1)
+        fSBMin = Pi0Mass + 3*Pi0Sigma;
+        fSBMax = (0.5-1.5*SBsplit);
+        break;
+      case 4: // Sideband 3 (1/4 SB 2)
+        fSBMin = Pi0Mass+3*Pi0Sigma+0.5*SBsplit;
+        fSBMax = (0.5-SBsplit);
+        break;
+      case 5: // Sideband 3 (1/4 SB 3)
+        fSBMin = Pi0Mass+3*Pi0Sigma+SBsplit;
+        fSBMax = (0.5-0.5*SBsplit);
+        break;
+      case 6: // Sideband 3 (1/4 SB 4)
+        fSBMin = Pi0Mass+3*Pi0Sigma+1.5*SBsplit;
+        fSBMax = 0.5;
+        break;
+    }
+    if (vecPi0.M() < fSBMin || vecPi0.M() >= fSBMax) {
+      fMassPionRej->Fill(vecPi0.M());
+      fMassPtPionRej->Fill(vecPi0.M(),vecPi0.Pt());
+      fMassPtCentPionRej->Fill(vecPi0.M(),vecPi0.Pt(),fCent);
+      return 0;
+    }
   }
   return Accepted;
 }
