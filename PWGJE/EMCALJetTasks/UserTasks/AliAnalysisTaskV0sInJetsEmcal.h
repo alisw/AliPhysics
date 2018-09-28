@@ -42,6 +42,7 @@ public:
 
   // event selection
   void SetEventCuts(Double_t z = 10, Double_t r = 1, Double_t cL = 0, Double_t cH = 80, Double_t dZ = 0.1) {fdCutVertexZ = z; fdCutVertexR2 = r * r; fdCutCentLow = cL; fdCutCentHigh = cH; fdCutDeltaZMax = dZ;}
+  void SetUseMultiplicity(Bool_t val = kTRUE) {fbUseMultiplicity = val;}
 
   // mixed events
   void SetCorrelations(Bool_t val = kTRUE) {fbCorrelations = val;}
@@ -159,6 +160,7 @@ private:
   Double_t fdCutCentHigh; // [%] maximum centrality
   Double_t fdCutDeltaZMax; // [cm] maximum |Delta z| between nominal prim vtx and SPD vtx
   Double_t fdCentrality; //! [%] centrality
+  Bool_t fbUseMultiplicity; // switch for getting centrality from AliMultSelection instead of from AliCentrality
 
   // Mixed events parameters
   Bool_t fbCorrelations; // switch for V0-jet correlations

@@ -564,6 +564,22 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
     cuts.AddCut("12410a13","00200009327000008250400000","1111100051032230000","0163103100000010"); //  0-90 calo correction cent dep
     cuts.AddCut("14610a13","00200009327000008250400000","1111100051032230000","0163103100000010"); //  0-90 calo correction cent dep
     cuts.AddCut("16810a13","00200009327000008250400000","1111100051032230000","0163103100000010"); //  0-90 calo correction cent dep
+  } else if (trainConfig == 254){ // EMCAL clusters - 20180718 - default with peripheral corrections
+    cuts.AddCut("10110a13","00200009327000008250400000","1111187051032230000","0163103100000010"); //
+    cuts.AddCut("11210a13","00200009327000008250400000","1111187051032230000","0163103100000010"); //
+    cuts.AddCut("12410a13","00200009327000008250400000","1111187051032230000","0163103100000010"); //
+    cuts.AddCut("14610a13","00200009327000008250400000","1111187051032230000","0163103100000010"); //
+    cuts.AddCut("16810a13","00200009327000008250400000","1111187051032230000","0163103100000010"); //
+  } else if (trainConfig == 255){ // EMCAL clusters - 20180718 - default with peripheral corrections
+    cuts.AddCut("10110a13","00200009327000008250400000","1111184051032230000","0163103100000010"); //
+    cuts.AddCut("11210a13","00200009327000008250400000","1111185051032230000","0163103100000010"); //
+    cuts.AddCut("12410a13","00200009327000008250400000","1111186051032230000","0163103100000010"); //
+    cuts.AddCut("14610a13","00200009327000008250400000","1111187051032230000","0163103100000010"); //
+    cuts.AddCut("16810a13","00200009327000008250400000","1111187051032230000","0163103100000010"); //
+  } else if (trainConfig == 256){ // EMCAL clusters - 20180718 - default with corrections
+    cuts.AddCut("30110a13","00200009327000008250400000","1111184051032230000","0163103100000010"); //
+    cuts.AddCut("31210a13","00200009327000008250400000","1111184051032230000","0163103100000010"); //
+    cuts.AddCut("12510a13","00200009327000008250400000","1111186051032230000","0163103100000010"); //
 
 
   } else if (trainConfig == 290){ // EMCAL clusters - correction convcalo f1
@@ -1031,6 +1047,11 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);
+  if(enableQAPhotonTask>1){
+    for(Int_t i = 0; i<numberOfCuts; i++){
+      mgr->ConnectOutput(task,2+i,mgr->CreateContainer(Form("%s_%s_%s_%s Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),cuts.GetClusterCut(i).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvCalo_%i.root",trainConfig)) );
+    }
+  }
 
   return;
 

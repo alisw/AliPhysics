@@ -1148,6 +1148,18 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                   = 1,    
     cuts.AddCut("86010113","00200009327000008250400000","2444451041013200000","0163103100000000"); // min opening angle 0    -> open
     cuts.AddCut("86010113","00200009327000008250400000","2444451041013200000","0163103100000030"); // min opening angle 0.01 -> 2 cell diag
 
+  } else if(trainConfig == 371){ // PCM-PHOS other cent estimators
+    cuts.AddCut("90010113","00200009327000008250400000","2444451044013200000","0163103100000010"); // 0-100% with PCM NL
+    cuts.AddCut("90210113","00200009327000008250400000","2444451044013200000","0163103100000010"); // 0-20% with PCM NL
+    cuts.AddCut("92410113","00200009327000008250400000","2444451044013200000","0163103100000010"); // 20-40% with PCM NL
+    cuts.AddCut("94610113","00200009327000008250400000","2444451044013200000","0163103100000010"); // 40-60% with PCM NL
+    cuts.AddCut("96010113","00200009327000008250400000","2444451044013200000","0163103100000010"); // 60-100% with PCM NL
+  } else if(trainConfig == 372){ // PCM-PHOS other cent estimators
+    cuts.AddCut("e0010113","00200009327000008250400000","2444451044013200000","0163103100000010"); // 0-100% with PCM NL
+    cuts.AddCut("e0210113","00200009327000008250400000","2444451044013200000","0163103100000010"); // 0-20% with PCM NL
+    cuts.AddCut("e2410113","00200009327000008250400000","2444451044013200000","0163103100000010"); // 20-40% with PCM NL
+    cuts.AddCut("e4610113","00200009327000008250400000","2444451044013200000","0163103100000010"); // 40-60% with PCM NL
+    cuts.AddCut("e6010113","00200009327000008250400000","2444451044013200000","0163103100000010"); // 60-100% with PCM NL
 
   // ===============================================================================================
   // Run 2 data EMC clusters pPb 8TeV
@@ -1452,6 +1464,11 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                   = 1,    
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);
+  if(enableQAPhotonTask>1){
+    for(Int_t i = 0; i<numberOfCuts; i++){
+      mgr->ConnectOutput(task,2+i,mgr->CreateContainer(Form("%s_%s_%s_%s Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),cuts.GetClusterCut(i).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvCalo_%i.root",trainConfig)) );
+    }
+  }
 
   return;
 

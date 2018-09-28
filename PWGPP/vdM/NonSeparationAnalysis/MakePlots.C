@@ -11,7 +11,7 @@ TH1* DrawFrame(TVirtualPad* c,
 	       Double_t xRange=0.65,
 	       const char* xTitle="Separation [mm]",
 	       Double_t bottomMargin=0.15,
-	       TString label) {
+	       TString label="") {
   c->SetLeftMargin(0.17);
   c->SetBottomMargin(bottomMargin);
   TH1* hf = c->DrawFrame(-xRange, yMin, +xRange, yMax);
@@ -42,7 +42,7 @@ void SetupErrorPlot(TVirtualPad *pad, Double_t maxSep) {
   hf->SetLabelSize(0.17, "X");
   hf->SetLabelSize(0.15, "Y");
   hf->GetYaxis()->SetNdivisions(-4);
-  hf->GetYaxis()->CenterTitle(kTRUE);
+  //hf->GetYaxis()->CenterTitle(kTRUE);
 
   hf->SetTitleSize(0.18, "X");
   hf->SetTitleOffset(0.8, "X");
@@ -59,7 +59,7 @@ TGraph *ConfGraph(TGraph *g, Int_t color, Int_t marker, Int_t lineWidth) {
   return g;
 }
 
-TvectorD              par(34);
+TVectorD             par(34);
 TMinuit              *gMinuit         =   NULL;
 TParameter<Double_t> *pNDF            =   NULL;
 TParameter<Double_t> *pChi2           =   NULL;
@@ -326,9 +326,9 @@ void MakePlotsMoments(Int_t scanIndex, TString pn, TString label, Double_t maxSe
     { GraphMin(gMoment[scanIndex][0])-0.2*dy[0], GraphMax(gMoment[scanIndex][0])+0.8*dy[0] },
     { GraphMin(gMoment[scanIndex][1])-0.2*dy[1], GraphMax(gMoment[scanIndex][1])+0.8*dy[1] },
     { GraphMin(gMoment[scanIndex][2])-1 + drawErrorPlots*0.0001, GraphMax(gMoment[scanIndex][2])+1.5 },
-    {  0.0 + drawErrorPlots*0.0001, 1.5*GraphMax(gMoment[scanIndex][3]) }
-    {  0.0 + drawErrorPlots*0.0001, 1.5*GraphMax(gMoment[scanIndex][4]) }
-    {  0.0 + drawErrorPlots*0.0001, 1.3*GraphMax(gMoment[scanIndex][5]) }
+    {  0.0 + drawErrorPlots*0.0001, 1.5*GraphMax(gMoment[scanIndex][3]) },
+    {  0.0 + drawErrorPlots*0.0001, 1.5*GraphMax(gMoment[scanIndex][4]) },
+    {  0.0 + drawErrorPlots*0.0001, 1.3*GraphMax(gMoment[scanIndex][5]) },
     { -1.0 + drawErrorPlots*0.0001,  1.0,  }
   };
 
@@ -355,7 +355,7 @@ void MakePlotsMoments(Int_t scanIndex, TString pn, TString label, Double_t maxSe
   // draw rate
   c1->cd(8);
   SetupPads(&padData, drawErrorPlots ? &padError : NULL);
-  DrawFrame(padData->cd(), .11, 1e6, frameTitle, yLabels[7], kTRUE, maxSep, drawErrorPlots ? "" : "Separation [mm]", drawErrorPlots ? 0.01 : 0.15, label);
+  DrawFrame(padData->cd(), .11, 5e3, frameTitle, yLabels[7], kTRUE, maxSep, drawErrorPlots ? "" : "Separation [mm]", drawErrorPlots ? 0.01 : 0.15, label);
   Printf("TEST %p", gRate[scanIndex]);
   if (gRate[scanIndex]) {
     delete gRate[scanIndex]->FindObject("fg");

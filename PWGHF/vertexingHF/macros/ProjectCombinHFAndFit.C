@@ -22,15 +22,16 @@
 enum Method{kME,kRot,kLS,kSB};
 
 // input files and pt binning
-TString fileName="DataTrains/AnalysisResults_17pq_FAST_wSDD_train2114.root";
-TString suffix="3SigPID_Pt300_FidY_PilSPD5_EM1";
-//TString fileNameMC="MCTrains/AnalysisResults_LHC17pq_FAST_CENTwSDD_G3_train890-889.root";
-TString fileNameMC="MCTrains/AnalysisResults_LHC17pq_FAST_CENTwSDD_G4_train892-891.root";
-TString suffixMC="_Prompt_3SigPID_Pt300_FidY_PilSPD5_EM1";
+TString fileName="DataTrains/AnalysisResults_17pq_FAST_wSDD_train2210.root";
+TString suffix="3SigPID_Pt300_FidY_PilMV_EM1";
+TString fileNameMC="MCTrains/AnalysisResults_LHC17pq_FAST_CENTwSDD_G3_train1169-1168.root";
+//TString fileNameMC="MCTrains/AnalysisResults_LHC17pq_FAST_CENTwSDD_G4_train892-891.root";
+TString suffixMC="_3SigPID_Pt300_FidY_PilMV_EM1";
 
 // TString fileName="DataTrains/AnalysisResults_17pq_FAST_wSDD_train2104.root";
 // TString suffix="2SigPID_Pt300_FidY_PilSPD5_EM1";
-// TString fileNameMC="MCTrains/AnalysisResults_LHC17pq_FAST_CENTwSDD_G4_train870-869.root";
+// //TString fileNameMC="MCTrains/AnalysisResults_LHC17pq_FAST_CENTwSDD_G4_train870-869.root";
+// TString fileNameMC="MCTrains/AnalysisResults_LHC17pq_FAST_CENTwSDD_G3_train868-867.root";
 // TString suffixMC="_Prompt_2SigPID_Pt300_FidY_PilSPD5_EM1";
 
 TString meson="Dzero";
@@ -45,9 +46,11 @@ Int_t saveCanvasAsEps=1;   //0=none, 1=main ones, 2=all
 
 // fit configuration
 Int_t rebin[nPtBins]={4,6,7,8,9,10,10,12};//8,9,10,12,12,12,12};
-Bool_t fixSigma=kFALSE;
+Int_t fixSigmaConf=0; // 0= all free, 1=all fixed, 2=use values per pt bin
+Bool_t fixSigma[nPtBins]={kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
 Double_t tuneSigmaOnData=-1.00; // scaling factor for the Gaussian sigma, if -1. use MC out of the box
-Bool_t fixMean=kFALSE;
+Int_t fixMeanConf=0; // 0= all free, 1=all fixed, 2=use values per pt bin
+Bool_t fixMean[nPtBins]={kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
 Double_t minMass=1.72;
 Double_t maxMass=2.04;
 Int_t optForNorm=1;
@@ -91,8 +94,8 @@ AliHFInvMassFitter* ConfigureFitter(TH1D* histo, Int_t iPtBin, Int_t backcase, D
   fitter->SetFitOption(fitoption.Data());
   fitter->SetInitialGaussianMean(massD);
   fitter->SetInitialGaussianSigma(sigmas[iPtBin]);
-  if(fixSigma) fitter->SetFixGaussianSigma(sigmas[iPtBin]);
-  if(fixMean) fitter->SetFixGaussianMean(massD);
+  if(fixSigmaConf==1 || (fixSigmaConf==2 && fixSigma[iPtBin])) fitter->SetFixGaussianSigma(sigmas[iPtBin]);
+  if(fixMeanConf==1 || (fixMeanConf==2 && fixMean[iPtBin])) fitter->SetFixGaussianMean(massD);
   if(correctForRefl){
     TCanvas *cTest=new TCanvas("cTest","cTest",800,800);    
     TH1F *hmasstemp=fitter->GetHistoClone();
@@ -260,28 +263,127 @@ TF1 *GausPlusLine(Double_t minRange=1.72,Double_t maxRange=2.05){
 
 
 
-Double_t GetBackgroundNormalizationFactor(TH1D* hRatio){
+Double_t GetBackgroundNormalizationFactor(TH1D* hRatio, Int_t reb=1){
   //
   Double_t norm=hRatio->GetMaximum();
+  Double_t massForNorm=0;
 
-  if(optForNorm==1){
-      norm=0.0001;
-      for(Int_t iMassBin=1; iMassBin<hRatio->GetNbinsX(); iMassBin++){
-	Double_t bce=hRatio->GetBinCenter(iMassBin);
-	if(bce>minMass && bce<maxMass){
-	  Double_t bco=hRatio->GetBinContent(iMassBin);
-	  if(bco>norm) norm=bco;
+  if(optForNorm==0){
+    Int_t binl=hRatio->GetXaxis()->FindBin(minMass);
+    Int_t binh=hRatio->GetXaxis()->FindBin(maxMass);
+    Double_t norml=hRatio->GetBinContent(1);
+    if(binl>0 && binl<=hRatio->GetNbinsX()) norml=hRatio->GetBinContent(binl);
+    Double_t normh=hRatio->GetBinContent(hRatio->GetNbinsX());
+    if(binh>0 && binh<=hRatio->GetNbinsX()) normh=hRatio->GetBinContent(binh);
+    if(norml>normh){
+      norm=norml;
+      massForNorm=hRatio->GetBinCenter(binl);
+    }else{
+      norm=normh;
+      massForNorm=hRatio->GetBinCenter(binh);
+    }
+  }else if(optForNorm==1){
+    norm=0.0001;
+    for(Int_t iMassBin=1; iMassBin<hRatio->GetNbinsX(); iMassBin++){
+      Double_t bce=hRatio->GetBinCenter(iMassBin);
+      if(bce>minMass && bce<maxMass){
+	Double_t bco=hRatio->GetBinContent(iMassBin);
+	if(bco>norm){ 
+	  norm=bco;
+	  massForNorm=bce;
 	}
       }
+    }
   }else if(optForNorm==2){ 
+    norm=0.0001;
+    for(Int_t iMassBin=1; iMassBin<hRatio->GetNbinsX(); iMassBin++){
+      Double_t bce=hRatio->GetBinCenter(iMassBin);
+      Double_t bco=hRatio->GetBinContent(iMassBin);
+      if(bco>norm){
+	norm=bco;
+	massForNorm=bce;
+      }
+    }
+  }else if(optForNorm==3){ 
+    Int_t binl=hRatio->GetXaxis()->FindBin(minMass);
+    Int_t binh=hRatio->GetXaxis()->FindBin(maxMass);
+    Double_t norml=0;
+    Double_t normReb=0;
+    Int_t iFirstBin=TMath::Max(binl-reb/2,1);
+    Int_t iLastBin=iFirstBin+reb;
+    if(iLastBin>hRatio->GetNbinsX()){
+      iLastBin=hRatio->GetNbinsX();
+      iFirstBin=iLastBin-reb;
+    }
+    for(Int_t jjj=iFirstBin; jjj<=iLastBin; jjj++){
+      norml+=hRatio->GetBinContent(jjj);
+      normReb+=1;
+    }
+    if(normReb>=1) norml/=normReb;
+    Double_t normh=0;
+    normReb=0;
+    iFirstBin=TMath::Max(binh-reb/2,1);
+    iLastBin=iFirstBin+reb;
+    if(iLastBin>hRatio->GetNbinsX()){
+      iLastBin=hRatio->GetNbinsX();
+      iFirstBin=iLastBin-reb;
+    }
+    for(Int_t jjj=iFirstBin; jjj<=iLastBin; jjj++){
+      normh+=hRatio->GetBinContent(jjj);
+      normReb+=1;
+    }
+    if(normReb>=1) normh/=normReb;
+    if(norml>normh){
+      norm=norml;
+      massForNorm=hRatio->GetBinCenter(binl);
+    }else{
+      norm=normh;
+      massForNorm=hRatio->GetBinCenter(binh);
+    }
+  }else if(optForNorm==4){ 
+    norm=0.0001;
+    for(Int_t iMassBin=1; iMassBin<hRatio->GetNbinsX(); iMassBin++){
+      Double_t bce=hRatio->GetBinCenter(iMassBin);
+      if(bce>minMass && bce<maxMass){
+	Double_t bco=0;
+	Double_t normReb=0;
+	Int_t iFirstBin=TMath::Max(iMassBin-reb/2,1);
+	Int_t iLastBin=iFirstBin+reb;
+	if(iLastBin>hRatio->GetNbinsX()){
+	  iLastBin=hRatio->GetNbinsX();
+	  iFirstBin=iLastBin-reb;
+	}
+	for(Int_t jjj=iFirstBin; jjj<=iLastBin; jjj++){
+	  bco+=hRatio->GetBinContent(jjj);
+	  normReb+=1;
+	}
+	if(normReb>=1){
+	  bco/=normReb;
+	  if(bco>norm){
+	    norm=bco;
+	    massForNorm=bce;
+	  }
+	}
+      }
+    }
+  }else if(optForNorm==5){ 
     hRatio->Fit("pol0","","",minMass,minMass+rangeForNorm);
     TF1* func0=(TF1*)hRatio->GetListOfFunctions()->FindObject("pol0");
     Double_t norml=func0->GetParameter(0);
     hRatio->Fit("pol0","","",maxMass-rangeForNorm,maxMass);
     func0=(TF1*)hRatio->GetListOfFunctions()->FindObject("pol0");
     Double_t normh=func0->GetParameter(0);
-    norm=TMath::Max(norml,normh);
+    if(norml>normh){
+      norm=norml;
+      massForNorm=maxMass-0.5*rangeForNorm;
+    }else{
+      norm=normh;
+      massForNorm=minMass+0.5*rangeForNorm;
+    }
   }
+
+  printf("Normalization factor = %f --> taken at mass=%f\n",norm,massForNorm);
+
   return norm;
 }
 
@@ -306,6 +408,21 @@ void ProjectCombinHFAndFit(){
 
   if(meson=="Dplus") massD=TDatabasePDG::Instance()->GetParticle(411)->Mass();
   else if(meson=="Dzero") massD=TDatabasePDG::Instance()->GetParticle(421)->Mass();
+
+  Int_t nBinsWithFixSig=0;
+  Int_t nBinsWithFixMean=0;
+  Int_t patSig=0;
+  Int_t patMean=0;
+  for(Int_t iPtBin=0; iPtBin<nPtBins; iPtBin++){
+    if(fixSigmaConf==1 || (fixSigmaConf==2 && fixSigma[iPtBin])){ 
+      nBinsWithFixSig++;
+      patSig+=1<<iPtBin;
+    }
+    if(fixMeanConf==1 || (fixMeanConf==2 && fixMean[iPtBin])){
+      nBinsWithFixMean++;
+      patMean+=1<<iPtBin;
+    }
+  }
 
   TFile* fil=new TFile(fileName.Data());
   TDirectoryFile* df=(TDirectoryFile*)fil->Get(dirName.Data());
@@ -341,7 +458,7 @@ void ProjectCombinHFAndFit(){
     TDirectoryFile* dfMC=(TDirectoryFile*)filMC->Get(dirNameMC.Data());
     TList* lMC=(TList*)dfMC->Get(lstNameMC.Data());
     hSigmaMC=FitMCInvMassSpectra(lMC);
-    if(fixSigma && !hSigmaMC){
+    if(nBinsWithFixSig>0 && !hSigmaMC){
       printf("Fit to MC inv. mass spectra failed\n");
       return;
     }
@@ -352,9 +469,12 @@ void ProjectCombinHFAndFit(){
   }
 
   TString sigConf="FixedSigma";
-  if(fixSigma && tuneSigmaOnData>0.) sigConf=Form("FixedSigma%d",TMath::Nint(tuneSigmaOnData*100.));
-  if(!fixSigma) sigConf="FreeSigma";
-  if(fixMean) sigConf+="FixedMean";
+  if(nBinsWithFixSig==0) sigConf="FreeSigma";
+  else if(nBinsWithFixSig==nPtBins) sigConf="FixedSigmaAll";
+  else sigConf=Form("FixedSigma%d",patSig);
+  if(nBinsWithFixSig>0 && tuneSigmaOnData>0.) sigConf+=Form("%d",TMath::Nint(tuneSigmaOnData*100.));
+  if(nBinsWithFixMean==nPtBins) sigConf+="FixedMeanAll";
+  else if(nBinsWithFixMean>0) sigConf+=Form("FixedMean%d",patMean);
 
   TCanvas* cem=new TCanvas("cem","Pools",1200,600);
   cem->Divide(2,1);
@@ -578,13 +698,16 @@ void ProjectCombinHFAndFit(){
     TCanvas* c0=new TCanvas(Form("CBin%d",iPtBin),Form("Bin%d norm",iPtBin),1000,700);
     c0->Divide(2,2);
     c0->cd(1);
-    TH1D* hRatio=(TH1D*)hMassPtBinr->Clone("hRatio");
+    TH1D* hRatio=(TH1D*)hMassPtBinr->Clone(Form("hRatioFormNorm%d",iPtBin));
     hRatio->Divide(hMassPtBin);
     hRatio->Draw();
     hRatio->GetYaxis()->SetTitle("Rotational/All");
     hRatio->GetXaxis()->SetTitle("Invariant mass (GeV/c^{2})");
-    Double_t normRot=GetBackgroundNormalizationFactor(hRatio);
+    Double_t normRot=GetBackgroundNormalizationFactor(hRatio,rebin[iPtBin]);
     hMassPtBinr->Scale(1./normRot);
+    TLatex* tnr=new TLatex(0.2,0.2,Form("Normaliz. factor = %f",normRot));
+    tnr->SetNDC();
+    tnr->Draw();
     c0->cd(2);
     hMassPtBinme->GetYaxis()->SetTitle("Entries (EvMix)");
     hMassPtBinme->GetXaxis()->SetTitle("Invariant mass (GeV/c^{2})");
@@ -611,8 +734,8 @@ void ProjectCombinHFAndFit(){
     hRatioME->GetYaxis()->SetTitle("EvMix/All");
     hRatioME->GetXaxis()->SetTitle("Invariant mass (GeV/c^{2})");
  
-    Double_t normME=GetBackgroundNormalizationFactor(hRatioME);
-    Double_t normMEAll=GetBackgroundNormalizationFactor(hRatioMEAll);
+    Double_t normME=GetBackgroundNormalizationFactor(hRatioME,rebin[iPtBin]);
+    Double_t normMEAll=GetBackgroundNormalizationFactor(hRatioMEAll,rebin[iPtBin]);
     hMassPtBinme->Scale(1./normME);
     hMassPtBinmeAll->Scale(1./normMEAll);
     printf("Background norm bin %d DONE\n",iPtBin);
@@ -776,6 +899,7 @@ void ProjectCombinHFAndFit(){
 	TH1F *hPullsTrend=new TH1F();// the name is changed afterwards, histo must not be deleted
 	TH1F *hResidualTrend=new TH1F();// the name is changed afterwards, histo must not be deleted
 	TH1F *hResiduals=fitterSB[iPtBin]->GetResidualsAndPulls(hPulls,hResidualTrend,hPullsTrend);
+	hResiduals->SetName(Form("hResidualsSB_PtBin%d",iPtBin));
 
 	hPulls->Draw();
 	PrintGausParams(hPulls);
@@ -838,7 +962,8 @@ void ProjectCombinHFAndFit(){
       TH1F *hPulls=new TH1F();//the name is changed afterwards, histo must not be deleted
       TH1F *hResidualTrend=new TH1F();// the name is changed afterwards, histo must not be deleted
       TH1F *hResiduals=fitterRot[iPtBin]->GetResidualsAndPulls(hPulls,hResidualTrend,hPullsTrend);
- 
+      hResiduals->SetName(Form("hResidualsRot_PtBin%d",iPtBin));
+
       hPulls->Draw();
       PrintGausParams(hPulls);
 
@@ -899,7 +1024,8 @@ void ProjectCombinHFAndFit(){
       TH1F *hPulls=new TH1F();//the name is changed afterwards, histo must not be deleted
       TH1F *hResidualTrend=new TH1F();// the name is changed afterwards, histo must not be deleted
       TH1F *hResiduals=fitterLS[iPtBin]->GetResidualsAndPulls(hPulls,hResidualTrend,hPullsTrend);
-  
+      hResiduals->SetName(Form("hResidualsLS_PtBin%d",iPtBin));
+ 
       hPulls->Draw();
       PrintGausParams(hPulls);
 
@@ -959,6 +1085,7 @@ void ProjectCombinHFAndFit(){
       TH1F *hPulls=new TH1F();//the name is changed afterwards, histo must not be deleted
       TH1F *hResidualTrend=new TH1F();// the name is changed afterwards, histo must not be deleted
       TH1F *hResiduals=fitterME[iPtBin]->GetResidualsAndPulls(hPulls,hResidualTrend,hPullsTrend);
+      hResiduals->SetName(Form("hResidualsME_PtBin%d",iPtBin));
       hPulls->Draw();
       PrintGausParams(hPulls);
 
@@ -1359,13 +1486,13 @@ void WriteFitFunctionsToFile(AliHFInvMassFitter *fitter, TString meth, Int_t iPt
   nameh.Form("FitFuncBkg_%s_PtBin%d",meth.Data(),iPtBin);
   fBkg->SetRange(1.6,2.2);
   fBkg->SetNpx(500);
-  fBkg->Write(nameh.Data());
+  fBkg->Write(nameh.Data());  
   if(meson=="Dzero"){
     TF1* fBkgR=fitter->GetBkgPlusReflFunc();
     nameh.Form("FitFuncBkgRefl_%s_PtBin%d",meth.Data(),iPtBin);
     fBkgR->SetRange(1.6,2.2);
     fBkgR->SetNpx(500);
-    fBkgR->Write(nameh.Data());
+    fBkgR->Write(nameh.Data());  
   }
   return;
 }

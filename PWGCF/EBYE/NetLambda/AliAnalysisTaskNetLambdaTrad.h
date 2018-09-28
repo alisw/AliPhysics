@@ -1,6 +1,6 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-//updated Jun 27
+//updated Sep 25
 
 #ifndef AliAnalysisTaskNetLambdaTrad_h
 #define AliAnalysisTaskNetLambdaTrad_h
@@ -52,13 +52,19 @@ protected:
     TH2F*  f2fHistRecCentVsPtLambda;
     TH2F*  f2fHistRecCentVsPtAntiLambda;
     TH2F*  f2fHistInvMassVsPtLambda;
+    TH2F*  f2fHistInvMassVsPtLambdaRec;
     TH2F*  f2fHistInvMassVsPtAntiLambda;
+    TH2F*  f2fHistInvMassVsPtAntiLambdaRec;
     TH2F*  f2fHistRecPrimariesCentVsPtLambda;
     TH2F*  f2fHistRecPrimariesCentVsPtAntiLambda;
     TH2F*  f2fHistmassctLambda;
     TH2F*  f2fHistmassctAntiLambda;
     TH2F*  f2fHistLambdaSecFromWeakDecay;
     TH2F*  f2fHistAntiLambdaSecFromWeakDecay;
+    TH2F*  f2fHistLambdaMaterial;
+    TH2F*  f2fHistAntiLambdaMaterial;
+    TH2F*  f2fHistLambdaMisId;
+    TH2F*  f2fHistAntiLambdaMisId;
     TH2F*  f2fHistLRecstat;
     TH2F*  f2fHistARecstat;
     TH2F*  f2fHistLGenstat;
@@ -85,7 +91,6 @@ protected:
     
     THnSparse *fPtBinNplusNminusCh;
     THnSparse *fPtBinNplusNminusChTruth;
-    Double_t MyRapidity(Double_t rE, Double_t rPz) const;
     Int_t    GetPtBin(Double_t pt);
     
     

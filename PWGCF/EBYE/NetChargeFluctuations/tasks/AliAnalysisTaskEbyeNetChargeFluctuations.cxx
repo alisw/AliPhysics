@@ -470,22 +470,18 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::doAODEvent(){
     
     fEventStatistics->Fill("found primary vertex",1);
     
-    if (TMath::Abs(zv) > 10.) return;        // vertex cut
-    fEventStatistics->Fill("vz cut",1);
-    
     //===========================Centrality calculation =====================
     fCentrality = -2;
     AliMultSelection *MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
+    if(!MultSelection) return;
     fEventStatistics->Fill("found MultSelection object",1);
+    fCentrality = MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
     
-    if(!MultSelection) {
-        cout << "AliMultSelection object not found!" << endl;
-        return;
-    }
+    if (TMath::Abs(zv) > 10.0) return;
+    fEventStatistics->Fill("vz cut",1);
     
-    else fCentrality = MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
     if(fCentrality < 0 || fCentrality >= 80) return;
-    
+    fHistCentralityMultSelection->Fill(fCentrality);
     fEventStatistics->Fill("centrality selection",1);
     
     fHistZVertexCent->Fill(zv, fCentrality);

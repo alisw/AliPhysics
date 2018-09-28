@@ -121,16 +121,21 @@ void AliFemtoDreamv0::SetDaughterInfo(AliAODv0 *v0) {
   this->SetCharge(fnDaug->GetCharge().at(0));
   this->SetCharge(fpDaug->GetCharge().at(0));
 
+  if (fnDaug->IsSet()) {
+    this->SetPhiAtRadius(fnDaug->GetPhiAtRaidius().at(0));
+  }
+  if (fnDaug->IsSet()) {
+    this->SetPhiAtRadius(fnDaug->GetPhiAtRaidius().at(0));
+  }
+
   if (fIsMC) {
     if (fnDaug->IsSet()) {
       this->SetMCTheta(fnDaug->GetMCTheta().at(0));
       this->SetMCPhi(fnDaug->GetMCPhi().at(0));
-      this->SetPhiAtRadius(fnDaug->GetPhiAtRaidius().at(0));
     }
     if (fpDaug->IsSet()) {
       this->SetMCTheta(fpDaug->GetMCTheta().at(0));
       this->SetMCPhi(fpDaug->GetMCPhi().at(0));
-      this->SetPhiAtRadius(fnDaug->GetPhiAtRaidius().at(0));
     }
   }
 }
@@ -196,6 +201,18 @@ void AliFemtoDreamv0::SetMCMotherInfo(AliAODEvent *evt, AliAODv0 *v0) {
         this->SetParticleOrigin(AliFemtoDreamBasePart::kMaterial);
       } else {
         this->SetParticleOrigin(AliFemtoDreamBasePart::kUnknown);
+      }
+      int motherID = mcPart->GetMother();
+      int lastMother = motherID;
+      AliAODMCParticle *mcMother;
+      while (motherID != -1) {
+        lastMother = motherID;
+        mcMother = (AliAODMCParticle *)mcarray->At(motherID);
+        motherID = mcMother->GetMother();
+      }
+      mcMother = (AliAODMCParticle *)mcarray->At(lastMother);
+      if (mcMother) {
+        this->SetMotherPDG(mcMother->GetPdgCode());
       }
     }
   }

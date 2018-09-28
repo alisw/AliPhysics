@@ -10,9 +10,10 @@
 
 class AliFemtoTrio {
 public:
-  enum EPart { kKaonPlus , kKaonMinus , kPionPlus , kPionMinus , kUnknown};
+  enum EPart { kKaonPlus , kKaonMinus , kPionPlus , kPionMinus , kProton, kAntiProton, kUnknown};
   
   AliFemtoTrio();
+  AliFemtoTrio(AliFemtoTrio&);
   ~AliFemtoTrio();
 
   // track Gets:

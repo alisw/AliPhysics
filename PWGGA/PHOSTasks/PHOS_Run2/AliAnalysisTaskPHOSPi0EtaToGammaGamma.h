@@ -107,6 +107,12 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     void SetAdditionalPi0PtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
       Int_t Ncen = centarray->GetSize();
+
+      if(fCentArrayPi0){
+        delete fCentArrayPi0;
+        fCentArrayPi0 = 0x0;
+      }
+
       fCentArrayPi0 = centarray;
 
       for(Int_t i=0;i<11;i++){
@@ -121,6 +127,12 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     void SetAdditionalK0SPtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
       Int_t Ncen = centarray->GetSize();
+
+      if(fCentArrayK0S){
+        delete fCentArrayK0S;
+        fCentArrayK0S = 0x0;
+      }
+
       fCentArrayK0S = centarray;
 
       for(Int_t i=0;i<11;i++){
@@ -135,6 +147,10 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     void SetAdditionalL0PtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
       Int_t Ncen = centarray->GetSize();
+      if(fCentArrayL0){
+        delete fCentArrayL0;
+        fCentArrayL0 = 0x0;
+      }
       fCentArrayL0 = centarray;
 
       for(Int_t i=0;i<11;i++){
@@ -149,6 +165,10 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     void SetAdditionalEtaPtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
       Int_t Ncen = centarray->GetSize();
+      if(fCentArrayEta){
+        delete fCentArrayEta;
+        fCentArrayEta = 0x0;
+      }
       fCentArrayEta = centarray;
 
       for(Int_t i=0;i<11;i++){
@@ -163,6 +183,10 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     void SetAdditionalGammaPtWeightFunction(TArrayD *centarray, TObjArray *funcarray) {
       Int_t Ncen = centarray->GetSize();
+      if(fCentArrayGamma){
+        delete fCentArrayGamma;
+        fCentArrayGamma = 0x0;
+      }
       fCentArrayGamma = centarray;
 
       for(Int_t i=0;i<11;i++){
@@ -229,6 +253,13 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     void SetPHOSTriggerAnalysis(Int_t L1input, Int_t L0input, Double_t Ethre, Bool_t isMC, Bool_t TOFflag, Int_t dummy_runNo=-1){
       fIsPHOSTriggerAnalysis = kTRUE;
+      fEnergyThreshold = Ethre;
+      fPHOSTriggerHelper = new AliPHOSTriggerHelper(L1input,L0input,isMC);
+      fPHOSTriggerHelper->ApplyTOFCut(TOFflag);
+      fPHOSTriggerHelper->SetDummyRunNumber(dummy_runNo);
+    }
+    void SetPHOSTriggerAnalysisMB(Int_t L1input, Int_t L0input, Double_t Ethre, Bool_t isMC, Bool_t TOFflag, Int_t dummy_runNo=-1){
+      fIsPHOSTriggerAnalysis = kFALSE;//this is MB analysis
       fEnergyThreshold = Ethre;
       fPHOSTriggerHelper = new AliPHOSTriggerHelper(L1input,L0input,isMC);
       fPHOSTriggerHelper->ApplyTOFCut(TOFflag);
@@ -310,6 +341,8 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     Double_t R(AliAODMCParticle *p);//in cylindrical system
     Double_t Rho(AliAODMCParticle *p);//in sperical system
+    Double_t RAbs(AliAODMCParticle *p);//in cylindrical system
+    Double_t RhoAbs(AliAODMCParticle *p);//in sperical system
     Double_t DeltaPhiIn0Pi(Double_t dphi);//this returns dphi in 0-pi range.
 
     virtual Int_t FindCommonParent(Int_t iPart, Int_t jPart);
@@ -487,7 +520,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 65);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 69);
 };
 
 #endif

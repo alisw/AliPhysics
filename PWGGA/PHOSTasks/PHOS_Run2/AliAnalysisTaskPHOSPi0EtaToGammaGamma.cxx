@@ -97,11 +97,6 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fTriggerEfficiency(0x0),
   fESDtrackCutsGlobal(0x0),
   fESDtrackCutsGlobalConstrained(0x0),
-  //fAdditionalPi0PtWeight(),
-  //fAdditionalEtaPtWeight(),
-  //fAdditionalGammaPtWeight(),
-  //fAdditionalK0SPtWeight(),
-  //fAdditionalL0PtWeight(),
   fCentArrayPi0(0x0),
   fCentArrayEta(0x0),
   fCentArrayGamma(0x0),
@@ -194,11 +189,6 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fV0EPName[1] = "VZEROA";
   fV0EPName[2] = "VZEROC";
 
-  //fPHOSTriggerHelperL0  = new AliPHOSTriggerHelper("L0" ,kFALSE);
-  //fPHOSTriggerHelperL1H = new AliPHOSTriggerHelper("L1H",kFALSE);
-  //fPHOSTriggerHelperL1M = new AliPHOSTriggerHelper("L1M",kFALSE);
-  //fPHOSTriggerHelperL1L = new AliPHOSTriggerHelper("L1L",kFALSE);
-
   for(Int_t i=0;i<11;i++){
     fAdditionalPi0PtWeight[i]   = new TF1(Form("fAdditionalPi0PtWeight_%d",i)  ,"1.",0,100);
     fAdditionalEtaPtWeight[i]   = new TF1(Form("fAdditionalEtaPtWeight_%d",i)  ,"1.",0,100);
@@ -277,6 +267,27 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::~AliAnalysisTaskPHOSPi0EtaToGammaGamma()
       fAdditionalGammaPtWeight[i] = 0x0;
     }
 
+  }
+
+  if(fCentArrayPi0){
+    delete fCentArrayPi0;
+    fCentArrayPi0 = 0x0;
+  }
+  if(fCentArrayEta){
+    delete fCentArrayEta;
+    fCentArrayEta = 0x0;
+  }
+  if(fCentArrayGamma){
+    delete fCentArrayGamma;
+    fCentArrayGamma = 0x0;
+  }
+  if(fCentArrayK0S){
+    delete fCentArrayK0S;
+    fCentArrayK0S = 0x0;
+  }
+  if(fCentArrayL0){
+    delete fCentArrayL0;
+    fCentArrayL0 = 0x0;
   }
 
   delete fTOFEfficiency;
@@ -880,6 +891,12 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     }
 
     //converted electrons.
+    for(Int_t jp=0;jp<4;jp++){
+      TH1F *h1purity_lce = new TH1F(Form("hPurityLCE_%s",PIDtype[jp].Data()),Form("p_{T} of true late conversion Electron in clusters for purity %s;p_{T} (GeV/c)",PIDtype[jp].Data()),NpTgg-1,pTgg);
+      h1purity_lce->Sumw2();
+      fOutputContainer->Add(h1purity_lce);
+    }
+
     for(Int_t jp=0;jp<4;jp++){
       TH2F *h2e = new TH2F(Form("hElectronRxy_%s",PIDtype[jp].Data()),Form("p_{T} of true Electron in clusters for purity %s vs. V_{prod};p_{T} (GeV/c);R_{xy} (cm)",PIDtype[jp].Data()),NpTgg-1,pTgg,500,0,500);
       h2e->Sumw2();
@@ -1982,31 +1999,46 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
         primary2 = ph2->GetPrimary();
 
         commonID = FindCommonParent(primary1,primary2);
+        if(commonID > -1) AliInfo(Form("commonID is found. primary1 = %d, primary2 = %d, commonID = %d, w1 = %e , w2 = %e",primary1,primary2,commonID,w1,w2));
+
         if(commonID > -1) weight = w1;
         else weight = w1*w2;
 
         if(IsFrom(primary1,TruePi0Pt,111) && IsFrom(primary2,TruePi0Pt,111) && commonID > -1){
+          AliAODMCParticle *p1 = (AliAODMCParticle*)fMCArrayAOD->At(primary1);
+          AliAODMCParticle *p2 = (AliAODMCParticle*)fMCArrayAOD->At(primary2);
+          Int_t pdg1 = p1->PdgCode(); 
+          Int_t pdg2 = p2->PdgCode(); 
+
           AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(commonID);
           Int_t pdg = p->PdgCode(); 
-          if(pdg == 111){
+          if(pdg1 == 22 && pdg2 == 22 && pdg == 111){
             FillHistogramTH2(fOutputContainer,"hMggFromPi0",m12,pt12,weight);
             if(asym < 0.8) FillHistogramTH2(fOutputContainer,"hMggFromPi0_asym08",m12,pt12,weight);
           }
         }
         if(IsFrom(primary1,TrueK0SPt,310) && IsFrom(primary2,TrueK0SPt,310) && commonID > -1){
           //for feed down correction from K0S->pi0 + pi0
+          AliAODMCParticle *p1 = (AliAODMCParticle*)fMCArrayAOD->At(primary1);
+          AliAODMCParticle *p2 = (AliAODMCParticle*)fMCArrayAOD->At(primary2);
+          Int_t pdg1 = p1->PdgCode(); 
+          Int_t pdg2 = p2->PdgCode(); 
           AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(commonID);
           Int_t pdg = p->PdgCode(); 
-          if(pdg == 111){
+          if(pdg1 == 22 && pdg2 == 22 && pdg == 111){
             FillHistogramTH2(fOutputContainer,"hMggFromK0S",m12,pt12,weight);
             if(asym < 0.8) FillHistogramTH2(fOutputContainer,"hMggFromK0S_asym08",m12,pt12,weight);
           }
         }
         if(IsFrom(primary1,TrueL0Pt,3122) && IsFrom(primary2,TrueL0Pt,3122) && commonID > -1){
           //for feed down correction from L0->pi0 + neutron
+          AliAODMCParticle *p1 = (AliAODMCParticle*)fMCArrayAOD->At(primary1);
+          AliAODMCParticle *p2 = (AliAODMCParticle*)fMCArrayAOD->At(primary2);
+          Int_t pdg1 = p1->PdgCode(); 
+          Int_t pdg2 = p2->PdgCode(); 
           AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(commonID);
           Int_t pdg = p->PdgCode(); 
-          if(pdg == 111){
+          if(pdg1 == 22 && pdg2 == 22 && pdg == 111){
             FillHistogramTH2(fOutputContainer,"hMggFromLambda0",m12,pt12,weight);
             if(asym < 0.8) FillHistogramTH2(fOutputContainer,"hMggFromLambda0_asym08",m12,pt12,weight);
           }
@@ -2913,7 +2945,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
         if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
           FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_noPID",pT,Rxy,weight);
           if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_noPID",pT,weight);
-          else              FillHistogramTH1(fOutputContainer,"hPurityGamma_noPID",pT,weight);
+          else              FillHistogramTH1(fOutputContainer,"hPurityLCE_noPID",pT,weight);
         }
         else FillHistogramTH1(fOutputContainer,"hPurityElectron_noPID",pT,weight);
       }
@@ -2943,7 +2975,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
           if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
             FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_CPV",pT,Rxy,weight);
             if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_CPV",pT,weight);
-            else              FillHistogramTH1(fOutputContainer,"hPurityGamma_CPV",pT,weight);
+            else              FillHistogramTH1(fOutputContainer,"hPurityLCE_CPV",pT,weight);
           }
           else FillHistogramTH1(fOutputContainer,"hPurityElectron_CPV",pT,weight);
         }
@@ -2977,7 +3009,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
           if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
             FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_Disp",pT,Rxy,weight);
             if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_Disp",pT,weight);
-            else              FillHistogramTH1(fOutputContainer,"hPurityGamma_Disp",pT,weight);
+            else              FillHistogramTH1(fOutputContainer,"hPurityLCE_Disp",pT,weight);
           }
           else FillHistogramTH1(fOutputContainer,"hPurityElectron_Disp",pT,weight);
         }
@@ -3009,7 +3041,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
           if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
             FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_PID",pT,Rxy,weight);
             if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_PID",pT,weight);
-            else              FillHistogramTH1(fOutputContainer,"hPurityGamma_PID",pT,weight);
+            else              FillHistogramTH1(fOutputContainer,"hPurityLCE_PID",pT,weight);
           }
           else FillHistogramTH1(fOutputContainer,"hPurityElectron_PID",pT,weight);
         }
@@ -3460,8 +3492,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
 
       Double32_t x = p->Vx() - fVertex[0];
       Double32_t y = p->Vy() - fVertex[1];
-      Double32_t z = p->Vz() - fVertex[2];
-      Double32_t Rho = sqrt(x*x + y*y + z*z);
+      //Double32_t z = p->Vz() - fVertex[2];
+      //Double32_t Rho = sqrt(x*x + y*y + z*z);
       Double32_t R = sqrt(x*x + y*y);
 
       //if(Rho > 1.0) continue;//3D
@@ -3725,6 +3757,25 @@ Double_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::Rho(AliAODMCParticle* p)
   return sqrt(x*x + y*y + z*z);
 }
 //________________________________________________________________________
+Double_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::RAbs(AliAODMCParticle* p)
+{
+  //Radius of vertex in cylindrical system.
+
+  Double32_t x = p->Xv();
+  Double32_t y = p->Yv();
+  return sqrt(x*x + y*y);
+}
+//________________________________________________________________________
+Double_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::RhoAbs(AliAODMCParticle* p)
+{
+  //Radius of vertex in spherical system.
+
+  Double32_t x = p->Xv();
+  Double32_t y = p->Yv();
+  Double32_t z = p->Zv();
+  return sqrt(x*x + y*y + z*z);
+}
+//________________________________________________________________________
 Double_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::DeltaPhiIn0Pi(Double_t dphi)
 {
   //this returns dphi in 0-pi range in unit of radian.
@@ -3752,8 +3803,8 @@ Bool_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::IsFrom(Int_t label, Double_t &True
 
     Double32_t x = 999;
     Double32_t y = 999;
-    Double32_t z = 999;
-    Double32_t Rho = 999;
+    //Double32_t z = 999;
+    //Double32_t Rho = 999;
     Double32_t R = 999;
 
     //printf("Nprimary = %d\n",Nprimary);
@@ -3767,8 +3818,8 @@ Bool_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::IsFrom(Int_t label, Double_t &True
 
       x = mp->Vx() - fVertex[0];
       y = mp->Vy() - fVertex[1];
-      z = mp->Vz() - fVertex[2];
-      Rho = sqrt(x*x + y*y + z*z);
+      //z = mp->Vz() - fVertex[2];
+      //Rho = sqrt(x*x + y*y + z*z);
       R = sqrt(x*x + y*y);
 
       //if(TMath::Abs(pdg) == target_pdg && Rho < 1.0){//pi0 from primary vertex
@@ -3831,14 +3882,37 @@ Int_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::FindCommonParent(Int_t iPart, Int_t
   Int_t iprim1 = iPart;
 
   while(iprim1>-1){
-    Int_t iprim2=jPart;
-
-    while(iprim2>-1){
-      if(iprim1==iprim2) return iprim1;
-      iprim2 = dynamic_cast<AliAODMCParticle*>(fMCArrayAOD->At(iprim2))->GetMother();
+    AliAODMCParticle *p1 = dynamic_cast<AliAODMCParticle*>(fMCArrayAOD->At(iprim1));
+    Int_t pdg1 = p1->GetPdgCode();
+    if(TMath::Abs(pdg1) <= 6 || TMath::Abs(pdg1) == 21){//reject quarks and gluons as parents.
+      iprim1 = p1->GetMother();
+      continue;
+    }
+    if(iprim1 == 0 || iprim1 == 1){//colliding protons
+      iprim1 = p1->GetMother();
+      continue;
     }
 
-    iprim1 = dynamic_cast<AliAODMCParticle*>(fMCArrayAOD->At(iprim1))->GetMother();
+    Int_t iprim2 = jPart;
+    while(iprim2>-1){
+      AliAODMCParticle *p2 = dynamic_cast<AliAODMCParticle*>(fMCArrayAOD->At(iprim2));
+      Int_t pdg2 = p2->GetPdgCode();
+
+      if(TMath::Abs(pdg2) <= 6 || TMath::Abs(pdg2) == 21){//reject quarks and gluons as parents.
+        iprim2 = p2->GetMother();
+        continue;
+      }
+      if(iprim2 == 0 || iprim2 == 1){//colliding protons
+        iprim2 = p2->GetMother();
+        continue;
+      }
+
+      if(iprim1==iprim2) return iprim1;
+      iprim2 = p2->GetMother();
+
+    }
+
+    iprim1 = p1->GetMother();
   }
 
   return -1;
@@ -4108,11 +4182,33 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillRejectionFactorMB()
   Int_t L0input  = 17;//LHC17
 
   if(fRunNumber <= 246994)  L0input = 9;
+  const Int_t Nmod=5;//number of mpdules
+  const Bool_t IsPrivateTRUBadMap = fPHOSTriggerHelper->IsPrivateTRUBadMap();
 
-  if(!fPHOSTriggerHelperL0 ) fPHOSTriggerHelperL0  = new AliPHOSTriggerHelper(-1      ,L0input,kFALSE);
-  if(!fPHOSTriggerHelperL1H) fPHOSTriggerHelperL1H = new AliPHOSTriggerHelper(L1Hinput,-1     ,kFALSE);
-  if(!fPHOSTriggerHelperL1M) fPHOSTriggerHelperL1M = new AliPHOSTriggerHelper(L1Minput,-1     ,kFALSE);
-  if(!fPHOSTriggerHelperL1L) fPHOSTriggerHelperL1L = new AliPHOSTriggerHelper(L1Linput,-1     ,kFALSE);
+  if(!fPHOSTriggerHelperL0 ){
+    fPHOSTriggerHelperL0  = new AliPHOSTriggerHelper(-1      ,L0input,kFALSE);
+    if(IsPrivateTRUBadMap){
+      for(Int_t imod=1;imod<Nmod;imod++) fPHOSTriggerHelperL0->SetPHOSTRUBadMap(imod,fPHOSTriggerHelper->GetPHOSTRUBadMap(imod));
+    }
+  }
+  if(!fPHOSTriggerHelperL1H){
+    fPHOSTriggerHelperL1H = new AliPHOSTriggerHelper(L1Hinput,-1     ,kFALSE);
+    if(IsPrivateTRUBadMap){
+      for(Int_t imod=1;imod<Nmod;imod++) fPHOSTriggerHelperL1H->SetPHOSTRUBadMap(imod,fPHOSTriggerHelper->GetPHOSTRUBadMap(imod));
+    }
+  }
+  if(!fPHOSTriggerHelperL1M){
+    fPHOSTriggerHelperL1M = new AliPHOSTriggerHelper(L1Minput,-1     ,kFALSE);
+    if(IsPrivateTRUBadMap){
+      for(Int_t imod=1;imod<Nmod;imod++) fPHOSTriggerHelperL1M->SetPHOSTRUBadMap(imod,fPHOSTriggerHelper->GetPHOSTRUBadMap(imod));
+    }
+  }
+  if(!fPHOSTriggerHelperL1L){
+    fPHOSTriggerHelperL1L = new AliPHOSTriggerHelper(L1Linput,-1     ,kFALSE);
+    if(IsPrivateTRUBadMap){
+      for(Int_t imod=1;imod<Nmod;imod++) fPHOSTriggerHelperL1L->SetPHOSTRUBadMap(imod,fPHOSTriggerHelper->GetPHOSTRUBadMap(imod));
+    }
+  }
 
   Bool_t Is0PH0fired = fEvent->GetHeader()->GetL0TriggerInputs() & 1 << (L0input  - 1);//trigger input -1
   Bool_t Is1PHHfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Hinput - 1);//trigger input -1

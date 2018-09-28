@@ -157,8 +157,11 @@ fEtaPhiClusAftSel(0),
 fPtvsDetavsDphi(0),
 fPtvsTrackPtvsDeta(0),
 fPtvsTrackPtvsDphi(0),
+fPtTrackClusRatiovsPt(0),
+fPtTrackClusRatiovsPtWithCPV(0),
 fClusEvsClusT(0),
 fPT(0),
+fPTbeforeNonLinScaling(0),
 fE(0),
 fNLM(0),
 fNLM2_NC_Acc(0),
@@ -217,6 +220,7 @@ fEtaBandVsConeArea(0),
 fPtVsConeVsEtaBand(0),
 fPtVsNormConeVsNormPhiBand(0),
 fPtVsNormConeVsNormEtaBand(0),
+fPtVsNormConeVsNormExtraPerpCones(0),
 fPtvsM02vsSumUE_Norm(0),
 fTestEtaPhiCone(0),
 fInvMassM02iso(0),
@@ -371,8 +375,11 @@ fEtaPhiClusAftSel(0),
 fPtvsDetavsDphi(0),
 fPtvsTrackPtvsDeta(0),
 fPtvsTrackPtvsDphi(0),
+fPtTrackClusRatiovsPt(0),
+fPtTrackClusRatiovsPtWithCPV(0),
 fClusEvsClusT(0),
 fPT(0),
+fPTbeforeNonLinScaling(0),
 fE(0),
 fNLM(0),
 fNLM2_NC_Acc(0),
@@ -431,6 +438,7 @@ fEtaBandVsConeArea(0),
 fPtVsConeVsEtaBand(0),
 fPtVsNormConeVsNormPhiBand(0),
 fPtVsNormConeVsNormEtaBand(0),
+fPtVsNormConeVsNormExtraPerpCones(0),
 fPtvsM02vsSumUE_Norm(0),
 fTestEtaPhiCone(0),
 fInvMassM02iso(0),
@@ -715,15 +723,22 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
       case 2:
       {
           // Initialization TH*D/TH*F
-        fPtaftM02C = new TH1F("hPtaftM02C_NC","#it{p}_{T} distribution for Clusters after shower shape cut",200,0.,100.);
-        fPtaftM02C->Sumw2();
-        fOutput->Add(fPtaftM02C);
 
-        fM02 = new TH2F("hM02_NC","#sigma_{long}^{2} vs. #it{E}_{T} for clusters",100,0.,100.,500,0.,5.);
-        fM02->Sumw2();
-        fOutput->Add(fM02);
+	if(fIsMC && fNonLinRecoEnergyScaling){
+	  fPTbeforeNonLinScaling = new TH1F("hPt_BeforeNonLinScaling","#it{p}_{T} distribution for clusters before candidate selection",100,0.,100.);
+	  fPTbeforeNonLinScaling->Sumw2();
+	  fOutput->Add(fPTbeforeNonLinScaling);
+	}
 
 	if(fQA){
+	  fPtaftM02C = new TH1F("hPtaftM02C_NC","#it{p}_{T} distribution for Clusters after shower shape cut",200,0.,100.);
+	  fPtaftM02C->Sumw2();
+	  fOutput->Add(fPtaftM02C);
+
+	  fM02 = new TH2F("hM02_NC","#sigma_{long}^{2} vs. #it{E}_{T} for clusters",100,0.,100.,500,0.,5.);
+	  fM02->Sumw2();
+	  fOutput->Add(fM02);
+
 	  fEtaPhiClusVsM02 = new TH3F ("hEtaVsPhiVsM02", "#eta vs. #varphi vs. #sigma_{long}^{2} for clusters with 14 < #it{E}_{T} < 16 GeV", netabins, etamin, etamax, nphibins, phimin, phimax, 75, 0., 1.5);
 	  fEtaPhiClusVsM02->Sumw2();
 	  fOutput->Add(fEtaPhiClusVsM02);
@@ -780,8 +795,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	  if(fAnalysispPb && fUEMethod == 0){
 	    fPtVsNormConeVsNormPhiBand = new TH3F("hPtVsConeVsPhiBand_Norm","Cluster energy vs. cone energy vs. phi band energy (already normalised by the appropriate areas)",200,0.,100.,250,0.,100.,250,0.,100.);
 	    fPtVsNormConeVsNormPhiBand->SetXTitle("#it{p}_{T}^{cluster}");
-	    fPtVsNormConeVsNormPhiBand->SetYTitle("#sum^{cone} #it{p}_{T}");
-	    fPtVsNormConeVsNormPhiBand->SetZTitle("#sum^{phi-band} #it{p}_{T}");
+	    fPtVsNormConeVsNormPhiBand->SetYTitle("#sum^{cone} #it{p}_{T} / #it{A}_{cone}");
+	    fPtVsNormConeVsNormPhiBand->SetZTitle("#sum^{phi-band} #it{p}_{T} / #it{A}_{UE}");
 	    fPtVsNormConeVsNormPhiBand->Sumw2();
 	    fOutput->Add(fPtVsNormConeVsNormPhiBand);
 	  }
@@ -789,10 +804,19 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	  if(fAnalysispPb && fUEMethod == 1){
 	    fPtVsNormConeVsNormEtaBand = new TH3F("hPtVsConeVsEtaBand_Norm","Cluster energy vs. cone energy vs. eta band energy (already normalised by the appropriate areas)",200,0.,100.,250,0.,100.,250,0.,100.);
 	    fPtVsNormConeVsNormEtaBand->SetXTitle("#it{p}_{T}^{cluster}");
-	    fPtVsNormConeVsNormEtaBand->SetYTitle("#sum^{cone} #it{p}_{T}");
-	    fPtVsNormConeVsNormEtaBand->SetZTitle("#sum^{eta-band} #it{p}_{T}");
+	    fPtVsNormConeVsNormEtaBand->SetYTitle("#sum^{cone} #it{p}_{T} / #it{A}_{cone}");
+	    fPtVsNormConeVsNormEtaBand->SetZTitle("#sum^{eta-band} #it{p}_{T} / #it{A}_{UE}");
 	    fPtVsNormConeVsNormEtaBand->Sumw2();
 	    fOutput->Add(fPtVsNormConeVsNormEtaBand);
+	  }
+
+	  if(fAnalysispPb && fUEMethod == 4){
+	    fPtVsNormConeVsNormExtraPerpCones = new TH3F("hPtVsConeVsExtraPerpCones_Norm","Cluster energy vs. cone energy vs. extrapolated perpendicular cones energy (already normalised by the appropriate areas)",200,0.,100.,250,0.,100.,250,0.,100.);
+	    fPtVsNormConeVsNormExtraPerpCones->SetXTitle("#it{p}_{T}^{cluster}");
+	    fPtVsNormConeVsNormExtraPerpCones->SetYTitle("#sum^{cone} #it{p}_{T} / #it{A}_{cone}");
+	    fPtVsNormConeVsNormExtraPerpCones->SetZTitle("#sum^{extr. perp cones} #it{p}_{T} / #it{A}_{UE}");
+	    fPtVsNormConeVsNormExtraPerpCones->Sumw2();
+	    fOutput->Add(fPtVsNormConeVsNormExtraPerpCones);
 	  }
 
 	  if(fAnalysispPb){
@@ -992,6 +1016,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	fPtvsTrackPtvsDphi = new TH3F("hPtvsTrackPtvsDphi","Cluster-track matching #Delta#varphi vs. track #it{p}_{T} vs. cluster energy", 120, 0., 60., 100, 0., 100., 200, -0.05, 0.05);
 	fPtvsTrackPtvsDphi->Sumw2();
 	fOutput->Add(fPtvsTrackPtvsDphi);
+
+	fPtTrackClusRatiovsPt = new TH2F("hPtTrackClusRatiovsPt","Track #it{p}_{T} over cluster #it{p}_{T} vs. cluster #it{p}_{T}", 120, 0., 60., 300, 0., 15.);
+	fPtTrackClusRatiovsPt->Sumw2();
+	fOutput->Add(fPtTrackClusRatiovsPt);
+
+	fPtTrackClusRatiovsPtWithCPV = new TH2F("hPtTrackClusRatiovsPt","Track #it{p}_{T} over cluster #it{p}_{T} vs. cluster #it{p}_{T} with CPV applied", 120, 0., 60., 300, 0., 15.);
+	fPtTrackClusRatiovsPtWithCPV->Sumw2();
+	fOutput->Add(fPtTrackClusRatiovsPtWithCPV);
       }
       break;
     }
@@ -1599,6 +1631,10 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     index=coi->GetID();
     TLorentzVector vecCOI;
     coi->GetMomentum(vecCOI, fVertex, AliVCluster::kNonLinCorr);
+
+    if(fIsMC && fNonLinRecoEnergyScaling)
+      fPTbeforeNonLinScaling->Fill(vecCOI.Pt());
+
     if(fIsMC && fNonLinRecoEnergyScaling)
       NonLinRecoEnergyScaling(vecCOI);
 
@@ -1655,6 +1691,10 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       index=coi->GetID();
       TLorentzVector vecCOI;
       coi->GetMomentum(vecCOI, fVertex, AliVCluster::kNonLinCorr);
+
+      if(fIsMC && fNonLinRecoEnergyScaling)
+	fPTbeforeNonLinScaling->Fill(vecCOI.Pt());
+
       if(fIsMC && fNonLinRecoEnergyScaling)
 	NonLinRecoEnergyScaling(vecCOI);
 
@@ -1722,7 +1762,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillQAHistograms(AliVCluster *coi, TLo
       break;
 
     case 2:
-      fM02->Fill(vecCOI.Pt(),m02COI);
+      if(fQA)
+	fM02->Fill(vecCOI.Pt(), m02COI);
       if(fQA && vecCOI.Pt()>14. && vecCOI.Pt()<16.)
 	fEtaPhiClusVsM02->Fill(vecCOI.Eta(),vecCOI.Phi(),m02COI);
       break;
@@ -1738,7 +1779,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillQAHistograms(AliVCluster *coi, TLo
   if(checktof>-30. && checktof<30. && !fIsMC){
     if(CheckBoundaries(vecCOI)){
       Double_t checkM02 = coi->GetM02();
-      if(fM02mincut < checkM02 && checkM02 < fM02maxcut && fWho==2)
+      if(fM02mincut < checkM02 && checkM02 < fM02maxcut && fWho==2 && fQA)
         fPtaftM02C->Fill(vecCOI.Pt());
     }
   }
@@ -1861,8 +1902,11 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     if(candidate && fWho == 2){
       if(fQA)
 	fPtvsDetavsDphi->Fill(vecClust.Pt(), deta, dphi);
+
       fPtvsTrackPtvsDeta->Fill(vecClust.Pt(), mt->Pt(), deta);
       fPtvsTrackPtvsDphi->Fill(vecClust.Pt(), mt->Pt(), dphi);
+
+      fPtTrackClusRatiovsPt->Fill(vecClust.Pt(), (mt->Pt()/vecClust.Pt()));
     }
 
     distCT = TMath::Sqrt(deta*deta+dphi*dphi);
@@ -1891,12 +1935,14 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     }
 
     if(TMath::Abs(dphi) < deltaPhi && TMath::Abs(deta) < deltaEta){
-      if(fQA && candidate){
-	if(fWho != 2){
-	  fDeltaETAClusTrackMatch->Fill(deta);
-	  fDeltaPHIClusTrackMatch->Fill(dphi);
-	}
+      if(fQA && candidate && fWho != 2){
+	fDeltaETAClusTrackMatch->Fill(deta);
+	fDeltaPHIClusTrackMatch->Fill(dphi);
       }
+
+      if(candidate && fWho == 2)
+	fPtTrackClusRatiovsPtWithCPV->Fill(vecClust.Pt(), (mt->Pt()/vecClust.Pt()));
+
       matched = kTRUE;
     }
   }
@@ -1914,7 +1960,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::NonLinRecoEnergyScaling ( TLorentzVect
   fGeom->SuperModuleNumberFromEtaPhi(cluster_vec.Eta(), cluster_vec.Phi(), cluster_SM);  
 
   Int_t    maxSM_withoutTRD       = 4;
-  Double_t scaleFactor_withoutTRD = 0., scaleFactor_withTRD = 0.;
+  Double_t scaleFactor_withoutTRD = 1., scaleFactor_withTRD = 1.;
 
   if      ( fPeriod.Contains("11") ) {
     maxSM_withoutTRD       = 6;
@@ -2988,6 +3034,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusExtraOrthCones(TLorentzVector
     }
   }
 
+  fTestEnergyCone->Fill(c.Pt(), sumEnergyConeClus, sumpTPerpConeTrack);
+
   ptIso = sumEnergyConeClus + sumpTConeCharged;
   cones = 1.347*sumpTPerpConeTrack; // Scaling charged-only UE to neutral + charged UE
 
@@ -3000,7 +3048,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusExtraOrthCones(TLorentzVector
     perpConesArea         *= 2.;
 
     fPerpConesUETracks->Fill(c.Pt(), sumpTPerpConeTrack/perpConesArea);
-    if(fAnalysispPb) fPtvsM02vsSumUE_Norm->Fill(c.Pt(), m02candidate, ptIso - cones * (isoConeArea / perpConesArea)); // Cone-UE energy vs. shower shape vs. candidate energy (area normalised)
+    if(fAnalysispPb){
+      fPtVsNormConeVsNormExtraPerpCones->Fill(c.Pt(), ptIso/isoConeArea, cones/perpConesArea);         // Cone energy    vs. UE energy    vs. candidate energy (area normalised)
+      fPtvsM02vsSumUE_Norm->Fill(c.Pt(), m02candidate, ptIso - cones * (isoConeArea / perpConesArea)); // Cone-UE energy vs. shower shape vs. candidate energy (area normalised)
+    }
   }
 }
 

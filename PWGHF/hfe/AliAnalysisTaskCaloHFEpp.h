@@ -60,6 +60,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		void                    SetEop(Double_t min, Double_t max) {EopMin = min, EopMax = max;};
 		void                    SetConeR(Double_t coneR) {MaxConeR = coneR;};
 		void                    SetptAsso(Double_t ptassoMin) {ptAssoMin = ptassoMin;};
+		void                    SetptCut(TString pte) {pTe = pte;};
 
 	private:
 		AliAODEvent*            fAOD;           //! input event
@@ -82,6 +83,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Double_t EopMin, EopMax;
 		Double_t MaxConeR;
 		Double_t ptAssoMin;
+		TString pTe;
 
 		//==== basic parameters ====
 		TH1F*                   fNevents;
@@ -121,6 +123,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fHistNsigEop;
 		TH2F*                   fEopPt_ele_loose;
 		TH2F*                   fEopPt_ele_tight;
+		TH2F*                   fEopPt_ele_tight_PYTHIA;
 		TH2F*                   fEopPt_had;
 		TH1F*                   fEtadiff;
 		TH1F*                   fPhidiff;
@@ -147,6 +150,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fMCcheckMother;
 		TClonesArray*           fMCarray;//! MC array
 		AliAODMCParticle*       fMCparticle;
+		AliAODMCParticle*       fMCTrackpart;
 		AliAODMCHeader*         fMCheader;
 		TH1F*                   fCheckEtaMC;
 		TH2F*                   fHistMCorgPi0;
@@ -156,6 +160,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
     Int_t                   NembMCpi0; // # of process in MC (no GEANT process)
     Int_t                   NembMCeta; // # of process in MC (no GEANT process)
     Int_t                   NpureMCproc; // # of process in MC (no GEANT process)
+    Int_t                   NpureMC; // # of process in MC (no GEANT process)
 		TH1D*                   fHistPhoReco0;
 		TH1D*                   fHistPhoReco1;
 		TH1D*                   fHistPhoReco2;
@@ -163,13 +168,22 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1D*               		fHistPhoPi1;
 		TH1D*               		fHistPhoEta0;
 		TH1D*               		fHistPhoEta1;
+    TF1*                    fPi000;
+    TF1*                    fPi005;
     TF1*                    fPi010;
+    TF1*                    fEta000;
+    TF1*                    fEta005;
     TF1*                    fEta010;
 		TH1F*               		fHistPt_HFE_MC_D;
 		TH1F*               		fHistPt_HFE_MC_B;
+		TH1F*               		fHistPt_HFE_PYTHIA;
+		TH1F*               		fHistPt_HFE_emb;
+		TH1F*               		fHistPt_HFE_Gen;
+		TH2F*               		fHistPt_HFE_GenvsReco;
 		TH1F*               		fHist_eff_HFE;
 		TH1F*               		fHist_eff_match;
 		TH1F*               		fHist_eff_TPC;
+		TH1F*               		fHist_eff_M20;
 
 
 		AliAnalysisTaskCaloHFEpp(const AliAnalysisTaskCaloHFEpp&); // not implemented

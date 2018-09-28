@@ -286,16 +286,21 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
   Int_t cs=0;
   Float_t zs=-999.;
   if(vtSPD){
-    Float_t xs=vtSPD->GetX();
-    Float_t ys=vtSPD->GetY();
-    zs=vtSPD->GetZ();
-    cs=vtSPD->GetNContributors();
-    fHistXspdVsContrib->Fill(cs,xs);
-    fHistYspdVsContrib->Fill(cs,ys);
-    fHistZspdVsContrib->Fill(cs,zs);
-    fHistXspdVsMult->Fill(ntracklets,xs);
-    fHistYspdVsMult->Fill(ntracklets,ys);
-    fHistZspdVsMult->Fill(ntracklets,zs);
+    TString spdtitle=vtSPD->GetTitle();
+    if(spdtitle.Contains("ertexer: 3D")){
+      Float_t xs=vtSPD->GetX();
+      Float_t ys=vtSPD->GetY();
+      zs=vtSPD->GetZ();
+      cs=vtSPD->GetNContributors();
+      fHistXspdVsContrib->Fill(cs,xs);
+      fHistYspdVsContrib->Fill(cs,ys);
+      fHistZspdVsContrib->Fill(cs,zs);
+      if(cs>=1){
+	fHistXspdVsMult->Fill(ntracklets,xs);
+	fHistYspdVsMult->Fill(ntracklets,ys);
+	fHistZspdVsMult->Fill(ntracklets,zs);
+      }
+    }
   }
   if(vtTPC){
     Float_t xtpc=vtTPC->GetX();
@@ -305,9 +310,11 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
     fHistXtpcVsContrib->Fill(ctpc,xtpc);
     fHistYtpcVsContrib->Fill(ctpc,ytpc);
     fHistZtpcVsContrib->Fill(ctpc,ztpc);
-    fHistXtpcVsMult->Fill(ntracklets,xtpc);
-    fHistYtpcVsMult->Fill(ntracklets,ytpc);
-    fHistZtpcVsMult->Fill(ntracklets,ztpc);
+    if(ctpc>=1){
+      fHistXtpcVsMult->Fill(ntracklets,xtpc);
+      fHistYtpcVsMult->Fill(ntracklets,ytpc);
+      fHistZtpcVsMult->Fill(ntracklets,ztpc);
+    }
   }
 
   Int_t nPileupVertSPD=aod->GetNumberOfPileupVerticesSPD();

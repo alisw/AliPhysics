@@ -1855,15 +1855,11 @@ void AliAnalysisTaskSubJetFraction::Terminate(Option_t *)
     fhJetEta->Scale(Eta_Bins/((Eta_Up-Eta_Low)*((fhEventCounter->GetBinContent(1)))));
     fhJetRadius->Scale(100/(fhEventCounter->GetBinContent(4)));  //should this and JetAngularity be divided by Bin 1 or 4???? 
     fhNumberOfJetTracks->Scale(1.0/(fhEventCounter->GetBinContent(4)));
-
     fhJetCounter->Scale(1.0/(fhEventCounter->GetBinContent(1)));  //is the first bin the correct one to look at?
    
-
  fhSubJetCounter->Scale(1.0/(fhEventCounter->GetBinContent(5)));
-
     */
     /*  
-
   fhJetPt->Scale(1.0/(fhEventCounter->GetBinContent(1)));                                      
   fhSubJetPt->Scale(1.0/(fhEventCounter->GetBinContent(5)));                                
   fhJetMass->Scale(1.0/(fhEventCounter->GetBinContent(1)));                                                                                                                     
@@ -2072,4 +2068,3 @@ Double_t AliAnalysisTaskSubJetFraction::FjNSubJettinessFastJet(std::pair<fastjet
   }
   else return -2;
 }
-

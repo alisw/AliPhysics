@@ -32,6 +32,7 @@
 
 #include <THistManager.h>
 #include <TLinearBinning.h>
+#include <TVariableBinning.h>
 
 #include "AliAODInputHandler.h"
 #include "AliAnalysisManager.h"
@@ -88,7 +89,19 @@ AliAnalysisTaskEmcalJetEnergySpectrum::~AliAnalysisTaskEmcalJetEnergySpectrum(){
 void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
-  TLinearBinning jetptbinning(200, 0., 200.), etabinning(100, -1., 1.), phibinning(100., 0., 7.), nefbinning(100, 0., 1.), trgclusterbinning(kTrgClusterN + 1, -0.5, kTrgClusterN -0.5);
+  if(!fUserPtBinning.GetSize()) {
+    // binning not set. apply default binning
+    AliInfoStream() << "Using default pt binning";
+    fUserPtBinning.Set(201);
+    double current(0.);
+    for(int istep = 0; istep < 201; istep++) {
+      fUserPtBinning[istep] = current;
+      current += 1; 
+    }
+  }
+
+  TLinearBinning etabinning(100, -1., 1.), phibinning(100., 0., 7.), nefbinning(100, 0., 1.), trgclusterbinning(kTrgClusterN + 1, -0.5, kTrgClusterN -0.5);
+  TVariableBinning jetptbinning(fUserPtBinning);
   const TBinning *binnings[5] = {&jetptbinning, &etabinning, &phibinning, &nefbinning, &trgclusterbinning};
   fHistos = new THistManager(Form("Histos_%s", GetName()));
   fHistos->CreateTH1("hEventCounter", "Event counter histogram", 1, 0.5, 1.5);

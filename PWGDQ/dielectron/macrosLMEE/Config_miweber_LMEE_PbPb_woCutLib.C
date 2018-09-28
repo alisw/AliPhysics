@@ -19,10 +19,12 @@ const Int_t nExtraMin = 666; // use extra cuts for nExtraMin <= cuts < nExtraMax
 const Int_t nExtraMax = 677; // use extra cuts for nExtraMin <= cuts < nExtraMax 
 
 AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
-        Bool_t bESDANA = kFALSE,
-        Bool_t bCutQA = kFALSE,
-        Bool_t isRandomRej=kFALSE,
-        Bool_t useTPCCorr=kFALSE)
+						 Bool_t bESDANA = kFALSE,
+						 Bool_t bCutQA = kFALSE,
+						 Bool_t isRandomRej=kFALSE,
+						 Bool_t useTPCCorr=kFALSE,
+						 Bool_t hasMC=kFALSE
+						 )
 {
   //
   // Setup the instance of AliDielectron
@@ -43,7 +45,7 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
   }
   else{
     Printf("=====================================");
-    Printf("Configuring cut set %d",cutDefinition);
+    Printf("Configuring cut set %d (MC = %d)",cutDefinition,hasMC);
     Printf("=====================================");
   }
     
@@ -54,6 +56,8 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
   AliDielectron *die =
     new AliDielectron(Form("%s",name.Data()),
                       Form("Track cuts: %s",name.Data()));
+
+  die->SetHasMC(hasMC);
 
   if(bCutQA){
     die->SetCutQA(bCutQA);
@@ -66,8 +70,7 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
     die->SetTrackRotator(rot);
   }//kRot
   
-  
-  if(kMix && !(die->GetHasMC()) ){ // need second since there is a problem when mixing MC events (TRef?)
+  if(kMix && !(die->GetHasMC())){ // need second since there is a problem when mixing MC events (TRef?)
     AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
 
     mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
@@ -82,7 +85,6 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
     
     die->SetMixingHandler(mix);
   }//kMix
-
 
   // set track cuts
   SetupCuts(die,cutDefinition,bESDANA);
@@ -842,8 +844,10 @@ void SetupAODtrackCutsRun3(AliDielectron *die)
   pidCutsMC->AddCut(AliDielectronVarManager::kPdgCode, +10.9, +11.1);
 
   // activate the cut sets (order might be CPU timewise important)
-  cuts->AddCut(pidCutsMC); // commented in for the moment -> only true electrons
-  die->GetTrackFilter().AddCuts(pidCutsMC);
+  if(hasMC){
+    cuts->AddCut(pidCutsMC); // commented in for the moment -> only true electrons
+    die->GetTrackFilter().AddCuts(pidCutsMC);
+  }
   cuts->AddCut(trkFilter);
   die->GetTrackFilter().AddCuts(trkFilter);
   cuts->AddCut(varCuts);
@@ -915,8 +919,10 @@ void SetupAODtrackCutsRun3_FT2(AliDielectron *die)
   pidCutsMC->AddCut(AliDielectronVarManager::kPdgCode, +10.9, +11.1);
 
   // activate the cut sets (order might be CPU timewise important)
-  cuts->AddCut(pidCutsMC); // commented in for the moment -> only true electrons
-  die->GetTrackFilter().AddCuts(pidCutsMC);
+  if(hasMC){
+    cuts->AddCut(pidCutsMC); // commented in for the moment -> only true electrons
+    die->GetTrackFilter().AddCuts(pidCutsMC);
+  }
   cuts->AddCut(trkFilter);
   die->GetTrackFilter().AddCuts(trkFilter);
   cuts->AddCut(varCuts);
@@ -964,6 +970,14 @@ void SetupAODtrackCutsRun3_FT2_ESD(AliDielectron *die)
   fesdTrackCuts->SetMinNClustersTPC(70);	
   fesdTrackCuts->SetMaxChi2PerClusterTPC(3.5);
 
+   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv TRACK CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
+  AliDielectronVarCuts *varCuts    = new AliDielectronVarCuts("VarCuts","VarCuts");
+  
+  // kinematic cuts
+  varCuts->AddCut(AliDielectronVarManager::kPt,           0.2, 200.);
+  varCuts->AddCut(AliDielectronVarManager::kEta,         -0.8, 0.8);
+  
+
    /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv PID CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
 
   AliDielectronPID *pidCuts        = new AliDielectronPID("PIDCuts","PIDCuts");
@@ -981,8 +995,12 @@ void SetupAODtrackCutsRun3_FT2_ESD(AliDielectron *die)
   pidCutsMC->AddCut(AliDielectronVarManager::kPdgCode, +10.9, +11.1);
 
   // activate the cut sets (order might be CPU timewise important)
-  cuts->AddCut(pidCutsMC); // commented in for the moment -> only true electrons
-  die->GetTrackFilter().AddCuts(pidCutsMC);
+  if(hasMC){
+    cuts->AddCut(pidCutsMC); // commented in for the moment -> only true electrons
+    die->GetTrackFilter().AddCuts(pidCutsMC);
+  }
+  cuts->AddCut(varCuts);
+  die->GetTrackFilter().AddCuts(varCuts);
   cuts->AddCut(fesdTrackCuts);
   die->GetTrackFilter().AddCuts(fesdTrackCuts);
   cuts->AddCut(pidCuts);
@@ -1040,8 +1058,10 @@ void SetupAODtrackCutsRun3_FT2_noPID(AliDielectron *die)
   pidCutsMC->AddCut(AliDielectronVarManager::kPdgCode, +10.9, +11.1);
 
   // activate the cut sets (order might be CPU timewise important)
-  cuts->AddCut(pidCutsMC); // commented in for the moment -> only true electrons
-  die->GetTrackFilter().AddCuts(pidCutsMC);
+  if(hasMC){
+    cuts->AddCut(pidCutsMC); // commented in for the moment -> only true electrons
+    die->GetTrackFilter().AddCuts(pidCutsMC);
+  }
   cuts->AddCut(trkFilter);
   die->GetTrackFilter().AddCuts(trkFilter);
   cuts->AddCut(varCuts);
@@ -1087,6 +1107,13 @@ void SetupAODtrackCutsRun3_FT2_noPID_ESD(AliDielectron *die)
   fesdTrackCuts->SetRequireTPCRefit(kTRUE);
   fesdTrackCuts->SetMinNClustersTPC(70);	
   fesdTrackCuts->SetMaxChi2PerClusterTPC(3.5);
+  
+  /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv TRACK CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
+  AliDielectronVarCuts *varCuts    = new AliDielectronVarCuts("VarCuts","VarCuts");
+  
+  // kinematic cuts
+  varCuts->AddCut(AliDielectronVarManager::kPt,           0.2, 200.);
+  varCuts->AddCut(AliDielectronVarManager::kEta,         -0.8, 0.8);
 
 
    /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv MC PID CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
@@ -1097,8 +1124,12 @@ void SetupAODtrackCutsRun3_FT2_noPID_ESD(AliDielectron *die)
   pidCutsMC->AddCut(AliDielectronVarManager::kPdgCode, +10.9, +11.1);
 
   // activate the cut sets (order might be CPU timewise important)
-  cuts->AddCut(pidCutsMC); // commented in for the moment -> only true electrons
-  die->GetTrackFilter().AddCuts(pidCutsMC);
+  if(hasMC){
+    cuts->AddCut(pidCutsMC); // commented in for the moment -> only true electrons
+    die->GetTrackFilter().AddCuts(pidCutsMC);
+  }
+  cuts->AddCut(varCuts);
+  die->GetTrackFilter().AddCuts(varCuts);
   cuts->AddCut(fesdTrackCuts);
   die->GetTrackFilter().AddCuts(fesdTrackCuts);
   
@@ -1430,6 +1461,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
 
   //add histograms to track class
+  histos->UserHistogram("Track","Centrality","Centrality;Centrality (%);#tracks",100,0.,100.,AliDielectronVarManager::kCentralityNew);
   histos->UserHistogram("Track","Pt","Pt;Pt [GeV];#tracks",500,0.,10.,AliDielectronVarManager::kPt);
   histos->UserHistogram("Track","P","P;P [GeV];#tracks",500,0.,10.,AliDielectronVarManager::kP);
   histos->UserHistogram("Track","PIn","PIn;PIn [GeV];#tracks",500,0.,10.,AliDielectronVarManager::kPIn);
@@ -1455,6 +1487,11 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Track","TOFnSigma_MomEle","TOF number of sigmas Electrons vs Momentum;Mom;TOFsigmaEle"                           ,     200,0.,10.,300,-30., 30. ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaEle);
 
   //add histograms to pair classes
+   histos->UserHistogram("Pair", 
+                         "InvMass_Centrality","Inv.Mass:Centrality;Inv. Mass (GeV/c^{2}); Centrality (%)",
+                         500,0.,5.,10,0.,100.,
+                         AliDielectronVarManager::kM, AliDielectronVarManager::kCentralityNew);
+   
   histos->UserHistogram("Pair",
                         "InvMass_pPt","Inv.Mass:PairPt;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c)",
                         500,0.,5.,250,0.,5.,
@@ -1534,7 +1571,7 @@ void SetupMCsignals(AliDielectron* die){
   pi0Sig->SetFillPureMCStep(kTRUE);
   die->AddSignalMC(pi0Sig);
 
-  AliDielectronSignalMC* pi0All = new AliDielectronSignalMC("pi0", "pi0All"); ///pi0 dalitz pairs (also from secondary)
+  AliDielectronSignalMC* pi0All = new AliDielectronSignalMC("pi0All", "pi0All"); ///pi0 dalitz pairs (also from secondary)
   pi0All->SetLegPDGs(11,-11);
   pi0All->SetMotherPDGs(111,111);
   pi0All->SetMothersRelation(AliDielectronSignalMC::kSame);

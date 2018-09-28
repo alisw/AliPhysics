@@ -548,9 +548,8 @@ Bool_t AliHFCorrFitSystematics::SetUpSystematicsFitter(){
     if(fVecSize == 6){fCanvasRefernce = new TCanvas("CanvasRefernce","CanvasRefernce",0,0,1600,1000); fCanvasRefernce->Divide(3,2);}
     if(fVecSize == 7){fCanvasRefernce = new TCanvas("CanvasRefernce","CanvasRefernce",0,0,1600,1000); fCanvasRefernce->Divide(4,2);}
     if(fVecSize == 8){fCanvasRefernce = new TCanvas("CanvasRefernce","CanvasRefernce",0,0,1600,1000); fCanvasRefernce->Divide(4,2);}
-    if(fVecSize == 9){fCanvasRefernce = new TCanvas("CanvasRefernce","CanvasRefernce",0,0,1600,1000); fCanvasRefernce->Divide(4,2);}
-    
-    
+    if(fVecSize == 9){fCanvasRefernce = new TCanvas("CanvasRefernce","CanvasRefernce",0,0,1600,1000); fCanvasRefernce->Divide(5,2);}
+        
     fCanvasFitting = new TCanvas*[fVecSystModesSize];
     
     /*
@@ -623,7 +622,7 @@ Bool_t AliHFCorrFitSystematics::SetUpSystematicsFitter(){
     fRMSHistoNSSigma = new TH1D *[fVecSize];
     fRMSHistoASYield = new TH1D *[fVecSize];
     fRMSHistoASSigma = new TH1D *[fVecSize];
-        fRMSHistoPedestal = new TH1D *[fVecSize];
+    fRMSHistoPedestal = new TH1D *[fVecSize];
         
         for(Int_t k=0; k<fVecSize;k++){
             fRMSHistoNSYield[k] = new TH1D(Form("RMSHistoNSYieldBin%d",k),Form("RMSHistoNSYieldBin%d",k),1000,0,10);
@@ -750,7 +749,7 @@ void AliHFCorrFitSystematics::Fitv2Systematics(){
         pave->SetName(Form("pave_%d",iPtBin));
         pave->AddText(Form("%.1f < p_{T}(D) < %.1f GeV/c",fVecLowEdgeDpt[iPtBin],fVecUpEdgeDpt[iPtBin]));
         if(fAssocTrackPtMax>50) pave->AddText(Form("p_{T}(hadron) > %.1f GeV/c",fAssocTrackPtMin));
-        else pave->AddText(Form("%.1f <p_{T}(hadron) < %.1f GeV/c",fAssocTrackPtMin, fAssocTrackPtMin));
+        else pave->AddText(Form("%.1f <p_{T}(hadron) < %.1f GeV/c",fAssocTrackPtMin, fAssocTrackPtMax));
         pave->SetFillStyle(0);
         pave->SetBorderSize(0);
         pave->SetTextSize(0.03);
@@ -802,6 +801,7 @@ void AliHFCorrFitSystematics::Fitv2Systematics(){
 
         fFitter->SetFixMeanType(3);
         fFitter->SetFuncType(fFitFuncType[fReferenceIndex]);
+        fFitter->SetPtRanges(fVecLowEdgeDpt[iPtBin],fVecUpEdgeDpt[iPtBin],fAssocTrackPtMin,fAssocTrackPtMax);
         fFitter->Fitting();
         fFitter->DrawLegendWithParameters();
         pave->Draw("same");
@@ -885,7 +885,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
       paveRef->SetName(Form("pave_%d",iPtBin));
       paveRef->AddText(Form("%.1f < p_{T}(D) < %.1f GeV/c",fVecLowEdgeDpt[iPtBin],fVecUpEdgeDpt[iPtBin]));
       if(fAssocTrackPtMax>50) paveRef->AddText(Form("p_{T}(hadron) > %.1f GeV/c",fAssocTrackPtMin));
-      else paveRef->AddText(Form("%.1f <p_{T}(hadron) < %.1f GeV/c",fAssocTrackPtMin, fAssocTrackPtMin));
+      else paveRef->AddText(Form("%.1f <p_{T}(hadron) < %.1f GeV/c",fAssocTrackPtMin, fAssocTrackPtMax));
       paveRef->SetFillStyle(0);
       paveRef->SetBorderSize(0);
       paveRef->SetTextSize(0.03);
@@ -906,6 +906,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
       fCanvasRefernce->cd(iPtBin+1);
       fFitter->SetFixMeanType(3);
       fFitter->SetFuncType(fFitFuncType[fReferenceIndex]);
+      fFitter->SetPtRanges(fVecLowEdgeDpt[iPtBin],fVecUpEdgeDpt[iPtBin],fAssocTrackPtMin,fAssocTrackPtMax);
       fFitter->Fitting();
       fFitter->DrawLegendWithParameters();
       paveRef->Draw("same");
@@ -966,7 +967,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
             pave->SetName(Form("pave_%d",iPtBin));
             pave->AddText(Form("%.1f < p_{T}(D) < %.1f GeV/c",fVecLowEdgeDpt[iPtBin],fVecUpEdgeDpt[iPtBin]));
             if(fAssocTrackPtMax>50) pave->AddText(Form("p_{T}(hadron) > %.1f GeV/c",fAssocTrackPtMin));
-            else pave->AddText(Form("%.1f <p_{T}(hadron) < %.1f GeV/c",fAssocTrackPtMin, fAssocTrackPtMin));
+            else pave->AddText(Form("%.1f <p_{T}(hadron) < %.1f GeV/c",fAssocTrackPtMin, fAssocTrackPtMax));
             pave->SetFillStyle(0);
             pave->SetBorderSize(0);
             pave->SetTextSize(0.03);
@@ -1016,6 +1017,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
             
             fFitter->SetFixMeanType(3);
             fFitter->SetFuncType(fFitFuncType[iSystMode]);
+            fFitter->SetPtRanges(fVecLowEdgeDpt[iPtBin],fVecUpEdgeDpt[iPtBin],fAssocTrackPtMin,fAssocTrackPtMax);
             fFitter->Fitting();
             fFitter->DrawLegendWithParameters();
             pave->Draw("same");
@@ -1311,9 +1313,9 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
     
 
     
-        TLegend * SystematicsLegendNSYield = new TLegend(0.5,0.6,0.85,0.8);
+        TLegend * SystematicsLegendNSYield = new TLegend(0.43,0.6,0.85,0.8);
         SystematicsLegendNSYield->SetFillColor(0);
-        SystematicsLegendNSYield->SetTextSize(0.025);
+        SystematicsLegendNSYield->SetTextSize(0.022);
         SystematicsLegendNSYield->SetBorderSize(0);
         fCanvasSystematicSourcesNSYield->cd();
         for(Int_t iSystMode = 0;iSystMode<fVecSystModesSize; iSystMode++ ){
@@ -1324,9 +1326,9 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
         SystematicsLegendNSYield->Draw("same");
        DefinePaveText();
         
-        TLegend * SystematicsLegendNSSigma = new TLegend(0.5,0.6,0.85,0.8);
+        TLegend * SystematicsLegendNSSigma = new TLegend(0.43,0.6,0.85,0.8);
         SystematicsLegendNSSigma->SetFillColor(0);
-        SystematicsLegendNSSigma->SetTextSize(0.025);
+        SystematicsLegendNSSigma->SetTextSize(0.022);
         SystematicsLegendNSSigma->SetBorderSize(0);
         fCanvasSystematicSourcesNSSigma->cd();
         for(Int_t iSystMode = 0;iSystMode<fVecSystModesSize; iSystMode++ ){
@@ -1337,9 +1339,9 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
         SystematicsLegendNSSigma->Draw("same");
         DefinePaveText();
         
-        TLegend * SystematicsLegendASYield = new TLegend(0.5,0.6,0.85,0.8);
+        TLegend * SystematicsLegendASYield = new TLegend(0.43,0.6,0.85,0.8);
         SystematicsLegendASYield->SetFillColor(0);
-        SystematicsLegendASYield->SetTextSize(0.025);
+        SystematicsLegendASYield->SetTextSize(0.022);
         SystematicsLegendASYield->SetBorderSize(0);
         fCanvasSystematicSourcesASYield->cd();
         for(Int_t iSystMode = 0;iSystMode<fVecSystModesSize; iSystMode++ ){
@@ -1350,9 +1352,9 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
         SystematicsLegendASYield->Draw("same");
         DefinePaveText();
         
-        TLegend * SystematicsLegendASSigma = new TLegend(0.5,0.6,0.85,0.8);
+        TLegend * SystematicsLegendASSigma = new TLegend(0.43,0.6,0.85,0.8);
         SystematicsLegendASSigma->SetFillColor(0);
-        SystematicsLegendASSigma->SetTextSize(0.025);
+        SystematicsLegendASSigma->SetTextSize(0.022);
         SystematicsLegendASSigma->SetBorderSize(0);
         
         fCanvasSystematicSourcesASSigma->cd();
@@ -1364,9 +1366,9 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
         SystematicsLegendASSigma->Draw("same");
     DefinePaveText();
     
-        TLegend * SystematicsLegendPedestal = new TLegend(0.5,0.6,0.85,0.8);
+        TLegend * SystematicsLegendPedestal = new TLegend(0.43,0.6,0.85,0.8);
         SystematicsLegendPedestal->SetFillColor(0);
-        SystematicsLegendPedestal->SetTextSize(0.025);
+        SystematicsLegendPedestal->SetTextSize(0.022);
         SystematicsLegendPedestal->SetBorderSize(0);
         fCanvasSystematicSourcesPedestal->cd();
         for(Int_t iSystMode = 0;iSystMode<fVecSystModesSize; iSystMode++ ){
@@ -1384,7 +1386,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
       if(fIspPb)  Fitv2Systematics();
     
     cout <<"drawing ns yield final " << endl;
-    TLegend * TotalSystematicsLegendNSyield = new TLegend(0.5,0.6,0.85,0.8);
+    TLegend * TotalSystematicsLegendNSyield = new TLegend(0.43,0.6,0.85,0.8);
     TotalSystematicsLegendNSyield->SetFillColor(0);
     TotalSystematicsLegendNSyield->SetTextSize(0.02);
     TotalSystematicsLegendNSyield->SetBorderSize(0);
@@ -1393,7 +1395,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
     DefinePaveText();
     
     cout <<"drawing ns yield sigma " << endl;
-    TLegend * TotalSystematicsLegendNSSigma = new TLegend(0.5,0.6,0.85,0.8);
+    TLegend * TotalSystematicsLegendNSSigma = new TLegend(0.43,0.6,0.85,0.8);
     TotalSystematicsLegendNSSigma->SetFillColor(0);
     TotalSystematicsLegendNSSigma->SetTextSize(0.02);
     TotalSystematicsLegendNSSigma->SetBorderSize(0);
@@ -1402,7 +1404,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
     DefinePaveText();
     
     cout <<"drawing ss yield final " << endl;
-    TLegend * TotalSystematicsLegendASyield = new TLegend(0.5,0.6,0.85,0.8);
+    TLegend * TotalSystematicsLegendASyield = new TLegend(0.43,0.6,0.85,0.8);
     TotalSystematicsLegendASyield->SetFillColor(0);
     TotalSystematicsLegendASyield->SetTextSize(0.02);
     TotalSystematicsLegendASyield->SetBorderSize(0);
@@ -1411,7 +1413,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
     DefinePaveText();
     
     cout <<"drawing as sigma final " << endl;
-    TLegend * TotalSystematicsLegendASSigma = new TLegend(0.5,0.6,0.85,0.8);
+    TLegend * TotalSystematicsLegendASSigma = new TLegend(0.43,0.6,0.85,0.8);
     TotalSystematicsLegendASSigma->SetFillColor(0);
     TotalSystematicsLegendASSigma->SetTextSize(0.02);
     TotalSystematicsLegendASSigma->SetBorderSize(0);
@@ -1420,7 +1422,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
     DefinePaveText();
     
     cout <<"drawing ns yield final " << endl;
-    TLegend * TotalSystematicsLegendPedestal = new TLegend(0.5,0.6,0.85,0.8);
+    TLegend * TotalSystematicsLegendPedestal = new TLegend(0.43,0.6,0.85,0.8);
     TotalSystematicsLegendPedestal->SetFillColor(0);
     TotalSystematicsLegendPedestal->SetTextSize(0.02);
     TotalSystematicsLegendPedestal->SetBorderSize(0);
@@ -1743,17 +1745,19 @@ void AliHFCorrFitSystematics::DrawBaselineSystematicsOnCanvas(TH1D * histoinput,
     histo->SetFillStyle(3000+iSystMode);
 
     TString suffix = "";
-    if(fVecSystMode[iSystMode] == kLowestPoint) suffix = "Lowest Point";
-    if(fVecSystMode[iSystMode] == kNLowest) suffix = Form("%dLowest Point",fNMinPointsBaselineEstimationRange[iSystMode]);
-    if(fVecSystMode[iSystMode] == k2PointsAtPiHalf) suffix = "2 Points at pi half";
-    if(fVecSystMode[iSystMode] == k4PointsAtPiHalf) suffix = "4 Points at pi half";
-    if(fVecSystMode[iSystMode] == kTransverse) suffix = Form("Baseline from region %.3f#pi - %.3f#pi ",fMinBaselineEstimationRange[iSystMode]/TMath::Pi(),fMaxBaselineEstimationRange[iSystMode]/TMath::Pi());
-    if(fVecSystMode[iSystMode] == kTransverseUppStatUnc) suffix = Form("Basel. from %.3f#pi - %.3f#pi + #sigma_{unc}",fMinBaselineEstimationRange[iSystMode]/TMath::Pi(),fMaxBaselineEstimationRange[iSystMode]/TMath::Pi());
-    if(fVecSystMode[iSystMode] == kTransverseLowStatUnc) suffix = Form("Basel. from %.3f#pi - %.3f#pi - #sigma_{unc}",fMinBaselineEstimationRange[iSystMode]/TMath::Pi(),fMaxBaselineEstimationRange[iSystMode]/TMath::Pi());
-    if(fVecSystMode[iSystMode] == kBinCount) suffix = "Bin Counting";
-    if(fVecSystMode[iSystMode] == kMinVar) suffix = "Min Variation";
-    if(fVecSystMode[iSystMode] == kMaxVar) suffix = "Max Variation";
-    
+    if(fVecSystMode[iSystMode] == kLowestPoint) suffix += "Lowest Point";
+    if(fVecSystMode[iSystMode] == kNLowest) suffix += Form("%dLowest Point",fNMinPointsBaselineEstimationRange[iSystMode]);
+    if(fVecSystMode[iSystMode] == k2PointsAtPiHalf) suffix += "2 Points at pi half";
+    if(fVecSystMode[iSystMode] == k4PointsAtPiHalf) suffix += "4 Points at pi half";
+    if(fVecSystMode[iSystMode] == kTransverse) suffix = Form("Basel. from region %.3f#pi - %.3f#pi ",fMinBaselineEstimationRange[iSystMode]/TMath::Pi(),fMaxBaselineEstimationRange[iSystMode]/TMath::Pi());
+    if(fVecSystMode[iSystMode] == kTransverseUppStatUnc) suffix += Form("Basel. from %.3f#pi - %.3f#pi + #sigma_{unc}",fMinBaselineEstimationRange[iSystMode]/TMath::Pi(),fMaxBaselineEstimationRange[iSystMode]/TMath::Pi());
+    if(fVecSystMode[iSystMode] == kTransverseLowStatUnc) suffix += Form("Basel. from %.3f#pi - %.3f#pi - #sigma_{unc}",fMinBaselineEstimationRange[iSystMode]/TMath::Pi(),fMaxBaselineEstimationRange[iSystMode]/TMath::Pi());
+    if(fVecSystMode[iSystMode] == kBinCount) suffix += "Bin Counting";
+    if(fVecSystMode[iSystMode] == kMinVar) suffix += "Min Variation";
+    if(fVecSystMode[iSystMode] == kMaxVar) suffix += "Max Variation";
+
+    if(fFitFuncType[iSystMode] == 7) suffix = Form("ModGausNS, %s",suffix.Data());
+
     TString legendentry = "";
     legendentry += suffix;
     legend->AddEntry(histo,legendentry,"f");

@@ -53,6 +53,11 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 			fMeanITS  = mean;
 			fWidthITS = width;
 		};
+		
+		void SetCorrWidthMeanTOF(TH3D* width, TH3D* mean){
+			fMeanTOF  = mean;
+			fWidthTOF = width;
+		};
 
 		void SetCentralityPercentileRange(Double_t min, Double_t max){
 				fCentralityPercentileMin = min;
@@ -165,6 +170,10 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		void SetUseITScorr(Bool_t answer){
 			fUseITScorr = answer;
 		}
+		
+		void SetUseTOFcorr(Bool_t answer){
+			fUseTOFcorr = answer;
+		}
 
 		Bool_t GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0);
 
@@ -232,6 +241,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		Double_t EnSigmaTPC;
 		Double_t EnSigmaTPCcorr;
 		Double_t EnSigmaTOF;
+		Double_t EnSigmaTOFcorr;
 		Double_t PnSigmaTPC;
 		Double_t PnSigmaITS;
 		Double_t PnSigmaTOF;
@@ -309,6 +319,13 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		Bool_t fUseITScorr;
 		TH3D* fWidthITS;
 		TH3D* fMeanITS;
+		
+		Bool_t fUseTOFcorr;
+		TH3D* fWidthTOF;
+		TH3D* fMeanTOF;
+
+		// Temp variable (needed for testing MC issues)
+		Int_t TOFstartMask;
 
 		// Store list of generator hashes which can be checked against to determine
 		// whether or not the track was injected

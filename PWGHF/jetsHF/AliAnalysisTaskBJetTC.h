@@ -40,6 +40,7 @@ public:
   	virtual void  Terminate(Option_t *);
 	virtual Bool_t Run();
 	virtual Double_t GetDeltaPtRandomCone();
+	virtual Double_t GetDeltaPtRandomConeWithSignal();
 	virtual Bool_t Notify();
 
 
@@ -108,6 +109,10 @@ public:
 
 	void SetCalculateDCATruth(Bool_t value){fCalcDCATruth = value;}
 
+	void SetTaggerWorkingPoint(Double_t value){fThresholdIP = value;}
+
+	void SetDoDeltaPtWithSignal(Bool_t value){fDoDeltaPtWithSignal = value;}
+
 	// B jet tracks selection
 	void SetTrackMinPt(Double_t val){ fTCMinTrackPt = val;}
 	void SetTPCClusterMin(Int_t val){ fTCMinClusTPC = val;}
@@ -156,6 +161,8 @@ private:
 	Float_t fPythiaEventWeight;//!
 	Bool_t fDoImprovedDCACut;//
 	Bool_t fVertexConstraint;//!
+	Double_t fThresholdIP;//
+	Bool_t fDoDeltaPtWithSignal;//
 
 	AliESDVertex* fDiamond;//!
 	AliVertexerTracks *fVertexer;//!
@@ -196,6 +203,11 @@ private:
 	TH2D * f2histRhoVsDeltaPtFirst;//!
 	TH2D * f2histRhoVsDeltaPtSecond;//!
 	TH2D * f2histRhoVsDeltaPtThird;//!
+
+	TH2D * f2histRhoVsDeltaPtWithSignal;//!
+	TH2D * f2histRhoVsDeltaPtWithSignalFirst;//!
+	TH2D * f2histRhoVsDeltaPtWithSignalSecond;//!
+	TH2D * f2histRhoVsDeltaPtWithSignalThird;//!
 
 	TH1D * fh1dTracksImpParXY;//! R Impact Parameter
 	TH1D * fh1dTracksImpParXYZ;//! R+z Impact Parameter
@@ -607,7 +619,7 @@ private:
   static const Double_t fgkMassProton;  //
   static const Int_t fgkiNCategV0 = 18; // number of V0 selection steps
 
-	ClassDef(AliAnalysisTaskBJetTC, 50)
+	ClassDef(AliAnalysisTaskBJetTC, 52)
 };
 #endif
  //

@@ -20,7 +20,6 @@ public:
 
   enum PIDMethodType {knSigma=0, kContour=1};
   typedef enum PIDMethodType ReadPIDMethodType;
-
   AliFemtoESDTrackCut();
   virtual ~AliFemtoESDTrackCut();
 
@@ -89,7 +88,6 @@ public:
   std::pair<float, float> GetProbProton() const { return std::make_pair(fPidProbProton[0], fPidProbProton[1]); }
   std::pair<float, float> GetProbMuon() const { return std::make_pair(fPidProbMuon[0], fPidProbMuon[1]); }
 
-
   bool GetLabel() const { return fLabel; }
   ULong64_t GetStatus() const { return fStatus; }
   int GetPIDmethod() const { return fPIDMethod; }
@@ -101,6 +99,8 @@ public:
   float GetMaxITSchiNdof() const { return fMaxITSchiNdof; }
   float GetMaxTPCchiNdof() const { return fMaxTPCchiNdof; }
   float GetMaxSigmaToVertex() const { return fMaxSigmaToVertex; }
+
+
 
   /// Use TPC & TOF information
   bool GetDualNsigma() const { return fNsigmaTPCTOF; }
@@ -186,7 +186,7 @@ protected:   // here are the quantities I want to cut on...
   bool IsPionTPCdEdx(float mom, float dEdx);
   bool IsKaonTPCdEdx(float mom, float dEdx);
   bool IsProtonTPCdEdx(float mom, float dEdx);
-
+  bool IsDeuteronTPCdEdx(float mom, float dEdx);
 
   
   bool IsPionTOFTime(float mom, float ttof);
@@ -239,7 +239,6 @@ inline void AliFemtoESDTrackCut::SetPidProbPion(const float& lo,const float& hi)
 inline void AliFemtoESDTrackCut::SetPidProbKaon(const float& lo,const float& hi){fPidProbKaon[0]=lo; fPidProbKaon[1]=hi;}
 inline void AliFemtoESDTrackCut::SetPidProbProton(const float& lo,const float& hi){fPidProbProton[0]=lo; fPidProbProton[1]=hi;}
 inline void AliFemtoESDTrackCut::SetPidProbMuon(const float& lo,const float& hi){fPidProbMuon[0]=lo; fPidProbMuon[1]=hi;}
-
 
 
 inline void AliFemtoESDTrackCut::SetLabel(const bool& flag){fLabel=flag;}

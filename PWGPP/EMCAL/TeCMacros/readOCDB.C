@@ -69,6 +69,464 @@ Int_t readLed(Int_t *runs, Int_t nruns=1, const char *pername="unspec")
   return ret;
 }
 
+void read_LHC13b(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {195344, 195351, 195389, 195391, 195478, 195479, 195480, 195481, 195482, 195483};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2013/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc13b");
+  readLed(runs,nruns,"lhc13b");
+}
+
+void read_LHC10b(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {115393, 115399, 115401, 116102, 116288, 116402, 116403, 116643, 116645, 117050, 117052, 117053, 117059, 117060, 117063, 117099, 117109, 117112, 117116, 117220, 117222};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2010/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc10b");
+  readLed(runs,nruns,"lhc10b");
+}
+
+void read_LHC10c(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {119159, 119161, 119163, 119841, 119842, 119844, 119845, 119846, 119853, 119856, 119859, 119862, 120067, 120069, 120072, 120076, 120079, 120244, 120503, 120504, 120505, 120616, 120617, 120671, 120741, 120820, 120821, 120822, 120823, 120824, 120825, 120829};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2010/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc10c");
+  readLed(runs,nruns,"lhc10c");
+}
+
+void read_LHC10d(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {122374, 122375, 125630, 125632, 125633, 125842, 125843, 125844, 125847, 125848, 125849, 125850, 125851, 125855, 126004, 126007, 126008, 126073, 126078, 126081, 126082, 126088, 126090, 126097, 126158, 126160, 126167, 126168, 126284, 126285, 126351, 126352, 126359, 126403, 126404, 126405, 126406, 126407, 126408, 126409, 126422, 126424, 126425, 126432};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2010/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc10d");
+  readLed(runs,nruns,"lhc10d");
+}
+
+void read_LHC10e(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {128486, 128494, 128495, 128498, 128503, 128504, 128505, 128506, 128582, 128590, 128592, 128594, 128596, 128605, 128609, 128611, 128615, 128621, 128677, 128678, 128777, 128778, 128819, 128820, 128823, 128824, 128833, 128834, 128835, 128836, 128843, 128850, 128853, 128855, 128913, 129042, 129512, 129513, 129514, 129515, 129516, 129519, 129520, 129521, 129523, 129524, 129525, 129527, 129528, 129536, 129540, 129586, 129587, 129599, 129639, 129641, 129647, 129650, 129651, 129652, 129653, 129659, 129666, 129723, 129726, 129729, 129734, 129735, 129736, 129738, 129742, 129744, 129959, 129960, 129961, 129962, 129966, 129983, 130149, 130151, 130157, 130158, 130168, 130172, 130178, 130343, 130354, 130356, 130358, 130360, 130375, 130480, 130481, 130517, 130519, 130696, 130704, 130793, 130795, 130798, 130799, 130834, 130840, 130842, 130844, 130847, 130848};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2010/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc10e");
+  readLed(runs,nruns,"lhc10e");
+}
+
+void read_LHC10f(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {133006, 133007, 133010, 133327, 133329, 133330, 133414, 133670, 133762, 133800, 133920, 133969, 133982};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2010/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc10f");
+  readLed(runs,nruns,"lhc10f");
+}
+
+void read_LHC11a7(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {146277, 146223, 146220, 146208, 146158, 146156, 146153, 146152, 146141, 146025, 146024, 146023, 145674, 145455, 145385, 145384, 145383, 145379, 145355, 145354, 145353, 145314, 145300, 145290, 145289, 145288 };
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2011/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc11a7");
+  readLed(runs,nruns,"lhc11a7");
+}
+
+
+void read_LHC11a(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {146746, 146747, 146748, 146801, 146802, 146803, 146804, 146805, 146806, 146807, 146817, 146824, 146856, 146858 };
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2011/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc11a");
+  readLed(runs,nruns,"lhc11a");
+}
+
+void read_LHC11b(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {148531, 148534, 148538, 148541, 148544, 148547, 148549, 148553, 148556, 148559, 148565, 148569, 148576, 148582, 148592, 148601, 148625, 148630, 148645, 148648, 148659, 148663, 148708, 148711, 148719, 148800, 148838, 148843, 148844, 148847, 148850, 148852, 148853, 148854, 148856, 148857, 149068, 149070, 149071, 149072, 149113, 149127, 149129, 149130, 149133, 149134, 149767, 149880, 149881, 149883, 149884, 149890, 149927, 149929, 149930, 149931, 149960, 149961, 149975, 150059, 150060, 150160, 150162, 150163, 150211, 150212, 150248, 150250, 150252, 150254, 150256, 150259, 150374, 150375, 150420, 150421, 150423, 150427, 150428, 150433, 150434, 150437, 150438, 150440, 150499, 150500, 150518, 150629, 151636, 151638};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2011/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc11b");
+  readLed(runs,nruns,"lhc11b");
+}
+
+void read_LHC11c(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {151655, 151660, 151661, 151664, 151672, 151674, 151681, 151689, 151724, 151849, 151850, 151851, 151852, 152003, 152011, 152015, 152208, 152256, 152284, 152306, 152309, 152311, 152312, 152319, 152320, 152321, 152322, 152366, 152367, 152368, 152369, 152371, 152377, 152455, 152488, 152512, 152513, 152567, 152568, 152570, 152581, 152591, 152599, 153116, 153223, 153232, 153296, 153362, 153363, 153369, 153371, 153373, 153415, 153465, 153533, 153536, 153539, 153541, 153542, 153544, 153548, 153552, 153558, 153560, 153566, 153570, 153571, 153583, 153587, 153589, 153591, 153594, 153702, 153709, 153718, 153725, 153726, 153727, 153728, 153733, 153738, 153776, 153777, 153779, 153784, 153794, 153796, 153798, 153805, 153807, 153808, 153873, 153875, 153876, 153997, 154001, 154002, 154018, 154024, 154026, 154030, 154031, 154039, 154056, 154060, 154066, 154070, 154083, 154125, 154126, 154129, 154130, 154132, 154136, 154138, 154141, 154143, 154145, 154151, 154158, 154163, 154207, 154211, 154219, 154220, 154221, 154222, 154234, 154235, 154252, 154257, 154261, 154264, 154266, 154269, 154270, 154273, 154281, 154283, 154286, 154289, 154293, 154296, 154315, 154316, 154317, 154382, 154383, 154385, 154448, 154478, 154480, 154482, 154483, 154485, 154495, 154583, 154591, 154594, 154596, 154597, 154598, 154599, 154726, 154732, 154733, 154742, 154745, 154748, 154750, 154753, 154755, 154786, 154789, 154793, 154796, 154808, 154903, 154908, 154929, 154930,154780, 154773, 154763,154787,154783};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2011/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc11c");
+  readLed(runs,nruns,"lhc11c");
+}
+
+
+void read_LHC11d(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {156620, 156621, 156626, 156629, 156794, 156797, 156829, 156889, 156891, 156895, 156896, 157003, 157025, 157082, 157083, 157087, 157090, 157091, 157092, 157094, 157096, 157098, 157203, 157209, 157210, 157211, 157212, 157214, 157220, 157226, 157227, 157257, 157260, 157261, 157262, 157268, 157272, 157273, 157275, 157277, 157475, 157476, 157496, 157560, 157561, 157562, 157564, 157567, 157569, 157645, 157698, 157707, 157708, 157713, 157734, 157765, 157766, 157770, 157818, 157819, 157848, 157857, 157975, 157976, 158000, 158001, 158002, 158003, 158009, 158011, 158013, 158014, 158020, 158025, 158026, 158031, 158036, 158037, 158041, 158042, 158048, 158049, 158050, 158051, 158052, 158053, 158084, 158086, 158110, 158111, 158112, 158114, 158115, 158118, 158120, 158124, 158135, 158136, 158137, 158180, 158189, 158191, 158192, 158194, 158196, 158200, 158201, 158285, 158287, 158288, 158293, 158299, 158301, 158303, 158304, 158338, 158341, 158467, 158468, 158469, 158471, 158492, 158495, 158496, 158508, 158509, 158511, 158516, 158518, 158520, 158521, 158522, 158526, 158528, 158531, 158533, 158592, 158598, 158602, 158604, 158608, 158611, 158613, 158615, 158617, 158622, 158626, 158673, 158706, 158714, 158717, 158718, 158722, 158729, 158745, 158776, 158777, 158779, 158780, 158781, 158784, 158788, 158790, 158791, 158792, 158793, 158794, 158844, 158848, 158856, 158868, 158875, 158876, 158877, 158878, 158879, 159007, 159028, 159040, 159042, 159044, 159076, 159085, 159090, 159117, 159120, 159121, 159122, 159128, 159146, 159147, 159150, 159154, 159156, 159162, 159167, 159168, 159169, 159173, 159177, 159185, 159186, 159191, 159192, 159193, 159194, 159199, 159200, 159201, 159204, 159205, 159206, 159207, 159212, 159214, 159215, 159216, 159217, 159218, 159220, 159221, 159223, 159254, 159255, 159257, 159258, 159259, 159260, 159283, 159285, 159286, 159318, 159378, 159379, 159450, 159451, 159502, 159503, 159505, 159517, 159521, 159532, 159535, 159536, 159538, 159539, 159571, 159575, 159577, 159580, 159581, 159582, 159586, 159593, 159595, 159599, 159602, 159606, 159635};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2011/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc11d");
+  readLed(runs,nruns,"lhc11d");
+}
+
+void read_LHC11h(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {167987, 167988, 168310, 168311, 168322, 168325, 168341, 168342, 168361, 168362, 168458, 168460, 168464, 168467, 168511, 168512, 168514, 168777, 168826, 168984, 168988, 168992, 169035, 169091, 169094, 169099, 169138, 169143, 169144, 169145, 169148, 169156, 169160, 169167, 169238, 169411, 169415, 169417, 169418, 169419, 169420, 169475, 169498, 169504, 169506, 169512, 169515, 169550, 169553, 169554, 169555, 169557, 169584, 169586, 169587, 169588, 169590, 169591, 169835, 169837, 169846, 169855, 169858, 169859, 169923, 169965, 169975, 169981, 170027, 170036, 170038, 170040, 170083, 170085, 170152, 170155, 170159, 170163, 170193, 170195, 170203, 170204, 170207, 170208, 170228, 170230, 170268, 170269, 170270, 170306, 170308, 170309, 170311, 170312, 170313, 170315, 170387, 170388, 170572, 170593};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2011/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc11h");
+  readLed(runs,nruns,"lhc11h");
+}
+
+void read_LHC12a(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {176715, 176730, 176749, 176752, 176753, 176849, 176854, 176859, 176924, 176926, 176927, 176929, 177011};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2012/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc12a");
+  readLed(runs,nruns,"lhc12a");
+}
+
+
+void read_LHC12b(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {177580, 177592, 177597, 177612, 177620, 177624, 177671, 177679, 177680, 177681, 177682, 177798, 177799, 177802, 177804, 177805, 177942};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2012/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc12b");
+  readLed(runs,nruns,"lhc12b");
+}
+
+
+void read_LHC12c(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {179569, 179571, 179584, 179585, 179591, 179618, 179621, 179639, 179796, 179803, 179806, 179858, 179859, 179916, 179917, 179918, 179919, 179920, 180000, 180042, 180044, 180129, 180130, 180131, 180132, 180133, 180199, 180200, 180500, 180501, 180515, 180517, 180561, 180564, 180567, 180569, 180716, 180717, 180719, 180720, 182017, 182018, 182022, 182023, 182106, 182110, 182111, 182207, 182289, 182295, 182297, 182299, 182300, 182302, 182322, 182323, 182324, 182325, 182624, 182635, 182684, 182686, 182687, 182691, 182692, 182724, 182725, 182728, 182729, 182730, 182741, 182744};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2012/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc12c");
+  readLed(runs,nruns,"lhc12c");
+}
+
+void read_LHC12d(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {183913, 183916, 183932, 183933, 183934, 183935, 183936, 183937, 183938, 183942, 183946, 184126, 184127, 184131, 184132, 184134, 184135, 184137, 184138, 184140, 184144, 184145, 184147, 184183, 184188, 184208, 184209, 184210, 184215, 184216, 184371, 184383, 184389, 184673, 184678, 184682, 184687, 184784, 184786, 185029, 185031, 185116, 185126, 185127, 185132, 185133, 185134, 185157, 185160, 185164, 185189, 185196, 185198, 185203, 185206, 185208, 185217, 185221, 185282, 185284, 185289, 185291, 185292, 185293, 185296, 185299, 185300, 185302, 185303, 185349, 185350, 185351, 185356, 185359, 185360, 185361, 185362, 185363, 185368, 185371, 185375, 185378, 185461, 185465, 185474, 185582, 185583, 185588, 185589, 185659, 185687, 185738, 185764, 185765, 185768, 185775, 185776, 185778, 185784, 186007, 186009, 186011, 186163, 186164, 186165, 186167, 186205, 186208, 186319, 186320};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2012/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc12d");
+  readLed(runs,nruns,"lhc12d");
+}
+
+
+void read_LHC12f(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {186668, 186688, 186689, 186690, 186692, 186694, 186811, 186814, 186937, 186938, 186939, 186966, 186969, 186990, 186992, 186994, 187143, 187145, 187146, 187147, 187148, 187149, 187150, 187151, 187152, 187202, 187203, 187339, 187340, 187341, 187487, 187488, 187489, 187510, 187623, 187624, 187627, 187656, 187698, 187739, 187749, 187783, 187785, 187791, 187796, 188093, 1881010};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2012/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc12f");
+  readLed(runs,nruns,"lhc12f");
+}
+
+
+void read_LHC12h(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {189306, 189310, 189315, 189316, 189350, 189351, 189352, 189353, 189400, 189407, 189409, 189410, 189411, 189577, 189578, 189602, 189603, 189605, 189610, 189611, 189612, 189616, 189621, 189623, 189647, 189648, 189650, 189654, 189656, 189658, 189659, 189696, 189697, 189698, 190150, 190209, 190210, 190212, 190213, 190214, 190215, 190216, 190240, 190303, 190305, 190307, 190335, 190337, 190338, 190340, 190341, 190342, 190344, 190386, 190388, 190389, 190390, 190392, 190393, 190416, 190417, 190418, 190419, 190421, 190422, 190424, 190425, 190895, 190898, 190903, 190904, 190968, 190970, 190974, 190975, 190979, 190981, 190983, 190984, 191129, 191227, 191229, 191230, 191231, 191245, 191247, 191248, 191450, 191451, 192072, 192073, 192075, 192128, 192136, 192140, 192141, 192172, 192174, 192177, 192194, 192197, 192199, 192200, 192201, 192202, 192205, 192246, 192344, 192347, 192348, 192349, 192415, 192417, 192453, 192461, 192468, 192471, 192492, 192499, 192505, 192510, 192535, 192542, 192548, 192551, 192729, 192731, 192732};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2012/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc12h");
+  readLed(runs,nruns,"lhc12h");
+}
+
+
+void read_LHC12i(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {192772, 192775, 192778, 192779, 192820, 192822, 192824, 193004, 193005, 193007, 193008, 193010, 193011, 193014, 193047, 193049, 193051, 193092, 193093, 193094, 193097, 193148, 193155, 193156, 193187, 193188, 193189, 193194};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2012/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc12i");
+  readLed(runs,nruns,"lhc12i");
+}
+
+void read_LHC13c(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {195529, 195531, 195566, 195567, 195568, 195592, 195593, 195596, 195633, 195635, 195644, 195673, 195675, 195677};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2013/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc13c");
+  readLed(runs,nruns,"lhc13c");
+}
+
+void read_LHC13d(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {195681, 195682, 195720, 195721, 195722, 195723, 195724, 195725, 195726, 195727, 195760, 195761, 195765, 195767, 195783, 195787, 195826, 195827, 195829, 195830, 195831, 195867, 195869, 195871, 195872, 195873};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2013/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc13d");
+  readLed(runs,nruns,"lhc13d");
+}
+
+
+void read_LHC13e(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {195935, 195949, 195950, 195954, 195955, 195958, 195989, 195994, 196000, 196006, 196085, 196089, 196090, 196091, 196099, 196105, 196107, 196185, 196187, 196194, 196197, 196199, 196200, 196201, 196203, 196208, 196214, 196308, 196309, 196310};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2013/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc13e");
+  readLed(runs,nruns,"lhc13e");
+}
+
+void read_LHC13f(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {196433, 196474, 196475, 196477, 196528, 196533, 196535, 196563, 196564, 196566, 196568, 196601, 196605, 196608, 196646, 196648, 196701, 196702, 196703, 196706, 196714, 196720, 196721, 196722, 196772, 196773, 196774, 196869, 196870, 196874, 196876, 196965, 196967, 196972, 196973, 196974, 197003, 197011, 197012, 197015, 197027, 197031, 197084, 197089, 197090, 197091, 197092, 197094, 197098, 197099, 197138, 197139, 197142, 197143, 197144, 197145, 197147, 197148, 197149, 197150, 197152, 197153, 197184, 197189, 197247, 197248, 197254, 197255, 197256, 197258, 197260, 197296, 197297, 197298, 197299, 197300, 197302, 197341, 197342, 197348, 197349, 197351, 197386, 197387, 197388};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2013/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc13f");
+  readLed(runs,nruns,"lhc13f");
+}
+
+
+void read_LHC13g(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {197471, 197496, 197497, 197499, 197500, 197501, 197529, 197531, 197553, 197555, 197583, 197584, 197608, 197609, 197610, 197611, 197618, 197643, 197669};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2013/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc13g");
+  readLed(runs,nruns,"lhc13g");
+}
+
+void read_LHC15Calib(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {235709, 235713, 235716, 235812, 235840, 235887, 235894, 235899, 236141, 236149, 236156, 236162, 236225, 236232, 236241, 236245, 236282, 236332, 236350, 236355, 236358, 236394, 236442, 236447, 236454, 236466, 236555, 236559, 236819, 236820, 236823, 236826, 236849, 236855, 236858, 236861, 236967, 236970, 237003, 237050, 237057, 237062, 237106, 237109, 237119, 237178, 237246, 237257, 237287, 237334, 237336, 237339, 237340, 237346, 237351, 237355, 237358, 237362, 237365, 237366, 237370, 237388, 237392, 237393, 237403, 237503, 237506, 237513, 237516, 237646, 237673, 237686, 237700, 237701, 237703, 237704, 237709, 237712, 237766, 237773, 237778, 237781, 237788, 237792, 237794, 237805, 237843, 237846, 237946, 237947, 237971, 237972, 237974, 237979, 237981, 238074, 238094, 238095, 238096, 238130, 238143, 238146, 238155, 238161, 238163, 238165, 238175, 238178, 238180, 238186, 238188, 238397};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2015/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc15Calib");
+  readLed(runs,nruns,"lhc15Calib");
+}
+
+
+void read_LHC15l(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {239396, 239401, 239402, 239404, 239407, 239409, 239519, 239696, 239701, 239717, 240069, 240072, 240376, 240380, 240381, 240382, 240392, 240394, 240398, 240404, 240406, 240408, 240409, 240411, 240412, 240434, 240440, 240443, 240444, 240447, 240450, 240610, 240612, 240845, 240854, 240860, 240864, 240872, 240874, 240875, 240880, 241001, 241010, 241014, 241021, 241043, 241050, 241054, 241055, 241056, 241057, 241062, 241069, 241141, 241144, 241257, 241267, 241268, 241269, 241281, 241288, 241295, 241296, 241354, 241360, 241361, 241393, 241396, 241407, 241521, 241523, 241531, 241544};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2015/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc15l");
+  readLed(runs,nruns,"lhc15l");
+}
+
+void read_LHC15n(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {244340, 244351, 244355, 244359, 244364, 244377, 244411, 244416, 244418, 244421, 244453, 244456, 244480, 244481, 244482, 244483, 244484, 244531, 244540, 244542, 244617, 244618, 244619, 244626, 244627, 244628};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2015/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc15n");
+  readLed(runs,nruns,"lhc15n");
+}
+
+
+void read_LHC15o(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {245145, 245146, 245148, 245151, 245152, 245231, 245232, 245233, 245259, 245343, 245345, 245346, 245347, 245349, 245353, 245396, 245397, 245401, 245407, 245409, 245410, 245411, 245439, 245441, 245446, 245454, 245496, 245497, 245501, 245504, 245505, 245507, 245535, 245540, 245542, 245543, 245544, 245545, 245554, 245683, 245700, 245702, 245705, 245729, 245731, 245738, 245752, 245759, 245793, 245829, 245831, 245833, 245949, 245952, 245954, 245963, 246001, 246003, 246037, 246042, 246052, 246053, 246087, 246089, 246113, 246115, 246148, 246151, 246152, 246153, 246178, 246180, 246181, 246182, 246217, 246222, 246225, 246271, 246272, 246275, 246276, 246424, 246433, 246434, 246487, 246488, 246493, 246495, 246540, 246543, 246567, 246568, 246575, 246583, 246648, 246671, 246675, 246676, 246750, 246751, 246757, 246758, 246759, 246760, 246765, 246766, 246804, 246805, 246807, 246808, 246809, 246810, 246844, 246845, 246846, 246865, 246867, 246870, 246871, 246928, 246930, 246945, 246948, 246980, 246982, 246984, 246989, 246991, 246994};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2015/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc15o");
+  readLed(runs,nruns,"lhc15o");
+}
 
 void read_LHC16f(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
 {
@@ -623,10 +1081,114 @@ void read_LHC18fLEDOnly(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
     readLed(runs,nruns,"lhc18fLED");
 }
 
-
-
-void read_all(Bool_t loc=0, Bool_t test=0)
+void read_LHC18f(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
 {
+  Int_t runs[] = {287000, 287021, 287063, 287064, 287071, 287077, 287137, 287155, 287185, 287202, 287209, 287248, 287249, 287250, 287254, 287283, 287323, 287324, 287343, 287346, 287347, 287353, 287355, 287356, 287360, 287380, 287381, 287385, 287387, 287388, 287389, 287413, 287480, 287481, 287484, 287486, 287513, 287516, 287517, 287520, 287521, 287573, 287575, 287576, 287654, 287656, 287657, 287876, 287877, 287883, 287884, 287885, 287911, 287912, 287913, 287915, 287923, 287941, 287975, 287977};
+
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2018/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc18f");
+  readLed(runs,nruns,"lhc18f");
+}
+
+void read_LHC18g(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {288619};
+
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2018/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc18g");
+  readLed(runs,nruns,"lhc18g");
+}
+
+void read_LHC18h(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {288804, 288806};
+
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2018/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc18h");
+  readLed(runs,nruns,"lhc18h");
+}
+
+void read_LHC18i(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {289165, 289166, 289169, 289172, 289175, 289176, 289177, 289198, 289199, 289200, 289201};
+
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2018/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc18i");
+  readLed(runs,nruns,"lhc18i");
+}
+
+void read_LHC18j(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {288943};
+
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2018/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc18j");
+  readLed(runs,nruns,"lhc18j");
+}
+
+void read_LHC18k(Bool_t loc=0, Bool_t test=0, Bool_t readLEDOnly = 0)
+{
+  Int_t runs[] = {289165, 289166, 289169, 289172, 289175, 289176, 289177, 289198, 289199, 289200, 289201};
+
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+  if (test)
+    nruns=3;
+
+  if (loc) {
+    AliCDBManager*  cdb = AliCDBManager::Instance();
+    cdb->SetDefaultStorage("local:///opt/alice/OCDB/2018/");
+  }
+
+  if (!readLEDOnly) readTemp(runs,nruns,"lhc18k");
+  readLed(runs,nruns,"lhc18k");
+}
+
+void read_allRun2(Bool_t loc=0, Bool_t test=0)
+{
+  read_LHC15Calib(loc,test);
+  read_LHC15l(loc,test);
+  read_LHC15n(loc,test);
+  read_LHC15o(loc,test);
   read_LHC16f(loc,test);
   read_LHC16g(loc,test);
   read_LHC16h(loc,test);
@@ -660,10 +1222,31 @@ void read_all(Bool_t loc=0, Bool_t test=0)
   read_LHC18d(loc,test);
   read_LHC18e(loc,test);
   read_LHC18fLEDOnly(loc,test);
+  read_LHC18f(loc,test);
+  read_LHC18g(loc,test);
+  read_LHC18h(loc,test);
+  read_LHC18i(loc,test);
+  read_LHC18j(loc,test);
+  read_LHC18k(loc,test);
+
+}
+
+void read_allRun1(Bool_t loc=0, Bool_t test=0)
+{
+  read_LHC13b(loc,test);
+  read_LHC13c(loc,test);
+  read_LHC13d(loc,test);
+  read_LHC13e(loc,test);
+  read_LHC13f(loc,test);
+  read_LHC13g(loc,test);
 }
 
 void read_allLED(Bool_t loc=0, Bool_t test=0)
 {
+  read_LHC15Calib(loc,test,1);
+  read_LHC15l(loc,test,1);
+  read_LHC15n(loc,test,1);
+  read_LHC15o(loc,test,1);
   read_LHC16f(loc,test,1);
   read_LHC16g(loc,test,1);
   read_LHC16h(loc,test,1);
@@ -697,6 +1280,12 @@ void read_allLED(Bool_t loc=0, Bool_t test=0)
   read_LHC18d(loc,test,1);
   read_LHC18e(loc,test,1);
   read_LHC18fLEDOnly(loc,test,1);
+  read_LHC18f(loc,test,1);
+  read_LHC18g(loc,test,1);
+  read_LHC18h(loc,test,1);
+  read_LHC18i(loc,test,1);
+  read_LHC18j(loc,test,1);
+  read_LHC18k(loc,test,1);
 }
 
 void readOCDB(Bool_t loc=0, Int_t runno=286154)

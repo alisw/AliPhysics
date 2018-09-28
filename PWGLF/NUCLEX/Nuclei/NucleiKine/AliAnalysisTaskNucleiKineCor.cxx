@@ -21,14 +21,19 @@
 
 ClassImp(AliAnalysisTaskNucleiKineCor);
 
+using std::cout;
+using std::endl;
+
 AliAnalysisTaskNucleiKineCor::AliAnalysisTaskNucleiKineCor(const char* name) :
   AliAnalysisTaskSE{name},
   fPdgCodes{211, -211, 321, -321, 2212, -2212, 2112, -2112, 1000010020, -1000010020,3122,-3122,3312,-3312,3334,-3334},
   fParticleNames{"#pi^{+}", "#pi^{-}", "K^{+}", "K^{-}", "p", "#bar{p}", "n", "#bar{n}", "d", "#bar{d}",
       "#Lambda", "#bar{#Lambda}", "#Xi^{+}", "#Xi^{-}", "#Omega^{+}", "#Omega^{-}"},
   fPt(5),
-  fOutputList{nullptr}
-  //  fEventCounter{nullptr},
+  fP0(0),
+  fAcc(1),
+  fCutY(0),
+  fOutputList(0)
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -36,7 +41,8 @@ AliAnalysisTaskNucleiKineCor::AliAnalysisTaskNucleiKineCor(const char* name) :
 
 AliAnalysisTaskNucleiKineCor::~AliAnalysisTaskNucleiKineCor() 
 {
-  if(fOutputList) delete fOutputList;
+  if (fOutputList) 
+    delete fOutputList;
 }
 
 void AliAnalysisTaskNucleiKineCor::UserCreateOutputObjects() 
@@ -70,6 +76,9 @@ void AliAnalysisTaskNucleiKineCor::UserCreateOutputObjects()
   fHists[2] = new TH1D("hNdeuterons",";Number of deuterons at |Y|<1; Events",15,-0.5,14.5);
   fHists[2]->Sumw2();
   fOutputList->Add(fHists[2]);
+  fHists[3] = new TH1D("hEtaHadrons",";#eta; Events",100,-fAcc,fAcc);
+  fHists[3]->Sumw2();
+  fOutputList->Add(fHists[3]);
 
   fHists[10] = new TH2D("hHadHad","Hadron-hadron correlation;#Delta#varphi;Associated p_{T} (GeV/c)",
 			128,-TMath::Pi()/2,3*TMath::Pi()/2,100,0.,10);
@@ -78,6 +87,7 @@ void AliAnalysisTaskNucleiKineCor::UserCreateOutputObjects()
   fHists[11] = new TH1D("fHadTrigs",";Number; Entries",25,-0.5,24.5);
   fHists[11]->Sumw2();
   fOutputList->Add(fHists[11]);
+
   fHists[12] = new TH2D("hHadLeadHad","Leading Hadron-hadron correlation;#Delta#varphi;Associated p_{T} (GeV/c)",
 			128,-TMath::Pi()/2,3*TMath::Pi()/2,100,0.,10);
   fHists[12]->Sumw2();
@@ -104,6 +114,50 @@ void AliAnalysisTaskNucleiKineCor::UserCreateOutputObjects()
   fHists[17]->Sumw2();
   fOutputList->Add(fHists[17]);
 
+  fHists[18] = new TH3D("hHadHadAcc","Acceptance correction;#Delta#varphi;Associated p_{T} (GeV/c)",
+			128,-TMath::Pi()/2,3*TMath::Pi()/2,128,-fAcc,fAcc,100,0.,10);
+  fHists[18]->Sumw2();
+  fOutputList->Add(fHists[18]);
+  fHists[19] = new TH2D("hHadHadwAcc","Hadron-hadron correlation;#Delta#varphi;Associated p_{T} (GeV/c)",
+			128,-TMath::Pi()/2,3*TMath::Pi()/2,100,0.,10);
+  fHists[19]->Sumw2();
+  fOutputList->Add(fHists[19]);
+
+  fHists[20] = new TH2D("hHadEta","Hadron;#eta;Associated p_{T} (GeV/c)",
+			128,-fAcc,fAcc,100,0.,10);
+  fHists[20]->Sumw2();
+
+  fOutputList->Add(fHists[20]);
+
+  fHists[21] = new TH2D("hProtEta","Proton correlation;#eta;Associated p_{T} (GeV/c)",
+			128,-fAcc,fAcc,100,0.,10);
+  fHists[21]->Sumw2();
+  fOutputList->Add(fHists[21]);
+
+  fHists[22] = new TH2D("hDeutEta","Deuteron correlation;#eta;Associated p_{T} (GeV/c)",
+			128,-fAcc,fAcc,100,0.,10);
+  fHists[22]->Sumw2();
+  fOutputList->Add(fHists[22]);
+
+  fHists[23] = new TH2D("heHadHad","Hadron-hadron correlation (half #eta);#Delta#varphi;Associated p_{T} (GeV/c)",
+			128,-TMath::Pi()/2,3*TMath::Pi()/2,100,0.,10);
+  fHists[23]->Sumw2();
+  fOutputList->Add(fHists[23]);
+
+  fHists[24] = new TH2D("heHadProt","Hadron-proton correlation (half #eta);#Delta#varphi;Associated p_{T} (GeV/c)",
+			128,-TMath::Pi()/2,3*TMath::Pi()/2,100,0.,10);
+  fHists[24]->Sumw2();
+  fOutputList->Add(fHists[24]);
+
+  fHists[25] = new TH2D("heHadDeut","Hadron-deuteron correlation (half #eta);#Delta#varphi;Associated p_{T} (GeV/c)",
+			128,-TMath::Pi()/2,3*TMath::Pi()/2,100,0.,10);
+  fHists[25]->Sumw2();
+  fOutputList->Add(fHists[25]);
+
+  fHists[26] = new TH1D("feHadTrigs",";Number; Entries",25,-0.5,24.5);
+  fHists[26]->Sumw2();
+  fOutputList->Add(fHists[26]);
+
   fHists[97] = new TProfile("hXsec",";Cross section;;",1,-0.5,0.5,"e");
   fOutputList->Add(fHists[97]);
 
@@ -114,7 +168,11 @@ void AliAnalysisTaskNucleiKineCor::UserCreateOutputObjects()
   fHists[99]->Sumw2();
   fOutputList->Add(fHists[99]);
 
-  PostData(1,fOutputList);
+  if (fP0>0) {
+    fAfterBurner.SetNucleusPdgCode(1000010020);
+    fAfterBurner.SetCoalescenceMomentum(fP0);
+  }
+  PostData(1, fOutputList);
 }
 
 void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*) 
@@ -127,22 +185,57 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
   if (!stack)
     AliFatal("Missing stack.");
 
-  int nstack = stack->GetNtrack();
+  Int_t nstack = stack->GetNtrack();
   fEvents->Fill(nstack);
+
+  // find nucleons and anti-nucleons
+  TObjArray keepParticles;
+  if (fP0>0) {
+    for (Int_t i=0; i < stack->GetNprimary(); ++i) {
+      TParticle* iParticle = stack->Particle(i);
+      if (iParticle->GetStatusCode() != 1)
+	continue;
+      switch (iParticle->GetPdgCode()) {
+      case 2212: //kProton:
+	keepParticles.Add(iParticle);
+	break;
+      case 2112: //kNeutron:
+	keepParticles.Add(iParticle);
+	break;
+      case -2212: //kProtonBar:
+	keepParticles.Add(iParticle);
+	break;
+      case -2112: //kNeutronBar:
+	keepParticles.Add(iParticle);
+	break;
+      default:
+	break;
+      }
+    }
+    fAfterBurner.SetStack(stack);
+    fAfterBurner.Generate();
+  }
 
   TParticle *leadP = 0;
   Double_t ptl     = 0;
   TObjArray arrh;
   TObjArray arrp;
   TObjArray arrd;
-  for (int iTracks = 0; iTracks < nstack; ++iTracks) {
+  Int_t nstack2 = stack->GetNtrack();
+
+  for (int iTracks = 0; iTracks < nstack2; ++iTracks) {
     TParticle* track = stack->Particle(iTracks);
     if (!track) 
       continue;
     if (!stack->IsPhysicalPrimary(iTracks)) 
       continue;
-    if (TMath::Abs(track->Y()) <= 1) 
-      continue;
+    if (fCutY) {
+      if (TMath::Abs(track->Y()) > fAcc) 
+	continue;
+    } else {
+      if (TMath::Abs(track->Eta()) > fAcc) 
+	continue;
+    }
     const int pdg = track->GetPdgCode();
     const int apg = TMath::Abs(pdg);
     const double pt = track->Pt();
@@ -163,7 +256,9 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
       arrd.Add(track);
     } 
   }
-  fPtLead->Fill(leadP->Pt());
+
+  if (leadP!=0) 
+    fPtLead->Fill(leadP->Pt());
 
   Int_t nh = arrh.GetEntries();
   fHists[0]->Fill(nh);
@@ -173,95 +268,134 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
   fHists[2]->Fill(nd);
 
   // hadron - hadron
-  TH2 *hh = (TH2*)fHists[10];
-  Int_t ntrigs = 0;
+  TH2 *hh  = (TH2*)fHists[10];
+  TH3 *ac  = (TH3*)fHists[18];
+  TH2 *hh2 = (TH2*)fHists[19];
+  TH2 *hhe = (TH2*)fHists[20];
+  TH2 *hh3 = (TH2*)fHists[23];
+  Int_t ntrigs  = 0;
+  Int_t ntrigs2 = 0;
   for (Int_t i=0;i<nh;++i) {
     TParticle *part1 = (TParticle*)arrh.At(i);
     const double pt1 = part1->Pt();
     if (pt1<fPt)
       continue;
     const double phi1 = part1->Phi();
+    const double eta1 = part1->Eta();
+    fHists[3]->Fill(eta1);
     ntrigs++;
+    if (TMath::Abs(eta1)<fAcc/2.)
+      ntrigs2++;
     for (Int_t j=0;j<nh;++j) {
       TParticle *part2 = (TParticle*)arrh.At(j);
       if (part2==part1) 
 	continue;
-      double dphi = DeltaPhi(phi1,part2->Phi());
+      const double dphi = DeltaPhi(phi1,part2->Phi());
+      const double deta = part2->Eta()-eta1;
       hh->Fill(dphi,part2->Pt());
+      hhe->Fill(part2->Eta(),part2->Pt());
+      const double acorr = 1-TMath::Abs(deta)/2/fAcc; 
+      if (acorr>0) {
+	ac->Fill(dphi,deta,part2->Pt());
+	hh2->Fill(dphi,part2->Pt(),1./acorr);
+      }
+      if (TMath::Abs(eta1)<fAcc/2.)
+	hh3->Fill(dphi,part2->Pt());
     }
     fHists[11]->Fill(ntrigs);  
+    fHists[26]->Fill(ntrigs2);  
   }
 
   // leading hadron - hadron
   hh = (TH2*)fHists[12];
+  hhe = (TH2*)fHists[21];
   if (ptl>fPt) {
-    Double_t phi1 = leadP->Phi();
+    const double phi1 = leadP->Phi();
+    const double eta1 = leadP->Eta();
     for (Int_t j=0;j<nh;++j) {
       TParticle *part2 = (TParticle*)arrh.At(j);
       if (part2==leadP) 
 	continue;
-      double dphi = DeltaPhi(phi1,part2->Phi());
+      const double dphi = DeltaPhi(phi1,part2->Phi());
+      const double deta = part2->Eta()-eta1;
       hh->Fill(dphi,part2->Pt());
+      hhe->Fill(part2->Eta(),part2->Pt());
     }
     fHists[13]->Fill(1);  
   }
 
   // hadron - proton
   hh = (TH2*)fHists[14];
+  hh3 = (TH2*)fHists[24];
   for (Int_t i=0;i<nh;++i) {
     TParticle *part1 = (TParticle*)arrh.At(i);
     const double pt1 = part1->Pt();
     if (pt1<fPt)
       continue;
     const double phi1 = part1->Phi();
+    const double eta1 = part1->Eta();
     for (Int_t j=0;j<np;++j) {
       TParticle *part2 = (TParticle*)arrp.At(j);
       if (part2==part1) 
 	continue;
-      double dphi = DeltaPhi(phi1,part2->Phi());
+      const double dphi = DeltaPhi(phi1,part2->Phi());
+      const double deta = part2->Eta()-eta1;
       hh->Fill(dphi,part2->Pt());
+      if (TMath::Abs(eta1)<fAcc/2.)
+	hh3->Fill(dphi,part2->Pt());
     }
   }
 
   // leading hadron - proton
   hh = (TH2*)fHists[15];
   if (ptl>fPt) {
-    Double_t phi1 = leadP->Phi();
+    const double phi1 = leadP->Phi();
+    const double eta1 = leadP->Eta();
     for (Int_t j=0;j<np;++j) {
       TParticle *part2 = (TParticle*)arrp.At(j);
       if (part2==leadP) 
 	continue;
-      double dphi = DeltaPhi(phi1,part2->Phi());
+      const double dphi = DeltaPhi(phi1,part2->Phi());
+      const double deta = part2->Eta()-eta1;
       hh->Fill(dphi,part2->Pt());
     }
   }
 
   // hadron - deuteron
   hh = (TH2*)fHists[16];
+  hhe = (TH2*)fHists[22];
+  hh3 = (TH2*)fHists[25];
   for (Int_t i=0;i<nh;++i) {
     TParticle *part1 = (TParticle*)arrh.At(i);
     const double pt1 = part1->Pt();
     if (pt1<fPt)
       continue;
     const double phi1 = part1->Phi();
+    const double eta1 = part1->Eta();
     for (Int_t j=0;j<nd;++j) {
       TParticle *part2 = (TParticle*)arrd.At(j);
       if (part2==part1) 
 	continue;
-      double dphi = DeltaPhi(phi1,part2->Phi());
+      const double dphi = DeltaPhi(phi1,part2->Phi());
+      const double deta = part2->Eta()-eta1;
       hh->Fill(dphi,part2->Pt());
+      hhe->Fill(part2->Eta(),part2->Pt());
+      if (TMath::Abs(eta1)<fAcc/2.)
+	hh3->Fill(dphi,part2->Pt());
     }
   }
 
   // leading hadron - deuteron
   hh = (TH2*)fHists[17];
   if (ptl>fPt) {
-    Double_t phi1 = leadP->Phi();
+    const double phi1 = leadP->Phi();
+    const double eta1 = leadP->Eta();
     for (Int_t j=0;j<nd;++j) {
       TParticle *part2 = (TParticle*)arrd.At(j);
       if (part2==leadP) 
 	continue;
-      double dphi = DeltaPhi(phi1,part2->Phi());
+      const double dphi = DeltaPhi(phi1,part2->Phi());
+      const double deta = part2->Eta()-eta1;
       hh->Fill(dphi,part2->Pt());
     }
   }
@@ -274,16 +408,42 @@ void AliAnalysisTaskNucleiKineCor::UserExec(Option_t*)
   if ((nd>0)&&(ntrigs>0))
     fHists[99]->Fill(3);  
 
-  AliGenCocktailEventHeader *hd = dynamic_cast<AliGenCocktailEventHeader*>(mcEvent->GenEventHeader());
-  if (!hd) 
-    AliFatal("Missing cocktail header");
-  AliGenPythiaEventHeader *hp = dynamic_cast<AliGenPythiaEventHeader*>(hd->GetHeaders()->At(0));
-  Double_t xsec = hp->GetXsection();
-  Int_t trials = hp->Trials();
-  TProfile* pr = (TProfile*)fHists[97];
-  pr->Fill(0.,xsec);
-  pr = (TProfile*)fHists[98];
-  pr->Fill(0.,trials);
+  AliGenPythiaEventHeader *hp = 0;
+  if (fP0>0) {
+    hp = dynamic_cast<AliGenPythiaEventHeader*>(mcEvent->GenEventHeader());
+  } else {
+    AliGenCocktailEventHeader *hd = dynamic_cast<AliGenCocktailEventHeader*>(mcEvent->GenEventHeader());
+    if (!hd) 
+      AliFatal("Missing cocktail header");
+    hp = dynamic_cast<AliGenPythiaEventHeader*>(hd->GetHeaders()->At(0));
+  }
+  if (hp) {
+    Double_t xsec = hp->GetXsection();
+    Int_t trials = hp->Trials();
+    TProfile* pr = (TProfile*)fHists[97];
+    pr->Fill(0.,xsec);
+    pr = (TProfile*)fHists[98];
+    pr->Fill(0.,trials);
+  }
+
+  // reset nucleons and anti-nucleons
+  if (fP0>0) {
+    for (Int_t i=0; i<keepParticles.GetEntries(); ++i) {
+      TParticle *p = dynamic_cast<TParticle*>(keepParticles.At(i));
+      if (!p) 
+	continue;
+      p->SetStatusCode(1);
+    }
+    for (Int_t i=nstack;i<nstack2;++i) {
+      TParticle* iParticle = stack->Particle(i);
+      if (iParticle->GetPdgCode()==1000010020) {
+	iParticle->SetPdgCode(0);
+	iParticle->SetStatusCode(201);
+      }
+    }
+    stack->SetNtrack(nstack);
+    stack->SetHighWaterMark(nstack);
+  }
 
   PostData(1, fOutputList);
 }
@@ -303,5 +463,3 @@ Double_t AliAnalysisTaskNucleiKineCor::DeltaPhi(Double_t phia, Double_t phib, Do
   
   return dphi;
 }
-
-

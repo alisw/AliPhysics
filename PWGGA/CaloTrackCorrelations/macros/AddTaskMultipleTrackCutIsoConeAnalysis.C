@@ -14,13 +14,19 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
+// Root
 #include <TString.h>
 #include <TSystem.h>
 #include <TROOT.h>
 
+// Analysis
+#include "AliIsolationCut.h"
 #include "AliAnalysisTaskCaloTrackCorrelation.h"
+
+// Macros
 #include "AddTaskCaloTrackCorrBase.C"
 #include "ConfigureCaloTrackCorrAnalysis.C"
+#include "GetAlienGlobalProductionVariables.C"
 
 #endif
 
@@ -82,11 +88,20 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMultipleTrackCutIsoConeAnalysis
  const char *trigSuffix = "EMC7"
 )
 {
+  printf("AddTaskMultipleTrackCutIsoConeAnalysis::Start configuration\n");
+  
+#if defined(__CINT__)
+  
+  printf("AddTaskMultipleTrackCutIsoConeAnalysis::Load macros\n");
+  // Load macros
+  //
   // Load macros
   //
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/AddTaskCaloTrackCorrBase.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/ConfigureCaloTrackCorrAnalysis.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/GetAlienGlobalProductionVariables.C");
+
+#endif
 
   // First check the ALIEN environment settings
   //
@@ -136,6 +151,8 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMultipleTrackCutIsoConeAnalysis
   ConfigureCaloTrackCorrAnalysis
   ( anaList, calorimeter, simulation, year, col, "QA_Charged", "", 
    -1, -1, -1, -1, -1, -1,-1,-1,0, printSettings, debug);
+  
+  printf("AddTaskMultipleTrackCutIsoConeAnalysis::End configuration\n");
   
   return task;
 }

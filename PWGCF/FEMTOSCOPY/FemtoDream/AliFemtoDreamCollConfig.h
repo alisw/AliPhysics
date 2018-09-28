@@ -61,6 +61,10 @@ class AliFemtoDreamCollConfig : public TNamed {
     fGetTheControlSampel = use;
   }
   ;
+  void SetUseStravinskyMethod(bool use) {
+    fStravinsky = use;
+  }
+  ;
   void SetZBins(std::vector<float> ZBins);
   void SetMultBins(std::vector<int> MultBins);
   void SetPDGCodes(std::vector<int> PDGCodes);
@@ -136,6 +140,10 @@ class AliFemtoDreamCollConfig : public TNamed {
     return fGetTheControlSampel;
   }
   ;
+  bool GetDoStravinsky() {
+    return fStravinsky;
+  }
+  ;
   bool GetdPhidEtaPlots() {
     return fdPhidEtaPlots;
   }
@@ -188,6 +196,22 @@ class AliFemtoDreamCollConfig : public TNamed {
     return fSpinningDepth;
   }
   ;
+
+  void SetDeltaEtaMax(float delta) {
+    fDoDeltaEtaDeltaPhiCut = true;
+    fDeltaEtaMax = delta;
+  }
+  float GetDeltaEtaMax() const { return fDeltaEtaMax; }
+
+  void SetDeltaPhiMax(float delta) {
+    fDoDeltaEtaDeltaPhiCut = true;
+    fDeltaPhiMax = delta;
+  }
+  float GetDeltaPhiMax() const { return fDeltaPhiMax; }
+
+  void DoDeltaEtaDeltaPhiCut(bool doIt) { fDoDeltaEtaDeltaPhiCut = doIt; }
+  float GetDoDeltaEtaDeltaPhiCut() const { return fDoDeltaEtaDeltaPhiCut; }
+
  private:
   bool fMultBinning;            //
   bool fCentBinning;            //
@@ -198,6 +222,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fdPhidEtaPlots;          //
   bool fMixedEventStatistics;   //
   bool fGetTheControlSampel;    //
+  bool fStravinsky;             //
   bool fInvMassPairs;           //
   bool fMinimalBookingME;       //
   bool fMinimalBookingSample;   //
@@ -214,7 +239,12 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fkTCentrality;           //
   bool fMCCommonAncestor;  // Setter used in MC Only to obtain the SE distribution for common ancestor and non common ancestor
   AliFemtoDreamEvent::MultEstimator fEst;  //
-ClassDef(AliFemtoDreamCollConfig,5)
+
+  float fDeltaEtaMax;
+  float fDeltaPhiMax;
+  bool fDoDeltaEtaDeltaPhiCut;
+
+ClassDef(AliFemtoDreamCollConfig,8)
   ;
 };
 

@@ -10,7 +10,7 @@
 /// ---------------------
 /// use root -b to speed up (no canvas drawn)                                                  <br>
 /// root [1] .L $ALICE_WORK_DIR/../ali-master/AliPhysics/PWGPP/EMCAL/BCMacros/runAnalysisBC.C++                                                    <br>
-/// root [2] runAnalysisBC(0,"LHC15o","Train_771","INT7",244918,"","AllRuns.txt")           //for merging to one runblock   <br>
+/// root [2] runAnalysisBC(0,"LHC15o","Train_771","INT7",244918,"","AllRuns.txt")  	           //for merging to one runblock   <br>
 /// root [2] runAnalysisBC(-1,"LHC15o","Train_771","INT7",244918,"244918_INT7Filtered.root","")  //for single files              <br>
 ///
 /// \author Eliane Epple <eliane.epple@yale.edu>, Yale University
@@ -30,7 +30,9 @@
 void runAnalysisBC(Int_t nversion = -1, TString period = "LHC15n", TString train = "Train_603", TString trigger= "INT7", Int_t runNum= 245683, TString externalFile= "",TString listName="runList.txt",TString workDir=".")
 {
 	gROOT->ProcessLine("gErrorIgnoreLevel = kWarning;"); //..to supress a lot of standard output
-    std::vector<Int_t> badcellsManual;
+	gROOT->SetBatch(1); //..Prevent ROOT from stealing focus when plotting
+
+	std::vector<Int_t> badcellsManual;
 
     //..15o block 1
     //badcellsManual.insert(badcellsManual.end(),{14655,14622,14640,14728,14726,14593,14599,14600,14645,14646,14759,14776});
@@ -82,7 +84,7 @@ void runAnalysisBC(Int_t nversion = -1, TString period = "LHC15n", TString train
     Analysis->AddPeriodAnalysis(1, sigmaE_hit,1.0,4.0);  // mean energy in range Emin Emax
 	Analysis->AddPeriodAnalysis(5, sigmaNHits,1.0,10.0); // hits in cell in range Emin Emax
 	Analysis->AddPeriodAnalysis(1, sigmaE_hit,1.0,10.0); // energy/hit in range Emin Emax
-	Analysis->AddPeriodAnalysis(5, sigmaNHits,0.11,0.29);  // hits in cell in range Emin Emax
+	Analysis->AddPeriodAnalysis(5, sigmaNHits-1,0.11,0.29);  // hits in cell in range Emin Emax
 
 
 	//..special test for extra high energy fluctuations

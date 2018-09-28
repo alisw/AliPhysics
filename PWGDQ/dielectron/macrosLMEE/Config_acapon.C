@@ -11,7 +11,7 @@ enum {kMee=0, kMee500, kPtee, kP2D, kRuns, kPhiV, kOpAng, kOpAng2, kEta2D, kEta3
 Bool_t MCenabled = kTRUE; //Needed for LMEEcutlib
 Int_t selectedCuts = -1;
 Int_t selectedPID = -1;
-Bool_t pairCuts = kFALSE;
+Bool_t pairCuts = kTRUE;
 
 Bool_t trackVarPlots = kFALSE;
 Bool_t plotsITS      = kTRUE;
@@ -43,21 +43,18 @@ AliDielectron* Config_acapon(TString cutDefinition,
 			LMcutlib->SetEtaCorrectionTPC(die, AliDielectronVarManager::kP,
                                       AliDielectronVarManager::kEta,
                                       AliDielectronVarManager::kRefMultTPConly, kFALSE);
-			v0plots = kTRUE;
 		}
 		if(setITScorr){
 			LMcutlib->SetEtaCorrectionITS(die, AliDielectronVarManager::kP,
                                       AliDielectronVarManager::kEta,
                                       AliDielectronVarManager::kRefMultTPConly, kFALSE);
 
-			v0plots = kTRUE;
 		}
 		if(setTOFcorr){
-			LMcutlib->SetEtaCorrectionITS(die, AliDielectronVarManager::kP,
+			LMcutlib->SetEtaCorrectionTOF(die, AliDielectronVarManager::kP,
                                       AliDielectronVarManager::kEta,
                                       AliDielectronVarManager::kRefMultTPConly, kFALSE);
 
-			v0plots = kTRUE;
 		}
     MCenabled = hasMC;
 
@@ -88,6 +85,14 @@ AliDielectron* Config_acapon(TString cutDefinition,
             die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(selectedCuts) );
         }
     }
+		else if(cutDefinition == "kCutSet1"){
+        selectedCuts = LMEECutLib::kCutSet1;
+				selectedPID = LMEECutLib::kCutSet1;
+        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
+        if(pairCuts){
+					die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(selectedCuts) );
+        }
+		}
     else if(cutDefinition == "highMult"){
         selectedCuts = LMEECutLib::kHighMult;
 				selectedPID = LMEECutLib::kHighMult;
@@ -134,10 +139,6 @@ AliDielectron* Config_acapon(TString cutDefinition,
 				selectedPID = LMEECutLib::kV0_TPCcorr;
         //die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
         die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
-        if(pairCuts){
-            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(selectedCuts) );
-        }
     }
     else if(cutDefinition == "V0_ITScorr"){
 				v0plots = kTRUE;
@@ -145,10 +146,6 @@ AliDielectron* Config_acapon(TString cutDefinition,
 				selectedPID = LMEECutLib::kV0_ITScorr;
         //die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
         die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
-        if(pairCuts){
-            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(selectedCuts) );
-        }
     }
     else if(cutDefinition == "V0_TOFcorr"){
 				v0plots = kTRUE;
@@ -156,10 +153,6 @@ AliDielectron* Config_acapon(TString cutDefinition,
 				selectedPID = LMEECutLib::kV0_TOFcorr;
         //die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
         die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
-        if(pairCuts){
-            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(selectedCuts) );
-        }
     }
     else{
         cout << " =============================== " << endl;
@@ -461,7 +454,7 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing)
   
     if(doPairing){
         //add histograms to Pair classes
-        histos->UserHistogram("Pair","InvMass","",500,0.,5.,AliDielectronVarManager::kM);
+        histos->UserHistogram("Pair","InvMass","",250,0.,5.,AliDielectronVarManager::kM);
         histos->UserHistogram("Pair","PairPt","",160,0.,8., AliDielectronVarManager::kPt);
         histos->UserHistogram("Pair","Rapidity","",200,-2.,2.,AliDielectronVarManager::kY);
         histos->UserHistogram("Pair","OpeningAngle","",240,0.,TMath::Pi(),AliDielectronVarManager::kOpeningAngle);
@@ -516,10 +509,9 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing)
         histos->UserHistogram("Pair","PairPt_Centrality",";Pair Pt [GeV];Centrality;#pairs",
                               GetVector(kPtee), BinsToVector(102,-1,101), 
                               AliDielectronVarManager::kPt, AliDielectronVarManager::kCentralityNew);
-				histos->UserHistogram("Pair", "InvMass_Centrality_PairPt", ";Inv. Mass [GeV];Centrality;Pair Pt [GeV]",
-                              GetVector(kMee), BinsToVector(102, -1, 101), GetVector(kPtee),
-															AliDielectronVarManager::kM, AliDielectronVarManager::kCentralityNew, 
-															AliDielectronVarManager::kPt);
+				histos->UserHistogram("Pair", "InvMass_PairPt_Centrality", ";Inv. Mass [GeV];Pair Pt (GeV);Centrality",
+                              GetVector(kMee), GetVector(kPtee), BinsToVector(102, -1, 101),
+															AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentralityNew);
     }//End doMixing histograms
 
     //add histograms to Track classes
@@ -577,23 +569,25 @@ TVectorD *GetVector(Int_t var)
 				if (plotsITS || plotsTOF || plotsTPCtask) return AliDielectronHelper::MakeLinBinning(120,  0.,120.);
       else          return AliDielectronHelper::MakeLinBinning( 50, 50.,100.);
       
-    case kMee:    return AliDielectronHelper::MakeArbitraryBinning("0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 
-                                                                   0.10, 0.14, 0.18, 0.22, 0.26, 0.30, 0.34, 0.38, 0.42, 0.46, 
-                                                                   0.50, 0.54, 0.58, 0.62, 0.66, 0.70, 0.74, 0.78, 0.82, 0.86, 
-                                                                   0.90, 0.94, 0.98, 1.02, 1.06, 
-                                                                   1.10, 1.30, 1.50, 1.70, 1.90, 2.10, 2.30, 2.50, 2.70, 2.90, 
-                                                                   3.10, 3.30, 3.50, 4.00, 4.50, 5.00 
-                                                                   ");
+    /* case kMee:    return AliDielectronHelper::MakeArbitraryBinning("0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, */ 
+    /*                                                                0.10, 0.14, 0.18, 0.22, 0.26, 0.30, 0.34, 0.38, 0.42, 0.46, */ 
+    /*                                                                0.50, 0.54, 0.58, 0.62, 0.66, 0.70, 0.74, 0.78, 0.82, 0.86, */ 
+    /*                                                                0.90, 0.94, 0.98, 1.02, 1.06, */ 
+    /*                                                                1.10, 1.30, 1.50, 1.70, 1.90, 2.10, 2.30, 2.50, 2.70, 2.90, */ 
+    /*                                                                3.10, 3.30, 3.50, 4.00, 4.50, 5.00 */ 
+    /*                                                                "); */
+		case kMee: return AliDielectronHelper::MakeLinBinning(250, 0., 5.);
     case kMee500: return AliDielectronHelper::MakeArbitraryBinning("0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 
                                                                    0.10, 0.14, 0.18, 0.22, 0.26, 0.30, 0.34, 0.38, 0.42, 0.46, 
                                                                    0.50 
                                                                    ");
-    case kPtee:   return AliDielectronHelper::MakeArbitraryBinning("0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 
-                                                                   0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 
-                                                                   1.00, 1.20, 1.40, 1.60, 1.80, 2.00, 2.20, 2.40, 2.60, 2.80, 
-                                                                   3.00, 3.20, 3.40, 3.60, 3.80, 4.00, 4.20, 4.40, 4.60, 4.80, 
-                                                                   5.00, 6.00, 7.00, 8.00 
-                                                                   ");
+    /* case kPtee:   return AliDielectronHelper::MakeArbitraryBinning("0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, */ 
+    /*                                                                0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, */ 
+    /*                                                                1.00, 1.20, 1.40, 1.60, 1.80, 2.00, 2.20, 2.40, 2.60, 2.80, */ 
+    /*                                                                3.00, 3.20, 3.40, 3.60, 3.80, 4.00, 4.20, 4.40, 4.60, 4.80, */ 
+    /*                                                                5.00, 6.00, 7.00, 8.00 */ 
+    /*                                                                "); */
+		case kPtee: return AliDielectronHelper::MakeLinBinning(160, 0., 8.);
     case kP2D:    return AliDielectronHelper::MakeArbitraryBinning("0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 
                                                                    0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 
                                                                    1.00, 1.05, 1.10, 1.15, 1.20, 1.25, 1.30, 1.35, 1.40, 1.45, 
@@ -607,7 +601,7 @@ TVectorD *GetVector(Int_t var)
     case kCent: return AliDielectronHelper::MakeLinBinning(10,0.,100.);
     
     //First and lasts bins added for clearer plotting
-    case kRuns:   return AliDielectronHelper::MakeArbitraryBinning("265300, 265309, 265332, 265334, 265335, 265336, 265338, 265339, 265342, 265343, 265344, 265377, 265378, 265381, 265383, 265384, 265385, 265387, 265388, 265419, 265420, 265421, 265422, 265424, 265425, 265426, 265427, 265435, 265499, 265500, 265501, 265521, 265525, 265530");
+    case kRuns:   return AliDielectronHelper::MakeArbitraryBinning("265300, 265309, 265332, 265334, 265336, 265338, 265339, 265342, 265343, 265344, 265377, 265378, 265381, 265383, 265384, 265385, 265387, 265388, 265419, 265420, 265421, 265422, 265424, 265425, 265426, 265427, 265435, 265499, 265500, 265501, 265521, 265525, 265530");
 
     default: cout << "ERROR: in 'GetVector(...var)' variable for axis range not defined!" << endl;
       break;

@@ -68,7 +68,7 @@ void AliAnalysisTaskPP13::UserCreateOutputObjects()
 	// Initialization of all outputs
 	for (int i = 0; i < fSelections->GetEntries(); ++i)
 	{
-		AliPP13PhotonSelection * selection = dynamic_cast<AliPP13PhotonSelection *> (fSelections->At(i));
+		AliPP13PhysicsSelection * selection = dynamic_cast<AliPP13PhysicsSelection *> (fSelections->At(i));
 		selection->InitSummaryHistograms();
 		PostData(i + 1, selection->GetListOfHistos()); // Output starts from 1
 	}
@@ -92,7 +92,7 @@ void AliAnalysisTaskPP13::UserExec(Option_t *)
 	// Count MB event before event cuts for every selection
 	for (int i = 0; i < fSelections->GetEntries(); ++i)
 	{
-		AliPP13PhotonSelection * selection = dynamic_cast<AliPP13PhotonSelection *> (fSelections->At(i));
+		AliPP13PhysicsSelection * selection = dynamic_cast<AliPP13PhysicsSelection *> (fSelections->At(i));
 		selection->CountMBEvent();
 	}
 
@@ -144,7 +144,7 @@ void AliAnalysisTaskPP13::UserExec(Option_t *)
 	TList * pool = fPreviousEvents->GetPool(evtProperties);
 	for (int i = 0; i < fSelections->GetEntries(); ++i) // Fill and Post Data to outputs
 	{
-		AliPP13PhotonSelection * selection = dynamic_cast<AliPP13PhotonSelection *> (fSelections->At(i));
+		AliPP13PhysicsSelection * selection = dynamic_cast<AliPP13PhysicsSelection *> (fSelections->At(i));
 
 		if (!selection->SelectEvent(evtProperties))
 			continue;

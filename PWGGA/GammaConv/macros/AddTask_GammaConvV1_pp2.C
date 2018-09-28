@@ -356,6 +356,10 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
    //----------------------------- configuration for run 2 analysis 13 TeVLowB --------------------------------------------
   } else if (trainConfig == 80) { //
     cuts.AddCut("00010113", "00200089227300008280404000", "0152103500000000"); //standard cut
+
+  } else if (trainConfig == 90) { //Standard cut for pp 5 TeV analysis VAND
+    cuts.AddCut("00010113", "0d200009227300008250404000", "0152103500000000"); //
+
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -498,6 +502,17 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);
+  Int_t nContainer = 2;
+  for(Int_t i = 0; i<numberOfCuts; i++){
+    if(enableQAPhotonTask>1){
+      mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+      nContainer++;
+    }
+    if(enableQAMesonTask>1){
+      mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+      nContainer++;
+    }
+  }
 
   return;
 

@@ -44,6 +44,7 @@
 #include "AliEmcalPythiaInfo.h"
 #include "AliAnalysisTaskEmcalJet.h"
 
+#include "AliGenHijingEventHeader.h"
 #include "AliHFJetsTaggingVertex.h"
 
 
@@ -58,7 +59,7 @@ ClassImp(AliAnalysisTaskJetExtractor)
 /// \endcond
 
 //________________________________________________________________________
-AliEmcalJetTree::AliEmcalJetTree() : TNamed("CustomTree", "CustomTree"), fJetTree(0), fInitialized(0), fSaveEventProperties(0), fSaveConstituents(0), fSaveConstituentsIP(0), fSaveConstituentPID(0), fSaveJetShapes(0), fSaveMCInformation(0), fSaveSecondaryVertices(0), fExtractionPercentages(), fExtractionPercentagePtBins(), fExtractionJetTypes_HM(), fExtractionJetTypes_PM()
+AliEmcalJetTree::AliEmcalJetTree() : TNamed("CustomTree", "CustomTree"), fJetTree(0), fInitialized(0), fSaveEventProperties(0), fSaveConstituents(0), fSaveConstituentsIP(0), fSaveConstituentPID(0), fSaveJetShapes(0), fSaveMCInformation(0), fSaveSecondaryVertices(0), fSaveTriggerTracks(0), fExtractionPercentages(), fExtractionPercentagePtBins(), fExtractionJetTypes_HM(), fExtractionJetTypes_PM()
 {
   // For these arrays, we need to reserve memory
   fBuffer_Const_Pt         = new Float_t[kMaxNumConstituents];
@@ -68,10 +69,11 @@ AliEmcalJetTree::AliEmcalJetTree() : TNamed("CustomTree", "CustomTree"), fJetTre
   fBuffer_Const_ProdVtx_X  = new Float_t[kMaxNumConstituents];
   fBuffer_Const_ProdVtx_Y  = new Float_t[kMaxNumConstituents];
   fBuffer_Const_ProdVtx_Z  = new Float_t[kMaxNumConstituents];
+
 }
 
 //________________________________________________________________________
-AliEmcalJetTree::AliEmcalJetTree(const char* name) : TNamed(name, name), fJetTree(0), fInitialized(0), fSaveEventProperties(0), fSaveConstituents(0), fSaveConstituentsIP(0), fSaveConstituentPID(0), fSaveJetShapes(0), fSaveMCInformation(0), fSaveSecondaryVertices(0), fExtractionPercentages(), fExtractionPercentagePtBins(), fExtractionJetTypes_HM(), fExtractionJetTypes_PM()
+AliEmcalJetTree::AliEmcalJetTree(const char* name) : TNamed(name, name), fJetTree(0), fInitialized(0), fSaveEventProperties(0), fSaveConstituents(0), fSaveConstituentsIP(0), fSaveConstituentPID(0), fSaveJetShapes(0), fSaveMCInformation(0), fSaveSecondaryVertices(0), fSaveTriggerTracks(0), fExtractionPercentages(), fExtractionPercentagePtBins(), fExtractionJetTypes_HM(), fExtractionJetTypes_PM()
 {
   // For these arrays, we need to reserve memory
   fBuffer_Const_Pt         = new Float_t[kMaxNumConstituents];
@@ -88,6 +90,7 @@ AliEmcalJetTree::AliEmcalJetTree(const char* name) : TNamed(name, name), fJetTre
 Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Float_t vertexX, Float_t vertexY, Float_t vertexZ, Float_t centrality, Long64_t eventID, Float_t magField,
   AliTrackContainer* trackCont, Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchedPt, Float_t truePtFraction, Float_t ptHard,
   Float_t* trackPID_ITS, Float_t* trackPID_TPC, Float_t* trackPID_TOF, Float_t* trackPID_TRD, Short_t* trackPID_Reco, Short_t* trackPID_Truth,
+  Int_t numTriggerTracks, Float_t* triggerTrackPt, Float_t* triggerTrackDeltaEta, Float_t* triggerTrackDeltaPhi,
   Float_t* trackIP_d0, Float_t* trackIP_z0, Float_t* trackIP_d0cov, Float_t* trackIP_z0cov,
   Int_t numSecVertices, Float_t* secVtx_X, Float_t* secVtx_Y, Float_t* secVtx_Z, Float_t* secVtx_Mass, Float_t* secVtx_Lxy, Float_t* secVtx_SigmaLxy, Float_t* secVtx_Chi2, Float_t* secVtx_Dispersion)
 {
@@ -211,6 +214,14 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Floa
     fBuffer_Jet_MC_TruePtFraction = truePtFraction;
   }
 
+  if(fSaveTriggerTracks)
+  {
+    fBuffer_NumTriggerTracks = numTriggerTracks;
+    fJetTree->SetBranchAddress("Jet_TriggerTrack_Pt", triggerTrackPt);
+    fJetTree->SetBranchAddress("Jet_TriggerTrack_dEta", triggerTrackDeltaEta);
+    fJetTree->SetBranchAddress("Jet_TriggerTrack_dPhi", triggerTrackDeltaPhi);
+  }
+
   // Add buffered jet to tree
   fJetTree->Fill();
 
@@ -300,7 +311,6 @@ void AliEmcalJetTree::InitializeTree()
 
   if(fSaveSecondaryVertices)
   {
-
     fJetTree->Branch("Jet_NumSecVertices",&fBuffer_NumSecVertices,"Jet_NumSecVertices/I");
 
     fJetTree->Branch("Jet_SecVtx_X",&dummy,"Jet_SecVtx_X[Jet_NumSecVertices]/F");
@@ -313,6 +323,15 @@ void AliEmcalJetTree::InitializeTree()
     fJetTree->Branch("Jet_SecVtx_Dispersion",&dummy,"Jet_SecVtx_Dispersion[Jet_NumSecVertices]/F");
   }
 
+  // Trigger track requirement active -> Save trigger track
+  if(fSaveTriggerTracks)
+  {
+    fJetTree->Branch("Jet_NumTriggerTracks",&fBuffer_NumTriggerTracks,"Jet_NumTriggerTracks/I");
+    fJetTree->Branch("Jet_TriggerTrack_Pt",&dummy,"Jet_TriggerTrack_Pt[Jet_NumTriggerTracks]/F");
+    fJetTree->Branch("Jet_TriggerTrack_dEta",&dummy,"Jet_TriggerTrack_dEta[Jet_NumTriggerTracks]/F");
+    fJetTree->Branch("Jet_TriggerTrack_dPhi",&dummy,"Jet_TriggerTrack_dPhi[Jet_NumTriggerTracks]/F");
+  }
+
   fInitialized = kTRUE;
 }
 
@@ -322,17 +341,24 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fJetTree(0),
   fVtxTagger(0),
   fHadronMatchingRadius(0.4),
+  fTrueJetMatchingRadius(0.4),
   fSecondaryVertexMaxChi2(1e10),
   fSecondaryVertexMaxDispersion(0.05),
   fCalculateSecondaryVertices(kTRUE),
   fVertexerCuts(0),
   fSetEmcalJetFlavour(0),
+  fEventCut_TriggerTrackMinPt(0),
+  fEventCut_TriggerTrackMaxPt(0),
+  fEventCut_TriggerTrackMinLabel(0),
   fJetsCont(0),
   fTracksCont(0),
   fTruthParticleArray(0),
   fTruthJetsArrayName(""),
   fTruthJetsRhoName(""),
-  fTruthParticleArrayName("mcparticles")
+  fTruthParticleArrayName("mcparticles"),
+  fTriggerTracks_Pt(),
+  fTriggerTracks_Eta(),
+  fTriggerTracks_Phi()
 {
   SetMakeGeneralHistograms(kTRUE);
   fJetTree = new AliEmcalJetTree(GetName());
@@ -348,17 +374,24 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fJetTree(0),
   fVtxTagger(0),
   fHadronMatchingRadius(0.4),
+  fTrueJetMatchingRadius(0.4),
   fSecondaryVertexMaxChi2(1e10),
   fSecondaryVertexMaxDispersion(0.05),
   fCalculateSecondaryVertices(kTRUE),
   fVertexerCuts(0),
   fSetEmcalJetFlavour(0),
+  fEventCut_TriggerTrackMinPt(0),
+  fEventCut_TriggerTrackMaxPt(0),
+  fEventCut_TriggerTrackMinLabel(0),
   fJetsCont(0),
   fTracksCont(0),
   fTruthParticleArray(0),
   fTruthJetsArrayName(""),
   fTruthJetsRhoName(""),
-  fTruthParticleArrayName("mcparticles")
+  fTruthParticleArrayName("mcparticles"),
+  fTriggerTracks_Pt(),
+  fTriggerTracks_Eta(),
+  fTriggerTracks_Phi()
 {
   SetMakeGeneralHistograms(kTRUE);
   fJetTree = new AliEmcalJetTree(GetName());
@@ -388,12 +421,14 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
   if(!fTracksCont)
     AliFatal("Particle input container not found attached to jets!");
 
+  // Activate saving of trigger tracks if this is demanded
+  if(fEventCut_TriggerTrackMinPt || fEventCut_TriggerTrackMaxPt)
+    fJetTree->SetSaveTriggerTracks(kTRUE);
 
   // ### Initialize the jet tree (settings must all be given at this stage)
   fJetTree->InitializeTree();
   OpenFile(2);
   PostData(2, fJetTree->GetTreePointer());
-
 
   // ### Add control histograms (already some created in base task)
   AddHistogram2D<TH2D>("hTrackCount", "Number of tracks in acceptance vs. centrality", "COLZ", 500, 0., 5000., 100, 0, 100, "N tracks","Centrality", "dN^{Events}/dN^{Tracks}");
@@ -410,7 +445,7 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
   AddHistogram2D<TH2D>("hConstituentPt", "Jet constituent p_{T} distribution", "COLZ", 400, 0., 300., 100, 0, 100, "p_{T, const} (GeV/c)", "Centrality", "dN^{Const}/dp_{T}");
   AddHistogram2D<TH2D>("hConstituentPhiEta", "Jet constituent relative #phi/#eta distribution", "COLZ", 120, -0.6, 0.6, 120, -0.6, 0.6, "#Delta#phi", "#Delta#eta", "dN^{Const}/d#phi d#eta");
 
-  AddHistogram1D<TH1D>("hExtractionPercentage", "Extracted jets p_{T} distribution (background subtracted)", "COLZ", 400, -100., 300., "p_{T, jet} (GeV/c)", "Extracted percentage");
+  AddHistogram1D<TH1D>("hExtractionPercentage", "Extracted jets p_{T} distribution (background subtracted)", "e1p", 400, -100., 300., "p_{T, jet} (GeV/c)", "Extracted percentage");
 
   // Track QA plots
   AddHistogram2D<TH2D>("hTrackPt", "Tracks p_{T} distribution", "", 300, 0., 300., 100, 0, 100, "p_{T} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
@@ -420,7 +455,6 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
 
   AddHistogram2D<TH2D>("hTrackEtaPt", "Track angular distribution in #eta vs. p_{T}", "LEGO2", 100, -2.5, 2.5, 300, 0., 300., "#eta", "p_{T} (GeV/c)", "dN^{Tracks}/(d#eta dp_{T})");
   AddHistogram2D<TH2D>("hTrackPhiPt", "Track angular distribution in #phi vs. p_{T}", "LEGO2", 180, 0, 2*TMath::Pi(), 300, 0., 300., "#phi", "p_{T} (GeV/c)", "dN^{Tracks}/(d#phi dp_{T})");
-
 }
 
 
@@ -452,12 +486,22 @@ void AliAnalysisTaskJetExtractor::ExecOnce()
       FillHistogram("hExtractionPercentage", pt, percentage);
     }
   }
+
+  // ### Add HIJING Ncoll histogram (in case we need it)
+  if(MCEvent())
+  {
+    if(dynamic_cast<AliGenHijingEventHeader*>(MCEvent()->GenEventHeader()))
+      AddHistogram1D<TH1D>("hHijingNcoll", "N_{coll} from HIJING", "e1p", 1000, 0., 5000, "N_{coll}", "dN^{Events}/dN^{N_{coll}}");
+  }
 }
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskJetExtractor::Run()
 {
   // ################################### EVENT PROPERTIES
+  if(!IsEventSelected())
+    return kFALSE;
+
   FillEventControlHistograms();
 
   // Load vertex if possible
@@ -478,6 +522,16 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
   AliVHeader* eventIDHeader = InputEvent()->GetHeader();
   if(eventIDHeader)
     eventID = eventIDHeader->GetEventIdAsLong();
+
+  // If available, get Ncoll from HIJING
+  if(MCEvent())
+  {
+    if(AliGenHijingEventHeader* mcHeader = dynamic_cast<AliGenHijingEventHeader*>(MCEvent()->GenEventHeader()))
+    {
+      Double_t ncoll = mcHeader->NN() + mcHeader->NNw() + mcHeader->NwN() + mcHeader->NwNw();
+      FillHistogram("hHijingNcoll", ncoll);
+    }
+  }
 
   // ################################### MAIN JET LOOP
   fJetsCont->ResetCurrentID();
@@ -526,10 +580,22 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     if(fJetTree->GetSaveSecondaryVertices())
       ReconstructSecondaryVertices(myVertex, jet, secVtx_X, secVtx_Y, secVtx_Z, secVtx_Mass, secVtx_Lxy, secVtx_SigmaLxy, secVtx_Chi2, secVtx_Dispersion);
 
+    // Now change trigger tracks eta/phi to dEta/dPhi relative to jet
+    std::vector<Float_t> triggerTracks_dEta(fTriggerTracks_Eta);
+    std::vector<Float_t> triggerTracks_dPhi(fTriggerTracks_Phi);
+    for(UInt_t i=0; i<triggerTracks_dEta.size(); i++)
+    {
+      triggerTracks_dEta[i] = jet->Eta() - triggerTracks_dEta[i];
+      triggerTracks_dPhi[i] = TMath::Min(TMath::Abs(jet->Phi() - fTriggerTracks_Phi[i]), TMath::TwoPi() - TMath::Abs(jet->Phi() - fTriggerTracks_Phi[i]));
+      if(!((jet->Phi() - fTriggerTracks_Phi[i] < 0) && (jet->Phi() - fTriggerTracks_Phi[i] <= TMath::Pi())))
+        triggerTracks_dPhi[i] = -triggerTracks_dPhi[i];
+    }
+
     // Fill jet to tree
     Bool_t accepted = fJetTree->AddJetToTree(jet, fJetsCont->GetRhoVal(), vtxX, vtxY, vtxZ, fCent, eventID, InputEvent()->GetMagneticField(), fTracksCont,
               currentJetType_PM,currentJetType_HM,currentJetType_IC,matchedJetPt,truePtFraction,fPtHard,
               vecSigITS, vecSigTPC, vecSigTOF, vecSigTRD, vecRecoPID, vecTruePID,
+              fTriggerTracks_Pt, triggerTracks_dEta, triggerTracks_dPhi,
               vec_d0, vec_z0, vec_d0cov, vec_z0cov,
               secVtx_X, secVtx_Y, secVtx_Z, secVtx_Mass, secVtx_Lxy, secVtx_SigmaLxy, secVtx_Chi2, secVtx_Dispersion);
 
@@ -546,10 +612,40 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
 }
 
 //________________________________________________________________________
+Bool_t AliAnalysisTaskJetExtractor::IsEventSelected()
+{
+  // Cut for trigger track requirement
+  if(fEventCut_TriggerTrackMinPt || fEventCut_TriggerTrackMaxPt)
+  {
+    // Clear vector of trigger tracks
+    fTriggerTracks_Pt.clear();
+    fTriggerTracks_Eta.clear();
+    fTriggerTracks_Phi.clear();
+
+    // Go through all tracks and check whether trigger tracks can be found
+    fTracksCont->ResetCurrentID();
+    while(AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()))
+      if( (track->GetLabel() >= fEventCut_TriggerTrackMinLabel) && (track->Pt() >= fEventCut_TriggerTrackMinPt) && (track->Pt() < fEventCut_TriggerTrackMaxPt) )
+      {
+        fTriggerTracks_Pt.push_back(track->Pt());
+        fTriggerTracks_Eta.push_back(track->Eta());
+        fTriggerTracks_Phi.push_back(track->Phi());
+      }
+
+    // No particle has been found that fulfills requirement -> Do not accept event
+    if(fTriggerTracks_Pt.size() == 0)
+      return kFALSE;
+  }
+  return kTRUE;
+}
+
+
+//________________________________________________________________________
 void AliAnalysisTaskJetExtractor::GetJetTruePt(AliEmcalJet* jet, Double_t& matchedJetPt, Double_t& truePtFraction)
 {
   // #################################################################################
   // ##### METHOD 1: If fTruthJetsArrayName is set, a matching jet is searched for
+  Double_t     bestMatchDeltaR = 999.;
   if(fTruthJetsArrayName != "")
   {
     // "True" background
@@ -559,7 +655,6 @@ void AliAnalysisTaskJetExtractor::GetJetTruePt(AliEmcalJet* jet, Double_t& match
      trueRho = rho->GetVal();
 
     TClonesArray* truthArray = static_cast<TClonesArray*>(InputEvent()->FindListObject(Form("%s", fTruthJetsArrayName.Data())));
-    Double_t     bestMatchDeltaR = 999.;
 
     // Loop over all true jets to find the best match
     matchedJetPt = 0;
@@ -567,7 +662,7 @@ void AliAnalysisTaskJetExtractor::GetJetTruePt(AliEmcalJet* jet, Double_t& match
       for(Int_t i=0; i<truthArray->GetEntries(); i++)
       {
         AliEmcalJet* truthJet = static_cast<AliEmcalJet*>(truthArray->At(i));
-        if(truthJet->Pt() < 1.0)
+        if(truthJet->Pt() < 0.15)
           continue;
 
         Double_t deltaEta = (truthJet->Eta()-jet->Eta());
@@ -575,7 +670,7 @@ void AliAnalysisTaskJetExtractor::GetJetTruePt(AliEmcalJet* jet, Double_t& match
         Double_t deltaR = TMath::Sqrt(deltaEta*deltaEta + deltaPhi*deltaPhi);
 
         // Cut jets too far away
-        if (deltaR > fJetsCont->GetJetRadius()*2)
+        if (deltaR > fTrueJetMatchingRadius)
           continue;
 
         // Search for the best match

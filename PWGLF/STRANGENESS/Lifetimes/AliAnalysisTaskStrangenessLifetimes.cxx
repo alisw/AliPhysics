@@ -73,8 +73,10 @@ AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
       fDoV0Refit{true},
       fMC{mc},
       fUseLightVertexer{true},
+      fUseOnTheFly{false},
       fHistMCct{nullptr},
       fHistMCctPrimary{nullptr},
+      fHistMCctSecondaryFromMaterial{nullptr},
       fHistV0radius{nullptr},
       fHistV0pt{nullptr},
       fHistV0eta{nullptr},
@@ -105,6 +107,7 @@ AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
       fMaxPtToSave{100},
       fMaxTPCpionSigma{10.},
       fMaxTPCprotonSigma{10.},
+      fMaxTPChe3Sigma{10.},
       fV0vector{},
       fMultiplicity{} {
   // Standard output
@@ -158,77 +161,82 @@ void AliAnalysisTaskStrangenessLifetimes::UserCreateOutputObjects() {
       new TH1D("fHistDistOverTotMom", ";V0 L/#it{p} (#it{c} cm / GeV); Counts",
                250, 0, 250);
   fHistV0CosPA = new TH1D("fHistV0CosPA", ";V0 cos(#theta_{P}); Counts",
-                          MiniV0::fgkV0cosPA_n, MiniV0::fgkV0cosPA_f + kEps,
-                          MiniV0::fgkV0cosPA_l + kEps);
+                          MiniV0<3>::fgkV0cosPA_n, MiniV0<3>::fgkV0cosPA_f + kEps,
+                          MiniV0<3>::fgkV0cosPA_l + kEps);
   fHistChi2V0 =
-      new TH1D("fHistChi2V0", ";V0 #chi^{2}; Counts", MiniV0::fgkV0chi2_n,
-               MiniV0::fgkV0chi2_f + kEps, MiniV0::fgkV0chi2_l + kEps);
+      new TH1D("fHistChi2V0", ";V0 #chi^{2}; Counts", MiniV0<3>::fgkV0chi2_n,
+               MiniV0<3>::fgkV0chi2_f + kEps, MiniV0<3>::fgkV0chi2_l + kEps);
   fHistDcaNeg2PrimaryVertex =
       new TH1D("fHistDcaNeg2PrimaryVertex", ";Neg prong DCA (cm); Counts",
-               MiniV0::fgkDCAProng2PV_n, MiniV0::fgkDCAProng2PV_f + kEps,
-               MiniV0::fgkDCAProng2PV_l + kEps);
+               MiniV0<3>::fgkDCAProng2PV_n, MiniV0<3>::fgkDCAProng2PV_f + kEps,
+               MiniV0<3>::fgkDCAProng2PV_l + kEps);
   fHistDcaPos2PrimaryVertex =
       new TH1D("fHistDcaPos2PrimaryVertex", ";Pos prong DCA (cm); Counts",
-               MiniV0::fgkDCAProng2PV_n, MiniV0::fgkDCAProng2PV_f + kEps,
-               MiniV0::fgkDCAProng2PV_l + kEps);
+               MiniV0<3>::fgkDCAProng2PV_n, MiniV0<3>::fgkDCAProng2PV_f + kEps,
+               MiniV0<3>::fgkDCAProng2PV_l + kEps);
   fHistDcaV0daughters = new TH1D(
-      "fHistDcaV0daughters", ";Prongs DCA; Counts", MiniV0::fgkDCAProngs_n,
-      MiniV0::fgkDCAProngs_f + kEps, MiniV0::fgkDCAProngs_l + kEps);
+      "fHistDcaV0daughters", ";Prongs DCA; Counts", MiniV0<3>::fgkDCAProngs_n,
+      MiniV0<3>::fgkDCAProngs_f + kEps, MiniV0<3>::fgkDCAProngs_l + kEps);
   fHistV0armAlpha = new TH1D(
-      "fHistV0armAlpha", ";Armenteros #alpha; Counts", MiniV0::fgkArmAlpha_n,
-      MiniV0::fgkArmAlpha_f + kEps, MiniV0::fgkArmAlpha_l + kEps);
+      "fHistV0armAlpha", ";Armenteros #alpha; Counts", MiniV0<3>::fgkArmAlpha_n,
+      MiniV0<3>::fgkArmAlpha_f + kEps, MiniV0<3>::fgkArmAlpha_l + kEps);
   fHistV0armPt = new TH1D(
       "fHistV0armPt", ";Armenteros #it{p}_{T} (GeV/#it{c}); Counts",
-      MiniV0::fgkArmPt_n, MiniV0::fgkArmPt_f + kEps, MiniV0::fgkArmPt_l + kEps);
+      MiniV0<3>::fgkArmPt_n, MiniV0<3>::fgkArmPt_f + kEps, MiniV0<3>::fgkArmPt_l + kEps);
   fHistLeastNxedRows = new TH1D(
       "fHistLeastNxedRows", ";Min # of crossed rows; Counts", 256, -0.5, 255.5);
   fHistLeastXedOverFindable = new TH1D(
       "fHistLeastXedOverFindable",
       ";Min # of crossed rows / findable clusters; Counts",
-      MiniV0::fgkXedOverFindable_n, MiniV0::fgkXedOverFindable_f + kEps,
-      MiniV0::fgkXedOverFindable_l + kEps);
+      MiniV0<3>::fgkXedOverFindable_n, MiniV0<3>::fgkXedOverFindable_f + kEps,
+      MiniV0<3>::fgkXedOverFindable_l + kEps);
   fHistMaxChi2PerCluster =
       new TH1D("fHistMaxChi2PerCluster", ";Min #chi^{2}/TPC clusters; Counts",
-               MiniV0::fgkChi2xCluster_n, MiniV0::fgkChi2xCluster_f + kEps,
-               MiniV0::fgkChi2xCluster_l + kEps);
+               MiniV0<3>::fgkChi2xCluster_n, MiniV0<3>::fgkChi2xCluster_f + kEps,
+               MiniV0<3>::fgkChi2xCluster_l + kEps);
   fHistNsigmaPosPion =
       new TH1D("fHistNsigmaPosPion", ";n_{#sigma} TPC Pos Pion; Counts",
-               MiniV0::fgkTPCsigma_n, MiniV0::fgkTPCsigma_f + kEps,
-               MiniV0::fgkTPCsigma_l + kEps);
+               MiniV0<3>::fgkTPCsigma_n, MiniV0<3>::fgkTPCsigma_f + kEps,
+               MiniV0<3>::fgkTPCsigma_l + kEps);
   fHistNsigmaPosProton =
       new TH1D("fHistNsigmaPosProton", ";n_{#sigma} TPC Pos Proton; Counts",
-               MiniV0::fgkTPCsigma_n, MiniV0::fgkTPCsigma_f + kEps,
-               MiniV0::fgkTPCsigma_l + kEps);
+               MiniV0<3>::fgkTPCsigma_n, MiniV0<3>::fgkTPCsigma_f + kEps,
+               MiniV0<3>::fgkTPCsigma_l + kEps);
   fHistNsigmaNegPion =
       new TH1D("fHistNsigmaNegPion", ";n_{#sigma} TPC Neg Pion; Counts",
-               MiniV0::fgkTPCsigma_n, MiniV0::fgkTPCsigma_f + kEps,
-               MiniV0::fgkTPCsigma_l + kEps);
+               MiniV0<3>::fgkTPCsigma_n, MiniV0<3>::fgkTPCsigma_f + kEps,
+               MiniV0<3>::fgkTPCsigma_l + kEps);
   fHistNsigmaNegProton =
       new TH1D("fHistNsigmaNegProton", ";n_{#sigma} TPC Neg Proton; Counts",
-               MiniV0::fgkTPCsigma_n, MiniV0::fgkTPCsigma_f + kEps,
-               MiniV0::fgkTPCsigma_l + kEps);
+               MiniV0<3>::fgkTPCsigma_n, MiniV0<3>::fgkTPCsigma_f + kEps,
+               MiniV0<3>::fgkTPCsigma_l + kEps);
   fHistEtaPos =
-      new TH1D("fHistEtaPos", ";Pos prong #eta; Counts", MiniV0::fgkEta_n,
-               MiniV0::fgkEta_f + kEps, MiniV0::fgkEta_l + kEps);
+      new TH1D("fHistEtaPos", ";Pos prong #eta; Counts", MiniV0<3>::fgkEta_n,
+               MiniV0<3>::fgkEta_f + kEps, MiniV0<3>::fgkEta_l + kEps);
   fHistEtaNeg =
-      new TH1D("fHistEtaNeg", ";Neg prong #eta; Counts", MiniV0::fgkEta_n,
-               MiniV0::fgkEta_f + kEps, MiniV0::fgkEta_l + kEps);
+      new TH1D("fHistEtaNeg", ";Neg prong #eta; Counts", MiniV0<3>::fgkEta_n,
+               MiniV0<3>::fgkEta_f + kEps, MiniV0<3>::fgkEta_l + kEps);
   fHistArmenteros = new TH2D(
-      "fHistArmenteros", ";#alpha;#it{q}_{T}", MiniV0::fgkArmAlpha_n,
-      MiniV0::fgkArmAlpha_f + kEps, MiniV0::fgkArmAlpha_l + kEps,
-      MiniV0::fgkArmPt_n, MiniV0::fgkArmPt_f + kEps, MiniV0::fgkArmPt_l + kEps);
+      "fHistArmenteros", ";#alpha;#it{q}_{T}", MiniV0<3>::fgkArmAlpha_n,
+      MiniV0<3>::fgkArmAlpha_f + kEps, MiniV0<3>::fgkArmAlpha_l + kEps,
+      MiniV0<3>::fgkArmPt_n, MiniV0<3>::fgkArmPt_f + kEps, MiniV0<3>::fgkArmPt_l + kEps);
 
 
   if (man->GetMCtruthEventHandler()) {
-    fHistMCct[0] = new TH1D("fHistMCctK0s", ";MC ct (cm); Counts", 4000, 0, 20);
-    fHistMCct[1] = new TH1D("fHistMCctLambda", ";MC ct (cm); Counts", 4000, 0, 20);
+    fHistMCct[0] = new TH1D("fHistMCctK0s", ";MC ct (cm); Counts", 4000, 0, 40);
+    fHistMCct[1] = new TH1D("fHistMCctLambda", ";MC ct (cm); Counts", 4000, 0, 40);
     fListHist->Add(fHistMCct[0]);
     fListHist->Add(fHistMCct[1]);
 
-    fHistMCctPrimary[0] = new TH1D("fHistMCctPrimaryK0s", ";MC ct (cm); Counts", 4000, 0, 20);
-    fHistMCctPrimary[1] = new TH1D("fHistMCctPrimaryLambda", ";MC ct (cm); Counts", 4000, 0, 20);
+    fHistMCctPrimary[0] = new TH1D("fHistMCctPrimaryK0s", ";MC ct (cm); Counts", 4000, 0, 40);
+    fHistMCctPrimary[1] = new TH1D("fHistMCctPrimaryLambda", ";MC ct (cm); Counts", 4000, 0, 40);
     fListHist->Add(fHistMCctPrimary[0]);
     fListHist->Add(fHistMCctPrimary[1]);
+
+    fHistMCctSecondaryFromMaterial[0] = new TH1D("fHistMCctSecondaryFromMaterialK0s", ";MC ct (cm); Counts", 4000, 0, 40);
+    fHistMCctSecondaryFromMaterial[1] = new TH1D("fHistMCctSecondaryFromMaterialLambda", ";MC ct (cm); Counts", 4000, 0, 40);
+    fListHist->Add(fHistMCctSecondaryFromMaterial[0]);
+    fListHist->Add(fHistMCctSecondaryFromMaterial[1]);
   }
 
   fListHist->Add(fHistV0radius);
@@ -268,7 +276,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
     return;
   }
 
-  std::array<int,2> pdgCodes = {310, 3122};
+  std::array<int,3> pdgCodes = {310, 3122, 1010010030};
   AliMCEvent* mcEvent = MCEvent();
   if (!mcEvent && fMC) {
     ::Fatal("AliAnalysisTaskStrangenessLifetimes::UserExec","Could not retrieve MC event");
@@ -287,29 +295,31 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
   fMultiplicity = fEventCuts.GetCentrality();
   fEventCuts.GetPrimaryVertex()->GetXYZ(primaryVertex);
 
-  // Only reset if not using on-the-fly (or else nothing passes)
-  esdEvent->ResetV0s();
+  if (!fUseOnTheFly) {
+    // Only reset if not using on-the-fly (or else nothing passes)
+    esdEvent->ResetV0s();
 
-  // Decide between regular and light vertexer (default: light)
-  if (!fUseLightVertexer) {
-    // Instantiate vertexer object
-    AliV0vertexer lV0vtxer;
-    // Set Cuts
-    lV0vtxer.SetDefaultCuts(fV0VertexerSels);
-    lV0vtxer.SetCuts(fV0VertexerSels);
-    // Redo
-    lV0vtxer.Tracks2V0vertices(esdEvent);
-  } else {
-    // Instantiate vertexer object
-    AliLightV0vertexer lV0vtxer;
-    // Set do or don't do V0 refit for improved precision
-    lV0vtxer.SetDoRefit(false);
-    if (fDoV0Refit) lV0vtxer.SetDoRefit(true);
-    // Set Cuts
-    lV0vtxer.SetDefaultCuts(fV0VertexerSels);
-    lV0vtxer.SetCuts(fV0VertexerSels);
-    // Redo
-    lV0vtxer.Tracks2V0vertices(esdEvent);
+    // Decide between regular and light vertexer (default: light)
+    if (!fUseLightVertexer) {
+      // Instantiate vertexer object
+      AliV0vertexer lV0vtxer;
+      // Set Cuts
+      lV0vtxer.SetDefaultCuts(fV0VertexerSels);
+      lV0vtxer.SetCuts(fV0VertexerSels);
+      // Redo
+      lV0vtxer.Tracks2V0vertices(esdEvent);
+    } else {
+      // Instantiate vertexer object
+      AliLightV0vertexer lV0vtxer;
+      // Set do or don't do V0 refit for improved precision
+      lV0vtxer.SetDoRefit(false);
+      if (fDoV0Refit) lV0vtxer.SetDoRefit(true);
+      // Set Cuts
+      lV0vtxer.SetDefaultCuts(fV0VertexerSels);
+      lV0vtxer.SetCuts(fV0VertexerSels);
+      // Redo
+      lV0vtxer.Tracks2V0vertices(esdEvent);
+    }
   }
 
   std::unordered_map<int,int> mcMap;
@@ -340,15 +350,18 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
               sVtx[0] = dau->Vx();
               sVtx[1] = dau->Vy();
               sVtx[2] = dau->Vz();
+              break;
             }
           }
           double dist = Distance(mcV->GetX() - sVtx[0], mcV->GetY() - sVtx[1], mcV->GetZ() - sVtx[2]);
+          double radius = std::hypot(sVtx[0], sVtx[1]);
 
           MCparticle v0part;
           v0part.SetPDGcode(currentPDG);
           v0part.SetEta(part->Eta());
           v0part.SetPt(part->Pt());
           v0part.SetDistOverP(dist / part->P());
+          v0part.SetRadius(radius);
           bool isSecondary = mcEvent->IsSecondaryFromWeakDecay(ilab);
           fHistMCct[idx]->Fill(dist * part->GetMass() / part->P());
           TParticle* mother = mcEvent->Particle(part->GetFirstMother());
@@ -356,17 +369,24 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
             v0part.SetStatus(MCparticle::kSecondaryFromWeakDecay);
 
             double motherDist = Distance(mcV->GetX() - part->Vx(), mcV->GetY() - part->Vy(), mcV->GetZ() - part->Vz());
+            double motherR = std::hypot(part->Vx(), part->Vy());
             MCparticle motherPart;
             motherPart.SetPDGcode(mother->GetPdgCode());
             motherPart.SetEta(mother->Eta());
             motherPart.SetPt(mother->Pt());
-            motherPart.SetDistOverP(motherDist / mother->P());
+            motherPart.SetDistOverP(motherDist / mother->P() + 1e-16);
+            motherPart.SetRadius(motherR);
             fMCvector.push_back(motherPart);
           } else if (mcEvent->IsPhysicalPrimary(ilab)) {
             v0part.SetStatus(MCparticle::kPrimary);
             fHistMCctPrimary[idx]->Fill(dist * part->GetMass() / part->P());
+          } else if (mcEvent->IsSecondaryFromMaterial(ilab)) {
+            v0part.SetStatus(MCparticle::kSecondaryFromWeakDecay);
+            fHistMCctSecondaryFromMaterial[idx]->Fill(dist * part->GetMass() / part->P());
           } else {
-            continue;
+            ::Fatal("AliAnalysisTaskStrangenessLifetimes::UserExec",
+              "A particle that is not primary, not secondary from weak decay nor from material."
+              "It does know only what it is not.");
           }
           mcMap[ilab] = fMCvector.size();
           fMCvector.push_back(v0part);
@@ -382,7 +402,8 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
                  // V0s)
     AliESDv0 *v0 = ((AliESDEvent *)esdEvent)->GetV0(iV0);
     if (!v0) continue;
-    if (v0->GetOnFlyStatus() != 0) continue;
+    if (v0->GetOnFlyStatus() != 0 && !fUseOnTheFly) continue;
+    if (fUseOnTheFly && v0->GetOnFlyStatus() == 0) continue;
 
     // Remove like-sign (will not affect offline V0 candidates!)
     if (v0->GetParamN()->Charge() * v0->GetParamP()->Charge() > 0) continue;
@@ -486,23 +507,29 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
 
     double cosPA = v0->GetV0CosineOfPointingAngle(
         primaryVertex[0], primaryVertex[1], primaryVertex[2]);
-    if (cosPA < MiniV0::fgkV0cosPA_f) continue;
+    if (cosPA < MiniV0<3>::fgkV0cosPA_f) continue;
 
     // Getting invariant mass infos directly from ESD
     v0->ChangeMassHypothesis(310);
     double invMassK0s = v0->GetEffMass();
     v0->ChangeMassHypothesis(3122);
     double invMassLambda = v0->GetEffMass();
+    v0->ChangeMassHypothesis(1010010030);
+    double invMassHyp = v0->GetEffMass();
 
     // Official means of acquiring N-sigmas
     float nSigmaPosProton =
         std::abs(fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kProton));
     float nSigmaPosPion =
         std::abs(fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion));
+    float nSigmaPosHe3 =
+        std::abs(fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kHe3));
     float nSigmaNegProton =
         std::abs(fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kProton));
     float nSigmaNegPion =
         std::abs(fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kPion));
+    float nSigmaNegHe3 =
+        std::abs(fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kHe3));
 
     float distOverP = std::sqrt(Sq(decayVtx[0] - primaryVertex[0]) +
                                 Sq(decayVtx[1] - primaryVertex[1]) +
@@ -517,6 +544,9 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
     float maxChi2PerCluster = posChi2PerCluster > negChi2PerCluster
                                   ? posChi2PerCluster
                                   : negChi2PerCluster;
+
+    bool negTOF = nTrack->GetTOFsignal() * 1.e-3 < 100; // in ns, loose cut on TOF beta (<~0.2)
+    bool posTOF = pTrack->GetTOFsignal() * 1.e-3 < 100; // in ns, loose cut on TOF beta (<~0.2)
 
     // Rugh 20-sigma selection band, parametric.
     // K0Short: Enough to parametrize peak broadening with linear function.
@@ -539,7 +569,13 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
         // Case 2: K0Short Selection
         (invMassK0s < lUpperLimitK0Short && invMassK0s > lLowerLimitK0Short &&
          nSigmaNegPion < fMaxTPCpionSigma &&
-         nSigmaPosPion < fMaxTPCpionSigma)) {
+         nSigmaPosPion < fMaxTPCpionSigma) ||
+                 // Case 3: Lambda Selection        
+        (invMassLambda < 2.85 && invMassLambda > 3.15 &&
+          ((nSigmaPosHe3 < fMaxTPChe3Sigma &&
+           nSigmaNegPion < fMaxTPCpionSigma) ||
+          (nSigmaNegHe3 < fMaxTPChe3Sigma &&
+           nSigmaPosPion < fMaxTPCpionSigma)))) {
       /// Filling monitoring histograms
       fHistV0radius->Fill(v0Radius);
       fHistV0pt->Fill(v0Pt);
@@ -566,21 +602,23 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
       fHistArmenteros->Fill(v0->AlphaV0(), v0->PtArmV0());
 
       // Filling the V0 vector
-      MiniV0 miniV0;
-      miniV0.SetV0pt(v0Pt);
+      MiniV0<3> miniV0;
+      miniV0.SetV0ptAndFake(v0Pt, false);
       miniV0.SetV0eta(v0->Eta());
       miniV0.SetLeastNumberOfXedRows(minXedRows);
       miniV0.SetDistOverP(distOverP);
-      miniV0.SetInvMasses(invMassK0s, invMassLambda);
+      miniV0.SetInvMass(0,invMassK0s);
+      miniV0.SetInvMass(1,invMassLambda);
+      miniV0.SetInvMass(2,invMassHyp);
       miniV0.SetArmenterosVariables(v0->AlphaV0(), v0->PtArmV0());
       miniV0.SetV0CosPA(cosPA);
       miniV0.SetV0Chi2andCowBoy(v0->GetChi2V0(), isCowboy);
       miniV0.SetProngsDCA(v0->GetDcaV0Daughters());
       miniV0.SetProngsPvDCA(dcaPosToPrimVertex, dcaNegToPrimVertex);
-      miniV0.SetV0radius(v0Radius);
+      miniV0.SetV0radiusAndLikeSign(v0Radius);
       miniV0.SetLeastXedRowsOverFindable(minXedRowsOverFindable);
       miniV0.SetMaxChi2perCluster(maxChi2PerCluster);
-      miniV0.SetProngsEta(pTrack->Eta(), nTrack->Eta());
+      miniV0.SetProngsEtaTOF(pTrack->Eta(), posTOF, nTrack->Eta(), negTOF);
       miniV0.SetProngsTPCnsigmas(nSigmaPosPion, nSigmaPosProton,
                                  nSigmaNegPion, nSigmaNegProton);
 
@@ -608,7 +646,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
     }
   }
 
-  if (fV0vector.size()) fTreeV0->Fill();
+  if (fV0vector.size() || fMCvector.size()) fTreeV0->Fill();
 
   PostData(1, fListHist);
   PostData(2, fTreeV0);

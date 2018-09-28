@@ -37,6 +37,7 @@ Int_t CheckLoadLibrary(const char* library);
 
 TCanvas *fCanvas=0x0;
 TTree *fTree=0x0;
+TH2F* fHistosPIDInTr[9];
 
 const Int_t nDetsForTrending=4; // ITS, TPC, TPC_TOF, TOF
 TString nameDetsForTrending[nDetsForTrending]={"ITS","TPC_Basic","TPC_TOF","TOF"};
@@ -104,12 +105,12 @@ void MakeTrendingPIDQA(const char* inputFile, TString dirInFile = "PIDqa", TStri
     if(origf){
       TList* l=(TList*)origf->GetListOfKeys();
       for(Int_t j=0; j<l->GetEntries(); j++){
-	      TKey* o=(TKey*)l->At(j);
-	      TString cname=o->GetClassName();
-	      if(cname.Contains("TTree")){
-	        fTree=(TTree*)origf->Get(o->GetName());
-	        break;
-	      }
+        TKey* o=(TKey*)l->At(j);
+        TString cname=o->GetClassName();
+        if(cname.Contains("TTree")){
+          fTree=(TTree*)origf->Get(o->GetName());
+          break;
+	}
       }
     }
   }
@@ -223,20 +224,21 @@ void MakeTrendingPIDQA(const char* inputFile, TString dirInFile = "PIDqa", TStri
   p.Close();
   delete fCanvas;
 
-  if(detList.Contains("ALL")){
-    if(origf && fTree){
-      origf->cd();
-      fTree->Write();
-      origf->Close();
-      delete origf;
+
+  if(origf){
+    origf->cd();
+    TDirectory* subdir=origf->mkdir("PIDinTr");
+    subdir->cd();
+    for(Int_t j=0; j<9; j++){
+      if(fHistosPIDInTr[j]) fHistosPIDInTr[j]->Write();
     }
-  }else{
-    if(origf && fTree){
-      origf->cd();
-      fTree->Write("", TObject::kOverwrite);
-      origf->Close();
-      delete origf;
+    origf->cd();
+    if(fTree){
+      if(detList.Contains("ALL"))fTree->Write();
+      else fTree->Write("", TObject::kOverwrite);
     }
+    origf->Close();
+    delete origf;
   }
  
 }
@@ -394,6 +396,7 @@ void CheckPIDInTracking(TList* qaListTPC,const char* listname){
     TString histoname=Form("hSigP_TPC_TrackedAs_%s",AliPID::ParticleName(j));
     TH2* histo = (TH2*)histolist->FindObject(histoname.Data());
     if(histo){
+      fHistosPIDInTr[j]=(TH2F*)histo->Clone(Form("%sforMerge",histoname.Data()));
       saveCan=kTRUE;
       TH2* histo2=(TH2*)histo->Clone(Form("%scolor",histoname.Data()));
       histo2->SetTitle(" ");
@@ -410,6 +413,7 @@ void CheckPIDInTracking(TList* qaListTPC,const char* listname){
       ctrpidall->Update();
     }
   }
+
   if(saveCan){
     ctrpid->cd();
     leg->Draw();

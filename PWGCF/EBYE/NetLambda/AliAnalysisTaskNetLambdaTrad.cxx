@@ -1,7 +1,6 @@
-
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-// Updated AUG 23: change DCA VO PV H11 0.05
+// Updated Sep 25; pt cut/contamination factor for data test
 // Parts of the code taken from:
 // AliEbyEPidEfficiencyContamination.cxx
 // AliAnalysisTaskStrangenessVsMultiplicityMCRun2.cxx
@@ -58,13 +57,19 @@ f2fHistGenCentVsPtAntiLambda(0x0),
 f2fHistRecCentVsPtLambda(0x0),
 f2fHistRecCentVsPtAntiLambda(0x0),
 f2fHistInvMassVsPtLambda(0x0),
+f2fHistInvMassVsPtLambdaRec(0x0),
 f2fHistInvMassVsPtAntiLambda(0x0),
+f2fHistInvMassVsPtAntiLambdaRec(0x0),
 f2fHistRecPrimariesCentVsPtLambda(0x0),
 f2fHistRecPrimariesCentVsPtAntiLambda(0x0),
 f2fHistmassctLambda(0x0),
 f2fHistmassctAntiLambda(0x0),
 f2fHistLambdaSecFromWeakDecay(0x0),
 f2fHistAntiLambdaSecFromWeakDecay(0x0),
+f2fHistLambdaMaterial(0x0),
+f2fHistAntiLambdaMaterial(0x0),
+f2fHistLambdaMisId(0x0),
+f2fHistAntiLambdaMisId(0x0),
 f2fHistLRecstat(0x0),
 f2fHistARecstat(0x0),
 f2fHistLGenstat(0x0),
@@ -117,8 +122,8 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
         xBinEdge[iBin] = iBin - 0.5;
     }
     
-    Double_t LambdaPtBins[20] = {1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.45, 2.6, 2.75, 2.9, 3.05, 3.2, 3.35};
-    
+    Double_t LambdaPtBins[20] = {1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.225, 2.35, 2.475, 2.6, 2.725, 2.85, 2.975, 3.1, 3.225};
+
     f2fHistLRecstat = new TH2F("f2fHistLRecstat","f2fHistLRecstat", 100, -0.5, 99.5, 1900, -0.5, 1899.5);
     fListHist->Add(f2fHistLRecstat);
     
@@ -134,8 +139,14 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
     f2fHistInvMassVsPtLambda = new TH2F("f2fHistInvMassVsPtLambda","Inv mass #Lambda Vs Pt",100,1.08,1.16,19,1.1,3.1);
     fListHist->Add(f2fHistInvMassVsPtLambda);
     
+    f2fHistInvMassVsPtLambdaRec = new TH2F("f2fHistInvMassVsPtLambdaRec","Inv mass #Lambda Vs Pt Rec",100,1.08,1.16,19,1.1,3.1);
+    fListHist->Add(f2fHistInvMassVsPtLambdaRec);
+    
     f2fHistInvMassVsPtAntiLambda = new TH2F("f2fHistInvMassVsPtAntiLambda","Inv mass #bar{#Lambda} Vs Pt",100,1.08,1.16,19,1.1,3.1);
     fListHist->Add(f2fHistInvMassVsPtAntiLambda);
+    
+    f2fHistInvMassVsPtAntiLambdaRec = new TH2F("f2fHistInvMassVsPtAntiLambdaRec","Inv mass #bar{#Lambda} Vs Pt Rec",100,1.08,1.16,19,1.1,3.1);
+    fListHist->Add(f2fHistInvMassVsPtAntiLambdaRec);
     
     f2fHistmassctLambda = new TH2F("f2fHistmassctLambda","#Lambda masscut",100,1.1,1.14,19,1.1,3.1);
     fListHist->Add(f2fHistmassctLambda);
@@ -197,6 +208,18 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
         
         f2fHistAntiLambdaSecFromWeakDecay = new TH2F("f2fHistAntiLambdaSecFromWeakDecay","#bar{#Lambda} from weak decays", xNbins, xBinEdge, fNptBins, LambdaPtBins);
         fListHist->Add(f2fHistAntiLambdaSecFromWeakDecay);
+        
+        f2fHistLambdaMaterial = new TH2F("f2fHistLambdaMaterial","#Lambda from material", xNbins, xBinEdge, fNptBins, LambdaPtBins);
+        fListHist->Add(f2fHistLambdaMaterial);
+        
+        f2fHistAntiLambdaMaterial = new TH2F("f2fHistAntiLambdaMaterial","#bar{#Lambda} from material", xNbins, xBinEdge, fNptBins, LambdaPtBins);
+        fListHist->Add(f2fHistAntiLambdaMaterial);
+        
+        f2fHistLambdaMisId = new TH2F("f2fHistLambdaMisId","#Lambda Mis Identified", xNbins, xBinEdge, fNptBins, LambdaPtBins);
+        fListHist->Add(f2fHistLambdaMisId);
+        
+        f2fHistAntiLambdaMisId = new TH2F("f2fHistAntiLambdaMisId","#bar{#Lambda}  Mis Identified", xNbins, xBinEdge, fNptBins, LambdaPtBins);
+        fListHist->Add(f2fHistAntiLambdaMisId);
         
         f2fHistRecPrimariesCentVsPtLambda = new TH2F("f2fHistRecPrimariesCentVsPtLambda","#Lambda primaries", xNbins, xBinEdge, fNptBins, LambdaPtBins);
         fListHist->Add(f2fHistRecPrimariesCentVsPtLambda);
@@ -310,7 +333,9 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         {
             Int_t genpid = -1;
             Float_t gpt = 0.0, eta = 0.0,abseta =0.0;
-            
+            Float_t gptmin = 1.1;
+            Float_t gptmax = 3.1;
+
             if(fIsAOD)
             {
                 AliAODMCParticle* mctrack = (AliAODMCParticle*)fMCEvent->GetTrack(iGen);
@@ -329,17 +354,15 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                 genpid = mctrack->GetPdgCode();
                 gpt = mctrack->Pt();
                 eta = mctrack->Eta();
-                lRap = MyRapidity(mctrack->Energy(), mctrack->Pz());
             }
             
             abseta = TMath::Abs(eta);
-            // if(abseta > 0.8) continue;
-            if (TMath::Abs (lRap) >0.5) continue;
+            if(abseta > 0.8) continue;
+            if ((gpt<=gptmin)||(gptmax<=gpt)) continue;
             
             Int_t iptbinMC = GetPtBin(gpt);
             if( iptbinMC < 0 || iptbinMC > fNptBins-1 ) continue;
             
-            //plots for efficiency calculations
             if(genpid == 3122)
             {
                 f2fHistGenCentVsPtLambda->Fill(fCentrality, gpt);
@@ -545,13 +568,15 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         
         
         Float_t v0Radius = TMath::Sqrt(vertx[0]*vertx[0]+vertx[1]*vertx[1]);
-    
-        if(TMath::Abs(peta) > 0.8) continue;
-        if(TMath::Abs(neta) > 0.8) continue;
+        Float_t fMinV0Pt = 1.1;
+        Float_t fMaxV0Pt = 3.1;
+        
+        if(TMath::Abs(peta) > 1) continue;
+        if(TMath::Abs(neta) > 1) continue;
         if(cosPointingAngle < 0.999) continue;
-        if(dcaDaughters > 0.8) continue;
+        if(dcaDaughters > 1.5) continue;
         if(v0Radius < 5.0) continue;
-        if(v0Radius > 100.) continue;
+        if(v0Radius > 200.) continue;
         
         
         Int_t iptbin = GetPtBin(V0pt);
@@ -559,24 +584,36 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         
         if( ontheflystat == 0 )
         {
-            if(dcaV0ToVertex < 0.05 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
+            
+        if (V0pt >=fMinV0Pt && V0pt <= fMaxV0Pt)
+        {
+            if(dcaV0ToVertex < 0.5 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
             {
                 f2fHistInvMassVsPtLambda->Fill(invMassLambda,V0pt);
                 f2fHistRecCentVsPtLambda->Fill(fCentrality,V0pt);
                 nRecL += 1.;
-                if(invMassLambda > 1.11 && invMassLambda < 1.12)
-                {f2fHistmassctLambda->Fill(invMassLambda,V0pt);
-                    ptCh[iptbin] += 1;}
+                
+                if(invMassLambda > 1.104 && invMassLambda < 1.128) //5 sigmas around mean
+                {
+                f2fHistmassctLambda->Fill(invMassLambda,V0pt);
+                ptCh[iptbin] += 1;
+                }
+                
             }
-            if(dcaV0ToVertex < 0.05 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
+            if(dcaV0ToVertex < 0.5 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
             {
                 f2fHistInvMassVsPtAntiLambda->Fill(invMassAntiLambda,V0pt);
                 f2fHistRecCentVsPtAntiLambda->Fill(fCentrality,V0pt);
                 nRecA += 1.;
-                if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.12)
-                {f2fHistmassctAntiLambda->Fill(invMassAntiLambda,V0pt);
-                    ptCh[iptbin+fNptBins] += 1;}
+                
+                if(invMassAntiLambda > 1.104 && invMassAntiLambda < 1.128)
+                {
+                f2fHistmassctAntiLambda->Fill(invMassAntiLambda,V0pt);
+                ptCh[iptbin+fNptBins] += 1;
+                }
+                
             }
+        }
             
             
             if(fIsMC)
@@ -586,6 +623,9 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                 Bool_t isPrim = kFALSE, isSecFromMaterial = kFALSE, isSecFromWeakDecay = kFALSE;
                 fTreeVariablePIDPositive = -999;
                 fTreeVariablePIDNegative = -999;
+                Float_t fMinmcpt = 1.1;
+                Float_t fMaxmcpt = 3.1;
+                
                 
                 if(fIsAOD)
                 {
@@ -611,29 +651,46 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         fTreeVariablePID = lthisV0->PdgCode();
                         
                         mcpt = lthisV0->Pt();
+                        if ((mcpt<=fMinmcpt)||(fMaxmcpt<=mcpt)) continue;
+
                         mceta = lthisV0->Eta();
+         
                         isSecFromMaterial = (static_cast<AliAODMCParticle*>(lthisV0))->IsSecondaryFromMaterial();
                         isSecFromWeakDecay = (static_cast<AliAODMCParticle*>(lthisV0))->IsSecondaryFromWeakDecay();
                         isPrim = (static_cast<AliAODMCParticle*>(lthisV0))->IsPhysicalPrimary();
                     }
                     
-                    
-                    if(dcaV0ToVertex < 0.05 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
+                    if(dcaV0ToVertex < 0.5 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
                     {
-                        if(fTreeVariablePID == 3122)
+                        if(isPrim)
                         {
-                            if(isPrim) {f2fHistRecPrimariesCentVsPtLambda->Fill(fCentrality,mcpt);}
-                            if(isSecFromWeakDecay) {f2fHistLambdaSecFromWeakDecay->Fill(fCentrality,mcpt);}
+                            if(fTreeVariablePID == 3122)
+                            {
+                                f2fHistRecPrimariesCentVsPtLambda->Fill(fCentrality,mcpt);
+                                f2fHistInvMassVsPtLambdaRec->Fill(invMassLambda,mcpt);
+                        
+                            }
+                            else{f2fHistLambdaMisId->Fill(fCentrality,mcpt);}
                         }
+                        if(isSecFromWeakDecay) {f2fHistLambdaSecFromWeakDecay->Fill(fCentrality,mcpt);}
+                        else if (isSecFromMaterial) {f2fHistLambdaMaterial->Fill(fCentrality,mcpt);}
                     }
                     
-                    if(dcaV0ToVertex < 0.05 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
+                    
+                    if(dcaV0ToVertex < 0.5 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
                     {
-                        if(fTreeVariablePID == -3122)
+                        if(isPrim)
                         {
-                            if(isPrim) {f2fHistRecPrimariesCentVsPtAntiLambda->Fill(fCentrality, mcpt);}
-                            if(isSecFromWeakDecay) {f2fHistAntiLambdaSecFromWeakDecay->Fill(fCentrality, mcpt);}
+                            if(fTreeVariablePID == -3122)
+                            {
+                                f2fHistRecPrimariesCentVsPtAntiLambda->Fill(fCentrality,mcpt);
+                                f2fHistInvMassVsPtAntiLambdaRec->Fill(invMassAntiLambda,mcpt);
+                     
+                            }
+                            else{f2fHistAntiLambdaMisId->Fill(fCentrality,mcpt);}
                         }
+                        if(isSecFromWeakDecay) {f2fHistAntiLambdaSecFromWeakDecay->Fill(fCentrality,mcpt);}
+                        else if (isSecFromMaterial) {f2fHistAntiLambdaMaterial->Fill(fCentrality,mcpt);}
                     }
                     
                 }
@@ -662,6 +719,8 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         fTreeVariablePID = esdlthisV0->GetPdgCode();
                         
                         mcpt = esdlthisV0->Pt();
+                        if ((mcpt<=fMinmcpt)||(fMaxmcpt<=mcpt)) continue;
+
                         mceta = esdlthisV0->Eta();
                         isSecFromMaterial = stack->IsSecondaryFromMaterial(posTparticle);
                         isSecFromWeakDecay = stack->IsSecondaryFromWeakDecay(posTparticle);
@@ -669,28 +728,39 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         
                     }
                     
-                    
-                    if(dcaV0ToVertex < 0.05 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
+                    if(dcaV0ToVertex < 0.5 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
                     {
-                        if(fTreeVariablePID == 3122)
+                        if(isPrim)
                         {
-                            if(isPrim) {f2fHistRecPrimariesCentVsPtLambda->Fill(fCentrality,mcpt);}
-                            if(isSecFromWeakDecay) {f2fHistLambdaSecFromWeakDecay->Fill(fCentrality,mcpt);}
+                            if(fTreeVariablePID == 3122)
+                            {
+                                f2fHistRecPrimariesCentVsPtLambda->Fill(fCentrality,mcpt);
+                                f2fHistInvMassVsPtLambdaRec->Fill(invMassLambda,mcpt);
+          
+                            }
+                            else{f2fHistLambdaMisId->Fill(fCentrality,mcpt);}
                         }
+                        if(isSecFromWeakDecay) {f2fHistLambdaSecFromWeakDecay->Fill(fCentrality,mcpt);}
+                        else if (isSecFromMaterial) {f2fHistLambdaMaterial->Fill(fCentrality,mcpt);}
                     }
                     
-                    if(dcaV0ToVertex < 0.05 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
+                    if(dcaV0ToVertex < 0.5 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
                     {
-                        if(fTreeVariablePID == -3122)
+                        if(isPrim)
                         {
-                            if(isPrim) {f2fHistRecPrimariesCentVsPtAntiLambda->Fill(fCentrality, mcpt);}
-                            if(isSecFromWeakDecay) {f2fHistAntiLambdaSecFromWeakDecay->Fill(fCentrality, mcpt);}
+                            if(fTreeVariablePID == -3122)
+                            {
+                                f2fHistRecPrimariesCentVsPtAntiLambda->Fill(fCentrality,mcpt);
+                                f2fHistInvMassVsPtAntiLambdaRec->Fill(invMassAntiLambda,mcpt);
+             
+                            }
+                            else{f2fHistAntiLambdaMisId->Fill(fCentrality,mcpt);}
                         }
+                        if(isSecFromWeakDecay) {f2fHistAntiLambdaSecFromWeakDecay->Fill(fCentrality,mcpt);}
+                        else if (isSecFromMaterial) {f2fHistAntiLambdaMaterial->Fill(fCentrality,mcpt);}
                     }
-                }
-                
-                
-            }
+                } //ESD
+            } //MC condition
         }// zero onfly V0
     }// end of V0 loop
     
@@ -710,23 +780,14 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
     PostData(1,fListHist);
     PostData(2,fTreeV0);
 }
-//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Double_t AliAnalysisTaskNetLambdaTrad::MyRapidity(Double_t rE, Double_t rPz) const
-{
-    // Local calculation for rapidity
-    Double_t ReturnValue = -100;
-    if( (rE-rPz+1.e-13) != 0 && (rE+rPz) != 0 ) {
-        ReturnValue =  0.5*TMath::Log((rE+rPz)/(rE-rPz+1.e-13));
-    }
-    return ReturnValue;
-}
+
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Int_t AliAnalysisTaskNetLambdaTrad::GetPtBin(Double_t pt)
 {
     Int_t bin = -1;
     
-    Double_t LambdaPtBins[20] = {1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.45, 2.6, 2.75, 2.9, 3.05, 3.2, 3.35};
+    Double_t LambdaPtBins[20] = {1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.225, 2.35, 2.475, 2.6, 2.725, 2.85, 2.975, 3.1, 3.225};
     
     for(Int_t iBin = 0; iBin < fNptBins; iBin++)
     {

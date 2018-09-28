@@ -89,6 +89,7 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF() : AliAnalysisTaskSE(),
     fElectronRejectionNSigma(-1.),
     fElectronRejectionMinPt(0.),
     fElectronRejectionMaxPt(1000.),
+    fExcludeElectronsInMC(kFALSE),
     fPIDCombined(0),
     fUsePIDnSigmaComb(kTRUE),
     fBayesPIDThr(0.8),
@@ -116,7 +117,9 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF() : AliAnalysisTaskSE(),
     fdEtaBin(64), //=64 (BF)  16
     fPtBin(100), //=100 (BF)  36
     fHistSurvived4EtaPtPhiPlus(0),
-    fHistSurvived8EtaPtPhiPlus(0){
+    fHistSurvived8EtaPtPhiPlus(0),
+    fHistPdgGen(0),
+    fHistPdgSurv(0){
 } 
 
 //________________________________________________________________________
@@ -174,6 +177,7 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF(const char *name)
     fElectronRejectionNSigma(-1.),
     fElectronRejectionMinPt(0.),
     fElectronRejectionMaxPt(1000.),
+    fExcludeElectronsInMC(kFALSE),
     fPIDCombined(0),
     fUsePIDnSigmaComb(kTRUE),
     fBayesPIDThr(0.8),
@@ -201,7 +205,9 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF(const char *name)
     fdEtaBin(64), //=64 (BF)  16
     fPtBin(100), //=100 (BF)  36
     fHistSurvived4EtaPtPhiPlus(0),
-    fHistSurvived8EtaPtPhiPlus(0)
+    fHistSurvived8EtaPtPhiPlus(0),
+    fHistPdgGen(0),
+    fHistPdgSurv(0)
    {   
   // Define input and output slots here
   // Input slot #0 works with a TChain
@@ -422,6 +428,12 @@ void AliAnalysisTaskEffContBF::UserCreateOutputObjects() {
 					etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistSurvived8EtaPtPhiPlus);
   
+  //check of pdg
+  fHistPdgGen  = new TH1F("fHistPdgGen","Pdg code distribution;pdg code;Entries",6401,-3200.5,3200.5);
+  fOutputList->Add(fHistPdgGen);
+  fHistPdgSurv  = new TH1F("fHistPdgSurv","Pdg code distribution;pdg code;Entries",6401,-3200.5,3200.5);
+  fOutputList->Add(fHistPdgSurv);
+    
   //fQAList->Print();
   //fOutputList->Print(); 
   PostData(1, fQAList);
@@ -647,6 +659,14 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 	      // ==============================================================================================
 
 
+		//Exclude electrons with PDG
+                if(fExcludeElectronsInMC){
+
+                  if(TMath::Abs(AODmcTrack->GetPdgCode()) == 11) continue;
+                
+		}
+
+
 		if (fUsePIDFromPDG || fUsePIDstrategy){
 		  Int_t pdgcode = AODmcTrack->GetPdgCode();
 		  if (TMath::Abs(pdgcode) != fPDGCodeWanted) continue;
@@ -708,12 +728,21 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		  }  
 		}
 
+		//Exclude electrons with PDG
+                if(fExcludeElectronsInMC){
+
+                  if(TMath::Abs(mcTrack->GetPdgCode()) == 11) continue;
+
+                }
+
 		if (fUsePIDFromPDG || fUsePIDstrategy ){
 
 		  Int_t pdgcode = mcTrack->GetPdgCode();
 		  if (TMath::Abs(pdgcode) != fPDGCodeWanted) continue;
 		}
 		
+		fHistPdgGen->Fill(mcTrack->GetPdgCode());
+
 		Short_t gMCCharge = mcTrack->Charge();
 		Double_t phiRad = mcTrack->Phi();
 		
@@ -725,7 +754,7 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		  fHistGeneratedEtaPtPhiMinus->Fill(mcTrack->Eta(),
 						    mcTrack->Pt(),
 						    phiRad);
-		
+		      
 		Bool_t labelTPC = kTRUE;
 		if(labelTPC) {
 		  labelMCArray.AddAt(iTracks,nMCLabelCounter);
@@ -769,6 +798,14 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
                       if((!hasGenerator) || (!generatorName.Contains(fGenToBeKept.Data()))) continue;
                   }
               }
+
+              //Exclude electrons with PDG
+              if(fExcludeElectronsInMC){
+
+                  AliAODMCParticle *trackAODMC = (AliAODMCParticle*) mcEvent->GetTrack(label);
+                  if(TMath::Abs(trackAODMC->GetPdgCode()) == 11) continue;
+
+              } 
 		
               Int_t mcGoods = nMCLabelCounter;
               for (Int_t k = 0; k < mcGoods; k++) {
@@ -799,6 +836,9 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
                   Double_t phiRad = trackAOD->Phi();
                   Double_t mom = trackAOD->P();
 
+                  AliAODMCParticle *trackAODMCforpdg = (AliAODMCParticle*) mcEvent->GetTrack(label);
+                  fHistPdgSurv->Fill(trackAODMCforpdg->GetPdgCode());
+                  
 		  
 		  if(fElectronRejection) {
 		    

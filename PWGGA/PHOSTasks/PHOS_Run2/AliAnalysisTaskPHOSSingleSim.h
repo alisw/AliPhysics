@@ -34,16 +34,16 @@ class AliAnalysisTaskPHOSSingleSim : public AliAnalysisTaskPHOSPi0EtaToGammaGamm
     void FillPhoton();
     void FillMgg();
     void FillMixMgg();
+    void MCPhotonPurity();
 
   protected:
     TString fParticleName;
-    TClonesArray *fMCArray;
 
   private:
     AliAnalysisTaskPHOSSingleSim(const AliAnalysisTaskPHOSSingleSim&); // not implemented
     AliAnalysisTaskPHOSSingleSim& operator=(const AliAnalysisTaskPHOSSingleSim&); // not implemented
 
-    ClassDef(AliAnalysisTaskPHOSSingleSim, 3);
+    ClassDef(AliAnalysisTaskPHOSSingleSim, 5);
 };
 
 #endif

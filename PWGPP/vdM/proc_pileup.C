@@ -140,8 +140,8 @@ void proc_pileup(const AliVdMMetaData& vdmMetaData,
     fCnotA->Draw("same");
 
     TLegend *leg = new TLegend(0.6, 0.75, 0.9, 0.9);
-    leg->AddEntry(&gCnotA[bc], "AnotC/AandC", "PEL");
-    leg->AddEntry(&gAnotC[bc], "CnotA/AandC", "PEL");
+    leg->AddEntry(&gCnotA[bc], "CnotA/AandC", "PEL");
+    leg->AddEntry(&gAnotC[bc], "AnotC/AandC", "PEL");
     leg->Draw();
 
     TPaveText *pt = new TPaveText(0.6, 0.4, 0.9, 0.7, "NDC NB");
@@ -165,7 +165,7 @@ void proc_pileup(const AliVdMMetaData& vdmMetaData,
           pt->AddText(TString::Format("%s = %.4f#pm%.4f", name.Data(), curval, err));
         else
           pt->AddText(TString::Format("%s = %.1e#pm%.1e", name.Data(), curval, err));
-        pt->GetLine(1+ivar)->SetTextColor(ivar%2 ? kRed : kBlue);
+        pt->GetLine(1+ivar)->SetTextColor(ivar%2 ? kRed : kBlue); // ivar=0,2 AnotC, ivar=1,3 CnotA
       }
       hPar[4]->SetBinContent(1+counter, pileupModel.GetChi2()/pileupModel.GetNDF());
     }

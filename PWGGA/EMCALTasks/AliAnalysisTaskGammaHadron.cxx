@@ -444,10 +444,10 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     Double_t *binEdgesThn[20] = {0};
 
     titleThn[dimThn] = "#Delta #varphi";
-    nbinsThn[dimThn] = 45;
-    Double_t deltaPhiArray[45+1];
+    nbinsThn[dimThn] = 50;
+    Double_t deltaPhiArray[50+1];
     binEdgesThn[dimThn] = deltaPhiArray;
-    GenerateFixedBinArray(45,-pi/2.,3.*pi/2.,deltaPhiArray);
+    GenerateFixedBinArray(50,-pi/2.,3.*pi/2.,deltaPhiArray);
     minThn[dimThn] = -pi/2.;
     maxThn[dimThn] = 3.*pi/2.;
     dimThn++;
@@ -1494,7 +1494,6 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 			//..get number of current events in pool
 			Int_t nMix = pool->GetCurrentNEvents();
 
-			printf("     MHO: Using the Pool!  %d events in pool.\n",nMix);
 //			cout<<"number of events in pool: "<<nMix<<endl;
 			for(Int_t jMix=0; jMix<nMix; jMix++)
 			{

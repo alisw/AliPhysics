@@ -5,6 +5,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "TObject.h"
 #include "THnSparse.h"
+#include "TH3.h"
 
 class TObject;
 class TH1F;
@@ -40,11 +41,47 @@ public:
         TLorentzVector particle;
     };
 
+    void SetKaonEtaCut(Float_t eta) { KAON_ETA_CUT = eta; };
+    void SetKaonTPCCut(Float_t tpcNSigma) { KAON_TPC_CUT = tpcNSigma; };
+    void SetKaonTOFCut(Float_t tofNSigma) { KAON_TOF_CUT = tofNSigma; };
+    void SetTOFVeto(Bool_t isVeto) { IS_KAON_TOF_VETO = isVeto; };
+    void SetKaonTrkBit(UInt_t trkbit) { KAON_TRK_BIT = trkbit; };
+
+    void SetTrigTrkBit(UInt_t trkbit) { TRIG_TRK_BIT = trkbit; };
+    void SetAssocTrkBit(UInt_t trkbit) { ASSOC_TRK_BIT = trkbit; };
+
+    void SetZVertexMin(Float_t zvtxMin) { Z_VTX_MIN = zvtxMin; };
+    void SetZVertexMax(Float_t zvtxMax) { Z_VTX_MAX = zvtxMax; };
+    void SetZVertexNbins(Int_t zvtxNbins) { Z_VTX_NBINS = zvtxNbins; };
+
+    void SetCentEstimator(TString centEst) { CENT_ESTIMATOR = centEst; };
+
+    void SetHH(Bool_t isHH) { IS_HH = isHH; };
+
+    void SetMultLow(Float_t multLow) { MULT_LOW = multLow; };
+    void SetMultHigh(Float_t multHigh) { MULT_HIGH = multHigh; };
+
 private:
 
     Bool_t IS_HH;
     Float_t MULT_LOW;
     Float_t MULT_HIGH;
+
+    Float_t KAON_ETA_CUT;
+    Float_t KAON_TPC_CUT;
+    Float_t KAON_TOF_CUT;
+    Bool_t IS_KAON_TOF_VETO;
+    UInt_t KAON_TRK_BIT;
+
+    UInt_t TRIG_TRK_BIT;
+    UInt_t ASSOC_TRK_BIT;
+
+    Float_t Z_VTX_MIN;
+    Float_t Z_VTX_MAX;
+    Int_t Z_VTX_NBINS;
+
+    TString CENT_ESTIMATOR;
+
 
     enum{
         kAODanalysis = BIT(20),
@@ -71,6 +108,7 @@ private:
     TH1F        *fVtxZ;//!Vertex z
     TH1F        *fVtxX;//!Vertex x
     TH1F        *fVtxY;//!Vertex y
+    TH1F        *fVtxZmixbins;//! Vertex z, mixing bins
     TH2F        *fTrigMulti;//!trigger multiplicity
     TH1F        *fTrkPt;//!track pt
     TH1F        *fTrketa;//!track eta
@@ -83,6 +121,8 @@ private:
     TH1F        *fHybridGlobalTrkphi;//!hybridGlobal track phi
     TH2F        *fdEdx;//!dedx vs pt
     TH2F        *fTPCNpts;//!TPC Npoints used for dedx
+    TH3F        *fKaonPID;//!Kaon PID
+    TH3F        *fKaonDist;//!Kaon pt, phi, eta
     TH2F        *fTPCKaonNSig;//!TPC Nsigma
 
     THnSparseF  *fTrigDist;//! trigger distribution
@@ -107,12 +147,12 @@ private:
     TH1D        *fLSpairsPerEvent;//! LS pairs per Event in mass range
     TH1D        *fUSpairsPerEvent;//! US pairs per Event in mass range
     
-    THnSparseF  *fDphiHPhi;//! delta-phi distribution with unlike sign kaon pairs
-    THnSparseF  *fDphiHKK;//! delta-phi distribution with like sign kaon pairs
-    THnSparseF  *fDphiHPhiMixed;//! hadron-US mixed correlation
-    THnSparseF  *fDphiHKKMixed;//! hadron-LS mixed correlation
-    THnSparseF  *fDphiHH;//! hadron-hadron correlation
-    THnSparseF  *fDphiHHMixed;//! hadron-hadron mixed correlation
+    THnSparseF  **fDphiHPhi;//! delta-phi distribution with unlike sign kaon pairs
+    THnSparseF  **fDphiHKK;//! delta-phi distribution with like sign kaon pairs
+    THnSparseF  **fDphiHPhiMixed;//! hadron-US mixed correlation
+    THnSparseF  **fDphiHKKMixed;//! hadron-LS mixed correlation
+    THnSparseF  **fDphiHH;//! hadron-hadron correlation
+    THnSparseF  **fDphiHHMixed;//! hadron-hadron mixed correlation
 
     AliAnalysisTaskHadronPhiCorr(const AliAnalysisTaskHadronPhiCorr&); // not implemented
     AliAnalysisTaskHadronPhiCorr& operator=(const AliAnalysisTaskHadronPhiCorr&); // not implemented

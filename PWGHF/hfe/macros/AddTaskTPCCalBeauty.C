@@ -6,7 +6,7 @@
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
 
-AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Double_t m20Cut = 0.35, Double_t minEoPCut = 0.9, Double_t minNSig = -1.0, Double_t dcaBinSize = 0.002, Bool_t fillElecSprs = kFALSE, Bool_t isMC=kFALSE, Bool_t runStackLoop = kFALSE, Int_t nClsTPC=80, TString ContNameExt = " ", Double_t ptAsso = 0.3, Double_t minNSigAsso = -3.)
+AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Double_t m20Cut = 0.35, Double_t minEoPCut = 0.9, Double_t minNSig = -1.0, Double_t dcaBinSize = 0.002, Bool_t fillElecSprs = kFALSE, Bool_t isMC=kFALSE, Bool_t runStackLoop = kFALSE, Int_t nClsTPC=80, TString ContNameExt = " ", Double_t ptAsso = 0.3, Double_t minNSigAsso = -3., Double_t trkMatch=0.05, Bool_t applyCentCut = kTRUE)
 {
     // get the manager via the static access member
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -30,11 +30,13 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Do
     // add your task to the manager
     mgr->AddTask(taskBFEemc);
     taskBFEemc->SetSSCut(m20Cut);
+    taskBFEemc->SetCentSelection(applyCentCut);
     taskBFEemc->SetFillSprs(fillElecSprs);
     taskBFEemc->SetMC(isMC);
     taskBFEemc->SetEoP(minEoPCut);
     taskBFEemc->SetNSig(minNSig);
     taskBFEemc->SetNSigAsso(minNSigAsso);
+    taskBFEemc->SetTrkMatch(trkMatch);
     taskBFEemc->SetPtAsso(ptAsso);
     taskBFEemc->SetDCABinSize(dcaBinSize);
     taskBFEemc->SetStackLoop(runStackLoop);
@@ -61,11 +63,13 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Do
     // add your task to the manager
     mgr->AddTask(taskBFEdc);
     taskBFEdc->SetSSCut(m20Cut);
+    taskBFEdc->SetCentSelection(applyCentCut);
     taskBFEdc->SetFillSprs(fillElecSprs);
     taskBFEdc->SetMC(isMC);
     taskBFEdc->SetEoP(minEoPCut);
     taskBFEdc->SetNSig(minNSig);
     taskBFEdc->SetNSigAsso(minNSigAsso);
+    taskBFEdc->SetTrkMatch(trkMatch);
     taskBFEdc->SetPtAsso(ptAsso);
     taskBFEdc->SetDCABinSize(dcaBinSize);
     taskBFEdc->SetStackLoop(runStackLoop);
@@ -124,11 +128,13 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Do
         // add your task to the manager
         mgr->AddTask(taskBFEeg01emc);
         taskBFEeg01emc->SetSSCut(m20Cut);
+        taskBFEeg01emc->SetCentSelection(applyCentCut);
         taskBFEeg01emc->SetFillSprs(fillElecSprs);
         taskBFEeg01emc->SetMC(isMC);
         taskBFEeg01emc->SetEoP(minEoPCut);
         taskBFEeg01emc->SetNSig(minNSig);
         taskBFEeg01emc->SetNSigAsso(minNSigAsso);
+        taskBFEeg01emc->SetTrkMatch(trkMatch);
         taskBFEeg01emc->SetPtAsso(ptAsso);
         taskBFEeg01emc->SetDCABinSize(dcaBinSize);
         taskBFEeg01emc->SetStackLoop(runStackLoop);
@@ -201,11 +207,13 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Do
         // add your task to the manager
         mgr->AddTask(taskBFEdg01dc);
         taskBFEdg01dc->SetSSCut(m20Cut);
+        taskBFEdg01dc->SetCentSelection(applyCentCut);
         taskBFEdg01dc->SetFillSprs(fillElecSprs);
         taskBFEdg01dc->SetMC(isMC);
         taskBFEdg01dc->SetEoP(minEoPCut);
         taskBFEdg01dc->SetNSig(minNSig);
         taskBFEdg01dc->SetNSigAsso(minNSigAsso);
+        taskBFEdg01dc->SetTrkMatch(trkMatch);
         taskBFEdg01dc->SetPtAsso(ptAsso);
         taskBFEdg01dc->SetDCABinSize(dcaBinSize);
         taskBFEdg01dc->SetStackLoop(runStackLoop);

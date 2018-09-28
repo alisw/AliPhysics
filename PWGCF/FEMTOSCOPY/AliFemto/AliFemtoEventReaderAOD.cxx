@@ -67,6 +67,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fAODpidUtil(NULL),
   fAODheader(NULL),
   fAnaUtils(NULL),
+  fEventCuts(NULL),
+  fUseAliEventCuts(0),
   fInputFile(""),
   fTree(NULL),
   fAodFile(NULL),
@@ -74,7 +76,11 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fisEPVZ(kTRUE),
   fpA2013(kFALSE),
   fisPileUp(kFALSE),
+  fCascadePileUpRemoval(kFALSE),
+  fV0PileUpRemoval(kFALSE),
+  fTrackPileUpRemoval(kFALSE),
   fMVPlp(kFALSE),
+  fOutOfBunchPlp(kFALSE),
   fMinVtxContr(0),
   fMinPlpContribMV(0),
   fMinPlpContribSPD(0),
@@ -138,6 +144,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fAODpidUtil(aReader.fAODpidUtil),
   fAODheader(aReader.fAODheader),
   fAnaUtils(aReader.fAnaUtils),
+  fEventCuts(aReader.fEventCuts),
+  fUseAliEventCuts(aReader.fUseAliEventCuts),
   fInputFile(aReader.fInputFile),
   fTree(NULL),
   fAodFile(new TFile(aReader.fAodFile->GetName())),
@@ -145,7 +153,11 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fisEPVZ(aReader.fisEPVZ),
   fpA2013(aReader.fpA2013),
   fisPileUp(aReader.fisPileUp),
+  fCascadePileUpRemoval(aReader.fCascadePileUpRemoval),
+  fV0PileUpRemoval(aReader.fV0PileUpRemoval),
+  fTrackPileUpRemoval(aReader.fTrackPileUpRemoval),
   fMVPlp(aReader.fMVPlp),
+  fOutOfBunchPlp(aReader.fOutOfBunchPlp),
   fMinVtxContr(aReader.fMinVtxContr),
   fMinPlpContribMV(aReader.fMinPlpContribMV),
   fMinPlpContribSPD(aReader.fMinPlpContribSPD),
@@ -201,6 +213,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
 //__________________
 AliFemtoEventReaderAOD::~AliFemtoEventReaderAOD()
 { // destructor
+  delete fEventCuts;
   delete fTree;
   delete fEvent;
   delete fAodFile;
@@ -234,6 +247,8 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fAODpidUtil = aReader.fAODpidUtil;
   fAODheader = aReader.fAODheader;
   fAnaUtils = aReader.fAnaUtils;
+  fEventCuts = aReader.fEventCuts;
+  fUseAliEventCuts = aReader.fUseAliEventCuts;
   fCentRange[0] = aReader.fCentRange[0];
   fCentRange[1] = aReader.fCentRange[1];
   fUsePreCent = aReader.fUsePreCent;
@@ -241,7 +256,11 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fMagFieldSign = aReader.fMagFieldSign;
   fpA2013 = aReader.fpA2013;
   fisPileUp = aReader.fisPileUp;
+  fCascadePileUpRemoval = aReader.fCascadePileUpRemoval;
+  fV0PileUpRemoval = aReader.fV0PileUpRemoval;
+  fTrackPileUpRemoval = aReader.fTrackPileUpRemoval;
   fMVPlp = aReader.fMVPlp;
+  fOutOfBunchPlp = aReader.fOutOfBunchPlp;
   fMinVtxContr = aReader.fMinVtxContr;
   fMinPlpContribMV = aReader.fMinPlpContribMV;
   fMinPlpContribSPD = aReader.fMinPlpContribSPD;
@@ -406,6 +425,14 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   //   }
   // }
 
+  //******* Ali Event Cuts - applied on AOD event ************
+  if(fUseAliEventCuts){
+    if (!fEventCuts->AcceptEvent(fEvent)) {
+      return NULL;
+    }
+  }
+  //**************************************
+  
   // AliAnalysisUtils
   if (fisPileUp || fpA2013) {
     fAnaUtils = new AliAnalysisUtils();
@@ -418,7 +445,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       return NULL;  // Vertex rejection for pA analysis.
     }
     fAnaUtils->SetUseMVPlpSelection(fMVPlp);
-
+    fAnaUtils->SetUseOutOfBunchPileUp(fOutOfBunchPlp);
+    
     if (fMinPlpContribMV) {
       fAnaUtils->SetMinPlpContribMV(fMinPlpContribMV);
     }
@@ -434,7 +462,12 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   }
 
   // Primary Vertex position
-  const AliAODVertex *aodvertex = (AliAODVertex *) fEvent->GetPrimaryVertex();
+  const AliAODVertex *aodvertex;
+  if(fUseAliEventCuts)
+    aodvertex = (AliAODVertex *) fEventCuts->GetPrimaryVertex();
+  else
+    aodvertex  = (AliAODVertex *) fEvent->GetPrimaryVertex();
+    
   if (!aodvertex || aodvertex->GetNContributors() < 1) {
     delete tEvent;  // Bad vertex, skip event.
     return NULL;
@@ -589,7 +622,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
    
     tEvent->SetNormalizedMult(norm_mult);
 
-    
+
+   
     AliFemtoTrack *trackCopy = CopyAODtoFemtoTrack(aodtrack);
    
     trackCopy->SetMultiplicity(norm_mult);
@@ -607,7 +641,27 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     assert(aodtrackpid && "Not a standard AOD");
 
 
+  //Pile-up removal
+  if(fTrackPileUpRemoval)
+    {
+      //method which checks if track
+      //have at least 1 hit in ITS or TOF.
+      bool passTrackPileUp = false;
 
+      //does tof timing exist for our track?
+      if (aodtrackpid->GetTOFBunchCrossing()==0) passTrackPileUp = true;
+
+      //check ITS refit
+      if(!(aodtrackpid->GetStatus()&AliESDtrack::kITSrefit)) continue;
+      
+      //loop over the 4 ITS Layrs and check for a hit!
+      for (int i=0;i<2;++i) { //we use layers 0, 1 /OR/ 0, 1, 4, 5
+	//if(i==2 || i==3) i+=2;
+	if (aodtrackpid->HasPointOnITSLayer(i)) passTrackPileUp=true;
+      }
+      
+      if(!passTrackPileUp) continue;
+    }
 
     
     CopyPIDtoFemtoTrack(aodtrackpid, trackCopy);
@@ -773,10 +827,10 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       /***************************************************/
       //
       
-      if (fIsDeuteronAnalysis == true && TMath::Abs(pdg) != 700201) trackAccept = false;
-      if (fIsTritonAnalysis == true && TMath::Abs(pdg) != 700301) trackAccept = false;
-      if (fIsHe3Analysis == true && TMath::Abs(pdg) != 700302)    trackAccept = false;
-      if (fIsAlphaAnalysis == true && TMath::Abs(pdg) != 700202) trackAccept = false;
+      if (fIsDeuteronAnalysis == true && TMath::Abs(pdg) != 1000010020) trackAccept = false;
+      if (fIsTritonAnalysis == true && TMath::Abs(pdg) != 1000010040) trackAccept = false;
+      if (fIsHe3Analysis == true && TMath::Abs(pdg) != 700302)    trackAccept = false;//temporary pdg
+      if (fIsAlphaAnalysis == true && TMath::Abs(pdg) != 700202) trackAccept = false;//temporary pdg
       //
       /*****************************************************/
       if (trackAccept == true && ptrue > 0) {    
@@ -840,6 +894,29 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
         daughterTrackNeg = tmp;
       }
 
+
+    if(fV0PileUpRemoval)
+      {
+	//method which checks if each of the v0 daughters
+	//have at least 1 hit in ITS or TOF.
+	bool passPos = false;
+	bool passNeg = false;
+
+	//does tof timing exist for our track?
+	if (daughterTrackPos->GetTOFBunchCrossing()==0) passPos = true;
+	if (daughterTrackNeg->GetTOFBunchCrossing()==0) passNeg = true;
+
+	//loop over the 4 ITS Layrs and check for a hit!
+	for (int i=0;i<4;++i) { //checking layers 0, 1, 4, 5
+	  if(i==2 || i==3) i+=2;
+	  if (daughterTrackPos->HasPointOnITSLayer(i)) passPos=true;
+	  if (daughterTrackNeg->HasPointOnITSLayer(i)) passNeg=true;
+	}
+	
+	if(!passPos) continue;
+	if(!passNeg) continue;
+      }
+      
       AliFemtoV0 *trackCopyV0 = CopyAODtoFemtoV0(aodv0);
       trackCopyV0->SetMultiplicity(norm_mult);
       trackCopyV0->SetZvtx(fV1[2]);
@@ -949,8 +1026,9 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 	if (daughterTrackNeg->GetTOFBunchCrossing()==0) passNeg = true;
 	if (bachTrack->GetTOFBunchCrossing()==0) passBac = true;
 
-	//loop over the 6 ITS Layrs and check for a hit!
-	for (int i=0;i<6;++i) {
+	//loop over the 4 ITS Layrs and check for a hit!
+	for (int i=0;i<4;++i) {
+	  if(i==2 || i==3) i+=2; //checking layers 0, 1, 4, 5
 	  if (daughterTrackPos->HasPointOnITSLayer(i)) passPos=true;
 	  if (daughterTrackNeg->HasPointOnITSLayer(i)) passNeg=true;
 	  if (bachTrack->HasPointOnITSLayer(i)) passBac=true;
@@ -1078,6 +1156,7 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
   tFemtoTrack->SetHelix(helix);
 
 
+  
   // Flags
   tFemtoTrack->SetTrackId(tAodTrack->GetID());
   tFemtoTrack->SetFlags(tAodTrack->GetFlags());
@@ -2085,12 +2164,13 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
     //  double trackTime=tAodTrack->GetTOFsignal();
 
   }
-  double deuteronPDG =1.8756;//GeV
-    if (trackTime > 0.){
+
+    if (trackTime > 0. &&  trackLength>0.){
+
       vp = trackLength / trackTime /0.03;
       tFemtoTrack->SetVTOF(vp);
       double massTof= tFemtoTrack->P().Mag()*tFemtoTrack->P().Mag()*(1/(vp*vp)-1);
-      tFemtoTrack->SetMassTOFDPG(massTof-deuteronPDG*deuteronPDG); 
+      tFemtoTrack->SetMassTOF(massTof); 
     }
   
   tFemtoTrack->SetNSigmaTOFPi(nsigmaTOFPi);
@@ -2275,6 +2355,14 @@ void AliFemtoEventReaderAOD::SetShiftedPositions(const AliAODTrack *track
   } // End of coarse propagation loop
 }
 
+
+void AliFemtoEventReaderAOD::SetUseAliEventCuts(Bool_t useAliEventCuts)
+{
+  fUseAliEventCuts = useAliEventCuts;
+  fEventCuts = new AliEventCuts(); 
+}
+
+
 void AliFemtoEventReaderAOD::SetpA2013(Bool_t pa2013)
 {
   fpA2013 = pa2013;
@@ -2285,6 +2373,11 @@ void AliFemtoEventReaderAOD::SetUseMVPlpSelection(Bool_t mvplp)
   fMVPlp = mvplp;
 }
 
+void AliFemtoEventReaderAOD::SetUseOutOfBunchPlpSelection(Bool_t outOfBunchPlp)
+{
+  fOutOfBunchPlp=outOfBunchPlp;
+}
+
 void AliFemtoEventReaderAOD::SetIsPileUpEvent(Bool_t ispileup)
 {
   fisPileUp = ispileup;
@@ -2293,6 +2386,16 @@ void AliFemtoEventReaderAOD::SetIsPileUpEvent(Bool_t ispileup)
 void AliFemtoEventReaderAOD::SetCascadePileUpRemoval(Bool_t cascadePileUpRemoval)
 {
   fCascadePileUpRemoval = cascadePileUpRemoval;
+}
+
+void AliFemtoEventReaderAOD::SetV0PileUpRemoval(Bool_t v0PileUpRemoval)
+{
+  fV0PileUpRemoval = v0PileUpRemoval;
+}
+
+void AliFemtoEventReaderAOD::SetTrackPileUpRemoval(Bool_t trackPileUpRemoval)
+{
+  fTrackPileUpRemoval= trackPileUpRemoval;
 }
 
 void AliFemtoEventReaderAOD::SetDCAglobalTrack(Int_t dcagt)

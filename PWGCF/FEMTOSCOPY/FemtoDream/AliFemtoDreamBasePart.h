@@ -183,6 +183,14 @@ class AliFemtoDreamBasePart {
     return fMotherID;
   }
   ;
+  void SetMotherPDG(int pdg) {
+    fMotherPDG = pdg;
+  }
+  ;
+  int GetMotherPDG() const {
+    return fMotherPDG;
+  }
+  ;
   void SetEvtNumber(int evtNumb) {
     fEvtNumber = evtNumb;
   }
@@ -243,6 +251,7 @@ class AliFemtoDreamBasePart {
   int fMCPDGCode;
   int fPDGMotherWeak;
   int fMotherID;
+  int fMotherPDG;
   int fEvtNumber;
   bool fIsMC;
   bool fUse;    //passes cuts

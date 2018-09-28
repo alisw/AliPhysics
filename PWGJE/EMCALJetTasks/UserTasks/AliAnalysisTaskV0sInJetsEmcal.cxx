@@ -38,6 +38,7 @@
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
 #include "AliMCEvent.h"
+#include "AliMultSelection.h"
 
 #include "AliEmcalJet.h"
 #include "AliJetContainer.h"
@@ -104,6 +105,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal():
   fdCutCentHigh(0),
   fdCutDeltaZMax(0),
   fdCentrality(0),
+  fbUseMultiplicity(0),
 
   fbCorrelations(0),
   fiSizePool(0),
@@ -390,6 +392,7 @@ AliAnalysisTaskV0sInJetsEmcal::AliAnalysisTaskV0sInJetsEmcal(const char* name):
   fdCutCentHigh(0),
   fdCutDeltaZMax(0),
   fdCentrality(0),
+  fbUseMultiplicity(0),
 
   fbCorrelations(0),
   fiSizePool(0),
@@ -1389,7 +1392,10 @@ void AliAnalysisTaskV0sInJetsEmcal::ExecOnce()
   if(fbMCAnalysis)
     printf("MC generator: %s\n", fsGeneratorName.Length() ? fsGeneratorName.Data() : "any");
   if(fbIsPbPb)
+  {
     printf("centrality range: %g-%g %%\n", fdCutCentLow, fdCutCentHigh);
+    printf("centrality estimator: %s\n", fbUseMultiplicity ? "AliMultSelection" : "AliCentrality");
+  }
   if(fdCutVertexZ > 0.) printf("max |z| of the prim vtx [cm]: %g\n", fdCutVertexZ);
   if(fdCutVertexR2 > 0.) printf("max r^2 of the prim vtx [cm^2]: %g\n", fdCutVertexR2);
   if(fdCutDeltaZMax > 0.) printf("max |Delta z| between nominal prim vtx and SPD vtx [cm]: %g\n", fdCutDeltaZMax);
@@ -3471,7 +3477,19 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::IsSelectedForJets(AliAODEvent* fAOD, Doubl
   fh1EventCounterCut->Fill(7); // radius within range
   if(fbIsPbPb)
   {
-    fdCentrality = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
+    if(fbUseMultiplicity) // from https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentralityCodeSnippets
+    {
+      AliMultSelection* MultSelection = 0x0;
+      MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
+      if(!MultSelection)
+      {
+        AliWarning("AliMultSelection object not found!");
+        return kFALSE;
+      }
+      fdCentrality = MultSelection->GetMultiplicityPercentile("V0M");
+    }
+    else
+      fdCentrality = ((AliVAODHeader*)fAOD->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
     if(fdCentrality < 0)
     {
       if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Negative centrality");

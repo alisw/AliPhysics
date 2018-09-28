@@ -12,13 +12,13 @@ declare -i localcode=$8
 declare -i centralitybin=$9
 declare dirmacroFD="${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros"
 
-declare -ai ptTrigMin=(3 5 8 16) 
-declare -ai ptTrigMax=(5 8 16 24) 
+declare -ai ptTrigMin=(2 3 5 8 16) 
+declare -ai ptTrigMax=(3 5 8 16 24) 
 
 declare -ai ptAssocMin=(3 3 10 20 30 10 20) #have to divide by 10 
 declare -ai ptAssocMax=(10 990 990 990 990 20 30)  #have to divide by 10
 
-declare -ai maxrange=(10 15 15)
+declare -ai maxrange=(10 15 15 10)
 if [ ${localcode} = 1 ]; then
     dirmacroFD=${HFCJlocalCodeDir}
 fi

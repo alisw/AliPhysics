@@ -114,6 +114,8 @@ class AliAnalysisTaskSDDRP : public AliAnalysisTaskSE {
   TProfile* fProfTrPtsLay4VsTime;  //! Profile of occupancy vs. time
   TProfile* fProfFracTrRecLay3VsTime;  //! Profile of occupancy vs. time
   TProfile* fProfFracTrRecLay4VsTime;  //! Profile of occupancy vs. time
+  TProfile* fProfFracTrkWithPntLay3VsTime;  //! Profile of occupancy vs. time
+  TProfile* fProfFracTrkWithPntLay4VsTime;  //! Profile of occupancy vs. time
   AliITSresponseSDD* fResp; // ResponseSDD object
   AliTriggerConfiguration* fTrigConfig; // trigger configuration object
   Bool_t  fUseITSsaTracks;   // Flag for using standalone ITS tracs
@@ -126,7 +128,7 @@ class AliAnalysisTaskSDDRP : public AliAnalysisTaskSE {
   Bool_t  fReadCDB;         // Flag to Switch on/off OCDB access
   Bool_t  fInitCalib;       // Flag to check calib initiatization
  
-  ClassDef(AliAnalysisTaskSDDRP,8);
+  ClassDef(AliAnalysisTaskSDDRP,9);
 };
 
 

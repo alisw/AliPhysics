@@ -171,7 +171,7 @@ void SetupPar(char* pararchivename)
   if ( gSystem->AccessPathName(pararchivename) ) 
   {  
     TString processline = Form(".! tar xvzf %s",parpar.Data()) ;
-    gROOT->ProcessLine(processline.Data());
+    gROOT->ProcessLine(processline.Data()); // REVIEW FOR ROOT6
   }
   
   TString ocwd = gSystem->WorkingDirectory();
@@ -198,7 +198,7 @@ void SetupPar(char* pararchivename)
     printf("*** Setup PAR archive       ***\n");
     cout<<pararchivename<<endl;
     printf("*******************************\n");
-    gROOT->Macro("PROOF-INF/SETUP.C");
+    gROOT->Macro("PROOF-INF/SETUP.C"); // REVIEW FOR ROOT6
   }
   
   gSystem->ChangeDirectory(ocwd.Data());
@@ -691,7 +691,9 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
 //    
 //    TFileCollection* ds= gProof->GetDataSet(kDatasetPROOF)->GetStagedSubset();
 //    
+//#if defined(__CINT__)
 //    gROOT->LoadMacro("/afs/in2p3.fr/group/alice/laf/dataset_management/CreateChainFromDataSet.C");
+//#endif
 //    chain = CreateChainFromDataSet(ds, kTreeName , kDatasetNMaxFiles);
 //    printf("chain has %d entries\n",chain->GetEntries());
 //  }
@@ -910,7 +912,9 @@ void  LoadLibraries(Int_t /*mode*/)
   //  if (mode == mPROOF)
   //  {
   //    //TProof::Mgr("ccalpmaster")->SetROOTVersion("ALICE_v5-27-06b");
+  //#if defined(__CINT__)
   //    gROOT->LoadMacro("/afs/in2p3.fr/group/alice/laf/EnableAliRootForLAF.C");
+  //#endif
   //    TProof* proof = EnableAliRootForLAF("ccaplmaster",nPROOFWorkers.Data(),ccin2p3UserName.Data(),alienUserName.Data(),"",kFALSE,kTRUE,kTRUE,"OADB:ANALYSIS:ANALYSISalice:AOD:ESD:CORRFW:STEERBase:EMCALUtils:PHOSUtils:PWGCaloTrackCorrBase:PWGGACaloTrackCorrelations:PWGPPEMCAL");
   //    
   //    //  TProof* proof = TProof::Open("ccaplmaster",Form("workers=%s",nPROOFWorkers.Data()));
@@ -1066,7 +1070,9 @@ void ana ( anaModes mode = mLocal )
 //  if ( mode==mPlugin )
 //  {
 //    // Create and configure the alien handler plugin
+//#if defined(__CINT__)
 //    gROOT->LoadMacro("CreateAlienHandler.C");
+//#endif
 //    alienHandler = CreateAlienHandler();
 //    if ( !alienHandler ) return;
 //  }  
@@ -1152,7 +1158,9 @@ void ana ( anaModes mode = mLocal )
   // Physics selection
   if ( !kMC )
   {
+#if defined(__CINT__)
     gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C"); 
+#endif
     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kMC,kTRUE); 
   }
   
@@ -1160,14 +1168,21 @@ void ana ( anaModes mode = mLocal )
 //  if ( bMultiplicity && kCollision.Contains("Pb") )
 //  {
 //    if ( kYear < 200000 && kInputData=="ESD" )
-//    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
-//    AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
+//    {
+//
+//#if defined(__CINT__)
+//     gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
+//#endif
+//     AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
+//    }
 //  }
   
   if ( bMultiplicity )
   {
     // New centrality/multiplicity selector
+#if defined(__CINT__)
     gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
+#endif
     AliMultSelectionTask * task = AddTaskMultSelection(kFALSE); // user mode:
     
     // use the default calibration for runs which have not yet been calibrated
@@ -1177,10 +1192,13 @@ void ana ( anaModes mode = mLocal )
   
 //  if ( kCollision=="PbPb" )
 //  {
+//#if defined(__CINT__)
 //    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskVZEROEPSelection.C");
+//    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskEventplane.C");
+//#endif
+//
 //    AliVZEROEPSelectionTask  * EPV0 = AddTaskVZEROEPSelection();  
 //    
-//    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskEventplane.C");
 //    AliEPSelectionTask * EP = AddTaskEventplane();
 //  } 
   
@@ -1188,8 +1206,11 @@ void ana ( anaModes mode = mLocal )
   //
   if ( bEMCCorrFra || bEMCCluster )
   {
-    //gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskCDBconnect.C");
-    gROOT->LoadMacro("AddTaskCDBconnect.C");
+#if defined(__CINT__)
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskCDBconnect.C");
+    //gROOT->LoadMacro("AddTaskCDBconnect.C");
+#endif
+
     AddTaskCDBconnect();
     ((AliTaskCDBconnect*)(AliAnalysisManager::GetAnalysisManager()->GetTask("CDBconnect")))->SetFallBackToRaw(kTRUE);
   }
@@ -1199,7 +1220,10 @@ void ana ( anaModes mode = mLocal )
   if ( bEMCCorrFra && !bEMCCluster )
   {
     printf("INIT EMCal corrections\n");
+#if defined(__CINT__)
     gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalCorrectionTask.C");
+#endif
+
     AliEmcalCorrectionTask * emcorr = AddTaskEmcalCorrectionTask();
     
     // Data or MC specific configurations
@@ -1235,8 +1259,10 @@ void ana ( anaModes mode = mLocal )
   if ( !bEMCCorrFra && bEMCCluster )
   {
     printf("INIT EMCal Clusterizer\n");
+#if defined(__CINT__)
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/AddTaskEMCALClusterize.C"); 
-    
+#endif
+ 
     Int_t   clTM      = 2;  // Do track matching, 0 no, 1 TPC only, 2 hybrid
     Bool_t  exo       = kTRUE;  // Remove exotic cells
     
@@ -1302,7 +1328,9 @@ void ana ( anaModes mode = mLocal )
    if(kInputData=="ESD"){
    printf("* Configure photon conversion analysis in macro \n");
    TString arguments = "-run-on-train -use-own-xyz  -force-aod -mc-off ";
+#if defined(__CINT__)
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/GammaConversion/macros/ConfigGammaConversion.C");
+#endif
    AliAnalysisTaskGammaConversion * taskGammaConversion = 
    ConfigGammaConversion(arguments,mgr->GetCommonInputContainer());
    taskGammaConversion->SelectCollisionCandidates();
@@ -1361,7 +1389,9 @@ void ana ( anaModes mode = mLocal )
     // More options:
     // "Photon_InvMass_MergedPi0_Isolation_Correlation_ClusterShape_PerSM_PerTCard_QA_Charged_Bkg"; 
     
+#if defined(__CINT__)
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/AddTaskGammaHadronCorrelationSelectAnalysis.C");
+#endif
     
     for(Int_t itrig = trig0; itrig < nTrig; itrig++)
     {
@@ -1430,7 +1460,9 @@ void ana ( anaModes mode = mLocal )
 //    Bool_t   qaan          = kTRUE;
 //    Bool_t   hadronan      = kTRUE;
 //    
+//#if defined(__CINT__)
 //    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/QA/AddTaskPi0IMGammaCorrQA.C");
+//#endif
 //    
 //    // To test the train environment variables
 //    //
@@ -1460,17 +1492,23 @@ void ana ( anaModes mode = mLocal )
 //    
 //    // Other QA
 //    // Detector QA
+//#if defined(__CINT__)
 //    //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/QA/AddTaskCalorimeterQA.C");  
+//#endif
 //    //  AliAnalysisTaskCaloTrackCorrelation * qatask = AddTaskCalorimeterQA(kInputData,kYear,kPrint,kMC); 
 //    // 
 //    // Very old Trigger QA, not in use
+//#if defined(__CINT__)
 //    //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/AddTaskEMCALTriggerQA.C");  
+//#endif
 //    //  AliAnalysisTaskEMCALTriggerQA * qatrigtask = AddTaskEMCALTriggerQA(); 
 //  } // bAnalysis QA
   
     //  // Simple event counting tasks
     //  
+    //#if defined(__CINT__)
     //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/AddTaskCounter.C");   
+    //#endif
     //
     //  AliAnalysisTaskCounter* count    = AddTaskCounter("",kMC);   // All, fill histo with cross section and trials if kMC is true
     //  AliAnalysisTaskCounter* countmb  = AddTaskCounter("MB"); // Min Bias

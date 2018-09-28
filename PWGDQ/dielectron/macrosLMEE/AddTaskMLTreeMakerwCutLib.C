@@ -1,7 +1,11 @@
 AliAnalysisTask *AddTaskMLTreeMakerwCutLib(   
-//                                                    Int_t trackCut=1,
-//                                                    Int_t evCut=1,
-                                                     Bool_t SetTPCCorrection=kTRUE
+                                                    Int_t trackCut=1,
+                                                    Int_t PIDCut=1,
+                                                    Int_t evCut=1,
+                                                    Double_t centmin=0.,
+                                                    Double_t centmax=100.,
+                                                    Bool_t SetTPCCorrection=kFALSE,
+                                                    Bool_t useAODFilterCuts=kFALSE
                                                     )
 {
 
@@ -46,10 +50,12 @@ if(SetTPCCorrection){
     task->SetUseCorr(kTRUE);
     task->SetCorrWidthMean((TH3D*)width.Clone(),(TH3D*)mean.Clone());
 }
+else  task->SetUseCorr(kFALSE);
 
 task->SelectCollisionCandidates(AliVEvent::kINT7);
-task->SetupTrackCuts(cutlib->GetTrackCuts(0,0));
-task->SetupEventCuts(cutlib->GetEventCuts(1));
+task->SetupTrackCuts(cutlib->GetTrackCuts(trackCut,PIDCut,0,useAODFilterCuts));
+task->SetupEventCuts(cutlib->GetEventCuts(centmin, centmax));
+task->SetCentralityPercentileRange(centmin,centmax);    //maybe redundant
 
 mgr->AddTask(task);
 

@@ -12,18 +12,26 @@ AliFemtoDreamControlSample::AliFemtoDreamControlSample()
       fMultBins(),
       fRandom(),
       fPi(TMath::Pi()),
-      fSpinningDepth(0) {
+      fSpinningDepth(0),
+      fStravinsky(false),
+      fDeltaEtaMax(0.f),
+      fDeltaPhiMax(0.f),
+      fDoDeltaEtaDeltaPhiCut(false) {
   fRandom.SetSeed(0);
 }
 
 AliFemtoDreamControlSample::AliFemtoDreamControlSample(
-    const AliFemtoDreamControlSample& samp)
+    const AliFemtoDreamControlSample &samp)
     : fHists(samp.fHists),
       fPDGParticleSpecies(samp.fPDGParticleSpecies),
       fMultBins(samp.fMultBins),
       fRandom(),
       fPi(TMath::Pi()),
-      fSpinningDepth(samp.fSpinningDepth) {
+      fSpinningDepth(samp.fSpinningDepth),
+      fStravinsky(false),
+      fDeltaEtaMax(samp.fDeltaEtaMax),
+      fDeltaPhiMax(samp.fDeltaPhiMax),
+      fDoDeltaEtaDeltaPhiCut(samp.fDoDeltaEtaDeltaPhiCut) {
   fRandom.SetSeed(0);
 }
 
@@ -34,8 +42,16 @@ AliFemtoDreamControlSample::AliFemtoDreamControlSample(
       fMultBins(conf->GetMultBins()),
       fRandom(),
       fPi(TMath::Pi()),
-      fSpinningDepth(0) {
-  fSpinningDepth = conf->GetSpinningDepth();
+      fSpinningDepth(0),
+      fStravinsky(conf->GetDoStravinsky()),
+      fDeltaEtaMax(conf->GetDeltaEtaMax()),
+      fDeltaPhiMax(conf->GetDeltaPhiMax()),
+      fDoDeltaEtaDeltaPhiCut(conf->GetDoDeltaEtaDeltaPhiCut()){
+  if (fStravinsky) {
+    fSpinningDepth = 1;
+  } else {
+    fSpinningDepth = conf->GetSpinningDepth();
+  }
   fRandom.SetSeed(0);
 }
 
@@ -50,6 +66,9 @@ AliFemtoDreamControlSample& AliFemtoDreamControlSample::operator=(
   this->fRandom.SetSeed(0);
   this->fPi = TMath::Pi();
   this->fSpinningDepth = samp.fSpinningDepth;
+  this->fDeltaEtaMax = samp.fDeltaEtaMax;
+  this->fDeltaPhiMax = samp.fDeltaPhiMax;
+  this->fDoDeltaEtaDeltaPhiCut = samp.fDoDeltaEtaDeltaPhiCut;
   return *this;
 }
 
@@ -78,6 +97,19 @@ void AliFemtoDreamControlSample::SetEvent(
           itPart2 = itSpec2->begin();
         }
         while (itPart2 != itSpec2->end()) {
+
+          // Delta eta - Delta phi* cut
+          if (fDoDeltaEtaDeltaPhiCut) {
+            if (ComputeDeltaEta(*itPart1, *itPart2) < fDeltaEtaMax) {
+              ++itPart2;
+              continue;
+            }
+            if (ComputeDeltaPhi(*itPart1, *itPart2) < fDeltaPhiMax) {
+              ++itPart2;
+              continue;
+            }
+          }
+
           // correlated sample
           RelativeK = RelativePairMomentum(itPart1->GetMomentum(), *itPDGPar1,
                                            itPart2->GetMomentum(), *itPDGPar2);
@@ -125,8 +157,16 @@ float AliFemtoDreamControlSample::RelativePairMomentum(TVector3 Part1Momentum,
 
   if (random) {
     // Do the randomization here
-    SPtrack.SetPhi(SPtrack.Phi() + fRandom.Uniform(2 * fPi));
-    TPProng.SetPhi(TPProng.Phi() + fRandom.Uniform(2 * fPi));
+    if (fStravinsky) {
+      if (fRandom.Uniform() < 0.5) {
+        SPtrack.SetPhi(SPtrack.Phi() + fPi);
+      } else {
+        TPProng.SetPhi(TPProng.Phi() + fPi);
+      }
+    } else {
+      SPtrack.SetPhi(SPtrack.Phi() + fRandom.Uniform(2 * fPi));
+      TPProng.SetPhi(TPProng.Phi() + fRandom.Uniform(2 * fPi));
+    }
   }
   trackSum = SPtrack + TPProng;
 
@@ -158,4 +198,24 @@ int AliFemtoDreamControlSample::FindBin(float Multiplicity) {
     }
   }
   return binCounter;
+}
+
+float AliFemtoDreamControlSample::ComputeDeltaEta(
+    AliFemtoDreamBasePart &part1, AliFemtoDreamBasePart &part2) {
+  float eta1 = part1.GetEta().at(0);
+  float eta2 = part2.GetEta().at(0);
+  return std::abs(eta1 - eta2);
+}
+
+float AliFemtoDreamControlSample::ComputeDeltaPhi(
+    AliFemtoDreamBasePart &part1, AliFemtoDreamBasePart &part2) {
+  std::vector<float> Phirad1 = part1.GetPhiAtRaidius().at(0);
+  std::vector<float> Phirad2 = part2.GetPhiAtRaidius().at(0);
+  std::vector<float> radVector;
+  float dphi = 999.f;
+  for (int iRad = 0; iRad < Phirad1.size(); ++iRad) {
+    float currentdphi = std::abs(Phirad1.at(iRad) - Phirad2.at(iRad));
+    if(currentdphi < dphi) dphi = currentdphi;
+  }
+  return dphi;
 }

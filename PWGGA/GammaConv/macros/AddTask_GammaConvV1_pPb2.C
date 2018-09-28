@@ -232,6 +232,29 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
   } else if (trainConfig == 22) {
     cuts.AddCut("80010113", "0b200009327000008250400000", "0162103500000000"); //Eta cut -0.9 - -0.2 and 0.2 - 0.9 with LineCut
 
+  // ZNA and CL1 configs
+  } else if (trainConfig == 30) {
+    cuts.AddCut("90010113", "00200009327000008250400000", "0162103500900000");
+  } else if (trainConfig == 31) {
+    cuts.AddCut("90210113", "00200009327000008250400000", "0162103500900000");
+  } else if (trainConfig == 32) {
+    cuts.AddCut("92410113", "00200009327000008250400000", "0162103500900000");
+  } else if (trainConfig == 33) {
+    cuts.AddCut("94610113", "00200009327000008250400000", "0162103500900000");
+  } else if (trainConfig == 34) {
+    cuts.AddCut("96010113", "00200009327000008250400000", "0162103500900000");
+
+  } else if (trainConfig == 35) {
+    cuts.AddCut("e0010113", "00200009327000008250400000", "0162103500900000");
+  } else if (trainConfig == 36) {
+    cuts.AddCut("e0210113", "00200009327000008250400000", "0162103500900000");
+  } else if (trainConfig == 37) {
+    cuts.AddCut("e2410113", "00200009327000008250400000", "0162103500900000");
+  } else if (trainConfig == 38) {
+    cuts.AddCut("e4610113", "00200009327000008250400000", "0162103500900000");
+  } else if (trainConfig == 39) {
+    cuts.AddCut("e6010113", "00200009327000008250400000", "0162103500900000");
+
   //Run 2 pPb
   } else if (trainConfig == 100) {
     cuts.AddCut("80010113", "00200009327000008250404000", "0162103500000000"); // new default for 5TeV
@@ -259,13 +282,14 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
     cuts.AddCut("c0110113", "00200009327000008250404000", "0162103500000000"); // 0-1
   } else if (trainConfig == 112) {
     cuts.AddCut("c0210113", "00200009327000008250404000", "0162103500000000"); // 0-2
+
   //Run 2 pPb HM
   } else if (trainConfig == 500) {
     cuts.AddCut("80010113", "00200009a27000008250a04120", "0162103500000000"); // test 1 for 5TeV
   } else if (trainConfig == 501) {
     cuts.AddCut("80110113", "00200009a27000008250a04120", "0162103500000000"); // 0-10
   } else if (trainConfig == 502) {
-    cuts.AddCut("81210113", "00200009a27000008250a04120", "0162103500000000"); // 0-20
+    cuts.AddCut("80210113", "00200009a27000008250a04120", "0162103500000000"); // 0-20
   } else if (trainConfig == 503) {
     cuts.AddCut("82410113", "00200009a27000008250a04120", "0162103500000000"); // 20-40
   } else if (trainConfig == 504) {
@@ -279,7 +303,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
   } else if (trainConfig == 508) {
     cuts.AddCut("80110113", "0d200009a27000008250a04120", "0162103500000000"); // 0-10
   } else if (trainConfig == 509) {
-    cuts.AddCut("81210113", "0d200009a27000008250a04120", "0162103500000000"); // 0-20
+    cuts.AddCut("80210113", "0d200009a27000008250a04120", "0162103500000000"); // 0-20
   } else if (trainConfig == 510) {
     cuts.AddCut("82410113", "0d200009a27000008250a04120", "0162103500000000"); // 20-40
   } else if (trainConfig == 511) {
@@ -288,8 +312,34 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
     cuts.AddCut("86810113", "0d200009a27000008250a04120", "0162103500000000"); // 60-80
   } else if (trainConfig == 513) {
     cuts.AddCut("88010113", "0d200009a27000008250a04120", "0162103500000000"); // 80-100
-
-
+  } else if (trainConfig == 514) {
+    cuts.AddCut("90010113", "0d200009a27000008250a04120", "0162103500000000"); // CL1
+  } else if (trainConfig == 515) {
+    cuts.AddCut("90110113", "0d200009a27000008250a04120", "0162103500000000"); // 0-10
+  } else if (trainConfig == 516) {
+    cuts.AddCut("90210113", "0d200009a27000008250a04120", "0162103500000000"); // 0-20
+  } else if (trainConfig == 517) {
+    cuts.AddCut("92410113", "0d200009a27000008250a04120", "0162103500000000"); // 20-40
+  } else if (trainConfig == 518) {
+    cuts.AddCut("94610113", "0d200009a27000008250a04120", "0162103500000000"); // 40-60
+  } else if (trainConfig == 519) {
+    cuts.AddCut("96810113", "0d200009a27000008250a04120", "0162103500000000"); // 60-80
+  } else if (trainConfig == 520) {
+    cuts.AddCut("98010113", "0d200009a27000008250a04120", "0162103500000000"); // 80-100
+  } else if (trainConfig == 521) {
+    cuts.AddCut("e0010113", "0d200009a27000008250a04120", "0162103500000000"); // ZNA
+  } else if (trainConfig == 522) {
+    cuts.AddCut("e0110113", "0d200009a27000008250a04120", "0162103500000000"); // 0-10
+  } else if (trainConfig == 523) {
+    cuts.AddCut("e0210113", "0d200009a27000008250a04120", "0162103500000000"); // 0-20
+  } else if (trainConfig == 524) {
+    cuts.AddCut("e2410113", "0d200009a27000008250a04120", "0162103500000000"); // 20-40
+  } else if (trainConfig == 525) {
+    cuts.AddCut("e4610113", "0d200009a27000008250a04120", "0162103500000000"); // 40-60
+  } else if (trainConfig == 526) {
+    cuts.AddCut("e6810113", "0d200009a27000008250a04120", "0162103500000000"); // 60-80
+  } else if (trainConfig == 527) {
+    cuts.AddCut("e8010113", "0d200009a27000008250a04120", "0162103500000000"); // 80-100
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -445,6 +495,17 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);
+  Int_t nContainer = 2;
+  for(Int_t i = 0; i<numberOfCuts; i++){
+    if(enableQAPhotonTask>1){
+      mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+      nContainer++;
+    }
+    if(enableQAMesonTask>1){
+      mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+      nContainer++;
+    }
+  }
 
   return;
 }

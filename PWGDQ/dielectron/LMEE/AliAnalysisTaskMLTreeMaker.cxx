@@ -404,12 +404,11 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
 //________________________________________________________________________
 
 void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
-  // Main loop
-
   // Called for each event
-  AliVEvent* event = dynamic_cast<AliVEvent*>(InputEvent()); 
   
   fQAHist->Fill("Events_all",1);
+  
+  AliVEvent* event = dynamic_cast<AliVEvent*>(InputEvent()); 
   
   if(!event) {
     AliError("event not available");
@@ -421,13 +420,12 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   if(selectedMask!=(evfilter->IsSelected(event))){
     return;
   }
+ 
   
-  fQAHist->Fill("Events_accepted",1);
+ AliInputEventHandler *eventHandler = nullptr;
+ AliInputEventHandler *eventHandlerMC = nullptr;
   
-     AliInputEventHandler *eventHandler = nullptr;
-     AliInputEventHandler *eventHandlerMC = nullptr;
-  
-    if ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->IsA() == AliAODInputHandler::Class()){
+  if ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->IsA() == AliAODInputHandler::Class()){
     eventHandler = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     eventHandlerMC = eventHandler;
   }
@@ -441,10 +439,8 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
     AliDielectronPID::SetWidthCorrFunction( (TH1*) fwidth->Clone());
     ::Info("AliAnalysisTaskMLTreeMaker::UserExec","Setting Correction Histos");
   }
-     
-  Double_t lMultiplicityVar = -1;
-  Int_t acceptedTracks = GetAcceptedTracks(event,lMultiplicityVar);
 
+  
   AliMultSelection *MultSelection = 0x0; 
   MultSelection = (AliMultSelection * ) event->FindListObject("MultSelection");
   
@@ -452,17 +448,23 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
    //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
    AliWarning("AliMultSelection object not found!");
   }
+  else cent = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
   
-  else cent = MultSelection->GetMultiplicityPercentile("V0M");
+  fQAHist->Fill("Events before cent",1);
   
+  if(cent<fCentralityPercentileMin || cent>fCentralityPercentileMax) return;
   
- runn = event->GetRunNumber();
+  fQAHist->Fill("Events after cent",1);
+  
+  Double_t lMultiplicityVar = -1;
+  Int_t acceptedTracks = GetAcceptedTracks(event,lMultiplicityVar);
+  
+  runn = event->GetRunNumber();
 
-  
   n= acceptedTracks;
   if(acceptedTracks){
-    fTree->Fill();
-    fQAHist->Fill("Events_track_selected",1);
+  fTree->Fill();
+  fQAHist->Fill("Events_track_and_cent_selected",1);
   }
 
   PostData(1, fList);
@@ -508,7 +510,7 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
   ev++;
   Int_t acceptedTracks = 0;
   Bool_t isAOD         = kFALSE;
-  
+  Int_t mpdg=0;
   eta.clear();
   phi.clear();
   pt.clear(); 
@@ -575,6 +577,9 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
 
 
   for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
+    
+    
+      fQAHist->Fill("All tracks",1); 
       AliVTrack* track = dynamic_cast<AliVTrack *>(event->GetTrack(iTracks));
       if (!track) {
 	      AliError(Form("Could not receive ESD track %d", iTracks));
@@ -601,14 +606,14 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
           continue;
         }
         else{
-          fQAHist->Fill("After MC check, bef. Hij",1); 
-          Rej=kFALSE;
-          if(!(CheckGenerator(TMath::Abs(track->GetLabel())))) Rej=kTRUE;
+          fQAHist->Fill("After MC check",1); 
+//          Rej=kFALSE;
+//          if(!(CheckGenerator(TMath::Abs(track->GetLabel())))) Rej=kTRUE;
           }
 
         }
 
-      fQAHist->Fill("Tracks aft MC&Hij, bef tr cuts",1); 
+      fQAHist->Fill("Tracks aft MC, bef tr cuts",1); 
       
       UInt_t selectedMask=(1<<filter->GetCuts()->GetEntries())-1;
       if(selectedMask!=(filter->IsSelected((AliVParticle*)track))){
@@ -655,7 +660,8 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
         if(!(mcTrack->GetMother() < 0)) {  
           hasmother.push_back(1);
           AliAODMCParticle* mcmother = dynamic_cast<AliAODMCParticle *>(fMCEvent->GetTrack(mcTrack->GetMother()));
-	        pdgmother.push_back( mcmother->PdgCode());
+                mpdg= mcmother->PdgCode();
+	        pdgmother.push_back(mpdg);
 
           motherlabel.push_back(abs(mcmother->GetLabel()));
         }
@@ -664,6 +670,8 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
           pdgmother.push_back( -9999);
           motherlabel.push_back(-9999);
         }
+
+      if( abs(mcTrack->PdgCode())==11 && mpdg!=22) fQAHist->Fill("Selected electrons, non-conversion",1);
           
      // infos of first mother:
       Int_t gMotherIndex = mcTrack->GetMother();

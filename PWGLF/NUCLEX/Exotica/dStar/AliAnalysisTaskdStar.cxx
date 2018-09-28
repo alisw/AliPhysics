@@ -27,6 +27,8 @@
 ClassImp(AliAnalysisTaskdStar);
 ///\endcond
 
+using std::string;
+
 /// Standard and default constructor of the class.
 ///
 /// \param taskname Name of the task

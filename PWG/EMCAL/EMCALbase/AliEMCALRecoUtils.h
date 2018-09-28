@@ -71,17 +71,20 @@ public:
 
   /// Non linearity enum list of possible parametrizations. 
   /// Recomended for data kBeamTestCorrectedv3 and for simulation kPi0MCv3
-  enum     NonlinearityFunctions{ kPi0MC   = 0, kPi0GammaGamma = 1,
-                                  kPi0GammaConversion = 2, kNoCorrection = 3,
-                                  kBeamTest= 4, kBeamTestCorrected = 5,
-                                  kPi0MCv2 = 6, kPi0MCv3 = 7,
-                                  kBeamTestCorrectedv2   = 8,
-                                  kSDMv5   = 9, kPi0MCv5 = 10,
-                                  kSDMv6   =11, kPi0MCv6 = 12,
-                                  kBeamTestCorrectedv3   = 13,
-				  kPCMv1 = 14, //pure symmetric decay muon method 
-				  kPCMplusBTCv1 = 15, //kPCMv1 convoluted with kBeamTestCorrectedv3
-				  kPCMsysv1 = 16 //variation of kPCMv1 to calculate systematics
+  enum     NonlinearityFunctions
+  { 
+    kPi0MC   = 0, kPi0GammaGamma = 1,
+    kPi0GammaConversion = 2, kNoCorrection = 3,
+    kBeamTest= 4, kBeamTestCorrected = 5,
+    kPi0MCv2 = 6, kPi0MCv3 = 7,
+    kBeamTestCorrectedv2   = 8,
+    kSDMv5   = 9, kPi0MCv5 = 10,
+    kSDMv6   =11, kPi0MCv6 = 12,
+    kBeamTestCorrectedv3   = 13,
+    kPCMv1 = 14,               // pure symmetric decay muon method 
+    kPCMplusBTCv1 = 15,        // kPCMv1 convoluted with kBeamTestCorrectedv3
+    kPCMsysv1 = 16,            // variation of kPCMv1 to calculate systematics
+    kBeamTestCorrectedv4 = 17  // Different parametrization of v3 but similar, improve E>100 GeV linearity
   };
 
   /// Cluster position enum list of possible algoritms

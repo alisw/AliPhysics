@@ -35,8 +35,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-  AliAnalysisTaskSEB0toDStarPi.cxx
-  AliRDHFCutsB0toDStarPi.cxx
   AliAODHFUtil.cxx
   AliAODRecoDecayHF.cxx
   AliAODRecoDecayHF2Prong.cxx
@@ -48,6 +46,8 @@ set(SRCS
   AliRDHFCuts.cxx
   AliVertexingHFUtils.cxx
   AliHFSystErr.cxx
+  AliRDHFCutsB0toDStarPi.cxx
+  AliRDHFCutsBPlustoD0Pi.cxx
   AliRDHFCutsD0toKpi.cxx
   AliRDHFCutsJpsitoee.cxx
   AliRDHFCutsDplustoKpipi.cxx
@@ -64,6 +64,8 @@ set(SRCS
   AliRDHFCutsXicPlustoXiPiPifromAODtracks.cxx
   AliRDHFCutsXictoeleXifromAODtracks.cxx
   AliAnalysisVertexingHF.cxx
+  AliAnalysisTaskSEB0toDStarPi.cxx
+  AliAnalysisTaskSEBPlustoD0Pi.cxx
   AliAnalysisTaskSEVertexingHF.cxx
   AliAnalysisTaskMEVertexingHF.cxx
   AliAnalysisTaskSESelectHF.cxx
@@ -197,9 +199,13 @@ install(FILES
             ConfigVertexingHF_Pb_AllCent_NoLS.C
             ConfigVertexingHF_DplustoK0s_DstoK0s.C
             ConfigVertexingHF_pPbRHF_DplustoK0s_DstoK0s.C
-	    upgrade/ConfigVertexingHF_Pb_Upgrade2018.C
         DESTINATION
             PWGHF/vertexingHF/)
+
+install(FILES
+	    upgrade/ConfigVertexingHF_Pb_Upgrade2018.C
+        DESTINATION
+            PWGHF/vertexingHF/upgrade)
 
 install(DIRECTORY
             macros

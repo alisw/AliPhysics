@@ -17,6 +17,18 @@ fTrack3type(kUnknown)
   
 }
 
+AliFemtoTrio::AliFemtoTrio(AliFemtoTrio& trio):
+fTrack1(trio.fTrack1),
+fTrack2(trio.fTrack2),
+fTrack3(trio.fTrack3),
+fTrack1type(trio.fTrack1type),
+fTrack2type(trio.fTrack2type),
+fTrack3type(trio.fTrack3type)
+{
+  
+}
+
+
 AliFemtoTrio::~AliFemtoTrio()
 {
 

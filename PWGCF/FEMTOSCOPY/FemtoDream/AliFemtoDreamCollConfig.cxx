@@ -18,6 +18,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
       fdPhidEtaPlots(false),
       fMixedEventStatistics(true),
       fGetTheControlSampel(false),
+      fStravinsky(false),
       fInvMassPairs(false),
       fMinimalBookingME(false),
       fMinimalBookingSample(false),
@@ -33,7 +34,10 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
       fSpinningDepth(0),
       fkTCentrality(false),
       fMCCommonAncestor(false),
-      fEst(AliFemtoDreamEvent::kSPD) {
+      fEst(AliFemtoDreamEvent::kSPD),
+      fDeltaEtaMax(0.f),
+      fDeltaPhiMax(0.f),
+      fDoDeltaEtaDeltaPhiCut(false) {
   //should not be used, since we need a name to deal with root objects
 }
 
@@ -49,6 +53,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fdPhidEtaPlots(config.fdPhidEtaPlots),
       fMixedEventStatistics(config.fMixedEventStatistics),
       fGetTheControlSampel(config.fGetTheControlSampel),
+      fStravinsky(config.fStravinsky),
       fInvMassPairs(config.fInvMassPairs),
       fMinimalBookingME(config.fMinimalBookingME),
       fMinimalBookingSample(config.fMinimalBookingSample),
@@ -64,7 +69,10 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fSpinningDepth(config.fSpinningDepth),
       fkTCentrality(config.fkTCentrality),
       fMCCommonAncestor(config.fMCCommonAncestor),
-      fEst(config.fEst) {
+      fEst(config.fEst),
+      fDeltaEtaMax(config.fDeltaEtaMax),
+      fDeltaPhiMax(config.fDeltaPhiMax),
+      fDoDeltaEtaDeltaPhiCut(config.fDoDeltaEtaDeltaPhiCut) {
 }
 
 AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
@@ -79,6 +87,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fdPhidEtaPlots(false),
       fMixedEventStatistics(true),
       fGetTheControlSampel(false),
+      fStravinsky(false),
       fInvMassPairs(false),
       fMinimalBookingME(false),
       fMinimalBookingSample(false),
@@ -94,7 +103,10 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fSpinningDepth(0),
       fkTCentrality(false),
       fMCCommonAncestor(false),
-      fEst(AliFemtoDreamEvent::kSPD) {
+      fEst(AliFemtoDreamEvent::kSPD),
+      fDeltaEtaMax(0.f),
+      fDeltaPhiMax(0.f),
+      fDoDeltaEtaDeltaPhiCut(false) {
   fZVtxBins = new TNtuple("ZBins", "ZBins", "zvtx");
   fMultBins = new TNtuple("MultBins", "MultBins", "mult");
   fPDGParticleSpecies = new TNtuple("PDGCodes", "PDGCodes", "PDGCodes");
@@ -132,6 +144,9 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     this->fkTCentrality = config.fkTCentrality;
     this->fMCCommonAncestor = config.fMCCommonAncestor;
     this->fEst = config.fEst;
+    this->fDeltaEtaMax = config.fDeltaEtaMax;
+    this->fDeltaPhiMax = config.fDeltaPhiMax;
+    this->fDoDeltaEtaDeltaPhiCut = config.fDoDeltaEtaDeltaPhiCut;
   }
   return *this;
 }

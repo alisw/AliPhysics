@@ -13,24 +13,29 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
+// ROOT
 #include <TString.h>
 #include <TSystem.h>
 #include <TROOT.h>
 
-#include "AliCaloTrackESDReader.h"
-#include "AliCaloTrackAODReader.h"
-#include "AliCalorimeterUtils.h"
-#include "AliAnalysisTaskCaloTrackCorrelation.h"
-#include "AliAnaCaloTrackCorrMaker.h"
+// AliPhysics
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliVTrack.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
-#include "ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
 #include "AliESDtrackCuts.h"
+
+// CaloTrackCorrelations frame
+#include "AliCaloTrackESDReader.h"
+#include "AliCaloTrackAODReader.h"
+#include "AliCalorimeterUtils.h"
+#include "AliAnalysisTaskCaloTrackCorrelation.h"
+#include "AliAnaCaloTrackCorrMaker.h"
+
+// Macros
+#include "ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
 #include "CreateTrackCutsPWGJE.C"
-#include "GetAlienGlobalProductionVariables.C"
 #include "CheckActiveEMCalTriggerPerPeriod.C"
 
 #endif
@@ -290,8 +295,10 @@ void ConfigureTrackCuts ( AliCaloTrackReader* reader,
   
   if ( inputDataType == "ESD" )
   {
+#if defined(__CINT__)
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
-    
+#endif
+
     //AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWGJE(10041004);
     //reader->SetTrackCuts(esdTrackCuts);
     
@@ -653,7 +660,10 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
   // Do not configure the wagon for certain analysis combinations
   // But create the task so that the sub-wagon train can run
   //
+#if defined(__CINT__)
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/CheckActiveEMCalTriggerPerPeriod.C");
+#endif
+
   Bool_t doAnalysis = CheckActiveEMCalTriggerPerPeriod(simulation,trigger,period,year);
   
   if ( doAnalysis && calorimeter == "DCAL" && year < 2015 ) doAnalysis = kFALSE;
@@ -732,7 +742,10 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
   maker->GetReader()->SwitchOnEventTriggerAtSE(); // on is default case
   if ( !simulation )
   {
+#if defined(__CINT__)
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C");
+#endif
+
     TString caloTriggerString = "";
     UInt_t mask = ConfigureAndGetEventTriggerMaskAndCaloTriggerString(trigger, year, caloTriggerString);
 

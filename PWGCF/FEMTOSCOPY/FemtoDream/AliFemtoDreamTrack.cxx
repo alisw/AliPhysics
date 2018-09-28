@@ -367,9 +367,7 @@ void AliFemtoDreamTrack::SetAODTrackingInformation() {
     }
   }
   this->fTPCClsS = fAODTrack->GetTPCnclsS();
-  if (fIsMC) {
-    SetPhiAtRadii();
-  }
+  SetPhiAtRadii();
 }
 void AliFemtoDreamTrack::SetPhiAtRadii() {
   float TPCradii[9] = { 85., 105., 125., 145., 165., 185., 205., 225., 245. };
@@ -382,7 +380,7 @@ void AliFemtoDreamTrack::SetPhiAtRadii() {
   for (int radius = 0; radius < 9; radius++) {
     phiatRadius.push_back(
         phi0
-            + TMath::ASin(
+            - TMath::ASin(
                 0.1 * chg * bfield * 0.3 * TPCradii[radius] * 0.01
                     / (2. * pt)));
   }
@@ -465,6 +463,18 @@ void AliFemtoDreamTrack::SetMCInformation() {
         this->SetParticleOrigin(AliFemtoDreamBasePart::kMaterial);
       } else {
         this->SetParticleOrigin(AliFemtoDreamBasePart::kUnknown);
+      }
+      int motherID = mcPart->GetMother();
+      int lastMother = motherID;
+      AliAODMCParticle *mcMother;
+      while (motherID != -1) {
+        lastMother = motherID;
+        mcMother = (AliAODMCParticle *)mcarray->At(motherID);
+        motherID = mcMother->GetMother();
+      }
+      mcMother = (AliAODMCParticle *)mcarray->At(lastMother);
+      if (mcMother) {
+        this->SetMotherPDG(mcMother->GetPdgCode());
       }
     }
   } else {

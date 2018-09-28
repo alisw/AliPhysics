@@ -35,17 +35,22 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
 
   void                        ActivateTrueJetMatching(const char* arrayName, const char* rhoName, const char* partArrayName = "mcparticles") 
                                 {fTruthJetsArrayName = arrayName; fTruthJetsRhoName = rhoName; fTruthParticleArrayName = partArrayName;}
-  void                        SetHadronMatchingRadius(Double_t val)               { fHadronMatchingRadius = val; }
+  void                        SetHadronMatchingRadius(Double_t val)               { fHadronMatchingRadius  = val; }
+  void                        SetTrueJetMatchingRadius(Double_t val)              { fTrueJetMatchingRadius = val; }
   void                        SetSecondaryVertexMaxChi2(Double_t val   )          { fSecondaryVertexMaxChi2 = val; }
   void                        SetSecondaryVertexMaxDispersion(Double_t val)       { fSecondaryVertexMaxDispersion = val; }
   void                        SetCalculateSecondaryVertices(Bool_t val)           { fCalculateSecondaryVertices = val; }
   void                        SetVertexerCuts(AliRDHFJetsCutsVertex* val)         { fVertexerCuts = val; }
   void                        SetSetEmcalJetFlavour(Bool_t val)                   { fSetEmcalJetFlavour = val; }
 
+  void                        SetEventCutTriggerTrack(Double_t minPt, Double_t maxPt, Int_t minLabel=0)
+                                { fEventCut_TriggerTrackMinPt = minPt; fEventCut_TriggerTrackMaxPt = maxPt; fEventCut_TriggerTrackMinLabel = minLabel; }
+
  protected:
   Bool_t                      CreateControlHistograms();
   void                        ExecOnce();
   Bool_t                      Run();
+  Bool_t                      IsEventSelected();
   void                        FillTrackControlHistograms(AliVTrack* track);
   void                        FillEventControlHistograms();
   void                        FillJetControlHistograms(AliEmcalJet* jet);
@@ -62,13 +67,17 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   AliEmcalJetTree*            fJetTree;
   AliHFJetsTaggingVertex*     fVtxTagger;                               //!<! class for sec. vertexing
   Double_t                    fHadronMatchingRadius;                    ///< Matching radius to search for beauty/charm hadrons around jet
+  Double_t                    fTrueJetMatchingRadius;                   ///< Matching radius to true jet
   Double_t                    fSecondaryVertexMaxChi2;                  ///< Max chi2 of secondary vertex (others will be discarded)
   Double_t                    fSecondaryVertexMaxDispersion;            ///< Max dispersion of secondary vertex (others will be discarded)
   Bool_t                      fCalculateSecondaryVertices;              ///< Calculate the secondary vertices (instead of loading)
   AliRDHFJetsCutsVertex*      fVertexerCuts;                            ///< Cuts used for the vertexer (given in add task macro)
   Bool_t                      fSetEmcalJetFlavour;                      ///< if set, the flavour property of the AliEmcalJets will be set
 
-
+  // ################## EVENT CUTS
+  Double_t                    fEventCut_TriggerTrackMinPt;              ///< Event requirement, trigger track min pT
+  Double_t                    fEventCut_TriggerTrackMaxPt;              ///< Event requirement, trigger track max pT
+  Int_t                       fEventCut_TriggerTrackMinLabel;           ///< Event requirement, trigger track min label (can be used to selected embedded particles)
 
   // ################## BASIC EVENT VARIABLES
   AliJetContainer            *fJetsCont;                                //!<! Jets
@@ -77,6 +86,11 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   TString                     fTruthJetsArrayName;                      ///< Array name for particle-level jets
   TString                     fTruthJetsRhoName;                        ///< Array name for particle-level rho
   TString                     fTruthParticleArrayName;                  ///< Array name of MC particles in event (mcparticles)
+
+  std::vector<Float_t>        fTriggerTracks_Pt;                         ///< If trigger track requi. is used -> save pT
+  std::vector<Float_t>        fTriggerTracks_Eta;                        ///< If trigger track requi. is used -> save eta
+  std::vector<Float_t>        fTriggerTracks_Phi;                        ///< If trigger track requi. is used -> save phi
+
 
   // ################## HISTOGRAM HELPER FUNCTIONS
   void                        FillHistogram(const char * key, Double_t x);
@@ -138,6 +152,7 @@ class AliEmcalJetTree : public TNamed
     void            SetSaveJetShapes(Bool_t val) {fSaveJetShapes = val; fInitialized = kFALSE;}
     void            SetSaveMCInformation(Bool_t val) {fSaveMCInformation = val; fInitialized = kFALSE;}
     void            SetSaveSecondaryVertices(Bool_t val) {fSaveSecondaryVertices = val; fInitialized = kFALSE;}
+    void            SetSaveTriggerTracks(Bool_t val) {fSaveTriggerTracks = val;}
 
     void            InitializeTree();
 
@@ -159,17 +174,20 @@ class AliEmcalJetTree : public TNamed
     Bool_t          AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity = 0, Float_t vertexX = 0, Float_t vertexY = 0, Float_t vertexZ = 0, Float_t centrality = 0, Long64_t eventID = 0, Float_t magField = 0,
       AliTrackContainer* trackCont = 0, Int_t motherParton = 0, Int_t motherHadron = 0, Int_t partonInitialCollision = 0, Float_t matchedPt = 0, Float_t truePtFraction = 0, Float_t ptHard = 0,
       std::vector<Float_t>& trackPID_ITS = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& trackPID_TPC = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& trackPID_TOF = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& trackPID_TRD = DEFAULT_VECTOR_FLOAT, std::vector<Short_t>& trackPID_Reco = DEFAULT_VECTOR_SHORT, std::vector<Short_t>& trackPID_Truth = DEFAULT_VECTOR_SHORT,
+      std::vector<Float_t>& triggerTrackPt = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& triggerTrackDeltaEta = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& triggerTrackDeltaPhi = DEFAULT_VECTOR_FLOAT,
       std::vector<Float_t>& trackIP_d0 = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& trackIP_z0 = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& trackIP_d0cov = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& trackIP_z0cov = DEFAULT_VECTOR_FLOAT,
       std::vector<Float_t>& secVtx_X = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& secVtx_Y = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& secVtx_Z = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& secVtx_Mass = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& secVtx_Lxy = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& secVtx_SigmaLxy = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& secVtx_Chi2 = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& secVtx_Dispersion = DEFAULT_VECTOR_FLOAT)
     {
       return AddJetToTree(jet, bgrdDensity, vertexX, vertexY, vertexZ, centrality, eventID, magField, trackCont, motherParton, motherHadron, partonInitialCollision, matchedPt, truePtFraction, ptHard,
         trackPID_ITS.data(), trackPID_TPC.data(), trackPID_TOF.data(), trackPID_TRD.data(), trackPID_Reco.data(), trackPID_Truth.data(),
+        triggerTrackPt.size(), triggerTrackPt.data(), triggerTrackDeltaEta.data(), triggerTrackDeltaPhi.data(),
         trackIP_d0.data(), trackIP_z0.data(), trackIP_d0cov.data(), trackIP_z0cov.data(),
         secVtx_X.size(), secVtx_X.data(), secVtx_Y.data(), secVtx_Z.data(), secVtx_Mass.data(), secVtx_Lxy.data(), secVtx_SigmaLxy.data(), secVtx_Chi2.data(), secVtx_Dispersion.data());
     }
     Bool_t          AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Float_t vertexX, Float_t vertexY, Float_t vertexZ, Float_t centrality, Long64_t eventID, Float_t magField,
       AliTrackContainer* trackCont, Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchedPt, Float_t truePtFraction, Float_t ptHard,
       Float_t* trackPID_ITS, Float_t* trackPID_TPC, Float_t* trackPID_TOF, Float_t* trackPID_TRD, Short_t* trackPID_Reco, Short_t* trackPID_Truth,
+      Int_t numTriggerTracks, Float_t* triggerTrackPt, Float_t* triggerTrackDeltaEta, Float_t* triggerTrackDeltaPhi,
       Float_t* trackIP_d0, Float_t* trackIP_z0, Float_t* trackIP_d0cov, Float_t* trackIP_z0cov,
       Int_t numSecVertices, Float_t* secVtx_X, Float_t* secVtx_Y, Float_t* secVtx_Z, Float_t* secVtx_Mass, Float_t* secVtx_Lxy, Float_t* secVtx_SigmaLxy, Float_t* secVtx_Chi2, Float_t* secVtx_Dispersion);
     // ######################################
@@ -186,6 +204,7 @@ class AliEmcalJetTree : public TNamed
     Bool_t          fSaveJetShapes;                       ///< save jet shapes
     Bool_t          fSaveMCInformation;                   ///< save MC information
     Bool_t          fSaveSecondaryVertices;               ///< save reconstructed sec. vertex properties
+    Bool_t          fSaveTriggerTracks;                   ///< save event trigger track
 
     // Option flags
     std::vector<Float_t> fExtractionPercentages;          ///< Percentages which will be extracted for a given pT bin
@@ -225,11 +244,12 @@ class AliEmcalJetTree : public TNamed
     Float_t         fBuffer_Jet_MC_MatchedPt;             //!<! array buffer
     Float_t         fBuffer_Jet_MC_TruePtFraction;        //!<! array buffer
 
+    Int_t           fBuffer_NumTriggerTracks;
     Int_t           fBuffer_NumSecVertices;
 
 
     /// \cond CLASSIMP
-    ClassDef(AliEmcalJetTree, 1) // Jet tree class
+    ClassDef(AliEmcalJetTree, 2) // Jet tree class
     /// \endcond
 };
 

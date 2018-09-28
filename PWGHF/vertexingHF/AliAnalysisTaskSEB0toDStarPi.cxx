@@ -128,7 +128,9 @@ AliAnalysisTaskSEB0toDStarPi::AliAnalysisTaskSEB0toDStarPi():
   fHistMassWindow(0.125),
   fDegreePerRotation(0),
   fNumberOfRotations(0),
-  fCheckBackground(0) 
+  fCheckBackground(0),
+  fCheckInjected(1),
+  fRemoveInjected(0) 
 {
   //
   /// Default ctor
@@ -186,7 +188,9 @@ AliAnalysisTaskSEB0toDStarPi::AliAnalysisTaskSEB0toDStarPi(const Char_t* name, A
   fHistMassWindow(0.125),
   fDegreePerRotation(0),
   fNumberOfRotations(0),
-  fCheckBackground(0)
+  fCheckBackground(0),
+  fCheckInjected(1),
+  fRemoveInjected(0)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -265,7 +269,7 @@ void AliAnalysisTaskSEB0toDStarPi::UserExec(Option_t *){
     return;
   }
 
-  if(fEvents%100==0){
+  if(fEvents%50==0){
     std::cout << "\r" << "Analysing event number: " << fEvents << std::endl;
   }
 
@@ -398,7 +402,7 @@ void AliAnalysisTaskSEB0toDStarPi::UserExec(Option_t *){
   fB0PionTracks->erase(fB0PionTracks->begin(),fB0PionTracks->end());
   fDStarPionTracks->erase(fDStarPionTracks->begin(),fDStarPionTracks->end());
   
-  delete B0toDStarPiLabelMatrix; B0toDStarPiLabelMatrix = NULL;
+  delete B0toDStarPiLabelMatrix; B0toDStarPiLabelMatrix = nullptr;
 
   //==================================================================================
   //  PARTICLE SELECTION LOOP - end
@@ -1250,20 +1254,20 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
         if(k==20){name_Histogram = "angleMotherSecondDaughter"; discription_Histogram = "flight angle mother and second daughter; [Cos(#phi)]; Entries"; numberOfBins = 100; lowerBound = 0.5; upperBound = 1;}
         if(k==21){name_Histogram = "angleBetweenBothDaughters"; discription_Histogram = "angle between both daughters; [Cos(#phi)]; Entries"; numberOfBins = 100; lowerBound = -1; upperBound = 1;}
         if(k==22){name_Histogram = "cosThetaStar"; discription_Histogram = "cosThetaStar; [Cos(#theta*)]; Entries"; numberOfBins = 200; lowerBound = -2; upperBound = 2;}
-        if(k==23){name_Histogram = "vertexX"; discription_Histogram = "Vertex position; [cm]; Entries"; numberOfBins = 500; lowerBound = -5; upperBound = 5;}
-        if(k==24){name_Histogram = "vertexY"; discription_Histogram = "Vertex position; [cm]; Entries"; numberOfBins = 500; lowerBound = -5; upperBound = 5;}
-        if(k==25){name_Histogram = "vertexZ"; discription_Histogram = "Vertex position; [cm]; Entries"; numberOfBins = 500; lowerBound = -20; upperBound = 20;}
+        if(k==23){name_Histogram = "vertexX"; discription_Histogram = "Vertex position; [cm]; Entries"; numberOfBins = 200; lowerBound = -5; upperBound = 5;}
+        if(k==24){name_Histogram = "vertexY"; discription_Histogram = "Vertex position; [cm]; Entries"; numberOfBins = 200; lowerBound = -5; upperBound = 5;}
+        if(k==25){name_Histogram = "vertexZ"; discription_Histogram = "Vertex position; [cm]; Entries"; numberOfBins = 200; lowerBound = -20; upperBound = 20;}
 
 
         if(k==26){if(i==0 || i==3 || i==4){name_Histogram = "pointingAngleToDStar"; discription_Histogram = "Pointing angle w.r.t. DStar decay vertex; [Cos(#theta)]; Entries"; numberOfBins = 200; lowerBound = -1; upperBound = 1;}
         else continue;} 
-        if(k==27){if(i==0 || i==3 || i==4){name_Histogram = "d0MotherToDStar"; discription_Histogram = "d0 Mother w.r.t. DStar decay vertex; [cm]; Entries"; numberOfBins = 500; lowerBound = 0; upperBound = 1;}
+        if(k==27){if(i==0 || i==3 || i==4){name_Histogram = "d0MotherToDStar"; discription_Histogram = "d0 Mother w.r.t. DStar decay vertex; [cm]; Entries"; numberOfBins = 200; lowerBound = 0; upperBound = 1;}
         else continue;} 
-        if(k==28){if(i==0 || i==3 || i==4){name_Histogram = "d0FirstDaughterToDStar"; discription_Histogram = "d0 first daughter w.r.t. DStar decay vertex; [cm]; Entries"; numberOfBins = 500; lowerBound = 0; upperBound = 1;}
+        if(k==28){if(i==0 || i==3 || i==4){name_Histogram = "d0FirstDaughterToDStar"; discription_Histogram = "d0 first daughter w.r.t. DStar decay vertex; [cm]; Entries"; numberOfBins = 200; lowerBound = 0; upperBound = 1;}
         else continue;} 
-        if(k==29){if(i==0 || i==3 || i==4){name_Histogram = "d0SecondDaughterToDStar"; discription_Histogram = "d0 second daughter w.r.t. DStar decay vertex; [cm]; Entries"; numberOfBins = 500; lowerBound = 0; upperBound = 1;}
+        if(k==29){if(i==0 || i==3 || i==4){name_Histogram = "d0SecondDaughterToDStar"; discription_Histogram = "d0 second daughter w.r.t. DStar decay vertex; [cm]; Entries"; numberOfBins = 200; lowerBound = 0; upperBound = 1;}
         else continue;}
-        if(k==30){if(i==0 || i==3 || i==4){name_Histogram = "impactProductToDStar"; discription_Histogram = "impact product w.r.t. DStar decay vertex; [cm]; Entries"; numberOfBins = 500; lowerBound = -0.02; upperBound = 0.02;}
+        if(k==30){if(i==0 || i==3 || i==4){name_Histogram = "impactProductToDStar"; discription_Histogram = "impact product w.r.t. DStar decay vertex; [cm]; Entries"; numberOfBins = 200; lowerBound = -0.02; upperBound = 0.02;}
         else continue;} 
         if(k==31){if(i==0 || i==3 || i==4){name_Histogram = "impactProductXYToDStar"; discription_Histogram = "impact product XY w.r.t. DStar decay vertex; [cm^{2}]; Entries"; numberOfBins = 100; lowerBound = 0; upperBound = 0.5;}
         else continue;} 
@@ -1276,10 +1280,10 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
         if(k==35){if(i==0 || i==3 || i==4){name_Histogram = "normDecayTimeToDStar"; discription_Histogram = "Normalized Decay Time w.r.t DStar vertex; [a.u.]; Entries"; numberOfBins = 100; lowerBound = 0; upperBound = 0.00001;}
           else continue;} 
 
-        if(k==36){name_Histogram = "topomaticFirstDaughter"; discription_Histogram = "topomatic d0 first daughter; [cm]; Entries"; numberOfBins = 500; lowerBound = 0; upperBound = 20;}
-        if(k==37){name_Histogram = "topomaticSecondDaughter"; discription_Histogram = "topomatic d0 second daughter; [cm]; Entries"; numberOfBins = 500; lowerBound = 0; upperBound = 20;}
-        if(k==38){name_Histogram = "topomaticMax"; discription_Histogram = "Max topomatic; [cm]; Entries"; numberOfBins = 500; lowerBound = 0; upperBound = 20;}
-        if(k==39){name_Histogram = "topomaticMin"; discription_Histogram = "Min topomatic; [cm]; Entries"; numberOfBins = 500; lowerBound = 0; upperBound = 20;}
+        if(k==36){name_Histogram = "topomaticFirstDaughter"; discription_Histogram = "topomatic d0 first daughter; [cm]; Entries"; numberOfBins = 200; lowerBound = 0; upperBound = 20;}
+        if(k==37){name_Histogram = "topomaticSecondDaughter"; discription_Histogram = "topomatic d0 second daughter; [cm]; Entries"; numberOfBins = 200; lowerBound = 0; upperBound = 20;}
+        if(k==38){name_Histogram = "topomaticMax"; discription_Histogram = "Max topomatic; [cm]; Entries"; numberOfBins = 200; lowerBound = 0; upperBound = 20;}
+        if(k==39){name_Histogram = "topomaticMin"; discription_Histogram = "Min topomatic; [cm]; Entries"; numberOfBins = 200; lowerBound = 0; upperBound = 20;}
         if(k==40){name_Histogram = "pointingAngleMotherXY"; discription_Histogram = "pointing angle XY;  [Cos(#theta)]; Entries"; numberOfBins = 1000; lowerBound = -1; upperBound = 1;}
         if(k==41){name_Histogram = "vertexDistanceXY"; discription_Histogram = "vertex distance between mother and primary vertex XY; distance [cm]; Entries"; numberOfBins = 1000; lowerBound = 0; upperBound = 10;}
         if(k==42){name_Histogram = "normDecayLengthXY"; discription_Histogram = "Normalized decay length w.r.t primary vertex XY; [cm]; Entries"; numberOfBins = 100; lowerBound = 0; upperBound = 50;}
@@ -1593,46 +1597,46 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
     }
   }
 
-  for (Int_t k = 0; k < fnPtBins+3; ++k){
-    TString ptBinMother = "";
-    if(k==0) ptBinMother = "";
-    if(k==1) ptBinMother = "_ptbin_6_to_inf";
-    if(k==2) ptBinMother = "_ptbin_3_to_inf";
-    if(k>2) {ptBinMother += "_ptbin_"; ptBinMother += fPtBinLimits[k-3]; ptBinMother += "_to_"; ptBinMother += fPtBinLimits[k-2];}
+  // for (Int_t k = 0; k < fnPtBins+3; ++k){
+  //   TString ptBinMother = "";
+  //   if(k==0) ptBinMother = "";
+  //   if(k==1) ptBinMother = "_ptbin_6_to_inf";
+  //   if(k==2) ptBinMother = "_ptbin_3_to_inf";
+  //   if(k>2) {ptBinMother += "_ptbin_"; ptBinMother += fPtBinLimits[k-3]; ptBinMother += "_to_"; ptBinMother += fPtBinLimits[k-2];}
  
-    for (Int_t i = 0; i < 7; ++i){
-      TString signName = "";
-      if(i==0) signName = "";
-      if(i==1) signName = "_SameSign";
-      if(i==2) signName = "_SignSum";
-      if(i==3) signName = "_HIJING_Background";
-      if(i==4) signName = "_HIJING_Signal";
-      if(i==5) signName = "_Background_rotation";
-      if(i==6) signName = "_HIJING_Background_rotation";
+  //   for (Int_t i = 0; i < 7; ++i){
+  //     TString signName = "";
+  //     if(i==0) signName = "";
+  //     if(i==1) signName = "_SameSign";
+  //     if(i==2) signName = "_SignSum";
+  //     if(i==3) signName = "_HIJING_Background";
+  //     if(i==4) signName = "_HIJING_Signal";
+  //     if(i==5) signName = "_Background_rotation";
+  //     if(i==6) signName = "_HIJING_Background_rotation";
 
-      TString name_invariantMassMother ="fineBin_invariantMassB0";
-      name_invariantMassMother += ptBinMother + signName;
-      TH1F* hist_invariantMassMother = new TH1F(name_invariantMassMother.Data(),"mass mother candidate; m [GeV/c^2]; Entries",10000,2.5,7.5);
-      hist_invariantMassMother->Sumw2();
-      hist_invariantMassMother->SetLineColor(6);
-      hist_invariantMassMother->SetMarkerStyle(20);
-      hist_invariantMassMother->SetMarkerSize(0.6);
-      hist_invariantMassMother->SetMarkerColor(6);
-      TH1F* histogram_invariantMassMother = (TH1F*)hist_invariantMassMother->Clone();
-      fOutputB0MC->Add(histogram_invariantMassMother);
+  //     TString name_invariantMassMother ="fineBin_invariantMassB0";
+  //     name_invariantMassMother += ptBinMother + signName;
+  //     TH1F* hist_invariantMassMother = new TH1F(name_invariantMassMother.Data(),"mass mother candidate; m [GeV/c^2]; Entries",5000,2.5,7.5);
+  //     hist_invariantMassMother->Sumw2();
+  //     hist_invariantMassMother->SetLineColor(6);
+  //     hist_invariantMassMother->SetMarkerStyle(20);
+  //     hist_invariantMassMother->SetMarkerSize(0.6);
+  //     hist_invariantMassMother->SetMarkerColor(6);
+  //     TH1F* histogram_invariantMassMother = (TH1F*)hist_invariantMassMother->Clone();
+  //     fOutputB0MC->Add(histogram_invariantMassMother);
 
-      TString name_deltainvariantMassMother ="fineBin_deltainvariantMassB0";
-      name_deltainvariantMassMother += ptBinMother + signName;
-      TH1F* hist_deltainvariantMassMother = new TH1F(name_deltainvariantMassMother.Data(),"delta mass mother candidate; m [GeV/c^2]; Entries",2000,0,20);
-      hist_deltainvariantMassMother->Sumw2();
-      hist_deltainvariantMassMother->SetLineColor(6);
-      hist_deltainvariantMassMother->SetMarkerStyle(20);
-      hist_deltainvariantMassMother->SetMarkerSize(0.6);
-      hist_deltainvariantMassMother->SetMarkerColor(6);
-      TH1F* histogram_deltainvariantMassMother = (TH1F*)hist_deltainvariantMassMother->Clone();
-      fOutputB0MC->Add(histogram_deltainvariantMassMother);
-    }
-  }
+  //     TString name_deltainvariantMassMother ="fineBin_deltainvariantMassB0";
+  //     name_deltainvariantMassMother += ptBinMother + signName;
+  //     TH1F* hist_deltainvariantMassMother = new TH1F(name_deltainvariantMassMother.Data(),"delta mass mother candidate; m [GeV/c^2]; Entries",2000,0,20);
+  //     hist_deltainvariantMassMother->Sumw2();
+  //     hist_deltainvariantMassMother->SetLineColor(6);
+  //     hist_deltainvariantMassMother->SetMarkerStyle(20);
+  //     hist_deltainvariantMassMother->SetMarkerSize(0.6);
+  //     hist_deltainvariantMassMother->SetMarkerColor(6);
+  //     TH1F* histogram_deltainvariantMassMother = (TH1F*)hist_deltainvariantMassMother->Clone();
+  //     fOutputB0MC->Add(histogram_deltainvariantMassMother);
+  //   }
+  // }
 
   TString name_cutEffectBackground ="cutEffectBackground";
   TH2I* hist_cutEffectBackground = new TH2I(name_cutEffectBackground.Data(),"Effect of Cuts on background; cut number; cut number",99,0,99,99,0,99);
@@ -2034,7 +2038,7 @@ AliAODVertex* AliAnalysisTaskSEB0toDStarPi::RecalculateVertex(const AliVVertex *
 
   if(vertexESD->GetNContributors()!=tracks->GetEntriesFast()) 
   {
-    delete vertexESD; vertexESD=NULL;
+    delete vertexESD; vertexESD=nullptr;
     return vertexAOD;
   }
 
@@ -2051,13 +2055,13 @@ AliAODVertex* AliAnalysisTaskSEB0toDStarPi::RecalculateVertex(const AliVVertex *
   Double_t vertRadius2=pos[0]*pos[0]+pos[1]*pos[1];
   if(vertRadius2>8.) //(2.82)^2 radius beam pipe
   {
-    delete vertexESD; vertexESD=NULL;
+    delete vertexESD; vertexESD=nullptr;
     return vertexAOD;
   }
   
   chi2perNDF = vertexESD->GetChi2toNDF();
   dispersion = vertexESD->GetDispersion();
-  delete vertexESD; vertexESD=NULL;
+  delete vertexESD; vertexESD=nullptr;
   Int_t nprongs = 2; //tracks->GetEntriesFast();
   vertexAOD = new AliAODVertex(pos,cov,chi2perNDF,0x0,-1,AliAODVertex::kUndef,nprongs);
   
@@ -2179,16 +2183,6 @@ void AliAnalysisTaskSEB0toDStarPi::B0toDStarPiSignalTracksInMC(TClonesArray * mc
 
     // Next, we save the labels to our array
     if(mcPionB0Present && mcPionDStarPresent && mcPionD0Present && mcKaonPresent){
-      Int_t rows = B0toDStarPiLabelMatrix->GetNrows();
-
-      B0toDStarPiLabelMatrix->ResizeTo(rows+1,7);
-      particleMatrix(rows,0) = mcLabelPionB0;
-      particleMatrix(rows,1) = mcLabelPionDStar;
-      particleMatrix(rows,2) = mcLabelPionD0;
-      particleMatrix(rows,3) = mcLabelKaon;
-      particleMatrix(rows,4) = mcLabelD0;
-      particleMatrix(rows,5) = mcLabelDStar;
-      particleMatrix(rows,6) = mcLabelB0;
 
       // We also save information on the amount of signal tracks that exist in the MC dataset
       TString fillthis= "B0s_in_analysis";
@@ -2245,62 +2239,97 @@ void AliAnalysisTaskSEB0toDStarPi::B0toDStarPiSignalTracksInMC(TClonesArray * mc
       fillthis= "mc_D0_kaon_pseudorapidity_true";
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(pseudoYMC[6]);
 
-    }
-  }
+      // We check if the tracks are in acceptance
+      if(ptMC[1] < 0.1 || TMath::Abs(pseudoYMC[1]) > 0.9 ) continue;
+      if(ptMC[3] < 0.1 || TMath::Abs(pseudoYMC[3]) > 0.9 ) continue;
+      if(ptMC[5] < 0.1 || TMath::Abs(pseudoYMC[5]) > 0.9 ) continue;
+      if(ptMC[6] < 0.1 || TMath::Abs(pseudoYMC[6]) > 0.9 ) continue;
 
-  // Not all the tracks can be/are detected by the detector. We are only interested in tracks that lie within the acceptance of the detector.
-  // We remove the undetectable tracks from the array in order to get accurate information on the amount of signal that lies within the acceptance of our detector.
-  Int_t numberOfB0s = 0;
-  TArrayI correctLabelArray; 
-  for (Int_t i = 0; i < B0toDStarPiLabelMatrix->GetNrows(); i++)
-  {
-    Int_t particleCounter = 0;
-    for (Int_t j = 0; j < 4; j++)
-    {
-      Int_t labelParticleInList = (Int_t)particleMatrix(i,j);
-      for (Int_t k=0; k<aodevent->GetNumberOfTracks(); k++)
-      { 
-        AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(aodevent->GetTrack(k));
-        if(!aodTrack) AliFatal("Not a standard AOD");
-        if(TMath::Abs(aodTrack->Eta())>0.8) continue;
-        if(aodTrack->GetLabel() == labelParticleInList) 
-        {
-          particleCounter++;
-          break;
-        }
-      }
-    }
+      // We check if the B0 is in the fiducial region
+      if(TMath::Abs(yMC[0]) > 0.8) continue;
 
-    if (particleCounter==4)
-    {
-      TString fillthis= "B0s_in_analysis";
+      Int_t rows = B0toDStarPiLabelMatrix->GetNrows();
+
+      B0toDStarPiLabelMatrix->ResizeTo(rows+1,7);
+      particleMatrix(rows,0) = mcLabelPionB0;
+      particleMatrix(rows,1) = mcLabelPionDStar;
+      particleMatrix(rows,2) = mcLabelPionD0;
+      particleMatrix(rows,3) = mcLabelKaon;
+      particleMatrix(rows,4) = mcLabelD0;
+      particleMatrix(rows,5) = mcLabelDStar;
+      particleMatrix(rows,6) = mcLabelB0;
+
+      fillthis= "B0s_in_analysis";
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(2);
-      numberOfB0s++;
-      correctLabelArray.Set(numberOfB0s);
-      correctLabelArray.AddAt(i,numberOfB0s-1);
 
-      Int_t labelParticle = (Int_t)particleMatrix(i,0);
-      AliAODMCParticle * B0track = dynamic_cast< AliAODMCParticle*>(mcTrackArray->At(labelParticle));
 
       fillthis= "B0s_per_bin_in_Acc";
       for (Int_t j = 0; j < fnPtBins; ++j)
       {
-        if(fPtBinLimits[j] < B0track->Pt() && B0track->Pt() < fPtBinLimits[j+1]) {((TH1F*)(listout->FindObject(fillthis)))->Fill(j); break;}    
+        if(fPtBinLimits[j] < ptMC[0] && ptMC[0] < fPtBinLimits[j+1]) {((TH1F*)(listout->FindObject(fillthis)))->Fill(j); break;}
       }
+
     }
   }
 
-  for (Int_t i = 0; i < correctLabelArray.GetSize(); i++)
-  {
-    particleMatrix(i,0) = (Int_t)particleMatrix(correctLabelArray[i],0);
-    particleMatrix(i,1) = (Int_t)particleMatrix(correctLabelArray[i],1);
-    particleMatrix(i,2) = (Int_t)particleMatrix(correctLabelArray[i],2);
-    particleMatrix(i,3) = (Int_t)particleMatrix(correctLabelArray[i],3);
-    particleMatrix(i,4) = (Int_t)particleMatrix(correctLabelArray[i],4);
-    particleMatrix(i,5) = (Int_t)particleMatrix(correctLabelArray[i],5);
-    particleMatrix(i,6) = (Int_t)particleMatrix(correctLabelArray[i],6);
-  }
-  B0toDStarPiLabelMatrix->ResizeTo(correctLabelArray.GetSize(),7);
+  //old method
+
+  // Not all the tracks can be/are detected by the detector. We are only interested in tracks that lie within the acceptance of the detector.
+  // We remove the undetectable tracks from the array in order to get accurate information on the amount of signal that lies within the acceptance of our detector.
+  // Int_t numberOfB0s = 0;
+  // TArrayI correctLabelArray; 
+  // for (Int_t i = 0; i < B0toDStarPiLabelMatrix->GetNrows(); i++)
+  // {
+  //   std::cout << "loop at row = " << i << std::endl;
+  //   Int_t particleCounter = 0;
+  //   for (Int_t j = 0; j < 4; j++)
+  //   {
+  //     Int_t labelParticleInList = (Int_t)particleMatrix(i,j);
+  //     for (Int_t k=0; k<aodevent->GetNumberOfTracks(); k++)
+  //     { 
+  //       AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(aodevent->GetTrack(k));
+  //       if(!aodTrack) AliFatal("Not a standard AOD");
+  //       if(TMath::Abs(aodTrack->Eta())>0.8) continue;
+  //       if(aodTrack->GetLabel() == labelParticleInList) 
+  //       {
+  //         particleCounter++;
+  //         break;
+  //       }
+  //     }
+  //   }
+  //   if(particleCounter==4) std::cout << "found 4" << std::endl;
+  //   if (particleCounter==4)
+  //   {
+  //     TString fillthis= "B0s_in_analysis";
+  //     ((TH1F*)(listout->FindObject(fillthis)))->Fill(2);
+  //     numberOfB0s++;
+  //     correctLabelArray.Set(numberOfB0s);
+  //     correctLabelArray.AddAt(i,numberOfB0s-1);
+
+  //     Int_t labelParticle = (Int_t)particleMatrix(i,0);
+  //     AliAODMCParticle * B0track = dynamic_cast< AliAODMCParticle*>(mcTrackArray->At(labelParticle));
+
+  //     fillthis= "B0s_per_bin_in_Acc";
+  //     for (Int_t j = 0; j < fnPtBins; ++j)
+  //     {
+  //       if(fPtBinLimits[j] < B0track->Pt() && B0track->Pt() < fPtBinLimits[j+1]) {((TH1F*)(listout->FindObject(fillthis)))->Fill(j); break;} 
+  //     }
+  //   }
+  // }
+
+  // std::cout << "Number of B0 = " << numberOfB0s << std::endl;
+
+  // for (Int_t i = 0; i < correctLabelArray.GetSize(); i++)
+  // {
+  //   particleMatrix(i,0) = (Int_t)particleMatrix(correctLabelArray[i],0);
+  //   particleMatrix(i,1) = (Int_t)particleMatrix(correctLabelArray[i],1);
+  //   particleMatrix(i,2) = (Int_t)particleMatrix(correctLabelArray[i],2);
+  //   particleMatrix(i,3) = (Int_t)particleMatrix(correctLabelArray[i],3);
+  //   particleMatrix(i,4) = (Int_t)particleMatrix(correctLabelArray[i],4);
+  //   particleMatrix(i,5) = (Int_t)particleMatrix(correctLabelArray[i],5);
+  //   particleMatrix(i,6) = (Int_t)particleMatrix(correctLabelArray[i],6);
+  // }
+  // B0toDStarPiLabelMatrix->ResizeTo(correctLabelArray.GetSize(),7);
   return;
 }
 //-------------------------------------------------------------------------------------
@@ -2345,7 +2374,9 @@ Bool_t AliAnalysisTaskSEB0toDStarPi::D0FirstDaughterSelection(AliAODTrack* aodTr
     }
   }
 
-  if(IsTrackInjected(aodTrack,header,mcTrackArray) && !isDesiredCandidate && fQuickSignalAnalysis == 2) return kFALSE;
+  if(fUseMCInfo){
+    if(IsTrackInjected(aodTrack,header,mcTrackArray) && !isDesiredCandidate && fQuickSignalAnalysis == 2) return kFALSE;
+  }
 
   Int_t daughterType = 0;
 
@@ -2568,7 +2599,9 @@ Bool_t AliAnalysisTaskSEB0toDStarPi::D0SecondDaughterSelection(AliAODTrack* aodT
     }
   }
 
-  if(IsTrackInjected(aodTrack,header,mcTrackArray) && !isDesiredCandidate && fQuickSignalAnalysis == 2) return kFALSE;
+  if(fUseMCInfo){
+    if(IsTrackInjected(aodTrack,header,mcTrackArray) && !isDesiredCandidate && fQuickSignalAnalysis == 2) return kFALSE;
+  }
 
   Int_t daughterType = 1;
 
@@ -2812,7 +2845,9 @@ void AliAnalysisTaskSEB0toDStarPi::DStarPionSelection(AliAODEvent* aodEvent, Ali
       }
     }
 
-    if(IsTrackInjected(aodTrack,header,mcTrackArray) && !isDesiredCandidate && fQuickSignalAnalysis == 2) continue;
+    if(fUseMCInfo){
+      if(IsTrackInjected(aodTrack,header,mcTrackArray) && !isDesiredCandidate && fQuickSignalAnalysis == 2) continue;
+    }
 
     Int_t daughterType = 2;
 
@@ -3095,7 +3130,10 @@ void AliAnalysisTaskSEB0toDStarPi::B0PionSelection(AliAODEvent* aodEvent, AliAOD
       }
     }
 
-    if(IsTrackInjected(aodTrack,header,mcTrackArray) && !isDesiredCandidate && fQuickSignalAnalysis == 2) continue;
+    if(fUseMCInfo){
+      if(IsTrackInjected(aodTrack,header,mcTrackArray) && !isDesiredCandidate && fQuickSignalAnalysis == 2) continue;
+    }
+
 
     Int_t daughterType = 3;
 
@@ -3321,7 +3359,7 @@ void AliAnalysisTaskSEB0toDStarPi::D0Selection(AliAODEvent* aodEvent, AliAODVert
     //we get the track of the D0
     AliAODRecoDecayHF2Prong * trackD0 = (AliAODRecoDecayHF2Prong*)(D0TracksFromFriendFile->At(j));
     if(!trackD0) {std::cout << "found none" << std::endl; continue;}
-    if(trackD0 == NULL) {std::cout << "found NULL" << std::endl; continue;}
+    if(trackD0 == nullptr) {std::cout << "found nullptr" << std::endl; continue;}
 
     if(!(vHF->FillRecoCand(aodEvent,trackD0))) //Fill the data members of the candidate only if they are empty.
     {
@@ -3412,8 +3450,8 @@ void AliAnalysisTaskSEB0toDStarPi::D0Selection(AliAODEvent* aodEvent, AliAODVert
         if(isDesiredCandidate){
           ((TH1F*)fMotherHistogramArrayExtra[motherType][1])->Fill(0);
         } else ((TH1F*)fMotherHistogramArrayExtra[motherType][0])->Fill(0);
-        // delete vertexMother; vertexMother = NULL; 
-        // delete trackD0; trackD0 = NULL;
+        // delete vertexMother; vertexMother = nullptr; 
+        // delete trackD0; trackD0 = nullptr;
         continue;
       }
 
@@ -3429,7 +3467,7 @@ void AliAnalysisTaskSEB0toDStarPi::D0Selection(AliAODEvent* aodEvent, AliAODVert
     fD0Tracks->push_back(j);
   }
 
-  delete vHF;
+  delete vHF; vHF = nullptr;
   return;
 }
 //-------------------------------------------------------------------------------------
@@ -3456,7 +3494,7 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
       //we get the track of the D0
       AliAODRecoDecayHF2Prong * trackSecondDaughter = (AliAODRecoDecayHF2Prong*)(D0TracksFromFriendFile->At(fD0Tracks->at(j)));
       if(!trackSecondDaughter) {std::cout << "found none" << std::endl; continue;}
-      if(trackSecondDaughter == NULL) {std::cout << "found NULL" << std::endl; continue;}
+      if(trackSecondDaughter == nullptr) {std::cout << "found nullptr" << std::endl; continue;}
 
       //we check if the IDs of the tracks are different
       if(trackFirstDaughter->GetID() == trackSecondDaughter->GetProngID(0) || trackFirstDaughter->GetID() == trackSecondDaughter->GetProngID(1)) continue;
@@ -3496,14 +3534,14 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
 
       Double_t dispersionTest = 0;
       AliAODVertex *testVertex = RecalculateVertex(primaryVertex,&tracksTestVertex,bz,dispersionTest);
-      if(!testVertex) {delete testVertex; testVertex = NULL; continue;}
+      if(!testVertex) {delete testVertex; testVertex = nullptr; continue;}
 
       Double_t d0z0Test[2],covd0z0Test[3];
 
       //DStar creation with the new vertex
       DStarPionTrackParam.PropagateToDCA(testVertex,bz,100.,d0z0Test,covd0z0Test);
       D0TrackParam.PropagateToDCA(testVertex,bz,100.,d0z0Test,covd0z0Test);
-      delete testVertex; testVertex = NULL;
+      delete testVertex; testVertex = nullptr;
 
       Double_t pdgMassPion = TDatabasePDG::Instance()->GetParticle(211)->Mass();
       Double_t pdgMassD0 = TDatabasePDG::Instance()->GetParticle(421)->Mass();
@@ -3561,8 +3599,6 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
         UShort_t idProng1 = twoProngdaughter1->GetID();
         
         if(trackB0Pion->GetID() == trackFirstDaughter->GetID() || trackB0Pion->GetID() == idProng0 || trackB0Pion->GetID() == idProng1) continue;
-        
-
 
         //we check if the charges of the tracks are correct // later change this for like sign analysis.
         Bool_t bSameSign = kFALSE;
@@ -3580,7 +3616,6 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
             //should still check if track is already at PV
             Double_t dPhiRotated = trackB0PionRotated->Phi() + TMath::Pi() - (TMath::Pi() * fDegreePerRotation * fNumberOfRotations / (180.0 * 2.0)) + (TMath::Pi() * fDegreePerRotation * iRot / 180.0);
             trackB0PionRotated->SetPhi(dPhiRotated);
-            trackB0PionRotated->SetLabel(-1);
           }
 
 
@@ -3604,16 +3639,16 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
           Double_t dispersion = 0;
           AliAODVertex *vertexMother = RecalculateVertex(primaryVertex,&daughterTracksWithRecalculation,bz,dispersion);
           if(!vertexMother) {
-            delete vertexMother; vertexMother = NULL; 
-            delete trackB0PionRotated; trackB0PionRotated = NULL; 
+            delete vertexMother; vertexMother = nullptr; 
+            delete trackB0PionRotated; trackB0PionRotated = nullptr; 
             continue;}
 
 
           if(vertexMother->GetNDaughters()!=2) 
           {
             std::cout << "bad reconstruction - number of daughters for vertex is incorrect" << std::endl;
-            delete vertexMother; vertexMother = NULL; 
-            delete trackB0PionRotated; trackB0PionRotated = NULL; 
+            delete vertexMother; vertexMother = nullptr; 
+            delete trackB0PionRotated; trackB0PionRotated = nullptr; 
             continue;
           }
 
@@ -3658,28 +3693,28 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
 
           if(dcaDStarPionD0 > fCuts->GetMaxDCADStarPionD0())
           {
-            delete vertexMother; vertexMother = NULL; 
-            delete trackB0PionRotated; trackB0PionRotated = NULL; 
+            delete vertexMother; vertexMother = nullptr; 
+            delete trackB0PionRotated; trackB0PionRotated = nullptr; 
             continue;
           }
           if(dcaDStarPionB0Pion > fCuts->GetMaxDCADStarPionB0Pion())
           {
-            delete vertexMother; vertexMother = NULL; 
-            delete trackB0PionRotated; trackB0PionRotated = NULL; 
+            delete vertexMother; vertexMother = nullptr; 
+            delete trackB0PionRotated; trackB0PionRotated = nullptr; 
             continue;
           }
           if(dcaB0PionD0 > fCuts->GetMaxDCAB0PionD0())
           {
-            delete vertexMother; vertexMother = NULL; 
-            delete trackB0PionRotated; trackB0PionRotated = NULL; 
+            delete vertexMother; vertexMother = nullptr; 
+            delete trackB0PionRotated; trackB0PionRotated = nullptr; 
             continue;
           }
 
           Double_t dcaCombined = TMath::Sqrt(TMath::Abs(dcaDStarPionD0) + TMath::Abs(dcaDStarPionB0Pion) + TMath::Abs(dcaB0PionD0));
           if(dcaCombined > fCuts->GetMaxDCACombined())
           {
-            delete vertexMother; vertexMother = NULL; 
-            delete trackB0PionRotated; trackB0PionRotated = NULL; 
+            delete vertexMother; vertexMother = nullptr; 
+            delete trackB0PionRotated; trackB0PionRotated = nullptr; 
             continue;
           }
 
@@ -3688,9 +3723,9 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
           if(!vertexDStar)
           {
             std::cout << "no dstar vertex" << std::endl;
-            delete vertexMother; vertexMother = NULL; 
-            delete vertexDStar; vertexDStar = NULL; 
-            delete trackB0PionRotated; trackB0PionRotated = NULL; 
+            delete vertexMother; vertexMother = nullptr; 
+            delete vertexDStar; vertexDStar = nullptr; 
+            delete trackB0PionRotated; trackB0PionRotated = nullptr; 
             continue;
 
           }
@@ -3699,9 +3734,9 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
           AliAODRecoDecayHF2Prong trackDStar(vertexDStar,pxDStar,pyDStar,pzDStar,d0DStar,d0errDStar,distanceAtVertex); 
           if(!&trackDStar) 
           {
-            delete vertexMother; vertexMother = NULL; 
-            delete vertexDStar; vertexDStar = NULL; 
-            delete trackB0PionRotated; trackB0PionRotated = NULL; 
+            delete vertexMother; vertexMother = nullptr; 
+            delete vertexDStar; vertexDStar = nullptr; 
+            delete trackB0PionRotated; trackB0PionRotated = nullptr; 
             continue;
           }
           
@@ -3719,9 +3754,9 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
           if(vertexDStar->GetNDaughters()!=2) 
           {
             std::cout << "bad reconstruction 2 - number of daughters for vertex is incorrect" << std::endl;
-            delete vertexMother; vertexMother = NULL; 
-            delete vertexDStar; vertexDStar = NULL; 
-            delete trackB0PionRotated; trackB0PionRotated = NULL; 
+            delete vertexMother; vertexMother = nullptr; 
+            delete vertexDStar; vertexDStar = nullptr; 
+            delete trackB0PionRotated; trackB0PionRotated = nullptr; 
             continue;
           }
 
@@ -3780,9 +3815,9 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
           AliAODRecoDecayHF2Prong trackB0(vertexMother,px,py,pz,d0,d0err,dca); 
           if(!&trackB0)
           {
-            delete vertexMother; vertexMother = NULL; 
-            delete vertexDStar; vertexDStar = NULL; 
-            delete trackB0PionRotated; trackB0PionRotated = NULL; 
+            delete vertexMother; vertexMother = nullptr; 
+            delete vertexDStar; vertexDStar = nullptr; 
+            delete trackB0PionRotated; trackB0PionRotated = nullptr; 
             continue;
           }
 
@@ -3793,23 +3828,19 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
           trackB0.SetPrimaryVtxRef((AliAODVertex*)aodEvent->GetPrimaryVertex());
           trackB0.SetProngIDs(2,id);
 
+          // Fiducial cut
+          if(TMath::Abs(trackB0.Y(511)) > 0.8) {
+            delete vertexMother; vertexMother = nullptr; 
+            delete vertexDStar; vertexDStar = nullptr; 
+            delete trackB0PionRotated; trackB0PionRotated = nullptr; 
+            continue;
+          }
+
           ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////<<
           //
           // Cuts
           //
           ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////<<
-
-          // We check if the signal is injected, optionally we can reject injected signals
-          Bool_t fCheckInjected = kTRUE; //temp
-          Bool_t fRemoveInjected = kFALSE; //temp
-          Bool_t bIsInjected = kFALSE;
-          if(fCheckInjected) bIsInjected = IsCandidateInjected(&trackB0, header,mcTrackArray);
-          if(fCheckInjected && fRemoveInjected && bIsInjected) {
-            delete vertexMother; vertexMother = NULL; 
-            delete vertexDStar; vertexDStar = NULL; 
-            delete trackB0PionRotated; trackB0PionRotated = NULL; 
-            continue;
-          }
 
           // We check if the B0 candidate is a true signal in Monte Carlo
           Bool_t isDesiredCandidate = kFALSE;
@@ -3824,7 +3855,7 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
             mcLabelDStar = MatchCandidateToMonteCarlo(413,&trackDStar,mcTrackArray,B0toDStarPiLabelMatrix);
             mcLabelB0 = MatchCandidateToMonteCarlo(511,&trackB0,mcTrackArray,B0toDStarPiLabelMatrix);
 
-            if (mcLabelB0 >= 0 && mcLabelDStar >= 0 && trackB0PionRotated->GetLabel() >= 0)
+            if (mcLabelB0 >= 0 && mcLabelDStar >= 0 && trackB0PionRotated->GetLabel() >= 0 && iRot == 0)
             {
               AliAODMCParticle *mcTrackDStarPion = (AliAODMCParticle*)mcTrackArray->At(trackB0PionRotated->GetLabel());
               AliAODMCParticle *mcTrackDStar = (AliAODMCParticle*)mcTrackArray->At(mcLabelDStar);
@@ -3839,6 +3870,27 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
             }
           }
           
+          // We check if the signal is injected, optionally we can reject injected signals
+          Bool_t bIsInjected = kFALSE;
+          if(fUseMCInfo)
+          {
+            if(fCheckInjected)
+            {
+              bIsInjected = IsCandidateInjected(&trackB0, header,mcTrackArray);
+              if(fRemoveInjected == 1 && isDesiredCandidate == kFALSE && bIsInjected) {
+                delete vertexMother; vertexMother = nullptr; 
+                delete vertexDStar; vertexDStar = nullptr; 
+                delete trackB0PionRotated; trackB0PionRotated = nullptr; 
+                continue;
+              }
+              if(fRemoveInjected == 2 && bIsInjected) {
+                delete vertexMother; vertexMother = nullptr; 
+                delete vertexDStar; vertexDStar = nullptr; 
+                delete trackB0PionRotated; trackB0PionRotated = nullptr; 
+                continue;
+              }
+            } 
+          }
 
           // We fill the DStar histograms
           histType = 0;
@@ -3895,9 +3947,9 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
             {
               ((TH1F*)fMotherHistogramArrayExtra[motherType][1])->Fill(0);
             } else ((TH1F*)fMotherHistogramArrayExtra[motherType][0])->Fill(0);
-            delete vertexMother; vertexMother = NULL;
-            delete vertexDStar; vertexDStar = NULL;
-            delete trackB0PionRotated; trackB0PionRotated = NULL; 
+            delete vertexMother; vertexMother = nullptr;
+            delete vertexDStar; vertexDStar = nullptr;
+            delete trackB0PionRotated; trackB0PionRotated = nullptr; 
             continue;
           }
 
@@ -4025,9 +4077,9 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
             {
               ((TH1F*)fMotherHistogramArrayExtra[motherType][1])->Fill(0);
             } else ((TH1F*)fMotherHistogramArrayExtra[motherType][0])->Fill(0);
-            delete vertexMother; vertexMother = NULL; 
-            delete vertexDStar; vertexDStar = NULL; 
-            delete trackB0PionRotated; trackB0PionRotated = NULL; 
+            delete vertexMother; vertexMother = nullptr; 
+            delete vertexDStar; vertexDStar = nullptr; 
+            delete trackB0PionRotated; trackB0PionRotated = nullptr; 
             continue;
           }
 
@@ -4218,9 +4270,9 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
                     {
                       if(fUpgradeSetting == 2 || fUpgradeSetting == 3) 
                       {
-                        delete vertexMother; vertexMother = NULL; 
-                        delete vertexDStar; vertexDStar = NULL; 
-                        delete trackB0PionRotated; trackB0PionRotated = NULL; 
+                        delete vertexMother; vertexMother = nullptr; 
+                        delete vertexDStar; vertexDStar = nullptr; 
+                        delete trackB0PionRotated; trackB0PionRotated = nullptr; 
                         continue;
                       }
                       bIsCorrelatedBackground = kTRUE;
@@ -4302,9 +4354,9 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
                     {
                       if(fUpgradeSetting == 1 || fUpgradeSetting == 3)
                       {
-                        delete vertexMother; vertexMother = NULL; 
-                        delete vertexDStar; vertexDStar = NULL; 
-                        delete trackB0PionRotated; trackB0PionRotated = NULL; 
+                        delete vertexMother; vertexMother = nullptr; 
+                        delete vertexDStar; vertexDStar = nullptr; 
+                        delete trackB0PionRotated; trackB0PionRotated = nullptr; 
                         continue;
                       }
                       bIsCorrelatedBackground = kTRUE;
@@ -4696,188 +4748,188 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
             }
           }
 
-          //fine binning
-          if(bSameSign  && iRot == 0)
-          {
-            fillthis="fineBin_invariantMassB0";
-            fillthis += "_SameSign";
-            ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-            fillthis="fineBin_invariantMassB0";
-            fillthis += ptBinMother + "_SameSign";
-            ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-            fillthis="fineBin_invariantMassB0";
-            fillthis += "_SignSum";
-            ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother,-1);
-            fillthis="fineBin_invariantMassB0";
-            fillthis += ptBinMother + "_SignSum";
-            ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother,-1);
-          }
-          if(!bSameSign)
-          {
-            if(iRot == 0)
-            {
-              fillthis="fineBin_invariantMassB0";
-              ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-              fillthis="fineBin_invariantMassB0";
-              fillthis += ptBinMother;
-              ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-              fillthis="fineBin_invariantMassB0";
-              fillthis += "_SignSum";
-              ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother,1);
-              fillthis="fineBin_invariantMassB0";
-              fillthis += ptBinMother + "_SignSum";
-              ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother,1);
+          // //fine binning
+          // if(bSameSign  && iRot == 0)
+          // {
+          //   fillthis="fineBin_invariantMassB0";
+          //   fillthis += "_SameSign";
+          //   ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //   fillthis="fineBin_invariantMassB0";
+          //   fillthis += ptBinMother + "_SameSign";
+          //   ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //   fillthis="fineBin_invariantMassB0";
+          //   fillthis += "_SignSum";
+          //   ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother,-1);
+          //   fillthis="fineBin_invariantMassB0";
+          //   fillthis += ptBinMother + "_SignSum";
+          //   ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother,-1);
+          // }
+          // if(!bSameSign)
+          // {
+          //   if(iRot == 0)
+          //   {
+          //     fillthis="fineBin_invariantMassB0";
+          //     ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //     fillthis="fineBin_invariantMassB0";
+          //     fillthis += ptBinMother;
+          //     ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //     fillthis="fineBin_invariantMassB0";
+          //     fillthis += "_SignSum";
+          //     ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother,1);
+          //     fillthis="fineBin_invariantMassB0";
+          //     fillthis += ptBinMother + "_SignSum";
+          //     ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother,1);
 
-              if(!isDesiredCandidate && !bIsInjected)
-              {
-                TString signName = "_HIJING_Background";
-                fillthis="fineBin_invariantMassB0";
-                fillthis += signName;
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-                fillthis="fineBin_invariantMassB0";
-                fillthis += ptBinMother + signName;
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-              }
-              if(isDesiredCandidate && !bIsInjected)
-              {
-                TString signName = "_HIJING_Signal";
-                fillthis="fineBin_invariantMassB0";
-                fillthis += signName;
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-                fillthis="fineBin_invariantMassB0";
-                fillthis += ptBinMother + signName;
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-              }
-            }
-            else
-            {
-              TString signName = "_Background_rotation";
-              fillthis="fineBin_invariantMassB0";
-              fillthis += signName;
-              ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-              fillthis="fineBin_invariantMassB0";
-              fillthis += ptBinMother + signName;
-              ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-              if(!isDesiredCandidate && !bIsInjected)
-              {
-                signName = "_HIJING_Background_rotation";
-                fillthis="fineBin_invariantMassB0";
-                fillthis += signName;
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-                fillthis="fineBin_invariantMassB0";
-                fillthis += ptBinMother + signName;
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-              }
-            }
-          }
+          //     if(!isDesiredCandidate && !bIsInjected)
+          //     {
+          //       TString signName = "_HIJING_Background";
+          //       fillthis="fineBin_invariantMassB0";
+          //       fillthis += signName;
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //       fillthis="fineBin_invariantMassB0";
+          //       fillthis += ptBinMother + signName;
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //     }
+          //     if(isDesiredCandidate && !bIsInjected)
+          //     {
+          //       TString signName = "_HIJING_Signal";
+          //       fillthis="fineBin_invariantMassB0";
+          //       fillthis += signName;
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //       fillthis="fineBin_invariantMassB0";
+          //       fillthis += ptBinMother + signName;
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //     }
+          //   }
+          //   else
+          //   {
+          //     TString signName = "_Background_rotation";
+          //     fillthis="fineBin_invariantMassB0";
+          //     fillthis += signName;
+          //     ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //     fillthis="fineBin_invariantMassB0";
+          //     fillthis += ptBinMother + signName;
+          //     ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //     if(!isDesiredCandidate && !bIsInjected)
+          //     {
+          //       signName = "_HIJING_Background_rotation";
+          //       fillthis="fineBin_invariantMassB0";
+          //       fillthis += signName;
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //       fillthis="fineBin_invariantMassB0";
+          //       fillthis += ptBinMother + signName;
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //     }
+          //   }
+          // }
 
-          if(trackB0.Pt() > 6.0)
-          {
-            TString broadptBinMother = "_ptbin_6_to_inf";
-            if(bSameSign && iRot == 0)
-            {
-              fillthis="fineBin_invariantMassB0";
-              fillthis += broadptBinMother + "_SameSign";
-              ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-              fillthis="fineBin_invariantMassB0";
-              fillthis += broadptBinMother + "_SignSum";
-              ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother,-1);
-            }
-            if(!bSameSign)
-            {
-              if(iRot == 0)
-              {
-                fillthis="fineBin_invariantMassB0";
-                fillthis += broadptBinMother;
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-                fillthis="fineBin_invariantMassB0";
-                fillthis += broadptBinMother + "_SignSum";
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother,1);
-                if(!isDesiredCandidate && !bIsInjected)
-                {
-                  TString signName = "_HIJING_Background";
-                  fillthis="fineBin_invariantMassB0";
-                  fillthis += broadptBinMother + signName;
-                  ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-                }
-                if(isDesiredCandidate && !bIsInjected)
-                {
-                  TString signName = "_HIJING_Signal";
-                  fillthis="fineBin_invariantMassB0";
-                  fillthis += broadptBinMother + signName;
-                  ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-                }
-              }
-              else
-              {
-                TString signName = "_Background_rotation";
-                fillthis="fineBin_invariantMassB0";
-                fillthis += broadptBinMother + signName;
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-                if(!isDesiredCandidate && !bIsInjected)
-                {
-                  signName = "_HIJING_Background_rotation";
-                  fillthis="fineBin_invariantMassB0";
-                  fillthis += broadptBinMother + signName;
-                  ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-                }
-              }
-            }
-          }
+          // if(trackB0.Pt() > 6.0)
+          // {
+          //   TString broadptBinMother = "_ptbin_6_to_inf";
+          //   if(bSameSign && iRot == 0)
+          //   {
+          //     fillthis="fineBin_invariantMassB0";
+          //     fillthis += broadptBinMother + "_SameSign";
+          //     ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //     fillthis="fineBin_invariantMassB0";
+          //     fillthis += broadptBinMother + "_SignSum";
+          //     ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother,-1);
+          //   }
+          //   if(!bSameSign)
+          //   {
+          //     if(iRot == 0)
+          //     {
+          //       fillthis="fineBin_invariantMassB0";
+          //       fillthis += broadptBinMother;
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //       fillthis="fineBin_invariantMassB0";
+          //       fillthis += broadptBinMother + "_SignSum";
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother,1);
+          //       if(!isDesiredCandidate && !bIsInjected)
+          //       {
+          //         TString signName = "_HIJING_Background";
+          //         fillthis="fineBin_invariantMassB0";
+          //         fillthis += broadptBinMother + signName;
+          //         ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //       }
+          //       if(isDesiredCandidate && !bIsInjected)
+          //       {
+          //         TString signName = "_HIJING_Signal";
+          //         fillthis="fineBin_invariantMassB0";
+          //         fillthis += broadptBinMother + signName;
+          //         ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //       }
+          //     }
+          //     else
+          //     {
+          //       TString signName = "_Background_rotation";
+          //       fillthis="fineBin_invariantMassB0";
+          //       fillthis += broadptBinMother + signName;
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //       if(!isDesiredCandidate && !bIsInjected)
+          //       {
+          //         signName = "_HIJING_Background_rotation";
+          //         fillthis="fineBin_invariantMassB0";
+          //         fillthis += broadptBinMother + signName;
+          //         ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //       }
+          //     }
+          //   }
+          // }
 
-          if(trackB0.Pt() > 3.0)
-          {
-            TString broadptBinMother = "_ptbin_3_to_inf";
-            if(bSameSign && iRot == 0)
-            {
-              fillthis="fineBin_invariantMassB0";
-              fillthis += broadptBinMother + "_SameSign";
-              ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-              fillthis="fineBin_invariantMassB0";
-              fillthis += broadptBinMother + "_SignSum";
-              ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother,-1);
-            }
-            if(!bSameSign)
-            {
-              if(iRot == 0)
-              {
-                fillthis="fineBin_invariantMassB0";
-                fillthis += broadptBinMother;
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-                fillthis="fineBin_invariantMassB0";
-                fillthis += broadptBinMother + "_SignSum";
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother,1);
-                if(!isDesiredCandidate && !bIsInjected)
-                {
-                  TString signName = "_HIJING_Background";
-                  fillthis="fineBin_invariantMassB0";
-                  fillthis += broadptBinMother + signName;
-                  ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-                }
-                if(isDesiredCandidate && !bIsInjected)
-                {
-                  TString signName = "_HIJING_Signal";
-                  fillthis="fineBin_invariantMassB0";
-                  fillthis += broadptBinMother + signName;
-                  ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-                }
-              }
-              else
-              {
-                TString signName = "_Background_rotation";
-                fillthis="fineBin_invariantMassB0";
-                fillthis += broadptBinMother + signName;
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-                if(!isDesiredCandidate && !bIsInjected)
-                {
-                  signName = "_HIJING_Background_rotation";
-                  fillthis="fineBin_invariantMassB0";
-                  fillthis += broadptBinMother + signName;
-                  ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
-                }
-              }
-            }
-          }
+          // if(trackB0.Pt() > 3.0)
+          // {
+          //   TString broadptBinMother = "_ptbin_3_to_inf";
+          //   if(bSameSign && iRot == 0)
+          //   {
+          //     fillthis="fineBin_invariantMassB0";
+          //     fillthis += broadptBinMother + "_SameSign";
+          //     ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //     fillthis="fineBin_invariantMassB0";
+          //     fillthis += broadptBinMother + "_SignSum";
+          //     ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother,-1);
+          //   }
+          //   if(!bSameSign)
+          //   {
+          //     if(iRot == 0)
+          //     {
+          //       fillthis="fineBin_invariantMassB0";
+          //       fillthis += broadptBinMother;
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //       fillthis="fineBin_invariantMassB0";
+          //       fillthis += broadptBinMother + "_SignSum";
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother,1);
+          //       if(!isDesiredCandidate && !bIsInjected)
+          //       {
+          //         TString signName = "_HIJING_Background";
+          //         fillthis="fineBin_invariantMassB0";
+          //         fillthis += broadptBinMother + signName;
+          //         ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //       }
+          //       if(isDesiredCandidate && !bIsInjected)
+          //       {
+          //         TString signName = "_HIJING_Signal";
+          //         fillthis="fineBin_invariantMassB0";
+          //         fillthis += broadptBinMother + signName;
+          //         ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //       }
+          //     }
+          //     else
+          //     {
+          //       TString signName = "_Background_rotation";
+          //       fillthis="fineBin_invariantMassB0";
+          //       fillthis += broadptBinMother + signName;
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //       if(!isDesiredCandidate && !bIsInjected)
+          //       {
+          //         signName = "_HIJING_Background_rotation";
+          //         fillthis="fineBin_invariantMassB0";
+          //         fillthis += broadptBinMother + signName;
+          //         ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+          //       }
+          //     }
+          //   }
+          // }
 
           //deltamass
           if(bSameSign && iRot == 0)
@@ -5071,192 +5123,192 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
             }
           }
 
-          //fine binning
-          if(bSameSign && iRot == 0)
-          {
-            fillthis="fineBin_deltainvariantMassB0";
-            fillthis += "_SameSign";
-            ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-            fillthis="fineBin_deltainvariantMassB0";
-            fillthis += ptBinMother + "_SameSign";
-            ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-            fillthis="fineBin_deltainvariantMassB0";
-            fillthis += "_SignSum";
-            ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta,-1);
-            fillthis="fineBin_deltainvariantMassB0";
-            fillthis += ptBinMother + "_SignSum";
-            ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta,-1);
-          }
-          if(!bSameSign)
-          {
-            if(iRot == 0)
-            {
-              fillthis="fineBin_deltainvariantMassB0";
-              ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-              fillthis="fineBin_deltainvariantMassB0";
-              fillthis += ptBinMother;
-              ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-              fillthis="fineBin_deltainvariantMassB0";
-              fillthis += "_SignSum";
-              ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta,1);
-              fillthis="fineBin_deltainvariantMassB0";
-              fillthis += ptBinMother + "_SignSum";
-              ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta,1);
+          // //fine binning
+          // if(bSameSign && iRot == 0)
+          // {
+          //   fillthis="fineBin_deltainvariantMassB0";
+          //   fillthis += "_SameSign";
+          //   ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //   fillthis="fineBin_deltainvariantMassB0";
+          //   fillthis += ptBinMother + "_SameSign";
+          //   ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //   fillthis="fineBin_deltainvariantMassB0";
+          //   fillthis += "_SignSum";
+          //   ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta,-1);
+          //   fillthis="fineBin_deltainvariantMassB0";
+          //   fillthis += ptBinMother + "_SignSum";
+          //   ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta,-1);
+          // }
+          // if(!bSameSign)
+          // {
+          //   if(iRot == 0)
+          //   {
+          //     fillthis="fineBin_deltainvariantMassB0";
+          //     ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //     fillthis="fineBin_deltainvariantMassB0";
+          //     fillthis += ptBinMother;
+          //     ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //     fillthis="fineBin_deltainvariantMassB0";
+          //     fillthis += "_SignSum";
+          //     ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta,1);
+          //     fillthis="fineBin_deltainvariantMassB0";
+          //     fillthis += ptBinMother + "_SignSum";
+          //     ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta,1);
 
-              if(!isDesiredCandidate && !bIsInjected)
-              {
-                TString signName = "_HIJING_Background";
-                fillthis="fineBin_deltainvariantMassB0";
-                fillthis += signName;
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-                fillthis="fineBin_deltainvariantMassB0";
-                fillthis += ptBinMother + signName;
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-              }
-              if(isDesiredCandidate && !bIsInjected)
-              {
-                TString signName = "_HIJING_Signal";
-                fillthis="fineBin_deltainvariantMassB0";
-                fillthis += signName;
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-                fillthis="fineBin_deltainvariantMassB0";
-                fillthis += ptBinMother + signName;
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-              }
-            }
-            else
-            {
-              TString signName = "_Background_rotation";
-              fillthis="fineBin_deltainvariantMassB0";
-              fillthis += signName;
-              ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-              fillthis="fineBin_deltainvariantMassB0";
-              fillthis += ptBinMother + signName;
-              ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-              if(!isDesiredCandidate && !bIsInjected)
-              {
-                signName = "_HIJING_Background_rotation";
-                fillthis="fineBin_deltainvariantMassB0";
-                fillthis += signName;
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-                fillthis="fineBin_deltainvariantMassB0";
-                fillthis += ptBinMother + signName;
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-              }
-            }
-          }
+          //     if(!isDesiredCandidate && !bIsInjected)
+          //     {
+          //       TString signName = "_HIJING_Background";
+          //       fillthis="fineBin_deltainvariantMassB0";
+          //       fillthis += signName;
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //       fillthis="fineBin_deltainvariantMassB0";
+          //       fillthis += ptBinMother + signName;
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //     }
+          //     if(isDesiredCandidate && !bIsInjected)
+          //     {
+          //       TString signName = "_HIJING_Signal";
+          //       fillthis="fineBin_deltainvariantMassB0";
+          //       fillthis += signName;
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //       fillthis="fineBin_deltainvariantMassB0";
+          //       fillthis += ptBinMother + signName;
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //     }
+          //   }
+          //   else
+          //   {
+          //     TString signName = "_Background_rotation";
+          //     fillthis="fineBin_deltainvariantMassB0";
+          //     fillthis += signName;
+          //     ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //     fillthis="fineBin_deltainvariantMassB0";
+          //     fillthis += ptBinMother + signName;
+          //     ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //     if(!isDesiredCandidate && !bIsInjected)
+          //     {
+          //       signName = "_HIJING_Background_rotation";
+          //       fillthis="fineBin_deltainvariantMassB0";
+          //       fillthis += signName;
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //       fillthis="fineBin_deltainvariantMassB0";
+          //       fillthis += ptBinMother + signName;
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //     }
+          //   }
+          // }
 
-          if(trackB0.Pt() > 6.0)
-          {
-            TString broadptBinMother = "_ptbin_6_to_inf";
-            if(bSameSign && iRot == 0)
-            {
-              fillthis="fineBin_deltainvariantMassB0";
-              fillthis += broadptBinMother + "_SameSign";
-              ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-              fillthis="fineBin_deltainvariantMassB0";
-              fillthis += broadptBinMother + "_SignSum";
-              ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta,-1);
-            }
-            if(!bSameSign)
-            {
-              if(iRot == 0)
-              {
-                fillthis="fineBin_deltainvariantMassB0";
-                fillthis += broadptBinMother;
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-                fillthis="fineBin_deltainvariantMassB0";
-                fillthis += broadptBinMother + "_SignSum";
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta,1);
-                if(!isDesiredCandidate && !bIsInjected)
-                {
-                  TString signName = "_HIJING_Background";
-                  fillthis="fineBin_deltainvariantMassB0";
-                  fillthis += broadptBinMother + signName;
-                  ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-                }
-                if(isDesiredCandidate && !bIsInjected)
-                {
-                  TString signName = "_HIJING_Signal";
-                  fillthis="fineBin_deltainvariantMassB0";
-                  fillthis += broadptBinMother + signName;
-                  ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-                }
-              }
-              else
-              {
-                TString signName = "_Background_rotation";
-                fillthis="fineBin_deltainvariantMassB0";
-                fillthis += broadptBinMother + signName;
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-                if(!isDesiredCandidate && !bIsInjected)
-                {
-                  signName = "_HIJING_Background_rotation";
-                  fillthis="fineBin_deltainvariantMassB0";
-                  fillthis += broadptBinMother + signName;
-                  ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-                }
-              }
-            }
-          }
+          // if(trackB0.Pt() > 6.0)
+          // {
+          //   TString broadptBinMother = "_ptbin_6_to_inf";
+          //   if(bSameSign && iRot == 0)
+          //   {
+          //     fillthis="fineBin_deltainvariantMassB0";
+          //     fillthis += broadptBinMother + "_SameSign";
+          //     ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //     fillthis="fineBin_deltainvariantMassB0";
+          //     fillthis += broadptBinMother + "_SignSum";
+          //     ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta,-1);
+          //   }
+          //   if(!bSameSign)
+          //   {
+          //     if(iRot == 0)
+          //     {
+          //       fillthis="fineBin_deltainvariantMassB0";
+          //       fillthis += broadptBinMother;
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //       fillthis="fineBin_deltainvariantMassB0";
+          //       fillthis += broadptBinMother + "_SignSum";
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta,1);
+          //       if(!isDesiredCandidate && !bIsInjected)
+          //       {
+          //         TString signName = "_HIJING_Background";
+          //         fillthis="fineBin_deltainvariantMassB0";
+          //         fillthis += broadptBinMother + signName;
+          //         ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //       }
+          //       if(isDesiredCandidate && !bIsInjected)
+          //       {
+          //         TString signName = "_HIJING_Signal";
+          //         fillthis="fineBin_deltainvariantMassB0";
+          //         fillthis += broadptBinMother + signName;
+          //         ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //       }
+          //     }
+          //     else
+          //     {
+          //       TString signName = "_Background_rotation";
+          //       fillthis="fineBin_deltainvariantMassB0";
+          //       fillthis += broadptBinMother + signName;
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //       if(!isDesiredCandidate && !bIsInjected)
+          //       {
+          //         signName = "_HIJING_Background_rotation";
+          //         fillthis="fineBin_deltainvariantMassB0";
+          //         fillthis += broadptBinMother + signName;
+          //         ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //       }
+          //     }
+          //   }
+          // }
 
-          if(trackB0.Pt() > 3.0)
-          {
-            TString broadptBinMother = "_ptbin_3_to_inf";
-            if(bSameSign && iRot == 0)
-            {
-              fillthis="fineBin_deltainvariantMassB0";
-              fillthis += broadptBinMother + "_SameSign";
-              ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-              fillthis="fineBin_deltainvariantMassB0";
-              fillthis += broadptBinMother + "_SignSum";
-              ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta,-1);
-            }
-            if(!bSameSign)
-            {
-              if(iRot == 0)
-              {
-                fillthis="fineBin_deltainvariantMassB0";
-                fillthis += broadptBinMother;
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-                fillthis="fineBin_deltainvariantMassB0";
-                fillthis += broadptBinMother + "_SignSum";
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta,1);
-                if(!isDesiredCandidate && !bIsInjected)
-                {
-                  TString signName = "_HIJING_Background";
-                  fillthis="fineBin_deltainvariantMassB0";
-                  fillthis += broadptBinMother + signName;
-                  ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-                }
-                if(isDesiredCandidate && !bIsInjected)
-                {
-                  TString signName = "_HIJING_Signal";
-                  fillthis="fineBin_deltainvariantMassB0";
-                  fillthis += broadptBinMother + signName;
-                  ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-                }
-              }
-              else
-              {
-                TString signName = "_Background_rotation";
-                fillthis="fineBin_deltainvariantMassB0";
-                fillthis += broadptBinMother + signName;
-                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-                if(!isDesiredCandidate && !bIsInjected)
-                {
-                  signName = "_HIJING_Background_rotation";
-                  fillthis="fineBin_deltainvariantMassB0";
-                  fillthis += broadptBinMother + signName;
-                  ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
-                }
-              }
-            }
-          }
+          // if(trackB0.Pt() > 3.0)
+          // {
+          //   TString broadptBinMother = "_ptbin_3_to_inf";
+          //   if(bSameSign && iRot == 0)
+          //   {
+          //     fillthis="fineBin_deltainvariantMassB0";
+          //     fillthis += broadptBinMother + "_SameSign";
+          //     ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //     fillthis="fineBin_deltainvariantMassB0";
+          //     fillthis += broadptBinMother + "_SignSum";
+          //     ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta,-1);
+          //   }
+          //   if(!bSameSign)
+          //   {
+          //     if(iRot == 0)
+          //     {
+          //       fillthis="fineBin_deltainvariantMassB0";
+          //       fillthis += broadptBinMother;
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //       fillthis="fineBin_deltainvariantMassB0";
+          //       fillthis += broadptBinMother + "_SignSum";
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta,1);
+          //       if(!isDesiredCandidate && !bIsInjected)
+          //       {
+          //         TString signName = "_HIJING_Background";
+          //         fillthis="fineBin_deltainvariantMassB0";
+          //         fillthis += broadptBinMother + signName;
+          //         ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //       }
+          //       if(isDesiredCandidate && !bIsInjected)
+          //       {
+          //         TString signName = "_HIJING_Signal";
+          //         fillthis="fineBin_deltainvariantMassB0";
+          //         fillthis += broadptBinMother + signName;
+          //         ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //       }
+          //     }
+          //     else
+          //     {
+          //       TString signName = "_Background_rotation";
+          //       fillthis="fineBin_deltainvariantMassB0";
+          //       fillthis += broadptBinMother + signName;
+          //       ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //       if(!isDesiredCandidate && !bIsInjected)
+          //       {
+          //         signName = "_HIJING_Background_rotation";
+          //         fillthis="fineBin_deltainvariantMassB0";
+          //         fillthis += broadptBinMother + signName;
+          //         ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invmassDelta);
+          //       }
+          //     }
+          //   }
+          // }
 
-          delete vertexMother; vertexMother = NULL; 
-          delete vertexDStar; vertexDStar = NULL; 
-          delete trackB0PionRotated; trackB0PionRotated = NULL; 
+          delete vertexMother; vertexMother = nullptr; 
+          delete vertexDStar; vertexDStar = nullptr; 
+          delete trackB0PionRotated; trackB0PionRotated = nullptr; 
         }
       }  
     }
@@ -6387,9 +6439,6 @@ Int_t AliAnalysisTaskSEB0toDStarPi::MatchCandidateToMonteCarlo(Int_t pdgabs, Ali
   if(!ndg) { AliError("No daughters available"); return -1;}
   if(ndg != 2) return -1;
 
-  // Skip if there is no signal in the event
-  if(B0toDStarPiLabelMatrix->GetNrows() == 0) return -1;
-
   // loop on daughters and write the labels
   Int_t dgLabels[2] = {-1};
   Int_t pdgDg[2] = {0};
@@ -6538,7 +6587,7 @@ Int_t AliAnalysisTaskSEB0toDStarPi::IsTrackInjected(AliAODTrack *part,AliAODMCHe
   AliVertexingHFUtils* ggg = new  AliVertexingHFUtils();
 
   Int_t lab=part->GetLabel();
-  if(lab<0) {delete ggg;return 1;} //
+  if(lab<0) {delete ggg; ggg = nullptr; return 1;} //
   TString nameGen = ggg->GetGenerator(lab,header);
   TString empty="";
   Int_t countControl =0;
@@ -6550,7 +6599,7 @@ Int_t AliAnalysisTaskSEB0toDStarPi::IsTrackInjected(AliAODTrack *part,AliAODMCHe
     }
     Int_t mother = mcpart->GetMother();
     if(mother<0){
-            printf("AliVertexingHFUtils::IsTrackInjected - BREAK: Reached primary particle without valid mother\n");
+            // printf("AliVertexingHFUtils::IsTrackInjected - BREAK: Reached primary particle without valid mother\n");
             break;
     }
     lab=mother;
@@ -6561,9 +6610,9 @@ Int_t AliAnalysisTaskSEB0toDStarPi::IsTrackInjected(AliAODTrack *part,AliAODMCHe
             break;
     }
   }
-  if(nameGen.IsWhitespace() || nameGen.Contains("ijing")){delete ggg; return 0;}
+  if(nameGen.IsWhitespace() || nameGen.Contains("ijing")){delete ggg; ggg = nullptr; return 0;}
 
-  delete ggg;
+  delete ggg; ggg = nullptr;
   return 1;
 }
 //-------------------------------------------------------------------------------------

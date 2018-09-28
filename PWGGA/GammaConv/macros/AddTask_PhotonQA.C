@@ -113,6 +113,7 @@ void AddTask_PhotonQA(  TString   V0ReaderEventCutNumber        = "00000003",
         AliAnalysisManager::kOutputContainer, Form("GammaConvV1_QA_%s_%s.root", TaskEventCutnumber.Data(), TaskPhotonCutnumber.Data()));
     mgr->ConnectOutput(fQA,  1, coutput);
   }
+  mgr->ConnectOutput(fQA,2,mgr->CreateContainer("PhotonQA", TTree::Class(), AliAnalysisManager::kOutputContainer, AliAnalysisManager::GetCommonFileName()) );
   mgr->ConnectInput(fQA,0,cinput);
 
 

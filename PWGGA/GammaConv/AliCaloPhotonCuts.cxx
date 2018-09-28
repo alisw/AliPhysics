@@ -57,6 +57,7 @@
 #include "AliOADBContainer.h"
 #include "AliESDtrackCuts.h"
 #include "AliCaloTrackMatcher.h"
+#include "AliPhotonIsolation.h"
 #include <vector>
 
 class iostream;
@@ -95,6 +96,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistograms(NULL),
   fHistExtQA(NULL),
   fCaloTrackMatcher(NULL),
+  fCaloIsolation(NULL),
   fGeomEMCAL(NULL),
   fEMCALRecUtils(NULL),
   fEMCALInitialized(kFALSE),
@@ -113,9 +115,13 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fV0ReaderName("V0ReaderV1"),
   fCorrTaskSetting(""),
   fCaloTrackMatcherName("CaloTrackMatcher_1_0"),
+  fCaloIsolationName("PhotonIsolation"),
   fPeriodName(""),
   fCurrentMC(kNoMC),
   fClusterType(0),
+  fIsolationRadius(0.4),
+  fMomPercentage(0.1),
+  fUsePhotonIsolation(kFALSE),
   fMinEtaCut(-10),
   fMinEtaInnerEdge(0),
   fMaxEtaCut(10),
@@ -280,6 +286,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistograms(NULL),
   fHistExtQA(NULL),
   fCaloTrackMatcher(NULL),
+  fCaloIsolation(NULL),
   fGeomEMCAL(NULL),
   fEMCALRecUtils(NULL),
   fEMCALInitialized(kFALSE),
@@ -298,9 +305,13 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fV0ReaderName(ref.fV0ReaderName),
   fCorrTaskSetting(ref.fCorrTaskSetting),
   fCaloTrackMatcherName(ref.fCaloTrackMatcherName),
+  fCaloIsolationName("PhotonIsolation"),
   fPeriodName(ref.fPeriodName),
   fCurrentMC(ref.fCurrentMC),
   fClusterType(ref.fClusterType),
+  fIsolationRadius(0.4),
+  fMomPercentage(0.1),
+  fUsePhotonIsolation(kFALSE),
   fMinEtaCut(ref.fMinEtaCut),
   fMinEtaInnerEdge(ref.fMinEtaInnerEdge),
   fMaxEtaCut(ref.fMaxEtaCut),
@@ -1203,14 +1214,14 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 
       if(fUseEOverPVetoTM){
         // plot trackP vs. clusterE in case of a match
-        fHistMatchedTrackPClusE  = new TH2F(Form("MatchedTrackPClusE %s",GetCutNumber().Data()), "Matched tracks: #it{P}_{track} vs #it{E}_{cl}",
+        fHistMatchedTrackPClusE  = new TH2F(Form("MatchedTrackPClusE %s",GetCutNumber().Data()), "Matched tracks",
                                             nBinsClusterEOnlyHighPt, arrClusEBinningOnlyHighPt, nBinsClusterEOnlyHighPt, arrClusEBinningOnlyHighPt);
         fHistMatchedTrackPClusE->GetXaxis()->SetTitle("E_{cl} (GeV)");
         fHistMatchedTrackPClusE->GetYaxis()->SetTitle("P_{track} (GeV/c)");
         fHistograms->Add(fHistMatchedTrackPClusE);
 
         // plot trackP vs. clusterE in case of a match AFTER EOverP veto has been applied
-        fHistMatchedTrackPClusEAfterEOverPVeto = new TH2F(Form("MatchedTrackPClusEAfterEOverPVeto  %s",GetCutNumber().Data()), "Matched tracks after EOverP veto: #it{P}_{track} vs #it{E}_{cl}",
+        fHistMatchedTrackPClusEAfterEOverPVeto = new TH2F(Form("MatchedTrackPClusEAfterEOverPVeto  %s",GetCutNumber().Data()), "Matched tracks after EOverP veto",
                                                         nBinsClusterEOnlyHighPt, arrClusEBinningOnlyHighPt, nBinsClusterEOnlyHighPt, arrClusEBinningOnlyHighPt);
         fHistMatchedTrackPClusEAfterEOverPVeto ->GetXaxis()->SetTitle("E_{cl} (GeV)");
         fHistMatchedTrackPClusEAfterEOverPVeto ->GetYaxis()->SetTitle("P_{track} (GeV/c)");
@@ -1368,7 +1379,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistograms->Add(fHistClusETruePi0_Matched);
 
       // plot trackP vs. clusterE in case of a match with pi0
-      fHistMatchedTrackPClusETruePi0Clus  = new TH2F(Form("MatchedTrackPClusETruePi0Clus %s",GetCutNumber().Data()), "Matched tracks to #pi^{0} clusters: #it{P}_{track} vs #it{E}_{cl}",
+      fHistMatchedTrackPClusETruePi0Clus  = new TH2F(Form("MatchedTrackPClusETruePi0Clus %s",GetCutNumber().Data()), "Matched tracks to #pi^{0} clusters",
                                                       nBinsClusterEOnlyHighPt, arrClusEBinningOnlyHighPt, nBinsClusterEOnlyHighPt, arrClusEBinningOnlyHighPt);
       fHistMatchedTrackPClusETruePi0Clus->GetXaxis()->SetTitle("E_{cl} (GeV)");
       fHistMatchedTrackPClusETruePi0Clus->GetYaxis()->SetTitle("P_{track} (GeV/c)");
@@ -1497,6 +1508,11 @@ void AliCaloPhotonCuts::InitializeEMCAL(AliVEvent *event){
 
     fGeomEMCAL              = AliEMCALGeometry::GetInstance();
     if(!fGeomEMCAL){ AliFatal("EMCal geometry not initialized!");}
+
+
+    //retrieve pointer to CaloIsolation Instance
+    if(fUsePhotonIsolation) fCaloIsolation = (AliPhotonIsolation*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloIsolationName.Data());
+    if(!fCaloIsolation && fUsePhotonIsolation){ AliFatal("AliPhotonIsolation instance could not be initialized!");}
 
     //retrieve pointer to trackMatcher Instance
     if(fUseDistTrackToCluster) fCaloTrackMatcher = (AliCaloTrackMatcher*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloTrackMatcherName.Data());
@@ -2965,6 +2981,27 @@ Bool_t AliCaloPhotonCuts::AcceptanceCuts(AliVCluster *cluster, AliVEvent* event,
   return kTRUE;
 }
 
+Bool_t  AliCaloPhotonCuts::ClusterIsIsolated(Int_t clusterID, AliAODConversionPhoton *PhotonCandidate)
+{
+
+  if(fUsePhotonIsolation){
+    Float_t ClusterPt = PhotonCandidate->Pt();
+    Float_t pTCone = fMomPercentage*ClusterPt;
+    //Float_t pTCone = 0.05*ClusterPt;
+    //Float_t pTCone = 2;
+
+    if(fCaloIsolation->GetIsolation(clusterID,fIsolationRadius,pTCone)){
+      return kTRUE;
+    }else{
+      return kFALSE;
+    }
+  }else{
+    return kTRUE;//if there's no isolation, all of them can be seen as isolated and pass the cut
+  }
+
+}
+
+
 //________________________________________________________________________
 Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convPhoton, AliVCluster* cluster, AliVEvent* event, Double_t weight){
 
@@ -3265,15 +3302,15 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
         if(fUseEOverPVetoTM){
           if(!vetoEOverP){
             fVectorMatchedClusterIDs.push_back(cluster->GetID());
-            if(fHistMatchedTrackPClusEAfterEOverPVeto) fHistMatchedTrackPClusEAfterEOverPVeto->Fill(inTrack->P(),cluster->E());
+            if(fHistMatchedTrackPClusEAfterEOverPVeto) fHistMatchedTrackPClusEAfterEOverPVeto->Fill(cluster->E(),inTrack->P());
           }
         }else{
           fVectorMatchedClusterIDs.push_back(cluster->GetID());
         }
-        if(fHistMatchedTrackPClusE && fUseEOverPVetoTM) fHistMatchedTrackPClusE->Fill(inTrack->P(),cluster->E());
+        if(fHistMatchedTrackPClusE && fUseEOverPVetoTM) fHistMatchedTrackPClusE->Fill(cluster->E(),inTrack->P());
         if(fIsMC && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5 ) && fUseEOverPVetoTM){
           if(IsClusterPi0(event, mcEvent, cluster) && fHistMatchedTrackPClusETruePi0Clus)
-            fHistMatchedTrackPClusETruePi0Clus->Fill(inTrack->P(),cluster->E());
+            fHistMatchedTrackPClusETruePi0Clus->Fill(cluster->E(),inTrack->P());
         }
 
         if(isEMCalOnly){
@@ -3530,6 +3567,16 @@ void AliCaloPhotonCuts::PrintCutsWithValues(const TString analysisCutSelection) 
   if (fUsePhiCut) printf("\t%3.2f < phi_{cluster} < %3.2f\n", fMinPhiCut, fMaxPhiCut );
   if (fUseDistanceToBadChannel>0) printf("\tdistance to bad channel used in mode '%i', distance in cells: %f \n",fUseDistanceToBadChannel, fMinDistanceToBadChannel);
 
+  if (fUsePhotonIsolation){
+    printf("PhotonIsolation Cuts: \n");
+    if (fClusterType == 1) printf("\tEMCAL calorimeter clusters are used\n");
+    if (fUsePhotonIsolation) printf("\tPhotonIsolation is turned on\n");
+    if (fIsolationRadius < 0.11 && fIsolationRadius > 0.09) printf("\tIsolation Radius = 0.1\n");
+    if (fIsolationRadius < 0.21 && fIsolationRadius > 0.19) printf("\tIsolation Radius = 0.2\n");
+    if (fIsolationRadius < 0.31 && fIsolationRadius > 0.29) printf("\tIsolation Radius = 0.3\n");
+    if (fIsolationRadius < 0.41 && fIsolationRadius > 0.39) printf("\tIsolation Radius = 0.4\n");
+  }
+
   printf("Cluster Quality cuts: \n");
   if (fUseTimeDiff) printf("\t %6.2f ns < time difference < %6.2f ns\n", fMinTimeDiff*1e9, fMaxTimeDiff*1e9 );
   if (fUseDistTrackToCluster) printf("\tmin distance to track in eta > %3.2f, min phi < %3.2f and max phi > %3.2f\n", fMaxDistTrackToClusterEta, fMinDistTrackToClusterPhi, fMaxDistTrackToClusterPhi );
@@ -3548,7 +3595,7 @@ void AliCaloPhotonCuts::PrintCutsWithValues(const TString analysisCutSelection) 
   printf("VO Reader name: %s \n",fV0ReaderName.Data());
   TString namePeriod = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
   if (namePeriod.CompareTo("") != 0) fCurrentMC = FindEnumForMCSet(namePeriod);
-  if (fUseNonLinearity) printf("\t Chose NonLinearity cut '%i', Period name: %s, period-enum: %i \n", fSwitchNonLinearity, namePeriod.Data(), fCurrentMC );
+  if (fUseNonLinearity) printf("\t Chose NonLinearity cut '%i', Period name: %s, MCSet: %i \n", fSwitchNonLinearity, namePeriod.Data(), fCurrentMC );
   else printf("\t No NonLinearity Correction on AnalysisTask level has been chosen\n");
 
 }
@@ -3573,6 +3620,30 @@ Bool_t AliCaloPhotonCuts::SetClusterTypeCut(Int_t clusterType)
     break;
   case 3: // DCAL clusters
     fClusterType=3;
+    break;
+  case 11: //EMCAL clusters with isolation R=0.1 and pTCone=0.1*ET_Cluster, accessible via "b"
+    fClusterType=1;
+    fIsolationRadius=0.1;
+    fMomPercentage=0.1;
+    fUsePhotonIsolation=kTRUE;
+    break;
+  case 12: //EMCAL clusters with isolation R=0.2 and pTCone=0.1*ET_Cluster, accessible via "c"
+    fClusterType=1;
+    fIsolationRadius=0.2;
+    fMomPercentage=0.1;
+    fUsePhotonIsolation=kTRUE;
+    break;
+  case 13: //EMCAL clusters with isolation R=0.3 and pTCone=0.1*ET_Cluster, accessible via "d"
+    fClusterType=1;
+    fIsolationRadius=0.3;
+    fMomPercentage=0.1;
+    fUsePhotonIsolation=kTRUE;
+    break;
+  case 14: //EMCAL clusters with isolation R=0.4 and pTCone=0.1*ET_Cluster, accessible via "e"
+    fClusterType=1;
+    fIsolationRadius=0.4;
+    fMomPercentage=0.1;
+    fUsePhotonIsolation=kTRUE;
     break;
   default:
     AliError(Form("ClusterTypeCut not defined %d",clusterType));
@@ -4990,18 +5061,11 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       }
       break;
 
-    // kPi0MCv1 for MC and kTestBeamv3 for data
+    // kPi0MCv3 for MC and kTestBeamv4 for data (same as case 02, but with new testbeam param. for > 100 gev)
     case 6:
       if (fClusterType == 1|| fClusterType == 3){
-        if(isMC == 0) energy *= FunctionNL_kTestBeamv3(energy);
-        else energy *= FunctionNL_kPi0MCv1(energy);
-      }
-      break;
-    // kPi0MCv1 for MC and kTestBeamv2 for data
-    case 7:
-      if (fClusterType == 1|| fClusterType == 3){
-        if(isMC == 0) energy *= FunctionNL_kTestBeamv2(energy);
-        else energy *= FunctionNL_kPi0MCv1(energy);
+        if(isMC == 0) energy *= FunctionNL_kTestBeamv4(energy);
+        else energy *= FunctionNL_kPi0MCv3(energy);
       }
       break;
 
@@ -5020,6 +5084,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         }
       }
       break;
+
+
 
 //----------------------------------------------------------------------------------------------------------
 
@@ -5551,7 +5617,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy /= FunctionNL_kSDM(energy, 0.989111, -4.26219, -0.819192);
             energy /= 0.9935;
           } else if(fClusterType==2){
-            energy /= ( 0.994914734 * 0.9964 ); // additional factors
+            energy /= ( 0.994914734 * 0.9964 * 0.9975659906); // additional factors
           }
         } else if( fCurrentMC==kPPb5T13P2HIJAdd ) {
           if(fClusterType==1){
@@ -5944,6 +6010,12 @@ Float_t AliCaloPhotonCuts::FunctionNL_kTestBeamv2(Float_t e){
 Float_t AliCaloPhotonCuts::FunctionNL_kTestBeamv3(Float_t e){
   return ( 0.9615 / ( 0.976941 *( 1. / ( 1. + 0.162310 * exp( -e / 1.08689 ) ) * 1. / ( 1. + 0.0819592 * exp( ( e - 152.338 ) / 30.9594 ) ) ) ) );
 }
+
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_kTestBeamv4(Float_t e){ // supplied by Evi Ganoti, cf. https://alice.its.cern.ch/jira/browse/EMCAL-190
+  return ( 0.97 / ( 0.9892 *( 1. / ( 1. + 0.1976 * exp( -e / 0.865 ) ) * 1. / ( 1. + 0.06775 * exp( ( e - 156.6 ) / 47.18 ) ) ) ) );
+}
+
 
 //************************************************************************
 //________________________________________________________________________

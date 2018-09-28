@@ -26,6 +26,9 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t*);
 
   // Task Configuration: trigger selection
+  void SetUseOnTheFlyV0s(bool useThem = true) {
+    fUseOnTheFly = useThem;
+  }
   void SetUseLightVertexers(bool lUseLightVertexers = true) {
     fUseLightVertexer = lUseLightVertexers;
   }
@@ -74,9 +77,10 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
     fLambdaMassSigma[3] = -2.58251e+00;
   }
 
-  void SetMaxTPCsigmas(float pi, float proton) {
+  void SetMaxTPCsigmas(float pi, float proton, float he3) {
     fMaxTPCpionSigma = pi;
     fMaxTPCprotonSigma = proton;
+    fMaxTPChe3Sigma = he3;
   }
   // Functions for analysis Bookkeepinp
   // 1- Configure standard vertexing
@@ -94,10 +98,12 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   bool fDoV0Refit;
   bool fMC;
   bool fUseLightVertexer;
+  bool fUseOnTheFly;
 
   /// Control histograms to monitor the filtering
   TH1D* fHistMCct[2];               //! MC ct
   TH1D* fHistMCctPrimary[2];        //! MC ct only for primary particles
+  TH1D* fHistMCctSecondaryFromMaterial[2]; //! MC ct for secondaries from material
   TH1D* fHistV0radius;              //! V0 decay vertex radius
   TH1D* fHistV0pt;                  //! V0 transverse momentum
   TH1D* fHistV0eta;                 //! V0 pseudorapidity
@@ -137,8 +143,9 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   float fMaxPtToSave;  // maximum pt
   float fMaxTPCpionSigma;
   float fMaxTPCprotonSigma;
+  float fMaxTPChe3Sigma;
 
-  std::vector<Lifetimes::MiniV0> fV0vector;
+  std::vector<Lifetimes::MiniV0<3> > fV0vector;
   std::vector<Lifetimes::MCparticle> fMCvector;
   float fMultiplicity;
 

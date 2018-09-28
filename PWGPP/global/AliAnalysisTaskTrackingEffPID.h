@@ -43,6 +43,13 @@ public:
   AliESDtrackCuts* GetTrackCuts() const{
     return fTrackCuts;
   }
+  void SetPrimarySelectionOption(Int_t opt){
+    fPrimarySelectionOpt=opt;
+  }
+  void SetTrackletMultiplicityEstimator(){ fMultEstimator=0;}
+  void SetVertexContribMultiplicityEstimator(){ fMultEstimator=1;}
+  void SetTracksMultiplicityEstimator(){ fMultEstimator=2;}
+
   void SetCollisionSystem(TString collsy){
     collsy.ToLower();
     collsy.ReplaceAll("-","");
@@ -70,6 +77,7 @@ public:
   }
   void SetUseMVPileup(bool flag) {fEventCut.fPileUpCutMV=flag;}
 
+
   AliEventCuts  fEventCut;
 
 
@@ -79,6 +87,8 @@ private:
 
   bool fUseTrackCutsForAOD;       /// flag to switch off/on fTrackCuts for AOD
   bool fUseGeneratedKine;         /// flag to use the generated pt, eta phi
+  int  fPrimarySelectionOpt;      /// 0=no selection, 1=IsPhysicalPrimary, 2= cut on the origin
+  int  fMultEstimator;            /// multiplicity estimator: 0=trackelts, 1=ITS+TPCtracks, 2=primary vertex contributors
   bool fIsAA;                     /// flag to control collision system
   int  fFilterBit;                /// filter-bit selection for AOD tracks
   AliESDtrackCuts* fTrackCuts;                            /// cut object
@@ -93,7 +103,7 @@ private:
 
 
   /// \cond CLASSDEF
-  ClassDef(AliAnalysisTaskTrackingEffPID, 1);
+  ClassDef(AliAnalysisTaskTrackingEffPID, 3);
   /// \endcond
 };
 

@@ -153,6 +153,9 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     mHeader.mEventMask |= kInelGt0;
   }
 
+  if (mEventCuts.PassedCut(AliEventCuts::kTriggerClasses))
+    mHeader.mEventMask |= kTriggerClasses;
+
   bool EventWithPOI = !bool(mEventPOI);
 
   mTracks.clear();
@@ -169,12 +172,13 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     if (track->Pt() < mPtCut) continue;
 
     /// PID cuts
-    float sig[8] = {999.f};
+    float sig[8] = {999.f,999.f,999.f,999.f,999.f,999.f,999.f,999.f};
     bool reject = !mMCtrue; /// In the MC the cut on the TPC pid is replaced by a cut on the true MC particle
+    bool tpcRefit = (track->GetStatus() & AliESDtrack::kTPCrefit) == AliESDtrack::kTPCrefit;
     for (int iS = 0; iS < 8; ++iS) {
-      if ((track->GetStatus() & AliESDtrack::kTPCrefit) == AliESDtrack::kTPCrefit && track->GetInnerParam() && track->GetTPCNcls() > 60) {
+      if (tpcRefit && track->GetInnerParam() && track->GetTPCNcls() > 60) {
         sig[iS] = mPIDresponse->NumberOfSigmas(AliPIDResponse::kTPC,track,particle_species[iS]);
-      } else if (track->Pt() < mITSsaPtCut) {
+      } else if (mITSstandalone && !tpcRefit && track->Pt() < mITSsaPtCut) {
         sig[iS] = mPIDresponse->NumberOfSigmas(AliPIDResponse::kITS,track,particle_species[iS]);
       }
       if (std::abs(sig[iS]) < mNsigmaTPCselectionPOI) {
@@ -238,7 +242,7 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     t.SetTOFsignal(time);
     t.SetIntegratedLength(track->GetIntegratedLength());
 
-    if (track->GetNumberOfTRDClusters() > 0) t.mask |= AliAnalysisCODEX::kTRDout;
+    if (track->GetStatus() & AliVTrack::kTRDout) t.mask |= AliAnalysisCODEX::kTRDout;
 
     /// Put the right information in the right place
     t.eta = track->Eta();

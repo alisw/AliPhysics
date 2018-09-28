@@ -106,6 +106,7 @@ public:
     void SetDebug        ( Bool_t lVar ) { fkDebug       = lVar; } ;
     void SetNDebug       ( Int_t  lVar ) { fNDebug       = lVar; } ;
     void SetHighMultQABinning( Bool_t lVar ) { fkHighMultQABinning = lVar; }
+    void SetGeneratorOnly( Bool_t lVar ) { fkGeneratorOnly = lVar; }
     
     //override for getting estimator definitions from different OADB file
     //FIXME: should preferably be protected, extra functionality required
@@ -145,6 +146,7 @@ private:
     Bool_t fkFilterMB;    //if true, save only kMB events
     Bool_t fkAttached;    //if true, has already attached to ESD (AOD)
     Bool_t fkHighMultQABinning; //if true, use narrow binning for percentile histograms
+    Bool_t fkGeneratorOnly; //if true, skip loading of reco objects
     
     //Debug Options
     Bool_t fkDebug;       //if true, saves percentiles in TTree for debugging
@@ -281,13 +283,14 @@ private:
     Float_t fPPVsMultUtilsV0M; //! percentiles from AliPPVsMultUtils (for debugging)
     
     //Data needed for Monte Carlo
-    Int_t fMC_NColl;
-    Int_t fMC_NPart;
-    Int_t fMC_NchV0A;
-    Int_t fMC_NchV0C;
-    Int_t fMC_NchEta05;
-    Int_t fMC_NchEta08;
-    Int_t fMC_NchEta10;
+    AliMultVariable *fMC_NColl;
+    AliMultVariable *fMC_NPart;
+    AliMultVariable *fMC_NchV0A;
+    AliMultVariable *fMC_NchV0C;
+    AliMultVariable *fMC_NchEta05;
+    AliMultVariable *fMC_NchEta08;
+    AliMultVariable *fMC_NchEta10;
+    AliMultVariable *fMC_NchEta14;
     
     //Histograms / Anything else as needed
     TH1D *fHistEventCounter; //!
@@ -349,7 +352,7 @@ private:
     AliMultSelectionTask(const AliMultSelectionTask&);            // not implemented
     AliMultSelectionTask& operator=(const AliMultSelectionTask&); // not implemented
 
-    ClassDef(AliMultSelectionTask, 5);
+    ClassDef(AliMultSelectionTask, 7);
     //3 - extra QA histograms
 };
 

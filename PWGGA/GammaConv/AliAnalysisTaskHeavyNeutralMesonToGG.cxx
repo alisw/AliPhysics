@@ -2694,7 +2694,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateMesonCandidates(){
             if (fDoMesonQA > 0 && fDoMesonQA < 3){
               if ( mesonCand->M() > fMesonInvMassWindow[0] && mesonCand->M() < fMesonInvMassWindow[1]){
                 fHistoMotherMesonPtY[fiCut]->Fill(mesonCand->Pt(),mesonCand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), fWeightJetJetMC);
-                fHistoMotherMesonPtAlpha[fiCut]->Fill(mesonCand->Pt(),TMath::Abs(mesonCand->GetAlpha()), fWeightJetJetMC);
+                fHistoMotherMesonPtAlpha[fiCut]->Fill(mesonCand->Pt(),mesonCand->GetAlpha(), fWeightJetJetMC);
                 fHistoMotherMesonPtOpenAngle[fiCut]->Fill(mesonCand->Pt(),mesonCand->GetOpeningAngle(), fWeightJetJetMC);
               }
             }
@@ -3111,7 +3111,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueMesonCandidatesCalo(  AliA
     if (fDoMesonQA > 0 && fDoMesonQA < 3){
       if ( mesonCand->M() > fMesonInvMassWindow[0] && mesonCand->M() < fMesonInvMassWindow[1] ){
         if (fHistoTrueMesonPtY[fiCut]) fHistoTrueMesonPtY[fiCut]->Fill(mesonCand->Pt(),mesonCand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), fWeightJetJetMC);
-        if (fHistoTrueMesonPtAlpha[fiCut]) fHistoTrueMesonPtAlpha[fiCut]->Fill(mesonCand->Pt(),TMath::Abs(mesonCand->GetAlpha()), fWeightJetJetMC);
+        if (fHistoTrueMesonPtAlpha[fiCut]) fHistoTrueMesonPtAlpha[fiCut]->Fill(mesonCand->Pt(),mesonCand->GetAlpha(), fWeightJetJetMC);
         if (fHistoTrueMesonPtOpenAngle[fiCut]) fHistoTrueMesonPtOpenAngle[fiCut]->Fill(mesonCand->Pt(),mesonCand->GetOpeningAngle(), fWeightJetJetMC);
       }
 
@@ -3258,7 +3258,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueMesonCandidatesCaloAOD( Al
     if (fDoMesonQA > 0 && fDoMesonQA < 3){
       if ( mesonCand->M() > fMesonInvMassWindow[0]  && mesonCand->M() < fMesonInvMassWindow[1] ){
         if (fHistoTrueMesonPtY[fiCut]) fHistoTrueMesonPtY[fiCut]->Fill(mesonCand->Pt(),mesonCand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), fWeightJetJetMC);
-        if (fHistoTrueMesonPtAlpha[fiCut]) fHistoTrueMesonPtAlpha[fiCut]->Fill(mesonCand->Pt(),TMath::Abs(mesonCand->GetAlpha()), fWeightJetJetMC);
+        if (fHistoTrueMesonPtAlpha[fiCut]) fHistoTrueMesonPtAlpha[fiCut]->Fill(mesonCand->Pt(),mesonCand->GetAlpha(), fWeightJetJetMC);
         if (fHistoTrueMesonPtOpenAngle[fiCut]) fHistoTrueMesonPtOpenAngle[fiCut]->Fill(mesonCand->Pt(),mesonCand->GetOpeningAngle(), fWeightJetJetMC);
       }
     }
@@ -3387,7 +3387,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueMesonCandidatesConv(  AliA
             if(fIsMC < 2){
               if (fHistoTrueMesonPtY[fiCut]) fHistoTrueMesonPtY[fiCut]->Fill(mesonCand->Pt(),mesonCand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift());
               if (fHistoTrueMesonPtOpenAngle[fiCut]) fHistoTrueMesonPtOpenAngle[fiCut]->Fill(mesonCand->Pt(),mesonCand->GetOpeningAngle());
-              if (fHistoTrueMesonPtAlpha[fiCut]) fHistoTrueMesonPtAlpha[fiCut]->Fill(mesonCand->Pt(),TMath::Abs(mesonCand->GetAlpha()),fWeightJetJetMC);
+              if (fHistoTrueMesonPtAlpha[fiCut]) fHistoTrueMesonPtAlpha[fiCut]->Fill(mesonCand->Pt(),mesonCand->GetAlpha(),fWeightJetJetMC);
             }
           }
         }
@@ -3523,7 +3523,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueMesonCandidatesConvAOD( Al
             if (fHistoTrueMesonPtY[fiCut]) fHistoTrueMesonPtY[fiCut]->Fill(mesonCand->Pt(),mesonCand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift());
             if (fHistoTrueMesonPtOpenAngle[fiCut]) fHistoTrueMesonPtOpenAngle[fiCut]->Fill(mesonCand->Pt(),mesonCand->GetOpeningAngle());
           }
-          if (fHistoTrueMesonPtAlpha[fiCut]) fHistoTrueMesonPtAlpha[fiCut]->Fill(mesonCand->Pt(),TMath::Abs(mesonCand->GetAlpha()),fWeightJetJetMC);
+          if (fHistoTrueMesonPtAlpha[fiCut]) fHistoTrueMesonPtAlpha[fiCut]->Fill(mesonCand->Pt(),mesonCand->GetAlpha(),fWeightJetJetMC);
         }
 
       }

@@ -42,6 +42,7 @@ public:
     Bool_t          GetEMCalTriggerDG1() { return fDCalDG1; };
     void            SetEMCalTriggerDG1(Bool_t flagTr1) { fDCalDG1=flagTr1; };
     
+    void            SetCentSelection(Bool_t applyCent) {fApplyCentrality = applyCent;};
     void            SetFillSprs(Bool_t fillElecSprs) {fFlagFillSprs = fillElecSprs;};
     void            SetMC(Bool_t setMCfill) {fFlagFillMCHistos = setMCfill;};
     void            SetSSCut(Double_t maxM20Cut) {fMaxM20Cut = maxM20Cut;};
@@ -56,6 +57,7 @@ public:
     void            SetTPCClus(Int_t nTPCclusters) {fNclusTPC = nTPCclusters;};
     void            SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void            SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
+    void            SetTrkMatch(Double_t maxTrkMatch) {fTrkMatch = maxTrkMatch;};
     
     void            SetCentralitySelection(Double_t centMin, Double_t centMax){fCentralityMin = centMin; fCentralityMax = centMax;};
     Double_t        CheckCentrality(AliAODEvent* fAOD, Bool_t &centralitypass);
@@ -92,12 +94,15 @@ private:
     Double_t            fMinPtAssoCut;   // set min pt for asso track
     
     Double_t            fDCABinSize;     // set DCA bin size for systematics
+    Bool_t              fApplyCentrality; //apply centrality cut
     Bool_t              fFlagFillSprs; //switch to fill electron eid sparse
     Bool_t              fFlagFillMCHistos; // switch to fill histos that require MC pid
     Bool_t              fFlagRunStackLoop; //switch to run stack loop to get D & B meson species info
     Int_t               fNclusTPC;       // set number of TPC clusters
     Bool_t              fFlagClsTypeEMC; // switch to select EMC clusters
     Bool_t              fFlagClsTypeDCAL;// switch to select DCAL clusters
+    Double_t            fTrkMatch; //set distance to cluster
+    
     Bool_t              fUseTender;      // switch to add tender
     Bool_t              fFlagULS;        // flag ULS
     Bool_t              fFlagLS;         // flag LS
@@ -225,7 +230,16 @@ private:
     TH1F                *fCBaryonPt; //!
     
     TH1F                *fBMesonPt; //!
+    TH1F                *fBMesonPtATLAS; //!
+    TH1F                *fBPlusPtATLAS; //!
+    TH1F                *fBMesonPtCMS; //!
+    TH1F                *fBPlusPtCMS; //!
+    TH1F                *fBMesonPtLHCb; //!
+    TH1F                *fBPlusPtLHCb; //!
     TH1F                *fBBaryonPt; //!
+    
+    TH1F                *fBMesonElecPt; //!
+    TH1F                *fBBaryonElecPt; //!
     
     TH2F    *fPromptD0DCAWeight; //!
     TH2F    *fD0FromDStarDCAWeight; //!
@@ -241,6 +255,8 @@ private:
     THnSparse           *fSprsPi0EtaWeightCal;  //! Sparse for pi0,eta weight calc
     THnSparse           *fSprsTemplatesNoWeight;  //! Sparse for templates
     THnSparse           *fSprsTemplatesWeight;  //! Sparse for templates
+    THnSparse           *fSprsTemplatesWeightVar1;  //! Sparse for templates
+    THnSparse           *fSprsTemplatesWeightVar2;  //! Sparse for templates
     
     TH2F                *fDTemplateWeight; //!
     TH2F                *fDTemplateNoWeight; //!

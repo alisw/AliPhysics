@@ -287,7 +287,10 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH3F                       * fPtvsDetavsDphi;                 ///<  Cluster-track matching vs. cluster energy
   TH3F                       * fPtvsTrackPtvsDeta;              ///<  Cluster-track matching Deta vs. track pT vs. cluster energy
   TH3F                       * fPtvsTrackPtvsDphi;              ///<  Cluster-track matching Dphi vs. track pT vs. cluster energy
+  TH2F                       * fPtTrackClusRatiovsPt;           ///<  Track pT over Cluster pT vs. cluster energy
+  TH2F                       * fPtTrackClusRatiovsPtWithCPV;    ///<  Track pT over Cluster pT vs. cluster energy with CPV applied
   TH2F                       * fClusEvsClusT;                   //!<! Cluster Energy vs Cluster Time ---QA
+  TH1F                       * fPTbeforeNonLinScaling;          //!<! Pt distribution (before non-lin scaling in MC, when applied)
   TH1F                       * fPT;                             //!<! Pt distribution
   TH1F                       * fE;                              //!<! E distribution
   TH2F                       * fNLM;                            //!<! NLM distribution
@@ -347,6 +350,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH3F                       * fPtVsConeVsEtaBand;              //!<! Energy cone clusters vs tracks test (not normalised)
   TH3F                       * fPtVsNormConeVsNormPhiBand;      //!<!
   TH3F                       * fPtVsNormConeVsNormEtaBand;      //!<!
+  TH3F                       * fPtVsNormConeVsNormExtraPerpCones; //!<!
   TH3F                       * fPtvsM02vsSumUE_Norm;
   TH2F                       * fTestEtaPhiCone;                 //!<! Eta vs phi test for clusters in cone
   TH3F                       * fInvMassM02iso;                  //!<!

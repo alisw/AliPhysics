@@ -136,17 +136,16 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt, AliAODcascade *casc) {
   this->SetCharge(nTrackXi->Charge());
   this->SetCharge(pTrackXi->Charge());
   this->SetCharge(bachTrackXi->Charge());
-  if (fIsMC) {
-    if (fNegDaug->IsSet()) {
-      this->SetPhiAtRadius(fNegDaug->GetPhiAtRaidius().at(0));
-    }
-    if (fPosDaug->IsSet()) {
-      this->SetPhiAtRadius(fPosDaug->GetPhiAtRaidius().at(0));
-    }
-    if (fBach->IsSet()) {
-      this->SetPhiAtRadius(fBach->GetPhiAtRaidius().at(0));
-    }
+  if (fNegDaug->IsSet()) {
+    this->SetPhiAtRadius(fNegDaug->GetPhiAtRaidius().at(0));
   }
+  if (fPosDaug->IsSet()) {
+    this->SetPhiAtRadius(fPosDaug->GetPhiAtRaidius().at(0));
+  }
+  if (fBach->IsSet()) {
+    this->SetPhiAtRadius(fBach->GetPhiAtRaidius().at(0));
+  }
+
   //v0 business
   if (bachTrackXi->Charge() < 0) {  //Xi minus
     fMassv0 = casc->MassLambda();

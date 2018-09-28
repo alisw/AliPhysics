@@ -27,6 +27,7 @@
 #include "AliAODpidUtil.h"
 #include "AliAODHeader.h"
 #include "AliAnalysisUtils.h"
+#include "AliEventCuts.h"
 
 class AliFemtoEvent;
 class AliFemtoTrack;
@@ -66,8 +67,11 @@ public:
   void SetUseMultiplicity(EstEventMult aType);
   void SetpA2013(Bool_t pa2013); ///< set vertex configuration for pA (2013): IsVertexSelected2013pA
   void SetUseMVPlpSelection(Bool_t mvplp);
+  void SetUseOutOfBunchPlpSelection(Bool_t outOfBunchPlp);
   void SetIsPileUpEvent(Bool_t ispileup);
   void SetCascadePileUpRemoval(Bool_t cascadePileUpRemoval);
+  void SetV0PileUpRemoval(Bool_t v0PileUpRemoval);
+  void SetTrackPileUpRemoval(Bool_t trackPileUpRemoval);
 
   void SetMinVtxContr(Int_t contr = 1) {
     fMinVtxContr = contr;
@@ -86,6 +90,9 @@ public:
 
   void SetPrimaryVertexCorrectionTPCPoints(bool correctTpcPoints);
   void SetShiftedPositions(const AliAODTrack *track ,const Float_t bfield, Float_t posShifted[3], const Double_t radius=1.25);
+
+  void SetUseAliEventCuts(Bool_t useAliEventCuts);
+  
   void Set1DCorrectionsPions(TH1D *h1);
   void Set1DCorrectionsKaons(TH1D *h1);
   void Set1DCorrectionsProtons(TH1D *h1);
@@ -156,6 +163,8 @@ protected:
   AliAODpidUtil *fAODpidUtil;
   AliAODHeader *fAODheader;
   AliAnalysisUtils *fAnaUtils;
+  AliEventCuts     *fEventCuts;
+  Bool_t           fUseAliEventCuts;
 
 
 private:
@@ -170,7 +179,10 @@ private:
   Bool_t fpA2013;          ///< analysis on pA 2013 data
   Bool_t fisPileUp;        ///< pile up rejection on?
   Bool_t fCascadePileUpRemoval;//pile-up removal for cascades (its+tof hits for pos, neg and bac tracks)
+  Bool_t fV0PileUpRemoval;//pile-up removal for V0s
+  Bool_t fTrackPileUpRemoval;//pile-up removal for tracks (its+tof hits of tracks)
   Bool_t fMVPlp;           ///< multi-vertex pileup rejection?
+  Bool_t fOutOfBunchPlp;   ///out-of-bunch pileup rejection
   Int_t fMinVtxContr;      ///< no of contributors for pA 2013 data
   Int_t fMinPlpContribMV;  ///< no of contributors for multivertex pile-up rejection
   Int_t fMinPlpContribSPD; ///< no of contributors for SPD pile-up rejection

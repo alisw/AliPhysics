@@ -40,7 +40,7 @@ ClassImp(AliAnalysisTaskChargedJetsHadronToy)
 /// \endcond
 //_____________________________________________________________________________________________________
 AliAnalysisTaskChargedJetsHadronToy::AliAnalysisTaskChargedJetsHadronToy() :
-  AliAnalysisTaskEmcalJet("AliAnalysisTaskChargedJetsHadronToy", kTRUE), fDistributionMultiplicity(0), fDistributionPt(0), fDistributionEtaPhi(0), fMinCentrality(0), fMaxCentrality(10), fDistributionV2(0), fDistributionV3(0), fDistributionV4(0), fDistributionV5(0), fUseMixedEvent(0), fMixedEvent_Tree(0), fMixedEvent_CurrentFile(0), fMixedEvent_CurrentFileID(-1), fMixedEvent_BaseFolder(""), fMixedEvent_TreeName("ME_tree"), fMixedEvent_CurrentEventID(0), fMixedEvent_NumTotalFiles(30), fBuffer_NumTracks(0), fBuffer_TrackPt(0), fBuffer_TrackPhi(0), fBuffer_TrackEta(0), fBuffer_TrackCharge(0), fInputArrayName(""), fOutputArrayName(""), fInputArray(0), fOutputArray(0), fRandom(), fToyCent(0), fRandomPsi3(0), fRandomPsi4(0), fRandomPsi5(0)
+  AliAnalysisTaskEmcalJet("AliAnalysisTaskChargedJetsHadronToy", kTRUE), fDistributionMultiplicity(0), fDistributionPt(0), fDistributionEtaPhi(0), fMinCentrality(0), fMaxCentrality(10), fPhysicalPrimariesOnly(kTRUE), fDistributionV2(0), fDistributionV3(0), fDistributionV4(0), fDistributionV5(0), fUseMixedEvent(0), fMixedEvent_Tree(0), fMixedEvent_CurrentFile(0), fMixedEvent_CurrentFileID(-1), fMixedEvent_BaseFolder(""), fMixedEvent_TreeName("ME_tree"), fMixedEvent_CurrentEventID(0), fMixedEvent_NumTotalFiles(30), fBuffer_NumTracks(0), fBuffer_TrackPt(0), fBuffer_TrackPhi(0), fBuffer_TrackEta(0), fBuffer_TrackCharge(0), fInputArrayName(""), fOutputArrayName(""), fInputArray(0), fOutputArray(0), fRandom(), fToyCent(0), fRandomPsi3(0), fRandomPsi4(0), fRandomPsi5(0)
 {
   // constructor
   fBuffer_TrackPt = new Float_t[10000];
@@ -53,7 +53,7 @@ AliAnalysisTaskChargedJetsHadronToy::AliAnalysisTaskChargedJetsHadronToy() :
 
 //_____________________________________________________________________________________________________
 AliAnalysisTaskChargedJetsHadronToy::AliAnalysisTaskChargedJetsHadronToy(const char* name) :
-  AliAnalysisTaskEmcalJet(name, kTRUE), fDistributionMultiplicity(0), fDistributionPt(0), fDistributionEtaPhi(0), fMinCentrality(0), fMaxCentrality(10), fDistributionV2(0), fDistributionV3(0), fDistributionV4(0), fDistributionV5(0), fUseMixedEvent(0), fMixedEvent_Tree(0), fMixedEvent_CurrentFile(0), fMixedEvent_CurrentFileID(-1), fMixedEvent_BaseFolder(""), fMixedEvent_TreeName("ME_tree"), fMixedEvent_CurrentEventID(0), fMixedEvent_NumTotalFiles(30), fBuffer_NumTracks(0), fBuffer_TrackPt(0), fBuffer_TrackPhi(0), fBuffer_TrackEta(0), fBuffer_TrackCharge(0), fInputArrayName(""), fOutputArrayName(""), fInputArray(0), fOutputArray(0), fRandom(), fToyCent(0), fRandomPsi3(0), fRandomPsi4(0), fRandomPsi5(0)
+  AliAnalysisTaskEmcalJet(name, kTRUE), fDistributionMultiplicity(0), fDistributionPt(0), fDistributionEtaPhi(0), fMinCentrality(0), fMaxCentrality(10), fPhysicalPrimariesOnly(kTRUE), fDistributionV2(0), fDistributionV3(0), fDistributionV4(0), fDistributionV5(0), fUseMixedEvent(0), fMixedEvent_Tree(0), fMixedEvent_CurrentFile(0), fMixedEvent_CurrentFileID(-1), fMixedEvent_BaseFolder(""), fMixedEvent_TreeName("ME_tree"), fMixedEvent_CurrentEventID(0), fMixedEvent_NumTotalFiles(30), fBuffer_NumTracks(0), fBuffer_TrackPt(0), fBuffer_TrackPhi(0), fBuffer_TrackEta(0), fBuffer_TrackCharge(0), fInputArrayName(""), fOutputArrayName(""), fInputArray(0), fOutputArray(0), fRandom(), fToyCent(0), fRandomPsi3(0), fRandomPsi4(0), fRandomPsi5(0)
 {
   // constructor
   fBuffer_TrackPt = new Float_t[10000];
@@ -149,11 +149,21 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
 
       if(aodTrack)
       {
+        if (TMath::Abs(aodTrack->Eta()) > 0.9) // only use ALICE acceptance for jet const.
+          continue;
+
         new ((*fOutputArray)[particleCount]) AliAODTrack(*aodTrack);
         particleCount++;
       }
       else if(aodMCParticle)
       {
+        if (fPhysicalPrimariesOnly && !aodMCParticle->IsPhysicalPrimary()) // only physical primaries
+          continue;
+        if (aodMCParticle->Charge() == 0) // only charged particles
+          continue;
+        if (TMath::Abs(aodMCParticle->Eta()) > 0.9) // only use ALICE acceptance for jet const.
+          continue;
+
         Float_t trackTheta = 2.*atan(exp(-aodMCParticle->Eta()));
         new ((*fOutputArray)[particleCount]) AliAODTrack();
         static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetPt(aodMCParticle->Pt());
@@ -222,7 +232,7 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
 
     fMixedEvent_CurrentEventID++;
   }
-  else // Simple toy
+  else if(fDistributionMultiplicity && fDistributionPt && fDistributionEtaPhi)// Simple toy
   {
     Int_t multiplicity = (Int_t)fDistributionMultiplicity->GetRandom();
     for(Int_t i=0;i<multiplicity; i++)

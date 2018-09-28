@@ -90,7 +90,7 @@ private:
   TObjArray *GetAcceptedTracksLeading(AliAODEvent *faod,Bool_t leading);
   TObjArray *GetAcceptedTracksPID(AliAODEvent *faod);
   TObjArray *GetAcceptedV0Tracks(const AliAODEvent *faod);
-  TObjArray *GetAcceptedCascadeTracks(const AliAODEvent *faod);
+  TObjArray *GetAcceptedCascadeTracks(AliAODEvent *faod);
   TObjArray *GetAcceptedTracksAssociated(AliAODEvent *faod);
 
   void  CalculateSP();
@@ -252,7 +252,7 @@ private:
   TH2F*  fh2_SPDtrack_multcorr;
   TH1F*  fhtrackletsdphi;
   TH2D*  fh2_FMD_eta_phi;
-
+  TH2D*  fhistfmdphiacc;
   AliTHn* fhistfmd;
   THnSparseF* fhistits;
   AliTHn* fhSecFMD;

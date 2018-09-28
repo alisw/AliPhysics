@@ -484,6 +484,10 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
 
 
   // only std cuts
+  } else if ( trainConfig == 128){ // EMCAL clusters 8 TeV LHC12
+    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010"); // std
+  } else if ( trainConfig == 129){ // EMCAL clusters 8 TeV LHC12
+    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010"); // std
   } else if ( trainConfig == 130){ // EMCAL clusters 8 TeV LHC12
     cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010"); // std
   } else if ( trainConfig == 131){ // EMCAL clusters 8 TeV LHC12
@@ -590,6 +594,8 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163106100000010"); // std/
 
   // only std cuts
+  } else if ( trainConfig == 158){ //std EMC7
+    cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010"); // only EMC7
   } else if ( trainConfig == 159){ //std EMC7
     cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010"); // only EMC7
 
@@ -695,6 +701,8 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
   // only std cuts
   } else if ( trainConfig == 181){ //std EGA
     cuts.AddCut("00081113","00200009327000008250400000","1111111067032230000","0163103100000010"); // only EGA
+  } else if ( trainConfig == 182){ //std EGA
+    cuts.AddCut("00081113","00200009327000008250400000","1111111067032230000","0163103100000010"); // only EGA
 
   //multiple std cuts for different studies
   } else if ( trainConfig == 183){ // EMCAL clusters 8 TeV LHC12
@@ -763,7 +771,6 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
   //*************************************************************************************************
   } else if ( trainConfig == 200){ // EMCAL clusters pp 7 TeV, pT dep matching
     cuts.AddCut("00000113","00200009327000008250400000","11111110b7032230000","0163103100000010"); // std
-    cuts.AddCut("00000113","00200009327000008250400000","1111111007032230000","0163103100000010"); // std
   } else if ( trainConfig == 201){ // EMCAL clusters pp 7 TeV, pT dep matching
     cuts.AddCut("00000113","00200009327000008250400000","11111110b7032230000","0163103100000010"); // std
   } else if ( trainConfig == 202){ //EMCAL minEnergy variation
@@ -896,6 +903,16 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     cuts.AddCut("00052113","00200009327000008250400000","1111102060032230000","0163103100000010"); // EMC7
     cuts.AddCut("00000113","00200009327000008250400000","1111102060032230000","0163103100000010"); // MBOR
     cuts.AddCut("00051113","00200009327000008250400000","1111102060032230000","0163103100000010"); // EMC1
+
+  //multiple std dirGAMMA cuts for different studies
+  } else if (trainConfig == 281){ // EMCAL clusters pp 7 TeV
+    cuts.AddCut("00000113","00200009327000008250400000","11111110b7032230000","0163103100000010"); // std
+  } else if (trainConfig == 282){ // EMCAL clusters pp 7 TeV
+    cuts.AddCut("00000113","00200009327000008250400000","11111110b7032230000","0163103100000010"); // std
+  } else if (trainConfig == 283){ // EMCAL clusters pp 7 TeV
+    cuts.AddCut("00000113","00200009327000008250400000","11111110b7032230000","0163103100000010"); // std
+  } else if (trainConfig == 284){ // EMCAL clusters pp 7 TeV
+    cuts.AddCut("00000113","00200009327000008250400000","11111110b7032230000","0163103100000010"); // std
 
   //*************************************************************************************************
   // 2.76 TeV (LHC11a) PHOS setup
@@ -1719,6 +1736,11 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);
+  if(enableQAPhotonTask>1){
+    for(Int_t i = 0; i<numberOfCuts; i++){
+      mgr->ConnectOutput(task,2+i,mgr->CreateContainer(Form("%s_%s_%s_%s Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),cuts.GetClusterCut(i).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvCalo_%i.root",trainConfig)) );
+    }
+  }
 
   return;
 

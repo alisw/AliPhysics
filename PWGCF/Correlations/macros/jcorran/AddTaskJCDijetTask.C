@@ -1,17 +1,18 @@
 //_____________________________________________________________________
 AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
                                     Bool_t isMC,
-                                    TString centBins        = "0.0 5.0 10.0 20.0 30.0 40.0 50.0 60.0 70.0",
-                                    double jetCone          = 0.4,
-                                    double ktjetCone        = 0.4,
-                                    int ktScheme            = 1,
-                                    Bool_t usePionMassInkt  = false,
-                                    double particleEtaCut   = 0.8,
-                                    double particlePtCut    = 0.15,
-                                    double leadingJetCut    = 20.0,
-                                    double subleadingJetCut = 20.0,
-                                    double constituentCut   = 5.0,
-                                    double deltaPhiCut      = 2.0){
+                                    TString centBins          = "0.0 5.0 10.0 20.0 30.0 40.0 50.0 60.0 70.0",
+                                    double jetCone            = 0.4,
+                                    double ktjetCone          = 0.4,
+                                    int ktScheme              = 1,
+                                    Bool_t usePionMassInkt    = false,
+                                    Bool_t useDeltaPhiBGSubtr = true,
+                                    double particleEtaCut     = 0.8,
+                                    double particlePtCut      = 0.15,
+                                    double leadingJetCut      = 20.0,
+                                    double subleadingJetCut   = 20.0,
+                                    double constituentCut     = 5.0,
+                                    double deltaPhiCut        = 2.0){
     // Load Custom Configuration and parameters
     // override values with parameters
 
@@ -63,7 +64,7 @@ AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
     dijetTask->SetJCatalystTaskName("JCatalystTask");  // AliJCatalystTask has this name hard coded
     dijetTask->SetCentralityBins(vecCentBins);
     dijetTask->SetJetConeSize(jetCone, ktjetCone);
-    dijetTask->SetBGSubtrSettings(ktScheme, usePionMassInkt);
+    dijetTask->SetBGSubtrSettings(ktScheme, usePionMassInkt, useDeltaPhiBGSubtr);
     dijetTask->SetIsMC(isMC);
     dijetTask->SetCuts(particleEtaCut, particlePtCut, leadingJetCut, subleadingJetCut, constituentCut, deltaPhiCut);
     cout << dijetTask->GetName() << endl;
