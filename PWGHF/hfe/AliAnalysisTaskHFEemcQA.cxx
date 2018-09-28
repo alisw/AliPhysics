@@ -187,6 +187,7 @@ fMCcheckMother(0),
 fMCcheckDdecay(0),
 fMCcheckBdecay(0),
 fMCcheckHFdecay(0),
+fHFmomCorr(0),
 fMCneutral(0),
 fEMCTrkMatch_Phi(0),
 fEMCTrkMatch_Eta(0),
@@ -331,6 +332,7 @@ fMCcheckMother(0),
 fMCcheckDdecay(0),
 fMCcheckBdecay(0),
 fMCcheckHFdecay(0),
+fHFmomCorr(0),
 fMCneutral(0),
 fEMCTrkMatch_Phi(0),
 fEMCTrkMatch_Eta(0),
@@ -672,21 +674,16 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     fHistRawNtpcPhi = new TH2F("fHistRawNtpcPhi","Raw tpc hits vs. Phi; #phi; counts",200,0,6.4,200,0,200);
     fOutputList->Add(fHistRawNtpcPhi);
 
-    /*
-     Int_t binsDal[6] =      {3,300,200,200,3,100};
-     Double_t mimDal[6] = {-0.5,0,0,0,-0.5,-5};
-     Double_t maxDal[6] = {2.5,0.3,40.0,40.0,2.5,5};
-     fInvmassPi0Dalitz = new THnSparseD("Pi0DalitzMC","Inv mass Dal;feed;mass;epT;pi0pT;prim;eta",6,binsDal,mimDal,maxDal);
-     fOutputList->Add(fInvmassPi0Dalitz);
-     */
     fMCcheckMother = new TH2F("fMCcheckMother", "Mother MC PDG", 1000,-0.5,999.5,50,0,50);
     fMCcheckBdecay = new TH2F("fMCcheckBdecay", "p_{T} distribution from B decay",50,0,50,50,0,50);
     fMCcheckDdecay = new TH2F("fMCcheckDdecay", "p_{T} distribution from D decay",50,0,50,50,0,50);
     fMCcheckHFdecay = new TH2F("fMCcheckHFdecay", "p_{T} distribution from D + B decay",10,-0.5,9.5,50,0,50);
+    fHFmomCorr = new TH2F("fHFmomCorr", "HFe p_{T} correlation",500,0,50,500,0,50);
     fOutputList->Add(fMCcheckMother);
     fOutputList->Add(fMCcheckBdecay);
     fOutputList->Add(fMCcheckDdecay);
     fOutputList->Add(fMCcheckHFdecay);
+    fOutputList->Add(fHFmomCorr);
     
     fMCneutral = new TH2F("fMCneutral","pi0 and eta pT from Hijing and enhance",6,-0.5,5.5,500,0,50);
     fOutputList->Add(fMCneutral);
@@ -712,9 +709,9 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     fOutputList->Add(fMCcheckEtadecay);
 
     if(fFlagSparse){
-    Int_t bins[9]=      {8, 280, 160, 40, 200, 200, 3, 20,  10}; // trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;iSM;cent
+    Int_t bins[9]=      {8, 280, 160, 40, 200, 200, 10, 20,  10}; // trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;iSM;cent
     Double_t xmin[9]={-0.5,   2,  -8,   0,   0,   0, -0.5,  0,   0};
-    Double_t xmax[9]={ 7.5,  30,   8,   2,   2,   2,  2.5,  20, 100};
+    Double_t xmax[9]={ 7.5,  30,   8,   2,   2,   2,  9.5,  20, 100};
     fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;eID;iSM;cent;",9,bins,xmin,xmax);
     fOutputList->Add(fSparseElectron);
     }
@@ -1288,16 +1285,6 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
             else
                 fClsEtaPhiAftMatchEMCout->Fill(emceta,emcphi);
             
-   /*         Float_t tof = clustMatch->GetTOF()*1e+9; // ns
-            Double_t caloinfo[6];
-            caloinfo[0] = iSM;
-            caloinfo[1] = clustMatchE;
-            caloinfo[2] = tof;
-            caloinfo[3] = clustMatch->GetNCells();
-            caloinfo[4] = emceta;
-            caloinfo[5] = emcphi;
-            if(clustMatchE>2.0 && fUseTender)fHistoTimeEMCcorr->Fill(caloinfo);
-    */
             //EMCAL EID info
             Double_t eop = -1.0;
             Double_t m02 = -99999,m20 = -99999,sqm02m20=-99999.0;
@@ -1325,7 +1312,8 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
             fvalueElectron[3] = eop;
             fvalueElectron[4] = m20;
             fvalueElectron[5] = m02;
-            fvalueElectron[6] = pid_ele;
+            //fvalueElectron[6] = pid_ele;
+            fvalueElectron[6] = MCinfo[5];
            // fvalueElectron[7] = fTPCnSigma_Pi;
             fvalueElectron[7] = iSM;
             fvalueElectron[8] = centrality;
@@ -1353,6 +1341,7 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
                 fEleCanTPCNCls->Fill(track->Pt(),track->GetTPCNcls());
                 
                 if((MCinfo[5]==1.0 || MCinfo[5]==2.0) && TMath::Abs(MCinfo[1])==11.0)fMCcheckHFdecay->Fill(3,MCinfo[4]);
+                if((MCinfo[5]==1.0 || MCinfo[5]==2.0) && TMath::Abs(MCinfo[1])==11.0)fHFmomCorr->Fill(MCinfo[4],track->Pt());
 
                 Int_t fITSncls=0;
                 for(Int_t l=0;l<6;l++) {
@@ -1679,6 +1668,8 @@ void AliAnalysisTaskHFEemcQA::GetTrackMCinfo(Int_t &ilabel, std::vector<double> 
 
           if(MCinfo[2]==411.0 || MCinfo[2]==421.0 || MCinfo[2]==413.0 || MCinfo[2]==423.0 || MCinfo[2]==431.0 || MCinfo[2]==433.0)MCinfo[5]=1.0;
           if(MCinfo[2]==511.0 || MCinfo[2]==521.0 || MCinfo[2]==513.0 || MCinfo[2]==523.0 || MCinfo[2]==531.0 || MCinfo[2]==533.0)MCinfo[5]=2.0;
+          if(MCinfo[2]==111.0)MCinfo[5]=3.0;
+          if(MCinfo[2]==221.0)MCinfo[5]=4.0;
 
      }
 
