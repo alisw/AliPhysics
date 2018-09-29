@@ -19,10 +19,12 @@ const Int_t nExtraMin = 666; // use extra cuts for nExtraMin <= cuts < nExtraMax
 const Int_t nExtraMax = 677; // use extra cuts for nExtraMin <= cuts < nExtraMax 
 
 AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
-        Bool_t bESDANA = kFALSE,
-        Bool_t bCutQA = kFALSE,
-        Bool_t isRandomRej=kFALSE,
-        Bool_t useTPCCorr=kFALSE)
+						 Bool_t bESDANA = kFALSE,
+						 Bool_t bCutQA = kFALSE,
+						 Bool_t isRandomRej=kFALSE,
+						 Bool_t useTPCCorr=kFALSE,
+						 Bool_t hasMC=kFALSE
+						 )
 {
   //
   // Setup the instance of AliDielectron
@@ -43,7 +45,7 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
   }
   else{
     Printf("=====================================");
-    Printf("Configuring cut set %d",cutDefinition);
+    Printf("Configuring cut set %d (MC = %d)",cutDefinition,hasMC);
     Printf("=====================================");
   }
     
@@ -54,6 +56,8 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
   AliDielectron *die =
     new AliDielectron(Form("%s",name.Data()),
                       Form("Track cuts: %s",name.Data()));
+
+  die->SetHasMC(hasMC);
 
   if(bCutQA){
     die->SetCutQA(bCutQA);
@@ -66,8 +70,7 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
     die->SetTrackRotator(rot);
   }//kRot
   
-  
-  if(kMix && !(die->GetHasMC()) && !(cutDefinition==674 || cutDefinition==676)){ // need second since there is a problem when mixing MC events (TRef?)
+  if(kMix && !(die->GetHasMC())){ // need second since there is a problem when mixing MC events (TRef?)
     AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
 
     mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
@@ -841,8 +844,10 @@ void SetupAODtrackCutsRun3(AliDielectron *die)
   pidCutsMC->AddCut(AliDielectronVarManager::kPdgCode, +10.9, +11.1);
 
   // activate the cut sets (order might be CPU timewise important)
-  cuts->AddCut(pidCutsMC); // commented in for the moment -> only true electrons
-  die->GetTrackFilter().AddCuts(pidCutsMC);
+  if(hasMC){
+    cuts->AddCut(pidCutsMC); // commented in for the moment -> only true electrons
+    die->GetTrackFilter().AddCuts(pidCutsMC);
+  }
   cuts->AddCut(trkFilter);
   die->GetTrackFilter().AddCuts(trkFilter);
   cuts->AddCut(varCuts);
@@ -914,8 +919,10 @@ void SetupAODtrackCutsRun3_FT2(AliDielectron *die)
   pidCutsMC->AddCut(AliDielectronVarManager::kPdgCode, +10.9, +11.1);
 
   // activate the cut sets (order might be CPU timewise important)
-  cuts->AddCut(pidCutsMC); // commented in for the moment -> only true electrons
-  die->GetTrackFilter().AddCuts(pidCutsMC);
+  if(hasMC){
+    cuts->AddCut(pidCutsMC); // commented in for the moment -> only true electrons
+    die->GetTrackFilter().AddCuts(pidCutsMC);
+  }
   cuts->AddCut(trkFilter);
   die->GetTrackFilter().AddCuts(trkFilter);
   cuts->AddCut(varCuts);
@@ -988,8 +995,10 @@ void SetupAODtrackCutsRun3_FT2_ESD(AliDielectron *die)
   pidCutsMC->AddCut(AliDielectronVarManager::kPdgCode, +10.9, +11.1);
 
   // activate the cut sets (order might be CPU timewise important)
-  cuts->AddCut(pidCutsMC); // commented in for the moment -> only true electrons
-  die->GetTrackFilter().AddCuts(pidCutsMC);
+  if(hasMC){
+    cuts->AddCut(pidCutsMC); // commented in for the moment -> only true electrons
+    die->GetTrackFilter().AddCuts(pidCutsMC);
+  }
   cuts->AddCut(varCuts);
   die->GetTrackFilter().AddCuts(varCuts);
   cuts->AddCut(fesdTrackCuts);
@@ -1049,8 +1058,10 @@ void SetupAODtrackCutsRun3_FT2_noPID(AliDielectron *die)
   pidCutsMC->AddCut(AliDielectronVarManager::kPdgCode, +10.9, +11.1);
 
   // activate the cut sets (order might be CPU timewise important)
-  cuts->AddCut(pidCutsMC); // commented in for the moment -> only true electrons
-  die->GetTrackFilter().AddCuts(pidCutsMC);
+  if(hasMC){
+    cuts->AddCut(pidCutsMC); // commented in for the moment -> only true electrons
+    die->GetTrackFilter().AddCuts(pidCutsMC);
+  }
   cuts->AddCut(trkFilter);
   die->GetTrackFilter().AddCuts(trkFilter);
   cuts->AddCut(varCuts);
@@ -1113,8 +1124,10 @@ void SetupAODtrackCutsRun3_FT2_noPID_ESD(AliDielectron *die)
   pidCutsMC->AddCut(AliDielectronVarManager::kPdgCode, +10.9, +11.1);
 
   // activate the cut sets (order might be CPU timewise important)
-  cuts->AddCut(pidCutsMC); // commented in for the moment -> only true electrons
-  die->GetTrackFilter().AddCuts(pidCutsMC);
+  if(hasMC){
+    cuts->AddCut(pidCutsMC); // commented in for the moment -> only true electrons
+    die->GetTrackFilter().AddCuts(pidCutsMC);
+  }
   cuts->AddCut(varCuts);
   die->GetTrackFilter().AddCuts(varCuts);
   cuts->AddCut(fesdTrackCuts);

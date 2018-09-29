@@ -231,7 +231,7 @@ AliFemtoDreamCascadeCuts* AliFemtoDreamCascadeCuts::OmegaCuts(
   OmegaCuts->SetIsMonteCarlo(isMC);
   OmegaCuts->SetContributionSplitting(contribSplitting);
   OmegaCuts->SetXiMassRange(1.672, 0.005);
-  OmegaCuts->SetCutXiDaughterDCA(1.3);
+  OmegaCuts->SetCutXiDaughterDCA(2.);
   OmegaCuts->SetCutXiMinDistBachToPrimVtx(0.04);
 
   OmegaCuts->SetCutXiCPA(0.98);

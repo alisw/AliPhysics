@@ -110,6 +110,12 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
   void     SetCheckBackground(Bool_t value) {fCheckBackground = value;}
   Bool_t   GetCheckBackground() const {return fCheckBackground;}
 
+  void     SetCheckInjected(Bool_t value) {fCheckInjected = value;}
+  Bool_t   GetCheckInjected() const {return fCheckInjected;}
+
+  void     SetRemoveInjected(Int_t value) {fRemoveInjected = value;}
+  Int_t    GetRemoveInjected() const {return fRemoveInjected;}
+
  private:
   
   AliAnalysisTaskSEB0toDStarPi(const AliAnalysisTaskSEB0toDStarPi &source);
@@ -127,6 +133,8 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
   Int_t  fDegreePerRotation;                 //
   Int_t  fNumberOfRotations;                 //
   Bool_t fCheckBackground;                   //
+  Bool_t fCheckInjected;                     //
+  Int_t  fRemoveInjected;                    //
 
   TList *fOutput;                            //!<!  User output
   TList *fListCuts;                          //!<!  User output
@@ -173,7 +181,7 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
   TH3F* fMotherHistogramArray3D[6][99][60];  //!
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEB0toDStarPi,5);  // class for B0 spectra
+  ClassDef(AliAnalysisTaskSEB0toDStarPi,6);  // class for B0 spectra
   /// \endcond
 };
 

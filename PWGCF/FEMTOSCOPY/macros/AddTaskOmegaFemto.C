@@ -193,45 +193,45 @@ AliAnalysisTaskSE* AddTaskOmegaFemto(
     NBins.push_back(750); // p barp
     NBins.push_back(750); // p Lambda
     NBins.push_back(750); // p barLambda
-    NBins.push_back(750); // p Xi
-    NBins.push_back(750); // p barXi
+    NBins.push_back(750); // p Omega
+    NBins.push_back(750); // p barOmega
     NBins.push_back(750); // barp barp
     NBins.push_back(750); // barp Lambda
     NBins.push_back(750); // barp barLambda
-    NBins.push_back(750); // barp Xi
-    NBins.push_back(750); // barp barXi
+    NBins.push_back(750); // barp Omega
+    NBins.push_back(750); // barp barOmega
     NBins.push_back(750); // Lambda Lambda
     NBins.push_back(750); // Lambda barLambda
-    NBins.push_back(750); // Lambda Xi
-    NBins.push_back(750); // Lambda barXi
+    NBins.push_back(750); // Lambda Omega
+    NBins.push_back(750); // Lambda barOmega
     NBins.push_back(750); // barLambda barLambda
-    NBins.push_back(750); // barLambda Xi
-    NBins.push_back(750); // barLambda barXi
-    NBins.push_back(750); // Xi Xi
-    NBins.push_back(750); // Xi barXi
-    NBins.push_back(750); // barXi barXi
+    NBins.push_back(750); // barLambda Omega
+    NBins.push_back(750); // barLambda barOmega
+    NBins.push_back(750); // Omega Omega
+    NBins.push_back(750); // Omega barOmega
+    NBins.push_back(750); // barOmega barOmega
   } else { //standard binning Run1
     NBins.push_back(750); // p p
     NBins.push_back(750); // p barp
     NBins.push_back(150); // p Lambda
     NBins.push_back(150); // p barLambda
-    NBins.push_back(150); // p Xi
-    NBins.push_back(150); // p barXi
+    NBins.push_back(150); // p Omega
+    NBins.push_back(150); // p barOmega
     NBins.push_back(750); // barp barp
     NBins.push_back(150); // barp Lambda
     NBins.push_back(150); // barp barLambda
-    NBins.push_back(150); // barp Xi
-    NBins.push_back(150); // barp barXi
+    NBins.push_back(150); // barp Omega
+    NBins.push_back(150); // barp barOmega
     NBins.push_back(150); // Lambda Lambda
     NBins.push_back(150); // Lambda barLambda
-    NBins.push_back(150); // Lambda Xi
-    NBins.push_back(150); // Lambda barXi
+    NBins.push_back(150); // Lambda Omega
+    NBins.push_back(150); // Lambda barOmega
     NBins.push_back(150); // barLambda barLambda
-    NBins.push_back(150); // barLambda Xi
-    NBins.push_back(150); // barLambda barXi
-    NBins.push_back(150); // Xi Xi
-    NBins.push_back(150); // Xi barXi
-    NBins.push_back(150); // barXi barXi
+    NBins.push_back(150); // barLambda Omega
+    NBins.push_back(150); // barLambda barOmega
+    NBins.push_back(150); // Omega Omega
+    NBins.push_back(150); // Omega barOmega
+    NBins.push_back(150); // barOmega barOmega
   }
   std::vector<float> kMin;
   kMin.push_back(0.);
@@ -549,21 +549,21 @@ AliAnalysisTaskSE* AddTaskOmegaFemto(
         Form("%s:%s", file.Data(), Antiv0CutsMCName.Data()));
     mgr->ConnectOutput(task, 16, coutputAntiv0CutsMC);
 
-    AliAnalysisDataContainer *coutputXiCutsMC;
-    TString XiCutsMCName = Form("%sXiCutsMC",addon.Data());
-    coutputXiCutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
-        XiCutsMCName.Data(), TList::Class(),
+    AliAnalysisDataContainer *coutputOmegaCutsMC;
+    TString OmegaCutsMCName = Form("%sOmegaCutsMC",addon.Data());
+    coutputOmegaCutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
+        OmegaCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
-        Form("%s:%s", file.Data(), XiCutsMCName.Data()));
-    mgr->ConnectOutput(task, 17, coutputXiCutsMC);
+        Form("%s:%s", file.Data(), OmegaCutsMCName.Data()));
+    mgr->ConnectOutput(task, 17, coutputOmegaCutsMC);
 
-    AliAnalysisDataContainer *coutputAntiXiCutsMC;
-    TString AntiXiCutsMCName = Form("%sAntiXiCutsMC",addon.Data());
-    coutputAntiXiCutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
-        AntiXiCutsMCName.Data(), TList::Class(),
+    AliAnalysisDataContainer *coutputAntiOmegaCutsMC;
+    TString AntiOmegaCutsMCName = Form("%sAntiOmegaCutsMC",addon.Data());
+    coutputAntiOmegaCutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
+        AntiOmegaCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
-        Form("%s:%s", file.Data(), AntiXiCutsMCName.Data()));
-    mgr->ConnectOutput(task, 18, coutputAntiXiCutsMC);
+        Form("%s:%s", file.Data(), AntiOmegaCutsMCName.Data()));
+    mgr->ConnectOutput(task, 18, coutputAntiOmegaCutsMC);
   }
   return task;
 }

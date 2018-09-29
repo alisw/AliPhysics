@@ -148,7 +148,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   AliSigma0PhotonMotherCuts *antiSigmaCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
   antiSigmaCuts->SetIsMC(isMC);
-  antiSigmaCuts->SetPDG(3212, 3122, 22);
+  antiSigmaCuts->SetPDG(-3212, -3122, 22);
   antiSigmaCuts->SetLambdaCuts(antiv0Cuts);
   antiSigmaCuts->SetV0ReaderName(V0ReaderName.Data());
   if (suffix != "0" && suffix != "999") {

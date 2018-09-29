@@ -19,29 +19,60 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
   evtCuts->SetMultVsCentPlots(true);
+  evtCuts->SetSphericityCuts(0.7,1.0);
 
   AliAnalysisTaskGrandma *task = new AliAnalysisTaskGrandma("myFirstTask",
                                                             isMC);
   task->SetTrackBufferSize(2000);
   task->SetEventCuts(evtCuts);
+
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
       isMC, DCAPlots, false, false);
   TrackCuts->SetCutCharge(1);
 //wanna change something? Do it like this: TrackCuts->SetPtRange(0.3, 4.05);
-
   task->SetTrackCuts(TrackCuts);
+
   AliFemtoDreamTrackCuts *AntiTrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, DCAPlots, false, false);
   AntiTrackCuts->SetCutCharge(-1);
   task->SetAntiTrackCuts(AntiTrackCuts);
+
+  AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(
+      isMC, false, false);
+  AliFemtoDreamTrackCuts *Posv0Daug=AliFemtoDreamTrackCuts::DecayProtonCuts(
+          isMC,true,false);
+  AliFemtoDreamTrackCuts *Negv0Daug=AliFemtoDreamTrackCuts::DecayPionCuts(
+          isMC,true,false);
+  v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
+  v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
+  v0Cuts->SetPDGCodePosDaug(2212);//Proton
+  v0Cuts->SetPDGCodeNegDaug(211);//Pion
+  v0Cuts->SetPDGCodev0(3122);//Lambda
+  task->Setv0Cuts(v0Cuts);
+
+  AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(
+      isMC, false, false);
+  AliFemtoDreamTrackCuts *PosAntiv0Daug=AliFemtoDreamTrackCuts::DecayPionCuts(
+          isMC,true,false);
+  PosAntiv0Daug->SetCutCharge(1);
+  AliFemtoDreamTrackCuts *NegAntiv0Daug=AliFemtoDreamTrackCuts::DecayProtonCuts(
+          isMC,true,false);
+  NegAntiv0Daug->SetCutCharge(-1);
+  Antiv0Cuts->SetPosDaugterTrackCuts(PosAntiv0Daug);
+  Antiv0Cuts->SetNegDaugterTrackCuts(NegAntiv0Daug);
+  Antiv0Cuts->SetPDGCodePosDaug(211);//Pion
+  Antiv0Cuts->SetPDGCodeNegDaug(2212);//Proton
+  Antiv0Cuts->SetPDGCodev0(-3122);//Lambda
+  task->SetAntiv0Cuts(Antiv0Cuts);
+
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
                                                                 "Femto");
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212);
   PDGParticles.push_back(2212);
-//  PDGParticles.push_back(3122);
-//  PDGParticles.push_back(3122);
+  PDGParticles.push_back(3122);
+  PDGParticles.push_back(3122);
 //  PDGParticles.push_back(3312);
 //  PDGParticles.push_back(3312);
   config->SetPDGCodes(PDGParticles);
@@ -124,20 +155,20 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
   std::vector<int> NBins;
   NBins.push_back(750);  // p p
   NBins.push_back(750);  // p barp
-//  NBins.push_back(750);  // p Lambda
-//  NBins.push_back(750);  // p barLambda
+  NBins.push_back(750);  // p Lambda
+  NBins.push_back(750);  // p barLambda
 //  NBins.push_back(750);  // p Xi
 //  NBins.push_back(750);  // p barXi
   NBins.push_back(750);  // barp barp
-//  NBins.push_back(750);  // barp Lambda
-//  NBins.push_back(750);  // barp barLambda
+  NBins.push_back(750);  // barp Lambda
+  NBins.push_back(750);  // barp barLambda
 //  NBins.push_back(750);  // barp Xi
 //  NBins.push_back(750);  // barp barXi
-//  NBins.push_back(750);  // Lambda Lambda
-//  NBins.push_back(750);  // Lambda barLambda
+  NBins.push_back(750);  // Lambda Lambda
+  NBins.push_back(750);  // Lambda barLambda
 //  NBins.push_back(750);  // Lambda Xi
 //  NBins.push_back(750);  // Lambda barXi
-//  NBins.push_back(750);  // barLambda barLambda
+  NBins.push_back(750);  // barLambda barLambda
 //  NBins.push_back(750);  // barLambda Xi
 //  NBins.push_back(750);  // barLambda barXi
 //  NBins.push_back(750);  // Xi Xi
@@ -147,13 +178,13 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
   kMin.push_back(0.);
   kMin.push_back(0.);
   kMin.push_back(0.);
-//  kMin.push_back(0.);
-//  kMin.push_back(0.);
-//  kMin.push_back(0.);
-//  kMin.push_back(0.);
-//  kMin.push_back(0.);
-//  kMin.push_back(0.);
-//  kMin.push_back(0.);
+  kMin.push_back(0.);
+  kMin.push_back(0.);
+  kMin.push_back(0.);
+  kMin.push_back(0.);
+  kMin.push_back(0.);
+  kMin.push_back(0.);
+  kMin.push_back(0.);
 //  kMin.push_back(0.);
 //  kMin.push_back(0.);
 //  kMin.push_back(0.);
@@ -169,13 +200,13 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
   kMax.push_back(3.);
   kMax.push_back(3.);
   kMax.push_back(3.);
-//  kMax.push_back(3.);
-//  kMax.push_back(3.);
-//  kMax.push_back(3.);
-//  kMax.push_back(3.);
-//  kMax.push_back(3.);
-//  kMax.push_back(3.);
-//  kMax.push_back(3.);
+  kMax.push_back(3.);
+  kMax.push_back(3.);
+  kMax.push_back(3.);
+  kMax.push_back(3.);
+  kMax.push_back(3.);
+  kMax.push_back(3.);
+  kMax.push_back(3.);
 //  kMax.push_back(3.);
 //  kMax.push_back(3.);
 //  kMax.push_back(3.);
@@ -276,6 +307,26 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
       Form("%s:%s", file.Data(), AntiTrackCutsName.Data()));
   mgr->ConnectOutput(task, 4, coutputAntiTrkCuts);
 
+  AliAnalysisDataContainer *couputv0Cuts;
+  TString v0CutsName = Form("V0Cuts");
+  couputv0Cuts = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      v0CutsName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), v0CutsName.Data()));
+  mgr->ConnectOutput(task, 5, couputv0Cuts);
+
+  AliAnalysisDataContainer *coutputAntiv0Cuts;
+  TString Antiv0CutsName = Form("AntiV0Cuts");
+  coutputAntiv0Cuts = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      Antiv0CutsName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), Antiv0CutsName.Data()));
+  mgr->ConnectOutput(task, 6, coutputAntiv0Cuts);
+
   AliAnalysisDataContainer *coutputResults;
   TString ResultsName = Form("Results");
   coutputResults = mgr->CreateContainer(
@@ -283,7 +334,7 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
       ResultsName.Data(),
       TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsName.Data()));
-  mgr->ConnectOutput(task, 5, coutputResults);
+  mgr->ConnectOutput(task, 7, coutputResults);
 
   AliAnalysisDataContainer *coutputResultQA;
   TString ResultQAName = Form("ResultQA");
@@ -292,7 +343,7 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
       ResultQAName.Data(),
       TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultQAName.Data()));
-  mgr->ConnectOutput(task, 6, coutputResultQA);
+  mgr->ConnectOutput(task, 8, coutputResultQA);
 
   if (isMC) {
     AliAnalysisDataContainer *coutputTrkCutsMC;
@@ -303,7 +354,17 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 7, coutputTrkCutsMC);
+    mgr->ConnectOutput(task, 9, coutputTrkCutsMC);
+
+    AliAnalysisDataContainer *coutputv0CutsMC;
+    TString v0CutsMCName = Form("V0CutsMC");
+    coutputv0CutsMC = mgr->CreateContainer(
+        //@suppress("Invalid arguments") it works ffs
+        v0CutsMCName.Data(),
+        TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), v0CutsMCName.Data()));
+    mgr->ConnectOutput(task, 10, coutputv0CutsMC);
 
     AliAnalysisDataContainer *coutputAntiTrkCutsMC;
     TString AntiTrkCutsMCName = Form("AntiTrkCutsMC");
@@ -313,7 +374,17 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 8, coutputAntiTrkCutsMC);
+    mgr->ConnectOutput(task, 11, coutputAntiTrkCutsMC);
+
+    AliAnalysisDataContainer *coutputAntiv0CutsMC;
+    TString Antiv0CutsMCName = Form("Antiv0CutsMC");
+    coutputAntiv0CutsMC = mgr->CreateContainer(
+        //@suppress("Invalid arguments") it works ffs
+        Antiv0CutsMCName.Data(),
+        TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), Antiv0CutsMCName.Data()));
+    mgr->ConnectOutput(task, 12, coutputAntiv0CutsMC);
   }
 
   return task;

@@ -258,6 +258,13 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       fPHOSTriggerHelper->ApplyTOFCut(TOFflag);
       fPHOSTriggerHelper->SetDummyRunNumber(dummy_runNo);
     }
+    void SetPHOSTriggerAnalysisMB(Int_t L1input, Int_t L0input, Double_t Ethre, Bool_t isMC, Bool_t TOFflag, Int_t dummy_runNo=-1){
+      fIsPHOSTriggerAnalysis = kFALSE;//this is MB analysis
+      fEnergyThreshold = Ethre;
+      fPHOSTriggerHelper = new AliPHOSTriggerHelper(L1input,L0input,isMC);
+      fPHOSTriggerHelper->ApplyTOFCut(TOFflag);
+      fPHOSTriggerHelper->SetDummyRunNumber(dummy_runNo);
+    }
 
     void SetTriggerMatchingDeltaR(Double_t DeltaR){
       fPHOSTriggerHelper->SetMatchingDeltaR(DeltaR);
@@ -513,7 +520,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 68);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 69);
 };
 
 #endif

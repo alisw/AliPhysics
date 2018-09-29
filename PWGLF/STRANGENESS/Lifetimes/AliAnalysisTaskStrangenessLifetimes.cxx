@@ -374,7 +374,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
             motherPart.SetPDGcode(mother->GetPdgCode());
             motherPart.SetEta(mother->Eta());
             motherPart.SetPt(mother->Pt());
-            motherPart.SetDistOverP(motherDist / mother->P());
+            motherPart.SetDistOverP(motherDist / mother->P() + 1e-16);
             motherPart.SetRadius(motherR);
             fMCvector.push_back(motherPart);
           } else if (mcEvent->IsPhysicalPrimary(ilab)) {
@@ -545,6 +545,9 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
                                   ? posChi2PerCluster
                                   : negChi2PerCluster;
 
+    bool negTOF = nTrack->GetTOFsignal() * 1.e-3 < 100; // in ns, loose cut on TOF beta (<~0.2)
+    bool posTOF = pTrack->GetTOFsignal() * 1.e-3 < 100; // in ns, loose cut on TOF beta (<~0.2)
+
     // Rugh 20-sigma selection band, parametric.
     // K0Short: Enough to parametrize peak broadening with linear function.
     double lUpperLimitK0Short = (5.63707e-01) + (1.14979e-02) * v0Pt;
@@ -615,7 +618,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
       miniV0.SetV0radiusAndLikeSign(v0Radius);
       miniV0.SetLeastXedRowsOverFindable(minXedRowsOverFindable);
       miniV0.SetMaxChi2perCluster(maxChi2PerCluster);
-      miniV0.SetProngsEta(pTrack->Eta(), nTrack->Eta());
+      miniV0.SetProngsEtaTOF(pTrack->Eta(), posTOF, nTrack->Eta(), negTOF);
       miniV0.SetProngsTPCnsigmas(nSigmaPosPion, nSigmaPosProton,
                                  nSigmaNegPion, nSigmaNegProton);
 

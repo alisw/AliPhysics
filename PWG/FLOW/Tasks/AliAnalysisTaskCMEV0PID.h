@@ -196,6 +196,12 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
 //TProfile              *fTPCFQ3xVsCentRun; //!
 //TProfile              *fTPCFQ3yVsCentRun; //!
 
+  TH3F              *fZPASignalPerChVsCent; //!
+  TH3F              *fZPCSignalPerChVsCent; //!
+  TH3F              *fZNASignalPerChVsCent; //!
+  TH3F              *fZNCSignalPerChVsCent; //!
+  TH3F                      *fCentDistVsVz; //!
+ 
 
 
 

@@ -84,7 +84,7 @@ void runAnalysisBC(Int_t nversion = -1, TString period = "LHC15n", TString train
     Analysis->AddPeriodAnalysis(1, sigmaE_hit,1.0,4.0);  // mean energy in range Emin Emax
 	Analysis->AddPeriodAnalysis(5, sigmaNHits,1.0,10.0); // hits in cell in range Emin Emax
 	Analysis->AddPeriodAnalysis(1, sigmaE_hit,1.0,10.0); // energy/hit in range Emin Emax
-	Analysis->AddPeriodAnalysis(5, sigmaNHits,0.11,0.29);  // hits in cell in range Emin Emax
+	Analysis->AddPeriodAnalysis(5, sigmaNHits-1,0.11,0.29);  // hits in cell in range Emin Emax
 
 
 	//..special test for extra high energy fluctuations

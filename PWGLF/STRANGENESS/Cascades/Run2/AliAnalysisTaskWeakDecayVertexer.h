@@ -191,6 +191,12 @@ public:
     void SetMaxPtV0     ( Float_t lMaxPt ) {
         fMaxPtV0 = lMaxPt;
     }
+    void SetForceResetV0s     ( Bool_t lOpt ) {
+        fkForceResetV0s = lOpt;
+    }
+    void SetForceResetCascades     ( Bool_t lOpt ) {
+        fkForceResetCascades = lOpt;
+    }
     void SetCentralityInterval     ( Float_t lMinCent, Float_t lMaxCent ) {
         fMinCentrality = lMinCent;
         fMaxCentrality = lMaxCent;
@@ -266,6 +272,8 @@ private:
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
     Bool_t fkDoExtraEvSels; //if true, rely on AliEventCuts
     //Min/Max Centrality
+    Bool_t fkForceResetV0s;
+    Bool_t fkForceResetCascades;
     Float_t fMinCentrality; //centrality interval to actually regenerate candidates
     Float_t fMaxCentrality; //centrality interval to actually regenerate candidates
     

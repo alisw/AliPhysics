@@ -1245,7 +1245,7 @@ EOF
 
 #ADDED...!!!
   echo "Running CompareFitResultspp2017toMC vs AssocPt track.C"
-    root -b <<EOF #&> CompareFitResultspp2017.log
+    root -b <<EOF &> CompareFitResultspp2017_vsPtAss.log
 .L ${HFCJlocalCodeDir}/CompareFitResultspp2017_vsPtAss.C
 SetDirectoryFitResultPP("${baseDir}/AllPlots/Averages/FitResults/")
 SetDirectoryFitResultsMCPP("${templateDir[${collsyst}]}/FitResults/")

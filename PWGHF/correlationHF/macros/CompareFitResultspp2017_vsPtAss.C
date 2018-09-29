@@ -26,10 +26,10 @@ TString strFitResultMC[2]={"",""};
 
 TString strquantityFile[5]={"NSYield","NSSigma","Pedestal","ASYield","ASSigma"};
 Double_t maxRangePP[8][5]={   //used in L1403. MODIFY THESE!!!
-         {1.8,0.64,2.33,2.0,1.09},
-         {1.8,0.64,2.33,2.0,1.09},
-         {1.8,0.64,2.33,2.0,1.09},
-         {1.8,0.64,2.33,2.0,1.09},
+         {1.7,0.64,2.33,2.1,1.09},
+         {1.7,0.64,2.33,2.1,1.09},
+         {1.7,0.64,2.33,2.1,1.09},
+         {1.7,0.64,2.33,2.1,1.09},
          {1.35,0.64,2.33,2,1.28},
          {1.35,0.64,2.33,2,1.28},
          {1.35,0.64,2.33,2,1.28},
@@ -55,7 +55,7 @@ Double_t minptMC=0.,maxptMC=99.;
 Double_t minptData=0.5,maxptData=3.5; //you have to be tighter than real limits...
 Int_t ncolumns=4;
 Int_t nrows=3;
-Double_t ytitleoffset=2.7,xtitleoffset=2.2;
+Double_t ytitleoffset=2.9,xtitleoffset=2.2;
 Bool_t skip3to5=kTRUE;
 Double_t markersize=1.2;
 Double_t markersizeMC=1.2;
@@ -277,8 +277,8 @@ void Set4x2PadPositions(TCanvas* c){
   innerPadHeight=(1-marginTop-marginBottom)/2.;// this is the height w/o margin, not the real pad height, which differs between inner pads and pads at the "boarders"!!
   Printf("innerPadHeight: %f",innerPadHeight);
   Printf("innerPadWidth: %f",innerPadWidth);
-  Double_t marginLeftForXAxis=0.0;
-  Double_t marginBottomForYAxis=0.0;
+  Double_t marginLeftForXAxis=0.2;
+  Double_t marginBottomForYAxis=0.2;
 
  // Bottom row
 
@@ -441,7 +441,7 @@ TLatex *GetDRapForSystem(Int_t collSystem,Int_t identifier,Int_t includeDEta=0){
     else if(collSystem==1)tlrap=new TLatex(x/gPad->GetWNDC()+gPad->GetLeftMargin(),y/gPad->GetHNDC()+gPad->GetBottomMargin(),str.Data()); 
     tlrap->SetNDC();
     tlrap->SetTextFont(43);
-    tlrap->SetTextSize(27*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
+    tlrap->SetTextSize(24*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
   }  
   tlrap->SetTextAlign(11);
   tlrap->SetName(Form("tlrap_%d",identifier));
@@ -519,9 +519,9 @@ TLatex *GetCollSystem(Int_t collSystem,Int_t identifier){
 
 TLatex *GetALICEtext(Int_t identifier){
   TLatex *alice;
-Double_t x=0.21,y=0.390;
+Double_t x=0.018,y=0.390;
   if(ncolumns==3){
-    x=0.21;
+    x=0.018;
   }
   if(nrows==3){// these are hard coded number from an optimization
     y=0.25;
@@ -533,17 +533,17 @@ Double_t x=0.21,y=0.390;
   }
 
   if(style==-1){
-    alice=new TLatex(0.75,0.85,"ALICE");
+    alice=new TLatex(0.75,0.85,"ALICE Preliminary");
     alice->SetNDC();
     alice->SetTextFont(42);
     alice->SetTextSize(0.03);
     alice->SetTextAlign(11);
   }
   else{
-    alice= new TLatex(0.15/gPad->GetWNDC()+gPad->GetLeftMargin(),0.38/gPad->GetHNDC()+gPad->GetBottomMargin(),"ALICE"); 
+    alice= new TLatex(0.016/gPad->GetWNDC()+gPad->GetLeftMargin(),0.38/gPad->GetHNDC()+gPad->GetBottomMargin(),"ALICE Preliminary"); 
     alice->SetNDC();
     alice->SetTextFont(43);
-    alice->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);// draft 2 was: 28 *...
+    alice->SetTextSize(22*innerPadHeight/referencePadHeight*resizeTextFactor);//0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);// draft 2 was: 28 *...
     alice->SetTextAlign(11);
   }
 
@@ -579,10 +579,10 @@ TLatex* GetDPtText(Int_t binD,Int_t identifier,Int_t addDEta=1){
   else{
     TString strTot=strPtDCanvas[binD];
     if(addDEta==1)strTot.Append("|#Delta#eta| < 1");
-    tlasspt= new TLatex(0.11/gPad->GetWNDC()+gPad->GetLeftMargin(),0.345/gPad->GetHNDC()+gPad->GetBottomMargin(),strTot.Data()); 
+    tlasspt= new TLatex(0.115/gPad->GetWNDC()+gPad->GetLeftMargin(),0.345/gPad->GetHNDC()+gPad->GetBottomMargin(),strTot.Data()); 
     tlasspt->SetNDC();
     tlasspt->SetTextFont(43);
-    tlasspt->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);//  if font 42 is used try this: 0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor) but see notes on top
+    tlasspt->SetTextSize(24*innerPadHeight/referencePadHeight*resizeTextFactor);//  if font 42 is used try this: 0.06/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor) but see notes on top
     Printf("Height pad: %f, scal Height = %f",gPad->GetHNDC(),scaleHeightPads);
   }
   //  TPaveText *tlasspt = new TPaveText(0.012/gPad->GetWNDC()+gPad->GetLeftMargin(),0.26/gPad->GetHNDC()+gPad->GetBottomMargin(),0.3/gPad->GetWNDC()+gPad->GetLeftMargin(),0.28/gPad->GetHNDC()+gPad->GetBottomMargin(),"NDC");
@@ -594,9 +594,9 @@ TLatex* GetDPtText(Int_t binD,Int_t identifier,Int_t addDEta=1){
 
 TLatex* GetTextSide(Int_t variable,Int_t identifier){
   TLatex *tlSide=new TLatex();    
-  Double_t x=0.015,y=0.390;
+  Double_t x=0.18,y=0.390;
   if(ncolumns==3){
-    x=0.015;
+    x=0.18;
   }
   if(nrows==3){// these are hard coded number from an optimization
     y=0.250;
@@ -616,11 +616,11 @@ TLatex* GetTextSide(Int_t variable,Int_t identifier){
         tlSide->SetTextSize(0.03*resizeTextFactor);
       }
       else{
-        tlSide=new TLatex(0.016/gPad->GetWNDC()+gPad->GetLeftMargin(),0.38/gPad->GetHNDC()+gPad->GetBottomMargin(),"Near side");
+        tlSide=new TLatex(0.155/gPad->GetWNDC()+gPad->GetLeftMargin(),0.38/gPad->GetHNDC()+gPad->GetBottomMargin(),"Near side");
         tlSide->SetNDC();
         tlSide->SetTextAlign(11);
         tlSide->SetTextFont(43);
-        tlSide->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);// draft 2 was 28*...
+        tlSide->SetTextSize(22*innerPadHeight/referencePadHeight*resizeTextFactor);// draft 2 was 28*...
       }
     }
   else {
@@ -632,11 +632,11 @@ TLatex* GetTextSide(Int_t variable,Int_t identifier){
       tlSide->SetTextSize(0.03*resizeTextFactor);
     }
     else{
-      tlSide=new TLatex(0.016/gPad->GetWNDC()+gPad->GetLeftMargin(),0.38/gPad->GetHNDC()+gPad->GetBottomMargin(),"Away side");
+      tlSide=new TLatex(0.155/gPad->GetWNDC()+gPad->GetLeftMargin(),0.38/gPad->GetHNDC()+gPad->GetBottomMargin(),"Away side");
       tlSide->SetNDC();
       tlSide->SetTextFont(43);
       tlSide->SetTextAlign(11);
-      tlSide->SetTextSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+      tlSide->SetTextSize(22*innerPadHeight/referencePadHeight*resizeTextFactor);
     }
     
 
@@ -921,14 +921,17 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binD,Int_t quantity,TPad *pd
   grData[0]->SetName(Form("%sPPb",gr1->GetName()));
   grData[0]->SetMarkerColor(colSystem[system]);
   grData[0]->SetLineColor(colSystem[system]);
-  grData[0]->SetLineWidth(2);
+  grData[0]->SetLineWidth(1);
   grData[0]->SetMarkerStyle(markerStyle[system]);
   grData[0]->SetMarkerSize(markersize);
 
   if(textlegendOptions==10){ //Fabiom, only dta legend
-    TLegend *legend= new TLegend(0.24,0.54,0.84,0.62);
+    TLegend *legend= new TLegend(0.24,0.67,0.94,0.75);
     legend->SetLineWidth(0);
     legend->SetLineColor(kWhite);
+    legend->SetTextFont(43);
+    legend->SetTextAlign(12);
+    legend->SetTextSize(22*innerPadHeight/referencePadHeight*resizeTextFactor);
     legend->AddEntry(hData[0],"pp, #sqrt{#it{s}} = 5.02 TeV","lep");
     legend->Draw();   
   }
@@ -996,7 +999,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binD,Int_t quantity,TPad *pd
     if(system==1)hData[0]->GetYaxis()->SetRangeUser(0,maxRangePPb[binD][quantity]);
     
     hData[0]->SetLineColor(colSystem[system]);
-    hData[0]->SetLineWidth(2);
+    hData[0]->SetLineWidth(1);
     hData[0]->SetMarkerColor(colSystem[system]);
     hData[0]->SetMarkerStyle(markerStyle[system]);
     hData[0]->SetMarkerSize(markersize);
@@ -1032,6 +1035,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binD,Int_t quantity,TPad *pd
     hDraw->GetYaxis()->SetLabelSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
     hDraw->GetXaxis()->SetTitleSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
     hDraw->GetXaxis()->SetLabelSize(28*innerPadHeight/referencePadHeight*resizeTextFactor);
+    hDraw->GetYaxis()->SetLabelOffset(0.012);
 
     if(textlegendOptions%10==2||textlegendOptions%10==3||textlegendOptions==10){
       hDraw->SetYTitle(yaxisTitle[quantity].Data());
@@ -1051,6 +1055,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binD,Int_t quantity,TPad *pd
     hData[0]->GetYaxis()->SetTitleSize(0.04);
     hData[0]->GetYaxis()->SetTitleOffset(1.2);
     hData[0]->GetYaxis()->SetLabelSize(0.04);
+    hData[0]->GetYaxis()->SetLabelOffset(0.012);
     hData[0]->GetXaxis()->SetTitleSize(0.04);
     hData[0]->GetXaxis()->SetLabelSize(0.04);
 
@@ -1077,7 +1082,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binD,Int_t quantity,TPad *pd
   hData[0]->SetMarkerColor(colSystem[system]);
   grData[0]->SetMarkerColor(colSystem[system]);
   grData[0]->SetLineColor(colSystem[system]);
-  grData[0]->SetLineWidth(2);
+  grData[0]->SetLineWidth(1);
   grData[0]->SetMarkerStyle(markerStyle[system]);
   grData[0]->SetMarkerSize(markersize);
   grData[0]->Draw("E2");
@@ -1164,7 +1169,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binD,Int_t quantity,TPad *pd
       grMC[kmc]->SetName(Form("%s%s",grMC1[kmc]->GetName(),strModelDir[kmc].Data()));
       grMC[kmc]->SetMarkerColor(colSystem[system]);
       grMC[kmc]->SetLineColor(colSystem[system]);
-      grMC[kmc]->SetLineWidth(2);
+      grMC[kmc]->SetLineWidth(1);
       grMC[kmc]->SetMarkerStyle(markerStyle[system]);
       grMC[kmc]->SetMarkerSize(markersize);
 
@@ -1210,7 +1215,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binD,Int_t quantity,TPad *pd
 	hMC[kmc]->Draw("same");
       }
       hMC[kmc]->SetLineColor(modelColors[kmc]);
-      hMC[kmc]->SetLineWidth(2);
+      hMC[kmc]->SetLineWidth(1);
       if(drawMCasLines==1){
 	hMC[kmc]->SetLineStyle(2);
       }
@@ -1219,7 +1224,7 @@ TCanvas* CompareDatatoModels(Int_t collsystem,Int_t binD,Int_t quantity,TPad *pd
       hMC[kmc]->SetMarkerSize(markersizeMC);
       grMC[kmc]->SetMarkerColor(modelColors[kmc]);
       grMC[kmc]->SetLineColor(modelColors[kmc]);
-      grMC[kmc]->SetLineWidth(2);
+      grMC[kmc]->SetLineWidth(1);
       grMC[kmc]->SetMarkerStyle(modelMarkerStyle[kmc]);
       grMC[kmc]->SetFillStyle(3001+kmc);
       grMC[kmc]->SetFillColor(modelColors[kmc]);

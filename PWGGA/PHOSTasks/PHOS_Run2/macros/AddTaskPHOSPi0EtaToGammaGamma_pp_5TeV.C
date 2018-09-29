@@ -108,6 +108,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
   else if(L0input == 17) Ethre = 0.0;//LHC17p//threshold was s et to 4 GeV, but efficiency can be measured down to 3 GeV
 
   if(trigger & AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,ApplyTOFTrigger,-1);
+  else if(trigger & AliVEvent::kINT7) task->SetPHOSTriggerAnalysisMB(L1input,L0input,Ethre,isMC,ApplyTOFTrigger,-1);
   if(kMC && (trigger & AliVEvent::kPHI7)) trigger = AliVEvent::kINT7;//change trigger selection in MC when you do PHOS trigger analysis.
   if(ForceActiveTRU) task->SetForceActiveTRU(L1input,L0input,Ethre,isMC);//this is to measure rejection factor from cluster energy kPHI7/kINT7 with same acceptance.
 

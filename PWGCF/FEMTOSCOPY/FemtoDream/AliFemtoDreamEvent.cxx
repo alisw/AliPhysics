@@ -35,7 +35,8 @@ AliFemtoDreamEvent::AliFemtoDreamEvent()
       fHasVertex(false),
       fHasMagField(false),
       fisSelected(false),
-      fEstimator(AliFemtoDreamEvent::kRef08) {
+      fEstimator(AliFemtoDreamEvent::kRef08),
+      fspher(0) {
 
 }
 
@@ -62,7 +63,8 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA,
       fHasVertex(false),
       fHasMagField(false),
       fisSelected(false),
-      fEstimator(kRef08) {
+      fEstimator(kRef08),
+      fspher(0) {
   if (mvPileUp) {
     //For pPb this is necessary according to DPG Processing status news
     //(week 29 April - 5 May 2017)
@@ -123,6 +125,7 @@ AliFemtoDreamEvent &AliFemtoDreamEvent::operator=(
   fHasMagField = obj.fHasMagField;
   fisSelected = obj.fisSelected;
   fEstimator = obj.fEstimator;
+  fspher = obj.fspher;
   return (*this);
 }
 
@@ -160,6 +163,8 @@ void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
   this->fV0AMult = vZERO->GetMTotV0A();
   this->fV0CMult = vZERO->GetMTotV0C();
   this->fRefMult08 = header->GetRefMultiplicityComb08();
+  this->fspher = CalculateSphericityEvent(evt);
+
   AliMultSelection *MultSelection = 0x0;
   MultSelection = (AliMultSelection *) evt->FindListObject("MultSelection");
   if (!MultSelection) {
@@ -264,4 +269,66 @@ int AliFemtoDreamEvent::GetMultiplicity() {
   }
 
   return mult;
+}
+
+double AliFemtoDreamEvent::CalculateSphericityEvent(AliAODEvent *evt) {
+//Initializing
+  double ptTot = 0.;
+  double s00 = 0.; //elements of the sphericity matrix taken form EPJC72:2124
+  double s01 = 0.;
+  double s10 = 0.;
+  double s11 = 0.;
+
+  int  numOfTracks = evt->GetNumberOfTracks();
+  if(numOfTracks<3) return -9999.;
+
+  int nTracks = 0;
+  for (int iTrack = 0; iTrack < numOfTracks; iTrack++) {
+
+    AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(evt->GetTrack(iTrack));
+
+    double pt = aodtrack->Pt();
+    double px = aodtrack->Px();
+    double py = aodtrack->Py();
+    double pz = aodtrack->Pz();
+    double eta = aodtrack->Eta();
+
+    ptTot +=pt;
+
+    s00 +=px*px/pt;
+    s01 +=px*py/pt;
+    s10  =s01;
+    s11 +=py*py/pt;
+    nTracks++;
+  }
+
+  //normalize to total Pt to obtain a linear form:
+  if(ptTot == 0.) return -9999.;
+  s00 /= ptTot;
+  s11 /= ptTot;
+  s10 /= ptTot;
+
+  //Calculate the trace of the sphericity matrix:
+  double T = s00+s11;
+  //Calculate the determinant of the sphericity matrix:
+  double D = s00*s11 - s10*s10;//S10 = S01
+
+  //Calculate the eigenvalues of the sphericity matrix:
+  double lambda1 = 0.5*(T + std::sqrt(T*T - 4.*D));
+  double lambda2 = 0.5*(T - std::sqrt(T*T - 4.*D));
+
+  if((lambda1 + lambda2) == 0.) return -9999.;
+
+  double spt = -1.;
+
+  if(lambda2>lambda1)
+    {
+      spt = 2.*lambda1/(lambda1+lambda2);
+    }
+  else
+    {
+      spt = 2.*lambda2/(lambda1+lambda2);
+    }
+
+  return spt;
 }

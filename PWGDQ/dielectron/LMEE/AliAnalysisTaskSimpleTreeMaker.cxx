@@ -378,10 +378,10 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 		if(fUseTPCcorr){
 			fTree->Branch("EsigTPCcorr",     &EnSigmaTPCcorr);
 		}
+		fTree->Branch("EsigTOF",           &EnSigmaTOF);
 		if(fUseTOFcorr){
 			fTree->Branch("EsigTOFcorr",     &EnSigmaTOFcorr);
 		}
-		fTree->Branch("EsigTOF",           &EnSigmaTOF);
 		fTree->Branch("PsigITS",           &PnSigmaITS);
 		fTree->Branch("PsigTPC",           &PnSigmaTPC);
 		fTree->Branch("PsigTOF",           &PnSigmaTOF);
@@ -750,7 +750,6 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 				EnSigmaTPCcorr -= AliDielectronPID::GetCntrdCorr(track);
 				EnSigmaTPCcorr /= AliDielectronPID::GetWdthCorr(track);
 			}
-
 			EnSigmaITS = -999;
 			if(fHasSDD){
 				EnSigmaITS = fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kElectron);
@@ -762,7 +761,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 				}
 			}
 			EnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kElectron);
-			if(fUseTOFcorr){
+			EnSigmaTOFcorr = EnSigmaTOF;
+			if(fUseTOFcorr && (EnSigmaTOF != -999)){
 				EnSigmaTOFcorr = EnSigmaTOF;
 				EnSigmaTOFcorr -= AliDielectronPID::GetCntrdCorrTOF(track);
 				EnSigmaTOFcorr /= AliDielectronPID::GetWdthCorrTOF(track);

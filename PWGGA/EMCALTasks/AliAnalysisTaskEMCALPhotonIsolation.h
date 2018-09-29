@@ -287,6 +287,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH3F                       * fPtvsDetavsDphi;                 ///<  Cluster-track matching vs. cluster energy
   TH3F                       * fPtvsTrackPtvsDeta;              ///<  Cluster-track matching Deta vs. track pT vs. cluster energy
   TH3F                       * fPtvsTrackPtvsDphi;              ///<  Cluster-track matching Dphi vs. track pT vs. cluster energy
+  TH2F                       * fPtTrackClusRatiovsPt;           ///<  Track pT over Cluster pT vs. cluster energy
+  TH2F                       * fPtTrackClusRatiovsPtWithCPV;    ///<  Track pT over Cluster pT vs. cluster energy with CPV applied
   TH2F                       * fClusEvsClusT;                   //!<! Cluster Energy vs Cluster Time ---QA
   TH1F                       * fPTbeforeNonLinScaling;          //!<! Pt distribution (before non-lin scaling in MC, when applied)
   TH1F                       * fPT;                             //!<! Pt distribution

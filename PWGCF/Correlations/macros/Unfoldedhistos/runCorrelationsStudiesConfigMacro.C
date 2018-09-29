@@ -29,6 +29,7 @@ void load2015oLIRpass4RunNumbers();
 void load2015oHIRRunNumbers();
 void load2015oHIRTestRunNumber();
 void load2016kTestRunNumber();
+void load2013bTestRunNumber();
 void loadAMPT2015oHIRTestRunNumber();
 void load2017nRunNumbers();
 void load2017nMCRunNumbers();
@@ -74,10 +75,11 @@ void runCorrelationsStudiesConfigMacro() {
   // load2010hBPPRunNumbers();
   // load2010hMCRunNumbers();
   // load2016kTestRunNumber();
+  load2013bTestRunNumber();
   // loadMCAMPT2010hCentrality("0-5");
   // loadAMPT2015oHIRTestRunNumber();
   // load2017nRunNumbers();
-  loadAMPT2760RunNumbers();
+  // loadAMPT2760RunNumbers();
 
   szRunPrefix = bMC ? "" : "000";
 
@@ -309,6 +311,23 @@ void loadMC2010h11a10a_bisBPPRunNumbers() {
   for (Int_t run = 0; run < nNoOf2010hBppRuns; run++)
     listOfActiveRuns.Add(new TObjString(bpp2010hRunNumbers[run]));
 }
+
+void load2013bTestRunNumber() {
+  bUseESD                    = kTRUE;
+  bUseAOD                    = !bUseESD;
+
+  /* teh GRID working directory */
+  szGridWorkingDir = "CorrelationStudies_2013b";
+
+  /* 2013b */
+  szDataDir = "/alice/data/2013/LHC13b";
+
+  /* 2013B */
+  szDataPattern = "*ESDs/pass3/*/AliESDs.root";
+
+  listOfActiveRuns.Add(new TObjString("195344"));
+}
+
 
 void loadMCAMPT2010h12A11RunNumbers() {
   bUseESD                    = kTRUE;

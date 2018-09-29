@@ -1,8 +1,8 @@
 //TString generatorNameForMCSignal  = "pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7";
-TString generatorNameForMCSignal  = "Hijing;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Hijing_0;Pythia CC_8;Pythia B_8;Pythia BB_8";
+TString generatorNameForMCSignal  = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia BB_8;Pythia B_8";
 //TString generatorNameForMCSignal  = "Pythia CC_1;Pythia BB_1;Pythia B_1;Jpsi2ee_1;B2JPsi2ee_1";
 // TString generatorNameForMCSignal  = "Hijing_0";
-TString generatorNameForULSSignal = "Hijing;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Hijing_0;Pythia CC_8;Pythia B_8;Pythia BB_8";
+TString generatorNameForULSSignal = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia BB_8;Pythia B_8";
 //TString generatorNameForULSSignal = "";
 
 
@@ -183,7 +183,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t selTr, Int_t selPID, Bool_t u
   LMEECutLib* LMcutlib = new LMEECutLib();
 
   std::cout << "Get CutTr: "<<selTr<<" CutPID: "<<selPID<<std::endl;
-  anaFilter->AddCuts(LMcutlib->GetTrackCuts(selTr, selPID,useAODFilterCuts));
+  anaFilter->AddCuts(LMcutlib->GetTrackCuts(selTr, selPID, 0, useAODFilterCuts));     // Setting MVA cut for efficiency to 0 - no efficiency correction for MVA cut here
   anaFilter->SetName(TString::Format("CutTr%d_PID%d",selTr, selPID));
   anaFilter->Print();
   return anaFilter;
@@ -217,8 +217,9 @@ std::vector<Bool_t> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* ta
   AliDielectronSignalMC eleFinalState("eleFinalState","eleFinalState");
   eleFinalState.SetLegPDGs(11,1);//dummy second leg (never MCkTRUE)\n"
   eleFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
-  eleFinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-
+//  eleFinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);    //in slight O(1%) disagreement with ML tree maker non-conversion electrons
+  eleFinalState.SetMotherPDGs(22,22,kTRUE,kTRUE); // this line leads to results in agreement with ML tree maker when counting non-conversion electrons
+  
   AliDielectronSignalMC eleFinalStateFromSameMotherMeson("eleFinalStateFromSameMotherMeson","eleFinalStateFromSameMotherMeson");
   eleFinalStateFromSameMotherMeson.SetLegPDGs(11,1);//dummy second leg (never MCkTRUE)\n"
   eleFinalStateFromSameMotherMeson.SetCheckBothChargesLegs(kTRUE,kTRUE);
@@ -276,7 +277,7 @@ void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
     AliDielectronSignalMC pair_sameMother("sameMother","sameMother");
     pair_sameMother.SetLegPDGs(11,-11);
     pair_sameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
-    pair_sameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+//    pair_sameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
     //mother
     pair_sameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
     pair_sameMother.SetMotherPDGs(22,22,kTRUE,kTRUE); // exclude conversion electrons. should have no effect on final state ele.

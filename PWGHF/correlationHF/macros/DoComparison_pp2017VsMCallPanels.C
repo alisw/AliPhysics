@@ -53,7 +53,7 @@ TString pthadron[nbinAssocpt]={"0.3to99.0","0.3to1.0","1.0to99.0","1.0to99.0","1
 TString strmesonpt[nbinDpt]={"3to5","5to8","8to16","16to24"};
 TString strmesonMCpt[nbinDpt]={"3To5","5To8","8To16","16To24"};
 Double_t minYaxis[nbinAssocpt]={-0.7,-0.7,-0.45,-0.39,-0.45,-0.23}; // or -0.6 for all  
-Double_t maxYaxis[nbinAssocpt]={5.4,1.9,3.4,3.4,1.4,1.1};// or 2.9 for the first and 1.9 for the last
+Double_t maxYaxis[nbinAssocpt]={5.4,1.9,3.4,3.4,1.48,1.1};// or 2.9 for the first and 1.9 for the last
 //Double_t maxYaxis[nbinAssocpt]={5.7,2.9,3.2};// or 2.9 for the first and 1.9 for the last  //used so far
 //Double_t maxYaxis[nbinAssocpt]={4.8,2.9,3.2};// or 2.9 for the first and 1.9 for the last
 //Double_t maxYaxis[nbinAssocpt]={3.8,1.9,2.2};// or 2.9 for the first and 1.9 for the last
@@ -485,6 +485,7 @@ void DoComparison_pp2017VsMCallPanels(){
 	  histo[iset][kassoc][jmes]->SetMarkerColor(4); 
 	  histo[iset][kassoc][jmes]->SetMarkerStyle(21); 
 	  histo[iset][kassoc][jmes]->SetLineColor(4);  
+    histo[iset][kassoc][jmes]->SetLineWidth(1);  
 	  
 	  subtractedhisto[iset][kassoc][jmes] = GetPedestalHistoAndSystAndSubtractPed(iset,kassoc,jmes,histo[iset][kassoc][jmes],err[iset][kassoc][jmes],suberr[iset][kassoc][jmes],"CanvasBaselineVariationTrendPedestal",grbase[iset][kassoc][jmes],grv2[iset][kassoc][jmes]);
 	  Printf("Histo subtrcated obtained");
@@ -493,9 +494,12 @@ void DoComparison_pp2017VsMCallPanels(){
 	  if(grv2[iset][kassoc][jmes]){
 	    Printf("SHOULD NOT ENTER HERE");
 	    grv2[iset][kassoc][jmes]->SetFillStyle(3002);
-	    grv2[iset][kassoc][jmes]->SetFillColor(kMagenta);  
+	    grv2[iset][kassoc][jmes]->SetFillColor(kMagenta);   
+      grv2[iset][kassoc][jmes]->SetLineWidth(1); 
+
 	  }
-	  suberr[iset][kassoc][jmes]->SetLineColor(kBlack);
+	  suberr[iset][kassoc][jmes]->SetLineColor(kBlack); 
+    suberr[iset][kassoc][jmes]->SetLineWidth(1); 
 	}
 	
 
@@ -642,17 +646,20 @@ void DoComparison_pp2017VsMCallPanels(){
       if(iassoc==2 && jDpt==0)SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.04,0.2,22);//0.07
       if(iassoc==2 && jDpt==1)SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.04,0.2,22);//0.085
       if(iassoc==2 && jDpt==2)SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.04,0.2,22);//0.078
-      if(iassoc!=0 && jDpt==3)SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.04,0.2,22);//0.078
+      if(iassoc==2 && jDpt==3)SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.04,0.104,22);//0.078
+      if(iassoc!=0 && iassoc!=3 && jDpt==3)SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.04,0.2,22);//0.078
       if(iassoc>=4 && jDpt==0)SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.04,0.2,22);//0.07
       if(iassoc>=4 && jDpt==1)SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.04,0.2,22);//0.085
       if(iassoc>=4 && jDpt==2)SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.04,0.2,22);//0.078
-      
+      if(iassoc>=4 && jDpt==3)SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.04,0.2,22);//0.078
+
 
       //     if((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1==1){
       //ltscale[0][iassoc][jDpt]->SetY(0.11/gPad->GetHNDC()+gPad->GetBottomMargin());
       //}
       ltscale[0][iassoc][jDpt]->Draw();
       for(Int_t kmod=1;kmod<nSets;kmod++){
+  if(includeset[kmod])subtractedhisto[kmod][iassoc][jDpt]->SetLineWidth(1);
 	if(includeset[kmod])subtractedhisto[kmod][iassoc][jDpt]->Draw("hist same c");
       }
 //       subtractedhisto[1][iassoc][jDpt]->Draw("hist same c");//Perugia0
@@ -676,7 +683,7 @@ void DoComparison_pp2017VsMCallPanels(){
       TPaveText *pvKineInfo = GetPaveKineInfo(jDpt,iassoc,(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1);
       TPaveText *pvKineInfo2 = GetPaveKineInfo2((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1);
       TLegend *legendbase=GetLegendBaselines(grbase[0][iassoc][firstDpt],(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1);
-      if(jDpt==0 && iassoc==0) legendbase->Draw();
+      if(jDpt==3 && iassoc==0) legendbase->Draw();
       //   if(jDpt==1 && iassoc==0) legendbase->Draw();
       if((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1==1)alice->Draw();
       pvKineInfo->Draw("same");
@@ -684,7 +691,7 @@ void DoComparison_pp2017VsMCallPanels(){
       //if((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1==1)pvKineInfo2->Draw("same");
       if(jDpt==0 && iassoc==0)pvKineInfo2->Draw("same");
 
-      if(jDpt==0 && iassoc==3) legendbase->Draw();
+      if(jDpt==3 && iassoc==3) legendbase->Draw();
       //   if(jDpt==1 && iassoc==0) legendbase->Draw();
       if((nbinDpt-firstDpt)*(iassoc-3)+jDpt-firstDpt+1==1)alice->Draw();
       pvKineInfo->Draw("same");
@@ -1005,7 +1012,7 @@ void SetScaleUncertaintyPositionAndSize(TLatex *tlpp,Float_t xx,Float_t yy,Float
 }
 
 TPaveText *GetALICEpavetext(Int_t identifier){
-   TPaveText *alice = new TPaveText(0.157/gPad->GetWNDC()+gPad->GetLeftMargin(),0.195/gPad->GetHNDC()+gPad->GetBottomMargin(),0.29/gPad->GetWNDC()+gPad->GetLeftMargin(),0.28/gPad->GetHNDC()+gPad->GetBottomMargin(),"NDC");
+   TPaveText *alice = new TPaveText(0.00/gPad->GetWNDC()+gPad->GetLeftMargin(),0.195/gPad->GetHNDC()+gPad->GetBottomMargin(),0.29/gPad->GetWNDC()+gPad->GetLeftMargin(),0.28/gPad->GetHNDC()+gPad->GetBottomMargin(),"NDC");
    cout<<"gPad->GetLeftMargin()="<<gPad->GetLeftMargin()<<"  gPad->GetBottomMargin()="<<gPad->GetBottomMargin()<<"   gPad->GetWNDC="<<gPad->GetWNDC()<<"  gPad->GetHNDC()="<<gPad->GetHNDC()<<"  totX="<<0.33/gPad->GetWNDC()+gPad->GetLeftMargin()<<"  totY="<<0.255/gPad->GetHNDC()+gPad->GetBottomMargin()<<endl;
    // TPaveText *alice = new TPaveText(0.78,0.77,0.9,0.83,"NDC");
   //TPaveText *alice = new TPaveText(0.012/gPad->GetWNDC()+gPad->GetLeftMargin(),0.26/gPad->GetHNDC()+gPad->GetBottomMargin(),0.3/gPad->GetWNDC()+gPad->GetLeftMargin(),0.28/gPad->GetHNDC()+gPad->GetBottomMargin(),"NDC");
@@ -1013,8 +1020,8 @@ TPaveText *GetALICEpavetext(Int_t identifier){
   SetPaveStyle(alice);
   alice->SetTextFont(43);
   //  alice->SetTextSize(0.07/(gPad->GetHNDC())*scaleHeightPads);
-  alice->SetTextSize(26*innerPadHeight/referencePadHeight*resizeTextFactor);
-  alice->AddText("ALICE");//commented
+  alice->SetTextSize(24*innerPadHeight/referencePadHeight*resizeTextFactor);
+  alice->AddText("ALICE Preliminary");//commented
   // fitvalueslow->AddText("D meson (average D^{0},D^{+},D^{*+}) - charged particle correlation");
   alice->SetName(Form("paveALICE_%d",identifier));
   return alice;
@@ -1022,7 +1029,7 @@ TPaveText *GetALICEpavetext(Int_t identifier){
 
 TPaveText *GetAveragepavetext(Int_t identifier){
   //TPaveText* pvAverage = new TPaveText(0.012/gPad->GetWNDC()+gPad->GetLeftMargin(),0.26/gPad->GetHNDC()+gPad->GetBottomMargin(),0.3/gPad->GetWNDC()+gPad->GetLeftMargin(),0.25/gPad->GetHNDC()+gPad->GetBottomMargin(),"NDC");
-  TPaveText *pvAverage = new TPaveText(0.005/gPad->GetWNDC()+gPad->GetLeftMargin(),0.195/gPad->GetHNDC()+gPad->GetBottomMargin(),0.17/gPad->GetWNDC()+gPad->GetLeftMargin(),0.28/gPad->GetHNDC()+gPad->GetBottomMargin(),"NDC");
+  TPaveText *pvAverage = new TPaveText(0.005/gPad->GetWNDC()+gPad->GetLeftMargin(),0.130/gPad->GetHNDC()+gPad->GetBottomMargin(),0.17/gPad->GetWNDC()+gPad->GetLeftMargin(),0.28/gPad->GetHNDC()+gPad->GetBottomMargin(),"NDC");
   // TPaveText * pvAverage= new TPaveText(0.22,0.77,0.64,0.83,"NDC");
   //0.21,0.83,0.5,0.863,"NDC");
   SetPaveStyle(pvAverage);
@@ -1102,7 +1109,7 @@ TPaveText *GetPaveKineInfo2(Int_t identifier){
   //  TPaveText *pvKineInfo = new TPaveText(0.4,0.56,0.7,0.65,"NDC");//in pad 0
   //  TPaveText *pvKineInfo = new TPaveText(0.24,0.56,0.6,0.65,"NDC");//in pad 0
   // TPaveText *pvKineInfo = new TPaveText(0.01,0.6,0.5,0.8,"brNDC");//in pad 1
-TPaveText *  pvKineInfo = new TPaveText(0.005/gPad->GetWNDC()+gPad->GetLeftMargin(),0.197/gPad->GetHNDC()+gPad->GetBottomMargin(),0.19/gPad->GetWNDC()+gPad->GetLeftMargin(),0.21/gPad->GetHNDC()+gPad->GetBottomMargin(),"NDC");
+TPaveText *  pvKineInfo = new TPaveText(0.005/gPad->GetWNDC()+gPad->GetLeftMargin(),0.075/gPad->GetHNDC()+gPad->GetBottomMargin(),0.19/gPad->GetWNDC()+gPad->GetLeftMargin(),0.21/gPad->GetHNDC()+gPad->GetBottomMargin(),"NDC");
   
   SetPaveStyle(pvKineInfo);
   pvKineInfo->SetTextAlign(12);
@@ -1116,7 +1123,7 @@ TPaveText *  pvKineInfo = new TPaveText(0.005/gPad->GetWNDC()+gPad->GetLeftMargi
   return pvKineInfo;
 }
 TLegend *GetLegendBaselines(TGraphAsymmErrors *gpp,Int_t identifier){
-  TLegend * legend = new TLegend(0.34,0.39,0.55,0.47);//pad 0
+  TLegend * legend = new TLegend(0.15,0.67,0.55,0.75);//pad 0
   //  TLegend * legend = new TLegend(0.40,0.45,0.85,0.55);//pad 1
   // TLegend * legend = new TLegend(0.40,0.6,0.85,0.67);
   // TLegend * legend = new TLegend(0.40,0.64,0.85,0.72);
@@ -1127,7 +1134,7 @@ TLegend *GetLegendBaselines(TGraphAsymmErrors *gpp,Int_t identifier){
   legend->SetTextFont(43);
   legend->SetTextAlign(12);
   // legend->SetTextSize(0.055/(gPad->GetHNDC())*scaleHeightPads);
-  legend->SetTextSize(22*innerPadHeight/referencePadHeight*resizeTextFactor);// settings for font 42: 0.07/(gPad->GetHNDC())*scaleHeight
+  legend->SetTextSize(20*innerPadHeight/referencePadHeight*resizeTextFactor);// settings for font 42: 0.07/(gPad->GetHNDC())*scaleHeight
  
   legend->AddEntry(gpp,"baseline-subtraction uncertainty","f");
   legend->SetName(Form("LegendBaselineUncPPandpp_%d",identifier));
