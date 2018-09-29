@@ -13,8 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
 //////////////////////////////////////////////////////////////////////////
 //                                                                      //
 // aliroot                                                              //
@@ -33,19 +31,22 @@
 //////////////////////////////////////////////////////////////////////////
 
 //Standard Root includes
+#include <RVersion.h>
+#include <Riostream.h>
 #include <TROOT.h>
+#include <TInterpreter.h>
 #include <TRint.h>
 #include <TFile.h>
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
 #include <AliRun.h>
-#include "Riostream.h"
-#include "ARVersion.h"
-// STD
+#endif
+#include <AliLog.h>
+#include <ARVersion.h>
 #include <iostream>
 #include <algorithm>
 #include <sstream>
 #include <stdexcept>
 #include <functional>
-#include <AliLog.h>
 #include <sys/resource.h>
 #include <stdlib.h>
 #include <string>
@@ -127,13 +128,18 @@ int main(int argc, char **argv)
       return 0;
     }    
   }
-  
-  // Create new configuration 
-  
-  new AliRun("gAlice","The ALICE Off-line Simulation Framework");
+
+  // Create new configuration
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
+  // ROOT 5: aliroot is linked to the necessary libraries
+  new AliRun("gAlice", "The ALICE Off-line Simulation Framework");
+#else
+  // ROOT 6+: aliroot has minimal dependencies: init gAlice through the interpreter
+  gInterpreter->ProcessLine("new AliRun(\"gAlice\", \"The ALICE Off-line Simulation Framework\");");
+#endif
   AliLog::GetRootLogger();  // force AliLog to initialize at start time
   // Start interactive geant
-  
+
   TRint *theApp = new TRint("aliroot", &argc, argv);
 #ifdef FORTRAN_G95
   g95_runtime_start();
