@@ -1022,6 +1022,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 												if(fTPCnSigma>CutNsigma[0] && fTPCnSigma<CutNsigma[1] && m20>CutM20[0] && m20<CutM20[1]){ // TPC nsigma & shower shape cut
 																fEopPt_ele_tight -> Fill(TrkPt,eop);
 																if(ilabelM<NpureMC){fEopPt_ele_tight_PYTHIA -> Fill(TrkPt,eop);}
+																if(pid_eleB || pid_eleD){fHist_eff_M20 -> Fill(TrkPt);}
 
 																if(eop>CutEop[0] && eop<CutEop[1]){ // E/p cut
 																				if(pid_eleB) fHistPt_HFE_MC_B -> Fill(track->Pt());
@@ -1032,7 +1033,6 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 																								else {fHistPt_HFE_emb -> Fill(track->Pt());}
 																								fHistPt_HFE_Gen -> Fill(fMCTrackpart->Pt());
 																								fHistPt_HFE_GenvsReco -> Fill(TrkPt,fMCTrackpart->Pt());
-																								fHist_eff_M20 -> Fill(TrkPt);
 																				}
 
 																				fHistPt_Inc->Fill(track->Pt());
