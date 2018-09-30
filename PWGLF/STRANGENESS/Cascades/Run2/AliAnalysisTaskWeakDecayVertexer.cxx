@@ -405,7 +405,7 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
             return;
         }
         
-        if( lPercentile>fMinCentrality && lPercentile<fMaxCentrality ) {
+        if( lPercentile>fMaxCentrality || lPercentile<fMinCentrality ) {
             //Event outside desired window
             PostData(1, fListHist    );
             return;
