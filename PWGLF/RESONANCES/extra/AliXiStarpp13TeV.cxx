@@ -391,8 +391,8 @@ void AliXiStarpp13TeV::XiStarInit()
     else fEventsToMix = 10; // original 40 jisong
 
     // multiplicity edges for event mixing bins
-    fMultLimits[0]=0, fMultLimits[1]=5, fMultLimits[2]=10, fMultLimits[3]=15, fMultLimits[4]=20, fMultLimits[5]=25;
-    fMultLimits[6]=30, fMultLimits[7]=35, fMultLimits[8]=40, fMultLimits[9]=45, fMultLimits[10]=50, fMultLimits[11]=150;
+    fMultLimits[0]=0, fMultLimits[1]=1, fMultLimits[2]=5, fMultLimits[3]=10, fMultLimits[4]=15, fMultLimits[5]=20;
+    fMultLimits[6]=30, fMultLimits[7]=40, fMultLimits[8]=50, fMultLimits[9]=70, fMultLimits[10]=100, fMultLimits[11]=150;
 
 
     fEC = new AliXiStarpp13TeVEventCollection **[fZvertexBins];
@@ -1300,7 +1300,7 @@ void AliXiStarpp13TeV::Exec(Option_t *)
 
     // set Multiplicity bin
     for(Int_t i=0; i<fMultBins; i++) {
-        if( ( myTracks > fMultLimits[i]) && ( myTracks <= fMultLimits[i+1]) ) {
+        if( ( lPerc > fMultLimits[i]) && ( lPerc <= fMultLimits[i+1]) ) {
             mBin=i;
             break;
         }
