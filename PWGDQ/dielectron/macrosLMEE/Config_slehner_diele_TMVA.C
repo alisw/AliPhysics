@@ -26,7 +26,7 @@ AliDielectron* Config_slehner_diele_TMVA(
   TString name=Form("DieleTr%d_PID%d_MVA%d",trCut,PIDCut, MVACut);
   cout<<"Diele name: "<<name.Data()<<endl;
   AliDielectron *die =  new AliDielectron(Form("%s",name.Data()), Form("Name: %s",name.Data()));
-
+  
   if(kMix && !(die->GetHasMC()) ){ // need second since there is a problem when mixing MC events (TRef?)
     AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
 

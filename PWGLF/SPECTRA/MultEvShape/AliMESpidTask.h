@@ -2,10 +2,10 @@
 #define ALIMESPIDTASK_H
 
 /////////////////////////////////////////////////////////////////////////////
-//  PID task for Multiplicity and Event Shape group //
+//  PID task for Multiplicity and Event Shape group                       //
 //  Authors:                                                              //
-//    Cristi Andrei <Cristian.Andrei@cern.ch>         //
-//                                                                             //
+//    Cristi Andrei <Cristian.Andrei@cern.ch>                             //
+//                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
 #ifndef ALIMESBASETASK_H

@@ -56,7 +56,7 @@ done;
 echo "</div>" >> $outputHtml
 
 if [ $heightDraw -gt 0 ] ; then
-## echo "<div class=\"rightDiv\">"  >> $outputHtml
+## echo "<div class=\"rightDiv\" id=\"canvasDiv\">"  >> $outputHtml
     echo "  <canvas width=\"800\" height=\"$heightDraw\"  id=\"canvasDraw\"></canvas>"  >> $outputHtml
     echo "</div>"  >> $outputHtml
     echo ""  >> $outputHtml

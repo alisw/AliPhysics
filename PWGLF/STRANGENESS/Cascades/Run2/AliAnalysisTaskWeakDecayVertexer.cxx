@@ -405,7 +405,7 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
             return;
         }
         
-        if( lPercentile>fMinCentrality && lPercentile<fMaxCentrality ) {
+        if( lPercentile>fMaxCentrality || lPercentile<fMinCentrality ) {
             //Event outside desired window
             PostData(1, fListHist    );
             return;
@@ -585,7 +585,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
         //Track pre-selection: clusters
         Float_t lThisTrackLength = -1;
         if (esdTrack->GetInnerParam()) lThisTrackLength = esdTrack->GetLengthInActiveZone(1, 2.0, 220.0, b);
-        if (esdTrack->GetTPCNcls() < 70 && lThisTrackLength<80 ) continue;
+        if (esdTrack->GetTPCNcls() < 70 && lThisTrackLength<80 &&fkExtraCleanup ) continue;
         
         Double_t d=esdTrack->GetD(xPrimaryVertex,yPrimaryVertex,b);
         if (TMath::Abs(d)<fV0VertexerSels[2]) continue;
@@ -781,7 +781,9 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
         
         if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
         if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
-        if ( ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) && lSmallestTrackLength<80 ) continue;
+        if ( ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) && lSmallestTrackLength<80 ){
+            if(fkExtraCleanup) continue;
+        }
         
         //7) Daughter eta
         Double_t lNegEta = nTrack->Eta();
@@ -815,7 +817,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
         //Track pre-selection: Track Quality
         Float_t lThisTrackLength = -1;
         if (esdtr->GetInnerParam()) lThisTrackLength = esdtr->GetLengthInActiveZone(1, 2.0, 220.0, b);
-        if (esdtr->GetTPCNcls() < 70 && lThisTrackLength<80 ) continue;
+        if (esdtr->GetTPCNcls() < 70 && lThisTrackLength<80 && fkExtraCleanup ) continue;
         
         if (TMath::Abs(esdtr->GetD(xPrimaryVertex,yPrimaryVertex,b))<fCascadeVertexerSels[3]) continue;
         trk[ntr++]=i;
@@ -920,7 +922,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
             if (dca > fCascadeVertexerSels[4]) continue;
             
             //eta cut - test
-            if (TMath::Abs(pbt->Eta())>0.8) continue;
+            if (TMath::Abs(pbt->Eta())>0.8 && fkExtraCleanup) continue;
             
             AliESDcascade cascade(*pv0,*pbt,bidx); //constucts a cascade candidate
             //PH         if (cascade.GetChi2Xi() > fChi2max) continue;
