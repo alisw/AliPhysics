@@ -39,8 +39,6 @@
 #include "AliAnalysisTaskEmcalJetPbPbTriggerTests.h"
 #include "AliEmcalAnalysisFactory.h"
 #include "AliEmcalJet.h"
-#include "AliEmcalTriggerDecisionContainer.h"
-#include "AliEmcalTriggerStringDecoder.h"
 #include "AliInputEventHandler.h"
 #include "AliJetContainer.h"
 #include "AliLog.h"
