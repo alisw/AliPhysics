@@ -847,7 +847,9 @@ void AliAnalysisTaskTOFppSpectra::UserExec(Option_t *)
 	fTOFsignal->SetParameter(1, 0);
 	fTOFsignal->SetParameter(2, fSigma);
 	fTOFsignal->SetParameter(3, 95);
-	fTOFsignal->SetParameter(4, fSlope);
+	if(fSlope==0.0)	fTOFsignal->SetParameter(4, 0.0125);
+	else if(fSlope==+1.0)	fTOFsignal->SetParameter(4, 0.01375);
+	else if(fSlope==-1.0)	fTOFsignal->SetParameter(4, 0.01125);
 
 	Double_t tof_sig=fTOFsignal->GetRandom();
 	Double_t sec_tail=ftail->GetRandom()-20;
