@@ -238,7 +238,9 @@ $(document).ready( function () {
       var chtml2=chtml.substring(chtml.lastIndexOf("ref")+5,chtml.lastIndexOf("\""));
       var img = new Image();
       img.src=chtml2;
-      c.width = 800; // canvas shrinks to show the whole plot at once
+      // canvas shrinks to show the whole plot at once
+      var cwidth = document.getElementById("canvasDiv").getBoundingClientRect().width;
+      c.width = Math.min(img.width, cwidth);
       ctx.drawImage(img,0,0,c.width,c.height);
     }
   } )
