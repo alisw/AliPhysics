@@ -74,7 +74,7 @@ source $ALICE_ROOT/libexec/alilog4bash.sh
 # 2.) Draw canvas
 ###########################################################################################################
 {
-    echo "    <div class=\"rightDiv\">"  >> $outputHtml
+    echo "    <div class=\"rightDiv\" id=\"canvasDiv\">"  >> $outputHtml
     echo "        <canvas width=\"800\" height=\"$heightDraw\"  id=\"canvasDraw\"></canvas>"  >> $outputHtml
     echo "    </div>"  >> $outputHtml
     echo ""  >> $outputHtml

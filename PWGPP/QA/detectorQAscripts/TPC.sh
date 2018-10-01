@@ -11,7 +11,8 @@ runLevelQA()
   qaFile=$1
 
   cp $ALICE_PHYSICS/PWGPP/TPC/macros/MakeTrend.C .
-  cp $ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/ConfigCalibTrain.C .
+  cp $ALICE_PHYSICS/PWGPP/TPC/macros/ConfigOCDB.C .
+  #cp $ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/ConfigCalibTrain.C .
 
   echo $dataType/$year/$period/$pass/$runNumber
   echo $ocdbStorage
@@ -21,8 +22,11 @@ runLevelQA()
   export epass=$pass
   export erunNumber=$runNumber
   export eocdbStorage=$ocdbStorage
-  echo aliroot -b -q -l "ConfigCalibTrain.C\($runNumber,\"$ocdbStorage\"\)  MakeTrend.C(\"$qaFile\",$runNumber)" 
-  aliroot -b -q -l ConfigCalibTrain.C\($runNumber,\"$ocdbStorage\"\)  "MakeTrend.C(\"$qaFile\",$runNumber)" 
+  cmd="aliroot -b -q -l 'ConfigOCDB.C($runNumber,\"$ocdbStorage\")'  'MakeTrend.C(\"$qaFile\",$runNumber)'"
+  echo $cmd
+  eval $cmd
+  #echo aliroot -b -q -l "ConfigCalibTrain.C\($runNumber,\"$ocdbStorage\"\)  MakeTrend.C(\"$qaFile\",$runNumber)"
+  #aliroot -b -q -l ConfigCalibTrain.C\($runNumber,\"$ocdbStorage\"\)  "MakeTrend.C(\"$qaFile\",$runNumber)"
 
   cp $ALICE_PHYSICS/PWGPP/TPC/macros/drawPerformanceTPCQAMatch.C .
   echo aliroot -b -q -l " drawPerformanceTPCQAMatch.C(\"$qaFile\")"
@@ -97,7 +101,7 @@ cat treePeriodTable.inc  >> index.html ###### Period Table for the upper left co
 echo "</div>" >> index.html
 
 ## Write Canvas for Plots
-echo "<div class=\"rightDiv\">"  >> index.html
+echo "<div class=\"rightDiv\" id=\"canvasDiv\">"  >> index.html
 echo "  <canvas width=\"800\" height=\"580\"  id=\"canvasDraw\"></canvas>"  >> index.html
 echo "</div>"  >> index.html
 echo "</div>"  >> index.html
