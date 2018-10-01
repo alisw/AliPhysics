@@ -50,7 +50,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   Bool_t                      CreateControlHistograms();
   void                        ExecOnce();
   Bool_t                      Run();
-  Bool_t                      IsEventSelected();
+  Bool_t                      IsTriggerTrackInEvent();
   void                        FillTrackControlHistograms(AliVTrack* track);
   void                        FillEventControlHistograms();
   void                        FillJetControlHistograms(AliEmcalJet* jet);

@@ -499,7 +499,7 @@ void AliAnalysisTaskJetExtractor::ExecOnce()
 Bool_t AliAnalysisTaskJetExtractor::Run()
 {
   // ################################### EVENT PROPERTIES
-  if(!IsEventSelected())
+  if(!IsTriggerTrackInEvent())
     return kFALSE;
 
   FillEventControlHistograms();
@@ -612,7 +612,7 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskJetExtractor::IsEventSelected()
+Bool_t AliAnalysisTaskJetExtractor::IsTriggerTrackInEvent()
 {
   // Cut for trigger track requirement
   if(fEventCut_TriggerTrackMinPt || fEventCut_TriggerTrackMaxPt)
