@@ -16,6 +16,7 @@ AliAnalysisTaskGrandma::AliAnalysisTaskGrandma()
     : AliAnalysisTaskSE(),
       fIsMC(false),
       fQA(nullptr),
+      fEvtCutQA(false),
       fEvent(nullptr),
       fEvtCuts(nullptr),
       fEvtHistList(nullptr),
@@ -46,6 +47,7 @@ AliAnalysisTaskGrandma::AliAnalysisTaskGrandma(const char* name, bool isMC)
     : AliAnalysisTaskSE(name),
       fIsMC(isMC),
       fQA(nullptr),
+      fEvtCutQA(false),
       fEvent(nullptr),
       fEvtCuts(nullptr),
       fEvtHistList(nullptr),
@@ -150,7 +152,6 @@ void AliAnalysisTaskGrandma::UserCreateOutputObjects() {
     AliWarning("Anti Track cuts are missing! \n");
   }
 
-  std::cout<<"fv0Cuts = "<<fv0Cuts<<endl;
 if (fv0Cuts) {
     fv0Cuts->Init();
     if (fv0Cuts->GetQAHists()) {

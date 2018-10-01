@@ -2,7 +2,8 @@
 #include "TSystem.h"
 
 AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
-                                      bool DCAPlots = false) {
+                                      bool DCAPlots = false, const char *swuffix="") {
+  TString suffix=Form("%s",swuffix);
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   if (!mgr) {
@@ -20,6 +21,14 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
   evtCuts->CleanUpMult(false, false, false, true);
   evtCuts->SetMultVsCentPlots(true);
   evtCuts->SetSphericityCuts(0.7,1.0);
+
+  if (suffix=="1") {
+    evtCuts->SetSphericityCuts(0.,0.3);
+  }
+
+  if (suffix=="2") {
+    evtCuts->SetSphericityCuts(0.3,0.7);
+  }
 
   AliAnalysisTaskGrandma *task = new AliAnalysisTaskGrandma("myFirstTask",
                                                             isMC);

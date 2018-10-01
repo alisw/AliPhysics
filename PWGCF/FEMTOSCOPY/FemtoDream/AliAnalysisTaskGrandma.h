@@ -28,6 +28,10 @@ class AliAnalysisTaskGrandma : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t *) {
   }  //
   ;
+  void SetEvtCutQA(bool setQA) {
+    fEvtCutQA = setQA;
+  }
+  ;
   void SetEventCuts(AliFemtoDreamEventCuts *cuts) {
     fEvtCuts = cuts;
   }
@@ -61,6 +65,7 @@ class AliAnalysisTaskGrandma : public AliAnalysisTaskSE {
  private:
   bool fIsMC;                              //
   TList *fQA;                               //!
+  bool fEvtCutQA;                           //  
   AliFemtoDreamEvent *fEvent;               //!
   AliFemtoDreamEventCuts *fEvtCuts;         // stream this one!
   TList *fEvtHistList;                      //!
