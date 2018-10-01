@@ -17,8 +17,6 @@ if(!mgr){
     return 0;
 }
 
-
-
 //Base Directory for GRID / LEGO Train  
 TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
 
@@ -41,7 +39,16 @@ Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler
 ::Info("AddTask_slehner_TreeMakeWCutLib","hasMC = %d",hasMC);
 
 
-LMEECutLib* cutlib = new LMEECutLib();      
+LMEECutLib* cutlib = new LMEECutLib(); 
+
+//AOD Usage currently tested with Input handler
+if (mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()){
+    ::Info("AddTask", "Detecting AOD manager"); //Prepended :: ensures resolution occurs from global namespace, not current one
+}
+else if (mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class()){
+    ::Info("AddTask","Detecting ESD manager");
+}
+
 AliAnalysisTaskMLTreeMaker *task = new AliAnalysisTaskMLTreeMaker("treemaker");   
 
 if(SetTPCCorrection){
@@ -55,7 +62,6 @@ else  task->SetUseCorr(kFALSE);
 task->SelectCollisionCandidates(AliVEvent::kINT7);
 task->SetupTrackCuts(cutlib->GetTrackCuts(trackCut,PIDCut,0,useAODFilterCuts));
 task->SetupEventCuts(cutlib->GetEventCuts(centmin, centmax));
-task->SetCentralityPercentileRange(centmin,centmax);    //maybe redundant
 
 mgr->AddTask(task);
 
