@@ -36,6 +36,9 @@ class AliPHOSJetJetMC : public TObject {
     Int_t GetGeneratorUEIndex() {return fGenUEID;}
     void ConfigureJetJetMC(AliVEvent *event);
 
+    void SetJetPtFactor(Double_t factor) {fPtHardAndJetPtFactor = factor;}
+    void SetSingleParticlePtFactor(Double_t factor) {fPtHardAndSinglePtFactor = factor;}
+
   protected:
     TList *GetGenHeaderList(AliVEvent *event);
     TString GetProductionName();    
@@ -58,7 +61,7 @@ class AliPHOSJetJetMC : public TObject {
     AliPHOSJetJetMC(const AliPHOSJetJetMC&);
     AliPHOSJetJetMC& operator=(const AliPHOSJetJetMC&);
 
-    ClassDef(AliPHOSJetJetMC, 7);
+    ClassDef(AliPHOSJetJetMC, 8);
 
 };
 

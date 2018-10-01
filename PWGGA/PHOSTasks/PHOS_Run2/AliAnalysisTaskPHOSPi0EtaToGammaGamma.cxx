@@ -110,6 +110,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fMCArrayESD(0x0),
   fMCArrayAOD(0x0),
   fJJMCHandler(0x0),
+  fPtHardAndJetPtFactor(-1),
+  fPtHardAndSinglePtFactor(-1),
   fRunNumber(0),
   fPHOSGeo(0x0),
   fPHOSClusterArray(NULL),
@@ -1087,6 +1089,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
 
     fJJMCHandler = new AliPHOSJetJetMC(pThardbin);
     fJJMCHandler->ConfigureJetJetMC(fEvent);//this should be called in each event to get pythia event header
+
+    if(fPtHardAndJetPtFactor > 0)    fJJMCHandler->SetJetPtFactor(fPtHardAndJetPtFactor);
+    if(fPtHardAndSinglePtFactor > 0) fJJMCHandler->SetSingleParticlePtFactor(fPtHardAndSinglePtFactor);
 
     AliMCEvent *mcevent = MCEvent();
     AliGenPythiaEventHeader* pythiaGenHeader = 0x0;
