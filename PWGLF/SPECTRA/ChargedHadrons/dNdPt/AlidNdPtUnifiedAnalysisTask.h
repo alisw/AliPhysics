@@ -22,15 +22,19 @@
 class TParticle;
 
 class AliESDEvent;
+class AliAODEvent;
 class AliVEvent;
 class AliStack;
 class AliESDtrackCuts;
+class AliAODtrackCuts;
 class AlidNdPtEventCuts;
 class AliAnalysisUtils;
 
 #include "THn.h"
 #include "TF1.h"
 #include "AliAnalysisTaskSE.h"
+#include "AlidNdPt.h"
+
 
 class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
   public:
@@ -49,6 +53,7 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     TArrayD* GetBinsEta(){return fBinsEta;}
     TArrayD* GetBinsMultCent() {return fBinsMultCent;}
     TArrayD* GetBinsZv() {return fBinsZv;}
+    TArrayD* GetBinsCent()  {return fBinsCent;}
 
 
     void SetTriggerMask(UInt_t triggermask)  { fTriggerMask = triggermask; }
@@ -81,10 +86,17 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     void SetBinsMultCent(TArrayD *bins){if(fBinsMultCent) delete fBinsMultCent; fBinsMultCent = new TArrayD(*bins);}
     /// Set bins in Multiplicity/Centrality number of bins and array of bin edges
     void SetBinsMultCent(Int_t nBins, Double_t *binEdges){if(fBinsMultCent) delete fBinsMultCent; fBinsMultCent = new TArrayD(nBins+1,binEdges);}
+     /// Set bins in Centrality using a TArrayD
+    void SetBinsCent(TArrayD* bins){if(fBinsCent) delete fBinsCent; fBinsCent = new TArrayD(*bins);}
+    /// Set bins in Centrality number of bins and array of bin edges
+    void SetBinsCent(Int_t nBins, Double_t* binEdges){if(fBinsCent) delete fBinsCent; fBinsCent = new TArrayD(nBins+1,binEdges);}
     /// Set bins in Zv using a TArrayD
     void SetBinsZv(TArrayD *bins){if(fBinsZv) delete fBinsZv; fBinsZv = new TArrayD(*bins);}
     /// Set bins in Zv using number of bins and array of bin edges
     void SetBinsZv(Int_t nBins, Double_t *binEdges){if(fBinsZv) delete fBinsZv; fBinsZv = new TArrayD(nBins+1,binEdges);}
+    void SetBinsPtReso(Int_t nBins, Double_t* binEdges){if(fBinsPtReso) delete fBinsPtReso; fBinsPtReso = new TArrayD(nBins+1,binEdges);}
+    void SetBins1Pt(Int_t nBins, Double_t* binEdges){if(fBins1Pt) delete fBins1Pt; fBins1Pt = new TArrayD(nBins+1,binEdges);}
+    void SetBinsSigma1Pt(Int_t nBins, Double_t* binEdges){if(fBinsSigma1Pt) delete fBinsSigma1Pt; fBinsSigma1Pt = new TArrayD(nBins+1,binEdges);}
 
     // Acceptance cuts
     /// Set the minimum Eta cut
@@ -118,6 +130,7 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     void SetMinLenghtInActiveZoneTPC(Int_t length){fMinActiveLength = length;}
     void SetGeometricalCut(Bool_t usegeometricalCut, Float_t deadzoneWidth, Float_t ncrnclgeomlength , Float_t ncrnclgeom1pt, Float_t fractionNcr, Float_t fractionNcl  ){fUseGeomCut = usegeometricalCut; fDeadZoneWidth = deadzoneWidth; fCutGeoNcrNclLenght = ncrnclgeomlength; fCutGeoNcrNclGeom1Pt = ncrnclgeom1pt; fCutGeoNcrNclFractionNcl = fractionNcr; fCutGeoNcrNclFractionNcl = fractionNcl;}
 
+
     /// TOF pileup -> only for Matching Efficiency calculations
     void SetTOFbunchCrossing(Bool_t isTOFbunch){fUseTOFBunchCrossing=isTOFbunch;}
 
@@ -134,6 +147,8 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     Bool_t IsEventAccepted2013pA(AliVEvent *event);
     Bool_t IsEventAccepted2015data(AliVEvent *event);
 
+    Double_t GetCentrality(AliVEvent* event);
+
     Int_t  IdentifyMCParticle(Int_t mcLabel);
 
     Double_t GetEventMultCent(AliVEvent *event);
@@ -144,13 +159,16 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     Bool_t IsChargedPrimary(Int_t stackIndex);
     Bool_t IsChargedPrimaryOrLambda(Int_t stackIndex);
 
+
     void InitESDTrackCuts();
+    void InitAODTrackCuts();
     void InitdNdPtEventCuts();
+    void SetFixedBinEdges(Double_t* array, Double_t lowerEdge, Double_t upperEdge, Int_t nBins);
 
 
     void SetCentralityCut(Double_t lowerCut, Double_t upperCut){fUseCentralityCut = kTRUE; fLowerCentralityBound = lowerCut; fUpperCentralityBound = upperCut;}
     Bool_t IsSelectedCentrality();
-    
+
 
     void SetIncludeSigmas(Bool_t includeSigmas){fIncludeSigmas = includeSigmas;}
 
@@ -164,40 +182,44 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     AlidNdPtEventCuts *fEventCuts;
     AliESDtrackCuts   *fESDtrackCuts;
 
+    ///AliAODSelection
+    AliAODtrackCuts *fAODtrackCuts;
+
     AliAnalysisUtils* fUtils;
     Bool_t      	fIsESD;			///< Flag for ESD usage
     Bool_t      	fUseMultiplicity;         ///< Flag for Multiplicity or Centrality
     Bool_t      	fIsMC;			///< Flag for MC usage
     Bool_t      	fEventTriggerRequired;
     Bool_t	 			fIs2013pA;
-    Bool_t 				fIs2015data;    
-    Bool_t 				fUseTOFBunchCrossing;    
-    
-    
+    Bool_t 				fIs2015data;
+    Bool_t 				fUseTOFBunchCrossing;
+    Bool_t          fUseMCInfo;                            /// use MC information
+
+
     Bool_t      	fTPCRefit;		///< TPC refit
-    Bool_t      	fITSRefit;		///< TPC refit            
-    Bool_t      	fAcceptKinks; 		///< Accept Kink Daughters    
-    Bool_t        fRequiresClusterITS;    
+    Bool_t      	fITSRefit;		///< TPC refit
+    Bool_t      	fAcceptKinks; 		///< Accept Kink Daughters
+    Bool_t        fRequiresClusterITS;
     Bool_t      	fDCAToVertex2D;
     Bool_t      	fSigmaToVertex;
     Bool_t      	fUseGeomCut;
     Bool_t      	fUseCountedMult;		///< Flag to select wether to use GetMultiplicity() or N_acc in fHistEvent and fHistTrack
-    
-    
-    THnF        	*fHistEvent;			///<  Histogram for events (Zv,mult/cent)    
+
+
+    THnF        	*fHistEvent;			///<  Histogram for events (Zv,mult/cent)
     THnF          *fEventCount;		        ///< Histogram for triggered events and events with vertex
     THnF        	*fHistMultEvent;		///<  Histogram for events (mult/cent,acc.mult,corr.mult)
     THnF        	*fHistMCGenEvent;		///<  Histogram for generated MC events (Zv,mult/cent)
-    THnF        	*fHistMCRecEvent;		///<  Histogram for reconstructed MC events (Zv,mult/cent)    
+    THnF        	*fHistMCRecEvent;		///<  Histogram for reconstructed MC events (Zv,mult/cent)
     THnF        	*fHistMultMCGenEvent;		///<  Histogram for generated MCevents (mult/cent,acc.mult,corr.mult)
     THnF        	*fHistMultMCRecEvent;		///<  Histogram for reconstructed MCevents (mult/cent,acc.mult,corr.mult)
     THnF        	*fHistMCGenINEL0Event;		///<  Histogram for generated INEL>0 MC events (Zv,mult/cent)
     THnF        	*fHistMCRecINEL0Event;    	///<  Histogram for reconstructed INEL>0 MC events (Zv,mult/cent)
     THnF        	*fHistMCTrigINEL0Event;   	///<  Histogram for triggered INEL>0 MC events (Zv,mult/cent)
     THnF        	*fHistMultCorrelation;		///<  Histogram for multiplicity correlation (corr.mult,corr.mult)
-               
+
     THnF        	*fHistMCResponseMat;    	///<  Histogram for Detector Response N_ch vs. N_acc
-    THnF        	*fHistMCTrigEvent;		///<  Histogram for triggered MC events (Zv,mult/cent)               
+    THnF        	*fHistMCTrigEvent;		///<  Histogram for triggered MC events (Zv,mult/cent)
 
     THnF        	*fHistTrack;			///<  Histogram for tracks (pt,eta,Zv,mult/cent)
     THnF	       	*fHistTrackCharge;		///<  Control Histogram for track charge (pt,eta,mult/cent,charge)
@@ -212,8 +234,15 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     THnF        	*fHistMCRecPrimTrackParticle;	///<  Particle type histogram for primary MC tracks (pt,eta,mult/cent)
 
     THnF        	*fHistMCRecSecTrack;		///<  Histogram for secondary MC tracks (pt,eta,mult/cent)
-    THnF        	*fHistMCRecSecTrackParticle;	///<  Particle type histogram for secondary MC tracks (pt,eta,mult/cent)
-                          
+    THnF        	*fHistMCRecSecTrackParticle;	    ///<  Particle type histogram for secondary MC tracks (pt,eta,mult/cent)
+    TH3D            *fDCAyEtaPt;                         /// DCAy:eta:pt
+    TH3D            *fDCAyEtaPtMCPrim;              /// DCAy:eta:pt for primary particles
+    TH3D            *fDCAyEtaPtMCSecDecays;         /// DCAy:eta:pt for secondary particles from decays in MC
+    TH3D            *fDCAyEtaPtMCSecMaterial;       /// DCAy:eta:pt for secondary particles from material in MC
+    TH3D            *fDCAyEtaPtMCSecDecaysK0s;       /// DCAy:eta:pt for secondary particles from decays K0s in MC
+    TH3D            *fDCAyEtaPtMCSecDecaysLambda;       /// DCAy:eta:pt for secondary particles from decays Lambda in MC
+
+
     UInt_t fTriggerMask;    // trigger mask
 
     // Acceptance cuts for tracks
@@ -222,10 +251,14 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     Float_t     	fMinPt;			///< Minimum pT cut
     Float_t     	fMaxPt;			///< Maximum pT cut
 
+
+    Int_t           fBinsDCA;
+    Double_t        fDCAbinEdges;
+
     Float_t     	fSigmaMeanXYZv[3];	///<[3]
     Float_t     	fMeanXYZv[3];		///<[3]
     Float_t     	fZvtx;
- 
+
     Int_t       	fMinNCrossedRowsTPC;	///< Minimum number of crossed Rows in the TPC
     Float_t     	fMinRatioCrossedRowsOverFindableClustersTPC;
     Float_t     	fMaxFractionSharedClustersTPC;
@@ -241,24 +274,33 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     Float_t       	fCutGeoNcrNclGeom1Pt;
     Float_t       	fCutGeoNcrNclFractionNcr;
     Float_t       	fCutGeoNcrNclFractionNcl;
-    
+
     TArrayD     	*fBinsMultCent;		///< Array of bins in multiplicity or centrality
-    TArrayD     	*fBinsPt;			///< Array of bins in pt
-    TArrayD     	*fBinsEta;		///< Array of bins in eta
-    TArrayD     	*fBinsZv;			///< Array of bins in Zv (Z-position of primary vtx)
-        
+    TArrayD*      fBinsCent;		    ///< Array of bins in centrality
+    TArrayD     	*fBinsPt;		    ///< Array of bins in pt
+    TArrayD     	*fBinsEta;		    ///< Array of bins in eta
+    TArrayD     	*fBinsZv;		    ///< Array of bins in Zv (Z-position of primary vtx)
+    TArrayD*      fBinsPtReso;		    ///< Array of bins for relative pt resoulution
+    TArrayD*      fBins1Pt;             ///< Array of bins for 1/pt
+    TArrayD*      fBinsSigma1Pt;	    ///< Array of bins for 1/pt resoulution
+
     THnF* 		  fHistMCMultPt;
     Bool_t 			fUseCentralityCut;
     Double_t	  fLowerCentralityBound;
     Double_t 	  fUpperCentralityBound;
+
+    Bool_t IsUseMCInfo() const { return fUseMCInfo; }
+    void SetUseMCInfo(const Bool_t info)   { fUseMCInfo = info; }
 
     Bool_t fIncludeSigmas;
     // Output Histograms
 
     THnF        	*fHistMCTrackMult;		///<  Histogram for tracks vs multiplicity (pt,Nacc,Nch)
     THnF        	*fHistMCTrackMultGen;		///<  Histogram for true tracks vs multiplicity (pt,Nacc,Nch)
-    
+
     THnF          *fHistResPt;                    ///<  Histogram for pT_gen vs pT_rec for resolution chrosschecks (pt,pt,eta,vz)
+
+    THnF*         fHistRelPtResoFromCov;			///<  Histogram for relative pT resolution of tracks from covariance matrix
 
     //   THnF	      *fHistMCGenTrackINEL0;    ///<  Histogram for generated MC tracks for INEL>0 events (pt,eta,mult/cent)
 
