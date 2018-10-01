@@ -91,5 +91,7 @@
 
 #pragma link C++ class AliAnalysisTaskEbyeNetChargeFluctuations+;
 
+#pragma link C++ class AliEbyEPhiDistNew+;
+
 
 #endif
