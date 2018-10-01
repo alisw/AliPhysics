@@ -1,9 +1,9 @@
 //Names should contain a comma seperated list of cut settings
 //Current options: all, electrons, kCutSet1, TTreeCuts, V0_TPCcorr, V0_ITScorr
 AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
-//                                                                Int_t trackCut=1,
-//                                                                Int_t PIDCut=1,
-//                                                                Int_t evCut=1,
+                                                                Int_t trackCut=0,
+                                                                Int_t PIDCut=0,
+                                                                Int_t evCut=0,
                                                                 Double_t centMin=0.,
                                                                 Double_t centMax=100.,
                                                                 Bool_t PIDCorr=kFALSE,
@@ -145,17 +145,17 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
 
   // #########################################################
   // Adding cutsettings
-  for(Int_t TrCut = 0; TrCut <= 4; ++TrCut){
-    for(Int_t PIDCut = 0; PIDCut <= 4; ++PIDCut){
-    std::cout << "CutTr: "<<TrCut<<" CutPID: "<<PIDCut<<" being added"<< std::endl;
-    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(TrCut, PIDCut, useAODFilterCuts);
+//  for(Int_t TrCut = 0; TrCut <= 4; ++TrCut){
+//    for(Int_t PIDCut = 0; PIDCut <= 4; ++PIDCut){
+//    std::cout << "CutTr: "<<TrCut<<" CutPID: "<<PIDCut<<" being added"<< std::endl;
+//    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(TrCut, PIDCut, useAODFilterCuts);
+//    task->AddTrackCuts(filter);
+//    }
+//  }
+    std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" being added"<< std::endl;
+    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, useAODFilterCuts);
     task->AddTrackCuts(filter);
-    }
-  }
-//  
-//  AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, useAODFilterCuts);
-//  task->AddTrackCuts(filter);  
-  
+    
   if(PIDCorr) setPIDCorrections(task);
 
   mgr->AddTask(task);

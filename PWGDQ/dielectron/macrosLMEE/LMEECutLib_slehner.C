@@ -115,7 +115,7 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts(Double_t centMin, Double_t cent
   eventCuts->SetRequireVertex();
   eventCuts->SetMinVtxContributors(1);
   eventCuts->SetVertexZ(-10.,+10.);
-  eventCuts->SetCentralityRange(0,80,kTRUE);    //isRun2 = true 
+  eventCuts->SetCentralityRange(centMin,centMax,kTRUE);    //isRun2 = true 
   return eventCuts;
 }
 
@@ -304,7 +304,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MV
   }
   trackCuts->AddCut(trackCutsDiel);
   trackCuts->AddCut(trackCutsAOD);
-   if(MVACut!=0) trackCuts->AddCut(TMVACuts);
+  if(MVACut!=0) trackCuts->AddCut(TMVACuts);
 
   trackCuts->AddCut(GetPIDCutsAna(selPID,useAODFilterCuts));
   return trackCuts;

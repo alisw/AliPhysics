@@ -1,4 +1,7 @@
-AliAnalysisTask *AddTask_slehner_diele_TMVA(  Double_t centMin=0.,
+AliAnalysisTask *AddTask_slehner_diele_TMVA(  Int_t trackCut=1,
+                                              Int_t PIDCut=1,
+                                              Int_t evCut=1,
+                                              Double_t centMin=0.,
                                               Double_t centMax=100.,
                                               Bool_t SetTPCCorrection=kFALSE,
                                               Bool_t useAODFilterCuts=kFALSE,
@@ -6,7 +9,7 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Double_t centMin=0.,
   
   TString directoryBaseName = "slehner_LMEE_TMVA";
   TString outputFileName = "AnalysisResults.root";
-  Bool_t isNano=kFALSE;
+//  Bool_t isNano=kFALSE;
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -14,7 +17,6 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Double_t centMin=0.,
     return 0;
   }
 
-  Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
 
   TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
   TString configFile("Config_slehner_diele_TMVA.C");
@@ -35,11 +37,11 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Double_t centMin=0.,
   task->UsePhysicsSelection();
 
   Int_t triggerNames = AliVEvent::kINT7;//PbPb Min Bias, can be set also from outside
-  if(!isNano){
+//  if(!isNano){
     task->SelectCollisionCandidates(triggerNames);
     task->SetTriggerMask(triggerNames);
     // task->SetRejectPileup(); // to be done differently (too strong cuts at the moment in dielectron framework) 
-  }
+//  }
 
   LMEECutLib* cutlib = new LMEECutLib();
   Bool_t isRun2 = kTRUE;
@@ -50,10 +52,27 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Double_t centMin=0.,
   
   //add dielectron analyses with various cuts to the task
   
-  for(Int_t TrCut = 0; TrCut <= 4; ++TrCut){
-    for(Int_t PIDCut = 0; PIDCut <= 4; ++PIDCut){
-      for(Int_t MVACut = 0; MVACut <= 10; ++MVACut){
-        AliDielectron * diel_low = Config_slehner_diele_TMVA(TrCut,PIDCut,MVACut,kFALSE);
+//  for(Int_t TrCut = 0; TrCut <= 4; ++TrCut){
+//    for(Int_t PIDCut = 0; PIDCut <= 4; ++PIDCut){
+//      for(Int_t MVACut = 0; MVACut <= 10; ++MVACut){
+//        AliDielectron * diel_low = Config_slehner_diele_TMVA(TrCut,PIDCut,MVACut,kFALSE);
+//        if(!diel_low){
+//          Printf("=======================================");
+//          Printf("No AliDielectron object loaded -> EXIT ");
+//          Printf("=======================================");
+//          return NULL; 
+//        }    
+//
+//        std::cout << "CutTr: "<<TrCut<<" CutPID: "<<PIDCut<<" MVAcut:"<<MVACut<<" being added"<< std::endl;
+//        diel_low->GetTrackFilter()->AddCuts(SetupTrackCutsAndSettings(TrCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight));   
+//        task->AddDielectron(diel_low);
+//        printf("successfully added AliDielectron: %s\n",diel_low->GetName());  
+//      }
+//    }
+//  }
+  
+      for(Int_t MVACut = 0; MVACut <= 0; ++MVACut){
+        AliDielectron * diel_low = Config_slehner_diele_TMVA(trackCut,PIDCut,MVACut,kFALSE);
         if(!diel_low){
           Printf("=======================================");
           Printf("No AliDielectron object loaded -> EXIT ");
@@ -61,13 +80,11 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Double_t centMin=0.,
           return NULL; 
         }    
 
-        std::cout << "CutTr: "<<TrCut<<" CutPID: "<<PIDCut<<" MVAcut:"<<MVACut<<" being added"<< std::endl;
-        diel_low->GetTrackFilter()->AddCuts(SetupTrackCutsAndSettings(TrCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight));   
+        std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVAcut:"<<MVACut<<" being added"<< std::endl;
+        diel_low->GetTrackFilter()->AddCuts(SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight));   
         task->AddDielectron(diel_low);
         printf("successfully added AliDielectron: %s\n",diel_low->GetName());  
       }
-    }
-  }
 
   //create output container
   AliAnalysisDataContainer *coutput1 =
