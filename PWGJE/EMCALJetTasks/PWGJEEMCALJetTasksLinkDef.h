@@ -217,6 +217,7 @@
 #pragma link C++ class EmcalTriggerJets::AliAnalysisTaskEmcalJetConstituentQA+;
 #pragma link C++ class EmcalTriggerJets::AliAnalysisTaskEmcalJetEnergyScale+;
 #pragma link C++ class EmcalTriggerJets::AliAnalysisTaskEmcalJetEnergySpectrum+;
+#pragma link C++ class EmcalTriggerJets::AliAnalysisTaskEmcalJetPbPbTriggerTests+;
 #pragma link C++ class EmcalTriggerJets::AliAnalysisTaskEmcalPatchMultCorr+;
 #pragma link C++ class EmcalTriggerJets::AliAnalysisTaskEmcalClustersInJets+;
 #pragma link C++ class EmcalTriggerJets::AliAnalysisTaskEmcalTriggerCorrelationMC+;
