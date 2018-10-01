@@ -309,6 +309,8 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     void SetPIDStudy(Bool_t flag) {fPIDStudy = flag;}
 
+    void SetJetPtFactor(Double_t factor) {fPtHardAndJetPtFactor = factor;}
+    void SetSingleParticlePtFactor(Double_t factor) {fPtHardAndSinglePtFactor = factor;}
 
   protected:
     virtual void UserCreateOutputObjects();
@@ -465,6 +467,8 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliStack *fMCArrayESD;     //MC particles array in ESD
     TClonesArray *fMCArrayAOD; //MC particles array in AOD
     AliPHOSJetJetMC *fJJMCHandler;
+    Double_t fPtHardAndJetPtFactor;
+    Double_t fPtHardAndSinglePtFactor;
     Int_t fRunNumber;
     AliPHOSGeometry *fPHOSGeo;
     TList *fPHOSEvents[10][12];
@@ -520,7 +524,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 69);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 70);
 };
 
 #endif
