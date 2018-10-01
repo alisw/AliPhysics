@@ -3253,8 +3253,9 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
   //
   //
   AliTPCCalPad *padActive      = calibDB->GetPadGainFactor();
-  //AliTPCCalPad *padLocalMax    = dataQA->GetNLocalMaxima();
+  AliTPCCalPad *padLocalMax    = dataQA->GetNLocalMaxima();
   AliTPCCalPad *padMaxCharge   = dataQA->GetMaxCharge();
+  AliTPCCalPad *padNoThreshold = dataQA->GetNoThreshold();
   AliTPCCalPad *padMaskedHV    = calibDB->GetMaskedChannelMapHV();
   AliTPCCalPad *padMaskedAltro = calibDB->GetMaskedChannelMapAltro();
   AliTPCCalPad *padMaskedDDL   = calibDB->GetMaskedChannelMapDDL();
@@ -3265,15 +3266,16 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
   static Bool_t hasRawQA = entry->GetId().GetFirstRun()== man->GetRun();
 
 
-  const Int_t nTypes = 6;
+  const Int_t nTypes = 8;
   //const char   *typeNames[nTypes]={"ActiveChannelMap", "LocaleMaxima", "HV_Mask",   "Altro_Mask",   "DDL_Mask",   "SCD_Mask"};
   //AliTPCCalPad *padInput [nTypes]={ padActive,          padLocalMax,   padMaskedHV, padMaskedAltro, padMaskedDDL, padMaskedSCD};
-  const char   *typeNames[nTypes]={"ActiveChannelMap", "MaxCharge",      "HV_Mask",   "Altro_Mask",   "DDL_Mask",   "SCD_Mask"};
-  AliTPCCalPad *padInput [nTypes]={ padActive,          padMaxCharge,   padMaskedHV, padMaskedAltro, padMaskedDDL, padMaskedSCD};
+  const char   *typeNames[nTypes]={"ActiveChannelMap",  "HV_Mask",   "Altro_Mask",   "DDL_Mask",   "SCD_Mask" ,  "LocaleMaxima", "MaxCharge" , "NoThreshold"    };
+  AliTPCCalPad *padInput [nTypes]={ padActive,         padMaskedHV, padMaskedAltro, padMaskedDDL, padMaskedSCD,   padLocalMax,   padMaxCharge, padNoThreshold   };
+  enum EPadType                   { kpadActive=0,     kpadMaskedHV, kpadMaskedAltro, kpadMaskedDDL, kpadMaskedSCD,   kpadLocalMax,   kpadMaxCharge, kpadNoThreshold   };
   TGraphErrors *grRaw[nTypes*2]={0};
   const char * side[2]={"A","C"};
-  Int_t kcolors[nTypes] ={kBlack, kRed+2, kOrange+1, kGreen+2, kAzure+10, kBlue+2};
-  Int_t kmarkers[nTypes]={21, 25, 20, 24, 23, 32};
+  Int_t kcolors[nTypes] ={kBlack, kRed+2, kOrange+1, kGreen+2, kAzure+10, kBlue+2, kMagenta+1, kGray+1};
+  Int_t kmarkers[nTypes]={21, 25, 20, 24, 23, 32, 29, 30};
    
   for (Int_t itype=0; itype<nTypes; ++itype){
     if (!padInput[itype]) {
@@ -3282,8 +3284,8 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
 
     for (Int_t isec=0; isec<72; isec++) {
       value[isec]              =padInput[itype]&&padInput[itype]->GetCalROC(isec)?padInput[itype]->GetCalROC(isec)->GetMedian():-1;
-      if (itype==0 || itype>1) value[isec]=padInput[itype]&&padInput[itype]->GetCalROC(isec)?padInput[itype]->GetCalROC(isec)->GetMean()  :-1;
-      if (itype>1) value[isec] = 1-value[isec]; //for type 2-5 masked channels are given, so we need to invert to get the active channels
+      if (itype<=4) value[isec]=padInput[itype]&&padInput[itype]->GetCalROC(isec)?padInput[itype]->GetCalROC(isec)->GetMean()  :-1;
+      if (itype>=1 && itype<=4) value[isec] = 1-value[isec]; //for type 1-4 masked channels are given, so we need to invert to get the active channels
       valueRMS[isec]=padInput[itype]&&padInput[itype]->GetCalROC(isec)?padInput[itype]->GetCalROC(isec)->GetRMS():-1;
       if (value[isec]>0) valueRMS[isec]/=value[isec];
       if (padInput[itype] && padInput[itype]->GetCalROC(isec)) valueRMS[isec]/=TMath::Sqrt( 16*padInput[itype]->GetCalROC(isec)->GetNchannels()/padInput[itype]->GetCalROC(isec)->GetNrows());
@@ -3356,7 +3358,7 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
       pad->cd()->SetLogz();
       TH1* histo = 0;
       if (padInput[itype]){
-        if (itype==1 &&  padInput[itype]->GetMedian()>0) padInput[itype]->Multiply(1./padInput[itype]->GetMedian());
+        if (itype>=(Int_t)kpadLocalMax &&  padInput[itype]->GetMedian()>0) padInput[itype]->Multiply(1./padInput[itype]->GetMedian());
 	histo=padInput[itype]->MakeHisto2D((iplot+1)%2);
 	if (histo->GetMaximum()>2) histo->SetMaximum(2.); 
 	histo->SetName(TString::Format("%s_%s_Side",padInput[itype]->GetTitle(),side[(iplot+1)%2]).Data());
@@ -3474,14 +3476,15 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
       "hasRawQA="<<hasRawQA<<                   // flag - Raw QA present
       "rawClusterCounter="<<clusterCounter<<    // absolute number of cluster  in Raw QA          -  calibDB->GetDataQA()->GetClusterCounter();
       "rawSignalCounter="<<signalCounter<<      // absolute number of signal above Thr  in Raw QA -  calibDB->GetDataQA()->GetSignalCounter()
-      "grOCDBStatus.="<<grRaw[0]<<              // OCDB status as used in Reco         - LTM:calibDB->GetPadGainFactor();
       //
-      //"grRawLocalMax.="<<grRaw[1]<<             // RAW QA OCDB local cluster counter   - LTM:calibDB->GetDataQA()->GetNLocalMaxima();
-      "grRawQMax.="<<grRaw[1]<<             // RAW QA OCDB local cluster counter   - LTM:calibDB->GetDataQA()->GetNLocalMaxima();
-      "grActiveHV.="   <<grRaw[2]<<             // OCDB normalized active channels due to HV
-      "grActiveAltro.="<<grRaw[3]<<             // OCDB normalized active channels due to the Altro config
-      "grActiveDDL.="  <<grRaw[4]<<             // OCDB normalized active channels due to the DDL status
-      "grActiveSCD.="  <<grRaw[5]<<             // OCDB normalized active channels due to the space-charge distortions
+      "grOCDBStatus.="<<grRaw[EPadType::kpadActive]      <<  // OCDB status as used in Reco         - LTM:calibDB->GetPadGainFactor();
+      "grRawLocalMax.="<<grRaw[EPadType::kpadLocalMax]   <<  // RAW QA OCDB local cluster counter   - LTM:calibDB->GetDataQA()->GetNLocalMaxima();
+      "grRawAboveThr.="<<grRaw[EPadType::kpadNoThreshold]<<  // RAW QA OCDB above threshold counter - LTM:calibDB->GetDataQA->GetNoThreshold(); 
+      "grRawQMax.="    <<grRaw[EPadType::kpadMaxCharge]  <<  // RAW QA OCDB average QMax            - LTM:calibDB->GetDataQA()->GetMaxCharge();
+      "grActiveHV.="   <<grRaw[EPadType::kpadMaskedHV]   <<  // OCDB normalized active channels due to HV
+      "grActiveAltro.="<<grRaw[EPadType::kpadMaskedAltro]<<  // OCDB normalized active channels due to the Altro config
+      "grActiveDDL.="  <<grRaw[EPadType::kpadMaskedDDL]  <<  // OCDB normalized active channels due to the DDL status
+      "grActiveSCD.="  <<grRaw[EPadType::kpadMaskedSCD]  <<  // OCDB normalized active channels due to the space-charge distortions
       //
       "grROCHVStatus.="<<grStatus[0]<<          // ROC HV status - enable/disable chambers beacus of LOW HV
       "grROCHVTimeFraction.="<<grStatus[1]<<    // ROC HV fraction of time disabled
@@ -3503,10 +3506,10 @@ void  AliTPCPerformanceSummary::MakeMissingChambersAliases(TTree * tree){
   // Missing chambers according StandardQA - using Ncl:phi  track counter
   //  Counter sum( Ntr_sector/<Ntr>_median < 70% ) 
   tree->SetAlias("ocdbStatusCounter","hasRawQA*Sum$(grOCDBStatus.fY<0.75)");               // counter status for the OCDB
-  //tree->SetAlias("rawLowQMaxCounter75","Sum$((grRawQMax.fY)<0.75)");                       // counter small gain based on RAW QA  Qmax 
-  //tree->SetAlias("rawLowOccupancyCounter75","Sum$((grRawLocalMax.fY)<0.75)");              // counter small occupancy (either gain or fraction of time)
-  //tree->SetAlias("rawLowCounter75","Sum$(((grRawQMax.fY)<0.75||(grRawLocalMax.fY)<0.75))*(-1+2*(grRawQMax.fEY<0.03))");
-  tree->SetAlias("rawLowCounter75","Sum$(((grRawQMax.fY)<0.75))*(-1+2*(grRawQMax.fEY<0.03))");
+  tree->SetAlias("rawLowQMaxCounter75","Sum$((grRawQMax.fY)<0.75)");                       // counter small gain based on RAW QA  Qmax 
+  tree->SetAlias("rawLowOccupancyCounter75","Sum$((grRawLocalMax.fY)<0.75)");              // counter small occupancy (either gain or fraction of time)
+  tree->SetAlias("rawLowCounter75","Sum$(((grRawQMax.fY)<0.75||(grRawLocalMax.fY)<0.75))*(-1+2*(grRawQMax.fEY<0.03))");
+  //tree->SetAlias("rawLowCounter75","Sum$(((grRawQMax.fY)<0.75))*(-1+2*(grRawQMax.fEY<0.03))");
   // counter outliers 75 (Qmax or occupancy based)  
   // for laser data Q is not reliable - disable decission for data with big RMS 
   tree->SetAlias("ocdbHVStatusCounter","Sum$(grROCHVStatus.fY<0.5)");                      // chambers not active  - according  HV decission
