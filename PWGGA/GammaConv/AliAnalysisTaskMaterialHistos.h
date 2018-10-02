@@ -91,6 +91,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		Int_t             fiCut;                        //
 		Int_t             fDoDeDxMaps;                  //
 		Int_t             fDoMultWeights;               //
+		Double_t          fWeightMultMC;                //
 		TH1F**            hNEvents;                     //!
 		TH1F**            hNGoodESDTracksEta08;         //!
 		TH1F**            hNGoodESDTracksWeightedEta08; //!
@@ -155,7 +156,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
 
 
-        ClassDef(AliAnalysisTaskMaterialHistos, 17);
+        ClassDef(AliAnalysisTaskMaterialHistos, 18);
 };
 
 #endif
