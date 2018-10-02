@@ -75,7 +75,6 @@ class AliAnalysisTaskGrandma : public AliAnalysisTaskSE {
   bool fMinBookingSample;                   //
   bool fMVPileUp;                           //
   bool fEvtCutQA;                           //
-  AliFemtoDreamAnalysis *fAnalysis;         //!
   AliFemtoDreamEvent *fEvent;               //!
   AliFemtoDreamEventCuts *fEvtCuts;         // stream this one!
   TList *fEvtHistList;                      //!
