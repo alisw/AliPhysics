@@ -99,6 +99,10 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
   jetTask->SetVzRange(-10,10);
   jetTask->SetNeedEmcalGeom(kFALSE);
 
+  Double_t JetEta = 0.9-jetradius;
+  cout << "<----------- JetEta =  " << JetEta << endl;
+  jetTask->SetJetEtaCut(JetEta);
+
   /*
   AliParticleContainer *trackCont = jetTask->AddTrackContainer(trackName);
   AliClusterContainer *clusterCont = jetTask->AddClusterContainer(clusName);
