@@ -20,7 +20,7 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
   evtCuts->SetMultVsCentPlots(true);
-  evtCuts->SetSphericityCuts(0.7,1.0);
+//  evtCuts->SetSphericityCuts(0.7,1.0);
 
   if (suffix=="1") {
     evtCuts->SetSphericityCuts(0.,0.3);
@@ -28,6 +28,10 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
 
   if (suffix=="2") {
     evtCuts->SetSphericityCuts(0.3,0.7);
+  }
+
+  if (suffix=="3") {
+    evtCuts->SetSphericityCuts(0.7,1.0);
   }
 
   AliAnalysisTaskGrandma *task = new AliAnalysisTaskGrandma("myFirstTask",
@@ -278,7 +282,6 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   mgr->ConnectInput(task, 0, cinput);
 
-  AliAnalysisDataContainer *coutputEvtCuts;
   TString QAName = Form("QA");
   AliAnalysisDataContainer *coutputQA;
   coutputQA = mgr->CreateContainer(
@@ -288,6 +291,7 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
       Form("%s:%s", file.Data(), QAName.Data()));
   mgr->ConnectOutput(task, 1, coutputQA);
 
+  AliAnalysisDataContainer *coutputEvtCuts;
   TString EvtCutsName = Form("EvtCuts");
   coutputEvtCuts = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs

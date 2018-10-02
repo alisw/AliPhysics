@@ -8,6 +8,7 @@
 #ifndef PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKGRANDMA_H_
 #define PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKGRANDMA_H_
 #include "AliAnalysisTaskSE.h"
+#include "AliFemtoDreamAnalysis.h"
 #include "AliFemtoDreamEvent.h"
 #include "AliFemtoDreamEventCuts.h"
 #include "AliFemtoDreamTrack.h"
@@ -27,6 +28,10 @@ class AliAnalysisTaskGrandma : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *);
   virtual void Terminate(Option_t *) {
   }  //
+  ;
+  void SetMVPileUp(bool mvPileUp) {
+    fMVPileUp = mvPileUp;
+  }
   ;
   void SetEvtCutQA(bool setQA) {
     fEvtCutQA = setQA;
@@ -63,9 +68,14 @@ class AliAnalysisTaskGrandma : public AliAnalysisTaskSE {
   }
   ;
  private:
-  bool fIsMC;                              //
+  int fTrackBufferSize;                     //
+  bool fIsMC;                               //
   TList *fQA;                               //!
-  bool fEvtCutQA;                           //  
+  bool fMinBookingME;                       //
+  bool fMinBookingSample;                   //
+  bool fMVPileUp;                           //
+  bool fEvtCutQA;                           //
+  AliFemtoDreamAnalysis *fAnalysis;         //!
   AliFemtoDreamEvent *fEvent;               //!
   AliFemtoDreamEventCuts *fEvtCuts;         // stream this one!
   TList *fEvtHistList;                      //!
@@ -88,9 +98,8 @@ class AliAnalysisTaskGrandma : public AliAnalysisTaskSE {
   AliFemtoDreamCollConfig *fConfig;         //
   TList *fResultList;                       //!
   TList *fResultQAList;                     //!
-  int fTrackBufferSize;                     //
   AliAODTrack **fGTI;                       //!
-ClassDef(AliAnalysisTaskGrandma,2)
+ClassDef(AliAnalysisTaskGrandma,3)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKGRANDMA_H_ */
