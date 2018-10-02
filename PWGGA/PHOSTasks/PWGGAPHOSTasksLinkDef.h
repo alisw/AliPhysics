@@ -106,6 +106,7 @@
 #pragma link C++ class AliAnalysisTaskCPV+;
 
 // LHC16_pp
+#pragma link C++ class AliPP13AnalysisCluster+;
 #pragma link C++ class AliPP13ClusterCuts+;
 #pragma link C++ class AliPP13SelectionWeights+;
 #pragma link C++ class AliPP13SelectionWeightsTOF+;
@@ -131,6 +132,8 @@
 #pragma link C++ class AliPP13KaonToPionRatioMC+;
 #pragma link C++ class AliPP13EpRatioSelection+;
 #pragma link C++ class AliPP13FeeddownSelection+;
+#pragma link C++ class AliPP13TriggerProperties+;
+#pragma link C++ class AliPP13TriggerEfficiency+;
 #pragma link C++ class AliPP13MixingSample+;
 #pragma link C++ class AliAnalysisTaskPP13+;
 

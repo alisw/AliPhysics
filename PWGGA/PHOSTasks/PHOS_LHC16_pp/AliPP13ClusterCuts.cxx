@@ -4,6 +4,12 @@
 
 Bool_t AliPP13ClusterCuts::AcceptCluster(AliVCluster * clus) const
 {
+	if (!clus->IsPHOS())
+		return kFALSE;
+
+	if (clus->GetType() != AliVCluster::kPHOSNeutral)
+		return kFALSE; // don't use CPV
+
 	if (clus->GetNCells() < fNCellsCut)
 		return kFALSE;
 

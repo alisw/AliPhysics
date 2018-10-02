@@ -112,8 +112,6 @@ Int_t AliPP13PhysicsSelection::CheckClusterGetSM(const AliVCluster * clus, Int_t
 
 	Int_t relId[4];
 	AliPHOSGeometry * phosGeometry = AliPHOSGeometry::GetInstance();
-	// AliPHOSGeometry * phosGeometry = AliPHOSGeometry::GetInstance("IHEP");
-	// AliPHOSGeometry * phosGeometry = AliPHOSGeometry::GetInstance("Run2") ;
 	phosGeometry->GlobalPos2RelId(global, relId) ;
 
 	Int_t sm = relId[0];
@@ -220,18 +218,11 @@ Bool_t AliPP13PhysicsSelection::SelectEvent(const EventFlags & flgs)
 void AliPP13PhysicsSelection::SelectPhotonCandidates(const TObjArray * clusArray, TObjArray * candidates, const EventFlags & eflags)
 {
 	// Don't return TObjArray: force user to handle candidates lifetime
-	Int_t sm, x, z;
 	for (Int_t i = 0; i < clusArray->GetEntriesFast(); i++)
 	{
 		AliVCluster * clus = (AliVCluster *) clusArray->At(i);
 
-		// TODO: Is this a good way of checking the sm?
-		//
-
-		if ((sm = CheckClusterGetSM(clus, x, z)) < 0)
-			continue;
-
-		if (!fCuts.AcceptCluster(clus))
+		if(!AcceptPhotonCandidate(clus, eflags))
 			continue;
 
 		candidates->Add(clus);
@@ -245,4 +236,19 @@ void AliPP13PhysicsSelection::SelectPhotonCandidates(const TObjArray * clusArray
 
 	if (candidates->GetEntriesFast() > 1 && !eflags.isMixing)
 		fEventCounter->Fill(EventFlags::kTwoPhotons);
+}
+
+//________________________________________________________________
+Bool_t AliPP13PhysicsSelection::AcceptPhotonCandidate(AliVCluster * clus, const EventFlags & eflags)
+{
+	(void) eflags;
+
+	Int_t sm, x, z;
+	if ((sm = CheckClusterGetSM(clus, x, z)) < 0)
+		return kFALSE;
+
+	if (!fCuts.AcceptCluster(clus))
+		return kFALSE;
+
+	return kTRUE;
 }
