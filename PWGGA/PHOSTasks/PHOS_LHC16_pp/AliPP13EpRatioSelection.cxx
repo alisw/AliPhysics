@@ -105,6 +105,9 @@ void AliPP13EpRatioSelection::InitSelectionHistograms()
 	fPIDCriteria[5] = new TH2F("hCPVDistanceNsigmaElectrons", "CPV distance to cluster for electrons ; E/p ratio ; n#sigma cpv", nM, nMin, nMax, 100, -1, 10);
 	fPIDCriteria[6] = new TH2F("hFullDispersionNsigmaElectrons", "Full cluster dispersion for electrons ; E/p ratio ; n#sigma disp", nM, nMin, nMax, 100, -1, 10);
 
+	fPIDCriteria[7] = new TH2F("hShapeNsigma", "Claster radius vs cluster energy; r, cm; E, GeV", 100, -5, 50, nPt, ptMin, ptMax);
+	fPIDCriteria[8] = new TH2F("hShapeNsigmaElectrons", "Claster radius vs n#sigma for electrons ; E/p ratio ; r, cm", nM, nMin, nMax, 100, -1, 10);
+
 
 	fListOfHistos->Add(fPIDCriteria[0]);
 	fListOfHistos->Add(fPIDCriteria[1]);
@@ -128,8 +131,9 @@ void AliPP13EpRatioSelection::FillClusterHistograms(const AliVCluster * cluster,
 {
 	Float_t nsigma_min = -1.5;
 	Float_t nsigma_max = 3;
-	Float_t nsigma_cpv = 2;
-	Float_t nsigma_disp = 2.5;
+	Float_t nsigma_cpv = 9999;
+	Float_t nsigma_disp = 9999;
+	Float_t distance_cut = 5.; // [cm]
 
 	// Don't do anything if pidresponse wasn't defined
 	if (!eflags.fPIDResponse)
@@ -153,6 +157,14 @@ void AliPP13EpRatioSelection::FillClusterHistograms(const AliVCluster * cluster,
 	fPIDCriteria[1]->Fill(disp, cluster_energy);
 	fPIDCriteria[2]->Fill(cluster->GetDistanceToBadChannel(), cluster_energy);
 
+    Double_t Dx = cluster->GetTrackDx();
+    Double_t Dz = cluster->GetTrackDz();
+
+    Double_t rr = sqrt(Dx * Dx + Dz * Dz); // unit is [cm]
+	fPIDCriteria[7]->Fill(rr, cluster_energy);
+  
+	if(TMath::Abs(r) > nsigma_cpv)
+		return;
 
 	// Apply PID cuts
 	if(TMath::Abs(r) > nsigma_cpv)
@@ -161,6 +173,15 @@ void AliPP13EpRatioSelection::FillClusterHistograms(const AliVCluster * cluster,
 	// Apply PID cuts
 	if(disp > nsigma_disp)
 		return;
+
+	if(rr > distance_cut)
+		return;
+	
+	// Don't take into account particles outside eta range
+	// 
+	if(TMath::Abs(track->Eta()) > 0.8)
+		return;
+
 
 	// Standard cuts, very loose DCA cut	
 	Bool_t isGlobalTrack = dynamic_cast<AliAODTrack*>(track)->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA);
@@ -199,6 +220,7 @@ void AliPP13EpRatioSelection::FillClusterHistograms(const AliVCluster * cluster,
 	{
 		fPIDCriteria[5]->Fill(EpRatio, r);
 		fPIDCriteria[6]->Fill(EpRatio, disp);
+		fPIDCriteria[6]->Fill(EpRatio, rr);
 
 		fEpE[0]->FillAll(sm, sm, EpRatio, cluster_energy);
 		fEpPt[0]->FillAll(sm, sm, EpRatio, trackPt);

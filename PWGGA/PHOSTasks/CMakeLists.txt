@@ -82,6 +82,7 @@ set(SRCS
     PHOS_GAFlow/AliAnalysisTaskThermalGAFlow.cxx
     PHOS_GAFlow/AliAnalysisTaskThermalGAFlowMC.cxx
     PHOS_LHC16_pp/AliAnalysisTaskPP13.cxx
+    PHOS_LHC16_pp/AliPP13AnalysisCluster.cxx
     PHOS_LHC16_pp/AliPP13ClusterCuts.cxx
     PHOS_LHC16_pp/AliPP13DetectorHistogram.cxx
     PHOS_LHC16_pp/AliPP13EfficiencySelectionMC.cxx
@@ -103,6 +104,8 @@ set(SRCS
     PHOS_LHC16_pp/AliPP13SpectrumSelection.cxx
     PHOS_LHC16_pp/AliPP13SpectrumSelectionMC.cxx
     PHOS_LHC16_pp/AliPP13TagAndProbeSelection.cxx
+    PHOS_LHC16_pp/AliPP13TriggerEfficiency.cxx
+    PHOS_LHC16_pp/AliPP13TriggerProperties.cxx
     PHOS_NeutralMeson/AliAnalysisTaskPHOSNeutralMeson.cxx
     PHOS_PbPb/AliAnalysisTaskPi0Flow.cxx
     PHOS_PbPb/AliAnalysisTaskGammaFlow.cxx
