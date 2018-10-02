@@ -638,7 +638,7 @@ void AliAnalysisHFCorrOnFlySim::HeavyFlavourCorrelations(TObject *obj){
     if(fUseWeights) weight = GetWeight(ptTrig);
 printf("pt = %f, wgt = %f\n",ptTrig,weight);
     Double_t PartProperties[8] = {static_cast<Double_t>(PDG_TrigPart),ptTrig,etaTrig,0,0,0,0,0};
-    ((THnSparseD*)fOutputList->FindObject(Form("HFTrgiggerProp")))->Fill(PartProperties);
+    ((THnSparseD*)fOutputList->FindObject(Form("HFTrgiggerProp")))->Fill(PartProperties,weight);
     if(fDoOpeningAngleStudies) {
       if(fFlagSinglePair && fFlagSmallOpen) ((THnSparseD*)fOutputList->FindObject(Form("HFTrgiggerProp_SmallOp")))->Fill(PartProperties,weight);
       if(fFlagSinglePair && fFlagLargeOpen) ((THnSparseD*)fOutputList->FindObject(Form("HFTrgiggerProp_LargeOp")))->Fill(PartProperties,weight);
