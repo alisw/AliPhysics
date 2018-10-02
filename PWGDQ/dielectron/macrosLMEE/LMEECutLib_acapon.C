@@ -6,6 +6,7 @@ class LMEECutLib {
 		kAllSpecies,
 		kElectrons,
 		kHighMult,
+		kMidLowMult,
 		kMidMult,
 		kLowMult,
 		kTTreeCuts,
@@ -487,6 +488,7 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts(Int_t cutSet) {
         case kElectrons:
         case kHighMult:
         case kMidMult:
+        case kMidLowMult:
         case kLowMult:
 				case kTTreeCuts:
 				case kV0_TPCcorr:
@@ -516,7 +518,7 @@ AliAnalysisCuts* LMEECutLib::GetCentralityCuts(Int_t centSel) {
 		case kV0_ITScorr:
 		case kV0_TOFcorr:
 			centCuts = new AliDielectronVarCuts("centCutsHigh","cent0090");
-			centCuts->AddCut(AliDielectronVarManager::kCentralityNew,0.,90.);
+			centCuts->AddCut(AliDielectronVarManager::kCentralityNew,0.,100.);
 			break;
 			break;
 		case kHighMult:
@@ -524,12 +526,16 @@ AliAnalysisCuts* LMEECutLib::GetCentralityCuts(Int_t centSel) {
 			centCuts->AddCut(AliDielectronVarManager::kCentralityNew,0.,20.);
 			break;
 	 case kMidMult:
-			centCuts = new AliDielectronVarCuts("centCutsMid","cent2060");
-			centCuts->AddCut(AliDielectronVarManager::kCentralityNew,20.,60.);
+			centCuts = new AliDielectronVarCuts("centCutsMid","cent2040");
+			centCuts->AddCut(AliDielectronVarManager::kCentralityNew,20.,40.);
+			break;
+	 case kMidLowMult:
+			centCuts = new AliDielectronVarCuts("centCutsMid","cent0460");
+			centCuts->AddCut(AliDielectronVarManager::kCentralityNew,40.,60.);
 			break;
 		case kLowMult:
-			centCuts  = new AliDielectronVarCuts("centCutsLow","cent6090");
-			centCuts->AddCut(AliDielectronVarManager::kCentralityNew,60.,90.);
+			centCuts  = new AliDielectronVarCuts("centCutsLow","cent60100");
+			centCuts->AddCut(AliDielectronVarManager::kCentralityNew,60.,100.);
 			break;
 		default: cout << "No Centrality selected" << endl;
 	}
@@ -544,6 +550,7 @@ AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet) {
 		case kElectrons:
 		case kHighMult:
 		case kMidMult:
+		case kMidLowMult:
 		case kLowMult:
 		case kCutSet1:
 			mixingHandler = new AliDielectronMixingHandler;
@@ -612,6 +619,7 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
 		case kElectrons:
 		case kHighMult:
 		case kMidMult:
+		case kMidLowMult:
 		case kLowMult:
 			if(wSDD){
 				cutsPID->AddCut(AliDielectronPID::kITS, AliPID::kElectron, -3.0,  1.0, 0.2, 100., kFALSE);
@@ -635,7 +643,10 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
 			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
 
 			// Copy xml file to local directory first
-			TString weightFile = "alien:///alice/cern.ch/user/a/acapon/TMVAclassifiers/TMVAClassification_BDTunweighted.weights.xml";
+			// Classifier trained on reweighted data
+			//TString weightFile = "alien:///alice/cern.ch/user/a/acapon/TMVAclassifiers/TMVAClassification_BDTunweighted.weights.xml";
+			// Classifier trained on PID post calibratied data
+			TString weightFile = "alien:///alice/cern.ch/user/a/acapon/TMVAclassifiers/TMVAClassification_BDT.weights.xml";
 			
 			AliDielectronTMVACuts *pidCuts = new AliDielectronTMVACuts("PIDCutsTMVA","PIDCutsTMVA");
 			pidCuts->AddTMVAInput("pt", AliDielectronVarManager::kPt);
@@ -646,8 +657,8 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
 			pidCuts->AddTMVASpectator("pdg", AliDielectronVarManager::kPdgCode);
 			pidCuts->SetTMVAWeights("BDT method", weightFile.Data());
 
-			Printf("Use TMVA cut value = %f",0.05);
-			pidCuts->SetTMVACutValue(0.05);
+			Printf("Use TMVA cut value = %f",0.1);
+			pidCuts->SetTMVACutValue(0.1);
 
 			cuts->AddCut(cutsPID);
 			cuts->AddCut(pidCuts);
@@ -713,6 +724,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 		case kElectrons:
 		case kHighMult:
 		case kMidMult:
+		case kMidLowMult:
 		case kLowMult:
 			varCutsFilter->AddCut(AliDielectronVarManager::kEta, -0.80, 0.80);
 			varCutsFilter->AddCut(AliDielectronVarManager::kPt, 0.2, 10.);
