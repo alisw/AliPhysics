@@ -264,7 +264,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MV
   AliDielectronTMVACuts *TMVACuts=0;
   
   if(MVACut!=0){
-    TString weightFile="alien:///alice/cern.ch/user/s/slehner/TMVAweights/"+TMVAweight;
+    TString weightFile="alien:///alice/cern.ch/user/s/selehner/TMVAweights/"+TMVAweight;
 
     Printf("Use TMVA weight input file: %s",weightFile.Data());
 
