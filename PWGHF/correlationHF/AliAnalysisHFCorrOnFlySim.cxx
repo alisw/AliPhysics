@@ -41,6 +41,7 @@ AliAnalysisHFCorrOnFlySim::AliAnalysisHFCorrOnFlySim():
   fHistEventsProcessed(0x0),
   fOutputQA(0),
   fOutputList(0),
+  fHistoWeights(0x0),
   fEtaMin(-20),
   fEtaMax(20),
   fYMin(-20),
@@ -60,6 +61,7 @@ AliAnalysisHFCorrOnFlySim::AliAnalysisHFCorrOnFlySim():
   fIsCorrOfQQbar(kFALSE),
   fIsCorrOfHeavyFlavor(kFALSE),
   fIsCorrOfHadronHadron(kFALSE),
+  fUseWeights(kFALSE),
   fDoOpeningAngleStudies(kFALSE),
   fFlagSinglePair(kTRUE),
   fFlagSmallOpen(kFALSE),
@@ -80,6 +82,7 @@ AliAnalysisHFCorrOnFlySim::AliAnalysisHFCorrOnFlySim(const Char_t* name) :
   fHistEventsProcessed(0x0),
   fOutputQA(0),
   fOutputList(0),
+  fHistoWeights(0x0),
   fEtaMin(-20),
   fEtaMax(20),
   fYMin(-20),
@@ -99,6 +102,7 @@ AliAnalysisHFCorrOnFlySim::AliAnalysisHFCorrOnFlySim(const Char_t* name) :
   fIsCorrOfQQbar(kFALSE),
   fIsCorrOfHeavyFlavor(kFALSE),
   fIsCorrOfHadronHadron(kFALSE),
+  fUseWeights(kFALSE),
   fDoOpeningAngleStudies(kFALSE),
   fFlagSinglePair(kTRUE),
   fFlagSmallOpen(kFALSE),
@@ -125,6 +129,7 @@ AliAnalysisHFCorrOnFlySim::AliAnalysisHFCorrOnFlySim(const AliAnalysisHFCorrOnFl
   fHistEventsProcessed(c.fHistEventsProcessed),
   fOutputQA(c.fOutputQA),
   fOutputList(c.fOutputList),
+  fHistoWeights(c.fHistoWeights),
   fEtaMin(c.fEtaMin),
   fEtaMax(c.fEtaMax),
   fYMin(c.fYMin),
@@ -144,6 +149,7 @@ AliAnalysisHFCorrOnFlySim::AliAnalysisHFCorrOnFlySim(const AliAnalysisHFCorrOnFl
   fIsCorrOfQQbar(c.fIsCorrOfQQbar),
   fIsCorrOfHeavyFlavor(c.fIsCorrOfHeavyFlavor),
   fIsCorrOfHadronHadron(c.fIsCorrOfHadronHadron),
+  fUseWeights(c.fUseWeights),
   fDoOpeningAngleStudies(c.fDoOpeningAngleStudies),
   fFlagSinglePair(c.fFlagSinglePair),
   fFlagSmallOpen(c.fFlagSmallOpen),
@@ -179,6 +185,7 @@ AliAnalysisHFCorrOnFlySim& AliAnalysisHFCorrOnFlySim::operator=(const AliAnalysi
     fHistEventsProcessed = c.fHistEventsProcessed;
     fOutputQA = c.fOutputQA;
     fOutputList = c.fOutputList;
+    fHistoWeights = c.fHistoWeights;
     fEtaMin = c.fEtaMin;
     fEtaMax = c.fEtaMax;
     fYMin = c.fYMin;
@@ -198,6 +205,7 @@ AliAnalysisHFCorrOnFlySim& AliAnalysisHFCorrOnFlySim::operator=(const AliAnalysi
     fIsCorrOfQQbar = c.fIsCorrOfQQbar;
     fIsCorrOfHeavyFlavor = c.fIsCorrOfHeavyFlavor;
     fIsCorrOfHadronHadron = c.fIsCorrOfHadronHadron;
+    fUseWeights = c.fUseWeights;
     fDoOpeningAngleStudies = c.fDoOpeningAngleStudies;
     fFlagSinglePair = c.fFlagSinglePair;
     fFlagSmallOpen = c.fFlagSmallOpen;
@@ -626,14 +634,16 @@ void AliAnalysisHFCorrOnFlySim::HeavyFlavourCorrelations(TObject *obj){
     Double_t phiTrig = TrigPart->Phi();
     Double_t etaTrig = TrigPart->Eta();
     Double_t ptTrig  = TrigPart->Pt();
-    
+    Double_t weight = 1.;
+    if(fUseWeights) weight = GetWeight(ptTrig);
+printf("pt = %f, wgt = %f\n",ptTrig,weight);
     Double_t PartProperties[8] = {static_cast<Double_t>(PDG_TrigPart),ptTrig,etaTrig,0,0,0,0,0};
     ((THnSparseD*)fOutputList->FindObject(Form("HFTrgiggerProp")))->Fill(PartProperties);
     if(fDoOpeningAngleStudies) {
-      if(fFlagSinglePair && fFlagSmallOpen) ((THnSparseD*)fOutputList->FindObject(Form("HFTrgiggerProp_SmallOp")))->Fill(PartProperties);
-      if(fFlagSinglePair && fFlagLargeOpen) ((THnSparseD*)fOutputList->FindObject(Form("HFTrgiggerProp_LargeOp")))->Fill(PartProperties);
-      if(fFlagSinglePair && !fFlagSmallOpen && !fFlagLargeOpen) ((THnSparseD*)fOutputList->FindObject(Form("HFTrgiggerProp_MiddleOp")))->Fill(PartProperties);
-      if(!fFlagSinglePair)  ((THnSparseD*)fOutputList->FindObject(Form("HFTrgiggerProp_MultiPair")))->Fill(PartProperties);
+      if(fFlagSinglePair && fFlagSmallOpen) ((THnSparseD*)fOutputList->FindObject(Form("HFTrgiggerProp_SmallOp")))->Fill(PartProperties,weight);
+      if(fFlagSinglePair && fFlagLargeOpen) ((THnSparseD*)fOutputList->FindObject(Form("HFTrgiggerProp_LargeOp")))->Fill(PartProperties,weight);
+      if(fFlagSinglePair && !fFlagSmallOpen && !fFlagLargeOpen) ((THnSparseD*)fOutputList->FindObject(Form("HFTrgiggerProp_MiddleOp")))->Fill(PartProperties,weight);
+      if(!fFlagSinglePair)  ((THnSparseD*)fOutputList->FindObject(Form("HFTrgiggerProp_MultiPair")))->Fill(PartProperties,weight);
     }
 
 
@@ -689,12 +699,12 @@ void AliAnalysisHFCorrOnFlySim::HeavyFlavourCorrelations(TObject *obj){
         Double_t ptLim_Sparse = ((THnSparseD*)fOutputList->FindObject(Form("2PCorrBtwn_HF-hadron")))->GetAxis(3)->GetXmax();
         if(PartProperties[3] > ptLim_Sparse) PartProperties[3] = ptLim_Sparse - 0.01;
         
-        ((THnSparseD*)fOutputList->FindObject(Form("2PCorrBtwn_HF-hadron")))->Fill(PartProperties);
+        ((THnSparseD*)fOutputList->FindObject(Form("2PCorrBtwn_HF-hadron")))->Fill(PartProperties,weight);
         if(fDoOpeningAngleStudies) {
-          if(fFlagSinglePair && fFlagSmallOpen) ((THnSparseD*)fOutputList->FindObject(Form("2PCorrBtwn_HF-hadron_SmallOp")))->Fill(PartProperties);
-          if(fFlagSinglePair && fFlagLargeOpen) ((THnSparseD*)fOutputList->FindObject(Form("2PCorrBtwn_HF-hadron_LargeOp")))->Fill(PartProperties);
-          if(fFlagSinglePair && !fFlagSmallOpen && !fFlagLargeOpen) ((THnSparseD*)fOutputList->FindObject(Form("2PCorrBtwn_HF-hadron_MiddleOp")))->Fill(PartProperties);
-          if(!fFlagSinglePair)  ((THnSparseD*)fOutputList->FindObject(Form("2PCorrBtwn_HF-hadron_MultiPair")))->Fill(PartProperties);
+          if(fFlagSinglePair && fFlagSmallOpen) ((THnSparseD*)fOutputList->FindObject(Form("2PCorrBtwn_HF-hadron_SmallOp")))->Fill(PartProperties,weight);
+          if(fFlagSinglePair && fFlagLargeOpen) ((THnSparseD*)fOutputList->FindObject(Form("2PCorrBtwn_HF-hadron_LargeOp")))->Fill(PartProperties,weight);
+          if(fFlagSinglePair && !fFlagSmallOpen && !fFlagLargeOpen) ((THnSparseD*)fOutputList->FindObject(Form("2PCorrBtwn_HF-hadron_MiddleOp")))->Fill(PartProperties,weight);
+          if(!fFlagSinglePair)  ((THnSparseD*)fOutputList->FindObject(Form("2PCorrBtwn_HF-hadron_MultiPair")))->Fill(PartProperties,weight);
         }
     }
 }

@@ -69,6 +69,15 @@ class AliAnalysisHFCorrOnFlySim : public AliAnalysisTaskSE{
   void SetDoCCbarOpeningAngleStudies(Bool_t doOpAngle = kFALSE) {fDoOpeningAngleStudies = doOpAngle;}
   void SetOpeningAngleEdges(Double_t small, Double_t large) {fLimitSmallOpen=small; fLimitLargeOpen=large;} 
   
+  void SetUsePtWeights(Bool_t useweights) {fUseWeights = useweights;}
+  void SetHistoWeights(TH1D* histoweights) {
+    if(fHistoWeights) delete fHistoWeights;
+    fHistoWeights = new TH1D(*histoweights);
+  }
+  Double_t GetWeight(Double_t pt) {
+    return fHistoWeights->GetBinContent(fHistoWeights->FindBin(pt));
+  }
+
  private:
   void CalculateEventProperties(TObject* obj);
   void CalculateParticleProperties(TObject *obj);
@@ -112,7 +121,8 @@ class AliAnalysisHFCorrOnFlySim : public AliAnalysisTaskSE{
   TH1I  *fHistEventsProcessed;   //! histo for monitoring the number of events processed slot 1
   TList       *fOutputQA; //! Output list
   TList       *fOutputList; //! Output list
-  
+  TH1D  *fHistoWeights; //PtWeights for D-meson spectrum reweighting
+
   Float_t fEtaMin;   // minimum eta cut
   Float_t fEtaMax;   // maximum eta cut
   Float_t fYMin;     // minimum Y cut
@@ -133,6 +143,7 @@ class AliAnalysisHFCorrOnFlySim : public AliAnalysisTaskSE{
   Bool_t fIsCorrOfQQbar;
   Bool_t fIsCorrOfHeavyFlavor;
   Bool_t fIsCorrOfHadronHadron;
+  Bool_t fUseWeights;
 
   Bool_t fDoOpeningAngleStudies; //activate differential-opening ccbar studies
   Bool_t fFlagSinglePair; //if false, there are more than 1 ccbar pair in the event
@@ -144,7 +155,7 @@ class AliAnalysisHFCorrOnFlySim : public AliAnalysisTaskSE{
   TArrayI *fArraySkipDDaugh;//!
   TArrayI *fArrayTrk ;//!
   Int_t flastdaugh;
-  ClassDef(AliAnalysisHFCorrOnFlySim,1)
+  ClassDef(AliAnalysisHFCorrOnFlySim,2)
 };
 
 #endif
