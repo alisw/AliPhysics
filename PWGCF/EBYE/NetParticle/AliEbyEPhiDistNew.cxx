@@ -213,7 +213,7 @@ void AliEbyEPhiDistNew::UserCreateOutputObjects(){
 //--------------------------------------------------------------------------------------
 
 void AliEbyEPhiDistNew::CreatePhiHist() {
-    const Char_t *fgkHistName[4] = {"Nch","Npi","Npi", "Nka"};
+    const Char_t *fgkHistName[4] = {"Nch","Npi","Nka", "Npr"};
     const Char_t *fgkHistLat[2][4] = {{"N^{-}","#pi^{-}","K^{-}","P^{-}"},{"N^{+}","#pi^{+}","K^{+}","P^{+}"}};
     
     const Char_t *fgkHistCharge[2] = {"Minus","Plus"};
