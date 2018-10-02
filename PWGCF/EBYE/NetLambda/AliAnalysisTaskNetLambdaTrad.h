@@ -1,6 +1,6 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-//updated Sep 25
+//updated 0ct 1
 
 #ifndef AliAnalysisTaskNetLambdaTrad_h
 #define AliAnalysisTaskNetLambdaTrad_h
@@ -90,6 +90,7 @@ protected:
     Int_t  fNptBins;
     
     THnSparse *fPtBinNplusNminusCh;
+    THnSparse *fPtBinNplusNminusChCut;
     THnSparse *fPtBinNplusNminusChTruth;
     Int_t    GetPtBin(Double_t pt);
     
