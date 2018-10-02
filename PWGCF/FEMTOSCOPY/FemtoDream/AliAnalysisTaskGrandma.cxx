@@ -14,8 +14,13 @@ ClassImp(AliAnalysisTaskGrandma)
 
 AliAnalysisTaskGrandma::AliAnalysisTaskGrandma()
     : AliAnalysisTaskSE(),
+      fTrackBufferSize(2000),
       fIsMC(false),
       fQA(nullptr),
+      fMinBookingME(false),
+      fMinBookingSample(false),
+      fMVPileUp(false),
+      fEvtCutQA(false),
       fEvent(nullptr),
       fEvtCuts(nullptr),
       fEvtHistList(nullptr),
@@ -38,14 +43,18 @@ AliAnalysisTaskGrandma::AliAnalysisTaskGrandma()
       fConfig(nullptr),
       fResultList(nullptr),
       fResultQAList(nullptr),
-      fTrackBufferSize(2000),
       fGTI(nullptr) {
 }
 
 AliAnalysisTaskGrandma::AliAnalysisTaskGrandma(const char* name, bool isMC)
     : AliAnalysisTaskSE(name),
-      fIsMC(isMC),
+      fTrackBufferSize(2000),
+      fIsMC(false),
       fQA(nullptr),
+      fMinBookingME(false),
+      fMinBookingSample(false),
+      fMVPileUp(false),
+      fEvtCutQA(false),
       fEvent(nullptr),
       fEvtCuts(nullptr),
       fEvtHistList(nullptr),
@@ -68,7 +77,6 @@ AliAnalysisTaskGrandma::AliAnalysisTaskGrandma(const char* name, bool isMC)
       fConfig(nullptr),
       fResultList(nullptr),
       fResultQAList(nullptr),
-      fTrackBufferSize(2000),
       fGTI(nullptr) {
   DefineOutput(1, TList::Class());  //Output for the Event Class and Pair Cleaner
   DefineOutput(2, TList::Class());  //Output for the Event Cuts
@@ -87,7 +95,6 @@ AliAnalysisTaskGrandma::AliAnalysisTaskGrandma(const char* name, bool isMC)
 }
 
 AliAnalysisTaskGrandma::~AliAnalysisTaskGrandma() {
-
 }
 
 void AliAnalysisTaskGrandma::UserCreateOutputObjects() {
@@ -95,7 +102,9 @@ void AliAnalysisTaskGrandma::UserCreateOutputObjects() {
   // (not used anymore since we event selection is done by AliEventCuts)
   //second flag: for the QA output of the AliEventCuts
   // might want to turn this off for systematics
-  fEvent = new AliFemtoDreamEvent(true, true, GetCollisionCandidates());
+
+  fEvent = new AliFemtoDreamEvent(true, fEvtCutQA, GetCollisionCandidates());
+
   fFemtoTrack = new AliFemtoDreamTrack();
   fFemtoTrack->SetUseMCInfo(fIsMC);
 
@@ -115,6 +124,16 @@ void AliAnalysisTaskGrandma::UserCreateOutputObjects() {
   fQA->SetName("QA");
   fQA->Add(fEvent->GetEvtCutList());
   fQA->Add(fPairCleaner->GetHistList());
+
+  // if (!fEvtCuts->GetMinimalBooking()) {
+  //   if (fAnalysis->GetEventCutHists()) {
+  //     fEvtHistList = fAnalysis->GetEventCutHists();
+  //   }
+  // } else {
+  //   fEvtHistList = new TList();
+  //   fEvtHistList->SetName("EventCuts");
+  //   fEvtHistList->SetOwner();
+  // }
 
   if (fEvtCuts) {
     fEvtCuts->InitQA();
@@ -150,7 +169,6 @@ void AliAnalysisTaskGrandma::UserCreateOutputObjects() {
     AliWarning("Anti Track cuts are missing! \n");
   }
 
-  std::cout<<"fv0Cuts = "<<fv0Cuts<<endl;
 if (fv0Cuts) {
     fv0Cuts->Init();
     if (fv0Cuts->GetQAHists()) {
@@ -212,6 +230,7 @@ void AliAnalysisTaskGrandma::UserExec(Option_t *) {
         }
         StoreGlobalTrackReference(track);
       }
+
 
       std::vector<AliFemtoDreamBasePart> Particles;
       std::vector<AliFemtoDreamBasePart> AntiParticles;
