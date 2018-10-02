@@ -192,7 +192,7 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     Float_t                 fCurrCentr; // current centrality used for set the priors
     Double_t                fParticleProbability; // Minimum Bayesian probability
     
-    static const Int_t      fNumCentralities = 6; // number of centrality ranges for NUE maps (for now...)
+    static const Int_t      fNumCentralities = 5; // number of centrality ranges for NUE maps (for now...)
     static const Int_t      fgkPIDptBin = 32; // pT bins for priors
     Float_t                 fC[fgkPIDptBin][5],fBinLimitPID[fgkPIDptBin]; // pt bin limit and priors
     static const Short_t    fFlowNumHarmonicsMax = 10; // maximum harmonics length of flow vector array
