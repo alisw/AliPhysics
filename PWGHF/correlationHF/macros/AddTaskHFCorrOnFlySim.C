@@ -7,7 +7,7 @@
  _____________________________________________________________*/
 
 
-AliAnalysisHFCorrOnFlySim *AddTaskHFCorrOnFlySim(TString suffixName =""){
+AliAnalysisHFCorrOnFlySim *AddTaskHFCorrOnFlySim(TString suffixName ="", Bool_t useweights=kFALSE, TString namefile="", TString namehistowgt="") {
 
    AliAnalysisHFCorrOnFlySim* clus = new  AliAnalysisHFCorrOnFlySim("");
    clus->SetEtaRange(-20.0, 20.0);
@@ -20,6 +20,13 @@ AliAnalysisHFCorrOnFlySim *AddTaskHFCorrOnFlySim(TString suffixName =""){
    clus->SetHHCorrelations(kFALSE);
    clus->SetQQbarCorrBetween("c", 1, "c", -1);
    clus->SetQQbarCorrelations(kTRUE);
+
+   if (useweights) {
+     TFile *f = TFile::Open(namefile.Data());
+     TH1D* hwgt = (TH1D*)f->Get(namehistowgt.Data());
+     clus->SetUsePtWeights(kTRUE);
+     clus->SetHistoWeights(hwgt);
+   }
     
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
