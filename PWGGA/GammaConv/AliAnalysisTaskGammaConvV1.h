@@ -83,6 +83,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
     void FillMultipleCountMap(map<Int_t,Int_t> &ma, Int_t tobechecked);
     void FillMultipleCountHistoAndClear(map<Int_t,Int_t> &ma, TH1F* hist);
+    Double_t GetOriginalInvMass(const AliConversionPhotonBase * photon, AliVEvent * event) const;
     
   protected:
     AliV0ReaderV1*                    fV0Reader;                                  //
@@ -112,6 +113,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fHistoConvGammaR;                           //!
     TH1F**                            fHistoConvGammaEta;                         //!
     TH1F**                            fHistoConvGammaPhi;                         //!
+    TH1F**                            fHistoConvGammaInvMass;                     //!
+    TH1F**                            fHistoConvGammaInvMassReco;                 //!
     TH2F**                            fHistoConvGammaPsiPairPt;                   //!
     TTree**                           tESDConvGammaPtDcazCat;                     //!
     Float_t                           fPtGamma;                                   //!
@@ -208,6 +211,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fHistoTrueConvGammaPtMC;                      //!
     TH1F**                            fHistoTrueConvGammaRMC;                       //!
     TH1F**                            fHistoTrueConvGammaEta;                       //!
+    TH1F**                            fHistoTrueConvGammaInvMass;                   //!
+    TH1F**                            fHistoTrueConvGammaInvMassReco;               //!
     TH2F**                            fHistoTrueConvGammaPsiPairPt;                 //!
     TH2F**                            fHistoCombinatorialPt;                        //!
     TH3F**                            fHistoCombinatorialMothersPt;                 //!

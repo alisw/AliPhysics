@@ -1825,6 +1825,9 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
     cuts.AddCut("18910a23", "00200009247602008250404000", "0652501500000000"); // 80-90%
     cuts.AddCut("10110a23", "00200009247602008250404000", "0652501500000000"); // 0-10%
     cuts.AddCut("10910a23", "00200009247602008250404000", "0652501500000000"); // 0-90%
+  } else if (trainConfig == 287){ // for test for inv mass cut
+    cuts.AddCut("10910013", "00200009247602008250404000", "0652501500000000"); // analysis cuts
+    cuts.AddCut("10910013", "00200018357602002140000000", "0652501500000000"); // open for systematic checks
 
   } else  if (trainConfig == 300){ // LHC10h standard, eta 0.65, y = 0.6
     cuts.AddCut("60100013", "03200009300002003220000000", "0152304500900000"); // 0-5%
