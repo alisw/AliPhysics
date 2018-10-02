@@ -1363,7 +1363,24 @@ Bool_t AliAnalysisTaskFlowModes::IsEventSelected_PbPb()
    Double_t centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
     
   // cut on consistency between centrality estimators: VOM vs CL1
-  if(fabs(centrV0M-centrCL1)>7.5) return kFALSE;
+   
+  double fEstimatorsCorrelationCoef[2];
+  double fEstimatorsSigmaPars[4];
+  double fDeltaEstimatorNsigma[2];
+    
+  fEstimatorsCorrelationCoef[0] = 0.0157497;
+  fEstimatorsCorrelationCoef[1] = 0.973488;
+  fEstimatorsSigmaPars[0] = 0.673612;
+  fEstimatorsSigmaPars[1] = 0.0290718;
+  fEstimatorsSigmaPars[2] = -0.000546728;
+  fEstimatorsSigmaPars[3] = 5.82749e-06;
+  fDeltaEstimatorNsigma[0] = 5.;
+  fDeltaEstimatorNsigma[1] = 5.5;
+
+  const double center = centrCL1 * fEstimatorsCorrelationCoef[1] + fEstimatorsCorrelationCoef[0];
+  const double sigma = fEstimatorsSigmaPars[0] + fEstimatorsSigmaPars[1] * centrCL1 + fEstimatorsSigmaPars[2] * centrCL1 * centrCL1 + fEstimatorsSigmaPars[3] * centrCL1 * centrCL1 * centrCL1;
+  if (centrV0M < center - fDeltaEstimatorNsigma[0] * sigma && centrV0M > center + fDeltaEstimatorNsigma[1] * sigma) {return kFALSE;}
+  //if(fabs(centrV0M-centrCL1)>7.5) return kFALSE;
   fhEventCounter->Fill("Centr. Est. Consis. OK",1);
 
   
@@ -1470,18 +1487,46 @@ Bool_t AliAnalysisTaskFlowModes::IsEventSelected_PbPb()
   } // end of for (Int_t it = 0; it < nTracks; it++)
   Double_t multTPCn = multTPC;
   Double_t multEsdn = multEsd;
+  Double_t fESDvsTPConlyLinearCut[2];
 
-  Double_t multESDTPCDif = multEsdn - multTPCn*3.38;
-  
-  if (multESDTPCDif > 700.) return kFALSE;//15000
+  fESDvsTPConlyLinearCut[0] = 700.;
+  fESDvsTPConlyLinearCut[1] = 3.38;
+    
+  if(multEsdn > fESDvsTPConlyLinearCut[0] + fESDvsTPConlyLinearCut[1] * multTPCn) return kFALSE;
   fhEventCounter->Fill("ESD TPC Mult. Diff. OK",1);
 
+  Int_t fTOFvsFB32nSigmaCut[2];
+  fTOFvsFB32nSigmaCut[0] = 4.;
+  fTOFvsFB32nSigmaCut[1] = 4.;
+    
   Double_t multTrkn = multTrk;
   Double_t multTrkTOFn = multTrkTOF;
-  
-  if(fExtraPileUp && multTrkTOFn< (-32+ 0.32*multTrkn+0.000037*multTrkn*multTrkn)) return kFALSE;
-  if(fExtraPileUp && multTrkTOFn> (13+0.46*multTrkn+0.000018*multTrkn*multTrkn)) return kFALSE;
+    
+  Double_t  fTOFvsFB32correlationPars[4];
+  Double_t  fTOFvsFB32sigmaPars[6];
+ 
+  fTOFvsFB32correlationPars[0] = -1.0178;
+  fTOFvsFB32correlationPars[1] = 0.333132;
+  fTOFvsFB32correlationPars[2] = 9.10282e-05;
+  fTOFvsFB32correlationPars[3] = -1.61861e-08;
 
+  fTOFvsFB32sigmaPars[0] = 1.47848;
+  fTOFvsFB32sigmaPars[1] = 0.0385923;
+  fTOFvsFB32sigmaPars[2] = -5.06153e-05;
+  fTOFvsFB32sigmaPars[3] = 4.37641e-08;
+  fTOFvsFB32sigmaPars[4] = -1.69082e-11;
+  fTOFvsFB32sigmaPars[5] = 2.35085e-15;
+    
+  //Double_t mu32tof = PolN(multTrkn,fTOFvsFB32correlationPars,3);
+  //Double_t sigma32tof = PolN(multTrkn,fTOFvsFB32sigmaPars, 5);
+
+  Double_t mu32tof = fTOFvsFB32correlationPars[0] + fTOFvsFB32correlationPars[1]* multTrkn + fTOFvsFB32correlationPars[2]* pow(multTrkn,2) + fTOFvsFB32correlationPars[3]* pow(multTrkn,3);
+  Double_t sigma32tof = fTOFvsFB32sigmaPars[0] + fTOFvsFB32sigmaPars[1]* multTrkn + fTOFvsFB32sigmaPars[2]* pow(multTrkn,2) + fTOFvsFB32sigmaPars[3]* pow(multTrkn,3) + fTOFvsFB32sigmaPars[4]* pow(multTrkn,4) + fTOFvsFB32sigmaPars[5]* pow(multTrkn,5);
+
+
+  if ((multTrkTOFn > mu32tof + fTOFvsFB32nSigmaCut[0] * sigma32tof || multTrkTOFn < mu32tof - fTOFvsFB32nSigmaCut[1] * sigma32tof)) return kFALSE;
+  //if(fExtraPileUp && multTrkTOFn< (-32+ 0.32*multTrkn+0.000037*multTrkn*multTrkn)) return kFALSE;
+  //if(fExtraPileUp && multTrkTOFn> (13+0.46*multTrkn+0.000018*multTrkn*multTrkn)) return kFALSE;
   fhEventCounter->Fill("TOF fb32 Mult. correlation OK",1);
 
   fhEventCounter->Fill("Selected",1);
@@ -1659,10 +1704,15 @@ void AliAnalysisTaskFlowModes::FillEventsQA(const Short_t iQAindex)
 	Double_t multTPCn = multTPC;
   	Double_t multEsdn = multEsd;
 
-  	Double_t multESDTPCDif = multEsdn - multTPCn*3.38;
+  	//Double_t multESDTPCDif = multEsdn - multTPCn*3.38;
+  	//if (multESDTPCDif > 700.) return;//15000
 
-  	if (multESDTPCDif > 700.) return;//15000
+        Double_t fESDvsTPConlyLinearCut[2];
 
+        fESDvsTPConlyLinearCut[0] = 700.;
+        fESDvsTPConlyLinearCut[1] = 3.38;
+
+        if(multEsdn > fESDvsTPConlyLinearCut[0] + fESDvsTPConlyLinearCut[1] * multTPCn) return;
   }
   fhQAEventsPileUp[iQAindex]->Fill(multTPC,multEsd);
   
@@ -1671,8 +1721,35 @@ void AliAnalysisTaskFlowModes::FillEventsQA(const Short_t iQAindex)
   	Double_t multTrkn = multTrk;
   	Double_t multTrkTOFn = multTrkTOF;
 
-  	if(fExtraPileUp && multTrkTOFn< (-32+ 0.32*multTrkn+0.000037*multTrkn*multTrkn)) return;
-  	if(fExtraPileUp && multTrkTOFn> (13+0.46*multTrkn+0.000018*multTrkn*multTrkn)) return;	
+        Int_t fTOFvsFB32nSigmaCut[2];
+        fTOFvsFB32nSigmaCut[0] = 4.;
+        fTOFvsFB32nSigmaCut[1] = 4.;
+
+        Double_t  fTOFvsFB32correlationPars[4];
+        Double_t  fTOFvsFB32sigmaPars[6];
+
+	fTOFvsFB32correlationPars[0] = -1.0178;
+        fTOFvsFB32correlationPars[1] = 0.333132;
+        fTOFvsFB32correlationPars[2] = 9.10282e-05;
+        fTOFvsFB32correlationPars[3] = -1.61861e-08;
+
+        fTOFvsFB32sigmaPars[0] = 1.47848;
+        fTOFvsFB32sigmaPars[1] = 0.0385923;
+        fTOFvsFB32sigmaPars[2] = -5.06153e-05;
+        fTOFvsFB32sigmaPars[3] = 4.37641e-08;
+        fTOFvsFB32sigmaPars[4] = -1.69082e-11;
+        fTOFvsFB32sigmaPars[5] = 2.35085e-15;
+
+        //Double_t mu32tof = PolN(multTrkn,fTOFvsFB32correlationPars,3);
+        //Double_t sigma32tof = PolN(multTrkn,fTOFvsFB32sigmaPars, 5);
+
+	Double_t mu32tof = fTOFvsFB32correlationPars[0] + fTOFvsFB32correlationPars[1]* multTrkn + fTOFvsFB32correlationPars[2]* pow(multTrkn,2) + fTOFvsFB32correlationPars[3]* pow(multTrkn,3);
+        Double_t sigma32tof = fTOFvsFB32sigmaPars[0] + fTOFvsFB32sigmaPars[1]* multTrkn + fTOFvsFB32sigmaPars[2]* pow(multTrkn,2) + fTOFvsFB32sigmaPars[3]* pow(multTrkn,3) + fTOFvsFB32sigmaPars[4]* pow(multTrkn,4) + fTOFvsFB32sigmaPars[5]* pow(multTrkn,5);
+
+        if ((multTrkTOFn > mu32tof + fTOFvsFB32nSigmaCut[0] * sigma32tof || multTrkTOFn < mu32tof - fTOFvsFB32nSigmaCut[1] * sigma32tof)) return;
+
+  	//if(fExtraPileUp && multTrkTOFn< (-32+ 0.32*multTrkn+0.000037*multTrkn*multTrkn)) return;
+  	//if(fExtraPileUp && multTrkTOFn> (13+0.46*multTrkn+0.000018*multTrkn*multTrkn)) return;	
   }
   fhEventsMultTOFFilterbit32[iQAindex]->Fill(multTrk,multTrkTOF);
 
@@ -2714,6 +2791,7 @@ void AliAnalysisTaskFlowModes::DoFlowCharged(const Short_t iEtaGapIndex)
         if(DDn4GapP!=0)
         {
             vector = Four13DiffGapPos(6,-2,-2,-2,iPt);
+            dValue = vector.Re()/DDn4GapP;
             if( TMath::Abs(dValue < 1) ){
                 fpMixedChargedCor4Pos[fIndexSampling][iEtaGapIndex]->Fill(fIndexCentrality,iPt*dPtBinWidth, dValue, DDn4GapP);
             }
@@ -2723,6 +2801,7 @@ void AliAnalysisTaskFlowModes::DoFlowCharged(const Short_t iEtaGapIndex)
         if(DDn4GapP!=0)
         {
             vector = Four13DiffGapNeg(6,-2,-2,-2,iPt);
+            dValue = vector.Re()/DDn4GapP;
             if( TMath::Abs(dValue < 1) ){
                 fpMixedChargedCor4Neg[fIndexSampling][iEtaGapIndex]->Fill(fIndexCentrality,iPt*dPtBinWidth, dValue, DDn4GapP);
             }
@@ -3543,7 +3622,7 @@ TComplex AliAnalysisTaskFlowModes::Four13DiffGapNeg(const Short_t n1, const Shor
 //____________________________________________________________________
 TComplex AliAnalysisTaskFlowModes::SixGapPos(const Short_t n1, const Short_t n2, const Short_t n3, const Short_t n4, const Short_t n5, const Short_t n6) // n1 + n2 + n3 = n4 + n5 + n6
 {
-    TComplex formula = QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1) - QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapNeg(n4+n5,2)*QGapNeg(n6,1) - QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapNeg(n4+n6,2)*QGapNeg(n5,1) - QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapNeg(n5+n6,2)*QGapNeg(n4,1) + 2.*QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapNeg(n4+n5+n6,3) - QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1) + QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapNeg(n4+n5,2)*QGapNeg(n6,1) + QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapNeg(n4+n6,2)*QGapNeg(n5,1) + QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapNeg(n5+n6,2)*QGapNeg(n4,1) - 2.*QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapNeg(n4+n5+n6,3) - QGapPos(n1+n3,2)*QGapPos(n2,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1) + QGapPos(n1+n3,2)*QGapPos(n2,1)*QGapNeg(n4+n5,2)*QGapNeg(n6,1) + QGapPos(n1+n3,2)*QGapPos(n2,1)*QGapNeg(n4+n6,2)*QGapNeg(n5,1) + QGapPos(n1+n3,2)*QGapPos(n2,1)*QGapNeg(n5+n6,2)*QGapNeg(n4,1) - 2.*QGapPos(n1+n3,2)*QGapPos(n2,1)*QGapNeg(n4+n5+n6,3) - QGapPos(n2+n3,2)*QGapPos(n1,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1) + QGapPos(n2+n3,2)*QGapPos(n1,1)*QGapNeg(n4+n5,2)*QGapNeg(n6,1) + QGapPos(n2+n3,2)*QGapPos(n1,1)*QGapNeg(n4+n6,2)*QGapNeg(n5,1) + QGapPos(n2+n3,2)*QGapPos(n1,1)*QGapNeg(n5+n6,2)*QGapNeg(n4,1) - 2.*QGapPos(n2+n3,2)*QGapPos(n1,1)*QGapNeg(n4+n5+n6,3)+ 2.*QGapPos(n1+n2+n3,3)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1) - 2.*QGapPos(n1+n2+n3,3)*QGapNeg(n4+n5,2)*QGapNeg(n6,1) - 2.*QGapPos(n1+n2+n3,3)*QGapNeg(n4+n6,2)*QGapNeg(n5,1) - 2.*QGapPos(n1+n2+n3,3)*QGapNeg(n5+n6,2)*QGapNeg(n4,1) + 4.*QGapPos(n1+n2+n3,3)*QGapNeg(n4+n5+n6,3);    
+    TComplex formula = QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1) - QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapNeg(n4+n5,2)*QGapNeg(n6,1) - QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapNeg(n4+n6,2)*QGapNeg(n5,1) - QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapNeg(n5+n6,2)*QGapNeg(n4,1) + 2.*QGapPos(n1,1)*QGapPos(n2,1)*QGapPos(n3,1)*QGapNeg(n4+n5+n6,3)- QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1) + QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapNeg(n4+n5,2)*QGapNeg(n6,1) + QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapNeg(n4+n6,2)*QGapNeg(n5,1) + QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapNeg(n5+n6,2)*QGapNeg(n4,1) - 2.*QGapPos(n1+n2,2)*QGapPos(n3,1)*QGapNeg(n4+n5+n6,3) - QGapPos(n1+n3,2)*QGapPos(n2,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1) + QGapPos(n1+n3,2)*QGapPos(n2,1)*QGapNeg(n4+n5,2)*QGapNeg(n6,1) + QGapPos(n1+n3,2)*QGapPos(n2,1)*QGapNeg(n4+n6,2)*QGapNeg(n5,1) + QGapPos(n1+n3,2)*QGapPos(n2,1)*QGapNeg(n5+n6,2)*QGapNeg(n4,1) - 2.*QGapPos(n1+n3,2)*QGapPos(n2,1)*QGapNeg(n4+n5+n6,3) - QGapPos(n2+n3,2)*QGapPos(n1,1)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1) + QGapPos(n2+n3,2)*QGapPos(n1,1)*QGapNeg(n4+n5,2)*QGapNeg(n6,1) + QGapPos(n2+n3,2)*QGapPos(n1,1)*QGapNeg(n4+n6,2)*QGapNeg(n5,1) + QGapPos(n2+n3,2)*QGapPos(n1,1)*QGapNeg(n5+n6,2)*QGapNeg(n4,1) - 2.*QGapPos(n2+n3,2)*QGapPos(n1,1)*QGapNeg(n4+n5+n6,3)+ 2.*QGapPos(n1+n2+n3,3)*QGapNeg(n4,1)*QGapNeg(n5,1)*QGapNeg(n6,1) - 2.*QGapPos(n1+n2+n3,3)*QGapNeg(n4+n5,2)*QGapNeg(n6,1) - 2.*QGapPos(n1+n2+n3,3)*QGapNeg(n4+n6,2)*QGapNeg(n5,1) - 2.*QGapPos(n1+n2+n3,3)*QGapNeg(n5+n6,2)*QGapNeg(n4,1) + 4.*QGapPos(n1+n2+n3,3)*QGapNeg(n4+n5+n6,3);
    return formula;
 }
 //____________________________________________________________________
