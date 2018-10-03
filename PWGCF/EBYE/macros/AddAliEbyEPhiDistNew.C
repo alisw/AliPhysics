@@ -106,7 +106,7 @@ AliAnalysisTask *AddAliEbyEPhiDistNew(
     else{
         task->SetNumberOfPtBins( 19 );
     }
-    task->SetPhi(Phil,Phih);
+    task->SetPhi(phil,phih);
     task->SetNumberOfPhiBins(6);
     task->SetTPCTrackQualityCuts( TPCCrossRow, Chi2NDF );
     task->SetCentralityEstimator( CentEstimator );
