@@ -55,6 +55,8 @@ public:
     void SetITSchi2(Int_t itschi2){fitschi2 = itschi2;};
     void SetMinSig(Double_t mimSig){fmimSig = mimSig;};
     void SetEopMim(Double_t mimEop){fmimEop = mimEop;};
+    void SetMinM20(Double_t mimM20){fmimM20 = mimM20;};
+    void SetMaxM20(Double_t maxM20){fmaxM20 = maxM20;};
 
     void SetInvMassCut0(Double_t InvmassCut) {fInvmassCut = InvmassCut;};
     void SetInvMassCut1(Double_t ptAssocut) {fptAssocut = ptAssocut;};
@@ -133,6 +135,8 @@ private:
     Int_t fitschi2; // max. centrality
     Double_t fmimSig; // max. centrality
     Double_t fmimEop; // max. centrality
+    Double_t fmimM20; // max. centrality
+    Double_t fmaxM20; // max. centrality
     Double_t fInvmassCut;  
     Double_t fptAssocut;  
     Int_t fetarange;  

@@ -702,7 +702,7 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     fCompTrackPtMatchwithEMC = new TH1F("fCompTrackPtMatchwithEMC","p_{T} distribution of tracks matched to EMC cluster for comparison;p_{T} (GeV/c);counts",35,ptbinning);
     fOutputList->Add(fCompTrackPtMatchwithEMC);
     
-    fMCcheckPi0decay= new TH2F("fHistpi0_e","electrons from pi0 in enhance",50,0,50,50,0,50);
+    fMCcheckPi0decay= new TH2F("fMCcheckPi0decay","electrons from pi0 in enhance",50,0,50,50,0,50);
     fOutputList->Add(fMCcheckPi0decay);
 
     fMCcheckEtadecay = new TH2F("fMCcheckEtadecay","electrons from Eta in enhance",50,0,50,50,0,50);
@@ -1646,7 +1646,7 @@ void AliAnalysisTaskHFEemcQA::GetTrackMCinfo(Int_t &ilabel, std::vector<double> 
            
   if(ilabelM>0)
     {
-     cout << ilabelM << " ; " << NpureMC << " ; " << NpureMCproc << " ; " << enhance  << endl;
+     //cout << ilabelM << " ; " << NpureMC << " ; " << NpureMCproc << " ; " << enhance  << endl;
 
      AliAODMCParticle* fMCparticleM = (AliAODMCParticle*) fMCarray->At(ilabelM);
 
@@ -1661,8 +1661,8 @@ void AliAnalysisTaskHFEemcQA::GetTrackMCinfo(Int_t &ilabel, std::vector<double> 
           
           Double_t pTmom = fMCparticleM->Pt();
           MCinfo[0] = enhance;
-          MCinfo[1] = pdg;
-          MCinfo[2] = pidM;
+          MCinfo[1] = (double)TMath::Abs(pdg);
+          MCinfo[2] = (double)TMath::Abs(pidM);
           MCinfo[3] = pTmom;
           MCinfo[4] = fMCparticle->Pt();
 
