@@ -74,7 +74,7 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
     AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
 
     mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
-    mix->AddVariable(AliDielectronVarManager::kCentrality,"0,5,10,20,30,50,80");
+    mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,20,30,50,80");
     mix->SetDepth(15);
     mix->SetMixType(AliDielectronMixingHandler::kAll);
     
@@ -96,7 +96,7 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
  // only if an AliDielectronHistos object is attached to the
  // dielectron framework histograms will be filled
  //
-  if (cutDefinition==674 || cutDefinition==676) SetupMCsignals(die);
+  if (die->GetHasMC()) SetupMCsignals(die);
  
  InitHistograms(die,cutDefinition);
  //  InitCF(die,cutDefinition);
@@ -1456,7 +1456,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   //add histograms to event class
   histos->UserHistogram("Event","nEvents","Number of processed events after cuts;Number events",1,0,1,AliDielectronVarManager::kNevents);
   histos->UserHistogram("Event","ZVertex","ZVertex;ZVertex/cm",120,-12.,12.,AliDielectronVarManager::kZvPrim);
-  histos->UserHistogram("Event","Centrality","Centrality;Centrality/%",202,-1.,100.,AliDielectronVarManager::kCentralityNew);
+  histos->UserHistogram("Event","Centrality","Centrality;Centrality/%",202,-1.,100.,AliDielectronVarManager::kCentrality);
+  histos->UserHistogram("Event","CentralityNew","Centrality;Centrality/%",202,-1.,100.,AliDielectronVarManager::kCentralityNew);
   histos->UserHistogram("Event","nEvTPC_eventplaneents",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  TMath::Pi()/-2.,TMath::Pi()/2.),AliDielectronVarManager::kQnTPCrpH2);
 
 
