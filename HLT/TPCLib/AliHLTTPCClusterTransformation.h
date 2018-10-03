@@ -4,13 +4,13 @@
 #ifndef ALIHLTTPCCLUSTERTRANSFORMATION_H
 #define ALIHLTTPCCLUSTERTRANSFORMATION_H
 
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the ALICE HLT Project        *
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
 /** @file   AliHLTTPCClusterTransformation.h
     @author Kalliopi Kanaki, Sergey Gorbunov
-    @date   
+    @date
     @brief
 */
 
@@ -41,7 +41,7 @@ namespace ali_tpc_common{
  *
  * The class transforms internal TPC coordinates (pad,time) to XYZ.
  * Allnecessary calibration and alignment corrections are applied
- * 
+ *
  * @ingroup alihlt_tpc_components
  */
 
@@ -50,14 +50,14 @@ class AliHLTTPCClusterTransformation{
  public:
 
   /// Enumeration of transformation kinds
-  enum  TransformationKind  { 
-    OldFastTransform = 0,    ///< old fast transfrom with splines
-    Original         = 1,    ///< original
-    FastIRS          = 2     ///< new fast transform with irregular splines from AliTPCCommon
+  enum  TransformationKind  {
+    TransformOldFastTransform = 0,    ///< old fast transfrom with splines
+    TransformOriginal         = 1,    ///< original
+    TransformFastIRS          = 2     ///< new fast transform with irregular splines from AliTPCCommon
    };
 
-  /** standard constructor */    
-  AliHLTTPCClusterTransformation();           
+  /** standard constructor */
+  AliHLTTPCClusterTransformation();
   /** destructor */
   virtual ~AliHLTTPCClusterTransformation();
 
@@ -123,7 +123,7 @@ class AliHLTTPCClusterTransformation{
 
   AliTPCTransform * fOrigTransform;  // offline transformation
   AliHLTTPCFastTransform fFastTransform; // fast transformation object
-  ali_tpc_common::tpc_fast_transformation::TPCFastTransform *fFastTransformIRS; // new fast transform with irregular splines 
+  ali_tpc_common::tpc_fast_transformation::TPCFastTransform *fFastTransformIRS; // new fast transform with irregular splines
   ali_tpc_common::tpc_fast_transformation::TPCFastTransformManager *fFastTransformManager; // manager
   
   bool fIsMC; //Do we process MC?
@@ -133,7 +133,7 @@ class AliHLTTPCClusterTransformation{
 
 inline Int_t AliHLTTPCClusterTransformation::Error(Int_t code, const char *msg)
 {
-  // Set error 
+  // Set error
   fError = msg;
   return code;
 }

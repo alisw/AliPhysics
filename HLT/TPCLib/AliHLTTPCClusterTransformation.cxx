@@ -18,8 +18,8 @@
 
 /** @file   AliHLTTPCClusterTransformation.cxx
     @author Kalliopi Kanaki, Sergey Gorbubnov
-    @date   
-    @brief 
+    @date
+    @brief
 */
 
 
@@ -43,8 +43,10 @@
 #include <iomanip>
 #include <TGeoGlobalMagField.h>
 
+#ifdef HAVE_ALITPCCOMMON
 #include "TPCFastTransform.h"
 #include "TPCFastTransformManager.h"
+#endif
 
 using namespace std;
 
@@ -55,31 +57,38 @@ AliRecoParam AliHLTTPCClusterTransformation::fOfflineRecoParam;
 AliHLTTPCClusterTransformation::AliHLTTPCClusterTransformation()
 :
   fError(),
-  fTransformKind( TransformationKind::OldFastTransform ),
+  fTransformKind( TransformOldFastTransform ),
   fOrigTransform(NULL),
   fFastTransform(),
+#ifdef HAVE_ALITPCCOMMON
   fFastTransformIRS(new ali_tpc_common::tpc_fast_transformation::TPCFastTransform),
   fFastTransformManager( new ali_tpc_common::tpc_fast_transformation::TPCFastTransformManager ),
+#else
+  fFastTransformIRS(NULL),
+  fFastTransformManager(NULL),
+#endif
   fIsMC(0)
 {
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt  
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
-AliHLTTPCClusterTransformation::~AliHLTTPCClusterTransformation() 
-{ 
+AliHLTTPCClusterTransformation::~AliHLTTPCClusterTransformation()
+{
   // see header file for class documentation
+#ifdef HAVE_ALITPCCOMMON
   delete fFastTransformManager;
   delete fFastTransformIRS;
+#endif
 }
 
 int  AliHLTTPCClusterTransformation::Init( double /*FieldBz*/, Long_t TimeStamp, bool isMC, int useOrigTransform )
 {
-  TransformationKind kind = OldFastTransform;
-  if( useOrigTransform ) kind = Original;
+  TransformationKind kind = TransformOldFastTransform;
+  if( useOrigTransform ) kind = TransformOriginal;
   return Init( TimeStamp, isMC, kind );
 }
 
@@ -108,7 +117,7 @@ int  AliHLTTPCClusterTransformation::Init( Long_t TimeStamp, bool isMC, Transfor
  
   if( !pCalib->GetTransform() ) return Error(-3,"AliHLTTPCClusterTransformation::Init: No TPC transformation found");
   
-  // -- Get AliRunInfo variables  
+  // -- Get AliRunInfo variables
 
   AliGRPObject tmpGRP, *pGRP=0;
 
@@ -155,14 +164,14 @@ int  AliHLTTPCClusterTransformation::Init( Long_t TimeStamp, bool isMC, Transfor
     //cout<<"\n\nSet reco param from AliHLTTPCClusterTransformation: AliDetectorRecoParam found \n"<<endl;
     AliDetectorRecoParam *copy = (AliDetectorRecoParam*)static_cast<AliDetectorRecoParam*>(recoParamObj)->Clone();
     fOfflineRecoParam.AddDetRecoParam(1,copy);
-  } else {    
+  } else {
     return Error(-8,"AliHLTTPCClusterTransformation::Init: Unknown format of the TPC Reco Param entry in the data base");
   }
   
   
-  fOfflineRecoParam.SetEventSpecie(&runInfo, evInfo, 0);    
+  fOfflineRecoParam.SetEventSpecie(&runInfo, evInfo, 0);
  
-  // 
+  //
 
   AliTPCRecoParam* recParam = (AliTPCRecoParam*)fOfflineRecoParam.GetDetRecoParam(1);
 
@@ -174,18 +183,20 @@ int  AliHLTTPCClusterTransformation::Init( Long_t TimeStamp, bool isMC, Transfor
   
 
   // set current time stamp and initialize the fast transformation
-  bool useOrigTransform = ( fTransformKind==TransformationKind::Original);
+  bool useOrigTransform = ( fTransformKind==TransformOriginal);
   int err = fFastTransform.Init( pCalib->GetTransform(), TimeStamp, useOrigTransform );
   if( err!=0 ){
-    return Error(-10,Form( "AliHLTTPCClusterTransformation::Init: Initialisation of Fast Transformation failed with error %d :%s",err,fFastTransform.GetLastError()) );    
+    return Error(-10,Form( "AliHLTTPCClusterTransformation::Init: Initialisation of Fast Transformation failed with error %d :%s",err,fFastTransform.GetLastError()) );
   }
 
-  if( fTransformKind == TransformationKind::FastIRS ){
+#ifdef HAVE_ALITPCCOMMON
+  if( fTransformKind == TransformFastIRS ){
     err = fFastTransformManager->create( *fFastTransformIRS, pCalib->GetTransform(), TimeStamp );
     if( err!=0 ){
-      return Error(-10,Form( "AliHLTTPCClusterTransformation::Init: Initialisation of Fast Transformation failed with error %d :%s",err,fFastTransformManager->getLastError()) );    
+      return Error(-10,Form( "AliHLTTPCClusterTransformation::Init: Initialisation of Fast Transformation failed with error %d :%s",err,fFastTransformManager->getLastError()) );
     }
   }
+#endif
   
   // offline transformation is already initialised in fFastTransform or in fFastTransformManager
   fOrigTransform = pCalib->GetTransform();
@@ -198,7 +209,7 @@ Int_t  AliHLTTPCClusterTransformation::Init( const AliHLTTPCFastTransformObject 
 {
   // Initialisation
  
-  fTransformKind = OldFastTransform;
+  fTransformKind = TransformOldFastTransform;
  
   if(!AliGeomManager::GetGeometry()){
     AliGeomManager::LoadGeometry();
@@ -216,7 +227,7 @@ Int_t  AliHLTTPCClusterTransformation::Init( const AliHLTTPCFastTransformObject 
 }
 
 
-Bool_t AliHLTTPCClusterTransformation::IsInitialised() const 
+Bool_t AliHLTTPCClusterTransformation::IsInitialised() const
 {
   // Is the transformation initialised
   return fFastTransform.IsInitialised();
@@ -230,7 +241,7 @@ void AliHLTTPCClusterTransformation::DeInit()
 
 Int_t AliHLTTPCClusterTransformation::SetCurrentTimeStamp( Long_t TimeStamp )
 {
-  // Set the current time stamp  
+  // Set the current time stamp
 
   AliTPCRecoParam* recParam = (AliTPCRecoParam*)fOfflineRecoParam.GetDetRecoParam(1);
   if( !recParam )  return Error(-1,"AliHLTTPCClusterTransformation::SetCurrentTimeStamp: No TPC Reco Param entry found");
@@ -249,12 +260,14 @@ Int_t AliHLTTPCClusterTransformation::SetCurrentTimeStamp( Long_t TimeStamp )
     return Error(-4,Form( "AliHLTTPCClusterTransformation::SetCurrentTimeStamp: SetCurrentTimeStamp to the Fast Transformation failed with error %d :%s",err,fFastTransform.GetLastError()) );
   }
 
-  if( fTransformKind == TransformationKind::FastIRS ){
+#ifdef HAVE_ALITPCCOMMON
+  if( fTransformKind == TransformFastIRS ){
     err = fFastTransformManager->updateCalibration( *fFastTransformIRS, TimeStamp );
     if( err!=0 ){
-      return Error(-10,Form( "AliHLTTPCClusterTransformation::SetCurrentTimeStamp: Initialisation of Fast Transformation failed with error %d :%s",err,fFastTransformManager->getLastError()) );    
+      return Error(-10,Form( "AliHLTTPCClusterTransformation::SetCurrentTimeStamp: Initialisation of Fast Transformation failed with error %d :%s",err,fFastTransformManager->getLastError()) );
     }
   }
+#endif
 
   // time stamp for the offline transformation is already set in fFastTransform or in fFastTransformManager
   fOrigTransform = pCalib->GetTransform();
@@ -281,13 +294,16 @@ Int_t  AliHLTTPCClusterTransformation::Transform( int Slice, int Row, float Pad,
 {
   //static int st=0;
   //st++;
-  if( fTransformKind == TransformationKind::FastIRS ){
+#ifdef HAVE_ALITPCCOMMON
+  if( fTransformKind == TransformFastIRS ){
     //if( st<100) cout<<"IRS"<<endl;
-    int err = fFastTransformIRS->Transform( Slice, Row, Pad, Time, XYZ[0], XYZ[1], XYZ[2]);    
-    if( err!=0 ) return Error(-1,Form( "AliHLTTPCClusterTransformation::Transform: Fast Transformation failed with error %d ",err) );    
-  } else  if( fTransformKind == TransformationKind::Original ){
+    int err = fFastTransformIRS->Transform( Slice, Row, Pad, Time, XYZ[0], XYZ[1], XYZ[2]);
+    if( err!=0 ) return Error(-1,Form( "AliHLTTPCClusterTransformation::Transform: Fast Transformation failed with error %d ",err) );
+  } else
+#endif
+  if( fTransformKind == TransformOriginal ){
     //if( st<100) cout<<"orig"<<endl;
-    Int_t sector=-99, thisrow=-99;  
+    Int_t sector=-99, thisrow=-99;
     AliHLTTPCGeometry::Slice2Sector( Slice, Row, sector, thisrow);
     Int_t is[]={sector};
     Double_t xx[]={static_cast<Double_t>(Row),Pad,Time};
@@ -295,8 +311,8 @@ Int_t  AliHLTTPCClusterTransformation::Transform( int Slice, int Row, float Pad,
     for (int i = 0;i < 3;i++) XYZ[i] = xx[i];
   } else {
     //if( st<100) cout<<"old"<<endl;
-    // Convert row, pad, time to X Y Z   	   
-    Int_t sector=-99, thisrow=-99;  
+    // Convert row, pad, time to X Y Z
+    Int_t sector=-99, thisrow=-99;
     AliHLTTPCGeometry::Slice2Sector( Slice, Row, sector, thisrow);
     int err = fFastTransform.Transform(sector, thisrow, Pad, Time, XYZ);
     if( err!=0 ) return Error(-1,Form( "AliHLTTPCClusterTransformation::Transform: Fast Transformation failed with error %d :%s",err,fFastTransform.GetLastError()) );
