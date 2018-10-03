@@ -1097,12 +1097,6 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
   Bool_t EG1tr = kFALSE;
   Bool_t EG2tr = kFALSE;
 
-  //cout << "trigger = " << trigger << endl;
-  //if(trigger==7)fEMCEG1 = kTRUE;
-  //if(firedTrigger.Contains(TriggerEG1))EG1tr = kTRUE;
-  //if(firedTrigger.Contains(TriggerEG2))EG2tr = kTRUE;
-  //cout << "fEMCEGA1 = " << fEMCEG1 << endl;
-  //cout << "firedTrigger = " << firedTrigger << endl;
 
   //if(trigger==7)if(firedTrigger.Contains(TriggerEG1))EG1tr = kTRUE;
   //cout << "EG1tr = " << EG1tr << endl;
@@ -1266,8 +1260,12 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     double m20mim = 0.03;
     double m20max = 0.28;
     */
+    /*
     double m20mim = 0.01;
     double m20max = 0.35;
+    */
+    double m20mim = fmimM20;
+    double m20max = fmaxM20;
 
     ////////////////////
     //Apply track cuts//
@@ -1336,11 +1334,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       fCheckEta->Fill(atrack->Eta());
 
 
-     cout << "<-------------- fRefit 0 = " << fRefit << endl; 
       if(fRefit)
         { 
-          cout << "<-------------- fRefit 1 = " << fRefit << endl; 
-         //cout << "fRefit = " << fRefit << endl; 
          if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
         }
       // not apply vAN20180703 to vAN20180705
