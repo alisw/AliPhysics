@@ -303,13 +303,14 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
     }
 
 		// Create hashes of generators used for injected signals in MC
-		TString generatorNames = "Pythia CC_1;Pythia BB_1;Pythia B_1;Jpsi2ee_1;B2JPsi2ee_1";
+		TString generatorNames = "Pythia CC_1;Pythia BB_1;Pythia B_1;Jpsi2ee_1;B2Jpsi2ee_1";
 		TObjArray arr = *(generatorNames.Tokenize(";"));
 		for(Int_t i = 0; i < arr.GetEntries(); i++){
 			TString temp = arr.At(i)->GetName();
 			std::cout << "---" << temp << std::endl;
 			fGeneratorHashes.push_back(temp.Hash());
 		}
+
 
     // Input slot #0 works with a TChain
     DefineInput(0, TChain::Class());
