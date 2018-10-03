@@ -1933,7 +1933,7 @@ void AliAnalysisTaskParticleEff::UserExec(Option_t *)
       if(aodCascade->CosPointingAngle(fV1) < 0.97) continue; fCutsXim->Fill(cutXim++);
       if(aodCascade->DcaV0ToPrimVertex() < 0.07) continue; fCutsXim->Fill(cutXim++);
       if(aodCascade->DcaV0Daughters() > 1.6) continue; fCutsXim->Fill(cutXim++);
-      if(aodCascade->MassAntiLambda() < (LambdaMass-0.005) || aodCascade->MassAntiLambda() > (LambdaMass+0.005)) continue; fCutsXim->Fill(cutXim++);
+      if(aodCascade->MassLambda() < (LambdaMass-0.005) || aodCascade->MassLambda() > (LambdaMass+0.005)) continue; fCutsXim->Fill(cutXim++);
       if(TMath::Abs(aodCascade->Eta()) > 0.8) continue; fCutsXim->Fill(cutXim++);
       if(aodCascade->DecayLength(fV1) > 100) continue;  fCutsXim->Fill(cutXim++);
       if(aodCascade->RadiusV0()<1.4 || aodCascade->RadiusV0()>200) continue; fCutsXim->Fill(cutXim++);
