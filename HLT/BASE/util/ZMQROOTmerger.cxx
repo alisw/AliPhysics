@@ -188,7 +188,7 @@ const char* fUSAGE =
     " -ZMQtimeout: when to timeout the sockets (milliseconds)\n"
     " -SchemaOnRequest : include streamers ONCE (after a request)\n"
     " -SchemaOnSend : include streamers ALWAYS in each sent message\n"
-    " -UnpackCollections : cache/merge the contents of the collections instead of the collection itself\n"
+    " -UnpackCollections : cache/merge the contents of the collections instead of the collection itself - default, do not change!\n"
     " -UnpackContainers : unpack the contents of AliAnalysisDataContainers\n"
     " -IgnoreDefaultContainerNames : don't prefix default container names (TList,TObjArray)\n"
     " -FullyDestroyAnalysisDataContainer : explicitly delete consumers and producer members in the container to work around a memory leak\n"
