@@ -91,7 +91,7 @@ Bool_t  fAllowResetOnRequest=kTRUE;
 Bool_t  fAllowResetAtSOR=kTRUE;
 Bool_t  fAllowClearAtSOR=kFALSE;
 
-Bool_t  fUnpackCollections = kFALSE;
+Bool_t  fUnpackCollections = kTRUE;
 Bool_t  fUnpackContainers = kFALSE;
 Bool_t  fFullyDestroyAnalysisDataContainer = kFALSE;
 std::string fLoadLibs;
@@ -281,7 +281,7 @@ public:
     {
       mergeable = dynamic_cast<AliMergeable*>(fObject);
     }
-    else if (!fMergeCall && fObject->IsA())
+    if (!hist && !mergeable && !fMergeCall && fObject->IsA())
     {
       //use ROOT magic as last resort
       fMergeCall = new TMethodCall;
