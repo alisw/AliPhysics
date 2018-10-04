@@ -14,7 +14,7 @@ using namespace std;
 //_____________________________________________________________________
 AliForwardGenericFramework::AliForwardGenericFramework()
 {
-  Int_t rbins[4] = {2, 6, 5, 1} ; // kind (real or imaginary), n, p, eta
+  Int_t rbins[4] = {2, 6, 5, 2} ; // kind (real or imaginary), n, p, eta
   Int_t dimensions = 4;
   if (fSettings.fFlowFlags & fSettings.kEtaGap) {
      rbins[3] = 2 ; // two bins in eta for gap, one for standard
@@ -25,7 +25,7 @@ AliForwardGenericFramework::AliForwardGenericFramework()
 
   fQvector = new THnD("Qvector", "Qvector", dimensions, rbins, xmin, xmax);
   Int_t dbins[4] = {2, 6, 4, fSettings.fNDiffEtaBins} ; // kind (real or imaginary), n, p, eta
-
+  xmin[3] = -4.0;
   fpvector = new THnD("pvector", "pvector", dimensions, dbins, xmin, xmax);
   fqvector = new THnD("qvector", "qvector", dimensions, dbins, xmin, xmax);
 
@@ -44,17 +44,10 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
   TH2F* fOutliers = static_cast<TH2F*>(eventList->FindObject("hOutliers"));
   TH1D* fFMDHits = static_cast<TH1D*>(eventList->FindObject("FMDHits"));
 
-  Int_t nBadBins = 0;
-  Double_t sumOfWeights = 0;
-
   for (Int_t etaBin = 1; etaBin <= dNdetadphi.GetNbinsX(); etaBin++) {
     Double_t acceptance = 1.;
 
     Double_t eta = dNdetadphi.GetXaxis()->GetBinCenter(etaBin);
-    Double_t runAvg = 0;
-    Double_t avgSqr = 0;
-    Double_t max = 0;
-    Int_t nInAvg = 0;
     
     Double_t difEtaBin = fpvector->GetAxis(3)->FindBin(eta);
     Double_t difEta = fpvector->GetAxis(3)->GetBinCenter(difEtaBin);
@@ -65,7 +58,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
       Double_t phi = dNdetadphi.GetYaxis()->GetBinCenter(phiBin);
       Double_t weight = dNdetadphi.GetBinContent(etaBin, phiBin);
 
-      if (dNdetadphi.GetBinContent(etaBin, 0) == 0) break;
+      //if (dNdetadphi.GetBinContent(etaBin, 0) == 0) break;
 
       if (fSettings.doNUA){
         // holes in the FMD

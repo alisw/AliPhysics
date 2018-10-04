@@ -25,8 +25,6 @@ AliForwardFlowRun2Settings::AliForwardFlowRun2Settings() :
   gap(0.0),
   mc(false)
 {
-
-
 }
 
 

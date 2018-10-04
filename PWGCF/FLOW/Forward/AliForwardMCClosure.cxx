@@ -297,7 +297,7 @@ std::cout << "noTracks = " << nTracks << std::endl;
     */
   
   //ESDs w. primary
-    
+    /*
     for (Int_t iTr = 0; iTr < nTracks; iTr++) {
       AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
       if (!p->IsPhysicalPrimary()) continue;
@@ -314,9 +314,9 @@ std::cout << "noTracks = " << nTracks << std::endl;
           }
         }
     }
-    
+    */
     //ESDs w. secondary
-    /*
+    
     for (Int_t iTr = 0; iTr < nTracks; iTr++) {
       AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
       if (p->Charge() == 0) continue;
@@ -332,7 +332,7 @@ std::cout << "noTracks = " << nTracks << std::endl;
         }
       }
     }
-    */
+    
 
         //if (p->Pt()>0.2 && p->Pt() < 2) centralDiff.Fill(p->Eta(),p->Phi(),1);
 
