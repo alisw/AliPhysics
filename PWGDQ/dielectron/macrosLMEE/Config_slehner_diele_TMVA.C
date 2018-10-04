@@ -190,11 +190,13 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 //  histos->UserHistogram("Track","eta","" , 100,-0.8,0.8, AliDielectronVarManager::kEta);
 //  histos->UserHistogram("Track","phi","" , 100,0,7, AliDielectronVarManager::kPhi);
   histos->UserHistogram("Track","pt", "", 100,0,10,AliDielectronVarManager::kPt);  
-//  histos->UserHistogram("Track","centrality","",100,0,100,  AliDielectronVarManager::kCentrality);
-  //add histograms to pair classes
-  histos->UserHistogram("Pair",
-                        "InvMass_pPt_cent","Inv.Mass:PairPt;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c), Centrality (V0M)",
-                        200,0.,10.,200,0.,10.,20,0,100,
+
+  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning("0.0, 0.1,0.3,0.5,0.7,0.9,1.1,1.3, 2.0, 2.9, 3.1,3.4");
+  TVectorD* ptbins= AliDielectronHelper::MakeArbitraryBinning("0.0,0.4,0.6,1,2.5");
+  TVectorD* centbins= AliDielectronHelper::MakeLinBinning(20,0,100);
+  
+  histos->UserHistogram("Pair","InvMass_pPt_cent","Inv.Mass:PairPt:Cent;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c); Centrality (V0M)",
+                        mbins, ptbins, centbins,
                         AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentrality);
   
 //  histos->UserHistogram("Pair",

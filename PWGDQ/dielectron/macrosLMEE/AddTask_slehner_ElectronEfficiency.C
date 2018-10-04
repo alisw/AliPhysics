@@ -8,8 +8,9 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
                                                                 Double_t centMax=100.,
                                                                 Bool_t PIDCorr=kFALSE,
                                                                 Bool_t useAODFilterCuts=kFALSE,
-                                                                TString configFile="Config_slehner_Efficiency.C"
-                                                                ) {
+                                                                TString configFile="Config_slehner_Efficiency.C",
+                                                                Bool_t getFromAlien=kFALSE
+        ) {
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
 
@@ -27,12 +28,13 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   // TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
   TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
 //  //Load updated macros from private ALIEN path
-//  if (getFromAlien //&&
-//      && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/s/slehner/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data())))
-//      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/s/slehner/PWGDQ/dielectron/macrosLMEE/LMEECutLib_slehner.C ."))
-//      ) {
-//    configBasePath=Form("%s/",gSystem->pwd());
-//  }
+  
+  if (getFromAlien //&&
+      && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/s/slehner/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data())))
+      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/s/slehner/PWGDQ/dielectron/macrosLMEE/LMEECutLib_slehner.C ."))
+      ) {
+    configBasePath=Form("%s/",gSystem->pwd());
+  }
   TString configFilePath(configBasePath+configFile);
   TString configLMEECutLib("LMEECutLib_slehner.C");
   TString configLMEECutLibPath(configBasePath+configLMEECutLib);
@@ -60,13 +62,12 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   task->SetEnablePhysicsSelection(kTRUE);
   task->SetTriggerMask(triggerNames);
   task->SetEventFilter(cutlib->GetEventCuts(centMin, centMax)); // All cut sets have same event cuts
-  task->SelectCollisionCandidates(AliVEvent::kINT7);
+//  task->SelectCollisionCandidates(AliVEvent::kINT7);    //where specified?
   
-
 //  maybe redundant since already set in eventcuts above
   std::cout << "CentMin = " << centMin << "  CentMax = " << centMax << std::endl;
   task->SetCentrality(centMin, centMax);
-
+  
   // #########################################################
   // #########################################################
   // Set minimum and maximum values of generated tracks. Only used to save computing power.
@@ -79,26 +80,37 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   // #########################################################
   // #########################################################
   // Set minimum and maximum values of generated tracks. Only used to save computing power.
-//  task->SetKinematicCuts(minPtCut, maxPtCut, minEtaCut, maxEtaCut);
+  task->SetKinematicCuts(minPtCut, maxPtCut, minEtaCut, maxEtaCut);
 
   // #########################################################
   // #########################################################
   // Set Binning
-  if(usePtVector == kTRUE){
-    std::vector<Double_t> ptBinsVec;
-    for (UInt_t i = 0; i < nBinsPt+1; ++i){
-      ptBinsVec.push_back(ptBins[i]);
-    }
-    task->SetPtBins(ptBinsVec);
-  }
-  else task->SetPtBinsLinear   (minPtBin,  maxPtBin, stepsPtBin);
+//  if(usePtVector == kTRUE){
+//    std::vector<Double_t> ptBinsVec;
+//    for (UInt_t i = 0; i < nBinsPt+1; ++i){
+//      ptBinsVec.push_back(ptBins[i]);
+//    }
+//    task->SetPtBins(ptBinsVec);
+//  }
+//  else
+  task->SetPtBinsLinear   (minPtBin,  maxPtBin, stepsPtBin);
   task->SetEtaBinsLinear  (minEtaBin, maxEtaBin, stepsEtaBin);
   task->SetPhiBinsLinear  (minPhiBin, maxPhiBin, stepsPhiBin);
   task->SetThetaBinsLinear(minThetaBin, maxThetaBin, stepsThetaBin);
-  task->SetMassBinsLinear (minMassBin, maxMassBin, stepsMassBin);
-  task->SetPairPtBinsLinear(minPairPtBin, maxPairPtBin, stepsPairPtBin);
+//  task->SetMassBinsLinear (minMassBin, maxMassBin, stepsMassBin);
+//  task->SetPairPtBinsLinear(minPairPtBin, maxPairPtBin, stepsPairPtBin);
+  
+  double mbinsarr[] = {0.0, 0.1,0.3,0.5,0.7,0.9,1.1,1.3, 2.0, 2.9, 3.1,3.4};
+  vector<double>mbins;
+  for(int i=0; i< sizeof(mbinsarr) / sizeof(mbinsarr[0]); i++){ mbins.push_back(mbinsarr[i]); }
 
-  // #########################################################
+  double ptbinsarr[]= {0.0,0.4,0.6,1,2.5};
+  vector<double>ptbins;
+  for(int i=0; i< sizeof(ptbinsarr) / sizeof(ptbinsarr[0]); i++){ ptbins.push_back(ptbinsarr[i]);} 
+  
+  task->SetMassBins(mbins);
+  task->SetPairPtBins(ptbins);
+
   // #########################################################
   // Resolution File, If resoFilename = "" no correction is applied
   task->SetResolutionFile(resoFilename);
@@ -151,10 +163,10 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
 //    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(TrCut, PIDCut, useAODFilterCuts);
 //    task->AddTrackCuts(filter);
 //    }
-//  }
-    std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" being added"<< std::endl;
-    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, useAODFilterCuts);
-    task->AddTrackCuts(filter);
+//  } 
+  std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" being added"<< std::endl;
+  AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, useAODFilterCuts);
+  task->AddTrackCuts(filter);
     
   if(PIDCorr) setPIDCorrections(task);
 

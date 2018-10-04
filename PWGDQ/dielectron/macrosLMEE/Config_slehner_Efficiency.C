@@ -56,7 +56,7 @@ Double_t ptBins[] = {0.000,0.050,0.100,0.150,0.200,0.250,0.300,0.350,0.400,0.450
 const Int_t nBinsPt =  ( sizeof(ptBins) / sizeof(ptBins[0]) )-1;
 
 const Double_t minPtBin   = 0;
-const Double_t maxPtBin   = 8;
+const Double_t maxPtBin   = 10;
 const Int_t    stepsPtBin = 400;
 
 const Double_t minEtaBin   = -1.0;
@@ -71,12 +71,12 @@ const Double_t minThetaBin   = 0;
 const Double_t maxThetaBin   = TMath::TwoPi();
 const Int_t    stepsThetaBin = 60;
 
-const Double_t minMassBin     = 0;
-const Double_t maxMassBin     = 5;
-const Int_t    stepsMassBin   = 250;
-const Double_t minPairPtBin   = 0;
-const Double_t maxPairPtBin   = 8;
-const Int_t    stepsPairPtBin = 160;
+//const Double_t minMassBin     = 0;
+//const Double_t maxMassBin     = 10;
+//const Int_t    stepsMassBin   = 200;
+//const Double_t minPairPtBin   = 0;
+//const Double_t maxPairPtBin   = 10;
+//const Int_t    stepsPairPtBin = 20;
 
 // Binning of resolution histograms
 const Int_t    NbinsDeltaMom   = 2000;
@@ -356,10 +356,10 @@ void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
 
 
     task->AddPairMCSignal(pair_sameMother);
-    // task->AddPairMCSignal(pair_sameMother_pion);
-    // task->AddPairMCSignal(pair_sameMother_eta);
-    // task->AddPairMCSignal(pair_sameMother_etaP);
-    // task->AddPairMCSignal(pair_sameMother_rho);
+//    task->AddPairMCSignal(pair_sameMother_pion);
+//     task->AddPairMCSignal(pair_sameMother_eta);
+//     task->AddPairMCSignal(pair_sameMother_etaP);
+//     task->AddPairMCSignal(pair_sameMother_rho);
     // task->AddPairMCSignal(pair_sameMother_omega);
     // task->AddPairMCSignal(pair_sameMother_phi);
     // task->AddPairMCSignal(pair_sameMother_jpsi);

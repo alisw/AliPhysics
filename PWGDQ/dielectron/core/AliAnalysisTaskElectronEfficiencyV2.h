@@ -101,7 +101,9 @@ public:
    void   SetThetaBinsLinear(const double min, const double max, const unsigned int steps){SetBinsLinear("theta", min, max, steps);}
 
    // pair binning setter
+   void   SetMassBins(std::vector<double> massBins){fMassBins=massBins;}
    void   SetMassBinsLinear(const double min, const double max, const unsigned int steps){SetBinsLinear("mass", min, max, steps);}
+   void   SetPairPtBins(std::vector<double> pairptBins){ fPairPtBins = pairptBins;}
    void   SetPairPtBinsLinear(const double min, const double max, const unsigned int steps){SetBinsLinear("pairpt", min, max, steps);}
 
    // Pair related setter
