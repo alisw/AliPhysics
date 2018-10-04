@@ -1321,6 +1321,15 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00010113","2446600044012300000","0163103100000010"); // INT7 w/ TM NCells 2
   } else if (trainConfig ==806){//Comparing CellQA Config from GammaConv
       cuts.AddCut("00010113","2446600000013300000","0163103100000010"); // INT7
+
+  // *********************************************************************************************************
+  // 5 TeV 2017 pp - Jet configurations
+  // *********************************************************************************************************
+
+  } else if (trainConfig == 900){
+    cuts.AddCut("00010113","11111110a7032230000","01631031000000d0"); // std
+    cuts.AddCut("00010113","1111111097032230000","01631031000000d0");
+
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -1476,6 +1485,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   task->SetDoTHnSparse(isUsingTHnSparse);
   task->SetProduceTreeEOverP(doTreeEOverP);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
+  if(trainConfig == 900)  task->SetJetAnalysis(kTRUE);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   if(trainConfig == 106 || trainConfig == 125 || trainConfig == 145){
     task->SetInOutTimingCluster(-30e-9,35e-9);
