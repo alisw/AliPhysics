@@ -65,10 +65,12 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
       Double_t phi = dNdetadphi.GetYaxis()->GetBinCenter(phiBin);
       Double_t weight = dNdetadphi.GetBinContent(etaBin, phiBin);
 
+      if (dNdetadphi.GetBinContent(etaBin, 0) == 0) break;
 
       if (fSettings.doNUA){
         // holes in the FMD
-        if ((etaBin == 17 || etaBin == 18 || etaBin == 14) && (weight == 0)){
+
+        if ((phiBin == 17 || phiBin == 18 || phiBin == 14) && (weight == 0)){
           if (detType == "forward") weight = 1.; 
         } 
 

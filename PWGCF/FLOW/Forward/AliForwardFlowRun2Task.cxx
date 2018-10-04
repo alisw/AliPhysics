@@ -284,7 +284,7 @@ if(!fAOD){
 
     // loop  over  all  the  tracks
       AliAODTrack* track = static_cast<AliAODTrack *>(fAOD->GetTrack(i));
-      if (track->TestFilterBit(kHybrid)){
+      if (track->TestFilterBit(kGlobal)){
         if (track->Pt() >= 0.2 && track->Pt() <= 5){
           spddNdedp.Fill(track->Eta(),track->Phi(), 1);
         }

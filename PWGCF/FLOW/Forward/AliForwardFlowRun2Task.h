@@ -130,6 +130,7 @@ Bool_t useEvent;
   enum {
     kTPCOnly = 128, // TPC only tracks
     kHybrid = 768, // TPC only tracks
+    kGlobal = 32, // Global tracks
     kphiAcceptanceBin = 21 // phi acceptance bin in the FMD histogram (dNdetadphi)
   };
 

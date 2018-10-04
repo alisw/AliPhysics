@@ -145,7 +145,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
 fDeltaList = new TList();
 fDeltaList->SetName("Delta");
 
-    Int_t bins_phi[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 21, fSettings.fCentBins, 200} ;
+    Int_t bins_phi[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 41, fSettings.fCentBins, 200} ;
     Double_t xmin_phi[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -4};
     Double_t xmax_phi[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 6}; // 
     Int_t dimensions_phi = 5;
@@ -155,7 +155,7 @@ fDeltaList->SetName("Delta");
     Double_t xmax_eta[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 6, 100, 2*TMath::Pi()}; // 
     Int_t dimensions_eta = 5;
 
-    Int_t bins_phi1[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 21, fSettings.fCentBins, 20} ;
+    Int_t bins_phi1[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 41, fSettings.fCentBins, 20} ;
     Double_t xmin_phi1[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, 0.0};
     Double_t xmax_phi1[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 2*TMath::Pi()}; // 
     Int_t dimensions_phi1 = 5;
@@ -305,8 +305,8 @@ std::cout << cent << std::endl;
   // Get detector objects
   //AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
 
-  TH2D spddNdedp = TH2D("spddNdedp","spddNdedp",400,-1.5,1.5,400,0,2*TMath::Pi()); // Histogram to contain the central tracks
-  TH2D forwarddNdedp = TH2D("forwarddNdedp","forwarddNdedp",200,-4,6,20,0,2*TMath::Pi()); // also known as dNdetadphi
+ // TH2D spddNdedp = TH2D("spddNdedp","spddNdedp",400,-1.5,1.5,400,0,2*TMath::Pi()); // Histogram to contain the central tracks
+  //TH2D forwarddNdedp = TH2D("forwarddNdedp","forwarddNdedp",200,-4,6,40,0,2*TMath::Pi()); // also known as dNdetadphi
 
   // Small helper function to get the eta value of a hit
   auto get_ref_eta = [event_vtx_z](AliTrackReference *ref) {
@@ -374,8 +374,8 @@ THnD* delta_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_eta"));
     if (tr && p->Charge() != 0){ // || this->IsHitTPC(p)){// { && p->Charge()!=0
 
       AliMCParticle* mother = GetMother(p); 
-      //if (!mother) continue;
-      if (!mother) mother = p;
+      if (!mother) continue;
+      //if (!mother) mother = p;
       Double_t eta_mother = mother->Eta();
       Double_t phi_mother = mother->Phi();
 
@@ -394,7 +394,7 @@ THnD* delta_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_eta"));
       delta_phi->Fill(phi1,1);
       delta_eta->Fill(eta1,1);
 
-      if (!(fabs(eta_tr - eta_mother) < 0.1)) continue;
+      //if (!(fabs(eta_tr - eta_mother) < 0.1)) continue;
       delta_phi_mother->Fill(phi,1);
       delta_eta_mother->Fill(eta,1);
 

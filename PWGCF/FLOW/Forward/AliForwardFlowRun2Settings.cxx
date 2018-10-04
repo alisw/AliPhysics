@@ -17,7 +17,7 @@ AliForwardFlowRun2Settings::AliForwardFlowRun2Settings() :
   qctype("std"),
   fnoSamples(10),
   fNRefEtaBins(1),
-  fNDiffEtaBins(100),
+  fNDiffEtaBins(50),
   fCentBins(10),
   nuacentral(),
   nuaforward(),
@@ -49,7 +49,7 @@ Bool_t AliForwardFlowRun2Settings::ExtraEventCutFMD(TH2D forwarddNdedp, double c
     for (Int_t phiBin = 0; phiBin <= phibins; phiBin++) {
       if (!mc){
         if ( fabs(eta) > 1.7) {
-          if (phiBin == 0 && forwarddNdedp.GetBinContent(etaBin, 0) == 0) break;
+          if (phiBin == 0 && forwarddNdedp.GetBinContent(etaBin, 0) == 0) useEvent = false;
         }
       }
       Double_t weight = forwarddNdedp.GetBinContent(etaBin, phiBin);

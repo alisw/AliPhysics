@@ -21,9 +21,9 @@
  */
 AliAnalysisTaskSE* AddTaskForwardFlowRun2()
 {
-  Bool_t etagap = false;
+  Bool_t etagap = true;
   Int_t mode = kRECON;
-  bool doNUA = false;
+  bool doNUA = true;
   bool mc = false;
 
 
@@ -67,7 +67,7 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2()
     // if etagap otherwise comment out, and it will be standard
     task->fSettings.fFlowFlags = task->fSettings.kEtaGap;
     task->fSettings.fNRefEtaBins = 1;
-    task->fSettings.gap = 0.4;
+    task->fSettings.gap = 0.0;
   }
   else {
     task->fSettings.fNRefEtaBins = 1; // eller skal det være et andet antal?

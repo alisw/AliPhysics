@@ -200,7 +200,7 @@ void AliForwardNUATask::UserExec(Option_t */*option*/)
     for(Int_t i(0); i < iTracks; i++) {
 
       AliAODTrack* track = static_cast<AliAODTrack *>(fAOD->GetTrack(i));
-      if (track->TestFilterBit(kHybrid)){
+      if (track->TestFilterBit(kGlobal)){
         if (track->Pt() >= 0.2 && track->Pt() <= 5){
           //spddNdedp.Fill(track->Eta(),track->Phi(), 1);
           //fHybrid->Fill(track->Eta(),track->Phi(), 1);
@@ -217,9 +217,53 @@ void AliForwardNUATask::UserExec(Option_t */*option*/)
       
         Double_t eta = forwarddNdedp.GetXaxis()->GetBinCenter(etaBin);
 
-        for (Int_t phiBin = 0; phiBin <= phibins; phiBin++) {
+        for (Int_t phiBin = 1; phiBin <= phibins; phiBin++) {
+          if (forwarddNdedp.GetBinContent(etaBin, 0) == 0) break;
+
           Double_t phi = forwarddNdedp.GetYaxis()->GetBinCenter(phiBin);
           Double_t weight = forwarddNdedp.GetBinContent(etaBin, phiBin);
+         //  std::cout << "etaBin = " << etaBin << ", eta = " << eta << ", phiBin = " << phiBin << ", phi = " << phi << std::endl;
+          // std::cout << "weight = " << weight << std::endl;
+        if ((phiBin == 17) && (etaBin > 125 && etaBin < 137)){
+
+          if (weight > 0 || forwarddNdedp.GetBinContent(etaBin, 18) > 0) continue;
+          if (weight > 0 || forwarddNdedp.GetBinContent(etaBin, 18) > 0) continue;
+          if (forwarddNdedp.GetBinContent(etaBin - 1, phiBin) > 0 ) continue;
+          if (forwarddNdedp.GetBinContent(etaBin - 2, phiBin) > 0 ) continue;
+          if (forwarddNdedp.GetBinContent(etaBin - 3, phiBin) > 0 ) continue;
+
+          // std::cout << "found hole, etaBin = " << etaBin << ", eta = " << eta << ", phiBin = " << phiBin << ", phi = " << phi << std::endl;
+       //    if (detType == "forward") weight = 1.; 
+           Double_t up = forwarddNdedp.GetBinContent(etaBin, 19);
+           Double_t low = forwarddNdedp.GetBinContent(etaBin, 16);
+           weight = ((up+low/2)+low)/2;
+          //std::cout << weight << std::endl;
+
+         }           
+        if ((phiBin == 18) && (etaBin > 125 && etaBin < 137)){
+          if (weight > 0 || forwarddNdedp.GetBinContent(etaBin, 17) > 0 ) continue;
+          if (forwarddNdedp.GetBinContent(etaBin - 1, phiBin) > 0 ) continue;
+          if (forwarddNdedp.GetBinContent(etaBin - 2, phiBin) > 0 ) continue;
+          if (forwarddNdedp.GetBinContent(etaBin - 3, phiBin) > 0 ) continue;
+
+          // std::cout << "found hole, etaBin = " << etaBin << ", eta = " << eta << ", phiBin = " << phiBin << ", phi = " << phi << std::endl;
+           Double_t up = forwarddNdedp.GetBinContent(etaBin, 19);
+           Double_t low = forwarddNdedp.GetBinContent(etaBin, 16);
+           weight = ((up+low/2)+low)/2;
+          std::cout << weight << std::endl;
+        }                    
+        if ((phiBin == 14) && (etaBin > 168 && etaBin < 185)){
+          if (weight > 0) continue;
+          if (forwarddNdedp.GetBinContent(etaBin + 1, phiBin) > 0 ) continue;
+          if (forwarddNdedp.GetBinContent(etaBin + 2, phiBin) > 0 ) continue;
+          if (forwarddNdedp.GetBinContent(etaBin + 3, phiBin) > 0 ) continue;
+          // std::cout << "found hole, etaBin = " << etaBin << ", eta = " << eta << ", phiBin = " << phiBin << ", phi = " << phi << std::endl;
+          Double_t  up = forwarddNdedp.GetBinContent(etaBin, 15);
+          Double_t  low = forwarddNdedp.GetBinContent(etaBin, 13);
+           weight = (up+low/2);
+          //std::cout << weight << std::endl;
+
+         }           
 
           // If empty, do not fill hist
           if (weight == 0) continue;

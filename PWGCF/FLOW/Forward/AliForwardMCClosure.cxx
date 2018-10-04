@@ -222,12 +222,13 @@ void AliForwardMCClosure::UserExec(Option_t */*option*/)
   // Disregard events without reconstructed vertex
   Float_t zvertex = fAOD->GetPrimaryVertex()->GetZ();
   if (!(TMath::Abs(zvertex) > 0)) {
+    std::cout << "Z vertex is negative!!" << std::endl;
     return;
   }
 
-    AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
-    double cent = MultSelection->GetMultiplicityPercentile("SPDTracklets");
-//double cent = 10;
+    //AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
+    //double cent = MultSelection->GetMultiplicityPercentile("SPDTracklets");
+double cent = 10;
 
 
 
@@ -296,7 +297,7 @@ std::cout << "noTracks = " << nTracks << std::endl;
     */
   
   //ESDs w. primary
-    /*
+    
     for (Int_t iTr = 0; iTr < nTracks; iTr++) {
       AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
       if (!p->IsPhysicalPrimary()) continue;
@@ -313,9 +314,9 @@ std::cout << "noTracks = " << nTracks << std::endl;
           }
         }
     }
-    */
-    //ESDs w. secondary
     
+    //ESDs w. secondary
+    /*
     for (Int_t iTr = 0; iTr < nTracks; iTr++) {
       AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
       if (p->Charge() == 0) continue;
@@ -331,6 +332,7 @@ std::cout << "noTracks = " << nTracks << std::endl;
         }
       }
     }
+    */
 
         //if (p->Pt()>0.2 && p->Pt() < 2) centralDiff.Fill(p->Eta(),p->Phi(),1);
 
@@ -355,8 +357,8 @@ std::cout << "noTracks = " << nTracks << std::endl;
     calculator.CumulantsAccumulate(spddNdedp,fOutputList, cent, zvertex,"central",true,true);
     //calculator.CumulantsAccumulate(centralDiff,fOutputList, cent, zvertex,"central",false,true);
 
-    if (calculator.useEvent) calculator.CumulantsAccumulate(forwarddNdedp, fOutputList, cent, zvertex,"forward",false,true);
-    if (calculator.useEvent) calculator.saveEvent(fOutputList, cent, zvertex,  randomInt);
+    calculator.CumulantsAccumulate(forwarddNdedp, fOutputList, cent, zvertex,"forward",false,true);
+    calculator.saveEvent(fOutputList, cent, zvertex,  randomInt);
     calculator.reset();
   }
   PostData(1, fOutputList); 
