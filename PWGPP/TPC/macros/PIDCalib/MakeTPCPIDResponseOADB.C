@@ -191,15 +191,19 @@ void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC16q.pass1/splines_16q.pass1.root", 267139, 267388, "1", "",
                               "-1.609459e-06,-6.765851e-04,9.610860e-03,2.864834e-02,0 ; -2.121118e-07,-1.181542e-06, -0.5 ; 0.,0.,0.,0."); // same configuration as 16q, so use these splines
 
+  // ---| pass2 |---------------------------------------------------------------
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC16k.pass2/Iteration3/splines.root", 256490, 258860, "2");
 
   //
   // ===| 2017 |================================================================
   //
   //
-  // For the moment use 17c for 17a-f
+  // For the moment use 17c for 17a-e
+  //                    17f for 17f
   //                    17g for 17g (low field)
-  //                    17c for 17h // no maps will be loaded
-  //                    17j for 17j-k // no maps will be loaded for k
+  //                    17h for 17h
+  //                    17j for 17j
+  //                    17k for 17k
   //                    17m for 17m
   //                    17n for 17n 
   //                    17o for 17o
@@ -215,12 +219,13 @@ void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data
   //                             17r   pp   13   TeV
   // ---| pass1 |---------------------------------------------------------------
 
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC17c.pass1/splines_17c.pass1.root", 268198, 270870, "1");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17c.pass1/Iteration2/splines.root", 268198, 270853, "1"); //a-e
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17f.pass1/Iteration2/splines.root", 270854, 270870, "1");
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17g.pass1/splines_17G_pass1.root",     270871, 271785, "1");
-
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC17c.pass1/splines_17c.pass1.root", 271786, 273471, "1"); // temporary for 17h
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17h.pass1/splines_17H_PASS1.root", 271786, 273471, "1");
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17i.pass1/splines_17I_PASS1.root", 273472, 274518, "1");
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17j.pass1/splines_17j_pass1.root", 274519, 276533, "1"); // for k temporary
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17j.pass1/splines_17j_pass1.root", 274519, 274677, "1");
+  //AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17k.pass1/splines_17K.pass1.root", 274678, 276533, "1");
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17l.pass1/splines_17L_PASS1.root", 276534, 278765, "1");
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17m.pass1/splines_17M_PASS1.root", 278766, 280154, "1");
 
@@ -229,18 +234,23 @@ void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data
 
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17o.pass1/splines_17O_PASS1.root", 280247, 281969, "1"); // temporary for 17o onwards
 
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17p.pass1/splines_17P_PASS1.root", 281970, 282350, "1");
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17q.pass1/splines_17Q_PASS1.root", 282351, 282444, "1");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17p.pass1_CENT_wSDD/splines_17P_PASS1.root", 281970, 282350, "1");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17q.pass1_CENT_wSDD/splines_17Q_PASS1.root", 282351, 282444, "1");
 
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17r.pass1/splines_17R_PASS1.root", 282445, 282955, "1"); // temporary for 17r onwards
 
   //
   // ===| 2018 |================================================================
   //
-  // For the moment use 16p splines (pp 13 TeV with Neon) for all 2018
+  // For the moment use 16p splines (pp 13 TeV with Neon) for 18a-b and 18d-
+  //                    18c for 18c
   //
   // ---| pass1 |---------------------------------------------------------------
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC16p.pass1/splines_16p.pass1.root",  282956, 999999, "1"); // temporary for 2018 (back to Ne)
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC16p.pass1/splines_16p.pass1.root",  282956, 285451, "1"); // temporary for 2018 (back to Ne)
+
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC18c.pass1_CENT_woSDD/Iteration2/splines.root",  285452, 285965, "1"); 
+
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC16p.pass1/splines_16p.pass1.root",  285966, 999999, "1"); // temporary for 2018 (back to Ne)
 
 
 
