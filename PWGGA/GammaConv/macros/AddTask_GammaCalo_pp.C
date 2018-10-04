@@ -1007,6 +1007,13 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("h0010113","1111111067032220000","01631031000000d0"); // std
     cuts.AddCut("i0010113","1111111067032220000","01631031000000d0"); // std
     cuts.AddCut("j0010113","1111111067032220000","01631031000000d0"); // std
+  } else if (trainConfig == 441){ // EMCAL clusters pp 5 TeV Sphericity Cuts
+    cuts.AddCut("k0010113","1111111067032220000","01631031000000d0"); // std
+    cuts.AddCut("l0010113","1111111067032220000","01631031000000d0"); // std
+    cuts.AddCut("m0010113","1111111067032220000","01631031000000d0"); // std
+    cuts.AddCut("n0010113","1111111067032220000","01631031000000d0"); // std
+    cuts.AddCut("o0010113","1111111067032220000","01631031000000d0"); // std
+    cuts.AddCut("p0010113","1111111067032220000","01631031000000d0"); // std
 
   } else if (trainConfig == 450){ // EMCAL standard cuts, different triggers
     cuts.AddCut("00010113","1111111067032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL kSDM PCMEMC INT7

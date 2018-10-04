@@ -1212,9 +1212,33 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
     fIsHeavyIon=0;
     fUseSphericity=2;
     break;
-  case 19: // j: pp -> Sphericity > 0.5
+  case 19: // j: pp -> 0 < Sphericity > 1.0
     fIsHeavyIon=0;
     fUseSphericity=3;
+    break;
+  case 20: // k: pp -> 0 < Sphericity < 1.0  + mult cut < 20
+    fIsHeavyIon=0;
+    fUseSphericity=4;
+    break;
+  case 21: // l: pp ->0 < Sphericity < 1.0 + mult cut > 20
+    fIsHeavyIon=0;
+    fUseSphericity=5;
+    break;
+  case 22: // m: pp -> Sphericity < 0.5 + mult cut < 20
+    fIsHeavyIon=0;
+    fUseSphericity=6;
+    break;
+  case 23: // n: pp -> Sphericity < 0.5 + mult cut > 20
+    fIsHeavyIon=0;
+    fUseSphericity=7;
+    break;
+  case 24: // o: pp -> Sphericity > 0.5 + mult cut < 20
+    fIsHeavyIon=0;
+    fUseSphericity=8;
+    break;
+  case 25: // p: pp -> Sphericity > 0.5 + mult cut > 20
+    fIsHeavyIon=0;
+    fUseSphericity=9;
     break;
 
   default:
@@ -4726,7 +4750,7 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
      }
   }
 
-  if(fUseSphericity != 0){
+  if(fUseSphericity > 0){
     if(fUseSphericity == 1 && ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()>0.5){
       return 14;
     }
@@ -4734,6 +4758,25 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
       return 14;
     }
     if(fUseSphericity == 3 && ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()==-1){
+      return 14;
+    }
+    Int_t nPrimTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
+    if(fUseSphericity == 4 && ((((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()==-1) || nPrimTracks > 20)){
+      return 14;
+    }
+    if(fUseSphericity == 5 && ((((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()==-1) || nPrimTracks < 20)){
+      return 14;
+    }
+    if(fUseSphericity == 6 && ((((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()>0.5) || nPrimTracks > 20)){
+      return 14;
+    }
+    if(fUseSphericity == 7 && ((((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()>0.5) || nPrimTracks < 20)){
+      return 14;
+    }
+    if(fUseSphericity == 8 && ((((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()<0.5) || nPrimTracks > 20)){
+      return 14;
+    }
+    if(fUseSphericity == 9 && ((((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()<0.5) || nPrimTracks < 20)){
       return 14;
     }
   }
