@@ -556,8 +556,8 @@ AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet) {
 			mixingHandler = new AliDielectronMixingHandler;
 			mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -7.5, -5., -2.5 , 0., 2.5, 5., 7.5 , 10.");
 			//mixingHandler->AddVariable(AliDielectronVarManager::kNacc,"0,500");
-			mixingHandler->AddVariable(AliDielectronVarManager::kCentralityNew,"0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100");
-			mixingHandler->SetDepth(20);
+			mixingHandler->AddVariable(AliDielectronVarManager::kCentralityNew,"0, 10, 20, 30, 40, 60, 80,100");
+			mixingHandler->SetDepth(50);
 			mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
 			break;
 		//[...]
@@ -655,7 +655,7 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
 			pidCuts->AddTMVAInput("EsigTOF", AliDielectronVarManager::kTOFnSigmaEle);
 			pidCuts->AddTMVAInput("PsigTPC", AliDielectronVarManager::kTPCnSigmaPio);
 			pidCuts->AddTMVASpectator("pdg", AliDielectronVarManager::kPdgCode);
-			pidCuts->SetTMVAWeights("BDT method", weightFile.Data());
+			pidCuts->SetTMVAWeights("BDT", weightFile.Data());
 
 			Printf("Use TMVA cut value = %f",0.1);
 			pidCuts->SetTMVACutValue(0.1);
