@@ -585,9 +585,10 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     std::vector<Float_t> triggerTracks_dPhi(fTriggerTracks_Phi);
     for(UInt_t i=0; i<triggerTracks_dEta.size(); i++)
     {
-      triggerTracks_dEta[i] = jet->Eta() - triggerTracks_dEta[i];
+      triggerTracks_dEta[i] = jet->Eta() - fTriggerTracks_Eta[i];
       triggerTracks_dPhi[i] = TMath::Min(TMath::Abs(jet->Phi() - fTriggerTracks_Phi[i]), TMath::TwoPi() - TMath::Abs(jet->Phi() - fTriggerTracks_Phi[i]));
-      if(!((jet->Phi() - fTriggerTracks_Phi[i] < 0) && (jet->Phi() - fTriggerTracks_Phi[i] <= TMath::Pi())))
+      if(  ((TMath::Abs(jet->Phi() - fTriggerTracks_Phi[i]) <= TMath::Pi()) && (jet->Phi() - fTriggerTracks_Phi[i] > 0)) 
+        || ((TMath::Abs(jet->Phi() - fTriggerTracks_Phi[i]) > TMath::Pi())  && (jet->Phi() - fTriggerTracks_Phi[i] < 0)) )
         triggerTracks_dPhi[i] = -triggerTracks_dPhi[i];
     }
 
