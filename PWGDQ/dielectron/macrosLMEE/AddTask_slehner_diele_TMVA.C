@@ -7,7 +7,7 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Int_t trackCut=1,
                                               Bool_t useAODFilterCuts=kFALSE,
                                               TString TMVAweight = "TMVAClassification_BDTG.weights_094.xml" ){
   
-  TString directoryBaseName = "slehner_LMEE_TMVA";
+  TString directoryBaseName = "slehnerLMEETMVA";
   TString outputFileName = "AnalysisResults.root";
 //  Bool_t isNano=kFALSE;
   //get the current analysis manager
@@ -94,7 +94,7 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Int_t trackCut=1,
                          outputFileName.Data());
   
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer(Form("%s_out",directoryBaseName.Data()),
+    mgr->CreateContainer(Form("%sData",directoryBaseName.Data()),
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
                          outputFileName.Data());
