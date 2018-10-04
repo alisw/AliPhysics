@@ -683,6 +683,11 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "00200009a27300008250a04140", "0152103500000000"); // dcaz 3cm
     cuts.AddCut("00010113", "00200009a27300008250a04220", "0152103500000000"); // dcar 5cm
     cuts.AddCut("00010113", "00200009a27300008250a04320", "0152105500000000"); // dcar 4cm
+  } else if (trainConfig == 125){
+    cuts.AddCut("00010113", "00200009a27300008250404130", "0152103500000000"); // cosPA 0.85
+    cuts.AddCut("00010113", "00200009a27300008250a04140", "0152103500000000"); // cosPA 0.995
+    cuts.AddCut("00010113", "0d200009a27300008250404130", "0152103500000000"); // cosPA 0.85  |eta| < 0.8
+    cuts.AddCut("00010113", "0d200009a27300008250a04140", "0152103500000000"); // cosPA 0.995 |eta| < 0.8
     // eta cut variation to exclude central cathode
   } else if (trainConfig == 130) {
     cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); //standard cut from 8TeV ana
