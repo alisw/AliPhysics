@@ -5,6 +5,8 @@
 #pragma link C++ class AliRsnAnalysisPhi900GeV+;
 #pragma link C++ class AliRsnAnalysisPhi7TeV+;
 #pragma link C++ class AliAnalysisTaskSigma1385+;
+#pragma link C++ class AliAnalysisTaskXi1530+;
+#pragma link C++ class AliAnalysisTaskXi1530RunTable+;
 #pragma link C++ class AliXiStar+;
 #pragma link C++ class AliXiStarpp13TeV+;
 #pragma link C++ class AliXiStarPbPb+;
