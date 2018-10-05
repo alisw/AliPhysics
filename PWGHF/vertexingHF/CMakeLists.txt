@@ -99,6 +99,7 @@ set(SRCS
   AliAnalysisTaskSEDStarCharmFraction.cxx
   AliAnalysisTaskSESignificance.cxx
   AliAnalysisTaskSEHFQA.cxx
+  AliAnalysisTaskSEHFTreeCreator.cxx
   AliAnalysisTaskTrackingSysPropagation.cxx
   AliMultiDimVector.cxx
   AliSignificanceCalculator.cxx
@@ -139,6 +140,7 @@ set(SRCS
   AliAnalysisTaskSEB0toDminuspi.cxx
   AliAnalysisTaskSEDstoK0sK.cxx
   AliHFVnVsMassFitter.cxx
+  AliHFCutOptTreeHandler.cxx
   )
 
 # Headers from sources
