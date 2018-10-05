@@ -71,12 +71,12 @@ const Double_t minThetaBin   = 0;
 const Double_t maxThetaBin   = TMath::TwoPi();
 const Int_t    stepsThetaBin = 60;
 
-//const Double_t minMassBin     = 0;
-//const Double_t maxMassBin     = 10;
-//const Int_t    stepsMassBin   = 200;
-//const Double_t minPairPtBin   = 0;
-//const Double_t maxPairPtBin   = 10;
-//const Int_t    stepsPairPtBin = 20;
+const Double_t minMassBin     = 0;
+const Double_t maxMassBin     = 10;
+const Int_t    stepsMassBin   = 200;
+const Double_t minPairPtBin   = 0;
+const Double_t maxPairPtBin   = 10;
+const Int_t    stepsPairPtBin = 20;
 
 // Binning of resolution histograms
 const Int_t    NbinsDeltaMom   = 2000;
@@ -218,7 +218,7 @@ std::vector<Bool_t> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* ta
   eleFinalState.SetLegPDGs(11,1);//dummy second leg (never MCkTRUE)\n"
   eleFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
 //  eleFinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);    //in slight O(1%) disagreement with ML tree maker non-conversion electrons
-  eleFinalState.SetMotherPDGs(22,22,kTRUE,kTRUE); // this line leads to results in agreement with ML tree maker when counting non-conversion electrons
+//  eleFinalState.SetMotherPDGs(22,22,kTRUE,kTRUE); // this line leads to results in agreement with ML tree maker when counting non-conversion electrons
   
   AliDielectronSignalMC eleFinalStateFromSameMotherMeson("eleFinalStateFromSameMotherMeson","eleFinalStateFromSameMotherMeson");
   eleFinalStateFromSameMotherMeson.SetLegPDGs(11,1);//dummy second leg (never MCkTRUE)\n"

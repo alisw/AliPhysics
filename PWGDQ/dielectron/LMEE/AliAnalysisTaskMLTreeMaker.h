@@ -53,6 +53,8 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   void SetupTrackCuts(AliDielectronCutGroup* f);
   void SetupEventCuts(AliDielectronEventCuts* f);
   
+  void isMC(Bool_t isMC){hasMC=isMC;}
+  
   void SetCentralityPercentileRange(Double_t min, Double_t max){
     fCentralityPercentileMin = min;
     fCentralityPercentileMax = max;

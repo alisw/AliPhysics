@@ -305,10 +305,7 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
      if (!fPIDResponse){
 	   AliError("Failed to get PIDResponse - return");
 	   return;}
-  
-  if (man->GetMCtruthEventHandler()!=0x0) hasMC=kTRUE;
-  else hasMC = kFALSE; 
-  
+    
   if(hasMC) std::cout <<"Running on MC!"<< std::endl;
   else std::cout <<"Running on RD!"<< std::endl;
 

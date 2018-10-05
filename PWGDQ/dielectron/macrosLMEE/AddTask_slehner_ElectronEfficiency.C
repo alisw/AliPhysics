@@ -62,7 +62,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   task->SetEnablePhysicsSelection(kTRUE);
   task->SetTriggerMask(triggerNames);
   task->SetEventFilter(cutlib->GetEventCuts(centMin, centMax)); // All cut sets have same event cuts
-//  task->SelectCollisionCandidates(AliVEvent::kINT7);    //where specified?
+  task->SelectCollisionCandidates(AliVEvent::kINT7);
   
 //  maybe redundant since already set in eventcuts above
   std::cout << "CentMin = " << centMin << "  CentMax = " << centMax << std::endl;
@@ -80,7 +80,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   // #########################################################
   // #########################################################
   // Set minimum and maximum values of generated tracks. Only used to save computing power.
-  task->SetKinematicCuts(minPtCut, maxPtCut, minEtaCut, maxEtaCut);
+  task->SetKinematicCuts(minGenPt, maxGenPt, minGenEta, maxGenEta);
 
   // #########################################################
   // #########################################################
