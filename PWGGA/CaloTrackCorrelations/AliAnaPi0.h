@@ -79,6 +79,10 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
 
   void         SwitchOnFillAngleHisto()         { fFillAngleHisto      = kTRUE  ; }
   void         SwitchOffFillAngleHisto()        { fFillAngleHisto      = kFALSE ; }
+
+  void         SwitchOnOneCellSeparation()      { fUseOneCellSeparation = kTRUE  ; }
+  void         SwitchOffOneCellSeparation()     { fUseOneCellSeparation = kFALSE ; }
+  Bool_t       CheckSeparation(TLorentzVector photonMom1, TLorentzVector photonMom2) ;
   
   //------------------------------------------
   // Do analysis only with clusters in same SM or different combinations of SM
@@ -189,6 +193,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fUseAngleEDepCut ;          ///<  Select pairs depending on their opening angle
   Float_t  fAngleCut ;                 ///<  Select pairs with opening angle larger than a threshold
   Float_t  fAngleMaxCut ;              ///<  Select pairs with opening angle smaller than a threshold
+  Bool_t   fUseOneCellSeparation ;     ///<  Select pairs with one cell in between of maxima
   
   Float_t  fPi0MassWindow[2];          ///<  Pi0 mass selection window
   Float_t  fEtaMassWindow[2];          ///<  Eta mass selection window
@@ -431,7 +436,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPrimEtaAccPtEventPlane ;  //!<! primary eta with accepted daughters reconstructed event plane vs pT
   
   // Primaries origin
-  TH2F *   fhPrimChHadronPt  ;         //!<! Spectrum of generated K+- pi+-
+  TH2F *   fhPrimPt ;         //!<! Spectrum of generated K+- pi+-
   TH2F *   fhPrimPi0PtOrigin ;         //!<! Spectrum of generated pi0 vs mother
   TH2F *   fhPrimEtaPtOrigin ;         //!<! Spectrum of generated eta vs mother
   TH2F *   fhPrimNotResonancePi0PtOrigin ; //!<! Spectrum of generated pi0 vs mother
