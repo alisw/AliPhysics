@@ -16,7 +16,14 @@ class AliAnalysisUtils;
 
 class AliAnalysisTaskParticleEff :public AliAnalysisTaskSE{
  public:
- AliAnalysisTaskParticleEff() :  AliAnalysisTaskSE(), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fEtaLambda(0),fPtLambda(0), fEtaAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fEtaXim(0),fPtXim(0), fEtaXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0),fRecPtXipMC(0), fDCAtoPrimVtx(0), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
+
+  enum EventMult {kRefMult=0, kV0M=1, kV0A=2};
+  typedef enum EventMult EstEventMult;
+
+  enum PidMethod {kNSigma=0, kNSigmaNoDoubleCounting=1, kExclusivePID=2, kExclusivePIDDiffRejection=3};
+  typedef enum PidMethod PidMethod;
+  
+ AliAnalysisTaskParticleEff() :  AliAnalysisTaskSE(), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fEtaLambda(0),fPtLambda(0), fEtaAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fEtaXim(0),fPtXim(0), fEtaXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0),fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(96), fPidMethod(kExclusivePIDDiffRejection), fEstEventMult(kRefMult), fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
     
     {
 
@@ -45,6 +52,13 @@ class AliAnalysisTaskParticleEff :public AliAnalysisTaskSE{
   virtual void UserCreateOutputObjects(); // user create output objects
   virtual void UserExec(Option_t *option); // user exec
   //void Terminate(Option_t *option);
+
+  void SetFB(int fb);
+  void SetPidMethod(PidMethod method);
+  void SetMultMethod(EstEventMult method);
+  void SetAliEventCuts(Bool_t ec);
+  void SetIfXiAnalysis(Bool_t xi);
+  void AnalyseCascades(int fcent, AliAODEvent* aodEvent, TClonesArray  *arrayMC);
   
  private:
   AliAnalysisTaskParticleEff(const AliAnalysisTaskParticleEff &); // copy constructor
@@ -136,7 +150,6 @@ class AliAnalysisTaskParticleEff :public AliAnalysisTaskSE{
   TH1D *fEtaXip;
   TH1D *fPtXip;
 
-
   TH2D *fTruePtXimMC;
   TH2D *fRecPtXimMC;
   TH2D *fTruePtXipMC;
@@ -144,11 +157,19 @@ class AliAnalysisTaskParticleEff :public AliAnalysisTaskSE{
 
   TH1D *fCutsXim;
   TH1D *fCutsXip;
-
+  TObjArray *recoParticleArrayXi;
+  
   //******************************************
 
   double fDCAtoPrimVtx;
+  Bool_t fIfAliEventCuts;
+  int    fFB;
+  PidMethod    fPidMethod; //PID method 
+  EstEventMult   fEstEventMult;  // Type of the event multiplicity estimator
+  Bool_t fIfXiAnalysis;
   
+  //******************************************
+
   AliPIDResponse *fpidResponse;
   AliAODpidUtil  *fAODpidUtil;
   AliEventCuts   *fEventCuts;
