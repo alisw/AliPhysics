@@ -15,6 +15,7 @@ class AliAODEvent;
 class AliESDEvent;
 class AliTOFTriggerMask;
 class TBits;
+class TFile;
 
 #define ntrg 17
 #include "AliAnalysisTaskSE.h"
@@ -170,10 +171,14 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   TList *fListPsi2sLoose;
   TList *fListPsi2sTight;
   
+  TFile *fSPDfile;
+  TH1D *hBCmod4;
+  TH2D *hSPDeff;
+  
   AliAnalysisTaskUpcPsi2s(const AliAnalysisTaskUpcPsi2s&); //not implemented
   AliAnalysisTaskUpcPsi2s& operator =(const AliAnalysisTaskUpcPsi2s&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcPsi2s, 7); 
+  ClassDef(AliAnalysisTaskUpcPsi2s, 8); 
 };
 
 #endif
