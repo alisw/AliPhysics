@@ -168,8 +168,6 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   TList *fListSystematics;
   TList *fListJPsiLoose;
   TList *fListJPsiTight;
-  TList *fListPsi2sLoose;
-  TList *fListPsi2sTight;
   
   TFile *fSPDfile;
   TH1D *hBCmod4;
