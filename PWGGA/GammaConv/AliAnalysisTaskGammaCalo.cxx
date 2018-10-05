@@ -729,8 +729,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
   if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
 
-  fConvJetReader=(AliAnalysisTaskConvJet*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskConvJet");
-  if(!fConvJetReader){printf("Error: No AliAnalysisTaskConvJet");return;} // GetV0Reader
+  if(fDoJetAnalysis){
+    fConvJetReader=(AliAnalysisTaskConvJet*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskConvJet");
+    if(!fConvJetReader){printf("Error: No AliAnalysisTaskConvJet");return;} // GetV0Reader
+  }
 
   if (fDoClusterQA == 2) fProduceCellIDPlots = kTRUE;
   if (fIsMC == 2){
@@ -3905,24 +3907,24 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
         if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(),gamma0->GetLeadingCellID(),gamma1->GetLeadingCellID()))){
           if(fLocalDebugFlag == 1) DebugMethodPrint1(pi0cand,gamma0,gamma1);
           fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), tempPi0CandWeight);
-          if(fDoJetAnalysis && fConvJetReader->GetNJets()>0){
-            fHistoJetMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), tempPi0CandWeight);
-            Double_t RJetPi0Cand = 0;
-//             cout << "sizes: " << fVectorJetPt.size() << "  " << fVectorJetEta.size() <<  "  " << fVectorJetPhi.size() << endl;
-            if(fVectorJetPt.size() == fConvJetReader->GetNJets() && fVectorJetEta.size() == fConvJetReader->GetNJets() && fVectorJetPhi.size() == fConvJetReader->GetNJets() && fVectorJetArea.size() == fConvJetReader->GetNJets()){
+          if(fDoJetAnalysis){
+            if(fConvJetReader->GetNJets()>0){
+              fHistoJetMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), tempPi0CandWeight);
+              Double_t RJetPi0Cand = 0;
+              if(fVectorJetPt.size() == fConvJetReader->GetNJets() && fVectorJetEta.size() == fConvJetReader->GetNJets() && fVectorJetPhi.size() == fConvJetReader->GetNJets() && fVectorJetArea.size() == fConvJetReader->GetNJets()){
                 Int_t counter = 0;
                 for(Int_t i=0; i<fConvJetReader->GetNJets(); i++){
                   RJetPi0Cand = TMath::Sqrt(pow((fVectorJetEta.at(i)-pi0cand->Eta()),2)+pow((fVectorJetPhi.at(i)-pi0cand->Phi()),2));
-//                   cout << "RJetPi0Cand= " << RJetPi0Cand << endl;
                   fHistoRJetPi0Cand[fiCut]->Fill(RJetPi0Cand,pi0cand->Pt(), tempPi0CandWeight);
                   if(fConvJetReader->Get_Jet_Radius() > 0 ){
                     if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
-                        counter ++;
+                      counter ++;
                       fHistoPi0InJetMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), tempPi0CandWeight);
                     }
                   }
                 }
                 fHistoDoubleCounting[fiCut]->Fill(counter);
+              }
             }
           }
           // fill new histograms
@@ -4902,8 +4904,10 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
                   tempBGCandidateWeight = 1;
               }
               fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), tempBGCandidateWeight);
-              if(fConvJetReader->GetNJets() > 0){
-                fHistoMotherBackJetInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), tempBGCandidateWeight);
+              if(fDoJetAnalysis){
+                if(fConvJetReader->GetNJets() > 0){
+                  fHistoMotherBackJetInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), tempBGCandidateWeight);
+                }
               }
               if(fDoTHnSparse){
                 Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};

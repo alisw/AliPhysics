@@ -1328,7 +1328,6 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
 
   } else if (trainConfig == 900){
     cuts.AddCut("00010113","11111110a7032230000","01631031000000d0"); // std
-    cuts.AddCut("00010113","1111111097032230000","01631031000000d0");
 
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

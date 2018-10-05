@@ -2,12 +2,6 @@
 #define AliAnalysisTaskConvJet_H
 /**
  * \file AliAnalysisTaskConvJet.h
- * \brief Declaration of class AliAnalysisTaskConvJet
- *
- * In this header file the class AliAnalysisTaskConvJet is declared.
- * This is a sample task that shows how to write a simple user analysis task
- * using the EMCal jet framework. It is also used to do automatic benchmark
- * tests of the software.
  *
  * \author Lizette Lamers <lizette.jacqueline.lamers@cern.ch>, Utrecht University
  * \author Mike Sas <mike.sas@cern.ch>, Utrecht University
@@ -26,11 +20,7 @@
  *
  * This class in an implementation of a sample task for EMCal jet analysis.
  * It derives from AliAnalysisTaskEmcalJet.
- * It performs a simple analysis, producing track, cluster and jet spectra.
- * It also performs a QA of the cluster-track matching.
- * Note: if jets are not used this class can be simplified by deriving
- * from AliAnalysisTaskEmcal and removing the functions DoJetLoop()
- * and AllocateJetHistograms().
+ * It performs a simple analysis, producing jet spectra.
  */
 class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
  public:
@@ -71,18 +61,18 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
 
   void                        DoJetLoop()                                       ;
 
-  Double_t                    fNJets                                            ; //
+  Double_t                    fNJets                                            ;
   vector<Double_t>            fVectorJetPt                                      ;
   vector<Double_t>            fVectorJetEta                                     ;
   vector<Double_t>            fVectorJetPhi                                     ;
   vector<Double_t>            fVectorJetR                                       ;
 
  private:
-  AliAnalysisTaskConvJet(const AliAnalysisTaskConvJet&)           ; // not implemented
-  AliAnalysisTaskConvJet &operator=(const AliAnalysisTaskConvJet&); // not implemented
+  AliAnalysisTaskConvJet(const AliAnalysisTaskConvJet&)           ;
+  AliAnalysisTaskConvJet &operator=(const AliAnalysisTaskConvJet&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskConvJet, 7);
+  ClassDef(AliAnalysisTaskConvJet, 1);
   /// \endcond
 };
 #endif
