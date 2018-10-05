@@ -42,9 +42,12 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        SetCalculateSecondaryVertices(Bool_t val)           { fCalculateSecondaryVertices = val; }
   void                        SetVertexerCuts(AliRDHFJetsCutsVertex* val)         { fVertexerCuts = val; }
   void                        SetSetEmcalJetFlavour(Bool_t val)                   { fSetEmcalJetFlavour = val; }
+  void                        SetEventPercentage(Double_t val)                    { fEventPercentage  = val; }
+  void                        SetTruthLabelRange(Int_t min, Int_t max)            { fTruthMinLabel = min; fTruthMaxLabel = max; }
 
-  void                        SetEventCutTriggerTrack(Double_t minPt, Double_t maxPt, Int_t minLabel=-9999999)
-                                { fEventCut_TriggerTrackMinPt = minPt; fEventCut_TriggerTrackMaxPt = maxPt; fEventCut_TriggerTrackMinLabel = minLabel; }
+  void                        SetEventCutTriggerTrack(Double_t minPt, Double_t maxPt, Int_t minLabel=-9999999, Int_t maxLabel=+9999999)
+                                { fEventCut_TriggerTrackMinPt = minPt; fEventCut_TriggerTrackMaxPt = maxPt; fEventCut_TriggerTrackMinLabel = minLabel;
+                                  fEventCut_TriggerTrackMaxLabel = maxLabel;}
 
  protected:
   Bool_t                      CreateControlHistograms();
@@ -59,6 +62,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        GetJetTruePt(AliEmcalJet* jet, Double_t& matchedJetPt, Double_t& truePtFraction);
   void                        GetJetType(AliEmcalJet* jet, Int_t& typeHM, Int_t& typePM, Int_t& typeIC);
   Bool_t                      IsStrangeJet(AliEmcalJet* jet);
+  void                        PrintConfig();
 
   void                        GetTrackImpactParameters(const AliVVertex* vtx, AliAODTrack* track, Float_t& d0, Float_t& d0cov, Float_t& z0, Float_t& z0cov);
   void                        ReconstructSecondaryVertices(const AliVVertex* primVtx, const AliEmcalJet* jet, std::vector<Float_t>& secVtx_X, std::vector<Float_t>& secVtx_Y, std::vector<Float_t>& secVtx_Z,
@@ -73,11 +77,15 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   Bool_t                      fCalculateSecondaryVertices;              ///< Calculate the secondary vertices (instead of loading)
   AliRDHFJetsCutsVertex*      fVertexerCuts;                            ///< Cuts used for the vertexer (given in add task macro)
   Bool_t                      fSetEmcalJetFlavour;                      ///< if set, the flavour property of the AliEmcalJets will be set
+  Double_t                    fEventPercentage;                         ///< percentage (0, 1] which will be extracted
+  Int_t                       fTruthMinLabel;                           ///< min track label to consider it as true particle
+  Int_t                       fTruthMaxLabel;                           ///< max track label to consider it as true particle
 
   // ################## EVENT CUTS
   Double_t                    fEventCut_TriggerTrackMinPt;              ///< Event requirement, trigger track min pT
   Double_t                    fEventCut_TriggerTrackMaxPt;              ///< Event requirement, trigger track max pT
   Int_t                       fEventCut_TriggerTrackMinLabel;           ///< Event requirement, trigger track min label (can be used to selected embedded particles)
+  Int_t                       fEventCut_TriggerTrackMaxLabel;           ///< Event requirement, trigger track max label (can be used to selected embedded particles)
 
   // ################## BASIC EVENT VARIABLES
   AliJetContainer            *fJetsCont;                                //!<! Jets

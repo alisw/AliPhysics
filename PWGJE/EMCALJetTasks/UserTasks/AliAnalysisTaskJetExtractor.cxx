@@ -347,9 +347,13 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fCalculateSecondaryVertices(kTRUE),
   fVertexerCuts(0),
   fSetEmcalJetFlavour(0),
+  fEventPercentage(1.0),
+  fTruthMinLabel(0),
+  fTruthMaxLabel(100000),
   fEventCut_TriggerTrackMinPt(0),
   fEventCut_TriggerTrackMaxPt(0),
-  fEventCut_TriggerTrackMinLabel(0),
+  fEventCut_TriggerTrackMinLabel(-9999999),
+  fEventCut_TriggerTrackMaxLabel(+9999999),
   fJetsCont(0),
   fTracksCont(0),
   fTruthParticleArray(0),
@@ -380,9 +384,13 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fCalculateSecondaryVertices(kTRUE),
   fVertexerCuts(0),
   fSetEmcalJetFlavour(0),
+  fEventPercentage(1.0),
+  fTruthMinLabel(0),
+  fTruthMaxLabel(100000),
   fEventCut_TriggerTrackMinPt(0),
   fEventCut_TriggerTrackMaxPt(0),
-  fEventCut_TriggerTrackMinLabel(0),
+  fEventCut_TriggerTrackMinLabel(-9999999),
+  fEventCut_TriggerTrackMaxLabel(+9999999),
   fJetsCont(0),
   fTracksCont(0),
   fTruthParticleArray(0),
@@ -429,6 +437,8 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
   fJetTree->InitializeTree();
   OpenFile(2);
   PostData(2, fJetTree->GetTreePointer());
+
+  PrintConfig();
 
   // ### Add control histograms (already some created in base task)
   AddHistogram2D<TH2D>("hTrackCount", "Number of tracks in acceptance vs. centrality", "COLZ", 500, 0., 5000., 100, 0, 100, "N tracks","Centrality", "dN^{Events}/dN^{Tracks}");
@@ -498,9 +508,14 @@ void AliAnalysisTaskJetExtractor::ExecOnce()
 //________________________________________________________________________
 Bool_t AliAnalysisTaskJetExtractor::Run()
 {
-  // ################################### EVENT PROPERTIES
+  // ################################### EVENT SELECTION
+
   if(!IsTriggerTrackInEvent())
     return kFALSE;
+  if(gRandom->Rndm() >= fEventPercentage)
+    return kFALSE;
+
+  // ################################### EVENT PROPERTIES
 
   FillEventControlHistograms();
 
@@ -626,13 +641,15 @@ Bool_t AliAnalysisTaskJetExtractor::IsTriggerTrackInEvent()
     // Go through all tracks and check whether trigger tracks can be found
     fTracksCont->ResetCurrentID();
     while(AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()))
-      if( (track->GetLabel() >= fEventCut_TriggerTrackMinLabel) && (track->Pt() >= fEventCut_TriggerTrackMinPt) && (track->Pt() < fEventCut_TriggerTrackMaxPt) )
-      {
-        fTriggerTracks_Pt.push_back(track->Pt());
-        fTriggerTracks_Eta.push_back(track->Eta());
-        fTriggerTracks_Phi.push_back(track->Phi());
-      }
-
+    {
+      if( (track->GetLabel() >= fEventCut_TriggerTrackMinLabel) && (track->GetLabel() < fEventCut_TriggerTrackMaxLabel) )
+        if( (track->Pt() >= fEventCut_TriggerTrackMinPt) && (track->Pt() < fEventCut_TriggerTrackMaxPt) )
+        {
+          fTriggerTracks_Pt.push_back(track->Pt());
+          fTriggerTracks_Eta.push_back(track->Eta());
+          fTriggerTracks_Phi.push_back(track->Phi());
+        }
+    }
     // No particle has been found that fulfills requirement -> Do not accept event
     if(fTriggerTracks_Pt.size() == 0)
       return kFALSE;
@@ -696,8 +713,8 @@ void AliAnalysisTaskJetExtractor::GetJetTruePt(AliEmcalJet* jet, Double_t& match
     if(!particle) continue;
     if(particle->Pt() < 1e-6) continue;
 
-    // Particles marked w/ labels above 100000 are considered from toy
-    if(particle->GetLabel() < 100000)
+    // Particles marked w/ labels within label range are considered from toy
+    if( (particle->GetLabel() >= fTruthMinLabel) && (particle->GetLabel() < fTruthMaxLabel))
       pt_nonMC += particle->Pt();
     pt_all += particle->Pt();
   }
@@ -1063,6 +1080,13 @@ void AliAnalysisTaskJetExtractor::AddPIDInformation(AliVParticle* particle, Floa
       }
     }
   }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskJetExtractor::PrintConfig()
+{
+  // Print properties for extraction
+  // to be implemented later
 }
 
 
