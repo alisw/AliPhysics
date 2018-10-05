@@ -39,7 +39,7 @@
 #include "AliMultiplicity.h"
 #include "AliMultSelection.h"
 #include "AliAnalysisUtils.h"
-
+#include "AliEventCuts.h"
 
 ClassImp(AliAnalysisTaskKinkPbPb)
 
@@ -54,12 +54,12 @@ AliAnalysisTaskKinkPbPb::AliAnalysisTaskKinkPbPb()
         fnSigmaTPC(0),fradiurKink(0),fLenthKink(0),fEtaK(0),frapiKESD(0),fzVertexPositionKinKvsKinkRad(0),fSignPtNcl(0),fSignPtrapiK(0),frapiKNcl(0),fSignPt(0),
         fChi2NclTPC(0),fRatioChi2Ncl(0),flifetime(),fPtKinkKaon(0),fDCAkink(0),fPtKink(0),fPtKinkPos(0),fPtKinkNeg(0),fPtKinkK0(0),fPtKinkK0P(0),fPtKinkK0N(0),
         fPtKinkGyu(0),fPtKinkGyuP(0),fPtKinkGyuN(0),fKinKRbn(0),fradPtRpDt(0),fAngMomK(0),fPosiKinkK(0),fPosiKinKXZ(0), fPosiKinKYZ(0),fPIDResponse(0),fNumberOfEvent(0),
-        fNumberOfEvent_cent(0),fESDtrackCuts(0),fbgCleaningHigh(0),fTPCSignalPt(0),fqTvsPt(0),fInvMassPt(0),fCent(0),fEventVsCentrality(0),fnsigma(3.5)
+        fNumberOfEvent_cent(0),fESDtrackCuts(0),fbgCleaningHigh(0),fTPCSignalPt(0),fqTvsPt(0),fInvMassPt(0),fCent(0),fEventVsCentrality(0),fnsigma(3.5), fmaxChi(4.0), fZpos(2.0),fEventCuts(0)
 {}
 
 
 //________________________________________________________________________
-AliAnalysisTaskKinkPbPb::AliAnalysisTaskKinkPbPb(const char *name, Float_t lRadiusKUp,  Float_t lRadiusKLow, Int_t lNCluster, Float_t lLowQtValue, Float_t yRange, Float_t lnsigma) 
+AliAnalysisTaskKinkPbPb::AliAnalysisTaskKinkPbPb(const char *name, Float_t lRadiusKUp,  Float_t lRadiusKLow, Int_t lNCluster, Float_t lLowQtValue, Float_t yRange, Float_t lnsigma, Float_t maxChi, Float_t Zpos) 
   : AliAnalysisTaskSE(name),  fOutputList(0), fHistPt(0),fVtxCut(10.),fMultiplicity(0),fIncompletEvent(0),fMultpileup(0), fMultV0trigger(0),fZvertex(0),fEventVertex(0),
 	fRatioCrossedRows(0),fZvXv(0), fZvYv(0), fXvYv(0),fRpr(0),fdcaToVertexXY(0),fdcaToVertexXYafterCut(0),fptAllKink(0),fRatioCrossedRowsKink(0),fPosiKink(0),
 	fQtAll(0),fptKink(0),fQtMothP(0),fqT1(0),fEta(0),fqT2(0),fKinkKaonBackg(0),f1(0), f2(0),fPtCut1(0),fAngMotherPi(0),
@@ -69,7 +69,7 @@ AliAnalysisTaskKinkPbPb::AliAnalysisTaskKinkPbPb(const char *name, Float_t lRadi
 	fnSigmaTPC(0),fradiurKink(0),fLenthKink(0),fEtaK(0),frapiKESD(0),fzVertexPositionKinKvsKinkRad(0),fSignPtNcl(0),fSignPtrapiK(0),frapiKNcl(0),fSignPt(0),
 	fChi2NclTPC(0),fRatioChi2Ncl(0),flifetime(),fPtKinkKaon(0),fDCAkink(0),fPtKink(0),fPtKinkPos(0),fPtKinkNeg(0),fPtKinkK0(0),fPtKinkK0P(0),fPtKinkK0N(0),
 	fPtKinkGyu(0),fPtKinkGyuP(0),fPtKinkGyuN(0),fKinKRbn(0),fradPtRpDt(0),fAngMomK(0),fPosiKinkK(0),fPosiKinKXZ(0), fPosiKinKYZ(0),fPIDResponse(0),fNumberOfEvent(0),
-	fNumberOfEvent_cent(0),fESDtrackCuts(0),fbgCleaningHigh(0),fTPCSignalPt(0),fqTvsPt(0),fInvMassPt(0),fCent(0),fEventVsCentrality(0),fnsigma(3.5)
+	fNumberOfEvent_cent(0),fESDtrackCuts(0),fbgCleaningHigh(0),fTPCSignalPt(0),fqTvsPt(0),fInvMassPt(0),fCent(0),fEventVsCentrality(0),fnsigma(3.5), fmaxChi(4.0), fZpos(2.0),fEventCuts(0)
 
 {
   // Constructor
@@ -90,8 +90,12 @@ fESDtrackCuts = new AliESDtrackCuts("AliESDtrackCuts","AliESDtrackCuts");
 //________________________________________________________________________
 void AliAnalysisTaskKinkPbPb::UserCreateOutputObjects()
 {
-  // Create histograms
- 
+  // Create event selections
+        fEventCuts.SetupLHC15o();
+        fEventCuts.SetManualMode();
+//Event Cuts with strong anti-pilep cuts
+        fEventCuts.fUseStrongVarCorrelationCut = true;
+        fEventCuts.fUseVariablesCorrelationCuts = true; 
  // Called once
 
 	f1=new TF1("f1","((atan([0]*[1]*(1.0/(sqrt((x^2)*(1.0-([1]^2))-([0]^2)*([1]^2))))))*180.)/[2]",1.1,10.0);
@@ -356,7 +360,7 @@ void AliAnalysisTaskKinkPbPb::UserCreateOutputObjects()
 	 fOutputList->Add(fCent);
 	 fOutputList->Add(fEventVsCentrality);
 	
-
+	fEventCuts.AddQAplotsToList(fOutputList);
 PostData(1, fOutputList);
 }
 
@@ -395,7 +399,6 @@ void AliAnalysisTaskKinkPbPb::UserExec(Option_t *)
         fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0105 + 0.0350/pt^1.01");
 //       fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
         fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
-        fNumberOfEvent->Fill(2.5);
 //physics selection
         UInt_t maskIsSelected =
         ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
@@ -406,7 +409,7 @@ void AliAnalysisTaskKinkPbPb::UserExec(Option_t *)
             return;
          }
         fMultV0trigger->Fill(2);
-        fNumberOfEvent->Fill(3.5);
+        fNumberOfEvent->Fill(2.5);
 
 //multiplicity/ centrality 
         Float_t cent = -999;
@@ -425,7 +428,17 @@ void AliAnalysisTaskKinkPbPb::UserExec(Option_t *)
         }
         }
         fCent->Fill(cent);
+        fNumberOfEvent->Fill(3.5);
+
+//AliEvent cut
+        if (!fEventCuts.AcceptEvent(event)) {
+        PostData(1, fOutputList);
+        return;
+        }
         fNumberOfEvent->Fill(4.5);
+        fEventVsCentrality->Fill(cent, 2);
+/*
+
 // check incomplete event
         if (esd->IsIncompleteDAQ()) return;
         //fIncompletEvent ->Fill(esd->GetNumberOfTracks() );
@@ -452,7 +465,9 @@ void AliAnalysisTaskKinkPbPb::UserExec(Option_t *)
         if (!(hasSPD && hasTrk)) return;
 
         fNumberOfEvent->Fill(8.5);
-// vertex cut
+
+*/
+
         const AliESDVertex *vertex=GetEventVertex(esd);
         if(!vertex) return;
         fNumberOfEvent->Fill(9.5);
@@ -460,12 +475,8 @@ void AliAnalysisTaskKinkPbPb::UserExec(Option_t *)
         vertex->GetXYZ(vpos);
         fZvertex->Fill(vpos[2]);
         if (TMath::Abs( vpos[2] ) > 10. ) return;
-        fEventVertex->Fill(2);
         fNumberOfEvent->Fill(10.5);
 
-	fEventVsCentrality->Fill(cent, 2);
-
-// loop on kink daughters
 
    	for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
 
@@ -494,7 +505,6 @@ void AliAnalysisTaskKinkPbPb::UserExec(Option_t *)
 
 
 //	  if (cent>=0 && cent<5) {
-      	fNumberOfEvent->Fill(6.5);
 // loop on kink daughters
 	fNumberOfEvent_cent->Fill(3);
 
@@ -536,7 +546,7 @@ void AliAnalysisTaskKinkPbPb::UserExec(Option_t *)
 
     	if((status&AliESDtrack::kITSrefit)==0) continue;
     	if((status&AliESDtrack::kTPCrefit)==0) continue;
-      	if((track->GetTPCchi2()/track->GetTPCclusters(0))>4.0) continue;
+      	if((track->GetTPCchi2()/track->GetTPCclusters(0))>fmaxChi) continue;
 //	fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0105 + 0.0350/(pow((track->Pt()),1.1))");
 //	fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0105 + 0.0350/pt^1.01");
   //  	fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
@@ -576,7 +586,7 @@ void AliAnalysisTaskKinkPbPb::UserExec(Option_t *)
 	fdcaToVertexXY->Fill(dcaToVertexXYpos);
 
 //	if((TMath::Abs(dcaToVertexXYpos)>0.3)||(TMath::Abs(dcaToVertexZpos)>2.5))
-	if((TMath::Abs(dcaToVertexZpos)>2.0))
+	if((TMath::Abs(dcaToVertexZpos)>fZpos))
         continue;   //    
 
 //                    if (!fMaxDCAtoVtxCut->AcceptTrack(track)) continue;

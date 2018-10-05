@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskKinkPbPb_cxx 
-#define AliAnalysisTaskKinkPbPb_cxx
+#ifndef AliAnalysisTaskKinkPbPb_H 
+#define AliAnalysisTaskKinkPbPb_H
 
 
 class TH1F;
@@ -11,11 +11,12 @@ class AliESDtrackCuts;
 ///class TFile;
 #include "AliAnalysisTaskSE.h"
 #include "AliITSPIDResponse.h"
+#include "AliEventCuts.h"
 
 class AliAnalysisTaskKinkPbPb : public AliAnalysisTaskSE {
  public:
 	 AliAnalysisTaskKinkPbPb();
-  	AliAnalysisTaskKinkPbPb(const char *name, Float_t lRadiusKUp,  Float_t lRadiusKLow, Int_t lNCluster, Float_t lLowQtValue, Float_t yRange, Float_t lnsigma);
+  	AliAnalysisTaskKinkPbPb(const char *name, Float_t lRadiusKUp,  Float_t lRadiusKLow, Int_t lNCluster, Float_t lLowQtValue, Float_t yRange, Float_t lnsigma, Float_t maxChi, Float_t Zpos);
   	virtual ~AliAnalysisTaskKinkPbPb() {}
   
   	virtual void   UserCreateOutputObjects();
@@ -29,6 +30,9 @@ class AliAnalysisTaskKinkPbPb : public AliAnalysisTaskSE {
         void SetNCluster(Int_t lNCluster){fLowCluster=lNCluster;}
         void SetLowQtValue(Float_t   lLowQtValue){fLowQt=lLowQtValue;}
         void SetnSigma(Float_t   lnsigma){fnsigma=lnsigma;}
+        void SetMaximumChiSquare(Float_t   maxChi){fmaxChi=maxChi;}
+        void SetDCAToVertexZpos(Float_t   Zpos){fZpos=Zpos;}
+
   
  private:
 	void   Process();
@@ -130,12 +134,15 @@ class AliAnalysisTaskKinkPbPb : public AliAnalysisTaskSE {
 	Float_t fLowQt;
 	Float_t fRapiK;
 	Float_t fnsigma;
+	Float_t fmaxChi;
+	Float_t fZpos;
   
 
 
 	Float_t fVtxCut;	
 	AliPIDResponse *fPIDResponse;
 	AliESDtrackCuts * fESDtrackCuts;
+	AliEventCuts fEventCuts;
 
  	AliAnalysisTaskKinkPbPb(const AliAnalysisTaskKinkPbPb&); // not implemented
   	AliAnalysisTaskKinkPbPb& operator=(const AliAnalysisTaskKinkPbPb&); // not implemented
