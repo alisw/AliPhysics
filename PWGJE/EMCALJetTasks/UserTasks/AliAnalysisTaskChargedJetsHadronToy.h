@@ -20,6 +20,22 @@ public:
   void  Terminate(Option_t *);
 
   // ### SETTERS/GETTERS
+  void                        AddTracksFromMixedEvent(const char* baseFolder) {fMixedEvent_BaseFolder = baseFolder; fAddTracksFromMixedEvent = kTRUE;}
+  void                        AddTracksFromPicoTracks(const char* arrName) {fPicoTracksArrayName = arrName; fAddTracksFromPicoTracks = kTRUE;}
+  void                        AddTracksFromInputEvent(const char* arrName) {fEventTracksArrayName = arrName; fAddTracksFromInputEvent = kTRUE;}
+  void                        AddTracksFromToy(const char* configFileName = "alien:///alice/cern.ch/user/r/rhaake/Distributions_PbPb.root");
+
+  void                        SetTrackingEfficiency_InputEvent(Double_t val) {fTrackEfficiency_InputEvent = val;}
+  void                        SetTrackingEfficiency_Toy(Double_t val) {fTrackEfficiency_Toy = val;}
+  void                        SetTrackingEfficiency_ME(Double_t val) {fTrackEfficiency_ME = val;}
+  void                        SetTrackingEfficiency_PicoTracks(Double_t val) {fTrackEfficiency_PicoTracks = val;}
+
+  void                        SetLabelOffset_InputEvent(Int_t val) {fLabelOffset_InputEvent = val;}
+  void                        SetLabelOffset_Toy(Int_t val) {fLabelOffset_Toy = val;}
+  void                        SetLabelOffset_ME(Int_t val) {fLabelOffset_ME = val;}
+  void                        SetLabelOffset_PicoTracks(Int_t val) {fLabelOffset_PicoTracks = val;}
+
+  
   void                        SetDistributionMultiplicity(TH1* val)           {fDistributionMultiplicity = val;}
   void                        SetDistributionPt(TH1* val)                     {fDistributionPt = val;}
   void                        SetDistributionEtaPhi(TH1* val)                 {fDistributionEtaPhi = val;}
@@ -28,23 +44,34 @@ public:
   void                        SetDistributionV4(TH2* val)                     {fDistributionV4 = val;}
   void                        SetDistributionV5(TH2* val)                     {fDistributionV5 = val;}
   void                        SetRangeCentrality(Int_t min, Int_t max)        {fMinCentrality = min; fMaxCentrality = max;}
-  void                        SetPhysicalPrimariesOnly(Bool_t val)            {fPhysicalPrimariesOnly = val;}
 
-  void                        SetInputArrayName(const char* val)              {fInputArrayName = val;}
   void                        SetOutputArrayName(const char* val)             {fOutputArrayName = val;}
 
-  void                        SetUseMixedEvent(const char* baseFolder)        {fMixedEvent_BaseFolder = baseFolder; fUseMixedEvent = kTRUE;}
   void                        SetMixedEventTreeName(const char* val)          {fMixedEvent_TreeName = val;}
   void                        SetMixedEventTotalFiles(Int_t val)              {fMixedEvent_NumTotalFiles = val;}
 
 protected:
   // ### Settings
+  Bool_t                      fAddTracksFromInputEvent;           // Use tracks from the event
+  Bool_t                      fAddTracksFromPicoTracks;           // Use tracks from PicoTrack array in event
+  Bool_t                      fAddTracksFromToy;                  // Use toy model to add tracks
+  Bool_t                      fAddTracksFromMixedEvent;           // Use tracks from mixed event trees
+
+  Double_t                    fTrackEfficiency_InputEvent;        // tracking efficiency
+  Double_t                    fTrackEfficiency_Toy;               // tracking efficiency
+  Double_t                    fTrackEfficiency_ME;                // tracking efficiency
+  Double_t                    fTrackEfficiency_PicoTracks;        // tracking efficiency
+
+  Int_t                       fLabelOffset_InputEvent;            // label offset
+  Int_t                       fLabelOffset_Toy;                   // label offset
+  Int_t                       fLabelOffset_ME;                    // label offset
+  Int_t                       fLabelOffset_PicoTracks;            // label offset
+
   TH1*                        fDistributionMultiplicity;          // histogram for multiplicity distribution
   TH1*                        fDistributionPt;                    // histogram for Pt distribution
   TH1*                        fDistributionEtaPhi;                // histogram for eta/phi distribution
   Int_t                       fMinCentrality;                     // minimum centrality
   Int_t                       fMaxCentrality;                     // maximum centrality
-  Bool_t                      fPhysicalPrimariesOnly;             // whether or not to use physical primaries only when running MC
   
   TH2*                        fDistributionV2;                    /// Distribution for v2 in bins of pt and centrality
   TH2*                        fDistributionV3;                    /// Distribution for v3 in bins of pt and centrality
@@ -52,8 +79,6 @@ protected:
   TH2*                        fDistributionV5;                    /// Distribution for v5 in bins of pt and centrality
 
   // ### Mixed event settings
-  Bool_t                      fUseMixedEvent;                     //  ME: use mixed event (instead of toy)
-  
   TTree*                      fMixedEvent_Tree;                   //! ME: The tree of the mixed event
   TFile*                      fMixedEvent_CurrentFile;            //! ME: open file
   Int_t                       fMixedEvent_CurrentFileID;          //  ME: open file ID
@@ -69,10 +94,14 @@ protected:
   Short_t*                    fBuffer_TrackCharge;                //! buffer for track charge array
   
   // ### Input/output settings+arrays
-  TString                     fInputArrayName;                    // Name of the TClonesArray that will be loaded
-  TString                     fOutputArrayName;                   // Name of the TClonesArray that will be loaded
-  TClonesArray*               fInputArray;                        //! input array containing tracks from events
-  TClonesArray*               fOutputArray;                       //! input array containing tracks from events
+  TString                     fPicoTracksArrayName;               // Name of the TClonesArray that will be loaded
+  TClonesArray*               fPicoTracksArray;                   //! input array containing pico tracks
+
+  TString                     fEventTracksArrayName;              // Name of the TClonesArray that will be loaded
+  TClonesArray*               fEventTracksArray;                  //! input array containing tracks from events
+
+  TString                     fOutputArrayName;                   // Name of the TClonesArray that will be written
+  TClonesArray*               fOutputArray;                       //! output array
 
   // ### Misc
   TRandom3*                   fRandom;                            //! random number generator
@@ -99,7 +128,7 @@ private:
   AliAnalysisTaskChargedJetsHadronToy &operator=(const AliAnalysisTaskChargedJetsHadronToy&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskChargedJetsHadronToy, 3); // Toy model
+  ClassDef(AliAnalysisTaskChargedJetsHadronToy, 4); // Toy model
   /// \endcond
 };
 
