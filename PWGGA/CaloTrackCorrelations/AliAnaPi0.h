@@ -79,6 +79,10 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
 
   void         SwitchOnFillAngleHisto()         { fFillAngleHisto      = kTRUE  ; }
   void         SwitchOffFillAngleHisto()        { fFillAngleHisto      = kFALSE ; }
+
+  void         SwitchOnOneCellSeparation()      { fUseOneCellSeparation = kTRUE  ; }
+  void         SwitchOffOneCellSeparation()     { fUseOneCellSeparation = kFALSE ; }
+  Bool_t       CheckSeparation(TLorentzVector photonMom1, TLorentzVector photonMom2) ;
   
   //------------------------------------------
   // Do analysis only with clusters in same SM or different combinations of SM
@@ -189,6 +193,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fUseAngleEDepCut ;          ///<  Select pairs depending on their opening angle
   Float_t  fAngleCut ;                 ///<  Select pairs with opening angle larger than a threshold
   Float_t  fAngleMaxCut ;              ///<  Select pairs with opening angle smaller than a threshold
+  Bool_t   fUseOneCellSeparation ;     ///<  Select pairs with one cell in between of maxima
   
   Float_t  fPi0MassWindow[2];          ///<  Pi0 mass selection window
   Float_t  fEtaMassWindow[2];          ///<  Eta mass selection window
