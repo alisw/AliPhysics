@@ -74,6 +74,7 @@ inline AliFemtoShareQualityPairCut::AliFemtoShareQualityPairCut(const AliFemtoSh
   fShareQualityMax(c.fShareQualityMax),
   fShareFractionMax(c.fShareFractionMax),
   fRemoveSameLabel(c.fRemoveSameLabel)
+  , fAlternativeAlgorithm(c.fAlternativeAlgorithm)
 { /* no-op */ }
 
 inline AliFemtoPairCut* AliFemtoShareQualityPairCut::Clone() {
