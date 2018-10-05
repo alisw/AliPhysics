@@ -1,3 +1,35 @@
+
+// Setter jet cuts
+//==============================================================================
+
+Bool_t DefineCutsTaskpp(AliAnalysisTaskHFJetIPQA *task, Float_t minC, Float_t maxC)
+{
+    // define cuts for task
+    AliRDHFJetsCuts *cuts=task->GetJetCutsHF();
+    // jets
+    cuts->SetJetRadius(0.4); // this cut does nothing
+    cuts->SetMaxEtaJet(0.5);//0.9-R
+    cuts->SetMinPtJet(5.);
+    cuts->SetMaxPtJet(250.);
+    // Set centrality
+    cuts->SetMinCentrality(minC);
+    cuts->SetMaxCentrality(maxC);
+    cuts->SetUsePhysicsSelection(kFALSE);
+    cuts->SetOptPileup(1);
+    cuts->ConfigurePileupCuts(5,0.8);
+    cuts->SetTriggerClass("");
+    cuts->SetTriggerMask(AliVEvent::kINT7);
+    cuts->PrintAll();
+    cuts->PrintTrigger();
+    // pPb minbias only
+
+    return kTRUE;
+}
+
+
+//
+
+
 AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
                                            const char *ntracks            = "Tracks",
                                            const char *nclusters           = "",
@@ -162,7 +194,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     if(IsESD) {
         // Setup initial ESD track cuts
         //==============================================================================
-        jetTask->SetRunESD();
+      //  jetTask->SetRunESD();
         AliESDtrackCuts * trackCuts = new AliESDtrackCuts();
         // trackCuts->SetMaxFractionSharedTPCClusters(0.4);
         // TFormula *f1NClustersTPCLinearPtDep = new TFormula("f1NClustersTPCLinearPtDep","70.+30./20.*x");
@@ -192,9 +224,9 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     // Create containers for input/output
     AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
     TString contname(combinedName);
-    contname += "_histos";
+    contname += Form("_histos_R%.1f",jetradius);
     TString contnamecorr(combinedName);
-    contnamecorr += "_correlations";
+    contnamecorr += Form("_correlations_R%.1f",jetradius);
 
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
                                                               TList::Class(),AliAnalysisManager::kOutputContainer,
@@ -208,33 +240,3 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     return jetTask;
 }
 
-
-// Setter jet cuts
-//==============================================================================
-
-Bool_t DefineCutsTaskpp(AliAnalysisTaskHFJetIPQA *task, Float_t minC, Float_t maxC)
-{
-    // define cuts for task
-    AliRDHFJetsCuts *cuts=task->GetJetCutsHF();
-    // jets
-    cuts->SetJetRadius(0.4); // this cut does nothing
-    cuts->SetMaxEtaJet(0.5);//0.9-R
-    cuts->SetMinPtJet(5.);
-    cuts->SetMaxPtJet(250.);
-    // Set centrality
-    cuts->SetMinCentrality(minC);
-    cuts->SetMaxCentrality(maxC);
-    cuts->SetUsePhysicsSelection(kFALSE);
-    cuts->SetOptPileup(1);
-    cuts->ConfigurePileupCuts(5,0.8);
-    cuts->SetTriggerClass("");
-    cuts->SetTriggerMask(AliVEvent::kINT7);
-    cuts->PrintAll();
-    cuts->PrintTrigger();
-    // pPb minbias only
-
-    return kTRUE;
-}
-
-
-//
