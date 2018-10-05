@@ -75,6 +75,7 @@
 #pragma link C++ class AliAnalysisTaskSEDStarCharmFraction+;
 #pragma link C++ class AliAnalysisTaskSESignificance+;
 #pragma link C++ class AliAnalysisTaskSEHFQA+;
+#pragma link C++ class AliAnalysisTaskSEHFTreeCreator+;
 #pragma link C++ class AliAnalysisTaskTrackingSysPropagation+;
 #pragma link C++ class AliMultiDimVector+;
 #pragma link C++ class AliSignificanceCalculator+;
@@ -109,5 +110,7 @@
 #pragma link C++ class AliHFCutVarFDsubMassFitter+;
 #pragma link C++ class AliHFCutVarFDsubMinimiser+;
 #pragma link C++ class AliHFVnVsMassFitter+;
+#pragma link C++ class AliHFCutOptTreeHandler+;
+
 
 #endif
