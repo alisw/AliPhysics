@@ -2,7 +2,8 @@ AliAnalysisTask *AddTask_jjung_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
                                                      TString cFileName = "Config_jjung_ElectronEfficiency.C",
                                                      Char_t* outputFileName="LMEE.root",
                                                      Bool_t deactivateTree=kFALSE, // enabling this has priority over 'writeTree'! (needed for LEGO trains)
-                                                     TString resolutionfile = ""
+                                                     TString resolutionfile = "",                                                    
+                                                     Int_t wagonnr=0
                                                      )
 {
 
@@ -45,7 +46,7 @@ AliAnalysisTask *AddTask_jjung_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
 
 
   // Electron efficiency task
-  AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency("jjung_ElectronEfficiency");
+  AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency(Form("jjung_ElectronEfficiency_%d",wagonnr));
   std::cout << "task created: " << task->GetName() << std::endl;
 
   if(CalcEfficiencyRec && !resolutionfile.IsNull() &&

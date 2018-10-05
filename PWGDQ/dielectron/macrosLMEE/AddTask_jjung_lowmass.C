@@ -1,6 +1,7 @@
 AliAnalysisTask *AddTask_jjung_lowmass(Bool_t getFromAlien=kFALSE,
                                       TString cFileName = "Config_jjung_lowmass.C",
-                                      Char_t* outputFileName="LMEE.root"
+                                      Char_t* outputFileName="LMEE.root",
+                                      Int_t wagonnr=0                                    
                                       )
 {
   std::cout << "AddTask_jjung_lowmass" << std::endl;
@@ -28,7 +29,7 @@ AliAnalysisTask *AddTask_jjung_lowmass(Bool_t getFromAlien=kFALSE,
   gROOT->LoadMacro(configFilePath.Data());
 
   //create task and add it to the manager (MB)
-  AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron("MultiDielectron");
+  AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron(Form("MultiDielectron_%d", wagonnr));
   if (!hasMC) task->UsePhysicsSelection();
   task->SetTriggerMask(triggerMask);
 
