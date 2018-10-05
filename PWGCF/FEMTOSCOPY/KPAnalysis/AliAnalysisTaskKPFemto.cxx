@@ -987,8 +987,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
      }
   */
   fPIDResponse = inputHandler->GetPIDResponse();
-
-
+  
   if(!fPIDResponse) {
     PostData(1,fOutputContainer );
     PostData(2, fHistSparseSignal );
@@ -1009,20 +1008,27 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 
   Float_t lcentrality = -99.;
   
-  if(fCollidingSystem == "PbPb" || fCollidingSystem == "pPb"){
+  // AliMultSelection* MultSelection = 0x0;
+
+  if(fCollidingSystem == "PbPb" ){
     lcentrality = centrality->GetCentralityPercentile("V0M"); //FIXME : Centrality in pp and pPb works the same???
     hmult->Fill(lcentrality);
   }
-  if(fCollidingSystem == "pPb"){
-    lcentrality = centrality->GetCentralityPercentile("V0A"); //FIXME : Centrality in pp and pPb works the same???
+  
+  else if(fCollidingSystem == "pPb"){
+    lcentrality = ((AliAODHeader * )fAODevent->GetHeader())->GetRefMultiplicityComb08(); //-->TBChecked
+    // lcentrality = centrality->GetCentralityPercentile("V0A"); //FIXME : Centrality in pp and pPb works the same???
     hmult->Fill(lcentrality);
-  }
-  if(fCollidingSystem == "pp") {//FIXME : I think up AOD have only refmult as mult estimation
+  } 
+  
+  else if(fCollidingSystem == "pp") {//FIXME : I think up AOD have only refmult as mult estimation
     lcentrality = ((AliAODHeader * )fAODevent->GetHeader())->GetRefMultiplicityComb08(); //-->RIcambiare
     //    lcentrality = ((AliAODHeader * )fAODevent->GetHeader())->GetRefMultiplicity(); //run on phojet
     //    cout<<"Centrality: "<<lcentrality<<endl;
     hmult->Fill(lcentrality);
   }
+
+  // cout<<lcentrality<<endl;
 
   if (lcentrality<fCentrLowLim||lcentrality>=fCentrUpLim){   
     PostData(1,fOutputContainer );
@@ -1031,6 +1037,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     return;
   }
   fHistEventMultiplicity->Fill(4);
+  
   //event must not be tagged as pileup
   Bool_t isPileUpSpd=kFALSE;
   isPileUpSpd=fAODevent->IsPileupFromSPD();
@@ -1057,7 +1064,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     isSelectedAny         = (mask & AliVEvent::kAny);
   }
   
-  if(fCollidingSystem == "pp"){
+  else if(fCollidingSystem == "pp"){
     isSelectedCentral     = (mask & AliVEvent::kCentral);
     isSelectedSemiCentral = (mask & AliVEvent::kSemiCentral);
     isSelectedMB          = (mask & AliVEvent::kMB);
@@ -1070,12 +1077,15 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 	isSelected = kTRUE;
   }
   
-  if(fCollidingSystem == "pPb"){
+  else if(fCollidingSystem == "pPb"){
     isSelectedCentral     = (mask & AliVEvent::kCentral);
     isSelectedSemiCentral = (mask & AliVEvent::kSemiCentral);
     isSelectedMB          = (mask & AliVEvent::kMB);
     isSelectedInt7        = (mask & AliVEvent::kINT7);
     isSelectedAny         = (mask & AliVEvent::kAny);
+
+    if(isSelectedInt7 )
+      isSelected = kTRUE;
   }
 
   if(isSelectedAny)
@@ -1111,9 +1121,12 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
       PostData(3, fHistSparseBkg );
       return;
     }
-  }   else  if(fCollidingSystem == "pPb" ){ // check pPb
+  }  
+  
+  else  if(fCollidingSystem == "pPb" ){ // check pPb
     
     if(!isSelectedInt7){   
+    //if(!isSelected){   
       PostData(1, fOutputContainer);
       PostData(2, fHistSparseSignal );
       PostData(3, fHistSparseBkg );
@@ -1122,7 +1135,6 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     
   }
   
-
   //  cout<<"nTracks: "<<ntracks<<" centrality "<<lcentrality<<endl;
   Double_t fSphericityvalue = CalculateSphericityofEvent(fAODevent);
   fHistSphericity->Fill(fSphericityvalue);
@@ -1158,7 +1170,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
   
   // ... and centrality    //FIXME : find out how centrality wokrs in AOD in pp and pPb
   int centralityBin=0;
-  if(fCollidingSystem == "PbPb" || fCollidingSystem == "pPb"){
+  if(fCollidingSystem == "PbPb" ){
     if(lcentrality < 5.) centralityBin=19;  // changed <= with < to be consistent with histogram binning, except last bin 
     else if(lcentrality < 10.) centralityBin=18;
     else if(lcentrality < 15.) centralityBin=17;
@@ -1181,7 +1193,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     else if(lcentrality <= 100.) centralityBin=0;
   }
 
-  else if(fCollidingSystem == "pp"){                // FIXME : To be understand if these selections are fine in the current framework
+  else if(fCollidingSystem == "pp"  || fCollidingSystem == "pPb"){                // FIXME : To be understand if these selections are fine in the current framework
     if(lcentrality < 4.)        centralityBin=19;  
     else if(lcentrality < 7.)   centralityBin=18;
     else if(lcentrality < 10.)  centralityBin=17;
