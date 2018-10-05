@@ -96,6 +96,7 @@ private:
     TString                         fOption;
     
     AliESDtrackCuts*                fTrackCuts=nullptr; //!
+    AliESDtrackCuts*                fTrackCuts2=nullptr; //!
     AliVEvent*                      fEvt=nullptr; //!
     UInt_t                          fFilterBit;
     AliAnalysisTaskXi1530RunTable*  fRunTable=nullptr; //!
@@ -135,7 +136,9 @@ private:
     Double_t                        PVy = 999;
     Double_t                        PVz = 999;
     Double_t                        bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 1);
+    ClassDef(AliAnalysisTaskXi1530, 2);
+    //1: Frist version
+    //2: Add Track cut2 for the Xi daughter particles
 };
 
 #endif
