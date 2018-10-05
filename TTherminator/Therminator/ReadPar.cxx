@@ -66,7 +66,7 @@ ReadPar::~ReadPar()
     free(fname);
 }
 
-int ReadPar::readFile(const char *aFName) throw (int)
+int ReadPar::readFile(const char *aFName)
 {
   option read_opt;
   STR buf_str;
@@ -119,7 +119,7 @@ int ReadPar::printOptions()
   return 0;
 }
 
-STR ReadPar::getPar(const char *name) throw(STR)
+STR ReadPar::getPar(const char *name)
 {
   VOPT::iterator c;
   STR pname(name);

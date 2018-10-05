@@ -567,7 +567,7 @@ void AliHLTTriggerCounterComponent::SetInitialCounters(const TMap* counters)
 }
 
 
-void* AliHLTTriggerCounterComponent::AliRingBuffer::operator new (std::size_t size) throw (std::bad_alloc)
+void* AliHLTTriggerCounterComponent::AliRingBuffer::operator new (std::size_t size)
 {
 	// New operator used to catch and log exceptions.
 	

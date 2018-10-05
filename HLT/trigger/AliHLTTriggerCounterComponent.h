@@ -135,7 +135,7 @@ private:
 		}
 		
 		/// Overloaded new operator to catch and log memory allocation failures.
-		void* operator new (std::size_t size) throw (std::bad_alloc);
+		void* operator new (std::size_t size);
 		
 		/// Symmetric delete operator for overloaded new.
 		void operator delete (void* mem) throw ();

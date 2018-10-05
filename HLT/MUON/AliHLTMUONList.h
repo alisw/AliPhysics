@@ -522,7 +522,7 @@ public:
 	 * This deletes all elements from the list and resizes the buffer which
 	 * is used to store the entries for the list.
 	 */
-	void Clear(AliHLTUInt32_t maxentries) throw(std::bad_alloc)
+	void Clear(AliHLTUInt32_t maxentries)
 	{
 		Clear();
 		
@@ -608,7 +608,7 @@ protected:
 	 * Locates the next free location in the fEntry buffer, creates a new node
 	 * at that location and returns the pointer.
 	 */
-	Node* NewNode() throw(std::bad_alloc)
+	Node* NewNode()
 	{
 		//return new Node();
 		assert( fNextFree < fMaxEntries );
@@ -631,7 +631,7 @@ protected:
 		throw std::bad_alloc();
 	}
 	
-	Node* NewNode(const DataType& data) throw(std::bad_alloc)
+	Node* NewNode(const DataType& data)
 	{
 		//return new Node(data);
 		assert( fNextFree < fMaxEntries );

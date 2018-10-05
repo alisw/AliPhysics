@@ -89,7 +89,7 @@ AliHLTITSTrack &AliHLTITSTrack::operator=(const AliHLTITSTrack& t)
 
 
 //____________________________________________________________________________
-AliHLTITSTrack::AliHLTITSTrack(AliESDtrack& t,Bool_t c) throw (const Char_t *) :
+AliHLTITSTrack::AliHLTITSTrack(AliESDtrack& t,Bool_t c) :
   AliKalmanTrack(),
   fExpQ(40),
   fTPCtrackId( 0 )
@@ -113,7 +113,7 @@ AliHLTITSTrack::AliHLTITSTrack(AliESDtrack& t,Bool_t c) throw (const Char_t *) :
 }
 
 //____________________________________________________________________________
-AliHLTITSTrack::AliHLTITSTrack(AliExternalTrackParam& t ) throw (const Char_t *) :
+AliHLTITSTrack::AliHLTITSTrack(AliExternalTrackParam& t ) :
   AliKalmanTrack(),  
   fExpQ(40),
   fTPCtrackId( 0 )
