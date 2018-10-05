@@ -5,7 +5,8 @@ AliAnalysisTask *AddTaskMLTreeMakerwCutLib(
                                                     Double_t centmin=0.,
                                                     Double_t centmax=100.,
                                                     Bool_t SetTPCCorrection=kFALSE,
-                                                    Bool_t useAODFilterCuts=kFALSE
+                                                    Bool_t useAODFilterCuts=kFALSE,
+                                                    Bool_t isMC
                                                     )
 {
 
@@ -50,6 +51,8 @@ else if (mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class()){
 }
 
 AliAnalysisTaskMLTreeMaker *task = new AliAnalysisTaskMLTreeMaker("treemaker");   
+
+task->isMC(isMC);
 
 if(SetTPCCorrection){
     TH3D mean = cutlib->SetEtaCorrectionTPC(AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly, kFALSE,1);

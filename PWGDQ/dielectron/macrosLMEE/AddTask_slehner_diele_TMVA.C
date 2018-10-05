@@ -1,6 +1,6 @@
-AliAnalysisTask *AddTask_slehner_diele_TMVA(  Int_t trackCut=1,
-                                              Int_t PIDCut=1,
-                                              Int_t evCut=1,
+AliAnalysisTask *AddTask_slehner_diele_TMVA(  Int_t trackCut=00,
+                                              Int_t PIDCut=0,
+                                              Int_t evCut=0,
                                               Double_t centMin=0.,
                                               Double_t centMax=100.,
                                               Bool_t SetTPCCorrection=kFALSE,
@@ -72,7 +72,7 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Int_t trackCut=1,
 //  }
   
       for(Int_t MVACut = 0; MVACut <= 2; ++MVACut){
-        AliDielectron * diel_low = Config_slehner_diele_TMVA(trackCut,PIDCut,3*MVACut,kFALSE);
+        AliDielectron * diel_low = Config_slehner_diele_TMVA(trackCut,PIDCut,3*MVACut,useAODFilterCuts);
         if(!diel_low){
           Printf("=======================================");
           Printf("No AliDielectron object loaded -> EXIT ");
