@@ -914,6 +914,12 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     TH1F *h1gamma_K0S = new TH1F("hGammaFromK0S","#gamma from K^{0}_{S};p_{T} (GeV/c)",NpTgg-1,pTgg);
     h1gamma_K0S->Sumw2();
     fOutputContainer->Add(h1gamma_K0S);
+    TH1F *h1gamma_L0 = new TH1F("hGammaFromL0","#gamma from #Lambda;p_{T} (GeV/c)",NpTgg-1,pTgg);
+    h1gamma_L0->Sumw2();
+    fOutputContainer->Add(h1gamma_L0);
+    TH1F *h1gamma_S0 = new TH1F("hGammaFromS0","#gamma from #Sigma^{0};p_{T} (GeV/c)",NpTgg-1,pTgg);
+    h1gamma_S0->Sumw2();
+    fOutputContainer->Add(h1gamma_S0);
 
     const TString Asym[] = {"","_asym08"};
     const Int_t Nasym = sizeof(Asym)/sizeof(Asym[0]);
@@ -1837,6 +1843,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
   Int_t primary = -1;
   Double_t weight = 1.;
   Double_t TrueK0SPt = 0;
+  Double_t TrueL0Pt = 0;
+  Double_t TrueS0Pt = 0;
 
   for(Int_t iph=0;iph<multClust;iph++){
     AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(iph);
@@ -1895,7 +1903,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
     }
 
     if(fIsMC){
-      if(IsFrom(primary,TrueK0SPt,310) && IsPhoton(primary)) FillHistogramTH1(fOutputContainer,"hGammaFromK0S",pT,weight); 
+      if(IsFrom(primary,TrueK0SPt,310)  && IsPhoton(primary)) FillHistogramTH1(fOutputContainer,"hGammaFromK0S",pT,weight); 
+
+      if(IsFrom(primary,TrueS0Pt ,3212) && IsPhoton(primary)) FillHistogramTH1(fOutputContainer,"hGammaFromS0" ,pT,weight);//Sigma0->L0 + gamma (Br = 100%)
+      else if(IsFrom(primary,TrueL0Pt ,3122) && IsPhoton(primary)) FillHistogramTH1(fOutputContainer,"hGammaFromL0" ,pT,weight);//L0->n + pi0 (Br = 35.8%)
     }
 
     value[0] = pT;
