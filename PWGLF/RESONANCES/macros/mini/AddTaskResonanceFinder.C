@@ -2615,7 +2615,7 @@ Bool_t Config_kxSigmastar(
   Int_t i,iCutSig[8];
 
   AliRsnCutMiniPair* cutMassS=new AliRsnCutMiniPair("cutMassSigmastar",AliRsnCutMiniPair::kMassRange);
-  cutMassS->SetRangeD(1.308,1.466);
+  cutMassS->SetRangeD(1.346,1.427);
   AliRsnCutMiniPair* cutYS=new AliRsnCutMiniPair("cutRapiditySigmastar",AliRsnCutMiniPair::kRapidityRange);
   cutYS->SetRangeD(-0.6,0.6);
   AliRsnCutMiniPair* cutV0=new AliRsnCutMiniPair("cutV0",AliRsnCutMiniPair::kContainsV0Daughter);
@@ -2679,7 +2679,7 @@ Bool_t Config_kxSigmastar(
     
   // sidebands
   AliRsnCutMiniPair* cutMassSB=new AliRsnCutMiniPair("cutMassSB",AliRsnCutMiniPair::kMassRange);
-  cutMassSB->SetRangeD(1.505,1.585);
+  cutMassSB->SetRangeD(1.446,1.486);
   AliRsnCutSet* cutsSB=new AliRsnCutSet("pairCutsSB",AliRsnTarget::kMother);
   cutsSB->AddCut(cutMassSB);
   cutsSB->AddCut(cutYS);
@@ -3131,7 +3131,7 @@ Bool_t Config_k0Sigmastar(
   Int_t i,iCutSig[8];
 
   AliRsnCutMiniPair* cutMassS=new AliRsnCutMiniPair("cutMassSigmastar",AliRsnCutMiniPair::kMassRange);
-  cutMassS->SetRangeD(1.308,1.466);
+  cutMassS->SetRangeD(1.346,1.427);
   AliRsnCutMiniPair* cutYS=new AliRsnCutMiniPair("cutRapiditySigmastar",AliRsnCutMiniPair::kRapidityRange);
   cutYS->SetRangeD(-0.6,0.6);
   AliRsnCutMiniPair* cutV0=new AliRsnCutMiniPair("cutV0",AliRsnCutMiniPair::kContainsV0Daughter);
@@ -3195,7 +3195,7 @@ Bool_t Config_k0Sigmastar(
     
   // sidebands
   AliRsnCutMiniPair* cutMassSB=new AliRsnCutMiniPair("cutMassSB",AliRsnCutMiniPair::kMassRange);
-  cutMassSB->SetRangeD(1.505,1.585);
+  cutMassSB->SetRangeD(1.446,1.486);
   AliRsnCutSet* cutsSB=new AliRsnCutSet("pairCutsSB",AliRsnTarget::kMother);
   cutsSB->AddCut(cutMassSB);
   cutsSB->AddCut(cutYS);
@@ -3597,8 +3597,9 @@ Bool_t Config_kstar0Sigmastar(
   cutYRes->SetRangeD(-0.6,0.6);
 
   AliRsnCutMiniPair* cutMassKstar=new AliRsnCutMiniPair("cutMassKstar",AliRsnCutMiniPair::kMassRange);
-  if(!SidebandKstar) cutMassKstar->SetRangeD(0.8,0.99);
-  else cutMassKstar->SetRangeD(1.037,1.085);
+  if(!SidebandKstar) cutMassKstar->SetRangeD(0.841,0.943);
+  else if(SidebandKstar==1) cutMassKstar->SetRangeD(0.766,0.816);
+  else cutMassKstar->SetRangeD(0.966,1.014);
   AliRsnCutSet* cutsKstar=new AliRsnCutSet("pairCutsKstar",AliRsnTarget::kMother);
   cutsKstar->AddCut(cutMassKstar);
   cutsKstar->AddCut(cutYRes);
@@ -3664,7 +3665,7 @@ Bool_t Config_kstar0Sigmastar(
   Int_t iCutSig[8];
 
   AliRsnCutMiniPair* cutMassS=new AliRsnCutMiniPair("cutMassSigmastar",AliRsnCutMiniPair::kMassRange);
-  cutMassS->SetRangeD(1.308,1.466);
+  cutMassS->SetRangeD(1.346,1.427);
   AliRsnCutMiniPair* cutV0=new AliRsnCutMiniPair("cutV0",AliRsnCutMiniPair::kContainsV0Daughter);
   AliRsnCutSet* cutsS=new AliRsnCutSet("pairCutsSigmastar",AliRsnTarget::kMother);
   cutsS->AddCut(cutMassS);
@@ -3726,7 +3727,7 @@ Bool_t Config_kstar0Sigmastar(
     
   // sidebands
   AliRsnCutMiniPair* cutMassSigmastarSB=new AliRsnCutMiniPair("cutMassSigmastarSB",AliRsnCutMiniPair::kMassRange);
-  cutMassSigmastarSB->SetRangeD(1.505,1.585);
+  cutMassSigmastarSB->SetRangeD(1.446,1.486);
   AliRsnCutSet* cutsSigmastarSB=new AliRsnCutSet("pairCutsSB",AliRsnTarget::kMother);
   cutsSigmastarSB->AddCut(cutMassSigmastarSB);
   cutsSigmastarSB->AddCut(cutYRes);
@@ -4234,7 +4235,7 @@ Bool_t Config_kstarxSigmastar(
   Int_t i,iCutKstar[4];
 
   AliRsnCutMiniPair* cutMassKstar=new AliRsnCutMiniPair("cutMassKstar",AliRsnCutMiniPair::kMassRange);
-  cutMassKstar->SetRangeD(0.8,0.99);
+  cutMassKstar->SetRangeD(0.841,0.943);
   AliRsnCutSet* cutsKstar=new AliRsnCutSet("pairCutsKstar",AliRsnTarget::kMother);
   cutsKstar->AddCut(cutMassKstar);
   cutsKstar->AddCut(cutYRes);
@@ -4268,7 +4269,8 @@ Bool_t Config_kstarxSigmastar(
   iCutKstar[i]=task->AddResonanceFinder(Kfinder[i]);
 
   AliRsnCutMiniPair* cutMassKstarSB=new AliRsnCutMiniPair("cutMassKstarSB",AliRsnCutMiniPair::kMassRange);
-  cutMassKstarSB->SetRangeD(1.037,1.085);
+  if(SidebandKstar<=1) cutMassKstarSB->SetRangeD(0.766,0.816);
+  else cutMassKstarSB->SetRangeD(0.966,1.014);
   AliRsnCutSet* cutsKstarSB=new AliRsnCutSet("pairCutsKstarSB",AliRsnTarget::kMother);
   cutsKstarSB->AddCut(cutMassKstarSB);
   cutsKstarSB->AddCut(cutYRes);
@@ -4306,7 +4308,7 @@ Bool_t Config_kstarxSigmastar(
   Int_t iCutSig[8];
 
   AliRsnCutMiniPair* cutMassS=new AliRsnCutMiniPair("cutMassSigmastar",AliRsnCutMiniPair::kMassRange);
-  cutMassS->SetRangeD(1.308,1.466);
+  cutMassS->SetRangeD(1.346,1.427);
   AliRsnCutSet* cutsS=new AliRsnCutSet("pairCutsSigmastar",AliRsnTarget::kMother);
   cutsS->AddCut(cutMassS);
   cutsS->AddCut(cutYRes);
@@ -4367,7 +4369,7 @@ Bool_t Config_kstarxSigmastar(
     
   // sidebands
   AliRsnCutMiniPair* cutMassSigmastarSB=new AliRsnCutMiniPair("cutMassSigmastarSB",AliRsnCutMiniPair::kMassRange);
-  cutMassSigmastarSB->SetRangeD(1.505,1.585);
+  cutMassSigmastarSB->SetRangeD(1.446,1.486);
   AliRsnCutSet* cutsSigmastarSB=new AliRsnCutSet("pairCutsSB",AliRsnTarget::kMother);
   cutsSigmastarSB->AddCut(cutMassSigmastarSB);
   cutsSigmastarSB->AddCut(cutYRes);
@@ -4731,7 +4733,7 @@ Bool_t Config_pikstar0(
   // AliRsnMiniResonanceFinder//kstar0
   AliRsnCutMiniPair* cutMassKstar0=new AliRsnCutMiniPair("cutMassKstar0",AliRsnCutMiniPair::kMassRange);
   //cutMassKstar0->SetRangeD(0.85,0.95);
-  cutMassKstar0->SetRangeD(0.8,0.99);
+  cutMassKstar0->SetRangeD(0.841,0.943);
   AliRsnCutMiniPair* cutYKstar0=new AliRsnCutMiniPair("cutRapidityKstar0",AliRsnCutMiniPair::kRapidityRange);
   cutYKstar0->SetRangeD(-0.6,0.6);
   AliRsnCutSet* cutsKstar0=new AliRsnCutSet("pairCutsKstar0",AliRsnTarget::kMother);
@@ -4797,7 +4799,7 @@ Bool_t Config_pikstar0(
   //side bands
   AliRsnCutMiniPair* cutMassSB=new AliRsnCutMiniPair("cutMassSB",AliRsnCutMiniPair::kMassRange);
   //cutMassSB->SetRangeD(0.95,1.05);
-  cutMassSB->SetRangeD(1.037,1.085);
+  cutMassSB->SetRangeD(0.966,1.014);
   AliRsnCutSet* cutsSB=new AliRsnCutSet("pairCutsSB",AliRsnTarget::kMother);
   cutsSB->AddCut(cutMassSB);
   cutsSB->AddCut(cutYKstar0);
@@ -4979,7 +4981,7 @@ Bool_t Config_pikstar0(
       ipdg=3124;
     }else if(i==12){
       xID=imID;
-      name.Form("PiplikeppKstar0Mix");
+      name.Form("PiplikeppKstar0");
       comp.Form("PAIR");
       charge1='+';
       cut2=iCutlikeppKstar0;
@@ -4987,7 +4989,7 @@ Bool_t Config_pikstar0(
       ipdg=3124;
     }else if(i==13){
       xID=imID;
-      name.Form("PimlikeppKstar0Mix");
+      name.Form("PimlikeppKstar0");
       comp.Form("PAIR");
       charge1='-';
       cut2=iCutlikeppKstar0;
@@ -4995,7 +4997,7 @@ Bool_t Config_pikstar0(
       ipdg=3124;
     }else if(i==14){
       xID=imID;
-      name.Form("PiplikemmKstar0Mix");
+      name.Form("PiplikemmKstar0");
       comp.Form("PAIR");
       charge1='+';
       cut2=iCutlikemmKstar0;
@@ -5003,7 +5005,7 @@ Bool_t Config_pikstar0(
       ipdg=3124;
     }else if(i==15){
       xID=imID;
-      name.Form("PimlikemmKstar0Mix");
+      name.Form("PimlikemmKstar0");
       comp.Form("PAIR");
       charge1='-';
       cut2=iCutlikemmKstar0;
