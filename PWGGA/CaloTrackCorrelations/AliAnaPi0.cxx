@@ -2995,11 +2995,11 @@ void AliAnaPi0::FillAcceptanceHistograms()
     
     if(fFillArmenterosThetaStar) FillArmenterosThetaStar(pdg);
     
+    Int_t absID1=-1;
+    Int_t absID2=-1;
+
     if(GetCalorimeter()==kEMCAL && inacceptance1 && inacceptance2 && fCheckAccInSector)
     {
-      Int_t absID1=0;
-      Int_t absID2=0;
-      
       Float_t photonPhi1 = fPhotonMom1.Phi();
       Float_t photonPhi2 = fPhotonMom2.Phi();
       
@@ -3045,10 +3045,11 @@ void AliAnaPi0::FillAcceptanceHistograms()
       Bool_t cutAngle = kFALSE;
       if(fUseAngleCut && (angle < fAngleCut || angle > fAngleMaxCut)) cutAngle = kTRUE;
 
-      Bool_t separation=CheckSeparation(fPhotonMom1,fPhotonMom2);
       Bool_t cutSeparation = kFALSE;
-      if(fUseOneCellSeparation && !separation) cutSeparation = kTRUE;
-
+      if(fUseOneCellSeparation)
+      {
+	if(CheckSeparation(absID1,absID2)) cutSeparation = kTRUE;
+      }
       
       AliDebug(2,Form("\t ACCEPTED pdg %d: pt %2.2f, phi %2.2f, eta %2.2f",pdg,mesonPt,mesonPhi,mesonYeta));
       
@@ -4217,13 +4218,15 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         continue;
       }
 
-      Bool_t separation=CheckSeparation(fPhotonMom1,fPhotonMom2);
-      if(fUseOneCellSeparation && !separation)
+      if(fUseOneCellSeparation)
       {
-	AliDebug(2,Form("Real pair one cell separation required and Yes/No %d", separation));
-        continue;
+	Bool_t separation = CheckSeparation(p1->GetCellAbsIdMax() ,p2->GetCellAbsIdMax());
+	if(!separation)
+	{
+	  AliDebug(2,Form("Real pair one cell separation required and Yes/No %d", separation));
+	  continue;
+	}
       }
-
       
       //-----------------------------------
       // In case of MC, get the ancestry and 
@@ -4658,14 +4661,16 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             AliDebug(2,Form("Mix pair cut %f < angle %f < cut %f (deg)",RadToDeg(fAngleCut),RadToDeg(angle),RadToDeg(fAngleMaxCut)));
             continue;
           }
-	  
-	  Bool_t separation=CheckSeparation(fPhotonMom1,fPhotonMom2);
-	  if(fUseOneCellSeparation && !separation)
+
+	  if(fUseOneCellSeparation)
 	  {
-	    AliDebug(2,Form("Mix pair one cell separation required and Yes/No %d", separation));
-	    continue;
+	    Bool_t separation = CheckSeparation(p1->GetCellAbsIdMax() ,p2->GetCellAbsIdMax());
+	    if(!separation)
+	    {
+	      AliDebug(2,Form("Mix pair one cell separation required and Yes/No %d", separation));
+	      continue;
+	    }
 	  }
-	  
           
           AliDebug(2,Form("Mixed Event: pT: fPhotonMom1 %2.2f, fPhotonMom2 %2.2f; Pair: pT %2.2f, mass %2.3f, a %2.3f",p1->Pt(), p2->Pt(), pt,m,a));
           
@@ -5051,20 +5056,9 @@ Int_t AliAnaPi0::GetEventIndex(AliCaloTrackParticle * part, Double_t * vert)
 /// TRUE - clusters are separated
 /// FALSE - are NOT separated
 //________________________________________________________________________
-Bool_t AliAnaPi0::CheckSeparation(TLorentzVector photonMom1, TLorentzVector photonMom2)
+Bool_t AliAnaPi0::CheckSeparation(Int_t absID1,Int_t absID2)
 {
-  Int_t absID1;
-  Int_t absID2;
-  
-  Float_t photonPhi1 = fPhotonMom1.Phi();
-  Float_t photonPhi2 = fPhotonMom2.Phi();
-      
-  if(photonPhi1 < 0) photonPhi1+=TMath::TwoPi();
-  if(photonPhi2 < 0) photonPhi2+=TMath::TwoPi();
-      
-  GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(fPhotonMom1.Eta(),photonPhi1,absID1);
-  GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(fPhotonMom2.Eta(),photonPhi2,absID2);
-
+  if(absID1<0 || absID2<0) return kFALSE;
   Bool_t neighbours = GetCaloUtils()->AreNeighbours(AliFiducialCut::kEMCAL, absID1, absID2);
   //neighbours = kTRUE -> no separation
   

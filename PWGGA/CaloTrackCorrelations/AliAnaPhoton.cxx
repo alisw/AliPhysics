@@ -4667,6 +4667,8 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     aodph.SetNCells(calo->GetNCells());
     aodph.SetSModNumber(nSM);
 
+    aodph.SetCellAbsIdMax(absIdMax);
+    
     Float_t en  = fMomentum.E ();
     Float_t pt  = fMomentum.Pt();
     Float_t eta = fMomentum.Eta();

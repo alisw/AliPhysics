@@ -106,7 +106,8 @@ class AliCaloTrackParticle : public AliVParticle {
   virtual Float_t GetTime()              const { return fTime         ; }
   virtual Int_t   GetNCells()            const { return fNCells       ; }
   virtual Int_t   GetSModNumber()        const { return fSuperModule  ; }
-
+  virtual Int_t   GetCellAbsIdMax()      const { return fCellAbsIdMax ; }
+  
   // Isolation cone background info
   virtual Float_t GetChargedLeadPtInCone() const { return fIsoConePtLead[0] ; } 
   virtual Float_t GetNeutralLeadPtInCone() const { return fIsoConePtLead[1] ; }   
@@ -146,6 +147,7 @@ class AliCaloTrackParticle : public AliVParticle {
   virtual void SetTime  (Float_t tim)    { fTime        = tim  ; }
   virtual void SetNCells(Int_t   nce)    { fNCells      = nce  ; }
   virtual void SetSModNumber(Int_t sm)   { fSuperModule = sm   ; }
+  virtual void SetCellAbsIdMax(Int_t absid)   { fCellAbsIdMax = absid ; }
   
   // Isolation cone background info
   virtual void SetChargedLeadPtInCone(Float_t ptl) { fIsoConePtLead[0] = ptl ; } 
@@ -190,6 +192,7 @@ class AliCaloTrackParticle : public AliVParticle {
   Float_t    fTime;             ///< Store the time of calorimeter cluster or track, nano seconds
   Int_t      fNCells;           ///< Store the number of cells in calorimeter cluster
   Int_t      fSuperModule;      ///< Store the super-module number of calorimeter cluster
+  Int_t      fCellAbsIdMax;     ///< Store the absID of max energy cell in calorimeter cluster
   
   // Tags
   Int_t      fDecayTag;         ///< Tag the photon as decay from, pi0, eta, pi0 side band, eta side band
@@ -211,7 +214,7 @@ class AliCaloTrackParticle : public AliVParticle {
   Int_t      fBtag;             ///< tag particle from B.
 
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackParticle, 1);
+  ClassDef(AliCaloTrackParticle, 2);
   /// \endcond
 
 };

@@ -82,7 +82,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
 
   void         SwitchOnOneCellSeparation()      { fUseOneCellSeparation = kTRUE  ; }
   void         SwitchOffOneCellSeparation()     { fUseOneCellSeparation = kFALSE ; }
-  Bool_t       CheckSeparation(TLorentzVector photonMom1, TLorentzVector photonMom2) ;
+  Bool_t       CheckSeparation(Int_t absID1, Int_t absID2) ;
   
   //------------------------------------------
   // Do analysis only with clusters in same SM or different combinations of SM
@@ -610,7 +610,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0 & operator = (const AliAnaPi0 & api0) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPi0,35) ;
+  ClassDef(AliAnaPi0,36) ;
   /// \endcond
   
 } ;
