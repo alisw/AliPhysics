@@ -152,6 +152,7 @@ void AliAnalysisTaskPP13::UserExec(Option_t *)
 
 		clusArray.Add(clus);
 	}
+	delete triggerUtils;
 
 	evtProperties.fTriggerEvent = nTriggered > 0;
 	evtProperties.fMcParticles = GetMCParticles(event);
