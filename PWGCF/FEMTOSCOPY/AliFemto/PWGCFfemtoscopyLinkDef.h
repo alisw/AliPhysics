@@ -5,6 +5,11 @@
 #pragma link off all functions;
 
 
+#pragma link C++ class AliAnalysisTaskFemto+;
+#pragma link C++ class AliAnalysisTaskFemtoMJ+;
+#pragma link C++ class AliAnalysisTaskFemtoNu+;
+#pragma link C++ class AliAnalysisTaskFemtoNu::Builder-;
+
 #pragma link C++ class AliFemtoAnalysis+;
 #pragma link C++ class AliFemtoLikeSignAnalysis+;
 #pragma link C++ class AliFemtoVertexAnalysis+;
@@ -71,8 +76,6 @@
 #pragma link C++ class AliFemtoEventReaderAODChain+;
 #pragma link C++ class AliFemtoEventReaderAODMultSelection+;
 #pragma link C++ class AliFemtoAODTrackCut+;
-#pragma link C++ class AliAnalysisTaskFemto+;
-#pragma link C++ class AliAnalysisTaskFemtoMJ+;
 #pragma link C++ class AliTwoTrackRes+;
 #pragma link C++ class AliFemtoMCTrackCut+;
 #pragma link C++ class AliFemtoEventReaderKinematicsChain+;

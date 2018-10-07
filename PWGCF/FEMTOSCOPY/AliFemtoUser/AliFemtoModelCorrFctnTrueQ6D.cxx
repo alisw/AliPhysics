@@ -386,3 +386,42 @@ AliFemtoModelCorrFctnTrueQ6D::SetQrange(const double o[2], const double s[2], co
   fQlimits[1] = {s[0], s[1]};
   fQlimits[2] = {l[0], l[1]};
 }
+
+AliFemtoModelCorrFctnTrueQ6D::Builder::Builder(AliFemtoModelCorrFctnTrueQ6D::Builder const &orig)
+  : bin_count(orig.bin_count)
+  , qmin(orig.qmin)
+  , qmax(orig.qmax)
+  , bin_method(orig.bin_method)
+  , title(orig.title)
+  , mc_manager(orig.mc_manager)
+  , qout_range_min(orig.qout_range_min)
+  , qout_range_max(orig.qout_range_max)
+  , qside_range_min(orig.qside_range_min)
+  , qside_range_max(orig.qside_range_max)
+  , qlong_range_min(orig.qlong_range_min)
+  , qlong_range_max(orig.qlong_range_max)
+  , ignore_zeromass(orig.ignore_zeromass)
+{
+}
+
+
+AliFemtoModelCorrFctnTrueQ6D::Builder&
+AliFemtoModelCorrFctnTrueQ6D::Builder::operator=(AliFemtoModelCorrFctnTrueQ6D::Builder const &rhs)
+{
+  if (this != &rhs) {
+    bin_count = rhs.bin_count;
+    qmin = rhs.qmin;
+    qmax = rhs.qmax;
+    bin_method = rhs.bin_method;
+    title = rhs.title;
+    mc_manager = rhs.mc_manager;
+    qout_range_min = rhs.qout_range_min;
+    qout_range_max = rhs.qout_range_max;
+    qside_range_min = rhs.qside_range_min;
+    qside_range_max = rhs.qside_range_max;
+    qlong_range_min = rhs.qlong_range_min;
+    qlong_range_max = rhs.qlong_range_max;
+    ignore_zeromass = rhs.ignore_zeromass;
+  }
+  return *this;
+}
