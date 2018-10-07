@@ -78,6 +78,7 @@ public:
     Bool_t IsMCEventTrueINEL0();
     Bool_t IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion);
     void FillMCinput(AliStack* fMCStack);
+    void FillTrackToEventPool();
     
     TAxis AxisFix( TString name, int nbin, Double_t xmin, Double_t xmax);
     TAxis AxisVar( TString name, std::vector<Double_t> bin );
@@ -136,9 +137,10 @@ private:
     Double_t                        PVy = 999;
     Double_t                        PVz = 999;
     Double_t                        bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 2);
+    ClassDef(AliAnalysisTaskXi1530, 3);
     //1: Frist version
     //2: Add Track cut2 for the Xi daughter particles
+    //3: Add FillMixingPool function
 };
 
 #endif

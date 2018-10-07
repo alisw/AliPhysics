@@ -1,6 +1,6 @@
 AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530"
                                      , const char *option = "LHC16k"
-                                     , int nmix=10
+                                     , int nmix=20
                                      , bool hightmult=kFALSE
                                      , bool isaa=kFALSE
                                      , bool ismc=kFALSE
@@ -28,11 +28,11 @@ AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530"
     
     
     AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-    AliAnalysisDataContainer *coutputXi1530 = mgr->CreateContainer("Xi1530", TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
+    AliAnalysisDataContainer *coutputXi1530 = mgr->CreateContainer(Form("%s_%s",taskname,option), TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
     
     mgr->ConnectInput(taskXi1530, 0, cinput);
     mgr->ConnectOutput(taskXi1530, 1, coutputXi1530);
-
+    
     return taskXi1530;
 }
 
