@@ -287,6 +287,7 @@ struct Configuration<AliFemtoBasicEventCut> : AbstractConfiguration<AliFemtoEven
     /// Construct a config object with this object's properties
     operator AliFemtoConfigObject() const {
         return AliFemtoConfigObject::BuildMap()
+          ("class", "AliFemtoBasicEventCut")
           ("multiplicity", multiplicity)
           ("centrality", centrality)
           ("vertex_z", vertex_z)
@@ -299,7 +300,8 @@ struct Configuration<AliFemtoBasicEventCut> : AbstractConfiguration<AliFemtoEven
 
     static AliFemtoConfigObject GetConfigurationOf(const AliFemtoBasicEventCut &cut)
     {
-      return AliFemtoConfigObject::BuildMap();
+      return AliFemtoConfigObject::BuildMap()
+          ("class", "AliFemtoBasicEventCut");
         //("multiplicity", cut.GetMultiplicity());
     }
 };
@@ -447,6 +449,7 @@ struct Configuration<AliFemtoESDTrackCut> : AbstractConfiguration<AliFemtoPartic
   static void ReadConfigurationInto(AliFemtoConfigObject &dest, const AliFemtoESDTrackCut &cut)
   {
     dest.Update(AliFemtoConfigObject::BuildMap()
+                ("class", "AliFemtoESDTrackCut")
                 ("pt", cut.GetPt())
                 ("rapidity", cut.GetRapidity())
                 ("eta", cut.GetEta())
@@ -553,7 +556,7 @@ struct Configuration<AliFemtoAODTrackCut> : AbstractConfiguration<AliFemtoPartic
 
   static void ReadConfigurationInto(AliFemtoConfigObject &dest, const AliFemtoAODTrackCut &cut)
   {
-    auto result = AliFemtoConfigObject::BuildMap();
+    auto result = AliFemtoConfigObject::BuildMap()("class", "AliFemtoAODTrackCut");
 
     TList *settings = const_cast<AliFemtoAODTrackCut&>(cut).ListSettings();
     TIter next(settings);
@@ -615,6 +618,7 @@ struct Configuration<AliFemtoShareQualityPairCut> : AbstractConfiguration<AliFem
   static void ReadConfigurationInto(AliFemtoConfigObject &dest, const AliFemtoShareQualityPairCut &cut)
   {
     dest.Update(AliFemtoConfigObject::BuildMap()
+                ("class", "AliFemtoShareQualityPairCut")
                 ("max_share_quality", cut.GetShareQualityMax())
                 ("max_share_fraction", cut.GetShareFractionMax())
                 ("remove_same_label", cut.GetRemoveSameLabel()));
