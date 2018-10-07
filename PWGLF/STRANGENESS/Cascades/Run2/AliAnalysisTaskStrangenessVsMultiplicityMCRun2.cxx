@@ -598,6 +598,11 @@ fTreeCascVarBachIsKink(0),
 fTreeCascVarPosIsKink(0),
 fTreeCascVarNegIsKink(0),
 
+fTreeCascVarIsCowboy(kFALSE),
+fTreeCascVarCowboyness(-2),
+fTreeCascVarIsCascadeCowboy(kFALSE),
+fTreeCascVarCascadeCowboyness(-2),
+
 fTreeCascVarSwappedPID(0),
 
 //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1104,6 +1109,11 @@ fTreeCascVarV0AntiLambdaMassError(0),
 fTreeCascVarBachIsKink(0),
 fTreeCascVarPosIsKink(0),
 fTreeCascVarNegIsKink(0),
+
+fTreeCascVarIsCowboy(kFALSE),
+fTreeCascVarCowboyness(-2),
+fTreeCascVarIsCascadeCowboy(kFALSE),
+fTreeCascVarCascadeCowboyness(-2),
 
 fTreeCascVarSwappedPID(0),
 
@@ -1689,6 +1699,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarPosIsKink",&fTreeCascVarPosIsKink,"fTreeCascVarPosIsKink/O");
             fTreeCascade->Branch("fTreeCascVarNegIsKink",&fTreeCascVarNegIsKink,"fTreeCascVarNegIsKink/O");
         }
+        
+        fTreeCascade->Branch("fTreeCascVarIsCowboy",&fTreeCascVarIsCowboy,"fTreeCascVarIsCowboy/O");
+        fTreeCascade->Branch("fTreeCascVarIsCascadeCowboy",&fTreeCascVarIsCascadeCowboy,"fTreeCascVarIsCascadeCowboy/O");
+        fTreeCascade->Branch("fTreeCascVarCowboyness",&fTreeCascVarCowboyness,"fTreeCascVarCowboyness/F");
+        fTreeCascade->Branch("fTreeCascVarCascadeCowboyness",&fTreeCascVarCascadeCowboyness,"fTreeCascVarCascadeCowboyness/F");
+        
         if ( fkDebugOOBPileup ) {
             fTreeCascade->Branch("fTreeCascVarNegTOFExpTDiff",&fTreeCascVarNegTOFExpTDiff,"fTreeCascVarNegTOFExpTDiff/F");
             fTreeCascade->Branch("fTreeCascVarPosTOFExpTDiff",&fTreeCascVarPosTOFExpTDiff,"fTreeCascVarPosTOFExpTDiff/F");
@@ -3782,6 +3798,33 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         }else{
             fTreeCascVarV0Lifetime = -1;
         }
+        //========================================================================================
+        //Cowboy/sailor info regarding V0 inside cascade
+        //Calculate vec prod with momenta projected to xy plane
+        //Provisions for cowboy/sailor check
+        Double_t lModp1 = TMath::Sqrt( lPMom[0]*lPMom[0] + lPMom[1]*lPMom[1] );
+        Double_t lModp2 = TMath::Sqrt( lNMom[0]*lNMom[0] + lNMom[1]*lNMom[1] );
+        
+        Double_t lVecProd = (lPMom[0]*lNMom[1] - lPMom[1]*lNMom[0]) / (lModp1*lModp2);
+        
+        if ( lMagneticField < 0 ) lVecProd *= -1; //invert sign
+        
+        fTreeCascVarIsCowboy = kFALSE;
+        if (lVecProd < 0) fTreeCascVarIsCowboy = kTRUE;
+        
+        fTreeCascVarCowboyness = lVecProd;
+        
+        Double_t lBachMod = TMath::Sqrt(lBMom[0]*lBMom[0]+lBMom[1]*lBMom[1]);
+        Double_t lV0px = lPMom[0] + lNMom[0];
+        Double_t lV0py = lPMom[1] + lNMom[1];
+        Double_t lVecProdXi = (lV0px*lBMom[1] - lV0py*lBMom[0]) / (lV0Pt*lBachMod);
+        
+        if ( lMagneticField < 0 ) lVecProdXi *= -1; //invert sign
+        
+        fTreeCascVarIsCascadeCowboy = kFALSE;
+        if (lVecProdXi < 0) fTreeCascVarIsCascadeCowboy = kTRUE;
+        
+        fTreeCascVarCascadeCowboyness = lVecProdXi;
         //========================================================================================
         
         lDcaPosToPrimVertexXi 	= TMath::Abs( pTrackXi	->GetD(	lBestPrimaryVtxPos[0],
