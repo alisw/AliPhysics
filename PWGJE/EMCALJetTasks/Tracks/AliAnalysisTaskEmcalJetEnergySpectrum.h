@@ -66,6 +66,9 @@ public:
   void SetUseTriggerSelectionForData(bool doUse) { fUseTriggerSelectionForData = doUse; }
   void SetRequireSubsetMB(bool doRequire, ULong_t minbiastrigger = AliVEvent::kAny) { fRequireSubsetMB = doRequire; fMinBiasTrigger = minbiastrigger; }
   void SetUserPtBinning(int nbins, double *binning) { fUserPtBinning.Set(nbins+1, binning); }
+  void SetRequestCentrality(bool doRequest) { fRequestCentrality = doRequest; }
+  void SetRequestTriggerClusters(bool doRequest) { fRequestTriggerClusters = doRequest; }
+  void SetCentralityEstimator(const char *centest) { fCentralityEstimator = centest; }
 
   static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, double radius, const char *trigger, const char *suffix = "");
 
@@ -90,6 +93,9 @@ private:
   Bool_t                        fUseTriggerSelectionForData;    ///< Use trigger selection on data (require trigger patch in addition to trigger selection string)
   Bool_t                        fUseDownscaleWeight;            ///< Use 1/downscale as weight
   TString                       fNameJetContainer;              ///< Name of the jet container 
+  Bool_t                        fRequestTriggerClusters;        ///< Request distinction of trigger clusters
+  Bool_t                        fRequestCentrality;             ///< Request centrality
+  TString                       fCentralityEstimator;           ///< Centrality estimator
   TArrayD                       fUserPtBinning;                 ///< User-defined pt-binning
 
   ClassDef(AliAnalysisTaskEmcalJetEnergySpectrum, 1);
