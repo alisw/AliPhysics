@@ -20,7 +20,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
 
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton;
-  cutnumberPhoton = "00200008400000002280920000";
+  cutnumberPhoton = "10200008400000002280920000";
   TString cutnumberEvent = "00000000";
   TString periodNameV0Reader = "";
   Bool_t enableV0findingEffi = kFALSE;
