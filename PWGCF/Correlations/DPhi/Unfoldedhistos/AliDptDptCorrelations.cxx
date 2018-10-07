@@ -1747,6 +1747,12 @@ void  AliDptDptCorrelations::FinalizeProcess()
     fillHistoWithArray(fhN1_1_vsZEtaPhiPt,       fN1_1_vsZEtaPhiPt,     fNBins_vertexZ, fNBins_etaPhi_1, fNBins_pt_1);
     fillHistoWithArray(fhN1_2_vsPt,              fN1_2_vsPt,            fNBins_pt_2);
     fillHistoWithArray(fhN1_2_vsZEtaPhiPt,       fN1_2_vsZEtaPhiPt,     fNBins_vertexZ, fNBins_etaPhi_2, fNBins_pt_2);
+
+    /* for the time being, the errors are trivial so, we do not use results file space */
+    fhN1_1_vsPt->Sumw2(false);
+    fhN1_1_vsZEtaPhiPt->Sumw2(false);
+    fhN1_2_vsPt->Sumw2(false);
+    fhN1_2_vsZEtaPhiPt->Sumw2(false);
   }
   else {
     fillHistoWithArray(fhN1_1_vsEtaPhi,          fN1_1_vsEtaPhi,        fNBins_eta_1,   fNBins_phi_1);
@@ -1759,6 +1765,17 @@ void  AliDptDptCorrelations::FinalizeProcess()
     fillHistoWithArray(fhSum2PtN_12_vsEtaPhi,    fSum2PtN_12_vsEtaPhi,  fNBins_etaPhi_12);
     fillHistoWithArray(fhSum2NPt_12_vsEtaPhi,    fSum2NPt_12_vsEtaPhi,  fNBins_etaPhi_12);
     fillHistoWithArray(fhN2_12_vsPtPt,           fN2_12_vsPtPt,         fNBins_pt_1,    fNBins_pt_2);
+
+    /* for the time being, the errors are trivial so, we do not use results file space */
+    fhN1_1_vsEtaPhi->Sumw2(false);
+    fhSum1Pt_1_vsEtaPhi->Sumw2(false);
+    fhN1_2_vsEtaPhi->Sumw2(false);
+    fhSum1Pt_2_vsEtaPhi->Sumw2(false);
+    fhN2_12_vsEtaPhi->Sumw2(false);
+    fhSum2PtPt_12_vsEtaPhi->Sumw2(false);
+    fhSum2PtN_12_vsEtaPhi->Sumw2(false);
+    fhSum2NPt_12_vsEtaPhi->Sumw2(false);
+    fhN2_12_vsPtPt->Sumw2(false);
   }
 }
 

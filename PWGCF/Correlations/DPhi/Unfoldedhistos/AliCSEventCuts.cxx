@@ -377,6 +377,17 @@ Bool_t AliCSEventCuts::IsEventAccepted(AliVEvent *fInputEvent) {
     }
   }
 
+  /* centrality estimators correlation */
+  /* quick and dirty test for p-Pb */
+  Float_t altcentrality = this->GetEventAltCentrality(fInputEvent);
+
+  Float_t center = 0.0 + 1.0*fCentrality;
+  Float_t sigma = 10.0+0.3*fCentrality-0.003*fCentrality*fCentrality;
+  if (altcentrality < center-sigma || center+sigma < altcentrality) {
+    fCutsActivatedMask.SetBitNumber(k2015PileUpCut);
+    accepted = kFALSE;
+  }
+
   if (!fgIsMConlyTruth) {
     /* 2015 additional pile up cut also applicable to 2010h*/
     /* check the additional pile up rejection if required */
@@ -425,7 +436,6 @@ Bool_t AliCSEventCuts::IsEventAccepted(AliVEvent *fInputEvent) {
     Int_t nClustersLayer0 = fInputEvent->GetNumberOfITSClusters(0);
     Int_t nClustersLayer1 = fInputEvent->GetNumberOfITSClusters(1);
     Int_t nTracklets      = fInputEvent->GetMultiplicity()->GetNumberOfTracklets();
-    Float_t altcentrality = this->GetEventAltCentrality(fInputEvent);
 
     for (Int_t i = 0; i < 2; i++) {
 
