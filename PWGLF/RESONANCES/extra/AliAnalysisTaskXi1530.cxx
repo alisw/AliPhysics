@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2018/10/05
+//  Last Modified Date: 2018/10/07
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -149,8 +149,12 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     fTrackCuts -> SetPtRange(0.15, 1e20);
     // secondary particle cut(Xi daugthers)
     fTrackCuts2 = new AliESDtrackCuts();
-    fTrackCuts2 -> GetStandardITSTPCTrackCuts2011(kFALSE,kTRUE); // not primary
-    fTrackCuts2 -> SetEtaRange(-0.8,0.8);
+    //fTrackCuts2 -> GetStandardITSTPCTrackCuts2011(kFALSE,kTRUE); // not primary
+    fTrackCuts2 -> SetAcceptKinkDaughters(kFALSE);
+    fTrackCuts2 -> SetMinNClustersTPC(50);
+    fTrackCuts2 -> SetRequireTPCRefit(kTRUE);
+    fTrackCuts2 -> SetMaxChi2PerClusterTPC(4); //From Enrico
+    //fTrackCuts2 -> SetEtaRange(-0.8,0.8);
     fTrackCuts2 -> SetPtRange(0.15, 1e20);
     // ----------------------------------------------------------------------
     
@@ -377,7 +381,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     //    – SPD vertex z resolution < 0.02 cm                                      (IsGoodVertex) -> GetZRes()<0.25 (rough)
     //    – z-position difference between trackand SPD vertex < 0.5 cm             (IsGoodVertex)
     //    – vertex z position: |vz| < 10 cm                                        (IsVtxInZCut)
-    // Most of them is already choosed in above.
+    // Most of them are already choosed in above sections.
     
     AliMultSelection *MultSelection = (AliMultSelection*) fEvt->FindListObject("MultSelection");
     Bool_t IsMultSelcted = MultSelection->IsEventSelected();
@@ -437,8 +441,10 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
         if (this -> GoodTracksSelection()      // If Good track
             && this -> GoodCascadeSelection()) // and Good cascade is in this event,
             this -> FillTracks();              // Fill the histogram
+        if (fsetmixing && goodtrackindices.size()) FillTrackToEventPool();
     }
     // ***********************************************************************
+    
     PostData(1, fHistos->GetListOfHistograms());
 }
 //________________________________________________________________________
@@ -451,20 +457,13 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
     // - TPC PID cut for pion
     // - Eta cut
     // - Z-vertex cut
+    // - DCA cut for primary particle
     // - pion mass window cut
     //
     const UInt_t ntracks = fEvt ->GetNumberOfTracks();
     goodtrackindices.clear();
     AliVTrack * track;
-    tracklist *etl = nullptr;
-    eventpool *ep = nullptr;
-    //Event mixing pool
-    if (fsetmixing){
-        ep = &fEMpool[centbin][zbin];
-        ep -> push_back( tracklist() );
-        etl = &(ep->back());
-    }
-    fNTracks = 0;
+    
     for (UInt_t it = 0; it<ntracks; it++){
         if (fEvt->IsA()==AliESDEvent::Class()){
             track = (AliESDtrack*) fEvt ->GetTrack(it);
@@ -488,13 +487,9 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
             if(abs(track->GetZ() - fZ) > 2) continue;
             
             // Pion mass window
-            if (fabs(track->M() - pionmass) > 0.007) continue;
+            //if (fabs(track->M() - pionmass) > 0.007) continue;
             
             goodtrackindices.push_back(it);
-            fNTracks++;
-            
-            //Event mixing pool
-            if (fsetmixing) etl->push_back( (AliVTrack*)track -> Clone() );
         }
         else {
             /*
@@ -505,14 +500,6 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
              if (abs(track->Eta())>fetacut) continue;
              fHistos->FillTH2("hPhiEta",track->Phi(),track->Eta());
              */
-        }
-    }
-    
-    if (fsetmixing){
-        if (!goodtrackindices.size()) ep->pop_back();
-        if ( (int)ep->size() > (int)fnMix ){
-            for (auto it: ep->front()) delete it;
-            ep->pop_front();
         }
     }
     return goodtrackindices.size();
@@ -530,7 +517,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
     // - Cosine Pointing Angle cut for Xi and Lamnbda
     // - Mass window cut for Xi
     // - Eta cut
-    // - XY Raidus cut(not applied)
+    // - XY Raidus cut(not applied), just for check
     
     goodcascadeindices.clear();
     const UInt_t ncascade = fEvt->GetNumberOfCascades();
@@ -734,9 +721,8 @@ void AliAnalysisTaskXi1530::FillTracks(){
         AliESDtrack *nTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetNindex()));
         AliESDtrack *bTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetBindex()));
         
-        temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Ximass);
-        
         FillTHnSparse("hInvMass_dXi",{fCent,Xicandidate->Pt(),Xicandidate->M()});
+        temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Ximass);
         
         // for PropogateToDCA
         xiVtx[0] = Xicandidate->Xv(); xiVtx[1] = Xicandidate->Yv(); xiVtx[2] = Xicandidate->Zv();
@@ -750,6 +736,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
             if(track1->GetID() == pTrackXi->GetID() || track1->GetID() == nTrackXi->GetID() || track1->GetID() == bTrackXi->GetID()) continue;
             
             temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(), pionmass);
+            
             vecsum = temp1+temp2; // temp1 = cascade, temp2=pion
             std::cout << "Check pion mass: " << track1->M() << std::endl;
             
@@ -828,9 +815,12 @@ void AliAnalysisTaskXi1530::FillTracks(){
                 if(track1->GetID() == pTrackXi->GetID() || track1->GetID() == nTrackXi->GetID() || track1->GetID() == bTrackXi->GetID()) continue;
                 temp2.SetXYZM(track1->Px(),track1->Py(), track1->Pz(),pionmass);
                 vecsum = temp1+temp2; // two pion vector sum
+                
                 if ((Xicandidate->Charge() ==-1 && track1->Charge()==-1)
-                    || (Xicandidate->Charge() ==+1 && track1->Charge()==+1)) continue;
-                if (fabs(vecsum.Eta())>0.5) continue; //rapidity cut
+                    || (Xicandidate->Charge() ==+1 && track1->Charge()==+1)) continue; // check only unlike-sign
+                
+                if (fabs(vecsum.Rapidity())>0.5) continue; // rapidity cut
+                
                 FillTHnSparse("hInvMass",{kMixing,fCent,vecsum.Pt(),vecsum.M()});
                 fHistos->FillTH1("hTotalInvMass_Mix",vecsum.M());
             }
@@ -1047,5 +1037,29 @@ Bool_t AliAnalysisTaskXi1530::IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion){
         }//Same mother(lambda)
     }//D2esd->pion
     return TrueXi1530;
+}
+void AliAnalysisTaskXi1530::FillTrackToEventPool(){
+    // Fill Selected tracks to event mixing pool
+    AliVTrack *goodtrack;
+    
+    tracklist *etl;
+    eventpool *ep;
+    //Event mixing pool
+    
+    ep = &fEMpool[centbin][zbin];
+    ep -> push_back( tracklist() );
+    etl = &(ep->back());
+    // Fill selected tracks
+    for (UInt_t i = 0; i < goodtrackindices.size(); i++) {
+        goodtrack = (AliESDtrack*) fEvt ->GetTrack(goodtrackindices[i]);
+        if(!goodtrack) continue;
+        std::cout<<"04"<<std::endl;
+        etl->push_back( (AliVTrack*)goodtrack -> Clone() );
+    }
+    if (!goodtrackindices.size()) ep->pop_back();
+    if ( (int)ep->size() > (int)fnMix ){
+        for (auto it: ep->front()) delete it;
+        ep->pop_front();
+    }
 }
 
