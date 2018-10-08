@@ -39,10 +39,10 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
       const char *suffix             = "");
 
   Double_t GetNJets() {return fNJets;}
-  vector<Double_t> GetVectorJetPt()  {return fVectorJetPt;}
-  vector<Double_t> GetVectorJetEta() {return fVectorJetEta;}
-  vector<Double_t> GetVectorJetPhi() {return fVectorJetPhi;}
-  vector<Double_t> GetVectorJetR()   {return fVectorJetR;}
+  std::vector<Double_t> GetVectorJetPt()  {return fVectorJetPt;}
+  std::vector<Double_t> GetVectorJetEta() {return fVectorJetEta;}
+  std::vector<Double_t> GetVectorJetPhi() {return fVectorJetPhi;}
+  std::vector<Double_t> GetVectorJetR()   {return fVectorJetR;}
 
   Double_t Get_Jet_Radius(){
       AliJetContainer* jetCont = 0;
@@ -62,10 +62,10 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
   void                        DoJetLoop()                                       ;
 
   Double_t                    fNJets                                            ;
-  vector<Double_t>            fVectorJetPt                                      ;
-  vector<Double_t>            fVectorJetEta                                     ;
-  vector<Double_t>            fVectorJetPhi                                     ;
-  vector<Double_t>            fVectorJetR                                       ;
+  std::vector<Double_t>            fVectorJetPt                                      ;
+  std::vector<Double_t>            fVectorJetEta                                     ;
+  std::vector<Double_t>            fVectorJetPhi                                     ;
+  std::vector<Double_t>            fVectorJetR                                       ;
 
  private:
   AliAnalysisTaskConvJet(const AliAnalysisTaskConvJet&)           ;
