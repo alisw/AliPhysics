@@ -40,7 +40,10 @@ inputObjects:                                       # Define all of the input ob
             #    - 16
             #    - 1
 sharedParameters:
-    # You can define here any parameters that you would like to share between tasks. See the documentation for more information
+    # You can define here any parameters that you would like to share between tasks. Note that you cannot directly
+    # override a shared parameter in your config! Instead, you'll need to explicitly set the parameter value, as well
+    # as whichever parameters it is supposed to override, in your user config. See the documentation for  more
+    # information.
     enableFracEMCRecalc: false                      # Enables the recalculation of the MC labels including the fractional energy on cell level
     removeNMCGenerators: 0                          # set number of accepted MC generators input (only for enableFracEMCRecalc=1)
     enableMCGenRemovTrack: true                     # apply the MC generators rejection also for track matching
