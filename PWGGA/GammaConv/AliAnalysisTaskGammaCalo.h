@@ -11,6 +11,7 @@
 #include "AliConvEventCuts.h"
 #include "AliConversionPhotonCuts.h"
 #include "AliConversionMesonCuts.h"
+#include "AliAnalysisTaskConvJet.h"
 #include "AliAnalysisManager.h"
 #include "TProfile2D.h"
 #include "TH3.h"
@@ -38,6 +39,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 
     // base functions for selecting photon and meson candidates in reconstructed data
     void ProcessClusters();
+    void ProcessJets();
     void CalculatePi0Candidates();
 
     // MC functions
@@ -118,6 +120,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 
     void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
 
+    void SetJetAnalysis(Bool_t DoJets)  {fDoJetAnalysis = DoJets;}
+
   protected:
     AliV0ReaderV1*        fV0Reader;                                            // basic photon Selection Task
     TString               fV0ReaderName;
@@ -141,6 +145,9 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliCaloPhotonCuts*    fCaloPhotonCuts;                                      // CaloPhotonCutObject
     TList*                fMesonCutArray;                                       // List with Meson Cuts
     AliConversionMesonCuts*   fMesonCuts;                                       // MesonCutObject
+    AliAnalysisTaskConvJet*   fConvJetReader;                                   // JetReader
+    Bool_t                fDoJetAnalysis;                                       // Bool to produce Jet Plots
+    TList**               fJetHistograms;                                       // Jet Histograms
 
     //histograms for mesons reconstructed quantities
     TH2F**                fHistoMotherInvMassPt;                                //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
@@ -332,6 +339,23 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TProfile**            fProfileJetJetXSection;                               //! array of profiles with xsection for jetjet
     TH1F**                fHistoJetJetNTrials;                                  //! array of histos with ntrials for jetjet
     TH1F**                fHistoEventSphericity;                                //! array of histos with event Sphericity
+
+    TH1F**                 fHistoPtJet;                                          // Histogram of Jet Pt
+    TH1F**                 fHistoJetEta;                                         // Histogram of Jet Eta
+    TH1F**                 fHistoJetPhi;                                         // Histogram of Jet Phi
+    TH1F**                 fHistoJetArea;                                        // Histogram of Jet Area
+    TH1F**                 fHistoNJets;                                          // Histogram of number of jets
+    TH1F**                 fHistoEventwJets;                                     // Histogram of number of events with jets > 0
+    TH1F**                 fHistoDoubleCounting;                                 // Histogram if NM candidates are defined within multiple jets
+    TH2F**                 fHistoJetMotherInvMassPt;                             // Histogram of NM candidates with a jet in the event
+    TH2F**                 fHistoPi0InJetMotherInvMassPt;                        // Histogram of NM candidates that are inside a jet
+    TH2F**                 fHistoMotherBackJetInvMassPt;                         // Histogram of Backgrouns candidates that are involved with jets
+    TH2F**                 fHistoRJetPi0Cand;                                    // Histogram of RJetPi0Cand vs Pt
+
+    vector<Double_t>      fVectorJetPt;                                         // Vector of JetPt
+    vector<Double_t>      fVectorJetEta;                                        // Vector of JetEta
+    vector<Double_t>      fVectorJetPhi;                                        // Vector of JetPhi
+    vector<Double_t>      fVectorJetArea;                                       // Vector of JetArea
 
     // tree for identified particle properties
     TTree**               tTrueInvMassROpenABPtFlag;                            //! array of trees with
