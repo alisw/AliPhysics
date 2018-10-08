@@ -1182,8 +1182,31 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80010113","2444451046013200000","0163103100000010"); // tm variation
     cuts.AddCut("80010113","2444451041013200000","0163103100000000"); // min opening angle 0    -> open
     cuts.AddCut("80010113","2444451041013200000","0163103100000030"); // min opening angle 0.01 -> 2 cell diag
-
-  // ===============================================================================================
+  } else if(trainConfig == 320){ // reproducing Dmitri's results pi0, eta
+    cuts.AddCut("80010113","2444400040013300000","0163103100000010"); // dmitri default pi0/eta
+    cuts.AddCut("80210113","2444400040013300000","0163103100000010"); // dmitri default pi0/eta
+    cuts.AddCut("82410113","2444400040013300000","0163103100000010"); // dmitri default pi0/eta
+    cuts.AddCut("84610113","2444400040013300000","0163103100000010"); // dmitri default pi0/eta
+    cuts.AddCut("86010113","2444400040013300000","0163103100000010"); // dmitri default pi0/eta
+  } else if(trainConfig == 321){ // reproducing Dmitri's results pi0, eta, PHI7 trigg
+    cuts.AddCut("80062113","2444400040013300000","0163103100000010"); // dmitri default pi0/eta
+    cuts.AddCut("80262113","2444400040013300000","0163103100000010"); // dmitri default pi0/eta
+    cuts.AddCut("82462113","2444400040013300000","0163103100000010"); // dmitri default pi0/eta
+    cuts.AddCut("84662113","2444400040013300000","0163103100000010"); // dmitri default pi0/eta
+    cuts.AddCut("86062113","2444400040013300000","0163103100000010"); // dmitri default pi0/eta
+  } else if(trainConfig == 330){ // reproducing Dmitri's results gamma
+    cuts.AddCut("80010113","2444400048013300020","0163103100000010"); // dmitri default gamma
+    cuts.AddCut("80210113","2444400048013300020","0163103100000010"); // dmitri default gamma
+    cuts.AddCut("82410113","2444400048013300020","0163103100000010"); // dmitri default gamma
+    cuts.AddCut("84610113","2444400048013300020","0163103100000010"); // dmitri default gamma
+    cuts.AddCut("86010113","2444400048013300020","0163103100000010"); // dmitri default gamma
+  } else if(trainConfig == 331){ // reproducing Dmitri's results gamma PHI7 trigg
+    cuts.AddCut("80062113","2444400048013300020","0163103100000010"); // dmitri default gamma
+    cuts.AddCut("80262113","2444400048013300020","0163103100000010"); // dmitri default gamma
+    cuts.AddCut("82462113","2444400048013300020","0163103100000010"); // dmitri default gamma
+    cuts.AddCut("84662113","2444400048013300020","0163103100000010"); // dmitri default gamma
+    cuts.AddCut("86062113","2444400048013300020","0163103100000010"); // dmitri default gamma
+    // ===============================================================================================
   // Run 2 data EMC clusters pPb 8TeV
   // ===============================================================================================
   // pPb 8TeV variations for QA

@@ -438,9 +438,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Double_t  fMinDistTrackToClusterPhi;                // minimum distance between track and cluster in phi
     Double_t  fMaxDistTrackToClusterPhi;                // maximum distance between track and cluster in phi
     Bool_t    fUseDistTrackToCluster;                   // flag for switching on distance between track and cluster cut
-    Bool_t    fUsePtDepTrackToCluster;                  // flag for switching on pT dependent matching parameters
+    Int_t     fUsePtDepTrackToCluster;                  // flag for switching on pT dependent matching parameters
     TF1*      fFuncPtDepEta;                            // TF1 for pT dep cutting in eta
     TF1*      fFuncPtDepPhi;                            // TF1 for pT dep cutting in phi
+    Float_t   fMinTMDistSigma;                          // number of sigma's for TM using PHOS
     Bool_t    fUseEOverPVetoTM;                         // flag for switching on E/P veto (forbidding tracks to match clusters if clusterE/trackP > someValue
     Double_t  fEOverPMax;                               // maximum value for E/P of a track to be considered for TM
     Int_t     fExtendedMatchAndQA;                      // switching on ext matching histograms (1) / ext QA_noCell (2) / ext matching + ext QA_noCell (3) / extQA + cell (4) / ext match + extQA + cell (5) or all off (0)

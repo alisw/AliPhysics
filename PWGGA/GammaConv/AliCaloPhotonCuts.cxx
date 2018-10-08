@@ -142,6 +142,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fUsePtDepTrackToCluster(0),
   fFuncPtDepEta(0),
   fFuncPtDepPhi(0),
+  fMinTMDistSigma(10),
   fUseEOverPVetoTM(0),
   fEOverPMax(0.),
   fExtendedMatchAndQA(0),
@@ -332,6 +333,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fUsePtDepTrackToCluster(ref.fUsePtDepTrackToCluster),
   fFuncPtDepEta(ref.fFuncPtDepEta),
   fFuncPtDepPhi(ref.fFuncPtDepPhi),
+  fMinTMDistSigma(ref.fMinTMDistSigma),
   fUseEOverPVetoTM(ref.fUseEOverPVetoTM),
   fEOverPMax(ref.fEOverPMax),
   fExtendedMatchAndQA(ref.fExtendedMatchAndQA),
@@ -1778,9 +1780,13 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       if (fUseDispersion)
         if( cluster->GetDispersion()> fMaxDispersion)
           failed = kTRUE;
-      if (fVectorMatchedClusterIDs.size()>0 && fUseDistTrackToCluster)
+      if (fVectorMatchedClusterIDs.size()>0 && fUseDistTrackToCluster){
         if( CheckClusterForTrackMatch(cluster) )
           failed = kTRUE;
+      } else if (fUseDistTrackToCluster && fUsePtDepTrackToCluster == 2){
+        if (cluster->GetEmcCpvDistance() < fMinTMDistSigma )
+          failed = kTRUE;
+      }
       if ( !( failed || failedM02 ) ){
         if(fHistClusterEtavsPhiExotics) fHistClusterEtavsPhiExotics->Fill(phiCluster, etaCluster, weight);
         if(fHistClusterEnergyvsNCellsExotics) fHistClusterEnergyvsNCellsExotics->Fill(cluster->E(), cluster->GetNCells(), weight);
@@ -1877,7 +1883,8 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
     leadMCLabel         = ((AliAODCaloCluster*)cluster)->GetLabel();
 
   // TM efficiency histograms before TM
-  if (fIsMC && isMC && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5) && fUseDistTrackToCluster  && !(fIsPureCalo > 0 && cluster->E() < 10.)){
+  if (fIsMC && isMC && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5) && fUseDistTrackToCluster  && !(fIsPureCalo > 0 && cluster->E() < 10.)
+      && fUsePtDepTrackToCluster < 2){
     classification    = ClassifyClusterForTMEffi(cluster, event, mcEvent, isESD);
     if(IsClusterPi0(event, mcEvent, cluster))
       if(fHistClusETruePi0_BeforeTM) fHistClusETruePi0_BeforeTM->Fill(cluster->E(), weight);
@@ -1904,11 +1911,12 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       fHistClusterTMEffiInput->Fill(cluster->E(), 5., weight); // Ga cl sub ch match
 
     Int_t nlabelsMatchedTracks      = 0;
-    if (!fUsePtDepTrackToCluster)
+    if (fUsePtDepTrackToCluster == 0)
       nlabelsMatchedTracks          = fCaloTrackMatcher->GetNMatchedTrackIDsForCluster(event, cluster->GetID(), fMaxDistTrackToClusterEta, -fMaxDistTrackToClusterEta,
                                                                                       fMaxDistTrackToClusterPhi, fMinDistTrackToClusterPhi);
-    else
+    else if (fUsePtDepTrackToCluster == 1)
       nlabelsMatchedTracks          = fCaloTrackMatcher->GetNMatchedTrackIDsForCluster(event, cluster->GetID(), fFuncPtDepEta, fFuncPtDepPhi);
+
     if (classification < 4 && classification > -1)
       fHistClusterENMatchesNeutral->Fill(cluster->E(), nlabelsMatchedTracks);
     else
@@ -1922,7 +1930,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   }
 
 
-  if (fVectorMatchedClusterIDs.size()>0 && fUseDistTrackToCluster){
+  if (fVectorMatchedClusterIDs.size()>0 && fUseDistTrackToCluster && fUsePtDepTrackToCluster < 2){
     if( CheckClusterForTrackMatch(cluster) ){
       if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//2
       // TM efficiency histos after TM
@@ -1948,10 +1956,10 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
           fHistClusterTMEffiInput->Fill(cluster->E(), 20., weight); // El cl match
 
         vector<Int_t> labelsMatchedTracks;
-        if (!fUsePtDepTrackToCluster)
+        if (fUsePtDepTrackToCluster == 0)
           labelsMatchedTracks           = fCaloTrackMatcher->GetMatchedTrackIDsForCluster(event, cluster->GetID(), fMaxDistTrackToClusterEta, -fMaxDistTrackToClusterEta,
                                                                                           fMaxDistTrackToClusterPhi, fMinDistTrackToClusterPhi);
-        else
+        else if  (fUsePtDepTrackToCluster == 1)
           labelsMatchedTracks           = fCaloTrackMatcher->GetMatchedTrackIDsForCluster(event, cluster->GetID(), fFuncPtDepEta, fFuncPtDepPhi);
 
         //Int_t idHighestPt = -1;
@@ -2017,6 +2025,13 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       }
 
       return kFALSE;
+
+    // special case for PHOS TM from tender
+    } else if (fUseDistTrackToCluster && fUsePtDepTrackToCluster == 2){
+        if( cluster->GetEmcCpvDistance() < fMinTMDistSigma ){
+            if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//2
+            return kFALSE;
+        }
     }
   }
 
@@ -3094,14 +3109,14 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
       if( (inTrack->Charge() > 0) && (dPhi > fMinDistTrackToClusterPhi) && (dPhi < fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
       else if( (inTrack->Charge() < 0) && (dPhi < -fMinDistTrackToClusterPhi) && (dPhi > -fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
 
-      if(fUsePtDepTrackToCluster){
+      if(fUsePtDepTrackToCluster == 1){
         if( TMath::Abs(dEta) < fFuncPtDepEta->Eval(inTrack->Pt())) match_dEta = kTRUE;
         else match_dEta = kFALSE;
 
         if( TMath::Abs(dPhi) < fFuncPtDepPhi->Eval(inTrack->Pt())) match_dPhi = kTRUE;
         else match_dPhi = kFALSE;
       }
-
+//
       if(match_dEta && match_dPhi){
             //if(dR2 < fMinDistTrackToCluster*fMinDistTrackToCluster){
         matched = kTRUE;
@@ -3287,7 +3302,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
       if( (inTrack->Charge() > 0) && (dPhi > fMinDistTrackToClusterPhi) && (dPhi < fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
       else if( (inTrack->Charge() < 0) && (dPhi < -fMinDistTrackToClusterPhi) && (dPhi > -fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
 
-      if(fUsePtDepTrackToCluster){
+      if(fUsePtDepTrackToCluster == 1){
         if( TMath::Abs(dEta) < fFuncPtDepEta->Eval(inTrack->Pt())) match_dEta = kTRUE;
         else match_dEta = kFALSE;
 
@@ -3993,7 +4008,7 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
     // pT dependent matching parameters
     case 6:
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      fUsePtDepTrackToCluster = kTRUE;
+      fUsePtDepTrackToCluster = 1;
       fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.03, 0.010, 2.5);
 
@@ -4002,7 +4017,7 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       break;
     case 7:
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      fUsePtDepTrackToCluster = kTRUE;
+      fUsePtDepTrackToCluster = 1;
       fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
 
@@ -4011,7 +4026,7 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       break;
     case 8:
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      fUsePtDepTrackToCluster = kTRUE;
+      fUsePtDepTrackToCluster = 1;
       fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.05, 0.010, 2.5);
 
@@ -4020,7 +4035,7 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       break;
     case 9:
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      fUsePtDepTrackToCluster = kTRUE;
+      fUsePtDepTrackToCluster = 1;
       fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.06, 0.015, 2.5);
 
@@ -4029,7 +4044,7 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       break;
     case 10:
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      fUsePtDepTrackToCluster = kTRUE;
+      fUsePtDepTrackToCluster = 1;
       fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.035, 0.010, 2.5);
 
@@ -4038,7 +4053,7 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       break;
     case 11:
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      fUsePtDepTrackToCluster = kTRUE;
+      fUsePtDepTrackToCluster = 1;
       fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.045, 0.010, 2.5);
 
@@ -4049,7 +4064,7 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       // note: this case does not apply the cut (fEOverPMax = 9e9), but sets fUseEOverPVetoTM = kTRUE, so that reference histos are still produced
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
-      fUsePtDepTrackToCluster = kTRUE;
+      fUsePtDepTrackToCluster = 1;
       fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
 
@@ -4061,7 +4076,7 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
     case 13: // loosest E/P cut; cut char 'd'
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
-      fUsePtDepTrackToCluster = kTRUE;
+      fUsePtDepTrackToCluster = 1;
       fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
 
@@ -4073,7 +4088,7 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
     case 14: // cut char 'e'
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
-      fUsePtDepTrackToCluster = kTRUE;
+      fUsePtDepTrackToCluster = 1;
       fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
 
@@ -4085,7 +4100,7 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
     case 15: // cut char 'f'
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
-      fUsePtDepTrackToCluster = kTRUE;
+      fUsePtDepTrackToCluster = 1;
       fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
 
@@ -4097,7 +4112,7 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
     case 16: // cut char 'g'
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
-      fUsePtDepTrackToCluster = kTRUE;
+      fUsePtDepTrackToCluster = 1;
       fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
 
@@ -4110,7 +4125,7 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
     case 17: // hardest E/p cut; cut char 'h'
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
-      fUsePtDepTrackToCluster = kTRUE;
+      fUsePtDepTrackToCluster = 1;
       fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
 
@@ -4154,7 +4169,7 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
         break;
       case 4: //pT dependent for PCM-PHOS "default" selection
         if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-        fUsePtDepTrackToCluster = kTRUE;
+        fUsePtDepTrackToCluster = 1;
         fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
         fFuncPtDepEta->SetParameters(0.05, 0.005, 3.0);
 
@@ -4163,7 +4178,7 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
         break;
       case 5: //pT dependent for PCM-PHOS tight selection
         if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-        fUsePtDepTrackToCluster = kTRUE;
+        fUsePtDepTrackToCluster = 1;
         fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
         fFuncPtDepEta->SetParameters(0.025, 0.002, 3.0);
 
@@ -4172,15 +4187,28 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
         break;
       case 6: //pT dependent for PCM-PHOS loose selection
         if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-        fUsePtDepTrackToCluster = kTRUE;
+        fUsePtDepTrackToCluster = 1;
         fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
         fFuncPtDepEta->SetParameters(0.07, 0.003, 2.5);
 
         fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
         fFuncPtDepPhi->SetParameters(0.45, 0.010, 2.0);
         break;
-
-
+      case 7: //
+        if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+        fUsePtDepTrackToCluster = 2;
+        fMinTMDistSigma         = 2.;
+        break;
+      case 8: //
+        if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+        fUsePtDepTrackToCluster = 2;
+        fMinTMDistSigma         = 2.5;
+        break;
+      case 9: //
+        if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+        fUsePtDepTrackToCluster = 2;
+        fMinTMDistSigma         = 3;
+        break;
       default:
         AliError(Form("Track Matching Cut not defined %d",trackMatching));
         return kFALSE;
@@ -4892,6 +4920,10 @@ Bool_t AliCaloPhotonCuts::SetDispersion(Int_t dispersion)
   case 1:
     if (!fUseDispersion) fUseDispersion=1;
     fMaxDispersion=2.;
+    break;
+  case 2:
+    if (!fUseDispersion) fUseDispersion=1;
+    fMaxDispersion=2.5*2.5;
     break;
   default:
     AliError(Form("Maximum Dispersion Cut not defined %d",dispersion));
@@ -6653,10 +6685,10 @@ std::vector<Int_t> AliCaloPhotonCuts::GetVectorMatchedTracksToCluster(AliVEvent*
   vector<Int_t> labelsMatched(0);
   if(!fUseDistTrackToCluster) return labelsMatched;
 
-  if (!fUsePtDepTrackToCluster)
+  if (fUsePtDepTrackToCluster == 0)
     labelsMatched = fCaloTrackMatcher->GetMatchedTrackIDsForCluster(event, cluster->GetID(), fMaxDistTrackToClusterEta, -fMaxDistTrackToClusterEta,
                                                                     fMaxDistTrackToClusterPhi, fMinDistTrackToClusterPhi);
-  else
+  else if (fUsePtDepTrackToCluster == 1)
     labelsMatched = fCaloTrackMatcher->GetMatchedTrackIDsForCluster(event, cluster->GetID(), fFuncPtDepEta, fFuncPtDepPhi);
 
   return labelsMatched;
