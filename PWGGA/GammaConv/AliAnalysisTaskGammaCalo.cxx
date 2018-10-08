@@ -276,11 +276,14 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fHistoJetArea(NULL),
   fHistoNJets(NULL),
   fHistoEventwJets(NULL),
+  fHistoJetPi0PtRatio(NULL),
   fHistoDoubleCounting(NULL),
   fHistoJetMotherInvMassPt(NULL),
   fHistoPi0InJetMotherInvMassPt(NULL),
   fHistoMotherBackJetInvMassPt(NULL),
   fHistoRJetPi0Cand(NULL),
+  fHistoEtaPhiJetPi0Cand(NULL),
+  fHistoEtaPhiJetWithPi0Cand(NULL),
   fVectorJetPt(0),
   fVectorJetEta(0),
   fVectorJetPhi(0),
@@ -567,11 +570,14 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoJetArea(NULL),
   fHistoNJets(NULL),
   fHistoEventwJets(NULL),
+  fHistoJetPi0PtRatio(NULL),
   fHistoDoubleCounting(NULL),
   fHistoJetMotherInvMassPt(NULL),
   fHistoPi0InJetMotherInvMassPt(NULL),
   fHistoMotherBackJetInvMassPt(NULL),
   fHistoRJetPi0Cand(NULL),
+  fHistoEtaPhiJetPi0Cand(NULL),
+  fHistoEtaPhiJetWithPi0Cand(NULL),
   fVectorJetPt(0),
   fVectorJetEta(0),
   fVectorJetPhi(0),
@@ -1055,12 +1061,15 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fHistoJetArea             = new TH1F*[fnCuts];
     fHistoNJets               = new TH1F*[fnCuts];
     fHistoEventwJets          = new TH1F*[fnCuts];
+    fHistoJetPi0PtRatio       = new TH1F*[fnCuts];
     fHistoDoubleCounting      = new TH1F*[fnCuts];
 
     fHistoJetMotherInvMassPt                  = new TH2F*[fnCuts];
     fHistoPi0InJetMotherInvMassPt             = new TH2F*[fnCuts];
     fHistoMotherBackJetInvMassPt              = new TH2F*[fnCuts];
     fHistoRJetPi0Cand                         = new TH2F*[fnCuts];
+    fHistoEtaPhiJetPi0Cand                    = new TH2F*[fnCuts];
+    fHistoEtaPhiJetWithPi0Cand                = new TH2F*[fnCuts];
   }
 
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
@@ -1429,6 +1438,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fJetHistograms[iCut]->Add(fHistoNJets[iCut]);
       fHistoEventwJets[iCut] = new TH1F("NEvents_with_Jets", "NEvents_with_Jets", 5, 0, 5);
       fJetHistograms[iCut]->Add(fHistoEventwJets[iCut]);
+      fHistoJetPi0PtRatio[iCut] = new TH1F("Ratio_Pt_Pi0_Jet", "Ratio_Pt_Pi0_Jet", 15, 0, 1);
+      fJetHistograms[iCut]->Add(fHistoJetPi0PtRatio[iCut]);
 
       fHistoDoubleCounting[iCut] = new TH1F("Double_Counting_Mesons_Jets", "Double_Counting_Mesons_Jets", 6, 0, 6);
       fJetHistograms[iCut]->Add(fHistoDoubleCounting[iCut]);
@@ -1440,6 +1451,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fJetHistograms[iCut]->Add(fHistoMotherBackJetInvMassPt[iCut]);
       fHistoRJetPi0Cand[iCut] = new TH2F("ESD_Jet_RJetPi0Cand_Pt", "ESD_Jet_RJetPi0Cand_Pt", 70, 0, 7, nBinsPt, arrPtBinning);
       fJetHistograms[iCut]->Add(fHistoRJetPi0Cand[iCut]);
+      fHistoEtaPhiJetPi0Cand[iCut] = new TH2F("Eta_Phi_Distr_Jet_Pi0", "Eta_Phi_Distr_Jet_Pi0", 20, 0, M_PI, 20, -1, 1);
+      fJetHistograms[iCut]->Add(fHistoEtaPhiJetPi0Cand[iCut]);
+      fHistoEtaPhiJetWithPi0Cand[iCut] = new TH2F("Eta_Phi_Distr_Jet_with_Pi0", "Eta_Phi_Distr_Jet_with_Pi0", 15, 0, 0.4, 15, -0.4, 0.4);
+      fJetHistograms[iCut]->Add(fHistoEtaPhiJetWithPi0Cand[iCut]);
       }
   }
   if(fDoMesonAnalysis){
@@ -3914,12 +3929,21 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
               if(fVectorJetPt.size() == fConvJetReader->GetNJets() && fVectorJetEta.size() == fConvJetReader->GetNJets() && fVectorJetPhi.size() == fConvJetReader->GetNJets() && fVectorJetArea.size() == fConvJetReader->GetNJets()){
                 Int_t counter = 0;
                 for(Int_t i=0; i<fConvJetReader->GetNJets(); i++){
-                  RJetPi0Cand = TMath::Sqrt(pow((fVectorJetEta.at(i)-pi0cand->Eta()),2)+pow((fVectorJetPhi.at(i)-pi0cand->Phi()),2));
+                  Double_t DeltaEta = fVectorJetEta.at(i)-pi0cand->Eta();
+                  Double_t DeltaPhi = abs(fVectorJetPhi.at(i)-pi0cand->Phi());
+                  if(DeltaPhi > M_PI) {
+                      DeltaPhi = 2*M_PI - DeltaPhi;
+                  }
+                  RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
                   fHistoRJetPi0Cand[fiCut]->Fill(RJetPi0Cand,pi0cand->Pt(), tempPi0CandWeight);
+                  fHistoEtaPhiJetPi0Cand[fiCut]->Fill(DeltaPhi,DeltaEta, tempPi0CandWeight);
                   if(fConvJetReader->Get_Jet_Radius() > 0 ){
                     if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
                       counter ++;
                       fHistoPi0InJetMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), tempPi0CandWeight);
+                      fHistoEtaPhiJetWithPi0Cand[fiCut]->Fill(DeltaEta, DeltaPhi, tempPi0CandWeight);
+                      Double_t PtRatio = pi0cand->Pt()/(fVectorJetPt.at(i));
+                      fHistoJetPi0PtRatio[fiCut]->Fill(PtRatio);
                     }
                   }
                 }
