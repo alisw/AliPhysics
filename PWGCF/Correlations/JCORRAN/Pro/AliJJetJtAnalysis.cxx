@@ -1227,6 +1227,34 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
     << fJetFinderBin << fJetTriggerBin << fTrkPtBin
     <<"END";
 
+  fhJetConeJtLeadingRefBin
+    << TH1D("JetConeJtLeadingRefBin","",NBINSJt,LogBinsJt)
+    << fJetFinderBin << fJetTriggerBin
+    <<"END";
+  fhJetConeJtWeightLeadingRefBin
+    << TH1D("JetConeJtWeightLeadingRefBin","",NBINSJt,LogBinsJt)
+    << fJetFinderBin << fJetTriggerBin
+    <<"END";
+  fhJetConeJtWeightLeadingRefWithTrackCutBinBin
+    << TH1D("JetConeJtWeightLeadingRefWithTrackCutBinBin","",NBINSJt,LogBinsJt)
+    << fJetFinderBin << fJetTriggerBin << fJetLeadPtBin
+    << "END";
+
+  fhJtLeadingRefBin
+    << TH1D("JtLeadingRefBin","",NBINSJt,LogBinsJt)
+    << fJetFinderBin << fJetTriggerBin
+    <<"END";
+  fhJtWeightLeadingRefBin
+    << TH1D("JtWeightLeadingRefBin","",NBINSJt,LogBinsJt)
+    << fJetFinderBin << fJetTriggerBin
+    <<"END";
+
+  fhJtWeightLeadingRefWithTrackCutBinBin
+    << TH1D("JtWeightLeadingRefWithTrackCutBinBin","",NBINSJt,LogBinsJt)
+    << fJetFinderBin << fJetTriggerBin << fJetLeadPtBin
+    << "END";
+
+
   fhLeadingJt
     << TH1D("LeadingJt","",NBINSJt, LogBinsJt )
     << fJetFinderBin
@@ -2274,7 +2302,7 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
   double conPtMax =0;
 
 
-  double z; double jt;
+  double z; double jt; double jtleading; double zleading;
   double pta;
   //double Y , deltaY = 0;
   //double Phi, deltaPhi;
@@ -2436,7 +2464,9 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
     for (int icon = 0; icon<jet->GetConstituents()->GetEntries(); icon++){
       AliJBaseTrack *con = jet->GetConstituent(icon);
       if (con->Pt()>conPtMax) conPtMax = con->Pt();
+      leadingTrackIndex = icon;
     }
+    AliJBaseTrack *leadingTrack = jet->GetConstituent(leadingTrackIndex);
 
     for (int ii = fJetConstPtLowLimits->GetNoElements(); ii >= 1 ; ii--){
       if (conPtMax > (*fJetConstPtLowLimits)[ii]) {
@@ -2448,8 +2478,7 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
     //iConstituent loop for the iJet
     //jt, z are calcualted and filled
     nC = 0;
-    leadingTrackPt = 0;
-    leadingTrackIndex = 0;
+    //leadingTrackPt = 0;
     leadingTrackEff = 0;
     leadingTrackJt = 0;
     for (int icon = 0; icon<jet->GetConstituents()->GetEntries(); icon++){
@@ -2511,13 +2540,20 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
           ->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection);
       }
 
-      if(pta > leadingTrackPt){
-        leadingTrackPt = pta;
-        leadingTrackIndex = icon;
+      if(icon == leadingTrackIndex){
+        //leadingTrackPt = pta;
+        //leadingTrackIndex = icon;
         leadingTrackJt = jt; //Save leading track jT for later
         leadingTrackEff = effCorrection;
+      }else{
+        zleading = (constituent->Vect()*leadingTrack->Vect().Unit())/leadingTrack->P();
+        jtleading =  (constituent->Vect()-zleading*leadingTrack->Vect()).Mag();
+        fhJtLeadingRefBin[iContainer][iBin]->Fill(jtleading,effCorrection);
+        fhJtWeightLeadingRefBin[iContainer][iBin]->Fill(jtleading,1.0/jtleading * effCorrection);
+        if(iBin2 > -1){
+          fhJtWeightLeadingRefWithTrackCutBinBin[iContainer][iBin][iBin2]->Fill(jtleading,1.0/jtleading * effCorrection);
+        }
       }
-
 
       for (int jj = 0; jj <= jBin ; jj++) {
         fhJtBinLimBin[iContainer][iBin][jj]->Fill( jt, effCorrection );
@@ -2657,6 +2693,15 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
             ->Fill( TMath::Log(jt), 1.0/jt * effCorrection );
           fhJetConeLogJtWeight2Bin[iContainer][iBin]
             ->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
+        }
+        if(pta < 0.99*leadingTrackPt){
+          zleading = (track->Vect()*leadingTrack->Vect().Unit())/leadingTrack->P();
+          jtleading =  (track->Vect()-zleading*leadingTrack->Vect()).Mag();
+          fhJetConeJtLeadingRefBin[iContainer]->Fill(jtleading,effCorrection);
+          fhJetConeJtWeightLeadingRefBin[iContainer][iBin]->Fill(jtleading,1.0/jtleading * effCorrection);
+          if(iBin2 > -1){
+            fhJetConeJtWeightLeadingRefWithTrackCutBinBin[iContainer][iBin][iBin2]->Fill(jtleading,1.0/jtleading * effCorrection);
+          }
         }
 
         if (iptaBin < 0) continue;
