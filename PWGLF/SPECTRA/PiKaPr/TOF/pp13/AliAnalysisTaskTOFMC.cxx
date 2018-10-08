@@ -1087,7 +1087,10 @@ void AliAnalysisTaskTOFMC::UserExec(Option_t *)
 	TClonesArray *arrayTR;
 	AliTrackReference *trackRef;
 
-	eventHandler->GetParticleAndTR(fTOFLabel[0], particle, arrayTR);
+	
+	fMC->GetParticleAndTR(fTOFLabel[0], particle, arrayTR);
+        //if (fMC->GetParticleAndTR(fTOFLabel[0], particle, arrayTR)<0) return
+        if (fMC->GetParticleAndTR(fTOFLabel[0], particle, arrayTR)>0){
     	for (Int_t itr = 0; itr < arrayTR->GetEntries(); itr++) {
 	trackRef = (AliTrackReference *)arrayTR->At(itr);
 	if (!trackRef || trackRef->DetectorId() != AliTrackReference::kTOF) continue;
@@ -1096,6 +1099,7 @@ void AliAnalysisTaskTOFMC::UserExec(Option_t *)
 //      fMCTOFLength = trackRef->GetLength();
       /* break as soon as we get it */
       break;
+}
     }
 }
 	
