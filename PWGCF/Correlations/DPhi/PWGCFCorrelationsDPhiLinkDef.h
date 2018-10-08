@@ -82,4 +82,5 @@
 #pragma link C++ class AliCSTrackMaps+;
 #pragma link C++ class AliCSTrackSelection+;
 #pragma link C++ class AliDptDptCorrelations+;
+#pragma link C++ class AliAnalysisTaskDiHadCorrelHighPt+;
 #endif
