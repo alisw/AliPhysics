@@ -155,7 +155,7 @@ public:
 	 * This deletes all elements from the list and resizes the buffer which
 	 * is used to store the entries for the list.
 	 */
-	void Clear(AliHLTUInt32_t maxentries) throw(std::bad_alloc)
+	void Clear(AliHLTUInt32_t maxentries)
 	{
 		AliHLTMUONList<DataType>::Clear(maxentries);
 		fCount = 0;

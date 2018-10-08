@@ -61,9 +61,9 @@ class ReadPar
   ReadPar& operator=(const ReadPar& aPar);
   ~ReadPar();
   
-  int readFile(const char *aFName) throw(int); 
+  int readFile(const char *aFName);
   int printOptions();
-  STR getPar(const char *name) throw(STR);
+  STR getPar(const char *name);
   
 };
 

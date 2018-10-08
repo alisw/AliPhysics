@@ -19,8 +19,8 @@ class AliHLTITSTrack : public AliKalmanTrack
  public:
 
   AliHLTITSTrack();
-  AliHLTITSTrack(AliESDtrack& t,Bool_t c=kFALSE) throw (const Char_t *);
-  AliHLTITSTrack(AliExternalTrackParam& t ) throw (const Char_t *);
+  AliHLTITSTrack(AliESDtrack& t,Bool_t c=kFALSE);
+  AliHLTITSTrack(AliExternalTrackParam& t );
   AliHLTITSTrack(const AliHLTITSTrack& t);
   AliHLTITSTrack &operator=(const AliHLTITSTrack& t);
 
