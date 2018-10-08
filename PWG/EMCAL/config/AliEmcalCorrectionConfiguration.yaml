@@ -40,7 +40,11 @@ inputObjects:                                       # Define all of the input ob
             #    - 16
             #    - 1
 sharedParameters:
-    # You can define here any parameters that you would like to share between tasks. See the documentation for more information
+    # You can define here any parameters that you would like to share between tasks. Note that you cannot directly
+    # override a shared parameter in your config! Instead, you'll need to explicitly set the parameter value, as well
+    # as whichever parameters it is supposed to override, in your user config. See the documentation for  more
+    # information.
+    minCellE: 0.05                                  # Minimum cell energy (GeV).
     enableFracEMCRecalc: false                      # Enables the recalculation of the MC labels including the fractional energy on cell level
     removeNMCGenerators: 0                          # set number of accepted MC generators input (only for enableFracEMCRecalc=1)
     enableMCGenRemovTrack: true                     # apply the MC generators rejection also for track matching
@@ -75,7 +79,7 @@ CellEmulateCrosstalk:                               # Component to emulate cross
     randomizeTCardInducedEnergy: true               # Randomize the energy fraction induced by the TCard
     inducedTCardMinimumCellEnergy: 0.01             # Minimum cell energy induced by the TCard
     inducedTCardMaximum: 100                        # Maximum energy induced by the TCard
-    inducedTCardMinimum: 0.05                       # Minimum energy induced by the TCard + cell energy, IMPORTANT use the same value as the clusterization cell E threshold or not too far from it
+    inducedTCardMinimum: "sharedParameters:minCellE" # Minimum energy induced by the TCard + cell energy, IMPORTANT use the same value as the clusterization cell E threshold or not too far from it
     inducedTCardMaximumELeak: 0                     # Maximum energy that is going to be leaked independently of what is set with inducedTCardMinimum
     # Note on using the following section:
     # Each setting can be enabled or disabled. If disabled, the settings will _not_ be applied
@@ -147,7 +151,7 @@ Clusterizer:                                        # Clusterizer component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
     clusterizer: kClusterizerv2                     # Type of clusterizer to use. Possible options are defined in the header of the clusterizer
-    cellE: 0.05                                     # Minimum cell energy (GeV)
+    cellE: "sharedParameters:minCellE"              # Minimum cell energy (GeV)
     seedE: 0.1                                      # Seed energy threshold (GeV)
     cellTimeMin: -1                                 # Min cell time (s)
     cellTimeMax: +1                                 # Max cell time (s)
