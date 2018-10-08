@@ -282,6 +282,15 @@ class AliJJetJtAnalysis{
     AliJTH1D fhEventJtWeightBin; ///Distribution of track jT for all tracks with 1/jT weight
     AliJTH1D fhEventJtWithPtCutWeightBinBin; ///Distribution of track jT for all tracks with 1/jT weight in track pT bins
 
+    //Histograms for leading track reference jt
+    AliJTH1D fhJetConeJtLeadingRefBin; //jT with leading track reference distribution for tracks inside constant cone around jet axis in jet pT bins
+    AliJTH1D fhJetConeJtWeightLeadingRefBin; //jT with \f$ \frac{1}{j_T} \f$ weight with leading track reference distribution for tracks inside constant cone around jet axis in jet pT bins
+    AliJTH1D fhJetConeJtWeightLeadingRefWithTrackCutBinBin; //jT with \f$ \frac{1}{j_T} \f$ weight with leading track reference distribution for tracks inside constant cone around jet axis in jet pT bins and leading track pT bins
+
+    AliJTH1D fhJtLeadingRefBin; //jT with leading track reference distribution for jet constituents in jet pT bins
+    AliJTH1D fhJtWeightLeadingRefBin; //jT with \f$ \frac{1}{j_T} \f$ weight with leading track reference distribution for jet constituents in jet pT bins
+    AliJTH1D fhJtWeightLeadingRefWithTrackCutBinBin; //jT with \f$ \frac{1}{j_T} \f$ weight with leading track reference distribution for jet constituents in jet pT bins and leading track pT bins
+
 
     //Histograms for jt in cone
     AliJTH1D fhJetConeTrkPt; /// Distribution of track pT in constant cone around jet axis
