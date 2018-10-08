@@ -319,6 +319,8 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing)
 													GetVector(kP2D), BinsToVector(700,0.,700.), AliDielectronVarManager::kP,AliDielectronVarManager::kITSsignal);
 			histos->UserHistogram("Track","ITSnSigmaEle_P",";p (GeV/c);n#sigma_{ele}^{ITS}",
 													GetVector(kP2D), GetVector(kSigmaEle), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaEle);
+			histos->UserHistogram("Track","ITSnSigmaEleRaw_P",";p (GeV/c);n#sigma_{ele}^{ITS}",
+													GetVector(kP2D), GetVector(kSigmaEle), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaEleRaw);
 			histos->UserHistogram("Track","ITSnSigmaEle_Eta",";Eta;n#sigma_{ele}^{ITS}",
 													GetVector(kEta2D), GetVector(kSigmaEle), AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaEle);
 			histos->UserHistogram("Track","ITSnSigmaEle_Phi",";Phi;n#sigma_{ele}^{ITS}",
@@ -342,6 +344,8 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing)
 													GetVector(kP2D), GetVector(kTPCdEdx), AliDielectronVarManager::kP,AliDielectronVarManager::kTPCsignal);
 			histos->UserHistogram("Track","TPCnSigmaEle_P",";p (GeV/c);n#sigma_{ele}^{TPC}",
 													GetVector(kP2D), GetVector(kSigmaEle), AliDielectronVarManager::kP,AliDielectronVarManager::kTPCnSigmaEle);
+			histos->UserHistogram("Track","TPCnSigmaEleRaw_P",";p (GeV/c);n#sigma_{ele}^{TPC}",
+													GetVector(kP2D), GetVector(kSigmaEle), AliDielectronVarManager::kP,AliDielectronVarManager::kTPCnSigmaEleRaw);
 			histos->UserHistogram("Track","TPCnSigmaEle_Pt",";p_{T} (GeV/c);n#sigma_{ele}^{TPC}",
 													GetVector(kP2D), GetVector(kSigmaEle), AliDielectronVarManager::kPt,AliDielectronVarManager::kTPCnSigmaEle);
 			histos->UserHistogram("Track","TPCnSigmaEle_Eta",";Eta;n#sigma_{ele}^{TPC}",
@@ -375,6 +379,8 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing)
 													GetVector(kP2D), BinsToVector(120,0.,1.2) ,AliDielectronVarManager::kP,AliDielectronVarManager::kTOFbeta);
 			histos->UserHistogram("Track","TOFnSigmaEle_P",";p_{in} (GeV/c);n#sigma_{elec}^{TOF}",
 													GetVector(kP2D), GetVector(kSigmaEle), AliDielectronVarManager::kP,AliDielectronVarManager::kTOFnSigmaEle);
+			histos->UserHistogram("Track","TOFnSigmaEleRaw_P",";p_{in} (GeV/c);n#sigma_{elec}^{TOF}",
+													GetVector(kP2D), GetVector(kSigmaEle), AliDielectronVarManager::kP,AliDielectronVarManager::kTOFnSigmaEleRaw);
 			histos->UserHistogram("Track","TOFnSigmaEle_Eta",";Eta;n#sigma_{elec}^{TOF}",
 													GetVector(kEta2D), GetVector(kSigmaEle), AliDielectronVarManager::kEta,AliDielectronVarManager::kTOFnSigmaEle);
 			histos->UserHistogram("Track","TOFnSigmaEle_Phi",";Phi;n#sigma_{elec}^{TOF}",
