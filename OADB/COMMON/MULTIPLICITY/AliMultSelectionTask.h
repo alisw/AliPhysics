@@ -127,6 +127,9 @@ public:
     //Calibration mode downscaling for manageable output
     void SetDownscaleFactor ( Double_t lDownscale ) { fDownscaleFactor = lDownscale; }
     
+    // Static method for AddTaskMultSelection
+    static AliMultSelectionTask* AddTaskMultSelection ( Bool_t lCalibration = kFALSE, TString lExtraOptions = "", Int_t lNDebugEstimators = 1, const TString lMasterJobSessionFlag = "");
+
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
