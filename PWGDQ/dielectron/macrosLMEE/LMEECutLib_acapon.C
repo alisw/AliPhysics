@@ -780,6 +780,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 			trackCutsFilter->SetRequireITSRefit(kTRUE);
 			trackCutsFilter->SetRequireTPCRefit(kTRUE);
 
+			trackCutsFilter->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
 			trackCuts->AddCut(varCutsFilter);
 			trackCuts->AddCut(trackCutsFilter);
 			trackCuts->AddCut(GetPIDCuts(PIDcuts));

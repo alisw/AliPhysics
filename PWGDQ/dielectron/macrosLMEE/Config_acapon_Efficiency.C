@@ -1,8 +1,5 @@
-//TString generatorNameForMCSignal  = "pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7";
-TString generatorNameForMCSignal  = "Pythia CC_1;Pythia BB_1;Pythia B_1;Jpsi2ee_1;B2JPsi2ee_1";
-// TString generatorNameForMCSignal  = "Hijing_0";
-//TString generatorNameForULSSignal = "Hijing;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Hijing_0;Pythia CC_8;Pythia B_8;Pythia BB_8";
-TString generatorNameForULSSignal = "";
+TString generatorNameForMCSignal  = "EPOS-LHC_0;Pythia CC_1;Pythia BB_1;Pythia B_1;Jpsi2ee_1;B2Jpsi2ee_1";
+TString generatorNameForULSSignal = "EPOS-LHC_0;Pythia CC_1;Pythia BB_1;Pythia B_1;Jpsi2ee_1;B2Jpsi2ee_1";
 
 
 Bool_t SetTPCCorrection = kFALSE;
@@ -236,7 +233,7 @@ std::vector<Bool_t> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* ta
   AliDielectronSignalMC eleFinalState("eleFinalState","eleFinalState");
   eleFinalState.SetLegPDGs(11,1);//dummy second leg (never MCkTRUE)\n"
   eleFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
-  eleFinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  //eleFinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
 
   AliDielectronSignalMC eleFinalStateFromSameMotherMeson("eleFinalStateFromSameMotherMeson","eleFinalStateFromSameMotherMeson");
   eleFinalStateFromSameMotherMeson.SetLegPDGs(11,1);//dummy second leg (never MCkTRUE)\n"

@@ -764,7 +764,6 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 			EnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kElectron);
 			EnSigmaTOFcorr = EnSigmaTOF;
 			if(fUseTOFcorr && (EnSigmaTOF != -999)){
-				EnSigmaTOFcorr = EnSigmaTOF;
 				EnSigmaTOFcorr -= AliDielectronPID::GetCntrdCorrTOF(track);
 				EnSigmaTOFcorr /= AliDielectronPID::GetWdthCorrTOF(track);
 			}
