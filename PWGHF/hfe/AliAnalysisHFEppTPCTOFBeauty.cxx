@@ -189,14 +189,17 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty(const char *name)
 ,fTPCnsigma_TOFnsigma2(0)
 ,fTPCnsigma_TOFnsigma3(0)
 ,fDCAxy_pt_had(0)
+,fDCAxy_pt_had_WoPID(0)
 ,fDCAxy_pt_charmbef(0)
 ,fDCAxy_pt_charmaft(0)
 ,fDCAxy_pt_beautybef(0)
 ,fDCAxy_pt_beautyaft(0)
 ,fDCAxy_pt_had_onlyDCA(0)
+,fDCAxy_pt_had_onlyDCA_WoPID(0)
 ,fDCAxy_pt_had_onlyDCA_Hijing(0)
 ,fDCAxy_pt_had_onlyDCA_Phytia(0)
 ,fDCAz_pt_had(0)
+,fDCAz_pt_had_WoPID(0)
 ,fDCAxy_pt_ele(0)
 ,fDCAz_pt_ele(0)
 ,hCharmMotherPt(0)
@@ -374,14 +377,17 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty()
 ,fTPCnsigma_TOFnsigma2(0)
 ,fTPCnsigma_TOFnsigma3(0)
 ,fDCAxy_pt_had(0)
+,fDCAxy_pt_had_WoPID(0)
 ,fDCAxy_pt_charmbef(0)
 ,fDCAxy_pt_charmaft(0)
 ,fDCAxy_pt_beautybef(0)
 ,fDCAxy_pt_beautyaft(0)
 ,fDCAxy_pt_had_onlyDCA(0)
+,fDCAxy_pt_had_onlyDCA_WoPID(0)
 ,fDCAxy_pt_had_onlyDCA_Hijing(0)
 ,fDCAxy_pt_had_onlyDCA_Phytia(0)
 ,fDCAz_pt_had(0)
+,fDCAz_pt_had_WoPID(0)
 ,fDCAxy_pt_ele(0)
 ,fDCAz_pt_ele(0)
 ,hCharmMotherPt(0)
@@ -703,6 +709,9 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     fDCAxy_pt_had = new TH2F("fDCAxy_pt_had",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
     fOutputList->Add(fDCAxy_pt_had);
     
+    fDCAxy_pt_had_WoPID = new TH2F("fDCAxy_pt_had_WoPID",";p_{t} (GeV/c);DCAxy hadrons_WoPID",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_had_WoPID);
+    
     fDCAxy_pt_charmbef = new TH2F("fDCAxy_pt_charmbef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
     fOutputList->Add(fDCAxy_pt_charmbef);
     
@@ -715,6 +724,9 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     fDCAxy_pt_beautyaft = new TH2F("fDCAxy_pt_beautyaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
     fOutputList->Add(fDCAxy_pt_beautyaft); 
     
+    fDCAxy_pt_had_onlyDCA_WoPID = new TH2F("fDCAxy_pt_had_onlyDCA_WoPID",";p_{t} (GeV/c);DCAxy hadrons_WoPID",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_had_onlyDCA_WoPID);
+    
     fDCAxy_pt_had_onlyDCA = new TH2F("fDCAxy_pt_had_onlyDCA",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
     fOutputList->Add(fDCAxy_pt_had_onlyDCA);
     
@@ -726,6 +738,9 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
        
     fDCAz_pt_had = new TH2F("fDCAz_pt_had",";p_{t} (GeV/c);DCAz hadrons",300,0,30,800,-0.2,0.2);
     fOutputList->Add(fDCAz_pt_had);
+    
+    fDCAz_pt_had_WoPID = new TH2F("fDCAz_pt_had_WoPID",";p_{t} (GeV/c);DCAz hadrons_WoPID",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAz_pt_had_WoPID);
     
     fDCAxy_pt_ele = new TH2F("fDCAxy_pt_ele",";p_{t} (GeV/c);DCAxy ",300,0,30,800,-0.2,0.2);
     fOutputList->Add(fDCAxy_pt_ele);
@@ -1290,6 +1305,18 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
         //////////////////////////////////////////////
 		//Hadron DCA  --- for DCA resolution studies//
 		//////////////////////////////////////////////
+		
+		
+		 ///////////////////
+		// Without PID cuts //     // By Sudhir on Monday Oct 8, 2018 For Improver check
+	       ///////////////////
+		fDCAxy_pt_had_onlyDCA_WoPID->Fill(fPt,DCAxy);
+			fDCAxy_pt_had_WoPID->Fill(fPt,DCAxy*track->Charge()*signB);
+			fDCAz_pt_had_WoPID->Fill(fPt,DCAz);	
+		
+		 ///////////////////
+		// With PID cuts //
+	       ///////////////////
         if(fTPCnSigma >= -5 && fTPCnSigma <= -3){
 			fDCAxy_pt_had_onlyDCA->Fill(fPt,DCAxy);
 			fDCAxy_pt_had->Fill(fPt,DCAxy*track->Charge()*signB);

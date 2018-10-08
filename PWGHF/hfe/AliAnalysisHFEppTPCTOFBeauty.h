@@ -243,11 +243,14 @@ private:
     TH1F				*fPHad_f;//!
     TH2F                *fDCAz_pt_had;//!
     TH2F                *fDCAxy_pt_had;//!
+    TH2F                *fDCAz_pt_had_WoPID;//!
+    TH2F                *fDCAxy_pt_had_WoPID;//!
     TH2F                *fDCAxy_pt_charmbef;//!
     TH2F                *fDCAxy_pt_charmaft;//!
     TH2F                *fDCAxy_pt_beautybef;//!
     TH2F                *fDCAxy_pt_beautyaft;//!
     TH2F				*fDCAxy_pt_had_onlyDCA;//!
+    TH2F				*fDCAxy_pt_had_onlyDCA_WoPID;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_Hijing;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_Phytia;//!
     TH2F                *fDCAz_pt_ele;//!
