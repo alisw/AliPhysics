@@ -27,7 +27,7 @@ public:
 
   /// Readers to access the data
   TTreeReaderValue<float>  fMultiplicity = {fReader, "fMultiplicity"};
-  TTreeReaderArray<Lifetimes::MiniV0> V0s = {fReader, "V0s"};
+  TTreeReaderArray<Lifetimes::MiniV0<3>> V0s = {fReader, "V0s"};
 
   /// standard selector methods
   MiniV0QA(TTree * /*tree*/ =0);
