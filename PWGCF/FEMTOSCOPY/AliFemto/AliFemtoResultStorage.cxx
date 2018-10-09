@@ -76,7 +76,12 @@ AliFemtoResultStorage::Write(const char *name, Int_t option, Int_t bufsize)
 Int_t
 AliFemtoResultStorage::Write(const char *name, Int_t option, Int_t bufsize) const
 {
-  TString path = name == nullptr ? name : fName.Data();
+  TString path(name);
+
+  // override if 'path' is empty
+  if (path.IsWhitespace()) {
+    path = fName.Strip(TString::kBoth);
+  }
 
   gDirectory->mkdir(path);
   TDirectory *outdir = gDirectory->GetDirectory(path);

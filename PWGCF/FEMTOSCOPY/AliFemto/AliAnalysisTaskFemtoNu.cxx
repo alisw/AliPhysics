@@ -73,6 +73,23 @@ AliAnalysisTaskFemtoNu::ConnectInputData(Option_t *opt)
   }
 }
 
+void
+AliAnalysisTaskFemtoNu::SetupContainers(const TString &outputfile)
+{
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+
+  const TString dest = outputfile.IsWhitespace() ? mgr->GetCommonFileName() : outputfile.Data();
+
+  auto *out_container = mgr->CreateContainer(fName,
+                                             AliFemtoResultStorage::Class(),
+                                             AliAnalysisManager::kOutputContainer,
+                                             dest);
+  auto *in_container = mgr->GetCommonInputContainer();
+
+  mgr->ConnectInput(this, 0, in_container);
+  mgr->ConnectOutput(this, RESULT_STORAGE_OUTPUT_SLOT, out_container);
+}
+
 
 void
 AliAnalysisTaskFemtoNu::CreateOutputObjects()

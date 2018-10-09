@@ -149,6 +149,7 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 # Additional headers
 set(HDRS ${HDRS}
   AliFemtoPairCutDetaDphi.h
+  AliFemtoCorrFctnQ3D.h
   )
 
 # Generate the dictionary

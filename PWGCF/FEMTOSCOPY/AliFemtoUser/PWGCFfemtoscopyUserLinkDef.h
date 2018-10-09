@@ -27,6 +27,11 @@
 #pragma link C++ class AliFemtoModelBPLCMSCorrFctnKK;
 #pragma link C++ class AliFemtoModelGausRinvFreezeOutGenerator;
 #pragma link C++ class AliFemtoModelCorrFctnKStar;
+
+#pragma link C++ class AliFemtoCorrFctnQ3DLCMS;
+#pragma link C++ class AliFemtoCorrFctnQ3DPF;
+#pragma link C++ class AliFemtoCorrFctnQ3DBF;
+
 #pragma link C++ class AliFemtoModelCorrFctnQinv;
 #pragma link C++ class AliFemtoModelCorrFctnTrueQ;
 #pragma link C++ class AliFemtoModelCorrFctnKK;
