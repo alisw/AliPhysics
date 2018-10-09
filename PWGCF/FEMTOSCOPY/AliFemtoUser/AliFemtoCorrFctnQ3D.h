@@ -16,56 +16,16 @@
 
 
 // preprocessor flag to enable using ONE histogram to store
+// #define USE_TPROFILE
 #define SINGLE_WQINV
 
 
-/// namespace for storing BP (Q{out,side,long}) calculator classes
-namespace femtoQ3D {
-
-  /// \class FrameLCMS
-  /// \breif Calculate
-  struct FrameLCMS {
-    static void GetQ(const AliFemtoPair &pair,
-                     double &x, double &y, double &z)
-    {
-      x = pair.QOutCMS();
-      y = pair.QSideCMS();
-      z = pair.QLongCMS();
-    }
-
-    static const char* FrameName()
-      { return "LCMS"; }
-  };
-
-
-  /// \class FramePF
-  struct FramePF {
-    static void GetQ(const AliFemtoPair &pair,
-                     double &x, double &y, double &z)
-    {
-      x = pair.QOutPf();
-      y = pair.QSidePf();
-      z = pair.QLongPf();
-    }
-
-    static const char* FrameName()
-      { return "PF"; }
-  };
-
-  /// \class FrameBF
-  struct FrameBF {
-    static void GetQ(const AliFemtoPair &pair,
-                     double &x, double &y, double &z)
-    {
-      x = pair.QOutBf();
-      y = pair.QSideBf();
-      z = pair.QLongBf();
-    }
-
-    static const char* FrameName()
-      { return "BF"; }
-  };
-}
+#ifdef USE_TPROFILE
+  #include <TProfile3D.h>
+  #define HIST_TYPE TProfile3D
+#else
+  #define HIST_TYPE TH3F
+#endif
 
 
 /// \class AliFemtoCorrFctnQ3D
@@ -191,13 +151,11 @@ public:
     { return *fDenominator; }
 
 #ifdef SINGLE_WQINV
-
   /// Return weighed by qinv
   TH3& QinvW()
     { return *fQinvW; }
 
 #else
-
   /// Return numerator weighed by qinv
   TH3& NumeratorW()
     { return *fNumeratorW; }
@@ -242,6 +200,9 @@ protected:
   TH3I* fDenominator;   ///<!< Denominator
 #ifdef SINGLE_WQINV
   TH3F* fQinvW;         ///<!< Qinv-Weighted histogram
+#elif defined(USE_TPROFILE)
+  TProfile3D* fNumeratorW;    ///<!< Qinv-Weighted numerator
+  TProfile3D* fDenominatorW;  ///<!< Qinv-Weighted denominator
 #else
   TH3F* fNumeratorW;    ///<!< Qinv-Weighted numerator
   TH3F* fDenominatorW;  ///<!< Qinv-Weighted denominator
@@ -287,13 +248,14 @@ AliFemtoCorrFctnQ3D<T>::AliFemtoCorrFctnQ3D(const char* title,
 
   fQinvW->Sumw2();
 #else
-  fNumeratorW = new TH3F(simple_name ? "NumWqinv" : (TString("NumWqinv") + title).Data(),
+
+  fNumeratorW = new HIST_TYPE(simple_name ? "NumWqinv" : (TString("NumWqinv") + title).Data(),
                          "Q_{inv} Weighted Numerator " + hist_title,
                          nbins, -QHi, QHi,
                          nbins, -QHi, QHi,
                          nbins, -QHi, QHi);
 
-  fDenominatorW = new TH3F(simple_name ? "DenWqinv" : (TString("DenWqinv") + title).Data(),
+  fDenominatorW = new HIST_TYPE(simple_name ? "DenWqinv" : (TString("DenWqinv") + title).Data(),
                            "Q_{inv} Weighted Denominator " + hist_title,
                            nbins, -QHi, QHi,
                            nbins, -QHi, QHi,
@@ -313,8 +275,8 @@ AliFemtoCorrFctnQ3D<T>::AliFemtoCorrFctnQ3D(const AliFemtoCorrFctnQ3D<T>& orig)
 #ifdef SINGLE_WQINV
   , fQinvW(new TH3F(*orig.fQinvW))
 #else
-  , fNumeratorW(new TH3F(*orig.fNumeratorW))
-  , fDenominatorW(new TH3F(*orig.fDenominatorW))
+  , fNumeratorW(new HIST_TYPE(*orig.fNumeratorW))
+  , fDenominatorW(new HIST_TYPE(*orig.fDenominatorW))
 #endif
 {
 }
@@ -373,8 +335,77 @@ AliFemtoCorrFctnQ3D<T>::Report()
 #undef SINGLE_WQINV
 
 
-typedef AliFemtoCorrFctnQ3D<femtoQ3D::FrameLCMS> AliFemtoCorrFctnQ3DLCMS;
-typedef AliFemtoCorrFctnQ3D<femtoQ3D::FrameBF> AliFemtoCorrFctnQ3DBF;
-typedef AliFemtoCorrFctnQ3D<femtoQ3D::FramePF> AliFemtoCorrFctnQ3DPF;
+struct AliFemtoCorrFctnQ3DLCMS : public AliFemtoCorrFctnQ3D<AliFemtoCorrFctnQ3DLCMS> {
+
+  typedef AliFemtoCorrFctnQ3D<AliFemtoCorrFctnQ3DLCMS> Super;
+  typedef Super::Build Build;
+
+  AliFemtoCorrFctnQ3DLCMS(const Super::Build &b)
+    : Super(b.into())
+    { }
+
+  AliFemtoCorrFctnQ3DLCMS(const char *name, int x, float y, bool b=true)
+    : Super(name, x, y, b)
+    { }
+
+  static void GetQ(const AliFemtoPair &pair, double &x, double &y, double &z)
+  {
+    x = pair.QOutCMS();
+    y = pair.QSideCMS();
+    z = pair.QLongCMS();
+  }
+
+  static const char* FrameName()
+    { return "LCMS"; }
+};
+
+
+struct AliFemtoCorrFctnQ3DPF : public AliFemtoCorrFctnQ3D<AliFemtoCorrFctnQ3DPF> {
+
+  typedef AliFemtoCorrFctnQ3D<AliFemtoCorrFctnQ3DPF> Super;
+  typedef Super::Build Build;
+
+  AliFemtoCorrFctnQ3DPF(const Super::Build &b)
+    : Super(b.into())
+    { }
+
+  AliFemtoCorrFctnQ3DPF(const char *name, int x, float y, bool b=true)
+    : Super(name, x, y, b)
+    { }
+
+  static void GetQ(const AliFemtoPair &pair, double &x, double &y, double &z)
+  {
+    x = pair.QOutPf();
+    y = pair.QSidePf();
+    z = pair.QLongPf();
+  }
+
+  static const char* FrameName()
+    { return "PF"; }
+};
+
+struct AliFemtoCorrFctnQ3DBF : public AliFemtoCorrFctnQ3D<AliFemtoCorrFctnQ3DBF> {
+
+  typedef AliFemtoCorrFctnQ3D<AliFemtoCorrFctnQ3DBF> Super;
+  typedef Super::Build Build;
+
+  AliFemtoCorrFctnQ3DBF(const Super::Build &b)
+    : Super(b.into())
+    { }
+
+  AliFemtoCorrFctnQ3DBF(const char *name, int x, float y, bool b=true)
+    : Super(name, x, y, b)
+    { }
+
+  static void GetQ(const AliFemtoPair &pair, double &x, double &y, double &z)
+  {
+    x = pair.QOutBf();
+    y = pair.QSideBf();
+    z = pair.QLongBf();
+  }
+
+  static const char* FrameName()
+    { return "BF"; }
+};
 
 #endif
