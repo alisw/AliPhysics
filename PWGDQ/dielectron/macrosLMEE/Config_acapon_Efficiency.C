@@ -96,12 +96,12 @@ const Double_t DeltaPhiMax     = 0.4;
 
 void GetCentrality(const Int_t centrality, Double_t& CentMin, Double_t& CentMax){
   std::cout << "GetCentrality with centrality " << centrality << std::endl;
-  if     (centrality == 0) {CentMin = 0;  CentMax = 100;}
-  else if(centrality == 1) {CentMin = 0;  CentMax = 20;}
-  else if(centrality == 2) {CentMin = 20; CentMax = 40;}
-  else if(centrality == 3) {CentMin = 40; CentMax = 60;}
-  else if(centrality == 3) {CentMin = 40; CentMax = 100;}
-  else if(centrality == 4) {CentMin = 0;  CentMax = 5;}
+  if     (centrality == 0){CentMin = 0;  CentMax = 100;}
+  else if(centrality == 1){CentMin = 0;  CentMax = 20;}
+  else if(centrality == 2){CentMin = 20; CentMax = 40;}
+  else if(centrality == 3){CentMin = 40; CentMax = 60;}
+  else if(centrality == 4){CentMin = 60; CentMax = 100;}
+  else if(centrality == 5){CentMin = 0;  CentMax = 5;}
   else                      {std::cout << "WARNING::Centrality range not found....." std::endl;}
   return;
 }
