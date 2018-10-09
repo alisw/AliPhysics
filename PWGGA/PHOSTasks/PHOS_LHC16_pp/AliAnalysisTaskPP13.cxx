@@ -89,12 +89,12 @@ void AliAnalysisTaskPP13::UserExec(Option_t *)
 		return;
 	}
 
-	AliPHOSTriggerUtils * triggerUtils = new AliPHOSTriggerUtils("PHOSTrig"); 
-	triggerUtils->SetEvent(event);
+	// AliPHOSTriggerUtils * triggerUtils = new AliPHOSTriggerUtils("PHOSTrig"); 
+	// triggerUtils->SetEvent(event);
 
-    AliPP13TriggerProperties triggerProperties(
-    	event->GetCaloTrigger("PHOS")
-    );
+	AliPP13TriggerProperties triggerProperties(
+		event->GetCaloTrigger("PHOS")
+	);
 
 	// Count MB event before event cuts for every selection
 	for (int i = 0; i < fSelections->GetEntries(); ++i)
@@ -131,28 +131,29 @@ void AliAnalysisTaskPP13::UserExec(Option_t *)
 	//
 	Int_t nTriggered = 0;
 	TObjArray clusArray;
-	clusArray.SetOwner(kTRUE);
+	// clusArray.SetOwner(kTRUE);
 	for (Int_t i = 0; i < event->GetNumberOfCaloClusters(); i++)
 	{
-		AliAODCaloCluster * c = dynamic_cast<AliAODCaloCluster *> (event->GetCaloCluster(i));
-		if (!c)
+		AliVCluster * clus = event->GetCaloCluster(i);	
+		// AliAODCaloCluster * c = dynamic_cast<AliAODCaloCluster *> (event->GetCaloCluster(i));
+		if (!clus)
 		{
 			AliWarning("Can't get cluster");
 			return;
 		}
 
-		AliPP13AnalysisCluster * clus = new AliPP13AnalysisCluster(*c);
+		// AliPP13AnalysisCluster * clus = new AliPP13AnalysisCluster(*c);
 
 		if (!clus->IsPHOS())
 			continue;
 
-		triggerProperties.FillTriggerInformation(clus);
-		clus->SetTrigger(triggerUtils->IsFiredTrigger(c));
-		nTriggered += clus->IsTrigger();
+		// triggerProperties.FillTriggerInformation(clus);
+		// clus->SetTrigger(triggerUtils->IsFiredTrigger(c));
+		// nTriggered += clus->IsTrigger();
 
 		clusArray.Add(clus);
 	}
-	delete triggerUtils;
+	// delete triggerUtils;
 
 	evtProperties.fTriggerEvent = nTriggered > 0;
 	evtProperties.fMcParticles = GetMCParticles(event);
