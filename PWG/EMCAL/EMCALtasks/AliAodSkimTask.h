@@ -9,6 +9,7 @@
 /// \author C.Loizides
 
 #include <AliAnalysisTaskSE.h>
+#include <TString.h>
 class AliAODMCHeader;
 class TH1F;
 
@@ -21,6 +22,7 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     void                  SetClusMinE(Double_t v)   {fClusMinE=v;}
     void                  SetCutMC(Bool_t b)        {fCutMC=b;}
     void                  SetYCutMC(Double_t v)     {fYCutMC=v;}
+    void                  SetGammaBrName(TString s) {fGammaBr=s;}
     void                  SetCopyHeader(Bool_t b)   {fDoCopyHeader=b;}
     void                  SetCopyVZERO(Bool_t b)    {fDoCopyVZERO=b;}
     void                  SetCopyTZERO(Bool_t b)    {fDoCopyTZERO=b;}
@@ -34,7 +36,11 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     void                  SetCopyPCells(Bool_t b)   {fDoCopyPCells=b;}
     void                  SetCopyClusters(Bool_t b) {fDoCopyClusters=b;}
     void                  SetCopyDiMuons(Bool_t b)  {fDoCopyDiMuons=b;}
+    void                  SetCopyTrdTracks(Bool_t b){fDoCopyTrdTracks=b;}
+    void                  SetCopyCascades(Bool_t b) {fDoCopyCascades=b;}
+    void                  SetCopyV0s(Bool_t b)      {fDoCopyV0s=b;}
     void                  SetCopyZDC(Bool_t b)      {fDoCopyZDC=b;}
+    void                  SetCopyConv(Bool_t b)     {fDoCopyConv=b;}
     void                  SetCopyMC(Bool_t b)       {fDoCopyMC=b;}
     void                  SetCopyMCHeader(Bool_t b) {fDoCopyMCHeader=b;}
     const char           *Str() const;
@@ -47,6 +53,7 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     Double_t              fClusMinE;        //  minimum cluster energy to accept event
     Bool_t                fCutMC;           //  if true cut MC particles with |Y|>fYCutMC
     Double_t              fYCutMC;          //  cut for MC particles (default = 0.7)
+    TString               fGammaBr;         //  gamma branch name
     Bool_t                fDoCopyHeader;    //  if true copy header
     Bool_t                fDoCopyVZERO;     //  if true copy VZERO
     Bool_t                fDoCopyTZERO;     //  if true copy TZERO
@@ -60,7 +67,11 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     Bool_t                fDoCopyPCells;    //  if true copy cells (PHS)
     Bool_t                fDoCopyClusters;  //  if true copy clusters
     Bool_t                fDoCopyDiMuons;   //  if true copy dimuons
+    Bool_t                fDoCopyTrdTracks; //  if true copy trd tracks
+    Bool_t                fDoCopyV0s;       //  if true copy v0s
+    Bool_t                fDoCopyCascades;  //  if true copy cascades
     Bool_t                fDoCopyZDC;       //  if true copy zdc
+    Bool_t                fDoCopyConv;      //  if true copy conversions
     Bool_t                fDoCopyMC;        //  if true copy MC particles
     Bool_t                fDoCopyMCHeader;  //  if true copy MC header
     UInt_t                fTrials;          //! events seen since last acceptance 
@@ -72,10 +83,10 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     TList                *fOutputList;      //! output list
     TH1F                 *fHevs;            //! events processed/accepted
     TH1F                 *fHclus;           //! cluster distribution
-    const char           *GetVersion() const { return "1.1"; }
+    const char           *GetVersion() const { return "1.2"; }
 
     AliAodSkimTask(const AliAodSkimTask&);             // not implemented
     AliAodSkimTask& operator=(const AliAodSkimTask&);  // not implemented
-    ClassDef(AliAodSkimTask, 3); // AliAodSkimTask
+    ClassDef(AliAodSkimTask, 4); // AliAodSkimTask
 };
 #endif

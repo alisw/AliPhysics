@@ -1,7 +1,22 @@
 // $Id: AddTaskSkim.C 4586 2013-01-16 15:32:16Z loizides $
 
-AliAodSkimTask *AddTaskAodSkim(const Double_t mine=5,
-                               const UInt_t trigsel = AliVEvent::kINT7,
+AliAodSkimTask *AddTaskAodSkim(const Double_t mine           = -1,
+                               const Double_t ycutmc         = 0.7,
+                               const char *gammabr           = 0,
+                               const UInt_t trigsel          = AliVEvent::kAny,
+			       const Bool_t doCopyTOF        = kTRUE,
+			       const Bool_t doCopyTracklets  = kTRUE,
+			       const Bool_t doCopyTracks     = kTRUE,
+			       const Bool_t doCopyTrigger    = kTRUE,
+			       const Bool_t doCopyPTrigger   = kTRUE,
+			       const Bool_t doCopyCells      = kTRUE,
+			       const Bool_t doCopyPCells     = kTRUE,
+			       const Bool_t doCopyClusters   = kTRUE,
+			       const Bool_t doCopyDiMuons    = kFALSE,
+			       const Bool_t doCopyTrdTracks  = kFALSE,
+			       const Bool_t doCopyCascades   = kFALSE,
+			       const Bool_t doCopyV0s        = kFALSE,
+			       const Bool_t doCopyMC         = kTRUE,
                                const char *name=0) 
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -25,8 +40,9 @@ AliAodSkimTask *AddTaskAodSkim(const Double_t mine=5,
   else 
     cout << "-> name=0" << endl;
   cout << "Writing skimmed aod tree to " << fname.Data() << endl;
- 
-  if (mgr->GetOutputEventHandler()==0) {
+
+  AliAODHandler *output = (AliAODHandler*)mgr->GetOutputEventHandler();
+   if (output==0) {
     AliAODHandler *output = new AliAODHandler;
     output->SetOutputFileName(fname);
     output->SetFillAOD(1);
@@ -36,9 +52,43 @@ AliAodSkimTask *AddTaskAodSkim(const Double_t mine=5,
     mgr->SetOutputEventHandler(output);
   }
 
+  AliAODInputHandler *input = (AliAODInputHandler*)mgr->GetInputEventHandler();
   AliAodSkimTask *task = new AliAodSkimTask(tname);
   task->SetClusMinE(mine);
+  if (gammabr) {
+    task->SetGammaBrName(gammabr);
+    task->SetCopyConv(kTRUE);
+    input->AddFriend("AliAODGammaConversion.root"); 
+  } else {
+    task->SetCopyConv(kFALSE);
+  }
   task->SelectCollisionCandidates(trigsel);
+  task->SetCopyHeader(kTRUE);
+  task->SetCopyVZERO(kTRUE);
+  task->SetCopyTZERO(kTRUE);
+  task->SetCopyVertices(kTRUE);
+  task->SetCopyZDC(kTRUE);
+  if (ycutmc>0) {
+    task->SetCutMC(kTRUE);
+    task->SetYCutMC(ycutmc);
+  } else {
+    task->SetCutMC(kFALSE);
+  }
+  task->SetCopyTOF(doCopyTOF);
+  task->SetCopyTracklets(doCopyTracklets);
+  task->SetCopyTracks(doCopyTracks);
+  task->SetCopyTrigger(doCopyTrigger);
+  task->SetCopyPTrigger(doCopyPTrigger);
+  task->SetCopyCells(doCopyCells);
+  task->SetCopyPCells(doCopyPCells);
+  task->SetCopyClusters(doCopyClusters);
+  task->SetCopyDiMuons(doCopyDiMuons);
+  task->SetCopyTrdTracks(doCopyTrdTracks);
+  task->SetCopyCascades(doCopyCascades);
+  task->SetCopyV0s(doCopyV0s);
+  task->SetCopyMC(doCopyMC);
+  task->SetCopyMCHeader(doCopyMC);
+
   cout << "Task configured with: " << task->Str() << endl;
   mgr->AddTask(task);
 
