@@ -97,6 +97,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   hMCConversionRRejSmall(NULL),
   hMCConversionRRejLarge(NULL),
   hMCAllGammaPt(NULL),
+  hMCAllSecondaryGammaPt(NULL),
   hMCTrueConversionRPhi(NULL),
   hMCTrueConversionRZ(NULL),
   hMCTrueConversionRPt(NULL),
@@ -111,6 +112,8 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   hMCTrueConversionRRejLarge(NULL),
   hMCTruePrimConversionRPt(NULL),
   hMCTrueSecConversionRPt(NULL),
+  hMCTrueSecondaryConvGammaRPt(NULL),
+  hMCTrueSecondaryConvGammaMCRPt(NULL),
   hMCTruePi0DalConversionRPt(NULL),
   hMCTruePi0DalConversionEta(NULL),
   hMCTrueEtaDalConversionRPt(NULL),
@@ -194,6 +197,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   hMCConversionRRejSmall(NULL),
   hMCConversionRRejLarge(NULL),
   hMCAllGammaPt(NULL),
+  hMCAllSecondaryGammaPt(NULL),
   hMCTrueConversionRPhi(NULL),
   hMCTrueConversionRZ(NULL),
   hMCTrueConversionRPt(NULL),
@@ -208,6 +212,8 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   hMCTrueConversionRRejLarge(NULL),
   hMCTruePrimConversionRPt(NULL),
   hMCTrueSecConversionRPt(NULL),
+  hMCTrueSecondaryConvGammaRPt(NULL),
+  hMCTrueSecondaryConvGammaMCRPt(NULL),
   hMCTruePi0DalConversionRPt(NULL),
   hMCTruePi0DalConversionEta(NULL),
   hMCTrueEtaDalConversionRPt(NULL),
@@ -307,6 +313,8 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
   hMCConversionRRejLarge    = new TH1F*[fnCuts];
   hMCConversionRRejSmall    = new TH1F*[fnCuts];
   hMCAllGammaPt             = new TH1F*[fnCuts];
+  hMCAllSecondaryGammaPt    = new TH2F*[fnCuts];
+  hMCSecondaryConvGammaPt   = new TH2F*[fnCuts];
 
   hMCTrueConversionRPhi     = new TH2F*[fnCuts];
   hMCTrueConversionRZ       = new TH2F*[fnCuts];
@@ -323,6 +331,11 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 
   hMCTruePrimConversionRPt    = new TH2F*[fnCuts];
   hMCTrueSecConversionRPt    = new TH2F*[fnCuts];
+
+  hMCTrueSecondaryConvGammaRPt    = new TH3F*[fnCuts];
+  hMCTrueSecondaryConvGammaMCRPt  = new TH3F*[fnCuts];
+
+
   hMCTruePi0DalConversionRPt = new TH2F*[fnCuts];
   hMCTruePi0DalConversionEta = new TH1F*[fnCuts];
   hMCTrueEtaDalConversionRPt = new TH2F*[fnCuts];
@@ -460,6 +473,21 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
         hMCAllGammaPt[iCut]         = new TH1F("MC_AllGamma_Pt","MC_AllGamma_Pt",nBinsPt,0.,20.);
         fMCList[iCut]->Add(hMCAllGammaPt[iCut]);
 
+	hMCAllSecondaryGammaPt[iCut]    = new TH2F("MC_AllSecondaryGamma_Pt", "MC_AllSecondaryGamma_Pt", nBinsPt, 0., 20., 4, -0.5, 3.5);
+	hMCAllSecondaryGammaPt[iCut]->GetYaxis()->SetBinLabel(1,"K0s");
+	hMCAllSecondaryGammaPt[iCut]->GetYaxis()->SetBinLabel(2,"K0l");
+	hMCAllSecondaryGammaPt[iCut]->GetYaxis()->SetBinLabel(3,"Lambda");
+	hMCAllSecondaryGammaPt[iCut]->GetYaxis()->SetBinLabel(4,"rest");
+	fMCList[iCut]->Add(hMCAllSecondaryGammaPt[iCut]);
+
+	hMCSecondaryConvGammaPt[iCut]  = new TH2F("MC_SecondaryConvGamma_Pt", "MC_SecondaryConvGamma_Pt", nBinsPt, 0., 20., 4, -0.5, 3.5);
+	hMCSecondaryConvGammaPt[iCut]->GetYaxis()->SetBinLabel(1,"K0s");
+	hMCSecondaryConvGammaPt[iCut]->GetYaxis()->SetBinLabel(2,"K0l");
+	hMCSecondaryConvGammaPt[iCut]->GetYaxis()->SetBinLabel(3,"Lambda");
+	hMCSecondaryConvGammaPt[iCut]->GetYaxis()->SetBinLabel(4,"rest");
+	fMCList[iCut]->Add(hMCSecondaryConvGammaPt[iCut]);
+
+
         hMCConversionRPhi[iCut]     = new TH2F("MC_Conversion_RPhi","MC_Conversion_RPhi",nBinsPhi,0.,2*TMath::Pi(),nBinsR,0.,200.);
         fMCList[iCut]->Add(hMCConversionRPhi[iCut]);
         hMCConversionREta[iCut]     = new TH2F("MC_Conversion_REta","MC_Conversion_REta",nBinsEta,-2.,2.,nBinsR,0.,200.);
@@ -506,6 +534,19 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
         hMCTrueSecConversionRPt[iCut]  = new TH2F("ESD_TrueSecConversion_RPt","ESD_TrueSecConversion_RPt",nBinsPt,0.,20.,nBinsR,0.,200.);
         fTrueList[iCut]->Add(hMCTrueSecConversionRPt[iCut]);
 
+	hMCTrueSecondaryConvGammaRPt[iCut]  = new TH3F("ESD_TrueSecondaryConvGamma_Pt", "ESD_TrueSecondaryConvGamma_Pt", nBinsPt,0.,20.,nBinsR,0.,200. , 4, -0.5, 3.5);
+	hMCTrueSecondaryConvGammaRPt[iCut]->GetZaxis()->SetBinLabel(1,"K0s");
+	hMCTrueSecondaryConvGammaRPt[iCut]->GetZaxis()->SetBinLabel(2,"K0l");
+	hMCTrueSecondaryConvGammaRPt[iCut]->GetZaxis()->SetBinLabel(3,"Lambda");
+	hMCTrueSecondaryConvGammaRPt[iCut]->GetZaxis()->SetBinLabel(4,"rest");
+	fTrueList[iCut]->Add(hMCTrueSecondaryConvGammaRPt[iCut]);
+	hMCTrueSecondaryConvGammaMCRPt[iCut]  = new TH3F("ESD_TrueSecondaryConvGamma_MCPt", "ESD_TrueSecondaryConvGamma_MCPt", nBinsPt, 0.,20.,nBinsR,0.,200., 4, -0.5, 3.5);
+	hMCTrueSecondaryConvGammaMCRPt[iCut]->GetZaxis()->SetBinLabel(1,"K0s");
+	hMCTrueSecondaryConvGammaMCRPt[iCut]->GetZaxis()->SetBinLabel(2,"K0l");
+	hMCTrueSecondaryConvGammaMCRPt[iCut]->GetZaxis()->SetBinLabel(3,"Lambda");
+	hMCTrueSecondaryConvGammaMCRPt[iCut]->GetZaxis()->SetBinLabel(4,"rest");
+	fTrueList[iCut]->Add(hMCTrueSecondaryConvGammaMCRPt[iCut]);
+	
 
 
 
@@ -538,6 +579,8 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 	  hMCTrueConversionAsymP[iCut] ->Sumw2();
 	  hMCTruePrimConversionRPt[iCut] ->Sumw2();
 	  hMCTrueSecConversionRPt[iCut] ->Sumw2();
+	  hMCTrueSecondaryConvGammaRPt[iCut]->Sumw2();
+	  hMCTrueSecondaryConvGammaMCRPt[iCut]->Sumw2();
 	}
 
     }
@@ -707,7 +750,6 @@ void AliAnalysisTaskMaterialHistos::UserExec(Option_t *){
       fWeightMultMC = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetWeightForMultiplicity(fNESDtracksEta08);
       hNGoodESDTracksWeightedEta08[iCut]->Fill(fNESDtracksEta08, fWeightMultMC);
     }
-    hNGoodESDTracksEta08[iCut]->Fill(fNESDtracksEta08);
     hNGoodESDTracksEta14[iCut]->Fill(fNESDtracksEta14);
     hNGoodESDTracksEta08_14[iCut]->Fill(fNESDtracksEta0814);
 
@@ -728,62 +770,98 @@ void AliAnalysisTaskMaterialHistos::UserExec(Option_t *){
   PostData(1, fOutputList);
 }
 
-///________________________________________________________________________
-void AliAnalysisTaskMaterialHistos::FillMCHistograms(Int_t eventPos){
-  TParticle* candidate = (TParticle *)fMCEvent->Particle(eventPos);
 
-  if(((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->PhotonIsSelectedMC(candidate,fMCEvent,kFALSE)){
-
-    fGammaMCPt = candidate->Pt();
-    fGammaMCTheta = candidate->Theta();
-
-    hMCAllGammaPt[fiCut]->Fill(candidate->Pt());
-
-  }
-
-  if(((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->PhotonIsSelectedMC(candidate,fMCEvent,kTRUE)){
-
-    fGammaMCConvPt = candidate->Pt();
-    fGammaMCConvTheta = candidate->Theta();
-
-    TParticle* daughter1 = (TParticle *)fMCEvent->Particle(candidate->GetFirstDaughter());
-//     TParticle* daughter2 = (TParticle *)fMCEvent->Particle(candidate->GetLastDaughter());
-
-    hMCConversionRPhi[fiCut]->Fill(candidate->Phi(),daughter1->R());
-    hMCConversionREta[fiCut]->Fill(candidate->Eta(),daughter1->R());
-    hMCConversionRPt[fiCut]->Fill(candidate->Pt(),daughter1->R());
-
-    if(daughter1->R() < 75. || daughter1->R() > 85.) hMCConversionRRejSmall[fiCut]->Fill(daughter1->R());
-    if(daughter1->R() < 70. || daughter1->R() > 90.) hMCConversionRRejLarge[fiCut]->Fill(daughter1->R());
-
-  } // Converted MC Gamma
-}
 
 ///________________________________________________________________________
 void AliAnalysisTaskMaterialHistos::ProcessMCPhotons(){
+
+  const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
+  Double_t mcProdVtxX   = primVtxMC->GetX();
+  Double_t mcProdVtxY   = primVtxMC->GetY();
+  Double_t mcProdVtxZ   = primVtxMC->GetZ();
+
+
   // Loop over all primary MC particle
-  for(Int_t i = 0; i < fMCEvent->GetNumberOfPrimaries(); i++) {
-    TParticle* particle = (TParticle *)fMCEvent->Particle(i);
-    if (!particle) continue;
+
+  // Loop over all primary MC particle
+  for(Long_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
+
+    //  for(Int_t i = 0; i < fMCEvent->GetNumberOfPrimaries(); i++) {
+    if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
+      // fill primary histogram
+      TParticle* particle = (TParticle *)fMCEvent->Particle(i);
+      if (!particle) continue;
 
 
-    if(fMCEvent && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
-      Int_t isPosFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
-      Int_t isNegFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
-      if( (isNegFromMBHeader < 1) || (isPosFromMBHeader < 1)) continue;
-    }
-
-
-    if (particle->GetPdgCode() == 111 && particle->GetFirstDaughter() >= fMCEvent->GetNumberOfPrimaries()){
-      //cout << "Undecayed pi0 found with mother: " << particle->GetMother(0) << endl;
-      for (Int_t j = 0; j < 2 ; j++){
-        FillMCHistograms(particle->GetDaughter(j));
+      if(fMCEvent && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
+	Int_t isPosFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
+	Int_t isNegFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
+	if( (isNegFromMBHeader < 1) || (isPosFromMBHeader < 1)) continue;
       }
-    } else {
-        FillMCHistograms(i);
-    }
 
+      if(((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCEvent,kFALSE)){
+	hMCAllGammaPt[fiCut]->Fill(particle->Pt()); // All MC Gamma
+      }
+      if(((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCEvent,kTRUE)){
+	TParticle* daughter1 = (TParticle *)fMCEvent->Particle(particle->GetFirstDaughter());
+	
+	
+	hMCConversionRPhi[fiCut]->Fill(particle->Phi(),daughter1->R());
+	hMCConversionREta[fiCut]->Fill(particle->Eta(),daughter1->R());
+	hMCConversionRPt[fiCut]->Fill(particle->Pt(),daughter1->R());
+	
+	if(daughter1->R() < 75. || daughter1->R() > 85.) hMCConversionRRejSmall[fiCut]->Fill(daughter1->R());
+	if(daughter1->R() < 70. || daughter1->R() > 90.) hMCConversionRRejLarge[fiCut]->Fill(daughter1->R());
+      } // Converted MC Gamma
+    } else {
+      // fill secondary histograms
+      TParticle* particle = (TParticle *)fMCEvent->Particle(i);
+      if (!particle) continue;
+
+      Int_t isMCFromMBHeader = -1;
+
+      if(fMCEvent && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
+	Int_t isPosFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
+	Int_t isNegFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
+	if( (isNegFromMBHeader < 1) || (isPosFromMBHeader < 1)) continue;
+      }
+      if(((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCEvent,kFALSE)){
+	if (particle->GetMother(0) > -1 && fMCEvent->Particle(particle->GetMother(0))->GetMother(0) > -1) {
+	  if (fMCEvent->Particle(fMCEvent->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 310){
+	    hMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),0.);
+	  } else if (fMCEvent->Particle(fMCEvent->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 130) {
+	    hMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),1.);
+	  } else if (fMCEvent->Particle(fMCEvent->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 3122) {
+	    hMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),2.);
+	  } else {
+	    //  if ( !(TMath::Abs(fMCEvent->Particle(particle->GetMother(0))->GetPdgCode()) == 11 && 
+	    // fMCEvent->Particle(fMCEvent->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 22) )
+	    hMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),3.);
+	  }
+	} else {
+	  hMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),3.);
+	}
+	if(((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCEvent,kTRUE)){
+          if (particle->GetMother(0) > -1 && fMCEvent->Particle(particle->GetMother(0))->GetMother(0) > -1) {
+            if (fMCEvent->Particle(fMCEvent->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 310){
+              hMCSecondaryConvGammaPt[fiCut]->Fill(particle->Pt(),0.);
+            } else if (fMCEvent->Particle(fMCEvent->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 130) {
+              hMCSecondaryConvGammaPt[fiCut]->Fill(particle->Pt(),1.);
+            } else if (fMCEvent->Particle(fMCEvent->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 3122) {
+              hMCSecondaryConvGammaPt[fiCut]->Fill(particle->Pt(),2.);
+            } else {
+	      //              if ( !(TMath::Abs(fMCEvent->Particle(particle->GetMother(0))->GetPdgCode()) == 11 && 
+	      //   fMCEvent->Particle(fMCEvent->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 22) )
+                hMCSecondaryConvGammaPt[fiCut]->Fill(particle->Pt(),3.);
+            }
+          } else {
+            hMCSecondaryConvGammaPt[fiCut]->Fill(particle->Pt(),3.);
+          }
+        }
+      }
+    }
   }
+  
 }
 
 ///________________________________________________________________________
@@ -993,6 +1071,35 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
                     fKind = 0; // primary photons
                 } else if (pdgCode == 22){
                     fKind = 5; //secondary photons
+
+		    //----------Splitting of secondaries. Part taken from AliAnalysisTaskGammaConvV1-----------------
+		    if( Photon->GetMother(0) > -1 && fMCEvent->Particle(Photon->GetMother(0))->GetMother(0) > -1){
+		      if (fMCEvent->Particle(fMCEvent->Particle(Photon->GetMother(0))->GetMother(0))->GetPdgCode() == 310){
+			hMCTrueSecondaryConvGammaRPt[fiCut]->Fill(gamma->Pt(),gamma->GetConversionRadius(),0.,fWeightMultMC);
+			hMCTrueSecondaryConvGammaMCRPt[fiCut]->Fill(Photon->Pt(),negDaughter->R(),0.,fWeightMultMC);
+			//			hMCTrueSecondaryConvGammaFromXFromK0sMCPtESDPtR[fiCut]->Fill(Photon->Pt(),gamma->Pt());
+		      } else if (fMCEvent->Particle(fMCEvent->Particle(Photon->GetMother(0))->GetMother(0))->GetPdgCode() == 130) {
+			hMCTrueSecondaryConvGammaRPt[fiCut]->Fill(gamma->Pt(),gamma->GetConversionRadius(),1.,fWeightMultMC);
+			hMCTrueSecondaryConvGammaMCRPt[fiCut]->Fill(Photon->Pt(),negDaughter->R(),1.,fWeightMultMC);
+			//			hMCTrueSecondaryConvGammaFromXFromK0lMCPtESDPt[fiCut]->Fill(Photon->Pt(),gamma->Pt());
+		      } else if (fMCEvent->Particle(fMCEvent->Particle(Photon->GetMother(0))->GetMother(0))->GetPdgCode() == 3122) {
+			hMCTrueSecondaryConvGammaRPt[fiCut]->Fill(gamma->Pt(),gamma->GetConversionRadius(),2.,fWeightMultMC);
+			hMCTrueSecondaryConvGammaMCRPt[fiCut]->Fill(Photon->Pt(),negDaughter->R(),2.,fWeightMultMC);
+			//			hMCTrueSecondaryConvGammaFromXFromLambdaMCPtESDPt[fiCut]->Fill(Photon->Pt(),gamma->Pt());
+		      } else if (fMCEvent->Particle(fMCEvent->Particle(Photon->GetMother(0))->GetMother(0))->GetPdgCode() == 221) {
+			hMCTrueSecondaryConvGammaRPt[fiCut]->Fill(Photon->Pt(),gamma->GetConversionRadius(),3.,fWeightMultMC);
+			hMCTrueSecondaryConvGammaMCRPt[fiCut]->Fill(gamma->Pt(),negDaughter->R(),3.,fWeightMultMC);
+		      } else {
+			//         if ( !(TMath::Abs(fMCEvent->Particle(Photon->GetMother(0))->GetPdgCode()) == 11 && fMCEvent->Particle(fMCEvent->Particle(Photon->GetMother(0))->GetMother(0))->GetPdgCode() == 22) ) {
+			hMCTrueSecondaryConvGammaRPt[fiCut]->Fill(gamma->Pt(),gamma->GetConversionRadius(),3.,fWeightMultMC);
+			hMCTrueSecondaryConvGammaMCRPt[fiCut]->Fill(Photon->Pt(),negDaughter->R(),3.,fWeightMultMC);
+			//         }
+		      }
+		    } else {
+		      hMCTrueSecondaryConvGammaRPt[fiCut]->Fill(gamma->Pt(),gamma->GetConversionRadius(),3.,fWeightMultMC);
+		      hMCTrueSecondaryConvGammaMCRPt[fiCut]->Fill(Photon->Pt(),negDaughter->R(),3.,fWeightMultMC);
+		    }
+		    // End spliting of secondaries 
                 }
             } else 	fKind = 9; //garbage
         } else fKind = 9; //garbage
