@@ -53,7 +53,9 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fCheckAODvertex{true},
   fRejectDAQincomplete{false},
   fRequiredSolenoidPolarity{0},
+  fUseCombinedMVSPDcut{false},
   fUseMultiplicityDependentPileUpCuts{false},
+  fUseSPDpileUpCut{false},
   fSPDpileupMinContributors{1000},
   fSPDpileupMinZdist{-1.f},
   fSPDpileupNsigmaZdist{-1.f},
@@ -198,6 +200,8 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
     fFlag |= BIT(kVertexQuality);
 
   /// Pile-up rejection
+  bool usePileUpMV = (fUseCombinedMVSPDcut && vtx != vtSPD) || fPileUpCutMV;
+  bool usePileUpSPD = (fUseCombinedMVSPDcut && vtx == vtSPD) || fUseSPDpileUpCut;
   AliVMultiplicity* mult = ev->GetMultiplicity();
   const int ntrkl = mult->GetNumberOfTracklets();
   if (fUseMultiplicityDependentPileUpCuts) {
@@ -205,9 +209,9 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
     else if (ntrkl < 50) fSPDpileupMinContributors = 4;
     else fSPDpileupMinContributors = 5;
   }
-  if (!ev->IsPileupFromSPD(fSPDpileupMinContributors,fSPDpileupMinZdist,fSPDpileupNsigmaZdist,fSPDpileupNsigmaDiamXY,fSPDpileupNsigmaDiamZ) &&
+  if ((!usePileUpSPD || !ev->IsPileupFromSPD(fSPDpileupMinContributors,fSPDpileupMinZdist,fSPDpileupNsigmaZdist,fSPDpileupNsigmaDiamXY,fSPDpileupNsigmaDiamZ)) &&
       (!fTrackletBGcut || !fUtils.IsSPDClusterVsTrackletBG(ev)) &&
-      (!fPileUpCutMV || !fUtils.IsPileUpMV(ev)))
+      (!usePileUpMV || !fUtils.IsPileUpMV(ev)))
     fFlag |= BIT(kPileUp);
 
   /// Centrality cuts:
@@ -583,12 +587,16 @@ void AliEventCuts::SetupRun2pp() {
   fRequiredSolenoidPolarity = 0;
 
   if (!fOverrideAutoPileUpCuts) {
-    fUseMultiplicityDependentPileUpCuts = true; // If user specify a value it is not overwritten
+    fUseCombinedMVSPDcut = true;
     fSPDpileupMinZdist = 0.8;
     fSPDpileupNsigmaZdist = 3.;
     fSPDpileupNsigmaDiamXY = 2.;
     fSPDpileupNsigmaDiamZ = 5.;
     fTrackletBGcut = true;
+    fUseMultiplicityDependentPileUpCuts = true;
+    fUtils.SetMaxPlpChi2MV(5);
+    fUtils.SetMinWDistMV(15);
+    fUtils.SetCheckPlpFromDifferentBCMV(kFALSE);
   }
 
   if (fCentralityFramework > 1)
@@ -691,11 +699,18 @@ void AliEventCuts::SetupRun1pA(int iPeriod) {
   fMaxDeltaSpdTrackNsigmaSPD = 20.f;
   fMaxDeltaSpdTrackNsigmaTrack = 40.f;
 
-  /// p-Pb pile-up cut is based on MV only, the SPD vs mult cut is here disabled
-  fUtils.SetMaxPlpChi2MV(5);
-  fUtils.SetMinWDistMV(15);
-  fUtils.SetCheckPlpFromDifferentBCMV(kFALSE);
-  fPileUpCutMV = true;
+  if (!fOverrideAutoPileUpCuts) {
+    fUseCombinedMVSPDcut = true; // If user specify a value it is not overwritten
+    fSPDpileupMinZdist = 0.8;
+    fSPDpileupNsigmaZdist = 3.;
+    fSPDpileupNsigmaDiamXY = 2.;
+    fSPDpileupNsigmaDiamZ = 5.;
+    fTrackletBGcut = false;
+    fUseMultiplicityDependentPileUpCuts = true;
+    fUtils.SetMaxPlpChi2MV(5);
+    fUtils.SetMinWDistMV(15);
+    fUtils.SetCheckPlpFromDifferentBCMV(kFALSE);
+  }
 
   fMinVtz = -10.f;
   fMaxVtz = 10.f;
@@ -731,11 +746,18 @@ void AliEventCuts::SetupRun2pA(int iPeriod) {
   fMaxDeltaSpdTrackNsigmaSPD = 20.f;
   fMaxDeltaSpdTrackNsigmaTrack = 40.f;
 
-  /// p-Pb pile-up cut is based on MV only, the SPD vs mult cut is here disabled
-  fUtils.SetMaxPlpChi2MV(5);
-  fUtils.SetMinWDistMV(15);
-  fUtils.SetCheckPlpFromDifferentBCMV(kFALSE);
-  fPileUpCutMV = true;
+  if (!fOverrideAutoPileUpCuts) {
+    fUseCombinedMVSPDcut = true; // If user specify a value it is not overwritten
+    fSPDpileupMinZdist = 0.8;
+    fSPDpileupNsigmaZdist = 3.;
+    fSPDpileupNsigmaDiamXY = 2.;
+    fSPDpileupNsigmaDiamZ = 5.;
+    fTrackletBGcut = false;
+    fUseMultiplicityDependentPileUpCuts = true;
+    fUtils.SetMaxPlpChi2MV(5);
+    fUtils.SetMinWDistMV(15);
+    fUtils.SetCheckPlpFromDifferentBCMV(kFALSE);
+  }
 
   fMinVtz = -10.f;
   fMaxVtz = 10.f;
