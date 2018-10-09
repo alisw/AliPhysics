@@ -5,18 +5,47 @@
 #include "AliAnalysisV0Efficiency.h"
 
 
-#ifdef __ROOT__
   /// \cond CLASSIMP
   ClassImp(AliAnalysisV0Efficiency);
   /// \endcond
-#endif
 
 using namespace std;
 
 
+//____________________________
+AliAnalysisV0Efficiency::AliAnalysisV0Efficiency():
+  AliAnalysisTaskSE(),
+
+  fAOD(nullptr),
+  fOutputList(nullptr),
+  fpidAOD(nullptr),
+
+  fEventCount(0),
+  fIgnoreInjectedV0s(false), 
+
+  fMCTruthOfOriginalParticles_Lam(nullptr),
+  fMCTruthOfV0FinderParticles_Lam(nullptr),
+  fMCTruthOfReconstructedParticles_Lam(nullptr),
+
+  fMCTruthOfOriginalParticles_ALam(nullptr),
+  fMCTruthOfV0FinderParticles_ALam(nullptr),
+  fMCTruthOfReconstructedParticles_ALam(nullptr),
+
+  fMCTruthOfOriginalParticles_K0s(nullptr),
+  fMCTruthOfV0FinderParticles_K0s(nullptr),
+  fMCTruthOfReconstructedParticles_K0s(nullptr),
+
+  fReconstructedPurityAid_Lam(nullptr),
+  fReconstructedPurityAid_ALam(nullptr),
+  fReconstructedPurityAid_K0s(nullptr),
+
+  fRemoveMisidentified(true)
+{
+}
+
+
 
 //____________________________
-//constructor with 0 parameters , look at default settings
 AliAnalysisV0Efficiency::AliAnalysisV0Efficiency(const char *name, bool aIgnoreInjectedV0s):
   AliAnalysisTaskSE(name),
 
@@ -47,6 +76,157 @@ AliAnalysisV0Efficiency::AliAnalysisV0Efficiency(const char *name, bool aIgnoreI
 {
   // default constructor
   DefineOutput(1, TList::Class());
+}
+
+
+
+//________________________________________________________________________
+AliAnalysisV0Efficiency::~AliAnalysisV0Efficiency()
+{
+  if(fOutputList) delete fOutputList;
+}
+
+
+//________________________________________________________________________
+AliAnalysisV0Efficiency::AliAnalysisV0Efficiency(const AliAnalysisV0Efficiency &aV0Eff) :
+  AliAnalysisTaskSE(aV0Eff),
+  fEventCount(aV0Eff.fEventCount),
+  fIgnoreInjectedV0s(aV0Eff.fIgnoreInjectedV0s),
+  fRemoveMisidentified(aV0Eff.fRemoveMisidentified)
+{
+  if(aV0Eff.fAOD) fAOD = new AliAODEvent(*(aV0Eff.fAOD));
+  else fAOD = nullptr;
+
+  if(aV0Eff.fOutputList) 
+  {
+    fOutputList = new TList();
+    TListIter next(aV0Eff.fOutputList);
+    while(TObject* obj = next()) fOutputList->Add(obj);
+  }
+  else fOutputList = nullptr;
+
+  if(aV0Eff.fpidAOD) fpidAOD = new AliAODpidUtil(*(aV0Eff.fpidAOD));
+  else fpidAOD = nullptr;
+
+  //-----
+
+  if(aV0Eff.fMCTruthOfOriginalParticles_Lam) fMCTruthOfOriginalParticles_Lam = new TH1F(*(aV0Eff.fMCTruthOfOriginalParticles_Lam));
+  else fMCTruthOfOriginalParticles_Lam = nullptr;
+
+  if(aV0Eff.fMCTruthOfV0FinderParticles_Lam) fMCTruthOfV0FinderParticles_Lam = new TH1F(*(aV0Eff.fMCTruthOfV0FinderParticles_Lam));
+  else fMCTruthOfV0FinderParticles_Lam = nullptr;
+
+  if(aV0Eff.fMCTruthOfReconstructedParticles_Lam) fMCTruthOfReconstructedParticles_Lam = new TH1F(*(aV0Eff.fMCTruthOfReconstructedParticles_Lam));
+  else fMCTruthOfReconstructedParticles_Lam = nullptr;
+
+  //-----
+
+  if(aV0Eff.fMCTruthOfOriginalParticles_ALam) fMCTruthOfOriginalParticles_ALam = new TH1F(*(aV0Eff.fMCTruthOfOriginalParticles_ALam));
+  else fMCTruthOfOriginalParticles_ALam = nullptr;
+
+  if(aV0Eff.fMCTruthOfV0FinderParticles_ALam) fMCTruthOfV0FinderParticles_ALam = new TH1F(*(aV0Eff.fMCTruthOfV0FinderParticles_ALam));
+  else fMCTruthOfV0FinderParticles_ALam = nullptr;
+
+  if(aV0Eff.fMCTruthOfReconstructedParticles_ALam) fMCTruthOfReconstructedParticles_ALam = new TH1F(*(aV0Eff.fMCTruthOfReconstructedParticles_ALam));
+  else fMCTruthOfReconstructedParticles_ALam = nullptr;
+
+  //-----
+
+  if(aV0Eff.fMCTruthOfOriginalParticles_K0s) fMCTruthOfOriginalParticles_K0s = new TH1F(*(aV0Eff.fMCTruthOfOriginalParticles_K0s));
+  else fMCTruthOfOriginalParticles_K0s = nullptr;
+
+  if(aV0Eff.fMCTruthOfV0FinderParticles_K0s) fMCTruthOfV0FinderParticles_K0s = new TH1F(*(aV0Eff.fMCTruthOfV0FinderParticles_K0s));
+  else fMCTruthOfV0FinderParticles_K0s = nullptr;
+
+  if(aV0Eff.fMCTruthOfReconstructedParticles_K0s) fMCTruthOfReconstructedParticles_K0s = new TH1F(*(aV0Eff.fMCTruthOfReconstructedParticles_K0s));
+  else fMCTruthOfReconstructedParticles_K0s = nullptr;
+
+  //-----
+
+  if(aV0Eff.fReconstructedPurityAid_Lam) fReconstructedPurityAid_Lam = new TH1F(*(aV0Eff.fReconstructedPurityAid_Lam));
+  else fReconstructedPurityAid_Lam = nullptr;
+
+  if(aV0Eff.fReconstructedPurityAid_ALam) fReconstructedPurityAid_ALam = new TH1F(*(aV0Eff.fReconstructedPurityAid_ALam));
+  else fReconstructedPurityAid_ALam = nullptr;
+
+  if(aV0Eff.fReconstructedPurityAid_K0s) fReconstructedPurityAid_K0s = new TH1F(*(aV0Eff.fReconstructedPurityAid_K0s));
+  else fReconstructedPurityAid_K0s = nullptr;
+
+}
+
+//________________________________________________________________________
+AliAnalysisV0Efficiency& AliAnalysisV0Efficiency::operator=(const AliAnalysisV0Efficiency &aV0Eff)
+{
+  //assignment operator
+  if (this == &aV0Eff) return *this;
+
+  AliAnalysisTaskSE::operator=(aV0Eff);
+
+  fEventCount = aV0Eff.fEventCount;
+  fIgnoreInjectedV0s = aV0Eff.fIgnoreInjectedV0s;
+  fRemoveMisidentified = aV0Eff.fRemoveMisidentified;
+
+  //-----
+
+  if(aV0Eff.fAOD) fAOD = new AliAODEvent(*(aV0Eff.fAOD));
+  else fAOD = nullptr;
+
+  if(aV0Eff.fOutputList) 
+  {
+    fOutputList = new TList();
+    TListIter next(aV0Eff.fOutputList);
+    while(TObject* obj = next()) fOutputList->Add(obj);
+  }
+  else fOutputList = nullptr;
+
+  if(aV0Eff.fpidAOD) fpidAOD = new AliAODpidUtil(*(aV0Eff.fpidAOD));
+  else fpidAOD = nullptr;
+
+  //-----
+
+  if(aV0Eff.fMCTruthOfOriginalParticles_Lam) fMCTruthOfOriginalParticles_Lam = new TH1F(*(aV0Eff.fMCTruthOfOriginalParticles_Lam));
+  else fMCTruthOfOriginalParticles_Lam = nullptr;
+
+  if(aV0Eff.fMCTruthOfV0FinderParticles_Lam) fMCTruthOfV0FinderParticles_Lam = new TH1F(*(aV0Eff.fMCTruthOfV0FinderParticles_Lam));
+  else fMCTruthOfV0FinderParticles_Lam = nullptr;
+
+  if(aV0Eff.fMCTruthOfReconstructedParticles_Lam) fMCTruthOfReconstructedParticles_Lam = new TH1F(*(aV0Eff.fMCTruthOfReconstructedParticles_Lam));
+  else fMCTruthOfReconstructedParticles_Lam = nullptr;
+
+  //-----
+
+  if(aV0Eff.fMCTruthOfOriginalParticles_ALam) fMCTruthOfOriginalParticles_ALam = new TH1F(*(aV0Eff.fMCTruthOfOriginalParticles_ALam));
+  else fMCTruthOfOriginalParticles_ALam = nullptr;
+
+  if(aV0Eff.fMCTruthOfV0FinderParticles_ALam) fMCTruthOfV0FinderParticles_ALam = new TH1F(*(aV0Eff.fMCTruthOfV0FinderParticles_ALam));
+  else fMCTruthOfV0FinderParticles_ALam = nullptr;
+
+  if(aV0Eff.fMCTruthOfReconstructedParticles_ALam) fMCTruthOfReconstructedParticles_ALam = new TH1F(*(aV0Eff.fMCTruthOfReconstructedParticles_ALam));
+  else fMCTruthOfReconstructedParticles_ALam = nullptr;
+
+  //-----
+
+  if(aV0Eff.fMCTruthOfOriginalParticles_K0s) fMCTruthOfOriginalParticles_K0s = new TH1F(*(aV0Eff.fMCTruthOfOriginalParticles_K0s));
+  else fMCTruthOfOriginalParticles_K0s = nullptr;
+
+  if(aV0Eff.fMCTruthOfV0FinderParticles_K0s) fMCTruthOfV0FinderParticles_K0s = new TH1F(*(aV0Eff.fMCTruthOfV0FinderParticles_K0s));
+  else fMCTruthOfV0FinderParticles_K0s = nullptr;
+
+  if(aV0Eff.fMCTruthOfReconstructedParticles_K0s) fMCTruthOfReconstructedParticles_K0s = new TH1F(*(aV0Eff.fMCTruthOfReconstructedParticles_K0s));
+  else fMCTruthOfReconstructedParticles_K0s = nullptr;
+
+  //-----
+
+  if(aV0Eff.fReconstructedPurityAid_Lam) fReconstructedPurityAid_Lam = new TH1F(*(aV0Eff.fReconstructedPurityAid_Lam));
+  else fReconstructedPurityAid_Lam = nullptr;
+
+  if(aV0Eff.fReconstructedPurityAid_ALam) fReconstructedPurityAid_ALam = new TH1F(*(aV0Eff.fReconstructedPurityAid_ALam));
+  else fReconstructedPurityAid_ALam = nullptr;
+
+  if(aV0Eff.fReconstructedPurityAid_K0s) fReconstructedPurityAid_K0s = new TH1F(*(aV0Eff.fReconstructedPurityAid_K0s));
+  else fReconstructedPurityAid_K0s = nullptr;
+
+  return *this;
 }
 
 
@@ -275,7 +455,7 @@ void AliAnalysisV0Efficiency::ExtractOriginalParticles(const AliAODEvent *aEvent
     const AliAODMCParticle *tPart = (AliAODMCParticle*)mcP->At(i);
     if(!tPart) continue;
     if(tPart->GetNDaughters() != 2) continue;
-    int tPartPID = tPart->GetPdgCode();
+//    int tPartPID = tPart->GetPdgCode();
 
     bool tIsInjected = IsInjected(tPart, mcP, tNumberOfLastHijingLabel);
     AliAODMCParticle *tMother = NULL;
