@@ -280,7 +280,11 @@ There are a number of useful advanced options to make the Corrections Framework 
 
 #### Shared parameters
 
-Often, a user will want to change some parameters in unison. Say, if a pt cut is changed, it should be changed everywhere. In such a case, it is useful to able to define a variable so that one change will change things everything. This can be accomplished by defining a parameters in the "shared parameters" section of the %YAML file. The name of the parameter defined in the shared parameters section can be referenced in other areas of the file by prepending ``sharedParameters:`` to the parameter name. Consider the example below:
+Often, a user will want to change some parameters in unison. Say, if a pt cut is changed, it should be changed
+everywhere. In such a case, it is useful to able to define a variable so that one change will change things everything.
+This can be accomplished by defining a parameters in the "shared parameters" section of the %YAML file. The name of the
+parameter defined in the shared parameters section can be referenced in other areas of the file by prepending
+``sharedParameters:`` to the parameter name. Consider the example below:
 
 ~~~
 sharedParameters:
@@ -292,7 +296,44 @@ Correction2:
     anotherExample: "sharedParameters:aMinimumValue"
 ~~~
 
-In the example, any change to ``aMinimumValue`` will be propagated to ``exampleValue`` in ``Correction1`` and ``anotherExample`` in ``Correction2``. Note that the parameter name (here, ``aMinimumValu``) can be anything that the user desires. When setting the value, don't forget to prepend "sharedParameters:" (in our example, "sharedParameters:aMinimumValu")!
+In the example, any change to ``aMinimumValue`` will be propagated to ``exampleValue`` in ``Correction1`` and
+``anotherExample`` in ``Correction2``. Note that the parameter name (here, ``aMinimumValu``) can be anything that
+the user desires. When setting the value, don't forget to prepend "sharedParameters:" (in our example,
+"sharedParameters:aMinimumValu")!
+
+Note that shared parameters are inherently somewhat limited. It can only retrieve values where the requested type
+is arithmetic, string, or bool. The retrieved shared parameters value can only be of those same types. Note that
+the shared parameters correspond to each configuration file.  ie. If ``sharedParameters:test`` is requested in the
+first configuration file, then it will only look for the sharedParameters value in that configuration. Thus, if a
+sharedParameter is requested in a later configuration file, the earlier configuration shared parameter values
+**will not** be considered.
+
+As an explicit example, to change the recalculation of the MC labels including the fractional energy on cell level
+to ``false`` while leaving the cluster-track matcher setting the same in your user config, it should look like
+(omitting unrelated values for brevity):
+
+~~~
+sharedParameter:
+    enableFracEMCRecalc: false
+Clusterizer:
+    enableFracEMCRecalc: true
+ClusterTrackMatcher:
+    inducedTCardMinimum: "sharedParameter:enableFracEMCRecalc"
+~~~
+
+To change the ``enableFracEMCRecalc`` for both in your user config, you'll need to do:
+
+~~~
+sharedParameter:
+    enableFracEMCRecalc: false
+Clusterizer:
+    enableFracEMCRecalc: "sharedParameters:enableFracEMCRecalc"
+ClusterTrackMatcher:
+    inducedTCardMinimum: "sharedParameters:enableFracEMCRecalc"
+~~~
+
+**It isn't enough to just change the value in the shared parameter of the user config!**. This is because the
+``sharedParameters`` field of each configuration do not override each other.
 
 ## Running multiple corrections at once ("specializing")                      {#emcCorrectionsSpecialization}
 

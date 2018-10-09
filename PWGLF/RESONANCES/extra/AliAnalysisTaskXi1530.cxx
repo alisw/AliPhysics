@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2018/10/07
+//  Last Modified Date: 2018/10/09
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -476,15 +476,15 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
             Double_t fTPCNSigPion = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
             fHistos->FillTH2("hTPCPIDXi1530Pion",track->GetTPCmomentum(),track->GetTPCsignal());
             fHistos->FillTH1("hTPCPIDsignalXi1530Pion",fTPCNSigPion);
-            if (abs(fTPCNSigPion) > 3.) continue;
+            if (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut) continue;
             fHistos->FillTH2("hTPCPIDXi1530Pion_cut",track->GetTPCmomentum(),track->GetTPCsignal());
             fHistos->FillTH1("hTPCPIDsignalXi1530Pion_cut",fTPCNSigPion);
             
             // Eta cut
-            if(abs(track->Eta())>0.8) continue;
+            if(abs(track->Eta()) > fXi1530PionEtaCut) continue;
             
             // Z vertex cut
-            if(abs(track->GetZ() - fZ) > 2) continue;
+            if(abs(track->GetZ() - fZ) > fXi1530PionZVertexCut) continue;
             
             // Pion mass window
             //if (fabs(track->M() - pionmass) > 0.007) continue;
@@ -569,9 +569,9 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
             fHistos->FillTH1("hTPCPIDsignalLambdaPion",fTPCNSigLambdaPion);
             fHistos->FillTH1("hTPCPIDsignalBachelorPion",fTPCNSigBachelorPion);
             
-            if (abs(fTPCNSigProton) > 3.) StandardXi=kFALSE; // PID for proton
-            if (abs(fTPCNSigLambdaPion) > 3.) StandardXi=kFALSE; // PID for 1st pion
-            if (abs(fTPCNSigBachelorPion) > 3.) StandardXi=kFALSE; // PID for 2nd pion
+            if (abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut) StandardXi=kFALSE; // PID for proton
+            if (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut) StandardXi=kFALSE; // PID for 1st pion
+            if (abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut) StandardXi=kFALSE; // PID for 2nd pion
             
             // DCA cut
             // DCA between Dautgher particles
@@ -580,8 +580,8 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
             fHistos -> FillTH1("hDCADist_Lambda_BTW_Daughters",fDCADist_Lambda);
             fHistos -> FillTH1("hDCADist_Xi_BTW_Daughters",fDCADist_Xi);
             
-            if( fDCADist_Lambda > 1.6) StandardXi=kFALSE;// DCA proton-pion
-            if( fDCADist_Xi > 1.6) StandardXi=kFALSE;// DCA Lambda-pion
+            if( fDCADist_Lambda > fDCADist_LambdaDaughtersCut) StandardXi=kFALSE;// DCA proton-pion
+            if( fDCADist_Xi > fDCADist_XiDaughtersCut) StandardXi=kFALSE;// DCA Lambda-pion
             
             // DCA to PV
             Double_t fDCADist_Lambda_PV       = fabs(Xicandidate->GetD(PVx, PVy, PVz));
@@ -601,7 +601,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
             fHistos -> FillTH1("hDCADist_LambdaPion_to_PV",fDCADist_LambdaPion_PV);
             fHistos -> FillTH1("hDCADist_BachelorPion_to_PV",fDCADist_BachelorPion_PV);
             
-            if( fDCADist_Lambda_PV < 0.07) StandardXi=kFALSE;// DCA proton-pion
+            if( fDCADist_Lambda_PV < fDCADist_Lambda_PVCut) StandardXi=kFALSE;// DCA proton-pion
             
             // CPA cut
             Double_t fLambdaCPA = Xicandidate->GetV0CosineOfPointingAngle(PVx, PVy, PVz);
@@ -609,16 +609,16 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
             fHistos -> FillTH1("hCosPA_lambda",fLambdaCPA);
             fHistos -> FillTH1("hCosPA_Xi",fXiCPA);
             
-            if(Xicandidate->GetV0CosineOfPointingAngle(PVx, PVy, PVz) < 0.97) StandardXi=kFALSE;
-            if(Xicandidate->GetCascadeCosineOfPointingAngle(PVx, PVy, PVz) < 0.97) StandardXi=kFALSE;
+            if(fLambdaCPA < fV0CosineOfPointingAngleCut) StandardXi=kFALSE;
+            if(fXiCPA < fCascadeCosineOfPointingAngleCut) StandardXi=kFALSE;
             
             // Mass window cut
             Double_t fMass_Xi = Xicandidate->M();
             fHistos -> FillTH1("hMass_Xi",fMass_Xi);
-            if (fabs(fMass_Xi - Ximass) > 0.007) StandardXi=kFALSE;
+            if (fabs(fMass_Xi - Ximass) > fXiMassWindowCut) StandardXi=kFALSE;
             
             // Eta cut
-            if(abs(Xicandidate->Eta())>0.8) StandardXi=kFALSE;
+            if(abs(Xicandidate->Eta()) > fXiEtaCut) StandardXi=kFALSE;
             fHistos->FillTH2("hPhiEta_Xi",Xicandidate->Phi(),Xicandidate->Eta());
             
             // XY Raidus cut(experiemntal)
@@ -741,7 +741,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
             std::cout << "Check pion mass: " << track1->M() << std::endl;
             
             // Y cut
-            if (fabs(vecsum.Rapidity())>0.5) continue;
+            if (fabs(vecsum.Rapidity()) > fXi1530RapidityCut) continue;
             
             // PropagateToDCA cut
             track1->GetXYZ(PiX); AliVertex *XiStarVtx = new AliVertex(PiX,0,0);
@@ -819,7 +819,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
                 if ((Xicandidate->Charge() ==-1 && track1->Charge()==-1)
                     || (Xicandidate->Charge() ==+1 && track1->Charge()==+1)) continue; // check only unlike-sign
                 
-                if (fabs(vecsum.Rapidity())>0.5) continue; // rapidity cut
+                if (fabs(vecsum.Rapidity()) > fXi1530RapidityCut) continue; // rapidity cut
                 
                 FillTHnSparse("hInvMass",{kMixing,fCent,vecsum.Pt(),vecsum.M()});
                 fHistos->FillTH1("hTotalInvMass_Mix",vecsum.M());

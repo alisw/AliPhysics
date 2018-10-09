@@ -68,6 +68,26 @@ public:
     void SetnMix     (Int_t nMix)       {fnMix = nMix;}
     void SetHighMult (Bool_t highmult)  {IsHighMult = highmult;}
     
+    // Set Functions for the cut study & Systematic study
+    void SetTPCNsigXi1530PionCut (Double_t nXi1530PionCut)  {fTPCNsigXi1530PionCut = nXi1530PionCut;}
+    void SetTPCNsigLambdaProtonCut (Double_t nLambdaProtonCut)  {fTPCNsigLambdaProtonCut = nLambdaProtonCut;}
+    void SetTPCNsigLambdaPionCut (Double_t nLambdaPionCut)  {fTPCNsigLambdaPionCut = nLambdaPionCut;}
+    void SetTPCNsigBachelorPionCut (Double_t nBachelorPionCut)  {fTPCNsigBachelorPionCut = nBachelorPionCut;}
+    void SetXi1530PionEtaCut (Double_t nXi1530PionEtaCut)  {fXi1530PionEtaCut = nXi1530PionEtaCut;}
+    void SetXiEtaCut (Double_t nXiEtaCut)  {fXiEtaCut = nXiEtaCut;}
+    void SetXi1530PionZVertexCut (Double_t nXi1530PionZVertexCut)  {fXi1530PionZVertexCut = nXi1530PionZVertexCut;}
+    void SetDCADist_LambdaDaughtersCut (Double_t nDCADist_LambdaDaughtersCut)  {fDCADist_LambdaDaughtersCut = nDCADist_LambdaDaughtersCut;}
+    void SetDCADist_XiDaughtersCut (Double_t nDCADist_XiDaughtersCut)  {fDCADist_XiDaughtersCut = nDCADist_XiDaughtersCut;}
+    
+    void SetDCADist_Lambda_PVCut (Double_t nDCADist_Lambda_PVCut)  {fDCADist_Lambda_PVCut = nDCADist_Lambda_PVCut;}
+    
+    void SetV0CosineOfPointingAngleCut (Double_t nV0CosineOfPointingAngleCut)  {fV0CosineOfPointingAngleCut = nV0CosineOfPointingAngleCut;}
+    void SetCascadeCosineOfPointingAngleCut (Double_t nCascadeCosineOfPointingAngleCut)  {fCascadeCosineOfPointingAngleCut = nCascadeCosineOfPointingAngleCut;}
+    void SetXiMassWindowCut (Double_t nXiMassWindowCut)  {fXiMassWindowCut = nXiMassWindowCut;}
+    void SetXi1530RapidityCut (Double_t nXi1530RapidityCut)  {fXi1530RapidityCut = nXi1530RapidityCut;}
+    
+    
+    
     Bool_t  GoodTracksSelection();
     Bool_t  GoodCascadeSelection();
     void FillTracks();
@@ -119,8 +139,22 @@ private:
     Int_t                           fnMix = 10;
     Int_t                           centbin = -1 ;
     Int_t                           zbin = -1 ;
-    Double_t                        fptcut = 0.15;
-    Double_t                        fetacut = 0.8;
+    
+    Double_t                        fTPCNsigXi1530PionCut   = 3.0;
+    Double_t                        fTPCNsigLambdaProtonCut = 3.0;
+    Double_t                        fTPCNsigLambdaPionCut   = 3.0;
+    Double_t                        fTPCNsigBachelorPionCut = 3.0;
+    Double_t                        fXi1530PionEtaCut       = 0.8;
+    Double_t                        fXiEtaCut               = 0.8;
+    Double_t                        fXi1530PionZVertexCut   = 2.0;
+    Double_t                        fDCADist_LambdaDaughtersCut = 1.6;
+    Double_t                        fDCADist_XiDaughtersCut     = 1.6;
+    Double_t                        fDCADist_Lambda_PVCut       = 0.07;
+    Double_t                        fV0CosineOfPointingAngleCut       = 0.97;
+    Double_t                        fCascadeCosineOfPointingAngleCut       = 0.07;
+    Double_t                        fXiMassWindowCut       = 0.007;
+    Double_t                        fXi1530RapidityCut       = 0.5;
+    
     Bool_t                          fsetmixing = kTRUE;
     Bool_t                          IsAA=kFALSE;
     Bool_t                          IsMC=kFALSE;
@@ -137,10 +171,11 @@ private:
     Double_t                        PVy = 999;
     Double_t                        PVz = 999;
     Double_t                        bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 3);
+    ClassDef(AliAnalysisTaskXi1530, 4);
     //1: Frist version
     //2: Add Track cut2 for the Xi daughter particles
     //3: Add FillMixingPool function
+    //4: Add Cut parameters to header and add "Set" fuction for cut study&Systematic study
 };
 
 #endif

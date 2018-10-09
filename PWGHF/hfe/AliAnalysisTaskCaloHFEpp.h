@@ -61,6 +61,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		void                    SetConeR(Double_t coneR) {MaxConeR = coneR;};
 		void                    SetptAsso(Double_t ptassoMin) {ptAssoMin = ptassoMin;};
 		void                    SetptCut(TString pte) {pTe = pte;};
+		void                    SetMassMin(Double_t MassMin) {massMin = MassMin;};
 
 	private:
 		AliAODEvent*            fAOD;           //! input event
@@ -84,6 +85,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Double_t MaxConeR;
 		Double_t ptAssoMin;
 		TString pTe;
+		Double_t massMin;
 
 		//==== basic parameters ====
 		TH1F*                   fNevents;
@@ -124,6 +126,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fEopPt_ele_loose;
 		TH2F*                   fEopPt_ele_tight;
 		TH2F*                   fEopPt_ele_tight_PYTHIA;
+		TH2F*                   fEopPt_ele_tight_forSys;
 		TH2F*                   fEopPt_had;
 		TH1F*                   fEtadiff;
 		TH1F*                   fPhidiff;

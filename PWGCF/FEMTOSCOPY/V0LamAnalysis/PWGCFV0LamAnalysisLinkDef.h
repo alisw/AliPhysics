@@ -8,3 +8,4 @@
 #pragma link C++ class AliAnalysisV0LamCut+;
 #pragma link C++ class AliAnalysisV0LamCutProcessing+;
 #pragma link C++ class AliReconstructedV0+;
+#pragma link C++ class AliAnalysisV0Efficiency+;
