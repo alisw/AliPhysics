@@ -30,7 +30,7 @@ def scalePtHardHistos(referenceFile):
   ptHardHi = [ 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, -1 ]
   
   # Option to remove outliers from specified histograms (see below)
-  bRemoveOutliers = False
+  bRemoveOutliers = True
 
   outlierLimit=2
   outlierNBinsThreshold=4
@@ -117,7 +117,7 @@ def scalePtHardHistos(referenceFile):
       print("ooo eventScaleFactor: {0}".format(eventScaleFactorAcc))
       print("ooo combined ScaleFactor: {0}".format(eventScaleFactorAcc*scaleFactor))
       controlFile = open('ControlTable.txt', 'a')
-      controlFile.write("| *{0}* | {1} - {2} | {3} | {4} |".format((bin+1), ptHardLo[bin], ptHardHi[bin], scaleFactor, scaleFactor*eventScaleFactorAcc))
+      controlFile.write("| *{0}* | {1} - {2} | {3} | {4} | \n".format((bin+1), ptHardLo[bin], ptHardHi[bin], scaleFactor, scaleFactor*eventScaleFactorAcc))
       controlFile.close()
 
       for qaListName in qaListNames:
@@ -193,7 +193,7 @@ def scalePtHardHistos(referenceFile):
       print("ooo combined ScaleFactor: {0}".format(eventScaleFactorAcc*scaleFactor))
       print("")
       twikifile = open('twikiTableoutput.txt', 'a')
-      twikifile.write("| *{0}* | {1} - {2} | {3} | {4} | {5} |".format((bin+1), ptHardLo[bin], ptHardHi[bin], scaleFactor, eventScaleFactorAcc, eventScaleFactorTot ))
+      twikifile.write("| *{0}* | {1} - {2} | {3} | {4} | {5} | \n".format((bin+1), ptHardLo[bin], ptHardHi[bin], scaleFactor, eventScaleFactorAcc, eventScaleFactorTot ))
       twikifile.close()
 
       hXSecPerEvent.Fill(bin+0.5, xsec)
@@ -422,7 +422,7 @@ def removeOutliers(pTHardBin, hist, verbose, limit=2, nBinsThreshold=4, dimensio
     (postMean, postMedian) = GetHistMeanAndMedian(histToCheckAfter)
     print("Pre  outliers removal mean: {}, median: {}".format(preMean, preMedian))
     print("Post outliers removal mean: {}, median: {}".format(postMean, postMedian))
-  outlierFilename = os.path.join(str(pTHardBin+1), "POST_{}_{}___{}.pdf".format(hist.GetName(),listName[:15], taskName[-35:-7]))
+  outlierFilename = "./POST_{}_{}___{}.pdf".format(hist.GetName(),listName[:15], taskName[-20:-7])
   plotOutlierPDF(histToCheck,histToCheckAfter, pTHardBin, outlierFilename, verbose, "hist E", True)
 
 ########################################################################################################
@@ -490,15 +490,15 @@ def plotOutlierPDF(h, hAfter, pTHardBin, outputFilename, verbose, drawOptions = 
   if pTHardBin==0:
     if verbose:
       print("Add first pT Hard bin to pdf with name: {0}".format(outputFilename))
-    c.Print("{}".format(outputFilename))
+    c.Print("{}(".format(outputFilename))#this opens a .pdf file with all figures
   elif pTHardBin==19:
     if verbose:
       print("Add last pT Hard bin to pdf with name: {0}".format(outputFilename))
-    c.Print("{}".format(outputFilename))
+    c.Print("{})".format(outputFilename)) #this closes the .pdf file with all figures
   elif pTHardBin>0:
     if verbose:
       print("Add further pT Hard bin to pdf with name: {0}".format(outputFilename))
-    c.Print("{}".format(outputFilename))
+    c.Print("{}".format(outputFilename)) #this adds to the .pdf file with all figures
   c.Close()
 
 #---------------------------------------------------------------------------------------------------
