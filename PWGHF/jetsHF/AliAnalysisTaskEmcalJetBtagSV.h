@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKEMCALJETBTAGSV_H
-#define ALIANALYSISTASKEMCALJETBTAGSV_H
+#ifndef AliAnalysisTaskEmcalJetBtagSV_H
+#define AliAnalysisTaskEmcalJetBtagSV_H
 
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -208,13 +208,29 @@ private:
   AliHFJetsContainerVertex*   fhQaVtx;           //!<! vertices properties
 
   TH1F*                       fhEntries;         //!<!
-  TH1F*						  fhZNApercentQa;	 //!<! QA histo for ZNA percentile
+  TH1F*	                      fhZNApercentQa;    //!<! QA histo for ZNA percentile
   TH1F*                       fhEvtRej;          //!<! Rejection criteria.
   TH1F*                       fhHFjetQa;         //!<! Various QA check on Jet.
   TH1F*                       fhRhoQa;
   TH1F*                       fhMCRhoQa;
-  TH1F* 					  fhDeltaPt;		 // delta pt distribution
-
+  TH1F*                       fhDeltaPt;         // delta pt distribution
+	
+  TH1F*                       fZVertex;          //!<! Z vertex distribuition //AID//	
+  TH2F*                       fhTrackEta;         //!<! eta inclusive track distribuition //AID//	
+  TH2F*                       fhTrackPhi;         //!<! phi inclusive track distribuition //AID//	
+  TH2F*                       fhJetEta;          //!<! eta inclusive jet distribuition //AID//	
+  TH2F*                       fhJetPhi;          //!<! phi inclusice jet distribuition //AID//		
+  TH2F*                       fhOneOverPtVsPhiNeg;//!<! 1/p_T,track  versus phi for negative tracks //AID//		
+  TH2F*                       fhOneOverPtVsPhiPos;//!<! 1/p_T,track  versus phi for positive tracks //AID//		
+  TH2F*                       fhSigmaPtOverPtVsPt;//!<! resolution of 1/p_T,track  versus p_T,track //AID//		
+  TH2F*                       fhDCAinXVsPt;      //!<! X DCA versus pT  //AID// 
+  TH2F*                       fhDCAinYVsPt;      //!<! Y DCA versus pT  //AID//
+  TH2F*                       fhDCAinXVsPtPhysPrimary; //!<! X DCA versus pT for physical primaries  //AID// 
+  TH2F*                       fhDCAinYVsPtPhysPrimary; //!<! Y DCA versus pT for physical primaries  //AID//
+  TH2F*                       fhDCAinXVsPtSecondary; //!<! X DCA versus pT for secondaries //AID// 
+  TH2F*                       fhDCAinYVsPtSecondary; //!<! Y DCA versus pT for secondaries //AID//
+  TH2D*                       fhFractionOfSecInJet; //!<! Fraction of jet pT carried by secondaries //AID//
+	
   THnSparse*                  fhnDetRespMtx;     //!<! THnSparse to fill response matrix
   THn*                        fhnGenerated;      //!<! THn to fill MC generated histo
 
@@ -223,7 +239,7 @@ private:
 
   AliVEvent*                  fEvent;            //! Input event
   AliAODMCHeader*             fMCHeader;         //! Input MC header
-  AliMultSelection*			  fMultSelection;    //! multiplicity/centrality selector
+  AliMultSelection*           fMultSelection;    //! multiplicity/centrality selector
 
   AliHFJetsTaggingVertex*     fTagger;           // Jet Tagging object
 
@@ -240,14 +256,16 @@ private:
 
   map_int_bool*               fV0gTrkMap;
 
-  TRandom3* 				  fRandom;     	     // used for throwing random cone
+  TRandom3*                   fRandom;     	 // used for throwing random cone
 
   Int_t                       fGlLogLevel;
   Int_t                       fLcDebLevel;
   Int_t                       fStartBin;
-  Float_t                     fMaxFacPtHard;  ///< Cut on  pthat events. How many times can be jet pT larger than pthat //FK
+  Float_t                     fMaxFacPtHard;     //<! Cut on  pthat events. How many times can be jet pT larger than pthat //FK
+  Double_t                    fPtCut;            //<! min cut on track pT   //AID  
+  Double_t                    fEtaCut;           //<! cut on track eta   //AID  
 
-  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 5);  // analysis task for MC study //FK
+  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 6);  // analysis task for MC study //AID//
 };
 
 //-------------------------------------------------------------------------------------
