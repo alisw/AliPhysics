@@ -19,55 +19,6 @@
 #define SINGLE_WQINV
 
 
-/// namespace for storing BP (Q{out,side,long}) calculator classes
-namespace femtoQ3D {
-
-  /// \class FrameLCMS
-  /// \breif Calculate
-  struct FrameLCMS {
-    static void GetQ(const AliFemtoPair &pair,
-                     double &x, double &y, double &z)
-    {
-      x = pair.QOutCMS();
-      y = pair.QSideCMS();
-      z = pair.QLongCMS();
-    }
-
-    static const char* FrameName()
-      { return "LCMS"; }
-  };
-
-
-  /// \class FramePF
-  struct FramePF {
-    static void GetQ(const AliFemtoPair &pair,
-                     double &x, double &y, double &z)
-    {
-      x = pair.QOutPf();
-      y = pair.QSidePf();
-      z = pair.QLongPf();
-    }
-
-    static const char* FrameName()
-      { return "PF"; }
-  };
-
-  /// \class FrameBF
-  struct FrameBF {
-    static void GetQ(const AliFemtoPair &pair,
-                     double &x, double &y, double &z)
-    {
-      x = pair.QOutBf();
-      y = pair.QSideBf();
-      z = pair.QLongBf();
-    }
-
-    static const char* FrameName()
-      { return "BF"; }
-  };
-}
-
-
 /// \class AliFemtoCorrFctnQ3D
 /// \brief A class to calculate 3D correlation functions for pairs
 ///        of identical particles vs. Bertsh-Pratt coordinates
@@ -373,8 +324,77 @@ AliFemtoCorrFctnQ3D<T>::Report()
 #undef SINGLE_WQINV
 
 
-typedef AliFemtoCorrFctnQ3D<femtoQ3D::FrameLCMS> AliFemtoCorrFctnQ3DLCMS;
-typedef AliFemtoCorrFctnQ3D<femtoQ3D::FrameBF> AliFemtoCorrFctnQ3DBF;
-typedef AliFemtoCorrFctnQ3D<femtoQ3D::FramePF> AliFemtoCorrFctnQ3DPF;
+struct AliFemtoCorrFctnQ3DLCMS : public AliFemtoCorrFctnQ3D<AliFemtoCorrFctnQ3DLCMS> {
+
+  typedef AliFemtoCorrFctnQ3D<AliFemtoCorrFctnQ3DLCMS> Super;
+  typedef Super::Build Build;
+
+  AliFemtoCorrFctnQ3DLCMS(const Super::Build &b)
+    : Super(b.into())
+    { }
+
+  AliFemtoCorrFctnQ3DLCMS(const char *name, int x, float y, bool b=true)
+    : Super(name, x, y, b)
+    { }
+
+  static void GetQ(const AliFemtoPair &pair, double &x, double &y, double &z)
+  {
+    x = pair.QOutCMS();
+    y = pair.QSideCMS();
+    z = pair.QLongCMS();
+  }
+
+  static const char* FrameName()
+    { return "LCMS"; }
+};
+
+
+struct AliFemtoCorrFctnQ3DPF : public AliFemtoCorrFctnQ3D<AliFemtoCorrFctnQ3DPF> {
+
+  typedef AliFemtoCorrFctnQ3D<AliFemtoCorrFctnQ3DPF> Super;
+  typedef Super::Build Build;
+
+  AliFemtoCorrFctnQ3DPF(const Super::Build &b)
+    : Super(b.into())
+    { }
+
+  AliFemtoCorrFctnQ3DPF(const char *name, int x, float y, bool b=true)
+    : Super(name, x, y, b)
+    { }
+
+  static void GetQ(const AliFemtoPair &pair, double &x, double &y, double &z)
+  {
+    x = pair.QOutPf();
+    y = pair.QSidePf();
+    z = pair.QLongPf();
+  }
+
+  static const char* FrameName()
+    { return "PF"; }
+};
+
+struct AliFemtoCorrFctnQ3DBF : public AliFemtoCorrFctnQ3D<AliFemtoCorrFctnQ3DBF> {
+
+  typedef AliFemtoCorrFctnQ3D<AliFemtoCorrFctnQ3DBF> Super;
+  typedef Super::Build Build;
+
+  AliFemtoCorrFctnQ3DBF(const Super::Build &b)
+    : Super(b.into())
+    { }
+
+  AliFemtoCorrFctnQ3DBF(const char *name, int x, float y, bool b=true)
+    : Super(name, x, y, b)
+    { }
+
+  static void GetQ(const AliFemtoPair &pair, double &x, double &y, double &z)
+  {
+    x = pair.QOutBf();
+    y = pair.QSideBf();
+    z = pair.QLongBf();
+  }
+
+  static const char* FrameName()
+    { return "BF"; }
+};
 
 #endif
