@@ -67,7 +67,6 @@ AliAnalysisTask* AddNuTaskPionPion(TString container,
   const TString AUTO_DIRECTORY = "$ALICE_PHYSICS/PWGCF/FEMTOSCOPY/macros/Train/PionPionFemto",
                 DEFAULT_MACRO = "%%/ConfigNuFemtoAnalysis.C",
                 DEFAULT_OUTPUT_CONTAINER = "PWG2FEMTO",
-                DEFAULT_TASK_NAME = "TaskPionPion",
                 DEFAULT_SUBWAGON_TYPE = "centrality";
 
   // Get the global analysis manager
@@ -79,7 +78,6 @@ AliAnalysisTask* AddNuTaskPionPion(TString container,
 
   TString macro = DEFAULT_MACRO,
           output_filename = mgr->GetCommonFileName(),
-          task_name = DEFAULT_TASK_NAME,
           output_container = DEFAULT_OUTPUT_CONTAINER,
           subwagon_type = DEFAULT_SUBWAGON_TYPE;
 
@@ -132,7 +130,7 @@ AliAnalysisTask* AddNuTaskPionPion(TString container,
                                               .ReplaceAll("\t", "\\t") + '"';
 
   AliAnalysisTaskFemto *femtotask = new AliAnalysisTaskFemtoNu(
-    task_name,
+    container,
     macro,
     analysis_params,
     verbose
