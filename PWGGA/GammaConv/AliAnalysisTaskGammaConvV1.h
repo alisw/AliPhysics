@@ -61,14 +61,14 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
                                                                   fEventCutArray                = CutArray  ;}
     void SetConversionCutList(Int_t nCuts, TList *CutArray)     { fnCuts                        = nCuts     ;
                                                                   fCutArray                     = CutArray  ;}
-                                                                
+
     void SetMesonCutList(Int_t nCuts, TList *CutArray)          { fnCuts                        = nCuts     ;
                                                                   fMesonCutArray                = CutArray  ;}
     void SetClusterCutList(Int_t nCuts, TList *CutArray)        { fnCuts                        = nCuts     ;
                                                                   fClusterCutArray              = CutArray  ;}
-                                                                  
+
     void SetDoMaterialBudgetWeightingOfGammasForTrueMesons(Bool_t flag) {fDoMaterialBudgetWeightingOfGammasForTrueMesons = flag;}
-    
+
     // BG HandlerSettings
     void SetMoveParticleAccordingToVertex(Bool_t flag)            {fMoveParticleAccordingToVertex = flag;}
     void FillPhotonCombinatorialBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode[], Double_t PhiParticle[]);
@@ -84,7 +84,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     void FillMultipleCountMap(map<Int_t,Int_t> &ma, Int_t tobechecked);
     void FillMultipleCountHistoAndClear(map<Int_t,Int_t> &ma, TH1F* hist);
     Double_t GetOriginalInvMass(const AliConversionPhotonBase * photon, AliVEvent * event) const;
-    
+
   protected:
     AliV0ReaderV1*                    fV0Reader;                                  //
     TString                           fV0ReaderName;
@@ -113,9 +113,9 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fHistoConvGammaR;                           //!
     TH1F**                            fHistoConvGammaEta;                         //!
     TH1F**                            fHistoConvGammaPhi;                         //!
+    TH2F**                            fHistoConvGammaPsiPairPt;                   //!
     TH1F**                            fHistoConvGammaInvMass;                     //!
     TH1F**                            fHistoConvGammaInvMassReco;                 //!
-    TH2F**                            fHistoConvGammaPsiPairPt;                   //!
     TTree**                           tESDConvGammaPtDcazCat;                     //!
     Float_t                           fPtGamma;                                   //!
     Float_t                           fDCAzPhoton;                                //!
@@ -126,8 +126,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
                                       // 0: garbage,
                                       // 1: background
                                       // 2: secondary photon not from eta or k0s,
-                                      // 3: secondary photon from eta, 
-                                      // 4: secondary photon from k0s, 
+                                      // 3: secondary photon from eta,
+                                      // 4: secondary photon from k0s,
                                       // 5: dalitz
                                       // 6: primary gamma
     TH2F**                            fHistoMotherInvMassPt;                        //!
@@ -211,9 +211,9 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fHistoTrueConvGammaPtMC;                      //!
     TH1F**                            fHistoTrueConvGammaRMC;                       //!
     TH1F**                            fHistoTrueConvGammaEta;                       //!
+    TH2F**                            fHistoTrueConvGammaPsiPairPt;                 //!
     TH1F**                            fHistoTrueConvGammaInvMass;                   //!
     TH1F**                            fHistoTrueConvGammaInvMassReco;               //!
-    TH2F**                            fHistoTrueConvGammaPsiPairPt;                 //!
     TH2F**                            fHistoCombinatorialPt;                        //!
     TH3F**                            fHistoCombinatorialMothersPt;                 //!
     TH2F**                            fHistoCombinatorialPtDeltaPhi_ek;             //!
@@ -272,8 +272,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
                                       // 0: garbage,
                                       // 1: background
                                       // 2: secondary meson not from eta or k0s,
-                                      // 3: secondary meson from eta, 
-                                      // 4: secondary meson from k0s, 
+                                      // 3: secondary meson from eta,
+                                      // 4: secondary meson from k0s,
                                       // 5: dalitz
                                       // 6: primary meson gamma-gamma-channel
     Double_t                          fEventPlaneAngle;                           // EventPlaneAngle

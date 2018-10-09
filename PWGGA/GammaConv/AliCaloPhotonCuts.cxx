@@ -738,10 +738,10 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistM20AfterQA                 = new TH1F(Form("M20_afterClusterQA %s",GetCutNumber().Data()),"M20_afterClusterQA",400,0,2.5);
     fHistM20AfterQA->GetXaxis()->SetTitle("#sigma_{short}^2");
     fHistograms->Add(fHistM20AfterQA);
-    fHistDispersionBeforeQA         = new TH1F(Form("Dispersion_beforeClusterQA %s",GetCutNumber().Data()),"Dispersion_beforeClusterQA",100,0,4);
+    fHistDispersionBeforeQA         = new TH1F(Form("Dispersion_beforeClusterQA %s",GetCutNumber().Data()),"Dispersion_beforeClusterQA",200,0,20);
     fHistDispersionBeforeQA->GetXaxis()->SetTitle("dispersion");
     fHistograms->Add(fHistDispersionBeforeQA);
-    fHistDispersionAfterQA          = new TH1F(Form("Dispersion_afterClusterQA %s",GetCutNumber().Data()),"Dispersion_afterClusterQA",100,0,4);
+    fHistDispersionAfterQA          = new TH1F(Form("Dispersion_afterClusterQA %s",GetCutNumber().Data()),"Dispersion_afterClusterQA",200,0,20);
     fHistDispersionAfterQA->GetXaxis()->SetTitle("dispersion");
     fHistograms->Add(fHistDispersionAfterQA);
     fHistNLMBeforeQA                = new TH1F(Form("NLM_beforeClusterQA %s",GetCutNumber().Data()),"NLM_beforeClusterQA",10,0,10);
@@ -4924,6 +4924,14 @@ Bool_t AliCaloPhotonCuts::SetDispersion(Int_t dispersion)
   case 2:
     if (!fUseDispersion) fUseDispersion=1;
     fMaxDispersion=2.5*2.5;
+    break;
+  case 3:
+    if (!fUseDispersion) fUseDispersion=1;
+    fMaxDispersion=2*2;
+    break;
+  case 4:
+    if (!fUseDispersion) fUseDispersion=1;
+    fMaxDispersion=3*3;
     break;
   default:
     AliError(Form("Maximum Dispersion Cut not defined %d",dispersion));
