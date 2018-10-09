@@ -24,11 +24,14 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/GF)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
 										${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+										${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
   )
 
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskChargedFlow.cxx
+	AliAnalysisTaskUniFlow.cxx
+	AliAnalysisTaskChargedFlowGF.cxx
   )
 
 # Headers from sources
