@@ -4863,16 +4863,26 @@ Float_t AliConvEventCuts::GetWeightForMultiplicity(Int_t mult){
 
   valueMultData               = hReweightMultData->Interpolate(mult);
   valueMultMC                 = hReweightMultMC->Interpolate(mult);
-
+  
   Float_t relativeErrorMC     = hReweightMultMC->GetBinError(hReweightMultMC->FindBin(mult))/hReweightMultMC->GetBinContent(hReweightMultMC->FindBin(mult));
   Float_t relativeErrorData   = hReweightMultData->GetBinError(hReweightMultData->FindBin(mult))/hReweightMultData->GetBinContent(hReweightMultData->FindBin(mult));
-
-  if (relativeErrorData < 0.2 && relativeErrorMC < 0.2 ){
-     if (isfinite(valueMultData) && isfinite(valueMultMC) ){
-        weightMult               = valueMultData/valueMultMC;
-     }
+  
+ 
+  if ( fPeriodEnum == kLHC16NomB || fPeriodEnum == kLHC16P1Pyt8 || fPeriodEnum == kLHC16P1PHO || 
+       fPeriodEnum == kLHC17pq  ||  fPeriodEnum == kLHC17P1PHO  || fPeriodEnum == kLHC17l3b  || fPeriodEnum == kLHC17l4b  || 
+       fPeriodEnum == kLHC15o      ) {  //  For these periods allow larger statistical error in the MC to apply the multiplicity weight
+     if (relativeErrorData < 0.2 && relativeErrorMC < 0.4 ){
+        if (isfinite(valueMultData) && isfinite(valueMultMC) ){
+          weightMult               = valueMultData/valueMultMC;
+        }
+    }
+  } else {     
+    if (relativeErrorData < 0.2 && relativeErrorMC < 0.2 ){
+       if (isfinite(valueMultData) && isfinite(valueMultMC) ){
+          weightMult               = valueMultData/valueMultMC;
+       }
+    }
   }
-
   return weightMult;
 }
 
@@ -5955,7 +5965,7 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
       fPeriodEnum = kLHC16P1EPOS;
       fEnergyEnum = k13TeV;
   // 13TeV LHC16d anchors full field Phojet MB
-  } else if ( periodName.CompareTo("LHC16P1PHO") == 0 || periodName.CompareTo("LHC18d6a") == 0  ){
+  } else if ( periodName.CompareTo("LHC16P1PHO") == 0 || periodName.CompareTo("LHC18d6a") == 0 || periodName.CompareTo("LHC18d6a2") == 0  ){
       fPeriodEnum = kLHC16P1PHO;
       fEnergyEnum = k13TeV;
   // 13TeV LHC16* anchors full field JJ Pythia 8 MB
@@ -6123,7 +6133,7 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = k5TeV;
 
   // LHC17p Low Intensity MC using Phojet
-  } else if ( periodName.CompareTo("LHC17P1PHO") == 0 ||  periodName.Contains("LHC18d6b") ){
+  } else if ( periodName.CompareTo("LHC17P1PHO") == 0 ||  periodName.Contains("LHC18d6b")  ||  periodName.Contains("LHC18d6b2")){
     fPeriodEnum = kLHC17P1PHO;
     fEnergyEnum = k5TeV;
 
