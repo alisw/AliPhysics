@@ -16,7 +16,16 @@
 
 
 // preprocessor flag to enable using ONE histogram to store
+// #define USE_TPROFILE
 #define SINGLE_WQINV
+
+
+#ifdef USE_TPROFILE
+  #include <TProfile3D.h>
+  #define HIST_TYPE TProfile3D
+#else
+  #define HIST_TYPE TH3F
+#endif
 
 
 /// \class AliFemtoCorrFctnQ3D
@@ -142,13 +151,11 @@ public:
     { return *fDenominator; }
 
 #ifdef SINGLE_WQINV
-
   /// Return weighed by qinv
   TH3& QinvW()
     { return *fQinvW; }
 
 #else
-
   /// Return numerator weighed by qinv
   TH3& NumeratorW()
     { return *fNumeratorW; }
@@ -193,6 +200,9 @@ protected:
   TH3I* fDenominator;   ///<!< Denominator
 #ifdef SINGLE_WQINV
   TH3F* fQinvW;         ///<!< Qinv-Weighted histogram
+#elif defined(USE_TPROFILE)
+  TProfile3D* fNumeratorW;    ///<!< Qinv-Weighted numerator
+  TProfile3D* fDenominatorW;  ///<!< Qinv-Weighted denominator
 #else
   TH3F* fNumeratorW;    ///<!< Qinv-Weighted numerator
   TH3F* fDenominatorW;  ///<!< Qinv-Weighted denominator
@@ -238,13 +248,14 @@ AliFemtoCorrFctnQ3D<T>::AliFemtoCorrFctnQ3D(const char* title,
 
   fQinvW->Sumw2();
 #else
-  fNumeratorW = new TH3F(simple_name ? "NumWqinv" : (TString("NumWqinv") + title).Data(),
+
+  fNumeratorW = new HIST_TYPE(simple_name ? "NumWqinv" : (TString("NumWqinv") + title).Data(),
                          "Q_{inv} Weighted Numerator " + hist_title,
                          nbins, -QHi, QHi,
                          nbins, -QHi, QHi,
                          nbins, -QHi, QHi);
 
-  fDenominatorW = new TH3F(simple_name ? "DenWqinv" : (TString("DenWqinv") + title).Data(),
+  fDenominatorW = new HIST_TYPE(simple_name ? "DenWqinv" : (TString("DenWqinv") + title).Data(),
                            "Q_{inv} Weighted Denominator " + hist_title,
                            nbins, -QHi, QHi,
                            nbins, -QHi, QHi,
@@ -264,8 +275,8 @@ AliFemtoCorrFctnQ3D<T>::AliFemtoCorrFctnQ3D(const AliFemtoCorrFctnQ3D<T>& orig)
 #ifdef SINGLE_WQINV
   , fQinvW(new TH3F(*orig.fQinvW))
 #else
-  , fNumeratorW(new TH3F(*orig.fNumeratorW))
-  , fDenominatorW(new TH3F(*orig.fDenominatorW))
+  , fNumeratorW(new HIST_TYPE(*orig.fNumeratorW))
+  , fDenominatorW(new HIST_TYPE(*orig.fDenominatorW))
 #endif
 {
 }
