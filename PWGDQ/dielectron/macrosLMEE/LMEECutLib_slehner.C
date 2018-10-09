@@ -109,7 +109,7 @@ static TH3D LMEECutLib::SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int
 AliDielectronEventCuts* LMEECutLib::GetEventCuts(Double_t centMin, Double_t centMax) {
   ::Info("LMEE_CutLib_slehner","setting event cuts");
   
-  AliDielectronEventCuts* eventCuts = new AliDielectronEventCuts("eventCuts","evcuts");
+  AliDielectronEventCuts* eventCuts = new AliDielectronEventCuts("eventCutsSlehner","evcuts");
   
   eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
   eventCuts->SetRequireVertex();
@@ -255,7 +255,16 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MV
             trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 160.0);   //<-
             trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);   //<-
             break;
-
+      case 5:     // Carsten's cuts from Physics Forum 12.04.18, with conversion rejection cuts
+            trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+            trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+            trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+            trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      100.0, 160.0);
+            trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
+            trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 160.0);
+            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+            break;
   }
   
   // /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv TMVA vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
@@ -297,7 +306,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MV
   AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
   trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA);   //(1<<4) -> error
   trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
-
+  
   if(useAODFilterCuts){
     trackCuts->AddCut(varCutsFilter);
     trackCuts->AddCut(trkCutsFilter);

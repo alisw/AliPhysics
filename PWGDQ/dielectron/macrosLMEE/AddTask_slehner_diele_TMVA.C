@@ -1,10 +1,11 @@
-AliAnalysisTask *AddTask_slehner_diele_TMVA(  Int_t trackCut=00,
+AliAnalysisTask *AddTask_slehner_diele_TMVA(  Int_t trackCut=0,
                                               Int_t PIDCut=0,
                                               Int_t evCut=0,
                                               Double_t centMin=0.,
                                               Double_t centMax=100.,
                                               Bool_t SetTPCCorrection=kFALSE,
                                               Bool_t useAODFilterCuts=kFALSE,
+                                              Bool_t hasMC=kFALSE,
                                               TString TMVAweight = "TMVAClassification_BDTG.weights_094.xml" ){
   
   TString directoryBaseName = "slehnerLMEETMVA";
@@ -27,10 +28,7 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Int_t trackCut=00,
   //load dielectron configuration files
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data()))    gROOT->LoadMacro(configFilePath.Data());
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(configLMEECutLibPath.Data()))    gROOT->LoadMacro(configLMEECutLibPath.Data());
-
-  //Do we have an MC handler?
-  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
-
+  
   //create task and add it to the manager
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData_slehner_TMVA");
 
@@ -72,7 +70,7 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Int_t trackCut=00,
 //  }
   
       for(Int_t MVACut = 0; MVACut <= 2; ++MVACut){
-        AliDielectron * diel_low = Config_slehner_diele_TMVA(trackCut,PIDCut,3*MVACut,useAODFilterCuts);
+        AliDielectron * diel_low = Config_slehner_diele_TMVA(trackCut,PIDCut,3*MVACut,useAODFilterCuts,hasMC);
         if(!diel_low){
           Printf("=======================================");
           Printf("No AliDielectron object loaded -> EXIT ");
