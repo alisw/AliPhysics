@@ -45,12 +45,13 @@ public:
 
   enum McOriginType {kUnassigned=0, kPrimary=1, kSig0=2, kXi0=3, kXiC=4, kSigSt0=5, kSigStP=6, kSigStM=7, kKSt0=8, kKStC=9, kOther=10, kFake=11, kMcOriginTypeMax=12};
 
+  AliAnalysisV0Efficiency();
   AliAnalysisV0Efficiency(const char *name, bool aIgnoreInjectedV0s);
-/*
+  virtual ~AliAnalysisV0Efficiency();
+
   AliAnalysisV0Efficiency(const AliAnalysisV0Efficiency &aV0Eff);
   AliAnalysisV0Efficiency &operator=(const AliAnalysisV0Efficiency &aV0Eff);
-  virtual ~AliAnalysisV0Efficiency();
-*/
+
 
   void MyInit();
   virtual void UserCreateOutputObjects();
