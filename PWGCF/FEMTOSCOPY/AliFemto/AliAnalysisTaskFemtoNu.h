@@ -119,6 +119,15 @@ public:
 
   virtual ~AliAnalysisTaskFemtoNu();
 
+  /// Automatically create and connect input/output containers
+  ///
+  /// The output container name will be the same as this task.
+  ///
+  /// \param filename The destination output filename.
+  ///                 If empty this uses `mgr->GetCommonFileName()`
+  ///
+  virtual void SetupContainers(const TString &filename="");
+
   /// Run macro to generate the FemtoManager
   virtual void CreateOutputObjects();
 
