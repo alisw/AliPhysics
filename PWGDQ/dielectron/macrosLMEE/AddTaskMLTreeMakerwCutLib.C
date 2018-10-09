@@ -35,9 +35,6 @@ else{
     return 0; // if return is not called, the job will fail instead of running wihout this task... (good for local tests, bad for train)
 }
 
-//Do we have an MC handler?
-Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() != 0x0);
-::Info("AddTask_slehner_TreeMakeWCutLib","hasMC = %d",hasMC);
 
 
 LMEECutLib* cutlib = new LMEECutLib(); 

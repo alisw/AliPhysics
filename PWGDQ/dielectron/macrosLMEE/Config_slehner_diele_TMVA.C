@@ -8,7 +8,6 @@ AliDielectronCutGroup* SetupTrackCutsAndSettings(Int_t selTr, Int_t selPID, Int_
 Bool_t isRandomRejTask=kFALSE;//needed for InitHistograms() //dont change!!!
 Bool_t kRot = kFALSE;
 Bool_t kMix = kTRUE;
-Bool_t kNoPairing   = kTRUE;
 Bool_t randomizeDau = kTRUE;
 
 // available cut defintions
@@ -19,7 +18,8 @@ AliDielectron* Config_slehner_diele_TMVA(
                                         Int_t trCut=0,
                                         Int_t PIDCut=0,
                                         Int_t MVACut= 0,
-					Bool_t useTPCCorr=kFALSE
+					Bool_t useTPCCorr=kFALSE,
+					Bool_t hasMC=kFALSE
         )
 {
   // create the actual framework object
@@ -27,7 +27,7 @@ AliDielectron* Config_slehner_diele_TMVA(
   cout<<"Diele name: "<<name.Data()<<endl;
   AliDielectron *die =  new AliDielectron(Form("%s",name.Data()), Form("Name: %s",name.Data()));
   
-  if(kMix && !(die->GetHasMC()) ){ // need second since there is a problem when mixing MC events (TRef?)
+  if(kMix && !hasMC ){ // need second since there is a problem when mixing MC events (TRef?)
     AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
 
     mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
@@ -40,9 +40,10 @@ AliDielectron* Config_slehner_diele_TMVA(
         
     die->SetMixingHandler(mix);
   }
-
- InitHistograms(die,0);
  
+ die->SetUseKF(kFALSE);   //keep this one, otherwise masses are slightly wrong and R factors very wrong!
+ InitHistograms(die,0);
+
  return die;
 
 }
@@ -191,10 +192,11 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 //  histos->UserHistogram("Track","phi","" , 100,0,7, AliDielectronVarManager::kPhi);
   histos->UserHistogram("Track","pt", "", 100,0,10,AliDielectronVarManager::kPt);  
 
-  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning("0.0, 0.1,0.3,0.5,0.7,0.9,1.1,1.3, 2.0, 2.9, 3.1,3.4");
-  TVectorD* ptbins= AliDielectronHelper::MakeArbitraryBinning("0.0,0.4,0.6,1,2.5");
+  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning("0.0, 0.1,0.3,0.5,0.7,0.9,1.1,1.3, 2.0, 2.9, 3.1,3.4,10");
+//  TVectorD* mbins=  AliDielectronHelper::MakeLinBinning(50,0,5);
+  TVectorD* ptbins= AliDielectronHelper::MakeArbitraryBinning("0.0,0.4,0.6,1,2.5,10");
   TVectorD* centbins= AliDielectronHelper::MakeLinBinning(20,0,100);
-  
+
   histos->UserHistogram("Pair","InvMass_pPt_cent","Inv.Mass:PairPt:Cent;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c); Centrality (V0M)",
                         mbins, ptbins, centbins,
                         AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentrality);

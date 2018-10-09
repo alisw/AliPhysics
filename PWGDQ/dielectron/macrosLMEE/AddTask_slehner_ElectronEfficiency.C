@@ -100,11 +100,11 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
 //  task->SetMassBinsLinear (minMassBin, maxMassBin, stepsMassBin);
 //  task->SetPairPtBinsLinear(minPairPtBin, maxPairPtBin, stepsPairPtBin);
   
-  double mbinsarr[] = {0.0, 0.1,0.3,0.5,0.7,0.9,1.1,1.3, 2.0, 2.9, 3.1,3.4};
+  double mbinsarr[] = {0.0, 0.1,0.3,0.5,0.7,0.9,1.1,1.3, 2.0, 2.9, 3.1,3.4,10};
   vector<double>mbins;
   for(int i=0; i< sizeof(mbinsarr) / sizeof(mbinsarr[0]); i++){ mbins.push_back(mbinsarr[i]); }
 
-  double ptbinsarr[]= {0.0,0.4,0.6,1,2.5};
+  double ptbinsarr[]= {0.0,0.4,0.6,1,2.5,10};
   vector<double>ptbins;
   for(int i=0; i< sizeof(ptbinsarr) / sizeof(ptbinsarr[0]); i++){ ptbins.push_back(ptbinsarr[i]);} 
   
