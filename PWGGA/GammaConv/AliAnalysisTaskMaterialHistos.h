@@ -119,6 +119,8 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
  		TH1F**            hMCConversionRRejSmall;       //!
  		TH1F**            hMCConversionRRejLarge;       //!
 		TH1F**            hMCAllGammaPt;                //!
+		TH2F**            hMCAllSecondaryGammaPt;       //!
+		TH2F**            hMCSecondaryConvGammaPt;      //!
 
 
 		TH2F**            hMCTrueConversionRPhi;        //!
@@ -135,8 +137,10 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
  		TH1F**            hMCTrueConversionRRejLarge;   //!
 		TH2F**            hMCTruePrimConversionRPt;     //!
 		TH2F**            hMCTrueSecConversionRPt;      //!
+		TH3F**            hMCTrueSecondaryConvGammaRPt;//!
+		TH3F**            hMCTrueSecondaryConvGammaMCRPt;//!
 
-		TH2F**            hMCTruePi0DalConversionRPt;   //!
+ 		TH2F**            hMCTruePi0DalConversionRPt;   //!
 		TH1F**            hMCTruePi0DalConversionEta;   //!
 		TH2F**            hMCTrueEtaDalConversionRPt;   //!
 		TH1F**            hMCTrueEtaDalConversionEta;   //!
