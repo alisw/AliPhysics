@@ -26,32 +26,42 @@
 //no specification of the variable 'numberOfCuts' needed anymore.
 //***************************************************************************************
 
-class CutHandlerConv{
+class CutHandlerConvpPb2{
   public:
-    CutHandlerConv(Int_t nMax=10){
+    CutHandlerConvpPb2(Int_t nMax=10){
       nCuts=0; nMaxCuts=nMax; validCuts = true;
-      eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts];
-      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = ""; mesonCutArray[i] = "";}
+      eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts]; clusterCutArray = new TString[nMaxCuts];
+      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = ""; mesonCutArray[i] = ""; clusterCutArray[i] = "";}
     }
 
     void AddCut(TString eventCut, TString photonCut, TString mesonCut){
-      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConv: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
-      if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandlerConv: Incorrect length of cut string!" << endl; validCuts = false; return;}
-      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut;
+      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConvpPb2: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
+      if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandlerConvpPb2: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut; clusterCutArray[nCuts]="";
       nCuts++;
       return;
     }
+    void AddCut(TString eventCut, TString photonCut, TString mesonCut, TString clusterCut){
+      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConvpPb2: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
+      if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 || clusterCut.Length()!=19 ) {cout << "ERROR in CutHandlerConvpPb2: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut; clusterCutArray[nCuts]=clusterCut;
+      nCuts++;
+      return;
+    }
+
     Bool_t AreValid(){return validCuts;}
     Int_t GetNCuts(){if(validCuts) return nCuts; else return 0;}
-    TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandlerConv: GetEventCut wrong index i" << endl;return "";}}
-    TString GetPhotonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return photonCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetPhotonCut wrong index i" << endl;return "";}}
-    TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetMesonCut wrong index i" << endl;return "";}}
+    TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandlerConvpPb2: GetEventCut wrong index i" << endl;return "";}}
+    TString GetPhotonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return photonCutArray[i]; else {cout << "ERROR in CutHandlerConvpPb2: GetPhotonCut wrong index i" << endl;return "";}}
+    TString GetClusterCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return clusterCutArray[i]; else {cout << "ERROR in CutHandlerConvpPb2: GetClusterCut wrong index i" << endl;return "";}}
+    TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerConvpPb2: GetMesonCut wrong index i" << endl;return "";}}
   private:
     Bool_t validCuts;
     Int_t nCuts; Int_t nMaxCuts;
     TString* eventCutArray;
     TString* photonCutArray;
     TString* mesonCutArray;
+    TString* clusterCutArray;
 };
 
 void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,                                // change different set of cuts
@@ -79,10 +89,32 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
                           ) {
 
   Int_t isHeavyIon = 2;
-  if (additionalTrainConfig.Atoi() > 0){
-    trainConfig = trainConfig + additionalTrainConfig.Atoi();
-  }
 
+  TString corrTaskSetting = ""; // select which correction task setting to use
+  //parse additionalTrainConfig flag
+  TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
+  if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaConvV1_pPb2 during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
+  TObjString* rAdditionalTrainConfig;
+  for(Int_t i = 0; i<rAddConfigArr->GetEntries() ; i++){
+    if(i==0) rAdditionalTrainConfig = (TObjString*)rAddConfigArr->At(i);
+    else{
+      TObjString* temp = (TObjString*) rAddConfigArr->At(i);
+      TString tempStr = temp->GetString();
+      cout<< tempStr.Data()<<endl;
+      if(tempStr.BeginsWith("CF")){
+        cout << "INFO: AddTask_GammaCalo_pPb2 will use custom branch from Correction Framework!" << endl;
+        corrTaskSetting = tempStr;
+        corrTaskSetting.Replace(0,2,"");
+      }
+    }
+  }
+  TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
+  if (sAdditionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
+    cout << "INFO: AddTask_GammaConvV1_pPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+  }
+  if(corrTaskSetting.CompareTo(""))
+    cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -177,7 +209,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
   task->SetLightOutput(runLightOutput);
   // Cut Numbers to use in Analysis
 
-  CutHandlerConv cuts;
+  CutHandlerConvpPb2 cuts;
 
   Bool_t doEtaShiftIndCuts = kFALSE;
   TString stringShift = "";
@@ -283,6 +315,40 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
   } else if (trainConfig == 112) {
     cuts.AddCut("c0210113", "00200009327000008250404000", "0162103500000000"); // 0-2
 
+  // triggers EMC7
+  } else if (trainConfig == 200) {
+    cuts.AddCut("80052113", "00200009327000008250400000", "0162103500900000", "1111100007032230000"); // new standard pPb MB
+  } else if (trainConfig == 201) {
+    cuts.AddCut("80252113", "00200009327000008250400000", "0162103500900000", "1111100007032230000"); // new standard pPb 0-20
+  } else if (trainConfig == 202) {
+    cuts.AddCut("82452113", "00200009327000008250400000", "0162103500900000", "1111100007032230000"); // new standard pPb 20-40
+  } else if (trainConfig == 203) {
+    cuts.AddCut("84652113", "00200009327000008250400000", "0162103500900000", "1111100007032230000"); // new standard pPb 40-60
+  } else if (trainConfig == 204) {
+    cuts.AddCut("86052113", "00200009327000008250400000", "0162103500900000", "1111100007032230000"); // new standard pPb 60-100
+  // triggers EG2
+  } else if (trainConfig == 210) {
+    cuts.AddCut("80085113", "00200009327000008250400000", "0162103500900000", "1111100007032230000"); // new standard pPb MB
+  } else if (trainConfig == 211) {
+    cuts.AddCut("80285113", "00200009327000008250400000", "0162103500900000", "1111100007032230000"); // new standard pPb 0-20
+  } else if (trainConfig == 212) {
+    cuts.AddCut("82485113", "00200009327000008250400000", "0162103500900000", "1111100007032230000"); // new standard pPb 20-40
+  } else if (trainConfig == 213) {
+    cuts.AddCut("84685113", "00200009327000008250400000", "0162103500900000", "1111100007032230000"); // new standard pPb 40-60
+  } else if (trainConfig == 214) {
+    cuts.AddCut("86085113", "00200009327000008250400000", "0162103500900000", "1111100007032230000"); // new standard pPb 60-100
+  // triggers EG1
+  } else if (trainConfig == 220) {
+    cuts.AddCut("80083113", "00200009327000008250400000", "0162103500900000", "1111100007032230000"); // new standard pPb MB
+  } else if (trainConfig == 221) {
+    cuts.AddCut("80283113", "00200009327000008250400000", "0162103500900000", "1111100007032230000"); // new standard pPb 0-20
+  } else if (trainConfig == 222) {
+    cuts.AddCut("82483113", "00200009327000008250400000", "0162103500900000", "1111100007032230000"); // new standard pPb 20-40
+  } else if (trainConfig == 223) {
+    cuts.AddCut("84683113", "00200009327000008250400000", "0162103500900000", "1111100007032230000"); // new standard pPb 40-60
+  } else if (trainConfig == 224) {
+    cuts.AddCut("86083113", "00200009327000008250400000", "0162103500900000", "1111100007032230000"); // new standard pPb 60-100
+
   //Run 2 pPb HM
   } else if (trainConfig == 500) {
     cuts.AddCut("80010113", "00200009a27000008250a04120", "0162103500000000"); // test 1 for 5TeV
@@ -346,7 +412,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
   }
   if(!cuts.AreValid()){
     cout << "\n\n****************************************************" << endl;
-    cout << "ERROR: No valid cuts stored in CutHandlerConv! Returning..." << endl;
+    cout << "ERROR: No valid cuts stored in CutHandlerConvpPb2! Returning..." << endl;
     cout << "****************************************************\n\n" << endl;
     return;
   }
@@ -356,6 +422,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
   TList *EventCutList = new TList();
   TList *ConvCutList = new TList();
   TList *MesonCutList = new TList();
+  TList *ClusterCutList = new TList();
 
   TList *HeaderList = new TList();
   if (doWeightingPart==1) {
@@ -386,6 +453,9 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
   AliConversionPhotonCuts **analysisCuts = new AliConversionPhotonCuts*[numberOfCuts];
   MesonCutList->SetOwner(kTRUE);
   AliConversionMesonCuts **analysisMesonCuts = new AliConversionMesonCuts*[numberOfCuts];
+  ClusterCutList->SetOwner(kTRUE);
+  AliCaloPhotonCuts **analysisClusterCuts     = new AliCaloPhotonCuts*[numberOfCuts];
+  Bool_t enableClustersForTrigger             = kFALSE;
 
   if (doWeighting) Printf("weighting has been switched on");
 
@@ -423,6 +493,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
+    analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->SetLightOutput(runLightOutput);
@@ -434,6 +505,28 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
 
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
+
+    if ( trainConfig > 200 && trainConfig < 230 ){
+        TString caloCutPos = cuts.GetClusterCut(i);
+        caloCutPos.Resize(1);
+        TString TrackMatcherName = Form("CaloTrackMatcher_%s",caloCutPos.Data());
+        if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
+          AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
+          fTrackMatcher->SetV0ReaderName(V0ReaderName);
+          fTrackMatcher->SetCorrectionTaskSetting(corrTaskSetting);
+          mgr->AddTask(fTrackMatcher);
+          mgr->ConnectInput(fTrackMatcher,0,cinput);
+        }
+
+        enableClustersForTrigger  = kTRUE;
+        analysisClusterCuts[i]    = new AliCaloPhotonCuts();
+        analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+        analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
+        analysisClusterCuts[i]->SetLightOutput(runLightOutput);
+        analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
+        ClusterCutList->Add(analysisClusterCuts[i]);
+        analysisClusterCuts[i]->SetFillCutHistograms("");
+    }
 
     analysisCuts[i] = new AliConversionPhotonCuts();
 
@@ -485,13 +578,16 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
   if (trainConfig ==13 || trainConfig ==14){
           task->SetDoTHnSparse(0);
   }
+  if (enableClustersForTrigger){
+    task->SetDoClusterSelectionForTriggerNorm(enableClustersForTrigger);
+    task->SetClusterCutList(numberOfCuts,ClusterCutList);
+  }
   task->SetDoPlotVsCentrality(enablePlotVsCentrality);
 
   //connect containers
   AliAnalysisDataContainer *coutput =
-    mgr->CreateContainer(Form("GammaConvV1_%i",trainConfig), TList::Class(),
-              AliAnalysisManager::kOutputContainer,Form("GammaConvV1_%i.root",trainConfig));
-
+  mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaConvV1_%i",trainConfig) : Form("GammaConvV1_%i_%s",trainConfig,corrTaskSetting.Data()), TList::Class(),
+                AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig) );
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);
