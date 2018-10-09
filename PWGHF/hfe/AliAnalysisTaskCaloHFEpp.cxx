@@ -83,6 +83,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				MaxConeR(0),
 				ptAssoMin(0),
 				pTe("name"),
+				massMin(0),
 				//==== basic parameters ====
 				fNevents(0),
 				fHist_VertexZ(0),
@@ -120,6 +121,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fEopPt_ele_loose(0),
 				fEopPt_ele_tight(0),
 				fEopPt_ele_tight_PYTHIA(0),
+				fEopPt_ele_tight_forSys(0),
 				fEopPt_had(0),
 				fEtadiff(0),
 				fPhidiff(0),
@@ -211,6 +213,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				MaxConeR(0),
 				ptAssoMin(0),
 				pTe("name"),
+				massMin(0),
 				//==== basic parameters ====
 				fNevents(0),
 				fHist_VertexZ(0),
@@ -248,6 +251,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fEopPt_ele_loose(0),
 				fEopPt_ele_tight(0),
 				fEopPt_ele_tight_PYTHIA(0),
+				fEopPt_ele_tight_forSys(0),
 				fEopPt_had(0),
 				fEtadiff(0),
 				fPhidiff(0),
@@ -430,6 +434,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fEopPt_ele_loose = new TH2F ("fEopPt_ele_loose","pt vs E/p distribution (-3<nSigma<3); pt(GeV/c); E/p",500,0,50,60,0,3.0);
 				fEopPt_ele_tight = new TH2F ("fEopPt_ele_tight","pt vs E/p distribution (-1<nSigma<3); pt(GeV/c); E/p",500,0,50,60,0,3.0);
 				fEopPt_ele_tight_PYTHIA = new TH2F ("fEopPt_ele_tight_PYTHIA","pt vs E/p distribution (-1<nSigma<3); pt(GeV/c); E/p",500,0,50,60,0,3.0);
+				fEopPt_ele_tight_forSys = new TH2F ("fEopPt_ele_tight_forSys","pt vs E/p distribution (-1<nSigma<3); pt(GeV/c); E/p",500,0,50,60,0,3.0);
 				fEopPt_had = new TH2F ("fEopPt_had","pt vs E/p distribution (nSigma<-3.5); pt(GeV/c); E/p",500,0,50,60,0,3.0);
 				fEop_ele = new TH1F ("fEop_ele"," electron E/p distribution ; E/p ; counts",60,0,3.0);
 				fConeR = new TH1F ("fConeR"," check cone radius; counts",500,0,0.5);
@@ -479,6 +484,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fOutputList->Add(fEopPt_ele_loose);
 				fOutputList->Add(fEopPt_ele_tight);
 				fOutputList->Add(fEopPt_ele_tight_PYTHIA);
+				fOutputList->Add(fEopPt_ele_tight_forSys);
 				fOutputList->Add(fEopPt_had);
 				fOutputList->Add(fEtadiff);
 				fOutputList->Add(fPhidiff);
@@ -1023,6 +1029,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 																fEopPt_ele_tight -> Fill(TrkPt,eop);
 																if(ilabelM<NpureMC){fEopPt_ele_tight_PYTHIA -> Fill(TrkPt,eop);}
 																if(pid_eleB || pid_eleD){fHist_eff_M20 -> Fill(TrkPt);}
+																if(pid_eleB || pid_eleD){fEopPt_ele_tight_forSys-> Fill(TrkPt,eop);}
 
 																if(eop>CutEop[0] && eop<CutEop[1]){ // E/p cut
 																				if(pid_eleB) fHistPt_HFE_MC_B -> Fill(track->Pt());
@@ -1065,6 +1072,7 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 
 				//##################### Set cone radius  ##################### //
 				Double_t CutptAsso = ptAssoMin;
+				Double_t CutmassMin = massMin;
 				//################################################################# //
 
 				AliESDtrackCuts* esdTrackCutsAsso = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
@@ -1165,7 +1173,8 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 								}
 
 
-								if(mass<0.1 && fFlagULS && !flagPhotonicElec)
+								//if(mass<0.1 && fFlagULS && !flagPhotonicElec)
+								if(mass<CutmassMin && fFlagULS && !flagPhotonicElec)
 												flagPhotonicElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised) 
 				}
 				fFlagPhotonicElec = flagPhotonicElec;
