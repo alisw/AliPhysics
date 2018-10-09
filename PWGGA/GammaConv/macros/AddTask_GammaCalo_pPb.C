@@ -1183,6 +1183,92 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80010113","2444451041013200000","0163103100000000"); // min opening angle 0    -> open
     cuts.AddCut("80010113","2444451041013200000","0163103100000030"); // min opening angle 0.01 -> 2 cell diag
 
+  } else if(trainConfig == 320){ // reproducing Dmitri's results pi0, eta
+    cuts.AddCut("80010113","2444400040013300000","0163103100000010"); // dmitri default pi0/eta w/ opening angle
+    cuts.AddCut("80010113","2444400040013300000","0163103100000000"); // dmitri default pi0/eta w/o opening angle
+  } else if(trainConfig == 321){ // reproducing Dmitri's results pi0, eta
+    cuts.AddCut("80210113","2444400040013300000","0163103100000010"); // dmitri default pi0/eta w/ opening angle
+    cuts.AddCut("82410113","2444400040013300000","0163103100000010"); // dmitri default pi0/eta w/ opening angle
+    cuts.AddCut("84610113","2444400040013300000","0163103100000010"); // dmitri default pi0/eta w/ opening angle
+    cuts.AddCut("86010113","2444400040013300000","0163103100000010"); // dmitri default pi0/eta w/ opening angle
+  } else if(trainConfig == 322){ // reproducing Dmitri's results pi0, eta
+    cuts.AddCut("80210113","2444400040013300000","0163103100000000"); // dmitri default pi0/eta w/o opening angle
+    cuts.AddCut("82410113","2444400040013300000","0163103100000000"); // dmitri default pi0/eta w/o opening angle
+    cuts.AddCut("84610113","2444400040013300000","0163103100000000"); // dmitri default pi0/eta w/o opening angle
+    cuts.AddCut("86010113","2444400040013300000","0163103100000000"); // dmitri default pi0/eta w/o opening angle
+  } else if(trainConfig == 323){ // reproducing Dmitri's results pi0, eta, PHI7 trigg
+    cuts.AddCut("80062113","2444400040013300000","0163103100000010"); // dmitri default pi0/eta w/ opening angle
+    cuts.AddCut("80062113","2444400040013300000","0163103100000000"); // dmitri default pi0/eta w/ opening angle
+  } else if(trainConfig == 324){ // reproducing Dmitri's results pi0, eta, PHI7 trigg
+    cuts.AddCut("80262113","2444400040013300000","0163103100000010"); // dmitri default pi0/eta w/ opening angle
+    cuts.AddCut("82462113","2444400040013300000","0163103100000010"); // dmitri default pi0/eta w/ opening angle
+    cuts.AddCut("84662113","2444400040013300000","0163103100000010"); // dmitri default pi0/eta w/ opening angle
+    cuts.AddCut("86062113","2444400040013300000","0163103100000010"); // dmitri default pi0/eta w/ opening angle
+  } else if(trainConfig == 325){ // reproducing Dmitri's results pi0, eta, PHI7 trigg
+    cuts.AddCut("80262113","2444400040013300000","0163103100000000"); // dmitri default pi0/eta w/o opening angle
+    cuts.AddCut("82462113","2444400040013300000","0163103100000000"); // dmitri default pi0/eta w/o opening angle
+    cuts.AddCut("84662113","2444400040013300000","0163103100000000"); // dmitri default pi0/eta w/o opening angle
+    cuts.AddCut("86062113","2444400040013300000","0163103100000000"); // dmitri default pi0/eta w/o opening angle
+  } else if(trainConfig == 326){ // reproducing Dmitri's results pi0, eta
+    cuts.AddCut("80010113","2444451040013300000","0163103100000010"); // dmitri default pi0/eta w/ opening angle
+    cuts.AddCut("80010113","2444451040013300000","0163103100000000"); // dmitri default pi0/eta w/o opening angle
+  } else if(trainConfig == 327){ // reproducing Dmitri's results pi0, eta
+    cuts.AddCut("80210113","2444451040013300000","0163103100000010"); // dmitri default pi0/eta w/ opening angle PCM-PHOS NL
+    cuts.AddCut("82410113","2444451040013300000","0163103100000010"); // dmitri default pi0/eta w/ opening angle PCM-PHOS NL
+    cuts.AddCut("84610113","2444451040013300000","0163103100000010"); // dmitri default pi0/eta w/ opening angle PCM-PHOS NL
+    cuts.AddCut("86010113","2444451040013300000","0163103100000010"); // dmitri default pi0/eta w/ opening angle PCM-PHOS NL
+  } else if(trainConfig == 328){ // reproducing Dmitri's results pi0, eta, PHI7 trigg
+    cuts.AddCut("80062113","2444451040013300000","0163103100000010"); // dmitri default pi0/eta w/ opening angle PCM-PHOS NL
+    cuts.AddCut("80062113","2444451040013300000","0163103100000000"); // dmitri default pi0/eta w/ opening angle PCM-PHOS NL
+  } else if(trainConfig == 329){ // reproducing Dmitri's results pi0, eta, PHI7 trigg
+    cuts.AddCut("80262113","2444451040013300000","0163103100000010"); // dmitri default pi0/eta w/ opening angle PCM-PHOS NL
+    cuts.AddCut("82462113","2444451040013300000","0163103100000010"); // dmitri default pi0/eta w/ opening angle PCM-PHOS NL
+    cuts.AddCut("84662113","2444451040013300000","0163103100000010"); // dmitri default pi0/eta w/ opening angle PCM-PHOS NL
+    cuts.AddCut("86062113","2444451040013300000","0163103100000010"); // dmitri default pi0/eta w/ opening angle PCM-PHOS NL
+
+  } else if(trainConfig == 340){ // reproducing Dmitri's results gamma
+    cuts.AddCut("80010113","2444400048013300020","0163103100000010"); // dmitri default gamma w/ opening angle
+    cuts.AddCut("80010113","2444400048013300020","0163103100000000"); // dmitri default gamma w/o opening angle
+  } else if(trainConfig == 341){ // reproducing Dmitri's results gamma
+    cuts.AddCut("80210113","2444400048013300020","0163103100000010"); // dmitri default gamma w/ opening angle
+    cuts.AddCut("82410113","2444400048013300020","0163103100000010"); // dmitri default gamma w/ opening angle
+    cuts.AddCut("84610113","2444400048013300020","0163103100000010"); // dmitri default gamma w/ opening angle
+    cuts.AddCut("86010113","2444400048013300020","0163103100000010"); // dmitri default gamma w/ opening angle
+  } else if(trainConfig == 342){ // reproducing Dmitri's results gamma
+    cuts.AddCut("80210113","2444400048013300020","0163103100000000"); // dmitri default gamma w/o opening angle
+    cuts.AddCut("82410113","2444400048013300020","0163103100000000"); // dmitri default gamma w/o opening angle
+    cuts.AddCut("84610113","2444400048013300020","0163103100000000"); // dmitri default gamma w/o opening angle
+    cuts.AddCut("86010113","2444400048013300020","0163103100000000"); // dmitri default gamma w/o opening angle
+  } else if(trainConfig == 343){ // reproducing Dmitri's results gamma PHI7 trigg
+    cuts.AddCut("80062113","2444400048013300020","0163103100000010"); // dmitri default gamma w/ opening angle
+    cuts.AddCut("80062113","2444400048013300020","0163103100000000"); // dmitri default gamma w/o opening angle
+  } else if(trainConfig == 344){ // reproducing Dmitri's results gamma PHI7 trigg
+    cuts.AddCut("80262113","2444400048013300020","0163103100000010"); // dmitri default gamma w/ opening angle
+    cuts.AddCut("82462113","2444400048013300020","0163103100000010"); // dmitri default gamma w/ opening angle
+    cuts.AddCut("84662113","2444400048013300020","0163103100000010"); // dmitri default gamma w/ opening angle
+    cuts.AddCut("86062113","2444400048013300020","0163103100000010"); // dmitri default gamma w/ opening angle
+  } else if(trainConfig == 345){ // reproducing Dmitri's results gamma PHI7 trigg
+    cuts.AddCut("80262113","2444400048013300020","0163103100000000"); // dmitri default gamma w/o opening angle
+    cuts.AddCut("82462113","2444400048013300020","0163103100000000"); // dmitri default gamma w/o opening angle
+    cuts.AddCut("84662113","2444400048013300020","0163103100000000"); // dmitri default gamma w/o opening angle
+    cuts.AddCut("86062113","2444400048013300020","0163103100000000"); // dmitri default gamma w/o opening angle
+  } else if(trainConfig == 346){ // reproducing Dmitri's results pi0, eta
+    cuts.AddCut("80010113","2444451048013300000","0163103100000010"); // dmitri default gamma w/ opening angle
+    cuts.AddCut("80010113","2444451048013300000","0163103100000000"); // dmitri default gamma w/o opening angle
+  } else if(trainConfig == 347){ // reproducing Dmitri's results pi0, eta
+    cuts.AddCut("80210113","2444451048013300020","0163103100000010"); // dmitri default gamma w/ opening angle PCM-PHOS NL
+    cuts.AddCut("82410113","2444451048013300020","0163103100000010"); // dmitri default gamma w/ opening angle PCM-PHOS NL
+    cuts.AddCut("84610113","2444451048013300020","0163103100000010"); // dmitri default gamma w/ opening angle PCM-PHOS NL
+    cuts.AddCut("86010113","2444451048013300020","0163103100000010"); // dmitri default gamma w/ opening angle PCM-PHOS NL
+  } else if(trainConfig == 348){ // reproducing Dmitri's results pi0, eta, PHI7 trigg
+    cuts.AddCut("80062113","2444451048013300020","0163103100000010"); // dmitri default gamma w/ opening angle PCM-PHOS NL
+    cuts.AddCut("80062113","2444451048013300020","0163103100000000"); // dmitri default gamma w/ opening angle PCM-PHOS NL
+  } else if(trainConfig == 349){ // reproducing Dmitri's results pi0, eta, PHI7 trigg
+    cuts.AddCut("80262113","2444451048013300020","0163103100000010"); // dmitri default gamma w/ opening angle PCM-PHOS NL
+    cuts.AddCut("82462113","2444451048013300020","0163103100000010"); // dmitri default gamma w/ opening angle PCM-PHOS NL
+    cuts.AddCut("84662113","2444451048013300020","0163103100000010"); // dmitri default gamma w/ opening angle PCM-PHOS NL
+    cuts.AddCut("86062113","2444451048013300020","0163103100000010"); // dmitri default gamma w/ opening angle PCM-PHOS NL
+
   // ===============================================================================================
   // Run 2 data EMC clusters pPb 8TeV
   // ===============================================================================================
