@@ -49,9 +49,10 @@ public:
   void SetStoreJpsiCandidates(Bool_t option) {fOptionStoreJpsiCandidates = option;}
   void SetMCJpsiPtWeights(TH1F* weights) {fMCJpsiPtWeights = weights;}
   
-  void AddLegCandidateMCcut(AliReducedInfoCut* cut) {
+  void AddLegCandidateMCcut(AliReducedInfoCut* cut, Bool_t sameMother=kTRUE) {
      if(fLegCandidatesMCcuts.GetEntries()>=32) return;
      fLegCandidatesMCcuts.Add(cut);
+     fLegCandidatesMCcuts_RequestSameMother[fLegCandidatesMCcuts.GetEntries()-1] = sameMother;
   }
   void AddJpsiMotherMCCut(AliReducedInfoCut* cutMother, AliReducedInfoCut* cutElectron) {
      if(fJpsiMotherMCcuts.GetEntries()>=32) return;
@@ -105,6 +106,7 @@ protected:
    //              apply cuts on the MC flags of the tracks.
    // NOTE: The names of the cuts are used in the naming of the histogram classes
    TList fLegCandidatesMCcuts;
+   Bool_t fLegCandidatesMCcuts_RequestSameMother[32];
    
    // selection cuts for the pure MC truth (select the J/psi from stack)
    // the list should contains cuts which can be applied to a pure MC truth particle (no reconstructed information)
@@ -144,7 +146,7 @@ protected:
   Bool_t fSkipMCEvent;          // decision to skip MC event
   TH1F*  fMCJpsiPtWeights;            // weights vs pt to reject events depending on the jpsi true pt (needed to re-weights jpsi Pt distribution)
   
-  ClassDef(AliReducedAnalysisJpsi2ee,6);
+  ClassDef(AliReducedAnalysisJpsi2ee,7);
 };
 
 #endif

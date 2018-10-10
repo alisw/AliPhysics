@@ -653,6 +653,7 @@ class AliReducedVarManager : public TObject {
   static void FillTrackingStatus(AliReducedTrackInfo* p, Float_t* values);
  // static void FillTrackingFlags(AliReducedTrackInfo* p, Float_t* values);
   static void FillMCTruthInfo(AliReducedTrackInfo* p, Float_t* values, AliReducedTrackInfo* leg1 = 0x0, AliReducedTrackInfo* leg2 = 0x0);
+  static void FillMCTruthInfo(AliReducedTrackInfo* leg1, AliReducedTrackInfo* leg2, Float_t* values);
   static void FillMCEventInfo(AliReducedEventInfo* event, Float_t* values);
   
   static void PrintTrackFlags(AliReducedTrackInfo* track);
