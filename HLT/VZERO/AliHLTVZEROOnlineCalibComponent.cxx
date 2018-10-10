@@ -313,13 +313,13 @@ Int_t AliHLTVZEROOnlineCalibComponent::DoEvent(const AliHLTComponentEventData& /
     }
     if (esdVZERO && itsSpdVertex)
     {
-        printf("Vertex position: %f %f %f\n", itsSpdVertex->GetX(), itsSpdVertex->GetY(), itsSpdVertex->GetZ());
+        //printf("Vertex position: %f %f %f\n", itsSpdVertex->GetX(), itsSpdVertex->GetY(), itsSpdVertex->GetZ());
         //Rough V0 decision check (equiv to phys. sel.)
         if (esdVZERO->GetV0ADecision()!=AliVVZERO::kV0BB) lIsV0DecisionOK = false;
         if (esdVZERO->GetV0CDecision()!=AliVVZERO::kV0BB) lIsV0DecisionOK = false;
         if ( TMath::Abs(itsSpdVertex->GetZ())>10.0 ) lIsVertexPositionGood = false;
         if ( itsSpdVertex->GetNContributors() < 1 ) lIsVertexPositionGood = false; //not okay, no contributor
-        printf("Decisions: v0 decision is %d , vertex decision is %d\n", lIsV0DecisionOK, lIsVertexPositionGood);
+        //printf("Decisions: v0 decision is %d , vertex decision is %d\n", lIsV0DecisionOK, lIsVertexPositionGood);
         
         Double_t lQuantities[6] = {
             static_cast<Double_t>(esdVZERO->GetMTotV0A()+esdVZERO->GetMTotV0C()),
