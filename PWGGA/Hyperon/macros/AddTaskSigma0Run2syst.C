@@ -313,7 +313,8 @@ AliAnalysisTaskSE *AddTaskSigma0Run2syst(bool isMC = false,
   AliSigma0PhotonMotherCuts *antiSigmaCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
   antiSigmaCuts->SetIsMC(isMC);
-  antiSigmaCuts->SetPDG(3212, 3122, 22);
+  // Fixed sign of PDG Codes.
+  antiSigmaCuts->SetPDG(-3212, -3122, 22);
   antiSigmaCuts->SetSigmaMassCut(0.2);
   antiSigmaCuts->SetLambdaCuts(antiv0Cuts);
   antiSigmaCuts->SetV0ReaderName(V0ReaderName.Data());
