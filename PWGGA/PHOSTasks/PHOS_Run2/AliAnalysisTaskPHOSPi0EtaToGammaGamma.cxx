@@ -586,7 +586,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     for(Int_t imod2=imod1;imod2<Nmod;imod2++){
       if(imod2 - imod1 > 1) continue;
 
-      TH2F *h2 = new TH2F(Form("hMgg_M%d%d",imod1,imod2),"M_{#gamma#gamma} vs p_{T}",60,0,0.24,NpTggModule-1,pTggModule);
+      TH2F *h2 = new TH2F(Form("hMgg_M%d%d",imod1,imod2),"M_{#gamma#gamma} vs p_{T}",180,0,0.72,NpTggModule-1,pTggModule);
       h2->Sumw2();
       fOutputContainer->Add(h2);
     }
@@ -595,17 +595,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     for(Int_t imod2=imod1;imod2<Nmod;imod2++){
       if(imod2 - imod1 > 1) continue;
 
-      TH2F *h2 = new TH2F(Form("hMixMgg_M%d%d",imod1,imod2),"M_{#gamma#gamma} vs p_{T}",60,0,0.24,NpTggModule-1,pTggModule);
-      h2->Sumw2();
-      fOutputContainer->Add(h2);
-    }
-  }
-
-  for(Int_t imod1=1;imod1<Nmod;imod1++){
-    for(Int_t imod2=imod1;imod2<Nmod;imod2++){
-      if(imod2 - imod1 > 1) continue;
-
-      TH2F *h2 = new TH2F(Form("hMgg_M%d%d_TOF",imod1,imod2),"M_{#gamma#gamma} vs p_{T}",60,0,0.24,NpTggModule-1,pTggModule);
+      TH2F *h2 = new TH2F(Form("hMixMgg_M%d%d",imod1,imod2),"M_{#gamma#gamma} vs p_{T}",180,0,0.72,NpTggModule-1,pTggModule);
       h2->Sumw2();
       fOutputContainer->Add(h2);
     }
@@ -615,7 +605,17 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     for(Int_t imod2=imod1;imod2<Nmod;imod2++){
       if(imod2 - imod1 > 1) continue;
 
-      TH2F *h2 = new TH2F(Form("hMixMgg_M%d%d_TOF",imod1,imod2),"M_{#gamma#gamma} vs p_{T}",60,0,0.24,NpTggModule-1,pTggModule);
+      TH2F *h2 = new TH2F(Form("hMgg_M%d%d_TOF",imod1,imod2),"M_{#gamma#gamma} vs p_{T}",180,0,0.72,NpTggModule-1,pTggModule);
+      h2->Sumw2();
+      fOutputContainer->Add(h2);
+    }
+  }
+
+  for(Int_t imod1=1;imod1<Nmod;imod1++){
+    for(Int_t imod2=imod1;imod2<Nmod;imod2++){
+      if(imod2 - imod1 > 1) continue;
+
+      TH2F *h2 = new TH2F(Form("hMixMgg_M%d%d_TOF",imod1,imod2),"M_{#gamma#gamma} vs p_{T}",180,0,0.72,NpTggModule-1,pTggModule);
       h2->Sumw2();
       fOutputContainer->Add(h2);
     }
