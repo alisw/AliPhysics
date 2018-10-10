@@ -22,6 +22,7 @@ void loadMC2010h11a10a_bisBPPRunNumbers();
 void loadMC2010h11a10a_bisAODRunNumbers(Int_t);
 void loadMCAMPT2010h12A11RunNumbers();
 void loadMCAMPT2010hCentrality(const char *cent);
+void loadMC2013b2_efixRunNumbers();
 void load2015oMCTestRunNumber();
 void load2015oLIRpass2RunNumbers();
 void load2015oLIRpass3RunNumbers();
@@ -30,6 +31,8 @@ void load2015oHIRRunNumbers();
 void load2015oHIRTestRunNumber();
 void load2016kTestRunNumber();
 void load2013bTestRunNumber();
+void load2013bAODRunNumbers();
+void load2013cAODRunNumbers();
 void load2013bAODTestRunNumber();
 void loadAMPT2015oHIRTestRunNumber();
 void load2017nRunNumbers();
@@ -76,7 +79,9 @@ void runCorrelationsStudiesConfigMacro() {
   // load2010hBPPRunNumbers();
   // load2010hMCRunNumbers();
   // load2016kTestRunNumber();
-  load2013bAODTestRunNumber();
+  // load2013bAODTestRunNumber();
+  // load2013bAODRunNumbers();
+  loadMC2013b2_efixRunNumbers();
   // loadMCAMPT2010hCentrality("0-5");
   // loadAMPT2015oHIRTestRunNumber();
   // load2017nRunNumbers();
@@ -346,6 +351,116 @@ void load2013bAODTestRunNumber() {
 }
 
 
+void load2013bAODRunNumbers() {
+  bUseESD                    = kFALSE;
+  bUseAOD                    = !bUseESD;
+
+  /* teh GRID working directory */
+  szGridWorkingDir = "CorrelationStudies_2013bc";
+
+  /* 2013b */
+  szDataDir = "/alice/data/2013/LHC13b";
+
+  /* 2013B */
+  szDataPattern = "*pass4/AOD/*/AliAOD.root";
+
+  const Int_t nRuns = 8;
+  const char *runNumbers[nRuns] = {
+    "195344",
+    "195351",
+    "195389",
+    "195391",
+    "195479",
+    "195480",
+    "195482",
+    "195483"
+  };
+
+  /* the list of runs to analyze */
+  for (Int_t run = 0; run < nRuns; run++)
+    listOfActiveRuns.Add(new TObjString(runNumbers[run]));
+}
+
+void load2013cAODRunNumbers() {
+  bUseESD                    = kFALSE;
+  bUseAOD                    = !bUseESD;
+
+  /* teh GRID working directory */
+  szGridWorkingDir = "CorrelationStudies_2013bc";
+
+  /* 2013b */
+  szDataDir = "/alice/data/2013/LHC13c";
+
+  /* 2013B */
+  szDataPattern = "*pass4/AOD/*/AliAOD.root";
+
+  const Int_t nRuns = 14;
+  const char *runNumbers[nRuns] = {
+    "195529",
+    "195531",
+    "195566",
+    "195567",
+    "195568",
+    "195592",
+    "195593",
+    "195596",
+    "195633",
+    "195635",
+    "195644",
+    "195673",
+    "195675",
+    "195677"
+  };
+
+  /* the list of runs to analyze */
+  for (Int_t run = 0; run < nRuns; run++)
+    listOfActiveRuns.Add(new TObjString(runNumbers[run]));
+}
+
+void loadMC2013b2_efixRunNumbers() {
+  bUseESD                    = kTRUE;
+  bUseAOD                    = !bUseESD;
+
+  /* the GRID working directory */
+  szGridWorkingDir = "CorrelationStudies_2013b2";
+
+  szDataDir = "/alice/sim/2013/LHC13b2_efix_p1";
+  szDataPattern = "*/AliESDs.root";
+
+  bMC = kTRUE;
+
+  const Int_t nRuns = 23;
+  const char *runNumbers[nRuns] = {
+    "195344",
+    "195351",
+    "195389",
+    "195391",
+    "195478",
+    "195479",
+    "195480",
+    "195482",
+    "195483",
+    "195529",
+    "195531",
+    "195566",
+    "195567",
+    "195568",
+    "195592",
+    "195593",
+    "195596",
+    "195633",
+    "195635",
+    "195644",
+    "195673",
+    "195675",
+    "195677"
+  };
+
+  /* the list of runs to analyze */
+  for (Int_t run = 0; run < nRuns; run++)
+    listOfActiveRuns.Add(new TObjString(runNumbers[run]));
+
+}
 void loadMCAMPT2010h12A11RunNumbers() {
   bUseESD                    = kTRUE;
   bUseAOD                    = !bUseESD;

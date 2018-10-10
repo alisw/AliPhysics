@@ -67,12 +67,13 @@ public:
   /// \enum SystemType
   /// \brief The type of the system under analysis
   enum SystemType {
-    kNoSystem,    ///< no system defined
+    kNoSystem = 0,    ///< no system defined
     kpp,          ///< **p-p** system
     kpPb,         ///< **p-Pb** system
     kPbPb,        ///< **Pb-Pb** system
     kXeXe,        ///< **Xe-Xe** system
-    kPbp          ///< **Pb-p** system
+    kPbp,         ///< **Pb-p** system
+    knSystems     ///< number of handled systems
   };
 
 private:
@@ -161,6 +162,7 @@ private:
   SystemType          fSystem;                ///< the type of system being analyzed
   Double_t            fVertexZ;               ///< the vertex \f$z\f$ coordinate
   Double_t            fCentrality;            ///< the event centrality
+  Double_t            fAltCentrality;         ///< the event centrality from the alternate detector
   Int_t               fCentralityDetector;    ///< the detector to estimate the centrality
   Int_t               fCentralityModifier;    ///< the modifier of the centrality cut value
   Float_t             fCentralityMin;         ///< the minimum value for centrality cut
@@ -226,7 +228,7 @@ private:
   AliCSEventCuts& operator=(const AliCSEventCuts&);
 
   /// \cond CLASSIMP
-  ClassDef(AliCSEventCuts,7);
+  ClassDef(AliCSEventCuts,8);
   /// \endcond
 };
 

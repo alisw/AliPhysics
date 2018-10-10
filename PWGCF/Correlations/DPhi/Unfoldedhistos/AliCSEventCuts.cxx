@@ -14,6 +14,7 @@
 #include <TF1.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TMath.h>
 #include "AliVEvent.h"
 #include "AliVTrack.h"
 #include "AliCSEventCuts.h"
@@ -68,6 +69,7 @@ AliCSEventCuts::AliCSEventCuts() :
     fSystem(kNoSystem),
     fVertexZ(999.0),
     fCentrality(0.0),
+    fAltCentrality(0.0),
     fCentralityDetector(0),
     fCentralityModifier(0),
     fCentralityMin(0.0),
@@ -130,6 +132,7 @@ AliCSEventCuts::AliCSEventCuts(const char *name, const char *title) :
     fSystem(kNoSystem),
     fVertexZ(999.0),
     fCentrality(0.0),
+    fAltCentrality(0.0),
     fCentralityDetector(0),
     fCentralityModifier(0),
     fCentralityMin(0.0),
@@ -369,6 +372,7 @@ Bool_t AliCSEventCuts::IsEventAccepted(AliVEvent *fInputEvent) {
 
   /* centrality cut */
   fCentrality = GetEventCentrality(fInputEvent);
+  fAltCentrality = GetEventAltCentrality(fInputEvent);
   AliInfo(Form("Event centrality: %f", Float_t(fCentrality)));
   if (fCutsEnabledMask.TestBitNumber(kCentralityCut)) {
     if (fCentrality < fCentralityMin || fCentralityMax <= fCentrality ) {
@@ -377,19 +381,9 @@ Bool_t AliCSEventCuts::IsEventAccepted(AliVEvent *fInputEvent) {
     }
   }
 
-  /* centrality estimators correlation */
-  /* quick and dirty test for p-Pb */
-  Float_t altcentrality = this->GetEventAltCentrality(fInputEvent);
-
-  Float_t center = 0.0 + 1.0*fCentrality;
-  Float_t sigma = 10.0+0.3*fCentrality-0.003*fCentrality*fCentrality;
-  if (altcentrality < center-sigma || center+sigma < altcentrality) {
-    fCutsActivatedMask.SetBitNumber(k2015PileUpCut);
-    accepted = kFALSE;
-  }
 
   if (!fgIsMConlyTruth) {
-    /* 2015 additional pile up cut also applicable to 2010h*/
+    /* 2015 additional pile up cut also applicable to 2010h and 2013bc*/
     /* check the additional pile up rejection if required */
     if (fCutsEnabledMask.TestBitNumber(k2015PileUpCut)) {
       if (Is2015PileUpEvent()) {
@@ -446,7 +440,7 @@ Bool_t AliCSEventCuts::IsEventAccepted(AliVEvent *fInputEvent) {
         fhSPDClustersVsTracklets[i]->Fill(nTracklets, nClustersLayer0+nClustersLayer1);
         fhV0MvsTracksTPCout[i]->Fill(fNoOfTPCoutTracks, fV0Multiplicity);
         fhV0MvsTracksInitialTPCout[i]->Fill(fNoOfInitialTPCoutTracks, fV0Multiplicity);
-        fhCentralityAltVsSel[i]->Fill(fCentrality,altcentrality);
+        fhCentralityAltVsSel[i]->Fill(fCentrality,fAltCentrality);
         fhCL0vsV0MCentrality[i]->Fill(fV0MCentrality,fCL0Centrality);
         fhESDvsTPConlyMultiplicity[i]->Fill(fNoOfFB128Tracks,fNoOfESDTracks);
         fhTOFvsGlobalMultiplicity[i]->Fill(fNoOfFB32Tracks,fNoOfFB32TOFTracks);
@@ -693,6 +687,9 @@ void AliCSEventCuts::PrintCutWithParams(Int_t paramID) const {
     case 3: /* use J/psi 2015 pile up rejection initial, corrected, method*/
       printf("    using J/psi 2015 pile up rejection , initial (corrected) method of track counting\n");
       printf("    actual cut will depend on data period\n");
+      break;
+    case 4:
+      printf("    using centrality estimation correlations to reject pile-up in p-Pb system\n");
       break;
     default:
       printf("    2015 additional pile up removal procedure %d not supported\n", fParameters[kRemove2015PileUp]);
@@ -1752,6 +1749,7 @@ Double_t AliCSEventCuts::GetVertexZ(AliVEvent *event) const {
 ///    |  1 | J/psi analysis pileup removal, initial (faulty) track counting method |
 ///    |  2 | Centrality and multiplicity correlations for 2015 |
 ///    |  3 | J/psi analysis pileup removal, initial (corrected) track counting method |
+///    |  4 | Use the correlation between centrality estimators for removing p-Pb pile-up |
 /// \return kTRUE for proper and supported 2015 additional pileup removal procedures
 Bool_t AliCSEventCuts::SetRemove2015PileUp(Int_t pupcode)
 {
@@ -1766,6 +1764,9 @@ Bool_t AliCSEventCuts::SetRemove2015PileUp(Int_t pupcode)
     fCutsEnabledMask.SetBitNumber(k2015PileUpCut);
     break;
   case 3: /* J/psi analysis pileup removal initial method */
+    fCutsEnabledMask.SetBitNumber(k2015PileUpCut);
+    break;
+  case 4: /* Centrality estimators correlation for p-Pb */
     fCutsEnabledMask.SetBitNumber(k2015PileUpCut);
     break;
   default:
@@ -1873,6 +1874,9 @@ void AliCSEventCuts::SetActual2015PileUpRemoval()
     }
     AliInfo(Form("2015 pileup removal (initial method): V0 mult < %s\n", TString(f2015V0MtoTrkTPCout->GetTitle()).ReplaceAll("x","trkTPCout").Data()));
     break;
+  case 4: /* centrality estimators correlators for p-Pb system */
+    /* do nothing for the time being */
+    break;
   default:
     AliError(Form("2015 additional pileup removal code %d not supported", fParameters[kRemove2015PileUp]));
   }
@@ -1916,6 +1920,14 @@ Bool_t AliCSEventCuts::Is2015PileUpEvent() const {
     if (fV0Multiplicity  < f2015V0MtoTrkTPCout->Eval(fNoOfInitialTPCoutTracks))
       return kTRUE;
     return kFALSE;
+    break;
+  case 4: /* centrality estimation correlations for p-Pb and Pb-p */ {
+      Float_t center = 0.0 + 1.0*fCentrality;
+      Float_t sigma = 10.0+0.3*fCentrality-0.003*fCentrality*fCentrality;
+      if (fAltCentrality < center-sigma || center+sigma < fAltCentrality)
+        return kTRUE;
+      return kFALSE;
+    }
     break;
   default:
     AliFatal(Form("Inconsistent parameter value %d for removal 2015 pileup", fParameters[kRemove2015PileUp]));
@@ -2391,22 +2403,32 @@ void AliCSEventCuts::DefineHistograms(){
     fHistogramsList->Add(fhTriggerClass[1]);
 
     if(fQALevel == kQALevelHeavy){
-      fhSPDClustersVsTracklets[0] = new TH2F(Form("SPDClustersVsTrackletsB_%s",GetCutsString()),"SPD clusters vs tracklets before cut;tracklets;SPD clusters",200,0,3000,500,0,10000);
-      fhSPDClustersVsTracklets[1] = new TH2F(Form("SPDClustersVsTrackletsA_%s",GetCutsString()),"SPD clusters vs tracklets;tracklets;SPD clusters",200,0,3000,500,0,10000);
+      Double_t maxTracklets[knSystems] = {0,400,400,3000,3000,400};
+      Double_t maxSPDclusters[knSystems] = {0,1500,1500,10000,10000,1500};
+      fhSPDClustersVsTracklets[0] = new TH2F(Form("SPDClustersVsTrackletsB_%s",GetCutsString()),"SPD clusters vs tracklets before cut;tracklets;SPD clusters",200,0,maxTracklets[fSystem],500,0,maxSPDclusters[fSystem]);
+      fhSPDClustersVsTracklets[1] = new TH2F(Form("SPDClustersVsTrackletsA_%s",GetCutsString()),"SPD clusters vs tracklets;tracklets;SPD clusters",200,0,maxTracklets[fSystem],500,0,maxSPDclusters[fSystem]);
       fHistogramsList->Add(fhSPDClustersVsTracklets[0]);
       fHistogramsList->Add(fhSPDClustersVsTracklets[1]);
 
+      Double_t maxTPCoutTracks[knSystems] = {0,200,200,5000,5000,200};
+      Double_t maxV0multiplicity[knSystems] = {0,1000,1000,40000,40000,1000};
       fhV0MvsTracksTPCout[0] =
-          new TH2F(Form("V0MvsTracksTPCoutB_%s", GetCutsString()),"V0 multiplicity vs tracks with kTPCout on before cut;# tracks with kTPCout on;V0 multiplicity",300,0,5000,300,0,40000);
+          new TH2F(Form("V0MvsTracksTPCoutB_%s", GetCutsString()),"V0 multiplicity vs tracks with kTPCout on before cut;# tracks with kTPCout on;V0 multiplicity",
+              TMath::Min(300,int(maxTPCoutTracks[fSystem])),0,maxTPCoutTracks[fSystem],300,0,maxV0multiplicity[fSystem]);
       fhV0MvsTracksTPCout[1] =
-          new TH2F(Form("V0MvsTracksTPCoutA_%s", GetCutsString()),"V0 multiplicity vs tracks with kTPCout on;# tracks with kTPCout on;V0 multiplicity",300,0,5000,300,0,40000);
+          new TH2F(Form("V0MvsTracksTPCoutA_%s", GetCutsString()),"V0 multiplicity vs tracks with kTPCout on;# tracks with kTPCout on;V0 multiplicity",
+              TMath::Min(300,int(maxTPCoutTracks[fSystem])),0,maxTPCoutTracks[fSystem],300,0,maxV0multiplicity[fSystem]);
       fHistogramsList->Add(fhV0MvsTracksTPCout[0]);
       fHistogramsList->Add(fhV0MvsTracksTPCout[1]);
 
+      Double_t maxTPCoutTracksInitial[knSystems] = {0,1000,1000,30000,30000,1000};
+      Double_t maxV0multiplicityInitial[knSystems] = {0,1000,1000,40000,40000,1000};
       fhV0MvsTracksInitialTPCout[0] =
-          new TH2F(Form("V0MvsTracksInitialTPCoutB_%s", GetCutsString()),"V0 multiplicity vs tracks with kTPCout on before cut;# tracks with kTPCout on (initial method);V0 multiplicity",300,0,30000,300,0,40000);
+          new TH2F(Form("V0MvsTracksInitialTPCoutB_%s", GetCutsString()),"V0 multiplicity vs tracks with kTPCout on before cut;# tracks with kTPCout on (initial method);V0 multiplicity",
+              300,0,maxTPCoutTracksInitial[fSystem],300,0,maxV0multiplicityInitial[fSystem]);
       fhV0MvsTracksInitialTPCout[1] =
-          new TH2F(Form("V0MvsTracksInitialTPCoutA_%s", GetCutsString()),"V0 multiplicity vs tracks with kTPCout on;# tracks with kTPCout on (initial method);V0 multiplicity",300,0,30000,300,0,40000);
+          new TH2F(Form("V0MvsTracksInitialTPCoutA_%s", GetCutsString()),"V0 multiplicity vs tracks with kTPCout on;# tracks with kTPCout on (initial method);V0 multiplicity",
+              300,0,maxTPCoutTracksInitial[fSystem],300,0,maxV0multiplicityInitial[fSystem]);
       fHistogramsList->Add(fhV0MvsTracksInitialTPCout[0]);
       fHistogramsList->Add(fhV0MvsTracksInitialTPCout[1]);
 
@@ -2436,36 +2458,40 @@ void AliCSEventCuts::DefineHistograms(){
       fHistogramsList->Add(fhCL0vsV0MCentrality[0]);
       fHistogramsList->Add(fhCL0vsV0MCentrality[1]);
 
+      Double_t maxTPConlyTracks[knSystems] = {0,250,250,7000,7000,250};
+      Double_t maxESDTracks[knSystems] = {0,1000,1000,50000,50000,1000};
       fhESDvsTPConlyMultiplicity[0] =
           new TH2F(Form("ESDvsTPConlyMultiplicityB_%s",GetCutsString()),
               "Multiplicity, ESD vs TPC only, before cuts;multiplicity (TPC only tracks);multiplicity (ESD tracks)",
-              400,0,7000,400,0,50000);
+              TMath::Min(400,int(maxTPConlyTracks[fSystem])),0,maxTPConlyTracks[fSystem],400,0,maxESDTracks[fSystem]);
       fhESDvsTPConlyMultiplicity[1] =
           new TH2F(Form("ESDvsTPConlyMultiplicityA_%s",GetCutsString()),
               "Multiplicity, ESD vs TPC only;multiplicity (TPC only tracks);multiplicity (ESD tracks)",
-              400,0,7000,400,0,50000);
+              TMath::Min(400,int(maxTPConlyTracks[fSystem])),0,maxTPConlyTracks[fSystem],400,0,maxESDTracks[fSystem]);
       fHistogramsList->Add(fhESDvsTPConlyMultiplicity[0]);
       fHistogramsList->Add(fhESDvsTPConlyMultiplicity[1]);
 
+      Double_t maxGlobalTracks[knSystems] = {0,150,150,4000,4000,150};
+      Double_t maxGlobalTOFTracks[knSystems] = {0,100,100,2000,2000,100};
       fhTOFvsGlobalMultiplicity[0] =
           new TH2F(Form("TOFvsGlobalMultiplicityB_%s",GetCutsString()),
               "global tracks in TOF vs global tracks, before cuts;multiplicity (global, FB32, tracks);multiplicity (global, FB32, TOF tracks)",
-              400,0,4000,400,0,2000);
+              TMath::Min(400,int(maxGlobalTracks[fSystem])),0,maxGlobalTracks[fSystem],TMath::Min(400,int(maxGlobalTOFTracks[fSystem])),0,maxGlobalTOFTracks[fSystem]);
       fhTOFvsGlobalMultiplicity[1] =
           new TH2F(Form("TOFvsGlobalMultiplicityA_%s",GetCutsString()),
               "global tracks in TOF vs global tracks;multiplicity (global, FB32, tracks);multiplicity (global, FB32, TOF tracks)",
-              400,0,4000,400,0,2000);
+              TMath::Min(400,int(maxGlobalTracks[fSystem])),0,maxGlobalTracks[fSystem],TMath::Min(400,int(maxGlobalTOFTracks[fSystem])),0,maxGlobalTOFTracks[fSystem]);
       fHistogramsList->Add(fhTOFvsGlobalMultiplicity[0]);
       fHistogramsList->Add(fhTOFvsGlobalMultiplicity[1]);
 
       fhAccTrkvsV0MCentrality[0] =
           new TH2F(Form("AccTrkvsV0MCentralityB_%s",GetCutsString()),
               "accepted global tracks vs V0M centrality, before cuts;centrality percentile (V0M);multiplicity (accepted global, FB32, tracks)",
-              100,0,100,400,0,3000);
+              100,0,100,TMath::Min(400,int(maxGlobalTracks[fSystem])),0,maxGlobalTracks[fSystem]);
       fhAccTrkvsV0MCentrality[1] =
           new TH2F(Form("AccTrkvsV0MCentralityA_%s",GetCutsString()),
               "accepted global tracks vs V0M centrality;centrality percentile (V0M);multiplicity (accepted global, FB32, tracks)",
-              100,0,100,400,0,3000);
+              100,0,100,TMath::Min(400,int(maxGlobalTracks[fSystem])),0,maxGlobalTracks[fSystem]);
       fHistogramsList->Add(fhAccTrkvsV0MCentrality[0]);
       fHistogramsList->Add(fhAccTrkvsV0MCentrality[1]);
     }
