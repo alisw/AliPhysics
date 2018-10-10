@@ -257,6 +257,7 @@ fTreeVariableNegITSSharedClusters4(0),
 fTreeVariableNegITSSharedClusters5(0),
 
 fTreeVariableIsCowboy(0),
+fTreeVariableRunNumber(0),
 
 fTreeVariableNegTOFExpTDiff(99999),
 fTreeVariablePosTOFExpTDiff(99999),
@@ -624,7 +625,9 @@ fHistGeneratedPtVsYVsCentralityAntiLambda(0),
 fHistGeneratedPtVsYVsCentralityXiMinus(0),
 fHistGeneratedPtVsYVsCentralityXiPlus(0),
 fHistGeneratedPtVsYVsCentralityOmegaMinus(0),
-fHistGeneratedPtVsYVsCentralityOmegaPlus(0)
+fHistGeneratedPtVsYVsCentralityOmegaPlus(0),
+fHistGeneratedPtVsYVsCentralityHypertriton(0),
+fHistGeneratedPtVsYVsCentralityAntihypertriton(0)
 //------------------------------------------------
 // Tree Variables
 {
@@ -769,6 +772,7 @@ fTreeVariableNegITSSharedClusters4(0),
 fTreeVariableNegITSSharedClusters5(0),
 
 fTreeVariableIsCowboy(0),
+fTreeVariableRunNumber(0),
 
 fTreeVariableNegTOFExpTDiff(99999),
 fTreeVariablePosTOFExpTDiff(99999),
@@ -1136,7 +1140,9 @@ fHistGeneratedPtVsYVsCentralityAntiLambda(0),
 fHistGeneratedPtVsYVsCentralityXiMinus(0),
 fHistGeneratedPtVsYVsCentralityXiPlus(0),
 fHistGeneratedPtVsYVsCentralityOmegaMinus(0),
-fHistGeneratedPtVsYVsCentralityOmegaPlus(0)
+fHistGeneratedPtVsYVsCentralityOmegaPlus(0),
+fHistGeneratedPtVsYVsCentralityHypertriton(0),
+fHistGeneratedPtVsYVsCentralityAntihypertriton(0)
 //------------------------------------------------
 // Tree Variables
 
@@ -1326,6 +1332,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
         fTreeV0->Branch("fTreeVariableMVPileupFlag",&fTreeVariableMVPileupFlag,"fTreeVariableMVPileupFlag/O");
         //------------------------------------------------
         fTreeV0->Branch("fTreeVariableIsCowboy",&fTreeVariableIsCowboy,"fTreeVariableIsCowboy/O");
+        fTreeV0->Branch("fTreeVariableRunNumber",&fTreeVariableRunNumber,"fTreeVariableRunNumber/I");
         if ( fkDebugWrongPIDForTracking ){
             fTreeV0->Branch("fTreeVariablePosPIDForTracking",&fTreeVariablePosPIDForTracking,"fTreeVariablePosPIDForTracking/I");
             fTreeV0->Branch("fTreeVariableNegPIDForTracking",&fTreeVariableNegPIDForTracking,"fTreeVariableNegPIDForTracking/I");
@@ -1868,6 +1875,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
         fListHist->Add(fHistGeneratedPtVsYVsCentralityOmegaPlus);
     }
     
+    if(! fHistGeneratedPtVsYVsCentralityHypertriton ) {
+        //Histogram Output: Efficiency Denominator
+        fHistGeneratedPtVsYVsCentralityHypertriton = new TH3D( "fHistGeneratedPtVsYVsCentralityHypertriton", ";pT;y;centrality",250,0,25,4,-1.0,1.0,10,0,100);
+        fListHist->Add(fHistGeneratedPtVsYVsCentralityHypertriton);
+    }
+    if(! fHistGeneratedPtVsYVsCentralityAntihypertriton ) {
+        //Histogram Output: Efficiency Denominator
+        fHistGeneratedPtVsYVsCentralityAntihypertriton = new TH3D( "fHistGeneratedPtVsYVsCentralityAntihypertriton", ";pT;y;centrality",250,0,25,4,-1.0,1.0,10,0,100);
+        fListHist->Add(fHistGeneratedPtVsYVsCentralityAntihypertriton);
+    }
+    
     //Superlight mode output
     if ( !fListV0 ){
         fListV0 = new TList();
@@ -2121,6 +2139,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     fHistEventCounter->Fill(1.5);
     
     //Bookkeep event number for debugging
+    //Run number
+    fTreeVariableRunNumber = lESDevent->GetRunNumber();
+    
+    //--- Acquisition of exact event ID
     fTreeCascVarEventNumber =
     ( ( ((ULong64_t)lESDevent->GetPeriodNumber() ) << 36 ) |
      ( ((ULong64_t)lESDevent->GetOrbitNumber () ) << 12 ) |
@@ -2186,7 +2208,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         lThisPDG = lPart->GetPdgCode();
         
         //This if is necessary in some situations (rapidity calculation and PYTHIA junctions, etc)
-        if ( (TMath::Abs(lThisPDG) == 3312) || (TMath::Abs(lThisPDG) == 3334) || (TMath::Abs(lThisPDG) == 3122) || lThisPDG == 310 )
+        if ( (TMath::Abs(lThisPDG) == 3312) || (TMath::Abs(lThisPDG) == 3334) || (TMath::Abs(lThisPDG) == 3122) || lThisPDG == 310 || (TMath::Abs(lThisPDG) == 1010010030) )
         {
             lThisRap   = MyRapidity(lPart->Energy(),lPart->Pz());
             lThisPt    = lPart->Pt();
@@ -2214,6 +2236,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             }
             if( lThisPDG == -3334 ) {
                 fHistGeneratedPtVsYVsCentralityOmegaPlus       -> Fill (lThisPt, lThisRap, lPercentileEmbeddedSelection);
+            }
+            if( lThisPDG == 1010010030 ) {
+                fHistGeneratedPtVsYVsCentralityHypertriton       -> Fill (lThisPt, lThisRap, lPercentileEmbeddedSelection);
+            }
+            if( lThisPDG == -1010010030 ) {
+                fHistGeneratedPtVsYVsCentralityAntihypertriton       -> Fill (lThisPt, lThisRap, lPercentileEmbeddedSelection);
             }
         }
     }//End of loop on tracks

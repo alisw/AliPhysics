@@ -438,6 +438,7 @@ private:
     Bool_t fTreeVariableNegITSSharedClusters5;
     
     Bool_t fTreeVariableIsCowboy; //store if V0 is cowboy-like or sailor-like in XY plane
+    Int_t fTreeVariableRunNumber; //store run number for random stuff
 
     //Variables for OOB pileup study (high-multiplicity triggers pp 13 TeV - 2016 data)
     Float_t fTreeVariableNegTOFExpTDiff;      //!
@@ -850,6 +851,10 @@ private:
     TH3D *fHistGeneratedPtVsYVsCentralityXiPlus;
     TH3D *fHistGeneratedPtVsYVsCentralityOmegaMinus;
     TH3D *fHistGeneratedPtVsYVsCentralityOmegaPlus;
+    
+    //Hypertriton
+    TH3D *fHistGeneratedPtVsYVsCentralityHypertriton;
+    TH3D *fHistGeneratedPtVsYVsCentralityAntihypertriton;
     
     AliAnalysisTaskStrangenessVsMultiplicityMCRun2(const AliAnalysisTaskStrangenessVsMultiplicityMCRun2&);            // not implemented
     AliAnalysisTaskStrangenessVsMultiplicityMCRun2& operator=(const AliAnalysisTaskStrangenessVsMultiplicityMCRun2&); // not implemented
