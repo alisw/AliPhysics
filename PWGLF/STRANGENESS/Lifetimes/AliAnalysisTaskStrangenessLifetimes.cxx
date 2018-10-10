@@ -360,7 +360,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
           v0part.SetPDGcode(currentPDG);
           v0part.SetEta(part->Eta());
           v0part.SetPt(part->Pt());
-          v0part.SetDistOverP(dist / part->P());
+          v0part.SetDistOverP(dist / part->P() + 1e-16);
           v0part.SetRadius(radius);
           bool isSecondary = mcEvent->IsSecondaryFromWeakDecay(ilab);
           fHistMCct[idx]->Fill(dist * part->GetMass() / part->P());
