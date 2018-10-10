@@ -1021,7 +1021,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	fPtTrackClusRatiovsPt->Sumw2();
 	fOutput->Add(fPtTrackClusRatiovsPt);
 
-	fPtTrackClusRatiovsPtWithCPV = new TH2F("hPtTrackClusRatiovsPt","Track #it{p}_{T} over cluster #it{p}_{T} vs. cluster #it{p}_{T} with CPV applied", 120, 0., 60., 300, 0., 15.);
+	fPtTrackClusRatiovsPtWithCPV = new TH2F("hPtTrackClusRatiovsPt_WithCPV","Track #it{p}_{T} over cluster #it{p}_{T} vs. cluster #it{p}_{T} with CPV applied", 120, 0., 60., 300, 0., 15.);
 	fPtTrackClusRatiovsPtWithCPV->Sumw2();
 	fOutput->Add(fPtTrackClusRatiovsPtWithCPV);
       }
