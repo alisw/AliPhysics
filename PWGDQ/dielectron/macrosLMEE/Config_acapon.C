@@ -20,7 +20,7 @@ Bool_t plotsTOF      = kTRUE;
 Bool_t plots3D       = kFALSE;
 // V0 plots switched on if cutDefinition is v0_tight
 // Or if requesting PID corrections
-Bool_t v0plots       = kFALSE;
+Bool_t v0plots       = kTRUE;
 
 AliDielectron* Config_acapon(TString cutDefinition,
                              Bool_t hasMC = kFALSE,
@@ -161,6 +161,8 @@ AliDielectron* Config_acapon(TString cutDefinition,
         cout << " =============================== " << endl;
     }
 
+		// Do not delete. Will mess up results.
+		// Why? Because reasons....
     die->SetUseKF(kFALSE);
 
     AliDielectronMixingHandler* mix = 0x0;
