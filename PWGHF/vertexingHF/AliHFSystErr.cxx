@@ -68,6 +68,7 @@ AliHFSystErr::AliHFSystErr(const Char_t* name, const Char_t* title) :
   fIs5TeVAnalysis(false),
   fIsBDTAnalysis(false),
   fIsCentScan(false),
+  fStandardBins(false),
   fIsRapidityScan(false)
 {
   //
@@ -110,7 +111,10 @@ void AliHFSystErr::Init(Int_t decay){
       else if(fIs5TeVAnalysis){
 	if(fIsLowPtAnalysis) InitD0toKpi2017pp5TeVLowPtAn();
 	else{
-	  if(fRunNumber==17)InitD0toKpi2017pp5TeV();
+	  if(fRunNumber==17){
+   if(fStandardBins)InitD0toKpi2017pp5TeV();
+      InitD0toKpi2017pp5TeV_finebins();
+    }
 	  else InitD0toKpi2015pp5TeV();
 	}
       }
@@ -1170,6 +1174,69 @@ void AliHFSystErr::InitD0toKpi2017pp5TeV(){
 
   return;
 }
+//-------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2017pp5TeV_finebins(){
+  Float_t xbins[24]={0.,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,9,10,12,16,24,36,50};
+  // TO BE DONE
+  // D0->Kpi syst errors. Responsible: C. Terrevoli
+  //  2017 pp sample - 5TeV with finer pt bins
+  //
+  printf("D0 in pp@5TeV  2017 \n");
+  SetNameTitle("AliHFSystErr","SystErrD0toKpi2017pp5TeV");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",23,xbins);
+ // fNorm->SetBinContent(1,0.0); // bin 0.-1.
+  for(Int_t i=1;i<=23;i++) fNorm->SetBinContent(i,0.021);
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",23,xbins);
+  //fBR->SetBinContent(1,0.0); // bin 0.-1.
+  for(Int_t i=1;i<=23;i++) fBR->SetBinContent(i,0.0129); //
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",23,xbins);
+  fTrackingEff->SetBinContent(1,0.03); //  0-0.5
+  fTrackingEff->SetBinContent(2,0.03); //  0.5-1.
+  fTrackingEff->SetBinContent(3,0.035); //  1-1.5
+  fTrackingEff->SetBinContent(4,0.035); //  1.5-2
+  fTrackingEff->SetBinContent(5,0.04); // 2-2.5
+  fTrackingEff->SetBinContent(6,0.04); // 2.5-3.
+  for(Int_t i=7;i<=23;i++) fTrackingEff->SetBinContent(i,0.045);//3-3.5 3.5-4 4-4.5 4.5-5
+
+  // Raw yield extraction
+  
+  fRawYield = new TH1F("fRawYield","fRawYield",23,xbins);//
+  fRawYield->SetBinContent(1,0.1);//pt bin not used for this analysis  0-0.5, bins
+  fRawYield->SetBinContent(2,0.1);//pt bin not used for this analysis  0.5-1 bins
+  fRawYield->SetBinContent(3,0.07);// 1-1.5
+  for(Int_t i=4;i<=6;i++) fRawYield->SetBinContent(i,0.03);//(1.5-2)
+  for(Int_t i=7;i<=23;i++) fRawYield->SetBinContent(i,0.02);
+
+  // Cuts efficiency (from cuts variation)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",23,xbins);
+  for(Int_t i=1;i<=6;i++) fCutsEff->SetBinContent(i,0.05);
+  for(Int_t i=7;i<=23;i++) fCutsEff->SetBinContent(i,0.03);
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",23,xbins);
+  for(Int_t i=1;i<=23;i++) fPIDEff->SetBinContent(i,0.0);
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",23,xbins);
+  fMCPtShape->SetBinContent(1,0.01);
+  fMCPtShape->SetBinContent(2,0.01);
+  fMCPtShape->SetBinContent(3,0.01);
+  for(Int_t i=4;i<=23;i++) fMCPtShape->SetBinContent(i,0);
+
+  // particle-antiparticle
+  //  fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",24,0,24);
+  //  fPartAntipart->SetBinContent(1,1);
+  //  for(Int_t i=2;i<=24;i++) fPartAntipart->SetBinContent(i,0.05);
+
+  return;
+}
+
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitD0toKpi2017pp5TeVLowPtAn() {
   //
@@ -7012,7 +7079,7 @@ void AliHFSystErr::InitLctopK0S2016pPb() {
   for(Int_t i=1;i<=nBins;i++) fBR->SetBinContent(i,0.05);
 
 }
-
+//-------------------------------------------------------------------------
 void AliHFSystErr::InitLctopK0S2017pp5TeV() {
   //
   // Lc->pK0S syst errors. Responsible: A. De Caro, E. Meninno
@@ -7087,7 +7154,6 @@ void AliHFSystErr::InitLctopK0S2017pp5TeV() {
   for(Int_t i=1;i<=nBins;i++) fBR->SetBinContent(i,0.05);
 
 }
-
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitLctopK0S2013pPbBDT() {
   //
@@ -8196,7 +8262,7 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
   gTotErr->SetLineColor(kBlack);
   gTotErr->SetFillColor(kRed);
   gTotErr->SetFillStyle(3002);
-  gTotErr->Draw("2");
+  gTotErr->Draw("2 hist ");
   leg->AddEntry(gTotErr,"Total (excl. norm. and BR)","f");
   //   hTotErr->SetLineColor(1);
   //   hTotErr->SetLineWidth(3);
@@ -8222,33 +8288,33 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
     fRawYield->SetLineColor(ci);
     //    fRawYield->SetLineColor(3);
     fRawYield->SetLineWidth(3);
-    fRawYield->Draw("same");
+    fRawYield->Draw("same hist ");
     TH1F *hRawYieldRefl = ReflectHisto(fRawYield);
-    hRawYieldRefl->Draw("same");
+    hRawYieldRefl->Draw("same hist ");
     leg->AddEntry(fRawYield,"Yield extraction","l");
   }
   if(fTrackingEff) {
     fTrackingEff->SetFillColor(4);
     fTrackingEff->SetFillStyle(3005);
-    fTrackingEff->Draw("same");
+    fTrackingEff->Draw("same hist ");
     TH1F *hTrackingEffRefl = ReflectHisto(fTrackingEff);
-    hTrackingEffRefl->Draw("same");
+    hTrackingEffRefl->Draw("same hist ");
     leg->AddEntry(fTrackingEff,"Tracking efficiency","f");
   }
   if(fCutsEff) {
     fCutsEff->SetLineColor(4);
     fCutsEff->SetLineWidth(3);
-    fCutsEff->Draw("same");
+    fCutsEff->Draw("same hist ");
     TH1F *hCutsEffRefl = ReflectHisto(fCutsEff);
-    hCutsEffRefl->Draw("same");
+    hCutsEffRefl->Draw("same hist ");
     leg->AddEntry(fCutsEff,"Cut efficiency","l");
   }
   if(fPIDEff) {
     fPIDEff->SetLineColor(7);
     fPIDEff->SetLineWidth(3);
-    fPIDEff->Draw("same");
+    fPIDEff->Draw("same hist ");
     TH1F *hPIDEffRefl = ReflectHisto(fPIDEff);
-    hPIDEffRefl->Draw("same");
+    hPIDEffRefl->Draw("same hist ");
     leg->AddEntry(fPIDEff,"PID efficiency","l");
   }
   if(fMCPtShape) {
@@ -8256,9 +8322,9 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
     fMCPtShape->SetLineColor(ci);
     //    fMCPtShape->SetLineColor(8);
     fMCPtShape->SetLineWidth(3);
-    fMCPtShape->Draw("same");
+    fMCPtShape->Draw("same hist ");
     TH1F *hMCPtShapeRefl = ReflectHisto(fMCPtShape);
-    hMCPtShapeRefl->Draw("same");
+    hMCPtShapeRefl->Draw("same hist ");
     leg->AddEntry(fMCPtShape,"MC p_{t} shape","l");
   }
   if(fPartAntipart) {
@@ -8266,15 +8332,15 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
     fPartAntipart->SetLineColor(ci);
     //    fPartAntipart->SetLineColor(9);
     fPartAntipart->SetLineWidth(3);
-    fPartAntipart->Draw("same");
+    fPartAntipart->Draw("same hist ");
     TH1F *hPartAntipartRefl = ReflectHisto(fPartAntipart);
-    hPartAntipartRefl->Draw("same");
+    hPartAntipartRefl->Draw("same hist ");
     leg->AddEntry(fPartAntipart,"D = #bar{D}","l");
   }
   if(grErrFeeddown) {
     grErrFeeddown->SetFillColor(kTeal-8);
     grErrFeeddown->SetFillStyle(3001);
-    grErrFeeddown->Draw("2");
+    grErrFeeddown->Draw("2 hist ");
     leg->AddEntry(grErrFeeddown,"Feed-down from B","f");
   }
 
