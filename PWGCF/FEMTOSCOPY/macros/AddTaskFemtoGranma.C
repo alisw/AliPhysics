@@ -17,10 +17,25 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
     return nullptr;
   }
 
+  if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
+    if (isMC) {
+      // IMPORTANT - SET WHEN USING DIFFERENT PASS
+      AliAnalysisTaskPIDResponse *pidResponse =
+          reinterpret_cast<AliAnalysisTaskPIDResponse *>(
+              gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/macros/"
+                  "AddTaskPIDResponse.C (kTRUE, kTRUE, "
+                  "kTRUE, \"1\")"));
+    } else {
+      AliAnalysisTaskPIDResponse *pidResponse =
+          reinterpret_cast<AliAnalysisTaskPIDResponse *>(
+              gInterpreter->ExecuteMacro(
+                  "$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C)"));
+    }
+  }
+
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
   evtCuts->SetMultVsCentPlots(true);
-//  evtCuts->SetSphericityCuts(0.7,1.0);
 
   if (suffix=="1") {
     evtCuts->SetSphericityCuts(0.,0.3);
@@ -36,19 +51,20 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
 
   AliAnalysisTaskGrandma *task = new AliAnalysisTaskGrandma("myFirstTask",
                                                             isMC);
-  task->SetTrackBufferSize(2000);
-  task->SetEventCuts(evtCuts);
+//  task->SetTrackBufferSize(2000);
+//  task->SetEventCuts(evtCuts);
 
+//Track cuts
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
       isMC, DCAPlots, false, false);
   TrackCuts->SetCutCharge(1);
 //wanna change something? Do it like this: TrackCuts->SetPtRange(0.3, 4.05);
-  task->SetTrackCuts(TrackCuts);
+//  task->SetTrackCuts(TrackCuts);
 
   AliFemtoDreamTrackCuts *AntiTrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, DCAPlots, false, false);
   AntiTrackCuts->SetCutCharge(-1);
-  task->SetAntiTrackCuts(AntiTrackCuts);
+//  task->SetAntiTrackCuts(AntiTrackCuts);
 
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(
       isMC, false, false);
@@ -61,7 +77,7 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
   v0Cuts->SetPDGCodePosDaug(2212);//Proton
   v0Cuts->SetPDGCodeNegDaug(211);//Pion
   v0Cuts->SetPDGCodev0(3122);//Lambda
-  task->Setv0Cuts(v0Cuts);
+//  task->Setv0Cuts(v0Cuts);
 
   AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(
       isMC, false, false);
@@ -76,7 +92,7 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
   Antiv0Cuts->SetPDGCodePosDaug(211);//Pion
   Antiv0Cuts->SetPDGCodeNegDaug(2212);//Proton
   Antiv0Cuts->SetPDGCodev0(-3122);//Lambda
-  task->SetAntiv0Cuts(Antiv0Cuts);
+//  task->SetAntiv0Cuts(Antiv0Cuts);
 
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
@@ -247,7 +263,7 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
 
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
 
-  task->SetCollectionConfig(config);
+//  task->SetCollectionConfig(config);
 
   if (CentEst == "kInt7") {
     task->SelectCollisionCandidates(AliVEvent::kINT7);
@@ -275,14 +291,24 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
         << "====================================================================="
         << std::endl;
   }
+  task->SetEvtCutQA(true);
+  task->SetTrackBufferSize(2000);
+  task->SetEventCuts(evtCuts);
+  task->SetTrackCuts(TrackCuts);
+  task->SetAntiTrackCuts(AntiTrackCuts);
+  task->Setv0Cuts(v0Cuts);
+  task->SetAntiv0Cuts(Antiv0Cuts);
+  task->SetCollectionConfig(config);
   mgr->AddTask(task);
 
   TString file = AliAnalysisManager::GetCommonFileName();
 
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+
   mgr->ConnectInput(task, 0, cinput);
 
   TString QAName = Form("QA");
+
   AliAnalysisDataContainer *coutputQA;
   coutputQA = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
