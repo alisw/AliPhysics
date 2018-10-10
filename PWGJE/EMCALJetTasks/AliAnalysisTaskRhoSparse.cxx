@@ -23,6 +23,7 @@ ClassImp(AliAnalysisTaskRhoSparse)
 AliAnalysisTaskRhoSparse::AliAnalysisTaskRhoSparse() : 
   AliAnalysisTaskRhoBase("AliAnalysisTaskRhoSparse"),
   fNExclLeadJets(0),
+  fExcludeOverlaps(0),
   fRhoCMS(0),
   fHistOccCorrvsCent(0)
 {
@@ -33,6 +34,7 @@ AliAnalysisTaskRhoSparse::AliAnalysisTaskRhoSparse() :
 AliAnalysisTaskRhoSparse::AliAnalysisTaskRhoSparse(const char *name, Bool_t histo) :
   AliAnalysisTaskRhoBase(name, histo),
   fNExclLeadJets(0),
+  fExcludeOverlaps(0),
   fRhoCMS(0),
   fHistOccCorrvsCent(0)
 {
@@ -130,6 +132,7 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
   Int_t NjetAcc = 0;
   Double_t TotaljetArea=0;
   Double_t TotaljetAreaPhys=0;
+  Double_t TotalTPCArea=2*TMath::Pi()*0.9;
 
   // push all jets within selected acceptance into stack
   for (Int_t iJets = 0; iJets < Njets; ++iJets) {
@@ -146,14 +149,11 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
 
     TotaljetArea+=jet->Area();
     
-    if(jet->Pt()>0.1){
-      TotaljetAreaPhys+=jet->Area();
-    }
 
     if (!AcceptJet(jet))
       continue;
 
-   // Search for overlap with signal jets
+    // Search for overlap with signal jets
     Bool_t isOverlapping = kFALSE;
     if (sigjets) {
       for(Int_t j=0;j<NjetsSig;j++)
@@ -172,17 +172,19 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
 	}
     }
 
-    if(isOverlapping) 
+    if(fExcludeOverlaps && isOverlapping)
       continue;
 
-    if(jet->Pt()>0.1){
-      rhovec[NjetAcc] = jet->Pt() / jet->Area();
-      ++NjetAcc;
+    //This is to exclude pure ghost jets from the rho calculation
+    if(jet->GetNumberOfTracks()>0)
+    {
+    	  TotaljetAreaPhys+=jet->Area();
+    	  rhovec[NjetAcc] = jet->Pt() / jet->Area();
+    	  ++NjetAcc;
     }
   }
 
-  Double_t OccCorr=0.0;
-  if(TotaljetArea>0) OccCorr=TotaljetAreaPhys/TotaljetArea;
+  Double_t OccCorr=TotaljetAreaPhys/TotalTPCArea;
  
   if (fCreateHisto)
     fHistOccCorrvsCent->Fill(fCent, OccCorr);
