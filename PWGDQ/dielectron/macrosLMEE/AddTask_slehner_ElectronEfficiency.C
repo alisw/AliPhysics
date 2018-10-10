@@ -8,12 +8,12 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
                                                                 Double_t centMax=100.,
                                                                 Bool_t PIDCorr=kFALSE,
                                                                 Bool_t useAODFilterCuts=kFALSE,
-                                                                TString configFile="Config_slehner_Efficiency.C",
-                                                                Bool_t getFromAlien=kFALSE
+                                                                TString TMVAweight = "TMVAClassification_BDTG.weights_094.xml" 
         ) {
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
-
+  TString configFile="Config_slehner_Efficiency.C";
+  Bool_t getFromAlien=kFALSE;
   // #########################################################
   // #########################################################
   // Configuring Analysis Manager
@@ -97,18 +97,18 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   task->SetEtaBinsLinear  (minEtaBin, maxEtaBin, stepsEtaBin);
   task->SetPhiBinsLinear  (minPhiBin, maxPhiBin, stepsPhiBin);
   task->SetThetaBinsLinear(minThetaBin, maxThetaBin, stepsThetaBin);
-//  task->SetMassBinsLinear (minMassBin, maxMassBin, stepsMassBin);
-//  task->SetPairPtBinsLinear(minPairPtBin, maxPairPtBin, stepsPairPtBin);
+  task->SetMassBinsLinear (0, 5, 500);
+  task->SetPairPtBinsLinear(minPairPtBin, maxPairPtBin, stepsPairPtBin);
   
-  double mbinsarr[] = {0.0, 0.1,0.3,0.5,0.7,0.9,1.1,1.3, 2.0, 2.9, 3.1,3.4,10};
+  double mbinsarr[] = { 0.00, 0.02, 0.04, 0.06, 0.08, 0.10, 0.14, 0.18, 0.22, 0.30, 0.38, 0.46, 0.62, 0.7, 0.86, 1.1, 1.70, 2.30, 2.70, 2.90, 3.00, 3.10, 3.30, 4.00, 5.00};
   vector<double>mbins;
   for(int i=0; i< sizeof(mbinsarr) / sizeof(mbinsarr[0]); i++){ mbins.push_back(mbinsarr[i]); }
-
-  double ptbinsarr[]= {0.0,0.4,0.6,1,2.5,10};
+  task->SetMassBins(mbins);
+  
+  double ptbinsarr[]= {0.0,0.4,0.6,1,2.5,8};
   vector<double>ptbins;
   for(int i=0; i< sizeof(ptbinsarr) / sizeof(ptbinsarr[0]); i++){ ptbins.push_back(ptbinsarr[i]);} 
-  
-  task->SetMassBins(mbins);
+ 
   task->SetPairPtBins(ptbins);
 
   // #########################################################
@@ -156,17 +156,18 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   task->AddMCSignalsWhereDielectronPairNotFromSameMother(DielectronsPairNotFromSameMother);
 
   // #########################################################
-  // Adding cutsettings
-//  for(Int_t TrCut = 0; TrCut <= 4; ++TrCut){
-//    for(Int_t PIDCut = 0; PIDCut <= 4; ++PIDCut){
-//    std::cout << "CutTr: "<<TrCut<<" CutPID: "<<PIDCut<<" being added"<< std::endl;
-//    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(TrCut, PIDCut, useAODFilterCuts);
-//    task->AddTrackCuts(filter);
-//    }
-//  } 
-  std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" being added"<< std::endl;
-  AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, useAODFilterCuts);
-  task->AddTrackCuts(filter);
+  // Adding multiple cutsettings
+  for(Int_t MVACut = 0; MVACut <= 10; ++MVACut){
+    std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVA Cut: "<<MVACut*0.2<<" added"<< std::endl;
+    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight);
+    task->AddTrackCuts(filter);
+    }
+  
+ 
+// Adding multiple cutsettings
+//  std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" being added"<< std::endl;
+//  AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, useAODFilterCuts);
+//  task->AddTrackCuts(filter);
     
   if(PIDCorr) setPIDCorrections(task);
 

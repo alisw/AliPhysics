@@ -175,16 +175,15 @@ void setPIDCorrections(AliAnalysisTaskElectronEfficiencyV2* task){
 // #########################################################
 // #########################################################
 
-AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t selTr, Int_t selPID, Bool_t useAODFilterCuts)
+AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t selTr, Int_t selPID, Int_t MVACut, Bool_t useAODFilterCuts,TString TMVAweight)
 {
-  std::cout<<"SetupTrackCutsAndSettings: "<<selTr<<","<<selPID<<std::endl;
+  std::cout<<"SetupTrackCutsAndSettings: TrackCut: "<<selTr<<", PIDCut; "<<selPID<<" MVACut: "<<MVACut*0.2<<std::endl;
   AliAnalysisFilter *anaFilter = new AliAnalysisFilter("anaFilter","anaFilter"); // named constructor seems mandatory!
 
   LMEECutLib* LMcutlib = new LMEECutLib();
 
-  std::cout << "Get CutTr: "<<selTr<<" CutPID: "<<selPID<<std::endl;
-  anaFilter->AddCuts(LMcutlib->GetTrackCuts(selTr, selPID, 0, useAODFilterCuts));     // Setting MVA cut for efficiency to 0 - no efficiency correction for MVA cut here
-  anaFilter->SetName(TString::Format("CutTr%d_PID%d",selTr, selPID));
+  anaFilter->AddCuts(LMcutlib->GetTrackCuts(selTr, selPID, MVACut, useAODFilterCuts));     // Setting MVA cut for efficiency to 0 - no efficiency correction for MVA cut here
+  anaFilter->SetName(TString::Format("CutTr%d_PID%d_MVA%d",selTr, selPID,MVACut,TMVAweight));
   anaFilter->Print();
   return anaFilter;
 }
