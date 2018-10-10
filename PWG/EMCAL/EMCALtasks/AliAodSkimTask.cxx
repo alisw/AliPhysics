@@ -21,18 +21,18 @@ using namespace std;
 ClassImp(AliAodSkimTask)
 
 AliAodSkimTask::AliAodSkimTask() : 
-  AliAnalysisTaskSE(), fClusMinE(-1), fCutMC(1), fYCutMC(0.7),
-  fDoCopyHeader(1),  fDoCopyVZERO(1),  fDoCopyTZERO(1),  fDoCopyVertices(1),  fDoCopyTOF(1), fDoCopyTracklets(1), fDoCopyTracks(1), fDoCopyTrigger(1), fDoCopyPTrigger(0), 
-  fDoCopyCells(1), fDoCopyPCells(0), fDoCopyClusters(1), fDoCopyDiMuons(0), fDoCopyZDC(1), fDoCopyMC(1), fDoCopyMCHeader(1), fTrials(0), fPyxsec(0), 
-  fPytrials(0), fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0), fHevs(0), fHclus(0)
+  AliAnalysisTaskSE(), fClusMinE(-1), fCutMC(1), fYCutMC(0.7), fGammaBr(""),
+  fDoCopyHeader(1),  fDoCopyVZERO(1),  fDoCopyTZERO(1),  fDoCopyVertices(1), fDoCopyTOF(1), fDoCopyTracklets(1), fDoCopyTracks(1), fDoCopyTrigger(1), fDoCopyPTrigger(0), 
+  fDoCopyCells(1), fDoCopyPCells(0), fDoCopyClusters(1), fDoCopyDiMuons(0),  fDoCopyTrdTracks(0), fDoCopyV0s(0), fDoCopyCascades(0), fDoCopyZDC(1), fDoCopyConv(0), 
+  fDoCopyMC(1), fDoCopyMCHeader(1), fTrials(0), fPyxsec(0), fPytrials(0), fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0), fHevs(0), fHclus(0)
 {
 }
 
 AliAodSkimTask::AliAodSkimTask(const char* name) : 
-  AliAnalysisTaskSE(name), fClusMinE(-1), fCutMC(1), fYCutMC(0.7),
+  AliAnalysisTaskSE(name), fClusMinE(-1), fCutMC(1), fYCutMC(0.7), fGammaBr(""),
   fDoCopyHeader(1),  fDoCopyVZERO(1),  fDoCopyTZERO(1),  fDoCopyVertices(1),  fDoCopyTOF(1), fDoCopyTracklets(1), fDoCopyTracks(1), fDoCopyTrigger(1), fDoCopyPTrigger(0), 
-  fDoCopyCells(1), fDoCopyPCells(0), fDoCopyClusters(1), fDoCopyDiMuons(0), fDoCopyZDC(1), fDoCopyMC(1), fDoCopyMCHeader(1), fTrials(0), fPyxsec(0), 
-  fPytrials(0), fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0), fHevs(0), fHclus(0)
+  fDoCopyCells(1), fDoCopyPCells(0), fDoCopyClusters(1), fDoCopyDiMuons(0),  fDoCopyTrdTracks(0), fDoCopyV0s(0), fDoCopyCascades(0), fDoCopyZDC(1), fDoCopyConv(0), 
+  fDoCopyMC(1), fDoCopyMCHeader(1), fTrials(0), fPyxsec(0), fPytrials(0), fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0), fHevs(0), fHclus(0)
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -128,16 +128,19 @@ void AliAodSkimTask::UserExec(Option_t *)
     *out = *in;
     out->SetUniqueID(fTrials);
   }
+
   if (fDoCopyVZERO) {   
     AliAODVZERO *out = eout->GetVZEROData();	                 
     AliAODVZERO *in  = evin->GetVZEROData();
     *out = *in;                  
   }
+
   if (fDoCopyTZERO) {   
     AliAODTZERO *out = eout->GetTZEROData();	                 
     AliAODTZERO *in  = evin->GetTZEROData(); 	    
     *out = *in; 
   }
+
   if (fDoCopyVertices) {   
     TClonesArray *out = eout->GetVertices(); 
     TClonesArray *in  = evin->GetVertices();      
@@ -146,11 +149,13 @@ void AliAodSkimTask::UserExec(Option_t *)
     }
     out->AbsorbObjects(in);
   }
+
   if (fDoCopyTOF) {   
     AliTOFHeader *out = const_cast<AliTOFHeader*>(eout->GetTOFHeader()); 
     const AliTOFHeader *in = evin->GetTOFHeader();	    
     *out = *in;                  
   }
+
   if (fDoCopyTracks) {
     TClonesArray *out = eout->GetTracks();	                 
     TClonesArray *in  = evin->GetTracks();	
@@ -159,31 +164,37 @@ void AliAodSkimTask::UserExec(Option_t *)
     }
     out->AbsorbObjects(in);
   }
+
   if (fDoCopyTracklets) { 
     AliAODTracklets *out = eout->GetTracklets();
     AliAODTracklets *in  = evin->GetTracklets();
     *out = *in;
   }
+
   if (fDoCopyTrigger) { 
     AliAODCaloTrigger *out = eout->GetCaloTrigger("EMCAL");
     AliAODCaloTrigger *in  = evin->GetCaloTrigger("EMCAL");
     *out = *in;
   }
+
   if (fDoCopyPTrigger) { 
     AliAODCaloTrigger *out = eout->GetCaloTrigger("PHOS");
     AliAODCaloTrigger *in  = evin->GetCaloTrigger("PHOS");
     *out = *in;
   }
+
   if (fDoCopyCells) { 
     AliAODCaloCells *out = eout->GetEMCALCells();                  
     AliAODCaloCells *in  = evin->GetEMCALCells();    
       *out = *in;
   }
+
   if (fDoCopyPCells) { 
     AliAODCaloCells *out = eout->GetPHOSCells();                  
     AliAODCaloCells *in  = evin->GetPHOSCells();    
     *out = *in;
   }
+
   if (fDoCopyClusters) { 
     TClonesArray *out = eout->GetCaloClusters();	         
     TClonesArray *in  = evin->GetCaloClusters();  
@@ -202,10 +213,64 @@ void AliAodSkimTask::UserExec(Option_t *)
     out->AbsorbObjects(in);
   }
 
+  if (fDoCopyTrdTracks) { 
+    TClonesArray *out = static_cast<TClonesArray*>(eout->FindListObject("trdTracks"));
+    TClonesArray *in  = static_cast<TClonesArray*>(eout->FindListObject("trdTracks"));
+    if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
+      AliFatal(Form("%s: Previous event not deleted. This should not happen!",GetName()));
+    }
+    out->AbsorbObjects(in);
+  }
+
+  if (fDoCopyV0s) { 
+    TClonesArray *out = eout->GetV0s();
+    TClonesArray *in  = evin->GetV0s();
+    if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
+      AliFatal(Form("%s: Previous event not deleted. This should not happen!",GetName()));
+    }
+    out->AbsorbObjects(in);
+  }
+
+  if (fDoCopyCascades) { 
+    TClonesArray *out = eout->GetCascades();
+    TClonesArray *in  = evin->GetCascades();
+    if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
+      AliFatal(Form("%s: Previous event not deleted. This should not happen!",GetName()));
+    }
+    out->AbsorbObjects(in);
+  }
+
   if (fDoCopyZDC) { 
     AliAODZDC *out = eout->GetZDCData();
     AliAODZDC *in  = evin->GetZDCData();
     *out = *in;
+  }
+
+  if (fDoCopyDiMuons) { 
+    TClonesArray *out = eout->GetDimuons();
+    TClonesArray *in  = evin->GetDimuons();
+    if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
+      AliFatal(Form("%s: Previous event not deleted. This should not happen!",GetName()));
+    }
+    out->AbsorbObjects(in);
+  }
+
+  if (fDoCopyConv) { 
+    TClonesArray *out = dynamic_cast<TClonesArray*>(eout->FindListObject(fGammaBr));
+    TClonesArray *in  = dynamic_cast<TClonesArray*>(evin->FindListObject(fGammaBr));
+    if (!in) {
+      evin->GetList()->ls();
+      AliFatal(Form("%s: Could not find conversion branch with name %s!",GetName(), fGammaBr.Data()));
+    }
+    if (in && !out) {
+      out = new TClonesArray("AliAODConversionPhoton",2*in->GetEntries());
+      out->SetName(fGammaBr);
+      oh->AddBranch("TClonesArray", &out);
+    }
+    if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
+      out->Delete();
+    }
+    out->AbsorbObjects(in);
   }
 
   if (fDoCopyMC) {
@@ -393,7 +458,7 @@ Bool_t AliAodSkimTask::PythiaInfoFromFile(const char* currFile, Float_t &xsec, F
 
 const char *AliAodSkimTask::Str() const
 {
-  return Form("mine%.2f_%dycut%.2f_%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d",
+  return Form("mine%.2f_%dycut%.2f_%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d",
 	      fClusMinE,
 	      fCutMC,
 	      fYCutMC,
@@ -410,7 +475,12 @@ const char *AliAodSkimTask::Str() const
 	      fDoCopyPCells,
 	      fDoCopyClusters,
 	      fDoCopyDiMuons,
+	      fDoCopyTrdTracks,
+	      fDoCopyV0s,
+	      fDoCopyCascades,
 	      fDoCopyZDC,
+	      fDoCopyConv,
 	      fDoCopyMC,
 	      fDoCopyMCHeader);
 }
+
