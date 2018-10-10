@@ -4870,7 +4870,11 @@ Float_t AliConvEventCuts::GetWeightForMultiplicity(Int_t mult){
  
   if ( fPeriodEnum == kLHC16NomB || fPeriodEnum == kLHC16P1Pyt8 || fPeriodEnum == kLHC16P1PHO || 
        fPeriodEnum == kLHC17pq  ||  fPeriodEnum == kLHC17P1PHO  || fPeriodEnum == kLHC17l3b  || fPeriodEnum == kLHC17l4b  || 
-       fPeriodEnum == kLHC15o      ) {  //  For these periods allow larger statistical error in the MC to apply the multiplicity weight
+       fPeriodEnum == kLHC15o   || fPeriodEnum == kLHC16g1  || fPeriodEnum == kLHC16g1a || 
+       fPeriodEnum == kLHC16g1b || fPeriodEnum == kLHC16g1c || fPeriodEnum == kLHC16i1a || 
+       fPeriodEnum == kLHC16i1b || fPeriodEnum == kLHC16i1c || fPeriodEnum == kLHC16i2a || 
+       fPeriodEnum == kLHC16i2b || fPeriodEnum == kLHC16i2c || fPeriodEnum == kLHC16i3a || 
+       fPeriodEnum == kLHC16i3b || fPeriodEnum == kLHC16i3c || fPeriodEnum == kLHC16h4     ) {  //  For these periods allow larger statistical error in the MC to apply the multiplicity weight
      if (relativeErrorData < 0.2 && relativeErrorMC < 0.4 ){
         if (isfinite(valueMultData) && isfinite(valueMultMC) ){
           weightMult               = valueMultData/valueMultMC;
@@ -6133,7 +6137,7 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = k5TeV;
 
   // LHC17p Low Intensity MC using Phojet
-  } else if ( periodName.CompareTo("LHC17P1PHO") == 0 ||  periodName.Contains("LHC18d6b")  ||  periodName.Contains("LHC18d6b2")){
+  } else if ( periodName.CompareTo("LHC17P1PHO") == 0 ||  periodName.Contains("LHC18d6b")  ){
     fPeriodEnum = kLHC17P1PHO;
     fEnergyEnum = k5TeV;
 
