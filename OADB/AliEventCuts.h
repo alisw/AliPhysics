@@ -123,7 +123,10 @@ class AliEventCuts : public TList {
 
     int           fRequiredSolenoidPolarity;      ///< 0: does not require any particular polarity. Positive numbers -> positive B field, negative numbers -> negative B field
 
+    bool          fUseCombinedMVSPDcut;           ///< If true, MV cut is used when a track vertex is present and if not, it used the SPDvsMultCut
+
     bool          fUseMultiplicityDependentPileUpCuts; ///< If true fSPDpileupMinContributors is set according to the event multiplicity (automatic setup set it true only if the user does not specify any custom value)
+    bool          fUseSPDpileUpCut;               ///< Enable the SPD pileup cut
     int           fSPDpileupMinContributors;      ///< Reject all the events with SPD pile-up vertices with more than fRejectPileupSPD contributors
     double        fSPDpileupMinZdist;             ///<
     double        fSPDpileupNsigmaZdist;          ///<
@@ -202,7 +205,7 @@ class AliEventCuts : public TList {
     AliESDtrackCuts* fFB32trackCuts; //!<! Cuts corresponding to FB32 in the ESD (used only for correlations cuts in ESDs)
     AliESDtrackCuts* fTPConlyCuts;   //!<! Cuts corresponding to the standalone TPC cuts in the ESDs (used only for correlations cuts in ESDs)
 
-    ClassDef(AliEventCuts,7)
+    ClassDef(AliEventCuts,8)
 };
 
 template<typename F> F AliEventCuts::PolN(F x,F* coef, int n) {
