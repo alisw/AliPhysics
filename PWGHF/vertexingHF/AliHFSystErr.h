@@ -78,7 +78,7 @@ class AliHFSystErr : public TNamed
     if(flag) AliInfo("Settings for the 5TeV analysis");  
   }
   void SetStandardBins(Bool_t flag){
-  fStandardBins= flag;
+    fStandardBins= flag;
   }
 
   void SetIsBDTAnalysis(Bool_t flag){
