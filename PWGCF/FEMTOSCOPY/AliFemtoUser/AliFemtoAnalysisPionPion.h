@@ -188,6 +188,11 @@ struct AliFemtoAnalysisPionPion::AnalysisParams {
   Bool_t output_settings;
   Bool_t is_mc_analysis;
 
+  // Bool_t auto_mult_bin;
+
+  /// get multiplicty from cut params
+  void calc_automult(const AliFemtoAnalysisPionPion::CutParams &);
+
   /// Default Values
   AnalysisParams();
 };

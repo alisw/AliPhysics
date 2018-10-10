@@ -67,7 +67,7 @@ struct Configuration<AliFemtoAnalysisPionPion> {
 
 AliFemtoAnalysisPionPion::AnalysisParams::AnalysisParams()
 : vertex_bins(1), vertex_min(-10.0), vertex_max(10.0)
-, mult_bins(30), mult_min(0.0), mult_max(10000.0f)
+, mult_bins(30), mult_min(0.0), mult_max(6480.0)
 // , pion_type_1(kNone)
 // , pion_type_2(kNone)
 , pion_type_1(kPiPlus)
@@ -80,6 +80,26 @@ AliFemtoAnalysisPionPion::AnalysisParams::AnalysisParams()
 , output_settings(kFALSE)
 , is_mc_analysis(kFALSE)
 {
+}
+
+void
+AliFemtoAnalysisPionPion::AnalysisParams::calc_automult(const AliFemtoAnalysisPionPion::CutParams &cut)
+{
+  const double
+    centlo = cut.event_CentralityMax,
+    centhi = cut.event_CentralityMin,
+
+    bin_width = (mult_max - mult_min) / mult_bins,
+
+  // magic numbers fitting the exp curve
+    min_mult = 4293.2 * std::exp(-centhi / 24.01),
+    max_mult = 4293.2 * std::exp(-centlo / 24.01),
+
+    mult_min = std::max(0.0, min_mult - 1000);
+    mult_max = max_mult + 2000;
+
+  // keep the same bin width
+  mult_bins = (mult_max - mult_min) / bin_width;
 }
 
 #include <initializer_list>
