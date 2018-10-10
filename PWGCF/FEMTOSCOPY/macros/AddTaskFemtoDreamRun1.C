@@ -1,26 +1,26 @@
 #include "TROOT.h"
 #include "TSystem.h"
-AliAnalysisTaskSE* AddTaskOmegaFemto(
+AliAnalysisTaskSE* AddTaskFemtoDreamRun1(
     bool isMC=false,
     bool isESD=false,
-    TString CentEst="kInt7",
-    bool notpp=true,//1
+    TString CentEst="kMB",
+    bool notpp=false,//1
     bool fineBinning=true,//2
     bool DCAPlots=false,//3
     bool CPAPlots=false,//4
     bool MomReso=false,//5
     bool etaPhiPlotsAtTPCRadii=false,//6
     bool CombSigma=false,//7
-    bool PileUpRej=true,//8
+    bool PileUpRej=false,//8
     bool mTkTPlot=false,//9
     bool kTCentPlot=false,//10
-    bool MultvsCentPlot=false,//11
+    bool MultvsCentPlot=true,//11
     bool dPhidEtaPlots=false,//12
     bool eventMixing=true,//13
-    bool phiSpin=true,//14
-    bool stravinskyPhiSpin=true,//15
+    bool phiSpin=false,//14
+    bool stravinskyPhiSpin=false,//15
     bool ContributionSplitting=false,//16
-    bool ContributionSplittingDaug=false,//17
+    bool ContributionSplittingDaug=true,//17
     bool RunNumberQA=false,//18
     int FilterBit=128,//19
     bool InvMassPairs=false, //20
@@ -28,6 +28,7 @@ AliAnalysisTaskSE* AddTaskOmegaFemto(
 {
   // 1    2     3     4     5     6     7    8    9      10   11     12   13    14    15    16   17
   //true,true,false,false,false,false,false,true,false,false,true,false,true,false,false,false,true
+  //false,true,false,false,false,false,false,true,true,false,false,false,true,true,true,false,false,false,128,false,true 
   // the manager is static, so get the existing manager via the static method
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -61,8 +62,7 @@ AliAnalysisTaskSE* AddTaskOmegaFemto(
 
 
   AliFemtoDreamEventCuts *evtCuts=
-      AliFemtoDreamEventCuts::StandardCutsRun2();
-  evtCuts->CleanUpMult(false,false,false,true);
+      AliFemtoDreamEventCuts::StandardCutsRun1();
   evtCuts->SetMultVsCentPlots(MultvsCentPlot);
   //Track Cuts
   AliFemtoDreamTrackCuts *TrackCuts=
@@ -120,43 +120,43 @@ AliAnalysisTaskSE* AddTaskOmegaFemto(
 
   //Cascade Cuts
   CascadeCuts=
-      AliFemtoDreamCascadeCuts::OmegaCuts(isMC,ContributionSplitting);
+      AliFemtoDreamCascadeCuts::XiCuts(isMC,ContributionSplitting);
   CascadeCuts->SetXiCharge(-1);
-  AliFemtoDreamTrackCuts *OmegaNegCuts=
+  AliFemtoDreamTrackCuts *XiNegCuts=
       AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC,PileUpRej,false);
-  AliFemtoDreamTrackCuts *OmegaPosCuts=
+  AliFemtoDreamTrackCuts *XiPosCuts=
       AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC,PileUpRej,false);
-  AliFemtoDreamTrackCuts *OmegaBachCuts=
-      AliFemtoDreamTrackCuts::OmegaBachKaonCuts(isMC,PileUpRej,false);
-  CascadeCuts->Setv0Negcuts(OmegaNegCuts);
-  CascadeCuts->Setv0PosCuts(OmegaPosCuts);
-  CascadeCuts->SetBachCuts(OmegaBachCuts);
-  CascadeCuts->SetPDGCodeCasc(3334);
+  AliFemtoDreamTrackCuts *XiBachCuts=
+      AliFemtoDreamTrackCuts::XiBachPionCuts(isMC,PileUpRej,false);
+  CascadeCuts->Setv0Negcuts(XiNegCuts);
+  CascadeCuts->Setv0PosCuts(XiPosCuts);
+  CascadeCuts->SetBachCuts(XiBachCuts);
+  CascadeCuts->SetPDGCodeCasc(3312);
   CascadeCuts->SetPDGCodev0(3122);
   CascadeCuts->SetPDGCodePosDaug(2212);
   CascadeCuts->SetPDGCodeNegDaug(-211);
-  CascadeCuts->SetPDGCodeBach(-321);
+  CascadeCuts->SetPDGCodeBach(-211);
 
   AntiCascadeCuts=
-      AliFemtoDreamCascadeCuts::OmegaCuts(isMC,ContributionSplitting);
+      AliFemtoDreamCascadeCuts::XiCuts(isMC,ContributionSplitting);
   AntiCascadeCuts->SetXiCharge(1);
-  AliFemtoDreamTrackCuts *AntiOmegaNegCuts=
+  AliFemtoDreamTrackCuts *AntiXiNegCuts=
       AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC,PileUpRej,false);
-  AntiOmegaNegCuts->SetCutCharge(-1);
-  AliFemtoDreamTrackCuts *AntiOmegaPosCuts=
+  AntiXiNegCuts->SetCutCharge(-1);
+  AliFemtoDreamTrackCuts *AntiXiPosCuts=
       AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC,PileUpRej,false);
-  AntiOmegaPosCuts->SetCutCharge(1);
-  AliFemtoDreamTrackCuts *AntiOmegaBachCuts=
-      AliFemtoDreamTrackCuts::OmegaBachKaonCuts(isMC,PileUpRej,false);
-  AntiOmegaBachCuts->SetCutCharge(1);
-  AntiCascadeCuts->Setv0Negcuts(AntiOmegaNegCuts);
-  AntiCascadeCuts->Setv0PosCuts(AntiOmegaPosCuts);
-  AntiCascadeCuts->SetBachCuts(AntiOmegaBachCuts);
-  AntiCascadeCuts->SetPDGCodeCasc(-3334);
+  AntiXiPosCuts->SetCutCharge(1);
+  AliFemtoDreamTrackCuts *AntiXiBachCuts=
+      AliFemtoDreamTrackCuts::XiBachPionCuts(isMC,PileUpRej,false);
+  AntiXiBachCuts->SetCutCharge(1);
+  AntiCascadeCuts->Setv0Negcuts(AntiXiNegCuts);
+  AntiCascadeCuts->Setv0PosCuts(AntiXiPosCuts);
+  AntiCascadeCuts->SetBachCuts(AntiXiBachCuts);
+  AntiCascadeCuts->SetPDGCodeCasc(-3312);
   AntiCascadeCuts->SetPDGCodev0(-3122);
   AntiCascadeCuts->SetPDGCodePosDaug(211);
   AntiCascadeCuts->SetPDGCodeNegDaug(-2212);
-  AntiCascadeCuts->SetPDGCodeBach(-321);
+  AntiCascadeCuts->SetPDGCodeBach(-211);
 
   if (RunNumberQA) {
     v0Cuts->SetRunNumberQA(265309,267167);
@@ -193,45 +193,45 @@ AliAnalysisTaskSE* AddTaskOmegaFemto(
     NBins.push_back(750); // p barp
     NBins.push_back(750); // p Lambda
     NBins.push_back(750); // p barLambda
-    NBins.push_back(750); // p Omega
-    NBins.push_back(750); // p barOmega
+    NBins.push_back(750); // p Xi
+    NBins.push_back(750); // p barXi
     NBins.push_back(750); // barp barp
     NBins.push_back(750); // barp Lambda
     NBins.push_back(750); // barp barLambda
-    NBins.push_back(750); // barp Omega
-    NBins.push_back(750); // barp barOmega
+    NBins.push_back(750); // barp Xi
+    NBins.push_back(750); // barp barXi
     NBins.push_back(750); // Lambda Lambda
     NBins.push_back(750); // Lambda barLambda
-    NBins.push_back(750); // Lambda Omega
-    NBins.push_back(750); // Lambda barOmega
+    NBins.push_back(750); // Lambda Xi
+    NBins.push_back(750); // Lambda barXi
     NBins.push_back(750); // barLambda barLambda
-    NBins.push_back(750); // barLambda Omega
-    NBins.push_back(750); // barLambda barOmega
-    NBins.push_back(750); // Omega Omega
-    NBins.push_back(750); // Omega barOmega
-    NBins.push_back(750); // barOmega barOmega
+    NBins.push_back(750); // barLambda Xi
+    NBins.push_back(750); // barLambda barXi
+    NBins.push_back(750); // Xi Xi
+    NBins.push_back(750); // Xi barXi
+    NBins.push_back(750); // barXi barXi
   } else { //standard binning Run1
     NBins.push_back(750); // p p
     NBins.push_back(750); // p barp
     NBins.push_back(150); // p Lambda
     NBins.push_back(150); // p barLambda
-    NBins.push_back(150); // p Omega
-    NBins.push_back(150); // p barOmega
+    NBins.push_back(150); // p Xi
+    NBins.push_back(150); // p barXi
     NBins.push_back(750); // barp barp
     NBins.push_back(150); // barp Lambda
     NBins.push_back(150); // barp barLambda
-    NBins.push_back(150); // barp Omega
-    NBins.push_back(150); // barp barOmega
+    NBins.push_back(150); // barp Xi
+    NBins.push_back(150); // barp barXi
     NBins.push_back(150); // Lambda Lambda
     NBins.push_back(150); // Lambda barLambda
-    NBins.push_back(150); // Lambda Omega
-    NBins.push_back(150); // Lambda barOmega
+    NBins.push_back(150); // Lambda Xi
+    NBins.push_back(150); // Lambda barXi
     NBins.push_back(150); // barLambda barLambda
-    NBins.push_back(150); // barLambda Omega
-    NBins.push_back(150); // barLambda barOmega
-    NBins.push_back(150); // Omega Omega
-    NBins.push_back(150); // Omega barOmega
-    NBins.push_back(150); // barOmega barOmega
+    NBins.push_back(150); // barLambda Xi
+    NBins.push_back(150); // barLambda barXi
+    NBins.push_back(150); // Xi Xi
+    NBins.push_back(150); // Xi barXi
+    NBins.push_back(150); // barXi barXi
   }
   std::vector<float> kMin;
   kMin.push_back(0.);
@@ -549,21 +549,21 @@ AliAnalysisTaskSE* AddTaskOmegaFemto(
         Form("%s:%s", file.Data(), Antiv0CutsMCName.Data()));
     mgr->ConnectOutput(task, 16, coutputAntiv0CutsMC);
 
-    AliAnalysisDataContainer *coutputOmegaCutsMC;
-    TString OmegaCutsMCName = Form("%sOmegaCutsMC",addon.Data());
-    coutputOmegaCutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
-        OmegaCutsMCName.Data(), TList::Class(),
+    AliAnalysisDataContainer *coutputXiCutsMC;
+    TString XiCutsMCName = Form("%sXiCutsMC",addon.Data());
+    coutputXiCutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
+        XiCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
-        Form("%s:%s", file.Data(), OmegaCutsMCName.Data()));
-    mgr->ConnectOutput(task, 17, coutputOmegaCutsMC);
+        Form("%s:%s", file.Data(), XiCutsMCName.Data()));
+    mgr->ConnectOutput(task, 17, coutputXiCutsMC);
 
-    AliAnalysisDataContainer *coutputAntiOmegaCutsMC;
-    TString AntiOmegaCutsMCName = Form("%sAntiOmegaCutsMC",addon.Data());
-    coutputAntiOmegaCutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
-        AntiOmegaCutsMCName.Data(), TList::Class(),
+    AliAnalysisDataContainer *coutputAntiXiCutsMC;
+    TString AntiXiCutsMCName = Form("%sAntiXiCutsMC",addon.Data());
+    coutputAntiXiCutsMC = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
+        AntiXiCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
-        Form("%s:%s", file.Data(), AntiOmegaCutsMCName.Data()));
-    mgr->ConnectOutput(task, 18, coutputAntiOmegaCutsMC);
+        Form("%s:%s", file.Data(), AntiXiCutsMCName.Data()));
+    mgr->ConnectOutput(task, 18, coutputAntiXiCutsMC);
   }
   return task;
 }
