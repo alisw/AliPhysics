@@ -1207,6 +1207,73 @@ void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values, TRACK* leg
       GetThetaPhiCM(leg1, leg2, values[kPairThetaHE], values[kPairPhiHE], values[kPairThetaCS], values[kPairPhiCS]);
 }
 
+
+//_________________________________________________________________
+void AliReducedVarManager::FillMCTruthInfo(TRACK* leg1, TRACK* leg2, Float_t* values) {
+   //
+   // Compute MC truth variables from decay legs only, no mother assumption used
+   // NOTE: This function is done specifically for pairs of MC particles which do not have any mother in the stack, e.g. electrons from gamma-gamma processes produced with Starlight
+   //      All quantities are computed just from the leg kinematics
+   //
+   
+   values[kPxMCfromLegs] = leg1->MCmom(0) + leg2->MCmom(0);
+   values[kPyMCfromLegs] = leg1->MCmom(1) + leg2->MCmom(1);
+   values[kPzMCfromLegs] = leg1->MCmom(2) + leg2->MCmom(2);
+   values[kPtMCfromLegs] = TMath::Sqrt(values[kPxMCfromLegs]*values[kPxMCfromLegs]+values[kPyMCfromLegs]*values[kPyMCfromLegs]);
+   values[kPMCfromLegs] = TMath::Sqrt(values[kPtMCfromLegs]*values[kPtMCfromLegs]+values[kPzMCfromLegs]*values[kPzMCfromLegs]);
+   values[kThetaMCfromLegs] = (values[kPMCfromLegs]>=1.0e-6 ? TMath::ACos(values[kPzMCfromLegs]/values[kPMCfromLegs]) : 0.0);
+   values[kEtaMCfromLegs] = TMath::Tan(0.5*values[kThetaMCfromLegs]);
+   values[kEtaMCfromLegs] = (values[kEtaMCfromLegs]>1.0e-6 ? -1.0*TMath::Log(values[kEtaMCfromLegs]) : 0.0);
+   values[kPhiMCfromLegs] = TMath::ATan2(values[kPyMCfromLegs],values[kPxMCfromLegs]);
+   values[kPhiMCfromLegs] = (values[kPhiMCfromLegs]<0.0 ? (TMath::TwoPi()+values[kPhiMCfromLegs]) : values[kPhiMCfromLegs]);
+   values[kPairLegPtMC+0] = TMath::Sqrt(leg1->MCmom(0)*leg1->MCmom(0)+leg1->MCmom(1)*leg1->MCmom(1));
+   values[kPairLegPtMC+1] = TMath::Sqrt(leg2->MCmom(0)*leg2->MCmom(0)+leg2->MCmom(1)*leg2->MCmom(1));
+   values[kPairLegPtMCSum] = values[kPairLegPtMC]+values[kPairLegPtMC+1];
+   
+   // NOTE: for other particle species, check the PDG code of the particles
+   Float_t m1 = fgkParticleMass[kElectron];
+   Float_t m2 = fgkParticleMass[kElectron];
+   values[kMassMCfromLegs] = m1*m1+m2*m2 + 
+      2.0*(TMath::Sqrt(m1*m1+leg1->P()*leg1->P())*TMath::Sqrt(m2*m2+leg2->P()*leg2->P()) - 
+            leg1->Px()*leg2->Px() - leg1->Py()*leg2->Py() - leg1->Pz()*leg2->Pz());
+   if(values[kMassMCfromLegs]<0.0) {
+      cout << "FillMCTruthInfo(track1, track2, values): Warning: Very small squared mass found. "
+      << "   Could be negative due to resolution of Float_t so it will be set to a small positive value." << endl; 
+      cout << "   mass^2: " << values[kMassMCfromLegs] << endl;
+      cout << "p1(p,x,y,z): " << leg1->P() << ", " << leg1->Px() << ", " << leg1->Py() << ", " << leg1->Pz() << endl;
+      cout << "p2(p,x,y,z): " << leg2->P() << ", " << leg2->Px() << ", " << leg2->Py() << ", " << leg2->Pz() << endl;
+      values[kMassMCfromLegs] = 0.0;
+   }
+   else
+      values[kMassMCfromLegs] = TMath::Sqrt(values[kMassMCfromLegs]);
+   values[kMassMC] = values[kMassMCfromLegs];
+   
+   Float_t e = TMath::Sqrt(values[kPMCfromLegs]*values[kPMCfromLegs] + values[kMassMCfromLegs] * values[kMassMCfromLegs]);
+   Float_t factor = e - values[kPzMCfromLegs];
+   values[kRapMCfromLegs] = (TMath::Abs(factor)>1.0e-6 ? (e+values[kPzMCfromLegs])/factor : 0.0);
+   values[kRapMCfromLegs] = (values[kRapMCfromLegs]>1.0e-6 ? 0.5*TMath::Log(values[kRapMCfromLegs]) : 0.0);
+   
+   values[kPtMC] = values[kPtMCfromLegs];
+   values[kPMC] = values[kPMCfromLegs];
+   values[kPxMC] = values[kPxMCfromLegs];
+   values[kPyMC] = values[kPyMCfromLegs];
+   values[kPzMC] = values[kPzMCfromLegs];
+   values[kThetaMC] = values[kThetaMCfromLegs];
+   values[kEtaMC] = values[kEtaMCfromLegs];
+   values[kPhiMC] = values[kPhiMCfromLegs];
+   values[kMassMC] = values[kMassMCfromLegs];
+   values[kRapMC] = values[kRapMCfromLegs];
+   values[kRapMCAbs] = TMath::Abs(values[kRapMCfromLegs]); 
+      
+   // polarization variables
+   Bool_t usePolarization=kFALSE;
+   if(leg1 && leg2 && (fgUsedVars[kPairThetaCS] || fgUsedVars[kPairThetaHE] || fgUsedVars[kPairPhiCS] || fgUsedVars[kPairPhiHE]))
+      usePolarization = kTRUE;
+   if(usePolarization)
+      GetThetaPhiCM(leg1, leg2, values[kPairThetaHE], values[kPairPhiHE], values[kPairThetaCS], values[kPairPhiCS]);
+}
+
+
 //_________________________________________________________________
 void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   //
@@ -1230,7 +1297,8 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
      if(fgUsedVars[kCosNPhi+ih-1]) values[kCosNPhi+ih-1] = TMath::Cos(p->Phi()*ih);
      if(fgUsedVars[kSinNPhi+ih-1]) values[kSinNPhi+ih-1] = TMath::Sin(p->Phi()*ih);
   }
-
+  values[kCharge] = p->Charge();
+  
   //pair efficiency variables
   if((fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff] || fgUsedVars[kOneOverPairEffSq]) && fgPairEffMap) {
     Int_t binX = fgPairEffMap->GetXaxis()->FindBin(values[fgEffMapVarDependencyX]);
@@ -1333,7 +1401,6 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   values[kDcaZ]        = pinfo->DCAz();
   values[kDcaXYTPC]    = pinfo->DCAxyTPC();
   values[kDcaZTPC]     = pinfo->DCAzTPC();
-  values[kCharge]      = pinfo->Charge();
 
   if(fgUsedVars[kITSncls]) values[kITSncls] = pinfo->ITSncls();
   values[kITSsignal] = pinfo->ITSsignal();
