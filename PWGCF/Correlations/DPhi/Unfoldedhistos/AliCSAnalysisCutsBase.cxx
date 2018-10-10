@@ -420,6 +420,12 @@ void AliCSAnalysisCutsBase::NotifyRunGlobal() {
   } else if (szLHCPeriod.Contains("LHC13b2_efix")){
     fgDataPeriod = kLHC13b2_efix;
     fgIsMC = kTRUE;
+    fgAnchorPeriod = kLHC13bc;
+    fgEnergy = kpPb5TeV;
+  } else if (szLHCPeriod.Contains("LHC13b2")){
+    fgDataPeriod = kLHC13b2;
+    fgIsMC = kTRUE;
+    fgAnchorPeriod = kLHC13bc;
     fgEnergy = kpPb5TeV;
   } else if (szLHCPeriod.CompareTo("LHC13e7") == 0){
     fgDataPeriod = kLHC13e7;
