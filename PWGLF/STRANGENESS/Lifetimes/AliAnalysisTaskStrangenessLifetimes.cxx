@@ -16,8 +16,9 @@
 #include "AliESDtrack.h"
 #include "AliExternalTrackParam.h"
 #include "AliInputEventHandler.h"
-#include "AliMCEvent.h"
 #include "AliLightV0vertexer.h"
+#include "AliMCEvent.h"
+#include "AliPDG.h"
 #include "AliPIDResponse.h"
 #include "AliV0vertexer.h"
 #include "AliVVertex.h"
@@ -266,6 +267,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserCreateOutputObjects() {
   PostData(1, fListHist);
   PostData(2, fTreeV0);
 
+  AliPDG::AddParticlesToPdgDataBase();
 }  // end UserCreateOutputObjects
 
 void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
