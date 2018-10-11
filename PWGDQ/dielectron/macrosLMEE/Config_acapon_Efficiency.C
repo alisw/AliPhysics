@@ -1,5 +1,5 @@
-/* TString generatorNameForMCSignal  = "EPOS-LHC_0;Pythia CC_1;Pythia BB_1;Pythia B_1;Jpsi2ee_1;B2Jpsi2ee_1"; */
-/* TString generatorNameForULSSignal = "EPOS-LHC_0;Pythia CC_1;Pythia BB_1;Pythia B_1;Jpsi2ee_1;B2Jpsi2ee_1"; */
+TString generatorNameForMCSignal  = "EPOS-LHC_0;Pythia CC_1;Pythia BB_1;Pythia B_1;Jpsi2ee_1;B2Jpsi2ee_1";
+TString generatorNameForULSSignal = "EPOS-LHC_0;Pythia CC_1;Pythia BB_1;Pythia B_1;Jpsi2ee_1;B2Jpsi2ee_1";
 
 TString generatorNameForMCSignal  = "";
 TString generatorNameForULSSignal = "";
@@ -177,7 +177,7 @@ void DoAdditionalWork(AliAnalysisTaskElectronEfficiencyV2* task){
 // #########################################################
 // #########################################################
 
-AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD)
+AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition)
 {
   std::cout << "SetupTrackCutsAndSettings( cutInstance = " << cutDefinition << " )" <<std::endl;
   AliAnalysisFilter *anaFilter = new AliAnalysisFilter("anaFilter","anaFilter"); // named constructor seems mandatory!
