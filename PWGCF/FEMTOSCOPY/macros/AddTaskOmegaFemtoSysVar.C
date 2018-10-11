@@ -522,6 +522,9 @@ AliAnalysisTaskSE* AddTaskOmegaFemtoSysVar(
   } else if (CentEst=="kHM") {
     addon+="HM";
   }
+
+  addon += "_Omega_";
+
   AliAnalysisDataContainer *coutputQA;
 
   std::cout << "CONTAINTER NAME: " << addon.Data() << " " << suffix.Data() << std::endl;
