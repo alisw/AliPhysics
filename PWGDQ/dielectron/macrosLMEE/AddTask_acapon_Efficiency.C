@@ -1,18 +1,18 @@
 //Names should contain a comma seperated list of cut settings
 //Current options: all, electrons, kCutSet1, TTreeCuts, V0_TPCcorr, V0_ITScorr
 AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names = "kCutSet1",
-                                                                Bool_t isAOD,
-                                                                Bool_t getFromAlien = kFALSE,
-                                                                TString configFile="Config_acapon_Efficiency.C",
-                                                                Bool_t DoCentralityCorrection = kFALSE,
-                                                                Bool_t cutlibPreloaded = kFALSE,
-                                                                Int_t wagonnr = 0,
-                                                                Int_t centrality = 0) {
+                                                               Int_t whichGen = 0, // 0=gen. purpose, 1=Jpsi, 2=HF, 3=all
+                                                               Int_t wagonnr = 0,
+                                                               Int_t centrality = 0,
+                                                               Bool_t cutlibPreloaded = kFALSE,
+                                                               Bool_t getFromAlien = kFALSE
+																																) {
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
 	
+  TString configFile  = "Config_acapon_Efficiency.C";
 	TObjArray *arrNames = names.Tokenize(";");
-	Int_t nDie = arrNames->GetEntries();
+	Int_t nDie          = arrNames->GetEntries();
 	Printf("Number of implemented cuts: %i", nDie);
 
 	Bool_t SDDstatus = kTRUE;
@@ -60,9 +60,21 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names = "
   // #########################################################
   // #########################################################
   // Possibility to set generator. If nothing set all generators are taken into account
-  // task->SetGeneratorName(generatorName);
-  task->SetGeneratorMCSignalName(generatorNameForMCSignal);
-  task->SetGeneratorULSSignalName(generatorNameForULSSignal);
+	if(whichGen == 0){
+		std::cout << "No generator specified. Looking at all sources" << std::endl;
+		task->SetGeneratorMCSignalName("");
+		task->SetGeneratorULSSignalName("");
+	}
+	else if(whichGen == 1){
+		std::cout << "Generator names specified -> Jpsi2ee_1 and B2Jpsi2ee_1" << std::endl;
+		task->SetGeneratorMCSignalName("Jpsi2ee_1;B2Jpsi2ee_1");
+		task->SetGeneratorULSSignalName("Jpsi2ee_1;B2Jpsi2ee_1");
+	}
+	else if(whichGen == 2){
+		std::cout << "Generator names specified -> Pythia CC_1, Pythia BB_1 and Pythia B_1" << std::endl;
+		task->SetGeneratorMCSignalName("Pythia CC_1;Pythia BB_1;Pythia B_1");
+		task->SetGeneratorULSSignalName("Pythia CC_1;Pythia BB_1;Pythia B_1");
+	}
 
   // #########################################################
   // #########################################################
@@ -160,7 +172,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names = "
   // Adding cutsettings
   for(Int_t iCut = 0; iCut < nDie; ++iCut){
     TString cutDefinition(arrNames->At(iCut)->GetName());
-    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
+    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition);
     task->AddTrackCuts(filter);
 		Printf("Successfully added task with cut set: %s\n", cutDefinition);
     //DoAdditionalWork(task);
