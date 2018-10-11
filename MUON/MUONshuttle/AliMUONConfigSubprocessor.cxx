@@ -191,7 +191,7 @@ AliMUONConfigSubprocessor::Process(TMap* /*dcsAliasMap*/)
   comment.ReplaceAll("$","");
 	metaData.SetComment(comment.Data());
   
-  Bool_t validToInfinity = kFALSE;
+  Bool_t validToInfinity = kTRUE;
 	Bool_t result = Master()->Store("Calib", "Config", fConfig, &metaData, 0, validToInfinity);
   return ( result != kTRUE ); // return 0 if everything is ok.
 }
