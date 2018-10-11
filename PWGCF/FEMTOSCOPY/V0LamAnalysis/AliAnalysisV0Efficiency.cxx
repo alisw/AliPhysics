@@ -424,7 +424,7 @@ bool AliAnalysisV0Efficiency::IsInjected(const AliAODMCParticle* aMCv0, TClonesA
   bool aIsInjected = false;
   if(aMCv0->GetMother() > -1) //V0 has a mother
   {
-    AliAODMCParticle *tMotherOfV0 = static_cast<AliAODMCParticle*>(mcArray->At(aMCv0->GetMother()));
+    AliAODMCParticle *tMotherOfV0 = (AliAODMCParticle*)(mcArray->At(aMCv0->GetMother()));
     if(tMotherOfV0->GetLabel() > aNumberOfLastHijingLabel) aIsInjected=true;
   }
   else //V0 has no mother
@@ -457,7 +457,8 @@ void AliAnalysisV0Efficiency::ExtractOriginalParticles(const AliAODEvent *aEvent
     if(tPart->GetNDaughters() != 2) continue;
 //    int tPartPID = tPart->GetPdgCode();
 
-    bool tIsInjected = IsInjected(tPart, mcP, tNumberOfLastHijingLabel);
+    bool tIsInjected = false;
+    if(fIgnoreInjectedV0s) IsInjected(tPart, mcP, tNumberOfLastHijingLabel);
     AliAODMCParticle *tMother = NULL;
     if(tPart->GetMother() > -1)  //MC particle has a mother 
     {
@@ -466,17 +467,28 @@ void AliAnalysisV0Efficiency::ExtractOriginalParticles(const AliAODEvent *aEvent
 
 
 
-    const AliAODMCParticle *mcParticlePos = static_cast<AliAODMCParticle*>(mcP->At(tPart->GetDaughter(0))),
-                           *mcParticleNeg = static_cast<AliAODMCParticle*>(mcP->At(tPart->GetDaughter(1)));
+    const AliAODMCParticle *mcParticlePos = (AliAODMCParticle*)(mcP->At(tPart->GetDaughter(0))),
+                           *mcParticleNeg = (AliAODMCParticle*)(mcP->At(tPart->GetDaughter(1)));
 
     // The daughter info must exist for both
     if(mcParticlePos==NULL || mcParticleNeg==NULL) continue;
+
+    if (mcParticlePos->Charge() == mcParticleNeg->Charge()) continue;
+
+    // ensure that pos and neg are pointing to the correct children
+    if (mcParticlePos->Charge() < 0 && mcParticleNeg->Charge() > 0) 
+    {
+      const AliAODMCParticle *tmp = mcParticlePos;
+      mcParticlePos = mcParticleNeg;
+      mcParticleNeg = tmp;
+    }
 
     const int motherOfPosID = mcParticlePos->GetMother(),
               motherOfNegID = mcParticleNeg->GetMother();
 
     // If both daughter tracks refer to the same mother, we can continue
     if(motherOfPosID < 0 || motherOfPosID != motherOfNegID) continue;
+
 
     if(fabs(mcParticlePos->Eta()) > 0.8) continue;
     if(fabs(mcParticleNeg->Eta()) > 0.8) continue;
@@ -641,8 +653,8 @@ bool AliAnalysisV0Efficiency::IsMisIDAntiLambda(const AliAODv0 *aV0, const AliAO
 bool AliAnalysisV0Efficiency::V0PassBasicCuts(const AliAODv0* aV0, const AliAODVertex *aAodvertex)
 {
   //Make sure the V0 satisifies a few basic criteria
-  if(aV0->GetNDaughters() > 2)                           return false;
-  if(aV0->GetNProngs() > 2)                              return false;
+  if(aV0->GetNDaughters() != 2)                           return false;
+  if(aV0->GetNProngs() != 2)                              return false;
   if(aV0->GetCharge() != 0)                              return false;
   if(aV0->ChargeProng(0) == aV0->ChargeProng(1))         return false;
 
@@ -742,6 +754,9 @@ bool AliAnalysisV0Efficiency::V0PassAllCuts(int aParticleType, const AliAODv0 *a
   if (!(aPartNeg->GetStatus() & fStatusDaughters)) return false;
   if (!(aPartPos->GetStatus() & fStatusDaughters)) return false;
   
+  //fiducial volume radius
+  if(aV0->RadiusV0()<0.0 || aV0->RadiusV0()>99999.0) 
+    return false;
 
   //DCA between daughter particles
   if (TMath::Abs(aV0->DcaV0Daughters()) > fMaxDcaV0Daughters)
@@ -888,40 +903,44 @@ void AliAnalysisV0Efficiency::ExtractV0FinderParticles(const AliAODEvent *aEvent
     const AliAODMCParticle *mcParticlePos=nullptr, *mcParticleNeg=nullptr;
     const AliAODMCParticle *tMCv0=nullptr;
     const AliAODMCParticle *tMother = nullptr;
-    if (daughterTrackPos->GetLabel() > 0 && daughterTrackNeg->GetLabel() > 0)
-    {
-      mcParticlePos = static_cast<AliAODMCParticle*>(mcP->At(daughterTrackPos->GetLabel())),
-      mcParticleNeg = static_cast<AliAODMCParticle*>(mcP->At(daughterTrackNeg->GetLabel()));
 
-      if ((mcParticlePos != NULL) && (mcParticleNeg != NULL))
-      {
-        // Get the mother ID of the two daughters
-        const int motherOfPosID = mcParticlePos->GetMother(),
-                  motherOfNegID = mcParticleNeg->GetMother();
+    if (daughterTrackPos->GetLabel() <= 0 || daughterTrackNeg->GetLabel() <= 0) continue;
+    mcParticlePos = (AliAODMCParticle*)(mcP->At(daughterTrackPos->GetLabel())),
+    mcParticleNeg = (AliAODMCParticle*)(mcP->At(daughterTrackNeg->GetLabel()));
+    if ((mcParticlePos == NULL) || (mcParticleNeg == NULL)) continue;
 
-        // If both daughter tracks refer to the same mother, we can continue
-        if ((motherOfPosID > -1) && (motherOfPosID == motherOfNegID)) 
-        {
-          // Our V0 particle
-          tMCv0 = static_cast<AliAODMCParticle*>(mcP->At(motherOfPosID));
-          if(tMCv0)
-          {
-            tIsInjected = IsInjected(tMCv0, mcP, tNumberOfLastHijingLabel);
-            if(tMCv0->GetMother() > -1) //V0 has mother
-            {
-              tMother = static_cast<AliAODMCParticle*>(mcP->At(tMCv0->GetMother()));
-            }
-          }
-          else continue;
-        }
-        else continue;
-      }
-      else continue;
-    }
-    else continue;
+    // Get the mother ID of the two daughters
+    const int motherOfPosID = mcParticlePos->GetMother(),
+              motherOfNegID = mcParticleNeg->GetMother();
+
+    // If both daughter tracks refer to the same mother, we can continue
+    if(motherOfPosID < 0 || motherOfPosID != motherOfNegID) continue;
+
+    // Our V0 particle
+    tMCv0 = (AliAODMCParticle*)(mcP->At(motherOfPosID));
+    if(!tMCv0) continue;
+
+    if(fIgnoreInjectedV0s) tIsInjected = IsInjected(tMCv0, mcP, tNumberOfLastHijingLabel);
+    if(tMCv0->GetMother() > -1) tMother = (AliAODMCParticle*)(mcP->At(tMCv0->GetMother())); //V0 has mother
+
 
     //-----------------------------------------------------------------
     if(fIgnoreInjectedV0s && tIsInjected) continue;
+
+    if(fabs(mcParticlePos->Eta()) > 0.8) continue;
+    if(fabs(mcParticleNeg->Eta()) > 0.8) continue;
+
+    if(mcParticlePos->Pt() < 0.16) continue;
+    if(mcParticleNeg->Pt() < 0.16) continue;
+
+    if(mcParticlePos->GetPdgCode() == 2212 && mcParticlePos->Pt() < 0.5) continue;
+    if(mcParticlePos->GetPdgCode() == -2212 && mcParticlePos->Pt() < 0.3) continue;
+
+    if(mcParticleNeg->GetPdgCode() == 2212 && mcParticleNeg->Pt() < 0.5) continue;
+    if(mcParticleNeg->GetPdgCode() == -2212 && mcParticleNeg->Pt() < 0.3) continue;
+
+
+
 
     //Fill fMCTruthOfV0FinderParticles histograms
     FillHistogram( 3122, tMCv0, tMother, fMCTruthOfV0FinderParticles_Lam); 
@@ -955,6 +974,13 @@ void AliAnalysisV0Efficiency::Exec(Option_t *)
   fEventCount++;
   fAOD = dynamic_cast<AliAODEvent*> (InputEvent());
   if (!fAOD) {Printf("ERROR: fAOD not available"); return;}
+
+  //Centrality selection
+/*
+  AliCentrality *centrality = fAOD->GetCentrality();
+  float centralityPercentile = centrality->GetCentralityPercentile("V0M");
+  if(centralityPercentile > 10.) return;
+*/
 
   ExtractAll(fAOD);
 
