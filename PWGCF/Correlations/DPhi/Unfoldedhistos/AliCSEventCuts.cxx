@@ -1858,6 +1858,10 @@ void AliCSEventCuts::SetActual2015PileUpRemoval()
     case kLHC10h:
       f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",GetCutsString()),"-1000+3.1*x");
       break;
+    case kLHC13bc:
+      f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",GetCutsString()),
+          "(x<150.0)*(19.0-0.1*x+0.010*x*x)+(x>=150.0)*(229+2.9*(x-150))");
+      break;
     case kLHC15oLIR:
       /* f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",GetCutsString()),"-4000+3.8*x"); pass2 */
       f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",GetCutsString()),"-800+2.93*x"); /* pass3 */
