@@ -193,6 +193,7 @@ private:
     TH2F        *fHistEopHad2;//!pt vs E/p
     TH2F        *fHistEopTrueMC;//!pt vs E/p
     TH2F        *fM20;//!M20 vs pt
+    TH2F        *fM20MC;//!M20 vs pt
     TH2F        *fM02;//!M20 vs pt
     TH2F        *fM20EovP;//!M20 vs E/p
     TH2F        *fM02EovP;//!M20 vs E/p
