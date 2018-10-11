@@ -1,6 +1,8 @@
-TString generatorNameForMCSignal  = "EPOS-LHC_0;Pythia CC_1;Pythia BB_1;Pythia B_1;Jpsi2ee_1;B2Jpsi2ee_1";
-TString generatorNameForULSSignal = "EPOS-LHC_0;Pythia CC_1;Pythia BB_1;Pythia B_1;Jpsi2ee_1;B2Jpsi2ee_1";
+/* TString generatorNameForMCSignal  = "EPOS-LHC_0;Pythia CC_1;Pythia BB_1;Pythia B_1;Jpsi2ee_1;B2Jpsi2ee_1"; */
+/* TString generatorNameForULSSignal = "EPOS-LHC_0;Pythia CC_1;Pythia BB_1;Pythia B_1;Jpsi2ee_1;B2Jpsi2ee_1"; */
 
+TString generatorNameForMCSignal  = "";
+TString generatorNameForULSSignal = "";
 
 Bool_t SetTPCCorrection = kFALSE;
 Bool_t SetITSCorrection = kFALSE;
@@ -189,8 +191,8 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition, Bool_t isAOD
 		anaFilter->SetName(cutDefinition);
 		anaFilter->Print();
   }
-	else if(cutDefinition = "kCutSet1"){ //TMVA (unweighted cut at 0.05)
-		std::cout << "Setting up cut set 1 (unweighted TMVA)" << std::endl;
+	else if(cutDefinition = "kCutSet1"){ //TMVA
+		std::cout << "Setting up cut set 1" << std::endl;
 		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
 		anaFilter->AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
 		anaFilter->SetName(cutDefinition);
