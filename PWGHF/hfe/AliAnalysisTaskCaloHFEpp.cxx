@@ -376,6 +376,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fHistPhoEta0->Sumw2(); 
 				fHistPhoEta1 = new TH1D("fHistPhoEta1", "reco Eta in sample; p_{T}(GeV/c)", 600,0,60);
 				fHistPhoEta1->Sumw2(); 
+
 				fCheckEtaMC = new TH1F("fCheckEtaMC","check Eta range cut in MC",160,-0.8,0.8);
 				fHistMCorgD = new TH1F("fHistMCorgD","MC org D",600,0,60);
 				fHistMCorgB = new TH1F("fHistMCorgB","MC org B",600,0,60);
@@ -426,17 +427,17 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fdEdx = new TH2F("fdEdx","All Track dE/dx distribution;p (GeV/c);dE/dx",500,0,50,500,0,160);
 				fTPCnsig = new TH2F("fTPCnsig","All Track TPC Nsigma distribution;p (GeV/c);#sigma_{TPC-dE/dx}",1000,0,50,200,-10,10);
 				fTPCnsig_ele = new TH1F("fTPCnsig_ele","electron TPC Nsigma distribution;#sigma_{TPC-dE/dx} ; counts",200,-10,10);
-				fHistNsigEop = new TH2F ("fHistNsigEop", "E/p vs TPC nsig; E/p; #sigme_{TPC-dE/dX}",60, 0.0, 3.0, 200, -10,10);   
+				fHistNsigEop = new TH2F ("fHistNsigEop", "E/p vs TPC nsig; E/p; #sigme_{TPC-dE/dX}",300, 0.0, 3.0, 200, -10,10);   
 				fM02 = new TH2F ("fM02","M02 vs pt distribution; pt(GeV/c); M02",500,0,50,400,0,2);
 				fM20 = new TH2F ("fM20","M20 vs pt distribution; pt(GeV/c); M20",500,0,50,400,0,2);
 				fM02_2 = new TH2F ("fM02_2","M02 vs pt distribution (-1<nSigma<3 & 0.9<E/p<1.3); pt(GeV/c); M02",500,0,50,400,0,2);
 				fM20_2 = new TH2F ("fM20_2","M20 vs pt distribution (-1<nSigma<3 & 0.9<E/p<1.3); pt(GeV/c); M20",500,0,50,400,0,2);
-				fEopPt_ele_loose = new TH2F ("fEopPt_ele_loose","pt vs E/p distribution (-3<nSigma<3); pt(GeV/c); E/p",500,0,50,60,0,3.0);
-				fEopPt_ele_tight = new TH2F ("fEopPt_ele_tight","pt vs E/p distribution (-1<nSigma<3); pt(GeV/c); E/p",500,0,50,60,0,3.0);
-				fEopPt_ele_tight_PYTHIA = new TH2F ("fEopPt_ele_tight_PYTHIA","pt vs E/p distribution (-1<nSigma<3); pt(GeV/c); E/p",500,0,50,60,0,3.0);
-				fEopPt_ele_tight_forSys = new TH2F ("fEopPt_ele_tight_forSys","pt vs E/p distribution (-1<nSigma<3); pt(GeV/c); E/p",500,0,50,60,0,3.0);
-				fEopPt_had = new TH2F ("fEopPt_had","pt vs E/p distribution (nSigma<-3.5); pt(GeV/c); E/p",500,0,50,60,0,3.0);
-				fEop_ele = new TH1F ("fEop_ele"," electron E/p distribution ; E/p ; counts",60,0,3.0);
+				fEopPt_ele_loose = new TH2F ("fEopPt_ele_loose","pt vs E/p distribution (-3<nSigma<3); pt(GeV/c); E/p",500,0,50,300,0,3.0);
+				fEopPt_ele_tight = new TH2F ("fEopPt_ele_tight","pt vs E/p distribution (-1<nSigma<3); pt(GeV/c); E/p",500,0,50,300,0,3.0);
+				fEopPt_ele_tight_PYTHIA = new TH2F ("fEopPt_ele_tight_PYTHIA","pt vs E/p distribution (-1<nSigma<3); pt(GeV/c); E/p",500,0,50,300,0,3.0);
+				fEopPt_ele_tight_forSys = new TH2F ("fEopPt_ele_tight_forSys","pt vs E/p distribution (-1<nSigma<3); pt(GeV/c); E/p",600,0,60,300,0,3.0);
+				fEopPt_had = new TH2F ("fEopPt_had","pt vs E/p distribution (nSigma<-3.5); pt(GeV/c); E/p",500,0,50,300,0,3.0);
+				fEop_ele = new TH1F ("fEop_ele"," electron E/p distribution ; E/p ; counts",300,0,3.0);
 				fConeR = new TH1F ("fConeR"," check cone radius; counts",500,0,0.5);
 				fHistoNCells = new TH2F("fHistoNCells", "No of EMCAL cells in a cluster; Cluster E; N^{EMC}_{cells}",500,0,50,30,0,30);
 				fInv_pT_ULS = new TH2F("fInv_pT_ULS", "Invariant mass vs p_{T} distribution(ULS) ; pt(GeV/c) ; mass(GeV/c^2)",500,0,50,1000,0,1.0);
