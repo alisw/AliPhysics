@@ -420,6 +420,9 @@ AliAnalysisTaskSE* AddTaskOmegaFemto(
   } else if (CentEst=="kHM") {
     addon+="HM";
   }
+
+  addon += "_Omega_";
+
   std::cout << "CONTAINTER NAME: " << addon.Data() << std::endl;
   TString QAName = Form("%sQA",addon.Data());
   coutputQA = mgr->CreateContainer(//@suppress("Invalid arguments") it works ffs
