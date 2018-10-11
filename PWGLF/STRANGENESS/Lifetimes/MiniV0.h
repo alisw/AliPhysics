@@ -39,6 +39,11 @@ class MiniV0 {
   bool NegativeProngHasTOF() const { return fEtaNeg & (1 << 7); }
   bool PositiveProngHasTOF() const { return fEtaPos & (1 << 7); }
   bool OneProngHasTOF() const { return NegativeProngHasTOF() || PositiveProngHasTOF(); }
+  bool NegativeProngHasITSrefit() const { return fITSInfo & (1 << 7); }
+  bool PositiveProngHasITSrefit() const { return fITSInfo & (1 << 6); }
+  bool NegativeProngHasSPDcluster() const { return fITSInfo & (1 << 5); }
+  bool PositiveProngHasSPDcluster() const { return fITSInfo & (1 << 4); }
+  int  GetLeastNumberOfITSclusters() const { return fITSInfo & 0x07; }
 
   void SetV0radiusAndLikeSign(float r, bool ls = false) { fV0radius = ls ? -r : r; }
   void SetV0ptAndFake(float pt, bool fake) { fV0pt = fake ? -pt : pt; }
@@ -55,6 +60,7 @@ class MiniV0 {
   void SetMaxChi2perCluster(float chi2);
   void SetProngsTPCnsigmas(float pPi, float pP, float nPi, float nP);
   void SetProngsEtaTOF(float posEta, bool posTOF, float negEta, bool negTOF);
+  void SetITSinformation(bool, bool, bool, bool, int);
 
   static const int fgkV0cosPA_n;
   static const float fgkV0cosPA_f;
@@ -126,6 +132,7 @@ class MiniV0 {
   unsigned char fNsigmaNeg;  // # sigma TPC pion/proton for the negative prong
   unsigned char fEtaPos;     // Pseudorapidity of the positive prong. MSB is the TOF bit.
   unsigned char fEtaNeg;     // Pseudorapidity of the negative prong. MSB is the TOF bit.
+  unsigned char fITSInfo;    // Starting from the MSB: kITSrefit for neg and pos, kSPDany for neg and pos, least number of ITS clusters (last 4 bits)
 };
 
 template<int n>
@@ -277,6 +284,16 @@ inline void MiniV0<n>::SetProngsEtaTOF(float posEta, bool posTOF, float negEta, 
   if (negTOF) fEtaNeg += 1 << 7;
   fEtaPos = getBinnedValue<unsigned char>(posEta, fgkEta_w, fgkEta_f, fgkEta_l);
   if (posTOF) fEtaPos += 1 << 7;
+}
+
+template<int n>
+inline void MiniV0<n>::SetITSinformation(bool negRefit, bool posRefit, bool negSPD, bool posSPD, int nITS) {
+  fITSInfo = 0u;
+  if (negRefit) fITSInfo |= 1 << 7;
+  if (posRefit) fITSInfo |= 1 << 6;
+  if (negSPD) fITSInfo |= 1 << 5;
+  if (posSPD) fITSInfo |= 1 << 4;
+  fITSInfo |= 0x07 & nITS;
 }
 
 template<int n> const int MiniV0<n>::fgkV0cosPA_n = 50000;

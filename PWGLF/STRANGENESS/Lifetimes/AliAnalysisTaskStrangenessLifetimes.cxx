@@ -550,6 +550,13 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
     bool negTOF = nTrack->GetTOFsignal() * 1.e-3 < 100; // in ns, loose cut on TOF beta (<~0.2)
     bool posTOF = pTrack->GetTOFsignal() * 1.e-3 < 100; // in ns, loose cut on TOF beta (<~0.2)
 
+    bool posITSrefit = pTrack->GetStatus() & AliESDtrack::kITSrefit;
+    bool negITSrefit = nTrack->GetStatus() & AliESDtrack::kITSrefit;
+    bool posSPDany = pTrack->HasPointOnITSLayer(0) || pTrack->HasPointOnITSLayer(1);
+    bool negSPDany = nTrack->HasPointOnITSLayer(0) || nTrack->HasPointOnITSLayer(1);
+    int ITSnCl = (nTrack->GetITSclusters(0) > pTrack->GetITSclusters(0)) ? pTrack->GetITSclusters(0) : nTrack->GetITSclusters(0);
+
+
     // Rugh 20-sigma selection band, parametric.
     // K0Short: Enough to parametrize peak broadening with linear function.
     double lUpperLimitK0Short = (5.63707e-01) + (1.14979e-02) * v0Pt;
@@ -623,6 +630,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
       miniV0.SetProngsEtaTOF(pTrack->Eta(), posTOF, nTrack->Eta(), negTOF);
       miniV0.SetProngsTPCnsigmas(nSigmaPosPion, nSigmaPosProton,
                                  nSigmaNegPion, nSigmaNegProton);
+      miniV0.SetITSinformation(negITSrefit, posITSrefit, negSPDany, posSPDany, ITSnCl);
 
       if (fMC) {
         AliESDtrack* one = esdEvent->GetTrack(v0->GetNindex());
