@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2018/10/09
+//  Last Modified Date: 2018/10/12
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -44,6 +44,19 @@
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
 #include "AliMultiplicity.h"
+
+// from header
+#include "THnSparse.h"
+#include "AliStack.h"
+#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
+#include "AliESDtrackCuts.h"
+#include "AliESDEvent.h"
+#include "AliAODEvent.h"
+#include "AliPIDResponse.h"
+#include "AliPIDCombined.h"
+#include "THistManager.h"
+//
 
 #include "AliAnalysisTaskXi1530.h"
 
