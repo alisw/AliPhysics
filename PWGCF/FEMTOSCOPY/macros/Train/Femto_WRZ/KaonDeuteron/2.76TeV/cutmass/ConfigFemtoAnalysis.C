@@ -216,8 +216,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  dtc2etaphitpc[aniter] = new AliFemtoESDTrackCut();
 	  dtc2etaphitpc[aniter]->SetNsigmaTPCTOF(true);
 	  dtc2etaphitpc[aniter]->SetNsigma(2.0);
-	  dtc2etaphitpc[aniter]->SetNsigmaMass(0.4);//na szie to zwykla niczba a nie sigma
-	  
+	  dtc2etaphitpc[aniter]->SetNsigmaMass(0.5);//na szie to zwykla niczba a nie sigma
 
 	  //Set charge of particles:
 	  if (ichg == 0) {
@@ -245,7 +244,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  dtc1etaphitpc[aniter]->SetMostProbableKaon();
 	  
 	  //Set particle 2:
-	  dtc2etaphitpc[aniter]->SetPt(0.5,4.0);
+	  dtc2etaphitpc[aniter]->SetPt(1,4.0);
           dtc2etaphitpc[aniter]->SetEta(-0.8,0.8);
 	  dtc2etaphitpc[aniter]->SetMass(DeuteronMass);	  
 	  dtc2etaphitpc[aniter]->SetMostProbableDeuteron();
@@ -402,28 +401,9 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
       }
     }
   }
-
   // *** End kaon-deuteron analysis
 
   return Manager;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
