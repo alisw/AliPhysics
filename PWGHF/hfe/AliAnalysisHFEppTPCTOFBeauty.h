@@ -261,6 +261,9 @@ private:
     TH1F                *hCharmMotherPt_corr2;//! pt of mothers of eletrons from mesons D weighted
 	
 	TH2F                *hBeautyMotherPt;//!
+	TH2F                *hBeautyMotherPt2Daft;//!
+	TH1F                *hBeautyMotherPtbef;//!
+	TH1F                *hBeautyMotherPtaft;//!
 	TH1F				*fPtBeautyGenerated;//!
 	TH1F				*fPtBeautyReconstructedAll;//!
 	TH1F				*fPtGeneratedBmesons;//!
