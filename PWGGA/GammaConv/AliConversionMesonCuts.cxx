@@ -1079,7 +1079,7 @@ Bool_t AliConversionMesonCuts::InitializeCutsFromCutString(const TString analysi
   fCutStringRead = Form("%s",analysisCutSelection.Data());
 
   // Initialize Cuts from a given Cut string
-  AliInfo(Form("Set Meson Cutnumber: %s",analysisCutSelection.Data()));
+  // AliInfo(Form("Set Meson Cutnumber: %s",analysisCutSelection.Data()));
   if(analysisCutSelection.Length()!=kNCuts) {
     AliError(Form("Cut selection has the wrong length! size is %d, number of cuts is %d", analysisCutSelection.Length(), kNCuts));
     return kFALSE;

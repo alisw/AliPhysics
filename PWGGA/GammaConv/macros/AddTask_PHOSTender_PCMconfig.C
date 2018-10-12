@@ -61,13 +61,13 @@ AliPHOSTenderTask* AddTask_PHOSTender_PCMconfig(
     std::cout << "=============================================================" << std::endl;
     std::cout << "INFO: AddPHOSTender_PCMConfig: "<< "You are setting a specific bad channel map using a full OADB file: " <<  specificBCMap.Data() << std::endl;
     std::cout << "=============================================================" << std::endl;
-    PHOSSupply->SetPrivateOADBBadMap(specificBCMap.Data());
+    PHOSSupply->SetPrivateOADBBadMap((char*)specificBCMap.Data());
   }
   if (forceBadChannelMap==2){
     std::cout << "=============================================================" << std::endl;
     std::cout << "INFO: AddPHOSTender_PCMConfig: "<< "You are setting a specific bad channel independent of the run: " <<  specificBCMap.Data() << std::endl;
     std::cout << "=============================================================" << std::endl;
-    PHOSSupply->ForceUsingBadMap(specificBCMap.Data());
+    PHOSSupply->ForceUsingBadMap((char*)specificBCMap.Data());
 
   }
   tenderTask->SetPHOSTenderSupply(PHOSSupply) ;
