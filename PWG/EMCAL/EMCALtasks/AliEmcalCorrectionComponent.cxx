@@ -50,7 +50,8 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent() :
   fCaloCells(0),
   fRecoUtils(0),
   fOutput(0),
-  fBasePath("")
+  fBasePath(""),
+  fCustomBadChannelFilePath("")
 
 {
   fVertex[0] = 0;
@@ -84,7 +85,8 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent(const char * name) :
   fCaloCells(0),
   fRecoUtils(0),
   fOutput(0),
-  fBasePath("")
+  fBasePath(""),
+  fCustomBadChannelFilePath("")
 {
   fVertex[0] = 0;
   fVertex[1] = 0;
@@ -338,7 +340,7 @@ Int_t AliEmcalCorrectionComponent::InitBadChannels()
     contBC = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(fbad->Get("AliEMCALBadChannels")));
   }
   else if (fCustomBadChannelFilePath!="")
-  { //if fBasePath specified in the ->SetBasePath()
+  { //if fCustomBadChannelFilePath specified in the configuration for custom bad channel maps
     AliInfo(Form("Loading custom Bad Channels OADB from given path %s",fCustomBadChannelFilePath.Data()));
     
     fbad = std::unique_ptr<TFile>(TFile::Open(Form("%s",fCustomBadChannelFilePath.Data()),"read"));
