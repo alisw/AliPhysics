@@ -210,6 +210,9 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty(const char *name)
 ,hCharmMotherPt_corr(0)
 ,hCharmMotherPt_corr2(0)
 ,hBeautyMotherPt(0)
+,hBeautyMotherPtbef(0)
+,hBeautyMotherPtaft(0)
+,hBeautyMotherPt2Daft(0)
 ,fPtBeautyGenerated(0)
 ,fPtGeneratedBmesons(0)
 ,fPtBeautyReconstructedAll(0)
@@ -398,6 +401,9 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty()
 ,hCharmMotherPt_corr(0)
 ,hCharmMotherPt_corr2(0)
 ,hBeautyMotherPt(0)
+,hBeautyMotherPtbef(0)
+,hBeautyMotherPtaft(0)
+,hBeautyMotherPt2Daft(0)
 ,fPtBeautyGenerated(0)
 ,fPtGeneratedBmesons(0)
 ,fPtBeautyReconstructedAll(0)
@@ -566,6 +572,8 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     
     Double_t ptbinningHF[14] = {1,2,3,4,5,6,7,8,10,12,16,24,36,50};
     
+    Double_t ptbinningHF2[15] = {0,1,2,3,4,5,6,7,8,10,12,16,24,36,50};
+    
     fTPC_p1 = new TH2F("fTPC_p1","p (GeV/c);TPC dE/dx (a. u.)",300,0,15,400,-20,200);
     fOutputList->Add(fTPC_p1);
     
@@ -683,8 +691,17 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     hCharmMotherPt_corr2 = new TH1F("hCharmMotherPt_corr2","; p_{T} [GeV/c]; Count",100,0,50);
     fOutputList->Add(hCharmMotherPt_corr2);
     
-	hBeautyMotherPt = new TH2F("hBeautyMotherPt","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
+    hBeautyMotherPtbef = new TH1F("hBeautyMotherPtbef","; p_{T} [GeV/c]; Count",13,ptbinningHF2);
+    fOutputList->Add(hBeautyMotherPtbef);
+    
+    hBeautyMotherPtaft = new TH1F("hBeautyMotherPtaft","; p_{T} [GeV/c]; Count",13,ptbinningHF2);
+    fOutputList->Add(hBeautyMotherPtaft);
+    
+    hBeautyMotherPt = new TH2F("hBeautyMotherPt","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
     fOutputList->Add(hBeautyMotherPt);
+    
+    hBeautyMotherPt2Daft = new TH2F("hBeautyMotherPt2Daft","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
+    fOutputList->Add(hBeautyMotherPt2Daft);
 
     fPtElec = new TH1F("fPtElec","; p_{T} [GeV/c]; Count",32,ptbinning);
     fOutputList->Add(fPtElec);
@@ -1313,7 +1330,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 		fDCAxy_pt_had_onlyDCA_WoPID->Fill(fPt,DCAxy);
 			fDCAxy_pt_had_WoPID->Fill(fPt,DCAxy*track->Charge()*signB);
 			fDCAz_pt_had_WoPID->Fill(fPt,DCAz);	
-		
+
 		 ///////////////////
 		// With PID cuts //
 	       ///////////////////
@@ -1524,8 +1541,8 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 						 
 						 ///Correcting pT spectrum
 						 ///(Weight for each electron pT bin starting at one - charm correction)
-						/* float probAcceptD = -999;
-						 if(fMCparticleMother->Pt() > 30) continue;
+						 float probAcceptD = -999;
+						 if(fMCparticleMother->Pt() > 36) continue;
 						 
 						 if(fMCparticleMother->Pt() < fPt){ ///Accept all D mesons with pt smaller than the electrons pt
 							 probAcceptD = 1;
@@ -1571,7 +1588,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 							hCharmMotherPt_vsElecPt_corr->Fill(fPt,fMCparticleMother->Pt());
 							hElecPt_vsCharmMotherPt_corr->Fill(fMCparticleMother->Pt(),fPt);
 							fDCAxy_pt_charmaft->Fill(fPt,DCAxy*track->Charge()*signB);						 
-						 }	*/											 
+						 }												 
 					}
 					
 					if(TMath::Abs(pdg_mother)>4000 && TMath::Abs(pdg_mother)<5000){///charmed baryon
@@ -1591,11 +1608,12 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
                     if(fIsFromMesonB || fIsFromMesonBD){///beauty meson 
 						qadca[1]=2.5;
 						hBeautyMotherPt->Fill(fMCparticleMother->Pt(),fPt);
+						hBeautyMotherPtbef->Fill(fMCparticleMother->Pt());
 						fDCAxy_pt_beautybef->Fill(fPt,DCAxy*track->Charge()*signB);
 						
 						///Correcting the pT spectrum
-						/*float probAcceptB = -999;
-						if(fIsFromMesonB && (fMCparticleMother->Pt() < 30)){
+						float probAcceptB = -999;
+						if(fIsFromMesonB && (fMCparticleMother->Pt() < 50)){
 							 probAcceptB = fBcorr->Eval(fMCparticleMother->Pt());///always evaluating the function in the pT of the B meson
 							 //cout<<"pdg_mother = "<<pdg_mother<<endl;	
 						}
@@ -1604,7 +1622,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 								fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
 								float pdg_gmother = fMCparticleGMother->GetPdgCode();
 								
-								if(TMath::Abs(pdg_gmother)>500 && TMath::Abs(pdg_gmother)<600 && (fMCparticleGMother->Pt()<30)){
+								if(TMath::Abs(pdg_gmother)>500 && TMath::Abs(pdg_gmother)<600 && (fMCparticleGMother->Pt()<50)){
 									 probAcceptB = fBcorr->Eval(fMCparticleGMother->Pt());
 									 /*
 									cout<<"---------------"<<endl;
@@ -1614,15 +1632,15 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 									cout<<"probAcceptB = "<<probAcceptB<<endl;		
 									cout<<"---------------"<<endl;
 									*/
-								/*}
+								}
 								else if(fMCparticleGMother->GetMother() > 0){
 									fMCparticleGGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleGMother->GetMother());
 									float pdg_ggmother = fMCparticleGGMother->GetPdgCode();
-									if(TMath::Abs(pdg_ggmother)>500 && TMath::Abs(pdg_ggmother)<600 && (fMCparticleGGMother->Pt()<30)) probAcceptB = fBcorr->Eval(fMCparticleGGMother->Pt());
+									if(TMath::Abs(pdg_ggmother)>500 && TMath::Abs(pdg_ggmother)<600 && (fMCparticleGGMother->Pt()<50)) probAcceptB = fBcorr->Eval(fMCparticleGGMother->Pt());
 									else if(fMCparticleGGMother->GetMother() > 0){
 										fMCparticleGGGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleGGMother->GetMother());
 										float pdg_gggmother = fMCparticleGGGMother->GetPdgCode();
-										if (TMath::Abs(pdg_gggmother)>500 && TMath::Abs(pdg_gggmother)<600 && (fMCparticleGGGMother->Pt()<30)) probAcceptB = fBcorr->Eval(fMCparticleGGGMother->Pt());
+										if (TMath::Abs(pdg_gggmother)>500 && TMath::Abs(pdg_gggmother)<600 && (fMCparticleGGGMother->Pt()<50)) probAcceptB = fBcorr->Eval(fMCparticleGGGMother->Pt());
 									}
 								}
 							}
@@ -1636,8 +1654,10 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 						
 						if(b < probAcceptB){
 							fDCAxy_pt_beautyaft->Fill(fPt,DCAxy*track->Charge()*signB);
+							hBeautyMotherPtaft->Fill(fMCparticleMother->Pt());
+							hBeautyMotherPt2Daft->Fill(fMCparticleMother->Pt(),fPt);
 							qadca[1]=19.5;
-						}*/
+						}
 					}
 					
 					if(fIsFromBarionB || fIsFromBarionBD){///beauty baryon
