@@ -33,14 +33,9 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
  double vZwidth                 =  0.5, // zMin, zMax & vZwidth determine _nBins_vertexZ.
  int    trackFilterBit          =  1,   // PbPb10(Global=1;TPConly=128;Hybrid=272); pPb13(Global=?;TPConly=?;Hybrid=768); pp10(Global=1;TPConly=?; Hybrid=?)
  int    nClusterMin             =  70,
- double eta1Min                 = -0.8, // set y1min acturally if useRapidity==1
  double eta1Max                 =  0.8, // set y1max acturally if useRapidity==1
- double eta2Min                 = -0.8, // set y2min acturally if useRapidity==1
- double eta2Max                 =  0.8, // set y2max acturally if useRapidity==1
  double etaBinWidth             =  0.1, // set yBinWidth acturally if useRapidity==1
- double dcaZMin                 = -3.2,
  double dcaZMax                 =  3.2,
- double dcaXYMin                = -2.4,
  double dcaXYMax                =  2.4,
  int nCentrality                =  6,
  int particleID                 =  1,   // Pion=0, Kaon=1, Proton=2
@@ -56,7 +51,11 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
  int nBinsPhi                   =  36,  // 36 is default value
  Bool_t NoResonances            = kTRUE, // only for MCAOD
  Bool_t NoElectron              = kTRUE, // only for MCAOD
- bool   PurePIDinMC             = 0,   // 0: Contamination in MCAODreco;       1: No Contamination in MCAODreco
+ bool   PurePIDinMC             = 0,   // 0: MisID in MCAODreco;       1: No MisID in MCAODreco
+ bool   PureNoWeakinMC          = 0,   // 0: No MisID but Secondaries from weak decays in MCAODreco;       1: No MisID and No Secondaries from weak decays in MCAODreco
+ bool   PureNoWeakMaterialinMC  = 0,   // 0: No MisID and No Secondaries from weak decays but Secondaries from material in MCAODreco;       1: No MisID and No Secondaries from weak decays and material in MCAODreco
+ bool   NoWeakinMC              = 0,   // 0: Secondaries from weak decays in MCAODreco;       1: No Secondaries from weak decays in MCAODreco
+ bool   NoMaterialinMC          = 0,   // 0: Secondaries from material in MCAODreco;          1: No Secondaries from material in MCAODreco
  const char* taskname           = "ChPM",
  char *inputHistogramFileName   = "alien:///alice/cern.ch/user/j/jipan/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2.root" )
 
@@ -77,8 +76,13 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
   int pidType                   =  2;  // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF // for AliHelperPID
   Bool_t requestTOFPID          =  1;  // for AliHelperPID
   Bool_t isMC                   =  0;  // for AliHelperPID
-  
+  double eta2Max                =  eta1Max; // set y2max acturally if useRapidity==1
+  double eta1Min                = -eta1Max; // set y1min acturally if useRapidity==1
+  double eta2Min                = -eta1Max; // set y2min acturally if useRapidity==1
+  double dcaZMin                = -dcaZMax;
+  double dcaXYMin               = -dcaXYMax;	
 
+	
   if      ( System == "PbPb" )                { centralityMethod = 4; trigger = kFALSE; }
   else if ( System == "PbPb_2015_kTRUE" )     { centralityMethod = 4; trigger = kTRUE;  }
   else if ( System == "PbPb_2015_kFALSE" )    { centralityMethod = 4; trigger = kTRUE;  }
@@ -431,6 +435,10 @@ AliAnalysisTaskPIDBFDptDpt * AddTaskPIDBFDptDpt
       task->SetPIDparticle(         pidparticle     );
       task->SetUse_pT_cut(          Use_PT_Cut      );
       task->SetIfContaminationInMC(   PurePIDinMC   );
+      task->SetIfContaminationWeakInMC( PureNoWeakinMC );
+      task->SetIfContaminationWeakMaterialInMC( PureNoWeakMaterialinMC );
+      task->SetIfWeakInMC( NoWeakinMC );
+      task->SetIfMaterialInMC( NoMaterialinMC );
       task->SetUseWeights(          useWeights      );
       task->SetUseRapidity(         useRapidity     );
       task->SetEventPlane(         useEventPlane     );
