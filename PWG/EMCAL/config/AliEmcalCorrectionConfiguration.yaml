@@ -55,11 +55,13 @@ CellEnergy:                                         # Cell Energy correction com
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
     enableRun2TempCalib: false                      # Whether the temperature calibration should be done for Run2
+    customRecalibFilePath: ""                       # Full path including .root file for custom recalibration object
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
 CellBadChannel:                                     # Bad channel removal at the cell level component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
+    customBadChannelFilePath: ""                    # Full path to a custom bad channel OADB object
     acceptDead: false                               # Declare dead channels as good
     acceptHot: false                                # Declare hot channels as good
     acceptWarm: false                               # Declare warm channels as good  

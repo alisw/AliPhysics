@@ -28,6 +28,7 @@ AliEmcalCorrectionCellEnergy::AliEmcalCorrectionCellEnergy() :
   ,fUseAutomaticRecalib(1)
   ,fUseAutomaticRunDepRecalib(1)
   ,fUseRunDepTempCalibRun2(0)
+  ,fCustomRecalibFilePath("")
 {
 }
 
@@ -52,6 +53,9 @@ Bool_t AliEmcalCorrectionCellEnergy::Initialize()
 
   // check the YAML configuration if the Run2 calibration is requested (default is false)
   GetProperty("enableRun2TempCalib",fUseRunDepTempCalibRun2);
+
+  // check the YAML configuration if a custom energy calibration is requested (default is empty string "")
+  GetProperty("customRecalibFilePath",fCustomRecalibFilePath);
 
   if (!fRecoUtils)
     fRecoUtils  = new AliEMCALRecoUtils;
@@ -149,6 +153,19 @@ Int_t AliEmcalCorrectionCellEnergy::InitRecalib()
     if (!recalibFile || recalibFile->IsZombie())
     {
       AliFatal(Form("EMCALRecalib.root not found in %s",fBasePath.Data()));
+      return 0;
+    }
+    
+    contRF = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(recalibFile->Get("AliEMCALRecalib")));
+  }
+  else if (fCustomRecalibFilePath!="")
+  { //if custom recalib requested
+    AliInfo(Form("Loading custom Recalib OADB from given path %s",fCustomRecalibFilePath.Data()));
+    
+    recalibFile = std::unique_ptr<TFile>(TFile::Open(Form("%s",fCustomRecalibFilePath.Data()),"read"));
+    if (!recalibFile || recalibFile->IsZombie())
+    {
+      AliFatal(Form("Recalibration not file found. Provided path was: %s",fCustomRecalibFilePath.Data()));
       return 0;
     }
     
