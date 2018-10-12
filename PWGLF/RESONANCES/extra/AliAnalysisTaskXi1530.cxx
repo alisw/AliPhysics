@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2018/10/09
+//  Last Modified Date: 2018/10/12
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -172,10 +172,11 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     CreateTHnSparse("hInvMass","InvMass",4,{binType,binCent,binPt,binMass},"s"); // Normal inv mass distribution of Xi1530
     CreateTHnSparse("hMult","Multiplicity",1,{binCent},"s");
     
+    auto binTrklet = AxisVar("nTrklet",{0,5,10,15,20,25,30,35,40,100});
     if(IsMC){
         // To get Trigger efficiency in each trk/V0M Multiplicity region
         auto MCType = AxisStr("Type",{"TrueINELg0","Reco","GoodVtx"});
-        auto binTrklet = AxisVar("nTrklet",{0,5,10,15,20,25,30,35,40,100});
+        //auto binTrklet = AxisVar("nTrklet",{0,5,10,15,20,25,30,35,40,100});
         CreateTHnSparse("htriggered_CINT7","",3,{MCType,binCent,binTrklet},"s"); // inv mass distribution of Xi
     }
     
@@ -274,6 +275,10 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
         fHistos->CreateTH2("hPhiEta_Xi_TrueMC","",180,0,2*pi,40,-2,2);
         fHistos->CreateTH2("hLambda_Rxy_TrueMC","",400,-200,200,400,-200,200);
         fHistos->CreateTH2("hXi_Rxy_TrueMC","",400,-200,200,400,-200,200);
+        
+        fHistos -> CreateTH1("htriggered_CINT7_true","",10,0,10,"s");
+        fHistos -> CreateTH1("htriggered_CINT7_reco","",10,0,10,"s");
+        fHistos -> CreateTH1("htriggered_CINT7_GoodVtx","",10,0,10,"s");
     }
     fEMpool.resize(binCent.GetNbins(),std::vector<eventpool> (binZ.GetNbins()));
     PostData(1, fHistos->GetListOfHistograms());
@@ -419,20 +424,28 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     
     // *********************************************************************** // Event Selection done
     
-    //  Missing Vetex and Trriger Efficiency ---------------------------------
-    if(IsMC){
-        if(IsINEL0True)
-            FillTHnSparse("htriggered_CINT7",{kTrueINELg0,fCent,ftrackmult});
-        if(IsPS)
-            FillTHnSparse("htriggered_CINT7",{kReco,fCent,ftrackmult});
-        if(IsPS && IsGoodVertex)
-            FillTHnSparse("htriggered_CINT7",{kGoodVtx,fCent,ftrackmult});
-    }
-    // -----------------------------------------------------------------------
     
     // Event Mixing pool -----------------------------------------------------
     zbin = binZ.FindBin(fZ) -1; // Event mixing z-bin
     centbin = binCent.FindBin(fCent) -1; // Event mixing cent bin
+    // -----------------------------------------------------------------------
+    
+    //  Missing Vetex and Trriger Efficiency ---------------------------------
+    if(IsMC){
+        //Int_t trklbin = binTrklet.FindBin(ftrackmult) -1; // # of tracklet bin
+        if(IsINEL0True){
+            FillTHnSparse("htriggered_CINT7",{(double)kTrueINELg0,fCent,ftrackmult});
+            fHistos -> FillTH1("htriggered_CINT7_true",centbin);
+        }
+        if(IsPS){
+            FillTHnSparse("htriggered_CINT7",{(double)kReco,fCent,ftrackmult});
+            fHistos -> FillTH1("htriggered_CINT7_reco",centbin);
+        }
+        if(IsPS && IsGoodVertex){
+            FillTHnSparse("htriggered_CINT7",{(double)kGoodVtx,fCent,ftrackmult});
+            fHistos -> FillTH1("htriggered_CINT7_GoodVtx",centbin);
+        }
+    }
     // -----------------------------------------------------------------------
     
     // Check tracks and casade, Fill histo************************************
@@ -757,7 +770,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
                     if ( IsTrueXi1530(Xicandidate,track1) ){ // MC Association, if it comes from True Xi1530
                         
                         // True Xi1530 signals
-                        FillTHnSparse("hInvMass",{kMCReco,fCent,vecsum.Pt(),vecsum.M()});
+                        FillTHnSparse("hInvMass",{(double)kMCReco,fCent,vecsum.Pt(),vecsum.M()});
                         
                         // For cut study
                         fHistos -> FillTH1("hDCADist_Lambda_BTW_Daughters_TrueMC",fabs(Xicandidate->GetDcaV0Daughters()));
@@ -821,7 +834,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
                 
                 if (fabs(vecsum.Rapidity()) > fXi1530RapidityCut) continue; // rapidity cut
                 
-                FillTHnSparse("hInvMass",{kMixing,fCent,vecsum.Pt(),vecsum.M()});
+                FillTHnSparse("hInvMass",{(double)kMixing,fCent,vecsum.Pt(),vecsum.M()});
                 fHistos->FillTH1("hTotalInvMass_Mix",vecsum.M());
             }
         }
