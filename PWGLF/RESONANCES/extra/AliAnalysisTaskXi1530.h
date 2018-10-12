@@ -9,16 +9,17 @@
 //
 
 #include <deque>
-class THnSparse;
-class AliAnalysisTask;
-class AliAnalysisTaskSE;
-class AliESDtrackCuts;
-class AliESDEvent;
-class AliAODEvent;
-class AliStack;
-class AliPIDResponse;
-class AliPIDCombined;
-class THistManager;
+
+#include "THnSparse.h"
+#include "AliStack.h"
+#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
+#include "AliESDtrackCuts.h"
+#include "AliESDEvent.h"
+#include "AliAODEvent.h"
+#include "AliPIDResponse.h"
+#include "AliPIDCombined.h"
+#include "THistManager.h"
 
 class AliAnalysisTaskXi1530RunTable {
 public:
@@ -171,11 +172,12 @@ private:
     Double_t                        PVy = 999;
     Double_t                        PVz = 999;
     Double_t                        bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 4);
+    ClassDef(AliAnalysisTaskXi1530, 5);
     //1: Frist version
     //2: Add Track cut2 for the Xi daughter particles
     //3: Add FillMixingPool function
     //4: Add Cut parameters to header and add "Set" fuction for cut study&Systematic study
+    //5: Restore header files to here
 };
 
 #endif
