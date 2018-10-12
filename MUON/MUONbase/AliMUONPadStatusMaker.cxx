@@ -937,7 +937,7 @@ AliMUONVStore* AliMUONPadStatusMaker::Config() const
 {
     if (!fConfig)
     {
-        fConfig = fkCalibrationData.Pedestals();
+        fConfig = fkCalibrationData.Config();
     }
     return fConfig;
 }
