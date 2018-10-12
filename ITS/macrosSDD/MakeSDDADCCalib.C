@@ -225,8 +225,8 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
       Float_t esig  = lfun->GetParError(3);
       Float_t sigl  = lfun->GetParameter(0);
       Float_t esigl = lfun->GetParError(0);
-      if(sigl<1.){
-	printf("   Bad fit parameters in time interval %d: sig=%f sigl=%f\n",idEdx,sig,sigl);
+      if(sigl<1. || mpv<40. || mpv>200.){
+	printf("   Bad fit parameters in time interval %d: mpv=%f sig=%f sigl=%f\n",idEdx,mpv,sig,sigl);
 	textbadFit->Draw();
 	chdEdxproj->Update();
 	continue;
