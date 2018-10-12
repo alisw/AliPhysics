@@ -71,7 +71,8 @@ AliGenReaderEMD::AliGenReaderEMD():
     fEtaomegaAside(0),
     fomegaPDGCode(0),
     fNomegaCside(0),
-    fEtaomegaCside(0)
+    fEtaomegaCside(0),
+    fNtupleName(0)
 {
 // Std constructor
     for(int i=0; i<70; i++){
@@ -144,7 +145,8 @@ AliGenReaderEMD::AliGenReaderEMD(const AliGenReaderEMD &reader):
     fEtaomegaAside(0),
     fomegaPDGCode(0),
     fNomegaCside(0),
-    fEtaomegaCside(0)
+    fEtaomegaCside(0),
+    fNtupleName(0)
 {
     // Copy Constructor
     for(int i=0; i<70; i++){
@@ -206,9 +208,9 @@ void AliGenReaderEMD::Init()
 	      pFile->cd();
 	       printf("\n %s file opened to read RELDIS EMD events\n\n", fFileName);
     }
-    fTreeNtuple = (TTree*)gDirectory->Get("h2032");
+    fTreeNtuple = (TTree*)gDirectory->Get(fNtupleName.Data());
     if(!fTreeNtuple){
-      Warning("Init", "No ntuple found!!!!");
+      Fatal("Init", "No ntuple found!!!!");
       return;
     }
     fNcurrent = fStartEvent;
@@ -337,8 +339,6 @@ Int_t AliGenReaderEMD::NextEvent()
       Warning("NextEvent", "No more entries found in external file!!!!");
       return 0;
     }
-
-    return 0;
 }
 
 // -----------------------------------------------------------------------------------
@@ -459,23 +459,30 @@ TParticle* AliGenReaderEMD::NextParticle()
 
     }
 
-   if(pdgCode!=1234567){
+   if(pdgCode!=1234567 && pdgCode!=0){
     Float_t ptot = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);
-    Double_t amass = TDatabasePDG::Instance()->GetParticle(pdgCode)->Mass();
-    p[3] = TMath::Sqrt(ptot*ptot+amass*amass);
+      Double_t amass = TDatabasePDG::Instance()->GetParticle(pdgCode)->Mass();
+      p[3] = TMath::Sqrt(ptot*ptot+amass*amass);
 
-    //if(p[3]<=amass){
-       //Warning("Generate","Particle %d  E = %f GeV p = %f GeV/c mass = %f GeV/c2 ",pdgCode,p[3],ptot,amass);
-    //}
+      //if(p[3]<=amass){
+         //Warning("Generate","Particle %d  E = %f GeV p = %f GeV/c mass = %f GeV/c2 ",pdgCode,p[3],ptot,amass);
+      //}
 
-    //printf("  Pc %d:  PDGcode %d  p(%1.2f, %1.2f, %1.2f, %1.3f)\n",	fNparticle,pdgCode,p[0], p[1], p[2], p[3]);
+      //printf("  Pc %d:  PDGcode %d  p(%1.2f, %1.2f, %1.2f, %1.3f)\n",	fNparticle,pdgCode,p[0], p[1], p[2], p[3]);
 
-    TParticle* particle = new TParticle(pdgCode, 0, -1, -1, -1, -1,
+      TParticle* particle = new TParticle(pdgCode, 0, -1, -1, -1, -1,
     	p[0], p[1], p[2], p[3], 0., 0., 0., 0.);
-    if((p[0]*p[0]+p[1]*p[1]+p[2]*p[2])>1e-5) particle->SetBit(kTransportBit);
-    fNparticle++;
-    return particle;
+      if(ptot>1e-4) particle->SetBit(kTransportBit);
+      fNparticle++;
+      return particle;
   }
+  else{
+      TParticle* particle = new TParticle(0, 0, -1, -1, -1, -1,
+    	 0., 0., 0., 0., 0., 0., 0., 0.);
+      fNparticle++;
+      return particle;
+  }
+
 }
 
 //___________________________________________________________
