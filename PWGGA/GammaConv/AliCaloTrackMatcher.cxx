@@ -391,11 +391,14 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
         fHistControlMatches->Fill(2.,inTrack->Pt());
         continue;
       }
-
-      if (TMath::Abs(eta) > 0.25 && (fClusterType == 2)){
-        delete trackParam;
-        fHistControlMatches->Fill(3.,inTrack->Pt());
-        continue;
+      Double_t trkPos[3] = {0,0,0};
+      if(emcParam.GetXYZ(trkPos)){
+        TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
+        if (TMath::Abs(trkPosVec.Eta()) > 0.25 && (fClusterType == 2)){
+          delete trackParam;
+          fHistControlMatches->Fill(3.,inTrack->Pt());
+          continue;
+        }
       }
     }
 

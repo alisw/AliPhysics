@@ -1,85 +1,42 @@
-void AddTask_PhotonQA(  TString   V0ReaderEventCutNumber        = "00000003",
-                        TString   V0ReaderPhotonCutNumber       = "060000084001001500000000",
-                        TString   TaskEventCutnumber            = "00000003",
-                        TString   TaskPhotonCutnumber           = "090000092663743800000000",
-                        Bool_t    isMC                          = kFALSE,
-                        Int_t     IsHeavyIon                    = 0,
-                        Bool_t    kHistograms                   = kTRUE,
-                        Double_t  kTree                         = 1.0,  // 0. / 0 / kFALSE for no, 1. / 1 / kTRUE for yes,  x > 1.0 will use only 1/x of the event statistics for the tree
-                        TString   V0ReaderCutNumberAODBranch    = "0000000060084001001500000",
-                        Bool_t    runBasicQAWithStandardOutput  = kTRUE,
-                        Bool_t    doEtaShiftV0Reader            = kFALSE,
-                        Bool_t    enableV0findingEffi           = kFALSE              // enables V0finding efficiency histograms
-                    ){
+void AddTask_PhotonQA(
+  TString   photonCutNumberV0Reader       = "060000084001001500000000",
+  TString   TaskEventCutnumber            = "00000003",
+  TString   TaskPhotonCutnumber           = "090000092663743800000000",
+  Bool_t    isMC                          = kFALSE,
+  Int_t     IsHeavyIon                    = 0,
+  Bool_t    kHistograms                   = kTRUE,
+  Double_t  kTree                         = 1.0,  // 0. / 0 / kFALSE for no, 1. / 1 / kTRUE for yes,  x > 1.0 will use only 1/x of the event statistics for the tree
+  TString   V0ReaderCutNumberAODBranch    = "0000000060084001001500000",
+  Bool_t    runBasicQAWithStandardOutput  = kTRUE,
+  Bool_t    doEtaShiftV0Reader            = kFALSE,
+  Bool_t    enableV0findingEffi           = kFALSE              // enables V0finding efficiency histograms
+  ){
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error(Form("AddTask_GammaConvV1_%i",trainConfig), "No analysis manager found.");
     return ;
   }
 
   // ================== GetInputEventHandler =============================
   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
-  //========= Add PID Reponse to ANALYSIS manager ====
-  if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-    AddTaskPIDResponse(isMC);
-  }
+    //=========  Set Cutnumber for V0Reader ================================
+  TString cutnumberPhoton     = photonCutNumberV0Reader.Data();
+  TString cutnumberEvent      = "00000003";
+  if(IsHeavyIon==1)
+    cutnumberEvent = "10000003";
+  else if(IsHeavyIon==2)
+    cutnumberEvent = "80000003";
 
-  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  TString V0ReaderName = Form("V0ReaderV1_%s_%s",V0ReaderEventCutNumber.Data(),V0ReaderPhotonCutNumber.Data());
+  //========= Check V0 Reader in  ANALYSIS manager  =====
+  TString V0ReaderName        = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+  AliV0ReaderV1 *fV0ReaderV1  =  NULL;
   if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
-    AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
-
-    fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
-    fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
-    fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
-    fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
-
-    AliConvEventCuts *fEventCuts=NULL;
-    if(V0ReaderEventCutNumber!=""){
-      fEventCuts= new AliConvEventCuts(V0ReaderEventCutNumber.Data(),V0ReaderEventCutNumber.Data());
-      fEventCuts->SetPreSelectionCutFlag(kTRUE);
-      fEventCuts->SetV0ReaderName(V0ReaderName);
-      if(fEventCuts->InitializeCutsFromCutString(V0ReaderEventCutNumber.Data())){
-        fV0ReaderV1->SetEventCuts(fEventCuts);
-        fEventCuts->SetFillCutHistograms("",kTRUE);
-        if (IsHeavyIon==2){
-          fEventCuts->DoEtaShift(doEtaShiftV0Reader);
-        }
-      }
-    }
-
-    // Set AnalysisCut Number
-    AliConversionPhotonCuts *fCuts=NULL;
-    if(V0ReaderPhotonCutNumber!=""){
-      fCuts= new AliConversionPhotonCuts(V0ReaderPhotonCutNumber.Data(),V0ReaderPhotonCutNumber.Data());
-      fCuts->SetPreSelectionCutFlag(kTRUE);
-      fCuts->SetIsHeavyIon(IsHeavyIon);
-      fCuts->SetV0ReaderName(V0ReaderName);
-      if(fCuts->InitializeCutsFromCutString(V0ReaderPhotonCutNumber.Data())){
-        fV0ReaderV1->SetConversionCuts(fCuts);
-        fCuts->SetFillCutHistograms("",kTRUE);
-      }
-    }
-
-
-    if(inputHandler->IsA()==AliAODInputHandler::Class()){
-      // AOD mode
-      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",V0ReaderCutNumberAODBranch.Data()));
-    }
-    fV0ReaderV1->Init();
-
-    AliLog::SetGlobalLogLevel(AliLog::kInfo);
-
-    //connect input V0Reader
-    mgr->AddTask(fV0ReaderV1);
-    mgr->ConnectInput(fV0ReaderV1,0,cinput);
-
+    cout << "V0Reader: " << V0ReaderName.Data() << " not found!!"<< endl;
+    return;
   } else {
-    Error("AddTask_V0ReaderV1", "Cannot execute AddTask, V0ReaderV1 already exists.");
+    cout << "V0Reader: " << V0ReaderName.Data() << " found!!"<< endl;
   }
 
   AliConvEventCuts *analysisEventCuts = new AliConvEventCuts();
