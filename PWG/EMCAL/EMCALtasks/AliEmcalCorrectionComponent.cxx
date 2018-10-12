@@ -337,6 +337,19 @@ Int_t AliEmcalCorrectionComponent::InitBadChannels()
     
     contBC = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(fbad->Get("AliEMCALBadChannels")));
   }
+  else if (fCustomBadChannelFilePath!="")
+  { //if fBasePath specified in the ->SetBasePath()
+    AliInfo(Form("Loading custom Bad Channels OADB from given path %s",fCustomBadChannelFilePath.Data()));
+    
+    fbad = std::unique_ptr<TFile>(TFile::Open(Form("%s",fCustomBadChannelFilePath.Data()),"read"));
+    if (!fbad || fbad->IsZombie())
+    {
+      AliFatal(Form("No valid Bad channel OADB object was not found in the path provided: %s",fCustomBadChannelFilePath.Data()));
+      return 0;
+    }
+    
+    contBC = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(fbad->Get("AliEMCALBadChannels")));
+  }
   else
   { // Else choose the one in the $ALICE_PHYSICS directory
     AliInfo("Loading Bad Channels OADB from $ALICE_PHYSICS/OADB/EMCAL");

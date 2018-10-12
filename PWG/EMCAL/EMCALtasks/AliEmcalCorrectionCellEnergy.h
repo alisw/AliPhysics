@@ -45,6 +45,7 @@ private:
   Bool_t                 fUseAutomaticRecalib;       ///< On by default the check in the OADB of the energy recalibration
   Bool_t                 fUseAutomaticRunDepRecalib; ///< On by default the check in the OADB of the run dependent energy recalibration
   Bool_t                 fUseRunDepTempCalibRun2;    ///< Off by default the check in the OADB of the run dependent temp calib Run2
+  TString                fCustomRecalibFilePath;     ///< Empty string by default the path to the OADB file of the custom energy recalibration
   
   AliEmcalCorrectionCellEnergy(const AliEmcalCorrectionCellEnergy &);               // Not implemented
   AliEmcalCorrectionCellEnergy &operator=(const AliEmcalCorrectionCellEnergy &);    // Not implemented
@@ -53,7 +54,7 @@ private:
   static RegisterCorrectionComponent<AliEmcalCorrectionCellEnergy> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionCellEnergy, 2); // EMCal cell energy correction component
+  ClassDef(AliEmcalCorrectionCellEnergy, 3); // EMCal cell energy correction component
   /// \endcond
 };
 
