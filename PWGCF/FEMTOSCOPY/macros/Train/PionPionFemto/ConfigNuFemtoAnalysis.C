@@ -80,6 +80,8 @@ struct MacroParams {
   bool do_kt_trueq_cf;
   bool do_trueq3d_cf;
   bool do_kt_trueq3d_cf;
+  bool do_trueq3dbp_cf;
+  bool do_kt_trueq3dbp_cf;
 
 };
 
@@ -140,6 +142,8 @@ ConfigFemtoAnalysis(const TString& param_str="")
   macro_config.do_kt_trueq_cf = false;
   macro_config.do_trueq3d_cf = false;
   macro_config.do_kt_trueq3d_cf = false;
+  macro_config.do_trueq3dbp_cf = false;
+  macro_config.do_kt_trueq3dbp_cf = false;
 
   macro_config.qinv_bin_size_MeV = 5.0f;
   macro_config.qinv_max_GeV = 1.0f;
@@ -412,6 +416,28 @@ ConfigFemtoAnalysis(const TString& param_str="")
         analysis->AddCorrFctn(kt_binned_cfs);
       }
 
+      if (macro_config.do_trueq3dbp_cf) {
+        AliFemtoModelCorrFctnTrueQ3DByParent *m_cf = new AliFemtoModelCorrFctnTrueQ3DByParent(macro_config.q3d_bin_count,
+                                                                                              macro_config.q3d_maxq);
+        m_cf->SetManager(model_manager);
+        analysis->AddCorrFctn(m_cf);
+      }
+
+      if (macro_config.do_kt_trueq3dbp_cf) {
+        AliFemtoModelCorrFctnTrueQ3DByParent *m_cf = new AliFemtoModelCorrFctnTrueQ3DByParent(macro_config.q3d_bin_count,
+                                                                                              macro_config.q3d_maxq);
+        m_cf->SetManager(model_manager);
+
+        AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_TrueQ3D", m_cf);
+
+        for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
+          float low = macro_config.kt_ranges[kt_idx],
+                high = macro_config.kt_ranges[kt_idx+1];
+          kt_binned_cfs->AddKtRange(low, high);
+        }
+        analysis->AddCorrFctn(kt_binned_cfs);
+      }
+
       if (macro_config.do_ylm_cf) {
         AliFemtoCorrFctnDirectYlm *ylm_cf = new AliFemtoCorrFctnDirectYlm(
             "AliFemtoCorrFctnDirectYlm",
@@ -437,9 +463,9 @@ ConfigFemtoAnalysis(const TString& param_str="")
         AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_DirectYlm", ylm_cf);
 
         for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
-          float low = macro_config.kt_ranges[kt_idx],
-                high = macro_config.kt_ranges[kt_idx+1];
-          kt_binned_cfs->AddKtRange(low, high);
+          float lo = macro_config.kt_ranges[kt_idx],
+                hi = macro_config.kt_ranges[kt_idx+1];
+          kt_binned_cfs->AddKtRange(lo, hi);
         }
         analysis->AddCorrFctn(kt_binned_cfs);
       }
@@ -456,8 +482,7 @@ void
 BuildConfiguration(const TString &text,
                    AliFemtoAnalysisPionPion::AnalysisParams &a,
                    AliFemtoAnalysisPionPion::CutParams &cut,
-                   MacroParams &mac
-                   )
+                   MacroParams &mac)
 {
   std::cout << "I-BuildConfiguration (BASE64-Encoded): " << TBase64::Encode(text) << " \n";
 
