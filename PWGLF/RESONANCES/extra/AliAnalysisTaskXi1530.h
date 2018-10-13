@@ -9,9 +9,9 @@
 //
 
 #include <deque>
-class THnSparse;
+#include <THnSparse.h>
+#include <AliAnalysisTaskSE.h>
 class AliAnalysisTask;
-class AliAnalysisTaskSE;
 class AliESDtrackCuts;
 class AliESDEvent;
 class AliAODEvent;
@@ -171,11 +171,12 @@ private:
     Double_t                        PVy = 999;
     Double_t                        PVz = 999;
     Double_t                        bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 4);
+    ClassDef(AliAnalysisTaskXi1530, 5);
     //1: Frist version
     //2: Add Track cut2 for the Xi daughter particles
     //3: Add FillMixingPool function
     //4: Add Cut parameters to header and add "Set" fuction for cut study&Systematic study
+    //5: include AliAnalysisTaskSE.h to avoid compile problem.
 };
 
 #endif
