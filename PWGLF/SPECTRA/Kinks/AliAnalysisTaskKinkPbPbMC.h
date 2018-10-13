@@ -15,7 +15,7 @@ class AliESDtrackCuts;
 class AliAnalysisTaskKinkPbPbMC : public AliAnalysisTaskSE {
  public:
   	AliAnalysisTaskKinkPbPbMC();
-	AliAnalysisTaskKinkPbPbMC(const char *name, Float_t lRadiusKUp,  Float_t lRadiusKLow, Int_t lNCluster, Float_t lLowQtValue, Float_t yRange, Float_t lnsigma, Float_t maxChi, Float_t Zpos);
+	AliAnalysisTaskKinkPbPbMC(const char *name, Float_t lRadiusKUp,  Float_t lRadiusKLow, Int_t lNCluster, Float_t lLowQtValue, Float_t yRange, Float_t lnsigma, Float_t maxChi, Float_t Zpos, Bool_t strongAntiPile, Bool_t sevenSigma, Bool_t sixSigma, Bool_t eightSigma);
   	virtual ~AliAnalysisTaskKinkPbPbMC() {}
   
   	virtual void   UserCreateOutputObjects();
@@ -30,6 +30,10 @@ class AliAnalysisTaskKinkPbPbMC : public AliAnalysisTaskSE {
 	void SetnSigma(Float_t   lnsigma){fnsigma=lnsigma;}
 	void SetMaximumChiSquare(Float_t   maxChi){fmaxChi=maxChi;}
         void SetDCAToVertexZpos(Float_t   Zpos){fZpos=Zpos;}
+	void SetStrongAntiPileup(Bool_t strongAntiPile){fstrongAntiPile=strongAntiPile;}
+        void SetDCAxySeven(Bool_t sevenSigma){fsevenSigma=sevenSigma;}
+        void SetDCAxySix(Bool_t sixSigma){fsixSigma = sixSigma;}
+        void SetDCAxyEight(Bool_t eightSigma){feightSigma = eightSigma;}
  private:
 	void   Process();
   	TList       *fOutputList; //! Output list
@@ -205,6 +209,10 @@ class AliAnalysisTaskKinkPbPbMC : public AliAnalysisTaskSE {
 	Float_t fnsigma;
 	Float_t fmaxChi;
         Float_t fZpos;
+	Bool_t fstrongAntiPile;
+        Bool_t fsevenSigma;
+        Bool_t fsixSigma;
+        Bool_t feightSigma;
 
 
 	UInt_t fTrigSel;
