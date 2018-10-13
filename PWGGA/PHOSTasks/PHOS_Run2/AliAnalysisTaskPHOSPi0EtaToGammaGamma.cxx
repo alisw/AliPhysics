@@ -706,32 +706,42 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     fOutputContainer->Add(h1PID);
   };
 
-  TH1F *h1all = new TH1F("hAllClusterEnergy","all cluster energy;E_{cluster} (GeV)",500,0,50);
+  const TString str[4] = {"L0","L1L","L1M","L1H"};
+  TH1F *h1all = new TH1F("hAllClusterEnergy","all cluster energy;E_{cluster} (GeV)",500,0,50);//for MB
   h1all->Sumw2();
   fOutputContainer->Add(h1all);
 
-  const TString str[4] = {"L0","L1L","L1M","L1H"};
+  TH1F *h1all_GT = new TH1F("hAllClusterEnergyGoodTRU","allcluster energy on good TRU;E_{cluster} (GeV)",500,0,50);//for MB
+  h1all_GT->Sumw2();
+  fOutputContainer->Add(h1all_GT);
+
   for(Int_t it=0;it<4;it++){
-    TH1F *h1matched = new TH1F(Form("hMatchedClusterEnergy%s",str[it].Data()),"matched cluster energy;E_{cluster} (GeV)",500,0,50);
+    TH1F *h1matched = new TH1F(Form("hMatchedClusterEnergy%s",str[it].Data()),"matched cluster energy;E_{cluster} (GeV)",500,0,50);//for MB
     h1matched->Sumw2();
     fOutputContainer->Add(h1matched);
-
-    //for(Int_t imod=1;imod<Nmod;imod++){
-    //  for(Int_t itru=1;itru<=Ntru;itru++){
-    //    TH1F *h1all_mt     = new TH1F(Form("hAllClusterEnergy%sM%dTRU%d",str[it].Data(),imod,itru)    ,Form("all cluster energy M%d TRU%d",imod,itru)    ,500,0,50);
-    //    TH1F *h1matched_mt = new TH1F(Form("hMatchedClusterEnergy%sM%dTRU%d",str[it].Data(),imod,itru),Form("matched cluster energy M%d TRU%d",imod,itru),500,0,50);
-
-    //    h1all_mt->Sumw2();
-    //    h1matched_mt->Sumw2();
-
-    //    fOutputContainer->Add(h1all_mt);
-    //    fOutputContainer->Add(h1matched_mt);
-
-    //  }//end of TRU loop
-    //}//end of module loop
   }//end of trigger type loop
 
-  if(fIsPHOSTriggerAnalysis){
+  for(Int_t imod=1;imod<Nmod;imod++){
+    for(Int_t itru=1;itru<=Ntru;itru++){
+      TH1F *h1all_mt     = new TH1F(Form("hAllClusterEnergyM%dTRU%d",imod,itru)    ,Form("all cluster energy M%d TRU%d;E_{cluster} (GeV)",imod,itru)    ,500,0,50);//for MB
+      h1all_mt->Sumw2();
+      fOutputContainer->Add(h1all_mt);
+    }//end of TRU loop
+  }//end of module loop
+
+  for(Int_t it=0;it<4;it++){
+    for(Int_t imod=1;imod<Nmod;imod++){
+      for(Int_t itru=1;itru<=Ntru;itru++){
+
+        TH1F *h1matched_mt = new TH1F(Form("hMatchedClusterEnergy%sM%dTRU%d",str[it].Data(),imod,itru),Form("matched cluster energy %s M%d TRU%d;E_{cluster} (GeV)",str[it].Data(),imod,itru),500,0,50);//for MB
+        h1matched_mt->Sumw2();
+        fOutputContainer->Add(h1matched_mt);
+
+      }//end of TRU loop
+    }//end of module loop
+  }//end of trigger type loop
+
+  if(fIsPHOSTriggerAnalysis){//for your trigger configuration
 
     //for Trigger QA
     fOutputContainer->Add(new TH1F("hNFiredTRUChannel","Fired TRU channel per event",101,-0.5,100.5));
@@ -739,9 +749,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH3F(Form("hMatchedFiredTRUChannelM%d",imod),Form("Fired TRU channel M%d",imod),64,0.5,64.5, 56,0.5,56.5,100,0,50));
 
     for(Int_t imod=1;imod<Nmod;imod++){
-      fOutputContainer->Add(new TH1F(Form("hClusterEnergyM%d",imod)       ,Form("cluster energy M%d",imod),500,0,50));
-      fOutputContainer->Add(new TH1F(Form("hMatchedClusterEnergyM%d",imod),Form("cluster energy M%d",imod),500,0,50));
-
       fOutputContainer->Add(new TH3F(Form("hClusterHitM%d",imod)       ,Form("cluster hit M%d",imod)         ,64,0.5,64.5,56,0.5,56.5,100,0,50));
       fOutputContainer->Add(new TH3F(Form("hMatchedClusterHitM%d",imod),Form("matched cluster hit M%d",imod) ,64,0.5,64.5,56,0.5,56.5,100,0,50));
 
@@ -1250,7 +1257,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
     return;
   }
 
-  if(fForceActiveTRU) fPHOSTriggerHelper->IsPHI7(fEvent,fPHOSClusterCuts,fEmin,fEnergyThreshold,fUseCoreEnergy);//only to set event in fPHOSTriggerHelper
+  fPHOSTriggerHelper->IsPHI7(fEvent,fPHOSClusterCuts,fEmin,fEnergyThreshold,fUseCoreEnergy);//only to set event in fPHOSTriggerHelper. //do nothing. just return kTRUE/kFALSE
 
   //<- end of event selection
   //-> start physics analysis
@@ -1645,7 +1652,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::TriggerQA()
       FillHistogramTH2(fOutputContainer,Form("hDeltaRM%dTRU%d",trgmodule,fPHOSTriggerHelper->WhichTRU(trgcellx,trgcellz)),DeltaR,energy);
 
       if(!IsFilledOnce){//to avoid double counting of energy
-        FillHistogramTH1(fOutputContainer,Form("hClusterEnergyM%d",module),energy);
         FillHistogramTH1(fOutputContainer,Form("hClusterEnergyM%dTRU%d",module,fPHOSTriggerHelper->WhichTRU(cellx,cellz)),energy);
         FillHistogramTH3(fOutputContainer,Form("hClusterHitM%d",module),cellx,cellz,energy);
       }
@@ -1657,7 +1663,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::TriggerQA()
           FillHistogramTH2(fOutputContainer,Form("hMatchedDeltaRM%dTRU%d",trgmodule,fPHOSTriggerHelper->WhichTRU(trgcellx,trgcellz)),DeltaR,energy);
 
           if(kUsedCluster[i] == 0){
-            FillHistogramTH1(fOutputContainer,Form("hMatchedClusterEnergyM%d",module),energy);
             FillHistogramTH1(fOutputContainer,Form("hMatchedClusterEnergyM%dTRU%d",trgmodule,fPHOSTriggerHelper->WhichTRU(trgcellx,trgcellz)),energy);
             FillHistogramTH3(fOutputContainer,Form("hMatchedClusterHitM%d",module),cellx,cellz,energy);
           }
@@ -1671,7 +1676,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::TriggerQA()
           FillHistogramTH2(fOutputContainer,Form("hMatchedDeltaRM%dTRU%d",trgmodule,fPHOSTriggerHelper->WhichTRU(trgcellx,trgcellz)),DeltaR,energy);
 
           if(kUsedCluster[i] == 0){
-            FillHistogramTH1(fOutputContainer,Form("hMatchedClusterEnergyM%d",module),energy);
             FillHistogramTH1(fOutputContainer,Form("hMatchedClusterEnergyM%dTRU%d",trgmodule,fPHOSTriggerHelper->WhichTRU(trgcellx,trgcellz)),energy);
             FillHistogramTH3(fOutputContainer,Form("hMatchedClusterHitM%d",module),cellx,cellz,energy);
           }
@@ -1702,6 +1706,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ClusterQA()
   Double_t M02=0, M20=0;
   Double_t R = 0, coreR=0;
   Double_t coreE = 0;
+
+//  AliPHOSTriggerHelper *tmp = new AliPHOSTriggerHelper();
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
@@ -1742,9 +1748,13 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ClusterQA()
     }
 
     if(ph->IsTOFOK()){
-      FillHistogramTH1(fOutputContainer,"hAllClusterEnergy",energy);//only for trigger efficiency in MB in data
+      Int_t tru = fPHOSTriggerHelper->WhichTRU(cellx,cellz);
+      FillHistogramTH1(fOutputContainer,"hAllClusterEnergy",energy);//all cluster
+      if(fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)){
+        FillHistogramTH1(fOutputContainer,"hAllClusterEnergyGoodTRU",energy);//all cluster on good TRU acceptance
+        FillHistogramTH1(fOutputContainer,Form("hAllClusterEnergyM%dTRU%d",module,tru),energy);//all cluster
+      }
     }
-
     FillHistogramTH2(fOutputContainer,"hEnergyvsDistanceToBadChannel",energy,ph->DistToBadfp()); //in unit of cell with floating point
 
     eta = global1.Eta();
@@ -4308,9 +4318,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillTriggerInfoMB(AliPHOSTriggerHelp
     }
     AliInfo(Form("cluster position M:%d, X:%d , Z:%d , TRU:%d",module,cellx,cellz,tru));
 
-    //FillHistogramTH1(fOutputContainer,Form("hAllClusterEnergy%s",type.Data()),energy);//all cluster
-    //FillHistogramTH1(fOutputContainer,Form("hAllClusterEnergy%s_M%d_TRU%d",type.Data(),module,tru),energy);//all cluster
-
     AliVCaloTrigger* trg = fEvent->GetCaloTrigger("PHOS");
     trg->Reset();
 
@@ -4337,7 +4344,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillTriggerInfoMB(AliPHOSTriggerHelp
 
       if(helper->IsMatched(trgrelId,relId)){
         FillHistogramTH1(fOutputContainer,Form("hMatchedClusterEnergy%s",type.Data()),energy);//matched cluster
-        //FillHistogramTH1(fOutputContainer,Form("hMatchedClusterEnergy%sM%dTRU%d",type.Data(),module,tru),energy);//all cluster
+        FillHistogramTH1(fOutputContainer,Form("hMatchedClusterEnergy%sM%dTRU%d",type.Data(),module,tru),energy);//matched cluster
         break;//exit from trigger patch loop
       }
     }//end of while trigger patch loop
