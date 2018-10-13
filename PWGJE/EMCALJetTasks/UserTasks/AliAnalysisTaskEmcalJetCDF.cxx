@@ -90,8 +90,36 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
 
   AliJetContainer* jetCont = NULL;
   TIter next(&fJetCollArray);
-  while ( (jetCont = static_cast<AliJetContainer*>(next())) )
-    {
+  while ( (jetCont = static_cast<AliJetContainer*>(next())) ) {
+    //##### EARLY VALIDITY CHECKS - BAIL OUT FAST
+
+    // get particles connected to jets
+    AliParticleContainer* fTracksCont = jetCont->GetParticleContainer();
+    if (!fTracksCont) { std::cout << "*********   JET CONTAINER WITHOUT TRACKS CONTAINER   *********" << std::endl; continue; }
+    TClonesArray* fTracksContArray = fTracksCont->GetArray();
+
+    // Number of Jets found in event - accepted cuts applied by JetContainer
+    Int_t fNJets_accepted = jetCont->GetNJets();
+
+    // Multiplicity in event - accepted tracks in tracks container
+    Int_t fNaccPart = fTracksCont->GetNAcceptedParticles();
+
+    // protection
+    if ( ( fNJets_accepted < 1 ) || ( fNaccPart < 1 ) ) {
+      if ( fDebug > 1 ) { std::cout << "accepted (fNJets || fNPart) == 0" << std::endl; }
+      continue;
+      }
+
+    if ( fDebug > 1 ) { std::cout << "fNJets = " << fNJets_accepted << " ; fNPart = " << fNaccPart << std::endl; }
+
+    // get jet1 - if there is no leading jet there is no point to continue
+    AliEmcalJet* jet1 = jetCont->GetLeadingJet(); // internaly checked for AcceptedJet
+    if (!jet1) {
+      if ( fDebug > 1 ) { Printf ( "Jet1 not found (did not survive cuts?)\n" ); }
+      continue;
+      }
+
+//######################################################################################################
     groupname = jetCont->GetName();
 
     Double_t jet_pt_min = jetCont->GetMinPt();
@@ -443,41 +471,15 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
 
 
 //######################################################################################################
-
-    // Number of Jets found in event - accepted cuts applied by JetContainer
-    Int_t fNJets_accepted = jetCont->GetNJets();
-
-    // get particles connected to jets
-    AliParticleContainer* fTracksCont = jetCont->GetParticleContainer();
-    if (!fTracksCont) { std::cout << "*********   JET CONTAINER WITHOUT TRACKS CONTAINER   *********" << std::endl; continue; }
-    TClonesArray* fTracksContArray = fTracksCont->GetArray();
-
-    // Multiplicity in event - accepted tracks in tracks container
-    Int_t fNaccPart = fTracksCont->GetNAcceptedParticles();
-
     // get clusters connected to jets
     AliClusterContainer* fCaloClustersCont = jetCont->GetClusterContainer();
     // accepted clusters in cluster container
     Int_t fNaccClus = -1;
     if (fCaloClustersCont) { fNaccClus = fCaloClustersCont->GetNAcceptedClusters(); }
 
-    // protection
-    if ( ( fNJets_accepted < 1 ) || ( fNaccPart < 1 ) )
-      {
-      if ( fDebug > 1 ) { std::cout << "accepted (fNJets || fNPart) == 0" << std::endl; }
-      return kFALSE;
-      }
-
-    if ( fDebug > 1 )
-      { std::cout << "fNJets = " << fNJets_accepted << " ; fNPart = " << fNaccPart << std::endl; }
-
-    AliVParticle* track = NULL;
-    AliEmcalJet*    jet = NULL;
-
     fH5->Fill ( fNJets_accepted ); // Distribution of jets in events;
 
     UShort_t counter_part = 0; Double_t counter_pt = 0.; // counter for npart and pt recording
-
     UShort_t jet_n90 = -99 ; Double_t jet_pt90 = -99.99 ;
     UShort_t jet_n85 = -99 ; Double_t jet_pt85 = -99.99 ;
     UShort_t jet_n80 = -99 ; Double_t jet_pt80 = -99.99 ;
@@ -497,62 +499,46 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
     Double_t g_pt75 = 0.; Double_t sum_part_pt_pt75 = 0.; Double_t sum_part_pt2_pt75 = 0.;
     Double_t g_pt70 = 0.; Double_t sum_part_pt_pt70 = 0.; Double_t sum_part_pt2_pt70 = 0.;
 
-
     // **************************************************************
     //                          LEADING JETS
     // **************************************************************
-    AliEmcalJet* jet1 = jetCont->GetLeadingJet(); // internaly checked for AcceptedJet
+    if ( jet1 ) {
+      if ( fDebug > 1 ) { std::cout << "+++++++++++++++++>>>>>>>>> Leading jet found" << std::endl; jet1->Print(); }
 
-    if ( fDebug > 1 )
-      {
-      if (jet1)
-        { std::cout << "+++++++++++++++++>>>>>>>>> Leading jet found" << std::endl; jet1->Print(); }
-      else
-        { Printf ( "Jet1 not found (did not survive cuts?)\n" ); }
-      }
+      // vector of sorted indexes of particles in leading jet - jet1 : sorting by p_T jet constituents
+      std::vector< int > jet1_sorted_idxvec = jet1->GetPtSortedTrackConstituentIndexes ( fTracksContArray );
 
-    if (jet1)
-      {
-      //vector of sorted indexes of particles in leading jet
-      std::vector< int > jet1_sorted_idxvec;
-
-      // jet1 : Sorting by p_T jet constituents
-      jet1_sorted_idxvec = jet1->GetPtSortedTrackConstituentIndexes ( fTracksContArray );
-
-      Int_t track_idx = -999;            // index variable for tracks
       Double_t jet1_pt = jet1->Pt();
-      UShort_t jet1_npart = jet1->GetNumberOfTracks();
+      UShort_t jet1_npart  = jet1->GetNumberOfTracks();
       UShort_t jet1_nconst = jet1->GetNumberOfConstituents();
 
-      UShort_t jet1_n90  = ( UShort_t ) ( 0.9 * jet1_npart );
-      Double_t jet1_pt90 = 0.9 * jet1_pt;
+      UShort_t jet1_n90  = ( UShort_t ) ( 0.90 * jet1_npart );
+      Double_t jet1_pt90 = 0.90 * jet1_pt;
 
       UShort_t jet1_n85  = ( UShort_t ) ( 0.85 * jet1_npart );
       Double_t jet1_pt85 = 0.85 * jet1_pt;
 
-      UShort_t jet1_n80  = ( UShort_t ) ( 0.8 * jet1_npart );
-      Double_t jet1_pt80 = 0.8 * jet1_pt;
+      UShort_t jet1_n80  = ( UShort_t ) ( 0.80 * jet1_npart );
+      Double_t jet1_pt80 = 0.80 * jet1_pt;
 
       UShort_t jet1_n75  = ( UShort_t ) ( 0.75 * jet1_npart );
       Double_t jet1_pt75 = 0.75 * jet1_pt;
 
-      UShort_t jet1_n70  = ( UShort_t ) ( 0.7 * jet1_npart );
-      Double_t jet1_pt70 = 0.7 * jet1_pt;
+      UShort_t jet1_n70  = ( UShort_t ) ( 0.70 * jet1_npart );
+      Double_t jet1_pt70 = 0.70 * jet1_pt;
 
-      fH6->Fill  ( jet1_npart );        // Multiplicity of jet1 - charged tracks
-      fH6c->Fill ( jet1_nconst );       // Multiplicity of jet1 - all constituents
+      fH6->Fill  ( jet1_npart );           // Multiplicity of jet1 - charged tracks
+      fH6c->Fill ( jet1_nconst );          // Multiplicity of jet1 - all constituents
       fH7->Fill  ( jet1_pt, jet1_nconst ); // N(jet) vs P_{T}(jet1)
 
+      Int_t track_idx = -999;            // index variable for tracks
       counter_part = 0; counter_pt = 0.; // reset counters
-
       //___________________________________________________________________________
       // parsing tracks of jet1 (leading jet) in decreasing order of Pt
-
-      for (std::size_t i = 0; i < jet1_npart; i++ )
-          {
+      for (std::size_t i = 0; i < jet1_npart; i++ ) {
           track_idx = jet1_sorted_idxvec.at (i);
           //track = dynamic_cast<AliVParticle*>(fTracksContArray->At( track_idx ));
-          track = jet1->TrackAt ( track_idx, fTracksContArray );
+          AliVParticle* track = jet1->TrackAt ( track_idx, fTracksContArray );
           if (!track) { std::cout << "Parsing tracks of jet1 :: track not defined but it should!!!" << std::endl; continue; }
 
           Double_t dpart = jet1->DeltaR ( track );
@@ -573,86 +559,73 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
           fH20->Fill ( dpart );                          // Distribution of R in leading jet
 
           // fill histograms for 70% of particles with highest pt
-          if ( counter_part <= jet1_n70 )
-              {
+          if ( counter_part <= jet1_n70 ) {
               fH15_n70->Fill ( dpart, track_pt, track_pt );     // <p_{T}> track vs the Distance R from Jet1 - 80% of particles
               fH20_n70->Fill ( dpart );                         // Distribution of R in leading jet
               }
           // fill histograms for 75% of particles with highest pt
-          if ( counter_part <= jet1_n75 )
-              {
+          if ( counter_part <= jet1_n75 ) {
               fH15_n75->Fill ( dpart, track_pt, track_pt );     // <p_{T}> track vs the Distance R from Jet1 - 80% of particles
               fH20_n75->Fill ( dpart );                         // Distribution of R in leading jet
               }
           // fill histograms for 80% of particles with highest pt
-          if ( counter_part <= jet1_n80 )
-              {
+          if ( counter_part <= jet1_n80 ) {
               fH15_n80->Fill ( dpart, track_pt, track_pt );     // <p_{T}> track vs the Distance R from Jet1 - 80% of particles
               fH20_n80->Fill ( dpart );                         // Distribution of R in leading jet
               }
           // fill histograms for 85% of particles with highest pt
-          if ( counter_part <= jet1_n85 )
-              {
+          if ( counter_part <= jet1_n85 ) {
               fH15_n85->Fill ( dpart, track_pt, track_pt );     // <p_{T}> track vs the Distance R from Jet1 - 80% of particles
               fH20_n85->Fill ( dpart );                         // Distribution of R in leading jet
               }
           // fill histograms for 90% of particles with highest pt
-          if ( counter_part <= jet1_n90 )
-              {
+          if ( counter_part <= jet1_n90 ) {
               fH15_n90->Fill ( dpart, track_pt, track_pt );     // <p_{T}> track vs the Distance R from Jet1 - 80% of particles
               fH20_n90->Fill ( dpart );                         // Distribution of R in leading jet
               }
 
           // fill histograms for particles that have first 70% of pt
-          if ( counter_pt <= jet1_pt70 )
-              {
+          if ( counter_pt <= jet1_pt70 ) {
               fH15_pt70->Fill ( dpart, track_pt, track_pt );     //  <p_{T}> track vs the Distance R from Jet1 - 80% of pt
               fH20_pt70->Fill ( dpart );                         // Distribution of R in leading jet
               }
           // fill histograms for particles that have first 75% of pt
-          if ( counter_pt <= jet1_pt75 )
-              {
+          if ( counter_pt <= jet1_pt75 ) {
               fH15_pt75->Fill ( dpart, track_pt, track_pt );     //  <p_{T}> track vs the Distance R from Jet1 - 80% of pt
               fH20_pt75->Fill ( dpart );                         // Distribution of R in leading jet
               }
           // fill histograms for particles that have first 80% of pt
-          if ( counter_pt <= jet1_pt80 )
-              {
+          if ( counter_pt <= jet1_pt80 ) {
               fH15_pt80->Fill ( dpart, track_pt, track_pt );     //  <p_{T}> track vs the Distance R from Jet1 - 80% of pt
               fH20_pt80->Fill ( dpart );                         // Distribution of R in leading jet
               }
           // fill histograms for particles that have first 80% of pt
-          if ( counter_pt <= jet1_pt85 )
-              {
+          if ( counter_pt <= jet1_pt85 ) {
               fH15_pt85->Fill ( dpart, track_pt, track_pt );     //  <p_{T}> track vs the Distance R from Jet1 - 80% of pt
               fH20_pt85->Fill ( dpart );                         // Distribution of R in leading jet
               }
           // fill histograms for particles that have first 80% of pt
-          if ( counter_pt <= jet1_pt90 )
-              {
+          if ( counter_pt <= jet1_pt90 ) {
               fH15_pt90->Fill ( dpart, track_pt, track_pt );     //  <p_{T}> track vs the Distance R from Jet1 - 80% of pt
               fH20_pt90->Fill ( dpart );                         // Distribution of R in leading jet
               }
 
           ++counter_part; counter_pt += track_pt;
           } // end of loop over jet1 tracks
-      jet1_sorted_idxvec.clear();
       } // end of jet1 (leading jet) processing
 
-
-    track = NULL; jet1 = NULL;
     // **************************************************************
     //                        ALL JETS
     // **************************************************************
     Double_t jet_pt = 0. ; UShort_t jet_npart = 0; UShort_t jet_nconst = 0;
 
-    // vector of sorted indexes of particles in jet
-    std::vector< int > jet_sorted_idxvec ;
-
     // loop over all jets
-    for( auto jet : jetCont->accepted())
-      {
+    for( auto jet : jetCont->accepted()) {
       if (!jet) { continue; }
+
+      // vector of sorted indexes of particles in jet
+      std::vector< int > jet_sorted_idxvec ;
+
       Int_t track_idx = -999; // index variable for tracks
       jet_pt = 0. ; jet_npart = 0; jet_nconst = 0;
       counter_part = 0; counter_pt = 0.; // reset counters
@@ -702,11 +675,10 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
       fH7all->Fill ( jet_pt, jet_nconst ); // N(jet) vs P_{T} - all jets
 
       // parsing all jet tracks
-      for (std::size_t i = 0; i < jet_npart; i++ )
-        {
+      for (std::size_t i = 0; i < jet_npart; i++ ) {
         track_idx = jet_sorted_idxvec.at (i);
         //track = dynamic_cast<AliVParticle*>(fTracksContArray->At( track_idx ));
-        track = jet->TrackAt ( track_idx, fTracksContArray );
+        AliVParticle* track = jet->TrackAt ( track_idx, fTracksContArray );
         if (!track) { std::cout << "Parsing tracks of jets :: track not defined but it should!!!" << std::endl; continue; }
 
         Double_t dpart = jet->DeltaR ( track );
@@ -732,12 +704,11 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
 
         // computing components for g and ptD in the jet tracks loop
         g_tot += (track_pt * dpart)/jet_pt;
-        sum_part_pt_tot += track_pt;
+        sum_part_pt_tot += TMath::Abs(track_pt);
         sum_part_pt2_tot += TMath::Power( track_pt, 2 );
 
   //#############################################################################################
-        if ( counter_part <= jet_n90 )         /// N90
-            {
+        if ( counter_part <= jet_n90 ) {        /// N90
             fH15all_n90->Fill ( dpart, track_pt );         // p_{T} track vs the Distance R from Jet - 80% of particles
             fH20all_n90->Fill ( dpart );
             fH_Rjt_n90->Fill  ( dpart, jt, jt );
@@ -749,8 +720,7 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
             sum_part_pt2_n90 += TMath::Power( track_pt, 2 );
             }
 
-        if ( counter_pt <= jet_pt90 )         /// PT90
-            {
+        if ( counter_pt <= jet_pt90 ) {        /// PT90
             fH15all_pt90->Fill ( dpart, track_pt ); //  p_{T} track vs the Distance R from Jet - 80% of pt
             fH20all_pt90->Fill ( dpart );
             fH_Rjt_pt90->Fill  ( dpart, jt, jt );
@@ -763,8 +733,7 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
             }
 
   //#############################################################################################
-        if ( counter_part <= jet_n85 )        /// N85
-            {
+        if ( counter_part <= jet_n85 ) {       /// N85
             fH15all_n85->Fill ( dpart, track_pt ); // p_{T} track vs the Distance R from Jet - 80% of particles
             fH20all_n85->Fill ( dpart );
             fH_Rjt_n85->Fill  ( dpart, jt, jt );
@@ -776,8 +745,7 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
             sum_part_pt2_n85 += TMath::Power( track_pt, 2 );
             }
 
-        if ( counter_pt <= jet_pt85 )        /// PT85
-            {
+        if ( counter_pt <= jet_pt85 ) {       /// PT85
             fH15all_pt85->Fill ( dpart, track_pt ); //  p_{T} track vs the Distance R from Jet - 80% of pt
             fH20all_pt85->Fill ( dpart );
             fH_Rjt_pt85->Fill  ( dpart, jt, jt );
@@ -790,8 +758,7 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
             }
 
   //#############################################################################################
-        if ( counter_part <= jet_n80 )        /// N80
-            {
+        if ( counter_part <= jet_n80 ) {       /// N80
             fH15all_n80->Fill ( dpart, track_pt ); // p_{T} track vs the Distance R from Jet - 80% of particles
             fH20all_n80->Fill ( dpart );
             fH_Rjt_n80->Fill  ( dpart, jt, jt );
@@ -803,8 +770,7 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
             sum_part_pt2_n80 += TMath::Power( track_pt, 2 );
             }
 
-        if ( counter_pt <= jet_pt80 )         /// PT80
-            {
+        if ( counter_pt <= jet_pt80 ) {        /// PT80
             fH15all_pt80->Fill ( dpart, track_pt ); //  p_{T} track vs the Distance R from Jet - 80% of pt
             fH20all_pt80->Fill ( dpart );
             fH_Rjt_pt80->Fill  ( dpart, jt, jt );
@@ -817,8 +783,7 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
             }
 
   //#############################################################################################
-        if ( counter_part <= jet_n75 )        /// N75
-            {
+        if ( counter_part <= jet_n75 ) {       /// N75
             fH15all_n75->Fill ( dpart, track_pt ); // p_{T} track vs the Distance R from Jet - 80% of particles
             fH20all_n75->Fill ( dpart );
             fH_Rjt_n75->Fill  ( dpart, jt, jt );
@@ -830,8 +795,7 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
             sum_part_pt2_n75 += TMath::Power( track_pt, 2 );
             }
 
-        if ( counter_pt <= jet_pt75 )         /// PT75
-            {
+        if ( counter_pt <= jet_pt75 ) {        /// PT75
             fH15all_pt75->Fill ( dpart, track_pt ); //  p_{T} track vs the Distance R from Jet - 80% of pt
             fH20all_pt75->Fill ( dpart );
             fH_Rjt_pt75->Fill  ( dpart, jt, jt );
@@ -844,8 +808,7 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
             }
 
   //#############################################################################################
-        if ( counter_part <= jet_n70 )       /// N70
-            {
+        if ( counter_part <= jet_n70 ) {      /// N70
             fH15all_n70->Fill ( dpart, track_pt ); // p_{T} track vs the Distance R from Jet - 80% of particles
             fH20all_n70->Fill ( dpart );
             fH_Rjt_n70->Fill  ( dpart, jt, jt );
@@ -857,8 +820,7 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
             sum_part_pt2_n70 += TMath::Power( track_pt, 2 );
             }
 
-        if ( counter_pt <= jet_pt70 )        /// PT70
-            {
+        if ( counter_pt <= jet_pt70 ) {       /// PT70
             fH15all_pt70->Fill ( dpart, track_pt ); //  p_{T} track vs the Distance R from Jet - 80% of pt
             fH20all_pt70->Fill ( dpart );
             fH_Rjt_pt70->Fill  ( dpart, jt, jt );
@@ -879,26 +841,63 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
       fHg_n85->Fill ( g_n85 );    fHg_pt85->Fill ( g_pt85 );
       fHg_n90->Fill ( g_n90 );    fHg_pt90->Fill ( g_pt90 );
 
-      fHptd->Fill( TMath::Sqrt(sum_part_pt2_tot)/sum_part_pt_tot );
+      if ( sum_part_pt_tot > 1e-8 )
+        { fHptd->Fill( TMath::Sqrt(sum_part_pt2_tot)/sum_part_pt_tot ); }
+      else
+        { if ( fDebug > 2 ) cout << "sum_part_pt_tot aprox 0!!!!" << endl; }
 
-      fHptd_n70->Fill( TMath::Sqrt(sum_part_pt2_n70)/sum_part_pt_n70 );
-      fHptd_n75->Fill( TMath::Sqrt(sum_part_pt2_n75)/sum_part_pt_n75 );
-      fHptd_n80->Fill( TMath::Sqrt(sum_part_pt2_n80)/sum_part_pt_n80 );
-      fHptd_n85->Fill( TMath::Sqrt(sum_part_pt2_n85)/sum_part_pt_n85 );
-      fHptd_n90->Fill( TMath::Sqrt(sum_part_pt2_n90)/sum_part_pt_n90 );
+      if ( sum_part_pt_n70 > 1e-8 )
+        { fHptd_n70->Fill( TMath::Sqrt(sum_part_pt2_n70)/sum_part_pt_n70 ); }
+      else
+        { if ( fDebug > 2 ) cout << "sum_part_pt_n70 aprox 0!!!!" << endl; }
 
-      fHptd_pt70->Fill( TMath::Sqrt(sum_part_pt2_pt70)/sum_part_pt_pt70 );
-      fHptd_pt75->Fill( TMath::Sqrt(sum_part_pt2_pt75)/sum_part_pt_pt75 );
-      fHptd_pt80->Fill( TMath::Sqrt(sum_part_pt2_pt80)/sum_part_pt_pt80 );
-      fHptd_pt85->Fill( TMath::Sqrt(sum_part_pt2_pt85)/sum_part_pt_pt85 );
-      fHptd_pt90->Fill( TMath::Sqrt(sum_part_pt2_pt90)/sum_part_pt_pt90 );
+      if ( sum_part_pt_n75 > 1e-8 )
+        { fHptd_n75->Fill( TMath::Sqrt(sum_part_pt2_n75)/sum_part_pt_n75 ); }
+      else
+        { if ( fDebug > 2 ) cout << "sum_part_pt_n75 aprox 0!!!!" << endl; }
 
-      }
-      // end of loopt over all jets
+      if ( sum_part_pt_n80 > 1e-8 )
+        { fHptd_n80->Fill( TMath::Sqrt(sum_part_pt2_n80)/sum_part_pt_n80 ); }
+      else
+        { if ( fDebug > 2 ) cout << "sum_part_pt_n80 aprox 0!!!!" << endl; }
 
-    jet = NULL; track = NULL;
-    }
-    // end of loop over jet container collection
+      if ( sum_part_pt_n85 > 1e-8 )
+        { fHptd_n85->Fill( TMath::Sqrt(sum_part_pt2_n85)/sum_part_pt_n85 ); }
+      else
+        { if ( fDebug > 2 ) cout << "sum_part_pt_n85 aprox 0!!!!" << endl; }
+
+      if ( sum_part_pt_n90 > 1e-8 )
+        { fHptd_n90->Fill( TMath::Sqrt(sum_part_pt2_n90)/sum_part_pt_n90 ); }
+      else
+        { if ( fDebug > 2 ) cout << "sum_part_pt_n90 aprox 0!!!!" << endl; }
+
+      if ( sum_part_pt_pt70 > 1e-8 )
+        { fHptd_pt70->Fill( TMath::Sqrt(sum_part_pt2_pt70)/sum_part_pt_pt70 ); }
+      else
+        { if ( fDebug > 2 ) cout << "sum_part_pt_pt70 aprox 0!!!!" << endl; }
+
+      if ( sum_part_pt_pt75 > 1e-8 )
+        { fHptd_pt75->Fill( TMath::Sqrt(sum_part_pt2_pt75)/sum_part_pt_pt75 ); }
+      else
+        { if ( fDebug > 2 ) cout << "sum_part_pt_pt75 aprox 0!!!!" << endl; }
+
+      if ( sum_part_pt_pt80 > 1e-8 )
+        { fHptd_pt80->Fill( TMath::Sqrt(sum_part_pt2_pt80)/sum_part_pt_pt80 ); }
+      else
+        { if ( fDebug > 2 ) cout << "sum_part_pt_pt80 aprox 0!!!!" << endl; }
+
+      if ( sum_part_pt_pt85 > 1e-8 )
+        { fHptd_pt85->Fill( TMath::Sqrt(sum_part_pt2_pt85)/sum_part_pt_pt85 ); }
+      else
+        { if ( fDebug > 2 ) cout << "sum_part_pt_pt85 aprox 0!!!!" << endl; }
+
+      if ( sum_part_pt_pt90 > 1e-8 )
+        { fHptd_pt90->Fill( TMath::Sqrt(sum_part_pt2_pt90)/sum_part_pt_pt90 ); }
+      else
+        { if ( fDebug > 2 ) cout << "sum_part_pt_pt90 aprox 0!!!!" << endl; }
+
+      } // end of loopt over all jets
+    } // end of loop over jet container collection
 
   // post data at every processing
   PostData ( 1, fOutput ); // Post data for ALL output slots > 0 here.
