@@ -62,13 +62,13 @@ AliAnalysisTaskKinkPbPbMC::AliAnalysisTaskKinkPbPbMC()
         fHistEta(0), frapidESDK(0), fHistQt2(0),fAngMomPi(0),fMinvPi(0),fMinvKa(0),fcodeH(0), fZkinkZDau(0),fRadiusPtFake(0),fTPCMomNSgnl(0),fPtPrKink(0),flifTiESDK(0),
         fKinkKaon(0),fkinkKaonP(0),fkinkKaonN(0),fcode2(0),fTPCSgnlPtpc(0),fMothKinkMomSgnlD(0),fKinkKaonBg(0),fMothKinkMomSgnl(0),fcodeDau2(0),fTPCSgnlKinkDau(0),
         fMinvPr(0),fDCAkinkBG(0),fPosiKinKBgXY(0),fPosiKinKBgZY(0),fPosiKinKBgZX(0),fKinKBGP(0),fKinKBGN(0),fdcodeH(0),fcode4(0),
-        fNumberOfEvent_cent(0),fESDtrackCuts(0),fEventVsCentrality(0),fnsigma(3.5), fmaxChi(4.0), fZpos(2.0),fEventCuts(0)
+        fNumberOfEvent_cent(0),fESDtrackCuts(0),fEventVsCentrality(0),fnsigma(3.5), fmaxChi(4.0), fZpos(2.0),fEventCuts(0), fstrongAntiPile(kTRUE), fsevenSigma(kTRUE),  fsixSigma(kFALSE), feightSigma(kFALSE)
 {}
 
 
 
 //________________________________________________________________________
-AliAnalysisTaskKinkPbPbMC::AliAnalysisTaskKinkPbPbMC(const char *name, Float_t lRadiusKUp,  Float_t lRadiusKLow, Int_t lNCluster, Float_t lLowQtValue, Float_t yRange, Float_t lnsigma, Float_t maxChi, Float_t Zpos) 
+AliAnalysisTaskKinkPbPbMC::AliAnalysisTaskKinkPbPbMC(const char *name, Float_t lRadiusKUp,  Float_t lRadiusKLow, Int_t lNCluster, Float_t lLowQtValue, Float_t yRange, Float_t lnsigma, Float_t maxChi, Float_t Zpos, Bool_t strongAntiPile,  Bool_t sevenSigma, Bool_t sixSigma, Bool_t eightSigma) 
   : AliAnalysisTaskSE(name),  fOutputList(0), fHistPt(0),fVtxCut(10.),fMultiplicity(0),fIncompletEvent(0),fMultpileup(0), fMultV0trigger(0),fZvertex(0),fEventVertex(0),
 	fRatioCrossedRows(0),fZvXv(0), fZvYv(0), fXvYv(0),fRpr(0),fdcaToVertexXY(0),fdcaToVertexXYafterCut(0),fptAllKink(0),fRatioCrossedRowsKink(0),fPosiKink(0),
 	fQtAll(0),fptKink(0),fQtMothP(0),fqT1(0),fEta(0),fqT2(0),fKinkKaonBackg(0),f1(0), f2(0),fPtCut1(0),fAngMotherPi(0),
@@ -87,7 +87,7 @@ AliAnalysisTaskKinkPbPbMC::AliAnalysisTaskKinkPbPbMC(const char *name, Float_t l
 	fHistEta(0), frapidESDK(0), fHistQt2(0),fAngMomPi(0),fMinvPi(0),fMinvKa(0),fcodeH(0), fZkinkZDau(0),fRadiusPtFake(0),fTPCMomNSgnl(0),fPtPrKink(0),flifTiESDK(0),
 	fKinkKaon(0),fkinkKaonP(0),fkinkKaonN(0),fcode2(0),fTPCSgnlPtpc(0),fMothKinkMomSgnlD(0),fKinkKaonBg(0),fMothKinkMomSgnl(0),fcodeDau2(0),fTPCSgnlKinkDau(0),
 	fMinvPr(0),fDCAkinkBG(0),fPosiKinKBgXY(0),fPosiKinKBgZY(0),fPosiKinKBgZX(0),fKinKBGP(0),fKinKBGN(0),fdcodeH(0),fcode4(0),
-	fNumberOfEvent_cent(0),fESDtrackCuts(0),fEventVsCentrality(0),fnsigma(3.5), fmaxChi(4.0), fZpos(2.0),fEventCuts(0)
+	fNumberOfEvent_cent(0),fESDtrackCuts(0),fEventVsCentrality(0),fnsigma(3.5), fmaxChi(4.0), fZpos(2.0),fEventCuts(0), fstrongAntiPile(kTRUE), fsevenSigma(kTRUE),  fsixSigma(kFALSE), feightSigma(kFALSE)
 	
 
 
@@ -114,8 +114,9 @@ void AliAnalysisTaskKinkPbPbMC::UserCreateOutputObjects()
         fEventCuts.SetupLHC15o();
         fEventCuts.SetManualMode();
 //Event Cuts with strong anti-pilep cuts
+	if (fstrongAntiPile){
         fEventCuts.fUseStrongVarCorrelationCut = true;
-        fEventCuts.fUseVariablesCorrelationCuts = true; 
+        fEventCuts.fUseVariablesCorrelationCuts = true;} 
  // Called once
 
 	f1=new TF1("f1","((atan([0]*[1]*(1.0/(sqrt((x^2)*(1.0-([1]^2))-([0]^2)*([1]^2))))))*180.)/[2]",1.1,10.0);
@@ -551,8 +552,13 @@ void AliAnalysisTaskKinkPbPbMC::UserExec(Option_t *)
         //fMultiplicity->Fill(nESDTracks);
         fMultiplicity->Fill(2);
 
-        fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0105 + 0.0350/pt^1.01");
-        //fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+	if (fsevenSigma){
+        fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0105 + 0.0350/pt^1.01");}
+        if (fsixSigma){
+        fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0090+0.0300/pt^1.1");}
+        if (feightSigma){
+        fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0120+0.0400/pt^1.1");}        
+//fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
          fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
 //physics selection
         UInt_t maskIsSelected =
