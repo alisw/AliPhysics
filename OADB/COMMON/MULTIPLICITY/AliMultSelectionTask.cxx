@@ -246,7 +246,8 @@ fHistQASelected_PtITSsaVsCL1(0),
 
 //Objects
 fOadbMultSelection(0),
-fInput(0)
+fInput(0),
+fOADB(nullptr)
 //------------------------------------------------
 // Tree Variables
 {
@@ -395,7 +396,8 @@ fHistQASelected_PtITSsaVsCL1(0),
 
 //Objects
 fOadbMultSelection(0),
-fInput(0)
+fInput(0),
+fOADB(nullptr)
 {
     
     for( Int_t iq=0; iq<100; iq++ ) fQuantiles[iq] = -1 ;
@@ -1659,7 +1661,13 @@ void AliMultSelectionTask::UserExec(Option_t *)
         // Compute Percentiles
         //===============================================
         //Make sure OADB is loaded
-        SetupRun( lVevent );
+        if (!fOADB ){
+            SetupRun( lVevent );
+        }else{
+            SetupRunFromOADB( lVevent );
+        }
+        
+        
         
         //===============================================
         // I/O: Create object for storing, add
@@ -2255,6 +2263,94 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     
     //Set histo title for posterity
     fHistEventCounter->SetTitle(lHistTitle.Data());
+    return 0;
+}
+
+//________________________________________________________________________
+Int_t AliMultSelectionTask::SetupRunFromOADB(const AliVEvent* const esd)
+{
+    // Setup files for run
+    
+    if (!esd)
+        return -1;
+    
+    // check if something to be done
+    if (fCurrentRun == esd->GetRunNumber())
+        return 0;
+    else
+        fCurrentRun = esd->GetRunNumber();
+    AliInfoF("Detected run number: %i",fCurrentRun);
+    
+    TString lPathInput = CurrentFileName();
+    
+        if(!fOADB) AliFatal("This should never ever happen!");
+        
+    //Get Object for this run!
+    TObject *lObjAcquired = 0x0;
+    
+    lObjAcquired = fOADB->GetObject(fCurrentRun, "Default");
+    
+    AliWarning("==================================================");
+    AliWarning("  Configuring from provided OADB container!");
+    AliWarning("==================================================");
+               
+    if (!lObjAcquired) {
+        if ( fkUseDefaultCalib ) {
+            AliWarning("======================================================================");
+            AliWarning(Form(" Multiplicity OADB does not exist for run %d, using Default \n",fCurrentRun ));
+            AliWarning(" This is only a 'good guess'! Use with Care! ");
+            AliWarning(" To Switch off this good guess, use SetUseDefaultCalib(kFALSE)");
+            AliWarning("======================================================================");
+            lObjAcquired  = fOADB->GetDefaultObject("oadbDefault");
+        } else {
+            AliWarning("======================================================================");
+            AliWarning(Form(" Multiplicity OADB does not exist for run %d, will return kNoCalib!",fCurrentRun ));
+            AliWarning("======================================================================");
+            //Create an empty OADB for us, please !
+            CreateEmptyOADB();
+            return -1;
+        }
+    }
+    if (!lObjAcquired) {
+        // This should not happen...
+        AliFatal("Really cannot find any OADB object - giving up!");
+    }
+    
+    AliOADBMultSelection *lObjTypecast = (AliOADBMultSelection*) lObjAcquired;
+    
+    fOadbMultSelection = new AliOADBMultSelection(*lObjTypecast);
+    // De-couple histograms from the underlying file
+    fOadbMultSelection->Dissociate();
+    // Update cache map from estimator to histogram for fast look-up
+    fOadbMultSelection->Setup();
+    
+    //Make sure naming convention is followed!
+    AliMultSelection* sel = fOadbMultSelection->GetMultSelection();
+    
+    if (sel) {
+        sel->SetName(fStoredObjectName.Data());
+        //Optimize evaluation
+        sel->Setup(fInput);
+    }
+    
+    AliInfo("---> Successfully set up! Inspect MultSelection:");
+    if (sel) {
+        sel->PrintInfo();
+    }
+    else {
+        AliWarning("Weird! No AliMultSelection found...");
+    }
+    AliInfo("---> Inspect Event Selection Criteria:");
+    AliMultSelectionCuts* selcuts = fOadbMultSelection->GetEventCuts();
+    if (selcuts) {
+        selcuts->Print();
+    }
+    else {
+        AliWarning("Weird! No AliMultSelectionCuts found...");
+    }
+    
+    //Set histo title for posterity
+    fHistEventCounter->SetTitle("Manual OADB loaded");
     return 0;
 }
 
@@ -2934,5 +3030,34 @@ AliMultSelectionTask* AliMultSelectionTask::AddTaskMultSelection ( Bool_t lCalib
     }
 
     return taskMultSelection;
+}
+
+//______________________________________________________________________
+void AliMultSelectionTask::SetOADB ( TString lOADBfilename ){
+    //This helper function opens an OADB file and copies the OADB object
+    //contained within so that it can be streamed together with the
+    //AliMultSelection task.
+    //
+    //This will override completely all other options and is meant to
+    //enable customized executions also when using the train framework.
+    
+    //Open fileNameAlter
+    TFile * fileOADB = 0x0;
+    fileOADB = TFile::Open(lOADBfilename.Data());
+    
+    //Check existence, please
+    if(!fileOADB) AliFatal(Form("Cannot open requested OADB file %s", lOADBfilename.Data()));
+    if(!fileOADB->IsOpen()) AliFatal(Form("Cannot open OADB file %s", lOADBfilename.Data()));
+    
+    AliOADBContainer *lMultContainer = (AliOADBContainer*) fileOADB->Get("MultSel");
+    if(!lMultContainer) AliFatal(Form("File %s does not contain valid OADB!", lOADBfilename.Data()));
+    
+    lMultContainer -> SetName("MultSelToCopy");
+    
+    //Establish copy
+    fOADB = (AliOADBContainer*) lMultContainer->Clone("MultSel");
+    
+    //Close file and that's it
+    fileOADB -> Close() ;
 }
 

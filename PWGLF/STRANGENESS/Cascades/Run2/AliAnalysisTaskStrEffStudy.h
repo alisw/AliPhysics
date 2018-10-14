@@ -563,6 +563,7 @@ private:
     Float_t fTreeCascVarPVx;
     Float_t fTreeCascVarPVy;
     Float_t fTreeCascVarPVz;
+    AliESDVertex *fTreeCascVarAliESDvertex;
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     
 //===========================================================================================
