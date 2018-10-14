@@ -204,7 +204,8 @@ Int_t AliMUONPadStatusMaker::CheckConfigConsistencyWithPedestalInformation(Int_t
     //
     // So, that's normal if all the manus of the same buspatch are in the same case.
     // Let's check that...
-    AliMpBusPatch* busPatch = AliMpDDLStore::Instance()->GetBusPatch(detElemId,manuId);
+    Int_t busPatchId = AliMpDDLStore::Instance()->GetBusPatchId(detElemId,manuId);
+    AliMpBusPatch* busPatch = AliMpDDLStore::Instance()->GetBusPatch(busPatchId,kFALSE);
     Int_t n = busPatch->GetNofManus();
     Int_t missing(0);
     for ( Int_t i = 0; i < n; ++i )
