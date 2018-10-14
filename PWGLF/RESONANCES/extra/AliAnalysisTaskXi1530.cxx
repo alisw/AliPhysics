@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2018/10/12
+//  Last Modified Date: 2018/10/13
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -46,10 +46,8 @@
 #include "AliMultiplicity.h"
 
 // from header
-#include "THnSparse.h"
 #include "AliStack.h"
 #include "AliAnalysisTask.h"
-#include "AliAnalysisTaskSE.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
@@ -751,7 +749,6 @@ void AliAnalysisTaskXi1530::FillTracks(){
             temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(), pionmass);
             
             vecsum = temp1+temp2; // temp1 = cascade, temp2=pion
-            std::cout << "Check pion mass: " << track1->M() << std::endl;
             
             // Y cut
             if (fabs(vecsum.Rapidity()) > fXi1530RapidityCut) continue;
@@ -823,7 +820,6 @@ void AliAnalysisTaskXi1530::FillTracks(){
             AliESDtrack *bTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetBindex()));
             
             for (UInt_t jt = 0; jt < trackpool.size(); jt++) {
-                std::cout << "cascade: " << i << ", track: " << jt << std::endl;
                 track1 = trackpool.at(jt);
                 if(track1->GetID() == pTrackXi->GetID() || track1->GetID() == nTrackXi->GetID() || track1->GetID() == bTrackXi->GetID()) continue;
                 temp2.SetXYZM(track1->Px(),track1->Py(), track1->Pz(),pionmass);
@@ -1066,7 +1062,6 @@ void AliAnalysisTaskXi1530::FillTrackToEventPool(){
     for (UInt_t i = 0; i < goodtrackindices.size(); i++) {
         goodtrack = (AliESDtrack*) fEvt ->GetTrack(goodtrackindices[i]);
         if(!goodtrack) continue;
-        std::cout<<"04"<<std::endl;
         etl->push_back( (AliVTrack*)goodtrack -> Clone() );
     }
     if (!goodtrackindices.size()) ep->pop_back();
