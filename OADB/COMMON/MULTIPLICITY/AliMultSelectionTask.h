@@ -52,6 +52,7 @@ class AliMultInput;
 class AliMultSelection;
 class AliMultSelectionCuts;
 class AliOADBMultSelection;
+class AliOADBContainer;
 
 //#include "TString.h"
 //#include "AliESDtrackCuts.h"
@@ -98,6 +99,7 @@ public:
     
     //Setup Run if needed (depends on run number!)     
     Int_t SetupRun( const AliVEvent* const esd );
+    Int_t SetupRunFromOADB( const AliVEvent* const esd );
     
     //removed to avoid accidental usage!
     //void SetSaveCalibInfo( Bool_t lVar ) { fkCalibration = lVar; } ;
@@ -126,6 +128,8 @@ public:
     
     //Calibration mode downscaling for manageable output
     void SetDownscaleFactor ( Double_t lDownscale ) { fDownscaleFactor = lDownscale; }
+    
+    void SetOADB ( TString lOADBfilename ); 
     
     // Static method for AddTaskMultSelection
     static AliMultSelectionTask* AddTaskMultSelection ( Bool_t lCalibration = kFALSE, TString lExtraOptions = "", Int_t lNDebugEstimators = 1, const TString lMasterJobSessionFlag = "");
@@ -351,12 +355,20 @@ private:
     //AliMultSelection Framework
     AliOADBMultSelection *fOadbMultSelection;
     AliMultInput         *fInput;
-
+    
+    // --- For direct setup
+    //
+    // an actual OADB to be streamed together with the task
+    // if valid, will bypass every other config option
+    // set this with SetOADB( TString *file );
+    AliOADBContainer *fOADB;
+    
     AliMultSelectionTask(const AliMultSelectionTask&);            // not implemented
     AliMultSelectionTask& operator=(const AliMultSelectionTask&); // not implemented
 
-    ClassDef(AliMultSelectionTask, 7);
+    ClassDef(AliMultSelectionTask, 8);
     //3 - extra QA histograms
+    //8 - fOADB ponter
 };
 
 #endif
