@@ -163,7 +163,7 @@ bool AliAnalysisTaskEmcalClustersRef::IsUserEventSelected(){
       AliErrorStream() << GetName() << ": Centrality selection enabled but no centrality estimator found" << std::endl;
       return false;
     }
-    if(mult->IsEventSelected()) return false;
+    //if(mult->IsEventSelected()) return false;
     fEventCentrality = mult->GetEstimator(fCentralityEstimator)->GetPercentile();
     AliDebugStream(1) << GetName() << ": Centrality " <<  fEventCentrality << std::endl;
     if(!fCentralityRange.IsInRange(fEventCentrality)){
