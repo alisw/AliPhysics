@@ -6,7 +6,7 @@
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
 
-AliAnalysisTaskDiHadCorrelHighPt* AddTaskDiHadCorrelHighPt(TString name = "name")
+AliAnalysisTaskDiHadCorrelHighPt* AddTaskDiHadCorrelHighPt(TString name = "name", Bool_t analysisMC = kFALSE)
 {
     // get the manager via the static access member. since it's static, you don't need
     // an instance of the class to call the function
@@ -24,11 +24,10 @@ AliAnalysisTaskDiHadCorrelHighPt* AddTaskDiHadCorrelHighPt(TString name = "name"
     TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += ":MyTask";      // create a subfolder in the file
     // now we create an instance of your task
-    AliAnalysisTaskDiHadCorrelHighPt* task = new AliAnalysisTaskDiHadCorrelHighPt(name.Data());
+    AliAnalysisTaskDiHadCorrelHighPt* task = new AliAnalysisTaskDiHadCorrelHighPt(name.Data(),analysisMC);
     if(!task) return 0x0;
     task->SetPtTrigMin(3);
     task->SetPtAsocMin(1);
-    task->SetMCAnalysis(kFALSE);
     task->SetOStatus(1);
     // add your task to the manager
     mgr->AddTask(task);

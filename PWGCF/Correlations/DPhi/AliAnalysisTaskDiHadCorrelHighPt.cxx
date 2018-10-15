@@ -91,7 +91,7 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     // this is used by root for IO purposes, it needs to remain empty
 }
 //_____________________________________________________________________________
-AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char* name) : AliAnalysisTaskSE(name),
+AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char* name, Bool_t analysisMC) : AliAnalysisTaskSE(name),
     fAOD(0),
     fPIDResponse(0),
     fOutputList(0),
@@ -110,7 +110,7 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char* n
     fMixingTracks(5000),
 	fPoolMgr(0x0),
     fPool(0x0),
-    fAnalysisMC(kTRUE),
+    fAnalysisMC(analysisMC),
     fOStatus(0),
     fPtTrigMin(0),
     fPtAsocMin(0),
