@@ -98,10 +98,10 @@ AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutModeLow = 100, In
     task->SetDCAtoVertexXYPtDep("0.0182+0.0350/pt^1.01");
     task->SetKinkDaughters(kFALSE);
     task->SetDCAtoVertex2D(kFALSE);
-   // task->SetMaxChi2TPCConstrained(36.);
+    task->SetMaxChi2TPCConstrained(36.);
     task->SetMinLenghtInActiveZoneTPC(0);
     task->SetGeometricalCut(kTRUE,3,130,1.5,0.85,0.7); ///if kTRUE comment CrossedRowsTPC cut
-    task->SetMinCrossedRowsTPC(120);
+    //task->SetMinCrossedRowsTPC(120);
 
 
     //Switch Low/High to study systematics uncertanties
