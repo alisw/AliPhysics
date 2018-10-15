@@ -179,7 +179,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fHist_eff_HFE(0),
 				fHist_eff_match(0),
 				fHist_eff_TPC(0),
-				fHist_eff_M20(0)
+				fHist_eff_M20(0),
+				fHist_eff_Iso(0)
 
 {
 				// default constructor, don't allocate memory here!
@@ -309,7 +310,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fHist_eff_HFE(0),
 				fHist_eff_match(0),
 				fHist_eff_TPC(0),
-				fHist_eff_M20(0)
+				fHist_eff_M20(0),
+				fHist_eff_Iso(0)
 {
 				// constructor
 				DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -397,6 +399,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fHist_eff_match   = new TH1F("fHist_eff_match","efficiency :: matched cluster",600,0,60);
 				fHist_eff_TPC     = new TH1F("fHist_eff_TPC","efficiency :: TPC cut",600,0,60);
 				fHist_eff_M20     = new TH1F("fHist_eff_M20","efficiency :: shower shape cut",600,0,60);
+				fHist_eff_Iso     = new TH2F("fHist_eff_Iso","efficiency :: shower shape cut",600,0,60,500,0.,0.5);
 
 
 
@@ -523,6 +526,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fOutputList->Add(fHist_eff_match); 
 				fOutputList->Add(fHist_eff_TPC); 
 				fOutputList->Add(fHist_eff_M20); 
+				fOutputList->Add(fHist_eff_Iso); 
 
 
 				PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
@@ -999,7 +1003,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 																///////-----Identify Non-HFE////////////////////////////
 																SelectPhotonicElectron(iTracks,track,fFlagNonHFE,pidM,TrkPt);
-																IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation);
+																IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD);
 																if(fFlagIsolation)fHistPt_Iso->Fill(track->Pt());
 
 																if(pid_eleP)
@@ -1350,7 +1354,7 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta,Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso)
+void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta,Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso, Bool_t fFlagB, Bool_t fFlagD)
 {
 				//##################### Set cone radius  ##################### //
 				Double_t CutConeR = MaxConeR;
@@ -1419,7 +1423,10 @@ void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Doub
 				}
 
 				riso = riso/MatchclE;
-				if(riso>=0.0)fHistPt_R_Iso->Fill(TrackPt,riso);
+				if(riso>=0.0){
+								fHistPt_R_Iso->Fill(TrackPt,riso);
+								if(fFlagB || fFlagD){fHist_eff_Iso -> Fill(TrackPt,riso);}
+				}
 
 				if(TrackPt >= 30. && riso>=0.0)CheckCorrelation(itrack,track,TrackPt,riso,fFlagPhoto);
 
