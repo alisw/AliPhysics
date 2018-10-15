@@ -174,6 +174,13 @@ Int_t AliHLTVZEROOnlineCalibComponent::DoInit( Int_t argc, const Char_t** argv )
     
     Int_t iResult=0;
     
+    //process arguments
+    if (ProcessOptionString(GetComponentArgs())<0)
+    {
+        HLTFatal("wrong config string! %s", GetComponentArgs().c_str());
+        return -1;
+    }
+    
     // -- Load GeomManager
     if(AliGeomManager::GetGeometry()==NULL){
         AliGeomManager::LoadGeometry();
