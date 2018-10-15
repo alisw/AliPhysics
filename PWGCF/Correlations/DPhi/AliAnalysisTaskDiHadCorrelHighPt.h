@@ -18,7 +18,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
 {
     public:
                                 AliAnalysisTaskDiHadCorrelHighPt();
-                                AliAnalysisTaskDiHadCorrelHighPt(const char *name);
+                                AliAnalysisTaskDiHadCorrelHighPt(const char *name, Bool_t analysisMC);
         virtual                 ~AliAnalysisTaskDiHadCorrelHighPt();
 
         virtual void            UserCreateOutputObjects();
@@ -41,7 +41,6 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Int_t                   GetOStatus() { return fOStatus; }
         void                    SetOStatus(Int_t stat) {  fOStatus=stat; }
 
-        void                    SetMCAnalysis(Bool_t var) {fAnalysisMC=var;}
         void                    SetPtTrigMin(Double_t var) {fPtTrigMin=var;}
         void                    SetPtAsocMin(Double_t var) {fPtAsocMin=var;}
         void                    Corelations(TObjArray *triggers, TObjArray *associated, THnSparse * fHistKor, Double_t lPVz,THnSparse* fHistNumOfTrig,Bool_t hh,Bool_t V0h,Float_t perc);
@@ -73,7 +72,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Int_t           			  fMixingTracks;      // size of track buffer for event mixing
         AliEventPoolManager*          fPoolMgr;         //! event pool manager
         AliEventPool*                 fPool; //!
-        Bool_t                        fAnalysisMC; //! enable MC study
+        Bool_t                        fAnalysisMC; // enable MC study
         Int_t                         fOStatus; //
         Double_t                      fPtTrigMin; //
         Double_t                      fPtAsocMin; //
@@ -97,7 +96,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 1);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 2);
 };
 
 class AliV0ChParticle : public AliVParticle
