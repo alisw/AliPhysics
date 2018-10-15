@@ -238,6 +238,9 @@ else()
   # FastJet
   find_package(FASTJET)
 
+  # RooUnfold
+  find_package(RooUnfold)
+
   # ZEROMQ
   find_package(ZeroMQ)
 
