@@ -246,13 +246,24 @@ std::vector<Bool_t> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* ta
   // eleSecondary.SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
   // task->AddSingleLegMCSignal(eleSecondary);
   //
-  // AliDielectronSignalMC eleDontCare("eleDontCare","eleDontCare");
-  // eleDontCare.SetLegPDGs(11,1);//dummy second leg (never MCkTRUE)\n"
-  // eleDontCare.SetCheckBothChargesLegs(kTRUE,kTRUE);
-  // eleDontCare.SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
-  // task->AddSingleLegMCSignal(eleDontCare);
+//   AliDielectronSignalMC eleDontCare("eleDontCare","eleDontCare");
+//   eleDontCare.SetLegPDGs(11,1);//dummy second leg (never MCkTRUE)\n"
+//   eleDontCare.SetCheckBothChargesLegs(kTRUE,kTRUE);
+//   eleDontCare.SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
+//   task->AddSingleLegMCSignal(eleDontCare);
 
-//  task->AddSingleLegMCSignal(partFinalState);
+  AliDielectronSignalMC partConv("partConv","partConv");
+  partConv.SetLegPDGs(0,1);//dummy second leg (never MCkTRUE)\n"
+  partConv.SetCheckBothChargesLegs(kTRUE,kTRUE);
+  partConv.SetMotherPDGs(22,22,kFALSE,kFALSE); 
+
+  AliDielectronSignalMC eleConv("eleConv","eleConv");
+  eleConv.SetLegPDGs(11,1);//dummy second leg (never MCkTRUE)\n"
+  eleConv.SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleConv.SetMotherPDGs(22,22,kFALSE,kFALSE); 
+
+  task->AddSingleLegMCSignal(partConv);
+  task->AddSingleLegMCSignal(eleConv);
   task->AddSingleLegMCSignal(eleFinalState);
   // task->AddSingleLegMCSignal(eleFinalStateFromPion);
   task->AddSingleLegMCSignal(eleFinalStateFromD);
@@ -364,5 +375,5 @@ void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
     // task->AddPairMCSignal(pair_sameMother_phi);
     // task->AddPairMCSignal(pair_sameMother_jpsi);
     // task->AddPairMCSignal(pair_sameMother_CharmedMesonsWithSameMother);
-    // task->AddPairMCSignal(pair_conversion);
+     task->AddPairMCSignal(pair_conversion);
 }

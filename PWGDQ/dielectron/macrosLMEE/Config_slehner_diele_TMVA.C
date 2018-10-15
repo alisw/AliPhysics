@@ -173,26 +173,27 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
   //add histograms to track class
 
-//  histos->UserHistogram("Track","nITS","nITS;nITS;nTracks",10,0,10.,AliDielectronVarManager::kNclsITS); 
-//  histos->UserHistogram("Track", "ITS1Shared", "ITS1Shared", 10,0,10., AliDielectronVarManager::kClsS1ITS);
-//  histos->UserHistogram("Track", "ITS2Shared", "ITS2Shared", 10,0,10., AliDielectronVarManager::kClsS2ITS);
-//  histos->UserHistogram("Track", "ITS3Shared", "ITS3Shared", 10,0,10., AliDielectronVarManager::kClsS3ITS);
-//  histos->UserHistogram("Track", "ITS4Shared", "ITS4Shared", 10,0,10., AliDielectronVarManager::kClsS4ITS);
-//  histos->UserHistogram("Track", "ITS5Shared", "ITS5Shared", 10,0,10., AliDielectronVarManager::kClsS5ITS);
-//  histos->UserHistogram("Track", "ITS6Shared", "ITS6Shared", 10,0,10., AliDielectronVarManager::kClsS6ITS);
-//  histos->UserHistogram("Track","nITSshared_frac", "nITSshared_frac",100,0,1.1,AliDielectronVarManager::kNclsSFracITS);
-//  histos->UserHistogram("Track","NCrossedRowsTPC","",200,0,200,  AliDielectronVarManager::kNclsCrTPC);
-//  histos->UserHistogram("Track","NClustersTPC", "",200,0,200, AliDielectronVarManager::kNclsTPC);
-//  histos->UserHistogram("Track","NTPCSignal","" ,200,0,200,  AliDielectronVarManager::kTPCsignalN);
-//  histos->UserHistogram("Track","log(abs(DCAxy))","", 100,-20,2,  AliDielectronVarManager::kLogDCAXY);
-//  histos->UserHistogram("Track","log(abs(DCAz))" ,"", 100,-20,2,  AliDielectronVarManager::kLogDCAZ);  
-//  histos->UserHistogram("Track","chi2GlobalPerNDF","", 100,0,10,  AliDielectronVarManager::kChi2GlobalNDF);
-//  histos->UserHistogram("Track","chi2ITS","" , 100,0,100,  AliDielectronVarManager::kITSchi2);
-//  histos->UserHistogram("Track","eta","" , 100,-0.8,0.8, AliDielectronVarManager::kEta);
-//  histos->UserHistogram("Track","phi","" , 100,0,7, AliDielectronVarManager::kPhi);
+  histos->UserHistogram("Track","nITS","nITS;nITS;nTracks",10,0,10.,AliDielectronVarManager::kNclsITS); 
+  histos->UserHistogram("Track", "ITS1Shared", "ITS1Shared", 10,0,10., AliDielectronVarManager::kClsS1ITS);
+  histos->UserHistogram("Track", "ITS2Shared", "ITS2Shared", 10,0,10., AliDielectronVarManager::kClsS2ITS);
+  histos->UserHistogram("Track", "ITS3Shared", "ITS3Shared", 10,0,10., AliDielectronVarManager::kClsS3ITS);
+  histos->UserHistogram("Track", "ITS4Shared", "ITS4Shared", 10,0,10., AliDielectronVarManager::kClsS4ITS);
+  histos->UserHistogram("Track", "ITS5Shared", "ITS5Shared", 10,0,10., AliDielectronVarManager::kClsS5ITS);
+  histos->UserHistogram("Track", "ITS6Shared", "ITS6Shared", 10,0,10., AliDielectronVarManager::kClsS6ITS);
+  histos->UserHistogram("Track","nITSshared_frac", "nITSshared_frac",100,0,1.1,AliDielectronVarManager::kNclsSFracITS);
+  histos->UserHistogram("Track","NCrossedRowsTPC","",200,0,200,  AliDielectronVarManager::kNclsCrTPC);
+  histos->UserHistogram("Track","NClustersTPC", "",200,0,200, AliDielectronVarManager::kNclsTPC);
+  histos->UserHistogram("Track","NTPCSignal","" ,200,0,200,  AliDielectronVarManager::kTPCsignalN);
+  histos->UserHistogram("Track","log(abs(DCAxy))","", 100,-20,2,  AliDielectronVarManager::kLogDCAXY);
+  histos->UserHistogram("Track","log(abs(DCAz))" ,"", 100,-20,2,  AliDielectronVarManager::kLogDCAZ);  
+  histos->UserHistogram("Track","chi2GlobalPerNDF","", 100,0,10,  AliDielectronVarManager::kChi2GlobalNDF);
+  histos->UserHistogram("Track","chi2ITS","" , 100,0,100,  AliDielectronVarManager::kITSchi2);
+  histos->UserHistogram("Track","eta","" , 100,-0.8,0.8, AliDielectronVarManager::kEta);
+  histos->UserHistogram("Track","phi","" , 100,0,7, AliDielectronVarManager::kPhi);
   histos->UserHistogram("Track","pt", "", 100,0,10,AliDielectronVarManager::kPt);  
 
-  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00, 0.02, 0.04, 0.06, 0.08, 0.10, 0.14, 0.18, 0.22, 0.30, 0.38, 0.46, 0.62, 0.7, 0.86, 1.1, 1.70, 2.30, 2.70, 2.90, 3.00, 3.10, 3.30, 4.00, 5.00");
+//  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00, 0.02, 0.04, 0.06, 0.08, 0.10, 0.14, 0.18, 0.22, 0.30, 0.38, 0.46, 0.62, 0.7, 0.86, 1.1, 1.70, 2.30, 2.70, 2.90, 3.00, 3.10, 3.30, 4.00, 5.00");
+  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00, 0.02 ,0.04 ,0.08 ,0.14 ,0.22 ,0.38 ,0.54 ,1.1 ,1.7 ,2.5 ,2.9 ,3.0 ,3.1 ,3.3 ,3.5 ,4.0 ,5.07, 0.86, 1.1, 1.70, 2.30, 2.70, 2.90, 3.00, 3.10, 3.30, 4.00, 5.00"); //Carsten's binning
 //  TVectorD* mbins=  AliDielectronHelper::MakeLinBinning(500,0,5);
   TVectorD* ptbins= AliDielectronHelper::MakeArbitraryBinning("0.0,0.4,0.6,1,2.5,8");
   TVectorD* centbins= AliDielectronHelper::MakeLinBinning(20,0,100);
@@ -215,10 +216,10 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 //                        50,-1.,1.,80,0.,6.4,
 //                        AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
 //			
-//  histos->UserHistogram("Pair",
-//                        "InvMass_PhivPair","InvMass_PhivPair;InvMass;PhivPair",
-//                         50, 0. , 0.5, 160 , 0., 3.2,
-//                         AliDielectronVarManager::kM , AliDielectronVarManager::kPhivPair );
+  histos->UserHistogram("Pair",
+                        "InvMass_PhivPair","InvMass_PhivPair;InvMass;PhivPair",
+                         50, 0. , 0.5, 160 , 0., 3.2,
+                         AliDielectronVarManager::kM , AliDielectronVarManager::kPhivPair );
 //
 //  histos->UserHistogram("Pair",
 //		            	"InvMass_OpAngle","InvMass_OpAngle;Invariant Mass;Opening angle",
