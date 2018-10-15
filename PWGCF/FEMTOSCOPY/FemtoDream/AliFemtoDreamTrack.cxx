@@ -96,6 +96,7 @@ void AliFemtoDreamTrack::SetTrack(AliAODTrack *track, const int multiplicity) {
     this->SetIDTracks(fAODGlobalTrack->GetID());
     this->SetAODTrackingInformation();
     this->SetAODPIDInformation();
+    this->SetEvtNumber(fAODTrack->GetAODEvent()->GetRunNumber());
     if (fIsMC) {
       this->SetMCInformation();
     }
@@ -117,6 +118,7 @@ void AliFemtoDreamTrack::SetTrack(AliESDtrack *track, AliMCEvent *mcEvent,
     }
     this->SetIDTracks(trackID);
     this->SetESDTrackingInformation();
+    this->SetEvtNumber(fESDTrack->GetESDEvent()->GetRunNumber());
     if (this->fIsSet) {
       this->SetESDPIDInformation();
       if (fIsMC) {
@@ -242,6 +244,7 @@ void AliFemtoDreamTrack::SetESDTrackingInformation() {
       fHasSharedClsITSLayer = true;
     }
   }
+  SetPhiAtRadii(fESDTrack->GetESDEvent()->GetMagneticField());
 }
 void AliFemtoDreamTrack::SetESDPIDInformation() {
   AliPID::EParticleType particleID[5] = { AliPID::kElectron, AliPID::kMuon,
@@ -367,15 +370,13 @@ void AliFemtoDreamTrack::SetAODTrackingInformation() {
     }
   }
   this->fTPCClsS = fAODTrack->GetTPCnclsS();
-  SetPhiAtRadii();
+  SetPhiAtRadii(fAODTrack->GetAODEvent()->GetMagneticField());
 }
-void AliFemtoDreamTrack::SetPhiAtRadii() {
+void AliFemtoDreamTrack::SetPhiAtRadii(const float bfield) {
   float TPCradii[9] = { 85., 105., 125., 145., 165., 185., 205., 225., 245. };
   float phi0 = GetPhi().at(0);
   float pt = GetPt();
   float chg = GetCharge().at(0);
-  float bfield = fAODTrack->GetAODEvent()->GetMagneticField();
-  this->SetEvtNumber(fAODTrack->GetAODEvent()->GetRunNumber());
   std::vector<float> phiatRadius;
   for (int radius = 0; radius < 9; radius++) {
     phiatRadius.push_back(

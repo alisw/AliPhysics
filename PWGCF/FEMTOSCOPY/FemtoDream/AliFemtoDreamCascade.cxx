@@ -292,6 +292,16 @@ void AliFemtoDreamCascade::SetCascade(AliESDEvent *evt, AliESDcascade *casc) {
   this->SetCharge(esdCascadePos->Charge());
   this->SetCharge(esdCascadeBach->Charge());
 
+  if (fNegDaug->IsSet()) {
+    this->SetPhiAtRadius(fNegDaug->GetPhiAtRaidius().at(0));
+  }
+  if (fPosDaug->IsSet()) {
+    this->SetPhiAtRadius(fPosDaug->GetPhiAtRaidius().at(0));
+  }
+  if (fBach->IsSet()) {
+    this->SetPhiAtRadius(fBach->GetPhiAtRaidius().at(0));
+  }
+
   TVector3 v0Mom = fPosDaug->GetMomentum() + fNegDaug->GetMomentum();
   fv0Momentum.SetXYZ(v0Mom.X(), v0Mom.Y(), v0Mom.Z());
   fv0Pt = fv0Momentum.Pt();
