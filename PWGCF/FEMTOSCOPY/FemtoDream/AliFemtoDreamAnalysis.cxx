@@ -423,8 +423,20 @@ void AliFemtoDreamAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent) {
       AntiParticles.push_back(*fFemtoTrack);
     }
   }
-  std::vector<AliFemtoDreamBasePart> DummyDecays;
-  std::vector<AliFemtoDreamBasePart> AntiDummyDecays;
+  std::vector<AliFemtoDreamBasePart> Decays;
+  std::vector<AliFemtoDreamBasePart> AntiDecays;
+
+  for (int iv0 = 0; iv0 < evt->GetNumberOfV0s(); ++iv0) {
+    AliESDv0 *v0 = evt->GetV0(iv0);
+//    fFemtov0->Setv0(evt, v0, fEvent->GetMultiplicity());
+//    if (fv0Cuts->isSelected(fFemtov0)) {
+//      Decays.push_back(*fFemtov0);
+//    }
+//    if (fAntiv0Cuts->isSelected(fFemtov0)) {
+//      AntiDecays.push_back(*fFemtov0);
+//    }
+  }
+
   std::vector<AliFemtoDreamBasePart> XiDecays;
   std::vector<AliFemtoDreamBasePart> AntiXiDecays;
   for (Int_t nCascade = 0; nCascade < evt->GetNumberOfCascades(); ++nCascade) {
@@ -438,16 +450,20 @@ void AliFemtoDreamAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent) {
     }
   }
   fPairCleaner->ResetArray();
+  fPairCleaner->CleanTrackAndDecay(&Particles, &Decays, 0);
   fPairCleaner->CleanTrackAndDecay(&Particles, &XiDecays, 2);
+  fPairCleaner->CleanTrackAndDecay(&AntiParticles, &AntiDecays, 1);
   fPairCleaner->CleanTrackAndDecay(&AntiParticles, &AntiXiDecays, 3);
 
+  fPairCleaner->CleanDecay(&Decays, 0);
+  fPairCleaner->CleanDecay(&AntiDecays, 1);
   fPairCleaner->CleanDecay(&XiDecays, 2);
   fPairCleaner->CleanDecay(&AntiXiDecays, 3);
 
   fPairCleaner->StoreParticle(Particles);
   fPairCleaner->StoreParticle(AntiParticles);
-  fPairCleaner->StoreParticle(DummyDecays);  //Spaceholders for Lambdas to not crash the task.
-  fPairCleaner->StoreParticle(AntiDummyDecays);
+  fPairCleaner->StoreParticle(Decays);
+  fPairCleaner->StoreParticle(AntiDecays);
   fPairCleaner->StoreParticle(XiDecays);
   fPairCleaner->StoreParticle(AntiXiDecays);
 

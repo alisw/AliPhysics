@@ -135,7 +135,7 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   void SetAODTrackingInformation();
   void ApplyESDtoAODFilter();
   void SetESDTrackingInformation();
-  void SetPhiAtRadii();
+  void SetPhiAtRadii(const float bfield);
   void SetAODPIDInformation();
   void SetESDPIDInformation();
   void SetMCInformation();
