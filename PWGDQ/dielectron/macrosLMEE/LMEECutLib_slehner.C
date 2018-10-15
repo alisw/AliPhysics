@@ -278,13 +278,13 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MV
     Printf("Use TMVA weight input file: %s",weightFile.Data());
 
     TMVACuts = new AliDielectronTMVACuts(TString::Format("TMVA%d",MVACut),TString::Format("TMVA%d",MVACut));
-    TMVACuts->AddTMVAInput("nITS", (Int_t) AliDielectronVarManager::kNclsITS);
-    TMVACuts->AddTMVAInput("ITS1Shared", (Int_t) AliDielectronVarManager::kClsS1ITS);
-    TMVACuts->AddTMVAInput("ITS2Shared", (Int_t) AliDielectronVarManager::kClsS2ITS);
-    TMVACuts->AddTMVAInput("ITS3Shared", (Int_t) AliDielectronVarManager::kClsS3ITS);
-    TMVACuts->AddTMVAInput("ITS4Shared", (Int_t) AliDielectronVarManager::kClsS4ITS);
-    TMVACuts->AddTMVAInput("ITS5Shared", (Int_t) AliDielectronVarManager::kClsS5ITS);
-    TMVACuts->AddTMVAInput("ITS6Shared", (Int_t) AliDielectronVarManager::kClsS6ITS);
+    TMVACuts->AddTMVAInput("nITS", (Float_t) AliDielectronVarManager::kNclsITS);
+    TMVACuts->AddTMVAInput("ITS1Shared", (Float_t) AliDielectronVarManager::kClsS1ITS);
+    TMVACuts->AddTMVAInput("ITS2Shared", (Float_t) AliDielectronVarManager::kClsS2ITS);
+    TMVACuts->AddTMVAInput("ITS3Shared", (Float_t) AliDielectronVarManager::kClsS3ITS);
+    TMVACuts->AddTMVAInput("ITS4Shared", (Float_t) AliDielectronVarManager::kClsS4ITS);
+    TMVACuts->AddTMVAInput("ITS5Shared", (Float_t) AliDielectronVarManager::kClsS5ITS);
+    TMVACuts->AddTMVAInput("ITS6Shared", (Float_t) AliDielectronVarManager::kClsS6ITS);
     TMVACuts->AddTMVAInput("nITSshared_frac",(Float_t) AliDielectronVarManager::kNclsSFracITS);
     TMVACuts->AddTMVAInput("NCrossedRowsTPC",(Float_t) AliDielectronVarManager::kNclsCrTPC);
     TMVACuts->AddTMVAInput("NClustersTPC",(Float_t) AliDielectronVarManager::kNclsTPC);
