@@ -17,8 +17,8 @@
 
 /** @file   AliHLTTPCClusterTransformationComponent.cxx
     @author Sergey Gorbunov
-    @date   
-    @brief 
+    @date
+    @brief
 */
 
 #include "AliHLTTPCReverseTransformInfoV1.h"
@@ -41,7 +41,7 @@
 //#include "TPCFastTransformQA.h"
 
 #include "TMath.h"
-#include "TObjString.h" 
+#include "TObjString.h"
 #include <cstdlib>
 #include <cerrno>
 #include <sys/time.h>
@@ -64,46 +64,45 @@ fInitializeByObjectInDoEvent(0),
 fInitialized(0),
 fTPCPresent(0),
 fIsMC(0),
-fUseOrigTransform(0),
+fTransformKind( AliHLTTPCClusterTransformation::TransformOldFastTransform ),
 fBenchmark("ClusterTransformation")
 {
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt  
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
   fBenchmark.Reset();
   fBenchmark.SetTimer(0,"total");
 }
 
 AliHLTTPCClusterTransformationComponent::~AliHLTTPCClusterTransformationComponent()
-{ 
+{
   // destructor
 }
 
-const char* AliHLTTPCClusterTransformationComponent::GetComponentID() { 
+const char* AliHLTTPCClusterTransformationComponent::GetComponentID() {
 // see header file for class documentation
-
   return "TPCClusterTransformation";
 }
 
-void AliHLTTPCClusterTransformationComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list) { 
+void AliHLTTPCClusterTransformationComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list) {
   // see header file for class documentation
 
-  list.clear(); 
+  list.clear();
   list.push_back( AliHLTTPCDefinitions::RawClustersDataType() );
   list.push_back( AliHLTTPCDefinitions::AliHLTDataTypeClusterMCInfo() );
   list.push_back( AliHLTTPCDefinitions::TPCFastTransformDataObjectDataType() );
 }
 
-AliHLTComponentDataType AliHLTTPCClusterTransformationComponent::GetOutputDataType() { 
+AliHLTComponentDataType AliHLTTPCClusterTransformationComponent::GetOutputDataType() {
   // see header file for class documentation
 
   return kAliHLTMultipleDataType;
 }
 
-int AliHLTTPCClusterTransformationComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList) { 
+int AliHLTTPCClusterTransformationComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList) {
   // see header file for class documentation
 
   tgtList.clear();
@@ -113,20 +112,20 @@ int AliHLTTPCClusterTransformationComponent::GetOutputDataTypes(AliHLTComponentD
   return tgtList.size();
 }
 
-void AliHLTTPCClusterTransformationComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) { 
+void AliHLTTPCClusterTransformationComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {
   // see header file for class documentation
   constBase = sizeof(AliHLTTPCClusterXYZData)*6*36;
   inputMultiplier = ( (double) sizeof(AliHLTTPCClusterXYZ) ) / ( sizeof(AliHLTTPCRawCluster) );
 }
 
-AliHLTComponent* AliHLTTPCClusterTransformationComponent::Spawn() { 
+AliHLTComponent* AliHLTTPCClusterTransformationComponent::Spawn() {
   // see header file for class documentation
 
   return new AliHLTTPCClusterTransformationComponent();
 }
 	
-int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv ) 
-{ 
+int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv )
+{
   // see header file for class documentation
 
   int iResult=0;
@@ -143,13 +142,13 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
   if (iResult>=0 && argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);
     
-  if (fUseOrigTransform)
+  if ( fTransformKind == AliHLTTPCClusterTransformation::TransformOriginal )
   {
     fOfflineMode = 1;
     fInitializeByObjectInDoEvent = 0;
   }
 
-  AliTPCcalibDB *calib=AliTPCcalibDB::Instance();  
+  AliTPCcalibDB *calib=AliTPCcalibDB::Instance();
   if(!calib){
     HLTError("AliTPCcalibDB does not exist");
     return -ENOENT;
@@ -165,8 +164,8 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
           HLTInfo( "Cluster Transformation will initialize on the fly in DoEvent loop via FastTransformation Data Object, skipping initialization." );
     }
     else if( fOfflineMode ) {
-      err = fgTransform.Init( GetBz(), GetTimeStamp(), fIsMC, fUseOrigTransform );
-	  fInitialized = true;
+      err = fgTransform.Init( GetTimeStamp(), fIsMC, fTransformKind );
+      fInitialized = true;
     } else {
        const char* defaultNotify = "";
        const char* cdbEntry = "HLT/ConfigTPC/TPCFastTransform";
@@ -206,14 +205,14 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
   return iResult;
 } // end DoInit()
 
-int AliHLTTPCClusterTransformationComponent::DoDeinit() { 
-  // see header file for class documentation   
+int AliHLTTPCClusterTransformationComponent::DoDeinit() {
+  // see header file for class documentation
   if (fInitialized) fgTransform.DeInit();
   fInitialized = false;
   return 0;
 }
 
-int AliHLTTPCClusterTransformationComponent::Reconfigure(const char* /*cdbEntry*/, const char* /*chainId*/) { 
+int AliHLTTPCClusterTransformationComponent::Reconfigure(const char* /*cdbEntry*/, const char* /*chainId*/) {
   // see header file for class documentation
   return 0;//!! ConfigureFromCDBTObjString(fgkOCDBEntryClusterTransformation);
 }
@@ -225,7 +224,7 @@ int AliHLTTPCClusterTransformationComponent::ScanConfigurationArgument(int argc,
   if (argc<=0) return 0;
   int iRet = 0;
   for( int i=0; i<argc; i++ ){
-    TString argument=argv[i];  
+    TString argument=argv[i];
     if (argument.CompareTo("-change-dataId")==0){
       HLTWarning("Obsolete -change-dataId option received.");
       iRet++;
@@ -246,8 +245,12 @@ int AliHLTTPCClusterTransformationComponent::ScanConfigurationArgument(int argc,
       HLTDebug("Processing Monte Carlo Data.");
       iRet++;
     } else if (argument.CompareTo("-use-orig-transform")==0){
-      fUseOrigTransform = 1;
+      fTransformKind = AliHLTTPCClusterTransformation::TransformOriginal;
       HLTInfo("Running unmodified original TPC transformation.");
+      iRet++;
+    } else if (argument.CompareTo("-use-irs-transform")==0){
+      fTransformKind = AliHLTTPCClusterTransformation::TransformFastIRS;
+      HLTInfo("Running TPC transformation with irregular splines");
       iRet++;
     } else if (argument.CompareTo("-offline-keep-initial-timestamp")==0){
       fOfflineKeepInitialTimestamp = 1;
@@ -255,17 +258,17 @@ int AliHLTTPCClusterTransformationComponent::ScanConfigurationArgument(int argc,
       iRet++;
     } else {
       iRet = -EINVAL;
-      HLTError("Unknown argument %s",argv[i]);     
+      HLTError("Unknown argument %s",argv[i]);
     }
-  } 
+  }
   return iRet;
 }
 
 
-int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventData& evtData, 
-					          const AliHLTComponentBlockData* blocks, 
-					          AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, 
-					          AliHLTUInt32_t& size, 
+int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventData& evtData,
+					          const AliHLTComponentBlockData* blocks,
+					          AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr,
+					          AliHLTUInt32_t& size,
 					          vector<AliHLTComponentBlockData>& outputBlocks ){
   // see header file for class documentation
  
@@ -312,7 +315,7 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
   
   if( !fgTransform.IsInitialised() ){
     HLTError(" TPC Transformation is not initialised ");
-    return -ENOENT;    
+    return -ENOENT;
   }
 
   fBenchmark.StartNewEvent();
@@ -336,14 +339,14 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
     fBenchmark.AddInput(iter->fSize);
     
     HLTDebug("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s or $s",
-	     evtData.fEventID, evtData.fEventID, 
-	     DataType2Text( iter->fDataType).c_str(), 
+	     evtData.fEventID, evtData.fEventID,
+	     DataType2Text( iter->fDataType).c_str(),
 	     DataType2Text(AliHLTTPCDefinitions::fgkRawClustersDataType).c_str(), DataType2Text(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo).c_str());
  
     if( iter->fDataType == AliHLTTPCDefinitions::AliHLTDataTypeClusterMCInfo() ){
       // forward MC labels
       fBenchmark.AddOutput( iter->fSize );
-      outputBlocks.push_back( *iter );     
+      outputBlocks.push_back( *iter );
       continue;
     }
 
@@ -374,7 +377,7 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
  
     int firstRow = AliHLTTPCGeometry::GetFirstRow(partition);
 
-    // create AliHLTTPCClusterXYZData array in parallel to raw clusters, fill xyz==0 in case of problems 
+    // create AliHLTTPCClusterXYZData array in parallel to raw clusters, fill xyz==0 in case of problems
 
     AliHLTTPCClusterXYZData* outPtr  = reinterpret_cast<AliHLTTPCClusterXYZData*>(outputPtr);
     outPtr->fCount = rawClusters->fCount;
@@ -394,7 +397,7 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
 	continue;
       }
       Float_t xyz[3];
-      int err = fgTransform.Transform( slice, firstRow + padrow, cl.GetPad(), cl.GetTime(), xyz );	 
+      int err = fgTransform.Transform( slice, firstRow + padrow, cl.GetPad(), cl.GetTime(), xyz );
       if( err!=0 ){
 	HLTWarning(Form("Cannot transform the cluster, AliHLTTPCClusterTransformation returns error %d, %s",err, fgTransform.GetLastError()));
 	continue;
@@ -423,9 +426,9 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
      
     fBenchmark.AddOutput(bd.fSize);
     size   += mysize;
-    outputPtr += mysize; 
+    outputPtr += mysize;
  
-  } // end of loop over data blocks  
+  } // end of loop over data blocks
   
   if (size + sizeof(AliHLTTPCReverseTransformInfoV1) > maxOutSize)
   {
@@ -476,7 +479,7 @@ void AliHLTTPCClusterTransformationComponent::GetOCDBObjectDescription( TMap* co
   targetMap->Add(new TObjString("GRP/CTP/CTPtiming"),     new TObjString("content used in the cluster coordinate transformation in relation to the L0 trigger timing"));
 
   // OCDB entries necessary for replaying data on the HLT cluster
-  targetMap->Add(new TObjString("GRP/GRP/Data"), new TObjString("contains magnetic field info"));  
+  targetMap->Add(new TObjString("GRP/GRP/Data"), new TObjString("contains magnetic field info"));
  
   // OCDB entries needed to suppress fatals/errors/warnings during reconstruction
   targetMap->Add(new TObjString("TPC/Calib/Distortion"),  new TObjString("distortion map"));
@@ -508,12 +511,12 @@ void AliHLTTPCClusterTransformationComponent::PrintDebugInfo()
   for( int row=10; row<20; row++){
     Int_t slice=-1;
     Int_t slicerow=-1;
-    AliHLTTPCGeometry::Sector2Slice( slice, slicerow, sector, row); 
-    Float_t f[3]; 
+    AliHLTTPCGeometry::Sector2Slice( slice, slicerow, sector, row);
+    Float_t f[3];
     fgTransform.Transform( slice, slicerow, 10., 500., f );
-    Double_t xyz[3] = { f[0], f[1], f[2] };    
+    Double_t xyz[3] = { f[0], f[1], f[2] };
     std::cout<<std::scientific;
-#if __cplusplus >= 201103L      
+#if __cplusplus >= 201103L
     std::cout<<std::setprecision( 10 );
 #endif
     std::cout<<"HLT transform: "<<" sec "<<sector<<" row "<< row<<" "<<xyz[0]<<" "<<xyz[1]<<" "<<xyz[2]<<std::endl;

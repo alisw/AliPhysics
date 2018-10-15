@@ -21,6 +21,7 @@
 class AliTPCParam;
 class TClonesArray;
 class AliHLTTPCDataCompressionDecoder;
+class AliTPCtracker;
 
 /**
  * @class AliHLTTPCClusterAccessHLTOUT
@@ -250,6 +251,8 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
   int fMarkEdgeClusters; //! mark edge clusters during decoding
   AliHLTTPCDataCompressionDecoder* fpDecoder; //! decoder instance
   AliTPCParam* fTPCParam; //! pointer to TPC param
+  int fCopySeeds; //! last command was to create seeds, so we will copy() seeds instead of clusters
+  AliTPCtracker* fTPCtracker; //!ptr to AliTPCtracker
 
   ClassDef(AliHLTTPCClusterAccessHLTOUT, 0)
 };

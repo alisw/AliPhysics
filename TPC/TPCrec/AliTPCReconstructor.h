@@ -67,6 +67,8 @@ public:
 
   static Bool_t GetCountMCTrackClusters()                  {return fgCountMCTrackClusters;}
   static void   SetCountMCTrackClusters(Bool_t v=kTRUE)    {fgCountMCTrackClusters = v;}
+  static Int_t  GetUseHLTTracks()                          {return fgUseHLTTracks;}
+  static void   SetUseHLTTracks(Int_t v)                   {fgUseHLTTracks = v;}
   
 private:
   AliTPCReconstructor(const AliTPCReconstructor&); //Not implemented
@@ -87,6 +89,10 @@ private:
   static Double_t              fgZOutSectorCut;       // cut on Z going on other side of CE 
   static Bool_t                fgCompactClusters;     // if true, cluster coordinates will be set to 0 in clusterizer
   static Bool_t                fgCountMCTrackClusters; // create tree with Ncl per MC track
+  static Int_t                 fgUseHLTTracks;        //Copy tracks from HLT instead of running offline tracking
+                                                      //0: normal offline tracking, 1 use HLT tracks as seeds in Clusters2Tracks
+                                                      //2: use HLT tracks instead of running Clusters2Tracks
+                                                      //3: as 2 but no refit in PropagateBack, 4: as 3 bit no refit in RefitInward
   TObjArray *fArrSplines;                  // array of pid splines
 
   void SetSplinesFromOADB(const char* tmplt, AliESDpid *esdPID);

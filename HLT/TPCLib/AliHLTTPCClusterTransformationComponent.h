@@ -21,8 +21,7 @@
 
 #include "AliHLTProcessor.h"
 #include "AliHLTComponentBenchmark.h"
-
-class AliHLTTPCClusterTransformation;
+#include "AliHLTTPCClusterTransformation.h"
 
 
 /**
@@ -94,7 +93,8 @@ private:
   bool fInitialized;	//Are we initialized?
   bool fTPCPresent;	//Is TPC present in GRP, if not skip init
   bool fIsMC; //Are we processing MC
-  bool fUseOrigTransform; //Use original TPC transform instead of fast HLT transform map
+
+  AliHLTTPCClusterTransformation::TransformationKind fTransformKind; // whichtransformation to use
 
   AliHLTComponentBenchmark fBenchmark; // benchmarks
 

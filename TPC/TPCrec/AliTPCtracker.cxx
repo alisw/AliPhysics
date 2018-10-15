@@ -192,7 +192,8 @@ AliTPCtracker::AliTPCtracker()
   fNFreeSeeds(0),
   fLastSeedID(-1),
   fAccountDistortions(0),
-  fMCtrackNClTree(0)
+  fMCtrackNClTree(0),
+  fHLTClusterAccess(NULL)
 {
   //
   // default constructor
@@ -440,7 +441,8 @@ AliTPCtracker::AliTPCtracker(const AliTPCParam *par):
   fNFreeSeeds(0),
   fLastSeedID(-1),
   fAccountDistortions(0),
-  fMCtrackNClTree(0)
+  fMCtrackNClTree(0),
+  fHLTClusterAccess(NULL)
 {
   //---------------------------------------------------------------------
   // The main TPC tracker constructor
@@ -541,7 +543,8 @@ AliTPCtracker::AliTPCtracker(const AliTPCtracker &t):
   fNFreeSeeds(0),
   fLastSeedID(-1),
   fAccountDistortions(0),
-  fMCtrackNClTree(0)
+  fMCtrackNClTree(0),
+  fHLTClusterAccess(NULL)
 {
   //------------------------------------
   // dummy copy constructor
@@ -600,7 +603,7 @@ AliTPCtracker::~AliTPCtracker() {
       delete flout;
     }
   }
-
+  if (fHLTClusterAccess) delete fHLTClusterAccess;
 }
 
 
@@ -640,7 +643,7 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
       pt->SetRow(0); // RS: memorise row
     }
       
-    if (( pt->GetPoints()[2]- pt->GetPoints()[0])>5 && pt->GetPoints()[3]>0.8){
+    if (AliTPCReconstructor::GetUseHLTTracks() >= 2 || (( pt->GetPoints()[2]- pt->GetPoints()[0])>5 && pt->GetPoints()[3]>0.8)){
       iotrack.~AliESDtrack();
       new(&iotrack) AliESDtrack;
       iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);
@@ -3856,6 +3859,7 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
   if (!event) return 0;
   fEvent = event;
   fEventHLT = 0;
+  
   // extract correction object for multiplicity dependence of dEdx
   TObjArray * gainCalibArray = AliTPCcalibDB::Instance()->GetTimeGainSplinesRun(event->GetRunNumber());
 
@@ -3878,9 +3882,20 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
   //
   ReadSeeds(event,2);
   fIteration=2;
-  //PrepareForProlongation(fSeeds,1);
-  PropagateForward2(fSeeds);
-  RemoveUsed2(fSeeds,0.4,0.4,20);
+
+  if (AliTPCReconstructor::GetUseHLTTracks() >= 4)
+  {
+    InitHLTClusterAccess();
+    TObject* pClusterAccess=fHLTClusterAccess;
+    pClusterAccess->Execute("updateSeedsInner", NULL, NULL);
+    pClusterAccess->Copy(*fSeeds);
+  }
+  else
+  {
+    //PrepareForProlongation(fSeeds,1);
+    PropagateForward2(fSeeds);
+    RemoveUsed2(fSeeds,0.4,0.4,20);
+  }
 
   Int_t entriesSeed=fSeeds->GetEntries();
   TObjArray arraySeed(entriesSeed);
@@ -3922,7 +3937,7 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
     }
     //
     //
-    if (seed->GetNumberOfClusters()<60 && seed->GetNumberOfClusters()<(esd->GetTPCclusters(0) -5)*0.8) {
+    if (seed->GetNumberOfClusters()<60 && seed->GetNumberOfClusters()<(esd->GetTPCclusters(0) -5)*0.8 && AliTPCReconstructor::GetUseHLTTracks() < 4) {
       AliExternalTrackParam paramIn;
       AliExternalTrackParam paramOut;
       //
@@ -3962,7 +3977,7 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
 	"Track.="<<seed<<
 	"\n"; 
     }
-    if (seed->GetNumberOfClusters()>15) {
+    if (seed->GetNumberOfClusters()>15 || AliTPCReconstructor::GetUseHLTTracks() >= 4) {
       esd->UpdateTrackParams(seed,AliESDtrack::kTPCrefit); 
       esd->SetTPCPoints(seed->GetPoints());
       esd->SetTPCPointsF(seed->GetNFoundable());
@@ -4054,6 +4069,29 @@ Int_t AliTPCtracker::PropagateBack(AliESDEvent *event)
   fEventHLT = 0;
   fIteration = 1;
   ReadSeeds(event,1);
+  
+  if (AliTPCReconstructor::GetUseHLTTracks() >= 3)
+  {
+    InitHLTClusterAccess();
+    TObject* pClusterAccess=fHLTClusterAccess;
+    pClusterAccess->Execute("updateSeedsOuter", NULL, NULL);
+    pClusterAccess->Copy(*fSeeds);
+   
+    for (Int_t i=0; i<fSeeds->GetEntriesFast(); i++) {
+      AliTPCseed *seed=(AliTPCseed*)fSeeds->UncheckedAt(i);    
+      if (!seed) continue;    
+      AliESDtrack *esd=event->GetTrack(i);
+      if (!esd) continue; //never happen
+      seed->UpdatePoints();
+      AddSystCovariance(seed); // correct covariance matrix for clusters syst. error
+      AddCovariance(seed);
+      esd->UpdateTrackParams(seed,AliESDtrack::kTPCout);
+    }
+
+    return 0;
+  }
+  
+  
   PropagateBack(fSeeds); 
   RemoveUsed2(fSeeds,0.4,0.4,20);
   //FindCurling(fSeeds, fEvent,1);  
@@ -4261,7 +4299,7 @@ void AliTPCtracker::ReadSeeds(const AliESDEvent *const event, Int_t direction)
 	      cl->Use(6);   // close cluster not accepted
 	    }	
 	  }else{
-	    Info("ReadSeeds","Not found cluster");
+	    Info("ReadSeeds","Not found cluster (track %d, row %d, clusterindex 0x%x)", i, irow, index);
 	  }
 	}
       }
@@ -8269,7 +8307,34 @@ Int_t AliTPCtracker::Clusters2Tracks() {
   TStopwatch timer;
 
   fIteration = 0;
-  fSeeds = Tracking();
+  if (AliTPCReconstructor::GetUseHLTTracks())
+  {
+    fSeeds = ReadSeedsFromHLT();
+  }
+  else
+  {
+    fSeeds = Tracking();
+  }
+  if (AliTPCReconstructor::GetUseHLTTracks() >= 2)
+  {
+    for (Int_t i=0; i<fSeeds->GetEntriesFast(); i++) {
+      AliTPCseed *pt=(AliTPCseed*)fSeeds->UncheckedAt(i), &t=*pt;    
+      if (!pt) continue;    
+      pt->CookdEdx(0.02,0.6);
+      CookLabel(pt,0.1);
+    }
+    
+    if (AliTPCReconstructor::GetUseHLTTracks() < 3)
+    {
+      SignShared(fSeeds);
+      SortTracks(fSeeds, 1);
+    }
+    Info("Clusters2Tracks","Number of imported HLT tracks %d",fSeeds->GetEntriesFast());  
+    savedir->cd();
+
+    return 0;
+  }
+  
 
   if (fDebug>0){
     Info("Clusters2Tracks","Time for tracking: \t");timer.Print();timer.Start();
@@ -9682,6 +9747,44 @@ void  AliTPCtracker::TrackFollowingHLT(TObjArray *const arr )
   }
 }
 
+bool AliTPCtracker::InitHLTClusterAccess()
+{
+  if (!fHLTClusterAccess) {
+    TClass* pCl=NULL;
+    ROOT::NewFunc_t pNewFunc=NULL;
+    do {
+      pCl=TClass::GetClass("AliHLTTPCClusterAccessHLTOUT");
+    } while (!pCl && gSystem->Load("libAliHLTTPC")==0);
+    if (!pCl || (pNewFunc=pCl->GetNew())==NULL) {
+      AliError("can not load class description of AliHLTTPCClusterAccessHLTOUT, aborting ...");
+      return false;
+    }
+  
+    void* p=(*pNewFunc)(NULL);
+    if (!p) {
+      AliError("unable to create instance of AliHLTTPCClusterAccessHLTOUT");
+      return false;
+    }
+    fHLTClusterAccess=reinterpret_cast<TObject*>(p);
+  }
+  return true;
+}
+
+TObjArray * AliTPCtracker::ReadSeedsFromHLT()
+{
+  TObjArray * seeds = fSeeds;
+  if (!seeds) seeds = new TObjArray;
+
+  if (!InitHLTClusterAccess()) return NULL;    
+
+  TObject* pClusterAccess=fHLTClusterAccess;
+  char params[64];
+  sprintf(params, "%p", this);
+  pClusterAccess->Execute("createSeeds", params, NULL);
+  pClusterAccess->Copy(*seeds);
+  
+  return seeds;
+}
 
 TObjArray * AliTPCtracker::MakeSeedsHLT(const AliESDEvent *hltEvent)
 {

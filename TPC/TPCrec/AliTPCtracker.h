@@ -1,4 +1,3 @@
-
 #ifndef ALITPCTRACKER_H
 #define ALITPCTRACKER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -157,7 +156,6 @@ public:
    void GetCachedSeedClusterStatistic(Int_t first, Int_t last, Int_t &found, Int_t &foundable, Int_t &shared, Bool_t plus2) const;
    void GetSeedClusterStatistic(const AliTPCseed* seed, Int_t first, Int_t last, Int_t &found, Int_t &foundable, Int_t &shared, Bool_t plus2) const;
    //
- public:
    void SetUseHLTClusters(Int_t useHLTClusters) {fUseHLTClusters = useHLTClusters;} // set usage from HLT clusters from rec.C options
 
    inline void SetTPCtrackerSectors(AliTPCtrackerSector *innerSec, AliTPCtrackerSector *outerSec); // set the AliTPCtrackerSector arrays from outside (toy MC)
@@ -195,6 +193,7 @@ public:
  protected:
    //private:
 
+  bool InitHLTClusterAccess();
   int GetAdjustedLabels(const AliTPCclusterMI* cl, int *lbReal);
   Bool_t IsFindable(AliTPCseed & t);
   AliTPCtracker(const AliTPCtracker& r);           //dummy copy constructor
@@ -247,7 +246,8 @@ public:
 
    Int_t PropagateToRowHLT(AliTPCseed *pt, int nrow);
    void TrackFollowingHLT(TObjArray *const arr);
-   TObjArray * MakeSeedsHLT(const AliESDEvent *hltEvent);
+   TObjArray * MakeSeedsHLT(const AliESDEvent *hltEvent); //Takes HLT ESD tracks, finds and attaches adjacent clusters
+   TObjArray * ReadSeedsFromHLT(); //Use HLT tracks directly, and attach clusters by matching HLT to offline clusters directly
 
    const Int_t fkNIS;        //number of inner sectors
    AliTPCtrackerSector *fInnerSec;  //array of inner sectors;
@@ -301,6 +301,8 @@ public:
    //
    Int_t fAccountDistortions;           //! flag to account for distortions. RS: to set!
    TTree* fMCtrackNClTree;              //! optional tree with N clusters per MC track
+   
+   TObject* fHLTClusterAccess;          //! interface to HLT clusters
    //
    ClassDef(AliTPCtracker,5) 
 };
@@ -373,5 +375,3 @@ void  AliTPCtracker::SetTPCtrackerSectors(AliTPCtrackerSector *innerSec, AliTPCt
 }
 
 #endif
-
-

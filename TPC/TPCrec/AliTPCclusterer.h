@@ -120,7 +120,7 @@ private:
   Float_t** fAllBins; //! All sector bins
   Int_t** fAllSigBins;//! All signal bins in a sector
   Int_t*  fAllNSigBins;//! Number of signal bins in a sector
-  TObject* fHLTClusterAccess;// interface to HLT clusters
+  TObject* fHLTClusterAccess;//! interface to HLT clusters
 
   ClassDef(AliTPCclusterer,0)  // TPC cluster finder
 };
@@ -154,5 +154,3 @@ inline Bool_t AliTPCclusterer::IsMaximum(Float_t q,Int_t max,const Float_t *bins
 //-----------------------------------------------------------------
 
 #endif
-
-

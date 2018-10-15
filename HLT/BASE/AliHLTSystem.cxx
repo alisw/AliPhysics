@@ -1296,7 +1296,8 @@ int AliHLTSystem::ScanOptions(const char* options)
 	} else if (token.BeginsWith("!lib") && token.EndsWith(".so")) {
 	  excludelibs+=token;
 	  excludelibs+=" ";
-	} else if ( (token.CompareTo("ignore-hltout")==0 ) || (token.Contains("TPC-input=")) ) {
+	} else if ( (token.CompareTo("ignore-hltout")==0 ) || (token.Contains("TPC-input=")) 
+		    || (token.Contains("TPC-transform:")) ) {
 	    // these options will be used when configuring subdetectors, do nothing here
 	} else {
 	  HLTWarning("unknown option \'%s\'", token.Data());
