@@ -43,6 +43,7 @@ TString fileFormat = ".eps"; /// File format: ".eps" ".pdf" ...
 ///
 /// \param particle  : "Pi0", "Eta" 
 /// \param calorimeter : "EMCAL", "DCAL","PHOS"
+/// \param trigger   : calo trigger type
 /// \param titleMC   : Simplified string acronym of input MC
 /// \param titleData : Simplified string acronym of input data
 //------------------------------------------------------------------------------
@@ -50,6 +51,7 @@ void CompareInvMassGraphs
 ( 
  TString particle    = "Pi0",
  TString calorimeter = "EMCAL",
+ TString trigger     = "default",
  TString titleMC     = "simu_pp_7TeV_MB", 
  TString titleData   = "LHC11cd_INT7"     
 )
@@ -104,6 +106,10 @@ void CompareInvMassGraphs
     , "MC xTalk + #it{E}_{inc+cell}>100 MeV"  
   };
 
+  // Create output directories
+  TString processline = Form(".! mkdir -p ComparisonGraphs/%s/%s/%s",calorimeter.Data(),trigger.Data(),particle.Data()) ;
+  gROOT->ProcessLine(processline.Data());
+  
   // Init  the graph arrays.
   //
   TGraphErrors* gMass[nSM][nProd];
@@ -132,11 +138,11 @@ void CompareInvMassGraphs
   
   for(Int_t iprod = 0; iprod < nProd; iprod++)
   {
-    file[iprod] = new TFile(Form("IMfigures/%s_%s_MassWidthPtHistograms_%s.root",
-                                 prod[iprod].Data(),calorimeter.Data(),particle.Data()),"read");
+    file[iprod] = new TFile(Form("%s/%s/%s/%s/MassWidthPtHistograms.root",
+                                 prod[iprod].Data(),calorimeter.Data(),trigger.Data(),particle.Data()),"read");
     
-    printf("iprod %d, IMfigures/%s_%s_MassWidthPtHistograms_%s.root %p\n",
-           iprod,prod[iprod].Data(),calorimeter.Data(),particle.Data(),file[iprod]);
+    printf("iprod %d, %s/%s/%s/%s/MassWidthPtHistograms.root %p\n",
+           iprod,prod[iprod].Data(),calorimeter.Data(),trigger.Data(),particle.Data(),file[iprod]);
     
     if(!file[iprod]) continue;
     
@@ -284,8 +290,8 @@ void CompareInvMassGraphs
   cGraphSM->cd(nSM+1);
   lE->Draw();
   
-  fileName = Form("IMfigures/Comparison_Mass_%s_%s_%s_%s_PerSM",
-                  titleData.Data(),titleMC.Data(),calorimeter.Data(),particle.Data());
+  fileName = Form("ComparisonGraphs/%s/%s/%s/Mass_%s_%s_PerSM",
+                  calorimeter.Data(),trigger.Data(),particle.Data(),titleData.Data(),titleMC.Data());
   
   fileName+=fileFormat;
   cGraphSM->Print(fileName);
@@ -330,8 +336,8 @@ void CompareInvMassGraphs
   
   lE->Draw();
   
-  fileName = Form("IMfigures/Comparison_MassRatio_%s_%s_%s_%s_PerSM",
-                  titleData.Data(),titleMC.Data(),calorimeter.Data(),particle.Data());
+  fileName = Form("ComparisonGraphs/%s/%s/%s/MassRatio_%s_%s_PerSM",
+                  calorimeter.Data(),trigger.Data(),particle.Data(),titleData.Data(),titleMC.Data());
   
   fileName+=fileFormat;
   cGraphSMRat->Print(fileName);
@@ -527,8 +533,8 @@ void CompareInvMassGraphs
   //cGraph->cd(ncol*nrow);
   //lE->Draw();
   
-  fileName = Form("IMfigures/Comparison_Mass_%s_%s_%s_%s",
-                  titleData.Data(),titleMC.Data(),calorimeter.Data(),particle.Data());
+  fileName = Form("ComparisonGraphs/%s/%s/%s/Mass_%s_%s",
+                  calorimeter.Data(),trigger.Data(),particle.Data(),titleData.Data(),titleMC.Data());
   
   fileName+=fileFormat;
   cGraph->Print(fileName);
