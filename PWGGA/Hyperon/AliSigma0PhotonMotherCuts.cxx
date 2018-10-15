@@ -55,11 +55,14 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fHistInvMassEta(nullptr),
       fHistEtaPhi(nullptr),
       fHistPtY(),
+      fHistPtMult(),
       fHistArmenterosBefore(nullptr),
       fHistArmenterosAfter(nullptr),
       fHistMixedPtY(),
+      fHistMixedPtMult(),
       fHistMixedInvMassPt(nullptr),
       fHistMixedInvMassBinnedPt(nullptr),
+      fHistMixedInvMassBinnedMultPt(),
       fHistLambdaPtPhi(nullptr),
       fHistLambdaPtEta(nullptr),
       fHistLambdaMassPt(nullptr),
@@ -146,11 +149,14 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fHistInvMassEta(nullptr),
       fHistEtaPhi(nullptr),
       fHistPtY(),
+      fHistPtMult(),
       fHistArmenterosBefore(nullptr),
       fHistArmenterosAfter(nullptr),
       fHistMixedPtY(),
+      fHistMixedPtMult(),
       fHistMixedInvMassPt(nullptr),
       fHistMixedInvMassBinnedPt(nullptr),
+      fHistMixedInvMassBinnedMultPt(),
       fHistLambdaPtPhi(nullptr),
       fHistLambdaPtEta(nullptr),
       fHistLambdaMassPt(nullptr),
@@ -285,6 +291,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
           continue;
       }
       const float rap = sigma.GetRapidity();
+      const int multBin = GetMultiplicityBin(lPercentile);
 
       // Now write out the stuff to the Femto containers
       if (invMass < fMassSigma + fSigmaMassCut &&
@@ -330,7 +337,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
 
       fHistInvMass->Fill(invMass);
 
-      if (std::abs(rap) > fRapidityMax) continue;
+      if (std::abs(rap) > fRapidityMax || multBin < 0) continue;
       const int rapBin = GetRapidityBin(rap);
       if (!fIsLightweight) {
         fHistArmenterosAfter->Fill(armAlpha, armQt);
@@ -341,6 +348,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
         fHistInvMassEta->Fill(sigma.GetEta(), invMass);
       }
       fHistInvMassPt->Fill(pT, invMass);
+      fHistPtMult[multBin]->Fill(pT, invMass);
 
       if (fIsMC) {
         int pdgLambdaMother = 0;
@@ -388,6 +396,15 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
 void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
     const std::vector<AliSigma0ParticleV0> &photonCandidates,
     const std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
+  // Mulitplicity estimator: V0M
+  Float_t lPercentile = 300;
+  AliMultSelection *MultSelection = 0x0;
+  MultSelection =
+      (AliMultSelection *)fInputEvent->FindListObject("MultSelection");
+  if (MultSelection) {
+    lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+  }
+
   // photons from this event with mixed lambdas
   for (const auto &LambdaContainer : fLambdaMixed) {
     for (const auto &Lambda : LambdaContainer) {
@@ -407,8 +424,10 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
         }
         const float invMass = sigma.GetMass();
         const float rap = sigma.GetRapidity();
-        if (std::abs(rap) > fRapidityMax) continue;
+        const int multBin = GetMultiplicityBin(lPercentile);
+        if (std::abs(rap) > fRapidityMax || multBin < 0) continue;
         fHistMixedInvMassPt->Fill(pT, invMass);
+        fHistMixedPtMult[multBin]->Fill(pT, invMass);
         if (!fIsLightweight) {
           const int rapBin = GetRapidityBin(rap);
           if (rapBin > -1) fHistMixedPtY[rapBin]->Fill(pT, invMass);
@@ -436,8 +455,10 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
         }
         const float invMass = sigma.GetMass();
         const float rap = sigma.GetRapidity();
-        if (std::abs(rap) > fRapidityMax) continue;
+        const int multBin = GetMultiplicityBin(lPercentile);
+        if (std::abs(rap) > fRapidityMax || multBin < 0) continue;
         fHistMixedInvMassPt->Fill(pT, invMass);
+        fHistMixedPtMult[multBin]->Fill(pT, invMass);
         if (!fIsLightweight) {
           const int rapBin = GetRapidityBin(rap);
           if (rapBin > -1) fHistMixedPtY[rapBin]->Fill(pT, invMass);
@@ -461,7 +482,6 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEventBinned(
   }
 
   const float zVertex = fInputEvent->GetPrimaryVertex()->GetZ();
-
   const int zVertexBin = GetZvertexBin(zVertex);
   const int multBin = GetMultiplicityBin(lPercentile);
 
@@ -488,6 +508,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEventBinned(
         const float rap = sigma.GetRapidity();
         if (std::abs(rap) > fRapidityMax) continue;
         fHistMixedInvMassBinnedPt->Fill(pT, invMass);
+        fHistMixedInvMassBinnedMultPt[multBin]->Fill(pT, invMass);
       }
     }
   }
@@ -513,6 +534,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEventBinned(
         const float rap = sigma.GetRapidity();
         if (std::abs(rap) > fRapidityMax) continue;
         fHistMixedInvMassBinnedPt->Fill(pT, invMass);
+        fHistMixedInvMassBinnedMultPt[multBin]->Fill(pT, invMass);
       }
     }
   }
@@ -756,18 +778,34 @@ int AliSigma0PhotonMotherCuts::GetRapidityBin(float rapidity) const {
 
 //____________________________________________________________________________________________________
 int AliSigma0PhotonMotherCuts::GetMultiplicityBin(float percentile) const {
-  if (50 < percentile && percentile <= 100)
+  if (0 < percentile && percentile <= 0.01)
     return 0;
-  else if (30 < percentile && percentile <= 50)
+  else if (0.01 < percentile && percentile <= 0.05)
     return 1;
-  else if (10 < percentile && percentile <= 30)
+  else if (0.05 < percentile && percentile <= 0.1)
     return 2;
-  else if (5 < percentile && percentile <= 10)
+  else if (0.1 < percentile && percentile <= 0.9)
     return 3;
-  else if (1 < percentile && percentile <= 5)
+  else if (0.9 < percentile && percentile <= 1.)
     return 4;
-  else if (percentile <= 1)
+  else if (1. < percentile && percentile <= 5.)
     return 5;
+  else if (5. < percentile && percentile <= 10.)
+    return 6;
+  else if (10. < percentile && percentile <= 15.)
+    return 7;
+  else if (15. < percentile && percentile <= 20.)
+    return 8;
+  else if (20. < percentile && percentile <= 30.)
+    return 9;
+  else if (30. < percentile && percentile <= 40.)
+    return 10;
+  else if (40. < percentile && percentile <= 50.)
+    return 11;
+  else if (50. < percentile && percentile <= 70.)
+    return 12;
+  else if (70. < percentile && percentile <= 100.)
+    return 13;
   else
     return -1;
 }
@@ -815,6 +853,9 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
   std::vector<float> rapBins = {{-10., -1.f, -0.5, -0.4, -0.3, -0.2, -0.1, 0.f,
                                  0.1, 0.2, 0.3, 0.4, 0.5, 1.f, 10.f}};
 
+  std::vector<float> multBins = {{0, 0.01, 0.05, 0.1, 0.9, 1., 5., 10., 15.,
+                                  20., 30., 40., 50., 70., 100.}};
+
   TH1::AddDirectory(kFALSE);
 
   TString name;
@@ -826,6 +867,30 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     fHistograms = new TList();
     fHistograms->SetOwner(kTRUE);
     fHistograms->SetName(appendix);
+  }
+
+  for (int i = 0; i < static_cast<int>(multBins.size() - 1); i++) {
+    fHistPtMult[i] =
+        new TH2F(Form("fHistPtMult_%i", i),
+                 Form("%.2f < <N> < %.2f ; #it{p}_{T} (GeV/#it{c}); "
+                      "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
+                      multBins[i], multBins[i + 1]),
+                 100, 0, 10, 150, 1.15, 1.3);
+    fHistograms->Add(fHistPtMult[i]);
+    fHistMixedPtMult[i] = new TH2F(
+        Form("fHistMixedPtMult_%i", i),
+        Form("%.2f < <N> < %.2f ; #it{p}_{T} (GeV/#it{c}); "
+             "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
+             multBins[i], multBins[i + 1]),
+        100, 0, 10, 150, 1.15, 1.3);
+    fHistograms->Add(fHistMixedPtMult[i]);
+    fHistMixedInvMassBinnedMultPt[i] =
+        new TH2F(Form("fHistMixedInvMassBinnedMultPt_%i", i),
+                 Form("%.2f < <N> < %.2f ; #it{p}_{T} (GeV/#it{c}); "
+                      "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
+                      multBins[i], multBins[i + 1]),
+                 100, 0, 10, 150, 1.15, 1.3);
+    fHistograms->Add(fHistMixedInvMassBinnedMultPt[i]);
   }
 
   fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 12, 0, 12);

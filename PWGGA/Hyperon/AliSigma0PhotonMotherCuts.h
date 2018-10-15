@@ -126,11 +126,11 @@ class AliSigma0PhotonMotherCuts : public TObject {
   std::vector<AliSigma0ParticlePhotonMother> fSidebandUp;    //!
   std::vector<AliSigma0ParticlePhotonMother> fSidebandDown;  //!
 
-  deque<vector<AliSigma0ParticleV0> > fLambdaMixed;               //!
-  deque<vector<AliSigma0ParticleV0> > fPhotonMixed;               //!
-  deque<vector<AliSigma0ParticleV0> > fLambdaMixedBinned[10][6];  //!
-  deque<vector<AliSigma0ParticleV0> > fPhotonMixedBinned[10][6];  //!
-  float fTreeVariables[4];                                        //!
+  deque<vector<AliSigma0ParticleV0> > fLambdaMixed;                //!
+  deque<vector<AliSigma0ParticleV0> > fPhotonMixed;                //!
+  deque<vector<AliSigma0ParticleV0> > fLambdaMixedBinned[10][22];  //!
+  deque<vector<AliSigma0ParticleV0> > fPhotonMixedBinned[10][22];  //!
+  float fTreeVariables[4];                                         //!
 
   AliSigma0V0Cuts *fLambdaCuts;  //
   AliSigma0V0Cuts *fPhotonCuts;  //
@@ -142,13 +142,13 @@ class AliSigma0PhotonMotherCuts : public TObject {
   int fPDGDaughter1;   //
   int fPDGDaughter2;   //
 
-  float fMassSigma;        //
-  float fSigmaMassCut;     //
-  float fSidebandCutUp;    //
-  float fSidebandCutDown;  //
-  float fPhotonPtMin;      //
-  float fPhotonPtMax;      //
-  float fRapidityMax;      //
+  float fMassSigma;       //
+  float fSigmaMassCut;    //
+  float fSidebandCutUp;   //
+  float fSidebandCutDown; //
+  float fPhotonPtMin;     //
+  float fPhotonPtMax;     //
+  float fRapidityMax;     //
 
   float fArmenterosCut;       //
   float fArmenterosQtLow;     //
@@ -162,22 +162,25 @@ class AliSigma0PhotonMotherCuts : public TObject {
   // =====================================================================
   TProfile *fHistCutBooking;  //!
 
-  TH1F *fHistNSigma;                   //!
-  TH1F *fHistMassCutPt;                //!
-  TH1F *fHistInvMass;                  //!
-  TH1F *fHistInvMassBeforeArmenteros;  //!
-  TH2F *fHistInvMassRecPhoton;         //!
-  TH2F *fHistInvMassRecLambda;         //!
-  TH2F *fHistInvMassRec;               //!
-  TH2F *fHistInvMassPt;                //!
-  TH2F *fHistInvMassEta;               //!
-  TH2F *fHistEtaPhi;                   //!
-  TH2F *fHistPtY[22];                  //!
-  TH2F *fHistArmenterosBefore;         //!
-  TH2F *fHistArmenterosAfter;          //!
-  TH2F *fHistMixedPtY[22];             //!
-  TH2F *fHistMixedInvMassPt;           //!
-  TH2F *fHistMixedInvMassBinnedPt;     //!
+  TH1F *fHistNSigma;                        //!
+  TH1F *fHistMassCutPt;                     //!
+  TH1F *fHistInvMass;                       //!
+  TH1F *fHistInvMassBeforeArmenteros;       //!
+  TH2F *fHistInvMassRecPhoton;              //!
+  TH2F *fHistInvMassRecLambda;              //!
+  TH2F *fHistInvMassRec;                    //!
+  TH2F *fHistInvMassPt;                     //!
+  TH2F *fHistInvMassEta;                    //!
+  TH2F *fHistEtaPhi;                        //!
+  TH2F *fHistPtY[22];                       //!
+  TH2F *fHistPtMult[22];                    //!
+  TH2F *fHistArmenterosBefore;              //!
+  TH2F *fHistArmenterosAfter;               //!
+  TH2F *fHistMixedPtY[22];                  //!
+  TH2F *fHistMixedPtMult[22];               //!
+  TH2F *fHistMixedInvMassPt;                //!
+  TH2F *fHistMixedInvMassBinnedPt;          //!
+  TH2F *fHistMixedInvMassBinnedMultPt[22];  //!
 
   TH2F *fHistLambdaPtPhi;   //!
   TH2F *fHistLambdaPtEta;   //!
