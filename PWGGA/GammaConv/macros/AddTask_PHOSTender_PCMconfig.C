@@ -41,7 +41,7 @@ AliPHOSTenderTask* AddTask_PHOSTender_PCMconfig(
           PHOSSupply->SetMCProduction(options.Data()) ;
           PHOSSupply->SetNonlinearityVersion("MC");
           Int_t n = 3;
-          Double_t par[3]={1.013,0.028,1.9} ;
+          Double_t par[3]={ 0.993, 0.02, 1.6 } ;
           std::cout << "============== NL version: MC with parameters ======================" << std::endl;
           for (Int_t i  = 0; i< 3; i++){
             std::cout << "parameter " << i << ": \t" << par[i] << endl;
