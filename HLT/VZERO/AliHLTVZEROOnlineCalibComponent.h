@@ -21,6 +21,7 @@
 
 
 #include "AliHLTProcessor.h"
+#include "AliOptionParser.h"
 #include "TH1F.h"
 
 class TTree;
@@ -29,7 +30,7 @@ class AliRunInfo;
 class AliESDVZERO;
 class AliVZERORecoParam;
 
-class AliHLTVZEROOnlineCalibComponent : public AliHLTProcessor {
+class AliHLTVZEROOnlineCalibComponent : public AliHLTProcessor, public AliOptionParser {
 public:
     
     /*
@@ -66,6 +67,9 @@ public:
     
     /** interface function, see @ref AliHLTComponent for description */
     AliHLTComponent* Spawn();
+    
+    //overload from AliOptionParser
+    int ProcessOption(TString option, TString value);
     
 protected:
     
@@ -125,6 +129,9 @@ private:
     
     /** VZERO reco param instance */
     AliVZERORecoParam     *fVZERORecoParam;     //! transient
+    
+    //reference trigger
+    TString fRefTrigger; 
     
     TH1F fHistMult[24]; //all histograms we'll need
     
