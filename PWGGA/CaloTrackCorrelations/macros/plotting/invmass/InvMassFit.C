@@ -46,6 +46,7 @@ Bool_t  kSumw2      = kTRUE;               /// Apply Root method Sumw2(), off fo
 Float_t kNPairCut   = 20;                  /// Minimum number of cluster pairs in pi0 or eta window 
 Float_t kFirstTRDSM = -1;                  /// First Calo SM covered by a TRD SM, 6 in 2011 and 4 in 2012-13
 TString kHistoStartName = "AnaPi0";        /// Common starting name in histograms
+TString kHistoList  = "default";           /// TList name, usually each list is a different trigger
 TString kProdName   = "LHC18c3_NystromOn"; /// Input production directory name where input file is located
 TString kFileName   = "AnalysisResults";   /// Name of file with input histograms
 TString kPlotFormat = "eps";               /// Automatic plots format
@@ -73,7 +74,7 @@ Int_t modStyleIndex[]={24,25,25,24,25,24,25,24,25,24,25,21,21,21,21,21,22,26,22,
 /// Open the file and the list and the number of analyzed events
 /// 
 //-----------------------------------------------------------------------------
-Bool_t GetFileAndEvents( TString dirName , TString listName )
+Bool_t GetFileAndEvents( TString dirName , TString listName /*, TString calo*/ )
 {
   fil = new TFile(Form("%s/%s.root",kProdName.Data(),kFileName.Data()),"read");
   
@@ -91,6 +92,7 @@ Bool_t GetFileAndEvents( TString dirName , TString listName )
     lis = (TList*) direc ->Get(listName);
   else
     lis = (TList*) fil->Get(listName);
+//  lis = (TList*) fil->Get(Form("CTC_%s_Trig_%s_SPDPileUp",calo.Data(),listName.Data()));
   
   if ( !lis && listName != "") return kFALSE;
   
@@ -364,8 +366,8 @@ void Efficiency
     legend->Draw();
   }
   
-  cEff->Print(Form("IMfigures/%s_%s_Efficiency_%s_%s.%s",
-                   kProdName.Data(),kCalorimeter.Data(),kParticle.Data(),hname.Data(),
+  cEff->Print(Form("%s/%s/%s/%s/Efficiency_%s.%s",
+                   kProdName.Data(),kCalorimeter.Data(),kHistoList.Data(),kParticle.Data(),hname.Data(),
                    /*kFileName.Data(),*/ kPlotFormat.Data()));   
 }
 
@@ -822,8 +824,8 @@ void ProjectAndFit
   } //pT bins
   
   if ( ok ) 
-    cIMModi->Print(Form("IMfigures/%s_%s_Mgg_%s_%s.%s",
-                        kProdName.Data(),kCalorimeter.Data(),kParticle.Data(),/*kFileName.Data(),*/
+    cIMModi->Print(Form("%s/%s/%s/%s/Mgg_%s.%s",
+                        kProdName.Data(),kCalorimeter.Data(),kHistoList.Data(),kParticle.Data(),/*kFileName.Data(),*/
                         hname.Data(),kPlotFormat.Data()));
   
   //xxxx Real / Mixxxxx
@@ -872,8 +874,8 @@ void ProjectAndFit
     }
     
     if ( okR )
-      cRat->Print(Form("IMfigures/%s_%s_MggRatio_%s_%s.%s",
-                       kProdName.Data(),kCalorimeter.Data(),kParticle.Data(),/*kFileName.Data(),*/ 
+      cRat->Print(Form("%s/%s/%s/%s/MggRatio_%s.%s",
+                       kProdName.Data(),kCalorimeter.Data(),kHistoList.Data(),kParticle.Data(),/*kFileName.Data(),*/ 
                        hname.Data(),kPlotFormat.Data()));
   }   // Mix  
   
@@ -1014,8 +1016,8 @@ void ProjectAndFit
   gPt->SetMaximum(maximum*2.);
   gPt->SetMinimum(minimum/2.);
   
-  cFitGraph->Print(Form("IMfigures/%s_%s_MassWidthPtSpectra_%s_%s.%s",
-                        kProdName.Data(),kCalorimeter.Data(),kParticle.Data(),hname.Data(),
+  cFitGraph->Print(Form("%s/%s/%s/%s/MassWidthPtSpectra_%s.%s",
+                        kProdName.Data(),kCalorimeter.Data(),kHistoList.Data(),kParticle.Data(),hname.Data(),
                         /*kFileName.Data(),*/ kPlotFormat.Data())); 
   
   //-----------------------
@@ -1274,7 +1276,12 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
     }
     
     if ( !opt.Contains("Group") )
-      legend->AddEntry(gPt[icomb],Form("%s %d",opt.Data(),icomb),"P");
+    {
+      if(opt == "SM" && kCalorimeter == "DCAL")
+        legend->AddEntry(gPt[icomb],Form("%s %d",opt.Data(),icomb+12),"P");
+      else
+        legend->AddEntry(gPt[icomb],Form("%s %d",opt.Data(),icomb),"P");
+    }
     else
     {
       if(icomb == 0) legend->AddEntry(gPt[icomb],"SM0+4+5+6+7+8+9","P");
@@ -1404,8 +1411,8 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
     legend->Draw();
   }
   
-  cFitGraph->Print(Form("IMfigures/%s_%s_MassWidthPtSpectra_%s_%sCombinations.%s",
-                        kProdName.Data(),kCalorimeter.Data(),kParticle.Data(),opt.Data(),
+  cFitGraph->Print(Form("%s/%s/%s/%s/MassWidthPtSpectra_%sCombinations.%s",
+                        kProdName.Data(),kCalorimeter.Data(),kHistoList.Data(),kParticle.Data(),opt.Data(),
                         /*kFileName.Data(),*/kPlotFormat.Data()));
   //
   // Calculate the ratio to the sum
@@ -1472,7 +1479,12 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
     }
     
     if ( !opt.Contains("Group") )
-      legendR->AddEntry(gPt[icomb],Form("%s %d",opt.Data(),icomb),"P");
+    {
+      if(opt == "SM" && kCalorimeter == "DCAL")
+        legendR->AddEntry(gPt[icomb],Form("%s %d",opt.Data(),icomb+12),"P");
+      else
+        legendR->AddEntry(gPt[icomb],Form("%s %d",opt.Data(),icomb),"P");
+    }
     else
     {
       if(icomb == 0) legendR->AddEntry(gPt[icomb],"SM0+4+5+6+7+8+9","P");
@@ -1556,8 +1568,8 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
     legendR->Draw();
   }
   
-  cFitGraphRatio->Print(Form("IMfigures/%s_%s_MassWidthPtSpectra_%s_%sCombinations_RatioToSum.%s",
-                             kProdName.Data(),kCalorimeter.Data(),kParticle.Data(),opt.Data(),
+  cFitGraphRatio->Print(Form("%s/%s/%s/%s/MassWidthPtSpectra_%sCombinations_RatioToSum.%s",
+                             kProdName.Data(),kCalorimeter.Data(),kHistoList.Data(),kParticle.Data(),opt.Data(),
                              /*kFileName.Data(),*/kPlotFormat.Data()));
  
   
@@ -1723,8 +1735,8 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
       legendR->Draw();
     }
     
-    cFitGraphRatioTRD->Print(Form("IMfigures/%s_%s_MassWidthPtSpectra_%s_%sCombinations_RatioToSumTRD.%s",
-                               kProdName.Data(),kCalorimeter.Data(),kParticle.Data(),opt.Data(),
+    cFitGraphRatioTRD->Print(Form("%s/%s/%s/%s/MassWidthPtSpectra_%sCombinations_RatioToSumTRD.%s",
+                               kProdName.Data(),kCalorimeter.Data(),kHistoList.Data(),kParticle.Data(),opt.Data(),
                                /*kFileName.Data(),*/kPlotFormat.Data()));
     
     
@@ -1820,8 +1832,8 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
       legend->Draw();
     }
     
-    cFitGraphSums->Print(Form("IMfigures/%s_%s_MassWidthPtSpectra_%s_%sSums.%s",
-                          kProdName.Data(),kCalorimeter.Data(),kParticle.Data(),opt.Data(),
+    cFitGraphSums->Print(Form("%s/%s/%s/%s/MassWidthPtSpectra_%sSums.%s",
+                          kProdName.Data(),kCalorimeter.Data(),kHistoList.Data(),kParticle.Data(),opt.Data(),
                           /*kFileName.Data(),*/kPlotFormat.Data()));
   }
 }
@@ -2043,8 +2055,8 @@ void PrimarySpectra(Int_t nPt, TArrayD xPtLimits, TArrayD xPt, TArrayD exPt)
 
   legendA->Draw();
   
-  cAcc->Print(Form("IMfigures/%s_%s_PrimarySpectraAcceptance_%s.%s",
-                   kProdName.Data(),kCalorimeter.Data(),kParticle.Data(),
+  cAcc->Print(Form("%s/%s/%s/%s/PrimarySpectraAcceptance.%s",
+                   kProdName.Data(),kCalorimeter.Data(),kHistoList.Data(),kParticle.Data(),
                    /*kFileName.Data(),*/ kPlotFormat.Data()));   
 }
   
@@ -2085,11 +2097,11 @@ void InvMassFit
  Float_t nPairMin     = 20, 
  Bool_t  sumw2        = kTRUE,
  Int_t   rebin        = 1,
- Int_t   firstTRD     = 6,
+ Int_t   firstTRD     = 0,
  Bool_t  mixed        = kTRUE,
  Bool_t  truncmix     = kFALSE,
  Int_t   pol          = 1,
- Bool_t  drawAll      = kFALSE,
+ Bool_t  drawAll      = kTRUE,
  Bool_t  drawMCAll    = kFALSE,
  Bool_t  drawPerSM    = kTRUE, 
  Bool_t  drawPerSMGr  = kFALSE, 
@@ -2113,6 +2125,7 @@ void InvMassFit
   kNPairCut   = nPairMin;
   kRebin      = rebin;
   kFirstTRDSM = firstTRD;
+  kHistoList  = histoList;
   
   if(histoStart !="")
     kHistoStartName = histoStart;
@@ -2128,7 +2141,7 @@ void InvMassFit
   //---------------------------------------
   // Get input file
   //---------------------------------------
-  Int_t ok = GetFileAndEvents(histoDir, histoList);
+  Int_t ok = GetFileAndEvents(histoDir, histoList/*, calorimeter*/);
   
 //  kProdName.ReplaceAll("module/","");
 //  kProdName.ReplaceAll("TCardChannel","");
@@ -2138,6 +2151,10 @@ void InvMassFit
   if( kFileName !="AnalysisResults" && !kFileName.Contains("Scale") )
     kProdName+=kFileName;
     
+  // Create output directories
+  TString processline = Form(".! mkdir -p %s/%s/%s/%s",prodname.Data(),calorimeter.Data(),histoList.Data(),particle.Data()) ;
+  gROOT->ProcessLine(processline.Data());
+  
   printf("Settings: prodname <%s>, filename <%s>, histoDir <%s>, histoList <%s>,\n"
          " \t histo start name <%s>, particle <%s>, calorimeter <%s>, \n"
          " \t mix %d, kPolN %d, sumw2 %d, n pairs cut %2.2e\n",
@@ -2157,10 +2174,10 @@ void InvMassFit
   //---------------------------------------
   
   // Open output file
-  fout = new TFile(Form("IMfigures/%s_%s_MassWidthPtHistograms_%s.root",
-                        kProdName.Data(),kCalorimeter.Data(),kParticle.Data() /*,kFileName.Data()*/), "recreate");
-  printf("Open Output File: IMfigures/%s_%s_MassWidthPtHistograms_%s.root\n",
-         kProdName.Data(),kCalorimeter.Data(),kParticle.Data());//,kFileName.Data());
+  fout = new TFile(Form("%s/%s/%s/%s/MassWidthPtHistograms.root",
+                        kProdName.Data(),kCalorimeter.Data(),kHistoList.Data(),kParticle.Data() /*,kFileName.Data()*/), "recreate");
+  printf("Open Output File: %s/%s/%s/%s/MassWidthPtHistograms.root\n",
+         kProdName.Data(),kCalorimeter.Data(),kHistoList.Data(),kParticle.Data());//,kFileName.Data());
   
   //---------------------------------------
   // Set the pt bins and total range
@@ -2261,6 +2278,7 @@ void InvMassFit
     }
     else
     {
+      //printf("Find: %s_hRe_cen0_pidbit0_asy0_dist1", kHistoStartName.Data());
       hRe = (TH2F *) lis->FindObject(Form("%s_hRe_cen0_pidbit0_asy0_dist1", kHistoStartName.Data()));
       hMi = (TH2F *) lis->FindObject(Form("%s_hMi_cen0_pidbit0_asy0_dist1", kHistoStartName.Data()));
     }
