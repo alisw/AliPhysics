@@ -35,7 +35,8 @@ find_package_handle_standard_args(RooUnfold DEFAULT_MSG
 add_library(RooUnfold::RooUnfold SHARED IMPORTED)
 set_target_properties(RooUnfold::RooUnfold PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${ROOUNFOLD_INCLUDE_DIR}"
-  IMPORTED_LOCATION             "${ROOUNFOLD_LIBPATH}")
+  IMPORTED_LOCATION             "${ROOUNFOLD_LIBPATH}"
+  INTERFACE_COMPILE_DEFINITIONS "WITH_ROOUNFOLD")
 
 # Unset RooUnfold variables
 unset(ROOUNFOLD_LIBPATH)
