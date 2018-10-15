@@ -802,7 +802,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
         timeResArr->AddAt(graphRes[ires],ires);
         lastGraph=graphRes[ires];
       }else{
-        if (lastGraph!= nullptr) timeResArr->AddAt(new TGraphErrors(lastGraph),ires);
+        if (lastGraph!= nullptr) timeResArr->AddAt(new TGraphErrors(*lastGraph),ires);
       }
     }
     timeResFunc.AddAt(timeResArr,isec); // Fill all trfs into a single TObjArray 
