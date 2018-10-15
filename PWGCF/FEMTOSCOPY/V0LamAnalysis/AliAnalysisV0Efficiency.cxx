@@ -458,7 +458,7 @@ void AliAnalysisV0Efficiency::ExtractOriginalParticles(const AliAODEvent *aEvent
 //    int tPartPID = tPart->GetPdgCode();
 
     bool tIsInjected = false;
-    if(fIgnoreInjectedV0s) IsInjected(tPart, mcP, tNumberOfLastHijingLabel);
+    if(fIgnoreInjectedV0s) tIsInjected = IsInjected(tPart, mcP, tNumberOfLastHijingLabel);
     AliAODMCParticle *tMother = NULL;
     if(tPart->GetMother() > -1)  //MC particle has a mother 
     {
