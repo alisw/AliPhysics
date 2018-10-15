@@ -1,4 +1,4 @@
-AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutMode = 100)
+AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutModeLow = 100, Int_t cutModeHigh = 104)
 {
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -17,6 +17,12 @@ AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutMode = 100)
     Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
 
     //AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
+
+  char taskName[100] = "";
+
+
+  for(Int_t cutMode = cutModeLow; cutMode < cutModeHigh; cutMode++){
+    sprintf(taskName, "dNdPt_cutMode_%d", cutMode);
 
     AlidNdPtUnifiedAnalysisTask *task = new AlidNdPtUnifiedAnalysisTask("AlidNdPtUnifiedAnalysisTask_yelmardb");
     task->SetUseMC(hasMC);
@@ -92,7 +98,7 @@ AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutMode = 100)
     task->SetDCAtoVertexXYPtDep("0.0182+0.0350/pt^1.01");
     task->SetKinkDaughters(kFALSE);
     task->SetDCAtoVertex2D(kFALSE);
-    //task->SetMaxChi2TPCConstrained(36.);
+   // task->SetMaxChi2TPCConstrained(36.);
     task->SetMinLenghtInActiveZoneTPC(0);
     task->SetGeometricalCut(kTRUE,3,130,1.5,0.85,0.7); ///if kTRUE comment CrossedRowsTPC cut
     task->SetMinCrossedRowsTPC(120);
@@ -124,6 +130,15 @@ AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutMode = 100)
 
     if(cutMode==116){task->SetGeometricalCut(kTRUE,3,140,1.5,0.85,0.7); }
     if(cutMode==117){task->SetGeometricalCut(kTRUE,3,120,1.5,0.85,0.7); }
+
+    if(cutMode==118){task->SetMaxChi2TPCConstrained(25.); }
+    if(cutMode==119){task->SetMaxChi2TPCConstrained(49.); }
+
+    //event cuts study
+    if(cutMode == 120) {task->SetZvtx(5.);}
+    if(cutMode == 121) {task->SetZvtx(20.);}
+
+
 
     //if(cutMode==118 || cutMode==119){max. 5-dim Chi2 TPC constrained track vs. global track;}
 
@@ -159,7 +174,7 @@ AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutMode = 100)
     mgr->AddTask(task);
 
     AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-    AliAnalysisDataContainer *coutput = mgr->CreateContainer("dNdPt",
+    AliAnalysisDataContainer *coutput = mgr->CreateContainer(taskName,
             TList::Class(),
             AliAnalysisManager::kOutputContainer,
             "AnalysisResults.root");
@@ -169,6 +184,9 @@ AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutMode = 100)
     mgr->ConnectInput(task, 0, cinput);
     mgr->ConnectOutput(task, 1, coutput);
 
+    }
+
     return task;
+
 
 }
