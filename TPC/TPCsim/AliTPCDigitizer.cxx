@@ -765,40 +765,46 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
     }
     treear->GetBranch("Segment")->SetAddress(&digarr[i1]);
   }
-
   //
   // zero supp, take gain and noise map of TPC from OCDB 
   Int_t zerosup = param->GetZeroSup();
   AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetDedxGainFactor();
   AliTPCCalPad * noiseTPC = AliTPCcalibDB::Instance()->GetPadNoise();
-
-
   // 
   // Cache the ion tail objects form OCDB
   //      
-
   TObjArray *ionTailArr = (TObjArray*)AliTPCcalibDB::Instance()->GetIonTailArray();
   if (!ionTailArr) {AliFatal("TPC - Missing IonTail OCDB object");}
   //  TObject *rocFactorIROC  = ionTailArr->FindObject("factorIROC");
 //   TObject *rocFactorOROC  = ionTailArr->FindObject("factorOROC");
 //   Float_t factorIROC      = (atof(rocFactorIROC->GetTitle()));
 //   Float_t factorOROC      = (atof(rocFactorOROC->GetTitle()));
+  const Int_t nTRFs = 20;
   Int_t nIonTailBins =0;
   TObjArray timeResFunc(nROCs);
   for (Int_t isec = 0;isec<nROCs;isec++){        //loop overs sectors
+    //
     // Array of TGraphErrors for a given sector
-    TGraphErrors ** graphRes   = new TGraphErrors *[20];
-    Float_t * trfIndexArr    = new Float_t[20];
-    for (Int_t icache=0; icache<20; icache++)
+    TGraphErrors ** graphRes   = new TGraphErrors *[nTRFs];
+    Float_t * trfIndexArr    = new Float_t[nTRFs];
+    for (Int_t icache=0; icache<nTRFs; icache++)
     {
       graphRes[icache]       = NULL;
       trfIndexArr[icache] = 0;
     }
     if (!AliTPCcalibDB::Instance()->GetTailcancelationGraphs(isec,graphRes,trfIndexArr)) continue;
-
+    //
     // fill all TGraphErrors of trfs (time response function) of a given sector to a TObjArray
-    TObjArray *timeResArr = new TObjArray(20);  timeResArr -> SetOwner(kTRUE);
-    for (Int_t ires = 0;ires<20;ires++) timeResArr->AddAt(graphRes[ires],ires);
+    TObjArray *timeResArr = new TObjArray(nTRFs);  timeResArr -> SetOwner(kTRUE);
+    TGraphErrors * lastGraph=NULL;
+    for (Int_t ires = 0;ires<nTRFs;ires++) {
+      if (graphRes[ires]) {
+        timeResArr->AddAt(graphRes[ires],ires);
+        lastGraph=graphRes[ires];
+      }else{
+        if (lastGraph!= nullptr) timeResArr->AddAt(new TGraphErrors(lastGraph),ires);
+      }
+    }
     timeResFunc.AddAt(timeResArr,isec); // Fill all trfs into a single TObjArray 
     nIonTailBins = graphRes[3]->GetN();
     delete[] trfIndexArr;

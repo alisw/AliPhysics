@@ -2590,6 +2590,7 @@ void AliTPCtracker::GetTailValue(Float_t ampfactor,Double_t &ionTailMax, Double_
     Float_t qTotPad1   = amp1*qTot1;                                           // used as a factor to multipliy the response function
       
     // find closest value of cl1 to COG (among the time response functions' amplitude array --> to select proper t.r.f.)
+    /// TODO - speed up this code - can be factor ~ 10
     Int_t ampIndex = 0;
     Float_t diffAmp  = TMath::Abs(deltaPad1-indexAmpGraphs[0]);
     for (Int_t j=0;j<20;j++) {
