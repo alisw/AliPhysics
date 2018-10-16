@@ -29,53 +29,10 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   void SetUseOnTheFlyV0s(bool useThem = true) {
     fUseOnTheFly = useThem;
   }
-  void SetUseLightVertexers(bool lUseLightVertexers = true) {
-    fUseLightVertexer = lUseLightVertexers;
-  }
   void SetDoV0Refit(bool lDoV0Refit = true) { fDoV0Refit = lDoV0Refit; }
-
-  // Setters for the V0 Vertexer Parameters
-  void SetV0VertexerMaxChisquare(double lParameter) {
-    fV0VertexerSels[0] = lParameter;
-  }
-  void SetV0VertexerDCAFirstToPV(double lParameter) {
-    fV0VertexerSels[1] = lParameter;
-  }
-  void SetV0VertexerDCASecondtoPV(double lParameter) {
-    fV0VertexerSels[2] = lParameter;
-  }
-  void SetV0VertexerDCAV0Daughters(double lParameter) {
-    fV0VertexerSels[3] = lParameter;
-  }
-  void SetV0VertexerCosinePA(double lParameter) {
-    fV0VertexerSels[4] = lParameter;
-  }
-  void SetV0VertexerMinRadius(double lParameter) {
-    fV0VertexerSels[5] = lParameter;
-  }
-  void SetV0VertexerMaxRadius(double lParameter) {
-    fV0VertexerSels[6] = lParameter;
-  }
 
   void SetMinPt(float lMinPt) { fMinPtToSave = lMinPt; }
   void SetMaxPt(float lMaxPt) { fMaxPtToSave = lMaxPt; }
-  void SetLambdaWindowParameters(double* fMeanPars, double* fSigmaPars) {
-    for (Int_t ipar = 0; ipar < 5; ipar++)
-      fLambdaMassMean[ipar] = fMeanPars[ipar];
-    for (Int_t ipar = 0; ipar < 4; ipar++)
-      fLambdaMassSigma[ipar] = fSigmaPars[ipar];
-  }
-  void SetLambdaWindowParametersStandard() {
-    fLambdaMassMean[0] = 1.15768e+00;
-    fLambdaMassMean[1] = -4.15945e-02;
-    fLambdaMassMean[2] = -7.14294e-04;
-    fLambdaMassMean[3] = -1.62793e-02;
-    fLambdaMassMean[4] = -7.84067e+00;
-    fLambdaMassSigma[0] = 1.30345e-03;
-    fLambdaMassSigma[1] = 2.89679e-04;
-    fLambdaMassSigma[2] = 1.52661e-03;
-    fLambdaMassSigma[3] = -2.58251e+00;
-  }
 
   void SetMaxTPCsigmas(float pi, float proton, float he3) {
     fMaxTPCpionSigma = pi;
@@ -97,7 +54,6 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
 
   bool fDoV0Refit;
   bool fMC;
-  bool fUseLightVertexer;
   bool fUseOnTheFly;
 
   /// Control histograms to monitor the filtering
@@ -127,17 +83,6 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   TH1D* fHistEtaPos;                //! Pseudorapidity of the positive prong
   TH1D* fHistEtaNeg;                //! Pseudorapidity of the negative prong
   TH2D* fHistArmenteros;            //! Pseudorapidity of the negative prong
-
-  double fV0VertexerSels[7];  // Array to store the 7 values for the different
-                              // selections V0 related
-
-  double fLambdaMassMean[5];  // Array to store the lambda mass mean
-                              // parametrization
-  //[0]+[1]*TMath::Exp([2]*x)+[3]*TMath::Exp([4]*x)
-
-  double fLambdaMassSigma[4];  // Array to store the lambda mass sigma
-                               // parametrization
-  //[0]+[1]*x+[2]*TMath::Exp([3]*x)
 
   float fMinPtToSave;  // minimum pt
   float fMaxPtToSave;  // maximum pt
