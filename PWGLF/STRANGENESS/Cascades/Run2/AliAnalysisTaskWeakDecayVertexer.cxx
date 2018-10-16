@@ -1263,21 +1263,23 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
         
         //DCA Calculation improved -> non-linear propagation
         //Preparatory step 1: get two tracks corresponding to V0
-        UInt_t lKeyPos = (UInt_t)TMath::Abs(v->GetPindex());
-        UInt_t lKeyNeg = (UInt_t)TMath::Abs(v->GetNindex());
-        AliESDtrack *pTrack=((AliESDEvent*)event)->GetTrack(lKeyPos);
-        AliESDtrack *nTrack=((AliESDEvent*)event)->GetTrack(lKeyNeg);
         
-        //Uncertainties: bachelor track as well as V0
-        Double_t dy2=t->GetSigmaY2() + pTrack->GetSigmaY2() + nTrack->GetSigmaY2();
-        Double_t dz2=t->GetSigmaZ2() + pTrack->GetSigmaZ2() + nTrack->GetSigmaZ2();
-        Double_t dx2=dy2;
+        Double_t dy2=1e-10;
+        Double_t dz2=1e-10;
+        Double_t dx2=1e-10;
         
-        if( fkDoPureGeometricMinimization ){
-            //Override uncertainties with small values -> pure geometry
-            dx2 = 1e-10;
-            dy2 = 1e-10;
-            dz2 = 1e-10;
+        if( !fkDoPureGeometricMinimization ){
+            UInt_t lKeyPos = (UInt_t)TMath::Abs(v->GetPindex());
+            UInt_t lKeyNeg = (UInt_t)TMath::Abs(v->GetNindex());
+            if( event ){
+                AliESDtrack *pTrack=((AliESDEvent*)event)->GetTrack(lKeyPos);
+                AliESDtrack *nTrack=((AliESDEvent*)event)->GetTrack(lKeyNeg);
+            
+                //Uncertainties: bachelor track as well as V0
+                dy2=t->GetSigmaY2() + pTrack->GetSigmaY2() + nTrack->GetSigmaY2();
+                dz2=t->GetSigmaZ2() + pTrack->GetSigmaZ2() + nTrack->GetSigmaZ2();
+                dx2=dy2;
+            }
         }
         
         //Create dummy V0 track

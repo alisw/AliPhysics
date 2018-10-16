@@ -6056,7 +6056,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQACascade(Int
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardV0Configuration(Bool_t lUseFull, Bool_t lDoSweep)
+void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardV0Configuration(Bool_t lUseFull, Bool_t lDoSweepLooseTight, Int_t lSweepFullNumb)
 //Meant to add some standard V0 analysis Configuration + its corresponding systematics
 {
     //======================================================
@@ -6419,7 +6419,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardV0Configuration(
     
     //================================================================================
     // Topo sweeps for tests
-    if ( lDoSweep ) {
+    if ( lDoSweepLooseTight )
+    { // begin sweeps between loose and tight versions of cuts
         // centrality binning for sweeps
         Double_t lSweepCentBinLimits[] = {0, 90};
         Long_t lSweepCentBinNumb = sizeof(lSweepCentBinLimits)/sizeof(Double_t) - 1;
@@ -6575,6 +6576,72 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardV0Configuration(
                     //lV0Result[lNV0]->Print();
                     lNV0++;
                 }
+            }
+        }
+    } // end sweeps between loose and tight versions of cuts
+    
+    if(lSweepFullNumb > 0)
+    {
+        // centrality binning for sweeps
+        Double_t lSweepCentBinLimits[] = {0, 10, 40, 60, 80, 90};
+        Long_t lSweepCentBinNumb = sizeof(lSweepCentBinLimits)/sizeof(Double_t) - 1;
+        
+        //Mass binning for sweeps
+        Double_t lNMassBins[] = {200, 200, 200};
+        Double_t lMass[] = {0.498, 1.116, 1.116};
+        Double_t lMassWindow[] = {0.15,0.1,0.1};
+        
+        //Loose cuts for sweeps
+        Int_t lCentralForSweepIndex = lNV0;
+        for(Int_t i = 0 ; i < lNPart ; i++)
+        {
+            //Central result for sweeps
+            lV0Result[lNV0] = new AliV0Result( Form("%s_Central_ForFullSweep",lParticleNameV0[i].Data() ),lMassHypoV0[i],"",lSweepCentBinNumb,lSweepCentBinLimits, lPtbinnumbV0,lPtbinlimitsV0,lNMassBins[i],lMass[i]-lMassWindow[i],lMass[i]+lMassWindow[i]);
+            if ( i!=0 ) lV0Result[lNV0] -> InitializeProtonProfile( lPtbinnumbV0,lPtbinlimitsV0 ); //profile
+            
+            //feeddown matrix
+            if ( i!=0 ) lV0Result[lNV0] -> InitializeFeeddownMatrix( lPtbinnumbV0,lPtbinlimitsV0, lPtbinnumbXi,lPtbinlimitsXi, lSweepCentBinNumb,lSweepCentBinLimits);
+            
+            //Setters for V0 Cuts
+            lV0Result[lNV0]->SetCutDCANegToPV            ( lcutsV0[i][1][ 0] ) ;
+            lV0Result[lNV0]->SetCutDCAPosToPV            ( lcutsV0[i][1][ 1] ) ;
+            lV0Result[lNV0]->SetCutDCAV0Daughters        ( lcutsV0[i][1][ 2] ) ;
+            lV0Result[lNV0]->SetCutV0CosPA               ( lcutsV0[i][1][ 3] ) ;
+            //Set Variable cut
+            lV0Result[lNV0]->SetCutVarV0CosPA               ( parExp0Const[i][1], parExp0Slope[i][1], parExp1Const[i][1], parExp1Slope[i][1], parConst[i][1] ) ;
+            
+            lV0Result[lNV0]->SetCutV0Radius              ( lcutsV0[i][1][ 4] ) ;
+            
+            //Miscellaneous
+            lV0Result[lNV0]->SetCutProperLifetime        ( lcutsV0[i][1][ 5] ) ;
+            lV0Result[lNV0]->SetCutLeastNumberOfCrossedRows ( -1 ) ; //no cut here
+            lV0Result[lNV0]->SetCutMinTrackLength ( lcutsV0[i][1][ 6] ) ;
+            lV0Result[lNV0]->SetCutLeastNumberOfCrossedRowsOverFindable               ( lcutsV0[i][1][ 7] ) ;
+            lV0Result[lNV0]->SetCutTPCdEdx               ( lcutsV0[i][1][ 8] ) ;
+            lV0Result[lNV0]->SetCutArmenterosParameter               ( lcutsV0[i][1][ 9] ) ;
+            
+            //Add result to pool
+            lNV0++;
+        }
+        
+        //Variable: V0 CosPA
+        Float_t lMinV0CosPA = 0.97;
+        Float_t lMaxV0CosPA = 1.00;
+        
+        for(Int_t i = 0 ; i < lNPart ; i ++)
+        {
+            for(Int_t iSweep = 0; iSweep <= lSweepFullNumb; iSweep++)
+            {
+                Double_t lCutValue = lMinV0CosPA + (iSweep/(Double_t)lSweepFullNumb)*(lMaxV0CosPA-lMinV0CosPA);
+                
+                lV0Result[lNV0] = new AliV0Result( lV0Result[lCentralForSweepIndex+i], Form( "%s_%s_%d", lParticleNameV0[i].Data(), "V0CosPASweep", iSweep ) );
+                
+                lV0Result[lNV0]->SetCutUseVarV0CosPA( kFALSE ) ;
+                lV0Result[lNV0]->SetCutV0CosPA( lCutValue );
+                
+                //Print this variation, add to pool
+                lV0Result[lNV0]->Print();
+                lNV0++;
             }
         }
     }

@@ -241,7 +241,7 @@ public:
     void AddTopologicalQAV0(Int_t lRecNumberOfSteps = 100);
     void AddTopologicalQACascade(Int_t lRecNumberOfSteps = 100);
     // 3 - Standard analysis configurations + systematics
-    void AddStandardV0Configuration(Bool_t lUseFull=kFALSE, Bool_t lDoSweep = kFALSE);
+    void AddStandardV0Configuration(Bool_t lUseFull = kFALSE, Bool_t lDoSweepLooseTight = kFALSE, Int_t lSweepFullNumb = 0);
     void AddStandardCascadeConfiguration(Bool_t lUseFull=kFALSE, Bool_t lDoSystematics = kTRUE);
     void AddCascadeConfiguration276TeV();
     //---------------------------------------------------------------------------------------

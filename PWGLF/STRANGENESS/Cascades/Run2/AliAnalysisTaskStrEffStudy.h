@@ -445,6 +445,8 @@ private:
     Float_t fTreeVariablePVy;
     Float_t fTreeVariablePVz;
     
+    AliESDVertex *fTreeVariableAliESDvertex;
+    
     Int_t fTreeVariableRun;
     
 //===========================================================================================
