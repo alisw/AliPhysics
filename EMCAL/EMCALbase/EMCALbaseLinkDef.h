@@ -25,6 +25,7 @@
 #pragma link C++ class AliEMCALSpaceFrame+;
 #pragma link C++ class AliEMCALBiasAPD+;
 #pragma link C++ class AliEMCALCalibAbs+;
+#pragma link C++ class AliEMCALCalibBadChannels+;
 #pragma link C++ class AliEMCALCalibReference+;
 #pragma link C++ class AliEMCALCalibMapAPD+;
 #pragma link C++ class AliEMCALSuperModuleCalibTempCoeff+;

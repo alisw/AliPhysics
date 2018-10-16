@@ -40,6 +40,7 @@ set(SRCS
     AliCaloCalibSignal.cxx
     AliEMCALBiasAPD.cxx
     AliEMCALCalibAbs.cxx
+    AliEMCALCalibBadChannels.cxx
     AliEMCALCalibData.cxx
     AliEMCALCalibTime.cxx
     AliEMCALCalibMapAPD.cxx
