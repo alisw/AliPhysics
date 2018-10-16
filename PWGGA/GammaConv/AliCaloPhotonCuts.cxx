@@ -5865,6 +5865,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if(fClusterType==1){
             energy /= (0.955001) ;
             energy /= FunctionNL_DExp(energy, 1.0380275426, 0.7534354400, -2.2110408210, 1.0408879042, 0.4399353376, -2.9554918759) ;
+            energy /= FunctionNL_DExp(energy, 1.0300358811, 0.8758778788, -2.4142808809, 1.0279722682, 0.5471598153, -3.5373985248) ;
           }
         } else {
           fPeriodNameAvailable = kFALSE;
@@ -5879,6 +5880,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy /= (0.954566) ;
             energy /= FunctionNL_DExp(energy, 1.0548582854, 1.5096237243, -1.6079078305, 1.0538380642, 124049.7, -38409.5) ;
             energy /= (0.9669) ;
+            energy /= FunctionNL_DExp(energy, 1.0300358811, 0.8758778788, -2.4142808809, 1.0279722682, 0.5471598153, -3.5373985248) ;
           }
         } else {
           fPeriodNameAvailable = kFALSE;
@@ -5892,6 +5894,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if(fClusterType==1){
             energy /= (0.9365) ;
             energy /= FunctionNL_DExp(energy, 1.0380275426, 0.7534354400, -2.2110408210, 1.0408879042, 0.4399353376, -2.9554918759) ;
+            energy /= FunctionNL_DExp(energy, 1.0300358811, 0.8758778788, -2.4142808809, 1.0279722682, 0.5471598153, -3.5373985248) ;
           }
         } else {
           fPeriodNameAvailable = kFALSE;
@@ -5905,6 +5908,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if(fClusterType==1){
             energy /= (0.948553) ;
             energy /= (0.998) ;
+            energy /= FunctionNL_DExp(energy, 1.0300358811, 0.8758778788, -2.4142808809, 1.0279722682, 0.5471598153, -3.5373985248) ;
           }
         } else {
           fPeriodNameAvailable = kFALSE;
@@ -5917,6 +5921,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         if( fCurrentMC== kPbPb5T15HIJING){
           if(fClusterType==1){
             energy /= (0.95306) ;
+            energy /= FunctionNL_DExp(energy, 1.0300358811, 0.8758778788, -2.4142808809, 1.0279722682, 0.5471598153, -3.5373985248) ;
           }
         } else {
           fPeriodNameAvailable = kFALSE;
