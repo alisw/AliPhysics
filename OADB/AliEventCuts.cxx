@@ -340,6 +340,7 @@ void AliEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlots) {
     "DAQ Incomplete",
     "Magnetic field choice",
     "Trigger selection",
+    "Trigger classes",
     "SPD vertex reconstruction",
     "Track vertex reconstruction",
     "Vertex reconstruction",
