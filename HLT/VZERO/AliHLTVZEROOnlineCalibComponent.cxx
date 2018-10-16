@@ -58,7 +58,8 @@ AliHLTVZEROOnlineCalibComponent::AliHLTVZEROOnlineCalibComponent() :
 
 AliHLTProcessor(),
 fRunInfo(NULL),
-fVZERORecoParam(NULL)
+fVZERORecoParam(NULL),
+fRefTrigger("C0TVX")
 {
     // a component meant to extract simple V0 amplitudes for an
     // online monitoring of V0 conditions. The vast majority of
@@ -79,7 +80,7 @@ fVZERORecoParam(NULL)
     for(Int_t i=0; i<24; i++){
         TString lName = Form("fHistMult%s%s%s", lDetTypes[i%3].Data(), lReadoutTypes[(i/3)%2].Data(), lTrigTypes[i/6].Data());
         TString lTitle = Form("%s %s", lDetTypes[i%3].Data(), lTitles[(i/3)%2].Data());
-        
+        if(i/6<1) lTitle.Append(Form(" ref: %s", fRefTrigger.Data()));
         fHistMult[i].SetName(lName.Data());
         fHistMult[i].SetTitle(lTitle.Data());
         fHistMult[i].SetYTitle("Event Count");
@@ -172,6 +173,13 @@ Int_t AliHLTVZEROOnlineCalibComponent::DoInit( Int_t argc, const Char_t** argv )
     // see header file for class documentation
     
     Int_t iResult=0;
+    
+    //process arguments
+    if (ProcessOptionString(GetComponentArgs())<0)
+    {
+        HLTFatal("wrong config string! %s", GetComponentArgs().c_str());
+        return -1;
+    }
     
     // -- Load GeomManager
     if(AliGeomManager::GetGeometry()==NULL){
@@ -302,11 +310,11 @@ Int_t AliHLTVZEROOnlineCalibComponent::DoEvent(const AliHLTComponentEventData& /
     //Get vertex for quick check
     const AliESDVertex* itsSpdVertex = dynamic_cast<const AliESDVertex*>(GetFirstInputObject(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITSSPD, "AliESDVertex"));
     
-    bool lIsSemiCentral = true, lIsCentral = true, lIsMinBias = true, lIsC0V0H = true, lIsV0DecisionOK = true, lIsVertexPositionGood = true;
+    bool lIsSemiCentral = false, lIsCentral = false, lIsMinBias = false, lIsC0V0H = false, lIsV0DecisionOK = true, lIsVertexPositionGood = true;
     const AliHLTCTPData* ctp = CTPData();
     if (ctp)
     {
-        lIsMinBias=ctp->MatchTriggerRE("C0TVX");
+        lIsMinBias=ctp->MatchTriggerRE(fRefTrigger.Data());
         lIsCentral=ctp->MatchTriggerRE("C0V0M");
         lIsSemiCentral=ctp->MatchTriggerRE("C0VSC");
         lIsC0V0H=ctp->MatchTriggerRE("C0V0H");
@@ -344,7 +352,7 @@ Int_t AliHLTVZEROOnlineCalibComponent::DoEvent(const AliHLTComponentEventData& /
     //The ZMQ merging component that sits at the end of the chain will receive all histograms from all concurrent VZEROOnlineCalib components, and merge them to the final histogram.
     
     for(Int_t i=0; i<24; i++){
-        if ( fHistMult[i].GetEntries() && PushBack(&fHistMult[i], kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT) > 0) fHistMult[i].Reset();
+        if ( PushBack(&fHistMult[i], kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT) > 0) fHistMult[i].Reset();
     }
     
     return iResult;
@@ -358,3 +366,22 @@ Int_t AliHLTVZEROOnlineCalibComponent::Reconfigure(const Char_t* cdbEntry, const
     return iResult;
 }
 
+// #################################################################################
+int AliHLTVZEROOnlineCalibComponent::ProcessOption(TString option, TString value)
+{
+    //process option
+    //to be implemented by the user
+    
+    if (option.EqualTo("trigger"))
+    {
+        //Simple setter
+        fRefTrigger = value.Data();
+    }
+    else
+    {
+        HLTError("unrecognized option %s", option.Data());
+        return -1;
+    }
+    
+    return 1;
+}
