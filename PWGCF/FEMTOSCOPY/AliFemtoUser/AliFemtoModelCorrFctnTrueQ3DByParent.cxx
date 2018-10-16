@@ -18,6 +18,7 @@
 
 #include <tuple>
 #include <iostream>
+#include <array>
 
 AliFemtoModelCorrFctnTrueQ3DByParent::AliFemtoModelCorrFctnTrueQ3DByParent():
   AliFemtoModelCorrFctnTrueQ3DByParent("CF_TrueQ3DBP")
