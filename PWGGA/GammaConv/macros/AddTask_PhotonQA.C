@@ -47,7 +47,6 @@ void AddTask_PhotonQA(  TString   V0ReaderEventCutNumber        = "00000003",
         fV0ReaderV1->SetEventCuts(fEventCuts);
         fEventCuts->SetFillCutHistograms("",kTRUE);
         if (IsHeavyIon==2){
-          fEventCuts->SelectCollisionCandidates(AliVEvent::kINT7);
           fEventCuts->DoEtaShift(doEtaShiftV0Reader);
         }
       }
