@@ -60,7 +60,7 @@ class TH1C;
 class AliVCluster;
 //class AliAODEvent;
 class AliVEvent;
-class AliTOFT0maker;
+//class AliTOFT0maker;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -72,7 +72,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
 
    AliAnalysisTaskEMCALTimeCalib() : AliAnalysisTaskSE(),
     fRunNumber(-1),
-    fTOFmaker(0),
+    //    fTOFmaker(0),
     fOutputList(0),
     fgeom(0),
     fGeometryName(0),
@@ -274,8 +274,8 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   // data members
   Int_t          fRunNumber ; //!<! run number
   
-  /// pointer to get T0 from TOF
-  AliTOFT0maker *fTOFmaker;   //->
+//  /// pointer to get T0 from TOF
+//  AliTOFT0maker *fTOFmaker;   //->
   
   /// pointer to output list
   TList         *fOutputList; //->
@@ -398,7 +398,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   AliAnalysisTaskEMCALTimeCalib& operator=(const AliAnalysisTaskEMCALTimeCalib&); 
   
 /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALTimeCalib, 3) ;
+  ClassDef(AliAnalysisTaskEMCALTimeCalib, 4) ;
 /// \endcond
 };
 
