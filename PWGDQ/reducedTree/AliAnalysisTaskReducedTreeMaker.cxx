@@ -304,10 +304,10 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
     }
 
     // MC
-    if (fWriteSecondTrackArray==kFALSE) {
-      for (Int_t i=0; i<kMaxMCsignals; i++) {
+    if (fWriteSecondTrackArray==kFALSE && fMCsignals.GetEntries()) {
+      for (Int_t i=0; i<fMCsignals.GetEntries(); i++) {
         if (fMCsignalsWritingOptions[i]==kBaseTrack) {
-          printf("AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects(): Second track array will be used.\n");
+          printf("AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects(): Second track array will be used (MC signal choice).\n");
           fWriteSecondTrackArray = kTRUE;
           break;
         }
