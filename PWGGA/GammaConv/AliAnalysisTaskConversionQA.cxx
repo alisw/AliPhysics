@@ -418,7 +418,7 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
   }
 
   if(ffillTree>=1.0){
-    fTreeQA = new TTree("PhotonQA","PhotonQA");
+    fTreeQA = new TTree(Form("PhotonQA_%s_%s",(fEventCuts->GetCutNumber()).Data(),(fConversionCuts->GetCutNumber()).Data()),Form("PhotonQA_%s_%s",(fEventCuts->GetCutNumber()).Data(),(fConversionCuts->GetCutNumber()).Data()));
 
     fTreeQA->Branch("daughterProp",&fDaughterProp);
     fTreeQA->Branch("recCords",&fGammaConvCoord);
