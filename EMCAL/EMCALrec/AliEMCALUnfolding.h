@@ -59,6 +59,9 @@ public:
   virtual void    SetRejectBelowThreshold(Bool_t reject) { fRejectBelowThreshold = reject ; }
   virtual Bool_t  GetRejectBelowThreshold()        const { return fRejectBelowThreshold   ; }
 
+  virtual void    SetRange(Float_t range) { fRange = range ; }
+  virtual Float_t GetRange()        const { return fRange  ; }
+
   // Unfolding main methods 
   virtual void      MakeUnfolding(); 
   static Double_t   ShowerShapeV2(Double_t x, Double_t y) ; // Shape of EM shower used in unfolding;  
@@ -86,6 +89,7 @@ protected:
   Float_t            fECALocMaxCut ;          ///<  Minimum energy difference to distinguish local maxima in a cluster
   Float_t            fThreshold ;             ///<  Minimum energy for cell to be joined to a cluster
   Bool_t             fRejectBelowThreshold ;  ///<  Split (false) or reject (true) cell energy below threshold after UF
+  Float_t            fRange ;                 ///<  Range (distance from maximum) of application of unfolding
   AliEMCALGeometry * fGeom;                   //!<! Pointer to geometry for utilities
   TObjArray        * fRecPoints;              ///<  Array with EMCAL clusters
   TClonesArray     * fDigitsArr;              ///<  Array with EMCAL digits
@@ -121,7 +125,7 @@ private:
   static void EvalParsPhiDependence(Int_t absId, const AliEMCALGeometry *geom); 
  
   /// \cond CLASSIMP
-  ClassDef(AliEMCALUnfolding,3) ;
+  ClassDef(AliEMCALUnfolding,4) ;
   /// \endcond
 
 } ; 

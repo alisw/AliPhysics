@@ -54,6 +54,7 @@ AliEMCALUnfolding::AliEMCALUnfolding():
   fECALocMaxCut(0),
   fThreshold(0.01),//10 MeV
   fRejectBelowThreshold(0),//split
+  fRange(-1.),
   fGeom(NULL),
   fRecPoints(NULL),
   fDigitsArr(NULL)
@@ -73,6 +74,7 @@ AliEMCALUnfolding::AliEMCALUnfolding(AliEMCALGeometry* geometry):
   fECALocMaxCut(0),
   fThreshold(0.01),//10 MeV
   fRejectBelowThreshold(0),//split
+  fRange(-1.),
   fGeom(geometry),
   fRecPoints(NULL),
   fDigitsArr(NULL)
@@ -101,6 +103,7 @@ AliEMCALUnfolding::AliEMCALUnfolding(AliEMCALGeometry* geometry,
   fECALocMaxCut(ecaLocMaxCut),
   fThreshold(0.01),//10 MeV
   fRejectBelowThreshold(0),//split
+  fRange(-1.),
   fGeom(geometry),
   fRecPoints(NULL),
   fDigitsArr(NULL)
@@ -359,11 +362,11 @@ Int_t AliEMCALUnfolding::UnfoldOneCluster(AliEMCALRecPoint * iniTower,
   //first cluster <first cell - last cell>, 
   //second cluster <first cell - last cell>, etc.
   
-  //**************************** sub-part 3.1 *************************************
+  //**************************** sub-part 3.0 *************************************
   //If not the energy from a given cell in the cluster is divided in correct proportions 
   //in accordance to the other clusters and added to them and set to 0.
   
-  //  cout<<"unfolding check here part 3.1"<<endl;
+  //  cout<<"unfolding check here part 3.0"<<endl;
   
   iparam = 0 ;
   while(iparam < nPar )
@@ -395,10 +398,92 @@ Int_t AliEMCALUnfolding::UnfoldOneCluster(AliEMCALRecPoint * iniTower,
         //add energy to temporary matrix
         correctedEnergyList[iparam/3*nDigits+iDigit] = eDigit;
         
-      } else AliDebug(1,"NULL digit part 3");
+      } else AliDebug(1,"NULL digit part 3.0");
     }//digit loop 
     iparam += 3 ;
   }//while
+
+  //**************************** sub-part 3.1 *************************************
+  //here we check the range
+  //if range set to 0 or negative do unfolding; if greater than 0 the range is set
+  //if the cell is beyond the range do not split cell energy
+  //  cout<<"unfolding check here part 3.1"<<endl;
+
+  if(fRange>0)
+  {// range is set and need to be checked
+    Float_t distance=0.;
+    Short_t nClosestMaxima = 0;
+    Short_t theClosestOne=-1;
+    Float_t minDistance=100.;
+    Float_t energySum=0.;
+    Float_t energyClose=0.;
+    Bool_t isInRange=kFALSE;
+    Short_t *closestMaxima  = new Short_t[nSplittedClusters];
+    Float_t *distanceMaxima = new Float_t[nSplittedClusters];
+
+    for(iDigit = 0 ; iDigit < nDigits ; iDigit++)//loop over cells
+    {
+      digit = dynamic_cast<AliEMCALDigit*>( fDigitsArr->At( digitsList[iDigit] ) ) ;
+      if(!digit) continue;
+
+      fGeom->GetCellIndex(digit->GetId(),iSupMod,iTower,iIphi,iIeta); 
+      fGeom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,
+					 iIphi, iIeta,iphi,ieta);
+
+      //check distance of cell for each maximum
+      nClosestMaxima = 0;
+      theClosestOne=-1;
+      minDistance=100;
+      energySum=0.;
+      energyClose=0.;
+      for(iparam = 0 ; iparam < nPar ; iparam+=3)//loop over maxima
+      {
+	xpar = fitparameters[iparam] ;
+	zpar = fitparameters[iparam+1] ;
+	distance=TMath::Sqrt( ((Float_t)iphi - xpar) * ((Float_t)iphi - xpar) +
+			      ((Float_t)ieta - zpar) * ((Float_t)ieta - zpar) );
+	energySum+=correctedEnergyList[iparam/3*nDigits+iDigit];
+	if(distance < minDistance){
+	  minDistance = distance;
+	  theClosestOne = iparam;
+	}
+	if(distance <= fRange){
+	  closestMaxima[nClosestMaxima]=(Short_t)iparam;
+	  distanceMaxima[nClosestMaxima]=distance;
+	  nClosestMaxima++;
+	  energyClose+=correctedEnergyList[iparam/3*nDigits+iDigit];
+	}
+      }//end of loop over maxima
+
+      //several cases of closiness
+      if(nClosestMaxima==0 || nClosestMaxima==1)
+      {//case for cell beyond the range of each maximum or only one maximum is in the range
+	//energy associated to the cosest maximum  
+	for(iparam = 0 ; iparam < nPar ; iparam+=3)//loop over maxima
+	{
+	  if(iparam==theClosestOne) correctedEnergyList[iparam/3*nDigits+iDigit] = energySum;
+	  else correctedEnergyList[iparam/3*nDigits+iDigit] = 0.;
+	}
+      }else if(nClosestMaxima>1)
+      {//cell in a range of more than one maximum 
+	if(nClosestMaxima==nPar/3) continue; //do nothing - correctly splitted
+
+	for(iparam = 0 ; iparam < nPar ; iparam+=3)//loop over maxima
+	{
+	  isInRange=kFALSE;
+	  for(Short_t iCloseMax=0; iCloseMax<nClosestMaxima; iCloseMax++)
+	    {//loop over closest maxima
+	      if(iparam == closestMaxima[iCloseMax]) isInRange=kTRUE;
+	    }
+	  if(isInRange) correctedEnergyList[iparam/3*nDigits+iDigit] *= (energySum/energyClose);
+	  else correctedEnergyList[iparam/3*nDigits+iDigit] = 0.;
+	}//end of loop over maxima
+      }
+    }//end of loop over cells
+
+    delete[] closestMaxima ;
+    delete[] distanceMaxima;
+  }
   
   //**************************** sub-part 3.2 *************************************
   //here we check if energy of the cell in the cluster after unfolding is above threshold. 
