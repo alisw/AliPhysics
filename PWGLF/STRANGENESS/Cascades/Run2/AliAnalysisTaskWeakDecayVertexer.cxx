@@ -1271,13 +1271,15 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
         if( !fkDoPureGeometricMinimization ){
             UInt_t lKeyPos = (UInt_t)TMath::Abs(v->GetPindex());
             UInt_t lKeyNeg = (UInt_t)TMath::Abs(v->GetNindex());
-            AliESDtrack *pTrack=((AliESDEvent*)event)->GetTrack(lKeyPos);
-            AliESDtrack *nTrack=((AliESDEvent*)event)->GetTrack(lKeyNeg);
+            if( event ){
+                AliESDtrack *pTrack=((AliESDEvent*)event)->GetTrack(lKeyPos);
+                AliESDtrack *nTrack=((AliESDEvent*)event)->GetTrack(lKeyNeg);
             
-            //Uncertainties: bachelor track as well as V0
-            dy2=t->GetSigmaY2() + pTrack->GetSigmaY2() + nTrack->GetSigmaY2();
-            dz2=t->GetSigmaZ2() + pTrack->GetSigmaZ2() + nTrack->GetSigmaZ2();
-            dx2=dy2;
+                //Uncertainties: bachelor track as well as V0
+                dy2=t->GetSigmaY2() + pTrack->GetSigmaY2() + nTrack->GetSigmaY2();
+                dz2=t->GetSigmaZ2() + pTrack->GetSigmaZ2() + nTrack->GetSigmaZ2();
+                dx2=dy2;
+            }
         }
         
         //Create dummy V0 track

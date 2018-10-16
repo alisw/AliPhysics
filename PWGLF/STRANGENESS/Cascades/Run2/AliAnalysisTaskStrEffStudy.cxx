@@ -215,7 +215,7 @@ fTreeVariableNegOriginalX(0),
 fTreeVariablePVx(0),
 fTreeVariablePVy(0),
 fTreeVariablePVz(0),
-
+fTreeVariableAliESDvertex(0),
 fTreeVariableRun(0),
 
 //---> Variables for fTreeCascade
@@ -452,7 +452,7 @@ fTreeVariableNegOriginalX(0),
 fTreeVariablePVx(0),
 fTreeVariablePVy(0),
 fTreeVariablePVz(0),
-
+fTreeVariableAliESDvertex(0),
 fTreeVariableRun(0),
 
 //---> Variables for fTreeCascade
@@ -753,6 +753,7 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         fTreeV0->Branch("fTreeVariablePVx",&fTreeVariablePVx,"fTreeVariablePVx/F");
         fTreeV0->Branch("fTreeVariablePVy",&fTreeVariablePVy,"fTreeVariablePVy/F");
         fTreeV0->Branch("fTreeVariablePVz",&fTreeVariablePVz,"fTreeVariablePVz/F");
+        fTreeV0->Branch("fTreeVariableAliESDvertex", &fTreeVariableAliESDvertex,16000,99);
     }
     
     fTreeV0->Branch("fTreeVariableRun",&fTreeVariableRun,"fTreeVariableRun/I");
@@ -1090,8 +1091,10 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
     
     AliESDVertex lPVobject(*lPrimaryBestESDVtx), *lPVpointer=&lPVobject;
+    fTreeVariableAliESDvertex = lPVpointer;
     
-    fTreeCascVarAliESDvertex = lPVpointer;
+    AliESDVertex lPVobject2(*lPrimaryBestESDVtx), *lPVpointer2=&lPVobject2;
+    fTreeCascVarAliESDvertex = lPVpointer2;
     
     fTreeVariableRun = lESDevent->GetRunNumber();
     
