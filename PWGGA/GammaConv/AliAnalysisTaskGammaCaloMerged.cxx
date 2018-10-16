@@ -1512,11 +1512,8 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
         clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
     }
 
-    if (!clus){
-      delete clus;
-      continue;
-    }
-    
+    if (!clus) continue;
+
     // Set the jetjet weight to 1 in case the cluster orignated from the minimum bias header
     if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
       if( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(clus->GetLabelAt(0), fMCEvent, fInputEvent) == 2)
@@ -1541,7 +1538,6 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
     if(!PhotonCandidate){
       delete clus;
       delete tmpvec;
-      if (PhotonCandidate) delete PhotonCandidate;
       continue;
     }
 
@@ -1705,10 +1701,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
               clusTemp = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(j));
           }
 
-          if (!clusTemp){
-            delete clusTemp;
-            continue;
-          }
+          if (!clusTemp) continue;
 
           Double_t R = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDistanceBetweenClusters(clus, clusTemp);
 
