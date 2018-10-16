@@ -66,6 +66,27 @@ void AliFemtoDreamv0::Setv0(AliAODEvent *evt, AliAODv0* v0,
   }
 }
 
+void AliFemtoDreamv0::Setv0(AliESDEvent *evt, AliESDv0* v0,
+                            const int multiplicity) {
+  if (!v0) {
+    AliFatal("SetProng No v0 to work with");
+  }
+  SetEventMultiplicity(multiplicity);
+  Reset();
+  fIsReset = false;
+  if (v0->GetOnFlyStatus()) {
+    this->fOnlinev0 = true;
+  } else {
+    this->fOnlinev0 = false;
+  }
+  this->SetDaughter(evt, v0);
+  this->SetMotherInfo(evt, v0);
+  this->SetEvtNumber(evt->GetRunNumber());
+  //  if (fIsMC) {
+  //    this->SetMCMotherInfo(evt, v0);
+  //  }
+}
+
 void AliFemtoDreamv0::SetDaughter(AliAODv0 *v0) {
   if (v0->GetPosID() >= fTrackBufferSize
       || v0->GetNegID() >= fTrackBufferSize) {
@@ -95,6 +116,38 @@ void AliFemtoDreamv0::SetDaughter(AliAODv0 *v0) {
     } else {
       this->fHasDaughter = false;
     }
+  }
+}
+
+void AliFemtoDreamv0::SetDaughter(AliESDEvent *evt, AliESDv0 *v0) {
+  int posFromV0 = v0->GetPindex();
+  int negFromV0 = v0->GetNindex();
+  AliESDtrack *esdV0Pos = evt->GetTrack(posFromV0);
+  AliESDtrack *esdV0Neg = evt->GetTrack(negFromV0);
+  if (esdV0Pos->Charge() > 0 && esdV0Neg->Charge() < 0) {
+    fnDaug->SetTrack(esdV0Pos);
+    fpDaug->SetTrack(esdV0Neg);
+    this->SetDaughterInfo(v0);
+    this->fHasDaughter = true;
+    this->fdcaPrimPos = TMath::Abs(
+        esdV0Pos->GetD(evt->GetPrimaryVertex()->GetX(),
+                       evt->GetPrimaryVertex()->GetY(), evt->GetMagneticField()));
+    this->fdcaPrimNeg = TMath::Abs(
+        esdV0Neg->GetD(evt->GetPrimaryVertex()->GetX(),
+                       evt->GetPrimaryVertex()->GetY(), evt->GetMagneticField()));
+  } else if (esdV0Pos->Charge() < 0 && esdV0Neg->Charge() > 0) {
+    fnDaug->SetTrack(esdV0Neg);
+    fpDaug->SetTrack(esdV0Pos);
+    this->SetDaughterInfo(v0);
+    this->fHasDaughter = true;
+    this->fdcaPrimNeg= TMath::Abs(
+        esdV0Pos->GetD(evt->GetPrimaryVertex()->GetX(),
+                       evt->GetPrimaryVertex()->GetY(), evt->GetMagneticField()));
+    this->fdcaPrimPos = TMath::Abs(
+        esdV0Neg->GetD(evt->GetPrimaryVertex()->GetX(),
+                       evt->GetPrimaryVertex()->GetY(), evt->GetMagneticField()));
+  } else {
+    this->fHasDaughter = false;
   }
 }
 
@@ -140,6 +193,55 @@ void AliFemtoDreamv0::SetDaughterInfo(AliAODv0 *v0) {
   }
 }
 
+void AliFemtoDreamv0::SetDaughterInfo(AliESDv0 *v0) {
+  //here we have to set the momentum from the v0. The Momentum of the Global
+  //track is different to the one of the daughter track and is also
+  //used in the official v0 class for the invarian mass
+  //calculation.
+  Double_t momPosAtV0vtx[3] = { 0. };
+  Double_t momNegAtV0vtx[3] = { 0. };
+
+  v0->GetPPxPyPz(momPosAtV0vtx[0], momPosAtV0vtx[1], momPosAtV0vtx[2]);
+  v0->GetNPxPyPz(momNegAtV0vtx[0], momNegAtV0vtx[1], momNegAtV0vtx[2]);
+
+  fnDaug->SetMomentum(momPosAtV0vtx[0], momPosAtV0vtx[1], momPosAtV0vtx[2]);
+  fpDaug->SetMomentum(momNegAtV0vtx[0], momNegAtV0vtx[1], momNegAtV0vtx[2]);
+
+  this->SetEta(fnDaug->GetMomentum().Eta());
+  this->SetEta(fpDaug->GetMomentum().Eta());
+
+  this->SetTheta(fnDaug->GetMomentum().Theta());
+  this->SetTheta(fpDaug->GetMomentum().Theta());
+
+  this->SetPhi(fnDaug->GetMomentum().Phi());
+  this->SetPhi(fpDaug->GetMomentum().Phi());
+
+  this->SetIDTracks(fnDaug->GetIDTracks().at(0));
+  this->SetIDTracks(fpDaug->GetIDTracks().at(0));
+
+  this->SetCharge(fnDaug->GetCharge().at(0) + fpDaug->GetCharge().at(0));
+  this->SetCharge(fnDaug->GetCharge().at(0));
+  this->SetCharge(fpDaug->GetCharge().at(0));
+
+  if (fnDaug->IsSet()) {
+    this->SetPhiAtRadius(fnDaug->GetPhiAtRaidius().at(0));
+  }
+  if (fnDaug->IsSet()) {
+    this->SetPhiAtRadius(fnDaug->GetPhiAtRaidius().at(0));
+  }
+
+  if (fIsMC) {
+    if (fnDaug->IsSet()) {
+      this->SetMCTheta(fnDaug->GetMCTheta().at(0));
+      this->SetMCPhi(fnDaug->GetMCPhi().at(0));
+    }
+    if (fpDaug->IsSet()) {
+      this->SetMCTheta(fpDaug->GetMCTheta().at(0));
+      this->SetMCPhi(fpDaug->GetMCPhi().at(0));
+    }
+  }
+}
+
 void AliFemtoDreamv0::SetMotherInfo(AliAODEvent *evt, AliAODv0 *v0) {
   this->SetCharge(v0->GetCharge());
   this->SetPt(v0->Pt());
@@ -159,6 +261,30 @@ void AliFemtoDreamv0::SetMotherInfo(AliAODEvent *evt, AliAODv0 *v0) {
   this->flenDecay = v0->DecayLengthV0(vecTarget);
   this->fCPA = v0->CosPointingAngle(vecTarget);
   this->fTransRadius = v0->DecayLengthXY(vecTarget);
+}
+
+void AliFemtoDreamv0::SetMotherInfo(AliESDEvent *evt, AliESDv0 *v0) {
+  if (fHasDaughter) {
+    this->SetPt(v0->Pt());
+    this->SetMomentum(v0->Px(), v0->Py(), v0->Pz());
+    this->SetEta(v0->Eta());
+    this->SetPhi(v0->Phi());
+    this->SetTheta(v0->Theta());
+    float xvP = evt->GetPrimaryVertex()->GetX();
+    float yvP = evt->GetPrimaryVertex()->GetY();
+    float zvP = evt->GetPrimaryVertex()->GetZ();
+    double vecTarget[3] = { xvP, yvP, zvP };
+    v0->GetXYZ(fv0Vtx[0], fv0Vtx[1], fv0Vtx[2]);
+    this->fdcav0Daug = v0->GetDcaV0Daughters();
+    this->fdcaPrim = v0->GetD(evt->GetPrimaryVertex()->GetX(),
+                              evt->GetPrimaryVertex()->GetY(),
+                              evt->GetPrimaryVertex()->GetZ());
+
+
+    this->flenDecay = DecayLengthV0(fv0Vtx, vecTarget);
+    this->fCPA = CosPointingAngle(fv0Vtx, vecTarget);
+    this->fTransRadius = DecayLengthXY(fv0Vtx,vecTarget);
+  }
 }
 
 void AliFemtoDreamv0::SetMCMotherInfo(AliAODEvent *evt, AliAODv0 *v0) {
@@ -207,10 +333,10 @@ void AliFemtoDreamv0::SetMCMotherInfo(AliAODEvent *evt, AliAODv0 *v0) {
       AliAODMCParticle *mcMother;
       while (motherID != -1) {
         lastMother = motherID;
-        mcMother = (AliAODMCParticle *)mcarray->At(motherID);
+        mcMother = (AliAODMCParticle *) mcarray->At(motherID);
         motherID = mcMother->GetMother();
       }
-      mcMother = (AliAODMCParticle *)mcarray->At(lastMother);
+      mcMother = (AliAODMCParticle *) mcarray->At(lastMother);
       if (mcMother) {
         this->SetMotherPDG(mcMother->GetPdgCode());
       }
@@ -256,4 +382,33 @@ void AliFemtoDreamv0::Reset() {
     fIsSet = true;
     fIsReset = true;
   }
+}
+
+double AliFemtoDreamv0::CosPointingAngle(const double *DecayVtx,
+                                         const double *point) const {
+  /// Cosine of pointing angle in space assuming it is produced at "point"
+  TVector3 v0Mom = fpDaug->GetMomentum() + fnDaug->GetMomentum();
+  TVector3 fline(DecayVtx[0] - point[0], DecayVtx[1] - point[1],
+                 DecayVtx[0] - point[2]);
+
+  Double_t ptot2 = v0Mom.Mag2() * fline.Mag2();
+  if (ptot2 <= 0) {
+    return 0.0;
+  } else {
+    Double_t cos = v0Mom.Dot(fline) / TMath::Sqrt(ptot2);
+    if (cos > 1.0)
+      cos = 1.0;
+    if (cos < -1.0)
+      cos = -1.0;
+    return cos;
+  }
+}
+
+double AliFemtoDreamv0::DecayLengthXY(double const *DecayVtx, double const *point) const
+{
+  /// Decay length in XY assuming it is produced at "point" [cm]
+  return TMath::Sqrt((point[0]-DecayVtx[0])
+        *(point[0]-DecayVtx[0])
+        +(point[1]-DecayVtx[1])
+        *(point[1]-DecayVtx[1]));
 }
