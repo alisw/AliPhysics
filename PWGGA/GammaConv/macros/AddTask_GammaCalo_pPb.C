@@ -1253,8 +1253,8 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("84662113","2444400048013300020","0163103100000000"); // dmitri default gamma w/o opening angle
     cuts.AddCut("86062113","2444400048013300020","0163103100000000"); // dmitri default gamma w/o opening angle
   } else if(trainConfig == 346){ // reproducing Dmitri's results pi0, eta
-    cuts.AddCut("80010113","2444451048013300000","0163103100000010"); // dmitri default gamma w/ opening angle
-    cuts.AddCut("80010113","2444451048013300000","0163103100000000"); // dmitri default gamma w/o opening angle
+    cuts.AddCut("80010113","2444451048013300020","0163103100000010"); // dmitri default gamma w/ opening angle
+    cuts.AddCut("80010113","2444451048013300020","0163103100000000"); // dmitri default gamma w/o opening angle
   } else if(trainConfig == 347){ // reproducing Dmitri's results pi0, eta
     cuts.AddCut("80210113","2444451048013300020","0163103100000010"); // dmitri default gamma w/ opening angle PCM-PHOS NL
     cuts.AddCut("82410113","2444451048013300020","0163103100000010"); // dmitri default gamma w/ opening angle PCM-PHOS NL

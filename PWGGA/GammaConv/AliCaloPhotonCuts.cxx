@@ -1929,7 +1929,6 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
     }
   }
 
-
   if (fVectorMatchedClusterIDs.size()>0 && fUseDistTrackToCluster && fUsePtDepTrackToCluster < 2){
     if( CheckClusterForTrackMatch(cluster) ){
       if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//2
@@ -2025,15 +2024,15 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       }
 
       return kFALSE;
-
-    // special case for PHOS TM from tender
-    } else if (fUseDistTrackToCluster && fUsePtDepTrackToCluster == 2){
-        if( cluster->GetEmcCpvDistance() < fMinTMDistSigma ){
-            if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//2
-            return kFALSE;
-        }
     }
+  // special case for PHOS TM from tender
+  } else if (fUseDistTrackToCluster && fUsePtDepTrackToCluster == 2){
+      if( cluster->GetEmcCpvDistance() < fMinTMDistSigma ){
+          if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//2
+          return kFALSE;
+      }
   }
+
 
   cutIndex++;//9, next cut
 
