@@ -131,7 +131,7 @@ void AddTask_GammaConvV1_pPb(
   task->SetLightOutput(enableLightOutput);
   // Cut Numbers to use in Analysis
 
-  CutHandlerConvpPb cuts;
+  CutHandlerConv cuts;
   Bool_t doEtaShiftIndCuts = kFALSE;
   TString stringShift = "";
 
@@ -1089,7 +1089,7 @@ void AddTask_GammaConvV1_pPb(
 
   if(!cuts.AreValid()){
     cout << "\n\n****************************************************" << endl;
-    cout << "ERROR: No valid cuts stored in CutHandlerConvpPb! Returning..." << endl;
+    cout << "ERROR: No valid cuts stored in CutHandlerConv! Returning..." << endl;
     cout << "****************************************************\n\n" << endl;
     return;
   }
