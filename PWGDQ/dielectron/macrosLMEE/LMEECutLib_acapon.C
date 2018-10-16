@@ -555,7 +555,6 @@ AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet) {
 		case kCutSet1:
 			mixingHandler = new AliDielectronMixingHandler;
 			mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -7.5, -5., -2.5 , 0., 2.5, 5., 7.5 , 10.");
-			//mixingHandler->AddVariable(AliDielectronVarManager::kNacc,"0,500");
 			mixingHandler->AddVariable(AliDielectronVarManager::kCentralityNew,"0, 10, 20, 30, 40, 60, 80,100");
 			mixingHandler->SetDepth(50);
 			mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
@@ -796,7 +795,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 			varCutsFilter->AddCut(AliDielectronVarManager::kImpactParXY,    -1.0,  1.0);
 			varCutsFilter->AddCut(AliDielectronVarManager::kImpactParZ,     -3.0,  3.0);
 			if(wSDD){
-				varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      4.0,   100.0); // < 4
+				varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      5.0,   100.0); // < 4
 			}else{
 				varCutsFilter->AddCut(AliDielectronVarManager::kNclsSfracITS, 0.0,   0.01); 
 			}
