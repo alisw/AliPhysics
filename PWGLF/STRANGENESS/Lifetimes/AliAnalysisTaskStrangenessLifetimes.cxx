@@ -16,11 +16,9 @@
 #include "AliESDtrack.h"
 #include "AliExternalTrackParam.h"
 #include "AliInputEventHandler.h"
-#include "AliLightV0vertexer.h"
 #include "AliMCEvent.h"
 #include "AliPDG.h"
 #include "AliPIDResponse.h"
-#include "AliV0vertexer.h"
 #include "AliVVertex.h"
 
 using Lifetimes::MCparticle;
@@ -73,7 +71,6 @@ AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
       fPIDResponse{nullptr},
       fDoV0Refit{true},
       fMC{mc},
-      fUseLightVertexer{true},
       fUseOnTheFly{false},
       fHistMCct{nullptr},
       fHistMCctPrimary{nullptr},
@@ -101,9 +98,6 @@ AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
       fHistEtaPos{nullptr},
       fHistEtaNeg{nullptr},
       fHistArmenteros{nullptr},
-      fV0VertexerSels{33., 0.02, 0.02, 2.0, 0.95, 1.0, 200.},
-      fLambdaMassMean{1.116, 0., 0., 0., 0.},
-      fLambdaMassSigma{0.002, 0., 0., 0.},
       fMinPtToSave{0.1},
       fMaxPtToSave{100},
       fMaxTPCpionSigma{10.},
@@ -296,33 +290,6 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
   double primaryVertex[3];
   fMultiplicity = fEventCuts.GetCentrality();
   fEventCuts.GetPrimaryVertex()->GetXYZ(primaryVertex);
-
-  if (!fUseOnTheFly) {
-    // Only reset if not using on-the-fly (or else nothing passes)
-    esdEvent->ResetV0s();
-
-    // Decide between regular and light vertexer (default: light)
-    if (!fUseLightVertexer) {
-      // Instantiate vertexer object
-      AliV0vertexer lV0vtxer;
-      // Set Cuts
-      lV0vtxer.SetDefaultCuts(fV0VertexerSels);
-      lV0vtxer.SetCuts(fV0VertexerSels);
-      // Redo
-      lV0vtxer.Tracks2V0vertices(esdEvent);
-    } else {
-      // Instantiate vertexer object
-      AliLightV0vertexer lV0vtxer;
-      // Set do or don't do V0 refit for improved precision
-      lV0vtxer.SetDoRefit(false);
-      if (fDoV0Refit) lV0vtxer.SetDoRefit(true);
-      // Set Cuts
-      lV0vtxer.SetDefaultCuts(fV0VertexerSels);
-      lV0vtxer.SetCuts(fV0VertexerSels);
-      // Redo
-      lV0vtxer.Tracks2V0vertices(esdEvent);
-    }
-  }
 
   std::unordered_map<int,int> mcMap;
   if (fMC) {
@@ -663,33 +630,3 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
 }
 
 void AliAnalysisTaskStrangenessLifetimes::Terminate(Option_t *) {}
-
-void AliAnalysisTaskStrangenessLifetimes::SetupStandardVertexing()
-// Meant to store standard re-vertexing configuration
-{
-  // Tell the task to re-run vertexers
-  SetDoV0Refit(true);
-
-  // V0-Related topological selections
-  SetV0VertexerDCAFirstToPV(0.05);
-  SetV0VertexerDCASecondtoPV(0.05);
-  SetV0VertexerDCAV0Daughters(1.20);
-  SetV0VertexerCosinePA(0.98);
-  SetV0VertexerMinRadius(0.9);
-  SetV0VertexerMaxRadius(200);
-}
-
-void AliAnalysisTaskStrangenessLifetimes::SetupLooseVertexing()
-// Meant to store standard re-vertexing configuration
-{
-  // Tell the task to re-run vertexers
-  SetDoV0Refit(true);
-
-  // V0-Related topological selections
-  SetV0VertexerDCAFirstToPV(0.1);
-  SetV0VertexerDCASecondtoPV(0.1);
-  SetV0VertexerDCAV0Daughters(1.40);
-  SetV0VertexerCosinePA(0.95);
-  SetV0VertexerMinRadius(0.9);
-  SetV0VertexerMaxRadius(200);
-}
