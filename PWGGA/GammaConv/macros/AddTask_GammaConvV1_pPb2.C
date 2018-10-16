@@ -90,6 +90,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
 
   Int_t isHeavyIon = 2;
 
+  Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
   TString corrTaskSetting = ""; // select which correction task setting to use
   //parse additionalTrainConfig flag
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
@@ -105,6 +106,11 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
         cout << "INFO: AddTask_GammaCalo_pPb2 will use custom branch from Correction Framework!" << endl;
         corrTaskSetting = tempStr;
         corrTaskSetting.Replace(0,2,"");
+      }else if(tempStr.BeginsWith("TM")){
+        TString tempType = tempStr;
+        tempType.Replace(0,2,"");
+        trackMatcherRunningMode = tempType.Atoi();
+        cout << Form("INFO: AddTask_GammaCalo_pp will use running mode '%i' for the TrackMatcher!",trackMatcherRunningMode) << endl;
       }
     }
   }
@@ -509,9 +515,9 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
     if ( trainConfig > 200 && trainConfig < 230 ){
         TString caloCutPos = cuts.GetClusterCut(i);
         caloCutPos.Resize(1);
-        TString TrackMatcherName = Form("CaloTrackMatcher_%s",caloCutPos.Data());
+        TString TrackMatcherName = Form("CaloTrackMatcher_%s_%i",caloCutPos.Data(),trackMatcherRunningMode);
         if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
-          AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
+          AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi(),trackMatcherRunningMode);
           fTrackMatcher->SetV0ReaderName(V0ReaderName);
           fTrackMatcher->SetCorrectionTaskSetting(corrTaskSetting);
           mgr->AddTask(fTrackMatcher);
@@ -523,6 +529,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
         analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
         analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
         analysisClusterCuts[i]->SetLightOutput(runLightOutput);
+        analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
         analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
         ClusterCutList->Add(analysisClusterCuts[i]);
         analysisClusterCuts[i]->SetFillCutHistograms("");

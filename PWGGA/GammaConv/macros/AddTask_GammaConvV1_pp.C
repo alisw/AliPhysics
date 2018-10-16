@@ -1370,6 +1370,7 @@ if(!cuts.AreValid()){
         analysisClusterCuts[i]    = new AliCaloPhotonCuts();
         analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
         analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
+        analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
         analysisClusterCuts[i]->SetLightOutput(runLightOutput);
         analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
         ClusterCutList->Add(analysisClusterCuts[i]);
