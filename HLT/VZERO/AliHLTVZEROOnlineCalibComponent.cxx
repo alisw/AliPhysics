@@ -80,7 +80,7 @@ fRefTrigger("C0TVX")
     for(Int_t i=0; i<24; i++){
         TString lName = Form("fHistMult%s%s%s", lDetTypes[i%3].Data(), lReadoutTypes[(i/3)%2].Data(), lTrigTypes[i/6].Data());
         TString lTitle = Form("%s %s", lDetTypes[i%3].Data(), lTitles[(i/3)%2].Data());
-        
+        if(i/6<1) lTitle.Append(Form(" ref: %s", fRefTrigger.Data()));
         fHistMult[i].SetName(lName.Data());
         fHistMult[i].SetTitle(lTitle.Data());
         fHistMult[i].SetYTitle("Event Count");
