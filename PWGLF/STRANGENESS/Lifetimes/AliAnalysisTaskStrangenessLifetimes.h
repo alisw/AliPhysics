@@ -15,6 +15,7 @@ class TTree;
 #include "MiniV0.h"
 
 class AliPIDResponse;
+class AliESDtrack;
 
 class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
  public:
@@ -43,6 +44,8 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   // 1- Configure standard vertexing
   void SetupStandardVertexing();
   void SetupLooseVertexing();
+
+  static double GetEffMass(int pdg, AliESDtrack* nTrack, AliESDtrack* pTrack, double alpha);
 
   AliEventCuts fEventCuts;  /// Event cuts class
 
@@ -76,7 +79,7 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   TH1D* fHistLeastNxedRows;         //! Min number of xed roads
   TH1D* fHistLeastXedOverFindable;  //! Min number of xed roads/findable clusters
   TH1D* fHistMaxChi2PerCluster;     //! Max chi2 per cluster in TPC
-  TH1D* fHistNsigmaPosPion;         //! # sigma TPC pion for the positive prong
+  TH1D* fHistNsigmaPosPion;         //! # sigma TPC pion for the positive prongedRo
   TH1D* fHistNsigmaPosProton;       //! # sigma TPC proton for the positive prong
   TH1D* fHistNsigmaNegPion;         //! # sigma TPC pion for the negative prong
   TH1D* fHistNsigmaNegProton;       //! # sigma TPC proton for the negative prong

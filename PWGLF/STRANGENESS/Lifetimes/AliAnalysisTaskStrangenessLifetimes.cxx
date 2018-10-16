@@ -10,6 +10,7 @@
 #include <TH2D.h>
 #include <TList.h>
 #include <TMath.h>
+#include "Math/Vector4D.h"
 
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
@@ -17,6 +18,7 @@
 #include "AliExternalTrackParam.h"
 #include "AliInputEventHandler.h"
 #include "AliMCEvent.h"
+#include "AliPID.h"
 #include "AliPDG.h"
 #include "AliPIDResponse.h"
 #include "AliVVertex.h"
@@ -25,6 +27,8 @@ using Lifetimes::MCparticle;
 using Lifetimes::MiniV0;
 using std::cout;
 using std::endl;
+
+typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>> LVector_t;
 
 ClassImp(AliAnalysisTaskStrangenessLifetimes);
 
@@ -104,6 +108,7 @@ AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
       fMaxTPCprotonSigma{10.},
       fMaxTPChe3Sigma{10.},
       fV0vector{},
+      fMCvector{},
       fMultiplicity{} {
   // Standard output
   DefineInput(0, TChain::Class());
@@ -272,7 +277,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
     return;
   }
 
-  std::array<int,3> pdgCodes = {310, 3122, 1010010030};
+  std::array<int,3> pdgCodes{310, 3122, 1010010030};
   AliMCEvent* mcEvent = MCEvent();
   if (!mcEvent && fMC) {
     ::Fatal("AliAnalysisTaskStrangenessLifetimes::UserExec","Could not retrieve MC event");
@@ -479,12 +484,10 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
     if (cosPA < MiniV0<3>::fgkV0cosPA_f) continue;
 
     // Getting invariant mass infos directly from ESD
-    v0->ChangeMassHypothesis(310);
-    double invMassK0s = v0->GetEffMass();
-    v0->ChangeMassHypothesis(3122);
-    double invMassLambda = v0->GetEffMass();
-    v0->ChangeMassHypothesis(1010010030);
-    double invMassHyp = v0->GetEffMass();
+    double masses[3];
+    for (int iPdg = 0; iPdg < 3; ++iPdg) {
+      masses[iPdg] = GetEffMass(pdgCodes[iPdg], nTrack, pTrack, v0->AlphaV0());
+    }
 
     // Official means of acquiring N-sigmas
     float nSigmaPosProton =
@@ -537,17 +540,17 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
     // Do Selection
     if (
         // Case 1: Lambda Selection
-        (invMassLambda < upperLimitLambda && invMassLambda > lowerLimitLambda &&
+        (masses[1] < upperLimitLambda && masses[1] > lowerLimitLambda &&
          ((nSigmaPosProton < fMaxTPCprotonSigma &&
            nSigmaNegPion < fMaxTPCpionSigma) ||
           (nSigmaNegProton < fMaxTPCprotonSigma &&
            nSigmaPosPion < fMaxTPCpionSigma))) ||
         // Case 2: K0Short Selection
-        (invMassK0s < lUpperLimitK0Short && invMassK0s > lLowerLimitK0Short &&
+        (masses[0] < lUpperLimitK0Short && masses[0] > lLowerLimitK0Short &&
          nSigmaNegPion < fMaxTPCpionSigma &&
          nSigmaPosPion < fMaxTPCpionSigma) ||
-                 // Case 3: Lambda Selection        
-        (invMassLambda < 2.85 && invMassLambda > 3.15 &&
+        // Case 3: Hypertriton Selection        
+        (masses[2] < 2.85 && masses[2] > 3.15 &&
           ((nSigmaPosHe3 < fMaxTPChe3Sigma &&
            nSigmaNegPion < fMaxTPCpionSigma) ||
           (nSigmaNegHe3 < fMaxTPChe3Sigma &&
@@ -556,8 +559,8 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
       fHistV0radius->Fill(v0Radius);
       fHistV0pt->Fill(v0Pt);
       fHistV0eta->Fill(v0->Eta());
-      fHistInvMassK0s->Fill(v0Pt, invMassK0s);
-      fHistInvMassLambda->Fill(v0Pt, invMassLambda);
+      fHistInvMassK0s->Fill(v0Pt, masses[0]);
+      fHistInvMassLambda->Fill(v0Pt, masses[1]);
       fHistDistOverTotMom->Fill(distOverP);
       fHistV0CosPA->Fill(cosPA);
       fHistChi2V0->Fill(v0->GetChi2V0());
@@ -583,9 +586,8 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
       miniV0.SetV0eta(v0->Eta());
       miniV0.SetLeastNumberOfXedRows(minXedRows);
       miniV0.SetDistOverP(distOverP);
-      miniV0.SetInvMass(0,invMassK0s);
-      miniV0.SetInvMass(1,invMassLambda);
-      miniV0.SetInvMass(2,invMassHyp);
+      for (int iPdg = 0; iPdg < 3; ++iPdg)
+        miniV0.SetInvMass(iPdg, masses[iPdg]);
       miniV0.SetArmenterosVariables(v0->AlphaV0(), v0->PtArmV0());
       miniV0.SetV0CosPA(cosPA);
       miniV0.SetV0Chi2andCowBoy(v0->GetChi2V0(), isCowboy);
@@ -630,3 +632,29 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
 }
 
 void AliAnalysisTaskStrangenessLifetimes::Terminate(Option_t *) {}
+
+double AliAnalysisTaskStrangenessLifetimes::GetEffMass(int pdg, AliESDtrack* negTrack, AliESDtrack* posTrack, double alpha) {
+  constexpr int v0Pdg[3]{310, 3122, 1010010030};
+  constexpr AliPID::EParticleType children[3][2]{
+    {AliPID::kPion, AliPID::kPion},
+    {AliPID::kProton, AliPID::kPion},
+    {AliPID::kHe3, AliPID::kPion},
+  };
+  for (int iPdg = 0; iPdg < 3; ++iPdg) {
+    if (pdg != v0Pdg[iPdg]) continue;
+    int posIndex = int(alpha < 0);
+    int negIndex = int(alpha >= 0);
+    double posMass = AliPID::ParticleMass(children[iPdg][posIndex]);
+    double negMass = AliPID::ParticleMass(children[iPdg][negIndex]);
+    int posCharge = AliPID::ParticleCharge(children[iPdg][posIndex]);
+    int negCharge = AliPID::ParticleCharge(children[iPdg][negIndex]);
+    double posMom[3],negMom[3];
+    posTrack->GetPxPyPz(posMom);
+    negTrack->GetPxPyPz(negMom);
+    LVector_t posLvec{posMom[0] * posCharge, posMom[1] * posCharge, posMom[2], posMass};
+    LVector_t negLvec{negMom[0] * negCharge, negMom[1] * negCharge, negMom[2], negMass};
+    posLvec += negLvec;
+    return posLvec.M();
+  }
+  return 0.;
+} 
