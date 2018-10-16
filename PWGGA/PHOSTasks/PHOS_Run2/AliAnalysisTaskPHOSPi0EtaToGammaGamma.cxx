@@ -94,7 +94,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fBunchSpace(25.),
   fCollisionSystem(-1),
   fTOFEfficiency(0x0),
-  fTriggerEfficiency(0x0),
+  //fTriggerEfficiency(0x0),
   fESDtrackCutsGlobal(0x0),
   fESDtrackCutsGlobalConstrained(0x0),
   fCentArrayPi0(0x0),
@@ -200,7 +200,13 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   }
 
   fTOFEfficiency = new TF1("fTOFEfficiency","1.",0,100);
-  fTriggerEfficiency = new TF1("fTriggerEfficiency","1.",0,100);
+
+  for(Int_t imod=0;imod<6;imod++){
+    for(Int_t itru=0;itru<9;itru++){
+      fTriggerEfficiency[imod][itru] = 0x0;
+      fTriggerEfficiency[imod][itru] = new TF1(Form("fTriggerEfficiency_M%dTRU%d",imod,itru),"1.",0,100);
+    }
+  }
 
   // Define input and output slots here
   // Input slot #0 works with a TChain
@@ -294,6 +300,13 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::~AliAnalysisTaskPHOSPi0EtaToGammaGamma()
 
   delete fTOFEfficiency;
   fTOFEfficiency = 0x0;
+
+  for(Int_t imod=0;imod<6;imod++){
+    for(Int_t itru=0;itru<9;itru++){
+      delete fTriggerEfficiency[imod][itru];
+      fTriggerEfficiency[imod][itru] = 0x0;
+    }
+  }
 
   if(fPHOSEventCuts){
     delete fPHOSEventCuts;
@@ -1847,7 +1860,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
   Double_t eff=1;
   Double_t trgeff=1;
   TF1 *f1tof = GetTOFCutEfficiencyFunction();
-  TF1 *f1trg = GetTriggerEfficiencyFunction();
+  TF1 *f1trg = 0x0;
   Double_t value[2] = {};
   Double_t sp1 = -999;
   Int_t primary = -1;
@@ -1855,6 +1868,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
   Double_t TrueK0SPt = 0;
   Double_t TrueL0Pt = 0;
   Double_t TrueS0Pt = 0;
+  Int_t module=0,cellx=0,cellz=0,tru=0;
+  Int_t relId[4]={};
+  Float_t position[3] = {};
 
   for(Int_t iph=0;iph<multClust;iph++){
     AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(iph);
@@ -1866,6 +1882,23 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
     }
 
     if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;//criterion fTRFM == kRFE is not needed.
+
+    relId[0] = 0; relId[1] = 0; relId[2] = 0; relId[3] = 0;
+    position[0] = ph->EMCx();
+    position[1] = ph->EMCy();
+    position[2] = ph->EMCz();
+    TVector3 global1(position);
+    fPHOSGeo->GlobalPos2RelId(global1,relId);
+
+    //AliVCluster *clu1 = (AliVCluster*)ph->GetCluster();
+    //Int_t maxAbsId = fPHOSTriggerHelper->FindHighestAmplitudeCellAbsId(clu1, cells);
+    //fPHOSGeo->AbsToRelNumbering(maxAbsId,relId);
+
+    module = relId[0];
+    cellx  = relId[2];
+    cellz  = relId[3];
+    tru = fPHOSTriggerHelper->WhichTRU(cellx,cellz);
+    f1trg = GetTriggerEfficiencyFunction(module,tru);
 
     weight = 1.;
     if(fIsMC){
@@ -1884,7 +1917,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
     }
 
     eff = f1tof->Eval(energy);
-    if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP) trgeff = f1trg->Eval(energy);
+    if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP){
+      trgeff = f1trg->Eval(energy);
+      AliInfo(Form("M%dTRU%d at E = %4.3f GeV : trigger efficiency = %4.3f",module,tru,energy,trgeff));
+    }
 
     if(fIsMC || (!fIsMC && ph->IsTOFOK())){
                                              FillHistogramTH1(fOutputContainer,"hPhotonPt_noPID",pT,1/eff * weight * 1/trgeff);
@@ -1949,7 +1985,11 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
   Double_t trgeff1=1;
   Double_t trgeff2=1;
   Double_t trgeff12=1;
-  TF1 *f1trg = GetTriggerEfficiencyFunction();
+  TF1 *f1trg1 = 0x0;
+  TF1 *f1trg2 = 0x0;
+  Int_t module=0,cellx=0,cellz=0,tru=0;
+  Int_t relId[4]={};
+  Float_t position[3] = {};
 
   Int_t primary1 = -1;
   Int_t primary2 = -1;
@@ -1958,11 +1998,27 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
   Double_t TrueL0Pt = 0;
   Int_t commonID = -1;
 
-
   for(Int_t i1=0;i1<multClust-1;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
+
+    relId[0] = 0; relId[1] = 0; relId[2] = 0; relId[3] = 0;
+    position[0] = ph1->EMCx();
+    position[1] = ph1->EMCy();
+    position[2] = ph1->EMCz();
+    TVector3 global1(position);
+    fPHOSGeo->GlobalPos2RelId(global1,relId);
+
+    //AliVCluster *clu1 = (AliVCluster*)ph->GetCluster();
+    //Int_t maxAbsId = fPHOSTriggerHelper->FindHighestAmplitudeCellAbsId(clu1, cells);
+    //fPHOSGeo->AbsToRelNumbering(maxAbsId,relId);
+
+    module = relId[0];
+    cellx  = relId[2];
+    cellz  = relId[3];
+    tru = fPHOSTriggerHelper->WhichTRU(cellx,cellz);
+    f1trg1 = GetTriggerEfficiencyFunction(module,tru);
 
     for(Int_t i2=i1+1;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
@@ -1977,6 +2033,23 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       if(fForceActiveTRU 
           && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))
         ) continue;//only for kINT7
+
+      relId[0] = 0; relId[1] = 0; relId[2] = 0; relId[3] = 0;
+      position[0] = ph2->EMCx();
+      position[1] = ph2->EMCy();
+      position[2] = ph2->EMCz();
+      TVector3 global2(position);
+      fPHOSGeo->GlobalPos2RelId(global2,relId);
+
+      //AliVCluster *clu1 = (AliVCluster*)ph->GetCluster();
+      //Int_t maxAbsId = fPHOSTriggerHelper->FindHighestAmplitudeCellAbsId(clu1, cells);
+      //fPHOSGeo->AbsToRelNumbering(maxAbsId,relId);
+
+      module = relId[0];
+      cellx  = relId[2];
+      cellz  = relId[3];
+      tru = fPHOSTriggerHelper->WhichTRU(cellx,cellz);
+      f1trg2 = GetTriggerEfficiencyFunction(module,tru);
 
       e1 = ph1->Energy();
       e2 = ph2->Energy();
@@ -2003,17 +2076,15 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       eff12 = eff1 * eff2;
 
       if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP){
-        //if(e1 < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
-        //if(e2 < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
-
         if((!ph1->IsTrig() || e1 < fEnergyThreshold)
         && (!ph2->IsTrig() || e2 < fEnergyThreshold)
           ) continue;
 
-        trgeff1  = f1trg->Eval(e1);
-        trgeff2  = f1trg->Eval(e2);
-        trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR//this is true only when occupancy is uniformed.
-
+        trgeff1  = f1trg1->Eval(e1);
+        trgeff2  = f1trg2->Eval(e2);
+        //trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR//this is true only when occupancy is uniformed.
+        Double_t ave = (trgeff1 + trgeff2)/2.;
+        trgeff12 = ave + ave - (ave * ave);//logical OR//this is true only when occupancy is uniformed.
       }
 
       weight = 1.;
@@ -2135,13 +2206,33 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
   Double_t trgeff1=1;
   Double_t trgeff2=1;
   Double_t trgeff12=1;
-  TF1 *f1trg = GetTriggerEfficiencyFunction();
+  TF1 *f1trg1 = 0x0;
+  TF1 *f1trg2 = 0x0;
+  Int_t module=0,cellx=0,cellz=0,tru=0;
+  Int_t relId[4]={};
+  Float_t position[3] = {};
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
 
+    relId[0] = 0; relId[1] = 0; relId[2] = 0; relId[3] = 0;
+    position[0] = ph1->EMCx();
+    position[1] = ph1->EMCy();
+    position[2] = ph1->EMCz();
+    TVector3 global1(position);
+    fPHOSGeo->GlobalPos2RelId(global1,relId);
+
+    //AliVCluster *clu1 = (AliVCluster*)ph->GetCluster();
+    //Int_t maxAbsId = fPHOSTriggerHelper->FindHighestAmplitudeCellAbsId(clu1, cells);
+    //fPHOSGeo->AbsToRelNumbering(maxAbsId,relId);
+
+    module = relId[0];
+    cellx  = relId[2];
+    cellz  = relId[3];
+    tru = fPHOSTriggerHelper->WhichTRU(cellx,cellz);
+    f1trg1 = GetTriggerEfficiencyFunction(module,tru);
 
     for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
       TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
@@ -2159,6 +2250,23 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         if(fForceActiveTRU 
             && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))
           ) continue;//only for kINT7
+
+        relId[0] = 0; relId[1] = 0; relId[2] = 0; relId[3] = 0;
+        position[0] = ph2->EMCx();
+        position[1] = ph2->EMCy();
+        position[2] = ph2->EMCz();
+        TVector3 global2(position);
+        fPHOSGeo->GlobalPos2RelId(global2,relId);
+
+        //AliVCluster *clu1 = (AliVCluster*)ph->GetCluster();
+        //Int_t maxAbsId = fPHOSTriggerHelper->FindHighestAmplitudeCellAbsId(clu1, cells);
+        //fPHOSGeo->AbsToRelNumbering(maxAbsId,relId);
+
+        module = relId[0];
+        cellx  = relId[2];
+        cellz  = relId[3];
+        tru = fPHOSTriggerHelper->WhichTRU(cellx,cellz);
+        f1trg2 = GetTriggerEfficiencyFunction(module,tru);
 
         e1 = ph1->Energy();
         e2 = ph2->Energy();
@@ -2187,17 +2295,15 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         weight = 1.;
 
         if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP){
-          //if(e1 < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
-          //if(e2 < fEnergyThreshold) continue;//if efficiency is not defined at this energy, it does not make sense to compute logical OR.
-
-
           if((!ph1->IsTrig() || e1 < fEnergyThreshold)
           && (!ph2->IsTrig() || e2 < fEnergyThreshold)
             ) continue;
 
-          trgeff1  = f1trg->Eval(e1);
-          trgeff2  = f1trg->Eval(e2);
-          trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR
+          trgeff1  = f1trg1->Eval(e1);
+          trgeff2  = f1trg2->Eval(e2);
+          //trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR
+          Double_t ave = (trgeff1 + trgeff2)/2.;
+          trgeff12 = ave + ave - (ave * ave);//logical OR//this is true only when occupancy is uniformed.
 
         }
 
@@ -2268,6 +2374,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillM3pi()
   const Double_t Mpi0 = 0.1349766;//in GeV/c2
   //Double_t nsigmaPion = 999;
 
+  Int_t module=0,cellx=0,cellz=0,tru=0;
+  Int_t relId[4]={};
+  Float_t position[3] = {};
+
   for(Int_t itrack=0;itrack<trackMult;itrack++){
     AliAODTrack *aodtrack = (AliAODTrack*)fEvent->GetTrack(itrack);
 
@@ -2321,7 +2431,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillM3pi()
   Double_t trgeff1=1;
   Double_t trgeff2=1;
   Double_t trgeff12=1;
-  TF1 *f1trg = GetTriggerEfficiencyFunction();
+  TF1 *f1trg1 = 0x0;
+  TF1 *f1trg2 = 0x0;
 
   Int_t primary1 = -1;
   Int_t primary2 = -1;
@@ -2338,6 +2449,23 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillM3pi()
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
 
+    relId[0] = 0; relId[1] = 0; relId[2] = 0; relId[3] = 0;
+    position[0] = ph1->EMCx();
+    position[1] = ph1->EMCy();
+    position[2] = ph1->EMCz();
+    TVector3 global1(position);
+    fPHOSGeo->GlobalPos2RelId(global1,relId);
+
+    //AliVCluster *clu1 = (AliVCluster*)ph->GetCluster();
+    //Int_t maxAbsId = fPHOSTriggerHelper->FindHighestAmplitudeCellAbsId(clu1, cells);
+    //fPHOSGeo->AbsToRelNumbering(maxAbsId,relId);
+
+    module = relId[0];
+    cellx  = relId[2];
+    cellz  = relId[3];
+    tru = fPHOSTriggerHelper->WhichTRU(cellx,cellz);
+    f1trg1 = GetTriggerEfficiencyFunction(module,tru);
+
     for(Int_t i2=i1+1;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
       if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
@@ -2351,6 +2479,23 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillM3pi()
       if(fForceActiveTRU 
           && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))
         ) continue;//only for kINT7
+
+      relId[0] = 0; relId[1] = 0; relId[2] = 0; relId[3] = 0;
+      position[0] = ph2->EMCx();
+      position[1] = ph2->EMCy();
+      position[2] = ph2->EMCz();
+      TVector3 global2(position);
+      fPHOSGeo->GlobalPos2RelId(global2,relId);
+
+      //AliVCluster *clu1 = (AliVCluster*)ph->GetCluster();
+      //Int_t maxAbsId = fPHOSTriggerHelper->FindHighestAmplitudeCellAbsId(clu1, cells);
+      //fPHOSGeo->AbsToRelNumbering(maxAbsId,relId);
+
+      module = relId[0];
+      cellx  = relId[2];
+      cellz  = relId[3];
+      tru = fPHOSTriggerHelper->WhichTRU(cellx,cellz);
+      f1trg2 = GetTriggerEfficiencyFunction(module,tru);
 
       p12  = *ph1 + *ph2;
       m12  = p12.M();
@@ -2382,9 +2527,11 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillM3pi()
       eff12 = eff1 * eff2;
 
       if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP){
-        trgeff1  = f1trg->Eval(e1);
-        trgeff2  = f1trg->Eval(e2);
-        trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR//this is true only when occupancy is uniformed.
+        trgeff1  = f1trg1->Eval(e1);
+        trgeff2  = f1trg2->Eval(e2);
+        //trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR//this is true only when occupancy is uniformed.
+        Double_t ave = (trgeff1 + trgeff2)/2.;
+        trgeff12 = ave + ave - (ave * ave);//logical OR//this is true only when occupancy is uniformed.
       }
 
       if(m12 < 0.12 || 0.15 < m12) continue;
