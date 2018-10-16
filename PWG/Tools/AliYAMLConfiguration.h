@@ -17,19 +17,19 @@
 
 /**
  * @class PWG::Tools::AliYAMLConfiguration
- * @brief YAML configuration class for AliPhysics.
+ * @brief %YAML configuration class for AliPhysics.
  *
- * A class to handle generic reading and writing to YAML files. This can be used to configure tasks, coordinate trains,
+ * A class to handle generic reading and writing to %YAML files. This can be used to configure tasks, coordinate trains,
  * or many other tasks which require configuration. While yaml-cpp can be used directly, this class handles many details
  * such as accessing files on AliEn, as well as generally simplifying the user experience. The class can also handle
  * multiple configuration files, first looking in the last added file, and then if the value is not found, looking in
  * previous configurations until the value is found. Values are accessed in this order so the values in the initial file
  * can be overridden by values defined in subsequently added files. Values that are used in multiple places can be set
- * together using "Shared Paramaters" (see the section below) or using YAML anchors.
+ * together using "Shared Paramaters" (see the section below) or using %YAML anchors.
  *
  * Usage information:
  *
- * Consider the following example YAML configuration.
+ * Consider the following example %YAML configuration.
  *
  * ~~~
  * hello:
@@ -42,22 +42,31 @@
  *   - entry3
  * ~~~
  *
- * To use the class, at least one YAML configuration file must be added to the class. To do so, use:
+ * To use the class, first add the config class to your task (be certain to stream it to store the
+ * configuration with your class!):
  *
  * ~~~{.cxx}
- * PWG::Tools::AliYAMLConfiguration config;
+ * PWG::Tools::AliYAMLConfiguration fYAMLConfig; ///< YAML configuration.
+ *
+ * /// Retrieve the YAML configurations for direct access for printing, etc.
+ * PWG::Tools::AliYAMLConfiguration & GetYAMLConfiguration() { return fYAMLConfig; }
+ * ~~~
+ *
+ * Then, to use it in your task:
+ *
+ * ~~~{.cxx}
  * // Will only be checked if a requested value is not in the second configuration.
- * config.AddConfiguration(filename, name);
+ * fYAMLConfig.AddConfiguration(filename, name);
  * // Will be checked first. This is so it can override values in the first added configuration.
- * config.AddConfiguration(filename2, name2);
+ * fYAMLConfig.AddConfiguration(filename2, name2);
  *
  * // Once all configuration is done and the YAML nodes will not be modified any more
  * // (for example, at the end of an AddTask), call Initialize() to lock in the configurations
  * // for streaming to the grid.
- * config.Initialize();
+ * fYAMLConfig.Initialize();
  * ~~~
  *
- * YAML objects cannot be streamed due to CINT limitations, so after the configuration class is
+ * %YAML objects cannot be streamed due to CINT limitations, so after the configuration class is
  * streamed, it must be re-initialized. This can be done in any function after streaming has been
  * completed, such as `UserCreateOutputObjects()`. It only needs to be performed once.
  *
@@ -82,17 +91,21 @@
  * ~~~{.cxx}
  * int tempInt = 0;
  * // True specifies that the value must exist in the config
- * config.GetProperty({"hello", "world", "examplePath"}, tempInt, true);
+ * fYAMLConfig.GetProperty({"hello", "world", "examplePath"}, tempInt, true);
  * std::cout << tempInt << "\n"; // Returns "10"
  * // Alternatively, you could specify the path explicitly (although not recommended)
- * config.GetProperty("hello:world:exampleValue", tempInt);
+ * fYAMLConfig.GetProperty("hello:world:exampleValue", tempInt);
  * // The type specifies what is returned
  * double tempDouble = 0.;
- * config.GetProperty("example", tempDouble);
+ * fYAMLConfig.GetProperty("example", tempDouble);
  * std::vector <std::string> importantValues;
- * config.GetProperty("importantValues", importantValues);
+ * fYAMLConfig.GetProperty("importantValues", importantValues);
  * // The vector "importantValues" now contains three strings
  * ~~~
+ *
+ * If you are accessing a %YAML file on AliEn (which is supported by default), the file will be
+ * copied to the directory where the task is run. Conveniently, this means that the configuration
+ * file is also easily accessible in the LEGO test train directory.
  *
  * That's basically all there is to using it. For more information, look at the documentation
  * of the various GetProperty(...) and WriteProperty(...) functions. The interfaces to both
