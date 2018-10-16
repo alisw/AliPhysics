@@ -207,12 +207,15 @@ void AliFemtoDreamv0::SetDaughterInfo(AliESDv0 *v0) {
   fnDaug->SetMomentum(momPosAtV0vtx[0], momPosAtV0vtx[1], momPosAtV0vtx[2]);
   fpDaug->SetMomentum(momNegAtV0vtx[0], momNegAtV0vtx[1], momNegAtV0vtx[2]);
 
+  this->SetEta(v0->Eta());
   this->SetEta(fnDaug->GetMomentum().Eta());
   this->SetEta(fpDaug->GetMomentum().Eta());
 
+  this->SetTheta(v0->Theta());
   this->SetTheta(fnDaug->GetMomentum().Theta());
   this->SetTheta(fpDaug->GetMomentum().Theta());
 
+  this->SetPhi(v0->Phi());
   this->SetPhi(fnDaug->GetMomentum().Phi());
   this->SetPhi(fpDaug->GetMomentum().Phi());
 
@@ -267,9 +270,6 @@ void AliFemtoDreamv0::SetMotherInfo(AliESDEvent *evt, AliESDv0 *v0) {
   if (fHasDaughter) {
     this->SetPt(v0->Pt());
     this->SetMomentum(v0->Px(), v0->Py(), v0->Pz());
-    this->SetEta(v0->Eta());
-    this->SetPhi(v0->Phi());
-    this->SetTheta(v0->Theta());
     float xvP = evt->GetPrimaryVertex()->GetX();
     float yvP = evt->GetPrimaryVertex()->GetY();
     float zvP = evt->GetPrimaryVertex()->GetZ();
