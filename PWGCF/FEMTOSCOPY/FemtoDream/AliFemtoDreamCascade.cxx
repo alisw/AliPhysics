@@ -206,6 +206,9 @@ void AliFemtoDreamCascade::SetCascade(AliESDEvent *evt, AliESDcascade *casc) {
   int idxV0FromCascade = -1;
   for (int iV0 = 0; iV0 < evt->GetNumberOfV0s(); ++iV0) {
     currentV0 = evt->GetV0(iV0);
+    // Make sure not to use online v0 here
+    // (the cascade is reconstructed with offline v0 only)
+    if (currentV0->GetOnFlyStatus() == kTRUE) continue;
     int posCurrentV0 = currentV0->GetPindex();
     int negCurrentV0 = currentV0->GetNindex();
     if (posCurrentV0 == idxPosFromV0Dghter
