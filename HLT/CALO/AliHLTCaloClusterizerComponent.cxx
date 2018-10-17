@@ -3,7 +3,6 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
- * Authors: Oystein Djuvsland <oysteind@ift.uib.no>                       *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -20,23 +19,18 @@
 #include "AliHLTCaloRecPointDataStruct.h"
 #include "AliHLTCaloRecPointHeaderStruct.h"
 #include "AliHLTCaloDigitDataStruct.h"
-#include "AliHLTCaloDigitContainerDataStruct.h"
 #include "AliHLTCaloDefinitions.h"
 #include "AliHLTCaloClusterDataStruct.h"
 #include "AliHLTCaloRecoParamHandler.h"
+#include "AliHLTEMCALGeometry.h"
 #include "TString.h"
 
 /** @file   AliHLTCaloClusterizerComponent.cxx
     @author Oystein Djuvsland
+    @author Rudiger Haake (Yale), adapted to EMCAL/DCAL clusterizer
     @date
-    @brief  A clusterizer component for PHOS HLT
+    @brief  A clusterizer component for EMCAL/DCAL HLT
  */
-
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 ClassImp(AliHLTCaloClusterizerComponent);
 
@@ -47,6 +41,7 @@ AliHLTCaloClusterizerComponent::AliHLTCaloClusterizerComponent(TString det):
             fAnalyserPtr(0),
             fRecoParamsPtr(0),
             fClusterizerPtr(0),
+            fGeometry(0),
             fDigitsPointerArray(0),
             fOutputDigitsArray(0),
             fDigitCount(0),
@@ -132,60 +127,25 @@ AliHLTCaloClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 
   if (digCount > 0)
   {
-
-    AliHLTCaloClusterHeaderStruct* caloClusterHeaderPtr = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(outBPtr);
-    caloClusterHeaderPtr->fNDigits = digCount;
-
-    outBPtr += sizeof(AliHLTCaloClusterHeaderStruct);
-    mysize += sizeof(AliHLTCaloClusterHeaderStruct);
-
-    // Sort the digit pointers
-    //      qsort(fDigitsPointerArray, digCount, sizeof(AliHLTCaloDigitDataStruct*), CompareDigits);
-
-
-    if (fCopyDigitsToOuput)
-    {
-      // Copy the digits to the output
-      fOutputDigitsArray = reinterpret_cast<AliHLTCaloDigitDataStruct*>(outBPtr);
-
-      for (Int_t n = 0; n < digCount; n++)
-      {
-        memcpy(outBPtr, fDigitsPointerArray[n], sizeof(AliHLTCaloDigitDataStruct));
-        //fOutputDigitsArray[n] = reinterpret_cast<AliHLTCaloDigitDataStruct*>(outBPtr);
-        outBPtr = outBPtr + sizeof(AliHLTCaloDigitDataStruct);
-      }
-    }
-
-    // Update the size of the output we have used, needs to be removed if we don't push the digits
-    mysize += digCount*sizeof(AliHLTCaloDigitDataStruct);
-
     // Do the clusterisation
     nRecPoints = fClusterizerPtr->ClusterizeEvent(digCount);
 
     HLTDebug("Number of rec points found: %d", nRecPoints);
 
-    // Give the cluster output to the analyser
+    // Give the storage pointer to the analyser
     fAnalyserPtr->SetCaloClusterData(reinterpret_cast<AliHLTCaloClusterDataStruct*>(outBPtr));
 
     // Give the rec points to the analyser (input)
     fAnalyserPtr->SetRecPointArray(fClusterizerPtr->GetRecPoints(), nRecPoints);
 
     // Give the digits to the analyser
-    //fAnalyserPtr->SetDigitDataArray(fOutputDigitsArray);
     fAnalyserPtr->SetDigitDataArray(fDigitsPointerArray);
 
     // Then we create the clusters
     Int_t nClusters = fAnalyserPtr->CreateClusters(nRecPoints, size, mysize);
 
     if (nClusters < 0)
-    {
       HLTError("Error in clusterisation");
-      caloClusterHeaderPtr->fNClusters = 0;
-    }
-    else
-    {
-      caloClusterHeaderPtr->fNClusters = nClusters;
-    }
 
     HLTDebug("Number of clusters: %d", nRecPoints);
 
@@ -253,10 +213,34 @@ AliHLTCaloClusterizerComponent::ScanConfigurationArgument(int argc, const char *
       fClusterizerPtr->SetEmcTimeGate(argument.Atof());
     }
 
-    if (argument.CompareTo("-sortbyposition") == 0)
+    if (argument.CompareTo("-celltimemin") == 0)
     {
-      fClusterizerPtr->SetSortDigitsByPosition();
+      if (++i >= argc) return -EPROTO;
+      argument = argv[i];
+      fClusterizerPtr->SetCellTimeMin(argument.Atof());
     }
+
+    if (argument.CompareTo("-celltimemax") == 0)
+    {
+      if (++i >= argc) return -EPROTO;
+      argument = argv[i];
+      fClusterizerPtr->SetCellTimeMax(argument.Atof());
+    }
+
+    if (argument.CompareTo("-usegradientcut") == 0)
+    {
+      if (++i >= argc) return -EPROTO;
+      argument = argv[i];
+      fClusterizerPtr->SetUseGradientCut((Bool_t)argument.Atoi());
+    }
+
+    if (argument.CompareTo("-gradientcut") == 0)
+    {
+      if (++i >= argc) return -EPROTO;
+      argument = argv[i];
+      fClusterizerPtr->SetGradientCut(argument.Atof());
+    }
+
   }
 
   return 0;
@@ -265,6 +249,8 @@ AliHLTCaloClusterizerComponent::ScanConfigurationArgument(int argc, const char *
 int
 AliHLTCaloClusterizerComponent::DoInit(int argc, const char** argv )
 {
+  fGeometry = new AliHLTEMCALGeometry(GetRunNo());
+
   //See headerfile for documentation
 
   if (fCaloConstants->GetDETNAME() == "EMCAL") 
@@ -273,11 +259,8 @@ AliHLTCaloClusterizerComponent::DoInit(int argc, const char** argv )
   else 
     fDigitsPointerArray = new AliHLTCaloDigitDataStruct*[fCaloConstants->GetNXCOLUMNSMOD()*fCaloConstants->GetNZROWSMOD()];
 
+  fClusterizerPtr->SetGeometry(fGeometry);
   fClusterizerPtr->SetDigitArray(fDigitsPointerArray);
-
-  fClusterizerPtr->SetSortDigitsByEnergy();
-
-  fClusterizerPtr->SetDetector(TString(fCaloConstants->GetDETNAME()));
 
   fAnalyserPtr = new AliHLTCaloClusterAnalyser();
 
@@ -331,6 +314,10 @@ int AliHLTCaloClusterizerComponent::DoDeinit()
   {
     delete fAnalyserPtr;
     fAnalyserPtr = 0;
+  }
+  if(fGeometry){
+    delete fGeometry;
+    fGeometry = 0;
   }
   return 0;
 }

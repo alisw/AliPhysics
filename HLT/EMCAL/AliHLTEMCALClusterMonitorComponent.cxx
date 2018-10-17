@@ -134,20 +134,20 @@ AliHLTEMCALClusterMonitorComponent::DoEvent(const AliHLTComponentEventData& evtD
 	for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
 	{
 	  
-	  	AliHLTCaloClusterHeaderStruct *caloClusterHeaderPtr = 0;
+	  	AliHLTCaloClusterDataStruct* caloClusterPtr = 0;
 
 		iter = blocks+ndx;
 		
 		if (fBeVerbose) PrintComponentDataTypeInfo(iter->fDataType);
 
-		if (iter->fDataType == kAliHLTDataTypeCaloCluster) caloClusterHeaderPtr = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(iter->fPtr);
+		if (iter->fDataType == kAliHLTDataTypeCaloCluster) caloClusterPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>(iter->fPtr);
 		else {
 			if(fBeVerbose) HLTWarning("\nI-CLUSTERMONITORCOMPONENT: Data block does not contain cluster type \n");
 		}
 
-	
+    Int_t nClusters = iter->fSize/sizeof(AliHLTCaloClusterDataStruct);
 		specification |= iter->fSpecification;
-		fHistoMakerPtr->MakeHisto(caloClusterHeaderPtr);
+		fHistoMakerPtr->MakeHisto(caloClusterPtr, nClusters);
 
 	}
 
