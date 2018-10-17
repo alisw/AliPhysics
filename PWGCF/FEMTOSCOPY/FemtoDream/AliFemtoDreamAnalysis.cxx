@@ -428,13 +428,13 @@ void AliFemtoDreamAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent) {
 
   for (int iv0 = 0; iv0 < evt->GetNumberOfV0s(); ++iv0) {
     AliESDv0 *v0 = evt->GetV0(iv0);
-//    fFemtov0->Setv0(evt, v0, fEvent->GetMultiplicity());
-//    if (fv0Cuts->isSelected(fFemtov0)) {
-//      Decays.push_back(*fFemtov0);
-//    }
-//    if (fAntiv0Cuts->isSelected(fFemtov0)) {
-//      AntiDecays.push_back(*fFemtov0);
-//    }
+    fFemtov0->Setv0(evt, v0, fEvent->GetMultiplicity());
+    if (fv0Cuts->isSelected(fFemtov0)) {
+      Decays.push_back(*fFemtov0);
+    }
+    if (fAntiv0Cuts->isSelected(fFemtov0)) {
+      AntiDecays.push_back(*fFemtov0);
+    }
   }
 
   std::vector<AliFemtoDreamBasePart> XiDecays;

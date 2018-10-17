@@ -432,7 +432,7 @@ void AliAnalysisTaskFemtoDream::UserCreateOutputObjects() {
 void AliAnalysisTaskFemtoDream::UserExec(Option_t *) {
   if (fESDAnalysis) {
     AliESDEvent *Event = static_cast<AliESDEvent*>(fInputEvent);
-    AliMCEvent *mcEvent;
+    AliMCEvent *mcEvent=nullptr;
     if (fIsMC) {
       mcEvent = MCEvent();
     }

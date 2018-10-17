@@ -11,13 +11,16 @@
 #include "AliFemtoDreamBasePart.h"
 #include "AliFemtoDreamTrack.h"
 #include "AliAODEvent.h"
+#include "AliESDEvent.h"
 #include "AliAODv0.h"
+#include "AliESDv0.h"
 
 class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
  public:
   AliFemtoDreamv0();
   virtual ~AliFemtoDreamv0();
   void Setv0(AliAODEvent *evt, AliAODv0 *v0, const int multiplicity = -1);
+  void Setv0(AliESDEvent *evt, AliESDv0 *v0, const int multiplicity = -1);
   bool GetOnlinev0() const {
     return fOnlinev0;
   }
@@ -86,13 +89,19 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
     return "v0Class";
   }
   ;
+  double DecayLengthV0(const double *DecayVtx, const double *point) const;
+  double CosPointingAngle(const double *DecayVtx, const double *point) const;
+  double DecayLengthXY(double const *DecayVtx, double const *point) const;
  private:
   AliFemtoDreamv0 &operator=(const AliFemtoDreamv0 &obj);
   AliFemtoDreamv0(const AliFemtoDreamv0&);
   void Reset();
   void SetDaughter(AliAODv0 *v0);
+  void SetDaughter(AliESDEvent *evt, AliESDv0 *v0);
   void SetDaughterInfo(AliAODv0 *v0);
+  void SetDaughterInfo(AliESDv0 *v0);
   void SetMotherInfo(AliAODEvent *evt, AliAODv0 *v0);
+  void SetMotherInfo(AliESDEvent *evt, AliESDv0 *v0);
   void SetMCMotherInfo(AliAODEvent *evt, AliAODv0 *v0);
   bool fOnlinev0;
   bool fHasDaughter;
@@ -108,5 +117,12 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   float fTransRadius;   // Decay Length in xy
 ClassDef(AliFemtoDreamv0,2)
 };
+
+inline double AliFemtoDreamv0::DecayLengthV0(const double *DecayVtx,
+                                             const double *point) const {
+  return ::sqrt(
+      ::pow(DecayVtx[0] - point[0], 2) + ::pow(DecayVtx[1] - point[1], 2)
+          + ::pow(DecayVtx[2] - point[2], 2));
+}
 
 #endif /* ALIFEMTODREAMV0_H_ */
