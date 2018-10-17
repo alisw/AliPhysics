@@ -82,9 +82,9 @@ void AliFemtoDreamv0::Setv0(AliESDEvent *evt, AliESDv0* v0,
   this->SetDaughter(evt, v0);
   this->SetMotherInfo(evt, v0);
   this->SetEvtNumber(evt->GetRunNumber());
-  //  if (fIsMC) {
-  //    this->SetMCMotherInfo(evt, v0);
-  //  }
+//    if (fIsMC) {
+//      this->SetMCMotherInfo(evt, v0);
+//    }
 }
 
 void AliFemtoDreamv0::SetDaughter(AliAODv0 *v0) {
@@ -124,32 +124,42 @@ void AliFemtoDreamv0::SetDaughter(AliESDEvent *evt, AliESDv0 *v0) {
   int negFromV0 = v0->GetNindex();
   AliESDtrack *esdV0Pos = evt->GetTrack(posFromV0);
   AliESDtrack *esdV0Neg = evt->GetTrack(negFromV0);
-  if (esdV0Pos->Charge() > 0 && esdV0Neg->Charge() < 0) {
-    fnDaug->SetTrack(esdV0Pos);
-    fpDaug->SetTrack(esdV0Neg);
-    if (fnDaug->IsSet() && fpDaug->IsSet()) {
-      this->SetDaughterInfo(v0);
-      this->fHasDaughter = true;
-      this->fdcaPrimPos = TMath::Abs(
-          esdV0Pos->GetD(evt->GetPrimaryVertex()->GetX(),
-                         evt->GetPrimaryVertex()->GetY(), evt->GetMagneticField()));
-      this->fdcaPrimNeg = TMath::Abs(
-          esdV0Neg->GetD(evt->GetPrimaryVertex()->GetX(),
-                         evt->GetPrimaryVertex()->GetY(), evt->GetMagneticField()));
+  std::cout << esdV0Pos << '\t' << esdV0Neg << std::endl;
+  if (esdV0Pos && esdV0Neg) {
+    if (esdV0Pos->Charge() > 0 && esdV0Neg->Charge() < 0) {
+      fnDaug->SetTrack(esdV0Pos, nullptr, -1, false);
+      fpDaug->SetTrack(esdV0Neg, nullptr, -1, false);
+      if (fnDaug->IsSet() && fpDaug->IsSet()) {
+        this->SetDaughterInfo(v0);
+        this->fHasDaughter = true;
+        this->fdcaPrimPos = TMath::Abs(
+            esdV0Pos->GetD(evt->GetPrimaryVertex()->GetX(),
+                           evt->GetPrimaryVertex()->GetY(),
+                           evt->GetMagneticField()));
+        this->fdcaPrimNeg = TMath::Abs(
+            esdV0Neg->GetD(evt->GetPrimaryVertex()->GetX(),
+                           evt->GetPrimaryVertex()->GetY(),
+                           evt->GetMagneticField()));
+      }
+    } else if (esdV0Pos->Charge() < 0 && esdV0Neg->Charge() > 0) {
+      fnDaug->SetTrack(esdV0Neg, nullptr, -1, false);
+      fpDaug->SetTrack(esdV0Pos, nullptr, -1, false);
+      if (fnDaug->IsSet() && fpDaug->IsSet()) {
+        this->SetDaughterInfo(v0);
+        this->fHasDaughter = true;
+        this->fdcaPrimNeg = TMath::Abs(
+            esdV0Pos->GetD(evt->GetPrimaryVertex()->GetX(),
+                           evt->GetPrimaryVertex()->GetY(),
+                           evt->GetMagneticField()));
+        this->fdcaPrimPos = TMath::Abs(
+            esdV0Neg->GetD(evt->GetPrimaryVertex()->GetX(),
+                           evt->GetPrimaryVertex()->GetY(),
+                           evt->GetMagneticField()));
+      }
+    } else {
+      this->fHasDaughter = false;
     }
-  } else if (esdV0Pos->Charge() < 0 && esdV0Neg->Charge() > 0) {
-    fnDaug->SetTrack(esdV0Neg);
-    fpDaug->SetTrack(esdV0Pos);
-    if (fnDaug->IsSet() && fpDaug->IsSet()) {
-      this->SetDaughterInfo(v0);
-      this->fHasDaughter = true;
-      this->fdcaPrimNeg= TMath::Abs(
-          esdV0Pos->GetD(evt->GetPrimaryVertex()->GetX(),
-                         evt->GetPrimaryVertex()->GetY(), evt->GetMagneticField()));
-      this->fdcaPrimPos = TMath::Abs(
-          esdV0Neg->GetD(evt->GetPrimaryVertex()->GetX(),
-                         evt->GetPrimaryVertex()->GetY(), evt->GetMagneticField()));
-    }
+    std::cout << fnDaug << '\t' << fpDaug << std::endl;
   } else {
     this->fHasDaughter = false;
   }
@@ -284,10 +294,9 @@ void AliFemtoDreamv0::SetMotherInfo(AliESDEvent *evt, AliESDv0 *v0) {
                               evt->GetPrimaryVertex()->GetY(),
                               evt->GetPrimaryVertex()->GetZ());
 
-
     this->flenDecay = DecayLengthV0(fv0Vtx, vecTarget);
     this->fCPA = CosPointingAngle(fv0Vtx, vecTarget);
-    this->fTransRadius = DecayLengthXY(fv0Vtx,vecTarget);
+    this->fTransRadius = DecayLengthXY(fv0Vtx, vecTarget);
   }
 }
 
@@ -408,11 +417,10 @@ double AliFemtoDreamv0::CosPointingAngle(const double *DecayVtx,
   }
 }
 
-double AliFemtoDreamv0::DecayLengthXY(double const *DecayVtx, double const *point) const
-{
+double AliFemtoDreamv0::DecayLengthXY(double const *DecayVtx,
+                                      double const *point) const {
   /// Decay length in XY assuming it is produced at "point" [cm]
-  return TMath::Sqrt((point[0]-DecayVtx[0])
-        *(point[0]-DecayVtx[0])
-        +(point[1]-DecayVtx[1])
-        *(point[1]-DecayVtx[1]));
+  return TMath::Sqrt(
+      (point[0] - DecayVtx[0]) * (point[0] - DecayVtx[0])
+          + (point[1] - DecayVtx[1]) * (point[1] - DecayVtx[1]));
 }

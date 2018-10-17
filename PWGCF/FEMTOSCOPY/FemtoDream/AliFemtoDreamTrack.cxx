@@ -106,7 +106,8 @@ void AliFemtoDreamTrack::SetTrack(AliAODTrack *track, const int multiplicity) {
 }
 
 void AliFemtoDreamTrack::SetTrack(AliESDtrack *track, AliMCEvent *mcEvent,
-                                  const int multiplicity) {
+                                  const int multiplicity,
+                                  const bool TPCOnlyTrack) {
   this->Reset();
   SetEventMultiplicity(multiplicity);
   fESDTrack = track;
@@ -117,7 +118,7 @@ void AliFemtoDreamTrack::SetTrack(AliESDtrack *track, AliMCEvent *mcEvent,
       AliWarning("Negative ID for ESD tracks");
     }
     this->SetIDTracks(trackID);
-    this->SetESDTrackingInformation();
+    this->SetESDTrackingInformation(TPCOnlyTrack);
     this->SetEvtNumber(fESDTrack->GetESDEvent()->GetRunNumber());
     if (this->fIsSet) {
       this->SetESDPIDInformation();
@@ -131,18 +132,22 @@ void AliFemtoDreamTrack::SetTrack(AliESDtrack *track, AliMCEvent *mcEvent,
   }
 }
 
-void AliFemtoDreamTrack::ApplyESDtoAODFilter() {
+void AliFemtoDreamTrack::ApplyESDtoAODFilter(const bool TPCOnlyTrack) {
   if (fESDTrackCuts->IsSelected(fESDTrack)) {
     fPassFiltering = true;
   } else {
     fPassFiltering = false;
   }
-  fESDTPCOnlyTrack = AliESDtrackCuts::GetTPCOnlyTrack(fESDTrack->GetESDEvent(),
+  if (TPCOnlyTrack) {
+    fESDTPCOnlyTrack = AliESDtrackCuts::GetTPCOnlyTrack(fESDTrack->GetESDEvent(),
                                                       fESDTrack->GetID());
+  } else {
+    fESDTPCOnlyTrack = fESDTrack;
+  }
 }
-void AliFemtoDreamTrack::SetESDTrackingInformation() {
+void AliFemtoDreamTrack::SetESDTrackingInformation(const bool TPCOnlyTrack) {
   fESDStatus = fESDTrack->GetStatus();
-  this->ApplyESDtoAODFilter();
+  this->ApplyESDtoAODFilter(TPCOnlyTrack);
   if (!fESDTPCOnlyTrack) {
     this->fIsSet = false;
     return;
@@ -470,10 +475,10 @@ void AliFemtoDreamTrack::SetMCInformation() {
       AliAODMCParticle *mcMother;
       while (motherID != -1) {
         lastMother = motherID;
-        mcMother = (AliAODMCParticle *)mcarray->At(motherID);
+        mcMother = (AliAODMCParticle *) mcarray->At(motherID);
         motherID = mcMother->GetMother();
       }
-      mcMother = (AliAODMCParticle *)mcarray->At(lastMother);
+      mcMother = (AliAODMCParticle *) mcarray->At(lastMother);
       if (mcMother) {
         this->SetMotherPDG(mcMother->GetPdgCode());
       }
