@@ -126,8 +126,8 @@ void AliFemtoDreamv0::SetDaughter(AliESDEvent *evt, AliESDv0 *v0) {
   AliESDtrack *esdV0Neg = evt->GetTrack(negFromV0);
   if (esdV0Pos && esdV0Neg) {
     if (esdV0Pos->Charge() > 0 && esdV0Neg->Charge() < 0) {
-      fnDaug->SetTrack(esdV0Pos, nullptr, -1, false);
-      fpDaug->SetTrack(esdV0Neg, nullptr, -1, false);
+      fnDaug->SetTrack(esdV0Neg, nullptr, -1, false);
+      fpDaug->SetTrack(esdV0Pos, nullptr, -1, false);
       if (fnDaug->IsSet() && fpDaug->IsSet()) {
         this->SetDaughterInfo(v0);
         this->fHasDaughter = true;
@@ -141,8 +141,8 @@ void AliFemtoDreamv0::SetDaughter(AliESDEvent *evt, AliESDv0 *v0) {
                            evt->GetMagneticField()));
       }
     } else if (esdV0Pos->Charge() < 0 && esdV0Neg->Charge() > 0) {
-      fnDaug->SetTrack(esdV0Neg, nullptr, -1, false);
-      fpDaug->SetTrack(esdV0Pos, nullptr, -1, false);
+      fnDaug->SetTrack(esdV0Pos, nullptr, -1, false);
+      fpDaug->SetTrack(esdV0Neg, nullptr, -1, false);
       if (fnDaug->IsSet() && fpDaug->IsSet()) {
         this->SetDaughterInfo(v0);
         this->fHasDaughter = true;
@@ -245,16 +245,16 @@ void AliFemtoDreamv0::SetDaughterInfo(AliESDv0 *v0) {
     this->SetPhiAtRadius(fnDaug->GetPhiAtRaidius().at(0));
   }
 
-  if (fIsMC) {
-    if (fnDaug->IsSet()) {
-      this->SetMCTheta(fnDaug->GetMCTheta().at(0));
-      this->SetMCPhi(fnDaug->GetMCPhi().at(0));
-    }
-    if (fpDaug->IsSet()) {
-      this->SetMCTheta(fpDaug->GetMCTheta().at(0));
-      this->SetMCPhi(fpDaug->GetMCPhi().at(0));
-    }
-  }
+//  if (fIsMC) {
+//    if (fnDaug->IsSet()) {
+//      this->SetMCTheta(fnDaug->GetMCTheta().at(0));
+//      this->SetMCPhi(fnDaug->GetMCPhi().at(0));
+//    }
+//    if (fpDaug->IsSet()) {
+//      this->SetMCTheta(fpDaug->GetMCTheta().at(0));
+//      this->SetMCPhi(fpDaug->GetMCPhi().at(0));
+//    }
+//  }
 }
 
 void AliFemtoDreamv0::SetMotherInfo(AliAODEvent *evt, AliAODv0 *v0) {
