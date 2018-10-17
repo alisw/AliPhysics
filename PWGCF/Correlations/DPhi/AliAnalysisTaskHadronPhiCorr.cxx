@@ -328,7 +328,7 @@ void AliAnalysisTaskHadronPhiCorr::UserCreateOutputObjects()
     fVtxX = new TH1F("fVtxX","X vertex position;Vtx_{x};counts",1000,-50,50);
     fOutputList->Add(fVtxX);
     
-    fVtxZmixbins = new TH1F("fVtxZ", "Z vertex position (Mixing Bins);Vtx_{z};counts", Z_VTX_NBINS, Z_VTX_MIN, Z_VTX_MAX);
+    fVtxZmixbins = new TH1F("fVtxZmixbins", "Z vertex position (Mixing Bins);Vtx_{z};counts", Z_VTX_NBINS, Z_VTX_MIN, Z_VTX_MAX);
     fOutputList->Add(fVtxZmixbins);
 
     fTrigMulti = new TH2F("fTrigMulti","Multiplicity distribution for different triggers; Trigger type; multiplicity",11,-1,10,2000,0,2000);
@@ -372,7 +372,7 @@ void AliAnalysisTaskHadronPhiCorr::UserCreateOutputObjects()
 
     // Kaon distribution and PID histograms
 
-    fKaonDist = new TH3F("fKaonDist", "Kaon Distribution;p_{T} (GeV/c);#varphi;#eta", 75, 0.0, 15.0, 32, 0, 6.2832, 60, -3.0, 3.0); 
+    fKaonDist = new TH3F("fKaonDist", "Kaon Distribution;p_{T} (GeV/c);#varphi;#eta", 75, 0.0, 15.0, 32, -3.1416, 3.1416, 60, -3.0, 3.0); 
     fOutputList->Add(fKaonDist);
 
     fKaonPID = new TH3F("fKaonPID", "Kaon PID;p_{T} (GeV/c);n#sigma_{TPC};n#sigma_{TOF}", 75, 0.0, 15.0, 50, -5.0, 5.0, 50, -5.0, 5.0);
@@ -907,7 +907,7 @@ void AliAnalysisTaskHadronPhiCorr::UserExec(Option_t *){
         //Apply track cuts//
         ////////////////////
         if(fAOD)
-            if(!atriggerTrack->TestFilterMask(TRIG_TRK_BIT)) continue; //selecting just hybrid-global tracks for trigger, continue otherwise
+            if(!atriggerTrack->TestBit(TRIG_TRK_BIT)) continue; //selecting just hybrid-global tracks for trigger, continue otherwise
         
         if(fESD)
             if(!esdTrackCutsH->AcceptTrack(etriggerTrack))continue;
