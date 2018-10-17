@@ -110,10 +110,13 @@ public:
 
   /// Custom constructor
   ///
-  AliFemtoModelCorrFctnTrueQ3DByParent(const char *title, UInt_t nbins, Double_t aQinvLo, Double_t aQinvHi);
+  AliFemtoModelCorrFctnTrueQ3DByParent(const char *title, UInt_t nbins, Double_t qlo, Double_t qhigh);
 
-  /// Construct
-  AliFemtoModelCorrFctnTrueQ3DByParent(Int_t nbins, Double_t aQinvLo, Double_t aQinvHi);
+  /// Construct with standard name
+  AliFemtoModelCorrFctnTrueQ3DByParent(Int_t nbins, Double_t qmax);
+
+  /// Construct with explicit q-range
+  AliFemtoModelCorrFctnTrueQ3DByParent(Int_t nbins, Double_t qlow, Double_t qhigh);
 
   /// Construct from parameter object
   ///
