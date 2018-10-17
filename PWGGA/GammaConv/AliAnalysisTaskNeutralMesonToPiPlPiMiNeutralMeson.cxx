@@ -567,8 +567,26 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     fPDGCodeNDM                                       = 221; // PDG value eta
     fPDGCodeAnalyzedMeson                             = 331; // PDG value eta prime
     break;
+  case 3:         // D0 MESON
+    HistoNMassBins                                    = 400;
+    HistoMassRange[0]                                 = 1.6;
+    HistoMassRange[1]                                 = 2.0;
+    HistoNMassBinsSub                                 = 400;      // MF: Background subtraction?
+    HistoMassRangeSub[0]                              = 1.6;
+    HistoMassRangeSub[1]                              = 2.0;
+    HistoNMassBinsDecayMeson                          = 450;
+    HistoMassRangeNDM[0]                              = 0.0;
+    HistoMassRangeNDM[1]                              = 0.45;
+    NameNeutralMesonAnalyzed                          = "D0";
+    NameNeutralMesonAnalyzedLatex                     = "D^{0}";
+    NameNDM                                           = "NeutralPion";
+    NameNDMLatex                                      = "#pi^{0}";
+    fPDGMassNDM                                       = 0.1349766; // hard coded PDG value to keep results reproducable later
+    fPDGCodeNDM                                       = 111; // PDG value pi0
+    fPDGCodeAnalyzedMeson                             = 421; // PDG value D0
+    break; 
   default:
-    AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2 valid)... selected: %d",fSelectedHeavyNeutralMeson));
+    AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
   }
 
   // Create the output container
@@ -1993,8 +2011,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
         if( IsEtaPrimePiPlPiMiEtaDaughter(motherRealLabel) )
             fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
         break;
+      case 3: // D0 MESON
+        if( IsD0PiPlPiMiPiZeroDaughter(motherRealLabel) )
+            fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+        break;
       default:
-        AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2 valid)... selected: %d",fSelectedHeavyNeutralMeson));
+        AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
       }
     }
   }
@@ -2089,8 +2111,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
             if( IsEtaPrimePiPlPiMiEtaDaughter(motherRealLabel) )
                 fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
             break;
+          case 3: // D0 MESON
+            if( IsD0PiPlPiMiPiZeroDaughter(motherRealLabel) )
+                fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+                break;
           default:
-            AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2 valid)... selected: %d",fSelectedHeavyNeutralMeson));
+            AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
           }
         }
       }
@@ -2201,8 +2227,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
           if( IsEtaPrimePiPlPiMiEtaDaughter(motherRealLabel) )
               fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
           break;
+        case 3: // D0 MESON
+          if( IsD0PiPlPiMiPiZeroDaughter(motherRealLabel) )
+              fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+          break;
         default:
-          AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2 valid)... selected: %d",fSelectedHeavyNeutralMeson));
+          AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
         }
       }
     }
@@ -2355,8 +2385,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
           if( IsEtaPrimePiPlPiMiEtaDaughter(motherRealLabel) )
               fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
           break;
+        case 3: // D0 MESON
+          if( IsD0PiPlPiMiPiZeroDaughter(motherRealLabel) )
+              fHistoTrueMotherGammaGammaFromHNMInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+              break;
         default:
-          AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2 valid)... selected: %d",fSelectedHeavyNeutralMeson));
+          AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
         }
       }
     }
@@ -2423,8 +2457,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
               if( IsEtaPrimePiPlPiMiEtaDaughter(labelNegPion) &&  negPionIsPrimary)
                 fHistoTrueNegPionFromNeutralMesonPt[fiCut]->Fill(negPionCandidate->Pt());
               break;
+            case 3: // D0 MESON
+              if( IsD0PiPlPiMiPiZeroDaughter(labelNegPion)& negPionIsPrimary)
+                fHistoTrueNegPionFromNeutralMesonPt[fiCut]->Fill(negPionCandidate->Pt());
+              break;
             default:
-              AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2 valid)... selected: %d",fSelectedHeavyNeutralMeson));
+              AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
             }
           }
         }
@@ -2476,8 +2514,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
               if( IsEtaPrimePiPlPiMiEtaDaughter(labelPosPion) &&  posPionIsPrimary)
                 fHistoTruePosPionFromNeutralMesonPt[fiCut]->Fill(posPionCandidate->Pt());
               break;
+            case 3: // D0 MESON
+              if( IsD0PiPlPiMiPiZeroDaughter(labelPosPion) && posPionIsPrimary )
+                fHistoTruePosPionFromNeutralMesonPt[fiCut]->Fill(posPionCandidate->Pt());
+              break;
             default:
-              AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2 valid)... selected: %d",fSelectedHeavyNeutralMeson));
+              AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
             }
           }
         }
@@ -2545,8 +2587,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
                       if( IsEtaPrimePiPlPiMiEtaDaughter(labeln) )
                         fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt());
                       break;
+                    case 3: // D0 MESON
+                      if( IsD0PiPlPiMiPiZeroDaughter(labeln) )
+                        fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt());
+                      break;
                     default:
-                      AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2 valid)... selected: %d",fSelectedHeavyNeutralMeson));
+                      AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
                     }
                   }
                 }
@@ -2569,8 +2615,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
                     if( IsEtaPrimePiPlPiMiEtaDaughter(labeln) )
                       fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt());
                     break;
+                  case 3: // D0 MESON
+                    if( IsD0PiPlPiMiPiZeroDaughter(labeln) )
+                      fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt());
+                    break;
                   default:
-                    AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2 valid)... selected: %d",fSelectedHeavyNeutralMeson));
+                    AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
                   }
                 }
               }
@@ -3597,6 +3647,21 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::IsOmegaPiPlPiMiPiZeroD
   return kFALSE;
 }
 
+//_____________________________________________________________________________________
+Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::IsD0PiPlPiMiPiZeroDaughter( Int_t label ) const {
+  //
+  // Returns true if the particle comes from eta -> pi+ pi- gamma
+  //
+  if(label<0) return kFALSE;
+  Int_t motherLabel = fMCEvent->Particle( label )->GetMother(0);
+  if( motherLabel < 0 || motherLabel >= fMCEvent->GetNumberOfTracks() ) return kFALSE;
+
+  TParticle* mother = fMCEvent->Particle( motherLabel );
+  if( mother->GetPdgCode() != 421 ) return kFALSE;
+  if( IsPiPlPiMiPiZeroDecay( mother ) ) return kTRUE;
+  return kFALSE;
+}
+
 
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::IsPiPlPiMiPiZeroDecay(TParticle *fMCMother) const
@@ -3683,8 +3748,11 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::GammaIsNeutralMesonPiP
   case 2: // ETA PRIME MESON
     if( IsPiPlPiMiEtaDecay( grandmother ) ) return kTRUE;
     break;
+  case 3: // D0 MESON
+    if( IsPiPlPiMiPiZeroDecay(grandmother) )  return kTRUE;
+    break;
   default:
-    AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2 valid)... selected: %d",fSelectedHeavyNeutralMeson));
+    AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
   }
   
   return kFALSE;
