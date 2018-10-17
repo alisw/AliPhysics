@@ -19,7 +19,7 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   virtual ~AliFemtoDreamTrack();
   void SetTrack(AliAODTrack *track, const int multiplicity = -1);
   void SetTrack(AliESDtrack *track, AliMCEvent *mcEvent = nullptr,
-                const int multiplicity = -1);
+                const int multiplicity = -1, const bool TPCOnlyTrack = true);
   UInt_t GetilterMap() const {
     return fFilterMap;
   }
@@ -133,8 +133,8 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   float GetBeta(AliESDtrack *track);
   bool CheckGlobalTrack(const Int_t TrackID);
   void SetAODTrackingInformation();
-  void ApplyESDtoAODFilter();
-  void SetESDTrackingInformation();
+  void ApplyESDtoAODFilter(const bool TPCOnlyTrack=true);
+  void SetESDTrackingInformation(const bool TPCOnlyTrack=true);
   void SetPhiAtRadii(const float bfield);
   void SetAODPIDInformation();
   void SetESDPIDInformation();

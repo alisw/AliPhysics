@@ -196,11 +196,11 @@ void AliFemtoDreamCascade::SetCascade(AliESDEvent *evt, AliESDcascade *casc) {
   int idxBachFromCascade = casc->GetBindex();
 
   AliESDtrack *esdCascadePos = evt->GetTrack(idxPosFromV0Dghter);
-  fPosDaug->SetTrack(esdCascadePos);
+  fPosDaug->SetTrack(esdCascadePos,nullptr,-1,false);
   AliESDtrack *esdCascadeNeg = evt->GetTrack(idxNegFromV0Dghter);
-  fNegDaug->SetTrack(esdCascadeNeg);
+  fNegDaug->SetTrack(esdCascadeNeg,nullptr,-1,false);
   AliESDtrack *esdCascadeBach = evt->GetTrack(idxBachFromCascade);
-  fBach->SetTrack(esdCascadeBach);
+  fBach->SetTrack(esdCascadeBach,nullptr,-1,false);
   // Identification of the V0 within the esdCascade (via both daughter track indices)
   AliESDv0 * currentV0 = 0x0;
   int idxV0FromCascade = -1;
