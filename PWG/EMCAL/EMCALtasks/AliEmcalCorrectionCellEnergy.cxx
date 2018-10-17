@@ -3,7 +3,6 @@
 
 #include <TObjArray.h>
 #include <TFile.h>
-#include <TGrid.h>
 #include "AliEMCALGeometry.h"
 #include "AliOADBContainer.h"
 #include "AliEMCALRecoUtils.h"
@@ -162,9 +161,7 @@ Int_t AliEmcalCorrectionCellEnergy::InitRecalib()
   else if (fCustomRecalibFilePath!="")
   { //if custom recalib requested
     AliInfo(Form("Loading custom Recalib OADB from given path %s",fCustomRecalibFilePath.Data()));
-    
-    TGrid::Connect("alien:///");
-    
+        
     recalibFile = std::unique_ptr<TFile>(TFile::Open(Form("%s",fCustomRecalibFilePath.Data()),"read"));
     if (!recalibFile || recalibFile->IsZombie())
     {
