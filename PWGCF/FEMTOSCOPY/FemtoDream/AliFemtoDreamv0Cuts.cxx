@@ -180,7 +180,6 @@ AliFemtoDreamv0Cuts* AliFemtoDreamv0Cuts::LambdaCuts(bool isMC, bool CPAPlots,
 
 bool AliFemtoDreamv0Cuts::isSelected(AliFemtoDreamv0 *v0) {
   bool pass = true;
-
   if (!v0->IsSet()) {
     pass = false;
   } else {
@@ -207,6 +206,7 @@ bool AliFemtoDreamv0Cuts::isSelected(AliFemtoDreamv0 *v0) {
       pass = false;
     }
   }
+
   v0->SetUse(pass);
   BookQA(v0);
   if (!fMinimalBooking) {
@@ -258,7 +258,7 @@ bool AliFemtoDreamv0Cuts::DaughtersPassCuts(AliFemtoDreamv0 *v0) {
         fHist->FillTrackCounter(2);
     }
   }
-  pass = passD1 && passD2;
+  if(pass) pass = passD1 && passD2;
   return pass;
 }
 bool AliFemtoDreamv0Cuts::MotherPassCuts(AliFemtoDreamv0 *v0) {
@@ -469,8 +469,10 @@ void AliFemtoDreamv0Cuts::BookQA(AliFemtoDreamv0 *v0) {
   v0->GetPosDaughter()->SetUse(v0->UseParticle());
   v0->GetNegDaughter()->SetUse(v0->UseParticle());
 
-  fPosCuts->BookQA(v0->GetPosDaughter());
-  fNegCuts->BookQA(v0->GetNegDaughter());
+  if (v0->IsSet()) {
+    fPosCuts->BookQA(v0->GetPosDaughter());
+    fNegCuts->BookQA(v0->GetNegDaughter());
+  }
 }
 
 void AliFemtoDreamv0Cuts::BookMC(AliFemtoDreamv0 *v0) {
