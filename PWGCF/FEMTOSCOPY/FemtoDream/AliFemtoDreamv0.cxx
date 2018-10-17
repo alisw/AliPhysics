@@ -127,25 +127,29 @@ void AliFemtoDreamv0::SetDaughter(AliESDEvent *evt, AliESDv0 *v0) {
   if (esdV0Pos->Charge() > 0 && esdV0Neg->Charge() < 0) {
     fnDaug->SetTrack(esdV0Pos);
     fpDaug->SetTrack(esdV0Neg);
-    this->SetDaughterInfo(v0);
-    this->fHasDaughter = true;
-    this->fdcaPrimPos = TMath::Abs(
-        esdV0Pos->GetD(evt->GetPrimaryVertex()->GetX(),
-                       evt->GetPrimaryVertex()->GetY(), evt->GetMagneticField()));
-    this->fdcaPrimNeg = TMath::Abs(
-        esdV0Neg->GetD(evt->GetPrimaryVertex()->GetX(),
-                       evt->GetPrimaryVertex()->GetY(), evt->GetMagneticField()));
+    if (fnDaug->IsSet() && fpDaug->IsSet()) {
+      this->SetDaughterInfo(v0);
+      this->fHasDaughter = true;
+      this->fdcaPrimPos = TMath::Abs(
+          esdV0Pos->GetD(evt->GetPrimaryVertex()->GetX(),
+                         evt->GetPrimaryVertex()->GetY(), evt->GetMagneticField()));
+      this->fdcaPrimNeg = TMath::Abs(
+          esdV0Neg->GetD(evt->GetPrimaryVertex()->GetX(),
+                         evt->GetPrimaryVertex()->GetY(), evt->GetMagneticField()));
+    }
   } else if (esdV0Pos->Charge() < 0 && esdV0Neg->Charge() > 0) {
     fnDaug->SetTrack(esdV0Neg);
     fpDaug->SetTrack(esdV0Pos);
-    this->SetDaughterInfo(v0);
-    this->fHasDaughter = true;
-    this->fdcaPrimNeg= TMath::Abs(
-        esdV0Pos->GetD(evt->GetPrimaryVertex()->GetX(),
-                       evt->GetPrimaryVertex()->GetY(), evt->GetMagneticField()));
-    this->fdcaPrimPos = TMath::Abs(
-        esdV0Neg->GetD(evt->GetPrimaryVertex()->GetX(),
-                       evt->GetPrimaryVertex()->GetY(), evt->GetMagneticField()));
+    if (fnDaug->IsSet() && fpDaug->IsSet()) {
+      this->SetDaughterInfo(v0);
+      this->fHasDaughter = true;
+      this->fdcaPrimNeg= TMath::Abs(
+          esdV0Pos->GetD(evt->GetPrimaryVertex()->GetX(),
+                         evt->GetPrimaryVertex()->GetY(), evt->GetMagneticField()));
+      this->fdcaPrimPos = TMath::Abs(
+          esdV0Neg->GetD(evt->GetPrimaryVertex()->GetX(),
+                         evt->GetPrimaryVertex()->GetY(), evt->GetMagneticField()));
+    }
   } else {
     this->fHasDaughter = false;
   }
