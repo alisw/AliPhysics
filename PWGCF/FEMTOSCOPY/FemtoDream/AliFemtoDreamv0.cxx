@@ -237,8 +237,8 @@ void AliFemtoDreamv0::SetDaughterInfo(AliESDv0 *v0) {
   if (fnDaug->IsSet()) {
     this->SetPhiAtRadius(fnDaug->GetPhiAtRaidius().at(0));
   }
-  if (fnDaug->IsSet()) {
-    this->SetPhiAtRadius(fnDaug->GetPhiAtRaidius().at(0));
+  if (fpDaug->IsSet()) {
+    this->SetPhiAtRadius(fpDaug->GetPhiAtRaidius().at(0));
   }
 
 //  if (fIsMC) {
