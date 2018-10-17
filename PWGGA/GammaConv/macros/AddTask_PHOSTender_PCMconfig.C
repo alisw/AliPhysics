@@ -48,7 +48,16 @@ AliPHOSTenderTask* AddTask_PHOSTender_PCMconfig(
           }
           std::cout << "=============================================================" << std::endl;
           PHOSSupply->SetNonlinearityParams(n,par);
-      }
+      } else if (options.CompareTo("MBMCLHC15o") == 0){
+        PHOSSupply->SetMCProduction("Run2Default") ;
+        PHOSSupply->SetNonlinearityVersion("Run2MC");//only for MC
+        Int_t n = 3;
+        Double_t par[3] = {1.002,-0.06,0.7};//only for MC
+        std::cout << "============== NL version: MC with parameters ======================" << std::endl;
+        for (Int_t i  = 0; i< 3; i++){
+          std::cout << "parameter " << i << ": \t" << par[i] << endl;
+        }
+        PHOSSupply->SetNonlinearityParams(3,par);//only for MC
     } else {
       PHOSSupply->SetMCProduction(options.Data()) ;
     }
