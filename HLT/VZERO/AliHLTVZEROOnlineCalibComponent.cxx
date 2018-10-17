@@ -377,6 +377,7 @@ int AliHLTVZEROOnlineCalibComponent::ProcessOption(TString option, TString value
         //Simple setter
         fRefTrigger = value.Data();
     }
+    else if (option.EqualTo("pushback-period")) {} //Let -pushback-period optionm pass
     else
     {
         HLTError("unrecognized option %s", option.Data());
