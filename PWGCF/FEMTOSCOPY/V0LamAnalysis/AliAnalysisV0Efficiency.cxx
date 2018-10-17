@@ -378,6 +378,7 @@ void AliAnalysisV0Efficiency::FillHistogram(int aPID, const AliAODMCParticle* aP
       //It appears K0Short(=310) will have a parent K0(=311)
       if(aPID==310 && tMotherPDG==311) aHist->Fill(kPrimary);
 
+      else if(aMother->GetCalcMass() < aPart->GetCalcMass()) aHist->Fill(kUnassigned);  //Mother should be heavier than daughter!
       else if(tMotherPDG==3212) aHist->Fill(kSig0);
       else if(tMotherPDG==3322) aHist->Fill(kXi0);
       else if(tMotherPDG==3312) aHist->Fill(kXiC);
