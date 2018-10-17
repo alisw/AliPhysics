@@ -587,6 +587,7 @@ Bool_t AliV0ReaderV1::Notify(){
 }
 //________________________________________________________________________
 void AliV0ReaderV1::UserExec(Option_t *option){
+  if (!fConversionCuts->GetPIDResponse()) fConversionCuts->InitPIDResponse();
 
   AliESDEvent * esdEvent = dynamic_cast<AliESDEvent*>(fInputEvent);
   if(esdEvent) {
@@ -607,7 +608,7 @@ void AliV0ReaderV1::UserExec(Option_t *option){
 //________________________________________________________________________
 Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
 {
-
+  if (!fConversionCuts->GetPIDResponse()) fConversionCuts->InitPIDResponse();
   //Reset the TClonesArray
   fConversionGammas->Delete();
 
