@@ -495,7 +495,7 @@ Bool_t AliAnalysisTaskUpcFilter::RunAOD()
       fMuonCounter->Fill( kMunEta );
 
       pdca = fMuonCuts->IsSelected(trk);
-      //if(!pdca) continue;
+      if(!pdca) continue;
       fMuonCounter->Fill( kMunPDCA );
 
       //muon track is accepted to put to the output
