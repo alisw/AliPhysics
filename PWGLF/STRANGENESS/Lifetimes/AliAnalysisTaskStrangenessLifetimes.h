@@ -11,11 +11,14 @@ class TTree;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
+#include "Math/Vector4D.h"
 #include "MCparticle.h"
 #include "MiniV0.h"
 
 class AliPIDResponse;
 class AliESDtrack;
+
+typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>> LVector_t;
 
 class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
  public:
@@ -45,7 +48,7 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   void SetupStandardVertexing();
   void SetupLooseVertexing();
 
-  static double GetEffMass(int pdg, AliESDtrack* nTrack, AliESDtrack* pTrack, double alpha);
+  static LVector_t GetV0LorentzVector(int pdg, AliESDtrack* nTrack, AliESDtrack* pTrack, double alpha);
 
   AliEventCuts fEventCuts;  /// Event cuts class
 

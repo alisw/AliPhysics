@@ -10,7 +10,6 @@
 #include <TH2D.h>
 #include <TList.h>
 #include <TMath.h>
-#include "Math/Vector4D.h"
 
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
@@ -28,7 +27,6 @@ using Lifetimes::MiniV0;
 using std::cout;
 using std::endl;
 
-typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>> LVector_t;
 
 ClassImp(AliAnalysisTaskStrangenessLifetimes);
 
@@ -382,7 +380,28 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
     // Remove like-sign (will not affect offline V0 candidates!)
     if (v0->GetParamN()->Charge() * v0->GetParamP()->Charge() > 0) continue;
 
+    const int lKeyPos = std::abs(v0->GetPindex());
+    const int lKeyNeg = std::abs(v0->GetNindex());
+    AliESDtrack *pTrack = esdEvent->GetTrack(lKeyPos);
+    AliESDtrack *nTrack = esdEvent->GetTrack(lKeyNeg);
+
+    // Official means of acquiring N-sigmas
+    float nSigmaPosProton =
+        std::abs(fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kProton));
+    float nSigmaPosPion =
+        std::abs(fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion));
+    float nSigmaPosHe3 =
+        std::abs(fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kHe3));
+    float nSigmaNegProton =
+        std::abs(fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kProton));
+    float nSigmaNegPion =
+        std::abs(fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kPion));
+    float nSigmaNegHe3 =
+        std::abs(fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kHe3));
+
+    bool isHyperCandidate = nSigmaNegHe3 < 5 || nSigmaPosHe3 < 5;
     double v0Pt = v0->Pt();
+
     if ((v0Pt < fMinPtToSave) || (fMaxPtToSave < v0Pt)) continue;
 
     double decayVtx[3];
@@ -395,9 +414,6 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
 
     double v0Radius = std::hypot(decayVtx[0], decayVtx[1]);
 
-    int lKeyPos = std::abs(v0->GetPindex());
-    int lKeyNeg = std::abs(v0->GetNindex());
-
     double momPos[3];
     v0->GetPPxPyPz(momPos[0], momPos[1], momPos[2]);
     double momNeg[3];
@@ -409,8 +425,8 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
     double lVecProd = momPos[0] * momNeg[1] - momPos[1] * momNeg[0];
     bool isCowboy = lVecProd * magneticField < 0;
 
-    AliESDtrack *pTrack = esdEvent->GetTrack(lKeyPos);
-    AliESDtrack *nTrack = esdEvent->GetTrack(lKeyNeg);
+   // AliESDtrack *pTrack = esdEvent->GetTrack(lKeyPos);
+   // AliESDtrack *nTrack = esdEvent->GetTrack(lKeyNeg);
 
     if (!pTrack || !nTrack) {
       ::Fatal("AliAnalysisTaskStrangenessLifetimes::UserExec",
@@ -486,22 +502,18 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
     // Getting invariant mass infos directly from ESD
     double masses[3];
     for (int iPdg = 0; iPdg < 3; ++iPdg) {
-      masses[iPdg] = GetEffMass(pdgCodes[iPdg], nTrack, pTrack, v0->AlphaV0());
+      auto lvector = GetV0LorentzVector(pdgCodes[iPdg], nTrack, pTrack, v0->AlphaV0());
+      masses[iPdg] = lvector.M();
+      if (iPdg == 2) {
+        if (isHyperCandidate) {
+          v0Pt = lvector.Pt();
+          lV0TotalMomentum = lvector.P();
+        } else
+          masses[iPdg] = -1;
+      }
     }
 
-    // Official means of acquiring N-sigmas
-    float nSigmaPosProton =
-        std::abs(fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kProton));
-    float nSigmaPosPion =
-        std::abs(fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion));
-    float nSigmaPosHe3 =
-        std::abs(fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kHe3));
-    float nSigmaNegProton =
-        std::abs(fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kProton));
-    float nSigmaNegPion =
-        std::abs(fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kPion));
-    float nSigmaNegHe3 =
-        std::abs(fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kHe3));
+ 
 
     float distOverP = std::sqrt(Sq(decayVtx[0] - primaryVertex[0]) +
                                 Sq(decayVtx[1] - primaryVertex[1]) +
@@ -633,7 +645,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
 
 void AliAnalysisTaskStrangenessLifetimes::Terminate(Option_t *) {}
 
-double AliAnalysisTaskStrangenessLifetimes::GetEffMass(int pdg, AliESDtrack* negTrack, AliESDtrack* posTrack, double alpha) {
+LVector_t AliAnalysisTaskStrangenessLifetimes::GetV0LorentzVector(int pdg, AliESDtrack* negTrack, AliESDtrack* posTrack, double alpha) {
   constexpr int v0Pdg[3]{310, 3122, 1010010030};
   constexpr AliPID::EParticleType children[3][2]{
     {AliPID::kPion, AliPID::kPion},
@@ -654,7 +666,7 @@ double AliAnalysisTaskStrangenessLifetimes::GetEffMass(int pdg, AliESDtrack* neg
     LVector_t posLvec{posMom[0] * posCharge, posMom[1] * posCharge, posMom[2], posMass};
     LVector_t negLvec{negMom[0] * negCharge, negMom[1] * negCharge, negMom[2], negMass};
     posLvec += negLvec;
-    return posLvec.M();
+    return posLvec;
   }
-  return 0.;
+  return LVector_t(0,0,0,0);
 } 
