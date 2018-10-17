@@ -116,6 +116,7 @@ set(SRCS
   AliAnalysisTaskBeautyCal.cxx
   AliAnalysisTaskTPCCalBeauty.cxx
   AliAnalysisTaskFlowITSTPCTOFQCSP.cxx
+  AliAnalysisTaskHFEIPDistribution.cxx
   AliAnalysisTaskHFEMulti.cxx
   AliAnalysisTaskHFEMultiplicity.cxx
   AliAnalysisTaskHFEtemplate.cxx
