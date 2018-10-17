@@ -65,6 +65,11 @@ AliFemtoModelCorrFctnTrueQ3DByParent::AliFemtoModelCorrFctnTrueQ3DByParent(const
                                    */
 }
 
+AliFemtoModelCorrFctnTrueQ3DByParent::AliFemtoModelCorrFctnTrueQ3DByParent(Int_t nbins, Double_t qmax)
+  : AliFemtoModelCorrFctnTrueQ3DByParent(nbins, -abs(qmax), abs(qmax))
+{
+}
+
 AliFemtoModelCorrFctnTrueQ3DByParent::AliFemtoModelCorrFctnTrueQ3DByParent(Int_t nbins, Double_t qmin, Double_t qmax)
   : AliFemtoCorrFctn()
   , fManager(nullptr)
@@ -122,15 +127,31 @@ AliFemtoModelCorrFctnTrueQ3DByParent::AliFemtoModelCorrFctnTrueQ3DByParent(const
   , fRng(new TRandom())
 {
   fNumeratorGenerated = static_cast<THnSparseF*>(orig.fNumeratorGenerated->Clone());
-  // fNumeratorReconstructed = new THnSparseF(*orig.fNumeratorReconstructed);
-  // fDenominatorGenerated = new THnSparseF(*orig.fDenominatorGenerated);
-  // fDenominatorReconstructed = new THnSparseF(*orig.fDenominatorReconstructed);
+  fNumeratorReconstructed = static_cast<THnSparseF*>(orig.fNumeratorReconstructed->Clone());
+  fDenominatorGenerated = static_cast<THnSparseF*>(orig.fDenominatorGenerated->Clone());
+  fDenominatorReconstructed = static_cast<THnSparseF*>(orig.fDenominatorReconstructed->Clone());
 }
 
 
 AliFemtoModelCorrFctnTrueQ3DByParent&
-AliFemtoModelCorrFctnTrueQ3DByParent::operator=(const AliFemtoModelCorrFctnTrueQ3DByParent&)
+AliFemtoModelCorrFctnTrueQ3DByParent::operator=(const AliFemtoModelCorrFctnTrueQ3DByParent &rhs)
 {
+  if (this == &rhs) {
+    return *this;
+  }
+
+  delete fNumeratorGenerated;
+  fNumeratorGenerated = static_cast<THnSparseF*>(rhs.fNumeratorGenerated->Clone());
+
+  delete fNumeratorReconstructed;
+  fNumeratorReconstructed = static_cast<THnSparseF*>(rhs.fNumeratorReconstructed->Clone());
+
+  delete fDenominatorGenerated;
+  fDenominatorGenerated = static_cast<THnSparseF*>(rhs.fDenominatorGenerated->Clone());
+
+  delete fDenominatorReconstructed;
+  fDenominatorReconstructed = static_cast<THnSparseF*>(rhs.fDenominatorReconstructed->Clone());
+
   return *this;
 }
 
