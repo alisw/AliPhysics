@@ -2082,9 +2082,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
 
         trgeff1  = f1trg1->Eval(e1);
         trgeff2  = f1trg2->Eval(e2);
-        //trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR//this is true only when occupancy is uniformed.
-        Double_t ave = (trgeff1 + trgeff2)/2.;
-        trgeff12 = ave + ave - (ave * ave);//logical OR//this is true only when occupancy is uniformed.
+        trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR//this is true only when occupancy is uniformed.
       }
 
       weight = 1.;
@@ -2301,9 +2299,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
 
           trgeff1  = f1trg1->Eval(e1);
           trgeff2  = f1trg2->Eval(e2);
-          //trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR
-          Double_t ave = (trgeff1 + trgeff2)/2.;
-          trgeff12 = ave + ave - (ave * ave);//logical OR//this is true only when occupancy is uniformed.
+          trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR
 
         }
 
@@ -2529,9 +2525,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillM3pi()
       if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP){
         trgeff1  = f1trg1->Eval(e1);
         trgeff2  = f1trg2->Eval(e2);
-        //trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR//this is true only when occupancy is uniformed.
-        Double_t ave = (trgeff1 + trgeff2)/2.;
-        trgeff12 = ave + ave - (ave * ave);//logical OR//this is true only when occupancy is uniformed.
+        trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR//this is true only when occupancy is uniformed.
       }
 
       if(m12 < 0.12 || 0.15 < m12) continue;
