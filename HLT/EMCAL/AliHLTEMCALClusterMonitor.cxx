@@ -24,6 +24,7 @@
 #include "AliHLTEMCALClusterMonitor.h"
 #include "AliHLTCaloSharedMemoryInterfacev2.h"
 #include "TMath.h"
+#include "TLorentzVector.h"
 
 ClassImp(AliHLTEMCALClusterMonitor);
 
@@ -37,7 +38,8 @@ AliHLTEMCALClusterMonitor::AliHLTEMCALClusterMonitor():
 	hClusterEneVsCells(0),
 	hClusterEtaVsPhi(0),
 	hClusterM02(0),
-	hClusterM20(0)
+	hClusterM20(0),
+	hClusterInvariantMass(0)
 
 {
   // See header file for documentation
@@ -47,6 +49,8 @@ AliHLTEMCALClusterMonitor::AliHLTEMCALClusterMonitor():
   // Booking histograms
   hList = new TObjArray;
 
+	hClusterInvariantMass  = new TH1F("hClusterInvariantMass", "Invariant mass (GeV)", 500, 0, 500);
+	hList->Add(hClusterInvariantMass);
 	hClusterEneEMCAL = new TH1F("hClusterEneEMCAL", "ClusterEnergy (GeV)", 200, 0, 100);
 	hList->Add(hClusterEneEMCAL);
 	hClusterEneDCAL = new TH1F("hClusterEneDCAL", "ClusterEnergy (GeV)", 200, 0, 100);
@@ -99,7 +103,9 @@ Int_t AliHLTEMCALClusterMonitor::MakeHisto(AliHLTCaloClusterDataStruct *caloClus
   AliHLTCaloClusterDataStruct* caloClusterStructPtr2 = caloClusterStructPtr;
   clusterReaderPtr2->SetMemoryNew(caloClusterStructPtr2, nClusters);
 
+  TLorentzVector* lorentzVecs = new TLorentzVector[nClusters];
 
+  UInt_t iCluster = 0;
   while((caloClusterStructPtr = fClusterReaderPtr->NextCluster()) != 0) {
     clusterX = caloClusterStructPtr->fGlobalPos[0];
     clusterY = caloClusterStructPtr->fGlobalPos[1];
@@ -123,13 +129,22 @@ Int_t AliHLTEMCALClusterMonitor::MakeHisto(AliHLTCaloClusterDataStruct *caloClus
     hClusterM02->Fill(caloClusterStructPtr->fM02);
     hClusterM20->Fill(caloClusterStructPtr->fM20);
 
-    // Invariant mass plots
-    while((caloClusterStructPtr2 = clusterReaderPtr2->NextCluster()) != 0) {
-      //TODO: Fill invariant mass plots
+
+    lorentzVecs[iCluster].SetPxPyPzE(clusterX, clusterY, clusterZ, clusterEne);
+    iCluster++;
+  }
+
+  // Invariant mass plots
+  for(Int_t i=0; i<nClusters; i++)
+    for(Int_t j=0; j<i; j++)
+    {
+      TVector3 clusterVector_1(lorentzVecs[i].X(), lorentzVecs[i].Y(), lorentzVecs[i].Z());
+      TVector3 clusterVector_2(lorentzVecs[j].X(), lorentzVecs[j].Y(), lorentzVecs[j].Z());
+      Float_t invMass = TMath::Sqrt(2*TMath::Abs(lorentzVecs[i].E())*TMath::Abs(lorentzVecs[j].E())*(1-TMath::Cos(clusterVector_1.Angle(clusterVector_2))));
+      hClusterInvariantMass->Fill(invMass);
     }
 
-  }
-	  
+  delete[] lorentzVecs;
 
-return 0; 
+  return 0; 
 }

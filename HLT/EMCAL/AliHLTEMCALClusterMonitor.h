@@ -62,6 +62,7 @@ private:
 	TH2F *hClusterEtaVsPhi;
 	TH1F *hClusterM02;
 	TH1F *hClusterM20;
+	TH1F *hClusterInvariantMass;
 
   AliHLTEMCALClusterMonitor(const AliHLTEMCALClusterMonitor &);
   AliHLTEMCALClusterMonitor & operator = (const AliHLTEMCALClusterMonitor &);
