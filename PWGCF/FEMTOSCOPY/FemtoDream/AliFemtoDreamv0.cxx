@@ -124,7 +124,6 @@ void AliFemtoDreamv0::SetDaughter(AliESDEvent *evt, AliESDv0 *v0) {
   int negFromV0 = v0->GetNindex();
   AliESDtrack *esdV0Pos = evt->GetTrack(posFromV0);
   AliESDtrack *esdV0Neg = evt->GetTrack(negFromV0);
-  std::cout << esdV0Pos << '\t' << esdV0Neg << std::endl;
   if (esdV0Pos && esdV0Neg) {
     if (esdV0Pos->Charge() > 0 && esdV0Neg->Charge() < 0) {
       fnDaug->SetTrack(esdV0Pos, nullptr, -1, false);
@@ -159,7 +158,6 @@ void AliFemtoDreamv0::SetDaughter(AliESDEvent *evt, AliESDv0 *v0) {
     } else {
       this->fHasDaughter = false;
     }
-    std::cout << fnDaug << '\t' << fpDaug << std::endl;
   } else {
     this->fHasDaughter = false;
   }
