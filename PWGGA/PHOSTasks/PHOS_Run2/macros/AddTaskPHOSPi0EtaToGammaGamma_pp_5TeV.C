@@ -163,12 +163,23 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
     //TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
     //f1trg->SetParameters(0.985,2.56,0.30);
 
-    TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1) + [3]/(TMath::Exp(-(x-[4])/[5]) + 1)",0,100);//20180211
-    f1trg->SetParameters(0.210,2.72,0.190,0.0676,3.97,0.364);
+    //TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1) + [3]/(TMath::Exp(-(x-[4])/[5]) + 1)",0,100);//20180211
+    //f1trg->SetParameters(0.210,2.72,0.190,0.0676,3.97,0.364);
+    //f1trg->SetNpx(1000);
+    //task->SetTriggerEfficiency(f1trg);
+    ////printf("TOF cut efficiency as a function of E is %s\n",f1tof->GetTitle());
 
-    f1trg->SetNpx(1000);
-    task->SetTriggerEfficiency(f1trg);
-    //printf("TOF cut efficiency as a function of E is %s\n",f1tof->GetTitle());
+    TF1 *f1trg[6][9] = {};
+    for(Int_t imod=0;imod<6;imod++){
+      for(Int_t itru=0;itru<9;itru++){
+        f1trg[imod][itru] = 0x0;
+        f1trg[imod][itru] = new TF1(Form("f1_M%dTRU%d",imod,itru),"[0]/(TMath::Exp(-(x-[1])/[2]) + 1) + [3]/(TMath::Exp(-(x-[4])/[5]) + 1)",0,100);
+        f1trg[imod][itru]->SetNpx(1000);
+        f1trg[imod][itru]->SetParameters(0.210,2.72,0.190,0.0676,3.97,0.364);
+        task->SetTriggerEfficiency(imod,itru,f1trg[imod][itru]);
+      }//end of tru loop
+    }//end of module loop
+
   }
 
   if(isMC){

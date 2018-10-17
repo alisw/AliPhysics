@@ -496,6 +496,9 @@ Bool_t AliPHOSTriggerHelper::IsOnActiveTRUChannel(AliCaloPhoton *ph)
   Int_t cellx  = relId[2];
   Int_t cellz  = relId[3];
 
+  //cellx in [1,64]
+  //cellz in [1,56]
+
   //convert (cellx,cellz) in FEE to (TRUchX,TRUchZ) in TRU.
 
   Int_t cellx00 = cellx;
@@ -512,6 +515,7 @@ Bool_t AliPHOSTriggerHelper::IsOnActiveTRUChannel(AliCaloPhoton *ph)
 
   if(fTriggerInputL1 > 0){//L1 trigger analysis
     //STU stores fired position at top-left
+    //L1 can detect a high energy cluster at a border of TRUs.
     if(cellx %2 == 0){
       cellx00 -= 1;
       cellx01 -= 1;
@@ -524,11 +528,13 @@ Bool_t AliPHOSTriggerHelper::IsOnActiveTRUChannel(AliCaloPhoton *ph)
       cellz10 += 1;
       cellz11 += 1;
     }
+    return IsGoodTRUChannel("PHOS",module,cellx00,cellz00) | IsGoodTRUChannel("PHOS",module,cellx01,cellz01) | IsGoodTRUChannel("PHOS",module,cellx10,cellz10) | IsGoodTRUChannel("PHOS",module,cellx11,cellz11);
   }
   else if(fTriggerInputL0 >0){//L0 trigger analysis
     //TRU stores fired position at bottom-left
     //note that 2D TRU bad maps are filled in odd number bins.(1,1) (1,3) ... (55,53) (55,55), ... (63,55)
     //At maximum, 1 cluster can fire 4 TRU channels.
+    //TRU can not detect a high energy cluser at a border of TRUs.
     if(cellx %2 == 0){
       cellx00 -= 1;
       cellx01 -= 1;
@@ -541,10 +547,21 @@ Bool_t AliPHOSTriggerHelper::IsOnActiveTRUChannel(AliCaloPhoton *ph)
       cellz10 -= 1;
       cellz11 -= 1;
     }
-  }
 
-  //return IsGoodTRUChannel("PHOS",module,cellx,cellz);
-  return IsGoodTRUChannel("PHOS",module,cellx00,cellz00) | IsGoodTRUChannel("PHOS",module,cellx01,cellz01) | IsGoodTRUChannel("PHOS",module,cellx10,cellz10) | IsGoodTRUChannel("PHOS",module,cellx11,cellz11);
+    if(cellx % 16 <= 2 && cellz % 28 <= 2)
+      return IsGoodTRUChannel("PHOS",module,cellx00,cellz00);
+    else if(cellx % 16 <= 2)
+      return IsGoodTRUChannel("PHOS",module,cellx10,cellz10) | IsGoodTRUChannel("PHOS",module,cellx00,cellz00);
+    else if(cellz % 28 <= 2)
+      return IsGoodTRUChannel("PHOS",module,cellx00,cellz00) | IsGoodTRUChannel("PHOS",module,cellx01,cellz01);
+    else
+      return IsGoodTRUChannel("PHOS",module,cellx00,cellz00) | IsGoodTRUChannel("PHOS",module,cellx01,cellz01) | IsGoodTRUChannel("PHOS",module,cellx10,cellz10) | IsGoodTRUChannel("PHOS",module,cellx11,cellz11);
+
+  }
+  else{
+    AliInfo("Trigger input is neither L1 nor L0. Check your configuration. return kFALSE");
+    return kFALSE;
+  }
 
 }
 //________________________________________________________________________
