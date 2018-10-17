@@ -49,20 +49,20 @@ AliFemtoResultStorage::~AliFemtoResultStorage()
   delete fObjects;
 }
 
-static Int_t recursive_directory_write(const TObject *objects, TDirectory *dir)
+static Int_t recursive_directory_write(const TObject *objects, TDirectory &dir)
 {
   Int_t result = 0;
   if (auto *collection = dynamic_cast<const TCollection*>(objects)) {
     TString path = collection->GetName();
-    dir->mkdir(path);
-    TDirectory *subdir = dir->GetDirectory(path);
+    dir.mkdir(path);
+    TDirectory *subdir = dir.GetDirectory(path);
 
     TIter next_object(collection);
     while (TObject *obj = next_object()) {
-      result += recursive_directory_write(obj, subdir);
+      result += recursive_directory_write(obj, *subdir);
     }
   } else {
-    result += dir->WriteTObject(objects);
+    result += dir.WriteTObject(objects);
   }
   return result;
 }
@@ -85,6 +85,10 @@ AliFemtoResultStorage::Write(const char *name, Int_t option, Int_t bufsize) cons
 
   gDirectory->mkdir(path);
   TDirectory *outdir = gDirectory->GetDirectory(path);
+  if (!outdir) {
+    Error("Could not create path %s", path);
+    return 0;
+  }
 
   Int_t result = 0;
   for (TObject *obj : *fObjects) {
@@ -96,7 +100,7 @@ AliFemtoResultStorage::Write(const char *name, Int_t option, Int_t bufsize) cons
     }
 
     for (TObject *output_object : *output_object_list) {
-      result += recursive_directory_write(output_object, outdir);
+      result += recursive_directory_write(output_object, *outdir);
     }
   }
 
