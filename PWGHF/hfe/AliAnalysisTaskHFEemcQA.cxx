@@ -777,7 +777,7 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     Int_t NpureMC = 0;
     Int_t NpureMCproc = 0;
     if(fMCarray)CheckMCgen(fMCheader,NpureMC,NpureMCproc);
-    cout << "NpureMC = "<< NpureMC << " ; " << NpureMCproc << endl;    
+   // cout << "NpureMC = "<< NpureMC << " ; " << NpureMCproc << endl;
 
     ///////////////////
     //PID initialised//
@@ -1525,15 +1525,15 @@ void AliAnalysisTaskHFEemcQA::CheckMCgen(AliAODMCHeader* fMCheader, Int_t &Npure
             AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
             if(gh)
             {
-                cout << "<------- imc = "<< gh->GetName() << endl;     
+              //  cout << "<------- imc = "<< gh->GetName() << endl;
                 if(igene==0)NpureMC = gh->NProduced();  // generate by PYTHIA or HIJING
                 NpureMCproc += gh->NProduced();
             }
         }
     }
     
-     cout << "NpureMC = " << NpureMC << endl;
-     cout << "NpureMCproc = " << NpureMCproc << endl;
+   //  cout << "NpureMC = " << NpureMC << endl;
+   //  cout << "NpureMCproc = " << NpureMCproc << endl;
     //for(int imc=0; imc<fMCarray->GetEntries(); imc++)
     for(int imc=0; imc<NpureMCproc; imc++)
     {
@@ -1653,7 +1653,8 @@ void AliAnalysisTaskHFEemcQA::GetTrackMCinfo(Int_t &ilabel, std::vector<double> 
      if(pidM==22) // from pi0 & eta
         {
          FindMother(fMCparticleM, ilabelM, pidM);
-         if(ilabelM>NpureMC && ilabelM<NpureMCproc)cout << "Conv. ; " << pidM << " ; " << fMCparticleM->Pt() << endl; 
+         if(ilabelM>NpureMC && ilabelM<NpureMCproc)
+             //cout << "Conv. ; " << pidM << " ; " << fMCparticleM->Pt() << endl;
          fMCparticleM = (AliAODMCParticle*) fMCarray->At(ilabelM);
         }     
  
