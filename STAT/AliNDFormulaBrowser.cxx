@@ -254,9 +254,8 @@ void AliNDFormulaBrowser::CloseWindow() {
 void AliNDFormulaBrowser::DoText(const char * /*text*/) {
   // Handle text entry widgets.
 
-  TGTextEntry *te = (TGTextEntry *) gTQSender;
+  /*TGTextEntry *te = (TGTextEntry *) gTQSender;
   Int_t id = te->WidgetId();
-  /*
   switch (id) {
      case HId1:
         fHslider1->SetPosition(atoi(fTbh1->GetString()));
@@ -438,7 +437,7 @@ void  AliNDFormulaBrowser::UpdateCanvas(){
     if (iParam!=iPar &&iParam!=jPar) {
       if (fVerbose&0x2){
         printf("iParam = %d\n",iParam);
-        printf("formula  = %d\n",fFormula->GetParName(iParam));
+        printf("formula  = %s\n",fFormula->GetParName(iParam));
       }
       fgkLatex->DrawLatexNDC(fgkLatex->GetX(), fgkLatex->GetY()-fgkLatex->GetTextSize()*1.2*iRow,
                              TString::Format("p_{%d} %s=%.5f", iParam, fFormula->GetParName(iParam),(*fFormulaParams)[iParam]).Data());

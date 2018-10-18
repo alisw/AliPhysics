@@ -154,7 +154,7 @@ Float_t AliDrawStyle::GetFloatAt(const char * format, Int_t index, const char * 
 /// \param index  - marker index
 /// \return marker style for given styleName, index
 Int_t AliDrawStyle::GetMarkerStyle(const char *style, Int_t index){
-  if (AliDrawStyle::fMarkerStyles[style].size() <= index) {
+  if ((Int_t) AliDrawStyle::fMarkerStyles[style].size() <= index) {
     return GetIntegerAt(style,index);
   }
   return  AliDrawStyle::fMarkerStyles[style][index];
@@ -165,7 +165,7 @@ Int_t AliDrawStyle::GetMarkerStyle(const char *style, Int_t index){
 /// \param index  - marker index
 /// \return marker style for given styleName, index
 Int_t AliDrawStyle::GetLineStyle(const char *style, Int_t index){
-  if (AliDrawStyle::fLineStyle[style].size() <= index) {
+  if ((Int_t) AliDrawStyle::fLineStyle[style].size() <= index) {
     return GetIntegerAt(style,index);
   }
   return  AliDrawStyle::fLineStyle[style][index];
@@ -176,7 +176,7 @@ Int_t AliDrawStyle::GetLineStyle(const char *style, Int_t index){
 /// \param index  - marker index
 /// \return marker style for given styleName, index
 Int_t AliDrawStyle::GetLineColor(const char *style, Int_t index){
-  if (AliDrawStyle::fLineColor[style].size() <= index) {
+  if ((Int_t) AliDrawStyle::fLineColor[style].size() <= index) {
     return GetIntegerAt(style,index);
   }
   return  AliDrawStyle::fLineColor[style][index];
@@ -187,7 +187,7 @@ Int_t AliDrawStyle::GetLineColor(const char *style, Int_t index){
 /// \param index  - marker index
 /// \return marker color for given styleName, index
 Int_t AliDrawStyle::GetMarkerColor(const char *style, Int_t index){
-  if (AliDrawStyle::fMarkerColors[style].size() <= index) {
+  if ((Int_t) AliDrawStyle::fMarkerColors[style].size() <= index) {
     return GetIntegerAt(style,index);
   }
   return  AliDrawStyle::fMarkerColors[style][index];
@@ -198,7 +198,7 @@ Int_t AliDrawStyle::GetMarkerColor(const char *style, Int_t index){
 /// \param index  - marker index
 /// \return marker color for given styleName, index
 Float_t AliDrawStyle::GetMarkerSize(const char *style, Int_t index){
-  if (AliDrawStyle::fMarkerSize[style].size() <= index) {
+  if ((Int_t) AliDrawStyle::fMarkerSize[style].size() <= index) {
     return GetIntegerAt(style,index);
   }
   return  AliDrawStyle::fMarkerSize[style][index];
@@ -209,7 +209,7 @@ Float_t AliDrawStyle::GetMarkerSize(const char *style, Int_t index){
 /// \param index  - marker index
 /// \return fill color for given styleName, index
 Int_t AliDrawStyle::GetFillColor(const char *style, Int_t index){
-  if (AliDrawStyle::fFillColors[style].size() <= index) {
+  if ((Int_t) AliDrawStyle::fFillColors[style].size() <= index) {
     return GetIntegerAt(style,index);
   }
   return  AliDrawStyle::fFillColors[style][index];
@@ -220,7 +220,7 @@ Int_t AliDrawStyle::GetFillColor(const char *style, Int_t index){
 /// \param index  - marker index
 /// \return fill color for given styleName, index
 Float_t AliDrawStyle::GetLineWidth(const char *style, Int_t index){
-  if (AliDrawStyle::fLineWidth[style].size() <= index) {
+  if ((Int_t) AliDrawStyle::fLineWidth[style].size() <= index) {
     return GetFloatAt(style,index);
   }
   return  AliDrawStyle::fLineWidth[style][index];
@@ -1703,8 +1703,8 @@ void AliDrawStyle::TCanvasApplyCssStyle(const char *styleName, TCanvas *cCanvas,
   objectID.ReplaceAll(".style", "");
   if (objectID(objectID.Length() - 1) == '[')
     objectID = objectID(0,objectID.Length() - 1);
-    if (verbose == 4)
-      ::Info("AliDrawStyle", "Object with name \"%s\" was parsed via AliDrawStyle::GetIds() to elementID = \"%s\", classID = \"%s\", objectID = \"%s\", localStyle = \"%s\"", cObject->GetName(), elementID.Data(), classID.Data(), objectID.Data(), localStyle.Data());
+  if (verbose == 4)
+    ::Info("AliDrawStyle", "Object with name \"%s\" was parsed via AliDrawStyle::GetIds() to elementID = \"%s\", classID = \"%s\", objectID = \"%s\", localStyle = \"%s\"", cObject->GetName(), elementID.Data(), classID.Data(), objectID.Data(), localStyle.Data());
 }
 
 /// \brief Applies style from css to all objects from Pad or Canvas.
@@ -1760,8 +1760,8 @@ void AliDrawStyle::ApplyCssStyle(TPad *pad, const char *styleName, Int_t verbose
     padNumStr = TString(TString(pad->GetName())(numPat0))(numPat1);
     if (padNumStr != TString(""))
       AliDrawStyle::SetPadNumber(padNumStr.Atoi());
-      AliDrawStyle::TPadApplyStyle(styleName, pad, verbose);
-      AliDrawStyle::SetPadNumber(AliDrawStyle::GetPadNumber() + 1);
+    AliDrawStyle::TPadApplyStyle(styleName, pad, verbose);
+    AliDrawStyle::SetPadNumber(AliDrawStyle::GetPadNumber() + 1);
   }
   Int_t objNum = -1, hisCnt = 0, funcCnt = 0, graphCnt = 0, legendCnt = 0;
   for (Int_t k = 0; k < oList->GetEntries(); k++) {

@@ -1168,8 +1168,6 @@ TTree*  AliExternalInfo::GetTreeAliVersMC(){
    TString slast;
    TString sanprod;
    TObjArray *subStrL;
-   Int_t runNTPC;
-   Int_t runNITS;
    
    TBranch* brMCanchprodname= dumptree->Branch("anchorProdTag_ForGuess",&sMCanchprodname);
    TBranch* brfirst= dumptree->Branch("First_Run",&first);

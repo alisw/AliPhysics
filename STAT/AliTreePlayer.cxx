@@ -79,9 +79,9 @@ Int_t AliTreeFormulaF::Compile(const char *expression) {
   //    variable: TTreeFormula
   // 3. GetFormatted string
   //
-  Int_t sLength = fquery.Length();     // original format string
-  Int_t iVar = 0;
-  Int_t varBegin = -1;
+  //Int_t sLength = fquery.Length();     // original format string
+  //Int_t iVar = 0;
+  //Int_t varBegin = -1;
   fFormulaArray = new TObjArray;
   fFormatArray = new TObjArray;
   fTextArray = new TObjArray;
@@ -115,6 +115,7 @@ Int_t AliTreeFormulaF::Compile(const char *expression) {
 /// \return
 char *AliTreeFormulaF::PrintValue(Int_t mode) const {
    PrintValue(mode, 0, "");
+   return NULL;
 }
 
 /// Overwrite TTreeFormula PrintValue
@@ -129,7 +130,6 @@ char *AliTreeFormulaF::PrintValue(Int_t mode) const {
 char *AliTreeFormulaF::PrintValue(Int_t mode, Int_t instance, const char *decform) const {
   std::stringstream stream;
   Int_t nVars = fFormulaArray->GetEntries();
-  const char *format=NULL;
   for (Int_t iVar = 0; iVar <= nVars; iVar++) {
     stream << fTextArray->At(iVar)->GetName();
     if (fDebug&2) cout<<"T"<<iVar<<"\t\t"<<fTextArray->At(iVar)->GetName()<<endl;

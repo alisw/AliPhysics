@@ -345,6 +345,7 @@ TFile * AliQA::GetQADataFile(const char * fileName)
   // Open if necessary the Data file and return its pointer
 
   if (!fgQADataFile) 
+  {
 	if (!fileName) 
 		fileName = AliQA::GetQADataFileName() ; 
 	if  (!gSystem->AccessPathName(fileName)) {
@@ -352,6 +353,7 @@ TFile * AliQA::GetQADataFile(const char * fileName)
 	} else {
 		AliFatalClass(Form("File %s not found", fileName)) ;
 	}
+  }
   return fgQADataFile ; 
 }
 

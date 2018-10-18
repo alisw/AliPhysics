@@ -128,9 +128,12 @@ AliAODCaloCluster::AliAODCaloCluster(Int_t id,
 //______________________________________________________________________________
 AliAODCaloCluster::~AliAODCaloCluster() 
 {
-  if(fCellsAmpFraction)       delete[] fCellsAmpFraction;       fCellsAmpFraction       = 0 ;
-  if(fCellsAbsId)             delete[] fCellsAbsId;             fCellsAbsId             = 0 ;
-  if(fCellsMCEdepFractionMap) delete[] fCellsMCEdepFractionMap; fCellsMCEdepFractionMap = 0 ;
+  if(fCellsAmpFraction)       delete[] fCellsAmpFraction;
+  fCellsAmpFraction       = 0 ;
+  if(fCellsAbsId)             delete[] fCellsAbsId;
+  fCellsAbsId             = 0 ;
+  if(fCellsMCEdepFractionMap) delete[] fCellsMCEdepFractionMap;
+  fCellsMCEdepFractionMap = 0 ;
 }
 
 ///
@@ -140,9 +143,12 @@ AliAODCaloCluster::~AliAODCaloCluster()
 void AliAODCaloCluster::Clear(const Option_t*) 
 {
   RemoveLabel();
-  if(fCellsAmpFraction)       delete[] fCellsAmpFraction;       fCellsAmpFraction       = 0 ;
-  if(fCellsAbsId)             delete[] fCellsAbsId;             fCellsAbsId             = 0 ;
-  if(fCellsMCEdepFractionMap) delete[] fCellsMCEdepFractionMap; fCellsMCEdepFractionMap = 0 ;
+  if(fCellsAmpFraction)       delete[] fCellsAmpFraction;
+  fCellsAmpFraction       = 0 ;
+  if(fCellsAbsId)             delete[] fCellsAbsId;
+  fCellsAbsId             = 0 ;
+  if(fCellsMCEdepFractionMap) delete[] fCellsMCEdepFractionMap;
+  fCellsMCEdepFractionMap = 0 ;
 }
 
 ///

@@ -22,12 +22,12 @@ public:
   virtual void Clear(Option_t *);
   void AddCell(AliMFTCACell *cell);
   void SetGID(Int_t gid) { fGID = gid; }
-  const Int_t GetGID() const { return fGID; }
-  const Int_t GetNcells() const { return fNcells; }
-  const Int_t GetCellGID(Int_t ic) const { return fCellGIDarray[ic]; }
+  Int_t GetGID() const { return fGID; }
+  Int_t GetNcells() const { return fNcells; }
+  Int_t GetCellGID(Int_t ic) const { return fCellGIDarray[ic]; }
   AliMFTCACell* GetCell(Int_t ic) const { return (AliMFTCACell*)fCells->At(ic); }
-  const Int_t GetLastCellGID() const { return fCellGIDarray[fNcells-1]; }
-  const Int_t GetStartLayer() const { return fStartLayer; }
+  Int_t GetLastCellGID() const { return fCellGIDarray[fNcells-1]; }
+  Int_t GetStartLayer() const { return fStartLayer; }
   void SetStartLayer(Int_t sl) { fStartLayer = sl; }
   void SetMCflag(UChar_t mcf) { fMCflag = mcf; }
   const UChar_t GetMCflag() { return fMCflag; }
@@ -36,23 +36,23 @@ public:
   void SetVertZ(Double_t z) { fVertZ = z; }
   void SetTheta(Double_t the) { fTheta = the; }
   void SetPhi(Double_t phi) { fPhi = phi; }
-  const Double_t GetVertX() { return fVertX; }
-  const Double_t GetVertY() { return fVertY; }
-  const Double_t GetVertZ() { return fVertZ; }
-  const Double_t GetTheta() { return fTheta; }
-  const Double_t GetPhi() { return fPhi; }
+  Double_t GetVertX() { return fVertX; }
+  Double_t GetVertY() { return fVertY; }
+  Double_t GetVertZ() { return fVertZ; }
+  Double_t GetTheta() { return fTheta; }
+  Double_t GetPhi() { return fPhi; }
   void SetChiSqX(Double_t chisq) { fChiSqX = chisq; }
   void SetChiSqY(Double_t chisq) { fChiSqY = chisq; }
-  const Double_t GetChiSqX() { return fChiSqX; }
-  const Double_t GetChiSqY() { return fChiSqY; }
+  Double_t GetChiSqX() { return fChiSqX; }
+  Double_t GetChiSqY() { return fChiSqY; }
   Double_t AddCellToChiSq(AliMFTCACell *cell);
   void SetMCindex(Int_t index) { fMCindex = index; }
-  const Int_t GetMCindex() { return fMCindex; }
+  Int_t GetMCindex() { return fMCindex; }
   void SetChargeSign(Short_t sign) { fChargeSign = sign; }
-  const Short_t GetChargeSign() { return fChargeSign; }
+  Short_t GetChargeSign() { return fChargeSign; }
   void SetCellGID(Int_t index, Int_t gid) { fCellGIDarray[index] = gid; };
-	void EvalSignedPt();
-	const Double_t GetPt() { return fPt; }
+  void EvalSignedPt();
+  Double_t GetPt() { return fPt; }
 
 private:
   static const Int_t fNDetMax = AliMFTConstants::fNMaxPlanes;

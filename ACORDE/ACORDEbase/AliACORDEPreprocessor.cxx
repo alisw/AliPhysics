@@ -146,51 +146,39 @@ UInt_t AliACORDEPreprocessor::Process(TMap* dcsAliasMap)
 
    while((source=dynamic_cast<TObjString*> (iter.Next())))
    {
-  	
         TString fileName = GetFile(kDAQ,SourcesId.Data(), source->GetName());
 
-  	if (fileName.Length() > 0)
-   		Log(Form("Got the file %s, now we can extract some values.", fileName.Data()));
+        if (fileName.Length() > 0)
+        {
+             Log(Form("Got the file %s, now we can extract some values.", fileName.Data()));
+            daqFile = new TFile(fileName.Data(),"READ");
+        }
+ 
+        if(!daqFile)
+        {
+            Log(Form("There are not histos     1"));
+            return 4;
+        }
 
-                daqFile = new TFile(fileName.Data(),"READ");
-              
-              if(!daqFile)
-              {
-                            
-              Log(Form("There are not histos     1"));
-	      return 4;
+        fH[0] = (TH1D*)daqFile->Get("fHist1");
+        fH[1] = (TH1D*)daqFile->Get("fHist2");
+        fH[2] = (TH1D*)daqFile->Get("fHist3");
+        fH[3] = (TH1D*)daqFile->Get("fHist4");
 
-              }
-
-           
-                
-            fH[0] = (TH1D*)daqFile->Get("fHist1");
-            fH[1] = (TH1D*)daqFile->Get("fHist2");
-            fH[2] = (TH1D*)daqFile->Get("fHist3");
-            fH[3] = (TH1D*)daqFile->Get("fHist4");
-          
-
-             
-             if(fH[0]!=NULL&&fH[1]!=NULL&&fH[2]!=NULL&&fH[3]!=NULL)  
-             {  
+         if(fH[0]!=NULL&&fH[1]!=NULL&&fH[2]!=NULL&&fH[3]!=NULL)  
+         {
              fCalData->AddHHits(fH[0]);
              fCalData->AddHTHits(fH[1]);
              fCalData->AddHMultiHits(fH[2]);
              fCalData->AddHTMultiHits(fH[3]);
-             }
-            
-            else
-            {
-             Log(Form("There are not histos     2"));
-             return 4;
-            }
-    
-
-   }                   
-                                                                          
- 
- 
-  delete sourceList;
+        }
+        else
+        {
+            Log(Form("There are not histos     2"));
+            return 4;
+        }
+   }
+   delete sourceList;
   
 
         //Now we have to store

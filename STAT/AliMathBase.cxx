@@ -91,7 +91,6 @@ void AliMathBase::EvaluateUni(const Int_t nvectors, const Double_t *data, Double
   
   Double_t sumx  =0;
   Double_t sumx2 =0;
-  Int_t    bestindex = -1;
   Double_t bestmean  = 0; 
   Double_t bestsigma = (data[index[nvectors-1]]-data[index[0]]+1.);   // maximal possible sigma
   bestsigma *=bestsigma;
@@ -109,7 +108,6 @@ void AliMathBase::EvaluateUni(const Int_t nvectors, const Double_t *data, Double
     if (csigma<bestsigma){
       bestmean  = cmean;
       bestsigma = csigma;
-      bestindex = i-hh;
     }
     
     sumx  += data[index[i]]-data[index[i-hh]];
@@ -149,7 +147,6 @@ void AliMathBase::EvaluateUniExternal(Int_t nvectors, Double_t *data, Double_t &
   //
   Double_t sumx  =0;
   Double_t sumx2 =0;
-  Int_t    bestindex = -1;
   Double_t bestmean  = 0; 
   Double_t bestsigma = -1;
   for (Int_t i=0; i<hh; i++){
@@ -165,7 +162,6 @@ void AliMathBase::EvaluateUniExternal(Int_t nvectors, Double_t *data, Double_t &
     if (csigma<bestsigma ||  bestsigma<0){
       bestmean  = cmean;
       bestsigma = csigma;
-      bestindex = i-hh;
     }
     //
     //
@@ -279,7 +275,8 @@ void AliMathBase::LTM(TH1F * his, TVectorD *param , Float_t fraction,  Bool_t ve
   npoints2=TMath::Max(Int_t(0.5*Float_t(npoints)),npoints2);
   AliMathBase::EvaluateUni(npoints, data, mean,sigma,npoints2);
   delete [] data;
-  if (verbose)  printf("Mean\t%f\t Sigma2\t%f\n", mean,sigma);if (param){
+  if (verbose)  printf("Mean\t%f\t Sigma2\t%f\n", mean,sigma);
+  if (param){
     (*param)[0] = his->GetMaximum();
     (*param)[1] = mean;
     (*param)[2] = sigma;    

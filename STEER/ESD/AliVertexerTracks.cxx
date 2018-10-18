@@ -195,7 +195,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliVEvent *vEvent)
   } 
   //
   int bcRound = fBCSpacing/25;   // profit from larger than 25ns spacing and set correct BC
-  TDirectory * olddir = gDirectory;
+  //TDirectory * olddir = gDirectory;
   //  TFile *f = 0;
   //  if(nTrks>500) f = new TFile("VertexerTracks.root","recreate");
   TObjArray trkArrayOrig(nTrks);

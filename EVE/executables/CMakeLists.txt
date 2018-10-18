@@ -21,8 +21,8 @@ include_directories(
                    )
 
 # Additional include folders in alphabetical order
+include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
 include_directories(
-                    ${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/EVE/EveBase

@@ -66,12 +66,20 @@ class AliITSgeom : public TObject {
     //
     //     This function returns a pointer to the particular AliITSgeomMatrix
     // class for a specific module index.
-    AliITSgeomMatrix *GetGeomMatrix(Int_t index){if(index<fGm.GetSize()&&index>=0)
-        return (AliITSgeomMatrix*)(fGm.At(index));else 
-            Error("GetGeomMatrix","index=%d<0||>=GetSize()=%d",index,fGm.GetSize());return 0;}
-    AliITSgeomMatrix *GetGeomMatrix(Int_t index)const{if(index<fGm.GetSize()&&index>=0)
-        return (AliITSgeomMatrix*)(fGm.At(index));else 
-            Error("GetGeomMatrix","index=%d<0||>=GetSize()=%d",index,fGm.GetSize());return 0;}
+    AliITSgeomMatrix *GetGeomMatrix(Int_t index){
+      if(index<fGm.GetSize()&&index>=0)
+        return (AliITSgeomMatrix*)(fGm.At(index));
+      else 
+        Error("GetGeomMatrix","index=%d<0||>=GetSize()=%d",index,fGm.GetSize());
+      return 0;
+    }
+    AliITSgeomMatrix *GetGeomMatrix(Int_t index)const{
+      if(index<fGm.GetSize()&&index>=0)
+        return (AliITSgeomMatrix*)(fGm.At(index));
+      else 
+        Error("GetGeomMatrix","index=%d<0||>=GetSize()=%d",index,fGm.GetSize());
+    return 0;
+    }
     // This function find and return the number of detector types only.
     Int_t GetNDetTypes()const{Int_t max;return GetNDetTypes(max);};
     // This function find and return the number of detector types and the

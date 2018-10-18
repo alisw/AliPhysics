@@ -213,7 +213,8 @@ Int_t AliAODTracklets::GetLabel(Int_t i, Int_t layer) const
     return (layer == 0) ? fLabels[i] : fLabelsL2[i];
   }
   else 
-    Error("GetLabel","Invalid track number %d",i); return -9999;
+    Error("GetLabel","Invalid track number %d",i);
+  return -9999;
 }
 
 //________________________________________________________________
@@ -226,7 +227,8 @@ Double_t AliAODTracklets::GetTheta(Int_t i) const
     return fTheta[i];
   }
   else 
-    Error("GetTheta","Invalid track number %d",i); return -9999.;
+    Error("GetTheta","Invalid track number %d",i);
+  return -9999.;
 }
 
 //________________________________________________________________
@@ -239,7 +241,8 @@ Double_t AliAODTracklets::GetPhi(Int_t i) const
     return fPhi[i];
   }
   else 
-    Error("GetPhi","Invalid track number %d",i); return -9999.;
+    Error("GetPhi","Invalid track number %d",i);
+  return -9999.;
 }
 
 //________________________________________________________________
@@ -252,5 +255,6 @@ Double_t AliAODTracklets::GetDeltaPhi(Int_t i) const
     return fDeltaPhi[i];
   }
   else 
-    Error("GetDeltaPhi","Invalid track number %d",i); return -9999.;
+    Error("GetDeltaPhi","Invalid track number %d",i);
+  return -9999.;
 }

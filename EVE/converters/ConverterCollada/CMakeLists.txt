@@ -15,8 +15,8 @@
 
 set(MODULE ConverterCollada)
 # Module include folder
-include_directories(${ROOT_INCLUDE_DIR}
-                    ${AliRoot_SOURCE_DIR}/EVE/converters/${MODULE}
+include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
+include_directories(${AliRoot_SOURCE_DIR}/EVE/converters/${MODULE}
 )
 
 set(SRCS

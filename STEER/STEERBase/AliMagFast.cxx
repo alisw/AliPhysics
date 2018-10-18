@@ -55,7 +55,7 @@ AliMagFast::AliMagFast(const char* inpFName, const char* inpFNameDip, const char
 
 //_______________________________________________________________________
 AliMagFast::AliMagFast(const AliMagFast &src):
-  fFactorSol(src.fFactorSol), fFactorDip(src.fFactorDip), fDipSegments(src.fDipSegments), fDipPar(src.fDipPar), fLibNameDip(src.fLibNameDip)
+  TObject(src), fFactorSol(src.fFactorSol), fFactorDip(src.fFactorDip), fDipSegments(src.fDipSegments), fDipPar(src.fDipPar), fLibNameDip(src.fLibNameDip)
 {
   //AliInfoF("AliMagFast::AliMagFast(const AliMagFast &src) %d",0);
   memcpy(fSolPar,src.fSolPar, kNSolRRanges*kNSolZRanges*kNQuadrants*sizeof(SolParam_t));
@@ -92,7 +92,7 @@ Bool_t AliMagFast::LoadData(const char* inpFName, const char* inpFNameDip, const
     return kFALSE;
   }
   std::string line;
-  int valI,component = -1, nParams = 0, header[4] = {-1,-1,-1,-1}; // iR, iZ, iQuadrant, nVal
+  int component = -1, nParams = 0, header[4] = {-1,-1,-1,-1}; // iR, iZ, iQuadrant, nVal
   SolParam_t* curParam = 0; //std::nullptr;
 
   while (std::getline(in, line)) {

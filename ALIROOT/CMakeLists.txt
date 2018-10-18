@@ -51,7 +51,7 @@ endif()
 install(TARGETS aliroot RUNTIME DESTINATION bin)
 
 # The VDT wrapper
-include_directories(${ROOT_INCLUDE_DIR})
+include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
 if(EXISTS ${ROOT_INCLUDE_DIR}/vdt/)
   message(STATUS "VDT include directory exists inside ROOT")
   add_library(alivdtwrapper SHARED alivdtwrapper.cxx)
