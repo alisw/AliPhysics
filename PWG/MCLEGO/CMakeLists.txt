@@ -48,6 +48,12 @@ install(DIRECTORY EPOS
   FILES_MATCHING PATTERN "*.optns"
   )
 
+# install Pythia configurations
+install(DIRECTORY Pythia
+  DESTINATION PWG/MCLEGO
+  FILES_MATCHING PATTERN "*.C"
+  )
+
 # install TunedOnPbPb configurations
 install(DIRECTORY TunedOnPbPb
   DESTINATION PWG/MCLEGO
