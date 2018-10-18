@@ -266,8 +266,10 @@ private:
     // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
     // your data member object is created on the worker nodes and streaming is not needed.
     // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
-    TList  *fListHist;      //! List of Cascade histograms
-    TList  *fListV0;        // List of Cascade histograms
+    TList  *fListHist;      //! List of event histograms
+    TList  *fListK0Short;        // List of V0 histograms
+    TList  *fListLambda;        // List of V0 histograms
+    TList  *fListAntiLambda;        // List of V0 histograms
     TList  *fListXiMinus;   // List of XiMinus outputs
     TList  *fListXiPlus;   // List of XiPlus outputs
     TList  *fListOmegaMinus;   // List of XiMinus outputs
