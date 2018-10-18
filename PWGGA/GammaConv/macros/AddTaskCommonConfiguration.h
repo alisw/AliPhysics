@@ -3,7 +3,15 @@
 
 class CutHandlerConv{
   public:
-    CutHandlerConv(Int_t nMax=10){
+    CutHandlerConv(Int_t nMax=10) :
+    nCuts(0),
+    nMaxCuts(10),
+    validCuts(kTRUE),
+    eventCutArray(0),
+    photonCutArray(0),
+    mesonCutArray(0),
+    clusterCutArray(0)
+    {
       nCuts=0; nMaxCuts=nMax; validCuts = true;
       eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts]; clusterCutArray = new TString[nMaxCuts];
       for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = ""; mesonCutArray[i] = ""; clusterCutArray[i] = "";}
@@ -30,9 +38,9 @@ class CutHandlerConv{
     TString GetPhotonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return photonCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetPhotonCut wrong index i" << endl;return "";}}
     TString GetClusterCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return clusterCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetClusterCut wrong index i" << endl;return "";}}
     TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetMesonCut wrong index i" << endl;return "";}}
-  private:
-    Bool_t validCuts;
+  protected:
     Int_t nCuts; Int_t nMaxCuts;
+    Bool_t validCuts;
     TString* eventCutArray;
     TString* photonCutArray;
     TString* mesonCutArray;
@@ -41,7 +49,14 @@ class CutHandlerConv{
 
 class CutHandlerCalo{
   public:
-    CutHandlerCalo(Int_t nMax=10){
+    CutHandlerCalo(Int_t nMax=10) :
+    nCuts(0),
+    nMaxCuts(10),
+    validCuts(kTRUE),
+    eventCutArray(0),
+    clusterCutArray(0),
+    mesonCutArray(0)
+    {
       nCuts=0; nMaxCuts=nMax; validCuts = true;
       eventCutArray = new TString[nMaxCuts]; clusterCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts];
       for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; clusterCutArray[i] = ""; mesonCutArray[i] = "";}
@@ -59,9 +74,9 @@ class CutHandlerCalo{
     TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandlerCalo: GetEventCut wrong index i" << endl;return "";}}
     TString GetClusterCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return clusterCutArray[i]; else {cout << "ERROR in CutHandlerCalo: GetClusterCut wrong index i" << endl;return "";}}
     TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerCalo: GetMesonCut wrong index i" << endl;return "";}}
-  private:
-    Bool_t validCuts;
+  protected:
     Int_t nCuts; Int_t nMaxCuts;
+    Bool_t validCuts;
     TString* eventCutArray;
     TString* clusterCutArray;
     TString* mesonCutArray;
@@ -69,7 +84,15 @@ class CutHandlerCalo{
 
 class CutHandlerConvCalo{
   public:
-    CutHandlerConvCalo(Int_t nMax=10){
+    CutHandlerConvCalo(Int_t nMax=10) :
+    nCuts(0),
+    nMaxCuts(10),
+    validCuts(kTRUE),
+    eventCutArray(0),
+    photonCutArray(0),
+    clusterCutArray(0),
+    mesonCutArray(0)
+    {
       nCuts=0; nMaxCuts=nMax; validCuts = true;
       eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts]; clusterCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts];
       for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = ""; clusterCutArray[i] = ""; mesonCutArray[i] = "";}
@@ -88,9 +111,9 @@ class CutHandlerConvCalo{
     TString GetPhotonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return photonCutArray[i]; else {cout << "ERROR in CutHandlerConvCalo: GetPhotonCut wrong index i" << endl;return "";}}
     TString GetClusterCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return clusterCutArray[i]; else {cout << "ERROR in CutHandlerConvCalo: GetClusterCut wrong index i" << endl;return "";}}
     TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerConvCalo: GetMesonCut wrong index i" << endl;return "";}}
-  private:
-    Bool_t validCuts;
+  protected:
     Int_t nCuts; Int_t nMaxCuts;
+    Bool_t validCuts;
     TString* eventCutArray;
     TString* photonCutArray;
     TString* clusterCutArray;
@@ -99,7 +122,15 @@ class CutHandlerConvCalo{
 
 class CutHandlerCaloMerged{
   public:
-    CutHandlerCaloMerged(Int_t nMax=10){
+    CutHandlerCaloMerged(Int_t nMax=10) :
+    nCuts(0),
+    nMaxCuts(10),
+    validCuts(kTRUE),
+    eventCutArray(0),
+    clusterCutArray(0),
+    clusterMergedCutArray(0),
+    mesonCutArray(0)
+    {
       nCuts=0; nMaxCuts=nMax; validCuts = true;
       eventCutArray = new TString[nMaxCuts]; clusterCutArray = new TString[nMaxCuts]; clusterMergedCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts];
       for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; clusterCutArray[i] = ""; clusterMergedCutArray[i] = ""; mesonCutArray[i] = "";}
@@ -118,9 +149,9 @@ class CutHandlerCaloMerged{
     TString GetClusterCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return clusterCutArray[i]; else {cout << "ERROR in CutHandlerCaloMerged: GetClusterCut wrong index i" << endl;return "";}}
     TString GetClusterMergedCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return clusterMergedCutArray[i]; else {cout << "ERROR in CutHandlerCaloMerged: GetClusterMergedCut wrong index i" << endl;return "";}}
     TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerCaloMerged: GetMesonCut wrong index i" << endl;return "";}}
-  private:
-    Bool_t validCuts;
+  protected:
     Int_t nCuts; Int_t nMaxCuts;
+    Bool_t validCuts;
     TString* eventCutArray;
     TString* clusterCutArray;
     TString* clusterMergedCutArray;

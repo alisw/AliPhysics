@@ -58,6 +58,7 @@ AliPHOSTenderTask* AddTask_PHOSTender_PCMconfig(
           std::cout << "parameter " << i << ": \t" << par[i] << endl;
         }
         PHOSSupply->SetNonlinearityParams(3,par);//only for MC
+      }
     } else {
       PHOSSupply->SetMCProduction(options.Data()) ;
     }
