@@ -109,11 +109,13 @@ void AliHFSystErr::Init(Int_t decay){
       if (fCollisionType==0) {
         if (fIsLowEnergy) InitD0toKpi2010ppLowEn();
         else if(fIs5TeVAnalysis){
-          if(fIsLowPtAnalysis) InitD0toKpi2017pp5TeVLowPtAn();
-          else{
+          if(fIsLowPtAnalysis){
+	    if(fStandardBins) InitD0toKpi2017pp5TeVLowPtAn();
+	    else InitD0toKpi2017pp5TeVLowPtAn_finebins();
+          }else{
             if(fRunNumber==17){
               if(fStandardBins)InitD0toKpi2017pp5TeV();
-              InitD0toKpi2017pp5TeV_finebins();
+              else InitD0toKpi2017pp5TeV_finebins();
             }
             else InitD0toKpi2015pp5TeV();
           }
@@ -1279,6 +1281,60 @@ void AliHFSystErr::InitD0toKpi2017pp5TeVLowPtAn() {
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
   for(Int_t i=1;i<=24;i++) fMCPtShape->SetBinContent(i,0);
+
+  // particle-antiparticle
+  //  fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",24,0,24);
+  //  for(Int_t i=1;i<=24;i++) fPartAntipart->SetBinContent(i,0.);
+
+  return;
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2017pp5TeVLowPtAn_finebins() {
+  //
+  // D0->Kpi syst errors. Responsible:
+  //   2017 pp sample at 5 TeV, analysis without topological cuts
+  //
+
+  AliInfo(" Settings for D0 --> K pi, pp collisions at 5 TeV, analysis without topological cuts - 0.5 GeV bins");
+  SetNameTitle("AliHFSystErr","SystErrD0toKpi2017pp5TeVLowPtAnFineBins");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",32,0,16);
+  for(Int_t i=1;i<=32;i++) fNorm->SetBinContent(i,0.05); // 5% error on sigmaV0and
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",32,0,16);
+  for(Int_t i=1;i<=32;i++) fBR->SetBinContent(i,0.0129); // (0.05/3.88)
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",32,0,16);
+  fTrackingEff->SetBinContent(1,0.03); //  0-0.5
+  fTrackingEff->SetBinContent(2,0.03); //  0.5-1.
+  fTrackingEff->SetBinContent(3,0.035); //  1-1.5
+  fTrackingEff->SetBinContent(4,0.035); //  1.5-2
+  fTrackingEff->SetBinContent(5,0.04); // 2-2.5
+  fTrackingEff->SetBinContent(6,0.04); // 2.5-3.
+  for(Int_t i=7;i<=32;i++) fTrackingEff->SetBinContent(i,0.045);// >3
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",32,0,16);
+  for(Int_t i=1;i<=32;i++) fRawYield->SetBinContent(i,0.2);
+  fRawYield->SetBinContent(1,0.09); // 0-0.5
+  fRawYield->SetBinContent(2,0.06); // 0.5-1
+  for(Int_t i=3;i<=24;i++) fRawYield->SetBinContent(i,0.04);
+   fRawYield->SetBinContent(4,0.05); //5<pt<6
+
+  // Cuts efficiency (from cuts variation)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",32,0,16);
+  for(Int_t i=1;i<=32;i++) fCutsEff->SetBinContent(i,0.);
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",32,0,16);
+  for(Int_t i=1;i<=32;i++) fPIDEff->SetBinContent(i,0.);
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",32,0,16);
+  for(Int_t i=1;i<=32;i++) fMCPtShape->SetBinContent(i,0);
 
   // particle-antiparticle
   //  fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",24,0,24);
@@ -8205,12 +8261,15 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
 
   TH2F *hFrame = new TH2F("hFrame","Systematic errors; p_{T} (GeV/c); Relative Syst. Unc.",50,0,50,100,-1,+1);
   hFrame->SetAxisRange(1.,35.9,"X");
+  hFrame->SetAxisRange(-0.5,0.5,"Y");
   if(fIs5TeVAnalysis && !fIsLowPtAnalysis && (fRunNumber==17 || fRunNumber==2017)){
     hFrame->SetAxisRange(0.,35.9,"X");
     hFrame->SetAxisRange(-0.15,0.15,"Y");
   }
-  if(fIsLowPtAnalysis) hFrame->SetAxisRange(0.,24.,"X");
-  hFrame->SetAxisRange(-0.5,0.5,"Y");
+  if(fIsLowPtAnalysis){
+    hFrame->SetAxisRange(0.,11.9,"X");
+    hFrame->SetAxisRange(-0.15,0.15,"Y");
+  }
   if(fCollisionType==2 && (fRunNumber==16 || fRunNumber==2016)) hFrame->SetAxisRange(-0.15,0.15,"Y");
   hFrame->Draw();
 
@@ -8220,10 +8279,11 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
   leg->SetBorderSize(0);
 
 
-  TH1F *hTotErr=new TH1F("hTotErr","",50,0,50);
-  Int_t nbins = fNorm->GetNbinsX();
-  TGraphAsymmErrors *gTotErr = new TGraphAsymmErrors(nbins);
-  for(Int_t i=1;i<=50;i++) {
+  TH1F *hTotErr=(TH1F*)fNorm->Clone("hTotErr");
+  hTotErr->Reset("MICE");
+  Int_t nbins = hTotErr->GetNbinsX();
+  TGraphAsymmErrors *gTotErr = new TGraphAsymmErrors(0);
+  for(Int_t i=1;i<=nbins;i++) {
     Double_t pt = hTotErr->GetBinCenter(i);
     Double_t ptwidth = hTotErr->GetBinWidth(i);
 
@@ -8245,13 +8305,13 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
       else toterryh = GetTotalSystErr(pt);
 
       hTotErr->SetBinContent(i,toterryh);
-      gTotErr->SetPoint(i,pt,0.);
-      gTotErr->SetPointError(i,ptwidth/2.,ptwidth/2.,toterryl,toterryh); // i, exl, exh, eyl, eyh
+      gTotErr->SetPoint(i-1,pt,0.);
+      gTotErr->SetPointError(i-1,ptwidth/2.,ptwidth/2.,toterryl,toterryh); // i, exl, exh, eyl, eyh
     }
     else {
       hTotErr->SetBinContent(i,GetTotalSystErr(pt));
-      gTotErr->SetPoint(i,pt,0.);
-      gTotErr->SetPointError(i,ptwidth/2.,ptwidth/2.,GetTotalSystErr(pt),GetTotalSystErr(pt)); // i, exl, exh, eyl, eyh
+      gTotErr->SetPoint(i-1,pt,0.);
+      gTotErr->SetPointError(i-1,ptwidth/2.,ptwidth/2.,GetTotalSystErr(pt),GetTotalSystErr(pt)); // i, exl, exh, eyl, eyh
     }
 
   }
@@ -8260,7 +8320,7 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
   gTotErr->SetLineColor(kBlack);
   gTotErr->SetFillColor(kRed);
   gTotErr->SetFillStyle(3002);
-  gTotErr->Draw("2 hist ");
+  gTotErr->Draw("2 same");
   leg->AddEntry(gTotErr,"Total (excl. norm. and BR)","f");
   //   hTotErr->SetLineColor(1);
   //   hTotErr->SetLineWidth(3);
