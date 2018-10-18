@@ -54,6 +54,7 @@ private:
    TTree *reducedTree_HyperTriton;//!
    
    // tree variables (Helium)
+   UInt_t triggerMask;
    Int_t magFieldSign;//
    
    Int_t SelectionStep;
