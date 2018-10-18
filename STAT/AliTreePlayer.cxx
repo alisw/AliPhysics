@@ -657,7 +657,7 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
 
   // print header
   if (isHTML){
-    fprintf(default_fp,"<table class=\"display\" cellspacing=\"0\" width=\"100%\">\n"); // add metadata info
+    fprintf(default_fp,"%s", "<table class=\"display\" cellspacing=\"0\" width=\"100%\">\n"); // add metadata info
     fprintf(default_fp,"\t<thead class=\"header\">\n"); // add metadata info
     fprintf(default_fp,"\t<tr>\n"); // add metadata info
     for (Int_t iCol=0; iCol<nCols; iCol++){

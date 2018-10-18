@@ -53,7 +53,7 @@ fPath(path)
     TString ocdbStorage   = settings.GetValue("OCDB.default.path","local://$ALICE_ROOT/../src/OCDB");// default path to OCDB
     
     
-    Info("AliEveInit",Form("\n\nOCDB path:%s\n\n",ocdbStorage.Data()));
+    Info("AliEveInit","\n\nOCDB path:%s\n\n",ocdbStorage.Data());
     
     //==============================================================================
     // Event Manager and different data sources

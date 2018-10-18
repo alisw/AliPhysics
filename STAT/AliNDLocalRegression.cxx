@@ -180,10 +180,10 @@ void AliNDLocalRegression::SetHistogram(THn* histo ){
   for (Int_t idim=0; idim<ndim; idim++){
     TAxis * axis = histo->GetAxis(idim);
     if (axis->GetNbins()<2) {
-      ::Error("AliNDLocalRegression::SetHistogram",TString::Format("Invalid binning nbins<2 %d",  axis->GetNbins()).Data());
+      ::Error("AliNDLocalRegression::SetHistogram","Invalid binning nbins<2 %d",  axis->GetNbins());
     }
     if (axis->GetXmin()>=axis->GetXmax()) {
-      ::Error("AliNDLocalRegression::SetHistogram",TString::Format("Invalid range <%f,%f", axis->GetXmin(),axis->GetXmax()).Data());
+      ::Error("AliNDLocalRegression::SetHistogram","Invalid range <%f,%f", axis->GetXmin(),axis->GetXmax());
     }    
   }
 
@@ -283,11 +283,11 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
   //
   Int_t entriesVal = tree->Draw(formulaVal,selection,"goffpara",entries);
   if (entriesVal==0) {
-    ::Error("AliNDLocalRegression::MakeFit", TString::Format("Empty point list\t%s\t%s\n",formulaVal,selection).Data());
+    ::Error("AliNDLocalRegression::MakeFit", "Empty point list\t%s\t%s\n",formulaVal,selection);
     return kFALSE; 
   }
   if (tree->GetVal(0)==NULL || (tree->GetVal(1)==NULL)){
-    ::Error("AliNDLocalRegression::MakeFit", TString::Format("Wrong selection\t%s\t%s\n",formulaVar,selection).Data());
+    ::Error("AliNDLocalRegression::MakeFit", "Wrong selection\t%s\t%s\n",formulaVar,selection);
     return kFALSE; 
   }
   TVectorD values(entriesVal,tree->GetVal(0));
@@ -300,7 +300,7 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
   TObjArray pointArray(fNParameters);
   Int_t entriesVar = tree->Draw(formulaVar,selection,"goffpara",entries);
   if (entriesVal!=entriesVar) {
-    ::Error("AliNDLocalRegression::MakeFit", TString::Format("Wrong selection\t%s\t%s\n",formulaVar,selection).Data());
+    ::Error("AliNDLocalRegression::MakeFit", "Wrong selection\t%s\t%s\n",formulaVar,selection);
     return kFALSE; 
   }
   for (Int_t ipar=0; ipar<fNParameters; ipar++) pointArray.AddAt(new TVectorD(entriesVar,tree->GetVal(ipar)),ipar);
@@ -1019,7 +1019,7 @@ Bool_t AliNDLocalRegression::AddWeekConstrainsAtBoundaries(Int_t nDims, Int_t *i
     if (TMath::Abs(determinant)<singularity_tolerance ) {
       vecParamUpdated->AddAt(new TVectorD(*((TVectorD*)(fLocalFitParam->UncheckedAt(iBin)))),iBin); 
       vecCovarUpdated->AddAt(new TMatrixD(*((TMatrixD*)(fLocalFitCovar->UncheckedAt(iBin)))),iBin);
-      Info("AliNDLocalRegression::AddWeekConstrainsAtBoundaries", TString::Format("Update matrix not possible matSk.Determinant() too small, skipping bin %d",iBin).Data());
+      Info("AliNDLocalRegression::AddWeekConstrainsAtBoundaries", "Update matrix not possible matSk.Determinant() too small, skipping bin %d",iBin);
     }else{
       matSk.Invert();
       matKk = (covXk*matHkT)*matSk;              //  Optimal Kalman gain
