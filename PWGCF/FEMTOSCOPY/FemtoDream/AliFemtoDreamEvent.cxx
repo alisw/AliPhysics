@@ -179,9 +179,9 @@ void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
 void AliFemtoDreamEvent::SetEvent(AliESDEvent *evt) {
   const AliVVertex *vtx = evt->GetPrimaryVertex();
   const AliVVertex* vtxSPD = evt->GetPrimaryVertexSPD();
-  fzVtxSPD = vtxSPD->GetZ();
+  fzVtxSPD = (vtxSPD) ? vtxSPD->GetZ() : vtx->GetZ();
   const AliESDVertex* vtxTrk = evt->GetPrimaryVertexTracks();
-  fzVtxTracks = vtxTrk->GetZ();
+  fzVtxTracks = (vtxTrk) ? vtxTrk->GetZ() : vtx->GetZ();
   AliESDVZERO *vZERO = evt->GetVZEROData();
   if (!vtx) {
     this->fHasVertex = false;
