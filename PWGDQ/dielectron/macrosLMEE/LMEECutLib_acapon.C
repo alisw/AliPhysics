@@ -694,6 +694,17 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
 			cuts->AddCut(cutsPID);
 			return cuts;
 			break;
+
+		case kPdgSel:
+			// PDG Code PID
+			AliDielectronVarCuts* PdgElectron = new AliDielectronVarCuts("PdgElectron","PdgElectron");
+			PdgElectron->AddCut(AliDielectronVarManager::kPdgCode, 11.);
+			AliDielectronVarCuts* PdgPositron = new AliDielectronVarCuts("PdgElectron","PdgElectron");
+			PdgPositron->AddCut(AliDielectronVarManager::kPdgCode, -11.);
+			AliDielectronCutGroup* PdgLepton = new AliDielectronCutGroup("PdgLepton","PdgLepton",AliDielectronCutGroup::kCompOR);
+			PdgLepton->AddCut(PdgElectron);
+			PdgLepton->AddCut(PdgPositron);
+			cuts->AddCut(PdgLepton);
 		default:
 			std::cout << "No Analysis PID Cut defined " << std::endl;
 			return 0x0;
@@ -787,7 +798,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 			varCutsFilter->AddCut(AliDielectronVarManager::kImpactParZ,     -3.0,  3.0);
 			if(wSDD){
 				varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      5.0,   100.0); // < 5
-				varCutsFilter->AddCut(AliDielectronVarManager::kNclsSfracITS, 0.0,   0.01); 
+				varCutsFilter->AddCut(AliDielectronVarManager::kNclsSFracITS, 0.0,   0.01); 
 			}else{
 			}
 			varCutsFilter->AddCut(AliDielectronVarManager::kITSchi2Cl,      0.0,   4.5);
