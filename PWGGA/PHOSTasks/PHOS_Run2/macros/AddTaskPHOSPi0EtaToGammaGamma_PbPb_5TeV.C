@@ -189,41 +189,17 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   if(!isMC && Trgcorrection){
     if(L1input == 7){
       printf("L1H is selected\n");
-      //TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
-      //f1trg->SetNpx(1000);
-      //f1trg->SetParameters(0.431,8.83,0.79);//from MB //acc x trigger efficiency 6-50GeV
-      //task->SetTriggerEfficiency(f1trg);
-
-      TF1 *f1trg[6][9] = {};
-      for(Int_t imod=0;imod<6;imod++){
-        for(Int_t itru=0;itru<9;itru++){
-          f1trg[imod][itru] = 0x0;
-          f1trg[imod][itru] = new TF1(Form("f1_M%dTRU%d",imod,itru),"[0]/(exp(-(x-[1])/[2]) + 1)",0,100);
-          f1trg[imod][itru]->SetNpx(1000);
-          f1trg[imod][itru]->SetParameters(0.431,8.83,0.79);//from MB //acc x trigger efficiency 6-50GeV
-          task->SetTriggerEfficiency(imod,itru,f1trg[imod][itru]);
-        }//end of tru loop
-      }//end of module loop
-
+      TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
+      f1trg->SetNpx(1000);
+      f1trg->SetParameters(0.431,8.83,0.79);//from MB //acc x trigger efficiency 6-50GeV
+      task->SetTriggerEfficiency(f1trg);
     }
     else if(L1input==6){
       printf("L1M is selected\n");
-      //TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
-      //f1trg->SetNpx(1000);
-      //f1trg->SetParameters(0.445,4.43,0.72);//from MB //acc x trigger efficiency 6-50GeV
-      //task->SetTriggerEfficiency(f1trg);
-
-      TF1 *f1trg[6][9] = {};
-      for(Int_t imod=0;imod<6;imod++){
-        for(Int_t itru=0;itru<9;itru++){
-          f1trg[imod][itru] = 0x0;
-          f1trg[imod][itru] = new TF1(Form("f1_M%dTRU%d",imod,itru),"[0]/(exp(-(x-[1])/[2]) + 1)",0,100);
-          f1trg[imod][itru]->SetNpx(1000);
-          f1trg[imod][itru]->SetParameters(0.445,4.43,0.72);//from MB //acc x trigger efficiency 3-50GeV
-          task->SetTriggerEfficiency(imod,itru,f1trg[imod][itru]);
-        }//end of tru loop
-      }//end of module loop
-
+      TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
+      f1trg->SetNpx(1000);
+      f1trg->SetParameters(0.445,4.43,0.72);//from MB //acc x trigger efficiency 6-50GeV
+      task->SetTriggerEfficiency(f1trg);
     }
   }
 

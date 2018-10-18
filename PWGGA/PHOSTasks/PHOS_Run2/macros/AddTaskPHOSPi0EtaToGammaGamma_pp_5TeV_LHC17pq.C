@@ -164,33 +164,11 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV_LHC
     //printf("TOF cut efficiency as a function of E is %s\n",f1tof->GetTitle());
   }
   if(!isMC && Trgcorrection){
-    //TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
-    //f1trg->SetNpx(1000);
-    //f1trg->SetParameters(0.616,3.72,0.298);//from MB //acc x trigger efficiency 3-30GeV
-    ////f1trg->SetParameters(0.609,3.73,0.301);//from MB //acc x trigger efficiency 3-30GeV//old
-    //task->SetTriggerEfficiency(f1trg);
-
-    Float_t par[6][9][3] = {
-      {{0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}},//M0 TRU[0,8]
-      {{0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}, {0.692, 3.811, 0.255}, {0.000, 0.000, 0.000}, {0.912, 3.759, 0.258}, {0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}, {0.871, 3.777, 0.253}, {0.826, 3.589, 0.224}},//M1 TRU[0,8]
-      {{0.000, 0.000, 0.000}, {0.994, 3.874, 0.285}, {0.988, 3.829, 0.309}, {0.729, 3.899, 0.290}, {0.707, 3.905, 0.280}, {0.842, 3.942, 0.332}, {0.856, 3.826, 0.289}, {0.706, 3.689, 0.276}, {0.000, 0.000, 0.000}},//M2 TRU[0,8]
-      {{0.000, 0.000, 0.000}, {0.926, 3.752, 0.290}, {0.000, 0.000, 0.000}, {0.856, 3.560, 0.275}, {0.000, 0.000, 0.000}, {0.893, 3.513, 0.253}, {0.621, 3.668, 0.274}, {0.000, 0.000, 0.000}, {0.614, 3.729, 0.264}},//M3 TRU[0,8]
-      {{0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}},//M4 TRU[0,8]
-      {{0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}, {0.000, 0.000, 0.000}} //M5 TRU[0,8]
-    };
-    const Float_t accTRU = 0.703;
-
-    TF1 *f1trg[6][9] = {};
-    for(Int_t imod=0;imod<6;imod++){
-      for(Int_t itru=0;itru<9;itru++){
-        f1trg[imod][itru] = 0x0;
-        f1trg[imod][itru] = new TF1(Form("f1_M%dTRU%d",imod,itru),"[0]/(exp(-(x-[1])/[2]) + 1)",0,100);
-        f1trg[imod][itru]->SetNpx(1000);
-        f1trg[imod][itru]->SetParameters(accTRU * par[imod][itru][0],par[imod][itru][1],par[imod][itru][2]);
-        task->SetTriggerEfficiency(imod,itru,f1trg[imod][itru]);
-      }//end of tru loop
-    }//end of module loop
-
+    TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
+    f1trg->SetNpx(1000);
+    f1trg->SetParameters(0.616,3.72,0.298);//from MB //acc x trigger efficiency 3-30GeV
+    //f1trg->SetParameters(0.609,3.73,0.301);//from MB //acc x trigger efficiency 3-30GeV//old
+    task->SetTriggerEfficiency(f1trg);
   }
 
   if(isMC){
