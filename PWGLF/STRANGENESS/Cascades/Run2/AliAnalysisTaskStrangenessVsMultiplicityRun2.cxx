@@ -123,7 +123,7 @@ using std::endl;
 ClassImp(AliAnalysisTaskStrangenessVsMultiplicityRun2)
 
 AliAnalysisTaskStrangenessVsMultiplicityRun2::AliAnalysisTaskStrangenessVsMultiplicityRun2()
-: AliAnalysisTaskSE(), fListHist(0), fListV0(0),
+: AliAnalysisTaskSE(), fListHist(0), fListK0Short(0), fListLambda(0), fListAntiLambda(0),
 fListXiMinus(0), fListXiPlus(0), fListOmegaMinus(0), fListOmegaPlus(0),
 fTreeEvent(0), fTreeV0(0), fTreeCascade(0),
 fPIDResponse(0), fESDtrackCuts(0),
@@ -470,7 +470,7 @@ fHistCentrality(0)
 }
 
 AliAnalysisTaskStrangenessVsMultiplicityRun2::AliAnalysisTaskStrangenessVsMultiplicityRun2(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, const char *name, TString lExtraOptions)
-: AliAnalysisTaskSE(name), fListHist(0), fListV0(0),
+: AliAnalysisTaskSE(name), fListHist(0), fListK0Short(0), fListLambda(0), fListAntiLambda(0),
 fListXiMinus(0), fListXiPlus(0), fListOmegaMinus(0), fListOmegaPlus(0),
 fTreeEvent(0), fTreeV0(0), fTreeCascade(0),
 fPIDResponse(0), fESDtrackCuts(0),
@@ -850,18 +850,20 @@ fHistCentrality(0)
     //Standard output
     DefineOutput(1, TList::Class()); // Basic Histograms
     DefineOutput(2, TList::Class()); // V0 Histogram Output
-    DefineOutput(3, TList::Class()); // Cascade Histogram Output
-    DefineOutput(4, TList::Class()); // Cascade Histogram Output
+    DefineOutput(3, TList::Class()); // V0 Histogram Output
+    DefineOutput(4, TList::Class()); // V0 Histogram Output
     DefineOutput(5, TList::Class()); // Cascade Histogram Output
     DefineOutput(6, TList::Class()); // Cascade Histogram Output
+    DefineOutput(7, TList::Class()); // Cascade Histogram Output
+    DefineOutput(8, TList::Class()); // Cascade Histogram Output
     
     //Optional output
     if (fkSaveEventTree)
-        DefineOutput(7, TTree::Class()); // Event Tree output
+        DefineOutput(9, TTree::Class()); // Event Tree output
     if (fkSaveV0Tree)
-        DefineOutput(8, TTree::Class()); // V0 Tree output
+        DefineOutput(10, TTree::Class()); // V0 Tree output
     if (fkSaveCascadeTree)
-        DefineOutput(9, TTree::Class()); // Cascade Tree output
+        DefineOutput(11, TTree::Class()); // Cascade Tree output
     
     //Special Debug Options (more to be added as needed)
     // A - Study Wrong PID for tracking bug
@@ -886,9 +888,17 @@ AliAnalysisTaskStrangenessVsMultiplicityRun2::~AliAnalysisTaskStrangenessVsMulti
         delete fListHist;
         fListHist = 0x0;
     }
-    if (fListV0) {
-        delete fListV0;
-        fListV0 = 0x0;
+    if (fListK0Short) {
+        delete fListK0Short;
+        fListK0Short = 0x0;
+    }
+    if (fListLambda) {
+        delete fListLambda;
+        fListLambda = 0x0;
+    }
+    if (fListAntiLambda) {
+        delete fListAntiLambda;
+        fListAntiLambda = 0x0;
     }
     if (fListXiMinus) {
         delete fListXiMinus;
@@ -1337,10 +1347,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
     }
     
     //Superlight mode output
-    if ( !fListV0 ){
-        fListV0 = new TList();
-        fListV0->SetOwner();
-    }
+    if ( !fListK0Short    ){ fListK0Short    = new TList();    fListK0Short->SetOwner();    }
+    if ( !fListLambda     ){ fListLambda     = new TList();    fListLambda->SetOwner();     }
+    if ( !fListAntiLambda ){ fListAntiLambda = new TList();    fListAntiLambda->SetOwner(); }
     
     if ( !fListXiMinus ){ fListXiMinus = new TList();    fListXiMinus->SetOwner(); }
     if ( !fListXiPlus  ){ fListXiPlus = new TList();     fListXiPlus->SetOwner();  }
@@ -1350,7 +1359,33 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
     //Initialize user objects of cascade type
     Int_t lNbrConfigs = 0, lTotalCfgs = 0;
     AliCascadeResult *lCscRslt = 0x0;
+    AliV0Result *lV0Rslt = 0x0;
     
+    //K0Short configurations
+    lNbrConfigs = fListK0Short->GetEntries();
+    lTotalCfgs += lNbrConfigs;
+    for(Int_t lcfg=0; lcfg<lNbrConfigs; lcfg++){
+        lV0Rslt = (AliV0Result*) fListK0Short->At(lcfg);
+        lV0Rslt->InitializeHisto();
+    }
+    //Lambda configurations
+    lNbrConfigs = fListLambda->GetEntries();
+    lTotalCfgs += lNbrConfigs;
+    for(Int_t lcfg=0; lcfg<lNbrConfigs; lcfg++){
+        lV0Rslt = (AliV0Result*) fListLambda->At(lcfg);
+        lV0Rslt->InitializeHisto();
+        lV0Rslt->InitializeProtonProfile();
+        lV0Rslt->InitializeFeeddownMatrix();
+    }
+    //Lambda configurations
+    lNbrConfigs = fListAntiLambda->GetEntries();
+    lTotalCfgs += lNbrConfigs;
+    for(Int_t lcfg=0; lcfg<lNbrConfigs; lcfg++){
+        lV0Rslt = (AliV0Result*) fListAntiLambda->At(lcfg);
+        lV0Rslt->InitializeHisto();
+        lV0Rslt->InitializeProtonProfile();
+        lV0Rslt->InitializeFeeddownMatrix();
+    }
     //XiMinus configurations
     lNbrConfigs = fListXiMinus->GetEntries();
     lTotalCfgs += lNbrConfigs;
@@ -1386,18 +1421,20 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
     
     AliWarning( Form("Initialized %i cascade output objects!", lTotalCfgs));
     
-    //Regular Output: Slots 1-6
+    //Regular Output: Slots 1-8
     PostData(1, fListHist    );
-    PostData(2, fListV0      );
-    PostData(3, fListXiMinus    );
-    PostData(4, fListXiPlus     );
-    PostData(5, fListOmegaMinus );
-    PostData(6, fListOmegaPlus  );
+    PostData(2, fListK0Short    );
+    PostData(3, fListLambda     );
+    PostData(4, fListAntiLambda );
+    PostData(5, fListXiMinus    );
+    PostData(6, fListXiPlus     );
+    PostData(7, fListOmegaMinus );
+    PostData(8, fListOmegaPlus  );
     
-    //TTree Objects: Slots 7-9
-    if(fkSaveEventTree)    PostData(7, fTreeEvent   );
-    if(fkSaveV0Tree)       PostData(8, fTreeV0      );
-    if(fkSaveCascadeTree)  PostData(9, fTreeCascade );
+    //TTree Objects: Slots 9-11
+    if(fkSaveEventTree)    PostData(9, fTreeEvent   );
+    if(fkSaveV0Tree)       PostData(10, fTreeV0      );
+    if(fkSaveCascadeTree)  PostData(11, fTreeCascade );
     
 }// end UserCreateOutputObjects
 
@@ -1545,16 +1582,18 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     if( lEvSelCode != 0 ) {
         //Regular Output: Slots 1-6
         PostData(1, fListHist    );
-        PostData(2, fListV0      );
-        PostData(3, fListXiMinus    );
-        PostData(4, fListXiPlus     );
-        PostData(5, fListOmegaMinus );
-        PostData(6, fListOmegaPlus  );
+        PostData(2, fListK0Short    );
+        PostData(3, fListLambda     );
+        PostData(4, fListAntiLambda );
+        PostData(5, fListXiMinus    );
+        PostData(6, fListXiPlus     );
+        PostData(7, fListOmegaMinus );
+        PostData(8, fListOmegaPlus  );
         
-        //TTree Objects: Slots 7-9
-        if(fkSaveEventTree)    PostData(7, fTreeEvent   );
-        if(fkSaveV0Tree)       PostData(8, fTreeV0      );
-        if(fkSaveCascadeTree)  PostData(9, fTreeCascade );
+        //TTree Objects: Slots 9-11
+        if(fkSaveEventTree)    PostData(9, fTreeEvent   );
+        if(fkSaveV0Tree)       PostData(10, fTreeV0      );
+        if(fkSaveCascadeTree)  PostData(11, fTreeCascade );
         return;
     }
     
@@ -1562,35 +1601,39 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     if( fkDoExtraEvSels ) {
         if ( fkPileupRejectionMode == 0) {
             if( !fEventCuts.AcceptEvent(ev) ) {
-                //Regular Output: Slots 1-6
+                //Regular Output: Slots 1-8
                 PostData(1, fListHist    );
-                PostData(2, fListV0      );
-                PostData(3, fListXiMinus    );
-                PostData(4, fListXiPlus     );
-                PostData(5, fListOmegaMinus );
-                PostData(6, fListOmegaPlus  );
+                PostData(2, fListK0Short    );
+                PostData(3, fListLambda     );
+                PostData(4, fListAntiLambda );
+                PostData(5, fListXiMinus    );
+                PostData(6, fListXiPlus     );
+                PostData(7, fListOmegaMinus );
+                PostData(8, fListOmegaPlus  );
                 
-                //TTree Objects: Slots 7-9
-                if(fkSaveEventTree)    PostData(7, fTreeEvent   );
-                if(fkSaveV0Tree)       PostData(8, fTreeV0      );
-                if(fkSaveCascadeTree)  PostData(9, fTreeCascade );
+                //TTree Objects: Slots 9-11
+                if(fkSaveEventTree)    PostData(9, fTreeEvent   );
+                if(fkSaveV0Tree)       PostData(10, fTreeV0      );
+                if(fkSaveCascadeTree)  PostData(11, fTreeCascade );
                 return;
             }
         }
         if ( fkPileupRejectionMode == 1) {
             if( !fEventCutsStrictAntipileup.AcceptEvent(ev) ) {
-                //Regular Output: Slots 1-6
+                //Regular Output: Slots 1-8
                 PostData(1, fListHist    );
-                PostData(2, fListV0      );
-                PostData(3, fListXiMinus    );
-                PostData(4, fListXiPlus     );
-                PostData(5, fListOmegaMinus );
-                PostData(6, fListOmegaPlus  );
+                PostData(2, fListK0Short    );
+                PostData(3, fListLambda     );
+                PostData(4, fListAntiLambda );
+                PostData(5, fListXiMinus    );
+                PostData(6, fListXiPlus     );
+                PostData(7, fListOmegaMinus );
+                PostData(8, fListOmegaPlus  );
                 
-                //TTree Objects: Slots 7-9
-                if(fkSaveEventTree)    PostData(7, fTreeEvent   );
-                if(fkSaveV0Tree)       PostData(8, fTreeV0      );
-                if(fkSaveCascadeTree)  PostData(9, fTreeCascade );
+                //TTree Objects: Slots 9-11
+                if(fkSaveEventTree)    PostData(9, fTreeEvent   );
+                if(fkSaveV0Tree)       PostData(10, fTreeV0      );
+                if(fkSaveCascadeTree)  PostData(11, fTreeCascade );
                 return;
             }
         }
@@ -1611,18 +1654,20 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                ( fEventCuts.AcceptEvent(ev) &&  fEventCutsStrictAntipileup.AcceptEvent(ev))    // this line rejects D
                ) {
                 
-                //Regular Output: Slots 1-6
+                //Regular Output: Slots 1-8
                 PostData(1, fListHist    );
-                PostData(2, fListV0      );
-                PostData(3, fListXiMinus    );
-                PostData(4, fListXiPlus     );
-                PostData(5, fListOmegaMinus );
-                PostData(6, fListOmegaPlus  );
+                PostData(2, fListK0Short    );
+                PostData(3, fListLambda     );
+                PostData(4, fListAntiLambda );
+                PostData(5, fListXiMinus    );
+                PostData(6, fListXiPlus     );
+                PostData(7, fListOmegaMinus );
+                PostData(8, fListOmegaPlus  );
                 
-                //TTree Objects: Slots 7-9
-                if(fkSaveEventTree)    PostData(7, fTreeEvent   );
-                if(fkSaveV0Tree)       PostData(8, fTreeV0      );
-                if(fkSaveCascadeTree)  PostData(9, fTreeCascade );
+                //TTree Objects: Slots 9-11
+                if(fkSaveEventTree)    PostData(9, fTreeEvent   );
+                if(fkSaveV0Tree)       PostData(10, fTreeV0      );
+                if(fkSaveCascadeTree)  PostData(11, fTreeCascade );
                 return;
             }
         }
@@ -2057,13 +2102,29 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         // Superlight adaptive output mode
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         
-        //Step 1: Sweep members of the output object TList and fill all of them as appropriate
-        Int_t lNumberOfConfigurations = fListV0->GetEntries();
         //AliWarning(Form("[V0 Analyses] Processing different configurations (%i detected)",lNumberOfConfigurations));
         TH3F *histoout         = 0x0;
         AliV0Result *lV0Result = 0x0;
-        for(Int_t lcfg=0; lcfg<lNumberOfConfigurations; lcfg++){
-            lV0Result = (AliV0Result*) fListV0->At(lcfg);
+        
+        //pointers to valid results
+        AliV0Result *lPointers[50000];
+        Long_t lValidConfigurations=0;
+        
+        for( Int_t icfg=0; icfg<fListK0Short->GetEntries(); icfg++ ){
+            lPointers[lValidConfigurations] = (AliV0Result*) fListK0Short->At(icfg);
+            lValidConfigurations++;
+        }
+        for( Int_t icfg=0; icfg<fListLambda->GetEntries(); icfg++ ){
+            lPointers[lValidConfigurations] = (AliV0Result*) fListLambda->At(icfg);
+            lValidConfigurations++;
+        }
+        for( Int_t icfg=0; icfg<fListAntiLambda->GetEntries(); icfg++ ){
+            lPointers[lValidConfigurations] = (AliV0Result*) fListAntiLambda->At(icfg);
+            lValidConfigurations++;
+        }
+        
+        for(Int_t lcfg=0; lcfg<lValidConfigurations; lcfg++){
+            lV0Result = lPointers[lcfg];
             histoout  = lV0Result->GetHistogram();
             
             Float_t lMass = 0;
@@ -3384,18 +3445,20 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     }// end of the Cascade loop (ESD or AOD)
     
     // Post output data.
-    //Regular Output: Slots 1-6
+    //Regular Output: Slots 1-8
     PostData(1, fListHist    );
-    PostData(2, fListV0      );
-    PostData(3, fListXiMinus    );
-    PostData(4, fListXiPlus     );
-    PostData(5, fListOmegaMinus );
-    PostData(6, fListOmegaPlus  );
+    PostData(2, fListK0Short    );
+    PostData(3, fListLambda     );
+    PostData(4, fListAntiLambda );
+    PostData(5, fListXiMinus    );
+    PostData(6, fListXiPlus     );
+    PostData(7, fListOmegaMinus );
+    PostData(8, fListOmegaPlus  );
     
-    //TTree Objects: Slots 7-9
-    if(fkSaveEventTree)    PostData(7, fTreeEvent   );
-    if(fkSaveV0Tree)       PostData(8, fTreeV0      );
-    if(fkSaveCascadeTree)  PostData(9, fTreeCascade );
+    //TTree Objects: Slots 9-11
+    if(fkSaveEventTree)    PostData(9, fTreeEvent   );
+    if(fkSaveV0Tree)       PostData(10, fTreeV0      );
+    if(fkSaveCascadeTree)  PostData(11, fTreeCascade );
 }
 
 //________________________________________________________________________
@@ -3438,13 +3501,30 @@ Double_t AliAnalysisTaskStrangenessVsMultiplicityRun2::MyRapidity(Double_t rE, D
 //________________________________________________________________________
 void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddConfiguration( AliV0Result *lV0Result )
 {
-    if (!fListV0){
-        Printf("fListV0 does not exist. Creating...");
-        fListV0 = new TList();
-        fListV0->SetOwner();
-        
+    if ( lV0Result->GetMassHypothesis () == AliV0Result::kK0Short ){
+        if (!fListK0Short){
+            Printf("fListK0Short does not exist. Creating...");
+            fListK0Short = new TList();
+            fListK0Short->SetOwner();
+        }
+        fListK0Short->Add(lV0Result);
     }
-    fListV0->Add(lV0Result);
+    if ( lV0Result->GetMassHypothesis () == AliV0Result::kLambda ){
+        if (!fListLambda){
+            Printf("fListLambda does not exist. Creating...");
+            fListLambda = new TList();
+            fListLambda->SetOwner();
+        }
+        fListLambda->Add(lV0Result);
+    }
+    if ( lV0Result->GetMassHypothesis () == AliV0Result::kAntiLambda ){
+        if (!fListAntiLambda){
+            Printf("fListAntiLambda does not exist. Creating...");
+            fListAntiLambda = new TList();
+            fListAntiLambda->SetOwner();
+        }
+        fListAntiLambda->Add(lV0Result);
+    }
 }
 
 //________________________________________________________________________
@@ -4253,10 +4333,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
     {
         //Central result, customized binning: the one to use, usually
         lV0Result[lNV0] = new AliV0Result( Form("%s_Central",lParticleNameV0[i].Data() ),lMassHypoV0[i],"",lCentbinnumbV0,lCentbinlimitsV0, lPtbinnumbV0,lPtbinlimitsV0);
-        if ( i!=0 ) lV0Result[lNV0] -> InitializeProtonProfile( lPtbinnumbV0,lPtbinlimitsV0 ); //profile
-        
+    
         //feeddown matrix
-        if ( i!=0 ) lV0Result[lNV0] -> InitializeFeeddownMatrix( lPtbinnumbV0,lPtbinlimitsV0, lPtbinnumbXi,lPtbinlimitsXi, lCentbinnumbV0,lCentbinlimitsV0);
+        if ( i!=0 ) lV0Result[lNV0] -> SetupFeeddownMatrix(lPtbinnumbXi,lPtbinlimitsXi);
         
         //Setters for V0 Cuts
         lV0Result[lNV0]->SetCutDCANegToPV            ( lcutsV0[i][1][ 0] ) ;
@@ -4287,10 +4366,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
             //Central Result, Full: No rebinning. Will use a significant amount of memory,
             //not to be replicated several times for systematics!
             lV0Result[lNV0] = new AliV0Result( Form("%s_Central_Full",lParticleNameV0[i].Data() ),lMassHypoV0[i]);
-            if ( i!=0 ) lV0Result[lNV0] -> InitializeProtonProfile( lPtbinnumbV0,lPtbinlimitsV0 ); //profile
             
             //feeddown matrix
-            if ( i!=0 ) lV0Result[lNV0] -> InitializeFeeddownMatrix( lPtbinnumbV0,lPtbinlimitsV0, lPtbinnumbXi,lPtbinlimitsXi, lCentbinnumbV0,lCentbinlimitsV0);
+            if ( i!=0 ) lV0Result[lNV0] -> SetupFeeddownMatrix(lPtbinnumbXi,lPtbinlimitsXi);
             
             //Setters for V0 Cuts
             lV0Result[lNV0]->SetCutDCANegToPV            ( lcutsV0[i][1][ 0] ) ;
@@ -4469,10 +4547,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
         {
             //Central result for sweeps
             lV0Result[lNV0] = new AliV0Result( Form("%s_Central_ForSweep",lParticleNameV0[i].Data() ),lMassHypoV0[i],"",lSweepCentBinNumb,lSweepCentBinLimits, lPtbinnumbV0,lPtbinlimitsV0,lNMassBins[i],lMass[i]-lMassWindow[i],lMass[i]+lMassWindow[i]);
-            if ( i!=0 ) lV0Result[lNV0] -> InitializeProtonProfile( lPtbinnumbV0,lPtbinlimitsV0 ); //profile
             
             //feeddown matrix
-            if ( i!=0 ) lV0Result[lNV0] -> InitializeFeeddownMatrix( lPtbinnumbV0,lPtbinlimitsV0, lPtbinnumbXi,lPtbinlimitsXi, lSweepCentBinNumb,lSweepCentBinLimits);
+            if ( i!=0 ) lV0Result[lNV0] -> SetupFeeddownMatrix(lPtbinnumbXi,lPtbinlimitsXi);
             
             //Setters for V0 Cuts
             lV0Result[lNV0]->SetCutDCANegToPV            ( lcutsV0[i][1][ 0] ) ;
@@ -4630,10 +4707,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
         {
             //Central result for sweeps
             lV0Result[lNV0] = new AliV0Result( Form("%s_Central_ForFullSweep",lParticleNameV0[i].Data() ),lMassHypoV0[i],"",lSweepCentBinNumb,lSweepCentBinLimits, lPtbinnumbV0,lPtbinlimitsV0,lNMassBins[i],lMass[i]-lMassWindow[i],lMass[i]+lMassWindow[i]);
-            if ( i!=0 ) lV0Result[lNV0] -> InitializeProtonProfile( lPtbinnumbV0,lPtbinlimitsV0 ); //profile
             
             //feeddown matrix
-            if ( i!=0 ) lV0Result[lNV0] -> InitializeFeeddownMatrix( lPtbinnumbV0,lPtbinlimitsV0, lPtbinnumbXi,lPtbinlimitsXi, lSweepCentBinNumb,lSweepCentBinLimits);
+            if ( i!=0 ) lV0Result[lNV0] -> SetupFeeddownMatrix(lPtbinnumbXi,lPtbinlimitsXi);
             
             //Setters for V0 Cuts
             lV0Result[lNV0]->SetCutDCANegToPV            ( lcutsV0[i][1][ 0] ) ;

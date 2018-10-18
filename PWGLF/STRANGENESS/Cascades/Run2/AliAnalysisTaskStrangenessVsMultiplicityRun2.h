@@ -222,7 +222,9 @@ private:
     // your data member object is created on the worker nodes and streaming is not needed.
     // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
     TList  *fListHist;      //! List of Cascade histograms
-    TList  *fListV0;        // List of Cascade histograms
+    TList  *fListK0Short;        // List of Cascade histograms
+    TList  *fListLambda;        // List of Cascade histograms
+    TList  *fListAntiLambda;        // List of Cascade histograms
     TList  *fListXiMinus;   // List of XiMinus outputs
     TList  *fListXiPlus;   // List of XiPlus outputs
     TList  *fListOmegaMinus;   // List of XiMinus outputs
@@ -634,7 +636,7 @@ private:
     AliAnalysisTaskStrangenessVsMultiplicityRun2(const AliAnalysisTaskStrangenessVsMultiplicityRun2&);            // not implemented
     AliAnalysisTaskStrangenessVsMultiplicityRun2& operator=(const AliAnalysisTaskStrangenessVsMultiplicityRun2&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrangenessVsMultiplicityRun2, 3);
+    ClassDef(AliAnalysisTaskStrangenessVsMultiplicityRun2, 4);
     //1: first implementation
 };
 
