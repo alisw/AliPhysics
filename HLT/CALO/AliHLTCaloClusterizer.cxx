@@ -45,8 +45,8 @@ ClassImp(AliHLTClusterFinder);
 ///
 /// Constructor
 //____________________________________________________________________________
-AliHLTClusterFinder::AliHLTClusterFinder(AliHLTCaloRecPointDataStruct** outputArray, AliHLTEMCALGeometry* geometry, Double_t timeCut, Double_t timeMin, Double_t timeMax, Double_t gradientCut, Bool_t doEnergyGradientCut, Double_t thresholdSeedE, Double_t thresholdCellE) :
-    fSeedList(), fDigitMap(), fCellMask(), fBadCellMask(), fCurrentClusterDigits(), fFoundClusters(outputArray), fNumFoundClusters(0), fGeometry(geometry), fTimeCut(timeCut), fTimeMin(timeMin), fTimeMax(timeMax), fGradientCut(gradientCut), fDoEnergyGradientCut(doEnergyGradientCut), fThresholdSeedEnergy(thresholdSeedE), fThresholdCellEnergy(thresholdCellE)
+AliHLTClusterFinder::AliHLTClusterFinder(AliHLTCaloRecPointDataStruct** outputArray, Int_t maxNumClusters, AliHLTEMCALGeometry* geometry, Double_t timeCut, Double_t timeMin, Double_t timeMax, Double_t gradientCut, Bool_t doEnergyGradientCut, Double_t thresholdSeedE, Double_t thresholdCellE) :
+    fSeedList(), fDigitMap(), fCellMask(), fBadCellMask(), fCurrentClusterDigits(), fFoundClusters(outputArray), fNumFoundClusters(0), fMaxNumClusters(maxNumClusters), fGeometry(geometry), fTimeCut(timeCut), fTimeMin(timeMin), fTimeMax(timeMax), fGradientCut(gradientCut), fDoEnergyGradientCut(doEnergyGradientCut), fThresholdSeedEnergy(thresholdSeedE), fThresholdCellEnergy(thresholdCellE)
 {
   // 
 }
@@ -236,6 +236,11 @@ Int_t AliHLTClusterFinder::FindClusters(AliHLTCaloDigitDataStruct** digitArray, 
   fNumFoundClusters = 0;
   for(Int_t i=nCells-1; i>=0; i--)
   {
+    if(fNumFoundClusters>=fMaxNumClusters)
+    {
+      HLTWarning("Buffer exceeded after %d clusters", fNumFoundClusters);
+      break;
+    }
     Int_t row = fSeedList[i].row, column = fSeedList[i].column;
     // Continue if the cell is already masked (i.e. was already clustered)
     if(fCellMask[row][column])
@@ -328,7 +333,7 @@ Int_t AliHLTCaloClusterizer::ClusterizeEvent(Int_t nDigits)
   // Create cluster finder only once, at execution time (cannot be done in constructor, because settings could change afterwards)
   if(!fClusterFinder)
   {
-    fClusterFinder = new AliHLTClusterFinder(fRecPointArray, fGeometry, fEmcTimeGate, fCellTimeMin, fCellTimeMax, fGradientCut, fUseGradientCut, fEmcClusteringThreshold, fEmcMinEnergyThreshold);
+    fClusterFinder = new AliHLTClusterFinder(fRecPointArray, fArraySize, fGeometry, fEmcTimeGate, fCellTimeMin, fCellTimeMax, fGradientCut, fUseGradientCut, fEmcClusteringThreshold, fEmcMinEnergyThreshold);
 
     // Add bad channel map
     AliCDBManager* cdb = AliCDBManager::Instance();
@@ -371,7 +376,7 @@ AliHLTCaloClusterizer::AliHLTCaloClusterizer(TString det):
     fEmcTimeGate = 1.e-6 ;
 
     // Reserve memory for buffer 
-    fArraySize = 200; // Up to 200 clusters
+    fArraySize = 10000; // max num clusters
     fRecPointArray = new AliHLTCaloRecPointDataStruct*[fArraySize];
 }
 

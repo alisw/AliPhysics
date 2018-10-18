@@ -61,7 +61,7 @@ namespace HLTClusterFinder
 ///
 /// \author Rudiger Haake (Yale)
 //_________________________________________________________________________
-class AliHLTClusterFinder
+class AliHLTClusterFinder : public AliHLTLogging
 {
   struct cellWithE {
     cellWithE() : energy(0.), row(0), column(0) {}
@@ -75,7 +75,7 @@ class AliHLTClusterFinder
   };
 
   public:
-    AliHLTClusterFinder(AliHLTCaloRecPointDataStruct** outputArray, AliHLTEMCALGeometry* geometry, Double_t timeCut, Double_t timeMin, Double_t timeMax, Double_t gradientCut, Bool_t doEnergyGradientCut, Double_t thresholdSeedE, Double_t thresholdCellE);
+    AliHLTClusterFinder(AliHLTCaloRecPointDataStruct** outputArray, Int_t maxNumClusters, AliHLTEMCALGeometry* geometry, Double_t timeCut, Double_t timeMin, Double_t timeMax, Double_t gradientCut, Bool_t doEnergyGradientCut, Double_t thresholdSeedE, Double_t thresholdCellE);
     ~AliHLTClusterFinder();
 
     Int_t               FindClusters(AliHLTCaloDigitDataStruct** digitArray, Int_t numDigits);
@@ -95,6 +95,7 @@ private:
     AliHLTCaloDigitDataStruct*      fCurrentClusterDigits[500]; //!<! temporary array of digits belonging to a cluster (is used to on-cluster calculations,e.g. center of gravity)
     AliHLTCaloRecPointDataStruct**   fFoundClusters;      //!<! Pointer to found cluster object array
     Int_t               fNumFoundClusters;                ///<  number of found clusters in FindClusters()
+    Int_t               fMaxNumClusters;                  ///<  available buffer
 
     AliHLTEMCALGeometry* fGeometry;                        ///<  HLT geometry object
     Double_t            fTimeCut;                         ///<  maximum time difference between the digits inside EMC cluster

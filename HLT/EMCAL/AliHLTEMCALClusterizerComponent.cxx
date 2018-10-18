@@ -83,7 +83,7 @@ AliHLTEMCALClusterizerComponent::GetOutputDataSize(unsigned long& constBase, dou
 {
   //See headerfile for documentation
   constBase = 0;
-  inputMultiplier = sizeof(AliHLTCaloClusterDataStruct)/sizeof(AliHLTCaloDigitDataStruct);
+  inputMultiplier = (double)sizeof(AliHLTCaloClusterDataStruct)/(double)sizeof(AliHLTCaloDigitDataStruct);
 }
 
 
