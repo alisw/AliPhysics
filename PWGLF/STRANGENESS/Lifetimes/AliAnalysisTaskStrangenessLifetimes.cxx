@@ -353,7 +353,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
             v0part.SetStatus(MCparticle::kPrimary);
             fHistMCctPrimary[idx]->Fill(dist * part->GetMass() / part->P());
           } else if (mcEvent->IsSecondaryFromMaterial(ilab)) {
-            v0part.SetStatus(MCparticle::kSecondaryFromWeakDecay);
+            v0part.SetStatus(MCparticle::kSecondaryFromMaterial);
             fHistMCctSecondaryFromMaterial[idx]->Fill(dist * part->GetMass() / part->P());
           } else {
             ::Fatal("AliAnalysisTaskStrangenessLifetimes::UserExec",
