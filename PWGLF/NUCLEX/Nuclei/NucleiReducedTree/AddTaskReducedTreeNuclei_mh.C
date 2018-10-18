@@ -10,8 +10,10 @@ AliAnalysisTask *AddTaskReducedTreeNuclei_mh(bool useTri=kFALSE)  {
    }
    
    AliAnalysisTaskReducedTreeNuclei *task = new AliAnalysisTaskReducedTreeNuclei("TaskNuclei");
-   task->SelectCollisionCandidates(AliVEvent::kINT7);
-   task->useTritonCandidates(useTri);   
+   task->SelectCollisionCandidates(AliVEvent::kINT7 + AliVEvent::kHighMultV0);
+//    task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+   
+   task->useTritonCandidates(kFALSE);   
    mgr->AddTask(task);
    
    TString Filename = "AnalysisResults.root"; //mgr->GetCommonFileName();
