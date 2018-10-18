@@ -30,6 +30,12 @@
 #include <memory>
 #include <ostream>
 
+#if __cplusplus > 201402L
+#define AUTO_PTR std::unique_ptr
+#else
+#define AUTO_PTR std::auto_ptr
+#endif
+
 ClassImp(AliHLTTPCHWCFData) //ROOT macro for the implementation of ROOT specific class methods
 
 AliHLTTPCHWCFData::AliHLTTPCHWCFData(int forceVersion)
@@ -329,7 +335,7 @@ int AliHLTTPCHWCFData::Open(const char* filename)
   
   TString input=filename;
   input+="?filetype=raw";
-  std::auto_ptr<TFile> pFile(new TFile(input));
+  AUTO_PTR<TFile> pFile(new TFile(input));
   if (!pFile.get()) return -ENOMEM;
   if (pFile->IsZombie()) return -ENOENT;
 
@@ -340,7 +346,7 @@ int AliHLTTPCHWCFData::Open(const char* filename)
   }
 
   pFile->Seek(0);
-  std::auto_ptr<TArrayC> buffer(new TArrayC);
+  AUTO_PTR<TArrayC> buffer(new TArrayC);
   if (!buffer.get()) return -ENOMEM;
 
   buffer->Set(pFile->GetSize());

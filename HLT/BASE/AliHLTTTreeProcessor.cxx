@@ -37,6 +37,12 @@
 #include "TSystem.h"
 #include "TRandom3.h"
 
+#if __cplusplus > 201402L
+#define AUTO_PTR std::unique_ptr
+#else
+#define AUTO_PTR std::auto_ptr
+#endif
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTTreeProcessor)
 
@@ -136,7 +142,7 @@ int AliHLTTTreeProcessor::DoInit(int argc, const char** argv)
     // originally foreseen to pass the arguments to the function, however
     // this is not appropriate. Argument scan via overloaded function
     // ScanConfigurationArgument
-    std::auto_ptr<TTree> ptr(CreateTree(0, NULL));
+    AUTO_PTR<TTree> ptr(CreateTree(0, NULL));
     if (ptr.get()) {
       ptr->SetDirectory(0);
       ptr->SetCircular(fMaxEntries);

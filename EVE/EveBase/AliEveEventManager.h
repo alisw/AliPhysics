@@ -129,6 +129,8 @@ public:
     void AutoLoadNextEvent();
 private:
     virtual ~AliEveEventManager();
+    AliEveEventManager(const AliEveEventManager&) {}
+    const AliEveEventManager& operator=(const AliEveEventManager&) {return *this;}
     static AliEveEventManager* fgMaster; // singleton instance of AliEveEventManager
     
     void   InitInternals();

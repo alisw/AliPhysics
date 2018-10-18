@@ -400,7 +400,7 @@ Int_t AliT0TimeAmplCorr::SetNewQTCcoefficients(TString filename)
             if((runMax - runMin) < minRUNdiff) enteryChoosen = enteryForMeanValues;
             tree_coef->GetEntry(enteryChoosen);
 
-            for(Int_t pmt = 0; pmt <= NPMT0; pmt++)
+            for(Int_t pmt = 0; pmt < NPMT0; pmt++)
             {
                 fNewQTCa[pmt] = coeffA[pmt];
                 fNewQTCb[pmt] = coeffB[pmt];

@@ -205,7 +205,7 @@ void AliTPCCalibViewer::Delete(Option_t* /*option*/) {
 }
 
 
-const char* AliTPCCalibViewer::AddAbbreviations(const Char_t *c, Bool_t printDrawCommand){
+TString AliTPCCalibViewer::AddAbbreviations(const Char_t *c, Bool_t printDrawCommand){
    /// Replace all "<variable>" with "<variable><fAbbreviation>" (Adds forgotten "~")
    /// but take care on the statistical information, like "CEQmean_Mean"
    /// and also take care on correct given variables, like "CEQmean~"
@@ -302,7 +302,7 @@ const char* AliTPCCalibViewer::AddAbbreviations(const Char_t *c, Bool_t printDra
    delete [] normLengths;
    delete [] varSort;
    delete [] normSort;
-   return str.Data();
+   return str;
 }
 
 

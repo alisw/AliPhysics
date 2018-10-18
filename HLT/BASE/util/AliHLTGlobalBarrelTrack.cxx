@@ -36,6 +36,12 @@
 #include "TMarker.h"
 #include "TArc.h"
 
+#if __cplusplus > 201402L
+#define AUTO_PTR std::unique_ptr
+#else
+#define AUTO_PTR std::auto_ptr
+#endif
+
 using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -321,7 +327,7 @@ void AliHLTGlobalBarrelTrack::Draw(Option_t *option)
 
   TString strOption(option);
   if (strOption.IsNull()) strOption="spacepoints trackarc";
-  std::auto_ptr<TObjArray> tokens(strOption.Tokenize(" "));
+  AUTO_PTR<TObjArray> tokens(strOption.Tokenize(" "));
   if (!tokens.get()) return;
   for (int i=0; i<tokens->GetEntriesFast(); i++) {
     if (!tokens->At(i)) continue;
@@ -556,7 +562,7 @@ int AliHLTGlobalBarrelTrack::DrawProjXYTrack(Option_t *option, const float scale
   //bool bNoTrackPoints=false; // don't draw track points
   TString strOption(option);
   if (strOption.IsNull()) strOption="spacepoints trackarc";
-  std::auto_ptr<TObjArray> tokens(strOption.Tokenize(" "));
+  AUTO_PTR<TObjArray> tokens(strOption.Tokenize(" "));
   if (!tokens.get()) return 0;
   for (int i=0; i<tokens->GetEntriesFast(); i++) {
     if (!tokens->At(i)) continue;
@@ -716,13 +722,13 @@ int AliHLTGlobalBarrelTrack::ReadTracks(const char* filename, TClonesArray& tgt,
   
   TString input=filename;
   input+="?filetype=raw";
-  std::auto_ptr<TFile> pFile(new TFile(input));
+  AUTO_PTR<TFile> pFile(new TFile(input));
   if (!pFile.get()) return -ENOMEM;
   if (pFile->IsZombie()) return -ENOENT;
 
   int iResult=0;
   pFile->Seek(0);
-  std::auto_ptr<TArrayC> buffer(new TArrayC);
+  AUTO_PTR<TArrayC> buffer(new TArrayC);
   if (!buffer.get()) return -ENOMEM;
 
   buffer->Set(pFile->GetSize());

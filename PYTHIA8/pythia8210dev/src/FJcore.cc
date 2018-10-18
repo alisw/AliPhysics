@@ -74,6 +74,7 @@
 //
 //#include "fjcore.hh"
 // For inclusion in Pythia8 line above is replaced by line below.
+
 #include "Pythia8/FJcore.h"
 #ifndef __FJCORE_VERSION_HH__
 #define __FJCORE_VERSION_HH__
@@ -777,8 +778,8 @@ private:
   typedef SearchTree<Shuffle>     Tree;
   typedef Tree::circulator        circulator;
   typedef Tree::const_circulator  const_circulator;
-  triplet<std::auto_ptr<Tree> >  _trees;
-  std::auto_ptr<MinHeap> _heap;
+  triplet<AUTO_PTR<Tree> >  _trees;
+  AUTO_PTR<MinHeap> _heap;
   std::vector<Point>     _points;
   std::stack<Point *>    _available_points;
   std::vector<Point *>   _points_under_review;
@@ -882,7 +883,7 @@ void ClosestPair2D::_initialize(const std::vector<Coord2D> & positions,
 	shuffles[i] += rel_shift; }
     }
     sort(shuffles.begin(), shuffles.end());
-    _trees[ishift] = auto_ptr<Tree>(new Tree(shuffles, max_size));
+    _trees[ishift] = AUTO_PTR<Tree>(new Tree(shuffles, max_size));
     circulator circ = _trees[ishift]->somewhere(), start=circ;
     unsigned int CP_range = min(_cp_search_range, n_positions-1);
     do {
@@ -902,7 +903,7 @@ void ClosestPair2D::_initialize(const std::vector<Coord2D> & positions,
   vector<double> mindists2(n_positions);
   for (unsigned int i = 0; i < n_positions; i++) {
     mindists2[i] = _points[i].neighbour_dist2;}
-  _heap = auto_ptr<MinHeap>(new MinHeap(mindists2, max_size));
+  _heap = AUTO_PTR<MinHeap>(new MinHeap(mindists2, max_size));
 }
 void ClosestPair2D::closest_pair(unsigned int & ID1, unsigned int & ID2,
 				 double & distance2) const {
@@ -1992,7 +1993,7 @@ void ClusterSequence::_delaunay_cluster () {
     points[i] = EtaPhi(_jets[i].rap(),_jets[i].phi_02pi());
     points[i].sanitize(); // make sure things are in the right range
   }
-  auto_ptr<DynamicNearestNeighbours> DNN;
+  AUTO_PTR<DynamicNearestNeighbours> DNN;
 #ifndef __FJCORE_DROP_CGAL // strategy = NlnN* are not supported if we drop CGAL...
   bool verbose = false;
   bool ignore_nearest_is_mirror = (_Rparam < twopi);

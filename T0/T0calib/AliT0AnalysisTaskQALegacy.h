@@ -1,5 +1,5 @@
 #ifndef AliT0AnalysisTaskQALegacyLegacy_cxx
-#define AliT0AnalysisTaskQALegacy_cxx
+#define AliT0AnalysisTaskQALegacyLegacy_cxx
 
 // task determines mean and sigma of T0 signals  ORA, ORC, ORA-ORC, ORA+ORC/2  
 // Authors: FK  

@@ -215,7 +215,7 @@ void AliPHOSCpvPedProducer::WritePedFiles(Int_t iDDL) const
   //cout<<"pedestal files now will be created!"<< endl;
 
   if(!fPedMeanMap[iDDL]) {
-    Printf("No pedestals found for DDL %d !\n");
+    Printf("No pedestals found for DDL %d !\n", iDDL);
     return;
   }
 

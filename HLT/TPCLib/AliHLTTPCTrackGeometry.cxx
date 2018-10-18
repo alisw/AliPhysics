@@ -39,6 +39,12 @@
 #include <sstream>
 using namespace std;
 
+#if __cplusplus > 201402L
+#define AUTO_PTR std::unique_ptr
+#else
+#define AUTO_PTR std::auto_ptr
+#endif
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCTrackGeometry)
 
@@ -319,7 +325,7 @@ int AliHLTTPCTrackGeometry::FillTrackPoints(AliHLTTrackGrid* pGrid) const
 AliHLTSpacePointContainer* AliHLTTPCTrackGeometry::ConvertToSpacePoints(bool bAssociated) const
 {
   /// create a collection of all points
-  std::auto_ptr<AliHLTTPCSpacePointContainer> spacepoints(new AliHLTTPCSpacePointContainer);
+  AUTO_PTR<AliHLTTPCSpacePointContainer> spacepoints(new AliHLTTPCSpacePointContainer);
   if (!spacepoints.get()) return NULL;
 
   const vector<AliHLTTrackPoint>& trackPoints=TrackPoints();

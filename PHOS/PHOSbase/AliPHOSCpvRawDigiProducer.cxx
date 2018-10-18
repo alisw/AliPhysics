@@ -132,7 +132,8 @@ Bool_t AliPHOSCpvRawDigiProducer::LoadPedFiles() {
 	    AliError(Form("wrong connection table! abs = %d, pad = %d, A2Pad = %d",abs,iPad,AliPHOSCpvParam::A2Pad(abs)));
 	}
 	Int_t thr;
-	fscanf(pedFile,"%x",&thr);
+	int tmp = fscanf(pedFile,"%x",&thr);
+	(void) tmp;
 	if(AliPHOSCpvParam::IsValidAbs(abs)) {
 	  Int_t s = thr & 0x1ff;
 	  Int_t p = thr >> 9;

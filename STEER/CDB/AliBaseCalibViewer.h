@@ -46,7 +46,7 @@ class AliBaseCalibViewer : public TObject {
       return fTree->Draw(varexp, selection, option, nentries, firstentry); 
     };
 
-    virtual const char* AddAbbreviations(Char_t* c, Bool_t printDrawCommand = kFALSE) = 0;
+    virtual TString AddAbbreviations(const Char_t* c, Bool_t printDrawCommand = kFALSE) = 0;
     // easy drawing of data, use '~' for abbreviation of '.fElements'
     virtual Int_t EasyDraw(const Char_t* drawCommand, const Char_t* sector, const Char_t* cuts = 0, 
         const Char_t* drawOptions = 0, Bool_t writeDrawCommand = kFALSE) const = 0;   

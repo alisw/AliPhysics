@@ -34,6 +34,12 @@
 #include "TH2.h"
 #include "TFile.h"
 
+#if __cplusplus > 201402L
+#define AUTO_PTR std::unique_ptr
+#else
+#define AUTO_PTR std::auto_ptr
+#endif
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTAltroChannelSelectorComponent)
 
@@ -183,7 +189,7 @@ int AliHLTAltroChannelSelectorComponent::DoDeinit()
 {
   // see header file for class documentation
   if(fMakeHistogram){
-    std::auto_ptr<TFile> outFile(new TFile("CSHistos.root","recreate"));
+    AUTO_PTR<TFile> outFile(new TFile("CSHistos.root","recreate"));
     if (outFile.get() && !outFile->IsZombie()) {
       if (fhThreshold) fhThreshold->Write();
       if (fhRMS)       fhRMS->Write();
@@ -221,7 +227,7 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
   // process the DLL input
   int blockno=0;
   const AliHLTComponentBlockData* pDesc=NULL;
-  std::auto_ptr<AliRawReaderMemory> pRawReader(new AliRawReaderMemory);
+  AUTO_PTR<AliRawReaderMemory> pRawReader(new AliRawReaderMemory);
   if (!pRawReader.get()) return -ENOMEM;
 
   for (pDesc=GetFirstInputBlock(kAliHLTDataTypeDDLRaw); pDesc!=NULL; pDesc=GetNextInputBlock(), blockno++) {
@@ -265,7 +271,7 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
       continue;
     }
 
-    std::auto_ptr<AliAltroRawStreamV3> altroRawStream(new AliAltroRawStreamV3(pRawReader.get()));
+    AUTO_PTR<AliAltroRawStreamV3> altroRawStream(new AliAltroRawStreamV3(pRawReader.get()));
 
     if (!altroRawStream.get()) {
       iResult=-ENOMEM;

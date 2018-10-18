@@ -35,6 +35,12 @@
 #include <cerrno>
 #include <memory>
 
+#if __cplusplus > 201402L
+#define AUTO_PTR std::unique_ptr
+#else
+#define AUTO_PTR std::auto_ptr
+#endif
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTESDEvent)
 
@@ -149,7 +155,7 @@ int AliHLTESDEvent::LoadTemplate(const char* /*cdbPath*/)
     "AliRawDataErrorLogs,"
     "AliESDACORDE";
 
-  std::auto_ptr<AliESDEvent> ptrEsd(new AliESDEvent);
+  AUTO_PTR<AliESDEvent> ptrEsd(new AliESDEvent);
   if (!ptrEsd.get()) return -ENOMEM;
   
   ptrEsd->CreateStdContent();

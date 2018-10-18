@@ -23,7 +23,7 @@ public:
     static AliEveMultiView* Instance(){return fgInstance;}
     
     AliEveMultiView();
-    ~AliEveMultiView();
+    virtual ~AliEveMultiView();
     
     void InitSimpleGeom(TEveGeoShape* geom,bool threeD=true, bool rPhi=true, bool rhoZ=true);
     

@@ -160,7 +160,7 @@ const char*
 AliMpTriggerSegmentation::GetName() const
 {
   /// Name of that segmentation = TriggerSegmentation + slatName
-  TString name("TriggerSegmentation");
+  static TString name("TriggerSegmentation");
   if ( fkSlat) 
   {
     name += ".";

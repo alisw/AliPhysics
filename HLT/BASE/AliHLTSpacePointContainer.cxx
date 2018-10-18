@@ -37,6 +37,12 @@
 #include <iostream>
 #include <iomanip>
 
+#if __cplusplus > 201402L
+#define AUTO_PTR std::unique_ptr
+#else
+#define AUTO_PTR std::auto_ptr
+#endif
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTSpacePointContainer)
 
@@ -106,13 +112,13 @@ int AliHLTSpacePointContainer::AddInputBlock(const char* filename, AliHLTCompone
   
   TString input=filename;
   input+="?filetype=raw";
-  std::auto_ptr<TFile> pFile(new TFile(input));
+  AUTO_PTR<TFile> pFile(new TFile(input));
   if (!pFile.get()) return -ENOMEM;
   if (pFile->IsZombie()) return -ENOENT;
 
   int iResult=0;
   pFile->Seek(0);
-  std::auto_ptr<TArrayC> buffer(new TArrayC);
+  AUTO_PTR<TArrayC> buffer(new TArrayC);
   if (!buffer.get()) return -ENOMEM;
 
   buffer->Set(pFile->GetSize());
@@ -152,7 +158,7 @@ int AliHLTSpacePointContainer::AddInputBlocks(const char* listfile, AliHLTCompon
     count+=iResult;
   }
 
-  // std::auto_ptr<TObjArray> tokens(files.Tokenize(" "));
+  // AUTO_PTR<TObjArray> tokens(files.Tokenize(" "));
   // if (!tokens.get()) return 0;
   // for (int i=0; i<tokens->GetEntriesFast(); i++) {
   //   if (!tokens->At(i)) continue;
@@ -336,7 +342,7 @@ void AliHLTSpacePointContainer::Draw(Option_t *option)
   int markercolor=5;
 
   TString strOption(option);
-  std::auto_ptr<TObjArray> tokens(strOption.Tokenize(" "));
+  AUTO_PTR<TObjArray> tokens(strOption.Tokenize(" "));
   if (!tokens.get()) return;
   for (int i=0; i<tokens->GetEntriesFast(); i++) {
     if (!tokens->At(i)) continue;
@@ -399,7 +405,7 @@ TTree* AliHLTSpacePointContainer::FillTree(const char* name, const char* title)
   TString treetitle=title;
   if (treename.IsNull()) treename="spacepoints";
   if (treetitle.IsNull()) treetitle="HLT space point coordinates";
-  std::auto_ptr<TTree> tree(new TTree(treename, treetitle));
+  AUTO_PTR<TTree> tree(new TTree(treename, treetitle));
   if (!tree.get()) return NULL;
 
   const unsigned dimension=8;

@@ -771,7 +771,7 @@ const char* AliITSMisAligner::GetSymbName(Int_t layer) const {
     //
     // be careful : SPD0 and SPD1 are not physically separated 
     //
-    TString name;
+    static TString name;
     switch (layer) {
 	case 0:
 	case 1: name = fStrSPD; name += layer; break;
@@ -789,7 +789,7 @@ const char* AliITSMisAligner::GetSymbName(Int_t layer, Int_t ladder, Int_t det) 
     //
     // symname from layer, ladder, detector
     //
-    TString symname(GetHalfStaveLadderSymbName(layer,ladder,det));
+    static TString symname(GetHalfStaveLadderSymbName(layer,ladder,det));
     if(layer<=2){
 	symname+="Ladder";
     }else if(layer<=6){
@@ -807,7 +807,7 @@ const char* AliITSMisAligner::GetSymbName(Int_t layer,Int_t ladd) const {
     //
     // Get logical names at the level of staves / ladders
     //
-    TString name(GetSymbName(layer));
+    static TString name(GetSymbName(layer));
     if (layer==0) { // SPD1
 
 	int sector = ladd/2;
@@ -841,7 +841,7 @@ const char* AliITSMisAligner::GetHalfStaveLadderSymbName(Int_t layer,Int_t ladd,
     //
     // Get logical names at the level of half-staves (SPD) or ladders (SDD and SSD)
     //
-    TString name(GetSymbName(layer));
+    static TString name(GetSymbName(layer));
     if (layer==0) { // SPD1
 
 	int sector = ladd/2;
@@ -879,7 +879,7 @@ const char* AliITSMisAligner::GetParentSymName(const char* symname) {
     //
     // symnane of parent volume
     //
-    TString parent(symname);
+    static TString parent(symname);
     // Give the symname of 
     if(parent.BeginsWith('/')) parent.Remove(TString::kLeading,'/');
     if(parent.EndsWith("/")) parent.Remove(TString::kTrailing,'/');

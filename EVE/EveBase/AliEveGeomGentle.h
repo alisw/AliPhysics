@@ -16,7 +16,7 @@ public:
     AliEveGeomGentle(){}
     ~AliEveGeomGentle(){}
     
-    TEveGeoShape* GetSimpleGeom(char* detector);
+    TEveGeoShape* GetSimpleGeom(const char* detector);
 private:
     void DrawDeep(TEveGeoShape *gsre, Color_t color, Char_t transparency, Color_t lineColor);
 };
