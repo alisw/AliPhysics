@@ -118,7 +118,8 @@ Bool_t MiniV0efficiency::Process(Long64_t entry) {
           fHistV0ptMC[j]->Fill(miniMC.GetPt());
           fHistV0ctMC[j]->Fill(MCmass*(miniMC.GetDistOverP()));
           if(ind>=0){
-            auto& minidata= V0s[ind];
+          auto& minidata= V0s[ind];  
+          if(ind!=2 || minidata.GetCandidateInvMass(ind)!=-1)  
             fHistV0ptData[j]->Fill(minidata.GetV0pt());
             fHistV0ctData[j]->Fill(MCmass*(minidata.GetDistOverP()));
             ctAnalysis[j]->Fill(MCmass*(minidata.GetDistOverP())-MCmass*(miniMC.GetDistOverP()),MCmass*(miniMC.GetDistOverP()));
