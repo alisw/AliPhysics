@@ -1,7 +1,7 @@
 ///
-/// \file CompareInvMassGraphs.C
+/// \file CompareInvMassGraphsMCvsData.C
 /// \ingroup CaloTrackCorrMacrosPlotting
-/// \brief Plot InvMassFit.C output from different inputs in same canvas 
+/// \brief Plot InvMassFit.C output from different inputs, data and MC, in same canvas 
 ///
 /// Example file to read output from InvMassFit.C, mass, width counts vs pT, per SM or all SM 
 /// or per cathegory (w/ w/out TRD when applicable) 
@@ -47,7 +47,7 @@ TString fileFormat = ".eps"; /// File format: ".eps" ".pdf" ...
 /// \param titleMC   : Simplified string acronym of input MC
 /// \param titleData : Simplified string acronym of input data
 //------------------------------------------------------------------------------
-void CompareInvMassGraphs
+void CompareInvMassGraphsMCvsData
 ( 
  TString particle    = "Pi0",
  TString calorimeter = "EMCAL",

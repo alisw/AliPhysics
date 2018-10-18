@@ -1080,6 +1080,11 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
     ymin = 0.5;
   }
   
+  if(opt.Contains("Side"))
+  {
+    xmin = 0.65;
+  }
+  
   TLegend * legend =  new TLegend(xmin,ymin,xmax,ymax);
   legend->SetTextSize(0.05);
   
@@ -1277,10 +1282,10 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
     
     if ( !opt.Contains("Group") )
     {
-      if(opt == "SM" && kCalorimeter == "DCAL")
-        legend->AddEntry(gPt[icomb],Form("%s %d",opt.Data(),icomb+12),"P");
-      else
-        legend->AddEntry(gPt[icomb],Form("%s %d",opt.Data(),icomb),"P");
+//      if(opt == "SM" && kCalorimeter == "DCAL")
+//        legend->AddEntry(gPt[icomb],Form("%s %d",opt.Data(),icomb+12),"P");
+//      else
+        legend->AddEntry(gPt[icomb],Form("%s %d",opt.Data(),icomb+first),"P");
     }
     else
     {
@@ -1480,10 +1485,10 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
     
     if ( !opt.Contains("Group") )
     {
-      if(opt == "SM" && kCalorimeter == "DCAL")
-        legendR->AddEntry(gPt[icomb],Form("%s %d",opt.Data(),icomb+12),"P");
-      else
-        legendR->AddEntry(gPt[icomb],Form("%s %d",opt.Data(),icomb),"P");
+//      if(opt == "SM" && kCalorimeter == "DCAL")
+//        legendR->AddEntry(gPt[icomb],Form("%s %d",opt.Data(),icomb+12),"P");
+//      else
+        legendR->AddEntry(gPt[icomb],Form("%s %d",opt.Data(),icomb+first),"P");
     }
     else
     {
@@ -2143,17 +2148,18 @@ void InvMassFit
   //---------------------------------------
   Int_t ok = GetFileAndEvents(histoDir, histoList/*, calorimeter*/);
   
+  // Create output directories
+  TString processline = Form(".! mkdir -p %s/%s/%s/%s",
+                             prodname.Data(),calorimeter.Data(),histoList.Data(),particle.Data()) ;
+  gROOT->ProcessLine(processline.Data());
+  
 //  kProdName.ReplaceAll("module/","");
 //  kProdName.ReplaceAll("TCardChannel","");
-  kProdName.ReplaceAll("/","_");
+//  kProdName.ReplaceAll("/","_");
 //  kProdName.ReplaceAll("2_","_");
 //  kProdName.ReplaceAll("__","_");
   if( kFileName !="AnalysisResults" && !kFileName.Contains("Scale") )
     kProdName+=kFileName;
-    
-  // Create output directories
-  TString processline = Form(".! mkdir -p %s/%s/%s/%s",prodname.Data(),calorimeter.Data(),histoList.Data(),particle.Data()) ;
-  gROOT->ProcessLine(processline.Data());
   
   printf("Settings: prodname <%s>, filename <%s>, histoDir <%s>, histoList <%s>,\n"
          " \t histo start name <%s>, particle <%s>, calorimeter <%s>, \n"
