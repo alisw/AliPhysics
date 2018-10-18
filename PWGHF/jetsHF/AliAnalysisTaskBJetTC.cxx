@@ -136,7 +136,11 @@ fh1dJetRecPtUnidentifiedAccepted(0x0),
 fh1dJetRecPtudsgAccepted(0x0),
 fh1dJetRecPtcAccepted(0x0),
 fh1dJetRecPtbAccepted(0x0),
+fDoTaggedDRM(kFALSE),
 fh2dJetGenPtVsJetRecPt(0x0),
+fh2dJetGenPtVsJetRecPtFirst(0x0),
+fh2dJetGenPtVsJetRecPtSecond(0x0),
+fh2dJetGenPtVsJetRecPtThird(0x0),
 fh2dJetGenPtVsJetRecPtb(0x0),
 fh2dJetGenPtVsJetRecPtc(0x0),
 fh2dJetGenPtVsJetRecPtudsg(0x0),
@@ -506,7 +510,11 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fh1dJetRecPtudsgAccepted(0x0),
 		fh1dJetRecPtcAccepted(0x0),
 		fh1dJetRecPtbAccepted(0x0),
+		fDoTaggedDRM(kFALSE),
 		fh2dJetGenPtVsJetRecPt(0x0),
+		fh2dJetGenPtVsJetRecPtFirst(0x0),
+		fh2dJetGenPtVsJetRecPtSecond(0x0),
+		fh2dJetGenPtVsJetRecPtThird(0x0),
 		fh2dJetGenPtVsJetRecPtb(0x0),
 		fh2dJetGenPtVsJetRecPtc(0x0),
 		fh2dJetGenPtVsJetRecPtudsg(0x0),
@@ -1733,6 +1741,28 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				}
 			}//N=4
 
+			if(fIsPythia && fDoTaggedDRM){
+
+				if (jetrec->MatchedJet()) {
+					  double genpt = jetrec->MatchedJet()->Pt();
+					  if(!(fJetContainerMC->GetRhoParameter() == 0x0)){
+						genpt = genpt - fJetContainerMC->GetRhoVal() * jetrec->MatchedJet()->Area();
+					  }
+
+					if (sImpParXY.size()>0){
+					  if(sImpParXY.at(0) >= fThresholdIP)  fh2dJetGenPtVsJetRecPtFirst ->Fill(fJetPt,genpt,fPythiaEventWeight);
+					}
+
+					if (sImpParXY.size()>1){
+					  if(sImpParXY.at(1) >= fThresholdIP)  fh2dJetGenPtVsJetRecPtSecond->Fill(fJetPt,genpt,fPythiaEventWeight);
+					}
+
+					if (sImpParXY.size()>2){
+					  if(sImpParXY.at(2) >= fThresholdIP)  fh2dJetGenPtVsJetRecPtThird ->Fill(fJetPt,genpt,fPythiaEventWeight);
+					}
+				}
+			}
+
 			sImpParXY.clear();
 			sImpParXYZ.clear();
 			sImpParXYSig.clear();
@@ -2701,6 +2731,14 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 
 		fh2dJetGenPtVsJetRecPtudsg = new TH2D("fh2dJetGenPtVsJetRecPtudsg","detector momentum response;rec pt;gen pt",500,0,250,500,0,250);
 
+		if(fDoTaggedDRM){
+
+			fh2dJetGenPtVsJetRecPtFirst = new TH2D("fh2dJetGenPtVsJetRecPtFirst","detector momentum response N=1;rec pt;gen pt",500,0,250,500,0,250);
+			fh2dJetGenPtVsJetRecPtSecond = new TH2D("fh2dJetGenPtVsJetRecPtSecond","detector momentum response N=2 ;rec pt;gen pt",500,0,250,500,0,250);
+			fh2dJetGenPtVsJetRecPtThird = new TH2D("fh2dJetGenPtVsJetRecPtThird","detector momentum response N=3;rec pt;gen pt",500,0,250,500,0,250);
+
+		}
+
 		//Track Counting Analysis
 		if(fDoTrackCountingAnalysis){
 
@@ -3168,6 +3206,13 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 		fOutput->Add(fh2dJetGenPtVsJetRecPtb);
 		fOutput->Add(fh2dJetGenPtVsJetRecPtc);
 		fOutput->Add(fh2dJetGenPtVsJetRecPtudsg);
+		if(fDoTaggedDRM){
+
+			fOutput->Add(fh2dJetGenPtVsJetRecPtFirst);
+			fOutput->Add(fh2dJetGenPtVsJetRecPtSecond);
+			fOutput->Add(fh2dJetGenPtVsJetRecPtThird);
+
+		}
 
 		if(fDoTrackCountingAnalysis){
 			fOutput->Add(fh2dJetSignedImpParXYUnidentified);
