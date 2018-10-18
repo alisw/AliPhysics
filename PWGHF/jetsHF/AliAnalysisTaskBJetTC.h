@@ -113,6 +113,8 @@ public:
 
 	void SetDoDeltaPtWithSignal(Bool_t value){fDoDeltaPtWithSignal = value;}
 
+	void SetDoTaggedJetsDRM(Bool_t value){fDoTaggedDRM = value;}
+
 	// B jet tracks selection
 	void SetTrackMinPt(Double_t val){ fTCMinTrackPt = val;}
 	void SetTPCClusterMin(Int_t val){ fTCMinClusTPC = val;}
@@ -241,7 +243,11 @@ private:
 	TH1D * fh1dJetRecPtcAccepted; //!
 	TH1D * fh1dJetRecPtbAccepted; //!
 
+	Bool_t fDoTaggedDRM; //Flag whether to do tagged jets RDM
 	TH2D * fh2dJetGenPtVsJetRecPt; //! raw momentum response matrix
+	TH2D * fh2dJetGenPtVsJetRecPtFirst; //! raw momentum response matrix N=1
+	TH2D * fh2dJetGenPtVsJetRecPtSecond; //! raw momentum response matrix N=2 
+	TH2D * fh2dJetGenPtVsJetRecPtThird; //! raw momentum response matrix N=3
 	TH2D * fh2dJetGenPtVsJetRecPtb; //! b momentum response matrix
 	TH2D * fh2dJetGenPtVsJetRecPtc; //! c momentum response matrix
 	TH2D * fh2dJetGenPtVsJetRecPtudsg; //! udsg momentum response matrix
@@ -619,7 +625,7 @@ private:
   static const Double_t fgkMassProton;  //
   static const Int_t fgkiNCategV0 = 18; // number of V0 selection steps
 
-	ClassDef(AliAnalysisTaskBJetTC, 52)
+	ClassDef(AliAnalysisTaskBJetTC, 53)
 };
 #endif
  //
