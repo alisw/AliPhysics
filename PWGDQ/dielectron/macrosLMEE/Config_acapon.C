@@ -13,7 +13,7 @@ Int_t selectedCuts = -1;
 Int_t selectedPID = -1;
 Bool_t pairCuts = kTRUE;
 
-Bool_t trackVarPlots = kFALSE;
+Bool_t trackVarPlots = kTRUE;
 Bool_t plotsITS      = kTRUE;
 Bool_t plotsTPC      = kTRUE;
 Bool_t plotsTOF      = kTRUE;

@@ -4,6 +4,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names = "
                                                                Int_t whichGen = 0, // 0=gen. purpose, 1=Jpsi, 2=HF, 3=all
                                                                Int_t wagonnr = 0,
                                                                Int_t centrality = 0,
+																															 Bool_t SDDstatus = kTRUE,
                                                                Bool_t cutlibPreloaded = kFALSE,
                                                                Bool_t getFromAlien = kFALSE
 																																) {
@@ -14,8 +15,6 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names = "
 	TObjArray *arrNames = names.Tokenize(";");
 	Int_t nDie          = arrNames->GetEntries();
 	Printf("Number of implemented cuts: %i", nDie);
-
-	Bool_t SDDstatus = kTRUE;
 
   // #########################################################
   // #########################################################

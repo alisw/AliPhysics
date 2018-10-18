@@ -1,17 +1,11 @@
-TString generatorNameForMCSignal  = "EPOS-LHC_0;Pythia CC_1;Pythia BB_1;Pythia B_1;Jpsi2ee_1;B2Jpsi2ee_1";
-TString generatorNameForULSSignal = "EPOS-LHC_0;Pythia CC_1;Pythia BB_1;Pythia B_1;Jpsi2ee_1;B2Jpsi2ee_1";
-
-TString generatorNameForMCSignal  = "";
-TString generatorNameForULSSignal = "";
-
 Bool_t SetTPCCorrection = kFALSE;
 Bool_t SetITSCorrection = kFALSE;
 Bool_t SetTOFCorrection = kFALSE;
 
 Bool_t SetGeneratedSmearingHistos = kTRUE;
 
-Bool_t DoPairing    = kTRUE;
-Bool_t DoULSLS      = kTRUE;
+Bool_t DoPairing    = kFALSE;
+Bool_t DoULSLS      = kFALSE;
 Bool_t DeactivateLS = kTRUE;
 
 // Leave blank to not use resolution files
@@ -38,7 +32,7 @@ const Double_t maxGenPt  = 10;
 const Double_t minGenEta = -1.5;
 const Double_t maxGenEta = 1.5;
 
-const Double_t minPtCut  = 0.2;
+const Double_t minPtCut  = 0.05;
 const Double_t maxPtCut  = 8.0;
 const Double_t minEtaCut = -0.8;
 const Double_t maxEtaCut = 0.8;
