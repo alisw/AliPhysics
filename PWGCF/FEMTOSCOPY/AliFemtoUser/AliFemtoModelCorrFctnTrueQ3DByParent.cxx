@@ -11,6 +11,7 @@
 #include <TRandom.h>
 
 #include <THnSparse.h>
+#include <TAxis.h>
 #include <TList.h>
 #include <TString.h>
 #include <TRandom.h>
@@ -244,10 +245,23 @@ AddPair(const AliFemtoParticle &particle1,
 
   Double_t q_out, q_side, q_long;
 
+  auto fill_if_within_bounds = [] (THnSparseF &hist, const double data[], const double weight) {
+    for (int i=0; i<4; ++i) {
+      const auto *axis = hist.GetAxis(i);
+      const double x = data[i];
+
+      if (x < axis->GetXmin() || axis->GetXmax() <= x) {
+        return;
+      }
+    }
+
+    hist.Fill(data, weight);
+  };
+
   {
     std::tie(q_out, q_side, q_long) = Qcms(particle1.FourMomentum(), particle2.FourMomentum());
     const Double_t data[] = {pbin, q_out, q_side, q_long};
-    rec_hist->Fill(data, weight);
+    fill_if_within_bounds(*rec_hist, data, weight);
   }
 
   // Fill generated-momentum histogram with "true" particle momentum
@@ -260,7 +274,7 @@ AddPair(const AliFemtoParticle &particle1,
 
     std::tie(q_out, q_side, q_long) = Qcms({e1, true_momentum1}, {e2, true_momentum2});
     const Double_t data[] = {pbin, q_out, q_side, q_long};
-    gen_hist->Fill(data, weight);
+    fill_if_within_bounds(*gen_hist, data, weight);
   }
 }
 
@@ -276,6 +290,7 @@ AliFemtoModelCorrFctnTrueQ3DByParent::AddRealPair(AliFemtoPair *pair)
   if (fRng->Uniform() >= 0.5) {
     std::swap(p1, p2);
   }
+
   AddPair(*p1, *p2, weight, fNumeratorGenerated, fNumeratorReconstructed);
 }
 
