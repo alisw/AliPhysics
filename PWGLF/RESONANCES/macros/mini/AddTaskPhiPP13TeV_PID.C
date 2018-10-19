@@ -30,7 +30,8 @@ enum eventCutSet { kEvtDefault=0,
 		   kNoVzCut, //=7
 		   kNoEvtSel, //=8
 		   kINEL10, //=9
-		   kIGZ10 //10
+		   kIGZ10, //=10
+           kIGZ //=11
                  };
 
 enum eventMixConfig { kDisabled = -1,
@@ -119,7 +120,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   // create the task and configure
   TString taskName=Form("phi%s%s_%i",(isPP? "pp" : "PbPb"),(isMC ? "MC" : "Data"),(Int_t)cutKaCandidate);
   AliRsnMiniAnalysisTask* task=new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
-  if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kINEL10 && evtCutSetID!=eventCutSet::kIGZ10){
+  if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kINEL10 && evtCutSetID!=eventCutSet::kIGZ10 && evtCutSetID!=eventCutSet::kIGZ){
     task->UseESDTriggerMask(triggerMask); //ESD
     //task->SelectCollisionCandidates(triggerMask); //AOD
   }
@@ -148,7 +149,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
 
   AliRsnCutPrimaryVertex* cutVertex=0;
-  if(evtCutSetID!=eventCutSet::kTriggered && evtCutSetID!=eventCutSet::kNoEvtSel){
+  if(evtCutSetID!=eventCutSet::kTriggered && evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kIGZ){
     if(evtCutSetID==eventCutSet::kINEL10 || evtCutSetID==eventCutSet::kIGZ10){
       cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
       cutVertex->SetCheckGeneratedVertexZ();
@@ -166,7 +167,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   AliRsnCutEventUtils* cutEventUtils=0;
   if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kINEL10){
     cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
-    if(evtCutSetID==eventCutSet::kIGZ10) cutEventUtils->SetCheckInelGt0MC();
+    if(evtCutSetID==eventCutSet::kIGZ10 || evtCutSetID==eventCutSet::kIGZ) cutEventUtils->SetCheckInelGt0MC();
     else if(!MultBins){
       cutEventUtils->SetCheckIncompleteDAQ();
       cutEventUtils->SetCheckSPDClusterVsTrackletBG();
