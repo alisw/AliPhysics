@@ -45,7 +45,8 @@ AliVertexGenFile::AliVertexGenFile() :
   fTree(NULL),
   fHeader(NULL),
   fEventsPerEntry(0),
-  fEvent(0)
+  fEvent(0),
+  fLastTime(0)
 {
 // default constructor: initialize data members
 
@@ -58,7 +59,8 @@ AliVertexGenFile::AliVertexGenFile(const char* fileName,
   fTree(NULL),
   fHeader(NULL),
   fEventsPerEntry(eventsPerEntry),
-  fEvent(0)
+  fEvent(0),
+  fLastTime(0)
 {
 // main constructor:
 // fileName is the name of the galice file containing the vertices
@@ -110,6 +112,7 @@ TVector3 AliVertexGenFile::GetVertex()
 // get the vertex from the event header tree
 
   Int_t entry = fEvent++ / fEventsPerEntry;
+  fLastTime = 0;
   if (!fTree) {
     AliError("no header tree");
     return TVector3(0,0,0);
@@ -127,6 +130,7 @@ TVector3 AliVertexGenFile::GetVertex()
 
   TArrayF vertex(3);
   fHeader->GenEventHeader()->PrimaryVertex(vertex);
+  fLastTime = fHeader->GenEventHeader()->InteractionTime();
   return TVector3(vertex[0], vertex[1], vertex[2]);
 }
 
