@@ -10,6 +10,7 @@ using std::endl;
 
 #include <TClonesArray.h>
 #include <TIterator.h>
+#include <TRandom.h>
 
 #include "AliReducedVarManager.h"
 #include "AliReducedEventInfo.h"
@@ -50,7 +51,9 @@ AliReducedAnalysisFilterTrees::AliReducedAnalysisFilterTrees() :
   fLeg1Tracks(),
   fLeg2Tracks(),
   fLeg1PrefilteredTracks(),
-  fLeg2PrefilteredTracks()
+  fLeg2PrefilteredTracks(),
+  fSkipMCEvent(kFALSE),
+  fMCJpsiPtWeights(0x0)
 {
   //
   // default constructor
@@ -85,7 +88,9 @@ AliReducedAnalysisFilterTrees::AliReducedAnalysisFilterTrees(const Char_t* name,
   fLeg1Tracks(),
   fLeg2Tracks(),
   fLeg1PrefilteredTracks(),
-  fLeg2PrefilteredTracks()
+  fLeg2PrefilteredTracks(),
+  fSkipMCEvent(kFALSE),
+  fMCJpsiPtWeights(0x0)
 {
   //
   // named constructor
@@ -141,7 +146,7 @@ void AliReducedAnalysisFilterTrees::Process() {
      cout << "ERROR: AliReducedAnalysisFilterTrees::Process() needs AliReducedEventInfo events" << endl;
      return;
   }
-  
+ 
   if(fEventCounter%100000==0) 
      cout << "Event no. " << fEventCounter << endl;
   fEventCounter++;
@@ -166,9 +171,13 @@ void AliReducedAnalysisFilterTrees::Process() {
   
   // apply event selection
   if(!IsEventSelected(fEvent)) return;
-  
-  if(fOptionRunOverMC) FillMCTruthHistograms();
-
+ 
+   if(fOptionRunOverMC) {
+     fSkipMCEvent = kFALSE;
+     FillMCTruthHistograms();
+     if(fSkipMCEvent) return;
+    }
+ 
   // fill event info histograms after cuts
   fHistosManager->FillHistClass("Event_AfterCuts", fValues);
   for(UShort_t ibit=0; ibit<64; ++ibit) {
@@ -364,6 +373,7 @@ void AliReducedAnalysisFilterTrees::RunCandidateLegsSelection() {
          }
       }
    }   // end loop over tracks
+
 }
 
 //___________________________________________________________________________
@@ -378,7 +388,7 @@ void AliReducedAnalysisFilterTrees::RunCandidateLegsPrefilter(Int_t leg) {
    TIter iterLeg((leg==1 ? &fLeg1Tracks : &fLeg2Tracks));
    TIter iterPrefLeg1(&fLeg1PrefilteredTracks);
    TIter iterPrefLeg2(&fLeg2PrefilteredTracks);
-   
+  
    // Pair the LEG candidates with the prefilter selected tracks
    AliReducedBaseTrack* track=0;
    AliReducedBaseTrack* prefTrack=0;
@@ -428,10 +438,12 @@ void AliReducedAnalysisFilterTrees::RunCandidateLegsPrefilter(Int_t leg) {
       }
    }
    
+   
    // fill histograms after the prefilter
    iterLeg.Reset();
    for(Int_t it = 0; it<(leg==1 ? fLeg1Tracks.GetEntries() : fLeg2Tracks.GetEntries()); ++it) {
       track = (AliReducedBaseTrack*)iterLeg();
+      AliReducedVarManager::FillTrackInfo(track, fValues);
       FillCandidateLegHistograms(Form("Track_LEG%d_AfterPrefilter", leg), track, fValues, (leg==2 && isAsymmetricDecayChannel ? 2 : 1), isAsymmetricDecayChannel);
    }
 }
@@ -833,7 +845,32 @@ void AliReducedAnalysisFilterTrees::LoopOverMCTracks(Int_t trackArray /*=1*/) {
 
    TClonesArray* trackList = (trackArray==1 ? fEvent->GetTracks() : fEvent->GetTracks2());
    if(!trackList) return;
-   TIter nextTrack(trackList);
+   TIter nextTrack(trackList); 
+  
+    // if the pt dependent weights were set, check the weight and reject randomly the event
+   if(fMCJpsiPtWeights) {
+      for(Int_t it=0; it<trackList->GetEntries(); ++it) {
+         mother = (AliReducedTrackInfo*)nextTrack();
+         if(!mother->IsMCKineParticle()) continue;
+
+         // apply selections on the jpsi mother
+         UInt_t motherDecisions = CheckMotherMCTruth(mother);
+         if(!motherDecisions) continue;
+
+         Double_t pt = mother->Pt();
+         if(pt>fMCJpsiPtWeights->GetXaxis()->GetXmax())
+            pt = fMCJpsiPtWeights->GetXaxis()->GetXmax();
+         Double_t weight = fMCJpsiPtWeights->GetBinContent(fMCJpsiPtWeights->FindBin(pt));
+         if(weight>1.0) weight = 1.0;
+         Double_t rnd = gRandom->Rndm();
+         if(weight<rnd) {
+            fSkipMCEvent = kTRUE;
+            return;
+         }
+      }
+   }
+
+   nextTrack.Reset();
    for(Int_t it=0; it<trackList->GetEntries(); ++it) {
       mother = (AliReducedTrackInfo*)nextTrack();
       if(!mother->IsMCKineParticle()) continue;
