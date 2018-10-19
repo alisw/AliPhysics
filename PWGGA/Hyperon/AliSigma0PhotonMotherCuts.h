@@ -97,6 +97,19 @@ class AliSigma0PhotonMotherCuts : public TObject {
   std::vector<AliSigma0ParticlePhotonMother> &GetSidebandDown() {
     return fSidebandDown;
   }
+  void GetLambda(std::vector<AliSigma0ParticleV0> &vecIn) {
+    vecIn.clear();
+    for (const auto &sigma : fSigma) {
+      vecIn.emplace_back(sigma.GetV0());
+    }
+  }
+  void GetPhoton(std::vector<AliSigma0ParticleV0> &vecIn) {
+    vecIn.clear();
+    for (const auto &sigma : fSigma) {
+      vecIn.emplace_back(sigma.GetPhoton());
+    }
+  }
+
 
  protected:
   TList *fHistograms;    //!
