@@ -134,6 +134,7 @@ fkDownScaleV0      ( kTRUE  ),
 fDownScaleFactorV0 ( 0.001  ),
 fkPreselectDedx ( kFALSE ),
 fkPreselectPID  ( kTRUE  ),
+fkAlwaysKeepTrue( kFALSE ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDoImprovedCascadeVertexFinding(kFALSE),
 fkIfImprovedPerformInitialLinearPropag( kFALSE ),
@@ -649,6 +650,7 @@ fkDownScaleV0      ( kTRUE  ),
 fDownScaleFactorV0 ( 0.001  ),
 fkPreselectDedx ( kFALSE ),
 fkPreselectPID  ( kTRUE  ),
+fkAlwaysKeepTrue( kFALSE ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDoImprovedCascadeVertexFinding(kFALSE),
 fkIfImprovedPerformInitialLinearPropag( kFALSE ),
@@ -5029,6 +5031,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         //Random denial
         Bool_t lKeepCascade = kTRUE;
         if(fkDownScaleCascade && ( fRand->Uniform() > fDownScaleFactorCascade )) lKeepCascade = kFALSE;
+        
+        if ( fkAlwaysKeepTrue && (TMath::Abs(fTreeCascVarPID)==3312||TMath::Abs(fTreeCascVarPID)==3334)) lKeepCascade = kTRUE; 
         
         //Lowest pT cutoff (this is all background anyways)
         if( fTreeCascVarPt < fMinPtToSave ) lKeepCascade = kFALSE;
