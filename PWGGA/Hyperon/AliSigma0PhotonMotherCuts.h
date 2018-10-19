@@ -97,6 +97,19 @@ class AliSigma0PhotonMotherCuts : public TObject {
   std::vector<AliSigma0ParticlePhotonMother> &GetSidebandDown() {
     return fSidebandDown;
   }
+  void GetLambda(std::vector<AliSigma0ParticleV0> &vecIn) {
+    vecIn.clear();
+    for (const auto &sigma : fSigma) {
+      vecIn.emplace_back(sigma.GetV0());
+    }
+  }
+  void GetPhoton(std::vector<AliSigma0ParticleV0> &vecIn) {
+    vecIn.clear();
+    for (const auto &sigma : fSigma) {
+      vecIn.emplace_back(sigma.GetPhoton());
+    }
+  }
+
 
  protected:
   TList *fHistograms;    //!
@@ -129,13 +142,13 @@ class AliSigma0PhotonMotherCuts : public TObject {
   int fPDGDaughter1;   //
   int fPDGDaughter2;   //
 
-  float fMassSigma;         //
-  float fSigmaMassCut;      //
-  float fSidebandCutUp;     //
-  float fSidebandCutDown;   //
-  float fPhotonPtMin;       //
-  float fPhotonPtMax;       //
-  float fRapidityMax;       //
+  float fMassSigma;        //
+  float fSigmaMassCut;     //
+  float fSidebandCutUp;    //
+  float fSidebandCutDown;  //
+  float fPhotonPtMin;      //
+  float fPhotonPtMax;      //
+  float fRapidityMax;      //
 
   float fArmenterosCut;       //
   float fArmenterosQtLow;     //
@@ -173,6 +186,11 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistPhotonPtEta;   //!
   TH2F *fHistPhotonMassPt;  //!
 
+  TH2F *fHistSigmaLambdaPtCorr;  //!
+  TH2F *fHistSigmaPhotonPtCorr;  //!
+  TH2F *fHistSigmaLambdaPCorr;   //!
+  TH2F *fHistSigmaPhotonPCorr;   //!
+
   TH2F *fHistMCTruthPtY;                          //!
   TH2F *fHistMCTruthPtEta;                        //!
   TH2F *fHistMCTruthDaughterPtY;                  //!
@@ -185,6 +203,15 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistMCTruthDaughterPtEtaHighMult;        //!
   TH2F *fHistMCTruthDaughterPtYAcceptHighMult;    //!
   TH2F *fHistMCTruthDaughterPtEtaAcceptHighMult;  //!
+
+  TH2F *fHistMCTrueSigmaLambdaPtCorr;  //!
+  TH2F *fHistMCTrueSigmaPhotonPtCorr;  //!
+  TH2F *fHistMCTrueSigmaLambdaPCorr;   //!
+  TH2F *fHistMCTrueSigmaPhotonPCorr;   //!
+  TH2F *fHistMCBkgSigmaLambdaPtCorr;   //!
+  TH2F *fHistMCBkgSigmaPhotonPtCorr;   //!
+  TH2F *fHistMCBkgSigmaLambdaPCorr;    //!
+  TH2F *fHistMCBkgSigmaPhotonPCorr;    //!
 
   TH1F *fHistMCV0Pt;           //!
   TH1F *fHistMCV0Mass;         //!

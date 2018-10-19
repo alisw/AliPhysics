@@ -164,6 +164,56 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
   fIDTracks.push_back(mother.GetPhoton().GetTrackLabelNeg());
 }
 
+AliFemtoDreamBasePart::AliFemtoDreamBasePart(
+    const AliSigma0ParticleV0 &daughter)
+    : fIsReset(false),
+      fGTI(0),
+      fTrackBufferSize(0),
+      fP(TVector3(daughter.GetPx(), daughter.GetPy(), daughter.GetPz())),
+      fMCP(
+          TVector3(daughter.GetPxMC(), daughter.GetPyMC(), daughter.GetPzMC())),
+      fPt(daughter.GetPt()),
+      fMCPt(daughter.GetPtMC()),
+      fP_TPC(0),
+      fEta(),
+      fTheta(),
+      fMCTheta(),
+      fPhi(),
+      fPhiAtRadius(0),
+      fMCPhi(),
+      fIDTracks(),
+      fCharge(0),
+      fCPA(0),
+      fOrigin(kUnknown),
+      fPDGCode(daughter.GetPDGcode()),
+      fMotherPDG(0),
+      fMCPDGCode(0),
+      fPDGMotherWeak(0),
+      fMotherID(-1),
+      fEvtNumber(0),
+      fIsMC(-1),
+      fUse(true),
+      fIsSet(true),
+      fEvtMultiplicity(-1) {
+  fEta.push_back(daughter.GetPosDaughter().GetEta());
+  fEta.push_back(daughter.GetNegDaughter().GetEta());
+
+  fTheta.push_back(daughter.GetPosDaughter().GetTheta());
+  fTheta.push_back(daughter.GetNegDaughter().GetTheta());
+
+  fMCTheta.push_back(daughter.GetPosDaughter().GetThetaMC());
+  fMCTheta.push_back(daughter.GetNegDaughter().GetThetaMC());
+
+  fPhi.push_back(daughter.GetPosDaughter().GetPhi());
+  fPhi.push_back(daughter.GetNegDaughter().GetPhi());
+
+  fMCPhi.push_back(daughter.GetPosDaughter().GetPhiMC());
+  fMCPhi.push_back(daughter.GetNegDaughter().GetPhiMC());
+
+  fIDTracks.push_back(daughter.GetTrackLabelPos());
+  fIDTracks.push_back(daughter.GetTrackLabelNeg());
+}
+
 AliFemtoDreamBasePart::~AliFemtoDreamBasePart() {}
 
 void AliFemtoDreamBasePart::SetMCParticle(AliAODMCParticle *mcPart,

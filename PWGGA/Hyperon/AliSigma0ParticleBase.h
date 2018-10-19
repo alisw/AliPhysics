@@ -52,6 +52,9 @@ class AliSigma0ParticleBase {
   double GetMass() const { return fMass; }
   int GetQ() const { return fQ; }
   double GetPt() const { return fPt; }
+  double GetP() const {
+    return std::sqrt(fP[0] * fP[0] + fP[1] * fP[1] + fP[2] * fP[2]);
+  }
   int GetTrackLabel() const { return fTrackLabel; }
   double GetPhi() const { return fPhi; }
   double GetEta() const { return fEta; }

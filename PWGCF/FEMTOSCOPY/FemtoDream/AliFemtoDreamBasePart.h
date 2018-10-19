@@ -20,6 +20,7 @@ class AliFemtoDreamBasePart {
   AliFemtoDreamBasePart(const AliFemtoDreamBasePart& part);
   AliFemtoDreamBasePart &operator=(const AliFemtoDreamBasePart &obj);
   AliFemtoDreamBasePart(const AliSigma0ParticlePhotonMother &mother);
+  AliFemtoDreamBasePart(const AliSigma0ParticleV0 &daughter);
   virtual ~AliFemtoDreamBasePart();
   enum PartOrigin {
     kPhysPrimary = 0,

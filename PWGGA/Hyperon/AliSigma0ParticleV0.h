@@ -35,6 +35,7 @@ class AliSigma0ParticleV0 : public AliSigma0ParticleBase {
   double GetMass() const { return AliSigma0ParticleBase::GetMass(); }
 
   double GetPt() const { return AliSigma0ParticleBase::GetPt(); }
+  double GetP() const { return AliSigma0ParticleBase::GetP(); }
   int GetTrackLabel() const { return AliSigma0ParticleBase::GetTrackLabel(); }
   double GetPhi() const { return AliSigma0ParticleBase::GetPhi(); }
   double GetEta() const { return AliSigma0ParticleBase::GetEta(); }
