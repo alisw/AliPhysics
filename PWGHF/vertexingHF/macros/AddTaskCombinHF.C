@@ -26,11 +26,12 @@ AliAnalysisTaskCombinHF *AddTaskCombinHF(Int_t meson = 0,
   
   AliRDHFCuts* analysiscuts=0x0;
   AliAODPidHF* pid=0x0;
+  AliESDtrackCuts* esdc = 0x0;
   if(!cutObjFile.IsNull()){
     TFile *f=TFile::Open(cutObjFile.Data(),"READ");
     if(f){
       analysiscuts=(AliRDHFCuts*)f->Get(cutObjNam.Data());
-      AliESDtrackCuts *esdc=analysiscuts->GetTrackCuts();
+      esdc=analysiscuts->GetTrackCuts();
       pid=analysiscuts->GetPidHF();
     }
   }
