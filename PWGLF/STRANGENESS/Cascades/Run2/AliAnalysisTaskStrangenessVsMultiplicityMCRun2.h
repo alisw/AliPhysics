@@ -75,6 +75,9 @@ public:
     void SetPreselectPID (Bool_t lPreselectPID = kTRUE ) {
         fkPreselectPID   = lPreselectPID;
     }
+    void SetAlwaysKeepTrue (Bool_t lAlwaysKeepTrue = kTRUE ) {
+        fkAlwaysKeepTrue   = lAlwaysKeepTrue;
+    }
     void SetUseOnTheFlyV0Cascading( Bool_t lUseOnTheFlyV0Cascading = kTRUE ){
         //Highly experimental, use with care!
         fkUseOnTheFlyV0Cascading = lUseOnTheFlyV0Cascading;
@@ -296,6 +299,7 @@ private:
     Double_t fDownScaleFactorV0;
     Bool_t fkPreselectDedx;
     Bool_t fkPreselectPID;
+    Bool_t fkAlwaysKeepTrue;
     Bool_t fkUseOnTheFlyV0Cascading;
     Bool_t fkDoImprovedCascadeVertexFinding;
     Bool_t fkIfImprovedPerformInitialLinearPropag;

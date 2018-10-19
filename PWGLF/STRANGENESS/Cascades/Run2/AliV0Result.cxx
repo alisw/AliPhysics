@@ -817,6 +817,7 @@ void AliV0Result::SetupFeeddownMatrix (Long_t lNXiPtPins, Double_t *lXiPtPins)
 //Setup arrays containing FD matrix range for cascades (Xi->Lambda feeddown correction) 
 {
     fhNPtBoundsFeeddown = lNXiPtPins;
+    fhPtBinsFeeddown = new Double_t[fhNPtBoundsFeeddown];
     for(Int_t i=0; i<lNXiPtPins; i++) fhPtBinsFeeddown[i] = lXiPtPins[i];
 }
 
