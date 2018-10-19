@@ -8,7 +8,7 @@
 
 #include <iostream>
 #include <math.h>
-
+#include <vector>
 
 #include "TChain.h"
 #include "TFile.h"
@@ -40,6 +40,8 @@
 #include "AliCentrality.h"
 #include "AliESDtrack.h"
 
+using std::vector;
+
 class AliAnalysisV0Efficiency : public AliAnalysisTaskSE {
 public:
 
@@ -64,6 +66,7 @@ public:
   static int GetNumberOfLastHijingLabel(const AliAODEvent *aEvent);
   bool IsInjected(const AliAODMCParticle* aMCv0, TClonesArray *mcArray, int aNumberOfLastHijingLabel);
 
+  bool ContainsSharedDaughters(vector<vector<int> > &aDaughtersCollection, int aPosLabel, int aNegLabel);
   void ExtractOriginalParticles(const AliAODEvent *aEvent);
 
   double GetNSigmaTOF(const AliAODTrack *aPart, AliPID::EParticleType aParticleType);
