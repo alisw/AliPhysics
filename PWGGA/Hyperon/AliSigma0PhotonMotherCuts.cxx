@@ -66,6 +66,10 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fHistPhotonPtPhi(nullptr),
       fHistPhotonPtEta(nullptr),
       fHistPhotonMassPt(nullptr),
+      fHistSigmaLambdaPtCorr(nullptr),
+      fHistSigmaPhotonPtCorr(nullptr),
+      fHistSigmaLambdaPCorr(nullptr),
+      fHistSigmaPhotonPCorr(nullptr),
       fHistMCTruthPtY(nullptr),
       fHistMCTruthPtEta(nullptr),
       fHistMCTruthDaughterPtY(nullptr),
@@ -78,6 +82,14 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fHistMCTruthDaughterPtEtaHighMult(nullptr),
       fHistMCTruthDaughterPtYAcceptHighMult(nullptr),
       fHistMCTruthDaughterPtEtaAcceptHighMult(nullptr),
+      fHistMCTrueSigmaLambdaPtCorr(nullptr),
+      fHistMCTrueSigmaPhotonPtCorr(nullptr),
+      fHistMCTrueSigmaLambdaPCorr(nullptr),
+      fHistMCTrueSigmaPhotonPCorr(nullptr),
+      fHistMCBkgSigmaLambdaPtCorr(nullptr),
+      fHistMCBkgSigmaPhotonPtCorr(nullptr),
+      fHistMCBkgSigmaLambdaPCorr(nullptr),
+      fHistMCBkgSigmaPhotonPCorr(nullptr),
       fHistMCV0Pt(nullptr),
       fHistMCV0Mass(nullptr),
       fHistMCV0Mother(nullptr),
@@ -145,6 +157,10 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fHistPhotonPtPhi(nullptr),
       fHistPhotonPtEta(nullptr),
       fHistPhotonMassPt(nullptr),
+      fHistSigmaLambdaPtCorr(nullptr),
+      fHistSigmaPhotonPtCorr(nullptr),
+      fHistSigmaLambdaPCorr(nullptr),
+      fHistSigmaPhotonPCorr(nullptr),
       fHistMCTruthPtY(nullptr),
       fHistMCTruthPtEta(nullptr),
       fHistMCTruthDaughterPtY(nullptr),
@@ -157,6 +173,14 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fHistMCTruthDaughterPtEtaHighMult(nullptr),
       fHistMCTruthDaughterPtYAcceptHighMult(nullptr),
       fHistMCTruthDaughterPtEtaAcceptHighMult(nullptr),
+      fHistMCTrueSigmaLambdaPtCorr(nullptr),
+      fHistMCTrueSigmaPhotonPtCorr(nullptr),
+      fHistMCTrueSigmaLambdaPCorr(nullptr),
+      fHistMCTrueSigmaPhotonPCorr(nullptr),
+      fHistMCBkgSigmaLambdaPtCorr(nullptr),
+      fHistMCBkgSigmaPhotonPtCorr(nullptr),
+      fHistMCBkgSigmaLambdaPCorr(nullptr),
+      fHistMCBkgSigmaPhotonPCorr(nullptr),
       fHistMCV0Pt(nullptr),
       fHistMCV0Mass(nullptr),
       fHistMCV0Mother(nullptr),
@@ -269,6 +293,29 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
         if (!fIsLightweight) {
           fHistMassCutPt->Fill(pT);
           fHistEtaPhi->Fill(sigma.GetEta(), sigma.GetPhi());
+          fHistSigmaLambdaPtCorr->Fill(pT, lambda.GetPt());
+          fHistSigmaPhotonPtCorr->Fill(pT, photon.GetPt());
+          fHistSigmaLambdaPCorr->Fill(sigma.GetP(), lambda.GetP());
+          fHistSigmaPhotonPCorr->Fill(sigma.GetP(), photon.GetP());
+
+          if (fIsMC) {
+            int pdgLambdaMother = 0;
+            int pdgPhotonMother = 0;
+            const int label = sigma.MatchToMC(fMCEvent, fPDG,
+                                              {{fPDGDaughter1, fPDGDaughter2}},
+                                              pdgLambdaMother, pdgPhotonMother);
+            if (label > 0) {
+              fHistMCTrueSigmaLambdaPtCorr->Fill(pT, lambda.GetPt());
+              fHistMCTrueSigmaPhotonPtCorr->Fill(pT, photon.GetPt());
+              fHistMCTrueSigmaLambdaPCorr->Fill(sigma.GetP(), lambda.GetP());
+              fHistMCTrueSigmaPhotonPCorr->Fill(sigma.GetP(), photon.GetP());
+            } else {
+              fHistMCBkgSigmaLambdaPtCorr->Fill(pT, lambda.GetPt());
+              fHistMCBkgSigmaPhotonPtCorr->Fill(pT, photon.GetPt());
+              fHistMCBkgSigmaLambdaPCorr->Fill(sigma.GetP(), lambda.GetP());
+              fHistMCBkgSigmaPhotonPCorr->Fill(sigma.GetP(), photon.GetP());
+            }
+          }
         }
         ++nSigma;
       }
@@ -919,6 +966,28 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     fHistograms->Add(fHistPhotonPtPhi);
     fHistograms->Add(fHistPhotonPtEta);
     fHistograms->Add(fHistPhotonMassPt);
+
+    fHistSigmaLambdaPtCorr = new TH2F("fHistSigmaLambdaPtCorr",
+                                      "; #Sigma^{0} #it{p}_{T} (GeV/#it{c}; "
+                                      "#Lambda #it{p}_{T} (GeV/#it{c}",
+                                      250, 0, 10, 250, 0, 10);
+    fHistSigmaPhotonPtCorr = new TH2F("fHistSigmaPhotonPtCorr",
+                                      "; #Sigma^{0} #it{p}_{T} (GeV/#it{c}; "
+                                      "#gamma #it{p}_{T} (GeV/#it{c}",
+                                      250, 0, 10, 250, 0, 10);
+    fHistSigmaLambdaPCorr = new TH2F("fHistSigmaLambdaPCorr",
+                                     "; #Sigma^{0} #it{p} (GeV/#it{c}; "
+                                     "#Lambda #it{p} (GeV/#it{c}",
+                                     250, 0, 10, 250, 0, 10);
+    fHistSigmaPhotonPCorr = new TH2F("fHistSigmaPhotonPCorr",
+                                     "; #Sigma^{0} #it{p} (GeV/#it{c}; "
+                                     "#gamma #it{p} (GeV/#it{c}",
+                                     250, 0, 10, 250, 0, 10);
+
+    fHistograms->Add(fHistSigmaLambdaPtCorr);
+    fHistograms->Add(fHistSigmaPhotonPtCorr);
+    fHistograms->Add(fHistSigmaLambdaPCorr);
+    fHistograms->Add(fHistSigmaPhotonPCorr);
   }
 
   if (fIsMC) {
@@ -969,6 +1038,43 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
         new TH2F("fHistMCTruthDaughterPtEtaAcceptHighMult",
                  "; #eta; #it{p}_{T} (GeV/#it{c})", 200, -10, 10, 100, 0, 10);
 
+    fHistMCTrueSigmaLambdaPtCorr =
+        new TH2F("fHistMCTrueSigmaLambdaPtCorr",
+                 "; #Sigma^{0} #it{p}_{T} (GeV/#it{c}; "
+                 "#Lambda #it{p}_{T} (GeV/#it{c}",
+                 250, 0, 10, 250, 0, 10);
+    fHistMCTrueSigmaPhotonPtCorr =
+        new TH2F("fHistMCTrueSigmaPhotonPtCorr",
+                 "; #Sigma^{0} #it{p}_{T} (GeV/#it{c}; "
+                 "#gamma #it{p}_{T} (GeV/#it{c}",
+                 250, 0, 10, 250, 0, 10);
+    fHistMCTrueSigmaLambdaPCorr = new TH2F("fHistMCTrueSigmaLambdaPCorr",
+                                           "; #Sigma^{0} #it{p} (GeV/#it{c}; "
+                                           "#Lambda #it{p} (GeV/#it{c}",
+                                           250, 0, 10, 250, 0, 10);
+    fHistMCTrueSigmaPhotonPCorr = new TH2F("fHistMCTrueSigmaPhotonPCorr",
+                                           "; #Sigma^{0} #it{p} (GeV/#it{c}; "
+                                           "#gamma #it{p} (GeV/#it{c}",
+                                           250, 0, 10, 250, 0, 10);
+    fHistMCBkgSigmaLambdaPtCorr =
+        new TH2F("fHistMCBkgSigmaLambdaPtCorr",
+                 "; #Sigma^{0} #it{p}_{T} (GeV/#it{c}; "
+                 "#Lambda #it{p}_{T} (GeV/#it{c}",
+                 250, 0, 10, 250, 0, 10);
+    fHistMCBkgSigmaPhotonPtCorr =
+        new TH2F("fHistMCBkgSigmaPhotonPtCorr",
+                 "; #Sigma^{0} #it{p}_{T} (GeV/#it{c}; "
+                 "#gamma #it{p}_{T} (GeV/#it{c}",
+                 250, 0, 10, 250, 0, 10);
+    fHistMCBkgSigmaLambdaPCorr = new TH2F("fHistMCBkgSigmaLambdaPCorr",
+                                          "; #Sigma^{0} #it{p} (GeV/#it{c}; "
+                                          "#Lambda #it{p} (GeV/#it{c}",
+                                          250, 0, 10, 250, 0, 10);
+    fHistMCBkgSigmaPhotonPCorr = new TH2F("fHistMCBkgSigmaPhotonPCorr",
+                                          "; #Sigma^{0} #it{p} (GeV/#it{c}; "
+                                          "#gamma #it{p} (GeV/#it{c}",
+                                          250, 0, 10, 250, 0, 10);
+
     fHistMCV0Pt = new TH1F("fHistMCV0Pt",
                            "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); Entries",
                            100, 0, 10);
@@ -1000,6 +1106,14 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     fHistogramsMC->Add(fHistMCTruthDaughterPtEtaHighMult);
     fHistogramsMC->Add(fHistMCTruthDaughterPtYAcceptHighMult);
     fHistogramsMC->Add(fHistMCTruthDaughterPtEtaAcceptHighMult);
+    fHistogramsMC->Add(fHistMCTrueSigmaLambdaPtCorr);
+    fHistogramsMC->Add(fHistMCTrueSigmaPhotonPtCorr);
+    fHistogramsMC->Add(fHistMCTrueSigmaLambdaPCorr);
+    fHistogramsMC->Add(fHistMCTrueSigmaPhotonPCorr);
+    fHistogramsMC->Add(fHistMCBkgSigmaLambdaPtCorr);
+    fHistogramsMC->Add(fHistMCBkgSigmaPhotonPtCorr);
+    fHistogramsMC->Add(fHistMCBkgSigmaLambdaPCorr);
+    fHistogramsMC->Add(fHistMCBkgSigmaPhotonPCorr);
     fHistogramsMC->Add(fHistMCV0Pt);
     fHistogramsMC->Add(fHistMCV0Mass);
     fHistogramsMC->Add(fHistMCV0Mother);
