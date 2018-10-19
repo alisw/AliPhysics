@@ -31,7 +31,6 @@
 #include <TString.h>
 #include <TList.h>
 #endif
-#include "AddTaskCommonConfiguration.h"
 
 void AddTask_V0Reader(    TString       periodNameV0Reader            = "",
                           Bool_t        enableV0findingEffi           = kFALSE,

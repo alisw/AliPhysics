@@ -28,16 +28,16 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtasks
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
-                    ${AliPhysics_SOURCE_DIR}/PWG/Cocktail                    
+                    ${AliPhysics_SOURCE_DIR}/PWG/Cocktail
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW
-		    ${AliPhysics_SOURCE_DIR}/PWG/JETFW
-		    ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWG/JETFW
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/TRD
-		    ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
+                    ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
                     ${AliPhysics_SOURCE_DIR}/TENDER/Tender
                     ${AliPhysics_SOURCE_DIR}/TENDER/TenderSupplies
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPb
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils                    
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils
                    )
 
 # Sources in alphabetical order
@@ -53,7 +53,7 @@ set(SRCS
     AliAnalysisTaskEtaToPiPlPiMiGamma.cxx
     AliAnalysisTaskGammaCalo.cxx
     AliAnalysisTaskGammaCaloIso.cxx
-    AliAnalysisTaskGammaCaloMerged.cxx    
+    AliAnalysisTaskGammaCaloMerged.cxx
     AliAnalysisTaskGammaConvCalo.cxx
     AliAnalysisTaskGammaConvDalitzV1.cxx
     AliAnalysisTaskGammaConvFlow.cxx
@@ -96,13 +96,12 @@ set(SRCS
     AliPrimaryPionSelector.cxx
     AliV0ReaderV1.cxx
     AliConversionCutHandler.cxx
+    AliCutHandlerPCM.cxx
    )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
-set(HDRS ${HDRS}
-    macros/AddTaskCommonConfiguration.h
-)
+set(HDRS ${HDRS})
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
@@ -120,7 +119,7 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 # Generate a PARfile target for this library
 add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
 
-# Create an object to be reused in case of static libraries 
+# Create an object to be reused in case of static libraries
 # Otherwise the sources will be compiled twice
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
