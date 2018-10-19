@@ -35,6 +35,7 @@
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "TH2.h"
+#include "TMath.h"
 
 
 /// \cond CLASSIMP
@@ -71,8 +72,9 @@ AliHLTCaloRecPointDataStruct* AliHLTClusterFinder::GetClusterFromNeighbours(AliH
   if(!recPoint)
   {
     recPoint = new AliHLTCaloRecPointDataStruct();
+    recPoint->fMultiplicity = 0;
     fCurrentClusterDigits[recPoint->fMultiplicity] = fDigitMap[row][column];
-    recPoint->fMultiplicity = 1;
+    recPoint->fMultiplicity++;
     recPoint->fAmp = fDigitMap[row][column]->fEnergy;
     recPoint->fLeadingCellID  = fDigitMap[row][column]->fID;
     recPoint->fModule = fDigitMap[row][column]->fModule;
@@ -104,7 +106,7 @@ AliHLTCaloRecPointDataStruct* AliHLTClusterFinder::GetClusterFromNeighbours(AliH
             shared = (currentSM != fGeometry->GetGeometryPtr()->GetSuperModuleNumber(fDigitMap[row+rowDiff][column+colDiff]->fID));
             (void) GetClusterFromNeighbours(recPoint, row+rowDiff, column+colDiff);
             // Add the digit to the current cluster -- if we end up here, the selected cluster fulfills the condition
-            fCurrentClusterDigits[recPoint->fMultiplicity] = fDigitMap[row+rowDiff][column+colDiff];
+            if(recPoint->fMultiplicity < 500) fCurrentClusterDigits[recPoint->fMultiplicity] = fDigitMap[row+rowDiff][column+colDiff];
             recPoint->fMultiplicity++;
             recPoint->fAmp += fDigitMap[row+rowDiff][column+colDiff]->fEnergy;
             // Mask the cell as already used for clustering
@@ -212,6 +214,18 @@ Int_t AliHLTClusterFinder::FindClusters(AliHLTCaloDigitDataStruct** digitArray, 
     // Put digit to 2D map
     Int_t row = 0, column = 0;
     GetTopologicalRowColumn(digit, row, column);
+    if(row >= HLTClusterFinder::kNrows) {
+      HLTError("Row exceed range: %d\n", row);
+      continue;
+    }
+    if(column >= HLTClusterFinder::kNcolumns) {
+      HLTError("Column exceed range: %d\n", column);
+      continue;
+    }
+    if(nCells >= HLTClusterFinder::kNcolumns * HLTClusterFinder::kNrows) {
+      HLTError("Too may seeds\n");
+      break;
+    }
 
     // Do not use digit if it is masked as bad cell
     if(fBadCellMask[row][column])
@@ -279,7 +293,7 @@ void AliHLTClusterFinder::CalculateCenterOfGravity(AliHLTCaloRecPointDataStruct*
   UInt_t iDigit = 0;
   Double_t logWeight = 4.5; // TODO: Verify this value
 
-  for(UInt_t iDigit = 0; iDigit < recPoint->fMultiplicity; iDigit++)
+  for(UInt_t iDigit = 0; iDigit < TMath::Min(int(recPoint->fMultiplicity), 500); iDigit++)
   {
     AliHLTCaloDigitDataStruct* digit = fCurrentClusterDigits[iDigit];
     xi = digit->fX;

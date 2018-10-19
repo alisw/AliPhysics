@@ -126,7 +126,7 @@ AliHLTEMCALClusterMonitorComponent::DoEvent(const AliHLTComponentEventData& evtD
 		std::vector<AliHLTComponentBlockData>& /*outputBlocks*/)
 {
 
-
+	std::cout << "Start cluster monitor" << std::endl;
 	const AliHLTComponentBlockData* iter = 0;
 	unsigned long ndx;
 
@@ -164,6 +164,7 @@ AliHLTEMCALClusterMonitorComponent::DoEvent(const AliHLTComponentEventData& evtD
 	  
 	  PushBack(fHistoMakerPtr->GetHistograms(), kAliHLTDataTypeTObjArray | kAliHLTDataOriginEMCAL , specification);
 	}
+	std::cout << "End cluster monitor" << std::endl;
 	
 	return 0;
 }

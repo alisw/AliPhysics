@@ -66,12 +66,13 @@ void AliHLTEMCALDigitsMonitor::ProcessDigits(Int_t ndigits, const AliHLTCaloDigi
 {
   const int kNsecPerSec = 1e9;
   for (int idig = 0; idig < ndigits; idig++) {
-    int gaintype = digits[idig].fHgPresent ? 1 : 0;
+    int gaintype = (digits[idig].fHgPresent ? 1 : 0);
     int cellID =
       fGeometry->GetGeometryPtr()->GetAbsCellIdFromCellIndexes(digits[idig].fModule, digits[idig].fX, digits[idig].fZ);
     AliDebug(1, Form("Digit %d is of type %s\n", idig, gaintype == 1 ? "high gain" : "low gain"));
     AliDebug(1,
              Form("Digit ID %d in module %d: Absolute cell ID: %d\n", digits[idig].fID, digits[idig].fModule, cellID));
+    if(gaintype > 1) gaintype = 1;      // no idea where the memory corruption comes from ...
     fHIDvsAmp[gaintype]->Fill(digits[idig].fEnergy, cellID);
     fHIDvsTime[gaintype]->Fill(digits[idig].fTime, cellID);
   }
