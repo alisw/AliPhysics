@@ -437,6 +437,22 @@ bool AliAnalysisV0Efficiency::IsInjected(const AliAODMCParticle* aMCv0, TClonesA
 }
 
 //____________________________
+bool AliAnalysisV0Efficiency::ContainsSharedDaughters(vector<vector<int> > &aDaughtersCollection, int aPosLabel, int aNegLabel)
+{
+  bool aPosDuplicate=false;
+  bool aNegDuplicate=false;
+
+  for(int i=0; i<(int)aDaughtersCollection.size(); i++)
+  {
+    if(aDaughtersCollection[i][0]==aPosLabel) aPosDuplicate=true;
+    if(aDaughtersCollection[i][1]==aNegLabel) aNegDuplicate=true;
+  }
+
+  if(!aPosDuplicate && !aNegDuplicate) return false;
+  else return true;
+}
+
+//____________________________
 void AliAnalysisV0Efficiency::ExtractOriginalParticles(const AliAODEvent *aEvent)
 {
   TClonesArray *mcP = NULL;
@@ -449,6 +465,8 @@ void AliAnalysisV0Efficiency::ExtractOriginalParticles(const AliAODEvent *aEvent
 
   int tNumberOfLastHijingLabel = GetNumberOfLastHijingLabel(aEvent);
   if(tNumberOfLastHijingLabel <= 0) return;
+
+  vector<vector<int> > tDaughterLabelsLam(0), tDaughterLabelsALam(0), tDaughterLabelsK0s(0);
 
   for(int i=0; i < mcP->GetEntriesFast(); i++)
   {
@@ -505,9 +523,13 @@ void AliAnalysisV0Efficiency::ExtractOriginalParticles(const AliAODEvent *aEvent
 
     if(fIgnoreInjectedV0s && tIsInjected) continue;
 
-    FillHistogram(3122, tPart, tMother, fMCTruthOfOriginalParticles_Lam); 
-    FillHistogram(-3122, tPart, tMother, fMCTruthOfOriginalParticles_ALam); 
-    FillHistogram(310, tPart, tMother, fMCTruthOfOriginalParticles_K0s); 
+    if(!ContainsSharedDaughters(tDaughterLabelsLam, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()))  FillHistogram(3122, tPart, tMother, fMCTruthOfOriginalParticles_Lam); 
+    if(!ContainsSharedDaughters(tDaughterLabelsALam, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel())) FillHistogram(-3122, tPart, tMother, fMCTruthOfOriginalParticles_ALam); 
+    if(!ContainsSharedDaughters(tDaughterLabelsK0s, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()))  FillHistogram(310, tPart, tMother, fMCTruthOfOriginalParticles_K0s); 
+
+    if(tPart->GetPdgCode()==3122)  tDaughterLabelsLam.push_back(vector<int>{mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()});
+    if(tPart->GetPdgCode()==-3122) tDaughterLabelsALam.push_back(vector<int>{mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()});
+    if(tPart->GetPdgCode()==310)   tDaughterLabelsK0s.push_back(vector<int>{mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()});
   }
 
 }
@@ -874,6 +896,9 @@ void AliAnalysisV0Efficiency::ExtractV0FinderParticles(const AliAODEvent *aEvent
   //-----
   const AliAODVertex *aodvertex = (AliAODVertex*)aEvent->GetPrimaryVertex();
 
+  vector<vector<int> > tDaughterLabelsRecoLam(0), tDaughterLabelsRecoALam(0), tDaughterLabelsRecoK0s(0);
+  vector<vector<int> > tDaughterLabelsV0Lam(0), tDaughterLabelsV0ALam(0), tDaughterLabelsV0K0s(0);
+
   for(int i = 0; i < aEvent->GetNumberOfV0s(); i++)
   {
     AliAODv0* tAODv0 = aEvent->GetV0(i);
@@ -944,18 +969,44 @@ void AliAnalysisV0Efficiency::ExtractV0FinderParticles(const AliAODEvent *aEvent
 
 
     //Fill fMCTruthOfV0FinderParticles histograms
-    FillHistogram( 3122, tMCv0, tMother, fMCTruthOfV0FinderParticles_Lam); 
-    FillHistogram(-3122, tMCv0, tMother, fMCTruthOfV0FinderParticles_ALam); 
-    FillHistogram(  310, tMCv0, tMother, fMCTruthOfV0FinderParticles_K0s); 
+    if(!ContainsSharedDaughters(tDaughterLabelsV0Lam, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()))  FillHistogram( 3122, tMCv0, tMother, fMCTruthOfV0FinderParticles_Lam); 
+    if(!ContainsSharedDaughters(tDaughterLabelsV0ALam, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel())) FillHistogram(-3122, tMCv0, tMother, fMCTruthOfV0FinderParticles_ALam); 
+    if(!ContainsSharedDaughters(tDaughterLabelsV0K0s, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()))  FillHistogram(  310, tMCv0, tMother, fMCTruthOfV0FinderParticles_K0s); 
+
+    if(tMCv0->GetPdgCode()==3122)  tDaughterLabelsV0Lam.push_back(vector<int>{mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()});
+    if(tMCv0->GetPdgCode()==-3122) tDaughterLabelsV0ALam.push_back(vector<int>{mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()});
+    if(tMCv0->GetPdgCode()==310)   tDaughterLabelsV0K0s.push_back(vector<int>{mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()});
     //-----------------------------------------------------------------
 
-    if(V0PassAllCuts(0, tAODv0, daughterTrackPos, daughterTrackNeg, aodvertex)) FillHistogram( 3122, tMCv0, tMother, fMCTruthOfReconstructedParticles_Lam, true);
-    if(V0PassAllCuts(1, tAODv0, daughterTrackPos, daughterTrackNeg, aodvertex)) FillHistogram(-3122, tMCv0, tMother, fMCTruthOfReconstructedParticles_ALam, true);
-    if(V0PassAllCuts(2, tAODv0, daughterTrackPos, daughterTrackNeg, aodvertex)) FillHistogram(  310, tMCv0, tMother, fMCTruthOfReconstructedParticles_K0s, true);
+    if(V0PassAllCuts(0, tAODv0, daughterTrackPos, daughterTrackNeg, aodvertex)) 
+    {
+      if(!ContainsSharedDaughters(tDaughterLabelsRecoLam, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()))
+      {
+        FillHistogram( 3122, tMCv0, tMother, fMCTruthOfReconstructedParticles_Lam, true);
+        tDaughterLabelsRecoLam.push_back(vector<int>{mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()});
+      }
+    }
+    if(V0PassAllCuts(1, tAODv0, daughterTrackPos, daughterTrackNeg, aodvertex)) 
+    {
+      if(!ContainsSharedDaughters(tDaughterLabelsRecoALam, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()))
+      {
+        FillHistogram(-3122, tMCv0, tMother, fMCTruthOfReconstructedParticles_ALam, true);
+        tDaughterLabelsRecoALam.push_back(vector<int>{mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()});
+      }
+    }
+    if(V0PassAllCuts(2, tAODv0, daughterTrackPos, daughterTrackNeg, aodvertex)) 
+    {
+      if(!ContainsSharedDaughters(tDaughterLabelsRecoK0s, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()))
+      {
+        FillHistogram(  310, tMCv0, tMother, fMCTruthOfReconstructedParticles_K0s, true);
+        tDaughterLabelsRecoK0s.push_back(vector<int>{mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()});
+      }
+    }
   }
 
 
 }
+
 
 //____________________________
 void AliAnalysisV0Efficiency::ExtractAll(const AliAODEvent *aEvent)
