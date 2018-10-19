@@ -56,6 +56,8 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
                     const AliVEvent *inputEvent);
   void CastToVector(std::vector<AliSigma0ParticlePhotonMother> &sigmaContainer,
                     std::vector<AliFemtoDreamBasePart> &particles);
+  void CastToVector(std::vector<AliSigma0ParticleV0> &container,
+                    std::vector<AliFemtoDreamBasePart> &particles);
   void FillTriggerHisto(TH1F *histo);
 
   AliEventCuts fAliEventCuts;
@@ -64,14 +66,14 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   AliAnalysisTaskSigma0Femto(const AliAnalysisTaskSigma0Femto &task);
   AliAnalysisTaskSigma0Femto &operator=(const AliAnalysisTaskSigma0Femto &task);
 
-  AliVEvent *fInputEvent;                       //! current event
-  AliMCEvent *fMCEvent;                         //! corresponding MC event
-  AliV0ReaderV1 *fV0Reader;                     //! basic photon Selection Task
-  TString fV0ReaderName;                        //
-  AliSigma0V0Cuts *fV0Cuts;                     //
-  AliSigma0V0Cuts *fAntiV0Cuts;                 //
-  AliSigma0PhotonMotherCuts *fSigmaCuts;        //
-  AliSigma0PhotonMotherCuts *fAntiSigmaCuts;    //
+  AliVEvent *fInputEvent;                     //! current event
+  AliMCEvent *fMCEvent;                       //! corresponding MC event
+  AliV0ReaderV1 *fV0Reader;                   //! basic photon Selection Task
+  TString fV0ReaderName;                      //
+  AliSigma0V0Cuts *fV0Cuts;                   //
+  AliSigma0V0Cuts *fAntiV0Cuts;               //
+  AliSigma0PhotonMotherCuts *fSigmaCuts;      //
+  AliSigma0PhotonMotherCuts *fAntiSigmaCuts;  //
 
   AliFemtoDreamTrack *fProtonTrack;                  //!
   AliFemtoDreamTrackCuts *fTrackCutsPartProton;      //
