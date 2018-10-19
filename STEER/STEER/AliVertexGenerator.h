@@ -12,6 +12,7 @@
 class AliVertexGenerator: public TObject {
  public:
   virtual TVector3 GetVertex() = 0;
+  virtual Float_t GetLastVertexTime() { return 0; }
 
   ClassDef(AliVertexGenerator, 1)    // Base class for vertex generators
 };

@@ -354,7 +354,7 @@ void AliGenerator::VertexExternal()
     fVertex[0] = vertex.X();
     fVertex[1] = vertex.Y();
     fVertex[2] = vertex.Z();
-    fTime = 0.;
+    fTime = fVertexGenerator->GetLastVertexTime();
 }
 
 //_______________________________________________________________________
