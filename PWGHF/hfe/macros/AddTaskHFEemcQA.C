@@ -103,9 +103,9 @@ AliAnalysisTask *AddTaskHFEemcQA(
     TString SubcontainerName = Form("HFEemcQAINT8_%s",calib);
     SubcontainerName += ContNameExt;
     AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerName, TList::Class(),AliAnalysisManager::kOutputContainer, containerName.Data());
+    AliAnalysisDataContainer *coutput = mgr->CreateContainer(SubcontainerName, TList::Class(),AliAnalysisManager::kOutputContainer, containerName.Data());
     mgr->ConnectInput(hfecalqa, 0, cinput);
-    mgr->ConnectOutput(hfecalqa, 1, coutput1);
+    mgr->ConnectOutput(hfecalqa, 1, coutput);
     
     // INT7
     AliAnalysisTaskHFEemcQA *hfecalqa7 = new AliAnalysisTaskHFEemcQA("emcqa");
@@ -127,10 +127,10 @@ AliAnalysisTask *AddTaskHFEemcQA(
     containerName7 += ContNameExt;
     TString SubcontainerName7 = Form("HFEemcQAINT7_%s",calib);
     SubcontainerName7 += ContNameExt;
-    AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerName7, TList::Class(),AliAnalysisManager::kOutputContainer, containerName7.Data());
-    mgr->ConnectInput(hfecalqa7, 0, cinput);
-    mgr->ConnectOutput(hfecalqa7, 1, coutput1);
+    AliAnalysisDataContainer *cinput7  = mgr->GetCommonInputContainer();
+    AliAnalysisDataContainer *coutput7 = mgr->CreateContainer(SubcontainerName7, TList::Class(),AliAnalysisManager::kOutputContainer, containerName7.Data());
+    mgr->ConnectInput(hfecalqa7, 0, cinput7);
+    mgr->ConnectOutput(hfecalqa7, 1, coutput7);
 /*
     // EMCal L0
     // + kEMC7
@@ -206,10 +206,10 @@ AliAnalysisTask *AddTaskHFEemcQA(
         containerName01 += ContNameExt;
         TString SubcontainerName01 = Form("HFEemcQATrigGAEG1_%s",calib);
         SubcontainerName01 += ContNameExt;
-        AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-        AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerName01, TList::Class(),AliAnalysisManager::kOutputContainer, containerName01.Data());
-        mgr->ConnectInput(hfecalqaTrig01, 0, cinput);
-        mgr->ConnectOutput(hfecalqaTrig01, 1, coutput1);
+        AliAnalysisDataContainer *cinput01  = mgr->GetCommonInputContainer();
+        AliAnalysisDataContainer *coutput01 = mgr->CreateContainer(SubcontainerName01, TList::Class(),AliAnalysisManager::kOutputContainer, containerName01.Data());
+        mgr->ConnectInput(hfecalqaTrig01, 0, cinput01);
+        mgr->ConnectOutput(hfecalqaTrig01, 1, coutput01);
         
         // EMCal EGA EG2
         AliAnalysisTaskHFEemcQA *hfecalqaTrig02 = new AliAnalysisTaskHFEemcQA("emcqa");
@@ -232,10 +232,10 @@ AliAnalysisTask *AddTaskHFEemcQA(
         containerName02 += ContNameExt;
         TString SubcontainerName02 = Form("HFEemcQATrigGAEG2_%s",calib);
         SubcontainerName02 += ContNameExt;
-        AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-        AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerName02, TList::Class(),AliAnalysisManager::kOutputContainer, containerName02.Data());
-        mgr->ConnectInput(hfecalqaTrig02, 0, cinput);
-        mgr->ConnectOutput(hfecalqaTrig02, 1, coutput1);
+        AliAnalysisDataContainer *cinput02  = mgr->GetCommonInputContainer();
+        AliAnalysisDataContainer *coutput02 = mgr->CreateContainer(SubcontainerName02, TList::Class(),AliAnalysisManager::kOutputContainer, containerName02.Data());
+        mgr->ConnectInput(hfecalqaTrig02, 0, cinput02);
+        mgr->ConnectOutput(hfecalqaTrig02, 1, coutput02);
         }
         if(ClsTypeDCAL){
         // DCal EGA DG1
@@ -259,10 +259,10 @@ AliAnalysisTask *AddTaskHFEemcQA(
         containerName03 += ContNameExt;
         TString SubcontainerName03 = Form("HFEemcQATrigGADG1_%s",calib);
         SubcontainerName03 += ContNameExt;
-        AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-        AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerName03, TList::Class(),AliAnalysisManager::kOutputContainer, containerName03.Data());
-        mgr->ConnectInput(hfdcalqaTrig01, 0, cinput);
-        mgr->ConnectOutput(hfdcalqaTrig01, 1, coutput1);
+        AliAnalysisDataContainer *cinput03  = mgr->GetCommonInputContainer();
+        AliAnalysisDataContainer *coutput03 = mgr->CreateContainer(SubcontainerName03, TList::Class(),AliAnalysisManager::kOutputContainer, containerName03.Data());
+        mgr->ConnectInput(hfdcalqaTrig01, 0, cinput03);
+        mgr->ConnectOutput(hfdcalqaTrig01, 1, coutput03);
         
         // DCal EGA DG2
         AliAnalysisTaskHFEemcQA *hfdcalqaTrig02 = new AliAnalysisTaskHFEemcQA("emcqa");
@@ -285,10 +285,10 @@ AliAnalysisTask *AddTaskHFEemcQA(
         containerName04 += ContNameExt;
         TString SubcontainerName04 = Form("HFEemcQATrigGADG2_%s",calib);
         SubcontainerName04 += ContNameExt;
-        AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-        AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerName04, TList::Class(),AliAnalysisManager::kOutputContainer, containerName04.Data());
-        mgr->ConnectInput(hfdcalqaTrig02, 0, cinput);
-        mgr->ConnectOutput(hfdcalqaTrig02, 1, coutput1);
+        AliAnalysisDataContainer *cinput04  = mgr->GetCommonInputContainer();
+        AliAnalysisDataContainer *coutput04 = mgr->CreateContainer(SubcontainerName04, TList::Class(),AliAnalysisManager::kOutputContainer, containerName04.Data());
+        mgr->ConnectInput(hfdcalqaTrig02, 0, cinput04);
+        mgr->ConnectOutput(hfdcalqaTrig02, 1, coutput04);
         }
     }
     if(!hasTwoEMCTrigThres)
@@ -315,9 +315,9 @@ AliAnalysisTask *AddTaskHFEemcQA(
         containerName1 += ContNameExt;
         TString SubcontainerName1 = Form("HFEemcQATrigGAEG_%s",calib);
         SubcontainerName1 += ContNameExt;
-        AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
+        AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
         AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerName1, TList::Class(),AliAnalysisManager::kOutputContainer, containerName1.Data());
-        mgr->ConnectInput(hfecalqaTrig0, 0, cinput);
+        mgr->ConnectInput(hfecalqaTrig0, 0, cinput1);
         mgr->ConnectOutput(hfecalqaTrig0, 1, coutput1);
     }
   /*
