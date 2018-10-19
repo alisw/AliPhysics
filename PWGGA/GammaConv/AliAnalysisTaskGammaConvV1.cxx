@@ -619,7 +619,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   Int_t nSPDClusters            = 400;
   Int_t nBinsTrklCls            = 100;
   if(fIsHeavyIon == 1){
-    nGammaCand                  = 120;
+    nGammaCand                  = 200;
     nTracks                     = 4000;
     nSPDTracklets               = 6000;
     nSPDClusters                = 20000;
