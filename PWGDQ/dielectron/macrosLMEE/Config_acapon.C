@@ -154,6 +154,13 @@ AliDielectron* Config_acapon(TString cutDefinition,
         //die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
         die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
     }
+		else if(cutDefinition == "MCpdgSel"){
+				v0plots = kTRUE;
+        selectedCuts = LMEECutLib::kMCsel;
+				selectedPID = LMEECutLib::kPdgSel;
+        //die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
+        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
+		}
     else{
         cout << " =============================== " << endl;
         cout << " ==== INVALID CONFIGURATION ==== " << endl;

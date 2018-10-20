@@ -13,7 +13,9 @@ class LMEECutLib {
 		kCutSet1,
 		kV0_ITScorr,
 		kV0_TPCcorr,
-		kV0_TOFcorr
+		kV0_TOFcorr,
+		kPdgSel,
+		kMCsel
 	};
 
 
@@ -613,7 +615,20 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
   // PID cut ranges correspond to global momentum P
   // check it again!!!
   //-----------------------------------------------
+
+	// Pdg code selection of electrons
+	AliDielectronVarCuts* PdgElectron = new AliDielectronVarCuts("PdgElectron","PdgElectron");
+	PdgElectron->AddCut(AliDielectronVarManager::kPdgCode, 11.);
+	AliDielectronVarCuts* PdgPositron = new AliDielectronVarCuts("PdgElectron","PdgElectron");
+	PdgPositron->AddCut(AliDielectronVarManager::kPdgCode, -11.);
+	AliDielectronCutGroup* PdgLepton = new AliDielectronCutGroup("PdgLepton","PdgLepton",AliDielectronCutGroup::kCompOR);
+	PdgLepton->AddCut(PdgElectron);
+	PdgLepton->AddCut(PdgPositron);
+  // Pdg selection cuts of V0 electrons
 	
+  AliDielectronVarCuts *MotherIsPhoton = new AliDielectronVarCuts("MotherIsPhoton","MotherIsPhoton");
+  MotherIsPhoton->AddCut(AliDielectronVarManager::kPdgCodeMother, 22.);
+
 	switch(PIDcuts){
 		case kElectrons:
 		case kHighMult:
@@ -694,17 +709,11 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
 			cuts->AddCut(cutsPID);
 			return cuts;
 			break;
-
 		case kPdgSel:
-			// PDG Code PID
-			AliDielectronVarCuts* PdgElectron = new AliDielectronVarCuts("PdgElectron","PdgElectron");
-			PdgElectron->AddCut(AliDielectronVarManager::kPdgCode, 11.);
-			AliDielectronVarCuts* PdgPositron = new AliDielectronVarCuts("PdgElectron","PdgElectron");
-			PdgPositron->AddCut(AliDielectronVarManager::kPdgCode, -11.);
-			AliDielectronCutGroup* PdgLepton = new AliDielectronCutGroup("PdgLepton","PdgLepton",AliDielectronCutGroup::kCompOR);
-			PdgLepton->AddCut(PdgElectron);
-			PdgLepton->AddCut(PdgPositron);
 			cuts->AddCut(PdgLepton);
+			cuts->Print();
+			return cuts;
+			break;
 		default:
 			std::cout << "No Analysis PID Cut defined " << std::endl;
 			return 0x0;
@@ -848,6 +857,10 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 
 			trackCuts->AddCut(gammaV0cuts);
 			trackCuts->AddCut(trackCutsV0);
+			trackCuts->AddCut(GetPIDCuts(PIDcuts));
+			return trackCuts;
+			break;
+		case kMCsel:
 			trackCuts->AddCut(GetPIDCuts(PIDcuts));
 			return trackCuts;
 			break;
