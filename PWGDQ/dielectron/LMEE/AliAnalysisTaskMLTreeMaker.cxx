@@ -51,7 +51,7 @@
 #include "AliGenCocktailEventHeader.h"
 #include "AliCentrality.h"
 #include "AliMultSelection.h"
-
+#include "TSystem.h"
 
 
 // Authors: Sebastian Lehner (SMI Vienna) - selehner@cern.ch
@@ -73,7 +73,8 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   trfilter(),
   pidcuts(0),      
   cuts(0),
-  filter(0), 
+  filter(0),
+  TMVAReader(0),     
   varManager(0), 
   fPIDResponse(0),        
   eta(0),
@@ -154,9 +155,30 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   chi2GlobalvsTPC(0),
   fCutMaxChi2TPCConstrainedVsGlobalVertexType(0),
   pdg(0),
-  pdgmother(0),        
-  fmean(0),
+  pdgmother(0), 
+  nITSTMVA(0),
+  ITS1SharedTMVA(0),
+  ITS2SharedTMVA(0),
+  ITS3SharedTMVA(0),
+  ITS4SharedTMVA(0),
+  ITS5SharedTMVA(0),
+  ITS6SharedTMVA(0),
+  nITSshared_fracTMVA(0),
+  NCrossedRowsTPCTMVA(0),
+  NClustersTPCTMVA(0),
+  NTPCSignalTMVA(0),
+  logDCAxyTMVA (0),
+  logDCAzTMVA (0),   
+  chi2GlobalPerNDFTMVA(0),
+  chi2ITSTMVA(0),
+  etaTMVA(0),
+  phiTMVA(0),
+  ptTMVA(0),   
+  centTMVA(0),
+  MVAout(0),
+  TMVAWeightFileName(0),      
   fwidth(0), 
+  fmean(0),      
   fuseCorr(kFALSE),      
   fTree(0),
   fQAHist(0)
@@ -164,7 +186,7 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
 
 }
 
-AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
+AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name,TString TMVAWeightFileName1) :
   AliAnalysisTaskSE(name),
   eventCuts(0),
   eventplaneCuts(0),
@@ -174,6 +196,7 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   pidcuts(0),      
   cuts(0),
   filter(0), 
+  TMVAReader(0),         
   varManager(0), 
   fPIDResponse(0),        
   eta(0),
@@ -257,9 +280,30 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   pdgmother(0),        
   hasmother(0),
   motherlabel(0),
-  fmean(0),
+  nITSTMVA(0),
+  ITS1SharedTMVA(0),
+  ITS2SharedTMVA(0),
+  ITS3SharedTMVA(0),
+  ITS4SharedTMVA(0),
+  ITS5SharedTMVA(0),
+  ITS6SharedTMVA(0),
+  nITSshared_fracTMVA(0),
+  NCrossedRowsTPCTMVA(0),
+  NClustersTPCTMVA(0),
+  NTPCSignalTMVA(0),
+  logDCAxyTMVA (0),
+  logDCAzTMVA (0),   
+  chi2GlobalPerNDFTMVA(0),
+  chi2ITSTMVA(0),
+  etaTMVA(0),
+  phiTMVA(0),
+  ptTMVA(0),   
+  centTMVA(0),      
+  MVAout(0),
+  TMVAWeightFileName(0),      
   fwidth(0), 
-  fuseCorr(kFALSE),              
+  fmean(0),      
+  fuseCorr(kFALSE),      
   fTree(0),
   fQAHist(0)
 {
@@ -267,6 +311,35 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
 // SetupEventCuts(); 
 // AliInfo("Track & Event cuts were set"); 
    
+  if(kTRUE){
+    
+    TMVAWeightFileName=TMVAWeightFileName1;
+  
+    TMVAReader = new TMVA::Reader( "!Color:!Silent" );
+
+    TMVAReader->AddVariable( "nITS", &nITSTMVA);
+    TMVAReader->AddVariable( "ITS1Shared", &ITS1SharedTMVA);
+    TMVAReader->AddVariable( "ITS2Shared", &ITS2SharedTMVA);
+    TMVAReader->AddVariable( "ITS3Shared", &ITS3SharedTMVA);
+    TMVAReader->AddVariable( "ITS4Shared", &ITS4SharedTMVA);
+    TMVAReader->AddVariable( "ITS5Shared", &ITS5SharedTMVA);
+    TMVAReader->AddVariable( "ITS6Shared", &ITS6SharedTMVA);
+    TMVAReader->AddVariable( "nITSshared_frac", &nITSshared_fracTMVA);
+    TMVAReader->AddVariable( "NCrossedRowsTPC", &NCrossedRowsTPCTMVA);
+    TMVAReader->AddVariable( "NClustersTPC", &NClustersTPCTMVA);
+    TMVAReader->AddVariable( "NTPCSignal", &NTPCSignalTMVA);
+    TMVAReader->AddVariable( "log(abs(DCAxy))", &logDCAxyTMVA );
+    TMVAReader->AddVariable( "log(abs(DCAz))", &logDCAzTMVA );   
+    TMVAReader->AddVariable( "chi2GlobalPerNDF", &chi2GlobalPerNDFTMVA);
+    TMVAReader->AddVariable( "chi2ITS", &chi2ITSTMVA);
+    TMVAReader->AddVariable( "eta", &etaTMVA);
+    TMVAReader->AddVariable( "phi", &phiTMVA);
+    TMVAReader->AddVariable( "pt", &ptTMVA);   
+    TMVAReader->AddVariable( "centrality", &centTMVA);
+ 
+    gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/s/selehner/TMVAweights/%s .",TMVAWeightFileName.Data()));
+    TMVAReader->BookMVA( "BDT method", TMVAWeightFileName.Data() );
+  }  
  DefineOutput(1, TList::Class());
 }
 
@@ -294,7 +367,6 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
    inputHandler->SetNeedField();
    
-    
   fList = new TList();
   fList->SetName("output_Tlist");
   fList->SetOwner();
@@ -382,6 +454,8 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
     
   }
   
+  if(kTRUE) fTree->Branch("MVAout", &MVAout);
+  
   PostData(1, fList);
   
   AliInfo("Finished setting up the Output");
@@ -399,7 +473,7 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
     fGeneratorHashs.push_back(temp.Hash());
     }
    }
-  }
+}
 //________________________________________________________________________
 
 void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
@@ -844,6 +918,31 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
       
       if(isAOD){ chi2GlobalPerNDF.push_back(((AliAODTrack*)track)->Chi2perNDF());
                  chi2GlobalvsTPC.push_back(((AliAODTrack*)track)->GetChi2TPCConstrainedVsGlobal());  
+      }
+      
+      if(kTRUE){
+        
+           nITSTMVA = (Float_t)nITS.back();
+	   ITS1SharedTMVA = (Float_t)ITS1S.back();
+	   ITS2SharedTMVA = (Float_t)ITS2S.back();
+	   ITS3SharedTMVA = (Float_t)ITS3S.back();
+	   ITS4SharedTMVA = (Float_t)ITS4S.back();
+	   ITS5SharedTMVA = (Float_t)ITS5S.back();
+	   ITS6SharedTMVA = (Float_t)ITS6S.back();
+	   nITSshared_fracTMVA = (Float_t)nITSshared.back();
+	   NCrossedRowsTPCTMVA= (Float_t)NCrossedRowsTPC.back();
+	   NClustersTPCTMVA = (Float_t) NClustersTPC.back();
+	   NTPCSignalTMVA = (Float_t) NTPCSignal.back();
+	   logDCAxyTMVA = (Float_t) TMath::Log(TMath::Abs(dcar.back()));
+	   logDCAzTMVA = (Float_t) TMath::Log(TMath::Abs(dcaz.back()));   
+	   chi2GlobalPerNDFTMVA = (Float_t)chi2GlobalPerNDF.back();
+	   chi2ITSTMVA = (Float_t) chi2ITS.back();
+	   etaTMVA= (Float_t) eta.back();
+	   phiTMVA = (Float_t) phi.back();
+	   ptTMVA = (Float_t) pt.back();   
+	   centTMVA = (Float_t)cent;
+      
+           MVAout.push_back(TMVAReader->EvaluateMVA("BDT method"));
       }
 
       acceptedTracks++;

@@ -6,7 +6,8 @@ AliAnalysisTask *AddTaskMLTreeMakerwCutLib(
                                                     Double_t centmax=100.,
                                                     Bool_t SetTPCCorrection=kFALSE,
                                                     Bool_t useAODFilterCuts=kFALSE,
-                                                    Bool_t isMC
+                                                    Bool_t isMC,
+                                                    TString TMVAweight = "TMVAClassification_BDTG.weights_094.xml"
                                                     )
 {
 
@@ -41,9 +42,11 @@ else{
 Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() != 0x0);
 ::Info("AddTask_slehner_TreeMakeWCutLib","hasMC = %d",hasMC);
 
+TString weightFile=TMVAweight;
+::Info("AddTask_slehner_TreeMakeWCutLib","TMVA weights file: alien:///alice/cern.ch/user/s/selehner/TMVAweights/%s",weightFile.Data());
 
 LMEECutLib* cutlib = new LMEECutLib();      
-AliAnalysisTaskMLTreeMaker *task = new AliAnalysisTaskMLTreeMaker("treemaker");   
+AliAnalysisTaskMLTreeMaker *task = new AliAnalysisTaskMLTreeMaker("treemaker",weightFile);   
 
 if(SetTPCCorrection){
     TH3D mean = cutlib->SetEtaCorrectionTPC(AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly, kFALSE,1);
