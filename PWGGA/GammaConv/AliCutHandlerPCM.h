@@ -10,7 +10,7 @@
 class AliCutHandlerPCM{
   public:
     AliCutHandlerPCM();
-    AliCutHandlerPCM(Int_t );
+    AliCutHandlerPCM(Int_t nMax = 10);
     virtual ~AliCutHandlerPCM() {};
 
 
