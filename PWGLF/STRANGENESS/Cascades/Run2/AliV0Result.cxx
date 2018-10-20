@@ -685,7 +685,6 @@ void AliV0Result::Print()
     cout<<" Object Name........: "<<this->GetName()<<endl;
     cout<<" Use OTF V0s........: "<<fUseOnTheFly<<endl;
     cout<<" 2.76TeV-like dE/dx.: "<<fCut276TeVLikedEdx<<endl;
-    cout<<" Histogram Name.....: "<<fHisto->GetName()<<endl;
     if( fMassHypo == AliV0Result::kK0Short      ) cout<<" Mass Hypothesis....: K0Short"<<endl;
     if( fMassHypo == AliV0Result::kLambda       ) cout<<" Mass Hypothesis....: Lambda"<<endl;
     if( fMassHypo == AliV0Result::kAntiLambda   ) cout<<" Mass Hypothesis....: AntiLambda"<<endl;
