@@ -17,7 +17,7 @@ public:
   }
   static AliDielectronPID* GetPIDCutsAna();
   AliDielectronCutGroup* GetTrackCuts(int trsel=0, int pidsel=0, Int_t MVACut=0, Bool_t useAODFilterCuts, TString TMVAweight="TMVAClassification_BDTG.weights_094.xml");
-  AliDielectronEventCuts* GetEventCuts(int sel);
+  AliDielectronEventCuts* GetEventCuts(Double_t centMin, Double_t centMax);
   static TH3D SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise);
   static AliDielectronPID* pidFilterCuts;
   static TBits *fUsedVars;               // used variables
@@ -109,13 +109,13 @@ static TH3D LMEECutLib::SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int
 AliDielectronEventCuts* LMEECutLib::GetEventCuts(Double_t centMin, Double_t centMax) {
   ::Info("LMEE_CutLib_slehner","setting event cuts");
   
-  AliDielectronEventCuts* eventCuts = new AliDielectronEventCuts("eventCutsSlehner","evcuts");
+  AliDielectronEventCuts* eventCuts = new AliDielectronEventCuts("eventCuts","evcuts");
   
   eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
   eventCuts->SetRequireVertex();
   eventCuts->SetMinVtxContributors(1);
   eventCuts->SetVertexZ(-10.,+10.);
-  eventCuts->SetCentralityRange(centMin,centMax,kTRUE);    //isRun2 = true 
+  eventCuts->SetCentralityRange(0,80,kTRUE);    //isRun2 = true 
   return eventCuts;
 }
 
@@ -180,7 +180,7 @@ AliDielectronPID* LMEECutLib::GetPIDCutsAna(int sel, Bool_t useAODFilterCuts) {
 AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MVACut, Bool_t useAODFilterCuts, TString TMVAweight) {
   
   ::Info("LMEE_CutLib_slehner","setting Track cuts");
-  AliDielectronCutGroup* trackCuts = new AliDielectronCutGroup(TString::Format("CutTr%d_PID%d_MVA%f",selTr, selPID,MVACut),TString::Format("CutTr%d_PID%d_MVA%f",selTr, selPID,MVACut),AliDielectronCutGroup::kCompAND);
+  AliDielectronCutGroup* trackCuts = new AliDielectronCutGroup("CutsAna","CutsAna",AliDielectronCutGroup::kCompAND);
     
   ////Add nanoAOD filter cuts
   AliDielectronVarCuts *varCutsFilter   = new AliDielectronVarCuts("VarCuts","VarCuts");
@@ -266,7 +266,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MV
             trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
             break;
   }
-  
+
   // /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv TMVA vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
 
 //  TString weightFile="alien:///alice/cern.ch/user/s/slehner/TMVAClassification_BDTG.weights_094.xml";
@@ -306,7 +306,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MV
   AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
   trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA);   //(1<<4) -> error
   trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
-  
+
   if(useAODFilterCuts){
     trackCuts->AddCut(varCutsFilter);
     trackCuts->AddCut(trkCutsFilter);

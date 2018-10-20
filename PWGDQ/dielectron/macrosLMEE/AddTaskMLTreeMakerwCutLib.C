@@ -18,6 +18,8 @@ if(!mgr){
     return 0;
 }
 
+
+
 //Base Directory for GRID / LEGO Train  
 TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
 
@@ -35,21 +37,13 @@ else{
     return 0; // if return is not called, the job will fail instead of running wihout this task... (good for local tests, bad for train)
 }
 
+//Do we have an MC handler?
+Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() != 0x0);
+::Info("AddTask_slehner_TreeMakeWCutLib","hasMC = %d",hasMC);
 
 
-LMEECutLib* cutlib = new LMEECutLib(); 
-
-//AOD Usage currently tested with Input handler
-if (mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()){
-    ::Info("AddTask", "Detecting AOD manager"); //Prepended :: ensures resolution occurs from global namespace, not current one
-}
-else if (mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class()){
-    ::Info("AddTask","Detecting ESD manager");
-}
-
+LMEECutLib* cutlib = new LMEECutLib();      
 AliAnalysisTaskMLTreeMaker *task = new AliAnalysisTaskMLTreeMaker("treemaker");   
-
-task->isMC(isMC);
 
 if(SetTPCCorrection){
     TH3D mean = cutlib->SetEtaCorrectionTPC(AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly, kFALSE,1);
@@ -61,7 +55,8 @@ else  task->SetUseCorr(kFALSE);
 
 task->SelectCollisionCandidates(AliVEvent::kINT7);
 task->SetupTrackCuts(cutlib->GetTrackCuts(trackCut,PIDCut,0,useAODFilterCuts));
-task->SetupEventCuts(cutlib->GetEventCuts(centmin, centmax));
+task->SetupEventCuts(cutlib->GetEventCuts(0, 20));
+//task->SetCentralityPercentileRange(centmin,centmax);
 
 mgr->AddTask(task);
 

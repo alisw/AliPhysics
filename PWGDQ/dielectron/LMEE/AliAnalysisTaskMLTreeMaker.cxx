@@ -305,13 +305,13 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
      if (!fPIDResponse){
 	   AliError("Failed to get PIDResponse - return");
 	   return;}
-    
+  
   if(hasMC) std::cout <<"Running on MC!"<< std::endl;
   else std::cout <<"Running on RD!"<< std::endl;
 
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
-  
+
   fTree = new TTree("Track_Tree","Tracks");
   fList->Add(fTree);
   
@@ -386,7 +386,7 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   
   AliInfo("Finished setting up the Output");
   TH1::AddDirectory(oldStatus);
-    
+  
   if(hasMC){
   TString generatorName = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia BB_8;Pythia B_8";
  
@@ -398,8 +398,8 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
     std::cout << "--- " << temp << std::endl;
     fGeneratorHashs.push_back(temp.Hash());
     }
+   }
   }
-}
 //________________________________________________________________________
 
 void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
@@ -599,17 +599,7 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
       if(!isAOD) fQAHist->Fill("Not AOD track",1);
       else       fQAHist->Fill("Is AOD track",1);
       
-
-      if( ((TString)track->ClassName()).Contains("MC") ){
-        fQAHist->Fill("Is MC track",1);
-      }
-      else{
-        fQAHist->Fill("Is RD track",1);
-      }
-
-      fQAHist->Fill(TString::Format("Track Type: %s",track->ClassName()),1);
-      
-      fQAHist->Fill("After AOD check, bef. MC",1); 
+      fQAHist->Fill("After ESD check, bef. MC",1); 
       
       if(hasMC){ 
         mcEvent = MCEvent(); 
@@ -627,12 +617,12 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
         }
 
       fQAHist->Fill("Tracks aft MC, bef tr cuts",1); 
-           
+      
     UInt_t selectedMask = (1 << filter->GetCuts()->GetEntries()) - 1;
     if (selectedMask != (filter->IsSelected((AliVParticle*) track))) {
       fQAHist->Fill("Tracks not selected filter",1);
-      continue;
-    }
+          continue;
+      }
       
       Double_t pttemp = track->Pt();
       Double_t etatemp = track->Eta();
