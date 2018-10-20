@@ -733,8 +733,12 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fUseTender(kFALSE)
 
 //new Tender organization, using global variables
-,fTenderClusterName("caloClusters")
-,fTenderTrackName("tracks")
+//,fTenderClusterName("caloClusters")
+//,fTenderTrackName("tracks")
+
+,fTenderClusterName("EmcCaloClusters")
+,fTenderTrackName("AODFilterTracks")
+
 
 
 
