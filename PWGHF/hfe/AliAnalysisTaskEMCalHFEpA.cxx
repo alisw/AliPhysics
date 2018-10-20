@@ -19,7 +19,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: September 27, 2018.							          //
+	//		version: 18 October, 2018. Old tender							          //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -131,6 +131,17 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fUseEMCal(kFALSE)
 ,fUseTrigger(kFALSE)
 ,fUseTender(kFALSE)
+
+//new Tender organization, using global variables
+//,fTenderClusterName("caloClusters")
+//,fTenderTrackName("tracks")
+
+,fTenderClusterName("EmcCaloClusters")
+,fTenderTrackName("AODFilterTracks")
+
+
+
+
 ,fUseShowerShapeCut(kFALSE)
 ,fCalibrateTPC(0)
 ,fCalibrateTPC_eta(0)
@@ -470,6 +481,10 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fTPCnsigma_eta_electrons(0)
 ,fTPCnsigma_eta_hadrons(0)
 ,fEoverP_pt_pions(0)
+
+,fEoverP_pt_pions0(0)
+,fEoverP_pt_pions1(0)
+
 ,ftpc_p_EoverPcut(0)
 ,fnsigma_p_EoverPcut(0)
 
@@ -716,6 +731,13 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fUseEMCal(kFALSE)
 ,fUseTrigger(kFALSE)
 ,fUseTender(kFALSE)
+
+//new Tender organization, using global variables
+,fTenderClusterName("caloClusters")
+,fTenderTrackName("tracks")
+
+
+
 ,fUseShowerShapeCut(kFALSE)
 ,fCalibrateTPC(0)
 ,fCalibrateTPC_eta(0)
@@ -1056,6 +1078,10 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fTPCnsigma_eta_electrons(0)
 ,fTPCnsigma_eta_hadrons(0)
 ,fEoverP_pt_pions(0)
+
+,fEoverP_pt_pions0(0)
+,fEoverP_pt_pions1(0)
+
 ,ftpc_p_EoverPcut(0)
 ,fnsigma_p_EoverPcut(0)
 ,fEoverP_pt_pions2(0)
@@ -2332,6 +2358,9 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	
 	fNcells_pt=new TH2F("fNcells_pt","fNcells_pt",1000, 0,20,100,0,30);
 	fEoverP_pt_pions= new TH2F("fEoverP_pt_pions","fEoverP_pt_pions",1000,0,30,2000,0,2);
+    
+    fEoverP_pt_pions0= new TH2F("fEoverP_pt_pions0","fEoverP_pt_pions0",1000,0,30,2000,0,2);
+    fEoverP_pt_pions1= new TH2F("fEoverP_pt_pions1","fEoverP_pt_pions1",1000,0,30,2000,0,2);
 	
 	ftpc_p_EoverPcut= new TH2F("ftpc_p_EoverPcut","ftpc_p_EoverPcut",1000,0,30,200,20,200);
 	fnsigma_p_EoverPcut= new TH2F("fnsigma_p_EoverPcut","fnsigma_p_EoverPcut",1000,0,30,500,-15,15);
@@ -2360,6 +2389,9 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	
 	fOutputList->Add(fNcells_pt);
 	fOutputList->Add(fEoverP_pt_pions);
+    
+    fOutputList->Add(fEoverP_pt_pions0);
+    fOutputList->Add(fEoverP_pt_pions1);
 	
 	fOutputList->Add(ftpc_p_EoverPcut);
 	fOutputList->Add(fnsigma_p_EoverPcut);
@@ -3140,12 +3172,14 @@ if(!fIspp){
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//To use tender
 	Int_t ClsNo0 = -999;
+    Int_t NTracks=0;
 		//ClsNo0 = fAOD->GetNumberOfCaloClusters(); 
 	if(fUseTender){
-			//TClonesArray  *fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
-			//NTracks = fTracks_tender->GetEntries();
-		fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
-		ClsNo0 = fCaloClusters_tender->GetEntries();
+       
+        fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTenderTrackName));
+        NTracks = fTracks_tender->GetEntries();
+        fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTenderClusterName));
+        ClsNo0 = fCaloClusters_tender->GetEntries();
 		
 		
 	}
@@ -3196,7 +3230,7 @@ if(!fIspp){
 					
 				
 					if(fUseTender){
-						fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+						//fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 						ClsNo0 = fCaloClusters_tender->GetEntries();
 					
 					}
@@ -3206,7 +3240,7 @@ if(!fIspp){
 						AliVCluster *clus0 = 0x0;
 						
 						if(fUseTender){
-							fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+							//fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 							clus0 = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(icl));
 						}
 						
@@ -3666,7 +3700,7 @@ if(!fIspp){
 	
 	///_____________________________________________________________________
 	///Track loop
-	Int_t NTracks=0;
+	
 	AliVCluster *clust = 0x0;
 	
 	if(!fUseTender){
@@ -3726,17 +3760,20 @@ if(!fIspp){
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//To use tender
 	if(fUseTender){
-		fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
+        
+        printf("Using tender\n");
+		//fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
 		//TClonesArray  *fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
 		NTracks = fTracks_tender->GetEntries();
-		fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+		//fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 		//fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 		ClsNo = fCaloClusters_tender->GetEntries();
 		
+        printf("Ntracks =%d, ClsNo =%d", NTracks, ClsNo);
 		
 		//For cluster information from tender
 		for (Int_t i=0; i< ClsNo; i++ ){
-			fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+			//fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 			clust = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(i));
 			if (!clust) {
 					//printf("ERROR: Could not receive cluster matched calibrated from track %d\n", iTracks);
@@ -3831,10 +3868,10 @@ if(!fIspp){
 		*/
 		
 		if(fUseTender){
-			fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
+			//fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
 				//TClonesArray  *fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
 			Vtrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(iTracks));
-			fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+			//fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 		}
 			
 		if (!Vtrack) 
@@ -4029,7 +4066,7 @@ if(!fIspp){
 				int EMCalIndex = -1;
 				EMCalIndex = track->GetEMCALcluster();
 				if(EMCalIndex>0){
-					fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+					//fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 					fClus = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
 					if (!fClus) {
 						//printf("ERROR: Could not receive cluster matched calibrated from track %d\n", iTracks);
@@ -4051,7 +4088,7 @@ if(!fIspp){
 				if(TMath::Abs(fClus->GetTrackDx())<=fdPhiCut && TMath::Abs(fClus->GetTrackDz())<=fdEtaCut)
 				{
 					fEMCflag = kTRUE;
-					fEoverP_pt[0]->Fill(fPt,(fClus->E() / fP));
+					
 					
 					
 					Float_t Energy	= fClus->E();
@@ -4658,7 +4695,7 @@ if(!fIspp){
 				int EMCalIndex = -1;
 				EMCalIndex = track->GetEMCALcluster();
 				if(EMCalIndex>0){
-					fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+					//fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 					fClus = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
 					if (!fClus) {
 						//printf("ERROR: Could not receive cluster matched calibrated from track %d\n", iTracks);
@@ -4675,7 +4712,7 @@ if(!fIspp){
 				
 				if(TMath::Abs(fClus->GetTrackDx())<=fdPhiCut && TMath::Abs(fClus->GetTrackDz())<=fdEtaCut)
 				{
-					fEoverP_pt[1]->Fill(fPt,(fClus->E() / fP));
+					
 					
 					Float_t Energy	= fClus->E();
 					Float_t EoverP	= Energy/track->P();
@@ -4828,10 +4865,18 @@ if(!fIspp){
 							if(fClus->E()>12.0)fEoverP_pt_pions2_highE0->Fill(fPt, EoverP);
 							
 						}
-						if(fTPCnSigma < -4.0){
-							fEoverP_pt_pions3->Fill(fPt, EoverP);
-							
-							
+                        
+                        if(fUseShowerShapeCut){
+                            if(M02 >= fM02CutMin && M02<=fM02CutMax && M20>=fM20CutMin && M20<=fM20CutMax){
+                                
+                                if(fTPCnSigma < -3.5){
+                            
+                                    fEoverP_pt_pions3->Fill(fPt, EoverP);
+                                    if(fClus->E()>8.0)fEoverP_pt_pions1->Fill(fPt, EoverP);
+                                    if(fClus->E()>12.0)fEoverP_pt_pions0->Fill(fPt, EoverP);
+                                    
+                                }
+                            }
 						}
 						
 						
@@ -5420,7 +5465,7 @@ if(!fIspp){
 				int EMCalIndex = -1;
 				EMCalIndex = track->GetEMCALcluster();
 				if(track->GetEMCALcluster()>0){
-					fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+					//fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
 					fClus = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
 					if (!fClus) {
 						//printf("ERROR: Could not receive cluster matched calibrated from track %d\n", iTracks);
@@ -5621,6 +5666,11 @@ if(!fIspp){
 							
 							if(M02 >= fM02CutMin && M02<=fM02CutMax && M20>=fM20CutMin && M20<=fM20CutMax){
 								fEoverP_pt[2]->Fill(fPt,(fClus->E() / fP));
+                                
+                                //checking with E cut > threshold EG0 > 12 GeV
+                                if(fClus->E() >=12.0)fEoverP_pt[0]->Fill(fPt,(fClus->E() / fP));
+                                //checking with E cut > threshold EG1 > 8 GeV
+                                if(fClus->E() >=8.0)fEoverP_pt[1]->Fill(fPt,(fClus->E() / fP));
 								
 									//centrality
 								if(fIsCentralitySys){
