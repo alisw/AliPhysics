@@ -422,6 +422,19 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
     return;
   }
  
+ AliMultSelection *MultSelection = 0x0; 
+  MultSelection = (AliMultSelection * ) event->FindListObject("MultSelection");
+  
+  if( !MultSelection) {
+   //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+   AliWarning("AliMultSelection object not found!");
+  }
+  else cent = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
+  
+  
+  
+  if(cent<fCentralityPercentileMin || cent>fCentralityPercentileMax) return;
+
   
  AliInputEventHandler *eventHandler = nullptr;
  AliInputEventHandler *eventHandlerMC = nullptr;
@@ -441,20 +454,8 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
     ::Info("AliAnalysisTaskMLTreeMaker::UserExec","Setting Correction Histos");
   }
 
-  
-  AliMultSelection *MultSelection = 0x0; 
-  MultSelection = (AliMultSelection * ) event->FindListObject("MultSelection");
-  
-  if( !MultSelection) {
-   //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
-   AliWarning("AliMultSelection object not found!");
-  }
-  else cent = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
-  
   fQAHist->Fill("Events before cent",1);
-  
-  if(cent<fCentralityPercentileMin || cent>fCentralityPercentileMax) return;
-  
+    
   fQAHist->Fill("Events after cent",1);
   
   Double_t lMultiplicityVar = -1;

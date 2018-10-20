@@ -115,7 +115,7 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts(Double_t centMin, Double_t cent
   eventCuts->SetRequireVertex();
   eventCuts->SetMinVtxContributors(1);
   eventCuts->SetVertexZ(-10.,+10.);
-  eventCuts->SetCentralityRange(0,80,kTRUE);    //isRun2 = true 
+  if(centMax!=0) eventCuts->SetCentralityRange(centMin,centMax,kTRUE);    //isRun2 = true 
   return eventCuts;
 }
 

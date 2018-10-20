@@ -69,7 +69,7 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Int_t trackCut=0,
 //    }
 //  }
   
-      for(Int_t MVACut = 0; MVACut <= 10; ++MVACut){
+      for(Int_t MVACut = 0; MVACut <= 0; ++MVACut){
         AliDielectron * diel_low = Config_slehner_diele_TMVA(trackCut,PIDCut,MVACut,useAODFilterCuts,hasMC);
         if(!diel_low){
           Printf("=======================================");
