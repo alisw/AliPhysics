@@ -213,62 +213,62 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(Int_t collisionSy
           if (mode == 0 || mode == 1 || mode == 2 || mode == 3) { // settings for PCM-PCM, PCM-Dalitz PCM-EMC, PCM-PHOS
             if(collisionSystem > 0 && collisionSystem < 8){ // settings PbPb
               if(centMin == 0 && centMax == 5){ 			// 0-5%
-                  Double_t fBinLimitsArrayMultiplicityPbPb0005[5] =   {0., 60., 75., 90., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb0005[5] =   {1., 60., 75., 90., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb0005[i];
                   }
               } else if(centMin == 5 && centMax == 10){ // 5-10%
-                  Double_t fBinLimitsArrayMultiplicityPbPb0510[5] =   {0., 45., 58., 75., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb0510[5] =   {1., 45., 58., 75., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb0510[i];
                   }
               } else if(centMin == 0 && centMax == 10){ // 0-10%
-                  Double_t fBinLimitsArrayMultiplicityPbPb0010[5] =   {0., 50., 65., 90., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb0010[5] =   {1., 50., 65., 90., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb0010[i];
                   }
               } else if(centMin == 10 && centMax == 20){  //10-20%
-                  Double_t fBinLimitsArrayMultiplicityPbPb1020[5] =   {0., 30., 40., 60., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb1020[5] =   {1., 30., 40., 60., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb1020[i];
                   }
               } else if(centMin == 0 && centMax == 20){	// 0-20%
-                  Double_t fBinLimitsArrayMultiplicityPbPb0020[5] =   {0., 30., 50., 70., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb0020[5] =   {1., 30., 50., 70., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb0020[i];
                   }
               } else if(centMin == 20 && centMax == 40){	// 20-40%
-                  Double_t fBinLimitsArrayMultiplicityPbPb2040[5] =   {0., 12., 20., 30., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb2040[5] =   {1., 12., 20., 30., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb2040[i];
                   }
               } else if(centMin == 40 && centMax == 60){  // 40-60%
-                  Double_t fBinLimitsArrayMultiplicityPbPb4060[5] =   {0., 4., 7., 13., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb4060[5] =   {1., 4., 7., 13., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb4060[i];
                   }
               } else if(centMin == 60 && centMax == 80){ // 60-80%
-                  Double_t fBinLimitsArrayMultiplicityPbPb6080[5] =   {0., 1., 2., 4., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb6080[5] =   {1., 3., 4., 5., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb6080[i];
                   }
               } else if(centMin == 40 && centMax == 80){ // 40-80%
-                  Double_t fBinLimitsArrayMultiplicityPbPb4080[5] =   {0., 2., 4., 9., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb4080[5] =   {1., 3., 4., 9., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb4080[i];
                   }
               } else if(centMin == 0 && (centMax == 80 || centMax == 90)){  // 0-80%
-                  Double_t fBinLimitsArrayMultiplicityPbPb0080[5] =   {0., 5., 20., 60., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb0080[5] =   {1., 5., 20., 60., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb0080[i];
                   }
               } else if(centMin == 20 && centMax == 50){ // 20-50%
-                  Double_t fBinLimitsArrayMultiplicityPbPb2050[5] =   {0., 8., 18., 30., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb2050[5] =   {1., 8., 18., 30., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb2050[i];
                   }
               } else{ // default PbPb
-                  Double_t fBinLimitsArrayMultiplicityPbPb[5] =   {0., 5., 20., 60., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb[5] =   {1., 5., 20., 60., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb[i];
                   }
@@ -290,62 +290,62 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(Int_t collisionSy
           } else if (mode == 4 || mode == 5){ // setting for EMC, PHOS
             if(collisionSystem > 0 && collisionSystem < 8){ // settings PbPb
               if(centMin == 0 && centMax == 5){ 			// 0-5%
-                  Double_t fBinLimitsArrayMultiplicityPbPb0005[5] = 	{0., 15., 22., 30., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb0005[5] = 	{2., 15., 22., 30., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb0005[i];
                   }
               } else if(centMin == 5 && centMax == 10){ 	// 5-10%
-                  Double_t fBinLimitsArrayMultiplicityPbPb0510[5] = 	{0., 13., 17., 25., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb0510[5] = 	{2., 13., 17., 25., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb0510[i];
                   }
               } else if(centMin == 0 && centMax == 10){	// 0-10%
-                  Double_t fBinLimitsArrayMultiplicityPbPb0010[5] = 	{0., 15., 21., 27., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb0010[5] = 	{2., 15., 21., 27., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb0010[i];
                   }
               } else if(centMin == 10 && centMax == 20){	//10-20%
-                  Double_t fBinLimitsArrayMultiplicityPbPb1020[5] = 	{0., 8., 13., 19., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb1020[5] = 	{2., 8., 13., 19., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb1020[i];
                   }
               } else if(centMin == 0 && centMax == 20){	// 0-20%
-                  Double_t fBinLimitsArrayMultiplicityPbPb0020[5] = 	{0., 11., 17., 24., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb0020[5] = 	{2., 11., 17., 24., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb0020[i];
                   }
               } else if(centMin == 20 && centMax == 40){	// 20-40%
-                  Double_t fBinLimitsArrayMultiplicityPbPb2040[5] = 	{0., 6., 11., 18., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb2040[5] = 	{2., 6., 11., 18., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb2040[i];
                   }
               } else if(centMin == 40 && centMax == 60){	// 40-60%
-                  Double_t fBinLimitsArrayMultiplicityPbPb4060[5] = 	{0., 2., 4., 7., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb4060[5] = 	{2., 3., 4., 7., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb4060[i];
                   }
               } else if(centMin == 60 && centMax == 80){ // 60-80%
-                  Double_t fBinLimitsArrayMultiplicityPbPb6080[5] = 	{0., 1., 3., 6., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb6080[5] = 	{2., 3., 4., 6., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb6080[i];
                   }
               } else if(centMin == 40 && centMax == 80){ // 40-80%
-                  Double_t fBinLimitsArrayMultiplicityPbPb4080[5] = 	{0., 2., 4., 7., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb4080[5] = 	{2., 3., 4., 7., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb4080[i];
                   }
               } else if(centMin == 0 && (centMax == 80 || centMax == 90)){	// 0-80%
-                  Double_t fBinLimitsArrayMultiplicityPbPb0080[5] = 	{0., 2., 10., 30., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb0080[5] = 	{2., 4., 10., 30., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb0080[i];
                   }
               } else if(centMin == 20 && centMax == 50){ // 20-50%
-                  Double_t fBinLimitsArrayMultiplicityPbPb2050[5] = 	{0., 4., 7., 15., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb2050[5] = 	{2., 4., 7., 15., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb2050[i];
                   }
               } else{ // default PbPb
-                  Double_t fBinLimitsArrayMultiplicityPbPb[5] = 	{0., 2., 10., 30., 200.};
+                  Double_t fBinLimitsArrayMultiplicityPbPb[5] = 	{2., 4., 10., 30., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb[i];
                   }
