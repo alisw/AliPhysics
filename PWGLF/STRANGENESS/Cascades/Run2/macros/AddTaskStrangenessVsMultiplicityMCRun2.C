@@ -28,22 +28,24 @@ AliAnalysisTaskStrangenessVsMultiplicityMCRun2 *AddTaskStrangenessVsMultiplicity
     
     Printf("Set OutputFileName : \n %s\n", outputFileName.Data() );
     
-    TString lC[9];
+    TString lC[11];
     lC[0] = "cList";
-    lC[1] = "cListV0";
-    lC[2] = "cListXiMinus";
-    lC[3] = "cListXiPlus";
-    lC[4] = "cListOmegaMinus";
-    lC[5] = "cListOmegaPlus";
-    lC[6] = "cTreeEvent";
-    lC[7] = "cTreeV0";
-    lC[8] = "cTreeCascade";
+    lC[1] = "cListK0Short";
+    lC[2] = "cListLambda";
+    lC[3] = "cListAntiLambda";
+    lC[4] = "cListXiMinus";
+    lC[5] = "cListXiPlus";
+    lC[6] = "cListOmegaMinus";
+    lC[7] = "cListOmegaPlus";
+    lC[8] = "cTreeEvent";
+    lC[9] = "cTreeV0";
+    lC[10] = "cTreeCascade";
     
-    for(Int_t iname=0;iname<9;iname++)
+    for(Int_t iname=0;iname<11;iname++)
         lC[iname] += lExtraOutputName.Data();
     
-    AliAnalysisDataContainer *coutputLists[6];
-    for(Int_t ilist=0;ilist<6;ilist++){
+    AliAnalysisDataContainer *coutputLists[8];
+    for(Int_t ilist=0;ilist<8;ilist++){
         coutputLists[ilist] = mgr->CreateContainer(lC[ilist].Data(),
                                                    TList::Class(),
                                                    AliAnalysisManager::kOutputContainer,
@@ -79,12 +81,12 @@ AliAnalysisTaskStrangenessVsMultiplicityMCRun2 *AddTaskStrangenessVsMultiplicity
     
     //Recommendation: Tree as a single output slot
     mgr->ConnectInput (taskAuxiliary, 0, mgr->GetCommonInputContainer());
-    for(Int_t ilist=0;ilist<6;ilist++){
+    for(Int_t ilist=0;ilist<8;ilist++){
         mgr->ConnectOutput(taskAuxiliary, ilist+1, coutputLists[ilist]);
     }
-    if ( lSaveEventTree ) mgr->ConnectOutput(taskAuxiliary, 7, coutputTree);
-    if ( lSaveV0 )        mgr->ConnectOutput(taskAuxiliary, 8, coutputTreeV0);
-    if ( lSaveCascade )   mgr->ConnectOutput(taskAuxiliary, 9, coutputTreeCascade);
+    if ( lSaveEventTree ) mgr->ConnectOutput(taskAuxiliary, 9, coutputTree);
+    if ( lSaveV0 )        mgr->ConnectOutput(taskAuxiliary, 10, coutputTreeV0);
+    if ( lSaveCascade )   mgr->ConnectOutput(taskAuxiliary, 11, coutputTreeCascade);
     
     return taskAuxiliary;
 }   
