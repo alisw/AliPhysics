@@ -253,9 +253,10 @@ AliHLTCaloClusterizerComponent::DoInit(int argc, const char** argv )
 
   //See headerfile for documentation
 
-  if (fCaloConstants->GetDETNAME() == "EMCAL") 
-
-    fDigitsPointerArray = new AliHLTCaloDigitDataStruct*[2*fCaloConstants->GetNXCOLUMNSMOD()*fCaloConstants->GetNZROWSMOD()];
+  if (fCaloConstants->GetDETNAME() == "EMCAL") {
+    std::cout << "Allocating " << 2*fCaloConstants->GetNXCOLUMNSMOD()*fCaloConstants->GetNZROWSMOD() << std::endl;
+    fDigitsPointerArray = new AliHLTCaloDigitDataStruct*[20*fCaloConstants->GetNXCOLUMNSMOD()*fCaloConstants->GetNZROWSMOD()];
+  }
   else 
     fDigitsPointerArray = new AliHLTCaloDigitDataStruct*[fCaloConstants->GetNXCOLUMNSMOD()*fCaloConstants->GetNZROWSMOD()];
 
@@ -276,7 +277,8 @@ AliHLTCaloClusterizerComponent::DoInit(int argc, const char** argv )
   {
     fAnalyserPtr->SetClusterType(kUndef);
   }
-  InitialiseGeometry();
+  //InitialiseGeometry();
+  fAnalyserPtr->SetGeometry(fGeometry);
   if (fRecoParamsPtr)
   {
     if (!fRecoParamsPtr->GetParametersFromCDB())

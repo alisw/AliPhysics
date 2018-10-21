@@ -66,7 +66,7 @@ void AliHLTEMCALDigitsMonitor::ProcessDigits(Int_t ndigits, const AliHLTCaloDigi
 {
   const int kNsecPerSec = 1e9;
   for (int idig = 0; idig < ndigits; idig++) {
-    int gaintype = digits[idig].fHgPresent ? 1 : 0;
+    int gaintype = (digits[idig].fHgPresent ? 1 : 0);
     int cellID =
       fGeometry->GetGeometryPtr()->GetAbsCellIdFromCellIndexes(digits[idig].fModule, digits[idig].fX, digits[idig].fZ);
     AliDebug(1, Form("Digit %d is of type %s\n", idig, gaintype == 1 ? "high gain" : "low gain"));

@@ -126,7 +126,6 @@ AliHLTEMCALClusterMonitorComponent::DoEvent(const AliHLTComponentEventData& evtD
 		std::vector<AliHLTComponentBlockData>& /*outputBlocks*/)
 {
 
-
 	const AliHLTComponentBlockData* iter = 0;
 	unsigned long ndx;
 
