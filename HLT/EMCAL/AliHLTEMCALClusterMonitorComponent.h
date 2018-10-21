@@ -71,7 +71,9 @@ protected:
 	/** interface function, see @ref AliHLTComponent for description */
 	virtual int Deinit(); ////////// PTH WARNING
 
-	
+  /** Push all histograms in the list */
+  void PushHistograms(TCollection* list);
+
 
 private:
 	TString fRootFileName;

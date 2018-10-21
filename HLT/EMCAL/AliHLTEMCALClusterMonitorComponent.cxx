@@ -161,12 +161,27 @@ AliHLTEMCALClusterMonitorComponent::DoEvent(const AliHLTComponentEventData& evtD
 	  
 	  if (fBeVerbose) cout << "\nI-CLUSTERMONITORCOMPONENT: pushback done at " << fLocalEventCount << " events " << endl;
 	  
-	  PushBack(fHistoMakerPtr->GetHistograms(), kAliHLTDataTypeTObjArray | kAliHLTDataOriginEMCAL , specification);
+	  PushHistograms(fHistoMakerPtr->GetHistograms());
 	}
 	
 	return 0;
 }
 
+void AliHLTEMCALClusterMonitorComponent::PushHistograms(TCollection* list)
+{
+  HLTDebug("Collection has %d histograms", list->GetEntries());
+  TIter next(list);
+
+  TH1* histo = 0;
+  while ((histo = static_cast<TH1*>(next()))) {
+    if (histo->GetEntries() > 0) {
+      HLTDebug("Pushing histogram %s", histo->GetName());
+      Int_t nbytes = PushBack(histo, kAliHLTDataTypeHistogram | kAliHLTDataOriginEMCAL, 0);
+    } else {
+      HLTDebug("Not pushing histogram %s, because it has 0 entries", histo->GetName());
+    }
+  }
+}
 
 AliHLTComponent*
 AliHLTEMCALClusterMonitorComponent::Spawn()

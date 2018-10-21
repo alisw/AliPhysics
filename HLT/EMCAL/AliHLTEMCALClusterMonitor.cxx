@@ -48,8 +48,9 @@ AliHLTEMCALClusterMonitor::AliHLTEMCALClusterMonitor():
 
   // Booking histograms
   hList = new TObjArray;
+  hList->SetName("EMCALClusterMonitorHists");
 
-	hClusterInvariantMass  = new TH1F("hClusterInvariantMass", "Invariant mass (GeV)", 500, 0, 500);
+	hClusterInvariantMass  = new TH1F("hClusterInvariantMass", "Invariant mass (GeV)", 1000, 0, 1);
 	hList->Add(hClusterInvariantMass);
 	hClusterEneEMCAL = new TH1F("hClusterEneEMCAL", "ClusterEnergy (GeV)", 200, 0, 100);
 	hList->Add(hClusterEneEMCAL);
