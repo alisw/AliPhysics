@@ -108,7 +108,7 @@ Int_t AliHLTCaloDigitMaker::MakeDigits(AliHLTCaloChannelDataHeaderStruct* channe
 
   Reset();
 
-  UInt_t totSize = sizeof(AliHLTCaloDigitDataStruct);
+  UInt_t totSize = 0;
 
   //   Int_t xMod = -1;
   //   Int_t zMod = -1;
@@ -121,8 +121,10 @@ Int_t AliHLTCaloDigitMaker::MakeDigits(AliHLTCaloChannelDataHeaderStruct* channe
   currentchannel = fShmPtr->NextChannel();
 
   while (currentchannel != 0) {
-    if (availableSize < totSize)
+    if ((availableSize - totSize) < sizeof(AliHLTCaloDigitDataStruct)){
+      HLTError("Insufficient buffer size for remaining digits");
       return -1;
+    }
 
     // fMapperPtr->ChannelId2Coordinate(currentchannel->fChannelID, coord);
     coord.fX = currentchannel->fRow;
@@ -246,6 +248,7 @@ void AliHLTCaloDigitMaker::AddDigit(AliHLTCaloChannelDataStruct* channelData, Al
     if (channelData->fEnergy >= fMaxEnergy) {
       fDigitStructPtr->fOverflow = true;
     }
+    fDigitStructPtr->fHgPresent = false;
     HLTDebug("LG channel (x = %d, z = %d) with amplitude: %f --> Digit with energy: %f\n", coord.fX, coord.fZ,
              channelData->fEnergy, fDigitStructPtr->fEnergy);
   }
