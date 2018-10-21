@@ -254,7 +254,7 @@ AliHLTCaloClusterizerComponent::DoInit(int argc, const char** argv )
   //See headerfile for documentation
 
   if (fCaloConstants->GetDETNAME() == "EMCAL") {
-    std::cout << "Allocating " << 2*fCaloConstants->GetNXCOLUMNSMOD()*fCaloConstants->GetNZROWSMOD() << std::endl;
+    //std::cout << "Allocating " << 2*fCaloConstants->GetNXCOLUMNSMOD()*fCaloConstants->GetNZROWSMOD() << std::endl;
     fDigitsPointerArray = new AliHLTCaloDigitDataStruct*[20*fCaloConstants->GetNXCOLUMNSMOD()*fCaloConstants->GetNZROWSMOD()];
   }
   else 
