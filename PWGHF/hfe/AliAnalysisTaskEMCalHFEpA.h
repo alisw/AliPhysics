@@ -821,7 +821,7 @@ private:
 	AliAnalysisTaskEMCalHFEpA(const AliAnalysisTaskEMCalHFEpA&); 			// not implemented
 	AliAnalysisTaskEMCalHFEpA& operator=(const AliAnalysisTaskEMCalHFEpA&); 		// not implemented
 	
-	ClassDef(AliAnalysisTaskEMCalHFEpA, 1); 								// example of analysis
+	ClassDef(AliAnalysisTaskEMCalHFEpA, 2); 								// example of analysis
 																			//______________________________________________________________________
 };
 
