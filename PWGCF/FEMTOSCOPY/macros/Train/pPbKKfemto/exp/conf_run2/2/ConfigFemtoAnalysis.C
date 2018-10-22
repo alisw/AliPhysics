@@ -263,7 +263,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  //sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.04);
           //sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
 
-	  sqpcetaphitpc[aniter]->SetAverageSeparation(6.0);
+	  sqpcetaphitpc[aniter]->SetAverageSeparation(3.0);
 	  
 	  sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
 
