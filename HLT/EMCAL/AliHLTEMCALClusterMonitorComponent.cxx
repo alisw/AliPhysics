@@ -18,7 +18,7 @@
 
 #include "TFile.h"
 #include "TString.h"
-
+#include "AliESDVZERO.h"
 
 
 /** 
@@ -145,11 +145,13 @@ AliHLTEMCALClusterMonitorComponent::DoEvent(const AliHLTComponentEventData& evtD
 		}
 
     Int_t nClusters = iter->fSize/sizeof(AliHLTCaloClusterDataStruct);
-		specification |= iter->fSpecification;
-		fHistoMakerPtr->MakeHisto(caloClusterPtr, nClusters);
+    const AliESDVZERO* esdVZERO = dynamic_cast<const AliESDVZERO*>(GetFirstInputObject(kAliHLTDataTypeESDContent | kAliHLTDataOriginVZERO, "AliESDVZERO"));
+
+    specification |= iter->fSpecification;
+
+    fHistoMakerPtr->MakeHisto(caloClusterPtr, nClusters, esdVZERO);
 
 	}
-
 
 	fLocalEventCount++;
 
@@ -177,6 +179,8 @@ void AliHLTEMCALClusterMonitorComponent::PushHistograms(TCollection* list)
     if (histo->GetEntries() > 0) {
       HLTDebug("Pushing histogram %s", histo->GetName());
       Int_t nbytes = PushBack(histo, kAliHLTDataTypeHistogram | kAliHLTDataOriginEMCAL, 0);
+      if (nbytes > 0)
+        histo->Reset();
     } else {
       HLTDebug("Not pushing histogram %s, because it has 0 entries", histo->GetName());
     }

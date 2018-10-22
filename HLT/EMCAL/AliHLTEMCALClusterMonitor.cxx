@@ -23,6 +23,7 @@
 
 #include "AliHLTEMCALClusterMonitor.h"
 #include "AliHLTCaloSharedMemoryInterfacev2.h"
+#include "AliESDVZERO.h"
 #include "TMath.h"
 #include "TLorentzVector.h"
 
@@ -31,7 +32,8 @@ ClassImp(AliHLTEMCALClusterMonitor);
 AliHLTEMCALClusterMonitor::AliHLTEMCALClusterMonitor():
   fClusterReaderPtr(0),
   hList(0),
-	hClusterEneEMCAL(0),
+  hClusterNumVsV0(0),
+  hClusterEneEMCAL(0),
 	hClusterEneDCAL(0),
 	hClusterEneVsTime(0),
 	hClusterCells(0),
@@ -50,7 +52,10 @@ AliHLTEMCALClusterMonitor::AliHLTEMCALClusterMonitor():
   hList = new TObjArray;
   hList->SetName("EMCALClusterMonitorHists");
 
-	hClusterInvariantMass  = new TH1F("hClusterInvariantMass", "Invariant mass (GeV)", 1000, 0, 1);
+	hClusterNumVsV0  = new TH2F("hClusterNumVsV0", "Number of clusters vs. V0", 250, 0, 2500, 350, 0, 35000);
+	hList->Add(hClusterNumVsV0);
+
+  hClusterInvariantMass  = new TH1F("hClusterInvariantMass", "Invariant mass (GeV)", 1000, 0, 1);
 	hList->Add(hClusterInvariantMass);
 	hClusterEneEMCAL = new TH1F("hClusterEneEMCAL", "ClusterEnergy (GeV)", 200, 0, 100);
 	hList->Add(hClusterEneEMCAL);
@@ -91,7 +96,7 @@ TObjArray* AliHLTEMCALClusterMonitor::GetHistograms()
 }
 
 
-Int_t AliHLTEMCALClusterMonitor::MakeHisto(AliHLTCaloClusterDataStruct *caloClusterStructPtr, Int_t nClusters)
+Int_t AliHLTEMCALClusterMonitor::MakeHisto(AliHLTCaloClusterDataStruct *caloClusterStructPtr, Int_t nClusters, const AliESDVZERO* esdVZERO)
 {
 	float clusterEne, clusterTime, clusterEta, clusterPhi, clusterX, clusterY, clusterZ;
   int nCells;
@@ -106,6 +111,9 @@ Int_t AliHLTEMCALClusterMonitor::MakeHisto(AliHLTCaloClusterDataStruct *caloClus
 
   TLorentzVector* lorentzVecs = new TLorentzVector[nClusters];
 
+  Double_t valueV0 = 0;
+  if(esdVZERO)
+    valueV0 = static_cast<Double_t>(esdVZERO->GetMTotV0A()+esdVZERO->GetMTotV0C());
   UInt_t iCluster = 0;
   while((caloClusterStructPtr = fClusterReaderPtr->NextCluster()) != 0) {
     clusterX = caloClusterStructPtr->fGlobalPos[0];
@@ -135,6 +143,7 @@ Int_t AliHLTEMCALClusterMonitor::MakeHisto(AliHLTCaloClusterDataStruct *caloClus
     iCluster++;
   }
 
+  hClusterNumVsV0->Fill(nClusters, valueV0);
   // Invariant mass plots
   for(Int_t i=0; i<nClusters; i++)
     for(Int_t j=0; j<i; j++)
