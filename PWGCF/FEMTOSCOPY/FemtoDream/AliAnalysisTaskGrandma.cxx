@@ -49,7 +49,7 @@ AliAnalysisTaskGrandma::AliAnalysisTaskGrandma()
 AliAnalysisTaskGrandma::AliAnalysisTaskGrandma(const char* name, bool isMC)
     : AliAnalysisTaskSE(name),
       fTrackBufferSize(2000),
-      fIsMC(false),
+      fIsMC(isMC),
       fQA(nullptr),
       fMinBookingME(false),
       fMinBookingSample(false),
