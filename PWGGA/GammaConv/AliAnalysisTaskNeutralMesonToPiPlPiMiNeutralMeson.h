@@ -106,6 +106,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Bool_t IsEtaPrimePiPlPiMiEtaDaughter( Int_t label ) const;
     Bool_t IsEtaPiPlPiMiPiZeroDaughter( Int_t label ) const;
     Bool_t IsOmegaPiPlPiMiPiZeroDaughter( Int_t label ) const;
+    Bool_t IsD0PiPlPiMiPiZeroDaughter( Int_t label ) const;
     Bool_t GammaIsNeutralMesonPiPlPiMiNDMDaughter( Int_t label ) const;
 
     Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);

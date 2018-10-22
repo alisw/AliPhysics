@@ -301,7 +301,35 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCut("00010113","1111100047032230000","30a330700","0103503l00000000","0153503000000000"); // pi+pi- mass cut of 10
     cuts.AddCut("00010113","1111100047032230000","30a330701","0103503l00000000","0153503000000000"); // pi+pi- mass cut of 1
     cuts.AddCut("00010113","1111100047032230000","30a330708","0103503l00000000","0153503000000000"); // pi+pi- mass cut of 0.85
+
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    //                                          D0 MESON
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  } else if( trainConfig == 300 ) {
+    // everything open, min pt charged pi = 100 MeV
+    cuts.AddCut("00000113","1111100047032230000","000010400","0103503a00000000","0103503000000000");
+  } else if( trainConfig == 301 ) {
+    // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, min pt charged pi = 100 MeV
+    cuts.AddCut("00000113","1111100047032230000","002010700","0103503a00000000","0103503000000000");
+  } else if( trainConfig == 302) {
+    // eta < 0.9
+    // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.65, min pt charged pi = 100 MeV
+    // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
+    // maxChi2 per cluster TPC <4, require TPC refit, DCA XY pT dependend 0.0182+0.0350/pt^1.01, DCA_Z = 3.0
+    // timing cluster cut open
+    cuts.AddCut("00010113","1111100047032230000","30a330708","0103503400000000","0153503000000000"); // all of the above
+    cuts.AddCut("00052113","1111100047032230000","30a330708","0103503400000000","0153503000000000"); // all of the above
+    cuts.AddCut("00062113","1111100047032230000","30a330708","0103503400000000","0153503000000000"); // all of the above
+    cuts.AddCut("00083113","1111100047032230000","30a330708","0103503400000000","0153503000000000"); // all of the above
+    cuts.AddCut("00085113","1111100047032230000","30a330708","0103503400000000","0153503000000000"); // all of the above
     
+  } else if( trainConfig == 303) {
+    // same as 102 but only MB
+    cuts.AddCut("00010113","1111100047032230000","30a330708","0103503400000000","0153503000000000"); // all of the above
+    
+     
   } else {
     Error(Form("GammaConvNeutralMeson_CaloMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
