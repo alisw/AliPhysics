@@ -34,9 +34,10 @@
 #include "AliAnaCaloTrackCorrMaker.h"
 
 // Macros
-#include "ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
-#include "CreateTrackCutsPWGJE.C"
-#include "CheckActiveEMCalTriggerPerPeriod.C"
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include "PWGGA/CaloTrackCorrelations/macros/ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
+#include "PWGJE/macros/CreateTrackCutsPWGJE.C"
+#include "PWGGA/CaloTrackCorrelations/macros/CheckActiveEMCalTriggerPerPeriod.C"
 
 #endif
 
