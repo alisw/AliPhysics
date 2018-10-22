@@ -11,11 +11,18 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
+// ROOT
 #include <TString.h>
 #include <TROOT.h>
 #include <TSystem.h>
 
+// ALIROOT/ALIPHYSICS
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
+#include "AliVTrack.h"
 #include "AliLog.h"
+
+// CaloTrackCorrr
 #include "AliAnalysisTaskCaloTrackCorrelation.h"
 #include "AliCaloTrackESDReader.h"
 #include "AliCaloTrackAODReader.h"
@@ -24,15 +31,13 @@
 #include "AliHistogramRanges.h"
 #include "AliAnaCalorimeterQA.h"
 #include "AliAnaCaloTrackCorrMaker.h"
-#include "AliAnalysisManager.h"
-#include "AliInputEventHandler.h"
-#include "AliVTrack.h"
-#include "ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
-#include "AliESDtrackCuts.h"
-#include "CreateTrackCutsPWGJE.C"
-#include "CheckActiveEMCalTriggerPerPeriod.C"
+
+// Macros
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 //#include "ConfigureEMCALRecoUtils.C"
-#include "GetAlienGlobalProductionVariables.C"
+#include "PWGGA/CaloTrackCorrelations/macros/ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
+#include "PWGGA/CaloTrackCorrelations/macros/CheckActiveEMCalTriggerPerPeriod.C"
+#include "PWGGA/CaloTrackCorrelations/macros/GetAlienGlobalProductionVariables.C"
 
 #endif // CINT
 

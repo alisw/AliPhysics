@@ -29,12 +29,14 @@
 
 // Analysis
 #include "AliAnalysisTaskCaloTrackCorrelation.h"
+#include "AliAnaCaloTrackCorrMaker.h"
 #include "AliIsolationCut.h"
 
 // Macros
-#include "AddTaskCaloTrackCorrBase.C"
-#include "ConfigureCaloTrackCorrAnalysis.C"
-#include "GetAlienGlobalProductionVariables.C"
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include "PWGGA/CaloTrackCorrelations/macros/AddTaskCaloTrackCorrBase.C"
+#include "PWGGA/CaloTrackCorrelations/macros/ConfigureCaloTrackCorrAnalysis.C"
+#include "PWGGA/CaloTrackCorrelations/macros/GetAlienGlobalProductionVariables.C"
 #endif
 
 ///

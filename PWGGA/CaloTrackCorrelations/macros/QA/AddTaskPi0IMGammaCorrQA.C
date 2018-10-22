@@ -49,11 +49,13 @@
 #include "AliAnaGeneratorKine.h"
 
 // Loaded macros of CaloTrackCorr and other
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 //#include "ConfigureEMCALRecoUtils.C"
-#include "ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
-#include "CheckActiveEMCalTriggerPerPeriod.C"
-#include "GetAlienGlobalProductionVariables.C"
-#include "CreateTrackCutsPWGJE.C"
+#include "PWGGA/CaloTrackCorrelations/macros/ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
+#include "PWGGA/CaloTrackCorrelations/macros/CheckActiveEMCalTriggerPerPeriod.C"
+#include "PWGGA/CaloTrackCorrelations/macros/GetAlienGlobalProductionVariables.C"
+#include "PWGJE/macros/CreateTrackCutsPWGJE.C"
+
 
 #endif // no CINT
 
