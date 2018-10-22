@@ -99,6 +99,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fNumberOfPrimaryTracks(0),
   fNumberOfTPCoutTracks(0),
   fSphericity(0),
+  fPtMaxSector(0),
   fCalcSphericity(kFALSE),
   fPeriodName(""),
   fPtHardBin(0),
@@ -1559,6 +1560,119 @@ void AliV0ReaderV1::CalculateSphericity(){
   }
 
   return;
+}
+///________________________________________________________________________
+Int_t AliV0ReaderV1::CalculatePtMaxSector(){
+
+
+  if(fInputEvent->IsA()==AliESDEvent::Class()){
+    static AliESDtrackCuts *EsdTrackCuts = 0x0;
+    static int prevRun = -1;
+    // Using standard function for setting Cuts
+    Int_t runNumber = fInputEvent->GetRunNumber();
+
+    if (prevRun!=runNumber) {
+      delete EsdTrackCuts;
+      EsdTrackCuts = 0;
+      prevRun = runNumber;
+    }
+    if (!EsdTrackCuts) {
+      // if LHC11a or earlier or if LHC13g or if LHC12a-i -> use 2010 cuts
+      if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) || (runNumber>=172440 && runNumber<=193766) ){
+        EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+        // else if run2 data use 2015 PbPb cuts
+      } else if (runNumber>=209122){
+        //EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
+        // hard coded track cuts for the moment, because AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb() gives spams warnings
+        EsdTrackCuts = new AliESDtrackCuts();
+        // TPC; clusterCut = 1, cutAcceptanceEdges = kTRUE, removeDistortedRegions = kFALSE
+        EsdTrackCuts->AliESDtrackCuts::SetMinNCrossedRowsTPC(70);
+        EsdTrackCuts->AliESDtrackCuts::SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+        EsdTrackCuts->SetCutGeoNcrNcl(2., 130., 1.5, 0.0, 0.0);  // only dead zone and not clusters per length
+        //EsdTrackCuts->AliESDtrackCuts::SetCutOutDistortedRegionsTPC(kTRUE);
+        EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterTPC(4);
+        EsdTrackCuts->AliESDtrackCuts::SetAcceptKinkDaughters(kFALSE);
+        EsdTrackCuts->AliESDtrackCuts::SetRequireTPCRefit(kTRUE);
+        // ITS; selPrimaries = 1
+        EsdTrackCuts->AliESDtrackCuts::SetRequireITSRefit(kTRUE);
+        EsdTrackCuts->AliESDtrackCuts::SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+                      AliESDtrackCuts::kAny);
+        EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+        EsdTrackCuts->AliESDtrackCuts::SetMaxChi2TPCConstrainedGlobal(36);
+        EsdTrackCuts->AliESDtrackCuts::SetMaxDCAToVertexZ(2);
+        EsdTrackCuts->AliESDtrackCuts::SetDCAToVertex2D(kFALSE);
+        EsdTrackCuts->AliESDtrackCuts::SetRequireSigmaToVertex(kFALSE);
+        EsdTrackCuts->AliESDtrackCuts::SetMaxChi2PerClusterITS(36);
+      // else use 2011 version of track cuts
+      }else{
+        EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+      }
+      EsdTrackCuts->SetMaxDCAToVertexZ(2);
+      EsdTrackCuts->SetEtaRange(-0.8, 0.8);
+      EsdTrackCuts->SetPtRange(0.15);
+    }
+    fPtMaxSector = 0;
+    Double_t PtMaxID = 0;
+    Double_t tempPt = 0;
+    for(Int_t iTracks = 0; iTracks < fInputEvent->GetNumberOfTracks(); iTracks++){
+      AliESDtrack* curTrack = (AliESDtrack*) fInputEvent->GetTrack(iTracks);
+      if(!curTrack) continue;
+      if(!EsdTrackCuts->AcceptTrack(curTrack)) continue;
+      if(PtMaxID == 0){
+        PtMaxID = iTracks;
+        tempPt = curTrack->Pt();
+      }
+      if(curTrack->Pt() > tempPt){
+        PtMaxID = iTracks;
+        tempPt = curTrack->Pt();
+      }
+    }
+    AliESDtrack* PtMaxTrack = (AliESDtrack*) fInputEvent->GetTrack(PtMaxID);
+    if(tempPt==0) return fPtMaxSector;
+    if(!PtMaxTrack) return fPtMaxSector;
+    Double_t PtMaxPhi = PtMaxTrack->Phi();
+    cout << "highest pt track is: " << PtMaxID << " with pt= " << tempPt << endl;
+    fPtMaxSector = 0;
+    if((PtMaxPhi > 0) && (PtMaxPhi < (TMath::Pi()/2.))) fPtMaxSector = 1;
+    if((PtMaxPhi > (TMath::Pi()/2.)) && (PtMaxPhi < TMath::Pi())) fPtMaxSector = 2;
+    if((PtMaxPhi > TMath::Pi()) && (PtMaxPhi < (1.5*TMath::Pi()))) fPtMaxSector = 3;
+    if((PtMaxPhi > (1.5*TMath::Pi())) && (PtMaxPhi < (2.*TMath::Pi()))) fPtMaxSector = 4;
+    if(PtMaxTrack->Eta()>0) fPtMaxSector *= 2;
+    cout << "sector = " << fPtMaxSector << endl;
+  } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+    fPtMaxSector = 0;
+    Double_t PtMaxID = 0;
+    Double_t tempPt = 0;
+    for(Int_t iTracks = 0; iTracks<fInputEvent->GetNumberOfTracks(); iTracks++){
+      AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
+      if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
+      if(!curTrack->IsHybridGlobalConstrainedGlobal()) continue;
+      if(TMath::Abs(curTrack->Eta())>0.8) continue;
+      if(curTrack->Pt()<0.15) continue;
+      if(PtMaxID == 0){
+        PtMaxID = iTracks;
+        tempPt = curTrack->Pt();
+      }
+      if(curTrack->Pt() > tempPt){
+        PtMaxID = iTracks;
+        tempPt = curTrack->Pt();
+      }
+    }
+    AliAODTrack* PtMaxTrack = (AliAODTrack*) fInputEvent->GetTrack(PtMaxID);
+    if(tempPt==0) return fPtMaxSector;
+    if(!PtMaxTrack) return fPtMaxSector;
+    Double_t PtMaxPhi = PtMaxTrack->Phi();
+    cout << "highest pt track is: " << PtMaxID << " with pt= " << tempPt << endl;
+    fPtMaxSector = 0;
+    if((PtMaxPhi > 0) && (PtMaxPhi < (TMath::Pi()/2.))) fPtMaxSector = 1;
+    if((PtMaxPhi > (TMath::Pi()/2.)) && (PtMaxPhi < TMath::Pi())) fPtMaxSector = 2;
+    if((PtMaxPhi > TMath::Pi()) && (PtMaxPhi < (1.5*TMath::Pi()))) fPtMaxSector = 3;
+    if((PtMaxPhi > (1.5*TMath::Pi())) && (PtMaxPhi < (2.*TMath::Pi()))) fPtMaxSector = 4;
+    if(PtMaxTrack->Eta()>0) fPtMaxSector *= 2;
+    cout << "sector = " << fPtMaxSector << endl;
+  }
+
+  return fPtMaxSector;
 }
 ///________________________________________________________________________
 Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliMCEvent *mcEvent, TParticle *particle, Double_t etaMax, Double_t rMax, Double_t zMax){

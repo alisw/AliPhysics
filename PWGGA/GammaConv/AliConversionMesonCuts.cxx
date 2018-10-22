@@ -134,6 +134,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fUsePtmaxMethodForBG(kFALSE),
   fDoBG(kTRUE),
   fDoBGProbability(kFALSE),
+  fDoConvCaloMixing(kFALSE),
   fUseTrackMultiplicityForBG(kFALSE),
   fEnableMinOpeningAngleCut(kTRUE),
   fEnableOneCellDistCut(kFALSE),
@@ -223,6 +224,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fUsePtmaxMethodForBG(ref.fUsePtmaxMethodForBG),
   fDoBG(ref.fDoBG),
   fDoBGProbability(ref.fDoBGProbability),
+  fDoConvCaloMixing(ref.fDoConvCaloMixing),
   fUseTrackMultiplicityForBG(ref.fUseTrackMultiplicityForBG),
   fEnableMinOpeningAngleCut(ref.fEnableMinOpeningAngleCut),
   fEnableOneCellDistCut(ref.fEnableOneCellDistCut),
@@ -2242,6 +2244,12 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fSidebandMixingLeftHigh          = 0.47;
     fSidebandMixingRightLow          = 0.600;
     fSidebandMixingRightHigh         = 0.650;
+    break;
+  case 17: //h mixed event with V0 multiplicity
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fDoBGProbability            = kFALSE;
+    fDoConvCaloMixing           = kTRUE;
     break;
   default:
     cout<<"Warning: BackgroundScheme not defined "<<BackgroundScheme<<endl;

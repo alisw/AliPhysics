@@ -444,6 +444,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Float_t   fMinTMDistSigma;                          // number of sigma's for TM using PHOS
     Bool_t    fUseEOverPVetoTM;                         // flag for switching on E/P veto (forbidding tracks to match clusters if clusterE/trackP > someValue
     Double_t  fEOverPMax;                               // maximum value for E/P of a track to be considered for TM
+    Bool_t    fUseTMMIPsubtraction;                     // flag for switching on MIP subtraction
     Int_t     fExtendedMatchAndQA;                      // switching on ext matching histograms (1) / ext QA_noCell (2) / ext matching + ext QA_noCell (3) / extQA + cell (4) / ext match + extQA + cell (5) or all off (0)
     Double_t  fExoticEnergyFracCluster;                 // exotic energy compared to E_cross cluster cut
     Double_t  fExoticMinEnergyCell;                     // minimum energy of cell to test for exotics
