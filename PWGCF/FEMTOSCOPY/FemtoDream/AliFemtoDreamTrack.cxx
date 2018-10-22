@@ -122,9 +122,9 @@ void AliFemtoDreamTrack::SetTrack(AliESDtrack *track, AliMCEvent *mcEvent,
     this->SetEvtNumber(fESDTrack->GetESDEvent()->GetRunNumber());
     if (this->fIsSet) {
       this->SetESDPIDInformation();
-      if (fIsMC) {
-        this->SetMCInformation(mcEvent);
-      }
+//      if (fIsMC) {
+//        this->SetMCInformation(mcEvent);
+//      }
     }
     if (TPCOnlyTrack && fESDTPCOnlyTrack) {
       delete fESDTPCOnlyTrack;
