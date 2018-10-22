@@ -15,14 +15,15 @@ std::string AliDataFile::GetFileName(const std::string &url) {
   // /cvmfs/alice.cern.ch/data/analysis/YYYY/VVVV/<url>
 
   std::string buf, ver, year;
-  size_t dash;
   const char *env;
 
   if ((env = gSystem->Getenv("ALIPHYSICS_VERSION"))) {
     buf = env;
-    dash = buf.rfind('-');
-    if (dash != std::string::npos) {
-      ver = buf.substr(0, dash);
+    size_t cut = buf.rfind('-'); // remove build number
+    size_t us = buf.rfind('_');
+    if (cut != std::string::npos) {
+      if (us != std::string::npos && us < cut) cut = us;
+      ver = buf.substr(0, cut);
       if (buf.length() >= 12 && buf.substr(0, 4) == "vAN-") year = buf.substr(4, 4);
     }
   }
