@@ -764,11 +764,13 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("10110a13","1111184051032230000","0163103100000050"); //
     cuts.AddCutCalo("11210a13","1111185051032230000","0163103100000050"); //
   } else if (trainConfig == 257){ // EMCAL clusters - 20180718 - default with peripheral corrections
+    cuts.AddCutCalo("14610a13","1111187050032230000","0163103100000050"); //
     cuts.AddCutCalo("14610a13","1111187051032230000","0163103100000050"); //
     cuts.AddCutCalo("14610a13","111118705i032230000","0163103100000050"); //
     cuts.AddCutCalo("14610a13","111118705j032230000","0163103100000050"); //
     cuts.AddCutCalo("14610a13","111118705k032230000","0163103100000050"); //
   } else if (trainConfig == 258){ // EMCAL clusters - TM studies with MIP subtraction
+    cuts.AddCutCalo("10110a13","1111184050032230000","0163103100000050"); //
     cuts.AddCutCalo("10110a13","1111184051032230000","0163103100000050"); //
     cuts.AddCutCalo("10110a13","111118405i032230000","0163103100000050"); //
     cuts.AddCutCalo("10110a13","111118405j032230000","0163103100000050"); //
