@@ -1,4 +1,4 @@
-AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Bool_t recoTrMC=kFALSE, Bool_t recoD0MC = kFALSE,  Bool_t flagsoftpicut = kTRUE, Bool_t MEthresh = kFALSE, Bool_t pporpPb_lims=kFALSE /*0=pp,1=pPb limits*/, TString cutsfilename="D0toKpiCuts.root", TString cutsfilename2="AssocPartCuts_Std_NewPools.root", TString effD0namec="D0Eff_From_c_wLimAcc_2D.root", TString effD0nameb="D0Eff_From_b_wLimAcc_2D.root", TString effName = "3D_eff_Std.root", TString cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", Double_t etacorr=1.5, Int_t system=0/*0=useMultipl(pp),1=useCentral(PbPb,pA depends)-*/, Int_t flagD0D0bar=0, Float_t minC=0, Float_t maxC=0, TString finDirname="Output", Bool_t flagAOD049=kFALSE, Int_t standardbins=1, Bool_t stdcuts=kFALSE, Bool_t analyszeKaon=kFALSE, Bool_t speed=kTRUE, Bool_t mergepools=kFALSE, Bool_t useDeff=kTRUE, Bool_t useTrackeff=kTRUE, Bool_t useCutFileSBRanges=kFALSE, Double_t ptAssocLim=1., Int_t fillTrees=AliAnalysisTaskSED0Correlations::kNoTrees, Double_t fractAccME=100., Double_t minDPt=2., Int_t AODprot=1, Bool_t puritystudies=kFALSE, Bool_t reweighMC=kFALSE, TString filenameWeights="")
+AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Bool_t recoTrMC=kFALSE, Bool_t recoD0MC = kFALSE,  Bool_t flagsoftpicut = kTRUE, Bool_t MEthresh = kFALSE, Bool_t pporpPb_lims=kFALSE /*0=pp,1=pPb limits*/, TString cutsfilename="D0toKpiCuts.root", TString cutsfilename2="AssocPartCuts_Std_NewPools.root", TString effD0namec="D0Eff_From_c_wLimAcc_2D.root", TString effD0nameb="D0Eff_From_b_wLimAcc_2D.root", TString effName = "3D_eff_Std.root", TString cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", Double_t etacorr=1.5, Int_t system=0/*0=useMultipl(pp),1=useCentral(PbPb,pA depends)-*/, Int_t flagD0D0bar=0, Float_t minC=0, Float_t maxC=0, TString finDirname="Output", Bool_t flagAOD049=kFALSE, Int_t standardbins=1, Bool_t stdcuts=kFALSE, Bool_t analyszeKaon=kFALSE, Bool_t speed=kTRUE, Bool_t mergepools=kFALSE, Bool_t useDeff=kTRUE, Bool_t useTrackeff=kTRUE, Bool_t useCutFileSBRanges=kFALSE, Double_t ptAssocLim=1., AliAnalysisTaskSED0Correlations::TreeFill fillTrees=AliAnalysisTaskSED0Correlations::kNoTrees, Double_t fractAccME=100., Double_t minDPt=2., Int_t AODprot=1, Bool_t puritystudies=kFALSE, Bool_t reweighMC=kFALSE, TString filenameWeights="")
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -95,7 +95,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   TFile* filecuts2=TFile::Open(cutsfilename2.Data());
   if(!filecuts2->IsOpen()){
     cout<<"Input file not found for tracks cuts!"<<endl;
-    return;
+    return NULL;
   }
 
   //Cuts for D0
@@ -118,7 +118,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
     RDHFD0Corrs = (AliRDHFCutsD0toKpi*)filecuts->Get(cutsD0name.Data());
     if(!RDHFD0Corrs){
       cout<<"Specific AliRDHFCuts not found"<<endl;
-      return;
+      return NULL;
     }
     if(flagAOD049)RDHFD0Corrs->SetUseAOD049(kTRUE);
     if(minC!=0 || maxC!=0) { //if centrality 0 and 0 leave the values in the cut object
@@ -132,7 +132,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   corrCuts = (AliHFAssociatedTrackCuts*)filecuts2->Get(cutsTrkname.Data());
   if(!corrCuts){
       cout<<"Specific AliHFAssociatedTrackCuts not found"<<endl;
-      return;
+      return NULL;
   }
   corrCuts->SetTrackCutsNames();
   corrCuts->SetvZeroCutsNames();
@@ -142,7 +142,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
     TFile* fileeff=TFile::Open(effName.Data());
     if(!fileeff->IsOpen()){
       cout<<"Input file not found for efficiency! Exiting..."<<endl;
-      return;
+      return NULL;
     }  
     TCanvas *c = (TCanvas*)fileeff->Get("c");
     TH3D *h3D = (TH3D*)c->FindObject("heff_rebin");
@@ -154,7 +154,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
     TFile* fileeffD0c=TFile::Open(effD0namec.Data());
     if(!fileeffD0c->IsOpen()){
       cout<<"Input file not found for efficiency! Exiting..."<<endl;
-      return;
+      return NULL;
     }
     TH2D *hEffD0c = (TH2D*)fileeffD0c->Get("h_Eff");
     if(recoD0MC) corrCuts->SetTriggerEffWeightMap(hEffD0c); //data and MC Reco
@@ -166,7 +166,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
       TFile* fileeffD0b=TFile::Open(effD0nameb.Data());
       if(!fileeffD0b->IsOpen()){
         cout<<"Input file not found for efficiency! Exiting..."<<endl;
-        return;
+        return NULL;
       }
       TH2D *hEffD0b = (TH2D*)fileeffD0b->Get("h_Eff");
       if(recoD0MC && readMC) corrCuts->SetTriggerEffWeightMapB(hEffD0b); //MC Reco
@@ -217,7 +217,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
       TH1D* hWeight = (TH1D*)filewgt->Get("hNtrUnCorrEvWithCandWeight");
       if(!hWeight) {
           printf("Error! Weights for Ntracklets not correctly loaded!");
-          return;
+          return NULL;
       }
       massD0Task->SetUseNtrklWeight(kTRUE);
       massD0Task->SetHistNtrklWeight(hWeight);
@@ -259,7 +259,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
     TVectorD *RSBLow = (TVectorD*)filecuts2->Get("vRSBLow");
     TVectorD *RSBUpp = (TVectorD*)filecuts2->Get("vRSBUpp");      
 
-    if(!LSBLow||!LSBUpp||!RSBLow||!RSBUpp) {printf("Error! No SB ranges found in the Associated track cut file, but useCutFileSBRanges==kTRUE! Exiting...\n"); return;}
+    if(!LSBLow||!LSBUpp||!RSBLow||!RSBUpp) {printf("Error! No SB ranges found in the Associated track cut file, but useCutFileSBRanges==kTRUE! Exiting...\n"); return NULL;}
 
     massD0Task->SetLSBLowLim(LSBLow->GetMatrixArray());
     massD0Task->SetLSBHighLim(LSBUpp->GetMatrixArray());
