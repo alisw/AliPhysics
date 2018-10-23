@@ -1,3 +1,14 @@
+// ROOT6 modifications
+#ifdef __CLING__
+#include <AliAODInputHandler.h>
+#include <AliDielectronVarCuts.h>
+
+// Tell ROOT where to find AliPhysics headers
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGDQ/dielectron/macrosLMEE/Config_miweber_LMEE_PbPb_woCutLib.C>
+
+#endif
+
 AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
         TString outputFileName = "AnalysisResult.root",
         TString directoryBaseName = "miweber_LMEE_PbPb",
@@ -15,14 +26,17 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
 
   Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
 
+  // ROOT6 modifications
+#ifndef __CLING__
   TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
   TString configFile("Config_miweber_LMEE_PbPb_woCutLib.C");
   TString configFilePath(configBasePath+configFile);
-  
    
   //load dielectron configuration files
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data()))
     gROOT->LoadMacro(configFilePath.Data());
+
+#endif
 
   //Do we have an MC handler?
   Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
