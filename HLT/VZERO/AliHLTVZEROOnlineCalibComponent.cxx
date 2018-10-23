@@ -181,6 +181,16 @@ Int_t AliHLTVZEROOnlineCalibComponent::DoInit( Int_t argc, const Char_t** argv )
         return -1;
     }
     
+    //change histo titles to match reference trigger
+    TString lDetTypes[3] = {"V0M", "V0A", "V0C"};
+    TString lTitles[2] = {"amplitude", "trigger charge"};
+    
+    for(Int_t i=0; i<6; i++){
+        TString lTitle = Form("%s %s", lDetTypes[i%3].Data(), lTitles[(i/3)%2].Data());
+        lTitle.Append(Form(" ref: %s", fRefTrigger.Data()));
+        fHistMult[i].SetTitle(lTitle.Data());
+    }
+    
     // -- Load GeomManager
     if(AliGeomManager::GetGeometry()==NULL){
         AliGeomManager::LoadGeometry();
