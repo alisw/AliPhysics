@@ -1,10 +1,26 @@
 void InitHistograms(AliDielectron *die, Int_t cutDefinition);
-void SetupCuts(AliDielectron *die, Int_t cutDefinition);
 void SetTPCCorr(AliDielectron *die);
+void SetupMCsignals(AliDielectron* die);
+void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA);
+AliDielectronEventCuts *GetEventCuts();
 AliDielectronPID *SetPIDcuts(Int_t cutDefinition);
 AliDielectronPID *SetPreFilterPIDcuts(Int_t cutDefinition);
-const AliDielectronEventCuts *GetEventCuts();
-void SetupMCsignals(AliDielectron* die);
+AliESDtrackCuts *SetupPreFilterESDtrackCuts(Int_t cutDefinition);
+AliESDtrackCuts *SetupESDtrackCuts(Int_t cutDefinition);
+AliAnalysisCuts *SetupPreFilterAODtrackCuts(Int_t cutDefinition);
+AliAnalysisCuts *SetupAODtrackCuts(Int_t cutDefinition);
+void SetupAODtrackCutsLoose(AliDielectron *die);
+void SetupAODtrackCutsTight(AliDielectron *die);
+void SetupAODtrackCutsTight2(AliDielectron *die);
+void SetupAODtrackCutsTight3(AliDielectron *die);
+void SetupAODtrackCutsCarsten1(AliDielectron *die);
+void SetupAODtrackCutsCarsten2(AliDielectron *die);
+void SetupAODtrackCutsRun3(AliDielectron *die);
+void SetupAODtrackCutsRun3_FT2(AliDielectron *die);
+void SetupAODtrackCutsRun3_FT2_noPID(AliDielectron *die);
+void SetupAODtrackCutsRun3_FT2_ESD(AliDielectron *die);
+void SetupAODtrackCutsRun3_FT2_noPID_ESD(AliDielectron *die);
+
 
 Bool_t isRandomRejTask=kFALSE;//needed for InitHistograms() //dont change!!!
 Bool_t kRot = kFALSE;
@@ -72,7 +88,7 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
   
   if(kMix && !(die->GetHasMC())){ // need second since there is a problem when mixing MC events (TRef?)
     AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
-
+    
     mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10,-5,0,5,10");
     mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,20,30,50,80");
     mix->SetDepth(15);
@@ -375,8 +391,8 @@ AliAnalysisCuts *SetupAODtrackCuts(Int_t cutDefinition){
 
 
   AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
-  trackCutsDiel->SetAODFilterBit(1<<4); // (=16) filterbit 4! //GetStandardITSTPCTrackCuts2010(kFALSE); loose DCA, 2D cut
-  trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+  trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA); // (=16) filterbit 4! //GetStandardITSTPCTrackCuts2010(kFALSE); loose DCA, 2D cut
+  trackCutsDiel->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kFirst);
   
   AliDielectronCutGroup* cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
   cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
@@ -402,12 +418,12 @@ AliAnalysisCuts *SetupPreFilterAODtrackCuts(Int_t cutDefinition){
   AliDielectronTrackCuts* trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
 
   if(cutDefinition==1){
-    trackCutsDiel->SetAODFilterBit(1<<0|1<<1); // ITSsa cuts + TPC only cuts
-    trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    trackCutsDiel->SetAODFilterBit((AliDielectronTrackCuts::EFilterBit)(AliDielectronTrackCuts::kTPCqual | AliDielectronTrackCuts::kITSonly)); // ITSsa cuts + TPC only cuts
+    trackCutsDiel->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kAny);
   }
   else{
-    trackCutsDiel->SetAODFilterBit(1<<0); // TPC only cuts 
-    trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kTPCqual); // TPC only cuts 
+    trackCutsDiel->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kAny);
   }
   AliDielectronCutGroup* cgTrackCutsAnaSPDfirst = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
   cgTrackCutsAnaSPDfirst->AddCut(trackCutsDiel);
@@ -527,7 +543,7 @@ void SetupAODtrackCutsTight(AliDielectron *die)
   AliDielectronVarCuts *varCuts   = new AliDielectronVarCuts("VarCuts","VarCuts");
   AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
   // specific cuts
-  trkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+  trkCuts->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kFirst);
   trkCuts->SetRequireITSRefit(kTRUE);
   trkCuts->SetRequireTPCRefit(kTRUE); // not useful when using prefilter
 
@@ -1218,8 +1234,8 @@ void SetupAODtrackCutsCarsten1(AliDielectron *die)
   SharedClusterCut->AddCut(trackCutsSharedCluster32);
   
   AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
-  trackCutsDiel->SetAODFilterBit(1<<4);
-  trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+  trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA);
+  trackCutsDiel->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kFirst);
     
   trackCuts = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
   //Add nanoAOD prefiltering cuts
@@ -1322,8 +1338,8 @@ void SetupAODtrackCutsCarsten2(AliDielectron *die)
   SharedClusterCut->AddCut(trackCutsSharedCluster32);
   
   AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
-  trackCutsDiel->SetAODFilterBit(1<<4);
-  trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+  trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA);
+  trackCutsDiel->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kFirst);
     
   trackCuts = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
   //Add nanoAOD prefiltering cuts
@@ -1352,10 +1368,10 @@ void SetTPCCorr(AliDielectron *die){
   TString path="alien:///alice/cern.ch/user/s/selehner/recal/recalib_data_tpc_nsigmaele.root";
   gSystem->Exec(TString::Format("alien_cp %s .",path.Data()));
   ::Info("Config_miweber_LMEE_PbPb_woCutLib","Copy TPC correction from Alien: %s",path.Data());
-  _file = TFile::Open("recalib_data_tpc_nsigmaele.root");
+  TFile *infile = TFile::Open("recalib_data_tpc_nsigmaele.root");
   
-  TH3D* mean = dynamic_cast<TH3D*>(_file->Get("sum_mean_correction"));
-  TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
+  TH3D* mean = dynamic_cast<TH3D*>(infile->Get("sum_mean_correction"));
+  TH3D* width= dynamic_cast<TH3D*>(infile->Get("sum_width_correction"));
 
   if(mean)   ::Info("Config_miweber_LMEE_PbPb_woCutLib","Mean Correction Histo loaded, entries: %f",mean->GetEntries());
   else {
@@ -1540,7 +1556,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
 }
 
-const AliDielectronEventCuts *GetEventCuts(){
+AliDielectronEventCuts *GetEventCuts(){
 
   AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex SPD && |vtxZ|<10 && ncontrib>0");
   eventCuts->SetRequireVertex();
