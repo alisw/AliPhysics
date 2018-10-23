@@ -1,5 +1,6 @@
 // ROOT6 modifications
 #ifdef __CLING__
+#include <AliAnalysisManager.h>
 #include <AliAODInputHandler.h>
 #include <AliDielectronVarCuts.h>
 
