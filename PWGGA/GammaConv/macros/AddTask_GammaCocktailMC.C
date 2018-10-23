@@ -1,4 +1,4 @@
-void AddTask_GammaCocktailMC(Bool_t runLightOutput = kFALSE, TString maxyetaset = "0.80") {
+void AddTask_GammaCocktailMC(Bool_t runLightOutput = kFALSE, Bool_t doWideBinning = kFALSE, TString maxyetaset = "0.80") {
 
   TObjArray *rConfigRapandEta = maxyetaset.Tokenize("_");
   if(rConfigRapandEta->GetEntries()<1){cout << "ERROR: AddTask_GammaCocktailMC during parsing of maxyetaset String '" << maxyetaset.Data() << "'" << endl; return;}
@@ -49,6 +49,7 @@ void AddTask_GammaCocktailMC(Bool_t runLightOutput = kFALSE, TString maxyetaset 
   if(fEtaSet)
     task->SetMaxEta(maxeta);
   task->SetLightOutput(runLightOutput);
+  task->SetWideBinning(doWideBinning);
   
   //connect containers
   AliAnalysisDataContainer *coutput =
