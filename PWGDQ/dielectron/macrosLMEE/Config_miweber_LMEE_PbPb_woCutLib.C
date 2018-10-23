@@ -124,7 +124,7 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
 }
 
 //______________________________________________________________________________________
-void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA = kFALSE)
+void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA)
 {
   // Setup the track cuts
 
