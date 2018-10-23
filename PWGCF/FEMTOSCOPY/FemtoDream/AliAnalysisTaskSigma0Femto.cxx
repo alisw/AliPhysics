@@ -403,20 +403,22 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     return;
   }
 
-  if (fV0Reader->GetEventCuts() &&
-      fV0Reader->GetEventCuts()->GetCutHistograms()) {
-    fOutputContainer->Add(fV0Reader->GetEventCuts()->GetCutHistograms());
-  }
-  if (fV0Reader->GetConversionCuts() &&
-      fV0Reader->GetConversionCuts()->GetCutHistograms()) {
-    fOutputContainer->Add(fV0Reader->GetConversionCuts()->GetCutHistograms());
-  }
-  if (fV0Reader->GetProduceV0FindingEfficiency() &&
-      fV0Reader->GetV0FindingEfficiencyHistograms()) {
-    fOutputContainer->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
-  }
-  if (fV0Reader->GetProduceImpactParamHistograms()) {
-    fOutputContainer->Add(fV0Reader->GetImpactParamHistograms());
+  if (!fIsLightweight) {
+    if (fV0Reader->GetEventCuts() &&
+        fV0Reader->GetEventCuts()->GetCutHistograms()) {
+      fOutputContainer->Add(fV0Reader->GetEventCuts()->GetCutHistograms());
+    }
+    if (fV0Reader->GetConversionCuts() &&
+        fV0Reader->GetConversionCuts()->GetCutHistograms()) {
+      fOutputContainer->Add(fV0Reader->GetConversionCuts()->GetCutHistograms());
+    }
+    if (fV0Reader->GetProduceV0FindingEfficiency() &&
+        fV0Reader->GetV0FindingEfficiencyHistograms()) {
+      fOutputContainer->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
+    }
+    if (fV0Reader->GetProduceImpactParamHistograms()) {
+      fOutputContainer->Add(fV0Reader->GetImpactParamHistograms());
+    }
   }
 
   fHistCutQA = new TH1F("fHistCutQA", ";;Entries", 10, 0, 10);
