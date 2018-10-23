@@ -102,6 +102,7 @@ AliHLTEMCALClusterMonitorComponent::GetInputDataTypes(vector<AliHLTComponentData
 	//see header file for documentation
 	list.clear();
 	list.push_back(kAliHLTDataTypeCaloCluster);
+	list.push_back(kAliHLTDataTypeESDContent | kAliHLTDataOriginVZERO);
 }
 
 AliHLTComponentDataType 
@@ -132,8 +133,8 @@ AliHLTEMCALClusterMonitorComponent::DoEvent(const AliHLTComponentEventData& evtD
 	UInt_t specification = 0;
 	for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
 	{
-	  
-	  	AliHLTCaloClusterDataStruct* caloClusterPtr = 0;
+	
+		AliHLTCaloClusterDataStruct* caloClusterPtr = 0;
 
 		iter = blocks+ndx;
 		
@@ -144,12 +145,12 @@ AliHLTEMCALClusterMonitorComponent::DoEvent(const AliHLTComponentEventData& evtD
 			if(fBeVerbose) HLTWarning("\nI-CLUSTERMONITORCOMPONENT: Data block does not contain cluster type \n");
 		}
 
-    Int_t nClusters = iter->fSize/sizeof(AliHLTCaloClusterDataStruct);
-    const AliESDVZERO* esdVZERO = dynamic_cast<const AliESDVZERO*>(GetFirstInputObject(kAliHLTDataTypeESDContent | kAliHLTDataOriginVZERO, "AliESDVZERO"));
+		Int_t nClusters = iter->fSize/sizeof(AliHLTCaloClusterDataStruct);
+		const AliESDVZERO* esdVZERO = dynamic_cast<const AliESDVZERO*>(GetFirstInputObject(kAliHLTDataTypeESDContent | kAliHLTDataOriginVZERO, "AliESDVZERO"));
 
-    specification |= iter->fSpecification;
+		specification |= iter->fSpecification;
 
-    fHistoMakerPtr->MakeHisto(caloClusterPtr, nClusters, esdVZERO);
+		fHistoMakerPtr->MakeHisto(caloClusterPtr, nClusters, esdVZERO);
 
 	}
 
