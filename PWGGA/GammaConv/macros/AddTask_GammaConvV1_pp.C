@@ -757,7 +757,10 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "00200009ea7300008250404000", "0163103100000000","1111100060032220000"); //INT7
     //Low B
     cuts.AddCutPCM("00010113", "00200089ea7300008250404000", "0163103100000000","1111100060032220000"); //INT7
-
+  } else if (trainConfig == 353) {//Testing clean0 and clean1; same as above to be able to run with different QA settings
+    cuts.AddCutPCM("00010113", "00200009ea7300008250404000", "0163103100000000","1111100060032220000"); //INT7
+    //Low B
+    cuts.AddCutPCM("00010113", "00200089ea7300008250404000", "0163103100000000","1111100060032220000"); //INT7
 
   //---------configs for V0AND 13TeVLowB --------------------------//
   } else if (trainConfig == 360) {
