@@ -1,7 +1,7 @@
 #include "TROOT.h"
 #include "TSystem.h"
 
-AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
+AliAnalysisTaskSE* AddTaskFemtoGranma_systcuts(bool isMC, TString CentEst = "kInt7",
                                       bool DCAPlots = false, const char *swuffix="") {
   TString suffix=Form("%s",swuffix);
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -34,7 +34,7 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
   }
 
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
-//  evtCuts->SetMinimalBooking(true);
+  evtCuts->SetMinimalBooking(true);
 
   if (suffix=="1") {
     evtCuts->SetSphericityCuts(0.,0.3);

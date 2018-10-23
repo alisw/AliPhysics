@@ -161,7 +161,7 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
   config->SetCentBins(centBins);
   config->SetkTCentralityBinning(false);
 
-  config->SetInvMassPairs(false);
+  config->SetInvMassPairs(true);
 
   if (isMC) {
     config->SetMomentumResolution(false);//kstar true vs. kstar reco
@@ -250,7 +250,7 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
-
+  config->SetMultBinning(true);
   config->SetUseEventMixing(true);
   config->SetMixingDepth(10);
 
@@ -263,7 +263,6 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
 
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
 
-//  task->SetCollectionConfig(config);
 
   if (CentEst == "kInt7") {
     task->SelectCollisionCandidates(AliVEvent::kINT7);
