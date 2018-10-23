@@ -1,5 +1,5 @@
 configurationName: "PWGGA configuration"
-pass: "pass4"
+pass: ""
 inputObjects:
     cells:
         defaultCells:
@@ -9,28 +9,6 @@ inputObjects:
             branchName: "usedefault"
         ClusterContainerS500A100:
             branchName: "S500A100ClustersBranch"
-        ClusterContainerS500A100W3:
-            branchName: "S500A100W3ClustersBranch"
-        ClusterContainerS500A100W35:
-            branchName: "S500A100W35ClustersBranch"
-        ClusterContainerS500A100W4:
-            branchName: "S500A100W4ClustersBranch"
-        ClusterContainerS500A100W5:
-            branchName: "S500A100W5ClustersBranch"
-        ClusterContainerS500A100W55:
-            branchName: "S500A100W55ClustersBranch"
-        ClusterContainerS500A100W6:
-            branchName: "S500A100W6ClustersBranch"
-        ClusterContainerS400A100:
-            branchName: "S400A100ClustersBranch"
-        ClusterContainerS600A100:
-            branchName: "S600A100ClustersBranch"
-        ClusterContainerS500A75:
-            branchName: "S500A75ClustersBranch"
-        ClusterContainerS500A125:
-            branchName: "S500A125ClustersBranch"
-        ClusterContainerS500A150:
-            branchName: "S500A150ClustersBranch"
     trackContainers:
         defaultTrackContainer:
             branchName: "usedefault"
@@ -61,7 +39,6 @@ Clusterizer:
     cellsNames:
         - defaultCells
 Clusterizer_defaultSetting:
-    # w0 standard is 4.5
     enabled: true
     cellE: 0.1
     seedE: 0.5
@@ -73,79 +50,6 @@ Clusterizer_S500A100:
     seedE: 0.5
     clusterContainersNames:
         - ClusterContainerS500A100
-Clusterizer_S500A100W3:
-    enabled: true
-    cellE: 0.1
-    seedE: 0.5
-    w0: 3
-    clusterContainersNames:
-        - ClusterContainerS500A100W3
-Clusterizer_S500A100W35:
-    enabled: true
-    cellE: 0.1
-    seedE: 0.5
-    w0: 3.5
-    clusterContainersNames:
-        - ClusterContainerS500A100W35
-Clusterizer_S500A100W4:
-    enabled: true
-    cellE: 0.1
-    seedE: 0.5
-    w0: 4.0
-    clusterContainersNames:
-        - ClusterContainerS500A100W4
-Clusterizer_S500A100W5:
-    enabled: true
-    cellE: 0.1
-    seedE: 0.5
-    w0: 5.0
-    clusterContainersNames:
-        - ClusterContainerS500A100W5
-Clusterizer_S500A100W55:
-    enabled: true
-    cellE: 0.1
-    seedE: 0.5
-    w0: 5.5
-    clusterContainersNames:
-        - ClusterContainerS500A100W55
-Clusterizer_S500A100W6:
-    enabled: true
-    cellE: 0.1
-    seedE: 0.5
-    w0: 6.0
-    clusterContainersNames:
-        - ClusterContainerS500A100W6
-Clusterizer_S400A100:
-    enabled: true
-    cellE: 0.1
-    seedE: 0.4
-    clusterContainersNames:
-        - ClusterContainerS400A100
-Clusterizer_S600A100:
-    enabled: true
-    cellE: 0.1
-    seedE: 0.6
-    clusterContainersNames:
-        - ClusterContainerS600A100
-Clusterizer_S500A75:
-    enabled: true
-    cellE: 0.075
-    seedE: 0.5
-    clusterContainersNames:
-        - ClusterContainerS500A75
-Clusterizer_S500A125:
-    enabled: true
-    cellE: 0.125
-    seedE: 0.5
-    clusterContainersNames:
-        - ClusterContainerS500A125
-Clusterizer_S500A150:
-    enabled: true
-    cellE: 0.15
-    seedE: 0.5
-    clusterContainersNames:
-        - ClusterContainerS500A150
-
 
 ClusterNonLinearity:
     createHistos: true
@@ -158,47 +62,3 @@ ClusterNonLinearity_S500A100:
     enabled: true
     clusterContainersNames:
         - ClusterContainerS500A100
-ClusterNonLinearity_S500A100W3:
-    enabled: true
-    clusterContainersNames:
-        - ClusterContainerS500A100W3
-ClusterNonLinearity_S500A100W35:
-    enabled: true
-    clusterContainersNames:
-        - ClusterContainerS500A100W35
-ClusterNonLinearity_S500A100W4:
-    enabled: true
-    clusterContainersNames:
-        - ClusterContainerS500A100W4
-ClusterNonLinearity_S500A100W5:
-    enabled: true
-    clusterContainersNames:
-        - ClusterContainerS500A100W5
-ClusterNonLinearity_S500A100W55:
-    enabled: true
-    clusterContainersNames:
-        - ClusterContainerS500A100W55
-ClusterNonLinearity_S500A100W6:
-    enabled: true
-    clusterContainersNames:
-        - ClusterContainerS500A100W6
-ClusterNonLinearity_S400A100:
-    enabled: true
-    clusterContainersNames:
-        - ClusterContainerS400A100
-ClusterNonLinearity_S600A100:
-    enabled: true
-    clusterContainersNames:
-        - ClusterContainerS600A100
-ClusterNonLinearity_S500A75:
-    enabled: true
-    clusterContainersNames:
-        - ClusterContainerS500A75
-ClusterNonLinearity_S500A125:
-    enabled: true
-    clusterContainersNames:
-        - ClusterContainerS500A125
-ClusterNonLinearity_S500A150:
-    enabled: true
-    clusterContainersNames:
-        - ClusterContainerS500A150
