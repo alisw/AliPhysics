@@ -21,6 +21,8 @@
 #include "AliHLTEMCALGeometry.h"
 #include "AliHLTEMCALTriggerMaker.h"
 #include "AliHLTEMCALTriggerMakerComponent.h"
+#include "AliGRPManager.h"
+#include "AliGRPObject.h"
 
 #include <TStopwatch.h>
 
@@ -181,7 +183,18 @@ int AliHLTEMCALTriggerMakerComponent::DoInit ( int argc, const char** argv ){
   Float_t jetTh[2*AliHLTEMCALTriggerMaker::kNthresholds] = {0};
   Float_t gammaTh[2*AliHLTEMCALTriggerMaker::kNthresholds] = {0};
   Float_t bkgTh[2] = {0}, l0Th[2] = {0};
-  Bool_t isPbPb = GetRunNo() > 244823 && GetRunNo() < 246995; // For the moment quick hack to distinguish PbPb from pp
+
+  Bool_t isPbPb = false;
+  AliGRPManager mgr;
+  mgr.ReadGRPEntry();
+
+  if (mgr.GetGRPData()->GetBeamType() == "Pb-Pb" ||
+      mgr.GetGRPData()->GetBeamType() == "PbPb" ||
+      mgr.GetGRPData()->GetBeamType() == "A-A" ||
+      mgr.GetGRPData()->GetBeamType() == "AA" )
+  {
+    isPbPb = true;
+  }
   Bool_t runBkgAlgo = isPbPb;
   Int_t jetpatchsize = isPbPb ? 8 : 16;
   for(Int_t iarg = 0; iarg < argc; iarg++){

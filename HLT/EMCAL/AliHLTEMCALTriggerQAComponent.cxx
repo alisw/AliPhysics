@@ -39,6 +39,8 @@
 //#include "AliHLTEMCALCaloCells.h"
 
 #include "AliHLTEMCALTriggerQAComponent.h"
+#include "AliGRPManager.h"
+#include "AliGRPObject.h"
 
 ClassImp(AliHLTEMCALTriggerQAComponent)
 
@@ -327,13 +329,21 @@ int AliHLTEMCALTriggerQAComponent::DoInit(int argc, const char** argv)
 
   Int_t debugLevel = 0;
 
-  Bool_t isPbPb = GetRunNo() > 244823 && GetRunNo() < 246995; // For the moment quick hack to distinguish PbPb from pp
-  fBeamType = isPbPb ? kPbPb : kPP;
+  Bool_t isPbPb = false;
+  AliGRPManager mgr;
+  mgr.ReadGRPEntry();
 
+  if (mgr.GetGRPData()->GetBeamType() == "Pb-Pb" ||
+      mgr.GetGRPData()->GetBeamType() == "PbPb" ||
+      mgr.GetGRPData()->GetBeamType() == "A-A" ||
+      mgr.GetGRPData()->GetBeamType() == "AA" )
+  {
+    fBeamType = kPbPb;
+  } else {
+    fBeamType = kPP;
+  }
   for (int i = 0; i < argc; i++) {
     TString option(argv[i]);
-    if (option == "-pp") fBeamType = kPP;
-    if (option == "-PbPb") fBeamType = kPbPb;
     if (option == "-newTriggerBitConfig") fTriggerBitConfig = new AliEMCALTriggerBitConfigNew;
     if (option == "-oldTriggerBitConfig") fTriggerBitConfig = new AliEMCALTriggerBitConfigOld;
     if (option == "-noHistoReset") fHistoResetOnPush = kFALSE;
