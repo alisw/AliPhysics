@@ -32,6 +32,9 @@
 #include "AliFemtoPairCutPt.h"
 #endif
 
+#include <stdio.h>
+#include <string.h>
+
 //________________________________________________________________________
 AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
@@ -43,7 +46,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	const int numOfChTypes = 20;
 	const int numOfkTbins = 5;
 
-	char *parameter[20];
+	char *par = new char[strlen(params)+1];
+	strcpy(par,params);
+	char *parameter[21];
 	if(strlen(params)!=0)
 	  {
 	    parameter[0] = strtok(params, ","); // Splits spaces between words in params

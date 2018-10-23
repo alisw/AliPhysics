@@ -188,9 +188,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 //	Reader->SetMinPlpContribSPD(minPlpContribSPD);
 	Reader->SetUseAliEventCuts(kTRUE);
 
-	Reader->SetIsPileUpEvent(kTRUE);
-  Reader->SetUseMVPlpSelection(kTRUE);
-	Reader->SetTrackPileUpRemoval(kFALSE);
+	Reader->SetIsPileUpEvent(ifIsPileUp);
+  Reader->SetUseMVPlpSelection(ifIsPileUp);
+	Reader->SetTrackPileUpRemoval(ifIsPileUp);
 	// Reader->SetUseOutOfBunchPlpSelection(kTRUE);
 	Reader->SetReadV0(kTRUE);
 	Reader->SetReadCascade(kTRUE);
@@ -234,8 +234,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	AliFemtoCutMonitorXi             *cutPass2Xi[numOfMultBins*numOfChTypes];
 	AliFemtoCutMonitorXi             *cutFail2Xi[numOfMultBins*numOfChTypes];
 	//	 AliFemtoShareQualityTPCEntranceSepPairCut			*sqpcetaphitpcsame[numOfMultBins*numOfChTypes];
-	AliFemtoPairCutAntiGamma	*sqpcetaphitpc[numOfMultBins*numOfChTypes];
-	//AliFemtoPairCutRadialDistance			*sqpcetaphitpc[numOfMultBins*numOfChTypes];
+	// AliFemtoPairCutAntiGamma	*sqpcetaphitpc[numOfMultBins*numOfChTypes];
+	AliFemtoPairCutRadialDistance			*sqpcetaphitpc[numOfMultBins*numOfChTypes];
 	//AliFemtoShareQualityPairCut			*sqpcetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoV0PairCut               *sqp1cetaphitpc[numOfMultBins*numOfChTypes];
 	AliFemtoV0TrackPairCut          *sqp2cetaphitpc[numOfMultBins*numOfChTypes];
@@ -645,15 +645,14 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					  }
 
 					//******** Two - track cuts ************
-					sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
-					//sqpcetaphitpc[aniter] = new AliFemtoShareQualityPairCut();
-					sqpcetaphitpc[aniter]->SetShareQualityMax(shareQuality);	// two track cuts on splitting and merging  //1- wylaczany 0 -wlaczany
-					sqpcetaphitpc[aniter]->SetShareFractionMax(shareFraction);	//  ile moga miec wspolnych klastrow //1 - wylaczany, 0.05 - wlaczany
+					sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();
+					sqpcetaphitpc[aniter]->SetShareQualityMax(shareQuality);
+					sqpcetaphitpc[aniter]->SetShareFractionMax(shareFraction);
 					sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
-					// sqpcetaphitpc[aniter]->SetMaximumRadius(0.82);
-					// sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);
-					// sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.02);
-					// sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
+					sqpcetaphitpc[aniter]->SetMinimumRadius(1.6);
+					sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
+					sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.045);
+
 
 					if (gammacut == 0)
 					  {
