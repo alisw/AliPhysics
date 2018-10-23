@@ -20,6 +20,7 @@ AliFemtoDreamv0Cuts::AliFemtoDreamv0Cuts()
       fMCData(false),
       fCPAPlots(false),
       fContribSplitting(false),
+      fDoMultBinning(false),
       fRunNumberQA(false),
       fMinRunNumber(0),
       fMaxRunNumber(0),
@@ -65,6 +66,7 @@ AliFemtoDreamv0Cuts::AliFemtoDreamv0Cuts(const AliFemtoDreamv0Cuts& cuts)
       fMCData(cuts.fMCData),
       fCPAPlots(cuts.fCPAPlots),
       fContribSplitting(cuts.fContribSplitting),
+      fDoMultBinning(cuts.fDoMultBinning),
       fRunNumberQA(cuts.fRunNumberQA),
       fMinRunNumber(cuts.fMinRunNumber),
       fMaxRunNumber(cuts.fMaxRunNumber),
@@ -112,6 +114,7 @@ AliFemtoDreamv0Cuts& AliFemtoDreamv0Cuts::operator=(
     this->fMCData = cuts.fMCData;
     this->fCPAPlots = cuts.fCPAPlots;
     this->fContribSplitting = cuts.fContribSplitting;
+    this->fDoMultBinning = cuts.fDoMultBinning;
     this->fRunNumberQA = cuts.fRunNumberQA;
     this->fMinRunNumber = cuts.fMinRunNumber;
     this->fMaxRunNumber = cuts.fMaxRunNumber;
@@ -417,7 +420,7 @@ void AliFemtoDreamv0Cuts::Init() {
     if (fMCData) {
       fMCHist = new AliFemtoDreamv0MCHist(fNumberXBins, fAxisMinMass,
                                           fAxisMaxMass, fContribSplitting,
-                                          fCPAPlots);
+                                          fCPAPlots, fDoMultBinning);
       fMCHistList = new TList();
       fMCHistList->SetOwner();
       fMCHistList->SetName("v0MCCuts");

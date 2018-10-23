@@ -12,6 +12,7 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist()
     : fMCList(0),
       fMultRangeLow(27),
       fMultRangeHigh(55),
+      fDoMultiplicityBinning(false),
       fCPAPlots(0),
       fMCCorrPt(0),
       fMCIdentPt(0),
@@ -61,9 +62,11 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist()
 AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(int MassNBins, float MassMin,
                                              float MassMax,
                                              bool contribSplitting,
-                                             bool CPADist)
+                                             bool CPADist,
+                                             bool DoMultBinning)
     : fMultRangeLow(27),
-      fMultRangeHigh(55) {
+      fMultRangeHigh(55),
+      fDoMultiplicityBinning(DoMultBinning) {
   float ptmin = -0.2;
   float ptmax = 6.3;
   int ptBins = 13;
@@ -352,87 +355,89 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(int MassNBins, float MassMin,
     fMCContCPAPtBins->GetYaxis()->SetTitle("CPA");
     fCPAPlots->Add(fMCContCPAPtBins);
 
-    TString name1 = "CPAPtBinningPriMult_0_";
-    name1 += fMultRangeLow;
-    TString name2 = "CPAPtBinningPriMult_";
-    name2 += fMultRangeLow;
-    name2 += "_";
-    name2 += fMultRangeHigh;
-    TString name3 = "CPAPtBinningPriMult_";
-    name3 += fMultRangeHigh;
-    name3 += "_inf";
-    TString primPtBinName[3] = { name1, name2, name3 };
+    if (fDoMultiplicityBinning) {
+      TString name1 = "CPAPtBinningPriMult_0_";
+      name1 += fMultRangeLow;
+      TString name2 = "CPAPtBinningPriMult_";
+      name2 += fMultRangeLow;
+      name2 += "_";
+      name2 += fMultRangeHigh;
+      TString name3 = "CPAPtBinningPriMult_";
+      name3 += fMultRangeHigh;
+      name3 += "_inf";
+      TString primPtBinName[3] = {name1, name2, name3};
 
-    name1 = "CPAPtBinningMatMult_0_";
-    name1 += fMultRangeLow;
-    name2 = "CPAPtBinningMatMult_";
-    name2 += fMultRangeLow;
-    name2 += "_";
-    name2 += fMultRangeHigh;
-    name3 = "CPAPtBinningMatMult_";
-    name3 += fMultRangeHigh;
-    name3 += "_inf";
-    TString matPtBinName[3] = { name1, name2, name3 };
+      name1 = "CPAPtBinningMatMult_0_";
+      name1 += fMultRangeLow;
+      name2 = "CPAPtBinningMatMult_";
+      name2 += fMultRangeLow;
+      name2 += "_";
+      name2 += fMultRangeHigh;
+      name3 = "CPAPtBinningMatMult_";
+      name3 += fMultRangeHigh;
+      name3 += "_inf";
+      TString matPtBinName[3] = {name1, name2, name3};
 
-    name1 = "CPAPtBinningSecMult_0_";
-    name1 += fMultRangeLow;
-    name2 = "CPAPtBinningSecMult_";
-    name2 += fMultRangeLow;
-    name2 += "_";
-    name2 += fMultRangeHigh;
-    name3 = "CPAPtBinningSecMult_";
-    name3 += fMultRangeHigh;
-    name3 += "_inf";
-    TString secPtBinName[3] = { name1, name2, name3 };
+      name1 = "CPAPtBinningSecMult_0_";
+      name1 += fMultRangeLow;
+      name2 = "CPAPtBinningSecMult_";
+      name2 += fMultRangeLow;
+      name2 += "_";
+      name2 += fMultRangeHigh;
+      name3 = "CPAPtBinningSecMult_";
+      name3 += fMultRangeHigh;
+      name3 += "_inf";
+      TString secPtBinName[3] = {name1, name2, name3};
 
-    name1 = "CPAPtBinningContMult_0_";
-    name1 += fMultRangeLow;
-    name2 = "CPAPtBinningContMult_";
-    name2 += fMultRangeLow;
-    name2 += "_";
-    name2 += fMultRangeHigh;
-    name3 = "CPAPtBinningContMult_";
-    name3 += fMultRangeHigh;
-    name3 += "_inf";
-    TString contPtBinName[3] = { name1, name2, name3 };
+      name1 = "CPAPtBinningContMult_0_";
+      name1 += fMultRangeLow;
+      name2 = "CPAPtBinningContMult_";
+      name2 += fMultRangeLow;
+      name2 += "_";
+      name2 += fMultRangeHigh;
+      name3 = "CPAPtBinningContMult_";
+      name3 += fMultRangeHigh;
+      name3 += "_inf";
+      TString contPtBinName[3] = {name1, name2, name3};
 
-    name1 = "0 < mult < ";
-    name1 += fMultRangeLow;
-    name1 += ";P#_{T};CPA";
-    name2 = "";
-    name2 += fMultRangeLow;
-    name2 += " < mult < ";
-    name2 += fMultRangeHigh;
-    name2 += ";P#_{T};CPA";
-    name3 = "mult > ";
-    name3 += fMultRangeHigh;
-    name3 += ";P#_{T};CPA";
-    TString axisRange[3] = { name1, name2, name3 };
+      name1 = "0 < mult < ";
+      name1 += fMultRangeLow;
+      name1 += ";P#_{T};CPA";
+      name2 = "";
+      name2 += fMultRangeLow;
+      name2 += " < mult < ";
+      name2 += fMultRangeHigh;
+      name2 += ";P#_{T};CPA";
+      name3 = "mult > ";
+      name3 += fMultRangeHigh;
+      name3 += ";P#_{T};CPA";
+      TString axisRange[3] = {name1, name2, name3};
 
-    for (int i = 0; i < 3; ++i) {
-      fMCPrimCPAPtBinsMult[i] = new TH2F(primPtBinName[i].Data(),
-                                         axisRange[i].Data(), 8, 0.3, 4.3, 1000,
-                                         0.90, 1.);
-      fMCPrimCPAPtBinsMult[i]->Sumw2();
-      fCPAPlots->Add(fMCPrimCPAPtBinsMult[i]);
+      for (int i = 0; i < 3; ++i) {
+        fMCPrimCPAPtBinsMult[i] =
+            new TH2F(primPtBinName[i].Data(), axisRange[i].Data(), 8, 0.3, 4.3,
+                     1000, 0.90, 1.);
+        fMCPrimCPAPtBinsMult[i]->Sumw2();
+        fCPAPlots->Add(fMCPrimCPAPtBinsMult[i]);
 
-      fMCMaterialCPAPtBinsMult[i] = new TH2F(matPtBinName[i].Data(),
-                                             axisRange[i].Data(), 8, 0.3, 4.3,
-                                             1000, 0.90, 1.);
-      fMCMaterialCPAPtBinsMult[i]->Sumw2();
-      fCPAPlots->Add(fMCMaterialCPAPtBinsMult[i]);
+        fMCMaterialCPAPtBinsMult[i] =
+            new TH2F(matPtBinName[i].Data(), axisRange[i].Data(), 8, 0.3, 4.3,
+                     1000, 0.90, 1.);
+        fMCMaterialCPAPtBinsMult[i]->Sumw2();
+        fCPAPlots->Add(fMCMaterialCPAPtBinsMult[i]);
 
-      fMCSecondaryCPAPtBinsMult[i] = new TH2F(secPtBinName[i].Data(),
-                                              axisRange[i].Data(), 8, 0.3, 4.3,
-                                              1000, 0.90, 1.);
-      fMCSecondaryCPAPtBinsMult[i]->Sumw2();
-      fCPAPlots->Add(fMCSecondaryCPAPtBinsMult[i]);
+        fMCSecondaryCPAPtBinsMult[i] =
+            new TH2F(secPtBinName[i].Data(), axisRange[i].Data(), 8, 0.3, 4.3,
+                     1000, 0.90, 1.);
+        fMCSecondaryCPAPtBinsMult[i]->Sumw2();
+        fCPAPlots->Add(fMCSecondaryCPAPtBinsMult[i]);
 
-      fMCContCPAPtBinsMult[i] = new TH2F(contPtBinName[i].Data(),
-                                         axisRange[i].Data(), 8, 0.3, 4.3, 1000,
-                                         0.90, 1.);
-      fMCContCPAPtBinsMult[i]->Sumw2();
-      fCPAPlots->Add(fMCContCPAPtBinsMult[i]);
+        fMCContCPAPtBinsMult[i] =
+            new TH2F(contPtBinName[i].Data(), axisRange[i].Data(), 8, 0.3, 4.3,
+                     1000, 0.90, 1.);
+        fMCContCPAPtBinsMult[i]->Sumw2();
+        fCPAPlots->Add(fMCContCPAPtBinsMult[i]);
+      }
     }
   } else {
     fCPAPlots = 0;
@@ -454,22 +459,30 @@ void AliFemtoDreamv0MCHist::FillMCCPAPtBins(
     int multiplicity) {
   if (org == AliFemtoDreamBasePart::kPhysPrimary) {
     fMCPrimCPAPtBins->Fill(pT, cpa);
-    FillMultiplicityHistos(multiplicity, pT, cpa, fMCPrimCPAPtBinsMult[0],
-                           fMCPrimCPAPtBinsMult[1], fMCPrimCPAPtBinsMult[2]);
+    if (fDoMultiplicityBinning) {
+      FillMultiplicityHistos(multiplicity, pT, cpa, fMCPrimCPAPtBinsMult[0],
+                             fMCPrimCPAPtBinsMult[1], fMCPrimCPAPtBinsMult[2]);
+    }
   } else if (org == AliFemtoDreamBasePart::kWeak) {
     fMCSecondaryCPAPtBins->Fill(pT, cpa);
-    FillMultiplicityHistos(multiplicity, pT, cpa, fMCSecondaryCPAPtBinsMult[0],
-                           fMCSecondaryCPAPtBinsMult[1],
-                           fMCSecondaryCPAPtBinsMult[2]);
+    if (fDoMultiplicityBinning) {
+      FillMultiplicityHistos(
+          multiplicity, pT, cpa, fMCSecondaryCPAPtBinsMult[0],
+          fMCSecondaryCPAPtBinsMult[1], fMCSecondaryCPAPtBinsMult[2]);
+    }
   } else if (org == AliFemtoDreamBasePart::kMaterial) {
     fMCMaterialCPAPtBins->Fill(pT, cpa);
-    FillMultiplicityHistos(multiplicity, pT, cpa, fMCMaterialCPAPtBinsMult[0],
-                           fMCMaterialCPAPtBinsMult[1],
-                           fMCMaterialCPAPtBinsMult[2]);
+    if (fDoMultiplicityBinning) {
+      FillMultiplicityHistos(multiplicity, pT, cpa, fMCMaterialCPAPtBinsMult[0],
+                             fMCMaterialCPAPtBinsMult[1],
+                             fMCMaterialCPAPtBinsMult[2]);
+    }
   } else if (org == AliFemtoDreamBasePart::kFake) {
     fMCContCPAPtBins->Fill(pT, cpa);
-    FillMultiplicityHistos(multiplicity, pT, cpa, fMCContCPAPtBinsMult[0],
-                           fMCContCPAPtBinsMult[1], fMCContCPAPtBinsMult[2]);
+    if (fDoMultiplicityBinning) {
+      FillMultiplicityHistos(multiplicity, pT, cpa, fMCContCPAPtBinsMult[0],
+                             fMCContCPAPtBinsMult[1], fMCContCPAPtBinsMult[2]);
+    }
   } else {
     AliFatal("Particle Origin not implemented");
   }

@@ -17,7 +17,7 @@
 class AliFemtoDreamTrackMCHist {
  public:
   AliFemtoDreamTrackMCHist();
-  AliFemtoDreamTrackMCHist(bool contribSplitting, bool DCADist);
+  AliFemtoDreamTrackMCHist(bool contribSplitting, bool DCADist, bool DoMultBinning = false);
   virtual ~AliFemtoDreamTrackMCHist();
   void FillMCDCAXYPtBins(AliFemtoDreamBasePart::PartOrigin org, int PDGCodeMoth,
                          float pT, float dcaxy, int multiplicity);
@@ -139,6 +139,7 @@ class AliFemtoDreamTrackMCHist {
   float fMultRangeHigh;			 //!
   bool fDoSplitting;              //!
   bool fDoDCAPlots;               //!
+  bool fDoMultiplicityBinning;    //!
 
   TList *fMCList;                 //!
   TList *fMCQAPlots[4];           //!
@@ -184,7 +185,7 @@ class AliFemtoDreamTrackMCHist {
   TH2F *fPtResolution;            //!
   TH2F *fThetaResolution;         //!
   TH2F *fPhiResolution;           //!
-ClassDef(AliFemtoDreamTrackMCHist,3)
+ClassDef(AliFemtoDreamTrackMCHist,4)
   ;
 };
 
