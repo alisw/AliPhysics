@@ -3,12 +3,10 @@
 #include<string>
 
 void      InitHistograms(AliDielectron *die, Bool_t doPairing);
-void      InitCF(AliDielectron* die, Int_t cutDefinition);
 TVectorD *BinsToVector(Int_t nbins, Double_t min, Double_t max);
 TVectorD *GetVector(Int_t var);
 enum {kMee=0, kMee500, kPtee, kP2D, kRuns, kPhiV, kOpAng, kOpAng2, kEta2D, kEta3D, kSigmaEle, kSigmaOther, kTPCdEdx, kCent, kPhi2D};
 
-Bool_t MCenabled = kTRUE; //Needed for LMEEcutlib
 Int_t selectedCuts = -1;
 Int_t selectedPID = -1;
 Bool_t pairCuts = kTRUE;
@@ -33,13 +31,10 @@ AliDielectron* Config_acapon(TString cutDefinition,
     //Setup the instance of AliDielectron
     LMEECutLib*  LMcutlib = new LMEECutLib(SDDstatus);
 
-    //Task name
-    TString name = cutDefinition;
+    // Init AliDielectron
+    AliDielectron* die = new AliDielectron(Form("%s",cutDefinition.Data()), Form("AliDielectron with cuts: %s",cutDefinition.Data()));
 
-    //Init AliDielectron
-    AliDielectron* die = new AliDielectron(Form("%s",name.Data()), Form("AliDielectron with cuts: %s",name.Data()));
-		//die->SetHasMC(hasMC);
-		if(setTPCcorr){
+		if(setTPCcorr && !hasMC){
 			LMcutlib->SetEtaCorrectionTPC(die, AliDielectronVarManager::kP,
                                       AliDielectronVarManager::kEta,
                                       AliDielectronVarManager::kRefMultTPConly, kFALSE);
@@ -47,16 +42,15 @@ AliDielectron* Config_acapon(TString cutDefinition,
 		if(setITScorr){
 			LMcutlib->SetEtaCorrectionITS(die, AliDielectronVarManager::kP,
                                       AliDielectronVarManager::kEta,
-                                      AliDielectronVarManager::kRefMultTPConly, kFALSE);
+                                      AliDielectronVarManager::kRefMultTPConly, kFALSE, hasMC);
 
 		}
 		if(setTOFcorr){
 			LMcutlib->SetEtaCorrectionTOF(die, AliDielectronVarManager::kP,
                                       AliDielectronVarManager::kEta,
-                                      AliDielectronVarManager::kRefMultTPConly, kFALSE);
+                                      AliDielectronVarManager::kRefMultTPConly, kFALSE, hasMC);
 
 		}
-    MCenabled = hasMC;
 
     // deactivate pairing to check track cuts or run with loose pid cuts:
     if(!doPairing){
@@ -634,38 +628,4 @@ TVectorD *BinsToVector(Int_t nbins, Double_t min, Double_t max) {
   //  for (int i = 0; i < nbins+1; i++) (*vec)[i] = min + i*binwdth;
   //  
   //  return vec;
-}
-
-
-
-void InitCF(AliDielectron* die, Int_t cutDefinition)
-{
-  //
-  // Setup the CF Manager if needed
-  //
-  AliDielectronCF *cf=new AliDielectronCF(die->GetName(),die->GetTitle());
-  
-  //pair variables
-  cf->AddVariable(AliDielectronVarManager::kP,100,0.,5.);
-  cf->AddVariable(AliDielectronVarManager::kM,200,-0.01,3.99); //20Mev Steps
-  cf->AddVariable(AliDielectronVarManager::kPairType,10,0,10);
-  
-  cf->AddVariable(AliDielectronVarManager::kCentralityNew,"0.,5.,10.,20.,30.,50.,80.,100.");
-  
-  //leg variables
-  cf->AddVariable(AliDielectronVarManager::kP,160,0.,8.,kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kITSsignal,350,0.,700.,kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kTPCsignal,60,0.,120.,kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kHaveSameMother,21,-10,10,kTRUE);
-  
-  //only in this case write MC truth info
-  if (MCenabled) { // more elegant: die->GetHasMC() 
-    cf->SetStepForMCtruth();
-    cf->SetStepsForMCtruthOnly();
-    cf->AddVariable(AliDielectronVarManager::kPdgCode,10000,-5000.5,4999.5,kTRUE);
-    cf->AddVariable(AliDielectronVarManager::kPdgCodeMother,10000,-5000.5,4999.5,kTRUE);
-  }
-  
-  cf->SetStepsForSignal();
-  die->SetCFManagerPair(cf);
 }

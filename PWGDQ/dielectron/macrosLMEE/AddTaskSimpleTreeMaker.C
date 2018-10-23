@@ -3,6 +3,7 @@ AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName = "MLtre
                                                        Bool_t useITScorr = kFALSE,
 																											 Bool_t useTPCcorr = kFALSE,
 																											 Bool_t useTOFcorr = kFALSE,
+																											 Bool_t isMC = kFALSE,
 																											 Bool_t getFromAlien = kFALSE) {				
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -65,11 +66,11 @@ AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName = "MLtre
     if(useITScorr){
 			TH3D meanITS = cutLib->SetEtaCorrectionITSTTree(AliDielectronVarManager::kP,
                                               AliDielectronVarManager::kEta,
-                                              AliDielectronVarManager::kRefMultTPConly, kFALSE,1);
+                                              AliDielectronVarManager::kRefMultTPConly, kFALSE,1, isMC);
 
 			TH3D widthITS = cutLib->SetEtaCorrectionITSTTree(AliDielectronVarManager::kP,
                                                AliDielectronVarManager::kEta,
-                                               AliDielectronVarManager::kRefMultTPConly, kFALSE,2);
+                                               AliDielectronVarManager::kRefMultTPConly, kFALSE,2, isMC);
 			task->SetUseITScorr(kTRUE);
 			task->SetCorrWidthMeanITS((TH3D*)widthITS.Clone(),(TH3D*)meanITS.Clone());
 
@@ -77,11 +78,11 @@ AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName = "MLtre
 		if(useTOFcorr){
 			TH3D meanTOF = cutLib->SetEtaCorrectionTOFTTree(AliDielectronVarManager::kP,
                                               AliDielectronVarManager::kEta,
-                                              AliDielectronVarManager::kRefMultTPConly, kFALSE,1);
+                                              AliDielectronVarManager::kRefMultTPConly, kFALSE,1, isMC);
 
 			TH3D widthTOF = cutLib->SetEtaCorrectionTOFTTree(AliDielectronVarManager::kP,
                                                AliDielectronVarManager::kEta,
-                                               AliDielectronVarManager::kRefMultTPConly, kFALSE,2);
+                                               AliDielectronVarManager::kRefMultTPConly, kFALSE,2, isMC);
 			task->SetUseTOFcorr(kTRUE);
 			task->SetCorrWidthMeanTOF((TH3D*)widthTOF.Clone(),(TH3D*)meanTOF.Clone());
 

@@ -61,6 +61,7 @@ void LMEECutLib::SetEtaCorrectionTPC(AliDielectron *die, Int_t corrXdim, Int_t c
   //
   // eta correction for the centroid and width of electron sigmas in the TPC, can be one/two/three-dimensional
   //
+	
   std::cout << "starting LMEECutLib::SetEtaCorrectionTPC()\n";
   std::string file_name = "/home/aaron/Data/PIDcalibration/outputTPC.root";
 
@@ -91,21 +92,34 @@ void LMEECutLib::SetEtaCorrectionTPC(AliDielectron *die, Int_t corrXdim, Int_t c
 
 }
 
-void LMEECutLib::SetEtaCorrectionITS(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise) {
+void LMEECutLib::SetEtaCorrectionITS(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise, Bool_t hasMC){
   //
   // eta correction for the centroid and width of electron sigmas in the TPC, can be one/two/three-dimensional
   //
   std::cout << "starting LMEECutLib::SetEtaCorrectionITS()\n";
-  std::string file_name = "/home/aaron/Data/PIDcalibration/outputITS.root";
+  TString file_name = "/home/aaron/Data/PIDcalibration/output";
+	if(hasMC){
+		file_name.Append("ITS_17f2a.root");
+	}else{
+		file_name.Append("ITS.root");
+	}
 
-  TFile* inFile = TFile::Open(file_name.c_str());
+  TFile* inFile = TFile::Open(file_name.Data());
   std::cout << inFile << std::endl;
   if(!inFile){
-    gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputITS.root .");
+		if(!hasMC){
+			gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputITS.root .");
+		}else{
+			gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputITS_17f2a.root .");
+		}
     std::cout << "Copy ITS correction from Alien" << std::endl;
-    inFile = TFile::Open("outputITS.root");
+		if(!hasMC){
+			inFile = TFile::Open("outputITS.root");
+		}else{
+			inFile = TFile::Open("outputITS_17f2a.root");
+		}
   }
-  else {
+  else{
     std::cout << "Correction loaded" << std::endl;
   }
   if(runwise){
@@ -124,21 +138,35 @@ void LMEECutLib::SetEtaCorrectionITS(AliDielectron *die, Int_t corrXdim, Int_t c
   }
 
 }
-void LMEECutLib::SetEtaCorrectionTOF(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise) {
+
+void LMEECutLib::SetEtaCorrectionTOF(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise, Bool_t hasMC){
   //
   // eta correction for the centroid and width of electron sigmas in the TPC, can be one/two/three-dimensional
   //
   std::cout << "starting LMEECutLib::SetEtaCorrectionTOF()\n";
-  std::string file_name = "/home/aaron/Data/PIDcalibration/outputTOF.root";
+  TString file_name = "/home/aaron/Data/PIDcalibration/output";
+	if(hasMC){
+		file_name.Append("TOF_17f2a.root");
+	}else{
+		file_name.Append("TOF.root");
+	}
 
-  TFile* inFile = TFile::Open(file_name.c_str());
+  TFile* inFile = TFile::Open(file_name.Data());
   std::cout << inFile << std::endl;
   if(!inFile){
-    gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputTOF.root .");
+		if(!hasMC){
+			gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputTOF.root .");
+		}else{
+			gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputTOF_17f2a.root .");
+		}
     std::cout << "Copy TOF correction from Alien" << std::endl;
-    inFile = TFile::Open("outputTOF.root");
+		if(!hasMC){
+			inFile = TFile::Open("outputTOF.root");
+		}else{
+			inFile = TFile::Open("outputTOF_17f2a.root");
+		}
   }
-  else {
+  else{
     std::cout << "Correction loaded" << std::endl;
   }
   if(runwise){
@@ -157,6 +185,8 @@ void LMEECutLib::SetEtaCorrectionTOF(AliDielectron *die, Int_t corrXdim, Int_t c
   }
 
 }
+
+
 static TH3D LMEECutLib::SetEtaCorrectionTPCTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise, Int_t selection) {
 	
 
@@ -264,18 +294,27 @@ static TH3D LMEECutLib::SetEtaCorrectionTPCTTree( Int_t corrXdim, Int_t corrYdim
 
 }
 
-static TH3D LMEECutLib::SetEtaCorrectionITSTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise, Int_t selection) {
+static TH3D LMEECutLib::SetEtaCorrectionITSTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise, Int_t selection, Bool_t hasMC) {
 	
 
   ::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> SetEtaCorrectionITSTTree() >>>>>>>>>>>>>>>>>>>>>> ");
 
   std::cout << "starting LMEECutLib::SetEtaCorrectionITSTTree()\n";
-  std::string file_name = "/home/aaron/Data/PIDcalibration/outputITS.root";
+  std::string file_name;
+	if(!hasMC){
+		file_name = "/home/aaron/Data/PIDcalibration/outputITS.root";
+	}else{
+		file_name = "/home/aaron/Data/PIDcalibration/outputITS_17f2a.root";
+	}
 
   TFile* recalFile = TFile::Open(file_name.c_str());
   std::cout << recalFile << std::endl;
   if(!recalFile){
-    gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputITS.root .");
+		if(hasMC){
+			gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputITS.root .");
+		}else{
+			gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputITS_17f2a.root .");
+		}
     std::cout << "Copy ITS correction from Alien" << std::endl;
     recalFile = TFile::Open("outputITS.root");
   }
@@ -371,18 +410,27 @@ static TH3D LMEECutLib::SetEtaCorrectionITSTTree( Int_t corrXdim, Int_t corrYdim
 
 }
 
-static TH3D LMEECutLib::SetEtaCorrectionTOFTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise, Int_t selection) {
+static TH3D LMEECutLib::SetEtaCorrectionTOFTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise, Int_t selection, Bool_t hasMC) {
 	
 
   ::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> SetEtaCorrectionTOFTTree() >>>>>>>>>>>>>>>>>>>>>> ");
 
   std::cout << "starting LMEECutLib::SetEtaCorrectionTOFTTree()\n";
-  std::string file_name = "/home/aaron/Data/PIDcalibration/outputTOF.root";
+  std::string file_name;
+	if(hasMC){
+		file_name = "/home/aaron/Data/PIDcalibration/outputTOF.root";
+	}else{
+		file_name = "/home/aaron/Data/PIDcalibration/outputTOF_17f2a.root";
+	}
 
   TFile* recalFile = TFile::Open(file_name.c_str());
   std::cout << recalFile << std::endl;
   if(!recalFile){
-    gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputTOF.root .");
+		if(hasMC){
+			gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputTOF.root .");
+		}else{
+			gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputTOF_17f2a.root .");
+		}
     std::cout << "Copy TOF correction from Alien" << std::endl;
     recalFile = TFile::Open("outputTOF.root");
   }
