@@ -40,7 +40,7 @@ fMergedClusterCutArray(0)
 }
 
 //________________________________________________________________________
-AliCutHandlerPCM::AliCutHandlerPCM(Int_t nMax=10) :
+AliCutHandlerPCM::AliCutHandlerPCM(Int_t nMax) :
   fMode(0),
   fNCuts(0),
   fNMaxCuts(10),
