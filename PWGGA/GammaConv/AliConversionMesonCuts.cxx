@@ -134,6 +134,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fUsePtmaxMethodForBG(kFALSE),
   fDoBG(kTRUE),
   fDoBGProbability(kFALSE),
+  fDoConvCaloMixing(kFALSE),
   fUseTrackMultiplicityForBG(kFALSE),
   fEnableMinOpeningAngleCut(kTRUE),
   fEnableOneCellDistCut(kFALSE),
@@ -223,6 +224,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fUsePtmaxMethodForBG(ref.fUsePtmaxMethodForBG),
   fDoBG(ref.fDoBG),
   fDoBGProbability(ref.fDoBGProbability),
+  fDoConvCaloMixing(ref.fDoConvCaloMixing),
   fUseTrackMultiplicityForBG(ref.fUseTrackMultiplicityForBG),
   fEnableMinOpeningAngleCut(ref.fEnableMinOpeningAngleCut),
   fEnableOneCellDistCut(ref.fEnableOneCellDistCut),
@@ -2243,6 +2245,12 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fSidebandMixingRightLow          = 0.600;
     fSidebandMixingRightHigh         = 0.650;
     break;
+  case 17: //h mixed event with V0 multiplicity
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fDoBGProbability            = kFALSE;
+    fDoConvCaloMixing           = kTRUE;
+    break;
   default:
     cout<<"Warning: BackgroundScheme not defined "<<BackgroundScheme<<endl;
     return kFALSE;
@@ -2743,6 +2751,16 @@ Bool_t AliConversionMesonCuts::SetMinOpanMesonCut(Int_t minOpanMesonCut){
       fMinOpanPtDepCut  = kFALSE;
       fEnableOneCellDistCut = kTRUE;
       break;
+    case 17:      //h - Min opening angle cut for eta reconstruction - EMCEMC
+      if( fFMinOpanCut ) delete fFMinOpanCut;
+      fFMinOpanCut      = new TF1("fFMinOpanCut","(exp([0]*(x+1))+[1]*(x-1)+[2]-0.05)*(x<[3])+0.017*(x>[3])",0.,100.);
+      fFMinOpanCut->SetParameter(0,-0.530209);
+      fFMinOpanCut->SetParameter(1,-0.00536687);
+      fFMinOpanCut->SetParameter(2,0.168845);
+      fFMinOpanCut->SetParameter(3,20);
+      fMinOpanCutMeson  = 0;
+      fMinOpanPtDepCut  = kTRUE;
+      break;
     // opening angle cut variations for EMCal related analyses up to 17. May 2017
 //    case 5:      //
 //      fMinOpanCutMeson  = 0.0202; // minimum 1 EMCal cell diagonal
@@ -2798,6 +2816,15 @@ Bool_t AliConversionMesonCuts::SetMaxOpanMesonCut(Int_t maxOpanMesonCut){
     fMaxOpanPtDepCut  = kTRUE;
     fMaxOpanCutMeson  = TMath::Pi();
     break;
+  case 3:      // - Max opening angle cut for pi0 & eta reconstruction - EMCEMC
+      if( fFMaxOpanCut ) delete fFMaxOpanCut;
+      fFMaxOpanCut      = new TF1("fFMaxOpanCut","exp([0]*(x-0.5))+[1]*(x-0.5)+[2]+0.15",0.,100.);
+      fFMaxOpanCut->SetParameter(0,-0.530209);
+      fFMaxOpanCut->SetParameter(1,-0.00536687);
+      fFMaxOpanCut->SetParameter(2,0.168845);
+      fMaxOpanPtDepCut  = kTRUE;
+      fMaxOpanCutMeson  = TMath::Pi();
+      break;
   default:
     cout<<"Warning: maxOpanMesonCut not defined "<< maxOpanMesonCut<<endl;
     return kFALSE;
