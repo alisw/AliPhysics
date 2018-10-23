@@ -101,6 +101,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fSphericity(0),
   fPtMaxSector(0),
   fCalcSphericity(kFALSE),
+  fCalcSector(kFALSE),
   fPeriodName(""),
   fPtHardBin(0),
   fUseMassToZero(kTRUE),
@@ -635,6 +636,7 @@ Bool_t AliV0ReaderV1::ProcessEvent(AliVEvent *inputEvent,AliMCEvent *mcEvent)
 
   // Calculate the Sphericity
   if(fCalcSphericity) CalculateSphericity();
+  if(fCalcSector) CalculatePtMaxSector();
 
   // Event Cuts
   if(!fEventCuts->EventIsSelected(fInputEvent,fMCEvent)){
@@ -1558,11 +1560,10 @@ void AliV0ReaderV1::CalculateSphericity(){
       fSphericity = (2*TMatrixDEigen(St).GetEigenValues()(1,1))/(TMatrixDEigen(St).GetEigenValues()(0,0)+TMatrixDEigen(St).GetEigenValues()(1,1));
     }
   }
-
   return;
 }
 ///________________________________________________________________________
-Int_t AliV0ReaderV1::CalculatePtMaxSector(){
+void AliV0ReaderV1::CalculatePtMaxSector(){
 
 
   if(fInputEvent->IsA()==AliESDEvent::Class()){
@@ -1628,17 +1629,15 @@ Int_t AliV0ReaderV1::CalculatePtMaxSector(){
       }
     }
     AliESDtrack* PtMaxTrack = (AliESDtrack*) fInputEvent->GetTrack(PtMaxID);
-    if(tempPt==0) return fPtMaxSector;
-    if(!PtMaxTrack) return fPtMaxSector;
-    Double_t PtMaxPhi = PtMaxTrack->Phi();
-    cout << "highest pt track is: " << PtMaxID << " with pt= " << tempPt << endl;
-    fPtMaxSector = 0;
-    if((PtMaxPhi > 0) && (PtMaxPhi < (TMath::Pi()/2.))) fPtMaxSector = 1;
-    if((PtMaxPhi > (TMath::Pi()/2.)) && (PtMaxPhi < TMath::Pi())) fPtMaxSector = 2;
-    if((PtMaxPhi > TMath::Pi()) && (PtMaxPhi < (1.5*TMath::Pi()))) fPtMaxSector = 3;
-    if((PtMaxPhi > (1.5*TMath::Pi())) && (PtMaxPhi < (2.*TMath::Pi()))) fPtMaxSector = 4;
-    if(PtMaxTrack->Eta()>0) fPtMaxSector *= 2;
-    cout << "sector = " << fPtMaxSector << endl;
+    if(tempPt!=0 && PtMaxTrack){
+      Double_t PtMaxPhi = PtMaxTrack->Phi();
+      fPtMaxSector = 0;
+      if((PtMaxPhi > (TMath::Pi()/4.)) && (PtMaxPhi < (3*TMath::Pi()/4.))) fPtMaxSector = 1;
+      if((PtMaxPhi > (3*TMath::Pi()/4.)) && (PtMaxPhi < (5*TMath::Pi()/4.))) fPtMaxSector = 2;
+      if((PtMaxPhi > (5*TMath::Pi()/4.)) && (PtMaxPhi < (7*TMath::Pi()/4.))) fPtMaxSector = 3;
+      if((PtMaxPhi > (7*TMath::Pi()/4.)) && (PtMaxPhi < (TMath::Pi()/4.))) fPtMaxSector = 4;
+      if(PtMaxTrack->Eta()>0) fPtMaxSector += 4;
+    }
   } else if(fInputEvent->IsA()==AliAODEvent::Class()){
     fPtMaxSector = 0;
     Double_t PtMaxID = 0;
@@ -1659,20 +1658,17 @@ Int_t AliV0ReaderV1::CalculatePtMaxSector(){
       }
     }
     AliAODTrack* PtMaxTrack = (AliAODTrack*) fInputEvent->GetTrack(PtMaxID);
-    if(tempPt==0) return fPtMaxSector;
-    if(!PtMaxTrack) return fPtMaxSector;
-    Double_t PtMaxPhi = PtMaxTrack->Phi();
-    cout << "highest pt track is: " << PtMaxID << " with pt= " << tempPt << endl;
-    fPtMaxSector = 0;
-    if((PtMaxPhi > 0) && (PtMaxPhi < (TMath::Pi()/2.))) fPtMaxSector = 1;
-    if((PtMaxPhi > (TMath::Pi()/2.)) && (PtMaxPhi < TMath::Pi())) fPtMaxSector = 2;
-    if((PtMaxPhi > TMath::Pi()) && (PtMaxPhi < (1.5*TMath::Pi()))) fPtMaxSector = 3;
-    if((PtMaxPhi > (1.5*TMath::Pi())) && (PtMaxPhi < (2.*TMath::Pi()))) fPtMaxSector = 4;
-    if(PtMaxTrack->Eta()>0) fPtMaxSector *= 2;
-    cout << "sector = " << fPtMaxSector << endl;
+    if(tempPt!=0 && PtMaxTrack){
+      Double_t PtMaxPhi = PtMaxTrack->Phi();
+      fPtMaxSector = 0;
+      if((PtMaxPhi > (TMath::Pi()/4.)) && (PtMaxPhi < (3*TMath::Pi()/4.))) fPtMaxSector = 1;
+      if((PtMaxPhi > (3*TMath::Pi()/4.)) && (PtMaxPhi < (5*TMath::Pi()/4.))) fPtMaxSector = 2;
+      if((PtMaxPhi > (5*TMath::Pi()/4.)) && (PtMaxPhi < (7*TMath::Pi()/4.))) fPtMaxSector = 3;
+      if((PtMaxPhi > (7*TMath::Pi()/4.)) && (PtMaxPhi < (TMath::Pi()/4.))) fPtMaxSector = 4;
+      if(PtMaxTrack->Eta()>0) fPtMaxSector += 4;
+    }
   }
-
-  return fPtMaxSector;
+  return;
 }
 ///________________________________________________________________________
 Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliMCEvent *mcEvent, TParticle *particle, Double_t etaMax, Double_t rMax, Double_t zMax){

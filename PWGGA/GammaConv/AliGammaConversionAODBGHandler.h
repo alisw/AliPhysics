@@ -32,6 +32,8 @@ class AliGammaConversionAODBGHandler : public TObject {
 		Double_t fY;
 		Double_t fZ;
 		Double_t fEP;
+                Int_t    fSector;
+                Double_t fSphericity;
 	};
 	
 	typedef struct GammaConversionVertex GammaConversionVertex; 																//!
@@ -61,6 +63,7 @@ class AliGammaConversionAODBGHandler : public TObject {
 	Int_t GetNBackgroundEventsInBuffer(Int_t binz, int binMult) const;
 
 	void AddEvent(TList* const eventGammas, Double_t xvalue,Double_t yvalue,Double_t zvalue, Int_t multiplicity, Double_t epvalue = -100);
+        void AddEvent(TList* const eventGammas, Double_t xvalue,Double_t yvalue,Double_t zvalue, Int_t multiplicity, Int_t sector = -1, Double_t sphericity = -1);
 	void AddMesonEvent(TList* const eventMothers, Double_t xvalue,Double_t yvalue,Double_t zvalue, Int_t multiplicity, Double_t epvalue = -100);
 	void AddMesonEvent(const std::vector<AliAODConversionMother> &eventMother, Double_t xvalue, Double_t yvalue, Double_t zvalue, Int_t multiplicity, Double_t epvalue = -100);
 	void AddElectronEvent(TClonesArray* const eventENeg, Double_t zvalue, Int_t multiplicity);
@@ -99,6 +102,6 @@ class AliGammaConversionAODBGHandler : public TObject {
 		AliGammaConversionBGVector 			fBGEventsENeg; 					// electron background electron events
 		AliGammaConversionMotherBGVector 	fBGEventsMeson; 				// neutral meson background events
 		
-	ClassDef(AliGammaConversionAODBGHandler,6)
+	ClassDef(AliGammaConversionAODBGHandler,8)
 };
 #endif

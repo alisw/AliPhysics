@@ -623,7 +623,35 @@ void AliGammaConversionAODBGHandler::AddEvent(TList* const eventGammas,Double_t 
 	}
 	fBGEventCounter[z][m]++;
 }
+//_____________________________________________________________________________________________________________________________
+void AliGammaConversionAODBGHandler::AddEvent(TList* const eventGammas,Double_t xvalue, Double_t yvalue, Double_t zvalue, Int_t multiplicity, Int_t sector, Double_t sphericity){
 
+	Int_t z = GetZBinIndex(zvalue);
+	Int_t m = GetMultiplicityBinIndex(multiplicity);
+
+	if(fBGEventCounter[z][m] >= fNEvents){
+		fBGEventCounter[z][m]=0;
+	}
+	Int_t eventCounter=fBGEventCounter[z][m];
+
+	fBGEventVertex[z][m][eventCounter].fX = xvalue;
+	fBGEventVertex[z][m][eventCounter].fY = yvalue;
+	fBGEventVertex[z][m][eventCounter].fZ = zvalue;
+        fBGEventVertex[z][m][eventCounter].fSector = sector;
+	fBGEventVertex[z][m][eventCounter].fSphericity = sphericity;
+
+    for(UInt_t d=0;d<fBGEvents[z][m][eventCounter].size();d++){
+		delete (AliAODConversionPhoton*)(fBGEvents[z][m][eventCounter][d]);
+	}
+	fBGEvents[z][m][eventCounter].clear();
+
+	// add the gammas to the vector
+	for(Int_t i=0; i< eventGammas->GetEntries();i++){
+		//    AliKFParticle *t = new AliKFParticle(*(AliKFParticle*)(eventGammas->At(i)));
+		fBGEvents[z][m][eventCounter].push_back(new AliAODConversionPhoton(*(AliAODConversionPhoton*)(eventGammas->At(i))));
+	}
+	fBGEventCounter[z][m]++;
+}
 //_____________________________________________________________________________________________________________________________
 void AliGammaConversionAODBGHandler::AddMesonEvent(TList* const eventMothers, Double_t xvalue, Double_t yvalue, Double_t zvalue, Int_t multiplicity, Double_t epvalue){
 
