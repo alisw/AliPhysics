@@ -785,12 +785,12 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
   fHistInvMassPt = new TH2F("fHistInvMassPt",
                             "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
                             "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
-                            100, 0, 10, 500, 1., 1.5);
+                            100, 0, 10, 300, 1., 1.3);
   fHistograms->Add(fHistInvMassPt);
   fHistMixedInvMassPt = new TH2F("fHistMixedInvMassPt",
                                  "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
                                  "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
-                                 100, 0, 10, 500, 1., 1.5);
+                                 100, 0, 10, 300, 1., 1.3);
   fHistograms->Add(fHistMixedInvMassPt);
 
   std::vector<float> multBins = {{0, 0.01, 0.05, 0.1, 0.9, 1., 5., 10., 15.,
@@ -802,21 +802,21 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
                  Form("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); "
                       "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
                       multBins[i], multBins[i + 1]),
-                 100, 0, 10, 150, 1.15, 1.3);
+                 100, 0, 10, 300, 1.15, 1.3);
     fHistograms->Add(fHistPtMult[i]);
     fHistMixedPtMult[i] =
         new TH2F(Form("fHistMixedPtMult_%i", i),
                  Form("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); "
                       "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
                       multBins[i], multBins[i + 1]),
-                 100, 0, 10, 150, 1.15, 1.3);
+                 100, 0, 10, 300, 1.15, 1.3);
     fHistograms->Add(fHistMixedPtMult[i]);
     fHistMixedInvMassBinnedMultPt[i] =
         new TH2F(Form("fHistMixedInvMassBinnedMultPt_%i", i),
                  Form("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); "
                       "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
                       multBins[i], multBins[i + 1]),
-                 100, 0, 10, 150, 1.15, 1.3);
+                 100, 0, 10, 300, 1.15, 1.3);
     fHistograms->Add(fHistMixedInvMassBinnedMultPt[i]);
   }
 
@@ -841,10 +841,10 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
                                50, 0, 10, 150, 1.15, 1.3);
     fHistArmenterosBefore =
         new TH2F("fHistArmenterosBefore", " ; #alpha; #it{q}_{T} (GeV/#it{c})",
-                 200, -1, 1, 100, 0, 0.5);
+                 100, -1, 1, 100, 0, 0.5);
     fHistArmenterosAfter =
         new TH2F("fHistArmenterosAfter", " ; #alpha; #it{q}_{T} (GeV/#it{c})",
-                 200, -1, 1, 100, 0, 0.5);
+                 100, -1, 1, 100, 0, 0.5);
     fHistEtaPhi = new TH2F("fHistEtaPhi", "; #eta; #phi", 100, -1, 1, 100,
                            -TMath::Pi(), TMath::Pi());
     fHistPtRapidity =
