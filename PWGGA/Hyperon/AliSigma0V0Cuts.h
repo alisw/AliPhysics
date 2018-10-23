@@ -52,11 +52,9 @@ class AliSigma0V0Cuts : public TObject {
   void PlotMasses(AliESDv0 *v0) const;
   bool LambdaSelection(AliESDv0 *v0) const;
   bool PhotonSelection(AliESDv0 *v0) const;
-  float ComputeRapidity(float pt, float pz, float m) const;
   float ComputePhotonMass(const AliESDv0 *v0) const;
   float ComputePhotonMassRefit(const AliESDv0 *v0) const;
   float ComputePsiPair(const AliESDv0 *v0) const;
-  int GetRapidityBin(float rapidity) const;
 
   void SetLightweight(bool isLightweight) { fIsLightweight = isLightweight; }
   void SetCheckCutsMC(bool checkCuts) { fCheckCutsMC = checkCuts; }
@@ -197,7 +195,6 @@ class AliSigma0V0Cuts : public TObject {
   TH1F *fHistK0Mass;           //!
   TH1F *fHistV0Pt;             //!
   TH1F *fHistV0Mass;           //!
-  TH2F *fHistV0PtY[20];        //!
   TH2F *fHistV0MassPt;         //!
   TH1F *fHistLambdaMassK0Rej;  //!
   TH1F *fHistK0MassAfter;      //!
@@ -223,17 +220,11 @@ class AliSigma0V0Cuts : public TObject {
   TH2F *fHistArmenterosAfter;         //!
 
   TH2F *fHistMCTruthV0PtY;                        //!
-  TH2F *fHistMCTruthV0PtEta;                      //!
   TH2F *fHistMCTruthV0DaughterPtY;                //!
-  TH2F *fHistMCTruthV0DaughterPtEta;              //!
   TH2F *fHistMCTruthV0DaughterPtYAccept;          //!
-  TH2F *fHistMCTruthV0DaughterPtEtaAccept;        //!
   TH2F *fHistMCTruthPtYHighMult;                  //!
-  TH2F *fHistMCTruthPtEtaHighMult;                //!
   TH2F *fHistMCTruthDaughterPtYHighMult;          //!
-  TH2F *fHistMCTruthDaughterPtEtaHighMult;        //!
   TH2F *fHistMCTruthDaughterPtYAcceptHighMult;    //!
-  TH2F *fHistMCTruthDaughterPtEtaAcceptHighMult;  //!
   TH1F *fHistMCV0Pt;                              //!
 
   TH2F *fHistV0Mother;                                        //!
@@ -320,7 +311,7 @@ class AliSigma0V0Cuts : public TObject {
   TH2F *fHistSingleParticlePID[2];                         //!
 
  private:
-  ClassDef(AliSigma0V0Cuts, 8)
+  ClassDef(AliSigma0V0Cuts, 9)
 };
 
 #endif

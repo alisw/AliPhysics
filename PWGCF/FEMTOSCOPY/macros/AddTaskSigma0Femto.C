@@ -121,6 +121,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
           new AliConvEventCuts(cutnumberEvent.Data(), cutnumberEvent.Data());
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
       fEventCuts->SetV0ReaderName(V0ReaderName);
+      fEventCuts->SetLightOutput(runLightOutput);
       if (periodNameV0Reader.CompareTo("") != 0)
         fEventCuts->SetPeriodEnum(periodNameV0Reader);
       fV0ReaderV1->SetEventCuts(fEventCuts);
