@@ -27,13 +27,25 @@ AliAnalysisV0Efficiency::AliAnalysisV0Efficiency():
   fMCTruthOfV0FinderParticles_Lam(nullptr),
   fMCTruthOfReconstructedParticles_Lam(nullptr),
 
+  fParticleOriginOfOriginalParticles_Lam(nullptr),
+  fParticleOriginOfV0FinderParticles_Lam(nullptr),
+  fParticleOriginOfReconstructedParticles_Lam(nullptr),
+
   fMCTruthOfOriginalParticles_ALam(nullptr),
   fMCTruthOfV0FinderParticles_ALam(nullptr),
   fMCTruthOfReconstructedParticles_ALam(nullptr),
 
+  fParticleOriginOfOriginalParticles_ALam(nullptr),
+  fParticleOriginOfV0FinderParticles_ALam(nullptr),
+  fParticleOriginOfReconstructedParticles_ALam(nullptr),
+
   fMCTruthOfOriginalParticles_K0s(nullptr),
   fMCTruthOfV0FinderParticles_K0s(nullptr),
   fMCTruthOfReconstructedParticles_K0s(nullptr),
+
+  fParticleOriginOfOriginalParticles_K0s(nullptr),
+  fParticleOriginOfV0FinderParticles_K0s(nullptr),
+  fParticleOriginOfReconstructedParticles_K0s(nullptr),
 
   fReconstructedPurityAid_Lam(nullptr),
   fReconstructedPurityAid_ALam(nullptr),
@@ -60,13 +72,25 @@ AliAnalysisV0Efficiency::AliAnalysisV0Efficiency(const char *name, bool aIgnoreI
   fMCTruthOfV0FinderParticles_Lam(nullptr),
   fMCTruthOfReconstructedParticles_Lam(nullptr),
 
+  fParticleOriginOfOriginalParticles_Lam(nullptr),
+  fParticleOriginOfV0FinderParticles_Lam(nullptr),
+  fParticleOriginOfReconstructedParticles_Lam(nullptr),
+
   fMCTruthOfOriginalParticles_ALam(nullptr),
   fMCTruthOfV0FinderParticles_ALam(nullptr),
   fMCTruthOfReconstructedParticles_ALam(nullptr),
 
+  fParticleOriginOfOriginalParticles_ALam(nullptr),
+  fParticleOriginOfV0FinderParticles_ALam(nullptr),
+  fParticleOriginOfReconstructedParticles_ALam(nullptr),
+
   fMCTruthOfOriginalParticles_K0s(nullptr),
   fMCTruthOfV0FinderParticles_K0s(nullptr),
   fMCTruthOfReconstructedParticles_K0s(nullptr),
+
+  fParticleOriginOfOriginalParticles_K0s(nullptr),
+  fParticleOriginOfV0FinderParticles_K0s(nullptr),
+  fParticleOriginOfReconstructedParticles_K0s(nullptr),
 
   fReconstructedPurityAid_Lam(nullptr),
   fReconstructedPurityAid_ALam(nullptr),
@@ -119,6 +143,16 @@ AliAnalysisV0Efficiency::AliAnalysisV0Efficiency(const AliAnalysisV0Efficiency &
   if(aV0Eff.fMCTruthOfReconstructedParticles_Lam) fMCTruthOfReconstructedParticles_Lam = new TH1F(*(aV0Eff.fMCTruthOfReconstructedParticles_Lam));
   else fMCTruthOfReconstructedParticles_Lam = nullptr;
 
+
+  if(aV0Eff.fParticleOriginOfOriginalParticles_Lam) fParticleOriginOfOriginalParticles_Lam = new TH1F(*(aV0Eff.fParticleOriginOfOriginalParticles_Lam));
+  else fParticleOriginOfOriginalParticles_Lam = nullptr;
+
+  if(aV0Eff.fParticleOriginOfV0FinderParticles_Lam) fParticleOriginOfV0FinderParticles_Lam = new TH1F(*(aV0Eff.fParticleOriginOfV0FinderParticles_Lam));
+  else fParticleOriginOfV0FinderParticles_Lam = nullptr;
+
+  if(aV0Eff.fParticleOriginOfReconstructedParticles_Lam) fParticleOriginOfReconstructedParticles_Lam = new TH1F(*(aV0Eff.fParticleOriginOfReconstructedParticles_Lam));
+  else fParticleOriginOfReconstructedParticles_Lam = nullptr;
+
   //-----
 
   if(aV0Eff.fMCTruthOfOriginalParticles_ALam) fMCTruthOfOriginalParticles_ALam = new TH1F(*(aV0Eff.fMCTruthOfOriginalParticles_ALam));
@@ -130,6 +164,16 @@ AliAnalysisV0Efficiency::AliAnalysisV0Efficiency(const AliAnalysisV0Efficiency &
   if(aV0Eff.fMCTruthOfReconstructedParticles_ALam) fMCTruthOfReconstructedParticles_ALam = new TH1F(*(aV0Eff.fMCTruthOfReconstructedParticles_ALam));
   else fMCTruthOfReconstructedParticles_ALam = nullptr;
 
+
+  if(aV0Eff.fParticleOriginOfOriginalParticles_ALam) fParticleOriginOfOriginalParticles_ALam = new TH1F(*(aV0Eff.fParticleOriginOfOriginalParticles_ALam));
+  else fParticleOriginOfOriginalParticles_ALam = nullptr;
+
+  if(aV0Eff.fParticleOriginOfV0FinderParticles_ALam) fParticleOriginOfV0FinderParticles_ALam = new TH1F(*(aV0Eff.fParticleOriginOfV0FinderParticles_ALam));
+  else fParticleOriginOfV0FinderParticles_ALam = nullptr;
+
+  if(aV0Eff.fParticleOriginOfReconstructedParticles_ALam) fParticleOriginOfReconstructedParticles_ALam = new TH1F(*(aV0Eff.fParticleOriginOfReconstructedParticles_ALam));
+  else fParticleOriginOfReconstructedParticles_ALam = nullptr;
+
   //-----
 
   if(aV0Eff.fMCTruthOfOriginalParticles_K0s) fMCTruthOfOriginalParticles_K0s = new TH1F(*(aV0Eff.fMCTruthOfOriginalParticles_K0s));
@@ -140,6 +184,16 @@ AliAnalysisV0Efficiency::AliAnalysisV0Efficiency(const AliAnalysisV0Efficiency &
 
   if(aV0Eff.fMCTruthOfReconstructedParticles_K0s) fMCTruthOfReconstructedParticles_K0s = new TH1F(*(aV0Eff.fMCTruthOfReconstructedParticles_K0s));
   else fMCTruthOfReconstructedParticles_K0s = nullptr;
+
+
+  if(aV0Eff.fParticleOriginOfOriginalParticles_K0s) fParticleOriginOfOriginalParticles_K0s = new TH1F(*(aV0Eff.fParticleOriginOfOriginalParticles_K0s));
+  else fParticleOriginOfOriginalParticles_K0s = nullptr;
+
+  if(aV0Eff.fParticleOriginOfV0FinderParticles_K0s) fParticleOriginOfV0FinderParticles_K0s = new TH1F(*(aV0Eff.fParticleOriginOfV0FinderParticles_K0s));
+  else fParticleOriginOfV0FinderParticles_K0s = nullptr;
+
+  if(aV0Eff.fParticleOriginOfReconstructedParticles_K0s) fParticleOriginOfReconstructedParticles_K0s = new TH1F(*(aV0Eff.fParticleOriginOfReconstructedParticles_K0s));
+  else fParticleOriginOfReconstructedParticles_K0s = nullptr;
 
   //-----
 
@@ -193,6 +247,16 @@ AliAnalysisV0Efficiency& AliAnalysisV0Efficiency::operator=(const AliAnalysisV0E
   if(aV0Eff.fMCTruthOfReconstructedParticles_Lam) fMCTruthOfReconstructedParticles_Lam = new TH1F(*(aV0Eff.fMCTruthOfReconstructedParticles_Lam));
   else fMCTruthOfReconstructedParticles_Lam = nullptr;
 
+
+  if(aV0Eff.fParticleOriginOfOriginalParticles_Lam) fParticleOriginOfOriginalParticles_Lam = new TH1F(*(aV0Eff.fParticleOriginOfOriginalParticles_Lam));
+  else fParticleOriginOfOriginalParticles_Lam = nullptr;
+
+  if(aV0Eff.fParticleOriginOfV0FinderParticles_Lam) fParticleOriginOfV0FinderParticles_Lam = new TH1F(*(aV0Eff.fParticleOriginOfV0FinderParticles_Lam));
+  else fParticleOriginOfV0FinderParticles_Lam = nullptr;
+
+  if(aV0Eff.fParticleOriginOfReconstructedParticles_Lam) fParticleOriginOfReconstructedParticles_Lam = new TH1F(*(aV0Eff.fParticleOriginOfReconstructedParticles_Lam));
+  else fParticleOriginOfReconstructedParticles_Lam = nullptr;
+
   //-----
 
   if(aV0Eff.fMCTruthOfOriginalParticles_ALam) fMCTruthOfOriginalParticles_ALam = new TH1F(*(aV0Eff.fMCTruthOfOriginalParticles_ALam));
@@ -204,6 +268,16 @@ AliAnalysisV0Efficiency& AliAnalysisV0Efficiency::operator=(const AliAnalysisV0E
   if(aV0Eff.fMCTruthOfReconstructedParticles_ALam) fMCTruthOfReconstructedParticles_ALam = new TH1F(*(aV0Eff.fMCTruthOfReconstructedParticles_ALam));
   else fMCTruthOfReconstructedParticles_ALam = nullptr;
 
+
+  if(aV0Eff.fParticleOriginOfOriginalParticles_ALam) fParticleOriginOfOriginalParticles_ALam = new TH1F(*(aV0Eff.fParticleOriginOfOriginalParticles_ALam));
+  else fParticleOriginOfOriginalParticles_ALam = nullptr;
+
+  if(aV0Eff.fParticleOriginOfV0FinderParticles_ALam) fParticleOriginOfV0FinderParticles_ALam = new TH1F(*(aV0Eff.fParticleOriginOfV0FinderParticles_ALam));
+  else fParticleOriginOfV0FinderParticles_ALam = nullptr;
+
+  if(aV0Eff.fParticleOriginOfReconstructedParticles_ALam) fParticleOriginOfReconstructedParticles_ALam = new TH1F(*(aV0Eff.fParticleOriginOfReconstructedParticles_ALam));
+  else fParticleOriginOfReconstructedParticles_ALam = nullptr;
+
   //-----
 
   if(aV0Eff.fMCTruthOfOriginalParticles_K0s) fMCTruthOfOriginalParticles_K0s = new TH1F(*(aV0Eff.fMCTruthOfOriginalParticles_K0s));
@@ -214,6 +288,16 @@ AliAnalysisV0Efficiency& AliAnalysisV0Efficiency::operator=(const AliAnalysisV0E
 
   if(aV0Eff.fMCTruthOfReconstructedParticles_K0s) fMCTruthOfReconstructedParticles_K0s = new TH1F(*(aV0Eff.fMCTruthOfReconstructedParticles_K0s));
   else fMCTruthOfReconstructedParticles_K0s = nullptr;
+
+
+  if(aV0Eff.fParticleOriginOfOriginalParticles_K0s) fParticleOriginOfOriginalParticles_K0s = new TH1F(*(aV0Eff.fParticleOriginOfOriginalParticles_K0s));
+  else fParticleOriginOfOriginalParticles_K0s = nullptr;
+
+  if(aV0Eff.fParticleOriginOfV0FinderParticles_K0s) fParticleOriginOfV0FinderParticles_K0s = new TH1F(*(aV0Eff.fParticleOriginOfV0FinderParticles_K0s));
+  else fParticleOriginOfV0FinderParticles_K0s = nullptr;
+
+  if(aV0Eff.fParticleOriginOfReconstructedParticles_K0s) fParticleOriginOfReconstructedParticles_K0s = new TH1F(*(aV0Eff.fParticleOriginOfReconstructedParticles_K0s));
+  else fParticleOriginOfReconstructedParticles_K0s = nullptr;
 
   //-----
 
@@ -257,12 +341,32 @@ void AliAnalysisV0Efficiency::UserCreateOutputObjects()
   fMCTruthOfReconstructedParticles_Lam = new TH1F("fMCTruthOfReconstructedParticles_Lam", "fMCTruthOfReconstructedParticles_Lam",
                                          kMcOriginTypeMax+1, 0, kMcOriginTypeMax+1);
 
+
+  fParticleOriginOfOriginalParticles_Lam = new TH1F("fParticleOriginOfOriginalParticles_Lam", "fParticleOriginOfOriginalParticles_Lam",
+                                         6000, 0.0, 6000.0);
+  fParticleOriginOfV0FinderParticles_Lam = new TH1F("fParticleOriginOfV0FinderParticles_Lam", "fParticleOriginOfV0FinderParticles_Lam",
+                                         6000, 0.0, 6000.0);
+  fParticleOriginOfReconstructedParticles_Lam = new TH1F("fParticleOriginOfReconstructedParticles_Lam", "fParticleOriginOfReconstructedParticles_Lam",
+                                         6000, 0.0, 6000.0);
+
+  //----------
+
   fMCTruthOfOriginalParticles_ALam = new TH1F("fMCTruthOfOriginalParticles_ALam", "fMCTruthOfOriginalParticles_ALam",
                                          kMcOriginTypeMax+1, 0, kMcOriginTypeMax+1);
   fMCTruthOfV0FinderParticles_ALam = new TH1F("fMCTruthOfV0FinderParticles_ALam", "fMCTruthOfV0FinderParticles_ALam",
                                          kMcOriginTypeMax+1, 0, kMcOriginTypeMax+1);
   fMCTruthOfReconstructedParticles_ALam = new TH1F("fMCTruthOfReconstructedParticles_ALam", "fMCTruthOfReconstructedParticles_ALam",
                                          kMcOriginTypeMax+1, 0, kMcOriginTypeMax+1);
+
+
+  fParticleOriginOfOriginalParticles_ALam = new TH1F("fParticleOriginOfOriginalParticles_ALam", "fParticleOriginOfOriginalParticles_ALam",
+                                         6000, 0.0, 6000.0);
+  fParticleOriginOfV0FinderParticles_ALam = new TH1F("fParticleOriginOfV0FinderParticles_ALam", "fParticleOriginOfV0FinderParticles_ALam",
+                                         6000, 0.0, 6000.0);
+  fParticleOriginOfReconstructedParticles_ALam = new TH1F("fParticleOriginOfReconstructedParticles_ALam", "fParticleOriginOfReconstructedParticles_ALam",
+                                         6000, 0.0, 6000.0);
+
+  //----------
 
   fMCTruthOfOriginalParticles_K0s = new TH1F("fMCTruthOfOriginalParticles_K0s", "fMCTruthOfOriginalParticles_K0s",
                                          kMcOriginTypeMax+1, 0, kMcOriginTypeMax+1);
@@ -271,7 +375,16 @@ void AliAnalysisV0Efficiency::UserCreateOutputObjects()
   fMCTruthOfReconstructedParticles_K0s = new TH1F("fMCTruthOfReconstructedParticles_K0s", "fMCTruthOfReconstructedParticles_K0s",
                                          kMcOriginTypeMax+1, 0, kMcOriginTypeMax+1);
 
-  //-----
+
+  fParticleOriginOfOriginalParticles_K0s = new TH1F("fParticleOriginOfOriginalParticles_K0s", "fParticleOriginOfOriginalParticles_K0s",
+                                         6000, 0.0, 6000.0);
+  fParticleOriginOfV0FinderParticles_K0s = new TH1F("fParticleOriginOfV0FinderParticles_K0s", "fParticleOriginOfV0FinderParticles_K0s",
+                                         6000, 0.0, 6000.0);
+  fParticleOriginOfReconstructedParticles_K0s = new TH1F("fParticleOriginOfReconstructedParticles_K0s", "fParticleOriginOfReconstructedParticles_K0s",
+                                         6000, 0.0, 6000.0);
+
+
+  //----------
 
   SetBinLabels(fMCTruthOfOriginalParticles_Lam);
   SetBinLabels(fMCTruthOfV0FinderParticles_Lam);
@@ -311,6 +424,20 @@ void AliAnalysisV0Efficiency::UserCreateOutputObjects()
   fOutputList->Add(fMCTruthOfReconstructedParticles_Lam);
   fOutputList->Add(fMCTruthOfReconstructedParticles_ALam);
   fOutputList->Add(fMCTruthOfReconstructedParticles_K0s);
+
+  //----------
+
+  fOutputList->Add(fParticleOriginOfOriginalParticles_Lam);
+  fOutputList->Add(fParticleOriginOfOriginalParticles_ALam);
+  fOutputList->Add(fParticleOriginOfOriginalParticles_K0s);
+
+  fOutputList->Add(fParticleOriginOfV0FinderParticles_Lam);
+  fOutputList->Add(fParticleOriginOfV0FinderParticles_ALam);
+  fOutputList->Add(fParticleOriginOfV0FinderParticles_K0s);
+
+  fOutputList->Add(fParticleOriginOfReconstructedParticles_Lam);
+  fOutputList->Add(fParticleOriginOfReconstructedParticles_ALam);
+  fOutputList->Add(fParticleOriginOfReconstructedParticles_K0s);
 
   //----------------------------------------------------
 
@@ -362,7 +489,7 @@ void AliAnalysisV0Efficiency::SetBinLabels(TH1* aHist)
 }
 
 //____________________________
-void AliAnalysisV0Efficiency::FillHistogram(int aPID, const AliAODMCParticle* aPart, const AliAODMCParticle* aMother, TH1* aHist, bool aFillFake)
+void AliAnalysisV0Efficiency::FillMCTruthHistogram(int aPID, const AliAODMCParticle* aPart, const AliAODMCParticle* aMother, TH1* aHist, bool aFillFake)
 {
   //TODO it appears a particle can have a mother, but still be considered primary
   //     i.e. calling aPart->IsPhysicalPrimary() can still be true
@@ -392,6 +519,25 @@ void AliAnalysisV0Efficiency::FillHistogram(int aPID, const AliAODMCParticle* aP
   }
   else if(aFillFake) aHist->Fill(kFake);
 }
+
+
+//____________________________
+void AliAnalysisV0Efficiency::FillParticleOriginHistogram(int aPID, const AliAODMCParticle* aPart, const AliAODMCParticle* aMother, TH1* aHist)
+{
+  if(aPart->GetPdgCode()==aPID)
+  {
+    if(aPart->GetMother() > -1) aHist->Fill(TMath::Abs(aMother->GetPdgCode()));
+    else aHist->Fill(0.);
+  }
+}
+
+//____________________________
+void AliAnalysisV0Efficiency::FillHistograms(int aPID, const AliAODMCParticle* aPart, const AliAODMCParticle* aMother, TH1* aMCTruthHist, TH1* aParticleOriginHist, bool aFillFake)
+{
+  FillMCTruthHistogram(aPID, aPart, aMother, aMCTruthHist, aFillFake);
+  FillParticleOriginHistogram(aPID, aPart, aMother, aParticleOriginHist);
+}
+
 
 //____________________________
 int AliAnalysisV0Efficiency::GetNumberOfLastHijingLabel(const AliAODEvent *aEvent)
@@ -476,8 +622,7 @@ void AliAnalysisV0Efficiency::ExtractOriginalParticles(const AliAODEvent *aEvent
     if(tPart->GetNDaughters() != 2) continue;
 //    int tPartPID = tPart->GetPdgCode();
 
-    bool tIsInjected = false;
-    if(fIgnoreInjectedV0s) tIsInjected = IsInjected(tPart, mcP, tNumberOfLastHijingLabel);
+    bool tIsInjected = IsInjected(tPart, mcP, tNumberOfLastHijingLabel);
     AliAODMCParticle *tMother = NULL;
     if(tPart->GetMother() > -1)  //MC particle has a mother 
     {
@@ -523,9 +668,18 @@ void AliAnalysisV0Efficiency::ExtractOriginalParticles(const AliAODEvent *aEvent
 
     if(fIgnoreInjectedV0s && tIsInjected) continue;
 
-    if(!ContainsSharedDaughters(tDaughterLabelsLam, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()))  FillHistogram(3122, tPart, tMother, fMCTruthOfOriginalParticles_Lam); 
-    if(!ContainsSharedDaughters(tDaughterLabelsALam, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel())) FillHistogram(-3122, tPart, tMother, fMCTruthOfOriginalParticles_ALam); 
-    if(!ContainsSharedDaughters(tDaughterLabelsK0s, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()))  FillHistogram(310, tPart, tMother, fMCTruthOfOriginalParticles_K0s); 
+    if(!ContainsSharedDaughters(tDaughterLabelsLam, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()))
+    {
+      FillHistograms(3122, tPart, tMother, fMCTruthOfOriginalParticles_Lam, fParticleOriginOfOriginalParticles_Lam); 
+    }
+    if(!ContainsSharedDaughters(tDaughterLabelsALam, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel())) 
+    {
+      FillHistograms(-3122, tPart, tMother, fMCTruthOfOriginalParticles_ALam, fParticleOriginOfOriginalParticles_ALam); 
+    }
+    if(!ContainsSharedDaughters(tDaughterLabelsK0s, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()))  
+    {
+      FillHistograms(310, tPart, tMother, fMCTruthOfOriginalParticles_K0s, fParticleOriginOfOriginalParticles_K0s); 
+    }
 
     if(tPart->GetPdgCode()==3122)  tDaughterLabelsLam.push_back(vector<int>{mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()});
     if(tPart->GetPdgCode()==-3122) tDaughterLabelsALam.push_back(vector<int>{mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()});
@@ -946,7 +1100,7 @@ void AliAnalysisV0Efficiency::ExtractV0FinderParticles(const AliAODEvent *aEvent
     tMCv0 = (AliAODMCParticle*)(mcP->At(motherOfPosID));
     if(!tMCv0) continue;
 
-    if(fIgnoreInjectedV0s) tIsInjected = IsInjected(tMCv0, mcP, tNumberOfLastHijingLabel);
+    tIsInjected = IsInjected(tMCv0, mcP, tNumberOfLastHijingLabel);
     if(tMCv0->GetMother() > -1) tMother = (AliAODMCParticle*)(mcP->At(tMCv0->GetMother())); //V0 has mother
 
 
@@ -969,9 +1123,18 @@ void AliAnalysisV0Efficiency::ExtractV0FinderParticles(const AliAODEvent *aEvent
 
 
     //Fill fMCTruthOfV0FinderParticles histograms
-    if(!ContainsSharedDaughters(tDaughterLabelsV0Lam, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()))  FillHistogram( 3122, tMCv0, tMother, fMCTruthOfV0FinderParticles_Lam); 
-    if(!ContainsSharedDaughters(tDaughterLabelsV0ALam, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel())) FillHistogram(-3122, tMCv0, tMother, fMCTruthOfV0FinderParticles_ALam); 
-    if(!ContainsSharedDaughters(tDaughterLabelsV0K0s, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()))  FillHistogram(  310, tMCv0, tMother, fMCTruthOfV0FinderParticles_K0s); 
+    if(!ContainsSharedDaughters(tDaughterLabelsV0Lam, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()))  
+    {
+      FillHistograms( 3122, tMCv0, tMother, fMCTruthOfV0FinderParticles_Lam, fParticleOriginOfV0FinderParticles_Lam); 
+    }
+    if(!ContainsSharedDaughters(tDaughterLabelsV0ALam, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel())) 
+    {
+      FillHistograms(-3122, tMCv0, tMother, fMCTruthOfV0FinderParticles_ALam, fParticleOriginOfV0FinderParticles_ALam); 
+    }
+    if(!ContainsSharedDaughters(tDaughterLabelsV0K0s, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()))  
+    {
+      FillHistograms(  310, tMCv0, tMother, fMCTruthOfV0FinderParticles_K0s, fParticleOriginOfV0FinderParticles_K0s); 
+    }
 
     if(tMCv0->GetPdgCode()==3122)  tDaughterLabelsV0Lam.push_back(vector<int>{mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()});
     if(tMCv0->GetPdgCode()==-3122) tDaughterLabelsV0ALam.push_back(vector<int>{mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()});
@@ -982,7 +1145,7 @@ void AliAnalysisV0Efficiency::ExtractV0FinderParticles(const AliAODEvent *aEvent
     {
       if(!ContainsSharedDaughters(tDaughterLabelsRecoLam, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()))
       {
-        FillHistogram( 3122, tMCv0, tMother, fMCTruthOfReconstructedParticles_Lam, true);
+        FillHistograms( 3122, tMCv0, tMother, fMCTruthOfReconstructedParticles_Lam, fParticleOriginOfReconstructedParticles_Lam, true);
         tDaughterLabelsRecoLam.push_back(vector<int>{mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()});
       }
     }
@@ -990,7 +1153,7 @@ void AliAnalysisV0Efficiency::ExtractV0FinderParticles(const AliAODEvent *aEvent
     {
       if(!ContainsSharedDaughters(tDaughterLabelsRecoALam, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()))
       {
-        FillHistogram(-3122, tMCv0, tMother, fMCTruthOfReconstructedParticles_ALam, true);
+        FillHistograms(-3122, tMCv0, tMother, fMCTruthOfReconstructedParticles_ALam, fParticleOriginOfReconstructedParticles_ALam, true);
         tDaughterLabelsRecoALam.push_back(vector<int>{mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()});
       }
     }
@@ -998,7 +1161,7 @@ void AliAnalysisV0Efficiency::ExtractV0FinderParticles(const AliAODEvent *aEvent
     {
       if(!ContainsSharedDaughters(tDaughterLabelsRecoK0s, mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()))
       {
-        FillHistogram(  310, tMCv0, tMother, fMCTruthOfReconstructedParticles_K0s, true);
+        FillHistograms(  310, tMCv0, tMother, fMCTruthOfReconstructedParticles_K0s, fParticleOriginOfReconstructedParticles_K0s, true);
         tDaughterLabelsRecoK0s.push_back(vector<int>{mcParticlePos->GetLabel(), mcParticleNeg->GetLabel()});
       }
     }

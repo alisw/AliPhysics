@@ -62,7 +62,9 @@ public:
 
   bool IsCorrectEventTrigger();
   static void SetBinLabels(TH1* aHist);
-  void FillHistogram(int aPID, const AliAODMCParticle* aPart, const AliAODMCParticle* aMother, TH1* aHist, bool aFillFake=false);
+  void FillMCTruthHistogram(int aPID, const AliAODMCParticle* aPart, const AliAODMCParticle* aMother, TH1* aHist, bool aFillFake=false);
+  void FillParticleOriginHistogram(int aPID, const AliAODMCParticle* aPart, const AliAODMCParticle* aMother, TH1* aHist);
+  void FillHistograms(int aPID, const AliAODMCParticle* aPart, const AliAODMCParticle* aMother, TH1* aMCTruthHist, TH1* aParticleOriginHist, bool aFillFake=false);
   static int GetNumberOfLastHijingLabel(const AliAODEvent *aEvent);
   bool IsInjected(const AliAODMCParticle* aMCv0, TClonesArray *mcArray, int aNumberOfLastHijingLabel);
 
@@ -106,17 +108,37 @@ protected:
   TH1F *fMCTruthOfV0FinderParticles_Lam; //!
   TH1F *fMCTruthOfReconstructedParticles_Lam; //!
 
+  TH1F *fParticleOriginOfOriginalParticles_Lam; //!
+  TH1F *fParticleOriginOfV0FinderParticles_Lam; //!
+  TH1F *fParticleOriginOfReconstructedParticles_Lam; //!
+
+  //----------
+
   TH1F *fMCTruthOfOriginalParticles_ALam; //!
   TH1F *fMCTruthOfV0FinderParticles_ALam; //!
   TH1F *fMCTruthOfReconstructedParticles_ALam; //!
+
+  TH1F *fParticleOriginOfOriginalParticles_ALam; //!
+  TH1F *fParticleOriginOfV0FinderParticles_ALam; //!
+  TH1F *fParticleOriginOfReconstructedParticles_ALam; //!
+
+  //----------
 
   TH1F *fMCTruthOfOriginalParticles_K0s; //!
   TH1F *fMCTruthOfV0FinderParticles_K0s; //!
   TH1F *fMCTruthOfReconstructedParticles_K0s; //!
 
+  TH1F *fParticleOriginOfOriginalParticles_K0s; //!
+  TH1F *fParticleOriginOfV0FinderParticles_K0s; //!
+  TH1F *fParticleOriginOfReconstructedParticles_K0s; //!
+
+  //----------
+
   TH1F *fReconstructedPurityAid_Lam;
   TH1F *fReconstructedPurityAid_ALam;
   TH1F *fReconstructedPurityAid_K0s;
+
+  //----------
 
   bool fRemoveMisidentified;
 
