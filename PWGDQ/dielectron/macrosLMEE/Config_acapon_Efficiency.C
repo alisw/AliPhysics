@@ -102,33 +102,13 @@ void GetCentrality(const Int_t centrality, Double_t& CentMin, Double_t& CentMax)
   return;
 }
 
-void DoAdditionalWork(AliAnalysisTaskElectronEfficiencyV2* task){
+void ApplyPIDpostCalibration(AliAnalysisTaskElectronEfficiencyV2* task, Int_t whichDet){
   std::cout << task << std::endl;
 
-  std::cout << "starting DoAdditionalWork()\n";
-  if(SetTPCCorrection == kTRUE){
-    std::cout << "Loading TPC correction" << std::endl;
-    std::string file_name = "outputTPC.root";
-    TFile* _file = TFile::Open(file_name.c_str());
-
-    if(!_file){
-      gSystem->Exec(("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/" + file_name + " .").c_str());
-      std::cout << "Copy TPC correction from Alien" << std::endl;
-      _file = TFile::Open(file_name.c_str());
-    }
-    else {
-      std::cout << "Correction loaded" << std::endl;
-    }
-
-    TH3D* mean = dynamic_cast<TH3D*>(_file->Get("sum_mean_correction"));
-    TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
-
-    task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTPC, mean,  AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
-    task->SetWidthCorrFunction   (AliAnalysisTaskElectronEfficiencyV2::kTPC, width, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
-  }
-  if(SetITSCorrection == kTRUE){
+  std::cout << "starting ApplyPIDpostCalibration()\n";
+  if(whichDet == 0){// ITS
     std::cout << "Loading ITS correction" << std::endl;
-    std::string file_name = "outputITS.root";
+    std::string file_name = "outputITS_17f2a.root";
     TFile* _file = TFile::Open(file_name.c_str());
 
     if(!_file){
@@ -146,9 +126,9 @@ void DoAdditionalWork(AliAnalysisTaskElectronEfficiencyV2* task){
     task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kITS, mean,  AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
     task->SetWidthCorrFunction   (AliAnalysisTaskElectronEfficiencyV2::kITS, width, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
   }
-  if(SetTOFCorrection == kTRUE){
+  if(whichDet == 1){// TOF
     std::cout << "Loading TOF correction" << std::endl;
-    std::string file_name = "outputTOF.root";
+    std::string file_name = "outputTOF_17f2a.root";
     TFile* _file = TFile::Open(file_name.c_str());
 
     if(!_file){
@@ -188,7 +168,6 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition)
 	else if(cutDefinition = "kCutSet1"){ //TMVA
 		std::cout << "Setting up cut set 1" << std::endl;
 		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
-		anaFilter->AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
 		anaFilter->SetName(cutDefinition);
 		anaFilter->Print();
 	}

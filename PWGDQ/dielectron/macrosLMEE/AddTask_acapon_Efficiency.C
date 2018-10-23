@@ -174,7 +174,9 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names = "
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition);
     task->AddTrackCuts(filter);
 		Printf("Successfully added task with cut set: %s\n", cutDefinition);
-    //DoAdditionalWork(task);
+		// Apply PID post calibration to ITS(0) and TOF(1)
+    ApplyPIDpostCalibration(task, 0);
+    ApplyPIDpostCalibration(task, 1);
   }
 
 
