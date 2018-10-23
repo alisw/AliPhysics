@@ -104,8 +104,8 @@ void AliAnalysisTaskFilterUPCNanoAOD::UserExec(Option_t*)
 	}
   
   //if(!isTriggered || !hasGoodVertex || nGoodTracks == 0) return;
-  if(!isTriggered || nGoodTracks == 0) return;
-  //if(!isTriggered) return;
+  //if(!isTriggered || nGoodTracks == 0) return;
+  if(!isTriggered) return;
   //AliInfo("Good UPC event");
   
   
