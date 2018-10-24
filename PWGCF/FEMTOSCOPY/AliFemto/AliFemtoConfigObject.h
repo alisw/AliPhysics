@@ -407,26 +407,32 @@ public:
   /// \defgroup Find&Load Methods
   /// @{
   /// Copies item identified by *key*, returns true if found
-  #define IMPL_FINDANDLOAD(__dest_type, __tag, __source)            \
+  #define IMPL_FINDANDLOAD(__dest_type, __load, __tag, __source)            \
     bool find_and_load(const Key_t &key, __dest_type &dest) const { \
       if (!is_map()) { return false; }                              \
-      MapValue_t::const_iterator found = fValueMap.find(key);       \
-      if (found == fValueMap.cend()) { return false; }              \
-      if (found->second.fTypeTag != __tag) { return false; }        \
-      dest = found->second. __source;                               \
-      return true; }
+      const AliFemtoConfigObject* found = find(key);                \
+      if (!found) { return false; }                                 \
+      return found-> __load (dest); }
 
-    FORWARD_STANDARD_TYPES(IMPL_FINDANDLOAD)
+    // FORWARD_STANDARD_TYPES(IMPL_FINDANDLOAD)
 
-    IMPL_FINDANDLOAD(pair_of_floats, kRANGE, fValueRange);
-    IMPL_FINDANDLOAD(pair_of_ints, kRANGE, fValueRange);
-    IMPL_FINDANDLOAD(int, kINT, fValueInt);
-    IMPL_FINDANDLOAD(unsigned int, kINT, fValueInt);
-    IMPL_FINDANDLOAD(Float_t, kFLOAT, fValueFloat);
-    IMPL_FINDANDLOAD(TString, kSTRING, fValueString);
+    IMPL_FINDANDLOAD(BoolValue_t, load_bool, kBOOL, fValueBool);
+    IMPL_FINDANDLOAD(IntValue_t, load_int, kINT, fValueInt);
+    IMPL_FINDANDLOAD(FloatValue_t, load_float, kFLOAT, fValueFloat);
+    IMPL_FINDANDLOAD(StringValue_t, load_str, kSTRING, fValueString);
+    IMPL_FINDANDLOAD(ArrayValue_t, load_array, kARRAY, fValueArray);
+    IMPL_FINDANDLOAD(MapValue_t, load_map, kMAP, fValueMap);
+    IMPL_FINDANDLOAD(RangeValue_t, load_range, kRANGE, fValueRange);
+    IMPL_FINDANDLOAD(RangeListValue_t, load_rangelist, kRANGELIST, fValueRangeList);
+
+    IMPL_FINDANDLOAD(pair_of_floats, load_range, kRANGE, fValueRange);
+    IMPL_FINDANDLOAD(pair_of_ints, load_range, kRANGE, fValueRange);
+    IMPL_FINDANDLOAD(unsigned int, load_int, kINT, fValueInt);
+    // IMPL_FINDANDLOAD(int, load_int, kINT, fValueInt);
+    IMPL_FINDANDLOAD(Float_t, load_float, kFLOAT, fValueFloat);
+    IMPL_FINDANDLOAD(TString, load_str, kSTRING, fValueString);
 
   #undef IMPL_FINDANDLOAD
-  /// @}
 
   bool find_and_load(const Key_t &key, AliFemtoConfigObject &dest) const
   {
