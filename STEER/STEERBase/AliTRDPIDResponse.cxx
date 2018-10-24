@@ -855,10 +855,10 @@ Bool_t AliTRDPIDResponse::IdentifiedAsElectron(Int_t nTracklets, const Double_t 
     AliDebug(3,Form("probabilities like %f %f %f \n",probEle,like[AliPID::kElectron],like[AliPID::kPion]));
     Double_t params[4];
     if(!fkPIDResponseObject->GetThresholdParameters(nTracklets, level, params,centrality,PIDmethod,iCharge)){
-        AliError("No Params found for the given configuration with chosen Charge");
-        AliError("Using Parameters for both charges");
+        //AliError("No Params found for the given configuration with chosen Charge");
+        //AliError("Using Parameters for both charges");
         if((iCharge!=AliPID::kNoCharge)&&(!fkPIDResponseObject->GetThresholdParameters(nTracklets, level, params,centrality,PIDmethod,AliPID::kNoCharge))){
-            AliError("No Params found for the given configuration with charge 0");
+            //AliError("No Params found for the given configuration with charge 0");
             return kTRUE;
         }
         if(iCharge==AliPID::kNoCharge){

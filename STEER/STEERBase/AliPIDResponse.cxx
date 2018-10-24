@@ -678,6 +678,7 @@ void AliPIDResponse::ExecNewRun()
   // ===| TRD part |============================================================
   SetTRDPidResponseMaster();
   //has to precede InitializeTRDResponse(), otherwise the read-out fTRDdEdxParams is not pased in TRDResponse!
+  CheckTRDLikelihoodParameter();
   SetTRDdEdxParams();
   SetTRDEtaMaps();
   SetTRDClusterMaps();
@@ -1772,6 +1773,26 @@ void AliPIDResponse::SetTRDPidResponseMaster()
       AliError(Form("TRD Response not found in run %d", fRun));
     }
   }
+}
+void AliPIDResponse::CheckTRDLikelihoodParameter(){
+    Int_t nTracklets=1;
+    Double_t level=0.9;
+    Double_t params[4];
+    Int_t centrality=0;
+    Int_t iCharge=1;
+    if(!fTRDPIDResponseObject->GetThresholdParameters(nTracklets, level, params,centrality,AliTRDPIDResponse::kLQ1D,iCharge)){
+        AliInfo("No Params for TRD Likelihood Threshold Parameters Found for Charge Dependence");
+        AliInfo("Using Parameters for both charges");
+        if((iCharge!=AliPID::kNoCharge)&&(!fTRDPIDResponseObject->GetThresholdParameters(nTracklets, level, params,centrality,AliTRDPIDResponse::kLQ1D,AliPID::kNoCharge))){
+            AliError("No Params TRD Likelihood Threshold Parameters Found!!");
+        }
+        if(iCharge==AliPID::kNoCharge){
+            AliError("No Params TRD Likelihood Threshold Parameters Found!!");
+        }
+    }
+    else {
+        AliInfo(Form("TRD Likelihood Threshold Parameters for Run %d Found",fRun));
+    }
 }
 
 //______________________________________________________________________________

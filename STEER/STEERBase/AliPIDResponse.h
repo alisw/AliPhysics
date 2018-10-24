@@ -316,6 +316,7 @@ private:
 
   //TRD
   void SetTRDPidResponseMaster();
+  void CheckTRDLikelihoodParameter();
   void InitializeTRDResponse();
   void SetTRDSlices(UInt_t TRDslicesForPID[2],AliTRDPIDResponse::ETRDPIDMethod method) const;
   void SetTRDdEdxParams();
@@ -379,7 +380,7 @@ private:
   EDetPidStatus GetPHOSPIDStatus(const AliVTrack *track) const;
   EDetPidStatus GetEMCALPIDStatus(const AliVTrack *track) const;
 
-  ClassDef(AliPIDResponse, 19);  //PID response handling
+  ClassDef(AliPIDResponse, 20);  //PID response handling
 };
 
 #endif
