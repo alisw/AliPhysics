@@ -316,6 +316,7 @@ private:
 
   //TRD
   void SetTRDPidResponseMaster();
+  void CheckTRDLikelihoodParameter();
   void InitializeTRDResponse();
   void SetTRDSlices(UInt_t TRDslicesForPID[2],AliTRDPIDResponse::ETRDPIDMethod method) const;
   void SetTRDdEdxParams();
