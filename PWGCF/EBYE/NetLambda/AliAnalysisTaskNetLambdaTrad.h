@@ -1,6 +1,6 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-//updated 0ct 19
+//updated 0ct 24
 
 #ifndef AliAnalysisTaskNetLambdaTrad_h
 #define AliAnalysisTaskNetLambdaTrad_h
@@ -67,11 +67,8 @@ protected:
     TH2F*  f2fHistAntiLambdaMisId;
     TH2F*  f2fHistV0CentVsPtLambda;
     TH2F*  f2fHistV0CentVsPtAntiLambda;
-    TH2F*  f2fHistLambdafromXi;
-    TH2F*  f2fHistAntiLambdafromXi;
-
-
-    
+    TH3F*  f3fHistLambdafromXi;
+    TH3F*  f3fHistAntiLambdafromXi;
     TH2F*  f2fHistLRecstat;
     TH2F*  f2fHistARecstat;
     TH2F*  f2fHistLGenstat;

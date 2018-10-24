@@ -1,6 +1,6 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-// Updated Oct 19; Provisions for feeddown correction
+// Updated Oct 24; double charged xi
 // Parts of the code taken from:
 // AliEbyEPidEfficiencyContamination.cxx
 // AliAnalysisTaskStrangenessVsMultiplicityMCRun2.cxx
@@ -76,8 +76,8 @@ f2fHisthXiPlus(0x0),
 f2fHisthXiMinus(0x0),
 f2fHisthXiZero(0x0),
 f2fHisthXiZeroAnti(0x0),
-f2fHistLambdafromXi(0x0),
-f2fHistAntiLambdafromXi(0x0),
+f3fHistLambdafromXi(0x0),
+f3fHistAntiLambdafromXi(0x0),
 f2fHistLRecstat(0x0),
 f2fHistARecstat(0x0),
 f2fHistLGenstat(0x0),
@@ -143,8 +143,6 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
     Double_t ptMax=12.;
     Double_t XiBins[listbins+1];
     for (Int_t i=0; i<=(listbins+1); i++) XiBins[i]=i*(ptMax+2)/listbins;
-    
-//    Printf("nBins is %d\n", fNptBins);
     
     f2fHistLRecstat = new TH2F("f2fHistLRecstat","f2fHistLRecstat", 100, -0.5, 99.5, 1900, -0.5, 1899.5);
     fListHist->Add(f2fHistLRecstat);
@@ -233,11 +231,11 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
         f2fHisthXiZeroAnti = new TH2F( "f2fHisthXiZeroAnti", "Centrality Vs Xi Zero bar Gen Pt", xNbins, xBinEdge, fNptBins, LambdaPtBins);
         fListHist->Add(f2fHisthXiZeroAnti);
         
-        f2fHistLambdafromXi = new TH2F( "f2fHistLambdafromXi", "Lambda pt vs Xi pt", fNptBins, LambdaPtBins, listbins, XiBins);
-        fListHist->Add(f2fHistLambdafromXi);
+        f3fHistLambdafromXi = new TH3F( "f3fHistLambdafromXi", "Lambda pt vs Cent vs Xi pt",fNptBins, LambdaPtBins, xNbins, xBinEdge, listbins, XiBins);
+        fListHist->Add(f3fHistLambdafromXi);
         
-        f2fHistAntiLambdafromXi = new TH2F( "f2fHistAntiLambdafromXi", "#bar{#Lambda} pt vs Xi pt", fNptBins, LambdaPtBins, listbins, XiBins);
-        fListHist->Add(f2fHistAntiLambdafromXi);
+        f3fHistAntiLambdafromXi = new TH3F( "f3fHistAntiLambdafromXi", " #bar{#Lambda} pt vs Cent vs Xi pt",fNptBins, LambdaPtBins, xNbins, xBinEdge, listbins, XiBins);
+        fListHist->Add(f3fHistAntiLambdafromXi);
         
         f2fHistInvMassVsPtLambdaRec = new TH2F("f2fHistInvMassVsPtLambdaRec","Inv mass #Lambda Vs Pt Rec",100,1.08,1.16, fNptBins,LambdaPtBins);
         fListHist->Add(f2fHistInvMassVsPtLambdaRec);
@@ -845,14 +843,14 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                     
                     if (fTreeVariablePID == 3122 && isSecFromWeakDecay && fTreeVariablePrimaryStatusMother == 1)
                     {
-                        if ((fTreeVariablePIDMother == 3312)||(fTreeVariablePIDMother == 3322))
-                            {f2fHistLambdafromXi->Fill(mcpt,fTreeVariablePtMother);}
+                        if (fTreeVariablePIDMother == 3312)
+                            {f3fHistLambdafromXi->Fill(mcpt,fCentrality,fTreeVariablePtMother);}
                     }
                     
                     if (fTreeVariablePID == -3122 && isSecFromWeakDecay && fTreeVariablePrimaryStatusMother == 1)
                     {
-                        if ((fTreeVariablePIDMother == -3312)||(fTreeVariablePIDMother == -3322))
-                        {f2fHistAntiLambdafromXi->Fill(mcpt,fTreeVariablePtMother);}
+                        if (fTreeVariablePIDMother == -3312)
+                        {f3fHistAntiLambdafromXi->Fill(mcpt,fCentrality,fTreeVariablePtMother);}
                     }
                 
                } //ESD
