@@ -219,14 +219,22 @@ AliFemtoConfigObject::pop(const Key_t &key)
 const AliFemtoConfigObject *
 AliFemtoConfigObject::find(const Key_t &key) const
 {
-  const AliFemtoConfigObject *result = nullptr;
+  auto keys = split_key(key);
 
-  if (is_map()) {
-    auto found = fValueMap.find(key);
-    if (found != fValueMap.end()) {
-      result = &found->second;
+  const AliFemtoConfigObject *result = this;
+
+  for (auto &subkey : keys) {
+    if (!result->is_map()) {
+      return nullptr;
     }
+
+    auto found = result->fValueMap.find(subkey);
+    if (found == result->fValueMap.end()) {
+      return nullptr;
+    }
+    result = &found->second;
   }
+
   return result;
 }
 
@@ -234,15 +242,8 @@ AliFemtoConfigObject::find(const Key_t &key) const
 AliFemtoConfigObject*
 AliFemtoConfigObject::find(const Key_t &key)
 {
-  AliFemtoConfigObject *result = nullptr;
-
-  if (is_map()) {
-    auto found = fValueMap.find(key);
-    if (found != fValueMap.end()) {
-      result = &found->second;
-    }
-  }
-  return result;
+  auto result = const_cast<const AliFemtoConfigObject*>(this)->find(key);
+  return const_cast<AliFemtoConfigObject*>(result);
 }
 
 void
@@ -407,7 +408,8 @@ TBuffer& operator>>(TBuffer &stream, AliFemtoConfigObject &cfg)
       // }
       new (&cfg.fValueArray) AliFemtoConfigObject::ArrayValue_t ();
       cfg.fValueArray.reserve(count);
-      for (std::size_t i = 0; i < count; ++i) {
+      // for (std::size_t i = 0; i < count; ++i) {
+      while (count--) {
         AliFemtoConfigObject tmp;
         stream >> tmp;
         cfg.fValueArray.emplace_back(std::move(tmp));
@@ -417,7 +419,8 @@ TBuffer& operator>>(TBuffer &stream, AliFemtoConfigObject &cfg)
       case AliFemtoConfigObject::kMAP:
       stream >> count;
       new (&cfg.fValueMap) AliFemtoConfigObject::MapValue_t ();
-      for (std::size_t i = 0; i < count; ++i) {
+      // for (std::size_t i = 0; i < count; ++i) {
+      while (count--) {
         TString keybuff;
         AliFemtoConfigObject val;
         stream >> keybuff;
