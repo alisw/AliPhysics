@@ -63,7 +63,7 @@ void LMEECutLib::SetEtaCorrectionTPC(AliDielectron *die, Int_t corrXdim, Int_t c
   //
 	
   std::cout << "starting LMEECutLib::SetEtaCorrectionTPC()\n";
-  std::string file_name = "/home/aaron/Data/PIDcalibration/outputTPC.root";
+  std::string file_name = "/home/aaron/Data/diElecOutput/PIDcalibration/outputTPC.root";
 
   TFile* inFile = TFile::Open(file_name.c_str(), "READ");
   std::cout << inFile << std::endl;
@@ -97,7 +97,7 @@ void LMEECutLib::SetEtaCorrectionITS(AliDielectron *die, Int_t corrXdim, Int_t c
   // eta correction for the centroid and width of electron sigmas in the TPC, can be one/two/three-dimensional
   //
   std::cout << "starting LMEECutLib::SetEtaCorrectionITS()\n";
-  TString file_name = "/home/aaron/Data/PIDcalibration/output";
+  TString file_name = "/home/aaron/Data/diElecOutput/PIDcalibration/output";
 	if(hasMC){
 		file_name.Append("ITS_17f2a.root");
 	}else{
@@ -144,7 +144,7 @@ void LMEECutLib::SetEtaCorrectionTOF(AliDielectron *die, Int_t corrXdim, Int_t c
   // eta correction for the centroid and width of electron sigmas in the TPC, can be one/two/three-dimensional
   //
   std::cout << "starting LMEECutLib::SetEtaCorrectionTOF()\n";
-  TString file_name = "/home/aaron/Data/PIDcalibration/output";
+  TString file_name = "/home/aaron/Data/diElecOutput/PIDcalibration/output";
 	if(hasMC){
 		file_name.Append("TOF_17f2a.root");
 	}else{
@@ -193,7 +193,7 @@ static TH3D LMEECutLib::SetEtaCorrectionTPCTTree( Int_t corrXdim, Int_t corrYdim
   ::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> SetEtaCorrectionTPC() >>>>>>>>>>>>>>>>>>>>>> ");
 
   std::cout << "starting LMEECutLib::SetEtaCorrectionTPC()\n";
-  std::string file_name = "/home/aaron/Data/PIDcalibration/outputTPC.root";
+  std::string file_name = "/home/aaron/Data/diElecOutput/PIDcalibration/outputTPC.root";
 
   TFile* recalFile = TFile::Open(file_name.c_str());
   std::cout << recalFile << std::endl;
@@ -302,9 +302,9 @@ static TH3D LMEECutLib::SetEtaCorrectionITSTTree( Int_t corrXdim, Int_t corrYdim
   std::cout << "starting LMEECutLib::SetEtaCorrectionITSTTree()\n";
   std::string file_name;
 	if(!hasMC){
-		file_name = "/home/aaron/Data/PIDcalibration/outputITS.root";
+		file_name = "/home/aaron/Data/diElecOutput/PIDcalibration/outputITS.root";
 	}else{
-		file_name = "/home/aaron/Data/PIDcalibration/outputITS_17f2a.root";
+		file_name = "/home/aaron/Data/diElecOutput/PIDcalibration/outputITS_17f2a.root";
 	}
 
   TFile* recalFile = TFile::Open(file_name.c_str());
@@ -418,9 +418,9 @@ static TH3D LMEECutLib::SetEtaCorrectionTOFTTree( Int_t corrXdim, Int_t corrYdim
   std::cout << "starting LMEECutLib::SetEtaCorrectionTOFTTree()\n";
   std::string file_name;
 	if(hasMC){
-		file_name = "/home/aaron/Data/PIDcalibration/outputTOF.root";
+		file_name = "/home/aaron/Data/diElecOutput/PIDcalibration/outputTOF.root";
 	}else{
-		file_name = "/home/aaron/Data/PIDcalibration/outputTOF_17f2a.root";
+		file_name = "/home/aaron/Data/diElecOutput/PIDcalibration/outputTOF_17f2a.root";
 	}
 
   TFile* recalFile = TFile::Open(file_name.c_str());
