@@ -88,24 +88,20 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
 
   fMCCorrPt = new TH1F("CorrParPt", "Correct Particles Pt", ptBins, ptmin,
                        ptmax);
-  fMCCorrPt->Sumw2();
   fMCCorrPt->GetXaxis()->SetTitle("p_{T}");
   fMCList->Add(fMCCorrPt);
 
   fMCIdentPt = new TH1F("IdentPartPt", "Ident Particles Pt", ptBins, ptmin,
                         ptmax);
-  fMCIdentPt->Sumw2();
   fMCIdentPt->GetXaxis()->SetTitle("p_{T}");
   fMCList->Add(fMCIdentPt);
 
   fMCGenPt = new TH1F("GenPartPt", "Gen Particles Pt", ptBins, ptmin, ptmax);
-  fMCGenPt->Sumw2();
   fMCGenPt->GetXaxis()->SetTitle("p_{T}");
   fMCList->Add(fMCGenPt);
 
   fPtResolution = new TH2F("DeltaPtRecoTruevsPtReco", "DeltaPtRecoTruevsPtReco",
                            100, 0, 5, 750, -3, 1);
-  fPtResolution->Sumw2();
   fPtResolution->GetXaxis()->SetTitle("P_{T,True}");
   fPtResolution->GetYaxis()->SetTitle("(P_{T,True}-P_{T,Reco})/P_{T,True}");
   fMCList->Add(fPtResolution);
@@ -113,7 +109,6 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
   fThetaResolution = new TH2F("DeltaThetaRecoTruevsPtReco",
                               "DeltaThetaRecoTruevsPtReco", 100, 0, 5, 400,
                               -0.25, 0.25);
-  fThetaResolution->Sumw2();
   fThetaResolution->GetXaxis()->SetTitle("P_{T,True}");
   fThetaResolution->GetYaxis()->SetTitle("#Theta_{T,True}-#Theta_{T,Reco}");
   fMCList->Add(fThetaResolution);
@@ -121,7 +116,6 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
   fPhiResolution = new TH2F("DeltaPhiRecoTruevsPtReco",
                             "DeltaPhiRecoTruevsPtReco", 100, 0, 5, 200, -0.2,
                             0.2);
-  fPhiResolution->Sumw2();
   fPhiResolution->GetXaxis()->SetTitle("P_{T,True}");
   fPhiResolution->GetYaxis()->SetTitle("(#Phi_{T,True}-#Phi_{T,Reco})");
   fMCList->Add(fPhiResolution);
@@ -136,28 +130,23 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
 
   if (contribSplitting) {
     fMCContPt = new TH1F("ContPt", "ContPt", ptBins, ptmin, ptmax);
-    fMCContPt->Sumw2();
     fMCContPt->GetXaxis()->SetTitle("p_{T}");
     fMCList->Add(fMCContPt);
 
     fMCUnknownPt = new TH1F("UnknPt", "UnknPt", ptBins, ptmin, ptmax);
-    fMCUnknownPt->Sumw2();
     fMCUnknownPt->GetXaxis()->SetTitle("p_{T}");
     fMCList->Add(fMCUnknownPt);
 
     fMCPrimaryPt = new TH1F("PrimaryPt", "PrimaryPt", ptBins, ptmin, ptmax);
-    fMCPrimaryPt->Sumw2();
     fMCPrimaryPt->GetXaxis()->SetTitle("p_{T}");
     fMCList->Add(fMCPrimaryPt);
 
     fMCMaterialPt = new TH1F("MatPt", "MatPT", ptBins, ptmin, ptmax);
-    fMCMaterialPt->Sumw2();
     fMCMaterialPt->GetXaxis()->SetTitle("p_{T}");
     fMCList->Add(fMCMaterialPt);
 
     fMCFeeddownWeakPt = new TH2F("FeeddownPt", "Feeddown Pt", ptBins, ptmin,
                                  ptmax, 213, 3121, 3334);
-    fMCFeeddownWeakPt->Sumw2();
     fMCFeeddownWeakPt->GetXaxis()->SetTitle("p_{T}");
     fMCList->Add(fMCFeeddownWeakPt);
 
@@ -183,58 +172,46 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
 
       fMCpTPCDist[i] = new TH1F(MCpTPCName.Data(), MCpTPCName.Data(), ptBins,
                                 ptmin, ptmax);
-      fMCpTPCDist[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCpTPCDist[i]);
 
       fMCetaDist[i] = new TH1F(MCetaName.Data(), MCetaName.Data(), 200, -10.,
                                10.);
-      fMCetaDist[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCetaDist[i]);
 
       fMCphiDist[i] = new TH1F(MCphiName.Data(), MCphiName.Data(), 200, 0.,
                                2 * TMath::Pi());
-      fMCphiDist[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCphiDist[i]);
 
       fMCTPCCls[i] = new TH2F(MCTPCName.Data(), MCTPCName.Data(), ptBins, ptmin,
                               ptmax, 100, 0, 200.);
-      fMCTPCCls[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCTPCCls[i]);
 
       fMCDCAxy[i] = new TH2F(MCDCAXYName.Data(), MCDCAXYName.Data(), ptBins,
                              ptmin, ptmax, 2.5 * twoDBins, -5., 5.);
-      fMCDCAxy[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCDCAxy[i]);
 
       fMCDCAz[i] = new TH2F(MCDCAZName.Data(), MCDCAZName.Data(), ptBins, ptmin,
                             ptmax, 2.5 * twoDBins, -5., 5.);
-      fMCDCAz[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCDCAz[i]);
 
       fMCTPCCrossedRows[i] = new TH2F(MCTPCCRName.Data(), MCTPCCRName.Data(),
                                       ptBins, ptmin, ptmax, 100, 0, 200.);
-      fMCTPCCrossedRows[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCTPCCrossedRows[i]);
 
       fMCTPCRatio[i] = new TH2F(MCTPCratioName.Data(), MCTPCratioName.Data(),
                                 ptBins, ptmin, ptmax, 100, 0., 2.);
-      fMCTPCRatio[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCTPCRatio[i]);
       fMCTPCdedx[i] = new TH2F(MCTPCdedxName.Data(), MCTPCdedxName.Data(),
                                ptBins, ptmin, ptmax, 2 * twoDBins, 0., 400);
-      fMCTPCdedx[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCTPCdedx[i]);
       fMCTOFbeta[i] = new TH2F(MCTOFbetaName.Data(), MCTOFbetaName.Data(),
                                ptBins, ptmin, ptmax, 3.5 * twoDBins, 0.4, 1.1);
-      fMCTOFbeta[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCTOFbeta[i]);
       fMCNSigTPC[i] = new TH2F(MCNSigTPCName.Data(), MCNSigTPCName.Data(),
                                ptBins, ptmin, ptmax, twoDBins, -20., 20.);
-      fMCNSigTPC[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCNSigTPC[i]);
       fMCNSigTOF[i] = new TH2F(MCNSigTOFName.Data(), MCNSigTOFName.Data(),
                                ptBins, ptmin, ptmax, twoDBins, -20., 20.);
-      fMCNSigTOF[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCNSigTOF[i]);
     }
   } else {
@@ -274,7 +251,6 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
     fMCPrimDCAXYPtBins = new TH2F(MCPridcaPtBinName.Data(),
                                   MCPridcaPtBinName.Data(), fpTbins, fpTmin,
                                   fpTmax, 500, -5, 5);
-    fMCPrimDCAXYPtBins->Sumw2();
     fMCPrimDCAXYPtBins->GetXaxis()->SetTitle("dca_{XY}");
     fMCPrimDCAXYPtBins->GetYaxis()->SetTitle("dca_{Z}");
     fDCAPlots->Add(fMCPrimDCAXYPtBins);
@@ -282,7 +258,6 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
     fMCMaterialDCAXYPtBins = new TH2F(MCMatdcaPtBinName.Data(),
                                       MCMatdcaPtBinName.Data(), fpTbins, fpTmin,
                                       fpTmax, 500, -5, 5);
-    fMCMaterialDCAXYPtBins->Sumw2();
     fMCMaterialDCAXYPtBins->GetXaxis()->SetTitle("dca_{XY}");
     fMCMaterialDCAXYPtBins->GetYaxis()->SetTitle("dca_{Z}");
     fDCAPlots->Add(fMCMaterialDCAXYPtBins);
@@ -290,7 +265,6 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
     fMCSecondaryDCAXYPtBins = new TH2F(MCSecdcaPtBinName.Data(),
                                        MCSecdcaPtBinName.Data(), fpTbins,
                                        fpTmin, fpTmax, 500, -5, 5);
-    fMCSecondaryDCAXYPtBins->Sumw2();
     fMCSecondaryDCAXYPtBins->GetXaxis()->SetTitle("dca_{XY}");
     fMCSecondaryDCAXYPtBins->GetYaxis()->SetTitle("dca_{Z}");
     fDCAPlots->Add(fMCSecondaryDCAXYPtBins);
@@ -298,7 +272,6 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
     fMCSecLambdaDCAXYPtBins = new TH2F(MCSecLamdcaPtBinName.Data(),
                                        MCSecLamdcaPtBinName.Data(), fpTbins,
                                        fpTmin, fpTmax, 500, -5, 5);
-    fMCSecLambdaDCAXYPtBins->Sumw2();
     fMCSecLambdaDCAXYPtBins->GetXaxis()->SetTitle("dca_{XY}");
     fMCSecLambdaDCAXYPtBins->GetYaxis()->SetTitle("dca_{Z}");
     fDCAPlots->Add(fMCSecLambdaDCAXYPtBins);
@@ -306,7 +279,6 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
     fMCSecSigmaDCAXYPtBins = new TH2F(MCSecSigdcaPtBinName.Data(),
                                       MCSecSigdcaPtBinName.Data(), fpTbins,
                                       fpTmin, fpTmax, 500, -5, 5);
-    fMCSecSigmaDCAXYPtBins->Sumw2();
     fMCSecSigmaDCAXYPtBins->GetXaxis()->SetTitle("dca_{XY}");
     fMCSecSigmaDCAXYPtBins->GetYaxis()->SetTitle("dca_{Z}");
     fDCAPlots->Add(fMCSecSigmaDCAXYPtBins);
@@ -384,31 +356,26 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
         fMCPrimDCAXYPtBinsMult[i] =
             new TH2F(primPtBinName[i].Data(), axisRange[i].Data(), fpTbins,
                      fpTmin, fpTmax, 500, -5, 5);
-        fMCPrimDCAXYPtBinsMult[i]->Sumw2();
         fDCAPlots->Add(fMCPrimDCAXYPtBinsMult[i]);
 
         fMCMaterialDCAXYPtBinsMult[i] =
             new TH2F(matPtBinName[i].Data(), axisRange[i].Data(), fpTbins,
                      fpTmin, fpTmax, 500, -5, 5);
-        fMCMaterialDCAXYPtBinsMult[i]->Sumw2();
         fDCAPlots->Add(fMCMaterialDCAXYPtBinsMult[i]);
 
         fMCSecondaryDCAXYPtBinsMult[i] =
             new TH2F(secPtBinName[i].Data(), axisRange[i].Data(), fpTbins,
                      fpTmin, fpTmax, 500, -5, 5);
-        fMCSecondaryDCAXYPtBinsMult[i]->Sumw2();
         fDCAPlots->Add(fMCSecondaryDCAXYPtBinsMult[i]);
 
         fMCSecLambdaDCAXYPtBinsMult[i] =
             new TH2F(secLambdaPtBinName[i].Data(), axisRange[i].Data(), fpTbins,
                      fpTmin, fpTmax, 500, -5, 5);
-        fMCSecLambdaDCAXYPtBinsMult[i]->Sumw2();
         fDCAPlots->Add(fMCSecLambdaDCAXYPtBinsMult[i]);
 
         fMCSecSigmaDCAXYPtBinsMult[i] =
             new TH2F(secSigmaPtBinName[i].Data(), axisRange[i].Data(), fpTbins,
                      fpTmin, fpTmax, 500, -5, 5);
-        fMCSecSigmaDCAXYPtBinsMult[i]->Sumw2();
         fDCAPlots->Add(fMCSecSigmaDCAXYPtBinsMult[i]);
       }
     }

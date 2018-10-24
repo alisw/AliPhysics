@@ -50,7 +50,6 @@ AliFemtoDreamPairCleanerHists::AliFemtoDreamPairCleanerHists(
     //introduced.
     fPairInvMass[i] = new TH1F(histName.Data(), histName.Data(), 1500, 2.25,
                                3.2);
-    fPairInvMass[i]->Sumw2();
     fOutput->Add(fPairInvMass[i]);
 
     histName += "Tuple";

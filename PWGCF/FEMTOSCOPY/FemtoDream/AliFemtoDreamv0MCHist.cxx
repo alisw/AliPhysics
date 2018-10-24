@@ -77,24 +77,20 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(int MassNBins, float MassMin,
 
   fMCCorrPt = new TH1F("CorrParPt", "Correct Particles Pt", ptBins, ptmin,
                        ptmax);
-  fMCCorrPt->Sumw2();
   fMCCorrPt->GetXaxis()->SetTitle("p_{T}");
   fMCList->Add(fMCCorrPt);
 
   fMCIdentPt = new TH1F("IdentPartPt", "Ident Particles Pt", ptBins, ptmin,
                         ptmax);
-  fMCIdentPt->Sumw2();
   fMCIdentPt->GetXaxis()->SetTitle("p_{T}");
   fMCList->Add(fMCIdentPt);
 
   fMCGenPt = new TH1F("GenPartPt", "Gen Particles Pt", ptBins, ptmin, ptmax);
-  fMCGenPt->Sumw2();
   fMCGenPt->GetXaxis()->SetTitle("p_{T}");
   fMCList->Add(fMCGenPt);
 
   fPtResolution = new TH2F("DeltaPtRecoTruevsPtReco", "DeltaPtRecoTruevsPtReco",
                            100, 0, 5, 500, -1, 1);
-  fPtResolution->Sumw2();
   fPtResolution->GetXaxis()->SetTitle("P_{T,True}");
   fPtResolution->GetYaxis()->SetTitle("(P_{T,True}-P_{T,Reco})/P_{T,True}");
   fMCList->Add(fPtResolution);
@@ -102,7 +98,6 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(int MassNBins, float MassMin,
   fThetaResolution = new TH2F("DeltaThetaRecoTruevsPtReco",
                               "DeltaThetaRecoTruevsPtReco", 100, 0, 5, 500,
                               -0.3, 0.3);
-  fThetaResolution->Sumw2();
   fThetaResolution->GetXaxis()->SetTitle("P_{T,True}");
   fThetaResolution->GetYaxis()->SetTitle("#Theta_{T,True}-#Theta_{T,Reco}");
   fMCList->Add(fThetaResolution);
@@ -110,7 +105,6 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(int MassNBins, float MassMin,
   fPhiResolution = new TH2F("DeltaPhiRecoTruevsPtReco",
                             "DeltaPhiRecoTruevsPtReco", 100, 0, 5, 500, -0.3,
                             0.3);
-  fPhiResolution->Sumw2();
   fPhiResolution->GetXaxis()->SetTitle("P_{T,True}");
   fPhiResolution->GetYaxis()->SetTitle("#Phi_{T,True}-#Phi_{T,Reco}");
   fMCList->Add(fPhiResolution);
@@ -126,23 +120,19 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(int MassNBins, float MassMin,
   if (contribSplitting) {
 
     fMCPrimaryPt = new TH1F("PrimaryPt", "PrimaryPt", ptBins, ptmin, ptmax);
-    fMCPrimaryPt->Sumw2();
     fMCPrimaryPt->GetXaxis()->SetTitle("p_{T}");
     fMCList->Add(fMCPrimaryPt);
 
     fMCMaterialPt = new TH1F("MatPt", "MatPT", ptBins, ptmin, ptmax);
-    fMCMaterialPt->Sumw2();
     fMCMaterialPt->GetXaxis()->SetTitle("p_{T}");
     fMCList->Add(fMCMaterialPt);
 
     fMCFeeddownWeakPt = new TH2F("FeeddownPt", "Feeddown Pt", ptBins, ptmin,
                                  ptmax, 213, 3121, 3334);
-    fMCFeeddownWeakPt->Sumw2();
     fMCFeeddownWeakPt->GetXaxis()->SetTitle("p_{T}");
     fMCList->Add(fMCFeeddownWeakPt);
 
     fMCContPt = new TH1F("ContPt", "ContPt", ptBins, ptmin, ptmax);
-    fMCContPt->Sumw2();
     fMCContPt->GetXaxis()->SetTitle("p_{T}");
     fMCList->Add(fMCContPt);
 
@@ -157,40 +147,34 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(int MassNBins, float MassMin,
       TString MCPtDist = Form("MCPt%s", MCModes[i].Data());
       fMCpTDist[i] = new TH1F(MCPtDist.Data(), MCPtDist.Data(), ptBins, ptmin,
                               ptmax);
-      fMCpTDist[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCpTDist[i]);
 
       TString MCEtaDist = Form("MCEta%s", MCModes[i].Data());
       fMCetaDist[i] = new TH1F(MCEtaDist.Data(), MCEtaDist.Data(), 200, -10.,
                                10.);
-      fMCetaDist[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCetaDist[i]);
 
       TString MCPhiDist = Form("MCPhi%s", MCModes[i].Data());
       fMCphiDist[i] = new TH1F(MCPhiDist.Data(), MCPhiDist.Data(), 100, 0.,
                                2 * TMath::Pi());
-      fMCphiDist[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCphiDist[i]);
 
       TString MCDecayVtxv0XDist = Form("MCDecayVtxXPV%s", MCModes[i].Data());
       fMCDecayVtxv0X[i] = new TH2F(MCDecayVtxv0XDist.Data(),
                                    MCDecayVtxv0XDist.Data(), ptBins, ptmin,
                                    ptmax, 400, 0, 200);
-      fMCDecayVtxv0X[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCDecayVtxv0X[i]);
 
       TString MCDecayVtxv0YDist = Form("MCDecayVtxYPV%s", MCModes[i].Data());
       fMCDecayVtxv0Y[i] = new TH2F(MCDecayVtxv0YDist.Data(),
                                    MCDecayVtxv0YDist.Data(), ptBins, ptmin,
                                    ptmax, 400, 0, 200);
-      fMCDecayVtxv0Y[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCDecayVtxv0Y[i]);
 
       TString MCDecayVtxv0ZDist = Form("MCDecayVtxZPV%s", MCModes[i].Data());
       fMCDecayVtxv0Z[i] = new TH2F(MCDecayVtxv0ZDist.Data(),
                                    MCDecayVtxv0ZDist.Data(), ptBins, ptmin,
                                    ptmax, 400, 0, 200);
-      fMCDecayVtxv0Z[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCDecayVtxv0Z[i]);
 
       TString MCTransverseRadius = Form("MCTransverseRadius%s",
@@ -198,39 +182,33 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(int MassNBins, float MassMin,
       fMCTransverseRadius[i] = new TH2F(MCTransverseRadius.Data(),
                                         MCTransverseRadius.Data(), ptBins,
                                         ptmin, ptmax, 750, 0, 150);
-      fMCTransverseRadius[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCTransverseRadius[i]);
 
       TString MCDCADaugPVP = Form("MCDCADauPToPV%s", MCModes[i].Data());
       fMCDCAPosDaugToPV[i] = new TH2F(MCDCADaugPVP.Data(), MCDCADaugPVP.Data(),
                                       ptBins, ptmin, ptmax, 500, 0, 100);
-      fMCDCAPosDaugToPV[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCDCAPosDaugToPV[i]);
 
       TString MCDCADaugPVN = Form("MCDCADauNToPV%s", MCModes[i].Data());
       fMCDCANegDaugToPV[i] = new TH2F(MCDCADaugPVN.Data(), MCDCADaugPVN.Data(),
                                       ptBins, ptmin, ptmax, 500, 0, 100);
-      fMCDCANegDaugToPV[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCDCANegDaugToPV[i]);
 
       TString MCDCADaugToVTX = Form("MCDCADauToVtx%s", MCModes[i].Data());
       fMCDCADaugToVtx[i] = new TH2F(MCDCADaugToVTX.Data(),
                                     MCDCADaugToVTX.Data(), ptBins, ptmin, ptmax,
                                     100, 0, 10);
-      fMCDCADaugToVtx[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCDCADaugToVtx[i]);
 
       TString MCCosPointing = Form("MCPointingAngle%s", MCModes[i].Data());
       fMCCosPointing[i] = new TH2F(MCCosPointing.Data(), MCCosPointing.Data(),
                                    ptBins, ptmin, ptmax, 400, 0.85, 1.001);
       ;
-      fMCCosPointing[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCCosPointing[i]);
 
       TString MCInvMass = Form("MCInvMass%s", MCModes[i].Data());
       fMCInvMass[i] = new TH1F(MCInvMass.Data(), MCInvMass.Data(), MassNBins,
                                MassMin, MassMax);
-      fMCInvMass[i]->Sumw2();
       fMCQAPlots[i]->Add(fMCInvMass[i]);
 
       TString MCBachDCAPV = Form("MCBachDCAPV%s", MCModes[i].Data());
@@ -326,7 +304,6 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(int MassNBins, float MassMin,
     fMCPrimCPAPtBins = new TH2F(MCPricpaPtBinName.Data(),
                                 MCPricpaPtBinName.Data(), 8, 0.3, 4.3, 1000,
                                 0.90, 1.);
-    fMCPrimCPAPtBins->Sumw2();
     fMCPrimCPAPtBins->GetXaxis()->SetTitle("P_{T}");
     fMCPrimCPAPtBins->GetYaxis()->SetTitle("CPA");
     fCPAPlots->Add(fMCPrimCPAPtBins);
@@ -334,7 +311,6 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(int MassNBins, float MassMin,
     fMCMaterialCPAPtBins = new TH2F(MCMatcpaPtBinName.Data(),
                                     MCMatcpaPtBinName.Data(), 8, 0.3, 4.3, 1000,
                                     0.90, 1.);
-    fMCMaterialCPAPtBins->Sumw2();
     fMCMaterialCPAPtBins->GetXaxis()->SetTitle("P_{T}");
     fMCMaterialCPAPtBins->GetYaxis()->SetTitle("CPA");
     fCPAPlots->Add(fMCMaterialCPAPtBins);
@@ -342,7 +318,6 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(int MassNBins, float MassMin,
     fMCSecondaryCPAPtBins = new TH2F(MCSeccpaPtBinName.Data(),
                                      MCSeccpaPtBinName.Data(), 8, 0.3, 4.3,
                                      1000, 0.90, 1.);
-    fMCSecondaryCPAPtBins->Sumw2();
     fMCSecondaryCPAPtBins->GetXaxis()->SetTitle("P_{T}");
     fMCSecondaryCPAPtBins->GetYaxis()->SetTitle("CPA");
     fCPAPlots->Add(fMCSecondaryCPAPtBins);
@@ -350,7 +325,6 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(int MassNBins, float MassMin,
     fMCContCPAPtBins = new TH2F(MCConcpaPtBinName.Data(),
                                 MCConcpaPtBinName.Data(), 8, 0.3, 4.3, 1000,
                                 0.90, 1.);
-    fMCContCPAPtBins->Sumw2();
     fMCContCPAPtBins->GetXaxis()->SetTitle("P_{T}");
     fMCContCPAPtBins->GetYaxis()->SetTitle("CPA");
     fCPAPlots->Add(fMCContCPAPtBins);
@@ -417,25 +391,21 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(int MassNBins, float MassMin,
         fMCPrimCPAPtBinsMult[i] =
             new TH2F(primPtBinName[i].Data(), axisRange[i].Data(), 8, 0.3, 4.3,
                      1000, 0.90, 1.);
-        fMCPrimCPAPtBinsMult[i]->Sumw2();
         fCPAPlots->Add(fMCPrimCPAPtBinsMult[i]);
 
         fMCMaterialCPAPtBinsMult[i] =
             new TH2F(matPtBinName[i].Data(), axisRange[i].Data(), 8, 0.3, 4.3,
                      1000, 0.90, 1.);
-        fMCMaterialCPAPtBinsMult[i]->Sumw2();
         fCPAPlots->Add(fMCMaterialCPAPtBinsMult[i]);
 
         fMCSecondaryCPAPtBinsMult[i] =
             new TH2F(secPtBinName[i].Data(), axisRange[i].Data(), 8, 0.3, 4.3,
                      1000, 0.90, 1.);
-        fMCSecondaryCPAPtBinsMult[i]->Sumw2();
         fCPAPlots->Add(fMCSecondaryCPAPtBinsMult[i]);
 
         fMCContCPAPtBinsMult[i] =
             new TH2F(contPtBinName[i].Data(), axisRange[i].Data(), 8, 0.3, 4.3,
                      1000, 0.90, 1.);
-        fMCContCPAPtBinsMult[i]->Sumw2();
         fCPAPlots->Add(fMCContCPAPtBinsMult[i]);
       }
     }

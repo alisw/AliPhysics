@@ -440,7 +440,6 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
         fSameEventCommonAncestDist[Counter] = new TH1F(
             SameEventCommonAncestName.Data(), SameEventCommonAncestName.Data(),
             *itNBins, *itKMin, *itKMax);
-        fSameEventCommonAncestDist[Counter]->Sumw2();
         fPairs[Counter]->Add(fSameEventCommonAncestDist[Counter]);
 
         TString SameEventNonCommonAncestName = Form(
@@ -448,7 +447,6 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
         fSameEventNonCommonAncestDist[Counter] = new TH1F(
             SameEventNonCommonAncestName.Data(),
             SameEventNonCommonAncestName.Data(), *itNBins, *itKMin, *itKMax);
-        fSameEventNonCommonAncestDist[Counter]->Sumw2();
         fPairs[Counter]->Add(fSameEventNonCommonAncestDist[Counter]);
       }
 
@@ -461,7 +459,6 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                         2 * TMath::Pi());
         fdEtadPhiSE[Counter]->GetXaxis()->SetTitle("#Delta#eta");
         fdEtadPhiSE[Counter]->GetYaxis()->SetTitle("#Delta#phi");
-        fdEtadPhiSE[Counter]->Sumw2();
         fPairs[Counter]->Add(fdEtadPhiSE[Counter]);
 
         TString MixedEventdPhidEtaName = Form(
@@ -472,7 +469,6 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                         2 * TMath::Pi());
         fdEtadPhiME[Counter]->GetXaxis()->SetTitle("#Delta#eta");
         fdEtadPhiME[Counter]->GetYaxis()->SetTitle("#Delta#phi");
-        fdEtadPhiME[Counter]->Sumw2();
         fPairs[Counter]->Add(fdEtadPhiME[Counter]);
 
       }
@@ -488,7 +484,6 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
         fPairCounterSE[Counter] = new TH2F(PairCounterSEName.Data(),
                                            PairCounterSEName.Data(), 20, 0, 20,
                                            20, 0, 20);
-        fPairCounterSE[Counter]->Sumw2();
         fPairCounterSE[Counter]->GetXaxis()->SetTitle(
             Form("Particle%d", iPar1));
         fPairCounterSE[Counter]->GetYaxis()->SetTitle(
@@ -500,7 +495,6 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
         fPairCounterME[Counter] = new TH2F(PairCounterMEName.Data(),
                                            PairCounterMEName.Data(), 20, 0, 20,
                                            20, 0, 20);
-        fPairCounterME[Counter]->Sumw2();
         fPairCounterME[Counter]->GetXaxis()->SetTitle(
             Form("Particle%d", iPar1));
         fPairCounterME[Counter]->GetYaxis()->SetTitle(
@@ -515,7 +509,6 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                             EffMixingDepthName.Data(),
                                             MixingDepth, -0.5,
                                             MixingDepth - 0.5);
-        fEffMixingDepth[Counter]->Sumw2();
         fEffMixingDepth[Counter]->GetXaxis()->SetTitle("MixingDepth");
         fPairQA[Counter]->Add(fEffMixingDepth[Counter]);
 
@@ -531,7 +524,6 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           fMomResolution[Counter] = new TH2F(MomResoName.Data(),
                                              MomResoName.Data(), nBims, 0, 1,
                                              nBims, 0, 1);
-          fMomResolution[Counter]->Sumw2();
           fMomResolution[Counter]->GetXaxis()->SetTitle("k_{Generated}");
           fMomResolution[Counter]->GetYaxis()->SetTitle("k_{Reco}");
           fPairQA[Counter]->Add(fMomResolution[Counter]);
@@ -541,7 +533,6 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           fMomResolutionDist[Counter] = new TH2F(MomResoDistName.Data(),
                                                  MomResoDistName.Data(), 500,
                                                  -0.3, 0.3, nBims, 0, 1);
-          fMomResolutionDist[Counter]->Sumw2();
           fMomResolutionDist[Counter]->GetXaxis()->SetTitle(
               "k_{Reco}-k_{Generated}");
           fMomResolutionDist[Counter]->GetYaxis()->SetTitle("k_{Generated}");
