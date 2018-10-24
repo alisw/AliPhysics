@@ -366,7 +366,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     
     // Jet rejection reason
     histname = TString::Format("%s/JetHistograms/hJetRejectionReason", jets->GetArrayName().Data());
-    if (fForceBeamType != kpp) {
+    if (fForceBeamType == kAA) {
       title = histname + ";Centrality (%);Rejection reason;#it{p}_{T,corr} (GeV/#it{c});counts";
       TH3* hist = fHistManager.CreateTH3(histname.Data(), title.Data(), 10, 0, 100, 32, 0, 32, nPtBins5, fMinPt, fMaxPt);
       SetRejectionReasonLabels(hist->GetYaxis());
@@ -379,8 +379,14 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     // Rho vs. Centrality
     if (!jets->GetRhoName().IsNull()) {
       histname = TString::Format("%s/JetHistograms/hRhoVsCent", jets->GetArrayName().Data());
-      title = histname + ";Centrality (%);#rho (GeV/#it{c});counts";
-      fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 500);
+      if (fForceBeamType == kAA) {
+    	  	  title = histname + ";Centrality (%);#rho (GeV/#it{c});counts";
+    	  	  fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 500);
+      }
+      else{
+          title = histname + ";Centrality (%);#rho (GeV/#it{c});counts";
+          fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 250, 0, 50);
+      }
     }
     
     // (Centrality, pT, NEF)
@@ -389,7 +395,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     Int_t nbinsz = 50; Int_t minz = 0; Int_t maxz = 1.;
     
     histname = TString::Format("%s/JetHistograms/hNEFVsPtEMCal", jets->GetArrayName().Data());
-    if (fForceBeamType != kpp) {
+    if (fForceBeamType == kAA) {
       title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});NEF";
       fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
     }
@@ -400,7 +406,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     
     if (fPlotDCal) {
       histname = TString::Format("%s/JetHistograms/hNEFVsPtDCal", jets->GetArrayName().Data());
-      if (fForceBeamType != kpp) {
+      if (fForceBeamType == kAA) {
         title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});NEF";
         fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
       }
@@ -419,7 +425,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     
     // pT-leading vs. pT
     histname = TString::Format("%s/JetHistograms/hPtLeadingVsPt", jets->GetArrayName().Data());
-    if (fForceBeamType != kpp) {
+    if (fForceBeamType == kAA) {
       title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{p}_{T,particle}^{leading} (GeV/#it{c})";
       fHistManager.CreateTH3(histname.Data(), title.Data(), 10, 0, 100, nPtBins2, fMinPt, fMaxPt, fMaxPt, 0, fMaxPt);
     }
@@ -430,13 +436,13 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     
     // A vs. pT
     histname = TString::Format("%s/JetHistograms/hAreaVsPt", jets->GetArrayName().Data());
-    if (fForceBeamType != kpp) {
-      title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{A}_{jet}";
-      fHistManager.CreateTH3(histname.Data(), title.Data(), 10, 0, 100, nPtBins2, fMinPt, fMaxPt, 50, 0, 0.5);
+    if (fForceBeamType == kAA) {
+      title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{A}_{jet}/#piR^{2}";
+      fHistManager.CreateTH3(histname.Data(), title.Data(), 10, 0, 100, nPtBins2, fMinPt, fMaxPt, 75, 0, 3);
     }
     else {
-      title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{A}_{jet}";
-      fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins2, fMinPt, fMaxPt, 50, 0, 0.5);
+      title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{A}_{jet}/#piR^{2}";
+      fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins2, fMinPt, fMaxPt, 100, 0, 3);
     }
     
     // (Centrality, pT, z-leading (charged))
@@ -445,7 +451,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     nbinsz = 50; minz = 0; maxz = 1.;
     
     histname = TString::Format("%s/JetHistograms/hZLeadingVsPtEMCal", jets->GetArrayName().Data());
-    if (fForceBeamType != kpp) {
+    if (fForceBeamType == kAA) {
       title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z}_{leading}";
       fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
     }
@@ -456,7 +462,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     
     if (fPlotDCal) {
       histname = TString::Format("%s/JetHistograms/hZLeadingVsPtDCal", jets->GetArrayName().Data());
-      if (fForceBeamType != kpp) {
+      if (fForceBeamType == kAA) {
         title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z}_{leading}";
         fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
       }
@@ -472,7 +478,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     nbinsz = 50; minz = 0; maxz = 1.;
     
     histname = TString::Format("%s/JetHistograms/hZVsPtEMCal", jets->GetArrayName().Data());
-    if (fForceBeamType != kpp) {
+    if (fForceBeamType == kAA) {
       title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z}";
       fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
     }
@@ -483,7 +489,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     
     if (fPlotDCal) {
       histname = TString::Format("%s/JetHistograms/hZVsPtDCal", jets->GetArrayName().Data());
-      if (fForceBeamType != kpp) {
+      if (fForceBeamType == kAA) {
         title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z}";
         fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
       }
@@ -499,7 +505,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     nbinsz = 50; minz = 0; maxz = fMaxPt;
     
     histname = TString::Format("%s/JetHistograms/hNConstVsPtEMCal", jets->GetArrayName().Data());
-    if (fForceBeamType != kpp) {
+    if (fForceBeamType == kAA) {
       title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});No. of constituents";
       fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
     }
@@ -510,7 +516,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     
     if (fPlotDCal) {
       histname = TString::Format("%s/JetHistograms/hNConstVsPtDCal", jets->GetArrayName().Data());
-      if (fForceBeamType != kpp) {
+      if (fForceBeamType == kAA) {
         title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});No. of constituents";
         fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
       }
@@ -521,7 +527,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     }
     
     // (Centrality, pT) for eta<0 and eta>0
-    if (fForceBeamType != kpp) {
+    if (fForceBeamType == kAA) {
       nbinsx = 20; minx = 0; maxx = 100;
       nbinsy = nPtBins1; miny = fMinPt; maxy = fMaxPt;
       
@@ -535,7 +541,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     }
     
     // (Centrality, jet pT, Enonlincorr - Ehadcorr)
-    if (fForceBeamType != kpp) {
+    if (fForceBeamType == kAA) {
       nbinsx = 20; minx = 0; maxx = 100;
       nbinsy = nPtBins2; miny = fMinPt; maxy = fMaxPt;
       nbinsz = nPtBins2; minz = fMinPt; maxz = fMaxPt;
@@ -893,11 +899,42 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateBackgroundHistograms()
     histname = TString::Format("%s/BackgroundHistograms/hScaleFactorEMCal", jets->GetArrayName().Data());
     title = histname + ";Centrality;Scale factor;counts";
     fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 5);
-    
     histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCal", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 400, -50, 150);
-    
+    if (fForceBeamType == kAA) {
+    		title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
+    		fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 400, -50, 150);
+    }
+    else{
+        title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
+        fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 1300, -25, 40);
+    }
+    histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCalExcl", jets->GetArrayName().Data());
+    if (fForceBeamType == kAA) {
+    		title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
+    		fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 400, -50, 150);
+    }
+    else{
+        title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
+        fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 1300, -25, 40);
+    }
+    histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCalCharged", jets->GetArrayName().Data());
+    if (fForceBeamType == kAA) {
+    		title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
+    		fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 400, -50, 150);
+    }
+    else{
+        title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
+        fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 1300, -25, 40);
+    }
+    histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCalChargedExcl", jets->GetArrayName().Data());
+    if (fForceBeamType == kAA) {
+    		title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
+    		fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 400, -50, 150);
+    }
+    else{
+        title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
+        fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 1300, -25, 40);
+    }
     histname = TString::Format("%s/BackgroundHistograms/hScaleFactorEMCalFid", jets->GetArrayName().Data());
     title = histname + ";Centrality;Scale factor;counts";
     fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 5);
@@ -1006,8 +1043,8 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateTriggerSimHistograms()
     
     // A vs. pT
     histname = TString::Format("%s/TriggerSimHistograms/hAreaVsPt", jets->GetArrayName().Data());
-    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{A}_{jet}";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins2, fMinPt, fMaxPt, 50, 0, 0.5);
+    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{A}_{jet}/#piR^{2}";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins2, fMinPt, fMaxPt, 75, 0, 3);
     
     // (Centrality, pT, z-leading (charged))
     nbinsx = 20; minx = 0; maxx = 100;
@@ -1073,7 +1110,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateMatchedJetHistograms()
   Int_t nbinsz = nPtBins1; Int_t minz = fMinPt; Int_t maxz = fMaxPt;
   
   histname = "MatchedJetHistograms/hResponseMatrixEMCal";
-  if (fForceBeamType != kpp) {
+  if (fForceBeamType == kAA) {
     title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});#it{p}_{T,corr}^{det} (GeV/#it{c})";
     fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
   }
@@ -1084,7 +1121,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateMatchedJetHistograms()
   
   if (fPlotDCal) {
     histname = "MatchedJetHistograms/hResponseMatrixDCal";
-    if (fForceBeamType != kpp) {
+    if (fForceBeamType == kAA) {
       title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});#it{p}_{T,corr}^{det} (GeV/#it{c})";
       fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
     }
@@ -1100,7 +1137,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateMatchedJetHistograms()
   nbinsz = 250; minz = -5.; maxz = 5.;
   
   histname = "MatchedJetHistograms/hJESshiftEMCal";
-  if (fForceBeamType != kpp) {
+  if (fForceBeamType == kAA) {
     title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});#frac{#it{p}_{T,corr}^{det} - #it{p}_{T}^{truth}}{#it{p}_{T}^{truth}}";
     fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
   }
@@ -1111,7 +1148,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateMatchedJetHistograms()
   
   if (fPlotDCal) {
     histname = "MatchedJetHistograms/hJESshiftDCal";
-    if (fForceBeamType != kpp) {
+    if (fForceBeamType == kAA) {
       title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});#frac{#it{p}_{T,corr}^{det} - #it{p}_{T}^{truth}}{#it{p}_{T}^{truth}}";
       fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
     }
@@ -1127,7 +1164,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateMatchedJetHistograms()
   nbinsz = 50; minz = 0; maxz = 1.;
   
   histname = "MatchedJetHistograms/hNEFVsPt";
-  if (fForceBeamType != kpp) {
+  if (fForceBeamType == kAA) {
     title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});Calo energy fraction";
     fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
   }
@@ -1142,7 +1179,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateMatchedJetHistograms()
   nbinsz = 50; minz = 0; maxz = 1.;
   
   histname = "MatchedJetHistograms/hZLeadingVsPt";
-  if (fForceBeamType != kpp) {
+  if (fForceBeamType == kAA) {
     title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});#it{z}_{leading}";
     fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
   }
@@ -1541,7 +1578,8 @@ void AliAnalysisTaskEmcalJetPerformance::FillJetHistograms()
       
       Float_t ptLeading = jets->GetLeadingHadronPt(jet);
       Float_t corrPt = GetJetPt(jet, rhoVal);
-      
+      Double_t jetR = jets->GetJetRadius();
+
       // compute jet acceptance type
       Double_t type = GetJetType(jet);
       if ( type != kEMCal ) {
@@ -1549,19 +1587,19 @@ void AliAnalysisTaskEmcalJetPerformance::FillJetHistograms()
           continue;
         }
       }
-      
+
       // (Centrality, Area, pT) (fill before area cut)
       histname = TString::Format("%s/JetHistograms/hAreaVsPt", jets->GetArrayName().Data());
-      if (fForceBeamType != kpp) {
-        fHistManager.FillTH3(histname.Data(), fCent, corrPt, jet->Area());
+      if (fForceBeamType == kAA) {
+        fHistManager.FillTH3(histname.Data(), fCent, corrPt, jet->Area()/(TMath::Pi()*pow(jetR,2)));
       }
       else {
-        fHistManager.FillTH2(histname.Data(), corrPt, jet->Area());
+        fHistManager.FillTH2(histname.Data(), corrPt, jet->Area()/(TMath::Pi()*pow(jetR,2)));
       }
       
       // (Centrality, pT-leading, pT) (before leading hadron cuts)
       histname = TString::Format("%s/JetHistograms/hPtLeadingVsPt", jets->GetArrayName().Data());
-      if (fForceBeamType != kpp) {
+      if (fForceBeamType == kAA) {
         fHistManager.FillTH3(histname.Data(), fCent, corrPt, ptLeading);
       }
       else {
@@ -1579,7 +1617,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillJetHistograms()
       jets->GetLeadingHadronMomentum(leadPart, jet);
       Double_t z = GetParallelFraction(leadPart.Vect(), jet);
       if (z == 1 || (z > 1 && z - 1 < 1e-3)) z = 0.999; // so that it will contribute to the bin <1
-      if (fForceBeamType != kpp) {
+      if (fForceBeamType == kAA) {
         fHistManager.FillTH3(histname, fCent, corrPt, z);
       }
       else {
@@ -1590,7 +1628,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillJetHistograms()
       UInt_t rejectionReason = 0;
       if (!jets->AcceptJet(jet, rejectionReason)) {
         histname = TString::Format("%s/JetHistograms/hJetRejectionReason", jets->GetArrayName().Data());
-        if (fForceBeamType != kpp) {
+        if (fForceBeamType == kAA) {
           fHistManager.FillTH3(histname.Data(), fCent, jets->GetRejectionReasonBitPosition(rejectionReason), corrPt);
         }
         else {
@@ -1606,7 +1644,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillJetHistograms()
       else if (type == kDCal) {
         histname = TString::Format("%s/JetHistograms/hNEFVsPtDCal", jets->GetArrayName().Data());
       }
-      if (fForceBeamType != kpp) {
+      if (fForceBeamType == kAA) {
         fHistManager.FillTH3(histname, fCent, corrPt, jet->NEF());
       }
       else {
@@ -1630,7 +1668,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillJetHistograms()
       for (Int_t i=0; i<jet->GetNumberOfTracks(); i++) {
         track = static_cast<AliVTrack*>(jet->Track(i));
         z = track->Pt() / TMath::Abs(corrPt);
-        if (fForceBeamType != kpp) {
+        if (fForceBeamType == kAA) {
           fHistManager.FillTH3(histname, fCent, corrPt, z);
         }
         else {
@@ -1645,7 +1683,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillJetHistograms()
       else if (type == kDCal) {
         histname = TString::Format("%s/JetHistograms/hNConstVsPtDCal", jets->GetArrayName().Data());
       }
-      if (fForceBeamType != kpp) {
+      if (fForceBeamType == kAA) {
         fHistManager.FillTH3(histname, fCent, corrPt, 1.*jet->GetNumberOfConstituents());
       }
       else {
@@ -1653,7 +1691,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillJetHistograms()
       }
       
       // (Centrality, pT) for eta<0 and eta>0
-      if (fForceBeamType != kpp) {
+      if (fForceBeamType == kAA) {
         if (type == kEMCal) {
           if (jet->Eta() > 0) {
             histname = TString::Format("%s/JetHistograms/hEtaPosVsPtEMCal", jets->GetArrayName().Data());
@@ -1667,7 +1705,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillJetHistograms()
       }
       
       // (Centrality, jet pT, Enonlincorr - Ehadcorr)
-      if (fForceBeamType != kpp) {
+      if (fForceBeamType == kAA) {
         Double_t deltaEhadcorr = 0;
         const AliVCluster* clus = nullptr;
         Int_t nClusters = jet->GetNumberOfClusters();
@@ -2190,7 +2228,30 @@ void AliAnalysisTaskEmcalJetPerformance::ComputeBackground()
   AliJetContainer* jetCont = 0;
   TIter nextJetColl(&fJetCollArray);
   while ((jetCont = static_cast<AliJetContainer*>(nextJetColl()))) {
-    
+	  if(jetCont->GetNJets()<1)continue;//Don't enter if there are no jets in the container
+	  Int_t maxJetIds[]   = {-1, -1};
+	  Float_t maxJetPts[] = { 0,  0};
+	  //loop over the jets in the jet container to find the leading and subleading jet
+	  //alternative: AliEmcalJet* leadingJet =jetCont->GetLeadingJet(); but there is no GetSubLeadingJet() function
+	  for (Int_t ij = 0; ij < jetCont->GetNJets(); ++ij)
+	  {
+		  //AliEmcalJet *jet = static_cast<AliEmcalJet*>(fJets->At(ij));
+		  AliEmcalJet *jet = static_cast<AliEmcalJet*>(jetCont->GetJet(ij));
+		  //if (!AcceptJet(jet)) continue;
+		  if (jet->Pt() > maxJetPts[0])
+		  {
+			  maxJetPts[1] = maxJetPts[0];
+			  maxJetIds[1] = maxJetIds[0];
+			  maxJetPts[0] = jet->Pt();
+			  maxJetIds[0] = ij;
+		  }
+		  else if (jet->Pt() > maxJetPts[1])
+		  {
+			  maxJetPts[1] = jet->Pt();
+			  maxJetIds[1] = ij;
+		  }
+	  }
+
     // Define fiducial acceptances, to be used to generate random cones, and for scale factor studies
     TRandom3* r = new TRandom3(0);
     Double_t jetR = jetCont->GetJetRadius();
@@ -2232,30 +2293,35 @@ void AliAnalysisTaskEmcalJetPerformance::ComputeBackground()
     Double_t clusPtSumDCalfid = 0;
     Double_t clusPtSumEMCalRC = 0;
     Double_t clusPtSumDCalRC = 0;
-    
+    Bool_t overlap=0;
     // Loop over tracks. Sum the track pT:
     // (1) in the entire TPC, (2) in the EMCal, (3) in the EMCal fiducial volume, (4) in the DCal, (5) in the DCal fiducial volume, (6) in the EMCal random cone, (7) in the DCal random cone
     // Note: Loops over all det-level track containers. For data there should be only one. For embedding, there should be signal+background tracks.
     AliParticleContainer * partCont = 0;
-    AliTLorentzVector track;
+    AliTLorentzVector trackVec;
+    AliVParticle* track;
     Double_t trackEta;
     Double_t trackPhi;
     Double_t trackPt;
     Double_t deltaR;
+    Double_t trackID=-1;
     TIter nextPartCont(&fParticleCollArray);
     while ((partCont = static_cast<AliParticleContainer*>(nextPartCont()))) {
       
       TString partContName = partCont->GetName();
       if (!partContName.CompareTo("tracks") || !partContName.CompareTo("thermalparticles")) {
-        
         for (auto trackIterator : partCont->accepted_momentum() ) {
           
-          track.Clear();
-          track = trackIterator.first;
-          trackEta = track.Eta();
-          trackPhi = track.Phi_0_2pi();
-          trackPt = track.Pt();
-          
+          trackVec.Clear();
+          trackVec = trackIterator.first;
+          trackEta = trackVec.Eta();
+          trackPhi = trackVec.Phi_0_2pi();
+          trackPt  = trackVec.Pt();
+          //To get track ID and particle pointer
+          track = trackIterator.second;
+          TClonesArray* fTracksContArray = partCont->GetArray();
+          trackID = fTracksContArray->IndexOf(track);
+
           // (1)
           if (TMath::Abs(trackEta) < etaTPC) {
             trackPtSumTPC += trackPt;
@@ -2286,14 +2352,20 @@ void AliAnalysisTaskEmcalJetPerformance::ComputeBackground()
           }
           
           // (6)
-          deltaR = GetDeltaR(&track, etaEMCalRC, phiEMCalRC);
+          deltaR = GetDeltaR(&trackVec, etaEMCalRC, phiEMCalRC);
           if (deltaR < jetR) {
             trackPtSumEMCalRC += trackPt;
+            //Check if there is an overlap with a leading/subleading signal jet
+            //if so set the flag to 1 and not take this random cone into accound
+            if(IsSignalJetOverlap(1,trackID,jetCont,maxJetIds))
+            {
+            	  overlap=1;
+            }
           }
           
           // (7)
           if (fPlotDCal) {
-            deltaR = GetDeltaR(&track, etaDCalRC, phiDCalRC);
+            deltaR = GetDeltaR(&trackVec, etaDCalRC, phiDCalRC);
             if (deltaR < jetR) {
               trackPtSumDCalRC += trackPt;
             }
@@ -2304,21 +2376,27 @@ void AliAnalysisTaskEmcalJetPerformance::ComputeBackground()
     
     // Loop over clusters, if the jet container is for full jets. Sum the cluster ET:
     // (1) in the EMCal, (2) in the EMCal fiducial volume, (3) in the DCal, (4), in the DCal fiducial volume, (5) in the EMCal random cone, (6) in the DCal random cone
-    if (jetCont->GetClusterContainer()) {
-      AliClusterContainer* clusCont = GetClusterContainer(0);
-      
-      AliTLorentzVector clus;
+    TString jetContName = jetCont->GetName();
+    if (!jetContName.Contains("Charged")) {
+
+    	  AliClusterContainer* clusCont = GetClusterContainer(0);
+      AliTLorentzVector clusVec;
+      AliVCluster* clus;
       Double_t clusEta;
       Double_t clusPhi;
       Double_t clusPt;
+      Double_t clusID=-1;
       for (auto clusIterator : clusCont->accepted_momentum() ) {
-        
-        clus.Clear();
-        clus = clusIterator.first;
-        clusEta = clus.Eta();
-        clusPhi = clus.Phi_0_2pi();
-        clusPt = clus.Pt();
-        
+
+        clusVec.Clear();
+        clusVec = clusIterator.first;
+        clusEta = clusVec.Eta();
+        clusPhi = clusVec.Phi_0_2pi();
+        clusPt  = clusVec.Pt();
+        clus    = clusIterator.second;
+        TClonesArray* fClusContArray = clusCont->GetArray();
+        clusID = fClusContArray->IndexOf(clus);
+
         // (1)
         if (TMath::Abs(clusEta) < etaEMCal && clusPhi > phiMinEMCal && clusPhi < phiMaxEMCal) {
           clusPtSumEMCal += clusPt;
@@ -2344,19 +2422,23 @@ void AliAnalysisTaskEmcalJetPerformance::ComputeBackground()
         }
         
         // (5)
-        deltaR = GetDeltaR(&clus, etaEMCalRC, phiEMCalRC);
+        deltaR = GetDeltaR(&clusVec, etaEMCalRC, phiEMCalRC);
         if (deltaR < jetR) {
           clusPtSumEMCalRC += clusPt;
+          //Check if there is an overlap with a leading/subleading signal jet
+          //if so set the flag to 1 and not take this random cone into accound
+        	  if(IsSignalJetOverlap(0,clusID,jetCont,maxJetIds))
+    		  {
+            	  overlap=1;
+          }
         }
-        
         // (6)
         if (fPlotDCal) {
-          deltaR = GetDeltaR(&clus, etaDCalRC, phiDCalRC);
+          deltaR = GetDeltaR(&clusVec, etaDCalRC, phiDCalRC);
           if (deltaR < jetR) {
             clusPtSumDCalRC += clusPt;
           }
         }
-        
       }
     }
     
@@ -2395,12 +2477,26 @@ void AliAnalysisTaskEmcalJetPerformance::ComputeBackground()
     }
     
     // Compute delta pT, as a function of centrality
-    
-    // EMCal
+    // EMCal acceptance only charged component
     Double_t rho = jetCont->GetRhoVal();
-    Double_t deltaPt = trackPtSumEMCalRC + clusPtSumEMCalRC - rho * TMath::Pi() * jetR * jetR;
+    Double_t deltaPt = trackPtSumEMCalRC - rho * TMath::Pi() * jetR * jetR;
+    histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCalCharged", jetCont->GetArrayName().Data());
+    fHistManager.FillTH2(histname, fCent, deltaPt);
+
+    // EMCal acceptance only charged component
+    // excluding random cones that overlap with signal jets
+    histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCalChargedExcl", jetCont->GetArrayName().Data());
+    if(overlap==0)fHistManager.FillTH2(histname, fCent, deltaPt);
+
+    // EMCal acceptance charged and neutral component
+    deltaPt += clusPtSumEMCalRC;
     histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCal", jetCont->GetArrayName().Data());
     fHistManager.FillTH2(histname, fCent, deltaPt);
+
+    // EMCal acceptance charged and neutral component
+    // excluding random cones that overlap with signal jets
+    histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCalExcl", jetCont->GetArrayName().Data());
+    if(overlap==0)fHistManager.FillTH2(histname, fCent, deltaPt);
     
     // DCal
     if (fPlotDCal) {
@@ -2428,6 +2524,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillTriggerSimHistograms()
   TIter nextJetColl(&fJetCollArray);
   while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
     TString jetContName = jets->GetName();
+    Double_t jetR = jets->GetJetRadius();
 
     Double_t rhoVal = 0;
     if (jets->GetRhoParameter()) {
@@ -2440,10 +2537,10 @@ void AliAnalysisTaskEmcalJetPerformance::FillTriggerSimHistograms()
       
       Float_t ptLeading = jets->GetLeadingHadronPt(jet);
       Float_t corrPt = GetJetPt(jet, rhoVal);
-      
+
       // A vs. pT (fill before area cut)
       histname = TString::Format("%s/TriggerSimHistograms/hAreaVsPt", jets->GetArrayName().Data());
-      fHistManager.FillTH2(histname.Data(), corrPt, jet->Area());
+      fHistManager.FillTH2(histname.Data(), corrPt, jet->Area()/(TMath::Pi()*pow(jetR,2)));
       
       // Rejection reason
       UInt_t rejectionReason = 0;
@@ -2587,7 +2684,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillMatchedJetHistograms()
     else if (type == kDCal) {
       histname = "MatchedJetHistograms/hResponseMatrixDCal";
     }
-    if (fForceBeamType != kpp) {
+    if (fForceBeamType == kAA) {
       fHistManager.FillTH3(histname, fCent, truthPt, detPt);
     }
     else {
@@ -2601,7 +2698,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillMatchedJetHistograms()
     else if (type == kDCal) {
       histname = "MatchedJetHistograms/hJESshiftDCal";
     }
-    if (fForceBeamType != kpp) {
+    if (fForceBeamType == kAA) {
       fHistManager.FillTH3(histname, fCent, truthPt, (detPt-truthPt)/truthPt );
     }
     else {
@@ -2610,7 +2707,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillMatchedJetHistograms()
     
     // Fill NEF of det-level matched jets (centrality, pT-truth, NEF)
     histname = "MatchedJetHistograms/hNEFVsPt";
-    if (fForceBeamType != kpp) {
+    if (fForceBeamType == kAA) {
       fHistManager.FillTH3(histname, fCent, truthPt, jet->NEF());
     }
     else {
@@ -2623,7 +2720,7 @@ void AliAnalysisTaskEmcalJetPerformance::FillMatchedJetHistograms()
     fDetJetContainer->GetLeadingHadronMomentum(leadPart, jet);
     Double_t z = GetParallelFraction(leadPart.Vect(), jet);
     if (z == 1 || (z > 1 && z - 1 < 1e-3)) z = 0.999; // so that it will contribute to the bin <1
-    if (fForceBeamType != kpp) {
+    if (fForceBeamType == kAA) {
       fHistManager.FillTH3(histname, fCent, truthPt, z);
     }
     else {
@@ -2922,6 +3019,36 @@ Bool_t AliAnalysisTaskEmcalJetPerformance::IsHadron(const ContributorType contri
 }
 
 /**
+ * Return whether a cluster/track is part of a signal jet
+ * Check if the particle in the random cone is part of
+ * any of the two leading Anti-Kt jets in the event
+ */
+Bool_t AliAnalysisTaskEmcalJetPerformance::IsSignalJetOverlap(Bool_t isTrack, Int_t particleID, const AliJetContainer* jetCont, Int_t maxJetIds[])
+{
+	//loop over the two leading anti-kT jets in the event
+	for (Int_t i=0; i<2; i++)
+	{
+		if(maxJetIds[i]==-1)continue;
+		AliEmcalJet* jet= jetCont->GetJet(maxJetIds[i]);
+		Int_t ClusterConstituentID=-1;
+		Int_t TrackConstituentID  =-1;
+		//check if the particle in the random cone is a constituent of a signal-Anti-KT jet
+		if(isTrack)
+		{
+			TrackConstituentID   = jet->ContainsTrack(particleID);
+		}
+		else
+		{
+			ClusterConstituentID = jet->ContainsCluster(particleID);
+		}
+		if(ClusterConstituentID>-1 || TrackConstituentID>-1)
+		{
+			return kTRUE;
+		}
+	}
+	return kFALSE;
+}
+/**
  * JetPerformance AddTask.
  */
 AliAnalysisTaskEmcalJetPerformance* AliAnalysisTaskEmcalJetPerformance::AddTaskEmcalJetPerformance(
@@ -3044,7 +3171,7 @@ AliAnalysisTaskEmcalJetPerformance* AliAnalysisTaskEmcalJetPerformance::AddTaskE
     clusCont->SetClusPtCut(0.);
   }
   if (clusCont) task->AdoptClusterContainer(clusCont);
-  
+
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------

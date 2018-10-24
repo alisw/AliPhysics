@@ -165,7 +165,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   Double_t                    GetJetType(const AliEmcalJet* jet);
   ContributorType             GetContributorType(const AliVCluster* clus, const AliMCEvent* mcevent, Int_t label);
   Bool_t                      IsHadron(const ContributorType contributor);
-  
+  Bool_t                      IsSignalJetOverlap(Bool_t isTrack, Int_t particleID, const AliJetContainer* jet, Int_t maxJetIds[]);
   // Analysis parameters
   Bool_t                      fPlotJetHistograms;                   ///< Set whether to enable inclusive jet histograms
   Bool_t                      fPlotClusterHistograms;               ///< Set whether to plot cluster histograms
