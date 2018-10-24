@@ -577,6 +577,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     HistoNMassBinsDecayMeson                          = 450;
     HistoMassRangeNDM[0]                              = 0.0;
     HistoMassRangeNDM[1]                              = 0.45;
+    HistoNPtBins                                      = 500;
+    HistoPtRange[1]                                   = 50.;
     NameNeutralMesonAnalyzed                          = "D0";
     NameNeutralMesonAnalyzedLatex                     = "D^{0}";
     NameNDM                                           = "NeutralPion";
