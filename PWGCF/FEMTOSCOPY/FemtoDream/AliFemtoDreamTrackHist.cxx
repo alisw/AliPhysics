@@ -120,40 +120,34 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
 
     TString ptName = Form("pTDist_%s", sName[i].Data());
     fpTDist[i] = new TH1F(ptName.Data(), ptName.Data(), ptBins, ptmin, ptmax);
-    fpTDist[i]->Sumw2();
     fpTDist[i]->GetXaxis()->SetTitle("p_{T}");
     fTrackCutQA[i]->Add(fpTDist[i]);
 
     TString pTPCName = Form("pTPCDist_%s", sName[i].Data());
     fpTPCDist[i] = new TH1F(pTPCName.Data(), pTPCName.Data(), ptBins, ptmin,
                             ptmax);
-    fpTPCDist[i]->Sumw2();
     fpTPCDist[i]->GetXaxis()->SetTitle("p_{TPC}");
     fTrackCutQA[i]->Add(fpTPCDist[i]);
 
     TString etaName = Form("EtaDist_%s", sName[i].Data());
     fetaDist[i] = new TH1F(etaName.Data(), etaName.Data(), 200, -10., 10.);
-    fetaDist[i]->Sumw2();
     fetaDist[i]->GetXaxis()->SetTitle("#eta");
     fTrackCutQA[i]->Add(fetaDist[i]);
 
     TString phiName = Form("phiDist_%s", sName[i].Data());
     fphiDist[i] = new TH1F(phiName.Data(), phiName.Data(), 200, 0.,
                            2 * TMath::Pi());
-    fphiDist[i]->Sumw2();
     fphiDist[i]->GetXaxis()->SetTitle("#phi");
     fTrackCutQA[i]->Add(fphiDist[i]);
 
     TString TPCName = Form("TPCCls_%s", sName[i].Data());
     fTPCCls[i] = new TH1F(TPCName.Data(), TPCName.Data(), 100, 0, 200.);
-    fTPCCls[i]->Sumw2();
     fTPCCls[i]->GetXaxis()->SetTitle("# cls TPC");
     fTrackCutQA[i]->Add(fTPCCls[i]);
 
     TString DCAXYName = Form("DCAXY_%s", sName[i].Data());
     fDCAxy[i] = new TH2F(DCAXYName.Data(), DCAXYName.Data(), ptBins, ptmin,
                          ptmax, 2.5 * twoDBins, -5., 5.);
-    fDCAxy[i]->Sumw2();
     fDCAxy[i]->GetXaxis()->SetTitle("p_{T}");
     fDCAxy[i]->GetYaxis()->SetTitle("DCA_{xy}");
 
@@ -162,7 +156,6 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
     TString DCAZName = Form("DCAZ_%s", sName[i].Data());
     fDCAz[i] = new TH2F(DCAZName.Data(), DCAZName.Data(), ptBins, ptmin, ptmax,
                         2.5 * twoDBins, -5., 5.);
-    fDCAz[i]->Sumw2();
     fDCAz[i]->GetXaxis()->SetTitle("p_{T}");
     fDCAz[i]->GetYaxis()->SetTitle("DCA_{z}");
     fTrackCutQA[i]->Add(fDCAz[i]);
@@ -170,27 +163,23 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
     TString TPCCRName = Form("CrossedRows_%s", sName[i].Data());
     fTPCCrossedRows[i] = new TH1F(TPCCRName.Data(), TPCCRName.Data(), 100, 0,
                                   200.);
-    fTPCCrossedRows[i]->Sumw2();
     fTPCCrossedRows[i]->GetXaxis()->SetTitle("# of crossed Rows");
     fTrackCutQA[i]->Add(fTPCCrossedRows[i]);
 
     TString TPCratioName = Form("TPCRatio_%s", sName[i].Data());
     fTPCRatio[i] = new TH1F(TPCratioName.Data(), TPCratioName.Data(), 100, 0.,
                             2.);
-    fTPCRatio[i]->Sumw2();
     fTPCRatio[i]->GetXaxis()->SetTitle("Ratio");
     fTrackCutQA[i]->Add(fTPCRatio[i]);
 
     TString TPCClsSName = Form("TPCClsS_%s", sName[i].Data());
     fTPCClsS[i] = new TH1F(TPCClsSName.Data(), TPCClsSName.Data(), 200, 0, 200);
-    fTPCClsS[i]->Sumw2();
     fTPCClsS[i]->GetXaxis()->SetTitle("TPC Cls S");
     fTrackCutQA[i]->Add(fTPCClsS[i]);
 
     TString ChiSquareName = Form("TrackChi2_%s", sName[i].Data());
     fTrackChi2[i] = new TH2F(ChiSquareName.Data(), ChiSquareName.Data(), ptBins,
                              ptmin, ptmax, 100, 0, 20);
-    fTrackChi2[i]->Sumw2();
     fTrackChi2[i]->GetXaxis()->SetTitle("#it{p}_T");
     fTrackChi2[i]->GetYaxis()->SetTitle("#chi^{2}/NDF");
     fTrackCutQA[i]->Add(fTrackChi2[i]);
@@ -198,7 +187,6 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
     TString ShrdClsITSName = Form("SharedClsITS_%s", sName[i].Data());
     fShrdClsITS[i] = new TH2F(ShrdClsITSName.Data(), ShrdClsITSName.Data(), 6,
                               1, 7, 2, 0, 2);
-    fShrdClsITS[i]->Sumw2();
     fShrdClsITS[i]->GetXaxis()->SetTitle("ITS Layer");
     fShrdClsITS[i]->GetYaxis()->SetBinLabel(1, "Has shared Cls");
     fShrdClsITS[i]->GetYaxis()->SetBinLabel(2, "Has no Shard Cls");
@@ -207,7 +195,6 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
     TString TPCdedxName = Form("TPCdedx_%s", sName[i].Data());
     fTPCdedx[i] = new TH2F(TPCdedxName.Data(), TPCdedxName.Data(), ptBins,
                            ptmin, ptmax, 2 * twoDBins, 0., 400);
-    fTPCdedx[i]->Sumw2();
     fTPCdedx[i]->GetXaxis()->SetTitle("p_{TPC}");
     fTPCdedx[i]->GetYaxis()->SetTitle("dEdx (arb. Units)");
 
@@ -216,7 +203,6 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
     TString TOFbetaName = Form("TOFbeta_%s", sName[i].Data());
     fTOFbeta[i] = new TH2F(TOFbetaName.Data(), TOFbetaName.Data(), ptBins,
                            ptmin, ptmax, 3.5 * twoDBins, 0.4, 1.1);
-    fTOFbeta[i]->Sumw2();
     fTOFbeta[i]->GetXaxis()->SetTitle("p_{TPC}");
     fTOFbeta[i]->GetYaxis()->SetTitle("#beta_{TOF}");
 
@@ -225,7 +211,6 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
     TString NSigTPCName = Form("NSigTPC_%s", sName[i].Data());
     fNSigTPC[i] = new TH2F(NSigTPCName.Data(), NSigTPCName.Data(), ptBins,
                            ptmin, ptmax, 3. * twoDBins, -60., 60.);
-    fNSigTPC[i]->Sumw2();
     fNSigTPC[i]->GetXaxis()->SetTitle("p_{TPC}");
     fNSigTPC[i]->GetYaxis()->SetTitle("n#sigma_{TPC}");
 
@@ -234,7 +219,6 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
     TString NSigTOFName = Form("NSigTOF_%s", sName[i].Data());
     fNSigTOF[i] = new TH2F(NSigTOFName.Data(), NSigTOFName.Data(), ptBins,
                            ptmin, ptmax, 3. * twoDBins, -60., 60.);
-    fNSigTOF[i]->Sumw2();
     fNSigTOF[i]->GetXaxis()->SetTitle("p_{TPC}");
     fNSigTOF[i]->GetYaxis()->SetTitle("n#sigma_{TOF}");
 
@@ -264,7 +248,6 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
     fTPCClsCPiluUp[i] = new TH2F(TPCClsCPileUpName.Data(),
                                  TPCClsCPileUpName.Data(), 15, 0, 15, 200, 0,
                                  200);
-    fTPCClsCPiluUp[i]->Sumw2();
     fTPCClsCPiluUp[i]->GetXaxis()->SetBinLabel(1, "Hit ITS Layer 1");
     fTPCClsCPiluUp[i]->GetXaxis()->SetBinLabel(2, "Hit ITS Layer 2");
     fTPCClsCPiluUp[i]->GetXaxis()->SetBinLabel(3, "Hit ITS Layer 3");
@@ -286,7 +269,6 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
     fITShrdClsPileUp[i] = new TH2F(ITSShrdClsPileUpName.Data(),
                                    ITSShrdClsPileUpName.Data(), 15, 0, 15, 12,
                                    0, 12);
-    fITShrdClsPileUp[i]->Sumw2();
     fITShrdClsPileUp[i]->GetXaxis()->SetBinLabel(1, "Hit ITS Layer 1");
     fITShrdClsPileUp[i]->GetXaxis()->SetBinLabel(2, "Hit ITS Layer 2");
     fITShrdClsPileUp[i]->GetXaxis()->SetBinLabel(3, "Hit ITS Layer 3");
@@ -322,7 +304,6 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
     fNSigCom = new TH3F("NSigComb", "NSigComb", 14, 0.5, 4.0, 300, -30, 30, 300,
                         -30, 30);
     fHistList->Add(fNSigCom);
-    fNSigCom->Sumw2();
   } else {
     fNSigCom = 0;
   }
@@ -330,7 +311,6 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
     TString dcaPtBinName = Form("DCAXYPtBinningTot");
     fDCAXYPtBins = new TH2F(dcaPtBinName.Data(), dcaPtBinName.Data(), 20, 0.5,
                             4.05, 500, -5, 5);
-    fDCAXYPtBins->Sumw2();
     fDCAXYPtBins->GetXaxis()->SetTitle("P#_{T}");
     fDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fHistList->Add(fDCAXYPtBins);
@@ -340,20 +320,17 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
         dcaPtBinName.Data(),
         Form("0 < mult < %i;P#_{T};dca_{XY}", fMultRangeLow), 20, 0.5, 4.05,
         500, -5, 5);
-    fDCAXYPtBinsMult[0]->Sumw2();
 
     dcaPtBinName = Form("DCAXYPtMult_%i_%i", fMultRangeLow, fMultRangeHigh);
     fDCAXYPtBinsMult[1] = new TH2F(
         dcaPtBinName.Data(),
         Form("%i < mult < %i;P#_{T};dca_{XY}", fMultRangeLow, fMultRangeHigh),
         20, 0.5, 4.05, 500, -5, 5);
-    fDCAXYPtBinsMult[1]->Sumw2();
 
     dcaPtBinName = Form("DCAXYPtMult_%i_inf", fMultRangeHigh);
     fDCAXYPtBinsMult[2] = new TH2F(
         dcaPtBinName.Data(), Form("mult > %i;P#_{T};dca_{XY}", fMultRangeHigh),
         20, 0.5, 4.05, 500, -5, 5);
-    fDCAXYPtBinsMult[2]->Sumw2();
 
     fHistList->Add(fDCAXYPtBinsMult[0]);
     fHistList->Add(fDCAXYPtBinsMult[1]);
@@ -399,7 +376,6 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(TString MinimalBooking)
   fpTDist[0] = 0;
   TString ptName = Form("pTDist_%s", "after");
   fpTDist[1] = new TH1F(ptName.Data(), ptName.Data(), 100, 0, 5);
-  fpTDist[1]->Sumw2();
   fHistList->Add(fpTDist[1]);
 }
 

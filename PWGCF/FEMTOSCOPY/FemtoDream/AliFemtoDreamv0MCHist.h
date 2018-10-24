@@ -16,7 +16,7 @@ class AliFemtoDreamv0MCHist {
  public:
   AliFemtoDreamv0MCHist();
   AliFemtoDreamv0MCHist(int MassNBins, float MassMin, float MassMax,
-                        bool contribSplitting, bool CPADist);
+                        bool contribSplitting, bool CPADist, bool DoMultBinning = false);
   virtual ~AliFemtoDreamv0MCHist();
   void FillMCCorr(float pT) {
     fMCCorrPt->Fill(pT);
@@ -169,6 +169,7 @@ class AliFemtoDreamv0MCHist {
   TList *fMCQAPlots[5];
   float fMultRangeLow;  //!
   float fMultRangeHigh;  //!
+  bool fDoMultiplicityBinning; //!
   TH1F *fMCCorrPt;
   TH1F *fMCIdentPt;
   TH1F *fMCGenPt;
@@ -211,7 +212,7 @@ class AliFemtoDreamv0MCHist {
   TH2F *fThetaResolution;         //!
   TH2F *fPhiResolution;           //!
 
-ClassDef(AliFemtoDreamv0MCHist,3)
+ClassDef(AliFemtoDreamv0MCHist,4)
 };
 
 #endif /* ALIFEMTODREAMV0MCHIST_H_ */

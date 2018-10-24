@@ -205,7 +205,6 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
   CastToVector(fSigmaCuts->GetSidebandDown(), sigma0sidebandLow);
   CastToVector(fAntiSigmaCuts->GetSidebandDown(), antiSigma0sidebandLow);
 
-
   CastToVector(lambdaSigma, sigma0lambda);
   CastToVector(photonSigma, sigma0photon);
   CastToVector(lambdaAntiSigma, antiSigma0lambda);
@@ -260,12 +259,18 @@ bool AliAnalysisTaskSigma0Femto::AcceptEvent(AliVEvent *event) {
   }
   fHistCutQA->Fill(0);
 
+  // Remove overlap with HM trigger from MB
+  if (!fIsMC && fTrigger == AliVEvent::kINT7 &&
+      (fInputHandler->IsEventSelected() & AliVEvent::kHighMultV0))
+    return false;
+  fHistCutQA->Fill(1);
+
   // EVENT SELECTION
   if (!fAliEventCuts.AcceptEvent(event)) return false;
   if (!fIsLightweight) {
     FillTriggerHisto(fHistTriggerAfter);
   }
-  fHistCutQA->Fill(1);
+  fHistCutQA->Fill(2);
 
   Float_t lPercentile = 300;
   AliMultSelection *MultSelection = 0x0;
@@ -285,7 +290,7 @@ bool AliAnalysisTaskSigma0Femto::AcceptEvent(AliVEvent *event) {
     if (!fIsLightweight) {
       fHistCentralityProfileAfter->Fill(lPercentile);
     }
-    fHistCutQA->Fill(2);
+    fHistCutQA->Fill(3);
   }
 
   bool isConversionEventSelected =
@@ -295,7 +300,7 @@ bool AliAnalysisTaskSigma0Femto::AcceptEvent(AliVEvent *event) {
 
   if (!fIsLightweight) fHistCentralityProfileCoarseAfter->Fill(lPercentile);
 
-  fHistCutQA->Fill(3);
+  fHistCutQA->Fill(4);
   return true;
 }
 
@@ -398,27 +403,30 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     return;
   }
 
-  if (fV0Reader->GetEventCuts() &&
-      fV0Reader->GetEventCuts()->GetCutHistograms()) {
-    fOutputContainer->Add(fV0Reader->GetEventCuts()->GetCutHistograms());
-  }
-  if (fV0Reader->GetConversionCuts() &&
-      fV0Reader->GetConversionCuts()->GetCutHistograms()) {
-    fOutputContainer->Add(fV0Reader->GetConversionCuts()->GetCutHistograms());
-  }
-  if (fV0Reader->GetProduceV0FindingEfficiency() &&
-      fV0Reader->GetV0FindingEfficiencyHistograms()) {
-    fOutputContainer->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
-  }
-  if (fV0Reader->GetProduceImpactParamHistograms()) {
-    fOutputContainer->Add(fV0Reader->GetImpactParamHistograms());
+  if (!fIsLightweight) {
+    if (fV0Reader->GetEventCuts() &&
+        fV0Reader->GetEventCuts()->GetCutHistograms()) {
+      fOutputContainer->Add(fV0Reader->GetEventCuts()->GetCutHistograms());
+    }
+    if (fV0Reader->GetConversionCuts() &&
+        fV0Reader->GetConversionCuts()->GetCutHistograms()) {
+      fOutputContainer->Add(fV0Reader->GetConversionCuts()->GetCutHistograms());
+    }
+    if (fV0Reader->GetProduceV0FindingEfficiency() &&
+        fV0Reader->GetV0FindingEfficiencyHistograms()) {
+      fOutputContainer->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
+    }
+    if (fV0Reader->GetProduceImpactParamHistograms()) {
+      fOutputContainer->Add(fV0Reader->GetImpactParamHistograms());
+    }
   }
 
-  fHistCutQA = new TH1F("fHistCutQA", ";;Entries", 5, 0, 5);
+  fHistCutQA = new TH1F("fHistCutQA", ";;Entries", 10, 0, 10);
   fHistCutQA->GetXaxis()->SetBinLabel(1, "Event");
-  fHistCutQA->GetXaxis()->SetBinLabel(2, "AliEventCuts");
-  fHistCutQA->GetXaxis()->SetBinLabel(3, "Multiplicity selection");
-  fHistCutQA->GetXaxis()->SetBinLabel(4, "AliConversionCuts");
+  fHistCutQA->GetXaxis()->SetBinLabel(2, "Overlap with HM");
+  fHistCutQA->GetXaxis()->SetBinLabel(3, "AliEventCuts");
+  fHistCutQA->GetXaxis()->SetBinLabel(4, "Multiplicity selection");
+  fHistCutQA->GetXaxis()->SetBinLabel(5, "AliConversionCuts");
   fQA->Add(fHistCutQA);
 
   fHistPhotonPileUp =

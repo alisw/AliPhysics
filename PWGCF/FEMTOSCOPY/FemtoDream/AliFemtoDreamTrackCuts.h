@@ -49,6 +49,9 @@ class AliFemtoDreamTrackCuts {
     fDCAPlots = plot;
   }
   ;
+  void SetOriginMultiplicityHists(bool plot) {
+    fDoMultBinning = plot;
+  }
   void SetPlotCombSigma(bool plot) {
     fCombSigma = plot;
   }
@@ -232,6 +235,7 @@ class AliFemtoDreamTrackCuts {
   bool fMinimalBooking;               //
   bool fMCData;                       //
   bool fDCAPlots;                     //
+  bool fDoMultBinning;                //
   bool fCombSigma;                    //
   bool fContribSplitting;             //
   bool fFillQALater;                  //
@@ -272,7 +276,7 @@ class AliFemtoDreamTrackCuts {
   float fNSigValue;                  // defaults to 3
   float fPIDPTPCThreshold;           // defaults to 0
   bool fRejectPions;  // Supress Pions at low pT with the TOF, if information is available
-ClassDef(AliFemtoDreamTrackCuts,3)
+ClassDef(AliFemtoDreamTrackCuts,4)
   ;
 };
 

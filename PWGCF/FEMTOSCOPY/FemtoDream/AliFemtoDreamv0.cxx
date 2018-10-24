@@ -66,7 +66,7 @@ void AliFemtoDreamv0::Setv0(AliAODEvent *evt, AliAODv0* v0,
   }
 }
 
-void AliFemtoDreamv0::Setv0(AliESDEvent *evt, AliESDv0* v0,
+void AliFemtoDreamv0::Setv0(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0,
                             const int multiplicity) {
   if (!v0) {
     AliFatal("SetProng No v0 to work with");
@@ -80,7 +80,7 @@ void AliFemtoDreamv0::Setv0(AliESDEvent *evt, AliESDv0* v0,
     this->fOnlinev0 = false;
   }
   this->SetMotherInfo(evt, v0);
-  this->SetDaughter(evt, v0);
+  this->SetDaughter(evt, mcEvent, v0);
   this->SetEvtNumber(evt->GetRunNumber());
   this->fIsSet = fIsSet && fHasDaughter;
 //    if (fIsMC) {
@@ -120,7 +120,7 @@ void AliFemtoDreamv0::SetDaughter(AliAODv0 *v0) {
   }
 }
 
-void AliFemtoDreamv0::SetDaughter(AliESDEvent *evt, AliESDv0 *v0) {
+void AliFemtoDreamv0::SetDaughter(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0) {
   int posFromV0 = v0->GetPindex();
   int negFromV0 = v0->GetNindex();
   AliESDtrack *esdV0Pos = evt->GetTrack(posFromV0);
@@ -128,8 +128,8 @@ void AliFemtoDreamv0::SetDaughter(AliESDEvent *evt, AliESDv0 *v0) {
   this->fHasDaughter = false;
   if (esdV0Pos && esdV0Neg) {
     if (esdV0Pos->Charge() > 0 && esdV0Neg->Charge() < 0) {
-      fnDaug->SetTrack(esdV0Neg, nullptr, -1, false);
-      fpDaug->SetTrack(esdV0Pos, nullptr, -1, false);
+      fnDaug->SetTrack(esdV0Neg, mcEvent, -1, false);
+      fpDaug->SetTrack(esdV0Pos, mcEvent, -1, false);
       if (fnDaug->IsSet() && fpDaug->IsSet()) {
         this->SetDaughterInfo(v0);
         this->fHasDaughter = true;
@@ -143,8 +143,8 @@ void AliFemtoDreamv0::SetDaughter(AliESDEvent *evt, AliESDv0 *v0) {
                            evt->GetMagneticField()));
       }
     } else if (esdV0Pos->Charge() < 0 && esdV0Neg->Charge() > 0) {
-      fnDaug->SetTrack(esdV0Pos, nullptr, -1, false);
-      fpDaug->SetTrack(esdV0Neg, nullptr, -1, false);
+      fnDaug->SetTrack(esdV0Pos, mcEvent, -1, false);
+      fpDaug->SetTrack(esdV0Neg, mcEvent, -1, false);
       if (fnDaug->IsSet() && fpDaug->IsSet()) {
         this->SetDaughterInfo(v0);
         this->fHasDaughter = true;

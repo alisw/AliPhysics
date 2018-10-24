@@ -17,6 +17,7 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
       fMinimalBooking(false),
       fMCData(false),
       fDCAPlots(false),
+      fDoMultBinning(false),
       fCombSigma(false),
       fContribSplitting(false),
       fFillQALater(false),
@@ -66,6 +67,7 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts(
       fMinimalBooking(cuts.fMinimalBooking),
       fMCData(cuts.fMCData),
       fDCAPlots(cuts.fDCAPlots),
+      fDoMultBinning(cuts.fDoMultBinning),
       fCombSigma(cuts.fCombSigma),
       fContribSplitting(cuts.fContribSplitting),
       fFillQALater(cuts.fFillQALater),
@@ -118,6 +120,7 @@ AliFemtoDreamTrackCuts &AliFemtoDreamTrackCuts::operator =(
   this->fMinimalBooking = cuts.fMinimalBooking;
   this->fMCData = cuts.fMCData;
   this->fDCAPlots = cuts.fDCAPlots;
+  this->fDoMultBinning = cuts.fDoMultBinning;
   this->fCombSigma = cuts.fCombSigma;
   this->fContribSplitting = cuts.fContribSplitting;
   this->fFillQALater = cuts.fFillQALater;
@@ -508,7 +511,7 @@ void AliFemtoDreamTrackCuts::Init(TString name) {
   if (!fMinimalBooking) {
     fHists = new AliFemtoDreamTrackHist(fDCAPlots, fCombSigma);
     if (fMCData) {
-      fMCHists = new AliFemtoDreamTrackMCHist(fContribSplitting, fDCAPlots);
+      fMCHists = new AliFemtoDreamTrackMCHist(fContribSplitting, fDCAPlots, fDoMultBinning);
     }
     BookTrackCuts();
   } else {

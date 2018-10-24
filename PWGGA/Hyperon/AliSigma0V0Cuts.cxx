@@ -70,7 +70,6 @@ ClassImp(AliSigma0V0Cuts)
       fHistK0Mass(nullptr),
       fHistV0Pt(nullptr),
       fHistV0Mass(nullptr),
-      fHistV0PtY(),
       fHistV0MassPt(nullptr),
       fHistLambdaMassK0Rej(nullptr),
       fHistK0MassAfter(nullptr),
@@ -94,17 +93,11 @@ ClassImp(AliSigma0V0Cuts)
       fHistArmenterosBefore(nullptr),
       fHistArmenterosAfter(nullptr),
       fHistMCTruthV0PtY(nullptr),
-      fHistMCTruthV0PtEta(nullptr),
       fHistMCTruthV0DaughterPtY(nullptr),
-      fHistMCTruthV0DaughterPtEta(nullptr),
       fHistMCTruthV0DaughterPtYAccept(nullptr),
-      fHistMCTruthV0DaughterPtEtaAccept(nullptr),
       fHistMCTruthPtYHighMult(nullptr),
-      fHistMCTruthPtEtaHighMult(nullptr),
       fHistMCTruthDaughterPtYHighMult(nullptr),
-      fHistMCTruthDaughterPtEtaHighMult(nullptr),
       fHistMCTruthDaughterPtYAcceptHighMult(nullptr),
-      fHistMCTruthDaughterPtEtaAcceptHighMult(nullptr),
       fHistMCV0Pt(nullptr),
       fHistV0Mother(nullptr),
       fHistV0MotherTrue(nullptr),
@@ -252,7 +245,6 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fHistK0Mass(nullptr),
       fHistV0Pt(nullptr),
       fHistV0Mass(nullptr),
-      fHistV0PtY(),
       fHistV0MassPt(nullptr),
       fHistLambdaMassK0Rej(nullptr),
       fHistK0MassAfter(nullptr),
@@ -276,17 +268,11 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fHistArmenterosBefore(nullptr),
       fHistArmenterosAfter(nullptr),
       fHistMCTruthV0PtY(nullptr),
-      fHistMCTruthV0PtEta(nullptr),
       fHistMCTruthV0DaughterPtY(nullptr),
-      fHistMCTruthV0DaughterPtEta(nullptr),
       fHistMCTruthV0DaughterPtYAccept(nullptr),
-      fHistMCTruthV0DaughterPtEtaAccept(nullptr),
       fHistMCTruthPtYHighMult(nullptr),
-      fHistMCTruthPtEtaHighMult(nullptr),
       fHistMCTruthDaughterPtYHighMult(nullptr),
-      fHistMCTruthDaughterPtEtaHighMult(nullptr),
       fHistMCTruthDaughterPtYAcceptHighMult(nullptr),
-      fHistMCTruthDaughterPtEtaAcceptHighMult(nullptr),
       fHistMCV0Pt(nullptr),
       fHistV0Mother(nullptr),
       fHistV0MotherTrue(nullptr),
@@ -394,12 +380,12 @@ AliSigma0V0Cuts *AliSigma0V0Cuts::LambdaCuts() {
   v0Cuts->SetV0DecayVertexMax(100.f);
   v0Cuts->SetPIDnSigma(5.f);
   v0Cuts->SetTPCclusterMin(70.f);
-  v0Cuts->SetEtaMax(0.8);
+  v0Cuts->SetEtaMax(0.9);
   v0Cuts->SetDaughterDCAMax(1.5);
   v0Cuts->SetDaughterDCAtoPV(0.05);
   v0Cuts->SetK0Rejection(0., 0.);
-  v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-  v0Cuts->SetPileUpRejectionMode(OneDaughterCombined);
+  v0Cuts->SetLambdaSelection(1.115683 - 0.005, 1.115683 + 0.005);
+  v0Cuts->SetPileUpRejectionMode(BothDaughtersCombined);
   v0Cuts->SetChi2Max(4);
   v0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
   return v0Cuts;
@@ -933,13 +919,9 @@ bool AliSigma0V0Cuts::LambdaSelection(AliESDv0 *v0) const {
   }
   if (!fIsLightweight) fHistCuts->Fill(16);
 
-  float rap = v0->RapLambda();
-  int rapBin = GetRapidityBin(rap);
-
   fHistV0MassPt->Fill(v0->Pt(), massLambda);
   if (!fIsLightweight) {
     fHistLambdaMassK0Rej->Fill(massLambda);
-    if (rapBin > -1) fHistV0PtY[rapBin]->Fill(v0->Pt(), massLambda);
     fHistK0MassAfter->Fill(massK0);
     fHistEtaPhi->Fill(v0->Eta(), v0->Phi());
   }
@@ -976,12 +958,8 @@ bool AliSigma0V0Cuts::PhotonSelection(AliESDv0 *v0) const {
   }
   if (!fIsLightweight) fHistCuts->Fill(17);
 
-  float rap = ComputeRapidity(v0->Pt(), v0->Pz(), massPhoton);
-  int rapBin = GetRapidityBin(rap);
-
   fHistV0MassPt->Fill(v0->Pt(), massPhoton);
   if (!fIsLightweight) {
-    if (rapBin > -1) fHistV0PtY[rapBin]->Fill(v0->Pt(), massPhoton);
     fHistK0MassAfter->Fill(massK0);
     fHistEtaPhi->Fill(v0->Eta(), v0->Phi());
   }
@@ -998,16 +976,6 @@ bool AliSigma0V0Cuts::PhotonSelection(AliESDv0 *v0) const {
 
   if (!fIsLightweight) fHistCuts->Fill(18);
   return true;
-}
-
-//____________________________________________________________________________________________________
-float AliSigma0V0Cuts::ComputeRapidity(float pt, float pz, float m) const {
-  // calculates rapidity keeping the sign in case E == pz
-
-  float energy = std::sqrt(pt * pt + pz * pz + m * m);
-  if (energy != std::fabs(pz))
-    return 0.5 * std::log((energy + pz) / (energy - pz));
-  return (pz >= 0) ? 1.e30 : -1.e30;
 }
 
 //____________________________________________________________________________________________________
@@ -1127,30 +1095,21 @@ void AliSigma0V0Cuts::ProcessMC() const {
     if (!mcParticle->IsPhysicalPrimary()) continue;
     if (mcParticle->PdgCode() != fPID) continue;
     fHistMCTruthV0PtY->Fill(mcParticle->Y(), mcParticle->Pt());
-    fHistMCTruthV0PtEta->Fill(mcParticle->Eta(), mcParticle->Pt());
     if (lPercentile < fMCHighMultThreshold) {
       fHistMCTruthPtYHighMult->Fill(mcParticle->Y(), mcParticle->Pt());
-      fHistMCTruthPtEtaHighMult->Fill(mcParticle->Eta(), mcParticle->Pt());
     }
 
     if (!CheckDaughters(mcParticle)) continue;
     fHistMCTruthV0DaughterPtY->Fill(mcParticle->Y(), mcParticle->Pt());
-    fHistMCTruthV0DaughterPtEta->Fill(mcParticle->Eta(), mcParticle->Pt());
     if (lPercentile < fMCHighMultThreshold) {
       fHistMCTruthDaughterPtYHighMult->Fill(mcParticle->Y(), mcParticle->Pt());
-      fHistMCTruthDaughterPtEtaHighMult->Fill(mcParticle->Eta(),
-                                              mcParticle->Pt());
     }
 
     if (!CheckDaughtersInAcceptance(mcParticle)) continue;
     fHistMCTruthV0DaughterPtYAccept->Fill(mcParticle->Y(), mcParticle->Pt());
-    fHistMCTruthV0DaughterPtEtaAccept->Fill(mcParticle->Eta(),
-                                            mcParticle->Pt());
     if (lPercentile < fMCHighMultThreshold) {
       fHistMCTruthDaughterPtYAcceptHighMult->Fill(mcParticle->Y(),
                                                   mcParticle->Pt());
-      fHistMCTruthDaughterPtEtaAcceptHighMult->Fill(mcParticle->Eta(),
-                                                    mcParticle->Pt());
     }
   }
 }
@@ -1459,40 +1418,6 @@ bool AliSigma0V0Cuts::CheckDaughtersInAcceptance(
 }
 
 //____________________________________________________________________________________________________
-int AliSigma0V0Cuts::GetRapidityBin(float rapidity) const {
-  if (-10 < rapidity && rapidity <= -1)
-    return 0;
-  else if (-1 < rapidity && rapidity <= -0.5)
-    return 1;
-  else if (-0.5 < rapidity && rapidity <= -0.4)
-    return 2;
-  else if (-0.4 < rapidity && rapidity <= -0.3)
-    return 3;
-  else if (-0.3 < rapidity && rapidity <= -0.2)
-    return 4;
-  else if (-0.2 < rapidity && rapidity <= -0.1)
-    return 5;
-  else if (-0.1 < rapidity && rapidity <= 0.f)
-    return 6;
-  else if (0.f < rapidity && rapidity <= 0.1)
-    return 7;
-  else if (0.1 < rapidity && rapidity <= 0.2)
-    return 8;
-  else if (0.2 < rapidity && rapidity <= 0.3)
-    return 9;
-  else if (0.3 < rapidity && rapidity <= 0.4)
-    return 10;
-  else if (0.4 < rapidity && rapidity <= 0.5)
-    return 11;
-  else if (0.5 < rapidity && rapidity <= 1.f)
-    return 12;
-  else if (1.0 < rapidity && rapidity < 10.f)
-    return 13;
-  else
-    return -1;
-}
-
-//____________________________________________________________________________________________________
 void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
   std::cout << "============================\n"
             << " V0 CUT CONFIGURATION " << appendix << "\n"
@@ -1525,9 +1450,6 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
             << " PDG pos      " << fNegPDG << "\n"
             << "============================\n";
 
-  std::vector<float> rapBins = {{-10., -1.f, -0.5, -0.4, -0.3, -0.2, -0.1, 0.f,
-                                 0.1, 0.2, 0.3, 0.4, 0.5, 1.f, 10.f}};
-
   const float pi = TMath::Pi();
 
   TH1::AddDirectory(kFALSE);
@@ -1543,24 +1465,26 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
     fHistograms->SetName(name);
   }
 
-  if (fHistogramsPos != nullptr) {
-    delete fHistogramsPos;
-    fHistogramsPos = nullptr;
-  }
-  if (fHistogramsPos == nullptr) {
-    fHistogramsPos = new TList();
-    fHistogramsPos->SetOwner(kTRUE);
-    fHistogramsPos->SetName("V0_PosDaughter");
-  }
+  if (!fIsLightweight) {
+    if (fHistogramsPos != nullptr) {
+      delete fHistogramsPos;
+      fHistogramsPos = nullptr;
+    }
+    if (fHistogramsPos == nullptr) {
+      fHistogramsPos = new TList();
+      fHistogramsPos->SetOwner(kTRUE);
+      fHistogramsPos->SetName("V0_PosDaughter");
+    }
 
-  if (fHistogramsNeg != nullptr) {
-    delete fHistogramsNeg;
-    fHistogramsNeg = nullptr;
-  }
-  if (fHistogramsNeg == nullptr) {
-    fHistogramsNeg = new TList();
-    fHistogramsNeg->SetOwner(kTRUE);
-    fHistogramsNeg->SetName("V0_NegDaughter");
+    if (fHistogramsNeg != nullptr) {
+      delete fHistogramsNeg;
+      fHistogramsNeg = nullptr;
+    }
+    if (fHistogramsNeg == nullptr) {
+      fHistogramsNeg = new TList();
+      fHistogramsNeg->SetOwner(kTRUE);
+      fHistogramsNeg->SetName("V0_NegDaughter");
+    }
   }
 
   fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 32, 0, 32);
@@ -1746,25 +1670,6 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
           new TH2F("fHistPsiPair", "; #it{p}_{T} (GeV/#it{c}); #Psi_{pair}",
                    100, 0, 10, 200, -pi / 2.f, pi / 2.f);
       fHistograms->Add(fHistPsiPair);
-    }
-
-    for (int i = 0; i < static_cast<int>(rapBins.size() - 1); ++i) {
-      if (std::abs(fPID) == 3122) {
-        fHistV0PtY[i] = new TH2F(
-            Form("fHistV0PtY_%.2f_%.2f", rapBins[i], rapBins[i + 1]),
-            Form("%.2f < y < %.2f ; #it{p}_{T} (GeV/#it{c}); Invariant "
-                 "mass (GeV/#it{c}^{2})",
-                 rapBins[i], rapBins[i + 1]),
-            100, 0, 10, 400, 1., 1.2);
-      } else if (std::abs(fPID) == 22) {
-        fHistV0PtY[i] = new TH2F(
-            Form("fHistV0PtY_%.2f_%.2f", rapBins[i], rapBins[i + 1]),
-            Form("%.2f < y < %.2f ; #it{p}_{T} (GeV/#it{c}); Invariant "
-                 "mass (GeV/#it{c}^{2})",
-                 rapBins[i], rapBins[i + 1]),
-            100, 0, 10, 400, 0., 0.4);
-      }
-      fHistograms->Add(fHistV0PtY[i]);
     }
   }
 
@@ -2113,40 +2018,22 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
     fHistMCTruthV0PtY =
         new TH2F("fHistMCTruthV0PtY", "; y; #it{p}_{T} (GeV/#it{c})", 100, -10,
                  10, 100, 0, 10);
-    fHistMCTruthV0PtEta =
-        new TH2F("fHistMCTruthV0PtEta", "; #eta; #it{p}_{T} (GeV/#it{c})", 100,
-                 -10, 10, 100, 0, 10);
     fHistMCTruthV0DaughterPtY =
         new TH2F("fHistMCTruthV0DaughterPtY", "; y; #it{p}_{T} (GeV/#it{c})",
                  100, -10, 10, 100, 0, 10);
-    fHistMCTruthV0DaughterPtEta =
-        new TH2F("fHistMCTruthV0DaughterPtEta",
-                 "; #eta; #it{p}_{T} (GeV/#it{c})", 100, -10, 10, 100, 0, 10);
     fHistMCTruthV0DaughterPtYAccept =
         new TH2F("fHistMCTruthV0DaughterPtYAccept",
                  "; y; #it{p}_{T} (GeV/#it{c})", 100, -10, 10, 100, 0, 10);
-    fHistMCTruthV0DaughterPtEtaAccept =
-        new TH2F("fHistMCTruthV0DaughterPtEtaAccept",
-                 "; #eta; #it{p}_{T} (GeV/#it{c})", 100, -10, 10, 100, 0, 10);
 
     fHistMCTruthPtYHighMult =
         new TH2F("fHistMCTruthPtYHighMult", "; y; #it{p}_{T} (GeV/#it{c})", 100,
                  -10, 10, 100, 0, 10);
-    fHistMCTruthPtEtaHighMult =
-        new TH2F("fHistMCTruthPtEtaHighMult", "; #eta; #it{p}_{T} (GeV/#it{c})",
-                 100, -10, 10, 100, 0, 10);
     fHistMCTruthDaughterPtYHighMult =
         new TH2F("fHistMCTruthDaughterPtYHighMult",
                  "; y; #it{p}_{T} (GeV/#it{c})", 100, -10, 10, 100, 0, 10);
-    fHistMCTruthDaughterPtEtaHighMult =
-        new TH2F("fHistMCTruthDaughterPtEtaHighMult",
-                 "; #eta; #it{p}_{T} (GeV/#it{c})", 100, -10, 10, 100, 0, 10);
     fHistMCTruthDaughterPtYAcceptHighMult =
         new TH2F("fHistMCTruthDaughterPtYAcceptHighMult",
                  "; y; #it{p}_{T} (GeV/#it{c})", 100, -10, 10, 100, 0, 10);
-    fHistMCTruthDaughterPtEtaAcceptHighMult =
-        new TH2F("fHistMCTruthDaughterPtEtaAcceptHighMult",
-                 "; #eta; #it{p}_{T} (GeV/#it{c})", 100, -10, 10, 100, 0, 10);
 
     fHistMCV0Pt = new TH1F("fHistMCV0Pt", "; #it{p}_{T} (GeV/#it{c}); Entries",
                            100, 0, 10);
@@ -2156,17 +2043,11 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
                  100, 0, 10, 4000, 0, 4000);
 
     fHistogramsMC->Add(fHistMCTruthV0PtY);
-    fHistogramsMC->Add(fHistMCTruthV0PtEta);
     fHistogramsMC->Add(fHistMCTruthV0DaughterPtY);
-    fHistogramsMC->Add(fHistMCTruthV0DaughterPtEta);
     fHistogramsMC->Add(fHistMCTruthV0DaughterPtYAccept);
-    fHistogramsMC->Add(fHistMCTruthV0DaughterPtEtaAccept);
     fHistogramsMC->Add(fHistMCTruthPtYHighMult);
-    fHistogramsMC->Add(fHistMCTruthPtEtaHighMult);
     fHistogramsMC->Add(fHistMCTruthDaughterPtYHighMult);
-    fHistogramsMC->Add(fHistMCTruthDaughterPtEtaHighMult);
     fHistogramsMC->Add(fHistMCTruthDaughterPtYAcceptHighMult);
-    fHistogramsMC->Add(fHistMCTruthDaughterPtEtaAcceptHighMult);
     fHistogramsMC->Add(fHistMCV0Pt);
     fHistogramsMC->Add(fHistV0Mother);
 
