@@ -371,34 +371,38 @@ public:
 
   bool load_bool(BoolValue_t &b) const { return is_bool() ? b = fValueBool, true : false; }
   bool load_float(FloatValue_t &f) const { return is_float() ? f = fValueFloat, true : false; }
+  bool load_float(float &f) const { return is_float() ? f = fValueFloat, true : false; }
   bool load_int(IntValue_t &i) const { return is_int() ? i = fValueInt, true : false; }
+  bool load_int(int &i) const { return is_int() ? i = static_cast<int>(fValueInt), true : false; }
+  bool load_int(unsigned int &i) const { return is_int() ? i = static_cast<unsigned int>(fValueInt), true : false; }
   bool load_num(FloatValue_t &f) const { return is_int() ? f = fValueInt, true : load_float(f); }
   bool load_str(std::string &s) const { return is_str() ? s = fValueString, true : false; }
   bool load_str(TString &s) const { return is_str() ? s = fValueString, true : false; }
   bool load_array(ArrayValue_t &a) const { return is_array() ? a = fValueArray, true : false; }
   bool load_map(MapValue_t &m) const { return is_map() ? m = fValueMap, true : false; }
-  bool load_range(RangeValue_t &r) const { return is_range() ? r = fValueRange, true : false; }
-  bool load_range(Float_t &a, Float_t &b) const {
-    return is_range() ? a = fValueRange.first, b = fValueRange.second, true : false; }
-  bool load_rangelist(RangeListValue_t &r) const {
-    return is_rangelist() ? r = fValueRangeList, true : load_rangelist(r); }
-  bool load_ranges(RangeListValue_t &r) const {
-    if (is_range()) {
-      r.clear();
-      r.push_back(fValueRange);
-      return true;
-    } else {
-      return load_rangelist(r);
-    }
-    // return is_range() ? r.clear(), r.push_back(fValueRange), true : load_rangelist(r);
-  }
 
-  bool load_range(std::pair<float, float> &r) const { return is_range() ? r = fValueRange, true : false; }
+  bool load_range(RangeValue_t &r) const { return is_range() ? r = fValueRange, true : false; }
+  bool load_range(pair_of_floats &r) const { return is_range() ? r = fValueRange, true : false; }
+  bool load_range(pair_of_ints &r) const { return is_range() ? r = fValueRange, true : false; }
+  bool load_range(typename RangeValue_t::first_type &a, typename RangeValue_t::second_type &b) const
+    { return is_range() ? a = fValueRange.first, b = fValueRange.second, true : false; }
+  bool load_range(Float_t &a, Float_t &b) const
+    { return is_range() ? a = fValueRange.first, b = fValueRange.second, true : false; }
+  bool load_range(int &a, int &b) const
+    { return is_range() ? a = fValueRange.first, b = fValueRange.second, true : false; }
+
+  bool load_rangelist(RangeListValue_t &r) const
+    { return is_rangelist() ? r = fValueRangeList, true : false; }
+
+  /// same as load_rangelist but interprets single range as rangelist
+  /// of length 1
+  bool load_ranges(RangeListValue_t &r) const
+    { return is_range() ? r.clear(), r.push_back(fValueRange), true : load_rangelist(r); }
+
 
   /// Return the commonname of this object's contained type; usefull for debugging
-  TString name_of_type() const {
-    return NameFromtype(fTypeTag);
-  }
+  TString name_of_type() const
+    { return NameFromtype(fTypeTag); }
 
   /// \defgroup Find&Load Methods
   /// @{
