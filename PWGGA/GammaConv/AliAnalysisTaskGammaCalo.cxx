@@ -2796,6 +2796,46 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
   Double_t vertex[3] = {0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
 
+  if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoFlatEnergySubtraction()){
+    Double_t totalClusterEnergy = 0;
+    for(Long_t i = 0; i < nclus; i++){
+      AliVCluster* clus = NULL;
+      if(fInputEvent->IsA()==AliESDEvent::Class()){
+        if(arrClustersProcess)
+          clus = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(i));
+        else
+          clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
+      } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+        if(arrClustersProcess)
+          clus = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(i));
+        else
+          clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
+      }
+      if(!clus) continue;
+      totalClusterEnergy += clus->E();
+      delete clus;
+    }
+    Double_t totalEDeposit = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetTotalEnergyDeposit(fInputEvent);
+    Double_t totalUnclusteredE = totalEDeposit - totalClusterEnergy;
+    for(Long_t i = 0; i < nclus; i++){
+      AliVCluster* clus = NULL;
+      if(fInputEvent->IsA()==AliESDEvent::Class()){
+        if(arrClustersProcess)
+          clus = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(i));
+        else
+          clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
+      } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+        if(arrClustersProcess)
+          clus = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(i));
+        else
+          clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
+      }
+      if(!clus) continue;
+      clus->SetE(clus->E()-(clus->GetNCells()*(totalUnclusteredE)/12288.));
+      delete clus;
+    }
+  }
+
   Double_t maxClusterEnergy = -1;
   Int_t maxClusterID        = -1;
   map<Long_t,Int_t> mapIsClusterAccepted;

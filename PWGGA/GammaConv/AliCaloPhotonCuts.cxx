@@ -152,6 +152,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fUseExoticCluster(0),
   fDoExoticsQA(kFALSE),
   fMinEnergy(0),
+  fDoFlatEnergySubtraction(0),
   fSeedEnergy(0.1),
   fLocMaxCutEDiff(0.03),
   fUseMinEnergy(0),
@@ -344,6 +345,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fUseExoticCluster(ref.fUseExoticCluster),
   fDoExoticsQA(ref.fDoExoticsQA),
   fMinEnergy(ref.fMinEnergy),
+  fDoFlatEnergySubtraction(ref.fDoFlatEnergySubtraction),
   fSeedEnergy(ref.fSeedEnergy),
   fLocMaxCutEDiff(ref.fLocMaxCutEDiff),
   fUseMinEnergy(ref.fUseMinEnergy),
@@ -2150,6 +2152,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
 
   for(Int_t iModule=0;iModule<nModules;iModule++){nCellsBigger100MeV[iModule]=0;nCellsBigger1500MeV[iModule]=0;EnergyOfMod[iModule]=0;}
 
+
   for(Int_t iCell=0;iCell<cells->GetNumberOfCells();iCell++){
     Short_t cellNumber=0;
     Double_t cellAmplitude=0;
@@ -2370,6 +2373,73 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     delete cluster;
   }
   return;
+}
+//________________________________________________________________________
+Double_t AliCaloPhotonCuts::GetTotalEnergyDeposit(AliVEvent *event)
+{
+
+  AliVCaloCells* cells = 0x0;
+  Int_t nModules = 0;
+  Double_t totalCellAmplitude = 0;
+
+  if( (fClusterType == 1 || fClusterType == 3) && !fEMCALInitialized ) InitializeEMCAL(event);
+  if( fClusterType == 2 && ( !fPHOSInitialized || (fPHOSCurrentRun != event->GetRunNumber()) ) ) InitializePHOS(event);
+
+  if( fClusterType == 1 || fClusterType == 3){ //EMCAL & DCAL
+    cells = event->GetEMCALCells();
+    fGeomEMCAL = AliEMCALGeometry::GetInstance();
+    if(!fGeomEMCAL) AliFatal("EMCal geometry not initialized!");
+    if(!fEMCALBadChannelsMap) AliFatal("EMCal bad channels map not initialized!");
+    nModules = fGeomEMCAL->GetNumberOfSuperModules();
+  } else if( fClusterType == 2 ){ //PHOS
+    cells = event->GetPHOSCells();
+    fGeomPHOS = AliPHOSGeometry::GetInstance();
+    if(!fGeomPHOS) AliFatal("PHOS geometry not initialized!");
+    nModules = fGeomPHOS->GetNModules();
+  } else{
+    AliError(Form("GetTotalEnergyDeposit not (yet) defined for cluster type (%i)",fClusterType));
+  }
+
+  for(Int_t iCell=0;iCell<cells->GetNumberOfCells();iCell++){
+    Short_t cellNumber=0;
+    Double_t cellAmplitude=0;
+    Double_t cellTime=0;
+    Double_t cellEFrac=0;
+    Int_t cellMCLabel=0;
+    Int_t nMod = -1;
+
+    cells->GetCell(iCell,cellNumber,cellAmplitude,cellTime,cellMCLabel,cellEFrac);
+    if( fClusterType == 3 && cellNumber < 12288){continue;}
+    if( fClusterType == 2 && cellNumber < 0){continue;} //Scip CPV cells in PHOS case
+    Int_t imod = -1;Int_t iTower = -1, iIphi = -1, iIeta = -1;
+    Int_t icol = -1;Int_t irow = -1;
+    Int_t relid[4];// for PHOS
+
+    Bool_t doBadCell = kTRUE;
+    if( fClusterType == 1 || fClusterType == 3){
+      nMod = fGeomEMCAL->GetSuperModuleNumber(cellNumber);
+      fGeomEMCAL->GetCellIndex(cellNumber,imod,iTower,iIphi,iIeta);
+      if (fEMCALBadChannelsMap->GetEntries() <= imod) doBadCell=kFALSE;
+      fGeomEMCAL->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi,iIeta,irow,icol);
+    }else if( fClusterType == 2 ){
+      fGeomPHOS->AbsToRelNumbering(cellNumber,relid);
+      if(relid[1]!=0) AliFatal("PHOS CPV in PHOS cell array?");
+      nMod = relid[0];//(Int_t) (1 + (cellNumber-1)/3584);
+      if(nMod>=nModules || nMod<0 || !fPHOSBadChannelsMap[nMod]) doBadCell=kFALSE;
+    }
+
+    Int_t iBadCell = 0;
+    if( (fClusterType == 1 || fClusterType == 3) && doBadCell){
+      iBadCell = (Int_t) ((TH2I*)fEMCALBadChannelsMap->At(imod))->GetBinContent(icol,irow);
+    }else if( fClusterType == 2 && doBadCell){
+      iBadCell = (Int_t) ((TH2I*)fPHOSBadChannelsMap[nMod])->GetBinContent(relid[2],relid[3]);
+    }
+
+    if(iBadCell > 0) continue;
+    totalCellAmplitude += cellAmplitude;
+  }
+
+  return totalCellAmplitude;
 }
 
 //________________________________________________________________________
@@ -4339,25 +4409,30 @@ Bool_t AliCaloPhotonCuts::SetMinEnergyCut(Int_t minEnergy)
           if (!fUseMinEnergy) fUseMinEnergy=1;
           fMinEnergy=6.0;
           break;
-        case 10:
+        case 10: // a
           if (!fUseMinEnergy) fUseMinEnergy=1;
           fMinEnergy=1.5;
           break;
-        case 11:
+        case 11: // b
           if (!fUseMinEnergy) fUseMinEnergy=1;
           fMinEnergy=1.0;
           break;
-        case 12:
+        case 12: // c
           if (!fUseMinEnergy) fUseMinEnergy=1;
           fMinEnergy=0.65;
           break;
-        case 13:
+        case 13: // d
           if (!fUseMinEnergy) fUseMinEnergy=1;
           fMinEnergy=0.675;
           break;
-        case 14:
+        case 14: // e
           if (!fUseMinEnergy) fUseMinEnergy=1;
           fMinEnergy=0.625;
+          break;
+        case 15: // f
+          if (!fUseMinEnergy) fUseMinEnergy=1;
+          fMinEnergy=0.7;
+          fDoFlatEnergySubtraction=kTRUE;
           break;
         default:
           AliError(Form("Minimum Energy Cut not defined %d",minEnergy));

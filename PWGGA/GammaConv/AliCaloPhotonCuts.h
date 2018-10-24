@@ -300,6 +300,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     void        SetExtendedMatchAndQA(Int_t extendedMatchAndQA) {fExtendedMatchAndQA = extendedMatchAndQA; return;}
     void        FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC);
+    Double_t    GetTotalEnergyDeposit(AliVEvent *event);
     void        SetIsPureCaloCut(Int_t merged)                  {fIsPureCalo = merged; return;}
     Int_t       GetIsPureCaloCut()                              {return fIsPureCalo;}
 
@@ -331,6 +332,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     AliPhotonIsolation* GetPhotonIsolationInstance()        { return fCaloIsolation; }
 
     Bool_t      GetIsAcceptedForBasicCounting()                 {return fIsAcceptedForBasic;}
+
+    Bool_t      GetDoFlatEnergySubtraction()                    {return fDoFlatEnergySubtraction;}
 
     // modify acceptance via histogram with cellID
     void        SetHistoToModifyAcceptance(TH1S* histAcc)       {fHistoModifyAcc  = histAcc; return;}
@@ -451,6 +454,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t    fUseExoticCluster;                        // flag for switching on exotic cluster cut
     Bool_t    fDoExoticsQA;                             // flag for switching on exotic cluster cut
     Double_t  fMinEnergy;                               // minium energy per cluster
+    Bool_t    fDoFlatEnergySubtraction;                 // enable flat energy subtraction
     Double_t  fSeedEnergy;                              // seed energy for clusters
     Double_t  fLocMaxCutEDiff;                          // cut on energy difference between two cells
     Bool_t    fUseMinEnergy;                            // flag for switching on minimum energy cut
