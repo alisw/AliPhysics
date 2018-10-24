@@ -74,7 +74,7 @@ AliMFTCARoad& AliMFTCARoad::operator=(const AliMFTCARoad& road)
     fCellsInLayer[i] = new TClonesArray("AliMFTCACell",10);
     fNcellsInLayer[i] = 0;
   }
-
+  return *this;
 }
 
 //___________________________________________________________________________

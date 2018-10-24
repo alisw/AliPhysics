@@ -159,6 +159,7 @@ int AliHLTEMCALDigitsMonitorComponent::Deinit()
     delete fDigitsMonitor;
   if (fGeometry)
     delete fGeometry;
+  return 0;
 }
 
 void AliHLTEMCALDigitsMonitorComponent::InitialiseGeometry() { fGeometry = new AliHLTEMCALGeometry(GetRunNo()); }

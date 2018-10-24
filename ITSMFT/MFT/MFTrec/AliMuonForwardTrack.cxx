@@ -73,7 +73,7 @@ AliMuonForwardTrack& AliMuonForwardTrack::operator=(const AliMuonForwardTrack& t
   AliMUONTrack::operator=(track);
 
   fTrackMCId = track.fTrackMCId;
-  
+  return *this;
 }
 
 //====================================================================================================================================================

@@ -110,5 +110,5 @@ TGeoVolume * AliMFTChip::CreateVolume(){
 //  
 //  
 //  return chipVol;
-  
+  return NULL;
 }

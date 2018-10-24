@@ -262,6 +262,7 @@ Bool_t AliPHOSCpvGainCalibDA::FillAmplA0Histos(TClonesArray *digits){
     fhTotalClusterAmplitude->Fill(totAmpl);
   }
   assert(false);
+  return true;
 }
 //*************************************************************
 void AliPHOSCpvGainCalibDA::CreateQAHistos(){

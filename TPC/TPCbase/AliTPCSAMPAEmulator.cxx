@@ -102,6 +102,7 @@ Bool_t   AliTPCSAMPAEmulator::DigitalFilterFloat(Int_t npoints, Double_t *dataAr
   if (fDigitFilterType==2) return  BC3SlopeFilterMI(npoints,dataArray,baseline);
   //
   assert(false);
+  return true;
 }
 
 void AliTPCSAMPAEmulator::SetBC3Parameters(Double_t slopeDown, Double_t slopeUp, Double_t round){
@@ -249,6 +250,7 @@ Bool_t  AliTPCSAMPAEmulator::MovingAverageFilter(Int_t npoints, Double_t *dataAr
     }
   }
   assert(false);
+  return true;
 }
 
 

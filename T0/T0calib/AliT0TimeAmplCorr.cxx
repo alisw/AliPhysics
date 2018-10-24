@@ -348,7 +348,7 @@ Int_t AliT0TimeAmplCorr::ConnectSourceFile(TString filename, TString treepathnam
 
     }
 
-
+    return 1;
 }
 
 /*******************************************************************************************************************/
@@ -1243,9 +1243,8 @@ Int_t AliT0TimeAmplCorr::GetRAWmeanValuesFromOCDB()
         fPedestalQTC[pmt] = T0CalTimeEq->GetCFDvalue(pmt,3);
         if(fVerbose >= 4)cout <<Form("Pedestal QTC %s from OCDB: %i",pmtname.Data(), fPedestalQTC[pmt])<<endl;
     }
-
-    return 1;
 */
+    return 1;
 }
 
 /*******************************************************************************************************************/

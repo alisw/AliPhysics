@@ -147,7 +147,7 @@ AliTOFCalibFineSlewing::operator=(const AliTOFCalibFineSlewing &src)
     fX[ipt] = src.fX[ipt];
     fY[ipt] = src.fY[ipt];
   }
-  
+  return *this;
 }
 
 //_________________________________________________________

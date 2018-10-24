@@ -48,19 +48,20 @@ enum requestType{
 struct clientRequestStruct
 {
     clientRequestStruct() :
-    messageType(-1),
-    maxStorageSize(-1),
-    maxOccupation(-1),
-    removeEvents(-1),
-    eventsInChunk(-1)
+      messageType(-1),
+      maxStorageSize(-1),
+      maxOccupation(-1),
+      removeEvents(-1),
+      eventsInChunk(-1)
     {};
-    clientRequestStruct(const clientRequestStruct& crs){
-        messageType = crs.messageType;
-        maxStorageSize =crs.maxStorageSize;
-        maxOccupation = crs.maxOccupation;
-        removeEvents = crs.removeEvents;
-        eventsInChunk = crs.eventsInChunk;
-    }
+    
+    clientRequestStruct(const clientRequestStruct& crs) :
+      messageType(crs.messageType),
+      maxStorageSize(crs.maxStorageSize),
+      maxOccupation(crs.maxOccupation),
+      removeEvents(crs.removeEvents),
+      eventsInChunk(crs.eventsInChunk)
+    {}
     
 	int messageType;
 	int maxStorageSize;
@@ -70,6 +71,8 @@ struct clientRequestStruct
 };
 
 struct eventStruct{
+	eventStruct() : runNumber(0), eventNumber(0) {}
+	eventStruct(int a, int b) : runNumber(a), eventNumber(b) {}
 	int runNumber;
 	int eventNumber;
 };
@@ -96,10 +99,11 @@ struct serverRequestStruct
     system(),
     triggerClass()
     {};
-    serverRequestStruct(const serverRequestStruct& src){
-        messageType = src.messageType;
-        eventsRunNumber = src.eventsRunNumber;
-        eventsEventNumber = src.eventsEventNumber;
+    serverRequestStruct(const serverRequestStruct& src) : 
+        messageType(src.messageType),
+        eventsRunNumber(src.eventsRunNumber),
+        eventsEventNumber(src.eventsEventNumber)
+    {
         runNumber[0] = src.runNumber[0];
         runNumber[1] = src.runNumber[1];
         eventNumber[0] = src.eventNumber[0];
@@ -112,8 +116,7 @@ struct serverRequestStruct
         strcpy(system[1],src.system[1]);
         strcpy(triggerClass,src.triggerClass);
     }
-	int messageType;
-    
+    int messageType;
     int eventsRunNumber;
     int eventsEventNumber;
 

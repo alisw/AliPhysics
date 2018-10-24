@@ -2894,6 +2894,7 @@ Bool_t AliTPCPreprocessorOffline::NormaliseYToMean(TGraphErrors *graph)
   }
 
   ScaleY(graph, 1./mean);
+  return true;
 }
 
 Bool_t AliTPCPreprocessorOffline::NormaliseYToWeightedMeandEdx(TGraphErrors *graph)
@@ -2907,6 +2908,7 @@ Bool_t AliTPCPreprocessorOffline::NormaliseYToWeightedMeandEdx(TGraphErrors *gra
   }
 
   ScaleY(graph, 1./scaleFactor);
+  return true;
 }
 
 Bool_t AliTPCPreprocessorOffline::NormaliseYToTruncateddEdx(TGraphErrors *graph)
@@ -2920,6 +2922,7 @@ Bool_t AliTPCPreprocessorOffline::NormaliseYToTruncateddEdx(TGraphErrors *graph)
   }
 
   ScaleY(graph, 1./truncationFactor);
+  return true;
 }
 
 void AliTPCPreprocessorOffline::GetStatType(const TH2* h, Double_t& fraction, Int_t& type, const Int_t minStat)

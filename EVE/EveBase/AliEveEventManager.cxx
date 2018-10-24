@@ -82,7 +82,7 @@ AliEveEventManager* AliEveEventManager::fgMaster  = NULL;
 
 AliEveEventManager::AliEveEventManager(EDataSource defaultDataSource) :
 TEveEventManager("Event", ""),
-fEventId(-1),fEventInfo(),fHasEvent(kFALSE),fCurrentRun(-1),
+fEventId(-1),fEventInfo(),fHasEvent(kFALSE),fCurrentRun(-1), fEmptyData(),
 fCurrentData(&fEmptyData),fCurrentDataSource(NULL),fDataSourceOnline(NULL),fDataSourceOffline(NULL),fDataSourceHLTZMQ(NULL),
 fAutoLoad(kFALSE), fAutoLoadTime(5),fAutoLoadTimer(0),fAutoLoadTimerRunning(kFALSE),
 fTransients(0),

@@ -108,6 +108,7 @@ Int_t AliTreeFormulaF::Compile(const char *expression) {
   }
   TString stext(fquery(lastI, fquery.Length() - lastI));
   fTextArray->AddAtAndExpand(new TObjString(stext.Data()), nVars);
+  return 0;
 }
 
 ///

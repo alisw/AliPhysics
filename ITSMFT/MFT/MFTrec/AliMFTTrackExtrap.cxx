@@ -79,6 +79,7 @@ Double_t AliMFTTrackExtrap::GetImpactParamFromBendingMomentum(Double_t bendingMo
 //  const Double_t kCorrectionFactor = 1.1; // impact parameter is 10% underestimated
 //  
 //  return kCorrectionFactor * (-0.0003 * fgSimpleBValue * fgkSimpleBLength * fgkSimpleBPosition / bendingMomentum);
+    return 0;
 }
 
 //__________________________________________________________________________
@@ -102,6 +103,7 @@ AliMFTTrackExtrap::GetBendingMomentumFromImpactParam(Double_t impactParam)
 //  {
 //    return AliMUONConstants::GetMostProbBendingMomentum();
 //  }
+    return 0;
 }
 //__________________________________________________________________________
 Double_t AliMFTTrackExtrap::Sagitta(Int_t nVal, Double_t *xVal, Double_t *yVal, Double_t &distL2, Double_t &q2)
@@ -558,7 +560,7 @@ Bool_t AliMFTTrackExtrap::ExtrapToZRungekutta(AliMFTTrackParam* trackParam, Doub
 //		return !tooManyStep;
 //		
 //	}
-	
+	return true;
 }
 
 //__________________________________________________________________________

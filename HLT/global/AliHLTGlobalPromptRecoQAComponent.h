@@ -51,9 +51,9 @@ struct histStruct {
   string config; //full config string
   bool triggerIsRegex;
   int Fill();
-  histStruct() : hist(NULL), x(), y(), trigger(), config() {}
-  histStruct( const histStruct& s) : hist(s.hist), x(s.x), y(s.y), trigger(s.trigger), config(s.config) {}
-  histStruct& operator=(const histStruct& s) {hist=s.hist; x=s.x; y=s.y; trigger=s.trigger; config=s.config; return *this;}
+  histStruct() : hist(NULL), x(), y(), trigger(), config(), triggerIsRegex(false) {}
+  histStruct( const histStruct& s) : hist(s.hist), x(s.x), y(s.y), trigger(s.trigger), config(s.config), triggerIsRegex(s.triggerIsRegex) {}
+  histStruct& operator=(const histStruct& s) {hist=s.hist; x=s.x; y=s.y; trigger=s.trigger; config=s.config; triggerIsRegex = s.triggerIsRegex; return *this;}
 };
 
 class AliHLTGlobalPromptRecoQAComponent : public AliHLTProcessor, public AliOptionParser
