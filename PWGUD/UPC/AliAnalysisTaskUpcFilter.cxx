@@ -607,7 +607,7 @@ Bool_t AliAnalysisTaskUpcFilter::RunAOD()
   fUPCEvent->SetIR2Map(aodEvent->GetHeader()->GetIRInt2InteractionMap());
 
   //SPD primary vertex in AOD
-  AliAODVertex *vtx = aodEvent->GetPrimaryVertexSPD();
+  AliAODVertex *vtx = aodEvent->GetPrimaryVertex();
   if(!vtx) {PostData(2, fHistList); return kFALSE;}
   Double_t posVtx[3]; vtx->GetXYZ( posVtx );
   Double_t covVtx[6]; vtx->GetCovarianceMatrix( covVtx );
