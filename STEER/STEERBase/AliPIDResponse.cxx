@@ -1776,7 +1776,7 @@ void AliPIDResponse::SetTRDPidResponseMaster()
 }
 void AliPIDResponse::CheckTRDLikelihoodParameter(){
     Int_t nTracklets=1;
-    Int_t level=0.9;
+    Double_t level=0.9;
     Double_t params[4];
     Int_t centrality=0;
     Int_t iCharge=1;
