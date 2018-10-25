@@ -45,6 +45,7 @@ public:
 
 
   	void SetPtHardBin(Int_t b){ fSelectPtHardBin   = b;}
+  	void SetPtHardThreshold(Double_t b){ fPtHardThreshold   = b;}
 
 	Bool_t IsEventSelected();
 	  enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex};
@@ -158,6 +159,7 @@ private:
 
 	AliHFJetsTagging* fHFJetUtils;//!
 
+	Double_t fPtHardThreshold;//
 	Bool_t fUseCorrPt;//
 	Bool_t fEnableV0GammaRejection;//
 	Float_t fPythiaEventWeight;//!
@@ -625,7 +627,7 @@ private:
   static const Double_t fgkMassProton;  //
   static const Int_t fgkiNCategV0 = 18; // number of V0 selection steps
 
-	ClassDef(AliAnalysisTaskBJetTC, 53)
+	ClassDef(AliAnalysisTaskBJetTC, 54)
 };
 #endif
  //
