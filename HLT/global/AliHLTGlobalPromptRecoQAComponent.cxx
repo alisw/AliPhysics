@@ -808,7 +808,9 @@ void AliHLTGlobalPromptRecoQAComponent::NewHistogram(
     HLTWarning("empty variable %s",yname.c_str());
     return;
   }
+
   delete hist.hist; hist.hist=NULL;
+
   if (x.bins==0 || y.bins==0)
   {
     HLTInfo("hist %s disabled, axis has zero bins",histName.c_str());
@@ -844,6 +846,7 @@ void AliHLTGlobalPromptRecoQAComponent::NewHistogram(
   hist.x = *ax;
   hist.y = y;
   hist.trigger = trigName;
+  hist.triggerIsRegex = std::string::npos != trigName.find_first_of("^$.[]+?|");
   hist.config=config;
   //register which axes we're using
   fAxes[xname].histograms[histName]=true;
@@ -929,7 +932,14 @@ int AliHLTGlobalPromptRecoQAComponent::FillHistograms()
     const AliHLTCTPData* ctp = CTPData();
     if (ctp && !hist.trigger.empty())
     {
-      triggerMatched=ctp->MatchTriggerRE(hist.trigger.c_str());
+      if (hist.triggerIsRegex)
+      {
+        triggerMatched=ctp->MatchTriggerRE(hist.trigger.c_str());
+      }
+      else
+      {
+        triggerMatched=ctp->MatchTriggerGlob(hist.trigger.c_str());
+      }
     }
 
 
