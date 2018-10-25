@@ -165,7 +165,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition)
 		anaFilter->SetName(cutDefinition);
 		anaFilter->Print();
   }
-	else if(cutDefinition = "kCutSet1"){ //TMVA
+	else if(cutDefinition == "kCutSet1"){ //TMVA
 		std::cout << "Setting up cut set 1" << std::endl;
 		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
 		anaFilter->SetName(cutDefinition);
