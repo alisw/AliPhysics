@@ -1787,9 +1787,6 @@ void AliPIDResponse::CheckTRDLikelihoodParameter(){
             if((iCharge!=AliPID::kNoCharge)&&(!fTRDPIDResponseObject->GetThresholdParameters(nTracklets, level, params,centrality,AliTRDPIDResponse::kLQ1D,AliPID::kNoCharge))){
                 AliError("No Params TRD Likelihood Threshold Parameters Found!!");
             }
-            if(iCharge==AliPID::kNoCharge){
-                AliError("No Params TRD Likelihood Threshold Parameters Found!!");
-            }
         }
         else {
             AliInfo(Form("TRD Likelihood Threshold Parameters for Run %d Found",fRun));
