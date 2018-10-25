@@ -7,7 +7,7 @@ Bool_t DefineCutsTaskpp(AliAnalysisTaskHFJetIPQA *task, Float_t minC, Float_t ma
     // define cuts for task
     AliRDHFJetsCuts *cuts=task->GetJetCutsHF();
     // jets
-    cuts->SetJetRadius(0.4); // this cut does nothing
+    //cuts->SetJetRadius(0.4); // this cut does nothing
     cuts->SetMaxEtaJet(0.5);//0.9-R
     cuts->SetMinPtJet(5.);
     cuts->SetMaxPtJet(250.);
