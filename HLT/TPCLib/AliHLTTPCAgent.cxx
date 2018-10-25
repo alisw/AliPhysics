@@ -1,7 +1,7 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the                          * 
+//* This file is property of and copyright by the                          *
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -17,9 +17,9 @@
 
 //  @file   AliHLTTPCAgent.cxx
 //  @author Matthias Richter
-//  @date   
+//  @date
 //  @brief  Agent of the libAliHLTTPC library
-//  @note   
+//  @note
 
 #include "AliHLTTPCAgent.h"
 #include "AliHLTTPCDefinitions.h"
@@ -44,6 +44,7 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCCATrackerComponent.h"
 #include "AliHLTTPCCAGlobalMergerComponent.h"
 #include "AliHLTTPCClusterStatComponent.h"
+#include "AliHLTGPUDumpComponent.h"
 #endif
 #include "AliHLTTPCTrackMCMarkerComponent.h"
 #include "AliHLTTPCdEdxComponent.h"
@@ -147,7 +148,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     // - one global merger
     // - the esd converter
     // The ESD is shipped embedded into a TTree
-    int iMinSlice=0; 
+    int iMinSlice=0;
     int iMaxSlice=35;
     int iMinPart=0;
     int iMaxPart=5;
@@ -161,7 +162,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     TString compressorInput;
     TString trackerInput;
 
-    // Default TPC input: raw data or compressed clusters 
+    // Default TPC input: raw data or compressed clusters
 
     if( isRawHLTOUT ){
       // Compressed clusters are already copied from the raw file to the HLTOUT.
@@ -285,15 +286,15 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     handler->CreateConfiguration("TPC-compression-monitoring-component", "TPCDataCompressorMonitor", "TPC-compression TPC-hwcfdata","-pushback-period=30");
     handler->CreateConfiguration("TPC-compression-monitoring", "ROOTFileWriter", "TPC-compression-monitoring-component","-concatenate-events -overwrite -datafile HLT.TPCDataCompression-statistics.root");
 
-    // compressed cluster ids 
-    handler->CreateConfiguration("TPC-compressed-cluster-ids", "BlockFilter"   , "TPC-compression", "-datatype 'CLIDSTRK' 'TPC ' -datatype 'REMCLIDS' 'TPC '");  
+    // compressed cluster ids
+    handler->CreateConfiguration("TPC-compressed-cluster-ids", "BlockFilter"   , "TPC-compression", "-datatype 'CLIDSTRK' 'TPC ' -datatype 'REMCLIDS' 'TPC '");
     handler->CreateConfiguration("TPC-compressed-clusters-no-ids", "BlockFilter"   , "TPC-compression", "-datatype 'COMPDESC' 'TPC ' -datatype 'CLUSNOTC' 'TPC ' -datatype 'REMCLSCM' 'TPC ' -datatype 'CLSTRKCM' 'TPC ' -datatype 'CLSFLAGS' 'TPC '");
  
     // the esd converter configuration
     TString converterInput="TPC-globalmerger";
     if (!bPublishRaw) {
       // propagate cluster info to the esd converter in order to fill the MC information
-      handler->CreateConfiguration("TPC-clustermc-info", "BlockFilter"   , sinkHWClusterInput.Data(), "-datatype 'CLMCINFO' 'TPC '");  
+      handler->CreateConfiguration("TPC-clustermc-info", "BlockFilter"   , sinkHWClusterInput.Data(), "-datatype 'CLMCINFO' 'TPC '");
       handler->CreateConfiguration("TPC-mcTrackMarker","TPCTrackMCMarker","TPC-globalmerger TPC-clustermc-info","" );
       converterInput+=" ";
       converterInput+="TPC-mcTrackMarker";
@@ -362,7 +363,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     /////////////////////////////////////////////////////////////////////////////////////
     //
     // monitoring of compressed TPC data {CLUSTRAW:TPC }, {REMCLSCM,TPC }, {CLSTRKCM,TPC }
-    // 
+    //
 
     // publisher component
     handler->CreateConfiguration("TPC-hltout-compressionmonitor-publisher", "AliHLTOUTPublisher"   , NULL,
@@ -413,6 +414,7 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCCATrackerComponent);
   pHandler->AddComponent(new AliHLTTPCCAGlobalMergerComponent);
   pHandler->AddComponent(new AliHLTTPCClusterStatComponent);
+  pHandler->AddComponent(new AliHLTGPUDumpComponent);
 #endif
   pHandler->AddComponent(new AliHLTTPCTrackMCMarkerComponent);
   pHandler->AddComponent(new AliHLTTPCdEdxComponent);
@@ -422,7 +424,7 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCDigitDumpComponent);
   pHandler->AddComponent(new AliHLTTPCClusterDumpComponent);
   pHandler->AddComponent(new AliHLTTPCClusterHistoComponent);
-  pHandler->AddComponent(new AliHLTTPCHistogramHandlerComponent);  
+  pHandler->AddComponent(new AliHLTTPCHistogramHandlerComponent);
   pHandler->AddComponent(new AliHLTTPCDataCheckerComponent);
   pHandler->AddComponent(new AliHLTTPCHWCFEmulatorComponent);
 //  pHandler->AddComponent(new AliHLTTPCHWCFConsistencyControlComponent);  //FIXME: Causes crash: https://savannah.cern.ch/bugs/?83677
@@ -496,7 +498,7 @@ int AliHLTTPCAgent::GetHandlerDescription(AliHLTComponentDataType dt,
       return 1;
   }
 
-  // {'CLMCINFO':'TPC '} 
+  // {'CLMCINFO':'TPC '}
   if (dt==AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo) {
       desc=AliHLTOUTHandlerDesc(kProprietary, dt, GetModuleId());
       return 1;
