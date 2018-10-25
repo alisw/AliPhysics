@@ -135,6 +135,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fDoBG(kTRUE),
   fDoBGProbability(kFALSE),
   fDoConvCaloMixing(kFALSE),
+  fDoSectorMixing(kFALSE),
+  fDoSphericityMixing(kFALSE),
   fUseTrackMultiplicityForBG(kFALSE),
   fEnableMinOpeningAngleCut(kTRUE),
   fEnableOneCellDistCut(kFALSE),
@@ -225,6 +227,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fDoBG(ref.fDoBG),
   fDoBGProbability(ref.fDoBGProbability),
   fDoConvCaloMixing(ref.fDoConvCaloMixing),
+  fDoSectorMixing(ref.fDoSectorMixing),
+  fDoSphericityMixing(ref.fDoSphericityMixing),
   fUseTrackMultiplicityForBG(ref.fUseTrackMultiplicityForBG),
   fEnableMinOpeningAngleCut(ref.fEnableMinOpeningAngleCut),
   fEnableOneCellDistCut(ref.fEnableOneCellDistCut),
@@ -2250,6 +2254,12 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fUseTrackMultiplicityForBG  = kFALSE;
     fDoBGProbability            = kFALSE;
     fDoConvCaloMixing           = kTRUE;
+    break;
+  case 18: //i mixed event with V0 multiplicity
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fDoBGProbability            = kFALSE;
+    fDoSectorMixing             = kTRUE;
     break;
   default:
     cout<<"Warning: BackgroundScheme not defined "<<BackgroundScheme<<endl;
