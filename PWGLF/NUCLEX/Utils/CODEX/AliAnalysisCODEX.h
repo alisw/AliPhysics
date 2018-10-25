@@ -69,7 +69,7 @@ namespace AliAnalysisCODEX {
     kIsFake = BIT(12),
     kTOFmismatch = BIT(13),
     kIsKink = BIT(14),
-    kTRDout = BIT(15)
+    kTRDrefit = BIT(15)
   };
 
   enum EventMask {

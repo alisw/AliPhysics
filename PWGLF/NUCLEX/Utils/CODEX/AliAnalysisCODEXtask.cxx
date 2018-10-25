@@ -242,8 +242,6 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     t.SetTOFsignal(time);
     t.SetIntegratedLength(track->GetIntegratedLength());
 
-    if (track->GetStatus() & AliVTrack::kTRDout) t.mask |= AliAnalysisCODEX::kTRDout;
-
     /// Put the right information in the right place
     t.eta = track->Eta();
     t.phi = track->Phi();
@@ -273,6 +271,8 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     /// Mask
     t.mask = standard_mask | kIsReconstructed;
 
+    if (track->GetStatus() & AliVTrack::kTRDrefit) t.mask |= AliAnalysisCODEX::kTRDrefit;
+    
     /// Binned information
     float cov[3],dca[2];
     double ITSsamp[4];
