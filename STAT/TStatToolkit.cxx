@@ -3147,3 +3147,8 @@ Int_t TStatToolkit::AdaptHistoMetadata(TTree* tree, TH1 *histogram, TString opti
   histogram->Draw(option.Data());
   return 1;
 }
+
+THashList * TStatToolkit::GetMetadata(TTree *tree) {
+  TList *list=(TList*)(tree->GetUserInfo());
+  return (THashList*)((list!=nullptr)? list->FindObject("metaTable"):0);
+}
