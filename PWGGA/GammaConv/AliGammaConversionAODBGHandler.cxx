@@ -92,30 +92,33 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(Int_t collisionSy
 	fBGEventsMeson(binsZ,AliGammaConversionMotherMultipicityVector(binsMultiplicity,AliGammaConversionMotherBGEventVector(nEvents)))
 {
 	// constructor
-    if(fNBinsZ>8) fNBinsZ = 8;
     if(fNBinsMultiplicity>5) fNBinsMultiplicity = 5;
 
-	// Initializing z vertex bins
-	fBinLimitsArrayZ= new Double_t[fNBinsZ] ;
-	if(collisionSystem > 0 && collisionSystem < 8){ // PbPb
-		Double_t fBinLimitsArrayZPbPb[8] = 	{-50, 	-5.5, 	-2.9, 	-0.65,
-											 1.45, 	3.65, 	6.15, 	50};
-		for (Int_t i = 0; i < fNBinsZ; i++){
-			fBinLimitsArrayZ[i] =  fBinLimitsArrayZPbPb[i];
-		}	
-	} else if(collisionSystem == 0){				// pp
-		Double_t fBinLimitsArrayZpp[8] = 	{-50, 	-3.375, -1.605, -0.225, 
-											 1.065, 2.445, 	4.245, 	50};
-		for (Int_t i = 0; i < fNBinsZ; i++){
-			fBinLimitsArrayZ[i] =  fBinLimitsArrayZpp[i];
-		}	
-	} else { 										// pPb
-		Double_t fBinLimitsArrayZpPb[8] = 	{-50, 	-5.85, 	-3.35, 	-1.15, 
-											 0.85, 	2.95, 	5.55, 	50};
-		for (Int_t i = 0; i < fNBinsZ; i++){
-			fBinLimitsArrayZ[i] =  fBinLimitsArrayZpPb[i];
-		}	
-	}
+        // Initializing z vertex bins
+        fBinLimitsArrayZ= new Double_t[fNBinsZ] ;
+        if(fNBinsZ==9){
+          Double_t fBinLimitsArraySector[9] =  {0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5};
+          for (Int_t i = 0; i < fNBinsZ; i++){
+                  fBinLimitsArrayZ[i] =  fBinLimitsArraySector[i];
+          }
+        } else {
+          if(collisionSystem > 0 && collisionSystem < 8){ // PbPb
+            Double_t fBinLimitsArrayZPbPb[8] =  {-50, -5.5, -2.9, -0.65, 1.45, 3.65, 6.15, 50};
+            for (Int_t i = 0; i < fNBinsZ; i++){
+                    fBinLimitsArrayZ[i] =  fBinLimitsArrayZPbPb[i];
+            }
+          } else if(collisionSystem == 0){  // pp
+            Double_t fBinLimitsArrayZpp[8] =  {-50, -3.375, -1.605, -0.225, 1.065, 2.445, 4.245, 50};
+            for (Int_t i = 0; i < fNBinsZ; i++){
+                    fBinLimitsArrayZ[i] =  fBinLimitsArrayZpp[i];
+            }
+          } else {  // pPb
+            Double_t fBinLimitsArrayZpPb[8] =   {-50, -5.85, -3.35, -1.15, 0.85, 2.95, 5.55, 50};
+            for (Int_t i = 0; i < fNBinsZ; i++){
+                    fBinLimitsArrayZ[i] =  fBinLimitsArrayZpPb[i];
+            }
+          }
+        }
 
 	// Initializing multiplicity bins 
 	fBinLimitsArrayMultiplicity= new Double_t[fNBinsMultiplicity];
@@ -616,35 +619,6 @@ void AliGammaConversionAODBGHandler::AddEvent(TList* const eventGammas,Double_t 
 	}
 	fBGEvents[z][m][eventCounter].clear();
 	
-	// add the gammas to the vector
-	for(Int_t i=0; i< eventGammas->GetEntries();i++){
-		//    AliKFParticle *t = new AliKFParticle(*(AliKFParticle*)(eventGammas->At(i)));
-		fBGEvents[z][m][eventCounter].push_back(new AliAODConversionPhoton(*(AliAODConversionPhoton*)(eventGammas->At(i))));
-	}
-	fBGEventCounter[z][m]++;
-}
-//_____________________________________________________________________________________________________________________________
-void AliGammaConversionAODBGHandler::AddEvent(TList* const eventGammas,Double_t xvalue, Double_t yvalue, Double_t zvalue, Int_t multiplicity, Int_t sector, Double_t sphericity){
-
-	Int_t z = GetZBinIndex(zvalue);
-	Int_t m = GetMultiplicityBinIndex(multiplicity);
-
-	if(fBGEventCounter[z][m] >= fNEvents){
-		fBGEventCounter[z][m]=0;
-	}
-	Int_t eventCounter=fBGEventCounter[z][m];
-
-	fBGEventVertex[z][m][eventCounter].fX = xvalue;
-	fBGEventVertex[z][m][eventCounter].fY = yvalue;
-	fBGEventVertex[z][m][eventCounter].fZ = zvalue;
-        fBGEventVertex[z][m][eventCounter].fSector = sector;
-	fBGEventVertex[z][m][eventCounter].fSphericity = sphericity;
-
-    for(UInt_t d=0;d<fBGEvents[z][m][eventCounter].size();d++){
-		delete (AliAODConversionPhoton*)(fBGEvents[z][m][eventCounter][d]);
-	}
-	fBGEvents[z][m][eventCounter].clear();
-
 	// add the gammas to the vector
 	for(Int_t i=0; i< eventGammas->GetEntries();i++){
 		//    AliKFParticle *t = new AliKFParticle(*(AliKFParticle*)(eventGammas->At(i)));

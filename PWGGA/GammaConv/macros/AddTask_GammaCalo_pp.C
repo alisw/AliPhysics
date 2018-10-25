@@ -923,8 +923,6 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 443){ // EMCAL clusters pp 5 TeV mixing studies
     cuts.AddCutCalo("00010113","1111111067032220000","01631031000000d0"); // std
     cuts.AddCutCalo("00010113","1111111067032220000","0i631031000000d0"); // std
-    cuts.AddCutCalo("00010113","1111111067032220000","0j631031000000d0"); // std
-    cuts.AddCutCalo("00010113","1111111067032220000","0k631031000000d0"); // std
   } else if (trainConfig == 444){ // EMCAL clusters pp 5 TeV studies for flat energy subtraction
     cuts.AddCutCalo("00010113","1111111067032220000","01631031000000d0"); // std
     cuts.AddCutCalo("00010113","11111110670f2220000","01631031000000d0"); // std

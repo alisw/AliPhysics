@@ -68,7 +68,6 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fV0ReaderName("V0ReaderV1"),
   fCorrTaskSetting(""),
   fBGHandler(NULL),
-  fBGHandlerLowS(NULL),
   fInputEvent(NULL),
   fMCEvent(NULL),
   fCutFolder(NULL),
@@ -365,7 +364,6 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fV0ReaderName("V0ReaderV1"),
   fCorrTaskSetting(""),
   fBGHandler(NULL),
-  fBGHandlerLowS(NULL),
   fInputEvent(NULL),
   fMCEvent(NULL),
   fCutFolder(NULL),
@@ -666,10 +664,6 @@ AliAnalysisTaskGammaCalo::~AliAnalysisTaskGammaCalo()
     delete[] fBGHandler;
     fBGHandler = 0x0;
   }
-  if(fBGHandlerLowS){
-    delete[] fBGHandlerLowS;
-    fBGHandlerLowS = 0x0;
-  }
 }
 //___________________________________________________________
 void AliAnalysisTaskGammaCalo::InitBack(){
@@ -685,7 +679,6 @@ void AliAnalysisTaskGammaCalo::InitBack(){
     }
 
   fBGHandler = new AliGammaConversionAODBGHandler*[fnCuts];
-  fBGHandlerLowS = new AliGammaConversionAODBGHandler*[fnCuts];
 
 
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
@@ -731,17 +724,18 @@ void AliAnalysisTaskGammaCalo::InitBack(){
       }
 
       if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->BackgroundHandlerType() == 0){
-        fBGHandler[iCut] = new AliGammaConversionAODBGHandler(
-                                  collisionSystem,centMin,centMax,
-                                  ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetNumberOfBGEvents(),
-                                  ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity(),
-                                  4,8,7);
-        if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoSectorMixing() || ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoSphericityMixing() ){
-          fBGHandlerLowS[iCut] = new AliGammaConversionAODBGHandler(
-                                  collisionSystem,centMin,centMax,
-                                  ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetNumberOfBGEvents(),
-                                  ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity(),
-                                  4,8,7);
+        if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoSectorMixing() ){
+          fBGHandler[iCut] = new AliGammaConversionAODBGHandler(
+                                    collisionSystem,centMin,centMax,
+                                    ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetNumberOfBGEvents(),
+                                    ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity(),
+                                    4,9,7);
+        } else {
+          fBGHandler[iCut] = new AliGammaConversionAODBGHandler(
+                                    collisionSystem,centMin,centMax,
+                                    ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetNumberOfBGEvents(),
+                                    ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity(),
+                                    4,8,7);
         }
       }
     }
@@ -1042,10 +1036,12 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoMotherEtaPtAlpha        = new TH2F*[fnCuts];
       fHistoMotherPi0PtOpenAngle    = new TH2F*[fnCuts];
       fHistoMotherEtaPtOpenAngle    = new TH2F*[fnCuts];
-      fHistoMotherPtOpenAngle       = new TH2F*[fnCuts];
-      fHistoMotherPtOpenAngleBck    = new TH2F*[fnCuts];
       fHistoMotherPi0NGoodESDTracksPt    = new TH2F*[fnCuts];
       fHistoMotherEtaNGoodESDTracksPt    = new TH2F*[fnCuts];
+    }
+    if (fDoMesonQA == 2){
+      fHistoMotherPtOpenAngle       = new TH2F*[fnCuts];
+      fHistoMotherPtOpenAngleBck    = new TH2F*[fnCuts];
     }
   }
 
@@ -1336,14 +1332,6 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoMotherEtaPtOpenAngle[iCut]->SetXTitle("p_{T} (GeV/c)");
         fHistoMotherEtaPtOpenAngle[iCut]->SetYTitle("#theta_{#eta}");
         fESDList[iCut]->Add(fHistoMotherEtaPtOpenAngle[iCut]);
-        fHistoMotherPtOpenAngle[iCut]  = new TH2F("ESD_Mother_Pt_OpenAngle", "ESD_Mother_Pt_OpenAngle", nBinsQAPt, arrQAPtBinning,180,0, 1.8);
-        fHistoMotherPtOpenAngle[iCut]->SetXTitle("p_{T} (GeV/c)");
-        fHistoMotherPtOpenAngle[iCut]->SetYTitle("#theta");
-        fESDList[iCut]->Add(fHistoMotherPtOpenAngle[iCut]);
-        fHistoMotherPtOpenAngleBck[iCut]  = new TH2F("ESD_MotherBck_Pt_OpenAngle", "ESD_MotherBck_Pt_OpenAngle", nBinsQAPt, arrQAPtBinning,180,0, 1.8);
-        fHistoMotherPtOpenAngleBck[iCut]->SetXTitle("p_{T} (GeV/c)");
-        fHistoMotherPtOpenAngleBck[iCut]->SetYTitle("#theta");
-        fESDList[iCut]->Add(fHistoMotherPtOpenAngleBck[iCut]);
         if(fIsHeavyIon == 1){
           fHistoMotherPi0NGoodESDTracksPt[iCut]  = new TH2F("ESD_MotherPi0_GoodESDTracks_Pt", "ESD_MotherPi0_GoodESDTracks_Pt", 4000, 0, 4000, nBinsQAPt, arrQAPtBinning);
           fHistoMotherPi0NGoodESDTracksPt[iCut]->SetXTitle("# good tracks");
@@ -1369,6 +1357,16 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fESDList[iCut]->Add(fHistoMotherPi0NGoodESDTracksPt[iCut]);
         fESDList[iCut]->Add(fHistoMotherEtaNGoodESDTracksPt[iCut]);
       }
+      if (fDoMesonQA == 2){
+        fHistoMotherPtOpenAngle[iCut]  = new TH2F("ESD_Mother_Pt_OpenAngle", "ESD_Mother_Pt_OpenAngle", nBinsQAPt, arrQAPtBinning,180,0, 1.8);
+        fHistoMotherPtOpenAngle[iCut]->SetXTitle("p_{T} (GeV/c)");
+        fHistoMotherPtOpenAngle[iCut]->SetYTitle("#theta");
+        fESDList[iCut]->Add(fHistoMotherPtOpenAngle[iCut]);
+        fHistoMotherPtOpenAngleBck[iCut]  = new TH2F("ESD_MotherBck_Pt_OpenAngle", "ESD_MotherBck_Pt_OpenAngle", nBinsQAPt, arrQAPtBinning,180,0, 1.8);
+        fHistoMotherPtOpenAngleBck[iCut]->SetXTitle("p_{T} (GeV/c)");
+        fHistoMotherPtOpenAngleBck[iCut]->SetYTitle("#theta");
+        fESDList[iCut]->Add(fHistoMotherPtOpenAngleBck[iCut]);
+      }
 
       if (fIsMC > 1 && fDoMesonQA > 0 && fDoMesonQA < 3){
         fHistoMotherPi0PtY[iCut]->Sumw2();
@@ -1377,10 +1375,12 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoMotherEtaPtAlpha[iCut]->Sumw2();
         fHistoMotherPi0PtOpenAngle[iCut]->Sumw2();
         fHistoMotherEtaPtOpenAngle[iCut]->Sumw2();
-        fHistoMotherPtOpenAngle[iCut]->Sumw2();
-        fHistoMotherPtOpenAngleBck[iCut]->Sumw2();
         fHistoMotherPi0NGoodESDTracksPt[iCut]->Sumw2();
         fHistoMotherEtaNGoodESDTracksPt[iCut]->Sumw2();
+      }
+      if (fIsMC == 2){
+        fHistoMotherPtOpenAngle[iCut]->Sumw2();
+        fHistoMotherPtOpenAngleBck[iCut]->Sumw2();
       }
 
       if (fProduceCellIDPlots){
@@ -1491,9 +1491,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     InitBack(); // Init Background Handler
   }
 
-  if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoSectorMixing() || ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoSphericityMixing() ){
+  if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoSectorMixing() ){
     fV0Reader->SetCalcSector(kTRUE);
-    fV0Reader->SetCalcSphericity(kTRUE);
   }
 
   if(fIsMC> 0){
@@ -2798,6 +2797,8 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
 
   if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoFlatEnergySubtraction()){
     Double_t totalClusterEnergy = 0;
+    Int_t totalActiveCells = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetNactiveEmcalCells();
+    Double_t totalCellsinClusters = 0;
     for(Long_t i = 0; i < nclus; i++){
       AliVCluster* clus = NULL;
       if(fInputEvent->IsA()==AliESDEvent::Class()){
@@ -2813,6 +2814,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
       }
       if(!clus) continue;
       totalClusterEnergy += clus->E();
+      totalCellsinClusters += clus->GetNCells();
       delete clus;
     }
     Double_t totalEDeposit = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetTotalEnergyDeposit(fInputEvent);
@@ -2831,7 +2833,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
           clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
       }
       if(!clus) continue;
-      clus->SetE(clus->E()-(clus->GetNCells()*(totalUnclusteredE)/12288.));
+      clus->SetE(clus->E()-(clus->GetNCells()*(totalUnclusteredE)/(totalActiveCells-totalCellsinClusters)));
       delete clus;
     }
   }
@@ -4043,6 +4045,8 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
               fHistoMotherEtaPtOpenAngle[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetOpeningAngle(),  tempPi0CandWeight);
               fHistoMotherEtaNGoodESDTracksPt[fiCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(),pi0cand->Pt(), tempPi0CandWeight);
             }
+          }
+          if (fDoMesonQA == 2){
             fHistoMotherPtOpenAngle[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetOpeningAngle(), tempPi0CandWeight);
           }
           if(fDoTHnSparse && ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoBGCalculation()){
@@ -4864,7 +4868,12 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
 //________________________________________________________________________
 void AliAnalysisTaskGammaCalo::CalculateBackground(){
 
-  Int_t zbin= fBGHandler[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
+  Int_t zbin= 0;
+  if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoSectorMixing() ) {
+    zbin = fV0Reader->GetPtMaxSector();
+  } else {
+    zbin = fBGHandler[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
+  }
   Int_t mbin = 0;
 
   Double_t tempBGCandidateWeight       = fWeightJetJetMC;
@@ -4983,52 +4992,15 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
         }
       }
     }
-  } else if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoSectorMixing() || ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoSphericityMixing() ) {
-    Bool_t mixSector = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoSectorMixing();
-    Bool_t mixSphericity = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoSphericityMixing();
-    Double_t curEvSec = fV0Reader->GetPtMaxSector();
-    Double_t curEvS   = fV0Reader->GetSphericity();
-    AliGammaConversionAODBGHandler::GammaConversionVertex *bgEventVertex = NULL;
+  } else if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoSectorMixing() ) {
     if(fClusterCandidates->GetEntries()>0){
       for(Int_t nEventsInBG=0;nEventsInBG <fBGHandler[fiCut]->GetNBGEvents();nEventsInBG++){
         AliGammaConversionAODVector *previousEventV0s = NULL;
-        if(curEvS > 0.6){
-          previousEventV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbin,mbin,nEventsInBG);
-        } else if(curEvS > 0){
-          previousEventV0s = fBGHandlerLowS[fiCut]->GetBGGoodV0s(zbin,mbin,nEventsInBG);
-        }
+        previousEventV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbin,mbin,nEventsInBG);
         if(previousEventV0s && previousEventV0s->size()>0){
-            if(curEvS > 0.6){
-              bgEventVertex = fBGHandler[fiCut]->GetBGEventVertex(zbin,mbin,nEventsInBG);
-            } else if(curEvS > 0){
-              bgEventVertex = fBGHandlerLowS[fiCut]->GetBGEventVertex(zbin,mbin,nEventsInBG);
-            }
-            Double_t bgSec = bgEventVertex->fSector;
-            Double_t bgS = bgEventVertex->fSphericity;
-            Bool_t DoTheMixing = kFALSE;
-            //if we only want to do same-sector mixing with mild sphericity mixing
-            if( mixSector && !mixSphericity ){
-              if(bgSec == curEvSec) DoTheMixing = kTRUE;
-            }
-            //if we only want to do extra sphericity mixing
-            if( !mixSector && mixSphericity ){
-              if( (curEvS>0.0 && curEvS<0.3)&&(bgS>0.0 && bgS<0.3) ) DoTheMixing = kTRUE;
-              if( (curEvS>0.3 && curEvS<0.6)&&(bgS>0.3 && bgS<0.6) ) DoTheMixing = kTRUE;
-              if( (curEvS>0.6 && curEvS<0.8)&&(bgS>0.6 && bgS<0.8) ) DoTheMixing = kTRUE;
-              if( (curEvS>0.8 && curEvS<1.0)&&(bgS>0.8 && bgS<1.0) ) DoTheMixing = kTRUE;
-            }
-            //if we want to do both same-sector and extra sphericity mixing
-            if( mixSector && mixSphericity ){
-              if( (curEvS>0.0 && curEvS<0.3)&&(bgS>0.0 && bgS<0.3) && (bgSec == curEvSec) ) DoTheMixing = kTRUE;
-              if( (curEvS>0.3 && curEvS<0.6)&&(bgS>0.3 && bgS<0.6) && (bgSec == curEvSec) ) DoTheMixing = kTRUE;
-              if( (curEvS>0.6 && curEvS<0.8)&&(bgS>0.6 && bgS<0.8) && (bgSec == curEvSec) ) DoTheMixing = kTRUE;
-              if( (curEvS>0.8 && curEvS<1.0)&&(bgS>0.8 && bgS<1.0) && (bgSec == curEvSec) ) DoTheMixing = kTRUE;
-            }
-            if(DoTheMixing){
               for(Int_t iCurrent=0;iCurrent<fClusterCandidates->GetEntries();iCurrent++){
                 AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fClusterCandidates->At(iCurrent));
                 for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
-
                   AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
                   AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
                   backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
@@ -5054,7 +5026,7 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
                       fHistoMotherBackInvMassECalib[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->E(),tempBGCandidateWeight);
                     }
 
-                    if (fDoMesonQA > 0 && fDoMesonQA < 3){
+                    if (fDoMesonQA == 2){
                       fHistoMotherPtOpenAngleBck[fiCut]->Fill(backgroundCandidate->Pt(),backgroundCandidate->GetOpeningAngle(), tempBGCandidateWeight);
                     }
                     if(fDoMesonQA == 4 && fIsMC == 0 && (backgroundCandidate->Pt() > 13.) ){
@@ -5072,7 +5044,6 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
                   backgroundCandidate = 0x0;
                 }
               }
-            }
         }
       }
     }
@@ -5109,7 +5080,7 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
                 fHistoMotherBackInvMassECalib[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->E(),tempBGCandidateWeight);
               }
 
-              if (fDoMesonQA > 0 && fDoMesonQA < 3){
+              if (fDoMesonQA == 2){
                   fHistoMotherPtOpenAngleBck[fiCut]->Fill(backgroundCandidate->Pt(),backgroundCandidate->GetOpeningAngle(), tempBGCandidateWeight);
               }
               if(fDoMesonQA == 4 && fIsMC == 0 && (backgroundCandidate->Pt() > 13.) ){
@@ -5144,12 +5115,8 @@ void AliAnalysisTaskGammaCalo::RotateParticle(AliAODConversionPhoton *gamma){
 void AliAnalysisTaskGammaCalo::UpdateEventByEventData(){
   //see header file for documentation
   if(fClusterCandidates->GetEntries() >0 ){
-    if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoSectorMixing() || ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoSphericityMixing() ){
-      if(fV0Reader->GetSphericity() > 0.6){
-        fBGHandler[fiCut]->AddEvent(fClusterCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fClusterCandidates->GetEntries(),fV0Reader->GetPtMaxSector(),fV0Reader->GetSphericity());
-      } else if(fV0Reader->GetSphericity() > 0){
-        fBGHandlerLowS[fiCut]->AddEvent(fClusterCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fClusterCandidates->GetEntries(),fV0Reader->GetPtMaxSector(),fV0Reader->GetSphericity());
-      }
+    if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoSectorMixing() ){
+      fBGHandler[fiCut]->AddEvent(fClusterCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fV0Reader->GetPtMaxSector(),fClusterCandidates->GetEntries(),fEventPlaneAngle);
     } else if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
       fBGHandler[fiCut]->AddEvent(fClusterCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fV0Reader->GetNumberOfPrimaryTracks(),fEventPlaneAngle);
     } else { // means we use #V0s for multiplicity

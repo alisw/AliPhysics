@@ -303,6 +303,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Double_t    GetTotalEnergyDeposit(AliVEvent *event);
     void        SetIsPureCaloCut(Int_t merged)                  {fIsPureCalo = merged; return;}
     Int_t       GetIsPureCaloCut()                              {return fIsPureCalo;}
+    Int_t       GetNactiveEmcalCells()                          {return fNactiveEmcalCells;}
 
 
     // Cut functions
@@ -480,6 +481,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t     fSwitchNonLinearity;                      // selection (combined) of NonLinearity
     Bool_t    fUseNonLinearity;                         // flag for switching NonLinearity correction
     Int_t     fIsPureCalo;                              // flag for MergedCluster analysis
+    Int_t     fNactiveEmcalCells;                       // total number of active emcal cells
 
     //vector
     std::vector<Int_t> fVectorMatchedClusterIDs;        // vector with cluster IDs that have been matched to tracks in merged cluster analysis

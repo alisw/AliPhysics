@@ -127,7 +127,6 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TString               fV0ReaderName;
     TString               fCorrTaskSetting;
     AliGammaConversionAODBGHandler**  fBGHandler;                               // BG handler for Conversion
-    AliGammaConversionAODBGHandler**  fBGHandlerLowS;                           // BG handler for Conversion filled with low S events
     AliVEvent*            fInputEvent;                                          // current event
     AliMCEvent*           fMCEvent;                                             // corresponding MC event
     TList**               fCutFolder;                                           // Array of lists for containers belonging to cut

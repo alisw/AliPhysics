@@ -178,6 +178,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fSwitchNonLinearity(0),
   fUseNonLinearity(kFALSE),
   fIsPureCalo(0),
+  fNactiveEmcalCells(0),
   fVectorMatchedClusterIDs(0),
   fCutString(NULL),
   fCutStringRead(""),
@@ -371,6 +372,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fSwitchNonLinearity(ref.fSwitchNonLinearity),
   fUseNonLinearity(ref.fUseNonLinearity),
   fIsPureCalo(ref.fIsPureCalo),
+  fNactiveEmcalCells(ref.fNactiveEmcalCells),
   fVectorMatchedClusterIDs(0),
   fCutString(NULL),
   fCutStringRead(""),
@@ -1524,7 +1526,7 @@ void AliCaloPhotonCuts::InitializeEMCAL(AliVEvent *event){
     if(fUseDistTrackToCluster) fCaloTrackMatcher = (AliCaloTrackMatcher*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloTrackMatcherName.Data());
     if(!fCaloTrackMatcher && fUseDistTrackToCluster ){ AliFatal("CaloTrackMatcher instance could not be initialized!");}
 
-    if(!fDoLightOutput){
+    if(!fDoLightOutput || fDoFlatEnergySubtraction){
       Int_t nMaxCellsEMCAL  = fNMaxEMCalModules*48*24;
       Int_t nMinCellsDCAL = 12288;
       Int_t nMaxCellsDCAL = nMinCellsDCAL+fNMaxDCalModules*32*24;
@@ -1542,13 +1544,14 @@ void AliCaloPhotonCuts::InitializeEMCAL(AliVEvent *event){
       Int_t imod = -1;Int_t iTower = -1, iIphi = -1, iIeta = -1;
       Int_t icol = -1;Int_t irow = -1;
 
+      fNactiveEmcalCells = 0;
       for(Int_t iCell=nMinCells;iCell<nMaxCells;iCell++){
         fGeomEMCAL->GetCellIndex(iCell,imod,iTower,iIphi,iIeta);
         if (fEMCALBadChannelsMap->GetEntries() <= imod) continue;
         fGeomEMCAL->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi,iIeta,irow,icol);
         Int_t iBadCell      = (Int_t) ((TH2I*)fEMCALBadChannelsMap->At(imod))->GetBinContent(icol,irow);
         if(iBadCell > 0) fBadChannels->Fill(iCell,1);
-        else fBadChannels->Fill(iCell,0);
+        else { fBadChannels->Fill(iCell,0); fNactiveEmcalCells++; }
       }
     }
   }
@@ -3392,7 +3395,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
           }
         }else if(fUseTMMIPsubtraction){
           //Subtracting the MIP energy is there is a match
-          if(cluster->E()>0.05) cluster->SetE(cluster->E()-0.05);
+          cluster->SetE(cluster->E()-0.215);
         }else{
           fVectorMatchedClusterIDs.push_back(cluster->GetID());
         }
@@ -3407,7 +3410,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
           if(fHistClusterdPhidPtAfterQA) fHistClusterdPhidPtAfterQA->Fill(dPhi,inTrack->Pt());
         }
         if(arrClustersMatch) delete cluster;
-        break;
+        if(!fUseTMMIPsubtraction) break;
       } else if(isEMCalOnly){
         if(fHistDistanceTrackToClusterAfterQA)fHistDistanceTrackToClusterAfterQA->Fill(TMath::Sqrt(dR2), weight);
         if(fHistClusterdEtadPhiAfterQA) fHistClusterdEtadPhiAfterQA->Fill(dEta, dPhi, weight);

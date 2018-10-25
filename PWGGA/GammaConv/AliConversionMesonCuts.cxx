@@ -2261,19 +2261,6 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fDoBGProbability            = kFALSE;
     fDoSectorMixing             = kTRUE;
     break;
-  case 19: //j mixed event with V0 multiplicity
-    fUseRotationMethodInBG      = kFALSE;
-    fUseTrackMultiplicityForBG  = kFALSE;
-    fDoBGProbability            = kFALSE;
-    fDoSphericityMixing         = kTRUE;
-    break;
-  case 20: //k mixed event with V0 multiplicity
-    fUseRotationMethodInBG      = kFALSE;
-    fUseTrackMultiplicityForBG  = kFALSE;
-    fDoBGProbability            = kFALSE;
-    fDoSectorMixing             = kTRUE;
-    fDoSphericityMixing         = kTRUE;
-    break;
   default:
     cout<<"Warning: BackgroundScheme not defined "<<BackgroundScheme<<endl;
     return kFALSE;
