@@ -37,7 +37,7 @@
 #include "AliEmcalJet.h"
 #include "AliLog.h"
 #include "AliJetContainer.h"
-#include "AliTrackContainer.h"
+#include "AliParticleContainer.h"
 #include "AliAODTrack.h"
 #include "AliVParticle.h"
 #include "TRandom3.h"
@@ -88,7 +88,7 @@ AliEmcalJetTree::AliEmcalJetTree(const char* name) : TNamed(name, name), fJetTre
 
 //________________________________________________________________________
 Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Float_t vertexX, Float_t vertexY, Float_t vertexZ, Float_t centrality, Long64_t eventID, Float_t magField,
-  AliTrackContainer* trackCont, Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchedPt, Float_t truePtFraction, Float_t ptHard,
+  AliParticleContainer* trackCont, Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchedPt, Float_t truePtFraction, Float_t ptHard,
   Float_t* trackPID_ITS, Float_t* trackPID_TPC, Float_t* trackPID_TOF, Float_t* trackPID_TRD, Short_t* trackPID_Reco, Short_t* trackPID_Truth,
   Int_t numTriggerTracks, Float_t* triggerTrackPt, Float_t* triggerTrackDeltaEta, Float_t* triggerTrackDeltaPhi,
   Float_t* trackIP_d0, Float_t* trackIP_z0, Float_t* trackIP_d0cov, Float_t* trackIP_z0cov,
@@ -425,7 +425,7 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
   if(!fJetsCont)
     AliFatal("Jet input container not found!");
   fJetsCont->PrintCuts();
-  fTracksCont       = static_cast<AliTrackContainer*>(fJetsCont->GetParticleContainer());
+  fTracksCont       = static_cast<AliParticleContainer*>(fJetsCont->GetParticleContainer());
   if(!fTracksCont)
     AliFatal("Particle input container not found attached to jets!");
 
