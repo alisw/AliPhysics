@@ -1,8 +1,20 @@
 #include "TROOT.h"
 #include "TSystem.h"
 
-AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
-                                      bool DCAPlots = false, const char *swuffix="") {
+AliAnalysisTaskSE* AddTaskFemtoGranma(
+    bool isMC = false,//1
+    TString CentEst = "kInt7",//2
+    bool DCAPlots = false,//3
+    bool CPAPlots = false,//4
+    bool CombSigma = false,//5
+    bool PileUpRej=true,//6
+    bool ContributionSplitting = false,//7
+    const char *swuffix = "") {
+
+
+      // 1    2     3     4     5     6     7    8    9      10   11     12   13    14    15    16   17
+      //true,true,false,false,false,false,false,true,false,false,true,false,true,false,false,false,true
+
   TString suffix=Form("%s",swuffix);
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -56,22 +68,22 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
 
 //Track cuts
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
-      isMC, DCAPlots, false, false);
+      isMC, DCAPlots, CombSigma, ContributionSplitting);
   TrackCuts->SetCutCharge(1);
 //wanna change something? Do it like this: TrackCuts->SetPtRange(0.3, 4.05);
 //  task->SetTrackCuts(TrackCuts);
 
   AliFemtoDreamTrackCuts *AntiTrackCuts =
-      AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, DCAPlots, false, false);
+      AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, DCAPlots, CombSigma, ContributionSplitting);
   AntiTrackCuts->SetCutCharge(-1);
 //  task->SetAntiTrackCuts(AntiTrackCuts);
 
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(
-      isMC, false, false);
+      isMC,CPAPlots,ContributionSplitting);
   AliFemtoDreamTrackCuts *Posv0Daug=AliFemtoDreamTrackCuts::DecayProtonCuts(
-          isMC,true,false);
+          isMC,PileUpRej,false);
   AliFemtoDreamTrackCuts *Negv0Daug=AliFemtoDreamTrackCuts::DecayPionCuts(
-          isMC,true,false);
+          isMC,PileUpRej,false);
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
   v0Cuts->SetPDGCodePosDaug(2212);//Proton
@@ -80,12 +92,12 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
 //  task->Setv0Cuts(v0Cuts);
 
   AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(
-      isMC, false, false);
+      isMC, CPAPlots,ContributionSplitting);
   AliFemtoDreamTrackCuts *PosAntiv0Daug=AliFemtoDreamTrackCuts::DecayPionCuts(
-          isMC,true,false);
+          isMC,PileUpRej,false);
   PosAntiv0Daug->SetCutCharge(1);
   AliFemtoDreamTrackCuts *NegAntiv0Daug=AliFemtoDreamTrackCuts::DecayProtonCuts(
-          isMC,true,false);
+          isMC,PileUpRej,false);
   NegAntiv0Daug->SetCutCharge(-1);
   Antiv0Cuts->SetPosDaugterTrackCuts(PosAntiv0Daug);
   Antiv0Cuts->SetNegDaugterTrackCuts(NegAntiv0Daug);
@@ -148,11 +160,6 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
   MultBins.push_back(96);
   MultBins.push_back(100);
   config->SetMultBins(MultBins);
-
-  config->SetMultBinning(false);
-  config->SetCentBinning(false);
-  config->SetkTBinning(false);
-  config->SetmTBinning(false);
 
   std::vector<float> centBins;
   centBins.push_back(20);
@@ -253,6 +260,10 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(bool isMC, TString CentEst = "kInt7",
   config->SetMultBinning(true);
   config->SetUseEventMixing(true);
   config->SetMixingDepth(10);
+  config->SetCentBinning(false);
+  config->SetkTBinning(false);
+  config->SetmTBinning(false);
+
 
   config->SetUsePhiSpinning(false);
 //  config->SetSpinningDepth(10);
