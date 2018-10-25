@@ -129,6 +129,8 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void SetPlotJetMatchCandThresh(Double_t r)                { fPlotJetMatchCandThresh = r; };
   void SetDoTriggerResponse(Bool_t b)                       { fDoTriggerResponse = b; };
   void SetDoClosureTest(Bool_t b)                           { fDoClosureTest = b; }
+  void SetFillChargedFluctuations(Bool_t b)                 { fFillChargedFluctuations = b; }
+
 
  protected:
   void                        ExecOnce()                                        ;
@@ -176,7 +178,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   Bool_t                      fComputeMBDownscaling;                ///< Set whether to compute and plot MB downscaling factors
   Bool_t                      fPlotDCal;                            ///< Set whether to enable several DCal-specific histograms
   Bool_t                      fDoClosureTest;                       ///< Set whether to do thermal model closure test
-  
+  Bool_t                      fFillChargedFluctuations;             ///< Set whether to fill also charged component of background fluctuations
   // Plotting parameters
   Double_t                    fMinPt;                               ///< Histogram min pT limit
   Double_t                    fMaxPt;                               ///< Histogram max pT limit

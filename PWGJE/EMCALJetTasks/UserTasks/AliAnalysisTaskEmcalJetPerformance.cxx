@@ -75,6 +75,7 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance() :
   fComputeMBDownscaling(kFALSE),
   fPlotDCal(kFALSE),
   fDoClosureTest(kFALSE),
+  fFillChargedFluctuations(kFALSE),
   fMinPt(-100),
   fMaxPt(250),
   fNEtaBins(40),
@@ -131,6 +132,7 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance(const cha
   fComputeMBDownscaling(kFALSE),
   fPlotDCal(kFALSE),
   fDoClosureTest(kFALSE),
+  fFillChargedFluctuations(kFALSE),
   fMinPt(-100),
   fMaxPt(250),
   fNEtaBins(40),
@@ -380,12 +382,12 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
     if (!jets->GetRhoName().IsNull()) {
       histname = TString::Format("%s/JetHistograms/hRhoVsCent", jets->GetArrayName().Data());
       if (fForceBeamType == kAA) {
-    	  	  title = histname + ";Centrality (%);#rho (GeV/#it{c});counts";
-    	  	  fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 500);
+    	  title = histname + ";Centrality (%);#rho (GeV/#it{c});counts";
+    	  fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 500);
       }
       else{
-          title = histname + ";Centrality (%);#rho (GeV/#it{c});counts";
-          fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 250, 0, 50);
+    	  title = histname + ";Centrality (%);#rho (GeV/#it{c});counts";
+    	  fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 250, 0, 50);
       }
     }
     
@@ -901,39 +903,41 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateBackgroundHistograms()
     fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 5);
     histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCal", jets->GetArrayName().Data());
     if (fForceBeamType == kAA) {
-    		title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
-    		fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 400, -50, 150);
+    	title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
+    	fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 400, -50, 150);
     }
     else{
-        title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
-        fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 1300, -25, 40);
+    	title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
+    	fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 1300, -25, 40);
     }
     histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCalExcl", jets->GetArrayName().Data());
     if (fForceBeamType == kAA) {
-    		title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
-    		fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 400, -50, 150);
+    	title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
+    	fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 400, -50, 150);
     }
     else{
-        title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
-        fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 1300, -25, 40);
+    	title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
+    	fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 1300, -25, 40);
     }
-    histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCalCharged", jets->GetArrayName().Data());
-    if (fForceBeamType == kAA) {
-    		title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
-    		fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 400, -50, 150);
+    if(fFillChargedFluctuations){
+    	histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCalCharged", jets->GetArrayName().Data());
+    	if (fForceBeamType == kAA) {
+    	title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
+    	fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 400, -50, 150);
     }
     else{
-        title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
-        fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 1300, -25, 40);
+    	title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
+    	fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 1300, -25, 40);
     }
     histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCalChargedExcl", jets->GetArrayName().Data());
     if (fForceBeamType == kAA) {
-    		title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
-    		fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 400, -50, 150);
+    	title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
+    	fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 400, -50, 150);
     }
     else{
-        title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
-        fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 1300, -25, 40);
+    	title = histname + ";Centrality (%);#delta#it{p}_{T} (GeV/#it{c});counts";
+    	fHistManager.CreateTH2(histname.Data(), title.Data(), 10, 0, 100, 1300, -25, 40);
+    }
     }
     histname = TString::Format("%s/BackgroundHistograms/hScaleFactorEMCalFid", jets->GetArrayName().Data());
     title = histname + ";Centrality;Scale factor;counts";
@@ -2228,28 +2232,27 @@ void AliAnalysisTaskEmcalJetPerformance::ComputeBackground()
   AliJetContainer* jetCont = 0;
   TIter nextJetColl(&fJetCollArray);
   while ((jetCont = static_cast<AliJetContainer*>(nextJetColl()))) {
-	  if(jetCont->GetNJets()<1)continue;//Don't enter if there are no jets in the container
+	  if(jetCont->GetNJets()<1){
+	    continue;//Don't enter if there are no jets in the container
+	  }
 	  Int_t maxJetIds[]   = {-1, -1};
 	  Float_t maxJetPts[] = { 0,  0};
 	  //loop over the jets in the jet container to find the leading and subleading jet
 	  //alternative: AliEmcalJet* leadingJet =jetCont->GetLeadingJet(); but there is no GetSubLeadingJet() function
-	  for (Int_t ij = 0; ij < jetCont->GetNJets(); ++ij)
-	  {
-		  //AliEmcalJet *jet = static_cast<AliEmcalJet*>(fJets->At(ij));
-		  AliEmcalJet *jet = static_cast<AliEmcalJet*>(jetCont->GetJet(ij));
-		  //if (!AcceptJet(jet)) continue;
-		  if (jet->Pt() > maxJetPts[0])
-		  {
-			  maxJetPts[1] = maxJetPts[0];
-			  maxJetIds[1] = maxJetIds[0];
-			  maxJetPts[0] = jet->Pt();
-			  maxJetIds[0] = ij;
-		  }
-		  else if (jet->Pt() > maxJetPts[1])
-		  {
-			  maxJetPts[1] = jet->Pt();
-			  maxJetIds[1] = ij;
-		  }
+	  for (Int_t ij = 0; ij < jetCont->GetNJets(); ++ij) {
+		//AliEmcalJet *jet = static_cast<AliEmcalJet*>(fJets->At(ij));
+		AliEmcalJet *jet = static_cast<AliEmcalJet*>(jetCont->GetJet(ij));
+		//if (!AcceptJet(jet)) continue;
+		if (jet->Pt() > maxJetPts[0]) {
+		  maxJetPts[1] = maxJetPts[0];
+		  maxJetIds[1] = maxJetIds[0];
+		  maxJetPts[0] = jet->Pt();
+		  maxJetIds[0] = ij;
+		}
+		else if (jet->Pt() > maxJetPts[1]) {
+		  maxJetPts[1] = jet->Pt();
+		  maxJetIds[1] = ij;
+		}
 	  }
 
     // Define fiducial acceptances, to be used to generate random cones, and for scale factor studies
@@ -2378,7 +2381,6 @@ void AliAnalysisTaskEmcalJetPerformance::ComputeBackground()
     // (1) in the EMCal, (2) in the EMCal fiducial volume, (3) in the DCal, (4), in the DCal fiducial volume, (5) in the EMCal random cone, (6) in the DCal random cone
     TString jetContName = jetCont->GetName();
     if (!jetContName.Contains("Charged")) {
-
     	  AliClusterContainer* clusCont = GetClusterContainer(0);
       AliTLorentzVector clusVec;
       AliVCluster* clus;
@@ -2427,9 +2429,9 @@ void AliAnalysisTaskEmcalJetPerformance::ComputeBackground()
           clusPtSumEMCalRC += clusPt;
           //Check if there is an overlap with a leading/subleading signal jet
           //if so set the flag to 1 and not take this random cone into accound
-        	  if(IsSignalJetOverlap(0,clusID,jetCont,maxJetIds))
-    		  {
-            	  overlap=1;
+          if(IsSignalJetOverlap(0,clusID,jetCont,maxJetIds))
+          {
+        	  overlap=1;
           }
         }
         // (6)
@@ -2480,14 +2482,15 @@ void AliAnalysisTaskEmcalJetPerformance::ComputeBackground()
     // EMCal acceptance only charged component
     Double_t rho = jetCont->GetRhoVal();
     Double_t deltaPt = trackPtSumEMCalRC - rho * TMath::Pi() * jetR * jetR;
-    histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCalCharged", jetCont->GetArrayName().Data());
-    fHistManager.FillTH2(histname, fCent, deltaPt);
+    if(fFillChargedFluctuations){
+    	histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCalCharged", jetCont->GetArrayName().Data());
+    	fHistManager.FillTH2(histname, fCent, deltaPt);
 
-    // EMCal acceptance only charged component
-    // excluding random cones that overlap with signal jets
-    histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCalChargedExcl", jetCont->GetArrayName().Data());
-    if(overlap==0)fHistManager.FillTH2(histname, fCent, deltaPt);
-
+    	// EMCal acceptance only charged component
+    	// excluding random cones that overlap with signal jets
+    	histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCalChargedExcl", jetCont->GetArrayName().Data());
+    	if(overlap==0)fHistManager.FillTH2(histname, fCent, deltaPt);
+    }
     // EMCal acceptance charged and neutral component
     deltaPt += clusPtSumEMCalRC;
     histname = TString::Format("%s/BackgroundHistograms/hDeltaPtEMCal", jetCont->GetArrayName().Data());
