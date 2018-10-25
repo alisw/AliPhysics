@@ -39,7 +39,6 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   AliDielectronCutGroup* cuts;
   AliAnalysisFilter* filter; 
   
-  TMVA::Reader* TMVAReader;
 
   // need this to use PID in dielectron framework
   AliDielectronVarManager* varManager;
@@ -56,6 +55,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   };
   void SetupTrackCuts(AliDielectronCutGroup* f);
   void SetupEventCuts(AliDielectronEventCuts* f);
+  void SetupTMVAReader(TString TMVAweight);
   
   void isMC(Bool_t isMC){hasMC=isMC;}
   
@@ -144,8 +144,14 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   void SetUseCorr( Bool_t b){
       fuseCorr=b;
   }
+  
+  void SetUseTMVA(Bool_t b){
+      useTMVA=b;
+  }
  private:
- 
+     
+  TMVA::Reader* TMVAReader;//-> 
+  Bool_t useTMVA;
   AliPIDResponse *fPIDResponse;     //! PID response object
 
   //AliPIDCombined *fPIDCombined;    
@@ -316,7 +322,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
 //  TH3D* fHistEtaPhiPt;//QA histogram for eta/phi/pt distribution
 
 
-  ClassDef(AliAnalysisTaskMLTreeMaker, 1); //
+  ClassDef(AliAnalysisTaskMLTreeMaker, 1); 
 
 };
 
