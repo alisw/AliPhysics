@@ -555,7 +555,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   fAxes["dEdx"].set( 300, 10., 3000., &fakePtr );
   fAxes["tpcClusterFlags"].set( 8, 0, 7, &fakePtr );
   fAxes["trdHCId"].set( 1080, 0, 1079, &fakePtr );
-  fAxes["ITSSPDvertexZ"].set( 100, -100., 100., &fITSSPDvertexZ );
+  fAxes["ITSSPDvertexZ"].set( 200, -100., 100., &fITSSPDvertexZ );
 
   //Start Histograms
   NewHistogram(",fHistSPDclusters_SPDrawSize,SPD clusters vs SPD raw size,rawSizeSPD,nClustersSPD");
@@ -590,6 +590,14 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   NewHistogram("CINT7,fHistITSSAtracks_SPDclusters,ITSSAP tracks vs SPD clusters,nClustersSPD,nITSSAPtracks");
   NewHistogram("MUFAST,fHistITSSAtracks_SSDclusters,ITSSAP tracks vs SSD clusters,nClustersSSD,nITSSAPtracks");
   NewHistogram("CINT7,fHistITSSAtracks_SSDclusters,ITSSAP tracks vs SSD clusters,nClustersSSD,nITSSAPtracks");
+
+  //vertex Z monitoring
+  NewHistogram("CINT7ZAC-B-NOPF-CENT,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ");
+  NewHistogram("CTVXZAC-B-NOPF-CENT-B-NOPF-CENT,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ");
+  NewHistogram("CINT7-B-NOPF-MUFAST,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ");
+  NewHistogram("C0TVX-B-NOPF-MUFAST,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ");
+  NewHistogram("C0V0M-B-NOPF-CENT,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ");
+  NewHistogram("CTVXV0M-B-NOPF-CENT,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ");
   //End Histograms
 
   fpHWCFData = new AliHLTTPCHWCFData;
