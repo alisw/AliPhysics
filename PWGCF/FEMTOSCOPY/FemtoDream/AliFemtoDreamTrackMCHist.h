@@ -17,7 +17,9 @@
 class AliFemtoDreamTrackMCHist {
  public:
   AliFemtoDreamTrackMCHist();
-  AliFemtoDreamTrackMCHist(bool contribSplitting, bool DCADist, bool DoMultBinning = false);
+  AliFemtoDreamTrackMCHist(bool contribSplitting, bool DCADist,
+                           bool DoMultBinning = false,
+                           bool checkMother = false);
   virtual ~AliFemtoDreamTrackMCHist();
   void FillMCDCAXYPtBins(AliFemtoDreamBasePart::PartOrigin org, int PDGCodeMoth,
                          float pT, float dcaxy, int multiplicity);
