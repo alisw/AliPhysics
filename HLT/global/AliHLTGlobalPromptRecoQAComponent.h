@@ -49,6 +49,7 @@ struct histStruct {
   axisStruct y; //y data
   string trigger; //trigger name
   string config; //full config string
+  bool triggerIsRegex;
   int Fill();
   histStruct() : hist(NULL), x(), y(), trigger(), config() {}
   histStruct( const histStruct& s) : hist(s.hist), x(s.x), y(s.y), trigger(s.trigger), config(s.config) {}
