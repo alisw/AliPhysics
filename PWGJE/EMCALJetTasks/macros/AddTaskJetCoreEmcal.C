@@ -2,6 +2,7 @@ AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal(
 								 const char *njetsBase,
 								 const char *njetsTrue,
 								 const char *njetsPart,
+								 const char *nRho,
 						     const Double_t R,
 								 const char *type,
 								 Int_t jetShapeType = AliAnalysisTaskJetCoreEmcal::kData,
@@ -65,7 +66,6 @@ AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal(
   task->AddClusterContainer(clusName);
 
   // connect jet container 
-  TString sRhoChName = "Rho";
   TString typeStr = TString(type);
   AliJetContainer* jetContBase = 0x0;
   AliJetContainer* jetContTrue = 0x0;
@@ -74,24 +74,24 @@ AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal(
 			jetShapeType == AliAnalysisTaskJetCoreEmcal::kMCTrue) { 
 
 		jetContBase = task->AddJetContainer(njetsBase,typeStr,R);
+		jetContBase->SetRhoName(nRho);
 		jetContBase->ConnectParticleContainer(trackCont);
-		jetContBase->SetRhoName(sRhoChName);
 		jetContBase->SetPercAreaCut(0.0);
 	}
 	if(jetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart) {
 
 		jetContBase = task->AddJetContainer(njetsBase,typeStr,R);
+		jetContBase->SetRhoName(nRho);
 		jetContBase->ConnectParticleContainer(trackCont);
-		jetContBase->SetRhoName(sRhoChName);
 		jetContBase->SetPercAreaCut(0.0);
 
 		jetContTrue = task->AddJetContainer(njetsTrue,typeStr,R);
-		jetContTrue->SetRhoName(sRhoChName);
+		jetContTrue->SetRhoName(nRho);
 		jetContTrue->ConnectParticleContainer(trackContTrueLevel);
 		jetContTrue->SetPercAreaCut(0.0); 
 
 		jetContPart = task->AddJetContainer(njetsPart,typeStr,R);
-		jetContPart->SetRhoName(sRhoChName);
+		jetContPart->SetRhoName(nRho);
 		jetContPart->ConnectParticleContainer(trackContPartLevel);
 		jetContPart->SetIsParticleLevel(kTRUE);
 		jetContPart->SetPercAreaCut(0.0);
@@ -122,14 +122,16 @@ AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal(
 			Form("%s", AliAnalysisManager::GetCommonFileName()));
 	mgr->ConnectInput  (task, 0,  cinput1 );
 	mgr->ConnectOutput (task, 1, coutput1 );
-	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contname2.Data(),
-			TTree::Class(),AliAnalysisManager::kOutputContainer,
-			Form("%s", AliAnalysisManager::GetCommonFileName()));
-	mgr->ConnectOutput (task, 2, coutput2 );
-	AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(contname3.Data(),
-			TTree::Class(),AliAnalysisManager::kOutputContainer,
-			Form("%s", AliAnalysisManager::GetCommonFileName()));
-	mgr->ConnectOutput (task, 3, coutput3 );
+  if(jetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart) {
+    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contname2.Data(),
+        TTree::Class(),AliAnalysisManager::kOutputContainer,
+        Form("%s", AliAnalysisManager::GetCommonFileName()));
+    mgr->ConnectOutput (task, 2, coutput2 );
+    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(contname3.Data(),
+        TTree::Class(),AliAnalysisManager::kOutputContainer,
+        Form("%s", AliAnalysisManager::GetCommonFileName()));
+    mgr->ConnectOutput (task, 3, coutput3 );
+  }
 
   return task;
 
