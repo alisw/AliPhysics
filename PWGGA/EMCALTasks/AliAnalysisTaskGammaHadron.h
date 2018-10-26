@@ -59,6 +59,7 @@ public:
   void                        SetUseManualEvtCuts(Bool_t input)                     { fUseManualEventCuts= input;}
   void                        SetDoRotBkg(Bool_t input)                             { fDoRotBkg          = input;}
   void                        SetDoClusMixing(Bool_t input)                         { fDoClusMixing      = input;}
+  void                        SetDoPosSwapMixing(Int_t input)                       { fDoPosSwapMixing   = input;}
   void                        SetClusterDepth(Int_t input)                          { fClusterDepth      = input;}
   void                        SetNRotBkgSamples(Int_t input)                        { fNRotBkgSamples    = input;}
   void                        SetUseParamMassSigma(Bool_t input)                    { fUseParamMassSigma = input;}
@@ -97,7 +98,7 @@ public:
   Bool_t                      FillHistograms()                                              ;
   Int_t                       CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
   Int_t                       CorrelatePi0AndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
-  void                        FillPi0CandsHist(AliTLorentzVector CaloClusterVec,AliTLorentzVector CaloClusterVec2,AliTLorentzVector CaloClusterVecPi0,Double_t fMaxClusM02,Double_t Weight,Bool_t isMixed, Int_t mcIndex1 = -1, Int_t mcIndex2 = -1);
+  void                        FillPi0CandsHist(AliTLorentzVector CaloClusterVec,AliTLorentzVector CaloClusterVec2,AliTLorentzVector CaloClusterVecPi0,Double_t fMaxClusM02,Double_t Weight,Int_t isMixed, Int_t mcIndex1 = -1, Int_t mcIndex2 = -1);
   void                        FillTriggerHist(AliTLorentzVector ClusterVec, Double_t Weight);
   void                        FillGhHistograms(Int_t identifier,AliTLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t Weight);
   void                        FillQAHistograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec, Double_t Weight=1);
@@ -205,12 +206,15 @@ public:
   TH3             *fMassPtCentPionRej;       //!<! Histogram of Mass vs Pt vs Cent for rejected Pi0 Candidates
   TH2             *fHistEOverPvE;            //!<! Histogram of E/p vs E_cluster for cluster-track pairs (geometrically matched)
   TH2             *fHistPOverEvE;            //!<! Histogram of p/E vs E_cluster for cluster-track pairs (geometrically matched)
+  TH2             *fHistPSDistU;             //!<! Histogram of sqrt((1-cos(theta_A))(1-cos(theta_B))) for Pos Swap Method
+  TH2             *fHistPSDistV;             //!<! Histogram of sqrt(E_A/E_B) for Pos Swap Method
 
 
   TRandom3        *fRand;                      //!<! Random number generator.  Initialzed by rot background
   TH1             *fClusEnergy;                //!<! Energy of clusters accepted for pi0 analysis
   Bool_t          fDoRotBkg;                   ///< Whether or not to calculate the rotational background
-  Bool_t          fDoClusMixing;               ///< Whether or not to use event pools to calculate mixed cluster pairs.  
+  Bool_t          fDoClusMixing;               ///< Whether or not to use event pools to calculate mixed cluster pairs.
+  Int_t           fDoPosSwapMixing;            ///< Whether to use Position Swapping ME method.  (0: Not used, 1: Use 1 random cluster, 2: use all avail clusters.)
   Int_t           fNRotBkgSamples;             ///< How many samples to use in the rotational background
   THnSparseF      *fPi0Cands;                  //!<! Michael's THnSparse for pi0 Candidates
   TH2							*fEMCalMultvZvtx;            //!<! Histogram investigating z-vertex, EMCal Multiplicity for mixed cluster pairs
