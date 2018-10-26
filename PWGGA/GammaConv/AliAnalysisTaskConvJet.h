@@ -45,10 +45,10 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
   std::vector<Double_t> GetVectorJetR()   {return fVectorJetR;}
 
   Double_t GetTrueNJets() {return fTrueNJets;}
-  vector<Double_t> GetTrueVectorJetPt()  {return fTrueVectorJetPt;}
-  vector<Double_t> GetTrueVectorJetEta() {return fTrueVectorJetEta;}
-  vector<Double_t> GetTrueVectorJetPhi() {return fTrueVectorJetPhi;}
-  vector<Double_t> GetTrueVectorJetR()   {return fTrueVectorJetR;}
+  std::vector<Double_t> GetTrueVectorJetPt()  {return fTrueVectorJetPt;}
+  std::vector<Double_t> GetTrueVectorJetEta() {return fTrueVectorJetEta;}
+  std::vector<Double_t> GetTrueVectorJetPhi() {return fTrueVectorJetPhi;}
+  std::vector<Double_t> GetTrueVectorJetR()   {return fTrueVectorJetR;}
 
   Double_t Get_Jet_Radius(){
       AliJetContainer* jetCont = 0;
@@ -74,17 +74,17 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
   std::vector<Double_t>            fVectorJetR                                       ;
 
   Double_t                    fTrueNJets                                        ;
-  vector<Double_t>            fTrueVectorJetPt                                  ;
-  vector<Double_t>            fTrueVectorJetEta                                 ;
-  vector<Double_t>            fTrueVectorJetPhi                                 ;
-  vector<Double_t>            fTrueVectorJetR                                   ;
+  std::vector<Double_t>            fTrueVectorJetPt                                  ;
+  std::vector<Double_t>            fTrueVectorJetEta                                 ;
+  std::vector<Double_t>            fTrueVectorJetPhi                                 ;
+  std::vector<Double_t>            fTrueVectorJetR                                   ;
 
  private:
   AliAnalysisTaskConvJet(const AliAnalysisTaskConvJet&)           ;
   AliAnalysisTaskConvJet &operator=(const AliAnalysisTaskConvJet&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskConvJet, 2);
+  ClassDef(AliAnalysisTaskConvJet, 3);
   /// \endcond
 };
 #endif
