@@ -181,7 +181,8 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   MVAout(0),
   TMVAWeightFileName(0),      
   fwidth(0), 
-  fmean(0),      
+  fmean(0), 
+  fIsTMVAInit(kFALSE),      
   fuseCorr(kFALSE),      
   fTree(0),
   fQAHist(0)
@@ -306,7 +307,8 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name,TString 
   MVAout(0),
   TMVAWeightFileName(0),      
   fwidth(0), 
-  fmean(0),      
+  fmean(0),
+  fIsTMVAInit(kFALSE),           
   fuseCorr(kFALSE),      
   fTree(0),
   fQAHist(0)
@@ -314,7 +316,7 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name,TString 
 // SetupTrackCuts(); 
 // SetupEventCuts(); 
 // AliInfo("Track & Event cuts were set"); 
-  if(useTMVA) SetupTMVAReader("TMVAClassification_BDTG.weights_094.xml");
+//  if(useTMVA) SetupTMVAReader("TMVAClassification_BDTG.weights_094.xml");
   DefineOutput(1, TList::Class());
 }
 
@@ -337,10 +339,43 @@ AliAnalysisTaskMLTreeMaker::~AliAnalysisTaskMLTreeMaker(){
 }
 
 void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
+
+    if (useTMVA) SetupTMVAReader("TMVAClassification_BDTG.weights_094.xml");  
+  
     
    AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
    inputHandler->SetNeedField();
+
+//      if(!fIsTMVAInit){
+//        TMVA::Reader* TMVAReader = new TMVA::Reader( "!Color:!Silent" );
+//
+//        TMVAReader->AddVariable( "nITS", &nITSTMVA);
+//        TMVAReader->AddVariable( "ITS1Shared", &ITS1SharedTMVA);
+//        TMVAReader->AddVariable( "ITS2Shared", &ITS2SharedTMVA);
+//        TMVAReader->AddVariable( "ITS3Shared", &ITS3SharedTMVA);
+//        TMVAReader->AddVariable( "ITS4Shared", &ITS4SharedTMVA);
+//        TMVAReader->AddVariable( "ITS5Shared", &ITS5SharedTMVA);
+//        TMVAReader->AddVariable( "ITS6Shared", &ITS6SharedTMVA);
+//        TMVAReader->AddVariable( "nITSshared_frac", &nITSshared_fracTMVA);
+//        TMVAReader->AddVariable( "NCrossedRowsTPC", &NCrossedRowsTPCTMVA);
+//        TMVAReader->AddVariable( "NClustersTPC", &NClustersTPCTMVA);
+//        TMVAReader->AddVariable( "NTPCSignal", &NTPCSignalTMVA);
+//        TMVAReader->AddVariable( "log(abs(DCAxy))", &logDCAxyTMVA );
+//        TMVAReader->AddVariable( "log(abs(DCAz))", &logDCAzTMVA );   
+//        TMVAReader->AddVariable( "chi2GlobalPerNDF", &chi2GlobalPerNDFTMVA);
+//        TMVAReader->AddVariable( "chi2ITS", &chi2ITSTMVA);
+//        TMVAReader->AddVariable( "eta", &etaTMVA);
+//        TMVAReader->AddVariable( "phi", &phiTMVA);
+//        TMVAReader->AddVariable( "pt", &ptTMVA);   
+//        TMVAReader->AddVariable( "centrality", &centTMVA);
+//
+//        gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/s/selehner/TMVAweights/%s .","TMVAClassification_BDTG.weights_094.xml"));
+//      //  cout<<"Setting weights file: "<<weightFile.Data()<<endl;
+//
+//        TMVAReader->BookMVA( "BDTG method","TMVAClassification_BDTG.weights_094.xml" );  
+////        fIsTMVAInit = kTRUE;
+//      }
    
   fList = new TList();
   fList->SetName("output_Tlist");
@@ -454,6 +489,7 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
 void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   // Called for each event
 //  SetupTMVAReader("TMVAClassification_BDTG.weights_094.xml");
+  
   fQAHist->Fill("Events_all",1);
   
   AliVEvent* event = dynamic_cast<AliVEvent*>(InputEvent()); 
@@ -613,6 +649,7 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
   ITS4S.clear();
   ITS5S.clear();
   ITS6S.clear(); 
+  MVAout.clear(); 
    
   
   
@@ -895,6 +932,7 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
                  chi2GlobalvsTPC.push_back(((AliAODTrack*)track)->GetChi2TPCConstrainedVsGlobal());  
       }
       
+      
       if(useTMVA){
         
            nITSTMVA = (Float_t)nITS.back();
@@ -918,6 +956,8 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
 	   centTMVA = (Float_t)cent;
       
            MVAout.push_back(TMVAReader->EvaluateMVA("BDTG method"));
+           
+//           cout<<iTracks<<":  "<<nITSTMVA<<" "<<ITS1SharedTMVA<<" "<<ITS2SharedTMVA<<" "<<ITS3SharedTMVA<<" "<<ITS4SharedTMVA<<" "<<ITS5SharedTMVA<<" "<<ITS6SharedTMVA<<" "<<nITSTMVA<<" "<<nITSshared_fracTMVA<<" "<<NCrossedRowsTPCTMVA<<" "<<NClustersTPCTMVA<<" "<<NTPCSignalTMVA<<" "<<logDCAxyTMVA<<" "<<logDCAzTMVA<<" "<<chi2GlobalPerNDFTMVA<<" "<<chi2ITSTMVA<<" "<<etaTMVA<<" "<<phiTMVA<<" "<<ptTMVA<<" "<<centTMVA<<" "<<MVAout.back()<<endl;
       }
 
       acceptedTracks++;
@@ -1002,7 +1042,7 @@ int AliAnalysisTaskMLTreeMaker::CheckGenerator(Int_t trackID){     //check if th
   
 void AliAnalysisTaskMLTreeMaker::SetupTMVAReader(TString weightFile){
   
-  TMVA::Reader* TMVAReader = new TMVA::Reader( "!Color:!Silent" );
+  TMVAReader = new TMVA::Reader( "!Color:!Silent" );
 
   TMVAReader->AddVariable( "nITS", &nITSTMVA);
   TMVAReader->AddVariable( "ITS1Shared", &ITS1SharedTMVA);
@@ -1025,7 +1065,7 @@ void AliAnalysisTaskMLTreeMaker::SetupTMVAReader(TString weightFile){
   TMVAReader->AddVariable( "centrality", &centTMVA);
 
   gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/s/selehner/TMVAweights/%s .",weightFile.Data()));
-  cout<<"Setting weights file: "<<weightFile.Data()<<endl;
+  std::cout<<"Setting weights file: "<<weightFile.Data()<<std::endl;
 
   TMVAReader->BookMVA( "BDTG method", weightFile.Data() );
 

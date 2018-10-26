@@ -150,7 +150,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   }
  private:
      
-  TMVA::Reader* TMVAReader;//-> 
+  TMVA::Reader* TMVAReader;     //-> 
   Bool_t useTMVA;
   AliPIDResponse *fPIDResponse;     //! PID response object
 
@@ -310,6 +310,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   TH3D* fmean;
   
   Bool_t fuseCorr;
+  Bool_t fIsTMVAInit;
   //TBits*            fUsedVars;                // used variables by AliDielectronVarManager
   
 //  Double_t probs[AliPID::kSPECIESC];

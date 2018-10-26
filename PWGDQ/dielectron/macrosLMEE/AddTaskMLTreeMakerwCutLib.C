@@ -56,11 +56,11 @@ if(SetTPCCorrection){
 }
 else  task->SetUseCorr(kFALSE);
 
+task->isMC(isMC);
 task->SelectCollisionCandidates(AliVEvent::kINT7);
 task->SetCentralityPercentileRange(centmin,centmax);
 task->SetupTrackCuts(cutlib->GetTrackCuts(trackCut,PIDCut,0,useAODFilterCuts));
-//task->SetUseTMVA(kTRUE);
-//task->SetupTMVAReader(TMVAweight);
+task->SetUseTMVA(kTRUE);
 task->SetupEventCuts(cutlib->GetEventCuts(0, 0));
 
 mgr->AddTask(task);
