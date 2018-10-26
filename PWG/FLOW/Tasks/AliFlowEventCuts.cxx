@@ -455,7 +455,8 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
       if (fQA) {
 	QAbefore(0)->Fill(pvtxz);
 	QAbefore(1)->Fill(multGlobal,multTPC);
-	QAbefore(2)->Fill(sT);
+	if(fUseSphericityCut)
+	  QAbefore(2)->Fill(sT);
       }
       
       //Use sphericity cut
@@ -510,7 +511,8 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
     if (fQA&&pass) {
       QAafter(0)->Fill(pvtxz);
       QAafter(1)->Fill(multGlobal,multTPC);
-      QAafter(2)->Fill(sT);
+      if(fUseSphericityCut) 
+	QAafter(2)->Fill(sT);
     }
     
   }else{
@@ -611,7 +613,8 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
     if (fQA) {
       QAbefore(0)->Fill(pvtxz);
       QAbefore(1)->Fill(multGlobal,multTPC);
-      QAbefore(2)->Fill(sT);
+      if(fUseSphericityCut)
+	QAbefore(2)->Fill(sT);
     }
     
     if (fCutNContributors) {
@@ -773,7 +776,8 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
     if (fQA&&pass) {
       QAafter(1)->Fill(multGlobal,multTPC);
       QAafter(0)->Fill(pvtxz);
-      QAafter(2)->Fill(sT);
+      if(fUseSphericityCut) 
+	QAafter(2)->Fill(sT);
     }
   }
   return pass;
