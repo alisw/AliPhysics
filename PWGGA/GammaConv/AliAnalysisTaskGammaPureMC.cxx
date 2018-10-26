@@ -78,6 +78,8 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(): AliAnalysisTaskSE(),
   fHistPtYDeltaMi(nullptr),
   fHistPtYDelta0(nullptr),
   fHistPtYLambda(nullptr),
+  fHistPtYKPl(nullptr),
+  fHistPtYKMi(nullptr),
   fHistPtYPi0FromEta(nullptr),
   fHistPtYPi0FromLambda(nullptr),
   fHistPtYPi0FromK(nullptr),
@@ -163,6 +165,8 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(const char *name):
   fHistPtYDeltaMi(nullptr),
   fHistPtYDelta0(nullptr),
   fHistPtYLambda(nullptr),
+  fHistPtYKPl(nullptr),
+  fHistPtYKMi(nullptr),
   fHistPtYPi0FromEta(nullptr),
   fHistPtYPi0FromLambda(nullptr),
   fHistPtYPi0FromK(nullptr),
@@ -333,6 +337,14 @@ void AliAnalysisTaskGammaPureMC::UserCreateOutputObjects(){
   fHistPtYLambda              		= new TH2F("Pt_Y_Lambda","Pt_Y_Lambda", 1000,0, 100, 200, -1.0, 1.0);
   fHistPtYLambda->Sumw2();
   fOutputContainer->Add(fHistPtYLambda);
+
+  fHistPtYKPl              		= new TH2F("Pt_Y_KPl","Pt_Y_KPl", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYKPl->Sumw2();
+  fOutputContainer->Add(fHistPtYKPl);
+
+  fHistPtYKMi              		= new TH2F("Pt_Y_KMi","Pt_Y_KMi", 1000,0, 100, 200, -1.0, 1.0);
+  fHistPtYKMi->Sumw2();
+  fOutputContainer->Add(fHistPtYKMi);
 
   fHistPtYPi0FromEta          		= new TH2F("Pt_Y_Pi0FromEta","Pt_Y_Pi0FromEta", 1000,0, 100, 200, -1.0, 1.0);
   fHistPtYPi0FromEta->Sumw2();
@@ -625,7 +637,7 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
     else
       hasMother                 = kFALSE;
 
-    const std::array<int, 18> kAcceptPdgCodes = {kPdgPi0, kPdgEta, kPdgEtaPrime, kPdgOmega, kPdgPiPlus, kPdgRho0, kPdgPhi, kPdgJPsi, kPdgSigma0, kPdgK0Short, kPdgDeltaPlus, kPdgDeltaPlusPlus, kPdgDeltaMinus, kPdgDelta0, kPdgRhoPlus, kPdgKStar, kPdgK0Long, kPdgLambda};
+    const std::array<int, 19> kAcceptPdgCodes = {kPdgPi0, kPdgEta, kPdgEtaPrime, kPdgOmega, kPdgPiPlus, kPdgRho0, kPdgPhi, kPdgJPsi, kPdgSigma0, kPdgK0Short, kPdgDeltaPlus, kPdgDeltaPlusPlus, kPdgDeltaMinus, kPdgDelta0, kPdgRhoPlus, kPdgKStar, kPdgK0Long, kPdgLambda, kPdgKPlus};
     if(std::find(kAcceptPdgCodes.begin(), kAcceptPdgCodes.end(), TMath::Abs(particle->GetPdgCode())) ==  kAcceptPdgCodes.end()) continue;  // species not supported
 
     if (!(TMath::Abs(particle->Energy()-particle->Pz())>0.)) continue;
@@ -722,6 +734,12 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
       break;
     case kPdgLambda:
       fHistPtYLambda->Fill(particle->Pt(), particle->Y());
+      break;
+    case kPdgKPlus:
+      fHistPtYKPl->Fill(particle->Pt(), particle->Y());
+      break;
+    case kPdgKMinus:
+      fHistPtYKMi->Fill(particle->Pt(), particle->Y());
       break;
     }
 
