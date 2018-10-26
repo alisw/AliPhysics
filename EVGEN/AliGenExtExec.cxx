@@ -35,6 +35,7 @@ AliGenExtExec::AliGenExtExec(const TString &scriptpath) :
   fPathFIFO("gen.hepmc"),
   fPathFile1("gen1.root"),
   fPathFile2("gen2.root"),
+  fGeneratorOptionalArguments(""),
   fEventNumberInFileMax(100),
   fMode(kFIFO),
   fInput(kHepMC),
@@ -53,6 +54,7 @@ AliGenExtExec::AliGenExtExec(Int_t npart, const TString &scriptpath) :
   fPathFIFO("gen.hepmc"),
   fPathFile1("gen1.root"),
   fPathFile2("gen2.root"),
+  fGeneratorOptionalArguments(""),
   fEventNumberInFileMax(100),
   fMode(kFIFO),
   fInput(kHepMC),
@@ -102,6 +104,12 @@ void AliGenExtExec::SetPathFile2(const TString &path)
 
   fPathFile2 = path;
   gSystem->ExpandPathName(fPathFile2);
+}
+
+void AliGenExtExec::SetGeneratorOptionalArguments(const TString &args)
+{
+  // set parameters that will be passed to generator shell script
+  fGeneratorOptionalArguments = args;
 }
 
 void AliGenExtExec::Init()
@@ -205,7 +213,7 @@ Bool_t AliGenExtExec::StartGen()
       AliError("forking generator failed");
       return kFALSE;
     } else if (fPID == 0) {
-      execl("/bin/bash", "bash", "-c", (fPathScript + " " + fPathFIFO + " > gen.log 2>&1").Data(), (char *) 0);
+      execl("/bin/bash", "bash", "-c", (fPathScript + " " + fPathFIFO + " " + fGeneratorOptionalArguments + " > gen.log 2>&1").Data(), (char *) 0);
     } else {
       AliInfo(Form("running generator with PID %i", fPID));
     }
@@ -218,7 +226,7 @@ Bool_t AliGenExtExec::StartGen()
       AliError("forking generator failed");
       return kFALSE;
     } else if (fPID == 0) {
-      execl("/bin/bash", "bash", "-c", (fPathScript + " " + fPathFile1 + " " + fPathFile2 + " > gen.log 2>&1").Data(), (char *) 0);
+      execl("/bin/bash", "bash", "-c", (fPathScript + " " + fPathFile1 + " " + fPathFile2 + " " + fGeneratorOptionalArguments + " > gen.log 2>&1").Data(), (char *) 0);
     } else {
       AliInfo(Form("running generator with PID %i", fPID));
     }
