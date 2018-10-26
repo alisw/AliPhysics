@@ -641,7 +641,7 @@ const Float_t multmax_100_400 = 400;
       for (Int_t ip=0; ip < 2; ip++) {
 	multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));    
 	if (!multEstimatorAvg[ip]) {
-	  Printf(Form("FATAL: Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
+	  Printf("FATAL: Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
 	  return NULL;               
 	}
       }
@@ -655,7 +655,7 @@ const Float_t multmax_100_400 = 400;
       for(Int_t ip=0; ip<4; ip++) {
 	multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));  
 	if (!multEstimatorAvg[ip]) {
-	  Printf(Form("FATAL: Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
+	  Printf("FATAL: Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
 	  return NULL;               
 	}  
       }
