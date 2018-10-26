@@ -48,6 +48,9 @@ class AliFemtoDreamv0Cuts {
   void SetOriginMultiplicityHists(bool plot) {
     fDoMultBinning = plot;
   }
+  void CheckParticleMothers(bool plot) {
+    fCheckMother = plot;
+  }
   void SetAxisInvMassPlots(int nBins, float minMass, float maxMass) {
     fNumberXBins = nBins;
     fAxisMinMass = minMass;
@@ -199,6 +202,7 @@ class AliFemtoDreamv0Cuts {
   bool fCPAPlots;                     //
   bool fContribSplitting;             //
   bool fDoMultBinning;               //
+  bool fCheckMother;                 //
   bool fRunNumberQA;                  //
   int fMinRunNumber;                  //
   int fMaxRunNumber;                  //
@@ -234,7 +238,7 @@ class AliFemtoDreamv0Cuts {
   int fPDGv0;                         //
   int fPDGDaugP;                      //
   int fPDGDaugN;                      //
-ClassDef(AliFemtoDreamv0Cuts,3)
+ClassDef(AliFemtoDreamv0Cuts,4)
 };
 
 #endif /* ALIFEMTODREAMV0CUTS_H_ */

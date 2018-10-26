@@ -52,6 +52,9 @@ class AliFemtoDreamTrackCuts {
   void SetOriginMultiplicityHists(bool plot) {
     fDoMultBinning = plot;
   }
+  void CheckParticleMothers(bool plot) {
+    fCheckMother = plot;
+  }
   void SetPlotCombSigma(bool plot) {
     fCombSigma = plot;
   }
@@ -236,6 +239,7 @@ class AliFemtoDreamTrackCuts {
   bool fMCData;                       //
   bool fDCAPlots;                     //
   bool fDoMultBinning;                //
+  bool fCheckMother;                  //
   bool fCombSigma;                    //
   bool fContribSplitting;             //
   bool fFillQALater;                  //
@@ -276,7 +280,7 @@ class AliFemtoDreamTrackCuts {
   float fNSigValue;                  // defaults to 3
   float fPIDPTPCThreshold;           // defaults to 0
   bool fRejectPions;  // Supress Pions at low pT with the TOF, if information is available
-ClassDef(AliFemtoDreamTrackCuts,4)
+ClassDef(AliFemtoDreamTrackCuts,5)
   ;
 };
 

@@ -16,7 +16,8 @@ class AliFemtoDreamv0MCHist {
  public:
   AliFemtoDreamv0MCHist();
   AliFemtoDreamv0MCHist(int MassNBins, float MassMin, float MassMax,
-                        bool contribSplitting, bool CPADist, bool DoMultBinning = false);
+                        bool contribSplitting, bool CPADist,
+                        bool DoMultBinning = false, bool checkMother = false);
   virtual ~AliFemtoDreamv0MCHist();
   void FillMCCorr(float pT) {
     fMCCorrPt->Fill(pT);
