@@ -37,6 +37,8 @@ void AddTaskESEFlowQC(TString particleSpecies = "",
   else {
     suffixName += "_AllCharged";
     suffixName = Form("%s_%i",suffixName.Data(),gAODfilterBit);
+    if(gCutOnSphericity) 
+      suffixName = Form("%s_%.1f_%.1f",suffixName.Data(),gMinSphericity,gMaxSphericity);
   }
         
   //=====================================================================
