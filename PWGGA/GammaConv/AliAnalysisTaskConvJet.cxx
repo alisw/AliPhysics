@@ -44,7 +44,12 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() :
   fVectorJetPt(0),
   fVectorJetEta(0),
   fVectorJetPhi(0),
-  fVectorJetR(0)
+  fVectorJetR(0),
+  fTrueNJets(0),
+  fTrueVectorJetPt(0),
+  fTrueVectorJetEta(0),
+  fTrueVectorJetPhi(0),
+  fTrueVectorJetR(0)
 {
 }
 
@@ -54,7 +59,11 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char *name) :
   fVectorJetPt(0),
   fVectorJetEta(0),
   fVectorJetPhi(0),
-  fVectorJetR(0)
+  fVectorJetR(0),
+  fTrueVectorJetPt(0),
+  fTrueVectorJetEta(0),
+  fTrueVectorJetPhi(0),
+  fTrueVectorJetR(0)
 {
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -97,21 +106,42 @@ void AliAnalysisTaskConvJet::DoJetLoop()
   AliJetContainer* jetCont = 0;
   TIter next(&fJetCollArray);
   while ((jetCont = static_cast<AliJetContainer*>(next()))) {
-    UInt_t count = 0;
-    fNJets = 0 ;
-    fVectorJetPt.clear();
-    fVectorJetEta.clear();
-    fVectorJetPhi.clear();
-    fVectorJetR.clear();
-    for(auto jet : jetCont->accepted()) {
-      if (!jet) continue;
-      count++;
-      fVectorJetPt.push_back(jet->Pt());
-      fVectorJetEta.push_back(jet->Eta());
-      fVectorJetPhi.push_back(jet->Phi());
-      fVectorJetR.push_back(jet->Area());
+    TString JetName = jetCont->GetTitle();
+    TObjArray *arr = JetName.Tokenize("__");
+    TObjString* testObjString = (TObjString*)arr->At(2);
+    if(testObjString->GetString() != "mcparticles"){
+      UInt_t count = 0;
+      fNJets = 0 ;
+      fVectorJetPt.clear();
+      fVectorJetEta.clear();
+      fVectorJetPhi.clear();
+      fVectorJetR.clear();
+      for(auto jet : jetCont->accepted()) {
+        if (!jet) continue;
+        count++;
+        fVectorJetPt.push_back(jet->Pt());
+        fVectorJetEta.push_back(jet->Eta());
+        fVectorJetPhi.push_back(jet->Phi());
+        fVectorJetR.push_back(jet->Area());
+      }
+      fNJets = count ;
+    }else{
+      UInt_t count = 0;
+      fTrueNJets = 0 ;
+      fTrueVectorJetPt.clear();
+      fTrueVectorJetEta.clear();
+      fTrueVectorJetPhi.clear();
+      fTrueVectorJetR.clear();
+      for(auto jet : jetCont->accepted()) {
+        if (!jet) continue;
+        count++;
+        fTrueVectorJetPt.push_back(jet->Pt());
+        fTrueVectorJetEta.push_back(jet->Eta());
+        fTrueVectorJetPhi.push_back(jet->Phi());
+        fTrueVectorJetR.push_back(jet->Area());
+      }
+      fTrueNJets = count ;
     }
-    fNJets = count ;
   }
 }
 
@@ -255,9 +285,12 @@ AliAnalysisTaskConvJet * AliAnalysisTaskConvJet::AddTask_GammaConvJet(
   sampleTask->GetClusterContainer(0)->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
   sampleTask->GetParticleContainer(0)->SetParticlePtCut(0.15);
   sampleTask->GetParticleContainer(0)->SetParticleEtaLimits(-0.8,0.8);
-  sampleTask->GetTrackContainer(0)->SetParticlePtCut(0.15);
-  sampleTask->GetTrackContainer(0)->SetParticleEtaLimits(-0.8,0.8);
-  sampleTask->GetTrackContainer(0)->SetFilterHybridTracks(kTRUE);
+
+  if(trackName != "mcparticles"){
+      sampleTask->GetTrackContainer(0)->SetFilterHybridTracks(kTRUE);
+      sampleTask->GetTrackContainer(0)->SetParticlePtCut(0.15);
+      sampleTask->GetTrackContainer(0)->SetParticleEtaLimits(-0.8,0.8);
+  }
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
@@ -267,7 +300,7 @@ AliAnalysisTaskConvJet * AliAnalysisTaskConvJet::AddTask_GammaConvJet(
 
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
-  TString contname(name);
+  TString contname(trackName);
   contname += "_histos";
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
       TList::Class(),AliAnalysisManager::kOutputContainer,

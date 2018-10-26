@@ -44,6 +44,12 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
   std::vector<Double_t> GetVectorJetPhi() {return fVectorJetPhi;}
   std::vector<Double_t> GetVectorJetR()   {return fVectorJetR;}
 
+  Double_t GetTrueNJets() {return fTrueNJets;}
+  vector<Double_t> GetTrueVectorJetPt()  {return fTrueVectorJetPt;}
+  vector<Double_t> GetTrueVectorJetEta() {return fTrueVectorJetEta;}
+  vector<Double_t> GetTrueVectorJetPhi() {return fTrueVectorJetPhi;}
+  vector<Double_t> GetTrueVectorJetR()   {return fTrueVectorJetR;}
+
   Double_t Get_Jet_Radius(){
       AliJetContainer* jetCont = 0;
       TIter next(&fJetCollArray);
@@ -66,6 +72,12 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
   std::vector<Double_t>            fVectorJetEta                                     ;
   std::vector<Double_t>            fVectorJetPhi                                     ;
   std::vector<Double_t>            fVectorJetR                                       ;
+
+  Double_t                    fTrueNJets                                        ;
+  vector<Double_t>            fTrueVectorJetPt                                  ;
+  vector<Double_t>            fTrueVectorJetEta                                 ;
+  vector<Double_t>            fTrueVectorJetPhi                                 ;
+  vector<Double_t>            fTrueVectorJetR                                   ;
 
  private:
   AliAnalysisTaskConvJet(const AliAnalysisTaskConvJet&)           ;
