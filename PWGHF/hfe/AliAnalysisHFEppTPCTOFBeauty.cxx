@@ -194,6 +194,12 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty(const char *name)
 ,fDCAxy_pt_charmaft(0)
 ,fDCAxy_pt_beautybef(0)
 ,fDCAxy_pt_beautyaft(0)
+,fDCAxy_pt_MesonB_beautyaft(0)
+,fDCAxy_pt_MesonB_beautybef(0)
+,fDCAxy_pt_MesonBD_beautyaft(0)
+,fDCAxy_pt_MesonBD_beautybef(0)
+,fDCAxy_pt_BaryonB_beautybef(0)
+,fDCAxy_pt_BaryonBD_beautybef(0)
 ,fDCAxy_pt_had_onlyDCA(0)
 ,fDCAxy_pt_had_onlyDCA_WoPID(0)
 ,fDCAxy_pt_had_onlyDCA_Hijing(0)
@@ -385,6 +391,12 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty()
 ,fDCAxy_pt_charmaft(0)
 ,fDCAxy_pt_beautybef(0)
 ,fDCAxy_pt_beautyaft(0)
+,fDCAxy_pt_MesonB_beautyaft(0)
+,fDCAxy_pt_MesonB_beautybef(0)
+,fDCAxy_pt_MesonBD_beautyaft(0)
+,fDCAxy_pt_MesonBD_beautybef(0)
+,fDCAxy_pt_BaryonB_beautybef(0)
+,fDCAxy_pt_BaryonBD_beautybef(0)
 ,fDCAxy_pt_had_onlyDCA(0)
 ,fDCAxy_pt_had_onlyDCA_WoPID(0)
 ,fDCAxy_pt_had_onlyDCA_Hijing(0)
@@ -741,6 +753,24 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     fDCAxy_pt_beautyaft = new TH2F("fDCAxy_pt_beautyaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
     fOutputList->Add(fDCAxy_pt_beautyaft); 
     
+    fDCAxy_pt_MesonB_beautybef = new TH2F("fDCAxy_pt_MesonB_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_MesonB_beautybef);
+    
+    fDCAxy_pt_MesonB_beautyaft = new TH2F("fDCAxy_pt_MesonB_beautyaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_MesonB_beautyaft);
+    
+    fDCAxy_pt_MesonBD_beautybef = new TH2F("fDCAxy_pt_MesonBD_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_MesonBD_beautybef);
+    
+    fDCAxy_pt_MesonBD_beautyaft = new TH2F("fDCAxy_pt_MesonBD_beautyaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_MesonBD_beautyaft);
+    
+    fDCAxy_pt_BaryonB_beautybef = new TH2F("fDCAxy_pt_BaryonB_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_BaryonB_beautybef);
+     
+    fDCAxy_pt_BaryonBD_beautybef = new TH2F("fDCAxy_pt_BaryonBD_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_BaryonBD_beautybef);
+       
     fDCAxy_pt_had_onlyDCA_WoPID = new TH2F("fDCAxy_pt_had_onlyDCA_WoPID",";p_{t} (GeV/c);DCAxy hadrons_WoPID",300,0,30,800,-0.2,0.2);
     fOutputList->Add(fDCAxy_pt_had_onlyDCA_WoPID);
     
@@ -1605,6 +1635,22 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
                     fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
                     pdg_mother = fMCparticleMother->GetPdgCode();
                     
+                    if(fIsFromMesonB){
+                    fDCAxy_pt_MesonB_beautybef->Fill(fPt,DCAxy*track->Charge()*signB);
+                    }
+                    if(fIsFromMesonBD){
+                    
+                    fDCAxy_pt_MesonBD_beautybef->Fill(fPt,DCAxy*track->Charge()*signB);
+                    }
+                    // check by Sudhir on 27 Oct 2018
+                    if(fIsFromBarionB){
+                    fDCAxy_pt_BaryonB_beautybef->Fill(fPt,DCAxy*track->Charge()*signB);
+                    }
+                    if(fIsFromBarionBD){
+                    
+                    fDCAxy_pt_BaryonBD_beautybef->Fill(fPt,DCAxy*track->Charge()*signB);
+                    }
+                    // check by Sudhir on 27 Oct 2018
                     if(fIsFromMesonB || fIsFromMesonBD){///beauty meson 
 						qadca[1]=2.5;
 						hBeautyMotherPt->Fill(fMCparticleMother->Pt(),fPt);
@@ -1657,6 +1703,15 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 							hBeautyMotherPtaft->Fill(fMCparticleMother->Pt());
 							hBeautyMotherPt2Daft->Fill(fMCparticleMother->Pt(),fPt);
 							qadca[1]=19.5;
+							
+						if(fIsFromMesonB){
+                    					fDCAxy_pt_MesonB_beautyaft->Fill(fPt,DCAxy*track->Charge()*signB);
+                    				}
+                    				
+                    				if(fIsFromMesonBD){
+                        	                	fDCAxy_pt_MesonBD_beautyaft->Fill(fPt,DCAxy*track->Charge()*signB);
+                    				}
+						// check by Sudhir on 27 Oct 2018	
 						}
 					}
 					
