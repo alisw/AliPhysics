@@ -84,7 +84,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskConvJet &operator=(const AliAnalysisTaskConvJet&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskConvJet, 1);
+  ClassDef(AliAnalysisTaskConvJet, 2);
   /// \endcond
 };
 #endif
