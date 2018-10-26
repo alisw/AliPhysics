@@ -57,6 +57,8 @@ class AliRDHFCutsBPlustoD0Pi : public AliRDHFCuts
 
   void SetGetCutInfo(Bool_t value){fGetCutInfo = value;}
   void InitializeCuts();
+  void InitializeCutsForCutOptimization(Int_t nCutsForOptimization, Int_t nVariables);
+  void SetCutsForCutOptimization(Int_t glIndex,Float_t *cutsRDForCutOptimization);
 
   Double_t GetCircRadius() { return fCircRadius; }
   void SetCircRadius(Double_t radius) { fCircRadius = radius; }
@@ -167,6 +169,8 @@ class AliRDHFCutsBPlustoD0Pi : public AliRDHFCuts
 
   void SetCut(Int_t nCutIndex, Int_t ptBin, AliRDHFCutsBPlustoD0Pi::EUpperCut cutDirection, Float_t cutValue);
   void SetCutD0forD0ptbin(Int_t nCutIndex, Int_t ptBin, AliRDHFCutsBPlustoD0Pi::EUpperCut cutDirection, Float_t cutValue);
+  void SetCutForCutOptimization(Int_t nCutIndex, Int_t nVariable, Int_t ptBin, AliRDHFCutsBPlustoD0Pi::EUpperCut cutDirection, Float_t * cutValues);
+  Float_t GetCutForCutOptimization(Int_t nCutIndex, Int_t nVariable, Int_t ptBin){return fCutsRDForCutOptimization[GetGlobalIndexForCutOptimization(nCutIndex,nVariable,ptBin)];}
 
   Double_t GetMind0D0FirstDaughter(){return fMind0D0FirstDaughter;}
   Double_t GetMind0D0SecondDaughter(){return fMind0D0SecondDaughter;}
@@ -175,6 +179,24 @@ class AliRDHFCutsBPlustoD0Pi : public AliRDHFCuts
   void SetMind0D0FirstDaughter(Double_t value){fMind0D0FirstDaughter = value; return;}
   void SetMind0D0SecondDaughter(Double_t value){fMind0D0SecondDaughter = value; return;}
   void SetMind0BPlusPion(Double_t value){fMind0BPlusPion = value; return;}
+
+  void SetnVariablesForCutOptimization(Double_t value){fnVariablesForCutOptimization = value; return;}
+  Int_t GetnVariablesForCutOptimization(){return fnVariablesForCutOptimization;}
+
+  void SetnCutsForOptimization(Double_t value){fnCutsForOptimization = value; return;}
+  Int_t GetnCutsForOptimization(){return fnCutsForOptimization;}
+
+  void SetGlobalIndexForCutOptimization(){fGlobalIndexCutOptimization = fnVariablesForCutOptimization*fnCutsForOptimization*fnPtBins; return;}
+  Int_t GetGlobalIndexForCutOptimization(Int_t iCut, Int_t iVar,Int_t iPtBin) {return iCut + iVar * fnCutsForOptimization + iPtBin * fnCutsForOptimization * fnVariablesForCutOptimization;}
+
+  void SetIsUpperCutForCutOptimization(Int_t nVariable, Bool_t isUpperCut){fIsUpperCutForCutOptimization[nVariable] = isUpperCut; return;}
+  Bool_t GetIsUpperCutForCutOptimization(Int_t nVariable) const {return fIsUpperCutForCutOptimization[nVariable];}
+
+  void SetCutIndexForCutOptimization(Int_t nVariable, Int_t nCutIndex){fCutIndexForCutOptimization[nVariable] = nCutIndex; return;}
+  Int_t GetCutIndexForCutOptimization(Int_t nVariable) const {return fCutIndexForCutOptimization[nVariable];}
+
+  void SetSigmaForCutOptimization(Double_t value, Int_t iPtBin){fSigmaForCutOptimization[iPtBin] = value; return;}
+  Double_t GetSigmaForCutOptimization(Int_t iPtBin) const {return fSigmaForCutOptimization[iPtBin];}
 
  protected:
 
@@ -235,8 +257,16 @@ class AliRDHFCutsBPlustoD0Pi : public AliRDHFCuts
   Double_t fMind0D0SecondDaughter;                    ///
   Double_t fMind0BPlusPion;                           ///
 
+  Int_t fnVariablesForCutOptimization;                ///
+  Int_t fnCutsForOptimization;                        ///
+  Int_t fGlobalIndexCutOptimization;                  ///
+  Float_t * fCutsRDForCutOptimization;                //[fGlobalIndexCutOptimization]
+  Bool_t * fIsUpperCutForCutOptimization;             //[fnVariablesForCutOptimization]
+  Int_t * fCutIndexForCutOptimization;                //[fnVariablesForCutOptimization]
+  Float_t * fSigmaForCutOptimization;                 //[fnPtBins]
+
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCutsBPlustoD0Pi,1) ///
+  ClassDef(AliRDHFCutsBPlustoD0Pi,2) ///
   /// \endcond
 };
 

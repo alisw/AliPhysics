@@ -13,9 +13,11 @@ AliAnalysisTaskSEBPlustoD0Pi *AddTaskBPlustoD0Pi(
                                 Int_t nUpgradeSetting=0,
                                 Int_t nDegreePerRotation=3,
                                 Int_t nNumberOfRotations=0,
-                                Double_t fHistMassWindow=0.125
+                                Double_t fHistMassWindow=0.125,
+                                Bool_t bPerformCutOptimization=kFALSE
                                 )
 {
+  
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   // gDebug = 1;
@@ -66,12 +68,13 @@ AliAnalysisTaskSEBPlustoD0Pi *AddTaskBPlustoD0Pi(
   task->SetDebugLevel(nDebugLevel);
   task->SetShowRejection(bShowRejection);
   task->SetShowMask(bShowMask);
-  // task->SetUse3DHistograms(bUse3DHistograms);
+  // task->SetUse3DHistograms(bUse3DHistograms); // not used
   task->SetCheckBackground(bCheckBackground);
-  task->SetUpgradeSetting(nUpgradeSetting);
+  // task->SetUpgradeSetting(nUpgradeSetting); // not used
   task->SetHistMassWindow(fHistMassWindow);
   task->SetDegreePerRotation(nDegreePerRotation);
   task->SetNumberOfRotations(nNumberOfRotations);
+  task->SetPerformCutOptimization(bPerformCutOptimization);
 
   mgr->AddTask(task);
 
