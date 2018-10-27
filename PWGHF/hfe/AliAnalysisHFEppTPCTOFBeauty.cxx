@@ -582,7 +582,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     
     Double_t ptbinning[33] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5, 5.5, 6, 6.5, 7, 8, 9, 10};
     
-    Double_t ptbinningHF[14] = {1,2,3,4,5,6,7,8,10,12,16,24,36,50};
+    Double_t ptbinningHF[15] = {0,1,2,3,4,5,6,7,8,10,12,16,24,36,50};
     
     Double_t ptbinningHF2[15] = {0,1,2,3,4,5,6,7,8,10,12,16,24,36,50};
     
@@ -682,7 +682,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     fTPCnsigma_TOFnsigma3 = new TH2F("fTPCnsigma_TOFnsigma3","TOF Electron N#sigma;TPC Electron N#sigma",200,-10,30,200,-15,10);
     fOutputList->Add(fTPCnsigma_TOFnsigma3);
     
-    hCharmMotherPt = new TH1F("hCharmMotherPt","; p_{T} [GeV/c]; Count",13,ptbinningHF);
+    hCharmMotherPt = new TH1F("hCharmMotherPt","; p_{T} [GeV/c]; Count",14,ptbinningHF);
     fOutputList->Add(hCharmMotherPt);
     
     hCharmMotherPt_vsElecPt = new TH2F("hCharmMotherPt_vsElecPt","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
@@ -697,16 +697,16 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     hElecPt_vsCharmMotherPt_corr = new TH2F("hElecPt_vsCharmMotherPt_corr","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
     fOutputList->Add(hElecPt_vsCharmMotherPt_corr);
     
-    hCharmMotherPt_corr = new TH1F("hCharmMotherPt_corr","; p_{T} [GeV/c]; Count",13,ptbinningHF);
+    hCharmMotherPt_corr = new TH1F("hCharmMotherPt_corr","; p_{T} [GeV/c]; Count",14,ptbinningHF);
     fOutputList->Add(hCharmMotherPt_corr);
     
     hCharmMotherPt_corr2 = new TH1F("hCharmMotherPt_corr2","; p_{T} [GeV/c]; Count",100,0,50);
     fOutputList->Add(hCharmMotherPt_corr2);
     
-    hBeautyMotherPtbef = new TH1F("hBeautyMotherPtbef","; p_{T} [GeV/c]; Count",13,ptbinningHF2);
+    hBeautyMotherPtbef = new TH1F("hBeautyMotherPtbef","; p_{T} [GeV/c]; Count",14,ptbinningHF2);
     fOutputList->Add(hBeautyMotherPtbef);
     
-    hBeautyMotherPtaft = new TH1F("hBeautyMotherPtaft","; p_{T} [GeV/c]; Count",13,ptbinningHF2);
+    hBeautyMotherPtaft = new TH1F("hBeautyMotherPtaft","; p_{T} [GeV/c]; Count",14,ptbinningHF2);
     fOutputList->Add(hBeautyMotherPtaft);
     
     hBeautyMotherPt = new TH2F("hBeautyMotherPt","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
@@ -718,10 +718,10 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     fPtElec = new TH1F("fPtElec","; p_{T} [GeV/c]; Count",32,ptbinning);
     fOutputList->Add(fPtElec);
     
-    hPtD0 = new TH1F("hPtD0","; p_{T} [GeV/c]; Count",13,ptbinningHF);
+    hPtD0 = new TH1F("hPtD0","; p_{T} [GeV/c]; Count",14,ptbinningHF);
     fOutputList->Add(hPtD0);
     
-    hPtLambdaC = new TH1F("hPtLambdaC","; p_{T} [GeV/c]; Count",13,ptbinningHF);
+    hPtLambdaC = new TH1F("hPtLambdaC","; p_{T} [GeV/c]; Count",14,ptbinningHF);
     fOutputList->Add(hPtLambdaC);
      
     fPElec = new TH1F("fPElec","; p [GeV/c]; Count",32,ptbinning);
