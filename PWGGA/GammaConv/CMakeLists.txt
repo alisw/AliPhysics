@@ -58,6 +58,7 @@ set(SRCS
     AliAnalysisTaskGammaConvDalitzV1.cxx
     AliAnalysisTaskGammaConvFlow.cxx
     AliAnalysisTaskGammaConvV1.cxx
+    AliAnalysisTaskGammaConvDtrue.cxx
     AliAnalysisTaskGCPartToPWG4Part.cxx
     AliAnalysisTaskMaterial.cxx
     AliAnalysisTaskMaterialHistos.cxx
