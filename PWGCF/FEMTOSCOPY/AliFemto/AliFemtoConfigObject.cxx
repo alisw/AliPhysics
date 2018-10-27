@@ -203,15 +203,37 @@ AliFemtoConfigObject::pop(Int_t idx)
 AliFemtoConfigObject*
 AliFemtoConfigObject::pop(const Key_t &key)
 {
+  if (!is_map()) {
+    return nullptr;
+  }
+
   AliFemtoConfigObject *result = nullptr;
 
-  if (is_map()) {
-    auto found = fValueMap.find(key);
-    if (found != fValueMap.end()) {
-      result = new AliFemtoConfigObject(std::move(found->second));
-      fValueMap.erase(found);
+  auto keys = split_key(key);
+
+  /// get the last key
+  const Key_t last_key = keys.back();
+  keys.erase(keys.rbegin().base());
+
+  /// find the sub-object
+  AliFemtoConfigObject *it = this;
+  for (auto &key : keys) {
+    auto found = it->fValueMap.find(key);
+    if (found == it->fValueMap.end()) {
+      return nullptr;
+    }
+    it = &found->second;
+    if (!it->is_map()) {
+      return nullptr;
     }
   }
+
+  auto target = it->fValueMap.find(last_key);
+  if (target != it->fValueMap.end()) {
+    result = new AliFemtoConfigObject(std::move(target->second));
+    it->fValueMap.erase(target);
+  }
+
   return result;
 }
 
