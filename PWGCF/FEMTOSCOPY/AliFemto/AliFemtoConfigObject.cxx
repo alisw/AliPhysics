@@ -8,6 +8,10 @@
 #include <TObjArray.h>
 #include <TCollection.h>
 
+#include <TBrowser.h>
+#include <TPad.h>
+#include <TROOT.h>
+
 #include <regex>
 #include <cctype>
 #include <sstream>
@@ -477,6 +481,24 @@ AliFemtoConfigObject::Streamer(TBuffer &buff)
 
 }
 
+void
+AliFemtoConfigObject::Draw(Option_t *opt)
+{
+  if (!gPad || !gPad->IsEditable()) {
+    gROOT->MakeDefCanvas();
+  } else {
+    gPad->Clear();
+    gPad->Range(0,0,1,1);
+  }
+  AppendPad(opt);
+}
+
+void
+AliFemtoConfigObject::Browse(TBrowser *b)
+{
+  Draw(b ? b->GetDrawOption() : "");
+  gPad->Update();
+}
 
 //===============================================
 //
@@ -533,9 +555,12 @@ AliFemtoConfigObject::Painter::Paint()
   fBody.SetTextFont(43);
   fBody.SetTextSize(18);
   fBody.SetFillColor(0);
+
   TObjArray *lines = result.Tokenize('\n');
-  for (Int_t iline = 0; iline < lines->GetEntriesFast(); iline++)
-    fBody.AddText(((TObjString*) lines->At(iline))->String().Data());
+  for (auto *obj : *lines) {
+    auto *str = static_cast<TObjString*>(obj);
+    fBody.AddText(str->String());
+  }
   fBody.Draw();
   delete lines;
 }

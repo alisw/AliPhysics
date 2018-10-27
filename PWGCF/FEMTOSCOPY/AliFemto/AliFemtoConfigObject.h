@@ -874,7 +874,7 @@ public:
   virtual Long64_t Merge(TCollection *);
 
   // virtual int DistanceToPrimitive(int x, int y) { return TObject::DistanceToPrimitive(x, y); }
-  // virtual void Draw(Option_t* ="");
+  virtual void Draw(Option_t* opt="");
   // virtual void ExecuteEvent(int event, int px, int py);
 
   /// Called when pad requests update.
@@ -885,10 +885,7 @@ public:
 
   /// Double clicking on object in TBrowser simply draws the object
   /// to the current pad
-  virtual void Browse(TBrowser *)
-  {
-    Draw();
-  }
+  virtual void Browse(TBrowser *);
 
 
 protected:
