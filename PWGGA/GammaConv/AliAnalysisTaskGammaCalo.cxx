@@ -2849,10 +2849,13 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
   Double_t vertex[3] = {0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
 
+  Int_t totalActiveCells = 0;
+  Double_t totalCellsinClusters = 0;
+  Double_t totalUnclusteredE = 0;
   if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoFlatEnergySubtraction()){
     Double_t totalClusterEnergy = 0;
-    Int_t totalActiveCells = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetNactiveEmcalCells();
-    Double_t totalCellsinClusters = 0;
+    totalActiveCells = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetNactiveEmcalCells();
+    totalCellsinClusters = 0;
     for(Long_t i = 0; i < nclus; i++){
       AliVCluster* clus = NULL;
       if(fInputEvent->IsA()==AliESDEvent::Class()){
@@ -2872,24 +2875,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
       delete clus;
     }
     Double_t totalEDeposit = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetTotalEnergyDeposit(fInputEvent);
-    Double_t totalUnclusteredE = totalEDeposit - totalClusterEnergy;
-    for(Long_t i = 0; i < nclus; i++){
-      AliVCluster* clus = NULL;
-      if(fInputEvent->IsA()==AliESDEvent::Class()){
-        if(arrClustersProcess)
-          clus = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(i));
-        else
-          clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
-      } else if(fInputEvent->IsA()==AliAODEvent::Class()){
-        if(arrClustersProcess)
-          clus = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(i));
-        else
-          clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
-      }
-      if(!clus) continue;
-      clus->SetE(clus->E()-(clus->GetNCells()*(totalUnclusteredE)/(totalActiveCells-totalCellsinClusters)));
-      delete clus;
-    }
+    totalUnclusteredE = totalEDeposit - totalClusterEnergy;
   }
 
   Double_t maxClusterEnergy = -1;
@@ -2913,6 +2899,12 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
         clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
     }
     if(!clus) continue;
+
+    if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoFlatEnergySubtraction()){
+      if(totalUnclusteredE!=0 && totalActiveCells!=0 && totalCellsinClusters!=0){
+        clus->SetE(clus->E()-(clus->GetNCells()*(totalUnclusteredE)/(totalActiveCells-totalCellsinClusters)));
+      }
+    }
 
     // Set the jetjet weight to 1 in case the cluster orignated from the minimum bias header
     if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
