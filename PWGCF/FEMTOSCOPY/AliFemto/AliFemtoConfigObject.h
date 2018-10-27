@@ -361,6 +361,12 @@ public:
   bool is_range() const { return fTypeTag == kRANGE; }
   bool is_rangelist() const { return fTypeTag == kRANGELIST; }
 
+  /// Return integer value - no typecheck
+  BoolValue_t as_bool() const { return fValueBool; }
+  IntValue_t as_int() const { return fValueInt; }
+  FloatValue_t as_float() const { return fValueFloat; }
+  RangeValue_t as_range() const { return fValueRange; }
+
   // template <typename BoolType> bool load_bool(BoolType &v) const { return is_bool() ? v = fValueBool, true : false; }
   // template <typename StringType> bool load_str(StringType &v) const { return is_str() ? v = fValueString, true : false; }
   // template <typename FloatType> bool load_float(FloatType &v) const { return is_float() ? v = fValueFloat, true : false; }
