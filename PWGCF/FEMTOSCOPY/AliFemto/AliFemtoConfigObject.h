@@ -611,30 +611,32 @@ public:
 
   public:
     /// construct from config object
-    list_iterator(AliFemtoConfigObject &obj): fParent(&obj), fIsArray(obj.is_array()), fInternal() {
+    list_iterator(AliFemtoConfigObject &obj)
+      : fParent(&obj), fIsArray(obj.is_array()), fInternal()
+    {
       if (fIsArray) {
         fInternal = obj.fValueArray.begin();
       }
     }
 
-    list_iterator(const list_iterator &orig): fParent(orig.fParent), fIsArray(orig.fParent), fInternal() {
+    list_iterator(const list_iterator &orig)
+      : fParent(orig.fParent), fIsArray(orig.fParent), fInternal()
+    {
       if (fIsArray) {
         fInternal = orig.fInternal;
       }
     }
 
-    value_type& operator*() {
-      return *fInternal;
-    }
+    value_type& operator*()
+      { return *fInternal; }
 
-    list_iterator& operator++() {
-      fInternal++;
-      return *this;
-    }
+    list_iterator& operator++()
+      { ++fInternal; return *this; }
 
-    list_iterator operator++(int) {
+    list_iterator operator++(int)
+    {
       list_iterator temp(*this);
-      fInternal++;
+      ++fInternal;
       return temp;
     }
 
@@ -651,9 +653,8 @@ public:
   /// `list_end`, making it safe to use in a for look without
   /// doing a type check.
   ///
-  list_iterator list_begin() {
-    return list_iterator(*this);
-  }
+  list_iterator list_begin()
+    { return list_iterator(*this); }
 
   /// Iterator to 'end' of list
   ///
@@ -662,7 +663,8 @@ public:
   /// function call; otherwise it returns a unique value which should
   /// be compared to the value returned by `list_begin`.
   ///
-  list_iterator list_end() {
+  list_iterator list_end()
+  {
     if (is_array()) {
       return list_iterator(this, fValueArray.end());
     }
@@ -682,14 +684,14 @@ public:
   class iterator_over_list {
     AliFemtoConfigObject *fParent;
   public:
+
     iterator_over_list(AliFemtoConfigObject &obj): fParent(&obj) {}
     list_iterator begin() { return fParent->list_begin(); }
     list_iterator end() { return fParent->list_end(); }
   };
 
-  iterator_over_list items_in_list() {
-    return iterator_over_list(*this);
-  }
+  iterator_over_list items_in_list()
+    { return iterator_over_list(*this); }
 
   /// \class map_iterator
   /// \brief Iterates over object if it is a map
@@ -706,53 +708,55 @@ public:
     MapValue_t::iterator fInternal;
     friend class AliFemtoConfigObject;
 
-    map_iterator(AliFemtoConfigObject *obj, MapValue_t::iterator it):
-      fParent(obj), fIsMap(true), fInternal(it) {}
+    map_iterator(AliFemtoConfigObject *obj, MapValue_t::iterator it)
+      : fParent(obj), fIsMap(true), fInternal(it)
+    { }
 
   public:
     /// construct from config object
-    map_iterator(AliFemtoConfigObject &obj): fParent(&obj), fIsMap(obj.is_map()), fInternal() {
+    map_iterator(AliFemtoConfigObject &obj)
+      : fParent(&obj), fIsMap(obj.is_map()), fInternal()
+    {
       if (fIsMap) {
         fInternal = obj.fValueMap.begin();
       }
     }
 
-    value_type& operator*() {
-      return *fInternal;
-    }
+    value_type& operator*()
+      { return *fInternal; }
 
     // prefix-increment (++it)
-    map_iterator& operator++() {
-      fInternal++;
-      return *this;
-    }
+    map_iterator& operator++()
+      { ++fInternal; return *this; }
 
     // postfix-increment (it++)
-    map_iterator operator++(int) {
-      map_iterator tmp(*this);
-      fInternal++;
-      return tmp;
-    }
+    map_iterator operator++(int)
+      {
+        map_iterator tmp(*this);
+        ++fInternal;
+        return tmp;
+      }
 
-    bool operator!=(map_iterator const &rhs) const {
-      return rhs.fParent != fParent                // if we don't have same parent - different
-          || fIsMap ? (fInternal != rhs.fInternal) // if array, compare internal iterator
-                    : false;                       // if not array, we are equal
-    }
+    bool operator!=(map_iterator const &rhs) const
+      {
+        return rhs.fParent != fParent                // if we don't have same parent - different
+            || fIsMap ? (fInternal != rhs.fInternal) // if array, compare internal iterator
+                      : false;                       // if not array, we are equal
+      }
   };
 
   /// Begin looping over map pairs
-  map_iterator map_begin() {
-    return map_iterator(*this);
-  }
+  map_iterator map_begin()
+    { return map_iterator(*this); }
 
   /// Ending of map iteration
-  map_iterator map_end() {
-    if (is_map()) {
-      return map_iterator(this, fValueMap.end());
+  map_iterator map_end()
+    {
+      if (is_map()) {
+        return map_iterator(this, fValueMap.end());
+      }
+      return map_iterator(*this);
     }
-    return map_iterator(*this);
-  }
 
   /// \class iterator_over_map
   /// \brief Returned by method `items_in_map` for c++11 foreach
@@ -773,10 +777,8 @@ public:
   };
 
   /// Simplified loop-over-map syntax function
-  iterator_over_map items_in_map() {
-    return iterator_over_map(*this);
-  }
-
+  iterator_over_map items_in_map()
+    { return iterator_over_map(*this); }
 
   /// \class Popper
   /// \brief Struct used for 'poping' many values from object
@@ -798,7 +800,8 @@ public:
     Popper& operator=(const Popper &rhs) { src = rhs.src; return *this; }
   };
 
-  Popper pop_all() const { return Popper(*this); }
+  Popper pop_all() const
+    { return Popper(*this); }
 
   /// return a string of valid JSON that may be parsed by other
   /// languages into their equivalent data types.
@@ -864,7 +867,8 @@ public:
   virtual ULong_t Hash() const;
 
   /// (static) title of "Configuration Object"
-  virtual const char* GetTitle() const { return "Configuration Object"; }
+  virtual const char* GetTitle() const
+    { return "Configuration Object"; }
 
   /// Called by merging actions like `hadd`
   virtual Long64_t Merge(TCollection *);
@@ -881,7 +885,10 @@ public:
 
   /// Double clicking on object in TBrowser simply draws the object
   /// to the current pad
-  virtual void Browse(TBrowser *) { Draw(); }
+  virtual void Browse(TBrowser *)
+  {
+    Draw();
+  }
 
 
 protected:
