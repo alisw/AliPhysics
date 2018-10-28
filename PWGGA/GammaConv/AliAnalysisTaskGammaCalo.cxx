@@ -1507,7 +1507,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fJetHistograms[iCut]->Add(fHistoEtaPhiJetWithPi0Cand[iCut]);
       fHistoDoubleCounting[iCut] = new TH1F("Double_Counting_Mesons_Jets", "Double_Counting_Mesons_Jets", 6, 0, 6);
       fJetHistograms[iCut]->Add(fHistoDoubleCounting[iCut]);
-      }
+    }
 
     if( ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->DoSectorMixing() ){
       fV0Reader->SetCalcSector(kTRUE);
