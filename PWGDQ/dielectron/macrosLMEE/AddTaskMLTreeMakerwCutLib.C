@@ -61,7 +61,8 @@ task->SelectCollisionCandidates(AliVEvent::kINT7);
 task->SetCentralityPercentileRange(centmin,centmax);
 task->SetupTrackCuts(cutlib->GetTrackCuts(trackCut,PIDCut,0,useAODFilterCuts));
 task->SetUseTMVA(kTRUE);
-task->SetupEventCuts(cutlib->GetEventCuts(0, 0));
+//task->SetupEventCuts(cutlib->GetEventCuts(0, 0));
+task->SetupEventCuts(cutlib->GetEventCuts(centmin, centmax));
 
 mgr->AddTask(task);
 
