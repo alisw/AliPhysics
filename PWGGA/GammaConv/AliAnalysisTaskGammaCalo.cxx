@@ -746,7 +746,7 @@ void AliAnalysisTaskGammaCalo::InitBack(){
       }
 
       if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->BackgroundHandlerType() == 0){
-        if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoSectorMixing() ){
+        if( ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->DoSectorMixing() ){
           fBGHandler[iCut] = new AliGammaConversionAODBGHandler(
                                     collisionSystem,centMin,centMax,
                                     ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetNumberOfBGEvents(),
@@ -1507,14 +1507,14 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fJetHistograms[iCut]->Add(fHistoEtaPhiJetWithPi0Cand[iCut]);
       fHistoDoubleCounting[iCut] = new TH1F("Double_Counting_Mesons_Jets", "Double_Counting_Mesons_Jets", 6, 0, 6);
       fJetHistograms[iCut]->Add(fHistoDoubleCounting[iCut]);
+      }
+
+    if( ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->DoSectorMixing() ){
+      fV0Reader->SetCalcSector(kTRUE);
     }
   }
   if(fDoMesonAnalysis){
     InitBack(); // Init Background Handler
-  }
-
-  if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoSectorMixing() ){
-    fV0Reader->SetCalcSector(kTRUE);
   }
 
   if(fIsMC> 0){
@@ -5047,7 +5047,7 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
 
   Int_t zbin= 0;
   if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoSectorMixing() ) {
-    zbin = fV0Reader->GetPtMaxSector();
+    zbin = fBGHandler[fiCut]->GetZBinIndex(fV0Reader->GetPtMaxSector());
   } else {
     zbin = fBGHandler[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
   }
