@@ -19,6 +19,7 @@ class AliCutHandlerPCM{
     void AddCutCalo(TString eventCut, TString clusterCut, TString mesonCut);
     void AddCutPCMCalo(TString eventCut, TString photonCut, TString clusterCut, TString mesonCut);
     void AddCutMergedCalo(TString eventCut, TString clusterCut, TString clusterMergedCut, TString mesonCut);
+    void AddCutPCMDalitz(TString eventCut, TString photonCut, TString mesonCut, TString electronCut);
 
     TString GetSpecialSettingFromAddConfig (TString additionalTrainConfig, TString configString, TString fileNameMatBudWeights);
     TString GetSpecialFileNameFromString (TString fileNameExternalInputs, TString configString);
@@ -30,6 +31,7 @@ class AliCutHandlerPCM{
     TString GetClusterCut(Int_t i);
     TString GetMesonCut(Int_t i);
     TString GetClusterMergedCut(Int_t i);
+    TString GetElectronCut(Int_t i);
   protected:
     Int_t fMode;
     Int_t fNCuts;
@@ -40,11 +42,13 @@ class AliCutHandlerPCM{
     Bool_t fValidCutsCalo;
     Bool_t fValidCutsMergedCalo;
     Bool_t fValidCutsMeson;
+    Bool_t fValidCutsElectron;
     TString* fEventCutArray;
     TString* fPhotonCutArray;
     TString* fMesonCutArray;
     TString* fClusterCutArray;
     TString* fMergedClusterCutArray;
+    TString* fElectronCutArray;
 
   private:
     AliCutHandlerPCM(const AliCutHandlerPCM&);                  // Prevent copy-construction
