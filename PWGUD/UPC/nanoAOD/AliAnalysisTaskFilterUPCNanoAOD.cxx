@@ -90,6 +90,7 @@ void AliAnalysisTaskFilterUPCNanoAOD::UserExec(Option_t*)
   if(trigger.Contains("CCUP")) isTriggered = kTRUE; // UPC central barrel
   if(trigger.Contains("CMUP") && fWithMuonTracks) isTriggered = kTRUE; // UPC MUON
   
+  
   //Vertex
   Bool_t hasGoodVertex = kFALSE;
   AliAODVertex *aodVertex = aod->GetPrimaryVertex();
