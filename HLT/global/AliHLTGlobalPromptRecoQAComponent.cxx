@@ -604,6 +604,12 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
 
   setlocale(LC_NUMERIC, ""); //Make printf with 1000 separators work
 
+  //then process the options from OCDB
+  TObjString* cdbString = dynamic_cast<TObjString*>(LoadAndExtractOCDBObject("HLT/ConfigHLT/GlobalPromptRecoQAComponent"));
+  if (cdbString) {
+    ProcessOptionString(cdbString->GetString());
+  }
+
   //parse the config string AFTER the defaults are set
   if (ProcessOptionString(GetComponentArgs())<0)
   {
