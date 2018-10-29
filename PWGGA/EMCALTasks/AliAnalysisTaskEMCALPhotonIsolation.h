@@ -127,7 +127,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         SetPythiaVersion            ( TString pythiaVersion                        ) { fPythiaVersion = pythiaVersion;                           }
   void                         SetVariableCPV              ( Bool_t  variable                             ) { fVariableCPV = variable;                                  }
   void                         SetVariableCPVInCone        ( Bool_t  variable                             ) { fVariableCPVInCone = variable;                            }
-  void                         SetVariableCPVSystematics   ( TString systematic                           ) { fVariableCPVSyst = systematic;                            }
+  void                         SetVariableCPVSystematics   ( TString systematics                          ) { fVariableCPVSyst = systematics;                           }
   void                         SetNonLinRecoEnergyScaling  ( Bool_t  scaling                              ) { fNonLinRecoEnergyScaling = scaling;                       }
   
  protected:
