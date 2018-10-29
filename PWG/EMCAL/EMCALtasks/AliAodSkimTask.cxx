@@ -20,22 +20,17 @@
 using namespace std;
 ClassImp(AliAodSkimTask)
 
-AliAodSkimTask::AliAodSkimTask() : 
-  AliAnalysisTaskSE(), fClusMinE(-1), fCutMC(1), fYCutMC(0.7), fGammaBr(""),
-  fDoCopyHeader(1),  fDoCopyVZERO(1),  fDoCopyTZERO(1),  fDoCopyVertices(1), fDoCopyTOF(1), fDoCopyTracklets(1), fDoCopyTracks(1), fDoCopyTrigger(1), fDoCopyPTrigger(0), 
-  fDoCopyCells(1), fDoCopyPCells(0), fDoCopyClusters(1), fDoCopyDiMuons(0),  fDoCopyTrdTracks(0), fDoCopyV0s(0), fDoCopyCascades(0), fDoCopyZDC(1), fDoCopyConv(0), 
-  fDoCopyMC(1), fDoCopyMCHeader(1), fTrials(0), fPyxsec(0), fPytrials(0), fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0), fHevs(0), fHclus(0)
-{
-}
-
 AliAodSkimTask::AliAodSkimTask(const char* name) : 
-  AliAnalysisTaskSE(name), fClusMinE(-1), fCutMC(1), fYCutMC(0.7), fGammaBr(""),
-  fDoCopyHeader(1),  fDoCopyVZERO(1),  fDoCopyTZERO(1),  fDoCopyVertices(1),  fDoCopyTOF(1), fDoCopyTracklets(1), fDoCopyTracks(1), fDoCopyTrigger(1), fDoCopyPTrigger(0), 
-  fDoCopyCells(1), fDoCopyPCells(0), fDoCopyClusters(1), fDoCopyDiMuons(0),  fDoCopyTrdTracks(0), fDoCopyV0s(0), fDoCopyCascades(0), fDoCopyZDC(1), fDoCopyConv(0), 
-  fDoCopyMC(1), fDoCopyMCHeader(1), fTrials(0), fPyxsec(0), fPytrials(0), fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0), fHevs(0), fHclus(0)
+  AliAnalysisTaskSE(name), fClusMinE(-1), fCutMC(1), fYCutMC(0.7), fCutMinPt(0), fCutFilterBit(-1), fGammaBr(""),
+  fDoCopyHeader(1),  fDoCopyVZERO(1),  fDoCopyTZERO(1),  fDoCopyVertices(1),  fDoCopyTOF(1), fDoCopyTracklets(1), fDoCopyTracks(1), fDoRemoveTracks(0), fDoCleanTracks(0), 
+  fDoRemCovMat(0), fDoRemPid(0), fDoCopyTrigger(1), fDoCopyPTrigger(0), fDoCopyCells(1), fDoCopyPCells(0), fDoCopyClusters(1), fDoCopyDiMuons(0),  fDoCopyTrdTracks(0), 
+  fDoCopyV0s(0), fDoCopyCascades(0), fDoCopyZDC(1), fDoCopyConv(0), fDoCopyMC(1), fDoCopyMCHeader(1), 
+  fTrials(0), fPyxsec(0), fPytrials(0), fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0), fHevs(0), fHclus(0)
 {
-  DefineInput(0, TChain::Class());
-  DefineOutput(1, TList::Class());
+  if (name) {
+    DefineInput(0, TChain::Class());
+    DefineOutput(1, TList::Class());
+  }
 }
 
 AliAodSkimTask::~AliAodSkimTask()
@@ -45,6 +40,43 @@ AliAodSkimTask::~AliAodSkimTask()
   }
   delete fHevs;
   delete fHclus;
+}
+
+Bool_t AliAodSkimTask::KeepTrack(AliAODTrack *t)
+{
+  if (t->IsMuonGlobalTrack())
+    return kFALSE;
+  if (t->Pt()<fCutMinPt)
+    return kFALSE;
+  if (t->TestFilterBit(fCutFilterBit)==0)
+    return kFALSE;
+
+  return kTRUE;
+}
+
+void AliAodSkimTask::CleanTrack(AliAODTrack *t)
+{
+  if (!fDoCleanTracks) 
+    return;
+  //cout << "Clean tracks " << endl;
+  t->SetRAtAbsorberEnd(0);
+  t->SetChi2MatchTrigger(0);
+  t->SetMuonClusterMap(0);
+  t->SetITSMuonClusterMap(0);
+  t->SetMUONtrigHitsMapTrg(0);
+  t->SetMUONtrigHitsMapTrk(0);
+  t->SetMFTClusterPattern(0);
+  t->SetMatchTrigger(0);
+  t->SetIsMuonGlobalTrack(0);
+  t->SetXYAtDCA(-999., -999.);
+  t->SetPxPyPzAtDCA(-999., -999., -999.);
+  if (fDoRemCovMat)
+    t->RemoveCovMatrix();
+  if (fDoRemPid) {
+    AliAODPid *pid = t->GetDetPid();
+    delete pid;
+    t->SetDetPID(0);
+  }
 }
 
 void AliAodSkimTask::UserCreateOutputObjects()
@@ -163,6 +195,16 @@ void AliAodSkimTask::UserExec(Option_t *)
       AliFatal(Form("%s: Previous event not deleted. This should not happen!",GetName()));
     }
     out->AbsorbObjects(in);
+    if (fDoRemoveTracks||fDoCleanTracks) {
+      for (Int_t i=0;i<out->GetEntriesFast();++i) {
+	AliAODTrack *t = static_cast<AliAODTrack*>(out->At(i));
+	if (KeepTrack(t)) 
+	  CleanTrack(t);
+	else {
+	  new ((*out)[i]) AliAODTrack;
+	}
+      }
+    }
   }
 
   if (fDoCopyTracklets) { 
