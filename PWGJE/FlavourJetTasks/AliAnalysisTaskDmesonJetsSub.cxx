@@ -2752,9 +2752,10 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::FindJet(AliAODRecoDecayHF2P
       DmesonJet.fJets[jetDef.GetName()].fNEF = totalNeutralPt / jets_incl[ijet].pt();
       DmesonJet.fJets[jetDef.GetName()].fArea = jets_incl[ijet].area();
       DmesonJet.fJets[jetDef.GetName()].fCorrPt = DmesonJet.fJets[jetDef.GetName()].fMomentum.Pt() - jets_incl[ijet].area() * rho;
-
+      IterativeDeclustering(ijet,1,jetDef);
       return kTRUE;
     }
+     if(!isDmesonJet) IterativeDeclustering(ijet,0,jetDef); 
   }
 
   return kFALSE;
@@ -2784,6 +2785,58 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::AddInputVectors(AliEmcalConta
   }
 }
 
+void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t ijet,Double_t type,AliHFJetDefinition& jetDef)
+{
+   double nsd = 0;        
+   double nall = 0;        
+   double zg = 0.;         
+   int flagSubjet=0;
+   double xconstperp=0;
+   TString hname; 
+   fastjet::JetAlgorithm jet_algo(fastjet::cambridge_algorithm);
+   double jet_radius_ca = 1.0;
+   fastjet::JetDefinition jet_def(jet_algo, jet_radius_ca,static_cast<fastjet::RecombinationScheme>(0), fastjet::Best);
+  
+      try{
+      std::vector<fastjet::PseudoJet> particles(fFastJetWrapper->GetJetConstituents(ijet));
+      fastjet::ClusterSequence cs_ca(particles, jet_def);
+      std::vector<fastjet::PseudoJet> output_jets = cs_ca.inclusive_jets(0);
+      output_jets = sorted_by_pt(output_jets);
+         
+
+      fastjet::PseudoJet jj = output_jets[0];
+      fastjet::PseudoJet j1; 
+      fastjet::PseudoJet j2;  
+    
+      while(jj.has_parents(j1,j2)){
+         nall = nall + 1;
+         if(j1.perp() < j2.perp()) std::swap(j1,j2);
+         flagSubjet=0;
+          vector < fastjet::PseudoJet > constitj1 = sorted_by_pt(j1.constituents());
+                for(Int_t j=0;j<constitj1.size();j++){
+                if(constitj1[j].user_index()==0){
+                       flagSubjet=1; }}
+
+	 if(flagSubjet==0 && type>0) std::swap(j1,j2);
+         double delta_R = j1.delta_R(j2);
+         zg = j2.perp()/(j1.perp()+j2.perp());   
+                     
+         double y = log(1.0/delta_R);
+         double lnpt_rel = log(zg*delta_R);
+	 
+	   double lundEntries[6] = {y, lnpt_rel, output_jets[0].perp(), nall,zg,type};
+	   hname = TString::Format("%s/LundIterative", jetDef.GetName());
+           THnSparse* h = static_cast<THnSparse*>(fHistManager->FindObject(hname)); 
+	   //   if(!h) cout<<"caca"<<endl;
+	   h->Fill(lundEntries);
+                jj=j1;
+      }
+
+         
+      } catch (fastjet::Error) { /*return -1;*/ }
+                       
+}
+         								 
 /// Run a particle level analysis
 void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::RunParticleLevelAnalysis()
 {
@@ -3143,6 +3196,15 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
     maxTracks = 500;
   }
 
+      Int_t dimx   = 6;
+      Int_t nbinsx[6]     = {50,50,20,10,10,2};
+      Double_t minx[6] = {0,-10,0,0,0,0};
+      Double_t maxx[6]  = {5,0,100,10,1,2};
+      TString titlex[6]={"log(1/deltaR)","log(zteta)","jet pt","n","z","type"};
+
+
+
+  
   hname = "fHistCharmPt";
   htitle = hname + ";#it{p}_{T,charm} (GeV/#it{c});counts";
   fHistManager.CreateTH1(hname, htitle, 500, 0, 1000);
@@ -3358,6 +3420,10 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
         htitle = hname + ";no. of tracks;#it{p}_{T,D} (GeV/#it{c});counts";
         fHistManager.CreateTH2(hname, htitle, 200, 0, maxTracks, 300, 0, 150);
       }
+       hname = TString::Format("%s/LundIterative",jetDef.GetName());
+      THnSparse* h = fHistManager.CreateTHnSparse(hname,hname,dimx,nbinsx,minx,maxx);
+      for (Int_t j = 0; j < dimx; j++) {
+      h->GetAxis(j)->SetTitle(titlex[j]);}
     }
     switch (fOutputType) {
     case kTreeOutput:
