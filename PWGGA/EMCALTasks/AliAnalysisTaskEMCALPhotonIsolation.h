@@ -127,6 +127,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         SetPythiaVersion            ( TString pythiaVersion                        ) { fPythiaVersion = pythiaVersion;                           }
   void                         SetVariableCPV              ( Bool_t  variable                             ) { fVariableCPV = variable;                                  }
   void                         SetVariableCPVInCone        ( Bool_t  variable                             ) { fVariableCPVInCone = variable;                            }
+  void                         SetVariableCPVSystematics   ( TString systematic                           ) { fVariableCPVSyst = systematic;                            }
   void                         SetNonLinRecoEnergyScaling  ( Bool_t  scaling                              ) { fNonLinRecoEnergyScaling = scaling;                       }
   
  protected:
@@ -190,6 +191,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TString		       fPythiaVersion;		     ///< May contain "6" or "8" to determine the Pythia version used
   Bool_t		       fVariableCPV;		     ///<
   Bool_t		       fVariableCPVInCone;	     ///<
+  TString		       fVariableCPVSyst;	     ///<
   Bool_t		       fNonLinRecoEnergyScaling;     ///< Set a scaling factor for reconstructed energy (regarding non-linearity correction)
   TClonesArray		     * fTracksAna;		     ///< Hybrid track array in
   AliStack		     * fStack;			     ///<
