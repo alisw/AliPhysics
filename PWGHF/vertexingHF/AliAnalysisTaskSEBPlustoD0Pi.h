@@ -66,7 +66,8 @@ class AliAnalysisTaskSEBPlustoD0Pi : public AliAnalysisTaskSE
   void     BPlusSelection(AliAODEvent* aodEvent, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * BPlustoD0PiLabelMatrix, TClonesArray * D0TracksFromFriendFile, AliAODMCHeader * header);
   Int_t    IsTrackInjected(AliAODTrack *part,AliAODMCHeader *header,TClonesArray *arrayMC);
   Bool_t   IsCandidateInjected(AliAODRecoDecayHF2Prong *part, AliAODMCHeader *header,TClonesArray *arrayMC);
-
+  void     CutOptimizationLoop(Int_t variable, Int_t nVariables, Int_t nCuts, Int_t ptBin, Int_t fillNumber, Bool_t isDesiredCandidate);
+  void     CutOptimizationVariableValues(AliAODRecoDecayHF2Prong * candidateBPlus, AliAODEvent*  aod);
 
   AliAODVertex* RecalculateVertex(const AliVVertex *primary,TObjArray *tracks,Double_t bField, Double_t dispersion);
   void     FillFinalTrackHistograms(AliAODRecoDecayHF2Prong * selectedBPlus, AliAODVertex *primaryVertex, Double_t bz, Bool_t isDesiredCandidate,TClonesArray * mcTrackArray);
@@ -93,11 +94,11 @@ class AliAnalysisTaskSEBPlustoD0Pi : public AliAnalysisTaskSE
   void     SetShowRejection(Bool_t bShowRejection) {fShowRejection = bShowRejection;}
   Bool_t   GetShowRejection() const {return fShowRejection;}
 
-  void     SetUse3DHistograms(Bool_t bUse3DHistograms) {fUse3DHistograms = bUse3DHistograms;}
-  Bool_t   GetUse3DHistograms() const {return fUse3DHistograms;}
+  // void     SetUse3DHistograms(Bool_t bUse3DHistograms) {fUse3DHistograms = bUse3DHistograms;}
+  // Bool_t   GetUse3DHistograms() const {return fUse3DHistograms;}
 
-  void     SetUpgradeSetting(Int_t nUpgradeSetting) {fUpgradeSetting = nUpgradeSetting;}
-  Int_t    GetUpgradeSetting() const {return fUpgradeSetting;}
+  // void     SetUpgradeSetting(Int_t nUpgradeSetting) {fUpgradeSetting = nUpgradeSetting;}
+  // Int_t    GetUpgradeSetting() const {return fUpgradeSetting;}
 
   void     SetHistMassWindow(Double_t value) {fHistMassWindow = value;}
   Double_t GetHistMassWindow() const {return fHistMassWindow;}
@@ -111,6 +112,9 @@ class AliAnalysisTaskSEBPlustoD0Pi : public AliAnalysisTaskSE
   void     SetCheckBackground(Bool_t value) {fCheckBackground = value;}
   Bool_t   GetCheckBackground() const {return fCheckBackground;}
 
+  void     SetPerformCutOptimization(Bool_t bPerformCutOptimization) {fPerformCutOptimization = bPerformCutOptimization;}
+  Bool_t   GetPerformCutOptimization() const {return fPerformCutOptimization;}
+
  private:
   
   AliAnalysisTaskSEBPlustoD0Pi(const AliAnalysisTaskSEBPlustoD0Pi &source);
@@ -122,12 +126,13 @@ class AliAnalysisTaskSEBPlustoD0Pi : public AliAnalysisTaskSE
   Bool_t fShowRejection;                         //
   Int_t  fQuickSignalAnalysis;                   //
   Bool_t fGetCutInfo;                            //
-  Bool_t fUse3DHistograms;                       //
-  Int_t  fUpgradeSetting;                        //
+  // Bool_t fUse3DHistograms;                       //
+  // Int_t  fUpgradeSetting;                        //
   Double_t fHistMassWindow;                      //  
   Int_t  fDegreePerRotation;                     //
   Int_t  fNumberOfRotations;                     //
   Bool_t fCheckBackground;                       //
+  Bool_t fPerformCutOptimization;                //
 
   TList *fOutput;                                //!<!  User output
   TList *fListCuts;                              //!<!  User output  
@@ -152,6 +157,7 @@ class AliAnalysisTaskSEBPlustoD0Pi : public AliAnalysisTaskSE
   Int_t fnPtBinsD0forD0ptbin;                    //!
   Int_t fnPtBinsD0forD0ptbinLimits;              //!
   Float_t * fPtBinLimitsD0forD0ptbin;            //! [fnPtBinsD0forD0ptbinLimits]
+  Float_t fCutVariableValueArray[99];            //!
 
 
   TH1F* fDaughterHistogramArray[4][6][15];       //!
@@ -162,7 +168,7 @@ class AliAnalysisTaskSEBPlustoD0Pi : public AliAnalysisTaskSE
   TH1F* fMotherHistogramArrayExtra[7][10];       //!
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEBPlustoD0Pi,1); /// class for BPlus spectra
+  ClassDef(AliAnalysisTaskSEBPlustoD0Pi,2); /// class for BPlus spectra
   /// \endcond
 };
 

@@ -916,10 +916,16 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("n0010113","1111111067032220000","01631031000000d0"); // std
     cuts.AddCutCalo("o0010113","1111111067032220000","01631031000000d0"); // std
     cuts.AddCutCalo("p0010113","1111111067032220000","01631031000000d0"); // std
-  } else if (trainConfig == 442){ // EMCAL clusters pp 5 TeV Sphericity Cuts
+  } else if (trainConfig == 442){ // EMCAL clusters pp 5 TeV opening angle studies
     cuts.AddCutCalo("00010113","1111111067032220000","01631031000000d0"); // std
     cuts.AddCutCalo("00010113","1111111067032220000","01631031000000d3"); // std pi0 & eta with max opening angle cut
     cuts.AddCutCalo("00010113","1111111067032220000","01631031000000h3"); // std eta excluding the pi0 & max cut
+  } else if (trainConfig == 443){ // EMCAL clusters pp 5 TeV mixing studies
+    cuts.AddCutCalo("00010113","1111111067032220000","01631031000000d0"); // std
+    cuts.AddCutCalo("00010113","1111111067032220000","0i631031000000d0"); // std
+  } else if (trainConfig == 444){ // EMCAL clusters pp 5 TeV studies for flat energy subtraction
+    cuts.AddCutCalo("00010113","1111111067032220000","01631031000000d0"); // std
+    cuts.AddCutCalo("00010113","11111110670f2220000","01631031000000d0"); // std
 
   } else if (trainConfig == 450){ // EMCAL standard cuts, different triggers
     cuts.AddCutCalo("00010113","1111111067032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL kSDM PCMEMC INT7

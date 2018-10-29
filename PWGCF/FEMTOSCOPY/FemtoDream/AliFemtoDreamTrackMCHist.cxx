@@ -66,7 +66,8 @@ AliFemtoDreamTrackMCHist::~AliFemtoDreamTrackMCHist() {
 
 AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
                                                    bool DCADist,
-                                                   bool DoMultBinning)
+                                                   bool DoMultBinning,
+                                                   bool checkMother)
     : fpTmin(0.5),
       fpTmax(4.05),
       fpTbins(20),
@@ -120,13 +121,17 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
   fPhiResolution->GetYaxis()->SetTitle("(#Phi_{T,True}-#Phi_{T,Reco})");
   fMCList->Add(fPhiResolution);
 
-  fHistMCMother = new TH2F("fHistMCMother",
-  		"; #it{p}_{T} (GeV/#it{c}^{2}); PDG code mother", 100, 0., 10.,
-		4000, 0, 4000);
-  fMCList->Add(fHistMCMother);
+  if (checkMother) {
+    fHistMCMother = new TH2F("fHistMCMother",
+                             "; #it{p}_{T} (GeV/#it{c}^{2}); PDG code mother",
+                             100, 0., 10., 4000, 0, 4000);
+    fMCList->Add(fHistMCMother);
 
-  fHistMCMotherPDG = new TH1I("fHistMCMotherPDG", "; Entries; PDG code mother", 10000000, 0, 10000000);
-  fMCList->Add(fHistMCMotherPDG);
+    fHistMCMotherPDG =
+        new TH1I("fHistMCMotherPDG", "; Entries; PDG code mother", 10000000, 0,
+                 10000000);
+    fMCList->Add(fHistMCMotherPDG);
+  }
 
   if (contribSplitting) {
     fMCContPt = new TH1F("ContPt", "ContPt", ptBins, ptmin, ptmax);

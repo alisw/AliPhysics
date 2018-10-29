@@ -510,10 +510,10 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
         Double_t sign=0;
         Int_t jetflavour=0;
         Bool_t is_udgjet = kFALSE;
-        if(fIsPythia){
-            jetmatched = nullptr;
-            jetmatched =jetrec->MatchedJet();
-                    if(jetmatched)jetflavour = IsMCJetPartonFast(jetmatched,0.4,is_udgjet); //Event based association to save memory
+        	if(fIsPythia){
+                  jetmatched = nullptr;
+                  jetmatched =jetrec->MatchedJet();
+                  if(jetmatched)jetflavour = IsMCJetPartonFast(jetmatched,0.4,is_udgjet); //Event based association to save memory
                 }
                 FillHist("fh1dJetRecPt",jetpt, 1);  //this->fXsectionWeightingFactor );
                 if(fIsPythia){
@@ -559,20 +559,35 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                     if (jetprob >0.9)FillHist(Form("fh1dJetRecPt_0_9JP_%sAccepted","all"),jetpt,1);  //this->fXsectionWeightingFactor );
                     if (jetprob >0.95)FillHist(Form("fh1dJetRecPt_0_95JP_%sAccepted","all"),jetpt,1);  //this->fXsectionWeightingFactor );
                 }
-                
-                for(Int_t itrack = 0; itrack < InputEvent()->GetNumberOfTracks(); ++itrack)
-                {
+                 AliVParticle *vp=0x0;
+
+                for(UInt_t i = 0; i < jetrec->GetNumberOfTracks(); i++) {
                     TrackWeight=1;
                     Double_t xyzatcda[3];
-                    AliAODTrack * trackV = (AliAODTrack *) InputEvent()->GetTrack(itrack);
+
+                    vp = static_cast<AliVParticle*>(jetrec->TrackAt(i, jetconrec->GetParticleContainer()->GetArray()));
+                    if (!vp){
+                      Printf("AliVParticle associated to constituent not found");
+                      continue;
+                    }
+
+                    AliVTrack *vtrack = dynamic_cast<AliVTrack*>(vp);
+                    if (!vtrack) {
+                      printf("ERROR: Could not receive track%d\n", i);
+                      continue;
+                    }
+
+                    AliAODTrack *trackV = dynamic_cast<AliAODTrack*>(vtrack);
+
                     if (!trackV || !jetrec)            continue;
-                    if (jetrec->DeltaR(trackV) > 0.4) continue;
+
                     if (!IsTrackAccepted((AliAODTrack*)trackV,3))   continue;
                     if(GetImpactParameterWrtToJet((AliAODTrack*)trackV,(AliAODEvent*)InputEvent(),jetrec,dca,cov,xyzatcda,sign)){
                         if(fEventVertex) {
                             delete fEventVertex;
                             fEventVertex =nullptr;
                         }
+
                         Int_t corridx=-1;double ppt;
                         fIsPythia ? TrackWeight = GetMonteCarloCorrectionFactor(trackV,corridx,ppt) : TrackWeight =1;
                         dca[0]=fabs(dca[0]);
@@ -769,7 +784,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                         SJetIpPati d(cursImParXYZSig, TrackWeight,kFALSE,kFALSE,corridx);sImpParXYZSig.push_back(d);
 
                     }
-                }
+                }//end trackloop
                 std::sort(sImpParXY.begin(),sImpParXY.end(),        AliAnalysisTaskHFJetIPQA::mysort);
                 std::sort(sImpParXYSig.begin(),sImpParXYSig.end(),  AliAnalysisTaskHFJetIPQA::mysort);
                 std::sort(sImpParXYZ.begin(),sImpParXYZ.end(),      AliAnalysisTaskHFJetIPQA::mysort);

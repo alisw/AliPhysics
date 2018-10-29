@@ -24,7 +24,8 @@ void AddTask_ClusterQA(
   Bool_t    doSaveClusterCells            = 1,
   Bool_t    doSaveEventProp               = 1,
   Bool_t    enableTriggerOverlapRej       = kTRUE,
-  Float_t   maxFacPtHard                  = 3.
+  Float_t   maxFacPtHard                  = 3.,
+  Bool_t    makeAdditionalHistos          = kFALSE
   ){
   
 
@@ -131,12 +132,13 @@ void AddTask_ClusterQA(
   fQA->SetMinClusterEnergy(minClusterEnergy);
   fQA->SetSaveEventProperties(doSaveEventProp);
   fQA->SetV0ReaderName(V0ReaderName);
+  fQA->SetDoAdditionalHistos(makeAdditionalHistos);
   mgr->AddTask(fQA);
 
 
   mgr->ConnectInput  (fQA, 0,  cinput );
   mgr->ConnectOutput (fQA, 1, mgr->CreateContainer(Form("GammaCaloQA_%s_%s_%s", TaskEventCutnumber.Data(), TaskClusterCutnumberEMC.Data(),TaskClusterCutnumberEMC.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:GammaCaloQA_%s_%s_%s", mgr->GetCommonFileName(), TaskEventCutnumber.Data(), TaskClusterCutnumberEMC.Data(),TaskClusterCutnumberEMC.Data())) );
-  mgr->ConnectOutput (fQA, 2, mgr->CreateContainer("ClusterTree", TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()) );
+  mgr->ConnectOutput (fQA, 2, mgr->CreateContainer(Form("ClusterTree_%s_%s_%s", TaskEventCutnumber.Data(), TaskClusterCutnumberEMC.Data(),TaskClusterCutnumberEMC.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()) );
 
   return;
 }

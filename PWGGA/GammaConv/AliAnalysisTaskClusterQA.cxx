@@ -31,6 +31,7 @@
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"
 #include "AliAODEvent.h"
+#include "AliMultSelection.h"
 
 class iostream;
 
@@ -69,8 +70,10 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA() : AliAnalysisTaskSE(),
   fMinTrackPt(0),
   fMinClusterEnergy(0),
   fSaveMCInformation(0),
+  fSaveAdditionalHistos(0),
   fExtractionPercentages(),
   fExtractionPercentagePtBins(),
+  fBuffer_EventID(0),
   fBuffer_ClusterE(0),
   fBuffer_ClusterPhi(0),
   fBuffer_ClusterEta(0),
@@ -103,21 +106,33 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA() : AliAnalysisTaskSE(),
   fBuffer_Surrounding_Tracks_Pt(0),
   fBuffer_Surrounding_Tracks_RelativeEta(0),
   fBuffer_Surrounding_Tracks_RelativePhi(0),
-  fBuffer_Cluster_MC_Label(-10)
+  fBuffer_Cluster_MC_Label(-10),
+  hNCellsInClustersVsCentrality(NULL),
+  hNActiveCellsVsCentrality(NULL),
+  hNActiveCellsAbove50MeVVsCentrality(NULL),
+  hNActiveCellsAbove80MeVVsCentrality(NULL),
+  hNActiveCellsAbove100MeVVsCentrality(NULL),
+  hNActiveCellsAbove150MeVVsCentrality(NULL),
+  hECellsInClustersVsCentrality(NULL),
+  hEActiveCellsVsCentrality(NULL),
+  hEActiveCells50MeVVsCentrality(NULL),
+  hEActiveCells80MeVVsCentrality(NULL),
+  hEActiveCells100MeVVsCentrality(NULL),
+  hEActiveCells150MeVVsCentrality(NULL)
 {
-  fBuffer_Cells_ID                = new Int_t[kMaxActiveCells];
-  fBuffer_Cells_E                 = new Float_t[kMaxActiveCells];
-  fBuffer_Cells_RelativeEta               = new Float_t[kMaxActiveCells];
-  fBuffer_Cells_RelativePhi               = new Float_t[kMaxActiveCells];
-  fBuffer_Surrounding_Cells_ID              = new Int_t[kMaxActiveCells];
-  fBuffer_Surrounding_Cells_R               = new Float_t[kMaxActiveCells];
-  fBuffer_Surrounding_Cells_E               = new Float_t[kMaxActiveCells];
-  fBuffer_Surrounding_Cells_RelativeEta           = new Float_t[kMaxActiveCells];
-  fBuffer_Surrounding_Cells_RelativePhi             = new Float_t[kMaxActiveCells];
-  fBuffer_Surrounding_Tracks_R           = new Float_t[kMaxNTracks];
-  fBuffer_Surrounding_Tracks_Pt           = new Float_t[kMaxNTracks];
-  fBuffer_Surrounding_Tracks_RelativeEta           = new Float_t[kMaxNTracks];
-  fBuffer_Surrounding_Tracks_RelativePhi             = new Float_t[kMaxNTracks];
+  fBuffer_Cells_ID                      = new Int_t[kMaxActiveCells];
+  fBuffer_Cells_E                       = new Float_t[kMaxActiveCells];
+  fBuffer_Cells_RelativeEta             = new Float_t[kMaxActiveCells];
+  fBuffer_Cells_RelativePhi             = new Float_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_ID          = new Int_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_R           = new Float_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_E           = new Float_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_RelativeEta = new Float_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_RelativePhi = new Float_t[kMaxActiveCells];
+  fBuffer_Surrounding_Tracks_R          = new Float_t[kMaxNTracks];
+  fBuffer_Surrounding_Tracks_Pt         = new Float_t[kMaxNTracks];
+  fBuffer_Surrounding_Tracks_RelativeEta= new Float_t[kMaxNTracks];
+  fBuffer_Surrounding_Tracks_RelativePhi= new Float_t[kMaxNTracks];
 }
 
 AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalysisTaskSE(name),
@@ -150,8 +165,10 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalys
   fMinTrackPt(0),
   fMinClusterEnergy(0),
   fSaveMCInformation(0),
+  fSaveAdditionalHistos(0),
   fExtractionPercentages(),
   fExtractionPercentagePtBins(),
+  fBuffer_EventID(0),
   fBuffer_ClusterE(0),
   fBuffer_ClusterPhi(0),
   fBuffer_ClusterEta(0),
@@ -184,21 +201,33 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalys
   fBuffer_Surrounding_Tracks_Pt(0),
   fBuffer_Surrounding_Tracks_RelativeEta(0),
   fBuffer_Surrounding_Tracks_RelativePhi(0),
-  fBuffer_Cluster_MC_Label(-10)
+  fBuffer_Cluster_MC_Label(-10),
+  hNCellsInClustersVsCentrality(NULL),
+  hNActiveCellsVsCentrality(NULL),
+  hNActiveCellsAbove50MeVVsCentrality(NULL),
+  hNActiveCellsAbove80MeVVsCentrality(NULL),
+  hNActiveCellsAbove100MeVVsCentrality(NULL),
+  hNActiveCellsAbove150MeVVsCentrality(NULL),
+  hECellsInClustersVsCentrality(NULL),
+  hEActiveCellsVsCentrality(NULL),
+  hEActiveCells50MeVVsCentrality(NULL),
+  hEActiveCells80MeVVsCentrality(NULL),
+  hEActiveCells100MeVVsCentrality(NULL),
+  hEActiveCells150MeVVsCentrality(NULL)
 {
-  fBuffer_Cells_ID                = new Int_t[kMaxActiveCells];
-  fBuffer_Cells_E                 = new Float_t[kMaxActiveCells];
-  fBuffer_Cells_RelativeEta               = new Float_t[kMaxActiveCells];
-  fBuffer_Cells_RelativePhi               = new Float_t[kMaxActiveCells];
-  fBuffer_Surrounding_Cells_ID              = new Int_t[kMaxActiveCells];
-  fBuffer_Surrounding_Cells_R               = new Float_t[kMaxActiveCells];
-  fBuffer_Surrounding_Cells_E               = new Float_t[kMaxActiveCells];
-  fBuffer_Surrounding_Cells_RelativeEta           = new Float_t[kMaxActiveCells];
-  fBuffer_Surrounding_Cells_RelativePhi             = new Float_t[kMaxActiveCells];
-  fBuffer_Surrounding_Tracks_R           = new Float_t[kMaxNTracks];
-  fBuffer_Surrounding_Tracks_Pt           = new Float_t[kMaxNTracks];
-  fBuffer_Surrounding_Tracks_RelativeEta           = new Float_t[kMaxNTracks];
-  fBuffer_Surrounding_Tracks_RelativePhi             = new Float_t[kMaxNTracks];
+  fBuffer_Cells_ID                      = new Int_t[kMaxActiveCells];
+  fBuffer_Cells_E                       = new Float_t[kMaxActiveCells];
+  fBuffer_Cells_RelativeEta             = new Float_t[kMaxActiveCells];
+  fBuffer_Cells_RelativePhi             = new Float_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_ID          = new Int_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_R           = new Float_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_E           = new Float_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_RelativeEta = new Float_t[kMaxActiveCells];
+  fBuffer_Surrounding_Cells_RelativePhi = new Float_t[kMaxActiveCells];
+  fBuffer_Surrounding_Tracks_R          = new Float_t[kMaxNTracks];
+  fBuffer_Surrounding_Tracks_Pt         = new Float_t[kMaxNTracks];
+  fBuffer_Surrounding_Tracks_RelativeEta= new Float_t[kMaxNTracks];
+  fBuffer_Surrounding_Tracks_RelativePhi= new Float_t[kMaxNTracks];
   // Default constructor
 
   DefineInput(0, TChain::Class());
@@ -210,7 +239,7 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalys
 AliAnalysisTaskClusterQA::~AliAnalysisTaskClusterQA()
 {
   // default deconstructor
-  
+
 }
 //________________________________________________________________________
 void AliAnalysisTaskClusterQA::UserCreateOutputObjects()
@@ -225,13 +254,13 @@ void AliAnalysisTaskClusterQA::UserCreateOutputObjects()
     fOutputList                         = new TList();
     fOutputList->SetOwner(kTRUE);
   }
-  
+
   if(ffillHistograms){
-    
+
     if(((AliConvEventCuts*)fEventCuts)->GetCutHistograms()){
       fOutputList->Add(((AliConvEventCuts*)fEventCuts)->GetCutHistograms());
     }
-    
+
     if(((AliCaloPhotonCuts*)fClusterCutsEMC)->GetCutHistograms()){
       fOutputList->Add(((AliCaloPhotonCuts*)fClusterCutsEMC)->GetCutHistograms());
     }
@@ -241,10 +270,37 @@ void AliAnalysisTaskClusterQA::UserCreateOutputObjects()
     if(((AliConversionMesonCuts*)fMesonCuts)->GetCutHistograms()){
       fOutputList->Add(((AliConversionMesonCuts*)fMesonCuts)->GetCutHistograms());
     }
+    if(fSaveAdditionalHistos){
+      hNCellsInClustersVsCentrality =  new TH2F("NCellsInClusters_Centrality","NCellsInClusters_Centrality",18000, 0, 18000, 100, 0, 100);
+      fOutputList->Add(hNCellsInClustersVsCentrality);
+      hNActiveCellsVsCentrality =  new TH2F("NActiveCells_Centrality","NActiveCells_Centrality",18000, 0, 18000, 100, 0, 100);
+      fOutputList->Add(hNActiveCellsVsCentrality);
+      hNActiveCellsAbove50MeVVsCentrality =  new TH2F("NActiveCells50MeV_Centrality","NActiveCells50MeV_Centrality",18000, 0, 18000, 100, 0, 100);
+      fOutputList->Add(hNActiveCellsAbove50MeVVsCentrality);
+      hNActiveCellsAbove80MeVVsCentrality =  new TH2F("NActiveCells80MeV_Centrality","NActiveCells80MeV_Centrality",18000, 0, 18000, 100, 0, 100);
+      fOutputList->Add(hNActiveCellsAbove80MeVVsCentrality);
+      hNActiveCellsAbove100MeVVsCentrality =  new TH2F("NActiveCells100MeV_Centrality","NActiveCells100MeV_Centrality",18000, 0, 18000, 100, 0, 100);
+      fOutputList->Add(hNActiveCellsAbove100MeVVsCentrality);
+      hNActiveCellsAbove150MeVVsCentrality =  new TH2F("NActiveCells150MeV_Centrality","NActiveCells150MeV_Centrality",18000, 0, 18000, 100, 0, 100);
+      fOutputList->Add(hNActiveCellsAbove150MeVVsCentrality);
+
+      hECellsInClustersVsCentrality =  new TH2F("EofCellsInClusters_Centrality","EofCellsInClusters_Centrality",2000, 0, 20, 100, 0, 100);
+      fOutputList->Add(hECellsInClustersVsCentrality);
+      hEActiveCellsVsCentrality =  new TH2F("EofActiveCells_Centrality","EofActiveCells_Centrality",2000, 0, 20, 100, 0, 100);
+      fOutputList->Add(hEActiveCellsVsCentrality);
+      hEActiveCells50MeVVsCentrality =  new TH2F("EofActiveCells50MeV_Centrality","EofActiveCells50MeV_Centrality",2000, 0, 20, 100, 0, 100);
+      fOutputList->Add(hEActiveCells50MeVVsCentrality);
+      hEActiveCells80MeVVsCentrality =  new TH2F("EofActiveCells80MeV_Centrality","EofActiveCells80MeV_Centrality",2000, 0, 20, 100, 0, 100);
+      fOutputList->Add(hEActiveCells80MeVVsCentrality);
+      hEActiveCells100MeVVsCentrality =  new TH2F("EofActiveCells100MeV_Centrality","EofActiveCells100MeV_Centrality",2000, 0, 20, 100, 0, 100);
+      fOutputList->Add(hEActiveCells100MeVVsCentrality);
+      hEActiveCells150MeVVsCentrality =  new TH2F("EofActiveCells150MeV_Centrality","EofActiveCells150MeV_Centrality",2000, 0, 20, 100, 0, 100);
+      fOutputList->Add(hEActiveCells150MeVVsCentrality);
+    }
     PostData(1, fOutputList);
   }
-  
-  fClusterTree = new TTree("ClusterQA","ClusterQA");
+
+  fClusterTree = new TTree(Form("ClusterQA_%s_%s_%s",(fEventCuts->GetCutNumber()).Data(),(fClusterCutsEMC->GetCutNumber()).Data(),(fClusterCutsDMC->GetCutNumber()).Data()),Form("ClusterQA_%s_%s_%s",(fEventCuts->GetCutNumber()).Data(),(fClusterCutsEMC->GetCutNumber()).Data(),(fClusterCutsDMC->GetCutNumber()).Data()));
 
   fClusterTree->Branch("Cluster_E",                         &fBuffer_ClusterE,                        "Cluster_E/F");
   fClusterTree->Branch("Cluster_Eta",                       &fBuffer_ClusterEta,                      "Cluster_Eta/F");
@@ -259,6 +315,7 @@ void AliAnalysisTaskClusterQA::UserCreateOutputObjects()
   fClusterTree->Branch("Cluster_M20",                       &fBuffer_ClusterM20,                      "Cluster_M20/F");
   if(fSaveEventProperties)
   {
+    fClusterTree->Branch("Event_ID",                        &fBuffer_EventID,                         "Event_ID/l");
     fClusterTree->Branch("Event_Vertex_X",                  &fBuffer_Event_Vertex_X,                  "Event_Vertex_X/F");
     fClusterTree->Branch("Event_Vertex_Y",                  &fBuffer_Event_Vertex_Y,                  "Event_Vertex_Y/F");
     fClusterTree->Branch("Event_Vertex_Z",                  &fBuffer_Event_Vertex_Z,                  "Event_Vertex_Z/F");
@@ -309,7 +366,7 @@ Bool_t AliAnalysisTaskClusterQA::Notify()
   } else if (fEventCuts->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){
     fEventCuts->SetPeriodEnum(fV0Reader->GetPeriodName());
   }
-  
+
   return kTRUE;
 }
 //________________________________________________________________________
@@ -327,7 +384,7 @@ void AliAnalysisTaskClusterQA::UserExec(Option_t *){
 
   fGeomEMCAL                          = AliEMCALGeometry::GetInstance();
   if(!fGeomEMCAL){ AliFatal("EMCal geometry not initialized!");}
-  
+
   Int_t nclus                         = 0;
   TClonesArray * arrClustersProcess   = NULL;
   // fNCurrentClusterBasic             = 0;
@@ -349,12 +406,55 @@ void AliAnalysisTaskClusterQA::UserExec(Option_t *){
   ((AliCaloPhotonCuts*)fClusterCutsEMC)->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kTRUE, fMCEvent);
   // ((AliCaloPhotonCuts*)fClusterCutsDMC)->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kTRUE, fMCEvent);
 
+  AliVCaloCells* cells = fInputEvent->GetEMCALCells();
+  Double_t centrality = 0;
+  if(fSaveAdditionalHistos){
+    centrality = GetCentrality(fInputEvent);
+
+    Int_t numberOfActiveCells50MeV =0;
+    Int_t numberOfActiveCells80MeV =0;
+    Int_t numberOfActiveCells100MeV =0;
+    Int_t numberOfActiveCells150MeV =0;
+    for(Int_t aCell=0;aCell<cells->GetNumberOfCells();aCell++){
+      // Define necessary variables
+      Short_t cellNumber                    = 0;
+      Double_t cellAmplitude = 0,  cellTime = 0, cellEFrac = 0;
+      Int_t cellMCLabel = 0;
+      // Get Cell ID
+      cells->GetCell(aCell,cellNumber,cellAmplitude,cellTime,cellMCLabel,cellEFrac);
+      Double_t cellEnergy = cells->GetCellAmplitude(cellNumber);
+      hEActiveCellsVsCentrality->Fill(cellEnergy,centrality);
+      if(cellEnergy >0.050 ){
+        numberOfActiveCells50MeV++;
+        hEActiveCells50MeVVsCentrality->Fill(cellEnergy,centrality);
+      }
+      if(cellEnergy >0.080 ){
+        numberOfActiveCells80MeV++;
+        hEActiveCells80MeVVsCentrality->Fill(cellEnergy,centrality);
+      }
+      if(cellEnergy >0.100 ){
+        numberOfActiveCells100MeV++;
+        hEActiveCells100MeVVsCentrality->Fill(cellEnergy,centrality);
+      }
+      if(cellEnergy >0.150 ){
+        numberOfActiveCells150MeV++;
+        hEActiveCells150MeVVsCentrality->Fill(cellEnergy,centrality);
+      }
+    }
+    hNActiveCellsVsCentrality->Fill(cells->GetNumberOfCells(),centrality);
+    hNActiveCellsAbove50MeVVsCentrality->Fill(numberOfActiveCells50MeV,centrality);
+    hNActiveCellsAbove80MeVVsCentrality->Fill(numberOfActiveCells80MeV,centrality);
+    hNActiveCellsAbove100MeVVsCentrality->Fill(numberOfActiveCells100MeV,centrality);
+    hNActiveCellsAbove150MeVVsCentrality->Fill(numberOfActiveCells150MeV,centrality);
+  }
+
   // vertex
   Double_t vertex[3] = {0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
 
   map<Long_t,Int_t> mapIsClusterAccepted;
   map<Long_t,Int_t> mapIsClusterAcceptedWithoutTrackMatch;
+  Int_t nCellInCluster = 0;
   // Loop over EMCal clusters
   for(Long_t i = 0; i < nclus; i++){
     Double_t tempClusterWeight              =  fWeightJetJetMC;
@@ -377,6 +477,13 @@ void AliAnalysisTaskClusterQA::UserExec(Option_t *){
       delete clus;
       continue;
     }
+    if(fSaveAdditionalHistos){
+      nCellInCluster+=clus->GetNCells();
+      for(Int_t iCell=0;iCell<clus->GetNCells();iCell++){
+        hECellsInClustersVsCentrality->Fill(cells->GetCellAmplitude(clus->GetCellAbsId(iCell)),centrality);
+      }
+    }
+
     if ( clus->E() < fMinClusterEnergy){
       delete clus;
       continue;
@@ -388,6 +495,9 @@ void AliAnalysisTaskClusterQA::UserExec(Option_t *){
     }
     ProcessQATreeCluster(fInputEvent,clus,i);
   }
+  if(fSaveAdditionalHistos)
+    hNCellsInClustersVsCentrality->Fill(nCellInCluster,centrality);
+
   PostData(1, fOutputList);
 }
 
@@ -401,13 +511,23 @@ void AliAnalysisTaskClusterQA::ProcessQATreeCluster(AliVEvent *event, AliVCluste
   Double_t phiCluster                     = clusterVector.Phi();
   if (phiCluster < 0) phiCluster          += 2*TMath::Pi();
 
-  // Vertex position x, y, z
-  fBuffer_Event_Vertex_X                  = fInputEvent->GetPrimaryVertex()->GetX();
-  fBuffer_Event_Vertex_Y                  = fInputEvent->GetPrimaryVertex()->GetY();
-  fBuffer_Event_Vertex_Z                  = fInputEvent->GetPrimaryVertex()->GetZ();
+  if(fSaveEventProperties){
+    // Vertex position x, y, z
+    fBuffer_Event_Vertex_X                  = fInputEvent->GetPrimaryVertex()->GetX();
+    fBuffer_Event_Vertex_Y                  = fInputEvent->GetPrimaryVertex()->GetY();
+    fBuffer_Event_Vertex_Z                  = fInputEvent->GetPrimaryVertex()->GetZ();
 
-  // V0-based multiplicity of the event
-  fBuffer_Event_Multiplicity              = fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C();
+    // Unique event ID of the current cluster
+    // AliESDEvent* esdEvent = dynamic_cast<AliESDEvent*>(event);
+    fBuffer_EventID              = 0;
+    // if(esdEvent->GetHeader()){
+    //   fBuffer_EventID = GetUniqueEventID(esdEvent->GetHeader());
+    //   printf("event id: %lld\n",fBuffer_EventID);
+    // }
+
+    // V0-based multiplicity of the event
+    fBuffer_Event_Multiplicity              = fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C();
+  }
 
   // Properties of the current cluster
   fBuffer_ClusterE                        = cluster->E();
@@ -437,8 +557,9 @@ void AliAnalysisTaskClusterQA::ProcessQATreeCluster(AliVEvent *event, AliVCluste
   else
     return;
 
-  // Determine all cells in the event
-  fBuffer_Event_NumActiveCells            = cells->GetNumberOfCells();
+  // Determine all active cells in the event
+  if(fSaveEventProperties)
+    fBuffer_Event_NumActiveCells            = cells->GetNumberOfCells();
 
   // Get the number of cells from the current cluster
   Int_t nCellCluster = cluster->GetNCells();
@@ -454,48 +575,51 @@ void AliAnalysisTaskClusterQA::ProcessQATreeCluster(AliVEvent *event, AliVCluste
   fBuffer_LeadingCell_Eta                = leadcelleta;
   fBuffer_LeadingCell_Phi              = leadcellphi;
   // Treat the remaining cells of the cluster and get their relative position compared to the leading cell
-  for(Int_t iCell=0;iCell<nCellCluster;iCell++){
-    if(iCell<100){ // maximum number of cells for a cluster is set to 100
-      fBuffer_Cells_ID[iCell]               = cluster->GetCellAbsId(iCell);
-      fBuffer_Cells_E[iCell]                = cells->GetCellAmplitude(cluster->GetCellAbsId(iCell));
-      Float_t celleta = 0.;
-      Float_t cellphi = 0.;
-      fGeomEMCAL->EtaPhiFromIndex(fBuffer_Cells_ID[iCell], celleta, cellphi);
-      if ( cellphi < 0 ) cellphi+=TMath::TwoPi();
-      fBuffer_Cells_RelativeEta[iCell]      = leadcelleta-celleta;
-      fBuffer_Cells_RelativePhi[iCell]   = leadcellphi-cellphi;
+  if(fSaveCells){
+    for(Int_t iCell=0;iCell<nCellCluster;iCell++){
+      if(iCell<100){ // maximum number of cells for a cluster is set to 100
+        fBuffer_Cells_ID[iCell]               = cluster->GetCellAbsId(iCell);
+        fBuffer_Cells_E[iCell]                = cells->GetCellAmplitude(cluster->GetCellAbsId(iCell));
+        Float_t celleta = 0.;
+        Float_t cellphi = 0.;
+        fGeomEMCAL->EtaPhiFromIndex(fBuffer_Cells_ID[iCell], celleta, cellphi);
+        if ( cellphi < 0 ) cellphi+=TMath::TwoPi();
+        fBuffer_Cells_RelativeEta[iCell]      = leadcelleta-celleta;
+        fBuffer_Cells_RelativePhi[iCell]   = leadcellphi-cellphi;
+      }
     }
   }
-  Int_t nActiveCellsSurroundingInR = 0;
-  // fill surrounding cell buffer
-  for(Int_t aCell=0;aCell<cells->GetNumberOfCells();aCell++){
-    // Define necessary variables
-    Short_t cellNumber                    = 0;
-    Double_t cellAmplitude = 0,  cellTime = 0, cellEFrac = 0;
-    Int_t cellMCLabel = 0;
-    Float_t surrcelleta = 0.;
-    Float_t surrcellphi = 0.;
-    // Get Cell ID
-    cells->GetCell(aCell,cellNumber,cellAmplitude,cellTime,cellMCLabel,cellEFrac);
+  if(fSaveSurroundingCells){
+    Int_t nActiveCellsSurroundingInR = 0;
+    // fill surrounding cell buffer
+    for(Int_t aCell=0;aCell<cells->GetNumberOfCells();aCell++){
+      // Define necessary variables
+      Short_t cellNumber                    = 0;
+      Double_t cellAmplitude = 0,  cellTime = 0, cellEFrac = 0;
+      Int_t cellMCLabel = 0;
+      Float_t surrcelleta = 0.;
+      Float_t surrcellphi = 0.;
+      // Get Cell ID
+      cells->GetCell(aCell,cellNumber,cellAmplitude,cellTime,cellMCLabel,cellEFrac);
 
-    // Get eta and phi for the surounding cells
-    fGeomEMCAL->EtaPhiFromIndex(cellNumber, surrcelleta, surrcellphi);
-    if ( surrcellphi < 0 ) surrcellphi+=TMath::TwoPi();
-    Double_t dR2 = pow(leadcelleta-surrcelleta,2) + pow(leadcellphi-surrcellphi,2);
-    // Select those cells that are within fConeRadius of the leading cluster cell
-    if( dR2 < fConeRadius){
-      fBuffer_Surrounding_Cells_E[aCell]              = cells->GetCellAmplitude(cellNumber);
-      fBuffer_Surrounding_Cells_ID[aCell]             = cellNumber;
-      fBuffer_Surrounding_Cells_R[aCell]             = dR2;
-      fBuffer_Surrounding_Cells_RelativeEta[aCell]      = leadcelleta-surrcelleta;
-      fBuffer_Surrounding_Cells_RelativePhi[aCell]   = leadcellphi-surrcellphi;
-      nActiveCellsSurroundingInR+=1;
+      // Get eta and phi for the surounding cells
+      fGeomEMCAL->EtaPhiFromIndex(cellNumber, surrcelleta, surrcellphi);
+      if ( surrcellphi < 0 ) surrcellphi+=TMath::TwoPi();
+      Double_t dR2 = pow(leadcelleta-surrcelleta,2) + pow(leadcellphi-surrcellphi,2);
+      // Select those cells that are within fConeRadius of the leading cluster cell
+      if( dR2 < fConeRadius){
+        fBuffer_Surrounding_Cells_E[aCell]              = cells->GetCellAmplitude(cellNumber);
+        fBuffer_Surrounding_Cells_ID[aCell]             = cellNumber;
+        fBuffer_Surrounding_Cells_R[aCell]             = dR2;
+        fBuffer_Surrounding_Cells_RelativeEta[aCell]      = leadcelleta-surrcelleta;
+        fBuffer_Surrounding_Cells_RelativePhi[aCell]   = leadcellphi-surrcellphi;
+        nActiveCellsSurroundingInR+=1;
+      }
     }
+    fBuffer_Surrounding_NCells = nActiveCellsSurroundingInR;
   }
-  fBuffer_Surrounding_NCells = nActiveCellsSurroundingInR;
   if(fIsMC) fBuffer_Cluster_MC_Label = MakePhotonCandidates(cluster, cells,indexCluster);
-
-  ProcessTracksAndMatching(cluster,indexCluster);
+  if(fSaveTracks) ProcessTracksAndMatching(cluster,indexCluster);
   // Add everything to the tree
   if (fClusterTree) fClusterTree->Fill();
 }
@@ -885,4 +1009,33 @@ Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidates(AliAODConversionPho
   
   delete mesoncand;
   return mcLabelCluster;
+}
+
+//_____________________________________________________________________________
+ULong64_t AliAnalysisTaskClusterQA::GetUniqueEventID(AliVHeader* header)
+{
+  // To have a unique id for each event in a run!
+  // Modified from AliRawReader.h
+  return ((ULong64_t)header->GetBunchCrossNumber()+
+	  (ULong64_t)header->GetOrbitNumber()*3564+
+	  (ULong64_t)header->GetPeriodNumber()*16777215*3564);
+}
+
+//-------------------------------------------------------------
+Float_t AliAnalysisTaskClusterQA::GetCentrality(AliVEvent *event)
+{   // Get Event Centrality
+
+  AliESDEvent *esdEvent=dynamic_cast<AliESDEvent*>(event);
+  if(esdEvent){
+    AliMultSelection *MultSelection = (AliMultSelection*)event->FindListObject("MultSelection");
+    if(!MultSelection){
+      AliWarning ("AliMultSelection object not found !");
+      return -1;
+    }else{
+      return MultSelection->GetMultiplicityPercentile("V0M");// default
+    }
+  }
+
+
+  return -1;
 }

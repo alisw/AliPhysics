@@ -193,7 +193,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Track","pt", "", 100,0,10,AliDielectronVarManager::kPt);  
 
 //  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00, 0.02, 0.04, 0.06, 0.08, 0.10, 0.14, 0.18, 0.22, 0.30, 0.38, 0.46, 0.62, 0.7, 0.86, 1.1, 1.70, 2.30, 2.70, 2.90, 3.00, 3.10, 3.30, 4.00, 5.00");
-  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00, 0.02 ,0.04 ,0.08 ,0.14 ,0.22 ,0.38 ,0.54 ,1.1 ,1.7 ,2.5 ,2.9 ,3.0 ,3.1 ,3.3 ,3.5 ,4.0 ,5.07, 0.86, 1.1, 1.70, 2.30, 2.70, 2.90, 3.00, 3.10, 3.30, 4.00, 5.00"); //Carsten's binning
+  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00, 0.02 ,0.04 ,0.08 ,0.14 ,0.22 ,0.38 ,0.54 ,1.1 ,1.7 ,2.5 ,2.9 ,3.0 ,3.1 ,3.3 ,3.5 ,4.0 ,5.0"); //Carsten's binning
 //  TVectorD* mbins=  AliDielectronHelper::MakeLinBinning(500,0,5);
   TVectorD* ptbins= AliDielectronHelper::MakeArbitraryBinning("0.0,0.4,0.6,1,2.5,8");
   TVectorD* centbins= AliDielectronHelper::MakeLinBinning(20,0,100);

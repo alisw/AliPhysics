@@ -129,6 +129,8 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void SetPlotJetMatchCandThresh(Double_t r)                { fPlotJetMatchCandThresh = r; };
   void SetDoTriggerResponse(Bool_t b)                       { fDoTriggerResponse = b; };
   void SetDoClosureTest(Bool_t b)                           { fDoClosureTest = b; }
+  void SetFillChargedFluctuations(Bool_t b)                 { fFillChargedFluctuations = b; }
+
 
  protected:
   void                        ExecOnce()                                        ;
@@ -165,7 +167,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   Double_t                    GetJetType(const AliEmcalJet* jet);
   ContributorType             GetContributorType(const AliVCluster* clus, const AliMCEvent* mcevent, Int_t label);
   Bool_t                      IsHadron(const ContributorType contributor);
-  
+  Bool_t                      IsSignalJetOverlap(Bool_t isTrack, Int_t particleID, const AliJetContainer* jet, Int_t maxJetIds[]);
   // Analysis parameters
   Bool_t                      fPlotJetHistograms;                   ///< Set whether to enable inclusive jet histograms
   Bool_t                      fPlotClusterHistograms;               ///< Set whether to plot cluster histograms
@@ -176,7 +178,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   Bool_t                      fComputeMBDownscaling;                ///< Set whether to compute and plot MB downscaling factors
   Bool_t                      fPlotDCal;                            ///< Set whether to enable several DCal-specific histograms
   Bool_t                      fDoClosureTest;                       ///< Set whether to do thermal model closure test
-  
+  Bool_t                      fFillChargedFluctuations;             ///< Set whether to fill also charged component of background fluctuations
   // Plotting parameters
   Double_t                    fMinPt;                               ///< Histogram min pT limit
   Double_t                    fMaxPt;                               ///< Histogram max pT limit

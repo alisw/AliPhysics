@@ -63,7 +63,8 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(int MassNBins, float MassMin,
                                              float MassMax,
                                              bool contribSplitting,
                                              bool CPADist,
-                                             bool DoMultBinning)
+                                             bool DoMultBinning,
+                                             bool checkMother)
     : fMultRangeLow(27),
       fMultRangeHigh(55),
       fDoMultiplicityBinning(DoMultBinning) {
@@ -109,13 +110,16 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(int MassNBins, float MassMin,
   fPhiResolution->GetYaxis()->SetTitle("#Phi_{T,True}-#Phi_{T,Reco}");
   fMCList->Add(fPhiResolution);
 
-  fHistMCMother = new TH2F("fHistMCMother",
-    "; #it{p}_{T} (GeV/#it{c}^{2}); PDG code mother", 100, 0., 10.,
-	4000, 0, 4000);
-  fMCList->Add(fHistMCMother);
+  if (checkMother) {
+    fHistMCMother = new TH2F("fHistMCMother",
+                             "; #it{p}_{T} (GeV/#it{c}^{2}); PDG code mother",
+                             100, 0., 10., 4000, 0, 4000);
+    fMCList->Add(fHistMCMother);
 
-  fHistMCMotherPDG = new TH1I("fHistMCMotherPDG", ";Entries; PDG code mother", 10000000, 0, 10000000);
-  fMCList->Add(fHistMCMotherPDG);
+    fHistMCMotherPDG = new TH1I("fHistMCMotherPDG", ";Entries; PDG code mother",
+                                10000000, 0, 10000000);
+    fMCList->Add(fHistMCMotherPDG);
+  }
 
   if (contribSplitting) {
 

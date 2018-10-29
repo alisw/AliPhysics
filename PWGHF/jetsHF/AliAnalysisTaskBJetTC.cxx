@@ -51,6 +51,7 @@ fV0Reader(NULL),
 fV0ReaderName("V0ReaderV1"),   fReaderGammas(NULL),
 fHFJetUtils(0x0),
 fRespoPID(0x0),
+fPtHardThreshold(0.0),
 fPythiaEventWeight(1.0),
 fDoImprovedDCACut(kTRUE),
 fVertexConstraint(kFALSE),
@@ -425,6 +426,7 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
   		fV0ReaderName("V0ReaderV1"),  fReaderGammas(NULL),
 		fHFJetUtils(0x0),
 		fRespoPID(0x0),
+		fPtHardThreshold(0.0),
 		fPythiaEventWeight(1.0),
 		fDoImprovedDCACut(kTRUE),
 		fVertexConstraint(kFALSE),
@@ -2300,7 +2302,12 @@ Bool_t AliAnalysisTaskBJetTC::IsSelected(Int_t &WhyRejected,ULong_t &RejectionBi
     		RejectionBits+=1<<kSelPtHardBin;
     		accept=kFALSE;
   	}
-
+	if (fPtHardThreshold > 0){
+		if(fPtHard > fPtHardThreshold){
+			RejectionBits+=1<<kSelPtHardBin;
+	    		accept=kFALSE;
+		}
+	}
 
 	if(fIsPythia){
 		if(!CheckMCOutliers()) {

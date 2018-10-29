@@ -2,12 +2,13 @@ void AddTaskESEFlowQC(TString particleSpecies = "",
                       Int_t uptoWhichHarmonics = 5,
                       Bool_t isMC = kFALSE,
 		      AliFlowEventCuts::refMultMethod gMultiplicityEstimator = AliFlowEventCuts::kVZERO,
-                      Int_t gAODfilterBit = 768,
-                      Double_t gProbPID = 0.9,
                       UInt_t triggerSelectionString = AliVEvent::kINT7,
-                      Double_t gDCAvtxXY = -1.,
-                      Double_t gDCAvtxZ = -1.,
-                      Double_t gCharge = 0,
+		      Bool_t gCutOnSphericity = kFALSE,
+		      Double_t gMinSphericity = 0.0,
+		      Double_t gMaxSphericity = 1.0,
+		      Int_t gAODfilterBit = 768,
+                      Double_t gProbPID = 0.9,
+		      Double_t gCharge = 0,
                       Bool_t doQA = kTRUE) {
   //======================================================================//
   // FLOW cut objects config  
@@ -19,13 +20,13 @@ void AddTaskESEFlowQC(TString particleSpecies = "",
   TString outputSlotName[nHarmonics];
   
   //Create the event cut object
-  cutsEvent = createFlowEventCutObject(gMultiplicityEstimator,doQA);
+  cutsEvent = createFlowEventCutObject(gMultiplicityEstimator,gCutOnSphericity,gMinSphericity,gMaxSphericity,doQA);
     
   //Create the RP cut object
   cutsRP = createFlowRPCutObject(gAODfilterBit,gCharge,doQA);
     
   //Create the POI cut object
-  cutsPOI = createFlowPOICutObject(particleSpecies,gAODfilterBit,gProbPID,gDCAvtxXY,gDCAvtxZ,gCharge,doQA);
+  cutsPOI = createFlowPOICutObject(particleSpecies,gAODfilterBit,gProbPID,gCharge,doQA);
         
   suffixName += "QC";
   if(particleSpecies != "") {
@@ -36,6 +37,8 @@ void AddTaskESEFlowQC(TString particleSpecies = "",
   else {
     suffixName += "_AllCharged";
     suffixName = Form("%s_%i",suffixName.Data(),gAODfilterBit);
+    if(gCutOnSphericity) 
+      suffixName = Form("%s_%.1f_%.1f",suffixName.Data(),gMinSphericity,gMaxSphericity);
   }
         
   //=====================================================================
@@ -140,7 +143,7 @@ void AddTaskESEFlowQC(TString particleSpecies = "",
 }
 
 //_________________________________________________________//
-AliFlowEventCuts *createFlowEventCutObject(AliFlowEventCuts::refMultMethod gMultiplicityEstimator = AliFlowEventCuts::kVZERO, Bool_t doQA = kFALSE) {
+AliFlowEventCuts *createFlowEventCutObject(AliFlowEventCuts::refMultMethod gMultiplicityEstimator = AliFlowEventCuts::kVZERO, Bool_t gCutOnSphericity = kFALSE, Double_t gMinSphericity = 0.0, Double_t gMaxSphericity = 1.0, Bool_t doQA = kFALSE) {
   //Part of the code that creates the event cut objects
   Double_t gVertexZmin = -10., gVertexZmax = 10.;
   
@@ -150,7 +153,8 @@ AliFlowEventCuts *createFlowEventCutObject(AliFlowEventCuts::refMultMethod gMult
   //cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
   cutsEvent->SetCheckPileup(kTRUE);
   cutsEvent->SetPrimaryVertexZrange(gVertexZmin,gVertexZmax);
-  cutsEvent->SetSphericityCut(0.7,1.0);
+  if(gCutOnSphericity)
+    cutsEvent->SetSphericityCut(gMinSphericity,gMaxSphericity);
   cutsEvent->SetQA(doQA);
   
   //return the object
@@ -185,9 +189,7 @@ AliFlowTrackCuts *createFlowRPCutObject(Int_t gAODfilterBit = 768,
 AliFlowTrackCuts *createFlowPOICutObject(TString particleSpecies = "Pion",
 					 Int_t gAODfilterBit = 768,
                                          Double_t gProbPID = 0.9,
-                                         Double_t gDCAvtxXY = -1.,
-                                         Double_t gDCAvtxZ = -1.,
-                                         Double_t gCharge = 0.,
+					 Double_t gCharge = 0.,
                                          Bool_t doQA = kFALSE) {
   //Part of the code that creates the POI cut objects
   Double_t gEtaMin = -0.8, gEtaMax = 0.8;
@@ -202,10 +204,6 @@ AliFlowTrackCuts *createFlowPOICutObject(TString particleSpecies = "Pion",
   cutsPOI->SetEtaRange(gEtaMin,gEtaMax);
   cutsPOI->SetMinimalTPCdedx(gMinTPCdedx);
   cutsPOI->SetAODfilterBit(gAODfilterBit);
-  if(gDCAvtxXY > 0)
-    cutsPOI->SetMaxDCAToVertexXY(gDCAvtxXY);
-  if(gDCAvtxZ > 0)
-    cutsPOI->SetMaxDCAToVertexZ(gDCAvtxZ);
   cutsPOI->SetQA(doQA);
   
   Bool_t isPID = kFALSE;

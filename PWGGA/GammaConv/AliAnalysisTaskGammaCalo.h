@@ -148,6 +148,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskConvJet*   fConvJetReader;                                   // JetReader
     Bool_t                fDoJetAnalysis;                                       // Bool to produce Jet Plots
     TList**               fJetHistograms;                                       // Jet Histograms
+    TList**               fTrueJetHistograms;                                   // True Jet Histograms
 
     //histograms for mesons reconstructed quantities
     TH2F**                fHistoMotherInvMassPt;                                //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
@@ -160,6 +161,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                fHistoMotherEtaPtAlpha;                               //! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, alpha
     TH2F**                fHistoMotherPi0PtOpenAngle;                           //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, openAngle
     TH2F**                fHistoMotherEtaPtOpenAngle;                           //! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, openAngle
+    TH2F**                fHistoMotherPtOpenAngle;                              //! array of histograms pt, openAngle
+    TH2F**                fHistoMotherPtOpenAngleBck;                           //! array of histograms pt, openAngle - for Background from eventmixing
     TH2F**                fHistoMotherPi0NGoodESDTracksPt;                 //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, ngoodtrakcs, pt
     TH2F**                fHistoMotherEtaNGoodESDTracksPt;                 //! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, ngoodtrakcs, pt
     TH2F**		            fHistoMotherInvMassECalib;				//! array of histogram with alpha cut of 0.1 for inv mass vs energy of cluster
@@ -354,11 +357,21 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                 fHistoRJetPi0Cand;                                    // Histogram of RJetPi0Cand vs Pt
     TH2F**                 fHistoEtaPhiJetPi0Cand;                               // Histogram of delta eta and delta phi distr between jet and NM candidates
     TH2F**                 fHistoEtaPhiJetWithPi0Cand;                           // Histogram of delta eta and delta phi distr when pi0 is inside a jet
+    TH2F**                 fHistoTruevsRecJetPt;                                 // Histogram of true jet pt vs reconstructed jet pt
+    TH2F**                 fHistoTruePi0JetMotherInvMassPt;                      // Histogram of true pi0s in an event with a jet
+    TH2F**                 fHistoTruePi0InJetMotherInvMassPt;                    // Histogram of true pi0s in a jet
+    TH1F**                 fHistoTrueDoubleCountingPi0Jet;                       // Histogram of when a true pi0 is defined to be in multiple jets
+    TH2F**                 fHistoTrueEtaJetMotherInvMassPt;                      // Histogram of true etas in an event with a jet
+    TH2F**                 fHistoTrueEtaInJetMotherInvMassPt;                    // Histogram of true etas in a jet
+    TH1F**                 fHistoTrueDoubleCountingEtaJet;                       // Histogram of when a true eta is defined to be in multiple jets
 
     vector<Double_t>      fVectorJetPt;                                         // Vector of JetPt
     vector<Double_t>      fVectorJetEta;                                        // Vector of JetEta
     vector<Double_t>      fVectorJetPhi;                                        // Vector of JetPhi
     vector<Double_t>      fVectorJetArea;                                       // Vector of JetArea
+    vector<Double_t>      fTrueVectorJetPt;                                     // Vector of True JetPt
+    vector<Double_t>      fTrueVectorJetEta;                                    // Vector of True JetEta
+    vector<Double_t>      fTrueVectorJetPhi;                                    // Vector of True JetPhi
 
     // tree for identified particle properties
     TTree**               tTrueInvMassROpenABPtFlag;                            //! array of trees with
@@ -437,7 +450,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 47);
+    ClassDef(AliAnalysisTaskGammaCalo, 49);
 };
 
 #endif

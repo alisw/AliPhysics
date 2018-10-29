@@ -63,6 +63,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
                                                                                             ffillHistograms = fillHistorams     ;
                                                                                           }
     void SetIsMC                            ( Bool_t isMC )                               { fIsMC                 = isMC        ; }
+    void SetDoAdditionalHistos              ( Bool_t val )                                { fSaveAdditionalHistos = val        ; }
     void SetSaveEventProperties             ( Bool_t val  )                               { fSaveEventProperties  = val         ; }
     void SetSaveClusterCells                ( Bool_t val  )                               { fSaveCells            = val         ; }
     void SetSaveSurroundingCells            ( Bool_t val  )                               { fSaveSurroundingCells         = val         ; }
@@ -80,11 +81,13 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Int_t MakePhotonCandidates(AliVCluster* clus, AliVCaloCells* cells, Long_t indexCluster);
     void ProcessTracksAndMatching(AliVCluster* clus, Long_t indexCluster);
     Int_t  GetMCClusterFlag(AliVCluster* clus, AliVCaloCells* cells);
+   Float_t GetCentrality(AliVEvent *event);
   private:
         
     AliAnalysisTaskClusterQA     ( const AliAnalysisTaskClusterQA& ); // Prevent copy-construction
     AliAnalysisTaskClusterQA &operator=( const AliAnalysisTaskClusterQA& ); // Prevent assignment
 
+    ULong64_t GetUniqueEventID      ( AliVHeader *header);
     void ProcessQATreeCluster       ( AliVEvent *event, AliVCluster* cluster, Long_t indexCluster);
     void ProcessQA                  ( AliAODConversionPhoton *gamma );
     void RelabelAODPhotonCandidates ( Bool_t mode );
@@ -134,12 +137,14 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Float_t          fMinTrackPt;                        ///< save arrays of all cells in event
     Float_t          fMinClusterEnergy;                        ///< save arrays of all cells in event
     Bool_t          fSaveMCInformation;                   ///< save MC information
+    Bool_t          fSaveAdditionalHistos;                   ///< save MC information
 
     // Option flags
     std::vector<Float_t> fExtractionPercentages;          ///< Percentages which will be extracted for a given pT bin
     std::vector<Float_t> fExtractionPercentagePtBins;     ///< pT-bins associated with fExtractionPercentages
     
     // Buffers that will be added to the tree
+    ULong64_t       fBuffer_EventID;                     //!<! array buffer
     Float_t         fBuffer_ClusterE;                     //!<! array buffer
     Float_t         fBuffer_ClusterPhi;                   //!<! array buffer
     Float_t         fBuffer_ClusterEta;                   //!<! array buffer
@@ -178,12 +183,24 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     
     Int_t           fBuffer_Cluster_MC_Label;              //!<! array buffer
 
+    TH2F*           hNCellsInClustersVsCentrality;
+    TH2F*           hNActiveCellsVsCentrality;
+    TH2F*           hNActiveCellsAbove50MeVVsCentrality;
+    TH2F*           hNActiveCellsAbove80MeVVsCentrality;
+    TH2F*           hNActiveCellsAbove100MeVVsCentrality;
+    TH2F*           hNActiveCellsAbove150MeVVsCentrality;
+    TH2F*           hECellsInClustersVsCentrality;
+    TH2F*           hEActiveCellsVsCentrality;
+    TH2F*           hEActiveCells50MeVVsCentrality;
+    TH2F*           hEActiveCells80MeVVsCentrality;
+    TH2F*           hEActiveCells100MeVVsCentrality;
+    TH2F*           hEActiveCells150MeVVsCentrality;
     
-    ClassDef(AliAnalysisTaskClusterQA, 3);
+    ClassDef(AliAnalysisTaskClusterQA, 4);
 };
 
-const Int_t kMaxActiveCells = 500;
-const Int_t kMaxNTracks = 50;
+const Int_t kMaxActiveCells = 18000;
+const Int_t kMaxNTracks = 4000;
 
 #endif
 
