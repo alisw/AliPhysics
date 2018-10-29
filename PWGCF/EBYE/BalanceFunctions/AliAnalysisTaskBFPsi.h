@@ -28,7 +28,7 @@ class AliPID;
  
 //================================correction
 #define kCENTRALITY 101
-#define kNBRUN 100
+#define kNBRUN 200
 //const Double_t centralityArrayForPbPb[kCENTRALITY+1] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.};
 //const TString centralityArrayForPbPb_string[kCENTRALITY] = {"0-5","5-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80"};
 //================================correction
