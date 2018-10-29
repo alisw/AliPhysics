@@ -633,7 +633,8 @@ Bool_t AliTPCTrackHitsV2::FlushHitStack(Bool_t force)
     }
 
     paraml.HitDistance(i)= Short_t(TMath::Nint(dl/fStep));
-    paraml.Charge(i)= Short_t(fTempInfo->GetQStack(i));
+    //paraml.Charge(i)= Short_t(fTempInfo->GetQStack(i));
+    paraml.SetCharge(i,Short_t(fTempInfo->GetQStack(i)));
     paraml.Time(i)= Short_t(fTempInfo->GetTimeStack(i)/AliTPCTrackHitsV2::fgkTimePrecision);
   }    
   
@@ -830,4 +831,27 @@ AliTrackHitsParamV2 * AliTPCTrackHitsV2::GetParam()
   return (fCurrentHit->GetStatus())? 
     (AliTrackHitsParamV2 *)fArray->At(fCurrentHit->GetParamIndex()):0;
 }
+
+/// Code charge - used to limit charge representation to short_t
+/// \param charge
+/// \return  index for charge
+/// * coding formula:
+/// ````
+///  q*=base*log(1+q/base)
+/// ````
+/// * limit case
+///  * q*~q      at q<<base (3000)
+///  * q*~ln(q)  at q>>base
+Int_t AliTrackHitsParamV2::CodeCharge(Int_t charge){
+  const Double_t base=3000;
+  Int_t index=TMath::Nint(base*TMath::Log(1.+charge/base));
+  return index;
+}
+///
+Int_t AliTrackHitsParamV2::DeCodeCharge(Int_t codedCharge){
+  const Double_t base=3000;
+  Int_t charge = TMath::Nint((exp(codedCharge/base)-1)*base);
+  return charge;
+}
+
 
