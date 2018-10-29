@@ -365,6 +365,7 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
   } else if (priorcc==2) {
   
      // 2. with TPC priors
+    printf("PIDResponse with default TPC priors\n");
     fPIDCombined1->SetEnablePriors(kTRUE);
     fPIDCombined1->SetDefaultTPCPriors();
   
@@ -701,13 +702,25 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   //  . OOM2: maxipad hits
   //      OOM2 = >=2 TOF maxipad hits
 
+  // number of fired FastOR trigger chips (OSMB/OSH1)
+  // nFiredChips[0]: number of fastOR fired chips on inner layer (filled from clusters)
+  // nFiredChips[1]: number of fastOR fired chips on outer layer (filled from clusters)
+  // nFiredChips[2]: number of fastOR fired chips on inner layer (from hardware bits)
+  // nFiredChips[3]: number of fastOR fired chips on outer layer (from hardware bits)
+  Short_t nFiredChips[4] = {0};
+  const AliMultiplicity *mult = (AliMultiplicity*)fEvent->GetMultiplicity();
+  TBits foMap = mult->GetFastOrFiredChips();
+  
+  nFiredChips[0] = mult->GetNumberOfFiredChips(0);
+  nFiredChips[1] = mult->GetNumberOfFiredChips(1);
+  for (Int_t ii=0;    ii<400; ii++) nFiredChips[2] += foMap[ii]>0 ? 1 : 0;
+  for (Int_t ii=400; ii<1200; ii++) nFiredChips[3] += foMap[ii]>0 ? 1 : 0;
+  
   // online tracklets (OSTG)
   // each bit (11 bits are used) of fisSTGTriggerFired corresponds to a
   // specific dphiMin
   // fisSTGTriggerFired & (1<<0): OSTG 2016
   // fisSTGTriggerFired & (1<<4): OSTG 2017
-  const AliMultiplicity *mult = (AliMultiplicity*)fEvent->GetMultiplicity();
-  TBits foMap = mult->GetFastOrFiredChips();
   fisSTGTriggerFired  = IsSTGFired(&foMap,0) ? (1<<0) : 0;
   for (Int_t ii=1; ii<=10; ii++)
     fisSTGTriggerFired |= IsSTGFired(&foMap,ii) ? (1<<ii) : 0;
@@ -716,17 +729,6 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   fnTOFmaxipads = fEvent->GetTOFHeader()->GetNumberOfTOFmaxipad();
   AliTOFTriggerMask *fTOFTriggerMask =
     fEvent->GetTOFHeader()->GetTriggerMask();
-  
-  // number of fired FastOR trigger chips (OSMB/OSH1)
-  // nFiredChips[0]: number of fastOR fired chips on inner layer (filled from clusters)
-  // nFiredChips[1]: number of fastOR fired chips on outer layer (filled from clusters)
-  // nFiredChips[2]: number of fastOR fired chips on inner layer (from hardware bits)
-  // nFiredChips[3]: number of fastOR fired chips on outer layer (from hardware bits)
-  Short_t nFiredChips[4] = {0};
-  nFiredChips[0] = mult->GetNumberOfFiredChips(0);
-  nFiredChips[1] = mult->GetNumberOfFiredChips(1);
-  for (Int_t ii=0;    ii<400; ii++) nFiredChips[2] += foMap[ii]>0 ? 1 : 0;
-  for (Int_t ii=400; ii<1200; ii++) nFiredChips[3] += foMap[ii]>0 ? 1 : 0;
   
   // trigger which are no DG triggers, but which potentially can be used
   // for replay of DG condition
@@ -741,6 +743,9 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     
     // this part of the code was proposed by Evgeny Kryshen
     // CINT11 = OSMB | SPD | V0
+    
+    // more is needed to replay the DG triggers, here however
+    // only !V0 and >=2 online tracklets are required
     Bool_t isV0Afired=0;
     Bool_t isV0Cfired=0;
     AliVVZERO* esdV0 = fEvent->GetVZEROData();
