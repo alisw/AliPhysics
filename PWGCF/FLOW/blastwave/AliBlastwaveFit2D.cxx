@@ -16,7 +16,7 @@ Float_t AliBlastwaveFit2D::fgStartValues[5] = {0.1,0.057,1.2,0.025,1.1};
 const Float_t AliBlastwaveFit2D::fgStepValues[5] = {0.001,0.001,0.001,0.001,0.001};
 const Float_t AliBlastwaveFit2D::fgMinValues[5] = {0.0001,-0.45,0.01,-0.45,0.1};
 const Float_t AliBlastwaveFit2D::fgMaxValues[5] = {1.0,0.45,10.0,0.45,5};
-Double_t  AliBlastwaveFit2D::fIntPrec=1E-9;
+Double_t  AliBlastwaveFit2D::fIntPrec=1E-8;
 
 AliBlastwaveFit2D::AliBlastwaveFit2D(const char *name,Double_t mass) :
   AliBlastwaveFit(name,mass)
