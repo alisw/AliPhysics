@@ -1132,11 +1132,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   }
 
     // Initialization of all the common THistos for the 3 different outputs
-  if(fWho != 2){
-    fVz = new TH1F("hVz_NC","Vertex Z distribution",100,-50.,50.);
-    fVz->Sumw2();
-    fOutput->Add(fVz);
-  }
+
+  fVz = new TH1F("hVz_NC","Vertex Z distribution",100,-50.,50.);
+  fVz->Sumw2();
+  fOutput->Add(fVz);
 
   fVzBeforecut = new TH1F("hVz_ALL", "Inclusive Vertex Z distribution",100,-50.,50.);
   fVzBeforecut->Sumw2();
@@ -1503,13 +1502,14 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 
   fCutFlowEvents->Fill(1.5);
 
-  if(fWho != 2){
+  if(fWho != 2)
     fSPDclustVsSPDtracklets->Fill(fVevent->GetMultiplicity()->GetNumberOfTracklets(),(fVevent->GetNumberOfITSClusters(0)+fVevent->GetNumberOfITSClusters(1)));
 
-    if(fRejectPileUpEvent && fVevent->IsPileupFromSPD(fNContrToPileUp, 0.8,3.,2.,5.)){
+  if(fRejectPileUpEvent && fVevent->IsPileupFromSPD(fNContrToPileUp, 0.8, 3., 2., 5.)){
+    if(fWho != 2)
       fnPUevents->Fill(0);
-      return kFALSE;
-    }
+
+    return kFALSE;
   }
 
   fCutFlowEvents->Fill(2.5);
@@ -1605,8 +1605,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       return kFALSE;
   }
 
-  if(fWho != 2)
-    fVz->Fill(fVertex[2]); // Fill Vertex Z histogram
+  fVz->Fill(fVertex[2]); // Fill Vertex Z histogram
 
   if(!isL1 && fIsMC && f2012EGA){
     return kFALSE;
