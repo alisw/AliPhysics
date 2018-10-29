@@ -55,11 +55,11 @@ public:
   Int_t   GetNHits()              const {return fNHits;}
 
   Short_t HitDistance(Int_t i) const {return fHitDistance[i];}
-  Short_t Charge(Int_t i)      const {return fCharge[i];}
+  Short_t Charge(Int_t i)      const {return AliTrackHitsParamV2::DeCodeCharge(fCharge[i]);}
   Short_t Time(Int_t i)        const {return fTime[i];}
 
   Short_t& HitDistance(Int_t i) {return fHitDistance[i];}
-  Short_t& Charge(Int_t i)      {return fCharge[i];}
+  void  SetCharge(Int_t i, Int_t q)      {fCharge[i]=AliTrackHitsParamV2::CodeCharge(q);}
   Short_t& Time(Int_t i)        {return fTime[i];}
 
   void SetHitDistance(Int_t i)
@@ -101,7 +101,8 @@ public:
   void SetNHits(Int_t n)       {fNHits=n;}
 
   Float_t Eta() const;
-
+  static Int_t CodeCharge(Int_t charge);
+  static Int_t DeCodeCharge(Int_t codedCharge);
  private:
   Int_t fTrackID; // ID of the track
   Short_t fVolumeID;// volume ID
