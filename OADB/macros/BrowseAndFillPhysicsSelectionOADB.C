@@ -270,7 +270,7 @@ AliOADBPhysicsSelection* DefaultPbPb(char* name = "oadbDefaultPbPb"){
   oadbDefaultPbPb->SetOfflineTrigger       (triggerCount,"V0A && V0C && ZDCTime && !TPCHVdip");
 
   triggerCount++;
-  oadbDefaultPbPb->AddCollisionTriggerClass(AliVEvent::kINT8,"+C0TVX-B-NOPF-CENT","B",triggerCount);
+  oadbDefaultPbPb->AddCollisionTriggerClass(AliVEvent::kINT8,"+[C0TVX|CTVXZAC]-B-NOPF-CENT","B",triggerCount);
   oadbDefaultPbPb->SetHardwareTrigger      (triggerCount,"T0");
   oadbDefaultPbPb->SetOfflineTrigger       (triggerCount,"!T0BG && ZDCTime && !TPCHVdip");
 
