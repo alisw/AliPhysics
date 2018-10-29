@@ -119,20 +119,24 @@ TList* AliCEPUtils::GetQArnumHists(Int_t rnummin, Int_t rnummax)
   lhh->Add(fhh04);
   TH1F* fhh05 = new TH1F("nCCUP25","nCCUP25",nch,rnummin,rnummax);
   lhh->Add(fhh05);
-  TH1F* fhh06 = new TH1F("nMBOR","nMBOR",nch,rnummin,rnummax);
+  TH1F* fhh06 = new TH1F("nCCUP26","nCCUP26",nch,rnummin,rnummax);
   lhh->Add(fhh06);
-  TH1F* fhh07 = new TH1F("nSaved","nSaved",nch,rnummin,rnummax);
+  TH1F* fhh07 = new TH1F("nCCUP27","nCCUP27",nch,rnummin,rnummax);
   lhh->Add(fhh07);
-  TH1F* fhh08 = new TH1F("nV0DG","nV0DG",nch,rnummin,rnummax);
+  TH1F* fhh08 = new TH1F("nMBOR","nMBOR",nch,rnummin,rnummax);
   lhh->Add(fhh08);
-  TH1F* fhh09 = new TH1F("nADDG","nADDG",nch,rnummin,rnummax);
+  TH1F* fhh09 = new TH1F("nSaved","nSaved",nch,rnummin,rnummax);
   lhh->Add(fhh09);
-  TH1F* fhh10 = new TH1F("nFMDDG","nFMDDG",nch,rnummin,rnummax);
+  TH1F* fhh10 = new TH1F("nV0DG","nV0DG",nch,rnummin,rnummax);
   lhh->Add(fhh10);
-  TH1F* fhh11 = new TH1F("nETDG","nETDG",nch,rnummin,rnummax);
+  TH1F* fhh11 = new TH1F("nADDG","nADDG",nch,rnummin,rnummax);
   lhh->Add(fhh11);
-  TH1F* fhh12 = new TH1F("nETNDG","nETNDG",nch,rnummin,rnummax);
+  TH1F* fhh12 = new TH1F("nFMDDG","nFMDDG",nch,rnummin,rnummax);
   lhh->Add(fhh12);
+  TH1F* fhh13 = new TH1F("nETDG","nETDG",nch,rnummin,rnummax);
+  lhh->Add(fhh13);
+  TH1F* fhh14 = new TH1F("nETNDG","nETNDG",nch,rnummin,rnummax);
+  lhh->Add(fhh14);
 
   return lhh;
 
