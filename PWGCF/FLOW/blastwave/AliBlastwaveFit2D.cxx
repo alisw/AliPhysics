@@ -16,6 +16,7 @@ Float_t AliBlastwaveFit2D::fgStartValues[5] = {0.1,0.057,1.2,0.025,1.1};
 const Float_t AliBlastwaveFit2D::fgStepValues[5] = {0.001,0.001,0.001,0.001,0.001};
 const Float_t AliBlastwaveFit2D::fgMinValues[5] = {0.0001,-0.45,0.01,-0.45,0.1};
 const Float_t AliBlastwaveFit2D::fgMaxValues[5] = {1.0,0.45,10.0,0.45,5};
+Double_t  AliBlastwaveFit2D::fIntPrec=1E-9;
 
 AliBlastwaveFit2D::AliBlastwaveFit2D(const char *name,Double_t mass) :
   AliBlastwaveFit(name,mass)
@@ -190,8 +191,8 @@ Double_t AliBlastwaveFit2D::V2(Double_t x[],Double_t par[]){
   fgFuncIntV2->SetParameter(5,par[4]);
   fgFuncIntV2->SetParameter(6,par[5]);
 
-  Double_t res = fgFuncIntV2->Integral(0.,2*TMath::Pi(),0.,1.);
-  Double_t den = fgFuncIntYield->Integral(0.,2*TMath::Pi(),0.,1.);
+  Double_t res = fgFuncIntV2->Integral(0.,2*TMath::Pi(),0.,1.,fIntPrec);
+  Double_t den = fgFuncIntYield->Integral(0.,2*TMath::Pi(),0.,1.,fIntPrec);
   
   if(den == 0) return 0.0;
 
@@ -224,7 +225,7 @@ Double_t AliBlastwaveFit2D::Pt(Double_t x[],Double_t par[]){
   fgFuncIntV2->SetParameter(5,par[4]);
   fgFuncIntV2->SetParameter(6,par[5]);
 
-  Double_t res = par[6]*1E+5*fgFuncIntYield->Integral(0.,2*TMath::Pi(),0.,1.);
+  Double_t res = par[6]*1E+5*fgFuncIntYield->Integral(0.,2*TMath::Pi(),0.,1.,fIntPrec);
 
   return res;
 }
@@ -240,7 +241,7 @@ Float_t AliBlastwaveFit2D::GetMeanBeta(){
   fbeta.SetParameter(2,fgFuncIntYield->GetParameter(5));
   fbeta.SetParameter(3,fgFuncIntYield->GetParameter(2));
 
-  return fbeta.Integral(0.,2*TMath::Pi(),0.,1.)/TMath::Pi();
+  return fbeta.Integral(0.,2*TMath::Pi(),0.,1.,fIntPrec)/TMath::Pi();
 }
 //------------------------------------------------------------------------------
 Float_t AliBlastwaveFit2D::GetMeanBeta(Double_t par[]){
@@ -262,7 +263,7 @@ Float_t AliBlastwaveFit2D::GetMeanBeta(Double_t par[]){
   fbeta.SetParameter(2,par[4]);
   fbeta.SetParameter(3,par[1]);
 
-  return fbeta.Integral(0.,2*TMath::Pi(),0.,1.)/TMath::Pi();
+  return fbeta.Integral(0.,2*TMath::Pi(),0.,1.,fIntPrec)/TMath::Pi();
 }
 //------------------------------------------------------------------------------
 void AliBlastwaveFit2D::SwitchOffFlow(TMinuit *m) const{
