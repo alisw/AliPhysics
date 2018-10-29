@@ -106,7 +106,7 @@ AliFemtoModelCorrFctnTrueQ3DByParent::AliFemtoModelCorrFctnTrueQ3DByParent(Int_t
     N_AXES, nbins_v.data(), min_v.data(), max_v.data());
 
   fDenominatorReconstructed = new THnSparseF(
-    "%s_DenRec", "Denominator (Reconstructed Momentum)" + axis_titles,
+    "DenRec", "Denominator (Reconstructed Momentum)" + axis_titles,
     N_AXES, nbins_v.data(), min_v.data(), max_v.data());
 }
 
