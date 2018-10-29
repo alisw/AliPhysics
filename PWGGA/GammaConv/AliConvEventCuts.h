@@ -209,6 +209,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16k5a,        //!< anchored LHC15n pass3 - general purpose Pythia8
         kLHC16k5b,        //!< anchored LHC15n pass3 - general purpose Pythia6
         kLHC17e2,         //!< anchored LHC15n pass4 - general purpose Pythia8
+        kLHC18j3,         //!< anchored LHC15n pass4 - general purpose Pythia8
         kLHC15k5a,        //!< anchored LHC15f pass2 - HF-forced MC for D2H analyses
         kLHC15k5b,        //!< anchored LHC15f pass2 - HF-forced MC for HFE analyses
         kLHC15k5c,        //!< anchored LHC15f pass2 - HF-forced MC for HFCJ analyses
@@ -271,6 +272,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17XeXeHi,         //!< MC for Xe-Xe 5.44 TeV HIJING
         // 5 TeV MC 2016
         kLHC17l3b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3,
+        kLHC18j2,             //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3,
         kLHC17l4b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4,
         kLHC18b8,             //!< anchored LHC17p/q pass 1 - jet-jet MC w/GEANT3,
         kLHC17P1PHO,          //!< anchored LHC17p only low Intensity Phojet 5 TeV
@@ -663,7 +665,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,54)
+      ClassDef(AliConvEventCuts,55)
       /// \endcond
 };
 
