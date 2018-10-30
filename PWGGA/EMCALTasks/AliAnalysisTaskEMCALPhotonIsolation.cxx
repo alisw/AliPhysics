@@ -1879,17 +1879,21 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     if(!mt)
       continue;
 
+    // Variable CPV parameters (inspired by direct photons analysis)
+    Float_t eta_param [3] = {0.010, 4.07, -2.50};
+    Float_t phi_param [3] = {0.015, 3.65, -2.00};
+
     if      ( fVariableCPVSyst == "loose" ) {
-      Float_t eta_param [3] = {0.010, 4.78, -2.50};
-      Float_t phi_param [3] = {0.015, 3.92, -2.00};
+      eta_param[0] = 0.010; eta_param[1] = 4.78; eta_param[2] = -2.50;
+      phi_param[0] = 0.015; phi_param[1] = 3.92; phi_param[2] = -2.00;
     }
     else if ( fVariableCPVSyst == "tight" ) {
-      Float_t eta_param [3] = {0.015, 3.46, -2.50};
-      Float_t phi_param [3] = {0.020, 3.73, -1.75};
+      eta_param[0] = 0.015; eta_param[1] = 3.46; eta_param[2] = -2.50;
+      phi_param[0] = 0.020; phi_param[1] = 3.73; phi_param[2] = -1.75;
     }
     else {
-      Float_t eta_param [3] = {0.010, 4.07, -2.50};
-      Float_t phi_param [3] = {0.015, 3.65, -2.00};
+      eta_param[0] = 0.010; eta_param[1] = 4.07; eta_param[2] = -2.50;
+      phi_param[0] = 0.015; phi_param[1] = 3.65; phi_param[2] = -2.00;
     }
 
     Double_t deltaEta, deltaPhi;
