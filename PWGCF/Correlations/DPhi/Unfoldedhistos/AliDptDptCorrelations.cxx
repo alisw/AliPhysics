@@ -696,9 +696,11 @@ Bool_t AliDptDptCorrelations::SetWeigths(const TH3F *h3_1, const TH3F *h3_2) {
       fCorrectionWeights_1 = new Float_t[fNBins_vertexZ*fNBins_etaPhi_1*fNBins_pt_1];
 
       for (ixZ = 0; ixZ < fNBins_vertexZ; ixZ++) {
+        Double_t zval = fMin_vertexZ + fWidth_vertexZ*(ixZ+0.5);
         for (ixEtaPhi=0; ixEtaPhi < fNBins_etaPhi_1; ixEtaPhi++) {
           for (ixPt=0; ixPt < fNBins_pt_1; ixPt++) {
-            fCorrectionWeights_1[ixZ*fNBins_etaPhi_1*fNBins_pt_1+ixEtaPhi*fNBins_pt_1+ixPt] = h3_1->GetBinContent(ixZ+1,ixEtaPhi+1,ixPt+1);
+            Double_t pTval = fMin_pt_1 + fWidth_pt_1*(ixPt+0.5);
+            fCorrectionWeights_1[ixZ*fNBins_etaPhi_1*fNBins_pt_1+ixEtaPhi*fNBins_pt_1+ixPt] = h3_1->GetBinContent(h3_1->GetXaxis()->FindBin(zval),ixEtaPhi+1,h3_1->GetZaxis()->FindBin(pTval));
           }
         }
       }
@@ -713,9 +715,11 @@ Bool_t AliDptDptCorrelations::SetWeigths(const TH3F *h3_1, const TH3F *h3_2) {
       fCorrectionWeights_2 = new Float_t[fNBins_vertexZ*fNBins_etaPhi_2*fNBins_pt_2];
 
       for (ixZ = 0; ixZ < fNBins_vertexZ; ixZ++) {
+        Double_t zval = fMin_vertexZ + fWidth_vertexZ*(ixZ+0.5);
         for (ixEtaPhi=0; ixEtaPhi < fNBins_etaPhi_2; ixEtaPhi++) {
+          Double_t pTval = fMin_pt_2 + fWidth_pt_2*(ixPt+0.5);
           for (ixPt=0; ixPt < fNBins_pt_2; ixPt++) {
-            fCorrectionWeights_2[ixZ*fNBins_etaPhi_2*fNBins_pt_2+ixEtaPhi*fNBins_pt_2+ixPt] = h3_2->GetBinContent(ixZ+1,ixEtaPhi+1,ixPt+1);
+            fCorrectionWeights_2[ixZ*fNBins_etaPhi_2*fNBins_pt_2+ixEtaPhi*fNBins_pt_2+ixPt] = h3_2->GetBinContent(h3_2->GetXaxis()->FindBin(zval),ixEtaPhi+1,h3_2->GetZaxis()->FindBin(pTval));
           }
         }
       }
