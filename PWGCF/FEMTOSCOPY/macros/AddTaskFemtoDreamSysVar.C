@@ -287,10 +287,12 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   } else if (suffix=="43") {
     CascadeCuts->SetXiMassRange(1.282, 0.028);
     AntiCascadeCuts->SetXiMassRange(1.282, 0.028);
-  } else {
-    std::cout << "========================\n";
-    std::cout << "Stuff does not exist! \n";
-    std::cout << "========================\n";
+  } else if (suffix=="44") {
+    CascadeCuts->SetXiMassRange(1.354, 0.014);
+    AntiCascadeCuts->SetXiMassRange(1.354, 0.014);
+  } else if (suffix=="45") {
+    CascadeCuts->SetXiMassRange(1.296, 0.014);
+    AntiCascadeCuts->SetXiMassRange(1.282, 0.014);
   }
 
   CascadeCuts->Setv0Negcuts(XiNegCuts);
