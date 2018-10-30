@@ -1093,6 +1093,11 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
     << fJetFinderBin << fJetTriggerBin
     <<"END";
 
+  fhLeadingRefJetPtBin
+    << TH1D("LeadingRefJetPtBin","",NBINS, LogBinsX )
+    << fJetFinderBin << fJetTriggerBin
+    <<"END";
+
   fhJetPtMultiplicityCutBin
     << TH1D("JetPtMultiplicityCutBin","",NBINS, LogBinsX )
     << fJetFinderBin << fJetTriggerBin << fJetMultBin
@@ -2332,7 +2337,7 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
   TLorentzVector leadingJetSubtracted;
   TLorentzVector subleadingJetSubtracted;
   TLorentzVector jetSubtracted;
-  bool leadingTrackOverThreshold;
+  bool leadingTrackOverThreshold,doLeadingRef;
 
   //fTrackJt.reserve(fTracks->GetEntries());
   //fTrackPt.reserve(fTracks->GetEntries());
@@ -2367,6 +2372,7 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
   for (int i = 0; i<Jets->GetEntries(); i++){
     //cout << "Jet: " << (i+1) << "/" << Jets->GetEntries() << endl;
     AliJJet *jet = dynamic_cast<AliJJet*>( Jets->At(i) );
+    doLeadingRef = false;
     if (!jet) continue;
     jet->ReSum();
     //if (TMath::Abs(jet->Eta()) > fJetEtaCut) {cout << "ijet: " << i << " Jet outside eta range, eta: " << jet->Eta() << " pT: " << jet->Pt() << endl; continue;}
@@ -2448,6 +2454,10 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
     fhJetPtWeightBin[iContainer][iBin]->Fill( pT, 1/pT );
     fhJetMultiplicityBin[iContainer][iBin]->Fill(jetMult);
     double leadingTrackPt = jet->LeadingParticlePt(); //FIXME? For MC tracks this is possibly a track with no charge
+    if(leadingTrackPt > 0.2 * pT) {
+      doLeadingRef = true;
+      fhLeadingRefJetPtBin[iContainer][iBin]->Fill( pT );
+    }
     fhLeadingTrkPtBin[iContainer][iBin]->Fill(leadingTrackPt);
     iBin2 = GetBin(fJetLeadPtBorders,leadingTrackPt);
     iBin3 = GetBin(fJetMultBorders,jetMult);
@@ -2546,12 +2556,14 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
         leadingTrackJt = jt; //Save leading track jT for later
         leadingTrackEff = effCorrection;
       }else{
-        zleading = (constituent->Vect()*leadingTrack->Vect().Unit())/leadingTrack->P();
-        jtleading =  (constituent->Vect()-zleading*leadingTrack->Vect()).Mag();
-        fhJtLeadingRefBin[iContainer][iBin]->Fill(jtleading,effCorrection);
-        fhJtWeightLeadingRefBin[iContainer][iBin]->Fill(jtleading,1.0/jtleading * effCorrection);
-        if(iBin2 > -1){
-          fhJtWeightLeadingRefWithTrackCutBinBin[iContainer][iBin][iBin2]->Fill(jtleading,1.0/jtleading * effCorrection);
+        if(doLeadingRef){
+          zleading = (constituent->Vect()*leadingTrack->Vect().Unit())/leadingTrack->P();
+          jtleading =  (constituent->Vect()-zleading*leadingTrack->Vect()).Mag();
+          fhJtLeadingRefBin[iContainer][iBin]->Fill(jtleading,effCorrection);
+          fhJtWeightLeadingRefBin[iContainer][iBin]->Fill(jtleading,1.0/jtleading * effCorrection);
+          if(iBin2 > -1){
+            fhJtWeightLeadingRefWithTrackCutBinBin[iContainer][iBin][iBin2]->Fill(jtleading,1.0/jtleading * effCorrection);
+          }
         }
       }
 
@@ -2694,7 +2706,7 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
           fhJetConeLogJtWeight2Bin[iContainer][iBin]
             ->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
         }
-        if(pta < 0.99*leadingTrackPt){
+        if(pta < 0.99*leadingTrackPt && doLeadingRef){
           zleading = (track->Vect()*leadingTrack->Vect().Unit())/leadingTrack->P();
           jtleading =  (track->Vect()-zleading*leadingTrack->Vect()).Mag();
           fhJetConeJtLeadingRefBin[iContainer]->Fill(jtleading,effCorrection);
@@ -2821,45 +2833,45 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
     dijet = leadingJetLorentz + subleadingJetLorentz; // Adding the jets together.
     if(fnkt>0) dijetSubtracted = leadingJetSubtracted + subleadingJetSubtracted; // Adding the jets together.
     if (leadingjet->Pt() > 20 && subleadingjet->Pt() > 20){
-        (*fDiJetMjj)[iContainer] = dijet.M();
-        //cout << "Dijet mass in an event: " << dijet.M() << ", leading pt: " << leadingjet->Pt() << ", subleading pt: " << subleadingjet->Pt() << endl;
-        dPhi1 = leadingJetLorentz.DeltaPhi(subleadingJetLorentz);
-        dPhi2  = dPhi1<0 ? dPhi1+TMath::TwoPi() : dPhi1;
-        fhDeltaPhi[iContainer]->Fill(dPhi2);
-        if (cBin>-1) fhDeltaPhiCentBinned[iContainer][cBin]->Fill(dPhi2);
+      (*fDiJetMjj)[iContainer] = dijet.M();
+      //cout << "Dijet mass in an event: " << dijet.M() << ", leading pt: " << leadingjet->Pt() << ", subleading pt: " << subleadingjet->Pt() << endl;
+      dPhi1 = leadingJetLorentz.DeltaPhi(subleadingJetLorentz);
+      dPhi2  = dPhi1<0 ? dPhi1+TMath::TwoPi() : dPhi1;
+      fhDeltaPhi[iContainer]->Fill(dPhi2);
+      if (cBin>-1) fhDeltaPhiCentBinned[iContainer][cBin]->Fill(dPhi2);
 
-        // First fill without DeltaPhi cut
-        fhDiJetM[0][iContainer]->Fill((*fDiJetMjj)[iContainer]);
-        // Then fill with DeltaPhi cut
-        if(TMath::Abs(dPhi2 - TMath::Pi()) < TMath::Pi()/3 ) fhDiJetM[1][iContainer]->Fill((*fDiJetMjj)[iContainer]);
-        if (cBin>-1) {
-            fhDiJetMCentBinned[0][iContainer][cBin]->Fill((*fDiJetMjj)[iContainer]);
-            if(dijetTracksOk==2) fhDiJetMCentBinnedCut[0][iContainer][cBin]->Fill((*fDiJetMjj)[iContainer]);
-            fhDiJetCutCounter[iContainer][cBin]->Fill(dijetTracksOk);
-            if(TMath::Abs(dPhi2 - TMath::Pi()) < TMath::Pi()/3 ) {
-                fhDiJetMCentBinned[1][iContainer][cBin]->Fill((*fDiJetMjj)[iContainer]);
-                if(dijetTracksOk==2) fhDiJetMCentBinnedCut[1][iContainer][cBin]->Fill((*fDiJetMjj)[iContainer]);
-            }
+      // First fill without DeltaPhi cut
+      fhDiJetM[0][iContainer]->Fill((*fDiJetMjj)[iContainer]);
+      // Then fill with DeltaPhi cut
+      if(TMath::Abs(dPhi2 - TMath::Pi()) < TMath::Pi()/3 ) fhDiJetM[1][iContainer]->Fill((*fDiJetMjj)[iContainer]);
+      if (cBin>-1) {
+        fhDiJetMCentBinned[0][iContainer][cBin]->Fill((*fDiJetMjj)[iContainer]);
+        if(dijetTracksOk==2) fhDiJetMCentBinnedCut[0][iContainer][cBin]->Fill((*fDiJetMjj)[iContainer]);
+        fhDiJetCutCounter[iContainer][cBin]->Fill(dijetTracksOk);
+        if(TMath::Abs(dPhi2 - TMath::Pi()) < TMath::Pi()/3 ) {
+          fhDiJetMCentBinned[1][iContainer][cBin]->Fill((*fDiJetMjj)[iContainer]);
+          if(dijetTracksOk==2) fhDiJetMCentBinnedCut[1][iContainer][cBin]->Fill((*fDiJetMjj)[iContainer]);
         }
+      }
     } else { // For testing:
-        //cout << "No dijet in an event!        leading pt: " << leadingjet->Pt() << ", subleading pt: " << subleadingjet->Pt() << endl;
+      //cout << "No dijet in an event!        leading pt: " << leadingjet->Pt() << ", subleading pt: " << subleadingjet->Pt() << endl;
     }
     if (fnkt>0 && leadingJetSubtracted.Pt() > 20 && subleadingJetSubtracted.Pt() > 20){
-        (*fDiJetMjjSubtr)[iContainer] = dijetSubtracted.M();
-        if (cBin>-1) {
-            fhDiJetMCentBinnedSubtracted[0][iContainer][cBin]->Fill((*fDiJetMjjSubtr)[iContainer]);
-            dPhi1 = leadingJetSubtracted.DeltaPhi(subleadingJetSubtracted);
-            dPhi2  = dPhi1<0 ? dPhi1+TMath::TwoPi() : dPhi1;
-            fhDeltaPhiCentBinnedSubtracted[iContainer][cBin]->Fill(dPhi2);
-            if(dijetTracksOk==2) {
-                fhDiJetMCentBinnedCutSubtracted[0][iContainer][cBin]->Fill((*fDiJetMjjSubtr)[iContainer]);
-                fhDeltaPhiCentBinnedCutSubtracted[iContainer][cBin]->Fill(dPhi2);
-            }
-            if(TMath::Abs(dPhi2 - TMath::Pi()) < TMath::Pi()/3 ) {
-                fhDiJetMCentBinnedSubtracted[1][iContainer][cBin]->Fill((*fDiJetMjjSubtr)[iContainer]);
-                if(dijetTracksOk==2) fhDiJetMCentBinnedCutSubtracted[1][iContainer][cBin]->Fill((*fDiJetMjjSubtr)[iContainer]);
-            }
+      (*fDiJetMjjSubtr)[iContainer] = dijetSubtracted.M();
+      if (cBin>-1) {
+        fhDiJetMCentBinnedSubtracted[0][iContainer][cBin]->Fill((*fDiJetMjjSubtr)[iContainer]);
+        dPhi1 = leadingJetSubtracted.DeltaPhi(subleadingJetSubtracted);
+        dPhi2  = dPhi1<0 ? dPhi1+TMath::TwoPi() : dPhi1;
+        fhDeltaPhiCentBinnedSubtracted[iContainer][cBin]->Fill(dPhi2);
+        if(dijetTracksOk==2) {
+          fhDiJetMCentBinnedCutSubtracted[0][iContainer][cBin]->Fill((*fDiJetMjjSubtr)[iContainer]);
+          fhDeltaPhiCentBinnedCutSubtracted[iContainer][cBin]->Fill(dPhi2);
         }
+        if(TMath::Abs(dPhi2 - TMath::Pi()) < TMath::Pi()/3 ) {
+          fhDiJetMCentBinnedSubtracted[1][iContainer][cBin]->Fill((*fDiJetMjjSubtr)[iContainer]);
+          if(dijetTracksOk==2) fhDiJetMCentBinnedCutSubtracted[1][iContainer][cBin]->Fill((*fDiJetMjjSubtr)[iContainer]);
+        }
+      }
     }
   }
   // End of dijet calculation.
@@ -3254,8 +3266,8 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
       deltaR   = getDiffR(jet->Phi(),mcjet->Phi(),jet->Eta(),mcjet->Eta());
       if(deltaR < 0.5){
         if(cBin>-1) {
-            fhJetPtCorrCentBinned[iContainer][cBin]->Fill(pTmc,pT);
-            if(fnkt>1) fhJetPtCorrCentBinnedSubtracted[iContainer][cBin]->Fill(pTmc - rhoMC*areaMC, pT - rhoDet*areaDet);
+          fhJetPtCorrCentBinned[iContainer][cBin]->Fill(pTmc,pT);
+          if(fnkt>1) fhJetPtCorrCentBinnedSubtracted[iContainer][cBin]->Fill(pTmc - rhoMC*areaMC, pT - rhoDet*areaDet);
         }
         fhJetPtCorr[iContainer]->Fill(pTmc,pT);
         fhJetPtCorrCoarse[iContainer]->Fill(pTmc,pT);
@@ -3266,8 +3278,8 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
       }
       if(found == 0){
         if(cBin>-1) {
-            fhJetPtCorrCentBinned[iContainer][cBin]->Fill(pTmc,-1);
-            if(fnkt>0) fhJetPtCorrCentBinnedSubtracted[iContainer][cBin]->Fill(pTmc - rhoMC*areaMC, -1);
+          fhJetPtCorrCentBinned[iContainer][cBin]->Fill(pTmc,-1);
+          if(fnkt>0) fhJetPtCorrCentBinnedSubtracted[iContainer][cBin]->Fill(pTmc - rhoMC*areaMC, -1);
         }
         fhJetPtCorr[iContainer]->Fill(pTmc,-1);
         fhJetPtCorrCoarse[iContainer]->Fill(pTmc,-1);
