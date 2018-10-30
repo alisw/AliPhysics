@@ -47,7 +47,7 @@ fElectronCutArray(0)
 AliCutHandlerPCM::AliCutHandlerPCM(Int_t nMax) :
   fMode(0),
   fNCuts(0),
-  fNMaxCuts(10),
+  fNMaxCuts(1),
   fValidCuts(kTRUE),
   fValidCutsEvent(kTRUE),
   fValidCutsPCM(kTRUE),
