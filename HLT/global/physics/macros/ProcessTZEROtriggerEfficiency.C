@@ -43,12 +43,6 @@ int process(TCollection* in, TCollection* out)
     } else
     if (name.Contains("HistITSSPDvertexZ_CTVXV0M-B-NOPF-CENT")) {
       h8 = tmp;
-    } else
-    if (name.Contains("histogram0")) {
-      test1 = tmp;
-    } else
-    if (name.Contains("histogram1")) {
-      test2 = tmp;
     }
   }
 
