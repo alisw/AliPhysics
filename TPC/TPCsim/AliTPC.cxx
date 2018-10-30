@@ -2226,7 +2226,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
   //-----------------------------------------------------------------
   AliTPCcalibDB* const calib=AliTPCcalibDB::Instance();
 
-  AliTPCCorrection * correctionDist = calib->GetTPCComposedCorrection();  
+  AliTPCCorrection * correctionDist = calib->GetTPCComposedCorrection();
 
   AliTPCRecoParam *tpcrecoparam = calib->GetRecoParamFromGRP(); // RS event specie will be selected according to GRP
   //  AliTPCRecoParam *tpcrecoparam = calib->GetRecoParam(0); //FIXME: event specie should not be set by hand, However the parameters read here are the same for al species
@@ -2240,20 +2240,20 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
   else { // only if Chebyshev maps are not used
     if (tpcrecoparam->GetUseExBCorrection()) {
       if (gAlice){ // Set correctly the magnetic field in the ExB calculation
-	if (!calib->GetExB()){
-	  AliMagF * field = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField()); 
-	  if (field) {
-	    calib->SetExBField(field);
-	  }
-	}
+        if (!calib->GetExB()){
+          AliMagF * field = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField());
+          if (field) {
+            calib->SetExBField(field);
+          }
+        }
       }
     } else if (tpcrecoparam->GetUseComposedCorrection()) {
-      AliMagF * field = (AliMagF*)TGeoGlobalMagField::Instance()->GetField(); 
+      AliMagF * field = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
       Double_t bzpos[3]={0,0,0};
       if (!correctionDist) correctionDist = calib->GetTPCComposedCorrection(field->GetBz(bzpos));
-      
+
       if (!correctionDist){
-	AliFatal("Correction map does not exist. Check the OCDB or your setup");
+        AliFatal("Correction map does not exist. Check the OCDB or your setup");
       }
     }
   }
@@ -2280,13 +2280,13 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
   if (fHitType>1) branch = TH->GetBranch("TPC2");
   else branch = TH->GetBranch("TPC");
 
- 
+
   //----------------------------------------------
   // Create TObjArray-s, one for each row,
   // each TObjArray will store the TVectors
   // of electrons, one TVectors per each track.
   //---------------------------------------------- 
-    
+
   Int_t *nofElectrons = new Int_t [nrows+2]; // electron counter for each row
   TVector **tracks = new TVector* [nrows+2]; //pointers to the track vectors
 
@@ -2296,12 +2296,12 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
     tracks[i]=0;
   }
 
- 
+
 
   //--------------------------------------------------------------------
   //  Loop over tracks, the "track" contains the full history
   //--------------------------------------------------------------------
-  
+
   Int_t previousTrack,currentTrack;
   previousTrack = -1; // nothing to store so far!
 
@@ -2314,7 +2314,7 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
     if (!isInSector) continue;
     //MI change
     branch->GetEntry(track); // get next track
-    
+
     //M.I. changes
 
     tpcHit = (AliTPChit*)FirstHit(-1);
@@ -2325,48 +2325,48 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 
 
     while(tpcHit){
-      
+
       Int_t sector=tpcHit->fSector; // sector number
       if(sector != isec){
-	tpcHit = (AliTPChit*) NextHit();
-	continue; 
+        tpcHit = (AliTPChit*) NextHit();
+        continue;
       }
 
       // Remove hits which arrive before the TPC opening gate signal
       if(((fTPCParam->GetZLength(isec)-TMath::Abs(tpcHit->Z()))
-	  /fTPCParam->GetDriftV()+tpcHit->Time())<fTPCParam->GetGateDelay()) {
-	tpcHit = (AliTPChit*) NextHit();
-	continue;
+          /fTPCParam->GetDriftV()+tpcHit->Time())<fTPCParam->GetGateDelay()) {
+        tpcHit = (AliTPChit*) NextHit();
+        continue;
       }
 
       currentTrack = tpcHit->Track(); // track number
 
       if(currentTrack != previousTrack){
-                          
-	// store already filled fTrack
-              
-	for(i=0;i<nrows+2;i++){
-	  if(previousTrack != -1){
-	    if(nofElectrons[i]>0){
-	      TVector &v = *tracks[i];
-	      v(0) = previousTrack;
-	      tracks[i]->ResizeTo(5*nofElectrons[i]+1); // shrink if necessary
-	      row[i]->Add(tracks[i]);                     
-	    }
-	    else {
-	      delete tracks[i]; // delete empty TVector
-	      tracks[i]=0;
-	    }
-	  }
 
-	  nofElectrons[i]=0;
-	  tracks[i] = new TVector(601); // TVectors for the next fTrack
+        // store already filled fTrack
 
-	} // end of loop over rows
-	       
-	previousTrack=currentTrack; // update track label 
+        for(i=0;i<nrows+2;i++){
+          if(previousTrack != -1){
+            if(nofElectrons[i]>0){
+              TVector &v = *tracks[i];
+              v(0) = previousTrack;
+              tracks[i]->ResizeTo(5*nofElectrons[i]+1); // shrink if necessary
+              row[i]->Add(tracks[i]);
+            }
+            else {
+              delete tracks[i]; // delete empty TVector
+              tracks[i]=0;
+            }
+          }
+
+          nofElectrons[i]=0;
+          tracks[i] = new TVector(601); // TVectors for the next fTrack
+
+        } // end of loop over rows
+
+        previousTrack=currentTrack; // update track label
       }
-	   
+
       Int_t qI = (Int_t) (tpcHit->fQ); // energy loss (number of electrons)
 
       //---------------------------------------------------
@@ -2376,10 +2376,10 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 
       Float_t time = 1.e6*(fTPCParam->GetZLength(isec)-TMath::Abs(tpcHit->Z()))/fTPCParam->GetDriftV();  // in microseconds!	
       Float_t attProb = fTPCParam->GetAttCoef()*fTPCParam->GetOxyCont()*time; //  fraction! 
-   
+
       if (qI==1 && (gRandom->Rndm(0)<attProb)) {  // the only electron is lost!
-	tpcHit = (AliTPChit*)NextHit();
-	continue;
+        tpcHit = (AliTPChit*)NextHit();
+        continue;
       }
 
       //RS: all electrons share the same deterministic transformations (of the same hit), up to diffusion
@@ -2390,31 +2390,31 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 
       double yLab = xyzHit[1]; // for eventual P-gradient accounting
       if (tpcrecoparam->GetUseCorrectionMap()) {
-	double xyzD[3] = {xyzHit[0],xyzHit[1],xyzHit[2]};
-	transform->ApplyDistortionMap(isec,xyzD);
-	for (int idim=3;idim--;) xyzHit[idim] = xyzD[idim];
+        double xyzD[3] = {xyzHit[0],xyzHit[1],xyzHit[2]};
+        transform->ApplyDistortionMap(isec,xyzD);
+        for (int idim=3;idim--;) xyzHit[idim] = xyzD[idim];
       }
       else {
-	// ExB effect - distort hig if specifiend in the RecoParam
-	//
-	if (tpcrecoparam->GetUseExBCorrection()) {
-	  Double_t dxyz0[3]={xyzHit[0],xyzHit[1],xyzHit[2]},dxyz1[3];
-	  if (calib->GetExB()) {
-	    calib->GetExB()->CorrectInverse(dxyz0,dxyz1);
-	  }else{
-	    AliError("Not valid ExB calibration");
-	    for (int idim=3;idim--;) dxyz1[idim] = xyzHit[idim];
-	  }
-	  for (int idim=3;idim--;) xyzHit[idim] = dxyz1[idim];
-	} 
-	else if (tpcrecoparam->GetUseComposedCorrection()) {
-	  //      Use combined correction/distortion  class AliTPCCorrection
-	  if (correctionDist){
-	    Float_t distPoint[3] = {xyzHit[0],xyzHit[1],xyzHit[2]};
-	    correctionDist->DistortPoint(distPoint, isec);
-	    for (int idim=3;idim--;) xyzHit[idim] = distPoint[idim];
-	  }      
-	}     
+        // ExB effect - distort hig if specifiend in the RecoParam
+        //
+        if (tpcrecoparam->GetUseExBCorrection()) {
+          Double_t dxyz0[3]={xyzHit[0],xyzHit[1],xyzHit[2]},dxyz1[3];
+          if (calib->GetExB()) {
+            calib->GetExB()->CorrectInverse(dxyz0,dxyz1);
+          }else{
+            AliError("Not valid ExB calibration");
+            for (int idim=3;idim--;) dxyz1[idim] = xyzHit[idim];
+          }
+          for (int idim=3;idim--;) xyzHit[idim] = dxyz1[idim];
+        }
+        else if (tpcrecoparam->GetUseComposedCorrection()) {
+          //      Use combined correction/distortion  class AliTPCCorrection
+          if (correctionDist){
+            Float_t distPoint[3] = {xyzHit[0],xyzHit[1],xyzHit[2]};
+            correctionDist->DistortPoint(distPoint, isec);
+            for (int idim=3;idim--;) xyzHit[idim] = distPoint[idim];
+          }
+        }
       }
       indexHit[0]=1;
 
@@ -2426,25 +2426,26 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
       Bool_t sideC = ((isec/18)&0x1);
       if ( tpcrecoparam->GetUseSectorAlignment() ) fTPCParam->Transform1to2(xyzHit,indexHit);
       else {
-	fTPCParam->Transform1to2Ideal(xyzHit,indexHit);  // rotate to sector coordinates
-	// account for A/C sides max drift L deficit to nominal 250 cm
-	xyzHit[2] -=  sideC ? 0.302 : 0.275; // C : A
+        fTPCParam->Transform1to2Ideal(xyzHit,indexHit);  // rotate to sector coordinates
+        // account for A/C sides max drift L deficit to nominal 250 cm
+        xyzHit[2] -=  sideC ? 0.302 : 0.275; // C : A
       }
       //
       //-----------------------------------------------
       //  Loop over electrons
       //-----------------------------------------------
-      for(Int_t nel=0;nel<qI;nel++) {
-	// skip if electron lost due to the attachment
-	// RS: check only case of multiple electrons, case of 1 is already checked
-	if(qI>1 && (gRandom->Rndm(0)) < attProb) continue; // electron lost!
-	// start from primary electron in vicinity of the readout, simulate diffusion
-	for (int idim=3;idim--;) {xyz[idim] = xyzHit[idim]; index[idim] = indexHit[idim];}
-	//
-	TransportElectron(xyz,index);    
-	Int_t rowNumber;
-	double driftEl = xyz[2];  // GetPadRow converts Z to timebin in a way incmpatible with real calib, save drift distance
-	Int_t padrow = fTPCParam->GetPadRow(xyz,index); 
+      Int_t elStep=TMath::Max(1, TMath::Nint(qI/100));    /// MI- Modification to speed-up monopole simulation - in case of many electrons - simulate in groups
+      for(Int_t nel=0;nel<qI;nel+=elStep) {
+        // skip if electron lost due to the attachment
+        // RS: check only case of multiple electrons, case of 1 is already checked
+        if(qI>1 && (gRandom->Rndm(0)) < attProb) continue; // electron lost!
+        // start from primary electron in vicinity of the readout, simulate diffusion
+        for (int idim=3;idim--;) {xyz[idim] = xyzHit[idim]; index[idim] = indexHit[idim];}
+        //
+        TransportElectron(xyz,index);
+        Int_t rowNumber;
+        double driftEl = xyz[2];  // GetPadRow converts Z to timebin in a way incmpatible with real calib, save drift distance
+        Int_t padrow = fTPCParam->GetPadRow(xyz,index);
 
         // get pad region
         UInt_t padRegion=0;
@@ -2454,134 +2455,134 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
             padRegion=2;
           }
         }
-	
-	// protection for the nonphysical avalanche size (10**6 maximum)
-	//
-	Double_t rn=TMath::Max(gRandom->Rndm(0),1.93e-22);
-	
+
+        // protection for the nonphysical avalanche size (10**6 maximum)
+        //
+        Double_t rn=TMath::Max(gRandom->Rndm(0),1.93e-22);
+
         //         xyz[3]= (Float_t) (-gasgain*TMath::Log(rn));
         // JW: take into account different gain in the pad regions
-        xyz[3]= (Float_t) (-gasGainRegions[padRegion]*TMath::Log(rn));
+        xyz[3]= (Float_t) (-gasGainRegions[padRegion]*TMath::Log(rn))*elStep;
 
         //
-	// Add Time0 correction due unisochronity
-	// xyz[0] - pad row coordinate 
-	// xyz[1] - pad coordinate
-	// xyz[2] - is in now time bin coordinate system
-	Float_t correction =0;
-	if (tpcrecoparam->GetUseExBCorrection()) {
+        // Add Time0 correction due unisochronity
+        // xyz[0] - pad row coordinate
+        // xyz[1] - pad coordinate
+        // xyz[2] - is in now time bin coordinate system
+        Float_t correction =0;
+        if (tpcrecoparam->GetUseExBCorrection()) {
           if (calib->GetPadTime0()){
-	    if (!calib->GetPadTime0()->GetCalROC(isec)) continue;	  
-	    Int_t npads = fTPCParam->GetNPads(isec,padrow);
-	    //	  Int_t pad  = TMath::Nint(xyz[1]+fTPCParam->GetNPads(isec,TMath::Nint(xyz[0]))*0.5);
-	    // pad numbering from -npads/2 .. npads/2-1
-	    Int_t pad  = TMath::Nint(xyz[1]+npads/2);
-	    if (pad<0) pad=0;
-	    if (pad>=npads) pad=npads-1;
-	    correction = calib->GetPadTime0()->GetCalROC(isec)->GetValue(padrow,pad);
-	    //	  printf("%d\t%d\t%d\t%f\n",isec,padrow,pad,correction);
-	    if (fDebugStreamer){
-	      (*fDebugStreamer)<<"Time0"<<
-	        "isec="<<isec<<
-	        "padrow="<<padrow<<
-	        "pad="<<pad<<
-	        "x0="<<xyz[0]<<
-	        "x1="<<xyz[1]<<
-	        "x2="<<xyz[2]<<
-	        "hit.="<<tpcHit<<
-	        "cor="<<correction<<
-	        "\n";
-	    }
-	  }
+            if (!calib->GetPadTime0()->GetCalROC(isec)) continue;
+            Int_t npads = fTPCParam->GetNPads(isec,padrow);
+            //	  Int_t pad  = TMath::Nint(xyz[1]+fTPCParam->GetNPads(isec,TMath::Nint(xyz[0]))*0.5);
+            // pad numbering from -npads/2 .. npads/2-1
+            Int_t pad  = TMath::Nint(xyz[1]+npads/2);
+            if (pad<0) pad=0;
+            if (pad>=npads) pad=npads-1;
+            correction = calib->GetPadTime0()->GetCalROC(isec)->GetValue(padrow,pad);
+            //	  printf("%d\t%d\t%d\t%f\n",isec,padrow,pad,correction);
+            if (fDebugStreamer){
+              (*fDebugStreamer)<<"Time0"<<
+                               "isec="<<isec<<
+                               "padrow="<<padrow<<
+                               "pad="<<pad<<
+                               "x0="<<xyz[0]<<
+                               "x1="<<xyz[1]<<
+                               "x2="<<xyz[2]<<
+                               "hit.="<<tpcHit<<
+                               "cor="<<correction<<
+                               "\n";
+            }
+          }
         }
-	if (!transform) { //RS old way of getting the time bin (not timestamp aware!)
-	  if (AliTPCcalibDB::Instance()->IsTrgL0()){  
-	    // Modification 14.03
-	    // distinguish between the L0 and L1 trigger as it is done in the reconstruction
-	    // by defualt we assume L1 trigger is used - make a correction in case of  L0
-	    AliCTPTimeParams* ctp = AliTPCcalibDB::Instance()->GetCTPTimeParams();
-	    if (ctp){
-	      //for TPC standalone runs no ctp info
-            Double_t delay = ctp->GetDelayL1L0()*0.000000025;
-            xyz[2]+=delay/fTPCParam->GetTSample();  // adding the delay (in the AliTPCTramsform opposite sign)
-	    }
-	  }
-	  if (tpcrecoparam->GetUseExBCorrection()) xyz[2]+=correction; // In Correction there is already a corretion for the time 0 offset so not needed
-	  xyz[2]+=fTPCParam->GetNTBinsL1();    // adding Level 1 time bin offset
-	  //
-	}
-	else { // use Transform for time-aware Z -> Tbin conversion
-	  // go back from L drift to Z
-	  double z = maxDrift - driftEl;
-	  if (sideC) z = -z;
-	  xyz[2] = transform->Z2TimeBin(z,isec, yLab);
-	}
-	// Electron track time (for pileup simulation)
-	xyz[2]+=tpcHit->Time()/fTPCParam->GetTSample(); // adding time of flight
+        if (!transform) { //RS old way of getting the time bin (not timestamp aware!)
+          if (AliTPCcalibDB::Instance()->IsTrgL0()){
+            // Modification 14.03
+            // distinguish between the L0 and L1 trigger as it is done in the reconstruction
+            // by defualt we assume L1 trigger is used - make a correction in case of  L0
+            AliCTPTimeParams* ctp = AliTPCcalibDB::Instance()->GetCTPTimeParams();
+            if (ctp){
+              //for TPC standalone runs no ctp info
+              Double_t delay = ctp->GetDelayL1L0()*0.000000025;
+              xyz[2]+=delay/fTPCParam->GetTSample();  // adding the delay (in the AliTPCTramsform opposite sign)
+            }
+          }
+          if (tpcrecoparam->GetUseExBCorrection()) xyz[2]+=correction; // In Correction there is already a corretion for the time 0 offset so not needed
+          xyz[2]+=fTPCParam->GetNTBinsL1();    // adding Level 1 time bin offset
+          //
+        }
+        else { // use Transform for time-aware Z -> Tbin conversion
+          // go back from L drift to Z
+          double z = maxDrift - driftEl;
+          if (sideC) z = -z;
+          xyz[2] = transform->Z2TimeBin(z,isec, yLab);
+        }
+        // Electron track time (for pileup simulation)
+        xyz[2]+=tpcHit->Time()/fTPCParam->GetTSample(); // adding time of flight
 
-	xyz[4] =0;	  
-	//
-	// row 0 - cross talk from the innermost row
-	// row fNRow+1 cross talk from the outermost row
-	rowNumber = index[2]+1; 
-	//transform position to local digit coordinates
-	//relative to nearest pad row 
-	if ((rowNumber<0)||rowNumber>fTPCParam->GetNRow(isec)+1) continue;
-	/*	Float_t x1,y1;
-	if (isec <fTPCParam->GetNInnerSector()) {
-	  x1 = xyz[1]*fTPCParam->GetInnerPadPitchWidth();
-	  y1 = fTPCParam->GetYInner(rowNumber);
-	}
-	else{
-	  x1=xyz[1]*fTPCParam->GetOuterPadPitchWidth();
-	  y1 = fTPCParam->GetYOuter(rowNumber);
-	}
-	// gain inefficiency at the wires edges - linear
-	x1=TMath::Abs(x1);
-	y1-=1.;
-	if(x1>y1) xyz[3]*=TMath::Max(1.e-6,(y1-x1+1.));	*/
-	
-	nofElectrons[rowNumber]++;	  
-	//----------------------------------
-	// Expand vector if necessary
-	//----------------------------------
-	if(nofElectrons[rowNumber]>120){
-	  Int_t range = tracks[rowNumber]->GetNrows();
-	  if((nofElectrons[rowNumber])>(range-1)/5){
-	    
-	    tracks[rowNumber]->ResizeTo(range+500); // Add 100 electrons
-	  }
-	}
-	
-	TVector &v = *tracks[rowNumber];
-	Int_t idx = 5*nofElectrons[rowNumber]-4;
-	Real_t * position = &(((TVector&)v)(idx)); //make code faster
-	memcpy(position,xyz,5*sizeof(Float_t));
-	
+        xyz[4] =0;
+        //
+        // row 0 - cross talk from the innermost row
+        // row fNRow+1 cross talk from the outermost row
+        rowNumber = index[2]+1;
+        //transform position to local digit coordinates
+        //relative to nearest pad row
+        if ((rowNumber<0)||rowNumber>fTPCParam->GetNRow(isec)+1) continue;
+        /*	Float_t x1,y1;
+        if (isec <fTPCParam->GetNInnerSector()) {
+          x1 = xyz[1]*fTPCParam->GetInnerPadPitchWidth();
+          y1 = fTPCParam->GetYInner(rowNumber);
+        }
+        else{
+          x1=xyz[1]*fTPCParam->GetOuterPadPitchWidth();
+          y1 = fTPCParam->GetYOuter(rowNumber);
+        }
+        // gain inefficiency at the wires edges - linear
+        x1=TMath::Abs(x1);
+        y1-=1.;
+        if(x1>y1) xyz[3]*=TMath::Max(1.e-6,(y1-x1+1.));	*/
+
+        nofElectrons[rowNumber]++;
+        //----------------------------------
+        // Expand vector if necessary
+        //----------------------------------
+        if(nofElectrons[rowNumber]>120){
+          Int_t range = tracks[rowNumber]->GetNrows();
+          if((nofElectrons[rowNumber])>(range-1)/5){
+
+            tracks[rowNumber]->ResizeTo(range+500); // Add 100 electrons
+          }
+        }
+
+        TVector &v = *tracks[rowNumber];
+        Int_t idx = 5*nofElectrons[rowNumber]-4;
+        Real_t * position = &(((TVector&)v)(idx)); //make code faster
+        memcpy(position,xyz,5*sizeof(Float_t));
+
       } // end of loop over electrons
 
       tpcHit = (AliTPChit*)NextHit();
-      
+
     } // end of loop over hits
   } // end of loop over tracks
 
-    //
-    //   store remaining track (the last one) if not empty
-    //
-  
+  //
+  //   store remaining track (the last one) if not empty
+  //
+
   for(i=0;i<nrows+2;i++){
     if(nofElectrons[i]>0){
       TVector &v = *tracks[i];
       v(0) = previousTrack;
       tracks[i]->ResizeTo(5*nofElectrons[i]+1); // shrink if necessary
-      row[i]->Add(tracks[i]);  
+      row[i]->Add(tracks[i]);
     }
     else{
       delete tracks[i];
       tracks[i]=0;
-    }  
-  }  
-  
+    }
+  }
+
   delete [] tracks;
   delete [] nofElectrons;
 
