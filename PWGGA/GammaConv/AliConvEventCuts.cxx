@@ -4751,32 +4751,34 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
   }
 
   if(fUseSphericity > 0){
-    if(fUseSphericity == 1 && ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()>0.5){
+    Double_t eventSphericity = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity();
+    if(eventSphericity == -1) return 14;
+    if(fUseSphericity == 1 && eventSphericity>0.5){
       return 14;
     }
-    if(fUseSphericity == 2 && ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()<0.5){
+    if(fUseSphericity == 2 && eventSphericity<0.5){
       return 14;
     }
-    if(fUseSphericity == 3 && ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()==-1){
+    if(fUseSphericity == 3 && eventSphericity==-1){
       return 14;
     }
     Int_t nPrimTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
-    if(fUseSphericity == 4 && ((((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()==-1) || nPrimTracks > 20)){
+    if(fUseSphericity == 4 && (eventSphericity==-1 || nPrimTracks > 20)){
       return 14;
     }
-    if(fUseSphericity == 5 && ((((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()==-1) || nPrimTracks < 20)){
+    if(fUseSphericity == 5 && (eventSphericity==-1 || nPrimTracks < 20)){
       return 14;
     }
-    if(fUseSphericity == 6 && ((((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()>0.5) || nPrimTracks > 20)){
+    if(fUseSphericity == 6 && (eventSphericity>0.5 || nPrimTracks > 20)){
       return 14;
     }
-    if(fUseSphericity == 7 && ((((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()>0.5) || nPrimTracks < 20)){
+    if(fUseSphericity == 7 && (eventSphericity>0.5 || nPrimTracks < 20)){
       return 14;
     }
-    if(fUseSphericity == 8 && ((((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()<0.5) || nPrimTracks > 20)){
+    if(fUseSphericity == 8 && (eventSphericity<0.5 || nPrimTracks > 20)){
       return 14;
     }
-    if(fUseSphericity == 9 && ((((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()<0.5) || nPrimTracks < 20)){
+    if(fUseSphericity == 9 && (eventSphericity<0.5 || nPrimTracks < 20)){
       return 14;
     }
   }
