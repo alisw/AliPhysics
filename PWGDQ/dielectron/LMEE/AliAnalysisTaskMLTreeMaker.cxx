@@ -500,26 +500,23 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
     return;
   }
 
+  AliMultSelection *MultSelection = 0x0; 
+  MultSelection = (AliMultSelection * ) event->FindListObject("MultSelection");
+
+  if( !MultSelection) {
+   //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+   AliWarning("AliMultSelection object not found!");
+  }
+  else cent = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
+
+//  if(cent<fCentralityPercentileMin || cent>fCentralityPercentileMax) return;
+  
   UInt_t selectedMask=(1<<evfilter->GetCuts()->GetEntries())-1;
   varManager->SetEvent(event);
   if(selectedMask!=(evfilter->IsSelected(event))){
     fQAHist->Fill("Events_not_selected_filter",1);
     return;
   }
- 
- AliMultSelection *MultSelection = 0x0; 
-  MultSelection = (AliMultSelection * ) event->FindListObject("MultSelection");
-  
-  if( !MultSelection) {
-   //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
-   AliWarning("AliMultSelection object not found!");
-  }
-  else cent = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
-  
-  
-  
-  if(cent<fCentralityPercentileMin || cent>fCentralityPercentileMax) return;
-
   
  AliInputEventHandler *eventHandler = nullptr;
  AliInputEventHandler *eventHandlerMC = nullptr;
