@@ -2714,18 +2714,18 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
     }
 
     Bool_t triggered = kTRUE;
-    if(eventNotAccepted){
-    // cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
+    if(eventNotAccepted!= 0){
       fHistoNEvents[iCut]->Fill(eventNotAccepted, fWeightJetJetMC); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
       if (fIsMC>1) fHistoNEventsWOWeight[iCut]->Fill(eventNotAccepted);
-      if (eventNotAccepted==3 && fIsMC>0){
+      // cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
+      if (eventNotAccepted==3 && fIsMC > 0){
         triggered = kFALSE;
-      } else {
+      }else {
         continue;
       }
     }
 
-    if(eventQuality != 0){// Event Not Accepted
+    if(eventQuality != 0 && triggered== kTRUE){// Event Not Accepted
       //cout << "event rejected due to: " <<eventQuality << endl;
       fHistoNEvents[iCut]->Fill(eventQuality, fWeightJetJetMC);
       if (fIsMC>1) fHistoNEventsWOWeight[iCut]->Fill(eventQuality); // Should be 0 here
