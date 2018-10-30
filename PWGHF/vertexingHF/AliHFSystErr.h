@@ -83,14 +83,9 @@ class AliHFSystErr : public TNamed
 
   void SetIsBDTAnalysis(Bool_t flag){
     fIsBDTAnalysis = flag;
-    if(flag) AliInfo("Settings for the Lc BDT analysis");  
+    if(flag) AliInfo("Settings for the Lc and Ds BDT analysis");  
   }
-  void SetIsMLAnalysis(Bool_t flag){
-    fIsMLAnalysis = flag;
-    if(flag) AliInfo("Settings for the Ds ML analysis");  
-  }
-
-
+  
   void SetIsPbPb2010EnergyScan(Bool_t flag) {
     fIsCentScan = flag;
     if(flag) AliInfo(" Settings for the PbPb 2010 energy scan");
@@ -284,7 +279,7 @@ class AliHFSystErr : public TNamed
   void InitDstoKKpi2010pp();
   void InitDstoKKpi2010ppPass4();
   void InitDstoKKpi2017pp5TeV();
-  void InitDstoKKpi2017pp5TeVML();
+  void InitDstoKKpi2017pp5TeVBDT();
   void InitDstoKKpi2011PbPb07half();
   void InitDstoKKpi2011PbPb010();
   void InitDstoKKpi2011PbPb2050();
@@ -346,8 +341,7 @@ class AliHFSystErr : public TNamed
   Bool_t fIsLowPtAnalysis; /// flag for the low pt analysis (no topological cuts)
   Bool_t fIsPass4Analysis; /// flag for the pass4 analysis
   Bool_t fIs5TeVAnalysis; /// flag for the pp5TeV analysis
-  Bool_t fIsBDTAnalysis;   /// flag for the Lc BDT analysis
-  Bool_t fIsMLAnalysis;   /// flag for the Ds ML analysis
+  Bool_t fIsBDTAnalysis;   /// flag for the Lc BDT analysis and Ds BDT analysis
   Bool_t fIsCentScan;      /// flag fot the PbPb centrality scan
   Bool_t fStandardBins;    /// flag for the standard bins in pp@5TeV
   Bool_t fIsRapidityScan;  /// flag for the pPb vs y measurement

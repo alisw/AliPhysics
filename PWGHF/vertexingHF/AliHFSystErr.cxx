@@ -67,7 +67,6 @@ AliHFSystErr::AliHFSystErr(const Char_t* name, const Char_t* title) :
   fIsPass4Analysis(false),
   fIs5TeVAnalysis(false),
   fIsBDTAnalysis(false),
-  fIsMLAnalysis(false),
   fIsCentScan(false),
   fStandardBins(false),
   fIsRapidityScan(false)
@@ -382,8 +381,8 @@ void AliHFSystErr::Init(Int_t decay){
         if(fIsPass4Analysis) InitDstoKKpi2010ppPass4();
         else if (fRunNumber==16 || fRunNumber==2016) InitDstoKKpi2016pp13TeV();
         else if (fRunNumber==17 || fRunNumber==2017){
-          if(fIsMLAnalysis)
-            InitDstoKKpi2017pp5TeVML();
+          if(fIsBDTAnalysis)
+            InitDstoKKpi2017pp5TeVBDT();
           else
             InitDstoKKpi2017pp5TeV();
         }
@@ -2271,12 +2270,12 @@ void AliHFSystErr::InitDstoKKpi2017pp5TeV(){
 }
 
 //_________________________________________________________________________
-void AliHFSystErr::InitDstoKKpi2017pp5TeVML(){
-  // Ds systematics in MB pp 5 TeV (2017) with ML selections
+void AliHFSystErr::InitDstoKKpi2017pp5TeVBDT(){
+  // Ds systematics in MB pp 5 TeV (2017) with BDT selections
   // Responsible: F. Catalano
   
-  AliInfo(" Settings for Ds --> K K pi, MB pp collisions at 5 TeV - 2017 runs (LHC17pq) with ML selections");
-  SetNameTitle("AliHFSystErr","SystErrDstoKKpi2017pp5TeVML");
+  AliInfo(" Settings for Ds --> K K pi, MB pp collisions at 5 TeV - 2017 runs (LHC17pq) with BDT selections");
+  SetNameTitle("AliHFSystErr","SystErrDstoKKpi2017pp5TeVBDT");
   
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",24,0,24);
