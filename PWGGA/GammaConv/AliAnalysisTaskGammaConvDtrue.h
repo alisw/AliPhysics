@@ -30,14 +30,14 @@
 #include "AliAnalysisTaskSE.h"
 
 class THistManager;
-class TParticle;
+class AliVParticle;
 
 class AliAnalysisTaskGammaConvDtrue : public AliAnalysisTaskSE {
 public:
   struct D03PionDecay{
-    TParticle   *fPi0daughter;
-    TParticle   *fPiPldaughter;
-    TParticle   *fPiMidaughter;
+    AliVParticle   *fPi0daughter;
+    AliVParticle   *fPiPldaughter;
+    AliVParticle   *fPiMidaughter;
   };
   AliAnalysisTaskGammaConvDtrue();
   AliAnalysisTaskGammaConvDtrue(const char *name);
@@ -49,10 +49,10 @@ public:
   static AliAnalysisTaskGammaConvDtrue *AddTaskGammaConvDtrue();
 
 protected:
-  D03PionDecay CheckFor3PionDecay(TParticle *d0mother) const;
+  D03PionDecay CheckFor3PionDecay(AliVParticle *d0mother) const;
 
 private:
-  THistManager              *fHistos;         ///< Output histograms
+  THistManager              *fHistos;         //!<! Output histograms
 
   ClassDef(AliAnalysisTaskGammaConvDtrue, 1);
 };

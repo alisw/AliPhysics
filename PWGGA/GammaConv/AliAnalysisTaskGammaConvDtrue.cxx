@@ -55,7 +55,7 @@ AliAnalysisTaskGammaConvDtrue::~AliAnalysisTaskGammaConvDtrue(){
 }
 
 void AliAnalysisTaskGammaConvDtrue::UserCreateOutputObjects(){
-  fHistos = new THistManager();
+  fHistos = new THistManager(Form("Histos_%s", GetName()));
 
   fHistos->CreateTH1("hTrueD0pt", "True D0 pt spectrum", 200, 0., 200.);
   fHistos->CreateTH1("hTrueD0pi0piplpimi", "True D0 pt spectrum (3 pion channel)", 200, 0., 200.);
@@ -73,8 +73,8 @@ void AliAnalysisTaskGammaConvDtrue::UserExec(Option_t *){
     return;
   }
   for(int ipart = 0; ipart < fMCEvent->GetNumberOfTracks(); ipart++){
-    auto part = fMCEvent->Particle(ipart);
-    if(TMath::Abs(part->GetPdgCode()) != 421) continue;
+    auto part = fMCEvent->GetTrack(ipart);
+    if(TMath::Abs(part->PdgCode()) != 421) continue;
     if(TMath::Abs(part->Eta()) < 0.5) continue;
     fHistos->FillTH1("hTrueD0pt", part->Pt());
     // check for 3 pion decay
@@ -95,16 +95,19 @@ void AliAnalysisTaskGammaConvDtrue::UserExec(Option_t *){
   PostData(1, fHistos->GetListOfHistograms());
 }
 
-AliAnalysisTaskGammaConvDtrue::D03PionDecay AliAnalysisTaskGammaConvDtrue::CheckFor3PionDecay(TParticle *d0mother) const {
+AliAnalysisTaskGammaConvDtrue::D03PionDecay AliAnalysisTaskGammaConvDtrue::CheckFor3PionDecay(AliVParticle *d0mother) const {
   D03PionDecay decay;
   decay.fPi0daughter = nullptr;
   decay.fPiPldaughter = nullptr;
   decay.fPiMidaughter = nullptr;
+  AliDebug(1, "Found D0\n");
+  int did = 0;
   for(auto idaughter = d0mother->GetFirstDaughter(); idaughter <= d0mother->GetLastDaughter(); idaughter++){
     auto daughterpart = fMCEvent->GetTrack(idaughter);
-    if(TMath::Abs(daughterpart->PdgCode()) == 111)  decay.fPi0daughter = daughterpart->Particle();  
-    if(daughterpart->PdgCode() == 211) decay.fPiPldaughter = daughterpart->Particle();
-    if(daughterpart->PdgCode() == -211) decay.fPiMidaughter = daughterpart->Particle();
+    AliDebug(2, Form("Daughter %d: %d\n", did, daughterpart->PdgCode()));
+    if(TMath::Abs(daughterpart->PdgCode()) == 111)  decay.fPi0daughter = daughterpart;  
+    if(daughterpart->PdgCode() == 211) decay.fPiPldaughter = daughterpart;
+    if(daughterpart->PdgCode() == -211) decay.fPiMidaughter = daughterpart;
   }
 
   return decay;
