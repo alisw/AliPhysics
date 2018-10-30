@@ -16,7 +16,7 @@
   } else {
       filecuts=TFile::Open(finname.Data());
       if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-	AliFatal("Input file not found : check your cut object");
+	Printf("FATAL: Input file not found : check your cut object");
       }
   }
   AliRDHFCutsLctopKpi* prodcuts=new AliRDHFCutsLctopKpi();
