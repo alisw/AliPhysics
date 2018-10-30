@@ -802,6 +802,7 @@ void AliHFCorrFitSystematics::Fitv2Systematics(){
         fFitter->SetFixMeanType(3);
         fFitter->SetFuncType(fFitFuncType[fReferenceIndex]);
         fFitter->SetPtRanges(fVecLowEdgeDpt[iPtBin],fVecUpEdgeDpt[iPtBin],fAssocTrackPtMin,fAssocTrackPtMax);
+        if(fIspPb) fFitter->SetIspPb(kTRUE);
         fFitter->Fitting();
         fFitter->DrawLegendWithParameters();
         pave->Draw("same");
@@ -907,6 +908,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
       fFitter->SetFixMeanType(3);
       fFitter->SetFuncType(fFitFuncType[fReferenceIndex]);
       fFitter->SetPtRanges(fVecLowEdgeDpt[iPtBin],fVecUpEdgeDpt[iPtBin],fAssocTrackPtMin,fAssocTrackPtMax);
+      if(fIspPb) fFitter->SetIspPb(kTRUE);      
       fFitter->Fitting();
       fFitter->DrawLegendWithParameters();
       paveRef->Draw("same");
@@ -1018,6 +1020,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
             fFitter->SetFixMeanType(3);
             fFitter->SetFuncType(fFitFuncType[iSystMode]);
             fFitter->SetPtRanges(fVecLowEdgeDpt[iPtBin],fVecUpEdgeDpt[iPtBin],fAssocTrackPtMin,fAssocTrackPtMax);
+            if(fIspPb) fFitter->SetIspPb(kTRUE);
             fFitter->Fitting();
             fFitter->DrawLegendWithParameters();
             pave->Draw("same");

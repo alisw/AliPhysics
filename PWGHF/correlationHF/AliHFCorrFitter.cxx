@@ -79,7 +79,8 @@ AliHFCorrFitter::AliHFCorrFitter():
   fMinDpt(0.),
   fMaxDpt(0.),
   fMinAsspt(0.),
-  fMaxAsspt(0.)
+  fMaxAsspt(0.),
+  fIspPb(kFALSE)
 {
   //Default Constructor......... fix me
 
@@ -112,7 +113,8 @@ fIsReflected(kFALSE),
 fMinDpt(0.),
 fMaxDpt(0.),
 fMinAsspt(0.),
-fMaxAsspt(0.)
+fMaxAsspt(0.),
+fIspPb(kFALSE)
 {
   if(isowner)fHist=histoToFit;
   else fHist=(TH1F*)histoToFit->Clone("fHist");
@@ -147,7 +149,8 @@ AliHFCorrFitter::AliHFCorrFitter(const AliHFCorrFitter &source):
   fMinDpt(source.fMinDpt),
   fMaxDpt(source.fMaxDpt),
   fMinAsspt(source.fMinAsspt),
-  fMaxAsspt(source.fMaxAsspt)
+  fMaxAsspt(source.fMaxAsspt),
+  fIspPb(source.fIspPb)
 {
   //copy constructor
 }
@@ -198,7 +201,8 @@ AliHFCorrFitter& AliHFCorrFitter::operator=(const AliHFCorrFitter &cfit)
   fMaxDpt=cfit.fMaxDpt;
   fMinAsspt=cfit.fMinAsspt;
   fMaxAsspt=cfit.fMaxAsspt;
-  
+  fIspPb=cfit.fIspPb;  
+
   return *this;
 
 }
@@ -516,6 +520,15 @@ case 4:
       fFit->SetParameter(3,0.3);
       fFit->SetParameter(4,0.6);
       fFit->SetParameter(6,0.6);
+      if(fIspPb && fMinDpt>=16) {
+        fFit->SetParameter(0,1.25);
+        fFit->SetParameter(1,1.8);
+        fFit->SetParameter(3,0.15);
+        fFit->SetParameter(4,0.7);
+        fFit->SetParameter(6,0.15);        
+        fFit->SetParameter(7,0.51);
+        fFit->SetParLimits(7,0.5,3.);        
+      }
     }    
     if(fMinAsspt==1 && fMaxAsspt==2) {  //dedicated starting parameters
       printf("Dedicated starting fit parameters...");
