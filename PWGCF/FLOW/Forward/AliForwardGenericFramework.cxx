@@ -8,6 +8,7 @@
 #include <cmath>
 #include "TH2F.h"
 #include "TFile.h"
+#include "AliForwardNUATask.h"
 
 using namespace std;
 
@@ -48,7 +49,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
     Double_t acceptance = 1.;
 
     Double_t eta = dNdetadphi.GetXaxis()->GetBinCenter(etaBin);
-    
+
     Double_t difEtaBin = fpvector->GetAxis(3)->FindBin(eta);
     Double_t difEta = fpvector->GetAxis(3)->GetBinCenter(difEtaBin);
     Double_t refEtaBin = fQvector->GetAxis(3)->FindBin(eta);
@@ -58,14 +59,18 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
       Double_t phi = dNdetadphi.GetYaxis()->GetBinCenter(phiBin);
       Double_t weight = dNdetadphi.GetBinContent(etaBin, phiBin);
 
-      //if (dNdetadphi.GetBinContent(etaBin, 0) == 0) break;
+      if (!fSettings.mc && dNdetadphi.GetBinContent(etaBin, 0) == 0) break;
 
       if (fSettings.doNUA){
         // holes in the FMD
 
+
+
         if ((phiBin == 17 || phiBin == 18 || phiBin == 14) && (weight == 0)){
-          if (detType == "forward") weight = 1.; 
-        } 
+          if (detType == "forward") weight = 1.;
+        }
+        Bool_t nua_mode = kTRUE;
+        if (nua_mode) weight = AliForwardNUATask::InterpolateWeight(dNdetadphi,phiBin,etaBin,weight);
 
         if (detType == "central") {
           Double_t nuaeta = fSettings.nuacentral->GetXaxis()->FindBin(eta);
@@ -83,7 +88,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
       if (weight == 0) continue;
 
     if (weight == 0) continue;
-    for (Int_t n = 0; n <= 5; n++) {         
+    for (Int_t n = 0; n <= 5; n++) {
       for (Int_t p = 1; p <= 4; p++) {
         Double_t realPart = TMath::Power(weight, p)*TMath::Cos(n*phi);
         Double_t imPart =   TMath::Power(weight, p)*TMath::Sin(n*phi);
@@ -94,7 +99,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
         if (doDiffFlow){
           fpvector->Fill(re, realPart);
           fpvector->Fill(im, imPart);
-          
+
           if (!(fSettings.fFlowFlags & fSettings.kEtaGap) & doRefFlow){
             fqvector->Fill(re, realPart);
             fqvector->Fill(im, imPart);
@@ -104,7 +109,8 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
           }
         }
 
-        if (doRefFlow && fabs(eta)>fSettings.gap){
+        if (doRefFlow){
+          if ((fSettings.fFlowFlags & fSettings.kEtaGap) && fabs(eta)<=fSettings.gap) continue;
           Double_t req[4] = {0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
           Double_t imq[4] = {-0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
           fQvector->Fill(req, realPart);
@@ -131,25 +137,25 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
   THnD*  fQcorrfactor = static_cast<THnD*>(autoList->FindObject("fQcorrfactor"));
   THnD*  fpcorrfactor = static_cast<THnD*>(autoList->FindObject("fpcorrfactor"));
   TList* difList = static_cast<TList*>(stdQCList->FindObject("Differential"));
-  
+
   THnD* cumuRef = 0;
   THnD* cumuDiff = 0;
 
     // For each n we loop over the hists
     Double_t noSamples = static_cast<Double_t>(r);
-    
+
     for (Int_t n = 2; n <= 5; n++) {
       Int_t prevRefEtaBin = kTRUE;
 
       cumuRef = static_cast<THnD*>(refList->FindObject(Form("cumuRef_v%d", n)));
       cumuDiff = static_cast<THnD*>(difList->FindObject(Form("cumuDiff_v%d", n)));
-        
+
       for (Int_t etaBin = 1; etaBin <= fpvector->GetAxis(3)->GetNbins(); etaBin++) {
         Double_t eta = fpvector->GetAxis(3)->GetBinCenter(etaBin);
 
         Double_t refEtaBinA = fQvector->GetAxis(3)->FindBin(eta);
         Double_t refEtaBinB = refEtaBinA;
-          
+
         if ((fSettings.fFlowFlags & fSettings.kEtaGap)) {
         //  if (eta > 3.75) refEtaBinB = fQvector->GetAxis(3)->FindBin(-3.75); // code for if FMD is reference
           refEtaBinB = fQvector->GetAxis(3)->FindBin(-eta);
@@ -179,7 +185,7 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
             cumuRef->Fill(x, two);
             x[4] = fSettings.kW2;
             cumuRef->Fill(x, dn2);
-            
+
             // four-particle cumulant
             double four = Four(n, n, -n, -n, refEtaBinA, refEtaBinB).Re();
             double dn4 = Four(0,0,0,0 , refEtaBinA, refEtaBinB).Re();
@@ -192,7 +198,7 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
             prevRefEtaBin = kFALSE;
           }
           // DIFFERENTIAL FLOW -----------------------------------------------------------------------------
-          if (n == 2 && (!(fSettings.fFlowFlags & fSettings.kEtaGap))){ 
+          if (n == 2 && (!(fSettings.fFlowFlags & fSettings.kEtaGap))){
             Double_t k[5] = {noSamples, vertexpos, eta, cent, fSettings.kW2Two};
             fpcorrfactor->Fill(k, fAutoDiff.GetBinContent(etaBin));
           }
@@ -216,7 +222,7 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
         } // if w2 > 0
       } //eta
     } // moment
-  
+
   return;
 }
 
@@ -272,7 +278,7 @@ TComplex AliForwardGenericFramework::Two(int n1, int n2, int eta1, int eta2)
 TComplex AliForwardGenericFramework::TwoDiff(int n1, int n2, int refetabin, int diffetabin)
 {
   TComplex formula =0;
- 
+
   formula = p(n1,1, diffetabin)*Q(n2,1, refetabin) - q(n1+n2,1, diffetabin);
   return formula;
 }

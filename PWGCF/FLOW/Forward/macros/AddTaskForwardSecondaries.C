@@ -1,22 +1,22 @@
 /**
  * @file   FTAddMyTask.C
  * @author Freja Thoresen <freja.thoresen@cern.ch>
- * 
- * @brief  Add Q-cummulant forward task to train 
- * 
- * 
+ *
+ * @brief  Add Q-cummulant forward task to train
+ *
+ *
  * @ingroup pwglf_forward_scripts_tasks
  */
-/** 
- * @defgroup pwglf_forward_flow Flow 
+/**
+ * @defgroup pwglf_forward_flow Flow
  *
- * Code to deal with flow 
+ * Code to deal with flow
  *
  * @ingroup pwglf_forward_topical
  */
-/** 
- * Add Flow task to train 
- * 
+/**
+ * Add Flow task to train
+ *
  * @ingroup pwglf_forward_flow
  */
 AliAnalysisTaskSE* AddTaskForwardSecondaries()
@@ -29,13 +29,13 @@ AliAnalysisTaskSE* AddTaskForwardSecondaries()
 
   // --- Get analysis manager ----------------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) 
+  if (!mgr)
     Fatal("","No analysis manager to connect to.");
-  
+
   const char* name = Form("ForwardFlowQC");
   AliForwardSecondariesTask* task = new AliForwardSecondariesTask(name);
-  
-  TString resName = "awesome";
+
+  TString resName = "Secondaries";
 
   task->fSettings.doNUA = doNUA;
 
@@ -51,12 +51,12 @@ AliAnalysisTaskSE* AddTaskForwardSecondaries()
 
     TFile *file = new TFile(nua_filepath);
 
-    file->GetObject("nuacentral", task->fSettings.nuacentral);  
+    file->GetObject("nuacentral", task->fSettings.nuacentral);
 
     task->fSettings.nuacentral->SetDirectory(0);
-    file->GetObject("nuaforward", task->fSettings.nuaforward);   
+    file->GetObject("nuaforward", task->fSettings.nuaforward);
     task->fSettings.nuaforward->SetDirectory(0);
-    file->Close(); 
+    file->Close();
   }
 
 

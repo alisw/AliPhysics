@@ -34,7 +34,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
   ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
   ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD/analysis2
   ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/c2
-  ${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/Forward  
+  ${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/Forward
   ${AliRoot_SOURCE_DIR}/PYTHIA6/pythia6
   )
 
@@ -42,6 +42,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
   AliForwardFlowRun2Settings.cxx
   AliForwardNUATask.cxx
+  AliForwardNUETask.cxx
   AliForwardGenericFramework.cxx
   AliForwardQCumulantRun2.cxx
   AliForwardFlowRun2Task.cxx
@@ -81,7 +82,7 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-install(TARGETS ${MODULE} 
+install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)

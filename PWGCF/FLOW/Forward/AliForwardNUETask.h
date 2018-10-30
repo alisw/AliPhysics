@@ -1,10 +1,10 @@
 //
 // Calculate the flow in the forward regions using the Q cumulants method
 //
-#ifndef AliForwardNUATask_H
-#define AliForwardNUATask_H
+#ifndef AliForwardNUETask_H
+#define AliForwardNUETask_H
 /**
- * @file AliForwardNUATask.h
+ * @file AliForwardNUETask.h
  * @author Freja Thoresen <freja.thoresen@cern.ch>
  *
  * @brief
@@ -42,30 +42,30 @@ class AliESDEvent;
  * @ingroup pwglf_forward_flow
  *
  */
-class AliForwardNUATask : public AliAnalysisTaskSE
+class AliForwardNUETask : public AliAnalysisTaskSE
 {
 public:
   /**
    * Constructor
    */
-  AliForwardNUATask();
+  AliForwardNUETask();
   /**
    * Constructor
    *
    * @param name Name of task
    */
-  AliForwardNUATask(const char* name);
+  AliForwardNUETask(const char* name);
   /**
    * Destructor
    */
-  virtual ~AliForwardNUATask() {}
+  virtual ~AliForwardNUETask() {}
 
   /**
    * Copy constructor
    *
    * @param o Object to copy from
    */
-  AliForwardNUATask(const AliForwardNUATask& o);
+  AliForwardNUETask(const AliForwardNUETask& o);
 
   /**
    * @{
@@ -112,7 +112,7 @@ Bool_t nua_mode;
     kphiAcceptanceBin = 21 // phi acceptance bin in the FMD histogram (dNdetadphi)
   };
 
-  ClassDef(AliForwardNUATask, 1); // Analysis task for flow analysis
+  ClassDef(AliForwardNUETask, 1); // Analysis task for flow analysis
 };
 
 #endif

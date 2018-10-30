@@ -3,9 +3,9 @@
 /**
  * @file AliForwardFlowRun2Settings.h
  * @author Freja Thoresen <freja.thoresen@cern.ch>
- * 
+ *
  * @brief
- * 
+ *
  * @ingroup pwgcf_forward_flow
  */
 #include "TObject.h"
@@ -64,10 +64,11 @@ class AliForwardFlowRun2Settings : public TObject {
   Double_t gap;
 
   bool mc;
-
+  UShort_t tracktype;
+  Bool_t nua_mode;
   // return true if good event
   Bool_t ExtraEventCutFMD(TH2D forwarddNdedp, double cent, Bool_t mc);
-  
+
   // flags used for method of cumulant
   enum EFlowFlags {
     kStdQC   = 0x0001, // Standard QC{2} and QC{4} calculations
@@ -86,7 +87,7 @@ class AliForwardFlowRun2Settings : public TObject {
   };
 
   // definition of different variables to save
-  enum { 
+  enum {
     kWA = 1,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
     kWA2,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
     kWB,               // multiplicity for all particles in subevent B (note subevent B can NOT be the entire event)
@@ -99,8 +100,8 @@ class AliForwardFlowRun2Settings : public TObject {
     kSinphi1A,         // <sin(phi1)> for subevent A
     kCosphi1B,         // <cos(phi1)> for subevent B
     kSinphi1B,         // <sin(phi1)> for subevent B
-    kCosphi1phi2p,     // <cos(phi1+phi2)> 
-    kCosphi1phi2m,     // <cos(phi1-phi2)> 
+    kCosphi1phi2p,     // <cos(phi1+phi2)>
+    kCosphi1phi2m,     // <cos(phi1-phi2)>
     kSinphi1phi2p,     // <sin(phi1+phi2)>
     kCosphi1phi2phi3m, // <cos(phi1-phi2-phi3)>
     kSinphi1phi2phi3m, // <sin(phi1-phi2-phi3)>
@@ -109,7 +110,7 @@ class AliForwardFlowRun2Settings : public TObject {
   };
 
   // definition of different variables to save
-  enum { 
+  enum {
     kN2 = 1,
     kD2
   };

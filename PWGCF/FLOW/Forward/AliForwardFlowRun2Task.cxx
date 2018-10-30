@@ -49,14 +49,14 @@
 using namespace std;
 ClassImp(AliForwardFlowRun2Task)
 #if 0
-; // For emacs 
+; // For emacs
 #endif
 
 //_____________________________________________________________________
 AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
   fAOD(0),           // input event
   fOutputList(0),    // output list
-  fStdQCList(0), 
+  fStdQCList(0),
   fGFList(0),
   fEventList(0),
   fRandom(0),
@@ -76,7 +76,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
   AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTaskSE(name),
   fAOD(0),           // input event
   fOutputList(0),    // output list
-  fStdQCList(0), 
+  fStdQCList(0),
   fGFList(0),
   fEventList(0),
   fRandom(0),
@@ -87,7 +87,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
   fMultCentLowCut(),
   useEvent(true)
   {
-  // 
+  //
   //  Constructor
   //
   //  Parameters:
@@ -107,33 +107,34 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
     fOutputList->SetOwner(kTRUE);       // memory stuff: the list is owner of all objects it contains and will delete them if requested
     fEventCuts.AddQAplotsToList(fOutputList);
 
-    TRandom r = TRandom();              // random integer to use for creation of samples (used for error bars). 
+    TRandom r = TRandom();              // random integer to use for creation of samples (used for error bars).
                                           // Needs to be created here, otherwise it will draw the same random number.
 
-    fStdQCList = new TList(); 
+    fStdQCList = new TList();
     fGFList    = new TList();
     fEventList = new TList();
-    fStdQCList->SetName("StdQC"); 
+    fStdQCList->SetName("StdQC");
     fGFList   ->SetName("GF");
     fEventList->SetName("EventInfo");
 
     fEventList->Add(new TH1D("Centrality","Centrality",fSettings.fCentBins,0,100));
     fEventList->Add(new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
-    fEventList->Add(new TH2F("hOutliers","Maximum #sigma from mean N_{ch} pr. bin", 
-       20, 0., 100., 500, 0., 5.)); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram 
-    fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
+    fEventList->Add(new TH2F("hOutliers","Maximum #sigma from mean N_{ch} pr. bin",
+       20, 0., 100., 500, 0., 5.)); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram
+       fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
+       fEventList->Add(new TH1D("EventCuts_FMD","EventCuts_FMD",3,0,3));
 
     fStdQCList->Add(new TList());
     fStdQCList->Add(new TList());
     static_cast<TList*>(fStdQCList->At(0))->SetName("Reference");
-    static_cast<TList*>(fStdQCList->At(1))->SetName("Differential");  
+    static_cast<TList*>(fStdQCList->At(1))->SetName("Differential");
 
     fGFList->Add(new TList());
-    fGFList->Add(new TList());   
-    fGFList->Add(new TList());   
+    fGFList->Add(new TList());
+    fGFList->Add(new TList());
     static_cast<TList*>(fGFList->At(0))->SetName("Reference");
-    static_cast<TList*>(fGFList->At(1))->SetName("Differential"); 
-    static_cast<TList*>(fGFList->At(2))->SetName("AutoCorrection"); 
+    static_cast<TList*>(fGFList->At(1))->SetName("Differential");
+    static_cast<TList*>(fGFList->At(2))->SetName("AutoCorrection");
 
     //static_cast<TList*>(fGFList->At(2))->Add(new TH1F("fQcorrfactor", "fQcorrfactor", 1, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge)); //(eta, n)
     //static_cast<TList*>(fGFList->At(2))->Add(new TH1F("fpcorrfactor", "fpcorrfactor", fSettings.fNDiffEtaBins, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge)); //(eta, n)
@@ -191,7 +192,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
 
 
 //_____________________________________________________________________
-void AliForwardFlowRun2Task::UserExec(Option_t */*option*/)
+void AliForwardFlowRun2Task::UserExec(Option_t *)
   {
   //
   //  Analyses the event with use of the helper class AliForwardQCumulantRun2
@@ -236,10 +237,10 @@ if(!fAOD){
     if(!fEventCuts.AcceptEvent(fInputEvent)) {
       PostData(1, fOutputList);
       return;
-    }  
-    
+    }
+
     AliAODVertex* aodVtx = fAOD->GetPrimaryVertex();
-    
+
     v0Centr = 0;
 
   // Get detector objects
@@ -248,7 +249,7 @@ if(!fAOD){
     aodfmult = static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
     zvertex = aodVtx->GetZ();
 }
-    
+
   //AliAODCentralMult* aodcmult = static_cast<AliAODCentralMult*>(fAOD->FindListObject("CentralClusters")); // only exists if created by user from ESDs
   TH2D spddNdedp = TH2D("spddNdedp","spddNdedp",400,-1.5,1.5,400,0,2*TMath::Pi()); // Histogram to contain the central tracks
   TH2D forwarddNdedp = TH2D("forwarddNdedp","forwarddNdedp",200,-4,6,20,0,2*TMath::Pi()); // also known as dNdetadphi
@@ -277,7 +278,7 @@ if(!fAOD){
       }
     }
   }
-  
+
   else{
     Int_t  iTracks(fAOD->GetNumberOfTracks());
     for(Int_t i(0); i < iTracks; i++) {
@@ -297,7 +298,7 @@ if(!fAOD){
 
 
   //AliMultSelection* MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
-  Float_t lPerc = v0Centr; 
+  Float_t lPerc = v0Centr;
 
  /* if ( MultSelection ) {
     lPerc = MultSelection->GetMultiplicityPercentile("V0M");
@@ -305,15 +306,18 @@ if(!fAOD){
     Int_t lEvSelCode = MultSelection->GetEvSelCode();
     if( lEvSelCode > 0 ) lPerc = lEvSelCode; // also if lEvSelCode > 200, the event is probably useless
     //disregard!
-  } 
+  }
   else
   {
     //If this happens, re-check if AliMultSelectionTask ran before your task!
-    AliInfo("Didn't find MultSelection!"); 
+    AliInfo("Didn't find MultSelection!");
   }*/
 
   if (!fSettings.ExtraEventCutFMD(forwarddNdedp, v0Centr, true)) useEvent = false;
+  static_cast<TH1D*>(fEventList->FindObject("FMDHits"))->Fill(0.5);
+
   if (useEvent){
+    static_cast<TH1D*>(fEventList->FindObject("FMDHits"))->Fill(1.5);
 
     UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
 
@@ -329,7 +333,7 @@ if(!fAOD){
     calculator.saveEvent(fOutputList, lPerc, zvertex,  randomInt);
     calculator.reset();
 
-    PostData(1, fOutputList); 
+    PostData(1, fOutputList);
   }
   return;
 }
@@ -338,11 +342,11 @@ if(!fAOD){
 
 AliTrackReference* AliForwardFlowRun2Task::IsHitFMD(AliMCParticle* p) {
   //std::cout << "p->GetNumberOfTrackReferences() = " << p->GetNumberOfTrackReferences() << std::endl;
-  for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) { 
+  for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
     AliTrackReference* ref = p->GetTrackReference(iTrRef);
     // Check hit on FMD
     //std::cout << "ref->DetectorId() = " << ref->DetectorId() << std::endl;
-    //std::cout << "AliTrackReference::kFMD = " << AliTrackReference::kFMD << std::endl; 
+    //std::cout << "AliTrackReference::kFMD = " << AliTrackReference::kFMD << std::endl;
     if (!ref || AliTrackReference::kFMD != ref->DetectorId()) {
       continue;
     }
@@ -354,7 +358,7 @@ AliTrackReference* AliForwardFlowRun2Task::IsHitFMD(AliMCParticle* p) {
 }
 
 AliTrackReference* AliForwardFlowRun2Task::IsHitTPC(AliMCParticle* p) {
-  for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) { 
+  for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
     AliTrackReference* ref = p->GetTrackReference(iTrRef);
     // Check hit on FMD
     if (!ref || AliTrackReference::kTPC != ref->DetectorId()) {

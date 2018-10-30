@@ -23,7 +23,9 @@ AliForwardFlowRun2Settings::AliForwardFlowRun2Settings() :
   nuaforward(),
   doNUA(false),
   gap(0.0),
-  mc(false)
+  mc(false),
+  tracktype(kHybrid),
+  nua_mode(kFALSE)
 {
 }
 
@@ -35,7 +37,7 @@ Bool_t AliForwardFlowRun2Settings::ExtraEventCutFMD(TH2D forwarddNdedp, double c
   Double_t totalFMDpar = 0;
 
   for (Int_t etaBin = 1; etaBin <= forwarddNdedp.GetNbinsX(); etaBin++) {
-  
+
     Double_t acceptance = 1.;
     Double_t eta = forwarddNdedp.GetXaxis()->GetBinCenter(etaBin);
     Double_t runAvg = 0;
@@ -55,7 +57,7 @@ Bool_t AliForwardFlowRun2Settings::ExtraEventCutFMD(TH2D forwarddNdedp, double c
         weight = 0;
       }
       totalFMDpar += weight;
-      
+
       // We calculate the average Nch per. bin
       avgSqr += weight*weight;
       runAvg += weight;
@@ -75,8 +77,8 @@ Bool_t AliForwardFlowRun2Settings::ExtraEventCutFMD(TH2D forwarddNdedp, double c
       Double_t nSigma = (stdev == 0 ? 0 : (max-runAvg)/stdev);
       if (fSigmaCut > 0. && nSigma >= fSigmaCut && cent < 60) nBadBins++;
       else nBadBins = 0;
-      // We still finish the loop, for fOutliers to make sense, 
-      // but we do no keep the event for analysis 
+      // We still finish the loop, for fOutliers to make sense,
+      // but we do no keep the event for analysis
       if (nBadBins > 3) useEvent = false;
      //if (nBadBins > 3) std::cout << "NUMBER OF BAD BINS > 3" << std::endl;
     }

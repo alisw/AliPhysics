@@ -63,7 +63,7 @@
 using namespace std;
 ClassImp(AliForwardSecondariesTask)
 #if 0
-; // For emacs 
+; // For emacs
 #endif
 
 //_____________________________________________________________________
@@ -80,7 +80,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
     fPiCheck(0),
     fdNdetaOrigin(0),
     fxray(0),
-    fNsecondaries(0),    
+    fNsecondaries(0),
     fNprimaries(0),
     fITS(0),
     fFMD1(0),
@@ -108,7 +108,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
     fPiCheck(0),
     fdNdetaOrigin(0),
     fxray(0),
-    fNsecondaries(0),    
+    fNsecondaries(0),
     fNprimaries(0),
     fITS(0),
     fFMD1(0),
@@ -117,7 +117,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
     fPipe(0),
     fEarlyDecay(0)
   {
-  // 
+  //
   //  Constructor
   //
   //  Parameters:
@@ -139,7 +139,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
 
   //fEventCuts.AddQAplotsToList(fOutputList);
 
-    TRandom fRandom = TRandom();              // random integer to use for creation of samples (used for error bars). 
+    TRandom fRandom = TRandom();              // random integer to use for creation of samples (used for error bars).
                                         // Needs to be created here, otherwise it will draw the same random number.
 
 fDeltaList = new TList();
@@ -147,27 +147,27 @@ fDeltaList->SetName("Delta");
 
     Int_t bins_phi[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 41, fSettings.fCentBins, 200} ;
     Double_t xmin_phi[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -4};
-    Double_t xmax_phi[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 6}; // 
+    Double_t xmax_phi[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 6}; //
     Int_t dimensions_phi = 5;
 
     Int_t bins_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 201, fSettings.fCentBins, 20} ;
     Double_t xmin_eta[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -4, 0, 0.0};
-    Double_t xmax_eta[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 6, 100, 2*TMath::Pi()}; // 
+    Double_t xmax_eta[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 6, 100, 2*TMath::Pi()}; //
     Int_t dimensions_eta = 5;
 
     Int_t bins_phi1[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 41, fSettings.fCentBins, 20} ;
     Double_t xmin_phi1[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, 0.0};
-    Double_t xmax_phi1[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 2*TMath::Pi()}; // 
+    Double_t xmax_phi1[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 2*TMath::Pi()}; //
     Int_t dimensions_phi1 = 5;
 
     Int_t bins_eta1[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 201, fSettings.fCentBins, 200} ;
     Double_t xmin_eta1[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -4, 0, -4.0};
-    Double_t xmax_eta1[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 6, 100, 6}; // 
+    Double_t xmax_eta1[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 6, 100, 6}; //
     Int_t dimensions_eta1 = 5;
 
     fDeltaList->Add(new THnD("delta_phi", "delta_phi",dimensions_phi1,bins_phi1, xmin_phi1, xmax_phi1)); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
     fDeltaList->Add(new THnD("delta_eta", "delta_eta",dimensions_eta1,bins_eta1, xmin_eta1, xmax_eta1)); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
-    
+
     fDeltaList->Add(new THnD("delta_phi_mother", "delta_phi_mother",dimensions_phi,bins_phi, xmin_phi, xmax_phi)); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
     fDeltaList->Add(new THnD("delta_phi_tr", "delta_phi_tr",dimensions_phi,bins_phi, xmin_phi, xmax_phi)); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
     fDeltaList->Add(new THnD("delta_eta_mother", "delta_eta_mother",dimensions_eta,bins_eta, xmin_eta, xmax_eta));// (samples, vertex,eta_mother - eta_tr ,centrality,phi_mother,phi_tr,phi_p)
@@ -192,8 +192,8 @@ fDeltaList->SetName("Delta");
 
     fEventList->Add(new TH1D("Centrality","Centrality",10,0,100));
     fEventList->Add(new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
-    fEventList->Add(new TH2F("hOutliers","Maximum #sigma from mean N_{ch} pr. bin", 
-     20, 0., 100., 500, 0., 5.)); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram 
+    fEventList->Add(new TH2F("hOutliers","Maximum #sigma from mean N_{ch} pr. bin",
+     20, 0., 100., 500, 0., 5.)); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram
     fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
     fEventList->SetName("EventInfo");
 
@@ -202,7 +202,7 @@ fDeltaList->SetName("Delta");
 
     Int_t bins_prim[4] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fCentBins, 200} ;
     Double_t xmin_prim[4] = {0,fSettings.fZVtxAcceptanceLowEdge, 0, -4};
-    Double_t xmax_prim[4] = {10,fSettings.fZVtxAcceptanceUpEdge, 100, 6}; // 
+    Double_t xmax_prim[4] = {10,fSettings.fZVtxAcceptanceUpEdge, 100, 6}; //
     Int_t dimensions_prim = 4;
     fDeltaList->Add(new THnD("fnoPrim", "fnoPrim", dimensions_prim, bins_prim, xmin_prim, xmax_prim)); //(samples,vertex, phi, cent, eta)
     static_cast<THnD*>(fDeltaList->FindObject("fnoPrim"))->GetAxis(0)->SetName("samples");
@@ -213,13 +213,13 @@ fDeltaList->SetName("Delta");
     fOutputList->Add(fEventList);
     fOutputList->Add(fDeltaList);
 
-    // do analysis 
+    // do analysis
     PostData(1, fOutputList);
   }
 
 
 //_____________________________________________________________________
-void AliForwardSecondariesTask::UserExec(Option_t */*option*/)
+void AliForwardSecondariesTask::UserExec(Option_t *)
 {
   //
   //  Analyses the event with use of the helper class AliForwardQCumulantRun2
@@ -233,7 +233,7 @@ void AliForwardSecondariesTask::UserExec(Option_t */*option*/)
         std::cout << "no aod" << std::endl;
 
     return;
-    }              
+    }
 
     //std::cout << "fMC->GetNumberOfTracks()" << fAOD->GetNumberOfTracks() << std::endl;
 
@@ -253,7 +253,7 @@ void AliForwardSecondariesTask::UserExec(Option_t */*option*/)
 double v0cent = 5.;
 std::cout << "the cent is " << v0cent << std::endl;
     static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(event_vtx_z);
- 
+
 
 
 
@@ -261,9 +261,9 @@ std::cout << "the cent is " << v0cent << std::endl;
 
   AliAODMCHeader* fAODMCHeader = static_cast<AliAODMCHeader*>(fAOD->FindListObject(AliAODMCHeader::StdBranchName()));
 
-  Double_t impactParam[] = { 0.00,  3.72,  5.23,  7.31,  8.88, 10.20, 
+  Double_t impactParam[] = { 0.00,  3.72,  5.23,  7.31,  8.88, 10.20,
           11.38, 12.47, 13.50, 14.51, 16.679};
-  Double_t centrality[]  = { 0.,    5.,   10.,   20.,   30.,   40., 
+  Double_t centrality[]  = { 0.,    5.,   10.,   20.,   30.,   40.,
           50.,   60.,   70.,   80.,  100.};
 
   Int_t nPoints = sizeof(impactParam)/sizeof(Double_t);
@@ -272,7 +272,7 @@ std::cout << "the cent is " << v0cent << std::endl;
 
     double fCent = 0;
     if (fAODMCHeader){
-  AliGenEventHeaderTunedPbPb* header = 
+  AliGenEventHeaderTunedPbPb* header =
     dynamic_cast<AliGenEventHeaderTunedPbPb*>(fAODMCHeader->GetCocktailHeader(0));
   if (header) fCent = header->GetCentrality();}
 
@@ -325,7 +325,7 @@ std::cout << cent << std::endl;
   Int_t nPrim     = stack->GetNprimary();
 std::cout << "nPrim = " << nPrim << std::endl;
 
-    
+
   UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
 
   static_cast<TH1D*>(fEventList->FindObject("Centrality"))->Fill(v0cent);
@@ -345,7 +345,7 @@ THnD* delta_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_eta"));
 
   const AliVVertex* aodVtx = fAOD->GetPrimaryVertex();
   Double_t vertex  = aodVtx->GetZ();
- 
+
   /*for (Int_t iTr = 0; iTr < nTracks; iTr++) {
     AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
     if (AliTrackReference *ref = this->IsHitFMD(p)) {
@@ -362,7 +362,7 @@ THnD* delta_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_eta"));
   //if (!fSettings.ExtraEventCutFMD(forwarddNdedp, v0cent, true)) useEvent = kFALSE;
 
 
-  if (useEvent){ 
+  if (useEvent){
   UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
   std::vector< Int_t > listOfMothers;
 
@@ -373,7 +373,7 @@ THnD* delta_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_eta"));
     AliTrackReference* tr = this->IsHitFMD(p);
     if (tr && p->Charge() != 0){ // || this->IsHitTPC(p)){// { && p->Charge()!=0
 
-      AliMCParticle* mother = GetMother(p); 
+      AliMCParticle* mother = GetMother(p);
       if (!mother) continue;
       //if (!mother) mother = p;
       Double_t eta_mother = mother->Eta();
@@ -385,7 +385,7 @@ THnD* delta_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_eta"));
       Double_t phi_tr = etaPhi[1];
       Double_t eta_tr = etaPhi[0];
 
-      // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr)    
+      // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr)
       Double_t phi[5] = {randomInt,event_vtx_z, WrapPi(phi_mother - phi_tr), v0cent, eta_mother};
       Double_t eta[5] = {randomInt,event_vtx_z, (eta_mother - eta_tr), v0cent, phi_mother};
 
@@ -414,11 +414,11 @@ THnD* delta_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_eta"));
         fnoPrim->Fill(x_prim,1);
       }
     }
-  } 
+  }
 
 
 
-  PostData(1, fOutputList); 
+  PostData(1, fOutputList);
 } // End of useEvent
   return;
 }
@@ -442,7 +442,7 @@ Bool_t AliForwardSecondariesTask::AddMotherIfFirstTimeSeen(AliMCParticle* p, std
   //Checking if v contains elements (is empty):
   if(v.empty()){
      return false;
-  } 
+  }
   Int_t x = p->GetLabel();
   if(std::find(v.begin(), v.end(), x) != v.end()) {
       /* v contains x */
@@ -644,11 +644,11 @@ AliMCParticle* AliForwardSecondariesTask::GetFirstNonPrimaryMother(AliMCParticle
 
 AliTrackReference* AliForwardSecondariesTask::IsHitFMD(AliMCParticle* p) {
   //std::cout << "p->GetNumberOfTrackReferences() = " << p->GetNumberOfTrackReferences() << std::endl;
-  for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) { 
+  for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
     AliTrackReference* ref = p->GetTrackReference(iTrRef);
     // Check hit on FMD
     //std::cout << "ref->DetectorId() = " << ref->DetectorId() << std::endl;
-    //std::cout << "AliTrackReference::kFMD = " << AliTrackReference::kFMD << std::endl; 
+    //std::cout << "AliTrackReference::kFMD = " << AliTrackReference::kFMD << std::endl;
     if (!ref || AliTrackReference::kFMD != ref->DetectorId()) {
       continue;
     }
@@ -660,7 +660,7 @@ AliTrackReference* AliForwardSecondariesTask::IsHitFMD(AliMCParticle* p) {
 }
 
 AliTrackReference* AliForwardSecondariesTask::IsHitTPC(AliMCParticle* p) {
-  for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) { 
+  for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
     AliTrackReference* ref = p->GetTrackReference(iTrRef);
     // Check hit on TPC
     if (!ref || AliTrackReference::kTPC != ref->DetectorId()) {
@@ -674,7 +674,7 @@ AliTrackReference* AliForwardSecondariesTask::IsHitTPC(AliMCParticle* p) {
 }
 
 AliTrackReference* AliForwardSecondariesTask::IsHitITS(AliMCParticle* p) {
-  for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) { 
+  for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
     AliTrackReference* ref = p->GetTrackReference(iTrRef);
     // Check hit on ITS
     if (!ref || AliTrackReference::kITS != ref->DetectorId()) {
@@ -692,7 +692,7 @@ AliTrackReference* AliForwardSecondariesTask::IsHitITS(AliMCParticle* p) {
 
 void AliForwardSecondariesTask::GetTrackRefEtaPhi(AliMCParticle* p, Double_t* etaPhi) {
   AliTrackReference* ref = 0x0;
-  for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) { 
+  for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
     ref = p->GetTrackReference(iTrRef);
     // Check hit on FMD
     if (ref && AliTrackReference::kFMD == ref->DetectorId()) {

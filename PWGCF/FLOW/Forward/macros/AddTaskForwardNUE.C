@@ -1,25 +1,13 @@
 /**
- * @file   FTAddMyTask.C
+ * @file   AddTaskForwardNUA.C
  * @author Freja Thoresen <freja.thoresen@cern.ch>
  *
  * @brief  Add Q-cummulant forward task to train
  *
  *
- * @ingroup pwglf_forward_scripts_tasks
  */
-/**
- * @defgroup pwglf_forward_flow Flow
- *
- * Code to deal with flow
- *
- * @ingroup pwglf_forward_topical
- */
-/**
- * Add Flow task to train
- *
- * @ingroup pwglf_forward_flow
- */
-AliAnalysisTaskSE* AddTaskForwardNUA(Bool_t nua_mode)
+
+AliAnalysisTaskSE* AddTaskForwardNUE(Bool_t nua_mode)
 {
   Int_t mode = kRECON;
 
@@ -28,14 +16,14 @@ AliAnalysisTaskSE* AddTaskForwardNUA(Bool_t nua_mode)
   if (!mgr)
     Fatal("","No analysis manager to connect to.");
 
-  const char* name = Form("ForwardNUA_filled");
+  const char* name = Form("ForwardNUE_filled");
 
-  TString resName = "NUA_filled";
+  TString resName = "NUE_filled";
   if (nua_mode){
-    resName = "NUA_extrapolated";
-    name = "ForwardNUA";
+    resName = "NUE_extrapolated";
+    name = "ForwardNUE";
   }
-  AliForwardNUATask* task = new AliForwardNUATask(name);
+  AliForwardNUETask* task = new AliForwardNUETask(name);
   task->nua_mode = nua_mode;
   std::cout << resName << std::endl;
 

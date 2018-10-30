@@ -1,29 +1,27 @@
 /**
  * @file   FTAddMyTask.C
  * @author Freja Thoresen <freja.thoresen@cern.ch>
- * 
- * @brief  Add Q-cummulant forward task to train 
- * 
- * 
+ *
+ * @brief  Add Q-cummulant forward task to train
+ *
+ *
  * @ingroup pwglf_forward_scripts_tasks
  */
-/** 
- * @defgroup pwglf_forward_flow Flow 
+/**
+ * @defgroup pwglf_forward_flow Flow
  *
- * Code to deal with flow 
+ * Code to deal with flow
  *
  * @ingroup pwglf_forward_topical
  */
-/** 
- * Add Flow task to train 
- * 
+/**
+ * Add Flow task to train
+ *
  * @ingroup pwglf_forward_flow
  */
-AliAnalysisTaskSE* AddTaskForwardFlowRun2()
+AliAnalysisTaskSE* AddTaskForwardFlowRun2(Bool_t nua_mode, Bool_t doetagap, Bool_t doNUA, Double_t gap)
 {
-  Bool_t etagap = true;
   Int_t mode = kRECON;
-  bool doNUA = true;
   bool mc = false;
 
 
@@ -31,43 +29,32 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2()
 
   // --- Get analysis manager ----------------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) 
+  if (!mgr)
     Fatal("","No analysis manager to connect to.");
 
+
+    if (doetagap)     name = "ForwardFlowEtagap";
+
   const char* name = Form("ForwardFlowQC");
-  AliForwardFlowRun2Task* task = new AliForwardFlowRun2Task(name);
-  
-  TString resName = "awesome";
+  AliForwardFlowRun2Task* task = new AliForwardFlowRun2Task();
+
+  TString resName = "ForwardFlow_std";
 
   task->fSettings.doNUA = doNUA;
   task->fSettings.mc = mc;
 
-
-  if (task->fSettings.doNUA){
-
-    //TString nua_filepath = std::getenv("NUA_FILE");
-    //if (!nua_filepath) {
-      TString nua_filepath = "/home/thoresen/Documents/PhD/Analysis/nua.root";
-      std::cerr << "Environment variable 'NUA_FILE' not found (this should be a path to nua.root).\n";
-      std::cerr << "   Using default value: '" << nua_filepath << "'\n";
-    //}
-
-    TFile *file = new TFile("/home/thoresen/Programs/alice/AliPhysics/PWGCF/FLOW/Forward/corrections/LHC15o_pass5_lowIR_selected.root");
-
-    file->GetObject("nuacentral", task->fSettings.nuacentral);  
-
-    task->fSettings.nuacentral->SetDirectory(0);
-    file->GetObject("nuaforward", task->fSettings.nuaforward);   
-    task->fSettings.nuaforward->SetDirectory(0);
-    file->Close(); 
-  }
+  task->fSettings.tracktype = AliForwardFlowRun2Task::kHybrid;
 
 
-  if (etagap){
+
+  if (doetagap){
     // if etagap otherwise comment out, and it will be standard
     task->fSettings.fFlowFlags = task->fSettings.kEtaGap;
     task->fSettings.fNRefEtaBins = 1;
-    task->fSettings.gap = 0.0;
+    task->fSettings.gap = gap;
+    resName = "ForwardFlow_etagap";
+    resName += std::to_string(gap);
+
   }
   else {
     task->fSettings.fNRefEtaBins = 1; // eller skal det være et andet antal?
@@ -75,7 +62,37 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2()
 
   }
 
-  
+
+    if (task->fSettings.doNUA){
+
+
+      //TString nua_filepath = std::getenv("NUA_FILE");
+      //if (!nua_filepath) {
+        TString nua_filepath = "/home/thoresen/Documents/PhD/Analysis/nua.root";
+        std::cerr << "Environment variable 'NUA_FILE' not found (this should be a path to nua.root).\n";
+        std::cerr << "   Using default value: '" << nua_filepath << "'\n";
+      //}
+      TFile *file;
+
+      if (nua_mode) {
+        // INTERPOLATE
+        resName += "_NUA_extrapolated"
+          file = new TFile("/home/thoresen/Programs/alice/AliPhysics/PWGCF/FLOW/Forward/corrections/LHC15o_pass5_lowIR_selected.root");
+      }
+      else {
+        // FILL
+          file = new TFile("/home/thoresen/Programs/alice/AliPhysics/PWGCF/FLOW/Forward/corrections/LHC15o_pass5_lowIR_selected.root");
+          resName += "_NUA_filled"
+      }
+
+      file->GetObject("nuacentral", task->fSettings.nuacentral);
+      task->fSettings.nuacentral->SetDirectory(0);
+      file->GetObject("nuaforward", task->fSettings.nuaforward);
+      task->fSettings.nuaforward->SetDirectory(0);
+      file->Close();
+    }
+
+
   //task->fSettings.fMultEstimator = "V0M";// RefMult08; // "V0M" // "SPDTracklets";
   // task->fSettings.fMultEstimator = task->fSettings.fMultEstimatorValidTracks;
 

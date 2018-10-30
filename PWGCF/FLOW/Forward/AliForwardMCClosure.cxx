@@ -51,14 +51,14 @@
 using namespace std;
 ClassImp(AliForwardMCClosure)
 #if 0
-; // For emacs 
+; // For emacs
 #endif
 
 //_____________________________________________________________________
 AliForwardMCClosure::AliForwardMCClosure() : AliAnalysisTaskSE(),
   fAOD(0),           // input event
   fOutputList(0),    // output list
-  fStdQCList(0), 
+  fStdQCList(0),
   fGFList(0),
   fEventList(0),
   fRandom(0),
@@ -77,7 +77,7 @@ AliForwardMCClosure::AliForwardMCClosure() : AliAnalysisTaskSE(),
   AliForwardMCClosure::AliForwardMCClosure(const char* name) : AliAnalysisTaskSE(name),
   fAOD(0),           // input event
   fOutputList(0),    // output list
-  fStdQCList(0), 
+  fStdQCList(0),
   fGFList(0),
   fEventList(0),
   fRandom(0),
@@ -87,7 +87,7 @@ AliForwardMCClosure::AliForwardMCClosure() : AliAnalysisTaskSE(),
   fMultTOFHighCut(),
   fMultCentLowCut()
   {
-  // 
+  //
   //  Constructor
   //
   //  Parameters:
@@ -108,20 +108,20 @@ AliForwardMCClosure::AliForwardMCClosure() : AliAnalysisTaskSE(),
 
   fEventCuts.AddQAplotsToList(fOutputList);
 
-  TRandom r = TRandom();              // random integer to use for creation of samples (used for error bars). 
+  TRandom r = TRandom();              // random integer to use for creation of samples (used for error bars).
                                         // Needs to be created here, otherwise it will draw the same random number.
 
-  fStdQCList = new TList(); 
+  fStdQCList = new TList();
   fGFList = new TList();
-  fStdQCList->SetName("StdQC"); 
+  fStdQCList->SetName("StdQC");
   fGFList->SetName("GF");
 
   fEventList = new TList();
 
   fEventList->Add(new TH1D("Centrality","Centrality",fSettings.fCentBins,0,100));
   fEventList->Add(new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
-  fEventList->Add(new TH2F("hOutliers","Maximum #sigma from mean N_{ch} pr. bin", 
-     20, 0., 100., 500, 0., 5.)); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram 
+  fEventList->Add(new TH2F("hOutliers","Maximum #sigma from mean N_{ch} pr. bin",
+     20, 0., 100., 500, 0., 5.)); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram
   fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
   fEventList->Add(new TH1D("dNdeta","dNdeta",fSettings.fNDiffEtaBins,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge));
   fEventList->SetName("EventInfo");
@@ -129,14 +129,14 @@ AliForwardMCClosure::AliForwardMCClosure() : AliAnalysisTaskSE(),
   fStdQCList->Add(new TList());
   fStdQCList->Add(new TList());
   static_cast<TList*>(fStdQCList->At(0))->SetName("Reference");
-  static_cast<TList*>(fStdQCList->At(1))->SetName("Differential");  
+  static_cast<TList*>(fStdQCList->At(1))->SetName("Differential");
 
   fGFList->Add(new TList());
-  fGFList->Add(new TList());   
-  fGFList->Add(new TList());   
+  fGFList->Add(new TList());
+  fGFList->Add(new TList());
   static_cast<TList*>(fGFList->At(0))->SetName("Reference");
-  static_cast<TList*>(fGFList->At(1))->SetName("Differential"); 
-  static_cast<TList*>(fGFList->At(2))->SetName("AutoCorrection"); 
+  static_cast<TList*>(fGFList->At(1))->SetName("Differential");
+  static_cast<TList*>(fGFList->At(2))->SetName("AutoCorrection");
 
     static_cast<TList*>(fGFList->At(2))->Add(new TH1F("fQcorrfactor", "fQcorrfactor", 1, -4.0, 6.0)); //(eta, n)
     static_cast<TList*>(fGFList->At(2))->Add(new TH1F("fpcorrfactor", "fpcorrfactor", fSettings.fNDiffEtaBins, -4.0, 6.0)); //(eta, n)
@@ -191,7 +191,7 @@ AliForwardMCClosure::AliForwardMCClosure() : AliAnalysisTaskSE(),
 
 
 //_____________________________________________________________________
-void AliForwardMCClosure::UserExec(Option_t */*option*/)
+void AliForwardMCClosure::UserExec(Option_t *)
   {
   //
   //  Analyses the event with use of the helper class AliForwardQCumulantRun2
@@ -216,8 +216,8 @@ void AliForwardMCClosure::UserExec(Option_t */*option*/)
     if(!fEventCuts.AcceptEvent(fInputEvent)) {
       PostData(1, fOutputList);
       return;
-    } 
-    */ 
+    }
+    */
 
   // Disregard events without reconstructed vertex
   Float_t zvertex = fAOD->GetPrimaryVertex()->GetZ();
@@ -226,19 +226,17 @@ void AliForwardMCClosure::UserExec(Option_t */*option*/)
     return;
   }
 
-    //AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
-    //double cent = MultSelection->GetMultiplicityPercentile("SPDTracklets");
-double cent = 10;
+    AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
+    double cent = MultSelection->GetMultiplicityPercentile("SPDTracklets");
+//double cent = 10;
 
 
 
 /*
-
-
   AliAODMCHeader* fAODMCHeader = static_cast<AliAODMCHeader*>(fAOD->FindListObject(AliAODMCHeader::StdBranchName()));
-  Double_t impactParam[] = { 0.00,  3.72,  5.23,  7.31,  8.88, 10.20, 
+  Double_t impactParam[] = { 0.00,  3.72,  5.23,  7.31,  8.88, 10.20,
           11.38, 12.47, 13.50, 14.51, 16.679};
-  Double_t centrality[]  = { 0.,    5.,   10.,   20.,   30.,   40., 
+  Double_t centrality[]  = { 0.,    5.,   10.,   20.,   30.,   40.,
           50.,   60.,   70.,   80.,  100.};
 
   Int_t nPoints = sizeof(impactParam)/sizeof(Double_t);
@@ -246,7 +244,7 @@ double cent = 10;
 
     double fCent = 0;
     if (fAODMCHeader){
-  AliGenEventHeaderTunedPbPb* header = 
+  AliGenEventHeaderTunedPbPb* header =
     dynamic_cast<AliGenEventHeaderTunedPbPb*>(fAODMCHeader->GetCocktailHeader(0));
   if (header) fCent = header->GetCentrality();
 }
@@ -288,16 +286,16 @@ std::cout << "noTracks = " << nTracks << std::endl;
         forwarddNdedp.Fill(p->Eta(),p->Phi(),1);
         dNdeta->Fill(p->Eta(),1);
       }
-      if (fabs(p->Eta()) <= 1.1 && p->Charge() != 0) {        
-        //if (p->Pt()>=0.2 && p->Pt()<5) 
+      if (fabs(p->Eta()) <= 1.1 && p->Charge() != 0) {
+        //if (p->Pt()>=0.2 && p->Pt()<5)
         spddNdedp.Fill(p->Eta(),p->Phi(),1);
         dNdeta->Fill(p->Eta(),1);
       }
     }
     */
-  
+
   //ESDs w. primary
-    /*
+
     for (Int_t iTr = 0; iTr < nTracks; iTr++) {
       AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
       if (!p->IsPhysicalPrimary()) continue;
@@ -314,9 +312,9 @@ std::cout << "noTracks = " << nTracks << std::endl;
           }
         }
     }
-    */
+
     //ESDs w. secondary
-    
+    /*
     for (Int_t iTr = 0; iTr < nTracks; iTr++) {
       AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
       if (p->Charge() == 0) continue;
@@ -332,7 +330,7 @@ std::cout << "noTracks = " << nTracks << std::endl;
         }
       }
     }
-    
+    */
 
         //if (p->Pt()>0.2 && p->Pt() < 2) centralDiff.Fill(p->Eta(),p->Phi(),1);
 
@@ -361,7 +359,7 @@ std::cout << "noTracks = " << nTracks << std::endl;
     calculator.saveEvent(fOutputList, cent, zvertex,  randomInt);
     calculator.reset();
   }
-  PostData(1, fOutputList); 
+  PostData(1, fOutputList);
 
   return;
 }
@@ -370,11 +368,11 @@ std::cout << "noTracks = " << nTracks << std::endl;
 
 AliTrackReference* AliForwardMCClosure::IsHitFMD(AliMCParticle* p) {
   //std::cout << "p->GetNumberOfTrackReferences() = " << p->GetNumberOfTrackReferences() << std::endl;
-  for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) { 
+  for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
     AliTrackReference* ref = p->GetTrackReference(iTrRef);
     // Check hit on FMD
     //std::cout << "ref->DetectorId() = " << ref->DetectorId() << std::endl;
-    //std::cout << "AliTrackReference::kFMD = " << AliTrackReference::kFMD << std::endl; 
+    //std::cout << "AliTrackReference::kFMD = " << AliTrackReference::kFMD << std::endl;
     if (!ref || AliTrackReference::kFMD != ref->DetectorId()) {
       continue;
     }
@@ -386,7 +384,7 @@ AliTrackReference* AliForwardMCClosure::IsHitFMD(AliMCParticle* p) {
 }
 
 AliTrackReference* AliForwardMCClosure::IsHitTPC(AliMCParticle* p) {
-  for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) { 
+  for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
     AliTrackReference* ref = p->GetTrackReference(iTrRef);
     // Check hit on FMD
     if (!ref || AliTrackReference::kTPC != ref->DetectorId()) {
@@ -422,24 +420,6 @@ AliMCParticle* AliForwardMCClosure::GetMother(AliMCParticle* p) {
   }
 }
 
-/*
-Bool_t AliForwardMCClosure::AddMotherIfFirstTimeSeen(AliMCParticle* p, std::vector<Int_t> v){
-
-  //Checking if v contains elements (is empty):
-  if(v.empty()){
-     return false;
-  } 
-  Int_t x = p->GetLabel();
-  if(std::find(v.begin(), v.end(), x) != v.end()) {
-      /* v contains x */
-
-//    return true;
-  //} else {
-      /* v does not contain x */
-    //return false;
-  //}
-
-//}
 
 Bool_t AliForwardMCClosure::IsRedefinedPhysicalPrimary(AliMCParticle* p) {
   AliMCEvent* event = this->MCEvent();

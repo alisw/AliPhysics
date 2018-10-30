@@ -12,10 +12,10 @@
 #include "AliAnalysisDataSlot.h"
 #include "AliForwardFlowRun2Task.h"
 
-enum mode {kRECON, kTRUTH};
+enum mode {kCOPY,kEXTRAPOLATE};
 
 void ConfigureTrain() {
-  
+
   // Add mult selection Task
   gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
   gROOT->ProcessLine("AddTaskMultSelection()");
@@ -41,7 +41,7 @@ void ConfigureTrain() {
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/FORWARD/thoresen/AddTaskForwardFlowRun2.C");
   AliForwardFlowRun2Task* mytask =
     reinterpret_cast<AliForwardFlowRun2Task*>
-    (gROOT->ProcessLine("AddTaskForwardFlowRun2()"));
+    (gROOT->ProcessLine("AddTaskForwardFlowRun2(kEXTRAPOLATE)"));
 
   // Add the C2 tasks last
  // mytask->ConnectInput(1, validation_task->GetOutputSlot(2)->GetContainer());

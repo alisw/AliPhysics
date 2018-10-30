@@ -8,6 +8,7 @@
 #pragma link C++ class AliForwardQCumulantRun2+;
 #pragma link C++ class AliForwardFlowRun2Task+;
 #pragma link C++ class AliForwardNUATask+;
+#pragma link C++ class AliForwardNUETask+;
 #pragma link C++ class AliForwardSecondariesTask+;
 #pragma link C++ class AliForwardMCClosure+;
 
