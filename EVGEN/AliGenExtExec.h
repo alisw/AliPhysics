@@ -36,6 +36,7 @@ public:
   virtual void SetPathFIFO(const TString &path = "gen.hepmc");
   virtual void SetPathFile1(const TString &path = "gen1.root");
   virtual void SetPathFile2(const TString &path = "gen2.root");
+  virtual void SetGeneratorOptionalArguments(const TString &args = "");
   virtual void SetMode(GenExtMode_t mode) { fMode = mode; }
   virtual void SetInput(GenExtInput_t input) { fInput = input; }
 
@@ -51,6 +52,7 @@ protected:
   TString fPathFIFO;             // path used for FIFO
   TString fPathFile1;            // path used for file 1
   TString fPathFile2;            // path used for file 2
+  TString fGeneratorOptionalArguments; // optional parameters for the generator
   Int_t fEventNumberInFileMax;   // max number of events in file
   GenExtMode_t fMode;            // mode for external generator
   GenExtInput_t fInput;          // input type to choose reader
@@ -64,7 +66,7 @@ private:
   AliGenExtExec(const AliGenExtExec &ext);              // not implemented
   AliGenExtExec & operator=(const AliGenExtExec & rhs); // not implemented
 
-  ClassDef(AliGenExtExec, 2)
+  ClassDef(AliGenExtExec, 3)
 };
 
 #endif
