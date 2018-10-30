@@ -97,6 +97,7 @@ fVertexRecalcMinPt(1.0),
 fn1_mix(-999.),
 fn2_mix(-999.),
 fn3_mix(-999.),
+fJetRadius(0.4),
 fIsMixSignalReady_n1(kFALSE),
 fIsMixSignalReady_n2(kFALSE),
 fIsMixSignalReady_n3(kFALSE),
@@ -165,6 +166,7 @@ fVertexRecalcMinPt(1.0),
 fn1_mix(-999.),
 fn2_mix(-999.),
 fn3_mix(-999.),
+fJetRadius(0.4),
 fIsMixSignalReady_n1(kFALSE),
 fIsMixSignalReady_n2(kFALSE),
 fIsMixSignalReady_n3(kFALSE),
@@ -427,6 +429,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
     }
     if(fIsPythia)FillParticleCompositionEvent(); //Added  for in cone vs inclusive comparison
 
+    FillHist("fh1dNoParticlesPerEvent",InputEvent()->GetNumberOfTracks(),1);
+
     for(long itrack= 0; itrack<InputEvent()->GetNumberOfTracks();++itrack)
     {
         trackV = static_cast<AliVTrack*>(InputEvent()->GetTrack(itrack));
@@ -459,6 +463,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
         FillTrackHistograms(trackV,dca,cov,TrackWeight);
     }
     AliJetContainer *  jetconrec = static_cast<AliJetContainer*>(fJetCollArray.At(0));
+    FillHist("fh1dNoJetsPerEvent",jetconrec->GetNJets(),1);
+
     if (!jetconrec) return kFALSE;
     AliJetContainer * jetcongen = nullptr;
     AliEmcalJet * jetgen  = nullptr;
@@ -471,7 +477,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
             if (!jetgen) continue;
             Int_t jetflavour =0;
             Bool_t is_udgjet = kFALSE;
-            jetflavour =IsMCJetPartonFast(jetgen,0.4,is_udgjet);
+            jetflavour =IsMCJetPartonFast(jetgen,fJetRadius,is_udgjet);
             FillHist("fh1dJetGenPt",GetPtCorrectedMC(jetgen), 1); //this->fXsectionWeightingFactor);
             if(jetflavour ==0)      FillHist("fh1dJetGenPtUnidentified",GetPtCorrectedMC(jetgen), 1); // this->fXsectionWeightingFactor );
             else if(jetflavour ==1) FillHist("fh1dJetGenPtudsg",GetPtCorrectedMC(jetgen), 1);   //this->fXsectionWeightingFactor );
@@ -481,6 +487,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
         jetcongen->ResetCurrentID();
         jetconrec->ResetCurrentID();
     }
+
     // Loop over reconstructed/matched jets for template creation and analysis
     AliEmcalJet * jetrec  = nullptr;
     AliEmcalJet * jetmatched  = nullptr;
@@ -504,6 +511,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                 FillHist("fh2dJetGenPtVsJetRecPt",genpt,jetpt,1);    // this->fXsectionWeightingFactor );
             }
         }
+        FillHist("fh1dJetArea",jetrec->Area(),1);
 
         Double_t dca[2] = {-99999,-99999};
         Double_t cov[3] = {-99999,-99999,-99999};
@@ -513,7 +521,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
         	if(fIsPythia){
                   jetmatched = nullptr;
                   jetmatched =jetrec->MatchedJet();
-                  if(jetmatched)jetflavour = IsMCJetPartonFast(jetmatched,0.4,is_udgjet); //Event based association to save memory
+                  if(jetmatched)jetflavour = IsMCJetPartonFast(jetmatched,fJetRadius,is_udgjet); //Event based association to save memory
                 }
                 FillHist("fh1dJetRecPt",jetpt, 1);  //this->fXsectionWeightingFactor );
                 if(fIsPythia){
@@ -561,6 +569,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                 }
                  AliVParticle *vp=0x0;
 
+                int NJetParticles=0;  //Used for counting particles per jet
                 for(UInt_t i = 0; i < jetrec->GetNumberOfTracks(); i++) {
                     TrackWeight=1;
                     Double_t xyzatcda[3];
@@ -582,11 +591,15 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                     if (!trackV || !jetrec)            continue;
 
                     if (!IsTrackAccepted((AliAODTrack*)trackV,3))   continue;
+                    ++NJetParticles;
+
+
                     if(GetImpactParameterWrtToJet((AliAODTrack*)trackV,(AliAODEvent*)InputEvent(),jetrec,dca,cov,xyzatcda,sign)){
                         if(fEventVertex) {
                             delete fEventVertex;
                             fEventVertex =nullptr;
                         }
+
 
                         Int_t corridx=-1;double ppt;
                         fIsPythia ? TrackWeight = GetMonteCarloCorrectionFactor(trackV,corridx,ppt) : TrackWeight =1;
@@ -697,10 +710,12 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                         }
                       }
 
+
                         if (!IsTrackAccepted((AliAODTrack*)trackV,6))   continue;
 
                             //Fill jet probability ipsig histograms for template fitting
                         const char * subtype_jp [4] = {"","udsg","c","b"};
+
                         
                         if(fDoJetProb){
                             if(jetflavour>0 && fIsPythia ){
@@ -763,6 +778,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                             fEventVertex =nullptr;
                         }
 
+
                         Int_t corridx=-1;double ppt;
                         fIsPythia ? TrackWeight = GetMonteCarloCorrectionFactor(trackV,corridx,ppt) : TrackWeight =1;
                         dca[0]=fabs(dca[0]);
@@ -778,13 +794,17 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                             FillHist(Form("fh2dJetSignedImpParXY%s",subtype[jetflavour]),jetpt,cursImParXY,TrackWeight);     //*this->fXsectionWeightingFactor );
                             FillHist(Form("fh2dJetSignedImpParXYSignificance%s",subtype[jetflavour]),jetpt,cursImParXYSig,TrackWeight);     //*this->fXsectionWeightingFactor );
                         }
-                        SJetIpPati a(cursImParXY, TrackWeight,kFALSE,kFALSE,corridx); sImpParXY.push_back(a);
-                        SJetIpPati b(cursImParXYZ, TrackWeight,kFALSE,kFALSE,corridx); sImpParXYZ.push_back(b);
-                        SJetIpPati c(cursImParXYSig, TrackWeight,kFALSE,kFALSE,corridx);sImpParXYSig.push_back(c);
-                        SJetIpPati d(cursImParXYZSig, TrackWeight,kFALSE,kFALSE,corridx);sImpParXYZSig.push_back(d);
+                        SJetIpPati a(cursImParXY, TrackWeight,kFALSE,kFALSE,corridx,trackV->Pt()); sImpParXY.push_back(a);
+                        SJetIpPati b(cursImParXYZ, TrackWeight,kFALSE,kFALSE,corridx,trackV->Pt()); sImpParXYZ.push_back(b);
+                        SJetIpPati c(cursImParXYSig, TrackWeight,kFALSE,kFALSE,corridx,trackV->Pt());sImpParXYSig.push_back(c);
+                        SJetIpPati d(cursImParXYZSig, TrackWeight,kFALSE,kFALSE,corridx,trackV->Pt());sImpParXYZSig.push_back(d);
+                        //printf("curImParXY=%f, TrackWeight=%f,  corridx=%i, pt=%f\n",cursImParXYSig,TrackWeight,corridx, trackV->Pt());
 
                     }
                 }//end trackloop
+
+                FillHist("fh1dParticlesPerJet",NJetParticles,1);
+
                 std::sort(sImpParXY.begin(),sImpParXY.end(),        AliAnalysisTaskHFJetIPQA::mysort);
                 std::sort(sImpParXYSig.begin(),sImpParXYSig.end(),  AliAnalysisTaskHFJetIPQA::mysort);
                 std::sort(sImpParXYZ.begin(),sImpParXYZ.end(),      AliAnalysisTaskHFJetIPQA::mysort);
@@ -802,7 +822,14 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                 if(hasIPs[0])ipval[0] =sImpParXYSig.at(0).first;
                 if(hasIPs[1])ipval[1] =sImpParXYSig.at(1).first;
                 if(hasIPs[2])ipval[2] =sImpParXYSig.at(2).first;
+                //if(hasIPs[0])printf("N=1: cursImParXY=%f, TrackWeight=%f,corridx=%i, pt=%f\n",sImpParXYSig.at(0).first, sImpParXYSig.at(0).second, sImpParXYSig.at(0).trackLabel, sImpParXYSig.at(0).trackpt);
+                //if(hasIPs[1])printf("N=2: cursImParXY=%f, TrackWeight=%f, corridx=%i, pt=%f\n",sImpParXYSig.at(1).first, sImpParXYSig.at(1).second, sImpParXYSig.at(1).trackLabel, sImpParXYSig.at(1).trackpt);
+                //if(hasIPs[2])printf("N=3: cursImParXY=%f, TrackWeight=%f, corridx=%i, pt=%f\n",sImpParXYSig.at(2).first, sImpParXYSig.at(2).second, sImpParXYSig.at(2).trackLabel, sImpParXYSig.at(2).trackpt);
+                //printf("*********************************************************\n");
 
+                if(hasIPs[0])FillHist("fh1dTrackPt_n_1_all_Accepted",sImpParXYSig.at(0).trackpt,1);
+                if(hasIPs[1])FillHist("fh1dTrackPt_n_2_all_Accepted",sImpParXYSig.at(1).trackpt,1);
+                if(hasIPs[2])FillHist("fh1dTrackPt_n_3_all_Accepted",sImpParXYSig.at(2).trackpt,1);
 
                 if(fFillCorrelations || fUseTreeForCorrelations){
                     FillCorrelations(hasIPs,ipval,jetpt);
@@ -811,6 +838,11 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                         if(!fIsMixSignalReady_n2 && hasIPs[1]) SetMixDCA(2,ipval[1] );
                         if(!fIsMixSignalReady_n3 && hasIPs[2]) SetMixDCA(3,ipval[2] );
                     }
+                }
+
+
+                if(sImpParXY.size()!=0){
+                  FillHist("fh2dNoAcceptedTracksvsJetArea",(int)sImpParXY.size(),jetrec->Area(),1);
                 }
 
                 for (Int_t ot = 0 ; ot <3 ;++ot){
@@ -1059,6 +1091,8 @@ void AliAnalysisTaskHFJetIPQA::SetFlukaFactor(TGraph* GraphOmega, TGraph* GraphX
    return;
   }
 
+
+
 /*! \brief SetResFunction
  *
  *
@@ -1173,64 +1207,41 @@ void AliAnalysisTaskHFJetIPQA::SetFlukaFactor(TGraph* GraphOmega, TGraph* GraphX
                             return;
                         }
 
-                        void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
+void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
+  Printf("Analysing Jets with Radius: R=%f\n",fJetRadius);
 
-                            fIsMixSignalReady_n1=kFALSE;
-                            fIsMixSignalReady_n2=kFALSE;
-                            fIsMixSignalReady_n3=kFALSE;
-                            fn1_mix =-1;
-                            fn2_mix =-1;
-                            fn3_mix =-1;
-                            fIsSameEvent_n1=kFALSE;
-                            fIsSameEvent_n2=kFALSE;
-                            fIsSameEvent_n3=kFALSE;
+  fIsMixSignalReady_n1=kFALSE;
+  fIsMixSignalReady_n2=kFALSE;
+  fIsMixSignalReady_n3=kFALSE;
+  fn1_mix =-1;
+  fn2_mix =-1;
+  fn3_mix =-1;
+  fIsSameEvent_n1=kFALSE;
+  fIsSameEvent_n2=kFALSE;
+  fIsSameEvent_n3=kFALSE;
 
+  AliAnalysisTaskEmcal::UserCreateOutputObjects();
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if(!mgr) AliError("Analysis manager not found!");
+  AliVEventHandler *evhand = mgr->GetInputEventHandler();
+  if (!evhand) AliError("Event handler not found!");
+  if (evhand->InheritsFrom("AliESDInputHandler"))  fIsEsd = kTRUE;
+  else fIsEsd = kFALSE;
+  OpenFile(1);
 
-                            AliAnalysisTaskEmcal::UserCreateOutputObjects();
-                            AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-                            if(!mgr) AliError("Analysis manager not found!");
-                            AliVEventHandler *evhand = mgr->GetInputEventHandler();
-                            if (!evhand) AliError("Event handler not found!");
-                            if (evhand->InheritsFrom("AliESDInputHandler"))  fIsEsd = kTRUE;
-                            else fIsEsd = kFALSE;
-                            OpenFile(1);
-                            Double_t xomega[10] ={0,1.00993,1.40318,1.7428,2.04667,2.35055,2.77061,3.39623,4.40616,1000};
-                            Double_t yomega[10] ={2.74011,2.74011,3.16949,3.37288,4.02825,4.38983,4.23164,4.75141,3.62147,3.62147};
-                            Double_t xxi[18] ={0,0.723932,0.849057,0.947368,1.04568,1.14399,1.25124,1.35849,1.43893,1.60874,1.80536,2.04667,2.41311,
-                               2.87786,3.50348,4.39722,5.45184,1000};
-                               Double_t yxi[18] ={1.20339,1.20339,1.45198,1.54237,1.76836,1.81356,1.85876,1.97175,2.10734,2.10734,2.15254,2.19774,2.22034,
-                                   2.19774,2.12994,1.83616,1.36158,1.36158};
-                                   Double_t xK0s[24]= {0,0.0628272,0.162304,0.26178,0.356021,0.465969,0.570681,0.675393,0.743455,0.863874,0.947644,1.10471,1.29843,
-                                    1.50785,1.70681,1.91099,2.19895,2.60733,3.01571,3.40838,3.82199,4.51832,5.49215,1000};
-                                    Double_t yK0s[24]= {1.31496,1.31496,1.19685,1.11024,1.16535,1.11811,1.07874,1.05512,
-                                        1.01575,0.976378,0.92126,0.889764,0.858268,0.811024,0.84252,0.858268,
-                                        0.811024,0.811024,0.779528,0.787402,0.795276,0.811024,0.88189,0.88189};
-                                        Double_t xPhi[24] ={0,0.456294,0.54021,0.645105,0.76049,0.833916,0.938811,1.03322,1.15385,
-                                            1.23776,1.34266,1.46853,1.5472,1.6521,1.75175,1.86189,1.96154,2.09266,
-                                            2.27622,2.51748,2.71678,2.91084,3.2465,1000};
-                                            Double_t yPhi[24] ={0.699725,0.699725,0.699725,0.721763,0.661157,0.683196,0.650138,
-                                                0.639118,0.639118,0.62259,0.61157,0.62259,0.61708,0.61708,0.606061,
-                                                0.644628,0.694215,0.699725,0.721763,0.787879,0.77686,0.809917,0.870523,0.870523};
-    //This is MC /Data not Data over MC
-                                                fGraphOmega = new TGraph(10,xomega,yomega);
-                                                fGraphXi    = new TGraph(18,xxi,yxi);
-                                                fK0Star     = new TGraph(24,xK0s,yK0s);
-                                                fPhi        = new TGraph(24,xPhi,yPhi);
+  Double_t lowIPxy =-1.;  //ranges of xy axis of fh2dTracksImpParXY and fh2dTracksImpParZ
+  Double_t highIPxy =1.;
 
-
-                                                Double_t lowIPxy =-1.;
-                                                Double_t highIPxy =1.;
-                                                OpenFile(1);
-                                                if(fIsPythia){
-                                                  if(!fPidResponse)   fPidResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
-                                                   if (!fPidResponse) {
-                                                    AliFatal("NULL PID response");
-                                                   }
-
-                                                  if(!fCombined) fCombined = new AliPIDCombined();
-                                                }
-    //Make Graphs
-                                                const Int_t gfProtonN = 9;
+  OpenFile(1);
+  if(fIsPythia){
+    if(!fPidResponse)   fPidResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
+    if (!fPidResponse) {
+      AliFatal("NULL PID response");
+    }
+    if(!fCombined) fCombined = new AliPIDCombined();
+  }
+    //Graphs currently not in use
+    /*                                            const Int_t gfProtonN = 9;
                                                 const Int_t gfAntiProtonN = 18;
                                                 const Int_t gfAntiLambdaN = 34;
                                                 const Int_t gfLambdaN = 2;
@@ -1256,348 +1267,369 @@ void AliAnalysisTaskHFJetIPQA::SetFlukaFactor(TGraph* GraphOmega, TGraph* GraphX
                                                                fGeant3FlukaLambda     = new TGraph(gfLambdaN,gfLambdaX,gfLambdaY);
                                                                fGeant3FlukaAntiLambda = new TGraph(gfAntiLambdaN,gfAntiLambdaX,gfAntiLambdaY);
                                                                fGeant3FlukaKMinus 	   = new TGraph(gfKMinusN,gfKMinusX,gfKMinusY);
-    //ADD HISTOGRAMS
-                                                                if(fUseTreeForCorrelations){
-                                                                    Printf("Adding Tree to output file");
-                                                                    OpenFile(1);
-                                                                    fCorrelationCrossCheck = new TTree("fCorrelationCrossCheck","fCorrelationCrossCheck");
-                                                                    fCorrelationCrossCheck->Branch("n1",&fTREE_n1,"px/F");
-                                                                    fCorrelationCrossCheck->Branch("n2",&fTREE_n2,"py/F");
-                                                                    fCorrelationCrossCheck->Branch("n3",&fTREE_n3,"pz/F");
-                                                                    fCorrelationCrossCheck->Branch("pt",&fTREE_pt,"pz/F");
-                                                                    fOutput->Add(fCorrelationCrossCheck);
-                                                                }
+
+*/
+
+  //General Information
+  TH1D * h = (TH1D*)AddHistogramm("fh1dEventRejectionRDHFCuts","fh1dEventRejectionRDHFCuts;reason;count",12,0,12);
+  h->GetXaxis()->SetBinLabel(1,"Event accepted");
+  h->GetXaxis()->SetBinLabel(2,"Event rejected");
+  h->GetXaxis()->SetBinLabel(3,"Wrong physics selection");
+  h->GetXaxis()->SetBinLabel(4,"No vertex");
+  h->GetXaxis()->SetBinLabel(5,"No contributors");
+  h->GetXaxis()->SetBinLabel(6,"Less than 10 contributors");
+  h->GetXaxis()->SetBinLabel(7,">10cm vertex Z distance");
+  h->GetXaxis()->SetBinLabel(8,"Bad diamond X distance");
+  h->GetXaxis()->SetBinLabel(9,"Bad diamond Y distance");
+  h->GetXaxis()->SetBinLabel(10,"Bad diamond Z distance");
+  h->GetXaxis()->SetBinLabel(11,"Chi2 vtx >1.5 ");
+  AddHistogramm("fh1dTracksAccepeted","# tracks before/after cuts;;",3,0,3);
+  fHistManager.CreateTH1("fh1dEventsAcceptedInRun","fh1dEventsAcceptedInRun;Events Accepted;count",1,0,1,"s");
+
+  TH1D * h1 = GetHist1D("fh1dTracksAccepeted");
+  h1->GetXaxis()->SetBinLabel(1,"total");
+  h1->GetXaxis()->SetBinLabel(2,"accepted");
+  h1->GetXaxis()->SetBinLabel(3,"rejected");
+
+  //Histograms for vertexing factor quicktest
+  fHistManager.CreateTH1("fh1dVERTEXFACTOR_VERTEXZ_FULL","fh1dVERTEXFACTOR_VERTEXZ_FULL;;",400,-100,100,"s");
+  fHistManager.CreateTH1("fh1dVERTEXFACTOR_VERTEXZ_10CM","fh1dVERTEXFACTOR_VERTEXZ_10CM;",400,-100,100,"s");
+
+  TH1D * hvt = (TH1D*)AddHistogramm("fh1dVERTEXFACTOR_EVENTS","fh1dVERTEXFACTOR_EVENTS;;",3,0,3);
+  hvt->GetXaxis()->SetBinLabel(1,"Event in");
+  hvt->GetXaxis()->SetBinLabel(2,"Event kMB");
+  hvt->GetXaxis()->SetBinLabel(3,"Event kMB with Vertex");
+
+  fHistManager.CreateTH1("fh1dNoParticlesPerEvent","fh1dNoParticlesvsEvent;#;No Particles/Event",5000, 0, 5000);
+  fHistManager.CreateTH1("fh1dNoJetsPerEvent","fh1dNoJetsPerEvent;#;No Jets/Event",400, 0, 100);
 
 
-
-                                                               TH1D * h = (TH1D*)AddHistogramm("fh1dEventRejectionRDHFCuts","fh1dEventRejectionRDHFCuts;reason;count",12,0,12);
-                                                               h->GetXaxis()->SetBinLabel(1,"Event accepted");
-                                                               h->GetXaxis()->SetBinLabel(2,"Event rejected");
-                                                               h->GetXaxis()->SetBinLabel(3,"Wrong physics selection");
-                                                               h->GetXaxis()->SetBinLabel(4,"No vertex");
-                                                               h->GetXaxis()->SetBinLabel(5,"No contributors");
-                                                               h->GetXaxis()->SetBinLabel(6,"Less than 10 contributors");
-                                                               h->GetXaxis()->SetBinLabel(7,">10cm vertex Z distance");
-                                                               h->GetXaxis()->SetBinLabel(8,"Bad diamond X distance");
-                                                               h->GetXaxis()->SetBinLabel(9,"Bad diamond Y distance");
-                                                               h->GetXaxis()->SetBinLabel(10,"Bad diamond Z distance");
-                                                               h->GetXaxis()->SetBinLabel(11,"Chi2 vtx >1.5 ");
-                                                               AddHistogramm("fh1dTracksAccepeted","# tracks before/after cuts;;",3,0,3);
-                                                               fHistManager.CreateTH1("fh1dEventsAcceptedInRun","fh1dEventsAcceptedInRun;Events Accepted;count",1,0,1,"s");
-
-                                                               TH1D * h1 = GetHist1D("fh1dTracksAccepeted");
-                                                               h1->GetXaxis()->SetBinLabel(1,"total");
-                                                               h1->GetXaxis()->SetBinLabel(2,"accepted");
-                                                               h1->GetXaxis()->SetBinLabel(3,"rejected");
-    // Tracks impact parameter histograms
-    //*********************Histograms for vertexing factor quicktest
-                                                               fHistManager.CreateTH1("fh1dVERTEXFACTOR_VERTEXZ_FULL","fh1dVERTEXFACTOR_VERTEXZ_FULL;;",400,-100,100,"s");
-                                                               fHistManager.CreateTH1("fh1dVERTEXFACTOR_VERTEXZ_10CM","fh1dVERTEXFACTOR_VERTEXZ_10CM;",400,-100,100,"s");
-
-                                                               TH1D * hvt = (TH1D*)AddHistogramm("fh1dVERTEXFACTOR_EVENTS","fh1dVERTEXFACTOR_EVENTS;;",3,0,3);
-                                                               hvt->GetXaxis()->SetBinLabel(1,"Event in");
-                                                               hvt->GetXaxis()->SetBinLabel(2,"Event kMB");
-                                                               hvt->GetXaxis()->SetBinLabel(3,"Event kMB with Vertex");
-                                                             //In-Out of jet particle composition in pythia events
-
-                                                               if(fIsPythia){
-                                                                fHistManager.CreateTH2("fh2dParticleSpectra_InCone","fh2dParticleSpectra_InCone ;species i;p_t particle (GeV/c)",22,0,22,200,0,50,"s");
-                                                                fHistManager.CreateTH2("fh2dParticleSpectra_InCone_bjet","fh2dParticleSpectra_InCone_bjet ;species i;p_t particle (GeV/c)",22,0,22,200,0,50,"s");
-                                                                fHistManager.CreateTH2("fh2dParticleSpectra_InCone_cjet","fh2dParticleSpectra_InCone_cjet ;species i;p_t particle (GeV/c)",22,0,22,200,0,50,"s");
-                                                                fHistManager.CreateTH2("fh2dParticleSpectra_InCone_lfjet","fh2dParticleSpectra_InCone_lfjet ;species i;p_t particle (GeV/c)",22,0,22,200,0,50,"s");
-                                                                fHistManager.CreateTH2("fh2dParticleSpectra_OutOfCone","fh2dParticleSpectra_OutOfCone ;species i;p_t particle (GeV/c)",22,0,22,200,0,50,"s");
-                                                                fHistManager.CreateTH2("fh2dParticleSpectra_Event","fh2dParticleSpectra_Event ;species i;p_t particle (GeV/c)",22,0,22,200,0,50,"s");
-                                                            }
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_IP_all","fh2dNMCWeightSpeciesPerJetPtN1_all (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_IP_b","fh2dNMCWeightSpeciesPerJetPtN1_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_IP_c","fh2dNMCWeightSpeciesPerJetPtN1_c (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_IP_lf","fh2dNMCWeightSpeciesPerJetPtN1_lf (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_IP_all","fh2dNMCWeightSpeciesPerJetPtN2_all (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_IP_b","fh2dNMCWeightSpeciesPerJetPtN2_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_IP_c","fh2dNMCWeightSpeciesPerJetPtN2_c (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_IP_lf","fh2dNMCWeightSpeciesPerJetPtN2_lf (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_IP_all","fh2dNMCWeightSpeciesPerJetPtN3_all (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_IP_b","fh2dNMCWeightSpeciesPerJetPtN3_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_IP_c","fh2dNMCWeightSpeciesPerJetPtN3_c (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_IP_lf","fh2dNMCWeightSpeciesPerJetPtN3_lf (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_SIP_all","fh2dNMCWeightSpeciesPerJetPtN1_all (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_SIP_b","fh2dNMCWeightSpeciesPerJetPtN1_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_SIP_c","fh2dNMCWeightSpeciesPerJetPtN1_c (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_SIP_lf","fh2dNMCWeightSpeciesPerJetPtN1_lf (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_SIP_all","fh2dNMCWeightSpeciesPerJetPtN2_all (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_SIP_b","fh2dNMCWeightSpeciesPerJetPtN2_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_SIP_c","fh2dNMCWeightSpeciesPerJetPtN2_c (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_SIP_lf","fh2dNMCWeightSpeciesPerJetPtN2_lf (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_SIP_all","fh2dNMCWeightSpeciesPerJetPtN3_all (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_SIP_b","fh2dNMCWeightSpeciesPerJetPtN3_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_SIP_c","fh2dNMCWeightSpeciesPerJetPtN3_c (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
-                                                            fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_SIP_lf","fh2dNMCWeightSpeciesPerJetPtN3_lf (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  //In-Out of jet particle composition in pythia events
+  if(fIsPythia){
+    fHistManager.CreateTH2("fh2dParticleSpectra_InCone","fh2dParticleSpectra_InCone ;species i;p_t particle (GeV/c)",22,0,22,200,0,50,"s");
+    fHistManager.CreateTH2("fh2dParticleSpectra_InCone_bjet","fh2dParticleSpectra_InCone_bjet ;species i;p_t particle (GeV/c)",22,0,22,200,0,50,"s");
+    fHistManager.CreateTH2("fh2dParticleSpectra_InCone_cjet","fh2dParticleSpectra_InCone_cjet ;species i;p_t particle (GeV/c)",22,0,22,200,0,50,"s");
+    fHistManager.CreateTH2("fh2dParticleSpectra_InCone_lfjet","fh2dParticleSpectra_InCone_lfjet ;species i;p_t particle (GeV/c)",22,0,22,200,0,50,"s");
+    fHistManager.CreateTH2("fh2dParticleSpectra_OutOfCone","fh2dParticleSpectra_OutOfCone ;species i;p_t particle (GeV/c)",22,0,22,200,0,50,"s");
+    fHistManager.CreateTH2("fh2dParticleSpectra_Event","fh2dParticleSpectra_Event ;species i;p_t particle (GeV/c)",22,0,22,200,0,50,"s");
+  }
+  //MC weights
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_IP_all","fh2dNMCWeightSpeciesPerJetPtN1_all (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_IP_b","fh2dNMCWeightSpeciesPerJetPtN1_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_IP_c","fh2dNMCWeightSpeciesPerJetPtN1_c (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_IP_lf","fh2dNMCWeightSpeciesPerJetPtN1_lf (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_IP_all","fh2dNMCWeightSpeciesPerJetPtN2_all (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_IP_b","fh2dNMCWeightSpeciesPerJetPtN2_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_IP_c","fh2dNMCWeightSpeciesPerJetPtN2_c (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_IP_lf","fh2dNMCWeightSpeciesPerJetPtN2_lf (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_IP_all","fh2dNMCWeightSpeciesPerJetPtN3_all (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_IP_b","fh2dNMCWeightSpeciesPerJetPtN3_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_IP_c","fh2dNMCWeightSpeciesPerJetPtN3_c (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_IP_lf","fh2dNMCWeightSpeciesPerJetPtN3_lf (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_SIP_all","fh2dNMCWeightSpeciesPerJetPtN1_all (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_SIP_b","fh2dNMCWeightSpeciesPerJetPtN1_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_SIP_c","fh2dNMCWeightSpeciesPerJetPtN1_c (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN1_SIP_lf","fh2dNMCWeightSpeciesPerJetPtN1_lf (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_SIP_all","fh2dNMCWeightSpeciesPerJetPtN2_all (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_SIP_b","fh2dNMCWeightSpeciesPerJetPtN2_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_SIP_c","fh2dNMCWeightSpeciesPerJetPtN2_c (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN2_SIP_lf","fh2dNMCWeightSpeciesPerJetPtN2_lf (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_SIP_all","fh2dNMCWeightSpeciesPerJetPtN3_all (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_SIP_b","fh2dNMCWeightSpeciesPerJetPtN3_b (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_SIP_c","fh2dNMCWeightSpeciesPerJetPtN3_c (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
+  fHistManager.CreateTH2("fh2dNMCWeightSpeciesPerJetPtN3_SIP_lf","fh2dNMCWeightSpeciesPerJetPtN3_lf (N used weights) ;species i;pt",22,0,22,150,0,150,"s");
                                                             
-                                                           
-                                                             if (fFillCorrelations && !fUseTreeForCorrelations){
-                                                            
-                                                             fHistManager.CreateTH2("fh2dInclusiveCorrelationN1N2","fh2dInclusiveCorrelationN1N2 ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                             fHistManager.CreateTH2("fh2dInclusiveCorrelationN1N3","fh2dInclusiveCorrelationN1N3 ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                             fHistManager.CreateTH2("fh2dInclusiveCorrelationN2N3","fh2dInclusiveCorrelationN2N3 ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                             fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN1N2","fh2dGreater10_20GeVCorrelationN1N2 ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                             fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN1N3","fh2dGreater10_20GeVCorrelationN1N3 ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                             fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN2N3","fh2dGreater10_20GeVCorrelationN2N3 ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                             fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN1N2","fh2dGreater20_30GeVCorrelationN1N2 ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                             fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN1N3","fh2dGreater20_30GeVCorrelationN1N3 ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                             fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN2N3","fh2dGreater20_30GeVCorrelationN2N3 ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                             fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN1N2","fh2dGreater30_100GeVCorrelationN1N2 ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                             fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN1N3","fh2dGreater30_100GeVCorrelationN1N3 ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                             fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN2N3","fh2dGreater30_100GeVCorrelationN2N3 ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                             fHistManager.CreateTH2("fh2dInclusiveCorrelationN1N2mix","fh2dInclusiveCorrelationN1N2mix ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                             fHistManager.CreateTH2("fh2dInclusiveCorrelationN1N3mix","fh2dInclusiveCorrelationN1N3mix ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                             fHistManager.CreateTH2("fh2dInclusiveCorrelationN2N3mix","fh2dInclusiveCorrelationN2N3mix ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                             fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN1N2mix","fh2dGreater10_20GeVCorrelationN1N2mix ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                             fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN1N3mix","fh2dGreater10_20GeVCorrelationN1N3mix ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                             fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN2N3mix","fh2dGreater10_20GeVCorrelationN2N3mix ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                             fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN1N2mix","fh2dGreater20_30GeVCorrelationN1N2mix ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                             fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN1N3mix","fh2dGreater20_30GeVCorrelationN1N3mix ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                             fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN2N3mix","fh2dGreater20_30GeVCorrelationN2N3mix ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                             fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN1N2mix","fh2dGreater30_100GeVCorrelationN1N2mix ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                             fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN1N3mix","fh2dGreater30_100GeVCorrelationN1N3mix ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                             fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN2N3mix","fh2dGreater30_100GeVCorrelationN2N3mix ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
-                                                         }
+  //Check N1N2N3 correlations
+  if(fUseTreeForCorrelations){
+    Printf("Adding Tree to output file");
+    OpenFile(1);
+    fCorrelationCrossCheck = new TTree("fCorrelationCrossCheck","fCorrelationCrossCheck");
+    fCorrelationCrossCheck->Branch("n1",&fTREE_n1,"px/F");
+    fCorrelationCrossCheck->Branch("n2",&fTREE_n2,"py/F");
+    fCorrelationCrossCheck->Branch("n3",&fTREE_n3,"pz/F");
+    fCorrelationCrossCheck->Branch("pt",&fTREE_pt,"pz/F");
+    fOutput->Add(fCorrelationCrossCheck);
+  }
 
-    //*********************************************
-                                                         fHistManager.CreateTH1("fh1dPtHardMonitor","fh1dPtHardMonitor;ptHard;",500,0,250,"s");
-                                                         fHistManager.CreateTH2("fh2dTracksImpParXY","radial imp. parameter ;impact parameter xy (cm);a.u.",2000,lowIPxy,highIPxy,500,0,100.,"s");
-                                                         fHistManager.CreateTH2("fh2dTracksImpParXYZ","XYZ imp. parameter ;impact parameter xy (cm);a.u.",2000,-1,1,500,0,100.,"s");
-                                                         fHistManager.CreateTH2("fh2dTracksImpParXYZSignificance","XYZ imp. parameter ;impact parameter xy (cm);a.u.",2000,-30,30,500,0,100.,"s");
-                                                         fHistManager.CreateTH2("fh2dTracksImpParZ","z imp. parameter ;impact parameter xy (cm);a.u.",2000,lowIPxy,highIPxy,500,0,10.,"s");
-                                                         fHistManager.CreateTH2("fh2dTracksImpParXYSignificance","radial imp. parameter sig;impact parameter xy (cm);a.u.",2000,-30,30,500,0,100.,"s");
-                                                         fHistManager.CreateTH2("fh2dTracksImpParZSignificance","z imp. parameter ;impact parameter xy (cm);a.u.",2000,-30,30,500,0,100.,"s");
-                                                         fHistManager.CreateTH1("fh1dTracksImpParXY","2d imp. parameter ;impact parameter 2d (cm);a.u.",400,-0.2,0.2,"s");
-                                                         fHistManager.CreateTH1("fh1dTracksImpParXYZ","3d imp. parameter ;impact parameter 3d (cm);a.u.",2000,0,1.,"s");
-                                                         fHistManager.CreateTH1("fh1dTracksImpParXYSignificance","radial imp. parameter ;impact parameter xy significance;a.u.",200,-30,30,"s");
-                                                         fHistManager.CreateTH1 ("fh1dTracksImpParXYZSignificance","3d imp. parameter ;impact parameter 3d significance;a.u.",2000,0.,100.,"s");
-                                                         fHistManager.CreateTH2("fh1dJetRecEtaPhiAccepted","detector level jet;#eta;phi",1,-0.5,0.5,1,0.,TMath::TwoPi(),"s");
-                                                         fHistManager.CreateTH2("fh2dAcceptedTracksEtaPhi","accepted tracks;#eta;phi",200,-0.9,0.9,200,0.,TMath::TwoPi(),"s");
-                                                         fHistManager.CreateTH1("fh1dJetRecPt","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                         fHistManager.CreateTH1("fh1dJetRecPtAccepted","accepted detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                         if (fIsPythia){
-            //Histograms for jet-probability tagger
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShits", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShits","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShits", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShits","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShits", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShits","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShits", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShits","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+  if (fFillCorrelations && !fUseTreeForCorrelations){
+    fHistManager.CreateTH2("fh2dInclusiveCorrelationN1N2","fh2dInclusiveCorrelationN1N2 ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+    fHistManager.CreateTH2("fh2dInclusiveCorrelationN1N3","fh2dInclusiveCorrelationN1N3 ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+    fHistManager.CreateTH2("fh2dInclusiveCorrelationN2N3","fh2dInclusiveCorrelationN2N3 ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+    fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN1N2","fh2dGreater10_20GeVCorrelationN1N2 ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+    fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN1N3","fh2dGreater10_20GeVCorrelationN1N3 ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+    fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN2N3","fh2dGreater10_20GeVCorrelationN2N3 ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+    fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN1N2","fh2dGreater20_30GeVCorrelationN1N2 ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+    fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN1N3","fh2dGreater20_30GeVCorrelationN1N3 ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+    fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN2N3","fh2dGreater20_30GeVCorrelationN2N3 ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+    fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN1N2","fh2dGreater30_100GeVCorrelationN1N2 ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+    fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN1N3","fh2dGreater30_100GeVCorrelationN1N3 ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+    fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN2N3","fh2dGreater30_100GeVCorrelationN2N3 ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+    fHistManager.CreateTH2("fh2dInclusiveCorrelationN1N2mix","fh2dInclusiveCorrelationN1N2mix ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+    fHistManager.CreateTH2("fh2dInclusiveCorrelationN1N3mix","fh2dInclusiveCorrelationN1N3mix ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+    fHistManager.CreateTH2("fh2dInclusiveCorrelationN2N3mix","fh2dInclusiveCorrelationN2N3mix ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+    fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN1N2mix","fh2dGreater10_20GeVCorrelationN1N2mix ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+    fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN1N3mix","fh2dGreater10_20GeVCorrelationN1N3mix ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+    fHistManager.CreateTH2("fh2dGreater10_20GeVCorrelationN2N3mix","fh2dGreater10_20GeVCorrelationN2N3mix ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+    fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN1N2mix","fh2dGreater20_30GeVCorrelationN1N2mix ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+    fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN1N3mix","fh2dGreater20_30GeVCorrelationN1N3mix ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+    fHistManager.CreateTH2("fh2dGreater20_30GeVCorrelationN2N3mix","fh2dGreater20_30GeVCorrelationN2N3mix ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+    fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN1N2mix","fh2dGreater30_100GeVCorrelationN1N2mix ;N1 impact parameter xy (cm);N2impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+    fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN1N3mix","fh2dGreater30_100GeVCorrelationN1N3mix ;N1 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+    fHistManager.CreateTH2("fh2dGreater30_100GeVCorrelationN2N3mix","fh2dGreater30_100GeVCorrelationN2N3mix ;N2 impact parameter xy (cm);N3impact parameter xy (cm)",1000,-50,50,1000,-50,50,"s");
+  }
+
+    //Track Impact Parameter Distributions
+    fHistManager.CreateTH1("fh1dPtHardMonitor","fh1dPtHardMonitor;ptHard;",500,0,250,"s");
+    fHistManager.CreateTH2("fh2dTracksImpParXY","radial imp. parameter ;impact parameter xy (cm);a.u.",2000,lowIPxy,highIPxy,500,0,100.,"s");
+    fHistManager.CreateTH2("fh2dTracksImpParXYZ","XYZ imp. parameter ;impact parameter xy (cm);a.u.",2000,-1,1,500,0,100.,"s");
+    fHistManager.CreateTH2("fh2dTracksImpParXYZSignificance","XYZ imp. parameter ;impact parameter xy (cm);a.u.",2000,-30,30,500,0,100.,"s");
+    fHistManager.CreateTH2("fh2dTracksImpParZ","z imp. parameter ;impact parameter xy (cm);a.u.",2000,lowIPxy,highIPxy,500,0,10.,"s");
+    fHistManager.CreateTH2("fh2dTracksImpParXYSignificance","radial imp. parameter sig;impact parameter xy (cm);a.u.",2000,-30,30,500,0,100.,"s");
+    fHistManager.CreateTH2("fh2dTracksImpParZSignificance","z imp. parameter ;impact parameter xy (cm);a.u.",2000,-30,30,500,0,100.,"s");
+    fHistManager.CreateTH1("fh1dTracksImpParXY","2d imp. parameter ;impact parameter 2d (cm);a.u.",400,-0.2,0.2,"s");
+    fHistManager.CreateTH1("fh1dTracksImpParXYZ","3d imp. parameter ;impact parameter 3d (cm);a.u.",2000,0,1.,"s");
+    fHistManager.CreateTH1("fh1dTracksImpParXYSignificance","radial imp. parameter ;impact parameter xy significance;a.u.",200,-30,30,"s");
+    fHistManager.CreateTH1 ("fh1dTracksImpParXYZSignificance","3d imp. parameter ;impact parameter 3d significance;a.u.",2000,0.,100.,"s");
+
+    //General Jet Properties
+    fHistManager.CreateTH2("fh1dJetRecEtaPhiAccepted","detector level jet;#eta;phi",1,-0.5,0.5,1,0.,TMath::TwoPi(),"s");
+    fHistManager.CreateTH2("fh2dAcceptedTracksEtaPhi","accepted tracks;#eta;phi",200,-0.9,0.9,200,0.,TMath::TwoPi(),"s");
+    fHistManager.CreateTH1("fh1dJetRecPt","detector level jets;pt (GeV/c); count",500,0,250,"s");
+    fHistManager.CreateTH1("fh1dJetRecPtAccepted","accepted detector level jets;pt (GeV/c); count",500,0,250,"s");
+    fHistManager.CreateTH1("fh1dJetArea","fh1dJetArea;# Jet Area",100,0,1,"s");
+    fHistManager.CreateTH1("fh1dParticlesPerJet","fh1dParticlesPerJet;#, Particles/Jet",100,0,100,"s");
+    fHistManager.CreateTH2("fh2dNoAcceptedTracksvsJetArea","fh2dNoAcceptedTracksvsJetArea;No Accepted Tracks;JetArea",20,0,20,100,0,1);
+
+
+
+
+    //IP Distributions for different species for different numbers of ITShits
+    if (fIsPythia){
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShits", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShits","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShits", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShits","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShits", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShits","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShits", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShits","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShits;pt (GeV/c); count",200,0,100,500,-30,0,"s");
             //Electrons
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsElectrons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsElectrons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsElectrons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsElectrons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsElectrons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsElectrons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsElectrons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsElectrons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsElectrons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsElectrons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsElectrons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsElectrons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsElectrons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsElectrons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsElectrons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsElectrons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsElectrons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
             //Pions
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsPions", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsPions","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsPions", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsPions","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsPions", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsPions","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsPions", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsPions","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsPions", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsPions","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsPions", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsPions","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsPions", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsPions","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsPions", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsPions","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsPions;pt (GeV/c); count",200,0,100,500,-30,0,"s");
             //Kaons
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsKaons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsKaons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsKaons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsKaons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsKaons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsKaons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsKaons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsKaons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsKaons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsKaons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsKaons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsKaons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsKaons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsKaons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsKaons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsKaons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsKaons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
             //Protons
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsProtons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsProtons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsProtons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsProtons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsProtons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsProtons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsProtons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-                                                            fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsProtons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
-            //Jet Probability QA  plots for different particle species
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsProtons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_6ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsProtons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_6ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsProtons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_5ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsProtons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_5ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsProtons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_4ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsProtons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_4ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsProtons", "fh2dJetSignedImpParXYSignificanceudg_light_resfunction_3ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
+      fHistManager.CreateTH2("fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsProtons","fh2dJetSignedImpParXYZSignificanceudg_light_resfunction_3ITShitsProtons;pt (GeV/c); count",200,0,100,500,-30,0,"s");
 
-                                                            if(fDoJetProb){
-                                                                fHistManager.CreateTH2("fh2d_jetprob_beauty", "fh2d_jetprob_beauty;pt (GeV/c); count",500,0,250,500,0,2.5,"s");
-                                                                fHistManager.CreateTH2("fh2d_jetprob_charm", "fh2d_jetprob_charm;pt (GeV/c); count",500,0,250,500,0,2.5,"s");
-                                                                fHistManager.CreateTH2("fh2d_jetprob_light", "fh2d_jetprob_light;pt (GeV/c); count",500,0,250,500,0,2.5,"s");
+      //Jet Probability QA  plots for different particle species
+      if(fDoJetProb){
+         fHistManager.CreateTH2("fh2d_jetprob_beauty", "fh2d_jetprob_beauty;pt (GeV/c); count",500,0,250,500,0,2.5,"s");
+         fHistManager.CreateTH2("fh2d_jetprob_charm", "fh2d_jetprob_charm;pt (GeV/c); count",500,0,250,500,0,2.5,"s");
+         fHistManager.CreateTH2("fh2d_jetprob_light", "fh2d_jetprob_light;pt (GeV/c); count",500,0,250,500,0,2.5,"s");
             //Templates for different probabilities
             //50%
-
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXY_b_0_5JP", "fh2d_ImpSigXY_b_0_5JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXYZ_b_0_5JP", "fh2d_ImpSigXYZ_b_0_5JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXY_c_0_5JP", "fh2d_ImpSigXY_c_0_5JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXYZ_c_0_5JP", "fh2d_ImpSigXYZ_c_0_5JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXY_udsg_0_5JP", "fh2d_ImpSigXY_udsg_0_5JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXYZ_udsg_0_5JP", "fh2d_ImpSigXYZ_udsg_0_5JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH1("fh1dJetRecPt_0_5JP_bAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                                fHistManager.CreateTH1("fh1dJetRecPt_0_5JP_cAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                                fHistManager.CreateTH1("fh1dJetRecPt_0_5JP_udsgAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXY_b_0_5JP", "fh2d_ImpSigXY_b_0_5JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXYZ_b_0_5JP", "fh2d_ImpSigXYZ_b_0_5JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXY_c_0_5JP", "fh2d_ImpSigXY_c_0_5JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXYZ_c_0_5JP", "fh2d_ImpSigXYZ_c_0_5JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXY_udsg_0_5JP", "fh2d_ImpSigXY_udsg_0_5JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXYZ_udsg_0_5JP", "fh2d_ImpSigXYZ_udsg_0_5JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH1("fh1dJetRecPt_0_5JP_bAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+         fHistManager.CreateTH1("fh1dJetRecPt_0_5JP_cAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+         fHistManager.CreateTH1("fh1dJetRecPt_0_5JP_udsgAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
             //60%
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXY_b_0_6JP", "fh2d_ImpSigXY_b_0_6JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXYZ_b_0_6JP", "fh2d_ImpSigXYZ_b_0_6JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXY_c_0_6JP", "fh2d_ImpSigXY_c_0_5JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXYZ_c_0_6JP", "fh2d_ImpSigXYZ_c_0_6JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXY_udsg_0_6JP", "fh2d_ImpSigXY_udsg_0_6JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXYZ_udsg_0_6JP", "fh2d_ImpSigXYZ_udsg_0_6JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-
-                                                                fHistManager.CreateTH1("fh1dJetRecPt_0_6JP_bAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                                fHistManager.CreateTH1("fh1dJetRecPt_0_6JP_cAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                                fHistManager.CreateTH1("fh1dJetRecPt_0_6JP_udsgAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXY_b_0_6JP", "fh2d_ImpSigXY_b_0_6JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXYZ_b_0_6JP", "fh2d_ImpSigXYZ_b_0_6JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXY_c_0_6JP", "fh2d_ImpSigXY_c_0_5JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXYZ_c_0_6JP", "fh2d_ImpSigXYZ_c_0_6JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXY_udsg_0_6JP", "fh2d_ImpSigXY_udsg_0_6JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXYZ_udsg_0_6JP", "fh2d_ImpSigXYZ_udsg_0_6JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH1("fh1dJetRecPt_0_6JP_bAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+         fHistManager.CreateTH1("fh1dJetRecPt_0_6JP_cAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+         fHistManager.CreateTH1("fh1dJetRecPt_0_6JP_udsgAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
             //70%
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXY_b_0_7JP", "fh2d_ImpSigXY_b_0_7JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXYZ_b_0_7JP", "fh2d_ImpSigXYZ_b_0_7JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXY_c_0_7JP", "fh2d_ImpSigXY_c_0_7JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXYZ_c_0_7JP", "fh2d_ImpSigXYZ_c_0_7JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXY_udsg_0_7JP", "fh2d_ImpSigXY_udsg_0_7JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXYZ_udsg_0_7JP", "fh2d_ImpSigXYZ_udsg_0_7JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-
-                                                                fHistManager.CreateTH1("fh1dJetRecPt_0_7JP_bAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                                fHistManager.CreateTH1("fh1dJetRecPt_0_7JP_cAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                                fHistManager.CreateTH1("fh1dJetRecPt_0_7JP_udsgAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXY_b_0_7JP", "fh2d_ImpSigXY_b_0_7JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXYZ_b_0_7JP", "fh2d_ImpSigXYZ_b_0_7JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXY_c_0_7JP", "fh2d_ImpSigXY_c_0_7JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXYZ_c_0_7JP", "fh2d_ImpSigXYZ_c_0_7JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXY_udsg_0_7JP", "fh2d_ImpSigXY_udsg_0_7JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXYZ_udsg_0_7JP", "fh2d_ImpSigXYZ_udsg_0_7JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH1("fh1dJetRecPt_0_7JP_bAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+         fHistManager.CreateTH1("fh1dJetRecPt_0_7JP_cAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+         fHistManager.CreateTH1("fh1dJetRecPt_0_7JP_udsgAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
             //80%
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXY_b_0_8JP", "fh2d_ImpSigXY_b_0_8JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXYZ_b_0_8JP", "fh2d_ImpSigXYZ_b_0_8JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXY_c_0_8JP", "fh2d_ImpSigXY_c_0_8JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXYZ_c_0_8JP", "fh2d_ImpSigXYZ_c_0_8JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXY_udsg_0_8JP", "fh2d_ImpSigXY_udsg_0_8JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXYZ_udsg_0_8JP", "fh2d_ImpSigXYZ_udsg_0_8JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-
-                                                                fHistManager.CreateTH1("fh1dJetRecPt_0_8JP_bAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                                fHistManager.CreateTH1("fh1dJetRecPt_0_8JP_cAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                                fHistManager.CreateTH1("fh1dJetRecPt_0_8JP_udsgAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXY_b_0_8JP", "fh2d_ImpSigXY_b_0_8JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXYZ_b_0_8JP", "fh2d_ImpSigXYZ_b_0_8JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXY_c_0_8JP", "fh2d_ImpSigXY_c_0_8JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXYZ_c_0_8JP", "fh2d_ImpSigXYZ_c_0_8JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXY_udsg_0_8JP", "fh2d_ImpSigXY_udsg_0_8JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXYZ_udsg_0_8JP", "fh2d_ImpSigXYZ_udsg_0_8JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH1("fh1dJetRecPt_0_8JP_bAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+         fHistManager.CreateTH1("fh1dJetRecPt_0_8JP_cAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+         fHistManager.CreateTH1("fh1dJetRecPt_0_8JP_udsgAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
             //90%
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXY_b_0_9JP", "fh2d_ImpSigXY_b_0_9JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXYZ_b_0_9JP", "fh2d_ImpSigXYZ_b_0_9JP;pt (GeV/c); sig ",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXY_c_0_9JP", "fh2d_ImpSigXY_c_0_9JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXYZ_c_0_9JP", "fh2d_ImpSigXYZ_c_0_9JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXY_udsg_0_9JP", "fh2d_ImpSigXY_udsg_0_9JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXYZ_udsg_0_9JP", "fh2d_ImpSigXYZ_udsg_0_9JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-
-                                                                fHistManager.CreateTH1("fh1dJetRecPt_0_9JP_bAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                                fHistManager.CreateTH1("fh1dJetRecPt_0_9JP_cAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                                fHistManager.CreateTH1("fh1dJetRecPt_0_9JP_udsgAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXY_b_0_9JP", "fh2d_ImpSigXY_b_0_9JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXYZ_b_0_9JP", "fh2d_ImpSigXYZ_b_0_9JP;pt (GeV/c); sig ",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXY_c_0_9JP", "fh2d_ImpSigXY_c_0_9JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXYZ_c_0_9JP", "fh2d_ImpSigXYZ_c_0_9JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXY_udsg_0_9JP", "fh2d_ImpSigXY_udsg_0_9JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXYZ_udsg_0_9JP", "fh2d_ImpSigXYZ_udsg_0_9JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH1("fh1dJetRecPt_0_9JP_bAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+         fHistManager.CreateTH1("fh1dJetRecPt_0_9JP_cAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+         fHistManager.CreateTH1("fh1dJetRecPt_0_9JP_udsgAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
             //95%
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXY_b_0_95JP", "fh2d_ImpSigXY_b_0_95JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXYZ_b_0_95JP", "fh2d_ImpSigXYZ_b_0_95JP;pt (GeV/c); sig ",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXY_c_0_95JP", "fh2d_ImpSigXY_c_0_95JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXYZ_c_0_95JP", "fh2d_ImpSigXYZ_c_0_95JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXY_udsg_0_95JP", "fh2d_ImpSigXY_udsg_0_95JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                                fHistManager.CreateTH2("fh2d_ImpSigXYZ_udsg_0_95JP", "fh2d_ImpSigXYZ_udsg_0_95JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXY_b_0_95JP", "fh2d_ImpSigXY_b_0_95JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXYZ_b_0_95JP", "fh2d_ImpSigXYZ_b_0_95JP;pt (GeV/c); sig ",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXY_c_0_95JP", "fh2d_ImpSigXY_c_0_95JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXYZ_c_0_95JP", "fh2d_ImpSigXYZ_c_0_95JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXY_udsg_0_95JP", "fh2d_ImpSigXY_udsg_0_95JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXYZ_udsg_0_95JP", "fh2d_ImpSigXYZ_udsg_0_95JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH1("fh1dJetRecPt_0_95JP_bAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+         fHistManager.CreateTH1("fh1dJetRecPt_0_95JP_cAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+         fHistManager.CreateTH1("fh1dJetRecPt_0_95JP_udsgAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
 
-                                                                fHistManager.CreateTH1("fh1dJetRecPt_0_95JP_bAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                                fHistManager.CreateTH1("fh1dJetRecPt_0_95JP_cAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                                fHistManager.CreateTH1("fh1dJetRecPt_0_95JP_udsgAccepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                            }
+         //IP distributions: all jet types combined
+         fHistManager.CreateTH2("fh2d_ImpSigXY_all_0_5JP", "fh2d_ImpSigXY_all_0_5JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXY_all_0_6JP", "fh2d_ImpSigXY_all_0_6JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXY_all_0_7JP", "fh2d_ImpSigXY_all_0_7JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXY_all_0_8JP", "fh2d_ImpSigXY_all_0_8JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXY_all_0_9JP", "fh2d_ImpSigXY_all_0_9JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         fHistManager.CreateTH2("fh2d_ImpSigXY_all_0_95JP", "fh2d_ImpSigXY_all_0_95JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
 
-                                                            fHistManager.CreateTH2("fh2dTracksImpParXY_McCorr","radial imp. parameter (after correction);impact parameter xy (cm);a.u.",2000,-1,1,500,0,100,"s");
-                                                            fHistManager.CreateTH1("fh1dTracksImpParXY_McCorr","radial imp. parameter (after correction);impact parameter xy (cm);a.u.",400,-0.2,0.2,"s");
-                                                            fHistManager.CreateTH1("fh1dTracksImpParXYZ_McCorr","3d imp. parameter (after correction);impact parameter 3d (cm);a.u.",2000,0,100.,"s");
-                                                            fHistManager.CreateTH2("fh2dTracksImpParXYZ_McCorr","XYZ imp. parameter ;impact parameter xy (cm);a.u.",2000,-1,1,500,0,100.,"s");
-                                                            fHistManager.CreateTH2("fh2dTracksImpParXYZSignificance_McCorr","XYZ imp. parameter ;impact parameter xy (cm);a.u.",2000,-30,30,500,0,100.,"s");
-                                                            fHistManager.CreateTH1("fh1dTracksImpParXYSignificance_McCorr","radial imp. parameter (after correction);impact parameter xy significance;a.u.",2000,-30,30.,"s");
-                                                            fHistManager.CreateTH1("fh1dTracksImpParXYZSignificance_McCorr","3d imp. parameter (after correction);impact parameter 3d significance;a.u.",2000,0.,100.,"s");
-                                                            fHistManager.CreateTH1("fh1dJetGenPt","generator level jets;pt (GeV/c); count",250,0,250,"s");
-                                                            fHistManager.CreateTH1("fh1dJetGenPtUnidentified","generator level jets (no flavour assigned);pt (GeV/c); count",250,0,250,"s");
-                                                            fHistManager.CreateTH1("fh1dJetGenPtudsg","generator level udsg jets;pt (GeV/c); count",250,0,250,"s");
-                                                            fHistManager.CreateTH1("fh1dJetGenPtc","generator level c jets;pt (GeV/c); count",250,0,250,"s");
-                                                            fHistManager.CreateTH1("fh1dJetGenPtb","generator level b jets;pt (GeV/c); count",250,0,250,"s");
-                                                            fHistManager.CreateTH2("fh2dJetGenPtVsJetRecPt","detector momentum response;gen pt;rec pt",500,0,250,500,0,250,"s");
-                                                            fHistManager.CreateTH1("fh1dJetRecPtudsg","detector level jets;pt (GeV/c); count",250,0,250,"s");
-                                                            fHistManager.CreateTH1("fh1dJetRecPtUnidentified","detector level jets;pt (GeV/c); count",250,0,250,"s");
-                                                            fHistManager.CreateTH1("fh1dJetRecPtc","detector level jets;pt (GeV/c); count",250,0,250,"s");
-                                                            fHistManager.CreateTH1("fh1dJetRecPtb","detector level jets;pt (GeV/c); count",250,0,250,"s");
-                                                            fHistManager.CreateTH1("fh1dJetRecPtUnidentifiedAccepted","detector level jets;pt (GeV/c); count",250,0,250,"s");
-                                                            fHistManager.CreateTH1("fh1dJetRecPtudsgAccepted","detector level jets;pt (GeV/c); count",250,0,250,"s");
-                                                            fHistManager.CreateTH1("fh1dJetRecPtcAccepted","detector level jets;pt (GeV/c); count",250,0,250,"s");
-                                                            fHistManager.CreateTH1("fh1dJetRecPtbAccepted","detector level jets;pt (GeV/c); count",250,0,250,"s");
-                                                        }
-                                                        if(fDoJetProb){
-                                                            fHistManager.CreateTH2("fh2d_ImpSigXY_all_0_5JP", "fh2d_ImpSigXY_all_0_5JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                            fHistManager.CreateTH2("fh2d_ImpSigXY_all_0_6JP", "fh2d_ImpSigXY_all_0_6JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                            fHistManager.CreateTH2("fh2d_ImpSigXY_all_0_7JP", "fh2d_ImpSigXY_all_0_7JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                            fHistManager.CreateTH2("fh2d_ImpSigXY_all_0_8JP", "fh2d_ImpSigXY_all_0_8JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                            fHistManager.CreateTH2("fh2d_ImpSigXY_all_0_9JP", "fh2d_ImpSigXY_all_0_9JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
-                                                            fHistManager.CreateTH2("fh2d_ImpSigXY_all_0_95JP", "fh2d_ImpSigXY_all_0_95JP;pt (GeV/c); sig",500,0,250,1000,-30,30,"s");
+         //Pt distributions: all jet types combined
+         fHistManager.CreateTH1("fh1dJetRecPt_0_5JP_all_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+         fHistManager.CreateTH1("fh1dJetRecPt_0_6JP_all_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+         fHistManager.CreateTH1("fh1dJetRecPt_0_7JP_all_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+         fHistManager.CreateTH1("fh1dJetRecPt_0_8JP_all_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+         fHistManager.CreateTH1("fh1dJetRecPt_0_9JP_all_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+         fHistManager.CreateTH1("fh1dJetRecPt_0_95JP_all_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+       }//EndDoJetProb
 
-                                                            fHistManager.CreateTH1("fh1dJetRecPt_0_5JP_all_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                            fHistManager.CreateTH1("fh1dJetRecPt_0_6JP_all_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                            fHistManager.CreateTH1("fh1dJetRecPt_0_7JP_all_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                            fHistManager.CreateTH1("fh1dJetRecPt_0_8JP_all_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                            fHistManager.CreateTH1("fh1dJetRecPt_0_9JP_all_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                            fHistManager.CreateTH1("fh1dJetRecPt_0_95JP_all_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                        }
-    //This is for the default baseline analysis
+     //MC Impact Parameter Correction
+     fHistManager.CreateTH2("fh2dTracksImpParXY_McCorr","radial imp. parameter (after correction);impact parameter xy (cm);a.u.",2000,-1,1,500,0,100,"s");
+     fHistManager.CreateTH1("fh1dTracksImpParXY_McCorr","radial imp. parameter (after correction);impact parameter xy (cm);a.u.",400,-0.2,0.2,"s");
+     fHistManager.CreateTH1("fh1dTracksImpParXYZ_McCorr","3d imp. parameter (after correction);impact parameter 3d (cm);a.u.",2000,0,100.,"s");
+     fHistManager.CreateTH2("fh2dTracksImpParXYZ_McCorr","XYZ imp. parameter ;impact parameter xy (cm);a.u.",2000,-1,1,500,0,100.,"s");
+     fHistManager.CreateTH2("fh2dTracksImpParXYZSignificance_McCorr","XYZ imp. parameter ;impact parameter xy (cm);a.u.",2000,-30,30,500,0,100.,"s");
+     fHistManager.CreateTH1("fh1dTracksImpParXYSignificance_McCorr","radial imp. parameter (after correction);impact parameter xy significance;a.u.",2000,-30,30.,"s");
+     fHistManager.CreateTH1("fh1dTracksImpParXYZSignificance_McCorr","3d imp. parameter (after correction);impact parameter 3d significance;a.u.",2000,0.,100.,"s");
 
-                                                        if(fIsPythia){
-                                                            fHistManager.CreateTH1("fh1dJetRecPt_n_1_b_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                            fHistManager.CreateTH1("fh1dJetRecPt_n_2_b_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                            fHistManager.CreateTH1("fh1dJetRecPt_n_3_b_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+     //MC General Information
+     fHistManager.CreateTH1("fh1dJetGenPt","generator level jets;pt (GeV/c); count",250,0,250,"s");
+     fHistManager.CreateTH1("fh1dJetGenPtUnidentified","generator level jets (no flavour assigned);pt (GeV/c); count",250,0,250,"s");
+     fHistManager.CreateTH1("fh1dJetGenPtudsg","generator level udsg jets;pt (GeV/c); count",250,0,250,"s");
+     fHistManager.CreateTH1("fh1dJetGenPtc","generator level c jets;pt (GeV/c); count",250,0,250,"s");
+     fHistManager.CreateTH1("fh1dJetGenPtb","generator level b jets;pt (GeV/c); count",250,0,250,"s");
+     fHistManager.CreateTH2("fh2dJetGenPtVsJetRecPt","detector momentum response;gen pt;rec pt",500,0,250,500,0,250,"s");
+     fHistManager.CreateTH1("fh1dJetRecPtudsg","detector level jets;pt (GeV/c); count",250,0,250,"s");
+     fHistManager.CreateTH1("fh1dJetRecPtUnidentified","detector level jets;pt (GeV/c); count",250,0,250,"s");
+     fHistManager.CreateTH1("fh1dJetRecPtc","detector level jets;pt (GeV/c); count",250,0,250,"s");
+     fHistManager.CreateTH1("fh1dJetRecPtb","detector level jets;pt (GeV/c); count",250,0,250,"s");
+     fHistManager.CreateTH1("fh1dJetRecPtUnidentifiedAccepted","detector level jets;pt (GeV/c); count",250,0,250,"s");
+     fHistManager.CreateTH1("fh1dJetRecPtudsgAccepted","detector level jets;pt (GeV/c); count",250,0,250,"s");
+     fHistManager.CreateTH1("fh1dJetRecPtcAccepted","detector level jets;pt (GeV/c); count",250,0,250,"s");
+     fHistManager.CreateTH1("fh1dJetRecPtbAccepted","detector level jets;pt (GeV/c); count",250,0,250,"s");
+   }//EndPythiaLoop
 
-                                                            fHistManager.CreateTH1("fh1dJetRecPt_n_1_c_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                            fHistManager.CreateTH1("fh1dJetRecPt_n_2_c_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                            fHistManager.CreateTH1("fh1dJetRecPt_n_3_c_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+    //Pt Distributions for N1,N2,N3 Tracks
+    if(fIsPythia){
+      fHistManager.CreateTH1("fh1dJetRecPt_n_1_b_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+      fHistManager.CreateTH1("fh1dJetRecPt_n_2_b_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+      fHistManager.CreateTH1("fh1dJetRecPt_n_3_b_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
 
-                                                            fHistManager.CreateTH1("fh1dJetRecPt_n_1_udsg_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                            fHistManager.CreateTH1("fh1dJetRecPt_n_2_udsg_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                            fHistManager.CreateTH1("fh1dJetRecPt_n_3_udsg_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                        }
-                                                        fHistManager.CreateTH1("fh1dJetRecPt_n_1_all_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                        fHistManager.CreateTH1("fh1dJetRecPt_n_2_all_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
-                                                        fHistManager.CreateTH1("fh1dJetRecPt_n_3_all_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+      fHistManager.CreateTH1("fh1dJetRecPt_n_1_c_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+      fHistManager.CreateTH1("fh1dJetRecPt_n_2_c_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+      fHistManager.CreateTH1("fh1dJetRecPt_n_3_c_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
 
-                                                        const char * flavour[5]  = {"Unidentified","udsg","c","b",""};
-                                                        const char * base = "fh2dJetSignedImpPar";
-                                                        const char * dim[2]  = {"XY","XYZ"};
-                                                        const char * typ[2]  = {"","Significance"};
-                                                        const char * ordpar [4] = {"","First","Second","Third"};
-                                                            const char * special [1] = {"",/*"McCorr"*/};
+      fHistManager.CreateTH1("fh1dJetRecPt_n_1_udsg_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+      fHistManager.CreateTH1("fh1dJetRecPt_n_2_udsg_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+      fHistManager.CreateTH1("fh1dJetRecPt_n_3_udsg_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+    }
+    fHistManager.CreateTH1("fh1dJetRecPt_n_1_all_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+    fHistManager.CreateTH1("fh1dJetRecPt_n_2_all_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+    fHistManager.CreateTH1("fh1dJetRecPt_n_3_all_Accepted","detector level jets;pt (GeV/c); count",500,0,250,"s");
+    fHistManager.CreateTH1("fh1dTrackPt_n_1_all_Accepted","detector level jets;pt (GeV/c); count",500,0,200,"s");
+    fHistManager.CreateTH1("fh1dTrackPt_n_2_all_Accepted","detector level jets;pt (GeV/c); count",500,0,200,"s");
+    fHistManager.CreateTH1("fh1dTrackPt_n_3_all_Accepted","detector level jets;pt (GeV/c); count",500,0,200,"s");
 
-                                                        Int_t ptbins = 250;
-                                                        Double_t ptlow = 0;
-                                                        Double_t pthigh = 250;
-                                                        Int_t ipbins = 1000;
-                                                        Double_t iplow = -.5;
-                                                        Double_t iphigh = .5;
-                                                        for (Int_t id = 0;id<2;++id)
-                                                            for (Int_t ifl = 0;ifl<5;++ifl)
-                                                                for (Int_t io = 0;io<4;++io)
-                                                                    for (Int_t is = 0;is<1;++is)
-                                                                        for (Int_t it = 0;it<2;++it){
-                                                                            if(it==1) {
-                                                                                iplow=-30;
-                                    iphigh=30; //from 30
-                                    if(io==0 && ifl==4) ipbins = 1000;//2000;
-                                    else  ipbins =1000;//2000;
-                                }else {
-                                    iplow=-0.5;
-                                    iphigh=0.5;
-                                    ipbins =1000;//;2000;
-                                }
-                            if(id==0)  ipbins =1000;//2000;
-                            if(id==0)  ipbins =1000;//2000;
-                            if((fIsPythia||(!fIsPythia && ifl==4)))  fHistManager.CreateTH2(Form("%s%s%s%s%s%s",base,dim[id],typ[it],flavour[ifl],ordpar[io],special[is]),
+    //Template Generation
+    const char * flavour[5]  = {"Unidentified","udsg","c","b",""};
+    const char * base = "fh2dJetSignedImpPar";
+    const char * dim[2]  = {"XY","XYZ"};
+    const char * typ[2]  = {"","Significance"};
+    const char * ordpar [4] = {"","First","Second","Third"};
+    const char * special [1] = {"",/*"McCorr"*/};
+
+    Int_t ptbins = 250;
+    Double_t ptlow = 0;
+    Double_t pthigh = 250;
+    Int_t ipbins = 1000;
+    Double_t iplow = -.5;
+    Double_t iphigh = .5;
+    for (Int_t id = 0;id<2;++id)  // XY or XY/
+      for (Int_t ifl = 0;ifl<5;++ifl)  //flavour
+        for (Int_t io = 0;io<4;++io)        //order parameter
+          for (Int_t is = 0;is<1;++is)          //special comment
+            for (Int_t it = 0;it<2;++it){           //significance or not
+              if(it==1) {
+                iplow=-30;
+                iphigh=30; //from 30
+                if(io==0 && ifl==4) ipbins = 1000;//2000;
+                  else  ipbins =1000;//2000;
+              }else {
+                iplow=-0.5;
+                iphigh=0.5;
+                ipbins =1000;//;2000;
+              }
+              if(id==0)  ipbins =1000;//2000;
+                if((fIsPythia||(!fIsPythia && ifl==4))){
+                  fHistManager.CreateTH2(Form("%s%s%s%s%s%s",base,dim[id],typ[it],flavour[ifl],ordpar[io],special[is]),
                                 Form("%s%s%s%s%s%s;;",base,dim[id],typ[it],flavour[ifl],ordpar[io],special[is]),
                                 ptbins,ptlow,pthigh,ipbins,iplow,iphigh,"s");
-                        }
-                    TIter next(fHistManager.GetListOfHistograms());
-                    TObject* obj = 0;
-                    while ((obj = next())) {
-                        fOutput->Add(obj);
-                    }
+                  }
+              }
+
+    TIter next(fHistManager.GetListOfHistograms());
+    TObject* obj = 0;
+    while ((obj = next())) {
+      printf("Adding Object %s\n",obj->GetName());
+      fOutput->Add(obj);
+    }
     PostData(1, fOutput); // Post data for ALL output slots > 0 here.
     if(fUseTreeForCorrelations)    PostData(0, fCorrelationCrossCheck); // Post data for ALL output slots > 0 here.
-
 }
+
+
+
 void AliAnalysisTaskHFJetIPQA::GetMaxImpactParameterCutR(const AliVTrack * const track, Double_t &maximpactRcut){
     //
     // Get max impact parameter cut r (pt dependent)
@@ -1823,7 +1855,7 @@ AliEmcalJet *  AliAnalysisTaskHFJetIPQA::GetPerpendicularPseudoJet (AliEmcalJet 
        TVector3 v(tr->Px(), tr->Py(), tr->Pz());
        Double_t dR1 = v.DrEtaPhi(p1);
        if(v.Pt()>0.150){
-        if(dR1 < 0.4) {
+        if(dR1 < fJetRadius) {
             sumAllPt1+=v.Pt();
             nconst_1++;
             const_idx1.push_back(itrack);
@@ -1835,7 +1867,7 @@ AliEmcalJet* jet1 =0;
 
 if (sumAllPt1>0) {
     jet1 = new AliEmcalJet(sumAllPt1, p1.Eta(), TVector2::Phi_0_2pi (p1.Phi()), 0);
-    jet1->SetArea(0.4*0.4*TMath::Pi());
+    jet1->SetArea(fJetRadius*fJetRadius*TMath::Pi());
     jet1->SetNumberOfTracks(nconst_1);
     jet1->SetNumberOfClusters(0);
     for (int i = 0 ; i < (int) const_idx1.size();++i) {

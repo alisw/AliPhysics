@@ -72,12 +72,13 @@ public:
 
     //UTILITY STRUCT DEFINITIONS
     struct SJetIpPati {
-        SJetIpPati(Double_t v1, Double_t v2, Bool_t b, Bool_t c,Int_t tl): first(v1),second(v2),is_electron(b),is_fromB(c),trackLabel(tl){}
+        SJetIpPati(Double_t v1, Double_t v2, Bool_t b, Bool_t c,Int_t tl,Double_t pt): first(v1),second(v2),is_electron(b),is_fromB(c),trackLabel(tl),trackpt(pt){}
         Double_t first; // to be compatible with std::pair
         Double_t second;// to be compatible with std::pair
         Bool_t   is_electron; // added for electron contribution check
         Bool_t   is_fromB; // added for electron contribution check
         Int_t trackLabel=-1 ;
+        Double_t trackpt=-99;
     };
     //FUNCTION DEFINITIONS
     AliAnalysisTaskHFJetIPQA();
@@ -111,6 +112,7 @@ public:
     AliExternalTrackParam GetExternalParamFromJet(const AliEmcalJet *jet, const AliAODEvent *event);
     Bool_t GetImpactParameterWrtToJet(const AliAODTrack *track, const AliAODEvent *event, const AliEmcalJet *jet, Double_t *dca, Double_t *cov, Double_t *XYZatDCA, Double_t &jetsign);
     Bool_t getJetVtxMass( AliEmcalJet *jet, double &value);
+    void SetJetRadius(Double_t fJetRadRead){fJetRadius=fJetRadRead;}
     int GetMCTruth(AliAODTrack *track, int &motherpdg);
     bool GetPIDCombined(AliAODTrack * track, double *prob, int &nDetectors, UInt_t &usedDet , AliPID::EParticleType &MostProbablePID, bool setTrackPID );
     void setFProductionNumberPtHard(Int_t value=-1)
@@ -255,6 +257,7 @@ private:
     AliPIDCombined *fCombined ;//!
     Float_t fXsectionWeightingFactor;//
     Int_t   fProductionNumberPtHard;//
+    Double_t fJetRadius;//
     Double_t fMCglobalDCAxyShift;//
     Double_t fMCglobalDCASmear;//
     Double_t fVertexRecalcMinPt;//
@@ -324,7 +327,7 @@ private:
 
 
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 27)
+    ClassDef(AliAnalysisTaskHFJetIPQA, 28)
 };
 
 #endif
