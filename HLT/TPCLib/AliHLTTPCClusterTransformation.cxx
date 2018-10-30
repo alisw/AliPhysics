@@ -306,7 +306,7 @@ Int_t  AliHLTTPCClusterTransformation::Transform( int Slice, int Row, float Pad,
     Int_t sector=-99, thisrow=-99;
     AliHLTTPCGeometry::Slice2Sector( Slice, Row, sector, thisrow);
     Int_t is[]={sector};
-    Double_t xx[]={static_cast<Double_t>(Row),Pad,Time};
+    Double_t xx[]={static_cast<Double_t>(thisrow),Pad,Time};
     fOrigTransform->Transform(xx,is,0,1);
     for (int i = 0;i < 3;i++) XYZ[i] = xx[i];
   } else {
