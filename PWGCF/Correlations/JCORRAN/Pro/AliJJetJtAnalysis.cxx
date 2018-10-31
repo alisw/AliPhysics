@@ -57,6 +57,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fJetLeadPtBorders(NULL)
   , fJetMultBorders(NULL)
   , fDeltaRBorders(NULL)
+  , fXlongBorders(NULL)
   , nJetContainer(0) //number of Jets finders
   , fnR(0) // Number of jet resolution parameters
   , fnkt(0) // Information that whether kt algorithm reconstruction was done or not.
@@ -102,6 +103,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fdRBin() //histmanager axis
   , fiHist() //histmanager axis
   , fCentralityBin() //histmanager axis
+  , fXlongBin() //histmanager axis
   , fktFinderBin()
   , fJetFinderBinMC() //histmanager axis
   , fJetTriggerBinMC() //histmanager axis
@@ -343,6 +345,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fJetLeadPtBorders(NULL)
   , fJetMultBorders(NULL)
   , fDeltaRBorders(NULL)
+  , fXlongBorders(NULL)
   , nJetContainer(0)
   , fnR(0)
   , fnkt(0)
@@ -388,6 +391,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fdRBin() //histmanager axis
   , fiHist() //histmanager axis
   , fCentralityBin() //histmanager axis
+  , fXlongBin() //histmanager axis
   , fktFinderBin()
   , fJetFinderBinMC() //histmanager axis
   , fJetTriggerBinMC() //histmanager axis
@@ -629,6 +633,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fJetLeadPtBorders(ap.fJetLeadPtBorders)
   , fJetMultBorders(ap.fJetMultBorders)
   , fDeltaRBorders(ap.fDeltaRBorders)
+  , fXlongBorders(ap.fXlongBorders)
   , nJetContainer(ap.nJetContainer)
   , fnR(ap.fnR)
   , fnkt(ap.fnkt)
@@ -674,6 +679,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fdRBin(ap.fdRBin)
   , fiHist(ap.fiHist)
   , fCentralityBin(ap.fCentralityBin)
+  , fXlongBin(ap.fXlongBin)
   , fktFinderBin(ap.fktFinderBin)
   , fDeltaPhiCutBin(ap.fDeltaPhiCutBin)
   , fJetFinderBinMC(ap.fJetFinderBinMC)
@@ -929,6 +935,7 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
   fDeltaRBorders = fCard->GetVector("DeltaRBorders");
   //fCentBinBorders = fCard->GetVector("CentBinBorders");
   fJetEtaCut = fCard-> Get("JetEtaCut");
+  fXlongBorders = fCard->GetVector("xEBorders");
 
   fEfficiency = new AliJEfficiency();
   // 0:NoEff, 1:Period 2:RunNum 3:Auto
@@ -980,6 +987,7 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
   fCentralityBin.Set("EventCentariltyBin","NCent","Centrality: %d - %d ").SetBin(fCard->GetVector("CentBinBorders"));
   fktFinderBin.Set("ktFinderBin","nkt","nkt:%d", AliJBin::kSingle).SetBin(fnkt);
   fDeltaPhiCutBin.Set("DeltaPhiCutBin","DPhi","DPhi:%d", AliJBin::kSingle).SetBin(2); // 0 for no cut, 1 for deltaPhi cut
+  fXlongBin.Set("XlongBin","Xlong","Xlong: %.1f - %.1f ").SetBin(fCard->GetVector("xEBorders"));
 
   int NBINSDijet=170;
   double LogBinsXDijet[NBINSDijet+1], LimLDijet=0.1, LimHDijet=1000;
@@ -1234,29 +1242,29 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
 
   fhJetConeJtLeadingRefBin
     << TH1D("JetConeJtLeadingRefBin","",NBINSJt,LogBinsJt)
-    << fJetFinderBin << fJetTriggerBin
+    << fJetFinderBin << fJetTriggerBin << fXlongBin
     <<"END";
   fhJetConeJtWeightLeadingRefBin
     << TH1D("JetConeJtWeightLeadingRefBin","",NBINSJt,LogBinsJt)
-    << fJetFinderBin << fJetTriggerBin
+    << fJetFinderBin << fJetTriggerBin << fXlongBin
     <<"END";
   fhJetConeJtWeightLeadingRefWithTrackCutBinBin
     << TH1D("JetConeJtWeightLeadingRefWithTrackCutBinBin","",NBINSJt,LogBinsJt)
-    << fJetFinderBin << fJetTriggerBin << fJetLeadPtBin
+    << fJetFinderBin << fJetTriggerBin << fJetLeadPtBin << fXlongBin
     << "END";
 
   fhJtLeadingRefBin
     << TH1D("JtLeadingRefBin","",NBINSJt,LogBinsJt)
-    << fJetFinderBin << fJetTriggerBin
+    << fJetFinderBin << fJetTriggerBin << fXlongBin
     <<"END";
   fhJtWeightLeadingRefBin
     << TH1D("JtWeightLeadingRefBin","",NBINSJt,LogBinsJt)
-    << fJetFinderBin << fJetTriggerBin
+    << fJetFinderBin << fJetTriggerBin << fXlongBin
     <<"END";
 
   fhJtWeightLeadingRefWithTrackCutBinBin
     << TH1D("JtWeightLeadingRefWithTrackCutBinBin","",NBINSJt,LogBinsJt)
-    << fJetFinderBin << fJetTriggerBin << fJetLeadPtBin
+    << fJetFinderBin << fJetTriggerBin << fJetLeadPtBin << fXlongBin
     << "END";
 
 
@@ -2551,18 +2559,20 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
       }
 
       if(icon == leadingTrackIndex){
-        //leadingTrackPt = pta;
-        //leadingTrackIndex = icon;
         leadingTrackJt = jt; //Save leading track jT for later
         leadingTrackEff = effCorrection;
       }else{
         if(doLeadingRef){
+          int xlongBin = GetBin(fXlongBorders, pta/leadingTrackPt);
+          if( xlongBin < 0 ) {
+            continue;
+          }
           zleading = (constituent->Vect()*leadingTrack->Vect().Unit())/leadingTrack->P();
           jtleading =  (constituent->Vect()-zleading*leadingTrack->Vect()).Mag();
-          fhJtLeadingRefBin[iContainer][iBin]->Fill(jtleading,effCorrection);
-          fhJtWeightLeadingRefBin[iContainer][iBin]->Fill(jtleading,1.0/jtleading * effCorrection);
+          fhJtLeadingRefBin[iContainer][iBin][xlongBin]->Fill(jtleading,effCorrection);
+          fhJtWeightLeadingRefBin[iContainer][iBin][xlongBin]->Fill(jtleading,1.0/jtleading * effCorrection);
           if(iBin2 > -1){
-            fhJtWeightLeadingRefWithTrackCutBinBin[iContainer][iBin][iBin2]->Fill(jtleading,1.0/jtleading * effCorrection);
+            fhJtWeightLeadingRefWithTrackCutBinBin[iContainer][iBin][iBin2][xlongBin]->Fill(jtleading,1.0/jtleading * effCorrection);
           }
         }
       }
@@ -2707,12 +2717,16 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , TObjArray *ChargedJet
             ->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
         }
         if(pta < 0.99*leadingTrackPt && doLeadingRef){
+          int xlongBin = GetBin(fXlongBorders, pta/leadingTrackPt);
+          if( xlongBin < 0 ) {
+            continue;
+          }
           zleading = (track->Vect()*leadingTrack->Vect().Unit())/leadingTrack->P();
           jtleading =  (track->Vect()-zleading*leadingTrack->Vect()).Mag();
-          fhJetConeJtLeadingRefBin[iContainer]->Fill(jtleading,effCorrection);
-          fhJetConeJtWeightLeadingRefBin[iContainer][iBin]->Fill(jtleading,1.0/jtleading * effCorrection);
+          fhJetConeJtLeadingRefBin[iContainer][iBin][xlongBin]->Fill(jtleading,effCorrection);
+          fhJetConeJtWeightLeadingRefBin[iContainer][iBin][xlongBin]->Fill(jtleading,1.0/jtleading * effCorrection);
           if(iBin2 > -1){
-            fhJetConeJtWeightLeadingRefWithTrackCutBinBin[iContainer][iBin][iBin2]->Fill(jtleading,1.0/jtleading * effCorrection);
+            fhJetConeJtWeightLeadingRefWithTrackCutBinBin[iContainer][iBin][iBin2][xlongBin]->Fill(jtleading,1.0/jtleading * effCorrection);
           }
         }
 

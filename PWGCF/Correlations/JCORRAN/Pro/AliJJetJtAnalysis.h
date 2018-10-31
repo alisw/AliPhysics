@@ -161,6 +161,7 @@ class AliJJetJtAnalysis{
     TVector *fJetMultBorders; ///< Jet multiplicity bin borders
     TVector  *fDeltaRBorders;
     TVector *fCentralityBorders; ///< Jet multiplicity bin borders
+    TVector *fXlongBorders; ///< Xlong bin borders
     int nJetContainer; ///< Number of jet finders
     int fnR; ///< Number of jet resolution parameters
     int fnkt; ///< Marks how many kt-algorithms were reconstructed
@@ -214,6 +215,7 @@ class AliJJetJtAnalysis{
     AliJBin fdRBin;
     AliJBin fiHist;
     AliJBin fCentralityBin;
+    AliJBin fXlongBin;
     AliJBin fktFinderBin;
     AliJBin fDeltaPhiCutBin;
     AliJBin fJetFinderBinMC;
