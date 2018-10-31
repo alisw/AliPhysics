@@ -31,6 +31,7 @@
 #include "TMethod.h"
 #include "AliMergeable.h"
 #include "TROOT.h"
+#include "TInterpreter.h"
 
 //this is meant to become a class, hence the structure with global vars etc.
 //Also the code is rather flat - it is a bit of a playground to test ideas.
@@ -377,7 +378,9 @@ Int_t DoProcessAllData(void* outputsocket)
   if (!fMacroPath.empty() && fInputObjects.GetEntries()>0)
   {
     if (fVerbose) {printf("processing...\n");}
-    gROOT->ProcessLine(Form("process((TCollection*)%p,(TCollection*)%p)",&fInputObjects,&fOutputObjects));
+    Int_t error = 0;
+    gROOT->ProcessLineFast(Form("process((TCollection*)%p,(TCollection*)%p)",&fInputObjects,&fOutputObjects),&error);
+    if (error != TInterpreter::kNoError) {printf("error %i executing process(...)\n");}
     DoSend(outputsocket);
     fOutputObjects.Clear(); //just clear, objects are destroyed by transport
     fInputObjects.Delete(); //Delete input objects after use
@@ -504,7 +507,7 @@ Int_t DoSend(void* socket)
   sentBytes += alizmq_msg_send(&message, socket, 0);
   fNumberOfMessagesSent++;
   fBytesOUT += sentBytes;
-  if (fVerbose) Printf("processor sent %i bytes, %i parts, on socket %p", sentBytes, parts, socket);
+  if (fVerbose) Printf("processor sent %i bytes, %i blocks, on socket %p", sentBytes, parts, socket);
   alizmq_msg_close(&message);
 
   SetLastPushBackTime();
@@ -717,7 +720,9 @@ Int_t ProcessOptionString(TString arguments, Bool_t verbose)
     {
       fMacroPath = value.Data();
       std::string tmp = fMacroPath+"++";
-      gROOT->LoadMacro(tmp.c_str());
+      if (0>gROOT->LoadMacro(tmp.c_str())) {
+        printf("ERROR: could not load macro %s\n",fMacroPath.c_str());
+      };
     }
     else
     {
