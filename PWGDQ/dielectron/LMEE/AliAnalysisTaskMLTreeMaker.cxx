@@ -509,7 +509,7 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   }
   else cent = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
 
-//  if(cent<fCentralityPercentileMin || cent>fCentralityPercentileMax) return;
+  if(cent<fCentralityPercentileMin || cent>fCentralityPercentileMax) return;
   
   UInt_t selectedMask=(1<<evfilter->GetCuts()->GetEntries())-1;
   varManager->SetEvent(event);

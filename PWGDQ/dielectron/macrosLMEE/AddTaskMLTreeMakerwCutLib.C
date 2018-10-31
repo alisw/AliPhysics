@@ -19,8 +19,6 @@ if(!mgr){
     return 0;
 }
 
-
-
 //Base Directory for GRID / LEGO Train  
 TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
 
@@ -61,8 +59,8 @@ task->SelectCollisionCandidates(AliVEvent::kINT7);
 task->SetCentralityPercentileRange(centmin,centmax);
 task->SetupTrackCuts(cutlib->GetTrackCuts(trackCut,PIDCut,0,useAODFilterCuts));
 task->SetUseTMVA(kTRUE);
-//task->SetupEventCuts(cutlib->GetEventCuts(0, 0));
-task->SetupEventCuts(cutlib->GetEventCuts(centmin, centmax));
+task->SetupEventCuts(cutlib->GetEventCuts(0, 0));
+//task->SetupEventCuts(cutlib->GetEventCuts(centmin, centmax));   //not working when this task is the only task run (e.g. in train test), use centrality selectrion in TreeMaker instead - same result
 
 mgr->AddTask(task);
 
