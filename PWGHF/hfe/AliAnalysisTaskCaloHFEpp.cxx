@@ -775,10 +775,10 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 //								correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fRefMult));
 //				} 
 //				fzvtx_Ntrkl_Corr->Fill(Zvertex,correctednAcc);
-//
-//
-//				if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
-//
+
+
+				if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
+
 				fzvtx_Nch->Fill(Zvertex,Nch);
 //				fNchNtr->Fill(correctednAcc,Nch);
 
