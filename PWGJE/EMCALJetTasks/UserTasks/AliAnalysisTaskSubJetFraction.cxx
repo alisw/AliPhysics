@@ -43,6 +43,7 @@
 #include "AliEmcalJetFinder.h"
 #include "AliAODEvent.h"
 #include "AliAnalysisTaskSubJetFraction.h"
+#include "AliEmcalPythiaInfo.h"
 
 #include "FJ_includes.h"
 
@@ -475,17 +476,17 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
       fShapesVarNames[7] = "Mass_Truth";
       fShapesVarNames[8] = "JetMultiplicity_Rec";
       fShapesVarNames[9] = "JetMultiplicity_Truth";
-      fShapesVarNames[10] = "Blank_1";
+      fShapesVarNames[10] = "Parton_1_Flag";
       fShapesVarNames[11] = "Blank_2";
-      fShapesVarNames[12] = "Blank_3";
+      fShapesVarNames[12] = "Parton_1_Eta";
       fShapesVarNames[13] = "Blank_4";
-      fShapesVarNames[14] = "Blank_5";
+      fShapesVarNames[14] = "Parton_1_Phi";
       fShapesVarNames[15] = "Blank_6";
-      fShapesVarNames[16] = "Blank_7";
+      fShapesVarNames[16] = "Parton_2_Flag";
       fShapesVarNames[17] = "Blank_8";
-      fShapesVarNames[18] = "Blank_9";
+      fShapesVarNames[18] = "Parton_2_Eta";
       fShapesVarNames[19] = "Blank_10";
-      fShapesVarNames[20] = "Blank_11";
+      fShapesVarNames[20] = "Parton_2_Phi";
       fShapesVarNames[21] = "Blank_12";
       fShapesVarNames[22] = "Blank_13";
       fShapesVarNames[23] = "Blank_14";
@@ -1494,6 +1495,8 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
     Double_t JetPhi=0;
     Bool_t EventCounter=kFALSE;
     Double_t JetPt_ForThreshold=0;
+    const AliEmcalPythiaInfo *Parton_Info = 0x0;
+    Parton_Info=GetPythiaInfo();
     fhEventCounter->Fill(1);
     if(JetCont) {
       fhEventCounter->Fill(2); //Number of events with a jet container
@@ -1588,18 +1591,18 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  if (fMLOn==0) fShapesVar[8]=FjNSubJettiness(Jet1,0,2,0,1,1);
 	  else fShapesVar[8]=Jet1->GetNumberOfTracks();
 	  if (fMLOn==0) fShapesVar[10]=FjNSubJettinessFastJet(ExtraProng_Jet_03_10,0,1,0,1,0);
-	  else fShapesVar[10]=0.0;
+	  else fShapesVar[10]=Parton_Info->GetPartonFlag6();
 	  if (fMLOn==0) fShapesVar[12]=FjNSubJettinessFastJet(ExtraProng_Jet_03_20,0,1,0,1,0);
-	  else fShapesVar[12]=0.0;
+	  else fShapesVar[12]=Parton_Info->GetPartonEta6();
 	  if (fMLOn==0) fShapesVar[14]=FjNSubJettinessFastJet(ExtraProng_Jet_01_10,0,2,0,1,0);
-	  else fShapesVar[14]=0.0;
+	  else fShapesVar[14]=Parton_Info->GetPartonPhi6();
 	  if (fMLOn==0) fShapesVar[16]=FjNSubJettinessFastJet(ExtraProng_Jet_01_20,0,2,0,1,0);
-	  else fShapesVar[16]=0.0;
+	  else fShapesVar[16]=Parton_Info->GetPartonFlag7();
 	  // fShapesVar[18]=FjNSubJettinessFastJet(ExtraProng_Jet_01_30,0,2,0,1,0);
 	  if (fMLOn==0) fShapesVar[18]=FjNSubJettinessFastJet(kTTrack_1_2_1,0,2,0,1,0);
-	  else fShapesVar[18]=0.0;
+	  else fShapesVar[18]=Parton_Info->GetPartonEta7();
 	  if (fMLOn==0) fShapesVar[20]=FjNSubJettinessFastJet(ExtraProng_Jet_03_15,0,2,0,1,0);
-	  else fShapesVar[20]=0.0;
+	  else fShapesVar[20]=Parton_Info->GetPartonPhi7();
 	  AliEmcalJetFinder *Reclusterer1 = Recluster(Jet1, 0, fSubJetRadius, fSubJetMinPt, fSubJetAlgorithm, "SubJetFinder");
 	  if (fFullTree){
 	    if (fMLOn==0) fShapesVar[22]=FjNSubJettiness(Jet1,0,2,0,1,2);
