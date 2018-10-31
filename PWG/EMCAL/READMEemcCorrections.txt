@@ -236,6 +236,7 @@ __Clusters__ (Includes all options for EMCal Containers):
 | --------------------- | --------------------------------- |
 | clusNonLinCorrEnergyCut | Double determining the cluster non-linearity energy cut |
 | clusHadCorrEnergyCut  | Double determining the cluster hadronic cluster energy cut |
+| defaultClusterEnergy  | String defining the default energy type of the container (kNonLinCorr, kHadCorr, ...) |
 | includePHOS           | True if PHOS cluster should be included |
 
 __Tracks__ (Includes all options for EMCal Containers):
