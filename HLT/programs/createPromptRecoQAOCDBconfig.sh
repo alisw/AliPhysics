@@ -2,7 +2,7 @@
 main ()
 {
   CONFIG=$(cat << EOF
-histogram=,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,
+histogram=\',fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,\'
 EOF
 )
 

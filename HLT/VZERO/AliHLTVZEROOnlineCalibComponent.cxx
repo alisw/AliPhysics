@@ -202,11 +202,6 @@ Int_t AliHLTVZEROOnlineCalibComponent::DoInit( Int_t argc, const Char_t** argv )
         AliGeomManager::LoadGeometry();
     }
     
-    // -- Read the component arguments
-    if (iResult>=0) {
-        iResult=ConfigureFromArgumentString(argc, argv);
-    }
-    
     // -- Get AliRunInfo variables
     // -----------------------------
     TObject* pOCDBEntry=LoadAndExtractOCDBObject("GRP/GRP/Data");
