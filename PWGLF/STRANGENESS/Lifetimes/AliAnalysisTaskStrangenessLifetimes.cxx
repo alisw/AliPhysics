@@ -562,7 +562,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
          nSigmaNegPion < fMaxTPCpionSigma &&
          nSigmaPosPion < fMaxTPCpionSigma) ||
         // Case 3: Hypertriton Selection        
-        (masses[2] < 2.85 && masses[2] > 3.15 &&
+        (masses[2] > 2.85 && masses[2] < 3.15 &&
           ((nSigmaPosHe3 < fMaxTPChe3Sigma &&
            nSigmaNegPion < fMaxTPCpionSigma) ||
           (nSigmaNegHe3 < fMaxTPChe3Sigma &&
