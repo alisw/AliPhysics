@@ -178,7 +178,7 @@ AliFemtoDreamTrackCuts::~AliFemtoDreamTrackCuts() {
 
 bool AliFemtoDreamTrackCuts::isSelected(AliFemtoDreamTrack *Track) {
   if (!Track) {
-    AliFatal("No Input Track recieved");
+    AliFatal("No Input Track received");
   }
   bool pass = true;
   if (!Track->IsSet()) {

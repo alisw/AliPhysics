@@ -101,6 +101,11 @@ class AliFemtoDreamTrackHist {
       fNSigTPC[i]->Fill(mom, nSigTPC);
   }
   ;
+  void FillNSigTPCMod(int i, float mom,float nSigTPC){
+    if (!fMinimalBooking)
+      fNSigTPCMod[i]->Fill(mom, TMath::Abs(nSigTPC));
+  }
+  ;
   void FillNSigTOF(int i, float mom, float nSigTOF) {
     if (!fMinimalBooking)
       fNSigTOF[i]->Fill(mom, nSigTOF);
@@ -173,6 +178,7 @@ class AliFemtoDreamTrackHist {
   TH2F *fTPCdedx[2];        //!
   TH2F *fTOFbeta[2];        //!
   TH2F *fNSigTPC[2];        //!
+  TH2F *fNSigTPCMod[2];     //!
   TH2F *fNSigTOF[2];        //!
   TH1F *fTPCStatus[2];      //!
   TH1F *fTOFStatus[2];      //!
