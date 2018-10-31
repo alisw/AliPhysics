@@ -2919,7 +2919,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
     pidProton = kFALSE;
     pidElectron = kFALSE;
 
-    if(track){
+    if(track && isGlobal){
       //Note that histograms are filled as a function of cluster pT.
       charge = track->Charge();
       trackP = track->P();
@@ -3033,9 +3033,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
           else                           FillHistogramTH1(fOutputContainer,"hPurityOthers_CPV",pT,weight);
         }
 
-
-
-
       }//end of CPV
 
       if(fPHOSClusterCuts->AcceptDisp(ph)){
@@ -3066,7 +3063,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
           }
           else                           FillHistogramTH1(fOutputContainer,"hPurityOthers_Disp",pT,weight);
         }
-
 
       }//end of Disp
 
@@ -4707,16 +4703,19 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillTrackMatching()
     AliVCluster *clu = (AliVCluster*)ph->GetCluster();
     AliVTrack *track = 0x0;
     r = 999;
+    isGlobal = kFALSE;
 
     if(fESDEvent){
       Int_t trackindex = clu->GetTrackMatchedIndex();
       if(trackindex > 0){
         track = (AliVTrack*)(fEvent->GetTrack(trackindex));
+        isGlobal = fESDtrackCutsGlobal->AcceptTrack(dynamic_cast<AliESDtrack*>(track));
       }//end of track matching
     }//end of ESD
     else if(fAODEvent){
       if(clu->GetNTracksMatched() > 0){
         track = dynamic_cast<AliVTrack*>(clu->GetTrackMatched(0));
+        isGlobal = dynamic_cast<AliAODTrack*>(track)->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA);//standard cuts with very loose DCA cut
       }//end of track matching
     }//end of AOD
 
@@ -4726,7 +4725,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillTrackMatching()
     pidElectron = kFALSE;
     r = ph->GetNsigmaCPV();
 
-    if(track){
+    if(track && isGlobal){
       trackPt = track->Pt();
       charge = track->Charge();
 
@@ -4846,42 +4845,50 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixTrackMatching()
           pidKaon = kFALSE;
           pidProton = kFALSE;
           pidElectron = kFALSE;
+          isGlobal = kFALSE;
 
           AliVTrack *track = (AliVTrack*)fEvent->GetTrack(itr);
+          if(fESDEvent){
+            isGlobal = fESDtrackCutsGlobal->AcceptTrack(dynamic_cast<AliESDtrack*>(track));
+          }//end of ESD
+          else if(fAODEvent){
+            isGlobal = dynamic_cast<AliAODTrack*>(track)->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA);//standard cuts with very loose DCA cut
+          }//end of AOD
 
-          nsigmaElectron = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron);//(-2,3) is for real electron analysis.
-          nsigmaPion     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion));
-          nsigmaKaon     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon));
-          nsigmaProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton));
+          if(isGlobal){
+            nsigmaElectron = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron);//(-2,3) is for real electron analysis.
+            nsigmaPion     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion));
+            nsigmaKaon     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon));
+            nsigmaProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton));
 
-          if((TMath::Abs(nsigmaElectron) < nsigmaPion)     && (TMath::Abs(nsigmaElectron) < nsigmaKaon) && (TMath::Abs(nsigmaElectron) < nsigmaProton) && (-2 < nsigmaElectron && nsigmaElectron < 3)) pidElectron = kTRUE;
-          if((nsigmaPion     < TMath::Abs(nsigmaElectron)) && (nsigmaPion     < nsigmaKaon) && (nsigmaPion     < nsigmaProton) && (nsigmaPion     < NsigmaCut)) pidPion = kTRUE;
-          if((nsigmaKaon     < TMath::Abs(nsigmaElectron)) && (nsigmaKaon     < nsigmaPion) && (nsigmaKaon     < nsigmaProton) && (nsigmaKaon     < NsigmaCut)) pidKaon = kTRUE;
-          if((nsigmaProton   < TMath::Abs(nsigmaElectron)) && (nsigmaProton   < nsigmaPion) && (nsigmaProton   < nsigmaKaon)   && (nsigmaProton   < NsigmaCut)) pidProton = kTRUE;
+            if((TMath::Abs(nsigmaElectron) < nsigmaPion)     && (TMath::Abs(nsigmaElectron) < nsigmaKaon) && (TMath::Abs(nsigmaElectron) < nsigmaProton) && (-2 < nsigmaElectron && nsigmaElectron < 3)) pidElectron = kTRUE;
+            if((nsigmaPion     < TMath::Abs(nsigmaElectron)) && (nsigmaPion     < nsigmaKaon) && (nsigmaPion     < nsigmaProton) && (nsigmaPion     < NsigmaCut)) pidPion = kTRUE;
+            if((nsigmaKaon     < TMath::Abs(nsigmaElectron)) && (nsigmaKaon     < nsigmaPion) && (nsigmaKaon     < nsigmaProton) && (nsigmaKaon     < NsigmaCut)) pidKaon = kTRUE;
+            if((nsigmaProton   < TMath::Abs(nsigmaElectron)) && (nsigmaProton   < nsigmaPion) && (nsigmaProton   < nsigmaKaon)   && (nsigmaProton   < NsigmaCut)) pidProton = kTRUE;
 
-          if(pidElectron){
-            FillHistogramTH2(fOutputContainer,"hMixRvsTrackPt_Electron",pttrack,cpv);
-            FillHistogramTH2(fOutputContainer,"hMixRvsClusterPt_Electron",pT,cpv);
-          }
-          else if(pidPion){
-            FillHistogramTH2(fOutputContainer,"hMixRvsTrackPt_Pion",pttrack,cpv);
-            FillHistogramTH2(fOutputContainer,"hMixRvsClusterPt_Pion",pT,cpv);
-          }
-          else if(pidKaon){
-            FillHistogramTH2(fOutputContainer,"hMixRvsTrackPt_Kaon",pttrack,cpv);
-            FillHistogramTH2(fOutputContainer,"hMixRvsClusterPt_Kaon",pT,cpv);
-          }
-          else if(pidProton){
-            if(charge > 0){
-              FillHistogramTH2(fOutputContainer,"hMixRvsTrackPt_Proton",pttrack,cpv);
-              FillHistogramTH2(fOutputContainer,"hMixRvsClusterPt_Proton",pT,cpv);
+            if(pidElectron){
+              FillHistogramTH2(fOutputContainer,"hMixRvsTrackPt_Electron",pttrack,cpv);
+              FillHistogramTH2(fOutputContainer,"hMixRvsClusterPt_Electron",pT,cpv);
             }
-            else{
-              FillHistogramTH2(fOutputContainer,"hMixRvsTrackPt_AntiProton",pttrack,cpv);
-              FillHistogramTH2(fOutputContainer,"hMixRvsClusterPt_AntiProton",pT,cpv);
+            else if(pidPion){
+              FillHistogramTH2(fOutputContainer,"hMixRvsTrackPt_Pion",pttrack,cpv);
+              FillHistogramTH2(fOutputContainer,"hMixRvsClusterPt_Pion",pT,cpv);
             }
-          }
-
+            else if(pidKaon){
+              FillHistogramTH2(fOutputContainer,"hMixRvsTrackPt_Kaon",pttrack,cpv);
+              FillHistogramTH2(fOutputContainer,"hMixRvsClusterPt_Kaon",pT,cpv);
+            }
+            else if(pidProton){
+              if(charge > 0){
+                FillHistogramTH2(fOutputContainer,"hMixRvsTrackPt_Proton",pttrack,cpv);
+                FillHistogramTH2(fOutputContainer,"hMixRvsClusterPt_Proton",pT,cpv);
+              }
+              else{
+                FillHistogramTH2(fOutputContainer,"hMixRvsTrackPt_AntiProton",pttrack,cpv);
+                FillHistogramTH2(fOutputContainer,"hMixRvsClusterPt_AntiProton",pT,cpv);
+              }
+            }
+          }//end of if isGlobal
         }//end of track matching
 
       }//end of cluster loop
