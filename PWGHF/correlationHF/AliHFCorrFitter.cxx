@@ -496,92 +496,175 @@ case 4:
     fFit->SetParameter(6,0.3);
     fFit->SetParameter(7,2);
     
-    if(fMinAsspt==0.3 && fMaxAsspt==99) {  //dedicated starting parameters
-      printf("Dedicated starting fit parameters...");
-      fFit->SetParameter(0,2.4);
-      fFit->SetParameter(1,0.8);
-      fFit->SetParameter(3,0.4);
-      fFit->SetParameter(4,1.0);
-      fFit->SetParameter(6,0.6);
+    if(fIspPb) { //for pPb analyses (TESTED AND WORKING)
+      if(fMinAsspt==0.3 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,2.4);
+        fFit->SetParameter(1,0.8);
+        fFit->SetParameter(3,0.4);
+        fFit->SetParameter(4,1.0);
+        fFit->SetParameter(6,0.6);
+      }
+      if(fMinAsspt==0.3 && fMaxAsspt==1) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,1.8);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.4);
+        fFit->SetParameter(4,0.5);
+        fFit->SetParameter(6,0.6);
+      }    
+      if(fMinAsspt==1 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.6);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.6);
+        fFit->SetParameter(6,0.6);
+        if(fMinDpt>=16) {
+          fFit->SetParameter(0,1.25);
+          fFit->SetParameter(1,1.8);
+          fFit->SetParameter(3,0.15);
+          fFit->SetParameter(4,0.7);
+          fFit->SetParameter(6,0.15);        
+          fFit->SetParameter(7,0.51);
+          fFit->SetParLimits(7,0.5,3.);        
+        }
+      }    
+      if(fMinAsspt==1 && fMaxAsspt==2) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.5);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.4);
+        fFit->SetParameter(6,0.7);
+      }
+      if(fMinAsspt==2 && fMaxAsspt==3) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.08);
+        fFit->SetParameter(1,0.1);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.4);
+        if(fMinDpt==2) {
+          fFit->SetParameter(0,0.1);
+          fFit->SetParameter(1,0.005);
+          fFit->SetParameter(3,0.6);
+          fFit->SetParameter(4,0.007);
+          fFit->SetParameter(6,0.4);
+        }
+        if(fMinDpt>=16) {
+          fFit->SetParLimits(7,0.5,3.);
+          fFit->SetParameter(1,0.5);
+          fFit->SetParameter(4,0.15);
+          fFit->SetParameter(7,1);
+        }      
+      }
+      if(fMinAsspt==2 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.08);
+        fFit->SetParameter(1,0.1);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.4);
+        if(fMinDpt==2) {
+          fFit->SetParameter(0,0.1);
+          fFit->SetParameter(1,0.005);
+          fFit->SetParameter(3,0.6);
+          fFit->SetParameter(4,0.01);
+          fFit->SetParameter(6,0.4);
+        }      
+      }    
+      if(fMinAsspt==3 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.04);
+        fFit->SetParameter(1,0.05);
+        fFit->SetParameter(3,0.2);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.5);
+      }
     }
 
-    if(fMinAsspt==0.3 && fMaxAsspt==1) {  //dedicated starting parameters
-      printf("Dedicated starting fit parameters...");
-      fFit->SetParameter(0,1.8);
-      fFit->SetParameter(1,0.4);
-      fFit->SetParameter(3,0.4);
-      fFit->SetParameter(4,0.5);
-      fFit->SetParameter(6,0.6);
-    }    
-    if(fMinAsspt==1 && fMaxAsspt==99) {  //dedicated starting parameters
-      printf("Dedicated starting fit parameters...");
-      fFit->SetParameter(0,0.6);
-      fFit->SetParameter(1,0.4);
-      fFit->SetParameter(3,0.3);
-      fFit->SetParameter(4,0.6);
-      fFit->SetParameter(6,0.6);
-      if(fIspPb && fMinDpt>=16) {
-        fFit->SetParameter(0,1.25);
-        fFit->SetParameter(1,1.8);
-        fFit->SetParameter(3,0.15);
-        fFit->SetParameter(4,0.7);
-        fFit->SetParameter(6,0.15);        
-        fFit->SetParameter(7,0.51);
-        fFit->SetParLimits(7,0.5,3.);        
+    if(!fIspPb) { //for pp analyses (TO BE ADAPTED)
+
+      fFit->SetParLimits(7,0.5,3.5);
+
+      if(fMinAsspt==0.3 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,2.4);
+        fFit->SetParameter(1,0.8);
+        fFit->SetParameter(3,0.4);
+        fFit->SetParameter(4,1.0);
+        fFit->SetParameter(6,0.6);
+      }
+      if(fMinAsspt==0.3 && fMaxAsspt==1) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,1.8);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.4);
+        fFit->SetParameter(4,0.5);
+        fFit->SetParameter(6,0.6);
+      }    
+      if(fMinAsspt==1 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.6);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.6);
+        fFit->SetParameter(6,0.6);
+      }    
+      if(fMinAsspt==1 && fMaxAsspt==2) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.5);
+        fFit->SetParameter(1,0.4);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.4);
+        fFit->SetParameter(6,0.7);
+      }
+      if(fMinAsspt==2 && fMaxAsspt==3) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.08);
+        fFit->SetParameter(1,0.1);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.4);
+        if(fMinDpt==2) {
+          fFit->SetParameter(0,0.1);
+          fFit->SetParameter(1,0.005);
+          fFit->SetParameter(3,0.6);
+          fFit->SetParameter(4,0.007);
+          fFit->SetParameter(6,0.4);
+        }
+        if(fMinDpt>=16) {
+          fFit->SetParLimits(7,0.5,3.);
+          fFit->SetParameter(1,0.5);
+          fFit->SetParameter(4,0.15);
+          fFit->SetParameter(7,1);
+        }      
+      }
+      if(fMinAsspt==2 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.08);
+        fFit->SetParameter(1,0.1);
+        fFit->SetParameter(3,0.3);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.4);
+        if(fMinDpt==2) {
+          fFit->SetParameter(0,0.1);
+          fFit->SetParameter(1,0.005);
+          fFit->SetParameter(3,0.6);
+          fFit->SetParameter(4,0.01);
+          fFit->SetParameter(6,0.4);
+        }      
+      }    
+      if(fMinAsspt==3 && fMaxAsspt==99) {  //dedicated starting parameters
+        printf("Dedicated starting fit parameters...");
+        fFit->SetParameter(0,0.04);
+        fFit->SetParameter(1,0.05);
+        fFit->SetParameter(3,0.2);
+        fFit->SetParameter(4,0.1);
+        fFit->SetParameter(6,0.5);
       }
     }    
-    if(fMinAsspt==1 && fMaxAsspt==2) {  //dedicated starting parameters
-      printf("Dedicated starting fit parameters...");
-      fFit->SetParameter(0,0.5);
-      fFit->SetParameter(1,0.4);
-      fFit->SetParameter(3,0.3);
-      fFit->SetParameter(4,0.4);
-      fFit->SetParameter(6,0.7);
-    }
-    if(fMinAsspt==2 && fMaxAsspt==3) {  //dedicated starting parameters
-      printf("Dedicated starting fit parameters...");
-      fFit->SetParameter(0,0.08);
-      fFit->SetParameter(1,0.1);
-      fFit->SetParameter(3,0.3);
-      fFit->SetParameter(4,0.1);
-      fFit->SetParameter(6,0.4);
-      if(fMinDpt==2) {
-        fFit->SetParameter(0,0.1);
-        fFit->SetParameter(1,0.005);
-        fFit->SetParameter(3,0.6);
-        fFit->SetParameter(4,0.007);
-        fFit->SetParameter(6,0.4);
-      }
-      if(fMinDpt>=16) {
-        fFit->SetParLimits(7,0.5,3.);
-        fFit->SetParameter(1,0.5);
-        fFit->SetParameter(4,0.15);
-        fFit->SetParameter(7,1);
-      }      
-    }
-    if(fMinAsspt==2 && fMaxAsspt==99) {  //dedicated starting parameters
-      printf("Dedicated starting fit parameters...");
-      fFit->SetParameter(0,0.08);
-      fFit->SetParameter(1,0.1);
-      fFit->SetParameter(3,0.3);
-      fFit->SetParameter(4,0.1);
-      fFit->SetParameter(6,0.4);
-      if(fMinDpt==2) {
-        fFit->SetParameter(0,0.1);
-        fFit->SetParameter(1,0.005);
-        fFit->SetParameter(3,0.6);
-        fFit->SetParameter(4,0.01);
-        fFit->SetParameter(6,0.4);
-      }      
-    }    
-    if(fMinAsspt==3 && fMaxAsspt==99) {  //dedicated starting parameters
-      printf("Dedicated starting fit parameters...");
-      fFit->SetParameter(0,0.04);
-      fFit->SetParameter(1,0.05);
-      fFit->SetParameter(3,0.2);
-      fFit->SetParameter(4,0.1);
-      fFit->SetParameter(6,0.5);
-    }
 
     fFit->SetParName(0,"ped");
     fFit->SetParName(1,"NS Y");
