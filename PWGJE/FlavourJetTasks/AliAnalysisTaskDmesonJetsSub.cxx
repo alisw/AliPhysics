@@ -2790,7 +2790,7 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t i
    double nsd = 0;        
    double nall = 0;        
    double zg = 0.;         
-   int flagSubjet=0;
+   double flagSubjet=0;
    double xconstperp=0;
    TString hname; 
    fastjet::JetAlgorithm jet_algo(fastjet::cambridge_algorithm);
