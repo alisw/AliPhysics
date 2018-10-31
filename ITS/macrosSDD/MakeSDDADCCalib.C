@@ -6,6 +6,7 @@
 #include <TGraphErrors.h>
 #include <TROOT.h>
 #include <TFile.h>
+#include <TLine.h>
 #include <TTree.h>
 #include <TGrid.h>
 #include <TGridResult.h>
@@ -81,11 +82,13 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
     
   //****************** Connection to alien *****************************************
     
-  TGrid::Connect("alien://",0,0,"t");
-  //TGrid *gGrid = TGrid::Connect("alien");
-  if(!gGrid||!gGrid->IsConnected()) {
-    printf("gGrid not found! exit macro\n");
-    return;
+  if(!readLocal){
+    TGrid::Connect("alien://",0,0,"t");
+    //TGrid *gGrid = TGrid::Connect("alien");
+    if(!gGrid||!gGrid->IsConnected()) {
+      printf("gGrid not found! exit macro\n");
+      return;
+    }
   }
     
   const Int_t nDrTimeBin = 8;
@@ -160,6 +163,19 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
   textbadFit->SetTextFont(63);
   textbadFit->SetTextColor(2);
   textbadFit->SetTextSize(28);
+
+  TLine* refLine=new TLine(0.,84.,6400.,84.);
+  refLine->SetLineColor(kGreen+1);
+  refLine->SetLineWidth(2);
+  refLine->SetLineStyle(2);
+  TLine* refLineL=new TLine(0.,79.,6400.,79.);
+  refLineL->SetLineColor(kRed-7);
+  refLineL->SetLineWidth(2);
+  refLineL->SetLineStyle(3);
+  TLine* refLineH=new TLine(0.,89.,6400.,89.);
+  refLineH->SetLineColor(kRed-7);
+  refLineH->SetLineWidth(2);
+  refLineH->SetLineStyle(3);
 
   //    for(Int_t ihist = 6; ihist < 7; ihist++){//loop on modules
   for(Int_t ihist = 0; ihist < nModules; ihist++){//loop on modules
@@ -266,6 +282,9 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
     chdEdxproj->cd(nDrTimeBin+1);
     hmpv->Draw();
     pol1mpv->Draw("same");
+    refLine->Draw("same");
+    if(hmpv->GetMinimum()<79) refLineL->Draw("same");
+    if(hmpv->GetMaximum()>89)refLineH->Draw("same");
     chdEdxproj->Update();
     if(firstpage){
       chdEdxproj->Print("LanGausFits.pdf(");
