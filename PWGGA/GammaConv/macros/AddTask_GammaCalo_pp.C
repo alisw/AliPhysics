@@ -877,6 +877,8 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","1111114067032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL kSDM PCMEMC+BTv3
     cuts.AddCutCalo("00010113","1111123067032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL DExt PCMEMC+BTv3
     cuts.AddCutCalo("00010113","1111124067032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL DExt PCMEMC+BTv3
+  } else if (trainConfig == 420){ // EMCAL clusters no NL
+    cuts.AddCutCalo("00010113","11111000a7032230000","01631031000000d0"); // -12.5ns, 13ns timing cut, no NL INT7
     // 5 TeV JetJet configs without trackmatching
   } else if (trainConfig == 430){ // EMCAL clusters no NonLin
     cuts.AddCutCalo("00010113","1111100060032220000","01631031000000d0"); // -50ns, 30ns timing cut, no NL INT7
@@ -1150,6 +1152,8 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 608){ // LHC15n
     cuts.AddCutCalo("00010113","3885522087032220000","01631031000000d0"); // std
     cuts.AddCutCalo("00010113","3885500017032220000","01631031000000d0"); // QA
+  } else if (trainConfig == 610){ // no NL tight timing
+    cuts.AddCutCalo("00010113","38855000a7032230000","01631031000000d0"); // -12.5 to 13 ns timing and M02 0.1-0.5
 
   } else if (trainConfig == 660){ // INT7 DCAL standard cut but with E/p TM veto
     cuts.AddCutCalo("00010113","3885511087041220000","01631031000000d0"); // std INT7
