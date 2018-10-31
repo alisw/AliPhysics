@@ -111,6 +111,6 @@ private:
   AliGenParam(const AliGenParam &Param);
   AliGenParam & operator=(const AliGenParam & rhs);
 
-  ClassDef(AliGenParam, 4) // Generator using parameterised pt- and y-distribution
+  ClassDef(AliGenParam, 5) // Generator using parameterised pt- and y-distribution
 };
 #endif
