@@ -96,6 +96,8 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     TH2F*                 fHistPtYDeltaMi;            //! histo for Delta-
     TH2F*                 fHistPtYDelta0;             //! histo for Delta0
     TH2F*                 fHistPtYLambda;             //! histo for Lambda
+    TH2F*                 fHistPtYKPl;                //! histo for K+s
+    TH2F*                 fHistPtYKMi;                //! histo for K-s
 
     TH2F*                 fHistPtYPi0FromEta;         //! histo for Pi0s from Etas
     TH2F*                 fHistPtYPi0FromLambda;      //! histo for Pi0s from Lambdas
@@ -163,7 +165,7 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaPureMC(const AliAnalysisTaskGammaPureMC&); // Prevent copy-construction
     AliAnalysisTaskGammaPureMC &operator=(const AliAnalysisTaskGammaPureMC&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaPureMC, 3);
+    ClassDef(AliAnalysisTaskGammaPureMC, 4);
 };
 
 #endif

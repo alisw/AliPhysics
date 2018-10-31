@@ -4736,12 +4736,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
         //Variable: V0 CosPA
         Float_t lMinV0CosPA = 0.97;
         Float_t lMaxV0CosPA = 1.00;
+        Double_t lMinV0PA = 0;
+        Double_t lMaxV0PA = TMath::ACos(lMinV0CosPA);
         
         for(Int_t i = 0 ; i < lNPart ; i ++)
         {
             for(Int_t iSweep = 0; iSweep <= lSweepFullNumb; iSweep++)
             {
-                Double_t lCutValue = lMinV0CosPA + (iSweep/(Double_t)lSweepFullNumb)*(lMaxV0CosPA-lMinV0CosPA);
+                Double_t lCutValue = TMath::Cos( lMinV0PA + (iSweep/(Double_t)lSweepFullNumb)*(lMaxV0PA-lMinV0PA) );
                 
                 lV0Result[lNV0] = new AliV0Result( lV0Result[lCentralForSweepIndex+i], Form( "%s_%s_%d", lParticleNameV0[i].Data(), "V0CosPASweep", iSweep ) );
                 

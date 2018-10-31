@@ -2261,7 +2261,7 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
       fPeriodEnum == kLHC17n ||                                                                                             // Xe-Xe LHC17n
       fPeriodEnum == kLHC17j7 ||                                                                                            // MC Xe-Xe LHC17n
       fPeriodEnum == kLHC17pq ||                                                                                            // pp 5TeV LHC17pq
-      fPeriodEnum == kLHC17l3b ||                                                                                           // MC pp 5TeV LHC17pq
+      fPeriodEnum == kLHC17l3b || fPeriodEnum == kLHC18j2 ||                                                                // MC pp 5TeV LHC17pq
       fPeriodEnum == kLHC17l4b ||                                                                                           // MC pp 5TeV LHC17pq
       fPeriodEnum == kLHC18b8                                                                                               // MC Jet Jet pp 5TeV LHC17pq
       ){
@@ -4751,32 +4751,34 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
   }
 
   if(fUseSphericity > 0){
-    if(fUseSphericity == 1 && ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()>0.5){
+    Double_t eventSphericity = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity();
+    if(eventSphericity == -1) return 14;
+    if(fUseSphericity == 1 && eventSphericity>0.5){
       return 14;
     }
-    if(fUseSphericity == 2 && ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()<0.5){
+    if(fUseSphericity == 2 && eventSphericity<0.5){
       return 14;
     }
-    if(fUseSphericity == 3 && ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()==-1){
+    if(fUseSphericity == 3 && eventSphericity==-1){
       return 14;
     }
     Int_t nPrimTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
-    if(fUseSphericity == 4 && ((((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()==-1) || nPrimTracks > 20)){
+    if(fUseSphericity == 4 && (eventSphericity==-1 || nPrimTracks > 20)){
       return 14;
     }
-    if(fUseSphericity == 5 && ((((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()==-1) || nPrimTracks < 20)){
+    if(fUseSphericity == 5 && (eventSphericity==-1 || nPrimTracks < 20)){
       return 14;
     }
-    if(fUseSphericity == 6 && ((((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()>0.5) || nPrimTracks > 20)){
+    if(fUseSphericity == 6 && (eventSphericity>0.5 || nPrimTracks > 20)){
       return 14;
     }
-    if(fUseSphericity == 7 && ((((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()>0.5) || nPrimTracks < 20)){
+    if(fUseSphericity == 7 && (eventSphericity>0.5 || nPrimTracks < 20)){
       return 14;
     }
-    if(fUseSphericity == 8 && ((((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()<0.5) || nPrimTracks > 20)){
+    if(fUseSphericity == 8 && (eventSphericity<0.5 || nPrimTracks > 20)){
       return 14;
     }
-    if(fUseSphericity == 9 && ((((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity()<0.5) || nPrimTracks < 20)){
+    if(fUseSphericity == 9 && (eventSphericity<0.5 || nPrimTracks < 20)){
       return 14;
     }
   }
@@ -4869,7 +4871,7 @@ Float_t AliConvEventCuts::GetWeightForMultiplicity(Int_t mult){
   
  
   if ( fPeriodEnum == kLHC16NomB || fPeriodEnum == kLHC16P1Pyt8 || fPeriodEnum == kLHC16P1PHO || 
-       fPeriodEnum == kLHC17pq  ||  fPeriodEnum == kLHC17P1PHO  || fPeriodEnum == kLHC17l3b  || fPeriodEnum == kLHC17l4b  || 
+       fPeriodEnum == kLHC17pq  ||  fPeriodEnum == kLHC17P1PHO  || fPeriodEnum == kLHC17l3b  || fPeriodEnum == kLHC18j2  || fPeriodEnum == kLHC17l4b  || 
        fPeriodEnum == kLHC15o   || fPeriodEnum == kLHC16g1  || fPeriodEnum == kLHC16g1a || 
        fPeriodEnum == kLHC16g1b || fPeriodEnum == kLHC16g1c || fPeriodEnum == kLHC16i1a || 
        fPeriodEnum == kLHC16i1b || fPeriodEnum == kLHC16i1c || fPeriodEnum == kLHC16i2a || 
@@ -5857,6 +5859,9 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if (periodName.CompareTo("LHC17e2") == 0){
     fPeriodEnum = kLHC17e2;
     fEnergyEnum = k5TeV;
+  } else if (periodName.CompareTo("LHC18j3") == 0){
+    fPeriodEnum = kLHC18j3;
+    fEnergyEnum = k5TeV;
   } else if (periodName.Contains("LHC15k1a1")){
     fPeriodEnum = kLHC15k1a1;
     fEnergyEnum = kPbPb5TeV;
@@ -6126,6 +6131,10 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if ( periodName.CompareTo("LHC17l3b") == 0 || periodName.CompareTo("LHC17l3b_fast") == 0 || periodName.CompareTo("LHC17l3b_cent") == 0 ||
               periodName.CompareTo("LHC17l3b_cent_woSDD") == 0){
     fPeriodEnum = kLHC17l3b;
+    fEnergyEnum = k5TeV;
+  } else if ( periodName.CompareTo("LHC18j2") == 0 || periodName.CompareTo("LHC18j2_fast") == 0 || periodName.CompareTo("LHC18j2_cent") == 0 ||
+              periodName.CompareTo("LHC18j2_cent_woSDD") == 0){
+    fPeriodEnum = kLHC18j2;
     fEnergyEnum = k5TeV;
   } else if (periodName.CompareTo("LHC17l4b") == 0 || periodName.CompareTo("LHC17l4b_fast") == 0 || periodName.CompareTo("LHC17l4b_cent") == 0 ||
             periodName.CompareTo("LHC17l4b_cent_woSDD") == 0){

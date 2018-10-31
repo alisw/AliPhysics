@@ -14,6 +14,7 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
 		                 Bool_t flagDG2,
 		                 Bool_t SetFlagClsTypeEMC,
 		                 Bool_t SetFlagClsTypeDCAL,
+		                 Bool_t fMC,
 										 Double_t TrackEtaMin,
 										 Double_t TrackEtaMax,
 										 Int_t NTPCClust,
@@ -44,8 +45,22 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
     if (!mgr->GetInputEventHandler()) {
         return 0x0;
     }
-    // by default, a file is open for writing. here, we get the filename
-    TString fileName = AliAnalysisManager::GetCommonFileName();
+
+
+		//-------------------------------------------
+		gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
+		gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
+
+		AddTaskPhysicsSelection(fMC,true); // IsMC true for MC !!!, second argument is for pileup removal which is very important.
+		AliMultSelectionTask * Multtask = AddTaskMultSelection(true); // argument is true if you need to run on calibration and this task should be called after the physics selection!!!!
+		Multtask->SetAlternateOADBforEstimators(dataname.Data()); // for MC, if there is no calibration then you can specify here the alternate default calibration to be used.
+		if(fMC)Multtask->SetUseDefaultMCCalib(kTRUE); // MC 
+		if(!fMC)Multtask->SetUseDefaultCalib(kTRUE); // data
+		//-------------------------------------------
+
+
+		// by default, a file is open for writing. here, we get the filename
+		TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += ":CaloHFEpp";      // create a subfolder in the file
     // now we create an instance of your task
     AliAnalysisTaskCaloHFEpp* task = new AliAnalysisTaskCaloHFEpp(name.Data());   

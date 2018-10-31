@@ -30,7 +30,7 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fPDGDaughter1(0),
       fPDGDaughter2(0),
       fMassSigma(0),
-      fSigmaMassCut(0.01),
+      fSigmaMassCut(0.005),
       fSidebandCutUp(0.05),
       fSidebandCutDown(0.01),
       fPhotonPtMin(0),
@@ -55,7 +55,6 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fHistPtMult(),
       fHistArmenterosBefore(nullptr),
       fHistArmenterosAfter(nullptr),
-      fHistMixedPtMult(),
       fHistMixedInvMassPt(nullptr),
       fHistMixedInvMassBinnedMultPt(),
       fHistLambdaPtPhi(nullptr),
@@ -114,7 +113,7 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fPDGDaughter1(0),
       fPDGDaughter2(0),
       fMassSigma(0),
-      fSigmaMassCut(0.01),
+      fSigmaMassCut(0.005),
       fSidebandCutUp(0.05),
       fSidebandCutDown(0.01),
       fPhotonPtMin(0),
@@ -139,7 +138,6 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fHistPtMult(),
       fHistArmenterosBefore(nullptr),
       fHistArmenterosAfter(nullptr),
-      fHistMixedPtMult(),
       fHistMixedInvMassPt(nullptr),
       fHistMixedInvMassBinnedMultPt(),
       fHistLambdaPtPhi(nullptr),
@@ -406,7 +404,6 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
         const int multBin = GetMultiplicityBin(lPercentile);
         if (std::abs(rap) > fRapidityMax || multBin < 0) continue;
         fHistMixedInvMassPt->Fill(pT, invMass);
-        fHistMixedPtMult[multBin]->Fill(pT, invMass);
       }
     }
   }
@@ -433,7 +430,6 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
         const int multBin = GetMultiplicityBin(lPercentile);
         if (std::abs(rap) > fRapidityMax || multBin < 0) continue;
         fHistMixedInvMassPt->Fill(pT, invMass);
-        fHistMixedPtMult[multBin]->Fill(pT, invMass);
       }
     }
   }
@@ -804,13 +800,7 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
                       multBins[i], multBins[i + 1]),
                  100, 0, 10, 300, 1.15, 1.3);
     fHistograms->Add(fHistPtMult[i]);
-    fHistMixedPtMult[i] =
-        new TH2F(Form("fHistMixedPtMult_%i", i),
-                 Form("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); "
-                      "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
-                      multBins[i], multBins[i + 1]),
-                 100, 0, 10, 300, 1.15, 1.3);
-    fHistograms->Add(fHistMixedPtMult[i]);
+
     fHistMixedInvMassBinnedMultPt[i] =
         new TH2F(Form("fHistMixedInvMassBinnedMultPt_%i", i),
                  Form("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); "

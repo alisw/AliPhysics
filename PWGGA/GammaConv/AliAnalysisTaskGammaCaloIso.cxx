@@ -372,7 +372,8 @@ AliAnalysisTaskGammaCaloIso::AliAnalysisTaskGammaCaloIso(): AliAnalysisTaskSE(),
   fDoInvMassShowerShapeTree(kFALSE),
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
-  fAllowOverlapHeaders(kTRUE)
+  fAllowOverlapHeaders(kTRUE),
+  fTrackMatcherRunningMode(0)
 {
 
 }
@@ -688,7 +689,8 @@ AliAnalysisTaskGammaCaloIso::AliAnalysisTaskGammaCaloIso(const char *name):
   fDoInvMassShowerShapeTree(kFALSE),
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
-  fAllowOverlapHeaders(kTRUE)
+  fAllowOverlapHeaders(kTRUE),
+  fTrackMatcherRunningMode(0)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -2564,7 +2566,7 @@ void AliAnalysisTaskGammaCaloIso::UserCreateOutputObjects(){
       fOutputContainer->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
 
   for(Int_t iMatcherTask = 0; iMatcherTask < 3; iMatcherTask++){
-    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i",iMatcherTask)));
+    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i_%i",iMatcherTask,fTrackMatcherRunningMode)));
     if(temp) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
   }
 
@@ -2726,11 +2728,10 @@ void AliAnalysisTaskGammaCaloIso::UserExec(Option_t *)
     }
 
     Bool_t triggered = kTRUE;
-
     if(eventNotAccepted!= 0){
-    // cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
       fHistoNEvents[iCut]->Fill(eventNotAccepted, fWeightJetJetMC); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
       if (fIsMC>1) fHistoNEventsWOWeight[iCut]->Fill(eventNotAccepted);
+      // cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
       if (eventNotAccepted==3 && fIsMC > 0){
         triggered = kFALSE;
       }else {
@@ -2738,7 +2739,7 @@ void AliAnalysisTaskGammaCaloIso::UserExec(Option_t *)
       }
     }
 
-    if(eventQuality != 0){// Event Not Accepted
+    if(eventQuality != 0 && triggered== kTRUE){// Event Not Accepted
       //cout << "event rejected due to: " <<eventQuality << endl;
       fHistoNEvents[iCut]->Fill(eventQuality, fWeightJetJetMC);
       if (fIsMC>1) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);

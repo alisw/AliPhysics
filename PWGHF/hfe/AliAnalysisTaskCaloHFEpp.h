@@ -86,6 +86,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Double_t ptAssoMin;
 		TString pTe;
 		Double_t massMin;
+		Int_t Nch;
 
 		//==== basic parameters ====
 		TH1F*                   fNevents;
@@ -140,6 +141,10 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fRiso_phidiff_LS;
 		TH2F*                   fRiso_phidiff_35;
 		TH2F*                   fRiso_phidiff_LS_35;
+		TH2F*                   fzvtx_Ntrkl;
+		TH2F*                   fzvtx_Nch;
+		TH2F*                   fzvtx_Ntrkl_Corr;
+		TH2F*                   fNchNtr;
 
 		//==== Trigger or Calorimeter flag ====
     Bool_t                  fEMCEG1;//EMcal Threshold EG1

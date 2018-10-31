@@ -26,7 +26,8 @@
   * 10 jul 2018: found and corrected bug:  if(pPid){nncl = nPid->GetTPCsignalN();}->if(nPid){nncl = nPid->GetTPCsignalN();}
   * 13 aug 2018: fill tree with AliAODEvent::GetNumberOfTracks() so I can plot is vs centrality
                  and: switch to use AliMultSelection instead of AliCentrality: CentFramework(CentFrameworkAliCen) kTRUE: use AliCentrality, kFALSE: use AliMultSelection
-  
+  * 31 oct 2018: fill tree with fEvent->refMult
+
   Remiders:
   * For pp: remove pile up thing
   * For 2011 MC or 2010 DT: remove hardcoded trigger conditions!
@@ -574,12 +575,12 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
       //13/08-18:
       
       if(fAnalysisPbPb){
-	if(fCentFrameworkAliCen){ // CentFramework in AliCentrality (tested: it works)
+	if(fCentFrameworkAliCen){ // CentFramework in AliCentrality
 	  
 	  AliCentrality *centObject =  fAOD->GetCentrality();
 	  if(centObject) centralityV0M = centObject->GetCentralityPercentile("V0M"); 
 	  
-	}else{ // CentFramework in AliMultSelection (tested: it DOESN'T work)
+	}else{ // CentFramework in AliMultSelection
 	  
 	  AliMultSelection* centObject = 0x0; 
 	  centObject = (AliMultSelection*)fAOD->FindListObject("MultSelection");
@@ -1185,6 +1186,13 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
   Int_t trackmult = 0; // no pt cuts
   Int_t nadded = 0;
   Int_t nAODTracks = AODevent->GetNumberOfTracks();
+
+  //31/10-18
+  AliAODHeader* header = dynamic_cast<AliAODHeader*>(AODevent->GetHeader());
+  UInt_t iNTracksRef = 0;
+  if(!header) AliError("Cannot get AOD header");
+  else iNTracksRef = header->GetRefMultiplicityComb08(); // get reference multiplicity
+
   
   if(fTrackArrayGlobalPar) fTrackArrayGlobalPar->Clear();
     
@@ -1330,6 +1338,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
   fEvent->trackmult  = trackmult;
   fEvent->n          = nadded;
   fEvent->nTracks    = nAODTracks;//13/08-18
+  fEvent->refMult    = iNTracksRef;//31/10-18
 }
 
 // ################################

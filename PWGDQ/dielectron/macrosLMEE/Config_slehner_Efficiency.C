@@ -1,10 +1,10 @@
 //TString generatorNameForMCSignal  = "pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7";
-//TString generatorNameForMCSignal  = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia BB_8;Pythia B_8";
+TString generatorNameForMCSignal  = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia BB_8;Pythia B_8";
 //TString generatorNameForMCSignal  = "Pythia CC_1;Pythia BB_1;Pythia B_1;Jpsi2ee_1;B2JPsi2ee_1";
- TString generatorNameForMCSignal  = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7";
+// TString generatorNameForMCSignal  = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7";
  
-//TString generatorNameForULSSignal = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia BB_8;Pythia B_8";
-TString generatorNameForULSSignal = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7";
+TString generatorNameForULSSignal = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia BB_8;Pythia B_8";
+//TString generatorNameForULSSignal = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7";
 
 
 Bool_t SetTPCCorrection = kFALSE;
@@ -36,7 +36,7 @@ const Int_t triggerNames = AliVEvent::kINT7;
 const Int_t nMCSignal   = 0;
 const Int_t nCutsetting = 0;
 
-const Double_t minGenPt  = 0.05;
+const Double_t minGenPt  = 0.01;
 const Double_t maxGenPt  = 10;
 const Double_t minGenEta = -1.5;
 const Double_t maxGenEta = 1.5;
@@ -262,7 +262,7 @@ std::vector<Bool_t> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* ta
   eleConv.SetCheckBothChargesLegs(kTRUE,kTRUE);
   eleConv.SetMotherPDGs(22,22,kFALSE,kFALSE); 
 
-  task->AddSingleLegMCSignal(partConv);
+//  task->AddSingleLegMCSignal(partConv);
   task->AddSingleLegMCSignal(eleConv);
   task->AddSingleLegMCSignal(eleFinalState);
   // task->AddSingleLegMCSignal(eleFinalStateFromPion);

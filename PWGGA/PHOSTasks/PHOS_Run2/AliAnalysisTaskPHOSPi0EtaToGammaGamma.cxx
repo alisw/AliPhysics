@@ -1030,6 +1030,19 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
   fESDEvent = dynamic_cast<AliESDEvent*>(fEvent);
   fAODEvent = dynamic_cast<AliAODEvent*>(fEvent);
 
+  //select event which PHOS was readout from trigger cluster point of view.
+  //for example, PHOS is not in MUFAST cluster.
+  TString trigClasses = fEvent->GetFiredTriggerClasses();
+  //printf("%s\n",trigClasses.Data());
+  if(!fIsMC 
+      && !trigClasses.Contains("-CENT") //accept CENT, CENTNO[TRD|PMD]
+      && !trigClasses.Contains("-FAST") //accept FAST, not MUFAST
+      && !trigClasses.Contains("-CALO") //accept CALO, CALOFAST
+    ){
+    AliWarning(Form("Skip event with triggers %s",trigClasses.Data()));
+    return;
+  }
+
   fPIDResponse = fInputHandler->GetPIDResponse();
   if(!fPIDResponse){
     AliFatal("fPIDResponse does not exist!");
@@ -1050,7 +1063,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
     return;
   }
 
-  Bool_t isPHI7selected = fSelectMask & (AliVEvent::kPHI7|AliVEvent::kMuonCalo);
+  //Bool_t isPHI7selected = fSelectMask & AliVEvent::kPHI7;
+  Bool_t isPHI7selected = fSelectMask & (AliVEvent::kPHI7|AliVEvent::kCaloOnly);
   if(!fIsMC && fIsPHOSTriggerAnalysis && !isPHI7selected){
     AliInfo("PHI7 Event is rejected by physics selection.");
     return;
@@ -1067,7 +1081,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
   Bool_t Is1PHMfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Minput - 1);//trigger input -1
   Bool_t Is1PHLfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Linput - 1);//trigger input -1
 
-  //As of 20180617, PHI7 in [CALO/CALOFAST] is moved AliVEvent::kMuonCalo.
+  //As of 20180617, PHI7 in [CALO/CALOFAST] is moved AliVEvent::kCaloOnly (or AliVEvent::kMuonCalo).
   //EMC triggers and PHOS triggers are merged to 1 bit.
   //First, select PHOS triggered event by bit operation
   if(!fIsMC && fIsPHOSTriggerAnalysis && 

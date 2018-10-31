@@ -45,6 +45,7 @@
 #include "AliGenEventHeader.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliVertexingHFUtils.h"
 
 
 //using std::cout;
@@ -84,6 +85,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				ptAssoMin(0),
 				pTe("name"),
 				massMin(0),
+				Nch(0),
 				//==== basic parameters ====
 				fNevents(0),
 				fHist_VertexZ(0),
@@ -135,6 +137,10 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fRiso_phidiff_LS(0),
 				fRiso_phidiff_35(0),
 				fRiso_phidiff_LS_35(0),
+				fzvtx_Ntrkl(0),
+				fzvtx_Nch(0),
+				fzvtx_Ntrkl_Corr(0),
+				fNchNtr(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
 				fEMCEG2(kFALSE),
@@ -215,6 +221,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				ptAssoMin(0),
 				pTe("name"),
 				massMin(0),
+				Nch(0),
 				//==== basic parameters ====
 				fNevents(0),
 				fHist_VertexZ(0),
@@ -266,6 +273,10 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fRiso_phidiff_LS(0),
 				fRiso_phidiff_35(0),
 				fRiso_phidiff_LS_35(0),
+				fzvtx_Ntrkl(0),
+				fzvtx_Nch(0),
+				fzvtx_Ntrkl_Corr(0),
+				fNchNtr(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
 				fEMCEG2(kFALSE),
@@ -395,6 +406,10 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fRiso_phidiff_LS    = new TH2F("fRiso_phidiff_LS","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 				fRiso_phidiff_35    = new TH2F("fRiso_phidiff_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 				fRiso_phidiff_LS_35 = new TH2F("fRiso_phidiff_LS_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
+				fzvtx_Ntrkl = new TH2F("fzvtx_Ntrkl","Zvertex vs N tracklet; zvtx; SPD Tracklets",200,-10.,10.,300,0.,300);
+				fzvtx_Nch = new TH2F("fzvtx_Nch","Zvertex vs N charged; zvtx; N_{ch}",200,-10.,10.,300,0.,300);
+				fzvtx_Ntrkl_Corr = new TH2F("fzvtx_Ntrkl_Corr","Zvertex vs N tracklet after correction; zvtx; SPD Tracklets",200,-10.,10.,300,0.,300);
+				fNchNtr = new TH2F("fNchNtr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",300,0.,30.,300,0.,300);
 				fHist_eff_HFE     = new TH1F("fHist_eff_HFE","efficiency :: HFE",600,0,60);
 				fHist_eff_match   = new TH1F("fHist_eff_match","efficiency :: matched cluster",600,0,60);
 				fHist_eff_TPC     = new TH1F("fHist_eff_TPC","efficiency :: TPC cut",600,0,60);
@@ -502,6 +517,10 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fOutputList->Add(fRiso_phidiff_LS);
 				fOutputList->Add(fRiso_phidiff_35);
 				fOutputList->Add(fRiso_phidiff_LS_35);
+				fOutputList->Add(fzvtx_Ntrkl);
+				fOutputList->Add(fzvtx_Nch);
+				fOutputList->Add(fzvtx_Ntrkl_Corr);
+				fOutputList->Add(fNchNtr);
 				//==== MC output ====
 				fOutputList->Add(fMCcheckMother);
 				fOutputList->Add(fCheckEtaMC);
@@ -581,7 +600,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
        
 				//////////////////////////////
-				//Get Tender?  
+				//Get Tender
 				//////////////////////////////
 				Bool_t fFlagEMCalCorrection = kTRUE;
 				if(fFlagEMCalCorrection){
@@ -658,6 +677,9 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				}
 
 
+
+
+
 				//////////////////////////////
 				//Centarality
 				//////////////////////////////
@@ -711,11 +733,56 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				if(TMath::Abs(Zvertex)>10.0)return;
 				fNevents->Fill(6); 
 				fHist_VertexZ->Fill(Zvertex);                     // plot the pt value of the track in a histogram
-				fHist_Centrality -> Fill(centrality);
 
+
+
+				//////////////////////////////
+				// Multiplicity
+				//////////////////////////////
+				Float_t lPercentiles[3];
+				TString lNames[1] = {"SPDTracklets,V0M,ZNA"}; // You can specify here the estimator you want to use
+				for(Int_t iEst=0; iEst<2; iEst++) lPercentiles[iEst] = 300;	
+				AliMultSelection *MultSelection = 0x0;
+				MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
+				if(MultSelection){
+								for(Int_t iEst=0; iEst<2; iEst++)
+												lPercentiles[iEst] = MultSelection->GetMultiplicityPercentile(lNames[iEst].Data()); // gives the multiplicity in percetile for the corresponding estimator.
+				}else{
+
+								AliInfo("Didn't find MultSelection!"); 
+				}
+				fHist_Centrality -> Fill(lPercentiles[0]);
+
+				//------------SPDTracklets--------------------
+				Int_t nTracklets = 0;
+				Int_t nAcc = 0;
+				Double_t etaRange = 1.0;
+
+				AliAODTracklets *tracklets = static_cast<const AliAODEvent*>(fAOD)->GetTracklets();
+				nTracklets = tracklets->GetNumberOfTracklets();
+				for (Int_t nn = 0; nn < nTracklets; nn++) {
+								Double_t theta = tracklets->GetTheta(nn);
+								Double_t eta = -TMath::Log(TMath::Tan(theta/2.0));
+								if (TMath::Abs(eta) < etaRange) nAcc++;
+				}
+				fzvtx_Ntrkl->Fill(Zvertex,nAcc);
+
+//				//-----------Tracklet correction-------------------------
+//				Double_t correctednAcc   = nAcc;
+//				Double_t fRefMult = 13;
+//				TProfile* estimatorAvg = GetEstimatorHistogram(fAOD);
+//				if(estimatorAvg){
+//								correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fRefMult));
+//				} 
+//				fzvtx_Ntrkl_Corr->Fill(Zvertex,correctednAcc);
 
 
 				if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
+
+				fzvtx_Nch->Fill(Zvertex,Nch);
+//				fNchNtr->Fill(correctednAcc,Nch);
+
+
 
 				//////////////////////////////
 				// EMCal cluster loop
@@ -1254,26 +1321,21 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
  NpureMCproc = 0;
  NembMCpi0 = 0;
  NembMCeta = 0;
+ Nch = 0;
  TString MCgen;
  TString embpi0("pi");
  TString embeta("eta");
 
  if(lh)
     {     
-     //cout << "<------- lh = " << lh << " ; NproAll = "<<  lh->GetEntries() << endl; 
-
      for(int igene=0; igene<lh->GetEntries(); igene++)
         {
          AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
          if(gh)
            {
-            //cout << "<------- imc = "<< gh->GetName() << endl;     
             MCgen =  gh->GetName();     
-            //cout << "<-------- Ncont = " << gh->NProduced() << endl;
             if(igene==0)NpureMC = gh->NProduced();  // generate by PYTHIA or HIJING
            
-            //if(MCgen.Contains(embpi0))cout << MCgen << endl;
-            //if(MCgen.Contains(embeta))cout << MCgen << endl;
             if(MCgen.Contains(embpi0))NembMCpi0 = NpureMCproc;
             if(MCgen.Contains(embeta))NembMCeta = NpureMCproc;
 
@@ -1282,30 +1344,33 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
         }
     }
 
- //cout << "NpureMC =" << NpureMC << endl;
- //cout << "NembMCpi0 =" << NembMCpi0 << endl;
- //cout << "NembMCeta =" << NembMCeta << endl;
- //cout << "NpureMCproc =" << NpureMCproc << endl;
 
  //for(int imc=0; imc<fMCarray->GetEntries(); imc++)
  for(int imc=0; imc<NpureMCproc; imc++)
      {
-      //cout << "imc = " << imc << endl;
       Bool_t iEnhance = kFALSE;
       if(imc>=NpureMC)iEnhance = kTRUE;
       Int_t iHijing = 1;  // select particles from Hijing or PYTHIA
 
-      //if(imc==NpureMC)cout << "========================" << endl;  
 
       fMCparticle = (AliAODMCParticle*) fMCarray->At(imc);
       Int_t pdgGen = TMath::Abs(fMCparticle->GetPdgCode());
       Double_t pdgEta = fMCparticle->Eta(); 
-      Double_t pTtrue = fMCparticle->Pt(); 
-			if(imc>=NembMCeta && imc<NpureMCproc){
-			//cout<<"!!!!!!!!!!!!!!PGD = "<<pdgGen<<" imc = "<<imc<<endl;
+			Double_t pTtrue = fMCparticle->Pt(); 
+			Int_t chargetrue = fMCparticle->Charge();
+			Bool_t isPhysPrim = fMCparticle->IsPhysicalPrimary();
+
+
+			//--------- Get N charged ----------------------
+			if(chargetrue!=0){
+							if(TMath::Abs(pdgEta)<1.0){
+											if(isPhysPrim){
+															Nch++;
+											}
+							}
 			}
 
-			//cout << "fetarange = " << fetarange << endl;
+
 			if(TMath::Abs(pdgEta)>CutEta)continue;
 
 			fCheckEtaMC->Fill(pdgEta);
@@ -1313,11 +1378,10 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
       Int_t pdgMom = -99;
       Int_t labelMom = -1;
       Double_t pTmom = -1.0;
-      //cout << "check Mother" << endl;
+
       FindMother(fMCparticle,labelMom,pdgMom,pTmom);
       if(pdgMom==-99 && iEnhance)iHijing = 0;  // particles from enhance
       if(pdgMom>0 && iEnhance)iHijing = -1;  // particles from enhance but feeddown
-      //if(pdgGen==111)cout << "pdg = " << pdgGen << " ; enhance = " << iEnhance << " ; HIJIJG = " << iHijing << " ; mother = " << pdgMom  << endl;
 
       if(iHijing>-1)
         {
@@ -1329,23 +1393,11 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
       if(pTtrue<2.0)continue;
 
 
-      //if(iHijing ==0)
-      //if(pdgMom>0)
       if(pdgMom!=0)
        {
          AliAODMCParticle* fMCparticleMom = (AliAODMCParticle*) fMCarray->At(labelMom);
-         //if(pdgMom==411 || pdgMom==421 || pdgMom==413 || pdgMom==423 || pdgMom==431 || pdgMom==433)
-				 if(IsDdecay(pdgMom))
-            {
-             fHistMCorgD->Fill(fMCparticle->Pt());
-             //cout << "orgD : " << pdgMom << " ; " << pdgGen << endl;
-            }
-         //if(pdgMom==511 || pdgMom==521 || pdgMom==513 || pdgMom==523 || pdgMom==531 || pdgMom==533)
-				 if(IsBdecay(pdgMom))
-           {
-            fHistMCorgB->Fill(fMCparticle->Pt());
-            //cout << "orgB : " << pdgMom << " ; " << pdgGen << endl;
-           }
+				 if(IsDdecay(pdgMom)){fHistMCorgD->Fill(fMCparticle->Pt());}
+				 if(IsBdecay(pdgMom)){fHistMCorgB->Fill(fMCparticle->Pt());}
         }
 
      }

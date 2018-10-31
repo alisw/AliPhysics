@@ -84,7 +84,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   // Switches for QA analyses
   int runmults[cMu] = {1};//, 0, 0, 0};
-  int multbins[cMu+1] = {0, 900};//, 300, 500, 900};
+  //int multbins[cMu+1] = {0, 900};//, 300, 500, 900};//orig for Feb 2018
+  int multbins[cMu+1] = {300, 500};//test for centrality 30-50%
 
   int runch[2] = {1, 0};//K+-
   const char *chrgs[2] = { "Kp", "Km"};

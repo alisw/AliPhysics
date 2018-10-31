@@ -14,6 +14,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
     bool mTBinning=false,//7
     bool eventMixing=true,//8
     bool phiSpin=true,//9
+    bool minimalBooking = true, // 10
     const char *swuffix="")//11
 {
   TString suffix=Form("%s",swuffix);
@@ -62,12 +63,12 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
       AliFemtoDreamTrackCuts::PrimProtonCuts(
           isMC,DCAPlots,CombSigma,ContributionSplitting);
   TrackCuts->SetCutCharge(1);
-  TrackCuts->SetMinimalBooking(true);
+  TrackCuts->SetMinimalBooking(minimalBooking);
   AliFemtoDreamTrackCuts *AntiTrackCuts=
       AliFemtoDreamTrackCuts::PrimProtonCuts(
           isMC,DCAPlots,CombSigma,ContributionSplitting);
   AntiTrackCuts->SetCutCharge(-1);
-  AntiTrackCuts->SetMinimalBooking(true);
+  AntiTrackCuts->SetMinimalBooking(minimalBooking);
   if (suffix=="1") {
     TrackCuts->SetPtRange(0.4,4.05);
     AntiTrackCuts->SetPtRange(0.4,4.05);
@@ -110,10 +111,10 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
       isMC,PileUpRej,false);
   AliFemtoDreamTrackCuts *Negv0Daug=AliFemtoDreamTrackCuts::DecayPionCuts(
       isMC,PileUpRej,false);
-  v0Cuts->SetMinimalBooking(true);
+  v0Cuts->SetMinimalBooking(minimalBooking);
   Antiv0Cuts=
       AliFemtoDreamv0Cuts::LambdaCuts(isMC,CPAPlots,ContributionSplitting);
-  Antiv0Cuts->SetMinimalBooking(true);
+  Antiv0Cuts->SetMinimalBooking(minimalBooking);
   AliFemtoDreamTrackCuts *PosAntiv0Daug=AliFemtoDreamTrackCuts::DecayPionCuts(
       isMC,PileUpRej,false);
   PosAntiv0Daug->SetCutCharge(1);
@@ -173,7 +174,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   //Cascade Cuts
   CascadeCuts=
       AliFemtoDreamCascadeCuts::XiCuts(isMC,ContributionSplitting);
-  CascadeCuts->SetMinimalBooking(true);
+  CascadeCuts->SetMinimalBooking(minimalBooking);
   CascadeCuts->SetXiCharge(-1);
   AliFemtoDreamTrackCuts *XiNegCuts=
       AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC,PileUpRej,false);
@@ -185,7 +186,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   AntiCascadeCuts=
       AliFemtoDreamCascadeCuts::XiCuts(isMC,ContributionSplitting);
   AntiCascadeCuts->SetXiCharge(1);
-  AntiCascadeCuts->SetMinimalBooking(true);
+  AntiCascadeCuts->SetMinimalBooking(minimalBooking);
   AliFemtoDreamTrackCuts *AntiXiNegCuts=
       AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC,PileUpRej,false);
   AntiXiNegCuts->SetCutCharge(-1);
@@ -280,6 +281,18 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   } else if (suffix=="41") {
     CascadeCuts->SetPtRangeXi(0.1,999.5);
     AntiCascadeCuts->SetPtRangeXi(0.1,999.5);
+  } else if (suffix=="42") {
+    CascadeCuts->SetXiMassRange(1.368, 0.028);
+    AntiCascadeCuts->SetXiMassRange(1.368, 0.028);
+  } else if (suffix=="43") {
+    CascadeCuts->SetXiMassRange(1.282, 0.028);
+    AntiCascadeCuts->SetXiMassRange(1.282, 0.028);
+  } else if (suffix=="44") {
+    CascadeCuts->SetXiMassRange(1.354, 0.014);
+    AntiCascadeCuts->SetXiMassRange(1.354, 0.014);
+  } else if (suffix=="45") {
+    CascadeCuts->SetXiMassRange(1.296, 0.014);
+    AntiCascadeCuts->SetXiMassRange(1.282, 0.014);
   }
 
   CascadeCuts->Setv0Negcuts(XiNegCuts);
@@ -470,9 +483,13 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   config->SetmTBinning(mTBinning);
   config->SetUseEventMixing(eventMixing);
   config->SetUsePhiSpinning(phiSpin);
-  config->SetMinimalBookingME(true);
-  config->SetMinimalBookingSample(true);
-
+  if (minimalBooking) {
+    config->SetMinimalBookingME(true);
+    config->SetMinimalBookingSample(true);
+  } else {
+    config->SetMinimalBookingME(false);
+    config->SetMinimalBookingSample(false);
+  }
   if (!notpp) {
     config->SetMultiplicityEstimator(AliFemtoDreamEvent::kSPD);
   } else {

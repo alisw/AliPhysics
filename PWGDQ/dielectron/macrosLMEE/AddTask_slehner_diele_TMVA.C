@@ -38,7 +38,7 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Int_t trackCut=0,
 //  if(!isNano){
     task->SelectCollisionCandidates(triggerNames);
     task->SetTriggerMask(triggerNames);
-    // task->SetRejectPileup(); // to be done differently (too strong cuts at the moment in dielectron framework) 
+//     task->SetRejectPileup(); // to be done differently (too strong cuts at the moment in dielectron framework) 
 //  }
 
   LMEECutLib* cutlib = new LMEECutLib();

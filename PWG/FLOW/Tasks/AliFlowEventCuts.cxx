@@ -455,7 +455,10 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
       if (fQA) {
 	QAbefore(0)->Fill(pvtxz);
 	QAbefore(1)->Fill(multGlobal,multTPC);
-	QAbefore(2)->Fill(sT);
+	if(fUseSphericityCut) {
+	  QAbefore(2)->Fill(sT);
+	  QAbefore(3)->Fill(nAcceptedTracks,sT);
+	}
       }
       
       //Use sphericity cut
@@ -510,7 +513,10 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
     if (fQA&&pass) {
       QAafter(0)->Fill(pvtxz);
       QAafter(1)->Fill(multGlobal,multTPC);
-      QAafter(2)->Fill(sT);
+      if(fUseSphericityCut) {
+	QAafter(2)->Fill(sT);
+	QAafter(3)->Fill(nAcceptedTracks,sT);
+      }
     }
     
   }else{
@@ -611,7 +617,10 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
     if (fQA) {
       QAbefore(0)->Fill(pvtxz);
       QAbefore(1)->Fill(multGlobal,multTPC);
-      QAbefore(2)->Fill(sT);
+      if(fUseSphericityCut) {
+	QAbefore(2)->Fill(sT);
+	QAbefore(3)->Fill(nAcceptedTracks,sT);
+      }
     }
     
     if (fCutNContributors) {
@@ -773,7 +782,10 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
     if (fQA&&pass) {
       QAafter(1)->Fill(multGlobal,multTPC);
       QAafter(0)->Fill(pvtxz);
-      QAafter(2)->Fill(sT);
+      if(fUseSphericityCut) {
+	QAafter(2)->Fill(sT);
+	QAafter(3)->Fill(nAcceptedTracks,sT);
+      }
     }
   }
   return pass;
@@ -929,6 +941,8 @@ void AliFlowEventCuts::DefineHistograms()
   after->Add(new TH2F("fTPCvsGlobalMult","TPC only vs Global track multiplicity;global;TPC only",600,0,3000,600,0,4000));//1
   before->Add(new TH1F("fHistSphericity",";S_{T};Counts",501,-0.05,1.05)); //2
   after->Add(new TH1F("fHistSphericity",";S_{T};Counts",501,-0.05,1.05)); //2
+  before->Add(new TH2F("fHistMultiplicityVsSphericity",";N_{acc.};S_{T};Counts",500,-0.5,499.5,501,-0.05,1.05));//3
+  after->Add(new TH2F("fHistMultiplicityVsSphericity",";N_{acc.};S_{T};Counts",500,-0.5,499.5,501,-0.05,1.05));//3
   TH1::AddDirectory(adddirstatus);
 }
 

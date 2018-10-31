@@ -1,3 +1,12 @@
+
+
+
+//----------------------------------------------------
+
+//AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2,UInt_t decayLc=AliCFTaskVertexingHF::kDelta,TString coutName="Delta",Int_t useNtrkWeight = 0, TString suffix = "")
+{
+
 //DEFINITION OF A FEW CONSTANTS
 const Double_t ymin  = -1.2 ;
 const Double_t ymax  =  1.2 ;
@@ -28,7 +37,7 @@ const Float_t centmax_60_100 = 100.;
 const Float_t centmin = 0.;
 const Float_t centmax = 100.;
 const Float_t fakemin = -0.5;
-const Float_t fakemax = 2.5.;
+const Float_t fakemax = 2.5;
 const Double_t distTwoPartmin=0;
 const Double_t distTwoPartmax=600;
 const Double_t dispVtxmin = 0;
@@ -45,14 +54,7 @@ const Float_t multmin_20_50 = 20;
 const Float_t multmax_20_50 = 50;
 const Float_t multmin_50_102 = 50;
 const Float_t multmax_50_102 = 102;
-
-
-//----------------------------------------------------
-
-//AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2)
-AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2,UInt_t decayLc=AliCFTaskVertexingHF::kDelta,TString coutName="Delta",Int_t useNtrkWeight = 0, const char* suffix = "")
-{
-	if(suffix!="") coutName+=Form("%s",suffix); //for subwagons containers 
+	if(suffix!="") coutName+=Form("%s",suffix.Data()); //for subwagons containers 
 	printf("Addig CF task using cuts from file %s\n",cutFile);
 	if (configuration == AliCFTaskVertexingHF::kSnail){
 		printf("The configuration is set to be SLOW --> all the variables will be used to fill the CF\n");
@@ -65,7 +67,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 	}
 	else{
 		printf("The configuration is not defined! returning\n");
-		return;
+		return NULL;
 	}
 	
 	gSystem->Sleep(2000);
@@ -76,21 +78,21 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 	
 	TString expected;
 	if (isSign == 0 && pdgCode < 0){
-		AliError(Form("Error setting PDG code (%d) and sign (0 --> particle (%d) only): they are not compatible, returning",pdgCode));
+		Printf("ERROR:Error setting PDG code (%d) and sign (0 --> particle (%d) only): they are not compatible, returning",pdgCode,isSign);
 		return 0x0;
 	}
 	else if (isSign == 1 && pdgCode > 0){
-		AliError(Form("Error setting PDG code (%d) and sign (1 --> antiparticle (%d) only): they are not compatible, returning",pdgCode));
+		Printf("ERROR:Error setting PDG code (%d) and sign (1 --> antiparticle (%d) only): they are not compatible, returning",pdgCode,isSign);
 		return 0x0;
 	}
 	else if (isSign > 2 || isSign < 0){
-		AliError(Form("Sign not valid (%d, possible values are 0, 1, 2), returning"));
+		Printf("ERROR:Sign not valid (%d, possible values are 0, 1, 2), returning",isSign);
 		return 0x0;
 	}
 	
 	TFile* fileCuts = TFile::Open(cutFile);
 	if(!fileCuts || (fileCuts && !fileCuts->IsOpen())){ 
-	  AliError("Wrong cut file");
+	  Printf("ERROR: Wrong cut file");
 	  return 0x0;
 	}
 
@@ -613,7 +615,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 
 	// create the task
 	TString combinedName; //for subwagons
-	combinedName.Form("AliCFTaskVertexingHF%s", suffix);
+	combinedName.Form("AliCFTaskVertexingHF%s", suffix.Data());
 	AliCFTaskVertexingHF *task = new AliCFTaskVertexingHF(combinedName,cutsLctopKpi);
 	task->SetConfiguration(configuration);
 	task->SetFillFromGenerated(kFALSE);
@@ -649,7 +651,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 		else if(useNtrkWeight==3) hNchPrimaries = (TH1F*)fileCuts->Get("hNtrUnCorrEvSel");
 		else if(useNtrkWeight==4) hNchPrimaries = (TH1F*)fileCuts->Get("hNtrUnCorrPSSel");
 		else {
-			AliFatal("useNtrkWeight value not a valid option - choice from 1-4");
+			Printf("FATAL: useNtrkWeight value not a valid option - choice from 1-4");
 			return 0x0;
 		}
 		if(hNchPrimaries) {
@@ -657,7 +659,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 			task->SetMCNchHisto(hNchPrimaries);
 			task->SetUseNchTrackletsWeight();
 		} else {
-			AliFatal("Histogram for multiplicity weights not found");
+			Printf("FATAL: Histogram for multiplicity weights not found");
 			return 0x0;
 		}
 	}
@@ -713,7 +715,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 	}
 	nameCorr+=coutName.Data();
         THnSparseD* correlation = new THnSparseD(nameCorr,"THnSparse with correlations",4,thnDim);
-        Double_t** binEdges = new Double_t[2];
+        Double_t** binEdges = new Double_t*[2];
 
         // set bin limits
 

@@ -3669,7 +3669,7 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::IsD0PiPlPiMiPiZeroDaug
 Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::IsPiPlPiMiPiZeroDecay(TParticle *fMCMother) const
 {
   if( fMCMother->GetNDaughters() != 3 ) return kFALSE;
-  if( !(fMCMother->GetPdgCode() == 221 || fMCMother->GetPdgCode() == 223)  ) return kFALSE;
+  if( !(fMCMother->GetPdgCode() == 221 || fMCMother->GetPdgCode() == 223 || fMCMother->GetPdgCode() == 421)  ) return kFALSE;
 
   TParticle *posPion = 0x0;
   TParticle *negPion = 0x0;

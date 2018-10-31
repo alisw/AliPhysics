@@ -213,6 +213,7 @@ TObject(),
   trackmult(-1),   // Track mult (no cuts)
   n(-1),           // Number of added tracks
   nTracks(-1),
+  refMult(-1),     // reference multiplicity
   trackmultMC(-1), // MC track mult (primary tracks)
   nMC(-1),         // MC number of added tracks 
   process(-2),     // MC process: -1=invalid, 0=data, 1=ND, 2=SD, 3=DD
@@ -243,6 +244,7 @@ void DeDxEvent::Copy(TObject& object) const
   eventIn->trackmult     = trackmult   ; 
   eventIn->n             = n           ;
   eventIn->nTracks       = nTracks     ;
+  eventIn->refMult       = refMult     ;
   eventIn->trackmultMC   = trackmultMC ; 
   eventIn->nMC           = nMC         ; 
   eventIn->process       = process     ; 

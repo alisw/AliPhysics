@@ -249,6 +249,12 @@ private:
     TH2F                *fDCAxy_pt_charmaft;//!
     TH2F                *fDCAxy_pt_beautybef;//!
     TH2F                *fDCAxy_pt_beautyaft;//!
+    TH2F                *fDCAxy_pt_MesonB_beautybef;//!
+    TH2F                *fDCAxy_pt_MesonB_beautyaft;//!
+    TH2F                *fDCAxy_pt_MesonBD_beautybef;//!
+    TH2F                *fDCAxy_pt_MesonBD_beautyaft;//!
+    TH2F                *fDCAxy_pt_BaryonB_beautybef;//!
+    TH2F                *fDCAxy_pt_BaryonBD_beautybef;//!
     TH2F				*fDCAxy_pt_had_onlyDCA;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_WoPID;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_Hijing;//!

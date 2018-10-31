@@ -34,6 +34,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
     fTPCdedx[i] = nullptr;
     fTOFbeta[i] = nullptr;
     fNSigTPC[i] = nullptr;
+    fNSigTPCMod[i] = nullptr;
     fNSigTOF[i] = nullptr;
     fTPCStatus[i] = nullptr;
     fTOFStatus[i] = nullptr;
@@ -216,6 +217,16 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
 
     fTrackCutQA[i]->Add(fNSigTPC[i]);
 
+    TString NSigTPCModName = Form("NSigTPCMod_%s", sName[i].Data());
+    fNSigTPCMod[i] = new TH2F(NSigTPCModName.Data(), NSigTPCModName.Data(), ptBins,
+                           ptmin, ptmax, 3. * twoDBins, -1., 5.);
+    fNSigTPCMod[i]->Sumw2();
+    fNSigTPCMod[i]->GetXaxis()->SetTitle("p_{TPC}");
+    fNSigTPCMod[i]->GetYaxis()->SetTitle("|n#sigma_{TPC}|");
+
+    fTrackCutQA[i]->Add(fNSigTPCMod[i]);
+
+
     TString NSigTOFName = Form("NSigTOF_%s", sName[i].Data());
     fNSigTOF[i] = new TH2F(NSigTOFName.Data(), NSigTOFName.Data(), ptBins,
                            ptmin, ptmax, 3. * twoDBins, -60., 60.);
@@ -363,6 +374,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(TString MinimalBooking)
     fTPCdedx[i] = nullptr;
     fTOFbeta[i] = nullptr;
     fNSigTPC[i] = nullptr;
+    fNSigTPCMod[i] = nullptr;
     fNSigTOF[i] = nullptr;
     fTPCStatus[i] = nullptr;
     fTOFStatus[i] = nullptr;

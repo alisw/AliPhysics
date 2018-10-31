@@ -67,6 +67,7 @@ fDPMjetHeader(0),
 fPythiaVersion(""),
 fVariableCPV(kFALSE),
 fVariableCPVInCone(kFALSE),
+fVariableCPVSyst(""),
 fNonLinRecoEnergyScaling(kFALSE),
 fTracksAna(0),
 fStack(0),
@@ -285,6 +286,7 @@ fDPMjetHeader(0),
 fPythiaVersion(""),
 fVariableCPV(kFALSE),
 fVariableCPVInCone(kFALSE),
+fVariableCPVSyst(""),
 fNonLinRecoEnergyScaling(kFALSE),
 fTracksAna(0),
 fStack(0),
@@ -1021,7 +1023,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	fPtTrackClusRatiovsPt->Sumw2();
 	fOutput->Add(fPtTrackClusRatiovsPt);
 
-	fPtTrackClusRatiovsPtWithCPV = new TH2F("hPtTrackClusRatiovsPt_WithCPV","Track #it{p}_{T} over cluster #it{p}_{T} vs. cluster #it{p}_{T} with CPV applied", 120, 0., 60., 300, 0., 15.);
+	fPtTrackClusRatiovsPtWithCPV = new TH2F("hPtTrackClusRatiovsPt_WithCPV","Cluster #it{p}_{T} over track #it{p}_{T} vs. cluster #it{p}_{T} with CPV applied", 120, 0., 60., 300, 0., 15.);
 	fPtTrackClusRatiovsPtWithCPV->Sumw2();
 	fOutput->Add(fPtTrackClusRatiovsPtWithCPV);
       }
@@ -1132,11 +1134,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   }
 
     // Initialization of all the common THistos for the 3 different outputs
-  if(fWho != 2){
-    fVz = new TH1F("hVz_NC","Vertex Z distribution",100,-50.,50.);
-    fVz->Sumw2();
-    fOutput->Add(fVz);
-  }
+
+  fVz = new TH1F("hVz_NC","Vertex Z distribution",100,-50.,50.);
+  fVz->Sumw2();
+  fOutput->Add(fVz);
 
   fVzBeforecut = new TH1F("hVz_ALL", "Inclusive Vertex Z distribution",100,-50.,50.);
   fVzBeforecut->Sumw2();
@@ -1503,13 +1504,14 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 
   fCutFlowEvents->Fill(1.5);
 
-  if(fWho != 2){
+  if(fWho != 2)
     fSPDclustVsSPDtracklets->Fill(fVevent->GetMultiplicity()->GetNumberOfTracklets(),(fVevent->GetNumberOfITSClusters(0)+fVevent->GetNumberOfITSClusters(1)));
 
-    if(fRejectPileUpEvent && fVevent->IsPileupFromSPD(fNContrToPileUp, 0.8,3.,2.,5.)){
+  if(fRejectPileUpEvent && fVevent->IsPileupFromSPD(fNContrToPileUp, 0.8, 3., 2., 5.)){
+    if(fWho != 2)
       fnPUevents->Fill(0);
-      return kFALSE;
-    }
+
+    return kFALSE;
   }
 
   fCutFlowEvents->Fill(2.5);
@@ -1605,8 +1607,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       return kFALSE;
   }
 
-  if(fWho != 2)
-    fVz->Fill(fVertex[2]); // Fill Vertex Z histogram
+  fVz->Fill(fVertex[2]); // Fill Vertex Z histogram
 
   if(!isL1 && fIsMC && f2012EGA){
     return kFALSE;
@@ -1878,6 +1879,23 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     if(!mt)
       continue;
 
+    // Variable CPV parameters (inspired by direct photons analysis)
+    Float_t eta_param [3] = {0.010, 4.07, -2.50};
+    Float_t phi_param [3] = {0.015, 3.65, -2.00};
+
+    if      ( fVariableCPVSyst == "loose" ) {
+      eta_param[0] = 0.010; eta_param[1] = 4.78; eta_param[2] = -2.50;
+      phi_param[0] = 0.015; phi_param[1] = 3.92; phi_param[2] = -2.00;
+    }
+    else if ( fVariableCPVSyst == "tight" ) {
+      eta_param[0] = 0.015; eta_param[1] = 3.46; eta_param[2] = -2.50;
+      phi_param[0] = 0.020; phi_param[1] = 3.73; phi_param[2] = -1.75;
+    }
+    else {
+      eta_param[0] = 0.010; eta_param[1] = 4.07; eta_param[2] = -2.50;
+      phi_param[0] = 0.015; phi_param[1] = 3.65; phi_param[2] = -2.00;
+    }
+
     Double_t deltaEta, deltaPhi;
     Double_t deta = 999;
     Double_t dphi = 999;
@@ -1915,8 +1933,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
 
     if(candidate){
       if(fVariableCPV){
-	deltaEta = 0.010 + TMath::Power((mt->Pt() + 4.07), -2.5); // See https://alice-notes.web.cern.ch/node/813
-	deltaPhi = 0.015 + TMath::Power((mt->Pt() + 3.65), -2.);  // See https://alice-notes.web.cern.ch/node/813
+	deltaEta = eta_param[0] + TMath::Power((mt->Pt() + eta_param[1]), eta_param[2]);
+	deltaPhi = phi_param[0] + TMath::Power((mt->Pt() + phi_param[1]), phi_param[2]);
       }
       else{
 	deltaEta = fdetacut;
@@ -1925,8 +1943,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     }
     else{
       if(fVariableCPVInCone){
-	deltaEta = 0.010 + TMath::Power((mt->Pt() + 4.07), -2.5); // See https://alice-notes.web.cern.ch/node/813
-	deltaPhi = 0.015 + TMath::Power((mt->Pt() + 3.65), -2.);  // See https://alice-notes.web.cern.ch/node/813
+	deltaEta = eta_param[0] + TMath::Power((mt->Pt() + eta_param[1]), eta_param[2]);
+	deltaPhi = phi_param[0] + TMath::Power((mt->Pt() + phi_param[1]), phi_param[2]);
       }
       else{
 	deltaEta = fdetacutIso;
@@ -1941,7 +1959,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
       }
 
       if(candidate && fWho == 2)
-	fPtTrackClusRatiovsPtWithCPV->Fill(vecClust.Pt(), (mt->Pt()/vecClust.Pt()));
+	fPtTrackClusRatiovsPtWithCPV->Fill(vecClust.Pt(), vecClust.Pt()/mt->Pt());
 
       matched = kTRUE;
     }

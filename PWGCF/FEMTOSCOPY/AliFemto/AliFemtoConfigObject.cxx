@@ -8,6 +8,10 @@
 #include <TObjArray.h>
 #include <TCollection.h>
 
+#include <TBrowser.h>
+#include <TPad.h>
+#include <TROOT.h>
+
 #include <regex>
 #include <cctype>
 #include <sstream>
@@ -203,15 +207,37 @@ AliFemtoConfigObject::pop(Int_t idx)
 AliFemtoConfigObject*
 AliFemtoConfigObject::pop(const Key_t &key)
 {
+  if (!is_map()) {
+    return nullptr;
+  }
+
   AliFemtoConfigObject *result = nullptr;
 
-  if (is_map()) {
-    auto found = fValueMap.find(key);
-    if (found != fValueMap.end()) {
-      result = new AliFemtoConfigObject(std::move(found->second));
-      fValueMap.erase(found);
+  auto keys = split_key(key);
+
+  /// get the last key
+  const Key_t last_key = keys.back();
+  keys.erase(keys.rbegin().base());
+
+  /// find the sub-object
+  AliFemtoConfigObject *it = this;
+  for (auto &key : keys) {
+    auto found = it->fValueMap.find(key);
+    if (found == it->fValueMap.end()) {
+      return nullptr;
+    }
+    it = &found->second;
+    if (!it->is_map()) {
+      return nullptr;
     }
   }
+
+  auto target = it->fValueMap.find(last_key);
+  if (target != it->fValueMap.end()) {
+    result = new AliFemtoConfigObject(std::move(target->second));
+    it->fValueMap.erase(target);
+  }
+
   return result;
 }
 
@@ -455,6 +481,24 @@ AliFemtoConfigObject::Streamer(TBuffer &buff)
 
 }
 
+void
+AliFemtoConfigObject::Draw(Option_t *opt)
+{
+  if (!gPad || !gPad->IsEditable()) {
+    gROOT->MakeDefCanvas();
+  } else {
+    gPad->Clear();
+    gPad->Range(0,0,1,1);
+  }
+  AppendPad(opt);
+}
+
+void
+AliFemtoConfigObject::Browse(TBrowser *b)
+{
+  Draw(b ? b->GetDrawOption() : "");
+  gPad->Update();
+}
 
 //===============================================
 //
@@ -511,9 +555,12 @@ AliFemtoConfigObject::Painter::Paint()
   fBody.SetTextFont(43);
   fBody.SetTextSize(18);
   fBody.SetFillColor(0);
+
   TObjArray *lines = result.Tokenize('\n');
-  for (Int_t iline = 0; iline < lines->GetEntriesFast(); iline++)
-    fBody.AddText(((TObjString*) lines->At(iline))->String().Data());
+  for (auto *obj : *lines) {
+    auto *str = static_cast<TObjString*>(obj);
+    fBody.AddText(str->String());
+  }
   fBody.Draw();
   delete lines;
 }

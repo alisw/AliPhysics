@@ -84,12 +84,12 @@ protected:
     Int_t fTreeVariablePID;
     Int_t fTreeVariableposTrMotherPID;
     Int_t fTreeVariablenegTrMotherPID;
-
+    
     Int_t fTreeVariablePIDMother;
     Int_t fTreeVariablePIDPositive;
     Int_t fTreeVariablePIDPositiveGrandMother;
     Int_t fTreeVariablePIDNegativeGrandMother;
-
+    
     Int_t fTreeVariablePrimaryStatusMother;
     Int_t fTreeVariablePIDNegative;
     Int_t fTreeVariableLeastNbrCrossedRows;
@@ -112,7 +112,7 @@ protected:
     THnSparse *fPtBinNplusNminusRec;
     THnSparse *fPtBinNplusNminusRecPri;
     THnSparse *fPtBinNplusNminusGen;
-
+    
     Int_t    GetPtBin(Double_t pt);
     
     
@@ -121,3 +121,4 @@ protected:
 
 
 #endif
+

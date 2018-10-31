@@ -46,6 +46,7 @@ class AliHFCorrFitter{
   void SetFixBasetype(Int_t fixbasetype){fFixBase=fixbasetype;}
   void SetFixMeanType(Int_t fixmeantype){fFixMean=fixmeantype;}
   void SetPtRanges(Double_t dmin,Double_t dmax,Double_t assmin,Double_t assmax) {fMinDpt=dmin; fMaxDpt=dmax; fMinAsspt=assmin; fMaxAsspt=assmax;}
+  void SetIspPb(Bool_t pPb) {fIspPb=pPb;}
   void SetBaselineExt(Double_t baseval){
     fBaseline=baseval;
     fFixBase=6;
@@ -142,6 +143,7 @@ class AliHFCorrFitter{
   Double_t			  fMaxDpt;
   Double_t			  fMinAsspt;
   Double_t			  fMaxAsspt;
-  ClassDef(AliHFCorrFitter,3);
+  Double_t			  fIspPb;
+  ClassDef(AliHFCorrFitter,4);
 };
 #endif

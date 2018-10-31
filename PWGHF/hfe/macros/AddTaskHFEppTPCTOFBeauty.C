@@ -123,240 +123,237 @@ AliAnalysisHFEppTPCTOFBeauty* ConfigHFEppTPCTOFBeauty(Bool_t isMCc, Bool_t isAOD
     
     if(isMCc){
     ///B correction
-    ///Default
+    ///Default FONLL
     if(IsBcorr == 0){
-		TF1 *fBmesonShape = new TF1("fBmesonShape","(1.0/0.449683)*(5.78258e-03 / (TMath::Power(TMath::Exp( - 2.07792e+00*x[0] + 6.75483e-03 * x[0] * x[0] ) + x[0] / 1.66686e+01, 7.05243e-01))*(2.27740e-06 / (TMath::Power(TMath::Exp( - 1.72205e-01*x[0] + 3.69234e-03 * x[0] * x[0] ) + x[0] / 7.12479e+00, 4.34903e+00)))*TMath::Power(1.0+x[0]/1.79842e-05,6.74073e-01))/(1.97901e-02 / (TMath::Power(TMath::Exp( - 1.21621e+00*x[0] - 3.54761e-02 * x[0] * x[0] ) + x[0] / 4.63948e+00, 1.43348e+00))*(4.89388e-03 / (TMath::Power(TMath::Exp( - 4.80220e-01*x[0] + 9.48365e-03 * x[0] * x[0] ) + x[0] / 3.64979e+01, 1.09103e+00)))*TMath::Power(1.0+x[0]/1.71070e+03,-1.44075e+02))",0.0,50);
+		TF1 *fBmesonShape = new TF1("fBmesonShape","(1.0/0.455737)*(5.78258e-03 / (TMath::Power(TMath::Exp( - 2.07792e+00*x[0] + 6.75483e-03 * x[0] * x[0] ) + x[0] / 1.66686e+01, 7.05243e-01))*(2.27740e-06 / (TMath::Power(TMath::Exp( - 1.72205e-01*x[0] + 3.69234e-03 * x[0] * x[0] ) + x[0] / 7.12479e+00, 4.34903e+00)))*TMath::Power(1.0+x[0]/1.79842e-05,6.74073e-01))/(1.87356e-02 / (TMath::Power(TMath::Exp( - 1.19647e+00*x[0] - 3.54687e-02 * x[0] * x[0] ) + x[0] / 4.67476e+00, 1.47150e+00))*(4.74056e-03 / (TMath::Power(TMath::Exp( - 5.31680e-01*x[0] + 1.02081e-02 * x[0] * x[0] ) + x[0] / 4.84483e+01, 9.27183e-01)))*TMath::Power(1.0+x[0]/1.74979e+03,-1.57702e+02))",0.0,50);
 		task->SetBcorrFunction(fBmesonShape);
 		cout<<"-----------------------------------------------------IsBcorr"<<IsBcorr<<endl;
 	}
-    ///Var 1
-  /*  if(IsBcorr == 1){
-		//TF1 *fBmesonShape1 = new TF1("fBmesonShape1","(0.5/(1. + exp((x[0] - 7.) * 0.7)) + 0.5 + (x[0] - 15.)/300)+(1-(0.5/(1. + exp((x[0] - 7.) * 0.7)) + 0.5 + (x[0] - 15.)/300))/2", 0, 30);
-		TF1 *fBmesonShape1 = new TF1("fBmesonShape1","(4.65644e-01) / (TMath::Power(TMath::Exp( - (2.63272e-01) * x[0] - (-7.24611e-03) * x[0] * x[0] ) + x[0] / (1.24435e+01), (2.09389e+00)))", 0, 30);
+    ///FONLL Lower edge
+    if(IsBcorr == 1){
+		TF1 *fBmesonShape1 = new TF1("fBmesonShape1","(1.0/0.389241)*(3.77085e-03 / (TMath::Power(TMath::Exp( - 4.99937e+00*x[0] - 8.02258e-01 * x[0] * x[0] ) + x[0] / 2.60310e+04, 1.89019e-01))*(1.43903e-03 / (TMath::Power(TMath::Exp( - 1.82037e-01*x[0] + 3.88349e-03 * x[0] * x[0] ) + x[0] / 7.21515e+00, 4.49037e+00)))*TMath::Power(1.0+x[0]/2.91057e-01,4.05964e-01))/(1.87356e-02 / (TMath::Power(TMath::Exp( - 1.19647e+00*x[0] - 3.54687e-02 * x[0] * x[0] ) + x[0] / 4.67476e+00, 1.47150e+00))*(4.74056e-03 / (TMath::Power(TMath::Exp( - 5.31680e-01*x[0] + 1.02081e-02 * x[0] * x[0] ) + x[0] / 4.84483e+01, 9.27183e-01)))*TMath::Power(1.0+x[0]/1.74979e+03,-1.57702e+02))",0.0,50);
 		task->SetBcorrFunction(fBmesonShape1);
 		cout<<"-----------------------------------------------------IsBcorr"<<IsBcorr<<endl;
 	}
-    ///Var 2
+    ///FONLL Upper edge
     if(IsBcorr == 2){
-		//TF1 *fBmesonShape2 = new TF1("fBmesonShape2","(0.5/(1. + exp((x[0] - 7.) * 0.7)) + 0.5 + (x[0] - 15.)/300)-(1-(0.5/(1. + exp((x[0] - 7.) * 0.7)) + 0.5 + (x[0] - 15.)/300))/2", 0, 30);
-		TF1 *fBmesonShape2 = new TF1("fBmesonShape2","(4.23575e-01) / (TMath::Power(TMath::Exp( - (2.65700e-01) * x[0] - (4.35955e-02) * x[0] * x[0] ) + x[0] / (7.48510e+00), (2.13502e+00)))", 0, 30);
+		TF1 *fBmesonShape2 = new TF1("fBmesonShape2","(1.0/0.532972)*(8.25352e-03 / (TMath::Power(TMath::Exp( - 6.11267e+00*x[0] - 1.05995e-01 * x[0] * x[0] ) + x[0] / 3.12399e+04, 2.13332e-01))*(1.70947e-03 / (TMath::Power(TMath::Exp( - 1.75188e-01*x[0] + 3.76833e-03 * x[0] * x[0] ) + x[0] / 6.82438e+00, 4.61154e+00)))*TMath::Power(1.0+x[0]/3.25350e-01,3.45204e-01))/(1.87356e-02 / (TMath::Power(TMath::Exp( - 1.19647e+00*x[0] - 3.54687e-02 * x[0] * x[0] ) + x[0] / 4.67476e+00, 1.47150e+00))*(4.74056e-03 / (TMath::Power(TMath::Exp( - 5.31680e-01*x[0] + 1.02081e-02 * x[0] * x[0] ) + x[0] / 4.84483e+01, 9.27183e-01)))*TMath::Power(1.0+x[0]/1.74979e+03,-1.57702e+02))",0.0,50);
 		task->SetBcorrFunction(fBmesonShape2);
 		cout<<"-----------------------------------------------------IsBcorr"<<IsBcorr<<endl;
 	}
-    ///Weight from RAAxFONLL/MC
-    if(IsBcorr == 3){
-		TF1 *fBmesonShape3 = new TF1("fBmesonShape3","(1./0.925)*(3.74727e-01/(TMath::Power(TMath::Exp( - (3.65064e-01) * x[0] - (-9.29285e-03) * x[0] * x[0] ) + x[0] / (1.06879e+01), (2.01898e+00))))", 0, 30);
-		task->SetBcorrFunction(fBmesonShape3);
-		cout<<"-----------------------------------------------------IsBcorr"<<IsBcorr<<endl;
-	}
-    */
-    
+ 
+    // Default
     if(IsDcorr == 0){
-		TF1 *fDmesonShape22 = new TF1("fDmesonShape22","(1/0.283384)*(3.05777e-03/(TMath::Power(TMath::Exp( - 4.61036e-01*x[0] + 1.19288e-02 * x[0] * x[0] ) + x[0] / 3.16263e+00, 4.60929e+00)))/(1.00194e-02 / (TMath::Power(TMath::Exp( - 3.84703e-01*x[0] + 9.65660e-03 * x[0] * x[0] ) + x[0] / 4.00801e+00, 4.42801e+00)))",1.0,36);  
+		TF1 *fDmesonShape22 = new TF1("fDmesonShape22","(1/0.296169)*(1.31661e-03/(TMath::Power(TMath::Exp( - 6.20935e-01*x[0] + 9.85658e-03 * x[0] * x[0] ) + x[0] / 3.59774e+00, 4.42801e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.0,36);  
 		task->SetDcorrFunction22(fDmesonShape22);
     
-		TF1 *fDmesonShape21 = new TF1("fDmesonShape21","(1/0.277916)*(3.05777e-03/(TMath::Power(TMath::Exp( - 4.61036e-01*x[0] + 1.19288e-02 * x[0] * x[0] ) + x[0] / 3.16263e+00, 4.60929e+00)))/(1.00194e-02 / (TMath::Power(TMath::Exp( - 3.84703e-01*x[0] + 9.65660e-03 * x[0] * x[0] ) + x[0] / 4.00801e+00, 4.42801e+00)))",1.1,36);
+		TF1 *fDmesonShape21 = new TF1("fDmesonShape21","(1/0.287189)*(1.31661e-03/(TMath::Power(TMath::Exp( - 6.20935e-01*x[0] + 9.85658e-03 * x[0] * x[0] ) + x[0] / 3.59774e+00, 4.42801e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.1,36);
 		task->SetDcorrFunction21(fDmesonShape21);
     
-		TF1 *fDmesonShape20 = new TF1("fDmesonShape20","(1/0.272175)*(3.05777e-03/(TMath::Power(TMath::Exp( - 4.61036e-01*x[0] + 1.19288e-02 * x[0] * x[0] ) + x[0] / 3.16263e+00, 4.60929e+00)))/(1.00194e-02 / (TMath::Power(TMath::Exp( - 3.84703e-01*x[0] + 9.65660e-03 * x[0] * x[0] ) + x[0] / 4.00801e+00, 4.42801e+00)))",1.2,36);
+		TF1 *fDmesonShape20 = new TF1("fDmesonShape20","(1/0.27827)*(1.31661e-03/(TMath::Power(TMath::Exp( - 6.20935e-01*x[0] + 9.85658e-03 * x[0] * x[0] ) + x[0] / 3.59774e+00, 4.42801e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.2,36);
 		task->SetDcorrFunction20(fDmesonShape20);
     
-		TF1 *fDmesonShape19 = new TF1("fDmesonShape19","(1/0.266235)*(3.05777e-03/(TMath::Power(TMath::Exp( - 4.61036e-01*x[0] + 1.19288e-02 * x[0] * x[0] ) + x[0] / 3.16263e+00, 4.60929e+00)))/(1.00194e-02 / (TMath::Power(TMath::Exp( - 3.84703e-01*x[0] + 9.65660e-03 * x[0] * x[0] ) + x[0] / 4.00801e+00, 4.42801e+00)))",1.3,36);
+		TF1 *fDmesonShape19 = new TF1("fDmesonShape19","(1/0.269485)*(1.31661e-03/(TMath::Power(TMath::Exp( - 6.20935e-01*x[0] + 9.85658e-03 * x[0] * x[0] ) + x[0] / 3.59774e+00, 4.42801e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.3,36);
 		task->SetDcorrFunction19(fDmesonShape19);
     
-		TF1 *fDmesonShape18 = new TF1("fDmesonShape18","(1/0.260164)*(3.05777e-03/(TMath::Power(TMath::Exp( - 4.61036e-01*x[0] + 1.19288e-02 * x[0] * x[0] ) + x[0] / 3.16263e+00, 4.60929e+00)))/(1.00194e-02 / (TMath::Power(TMath::Exp( - 3.84703e-01*x[0] + 9.65660e-03 * x[0] * x[0] ) + x[0] / 4.00801e+00, 4.42801e+00)))",1.4,36);
+		TF1 *fDmesonShape18 = new TF1("fDmesonShape18","(1/0.260894)*(1.31661e-03/(TMath::Power(TMath::Exp( - 6.20935e-01*x[0] + 9.85658e-03 * x[0] * x[0] ) + x[0] / 3.59774e+00, 4.42801e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.4,36);
 		task->SetDcorrFunction18(fDmesonShape18);
        
-		TF1 *fDmesonShape17 = new TF1("ffDmesonShape17","(1/0.254022)*(3.05777e-03/(TMath::Power(TMath::Exp( - 4.61036e-01*x[0] + 1.19288e-02 * x[0] * x[0] ) + x[0] / 3.16263e+00, 4.60929e+00)))/(1.00194e-02 / (TMath::Power(TMath::Exp( - 3.84703e-01*x[0] + 9.65660e-03 * x[0] * x[0] ) + x[0] / 4.00801e+00, 4.42801e+00)))",1.5,36); 
+		TF1 *fDmesonShape17 = new TF1("ffDmesonShape17","(1/0.252547)*(1.31661e-03/(TMath::Power(TMath::Exp( - 6.20935e-01*x[0] + 9.85658e-03 * x[0] * x[0] ) + x[0] / 3.59774e+00, 4.42801e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.5,36); 
 		task->SetDcorrFunction17(fDmesonShape17);
     
-		TF1 *fDmesonShape16 = new TF1("fDmesonShape16","(1/0.238692)*(3.05777e-03/(TMath::Power(TMath::Exp( - 4.61036e-01*x[0] + 1.19288e-02 * x[0] * x[0] ) + x[0] / 3.16263e+00, 4.60929e+00)))/(1.00194e-02 / (TMath::Power(TMath::Exp( - 3.84703e-01*x[0] + 9.65660e-03 * x[0] * x[0] ) + x[0] / 4.00801e+00, 4.42801e+00)))",1.75,36);
+		TF1 *fDmesonShape16 = new TF1("fDmesonShape16","(1/0.232981)*(1.31661e-03/(TMath::Power(TMath::Exp( - 6.20935e-01*x[0] + 9.85658e-03 * x[0] * x[0] ) + x[0] / 3.59774e+00, 4.42801e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.75,36);
 		task->SetDcorrFunction16(fDmesonShape16);
     
-		TF1 *fDmesonShape1 = new TF1("fDmesonShape1","(1/0.223879)*(3.05777e-03/(TMath::Power(TMath::Exp( - 4.61036e-01*x[0] + 1.19288e-02 * x[0] * x[0] ) + x[0] / 3.16263e+00, 4.60929e+00)))/(1.00194e-02 / (TMath::Power(TMath::Exp( - 3.84703e-01*x[0] + 9.65660e-03 * x[0] * x[0] ) + x[0] / 4.00801e+00, 4.42801e+00)))",2.0,36); 
+		TF1 *fDmesonShape1 = new TF1("fDmesonShape1","(1/0.215513)*(1.31661e-03/(TMath::Power(TMath::Exp( - 6.20935e-01*x[0] + 9.85658e-03 * x[0] * x[0] ) + x[0] / 3.59774e+00, 4.42801e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",2.0,36); 
 		task->SetDcorrFunction1(fDmesonShape1);
     
-		TF1 *fDmesonShape2 = new TF1("fDmesonShape2","(1/0.209986)*(3.05777e-03/(TMath::Power(TMath::Exp( - 4.61036e-01*x[0] + 1.19288e-02 * x[0] * x[0] ) + x[0] / 3.16263e+00, 4.60929e+00)))/(1.00194e-02 / (TMath::Power(TMath::Exp( - 3.84703e-01*x[0] + 9.65660e-03 * x[0] * x[0] ) + x[0] / 4.00801e+00, 4.42801e+00)))",2.25,36);   
+		TF1 *fDmesonShape2 = new TF1("fDmesonShape2","(1/0.200212)*(1.31661e-03/(TMath::Power(TMath::Exp( - 6.20935e-01*x[0] + 9.85658e-03 * x[0] * x[0] ) + x[0] / 3.59774e+00, 4.42801e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",2.25,36);   
 		task->SetDcorrFunction2(fDmesonShape2);
     
-		TF1 *fDmesonShape3 = new TF1("fDmesonShap3","(1/0.197226)*(3.05777e-03/(TMath::Power(TMath::Exp( - 4.61036e-01*x[0] + 1.19288e-02 * x[0] * x[0] ) + x[0] / 3.16263e+00, 4.60929e+00)))/(1.00194e-02 / (TMath::Power(TMath::Exp( - 3.84703e-01*x[0] + 9.65660e-03 * x[0] * x[0] ) + x[0] / 4.00801e+00, 4.42801e+00)))",2.5,36);   
+		TF1 *fDmesonShape3 = new TF1("fDmesonShap3","(1/0.18697)*(1.31661e-03/(TMath::Power(TMath::Exp( - 6.20935e-01*x[0] + 9.85658e-03 * x[0] * x[0] ) + x[0] / 3.59774e+00, 4.42801e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",2.5,36);   
 		task->SetDcorrFunction3(fDmesonShape3);
     
-		TF1 *fDmesonShape4 = new TF1("fDmesonShape4","(1/0.185674)*(3.05777e-03/(TMath::Power(TMath::Exp( - 4.61036e-01*x[0] + 1.19288e-02 * x[0] * x[0] ) + x[0] / 3.16263e+00, 4.60929e+00)))/(1.00194e-02 / (TMath::Power(TMath::Exp( - 3.84703e-01*x[0] + 9.65660e-03 * x[0] * x[0] ) + x[0] / 4.00801e+00, 4.42801e+00)))",2.75,36);    
+		TF1 *fDmesonShape4 = new TF1("fDmesonShape4","(1/0.175584)*(1.31661e-03/(TMath::Power(TMath::Exp( - 6.20935e-01*x[0] + 9.85658e-03 * x[0] * x[0] ) + x[0] / 3.59774e+00, 4.42801e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",2.75,36);    
 		task->SetDcorrFunction4(fDmesonShape4);
     
-		TF1 *fDmesonShape5 = new TF1("fDmesonShape5","(1/0.175318)*(3.05777e-03/(TMath::Power(TMath::Exp( - 4.61036e-01*x[0] + 1.19288e-02 * x[0] * x[0] ) + x[0] / 3.16263e+00, 4.60929e+00)))/(1.00194e-02 / (TMath::Power(TMath::Exp( - 3.84703e-01*x[0] + 9.65660e-03 * x[0] * x[0] ) + x[0] / 4.00801e+00, 4.42801e+00)))",3.0,36);  
+		TF1 *fDmesonShape5 = new TF1("fDmesonShape5","(1/0.165817)*(1.31661e-03/(TMath::Power(TMath::Exp( - 6.20935e-01*x[0] + 9.85658e-03 * x[0] * x[0] ) + x[0] / 3.59774e+00, 4.42801e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",3.0,36);  
 		task->SetDcorrFunction5(fDmesonShape5);
     
-		TF1 *fDmesonShape6 = new TF1("fDmesonShape6","(1/0.157905)*(3.05777e-03/(TMath::Power(TMath::Exp( - 4.61036e-01*x[0] + 1.19288e-02 * x[0] * x[0] ) + x[0] / 3.16263e+00, 4.60929e+00)))/(1.00194e-02 / (TMath::Power(TMath::Exp( - 3.84703e-01*x[0] + 9.65660e-03 * x[0] * x[0] ) + x[0] / 4.00801e+00, 4.42801e+00)))",3.5,36);   
+		TF1 *fDmesonShape6 = new TF1("fDmesonShape6","(1/0.150219)*(1.31661e-03/(TMath::Power(TMath::Exp( - 6.20935e-01*x[0] + 9.85658e-03 * x[0] * x[0] ) + x[0] / 3.59774e+00, 4.42801e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",3.5,36);   
 		task->SetDcorrFunction6(fDmesonShape6);
     
-		TF1 *fDmesonShape7 = new TF1("fDmesonShape7","(1/0.144227)*(3.05777e-03/(TMath::Power(TMath::Exp( - 4.61036e-01*x[0] + 1.19288e-02 * x[0] * x[0] ) + x[0] / 3.16263e+00, 4.60929e+00)))/(1.00194e-02 / (TMath::Power(TMath::Exp( - 3.84703e-01*x[0] + 9.65660e-03 * x[0] * x[0] ) + x[0] / 4.00801e+00, 4.42801e+00)))",4.0,36);   
+		TF1 *fDmesonShape7 = new TF1("fDmesonShape7","(1/0.138568)*(1.31661e-03/(TMath::Power(TMath::Exp( - 6.20935e-01*x[0] + 9.85658e-03 * x[0] * x[0] ) + x[0] / 3.59774e+00, 4.42801e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",4.0,36);   
 		task->SetDcorrFunction7(fDmesonShape7);
     
-		TF1 *fDmesonShape8 = new TF1("fDmesonShape8","(1/0.133482)*(3.05777e-03/(TMath::Power(TMath::Exp( - 4.61036e-01*x[0] + 1.19288e-02 * x[0] * x[0] ) + x[0] / 3.16263e+00, 4.60929e+00)))/(1.00194e-02 / (TMath::Power(TMath::Exp( - 3.84703e-01*x[0] + 9.65660e-03 * x[0] * x[0] ) + x[0] / 4.00801e+00, 4.42801e+00)))",4.5,36);    
+		TF1 *fDmesonShape8 = new TF1("fDmesonShape8","(1/0.129681)*(1.31661e-03/(TMath::Power(TMath::Exp( - 6.20935e-01*x[0] + 9.85658e-03 * x[0] * x[0] ) + x[0] / 3.59774e+00, 4.42801e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",4.5,36);    
 		task->SetDcorrFunction8(fDmesonShape8);
     
-		TF1 *fDmesonShape9 = new TF1("fDmesonShape9","(1/0.124985)*(3.05777e-03/(TMath::Power(TMath::Exp( - 4.61036e-01*x[0] + 1.19288e-02 * x[0] * x[0] ) + x[0] / 3.16263e+00, 4.60929e+00)))/(1.00194e-02 / (TMath::Power(TMath::Exp( - 3.84703e-01*x[0] + 9.65660e-03 * x[0] * x[0] ) + x[0] / 4.00801e+00, 4.42801e+00)))",5.0,36);  
+		TF1 *fDmesonShape9 = new TF1("fDmesonShape9","(1/0.122738)*(1.31661e-03/(TMath::Power(TMath::Exp( - 6.20935e-01*x[0] + 9.85658e-03 * x[0] * x[0] ) + x[0] / 3.59774e+00, 4.42801e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",5.0,36);  
 		task->SetDcorrFunction9(fDmesonShape9);
     
-		TF1 *fDmesonShape10 = new TF1("fDmesonShape10","(1/0.118198)*(3.05777e-03/(TMath::Power(TMath::Exp( - 4.61036e-01*x[0] + 1.19288e-02 * x[0] * x[0] ) + x[0] / 3.16263e+00, 4.60929e+00)))/(1.00194e-02 / (TMath::Power(TMath::Exp( - 3.84703e-01*x[0] + 9.65660e-03 * x[0] * x[0] ) + x[0] / 4.00801e+00, 4.42801e+00)))",5.5,36);   
+		TF1 *fDmesonShape10 = new TF1("fDmesonShape10","(1/0.117183)*(1.31661e-03/(TMath::Power(TMath::Exp( - 6.20935e-01*x[0] + 9.85658e-03 * x[0] * x[0] ) + x[0] / 3.59774e+00, 4.42801e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",5.5,36);   
 		task->SetDcorrFunction10(fDmesonShape10);
     
-		TF1 *fDmesonShape11 = new TF1("fDmesonShape11","(1/0.112712)*(3.05777e-03/(TMath::Power(TMath::Exp( - 4.61036e-01*x[0] + 1.19288e-02 * x[0] * x[0] ) + x[0] / 3.16263e+00, 4.60929e+00)))/(1.00194e-02 / (TMath::Power(TMath::Exp( - 3.84703e-01*x[0] + 9.65660e-03 * x[0] * x[0] ) + x[0] / 4.00801e+00, 4.42801e+00)))",6.0,36);   
+		TF1 *fDmesonShape11 = new TF1("fDmesonShape11","(1/0.112639)*(1.31661e-03/(TMath::Power(TMath::Exp( - 6.20935e-01*x[0] + 9.85658e-03 * x[0] * x[0] ) + x[0] / 3.59774e+00, 4.42801e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",6.0,36);   
 		task->SetDcorrFunction11(fDmesonShape11);
     
-		TF1 *fDmesonShape12 = new TF1("fDmesonShape12","(1/0.108224)*(3.05777e-03/(TMath::Power(TMath::Exp( - 4.61036e-01*x[0] + 1.19288e-02 * x[0] * x[0] ) + x[0] / 3.16263e+00, 4.60929e+00)))/(1.00194e-02 / (TMath::Power(TMath::Exp( - 3.84703e-01*x[0] + 9.65660e-03 * x[0] * x[0] ) + x[0] / 4.00801e+00, 4.42801e+00)))",6.5,36);    
+		TF1 *fDmesonShape12 = new TF1("fDmesonShape12","(1/0.108845)*(1.31661e-03/(TMath::Power(TMath::Exp( - 6.20935e-01*x[0] + 9.85658e-03 * x[0] * x[0] ) + x[0] / 3.59774e+00, 4.42801e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",6.5,36);    
 		task->SetDcorrFunction12(fDmesonShape12);
     
-		TF1 *fDmesonShape13 = new TF1("fDmesonShape13","(1/0.104508)*(3.05777e-03/(TMath::Power(TMath::Exp( - 4.61036e-01*x[0] + 1.19288e-02 * x[0] * x[0] ) + x[0] / 3.16263e+00, 4.60929e+00)))/(1.00194e-02 / (TMath::Power(TMath::Exp( - 3.84703e-01*x[0] + 9.65660e-03 * x[0] * x[0] ) + x[0] / 4.00801e+00, 4.42801e+00)))",7.0,36);    
+		TF1 *fDmesonShape13 = new TF1("fDmesonShape13","(1/0.105620)*(1.31661e-03/(TMath::Power(TMath::Exp( - 6.20935e-01*x[0] + 9.85658e-03 * x[0] * x[0] ) + x[0] / 3.59774e+00, 4.42801e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",7.0,36);    
 		task->SetDcorrFunction13(fDmesonShape13);
     
-		TF1 *fDmesonShape14 = new TF1("fDmesonShape14","(1/0.0987508)*(3.05777e-03/(TMath::Power(TMath::Exp( - 4.61036e-01*x[0] + 1.19288e-02 * x[0] * x[0] ) + x[0] / 3.16263e+00, 4.60929e+00)))/(1.00194e-02 / (TMath::Power(TMath::Exp( - 3.84703e-01*x[0] + 9.65660e-03 * x[0] * x[0] ) + x[0] / 4.00801e+00, 4.42801e+00)))",8.0,36);  
+		TF1 *fDmesonShape14 = new TF1("fDmesonShape14","(1/0.100396)*(1.31661e-03/(TMath::Power(TMath::Exp( - 6.20935e-01*x[0] + 9.85658e-03 * x[0] * x[0] ) + x[0] / 3.59774e+00, 4.42801e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",8.0,36);  
 		task->SetDcorrFunction14(fDmesonShape14);
     
-		TF1 *fDmesonShape15 = new TF1("fDmesonShape15","(1/0.0945248)*(3.05777e-03/(TMath::Power(TMath::Exp( - 4.61036e-01*x[0] + 1.19288e-02 * x[0] * x[0] ) + x[0] / 3.16263e+00, 4.60929e+00)))/(1.00194e-02 / (TMath::Power(TMath::Exp( - 3.84703e-01*x[0] + 9.65660e-03 * x[0] * x[0] ) + x[0] / 4.00801e+00, 4.42801e+00)))",9.0,36);  
+		TF1 *fDmesonShape15 = new TF1("fDmesonShape15","(1/0.0962985)*(1.31661e-03/(TMath::Power(TMath::Exp( - 6.20935e-01*x[0] + 9.85658e-03 * x[0] * x[0] ) + x[0] / 3.59774e+00, 4.42801e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",9.0,36);  
 		task->SetDcorrFunction15(fDmesonShape15);
 	}
     
-  /*  if(IsDcorr == 1){
-		TF1 *fDmesonShape22 = new TF1("fDmesonShape22","(1/151.879)*(1.25915e+05*TMath::Power(1-(1-1.20176e+00)*x/6.15769e-02,1/(1-1.20176e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",1.0,30);
+    // Data up tilted 
+    
+     if(IsDcorr == 1){
+		TF1 *fDmesonShape22 = new TF1("fDmesonShape22","(1/0.318575)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.0,36);  
 		task->SetDcorrFunction22(fDmesonShape22);
     
-		TF1 *fDmesonShape21 = new TF1("fDmesonShape21","(1/115.442)*(1.25915e+05*TMath::Power(1-(1-1.20176e+00)*x/6.15769e-02,1/(1-1.20176e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",1.1,30);
+		TF1 *fDmesonShape21 = new TF1("fDmesonShape21","(1/0.306756)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.1,36);
 		task->SetDcorrFunction21(fDmesonShape21);
     
-		TF1 *fDmesonShape20 = new TF1("fDmesonShape20","(1/89.7009)*(1.25915e+05*TMath::Power(1-(1-1.20176e+00)*x/6.15769e-02,1/(1-1.20176e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",1.2,30);
+		TF1 *fDmesonShape20 = new TF1("fDmesonShape20","(1/0.295518)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.2,36);
 		task->SetDcorrFunction20(fDmesonShape20);
     
-		TF1 *fDmesonShape19 = new TF1("fDmesonShape19","(1/71.0357)*(1.25915e+05*TMath::Power(1-(1-1.20176e+00)*x/6.15769e-02,1/(1-1.20176e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",1.3,30);
+		TF1 *fDmesonShape19 = new TF1("fDmesonShape19","(1/0.284868)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.3,36);
 		task->SetDcorrFunction19(fDmesonShape19);
     
-		TF1 *fDmesonShape18 = new TF1("fDmesonShape18","(1/57.1919)*(1.25915e+05*TMath::Power(1-(1-1.20176e+00)*x/6.15769e-02,1/(1-1.20176e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",1.4,30);
+		TF1 *fDmesonShape18 = new TF1("fDmesonShape18","(1/0.274805)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.4,36);
 		task->SetDcorrFunction18(fDmesonShape18);
        
-		TF1 *fDmesonShape17 = new TF1("fDmesonShape17","(1/46.7188)*(1.25915e+05*TMath::Power(1-(1-1.20176e+00)*x/6.15769e-02,1/(1-1.20176e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",1.5,30);
+		TF1 *fDmesonShape17 = new TF1("ffDmesonShape17","(1/0.265321)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.5,36); 
 		task->SetDcorrFunction17(fDmesonShape17);
     
-		TF1 *fDmesonShape16 = new TF1("fDmesonShape16","(1/29.7105)*(1.25915e+05*TMath::Power(1-(1-1.20176e+00)*x/6.15769e-02,1/(1-1.20176e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",1.75,30);
+		TF1 *fDmesonShape16 = new TF1("fDmesonShape16","(1/0.244033)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.75,36);
 		task->SetDcorrFunction16(fDmesonShape16);
     
-		TF1 *fDmesonShape1 = new TF1("fDmesonShape1","(1/20.079)*(1.25915e+05*TMath::Power(1-(1-1.20176e+00)*x/6.15769e-02,1/(1-1.20176e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",2,30);
+		TF1 *fDmesonShape1 = new TF1("fDmesonShape1","(1/0.225915)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",2.0,36); 
 		task->SetDcorrFunction1(fDmesonShape1);
     
-		TF1 *fDmesonShape2 = new TF1("fDmesonShape2","(1/14.2264)*(1.25915e+05*TMath::Power(1-(1-1.20176e+00)*x/6.15769e-02,1/(1-1.20176e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",2.25,30);   
+		TF1 *fDmesonShape2 = new TF1("fDmesonShape2","(1/0.210545)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",2.25,36);   
 		task->SetDcorrFunction2(fDmesonShape2);
     
-		TF1 *fDmesonShape3 = new TF1("fDmesonShape3","(1/10.4666)*(1.25915e+05*TMath::Power(1-(1-1.20176e+00)*x/6.15769e-02,1/(1-1.20176e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",2.5,30);   
+		TF1 *fDmesonShape3 = new TF1("fDmesonShap3","(1/0.197494)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",2.5,36);   
 		task->SetDcorrFunction3(fDmesonShape3);
     
-		TF1 *fDmesonShape4 = new TF1("fDmesonShape4","(1/7.94014)*(1.25915e+05*TMath::Power(1-(1-1.20176e+00)*x/6.15769e-02,1/(1-1.20176e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",2.75,30);   
+		TF1 *fDmesonShape4 = new TF1("fDmesonShape4","(1/0.186364)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",2.75,36);    
 		task->SetDcorrFunction4(fDmesonShape4);
     
-		TF1 *fDmesonShape5 = new TF1("fDmesonShape5","(1/6.17838)*(1.25915e+05*TMath::Power(1-(1-1.20176e+00)*x/6.15769e-02,1/(1-1.20176e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",3,30);   
+		TF1 *fDmesonShape5 = new TF1("fDmesonShape5","(1/0.176812)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",3.0,36);  
 		task->SetDcorrFunction5(fDmesonShape5);
     
-		TF1 *fDmesonShape6 = new TF1("fDmesonShape6","(1/3.97542)*(1.25915e+05*TMath::Power(1-(1-1.20176e+00)*x/6.15769e-02,1/(1-1.20176e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",3.5,30);   
+		TF1 *fDmesonShape6 = new TF1("fDmesonShape6","(1/0.16134)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",3.5,36);   
 		task->SetDcorrFunction6(fDmesonShape6);
     
-		TF1 *fDmesonShape7 = new TF1("fDmesonShape7","(1/2.7242)*(1.25915e+05*TMath::Power(1-(1-1.20176e+00)*x/6.15769e-02,1/(1-1.20176e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",4,30);   
+		TF1 *fDmesonShape7 = new TF1("fDmesonShape7","(1/0.14936)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",4.0,36);   
 		task->SetDcorrFunction7(fDmesonShape7);
     
-		TF1 *fDmesonShape8 = new TF1("fDmesonShape8","(1/1.95827)*(1.25915e+05*TMath::Power(1-(1-1.20176e+00)*x/6.15769e-02,1/(1-1.20176e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",4.5,30);   
+		TF1 *fDmesonShape8 = new TF1("fDmesonShape8","(1/0.139769)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",4.5,36);    
 		task->SetDcorrFunction8(fDmesonShape8);
     
-		TF1 *fDmesonShape9 = new TF1("fDmesonShape9","(1/1.46145)*(1.25915e+05*TMath::Power(1-(1-1.20176e+00)*x/6.15769e-02,1/(1-1.20176e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",5,30);   
+		TF1 *fDmesonShape9 = new TF1("fDmesonShape9","(1/0.131863)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",5.0,36);  
 		task->SetDcorrFunction9(fDmesonShape9);
     
-		TF1 *fDmesonShape10 = new TF1("fDmesonShape10","(1/1.12401)*(1.25915e+05*TMath::Power(1-(1-1.20176e+00)*x/6.15769e-02,1/(1-1.20176e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",5.5,30);   
+		TF1 *fDmesonShape10 = new TF1("fDmesonShape10","(1/0.125188)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",5.5,36);   
 		task->SetDcorrFunction10(fDmesonShape10);
     
-		TF1 *fDmesonShape11 = new TF1("fDmesonShape11","(1/0.88607)*(1.25915e+05*TMath::Power(1-(1-1.20176e+00)*x/6.15769e-02,1/(1-1.20176e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",6,30);   
+		TF1 *fDmesonShape11 = new TF1("fDmesonShape11","(1/0.119445)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",6.0,36);   
 		task->SetDcorrFunction11(fDmesonShape11);
     
-		TF1 *fDmesonShape12 = new TF1("fDmesonShape12","(1/0.713003)*(1.25915e+05*TMath::Power(1-(1-1.20176e+00)*x/6.15769e-02,1/(1-1.20176e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",6.5,30);   
+		TF1 *fDmesonShape12 = new TF1("fDmesonShape12","(1/0.114426)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",6.5,36);    
 		task->SetDcorrFunction12(fDmesonShape12);
     
-		TF1 *fDmesonShape13 = new TF1("fDmesonShape13","(1/0.583796)*(1.25915e+05*TMath::Power(1-(1-1.20176e+00)*x/6.15769e-02,1/(1-1.20176e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",7,30);   
+		TF1 *fDmesonShape13 = new TF1("fDmesonShape13","(1/0.109988)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",7.0,36);    
 		task->SetDcorrFunction13(fDmesonShape13);
     
-		TF1 *fDmesonShape14 = new TF1("fDmesonShape14","(1/0.408415)*(1.25915e+05*TMath::Power(1-(1-1.20176e+00)*x/6.15769e-02,1/(1-1.20176e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",8,30);   
+		TF1 *fDmesonShape14 = new TF1("fDmesonShape14","(1/0.102454)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",8.0,36);  
 		task->SetDcorrFunction14(fDmesonShape14);
     
-		TF1 *fDmesonShape15 = new TF1("fDmesonShape15","(1/0.298932)*(1.25915e+05*TMath::Power(1-(1-1.20176e+00)*x/6.15769e-02,1/(1-1.20176e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",9,30);   
+		TF1 *fDmesonShape15 = new TF1("fDmesonShape15","(1/0.0962635)*(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",9.0,36);  
 		task->SetDcorrFunction15(fDmesonShape15);
 	}
-	
-	if(IsDcorr == 2){
-		TF1 *fDmesonShape22 = new TF1("fDmesonShape22","(1/86.5976)*(2.99867e+05*TMath::Power(1-(1-1.22514e+00)*x/3.76340e-02,1/(1-1.22514e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",1.0,30);
+   
+    
+    // Data Down tilted
+    
+     if(IsDcorr == 2){
+		TF1 *fDmesonShape22 = new TF1("fDmesonShape22","(1/0.275971)*(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08516e-01*x[0] - 1.38420e-02 * x[0] * x[0] ) + x[0] / 3.44002e+00, 4.24401e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.0,36);  
 		task->SetDcorrFunction22(fDmesonShape22);
     
-		TF1 *fDmesonShape21 = new TF1("fDmesonShape21","(1/65.8729)*(2.99867e+05*TMath::Power(1-(1-1.22514e+00)*x/3.76340e-02,1/(1-1.22514e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",1.1,30);
+		TF1 *fDmesonShape21 = new TF1("fDmesonShape21","(1/0.267682)*(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08516e-01*x[0] - 1.38420e-02 * x[0] * x[0] ) + x[0] / 3.44002e+00, 4.24401e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.1,36);
 		task->SetDcorrFunction21(fDmesonShape21);
     
-		TF1 *fDmesonShape20 = new TF1("fDmesonShape20","(1/51.3564)*(2.99867e+05*TMath::Power(1-(1-1.22514e+00)*x/3.76340e-02,1/(1-1.22514e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",1.2,30);
+		TF1 *fDmesonShape20 = new TF1("fDmesonShape20","(1/0.259608)*(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08516e-01*x[0] - 1.38420e-02 * x[0] * x[0] ) + x[0] / 3.44002e+00, 4.24401e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.2,36);
 		task->SetDcorrFunction20(fDmesonShape20);
     
-		TF1 *fDmesonShape19 = new TF1("fDmesonShape19","(1/40.8843)*(2.99867e+05*TMath::Power(1-(1-1.22514e+00)*x/3.76340e-02,1/(1-1.22514e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",1.3,30);
+		TF1 *fDmesonShape19 = new TF1("fDmesonShape19","(1/0.251762)*(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08516e-01*x[0] - 1.38420e-02 * x[0] * x[0] ) + x[0] / 3.44002e+00, 4.24401e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.3,36);
 		task->SetDcorrFunction19(fDmesonShape19);
     
-		TF1 *fDmesonShape18 = new TF1("fDmesonShape18","(1/33.1368)*(2.99867e+05*TMath::Power(1-(1-1.22514e+00)*x/3.76340e-02,1/(1-1.22514e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",1.4,30);
+		TF1 *fDmesonShape18 = new TF1("fDmesonShape18","(1/0.24416)*(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08516e-01*x[0] - 1.38420e-02 * x[0] * x[0] ) + x[0] / 3.44002e+00, 4.24401e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.4,36);
 		task->SetDcorrFunction18(fDmesonShape18);
        
-		TF1 *fDmesonShape17 = new TF1("fDmesonShape17","(1/27.2782)*(2.99867e+05*TMath::Power(1-(1-1.22514e+00)*x/3.76340e-02,1/(1-1.22514e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",1.5,30);
+		TF1 *fDmesonShape17 = new TF1("ffDmesonShape17","(1/0.236812)*(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08516e-01*x[0] - 1.38420e-02 * x[0] * x[0] ) + x[0] / 3.44002e+00, 4.24401e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.5,36); 
 		task->SetDcorrFunction17(fDmesonShape17);
     
-		TF1 *fDmesonShape16 = new TF1("fDmesonShape16","(1/17.7376)*(2.99867e+05*TMath::Power(1-(1-1.22514e+00)*x/3.76340e-02,1/(1-1.22514e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",1.75,30);
+		TF1 *fDmesonShape16 = new TF1("fDmesonShape16","(1/0.219616)*(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08516e-01*x[0] - 1.38420e-02 * x[0] * x[0] ) + x[0] / 3.44002e+00, 4.24401e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",1.75,36);
 		task->SetDcorrFunction16(fDmesonShape16);
     
-		TF1 *fDmesonShape1 = new TF1("fDmesonShape1","(1/12.2852)*(2.99867e+05*TMath::Power(1-(1-1.22514e+00)*x/3.76340e-02,1/(1-1.22514e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",2,30);
+		TF1 *fDmesonShape1 = new TF1("fDmesonShape1","(1/0.204151)*(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08516e-01*x[0] - 1.38420e-02 * x[0] * x[0] ) + x[0] / 3.44002e+00, 4.24401e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",2.0,36); 
 		task->SetDcorrFunction1(fDmesonShape1);
     
-		TF1 *fDmesonShape2 = new TF1("fDmesonShape2","(1/8.92829)*(2.99867e+05*TMath::Power(1-(1-1.22514e+00)*x/3.76340e-02,1/(1-1.22514e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",2.25,30);   
+		TF1 *fDmesonShape2 = new TF1("fDmesonShape2","(1/0.190411)*(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08516e-01*x[0] - 1.38420e-02 * x[0] * x[0] ) + x[0] / 3.44002e+00, 4.24401e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",2.25,36);   
 		task->SetDcorrFunction2(fDmesonShape2);
     
-		TF1 *fDmesonShape3 = new TF1("fDmesonShape3","(1/6.73831)*(2.99867e+05*TMath::Power(1-(1-1.22514e+00)*x/3.76340e-02,1/(1-1.22514e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",2.5,30);   
+		TF1 *fDmesonShape3 = new TF1("fDmesonShap3","(1/0.178315)*(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08516e-01*x[0] - 1.38420e-02 * x[0] * x[0] ) + x[0] / 3.44002e+00, 4.24401e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",2.5,36);   
 		task->SetDcorrFunction3(fDmesonShape3);
     
-		TF1 *fDmesonShape4 = new TF1("fDmesonShape4","(1/5.24209)*(2.99867e+05*TMath::Power(1-(1-1.22514e+00)*x/3.76340e-02,1/(1-1.22514e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",2.75,30);   
+		TF1 *fDmesonShape4 = new TF1("fDmesonShape4","(1/0.167736)*(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08516e-01*x[0] - 1.38420e-02 * x[0] * x[0] ) + x[0] / 3.44002e+00, 4.24401e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",2.75,36);    
 		task->SetDcorrFunction4(fDmesonShape4);
     
-		TF1 *fDmesonShape5 = new TF1("fDmesonShape5","(1/4.18062)*(2.99867e+05*TMath::Power(1-(1-1.22514e+00)*x/3.76340e-02,1/(1-1.22514e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",3,30);   
+		TF1 *fDmesonShape5 = new TF1("fDmesonShape5","(1/0.15852)*(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08516e-01*x[0] - 1.38420e-02 * x[0] * x[0] ) + x[0] / 3.44002e+00, 4.24401e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",3.0,36);  
 		task->SetDcorrFunction5(fDmesonShape5);
     
-		TF1 *fDmesonShape6 = new TF1("fDmesonShape6","(1/2.81982)*(2.99867e+05*TMath::Power(1-(1-1.22514e+00)*x/3.76340e-02,1/(1-1.22514e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",3.5,30);   
+		TF1 *fDmesonShape6 = new TF1("fDmesonShape6","(1/0.143546)*(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08516e-01*x[0] - 1.38420e-02 * x[0] * x[0] ) + x[0] / 3.44002e+00, 4.24401e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",3.5,36);   
 		task->SetDcorrFunction6(fDmesonShape6);
     
-		TF1 *fDmesonShape7 = new TF1("fDmesonShape7","(1/2.01957)*(2.99867e+05*TMath::Power(1-(1-1.22514e+00)*x/3.76340e-02,1/(1-1.22514e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",4,30);   
+		TF1 *fDmesonShape7 = new TF1("fDmesonShape7","(1/0.132225)*(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08516e-01*x[0] - 1.38420e-02 * x[0] * x[0] ) + x[0] / 3.44002e+00, 4.24401e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",4.0,36);   
 		task->SetDcorrFunction7(fDmesonShape7);
     
-		TF1 *fDmesonShape8 = new TF1("fDmesonShape8","(1/1.51292)*(2.99867e+05*TMath::Power(1-(1-1.22514e+00)*x/3.76340e-02,1/(1-1.22514e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",4.5,30);   
+		TF1 *fDmesonShape8 = new TF1("fDmesonShape8","(1/0.123608)*(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08516e-01*x[0] - 1.38420e-02 * x[0] * x[0] ) + x[0] / 3.44002e+00, 4.24401e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",4.5,36);    
 		task->SetDcorrFunction8(fDmesonShape8);
     
-		TF1 *fDmesonShape9 = new TF1("fDmesonShape9","(1/1.17351)*(2.99867e+05*TMath::Power(1-(1-1.22514e+00)*x/3.76340e-02,1/(1-1.22514e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",5,30);   
+		TF1 *fDmesonShape9 = new TF1("fDmesonShape9","(1/0.116984)*(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08516e-01*x[0] - 1.38420e-02 * x[0] * x[0] ) + x[0] / 3.44002e+00, 4.24401e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",5.0,36);  
 		task->SetDcorrFunction9(fDmesonShape9);
     
-		TF1 *fDmesonShape10 = new TF1("fDmesonShape10","(1/0.935775)*(2.99867e+05*TMath::Power(1-(1-1.22514e+00)*x/3.76340e-02,1/(1-1.22514e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",5.5,30);   
+		TF1 *fDmesonShape10 = new TF1("fDmesonShape10","(1/0.111835)*(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08516e-01*x[0] - 1.38420e-02 * x[0] * x[0] ) + x[0] / 3.44002e+00, 4.24401e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",5.5,36);   
 		task->SetDcorrFunction10(fDmesonShape10);
     
-		TF1 *fDmesonShape11 = new TF1("fDmesonShape11","(1/0.763158)*(2.99867e+05*TMath::Power(1-(1-1.22514e+00)*x/3.76340e-02,1/(1-1.22514e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",6,30);   
+		TF1 *fDmesonShape11 = new TF1("fDmesonShape11","(1/0.107785)*(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08516e-01*x[0] - 1.38420e-02 * x[0] * x[0] ) + x[0] / 3.44002e+00, 4.24401e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",6.0,36);   
 		task->SetDcorrFunction11(fDmesonShape11);
     
-		TF1 *fDmesonShape12 = new TF1("fDmesonShape12","(1/0.634055)*(2.99867e+05*TMath::Power(1-(1-1.22514e+00)*x/3.76340e-02,1/(1-1.22514e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",6.5,30);   
+		TF1 *fDmesonShape12 = new TF1("fDmesonShape12","(1/0.104563)*(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08516e-01*x[0] - 1.38420e-02 * x[0] * x[0] ) + x[0] / 3.44002e+00, 4.24401e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",6.5,36);    
 		task->SetDcorrFunction12(fDmesonShape12);
     
-		TF1 *fDmesonShape13 = new TF1("fDmesonShape13","(1/0.535073)*(2.99867e+05*TMath::Power(1-(1-1.22514e+00)*x/3.76340e-02,1/(1-1.22514e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",7,30);   
+		TF1 *fDmesonShape13 = new TF1("fDmesonShape13","(1/0.101968)*(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08516e-01*x[0] - 1.38420e-02 * x[0] * x[0] ) + x[0] / 3.44002e+00, 4.24401e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",7.0,36);    
 		task->SetDcorrFunction13(fDmesonShape13);
     
-		TF1 *fDmesonShape14 = new TF1("fDmesonShape14","(1/0.395789)*(2.99867e+05*TMath::Power(1-(1-1.22514e+00)*x/3.76340e-02,1/(1-1.22514e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",8,30);   
+		TF1 *fDmesonShape14 = new TF1("fDmesonShape14","(1/0.098111)*(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08516e-01*x[0] - 1.38420e-02 * x[0] * x[0] ) + x[0] / 3.44002e+00, 4.24401e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",8.0,36);  
 		task->SetDcorrFunction14(fDmesonShape14);
     
-		TF1 *fDmesonShape15 = new TF1("fDmesonShape15","(1/0.304682)*(2.99867e+05*TMath::Power(1-(1-1.22514e+00)*x/3.76340e-02,1/(1-1.22514e+00)))/(1.96376e+00*TMath::Power(1-(1-1.38770e+00)*x/6.84942e-01,1/(1-1.38770e+00)))",9,30);   
+		TF1 *fDmesonShape15 = new TF1("fDmesonShape15","(1/0.0954295)*(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08516e-01*x[0] - 1.38420e-02 * x[0] * x[0] ) + x[0] / 3.44002e+00, 4.24401e+00)))/(3.57474e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.14266e+00)))",9.0,36);  
 		task->SetDcorrFunction15(fDmesonShape15);
 	}
-	
-	*/
-	}
+   
+    
+ 	}
 	
     
     ///Configure PID
