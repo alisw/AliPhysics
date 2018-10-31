@@ -146,8 +146,8 @@ class AliAODCaloCluster : public AliAODCluster {
 
   Double32_t   fDistToBadChannel; ///< Distance to nearest bad channel.
   Double32_t   fDispersion;       ///< cluster dispersion, for shape analysis.
-  Double32_t   fM20;              ///< 2-nd moment along the main eigen axis.
-  Double32_t   fM02;              ///< 2-nd moment along the second eigen axis.
+  Double32_t   fM20;              ///< 2-nd moment along the second eigen axis.
+  Double32_t   fM02;              ///< 2-nd moment along the main eigen axis. 
   Double32_t   fEmcCpvDistance;   ///< The distance from PHOS EMC rec.point to the closest CPV rec.point.
   Double32_t   fTrackDx ;         ///< Distance to closest track in phi.
   Double32_t   fTrackDz ;         ///< Distance to closest track in z (eta).
