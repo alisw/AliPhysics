@@ -2752,10 +2752,10 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::FindJet(AliAODRecoDecayHF2P
       DmesonJet.fJets[jetDef.GetName()].fNEF = totalNeutralPt / jets_incl[ijet].pt();
       DmesonJet.fJets[jetDef.GetName()].fArea = jets_incl[ijet].area();
       DmesonJet.fJets[jetDef.GetName()].fCorrPt = DmesonJet.fJets[jetDef.GetName()].fMomentum.Pt() - jets_incl[ijet].area() * rho;
-      IterativeDeclustering(ijet,1,jetDef);
+      IterativeDeclustering(ijet,1,jetDef, DmesonJet.fD.M());
       return kTRUE;
     }
-     if(!isDmesonJet) IterativeDeclustering(ijet,0,jetDef); 
+    if(!isDmesonJet) IterativeDeclustering(ijet,0,jetDef,0.); 
   }
 
   return kFALSE;
@@ -2785,7 +2785,7 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::AddInputVectors(AliEmcalConta
   }
 }
 
-void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t ijet,Double_t type,AliHFJetDefinition& jetDef)
+void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t ijet,Double_t type,AliHFJetDefinition& jetDef, Double_t invmass)
 {
    double nsd = 0;        
    double nall = 0;        
@@ -2815,16 +2815,17 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t i
           vector < fastjet::PseudoJet > constitj1 = sorted_by_pt(j1.constituents());
                 for(Int_t j=0;j<constitj1.size();j++){
                 if(constitj1[j].user_index()==0){
+		  xconstperp=constitj1[j].perp();
                        flagSubjet=1; }}
 
-	 if(flagSubjet==0 && type>0) std::swap(j1,j2);
+	 
          double delta_R = j1.delta_R(j2);
          zg = j2.perp()/(j1.perp()+j2.perp());   
                      
          double y = log(1.0/delta_R);
          double lnpt_rel = log(zg*delta_R);
 	 
-	   double lundEntries[6] = {y, lnpt_rel, output_jets[0].perp(), nall,zg,type};
+	 double lundEntries[8] = {y, lnpt_rel, output_jets[0].perp(), nall, type, flagSubjet, xconstperp, invmass};
 	   hname = TString::Format("%s/LundIterative", jetDef.GetName());
            THnSparse* h = static_cast<THnSparse*>(fHistManager->FindObject(hname)); 
 	   //   if(!h) cout<<"caca"<<endl;
@@ -3196,11 +3197,11 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
     maxTracks = 500;
   }
 
-      Int_t dimx   = 6;
-      Int_t nbinsx[6]     = {50,50,20,10,10,2};
-      Double_t minx[6] = {0,-10,0,0,0,0};
-      Double_t maxx[6]  = {5,0,100,10,1,2};
-      TString titlex[6]={"log(1/deltaR)","log(zteta)","jet pt","n","z","type"};
+      Int_t dimx   = 8;
+      Int_t nbinsx[8]   = {50,50,10,20,2,2,20,20};
+      Double_t minx[8] =  {0,-10,0,0,0,0,0,1.4};
+      Double_t maxx[8]  = {5,0,100,20,2,2,20,2.4};
+      TString titlex[8]={"log(1/deltaR)","log(zteta)","jet pt","n","type","flagSubjet","ptD","invmass"};
 
 
 
