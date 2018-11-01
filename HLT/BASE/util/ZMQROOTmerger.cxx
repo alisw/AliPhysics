@@ -104,8 +104,6 @@ TString fNameAnnotation = "";
 Bool_t fTitleAnnotationWithContainerName = kFALSE;
 Bool_t fIgnoreDefaultNamesWhenUnpacking = kFALSE;
 
-AliHLTDataTopic fInfoTopic = kAliHLTDataTypeInfo;
-
 Int_t fRunNumber = 0;
 std::string fInfo;           //cache for the info string
 
@@ -543,6 +541,8 @@ Int_t DoControl(aliZMQmsg::iterator block, void* socket)
       }
       if (fZMQsync)
       {
+        DataTopic fInfoTopic = kDataTypeInfo;
+        fInfoTopic.SetOrigin(kAliHLTDataOriginOut);
         fBytesOUT += alizmq_msg_send(fInfoTopic, fInfo, fZMQsync, ZMQ_DONTWAIT);
         fNumberOfMessagesSent++;
       }
@@ -750,7 +750,7 @@ Int_t DoRequest(void*& socket, TString* config)
   //request
   if (fRequestResetOnRequest) {
     if (fVerbose) Printf("sending an ResetOnRequest request");
-    alizmq_msg_send(kAliHLTDataTypeConfig, "ResetOnRequest",socket,0);
+    alizmq_msg_send(kDataTypeConfig, "ResetOnRequest",socket,0);
     fNumberOfMessagesSent++;
   } else {
     if (fVerbose) Printf("sending an empty request");
@@ -775,6 +775,8 @@ Int_t DoSend(void* socket)
 
   aliZMQmsg message;
   //forward the (run-)info string
+  DataTopic fInfoTopic = kDataTypeInfo;
+  fInfoTopic.SetOrigin(kAliHLTDataOriginOut);
   alizmq_msg_add(&message, &fInfoTopic, fInfo);
   Bool_t reset = kFALSE;
   Int_t rc = 0;
@@ -783,7 +785,8 @@ Int_t DoSend(void* socket)
   for (mergeMap_t::iterator i = fMergeObjectMap.begin(); i!=fMergeObjectMap.end(); ++i)
   {
     //the topic
-    AliHLTDataTopic topic = kAliHLTDataTypeTObject|kAliHLTDataOriginOut;
+    DataTopic topic = kDataTypeTObject;
+    topic.SetOrigin(kAliHLTDataOriginOut);
     //the data
     string objectName = i->first;
     AliZMQROOTMergerEntry& entry = i->second;

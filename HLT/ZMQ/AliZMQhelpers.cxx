@@ -834,6 +834,7 @@ int AliZMQhelpers::alizmq_msg_iter_data(aliZMQmsg::iterator it, TObject*& object
   zmq_msg_t* message = it->second;
   size_t size = zmq_msg_size(message);
   void* data = zmq_msg_data(message);
+  object=NULL;
 
   if (topic->fDataSerialization==kSerializationHLTROOT) //serialized by the HLT chain
   {

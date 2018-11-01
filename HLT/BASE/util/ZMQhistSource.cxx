@@ -152,7 +152,7 @@ int main(int argc, char** argv)
       fHistograms[i]->FillRandom(templateHist, fNentries);
     }
 
-    AliHLTDataTopic topic = kAliHLTDataTypeTObject;
+    DataTopic topic = kDataTypeTObject;
 
     if (fZMQsocketModeOUT==ZMQ_REP)
     {

@@ -95,8 +95,6 @@ TString fNameAnnotation = "";
 Bool_t fTitleAnnotationWithContainerName = kFALSE;
 Bool_t fIgnoreDefaultNamesWhenUnpacking = kFALSE;
 
-AliHLTDataTopic fInfoTopic = kAliHLTDataTypeInfo;
-
 Int_t fRunNumber = 0;
 std::string fInfo;           //cache for the info string
 
@@ -474,6 +472,9 @@ Int_t DoSend(void* socket)
 
   //send back merged data, one object per frame
 
+  DataTopic fInfoTopic = kDataTypeInfo;
+  fInfoTopic.SetOrigin(kAliHLTDataOriginOut);
+
   aliZMQmsg message;
   //forward the (run-)info string
   alizmq_msg_add(&message, &fInfoTopic, fInfo);
@@ -485,7 +486,8 @@ Int_t DoSend(void* socket)
   while (TObject* object = next())
   {
     //the topic
-    AliHLTDataTopic topic = kAliHLTDataTypeTObject|kAliHLTDataOriginOut;
+    DataTopic topic = kDataTypeTObject;
+    topic.SetOrigin(kAliHLTDataOriginOut);
     //the data
     string objectName = object->GetName();
 
