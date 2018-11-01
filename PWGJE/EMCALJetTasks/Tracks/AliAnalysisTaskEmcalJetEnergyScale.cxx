@@ -74,7 +74,7 @@ AliAnalysisTaskEmcalJetEnergyScale::~AliAnalysisTaskEmcalJetEnergyScale() {
 void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
-  TLinearBinning jetPtBinning(20, 0., 200.), nefbinning(100, 0., 1.), ptdiffbinning(200, -1., 1.), jetEtaBinning(100, -0.9, 0.9), jetPhiBinning(100, 0., TMath::TwoPi());
+  TLinearBinning jetPtBinning(200, 0., 200.), nefbinning(100, 0., 1.), ptdiffbinning(200, -1., 1.), jetEtaBinning(100, -0.9, 0.9), jetPhiBinning(100, 0., TMath::TwoPi());
 
   const TBinning *diffbinning[3] = {&jetPtBinning, &nefbinning, &ptdiffbinning},
                  *corrbinning[3] = {&jetPtBinning, &jetPtBinning, &nefbinning},
@@ -124,7 +124,7 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
     }
     taggedjets.emplace_back(partjet);
     double pointCorr[3] = {partjet->Pt(), detjet->Pt(), detjet->NEF()},
-           pointDiff[3] = {partjet->Pt(), (detjet->Pt()-partjet->Pt())/partjet->Pt(), detjet->NEF()};
+           pointDiff[3] = {partjet->Pt(), detjet->NEF(), (detjet->Pt()-partjet->Pt())/partjet->Pt()};
     fHistos->FillTHnSparse("hPtDiff", pointDiff);
     fHistos->FillTHnSparse("hPtCorr", pointCorr);
   }
