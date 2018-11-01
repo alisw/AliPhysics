@@ -43,8 +43,8 @@ void* AliZMQhelpers::gZMQcontext = NULL;
 const UInt_t AliZMQhelpers::BaseDataTopic::fgkMagicNumber = CharArr2uint32("O2O2");
 const ULong64_t AliZMQhelpers::DataTopic::fgkDataTopicDescription = CharArr2uint64("DataHDR");
 const UInt_t AliZMQhelpers::DataTopic::fgkTopicSerialization = CharArr2uint64("NONE");
-const ULong64_t AliZMQhelpers::kSerializationHLTROOT = CharArr2uint64("ROOT   ");
-const ULong64_t AliZMQhelpers::kSerializationROOT = CharArr2uint64("ROOTmsg");
+const ULong64_t AliZMQhelpers::kSerializationHLTROOT = CharArr2uint64("HLTROOT");
+const ULong64_t AliZMQhelpers::kSerializationROOT = CharArr2uint64("ROOT   ");
 const ULong64_t AliZMQhelpers::kSerializationNONE = CharArr2uint64("NONE   ");
 
 const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeStreamerInfos("ROOTSTRI","***\n",AliZMQhelpers::kSerializationROOT);
