@@ -1275,13 +1275,13 @@ AliAnalysisTaskJetExtractor* AliAnalysisTaskJetExtractor::AddTaskJetExtractor(co
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   TString     trackArray         = "tracks";
   TString     jetArray           = "Jet_AKTChargedR040_tracks_pT0150_E_scheme";
-  TString     rhoObject          = "Rho";
+  TString     rhoObject          = "";
   Double_t    jetRadius          = 0.4;
   Double_t    minJetEta          = 0.5;
   Double_t    minJetPt           = 0.15;
   Double_t    minTrackPt         = 0.15;
   Double_t    minJetAreaPerc     = 0.557;
-  TString     suffix             = "_allJets";
+  TString     suffix             = "";
   if(taskNameSuffix != 0)
     suffix = taskNameSuffix;
 
@@ -1293,13 +1293,12 @@ AliAnalysisTaskJetExtractor* AliAnalysisTaskJetExtractor::AddTaskJetExtractor(co
 
   fYAMLConfig.GetProperty("TrackArray", trackArray);
   fYAMLConfig.GetProperty("JetArray", jetArray);
-  fYAMLConfig.GetProperty("RhoName", rhoObject);
+  fYAMLConfig.GetProperty("RhoName", rhoObject, kFALSE);
   fYAMLConfig.GetProperty("JetRadius", jetRadius);
   fYAMLConfig.GetProperty("MinJetEta", minJetEta);
   fYAMLConfig.GetProperty("MinJetPt", minJetPt);
   fYAMLConfig.GetProperty("MinTrackPt", minTrackPt);
   fYAMLConfig.GetProperty("MinJetAreaPerc", minJetAreaPerc);
-  fYAMLConfig.GetProperty("Suffix", suffix);
   fYAMLConfig.Print();
 
   // ###### Task name
