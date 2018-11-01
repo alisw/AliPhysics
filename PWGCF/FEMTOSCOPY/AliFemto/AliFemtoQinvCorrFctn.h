@@ -1,16 +1,22 @@
-/***************************************************************************
- *
- * $Id$
- *
- * Author: Mike Lisa, Ohio State, lisa@mps.ohio-state.edu
- ***************************************************************************
- *
- * Description: part of STAR HBT Framework: AliFemtoMaker package
- *   a simple Q-invariant correlation function
- *
- ***************************************************************************
- *
- * $Log$
+///
+/// \file AliFemtoQinvCorrFctn.h
+///
+
+#ifndef ALIFEMTOQINVCORRFCTN_H
+#define ALIFEMTOQINVCORRFCTN_H
+
+#pragma once
+
+#include "TH1D.h"
+#include "TH2D.h"
+#include "TNtuple.h"
+
+#include "AliFemtoCorrFctn.h"
+
+#include "AliAODInputHandler.h"
+#include "AliAnalysisManager.h"
+
+/*
  * Revision 1.1  2007/05/16 10:22:11  akisiel
  * Making the directory structure of AliFemto flat. All files go into one common directory
  *
@@ -40,22 +46,14 @@
  *
  * Revision 1.1.1.1  1999/06/29 16:02:57  lisa
  * Installation of AliFemtoMaker
- *
- **************************************************************************/
+ */
 
-#ifndef ALIFEMTOQINVCORRFCTN_H
-#define ALIFEMTOQINVCORRFCTN_H
-
-#include "TH1D.h"
-#include "TH2D.h"
-#include "TNtuple.h"
-
-#include "AliFemtoCorrFctn.h"
-
-#include "AliAODInputHandler.h"
-#include "AliAnalysisManager.h"
-
-
+/// \class AliFemtoQinvCorrFctn
+/// \brief A simple Q-invariant correlation function
+///
+///
+/// \author Mike Lisa, Ohio State, lisa@mps.ohio-state.edu
+///
 class AliFemtoQinvCorrFctn : public AliFemtoCorrFctn {
 public:
   AliFemtoQinvCorrFctn(const char* title, const int& nbins, const float& QinvLo, const float& QinvHi);
@@ -107,6 +105,12 @@ private:
 inline  TH1D* AliFemtoQinvCorrFctn::Numerator(){return fNumerator;}
 inline  TH1D* AliFemtoQinvCorrFctn::Denominator(){return fDenominator;}
 inline  TH1D* AliFemtoQinvCorrFctn::Ratio(){return fRatio;}
+
+inline void AliFemtoQinvCorrFctn::CalculateDetaDphis(Bool_t dedpsc, Double_t rad)
+  { fDetaDphiscal = dedpsc; fRaddedps = rad; }
+
+inline void AliFemtoQinvCorrFctn::CalculatePairKinematics(Bool_t pk)
+  { fPairKinematics = pk; }
 
 
 #endif
