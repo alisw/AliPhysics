@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include <iostream>
 #include <cstdlib>
 #include <algorithm>
 #include <vector>
@@ -20,6 +21,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <TProfile.h>
 #include <TTree.h>
 #include <TList.h>
 #include <TLorentzVector.h>
@@ -43,10 +45,13 @@
 #include "TRandom3.h"
 #include "AliEmcalPythiaInfo.h"
 #include "AliAnalysisTaskEmcalJet.h"
+#include "AliAnalysisManager.h"
+#include "AliYAMLConfiguration.h"
 
+#include "AliGenHepMCEventHeader.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliHFJetsTaggingVertex.h"
-
+#include "AliRDHFJetsCutsVertex.h"
 
 #include "AliAnalysisTaskJetExtractor.h"
 
@@ -89,7 +94,7 @@ AliEmcalJetTree::AliEmcalJetTree(const char* name) : TNamed(name, name), fJetTre
 //________________________________________________________________________
 Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Float_t vertexX, Float_t vertexY, Float_t vertexZ, Float_t centrality, Long64_t eventID, Float_t magField,
   AliParticleContainer* trackCont, Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchedPt, Float_t truePtFraction, Float_t ptHard,
-  Float_t* trackPID_ITS, Float_t* trackPID_TPC, Float_t* trackPID_TOF, Float_t* trackPID_TRD, Short_t* trackPID_Reco, Short_t* trackPID_Truth,
+  Float_t* trackPID_ITS, Float_t* trackPID_TPC, Float_t* trackPID_TOF, Float_t* trackPID_TRD, Short_t* trackPID_Reco, Int_t* trackPID_Truth,
   Int_t numTriggerTracks, Float_t* triggerTrackPt, Float_t* triggerTrackDeltaEta, Float_t* triggerTrackDeltaPhi,
   Float_t* trackIP_d0, Float_t* trackIP_z0, Float_t* trackIP_d0cov, Float_t* trackIP_z0cov,
   Int_t numSecVertices, Float_t* secVtx_X, Float_t* secVtx_Y, Float_t* secVtx_Z, Float_t* secVtx_Mass, Float_t* secVtx_Lxy, Float_t* secVtx_SigmaLxy, Float_t* secVtx_Chi2, Float_t* secVtx_Dispersion)
@@ -292,7 +297,7 @@ void AliEmcalJetTree::InitializeTree()
 
     fJetTree->Branch("Jet_Const_PID_Reconstructed",&dummy,"Jet_Const_PID_Reconstructed[Jet_NumConstituents]/S");
     if(fSaveMCInformation)
-      fJetTree->Branch("Jet_Const_PID_Truth",&dummy,"Jet_Const_PID_Truth[Jet_NumConstituents]/S");
+      fJetTree->Branch("Jet_Const_PID_Truth",&dummy,"Jet_Const_PID_Truth[Jet_NumConstituents]/I");
   }
 
   if(fSaveJetShapes)
@@ -350,6 +355,7 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fEventPercentage(1.0),
   fTruthMinLabel(0),
   fTruthMaxLabel(100000),
+  fSaveTrackPDGCode(kTRUE),
   fEventCut_TriggerTrackMinPt(0),
   fEventCut_TriggerTrackMaxPt(0),
   fEventCut_TriggerTrackMinLabel(-9999999),
@@ -387,6 +393,7 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fEventPercentage(1.0),
   fTruthMinLabel(0),
   fTruthMaxLabel(100000),
+  fSaveTrackPDGCode(kTRUE),
   fEventCut_TriggerTrackMinPt(0),
   fEventCut_TriggerTrackMaxPt(0),
   fEventCut_TriggerTrackMinLabel(-9999999),
@@ -497,12 +504,21 @@ void AliAnalysisTaskJetExtractor::ExecOnce()
     }
   }
 
-  // ### Add HIJING Ncoll histogram (in case we need it)
+  // ### Add HIJING/JEWEL histograms (in case we need it)
   if(MCEvent())
   {
     if(dynamic_cast<AliGenHijingEventHeader*>(MCEvent()->GenEventHeader()))
-      AddHistogram1D<TH1D>("hHijingNcoll", "N_{coll} from HIJING", "e1p", 1000, 0., 5000, "N_{coll}", "dN^{Events}/dN^{N_{coll}}");
+      AddHistogram1D<TH1D>("hHIJING_Ncoll", "N_{coll} from HIJING", "e1p", 1000, 0., 5000, "N_{coll}", "dN^{Events}/dN^{N_{coll}}");
+
+    if(dynamic_cast<AliGenHepMCEventHeader*>(MCEvent()->GenEventHeader()))
+    {
+      AddHistogram1D<TH1D>("hJEWEL_NProduced", "NProduced from JEWEL", "e1p", 1000, 0., 1000, "Nproduced", "dN^{Events}/dN^{Nproduced}");
+      AddHistogram1D<TH1D>("hJEWEL_ImpactParameter", "Impact parameter from JEWEL", "e1p", 1000, 0., 1, "IP", "dN^{Events}/dN^{IP}");
+      TProfile* evweight = new TProfile("hJEWEL_EventWeight", "Event weight from JEWEL", 1, 0,1);
+      fOutput->Add(evweight);
+    }
   }
+
 }
 
 //________________________________________________________________________
@@ -516,7 +532,6 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     return kFALSE;
 
   // ################################### EVENT PROPERTIES
-
   FillEventControlHistograms();
 
   // Load vertex if possible
@@ -544,7 +559,14 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     if(AliGenHijingEventHeader* mcHeader = dynamic_cast<AliGenHijingEventHeader*>(MCEvent()->GenEventHeader()))
     {
       Double_t ncoll = mcHeader->NN() + mcHeader->NNw() + mcHeader->NwN() + mcHeader->NwNw();
-      FillHistogram("hHijingNcoll", ncoll);
+      FillHistogram("hHIJING_Ncoll", ncoll);
+    }
+    if(AliGenHepMCEventHeader* mcHeader = dynamic_cast<AliGenHepMCEventHeader*>(MCEvent()->GenEventHeader()))
+    {
+      TProfile* tmpHist = static_cast<TProfile*>(fOutput->FindObject("hJEWEL_EventWeight"));
+      tmpHist->Fill(0., mcHeader->EventWeight());
+      FillHistogram("hJEWEL_NProduced", mcHeader->NProduced());
+      FillHistogram("hJEWEL_ImpactParameter", mcHeader->impact_parameter());
     }
   }
 
@@ -568,7 +590,7 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     }
 
     // ### CONSTITUENT LOOP: Retrieve PID values + impact parameters
-    std::vector<Float_t> vecSigITS; std::vector<Float_t> vecSigTPC; std::vector<Float_t> vecSigTRD; std::vector<Float_t> vecSigTOF; std::vector<Short_t> vecRecoPID; std::vector<Short_t> vecTruePID;
+    std::vector<Float_t> vecSigITS; std::vector<Float_t> vecSigTPC; std::vector<Float_t> vecSigTRD; std::vector<Float_t> vecSigTOF; std::vector<Short_t> vecRecoPID; std::vector<Int_t> vecTruePID;
     std::vector<Float_t> vec_d0; std::vector<Float_t> vec_d0cov; std::vector<Float_t> vec_z0; std::vector<Float_t> vec_z0cov;
 
     if(fJetTree->GetSaveConstituentPID() || fJetTree->GetSaveConstituentsIP())
@@ -578,7 +600,7 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
         if(!particle) continue;
         if(fJetTree->GetSaveConstituentPID())
         {
-          Float_t sigITS = 0; Float_t sigTPC = 0; Float_t sigTOF = 0; Float_t sigTRD = 0; Short_t recoPID = 0; Short_t truePID = 0;
+          Float_t sigITS = 0; Float_t sigTPC = 0; Float_t sigTOF = 0; Float_t sigTRD = 0; Short_t recoPID = 0; Int_t truePID = 0;
           AddPIDInformation(particle, sigITS, sigTPC, sigTOF, sigTRD, recoPID, truePID);
           vecSigITS.push_back(sigITS); vecSigTPC.push_back(sigTPC); vecSigTOF.push_back(sigTOF); vecSigTRD.push_back(sigTRD); vecRecoPID.push_back(recoPID); vecTruePID.push_back(truePID);
         }
@@ -1022,7 +1044,7 @@ void AliAnalysisTaskJetExtractor::FillTrackControlHistograms(AliVTrack* track)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractor::AddPIDInformation(AliVParticle* particle, Float_t& sigITS, Float_t& sigTPC, Float_t& sigTOF, Float_t& sigTRD, Short_t& recoPID, Short_t& truePID)
+void AliAnalysisTaskJetExtractor::AddPIDInformation(AliVParticle* particle, Float_t& sigITS, Float_t& sigTPC, Float_t& sigTOF, Float_t& sigTRD, Short_t& recoPID, Int_t& truePID)
 {
   truePID = 9;
   if(!particle) return;
@@ -1054,27 +1076,33 @@ void AliAnalysisTaskJetExtractor::AddPIDInformation(AliVParticle* particle, Floa
 
       if (mcParticle->GetLabel() == particle->GetLabel())
       {
-        // Use same convention as PID in AODs
-        if(TMath::Abs(mcParticle->PdgCode()) == 2212) // proton
-          truePID = 4;
-        else if (TMath::Abs(mcParticle->PdgCode()) == 211) // pion
-          truePID = 2;
-        else if (TMath::Abs(mcParticle->PdgCode()) == 321) // kaon
-          truePID = 3;
-        else if (TMath::Abs(mcParticle->PdgCode()) == 11) // electron
-          truePID = 0;
-        else if (TMath::Abs(mcParticle->PdgCode()) == 13) // muon
-          truePID = 1;
-        else if (TMath::Abs(mcParticle->PdgCode()) == 700201) // deuteron
-          truePID = 5;
-        else if (TMath::Abs(mcParticle->PdgCode()) == 700301) // triton
-          truePID = 6;
-        else if (TMath::Abs(mcParticle->PdgCode()) == 700302) // He3
-          truePID = 7;
-        else if (TMath::Abs(mcParticle->PdgCode()) == 700202) // alpha
-          truePID = 8;
-        else
-          truePID = 9;
+        if(fSaveTrackPDGCode)
+        {
+          truePID = mcParticle->PdgCode();
+        }
+        else // Use same convention as for PID in AODs
+        {
+          if(TMath::Abs(mcParticle->PdgCode()) == 2212) // proton
+            truePID = 4;
+          else if (TMath::Abs(mcParticle->PdgCode()) == 211) // pion
+            truePID = 2;
+          else if (TMath::Abs(mcParticle->PdgCode()) == 321) // kaon
+            truePID = 3;
+          else if (TMath::Abs(mcParticle->PdgCode()) == 11) // electron
+            truePID = 0;
+          else if (TMath::Abs(mcParticle->PdgCode()) == 13) // muon
+            truePID = 1;
+          else if (TMath::Abs(mcParticle->PdgCode()) == 700201) // deuteron
+            truePID = 5;
+          else if (TMath::Abs(mcParticle->PdgCode()) == 700301) // triton
+            truePID = 6;
+          else if (TMath::Abs(mcParticle->PdgCode()) == 700302) // He3
+            truePID = 7;
+          else if (TMath::Abs(mcParticle->PdgCode()) == 700202) // alpha
+            truePID = 8;
+          else
+            truePID = 9;
+        }
 
         break;
       }
@@ -1223,4 +1251,112 @@ template <class T> T* AliAnalysisTaskJetExtractor::AddHistogram3D(const char* na
 void AliAnalysisTaskJetExtractor::Terminate(Option_t *) 
 {
   // Called once at the end of the analysis.
+}
+
+// ### ADDTASK MACRO
+//________________________________________________________________________
+AliAnalysisTaskJetExtractor* AliAnalysisTaskJetExtractor::AddTaskJetExtractor(const char* configFile, AliRDHFJetsCutsVertex* vertexerCuts, const char* taskNameSuffix)
+{  
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  TString     trackArray         = "tracks";
+  TString     jetArray           = "Jet_AKTChargedR040_tracks_pT0150_E_scheme";
+  TString     rhoObject          = "Rho";
+  Double_t    jetRadius          = 0.4;
+  Double_t    minJetEta          = 0.5;
+  Double_t    minJetPt           = 0.15;
+  Double_t    minTrackPt         = 0.15;
+  Double_t    minJetAreaPerc     = 0.557;
+  TString     suffix             = "_allJets";
+  if(taskNameSuffix != 0)
+    suffix = taskNameSuffix;
+
+  // ###### Load configuration from YAML files
+  PWG::Tools::AliYAMLConfiguration fYAMLConfig;
+  fYAMLConfig.AddConfiguration("alien:///alice/cern.ch/user/r/rhaake/ConfigFiles/JetExtractor_BaseConfig.yaml", "baseConfig");
+  fYAMLConfig.AddConfiguration(configFile, "customConfig");
+  fYAMLConfig.Initialize();
+
+  fYAMLConfig.GetProperty("TrackArray", trackArray);
+  fYAMLConfig.GetProperty("JetArray", jetArray);
+  fYAMLConfig.GetProperty("RhoName", rhoObject);
+  fYAMLConfig.GetProperty("JetRadius", jetRadius);
+  fYAMLConfig.GetProperty("MinJetEta", minJetEta);
+  fYAMLConfig.GetProperty("MinJetPt", minJetPt);
+  fYAMLConfig.GetProperty("MinTrackPt", minTrackPt);
+  fYAMLConfig.GetProperty("MinJetAreaPerc", minJetAreaPerc);
+  fYAMLConfig.GetProperty("Suffix", suffix);
+  fYAMLConfig.Print();
+
+  // ###### Task name
+  TString name("AliAnalysisTaskJetExtractor");
+  if (jetArray != "") {
+    name += "_";
+    name += jetArray;
+  }
+  if (rhoObject != "") {
+    name += "_";
+    name += rhoObject;
+  }
+  if (suffix != "") {
+    name += "_";
+    name += suffix;
+  }
+
+  // ###### Setup task with default settings
+  AliAnalysisTaskJetExtractor* myTask = new AliAnalysisTaskJetExtractor(name);
+  myTask->SetNeedEmcalGeom(kFALSE);
+  myTask->SetVzRange(-10.,10.);
+
+  // Particle container and track pt cut
+  AliParticleContainer* trackCont = 0;
+  if(trackArray == "mcparticles")
+    trackCont = myTask->AddMCParticleContainer(trackArray);
+  else if(trackArray =="mctracks")
+    trackCont = myTask->AddParticleContainer(trackArray);
+  else
+    trackCont = myTask->AddTrackContainer(trackArray);
+  trackCont->SetParticlePtCut(minTrackPt);
+
+  // Secondary vertex cuts (default settings from PWGHF)
+  // (can be overwritten by using myTask->SetVertexerCuts(cuts) from outside macro)
+  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "default");
+  esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+  esdTrackCuts->SetMinNClustersTPC(90);
+  esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+  esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+  esdTrackCuts->SetMinDCAToVertexXY(0.);
+  esdTrackCuts->SetEtaRange(-0.8, 0.8);
+  esdTrackCuts->SetPtRange(1.0, 1.e10);
+  vertexerCuts->AddTrackCuts(esdTrackCuts);
+  vertexerCuts->SetNprongs(3);
+  vertexerCuts->SetMinPtHardestTrack(1.0);//default 0.3
+  vertexerCuts->SetSecVtxWithKF(kFALSE);//default with StrLinMinDist
+  vertexerCuts->SetImpParCut(0.);//default 0
+  vertexerCuts->SetDistPrimSec(0.);//default 0
+  vertexerCuts->SetCospCut(-1);//default -1
+  myTask->SetVertexerCuts(vertexerCuts);
+
+  // Jet container
+  AliJetContainer *jetCont = myTask->AddJetContainer(jetArray,6,jetRadius);
+  if (jetCont) {
+    jetCont->SetRhoName(rhoObject);
+    jetCont->SetPercAreaCut(minJetAreaPerc);
+    jetCont->SetJetPtCut(minJetPt);
+    jetCont->SetLeadingHadronType(0);
+    jetCont->SetPtBiasJetTrack(minTrackPt);
+    jetCont->SetJetEtaLimits(-minJetEta, +minJetEta);
+    jetCont->ConnectParticleContainer(trackCont);
+    jetCont->SetMaxTrackPt(1000);
+  }
+
+  mgr->AddTask(myTask);
+
+  // ###### Connect inputs/outputs
+  mgr->ConnectInput  (myTask, 0,  mgr->GetCommonInputContainer() );
+  mgr->ConnectOutput (myTask, 1, mgr->CreateContainer(Form("%s_histos", name.Data()), AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:ChargedJetsHadronCF", mgr->GetCommonFileName())) );
+  mgr->ConnectOutput (myTask, 2, mgr->CreateContainer(Form("%s_tree", name.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()) );
+
+  return myTask;
 }

@@ -29,6 +29,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetExtractor();
   AliAnalysisTaskJetExtractor(const char *name);
   virtual ~AliAnalysisTaskJetExtractor();
+  static AliAnalysisTaskJetExtractor* AddTaskJetExtractor(const char* configFile, AliRDHFJetsCutsVertex* vertexerCuts, const char* taskNameSuffix = 0);
   void                        UserCreateOutputObjects();
   void                        Terminate(Option_t *option);
   AliEmcalJetTree*            GetJetTree() {return fJetTree;}
@@ -44,6 +45,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        SetSetEmcalJetFlavour(Bool_t val)                   { fSetEmcalJetFlavour = val; }
   void                        SetEventPercentage(Double_t val)                    { fEventPercentage  = val; }
   void                        SetTruthLabelRange(Int_t min, Int_t max)            { fTruthMinLabel = min; fTruthMaxLabel = max; }
+  void                        SetSaveTrackPDGCode(Bool_t val)                     { fSaveTrackPDGCode = val; }
 
   void                        SetEventCutTriggerTrack(Double_t minPt, Double_t maxPt, Int_t minLabel=-9999999, Int_t maxLabel=+9999999)
                                 { fEventCut_TriggerTrackMinPt = minPt; fEventCut_TriggerTrackMaxPt = maxPt; fEventCut_TriggerTrackMinLabel = minLabel;
@@ -57,7 +59,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        FillTrackControlHistograms(AliVTrack* track);
   void                        FillEventControlHistograms();
   void                        FillJetControlHistograms(AliEmcalJet* jet);
-  void                        AddPIDInformation(AliVParticle* particle, Float_t& sigITS, Float_t& sigTPC, Float_t& sigTOF, Float_t& sigTRD, Short_t& recoPID, Short_t& truePID);
+  void                        AddPIDInformation(AliVParticle* particle, Float_t& sigITS, Float_t& sigTPC, Float_t& sigTOF, Float_t& sigTRD, Short_t& recoPID, Int_t& truePID);
   Bool_t                      IsTrackInCone(AliVParticle* track, Double_t eta, Double_t phi, Double_t radius);
   void                        GetJetTruePt(AliEmcalJet* jet, Double_t& matchedJetPt, Double_t& truePtFraction);
   void                        GetJetType(AliEmcalJet* jet, Int_t& typeHM, Int_t& typePM, Int_t& typeIC);
@@ -80,6 +82,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   Double_t                    fEventPercentage;                         ///< percentage (0, 1] which will be extracted
   Int_t                       fTruthMinLabel;                           ///< min track label to consider it as true particle
   Int_t                       fTruthMaxLabel;                           ///< max track label to consider it as true particle
+  Bool_t                      fSaveTrackPDGCode;                        ///< save PDG code instead of code defined for AOD pid
 
   // ################## EVENT CUTS
   Double_t                    fEventCut_TriggerTrackMinPt;              ///< Event requirement, trigger track min pT
@@ -124,6 +127,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
 //###############################################################################################################################################3
 static std::vector<Float_t> DEFAULT_VECTOR_FLOAT;
 static std::vector<Short_t> DEFAULT_VECTOR_SHORT;
+static std::vector<Int_t>   DEFAULT_VECTOR_INT;
 const Int_t kMaxNumConstituents = 500;
 /**
  * \class AliEmcalJetTree
@@ -181,7 +185,7 @@ class AliEmcalJetTree : public TNamed
     // ######################################
     Bool_t          AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity = 0, Float_t vertexX = 0, Float_t vertexY = 0, Float_t vertexZ = 0, Float_t centrality = 0, Long64_t eventID = 0, Float_t magField = 0,
       AliParticleContainer* trackCont = 0, Int_t motherParton = 0, Int_t motherHadron = 0, Int_t partonInitialCollision = 0, Float_t matchedPt = 0, Float_t truePtFraction = 0, Float_t ptHard = 0,
-      std::vector<Float_t>& trackPID_ITS = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& trackPID_TPC = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& trackPID_TOF = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& trackPID_TRD = DEFAULT_VECTOR_FLOAT, std::vector<Short_t>& trackPID_Reco = DEFAULT_VECTOR_SHORT, std::vector<Short_t>& trackPID_Truth = DEFAULT_VECTOR_SHORT,
+      std::vector<Float_t>& trackPID_ITS = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& trackPID_TPC = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& trackPID_TOF = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& trackPID_TRD = DEFAULT_VECTOR_FLOAT, std::vector<Short_t>& trackPID_Reco = DEFAULT_VECTOR_SHORT, std::vector<Int_t>& trackPID_Truth = DEFAULT_VECTOR_INT,
       std::vector<Float_t>& triggerTrackPt = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& triggerTrackDeltaEta = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& triggerTrackDeltaPhi = DEFAULT_VECTOR_FLOAT,
       std::vector<Float_t>& trackIP_d0 = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& trackIP_z0 = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& trackIP_d0cov = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& trackIP_z0cov = DEFAULT_VECTOR_FLOAT,
       std::vector<Float_t>& secVtx_X = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& secVtx_Y = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& secVtx_Z = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& secVtx_Mass = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& secVtx_Lxy = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& secVtx_SigmaLxy = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& secVtx_Chi2 = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& secVtx_Dispersion = DEFAULT_VECTOR_FLOAT)
@@ -194,7 +198,7 @@ class AliEmcalJetTree : public TNamed
     }
     Bool_t          AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Float_t vertexX, Float_t vertexY, Float_t vertexZ, Float_t centrality, Long64_t eventID, Float_t magField,
       AliParticleContainer* trackCont, Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchedPt, Float_t truePtFraction, Float_t ptHard,
-      Float_t* trackPID_ITS, Float_t* trackPID_TPC, Float_t* trackPID_TOF, Float_t* trackPID_TRD, Short_t* trackPID_Reco, Short_t* trackPID_Truth,
+      Float_t* trackPID_ITS, Float_t* trackPID_TPC, Float_t* trackPID_TOF, Float_t* trackPID_TRD, Short_t* trackPID_Reco, Int_t* trackPID_Truth,
       Int_t numTriggerTracks, Float_t* triggerTrackPt, Float_t* triggerTrackDeltaEta, Float_t* triggerTrackDeltaPhi,
       Float_t* trackIP_d0, Float_t* trackIP_z0, Float_t* trackIP_d0cov, Float_t* trackIP_z0cov,
       Int_t numSecVertices, Float_t* secVtx_X, Float_t* secVtx_Y, Float_t* secVtx_Z, Float_t* secVtx_Mass, Float_t* secVtx_Lxy, Float_t* secVtx_SigmaLxy, Float_t* secVtx_Chi2, Float_t* secVtx_Dispersion);
