@@ -2,7 +2,7 @@ R__LOAD_LIBRARY(liblhapdf)
 R__LOAD_LIBRARY(libEGPythia6)
 R__LOAD_LIBRARY(libpythia6)
 R__LOAD_LIBRARY(libAliPythia6)
-R__LOAD_LIBRARY(libhijing)
+R__LOAD_LIBRARY(libHIJING)
 R__LOAD_LIBRARY(libTHijing)
 R__LOAD_LIBRARY(libTTherminator)
 
@@ -19,7 +19,7 @@ AliGenerator *AddMCGenTherminator()
   gener->SetTau(9.0);
   gener->SetRhoMax(11.4);
   gener->SetMiuB(0.0);
-  gener->SetPtHardMin(2.3);
+//  gener->SetPtHardMin(2.3); this function is not derived in AliGenTherminator or its base classes ... 
   
   return gener;
 }

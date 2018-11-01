@@ -2,7 +2,7 @@ R__LOAD_LIBRARY(liblhapdf)
 R__LOAD_LIBRARY(libEGPythia6)
 R__LOAD_LIBRARY(libpythia6)
 R__LOAD_LIBRARY(libAliPythia6)
-R__LOAD_LIBRARY(libhijing)
+R__LOAD_LIBRARY(libHIJING)
 R__LOAD_LIBRARY(libTHijing)
 
 #include "AliGenerator.h"
