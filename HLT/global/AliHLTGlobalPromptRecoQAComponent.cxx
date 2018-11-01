@@ -544,7 +544,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   //End Common Axes
 
   //fixed axes - used by fixed histograms
-  //set nbins to 0 to disable the histograms using an axis
+  //set nbins to something negative to disable the histograms using an axis
   static double fakePtr = 0.;
   fAxes["tpcTrackPt"].set( 100, 0., 5., &fakePtr );
   fAxes["tpcClusterCharge"].set( 100, 0, 499, &fakePtr );
@@ -592,12 +592,12 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   NewHistogram("CINT7,fHistITSSAtracks_SSDclusters,ITSSAP tracks vs SSD clusters,nClustersSSD,nITSSAPtracks");
 
   //vertex Z monitoring
-  NewHistogram("CINT7ZAC-B-NOPF-CENT,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ");
-  NewHistogram("CTVXZAC-B-NOPF-CENT-B-NOPF-CENT,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ");
-  NewHistogram("CINT7-B-NOPF-MUFAST,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ");
-  NewHistogram("C0TVX-B-NOPF-MUFAST,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ");
-  NewHistogram("C0V0M-B-NOPF-CENT,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ");
-  NewHistogram("CTVXV0M-B-NOPF-CENT,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ");
+  NewHistogram("CINT7ZAC-B-NOPF-CENT,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,");
+  NewHistogram("CTVXZAC-B-NOPF-CENT-B-NOPF-CENT,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,");
+  NewHistogram("CINT7-B-NOPF-MUFAST,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,");
+  NewHistogram("C0TVX-B-NOPF-MUFAST,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,");
+  NewHistogram("C0V0M-B-NOPF-CENT,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,");
+  NewHistogram("CTVXV0M-B-NOPF-CENT,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,");
   //End Histograms
 
   fpHWCFData = new AliHLTTPCHWCFData;
@@ -825,9 +825,9 @@ void AliHLTGlobalPromptRecoQAComponent::NewHistogram(
 
   delete hist.hist; hist.hist=NULL;
 
-  if (x.bins==0 || y.bins==0)
+  if (x.bins<0 || y.bins<0 || (x.bins==0 && y.bins==0))
   {
-    HLTInfo("hist %s disabled, axis has zero bins",histName.c_str());
+    HLTWarning("hist %s disabled by negative number of bins set or both axes have zero bins",histName.c_str());
     fHistograms.erase(histName);
     return;
   }
@@ -971,7 +971,9 @@ int AliHLTGlobalPromptRecoQAComponent::FillHistograms()
 //__________________________________________________________________________________________________
 int histStruct::Fill()
 {
-  if (x.value && (*x.value) && ((y.value)?(*y.value):1) )
+  //we are filtering out values which are exacly zero.
+  //don't remeber exactly why but probably some invalid values caused spikes? is this the right way to go?
+  if (x.value && (*x.value!=0.) && (y.value)?(*y.value!=0.):1. )
   {
     if (!hist) return 0;
     hist->Fill(*x.value, (y.value)?(*y.value):0.);
