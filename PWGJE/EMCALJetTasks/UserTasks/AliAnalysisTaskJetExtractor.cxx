@@ -93,7 +93,7 @@ AliEmcalJetTree::AliEmcalJetTree(const char* name) : TNamed(name, name), fJetTre
 
 //________________________________________________________________________
 Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Float_t vertexX, Float_t vertexY, Float_t vertexZ, Float_t centrality, Long64_t eventID, Float_t magField,
-  AliParticleContainer* trackCont, Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchedPt, Float_t truePtFraction, Float_t ptHard,
+  AliParticleContainer* trackCont, Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchedPt, Float_t truePtFraction, Float_t ptHard, Float_t eventWeight, Float_t impactParameter,
   Float_t* trackPID_ITS, Float_t* trackPID_TPC, Float_t* trackPID_TOF, Float_t* trackPID_TRD, Short_t* trackPID_Reco, Int_t* trackPID_Truth,
   Int_t numTriggerTracks, Float_t* triggerTrackPt, Float_t* triggerTrackDeltaEta, Float_t* triggerTrackDeltaPhi,
   Float_t* trackIP_d0, Float_t* trackIP_z0, Float_t* trackIP_d0cov, Float_t* trackIP_z0cov,
@@ -144,7 +144,11 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Floa
     fBuffer_Event_ID                              = eventID;
     fBuffer_Event_MagneticField                   = magField;
     if(fSaveMCInformation)
-      fBuffer_Event_PtHard                          = ptHard;
+    {
+      fBuffer_Event_PtHard                        = ptHard;
+      fBuffer_Event_Weight                        = eventWeight;
+      fBuffer_Event_ImpactParameter               = impactParameter;
+    }
   }
 
   // Extract basic constituent properties directly from AliEmcalJet object
@@ -265,7 +269,11 @@ void AliEmcalJetTree::InitializeTree()
     fJetTree->Branch("Event_MagneticField",&fBuffer_Event_MagneticField,"Event_MagneticField/F");
 
     if(fSaveMCInformation)
+    {
       fJetTree->Branch("Event_PtHard",&fBuffer_Event_PtHard,"Event_PtHard/F");
+      fJetTree->Branch("Event_Weight",&fBuffer_Event_Weight,"Event_Weight/F");
+      fJetTree->Branch("Event_ImpactParameter",&fBuffer_Event_ImpactParameter,"Event_ImpactParameter/F");
+    }
   }
 
   if(fSaveConstituents)
@@ -356,6 +364,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fTruthMinLabel(0),
   fTruthMaxLabel(100000),
   fSaveTrackPDGCode(kTRUE),
+  fEventWeight(0.),
+  fImpactParameter(0.),
   fEventCut_TriggerTrackMinPt(0),
   fEventCut_TriggerTrackMaxPt(0),
   fEventCut_TriggerTrackMinLabel(-9999999),
@@ -394,6 +404,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fTruthMinLabel(0),
   fTruthMaxLabel(100000),
   fSaveTrackPDGCode(kTRUE),
+  fEventWeight(0.),
+  fImpactParameter(0.),
   fEventCut_TriggerTrackMinPt(0),
   fEventCut_TriggerTrackMaxPt(0),
   fEventCut_TriggerTrackMinLabel(-9999999),
@@ -563,10 +575,13 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     }
     if(AliGenHepMCEventHeader* mcHeader = dynamic_cast<AliGenHepMCEventHeader*>(MCEvent()->GenEventHeader()))
     {
+      fEventWeight = mcHeader->EventWeight();
+      fImpactParameter = mcHeader->impact_parameter();
+
       TProfile* tmpHist = static_cast<TProfile*>(fOutput->FindObject("hJEWEL_EventWeight"));
-      tmpHist->Fill(0., mcHeader->EventWeight());
+      tmpHist->Fill(0., fEventWeight);
       FillHistogram("hJEWEL_NProduced", mcHeader->NProduced());
-      FillHistogram("hJEWEL_ImpactParameter", mcHeader->impact_parameter());
+      FillHistogram("hJEWEL_ImpactParameter", fImpactParameter);
     }
   }
 
@@ -631,7 +646,7 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
 
     // Fill jet to tree
     Bool_t accepted = fJetTree->AddJetToTree(jet, fJetsCont->GetRhoVal(), vtxX, vtxY, vtxZ, fCent, eventID, InputEvent()->GetMagneticField(), fTracksCont,
-              currentJetType_PM,currentJetType_HM,currentJetType_IC,matchedJetPt,truePtFraction,fPtHard,
+              currentJetType_PM,currentJetType_HM,currentJetType_IC,matchedJetPt,truePtFraction,fPtHard,fEventWeight,fImpactParameter,
               vecSigITS, vecSigTPC, vecSigTOF, vecSigTRD, vecRecoPID, vecTruePID,
               fTriggerTracks_Pt, triggerTracks_dEta, triggerTracks_dPhi,
               vec_d0, vec_z0, vec_d0cov, vec_z0cov,

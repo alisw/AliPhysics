@@ -83,6 +83,8 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   Int_t                       fTruthMinLabel;                           ///< min track label to consider it as true particle
   Int_t                       fTruthMaxLabel;                           ///< max track label to consider it as true particle
   Bool_t                      fSaveTrackPDGCode;                        ///< save PDG code instead of code defined for AOD pid
+  Double_t                    fEventWeight;                             ///< save event weight for each event (only works for JEWEL)
+  Double_t                    fImpactParameter;                         ///< save IP for each event (only works for JEWEL)
 
   // ################## EVENT CUTS
   Double_t                    fEventCut_TriggerTrackMinPt;              ///< Event requirement, trigger track min pT
@@ -184,20 +186,20 @@ class AliEmcalJetTree : public TNamed
 
     // ######################################
     Bool_t          AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity = 0, Float_t vertexX = 0, Float_t vertexY = 0, Float_t vertexZ = 0, Float_t centrality = 0, Long64_t eventID = 0, Float_t magField = 0,
-      AliParticleContainer* trackCont = 0, Int_t motherParton = 0, Int_t motherHadron = 0, Int_t partonInitialCollision = 0, Float_t matchedPt = 0, Float_t truePtFraction = 0, Float_t ptHard = 0,
+      AliParticleContainer* trackCont = 0, Int_t motherParton = 0, Int_t motherHadron = 0, Int_t partonInitialCollision = 0, Float_t matchedPt = 0, Float_t truePtFraction = 0, Float_t ptHard = 0, Float_t eventWeight = 0, Float_t impactParameter = 0,
       std::vector<Float_t>& trackPID_ITS = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& trackPID_TPC = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& trackPID_TOF = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& trackPID_TRD = DEFAULT_VECTOR_FLOAT, std::vector<Short_t>& trackPID_Reco = DEFAULT_VECTOR_SHORT, std::vector<Int_t>& trackPID_Truth = DEFAULT_VECTOR_INT,
       std::vector<Float_t>& triggerTrackPt = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& triggerTrackDeltaEta = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& triggerTrackDeltaPhi = DEFAULT_VECTOR_FLOAT,
       std::vector<Float_t>& trackIP_d0 = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& trackIP_z0 = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& trackIP_d0cov = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& trackIP_z0cov = DEFAULT_VECTOR_FLOAT,
       std::vector<Float_t>& secVtx_X = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& secVtx_Y = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& secVtx_Z = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& secVtx_Mass = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& secVtx_Lxy = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& secVtx_SigmaLxy = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& secVtx_Chi2 = DEFAULT_VECTOR_FLOAT, std::vector<Float_t>& secVtx_Dispersion = DEFAULT_VECTOR_FLOAT)
     {
-      return AddJetToTree(jet, bgrdDensity, vertexX, vertexY, vertexZ, centrality, eventID, magField, trackCont, motherParton, motherHadron, partonInitialCollision, matchedPt, truePtFraction, ptHard,
+      return AddJetToTree(jet, bgrdDensity, vertexX, vertexY, vertexZ, centrality, eventID, magField, trackCont, motherParton, motherHadron, partonInitialCollision, matchedPt, truePtFraction, ptHard, eventWeight, impactParameter,
         trackPID_ITS.data(), trackPID_TPC.data(), trackPID_TOF.data(), trackPID_TRD.data(), trackPID_Reco.data(), trackPID_Truth.data(),
         triggerTrackPt.size(), triggerTrackPt.data(), triggerTrackDeltaEta.data(), triggerTrackDeltaPhi.data(),
         trackIP_d0.data(), trackIP_z0.data(), trackIP_d0cov.data(), trackIP_z0cov.data(),
         secVtx_X.size(), secVtx_X.data(), secVtx_Y.data(), secVtx_Z.data(), secVtx_Mass.data(), secVtx_Lxy.data(), secVtx_SigmaLxy.data(), secVtx_Chi2.data(), secVtx_Dispersion.data());
     }
     Bool_t          AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Float_t vertexX, Float_t vertexY, Float_t vertexZ, Float_t centrality, Long64_t eventID, Float_t magField,
-      AliParticleContainer* trackCont, Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchedPt, Float_t truePtFraction, Float_t ptHard,
+      AliParticleContainer* trackCont, Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchedPt, Float_t truePtFraction, Float_t ptHard, Float_t eventWeight,  Float_t impactParameter,
       Float_t* trackPID_ITS, Float_t* trackPID_TPC, Float_t* trackPID_TOF, Float_t* trackPID_TRD, Short_t* trackPID_Reco, Int_t* trackPID_Truth,
       Int_t numTriggerTracks, Float_t* triggerTrackPt, Float_t* triggerTrackDeltaEta, Float_t* triggerTrackDeltaPhi,
       Float_t* trackIP_d0, Float_t* trackIP_z0, Float_t* trackIP_d0cov, Float_t* trackIP_z0cov,
@@ -239,6 +241,8 @@ class AliEmcalJetTree : public TNamed
     Long64_t        fBuffer_Event_ID;                     //!<! array buffer
     Float_t         fBuffer_Event_MagneticField;          //!<! array buffer
     Float_t         fBuffer_Event_PtHard;                 //!<! array buffer
+    Float_t         fBuffer_Event_Weight;                 //!<! array buffer
+    Float_t         fBuffer_Event_ImpactParameter;        //!<! array buffer
 
     Float_t*        fBuffer_Const_Pt;                     //!<! array buffer
     Float_t*        fBuffer_Const_Eta;                    //!<! array buffer
