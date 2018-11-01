@@ -544,11 +544,11 @@ void AliEbyEPhiDistNew::CreatePhiHist() {
                     nRec[icharge] += 1;
                     
                     if (icharge == 1){
-                        pTPhi[iptbin][iphibin] += 1;
+                        pTPhi[iphibin] += 1;
                         
                     }
                     if(icharge == 0){
-                        pTPhi[iptbin+fNphiBins][iphibin] += 1;
+                        pTPhi[iphibin] += 1;
                     }
                 }
             }
@@ -762,7 +762,7 @@ void AliEbyEPhiDistNew::CreatePhiHist() {
                         ptContainerMC[k+1] = pTPhiMC[jphi];
                         if (pTPhiMC[jphi] > 4) fEventCounter-> Fill(18);
                     }
-                }
+                //}
                 fPtBinNplusNminusTruth->Fill(ptContainerMC);
             }
             
