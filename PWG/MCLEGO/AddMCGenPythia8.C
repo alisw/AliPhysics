@@ -4,26 +4,6 @@ R__LOAD_LIBRARY(libpythia6)
 #include "AliGenerator.h"
 #include "AliGenPythia.h"
 
-AliGenerator* AddMCGenPythia8(Float_t e_cms = 2760., 
-                              Bool_t kCR = kTRUE, 
-                              Int_t kF = 1,
-                              Int_t kProcess=0,
-                              Double_t ptHardMin=0,
-                              Double_t ptHardMax=1., 
-                              Int_t tune=14) 
-{
-  // Add Pythia 8 generator: 
-  //    -kProcess=0  MB generation
-  //    -kProcess=1  Jet production, pthard generation
-  //    - Color reconnection = ON/OFF
-  //    - Set k factor, default = 1; range of possible values in xmldoc/CouplingsAndScales.xml
-
-  AliGenerator *genP = NULL;
-  genP = CreatePythia8Gen(e_cms, kCR, kF,kProcess,ptHardMin,ptHardMax);
-  
-  return genP;
-}
-
 AliGenerator* CreatePythia8Gen(Float_t e_cms, 
 			       Bool_t kCR, 
 			       Int_t kF,
@@ -72,3 +52,25 @@ AliGenerator* CreatePythia8Gen(Float_t e_cms,
   
   return gener;
 }
+
+AliGenerator* AddMCGenPythia8(Float_t e_cms = 2760., 
+                              Bool_t kCR = kTRUE, 
+                              Int_t kF = 1,
+                              Int_t kProcess=0,
+                              Double_t ptHardMin=0,
+                              Double_t ptHardMax=1., 
+                              Int_t tune=14) 
+{
+  // Add Pythia 8 generator: 
+  //    -kProcess=0  MB generation
+  //    -kProcess=1  Jet production, pthard generation
+  //    - Color reconnection = ON/OFF
+  //    - Set k factor, default = 1; range of possible values in xmldoc/CouplingsAndScales.xml
+
+  AliGenerator *genP = NULL;
+  genP = CreatePythia8Gen(e_cms, kCR, kF,kProcess,ptHardMin,ptHardMax,tune);
+  
+  return genP;
+}
+
+

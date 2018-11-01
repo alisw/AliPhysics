@@ -31,13 +31,6 @@ R__LOAD_LIBRARY(libAliPythia6)
 #include "AliGenerator.h"
 #include "AliGenPythia.h"
 
-AliGenerator* AddMCGenQuench(Float_t e_cms = 2760., Double_t ptHardMin = 0., Double_t ptHardMax = 0., Int_t fpythia = 1, Double_t quench=4.4e6, Int_t ianglepyquen = 2,Float_t ptWeight=0) 
-{
-  //Add Pythia generator: pt-hard bin or min bias
- 
-  return CreatePythia6Gen(e_cms, ptHardMin, ptHardMax, fpythia, quench, ianglepyquen,ptWeight);
-}
-
 AliGenerator* CreatePythia6Gen(Float_t e_cms, Int_t ptHardMin, Int_t ptHardMax, Int_t fpythia, Double_t quench = 4.4e6, Int_t ianglepyquen=2,Float_t ptWeight=0) {
     
   AliGenPythia* genP = new AliGenPythia(1);
@@ -71,4 +64,11 @@ AliGenerator* CreatePythia6Gen(Float_t e_cms, Int_t ptHardMin, Int_t ptHardMax, 
   }
 
   return genP;
+}
+
+AliGenerator* AddMCGenQuench(Float_t e_cms = 2760., Double_t ptHardMin = 0., Double_t ptHardMax = 0., Int_t fpythia = 1, Double_t quench=4.4e6, Int_t ianglepyquen = 2,Float_t ptWeight=0) 
+{
+  //Add Pythia generator: pt-hard bin or min bias
+ 
+  return CreatePythia6Gen(e_cms, ptHardMin, ptHardMax, fpythia, quench, ianglepyquen,ptWeight);
 }
