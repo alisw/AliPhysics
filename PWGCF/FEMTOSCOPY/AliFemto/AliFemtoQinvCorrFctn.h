@@ -106,5 +106,11 @@ inline  TH1D* AliFemtoQinvCorrFctn::Numerator(){return fNumerator;}
 inline  TH1D* AliFemtoQinvCorrFctn::Denominator(){return fDenominator;}
 inline  TH1D* AliFemtoQinvCorrFctn::Ratio(){return fRatio;}
 
+inline void AliFemtoQinvCorrFctn::CalculateDetaDphis(Bool_t dedpsc, Double_t rad)
+  { fDetaDphiscal = dedpsc; fRaddedps = rad; }
+
+inline void AliFemtoQinvCorrFctn::CalculatePairKinematics(Bool_t pk)
+  { fPairKinematics = pk; }
+
 
 #endif
