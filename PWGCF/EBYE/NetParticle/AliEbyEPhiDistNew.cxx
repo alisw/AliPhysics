@@ -316,17 +316,17 @@ void AliEbyEPhiDistNew::CreatePhiHist() {
     }
     
     //-----For Thn Sparse----------------------
-    const Int_t dim = 229; // 1 centrality bin + ( 19 pt bins )*2 *6
+    const Int_t dim = 13; // 1 centrality bin + 2 *6 phi bins
         Int_t bin[dim];
         bin[0] = 81;
-        for (Int_t ibin = 1; ibin<dim ; ibin++) bin[ibin] = 500;
+        for (Int_t ibin = 1; ibin<dim ; ibin++) bin[ibin] = 100;
         
         Double_t min[dim];
         for (Int_t jbin = 0; jbin<dim ; jbin++) min[jbin] = -0.5;
         
         Double_t max[dim];
         max[0] = 80.5 ;
-        for(Int_t jbin = 1; jbin<dim; jbin++) max[jbin] = 499.5;
+        for(Int_t jbin = 1; jbin<dim; jbin++) max[jbin] = 99.5;
         
         fPtBinNplusNminus = new THnSparseI("fPtBinNplusNminus","cent-nplus-nminus",dim, bin, min, max);
         fThnList->Add(fPtBinNplusNminus);
@@ -350,17 +350,17 @@ void AliEbyEPhiDistNew::CreatePhiHist() {
             return;
         }
         
-        const Int_t dim = 38; // number of pT bins * 2
+        //const Int_t dim = 38; // number of pT bins * 2
         const Int_t kPhi = 6; // number of Phi Bins
-        Int_t pTPhi[dim][kPhi];
-        Int_t pTPhiMC[dim][kPhi];
+        Int_t pTPhi[kPhi];
+        Int_t pTPhiMC[kPhi];
         
-        for (Int_t idx= 0; idx < dim ; idx++){
+        //for (Int_t idx= 0; idx < dim ; idx++){
             for (Int_t it = 0; it <kPhi ; it++){
-                pTPhi[idx][it] = 0.;
-                pTPhiMC[idx][it] = 0.;
+                pTPhi[it] = 0.;
+                pTPhiMC[it] = 0.;
             }
-        }
+        //}
         
         fEventCounter->Fill(1);
         if (!fInputHandler)
@@ -621,18 +621,18 @@ void AliEbyEPhiDistNew::CreatePhiHist() {
                 fHistCentRec[1] -> Fill(fCentrality, nRec[1]);
             }
             
-            const Int_t thndim = dim * kPhi;
+            const Int_t thndim = kPhi;
             Double_t ptContainer[thndim+1];
             
             ptContainer[0] = (Double_t)fCentrality;
             
-            for(Int_t ipt = 0; ipt <  dim ; ipt++) {
+            //for(Int_t ipt = 0; ipt <  dim ; ipt++) {
                 for (Int_t jphi = 0 ; jphi < kPhi ; jphi++){
-                    Int_t k = (ipt * kPhi) + jphi;
-                    ptContainer[k+1] = pTPhi[ipt][jphi];
-                    if(pTPhi[ipt][jphi] > 4) fEventCounter->Fill(17);
+                    Int_t k = jphi;
+                    ptContainer[k+1] = pTPhi[jphi];
+                    if(pTPhi[jphi] > 4) fEventCounter->Fill(17);
                 }
-            }
+            //}
             fPtBinNplusNminus -> Fill(ptContainer);
             
             fEventCounter -> Fill(7);
@@ -682,10 +682,10 @@ void AliEbyEPhiDistNew::CreatePhiHist() {
                         
                         nGen[icharge] += 1;
                         if (icharge == 1){
-                            pTPhiMC[iptbinMC][iphibinMC] += 1;
+                            pTPhiMC[iphibinMC] += 1;
                         }
                         if (icharge == 0){
-                            pTPhiMC[iphibinMC][iphibinMC] += 1;
+                            pTPhiMC[iphibinMC] += 1;
                         }
                     }
                     fEventCounter -> Fill(9);
@@ -740,10 +740,10 @@ void AliEbyEPhiDistNew::CreatePhiHist() {
                         //-------------------------
                         
                         if(icharge == 1){
-                            pTPhiMC [iptbinMC][iphibinMC] += 1;
+                            pTPhiMC[iphibinMC] += 1;
                         }
                         if (icharge == 0) {
-                            pTPhiMC [iptbinMC+fNptBins][iphibinMC] += 1;
+                            pTPhiMC[iphibinMC] += 1;
                         }
                     }
                     
@@ -756,11 +756,11 @@ void AliEbyEPhiDistNew::CreatePhiHist() {
                 Double_t ptContainerMC[thndim+1];
                 ptContainerMC[0] = (Double_t) fCentrality;
                 
-                for (Int_t ipt = 0; ipt < dim ; ipt++){
+                //for (Int_t ipt = 0; ipt < dim ; ipt++){
                     for (Int_t jphi = 0 ; jphi < kPhi ; jphi++){
-                        Int_t k = (ipt*kPhi) + jphi;
-                        ptContainerMC[k+1] = pTPhiMC[ipt][jphi];
-                        if (pTPhiMC[ipt][jphi] > 4) fEventCounter-> Fill(18);
+                        Int_t k = jphi;
+                        ptContainerMC[k+1] = pTPhiMC[jphi];
+                        if (pTPhiMC[jphi] > 4) fEventCounter-> Fill(18);
                     }
                 }
                 fPtBinNplusNminusTruth->Fill(ptContainerMC);
