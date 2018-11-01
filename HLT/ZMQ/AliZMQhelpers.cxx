@@ -31,6 +31,7 @@
 #include "TClass.h"
 #include "TSystem.h"
 #include "TList.h"
+#include "AliHLTMessage.h"
 
 #include <netinet/in.h>
 
@@ -42,14 +43,15 @@ void* AliZMQhelpers::gZMQcontext = NULL;
 const UInt_t AliZMQhelpers::BaseDataTopic::fgkMagicNumber = CharArr2uint32("O2O2");
 const ULong64_t AliZMQhelpers::DataTopic::fgkDataTopicDescription = CharArr2uint64("DataHDR");
 const UInt_t AliZMQhelpers::DataTopic::fgkTopicSerialization = CharArr2uint64("NONE");
-const ULong64_t AliZMQhelpers::kSerializationROOT = CharArr2uint64("ROOT   ");
+const ULong64_t AliZMQhelpers::kSerializationHLTROOT = CharArr2uint64("ROOT   ");
+const ULong64_t AliZMQhelpers::kSerializationROOT = CharArr2uint64("ROOTmsg");
 const ULong64_t AliZMQhelpers::kSerializationNONE = CharArr2uint64("NONE   ");
 
-const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeStreamerInfos("ROOTSTRI","***\n",0);
-const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeInfo("INFO____","***\n",0);
-const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeConfig("CONFIG__","***\n",0);
-const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeTObject("ROOTTOBJ","***\n",0);
-const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeTH1("ROOTHIST","***\n",0);
+const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeStreamerInfos("ROOTSTRI","***\n",AliZMQhelpers::kSerializationROOT);
+const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeInfo("INFO____","***\n",AliZMQhelpers::kSerializationNONE);
+const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeConfig("CONFIG__","***\n",AliZMQhelpers::kSerializationNONE);
+const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeTObject("ROOTTOBJ","***\n",AliZMQhelpers::kSerializationROOT);
+const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeTH1("ROOTHIST","***\n",AliZMQhelpers::kSerializationROOT);
 
 //_______________________________________________________________________________________
 void* AliZMQhelpers::alizmq_context()
@@ -827,11 +829,20 @@ int AliZMQhelpers::alizmq_msg_iter_topic(aliZMQmsg::iterator it, DataTopic& topi
 //_______________________________________________________________________________________
 int AliZMQhelpers::alizmq_msg_iter_data(aliZMQmsg::iterator it, TObject*& object)
 {
+  zmq_msg_t* topicMessage = it->first;
+  DataTopic* topic = reinterpret_cast<DataTopic*>(zmq_msg_data(topicMessage));
   zmq_msg_t* message = it->second;
   size_t size = zmq_msg_size(message);
   void* data = zmq_msg_data(message);
 
-  object = ZMQTMessage::Extract(data, size);
+  if (topic->fDataSerialization==kSerializationHLTROOT) //serialized by the HLT chain
+  {
+    object = AliHLTMessage::Extract(data,size);
+  }
+  else if (topic->fDataSerialization==kSerializationROOT) //serialized by the ZMQ framework or ROOT
+  {
+    object = ZMQTMessage::Extract(data, size);
+  }
   return 0;
 }
 

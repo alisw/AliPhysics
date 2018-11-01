@@ -652,6 +652,10 @@ Int_t DoReceive(aliZMQmsg::iterator block, void* socket)
                        zmq_msg_size(block->second));
   TObject* object = NULL;
   alizmq_msg_iter_data(block, object);
+  if (!object) {
+    if (fVerbose) {printf("message does not contain a TObject!\n");}
+    return 0;
+  }
 
   //if we get a collection, always set ownership to prevent mem leaks
   //if we request unpacking: unpack what was requestd, otherwise just add
