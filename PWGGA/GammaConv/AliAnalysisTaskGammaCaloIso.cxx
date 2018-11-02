@@ -2872,10 +2872,10 @@ void AliAnalysisTaskGammaCaloIso::UserExec(Option_t *)
     }
 
     if(fDoInvMassShowerShapeTree) tESDmapIsClusterAcceptedWithoutTrackMatch.clear();
-
+    fIsoCandidates->Clear();
     fGammaCandidates->Clear(); // delete this cuts good gammas
     fClusterCandidates->Clear(); // delete cluster candidates
-    fIsoCandidates->Clear();
+
   }
 
   if(fIsMC>0 && fInputEvent->IsA()==AliAODEvent::Class() && !(fV0Reader->AreAODsRelabeled())){

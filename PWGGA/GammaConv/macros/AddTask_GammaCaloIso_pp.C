@@ -30,7 +30,7 @@ void AddTask_GammaCaloIso_pp(
   TString   periodNameV0Reader            = "",
   TString   periodname                    = "",        // period name
   // general setting for task
-  Int_t     enableQAMesonTask             = 0,        // enable QA in AliAnalysisTaskGammaConvV1
+  Int_t     enableQAMesonTask             = 0,        // enable QA in AliAnalysisTaskGammaCaloIso
   Int_t     enableQAPhotonTask            = 0,        // enable additional QA task
   Int_t     enableExtMatchAndQA           = 0,                            // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
   Int_t     enableLightOutput             = 0,   // switch to run light output (only essential histograms for afterburner)
@@ -66,7 +66,7 @@ void AddTask_GammaCaloIso_pp(
   TString sAdditionalTrainConfig      = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "", "");
   if (sAdditionalTrainConfig.Atoi() > 0){
     trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
-    cout << "INFO: AddTask_GammaConvV1_pPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+    cout << "INFO: AddTask_GammaCaloIso_pp running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
   }
   TString corrTaskSetting             = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "CF", "");
   if(corrTaskSetting.CompareTo(""))
@@ -90,7 +90,7 @@ void AddTask_GammaCaloIso_pp(
   TH1S* histoAcc = 0x0;         // histo for modified acceptance
   TString strModifiedAcc              = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "MODIFYACC", "");
   if(strModifiedAcc.Contains("MODIFYACC")){
-    cout << "INFO: AddTask_GammaCalo_pp activating 'MODIFYacc'" << endl;
+    cout << "INFO: AddTask_GammaCaloIso_pp activating 'MODIFYacc'" << endl;
     TString tempType = strModifiedAcc;
     tempType.Replace(0,9,"");
     cout << "INFO: connecting to alien..." << endl;
