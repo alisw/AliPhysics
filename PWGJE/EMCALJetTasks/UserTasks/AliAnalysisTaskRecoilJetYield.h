@@ -42,10 +42,6 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
     kInclusive = 0,
     kRecoil = 1
   };
-  enum DerivSubtrOrder {
-    kSecondOrder = 0,
-    kFirstOrder = 1
-  };
 
   AliAnalysisTaskRecoilJetYield();
   AliAnalysisTaskRecoilJetYield(const char *name);
@@ -78,7 +74,6 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   void SetSubJetMinPt(Float_t SubJetMinPt)                  {fSubJetMinPt=SubJetMinPt;}
   void SetRMatched(Double_t RMatched)                       {fRMatched=RMatched;}
   void SetSharedFractionPtMin(Double_t SharedFractionPtMin) {fSharedFractionPtMin=SharedFractionPtMin;}
-  void SetDerivativeSubtractionOrder(Int_t Order)           {fDerivSubtrOrder = Order;}
   void SetFullTree(Bool_t FullTree)                         {fFullTree = FullTree;}
   void SetBetaSD(Double_t BetaSD)                           {fBeta_SD = BetaSD;}
   void SetZCut(Double_t ZCut)                               {fZCut = ZCut;}
@@ -137,7 +132,6 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   Double_t                            fSharedFractionPtMin;
   Double_t                            Background_Median;
   Double_t                            Background_Fluc;
-  Int_t                               fDerivSubtrOrder;
   Bool_t                              fFullTree;
   Double_t                            fBeta_SD;
   Double_t                            fZCut;

@@ -21,10 +21,10 @@ AliAnalysisTaskRecoilJetYield* AddTaskRecoilJetYield(const char * njetsData, //d
 								    TString     trigClass      = "",
 								    TString     kEmcalTriggers = "",
 								    TString     tag            = "",
-								    AliAnalysisTaskRecoilJetYield::JetShapeType jetShapeType,
-								    AliAnalysisTaskRecoilJetYield::JetShapeSub jetShapeSub,
-								    AliAnalysisTaskRecoilJetYield::JetSelectionType jetSelection,
-								    Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0., AliAnalysisTaskRecoilJetYield::DerivSubtrOrder derivSubtrOrder = 0  ) {
+								    AliAnalysisTaskRecoilJetYield::JetShapeType jetShapeType = 0,
+								    AliAnalysisTaskRecoilJetYield::JetShapeSub jetShapeSub = 0,
+								    AliAnalysisTaskRecoilJetYield::JetSelectionType jetSelection = 0,
+								    Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0.  ) {
   
   
   
@@ -44,18 +44,18 @@ AliAnalysisTaskRecoilJetYield* AddTaskRecoilJetYield(const char * njetsData, //d
       ::Error("AliAnalysisTaskRecoilJetYield", "This task requires an input event handler");
       return NULL;
     }
-
+  TString wagonName1,wagonName2;
   if (jetShapeType==AliAnalysisTaskRecoilJetYield::kData || jetShapeType==AliAnalysisTaskRecoilJetYield::kSim){
-    TString wagonName1 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%s",njetsData,trigClass.Data(),tag.Data());
-    TString wagonName2 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%sTree",njetsData,trigClass.Data(),tag.Data());
+    wagonName1 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%s",njetsData,trigClass.Data(),tag.Data());
+    wagonName2 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%sTree",njetsData,trigClass.Data(),tag.Data());
   }
   if (jetShapeType==AliAnalysisTaskRecoilJetYield::kTrue || jetShapeType==AliAnalysisTaskRecoilJetYield::kTrueDet || jetShapeType==AliAnalysisTaskRecoilJetYield::kGenOnTheFly){
-    TString wagonName1 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%s",njetsTrue,trigClass.Data(),tag.Data());
-    TString wagonName2 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%sTree",njetsTrue,trigClass.Data(),tag.Data());
+    wagonName1 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%s",njetsTrue,trigClass.Data(),tag.Data());
+    wagonName2 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%sTree",njetsTrue,trigClass.Data(),tag.Data());
   }
   if (jetShapeType==AliAnalysisTaskRecoilJetYield::kDetEmbPart){
-    TString wagonName1 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%s",njetsHybridS,trigClass.Data(),tag.Data());
-    TString wagonName2 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%sTree",njetsHybridS,trigClass.Data(),tag.Data());
+    wagonName1 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%s",njetsHybridS,trigClass.Data(),tag.Data());
+    wagonName2 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%sTree",njetsHybridS,trigClass.Data(),tag.Data());
   }
   //Configure jet tagger task
   AliAnalysisTaskRecoilJetYield *task = new AliAnalysisTaskRecoilJetYield(wagonName1.Data());
