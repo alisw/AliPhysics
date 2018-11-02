@@ -21,9 +21,9 @@ AliAnalysisTaskRecoilJetYield* AddTaskRecoilJetYield(const char * njetsData, //d
 								    TString     trigClass      = "",
 								    TString     kEmcalTriggers = "",
 								    TString     tag            = "",
-								    AliAnalysisTaskRecoilJetYield::JetShapeType jetShapeType = 0,
-								    AliAnalysisTaskRecoilJetYield::JetShapeSub jetShapeSub = 0,
-								    AliAnalysisTaskRecoilJetYield::JetSelectionType jetSelection = 0,
+								    AliAnalysisTaskRecoilJetYield::JetShapeType jetShapeType = kTrue,
+								    AliAnalysisTaskRecoilJetYield::JetShapeSub jetShapeSub = kNoSub,
+								    AliAnalysisTaskRecoilJetYield::JetSelectionType jetSelection = kInclusive,
 								    Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0.  ) {
   
   
