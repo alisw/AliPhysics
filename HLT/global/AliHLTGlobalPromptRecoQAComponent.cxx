@@ -973,10 +973,11 @@ int histStruct::Fill()
 {
   //we are filtering out values which are exacly zero.
   //don't remeber exactly why but probably some invalid values caused spikes? is this the right way to go?
-  if (x.value && (*x.value!=0.) && (y.value)?(*y.value!=0.):1. )
+  bool fill = x.value && (*x.value!=0.) && ((y.value)?(*y.value!=0.):true);
+  if (fill)
   {
     if (!hist) return 0;
-    hist->Fill(*x.value, (y.value)?(*y.value):0.);
+    hist->Fill(*x.value, (y.value)?(*y.value):1.);
     return 1;
   }
   return 0;
