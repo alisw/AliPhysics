@@ -1,5 +1,15 @@
+#if !defined (__CINT__) || defined (__MAKECINT__)
+#include "Rtypes.h"
+#include "TH1F.h"
+#include "TF1.h"
+#include "TCollection.h"
+#include "TFile.h"
+#include "TMath.h"
+#include <cstdio>
+#endif
 //______________________________________________________
-Double_t GetBoundaryForPercentile( TH1D *histo, Double_t lPercentileRequested ) {
+//
+Double_t GetBoundaryForPercentile( TH1F *histo, Double_t lPercentileRequested ) {
     //This function returns the boundary for a specific percentile.
     Double_t lReturnValue = 0.0;
     Double_t lPercentile = 100.0 - lPercentileRequested;
@@ -46,8 +56,8 @@ const Long_t lNOnlineRefBins = sizeof (lOnlineReferenceY) / sizeof(Double_t);
 
 
 
-TH1D *hReferenceV0M;
-TH1D *hOnlineReferenceV0M;
+TH1F *hReferenceV0M;
+TH1F *hOnlineReferenceV0M;
 
 //______________________________________________________
 Double_t pdf_PbPb_kno(Double_t *x, Double_t *par)
@@ -86,7 +96,7 @@ Double_t pdf_PbPb_onlinekno(Double_t *x, Double_t *par)
 Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
     
     TString lStudiedTriggers[2] = {"V0M", "V0MOnline"};
-    
+   
     if( !lIn ){
         //For debugging purposes: grab from actual file
         TFile *file = new TFile("TriggerExampleList.root", "READ") ;
@@ -114,13 +124,14 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
 
     for(Int_t itrig=0; itrig<2; itrig++){
         //Get basic macros
-        TH1D *histo = (TH1D*) lIn->FindObject(Form("fHistMult%s",lStudiedTriggers[itrig].Data()));
-        TH1D *histoc = (TH1D*) lIn->FindObject(Form("fHistMult%s_Central",lStudiedTriggers[itrig].Data()));
-        TH1D *histosc = (TH1D*) lIn->FindObject(Form("fHistMult%s_SemiCentral",lStudiedTriggers[itrig].Data()));
-        TH1D *histoextra = (TH1D*) lIn->FindObject(Form("fHistMult%s_C0V0H",lStudiedTriggers[itrig].Data()));
+        TH1F *histo = (TH1F*) lIn->FindObject(Form("fHistMult%s",lStudiedTriggers[itrig].Data()));
+        TH1F *histoc = (TH1F*) lIn->FindObject(Form("fHistMult%s_Central",lStudiedTriggers[itrig].Data()));
+        TH1F *histosc = (TH1F*) lIn->FindObject(Form("fHistMult%s_SemiCentral",lStudiedTriggers[itrig].Data()));
+        TH1F *histoextra = (TH1F*) lIn->FindObject(Form("fHistMult%s_C0V0H",lStudiedTriggers[itrig].Data()));
         
         if( !histo || !histoc || !histosc || !histoextra ) {
             cout<<"Received incomplete input for type "<<lStudiedTriggers[itrig]<<". Skipping."<<endl;
+            printf("histo %p histoc %p histosc %p histoextra %p\n",histo, histoc, histosc, histoextra);
             continue;
         }
         
@@ -143,16 +154,16 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         cout<<lCentBoundsRaw[100]<<" (end)"<<endl;
         
         cout<<"Classifying..."<<endl;
-        TH1D* fHistCentrality             = new TH1D(Form("fHistCentrality%s",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
-        TH1D* fHistCentrality_Central     = new TH1D(Form("fHistCentrality%s_Central",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
-        TH1D* fHistCentrality_SemiCentral = new TH1D(Form("fHistCentrality%s_SemiCentral",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
-        TH1D* fHistCentrality_C0V0H       = new TH1D(Form("fHistCentrality%s_C0V0H",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
+        TH1F* fHistCentrality             = new TH1F(Form("fHistCentrality%s",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
+        TH1F* fHistCentrality_Central     = new TH1F(Form("fHistCentrality%s_Central",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
+        TH1F* fHistCentrality_SemiCentral = new TH1F(Form("fHistCentrality%s_SemiCentral",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
+        TH1F* fHistCentrality_C0V0H       = new TH1F(Form("fHistCentrality%s_C0V0H",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
         
         fHistCentrality->Sumw2();
         fHistCentrality_Central->Sumw2();
         fHistCentrality_SemiCentral->Sumw2();
         
-        TH1D *hClassifier = new TH1D(Form("hClassifier_%s", lStudiedTriggers[itrig].Data()), "", 100, lCentBoundsRaw);
+        TH1F *hClassifier = new TH1F(Form("hClassifier_%s", lStudiedTriggers[itrig].Data()), "", 100, lCentBoundsRaw);
         for(Int_t i=0; i<101; i++){
             hClassifier -> SetBinContent( i+1 , 99.5 - i );
         }
@@ -184,11 +195,11 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         
         //Prepare reference histogram
         if(lStudiedTriggers[itrig].Contains("Online")==kFALSE){
-            hReferenceV0M = new TH1D(Form("fHistReference%s",lStudiedTriggers[itrig].Data()), "", lNRefBins, lReferenceX);
+            hReferenceV0M = new TH1F(Form("fHistReference%s",lStudiedTriggers[itrig].Data()), "", lNRefBins, lReferenceX);
             for(Int_t i=1; i<hReferenceV0M->GetNbinsX()+1; i++)
                 hReferenceV0M->SetBinContent(i, lReferenceY[i-1]);
         }else{
-            hOnlineReferenceV0M = new TH1D(Form("fHistReference%s",lStudiedTriggers[itrig].Data()), "", lNOnlineRefBins, lOnlineReferenceX);
+            hOnlineReferenceV0M = new TH1F(Form("fHistReference%s",lStudiedTriggers[itrig].Data()), "", lNOnlineRefBins, lOnlineReferenceX);
             for(Int_t i=1; i<hOnlineReferenceV0M->GetNbinsX()+1; i++)
                 hOnlineReferenceV0M->SetBinContent(i, lOnlineReferenceY[i-1]);
         }
@@ -220,7 +231,7 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         
         cout<<"Now creating anchored histogram..."<<endl;
         
-        TH1D *histo_KNOanchored = (TH1D*) histo->Clone(Form("fHistMultKNO%s",lStudiedTriggers[itrig].Data()));
+        TH1F *histo_KNOanchored = (TH1F*) histo->Clone(Form("fHistMultKNO%s",lStudiedTriggers[itrig].Data()));
         
         //Find the bin to anchor to (precision: +/- 1 bin)
         Int_t lAnchorBinKNO = histo_KNOanchored->FindBin(lAnchorPointKNO);
@@ -240,10 +251,10 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         
         //Repeat procedure done before
         cout<<"Classifying after KNO-scaling anchoring..."<<endl;
-        TH1D* fHistCentralityKNO             = new TH1D(Form("fHistCentralityKNO%s",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
-        TH1D* fHistCentralityKNO_Central     = new TH1D(Form("fHistCentralityKNO%s_Central",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
-        TH1D* fHistCentralityKNO_SemiCentral = new TH1D(Form("fHistCentralityKNO%s_SemiCentral",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
-        TH1D* fHistCentralityKNO_C0V0H       = new TH1D(Form("fHistCentralityKNO%s_C0V0H",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
+        TH1F* fHistCentralityKNO             = new TH1F(Form("fHistCentralityKNO%s",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
+        TH1F* fHistCentralityKNO_Central     = new TH1F(Form("fHistCentralityKNO%s_Central",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
+        TH1F* fHistCentralityKNO_SemiCentral = new TH1F(Form("fHistCentralityKNO%s_SemiCentral",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
+        TH1F* fHistCentralityKNO_C0V0H       = new TH1F(Form("fHistCentralityKNO%s_C0V0H",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
         
         cout<<"Determining calibration on-the-fly..."<<endl;
         Float_t lCentBoundsRawKNO[101];
@@ -257,7 +268,7 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         lCentBoundsRawKNO[100] = 1e+5;
         cout<<lCentBoundsRawKNO[100]<<" (end)"<<endl;
         
-        TH1D *hClassifierKNO = new TH1D(Form("hClassifierKNO_%s",lStudiedTriggers[itrig].Data()), "", 100, lCentBoundsRawKNO);
+        TH1F *hClassifierKNO = new TH1F(Form("hClassifierKNO_%s",lStudiedTriggers[itrig].Data()), "", 100, lCentBoundsRawKNO);
         for(Int_t i=0; i<101; i++){
             hClassifierKNO -> SetBinContent( i+1 , 99.5 - i );
         }
