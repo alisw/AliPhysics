@@ -591,13 +591,6 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   NewHistogram("MUFAST,fHistITSSAtracks_SSDclusters,ITSSAP tracks vs SSD clusters,nClustersSSD,nITSSAPtracks");
   NewHistogram("CINT7,fHistITSSAtracks_SSDclusters,ITSSAP tracks vs SSD clusters,nClustersSSD,nITSSAPtracks");
 
-  //vertex Z monitoring
-  NewHistogram("CINT7ZAC-B-NOPF-CENT,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,");
-  NewHistogram("CTVXZAC-B-NOPF-CENT-B-NOPF-CENT,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,");
-  NewHistogram("CINT7-B-NOPF-MUFAST,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,");
-  NewHistogram("C0TVX-B-NOPF-MUFAST,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,");
-  NewHistogram("C0V0M-B-NOPF-CENT,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,");
-  NewHistogram("CTVXV0M-B-NOPF-CENT,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,");
   //End Histograms
 
   fpHWCFData = new AliHLTTPCHWCFData;

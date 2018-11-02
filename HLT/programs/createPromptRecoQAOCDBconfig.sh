@@ -3,6 +3,12 @@ main ()
 {
   CONFIG=$(cat << EOF
 histogram=\',fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,\'
+histogram=\'INT7ZAC-B-NOPF-CENT,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,\'
+histogram=\'CTVXZAC-B-NOPF-CENT-B-NOPF-CENT,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,\'
+histogram=\'CINT7-B-NOPF-MUFAST,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,\'
+histogram=\'C0TVX-B-NOPF-MUFAST,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,\'
+histogram=\'C0V0M-B-NOPF-CENT,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,\'
+histogram=\'CTVXV0M-B-NOPF-CENT,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,\'
 EOF
 )
 
