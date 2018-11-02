@@ -21,9 +21,9 @@ AliAnalysisTaskRecoilJetYield* AddTaskRecoilJetYield(const char * njetsData, //d
 								    TString     trigClass      = "",
 								    TString     kEmcalTriggers = "",
 								    TString     tag            = "",
-								    AliAnalysisTaskRecoilJetYield::JetShapeType jetShapeType = kTrue,
-								    AliAnalysisTaskRecoilJetYield::JetShapeSub jetShapeSub = kNoSub,
-								    AliAnalysisTaskRecoilJetYield::JetSelectionType jetSelection = kInclusive,
+						     AliAnalysisTaskRecoilJetYield::JetShapeType jetShapeType = AliAnalysisTaskRecoilJetYield::kTruth,
+						     AliAnalysisTaskRecoilJetYield::JetShapeSub jetShapeSub = AliAnalysisTaskRecoilJetYield::kNoSub,
+						     AliAnalysisTaskRecoilJetYield::JetSelectionType jetSelection = AliAnalysisTaskRecoilJetYield::kInclusive,
 								    Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0.  ) {
   
   
@@ -49,7 +49,7 @@ AliAnalysisTaskRecoilJetYield* AddTaskRecoilJetYield(const char * njetsData, //d
     wagonName1 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%s",njetsData,trigClass.Data(),tag.Data());
     wagonName2 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%sTree",njetsData,trigClass.Data(),tag.Data());
   }
-  if (jetShapeType==AliAnalysisTaskRecoilJetYield::kTrue || jetShapeType==AliAnalysisTaskRecoilJetYield::kTrueDet || jetShapeType==AliAnalysisTaskRecoilJetYield::kGenOnTheFly){
+  if (jetShapeType==AliAnalysisTaskRecoilJetYield::kTruth || jetShapeType==AliAnalysisTaskRecoilJetYield::kTrueDet || jetShapeType==AliAnalysisTaskRecoilJetYield::kGenOnTheFly){
     wagonName1 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%s",njetsTrue,trigClass.Data(),tag.Data());
     wagonName2 = Form("AliAnalysisTaskRecoilJetYield_%s_TC%s%sTree",njetsTrue,trigClass.Data(),tag.Data());
   }
@@ -104,8 +104,8 @@ AliAnalysisTaskRecoilJetYield* AddTaskRecoilJetYield(const char * njetsData, //d
 
   TString strType(type);
   
-  ///////kTrue///////
-  if (jetShapeType==AliAnalysisTaskRecoilJetYield::kTrue) {
+  ///////kTruth///////
+  if (jetShapeType==AliAnalysisTaskRecoilJetYield::kTruth) {
     JetContTrue = task->AddJetContainer(njetsTrue,strType,R);
     if(JetContTrue) {
       JetContTrue->SetRhoName(nrhoBase);
@@ -240,7 +240,7 @@ AliAnalysisTaskRecoilJetYield* AddTaskRecoilJetYield(const char * njetsData, //d
   TString contName1(wagonName1);
   TString contName2(wagonName2);
   
-  if (jetShapeType == AliAnalysisTaskRecoilJetYield::kTrue){
+  if (jetShapeType == AliAnalysisTaskRecoilJetYield::kTruth){
     contName1 += "_True";
     contName2 += "_True";
   }

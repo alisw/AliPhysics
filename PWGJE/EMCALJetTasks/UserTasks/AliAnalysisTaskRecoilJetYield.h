@@ -26,7 +26,7 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
  public:
   
   enum JetShapeType {
-    kTrue = 0,   // generated jets only 
+    kTruth = 0,   // generated jets only 
     kTrueDet =1,  // detector and generated jets  
     kData   = 2,  // raw data 
     kDetEmbPart = 3,  //detector embedded jets
