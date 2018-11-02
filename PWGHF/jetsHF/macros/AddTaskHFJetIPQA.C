@@ -106,6 +106,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     combinedName.Form("%s%s", name.Data(),suffix);
     AliAnalysisTaskHFJetIPQA* jetTask = new AliAnalysisTaskHFJetIPQA(combinedName);
     if(useCorrelationTree) jetTask->useTreeForCorrelations(kTRUE);
+    jetTask->SetJetRadius(jetradius);
 
     if(isMC && fileMCoverDataWeights){
         TH1F * h[20] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
@@ -119,6 +120,8 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
         Printf("%s :: Weights written to analysis task.",taskname);
         if(fileMCoverDataWeights) fileMCoverDataWeights->Close();
     }
+
+
 
     // Load and setup Fluka correction factors from file
     //==============================================================================
