@@ -1099,15 +1099,20 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				else if(partonpdg==5)MCJetflavour=3;
 			}
 
-			fh1dJetGenPt->Fill(jetgen->Pt(),fPythiaEventWeight);
+			double genpt = jetgen->Pt();
+			if(!(fJetContainerMC->GetRhoParameter() == 0x0)){
+				 genpt = genpt - fJetContainerMC->GetRhoVal() * jetgen->Area();
+			}
+
+			fh1dJetGenPt->Fill(genpt,fPythiaEventWeight);
 			if(MCJetflavour ==0)
-				fh1dJetGenPtUnidentified->Fill(jetgen->Pt(),fPythiaEventWeight);
+				fh1dJetGenPtUnidentified->Fill(genpt,fPythiaEventWeight);
 			else if(MCJetflavour ==1)
-				fh1dJetGenPtudsg->Fill(jetgen->Pt(),fPythiaEventWeight);
+				fh1dJetGenPtudsg->Fill(genpt,fPythiaEventWeight);
 			else if(MCJetflavour ==2)
-				fh1dJetGenPtc->Fill(jetgen->Pt(),fPythiaEventWeight);
+				fh1dJetGenPtc->Fill(genpt,fPythiaEventWeight);
 			else if(MCJetflavour ==3)
-				fh1dJetGenPtb->Fill(jetgen->Pt(),fPythiaEventWeight);
+				fh1dJetGenPtb->Fill(genpt,fPythiaEventWeight);
 		}
 		jetgen = 0x0;
 		delete jetgen;
@@ -2063,7 +2068,9 @@ Double_t AliAnalysisTaskBJetTC::CalculateJetProb(AliEmcalJet *jet)
       AliAODTrack* trackV = 0x0;
       if(fUsePicoTracks) trackV = (AliAODTrack*)((AliPicoTrack*)jet->Track(itrack))->GetTrack();
       else trackV = (AliAODTrack*)((fJetContainerData->GetParticleContainer())->GetParticle(jet->TrackAt(itrack)));
-      
+
+      if(!trackV) continue;
+
       //class selection
       Int_t QualityClass=0;
       double dca[2] = {0};
@@ -3666,7 +3673,6 @@ Bool_t AliAnalysisTaskBJetTC::IsTrackAcceptedQuality(AliAODTrack* track ,AliEmca
   //if(track->GetNcls(0)<fTCMinHitsITS) return kFALSE;//2
   if(track->Chi2perNDF()>=fTCMaxChi2pNDF) return kFALSE;//5
 
-  
   double dcaTrackJet =0,lindeclen =0 ;
 
   if(!CalculateJetSignedTrackImpactParameter(track,Jet,imp,cov,sign,dcaTrackJet,lindeclen)) return kFALSE;
