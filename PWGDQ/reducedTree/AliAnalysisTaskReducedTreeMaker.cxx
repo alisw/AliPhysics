@@ -334,31 +334,32 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
      default:
         break;
   };
- 
-  if(fWriteTree)
+
+	if(fWriteTree) {
     fTree->Branch("Event",&fReducedEvent,16000,99);
 
-  // if user set active branches
-  TObjArray* aractive=fActiveBranches.Tokenize(";");
-  if(aractive->GetEntries()>0) {fTree->SetBranchStatus("*", 0);}
-  for(Int_t i=0; i<aractive->GetEntries(); i++){
-    fTree->SetBranchStatus(aractive->At(i)->GetName(), 1);
-  }
+		// if user set active branches
+		TObjArray* aractive=fActiveBranches.Tokenize(";");
+		if(aractive->GetEntries()>0) {fTree->SetBranchStatus("*", 0);}
+		for(Int_t i=0; i<aractive->GetEntries(); i++){
+			fTree->SetBranchStatus(aractive->At(i)->GetName(), 1);
+		}
 
-  // if user set inactive branches
-  TObjArray* arinactive=fInactiveBranches.Tokenize(";");
-  for(Int_t i=0; i<arinactive->GetEntries(); i++){
-    fTree->SetBranchStatus(arinactive->At(i)->GetName(), 0);
-  }
- 
-  // if MC info is not requested, then set the respective branches off
-  if(!fFillMCInfo) {
-    fTree->SetBranchStatus("fTracks.fMC*", 0); 
-  }
-  if(!fFillEventPlaneInfo) {
-    fTree->SetBranchStatus("fEventPlane.*", 0);   
-  }
- 
+		// if user set inactive branches
+		TObjArray* arinactive=fInactiveBranches.Tokenize(";");
+		for(Int_t i=0; i<arinactive->GetEntries(); i++){
+			fTree->SetBranchStatus(arinactive->At(i)->GetName(), 0);
+		}
+
+		// if MC info is not requested, then set the respective branches off
+		if(!fFillMCInfo) {
+			fTree->SetBranchStatus("fTracks.fMC*", 0);
+		}
+		if(!fFillEventPlaneInfo) {
+			fTree->SetBranchStatus("fEventPlane.*", 0);
+		}
+	}
+
   /*if(fFillBayesianPIDInfo) {
     fBayesianResponse = new AliFlowBayesianPID();
     fBayesianResponse->SetNewTrackParam();
