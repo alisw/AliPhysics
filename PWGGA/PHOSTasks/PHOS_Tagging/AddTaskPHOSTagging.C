@@ -23,7 +23,7 @@ AliAnalysisTaskTaggedPhotons* AddTaskPHOSTagging (const char* name = "PHOSTaggin
 
   task->SelectCollisionCandidates(offlineTriggerMask);
  
-  task->SetTimeCut(25.e-9) ;
+  task->SetTimeCut(timeCut) ;
   task->SetTrigger(ignorePHI7Events) ;
   task->SetCentralityEstimator(centralityEstinator) ; 
   
