@@ -890,14 +890,13 @@ void AliEmcalCorrectionTask::SetupContainer(const AliEmcalContainerUtils::InputO
   AliClusterContainer * clusterContainer = dynamic_cast<AliClusterContainer *>(cont);
   if (clusterContainer) {
     // Default energy
-    // Probably not needed for the corrections
-    /*result = fYAMLConfig.GetProperty(inputObjectPropertiesPath, "defaultClusterEnergy", tempString, false);
+    result = fYAMLConfig.GetProperty(inputObjectPropertiesPath, "defaultClusterEnergy", tempString, false);
     if (result) {
       // Need to get the enumeration
       AliVCluster::VCluUserDefEnergy_t clusterEnergyType = AliClusterContainer::fgkClusterEnergyTypeMap.at(tempString);
       AliDebugStream(2) << clusterContainer->GetName() << ": Setting cluster energy type to " << clusterEnergyType << std::endl;
       clusterContainer->SetDefaultClusterEnergy(clusterEnergyType);
-    }*/
+    }
 
     // NonLinCorrEnergyCut
     result = fYAMLConfig.GetProperty(inputObjectPropertiesPath, "clusNonLinCorrEnergyCut", tempDouble, false);

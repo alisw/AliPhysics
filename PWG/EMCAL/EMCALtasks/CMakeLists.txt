@@ -78,6 +78,7 @@ set(SRCS
   AliEmcalCorrectionClusterExotics.cxx
   AliEmcalCorrectionClusterTrackMatcher.cxx
   AliEmcalCorrectionClusterHadronicCorrection.cxx
+  AliEmcalCorrectionClusterEnergyVariation.cxx
   AliEmcalCorrectionPHOSCorrections.cxx
   AliAnalysisTaskEmcalOccupancy.cxx
   TestAliEmcalAODFilterBitCuts.cxx
