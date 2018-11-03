@@ -380,7 +380,7 @@ Int_t DoProcessAllData(void* outputsocket)
     gROOT->ProcessLineFast(Form("process((TCollection*)%p,(TCollection*)%p)",&fInputObjects,&fOutputObjects),&error);
     if (error != TInterpreter::kNoError) {printf("error %i executing process(...)\n");}
     DoSend(outputsocket);
-    fOutputObjects.Clear(); //just clear, objects are destroyed by transport
+    fOutputObjects.Delete(); //Delete output objects, they are already serialized.
     fInputObjects.Delete(); //Delete input objects after use
   }
   return 0;
