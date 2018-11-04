@@ -131,7 +131,10 @@ private:
     AliVZERORecoParam     *fVZERORecoParam;     //! transient
     
     //reference trigger
-    TString fRefTrigger; 
+    TString fRefTrigger;
+    TString fTrigger1;
+    TString fTrigger2;
+    TString fTrigger3;
     
     TH1F fHistMult[24]; //all histograms we'll need
     

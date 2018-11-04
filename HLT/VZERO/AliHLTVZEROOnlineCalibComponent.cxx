@@ -59,7 +59,10 @@ AliHLTVZEROOnlineCalibComponent::AliHLTVZEROOnlineCalibComponent() :
 AliHLTProcessor(),
 fRunInfo(NULL),
 fVZERORecoParam(NULL),
-fRefTrigger("C0TVX")
+fRefTrigger("CINT7-B"),
+fTrigger1("CV0H7-B"),
+fTrigger2("CMID7-B"),
+fTrigger3("CINT7ZAC-B")
 {
     // a component meant to extract simple V0 amplitudes for an
     // online monitoring of V0 conditions. The vast majority of
@@ -74,13 +77,16 @@ fRefTrigger("C0TVX")
     //Initialize
     TString lDetTypes[3] = {"V0M", "V0A", "V0C"};
     TString lReadoutTypes[2] = {"", "Online"};
-    TString lTrigTypes[4] = {"", "_Central", "_SemiCentral", "_C0V0H"};
+    TString lTrigTypes[4] = {"", "_Central", "_SemiCentral", "_Extra"};
     TString lTitles[2] = {"amplitude", "trigger charge"};
     
     for(Int_t i=0; i<24; i++){
         TString lName = Form("fHistMult%s%s%s", lDetTypes[i%3].Data(), lReadoutTypes[(i/3)%2].Data(), lTrigTypes[i/6].Data());
         TString lTitle = Form("%s %s", lDetTypes[i%3].Data(), lTitles[(i/3)%2].Data());
-        if(i/6<1) lTitle.Append(Form(" ref: %s", fRefTrigger.Data()));
+        if(i/6==0) lTitle.Append(Form(" ref: %s", fRefTrigger.Data()));
+        if(i/6==1) lTitle.Append(Form(" trig: %s", fTrigger1.Data()));
+        if(i/6==2) lTitle.Append(Form(" trig: %s", fTrigger2.Data()));
+        if(i/6==3) lTitle.Append(Form(" trig: %s", fTrigger3.Data()));
         fHistMult[i].SetName(lName.Data());
         fHistMult[i].SetTitle(lTitle.Data());
         fHistMult[i].SetYTitle("Event Count");
@@ -325,9 +331,9 @@ Int_t AliHLTVZEROOnlineCalibComponent::DoEvent(const AliHLTComponentEventData& /
     if (ctp)
     {
         lIsMinBias=ctp->MatchTriggerRE(fRefTrigger.Data());
-        lIsCentral=ctp->MatchTriggerRE("C0V0M");
-        lIsSemiCentral=ctp->MatchTriggerRE("C0VSC");
-        lIsC0V0H=ctp->MatchTriggerRE("C0V0H");
+        lIsCentral=ctp->MatchTriggerRE(fTrigger1.Data());
+        lIsSemiCentral=ctp->MatchTriggerRE(fTrigger2.Data());
+        lIsC0V0H=ctp->MatchTriggerRE(fTrigger3.Data());
     }
     if (esdVZERO && itsSpdVertex)
     {
@@ -386,6 +392,15 @@ int AliHLTVZEROOnlineCalibComponent::ProcessOption(TString option, TString value
     {
         //Simple setter
         fRefTrigger = value.Data();
+    }
+    else if (option.EqualTo("trigger1") ){
+        fTrigger1 = value.Data();
+    }
+    else if (option.EqualTo("trigger2") ){
+        fTrigger2 = value.Data();
+    }
+    else if (option.EqualTo("trigger3") ){
+        fTrigger3 = value.Data();
     }
     else if (option.EqualTo("pushback-period")) {} //Let -pushback-period optionm pass
     else
