@@ -383,7 +383,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fListOfHistos->Add(new TH1F("eventStat", ";;events", 4, -0.5, 3.5));
   fListOfHistos->Add(new TH2F("mixedDist", ";centrality;tracks;events", 101, 0, 101, 200, 0, fMixingTracks * 1.5));
   fListOfHistos->Add(new TH2F("mixedDist2", ";centrality;events;events", 101, 0, 101, 100, -0.5, 99.5));
-  fListOfHistos->Add(new TH2F("referenceMultiplicity", ";centrality;tracks;events", 101, 0, 101, 200, 0, 200));
+  fListOfHistos->Add(new TH2F("referenceMultiplicity", ";centrality;tracks;events", 101, 0, 101, 200, -0.5, 199.5));
   if (fCentralityMethod == "V0A_MANUAL")
   {
     fListOfHistos->Add(new TH2F("V0AMult", "V0A multiplicity;V0A multiplicity;V0A multiplicity (scaled)", 1000, -.5, 999.5, 1000, -.5, 999.5));
