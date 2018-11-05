@@ -36,6 +36,24 @@ Double_t GetBoundaryForPercentile( TH1F *histo, Double_t lPercentileRequested ) 
 }
 
 //______________________________________________________
+TString GetTriggerFromTitle( TString lTitle ){
+    //This function serves to extract trigger selection string from a title
+    TString lReturnValue = "N/A";
+    if( lTitle.Contains(" ref: ")){
+        Int_t lRemInd = lTitle.Index(" ref: ");
+        lTitle.Remove(0,lRemInd);
+        lTitle.ReplaceAll(" ref: ", "");
+        lReturnValue = lTitle;
+    }else if( lTitle.Contains(" trig: ")){
+        Int_t lRemInd = lTitle.Index(" trig: ");
+        lTitle.Remove(0,lRemInd);
+        lTitle.ReplaceAll(" trig: ", "");
+        lReturnValue = lTitle;
+    }
+    return lReturnValue;
+}
+
+//______________________________________________________
 // Reference values obtained from run 246087, LHC15o
 //______________________________________________________
 const Double_t lReferenceX[] = {0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100, 2200, 2300, 2400, 2500, 2600, 2700, 2800, 2900, 3000, 3100, 3200, 3300, 3400, 3500, 3600, 3700, 3800, 3900, 4000, 4100, 4200, 4300, 4400, 4500, 4600, 4700, 4800, 4900, 5000, 5100, 5200, 5300, 5400, 5500, 5600, 5700, 5800, 5900, 6000, 6100, 6200, 6300, 6400, 6500, 6600, 6700, 6800, 6900, 7000, 7100, 7200, 7300, 7400, 7500, 7600, 7700, 7800, 7900, 8000, 8100, 8200, 8300, 8400, 8500, 8600, 8700, 8800, 8900, 9000, 9100, 9200, 9300, 9400, 9500, 9600, 9700, 9800, 9900, 10000, 10100, 10200, 10300, 10400, 10500, 10600, 10700, 10800, 10900, 11000, 11100, 11200, 11300, 11400, 11500, 11600, 11700, 11800, 11900, 12000, 12100, 12200, 12300, 12400, 12500, 12600, 12700, 12800, 12900, 13000, 13100, 13200, 13300, 13400, 13500, 13600, 13700, 13800, 13900, 14000, 14100, 14200, 14300, 14400, 14500, 14600, 14700, 14800, 14900, 15000, 15100, 15200, 15300, 15400, 15500, 15600, 15700, 15800, 15900, 16000, 16100, 16200, 16300, 16400, 16500, 16600, 16700, 16800, 16900, 17000, 17100, 17200, 17300, 17400, 17500, 17600, 17700, 17800, 17900, 18000, 18100, 18200, 18300, 18400, 18500, 18600, 18700, 18800, 18900, 19000, 19100, 19200, 19300, 19400, 19500, 19600, 19700, 19800, 19900, 20000, 20100, 20200, 20300, 20400, 20500, 20600, 20700, 20800, 20900, 21000, 21100, 21200, 21300, 21400, 21500, 21600, 21700, 21800, 21900, 22000, 22100, 22200, 22300, 22400, 22500, 22600, 22700, 22800, 22900, 23000, 23100, 23200, 23300, 23400, 23500, 23600, 23700, 23800, 23900, 24000, 24100, 24200, 24300, 24400, 24500, 24600, 24700, 24800, 24900, 25000, 25100, 25200, 25300, 25400, 25500, 25600, 25700, 25800, 25900, 26000, 26100, 26200, 26300, 26400, 26500, 26600, 26700, 26800, 26900, 27000, 27100, 27200, 27300, 27400, 27500, 27600, 27700, 27800, 27900, 28000, 28100, 28200, 28300, 28400, 28500, 28600, 28700, 28800, 28900, 29000, 29100, 29200, 29300, 29400, 29500, 29600, 29700, 29800, 29900, 30000, 30100, 30200, 30300, 30400, 30500, 30600, 30700, 30800, 30900, 31000, 31100, 31200, 31300, 31400, 31500, 31600, 31700, 31800, 31900, 32000, 32100, 32200, 32300, 32400, 32500, 32600, 32700, 32800, 32900, 33000, 33100, 33200, 33300, 33400, 33500, 33600, 33700, 33800, 33900, 34000, 34100, 34200, 34300, 34400, 34500, 34600, 34700, 34800, 34900, 35000, 35100, 35200, 35300, 35400};
@@ -56,8 +74,9 @@ const Double_t lOnlineReferenceY[] = {0.0875729, 0.0549932, 0.039097, 0.0306405,
 const Long_t lNOnlineRefBins = sizeof (lOnlineReferenceY) / sizeof(Double_t);
 
 
-TH1F* hReferenceV0M(NULL);
-TH1F* hOnlineReferenceV0M(NULL);
+
+TH1F *hReferenceV0M(NULL);
+TH1F *hOnlineReferenceV0M(NULL);
 
 //______________________________________________________
 Double_t pdf_PbPb_kno(Double_t *x, Double_t *par)
@@ -96,10 +115,11 @@ Double_t pdf_PbPb_onlinekno(Double_t *x, Double_t *par)
 Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
     
     TString lStudiedTriggers[2] = {"V0M", "V0MOnline"};
-   
+    TFile *file = 0x0;
+    
     if( !lIn ){
         //For debugging purposes: grab from actual file
-        TFile *file = new TFile("TriggerExampleList.root", "READ") ;
+        file = new TFile("TriggerExample.root", "READ") ;
         if(!file) {
             cout<<"No input specified and example file not found! Exiting!"<<endl;
             return -1;
@@ -111,11 +131,11 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
     }
     
     //Save to TCollection inside file (testing)
+    TFile *fFile = 0x0;
     
     if( !lOut ){
         lOut = new TObjArray();
-        TFile *fFile = new TFile("testingontheflycentrality.root", "RECREATE");
-        
+        fFile = new TFile("testingontheflycentrality.root", "RECREATE");
         if(!fFile){
             cout<<"Output not viable, exiting!"<<endl;
             return -1;
@@ -132,12 +152,31 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
     fThresholdTable->SetOption("text0");
     fThresholdTable->SetStats(kFALSE);
     
+    //Prepare reference histogram in case it does not exist
+    if(!hReferenceV0M){
+        hReferenceV0M = new TH1F("fHistReferenceV0M", "", lNRefBins, lReferenceX);
+        for(Int_t i=1; i<hReferenceV0M->GetNbinsX()+1; i++)
+            hReferenceV0M->SetBinContent(i, lReferenceY[i-1]);
+        hReferenceV0M->SetDirectory(0);
+    }
+    if(!hOnlineReferenceV0M){
+        hOnlineReferenceV0M = new TH1F("fHistReferenceV0MOnline", "", lNOnlineRefBins, lOnlineReferenceX);
+        for(Int_t i=1; i<hOnlineReferenceV0M->GetNbinsX()+1; i++)
+            hOnlineReferenceV0M->SetBinContent(i, lOnlineReferenceY[i-1]);
+        hOnlineReferenceV0M->SetDirectory(0);
+    }
+    
     for(Int_t itrig=0; itrig<2; itrig++){
         //Get basic macros
         TH1F *histo = (TH1F*) lIn->FindObject(Form("fHistMult%s",lStudiedTriggers[itrig].Data()));
         TH1F *histoc = (TH1F*) lIn->FindObject(Form("fHistMult%s_Central",lStudiedTriggers[itrig].Data()));
         TH1F *histosc = (TH1F*) lIn->FindObject(Form("fHistMult%s_SemiCentral",lStudiedTriggers[itrig].Data()));
         TH1F *histoextra = (TH1F*) lIn->FindObject(Form("fHistMult%s_Extra",lStudiedTriggers[itrig].Data()));
+        
+        histo->SetLineColor(kBlack);
+        histoc->SetLineColor(kRed+1);
+        histosc->SetLineColor(kGreen+1);
+        histoextra->SetLineColor(kBlue+1);
         
         if( !histo || !histoc || !histosc || !histoextra ) {
             cout<<"Received incomplete input for type "<<lStudiedTriggers[itrig]<<". Skipping."<<endl;
@@ -147,7 +186,7 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         
         Float_t lCentBounds[101];
         Float_t lCentBoundsRaw[101];
-
+        
         cout<<"=================================================="<<endl;
         cout<<" Step 1: now doing unanchored calibration of "<<lStudiedTriggers[itrig]<<endl;
         cout<<"=================================================="<<endl;
@@ -181,14 +220,17 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         fHistCentrality->SetLineColor(kBlack);
         
         fHistCentrality_Central->SetMarkerStyle(21);
+        fHistCentrality_Central->SetMarkerSize(0.7);
         fHistCentrality_Central->SetMarkerColor(kRed+1);
         fHistCentrality_Central->SetLineColor(kRed+1);
         
         fHistCentrality_SemiCentral->SetMarkerStyle(21);
+        fHistCentrality_SemiCentral->SetMarkerSize(0.7);
         fHistCentrality_SemiCentral->SetMarkerColor(kGreen+1);
         fHistCentrality_SemiCentral->SetLineColor(kGreen+1);
         
         fHistCentrality_Extra->SetMarkerStyle(21);
+        fHistCentrality_Extra->SetMarkerSize(0.7);
         fHistCentrality_Extra->SetMarkerColor(kBlue+1);
         fHistCentrality_Extra->SetLineColor(kBlue+1);
         
@@ -244,18 +286,7 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         
         //This run is anchored at a V0M amplitude of 129.59 in our
         //usual centrality calibration.
-
-        //Prepare reference histogram
-        if(lStudiedTriggers[itrig].Contains("Online")==kFALSE && !hReferenceV0M){
-          hReferenceV0M = new TH1F(Form("fHistReference%s",lStudiedTriggers[itrig].Data()), "", lNRefBins, lReferenceX);
-          for(Int_t i=1; i<hReferenceV0M->GetNbinsX()+1; i++)
-            hReferenceV0M->SetBinContent(i, lReferenceY[i-1]);
-        }else if(!hOnlineReferenceV0M){
-          hOnlineReferenceV0M = new TH1F(Form("fHistReference%s",lStudiedTriggers[itrig].Data()), "", lNOnlineRefBins, lOnlineReferenceX);
-          for(Int_t i=1; i<hOnlineReferenceV0M->GetNbinsX()+1; i++)
-            hOnlineReferenceV0M->SetBinContent(i, lOnlineReferenceY[i-1]);
-        }
-
+        
         TF1 *f1_kno = 0x0;
         
         if( lStudiedTriggers[itrig].Contains("Online") == kFALSE ){
@@ -277,7 +308,18 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         f1_kno->SetParName(1, "Y-scaling factor");
         f1_kno->SetNpx(1000);
         
+        cout<<"Fitting... "<<endl;
         histo->Fit(Form("f1_kno_%s",lStudiedTriggers[itrig].Data()),"R0W");
+        
+        //Create a clone for drawing purposes
+        cout<<"Cloning f1... ";
+        TF1 *f1_kno_drawclone = (TF1*) f1_kno->Clone( Form("f1_kno_drawclone_%s",lStudiedTriggers[itrig].Data()) );
+        f1_kno_drawclone->SetLineColor(kRed+1);
+        
+        cout<<"Cloning histo... ";
+        TH1F *Plot1 = (TH1F*) histo->Clone(Form("Plot1_%s", lStudiedTriggers[itrig].Data()));
+        Plot1->GetListOfFunctions()->Add(f1_kno_drawclone);
+        Plot1->SetStats(kFALSE);
         
         Double_t lAnchorPointKNO = f1_kno->GetParameter(0)*129.59;
         
@@ -331,14 +373,17 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         fHistCentralityKNO->SetLineColor(kBlack);
         
         fHistCentralityKNO_Central->SetMarkerStyle(21);
+        fHistCentralityKNO_Central->SetMarkerSize(0.7);
         fHistCentralityKNO_Central->SetMarkerColor(kRed+1);
         fHistCentralityKNO_Central->SetLineColor(kRed+1);
         
         fHistCentralityKNO_SemiCentral->SetMarkerStyle(21);
+        fHistCentralityKNO_SemiCentral->SetMarkerSize(0.7);
         fHistCentralityKNO_SemiCentral->SetMarkerColor(kGreen+1);
         fHistCentralityKNO_SemiCentral->SetLineColor(kGreen+1);
         
         fHistCentralityKNO_Extra->SetMarkerStyle(21);
+        fHistCentralityKNO_Extra->SetMarkerSize(0.7);
         fHistCentralityKNO_Extra->SetMarkerColor(kBlue+1);
         fHistCentralityKNO_Extra->SetLineColor(kBlue+1);
         
@@ -459,6 +504,63 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         fThresholdTable->GetYaxis()->SetBinLabel(2*itrig+1, Form("%s unanchored", lStudiedTriggers[itrig].Data()));
         fThresholdTable->GetYaxis()->SetBinLabel(2*itrig+2, Form("%s anchored", lStudiedTriggers[itrig].Data()));
         
+        //==============================================================================
+        //        Create Plot2, please
+        //==============================================================================
+        TH1F *Plot2 = new TH1F(Form("Plot2_%s", lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
+        
+        TH1F *Plot2_sub0 = (TH1F*) fHistCentralityKNO              ->Clone(Form("Plot2_sub0_%s", lStudiedTriggers[itrig].Data()));
+        TH1F *Plot2_sub1 = (TH1F*) fHistCentralityKNO_Central      ->Clone(Form("Plot2_sub1_%s", lStudiedTriggers[itrig].Data()));
+        TH1F *Plot2_sub2 = (TH1F*) fHistCentralityKNO_SemiCentral  ->Clone(Form("Plot2_sub2_%s", lStudiedTriggers[itrig].Data()));
+        TH1F *Plot2_sub3 = (TH1F*) fHistCentralityKNO_Extra        ->Clone(Form("Plot2_sub3_%s", lStudiedTriggers[itrig].Data()));
+        
+        Plot2->SetStats(kFALSE);
+        Plot2->GetYaxis()->SetTitle("Event Count");
+        Plot2->GetXaxis()->SetTitle("Centrality (%)");
+        
+        Plot2_sub0 ->SetOption("same");
+        Plot2_sub1 ->SetOption("same");
+        Plot2_sub2 ->SetOption("same");
+        Plot2_sub3 ->SetOption("same");
+        
+        //determine good ranges
+        Double_t lMaxY = fHistCentralityKNO->GetMaximum();
+        if ( fHistCentralityKNO_Central->GetMaximum()     > lMaxY ) lMaxY = fHistCentralityKNO_Central    ->GetMaximum();
+        if ( fHistCentralityKNO_SemiCentral->GetMaximum() > lMaxY ) lMaxY = fHistCentralityKNO_SemiCentral->GetMaximum();
+        if ( fHistCentralityKNO_Extra->GetMaximum()       > lMaxY ) lMaxY = fHistCentralityKNO_Extra      ->GetMaximum();
+        
+        //Don't add it to the outgoing directory - will be added to list of functions manually!
+        Plot2_sub0 -> SetDirectory(0);
+        Plot2_sub1 -> SetDirectory(0);
+        Plot2_sub2 -> SetDirectory(0);
+        Plot2_sub3 -> SetDirectory(0);
+        
+        Plot2->GetYaxis()->SetRangeUser(0, lMaxY*1.1);
+        Plot2->SetFillStyle(0);
+        
+        Plot2->GetListOfFunctions()->Add(Plot2_sub0);
+        Plot2->GetListOfFunctions()->Add(Plot2_sub1);
+        Plot2->GetListOfFunctions()->Add(Plot2_sub2);
+        Plot2->GetListOfFunctions()->Add(Plot2_sub3);
+        
+        TLine *lines[3];
+        for(Int_t ilin=0; ilin<3; ilin++){
+            lines[ilin] = new TLine(10+20*ilin, 0, 10+20*ilin, lMaxY*1.05);
+            lines[ilin] -> SetLineStyle(7);
+            lines[ilin] -> SetLineColor(kGray+1);
+            Plot2->GetListOfFunctions()->Add(lines[ilin]);
+        }
+        
+        TLegend *leg = new TLegend(.1, .91, .9, .99);
+        //Process names, please
+        leg->SetNColumns(4);
+        leg->AddEntry(Plot2_sub0, GetTriggerFromTitle(histo->GetTitle()), "lp");
+        leg->AddEntry(Plot2_sub1, GetTriggerFromTitle(histoc->GetTitle()), "lp");
+        leg->AddEntry(Plot2_sub2, GetTriggerFromTitle(histosc->GetTitle()), "lp");
+        leg->AddEntry(Plot2_sub3, GetTriggerFromTitle(histoextra->GetTitle()), "lp");
+        
+        Plot2->GetListOfFunctions()->Add(leg);
+        
         cout<<"=================================================="<<endl;
         cout<<" Step 3: now doing anchoring via NBD-glauber fit"<<endl;
         cout<<"=================================================="<<endl;
@@ -473,11 +575,10 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         lOut -> Add(fHistCentrality_SemiCentral);
         lOut -> Add(fHistCentrality_Extra);
         lOut -> Add(fThresholds);
-    
+        
         //KNO-scaling stuff
-        //lOut -> Add(hReferenceV0M); reference is not needed, come on
         lOut -> Add(f1_kno);
-
+        
         lOut -> Add(histo_KNOanchored);
         lOut -> Add(hClassifierKNO);
         lOut -> Add(fHistCentralityKNO);
@@ -485,6 +586,16 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         lOut -> Add(fHistCentralityKNO_SemiCentral);
         lOut -> Add(fHistCentralityKNO_Extra);
         lOut -> Add(fThresholdsKNO);
+        
+        //Reference plots to draw
+        lOut -> Add(Plot1);
+        lOut -> Add(Plot2);
+        
+        //delete hReferenceV0M; hReferenceV0M=NULL;
+        //delete hOnlineReferenceV0M; hOnlineReferenceV0M=NULL;
+        
+        
+        
     }
     //Nice little table summary
     lOut -> Add(fThresholdTable);
@@ -493,7 +604,17 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
     cout<<"=================================================="<<endl;
     cout<<"Output TList at end of execution: "<<endl;
     lOut->ls();
-    //lOut->Write();
+    if( fFile ){
+        lOut->Write("", TObject::kSingleKey);
+        fFile->Close(); //if you close, you lose the ref histos!
+                          //alternatively, do ::SetDirectory(0);
+        //Cleanup test
+        //lOut->Delete();
+        //lIn->Delete();
+        //file->Close();
+        //fFile->Close();
+    }
+    
     cout<<" Done!"<<endl;
     return 0;
 }
