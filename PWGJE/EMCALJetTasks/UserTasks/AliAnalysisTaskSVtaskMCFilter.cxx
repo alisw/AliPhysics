@@ -192,4 +192,6 @@ Bool_t AliAnalysisTaskSVtaskMCFilter::Run()
 
       }
    }
+
+   return kTRUE;
 }
