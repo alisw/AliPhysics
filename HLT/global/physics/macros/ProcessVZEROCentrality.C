@@ -1,6 +1,7 @@
 #if !defined (__CINT__) || defined (__MAKECINT__)
 #include "Rtypes.h"
 #include "TH1F.h"
+#include "TH2F.h"
 #include "TF1.h"
 #include "TCollection.h"
 #include "TFile.h"
@@ -55,9 +56,8 @@ const Double_t lOnlineReferenceY[] = {0.0875729, 0.0549932, 0.039097, 0.0306405,
 const Long_t lNOnlineRefBins = sizeof (lOnlineReferenceY) / sizeof(Double_t);
 
 
-
-TH1F *hReferenceV0M;
-TH1F *hOnlineReferenceV0M;
+TH1F* hReferenceV0M(NULL);
+TH1F* hOnlineReferenceV0M(NULL);
 
 //______________________________________________________
 Double_t pdf_PbPb_kno(Double_t *x, Double_t *par)
@@ -121,13 +121,23 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
             return -1;
         }
     }
-
+    
+    Int_t lAtLine = 1;
+    TH2F *fThresholdTable = new TH2F("fThresholdTable", "", 3, 0, 3, 4, 0, 4);
+    fThresholdTable->GetXaxis()->SetBinLabel(1, "50%");
+    fThresholdTable->GetXaxis()->SetBinLabel(2, "30%");
+    fThresholdTable->GetXaxis()->SetBinLabel(3, "10%");
+    
+    fThresholdTable->SetMarkerSize(2.5);
+    fThresholdTable->SetOption("text0");
+    fThresholdTable->SetStats(kFALSE);
+    
     for(Int_t itrig=0; itrig<2; itrig++){
         //Get basic macros
         TH1F *histo = (TH1F*) lIn->FindObject(Form("fHistMult%s",lStudiedTriggers[itrig].Data()));
         TH1F *histoc = (TH1F*) lIn->FindObject(Form("fHistMult%s_Central",lStudiedTriggers[itrig].Data()));
         TH1F *histosc = (TH1F*) lIn->FindObject(Form("fHistMult%s_SemiCentral",lStudiedTriggers[itrig].Data()));
-        TH1F *histoextra = (TH1F*) lIn->FindObject(Form("fHistMult%s_C0V0H",lStudiedTriggers[itrig].Data()));
+        TH1F *histoextra = (TH1F*) lIn->FindObject(Form("fHistMult%s_Extra",lStudiedTriggers[itrig].Data()));
         
         if( !histo || !histoc || !histosc || !histoextra ) {
             cout<<"Received incomplete input for type "<<lStudiedTriggers[itrig]<<". Skipping."<<endl;
@@ -157,7 +167,45 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         TH1F* fHistCentrality             = new TH1F(Form("fHistCentrality%s",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
         TH1F* fHistCentrality_Central     = new TH1F(Form("fHistCentrality%s_Central",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
         TH1F* fHistCentrality_SemiCentral = new TH1F(Form("fHistCentrality%s_SemiCentral",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
-        TH1F* fHistCentrality_C0V0H       = new TH1F(Form("fHistCentrality%s_C0V0H",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
+        TH1F* fHistCentrality_Extra       = new TH1F(Form("fHistCentrality%s_Extra",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
+        
+        fHistCentrality->SetStats(0);
+        fHistCentrality_Central->SetStats(0);
+        fHistCentrality_SemiCentral->SetStats(0);
+        fHistCentrality_Extra->SetStats(0);
+        
+        //Some basic cosmetics
+        fHistCentrality->SetMarkerStyle(20);
+        fHistCentrality->SetMarkerSize(0.6);
+        fHistCentrality->SetMarkerColor(kBlack);
+        fHistCentrality->SetLineColor(kBlack);
+        
+        fHistCentrality_Central->SetMarkerStyle(21);
+        fHistCentrality_Central->SetMarkerColor(kRed+1);
+        fHistCentrality_Central->SetLineColor(kRed+1);
+        
+        fHistCentrality_SemiCentral->SetMarkerStyle(21);
+        fHistCentrality_SemiCentral->SetMarkerColor(kGreen+1);
+        fHistCentrality_SemiCentral->SetLineColor(kGreen+1);
+        
+        fHistCentrality_Extra->SetMarkerStyle(21);
+        fHistCentrality_Extra->SetMarkerColor(kBlue+1);
+        fHistCentrality_Extra->SetLineColor(kBlue+1);
+        
+        fHistCentrality->SetTitle(Form("%s, cent. distrib. for reference sample (unanchored)", histo->GetTitle()));
+        fHistCentrality_Central->SetTitle(Form("%s, cent. distrib. for central  (unanchored)", histoc->GetTitle()));
+        fHistCentrality_SemiCentral->SetTitle(Form("%s, cent. distrib. for semicentral (unanchored)", histosc->GetTitle()));
+        fHistCentrality_Extra->SetTitle(Form("%s, cent. distrib. for extra trigger (unanchored)", histoextra->GetTitle()));
+        
+        fHistCentrality->GetXaxis()->SetTitle("Centrality (%)");
+        fHistCentrality_Central->GetXaxis()->SetTitle("Centrality (%)");
+        fHistCentrality_SemiCentral->GetXaxis()->SetTitle("Centrality (%)");
+        fHistCentrality_Extra->GetXaxis()->SetTitle("Centrality (%)");
+        
+        fHistCentrality->GetYaxis()->SetTitle("Event count");
+        fHistCentrality_Central->GetYaxis()->SetTitle("Event count");
+        fHistCentrality_SemiCentral->GetYaxis()->SetTitle("Event count");
+        fHistCentrality_Extra->GetYaxis()->SetTitle("Event count");
         
         fHistCentrality->Sumw2();
         fHistCentrality_Central->Sumw2();
@@ -167,19 +215,23 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         for(Int_t i=0; i<101; i++){
             hClassifier -> SetBinContent( i+1 , 99.5 - i );
         }
+        hClassifier->SetTitle(Form("%s <-> centrality map (unanchored)", lStudiedTriggers[itrig].Data()));
+        hClassifier->GetYaxis()->SetTitle("Centrality (%)");
+        hClassifier->GetXaxis()->SetTitle(Form("%s signal (raw)", lStudiedTriggers[itrig].Data()));
+        hClassifier->SetStats(0);
         
         for(Long_t i=1; i<histo->GetNbinsX()+1; i++) {
             Float_t lCentrality = hClassifier->GetBinContent(hClassifier->FindBin(histo->GetBinCenter(i)));
             fHistCentrality->Fill( lCentrality, histo->GetBinContent(i));
             fHistCentrality_Central->Fill( lCentrality, histoc->GetBinContent(i));
             fHistCentrality_SemiCentral->Fill( lCentrality, histosc->GetBinContent(i));
-            fHistCentrality_C0V0H->Fill( lCentrality, histoextra->GetBinContent(i));
+            fHistCentrality_Extra->Fill( lCentrality, histoextra->GetBinContent(i));
         }
         for(Long_t i=1; i<histo->GetNbinsX()+1; i++) {
             fHistCentrality->SetBinError(i, TMath::Sqrt(fHistCentrality->GetBinContent(i)) );
             fHistCentrality_Central->SetBinError(i, TMath::Sqrt(fHistCentrality_Central->GetBinContent(i)) );
             fHistCentrality_SemiCentral->SetBinError(i, TMath::Sqrt(fHistCentrality_SemiCentral->GetBinContent(i)) );
-            fHistCentrality_C0V0H->SetBinError(i, TMath::Sqrt(fHistCentrality_C0V0H->GetBinContent(i)) );
+            fHistCentrality_Extra->SetBinError(i, TMath::Sqrt(fHistCentrality_Extra->GetBinContent(i)) );
         }
         
         cout<<"=================================================="<<endl;
@@ -192,18 +244,18 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         
         //This run is anchored at a V0M amplitude of 129.59 in our
         //usual centrality calibration.
-        
+
         //Prepare reference histogram
-        if(lStudiedTriggers[itrig].Contains("Online")==kFALSE){
-            hReferenceV0M = new TH1F(Form("fHistReference%s",lStudiedTriggers[itrig].Data()), "", lNRefBins, lReferenceX);
-            for(Int_t i=1; i<hReferenceV0M->GetNbinsX()+1; i++)
-                hReferenceV0M->SetBinContent(i, lReferenceY[i-1]);
-        }else{
-            hOnlineReferenceV0M = new TH1F(Form("fHistReference%s",lStudiedTriggers[itrig].Data()), "", lNOnlineRefBins, lOnlineReferenceX);
-            for(Int_t i=1; i<hOnlineReferenceV0M->GetNbinsX()+1; i++)
-                hOnlineReferenceV0M->SetBinContent(i, lOnlineReferenceY[i-1]);
+        if(lStudiedTriggers[itrig].Contains("Online")==kFALSE && !hReferenceV0M){
+          hReferenceV0M = new TH1F(Form("fHistReference%s",lStudiedTriggers[itrig].Data()), "", lNRefBins, lReferenceX);
+          for(Int_t i=1; i<hReferenceV0M->GetNbinsX()+1; i++)
+            hReferenceV0M->SetBinContent(i, lReferenceY[i-1]);
+        }else if(!hOnlineReferenceV0M){
+          hOnlineReferenceV0M = new TH1F(Form("fHistReference%s",lStudiedTriggers[itrig].Data()), "", lNOnlineRefBins, lOnlineReferenceX);
+          for(Int_t i=1; i<hOnlineReferenceV0M->GetNbinsX()+1; i++)
+            hOnlineReferenceV0M->SetBinContent(i, lOnlineReferenceY[i-1]);
         }
-        
+
         TF1 *f1_kno = 0x0;
         
         if( lStudiedTriggers[itrig].Contains("Online") == kFALSE ){
@@ -211,6 +263,7 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         }else{
             f1_kno = new TF1(Form("f1_kno_%s",lStudiedTriggers[itrig].Data()),pdf_PbPb_onlinekno,0,50000,2);
         }
+        f1_kno->SetTitle(Form("ref fit to %s signal (raw);%s signal (raw);f()", lStudiedTriggers[itrig].Data(), lStudiedTriggers[itrig].Data()));
         
         cout<<"Guessing normalization to: "<<histo->GetEntries()<<endl;
         
@@ -227,11 +280,21 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         histo->Fit(Form("f1_kno_%s",lStudiedTriggers[itrig].Data()),"R0W");
         
         Double_t lAnchorPointKNO = f1_kno->GetParameter(0)*129.59;
+        
+        //Scale back if trigger charge, please !
+        if( lStudiedTriggers[itrig].Contains("Online") ) lAnchorPointKNO *= 7147./7469.;
+        
         cout<<"Determined 90% anchor point via KNO-scaling: "<<lAnchorPointKNO<<endl;
         
         cout<<"Now creating anchored histogram..."<<endl;
         
         TH1F *histo_KNOanchored = (TH1F*) histo->Clone(Form("fHistMultKNO%s",lStudiedTriggers[itrig].Data()));
+        
+        histo_KNOanchored->GetYaxis()->SetTitle("Event count");
+        histo_KNOanchored->GetXaxis()->SetTitle(Form("%s signal (raw)",lStudiedTriggers[itrig].Data()));
+        histo_KNOanchored->SetTitle(Form("Anchored ref histo for %s", histo->GetTitle()));
+        histo_KNOanchored->SetLineColor(kBlack);
+        histo_KNOanchored->SetStats(kFALSE);
         
         //Find the bin to anchor to (precision: +/- 1 bin)
         Int_t lAnchorBinKNO = histo_KNOanchored->FindBin(lAnchorPointKNO);
@@ -254,7 +317,45 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         TH1F* fHistCentralityKNO             = new TH1F(Form("fHistCentralityKNO%s",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
         TH1F* fHistCentralityKNO_Central     = new TH1F(Form("fHistCentralityKNO%s_Central",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
         TH1F* fHistCentralityKNO_SemiCentral = new TH1F(Form("fHistCentralityKNO%s_SemiCentral",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
-        TH1F* fHistCentralityKNO_C0V0H       = new TH1F(Form("fHistCentralityKNO%s_C0V0H",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
+        TH1F* fHistCentralityKNO_Extra       = new TH1F(Form("fHistCentralityKNO%s_Extra",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
+        
+        fHistCentralityKNO->SetStats(0);
+        fHistCentralityKNO_Central->SetStats(0);
+        fHistCentralityKNO_SemiCentral->SetStats(0);
+        fHistCentralityKNO_Extra->SetStats(0);
+        
+        //Some basic cosmetics
+        fHistCentralityKNO->SetMarkerStyle(20);
+        fHistCentralityKNO->SetMarkerSize(0.6);
+        fHistCentralityKNO->SetMarkerColor(kBlack);
+        fHistCentralityKNO->SetLineColor(kBlack);
+        
+        fHistCentralityKNO_Central->SetMarkerStyle(21);
+        fHistCentralityKNO_Central->SetMarkerColor(kRed+1);
+        fHistCentralityKNO_Central->SetLineColor(kRed+1);
+        
+        fHistCentralityKNO_SemiCentral->SetMarkerStyle(21);
+        fHistCentralityKNO_SemiCentral->SetMarkerColor(kGreen+1);
+        fHistCentralityKNO_SemiCentral->SetLineColor(kGreen+1);
+        
+        fHistCentralityKNO_Extra->SetMarkerStyle(21);
+        fHistCentralityKNO_Extra->SetMarkerColor(kBlue+1);
+        fHistCentralityKNO_Extra->SetLineColor(kBlue+1);
+        
+        fHistCentralityKNO->SetTitle(Form("%s, cent. distrib. for reference sample (anchored)", histo->GetTitle()));
+        fHistCentralityKNO_Central->SetTitle(Form("%s, cent. distrib. for central  (anchored)", histoc->GetTitle()));
+        fHistCentralityKNO_SemiCentral->SetTitle(Form("%s, cent. distrib. for semicentral (anchored)", histosc->GetTitle()));
+        fHistCentralityKNO_Extra->SetTitle(Form("%s, cent. distrib. for extra trigger (anchored)", histoextra->GetTitle()));
+        
+        fHistCentralityKNO->GetXaxis()->SetTitle("Centrality (%)");
+        fHistCentralityKNO_Central->GetXaxis()->SetTitle("Centrality (%)");
+        fHistCentralityKNO_SemiCentral->GetXaxis()->SetTitle("Centrality (%)");
+        fHistCentralityKNO_Extra->GetXaxis()->SetTitle("Centrality (%)");
+        
+        fHistCentralityKNO->GetYaxis()->SetTitle("Event count");
+        fHistCentralityKNO_Central->GetYaxis()->SetTitle("Event count");
+        fHistCentralityKNO_SemiCentral->GetYaxis()->SetTitle("Event count");
+        fHistCentralityKNO_Extra->GetYaxis()->SetTitle("Event count");
         
         cout<<"Determining calibration on-the-fly..."<<endl;
         Float_t lCentBoundsRawKNO[101];
@@ -272,6 +373,10 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         for(Int_t i=0; i<101; i++){
             hClassifierKNO -> SetBinContent( i+1 , 99.5 - i );
         }
+        hClassifierKNO->SetTitle(Form("%s <-> centrality map (anchored)", lStudiedTriggers[itrig].Data()));
+        hClassifierKNO->GetYaxis()->SetTitle("Centrality (%)");
+        hClassifierKNO->GetXaxis()->SetTitle(Form("%s signal (raw)", lStudiedTriggers[itrig].Data()));
+        hClassifierKNO->SetStats(kFALSE);
         
         for(Long_t i=1; i<histo->GetNbinsX()+1; i++) {
             //This is the anchored-out centrality, no extra action needed
@@ -280,32 +385,97 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
             fHistCentralityKNO->Fill( lCentrality, histo->GetBinContent(i));
             fHistCentralityKNO_Central->Fill( lCentrality, histoc->GetBinContent(i));
             fHistCentralityKNO_SemiCentral->Fill( lCentrality, histosc->GetBinContent(i));
-            fHistCentralityKNO_C0V0H->Fill( lCentrality, histoextra->GetBinContent(i));
+            fHistCentralityKNO_Extra->Fill( lCentrality, histoextra->GetBinContent(i));
         }
         for(Long_t i=1; i<histo->GetNbinsX()+1; i++) {
             fHistCentralityKNO->SetBinError(i, TMath::Sqrt(fHistCentralityKNO->GetBinContent(i)) );
             fHistCentralityKNO_Central->SetBinError(i, TMath::Sqrt(fHistCentralityKNO_Central->GetBinContent(i)) );
             fHistCentralityKNO_SemiCentral->SetBinError(i, TMath::Sqrt(fHistCentralityKNO_SemiCentral->GetBinContent(i)) );
-            fHistCentralityKNO_C0V0H->SetBinError(i, TMath::Sqrt(fHistCentralityKNO_C0V0H->GetBinContent(i)) );
+            fHistCentralityKNO_Extra->SetBinError(i, TMath::Sqrt(fHistCentralityKNO_Extra->GetBinContent(i)) );
         }
         
+        //Final step: please copy reference histograms (watch out for similarly named histograms!)
+        TH1F *histo_ref = (TH1F*) histo->Clone(Form("fHistRefMult%s",lStudiedTriggers[itrig].Data()));
+        TH1F *histoc_ref = (TH1F*) histoc->Clone(Form("fHistRefMult%s_Central",lStudiedTriggers[itrig].Data()));
+        TH1F *histosc_ref = (TH1F*) histosc->Clone(Form("fHistRefMult%s_SemiCentral",lStudiedTriggers[itrig].Data()));
+        TH1F *histoextra_ref = (TH1F*) histoextra->Clone(Form("fHistRefMult%s_Extra",lStudiedTriggers[itrig].Data()));
+        
+        //histo_ref->SetTitle(Form("%s signal distrib (reference)", lStudiedTriggers[itrig].Data()));
+        //histoc_ref->SetTitle(Form("%s signal distrib (central)", lStudiedTriggers[itrig].Data()));
+        //histosc_ref->SetTitle(Form("%s signal distrib (semicentral)", lStudiedTriggers[itrig].Data()));
+        //histoextra_ref->SetTitle(Form("%s signal distrib (extra)", lStudiedTriggers[itrig].Data()));
+        
+        histo_ref->GetYaxis()->SetTitle("Event counts");
+        histoc_ref->GetYaxis()->SetTitle("Event counts");
+        histosc_ref->GetYaxis()->SetTitle("Event counts");
+        histoextra_ref->GetYaxis()->SetTitle("Event counts");
+        
+        histo_ref->GetXaxis()->SetTitle(Form("%s signal (raw)",lStudiedTriggers[itrig].Data()));
+        histoc_ref->GetXaxis()->SetTitle(Form("%s signal (raw)",lStudiedTriggers[itrig].Data()));
+        histosc_ref->GetXaxis()->SetTitle(Form("%s signal (raw)",lStudiedTriggers[itrig].Data()));
+        histoextra_ref->GetXaxis()->SetTitle(Form("%s signal (raw)",lStudiedTriggers[itrig].Data()));
+        
+        //Bis final step: save histo with reference thresholds, please
+        TH1F *fThresholds = new TH1F(Form("fThresholds%s",lStudiedTriggers[itrig].Data()),"",  3, 0, 3);
+        fThresholds->GetXaxis()->SetBinLabel(1, "50%");
+        fThresholds->GetXaxis()->SetBinLabel(2, "30%");
+        fThresholds->GetXaxis()->SetBinLabel(3, "10%");
+        fThresholds->GetXaxis()->SetLabelSize(0.06);
+        fThresholds->GetYaxis()->SetTitle(Form("%s signal (raw)",lStudiedTriggers[itrig].Data()));
+        fThresholds->SetMarkerSize(2.5);
+        fThresholds->SetLineColor(kBlack);
+        fThresholds->SetBinContent( 1, GetBoundaryForPercentile( histo,  50 ) );
+        fThresholds->SetBinContent( 2, GetBoundaryForPercentile( histo,  30 ) );
+        fThresholds->SetBinContent( 3, GetBoundaryForPercentile( histo,  10 ) );
+        fThresholds->SetOption("text0");
+        fThresholds->SetTitle("Centrality thresholds (unanchored)");
+        fThresholds->SetStats(kFALSE);
+        
+        //Bis final step: save histo with reference thresholds, please
+        TH1F *fThresholdsKNO = new TH1F(Form("fThresholdsKNO%s",lStudiedTriggers[itrig].Data()),"",  3, 0, 3);
+        fThresholdsKNO->GetXaxis()->SetBinLabel(1, "50%");
+        fThresholdsKNO->GetXaxis()->SetBinLabel(2, "30%");
+        fThresholdsKNO->GetXaxis()->SetBinLabel(3, "10%");
+        fThresholdsKNO->GetXaxis()->SetLabelSize(0.06);
+        fThresholdsKNO->GetYaxis()->SetTitle(Form("%s signal (raw)",lStudiedTriggers[itrig].Data()));
+        fThresholdsKNO->SetMarkerSize(2.5);
+        fThresholdsKNO->SetLineColor(kBlack);
+        fThresholdsKNO->SetBinContent( 1, GetBoundaryForPercentile( histo_KNOanchored,  50 ) );
+        fThresholdsKNO->SetBinContent( 2, GetBoundaryForPercentile( histo_KNOanchored,  30 ) );
+        fThresholdsKNO->SetBinContent( 3, GetBoundaryForPercentile( histo_KNOanchored,  10 ) );
+        fThresholdsKNO->SetOption("text0");
+        fThresholdsKNO->SetTitle("Centrality thresholds (anchored)");
+        fThresholdsKNO->SetStats(kFALSE);
+        
+        //table, please
+        fThresholdTable->SetBinContent( 1, 2*itrig+1,  GetBoundaryForPercentile( histo,  50 ) );
+        fThresholdTable->SetBinContent( 2, 2*itrig+1,  GetBoundaryForPercentile( histo,  30 ) );
+        fThresholdTable->SetBinContent( 3, 2*itrig+1,  GetBoundaryForPercentile( histo,  10 ) );
+        
+        fThresholdTable->SetBinContent( 1, 2*itrig+2,  GetBoundaryForPercentile( histo_KNOanchored,  50 ) );
+        fThresholdTable->SetBinContent( 2, 2*itrig+2,  GetBoundaryForPercentile( histo_KNOanchored,  30 ) );
+        fThresholdTable->SetBinContent( 3, 2*itrig+2,  GetBoundaryForPercentile( histo_KNOanchored,  10 ) );
+        
+        fThresholdTable->GetYaxis()->SetBinLabel(2*itrig+1, Form("%s unanchored", lStudiedTriggers[itrig].Data()));
+        fThresholdTable->GetYaxis()->SetBinLabel(2*itrig+2, Form("%s anchored", lStudiedTriggers[itrig].Data()));
         
         cout<<"=================================================="<<endl;
         cout<<" Step 3: now doing anchoring via NBD-glauber fit"<<endl;
         cout<<"=================================================="<<endl;
         
         lOut -> Add(hClassifier);
-        lOut -> Add(histo);
-        lOut -> Add(histoc);
-        lOut -> Add(histosc);
-        lOut -> Add(histoextra);
+        lOut -> Add(histo_ref);
+        lOut -> Add(histoc_ref);
+        lOut -> Add(histosc_ref);
+        lOut -> Add(histoextra_ref);
         lOut -> Add(fHistCentrality);
         lOut -> Add(fHistCentrality_Central);
         lOut -> Add(fHistCentrality_SemiCentral);
-        lOut -> Add(fHistCentrality_C0V0H);
+        lOut -> Add(fHistCentrality_Extra);
+        lOut -> Add(fThresholds);
     
         //KNO-scaling stuff
-        lOut -> Add(hReferenceV0M);
+        //lOut -> Add(hReferenceV0M); reference is not needed, come on
         lOut -> Add(f1_kno);
 
         lOut -> Add(histo_KNOanchored);
@@ -313,13 +483,17 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         lOut -> Add(fHistCentralityKNO);
         lOut -> Add(fHistCentralityKNO_Central);
         lOut -> Add(fHistCentralityKNO_SemiCentral);
-        lOut -> Add(fHistCentralityKNO_C0V0H);
+        lOut -> Add(fHistCentralityKNO_Extra);
+        lOut -> Add(fThresholdsKNO);
     }
+    //Nice little table summary
+    lOut -> Add(fThresholdTable);
     
     //List output being exported:
     cout<<"=================================================="<<endl;
     cout<<"Output TList at end of execution: "<<endl;
     lOut->ls();
+    //lOut->Write();
     cout<<" Done!"<<endl;
     return 0;
 }
