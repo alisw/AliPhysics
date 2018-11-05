@@ -1625,7 +1625,7 @@ TString* AliTPCCalibViewerGUI::GetDrawString() {
    
    // try to add forgotten '~'
    if (fChkAutoAppend->GetState() == kButtonDown) 
-      desiredData = TString(fViewer->AddAbbreviations((char*)desiredData.Data()));
+      desiredData = fViewer->AddAbbreviations(desiredData.Data());
    return new TString(desiredData.Data());
 }   
 
@@ -1677,7 +1677,7 @@ TString* AliTPCCalibViewerGUI::GetSectorString() {
    
    // try to add forgotten '~'
    if (fChkAutoAppend->GetState() == kButtonDown) 
-      cutsStr = TString(fViewer->AddAbbreviations((char*)cutsStr.Data()));
+      cutsStr = fViewer->AddAbbreviations(cutsStr.Data());
    return new TString(cutsStr.Data());
 }
 
@@ -1774,12 +1774,12 @@ void AliTPCCalibViewerGUI::DoFit() {
    }
    // try to add forgotten '~'
    if (fChkAutoAppend->GetState() == kButtonDown) 
-      cutStr = TString(fViewer->AddAbbreviations((char*)cutStr.Data()));
+      cutStr = fViewer->AddAbbreviations(cutStr.Data());
    
    // ********** get formula string **********
    formulaStr += fComboCustomFit->GetTextEntry()->GetText();
    if (fChkAutoAppend->GetState() == kButtonDown) 
-      formulaStr = TString(fViewer->AddAbbreviations((char*)formulaStr.Data()));
+      formulaStr = fViewer->AddAbbreviations(formulaStr.Data());
 
    // ********** call AliTPCCalibViewer's fit-function
   ReplacePlaceHolders(drawStr);

@@ -129,6 +129,11 @@ public:
     void AutoLoadNextEvent();
 private:
     virtual ~AliEveEventManager();
+    AliEveEventManager(const AliEveEventManager&) : fEventId(), fEventInfo(), fHasEvent(), fCurrentRun(), fEmptyData(), fCurrentData(), fCurrentDataSource(), fDataSourceOnline(), fDataSourceOffline(),
+        fDataSourceHLTZMQ(), fAutoLoad(), fAutoLoadTime(), fAutoLoadTimer(), fAutoLoadTimerRunning(), fTransients(), fExecutor(), fViewsSaver(), fESDTracksDrawer(), fAODTracksDrawer(),
+        fMomentumHistogramsDrawer(), fPrimaryVertexDrawer(), fKinksDrawer(), fCascadesDrawer(), fV0sDrawer(), fMuonTracksDrawer(), fSPDTracklersDrawer(), fKineTracksDrawer(), fPEventSelector(),
+        fgGRPLoaded(), fgMagField() {}
+    const AliEveEventManager& operator=(const AliEveEventManager&) {return *this;}
     static AliEveEventManager* fgMaster; // singleton instance of AliEveEventManager
     
     void   InitInternals();

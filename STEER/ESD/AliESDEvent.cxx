@@ -745,7 +745,7 @@ Bool_t  AliESDEvent::RemoveKink(Int_t rm) const
   if (kink->GetIndex(0)>=0 && kink->GetIndex(1)>=0) { // the indices migh have been already disabled
     for (int i=2;i--;) {
       AliESDtrack* trc = GetTrack(kink->GetIndex(i));
-      int indK[3]={0,0,0},restK=0;
+      int indK[3]={0,0,0};
       for (int j=0;j<3;j++) {
 	int ind = trc->GetKinkIndex(j);
 	if (!ind) break;
@@ -810,7 +810,7 @@ AliESDfriendTrack*  AliESDEvent::RemoveTrack(Int_t rm, Bool_t checkPrimVtx)
   Int_t nv0=GetNumberOfV0s();
   Int_t ncl=GetNumberOfCaloClusters();
   Int_t used=0;
-  Bool_t lastUsePVTrc=kFALSE,lastUsePVTPC=kFALSE,lastUseV0=kFALSE,lastUseCasc=kFALSE;
+  Bool_t lastUsePVTrc=kFALSE,lastUsePVTPC=kFALSE;
 
   if (fTPCVertex && fTPCVertex->GetStatus()) {
     if (checkPrimVtx && fTPCVertex->UsesTrack(rm)) return 0;// Check if this track comes from the reconstructed primary vertices
@@ -2884,7 +2884,6 @@ void AliESDEvent::RestoreOfflineV0Prongs()
 {
   // fill redundant prongs info by 0 for offline v0s;
   Int_t nv0=GetNumberOfV0s();
-  const double par0[5]={0.}, cov0[15]={0.};
   double bZ = GetMagneticField();
   for (Int_t n=0; n<nv0; n++) {
     AliESDv0 *v0=GetV0(n);

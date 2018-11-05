@@ -21,8 +21,8 @@ add_definitions(-D_MODULE_="${MODULE}")
 include_directories(${AliRoot_SOURCE_DIR}/EMCAL/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIR}
-                    ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
+include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
+include_directories(${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
                     ${AliRoot_SOURCE_DIR}/STEER/CDB

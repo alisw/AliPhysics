@@ -56,7 +56,6 @@ Int_t AliNanoAODStorage::GetIntParameters(const TString varListHeader){
   const TString stringVariables = "FiredTriggerClasses, BunchCrossNumber, OrbitNumber, PeriodNumber";//list of all possible string variables in AliNanoAODStorage
 
   TObjArray * vars = varListHeader.Tokenize(",");
-  Int_t size = vars->GetSize();
   TIter it(vars);
   TObjString *token  = 0;
   Int_t stringVars=0;

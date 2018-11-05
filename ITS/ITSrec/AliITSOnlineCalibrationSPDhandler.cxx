@@ -2362,7 +2362,7 @@ UInt_t AliITSOnlineCalibrationSPDhandler::GetNoisyRowAtC(UInt_t eq, UInt_t hs, U
 //____________________________________________________________________________________________
 const Char_t* AliITSOnlineCalibrationSPDhandler::GetDeadPixelAsTextC(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t index) const {
   // get a string of dead pixel info
-  TString returnMess = "";
+  static TString returnMess = "";
   UInt_t gloChip = GetGloChip(eq,hs,chip);
   if (gloChip>=1200) {
     Error("AliITSOnlineCalibrationSPDhandler::GetDeadPixelAsTextC", "global chip nr (%d) out of bounds.",gloChip);
@@ -2386,7 +2386,7 @@ const Char_t* AliITSOnlineCalibrationSPDhandler::GetDeadPixelAsTextC(UInt_t eq, 
 //____________________________________________________________________________________________
 const Char_t* AliITSOnlineCalibrationSPDhandler::GetNoisyPixelAsTextC(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t index) const {
   // get a string of noisy pixel info
-  TString returnMess = "";
+  static TString returnMess = "";
   UInt_t gloChip = GetGloChip(eq,hs,chip);
   if (gloChip>=1200) {
     Error("AliITSOnlineCalibrationSPDhandler::GetNoisyPixelAsTextC", "global chip nr (%d) out of bounds.",gloChip);

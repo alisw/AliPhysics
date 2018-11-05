@@ -20,8 +20,8 @@ set(MODULE T0calib)
 include_directories(${AliRoot_SOURCE_DIR}/T0/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIR}
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
+include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
+include_directories(${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/STEER/CDB
                     ${AliRoot_SOURCE_DIR}/STEER/ESD

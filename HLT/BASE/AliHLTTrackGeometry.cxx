@@ -32,6 +32,12 @@
 #include <iostream>
 #include <algorithm>
 
+#if __cplusplus > 201402L
+#define AUTO_PTR std::unique_ptr
+#else
+#define AUTO_PTR std::auto_ptr
+#endif
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTrackGeometry)
 
@@ -115,7 +121,7 @@ void AliHLTTrackGeometry::Draw(Option_t *option)
   int verbosity=0;
 
   TString strOption(option);
-  std::auto_ptr<TObjArray> tokens(strOption.Tokenize(" "));
+  AUTO_PTR<TObjArray> tokens(strOption.Tokenize(" "));
   if (!tokens.get()) return;
   for (int i=0; i<tokens->GetEntriesFast(); i++) {
     if (!tokens->At(i)) continue;

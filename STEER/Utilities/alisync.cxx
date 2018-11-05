@@ -134,6 +134,7 @@ std::string calculateMD5(const std::string &f) {
   if (!of)
     return "";
   size_t t = fread((void *)out.c_str(), PATH_MAX*2, 1, of);
+  (void) t;
 
   int ret = pclose(of);
   if(WIFEXITED(ret))
@@ -302,7 +303,7 @@ void sigchld_hdl(int sig)
                                                        gJobs.end(),
                                                        SamePidAs(pid));
       it->retries--;
-      int returnCode;
+      int returnCode = -1;
       if (WIFEXITED(status))
         returnCode = WEXITSTATUS(status);
       else if(WIFSIGNALED(status))
@@ -346,8 +347,8 @@ viableJobs() {
 // - 1 had an error
 // - -1 not completed yet
 int exitCode(float successrate) {
-  int successfull = 0;
-  int failed = 0;
+  unsigned int successfull = 0;
+  unsigned int failed = 0;
   for (size_t i = 0; i < gJobs.size(); ++i) {
     JobInfo &info = gJobs[i];
     if (info.retries <= 0)
@@ -395,14 +396,13 @@ int main( int argc, char **argv )
   int gTimeout = 60;
   int gRetries = 5;
   float gSuccessRate = 1.;
-  float gSuccessfull = 0.;
   std::string gOutputDirectory = ".";
   std::vector<TRegexp *> gIncludeRE;
   typedef std::vector<std::string> Filenames;
   Filenames gFilenames;
 
   char ch;
-  int intCand;
+  int intCand = 0;
   float floatCand;
 
   while ((ch = getopt(argc, argv, OPT_STRING)) != -1) {
@@ -522,7 +522,6 @@ int main( int argc, char **argv )
   // This loop take care or queueing files for fetching.
   // - Get the index to a viable job (i.e. one which still needs to be done).
   // - If we do not have enough free jobs sleep and try again.
-  size_t nextJob;
   int gExitCode;
   while ((gExitCode = exitCode(gSuccessRate)) == -1)
   {
@@ -539,7 +538,7 @@ int main( int argc, char **argv )
 
     // If there is no viable job, try again in a while, otherwise
     // process it.
-    size_t nextJob = viableJobs();
+    int nextJob = viableJobs();
     if (nextJob == -1)
     {
       sleep(1);

@@ -39,6 +39,11 @@
 #include <sstream>
 #include <iomanip>
 
+#if __cplusplus > 201402L
+#define AUTO_PTR std::unique_ptr
+#else
+#define AUTO_PTR std::auto_ptr
+#endif
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCRawSpacePointContainer)
@@ -441,7 +446,7 @@ void AliHLTTPCRawSpacePointContainer::Print(ostream& out, Option_t */*option*/) 
 AliHLTSpacePointContainer* AliHLTTPCRawSpacePointContainer::SelectByMask(AliHLTUInt32_t mask, bool /*bAlloc*/) const
 {
   /// create a collection of clusters for a space point mask
-  std::auto_ptr<AliHLTTPCRawSpacePointContainer> c(new AliHLTTPCRawSpacePointContainer);
+  AUTO_PTR<AliHLTTPCRawSpacePointContainer> c(new AliHLTTPCRawSpacePointContainer);
   if (!c.get()) return NULL;
 
   UInt_t slice=AliHLTTPCGeometry::CluID2Slice(mask);
@@ -461,7 +466,7 @@ AliHLTSpacePointContainer* AliHLTTPCRawSpacePointContainer::SelectByMask(AliHLTU
 AliHLTSpacePointContainer* AliHLTTPCRawSpacePointContainer::SelectByTrack(int trackId, bool /*bAlloc*/) const
 {
   /// create a collection of clusters for a specific track
-  std::auto_ptr<AliHLTTPCRawSpacePointContainer> c(new AliHLTTPCRawSpacePointContainer);
+  AUTO_PTR<AliHLTTPCRawSpacePointContainer> c(new AliHLTTPCRawSpacePointContainer);
   if (!c.get()) return NULL;
 
   HLT::copy_map_if(fClusters.begin(), fClusters.end(), c->fClusters, HLT::AliHLTUnaryPredicate<AliHLTTPCRawSpacePointContainer::AliHLTTPCRawSpacePointProperties, int>(&AliHLTTPCRawSpacePointContainer::AliHLTTPCRawSpacePointProperties::GetTrackId,trackId));
@@ -471,7 +476,7 @@ AliHLTSpacePointContainer* AliHLTTPCRawSpacePointContainer::SelectByTrack(int tr
 AliHLTSpacePointContainer* AliHLTTPCRawSpacePointContainer::SelectByMC(int mcId, bool /*bAlloc*/) const
 {
   /// create a collection of clusters for a specific MC track
-  std::auto_ptr<AliHLTTPCRawSpacePointContainer> c(new AliHLTTPCRawSpacePointContainer);
+  AUTO_PTR<AliHLTTPCRawSpacePointContainer> c(new AliHLTTPCRawSpacePointContainer);
   if (!c.get()) return NULL;
 
   HLT::copy_map_if(fClusters.begin(), fClusters.end(), c->fClusters, HLT::AliHLTUnaryPredicate<AliHLTTPCRawSpacePointContainer::AliHLTTPCRawSpacePointProperties, int>(&AliHLTTPCRawSpacePointContainer::AliHLTTPCRawSpacePointProperties::GetMCId,mcId));
@@ -481,7 +486,7 @@ AliHLTSpacePointContainer* AliHLTTPCRawSpacePointContainer::SelectByMC(int mcId,
 AliHLTSpacePointContainer* AliHLTTPCRawSpacePointContainer::UsedClusters(bool /*bAlloc*/) const
 {
   /// create a collection of all used clusters
-  std::auto_ptr<AliHLTTPCRawSpacePointContainer> c(new AliHLTTPCRawSpacePointContainer);
+  AUTO_PTR<AliHLTTPCRawSpacePointContainer> c(new AliHLTTPCRawSpacePointContainer);
   if (!c.get()) return NULL;
 
   HLT::copy_map_if(fClusters.begin(), fClusters.end(), c->fClusters, HLT::AliHLTUnaryPredicate<AliHLTTPCRawSpacePointContainer::AliHLTTPCRawSpacePointProperties, bool>(&AliHLTTPCRawSpacePointContainer::AliHLTTPCRawSpacePointProperties::IsUsed,true));
@@ -491,7 +496,7 @@ AliHLTSpacePointContainer* AliHLTTPCRawSpacePointContainer::UsedClusters(bool /*
 AliHLTSpacePointContainer* AliHLTTPCRawSpacePointContainer::UnusedClusters(bool /*bAlloc*/) const
 {
   /// create a collection of all unused clusters
-  std::auto_ptr<AliHLTTPCRawSpacePointContainer> c(new AliHLTTPCRawSpacePointContainer);
+  AUTO_PTR<AliHLTTPCRawSpacePointContainer> c(new AliHLTTPCRawSpacePointContainer);
   if (!c.get()) return NULL;
 
   HLT::copy_map_if(fClusters.begin(), fClusters.end(), c->fClusters, HLT::AliHLTUnaryPredicate<AliHLTTPCRawSpacePointContainer::AliHLTTPCRawSpacePointProperties, bool>(&AliHLTTPCRawSpacePointContainer::AliHLTTPCRawSpacePointProperties::IsUsed,false));

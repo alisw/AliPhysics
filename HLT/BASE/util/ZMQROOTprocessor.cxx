@@ -385,6 +385,7 @@ Int_t DoProcessAllData(void* outputsocket)
     fOutputObjects.Clear(); //just clear, objects are destroyed by transport
     fInputObjects.Delete(); //Delete input objects after use
   }
+  return 0;
 }
 
 //_____________________________________________________________________

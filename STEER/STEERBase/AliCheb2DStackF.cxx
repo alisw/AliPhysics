@@ -345,7 +345,8 @@ void AliCheb2DStackF::PrintSlice(int isl, const Option_t* opt) const
     if (showcf) {
       printf("\n");
       for (int ir=0;ir<nr;ir++) {
-	for (int ic=0;ic<cols[ir];ic++) printf("%+.2e ",*cfs++); printf("\n");
+	for (int ic=0;ic<cols[ir];ic++) printf("%+.2e ",*cfs++);
+	printf("\n");
       }
     }
     cols += nr; // cols entry for next dimension

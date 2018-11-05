@@ -40,7 +40,7 @@ public:
   ~AliMFTTrackFinder();
   
   void Init(Char_t *parfile);
-  void ReadParam(Char_t *parfile = "param.txt");
+  void ReadParam(const Char_t *parfile = "param.txt");
   void SetDebug(Int_t debug) { fDebug = debug; }
   
   virtual void Clear(Option_t *);

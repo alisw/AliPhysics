@@ -62,8 +62,12 @@ class AliITSgeomMatrix : public TObject {
     // Sets the translation vector and computes fCylR and fCylPhi.
     void SetTranslation(const Double_t tran[3]);
     // sets the rotation matrix and computes the rotation angles [radians]
-    void SetMatrix(const Double_t matrix[3][3]){ for(Int_t i=0;i<3;i++)
-        for(Int_t j=0;j<3;j++) fm[i][j]=matrix[i][j];this->AngleFromMatrix();}
+    void SetMatrix(const Double_t matrix[3][3]){
+      for(Int_t i=0;i<3;i++)
+        for(Int_t j=0;j<3;j++)
+          fm[i][j]=matrix[i][j];
+      this->AngleFromMatrix();
+    }
     // Sets the detector index value
     void SetDetectorIndex(Int_t idt) {fDetectorIndex = idt;}
     // Sets the detector layer, ladder, detector (id) values.

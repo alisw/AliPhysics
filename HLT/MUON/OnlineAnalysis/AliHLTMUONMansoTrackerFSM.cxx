@@ -122,9 +122,9 @@ bool AliHLTMUONMansoTrackerFSM::AliRegionOfInterest::Contains(AliHLTMUONRecHitSt
 	// Compute the distance between the centre of the region of interest and
 	// the point p. This distance must be less than the radius of the region
 	// of interest for p to be contained in the region of interest.
-	register AliHLTFloat32_t lx = fCentre.fX - p.fX;
-	register AliHLTFloat32_t ly = fCentre.fY - p.fY;
-	register AliHLTFloat32_t r = (AliHLTFloat32_t) sqrt( lx * lx + ly * ly );
+	AliHLTFloat32_t lx = fCentre.fX - p.fX;
+	AliHLTFloat32_t ly = fCentre.fY - p.fY;
+	AliHLTFloat32_t r = (AliHLTFloat32_t) sqrt( lx * lx + ly * ly );
 	DebugTrace("\tAliRegionOfInterest::Contains : p = " << p
 		<< " , centre = " << fCentre << " , r = " << r << " , Rs = " << fRs
 	);

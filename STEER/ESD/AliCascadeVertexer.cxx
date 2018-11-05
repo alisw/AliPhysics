@@ -84,9 +84,9 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
      if ((status&AliESDtrack::kITSrefit)==0)
        if ((status&AliESDtrack::kTPCrefit)==0) continue;
 
-       if (TMath::Abs(esdtr->GetD(xPrimaryVertex,yPrimaryVertex,b))<fDBachMin) continue;
+     if (TMath::Abs(esdtr->GetD(xPrimaryVertex,yPrimaryVertex,b))<fDBachMin) continue;
 
-       trk[ntr++]=i;
+     trk[ntr++]=i;
    }   
 
    Double_t massLambda=1.11568;

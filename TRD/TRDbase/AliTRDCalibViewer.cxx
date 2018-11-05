@@ -156,7 +156,7 @@ void AliTRDCalibViewer::GetTimeInfoOCDB(const Char_t* runList, const Char_t* out
 */
 
 //_____________________________________________________________________________
-const char* AliTRDCalibViewer::AddAbbreviations(char* c, Bool_t printDrawCommand){ 
+TString AliTRDCalibViewer::AddAbbreviations(const char* c, Bool_t printDrawCommand){ 
    // Replace all "<variable>" with "<variable><fAbbreviation>" (Adds forgotten "~")
    // but take care on the statistical information, like "CEQmean_Mean"
    // and also take care on correct given variables, like "CEQmean~"
@@ -249,7 +249,7 @@ const char* AliTRDCalibViewer::AddAbbreviations(char* c, Bool_t printDrawCommand
    if (printDrawCommand) std::cout << "The string looks now like: " << str.Data() << std::endl;
    delete [] varSort;
    delete [] normSort;
-   return str.Data();
+   return str;
 }
 
 //_____________________________________________________________________________

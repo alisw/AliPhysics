@@ -79,7 +79,7 @@ ALICE_UseVc()
 # Sources in alphabetical order
 set(SRCS
     AliHLTTPCAgent.cxx
-    AliHLTTPCClusterAccessHLTOUT.cxx    
+    AliHLTTPCClusterAccessHLTOUT.cxx
     AliHLTTPCClusterDumpComponent.cxx
     AliHLTTPCClusterHistoComponent.cxx
     AliHLTTPCClusterTransformationComponent.cxx
@@ -106,7 +106,7 @@ set(SRCS
     AliHLTTPCMemHandler.cxx
     AliHLTTPCRawSpacePointContainer.cxx
     AliHLTTPCSpacePointContainer.cxx
-    AliHLTTPCTrackGeometry.cxx    
+    AliHLTTPCTrackGeometry.cxx
     AliHLTTPCTrackMCMarkerComponent.cxx
     AliHLTTPCGeometry.cxx
     AliHLTTPCPolynomFit.cxx

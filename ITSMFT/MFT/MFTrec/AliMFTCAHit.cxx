@@ -73,5 +73,5 @@ AliMFTCAHit& AliMFTCAHit::operator=(const AliMFTCAHit& hit)
   for (Int_t i = 0; i < hit.fNRoads; i++) {
     fInRoad[i] = hit.fInRoad[i];
   }
-  
+  return *this;
 }

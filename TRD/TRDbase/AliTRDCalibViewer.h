@@ -54,7 +54,7 @@ class AliTRDCalibViewer : public AliBaseCalibViewer {
   void ProcessTRDCalibArray(AliTRDCalPad *padCalib,
                             TVectorD &superModuleValues, TVectorD &superModuleValuesRMS);
 
-  virtual const char* AddAbbreviations(char* c, Bool_t printDrawCommand = kFALSE);
+  virtual TString AddAbbreviations(const char* c, Bool_t printDrawCommand = kFALSE);
   void GetLayerSectorStack(TString trdString, Int_t& layerNo, Int_t& sectorNo, Int_t& stackNo) const;
   // easy drawing of data, use '~' for abbreviation of '.fElements'
   virtual Int_t EasyDraw(const char* drawCommand, const char* sector, const char* cuts = 0, 

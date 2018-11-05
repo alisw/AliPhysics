@@ -394,7 +394,7 @@ AliMpSlat::GetName() const
   /// Returns the name of this slat, which is composed of its ID with
   /// the plane type as a suffix.
   ///
-  TString name(GetID());
+  static TString name(GetID());
   if ( fPlaneType == AliMp::kBendingPlane )
   {
     name += ".Bending";

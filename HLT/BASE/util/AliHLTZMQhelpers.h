@@ -112,6 +112,9 @@ class AtomicFile {
   ~AtomicFile();
   TFile* GetFile() {return tempFile;}
   void Close();
+  private:
+  AtomicFile(const AliZMQhelpers::AtomicFile&) {}
+  const AliZMQhelpers::AtomicFile& operator=(const AliZMQhelpers::AtomicFile&) {return *this;}
 };
 
 int alizmq_msg_iter_check_id(aliZMQmsg::iterator it, const AliHLTDataTopic& topic);

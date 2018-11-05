@@ -32,6 +32,12 @@
 #include "AliHLTCDHWrapper.h"
 #include <memory>
 
+#if __cplusplus > 201402L
+#define AUTO_PTR std::unique_ptr
+#else
+#define AUTO_PTR std::auto_ptr
+#endif
+
 using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -172,7 +178,7 @@ int AliHLTAltroTimebinAverageComponent::DoEvent( const AliHLTComponentEventData&
   const AliHLTComponentBlockData* iter = NULL;
   unsigned long ndx;
 
-  std::auto_ptr<AliRawReaderMemory> pRawReader(new AliRawReaderMemory);
+  AUTO_PTR<AliRawReaderMemory> pRawReader(new AliRawReaderMemory);
   if (pRawReader.get()) return -ENOMEM;
 
   for(ndx = 0; ndx < evtData.fBlockCnt; ndx++) {
@@ -194,8 +200,8 @@ int AliHLTAltroTimebinAverageComponent::DoEvent( const AliHLTComponentEventData&
       continue;
     }
 
-    std::auto_ptr<AliAltroRawStreamV3> altroRawStream(new AliAltroRawStreamV3(pRawReader.get()));
-    std::auto_ptr<AliHLTAltroEncoder> altroEncoder(new AliHLTAltroEncoder);
+    AUTO_PTR<AliAltroRawStreamV3> altroRawStream(new AliAltroRawStreamV3(pRawReader.get()));
+    AUTO_PTR<AliHLTAltroEncoder> altroEncoder(new AliHLTAltroEncoder);
 
     if (!altroRawStream.get() || !altroEncoder.get()) {
       iResult=-ENOMEM;

@@ -73,7 +73,8 @@ class AliHLTComponentConfiguration : public AliHLTConfiguration {
 
   void AddNode(const char* node) {
     if (!node) return;
-    if (!fNodeNames.IsNull()) fNodeNames+=" "; fNodeNames+=node;
+    if (!fNodeNames.IsNull()) fNodeNames+=" ";
+    fNodeNames+=node;
   }
 
   /// set the online command string

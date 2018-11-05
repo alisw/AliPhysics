@@ -72,6 +72,13 @@
 //  along with FastJet. If not, see <http://www.gnu.org/licenses/>.
 //----------------------------------------------------------------------
 //
+
+#if __cplusplus > 201402L
+#define AUTO_PTR std::unique_ptr
+#else
+#define AUTO_PTR std::auto_ptr
+#endif
+
 #ifndef __FJCORE_HH__
 #define __FJCORE_HH__
 #define __FJCORE__   // remove all the non-core code (a safekeeper)
@@ -1320,7 +1327,7 @@ class ClusterSequence {
     virtual ~Extras() {}
     virtual std::string description() const {return "This is a dummy extras class that contains no extra information! Derive from it if you want to use it to provide extra information from a plugin jet finder";}
   };
-  inline void plugin_associate_extras(std::auto_ptr<Extras> extras_in) {
+  inline void plugin_associate_extras(AUTO_PTR<Extras> extras_in) {
     _extras.reset(extras_in.release());
   }
   inline bool plugin_activated() const {return _plugin_activated;}

@@ -191,21 +191,35 @@ AliMultiplicity &AliMultiplicity::operator=(const AliMultiplicity& m){
   if(this == &m)return *this;
   ((AliVMultiplicity*)this)->operator=(m);
 
-  if(fTh)delete [] fTh;fTh = 0;
-  if(fPhi)delete [] fPhi;fPhi = 0; 
-  if(fDeltTh)delete [] fDeltTh;fDeltTh= 0; 
-  if(fDeltPhi)delete [] fDeltPhi;fDeltPhi = 0; 
-  if(fLabels)delete [] fLabels;fLabels = 0;
-  if(fLabelsL2)delete [] fLabelsL2;fLabelsL2 = 0;
-  if(fThsingle)delete [] fThsingle;fThsingle = 0;
-  if(fPhisingle)delete [] fPhisingle;fPhisingle = 0;
-  if(fLabelssingle)delete [] fLabelssingle;fLabelssingle = 0;
-  if(fUsedClusS) delete[] fUsedClusS; fUsedClusS = 0;
-  if(fUsedClusT) delete[] fUsedClusT; fUsedClusT = 0;
+  if(fTh)delete [] fTh;
+  fTh = 0;
+  if(fPhi)delete [] fPhi;
+  fPhi = 0; 
+  if(fDeltTh)delete [] fDeltTh;
+  fDeltTh= 0; 
+  if(fDeltPhi)delete [] fDeltPhi;
+  fDeltPhi = 0; 
+  if(fLabels)delete [] fLabels;
+  fLabels = 0;
+  if(fLabelsL2)delete [] fLabelsL2;
+  fLabelsL2 = 0;
+  if(fThsingle)delete [] fThsingle;
+  fThsingle = 0;
+  if(fPhisingle)delete [] fPhisingle;
+  fPhisingle = 0;
+  if(fLabelssingle)delete [] fLabelssingle;
+  fLabelssingle = 0;
+  if(fUsedClusS) delete[] fUsedClusS;
+  fUsedClusS = 0;
+  if(fUsedClusT) delete[] fUsedClusT;
+  fUsedClusT = 0;
   for (int il=2;il--;) {
-    if (fSCl2Tracks[il])    delete fSCl2Tracks[il];    fSCl2Tracks[il]    = 0;
-    if (fTCl2Tracks[il][0]) delete fTCl2Tracks[il][0]; fTCl2Tracks[il][0] = 0;
-    if (fTCl2Tracks[il][1]) delete fTCl2Tracks[il][1]; fTCl2Tracks[il][1] = 0;
+    if (fSCl2Tracks[il])    delete fSCl2Tracks[il];
+    fSCl2Tracks[il]    = 0;
+    if (fTCl2Tracks[il][0]) delete fTCl2Tracks[il][0];
+    fTCl2Tracks[il][0] = 0;
+    if (fTCl2Tracks[il][1]) delete fTCl2Tracks[il][1];
+    fTCl2Tracks[il][1] = 0;
   }
   Duplicate(m);
   //
@@ -292,21 +306,35 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
 //______________________________________________________________________
 AliMultiplicity::~AliMultiplicity(){
   // Destructor
-  if(fTh)delete [] fTh;fTh = 0;
-  if(fPhi)delete [] fPhi;fPhi = 0; 
-  if(fDeltTh)delete [] fDeltTh;fDeltTh = 0; 
-  if(fDeltPhi)delete [] fDeltPhi;fDeltPhi = 0; 
-  if(fLabels)delete [] fLabels;fLabels = 0;
-  if(fLabelsL2)delete [] fLabelsL2;fLabelsL2 = 0;
-  if(fThsingle)delete [] fThsingle;fThsingle = 0;
-  if(fPhisingle)delete [] fPhisingle;fPhisingle = 0;
-  if(fLabelssingle)delete [] fLabelssingle;fLabelssingle = 0;
-  if(fUsedClusS) delete[] fUsedClusS; fUsedClusS = 0;
-  if(fUsedClusT) delete[] fUsedClusT; fUsedClusT = 0;
+  if(fTh)delete [] fTh;
+  fTh = 0;
+  if(fPhi)delete [] fPhi;
+  fPhi = 0; 
+  if(fDeltTh)delete [] fDeltTh;
+  fDeltTh = 0; 
+  if(fDeltPhi)delete [] fDeltPhi;
+  fDeltPhi = 0; 
+  if(fLabels)delete [] fLabels;
+  fLabels = 0;
+  if(fLabelsL2)delete [] fLabelsL2;
+  fLabelsL2 = 0;
+  if(fThsingle)delete [] fThsingle;
+  fThsingle = 0;
+  if(fPhisingle)delete [] fPhisingle;
+  fPhisingle = 0;
+  if(fLabelssingle)delete [] fLabelssingle;
+  fLabelssingle = 0;
+  if(fUsedClusS) delete[] fUsedClusS;
+  fUsedClusS = 0;
+  if(fUsedClusT) delete[] fUsedClusT;
+  fUsedClusT = 0;
   for (int il=2;il--;) {
-    if (fSCl2Tracks[il])    delete fSCl2Tracks[il];    fSCl2Tracks[il]    = 0;
-    if (fTCl2Tracks[il][0]) delete fTCl2Tracks[il][0]; fTCl2Tracks[il][0] = 0;
-    if (fTCl2Tracks[il][1]) delete fTCl2Tracks[il][1]; fTCl2Tracks[il][1] = 0;
+    if (fSCl2Tracks[il])    delete fSCl2Tracks[il];
+    fSCl2Tracks[il]    = 0;
+    if (fTCl2Tracks[il][0]) delete fTCl2Tracks[il][0];
+    fTCl2Tracks[il][0] = 0;
+    if (fTCl2Tracks[il][1]) delete fTCl2Tracks[il][1];
+    fTCl2Tracks[il][1] = 0;
   }
 }
 
@@ -315,21 +343,35 @@ void AliMultiplicity::Clear(Option_t*)
 {
   // reset all
   AliVMultiplicity::Clear();
-  if(fTh)delete [] fTh;fTh = 0;
-  if(fPhi)delete [] fPhi;fPhi = 0; 
-  if(fDeltTh)delete [] fDeltTh;fDeltTh = 0; 
-  if(fDeltPhi)delete [] fDeltPhi;fDeltPhi = 0; 
-  if(fLabels)delete [] fLabels;fLabels = 0;
-  if(fLabelsL2)delete [] fLabelsL2;fLabelsL2 = 0;
-  if(fThsingle)delete [] fThsingle;fThsingle = 0;
-  if(fPhisingle)delete [] fPhisingle;fPhisingle = 0;
-  if(fLabelssingle)delete [] fLabelssingle;fLabelssingle = 0;
-  if(fUsedClusS) delete[] fUsedClusS; fUsedClusS = 0;
-  if(fUsedClusT) delete[] fUsedClusT; fUsedClusT = 0;
+  if(fTh)delete [] fTh;
+  fTh = 0;
+  if(fPhi)delete [] fPhi;
+  fPhi = 0; 
+  if(fDeltTh)delete [] fDeltTh;
+  fDeltTh = 0; 
+  if(fDeltPhi)delete [] fDeltPhi;
+  fDeltPhi = 0; 
+  if(fLabels)delete [] fLabels;
+  fLabels = 0;
+  if(fLabelsL2)delete [] fLabelsL2;
+  fLabelsL2 = 0;
+  if(fThsingle)delete [] fThsingle;
+  fThsingle = 0;
+  if(fPhisingle)delete [] fPhisingle;
+  fPhisingle = 0;
+  if(fLabelssingle)delete [] fLabelssingle;
+  fLabelssingle = 0;
+  if(fUsedClusS) delete[] fUsedClusS;
+  fUsedClusS = 0;
+  if(fUsedClusT) delete[] fUsedClusT;
+  fUsedClusT = 0;
   for (int il=2;il--;) {
-    if (fSCl2Tracks[il])    delete fSCl2Tracks[il];    fSCl2Tracks[il]    = 0;
-    if (fTCl2Tracks[il][0]) delete fTCl2Tracks[il][0]; fTCl2Tracks[il][0] = 0;
-    if (fTCl2Tracks[il][1]) delete fTCl2Tracks[il][1]; fTCl2Tracks[il][1] = 0;
+    if (fSCl2Tracks[il])    delete fSCl2Tracks[il];
+    fSCl2Tracks[il]    = 0;
+    if (fTCl2Tracks[il][0]) delete fTCl2Tracks[il][0];
+    fTCl2Tracks[il][0] = 0;
+    if (fTCl2Tracks[il][1]) delete fTCl2Tracks[il][1];
+    fTCl2Tracks[il][1] = 0;
   }
   fNtracks = fNsingle = 0;
   for (int i=6;i--;) fITSClusters[0] = 0;

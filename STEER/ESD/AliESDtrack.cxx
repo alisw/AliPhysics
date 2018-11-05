@@ -1607,9 +1607,9 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong64_t flags){
 
   Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
   if (fFriendTrack) {
-  if (flags==kITSout) fFriendTrack->SetITSOut(*t);
-  if (flags==kTPCout) fFriendTrack->SetTPCOut(*t);
-  if (flags==kTRDrefit) fFriendTrack->SetTRDIn(*t);
+    if (flags==kITSout) fFriendTrack->SetITSOut(*t);
+    if (flags==kTPCout) fFriendTrack->SetTPCOut(*t);
+    if (flags==kTRDrefit) fFriendTrack->SetTRDIn(*t);
   }
   
   switch (flags) {
@@ -3016,9 +3016,9 @@ void AliESDtrack::Print(Option_t *) const {
     GetTRDpid(p) ; 
     for(index = 0 ; index < AliPID::kSPECIES; index++) 
       printf("%f, ", p[index]) ;
-      printf("\n           signal = %f\n", GetTRDsignal()) ;
-      printf("\n           NchamberdEdx = %d\n", GetTRDNchamberdEdx()) ;
-      printf("\n           NclusterdEdx = %d\n", GetTRDNclusterdEdx()) ;
+    printf("\n           signal = %f\n", GetTRDsignal()) ;
+    printf("\n           NchamberdEdx = %d\n", GetTRDNchamberdEdx()) ;
+    printf("\n           NclusterdEdx = %d\n", GetTRDNclusterdEdx()) ;
   }
   if( IsOn(kTOFpid) ){
     printf("From TOF: ") ; 

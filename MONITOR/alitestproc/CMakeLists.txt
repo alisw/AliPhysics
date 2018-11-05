@@ -20,8 +20,8 @@ include_directories(${AliRoot_SOURCE_DIR}/MONITOR/alitestproc
                    )
 
 # Additional include folders in alphabetical order
-include_directories(${ROOT_INCLUDE_DIR}
-                    ${AliRoot_SOURCE_DIR}/MONITOR/MONITOR
+include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
+include_directories(${AliRoot_SOURCE_DIR}/MONITOR/MONITOR
                    )
 
 # Sources in alphabetical order

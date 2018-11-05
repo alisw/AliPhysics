@@ -10,7 +10,7 @@ using namespace std;
 
 TXMLEngine* xml = new TXMLEngine;
 
-stringstream& getXml(AliESDEvent *event)
+stringstream getXml(AliESDEvent *event)
 {
 	// Create main node of document tree
 	XMLNodePointer_t mainnode = xml->NewChild(0, 0, "main");

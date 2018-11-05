@@ -19,6 +19,12 @@
 #include <cerrno>
 #include <cmath>
 
+#if __cplusplus > 201402L
+#define AUTO_PTR std::unique_ptr
+#else
+#define AUTO_PTR std::auto_ptr
+#endif
+
 template <typename T, typename V>
 class AliHLTIndexGrid {
  public:
@@ -325,7 +331,7 @@ class AliHLTIndexGrid {
 
     if (offset>fDataDimension) {
       // grow the data array
-      auto_ptr<V> newArray(new V[offset]);
+      AUTO_PTR<V> newArray(new V[offset]);
       if (newArray.get()) {
 	memcpy(newArray.get(), fData, fDataDimension);
 	memset(newArray.get()+fDataDimension, 0, (offset-fDataDimension)*sizeof(V));

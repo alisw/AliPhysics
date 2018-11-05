@@ -19,6 +19,7 @@ include_directories(${AliRoot_SOURCE_DIR}/EVE/converters/${MODULE}
                    )
 
 # Additional include folders in alphabetical order
+include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
 include_directories(${AliRoot_SOURCE_DIR}/EVE/EveBase
                     ${AliRoot_SOURCE_DIR}/EVE/EveDet
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils

@@ -238,7 +238,7 @@ Double_t AliITSPIDResponse::Bethe(Double_t p, Double_t mass, Bool_t isSA) const 
   if (!foundMatchingSpecies)
     printf("Error AliITSPIDResponse::Bethe: Mass does not match any species. Assuming pion! Note that this function is deprecated!\n");
 
-    return Bethe(p,species,isSA);
+  return Bethe(p,species,isSA);
 }
 
 //_________________________________________________________________________

@@ -31,6 +31,12 @@
 #include <algorithm>
 #include <iostream>
 
+#if __cplusplus > 201402L
+#define AUTO_PTR std::unique_ptr
+#else
+#define AUTO_PTR std::auto_ptr
+#endif
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTDataDeflater)
 
@@ -360,7 +366,7 @@ int AliHLTDataDeflater::FillStatistics(int id, AliHLTUInt64_t value, unsigned le
 void AliHLTDataDeflater::SaveAs(const char *filename,Option_t */*option*/) const
 {
   // safe histograms to file
-  std::auto_ptr<TFile> file(TFile::Open(filename, "RECREATE"));
+  AUTO_PTR<TFile> file(TFile::Open(filename, "RECREATE"));
   if (!file.get() || file->IsZombie()) {
     HLTError("can not open file %s", filename);;
     return;

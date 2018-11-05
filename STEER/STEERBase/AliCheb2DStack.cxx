@@ -108,7 +108,6 @@ float* AliCheb2DStack::DefineGrid(int slice, int dim, const int np[2]) const
 {
   // prepare the grid of Chebyshev roots for dim-th output dimension
   // First np[1] nodes of 2nd input dimesion are stored, then np[0] nodes for 1st dim.
-  const int kMinPoints = 1;
   float *grid = new float[np[0]+np[1]];
   int cnt=0;
   for (int id=2;id--;) {

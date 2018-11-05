@@ -7,21 +7,15 @@
 #include <functional>
 
 
-// Helpers to trim whitespace from strings. trim from start.
-static inline std::string &ltrim(std::string &s) {
-  s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
-  return s;
-}
-
-// trim from end
-static inline std::string &rtrim(std::string &s) {
-  s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
-  return s;
-}
-
 // trim from both ends
-static inline std::string &trim(std::string &s) {
-  return ltrim(rtrim(s));
+static inline std::string trim(const std::string &str) {
+  size_t first = str.find_first_not_of(' ');
+  if (std::string::npos == first)
+  {
+    return str;
+  }
+  size_t last = str.find_last_not_of(' ');
+  return str.substr(first, (last - first + 1));
 }
 
 struct MatchPathSeparator

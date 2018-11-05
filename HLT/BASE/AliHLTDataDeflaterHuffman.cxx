@@ -32,6 +32,12 @@
 #include <cmath>
 #include <iostream>
 
+#if __cplusplus > 201402L
+#define AUTO_PTR std::unique_ptr
+#else
+#define AUTO_PTR std::auto_ptr
+#endif
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTDataDeflaterHuffman)
 
@@ -271,7 +277,7 @@ void AliHLTDataDeflaterHuffman::SaveAs(const char *filename, Option_t *option) c
   TString remainingOptions;
   bool bWriteHuffmanConf=false; // write the huffman configuration
   TString strOption(option);
-  std::auto_ptr<TObjArray> tokens(strOption.Tokenize(" "));
+  AUTO_PTR<TObjArray> tokens(strOption.Tokenize(" "));
   if (tokens.get()) {
     for (int i=0; i<tokens->GetEntriesFast(); i++) {
       if (!tokens->At(i)) continue;
@@ -290,7 +296,7 @@ void AliHLTDataDeflaterHuffman::SaveAs(const char *filename, Option_t *option) c
   }
 
   if (bWriteHuffmanConf) {
-    std::auto_ptr<TFile> output(TFile::Open(filename, "RECREATE"));
+    AUTO_PTR<TFile> output(TFile::Open(filename, "RECREATE"));
     if (!output.get() || output->IsZombie()) {
       HLTError("can not open file %s from writing", filename);
       return;

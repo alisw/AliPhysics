@@ -32,6 +32,9 @@ public:
   const TObjArray* GetV0HypSelArray() const {return fV0HypSelArray;}
   
 private:
+  AliV0vertexer(const AliV0vertexer&) : fEtaMax(), fChi2max(), fDNmin(), fDPmin(), fDCAmax(), fCPAmin(), fRmin(), fRmax(), fV0HypSelArray(NULL) {}
+  const AliV0vertexer& operator=(const AliV0vertexer&) {return *this;}
+
   static
   Double_t fgEtaMax;      // maximal allowed Eta
   static

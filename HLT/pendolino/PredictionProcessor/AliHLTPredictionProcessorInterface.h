@@ -20,6 +20,12 @@
 #include "TMap.h"
 #include <memory>
 
+#if __cplusplus > 201402L
+#define AUTO_PTR std::unique_ptr
+#else
+#define AUTO_PTR std::auto_ptr
+#endif
+
 class AliHLTPendolino;
 
 /**
@@ -252,7 +258,7 @@ AliDCSSensor* AliHLTPredictionProcessorInterface::CreateSensor(const char* id, T
 
   if (!id) return NULL;
 
-  std::auto_ptr<AliDCSSensor> pSensor(new AliDCSSensor);
+  AUTO_PTR<AliDCSSensor> pSensor(new AliDCSSensor);
   if (!pSensor.get()) {
     //HLTFatal("memory allocation failed");
     return NULL;
@@ -273,7 +279,7 @@ AliDCSSensor* AliHLTPredictionProcessorInterface::CreateSensor(const char* id, T
   x[1]=(endtime-starttime)/kSecInHour;
   y[0]=value;
   y[1]=value;
-  std::auto_ptr<TGraph> pGraph(new TGraph(2,x,y));
+  AUTO_PTR<TGraph> pGraph(new TGraph(2,x,y));
   if (!pGraph.get()) {
     //HLTFatal("can not create graph for id %s", id);
     return NULL;

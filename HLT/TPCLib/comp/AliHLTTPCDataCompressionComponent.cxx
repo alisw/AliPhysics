@@ -49,6 +49,12 @@
 #include "TFile.h"
 #include <memory>
 
+#if __cplusplus > 201402L
+#define AUTO_PTR std::unique_ptr
+#else
+#define AUTO_PTR std::auto_ptr
+#endif
+
 ClassImp(AliHLTTPCDataCompressionComponent)
 
 AliHLTTPCDataCompressionComponent::AliHLTTPCDataCompressionComponent()
@@ -830,7 +836,7 @@ int AliHLTTPCDataCompressionComponent::DoInit( int argc, const char** argv )
     HLTInfo("configured from command line: mode %d, deflater mode %d", fMode, fDeflaterMode);
   }
 
-  std::auto_ptr<AliHLTComponentBenchmark> benchmark(new AliHLTComponentBenchmark);
+  AUTO_PTR<AliHLTComponentBenchmark> benchmark(new AliHLTComponentBenchmark);
   if (benchmark.get()) {
     benchmark->SetTimer(0,"total");
     benchmark->SetTimer(1,"rawclusterinput");
@@ -851,25 +857,25 @@ int AliHLTTPCDataCompressionComponent::DoInit( int argc, const char** argv )
     // optimized storage format: differential pad and time storage
     spacePointContainerMode|=AliHLTTPCRawSpacePointContainer::kModeDifferentialPadTime;
   }
-  std::auto_ptr<AliHLTTPCRawSpacePointContainer> rawInputClusters(new AliHLTTPCRawSpacePointContainer(spacePointContainerMode, fCreateFlags));
-  std::auto_ptr<AliHLTTPCSpacePointContainer> inputClusters(new AliHLTTPCSpacePointContainer);
+  AUTO_PTR<AliHLTTPCRawSpacePointContainer> rawInputClusters(new AliHLTTPCRawSpacePointContainer(spacePointContainerMode, fCreateFlags));
+  AUTO_PTR<AliHLTTPCSpacePointContainer> inputClusters(new AliHLTTPCSpacePointContainer);
 
-  std::auto_ptr<TH1F> histoCompFactor(new TH1F("CompressionFactor",
+  AUTO_PTR<TH1F> histoCompFactor(new TH1F("CompressionFactor",
 					       "HLT TPC data compression factor",
 					       100, 0., 10.));
-  std::auto_ptr<TH1F> histoResidualPad(new TH1F("PadResidual",
+  AUTO_PTR<TH1F> histoResidualPad(new TH1F("PadResidual",
 						"HLT TPC pad residual",
 						100, -fMaxDeltaPad, fMaxDeltaPad));
-  std::auto_ptr<TH1F> histoResidualTime(new TH1F("TimeResidual",
+  AUTO_PTR<TH1F> histoResidualTime(new TH1F("TimeResidual",
 						 "HLT TPC time residual",
 						 100, -fMaxDeltaTime, fMaxDeltaTime));
-  std::auto_ptr<TH1F> histoClustersOnTracks(new TH1F("ClustersOnTracks",
+  AUTO_PTR<TH1F> histoClustersOnTracks(new TH1F("ClustersOnTracks",
 						 "Clusters in track model compression",
 						 200, 0., 600));
-  std::auto_ptr<TH1F> histoClusterRatio(new TH1F("ClusterRatio",
+  AUTO_PTR<TH1F> histoClusterRatio(new TH1F("ClusterRatio",
 						 "Fraction of clusters in track model compression",
 						 100, 0., 1.));
-  std::auto_ptr<TH1F> histoTrackClusterRatio(new TH1F("UsedTrackClusters",
+  AUTO_PTR<TH1F> histoTrackClusterRatio(new TH1F("UsedTrackClusters",
 						 "Fraction of track clusters in track model compression",
 						 100, 0., 1.));
 
@@ -922,7 +928,7 @@ int AliHLTTPCDataCompressionComponent::InitDeflater(int mode)
   int iResult=0;
   if (mode==kDeflaterModeHuffman || mode==kDeflaterModeHuffmanTrainer) {
     // huffman deflater
-    std::auto_ptr<AliHLTDataDeflaterHuffman> deflater(new AliHLTDataDeflaterHuffman(mode==kDeflaterModeHuffmanTrainer));
+    AUTO_PTR<AliHLTDataDeflaterHuffman> deflater(new AliHLTDataDeflaterHuffman(mode==kDeflaterModeHuffmanTrainer));
     if (!deflater.get()) return -ENOMEM;
 
     if (!deflater->IsTrainingMode()) {
@@ -984,7 +990,7 @@ int AliHLTTPCDataCompressionComponent::InitDeflater(int mode)
     return 0;
   }
   if (mode==kDeflaterModeSimple) {
-    std::auto_ptr<AliHLTDataDeflaterSimple> deflater(new AliHLTDataDeflaterSimple);
+    AUTO_PTR<AliHLTDataDeflaterSimple> deflater(new AliHLTDataDeflaterSimple);
     if (!deflater.get()) return -ENOMEM;
 
     if (!fHistogramFile.IsNull())

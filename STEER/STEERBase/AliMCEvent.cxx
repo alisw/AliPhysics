@@ -530,7 +530,7 @@ Bool_t AliMCEvent::IsFromSubsidiaryEvent(int id) const
   if (id >= BgLabelOffset() && fSubsidiaryEvents) return kTRUE;
   if (fSubsidiaryEvents) {
     AliMCEvent* mc;
-    Int_t idx = FindIndexAndEvent(id, mc);
+    FindIndexAndEvent(id, mc);
     if (mc != fSubsidiaryEvents->At(0)) return kTRUE;
   } 
   return kFALSE;

@@ -156,7 +156,7 @@ Bool_t AliHLTEMCALCaloCells::SetCell(Short_t pos, Short_t /*cellNumber*/, Double
 Bool_t AliHLTEMCALCaloCells::AddCell(Short_t pos, Double_t amplitude)
 {
   if (pos < 0 || pos >= fCapacity) {
-    Printf(Form("ERROR-AliHLTEMCALCaloCells::AddCell - Could not add energy of cell %d (capacity is %d)", pos, fCapacity));
+    Printf("ERROR-AliHLTEMCALCaloCells::AddCell - Could not add energy of cell %d (capacity is %d)", pos, fCapacity);
     return kFALSE;
   }
 

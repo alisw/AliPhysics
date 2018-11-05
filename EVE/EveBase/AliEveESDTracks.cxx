@@ -35,6 +35,7 @@ fUseIPonFailedITSrefit(kFALSE),
 fTrueField(kTRUE),
 fRKstepper(kFALSE),
 fAnalCuts(0),
+fWidth(0),
 fDashNoRefit(true),
 fDrawNoRefit(false)
 {

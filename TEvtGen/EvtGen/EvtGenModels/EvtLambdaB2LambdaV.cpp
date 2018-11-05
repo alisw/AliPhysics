@@ -587,7 +587,8 @@ void EvtLambda2PPiForLambdaB2LambdaV::init()
   {
     report(Severity::Error,fname.c_str()) << " Vtype " <<getArg(1)<<" is unknown"<<std::endl;
     if (!antiparticle) report(Severity::Debug,fname.c_str())<<" From : Lambda_b0 -> Lambda rho-omega-mixing"<<std::endl;
-    else report(Severity::Debug,fname.c_str())<<" From : anti-Lambda_b0 -> anti-Lambda rho-omega-mixing"<<std::endl;    abort();
+    else report(Severity::Debug,fname.c_str())<<" From : anti-Lambda_b0 -> anti-Lambda rho-omega-mixing"<<std::endl;
+    abort();
   }
 
   //constants
@@ -987,7 +988,8 @@ void EvtV2VpVmForLambdaB2LambdaV::init()
       if (Vtype==VID::RHO) report(Severity::Debug,fname.c_str())<<" Decay mode successfully initialized : rho0 -> pi+ pi-"<<std::endl;
       if (Vtype==VID::OMEGA) report(Severity::Debug,fname.c_str())<<" Decay mode successfully initialized : omega -> pi+ pi-"<<std::endl;
       if (Vtype==VID::RHO_OMEGA_MIXING) 
-              report(Severity::Debug,fname.c_str())<<" Decay mode successfully initialized : rho-omega mixing -> pi+ pi-"<<std::endl; break;
+              report(Severity::Debug,fname.c_str())<<" Decay mode successfully initialized : rho-omega mixing -> pi+ pi-"<<std::endl;
+      break;
 
     default :
       report(Severity::Error,fname.c_str()) << "No decay mode chosen ! "<<std::endl;

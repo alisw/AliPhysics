@@ -2758,6 +2758,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeITSProbability  (const A
   Double_t mom=track->P();
   Double_t dedx=track->GetITSsignal();
   if (fTuneMConData && ((fTuneMConDataMask & kDetITS) == kDetITS)) dedx = GetITSsignalTunedOnData(track);
+  (void) dedx;//mark as used to avoid warning
 
   Double_t momITS=mom;
   UChar_t clumap=track->GetITSClusterMap();

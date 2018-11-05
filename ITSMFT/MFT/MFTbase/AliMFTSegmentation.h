@@ -43,7 +43,9 @@ public:
 
 
 private:
-
+  AliMFTSegmentation(const AliMFTSegmentation&) : TNamed(), fMFTHalves() {}
+  AliMFTSegmentation& operator=(const AliMFTSegmentation&) {return *this;}
+  
   TClonesArray *fMFTHalves; ///< \brief Array of pointer to AliMFTHalfSegmentation
 
   /// \cond CLASSIMP

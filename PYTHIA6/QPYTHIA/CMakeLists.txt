@@ -21,8 +21,8 @@ add_definitions(-D_MODULE_="${MODULE}")
 include_directories(${AliRoot_SOURCE_DIR}/PYTHIA6/QPYTHIA)
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIR}
-                    ${AliRoot_SOURCE_DIR}/FASTSIM
+include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
+include_directories(${AliRoot_SOURCE_DIR}/FASTSIM
                     ${AliRoot_SOURCE_DIR}/PYTHIA6/pythia6
                    )
 

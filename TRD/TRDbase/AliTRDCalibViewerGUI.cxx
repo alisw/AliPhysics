@@ -567,7 +567,7 @@ TString* AliTRDCalibViewerGUI::GetDrawString() {
    
   // try to add forgotten '~'
   if (fChkAutoAppend->GetState() == kButtonDown) 
-    desiredData = TString(((AliTRDCalibViewer*)fViewer)->AddAbbreviations((char*)desiredData.Data()));
+    desiredData = ((AliTRDCalibViewer*)fViewer)->AddAbbreviations(desiredData.Data());
   return new TString(desiredData.Data());
 }
 
@@ -581,7 +581,7 @@ TString* AliTRDCalibViewerGUI::GetCutString() {
       
    // try to add forgotten '~'
    if(fChkAutoAppend->GetState() == kButtonDown) 
-      cutsStr = TString(((AliTRDCalibViewer*)fViewer)->AddAbbreviations((char*)cutsStr.Data()));
+      cutsStr = ((AliTRDCalibViewer*)fViewer)->AddAbbreviations(cutsStr.Data());
    return new TString(cutsStr.Data());
 }
 

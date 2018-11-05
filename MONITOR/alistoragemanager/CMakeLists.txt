@@ -18,6 +18,7 @@ include_directories(${AliRoot_SOURCE_DIR}/MONITOR/alistoragemanager
                    )
 
 # Additional include folders in alphabetical order
+include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
 include_directories(${AliRoot_SOURCE_DIR}/MONITOR/MONITOR
                     ${AliRoot_SOURCE_DIR}/MONITOR/MONITORzmq
                     ${AliRoot_SOURCE_DIR}/STEER/ESD

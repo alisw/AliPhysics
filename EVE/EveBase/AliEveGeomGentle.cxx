@@ -14,7 +14,7 @@
 
 using namespace std;
 
-TEveGeoShape* AliEveGeomGentle::GetSimpleGeom(char* detector)
+TEveGeoShape* AliEveGeomGentle::GetSimpleGeom(const char* detector)
 {
     TEnv settings;
     AliEveInit::GetConfig(&settings);
