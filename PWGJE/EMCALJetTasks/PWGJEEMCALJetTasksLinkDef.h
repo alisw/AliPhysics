@@ -263,5 +263,6 @@
 #pragma link C++ class AliAnalysisTaskSoftDropResponse+;
 #pragma link C++ class AliAnalysisTaskEmcalSubjet+;
 #pragma link C++ class AliAnalysisTaskJetCoreEmcal+;
+#pragma link C++ class AliAnalysisTaskSVtaskMCFilter+;
 #endif
 #endif
