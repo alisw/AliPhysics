@@ -568,8 +568,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     fPDGCodeAnalyzedMeson                             = 331; // PDG value eta prime
     break;
   case 3:         // D0 MESON
-    HistoNMassBins                                    = 400;
-    HistoMassRange[0]                                 = 1.6;
+    HistoNMassBins                                    = 600;
+    HistoMassRange[0]                                 = 1.4;
     HistoMassRange[1]                                 = 2.0;
     HistoNMassBinsSub                                 = 400;      // MF: Background subtraction?
     HistoMassRangeSub[0]                              = 1.6;
