@@ -593,27 +593,63 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
 	  if(multTPC < (-18.5+1.15*multGlobal) || multTPC > (200.+1.45*multGlobal)) pass = kFALSE;
 	}
       }
-      
-      //==================================================//
-      //sphericity calculation: 
-      //currently for events with nAcceptedTracks >= 2
-      if(nAcceptedTracks >= 2) { 
-	if(sumPt != 0.) { 
-	  s00 /= sumPt;
-	  s11 /= sumPt;
-	  s10 /= sumPt;
+    }
+
+    //==================================================//
+    //MC kine only
+    if(mcevent) {
+      for (Int_t iParticle = 0; iParticle < mcevent->GetNumberOfTracks(); iParticle++) {
+	AliMCParticle* gParticle = dynamic_cast<AliMCParticle *>(mcevent->GetTrack(iParticle));
+	if (!gParticle) {
+	  Printf(Form("Could not receive particle %d", iParticle));
+	  continue;
+	}
+	
+	//exclude non stable particles
+	if(!(mcevent->IsPhysicalPrimary(iParticle))) continue;
+    
+	//kinematic cuts cuts
+	Float_t pX  = gParticle->Px();
+	Float_t pY  = gParticle->Py();
+	Float_t pT  = gParticle->Pt();
+	Float_t eta = gParticle->Eta();
+	
+	// Kinematics cuts from ESD track cuts
+	if( pT < 0.2 || pT > 5.)      continue;
+	if( eta < -0.8 || eta > 0.8)  continue;
+    
+	sumPt += pT;
+	if(pT != 0.) {
+	  s00 += TMath::Power(pX,2)/pT;
+	  s11 += TMath::Power(pY,2)/pT;
+	  s10 += pX*pY/pT;
+	}
+	
+	nAcceptedTracks += 1;
+      } //particle loop
+    }//MC event
+
+    //==================================================//
+    //sphericity calculation: 
+    //currently for events with nAcceptedTracks >= 2
+    if(nAcceptedTracks >= 2) { 
+      if(sumPt != 0.) { 
+	s00 /= sumPt;
+	s11 /= sumPt;
+	s10 /= sumPt;
+	
+	if((TMath::Power((s00 + s11),2) - 4.*(s00*s11 - TMath::Power(s10,2))) >= 0.) {
+	  lambda1 = (s00 + s11 + TMath::Sqrt(TMath::Power((s00 + s11),2) - 4.*(s00*s11 - TMath::Power(s10,2))))/2.;
+	  lambda2 = (s00 + s11 - TMath::Sqrt(TMath::Power((s00 + s11),2) - 4.*(s00*s11 - TMath::Power(s10,2))))/2.;
 	  
-	  if((TMath::Power((s00 + s11),2) - 4.*(s00*s11 - TMath::Power(s10,2))) >= 0.) {
-	    lambda1 = (s00 + s11 + TMath::Sqrt(TMath::Power((s00 + s11),2) - 4.*(s00*s11 - TMath::Power(s10,2))))/2.;
-	    lambda2 = (s00 + s11 - TMath::Sqrt(TMath::Power((s00 + s11),2) - 4.*(s00*s11 - TMath::Power(s10,2))))/2.;
-	    
-	    if((lambda1 + lambda2) != 0.) {
-	      sT = 2.*TMath::Min(lambda1,lambda2)/(lambda1 + lambda2);
-	    }
+	  if((lambda1 + lambda2) != 0.) {
+	    sT = 2.*TMath::Min(lambda1,lambda2)/(lambda1 + lambda2);
 	  }
 	}
       }
     }
+
+
     if (fQA) {
       QAbefore(0)->Fill(pvtxz);
       QAbefore(1)->Fill(multGlobal,multTPC);
