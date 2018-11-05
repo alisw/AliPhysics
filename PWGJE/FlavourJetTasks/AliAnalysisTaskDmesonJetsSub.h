@@ -799,7 +799,7 @@ class AliAnalysisTaskDmesonJetsSub : public AliAnalysisTaskEmcalLight
     Bool_t              ExtractD0Attributes(const AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, UInt_t i);
     Bool_t              ExtractDstarAttributes(const AliAODRecoCascadeHF* DstarCand, AliDmesonJetInfo& DmesonJet, UInt_t i);
     Bool_t              FindJet(AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, AliHFJetDefinition& jetDef);
-    void                IterativeDeclustering(Int_t jetnum,Double_t type, AliHFJetDefinition& jetDef); 
+    void                IterativeDeclustering(Int_t jetnum,Double_t type, AliHFJetDefinition& jetDef,Double_t invm); 
     /// \cond CLASSIMP
     ClassDef(AnalysisEngine, 3);
     /// \endcond
