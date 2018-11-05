@@ -7,6 +7,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliPIDResponse.h"
+#include "TProfile.h"
 class AliAODMCParticle;
 class AliAODMCHeader;
 class AliMultSelection;
@@ -43,6 +44,8 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Bool_t                  IsPdecay(int mpid);
 		Bool_t                  IsDdecay(int mpid);
 		Bool_t                  IsBdecay(int mpid);
+		TProfile* 		GetEstimatorHistogram(const AliAODEvent *fAOD);
+		TProfile* 		GetEstimatorHistogramMC(const AliAODEvent *fAOD);
 
     void                    SetEG1(Bool_t flagEG1) { fEMCEG1= flagEG1;};
     void                    SetEG2(Bool_t flagEG2) { fEMCEG2= flagEG2;};
@@ -62,6 +65,32 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		void                    SetptAsso(Double_t ptassoMin) {ptAssoMin = ptassoMin;};
 		void                    SetptCut(TString pte) {pTe = pte;};
 		void                    SetMassMin(Double_t MassMin) {massMin = MassMin;};
+		void                    SetNref(Double_t nref) {Nref = nref;};
+
+		void 			SetMultiProfileLHC16i(TProfile * hprof){
+						if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+						fMultEstimatorAvg[0]=new TProfile(*hprof);
+		}
+		void 			SetMultiProfileLHC16j(TProfile * hprof){
+						if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+						fMultEstimatorAvg[1]=new TProfile(*hprof);
+		}
+		void 			SetMultiProfileLHC16k(TProfile * hprof){
+						if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+						fMultEstimatorAvg[2]=new TProfile(*hprof);
+		}
+		void 			SetMultiProfileLHC16o(TProfile * hprof){
+						if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
+						fMultEstimatorAvg[3]=new TProfile(*hprof);
+		}
+		void 			SetMultiProfileMCLHC16k(TProfile * hprof){
+						if(fMultEstimatorAvg[4]) delete fMultEstimatorAvg[4];
+						fMultEstimatorAvg[4]=new TProfile(*hprof);
+		}
+		void 			SetMultiProfileMCLHC16l(TProfile * hprof){
+						if(fMultEstimatorAvg[5]) delete fMultEstimatorAvg[5];
+						fMultEstimatorAvg[5]=new TProfile(*hprof);
+		}
 
 	private:
 		AliAODEvent*            fAOD;           //! input event
@@ -86,6 +115,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Double_t ptAssoMin;
 		TString pTe;
 		Double_t massMin;
+		Double_t Nref;
 		Int_t Nch;
 
 		//==== basic parameters ====
@@ -198,6 +228,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		AliAnalysisTaskCaloHFEpp(const AliAnalysisTaskCaloHFEpp&); // not implemented
 		AliAnalysisTaskCaloHFEpp& operator=(const AliAnalysisTaskCaloHFEpp&); // not implemented
 		Int_t fetarange;
+		TProfile*		fMultEstimatorAvg[6];
 
 
 		ClassDef(AliAnalysisTaskCaloHFEpp, 1);

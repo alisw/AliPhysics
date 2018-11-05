@@ -85,6 +85,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				ptAssoMin(0),
 				pTe("name"),
 				massMin(0),
+				Nref(0),
 				Nch(0),
 				//==== basic parameters ====
 				fNevents(0),
@@ -191,6 +192,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 {
 				// default constructor, don't allocate memory here!
 				// this is used by root for IO purposes, it needs to remain empty
+				for(Int_t i=0; i<6; i++) fMultEstimatorAvg[i]=0;
 }
 //_____________________________________________________________________________
 AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalysisTaskSE(name),
@@ -221,6 +223,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				ptAssoMin(0),
 				pTe("name"),
 				massMin(0),
+				Nref(0),
 				Nch(0),
 				//==== basic parameters ====
 				fNevents(0),
@@ -332,6 +335,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				// you can add more output objects by calling DefineOutput(2, classname::Class())
 				// if you add more output objects, make sure to call PostData for all of them, and to
 				// make changes to your AddTask macro!
+				for(Int_t i=0; i<6; i++) fMultEstimatorAvg[i]=0;
 }
 //_____________________________________________________________________________
 AliAnalysisTaskCaloHFEpp::~AliAnalysisTaskCaloHFEpp()
@@ -339,6 +343,9 @@ AliAnalysisTaskCaloHFEpp::~AliAnalysisTaskCaloHFEpp()
 				// destructor
 				if(fOutputList) {
 								delete fOutputList;     // at the end of your task, it is deleted from memory by calling this function
+				}
+				for(Int_t i=0; i<6; i++) {
+								if (fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i];
 				}
 }
 //_____________________________________________________________________________
@@ -767,20 +774,22 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				}
 				fzvtx_Ntrkl->Fill(Zvertex,nAcc);
 
-//				//-----------Tracklet correction-------------------------
-//				Double_t correctednAcc   = nAcc;
-//				Double_t fRefMult = 13;
-//				TProfile* estimatorAvg = GetEstimatorHistogram(fAOD);
-//				if(estimatorAvg){
-//								correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fRefMult));
-//				} 
-//				fzvtx_Ntrkl_Corr->Fill(Zvertex,correctednAcc);
+				//-----------Tracklet correction-------------------------
+				Double_t correctednAcc   = nAcc;
+				Double_t fRefMult = Nref;
+				TProfile* estimatorAvg;
+				if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fAOD);
+				if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fAOD);
+				if(estimatorAvg){
+								correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fRefMult));
+				} 
+				fzvtx_Ntrkl_Corr->Fill(Zvertex,correctednAcc);
 
 
 				if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
 
 				fzvtx_Nch->Fill(Zvertex,Nch);
-//				fNchNtr->Fill(correctednAcc,Nch);
+				fNchNtr->Fill(correctednAcc,Nch);
 
 
 
@@ -1587,4 +1596,34 @@ void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, 
 
 				}
 
+}
+//____________________________________________________________________________
+TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(const AliAODEvent* fAOD)
+{
+    
+  Int_t runNo  = fAOD->GetRunNumber();
+  Int_t period = -1; 
+   
+  if (runNo>=255539 && runNo<=255618) period = 0; //LHC16i
+  if (runNo>=256207 && runNo<=256420) period = 1; //LHC16j
+  if (runNo>=256941 && runNo<=258537) period = 2; //LHC16k
+  if (runNo>=262424 && runNo<=263487) period = 3; //LHC16o
+  if (period < 0 || period > 3) return 0;
+    
+    
+  return fMultEstimatorAvg[period];
+}
+//____________________________________________________________________________
+TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogramMC(const AliAODEvent* fAOD)
+{
+    
+  Int_t runNo  = fAOD->GetRunNumber();
+  Int_t period = -1; 
+   
+  if (runNo>=256592 && runNo<=258537) period = 4; //LHC16k
+  if (runNo>=258919 && runNo<=259888) period = 5; //LHC16l
+  if (period < 4 || period > 5) return 0;
+    
+    
+  return fMultEstimatorAvg[period];
 }
