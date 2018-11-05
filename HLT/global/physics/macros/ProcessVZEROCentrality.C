@@ -6,6 +6,8 @@
 #include "TCollection.h"
 #include "TFile.h"
 #include "TMath.h"
+#include "TLine.h"
+#include "TLegend.h"
 #include <cstdio>
 #endif
 //______________________________________________________
