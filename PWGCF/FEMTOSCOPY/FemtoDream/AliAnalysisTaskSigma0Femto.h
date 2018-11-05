@@ -72,6 +72,7 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   TString fV0ReaderName;                      //
   AliSigma0V0Cuts *fV0Cuts;                   //
   AliSigma0V0Cuts *fAntiV0Cuts;               //
+  AliSigma0V0Cuts *fPhotonQA;                 //
   AliSigma0PhotonMotherCuts *fSigmaCuts;      //
   AliSigma0PhotonMotherCuts *fAntiSigmaCuts;  //
 
@@ -105,7 +106,6 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   TH1F *fHistCentralityProfileCoarseAfter;  //!
   TH1F *fHistTriggerBefore;                 //!
   TH1F *fHistTriggerAfter;                  //!
-  TH2F *fHistPhotonPileUp;                  //!
 
   ClassDef(AliAnalysisTaskSigma0Femto, 7)
 };

@@ -18,6 +18,7 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fV0ReaderName("NoInit"),
       fV0Cuts(nullptr),
       fAntiV0Cuts(nullptr),
+      fPhotonQA(nullptr),
       fSigmaCuts(nullptr),
       fAntiSigmaCuts(nullptr),
       fProtonTrack(nullptr),
@@ -43,8 +44,7 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fHistCentralityProfileAfter(nullptr),
       fHistCentralityProfileCoarseAfter(nullptr),
       fHistTriggerBefore(nullptr),
-      fHistTriggerAfter(nullptr),
-      fHistPhotonPileUp(nullptr) {}
+      fHistTriggerAfter(nullptr) {}
 
 //____________________________________________________________________________________________________
 AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
@@ -56,6 +56,7 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
       fV0ReaderName("NoInit"),
       fV0Cuts(nullptr),
       fAntiV0Cuts(nullptr),
+      fPhotonQA(nullptr),
       fSigmaCuts(nullptr),
       fAntiSigmaCuts(nullptr),
       fProtonTrack(nullptr),
@@ -81,8 +82,7 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
       fHistCentralityProfileAfter(nullptr),
       fHistCentralityProfileCoarseAfter(nullptr),
       fHistTriggerBefore(nullptr),
-      fHistTriggerAfter(nullptr),
-      fHistPhotonPileUp(nullptr) {
+      fHistTriggerAfter(nullptr) {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
@@ -164,6 +164,9 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
 
   // PHOTON SELECTION
   fGammaArray = fV0Reader->GetReconstructedGammas();  // Gammas from default Cut
+  if (!fIsLightweight) {
+    fPhotonQA->PhotonQA(fInputEvent, fGammaArray);
+  }
   std::vector<AliSigma0ParticleV0> gammaConvContainer;
   CastToVector(gammaConvContainer, fInputEvent);
 
@@ -311,7 +314,6 @@ void AliAnalysisTaskSigma0Femto::CastToVector(
     auto *PhotonCandidate =
         dynamic_cast<AliAODConversionPhoton *>(fGammaArray->At(iGamma));
     if (!PhotonCandidate) continue;
-    fHistPhotonPileUp->Fill(PhotonCandidate->Pt(), 0.5);
 
     // pile up check
     if (fPhotonLegPileUpCut) {
@@ -335,7 +337,6 @@ void AliAnalysisTaskSigma0Femto::CastToVector(
 
       if (!posTrackCombined || !negTrackCombined) continue;
     }
-    fHistPhotonPileUp->Fill(PhotonCandidate->Pt(), 1.5);
 
     AliSigma0ParticleV0 phot(PhotonCandidate, inputEvent);
     if (fIsMC) {
@@ -428,13 +429,6 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
   fHistCutQA->GetXaxis()->SetBinLabel(4, "Multiplicity selection");
   fHistCutQA->GetXaxis()->SetBinLabel(5, "AliConversionCuts");
   fQA->Add(fHistCutQA);
-
-  fHistPhotonPileUp =
-      new TH2F("fHistPhotonPileUp", ";#it{p}_{T} (GeV/#it{c}^{2}; PileUp", 100,
-               0, 10, 2, 0, 2);
-  fHistPhotonPileUp->GetYaxis()->SetBinLabel(1, "Before");
-  fHistPhotonPileUp->GetYaxis()->SetBinLabel(2, "After");
-  fQA->Add(fHistPhotonPileUp);
 
   if (!fIsLightweight) {
     fHistRunNumber = new TProfile("fHistRunNumber", ";;Run Number", 1, 0, 1);
@@ -611,6 +605,16 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
 
   if (fAntiV0Cuts && fAntiV0Cuts->GetCutHistograms()) {
     fOutputContainer->Add(fAntiV0Cuts->GetCutHistograms());
+  }
+
+  if (!fIsLightweight) {
+    fPhotonQA = new AliSigma0V0Cuts();
+    fPhotonQA->SetLightweight(false);
+    fPhotonQA->SetPID(22);
+    fPhotonQA->SetPosPID(AliPID::kElectron, 11);
+    fPhotonQA->SetNegPID(AliPID::kElectron, -11);
+    fPhotonQA->InitCutHistograms(TString("Photon"));
+    fOutputContainer->Add(fPhotonQA->GetCutHistograms());
   }
 
   if (fSigmaCuts && fSigmaCuts->GetCutHistograms()) {
