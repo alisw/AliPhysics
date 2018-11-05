@@ -750,6 +750,10 @@ Bool_t AliTPCcalibDB::GetTailcancelationGraphs(Int_t sector, TGraphErrors ** gra
   Int_t nvoltages=0;
   for (Int_t i=0;i<=ngraph;i++){
     // read the TRF object name in order to select proper TRF for the given sector: IROC or OROC
+    if (fIonTailArray->At(i)==nullptr)  {
+      ::Error("AliTPCcalibDB::GetTailcancelationGraphs()","Empty graph %d in array of length %d. SKIPPING",i, ngraph);
+      continue;
+    }
     TString objname(fIonTailArray->At(i)->GetName());
     if (!objname.Contains(rocType)) continue;
     TObjArray *objArr = objname.Tokenize("_");
@@ -779,9 +783,14 @@ Bool_t AliTPCcalibDB::GetTailcancelationGraphs(Int_t sector, TGraphErrors ** gra
   Int_t igraph=0;
   for (Int_t i=0; i<=ngraph; i++){
 
-    TGraphErrors * trfObj = static_cast<TGraphErrors*>(fIonTailArray->At(i));
+    TGraphErrors * trfObj = dynamic_cast<TGraphErrors*>(fIonTailArray->At(i));
+    if (trfObj== nullptr) continue;
     TString objname(trfObj->GetName());
+    if (!objname.Contains(rocType)) continue;
     TObjArray *objArr1 = objname.Tokenize("_");
+    if (objArr1->GetEntries()<4){
+      ::Fatal("AliTPCcalibDB::GetTailcancelationGraphs","Unexpected graph name %s", objname.Data());
+    }
     Int_t voltage = atoi(static_cast<TObjString*>(objArr1->At(2))->GetName());
     Int_t angle   = atoi(static_cast<TObjString*>(objArr1->At(3))->GetName());
     Float_t dCOG  = atof(static_cast<TObjString*>(objArr1->At(4))->GetName());
