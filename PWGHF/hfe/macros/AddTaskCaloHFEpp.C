@@ -31,7 +31,9 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
 										 Double_t coneR,
 										 Double_t ptAsso,
 										 TString  pte = "pte",
-										 Double_t MassMin)
+										 Double_t MassMin,
+										 Int_t nref,
+										 TString estimatorFilename)
 {
     // get the manager via the static access member. since it's static, you don't need
     // an instance of the class to call the function
@@ -46,17 +48,6 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
         return 0x0;
     }
 
-
-//		//-------------------------------------------
-//		gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
-//		gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
-//
-//		AddTaskPhysicsSelection(fMC,true); // IsMC true for MC !!!, second argument is for pileup removal which is very important.
-//		AliMultSelectionTask * Multtask = AddTaskMultSelection(true); // argument is true if you need to run on calibration and this task should be called after the physics selection!!!!
-//		Multtask->SetAlternateOADBforEstimators(dataname.Data()); // for MC, if there is no calibration then you can specify here the alternate default calibration to be used.
-//		if(fMC)Multtask->SetUseDefaultMCCalib(kTRUE); // MC 
-//		if(!fMC)Multtask->SetUseDefaultCalib(kTRUE); // data
-//		//-------------------------------------------
 
 
 		// by default, a file is open for writing. here, we get the filename
@@ -81,6 +72,97 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
 		task -> SetptAsso(ptAsso);
 		task -> SetptCut(pte);
 		task -> SetMassMin(MassMin);
+		task -> SetNref(nref);
+
+		TFile* fEstimator=TFile::Open(estimatorFilename.Data());
+		if(!fEstimator){
+						AliFatal("File with multiplicity estimator not found\n");
+						return;
+		}
+
+		// MB get estimator file
+		if(SetFlagClsTypeEMC && !flagEG1 && !flagEG2){
+						const Char_t* profilebasename="SPDTrklMB";
+						const Char_t* periodNames[4] = {"LHC16i", "LHC16j","LHC16k","LHC16o"};
+
+						TProfile* multEstimatorAvgMB[4];
+
+						for(Int_t ip=0; ip<4; ip++) {
+										cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
+										multEstimatorAvgMB[ip] = (TProfile*)(fEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+										if(!multEstimatorAvgMB[ip]){
+														AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
+														return;
+										}
+						}
+						task->SetMultiProfileLHC16i(multEstimatorAvgMB[0]);
+						task->SetMultiProfileLHC16j(multEstimatorAvgMB[1]);
+						task->SetMultiProfileLHC16k(multEstimatorAvgMB[2]);
+						task->SetMultiProfileLHC16o(multEstimatorAvgMB[3]);
+		}
+
+		// EG1 get estimator file
+		if(SetFlagClsTypeEMC && flagEG1 && !flagEG2){
+						const Char_t* profilebasename="SPDTrklEG1";
+						const Char_t* periodNames[4] = {"LHC16i", "LHC16j","LHC16k","LHC16o"};
+
+						TProfile* multEstimatorAvgEG1[4];
+
+						for(Int_t ip=0; ip<4; ip++) {
+										cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
+										multEstimatorAvgEG1[ip] = (TProfile*)(fEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+										if(!multEstimatorAvgEG1[ip]){
+														AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
+														return;
+										}
+						}
+						task->SetMultiProfileLHC16i(multEstimatorAvgEG1[0]);
+						task->SetMultiProfileLHC16j(multEstimatorAvgEG1[1]);
+						task->SetMultiProfileLHC16k(multEstimatorAvgEG1[2]);
+						task->SetMultiProfileLHC16o(multEstimatorAvgEG1[3]);
+		}
+
+		// EG2 get estimator file
+		if(SetFlagClsTypeEMC && !flagEG1 && flagEG2){
+						const Char_t* profilebasename="SPDTrklEG2";
+						const Char_t* periodNames[4] = {"LHC16i", "LHC16j","LHC16k","LHC16o"};
+
+						TProfile* multEstimatorAvgEG2[4];
+
+						for(Int_t ip=0; ip<4; ip++) {
+										cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
+										multEstimatorAvgEG2[ip] = (TProfile*)(fEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+										if(!multEstimatorAvgEG2[ip]){
+														AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
+														return;
+										}
+						}
+						task->SetMultiProfileLHC16i(multEstimatorAvgEG2[0]);
+						task->SetMultiProfileLHC16j(multEstimatorAvgEG2[1]);
+						task->SetMultiProfileLHC16k(multEstimatorAvgEG2[2]);
+						task->SetMultiProfileLHC16o(multEstimatorAvgEG2[3]);
+		}
+
+
+		// MC get estimator file
+		const Char_t* profilebasenameMC="SPDTrklMC";
+		const Char_t* periodNamesMC[2] = {"LHC16k","LHC16l"};
+		TProfile* multEstimatorAvgMC[2];
+
+		for(Int_t ip=0; ip<2; ip++) {
+						cout<< " Trying to get "<<Form("%s_%s",profilebasenameMC,periodNamesMC[ip])<<endl;
+						multEstimatorAvgMC[ip] = (TProfile*)(fEstimator->Get(Form("%s_%s",profilebasenameMC,periodNamesMC[ip]))->Clone(Form("%s_%s_clone",profilebasenameMC,periodNamesMC[ip])));
+						if(!multEstimatorAvgMC[ip]){
+										AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNamesMC[ip]));
+										return;
+						}
+		}
+		task->SetMultiProfileMCLHC16k(multEstimatorAvgMC[0]);
+		task->SetMultiProfileMCLHC16l(multEstimatorAvgMC[1]);
+
+
+
+
     if(!task) return 0x0;
 
     // add your task to the manager
