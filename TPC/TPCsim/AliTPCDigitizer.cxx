@@ -608,8 +608,7 @@ void AliTPCDigitizer::DigitizeSave(Option_t* option)
 
 
 //------------------------------------------------------------------------
-void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
-{
+void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option) {
   // Modified version of the digitization function
   // Modification: adding the ion tail and crosstalk:
   //
@@ -632,7 +631,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
   // merge input tree's with summable digits
   // output stored in TreeTPCD 
   //  
-  AliTPCcalibDB* const calib=AliTPCcalibDB::Instance();
+  AliTPCcalibDB *const calib = AliTPCcalibDB::Instance();
   //  AliTPCRecoParam *recoParam = calib->GetRecoParam(0); 
   AliTPCRecoParam *recoParam = calib->GetRecoParamFromGRP(); // RS event specie will be selected according to GRP
   //AliDebug(1, Form(" recoParam->GetCrosstalkCorrection()  =   %f", recoParam->GetCrosstalkCorrection()));
@@ -644,8 +643,8 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
   char s[100];
   char ss[100];
   TString optionString = option;
-  if (!strcmp(optionString.Data(),"deb")) {
-    cout<<"AliTPCDigitizer:::DigitizeFast called with option deb "<<endl;
+  if (!strcmp(optionString.Data(), "deb")) {
+    cout << "AliTPCDigitizer:::DigitizeFast called with option deb " << endl;
     fDebug = 3;
   }
 
@@ -654,34 +653,32 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
   AliRunLoader *rl, *orl;
   AliLoader *gime, *ogime;
 
-  if (gAlice == 0x0)
-  {
-    Warning("DigitizeFast","gAlice is NULL. Loading from input 0");
+  if (gAlice == 0x0) {
+    Warning("DigitizeFast", "gAlice is NULL. Loading from input 0");
     rl = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(0));
-    if (rl == 0x0)
-    {
-      Error("DigitizeFast","Can not find Run Loader for input 0. Can not proceed.");
+    if (rl == 0x0) {
+      Error("DigitizeFast", "Can not find Run Loader for input 0. Can not proceed.");
       return;
     }
     rl->LoadgAlice();
     rl->GetAliRun();
   }
-  AliTPC *pTPC  = (AliTPC *) gAlice->GetModule("TPC");
-  AliTPCParam * param = pTPC->GetParam();
-  const Bool_t useGlitchFilter=param->GetUseGlitchFilter();
+  AliTPC *pTPC = (AliTPC *) gAlice->GetModule("TPC");
+  AliTPCParam *param = pTPC->GetParam();
+  const Bool_t useGlitchFilter = param->GetUseGlitchFilter();
 
   //sprintf(s,param->GetTitle());
-  snprintf(s,100,"%s",param->GetTitle());
+  snprintf(s, 100, "%s", param->GetTitle());
   //sprintf(ss,"75x40_100x60");
-  snprintf(ss,100,"75x40_100x60");
-  if(strcmp(s,ss)==0){
+  snprintf(ss, 100, "75x40_100x60");
+  if (strcmp(s, ss) == 0) {
     printf("2 pad-length geom hits with 3 pad-lenght geom digits...\n");
     delete param;
-    param=new AliTPCParamSR();
+    param = new AliTPCParamSR();
   } else {
     //sprintf(ss,"75x40_100x60_150x60");
-    snprintf(ss,100,"75x40_100x60_150x60");
-    if(strcmp(s,ss)!=0) {
+    snprintf(ss, 100, "75x40_100x60_150x60");
+    if (strcmp(s, ss) != 0) {
       printf("No TPC parameters found...\n");
       exit(2);
     }
@@ -690,12 +687,12 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
   pTPC->GenerNoise(500000); //create table with noise
   //
   Int_t nInputs = fDigInput->GetNinputs();
-  Int_t * masks = new Int_t[nInputs];
-  for (Int_t i=0; i<nInputs;i++)
-    masks[i]= fDigInput->GetMask(i);
-  Short_t **pdig= new Short_t*[nInputs];   //pointers to the expanded digits array
-  Int_t **ptr=  new Int_t*[nInputs];       //pointers to the expanded tracks array
-  Bool_t *active=  new Bool_t[nInputs];    //flag for active input segments
+  Int_t *masks = new Int_t[nInputs];
+  for (Int_t i = 0; i < nInputs; i++)
+    masks[i] = fDigInput->GetMask(i);
+  Short_t **pdig = new Short_t *[nInputs];   //pointers to the expanded digits array
+  Int_t **ptr = new Int_t *[nInputs];       //pointers to the expanded tracks array
+  Bool_t *active = new Bool_t[nInputs];    //flag for active input segments
   Char_t phname[100];
 
   //create digits array for given sectors
@@ -704,155 +701,156 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
   //create branch's in TPC treeD
   orl = AliRunLoader::GetRunLoader(fDigInput->GetOutputFolderName());
   ogime = orl->GetLoader("TPCLoader");
-  TTree * tree  = ogime->TreeD();
-  AliSimDigits * digrow = new AliSimDigits;
+  TTree *tree = ogime->TreeD();
+  AliSimDigits *digrow = new AliSimDigits;
 
-  if (tree == 0x0)
-  {
+  if (tree == 0x0) {
     ogime->MakeTree("D");
-    tree  = ogime->TreeD();
+    tree = ogime->TreeD();
   }
-  tree->Branch("Segment","AliSimDigits",&digrow);
+  tree->Branch("Segment", "AliSimDigits", &digrow);
   //  
-  AliSimDigits ** digarr = new AliSimDigits*[nInputs];
-  for (Int_t i1=0;i1<nInputs; i1++)
-  {
-    digarr[i1]=0;
+  AliSimDigits **digarr = new AliSimDigits *[nInputs];
+  for (Int_t i1 = 0; i1 < nInputs; i1++) {
+    digarr[i1] = 0;
     //    intree[i1]
     rl = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(i1));
     gime = rl->GetLoader("TPCLoader");
     gime->LoadSDigits("read");
-    TTree * treear =  gime->TreeS();
+    TTree *treear = gime->TreeS();
 
-    if (!treear)
-    {
-      cerr<<"AliTPCDigitizer: Input tree with SDigits not found in"
-          <<" input "<< i1<<endl;
-      for (Int_t i2=0;i2<i1+1; i2++){
+    if (!treear) {
+      cerr << "AliTPCDigitizer: Input tree with SDigits not found in"
+           << " input " << i1 << endl;
+      for (Int_t i2 = 0; i2 < i1 + 1; i2++) {
 
-        if(digarr[i2])  delete digarr[i2];
+        if (digarr[i2]) delete digarr[i2];
       }
-      delete [] digarr;
-      delete [] active;
-      delete []masks;
-      delete []pdig;
-      delete []ptr;
+      delete[] digarr;
+      delete[] active;
+      delete[]masks;
+      delete[]pdig;
+      delete[]ptr;
       return;
     }
 
     //sprintf(phname,"lhcphase%d",i1);
-    snprintf(phname,100,"lhcphase%d",i1);
-    TParameter<float> *ph = (TParameter<float>*)treear->GetUserInfo()
+    snprintf(phname, 100, "lhcphase%d", i1);
+    TParameter<float> *ph = (TParameter<float> *) treear->GetUserInfo()
             ->FindObject("lhcphase0");
-    if(!ph)
-    {
-      cerr<<"AliTPCDigitizer: LHC phase  not found in"
-          <<" input "<< i1<<endl;
-      for (Int_t i2=0;i2<i1+1; i2++){
-        if(digarr[i2])  delete digarr[i2];
+    if (!ph) {
+      cerr << "AliTPCDigitizer: LHC phase  not found in"
+           << " input " << i1 << endl;
+      for (Int_t i2 = 0; i2 < i1 + 1; i2++) {
+        if (digarr[i2]) delete digarr[i2];
       }
-      delete [] digarr;
-      delete [] active;
-      delete []masks;
-      delete []pdig;
-      delete []ptr;
+      delete[] digarr;
+      delete[] active;
+      delete[]masks;
+      delete[]pdig;
+      delete[]ptr;
       return;
     }
-    tree->GetUserInfo()->Add(new TParameter<float>(phname,ph->GetVal()));
+    tree->GetUserInfo()->Add(new TParameter<float>(phname, ph->GetVal()));
     //
-    if (treear->GetTreeIndex()==0) {
-      treear->BuildIndex("fSegmentID","fSegmentID");
-    }
+    if (treear->GetIndex() == 0)
+      treear->BuildIndex("fSegmentID", "fSegmentID");
     treear->GetBranch("Segment")->SetAddress(&digarr[i1]);
   }
   //
   // zero supp, take gain and noise map of TPC from OCDB 
   Int_t zerosup = param->GetZeroSup();
-  AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetDedxGainFactor();
-  AliTPCCalPad * noiseTPC = AliTPCcalibDB::Instance()->GetPadNoise();
+  AliTPCCalPad *gainTPC = AliTPCcalibDB::Instance()->GetDedxGainFactor();
+  AliTPCCalPad *noiseTPC = AliTPCcalibDB::Instance()->GetPadNoise();
   // 
   // Cache the ion tail objects form OCDB
   //      
-  TObjArray *ionTailArr = (TObjArray*)AliTPCcalibDB::Instance()->GetIonTailArray();
-  if (!ionTailArr) {AliFatal("TPC - Missing IonTail OCDB object");}
+  TObjArray *ionTailArr = (TObjArray *) AliTPCcalibDB::Instance()->GetIonTailArray();
+  if (!ionTailArr) { AliFatal("TPC - Missing IonTail OCDB object"); }
   //  TObject *rocFactorIROC  = ionTailArr->FindObject("factorIROC");
 //   TObject *rocFactorOROC  = ionTailArr->FindObject("factorOROC");
 //   Float_t factorIROC      = (atof(rocFactorIROC->GetTitle()));
 //   Float_t factorOROC      = (atof(rocFactorOROC->GetTitle()));
   const Int_t nTRFs = 20;
-  Int_t nIonTailBins =0;
+  Int_t nIonTailBins = 0;
   TObjArray timeResFunc(nROCs);
-  for (Int_t isec = 0;isec<nROCs;isec++){        //loop overs sectors
+  for (Int_t isec = 0; isec < nROCs; isec++) {        //loop overs sectors
     //
     // Array of TGraphErrors for a given sector
-    TGraphErrors ** graphRes   = new TGraphErrors *[nTRFs];
-    Float_t * trfIndexArr    = new Float_t[nTRFs];
-    for (Int_t icache=0; icache<nTRFs; icache++)
-    {
-      graphRes[icache]       = NULL;
+    TGraphErrors **graphRes = new TGraphErrors *[nTRFs];
+    Float_t *trfIndexArr = new Float_t[nTRFs];
+    for (Int_t icache = 0; icache < nTRFs; icache++) {
+      graphRes[icache] = NULL;
       trfIndexArr[icache] = 0;
     }
-    if (!AliTPCcalibDB::Instance()->GetTailcancelationGraphs(isec,graphRes,trfIndexArr)) continue;
+    if (!AliTPCcalibDB::Instance()->GetTailcancelationGraphs(isec, graphRes, trfIndexArr)) continue;
     //
     // fill all TGraphErrors of trfs (time response function) of a given sector to a TObjArray
-    TObjArray *timeResArr = new TObjArray(nTRFs);  timeResArr -> SetOwner(kTRUE);
-    TGraphErrors * lastGraph=NULL;
-    for (Int_t ires = 0;ires<nTRFs;ires++) {
+    TObjArray *timeResArr = new TObjArray(nTRFs);
+    timeResArr->SetOwner(kTRUE);
+    TGraphErrors *lastGraph = NULL;
+    for (Int_t ires = 0; ires < nTRFs; ires++) {
       if (graphRes[ires]) {
-        timeResArr->AddAt(graphRes[ires],ires);
-        lastGraph=graphRes[ires];
-      }else{
-        if (lastGraph!= nullptr) timeResArr->AddAt(new TGraphErrors(*lastGraph),ires);
+        timeResArr->AddAt(graphRes[ires], ires);
+        lastGraph = graphRes[ires];
+      } else {
+        if (lastGraph != nullptr) timeResArr->AddAt(new TGraphErrors(*lastGraph), ires);
       }
     }
+<<<<<<< HEAD
     timeResFunc.AddAt(timeResArr,isec); // Fill all trfs into a single TObjArray 
     nIonTailBins = graphRes[3]->GetN();
     delete[] trfIndexArr;
+=======
+    timeResFunc.AddAt(timeResArr, isec); // Fill all trfs into a single TObjArray
+    nIonTailBins = graphRes[0]->GetN();
+    delete trfIndexArr;
+>>>>>>> # ATO-452: convolut common mode signal with ion tail
   }
 
   //
   // 1.) Make first loop to calculate mean amplitude per pad per segment for cross talk 
   //
 
-  TObjArray   crossTalkSignalArray(nROCs);  // for 36 sectors 
-  TVectorD  * qTotSector  = new TVectorD(nROCs);
-  TVectorD  * nTotSector  = new TVectorD(nROCs);
+  TObjArray crossTalkSignalArray(nROCs);  // for 36 sectors
+  TVectorD *qTotSector = new TVectorD(nROCs);
+  TVectorD *nTotSector = new TVectorD(nROCs);
   Float_t qTotTPC = 0.;
   Float_t qTotPerSector = 0.;
   Float_t nTotPerSector = 0.;
   Int_t nTimeBinsAll = 1100;
-  Int_t nWireSegments=11;
+  Int_t nWireSegments = 11;
   // 1.a) crorstalk matrix initialization
-  for (Int_t sector=0; sector<nROCs; sector++){
-    TMatrixD *pcrossTalkSignal = new TMatrixD(nWireSegments,nTimeBinsAll);
-    for (Int_t imatrix = 0; imatrix<11; imatrix++)
-      for (Int_t jmatrix = 0; jmatrix<nTimeBinsAll; jmatrix++){
-        (*pcrossTalkSignal)[imatrix][jmatrix]=0.;
+  for (Int_t sector = 0; sector < nROCs; sector++) {
+    TMatrixD *pcrossTalkSignal = new TMatrixD(nWireSegments, nTimeBinsAll);
+    for (Int_t imatrix = 0; imatrix < 11; imatrix++)
+      for (Int_t jmatrix = 0; jmatrix < nTimeBinsAll; jmatrix++) {
+        (*pcrossTalkSignal)[imatrix][jmatrix] = 0.;
       }
-    crossTalkSignalArray.AddAt(pcrossTalkSignal,sector);
+    crossTalkSignalArray.AddAt(pcrossTalkSignal, sector);
   }
   //  
   // main loop over rows of whole TPC
-  for (Int_t globalRowID=0; globalRowID<param->GetNRowsTotal(); globalRowID++) {
+  for (Int_t globalRowID = 0; globalRowID < param->GetNRowsTotal(); globalRowID++) {
     Int_t sector, padRow;
-    if (!param->AdjustSectorRow(globalRowID,sector,padRow)) {
-      cerr<<"AliTPC warning: invalid segment ID ! "<<globalRowID<<endl;
+    if (!param->AdjustSectorRow(globalRowID, sector, padRow)) {
+      cerr << "AliTPC warning: invalid segment ID ! " << globalRowID << endl;
       continue;
     }
     // Calculate number of pads in a anode wire segment for normalization
-    Int_t wireSegmentID    = param->GetWireSegment(sector,padRow);
+    Int_t wireSegmentID = param->GetWireSegment(sector, padRow);
     Float_t nPadsPerSegment = (Float_t)(param->GetNPadsPerSegment(wireSegmentID));
     // structure with mean signal per pad to be filled for each timebin in first loop (11 anodeWireSegment and 1100 timebin)
-    TMatrixD &crossTalkSignal =  *((TMatrixD*)crossTalkSignalArray.At(sector));
-    AliTPCCalROC * gainROC = gainTPC->GetCalROC(sector);  // pad gains per given sector
+    TMatrixD &crossTalkSignal = *((TMatrixD *) crossTalkSignalArray.At(sector));
+    AliTPCCalROC *gainROC = gainTPC->GetCalROC(sector);  // pad gains per given sector
     //  digrow->SetID(globalRowID);
     Int_t nTimeBins = 0;
     Int_t nPads = 0;
     Bool_t digitize = kFALSE;
-    for (Int_t i=0;i<nInputs; i++){   //here we can have more than one input  - merging of separate events, signal1+signal2+background 
+    for (Int_t i = 0; i < nInputs; i++) {   //here we can have more than one input  - merging of separate events, signal1+signal2+background
       rl = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(i));
       gime = rl->GetLoader("TPCLoader");
-      if (gime->TreeS()->GetEntryWithIndex(globalRowID,globalRowID) >= 0) {
+      if (gime->TreeS()->GetEntryWithIndex(globalRowID, globalRowID) >= 0) {
         digarr[i]->ExpandBuffer();
         digarr[i]->ExpandTrackBuffer();
         nTimeBins = digarr[i]->GetNRows();
@@ -866,47 +864,78 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
     }
     if (!digitize) continue;
     //digrow->Allocate(nTimeBins,nPads);
-    Float_t q    = 0;
+    Float_t q = 0;
     Int_t labptr = 0;
-    Int_t nElems = nTimeBins*nPads; // element is a unit of a given row's pad-timebin space        
-    for (Int_t i=0;i<nInputs; i++)
+    Int_t nElems = nTimeBins * nPads; // element is a unit of a given row's pad-timebin space
+    for (Int_t i = 0; i < nInputs; i++)
       if (active[i]) {
         pdig[i] = digarr[i]->GetDigits();
       }
     //    
     // loop over elements i.e pad-timebin space of a row, "padNumber=elem/nTimeBins", "timeBin=elem%nTimeBins"
     // 
-    for (Int_t elem=0;elem<nElems; elem++) {
-      q=0;
-      labptr=0;
+    for (Int_t elem = 0; elem < nElems; elem++) {
+      q = 0;
+      labptr = 0;
       // looop over digits 
-      for (Int_t i=0;i<nInputs; i++) if (active[i])       {
-          q  += *(pdig[i]);
+      for (Int_t i = 0; i < nInputs; i++)
+        if (active[i]) {
+          q += *(pdig[i]);
           pdig[i]++;
         }
-      if (q<=0) continue;
-      Int_t padNumber = elem/nTimeBins;
-      Int_t timeBin   = elem%nTimeBins;
-      Float_t gain = gainROC->GetValue(padRow,padNumber);  // get gain for given - pad-row pad
-      q*= gain;
-      crossTalkSignal[wireSegmentID][timeBin]+= q/nPadsPerSegment;        // Qtot per segment for a given timebin
-      qTotSector -> GetMatrixArray()[sector] += q;                      // Qtot for each sector
-      nTotSector -> GetMatrixArray()[sector] += 1;                      // Ntot digit counter for each sector
+      if (q <= 0) continue;
+      Int_t padNumber = elem / nTimeBins;
+      Int_t timeBin = elem % nTimeBins;
+      Float_t gain = gainROC->GetValue(padRow, padNumber);  // get gain for given - pad-row pad
+      q *= gain;
+      crossTalkSignal[wireSegmentID][timeBin] += q / nPadsPerSegment;        // Qtot per segment for a given timebin
+      qTotSector->GetMatrixArray()[sector] += q;                      // Qtot for each sector
+      nTotSector->GetMatrixArray()[sector] += 1;                      // Ntot digit counter for each sector
       qTotTPC += q;                                                        // Qtot for whole TPC       
     } // end of q loop
   } // end of global row loop
 
+  /// 1.a) convolut common mode signal with ion tail if specified
+  for (Int_t isector = 0; isector < nROCs; isector++) {  //set all elements of crosstalk matrix to 0
+    TMatrixD *crossTalkMatrix = (TMatrixD *) crossTalkSignalArray.At(isector);
+    TMatrixD matrixTail(nWireSegments, nTimeBinsAll);
+    TObjArray *arrTRF = (TObjArray *) timeResFunc.At(isector); /// get ion tail for sector
+    if (arrTRF == nullptr) continue;
+    TGraphErrors *graphTRFPRF = (TGraphErrors *) arrTRF->At(0);
+    if (graphTRFPRF == NULL) continue;
+    Int_t nTimes = crossTalkMatrix->GetNcols();
+    for (Int_t iwire = 0; iwire < crossTalkMatrix->GetNrows(); iwire++) {
+      for (Int_t itime = 0; itime < crossTalkMatrix->GetNcols(); itime++) {
+        for (Int_t jtime = itime + 1; jtime < crossTalkMatrix->GetNcols(); jtime++) {
+          Double_t trf = graphTRFPRF->GetY()[jtime - itime];
+          if (trf < 0) {
+            matrixTail(iwire, jtime) += (*crossTalkMatrix)(iwire, itime) * trf;
+          }
+        }
+      }
+    }
+    if ((AliTPCReconstructor::StreamLevel() & kStreamCrosstalk) > 0) {
+      (*fDebugStreamer) << "crosstalkMatrixTail" <<
+                        "sector=" << isector <<
+                        "crossMatrix.=" << crossTalkMatrix <<
+                        "tailMatrix.=" << &matrixTail <<
+                        "\n";
+    }
+    (*crossTalkMatrix) += matrixTail;
+  }
+
+
   //
-  // 1.b) Dump the content of the crossTalk signal to the debug stremer - to be corealted later with the same crosstalk correction
+  // 1.b) Dump the content of the crossTalk signal to the debug streamer - to be corelated later with the same crosstalk correction
   //      assumed during reconstruction 
   //
   if ((AliTPCReconstructor::StreamLevel()&kStreamCrosstalk)>0) {
     //
     // dump the crosstalk matrices to tree for further investigation
-    //     a.) to estimate fluctuation of pedestal in indiviula wire segments
+    //     a.) to estimate fluctuation of pedestal in individual wire segments
     //     b.) to check correlation between regions
-    //     c.) to check relative conribution of signal below threshold to crosstalk
-    for (Int_t isector=0; isector<nROCs; isector++){  //set all ellemts of crosstalk matrix to 0
+    //     c.) to check relative contribution of signal below threshold to crosstalk
+    for (Int_t isector=0; isector<nROCs; isector++){  //set all elements of crosstalk matrix to 0
       TMatrixD * crossTalkMatrix = (TMatrixD*)crossTalkSignalArray.At(isector);
       //TMatrixD * crossTalkMatrixBelow = (TMatrixD*)fCrossTalkSignalArray->At(isector+nROCs);
       TVectorD vecAll(crossTalkMatrix->GetNrows());
