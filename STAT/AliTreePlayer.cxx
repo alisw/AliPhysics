@@ -688,7 +688,7 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
     fprintf(default_fp,"\t</tfoot>\n"); // add metadata info
     fprintf(default_fp,"\t<tbody>\n"); // add metadata info
   }
-  if (isCSV){
+  if (isCSV && outputFormat.Contains("csvroot")){
     // add header info
     for (Int_t iCol=0; iCol<nCols; iCol++){
       fprintf(default_fp,"%s%s",columnNameList[iCol]->GetName(), outputFormatList[iCol]->GetName());
