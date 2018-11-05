@@ -59,7 +59,7 @@ fTriggerType(AliVEvent::kINT7),fPi0MassSelection(1), fMixingEventType(AliVEvent:
 fParticleLevel(kFALSE),fIsMC(kFALSE),fMCParticles(0),
 fEventCutList(0),
 
-fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPionRej(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),fHistEOverPvE(0),fHistPOverEvE(0),fHistPSDistU(0),fHistPSDistV(0),
+fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPionRej(0),fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fHistEOverPvE(0),fHistPOverEvE(0),fHistPSDistU(0),fHistPSDistV(0),
 fRand(0),fClusEnergy(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),fEMCalMultvZvtx(0),
 fHistClusMCDE(0),fHistClusMCDPhiDEta(0),fHistPi0MCDPt(0),fHistEtaMCDPt(0),fHistPi0MCDPhiDEta(0),fHistEtaMCDPhiDEta(0),
 fUseParamMassSigma(0),fPi0NSigma(2.),fPi0AsymCut(1.0),
@@ -88,7 +88,7 @@ fTriggerType(AliVEvent::kINT7),fPi0MassSelection(1), fMixingEventType(AliVEvent:
 fParticleLevel(kFALSE),fIsMC(InputMCorData),fMCParticles(0),
 fEventCutList(0),
 
-fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPionRej(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),fHistEOverPvE(0),fHistPOverEvE(0),fHistPSDistU(0),fHistPSDistV(0),
+fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPionRej(0),fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fHistEOverPvE(0),fHistPOverEvE(0),fHistPSDistU(0),fHistPSDistV(0),
 fRand(0),fClusEnergy(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),fEMCalMultvZvtx(0),
 fHistClusMCDE(0),fHistClusMCDPhiDEta(0),fHistPi0MCDPt(0),fHistEtaMCDPt(0),fHistPi0MCDPhiDEta(0),fHistEtaMCDPhiDEta(0),
 fUseParamMassSigma(0),fPi0NSigma(2.),fPi0AsymCut(1.0),
@@ -1072,6 +1072,9 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 		fMassPionRej = new TH1F("fMassPionRej","Rejected Pi0 Candidates;M_{#gamma#gamma} (GeV/c^2)",3000,0,0.75);
 		fOutput->Add(fMassPionRej);
 
+		fEtaPhiPionAcc = new TH2F("fEtaPhiPionAcc","Accepted Pi0 Coordinates;#eta;#phi",200,-0.9,0.9,200,0,2*TMath::Pi());
+		fOutput->Add(fEtaPhiPionAcc);
+
 		fMassPtPionAcc = new TH2F("fMassPtPionAcc","Accepted Pi0 Candidates;M_{#gamma#gamma} (GeV/c^2);p_{T} (GeV/c)",3000,0,0.75,250,0,50);
 		fOutput->Add(fMassPtPionAcc);
 		fMassPtPionRej = new TH2F("fMassPtPionRej","Rejected Pi0 Candidates;M_{#gamma#gamma} (GeV/c^2);p_{T} (GeV/c)",3000,0,0.75,250,0,50);
@@ -1088,6 +1091,10 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
   fOutput->Add(fHistEOverPvE);
   fHistPOverEvE = new TH2F("fHistPOverEvE","fHistPOverEvE;E_{#gamma} (GeV);p_{Track}/E_{#gamma}", 400, 0, 40, 200, 0, 20); 
   fOutput->Add(fHistPOverEvE);
+	fMatchDeltaEtaTrackPt = new TH2F("fMatchDeltaEtaTrackPt","fMatchDeltaEtaTrackPt;p_{T}^{track} (GeV/c);#Delta#eta",200,0,20,200,-0.1,0.1);
+	fOutput->Add(fMatchDeltaEtaTrackPt);
+	fMatchDeltaPhiTrackPt = new TH2F("fMatchDeltaPhiTrackPt","fMatchDeltaPhiTrackPt;p_{T}^{track} (GeV/c);#Delta#phi",200,0,20,200,-0.1,0.1);
+	fOutput->Add(fMatchDeltaPhiTrackPt);
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     //   Tyler's Special Histograms
@@ -1967,6 +1974,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 
 			if(AccClusPairForAna(cluster,cluster2,aliCaloClusterVecpi0))
 			{
+				fEtaPhiPionAcc->Fill(aliCaloClusterVecpi0.Eta(),aliCaloClusterVecpi0.Phi());
 				fMassPtPionAcc->Fill(aliCaloClusterVecpi0.M(),aliCaloClusterVecpi0.Pt());
 				fMassPtCentPionAcc->Fill(aliCaloClusterVecpi0.M(),aliCaloClusterVecpi0.Pt(),fCent);
 				nAccPi0Clusters++;
@@ -2808,6 +2816,9 @@ Bool_t AliAnalysisTaskGammaHadron::DetermineMatchedTrack(AliVCluster* caloCluste
 		Double_t etaCut = fTrackMatchEta;
 		Double_t phiCut = fTrackMatchPhi;
 		Double_t trackPt = track->Pt();
+
+		fMatchDeltaPhiTrackPt->Fill(trackPt,etadiff);
+		fMatchDeltaEtaTrackPt->Fill(trackPt,phidiff);
 		//
 		// For input -1 or 0, use the parametrized track matching cuts given in https://alice-notes.web.cern.ch/node/813
 		if (etaCut <= 0) etaCut = 0.010 + TMath::Power((trackPt + 4.07), -2.5);
