@@ -1,6 +1,6 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-// Updated NOV 3
+// Updated NOV 4 FIX ARRAY 
 // Parts of the code taken from:
 // AliEbyEPidEfficiencyContamination.cxx
 // AliAnalysisTaskStrangenessVsMultiplicityMCRun2.cxx
@@ -87,8 +87,8 @@ fTreeVariablePID(-1),
 fTreeVariablePIDMother(-1),
 fTreeVariablePIDPositive(-1),
 fTreeVariablePIDNegative(-1),
-fNptBins(37),
-xibinnumb(23),
+fNptBins(19),
+xibinnumb(19),
 fIsMC(kTRUE),
 fIsAOD(kFALSE),
 fEvSel(AliVEvent::kINT7),
@@ -131,12 +131,12 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
     
     const Int_t xNbins = 100;
     Double_t xBinEdge[xNbins+1];
-    for(Int_t iBin = 0 ; iBin <= xNbins; iBin++){
+    for(Int_t iBin = 0 ; iBin <= xNbins; iBin++)
+    {
         xBinEdge[iBin] = iBin - 0.5;
     }
-    
-    Double_t LambdaPtBins[38] =  {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.5,8.0,10.0,12.0};
-    Double_t xibinlimits[24]={0.00,0.20,0.40,0.60,0.80,0.90,1.00,1.10,1.20,1.30,1.40,1.50,1.70,1.90,2.20,2.60,3.10,3.90,4.90,6.00,7.20,8.50,10.00,12.00};
+    Double_t LambdaPtBins[20] = {1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0};
+    Double_t xibinlimits[20] = {0.80,0.90,1.00,1.10,1.20,1.30,1.40,1.50,1.70,1.90,2.20,2.60,3.10,3.90,4.90,6.00,7.20,8.50,10.00,12.00};
     
     f2fHistLRecstat = new TH2F("f2fHistLRecstat","f2fHistLRecstat", 100, -0.5, 99.5, 1900, -0.5, 1899.5);
     fListHist->Add(f2fHistLRecstat);
@@ -168,15 +168,29 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
     f1fHistmassctAntiLambda = new TH1F("f1fHistmassctAntiLambda","#bar{#Lambda} masscut 1D",100,1.1,1.14);
     fListHist->Add(f1fHistmassctAntiLambda);
     
-    const Int_t dim = 75; //37 pt bins *2 + 1 cent bin
-    Int_t bin[dim]    = { 100,500, 500, 500,500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 200, 200,200, 200, 200, 200,200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200,
-        500, 500, 500,500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 200, 200,200, 200, 200, 200,200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200};
+    const Int_t dim = 39; //19 pt bins + 1 cent bin
+    Int_t bin[dim]    = { 100,
+        500, 500, 500,
+        500, 500, 500, 500, 500, 500, 500, 500,
+        200, 200, 200, 200, 200, 200, 200, 200,
+        500, 500, 500,
+        500, 500, 500, 500, 500, 500, 500, 500,
+        200, 200, 200, 200, 200, 200, 200, 200 };
     
-    Double_t min[dim] =  { -0.5,-0.5, -0.5, -0.5,-0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,-0.5, -0.5, -0.5, -0.5,-0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
-        -0.5, -0.5, -0.5,-0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,-0.5, -0.5, -0.5, -0.5,-0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5};
+    Double_t min[dim] = { -0.5,
+        -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
+        -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
+        -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
+        -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
+        -0.5, -0.5};
     
-    Double_t max[dim] = { 99.5,499.5, 499.5, 499.5,499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 199.5, 199.5,199.5, 199.5, 199.5, 199.5,199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5,
-        499.5, 499.5, 499.5,499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 199.5, 199.5,199.5, 199.5, 199.5, 199.5,199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5};
+    Double_t max[dim] = { 99.5,
+        499.5, 499.5, 499.5,
+        499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5,
+        199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5,
+        499.5, 499.5, 499.5,
+        499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5, 499.5,
+        199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5, 199.5 };
     
     
     fPtBinNplusNminusV0 = new THnSparseI("fPtBinNplusNminusV0","cent-nlambda-nantilambda", dim, bin, min, max);
@@ -444,7 +458,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             ptContainerMC[i] = ptChMC[i-1];
         }
         fPtBinNplusNminusGen->Fill(ptContainerMC);
-
+        
     }
     
     Int_t nV0 = 0;
@@ -877,7 +891,7 @@ Int_t AliAnalysisTaskNetLambdaTrad::GetPtBin(Double_t pt)
 {
     Int_t bin = -1;
     
-    Double_t LambdaPtBins[38] =  {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.5,8.0,10.0,12.0};
+    Double_t LambdaPtBins[20] =  {1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0};
 
     for(Int_t iBin = 0; iBin < fNptBins; iBin++)
     {
