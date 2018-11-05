@@ -2903,15 +2903,17 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(){
   */
 
   // Get multiplicity and zbin from fBGHandler
-  Int_t zbin= fBGHandlerPiMi[fiCut]->GetZBinIndex(fESDEvent->GetPrimaryVertex()->GetZ());
+  Int_t zbin = fBGHandlerPiMi[fiCut]->GetZBinIndex(fESDEvent->GetPrimaryVertex()->GetZ());
   Int_t mbin = 0;
 
   // Multiplicity can be determined either by number of cluster candidates or track mulitiplicity
-  if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
+  if (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()) {
     mbin = fBGHandlerPiMi[fiCut]->GetMultiplicityBinIndex(fNumberOfESDTracks);
   } else {
-    if (fNDMRecoMode < 2) mbin = fBGHandlerPiMi[fiCut]->GetMultiplicityBinIndex(fGoodConvGammas->GetEntries());
-    else mbin = fBGHandlerPiMi[fiCut]->GetMultiplicityBinIndex(fClusterCandidates->GetEntries());
+    if (fNDMRecoMode < 2)
+      mbin = fBGHandlerPiMi[fiCut]->GetMultiplicityBinIndex(fGoodConvGammas->GetEntries());
+    else
+      mbin = fBGHandlerPiMi[fiCut]->GetMultiplicityBinIndex(fClusterCandidates->GetEntries());
   }
 
   AliGammaConversionAODBGHandler::GammaConversionVertex *bgEventVertexPl = NULL;
@@ -2919,322 +2921,319 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(){
 
   // Get N of Pi0 according to chosen mix mode
   Int_t NNDMCandidates = 0;
-  if( (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()) || (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixingBothSides())){
-      NNDMCandidates = fNeutralDecayParticleSidebandCandidates->GetEntries();
-   }else{
-      NNDMCandidates = fNeutralDecayParticleCandidates->GetEntries();
+  if ((((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->UseSidebandMixing()) || (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->UseSidebandMixingBothSides())) {
+    NNDMCandidates = fNeutralDecayParticleSidebandCandidates->GetEntries();
+  } else {
+    NNDMCandidates = fNeutralDecayParticleCandidates->GetEntries();
   }
   // Begin loop over all Pi0 candidates
- for(Int_t iCurrentNDM=0; iCurrentNDM<NNDMCandidates; iCurrentNDM++){
-     AliAODConversionMother* EventNDMGoodMeson;
-     if( (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()) ||  (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixingBothSides())){
-         EventNDMGoodMeson = (AliAODConversionMother*)(fNeutralDecayParticleSidebandCandidates->At(iCurrentNDM));
-     }else{
-         EventNDMGoodMeson = (AliAODConversionMother*)(fNeutralDecayParticleCandidates->At(iCurrentNDM));
-     }
+  for (Int_t iCurrentNDM = 0; iCurrentNDM < NNDMCandidates; iCurrentNDM++) {
+    AliAODConversionMother *EventNDMGoodMeson;
+    if ((((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->UseSidebandMixing()) || (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->UseSidebandMixingBothSides())) {
+      EventNDMGoodMeson = (AliAODConversionMother *)(fNeutralDecayParticleSidebandCandidates->At(iCurrentNDM));
+    } else {
+      EventNDMGoodMeson = (AliAODConversionMother *)(fNeutralDecayParticleCandidates->At(iCurrentNDM));
+    }
 
-  if(!(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseLikeSignMixing())){
-    // Begin loop over BG events for Pi+
-    for(Int_t nEventsInBGPl=0;nEventsInBGPl<fBGHandlerPiPl[fiCut]->GetNBGEvents();nEventsInBGPl++){
+    if (!(((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->UseLikeSignMixing())) {
+      // Begin loop over BG events for Pi+
+      for (Int_t nEventsInBGPl = 0; nEventsInBGPl < fBGHandlerPiPl[fiCut]->GetNBGEvents(); nEventsInBGPl++) {
 
-      // Store all Pi+ of current event in right binning in vector
-      AliGammaConversionMotherAODVector *EventPiPlMeson = fBGHandlerPiPl[fiCut]->GetBGGoodMesons(zbin,mbin,nEventsInBGPl);
+        // Store all Pi+ of current event in right binning in vector
+        AliGammaConversionMotherAODVector *EventPiPlMeson = fBGHandlerPiPl[fiCut]->GetBGGoodMesons(zbin, mbin, nEventsInBGPl);
 
-      // Begin loop over BG events for Pi-
-      for(Int_t nEventsInBGMi=0;nEventsInBGMi<fBGHandlerPiMi[fiCut]->GetNBGEvents();nEventsInBGMi++){
-        AliGammaConversionMotherAODVector *EventPiMiMeson = fBGHandlerPiMi[fiCut]->GetBGGoodMesons(zbin,mbin,nEventsInBGMi);
+        // Begin loop over BG events for Pi-
+        for (Int_t nEventsInBGMi = 0; nEventsInBGMi < fBGHandlerPiMi[fiCut]->GetNBGEvents(); nEventsInBGMi++) {
+          AliGammaConversionMotherAODVector *EventPiMiMeson = fBGHandlerPiMi[fiCut]->GetBGGoodMesons(zbin, mbin, nEventsInBGMi);
 
-        // If one of the events isn't found skip to next one
-        if((EventPiMiMeson && EventPiPlMeson) == kFALSE) continue;
+          // If one of the events isn't found skip to next one
+          if ((EventPiMiMeson && EventPiPlMeson) == kFALSE)
+            continue;
 
-        // Determine Background event vertex
-        if(fMoveParticleAccordingToVertex == kTRUE){
-          bgEventVertexPl = fBGHandlerPiPl[fiCut]->GetBGEventVertex(zbin,mbin,nEventsInBGPl);
-          bgEventVertexMi = fBGHandlerPiMi[fiCut]->GetBGEventVertex(zbin,mbin,nEventsInBGMi);
-        }
-        // Loop over all Pi+
-        for(UInt_t iCurrentPiPl = 0; iCurrentPiPl<EventPiPlMeson->size();iCurrentPiPl++){
-            AliAODConversionMother EventPiPlGoodMeson= (AliAODConversionMother)(*(EventPiPlMeson->at(iCurrentPiPl)));
+          // Determine Background event vertex
+          if (fMoveParticleAccordingToVertex == kTRUE) {
+            bgEventVertexPl = fBGHandlerPiPl[fiCut]->GetBGEventVertex(zbin, mbin, nEventsInBGPl);
+            bgEventVertexMi = fBGHandlerPiMi[fiCut]->GetBGEventVertex(zbin, mbin, nEventsInBGMi);
+          }
+          // Loop over all Pi+
+          for (UInt_t iCurrentPiPl = 0; iCurrentPiPl < EventPiPlMeson->size(); iCurrentPiPl++) {
+            AliAODConversionMother EventPiPlGoodMeson = (AliAODConversionMother)(*(EventPiPlMeson->at(iCurrentPiPl)));
 
             // Move Vertex
-            if(fMoveParticleAccordingToVertex == kTRUE){
+            if (fMoveParticleAccordingToVertex == kTRUE) {
               MoveParticleAccordingToVertex(&EventPiPlGoodMeson, bgEventVertexPl);
             }
 
             // Combine Pi+ and Pi0
             AliAODConversionMother PiPlNDMBackgroundCandidate(EventNDMGoodMeson, &EventPiPlGoodMeson);
 
-            for(UInt_t iCurrentPiMi = 0; iCurrentPiMi<EventPiMiMeson->size();iCurrentPiMi++){
+            for (UInt_t iCurrentPiMi = 0; iCurrentPiMi < EventPiMiMeson->size(); iCurrentPiMi++) {
               AliAODConversionMother EventPiMiGoodMeson = (AliAODConversionMother)(*(EventPiMiMeson->at(iCurrentPiMi)));
 
               // Move Vertex
-              if(fMoveParticleAccordingToVertex == kTRUE){
+              if (fMoveParticleAccordingToVertex == kTRUE) {
                 MoveParticleAccordingToVertex(&EventPiMiGoodMeson, bgEventVertexMi);
               }
 
               // Mass cut (pi+pi-)
-              if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut()){
-                AliAODConversionMother backPiPlPiMiCandidate(&EventPiPlGoodMeson,&EventPiMiGoodMeson);
-                if (backPiPlPiMiCandidate.M() >= ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut()){
+              if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut()) {
+                AliAODConversionMother backPiPlPiMiCandidate(&EventPiPlGoodMeson, &EventPiMiGoodMeson);
+                if (backPiPlPiMiCandidate.M() >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut()) {
                   continue;
                 }
               }
 
               // Create (final) Candidate
-              AliAODConversionMother PiPlPiMiNDMBackgroundCandidate(&PiPlNDMBackgroundCandidate,&EventPiMiGoodMeson);
+              AliAODConversionMother PiPlPiMiNDMBackgroundCandidate(&PiPlNDMBackgroundCandidate, &EventPiMiGoodMeson);
 
               // Check if candidate survives meson cut
-              if(  ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(&PiPlPiMiNDMBackgroundCandidate,kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
+              if (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonIsSelected(&PiPlPiMiNDMBackgroundCandidate, kFALSE, ((AliConvEventCuts *)fEventCutArray->At(fiCut))->GetEtaShift())) {
 
                 // Check if candidate survives kinematic cut
-                if(KinematicCut(&EventPiMiGoodMeson, &EventPiPlGoodMeson,EventNDMGoodMeson,&PiPlPiMiNDMBackgroundCandidate)){
+                if (KinematicCut(&EventPiMiGoodMeson, &EventPiPlGoodMeson, EventNDMGoodMeson, &PiPlPiMiNDMBackgroundCandidate)) {
                   // Create temporary mesons to be able to fix pz
                   AliAODConversionMother NDMtmp;
                   NDMtmp.SetPxPyPzE(EventNDMGoodMeson->Px(), EventNDMGoodMeson->Py(), EventNDMGoodMeson->Pz(), EventNDMGoodMeson->Energy());
                   FixPzToMatchPDGInvMassNDM(&NDMtmp);
-                  AliAODConversionMother PiMiNDMtmp(&EventPiMiGoodMeson,&NDMtmp);
-                  AliAODConversionMother PiPlPiMiNDMtmp(&EventPiPlGoodMeson,&PiMiNDMtmp);
+                  AliAODConversionMother PiMiNDMtmp(&EventPiMiGoodMeson, &NDMtmp);
+                  AliAODConversionMother PiPlPiMiNDMtmp(&EventPiPlGoodMeson, &PiMiNDMtmp); // Must be two separate lines since second instance depends on first and execution order is not guaranteed
 
-                  if (nEventsInBGMi != nEventsInBGPl){
+                  if (nEventsInBGMi != nEventsInBGPl) {
                     // Pi+ and Pi- don't come from the same event (but different than pi0 event)
                     // Fill histograms
-                    fHistoBackInvMassPtGroup4[fiCut]->Fill(PiPlPiMiNDMBackgroundCandidate.M(),PiPlPiMiNDMBackgroundCandidate.Pt());
-                    fHistoBackInvMassPtGroup4SubNDM[fiCut]->Fill(PiPlPiMiNDMBackgroundCandidate.M()-(EventNDMGoodMeson->M()-fPDGMassNDM),PiPlPiMiNDMBackgroundCandidate.Pt());
-                    fHistoBackInvMassPtGroup4FixedPzNDM[fiCut]->Fill(PiPlPiMiNDMtmp.M(),PiPlPiMiNDMtmp.Pt());
-
-                  } else if(nEventsInBGMi==nEventsInBGPl){
+                    fHistoBackInvMassPtGroup4[fiCut]->Fill(PiPlPiMiNDMBackgroundCandidate.M(), PiPlPiMiNDMBackgroundCandidate.Pt());
+                    fHistoBackInvMassPtGroup4SubNDM[fiCut]->Fill(PiPlPiMiNDMBackgroundCandidate.M() - (EventNDMGoodMeson->M() - fPDGMassNDM), PiPlPiMiNDMBackgroundCandidate.Pt());
+                    fHistoBackInvMassPtGroup4FixedPzNDM[fiCut]->Fill(PiPlPiMiNDMtmp.M(), PiPlPiMiNDMtmp.Pt());
+                  }
+                  else if (nEventsInBGMi == nEventsInBGPl) {
                     // Pi+ and Pi- come from the same event (but different than pi0 event)
-                    fHistoBackInvMassPtGroup1[fiCut]->Fill(PiPlPiMiNDMBackgroundCandidate.M(),PiPlPiMiNDMBackgroundCandidate.Pt());
-                    fHistoBackInvMassPtGroup1SubNDM[fiCut]->Fill(PiPlPiMiNDMBackgroundCandidate.M()-(EventNDMGoodMeson->M()-fPDGMassNDM),PiPlPiMiNDMBackgroundCandidate.Pt());
-                    fHistoBackInvMassPtGroup1FixedPzNDM[fiCut]->Fill(PiPlPiMiNDMtmp.M(),PiPlPiMiNDMtmp.Pt());
+                    fHistoBackInvMassPtGroup1[fiCut]->Fill(PiPlPiMiNDMBackgroundCandidate.M(), PiPlPiMiNDMBackgroundCandidate.Pt());
+                    fHistoBackInvMassPtGroup1SubNDM[fiCut]->Fill(PiPlPiMiNDMBackgroundCandidate.M() - (EventNDMGoodMeson->M() - fPDGMassNDM), PiPlPiMiNDMBackgroundCandidate.Pt());
+                    fHistoBackInvMassPtGroup1FixedPzNDM[fiCut]->Fill(PiPlPiMiNDMtmp.M(), PiPlPiMiNDMtmp.Pt());
                   }
                 }
               }
             } // end pi- loop
-        } // end pi+ loop
-      } // end loop over all pi- event
-    } // end loop over pi+ events
+          }   // end pi+ loop
+        }     // end loop over all pi- event
+      }       // end loop over pi+ events
 
-    // Loop over all pi+ events(from Handler)
-    for(Int_t nEventsInBGPl=0;nEventsInBGPl<fBGHandlerPiPl[fiCut]->GetNBGEvents();nEventsInBGPl++){
-      // Store all Pi+ of current event in right binning in vector
-      AliGammaConversionMotherAODVector *EventPiPlMeson = fBGHandlerPiPl[fiCut]->GetBGGoodMesons(zbin,mbin,nEventsInBGPl);
+      // Loop over all pi+ events(from Handler)
+      for (Int_t nEventsInBGPl = 0; nEventsInBGPl < fBGHandlerPiPl[fiCut]->GetNBGEvents(); nEventsInBGPl++) {
+        // Store all Pi+ of current event in right binning in vector
+        AliGammaConversionMotherAODVector *EventPiPlMeson = fBGHandlerPiPl[fiCut]->GetBGGoodMesons(zbin, mbin, nEventsInBGPl);
 
-      // Determine Vertex
-      if(fMoveParticleAccordingToVertex == kTRUE){
-        bgEventVertexPl = fBGHandlerPiPl[fiCut]->GetBGEventVertex(zbin,mbin,nEventsInBGPl);
-      }
-      // Begin loop over all pi+ in ecent
-      for(UInt_t iCurrentPiPl = 0; iCurrentPiPl<EventPiPlMeson->size();iCurrentPiPl++){
-        AliAODConversionMother EventPiPlGoodMeson= (AliAODConversionMother)(*(EventPiPlMeson->at(iCurrentPiPl)));
-
-        // Move vertex
-        if(fMoveParticleAccordingToVertex == kTRUE){
-          MoveParticleAccordingToVertex(&EventPiPlGoodMeson, bgEventVertexPl);
+        // Determine Vertex
+        if (fMoveParticleAccordingToVertex == kTRUE) {
+          bgEventVertexPl = fBGHandlerPiPl[fiCut]->GetBGEventVertex(zbin, mbin, nEventsInBGPl);
         }
-        // Combine Pi+ and Pi0
-        AliAODConversionMother PiPlNDMBackgroundCandidate(EventNDMGoodMeson, &EventPiPlGoodMeson);
-        // Loop over all pi- (from current event)
-        for(Int_t iCurrentPiMi=0; iCurrentPiMi<fNegPionCandidates->GetEntries(); iCurrentPiMi++){
-          AliAODConversionMother EventPiNegGoodMeson = *(AliAODConversionMother*)(fNegPionCandidates->At(iCurrentPiMi));
+        // Begin loop over all pi+ in ecent
+        for (UInt_t iCurrentPiPl = 0; iCurrentPiPl < EventPiPlMeson->size(); iCurrentPiPl++) {
+          AliAODConversionMother EventPiPlGoodMeson = (AliAODConversionMother)(*(EventPiPlMeson->at(iCurrentPiPl)));
 
-          // Mass cut on pi+pi-
-          if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut()){
-            AliAODConversionMother backPiPlPiMiCandidate(&EventPiPlGoodMeson,&EventPiNegGoodMeson);
-            if (backPiPlPiMiCandidate.M() >= ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut()){
-              continue;
-            }
+          // Move vertex
+          if (fMoveParticleAccordingToVertex == kTRUE) {
+            MoveParticleAccordingToVertex(&EventPiPlGoodMeson, bgEventVertexPl);
           }
+          // Combine Pi+ and Pi0
+          AliAODConversionMother PiPlNDMBackgroundCandidate(EventNDMGoodMeson, &EventPiPlGoodMeson);
+          // Loop over all pi- (from current event)
+          for (Int_t iCurrentPiMi = 0; iCurrentPiMi < fNegPionCandidates->GetEntries(); iCurrentPiMi++) {
+            AliAODConversionMother EventPiNegGoodMeson = *(AliAODConversionMother *)(fNegPionCandidates->At(iCurrentPiMi));
 
-          // Create (final) Candidate
-          AliAODConversionMother PiPlPiMiNDMBackgroundCandidate(&PiPlNDMBackgroundCandidate,&EventPiNegGoodMeson);
-
-          // Check if candidate survives meson cut
-          if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(&PiPlPiMiNDMBackgroundCandidate,kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
-
-            // Check if candidate survives kinematic cut
-            if(KinematicCut(&EventPiNegGoodMeson, &EventPiPlGoodMeson, EventNDMGoodMeson,&PiPlPiMiNDMBackgroundCandidate)){
-
-              // Create temporary mesons to be able to fix pz
-              AliAODConversionMother NDMtmp;
-              NDMtmp.SetPxPyPzE(EventNDMGoodMeson->Px(), EventNDMGoodMeson->Py(), EventNDMGoodMeson->Pz(), EventNDMGoodMeson->Energy());
-              FixPzToMatchPDGInvMassNDM(&NDMtmp);
-              AliAODConversionMother PiMiNDMtmp(&EventPiNegGoodMeson,&NDMtmp);
-              AliAODConversionMother PiPlPiMiNDMtmp(&EventPiPlGoodMeson,&PiMiNDMtmp);
-
-              // Fill histograms (pi- and pi0 from same event)
-              fHistoBackInvMassPtGroup3[fiCut]->Fill(PiPlPiMiNDMBackgroundCandidate.M(),PiPlPiMiNDMBackgroundCandidate.Pt());
-              fHistoBackInvMassPtGroup3SubNDM[fiCut]->Fill(PiPlPiMiNDMBackgroundCandidate.M()-(EventNDMGoodMeson->M()-fPDGMassNDM),PiPlPiMiNDMBackgroundCandidate.Pt());
-              fHistoBackInvMassPtGroup3FixedPzNDM[fiCut]->Fill(PiPlPiMiNDMtmp.M(),PiPlPiMiNDMtmp.Pt());
+            // Mass cut on pi+pi-
+            if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut()) {
+              AliAODConversionMother backPiPlPiMiCandidate(&EventPiPlGoodMeson, &EventPiNegGoodMeson);
+              if (backPiPlPiMiCandidate.M() >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut()) {
+                continue;
+              }
             }
-          }
-        } // End loop pi- (from current event)
-      } // End loop pi+
-    } // end loop over pi+ events
 
-    // Loop over all pi- events(from Handler)
-    for(Int_t nEventsInBGMi=0;nEventsInBGMi<fBGHandlerPiPl[fiCut]->GetNBGEvents();nEventsInBGMi++){
-      // Store all Pi- of current event in right binning in vector
-      AliGammaConversionMotherAODVector *EventPiMiMeson = fBGHandlerPiMi[fiCut]->GetBGGoodMesons(zbin,mbin,nEventsInBGMi);
+            // Create (final) Candidate
+            AliAODConversionMother PiPlPiMiNDMBackgroundCandidate(&PiPlNDMBackgroundCandidate, &EventPiNegGoodMeson);
 
-      // Determine vertex
-      if(fMoveParticleAccordingToVertex == kTRUE){
-        bgEventVertexMi = fBGHandlerPiMi[fiCut]->GetBGEventVertex(zbin,mbin,nEventsInBGMi);
-      }
+            // Check if candidate survives meson cut
+            if (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonIsSelected(&PiPlPiMiNDMBackgroundCandidate, kFALSE, ((AliConvEventCuts *)fEventCutArray->At(fiCut))->GetEtaShift())) {
 
-      // Begin loop over all pi- in event
-      for(UInt_t iCurrentPiMi = 0; iCurrentPiMi<EventPiMiMeson->size();iCurrentPiMi++){
-        AliAODConversionMother EventPiMiGoodMeson= (AliAODConversionMother)(*(EventPiMiMeson->at(iCurrentPiMi)));
+              // Check if candidate survives kinematic cut
+              if (KinematicCut(&EventPiNegGoodMeson, &EventPiPlGoodMeson, EventNDMGoodMeson, &PiPlPiMiNDMBackgroundCandidate)) {
 
-        // move vertex
-        if(fMoveParticleAccordingToVertex == kTRUE){
-          MoveParticleAccordingToVertex(&EventPiMiGoodMeson, bgEventVertexMi);
+                // Create temporary mesons to be able to fix pz
+                AliAODConversionMother NDMtmp;
+                NDMtmp.SetPxPyPzE(EventNDMGoodMeson->Px(), EventNDMGoodMeson->Py(), EventNDMGoodMeson->Pz(), EventNDMGoodMeson->Energy());
+                FixPzToMatchPDGInvMassNDM(&NDMtmp);
+                AliAODConversionMother PiMiNDMtmp(&EventPiNegGoodMeson, &NDMtmp);
+                AliAODConversionMother PiPlPiMiNDMtmp(&EventPiPlGoodMeson, &PiMiNDMtmp); // Must be two separate lines since second instance depends on first and execution order is not guaranteed
+
+                // Fill histograms (pi- and pi0 from same event)
+                fHistoBackInvMassPtGroup3[fiCut]->Fill(PiPlPiMiNDMBackgroundCandidate.M(), PiPlPiMiNDMBackgroundCandidate.Pt());
+                fHistoBackInvMassPtGroup3SubNDM[fiCut]->Fill(PiPlPiMiNDMBackgroundCandidate.M() - (EventNDMGoodMeson->M() - fPDGMassNDM), PiPlPiMiNDMBackgroundCandidate.Pt());
+                fHistoBackInvMassPtGroup3FixedPzNDM[fiCut]->Fill(PiPlPiMiNDMtmp.M(), PiPlPiMiNDMtmp.Pt());
+              }
+            }
+          } // End loop pi- (from current event)
+        }   // End loop pi+
+      }     // end loop over pi+ events
+
+      // Loop over all pi- events(from Handler)
+      for (Int_t nEventsInBGMi = 0; nEventsInBGMi < fBGHandlerPiPl[fiCut]->GetNBGEvents(); nEventsInBGMi++) {
+        // Store all Pi- of current event in right binning in vector
+        AliGammaConversionMotherAODVector *EventPiMiMeson = fBGHandlerPiMi[fiCut]->GetBGGoodMesons(zbin, mbin, nEventsInBGMi);
+
+        // Determine vertex
+        if (fMoveParticleAccordingToVertex == kTRUE) {
+          bgEventVertexMi = fBGHandlerPiMi[fiCut]->GetBGEventVertex(zbin, mbin, nEventsInBGMi);
         }
 
+        // Begin loop over all pi- in event
+        for (UInt_t iCurrentPiMi = 0; iCurrentPiMi < EventPiMiMeson->size(); iCurrentPiMi++) {
+          AliAODConversionMother EventPiMiGoodMeson = (AliAODConversionMother)(*(EventPiMiMeson->at(iCurrentPiMi)));
 
-        // Combine Pi- and Pi0
-        AliAODConversionMother PiMiNDMBackgroundCandidate(EventNDMGoodMeson, &EventPiMiGoodMeson);
-
-        // Loop over all pi+ (from current event)
-        for(Int_t iCurrentPiPl=0; iCurrentPiPl<fPosPionCandidates->GetEntries(); iCurrentPiPl++){
-          AliAODConversionMother EventPiPlGoodMeson = *(AliAODConversionMother*)(fPosPionCandidates->At(iCurrentPiPl));
-
-          // Mass cut on pi+pi-
-          if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut()){
-            AliAODConversionMother backPiPlPiMiCandidate(&EventPiPlGoodMeson,&EventPiMiGoodMeson);
-            if (backPiPlPiMiCandidate.M() >= ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut()){
-              continue;
-            }
+          // move vertex
+          if (fMoveParticleAccordingToVertex == kTRUE) {
+            MoveParticleAccordingToVertex(&EventPiMiGoodMeson, bgEventVertexMi);
           }
 
-          // Create (final) Candidate
-          AliAODConversionMother PiPlPiMiNDMBackgroundCandidate(&PiMiNDMBackgroundCandidate,&EventPiPlGoodMeson);
+          // Combine Pi- and Pi0
+          AliAODConversionMother PiMiNDMBackgroundCandidate(EventNDMGoodMeson, &EventPiMiGoodMeson);
 
-          // Check if candidate survives meson cut
-          if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(&PiMiNDMBackgroundCandidate,kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
+          // Loop over all pi+ (from current event)
+          for (Int_t iCurrentPiPl = 0; iCurrentPiPl < fPosPionCandidates->GetEntries(); iCurrentPiPl++)
+          {
+            AliAODConversionMother EventPiPlGoodMeson = *(AliAODConversionMother *)(fPosPionCandidates->At(iCurrentPiPl));
 
-            // Check if candidate survives kinematic cut
-            if(KinematicCut(&EventPiMiGoodMeson, &EventPiPlGoodMeson, EventNDMGoodMeson,&PiPlPiMiNDMBackgroundCandidate)){
+            // Mass cut on pi+pi-
+            if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut()) {
+              AliAODConversionMother backPiPlPiMiCandidate(&EventPiPlGoodMeson, &EventPiMiGoodMeson);
+              if (backPiPlPiMiCandidate.M() >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut()) {
+                continue;
+              }
+            }
 
-              // Create temporary mesons to be able to fix pz
-              AliAODConversionMother NDMtmp;
-              NDMtmp.SetPxPyPzE(EventNDMGoodMeson->Px(), EventNDMGoodMeson->Py(), EventNDMGoodMeson->Pz(), EventNDMGoodMeson->Energy());
-              FixPzToMatchPDGInvMassNDM(&NDMtmp);
-              AliAODConversionMother PiMiNDMtmp(&EventPiMiGoodMeson,&NDMtmp);
-              AliAODConversionMother PiPlPiMiNDMtmp(&EventPiPlGoodMeson,&PiMiNDMtmp);
+            // Create (final) Candidate
+            AliAODConversionMother PiPlPiMiNDMBackgroundCandidate(&PiMiNDMBackgroundCandidate, &EventPiPlGoodMeson);
 
-              // Fill histograms (pi+ and pi0 from same event)
-              fHistoBackInvMassPtGroup2[fiCut]->Fill(PiPlPiMiNDMBackgroundCandidate.M(),PiPlPiMiNDMBackgroundCandidate.Pt());
-              fHistoBackInvMassPtGroup2SubNDM[fiCut]->Fill(PiPlPiMiNDMBackgroundCandidate.M()-(EventNDMGoodMeson->M()-fPDGMassNDM),PiPlPiMiNDMBackgroundCandidate.Pt());
-              fHistoBackInvMassPtGroup2FixedPzNDM[fiCut]->Fill(PiPlPiMiNDMtmp.M(),PiPlPiMiNDMtmp.Pt());
+            // Check if candidate survives meson cut
+            if (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonIsSelected(&PiMiNDMBackgroundCandidate, kFALSE, ((AliConvEventCuts *)fEventCutArray->At(fiCut))->GetEtaShift())) {
+
+              // Check if candidate survives kinematic cut
+              if (KinematicCut(&EventPiMiGoodMeson, &EventPiPlGoodMeson, EventNDMGoodMeson, &PiPlPiMiNDMBackgroundCandidate)) {
+
+                // Create temporary mesons to be able to fix pz
+                AliAODConversionMother NDMtmp;
+                NDMtmp.SetPxPyPzE(EventNDMGoodMeson->Px(), EventNDMGoodMeson->Py(), EventNDMGoodMeson->Pz(), EventNDMGoodMeson->Energy());
+                FixPzToMatchPDGInvMassNDM(&NDMtmp);
+                AliAODConversionMother PiMiNDMtmp(&EventPiMiGoodMeson, &NDMtmp);
+                AliAODConversionMother PiPlPiMiNDMtmp(&EventPiPlGoodMeson, &PiMiNDMtmp); // Must be two separate lines since second instance depends on first and execution order is not guaranteed
+
+                // Fill histograms (pi+ and pi0 from same event)
+                fHistoBackInvMassPtGroup2[fiCut]->Fill(PiPlPiMiNDMBackgroundCandidate.M(), PiPlPiMiNDMBackgroundCandidate.Pt());
+                fHistoBackInvMassPtGroup2SubNDM[fiCut]->Fill(PiPlPiMiNDMBackgroundCandidate.M() - (EventNDMGoodMeson->M() - fPDGMassNDM), PiPlPiMiNDMBackgroundCandidate.Pt());
+                fHistoBackInvMassPtGroup2FixedPzNDM[fiCut]->Fill(PiPlPiMiNDMtmp.M(), PiPlPiMiNDMtmp.Pt());
+              }
+            }
+          } // End loop pi+ (from current event)
+        }   // End loop pi-
+      }     // end loop over pi+ events
+      /*
+   * LikeSign Mixing
+   */
+    } else if (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->UseLikeSignMixing()) {
+      // Loops for Pi0Pi+Pi+ LikeSign mixing
+      for (Int_t iCurrentPiPl = 0; iCurrentPiPl < fPosPionCandidates->GetEntries(); iCurrentPiPl++) {
+
+        AliAODConversionMother EventPiPlGoodMeson = *(AliAODConversionMother *)(fPosPionCandidates->At(iCurrentPiPl));
+
+        for (Int_t iCurrentPiPl2 = 0; iCurrentPiPl2 < fPosPionCandidates->GetEntries(); iCurrentPiPl2++) {
+
+          if (iCurrentPiPl != iCurrentPiPl2) { // dont mix same particle
+            AliAODConversionMother EventPiPlGoodMeson2 = *(AliAODConversionMother *)(fPosPionCandidates->At(iCurrentPiPl2));
+
+            // Combine Pi+ and Pi0
+            AliAODConversionMother PiPlNDMBackgroundCandidate(&EventPiPlGoodMeson, EventNDMGoodMeson);
+
+            // Mass cut on pi+pi+
+            if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut()) {
+              AliAODConversionMother backPiPlPiPlCandidate(&EventPiPlGoodMeson, &EventPiPlGoodMeson2);
+              if (backPiPlPiPlCandidate.M() >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut()) {
+                continue;
+              }
+            }
+
+            // Create (final) Candidate
+            AliAODConversionMother PiPlPiPlNDMBackgroundCandidate(&PiPlNDMBackgroundCandidate, &EventPiPlGoodMeson2);
+
+            // Check if candidate survives meson cut
+            if (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonIsSelected(&PiPlNDMBackgroundCandidate, kFALSE, ((AliConvEventCuts *)fEventCutArray->At(fiCut))->GetEtaShift())) {
+
+              // Check if candidate survives kinematic cut
+              if (KinematicCut(&EventPiPlGoodMeson, &EventPiPlGoodMeson2, EventNDMGoodMeson, &PiPlPiPlNDMBackgroundCandidate)) {
+
+                // Create temporary mesons to be able to fix pz
+                AliAODConversionMother NDMtmp;
+                NDMtmp.SetPxPyPzE(EventNDMGoodMeson->Px(), EventNDMGoodMeson->Py(), EventNDMGoodMeson->Pz(), EventNDMGoodMeson->Energy());
+                FixPzToMatchPDGInvMassNDM(&NDMtmp);
+                AliAODConversionMother PiPlNDMtmp(&EventPiPlGoodMeson, &NDMtmp);
+                AliAODConversionMother PiPlPiPlNDMtmp(&EventPiPlGoodMeson2, &PiPlNDMtmp); // Must be two separate lines since second instance depends on first and execution order is not guaranteed
+
+                // Fill histograms (likesign)
+                fHistoMotherLikeSignBackInvMassPt[fiCut]->Fill(PiPlPiPlNDMBackgroundCandidate.M(), PiPlPiPlNDMBackgroundCandidate.Pt());
+                fHistoMotherLikeSignBackInvMassSubNDMPt[fiCut]->Fill(PiPlPiPlNDMBackgroundCandidate.M() - (EventNDMGoodMeson->M() - fPDGMassNDM), PiPlPiPlNDMBackgroundCandidate.Pt());
+                fHistoMotherLikeSignBackInvMassFixedPzNDMPt[fiCut]->Fill(PiPlPiPlNDMtmp.M(), PiPlPiPlNDMtmp.Pt());
+              }
             }
           }
-        } // End loop pi+ (from current event)
-      } // End loop pi-
-    } // end loop over pi+ events
- /*
-  * LikeSign Mixing
-  */
- } else if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseLikeSignMixing()){
-     // Loops for Pi0Pi+Pi+ LikeSign mixing
-     for(Int_t iCurrentPiPl=0; iCurrentPiPl<fPosPionCandidates->GetEntries(); iCurrentPiPl++){
+        } // end of iCurrentPiPl2
+      }   // end of iCurrenPiPl
 
-         AliAODConversionMother EventPiPlGoodMeson = *(AliAODConversionMother*)(fPosPionCandidates->At(iCurrentPiPl));
+      // Loops for Pi0Pi-Pi- LikeSign mixing
+      for (Int_t iCurrentPiMi = 0; iCurrentPiMi < fNegPionCandidates->GetEntries(); iCurrentPiMi++) {
 
-          for(Int_t iCurrentPiPl2=0; iCurrentPiPl2<fPosPionCandidates->GetEntries(); iCurrentPiPl2++){
+        AliAODConversionMother EventPiMiGoodMeson = *(AliAODConversionMother *)(fNegPionCandidates->At(iCurrentPiMi));
 
-              if(iCurrentPiPl!=iCurrentPiPl2){ // dont mix same particle
-                  AliAODConversionMother EventPiPlGoodMeson2 = *(AliAODConversionMother*)(fPosPionCandidates->At(iCurrentPiPl2));
+        for (Int_t iCurrentPiMi2 = 0; iCurrentPiMi2 < fNegPionCandidates->GetEntries(); iCurrentPiMi2++){
 
-                  // Combine Pi+ and Pi0
-                  AliAODConversionMother PiPlNDMBackgroundCandidate(&EventPiPlGoodMeson, EventNDMGoodMeson);
+          if (iCurrentPiMi != iCurrentPiMi2) { // dont mix same particle
+            AliAODConversionMother EventPiMiGoodMeson2 = *(AliAODConversionMother *)(fNegPionCandidates->At(iCurrentPiMi2));
 
-                  // Mass cut on pi+pi+
-                  if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut()){
-                    AliAODConversionMother backPiPlPiPlCandidate(&EventPiPlGoodMeson,&EventPiPlGoodMeson2);
-                    if (backPiPlPiPlCandidate.M() >= ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut()){
-                      continue;
-                    }
-                  }
+            // Combine Pi- and Pi0
+            AliAODConversionMother PiMiNDMBackgroundCandidate(&EventPiMiGoodMeson, EventNDMGoodMeson);
 
-                  // Create (final) Candidate
-                  AliAODConversionMother PiPlPiPlNDMBackgroundCandidate(&PiPlNDMBackgroundCandidate, &EventPiPlGoodMeson2);
-
-                  // Check if candidate survives meson cut
-                  if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(&PiPlNDMBackgroundCandidate,kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
-
-                    // Check if candidate survives kinematic cut
-                    if(KinematicCut(&EventPiPlGoodMeson, &EventPiPlGoodMeson2, EventNDMGoodMeson,&PiPlPiPlNDMBackgroundCandidate)){
-
-                      // Create temporary mesons to be able to fix pz
-                      AliAODConversionMother NDMtmp;
-                      NDMtmp.SetPxPyPzE(EventNDMGoodMeson->Px(), EventNDMGoodMeson->Py(), EventNDMGoodMeson->Pz(), EventNDMGoodMeson->Energy());
-                      FixPzToMatchPDGInvMassNDM(&NDMtmp);
-                      AliAODConversionMother PiPlNDMtmp(&EventPiPlGoodMeson,&NDMtmp); 
-                      AliAODConversionMother PiPlPiPlNDMtmp(&EventPiPlGoodMeson2,&PiPlNDMtmp); // Must be two separate lines since second instance depends on first and execution order is not guaranteed
-
-                      // Fill histograms (likesign)
-                      fHistoMotherLikeSignBackInvMassPt[fiCut]->Fill(PiPlPiPlNDMBackgroundCandidate.M(),PiPlPiPlNDMBackgroundCandidate.Pt());
-                      fHistoMotherLikeSignBackInvMassSubNDMPt[fiCut]->Fill(PiPlPiPlNDMBackgroundCandidate.M()-(EventNDMGoodMeson->M()-fPDGMassNDM),PiPlPiPlNDMBackgroundCandidate.Pt());
-                      fHistoMotherLikeSignBackInvMassFixedPzNDMPt[fiCut]->Fill(PiPlPiPlNDMtmp.M(),PiPlPiPlNDMtmp.Pt());
-                    }
-                  }
+            // Mass cut on pi-pi-
+            if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut()) {
+              AliAODConversionMother backPiMiPiMiCandidate(&EventPiMiGoodMeson, &EventPiMiGoodMeson2);
+              if (backPiMiPiMiCandidate.M() >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut()) {
+                continue;
               }
-          } // end of iCurrentPiPl2
-     }// end of iCurrenPiPl
+            }
 
-     // Loops for Pi0Pi-Pi- LikeSign mixing
-     for(Int_t iCurrentPiMi=0; iCurrentPiMi<fNegPionCandidates->GetEntries(); iCurrentPiMi++){
+            // Create (final) Candidate
+            AliAODConversionMother PiMiPiMiNDMBackgroundCandidate(&PiMiNDMBackgroundCandidate, &EventPiMiGoodMeson2);
 
-         AliAODConversionMother EventPiMiGoodMeson = *(AliAODConversionMother*)(fNegPionCandidates->At(iCurrentPiMi));
+            // Check if candidate survives meson cut
+            if (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonIsSelected(&PiMiNDMBackgroundCandidate, kFALSE, ((AliConvEventCuts *)fEventCutArray->At(fiCut))->GetEtaShift())) {
 
-          for(Int_t iCurrentPiMi2=0; iCurrentPiMi2<fNegPionCandidates->GetEntries(); iCurrentPiMi2++){
+              // Check if candidate survives kinematic cut
+              if (KinematicCut(&EventPiMiGoodMeson, &EventPiMiGoodMeson2, EventNDMGoodMeson, &PiMiPiMiNDMBackgroundCandidate)) {
 
-              if(iCurrentPiMi!=iCurrentPiMi2){ // dont mix same particle
-                  AliAODConversionMother EventPiMiGoodMeson2 = *(AliAODConversionMother*)(fNegPionCandidates->At(iCurrentPiMi2));
+                // Create temporary mesons to be able to fix pz
+                AliAODConversionMother NDMtmp;
+                NDMtmp.SetPxPyPzE(EventNDMGoodMeson->Px(), EventNDMGoodMeson->Py(), EventNDMGoodMeson->Pz(), EventNDMGoodMeson->Energy());
+                FixPzToMatchPDGInvMassNDM(&NDMtmp);
+                AliAODConversionMother PiMiNDMtmp(&EventPiMiGoodMeson, &NDMtmp);
+                AliAODConversionMother PiMiPiMiNDMtmp(&EventPiMiGoodMeson2, &PiMiNDMtmp);  // Must be two separate lines since second instance depends on first and execution order is not guaranteed
 
-                  // Combine Pi- and Pi0
-                  AliAODConversionMother *PiMiNDMBackgroundCandidate = new AliAODConversionMother(&EventPiMiGoodMeson, EventNDMGoodMeson);
-
-                  // Mass cut on pi-pi-
-                  if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut()){
-                    AliAODConversionMother *backPiMiPiMiCandidate = new AliAODConversionMother(&EventPiMiGoodMeson,&EventPiMiGoodMeson2);
-                    if (backPiMiPiMiCandidate->M() >= ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut()){
-                      delete backPiMiPiMiCandidate;
-                      backPiMiPiMiCandidate = 0x0;
-                      continue;
-                    }
-                    delete backPiMiPiMiCandidate;
-                    backPiMiPiMiCandidate = 0x0;
-                  }
-
-                  // Create (final) Candidate
-                  AliAODConversionMother PiMiPiMiNDMBackgroundCandidate(PiMiNDMBackgroundCandidate, &EventPiMiGoodMeson2);
-
-                  // Check if candidate survives meson cut
-                  if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(PiMiNDMBackgroundCandidate,kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
-
-                    // Check if candidate survives kinematic cut
-                    if(KinematicCut(&EventPiMiGoodMeson, &EventPiMiGoodMeson2, EventNDMGoodMeson,&PiMiPiMiNDMBackgroundCandidate)){
-
-                      // Create temporary mesons to be able to fix pz
-                      AliAODConversionMother NDMtmp;
-                      NDMtmp.SetPxPyPzE(EventNDMGoodMeson->Px(), EventNDMGoodMeson->Py(), EventNDMGoodMeson->Pz(), EventNDMGoodMeson->Energy());
-                      FixPzToMatchPDGInvMassNDM(&NDMtmp);
-                      AliAODConversionMother PiMiNDMtmp(&EventPiMiGoodMeson,&NDMtmp);
-                      AliAODConversionMother PiMiPiMiNDMtmp(&EventPiMiGoodMeson2,&PiMiNDMtmp);
-
-                      // Fill histograms (likesign)
-                      fHistoMotherLikeSignBackInvMassPt[fiCut]->Fill(PiMiPiMiNDMBackgroundCandidate.M(),PiMiPiMiNDMBackgroundCandidate.Pt());
-                      fHistoMotherLikeSignBackInvMassSubNDMPt[fiCut]->Fill(PiMiPiMiNDMBackgroundCandidate.M()-(EventNDMGoodMeson->M()-fPDGMassNDM),PiMiPiMiNDMBackgroundCandidate.Pt());
-                      fHistoMotherLikeSignBackInvMassFixedPzNDMPt[fiCut]->Fill(PiMiPiMiNDMtmp.M(),PiMiPiMiNDMtmp.Pt());
-                    }
-                  }
+                // Fill histograms (likesign)
+                fHistoMotherLikeSignBackInvMassPt[fiCut]->Fill(PiMiPiMiNDMBackgroundCandidate.M(), PiMiPiMiNDMBackgroundCandidate.Pt());
+                fHistoMotherLikeSignBackInvMassSubNDMPt[fiCut]->Fill(PiMiPiMiNDMBackgroundCandidate.M() - (EventNDMGoodMeson->M() - fPDGMassNDM), PiMiPiMiNDMBackgroundCandidate.Pt());
+                fHistoMotherLikeSignBackInvMassFixedPzNDMPt[fiCut]->Fill(PiMiPiMiNDMtmp.M(), PiMiPiMiNDMtmp.Pt());
               }
-          } // end of iCurrentPiMi2
-     }// end of iCurrenPiMi
-   } // end of LikeSign if
- } //end loop pi0 candidates
+            }
+          }
+        } // end of iCurrentPiMi2
+      }   // end of iCurrenPiMi
+    }     // end of LikeSign if
+  }       //end loop pi0 candidates
 }
 
 //______________________________________________________________________
