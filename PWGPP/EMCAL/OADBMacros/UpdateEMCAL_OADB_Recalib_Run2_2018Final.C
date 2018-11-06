@@ -1,17 +1,17 @@
 ///
-/// \file UpdateEMCAL_OADB_Recalib_Run2.C
+/// \file UpdateEMCAL_OADB_Recalib_Run2_2018Final.C
 /// \ingroup EMCAL_OADB
-/// \brief Update OADB file with energy recalibration factors for Run2.
+/// \brief Update OADB file with EMCal/DCal energy recalibration for Run2 with 2018 campaign.
 ///
 /// The histograms with energy recalibraton Factors are loaded and some TObjarrays 
 /// are filled with these histograms. At the end, a OADB container is created 
 /// receiving these arrays.
-/// This UpdateEMCAL_OADB_Recalib updates the information of a original OADB file and writes the output to BetaRecalib.root///
+/// This UpdateEMCAL_OADB_Recalib updates the information of a original OADB file 
+/// and writes the output to BetaRecalib.root///
 ///
 /// Update Run2 calibration with the 2018 calibration campaign output. 
 ///
 /// \author Gustavo Conesa Balbastre, <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-CNRS 
-/// \author Marcel Figueredo, <marcel.figueredo@cern.ch>, Sao Paulo
 ///
 
 #if !defined(__CINT__)
@@ -94,11 +94,15 @@ void UpdateEMCAL_OADB_Recalib_Run2_2018Final
 )
 {
   gSystem->Load("libOADB");  
-  
-  // New parameters file from calibration task
+
+  //  
+  // New parameters file from pi0 calibration task on LHC18d calibration campaign
+  //
   TFile* fRecalibFactors = new TFile(fileNameRecalibFactors,"read");
   
-  // Old parameters OADB file
+  // 
+  // Open old parameters OADB file
+  //
   AliOADBContainer *con	= new AliOADBContainer("");
   con->InitFromFile(fileNameOADB, "AliEMCALRecalib"); //Updating the original OADB file, output will be written into BetaRecalib.root 
   
@@ -126,7 +130,7 @@ void UpdateEMCAL_OADB_Recalib_Run2_2018Final
   // Get the histograms per SM in the OADB and the new, update the new multiplying by OADB factors
 
   char name[30];  
-  for (Int_t iSM=0;iSM<kNbSMtot;iSM++)
+  for (Int_t iSM=0; iSM<kNbSMtot; iSM++)
   {
     sprintf(name,"EMCALRecalFactors_SM%d",iSM);
     printf("SM %d, histo name %s, entries %4.0f\n",
