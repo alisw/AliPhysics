@@ -6,9 +6,13 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
     TString CentEst = "kInt7",//2
     bool DCAPlots = false,//3
     bool CPAPlots = false,//4
-    bool CombSigma = false,//5
-    bool PileUpRej=true,//6
-    bool ContributionSplitting = false,//7
+    bool MomReso = false,//5 to set to true only when running on MC
+    bool etaPhiPlotsAtTPCRadii=false,//6 to set to true only when running on MC
+    bool CombSigma = false,//7
+    bool PileUpRej=true,//8
+    bool dPhidEtaPlots=false,//9
+    bool ContributionSplitting = false,//10
+    bool InvMassPairs=false, //11
     const char *swuffix = "") {
 
 
@@ -168,25 +172,29 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
   config->SetCentBins(centBins);
   config->SetkTCentralityBinning(false);
 
-  config->SetInvMassPairs(true);
+  config->SetInvMassPairs(InvMassPairs);
 
+if (MomReso) {
   if (isMC) {
-    config->SetMomentumResolution(false);//kstar true vs. kstar reco
+    config->SetMomentumResolution(true);//kstar true vs. kstar reco
   } else {
     std::cout
         << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
   }
+}
+  if (etaPhiPlotsAtTPCRadii) {
   if (isMC) {
-    config->SetPhiEtaBinnign(false);  // check for track splitting/merging at various TPC Radii
+    config->SetPhiEtaBinnign(true);  // check for track splitting/merging at various TPC Radii
   } else {
     std::cout
         << "You are trying to request the Eta Phi Plots without MC Info; fix it wont work! \n";
   }
+}
 //  if (DeltaEtaDeltaPhiCut) {
 //    config->SetDeltaEtaMax(0.01);
 //    config->SetDeltaPhiMax(0.01);
 //  }
-  config->SetdPhidEtaPlots(false);  // warsaw like plots
+  config->SetdPhidEtaPlots(dPhidEtaPlots);  // warsaw like plots
 
   std::vector<int> NBins;
   NBins.push_back(750);  // p p

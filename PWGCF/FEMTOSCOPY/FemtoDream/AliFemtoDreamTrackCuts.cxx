@@ -608,9 +608,12 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
         fHists->FillTPCdedx(i, p, Track->GetdEdxTPC());
         fHists->FillTOFbeta(i, p, Track->GetbetaTOF());
         fHists->FillNSigTPC(i, p, (Track->GetnSigmaTPC(fParticleID)));
+        fHists->FillNSigTPCMod(i,p,(Track->GetnSigmaTPC(fParticleID)));
         fHists->FillNSigTOF(i, p, (Track->GetnSigmaTOF(fParticleID)));
         fHists->FillTPCStatus(i, Track->GetstatusTPC());
         fHists->FillTOFStatus(i, Track->GetstatusTOF());
+        fHists->FillNSigComTPCTOF(i,p,Track->GetnSigmaTPC(fParticleID),
+                             Track->GetnSigmaTOF(fParticleID));
         //Fill These Before
         if (i == 0 && fCombSigma) {
           fHists->FillNSigComb(pT, Track->GetnSigmaTPC(fParticleID),

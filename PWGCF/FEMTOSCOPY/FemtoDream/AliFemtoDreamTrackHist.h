@@ -122,6 +122,14 @@ class AliFemtoDreamTrackHist {
   }
   ;
   void FillNSigComb(float pT, float nSigTPC, float nSigTOF);
+
+  void FillNSigComTPCTOF(int i, float mom,float nSigTPC, float nSigTOF){
+    if (!fMinimalBooking)
+      fNSigComTPCTOF[i]->Fill(mom, TMath::Sqrt(nSigTPC*nSigTPC+nSigTOF*nSigTOF));
+  }
+  ;
+
+
   void FillDCAXYPtBins(float pT, float dcaxy, int multiplicity);
   void FillTPCClsCPileUp(int i, int iCrit, float TPCClsC) {
     if (!fMinimalBooking)
@@ -183,6 +191,7 @@ class AliFemtoDreamTrackHist {
   TH1F *fTPCStatus[2];      //!
   TH1F *fTOFStatus[2];      //!
   TH3F *fNSigCom;           //!
+  TH2  *fNSigComTPCTOF[2];   //!
   TH2F *fTPCClsCPiluUp[2];  //!
   TH2F *fITShrdClsPileUp[2];  //!
 ClassDef(AliFemtoDreamTrackHist,4)

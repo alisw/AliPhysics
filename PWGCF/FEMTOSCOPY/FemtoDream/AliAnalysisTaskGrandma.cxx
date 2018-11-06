@@ -269,7 +269,7 @@ void AliAnalysisTaskGrandma::UserExec(Option_t *) {
           AntiDecays.push_back(*fFemtov0);
         }
       }
-
+      //loop once over the MC stack to calculate Efficiency/Purity
       if (fIsMC) {
         AliAODInputHandler *eventHandler =
             dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()
