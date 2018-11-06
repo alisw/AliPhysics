@@ -91,9 +91,6 @@ using namespace std;            // std namespace: so you can do things like 'cou
 
 //ofstream file_output("output.txt");
 
-int      eta_limiting = 1;
-Double_t cut_width    = 2.0;
-short    do_lead_only = 0;     // 0 = all,  1 = only leading
 
 ClassImp(AliAnalysisTaskCorPIDTOFprot) // classimp: necessary for root
 
