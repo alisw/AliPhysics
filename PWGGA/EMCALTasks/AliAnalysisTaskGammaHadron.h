@@ -43,6 +43,7 @@ public:
   //..setters for the analysis
   void                        SetCorrectEff(Bool_t input)                           { fCorrectEff      = input  ; }
   void                        SetSavePool(Bool_t input)                             { fSavePool        = input  ; }
+  void                        SetPoolTrackDepth(Int_t input)                        { fTrackDepth      = input  ; }
   void                        SetPlotMore(Int_t input)                              { fPlotQA          = input  ; }
   void                        SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
 	void                        SetPi0MassSelection(Int_t input)                      { fPi0MassSelection= input  ; }
@@ -50,7 +51,7 @@ public:
   void                        SetSubDetector(Int_t input)                           { fSubDetector     = input; }
   void                        SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
   void                        SetVetoTrigger(UInt_t input)                          { fVetoTrigger = input  ; }
-  void                        SetClEnergyMin(Int_t input)                           { fClEnergyMin     = input;}
+  void                        SetClEnergyMin(Double_t input)                        { fClEnergyMin     = input;}
   void                        SetOpeningAngleCut(Double_t input)                    { fOpeningAngleCut = input;}
   void                        SetNLM(Int_t input)                                   { fMaxNLM          = input;}
   void                        SetM02(Double_t inputMin,Double_t inputMax)           { fClShapeMin = inputMin; fClShapeMax = inputMax;}
@@ -145,9 +146,11 @@ public:
   static const Int_t          kNoGammaBins=9;            ///< Bins in gamma pT
   static const Int_t          kNoZtBins=7;               ///< Bins in Zt
   static const Int_t          kNoXiBins=8;               ///< Bins in Xi
+  static const Int_t          kNoHPtBins=8;               ///< Bins in hadron pT
   Double_t                    fArray_G_Bins[10];         ///< 10=kNoGammaBins+1
   Double_t                    fArray_ZT_Bins[8];         ///< 8=kNoZtBins+1
   Double_t                    fArray_XI_Bins[9];         ///< 9=kNoXiBins+1
+  Double_t                    fArray_HPT_Bins[9];        ///< 9=kNoHPtBins+1
   Double_t                    fArrayNVertBins[21];       ///< 21=kNvertBins+1
 
   //..cuts
@@ -200,10 +203,13 @@ public:
   TH2             *fMAngle;                  //!<! Tyler's histogram
   TH2             *fPtAngle;                 //!<! Tyler's histogram
   TH1             *fMassPionRej;             //!<! Histogram of Mass vs Pt for rejected Pi0 Candidates
+  TH2             *fEtaPhiPionAcc;           //!<! Histogram of eta,phi location of accepted pions
   TH2             *fMassPtPionAcc;           //!<! Histogram of Mass vs Pt for accepted Pi0 Candidates
   TH2             *fMassPtPionRej;           //!<! Histogram of Mass vs Pt for rejected Pi0 Candidates
   TH3             *fMassPtCentPionAcc;       //!<! Histogram of Mass vs Pt vs Cent for accepted Pi0 Candidates
   TH3             *fMassPtCentPionRej;       //!<! Histogram of Mass vs Pt vs Cent for rejected Pi0 Candidates
+  TH2             *fMatchDeltaEtaTrackPt;     //!<! Histogram of Delta eta vs track pt for cluster-track matching
+  TH2             *fMatchDeltaPhiTrackPt;     //!<! Histogram of Delta phi vs track pt for cluster-track matching
   TH2             *fHistEOverPvE;            //!<! Histogram of E/p vs E_cluster for cluster-track pairs (geometrically matched)
   TH2             *fHistPOverEvE;            //!<! Histogram of p/E vs E_cluster for cluster-track pairs (geometrically matched)
   TH2             *fHistPSDistU;             //!<! Histogram of sqrt((1-cos(theta_A))(1-cos(theta_B))) for Pos Swap Method
