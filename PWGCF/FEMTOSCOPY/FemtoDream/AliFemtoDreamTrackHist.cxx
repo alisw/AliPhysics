@@ -259,7 +259,6 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
     TString NSigComTPCTOFName = Form("NSigComTPCTOF_%s", sName[i].Data());
     fNSigComTPCTOF[i] = new TH2F(NSigComTPCTOFName.Data(), NSigComTPCTOFName.Data(), ptBins,
                            ptmin, ptmax, 3. * twoDBins, -1., 5.);
-    fNSigComTPCTOF[i]->Sumw2();
     fNSigComTPCTOF[i]->GetXaxis()->SetTitle("p_{TPC}");
     fNSigComTPCTOF[i]->GetYaxis()->SetTitle("n#sigma_{comb}=#sqrt{n#sigma_{TPC}^{2}+n#sigma_{TOF}^{2}}");
 
@@ -390,6 +389,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(TString MinimalBooking)
     fNSigTOF[i] = nullptr;
     fTPCStatus[i] = nullptr;
     fTOFStatus[i] = nullptr;
+    fNSigComTPCTOF[i] = nullptr;
     fTPCClsCPiluUp[i] = nullptr;
     fITShrdClsPileUp[i] = nullptr;
   }
