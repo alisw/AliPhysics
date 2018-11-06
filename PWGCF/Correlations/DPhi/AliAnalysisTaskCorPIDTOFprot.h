@@ -42,6 +42,11 @@ class AliAnalysisTaskCorPIDTOFprot : public AliAnalysisTaskSE
 	Float_t pio2   = TMath::PiOver2();
 	Float_t twopi  = TMath::TwoPi();
 
+	int      eta_limiting = 1;
+	Double_t cut_width    = 2.0;
+	short    do_lead_only = 0;     // 0 = all,  1 = only leading
+
+	
     private:    
 
         AliAODEvent*          fAOD;               //! input event

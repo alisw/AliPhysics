@@ -73,13 +73,13 @@ ClassImp(AliEbyEPhiDistNew)
 
 //------------------------------------------------------------------------
 AliEbyEPhiDistNew::AliEbyEPhiDistNew():AliAnalysisTaskSE(),
- fThnList(NULL), fInputHandler(NULL), fMCEventHandler(NULL), fVevent(NULL), fArrayMC(NULL), fESDtrackCuts(NULL), fMCEvent(NULL), fMCStack(NULL), fEventCuts(NULL), fRun("LHC10h") , fCentralityEstimator("V0M"),
+fThnList(NULL), fInputHandler(NULL), fMCEventHandler(NULL), fVevent(NULL), fArrayMC(NULL), fESDtrackCuts(NULL), fMCEvent(NULL), fMCStack(NULL), fEventCuts(NULL), fRun("LHC10h") , fCentralityEstimator("V0M"),
 
- fAODtrackCutBit(272), fVxMax(3.), fVyMax(3.), fVzMax(10.), fPtMin(0.15), fPtMax(1.5), fPhiMin(0.0), fPhiMax(6.28),fEtaMin(-1), fEtaMax(1), fNptBins(19), fNphiBins(6), fDcaXy(10.), fDcaZ(10.), fNcrossRows(80), fChi2NDF(4),
+fAODtrackCutBit(272), fVxMax(3.), fVyMax(3.), fVzMax(10.), fPtMin(0.15), fPtMax(1.5), fPhiMin(0.0), fPhiMax(6.28),fEtaMin(-1), fEtaMax(1), fNptBins(19), fNphiBins(6), fDcaXy(10.), fDcaZ(10.), fNcrossRows(80), fChi2NDF(4),
 
- fIsMC(kFALSE), fIsAOD(kFALSE), fIsRapCut(kFALSE),
+fIsMC(kFALSE), fIsAOD(kFALSE), fIsRapCut(kFALSE),
 
- fNTracks(0), fCentrality(-1), fEventCounter(NULL), fHistCent(0x0),
+fNTracks(0), fCentrality(-1), fEventCounter(NULL), fHistCent(0x0),
 
 fPIDResponse(0x0), fPIDCombined(0x0), fPidType(1), fMcPid(211), fPidStrategy(0), fNSigmaMaxITS(3.), fNSigmaMaxTPC(3.), fNSigmaMaxTOF(3.), fParticleSpecies(AliPID::kPion),
 
@@ -207,13 +207,13 @@ void AliEbyEPhiDistNew::UserCreateOutputObjects(){
     fThnList->Add(fEventCounter);
     
     PostData(1,fThnList);
-
+    
 }
 
 //--------------------------------------------------------------------------------------
 
 void AliEbyEPhiDistNew::CreatePhiHist() {
-    const Char_t *fgkHistName[4] = {"Nch","Npi","Nka", "Npr"};
+    const Char_t *fgkHistName[4] = {"Nch","Npi","Npi", "Nka"};
     const Char_t *fgkHistLat[2][4] = {{"N^{-}","#pi^{-}","K^{-}","P^{-}"},{"N^{+}","#pi^{+}","K^{+}","P^{+}"}};
     
     const Char_t *fgkHistCharge[2] = {"Minus","Plus"};
@@ -316,459 +316,459 @@ void AliEbyEPhiDistNew::CreatePhiHist() {
     }
     
     //-----For Thn Sparse----------------------
-    const Int_t dim = 229; // 1 centrality bin + ( 19 pt bins )*2 *6
-        Int_t bin[dim];
-        bin[0] = 81;
-        for (Int_t ibin = 1; ibin<dim ; ibin++) bin[ibin] = 500;
-        
-        Double_t min[dim];
-        for (Int_t jbin = 0; jbin<dim ; jbin++) min[jbin] = -0.5;
-        
-        Double_t max[dim];
-        max[0] = 80.5 ;
-        for(Int_t jbin = 1; jbin<dim; jbin++) max[jbin] = 499.5;
-        
-        fPtBinNplusNminus = new THnSparseI("fPtBinNplusNminus","cent-nplus-nminus",dim, bin, min, max);
-        fThnList->Add(fPtBinNplusNminus);
-        
-        if(fIsMC){
-            fPtBinNplusNminusTruth = new THnSparseI("fPtBinNplusNminusTruth","cent-nplus-nminus",dim, bin, min, max);
-            fThnList->Add(fPtBinNplusNminusTruth);
-        }
+    const Int_t dim = 13; // 1 centrality bin + ( 19 pt bins )*2 *6
+    Int_t bin[dim];
+    bin[0] = 81;
+    for (Int_t ibin = 1; ibin<dim ; ibin++) bin[ibin] = 100;
+    
+    Double_t min[dim];
+    for (Int_t jbin = 0; jbin<dim ; jbin++) min[jbin] = -0.5;
+    
+    Double_t max[dim];
+    max[0] = 80.5 ;
+    for(Int_t jbin = 1; jbin<dim; jbin++) max[jbin] = 99.5;
+    
+    fPtBinNplusNminus = new THnSparseI("fPtBinNplusNminus","cent-nplus-nminus",dim, bin, min, max);
+    fThnList->Add(fPtBinNplusNminus);
+    
+    if(fIsMC){
+        fPtBinNplusNminusTruth = new THnSparseI("fPtBinNplusNminusTruth","cent-nplus-nminus",dim, bin, min, max);
+        fThnList->Add(fPtBinNplusNminusTruth);
+    }
 }
 
-    //------------------------------------------------------
-    
-    void AliEbyEPhiDistNew::LocalPost(){
-        PostData(1,fThnList);
-    }
+//------------------------------------------------------
 
-    void AliEbyEPhiDistNew::UserExec (Option_t *){
+void AliEbyEPhiDistNew::LocalPost(){
+    PostData(1,fThnList);
+}
+
+void AliEbyEPhiDistNew::UserExec (Option_t *){
+    
+    if (fPidType < 1 || fPidType >3){
+        AliError("PID are not supported");
+        return;
+    }
+    
+    //const Int_t dim = 38; // number of pT bins * 2
+    const Int_t kPhi = 6; // number of Phi Bins
+    Int_t pTPhi[kPhi];
+    Int_t pTPhiMC[kPhi];
+    
+    //for (Int_t idx= 0; idx < dim ; idx++){
+    for (Int_t it = 0; it <kPhi ; it++){
+        pTPhi[it] = 0.;
+        pTPhiMC[it] = 0.;
+        //}
+    }
+    
+    fEventCounter->Fill(1);
+    if (!fInputHandler)
+        fInputHandler = dynamic_cast<AliVEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    if (!fInputHandler){
+        AliError("No InputHandler");
+        return;
+    }
+    
+    fVevent = dynamic_cast<AliVEvent*>(fInputHandler->GetEvent());
+    if (!fVevent){
+        cout << "Error : fVEvent not available\n" << endl;
+        LocalPost(); return;
         
-        if (fPidType < 1 || fPidType >3){
-            AliError("PID are not supported");
-            return;
+    }
+    
+    //--------------Initiate MC-----------
+    if (fIsMC){
+        fMCEvent = NULL;
+        fEventCounter->Fill(8);
+        if(fIsAOD){
+            fArrayMC = NULL;
+            fArrayMC = dynamic_cast<TClonesArray*>(fVevent->FindListObject(AliAODMCParticle::StdBranchName()));
+            if(!fArrayMC)
+                AliFatal("No array of MC particles found !!");
         }
-        
-        const Int_t dim = 38; // number of pT bins * 2
-        const Int_t kPhi = 6; // number of Phi Bins
-        Int_t pTPhi[dim][kPhi];
-        Int_t pTPhiMC[dim][kPhi];
-        
-        for (Int_t idx= 0; idx < dim ; idx++){
-            for (Int_t it = 0; it <kPhi ; it++){
-                pTPhi[idx][it] = 0.;
-                pTPhiMC[idx][it] = 0.;
+        else{
+            fMCEventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+            if(!fMCEventHandler){
+                AliError("No MC event Handler available");
+                LocalPost(); return;
             }
-        }
-        
-        fEventCounter->Fill(1);
-        if (!fInputHandler)
-            fInputHandler = dynamic_cast<AliVEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-        if (!fInputHandler){
-            AliError("No InputHandler");
-            return;
-        }
-        
-        fVevent = dynamic_cast<AliVEvent*>(fInputHandler->GetEvent());
-        if (!fVevent){
-            cout << "Error : fVEvent not available\n" << endl;
-            LocalPost(); return;
-            
-        }
-        
-        //--------------Initiate MC-----------
-        if (fIsMC){
-            fMCEvent = NULL;
-            fEventCounter->Fill(8);
-            if(fIsAOD){
-                fArrayMC = NULL;
-                fArrayMC = dynamic_cast<TClonesArray*>(fVevent->FindListObject(AliAODMCParticle::StdBranchName()));
-                if(!fArrayMC)
-                    AliFatal("No array of MC particles found !!");
+            fMCEvent = fMCEventHandler->MCEvent();
+            if (!fMCEvent){
+                cout << "Error: Could not retrieve MC event" << endl;
+                LocalPost();return;
             }
-            else{
-                fMCEventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-                if(!fMCEventHandler){
-                    AliError("No MC event Handler available");
-                    LocalPost(); return;
-                }
-                fMCEvent = fMCEventHandler->MCEvent();
-                if (!fMCEvent){
-                    cout << "Error: Could not retrieve MC event" << endl;
-                    LocalPost();return;
-                }
-                fMCStack = fMCEvent->Stack();
-                if(!fMCStack){
-                    cout << "ERROR: Could not retrive MC stack" << endl;
-                    LocalPost(); return;
-                }
-            }
-        } // if -------MC--
-        
-        
-        //Plie up cout for Run2
-        
-        if(fRun == "LHC15o"){
-            if(!fEventCuts->AcceptEvent(fVevent)){
+            fMCStack = fMCEvent->Stack();
+            if(!fMCStack){
+                cout << "ERROR: Could not retrive MC stack" << endl;
                 LocalPost(); return;
             }
         }
-        
-        const AliVVertex *vertex = fVevent->GetPrimaryVertex();
-        if(!vertex) { LocalPost(); return;}
-        
-        Bool_t vtest = kFALSE;
-        Double32_t fCov[6];
-        vertex->GetCovarianceMatrix(fCov);
-        if(vertex->GetNContributors() > 0) {
-            if(fCov[5] != 0){
-                vtest = kTRUE;
-            }
-        }
-        if(!vtest) {LocalPost(); return;}
-        
-        if(TMath::Abs(vertex->GetX()) > fVxMax) {LocalPost(); return; }
-        if(TMath::Abs(vertex->GetY()) > fVyMax) {LocalPost(); return; }
-        if(TMath::Abs(vertex->GetZ()) > fVzMax) {LocalPost(); return; }
-        
-        //--------Centrality task----------------------------------------
-        
-        if( fRun == "LHC10h" || fRun == "LHC11h") {
-            AliCentrality *centrality = fVevent -> GetCentrality();
-            if(!centrality) return;
-            if (centrality->GetQuality() != 0) {LocalPost(); return; }
-            
-            fCentrality = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
-        }
-        else if (fRun == "LHC15o") {
-            AliMultSelection *fMultSelection = (AliMultSelection *) fVevent->FindListObject("MultSelection");
-            if(!fMultSelection){
-                cout << "AliMultSelection object not found! " << endl;
-                return;
-            }
-            else fCentrality = fMultSelection->GetMultiplicityPercentile(fCentralityEstimator.Data(),false);
-        }
-        else if (fRun == "LHC10hAMPT"){
-            //centrality range from impact parameter
-            AliGenEventHeader* genHeader = fMCEvent->GenEventHeader();
-            if(!genHeader) return;
-            
-            Double_t impactPar = ((AliGenHijingEventHeader*) genHeader)->ImpactParameter();
-            
-            if( impactPar >= 0. && impactPar < 3.51 ) fCentrality = 1.; //0-5
-            if( impactPar >= 3.51 && impactPar < 4.96 ) fCentrality = 6.; //5-10
-            if( impactPar >= 4.96 && impactPar < 6.08 ) fCentrality = 11.;//10-15
-            if( impactPar >= 6.08 && impactPar < 7.01 ) fCentrality = 16.;//15-20
-            if( impactPar >= 7.01 && impactPar < 7.84 ) fCentrality = 21.;//20-25
-            if( impactPar >= 7.84 && impactPar < 8.59 ) fCentrality = 26.;//25-30
-            if( impactPar >= 8.59 && impactPar < 9.27 ) fCentrality = 31.;//30-35
-            if( impactPar >= 9.27 && impactPar < 9.92 ) fCentrality = 36.;//35-40
-            if( impactPar >= 9.92 && impactPar < 10.5 ) fCentrality = 41.;//40-45
-            if( impactPar >= 10.5 && impactPar < 11.1 ) fCentrality = 46.;//45-50
-            if( impactPar >= 11.1 && impactPar < 11.6 ) fCentrality = 51.;//50-55
-            if( impactPar >= 11.6 && impactPar < 12.1 ) fCentrality = 56.;//55-60
-            if( impactPar >= 12.1 && impactPar < 12.6 ) fCentrality = 61.;//60-65
-            if( impactPar >= 12.6 && impactPar < 13.1 ) fCentrality = 66.;//65-70
-            if( impactPar >= 13.1 && impactPar < 13.6 ) fCentrality = 71.;//70-75
-            if( impactPar >= 13.6 && impactPar < 14.0 ) fCentrality = 76.;//75-80
-            
-        }
-        else {
-            cout << "Wrong run period for centrality" << endl;
+    } // if -------MC--
+    
+    
+    //Plie up cout for Run2
+    
+    if(fRun == "LHC15o"){
+        if(!fEventCuts->AcceptEvent(fVevent)){
             LocalPost(); return;
         }
+    }
+    
+    const AliVVertex *vertex = fVevent->GetPrimaryVertex();
+    if(!vertex) { LocalPost(); return;}
+    
+    Bool_t vtest = kFALSE;
+    Double32_t fCov[6];
+    vertex->GetCovarianceMatrix(fCov);
+    if(vertex->GetNContributors() > 0) {
+        if(fCov[5] != 0){
+            vtest = kTRUE;
+        }
+    }
+    if(!vtest) {LocalPost(); return;}
+    
+    if(TMath::Abs(vertex->GetX()) > fVxMax) {LocalPost(); return; }
+    if(TMath::Abs(vertex->GetY()) > fVyMax) {LocalPost(); return; }
+    if(TMath::Abs(vertex->GetZ()) > fVzMax) {LocalPost(); return; }
+    
+    //--------Centrality task----------------------------------------
+    
+    if( fRun == "LHC10h" || fRun == "LHC11h") {
+        AliCentrality *centrality = fVevent -> GetCentrality();
+        if(!centrality) return;
+        if (centrality->GetQuality() != 0) {LocalPost(); return; }
         
-        if (fCentrality < 0 || fCentrality >=80) return;
-        fHistCent->Fill(fCentrality);
-        fEventCounter->Fill(2);
+        fCentrality = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
+    }
+    else if (fRun == "LHC15o") {
+        AliMultSelection *fMultSelection = (AliMultSelection *) fVevent->FindListObject("MultSelection");
+        if(!fMultSelection){
+            cout << "AliMultSelection object not found! " << endl;
+            return;
+        }
+        else fCentrality = fMultSelection->GetMultiplicityPercentile(fCentralityEstimator.Data(),false);
+    }
+    else if (fRun == "LHC10hAMPT"){
+        //centrality range from impact parameter
+        AliGenEventHeader* genHeader = fMCEvent->GenEventHeader();
+        if(!genHeader) return;
         
-        fEventCounter->Fill(3);
-        //-------tracks--------------
-        fNTracks = fVevent->GetNumberOfTracks();
+        Double_t impactPar = ((AliGenHijingEventHeader*) genHeader)->ImpactParameter();
         
-        Double_t nRec[2]= {0.,0.};
-        Double_t nGen[2]= {0.,0.};
+        if( impactPar >= 0. && impactPar < 3.51 ) fCentrality = 1.; //0-5
+        if( impactPar >= 3.51 && impactPar < 4.96 ) fCentrality = 6.; //5-10
+        if( impactPar >= 4.96 && impactPar < 6.08 ) fCentrality = 11.;//10-15
+        if( impactPar >= 6.08 && impactPar < 7.01 ) fCentrality = 16.;//15-20
+        if( impactPar >= 7.01 && impactPar < 7.84 ) fCentrality = 21.;//20-25
+        if( impactPar >= 7.84 && impactPar < 8.59 ) fCentrality = 26.;//25-30
+        if( impactPar >= 8.59 && impactPar < 9.27 ) fCentrality = 31.;//30-35
+        if( impactPar >= 9.27 && impactPar < 9.92 ) fCentrality = 36.;//35-40
+        if( impactPar >= 9.92 && impactPar < 10.5 ) fCentrality = 41.;//40-45
+        if( impactPar >= 10.5 && impactPar < 11.1 ) fCentrality = 46.;//45-50
+        if( impactPar >= 11.1 && impactPar < 11.6 ) fCentrality = 51.;//50-55
+        if( impactPar >= 11.6 && impactPar < 12.1 ) fCentrality = 56.;//55-60
+        if( impactPar >= 12.1 && impactPar < 12.6 ) fCentrality = 61.;//60-65
+        if( impactPar >= 12.6 && impactPar < 13.1 ) fCentrality = 66.;//65-70
+        if( impactPar >= 13.1 && impactPar < 13.6 ) fCentrality = 71.;//70-75
+        if( impactPar >= 13.6 && impactPar < 14.0 ) fCentrality = 76.;//75-80
         
-        //-----------------track loop---------------
-        for (Int_t idxTrack = 0; idxTrack < fNTracks; ++idxTrack){
-            AliVTrack *track = static_cast<AliVTrack*>(fVevent->GetTrack(idxTrack));
-            if(!AcceptTrackL(track))continue;
+    }
+    else {
+        cout << "Wrong run period for centrality" << endl;
+        LocalPost(); return;
+    }
+    
+    if (fCentrality < 0 || fCentrality >=80) return;
+    fHistCent->Fill(fCentrality);
+    fEventCounter->Fill(2);
+    
+    fEventCounter->Fill(3);
+    //-------tracks--------------
+    fNTracks = fVevent->GetNumberOfTracks();
+    
+    Double_t nRec[2]= {0.,0.};
+    Double_t nGen[2]= {0.,0.};
+    
+    //-----------------track loop---------------
+    for (Int_t idxTrack = 0; idxTrack < fNTracks; ++idxTrack){
+        AliVTrack *track = static_cast<AliVTrack*>(fVevent->GetTrack(idxTrack));
+        if(!AcceptTrackL(track))continue;
+        
+        Int_t icharge = track->Charge() < 0 ? 0 : 1 ;
+        Float_t lPt = (Float_t)track->Pt();
+        Float_t lPz = track->Pz();
+        Float_t lP = 0.;
+        if(fTotP) lP = track->GetInnerParam()->GetP();
+        Float_t lEta = (Float_t)track->Eta();
+        Float_t lPhi = (Float_t)track->Phi();
+        
+        //Get the pT (p) bin
+        Int_t iptbin = -1;
+        if(fTotP) iptbin = GetPtBin(lP);
+        else iptbin = GetPtBin(lPt);
+        if(iptbin < 0 || iptbin > fNptBins - 1) continue;
+        
+        //Get the Phi bins
+        Int_t iphibin = -1 ;
+        iphibin = GetPhiBin(lPhi);
+        if (iphibin < 0 || iphibin > fNphiBins-1) continue;
+        
+        //Get the Eta Bin--
+        Int_t etabin = -1;
+        etabin = GetEtaBin(TMath::Abs(lEta));
+        if ( etabin < 0 || etabin >7) continue;
+        
+        //--Fill Histos-------------------
+        
+        Float_t RecContainer[3];
+        RecContainer[0] = fCentrality;
+        if(fTotP) RecContainer[1] = lP;
+        else RecContainer[1] = lPt;
+        RecContainer[2] = lPhi;
+        
+        Bool_t isPid = kFALSE;
+        
+        if (fPidType != 0){
+            isPid = IsPidPassed(track);
             
-            Int_t icharge = track->Charge() < 0 ? 0 : 1 ;
-            Float_t lPt = (Float_t)track->Pt();
-            Float_t lPz = track->Pz();
-            Float_t lP = 0.;
-            if(fTotP) lP = track->GetInnerParam()->GetP();
-            Float_t lEta = (Float_t)track->Eta();
-            Float_t lPhi = (Float_t)track->Phi();
-            
-            //Get the pT (p) bin
-            Int_t iptbin = -1;
-            if(fTotP) iptbin = GetPtBin(lP);
-            else iptbin = GetPtBin(lPt);
-            if(iptbin < 0 || iptbin > fNptBins - 1) continue;
-            
-            //Get the Phi bins
-            Int_t iphibin = -1 ;
-            iphibin = GetPhiBin(lPhi);
-            if (iphibin < 0 || iphibin > fNphiBins-1) continue;
-            
-            //Get the Eta Bin--
-            Int_t etabin = -1;
-            etabin = GetEtaBin(TMath::Abs(lEta));
-            if ( etabin < 0 || etabin >7) continue;
-            
-            //--Fill Histos-------------------
-            
-            Float_t RecContainer[3];
-            RecContainer[0] = fCentrality;
-            if(fTotP) RecContainer[1] = lP;
-            else RecContainer[1] = lPt;
-            RecContainer[2] = lPhi;
-            
-            Bool_t isPid = kFALSE;
-            
-            if (fPidType != 0){
-                isPid = IsPidPassed(track);
-                
-                if(isPid){
-                    if(fIsMC){
-                        cout << "yes it is inside " << endl;
-                        fCentPtEtaPhiThnRec[icharge]->Fill(RecContainer[0],RecContainer[1], RecContainer[2]);
-                    }
-                    else {
-                        fHistCentRec[icharge]->Fill(RecContainer[0],RecContainer[2]);
-                        fCentPtEtaPhiThnRec[icharge]->Fill(RecContainer[0],RecContainer[1], RecContainer[2]);
-                    }
-                    nRec[icharge] += 1;
-                    
-                    if (icharge == 1){
-                        pTPhi[iptbin][iphibin] += 1;
-                        
-                    }
-                    if(icharge == 0){
-                        pTPhi[iptbin+fNphiBins][iphibin] += 1;
-                    }
-                }
-            }
-            
-            //MC loop for Physical primary
-            
-            if (fIsMC){
-                Int_t label = TMath::Abs(track->GetLabel());
-                
-                Bool_t isPhysicalPrimary = 0;
-                Bool_t isSecondaryFromWeakDecay = 0;
-                Bool_t isSecondaryFromMaterial = 0;
-                AliVParticle* particle = NULL;
-                
-                if(track->InheritsFrom("AliESDtrack")) {
-                    particle = static_cast<AliVParticle*>(fMCEvent->GetTrack(label));
-                    if(!particle) return;
-                    isPhysicalPrimary = fMCStack->IsPhysicalPrimary(label);
-                    isSecondaryFromWeakDecay = fMCStack->IsSecondaryFromWeakDecay(label);
-                    isSecondaryFromMaterial = fMCStack->IsSecondaryFromMaterial(label);
+            if(isPid){
+                if(fIsMC){
+                    cout << "yes it is inside " << endl;
+                    fCentPtEtaPhiThnRec[icharge]->Fill(RecContainer[0],RecContainer[1], RecContainer[2]);
                 }
                 else {
-                    particle = static_cast<AliVParticle*>(fArrayMC->At(label));
-                    isPhysicalPrimary = (static_cast<AliAODMCParticle*>(particle))->IsPhysicalPrimary();
-                    isSecondaryFromWeakDecay = (static_cast<AliAODMCParticle*>(particle))->IsSecondaryFromWeakDecay();
-                    isSecondaryFromMaterial = (static_cast<AliAODMCParticle*>(particle))->IsSecondaryFromMaterial();
+                    fHistCentRec[icharge]->Fill(RecContainer[0],RecContainer[2]);
+                    fCentPtEtaPhiThnRec[icharge]->Fill(RecContainer[0],RecContainer[1], RecContainer[2]);
                 }
-                Float_t fpTRec = particle->Pt();
-                Float_t fpZRec = particle->Pz();
-                Float_t fPRec = particle ->P();
-                Float_t fEtaRec = particle->Eta();
-                Float_t fPhiRec = particle->Phi();
-                Int_t pdg = TMath::Abs(particle->PdgCode());
+                nRec[icharge] += 1;
                 
-                //Get the eta (Rap) bin---
-                
-                Int_t etabinRecMC = -1;
-                etabinRecMC = GetEtaBin(TMath::Abs(fEtaRec));
-                if(etabinRecMC < 0 || etabinRecMC > 7) continue;
-                
-                Double_t RecMCContainer[3];
-                RecMCContainer[0] = fCentrality;
-                if(fTotP) RecMCContainer[1] = fPRec;
-                else RecMCContainer[1] = fpTRec;
-                RecMCContainer[2] = fPhiRec;
-                
-                //PID--------
-                if (isPid) {
-                    if(isPhysicalPrimary){
-                        if (pdg == fMcPid){
+                if (icharge == 1){
+                    pTPhi[iphibin] += 1;
+                    
+                }
+                if(icharge == 0){
+                    pTPhi[iphibin] += 1;
+                }
+            }
+        }
+        
+        //MC loop for Physical primary
+        
+        if (fIsMC){
+            Int_t label = TMath::Abs(track->GetLabel());
+            
+            Bool_t isPhysicalPrimary = 0;
+            Bool_t isSecondaryFromWeakDecay = 0;
+            Bool_t isSecondaryFromMaterial = 0;
+            AliVParticle* particle = NULL;
+            
+            if(track->InheritsFrom("AliESDtrack")) {
+                particle = static_cast<AliVParticle*>(fMCEvent->GetTrack(label));
+                if(!particle) return;
+                isPhysicalPrimary = fMCStack->IsPhysicalPrimary(label);
+                isSecondaryFromWeakDecay = fMCStack->IsSecondaryFromWeakDecay(label);
+                isSecondaryFromMaterial = fMCStack->IsSecondaryFromMaterial(label);
+            }
+            else {
+                particle = static_cast<AliVParticle*>(fArrayMC->At(label));
+                isPhysicalPrimary = (static_cast<AliAODMCParticle*>(particle))->IsPhysicalPrimary();
+                isSecondaryFromWeakDecay = (static_cast<AliAODMCParticle*>(particle))->IsSecondaryFromWeakDecay();
+                isSecondaryFromMaterial = (static_cast<AliAODMCParticle*>(particle))->IsSecondaryFromMaterial();
+            }
+            Float_t fpTRec = particle->Pt();
+            Float_t fpZRec = particle->Pz();
+            Float_t fPRec = particle ->P();
+            Float_t fEtaRec = particle->Eta();
+            Float_t fPhiRec = particle->Phi();
+            Int_t pdg = TMath::Abs(particle->PdgCode());
+            
+            //Get the eta (Rap) bin---
+            
+            Int_t etabinRecMC = -1;
+            etabinRecMC = GetEtaBin(TMath::Abs(fEtaRec));
+            if(etabinRecMC < 0 || etabinRecMC > 7) continue;
+            
+            Double_t RecMCContainer[3];
+            RecMCContainer[0] = fCentrality;
+            if(fTotP) RecMCContainer[1] = fPRec;
+            else RecMCContainer[1] = fpTRec;
+            RecMCContainer[2] = fPhiRec;
+            
+            //PID--------
+            if (isPid) {
+                if(isPhysicalPrimary){
+                    if (pdg == fMcPid){
                         fCentPtEtaPhiThnRecPrim[icharge]->Fill (RecMCContainer[0], RecMCContainer[1], RecMCContainer[2]);
                     }
                     else {
                         fCentPtEtaPhiThnMisId[icharge]->Fill(RecMCContainer[0], RecMCContainer[1], RecMCContainer[2]);
                     }
                 }
-                    else if (isSecondaryFromWeakDecay) {
-                        fCentPtEtaPhiThnSec[icharge] -> Fill(RecMCContainer[0], RecMCContainer[1], RecMCContainer[2]);
-                    }
-                    else if (isSecondaryFromMaterial){
-                        fCentPtEtaPhiThnMat[icharge] -> Fill(RecMCContainer[0], RecMCContainer[1], RecMCContainer[2]);
-                    }
+                else if (isSecondaryFromWeakDecay) {
+                    fCentPtEtaPhiThnSec[icharge] -> Fill(RecMCContainer[0], RecMCContainer[1], RecMCContainer[2]);
+                }
+                else if (isSecondaryFromMaterial){
+                    fCentPtEtaPhiThnMat[icharge] -> Fill(RecMCContainer[0], RecMCContainer[1], RecMCContainer[2]);
+                }
             }
+            
+        }
+    }// Reconstructed track loop
+    
+    if (fIsMC){
+        fHistCentRec[0] -> Fill(fCentrality, nRec[0]);
+        fHistCentRec[1] -> Fill(fCentrality, nRec[1]);
+    }
+    
+    const Int_t thndim = kPhi;
+    Double_t ptContainer[thndim+1];
+    
+    ptContainer[0] = (Double_t)fCentrality;
+    
+    //for(Int_t ipt = 0; ipt <  dim ; ipt++) {
+    for (Int_t jphi = 0 ; jphi < kPhi ; jphi++){
+        Int_t k = jphi;
+        ptContainer[k+1] = pTPhi[jphi];
+        if(pTPhi[jphi] > 4) fEventCounter->Fill(17);
+    }
+    //}
+    fPtBinNplusNminus -> Fill(ptContainer);
+    
+    fEventCounter -> Fill(7);
+    //---------------------------------------------------------------------
+    
+    if (fIsMC){
+        fEventCounter -> Fill(8);
+        if (fIsAOD){
+            for(Int_t idxMC = 0; idxMC < fArrayMC-> GetEntries(); idxMC++) {
+                AliAODMCParticle *particle = static_cast<AliAODMCParticle*> (fArrayMC->At(idxMC));
+                if(!particle) continue;
+                
+                if (!particle->IsPhysicalPrimary()) continue;
+                if (!AcceptTrackLMC((AliVParticle*)particle)) continue;
+                Int_t icharge = (particle->PdgCode() < 0) ? 0 :1;
+                
+                Float_t fpTGen = particle->Pt();
+                Float_t fpzGen = particle->Pz();
+                Float_t fpGen  = particle->P();
+                Float_t fEtaGen = particle-> Eta();
+                Float_t fPhiGen = particle-> Phi();
+                
+                Int_t pdg = TMath::Abs(particle->PdgCode());
+                if (pdg != fMcPid) continue;
+                
+                Int_t iptbinMC = -1;
+                if (fTotP) iptbinMC = GetPtBin(fpGen); // total p bin
+                else iptbinMC = GetPtBin(fpTGen);
+                if (iptbinMC < 0 || iptbinMC > fNptBins -1) continue;
+                
+                Int_t iphibinMC = -1 ;
+                iphibinMC = GetPhiBin(fPhiGen);
+                if (iphibinMC < 0 || iphibinMC > fNphiBins-1) continue;
+                
+                Int_t etabinMC = -1;
+                etabinMC = GetEtaBin(TMath :: Abs(fEtaGen));
+                if (etabinMC < 0 || etabinMC > 7) continue;
+                
+                Double_t GenContainer[3];
+                GenContainer[0] = fCentrality;
+                if(fTotP) GenContainer[1] = fpGen;
+                else GenContainer[1] = fpTGen;
+                GenContainer[2] = fPhiGen;
+                
+                
+                fCentPtEtaPhiThnGen[icharge]->Fill(GenContainer[0], GenContainer[1], GenContainer[2]);
+                
+                nGen[icharge] += 1;
+                if (icharge == 1){
+                    pTPhiMC[iphibinMC] += 1;
+                }
+                if (icharge == 0){
+                    pTPhiMC[iphibinMC] += 1;
+                }
+            }
+            fEventCounter -> Fill(9);
+        }
+        else {
+            fEventCounter->Fill(10);
+            for(Int_t idxMC = 0; idxMC < fMCStack->GetNprimary(); ++idxMC) {
+                AliVParticle* particle = fMCEvent->GetTrack(idxMC);
+                if(!particle)
+                    continue;
+                if (!fMCStack->IsPhysicalPrimary(idxMC)) continue;
+                
+                if (!AcceptTrackLMC(particle)) continue;
+                Int_t icharge = (particle->PdgCode() < 0) ? 0 : 1;
+                
+                Float_t fpTGen   = particle->Pt();
+                Float_t fpzGen   = particle->Pz();
+                Float_t fpGen    = particle->P();
+                Float_t fEtaGen  = particle->Eta();
+                Float_t fPhiGen  = particle->Phi();
+                
+                Int_t pdg = TMath::Abs(particle->PdgCode());
+                if (pdg != fMcPid) continue;
+                
+                //pt (p) bin-------
+                
+                Int_t iptbinMC = -1;
+                if (fTotP) iptbinMC = GetPtBin(fpGen); // p bin
+                else iptbinMC = GetPtBin(fpTGen); // pt bin
+                if (iptbinMC < 0 || iptbinMC > fNptBins - 1)continue;
+                
+                //phibins
+                Int_t iphibinMC = -1 ;
+                iphibinMC = GetPhiBin(fPhiGen);
+                if (iphibinMC < 0 || iphibinMC > fNphiBins-1) continue;
+                
+                //Eta Bin
+                Int_t etabinMC = -1;
+                etabinMC = GetEtaBin(TMath :: Abs(fEtaGen));
+                if (etabinMC < 0 || etabinMC > 7) continue;
+                
+                Double_t GenContainer[3];
+                GenContainer[0] = fCentrality;
+                if (fTotP) GenContainer[1] = fpGen;
+                else GenContainer[1] = fpTGen;
+                GenContainer[2] = fPhiGen;
+                
+                fCentPtEtaPhiThnGen[icharge] -> Fill(GenContainer[0], GenContainer[1], GenContainer[2]);
+                
+                nGen[icharge] += 1;
+                
+                //-------------------------
+                
+                if(icharge == 1){
+                    pTPhiMC[iphibinMC] += 1;
+                }
+                if (icharge == 0) {
+                    pTPhiMC[iphibinMC] += 1;
+                }
+            }
+            
+            fEventCounter->Fill(11) ;
+        } // else is for ESD
         
+        fHistCentGen[0] -> Fill(fCentrality, nGen[0]);
+        fHistCentGen[1] -> Fill(fCentrality, nGen[1]);
+        
+        Double_t ptContainerMC[thndim+1];
+        ptContainerMC[0] = (Double_t) fCentrality;
+        
+        //for (Int_t ipt = 0; ipt < dim ; ipt++){
+        for (Int_t jphi = 0 ; jphi < kPhi ; jphi++){
+            Int_t k = jphi;
+            ptContainerMC[k+1] = pTPhiMC[jphi];
+            if (pTPhiMC[jphi] > 4) fEventCounter-> Fill(18);
         }
-        }// Reconstructed track loop
-            
-            if (fIsMC){
-                fHistCentRec[0] -> Fill(fCentrality, nRec[0]);
-                fHistCentRec[1] -> Fill(fCentrality, nRec[1]);
-            }
-            
-            const Int_t thndim = dim * kPhi;
-            Double_t ptContainer[thndim+1];
-            
-            ptContainer[0] = (Double_t)fCentrality;
-            
-            for(Int_t ipt = 0; ipt <  dim ; ipt++) {
-                for (Int_t jphi = 0 ; jphi < kPhi ; jphi++){
-                    Int_t k = (ipt * kPhi) + jphi;
-                    ptContainer[k+1] = pTPhi[ipt][jphi];
-                    if(pTPhi[ipt][jphi] > 4) fEventCounter->Fill(17);
-                }
-            }
-            fPtBinNplusNminus -> Fill(ptContainer);
-            
-            fEventCounter -> Fill(7);
-            //---------------------------------------------------------------------
-            
-            if (fIsMC){
-                fEventCounter -> Fill(8);
-                if (fIsAOD){
-                    for(Int_t idxMC = 0; idxMC < fArrayMC-> GetEntries(); idxMC++) {
-                        AliAODMCParticle *particle = static_cast<AliAODMCParticle*> (fArrayMC->At(idxMC));
-                        if(!particle) continue;
-                        
-                        if (!particle->IsPhysicalPrimary()) continue;
-                        if (!AcceptTrackLMC((AliVParticle*)particle)) continue;
-                        Int_t icharge = (particle->PdgCode() < 0) ? 0 :1;
-                        
-                        Float_t fpTGen = particle->Pt();
-                        Float_t fpzGen = particle->Pz();
-                        Float_t fpGen  = particle->P();
-                        Float_t fEtaGen = particle-> Eta();
-                        Float_t fPhiGen = particle-> Phi();
-                        
-                        Int_t pdg = TMath::Abs(particle->PdgCode());
-                        if (pdg != fMcPid) continue;
-                        
-                        Int_t iptbinMC = -1;
-                        if (fTotP) iptbinMC = GetPtBin(fpGen); // total p bin
-                        else iptbinMC = GetPtBin(fpTGen);
-                        if (iptbinMC < 0 || iptbinMC > fNptBins -1) continue;
-                        
-                        Int_t iphibinMC = -1 ;
-                        iphibinMC = GetPhiBin(fPhiGen);
-                        if (iphibinMC < 0 || iphibinMC > fNphiBins-1) continue;
-                        
-                        Int_t etabinMC = -1;
-                        etabinMC = GetEtaBin(TMath :: Abs(fEtaGen));
-                        if (etabinMC < 0 || etabinMC > 7) continue;
-                        
-                        Double_t GenContainer[3];
-                        GenContainer[0] = fCentrality;
-                        if(fTotP) GenContainer[1] = fpGen;
-                        else GenContainer[1] = fpTGen;
-                        GenContainer[2] = fPhiGen;
-                    
-                        
-                        fCentPtEtaPhiThnGen[icharge]->Fill(GenContainer[0], GenContainer[1], GenContainer[2]);
-                        
-                        nGen[icharge] += 1;
-                        if (icharge == 1){
-                            pTPhiMC[iptbinMC][iphibinMC] += 1;
-                        }
-                        if (icharge == 0){
-                            pTPhiMC[iphibinMC][iphibinMC] += 1;
-                        }
-                    }
-                    fEventCounter -> Fill(9);
-                }
-                else {
-                    fEventCounter->Fill(10);
-                    for(Int_t idxMC = 0; idxMC < fMCStack->GetNprimary(); ++idxMC) {
-                        AliVParticle* particle = fMCEvent->GetTrack(idxMC);
-                        if(!particle)
-                            continue;
-                        if (!fMCStack->IsPhysicalPrimary(idxMC)) continue;
-                        
-                        if (!AcceptTrackLMC(particle)) continue;
-                        Int_t icharge = (particle->PdgCode() < 0) ? 0 : 1;
-                        
-                        Float_t fpTGen   = particle->Pt();
-                        Float_t fpzGen   = particle->Pz();
-                        Float_t fpGen    = particle->P();
-                        Float_t fEtaGen  = particle->Eta();
-                        Float_t fPhiGen  = particle->Phi();
-                        
-                        Int_t pdg = TMath::Abs(particle->PdgCode());
-                        if (pdg != fMcPid) continue;
-                        
-                        //pt (p) bin-------
-                        
-                        Int_t iptbinMC = -1;
-                        if (fTotP) iptbinMC = GetPtBin(fpGen); // p bin
-                        else iptbinMC = GetPtBin(fpTGen); // pt bin
-                        if (iptbinMC < 0 || iptbinMC > fNptBins - 1)continue;
-                        
-                        //phibins
-                        Int_t iphibinMC = -1 ;
-                        iphibinMC = GetPhiBin(fPhiGen);
-                        if (iphibinMC < 0 || iphibinMC > fNphiBins-1) continue;
-                        
-                        //Eta Bin
-                        Int_t etabinMC = -1;
-                        etabinMC = GetEtaBin(TMath :: Abs(fEtaGen));
-                        if (etabinMC < 0 || etabinMC > 7) continue;
-                        
-                        Double_t GenContainer[3];
-                        GenContainer[0] = fCentrality;
-                        if (fTotP) GenContainer[1] = fpGen;
-                        else GenContainer[1] = fpTGen;
-                        GenContainer[2] = fPhiGen;
-                        
-                        fCentPtEtaPhiThnGen[icharge] -> Fill(GenContainer[0], GenContainer[1], GenContainer[2]);
-                        
-                        nGen[icharge] += 1;
-                        
-                        //-------------------------
-                        
-                        if(icharge == 1){
-                            pTPhiMC [iptbinMC][iphibinMC] += 1;
-                        }
-                        if (icharge == 0) {
-                            pTPhiMC [iptbinMC+fNptBins][iphibinMC] += 1;
-                        }
-                    }
-                    
-                    fEventCounter->Fill(11) ;
-                } // else is for ESD
-                
-                fHistCentGen[0] -> Fill(fCentrality, nGen[0]);
-                fHistCentGen[1] -> Fill(fCentrality, nGen[1]);
-                
-                Double_t ptContainerMC[thndim+1];
-                ptContainerMC[0] = (Double_t) fCentrality;
-                
-                for (Int_t ipt = 0; ipt < dim ; ipt++){
-                    for (Int_t jphi = 0 ; jphi < kPhi ; jphi++){
-                        Int_t k = (ipt*kPhi) + jphi;
-                        ptContainerMC[k+1] = pTPhiMC[ipt][jphi];
-                        if (pTPhiMC[ipt][jphi] > 4) fEventCounter-> Fill(18);
-                    }
-                }
-                fPtBinNplusNminusTruth->Fill(ptContainerMC);
-            }
-            
-            fEventCounter-> Fill(12);
-            PostData(1,fThnList);
-        }
+        //}
+        fPtBinNplusNminusTruth->Fill(ptContainerMC);
+    }
+    
+    fEventCounter-> Fill(12);
+    PostData(1,fThnList);
+}
 
 //--------------------------------------
 
@@ -935,8 +935,8 @@ Int_t AliEbyEPhiDistNew::GetPhiBin(Double_t Phi){
 
 void AliEbyEPhiDistNew::Terminate(Option_t *) {
     cout << "-------------------------------------\n"
-            "         Terminating the task        \n"
-            "-------------------------------------\n";
+    "         Terminating the task        \n"
+    "-------------------------------------\n";
 }
 
 
@@ -1035,19 +1035,19 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
         
         pid[1] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kTPC, track, fParticleSpecies);
         
-        if (fParticleSpecies == 2){ //kaon
+        if (fParticleSpecies == 2){ //pion
             if (track->Pt() > 0.525 && track->Pt() < 1.5) {
                 if (TMath::Abs(pid[1]) < 2.) // cut on nsigma
                     isAcceptedTPC = kTRUE;
             }
         }// Pion
-
+        
         if (fParticleSpecies == 3){ //kaon
             if (track->Pt() > 0.525 && track->Pt() < 1.5) {
                 if (TMath::Abs(pid[1]) < 2.) // cut on nsigma
                     isAcceptedTPC = kTRUE;
             }
-    }// kaon
+        }// kaon
         else {
             if (TMath::Abs(pid[1]) < fNSigmaMaxTPC) isAcceptedTPC = kTRUE;
         }
@@ -1113,10 +1113,11 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
     }
     
     //----------------COmbined PID-----------------------------
-    if (fParticleSpecies == 2){//for Pion: TPC+TOF---
+    if (fParticleSpecies == 2){//for Pion: TPC-
         
         if(fPidStrategy == 0){
-            isAccepted = isAcceptedTPC && isAcceptedTOF;
+            //isAccepted = isAcceptedTPC && isAcceptedTOF;
+            isAccepted = isAcceptedTPC;
         }
         else if( fPidStrategy == 1){
             Double_t nsigCombined = TMath::Sqrt( pid[1]*pid[1] +  pid[2]*pid[2] );
@@ -1173,102 +1174,4 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
     
 } // end
 
-//----------------------------------------------------------------------------------------------------------------------------------
-    
-
-    
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//----------------------------------------------------------------------------------------------------------

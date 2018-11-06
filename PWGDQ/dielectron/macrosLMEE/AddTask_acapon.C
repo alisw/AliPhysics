@@ -3,19 +3,19 @@
 AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root",
                                 TString names          = "kCutSet1",
                                 Bool_t SDDstatus       = kFALSE,
-																Bool_t hasMC           = kFALSE,
-																Int_t wagonNum         = 0,
+                                Bool_t hasMC           = kFALSE,
+                                Int_t wagonNum         = 0,
                                 Bool_t doPairing       = kTRUE,
-																Bool_t applyPairCuts   = kTRUE,
-																Bool_t doMixing        = kTRUE, // Do event mixing for R fac.
-																Bool_t trackVarPlots   = kTRUE, // Simple track QA plots
-																Int_t whichDetPlots    = 0,     // 0=None,1=ITS,2=TPC,4=TOF,7=All3
-																Bool_t v0plots         = kTRUE, // Plots for PID cal.
+                                Bool_t applyPairCuts   = kTRUE,
+                                Bool_t doMixing        = kTRUE, // Do event mixing for R fac.
+                                Bool_t trackVarPlots   = kTRUE, // Simple track QA plots
+                                Int_t whichDetPlots    = 0,     // 0=None,1=ITS,2=TPC,4=TOF,7=All3
+                                Bool_t v0plots         = kTRUE, // Plots for PID cal.
                                 Bool_t useITScorr      = kTRUE,
-																Bool_t useTPCcorr      = kTRUE,
-																Bool_t useTOFcorr      = kTRUE,
-																Bool_t plots3D         = kFALSE,
-																Bool_t getFromAlien    = kFALSE)
+                                Bool_t useTPCcorr      = kTRUE,
+                                Bool_t useTOFcorr      = kTRUE,
+                                Bool_t plots3D         = kFALSE,
+                                Bool_t getFromAlien    = kFALSE)
 {
   
 		TObjArray *arrNames = names.Tokenize(";");

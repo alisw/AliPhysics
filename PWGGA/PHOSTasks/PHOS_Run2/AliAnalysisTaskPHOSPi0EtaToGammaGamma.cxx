@@ -149,7 +149,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fGlobalEScale(1.0),
   fEmin(0.2),
   fIsOAStudy(kFALSE),
-  fNMixTrack(2),
+  fNMixTrack(5),
   fMatchingR(2.),
   fAnaOmega3Pi(kFALSE),
   fMinPtPi0(0),
@@ -2880,6 +2880,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
     if(!fIsMC && fIsPHOSTriggerAnalysis && !ph->IsTrig()) continue;//it is meaningless to look at non-triggered cluster in PHOS trigger analysis.
     if(!CheckMinimumEnergy(ph)) continue;
 
+    if(!fIsMC && !ph->IsTOFOK()) continue;
+
     pT = ph->Pt();
     cluE = ph->Energy();
 
@@ -3033,9 +3035,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
           else                           FillHistogramTH1(fOutputContainer,"hPurityOthers_CPV",pT,weight);
         }
 
-
-
-
       }//end of CPV
 
       if(fPHOSClusterCuts->AcceptDisp(ph)){
@@ -3066,7 +3065,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
           }
           else                           FillHistogramTH1(fOutputContainer,"hPurityOthers_Disp",pT,weight);
         }
-
 
       }//end of Disp
 
@@ -4694,6 +4692,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillTrackMatching()
     AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
     //if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
     if(!CheckMinimumEnergy(ph)) continue;
+    if(!fIsMC && !ph->IsTOFOK()) continue;
 
     if(fIsPHOSTriggerAnalysis){
       if( fIsMC && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;//only for MC
@@ -4707,16 +4706,19 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillTrackMatching()
     AliVCluster *clu = (AliVCluster*)ph->GetCluster();
     AliVTrack *track = 0x0;
     r = 999;
+    isGlobal = kFALSE;
 
     if(fESDEvent){
       Int_t trackindex = clu->GetTrackMatchedIndex();
       if(trackindex > 0){
         track = (AliVTrack*)(fEvent->GetTrack(trackindex));
+        isGlobal = fESDtrackCutsGlobal->AcceptTrack(dynamic_cast<AliESDtrack*>(track));
       }//end of track matching
     }//end of ESD
     else if(fAODEvent){
       if(clu->GetNTracksMatched() > 0){
         track = dynamic_cast<AliVTrack*>(clu->GetTrackMatched(0));
+        isGlobal = dynamic_cast<AliAODTrack*>(track)->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA);//standard cuts with very loose DCA cut
       }//end of track matching
     }//end of AOD
 
@@ -4811,6 +4813,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixTrackMatching()
         AliCaloPhoton *ph = (AliCaloPhoton*)mixPHOS->At(iph);
         //if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
         if(!CheckMinimumEnergy(ph)) continue;
+        if(!fIsMC && !ph->IsTOFOK()) continue;
 
         if(fIsPHOSTriggerAnalysis){
           if( fIsMC && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;//keep same TRU acceptance only in kRFE.
@@ -4846,8 +4849,15 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixTrackMatching()
           pidKaon = kFALSE;
           pidProton = kFALSE;
           pidElectron = kFALSE;
+          isGlobal = kFALSE;
 
           AliVTrack *track = (AliVTrack*)fEvent->GetTrack(itr);
+          if(fESDEvent){
+            isGlobal = fESDtrackCutsGlobal->AcceptTrack(dynamic_cast<AliESDtrack*>(track));
+          }//end of ESD
+          else if(fAODEvent){
+            isGlobal = dynamic_cast<AliAODTrack*>(track)->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA);//standard cuts with very loose DCA cut
+          }//end of AOD
 
           nsigmaElectron = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron);//(-2,3) is for real electron analysis.
           nsigmaPion     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion));
@@ -4881,7 +4891,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixTrackMatching()
               FillHistogramTH2(fOutputContainer,"hMixRvsClusterPt_AntiProton",pT,cpv);
             }
           }
-
         }//end of track matching
 
       }//end of cluster loop

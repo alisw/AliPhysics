@@ -201,7 +201,7 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     
     static const Short_t    fiNumIndexQA = 2; // QA indexes: 0: before cuts // 1: after cuts
    
-    const static Short_t    fNumSamples = 6; // overall number of samples (from random sampling) used
+    const static Short_t    fNumSamples = 10; // overall number of samples (from random sampling) used
     const static Int_t      fNumHarmonics = 5; // number of harmonics
     const static Int_t      fNumMixedHarmonics = 4; // number of mixed harmonics: 4{psi2}, 6{psi3} and 5{psi2,3}
     static Int_t            fHarmonics[fNumHarmonics]; // values of used harmonics

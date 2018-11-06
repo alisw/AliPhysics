@@ -66,7 +66,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   
 //  maybe redundant since already set in eventcuts above
   std::cout << "CentMin = " << centMin << "  CentMax = " << centMax << std::endl;
-  task->SetCentrality(centMin, centMax);
+//  task->SetCentrality(centMin, centMax);
   
   // #########################################################
   // #########################################################
@@ -80,7 +80,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   // #########################################################
   // #########################################################
   // Set minimum and maximum values of generated tracks. Only used to save computing power.
-  task->SetKinematicCuts(minGenPt, maxGenPt, minGenEta, maxGenEta);
+  task->SetKinematicCuts(minPtCut, maxPtCut, minEtaCut, maxEtaCut);
 
   // #########################################################
   // #########################################################
@@ -151,24 +151,19 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   // #########################################################
   // Add MCSignals. Can be set to see differences of:
   // e.g. secondaries and primaries. or primaries from charm and resonances
-  AddSingleLegMCSignal(task);
+//  AddSingleLegMCSignal(task);
   AddPairMCSignal(task);
   std::vector<Bool_t> DielectronsPairNotFromSameMother = AddSingleLegMCSignal(task);
   task->AddMCSignalsWhereDielectronPairNotFromSameMother(DielectronsPairNotFromSameMother);
 
   // #########################################################
   // Adding multiple cutsettings
-  for(Int_t MVACut = 0; MVACut <= 10; ++MVACut){
+  for(Int_t MVACut = 0; MVACut <= 9; ++MVACut){
     std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVA Cut: "<<MVACut*0.2<<" added"<< std::endl;
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight);
     task->AddTrackCuts(filter);
     }
-  
- 
-// Adding multiple cutsettings
-//  std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" being added"<< std::endl;
-//  AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, useAODFilterCuts);
-//  task->AddTrackCuts(filter);
+
     
   if(PIDCorr) setPIDCorrections(task);
 

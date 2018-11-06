@@ -51,7 +51,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	char *parameter[21];
 	if(strlen(params)!=0)
 	  {
-	    parameter[0] = strtok(params, ","); // Splits spaces between words in params
+	    parameter[0] = strtok(par, ","); // Splits spaces between words in params
 	    cout<<"Parameter [0] (filterbit):"<<parameter[0]<<endl; // Writes first parameter
 	    parameter[1] = strtok(NULL, ",");
 	    cout<<"Parameter [1] (ktdep):"<<parameter[1]<<" "<<endl;

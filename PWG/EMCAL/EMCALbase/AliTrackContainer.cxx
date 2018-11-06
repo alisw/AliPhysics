@@ -150,7 +150,7 @@ void AliTrackContainer::SetArray(const AliVEvent *event)
           fEmcalTrackSelection->SetSelectionModeAll();
         }
 
-        fEmcalTrackSelection->AddTrackCuts(fListOfCuts);
+        if(fListOfCuts) fEmcalTrackSelection->AddTrackCuts(fListOfCuts);
       }
     }
     else {

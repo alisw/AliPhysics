@@ -52,6 +52,8 @@ void AliPP13QualityPhotonSelection::InitSelectionHistograms()
 	// Time maps
 	fClusterTime    = new AliPP13DetectorHistogram(new TH1F("hClusterTime", "Cluster Time scaled by E, ;t, s", 4800, -0.25 * 1e-6, 0.25 * 1e-6), fListOfHistos, AliPP13DetectorHistogram::kModules);
 	fClusterEvsT    = new AliPP13DetectorHistogram(new TH2F("hClusterEvsT", "Cluster energy vs time, ; cluster energy, GeV; time, s", 100, 0., 12., 1200, -0.25 * 1e-6, 0.25 * 1e-6), fListOfHistos, AliPP13DetectorHistogram::kModules);
+	fClusterTimeWide = new AliPP13DetectorHistogram(new TH1F("hClusterTimeWide", "Cluster Time scaled by E, ;t, s", 4800, -0.25 * 1e-3, 0.25 * 1e-3), fListOfHistos, AliPP13DetectorHistogram::kModules);
+	fClusterEvsTWide = new AliPP13DetectorHistogram(new TH2F("hClusterEvsTWide", "Cluster energy vs time, ; cluster energy, GeV; time, s", 100, 0., 12., 1200, -0.25 * 1e-2, 0.25 * 1e-2), fListOfHistos, AliPP13DetectorHistogram::kModules);
 	fClusterTimeMap = new AliPP13DetectorHistogram(new TH2F("hClusterTimeMap", "Cluster time map, ; X; Z", 64, 0.5, 64.5, 56, 0.5, 56.5), fListOfHistos, AliPP13DetectorHistogram::kModules);
 	fAsymmetry      = new TH1F("hAsymmetry", "Asymmetry between clusters; asymmetry A = (E_{1} - E_{2})/(E_{1} + E_{2})", 500, -0.5, 1.5);
 
@@ -118,7 +120,9 @@ void AliPP13QualityPhotonSelection::SelectPhotonCandidates(const TObjArray * clu
 		if (!eflags.isMixing)
 		{
 			fClusterTime->FillAll(sm, sm, clus->E());
+			fClusterTimeWide->FillAll(sm, sm, clus->E());
 			fClusterEvsT->FillAll(sm, sm, tof, clus->E());
+			fClusterEvsTWide->FillAll(sm, sm, tof, clus->E());
 			fClusterTimeMap->FillAll(sm, sm, x, z, tof);
 		}
 		if (TMath::Abs(clus->GetTOF()) > fCuts.fTimingCut) continue;

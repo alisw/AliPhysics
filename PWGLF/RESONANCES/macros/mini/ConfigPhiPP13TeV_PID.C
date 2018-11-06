@@ -179,14 +179,20 @@ Bool_t ConfigPhiPP13TeV_PID
     if (polarizationOpt.Contains("T")) outm->AddAxis(cttmID,21,-1.,1.);
 
     AliRsnMiniOutput* outmf=task->CreateOutput(Form("phi_MotherFine%s", suffix),"HIST","MOTHER");
-    outmf->SetDaughter(0,AliRsnDaughter::kKaon);
-    outmf->SetDaughter(1,AliRsnDaughter::kKaon);
-    outmf->SetMotherPDG(333);
-    outmf->SetMotherMass(1.019461);
+    //outmf->SetDaughter(0,AliRsnDaughter::kKaon);
+    //outmf->SetDaughter(1,AliRsnDaughter::kKaon);
+    //outmf->SetMotherPDG(333);
+    //outmf->SetMotherMass(1.019461);
+    //outmf->SetPairCuts(cutsPair);
+    //outmf->AddAxis(imID,215,0.985,1.2);
+    outmf->SetDaughter(0,AliRsnDaughter::kXi);
+    outmf->SetDaughter(1,AliRsnDaughter::kPion);
+    outmf->SetMotherPDG(3324);
+    outmf->SetMotherMass(1.5318);
     outmf->SetPairCuts(cutsPair);
-    outmf->AddAxis(imID,215,0.985,1.2);
+    outmf->AddAxis(imID,200,1.3,1.7);
     outmf->AddAxis(ptID,300,0.,3.);//fine binning for efficiency weighting
-    outmf->AddAxis(centID,nmult,multbins);
+    //outmf->AddAxis(centID,nmult,multbins);
     //if(!isPP || MultBins) outmf->AddAxis(centID,100,0.,100.);
     //else outmf->AddAxis(centID,161,-0.5,160.5);
     if (polarizationOpt.Contains("J")) outmf->AddAxis(ctjmID,21,-1.,1.);

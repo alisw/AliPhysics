@@ -84,7 +84,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	char *parameter[21];
 	if(strlen(params)!=0)
 	  {
-	    parameter[0] = strtok(params, ","); // Splits spaces between words in params
+	    parameter[0] = strtok(par, ","); // Splits spaces between words in params
 	    cout<<"Parameter [0] (filterbit):"<<parameter[0]<<endl; // Writes first parameter
 	    parameter[1] = strtok(NULL, ",");
 	    cout<<"Parameter [1] (ktdep):"<<parameter[1]<<" "<<endl;
@@ -256,10 +256,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	//	AliFemtoCorrFctnDYDPhiSimpleWithCorrections	*cdydpyphinocorr[numOfMultBins*numOfChTypes];
 	AliFemtoCorrFctnDEtaDPhiCorrections *cdedpetaphiPt[numOfMultBins*numOfChTypes*numOfkTbins];
 
-	AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta08[numOfMultBins**numOfkTbins];
-	AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta12[numOfMultBins**numOfkTbins];
-	AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta16[numOfMultBins**numOfkTbins];
-	AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta20[numOfMultBins**numOfkTbins];
+	AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta08[500];
+	AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta12[500];
+	AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta16[500];
+	AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta20[500];
 
         AliFemtoCorrFctnNonIdDR         *cnonidtpc[numOfMultBins*numOfChTypes];
 
