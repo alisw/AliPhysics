@@ -800,8 +800,8 @@ void AliResonanceFits::ComputeEntryScale(TH1* sig, TH1* bkg) {
    if(fgOptionMEMatching == kMatchSEOS) {
       entriesSig -= entriesSigExcl;
       entriesBkg -= entriesBkgExcl;
-      entriesSigErr = TMath::Sqrt(entriesSigErr*entriesSigErr + entriesSigExclErr);
-      entriesBkgErr = TMath::Sqrt(entriesBkgErr*entriesBkgErr + entriesBkgExclErr);
+      entriesSigErr = TMath::Sqrt(entriesSigErr*entriesSigErr - entriesSigExclErr);
+      entriesBkgErr = TMath::Sqrt(entriesBkgErr*entriesBkgErr - entriesBkgExclErr);
    }
    
    fFitValues[kBkgScale] = (entriesSig>1.0e-6 && entriesBkg>1.0e-6 ? entriesSig/entriesBkg : 0.0);
