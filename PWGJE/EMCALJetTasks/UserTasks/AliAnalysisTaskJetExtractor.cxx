@@ -71,6 +71,7 @@ AliEmcalJetTree::AliEmcalJetTree() : TNamed("CustomTree", "CustomTree"), fJetTre
   fBuffer_Const_Eta        = new Float_t[kMaxNumConstituents];
   fBuffer_Const_Phi        = new Float_t[kMaxNumConstituents];
   fBuffer_Const_Charge     = new Float_t[kMaxNumConstituents];
+  fBuffer_Const_Label      = new Int_t  [kMaxNumConstituents];
   fBuffer_Const_ProdVtx_X  = new Float_t[kMaxNumConstituents];
   fBuffer_Const_ProdVtx_Y  = new Float_t[kMaxNumConstituents];
   fBuffer_Const_ProdVtx_Z  = new Float_t[kMaxNumConstituents];
@@ -85,6 +86,7 @@ AliEmcalJetTree::AliEmcalJetTree(const char* name) : TNamed(name, name), fJetTre
   fBuffer_Const_Eta        = new Float_t[kMaxNumConstituents];
   fBuffer_Const_Phi        = new Float_t[kMaxNumConstituents];
   fBuffer_Const_Charge     = new Float_t[kMaxNumConstituents];
+  fBuffer_Const_Label      = new Int_t  [kMaxNumConstituents];
   fBuffer_Const_ProdVtx_X  = new Float_t[kMaxNumConstituents];
   fBuffer_Const_ProdVtx_Y  = new Float_t[kMaxNumConstituents];
   fBuffer_Const_ProdVtx_Z  = new Float_t[kMaxNumConstituents];
@@ -165,6 +167,7 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Floa
         fBuffer_Const_Eta[fBuffer_NumConstituents] = particle->Eta();
         fBuffer_Const_Phi[fBuffer_NumConstituents] = particle->Phi();
         fBuffer_Const_Charge[fBuffer_NumConstituents] = particle->Charge();
+        fBuffer_Const_Label[fBuffer_NumConstituents] = particle->GetLabel();
       }
       if(fSaveConstituentsIP)
       {
@@ -282,6 +285,8 @@ void AliEmcalJetTree::InitializeTree()
     fJetTree->Branch("Jet_Const_Phi",fBuffer_Const_Phi,"Jet_Const_Phi[Jet_NumConstituents]/F");
     fJetTree->Branch("Jet_Const_Eta",fBuffer_Const_Eta,"Jet_Const_Eta[Jet_NumConstituents]/F");
     fJetTree->Branch("Jet_Const_Charge",fBuffer_Const_Charge,"Jet_Const_Charge[Jet_NumConstituents]/F");
+    if(fSaveMCInformation)
+      fJetTree->Branch("Jet_Const_Label",fBuffer_Const_Label,"Jet_Const_Label[Jet_NumConstituents]/I");
   }
 
   if(fSaveConstituentsIP)
