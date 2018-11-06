@@ -153,7 +153,6 @@ Bool_t AliAnalysisTaskSVtaskMCFilter::Run()
 
  
 
-   GetTrackContainer(0)->ResetCurrentID();
    AliAODTrack* track = 0;
    TString nameGen;
    Int_t lab, mother;
