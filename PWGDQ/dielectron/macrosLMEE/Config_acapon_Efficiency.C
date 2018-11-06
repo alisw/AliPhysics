@@ -108,7 +108,7 @@ void ApplyPIDpostCalibration(AliAnalysisTaskElectronEfficiencyV2* task, Int_t wh
   std::cout << "starting ApplyPIDpostCalibration()\n";
   if(whichDet == 0){// ITS
     std::cout << "Loading ITS correction" << std::endl;
-    std::string file_name = "outputITS_17f2a.root";
+    std::string file_name = "outputITS_MC.root";
     TFile* _file = TFile::Open(file_name.c_str());
 
     if(!_file){
@@ -128,7 +128,7 @@ void ApplyPIDpostCalibration(AliAnalysisTaskElectronEfficiencyV2* task, Int_t wh
   }
   if(whichDet == 1){// TOF
     std::cout << "Loading TOF correction" << std::endl;
-    std::string file_name = "outputTOF_17f2a.root";
+    std::string file_name = "outputTOF_MC.root";
     TFile* _file = TFile::Open(file_name.c_str());
 
     if(!_file){
@@ -178,24 +178,6 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition)
 
   return anaFilter;
 }
-
-
-// #########################################################
-// #########################################################
-/* AliAnalysisCuts* SetupEventCuts(Bool_t isAOD) */
-/* { */
-/*   std::cout << "Setup Event Cuts" << std::endl; */
-/*   // event cuts are identical for all analysis 'cutInstance's that run together! */
-/*   AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0"); */
-/*   eventCuts->SetRequireVertex(); */
-/*   eventCuts->SetMinVtxContributors(1); */
-/*   eventCuts->SetVertexZ(-10.,10.); */
-/*   if(isAOD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxSPD); // AOD */
-/*   eventCuts->Print(); */
-/*   return eventCuts; */
-/* } */
-
-
 
 // #########################################################
 // #########################################################
