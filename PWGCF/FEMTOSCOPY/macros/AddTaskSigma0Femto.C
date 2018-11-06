@@ -443,7 +443,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
                    "Info; fix it wont work! \n";
     }
   }
-  config->SetdPhidEtaPlots(etaPhiPlotsAtTPCRadii);
+  config->SetdPhidEtaPlots(false);
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
