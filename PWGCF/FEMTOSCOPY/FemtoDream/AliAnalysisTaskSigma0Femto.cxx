@@ -203,17 +203,18 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
   static std::vector<AliFemtoDreamBasePart> antiSigma0lambda;
   static std::vector<AliFemtoDreamBasePart> antiSigma0photon;
 
-  CastToVector(fSigmaCuts->GetSigma(), sigma0particles);
-  CastToVector(fAntiSigmaCuts->GetSigma(), antiSigma0particles);
-  CastToVector(fSigmaCuts->GetSidebandUp(), sigma0sidebandUp);
-  CastToVector(fAntiSigmaCuts->GetSidebandUp(), antiSigma0sidebandUp);
-  CastToVector(fSigmaCuts->GetSidebandDown(), sigma0sidebandLow);
-  CastToVector(fAntiSigmaCuts->GetSidebandDown(), antiSigma0sidebandLow);
+  CastToVector(fSigmaCuts->GetSigma(), sigma0particles, fMCEvent);
+  CastToVector(fAntiSigmaCuts->GetSigma(), antiSigma0particles, fMCEvent);
+  CastToVector(fSigmaCuts->GetSidebandUp(), sigma0sidebandUp, fMCEvent);
+  CastToVector(fAntiSigmaCuts->GetSidebandUp(), antiSigma0sidebandUp, fMCEvent);
+  CastToVector(fSigmaCuts->GetSidebandDown(), sigma0sidebandLow, fMCEvent);
+  CastToVector(fAntiSigmaCuts->GetSidebandDown(), antiSigma0sidebandLow,
+               fMCEvent);
 
-  CastToVector(lambdaSigma, sigma0lambda);
-  CastToVector(photonSigma, sigma0photon);
-  CastToVector(lambdaAntiSigma, antiSigma0lambda);
-  CastToVector(photonAntiSigma, antiSigma0photon);
+  CastToVector(lambdaSigma, sigma0lambda, fMCEvent);
+  CastToVector(photonSigma, sigma0photon, fMCEvent);
+  CastToVector(lambdaAntiSigma, antiSigma0lambda, fMCEvent);
+  CastToVector(photonAntiSigma, antiSigma0photon, fMCEvent);
 
   fPairCleaner->CleanTrackAndDecay(&particles, &sigma0particles, 0);
   fPairCleaner->CleanTrackAndDecay(&antiParticles, &antiSigma0particles, 1);
@@ -305,7 +306,8 @@ bool AliAnalysisTaskSigma0Femto::AcceptEvent(AliVEvent *event) {
 
   if (!fIsLightweight) fHistCentralityProfileCoarseAfter->Fill(lPercentile);
 
-  fHistMultiplicity->Fill(AliSigma0PhotonMotherCuts::GetMultiplicityBin(lPercentile));
+  fHistMultiplicity->Fill(
+      AliSigma0PhotonMotherCuts::GetMultiplicityBin(lPercentile));
 
   fHistCutQA->Fill(4);
   return true;
@@ -353,20 +355,20 @@ void AliAnalysisTaskSigma0Femto::CastToVector(
 //____________________________________________________________________________________________________
 void AliAnalysisTaskSigma0Femto::CastToVector(
     std::vector<AliSigma0ParticlePhotonMother> &sigmaContainer,
-    std::vector<AliFemtoDreamBasePart> &particles) {
+    std::vector<AliFemtoDreamBasePart> &particles, const AliMCEvent *mcEvent) {
   particles.clear();
   for (const auto &sigma : sigmaContainer) {
-    particles.push_back(sigma);
+    particles.push_back({sigma, mcEvent});
   }
 }
 
 //____________________________________________________________________________________________________
 void AliAnalysisTaskSigma0Femto::CastToVector(
     std::vector<AliSigma0ParticleV0> &container,
-    std::vector<AliFemtoDreamBasePart> &particles) {
+    std::vector<AliFemtoDreamBasePart> &particles, const AliMCEvent *mcEvent) {
   particles.clear();
   for (const auto &part : container) {
-    particles.push_back(part);
+    particles.push_back({part, mcEvent});
   }
 }
 

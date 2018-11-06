@@ -6,6 +6,7 @@
  */
 
 #include "AliFemtoDreamBasePart.h"
+#include "AliMCParticle.h"
 #include "AliSigma0ParticleV0.h"
 
 #include <iostream>
@@ -32,7 +33,7 @@ ClassImp(AliFemtoDreamBasePart) AliFemtoDreamBasePart::AliFemtoDreamBasePart()
       fMCPDGCode(0),
       fPDGMotherWeak(0),
       fMotherID(0),
-	  fMotherPDG(-1),
+      fMotherPDG(-1),
       fEvtNumber(0),
       fIsMC(false),
       fUse(true),
@@ -62,7 +63,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliFemtoDreamBasePart &part)
       fMCPDGCode(part.fMCPDGCode),
       fPDGMotherWeak(part.fPDGMotherWeak),
       fMotherID(part.fMotherID),
-	  fMotherPDG(part.fMotherPDG),
+      fMotherPDG(part.fMotherPDG),
       fEvtNumber(part.fEvtNumber),
       fIsMC(part.fIsMC),
       fUse(part.fUse),
@@ -104,7 +105,7 @@ AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(
 }
 
 AliFemtoDreamBasePart::AliFemtoDreamBasePart(
-    const AliSigma0ParticlePhotonMother &mother)
+    const AliSigma0ParticlePhotonMother &mother, const AliMCEvent *mcEvent)
     : fIsReset(false),
       fGTI(0),
       fTrackBufferSize(0),
@@ -124,12 +125,12 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
       fCPA(0),
       fOrigin(kUnknown),
       fPDGCode(mother.GetPDGCode()),
-	  fMotherPDG(0),
+      fMotherPDG(0),
       fMCPDGCode(0),
       fPDGMotherWeak(0),
-      fMotherID(mother.GetMCLabelMother()),
+      fMotherID(),
       fEvtNumber(0),
-      fIsMC((mother.GetMCLabelMother() > 0)),
+      fIsMC((mother.GetMCLabel() > 0)),
       fUse(true),
       fIsSet(true),
       fEvtMultiplicity(-1) {
@@ -162,10 +163,40 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
   fIDTracks.push_back(mother.GetV0().GetTrackLabelNeg());
   fIDTracks.push_back(mother.GetPhoton().GetTrackLabelPos());
   fIDTracks.push_back(mother.GetPhoton().GetTrackLabelNeg());
+
+  if (mcEvent) {
+    auto *partSigma0 =
+        static_cast<AliMCParticle *>(mcEvent->GetTrack(mother.GetMCLabel()));
+    if (!partSigma0) {
+      // if the particle does not exist it is most probably combinatorial
+      // background
+      SetParticleOrigin(AliFemtoDreamBasePart::kFake);
+      fIsSet = false;
+      fUse = false;
+    } else {
+      auto *sigmaMother = static_cast<AliMCParticle *>(
+          mcEvent->GetTrack(partSigma0->GetMother()));
+      if (sigmaMother) {
+        SetPDGMotherWeak(sigmaMother->PdgCode());
+        fMotherID = partSigma0->GetMother();
+      }
+      if (partSigma0->IsPhysicalPrimary() &&
+          !(partSigma0->IsSecondaryFromWeakDecay())) {
+        SetParticleOrigin(AliFemtoDreamBasePart::kPhysPrimary);
+      } else if (partSigma0->IsSecondaryFromWeakDecay() &&
+                 !(partSigma0->IsSecondaryFromMaterial())) {
+        SetParticleOrigin(AliFemtoDreamBasePart::kWeak);
+      } else if (partSigma0->IsSecondaryFromMaterial()) {
+        SetParticleOrigin(AliFemtoDreamBasePart::kMaterial);
+      } else {
+        SetParticleOrigin(AliFemtoDreamBasePart::kUnknown);
+      }
+    }
+  }
 }
 
 AliFemtoDreamBasePart::AliFemtoDreamBasePart(
-    const AliSigma0ParticleV0 &daughter)
+    const AliSigma0ParticleV0 &daughter, const AliMCEvent *mcEvent)
     : fIsReset(false),
       fGTI(0),
       fTrackBufferSize(0),
@@ -212,6 +243,36 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
 
   fIDTracks.push_back(daughter.GetTrackLabelPos());
   fIDTracks.push_back(daughter.GetTrackLabelNeg());
+
+  if (mcEvent) {
+    auto *partv0 = static_cast<AliMCParticle *>(
+        mcEvent->GetTrack(daughter.GetMCLabelV0()));
+    if (!partv0) {
+      // if the particle does not exist it is most probably combinatorial
+      // background
+      SetParticleOrigin(AliFemtoDreamBasePart::kFake);
+      fIsSet = false;
+      fUse = false;
+    } else {
+      auto *v0Mother =
+          static_cast<AliMCParticle *>(mcEvent->GetTrack(partv0->GetMother()));
+      if (v0Mother) {
+        SetPDGMotherWeak(v0Mother->PdgCode());
+        fMotherID = partv0->GetMother();
+      }
+      if (partv0->IsPhysicalPrimary() &&
+          !(partv0->IsSecondaryFromWeakDecay())) {
+        SetParticleOrigin(AliFemtoDreamBasePart::kPhysPrimary);
+      } else if (partv0->IsSecondaryFromWeakDecay() &&
+                 !(partv0->IsSecondaryFromMaterial())) {
+        SetParticleOrigin(AliFemtoDreamBasePart::kWeak);
+      } else if (partv0->IsSecondaryFromMaterial()) {
+        SetParticleOrigin(AliFemtoDreamBasePart::kMaterial);
+      } else {
+        SetParticleOrigin(AliFemtoDreamBasePart::kUnknown);
+      }
+    }
+  }
 }
 
 AliFemtoDreamBasePart::~AliFemtoDreamBasePart() {}

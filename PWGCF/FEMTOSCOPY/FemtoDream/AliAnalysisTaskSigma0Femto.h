@@ -55,9 +55,11 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   void CastToVector(std::vector<AliSigma0ParticleV0> &container,
                     const AliVEvent *inputEvent);
   void CastToVector(std::vector<AliSigma0ParticlePhotonMother> &sigmaContainer,
-                    std::vector<AliFemtoDreamBasePart> &particles);
+                    std::vector<AliFemtoDreamBasePart> &particles,
+                    const AliMCEvent *mcEvent);
   void CastToVector(std::vector<AliSigma0ParticleV0> &container,
-                    std::vector<AliFemtoDreamBasePart> &particles);
+                    std::vector<AliFemtoDreamBasePart> &particles,
+                    const AliMCEvent *mcEvent);
   void FillTriggerHisto(TH1F *histo);
 
   AliEventCuts fAliEventCuts;

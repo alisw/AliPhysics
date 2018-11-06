@@ -43,7 +43,7 @@ class AliSigma0ParticlePhotonMother : public AliSigma0ParticleBase {
   float GetArmenterosAlpha() const;
   float GetArmenterosQt() const;
 
-  int GetMCLabelMother() const { return fMCLabelMother; }
+  int GetMCLabel() const { return fMCLabel; }
   int GetPDGCode() const { return fPDGCode; }
 
   AliSigma0ParticleV0 GetV0() const { return fV0; }
@@ -58,12 +58,12 @@ class AliSigma0ParticlePhotonMother : public AliSigma0ParticleBase {
   double fRecMassPhoton;
   double fRecMassLambda;
   double fRecMass;
-  int fMCLabelMother;
+  int fMCLabel;
   int fPDGCode;
   AliSigma0ParticleV0 fV0;
   AliSigma0ParticleV0 fPhoton;
 
-  ClassDef(AliSigma0ParticlePhotonMother, 3)
+  ClassDef(AliSigma0ParticlePhotonMother, 4)
 };
 
 #endif

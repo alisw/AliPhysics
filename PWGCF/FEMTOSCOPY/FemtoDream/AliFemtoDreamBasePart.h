@@ -19,8 +19,8 @@ class AliFemtoDreamBasePart {
   AliFemtoDreamBasePart();
   AliFemtoDreamBasePart(const AliFemtoDreamBasePart& part);
   AliFemtoDreamBasePart &operator=(const AliFemtoDreamBasePart &obj);
-  AliFemtoDreamBasePart(const AliSigma0ParticlePhotonMother &mother);
-  AliFemtoDreamBasePart(const AliSigma0ParticleV0 &daughter);
+  AliFemtoDreamBasePart(const AliSigma0ParticlePhotonMother &mother, const AliMCEvent *mcEvent);
+  AliFemtoDreamBasePart(const AliSigma0ParticleV0 &daughter, const AliMCEvent *mcEvent);
   virtual ~AliFemtoDreamBasePart();
   enum PartOrigin {
     kPhysPrimary = 0,
