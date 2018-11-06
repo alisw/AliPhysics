@@ -520,6 +520,8 @@ protected:
   
   TH1F     * _invMassKaon;
   TH1F     * _invMassKaonSq;
+  TH1F     * _invMassLambda;
+  TH1F     * _invMassLambdaSq;
   TH1F     * _invMassElec;
   
   TString n1Name;
