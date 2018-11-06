@@ -1,7 +1,7 @@
 //Names should contain a comma seperated list of cut settings
 //Current options: all, electrons, kCutSet1, TTreeCuts, V0_TPCcorr, V0_ITScorr
 AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names = "kCutSet1",
-                                                               Int_t whichGen = 0, // 0=gen. purpose, 1=Jpsi, 2=HF, 3=all
+                                                               Int_t whichGen = 0, // 0=all sources, 1=Jpsi, 2=HF
                                                                Int_t wagonnr = 0,
                                                                Int_t centrality = 0,
 																															 Bool_t SDDstatus = kTRUE,
