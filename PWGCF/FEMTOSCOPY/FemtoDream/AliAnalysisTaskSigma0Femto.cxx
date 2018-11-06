@@ -44,7 +44,8 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fHistCentralityProfileAfter(nullptr),
       fHistCentralityProfileCoarseAfter(nullptr),
       fHistTriggerBefore(nullptr),
-      fHistTriggerAfter(nullptr) {}
+      fHistTriggerAfter(nullptr),
+      fHistMultiplicity(nullptr) {}
 
 //____________________________________________________________________________________________________
 AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
@@ -82,7 +83,8 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
       fHistCentralityProfileAfter(nullptr),
       fHistCentralityProfileCoarseAfter(nullptr),
       fHistTriggerBefore(nullptr),
-      fHistTriggerAfter(nullptr) {
+      fHistTriggerAfter(nullptr),
+      fHistMultiplicity(nullptr) {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
@@ -302,6 +304,8 @@ bool AliAnalysisTaskSigma0Femto::AcceptEvent(AliVEvent *event) {
   if (!isConversionEventSelected) return false;
 
   if (!fIsLightweight) fHistCentralityProfileCoarseAfter->Fill(lPercentile);
+
+  fHistMultiplicity->Fill(AliSigma0PhotonMotherCuts::GetMultiplicityBin(lPercentile));
 
   fHistCutQA->Fill(4);
   return true;
@@ -562,6 +566,16 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     fHistTriggerAfter->GetXaxis()->SetBinLabel(50, "kAnyINT");
     fQA->Add(fHistTriggerAfter);
   }
+
+  std::vector<float> multBins = {{0, 0.01, 0.05, 0.1, 0.9, 1., 5., 10., 15.,
+                                  20., 30., 40., 50., 70., 100.}};
+  fHistMultiplicity = new TH1I("fHistMultiplicity", "; Multiplicity bin; Entries", 14, 0, 14);
+  fHistMultiplicity->GetXaxis()->LabelsOption("u");
+  for (int i = 0; i < static_cast<int>(multBins.size() - 1); i++) {
+    fHistMultiplicity->GetXaxis()->SetBinLabel(
+        i + 1, Form("V0M: %.2f - %.2f %%", multBins[i], multBins[i + 1]));
+  }
+  fQA->Add(fHistMultiplicity);
 
   fOutputContainer->Add(fQA);
 

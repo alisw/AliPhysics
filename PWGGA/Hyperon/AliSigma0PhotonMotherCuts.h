@@ -45,7 +45,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   void FillEventBuffer(
       const std::vector<AliSigma0ParticleV0> &photonCandidates,
       const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
-  int GetMultiplicityBin(float percentile) const;
+  static int GetMultiplicityBin(float percentile);
   void ProcessMC() const;
   bool CheckDaughters(const AliMCParticle *particle) const;
   bool CheckDaughtersInAcceptance(const AliMCParticle *particle) const;

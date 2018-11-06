@@ -685,7 +685,7 @@ bool AliSigma0PhotonMotherCuts::CheckDaughtersInAcceptance(
 }
 
 //____________________________________________________________________________________________________
-int AliSigma0PhotonMotherCuts::GetMultiplicityBin(float percentile) const {
+int AliSigma0PhotonMotherCuts::GetMultiplicityBin(float percentile) {
   if (0 < percentile && percentile <= 0.01)
     return 0;
   else if (0.01 < percentile && percentile <= 0.05)
