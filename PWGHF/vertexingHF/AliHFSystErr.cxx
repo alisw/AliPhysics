@@ -303,7 +303,8 @@ void AliHFSystErr::Init(Int_t decay){
           InitDstartoKpipi2016pp13TeV();
         } else if(fRunNumber == 17 || fRunNumber == 2017){
           if(fIs5TeVAnalysis){
-            InitDstartoD0pi2017pp5TeV();
+            if(fStandardBins) InitDstartoD0pi2017pp5TeV();
+            else InitDstartoD0pi2017pp5TeV_finebins();
           }
         } else AliFatal("Not yet implemented");
       }
@@ -3700,6 +3701,78 @@ void AliHFSystErr::InitDstartoD0pi2017pp5TeV(){
   for(Int_t i=1;i<=36;i++) fMCPtShape->SetBinError(i,0.);
 
   return;
+}
+//----------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2017pp5TeV_finebins(){
+    //
+    // D*+->Kpipi syst errors. Responsible: L. Vermunt
+    //  2017 pp sample - 5TeV
+    //
+    // First bin is [1-2], 0.5 GeV bins afterwards
+    // Note: *->SetBinContent(3,* should be deleted if first bin is changed: [1,2] -> [1.5,2]
+
+    AliInfo(" Settings for D*+ --> D0 pi --> K pi pi, pp collisions for 5.02 TeV 2017 (fine binning)");
+    SetNameTitle("AliHFSystErr","SystErrDstartoD0pi2017pp5TeVFineBins");
+ 
+    // Normalization
+    fNorm = new TH1F("fNorm","fNorm",72,0,36); //Finer binning uses 500 MeV, so 72 bins needed
+    for(Int_t i=1;i<=72;i++) fNorm->SetBinContent(i,0.021); // 2.1% error on sigmaV0and
+    for(Int_t i=1;i<=72;i++) fNorm->SetBinError(i,0.);
+    
+    // Branching ratio
+    fBR = new TH1F("fBR","fBR",72,0,36);
+    for(Int_t i=1;i<=72;i++) fBR->SetBinContent(i,0.013); // 1.3%
+    for(Int_t i=1;i<=72;i++) fBR->SetBinError(i,0.);
+    
+    // Tracking efficiency (TPC contribution: 0.5% per D0 daughter + 1.0% for soft pion)
+    fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",72,0,36);
+    fTrackingEff->SetBinContent(3,0.04); //<- Should be deleted when starting with bin 1.5-2.0
+    fTrackingEff->SetBinContent(4,0.04);
+    fTrackingEff->SetBinContent(5,0.04);
+    fTrackingEff->SetBinContent(6,0.04);
+    fTrackingEff->SetBinContent(7,0.045);
+    fTrackingEff->SetBinContent(8,0.045);
+    for(Int_t i=9;i<=72;i++) fTrackingEff->SetBinContent(i,0.05);
+    for(Int_t i=1;i<=72;i++) fTrackingEff->SetBinError(i,0.);
+
+    // Raw yield extraction
+    fRawYield = new TH1F("fRawYield","fRawYield",72,0,36);
+    fRawYield->SetBinContent(3,0.07); //<- Should be deleted when starting with bin 1.5-2.0
+    fRawYield->SetBinContent(4,0.07);
+    fRawYield->SetBinContent(5,0.03);
+    fRawYield->SetBinContent(6,0.03);
+    fRawYield->SetBinContent(7,0.03);
+    for(Int_t i= 8;i<=32;i++) fRawYield->SetBinContent(i,0.01);
+    for(Int_t i=33;i<=72;i++) fRawYield->SetBinContent(i,0.02);
+    for(Int_t i=1;i<=72;i++) fRawYield->SetBinError(i,0.);
+    
+    // Cuts efficiency (from cuts variation)
+    fCutsEff = new TH1F("fCutsEff","fCutsEff",72,0,36);
+    fCutsEff->SetBinContent(3,0.05); //<- Should be deleted when starting with bin 1.5-2.0
+    fCutsEff->SetBinContent(4,0.05);
+    fCutsEff->SetBinContent(5,0.05);
+    fCutsEff->SetBinContent(6,0.03);
+    fCutsEff->SetBinContent(7,0.03);
+    for(Int_t i= 8;i<=13;i++) fCutsEff->SetBinContent(i,0.02);
+    for(Int_t i=14;i<=72;i++) fCutsEff->SetBinContent(i,0.01);
+    for(Int_t i=1;i<=72;i++) fCutsEff->SetBinError(i,0.);
+    
+    // PID efficiency (from PID/noPID)
+    fPIDEff = new TH1F("fPIDEff","fPIDEff",72,0,36);
+    fPIDEff->SetBinContent(3,0.0); //<- Should be deleted when starting with bin 1.5-2.0
+    for(Int_t i=4;i<=72;i++) fPIDEff->SetBinContent(i,0.0);
+    for(Int_t i=1;i<=72;i++) fPIDEff->SetBinError(i,0.);
+    
+    // MC pT shape
+    fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",72,0,36);
+    fMCPtShape->SetBinContent(3,0.05); //<- Should be deleted when starting with bin 1.5-2.0
+    fMCPtShape->SetBinContent(4,0.05); //<- Should be "fMCPtShape->SetBinContent(4,0.01);" when starting with bin 1.5-2.0
+    fMCPtShape->SetBinContent(5,0.01);
+    for(Int_t i=6;i<=72;i++) fMCPtShape->SetBinContent(i,0);
+    for(Int_t i=1;i<=72;i++) fMCPtShape->SetBinError(i,0.);
+    
+    return;
+ 
 }
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitDstartoD0pi2010ppLowEn() {
