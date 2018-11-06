@@ -248,6 +248,7 @@ class AliEmcalJetTree : public TNamed
     Float_t*        fBuffer_Const_Eta;                    //!<! array buffer
     Float_t*        fBuffer_Const_Phi;                    //!<! array buffer
     Float_t*        fBuffer_Const_Charge;                 //!<! array buffer
+    Int_t*          fBuffer_Const_Label;                  //!<! array buffer
     Float_t*        fBuffer_Const_ProdVtx_X;              //!<! array buffer
     Float_t*        fBuffer_Const_ProdVtx_Y;              //!<! array buffer
     Float_t*        fBuffer_Const_ProdVtx_Z;              //!<! array buffer
@@ -265,7 +266,7 @@ class AliEmcalJetTree : public TNamed
 
 
     /// \cond CLASSIMP
-    ClassDef(AliEmcalJetTree, 2) // Jet tree class
+    ClassDef(AliEmcalJetTree, 3) // Jet tree class
     /// \endcond
 };
 
