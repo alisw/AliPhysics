@@ -1300,9 +1300,11 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
   int    nClus;
   bool   bitOK;
   const float mpion   = 0.139570; // GeV/c2
+  const float massPionSq = 0.0194797849; // GeV/c2
   const float mkaon   = 0.493677; // GeV/c2
   const float massKaonSq = 0.2437169803; // GeV/c2
   const float mproton = 0.938272; // GeV/c2
+  const float massProtonSq = 0.880354346; // GeV/c2
   Double_t c = TMath::C() * 1.E-9;// m/ns
   double EP = 0;
   
