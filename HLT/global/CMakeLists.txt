@@ -112,15 +112,17 @@ if(DEFINED ALITPCCOMMON_DIR)
   add_definitions(-DHAVE_ALITPCCOMMON -DHLTCA_BUILD_ALIROOT_LIB)
   set(SRCS ${SRCS} AliHLTGlobalPromptRecoQAComponent.cxx)
   include_directories(${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/SliceTracker
-  ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/TRDTracking
-  ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/Merger
-  ${ALITPCCOMMON_DIR}/sources/Common)
+    ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/TRDTracking
+    ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/Merger
+    ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/GlobalTracker
+    ${ALITPCCOMMON_DIR}/sources/Common
+  )
 endif()
 
 if(ZEROMQ_FOUND)
   include_directories(${ZEROMQ_INCLUDE_DIR}
                       ${AliRoot_SOURCE_DIR}/HLT/ZMQ)
-  set(SRCS 
+  set(SRCS
       ${SRCS}
       AliHLTZMQsink.cxx
       AliHLTZMQsource.cxx
@@ -166,7 +168,7 @@ install(FILES ${HDRS} DESTINATION include)
 install(DIRECTORY macros DESTINATION HLT/global)
 install(DIRECTORY physics/macros DESTINATION HLT/global/physics/)
 
-if(ZEROMQ_FOUND) 
+if(ZEROMQ_FOUND)
 
   # Additional include folders in alphabetical order except ROOT
   include_directories(
@@ -179,6 +181,6 @@ if(ZEROMQ_FOUND)
   add_executable(ZMQDIMlumiregServer ZMQDIMlumiregServer.cxx)
   target_link_libraries(ZMQDIMlumiregServer HLTbase AliHLTGlobal AliZMQhelpers AliHLTUtil AliHLTHOMER RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core ${ZMQ_LIBRARIES})
   
-  # Installation of 
+  # Installation of
   install(TARGETS ZMQDIMlumiregServer RUNTIME DESTINATION bin)
 endif(ZEROMQ_FOUND)
