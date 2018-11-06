@@ -36,10 +36,10 @@ const Int_t triggerNames = AliVEvent::kINT7;
 const Int_t nMCSignal   = 0;
 const Int_t nCutsetting = 0;
 
-const Double_t minGenPt  = 0.01;
+const Double_t minGenPt  = 0.15;
 const Double_t maxGenPt  = 10;
-const Double_t minGenEta = -1.5;
-const Double_t maxGenEta = 1.5;
+const Double_t minGenEta = -1.2;
+const Double_t maxGenEta = 1.2;
 
 const Double_t minPtCut  = 0.2;
 const Double_t maxPtCut  = 8.0;
