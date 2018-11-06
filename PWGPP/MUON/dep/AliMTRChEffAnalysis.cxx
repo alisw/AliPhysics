@@ -1879,8 +1879,11 @@ Bool_t AliMTRChEffAnalysis::CheckRanges ( TArrayI runRanges ) const
       Int_t iend = istart+1;
       Int_t firstRun = runRanges[istart];
       Int_t lastRun = runRanges[iend];
+      // Sometimes we can have a range made by just one run
+      // In this case the firstRun and lastRun coincide
+      // So the start and end must be tested separately
       if ( run == firstRun ) rangeOk[istart] = true;
-      else if ( run == lastRun ) rangeOk[iend] = true;
+      if ( run == lastRun ) rangeOk[iend] = true;
       if ( run >= firstRun && run <= lastRun ) {
         isInside = true;
         break;
