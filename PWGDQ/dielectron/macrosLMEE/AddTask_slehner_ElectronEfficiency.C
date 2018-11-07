@@ -158,13 +158,17 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
 
   // #########################################################
   // Adding multiple cutsettings
-  for(Int_t MVACut = 0; MVACut <= 9; ++MVACut){
-    std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVA Cut: "<<MVACut*0.2<<" added"<< std::endl;
-    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight);
-    task->AddTrackCuts(filter);
+//  for(Int_t MVACut = 0; MVACut <= 0; ++MVACut){
+  
+    Int_t MVACut=0;
+    for(Int_t trackCut = 0; trackCut <=5; ++trackCut){
+      for(Int_t PIDCut = 0; PIDCut <= 8; ++PIDCut){  
+        std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVA Cut: "<<MVACut*0.2<<" added"<< std::endl;
+        AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight);
+        task->AddTrackCuts(filter);
+      }
     }
 
-    
   if(PIDCorr) setPIDCorrections(task);
 
   mgr->AddTask(task);
