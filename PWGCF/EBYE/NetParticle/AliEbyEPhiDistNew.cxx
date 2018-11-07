@@ -21,13 +21,13 @@
 //                   Deepika Rathee  | Satyajit Jena                       //
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                                                                         //
-//                        (Last Modified 2018/08/27)                       //
+//                        (Last Modified 2018/11/07)                       //
 //                 Dealing with Wide pT Window Modified to ESDs            //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle   //
 //analysis task.                                                           //
 //=========================================================================//
 
-//ver: 2018/09/11
+
 
 #include <Riostream.h>
 #include "TList.h"
@@ -213,7 +213,7 @@ void AliEbyEPhiDistNew::UserCreateOutputObjects(){
 //--------------------------------------------------------------------------------------
 
 void AliEbyEPhiDistNew::CreatePhiHist() {
-    const Char_t *fgkHistName[4] = {"Nch","Npi","Npi", "Nka"};
+    const Char_t *fgkHistName[4] = {"Nch","Npi","Nka", "Npr"};
     const Char_t *fgkHistLat[2][4] = {{"N^{-}","#pi^{-}","K^{-}","P^{-}"},{"N^{+}","#pi^{+}","K^{+}","P^{+}"}};
     
     const Char_t *fgkHistCharge[2] = {"Minus","Plus"};
@@ -229,8 +229,8 @@ void AliEbyEPhiDistNew::CreatePhiHist() {
     const Int_t ptBins = 19;
     Double_t pidPtBins[ptBins+1] = {0.35, 0.4, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.55};
     
-    const Int_t phiBins = 6;
-    Double_t pidPhiBins[phiBins+1] = {0.0, 1.04, 2.09, 3.14, 4.18, 5.23, 6.28};
+    const Int_t phiBins = 18;
+    Double_t pidPhiBins[phiBins+1] = {0.0, 0.348, 0.697, 1.04, 1.39, 1.74, 2.09, 2.44, 2.79, 3.14, 3.48, 3.83, 4.18, 4.53, 4.88, 5.23, 5.58, 5.93,  6.28};
     
     
     const Char_t *gstName[3] = {"pT", "Eta", "Phi"};
@@ -316,7 +316,7 @@ void AliEbyEPhiDistNew::CreatePhiHist() {
     }
     
     //-----For Thn Sparse----------------------
-    const Int_t dim = 13; // 1 centrality bin + ( 19 pt bins )*2 *6
+    const Int_t dim = 37; // 1 centrality bin + ( 18 phi bins )*2
     Int_t bin[dim];
     bin[0] = 81;
     for (Int_t ibin = 1; ibin<dim ; ibin++) bin[ibin] = 100;
@@ -351,7 +351,7 @@ void AliEbyEPhiDistNew::UserExec (Option_t *){
     }
     
     //const Int_t dim = 38; // number of pT bins * 2
-    const Int_t kPhi = 6; // number of Phi Bins
+    const Int_t kPhi = 18; // number of Phi Bins
     Int_t pTPhi[kPhi];
     Int_t pTPhiMC[kPhi];
     
@@ -910,7 +910,7 @@ Int_t AliEbyEPhiDistNew::GetPhiBin(Double_t Phi){
     
     Int_t phibin = -1;
     
-    Double_t pidPhiBins[7] = {0.0, 1.04, 2.09, 3.14, 4.18, 5.23, 6.28};
+    Double_t pidPhiBins[19] = {0.0, 0.348, 0.697, 1.04, 1.39, 1.74, 2.09, 2.44, 2.79, 3.14, 3.48, 3.83, 4.18, 4.53, 4.88, 5.23, 5.58, 5.93,  6.28};
     
     for (Int_t pBin = 0; pBin < fNphiBins; pBin++){
         
@@ -1001,13 +1001,13 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
     Double_t ptLowITS[5]       = { 0., 0., 0.2,  0.2,  0.3  };
     Double_t ptHighITS[5]      = { 0., 0., 0.6,  0.6,  1.1  };
     //TPC---------------
-    Double_t ptLowTPC[5]       = { 0., 0., 0.2,  0.325, 0.3  };
-    Double_t ptHighTPC[5]      = { 0., 0., 2.0,  2.0,   2.0  };
+    Double_t ptLowTPC[5]       = { 0., 0., 0.3,  0.325, 0.3  };
+    Double_t ptHighTPC[5]      = { 0., 0., 1.5,  1.5,   2.0  };
     //TOF----
-    Double_t ptLowTOF[5]       = { 0., 0., 0.2,  0.625,  1.1  };
+    Double_t ptLowTOF[5]       = { 0., 0., 1.5,  1.5,  1.1  };
     Double_t ptHighTOF[5]      = { 0., 0., 2.0,  2.0,    2.0  };
     //TPCTOF----------
-    Double_t ptLowTPCTOF[5]    = { 0., 0., 0.65, 0.69,   0.8  };
+    Double_t ptLowTPCTOF[5]    = { 0., 0., 1.5, 1.5,   0.8  };
     Double_t ptHighTPCTOF[5]   = { 0., 0., 2.0,  2.00,   2.0  };
     
     
@@ -1174,4 +1174,102 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
     
 } // end
 
-//----------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
