@@ -357,19 +357,44 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                 fHistoRJetPi0Cand;                                    // Histogram of RJetPi0Cand vs Pt
     TH2F**                 fHistoEtaPhiJetPi0Cand;                               // Histogram of delta eta and delta phi distr between jet and NM candidates
     TH2F**                 fHistoEtaPhiJetWithPi0Cand;                           // Histogram of delta eta and delta phi distr when pi0 is inside a jet
+    TH2F**                 fHistoJetFragmFunc;                                   // Histogram to determine fragmentation function
     TH2F**                 fHistoTruevsRecJetPt;                                 // Histogram of true jet pt vs reconstructed jet pt
     TH2F**                 fHistoTruePi0JetMotherInvMassPt;                      // Histogram of true pi0s in an event with a jet
     TH2F**                 fHistoTruePi0InJetMotherInvMassPt;                    // Histogram of true pi0s in a jet
+    TH2F**                 fHistoTruePrimaryPi0JetInvMassPt;                     // Histogram of true primary pi0s in an event with a jet
+    TH2F**                 fHistoTruePrimaryPi0inJetInvMassPt;                   // Histogram of true primary pi0s in a jet
     TH1F**                 fHistoTrueDoubleCountingPi0Jet;                       // Histogram of when a true pi0 is defined to be in multiple jets
     TH2F**                 fHistoTrueEtaJetMotherInvMassPt;                      // Histogram of true etas in an event with a jet
     TH2F**                 fHistoTrueEtaInJetMotherInvMassPt;                    // Histogram of true etas in a jet
+    TH2F**                 fHistoTruePrimaryEtaJetInvMassPt;                     // Histogram of true primary etas in an event with a jet
+    TH2F**                 fHistoTruePrimaryEtainJetInvMassPt;                   // Histogram of true primary etas in a jet
     TH1F**                 fHistoTrueDoubleCountingEtaJet;                       // Histogram of when a true eta is defined to be in multiple jets
+    TH2F**                 fHistoTruePi0JetFragmFunc;                            // Histogram to determine true pi0 fragmentation function
+    TH2F**                 fHistoTrueEtaJetFragmFunc;                            // Histogram to determine true eta fragmentation function
+    TH1F**                 fHistoMCPi0JetInAccPt;                                // Histogram with weighted pi0 in a jet event in acceptance, pT
+    TH1F**                 fHistoMCPi0inJetInAccPt;                              // Histogram with weighted pi0 in a jet in acceptance, pT
+    TH1F**                 fHistoMCEtaJetInAccPt;                                // Histogram with weighted eta in a jet event in acceptance, pT
+    TH1F**                 fHistoMCEtainJetInAccPt;                              // Histogram with weighted eta in a jet in acceptance, pT
+    TH2F**                 fHistoTrueSecondaryPi0FromK0sJetInvMassPt;            // Histogram with validated secondary mothers from K0s in an event with a jet, invMass, pt
+    TH2F**                 fHistoTrueSecondaryPi0FromK0sinJetInvMassPt;          // Histogram with validated secondary mothers from K0s in a jet, invMass, pt
+    TH2F**                 fHistoTrueSecondaryPi0FromLambdaJetInvMassPt;         // Histogram with validated secondary mothers from lambda in an event with a jet, invMass, pt
+    TH2F**                 fHistoTrueSecondaryPi0FromLambdainJetInvMassPt;       // Histogram with validated secondary mothers from lambda in a jet, invMass, pt
+    TH2F**                 fHistoTrueSecondaryPi0FromK0lJetInvMassPt;            // Histogram with validated secondary mothers from K0l in an event with a jet, invMass, pt
+    TH2F**                 fHistoTrueSecondaryPi0FromK0linJetInvMassPt;          // Histogram with validated secondary mothers from K0l in a jet, invMass, pt
+    TH2F**                 fHistoTrueSecondaryPi0InvJetMassPt;                   // Histogram with validated secondary mothers in an event with a jet, invMass, pt
+    TH2F**                 fHistoTrueSecondaryPi0InvinJetMassPt;                 // Histogram with validated secondary mothers in a jet, invMass, pt
 
     vector<Double_t>      fVectorJetPt;                                         // Vector of JetPt
+    vector<Double_t>      fVectorJetPx;                                         // Vector of JetPx
+    vector<Double_t>      fVectorJetPy;                                         // Vector of JetPy
+    vector<Double_t>      fVectorJetPz;                                         // Vector of JetPz
     vector<Double_t>      fVectorJetEta;                                        // Vector of JetEta
     vector<Double_t>      fVectorJetPhi;                                        // Vector of JetPhi
     vector<Double_t>      fVectorJetArea;                                       // Vector of JetArea
     vector<Double_t>      fTrueVectorJetPt;                                     // Vector of True JetPt
+    vector<Double_t>      fTrueVectorJetPx;                                     // Vector of True JetPx
+    vector<Double_t>      fTrueVectorJetPy;                                     // Vector of True JetPy
+    vector<Double_t>      fTrueVectorJetPz;                                     // Vector of True JetPz
     vector<Double_t>      fTrueVectorJetEta;                                    // Vector of True JetEta
     vector<Double_t>      fTrueVectorJetPhi;                                    // Vector of True JetPhi
 
@@ -450,7 +475,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 49);
+    ClassDef(AliAnalysisTaskGammaCalo, 50);
 };
 
 #endif

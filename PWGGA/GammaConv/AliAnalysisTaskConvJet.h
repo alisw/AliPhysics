@@ -40,12 +40,18 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
 
   Double_t GetNJets() {return fNJets;}
   std::vector<Double_t> GetVectorJetPt()  {return fVectorJetPt;}
+  std::vector<Double_t> GetVectorJetPx()  {return fVectorJetPx;}
+  std::vector<Double_t> GetVectorJetPy()  {return fVectorJetPy;}
+  std::vector<Double_t> GetVectorJetPz()  {return fVectorJetPz;}
   std::vector<Double_t> GetVectorJetEta() {return fVectorJetEta;}
   std::vector<Double_t> GetVectorJetPhi() {return fVectorJetPhi;}
   std::vector<Double_t> GetVectorJetR()   {return fVectorJetR;}
 
   Double_t GetTrueNJets() {return fTrueNJets;}
   std::vector<Double_t> GetTrueVectorJetPt()  {return fTrueVectorJetPt;}
+  std::vector<Double_t> GetTrueVectorJetPx()  {return fTrueVectorJetPx;}
+  std::vector<Double_t> GetTrueVectorJetPy()  {return fTrueVectorJetPy;}
+  std::vector<Double_t> GetTrueVectorJetPz()  {return fTrueVectorJetPz;}
   std::vector<Double_t> GetTrueVectorJetEta() {return fTrueVectorJetEta;}
   std::vector<Double_t> GetTrueVectorJetPhi() {return fTrueVectorJetPhi;}
   std::vector<Double_t> GetTrueVectorJetR()   {return fTrueVectorJetR;}
@@ -69,12 +75,18 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
 
   Double_t                    fNJets                                            ;
   std::vector<Double_t>            fVectorJetPt                                      ;
+  std::vector<Double_t>            fVectorJetPx                                      ;
+  std::vector<Double_t>            fVectorJetPy                                      ;
+  std::vector<Double_t>            fVectorJetPz                                      ;
   std::vector<Double_t>            fVectorJetEta                                     ;
   std::vector<Double_t>            fVectorJetPhi                                     ;
   std::vector<Double_t>            fVectorJetR                                       ;
 
   Double_t                    fTrueNJets                                        ;
   std::vector<Double_t>            fTrueVectorJetPt                                  ;
+  std::vector<Double_t>            fTrueVectorJetPx                                  ;
+  std::vector<Double_t>            fTrueVectorJetPy                                  ;
+  std::vector<Double_t>            fTrueVectorJetPz                                  ;
   std::vector<Double_t>            fTrueVectorJetEta                                 ;
   std::vector<Double_t>            fTrueVectorJetPhi                                 ;
   std::vector<Double_t>            fTrueVectorJetR                                   ;
@@ -84,7 +96,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskConvJet &operator=(const AliAnalysisTaskConvJet&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskConvJet, 3);
+  ClassDef(AliAnalysisTaskConvJet, 4);
   /// \endcond
 };
 #endif
