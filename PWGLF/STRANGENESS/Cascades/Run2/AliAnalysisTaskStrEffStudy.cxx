@@ -321,6 +321,7 @@ fTreeCascVarPVx(0),
 fTreeCascVarPVy(0),
 fTreeCascVarPVz(0),
 fTreeCascVarAliESDvertex(0),
+fTreeCascVarBumpAsOTF(0),
 
 //Histos
 fHistEventCounter(0),
@@ -552,6 +553,7 @@ fTreeCascVarPVx(0),
 fTreeCascVarPVy(0),
 fTreeCascVarPVz(0),
 fTreeCascVarAliESDvertex(0),
+fTreeCascVarBumpAsOTF(0),
 
 //Histos
 fHistEventCounter(0),
@@ -878,6 +880,7 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         
         fTreeCascade->Branch("fTreeCascVarAliESDvertex", &fTreeCascVarAliESDvertex,16000,99);
     }
+    fTreeCascade->Branch("fTreeCascVarBumpAsOTF",&fTreeCascVarBumpAsOTF,"fTreeCascVarBumpAsOTF/O");
     //------------------------------------------------
 
     //------------------------------------------------
@@ -1661,6 +1664,26 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeCascVarBachTrack = esdTrackBach;
         fTreeCascVarPosTrack = esdTrackPos;
         fTreeCascVarNegTrack = esdTrackNeg;
+        
+        fTreeCascVarBumpAsOTF = kFALSE ;
+        //check if the bump has been picked up by OTF
+        if ( esdTrackPos -> Charge() < -1 ){
+            Int_t nv0s = lESDevent->GetNumberOfV0s();
+            for(Long_t iV0s=0; iV0s<nv0s; iV0s++){
+                AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iV0s);
+                if(v0->GetOnFlyStatus() == 0) continue;
+                if(v0->GetNindex()==lCascBachTrackArray[iCasc] && v0->GetPindex()==lCascPosTrackArray[iCasc]) fTreeCascVarBumpAsOTF = kTRUE;
+                if(v0->GetPindex()==lCascBachTrackArray[iCasc] && v0->GetNindex()==lCascPosTrackArray[iCasc]) fTreeCascVarBumpAsOTF = kTRUE;
+            }
+        }else{
+            Int_t nv0s = lESDevent->GetNumberOfV0s();
+            for(Long_t iV0s=0; iV0s<nv0s; iV0s++){
+                AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iV0s);
+                if(v0->GetOnFlyStatus() == 0) continue;
+                if(v0->GetNindex()==lCascBachTrackArray[iCasc] && v0->GetPindex()==lCascNegTrackArray[iCasc]) fTreeCascVarBumpAsOTF = kTRUE;
+                if(v0->GetPindex()==lCascBachTrackArray[iCasc] && v0->GetNindex()==lCascNegTrackArray[iCasc]) fTreeCascVarBumpAsOTF = kTRUE;
+            }
+        }
         
         //=================================================================================
         //OTF loop: try to find equivalent OTF V0, store empty object if not found
