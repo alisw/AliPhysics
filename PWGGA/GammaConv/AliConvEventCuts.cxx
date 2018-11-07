@@ -4858,31 +4858,42 @@ Float_t AliConvEventCuts::GetWeightForMultiplicity(Int_t mult){
 
   Double_t weightMult         = 1.;
 
-  Float_t valueMultData       = -1.;
-  Float_t valueMultMC         = -1.;
-
   if (hReweightMultData == NULL || hReweightMultMC == NULL ) return weightMult;
 
+  // get mult values for weights
+  Float_t valueMultData       = -1.;
+  Float_t valueMultMC         = -1.;
   valueMultData               = hReweightMultData->Interpolate(mult);
   valueMultMC                 = hReweightMultMC->Interpolate(mult);
-  
-  Float_t relativeErrorMC     = hReweightMultMC->GetBinError(hReweightMultMC->FindBin(mult))/hReweightMultMC->GetBinContent(hReweightMultMC->FindBin(mult));
-  Float_t relativeErrorData   = hReweightMultData->GetBinError(hReweightMultData->FindBin(mult))/hReweightMultData->GetBinContent(hReweightMultData->FindBin(mult));
-  
- 
+
+  // calculate relative error for data and MC
+  Float_t valueMC   = 0;
+  Float_t valueData = 0;
+  Float_t errorMC   = 0;
+  Float_t errorData = 0;
+  valueMC   = hReweightMultMC->GetBinContent(hReweightMultMC->FindBin(mult));
+  valueData = hReweightMultData->GetBinContent(hReweightMultData->FindBin(mult));
+  errorMC   = hReweightMultMC->GetBinError(hReweightMultMC->FindBin(mult));
+  errorData = hReweightMultData->GetBinError(hReweightMultData->FindBin(mult));
+  Float_t relativeErrorMC   = 1;
+  Float_t relativeErrorData = 1;
+  if(valueMC!=0)   relativeErrorMC   = errorMC / valueMC;
+  if(valueData!=0) relativeErrorData = errorData / valueData;
+
   if ( fPeriodEnum == kLHC16NomB || fPeriodEnum == kLHC16P1Pyt8 || fPeriodEnum == kLHC16P1PHO || 
        fPeriodEnum == kLHC17pq  ||  fPeriodEnum == kLHC17P1PHO  || fPeriodEnum == kLHC17l3b  || fPeriodEnum == kLHC18j2  || fPeriodEnum == kLHC17l4b  || 
-       fPeriodEnum == kLHC15o   || fPeriodEnum == kLHC16g1  || fPeriodEnum == kLHC16g1a || 
-       fPeriodEnum == kLHC16g1b || fPeriodEnum == kLHC16g1c || fPeriodEnum == kLHC16i1a || 
-       fPeriodEnum == kLHC16i1b || fPeriodEnum == kLHC16i1c || fPeriodEnum == kLHC16i2a || 
-       fPeriodEnum == kLHC16i2b || fPeriodEnum == kLHC16i2c || fPeriodEnum == kLHC16i3a || 
-       fPeriodEnum == kLHC16i3b || fPeriodEnum == kLHC16i3c || fPeriodEnum == kLHC16h4     ) {  //  For these periods allow larger statistical error in the MC to apply the multiplicity weight
-     if (relativeErrorData < 0.2 && relativeErrorMC < 0.4 ){
+       fPeriodEnum == kLHC16g1  || fPeriodEnum == kLHC16h4  ||
+       fPeriodEnum == kLHC16g1a || fPeriodEnum == kLHC16g1b || fPeriodEnum == kLHC16g1c ||
+       fPeriodEnum == kLHC16i1a || fPeriodEnum == kLHC16i1b || fPeriodEnum == kLHC16i1c ||
+       fPeriodEnum == kLHC16i2a || fPeriodEnum == kLHC16i2b || fPeriodEnum == kLHC16i2c ||
+       fPeriodEnum == kLHC16i3a || fPeriodEnum == kLHC16i3b || fPeriodEnum == kLHC16i3c      ) {  //  For these periods allow larger statistical error in the MC to apply the multiplicity weight
+
+    if (relativeErrorData < 0.2 && relativeErrorMC < 0.4 ){
         if (isfinite(valueMultData) && isfinite(valueMultMC) ){
           weightMult               = valueMultData/valueMultMC;
         }
-    }
-  } else {     
+     }
+  } else {
     if (relativeErrorData < 0.2 && relativeErrorMC < 0.2 ){
        if (isfinite(valueMultData) && isfinite(valueMultMC) ){
           weightMult               = valueMultData/valueMultMC;
