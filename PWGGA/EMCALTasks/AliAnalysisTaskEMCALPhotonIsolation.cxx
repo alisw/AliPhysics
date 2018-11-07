@@ -69,6 +69,7 @@ fVariableCPV(kFALSE),
 fVariableCPVInCone(kFALSE),
 fVariableCPVSyst(""),
 fNonLinRecoEnergyScaling(kFALSE),
+fExtraPerpConesFactor(1.347),
 fTracksAna(0),
 fStack(0),
 fEMCALRecoUtils(new AliEMCALRecoUtils),
@@ -289,6 +290,7 @@ fVariableCPV(kFALSE),
 fVariableCPVInCone(kFALSE),
 fVariableCPVSyst(""),
 fNonLinRecoEnergyScaling(kFALSE),
+fExtraPerpConesFactor(1.347),
 fTracksAna(0),
 fStack(0),
 fEMCALRecoUtils(new AliEMCALRecoUtils),
@@ -3066,7 +3068,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusExtraOrthCones(TLorentzVector
   fTestEnergyCone->Fill(c.Pt(), sumEnergyConeClus, sumpTPerpConeTrack);
 
   ptIso = sumEnergyConeClus + sumpTConeCharged;
-  cones = 1.347*sumpTPerpConeTrack; // Scaling charged-only UE to neutral + charged UE
+  cones = fExtraPerpConesFactor*sumpTPerpConeTrack; // Scaling charged-only UE to neutral + charged UE
 
   Double_t isoConeArea   = 0.; // Cluster (eta, phi)-dependent cone area
   Double_t perpConesArea = 0.; // Cluster (eta, phi)-dependent perpendicular cones area
@@ -4740,7 +4742,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE, Ali
              TMath::Sqrt(TMath::Power(etap-etacone2,2)+TMath::Power(phip-phicone2,2)) < fIsoConeRadius)
             sumUE += mcpp->Pt();
 	  
-	  sumUE *= 1.347; // Neutral + charged extrapolation
+	  sumUE *= fExtraPerpConesFactor; // Neutral + charged extrapolation
 
           break;
         }
