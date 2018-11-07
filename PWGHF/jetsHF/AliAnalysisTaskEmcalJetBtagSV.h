@@ -78,6 +78,8 @@ public:
   void SetUseWeightOn() {fUseWeight = kTRUE;}
 
   void SetJetTaggingRadius(Double_t tagradius) {fTaggingRadius = tagradius;};
+  void SetDelPtSigmaCut(Double_t SigmaCut) { fSigmaSVCut = SigmaCut; }            //newDeltaPt//
+
 
   void SetGlLogLevel(Int_t level) { fGlLogLevel = level; };
   void SetLcDebLevel(Int_t level) { fLcDebLevel = level; };
@@ -155,7 +157,7 @@ protected:
 
   Double_t  GetExternalRho(Bool_t isMC = kFALSE);
   Double_t  GetDeltaPtRandomCone(Double_t jetradius, Double_t rhovalue);
-
+  void  FillDeltaPt(Int_t, AliAODVertex* , vctr_pair_dbl_int, Double_t );      //newDeltaPt//
   Bool_t IsOutlier(); //FK// Tests if the event is pthard bin outlier 
 
 private:
@@ -183,7 +185,7 @@ private:
   TString     fMCRhoTaskName;        //  Name of the rho task
 
   Double_t    fTaggingRadius;        // radius used in tagging the jet flavour
-
+  Double_t    fSigmaSVCut;           // cut for delPt histogram                    //newDeltaPt//
   //
   // MC weights
   //
@@ -214,6 +216,10 @@ private:
   TH1F*                       fhRhoQa;
   TH1F*                       fhMCRhoQa;
   TH1F*                       fhDeltaPt;         // delta pt distribution
+  TH1F*                       fhDeltaPtLxy5;    // delta pt distribution, Lxy=5 //newDeltaPt//
+  TH1F*                       fhDeltaPtLxy6;    // delta pt distribution, Lxy=6 //newDeltaPt//
+  TH1F*                       fhDeltaPtLxy7;    // delta pt distribution, Lxy=7 //newDeltaPt//	
+  TH1F*                       fhDeltaPtTrack10; // delta pt distribution, pt track > 10 //newDeltaPt//	
 	
   TH1F*                       fZVertex;          //!<! Z vertex distribuition //AID//	
   TH2F*                       fhTrackEta;         //!<! eta inclusive track distribuition //AID//	
@@ -265,7 +271,7 @@ private:
   Double_t                    fPtCut;            //<! min cut on track pT   //AID  
   Double_t                    fEtaCut;           //<! cut on track eta   //AID  
 
-  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 6);  // analysis task for MC study //AID//
+  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 7);  // analysis task for MC study //AID//
 };
 
 //-------------------------------------------------------------------------------------
