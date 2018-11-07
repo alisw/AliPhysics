@@ -273,6 +273,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fProfileJetJetXSection(NULL),
   fHistoJetJetNTrials(NULL),
   fHistoEventSphericity(NULL),
+  fHistoEventSphericityvsNtracks(NULL),
   fHistoPtJet(NULL),
   fHistoJetEta(NULL),
   fHistoJetPhi(NULL),
@@ -580,6 +581,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fProfileJetJetXSection(NULL),
   fHistoJetJetNTrials(NULL),
   fHistoEventSphericity(NULL),
+  fHistoEventSphericityvsNtracks(NULL),
   fHistoPtJet(NULL),
   fHistoJetEta(NULL),
   fHistoJetPhi(NULL),
@@ -1037,6 +1039,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   fHistoNGammaCandidates      = new TH1F*[fnCuts];
   fHistoNGammaCandidatesBasic = new TH1F*[fnCuts];
   fHistoEventSphericity       = new TH1F*[fnCuts];
+  fHistoEventSphericityvsNtracks    = new TH2F*[fnCuts];
   if(!fDoLightOutput){
     fHistoNGoodESDTracksVsNGammaCandidates  = new TH2F*[fnCuts];
     fHistoSPDClusterTrackletBackground      = new TH2F*[fnCuts];
@@ -1197,6 +1200,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoEventSphericity[iCut]->GetXaxis()->SetTitle("S");
       fESDList[iCut]->Add(fHistoEventSphericity[iCut]);
       fV0Reader->SetCalcSphericity(kTRUE);
+      fHistoEventSphericityvsNtracks[iCut]  = new TH2F("EventSphericity vs Ntracks", "EventSphericity vs Ntracks", 100, 0, 1, 100, 0, 100);
+      fHistoEventSphericityvsNtracks[iCut]->GetXaxis()->SetTitle("S");
+      fHistoEventSphericityvsNtracks[iCut]->GetYaxis()->SetTitle("Ntracks");
+      fESDList[iCut]->Add(fHistoEventSphericityvsNtracks[iCut]);
     }
 
     fHistoVertexZ[iCut]             = new TH1F("VertexZ", "VertexZ", 200, -10, 10);
@@ -1257,6 +1264,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoNGoodESDTracks[iCut]->Sumw2();
       if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetUseSphericity()!=0){
         fHistoEventSphericity[iCut]->Sumw2();
+        fHistoEventSphericityvsNtracks[iCut]->Sumw2();
       }
       fHistoVertexZ[iCut]->Sumw2();
       fHistoNGammaCandidates[iCut]->Sumw2();
@@ -2739,6 +2747,7 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
           fHistoNGoodESDTracks[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
           fHistoVertexZ[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetZ(), fWeightJetJetMC);
           fHistoEventSphericity[iCut]->Fill(fV0Reader->GetSphericity(), fWeightJetJetMC);
+          fHistoEventSphericityvsNtracks[iCut]->Fill(fV0Reader->GetSphericity(), fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
         }
       }else{
         fHistoNEvents[iCut]->Fill(eventQuality, fWeightJetJetMC); // Should be 0 here
