@@ -124,10 +124,10 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoCutMonitorCollections   *cutFailColletaphitpc[20];
   //AliFemtoKKTrackCut           *dtc1etaphitpc[20];
   //AliFemtoKKTrackCut           *dtc2etaphitpc[20];
-  //AliFemtoESDTrackCut           *dtc1etaphitpc[20];
-  //AliFemtoESDTrackCut           *dtc2etaphitpc[20];
-  AliFemtoKKTrackCutTest        *dtc1etaphitpc[20];
-  AliFemtoKKTrackCutTest        *dtc2etaphitpc[20];
+  AliFemtoESDTrackCut           *dtc1etaphitpc[20];
+  AliFemtoESDTrackCut           *dtc2etaphitpc[20];
+  //AliFemtoKKTrackCutTest        *dtc1etaphitpc[20];
+  //AliFemtoKKTrackCutTest        *dtc2etaphitpc[20];
   AliFemtoCutMonitorParticleYPt *cutPass1YPtetaphitpc[20];
   AliFemtoCutMonitorParticleYPt *cutFail1YPtetaphitpc[20];
   AliFemtoCutMonitorParticlePID *cutPass1PIDetaphitpc[20];
@@ -187,9 +187,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
           cutFailColletaphitpc[aniter] = new AliFemtoCutMonitorCollections(Form("cutFail%stpcM%i", chrgs[ichg], imult));
           mecetaphitpc[aniter]->AddCutMonitor(cutPassColletaphitpc[aniter], cutFailColletaphitpc[aniter]);
 
-	  //dtc1etaphitpc[aniter] = new AliFemtoESDTrackCut();
+	  dtc1etaphitpc[aniter] = new AliFemtoESDTrackCut();
 	  //dtc1etaphitpc[aniter] = new AliFemtoKKTrackCut();
-	  dtc1etaphitpc[aniter] = new AliFemtoKKTrackCutTest();
+	  //dtc1etaphitpc[aniter] = new AliFemtoKKTrackCutTest();
 
 	  if (ichg == 0)
 	    dtc1etaphitpc[aniter]->SetCharge(1.0);

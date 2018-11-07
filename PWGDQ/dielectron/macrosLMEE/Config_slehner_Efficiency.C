@@ -36,10 +36,10 @@ const Int_t triggerNames = AliVEvent::kINT7;
 const Int_t nMCSignal   = 0;
 const Int_t nCutsetting = 0;
 
-const Double_t minGenPt  = 0.01;
+const Double_t minGenPt  = 0.15;
 const Double_t maxGenPt  = 10;
-const Double_t minGenEta = -1.5;
-const Double_t maxGenEta = 1.5;
+const Double_t minGenEta = -1.2;
+const Double_t maxGenEta = 1.2;
 
 const Double_t minPtCut  = 0.2;
 const Double_t maxPtCut  = 8.0;
@@ -366,14 +366,14 @@ void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
 
 
 
-    task->AddPairMCSignal(pair_sameMother);
-//    task->AddPairMCSignal(pair_sameMother_pion);
-//     task->AddPairMCSignal(pair_sameMother_eta);
-//     task->AddPairMCSignal(pair_sameMother_etaP);
-//     task->AddPairMCSignal(pair_sameMother_rho);
-    // task->AddPairMCSignal(pair_sameMother_omega);
-    // task->AddPairMCSignal(pair_sameMother_phi);
-    // task->AddPairMCSignal(pair_sameMother_jpsi);
-    // task->AddPairMCSignal(pair_sameMother_CharmedMesonsWithSameMother);
-     task->AddPairMCSignal(pair_conversion);
+  task->AddPairMCSignal(pair_sameMother);
+//  task->AddPairMCSignal(pair_sameMother_pion);
+//  task->AddPairMCSignal(pair_sameMother_eta);
+//  task->AddPairMCSignal(pair_sameMother_etaP);
+//  task->AddPairMCSignal(pair_sameMother_rho);
+//  task->AddPairMCSignal(pair_sameMother_omega);
+//  task->AddPairMCSignal(pair_sameMother_phi);
+  task->AddPairMCSignal(pair_sameMother_jpsi);
+  task->AddPairMCSignal(pair_sameMother_CharmedMesonsWithSameMother);
+  task->AddPairMCSignal(pair_conversion);
 }

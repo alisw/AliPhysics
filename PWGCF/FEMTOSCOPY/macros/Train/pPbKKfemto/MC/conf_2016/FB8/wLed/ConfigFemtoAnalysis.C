@@ -53,6 +53,7 @@
 #include "AliFemtoKTPairCut.h"
 #include "AliFemtoCutMonitorCollections.h"
 #include "AliFemtoModelCorrFctnKK.h"
+#include "AliFemtoModelCorrFctnKpKp.h"
 #endif
 
 //________________________________________________________________________
@@ -169,6 +170,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoTPCInnerCorrFctn      *cqinvinnertpc[20*10];
   //AliFemtoModelCorrFctnKK   *cqinvkttpcmodel[20*8];
   AliFemtoModelCorrFctnSource   *cqinvkttpcmodel[20*8];
+  AliFemtoModelCorrFctnKpKp   *cqinvkttpcmodelKpKp[20*8];
 
   // *** Begin pion-pion analysis ***
   int aniter = 0;
@@ -365,6 +367,12 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      cqinvkttpcmodel[ktm]->SetKaonPDG(kTRUE);
 	      cqinvkttpcmodel[ktm]->ConnectToManager(tModelManager);
 	      anetaphitpc[aniter]->AddCorrFctn(cqinvkttpcmodel[ktm]);
+
+	      cqinvkttpcmodelKpKp[ktm] = new AliFemtoModelCorrFctnKpKp(Form("cqinvModel%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,(imult>6)?shqmax*2.5:shqmax);
+	      cqinvkttpcmodelKpKp[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
+	      cqinvkttpcmodelKpKp[ktm]->SetKaonPDG(kTRUE);
+	      cqinvkttpcmodelKpKp[ktm]->ConnectToManager(tModelManager);
+	      anetaphitpc[aniter]->AddCorrFctn(cqinvkttpcmodelKpKp[ktm]);
 
 	      if (run3d) {
 		//		cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),60,(imult>3)?((imult>6)?((imult>7)?0.6:0.4):0.25):0.15);

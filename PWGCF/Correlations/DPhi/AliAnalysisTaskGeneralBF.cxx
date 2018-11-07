@@ -346,6 +346,8 @@ _s2PtNNw_12_vsM    ( 0),
 _s2NPtNw_12_vsM    ( 0),
 _invMassKaon       ( 0),
 _invMassKaonSq     ( 0),
+_invMassLambda     ( 0),
+_invMassLambdaSq   ( 0),
 _invMassElec       ( 0),
 n1Name("NA"),
 n1NwName("NA"),
@@ -731,6 +733,8 @@ _s2PtNNw_12_vsM    ( 0),
 _s2NPtNw_12_vsM    ( 0),
 _invMassKaon       ( 0),
 _invMassKaonSq     ( 0),
+_invMassLambda     ( 0),
+_invMassLambdaSq   ( 0),
 _invMassElec       ( 0),
 n1Name("NA"),
 n1NwName("NA"),
@@ -1211,6 +1215,8 @@ void  AliAnalysisTaskGeneralBF::createHistograms()
     name = s2NPtNwName+pair_12_Name + vsM;    _s2NPtNw_12_vsM       = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgNSumPt_12);
     name = "mInvKaon";   _invMassKaon   = createHisto1F(name,name, 80, 0.98, 1.06, "M_{KK}","counts");
     name = "mInvKaonSq"; _invMassKaonSq = createHisto1F(name,name, 120, 0.98, 1.10, "M_{KK}^2","counts");
+    name = "mInvLambda"; _invMassLambda = createHisto1F(name,name, 120, 1.09, 1.15, "M_{Lambda}","counts");
+    name = "mInvLambdaSq"; _invMassLambdaSq = createHisto1F(name,name, 140, 1.18, 1.32, "M_{Lambda}^2","counts");
     name = "mInvElec"; _invMassElec = createHisto1F(name,name, 500, 0., 1.000, "M_{inv}","counts");
   }
   
@@ -1294,9 +1300,11 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
   int    nClus;
   bool   bitOK;
   const float mpion   = 0.139570; // GeV/c2
+  const float massPionSq = 0.0194797849; // GeV/c2
   const float mkaon   = 0.493677; // GeV/c2
   const float massKaonSq = 0.2437169803; // GeV/c2
   const float mproton = 0.938272; // GeV/c2
+  const float massProtonSq = 0.880354346; // GeV/c2
   Double_t c = TMath::C() * 1.E-9;// m/ns
   double EP = 0;
   
@@ -2551,7 +2559,7 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
         } //i1
       }
     }
-    else  // for like-sign pairs // filter 1 and 2 are different -- must do all particle pairs...
+    else  // for unlike-sign pairs // filter 1 and 2 are different -- must do all particle pairs...
     {
       _n1_1_vsM->Fill(centrality,      __n1_1);
       _s1pt_1_vsM->Fill(centrality,    __s1pt_1);
@@ -2603,6 +2611,16 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
               float mInvKaon = sqrt(mInvKaonSq);
               _invMassKaonSq->Fill(mInvKaonSq);
               _invMassKaon->Fill(mInvKaon);
+            }
+            
+            if ( particleSpecies_1 == 0 && particleSpecies_2 == 2 ) // lambda invariant mass calculation for pion-proton pairs
+            {
+              float EngyPionSq = massPionSq + pt_1*pt_1 + pz_1*pz_1;
+              float EngyProtonSq = massProtonSq + pt_2*pt_2 + pz_2*pz_2;
+              float mInvLambdaSq = massPionSq + massProtonSq + 2*sqrt(EngyPionSq*EngyProtonSq) - 2*(px_1*px_2 + py_1*py_2 + pz_1*pz_2);
+              float mInvLambda = sqrt(mInvLambdaSq);
+              _invMassLambdaSq->Fill(mInvLambdaSq);
+              _invMassLambda->Fill(mInvLambda);
             }
             
             corr      = corr_1*corr_2;

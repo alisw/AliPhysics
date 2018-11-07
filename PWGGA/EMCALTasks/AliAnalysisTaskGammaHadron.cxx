@@ -521,6 +521,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
      	maxThn[dimThn] = centBinArray[nCentHistBins];
      	dimThn++;
     }
+
     if(fPlotQA==0)
     {
      	fCorrVsManyThings   = new THnSparseF("CorrVsManyThings", "CorrVsManyThings", dimThn, nbinsThn, minThn, maxThn);
@@ -1042,8 +1043,10 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 				//..only if there is an eta dependency given
 				if(funcpEta_left[cent]->GetParameter(0)!=0 && funcpEta_right[cent]->GetParameter(0)!=0)
 				{
-					if(eta<=-0.04)DetectionEff*=funcpEta_left[cent]->Eval(eta,0,0);
-					else          DetectionEff*=funcpEta_right[cent]->Eval(eta,0,0);
+					if(TMath::Abs(eta) < 0.9) { //functions have singularity at .91
+						if(eta<=-0.04)DetectionEff*=funcpEta_left[cent]->Eval(eta,0,0);
+						else          DetectionEff*=funcpEta_right[cent]->Eval(eta,0,0);
+					}
 				}
 				if(fCorrectEff==1)fEffCorrectionCheck[cent]->SetBinContent(j,k,DetectionEff/fscaleEta[cent]);
 				if(fCorrectEff==0)fEffCorrectionCheck[cent]->SetBinContent(j,k,1);
@@ -2817,8 +2820,8 @@ Bool_t AliAnalysisTaskGammaHadron::DetermineMatchedTrack(AliVCluster* caloCluste
 		Double_t phiCut = fTrackMatchPhi;
 		Double_t trackPt = track->Pt();
 
-		fMatchDeltaPhiTrackPt->Fill(trackPt,etadiff);
-		fMatchDeltaEtaTrackPt->Fill(trackPt,phidiff);
+		fMatchDeltaPhiTrackPt->Fill(trackPt,phidiff);
+		fMatchDeltaEtaTrackPt->Fill(trackPt,etadiff);
 		//
 		// For input -1 or 0, use the parametrized track matching cuts given in https://alice-notes.web.cern.ch/node/813
 		if (etaCut <= 0) etaCut = 0.010 + TMath::Power((trackPt + 4.07), -2.5);

@@ -161,6 +161,7 @@ fPtvsTrackPtvsDphi(0),
 fPtTrackClusRatiovsPt(0),
 fPtTrackClusRatiovsPtWithCPV(0),
 fClusEvsClusT(0),
+fClustEnBefAftNonLin(0),
 fPT(0),
 fPTbeforeNonLinScaling(0),
 fE(0),
@@ -380,6 +381,7 @@ fPtvsTrackPtvsDphi(0),
 fPtTrackClusRatiovsPt(0),
 fPtTrackClusRatiovsPtWithCPV(0),
 fClusEvsClusT(0),
+fClustEnBefAftNonLin(0),
 fPT(0),
 fPTbeforeNonLinScaling(0),
 fE(0),
@@ -1184,6 +1186,12 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fClusEvsClusT->Sumw2();
   fOutput->Add(fClusEvsClusT);
 
+  fClustEnBefAftNonLin = new TH2F("fClustEnBefAftNonLin", "Cluster energy, non-linearity correction vs. raw", 100, 0., 100., 100, 0., 100.);
+  fClustEnBefAftNonLin->SetXTitle("Raw #it{E} (GeV)");
+  fClustEnBefAftNonLin->SetYTitle("Non-lin. corr. #it{E} (GeV)");
+  fClustEnBefAftNonLin->Sumw2();
+  fOutput->Add(fClustEnBefAftNonLin);
+
   fPT = new TH1F("hPt_NC","#it{p}_{T} distribution for clusters before candidate selection",100,0.,100.);
   fPT->Sumw2();
   fOutput->Add(fPT);
@@ -1700,6 +1708,9 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 	NonLinRecoEnergyScaling(vecCOI);
 
       fPT->Fill(vecCOI.Pt());
+
+      // Check non-linearity effect
+      fClustEnBefAftNonLin->Fill(coi->E(), coi->GetNonLinCorrEnergy());
 
       if(fQA)
 	FillQAHistograms(coi,vecCOI);

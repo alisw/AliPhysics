@@ -8,7 +8,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
                                                                 Double_t centMax=100.,
                                                                 Bool_t PIDCorr=kFALSE,
                                                                 Bool_t useAODFilterCuts=kFALSE,
-                                                                TString TMVAweight = "TMVAClassification_BDTG.weights_094.xml" 
+                                                                TString TMVAweight = "TMVAClassification_BDTG.weights_094.xml",
+                                                                int genGroup=0
         ) {
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
@@ -51,8 +52,13 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   // #########################################################
   // Possibility to set generator. If nothing set all generators are taken into account
   // task->SetGeneratorName(generatorName);
-  task->SetGeneratorMCSignalName(generatorNameForMCSignal);
-  task->SetGeneratorULSSignalName(generatorNameForULSSignal);
+  TString generators="";
+  if(genGroup&1<<0) generators+= "Hijing_0;";
+  if(genGroup&1<<1) generators+= "pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;";
+  if(genGroup&1<<2) generators+= "Pythia CC_8;Pythia BB_8;Pythia B_8";
+  TString generatorsPair=generators;
+  task->SetGeneratorMCSignalName(generatorsPair);
+  task->SetGeneratorULSSignalName(generators);
 
   // #########################################################
   // #########################################################
@@ -66,7 +72,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   
 //  maybe redundant since already set in eventcuts above
   std::cout << "CentMin = " << centMin << "  CentMax = " << centMax << std::endl;
-  task->SetCentrality(centMin, centMax);
+//  task->SetCentrality(centMin, centMax);
   
   // #########################################################
   // #########################################################
@@ -80,7 +86,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   // #########################################################
   // #########################################################
   // Set minimum and maximum values of generated tracks. Only used to save computing power.
-  task->SetKinematicCuts(minGenPt, maxGenPt, minGenEta, maxGenEta);
+  task->SetKinematicCuts(minPtCut, maxPtCut, minEtaCut, maxEtaCut);
 
   // #########################################################
   // #########################################################
@@ -151,25 +157,24 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   // #########################################################
   // Add MCSignals. Can be set to see differences of:
   // e.g. secondaries and primaries. or primaries from charm and resonances
-  AddSingleLegMCSignal(task);
+//  AddSingleLegMCSignal(task);
   AddPairMCSignal(task);
   std::vector<Bool_t> DielectronsPairNotFromSameMother = AddSingleLegMCSignal(task);
   task->AddMCSignalsWhereDielectronPairNotFromSameMother(DielectronsPairNotFromSameMother);
 
   // #########################################################
   // Adding multiple cutsettings
-  for(Int_t MVACut = 0; MVACut <= 10; ++MVACut){
-    std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVA Cut: "<<MVACut*0.2<<" added"<< std::endl;
-    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight);
-    task->AddTrackCuts(filter);
-    }
+//  for(Int_t MVACut = 0; MVACut <= 0; ++MVACut){
   
- 
-// Adding multiple cutsettings
-//  std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" being added"<< std::endl;
-//  AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, useAODFilterCuts);
-//  task->AddTrackCuts(filter);
-    
+    Int_t MVACut=0;
+    for(Int_t trackCut = 0; trackCut <=5; ++trackCut){
+      for(Int_t PIDCut = 0; PIDCut <= 8; ++PIDCut){  
+        std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVA Cut: "<<MVACut*0.2<<" added"<< std::endl;
+        AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight);
+        task->AddTrackCuts(filter);
+      }
+    }
+
   if(PIDCorr) setPIDCorrections(task);
 
   mgr->AddTask(task);

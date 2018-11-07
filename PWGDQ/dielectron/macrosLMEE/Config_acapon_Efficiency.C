@@ -9,8 +9,8 @@ Bool_t DoULSLS      = kFALSE;
 Bool_t DeactivateLS = kTRUE;
 
 // Leave blank to not use resolution files
-std::string resoFilename = "resolution_17f2a_deltaVsP_0090cent.root";
-std::string resoFilenameFromAlien = "/alice/cern.ch/user/a/acapon/ResolutionFiles/resolution_17f2a_deltaVsP_0090cent.root";
+std::string resoFilename = "";
+std::string resoFilenameFromAlien = "";
 
 Bool_t DoCocktailWeighting  = kFALSE;
 Bool_t GetCocktailFromAlien = kFALSE;
@@ -32,7 +32,7 @@ const Double_t maxGenPt  = 10;
 const Double_t minGenEta = -1.5;
 const Double_t maxGenEta = 1.5;
 
-const Double_t minPtCut  = 0.05;
+const Double_t minPtCut  = 0.2;
 const Double_t maxPtCut  = 8.0;
 const Double_t minEtaCut = -0.8;
 const Double_t maxEtaCut = 0.8;
@@ -159,9 +159,9 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(TString cutDefinition)
 	Bool_t SDDstatus = kTRUE;
 
   LMEECutLib* LMcutlib = new LMEECutLib(SDDstatus);
-  if(cutDefinition == "kTTreeCuts"){
-		std::cout << "TTree Cuts being set" << std::endl;
-		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kTTreeCuts, LMEECutLib::kTTreeCuts));
+  if(cutDefinition == "kResolutionCuts"){
+		std::cout << "Resolution Track Cuts being set" << std::endl;
+		anaFilter->AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kResolutionTrackCuts, LMEECutLib::kResolutionTrackCuts));
 		anaFilter->SetName(cutDefinition);
 		anaFilter->Print();
   }
