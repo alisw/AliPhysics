@@ -4888,7 +4888,7 @@ Float_t AliConvEventCuts::GetWeightForMultiplicity(Int_t mult){
        fPeriodEnum == kLHC16i2a || fPeriodEnum == kLHC16i2b || fPeriodEnum == kLHC16i2c ||
        fPeriodEnum == kLHC16i3a || fPeriodEnum == kLHC16i3b || fPeriodEnum == kLHC16i3c      ) {  //  For these periods allow larger statistical error in the MC to apply the multiplicity weight
 
-    if (relativeErrorData < 0.2 && relativeErrorMC < 0.4 ){
+    if (relativeErrorData < 0.6 && relativeErrorMC < 0.6 ){
         if (isfinite(valueMultData) && isfinite(valueMultMC) ){
           weightMult               = valueMultData/valueMultMC;
         }
