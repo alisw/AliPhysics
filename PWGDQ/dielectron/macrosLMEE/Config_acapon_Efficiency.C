@@ -9,8 +9,8 @@ Bool_t DoULSLS      = kFALSE;
 Bool_t DeactivateLS = kTRUE;
 
 // Leave blank to not use resolution files
-std::string resoFilename = "resolution_17f2a_deltaVsP_0090cent.root";
-std::string resoFilenameFromAlien = "/alice/cern.ch/user/a/acapon/ResolutionFiles/resolution_17f2a_deltaVsP_0090cent.root";
+std::string resoFilename = "";
+std::string resoFilenameFromAlien = "";
 
 Bool_t DoCocktailWeighting  = kFALSE;
 Bool_t GetCocktailFromAlien = kFALSE;
