@@ -1710,7 +1710,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       fPT->Fill(vecCOI.Pt());
 
       // Check non-linearity effect
-      fClustEnBefAftNonLin(coi->E(), coi->GetNonLinCorrEnergy());
+      fClustEnBefAftNonLin->Fill(coi->E(), coi->GetNonLinCorrEnergy());
 
       if(fQA)
 	FillQAHistograms(coi,vecCOI);
