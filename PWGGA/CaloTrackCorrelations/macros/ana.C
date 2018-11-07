@@ -1,4 +1,4 @@
-/// \file ana.C 
+/// \file ana.C
 /// \ingroup CaloTrackCorrMacros
 /// \brief Example of execution macro
 ///
@@ -13,6 +13,9 @@
 ///
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
+
+R__ADD_INCLUDE_PATH($ALICE_ROOT)
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 
 // ROOT
 #include <Riostream.h>
@@ -51,44 +54,46 @@
 // Main AddTasks and associated classes
 #include "AliAnalysisTaskCaloTrackCorrelation.h"
 #include "AliAnaCaloTrackCorrMaker.h"
-#include "AddTaskGammaHadronCorrelationSelectAnalysis.C" 
-//#include "AddTaskMultipleTrackCutIsoConeAnalysis.C" // comment, does not compile with AddTaskGammaHadronCorrelationSelectAnalysis.C
-//#include "AddTaskPi0IMGammaCorrQA.C" // comment, does not compile with AddTaskGammaHadronCorrelationSelectAnalysis.C
+#include "PWGGA/CaloTrackCorrelations/macros/AddTaskGammaHadronCorrelationSelectAnalysis.C" 
+//#include "PWGGA/CaloTrackCorrelations/macros/AddTaskMultipleTrackCutIsoConeAnalysis.C" 
+// comment, does not compile with AddTaskGammaHadronCorrelationSelectAnalysis.C
+//#include "PWGGA/CaloTrackCorrelations/macros/AddTaskPi0IMGammaCorrQA.C" 
+// comment, does not compile with AddTaskGammaHadronCorrelationSelectAnalysis.C
 
 #include "AliPhysicsSelection.h"
 #include "AliPhysicsSelectionTask.h"
-#include "AddTaskPhysicsSelection.C"
+#include "OADB/macros/AddTaskPhysicsSelection.C"
 
 //#include "AliCentralitySelectionTask.h"
 //#include "AddTaskCentrality.C"
 
 #include "AliMultSelectionTask.h" 
-#include "AddTaskMultSelection.C"
+#include "OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C"
 
 //#include "AliVZEROEPSelectionTask.h"
 //#include "AliEPSelectionTask.h"
 //#include "AddTaskVZEROEPSelection.C"
-//#include "AddTaskEventplane.C"
+//#include "ANALYSIS/macros/AddTaskEventplane.C"
 
 //#include "CreateAlienHandler.C"
 
 //#include "AliAnalysisTaskCounter.h"
-//#include "AddTaskCounter.C"
+//#include "PWGGA/CaloTrackCorrelations/macros/AddTaskCounter.C"
 
 //#include "AliTender.h"
 //#include "AliEmcalTenderTask.h"
 //#include "AliEMCALTenderSupply.h"
 //#include "AliEMCALRecParam.h"
-//#include "AddTaskEMCALTender.C"
+//#include "PWG/EMCAL/macros/AddTaskEMCALTender.C"
 
 #include "AliTaskCDBconnect.h"
-#include "AddTaskCDBconnect.C"
+#include "PWGPP/PilotTrain/AddTaskCDBconnect.C"
 
 #include "AliAnalysisTaskEMCALClusterize.h"
-#include "AddTaskEMCALClusterize.C"
+#include "PWGPP/EMCAL/macros/AddTaskEMCALClusterize.C"
 
 #include "AliEmcalCorrectionTask.h"
-#include "AddTaskEmcalCorrectionTask.C"
+#include "PWG/EMCAL/macros/AddTaskEmcalCorrectionTask.C"
 
 #endif
 
@@ -987,7 +992,7 @@ void  LoadLibraries(Int_t /*mode*/)
 ///
 /// \param mode: analysis mode defined in enum anaModes
 //________________________
-void ana ( anaModes mode = mLocal )
+void ana ( anaModes mode = mGRID )
 {  
   //--------------------------------------------------------------------
   // Load analysis libraries
@@ -1226,6 +1231,7 @@ void ana ( anaModes mode = mLocal )
 
     AliEmcalCorrectionTask * emcorr = AddTaskEmcalCorrectionTask();
     
+    //emcorr->SetUserConfigurationFilename("./EMCalCorrConfig_Data_ClV1_Run2TCalib_Test.yaml");
     // Data or MC specific configurations
     if ( !kMC )
     {
@@ -1263,27 +1269,27 @@ void ana ( anaModes mode = mLocal )
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/AddTaskEMCALClusterize.C"); 
 #endif
  
-    Int_t   clTM      = 2;  // Do track matching, 0 no, 1 TPC only, 2 hybrid
-    Bool_t  exo       = kTRUE;  // Remove exotic cells
-    
-    Bool_t  clnonlin  = kTRUE;  // Apply non linearity (clusterizer), CAREFUL check that not done in analysis
+    TString sClust    = "V1Unfold"; // Options: V1, V2, V1Unfold, NxN
+    Int_t   clTM      = 2;       // Do track matching, 0 no, 1 TPC only, 2 hybrid
+    Bool_t  exo       = kTRUE;   // Remove exotic cells
+    Bool_t  clnonlin  = kTRUE;   // Apply non linearity (clusterizer), CAREFUL check that not done in analysis
     Int_t   minEcell  = 100;     // 50  MeV (10 MeV used in reconstruction)
     Int_t   minEseed  = 500;     // 100 MeV
     Int_t   dTime     = 10000;   // open
     Int_t   wTime     = 10000;   // open
     Int_t   unfMinE   = 15;      // Remove cells with less than 15 MeV from cluster after unfolding
     Int_t   unfFrac   = 1;       // Remove cells with less than 1% of cluster energy after unfolding
-    Bool_t  updateCell= kTRUE;   // Calibrate cells and modify them on the fly
+    Bool_t  updateCell= kFALSE;  // Calibrate cells and modify them on the fly
     Bool_t  filterEvents = kFALSE; // Filter events with activity in EMCal
     Int_t   cenBin[]  = {-1,-1}; // Centrality bin min-max of accepted events. {-1,-1} take all
     // Calibration, bad map ...
     
-    Bool_t calibEE = kFALSE; // It is set automatically, but here we force to use ir or not in any case
-    Bool_t calibTT = kFALSE; // It is set automatically, but here we force to use ir or not in any case
-    Bool_t badMap  = kTRUE;  // It is set automatically, but here we force to use it or not in any case  
+    Bool_t calibEE = kTRUE; // It is set automatically, but here we force to use ir or not in any case
+    Bool_t calibTT = kTRUE; // It is set automatically, but here we force to use ir or not in any case
+    Bool_t badMap  = kTRUE; // It is set automatically, but here we force to use it or not in any case  
        
     AliAnalysisTaskEMCALClusterize * cl = 
-    AddTaskEMCALClusterize(clustersArray, outAOD, kMC, exo,"V1","", clTM,
+    AddTaskEMCALClusterize(clustersArray, outAOD, kMC, exo,sClust,"", clTM,
                            minEcell,minEseed,dTime,wTime,unfMinE,unfFrac,
                            calibEE,badMap,calibTT,clnonlin,
                            cenBin[0],cenBin[1],-1,1,1,filterEvents,xTalkEmul,updateCell);
@@ -1305,10 +1311,10 @@ void ana ( anaModes mode = mLocal )
     //    cl->GetRecoUtils()->SetDeadChannelAsGood();
     //    cl->GetRecoUtils()->SetHotChannelAsGood();
     
-    clustersArray = Form("V1_Ecell%d_Eseed%d",minEcell,minEseed);
+    clustersArray = Form("%s_Ecell%d_Eseed%d",sClust.Data(),minEcell,minEseed);
     cl->SetAODBranchName(clustersArray);
 
-    if ( updateCell )
+    if ( !updateCell )
     {
       cellsArray = "Cells_Updated";
       if ( xTalkEmul > 0 )
@@ -1365,6 +1371,12 @@ void ana ( anaModes mode = mLocal )
     nTrig = fixTrig+1;
   }
   
+  if ( kYear == 2011 )
+    nTrig = 2;
+
+  if ( kYear == 2010 )
+    nTrig = 1;  
+  
   // -----------------
   // Photon/Pi0/Isolation/Correlation etc
   // -----------------
@@ -1384,8 +1396,10 @@ void ana ( anaModes mode = mLocal )
     Bool_t   mixOn         = kFALSE;
     TString  outputfile    = "";
     Bool_t   printSettings = kFALSE;
+    
     TString  cutSelected      = "SPDPileUp";//"_ITSonly";
-    TString  analysisSelected = "Photon_InvMass"; // Activate photon selection and invariant mass analysis
+     // Activate photon selection and invariant mass analysis
+    TString  analysisSelected = "Photon_InvMass";//_MergedPi0_Isolation_Correlation_ClusterShape_PerSM_PerTCard";
     // More options:
     // "Photon_InvMass_MergedPi0_Isolation_Correlation_ClusterShape_PerSM_PerTCard_QA_Charged_Bkg"; 
     
@@ -1503,38 +1517,38 @@ void ana ( anaModes mode = mLocal )
 //#endif
 //    //  AliAnalysisTaskEMCALTriggerQA * qatrigtask = AddTaskEMCALTriggerQA(); 
 //  } // bAnalysis QA
-  
-    //  // Simple event counting tasks
-    //  
-    //#if defined(__CINT__)
-    //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/AddTaskCounter.C");   
-    //#endif
-    //
-    //  AliAnalysisTaskCounter* count    = AddTaskCounter("",kMC);   // All, fill histo with cross section and trials if kMC is true
-    //  AliAnalysisTaskCounter* countmb  = AddTaskCounter("MB"); // Min Bias
-    //  AliAnalysisTaskCounter* countany = AddTaskCounter("Any"); 
-    //  AliAnalysisTaskCounter* countint = AddTaskCounter("AnyINT");// Min Bias
-    //  
-    //  if ( !kMC )
-    //  {
-    //    AliAnalysisTaskCounter* countemg = AddTaskCounter("EMCEGA"); 
-    //    AliAnalysisTaskCounter* countemj = AddTaskCounter("EMCEJE"); 
-    //    if ( kCollision=="PbPb" )
-    //    {
-    //      AliAnalysisTaskCounter* countcen = AddTaskCounter("Central"); 
-    //      AliAnalysisTaskCounter* countsce = AddTaskCounter("SemiCentral"); 
-    //      AliAnalysisTaskCounter* countssce= AddTaskCounter("SemiOrCentral"); 
-    //      AliAnalysisTaskCounter* countphP = AddTaskCounter("PHOSPb"); 
-    //    }
-    //    else
-    //    {
-    //      AliAnalysisTaskCounter* countem1 = AddTaskCounter("EMC1"); // Trig Th > 1.5 GeV approx
-    //      AliAnalysisTaskCounter* countem7 = AddTaskCounter("EMC7"); // Trig Th > 4-5 GeV 
-    //      AliAnalysisTaskCounter* countphp = AddTaskCounter("PHOS"); 
-    //    }
-    //  }  
-    // 
-    //  
+//  
+      // Simple event counting tasks
+//      
+//    #if defined(__CINT__)
+//      gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/AddTaskCounter.C");   
+//    #endif
+//    
+//      AliAnalysisTaskCounter* count    = AddTaskCounter("",kMC);   // All, fill histo with cross section and trials if kMC is true
+//      AliAnalysisTaskCounter* countmb  = AddTaskCounter("MB"); // Min Bias
+//      AliAnalysisTaskCounter* countany = AddTaskCounter("Any"); 
+//      AliAnalysisTaskCounter* countint = AddTaskCounter("AnyINT");// Min Bias
+//      
+//      if ( !kMC )
+//      {
+//        AliAnalysisTaskCounter* countemg = AddTaskCounter("EMCEGA"); 
+//        AliAnalysisTaskCounter* countemj = AddTaskCounter("EMCEJE"); 
+//        if ( kCollision=="PbPb" )
+//        {
+//          AliAnalysisTaskCounter* countcen = AddTaskCounter("Central"); 
+//          AliAnalysisTaskCounter* countsce = AddTaskCounter("SemiCentral"); 
+//          AliAnalysisTaskCounter* countssce= AddTaskCounter("SemiOrCentral"); 
+//          AliAnalysisTaskCounter* countphP = AddTaskCounter("PHOSPb"); 
+//        }
+//        else
+//        {
+//          AliAnalysisTaskCounter* countem1 = AddTaskCounter("EMC1"); // Trig Th > 1.5 GeV approx
+//          AliAnalysisTaskCounter* countem7 = AddTaskCounter("EMC7"); // Trig Th > 4-5 GeV 
+//          AliAnalysisTaskCounter* countphp = AddTaskCounter("PHOS"); 
+//        }
+//      }  
+//     
+      
   
   
   //-----------------------
