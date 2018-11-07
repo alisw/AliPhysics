@@ -760,20 +760,20 @@ void AliConvEventCuts::LoadWeightingMultiplicityFromFile() {
   if (fNameHistoReweightingMultData.CompareTo("") != 0 && (fDoMultiplicityWeighting > 0)){
     cout << "I have to find: " <<  fNameHistoReweightingMultData.Data() << endl;
     TH1D *hReweightMultDatatemp = (TH1D*)w->Get(fNameHistoReweightingMultData.Data());
-    if (hReweightMultDatatemp == NULL) AliError(Form("%s was not contained in %s", fNameHistoReweightingMultData.Data(),fPathReweightingMult.Data() ));
-    hReweightMultData = new TH1D(*hReweightMultDatatemp);
-    if (hReweightMultData) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingMultData.Data(),fPathReweightingMult.Data() ));
-    else AliWarning(Form("%s not found in %s", fNameHistoReweightingMultData.Data() ,fPathReweightingMult.Data()));
-    hReweightMultData->SetDirectory(0);
+    if(hReweightMultDatatemp){
+      hReweightMultData = new TH1D(*hReweightMultDatatemp);
+      hReweightMultData->SetDirectory(0);
+      AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingMultData.Data(),fPathReweightingMult.Data() ));
+    } else  AliError(Form("%s was not contained in %s", fNameHistoReweightingMultData.Data(),fPathReweightingMult.Data() ));
   }
   if (fNameHistoReweightingMultMC.CompareTo("") != 0 && (fDoMultiplicityWeighting > 0)){
     cout << "I have to find: " <<  fNameHistoReweightingMultMC.Data() << endl;
     TH1D *hReweightMultMCtemp = (TH1D*)w->Get(fNameHistoReweightingMultMC.Data());
-    if (hReweightMultMCtemp == NULL) AliError(Form("%s was not contained in %s", fNameHistoReweightingMultMC.Data(),fPathReweightingMult.Data() ));
-    hReweightMultMC = new TH1D(*hReweightMultMCtemp);
-    if (hReweightMultData) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingMultMC.Data(),fPathReweightingMult.Data() ));
-    else AliWarning(Form("%s not found in %s", fNameHistoReweightingMultMC.Data() ,fPathReweightingMult.Data()));
-    hReweightMultMC->SetDirectory(0);
+    if(hReweightMultMCtemp){
+      hReweightMultMC = new TH1D(*hReweightMultMCtemp);
+      hReweightMultMC->SetDirectory(0);
+      AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingMultMC.Data(),fPathReweightingMult.Data() ));
+    } else  AliError(Form("%s was not contained in %s", fNameHistoReweightingMultMC.Data(),fPathReweightingMult.Data() ));
   }
 
   w->Close();
@@ -4858,31 +4858,42 @@ Float_t AliConvEventCuts::GetWeightForMultiplicity(Int_t mult){
 
   Double_t weightMult         = 1.;
 
-  Float_t valueMultData       = -1.;
-  Float_t valueMultMC         = -1.;
-
   if (hReweightMultData == NULL || hReweightMultMC == NULL ) return weightMult;
 
+  // get mult values for weights
+  Float_t valueMultData       = -1.;
+  Float_t valueMultMC         = -1.;
   valueMultData               = hReweightMultData->Interpolate(mult);
   valueMultMC                 = hReweightMultMC->Interpolate(mult);
-  
-  Float_t relativeErrorMC     = hReweightMultMC->GetBinError(hReweightMultMC->FindBin(mult))/hReweightMultMC->GetBinContent(hReweightMultMC->FindBin(mult));
-  Float_t relativeErrorData   = hReweightMultData->GetBinError(hReweightMultData->FindBin(mult))/hReweightMultData->GetBinContent(hReweightMultData->FindBin(mult));
-  
- 
+
+  // calculate relative error for data and MC
+  Float_t valueMC   = 0;
+  Float_t valueData = 0;
+  Float_t errorMC   = 0;
+  Float_t errorData = 0;
+  valueMC   = hReweightMultMC->GetBinContent(hReweightMultMC->FindBin(mult));
+  valueData = hReweightMultData->GetBinContent(hReweightMultData->FindBin(mult));
+  errorMC   = hReweightMultMC->GetBinError(hReweightMultMC->FindBin(mult));
+  errorData = hReweightMultData->GetBinError(hReweightMultData->FindBin(mult));
+  Float_t relativeErrorMC   = 1;
+  Float_t relativeErrorData = 1;
+  if(valueMC!=0)   relativeErrorMC   = errorMC / valueMC;
+  if(valueData!=0) relativeErrorData = errorData / valueData;
+
   if ( fPeriodEnum == kLHC16NomB || fPeriodEnum == kLHC16P1Pyt8 || fPeriodEnum == kLHC16P1PHO || 
        fPeriodEnum == kLHC17pq  ||  fPeriodEnum == kLHC17P1PHO  || fPeriodEnum == kLHC17l3b  || fPeriodEnum == kLHC18j2  || fPeriodEnum == kLHC17l4b  || 
-       fPeriodEnum == kLHC15o   || fPeriodEnum == kLHC16g1  || fPeriodEnum == kLHC16g1a || 
-       fPeriodEnum == kLHC16g1b || fPeriodEnum == kLHC16g1c || fPeriodEnum == kLHC16i1a || 
-       fPeriodEnum == kLHC16i1b || fPeriodEnum == kLHC16i1c || fPeriodEnum == kLHC16i2a || 
-       fPeriodEnum == kLHC16i2b || fPeriodEnum == kLHC16i2c || fPeriodEnum == kLHC16i3a || 
-       fPeriodEnum == kLHC16i3b || fPeriodEnum == kLHC16i3c || fPeriodEnum == kLHC16h4     ) {  //  For these periods allow larger statistical error in the MC to apply the multiplicity weight
-     if (relativeErrorData < 0.2 && relativeErrorMC < 0.4 ){
+       fPeriodEnum == kLHC16g1  || fPeriodEnum == kLHC16h4  ||
+       fPeriodEnum == kLHC16g1a || fPeriodEnum == kLHC16g1b || fPeriodEnum == kLHC16g1c ||
+       fPeriodEnum == kLHC16i1a || fPeriodEnum == kLHC16i1b || fPeriodEnum == kLHC16i1c ||
+       fPeriodEnum == kLHC16i2a || fPeriodEnum == kLHC16i2b || fPeriodEnum == kLHC16i2c ||
+       fPeriodEnum == kLHC16i3a || fPeriodEnum == kLHC16i3b || fPeriodEnum == kLHC16i3c      ) {  //  For these periods allow larger statistical error in the MC to apply the multiplicity weight
+
+    if (relativeErrorData < 0.6 && relativeErrorMC < 0.6 ){
         if (isfinite(valueMultData) && isfinite(valueMultMC) ){
           weightMult               = valueMultData/valueMultMC;
         }
-    }
-  } else {     
+     }
+  } else {
     if (relativeErrorData < 0.2 && relativeErrorMC < 0.2 ){
        if (isfinite(valueMultData) && isfinite(valueMultMC) ){
           weightMult               = valueMultData/valueMultMC;
