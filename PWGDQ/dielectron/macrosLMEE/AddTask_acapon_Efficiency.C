@@ -1,13 +1,14 @@
 //Names should contain a comma seperated list of cut settings
 //Current options: all, electrons, kCutSet1, TTreeCuts, V0_TPCcorr, V0_ITScorr
-AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names = "kCutSet1",
-                                                               Int_t whichGen = 0, // 0=all sources, 1=Jpsi, 2=HF
-                                                               Int_t wagonnr = 0,
-                                                               Int_t centrality = 0,
-																															 Bool_t SDDstatus = kTRUE,
+AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names          = "kCutSet1",
+                                                               Int_t whichGen         = 0, // 0=all sources, 1=Jpsi, 2=HS
+                                                               Int_t wagonnr          = 0,
+                                                               Int_t centrality       = 0,
+                                                               Bool_t SDDstatus       = kTRUE,
+                                                               Bool_t applyPIDcorr    = kTRUE,
                                                                Bool_t cutlibPreloaded = kFALSE,
-                                                               Bool_t getFromAlien = kFALSE
-																																) {
+                                                               Bool_t getFromAlien    = kFALSE)
+{
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
 	
@@ -102,7 +103,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names = "
 
   // #########################################################
   // #########################################################
-  // Set minimum and maximum values of generated tracks. Only used to save computing power.
+  // Set kinematic cuts for pairing
   task->SetKinematicCuts(minPtCut, maxPtCut, minEtaCut, maxEtaCut);
 
   // #########################################################
@@ -172,11 +173,17 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names = "
   for(Int_t iCut = 0; iCut < nDie; ++iCut){
     TString cutDefinition(arrNames->At(iCut)->GetName());
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition);
+		if(!filter){
+			std::cout << "Invalid cut setting specified!!" << std::endl;
+			return 0x0;
+		}
     task->AddTrackCuts(filter);
 		Printf("Successfully added task with cut set: %s\n", cutDefinition);
 		// Apply PID post calibration to ITS(0) and TOF(1)
-    ApplyPIDpostCalibration(task, 0);
-    ApplyPIDpostCalibration(task, 1);
+		if(applyPIDcorr){
+			ApplyPIDpostCalibration(task, 0);
+			ApplyPIDpostCalibration(task, 1);
+		}
   }
 
 
