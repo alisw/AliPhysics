@@ -18,6 +18,8 @@ fValidCutsCalo(kTRUE),
 fValidCutsMergedCalo(kTRUE),
 fValidCutsMeson(kTRUE),
 fValidCutsElectron(kTRUE),
+fValidCutsNDM(kTRUE),
+fValidCutsChargedPion(kTRUE),
 fEventCutArray(0),
 fPhotonCutArray(0),
 fMesonCutArray(0),
@@ -55,21 +57,28 @@ AliCutHandlerPCM::AliCutHandlerPCM(Int_t nMax) :
   fValidCutsMergedCalo(kTRUE),
   fValidCutsMeson(kTRUE),
   fValidCutsElectron(kTRUE),
+  fValidCutsNDM(kTRUE),
+  fValidCutsChargedPion(kTRUE),
   fEventCutArray(0),
   fPhotonCutArray(0),
   fMesonCutArray(0),
   fClusterCutArray(0),
   fMergedClusterCutArray(0),
-  fElectronCutArray(0)
+  fElectronCutArray(0),
+  fNeutralDecayMesonCutArray(0),
+  fChargedPionCutArray(0)
 {
-  fNCuts                  = 0;
-  fNMaxCuts               = nMax;
-  fEventCutArray          = new TString[fNMaxCuts];
-  fPhotonCutArray         = new TString[fNMaxCuts];
-  fMesonCutArray          = new TString[fNMaxCuts];
-  fClusterCutArray        = new TString[fNMaxCuts];
-  fMergedClusterCutArray  = new TString[fNMaxCuts];
-  fElectronCutArray       = new TString[fNMaxCuts];
+  fNCuts                     = 0;
+  fNMaxCuts                  = nMax;
+  fEventCutArray             = new TString[fNMaxCuts];
+  fPhotonCutArray            = new TString[fNMaxCuts];
+  fMesonCutArray             = new TString[fNMaxCuts];
+  fClusterCutArray           = new TString[fNMaxCuts];
+  fMergedClusterCutArray     = new TString[fNMaxCuts];
+  fElectronCutArray          = new TString[fNMaxCuts];
+  fNeutralDecayMesonCutArray = new TString[fNMaxCuts];
+  fChargedPionCutArray       = new TString[fNMaxCuts];
+
   for(Int_t i=0; i<fNMaxCuts; i++) {
     fEventCutArray[i]           = "";
     fPhotonCutArray[i]          = "";
@@ -222,6 +231,83 @@ void AliCutHandlerPCM::AddCutPCMDalitz(TString eventCut, TString photonCut, TStr
   return;
 }
 
+void AliCutHandlerPCM::AddCutHeavyMesonPCM(TString eventCut, TString photonCut, TString pionCut, TString ndmCut, TString mesonCut){
+  if(fNCuts>=fNMaxCuts) {
+    cout << "ERROR in AliCutHandlerPCM: Exceeded maximum number of cuts!" << endl;
+    fValidCuts = false;
+    return;
+  }
+  if( eventCut.Length()!=8 || photonCut.Length()!=26 || pionCut.Length()!=9 || ndmCut.Length()!=16 || mesonCut.Length()!=16 ){
+    cout << "ERROR in AliCutHandlerPCM: Incorrect length of cut string!" << endl;
+    fValidCutsEvent       = kFALSE;
+    fValidCutsPCM         = kFALSE;
+    fValidCutsChargedPion = kFALSE;
+    fValidCutsNDM         = kFALSE;
+    fValidCutsMeson       = kFALSE;
+    fValidCuts            = false;
+  }
+  fMode                              = 0;
+  fEventCutArray[fNCuts]             = eventCut;
+  fPhotonCutArray[fNCuts]            = photonCut;
+  fChargedPionCutArray[fNCuts]       = pionCut;
+  fNeutralDecayMesonCutArray[fNCuts] = ndmCut;
+  fMesonCutArray[fNCuts]             = mesonCut;
+  fNCuts++;
+  return;
+}
+
+void AliCutHandlerPCM::AddCutHeavyMesonCalo(TString eventCut, TString clusterCut, TString pionCut, TString ndmCut, TString mesonCut){
+  if(fNCuts>=fNMaxCuts) {
+    cout << "ERROR in AliCutHandlerPCM: Exceeded maximum number of cuts!" << endl;
+    fValidCuts = false;
+    return;
+  }
+  if( eventCut.Length()!=8 || clusterCut.Length()!=19 || pionCut.Length()!=9 || ndmCut.Length()!=16 || mesonCut.Length()!=16 ){
+    cout << "ERROR in AliCutHandlerPCM: Incorrect length of cut string!" << endl;
+    fValidCutsEvent       = kFALSE;
+    fValidCutsCalo        = kFALSE;
+    fValidCutsChargedPion = kFALSE;
+    fValidCutsNDM         = kFALSE;
+    fValidCutsMeson       = kFALSE;
+    fValidCuts            = false;
+  }
+  fMode                              = 0;
+  fEventCutArray[fNCuts]             = eventCut;
+  fClusterCutArray[fNCuts]           = clusterCut;
+  fChargedPionCutArray[fNCuts]       = pionCut;
+  fNeutralDecayMesonCutArray[fNCuts] = ndmCut;
+  fMesonCutArray[fNCuts]             = mesonCut;
+  fNCuts++;
+  return;
+}
+void AliCutHandlerPCM::AddCutHeavyMesonPCMCalo(TString eventCut,TString photonCut, TString clusterCut, TString pionCut, TString ndmCut, TString mesonCut){
+  if(fNCuts>=fNMaxCuts) {
+    cout << "ERROR in AliCutHandlerPCM: Exceeded maximum number of cuts!" << endl;
+    fValidCuts = false;
+    return;
+  }
+  if( eventCut.Length()!=8 || photonCut.Length()!=26 || clusterCut.Length()!=19 || pionCut.Length()!=9 || ndmCut.Length()!=16 || mesonCut.Length()!=16 ){
+    cout << "ERROR in AliCutHandlerPCM: Incorrect length of cut string!" << endl;
+    fValidCutsEvent       = kFALSE;
+    fValidCutsPCM         = kFALSE;
+    fValidCutsCalo        = kFALSE;
+    fValidCutsChargedPion = kFALSE;
+    fValidCutsNDM         = kFALSE;
+    fValidCutsMeson       = kFALSE;
+    fValidCuts            = false;
+  }
+  fMode                              = 0;
+  fEventCutArray[fNCuts]             = eventCut;
+  fPhotonCutArray[fNCuts]            = photonCut;
+  fClusterCutArray[fNCuts]           = clusterCut;
+  fChargedPionCutArray[fNCuts]       = pionCut;
+  fNeutralDecayMesonCutArray[fNCuts] = ndmCut;
+  fMesonCutArray[fNCuts]             = mesonCut;
+  fNCuts++;
+  return;
+}
+
+
 
 
 Int_t AliCutHandlerPCM::GetNCuts(){
@@ -281,6 +367,23 @@ TString AliCutHandlerPCM::GetElectronCut(Int_t i){
         return fElectronCutArray[i];
     else {
         cout<<" ERROR in AliCutHandlerPCM: GetElectronCut wrong index i "<<endl;
+    }
+}
+
+TString AliCutHandlerPCM::GetNDMCut(Int_t i){ // Neutral Decay Meson Cut
+
+    if(fValidCutsNDM&&i<fNMaxCuts&&i>=0)
+        return fNeutralDecayMesonCutArray[i];
+    else {
+        cout<<" ERROR in AliCutHandlerPCM: GetNDMCut wrong index i "<<endl;
+    }
+}
+TString AliCutHandlerPCM::GetPionCut(Int_t i){ // Get charged pion cut
+
+    if(fValidCutsChargedPion&&i<fNMaxCuts&&i>=0)
+        return fChargedPionCutArray[i];
+    else {
+        cout<<" ERROR in AliCutHandlerPCM: GetPionCut wrong index i "<<endl;
     }
 }
 
