@@ -264,10 +264,12 @@ public:
     
     //---------------------------------------------------------------------------------------
     // changes to enable AliExternalTrackParam inheritance from on-the-fly finder
-    
     //selective reset: go over list of V0s and delete offline (0) or on-the-fly (1) V0s
     void SelectiveResetV0s(AliESDEvent *event, Int_t lType = 0);
-    
+    //Master switch
+    void SetUseOptimalTrackParams (Bool_t lOpt){
+        fkUseOptimalTrackParams = lOpt;
+    }
     //---------------------------------------------------------------------------------------
     
 
