@@ -447,6 +447,8 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
             lESDevent->ResetV0s();
         }else{
             //reset only offline V0s, please
+            //important: reset cascades or RemoveV0s will NOT DO IT
+            lESDevent->ResetCascades();
             SelectiveResetV0s(lESDevent, 0);
         }
         Tracks2V0vertices(lESDevent);
@@ -584,7 +586,6 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
         }//finished preparing map
     }
     
-    
     const AliESDVertex *vtxT3D=event->GetPrimaryVertex();
     
     Double_t xPrimaryVertex=vtxT3D->GetX();
@@ -646,33 +647,32 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             if (TMath::Abs(ntrk->GetD(xPrimaryVertex,yPrimaryVertex,b))<fV0VertexerSels[1])
                 if (TMath::Abs(ptrk->GetD(xPrimaryVertex,yPrimaryVertex,b))<fV0VertexerSels[2]) continue;
             
-            AliExternalTrackParam *ptrk_temporary, *ntrk_temporary;
-            ptrk_temporary = ptrk;
-            ntrk_temporary = ntrk;
+            AliExternalTrackParam nt(*ptrk), pt(*ptrk);
             if( fkUseOptimalTrackParams ){
                 //reroute to pointers obtained with on-the-fly finding, please
-                //Int_t lEquivalentOTFV0 = fOTFMap.find(make_pair(nidx,pidx));
-                //if(lEquivalentOTFV0 != fOTFMap.end())
-                
                 map<pair<int,int>, int>::iterator iter = fOTFMap.find(make_pair(nidx,pidx));
                 if(iter != fOTFMap.end())
                 {
                     Int_t lEquivalentOTFV0 = (*iter).second; // or iter->second;
                     AliESDv0 *v0_otf = ((AliESDEvent*)event)->GetV0(lEquivalentOTFV0);
-                    AliExternalTrackParam ptimproved(*v0_otf->GetParamP());
-                    AliExternalTrackParam ntimproved(*v0_otf->GetParamN());
-                    if( v0_otf->GetParamP()->Charge() > 0 && v0_otf->GetParamN()->Charge() < 0 ) {
-                        //V0 daughter track swapping is required! Note: everything is swapped here... P->N, N->P
-                        ptrk_temporary = &ptimproved;
-                        ntrk_temporary = &ntimproved;
+                    if(!v0_otf){
+                        AliWarning(Form("Invalid V0 at position %i!", lEquivalentOTFV0));
                     }else{
-                        //swap charges if charges are swapped
-                        ptrk_temporary = &ntimproved;
-                        ntrk_temporary = &ptimproved;
+                        AliExternalTrackParam ptimproved(*(v0_otf->GetParamP()));
+                        AliExternalTrackParam ntimproved(*(v0_otf->GetParamN()));
+                        if( v0_otf->GetParamP()->Charge() > 0 && v0_otf->GetParamN()->Charge() < 0 ) {
+                            //V0 daughter track swapping is required! Note: everything is swapped here... P->N, N->P
+                            pt = ptimproved;
+                            nt = ntimproved;
+                        }else{
+                            //swap charges if charges are swapped
+                            pt = ntimproved;
+                            nt = ptimproved;
+                        }
                     }
                 }
             }
-            AliExternalTrackParam nt(*ptrk_temporary), pt(*ptrk_temporary), *ntp=&nt, *ptp=&pt;
+            AliExternalTrackParam *ntp=&nt, *ptp=&pt;
             Double_t xn, xp, dca;
             
             //Improved call: use own function, including XY-pre-opt stage
