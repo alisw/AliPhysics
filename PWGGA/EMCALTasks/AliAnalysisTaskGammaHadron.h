@@ -51,7 +51,7 @@ public:
   void                        SetSubDetector(Int_t input)                           { fSubDetector     = input; }
   void                        SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
   void                        SetVetoTrigger(UInt_t input)                          { fVetoTrigger = input  ; }
-  void                        SetClEnergyMin(Int_t input)                           { fClEnergyMin     = input;}
+  void                        SetClEnergyMin(Double_t input)                        { fClEnergyMin     = input;}
   void                        SetOpeningAngleCut(Double_t input)                    { fOpeningAngleCut = input;}
   void                        SetNLM(Int_t input)                                   { fMaxNLM          = input;}
   void                        SetM02(Double_t inputMin,Double_t inputMax)           { fClShapeMin = inputMin; fClShapeMax = inputMax;}
