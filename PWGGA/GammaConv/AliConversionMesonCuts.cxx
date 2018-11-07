@@ -2182,14 +2182,14 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fDoBGProbability            = kFALSE;
     fUsePtmaxMethodForBG        = kTRUE;
     break;
-  case 10: // mixed event with likesign mixing
+  case 10: // a mixed event with likesign mixing
     fUseRotationMethodInBG      = kFALSE;
     fUseTrackMultiplicityForBG  = kFALSE;
     fDoBGProbability            = kFALSE;
     fBackgroundUseLikeSign      = kTRUE;
     fBackgroundUseSideband      = kFALSE;
     break;
-  case 11: // mixed event with pi0 sideband candidates (right side of pi0 peak)
+  case 11: // b mixed event with pi0 sideband candidates (right side of pi0 peak)
     fUseRotationMethodInBG      = kFALSE;
     fUseTrackMultiplicityForBG  = kFALSE;
     fDoBGProbability            = kFALSE;
@@ -2198,7 +2198,7 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fSidebandMixingLow          = 0.180;
     fSidebandMixingHigh         = 0.220;
     break;
-  case 12: // mixed event with pi0 sideband candidates (left side of pi0 peak)
+  case 12: // c mixed event with pi0 sideband candidates (left side of pi0 peak)
     fUseRotationMethodInBG      = kFALSE;
     fUseTrackMultiplicityForBG  = kFALSE;
     fDoBGProbability            = kFALSE;
@@ -2207,7 +2207,7 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fSidebandMixingLow          = 0.01;
     fSidebandMixingHigh         = 0.05;
     break;
-  case 13: // mixing event with pi0 sideband candidates (both sides of pi0 peak)
+  case 13: // d mixing event with pi0 sideband candidates (both sides of pi0 peak)
     fUseRotationMethodInBG           = kFALSE;
     fUseTrackMultiplicityForBG       = kFALSE;
     fDoBGProbability                 = kFALSE;

@@ -1447,6 +1447,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoMotherPtOpenAngleBck[iCut]->SetXTitle("p_{T} (GeV/c)");
         fHistoMotherPtOpenAngleBck[iCut]->SetYTitle("#theta");
         fESDList[iCut]->Add(fHistoMotherPtOpenAngleBck[iCut]);
+        if (fIsMC == 2){
+          fHistoMotherPtOpenAngle[iCut]->Sumw2();
+          fHistoMotherPtOpenAngleBck[iCut]->Sumw2();
+        }
       }
 
       if (fIsMC > 1 && fDoMesonQA > 0 && fDoMesonQA < 3){
@@ -1458,10 +1462,6 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoMotherEtaPtOpenAngle[iCut]->Sumw2();
         fHistoMotherPi0NGoodESDTracksPt[iCut]->Sumw2();
         fHistoMotherEtaNGoodESDTracksPt[iCut]->Sumw2();
-      }
-      if (fIsMC == 2){
-        fHistoMotherPtOpenAngle[iCut]->Sumw2();
-        fHistoMotherPtOpenAngleBck[iCut]->Sumw2();
       }
 
       if (fProduceCellIDPlots){
