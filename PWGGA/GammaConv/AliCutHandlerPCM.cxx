@@ -25,23 +25,29 @@ fPhotonCutArray(0),
 fMesonCutArray(0),
 fClusterCutArray(0),
 fMergedClusterCutArray(0),
-fElectronCutArray(0)
+fElectronCutArray(0),
+fNeutralDecayMesonCutArray(0),
+fChargedPionCutArray(0)
 {
-  fNCuts                  = 0;
-  fNMaxCuts               = 10;
-  fEventCutArray          = new TString[fNMaxCuts];
-  fPhotonCutArray         = new TString[fNMaxCuts];
-  fMesonCutArray          = new TString[fNMaxCuts];
-  fClusterCutArray        = new TString[fNMaxCuts];
-  fMergedClusterCutArray  = new TString[fNMaxCuts];
-  fElectronCutArray       = new TString[fNMaxCuts];
+  fNCuts                     = 0;
+  fNMaxCuts                  = 10;
+  fEventCutArray             = new TString[fNMaxCuts];
+  fPhotonCutArray            = new TString[fNMaxCuts];
+  fMesonCutArray             = new TString[fNMaxCuts];
+  fClusterCutArray           = new TString[fNMaxCuts];
+  fMergedClusterCutArray     = new TString[fNMaxCuts];
+  fElectronCutArray          = new TString[fNMaxCuts];
+  fNeutralDecayMesonCutArray = new TString[fNMaxCuts];
+  fChargedPionCutArray       = new TString[fNMaxCuts];
   for(Int_t i=0; i<fNMaxCuts; i++) {
-    fEventCutArray[i]           = "";
-    fPhotonCutArray[i]          = "";
-    fMesonCutArray[i]           = "";
-    fClusterCutArray[i]         = "";
-    fMergedClusterCutArray[i]   = "";
-    fElectronCutArray[i]        = "";
+    fEventCutArray[i]             = "";
+    fPhotonCutArray[i]            = "";
+    fMesonCutArray[i]             = "";
+    fClusterCutArray[i]           = "";
+    fMergedClusterCutArray[i]     = "";
+    fElectronCutArray[i]          = "";
+    fNeutralDecayMesonCutArray[i] = "";
+    fChargedPionCutArray[i]       = "";
   }
 }
 
@@ -80,12 +86,14 @@ AliCutHandlerPCM::AliCutHandlerPCM(Int_t nMax) :
   fChargedPionCutArray       = new TString[fNMaxCuts];
 
   for(Int_t i=0; i<fNMaxCuts; i++) {
-    fEventCutArray[i]           = "";
-    fPhotonCutArray[i]          = "";
-    fMesonCutArray[i]           = "";
-    fClusterCutArray[i]         = "";
-    fMergedClusterCutArray[i]   = "";
-    fElectronCutArray[i]        = "";
+    fEventCutArray[i]             = "";
+    fPhotonCutArray[i]            = "";
+    fMesonCutArray[i]             = "";
+    fClusterCutArray[i]           = "";
+    fMergedClusterCutArray[i]     = "";
+    fElectronCutArray[i]          = "";
+    fNeutralDecayMesonCutArray[i] = "";
+    fChargedPionCutArray[i]       = "";
   }
 }
 
