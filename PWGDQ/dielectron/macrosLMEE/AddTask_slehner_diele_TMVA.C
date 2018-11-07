@@ -81,7 +81,7 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Int_t trackCut=0,
             return NULL; 
           }  
         std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVAcut: "<<MVACut*0.2<<" being added"<< std::endl;
-        diel_low->GetTrackFilter()->AddCuts(SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight));   
+        diel_low->GetTrackFilter().AddCuts(SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight));   
         task->AddDielectron(diel_low);
         printf("successfully added AliDielectron: %s\n",diel_low->GetName());           
         }    
