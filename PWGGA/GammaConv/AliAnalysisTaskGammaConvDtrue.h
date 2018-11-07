@@ -27,12 +27,12 @@
 #ifndef ALIANALYSISTASKGAMMACONVDTRUE_H
 #define ALIANALYSISTASKGAMMACONVDTRUE_H
 
-#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisTaskEmcal.h"
 
 class THistManager;
 class AliVParticle;
 
-class AliAnalysisTaskGammaConvDtrue : public AliAnalysisTaskSE {
+class AliAnalysisTaskGammaConvDtrue : public AliAnalysisTaskEmcal {
 public:
   struct D03PionDecay{
     AliVParticle   *fPi0daughter;
@@ -44,7 +44,7 @@ public:
   virtual ~AliAnalysisTaskGammaConvDtrue();
 
   virtual void UserCreateOutputObjects();
-  virtual void UserExec(Option_t *);
+  virtual bool Run();
 
   static AliAnalysisTaskGammaConvDtrue *AddTaskGammaConvDtrue();
 
