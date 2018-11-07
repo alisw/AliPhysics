@@ -2570,7 +2570,7 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::RunDetectorLevelAnalysis()
       DmesonJet.fSelectionType = im + 1;
       if (ExtractRecoDecayAttributes(charmCand, DmesonJet, im)) {
         for (auto& def : fJetDefinitions) {
-          if (FindJet(charmCand, DmesonJet, def)) {
+          if (FindJet(charmCand, DmesonJet, def,im)) {
             Double_t jetPt = DmesonJet.fJets[def.GetName()].fMomentum.Pt();
             if (jetPt > maxJetPt[&def]) maxJetPt[&def] = jetPt;
           }
@@ -2674,7 +2674,7 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::RunDetectorLevelAnalysis()
 /// \param r Jet radius
 ///
 /// \return kTRUE on success, kFALSE otherwise
-Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::FindJet(AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, AliHFJetDefinition& jetDef)
+Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::FindJet(AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, AliHFJetDefinition& jetDef, Int_t numcand)
 {
   TString hname;
 
@@ -2755,7 +2755,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::FindJet(AliAODRecoDecayHF2P
       IterativeDeclustering(ijet,1,jetDef, DmesonJet.fD.M());
       return kTRUE;
     }
-    if(!isDmesonJet) IterativeDeclustering(ijet,0,jetDef,0.); 
+    if(!isDmesonJet && numcand!=1) IterativeDeclustering(ijet,0,jetDef,0.); 
   }
 
   return kFALSE;
