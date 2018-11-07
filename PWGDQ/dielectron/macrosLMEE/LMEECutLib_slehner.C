@@ -150,7 +150,7 @@ AliDielectronPID* LMEECutLib::GetPIDCutsAna(int sel, Bool_t useAODFilterCuts) {
     
       case 2:
         pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2, 3.0 , 0. ,100., kFALSE);
-        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 3.5 , 0. ,100., kTRUE);   //<-
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 3.0 , 0. ,100., kTRUE);   //<-
         pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
         pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
         break;
@@ -163,14 +163,39 @@ AliDielectronPID* LMEECutLib::GetPIDCutsAna(int sel, Bool_t useAODFilterCuts) {
         break;
     
       case 4:
-        // additional PID cuts: carsten analysis PID cut (Physics Forum 12.04.18)
         pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -4, 4.0 , 0. ,100., kFALSE);   //<-
         pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4.5 , 0. ,100., kTRUE);
         pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
         pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
         break;      
-
-            
+    
+      case 5:
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2, 3.0 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 5.5 , 0. ,100., kTRUE);   //<-
+        pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+        break;
+    
+      case 6:
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2, 3.0 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4.5 , 0. ,100., kTRUE);
+        pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kRequire); //<-
+        break;    
+    
+      case 7:
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2, 3.0 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4.5 , 0. ,100., kTRUE);
+        pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
+//        pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable); //<-
+        break;
+    
+      case 8:
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2, 3.0 , 0. ,100., kFALSE);
+//        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4.5 , 0. ,100., kTRUE);
+        pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+        break;
   }
   
   return(pidFilterCuts);       //Add nanoAODfilter PID cuts
@@ -216,8 +241,8 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MV
             trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
             break;
      case 1:
-            trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -0.5,   0.5);                     //<-
-            trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -1.0,   1.0);                     //<-
+            trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -0.3,   0.3);                     //<-
+            trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
 //          trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
             trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      100.0, 160.0);
 //          trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
@@ -233,13 +258,13 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MV
 //          trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
 //          trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
             trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 160.0);            
-            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.97, 1.03);          //<- 
+            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.98, 1.02);          //<- 
             break;
       case 3:
             trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
             trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);                    
 //          trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
-            trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      130.0, 160.0);     //<-
+            trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      130.0, 150.0);     //<-
 //          trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
 //          trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
             trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 160.0);            
@@ -252,8 +277,8 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MV
             trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      100.0, 160.0);
 //          trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
 //          trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
-            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 160.0);   //<-
-            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);   //<-
+            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 160.0);   
+            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.90, 1.10);   
             break;
       case 5:     // Carsten's cuts from Physics Forum 12.04.18, with conversion rejection cuts
             trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);

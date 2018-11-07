@@ -366,14 +366,14 @@ void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
 
 
 
-    task->AddPairMCSignal(pair_sameMother);
-//    task->AddPairMCSignal(pair_sameMother_pion);
-//     task->AddPairMCSignal(pair_sameMother_eta);
-//     task->AddPairMCSignal(pair_sameMother_etaP);
-//     task->AddPairMCSignal(pair_sameMother_rho);
-    // task->AddPairMCSignal(pair_sameMother_omega);
-    // task->AddPairMCSignal(pair_sameMother_phi);
-    // task->AddPairMCSignal(pair_sameMother_jpsi);
-    // task->AddPairMCSignal(pair_sameMother_CharmedMesonsWithSameMother);
-     task->AddPairMCSignal(pair_conversion);
+  task->AddPairMCSignal(pair_sameMother);
+//  task->AddPairMCSignal(pair_sameMother_pion);
+//  task->AddPairMCSignal(pair_sameMother_eta);
+//  task->AddPairMCSignal(pair_sameMother_etaP);
+//  task->AddPairMCSignal(pair_sameMother_rho);
+//  task->AddPairMCSignal(pair_sameMother_omega);
+//  task->AddPairMCSignal(pair_sameMother_phi);
+  task->AddPairMCSignal(pair_sameMother_jpsi);
+  task->AddPairMCSignal(pair_sameMother_CharmedMesonsWithSameMother);
+  task->AddPairMCSignal(pair_conversion);
 }
