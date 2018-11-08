@@ -69,13 +69,14 @@ void MiniV0efficiency::SlaveBegin(TTree * /*tree*/) {
 
   ///Hypertriton
   fHistV0ptData[2] =
-      new TH1D("fHistV0ptDataH", ";V0 #it{p}_{T} (GeV/#it{c}); Counts", 40, 0., 4.);
+      new TH1D("fHistV0ptDataH", ";V0 #it{p}_{T} (GeV/#it{c}); Counts", 40, 0., 10.);
   fHistV0ptMC[2] =
-      new TH1D("fHistV0ptMCH", ";V0 #it{p}_{T} (GeV/#it{c}); Counts", 40, 0., 4.);
+      new TH1D("fHistV0ptMCH", ";V0 #it{p}_{T} (GeV/#it{c}); Counts", 40, 0., 10.);
   fHistV0ctData[2] =
       new TH1D("fHistV0ctDataH", ";V0 #it{ct} (#it{cm}); Counts", 40, 0., 40.);
   fHistV0ctMC[2] =
       new TH1D("fHistV0ctMCH", ";V0 #it{ct} (#it{cm}); Counts", 40, 0., 40.);
+  fHistV0ptDataNC= new TH1D("fHistV0ptDataNC", ";V0 #it{p}_{T} (GeV/#it{c}); Counts", 40, 0., 10.);    
 
   ctAnalysis[2]=new TH2D("ctAnalysisH","H_ct_Analysis",40,-1.,1.,40,0.,40.);
   ctAnalysis[2]->SetXTitle("ctRec-ctGen(#it{cm})");
@@ -111,23 +112,28 @@ Bool_t MiniV0efficiency::Process(Long64_t entry) {
     auto& miniMC=MCparticles[i];
     if(miniMC.IsPrimary()){ 
       int part=miniMC.GetPDGcode();
-      int ind=miniMC.GetRecoIndex();
-      for (int j=0;j<3;j++){
-        if(p_vec[j]==part){
-          float MCmass=miniMC.GetMass();
-          fHistV0ptMC[j]->Fill(miniMC.GetPt());
-          fHistV0ctMC[j]->Fill(MCmass*(miniMC.GetDistOverP()));
-          if(ind>=0){
-          auto& minidata= V0s[ind];  
-          if(ind!=2 || minidata.GetCandidateInvMass(ind)!=-1)  
-            fHistV0ptData[j]->Fill(minidata.GetV0pt());
-            fHistV0ctData[j]->Fill(MCmass*(minidata.GetDistOverP()));
-            ctAnalysis[j]->Fill(MCmass*(minidata.GetDistOverP())-MCmass*(miniMC.GetDistOverP()),MCmass*(miniMC.GetDistOverP()));
+      if(miniMC.GetNBodies()==3 || part!=p_vec[2]){  
+        int ind=miniMC.GetRecoIndex();
+        for (int j=0;j<3;j++){
+          if(p_vec[j]==part){
+            float MCmass=miniMC.GetMass();
+            fHistV0ptMC[j]->Fill(miniMC.GetPt());
+            fHistV0ctMC[j]->Fill(MCmass*(miniMC.GetDistOverP()));
+            if(ind>=0){
+            auto& minidata= V0s[ind];  
+            if(minidata.GetCandidateInvMass(j)!=-1){ 
+              fHistV0ptData[j]->Fill(minidata.GetV0pt());
+              fHistV0ctData[j]->Fill(MCmass*(minidata.GetDistOverP()));
+              ctAnalysis[j]->Fill(MCmass*(minidata.GetDistOverP())-MCmass*(miniMC.GetDistOverP()),MCmass*(miniMC.GetDistOverP()));}
+            else{
+              if(j==2){fHistV0ptDataNC->Fill(minidata.GetV0pt()); } 
+
+            }  
+            }
           }
+
         }
-
       }
-
     }
   }
 
@@ -170,7 +176,7 @@ void MiniV0efficiency::Terminate() {
     GetOutputList()->Add(Effvsct[j]); 
     GetOutputList()->Add(ctAnalysis[j]);
    }
-
+  GetOutputList()->Add(fHistV0ptDataNC);
   TFile output(Form("results/%s", fOutputFileName.data()),"RECREATE");
   GetOutputList()->Write();
   output.Close();
