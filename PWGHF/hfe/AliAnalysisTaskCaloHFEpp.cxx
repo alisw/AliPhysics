@@ -141,6 +141,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fzvtx_Ntrkl(0),
 				fzvtx_Nch(0),
 				fzvtx_Ntrkl_Corr(0),
+				fzvtx_Ntrkl_CorrWeight(0),
 				fNchNtr(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
@@ -177,6 +178,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fEta000(0),
 				fEta005(0),
 				fEta010(0),
+				fCorrZvtx(0),
+				fCorrNtrkl(0),
 				fHistPt_HFE_MC_D(0),
 				fHistPt_HFE_MC_B(0),
 				fHistPt_HFE_PYTHIA(0),
@@ -279,6 +282,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fzvtx_Ntrkl(0),
 				fzvtx_Nch(0),
 				fzvtx_Ntrkl_Corr(0),
+				fzvtx_Ntrkl_CorrWeight(0),
 				fNchNtr(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
@@ -315,6 +319,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fEta000(0),
 				fEta005(0),
 				fEta010(0),
+				fCorrZvtx(0),
+				fCorrNtrkl(0),
 				fHistPt_HFE_MC_D(0),
 				fHistPt_HFE_MC_B(0),
 				fHistPt_HFE_PYTHIA(0),
@@ -416,7 +422,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fzvtx_Ntrkl = new TH2F("fzvtx_Ntrkl","Zvertex vs N tracklet; zvtx; SPD Tracklets",200,-10.,10.,300,0.,300);
 				fzvtx_Nch = new TH2F("fzvtx_Nch","Zvertex vs N charged; zvtx; N_{ch}",200,-10.,10.,300,0.,300);
 				fzvtx_Ntrkl_Corr = new TH2F("fzvtx_Ntrkl_Corr","Zvertex vs N tracklet after correction; zvtx; SPD Tracklets",200,-10.,10.,300,0.,300);
-				fNchNtr = new TH2F("fNchNtr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",300,0.,30.,300,0.,300);
+				fzvtx_Ntrkl_CorrWeight = new TH2F("fzvtx_Ntrkl_CorrWeight","Zvertex vs N tracklet after correction; zvtx; SPD Tracklets",200,-10.,10.,300,0.,300);
+				fNchNtr = new TH2F("fNchNtr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",300,0.,300.,300,0.,300);
 				fHist_eff_HFE     = new TH1F("fHist_eff_HFE","efficiency :: HFE",600,0,60);
 				fHist_eff_match   = new TH1F("fHist_eff_match","efficiency :: matched cluster",600,0,60);
 				fHist_eff_TPC     = new TH1F("fHist_eff_TPC","efficiency :: TPC cut",600,0,60);
@@ -444,6 +451,12 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fEta005->SetParameters(3.00390e+01,-1.76773e+01,7.45941e+00,4.48491e+00,2.41261e+00);
 				fEta010 = new TF1("fEta010","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
 				fEta010->SetParameters(1.82736e+00,-8.08208e+01,2.32670e+04,4.66500e+00,1.75496e+00); 
+
+				fCorrZvtx = new TF1("fCorrZvtx","pol4");
+				fCorrZvtx->SetParameters(1.03336,0.00458321,-0.00161536,1.34027e-05,-9.30713e-06);
+
+				fCorrNtrkl = new TF1("fCorrNtrkl","pol8");
+				fCorrNtrkl->SetParameters(1.32267,-0.186463,0.0300275,-0.00205886,7.30481e-05,-1.45858e-06,1.65515e-08,-9.94577e-11,2.45483e-13);
 
 
 				fHist_Mult = new TH2F("fMult","Track multiplicity",100,0,100,20000,0,20000);
@@ -527,6 +540,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fOutputList->Add(fzvtx_Ntrkl);
 				fOutputList->Add(fzvtx_Nch);
 				fOutputList->Add(fzvtx_Ntrkl_Corr);
+				fOutputList->Add(fzvtx_Ntrkl_CorrWeight);
 				fOutputList->Add(fNchNtr);
 				//==== MC output ====
 				fOutputList->Add(fMCcheckMother);
@@ -777,6 +791,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				//-----------Tracklet correction-------------------------
 				Double_t correctednAcc   = nAcc;
 				Double_t fRefMult = Nref;
+				Double_t WeightNtrkl = -1.;
+				Double_t WeightZvtx = -1.;
 				TProfile* estimatorAvg;
 				if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fAOD);
 				if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fAOD);
@@ -788,9 +804,14 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 				if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
 
-				fzvtx_Nch->Fill(Zvertex,Nch);
-				fNchNtr->Fill(correctednAcc,Nch);
 
+				if(fMCarray){
+								WeightZvtx = fCorrZvtx->Eval(Zvertex);
+								WeightNtrkl = fCorrNtrkl->Eval(correctednAcc);
+								fzvtx_Ntrkl_CorrWeight->Fill(Zvertex*WeightZvtx,correctednAcc*WeightNtrkl);
+								fNchNtr->Fill(correctednAcc*WeightNtrkl,Nch);
+								fzvtx_Nch->Fill(Zvertex*WeightZvtx,Nch);
+				}
 
 
 				//////////////////////////////
