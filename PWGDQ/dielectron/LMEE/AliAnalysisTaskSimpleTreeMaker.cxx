@@ -150,7 +150,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
 		alpha(0),
     fQAhist(0),
     fCentralityPercentileMin(0),
-    fCentralityPercentileMax(80),
+    fCentralityPercentileMax(100),
     fPtMin(0.2),
     fPtMax(10),
     fEtaMin(-0.8),
@@ -262,7 +262,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
 		alpha(0),
     fQAhist(0),
     fCentralityPercentileMin(0),
-    fCentralityPercentileMax(80),
+    fCentralityPercentileMax(100),
     fPtMin(0.2),
     fPtMax(10),
     fEtaMin(-0.8),
@@ -599,9 +599,12 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 				mcEta           = -99;
 				mcPhi           = -99;
 				mcPt            = -99;
+				// Vert values that will be written to TTree as floats
 				mcVert[0]       = {-99};
 				mcVert[1]       = {-99};
 				mcVert[2]       = {-99};
+				// Vert values that are passed to mcTrack as doubles
+				Double_t mcVertD[3] = {-99, -99, -99};
 				iPdg            = -9999;
 				iPdgMother      = -9999;
 				HasMother       = kFALSE;
@@ -630,7 +633,11 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 				mcEta = mcTrack->Eta();
 				mcPhi = mcTrack->Phi();
 				mcPt  = mcTrack->Pt();
-				mcTrack->XvYvZv(mcVert);
+				mcTrack->XvYvZv(mcVertD);
+
+				for(Int_t i = 0; i < 3; ++i){
+					mcVert[i] = (Float_t)mcVertD[i];
+				}
 
 				// Get label of mother particle
 				// Will return -1 if no mother particle
@@ -933,6 +940,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 			//If both pass, write pos particle features, then get neg features
 			//again!
 			Int_t label = -9999;
+			Double_t mcVertD[3] = {-99, -99, -99};
 			if(hasMC){
 				//-------- Check negative charge particle --------------
 				//Only want to check validity of track
@@ -980,7 +988,11 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 				mcEta = mcTrack->Eta();
 				mcPhi = mcTrack->Phi();
 				mcPt  = mcTrack->Pt();
-				mcTrack->XvYvZv(mcVert);
+				mcTrack->XvYvZv(mcVertD);
+
+				for(Int_t i = 0; i < 3; ++i){
+					mcVert[i] = (Float_t)mcVertD[i];
+				}
 
 				gMotherIndex = mcTrack->GetMother();
 
@@ -1211,8 +1223,11 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 				mcEta = mcTrack->Eta();
 				mcPhi = mcTrack->Phi();
 				mcPt  = mcTrack->Pt();
-				mcTrack->XvYvZv(mcVert);
+				mcTrack->XvYvZv(mcVertD);
 
+				for(Int_t i = 0; i < 3; ++i){
+					mcVert[i] = (Float_t)mcVertD[i];
+				}
 				Int_t gMotherIndex = mcTrack->GetMother();
 
 				if(!(gMotherIndex < 0)){
@@ -1289,9 +1304,9 @@ Bool_t AliAnalysisTaskSimpleTreeMaker::isV0daughterAccepted(AliVTrack* track){
 
     Bool_t answer = kFALSE;
     //Kinematic cuts
-    Double_t pt   = track->Pt();
+    Float_t pt   = (Float_t)track->Pt();
     if( pt < fPtMin || pt > fPtMax ){ return answer; }
-    Double_t eta  = track->Eta();
+    Float_t eta  = (Float_t)track->Eta();
     if( eta < fEtaMin || eta > fEtaMax ){ return answer; }
 
     if(!fIsAOD){
@@ -1363,25 +1378,27 @@ void AliAnalysisTaskSimpleTreeMaker::SetupEventCuts(AliDielectronEventCuts* cuts
 }
 
 // Check if the generator is on the list of generators
-Bool_t AliAnalysisTaskSimpleTreeMaker::CheckGenerator(Int_t trackID){
+// If found, assign track with integer value correspding to generator
+//0 = gen purp, 1=Pythia CC_1, 2= Pythia BB_1, 3=Pythia B_1, 4=Jpsi2ee_1, 5=B2Jpsi2ee_1";
+Int_t AliAnalysisTaskSimpleTreeMaker::CheckGenerator(Int_t trackID){
 
   if(fGeneratorHashes.size() == 0){
-		return kTRUE;
+		return -1;
 	}
 
   TString genname;
   Bool_t hasGenerator = fMCevent->GetCocktailGenerator(TMath::Abs(trackID), genname);
   if(!hasGenerator){
     Printf("no cocktail header list was found for this track");
-    return kFALSE;
+    return -1;
   }
   else{
     for(UInt_t i = 0; i < fGeneratorHashes.size(); ++i){
       if(genname.Hash() == fGeneratorHashes[i]){
-				return kTRUE;
+				return i+1;
 			}
     }
-    return kFALSE;
+    return 0;
   }
-  return kFALSE; // should not happen
+  return -1; // should not happen
 }

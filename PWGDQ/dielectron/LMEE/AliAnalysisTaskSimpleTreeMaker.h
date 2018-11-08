@@ -59,41 +59,41 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 			fWidthTOF = width;
 		};
 
-		void SetCentralityPercentileRange(Double_t min, Double_t max){
+		void SetCentralityPercentileRange(Float_t min, Float_t max){
 				fCentralityPercentileMin = min;
 				fCentralityPercentileMax = max;
 		}
 
-		void SetPtRange(Double_t min, Double_t max){
+		void SetPtRange(Float_t min, Float_t max){
 				fPtMin = min;
 				fPtMax = max;
 		}
 
-		void SetEtaRange(Double_t min, Double_t max){
+		void SetEtaRange(Float_t min, Float_t max){
 				fEtaMin = min;
 				fEtaMax = max;
 		}
 
 		//Set inclusive electron PID cuts
-		void SetESigRangeITS(Double_t min, Double_t max){
+		void SetESigRangeITS(Float_t min, Float_t max){
 				fPIDcutITS = kTRUE;
 				fESigITSMin = min;
 				fESigITSMax = max;
 		}
 
-		void SetESigRangeTPC(Double_t min, Double_t max){
+		void SetESigRangeTPC(Float_t min, Float_t max){
 				fESigTPCMin = min;
 				fESigTPCMax = max;
 		}
 
-		void SetESigRangeTOF(Double_t min, Double_t max){
+		void SetESigRangeTOF(Float_t min, Float_t max){
 				fPIDcutTOF = kTRUE;
 				fESigTOFMin = min;
 				fESigTOFMax = max;
 		}
 
 		//Set pion PID exclusion cut
-		void SetPSigRangeTPC(Double_t min, Double_t max){
+		void SetPSigRangeTPC(Float_t min, Float_t max){
 				fPionPIDcutTPC = kTRUE;
 				fPSigTPCMin = min;
 				fPSigTPCMax = max;
@@ -177,7 +177,10 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 
 		Bool_t GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0);
 
-		Bool_t CheckGenerator(Int_t trackID);
+		// Check if the generator is on the list of generators
+		// If found, assign track with integer value correspding to generator
+		//0 = gen purp, 1=Pythia CC_1, 2= Pythia BB_1, 3=Pythia B_1, 4=Jpsi2ee_1, 5=B2Jpsi2ee_1";
+		Int_t CheckGenerator(Int_t trackID);
 
   private:
  
@@ -213,92 +216,93 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 
 		// TTree branch variables
 		// Event variables
-		Double_t primaryVertex[3];
-		Double_t multiplicityV0A;
-		Double_t multiplicityV0C;
-		Double_t multiplicityCL1;
+		Float_t primaryVertex[3];
+		Float_t multiplicityV0A;
+		Float_t multiplicityV0C;
+		Float_t multiplicityCL1;
 		Int_t runNumber;
 		Int_t event;
 		// Reconstructed
-		Double_t pt;
-		Double_t eta;
-		Double_t phi;
-		Double_t nTPCclusters;
-		Double_t nTPCcrossed;
-		Double_t fTPCcrossOverFind;
-		Double_t nTPCfindable;
+		Float_t pt;
+		Float_t eta;
+		Float_t phi;
+		Float_t nTPCclusters;
+		Float_t nTPCcrossed;
+		Float_t fTPCcrossOverFind;
+		Float_t nTPCfindable;
 		TBits tpcSharedMap;
-		Double_t nTPCshared;
-		Double_t chi2TPC;
-		Double_t DCA[2];
+		Float_t nTPCshared;
+		Float_t chi2TPC;
+		Float_t DCA[2];
 		Int_t nITS;
-		Double_t chi2ITS;
-		Double_t fITSshared;
+		Float_t chi2ITS;
+		Float_t fITSshared;
 		Bool_t SPDfirst;
 		Int_t charge;
-		Double_t EnSigmaITS;
-		Double_t EnSigmaITScorr;
-		Double_t EnSigmaTPC;
-		Double_t EnSigmaTPCcorr;
-		Double_t EnSigmaTOF;
-		Double_t EnSigmaTOFcorr;
-		Double_t PnSigmaTPC;
-		Double_t PnSigmaITS;
-		Double_t PnSigmaTOF;
-		Double_t KnSigmaITS;
-		Double_t KnSigmaTPC;
-		Double_t KnSigmaTOF;
-		Double_t ITSsignal;
-		Double_t TPCsignal;
-		Double_t TOFsignal;
-		Double_t goldenChi2;
+		Float_t EnSigmaITS;
+		Float_t EnSigmaITScorr;
+		Float_t EnSigmaTPC;
+		Float_t EnSigmaTPCcorr;
+		Float_t EnSigmaTOF;
+		Float_t EnSigmaTOFcorr;
+		Float_t PnSigmaTPC;
+		Float_t PnSigmaITS;
+		Float_t PnSigmaTOF;
+		Float_t KnSigmaITS;
+		Float_t KnSigmaTPC;
+		Float_t KnSigmaTOF;
+		Float_t ITSsignal;
+		Float_t TPCsignal;
+		Float_t TOFsignal;
+		Float_t goldenChi2;
 		//MC 
-		Double_t mcEta;
-		Double_t mcPhi;
-		Double_t mcPt;
-		Double_t mcVert[3];
+		Float_t mcEta;
+		Float_t mcPhi;
+		Float_t mcPt;
+		Float_t mcVert[3];
 		Int_t iPdg;
 		Int_t iPdgMother;
 		Bool_t HasMother;
 		Int_t motherLabel;
-		Bool_t isInj; // If track is injected 
+		Int_t isInj; // If track is injected 
 		// Pdg and label for initial particle in decay chain
 		Int_t iPdgFirstMother;
 		Int_t gLabelFirstMother;
 		Int_t gLabelMinFirstMother;
 		Int_t gLabelMaxFirstMother;
 		//V0 features
-		Double_t pointingAngle;
-		Double_t daughtersDCA;
-		Double_t decayLength;
-		Double_t v0mass;
-		Double_t ptArm;
-		Double_t alpha;
+		Float_t pointingAngle;
+		Float_t daughtersDCA;
+		Float_t decayLength;
+		Float_t v0mass;
+		Float_t ptArm;
+		Float_t alpha;
 
 		TH1F* fQAhist; //!
-		Double_t fCentralityPercentileMin;// minimum centrality threshold (default = 0)
-		Double_t fCentralityPercentileMax;// maximum centrality threshold (default = 80)
+		// Currently no cut on centrality
+		Float_t fCentralityPercentileMin;// minimum centrality threshold (default = 0)
+		Float_t fCentralityPercentileMax;// maximum centrality threshold (default = 100)
 
-		Double_t fPtMin;// minimum pT threshold (default = 0)
-		Double_t fPtMax;// maximum pT threshold (default = 10)
-		Double_t fEtaMin;// minimum eta threshold (default = -0.8)
-		Double_t fEtaMax;// maximum eta threshold (default = 0.8)
+		Float_t fPtMin;// minimum pT threshold (default = 0)
+		Float_t fPtMax;// maximum pT threshold (default = 10)
+		Float_t fEtaMin;// minimum eta threshold (default = -0.8)
+		Float_t fEtaMax;// maximum eta threshold (default = 0.8)
 
 		//Values and flags for PID cuts in ITS and TOF
-		Double_t fESigITSMin;
-		Double_t fESigITSMax;
-		Double_t fESigTPCMin; 
-		Double_t fESigTPCMax; 
-		Double_t fESigTOFMin;
-		Double_t fESigTOFMax;
+		Float_t fESigITSMin;
+		Float_t fESigITSMax;
+		Float_t fESigTPCMin; 
+		Float_t fESigTPCMax; 
+		Float_t fESigTOFMin;
+		Float_t fESigTOFMax;
 		
 		Bool_t fPIDcutITS;
 		Bool_t fPIDcutTOF;
 		
 		//Values and flag for pion PID cuts in TPC
 		Bool_t fPionPIDcutTPC;
-		Double_t fPSigTPCMin;
-		Double_t fPSigTPCMax;
+		Float_t fPSigTPCMin;
+		Float_t fPSigTPCMax;
 		
 		Bool_t fHasSDD;
 
