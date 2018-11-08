@@ -128,6 +128,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         SetPythiaVersion            ( TString  pythiaVersion                        ) { fPythiaVersion = pythiaVersion;                           }
   void                         SetVariableCPV              ( Bool_t   variable                             ) { fVariableCPV = variable;                                  }
   void                         SetVariableCPVInCone        ( Bool_t   variable                             ) { fVariableCPVInCone = variable;                            }
+  void                         SetVariableCPVBoth          ( Bool_t   variable                             ) { fVariableCPVBoth = variable;                              }
   void                         SetVariableCPVSystematics   ( TString  systematics                          ) { fVariableCPVSyst = systematics;                           }
   void                         SetNonLinRecoEnergyScaling  ( Bool_t   scaling                              ) { fNonLinRecoEnergyScaling = scaling;                       }
   void                         SetExtraPerpConesFactor     ( Double_t factor                               ) { fExtraPerpConesFactor = factor;                           }
@@ -193,6 +194,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TString		       fPythiaVersion;		     ///< May contain "6" or "8" to determine the Pythia version used
   Bool_t		       fVariableCPV;		     ///<
   Bool_t		       fVariableCPVInCone;	     ///<
+  Bool_t		       fVariableCPVBoth;             ///<
   TString		       fVariableCPVSyst;	     ///<
   Bool_t		       fNonLinRecoEnergyScaling;     ///< Set a scaling factor for reconstructed energy (regarding non-linearity correction)
   Double_t                     fExtraPerpConesFactor;        ///< Charged to neutral + charged UE extrapolation factor (perpendicular cones)

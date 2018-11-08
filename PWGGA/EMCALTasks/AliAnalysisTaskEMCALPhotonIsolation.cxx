@@ -67,6 +67,7 @@ fDPMjetHeader(0),
 fPythiaVersion(""),
 fVariableCPV(kFALSE),
 fVariableCPVInCone(kFALSE),
+fVariableCPVBoth(kFALSE),
 fVariableCPVSyst(""),
 fNonLinRecoEnergyScaling(kFALSE),
 fExtraPerpConesFactor(1.347),
@@ -288,6 +289,7 @@ fDPMjetHeader(0),
 fPythiaVersion(""),
 fVariableCPV(kFALSE),
 fVariableCPVInCone(kFALSE),
+fVariableCPVBoth(kFALSE),
 fVariableCPVSyst(""),
 fNonLinRecoEnergyScaling(kFALSE),
 fExtraPerpConesFactor(1.347),
@@ -1945,7 +1947,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
       maxdist = distCT;
 
     if(candidate){
-      if(fVariableCPV){
+      if((fVariableCPVBoth || fVariableCPV) || (fVariableCPVBoth && fVariableCPV)){
 	deltaEta = eta_param[0] + TMath::Power((mt->Pt() + eta_param[1]), eta_param[2]);
 	deltaPhi = phi_param[0] + TMath::Power((mt->Pt() + phi_param[1]), phi_param[2]);
       }
@@ -1955,7 +1957,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
       }
     }
     else{
-      if(fVariableCPVInCone){
+      if((fVariableCPVBoth || fVariableCPVInCone) || (fVariableCPVBoth && fVariableCPVInCone)){
 	deltaEta = eta_param[0] + TMath::Power((mt->Pt() + eta_param[1]), eta_param[2]);
 	deltaPhi = phi_param[0] + TMath::Power((mt->Pt() + phi_param[1]), phi_param[2]);
       }
