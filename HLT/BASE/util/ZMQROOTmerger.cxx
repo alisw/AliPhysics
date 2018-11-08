@@ -157,7 +157,7 @@ const char* fUSAGE =
     " -id : some string identifier\n"
     " -in : data in, zmq config string, e.g. PUSH>tcp://localhost:123123\n"
     " -out : data out\n"
-    " -mon : monitoring socket\n"
+    " -mon : monitoring socket, ignores updates in the INFO block (like runnumber)\n"
     " -sync : sync socket, will send the INFO block on run change, has to be PUB or SUB\n"
     " -Verbose : print some info\n"
     " -pushback-period : push the merged data once every n milliseconds (if updated)\n"
@@ -512,7 +512,7 @@ Int_t DoControl(aliZMQmsg::iterator block, void* socket)
     ProcessOptionString(requestBody.c_str());
     return 1;
   }
-  else if (topic.GetID().compare(0,4,"INFO")==0)
+  else if (topic.GetID().compare(0,4,"INFO")==0 && socket!=fZMQmon)
   {
     //check if we have a runnumber in the string
     alizmq_msg_iter_data(block, fInfo);
