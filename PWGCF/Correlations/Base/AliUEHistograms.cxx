@@ -858,7 +858,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
           {
             Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.1396);
   
-            const Float_t kPhimass = 1.195;
+            const Float_t kPhimass = 1.019;
 
             if (TMath::Abs(mass - kPhimass*kPhimass) < fCutResonancesV * 5)
             {
