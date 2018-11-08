@@ -2813,10 +2813,11 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t i
          if(j1.perp() < j2.perp()) std::swap(j1,j2);
          flagSubjet=0;
           vector < fastjet::PseudoJet > constitj1 = sorted_by_pt(j1.constituents());
-                for(Int_t j=0;j<constitj1.size();j++){
+          if(type==1){ 
+	  for(Int_t j=0;j<constitj1.size();j++){
                 if(constitj1[j].user_index()==0){
 		  xconstperp=constitj1[j].perp();
-                       flagSubjet=1; }}
+		  flagSubjet=1; }}}
 
 	 
          double delta_R = j1.delta_R(j2);
