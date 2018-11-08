@@ -61,6 +61,13 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
                     std::vector<AliFemtoDreamBasePart> &particles,
                     const AliMCEvent *mcEvent);
   void FillTriggerHisto(TH1F *histo);
+  void FillCorrelationCorrelator(
+      const std::vector<AliFemtoDreamBasePart> &particles,
+      const std::vector<AliFemtoDreamBasePart> &sigmasFemto,
+      const std::vector<AliSigma0ParticlePhotonMother> &sigmas,
+      const bool isAnti) const;
+  float ComputeRelk(const TVector3 &Part1Momentum, const int PDGPart1,
+                    const TVector3 &Part2Momentum, const int PDGPart2) const;
 
   AliEventCuts fAliEventCuts;
 
@@ -97,19 +104,25 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   // Histograms
   // =====================================================================
 
-  TList *fOutputContainer;                  //!
-  TList *fQA;                               //!
-  TList *fOutputFemto;                      //!
-  TH1F *fHistCutQA;                         //!
-  TProfile *fHistRunNumber;                 //!
-  TProfile *fHistCutBooking;                //!
-  TH1F *fHistCentralityProfileBefore;       //!
-  TH1F *fHistCentralityProfileAfter;        //!
-  TH1F *fHistCentralityProfileCoarseAfter;  //!
-  TH1F *fHistTriggerBefore;                 //!
-  TH1F *fHistTriggerAfter;                  //!
-  TH1I *fHistMultiplicity;                  //!
+  TList *fOutputContainer;                                 //!
+  TList *fQA;                                              //!
+  TList *fOutputFemto;                                     //!
+  TH1F *fHistCutQA;                                        //!
+  TProfile *fHistRunNumber;                                //!
+  TProfile *fHistCutBooking;                               //!
+  TH1F *fHistCentralityProfileBefore;                      //!
+  TH1F *fHistCentralityProfileAfter;                       //!
+  TH1F *fHistCentralityProfileCoarseAfter;                 //!
+  TH1F *fHistTriggerBefore;                                //!
+  TH1F *fHistTriggerAfter;                                 //!
+  TH1I *fHistMultiplicity;                                 //!
+  TH2F *fHistCorrelationPSigmaPLambda[3];                  //!
+  TH2F *fHistCorrelationPSigmaPGamma[3];                   //!
+  TH2F *fHistCorrelationPLambdaPGamma[3];                  //!
+  TH2F *fHistCorrelationAntiPAntiSigmaAntiPAntiLambda[3];  //!
+  TH2F *fHistCorrelationAntiPAntiSigmaAntiPAntiGamma[3];   //!
+  TH2F *fHistCorrelationAntiPAntiLambdaAntiPAntiGamma[3];  //!
 
-  ClassDef(AliAnalysisTaskSigma0Femto, 7)
+  ClassDef(AliAnalysisTaskSigma0Femto, 8)
 };
 #endif
