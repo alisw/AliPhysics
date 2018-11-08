@@ -65,9 +65,7 @@ AliForwardMCClosure::AliForwardMCClosure() : AliAnalysisTaskSE(),
   fSettings(),
   fEventCuts(),
   use_primaries(kFALSE),
-  fMultTOFLowCut(),
-  fMultTOFHighCut(),
-  fMultCentLowCut()
+  esd_event(kFALSE)
   {
   //
   //  Default constructor
@@ -85,9 +83,7 @@ AliForwardMCClosure::AliForwardMCClosure() : AliAnalysisTaskSE(),
   fSettings(),
   fEventCuts(),
   use_primaries(kFALSE),
-  fMultTOFLowCut(),
-  fMultTOFHighCut(),
-  fMultCentLowCut()
+  esd_event(kFALSE)
   {
   //
   //  Constructor
@@ -201,6 +197,7 @@ void AliForwardMCClosure::UserExec(Option_t *)
   //  Parameters:
   //   option: Not used
   //
+
   AliMCEvent* fAOD = this->MCEvent();
   AliStack* stack = fAOD->Stack();
 

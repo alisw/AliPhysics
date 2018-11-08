@@ -47,11 +47,8 @@ class AliForwardFlowRun2Settings : public TObject {
   TString qctype;
 
   Int_t fnoSamples;
-
   Int_t fNRefEtaBins; // eta bins in reference histograms
-
   Int_t fNDiffEtaBins; // eta bins in differential histograms
-
   Int_t fCentBins; // bins in centrality
 
   UShort_t fFlowFlags;     //  Flow flags, e.g., eta-gap, sat. vtx.
@@ -64,8 +61,16 @@ class AliForwardFlowRun2Settings : public TObject {
   Double_t gap;
 
   Bool_t mc;
-  UShort_t tracktype;
+  Bool_t esd;
+
+  Int_t tracktype;
   Bool_t nua_mode;
+  Bool_t useTPC;
+  Bool_t useSPD;
+  Bool_t use_primaries;
+
+
+  TString centrality_estimator;
   // return true if good event
   Bool_t ExtraEventCutFMD(TH2D forwarddNdedp, double cent, Bool_t mc);
 
@@ -83,9 +88,17 @@ class AliForwardFlowRun2Settings : public TObject {
     kMC      = 0x0200, // MC object flag
     kTracks  = 0x1000, // Use tracks for reference flow
     kTPC     = 0x3000, // Use TPC tracks
-    kHybrid  = 0x5000  // Use hybrid tracks
   };
 
+
+  enum {
+    kTPCOnly = 128, // TPC only tracks
+    kHybrid = 768, // TPC only tracks
+    kGlobal = 32, // Global tracks
+    kGlobalLoose = 64, // Global tracks
+    kGlobalComb = 96,
+    kphiAcceptanceBin = 21 // phi acceptance bin in the FMD histogram (dNdetadphi)
+  };
   // definition of different variables to save
   enum {
     kWA = 1,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)

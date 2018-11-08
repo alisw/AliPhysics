@@ -46,7 +46,6 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
   TH1D* fFMDHits = static_cast<TH1D*>(eventList->FindObject("FMDHits"));
 
   for (Int_t etaBin = 1; etaBin <= dNdetadphi.GetNbinsX(); etaBin++) {
-    Double_t acceptance = 1.;
 
     Double_t eta = dNdetadphi.GetXaxis()->GetBinCenter(etaBin);
 

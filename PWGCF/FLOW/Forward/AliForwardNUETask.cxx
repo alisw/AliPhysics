@@ -137,10 +137,10 @@ void AliForwardNUETask::UserExec(Option_t *)
   //   option: Not used
   //
   AliAODEvent* fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-  AliAODMCHeader* fAODMCHeader = static_cast<AliAODMCHeader*>(fAOD->FindListObject(AliAODMCHeader::StdBranchName()));
+  //AliAODMCHeader* fAODMCHeader = static_cast<AliAODMCHeader*>(fAOD->FindListObject(AliAODMCHeader::StdBranchName()));
 
   AliMCEvent* fAODMC = this->MCEvent();
-  AliStack* stack = fAODMC->Stack();
+  //AliStack* stack = fAODMC->Stack();
   //..check if I have AOD
 
   if(!fAOD){

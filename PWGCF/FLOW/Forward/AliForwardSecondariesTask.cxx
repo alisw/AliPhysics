@@ -308,18 +308,6 @@ std::cout << cent << std::endl;
  // TH2D spddNdedp = TH2D("spddNdedp","spddNdedp",400,-1.5,1.5,400,0,2*TMath::Pi()); // Histogram to contain the central tracks
   //TH2D forwarddNdedp = TH2D("forwarddNdedp","forwarddNdedp",200,-4,6,40,0,2*TMath::Pi()); // also known as dNdetadphi
 
-  // Small helper function to get the eta value of a hit
-  auto get_ref_eta = [event_vtx_z](AliTrackReference *ref) {
-           Double_t new_ref_z = ref->Z() - event_vtx_z;
-           Double_t ref_r = TMath::Sqrt(ref->X()*ref->X() + ref->Y()*ref->Y());
-           Double_t theta = TMath::ATan2(ref_r, new_ref_z);
-           if (theta < 0){
-       theta += TMath::TwoPi();
-           }
-           Double_t ref_eta = -TMath::Log(TMath::Tan(theta/2.));
-           return ref_eta;
-         };
-
   Int_t nTracks   = fAOD->GetNumberOfTracks();
   //Int_t nTracks   = stack->GetNtrack();
   Int_t nPrim     = stack->GetNprimary();

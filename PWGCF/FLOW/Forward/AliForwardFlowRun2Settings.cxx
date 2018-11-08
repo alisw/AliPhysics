@@ -24,8 +24,13 @@ AliForwardFlowRun2Settings::AliForwardFlowRun2Settings() :
   doNUA(false),
   gap(0.0),
   mc(false),
+  esd(false),
   tracktype(kHybrid),
-  nua_mode(kFALSE)
+  nua_mode(kFALSE),
+  useTPC{kTRUE},
+  useSPD(kFALSE),
+  use_primaries(kFALSE),
+  centrality_estimator('SPDTracklets')//CL0, V0M
 {
 }
 
@@ -38,7 +43,6 @@ Bool_t AliForwardFlowRun2Settings::ExtraEventCutFMD(TH2D forwarddNdedp, double c
 
   for (Int_t etaBin = 1; etaBin <= forwarddNdedp.GetNbinsX(); etaBin++) {
 
-    Double_t acceptance = 1.;
     Double_t eta = forwarddNdedp.GetXaxis()->GetBinCenter(etaBin);
     Double_t runAvg = 0;
     Double_t avgSqr = 0;

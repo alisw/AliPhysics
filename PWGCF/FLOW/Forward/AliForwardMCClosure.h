@@ -130,10 +130,7 @@ public:
   AliForwardFlowRun2Settings fSettings;
 
 AliEventCuts fEventCuts;
-TF1 *fMultTOFLowCut; //!
-TF1 *fMultTOFHighCut; //!
-TF1 *fMultCentLowCut; //!
-
+Bool_t esd_event;
   enum {
     kTPCOnly = 128, // TPC only tracks
     kHybrid = 768, // TPC only tracks
