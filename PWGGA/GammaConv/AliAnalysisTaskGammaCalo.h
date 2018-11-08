@@ -342,6 +342,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TProfile**            fProfileJetJetXSection;                               //! array of profiles with xsection for jetjet
     TH1F**                fHistoJetJetNTrials;                                  //! array of histos with ntrials for jetjet
     TH1F**                fHistoEventSphericity;                                //! array of histos with event Sphericity
+    TH2F**                fHistoEventSphericityvsNtracks;                       //! array of histos with event Sphericity vs Ntracks
 
     TH1F**                 fHistoPtJet;                                          // Histogram of Jet Pt
     TH1F**                 fHistoJetEta;                                         // Histogram of Jet Eta
@@ -475,7 +476,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 50);
+    ClassDef(AliAnalysisTaskGammaCalo, 51);
 };
 
 #endif

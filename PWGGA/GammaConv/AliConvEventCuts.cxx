@@ -1240,6 +1240,14 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
     fIsHeavyIon=0;
     fUseSphericity=9;
     break;
+  case 26: // q: pp -> Sphericity < 0.3
+    fIsHeavyIon=0;
+    fUseSphericity=10;
+    break;
+  case 27: // r: pp -> Sphericity > 0.7
+    fIsHeavyIon=0;
+    fUseSphericity=11;
+    break;
 
   default:
     AliError(Form("SetHeavyIon not defined %d",isHeavyIon));
@@ -4779,6 +4787,12 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
       return 14;
     }
     if(fUseSphericity == 9 && (eventSphericity<0.5 || nPrimTracks < 20)){
+      return 14;
+    }
+    if(fUseSphericity == 10 && eventSphericity>0.3){
+      return 14;
+    }
+    if(fUseSphericity == 11 && eventSphericity<0.7){
       return 14;
     }
   }
