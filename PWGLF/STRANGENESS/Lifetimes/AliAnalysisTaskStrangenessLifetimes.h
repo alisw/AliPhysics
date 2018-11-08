@@ -2,6 +2,7 @@
 #define AliAnalysisTaskStrangenessLifetimes_H
 
 class TH1D;
+class TGraph;
 class TH2D;
 class TList;
 class TTree;
@@ -14,6 +15,7 @@ class TTree;
 #include "Math/Vector4D.h"
 #include "MCparticle.h"
 #include "MiniV0.h"
+ 
 
 class AliPIDResponse;
 class AliESDtrack;
@@ -89,7 +91,9 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   TH1D* fHistEtaPos;                //! Pseudorapidity of the positive prong
   TH1D* fHistEtaNeg;                //! Pseudorapidity of the negative prong
   TH2D* fHistArmenteros;            //! Pseudorapidity of the negative prong
-
+  TH1D* fHistNsigmaPosHe;
+  TH2D* dEdxVsPt; 
+  TH1D* Nhyp;
   float fMinPtToSave;  // minimum pt
   float fMaxPtToSave;  // maximum pt
   float fMaxTPCpionSigma;
@@ -98,6 +102,7 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
 
   std::vector<Lifetimes::MiniV0<3> > fV0vector;
   std::vector<Lifetimes::MCparticle> fMCvector;
+
   float fMultiplicity;
 
   AliAnalysisTaskStrangenessLifetimes(

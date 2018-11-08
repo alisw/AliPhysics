@@ -219,6 +219,10 @@ void AliAnalysisTaskStrangenessLifetimes::UserCreateOutputObjects() {
       MiniV0<3>::fgkArmAlpha_f + kEps, MiniV0<3>::fgkArmAlpha_l + kEps,
       MiniV0<3>::fgkArmPt_n, MiniV0<3>::fgkArmPt_f + kEps, MiniV0<3>::fgkArmPt_l + kEps);
 
+  fHistNsigmaPosHe =
+      new TH1D("fHistNsigmaPosHe", ";n_{#sigma} TPC Pos He; Counts",60,0,20);       
+  dEdxVsPt=new TH2D("dedxpt",";pt;dedx;counts",100,0,10,100,0,1500);
+  Nhyp=new TH1D("num of hyper",";pt;counts",60,0,10);
 
   if (man->GetMCtruthEventHandler()) {
     fHistMCct[0] = new TH1D("fHistMCctK0s", ";MC ct (cm); Counts", 4000, 0, 40);
@@ -236,7 +240,9 @@ void AliAnalysisTaskStrangenessLifetimes::UserCreateOutputObjects() {
     fListHist->Add(fHistMCctSecondaryFromMaterial[0]);
     fListHist->Add(fHistMCctSecondaryFromMaterial[1]);
   }
-
+  fListHist->Add(Nhyp);
+  fListHist->Add(dEdxVsPt);
+  fListHist->Add(fHistNsigmaPosHe);
   fListHist->Add(fHistV0radius);
   fListHist->Add(fHistV0pt);
   fListHist->Add(fHistV0eta);
@@ -276,6 +282,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
   }
 
   std::array<int,3> pdgCodes{310, 3122, 1010010030};
+  int hePDG=1000020030;
   AliMCEvent* mcEvent = MCEvent();
   if (!mcEvent && fMC) {
     ::Fatal("AliAnalysisTaskStrangenessLifetimes::UserExec","Could not retrieve MC event");
@@ -361,6 +368,11 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
               "It does know only what it is not.");
           }
           mcMap[ilab] = fMCvector.size();
+          if (v0part.GetPDGcode()==pdgCodes[2]) {
+             if( (part->GetLastDaughter()-part->GetFirstDaughter())==2 ) v0part.SetNBodies(3);
+             else{ v0part.SetNBodies(2);
+             Nhyp->Fill(v0part.GetPt());}
+          }
           fMCvector.push_back(v0part);
         }
         ++idx;
@@ -384,6 +396,26 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
     const int lKeyNeg = std::abs(v0->GetNindex());
     AliESDtrack *pTrack = esdEvent->GetTrack(lKeyPos);
     AliESDtrack *nTrack = esdEvent->GetTrack(lKeyNeg);
+
+    if (fMC) {
+      AliESDtrack* one = esdEvent->GetTrack(v0->GetNindex());
+      AliESDtrack* two = esdEvent->GetTrack(v0->GetPindex());
+      if (!one || !two)
+        ::Fatal("AliAnalysisTaskStrangenessLifetimes::UserExec",
+          "Missing V0 tracks %p %p",(void*)one,(void*)two);
+        int ilab = std::abs(ComputeMother(mcEvent, one, two));
+        TParticle* part = mcEvent->Particle(ilab);
+        
+        int currentPDG = part->GetPdgCode();
+        
+        if (currentPDG==pdgCodes[2]) {
+           fHistNsigmaPosHe->Fill(std::abs(fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kHe3)));
+           dEdxVsPt->Fill(pTrack->GetTPCmomentum(),pTrack->GetTPCsignal());
+
+        }
+        
+    }    
+    
 
     // Official means of acquiring N-sigmas
     float nSigmaPosProton =
