@@ -1212,14 +1212,14 @@ void AddTask_GammaCalo_pp(
   // 5 TeV 2015 pp Run2 - PHOS configurations
   // *********************************************************************************************************
   } else if (trainConfig == 700){ // PHOS clusters with larger acceptance
-    cuts.AddCutCalo("00010113","2446600040013300000","0163103100000010"); // INT7
-    cuts.AddCutCalo("00062113","2446600040013300000","0163103100000010"); // PHI7
+    cuts.AddCutCalo("00010113","2446600040012300000","0163103100000010"); // INT7
+    cuts.AddCutCalo("00062113","2446600040012300000","0163103100000010"); // PHI7
   } else if (trainConfig == 701){ // Default cut, No TM
-    cuts.AddCutCalo("00010113","2446651040013300000","0163103100000010"); // INT7
-    cuts.AddCutCalo("00062113","2446651040013300000","0163103100000010"); // PHI7
+    cuts.AddCutCalo("00010113","2446651040012300000","0163103100000010"); // INT7
+    cuts.AddCutCalo("00062113","2446651040012300000","0163103100000010"); // PHI7
   } else if (trainConfig == 702){ // Default cut, with TM
-    cuts.AddCutCalo("00010113","2446651044013300000","0163103100000010"); // INT7
-    cuts.AddCutCalo("00062113","2446651044013300000","0163103100000010"); // PHI7
+    cuts.AddCutCalo("00010113","2446651044012300000","0163103100000010"); // INT7
+    cuts.AddCutCalo("00062113","2446651044012300000","0163103100000010"); // PHI7
   } else if( trainConfig == 703){ // DEFAULT 2018 oct 31 no NL
     cuts.AddCutCalo("00010113","2446600044012300000","0163103100000010"); // no NL
   } else if( trainConfig == 704){ // DEFAULT 2018 oct 31 NL variations
@@ -1252,7 +1252,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","2446600044013300000","0163103100000010"); // INT7 w/ TM NCells 3
     cuts.AddCutCalo("00010113","2446600044012300000","0163103100000010"); // INT7 w/ TM NCells 2
   } else if (trainConfig ==806){//Comparing CellQA Config from GammaConv
-      cuts.AddCutCalo("00010113","2446600000013300000","0163103100000010"); // INT7
+    cuts.AddCutCalo("00010113","2446600000012300000","0163103100000010"); // INT7
 
   // *********************************************************************************************************
   // 5 TeV 2017 pp - Jet configurations
