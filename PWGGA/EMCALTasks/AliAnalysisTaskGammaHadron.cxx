@@ -59,7 +59,7 @@ fTriggerType(AliVEvent::kINT7),fPi0MassSelection(1), fMixingEventType(AliVEvent:
 fParticleLevel(kFALSE),fIsMC(kFALSE),fMCParticles(0),
 fEventCutList(0),
 
-fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPionRej(0),fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fHistEOverPvE(0),fHistPOverEvE(0),fHistPSDistU(0),fHistPSDistV(0),
+fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPionRej(0),fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fHistEOverPvE(0),fHistPOverEvE(0),fHistPSDistU(0),fHistPSDistV(0),
 fRand(0),fClusEnergy(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),fEMCalMultvZvtx(0),
 fHistClusMCDE(0),fHistClusMCDPhiDEta(0),fHistPi0MCDPt(0),fHistEtaMCDPt(0),fHistPi0MCDPhiDEta(0),fHistEtaMCDPhiDEta(0),
 fUseParamMassSigma(0),fPi0NSigma(2.),fPi0AsymCut(1.0),
@@ -88,7 +88,7 @@ fTriggerType(AliVEvent::kINT7),fPi0MassSelection(1), fMixingEventType(AliVEvent:
 fParticleLevel(kFALSE),fIsMC(InputMCorData),fMCParticles(0),
 fEventCutList(0),
 
-fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPionRej(0),fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fHistEOverPvE(0),fHistPOverEvE(0),fHistPSDistU(0),fHistPSDistV(0),
+fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPionRej(0),fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fHistEOverPvE(0),fHistPOverEvE(0),fHistPSDistU(0),fHistPSDistV(0),
 fRand(0),fClusEnergy(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),fEMCalMultvZvtx(0),
 fHistClusMCDE(0),fHistClusMCDPhiDEta(0),fHistPi0MCDPt(0),fHistEtaMCDPt(0),fHistPi0MCDPhiDEta(0),fHistEtaMCDPhiDEta(0),
 fUseParamMassSigma(0),fPi0NSigma(2.),fPi0AsymCut(1.0),
@@ -1098,6 +1098,10 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	fOutput->Add(fMatchDeltaEtaTrackPt);
 	fMatchDeltaPhiTrackPt = new TH2F("fMatchDeltaPhiTrackPt","fMatchDeltaPhiTrackPt;p_{T}^{track} (GeV/c);#Delta#phi",200,0,20,200,-0.1,0.1);
 	fOutput->Add(fMatchDeltaPhiTrackPt);
+	fMatchCondDeltaEtaTrackPt = new TH2F("fMatchCondDeltaEtaTrackPt","fMatchCondDeltaEtaTrackPt;p_{T}^{track} (GeV/c);#Delta#eta",200,0,20,200,-0.1,0.1);
+	fOutput->Add(fMatchCondDeltaEtaTrackPt);
+	fMatchCondDeltaPhiTrackPt = new TH2F("fMatchCondDeltaPhiTrackPt","fMatchCondDeltaPhiTrackPt;p_{T}^{track} (GeV/c);#Delta#phi",200,0,20,200,-0.1,0.1);
+	fOutput->Add(fMatchCondDeltaPhiTrackPt);
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     //   Tyler's Special Histograms
@@ -2467,8 +2471,9 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliClusterContainer* cluster
 	}
 	//-----------------------------
 	//..remove clusters with a matched track
-	Double_t trash;
-	if(fRmvMTrack==1 && DetermineMatchedTrack(caloCluster,trash,trash))
+	Double_t etaDiff = 0;
+	Double_t phiDiff = 0;
+	if(fRmvMTrack==1 && DetermineMatchedTrack(caloCluster,etaDiff,phiDiff))
 	{
 		return 0;
 	}
@@ -2808,8 +2813,8 @@ Bool_t AliAnalysisTaskGammaHadron::DetermineMatchedTrack(AliVCluster* caloCluste
 		TVector3 cpos(pos);
 		Double_t ceta     = cpos.Eta();
 		Double_t cphi     = cpos.Phi();
-		etadiff=veta-ceta;
-		phidiff=TVector2::Phi_mpi_pi(vphi-cphi);
+		Double_t fEtaDiff=veta-ceta;
+		Double_t fPhiDiff=TVector2::Phi_mpi_pi(vphi-cphi);
 
 		//?  // check if track also points to cluster
 		//?   Int_t cid = track->GetEMCALcluster();
@@ -2820,14 +2825,17 @@ Bool_t AliAnalysisTaskGammaHadron::DetermineMatchedTrack(AliVCluster* caloCluste
 		Double_t phiCut = fTrackMatchPhi;
 		Double_t trackPt = track->Pt();
 
-		fMatchDeltaPhiTrackPt->Fill(trackPt,phidiff);
-		fMatchDeltaEtaTrackPt->Fill(trackPt,etadiff);
+		fMatchDeltaPhiTrackPt->Fill(trackPt,fPhiDiff);
+		fMatchDeltaEtaTrackPt->Fill(trackPt,fEtaDiff);
 		//
 		// For input -1 or 0, use the parametrized track matching cuts given in https://alice-notes.web.cern.ch/node/813
 		if (etaCut <= 0) etaCut = 0.010 + TMath::Power((trackPt + 4.07), -2.5);
 		if (phiCut <= 0) phiCut = 0.015 + TMath::Power((trackPt + 3.65), -2.);
 
-		if(TMath::Abs(etadiff)<etaCut && TMath::Abs(phidiff)<phiCut)
+		if(TMath::Abs(fEtaDiff)<etaCut) fMatchCondDeltaPhiTrackPt->Fill(trackPt,fPhiDiff);
+		if(TMath::Abs(fPhiDiff)<phiCut) fMatchCondDeltaEtaTrackPt->Fill(trackPt,fEtaDiff);
+
+		if(TMath::Abs(fEtaDiff)<etaCut && TMath::Abs(fPhiDiff)<phiCut)
 		{
 			if (!fIsMC || (fMinMCLabel <= 0 || TMath::Abs(track->GetLabel()) > fMinMCLabel)) // label check copied from AliClusterContainer
 			{
@@ -2846,6 +2854,8 @@ Bool_t AliAnalysisTaskGammaHadron::DetermineMatchedTrack(AliVCluster* caloCluste
 					} 
 				}
 				foundTrackMatched=1;
+				etadiff = fEtaDiff;
+				phidiff = fPhiDiff;
 				if (!recordEOverPvE)	break; 
 			}
 		}

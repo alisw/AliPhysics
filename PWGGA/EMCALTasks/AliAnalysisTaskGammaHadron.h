@@ -208,6 +208,8 @@ public:
   TH3             *fMassPtCentPionRej;       //!<! Histogram of Mass vs Pt vs Cent for rejected Pi0 Candidates
   TH2             *fMatchDeltaEtaTrackPt;     //!<! Histogram of Delta eta vs track pt for cluster-track matching
   TH2             *fMatchDeltaPhiTrackPt;     //!<! Histogram of Delta phi vs track pt for cluster-track matching
+  TH2             *fMatchCondDeltaEtaTrackPt;     //!<! Histogram of Delta eta vs track pt for cluster-track matching (Requiring delta phi cut)
+  TH2             *fMatchCondDeltaPhiTrackPt;     //!<! Histogram of Delta phi vs track pt for cluster-track matching (Requiring delta eta cut)
   TH2             *fHistEOverPvE;            //!<! Histogram of E/p vs E_cluster for cluster-track pairs (geometrically matched)
   TH2             *fHistPOverEvE;            //!<! Histogram of p/E vs E_cluster for cluster-track pairs (geometrically matched)
   TH2             *fHistPSDistU;             //!<! Histogram of sqrt((1-cos(theta_A))(1-cos(theta_B))) for Pos Swap Method
