@@ -5,10 +5,6 @@ class LMEECutLib {
 	enum LMEECutSet{
 		kAllSpecies,
 		kElectrons,
-		kHighMult,
-		kMidLowMult,
-		kMidMult,
-		kLowMult,
 		kTTreeCuts,
 		kCutSet1,
 		kV0_ITScorr,
@@ -544,10 +540,6 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts(Int_t cutSet) {
     switch(cutSet){
         case kAllSpecies:
         case kElectrons:
-        case kHighMult:
-        case kMidMult:
-        case kMidLowMult:
-        case kLowMult:
 				case kTTreeCuts:
 				case kV0_TPCcorr:
 				case kV0_ITScorr:
@@ -579,22 +571,6 @@ AliAnalysisCuts* LMEECutLib::GetCentralityCuts(Int_t centSel) {
 			centCuts->AddCut(AliDielectronVarManager::kCentralityNew,0.,100.);
 			break;
 			break;
-		case kHighMult:
-			centCuts = new AliDielectronVarCuts("centCutsHigh","cent0020");
-			centCuts->AddCut(AliDielectronVarManager::kCentralityNew,0.,20.);
-			break;
-	 case kMidMult:
-			centCuts = new AliDielectronVarCuts("centCutsMid","cent2040");
-			centCuts->AddCut(AliDielectronVarManager::kCentralityNew,20.,40.);
-			break;
-	 case kMidLowMult:
-			centCuts = new AliDielectronVarCuts("centCutsMid","cent0460");
-			centCuts->AddCut(AliDielectronVarManager::kCentralityNew,40.,60.);
-			break;
-		case kLowMult:
-			centCuts  = new AliDielectronVarCuts("centCutsLow","cent60100");
-			centCuts->AddCut(AliDielectronVarManager::kCentralityNew,60.,100.);
-			break;
 		default: cout << "No Centrality selected" << endl;
 	}
 	return centCuts;
@@ -606,10 +582,6 @@ AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet) {
 	switch (cutSet) {
 		case kAllSpecies:
 		case kElectrons:
-		case kHighMult:
-		case kMidMult:
-		case kMidLowMult:
-		case kLowMult:
 		case kCutSet1:
 			mixingHandler = new AliDielectronMixingHandler;
 			mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -7.5, -5., -2.5 , 0., 2.5, 5., 7.5 , 10.");
@@ -687,10 +659,6 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
 
 	switch(PIDcuts){
 		case kElectrons:
-		case kHighMult:
-		case kMidMult:
-		case kMidLowMult:
-		case kLowMult:
 			if(wSDD){
 				cutsPID->AddCut(AliDielectronPID::kITS, AliPID::kElectron, -3.0,  1.0, 0.2, 100., kFALSE);
 				cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -1.5,  4.0, 0.2, 100., kFALSE);
@@ -795,10 +763,6 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
     //----------
 		case kAllSpecies:
 		case kElectrons:
-		case kHighMult:
-		case kMidMult:
-		case kMidLowMult:
-		case kLowMult:
 			varCutsFilter->AddCut(AliDielectronVarManager::kEta, -0.80, 0.80);
 			varCutsFilter->AddCut(AliDielectronVarManager::kPt, 0.2, 10.);
 			varCutsFilter->AddCut(AliDielectronVarManager::kImpactParXY,  - 1.0, 1.0);

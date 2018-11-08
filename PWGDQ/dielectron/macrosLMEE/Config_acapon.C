@@ -84,36 +84,6 @@ AliDielectron* Config_acapon(TString cutDefinition,
 					die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(selectedCuts) );
         }
 		}
-    else if(cutDefinition == "highMult"){
-        selectedCuts = LMEECutLib::kHighMult;
-				selectedPID = LMEECutLib::kHighMult;
-        die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
-        if(applyPairCuts){
-            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(selectedCuts) );
-        }
-    }
-    else if(cutDefinition == "midMult"){
-        selectedCuts = LMEECutLib::kMidMult;
-				selectedPID = LMEECutLib::kMidMult;
-        die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
-        if(applyPairCuts){
-            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(selectedCuts) );
-        }
-    }
-    else if(cutDefinition == "lowMult"){
-        selectedCuts = LMEECutLib::kLowMult;
-				selectedPID = LMEECutLib::kLowMult;
-        die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
-        if(applyPairCuts){
-            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(selectedCuts) );
-        }
-    }
     else if(cutDefinition == "TTreeCuts"){
         selectedCuts = LMEECutLib::kTTreeCuts;
 				selectedPID = LMEECutLib::kTTreeCuts;

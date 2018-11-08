@@ -47,10 +47,12 @@ AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName = "MLtre
 
 		LMEECutLib* cutLib = new LMEECutLib(hasSDD);
     AliAnalysisTaskSimpleTreeMaker *task = new AliAnalysisTaskSimpleTreeMaker(taskName);
+		task->analyseMC(isMC);
     // ==========================================================================
     // user customization part
 
-    if(useTPCcorr){
+		// TPC in MC is already calibrated
+    if(useTPCcorr && !isMC){
 			TH3D meanTPC = cutLib->SetEtaCorrectionTPCTTree(AliDielectronVarManager::kP,
                                               AliDielectronVarManager::kEta,
                                               AliDielectronVarManager::kRefMultTPConly, kFALSE,1);
