@@ -26,22 +26,22 @@ int process(TCollection* in, TCollection* out)
     TH1* tmp = dynamic_cast<TH1*>(object);
     if (!tmp) continue;
     TString name(tmp->GetName());
-    if (name.Contains("HistITSSPDvertexZ_CINT7ZAC-B-NOPF-CENT")) {
+    if (name.Contains("fHistITSSPDvertexZ_CINT7ZAC-B-NOPF-CENT")) {
       h1 = tmp;
     } else
-    if (name.Contains("HistITSSPDvertexZ_CTVXZAC-B-NOPF-CENT")) {
+    if (name.Contains("fHistITSSPDvertexZ_CTVXZAC-B-NOPF-CENT")) {
       h2 = tmp;
     } else
-    if (name.Contains("HistITSSPDvertexZ_CINT7-B-NOPF-MUFAST")) {
+    if (name.Contains("fHistITSSPDvertexZ_CINT7-B-NOPF-MUFAST")) {
       h4 = tmp;
     } else
-    if (name.Contains("HistITSSPDvertexZ_C0TVX-B-NOPF-MUFAST")) {
+    if (name.Contains("fHistITSSPDvertexZ_C0TVX-B-NOPF-MUFAST")) {
       h5 = tmp;
     } else
-    if (name.Contains("HistITSSPDvertexZ_C0V0M-B-NOPF-CENTNOTRD")) {
+    if (name.Contains("fHistITSSPDvertexZ_C0V0M-B-NOPF-CENTNOTRD")) {
       h7 = tmp;
     } else
-    if (name.Contains("HistITSSPDvertexZ_CTVXV0M-B-NOPF-CENT")) {
+    if (name.Contains("fHistITSSPDvertexZ_CTVXV0M-B-NOPF-CENT")) {
       h8 = tmp;
     }
   }
