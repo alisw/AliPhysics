@@ -1476,7 +1476,6 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Event","CentralityNew","Centrality;Centrality/%",202,-1.,100.,AliDielectronVarManager::kCentralityNew);
   histos->UserHistogram("Event","nEvTPC_eventplaneents",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  TMath::Pi()/-2.,TMath::Pi()/2.),AliDielectronVarManager::kQnTPCrpH2);
 
-
   //add histograms to track class
   histos->UserHistogram("Track","Centrality","Centrality;Centrality (%);#tracks",100,0.,100.,AliDielectronVarManager::kCentralityNew);
   histos->UserHistogram("Track","Pt","Pt;Pt [GeV];#tracks",500,0.,10.,AliDielectronVarManager::kPt);
@@ -1504,6 +1503,26 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Track","TOFnSigma_MomEle","TOF number of sigmas Electrons vs Momentum;Mom;TOFsigmaEle"                           ,     200,0.,10.,300,-30., 30. ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaEle);
 
   //add histograms to pair classes
+  histos->UserHistogram("Pair", 
+			"InvMass_QnTPCDelta","Inv.Mass:QnTPC;Inv. Mass (GeV/c^{2}); kQnDeltaPhiTPCrpH2",
+			500,0.,5.,200,-TMath::Pi(),TMath::Pi(),
+			AliDielectronVarManager::kM, AliDielectronVarManager::kQnDeltaPhiTPCrpH2);
+
+  histos->UserHistogram("Pair", 
+			"InvMass_QnTPCSPV2","Inv.Mass:QnTPCSPV2;Inv. Mass (GeV/c^{2}); kQnTPCrpH2FlowSPV2",
+			500,0.,5.,200,-1.,1.,
+			AliDielectronVarManager::kM, AliDielectronVarManager::kQnTPCrpH2FlowSPV2);
+
+  histos->UserHistogram("Pair", 
+			"InvMass_CosThetaCS","Inv.Mass:CosThetaCS;Inv. Mass (GeV/c^{2}); cos(#theta_{CS})",
+			500,0.,5.,200,-1.,1.,
+			AliDielectronVarManager::kM, AliDielectronVarManager::kThetaCS);
+
+  histos->UserHistogram("Pair", 
+			"InvMass_PhiCS","Inv.Mass:PhiCS;Inv. Mass (GeV/c^{2}); #varphi_{CS}",
+			500,0.,5.,200,-TMath::Pi(),TMath::Pi(),
+			AliDielectronVarManager::kM, AliDielectronVarManager::kPhiCS);
+  
    histos->UserHistogram("Pair", 
                          "InvMass_Centrality","Inv.Mass:Centrality;Inv. Mass (GeV/c^{2}); Centrality (%)",
                          500,0.,5.,10,0.,100.,
