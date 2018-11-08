@@ -832,9 +832,9 @@ void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray* arrayCluster, In
         SetTagBit(tag, kMCDecayPairInCalo);
         return ;
       }
-      else if ( label== iParent || label== iMom )
+      else if ( label == iParent || label == iMom  || label < 0 )
       {
-        //printf("\t \t skip\n");
+        AliDebug(1,Form("Skip checking label %d, (iParent %d, iMom %d)",label,iParent,iMom));
         continue;
       }
       else // check the ancestry
@@ -897,8 +897,8 @@ void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray* arrayCluster, In
           continue;
         }
         
-      }
-    }
+      } // last else, check the ancestry 
+    } // label loop
   } // cluster loop
   
   SetTagBit(tag, kMCDecayPairLost);
