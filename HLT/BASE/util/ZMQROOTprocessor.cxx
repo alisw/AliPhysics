@@ -478,6 +478,7 @@ Int_t DoSend(void* socket)
   aliZMQmsg message;
   //forward the (run-)info string
   alizmq_msg_add(&message, &fInfoTopic, fInfo);
+  fInfo.clear();
   Bool_t reset = kFALSE;
   Int_t rc = 0;
   int parts = 1;
