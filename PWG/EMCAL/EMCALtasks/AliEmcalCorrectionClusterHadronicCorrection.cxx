@@ -574,6 +574,11 @@ void AliEmcalCorrectionClusterHadronicCorrection::DoMatchedTracksLoop(Int_t iclu
   AliVCluster* cluster = fClusterContainerIndexMap.GetObjectFromGlobalIndex(icluster);
 
   if (!cluster) return;
+  //these are the functional forms for the momentum dependent eta-phi track matching cut
+  TF1 funcPtDepEta("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+  funcPtDepEta.SetParameters(0.04, 0.010, 2.5);
+  TF1 funcPtDepPhi("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+  funcPtDepPhi.SetParameters(0.09, 0.015, 2.);
   
   // loop over matched tracks
   Int_t Ntrks = cluster->GetNTracksMatched();
@@ -640,15 +645,10 @@ void AliEmcalCorrectionClusterHadronicCorrection::DoMatchedTracksLoop(Int_t iclu
     //Do momentum dependent track matching. Values taken from the PCM analyses see:
     //https://alice-notes.web.cern.ch/node/411  Fig. 46   for mom<3GeV these cuts are wider than the standard cuts
     //these values were extracted in the 2012 pp8 TeV MonteCarlo and apparently showed robustness throughout different periods
-    if (fDoMomDepMatching){
-      TF1* fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
-      fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
-      TF1* fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
-      fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
-
-      phiCutlo = -fFuncPtDepPhi->Eval(mom);
-      phiCuthi = +fFuncPtDepPhi->Eval(mom);
-      etaCut   = fFuncPtDepEta->Eval(mom);
+    if (fDoMomDepMatching) {
+      phiCutlo = -funcPtDepPhi.Eval(mom);
+      phiCuthi = +funcPtDepPhi.Eval(mom);
+      etaCut   = funcPtDepEta.Eval(mom);
     }
     
     if ((phidiff < phiCuthi && phidiff > phiCutlo) && TMath::Abs(etadiff) < etaCut) {
