@@ -120,13 +120,14 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
 
   AliAnalysisTaskPHOSEmbeddingEfficiency* task = new AliAnalysisTaskPHOSEmbeddingEfficiency(taskname);
 
-  Double_t Ethre = 8.0;
-  if(L1input == 7)       Ethre = 8.0;
-  else if(L1input == 6)  Ethre = 4.0;
-  else if(L1input == 5)  Ethre = 4.0;
+  Double_t Ethre = 0.0;
+  if(L1input == 7)       Ethre = 0.0;
+  else if(L1input == 6)  Ethre = 0.0;
+  else if(L1input == 5)  Ethre = 0.0;
   else if(L0input == 9)  Ethre = 0.0;//LHC15n
   else if(L0input == 17) Ethre = 0.0;//LHC17p
-  if(trigger & AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,ApplyTOFTrigger,-1);
+  if(trigger & AliVEvent::kPHI7)      task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,ApplyTOFTrigger,-1);
+  else if(trigger & AliVEvent::kINT7) task->SetPHOSTriggerAnalysisMB(L1input,L0input,Ethre,isMC,ApplyTOFTrigger,-1);
   if(kMC && (trigger & AliVEvent::kPHI7)) trigger = AliVEvent::kINT7;//change trigger selection in MC when you do PHOS trigger analysis.
   if(ForceActiveTRU) task->SetForceActiveTRU(L1input,L0input,Ethre,isMC);//this is to measure rejection factor from cluster energy kPHI7/kINT7 with same acceptance.
 
