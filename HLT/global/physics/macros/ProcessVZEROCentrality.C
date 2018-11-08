@@ -145,7 +145,7 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
     }
     
     Int_t lAtLine = 1;
-    TH2F *fThresholdTable = new TH2F("fThresholdTable", "", 3, 0, 3, 4, 0, 4);
+    TH2F *fThresholdTable = new TH2F("fThresholdTable", "Threshhold table", 3, 0, 3, 4, 0, 4);
     fThresholdTable->GetXaxis()->SetBinLabel(1, "50%");
     fThresholdTable->GetXaxis()->SetBinLabel(2, "30%");
     fThresholdTable->GetXaxis()->SetBinLabel(3, "10%");
@@ -541,9 +541,9 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         Plot2->SetFillStyle(0);
         
         Plot2->GetListOfFunctions()->Add(Plot2_sub0);
+        Plot2->GetListOfFunctions()->Add(Plot2_sub3);
         Plot2->GetListOfFunctions()->Add(Plot2_sub1);
         Plot2->GetListOfFunctions()->Add(Plot2_sub2);
-        Plot2->GetListOfFunctions()->Add(Plot2_sub3);
         
         TLine *lines[3];
         for(Int_t ilin=0; ilin<3; ilin++){
