@@ -2824,8 +2824,8 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t i
                      
          double y = log(1.0/delta_R);
          double lnpt_rel = log(zg*delta_R);
-	 
-	 double lundEntries[8] = {y, lnpt_rel, output_jets[0].perp(), nall, type, flagSubjet, xconstperp, invmass};
+	 double frac=j1.perp()/output_jets[0].perp();
+	 double lundEntries[9] = {y, lnpt_rel, output_jets[0].perp(), nall, type, flagSubjet, xconstperp, invmass,frac};
 	   hname = TString::Format("%s/LundIterative", jetDef.GetName());
            THnSparse* h = static_cast<THnSparse*>(fHistManager->FindObject(hname)); 
 	   //   if(!h) cout<<"caca"<<endl;
@@ -3197,11 +3197,11 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
     maxTracks = 500;
   }
 
-      Int_t dimx   = 8;
-      Int_t nbinsx[8]   = {50,50,10,20,2,2,20,20};
-      Double_t minx[8] =  {0,-10,0,0,0,0,0,1.4};
-      Double_t maxx[8]  = {5,0,100,20,2,2,20,2.4};
-      TString titlex[8]={"log(1/deltaR)","log(zteta)","jet pt","n","type","flagSubjet","ptD","invmass"};
+      Int_t dimx   = 9;
+      Int_t nbinsx[9]   = {50,50,10,20,2,2,20,20,10};
+      Double_t minx[9] =  {0,-10,0,0,0,0,0,1.4,0};
+      Double_t maxx[9]  = {5,0,100,20,2,2,20,2.4,1};
+      TString titlex[9]={"log(1/deltaR)","log(zteta)","jet pt","n","type","flagSubjet","ptD","invmass","frac"};
 
 
 
