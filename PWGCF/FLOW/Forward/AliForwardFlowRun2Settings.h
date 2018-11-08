@@ -63,7 +63,7 @@ class AliForwardFlowRun2Settings : public TObject {
 
   Double_t gap;
 
-  bool mc;
+  Bool_t mc;
   UShort_t tracktype;
   Bool_t nua_mode;
   // return true if good event

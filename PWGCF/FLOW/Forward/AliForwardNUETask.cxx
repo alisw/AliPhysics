@@ -14,12 +14,12 @@
 #include <TInterpreter.h>
 #include <TList.h>
 #include <THn.h>
-
+#include "AliAODMCHeader.h"
 #include "AliLog.h"
 #include "AliForwardNUETask.h"
 #include "AliForwardQCumulantRun2.h"
 #include "AliForwardGenericFramework.h"
-
+#include "AliForwardNUATask.h"
 #include "AliAODForwardMult.h"
 #include "AliAODCentralMult.h"
 #include "AliAODEvent.h"
@@ -136,9 +136,11 @@ void AliForwardNUETask::UserExec(Option_t *)
   //  Parameters:
   //   option: Not used
   //
+  AliAODEvent* fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+  AliAODMCHeader* fAODMCHeader = static_cast<AliAODMCHeader*>(fAOD->FindListObject(AliAODMCHeader::StdBranchName()));
 
-  AliMCEvent* fAOD = this->MCEvent();
-  AliStack* stack = fAOD->Stack();
+  AliMCEvent* fAODMC = this->MCEvent();
+  AliStack* stack = fAODMC->Stack();
   //..check if I have AOD
 
   if(!fAOD){
@@ -165,47 +167,46 @@ void AliForwardNUETask::UserExec(Option_t *)
   TH1D* fFMDHits = static_cast<TH1D*>(eventList->FindObject("FMDHits"));
 
   Int_t  iTracks(fAOD->GetNumberOfTracks());
+  AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
+  Double_t cent = MultSelection->GetMultiplicityPercentile("V0M"); //CL0
 
-  TH2D& forwarddNdedp = aodfmult->GetHistogram(); // also known as forwarddNdedp
-  //if (!forwarddNdedp) std::cout << "IKKE GODT" << '\n';
+  TH2D& forwarddNdedp = aodfmult->GetHistogram();
   Double_t zvertex = fAOD->GetPrimaryVertex()->GetZ();
 
   bool useEvent = kTRUE;
   if (iTracks < 10) useEvent = kFALSE;
 
   // extra cut on the FMD
-  //if (!fSettings.ExtraEventCutFMD(forwarddNdedp, cent, true)) useEvent = false;
+  if (!fSettings.ExtraEventCutFMD(forwarddNdedp, cent, true)) useEvent = false;
   if (useEvent) {
 
     // loop for the SPD
-/*
+
     AliAODTracklets* aodTracklets = fAOD->GetTracklets();
     for (Int_t i = 0; i < aodTracklets->GetNumberOfTracklets(); i++) {
-      nua_spd->Fill(aodTracklets->GetEta(i),aodVtx->GetZ(),1);
+      nua_spd->Fill(aodTracklets->GetEta(i),zvertex,1);
     }
-*/
+
     // loop for the TPC
     for(Int_t i(0); i < iTracks; i++) {
       AliAODTrack* track = dynamic_cast<AliAODTrack *>(fAOD->GetTrack(i));
       if (track->Pt() >= 0.2 && track->Pt() <= 5){
-        Double_t x[4] = {track->Eta(),track->Pt(),zvertex,1};
+        if (fabs(track->Eta()) > 1.1) continue;
+        Double_t x[4] = {track->Eta(),track->Pt(),zvertex,1.0};
 
         if (track->TestFilterBit(kTPCOnly)){
           nua_tpc->Fill(x,1);
         }
-        if (track->TestFilterBit(kHybrid)){
-          x[3] = 2;
+        else if (track->TestFilterBit(kHybrid)){
+          x[3] = 2.0;
           nua_tpc->Fill(x,1);
         }
-        if (track->TestFilterBit(kGlobal)){
-          x[3] = 3;
+        else if (track->TestFilterBit(kGlobal)){
+          x[3] = 3.0;
           nua_tpc->Fill(x,1);
         }
-        if (track->TestFilterBit(kGlobalOnly)){
-          x[3] = 4;
-          nua_tpc->Fill(x,1);
-        }
-        if (track->TestFilterBit(kGlobalOnly)){
+        else if (track->TestFilterBit(kGlobalOnly)){
+          x[3] = 4.0;
           nua_tpc->Fill(x,1);
         }
       }
@@ -222,16 +223,36 @@ void AliForwardNUETask::UserExec(Option_t *)
           Double_t phi = forwarddNdedp.GetYaxis()->GetBinCenter(phiBin);
           Double_t weight = forwarddNdedp.GetBinContent(etaBin, phiBin);
 
-          if (nua_mode) weight = InterpolateWeight(forwarddNdedp,phiBin,etaBin,weight);
+          //if (nua_mode) weight = AliForwardNUATask::InterpolateWeight(forwarddNdedp,phiBin,etaBin,weight);
 
           // If empty, do not fill hist
           if (weight == 0) continue;
 
-          fFMDHits->Fill(weight);
+          //fFMDHits->Fill(weight);
           nua_fmd->Fill(eta,zvertex,weight);
         } // End of phi loop
       } // End of eta bin
     } // End of useEvent
+
+    Int_t nTracksMC   = fAODMC->GetNumberOfTracks();
+
+        for (Int_t iTr = 0; iTr < nTracksMC; iTr++) {
+          AliMCParticle* p = static_cast< AliMCParticle* >(fAODMC->GetTrack(iTr));
+          if (!p->IsPhysicalPrimary()) continue;
+          if (p->Charge() == 0) continue;
+
+            if ( (p->Eta() < -1.7 && p->Eta() > -3.4) || (p->Eta() > 1.7 && p->Eta() < 5.0) ){
+              nua_fmd_prim->Fill(p->Eta(),zvertex);
+            }
+            if (p->Pt()>=0.2 && p->Pt()<=5) {
+              if (fabs(p->Eta()) < 1.1) {
+                nua_tpc_prim->Fill(p->Eta(),p->Pt(),zvertex);
+              }
+            }
+            if (fabs(p->Eta()) < 2.5) {
+              nua_spd_prim->Fill(p->Eta(),zvertex);
+            }
+        }
 
   PostData(1, fOutputList);
   return;

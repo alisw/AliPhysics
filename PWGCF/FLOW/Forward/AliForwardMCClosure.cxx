@@ -23,7 +23,7 @@
 #include "AliAODForwardMult.h"
 #include "AliAODCentralMult.h"
 #include "AliAODEvent.h"
-
+#include "AliForwardSecondariesTask.h"
 #include "AliForwardUtil.h"
 
 #include "AliVVZERO.h"
@@ -64,6 +64,7 @@ AliForwardMCClosure::AliForwardMCClosure() : AliAnalysisTaskSE(),
   fRandom(0),
   fSettings(),
   fEventCuts(),
+  use_primaries(kFALSE),
   fMultTOFLowCut(),
   fMultTOFHighCut(),
   fMultCentLowCut()
@@ -83,6 +84,7 @@ AliForwardMCClosure::AliForwardMCClosure() : AliAnalysisTaskSE(),
   fRandom(0),
   fSettings(),
   fEventCuts(),
+  use_primaries(kFALSE),
   fMultTOFLowCut(),
   fMultTOFHighCut(),
   fMultCentLowCut()
@@ -228,9 +230,6 @@ void AliForwardMCClosure::UserExec(Option_t *)
 
     AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
     double cent = MultSelection->GetMultiplicityPercentile("SPDTracklets");
-//double cent = 10;
-
-
 
 /*
   AliAODMCHeader* fAODMCHeader = static_cast<AliAODMCHeader*>(fAOD->FindListObject(AliAODMCHeader::StdBranchName()));
@@ -249,58 +248,28 @@ void AliForwardMCClosure::UserExec(Option_t *)
   if (header) fCent = header->GetCentrality();
 }
 
-    double cent1 = 0;
-
 
 if (fAODMCHeader){
   Double_t b = fAODMCHeader->GetImpactParameter();
-  cent1 = fImpactParToCent->Eval(b);
+  double cent1 = fImpactParToCent->Eval(b);
 }
-
-std::cout << fCent << std::endl;
-std::cout << cent1 << std::endl;
-
 */
+// Histogram to contain the central tracks
+  TH2D spddNdedp = TH2D("spddNdedp","spddNdedp",400,-1.5,1.5,400,0,2*TMath::Pi());
+  TH2D centralDiff = TH2D("central","central",400,-1.5,1.5,400,0,2*TMath::Pi());
 
-  //AliAODCentralMult* aodcmult = static_cast<AliAODCentralMult*>(fAOD->FindListObject("CentralClusters")); // only exists if created by user from ESDs
-  TH2D spddNdedp = TH2D("spddNdedp","spddNdedp",400,-1.5,1.5,400,0,2*TMath::Pi()); // Histogram to contain the central tracks
-  TH2D centralDiff = TH2D("central","central",400,-1.5,1.5,400,0,2*TMath::Pi()); // Histogram to contain the central tracks
   //TH2D forwarddNdedp = TH2D("forwarddNdedp","forwarddNdedp",400,-4,6,400,0,2*TMath::Pi()); // also known as dNdetadphi
   TH2D forwarddNdedp = TH2D("forwarddNdedp","forwarddNdedp",200,-4,6,20,0,2*TMath::Pi()); // also known as dNdetadphi
+  TH1D* dNdeta = static_cast<TH1D*>(fEventList->FindObject("dNdeta"));
 
   Int_t nTracks   = fAOD->GetNumberOfTracks();
-  //Int_t nTracks   = stack->GetNtrack();
 
-
-std::cout << "noTracks = " << nTracks << std::endl;
-
-      TH1D* dNdeta = static_cast<TH1D*>(fEventList->FindObject("dNdeta"));
-
-  Bool_t truth_run = true;
-  // AODs
-  /*
-    for (Int_t iTr = 0; iTr < nTracks; iTr++) {
-      AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
-      //if (!p->IsPhysicalPrimary()) continue;
-      if (fabs(p->Eta())>1.6 && p->Charge() != 0) {
-        forwarddNdedp.Fill(p->Eta(),p->Phi(),1);
-        dNdeta->Fill(p->Eta(),1);
-      }
-      if (fabs(p->Eta()) <= 1.1 && p->Charge() != 0) {
-        //if (p->Pt()>=0.2 && p->Pt()<5)
-        spddNdedp.Fill(p->Eta(),p->Phi(),1);
-        dNdeta->Fill(p->Eta(),1);
-      }
-    }
-    */
-
-  //ESDs w. primary
-
-    for (Int_t iTr = 0; iTr < nTracks; iTr++) {
-      AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
-      if (!p->IsPhysicalPrimary()) continue;
-      if (p->Charge() == 0) continue;
-
+    if (use_primaries){
+      //ESDs w. primary
+      for (Int_t iTr = 0; iTr < nTracks; iTr++) {
+        AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
+        if (!p->IsPhysicalPrimary()) continue;
+        if (p->Charge() == 0) continue;
         if ( (p->Eta() < -1.7 && p->Eta() > -3.4) || (p->Eta() > 1.7 && p->Eta() < 5.0) ){
           forwarddNdedp.Fill(p->Eta(),p->Phi(),1);
           dNdeta->Fill(p->Eta(),1);
@@ -311,35 +280,30 @@ std::cout << "noTracks = " << nTracks << std::endl;
             dNdeta->Fill(p->Eta(),1);
           }
         }
-    }
-
-    //ESDs w. secondary
-    /*
-    for (Int_t iTr = 0; iTr < nTracks; iTr++) {
-      AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
-      if (p->Charge() == 0) continue;
-
-      if (AliTrackReference *ref = this->IsHitFMD(p)){
-          forwarddNdedp.Fill(p->Eta(),p->Phi(),1);
-          dNdeta->Fill(p->Eta(),1);
       }
-      if (AliTrackReference *ref = this->IsHitTPC(p)) {
-        if (p->Pt()>=0.2 && p->Pt()<=5) {
-            spddNdedp.Fill(p->Eta(),p->Phi(),1);
+    }
+    else{
+      //ESDs w. secondary
+      for (Int_t iTr = 0; iTr < nTracks; iTr++) {
+        AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
+        if (p->Charge() == 0) continue;
+
+        if (AliTrackReference *ref = this->IsHitFMD(p)){
+            forwarddNdedp.Fill(p->Eta(),p->Phi(),1);
             dNdeta->Fill(p->Eta(),1);
+        }
+        if (AliTrackReference *ref = this->IsHitTPC(p)) {
+          if (p->Pt()>=0.2 && p->Pt()<=5) {
+              spddNdedp.Fill(p->Eta(),p->Phi(),1);
+              dNdeta->Fill(p->Eta(),1);
+          }
         }
       }
     }
-    */
 
-        //if (p->Pt()>0.2 && p->Pt() < 2) centralDiff.Fill(p->Eta(),p->Phi(),1);
-
-
-
-
-    bool useEvent = kTRUE;
+  bool useEvent = kTRUE;
   if (nTracks < 10) useEvent = kFALSE;
-  //if (!fSettings.ExtraEventCutFMD(forwarddNdedp, cent, true)) useEvent = kFALSE;
+  if (!fSettings.ExtraEventCutFMD(forwarddNdedp, cent, true)) useEvent = kFALSE;
 
   if (useEvent){
 
@@ -398,7 +362,6 @@ AliTrackReference* AliForwardMCClosure::IsHitTPC(AliMCParticle* p) {
 }
 
 
-
 AliMCParticle* AliForwardMCClosure::GetMother(AliMCParticle* p) {
   // Recurses until the mother IsPhysicalPrimary
   // Return NULL if no mother was found
@@ -441,8 +404,6 @@ Bool_t AliForwardMCClosure::IsRedefinedPhysicalPrimary(AliMCParticle* p) {
   }
   return isPPStandardDef;
 }
-
-
 
 
 //_____________________________________________________________________

@@ -19,11 +19,19 @@
  *
  * @ingroup pwglf_forward_flow
  */
-AliAnalysisTaskSE* AddTaskForwardMCClosure()
+AliAnalysisTaskSE* AddTaskForwardMCClosure(Bool_t use_primaries)
 {
   Bool_t etagap = true;
   Int_t mode = kRECON;
   bool doNUA = false;
+
+  TString resName = "MCClosure_secondaries";
+  const char* name = Form("ForwardFlowQC_second");
+
+  if (use_primaries){
+    resName = "MCClosure_primaries";
+    name = "ForwardFlowQC_prim";
+  }
 
   std::cout << "AddTaskForwardMCClosure" << std::endl;
 
@@ -32,16 +40,13 @@ AliAnalysisTaskSE* AddTaskForwardMCClosure()
   if (!mgr)
     Fatal("","No analysis manager to connect to.");
 
-  const char* name = Form("ForwardFlowQC");
   AliForwardMCClosure* task = new AliForwardMCClosure(name);
-
-  TString resName = "MCClosure";
-
   task->fSettings.doNUA = doNUA;
+  task->fSettings.mc = kTRUE;
+  task->use_primaries = use_primaries;
 
 
   if (task->fSettings.doNUA){
-
     //TString nua_filepath = std::getenv("NUA_FILE");
     //if (!nua_filepath) {
       TString nua_filepath = "/home/thoresen/Documents/PhD/analysis/nua.root";
@@ -52,7 +57,6 @@ AliAnalysisTaskSE* AddTaskForwardMCClosure()
     TFile *file = new TFile(nua_filepath);
 
     file->GetObject("nuacentral", task->fSettings.nuacentral);
-
     task->fSettings.nuacentral->SetDirectory(0);
     file->GetObject("nuaforward", task->fSettings.nuaforward);
     task->fSettings.nuaforward->SetDirectory(0);

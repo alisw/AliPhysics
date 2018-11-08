@@ -6,9 +6,9 @@
 /**
  * @file AliForwardMCClosure.h
  * @author Freja Thoresen <freja.thoresen@cern.ch>
- * 
+ *
  * @brief
- * 
+ *
  * @ingroup pwgcf_forward_flow
  */
 #include "AliAnalysisTaskSE.h"
@@ -32,9 +32,9 @@ class TCutG;
 class TH2D;
 class AliESDEvent;
 /**
- * @defgroup pwglf_forward_tasks_flow Flow tasks 
+ * @defgroup pwglf_forward_tasks_flow Flow tasks
  *
- * Code to do flow 
+ * Code to do flow
  *
  * @ingroup pwglf_forward_tasks
  */
@@ -53,14 +53,14 @@ class AliESDEvent;
 class AliForwardMCClosure : public AliAnalysisTaskSE
 {
 public:
-  /** 
-   * Constructor 
+  /**
+   * Constructor
    */
   AliForwardMCClosure();
-  /** 
+  /**
    * Constructor
-   * 
-   * @param name Name of task 
+   *
+   * @param name Name of task
    */
   AliForwardMCClosure(const char* name);
   /**
@@ -68,28 +68,28 @@ public:
    */
   virtual ~AliForwardMCClosure() {}
 
-  /** 
-   * Copy constructor 
-   * 
-   * @param o Object to copy from 
+  /**
+   * Copy constructor
+   *
+   * @param o Object to copy from
    */
   AliForwardMCClosure(const AliForwardMCClosure& o);
 
-  /** 
-   * @{ 
-   * @name Task interface methods 
+  /**
+   * @{
+   * @name Task interface methods
    */
 
-  /** 
-   * Create output objects 
+  /**
+   * Create output objects
    */
   virtual void UserCreateOutputObjects();
-  
-  /** 
-   * Process each event 
+
+  /**
+   * Process each event
    *
    * @param option Not used
-   */  
+   */
   virtual void UserExec(Option_t *option);
 
 
@@ -107,23 +107,25 @@ public:
 
 
 
-  /** 
+  /**
    * End of job
-   * 
-   * @param option Not used 
+   *
+   * @param option Not used
    */
   virtual void Terminate(Option_t *option);
 
   //private:
   AliAODEvent*            fAOD;           //! input event
   TList*                  fOutputList;    //! output list
-  TList*    fStdQCList; //! 
+  TList*    fStdQCList; //!
   TList*    fGFList; //!
   //TList* fRefList; //!
-  //TList* fDiffList; //! 
-  TList* fEventList; //! 
+  //TList* fDiffList; //!
+  TList* fEventList; //!
   TRandom fRandom;
-  
+  Bool_t use_primaries;
+
+
   // A class combining all the settings for this analysis
   AliForwardFlowRun2Settings fSettings;
 
@@ -143,5 +145,5 @@ TF1 *fMultCentLowCut; //!
 
 #endif
 // Local Variables:
-//   mode: C++ 
+//   mode: C++
 // End:

@@ -84,7 +84,6 @@ public:
    */
   virtual void UserExec(Option_t *option);
 
-  static Double_t InterpolateWeight(TH2D& forwarddNdedp,Int_t phiBin, Int_t etaBin, Double_t weight);
 
   /**
    * End of job
