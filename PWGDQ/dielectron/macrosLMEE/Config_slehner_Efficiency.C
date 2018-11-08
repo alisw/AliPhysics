@@ -263,12 +263,12 @@ std::vector<Bool_t> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* ta
   eleConv.SetMotherPDGs(22,22,kFALSE,kFALSE); 
 
 //  task->AddSingleLegMCSignal(partConv);
-  task->AddSingleLegMCSignal(eleConv);
+//  task->AddSingleLegMCSignal(eleConv);
   task->AddSingleLegMCSignal(eleFinalState);
   // task->AddSingleLegMCSignal(eleFinalStateFromPion);
   task->AddSingleLegMCSignal(eleFinalStateFromD);
   task->AddSingleLegMCSignal(eleFinalStateFromB);
-//   task->AddSingleLegMCSignal(eleFinalStateFromSameMotherMeson);
+//  task->AddSingleLegMCSignal(eleFinalStateFromSameMotherMeson);
 
   // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
   // ordering is according to MCSignals of single legs
@@ -373,7 +373,7 @@ void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
 //  task->AddPairMCSignal(pair_sameMother_rho);
 //  task->AddPairMCSignal(pair_sameMother_omega);
 //  task->AddPairMCSignal(pair_sameMother_phi);
-  task->AddPairMCSignal(pair_sameMother_jpsi);
-  task->AddPairMCSignal(pair_sameMother_CharmedMesonsWithSameMother);
-  task->AddPairMCSignal(pair_conversion);
+//  task->AddPairMCSignal(pair_sameMother_jpsi);
+//  task->AddPairMCSignal(pair_sameMother_CharmedMesonsWithSameMother);
+//  task->AddPairMCSignal(pair_conversion);
 }
