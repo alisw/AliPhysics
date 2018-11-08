@@ -157,7 +157,8 @@ fMassWindowAroundCascade(0.060),
 fHistEventCounter(0),
 fHistCentrality(0),
 fHistNumberOfCandidates(0), //bookkeep total number of candidates analysed
-fHistV0ToBachelorPropagationStatus(0)
+fHistV0ToBachelorPropagationStatus(0),
+fHistV0OptimalTrackParamUse(0)
 //________________________________________________
 {
     
@@ -210,7 +211,8 @@ fMassWindowAroundCascade(0.060),
 fHistEventCounter(0),
 fHistCentrality(0),
 fHistNumberOfCandidates(0), //bookkeep total number of candidates analysed
-fHistV0ToBachelorPropagationStatus(0)
+fHistV0ToBachelorPropagationStatus(0),
+fHistV0OptimalTrackParamUse(0)
 //________________________________________________
 {
     
@@ -309,6 +311,14 @@ void AliAnalysisTaskWeakDecayVertexer::UserCreateOutputObjects()
         fHistV0ToBachelorPropagationStatus->GetXaxis()->SetBinLabel(9, "Propag failure");
         fHistV0ToBachelorPropagationStatus->GetXaxis()->SetBinLabel(10,"Propag OK");
         fListHist->Add(fHistV0ToBachelorPropagationStatus);
+    }
+    if(! fHistV0OptimalTrackParamUse ) {
+        //Histogram Output: Event-by-Event
+        fHistV0OptimalTrackParamUse = new TH1D( "fHistV0OptimalTrackParamUse", "Candidate count;Occurrence;Count",3,0,3);
+        fHistV0OptimalTrackParamUse->GetXaxis()->SetBinLabel(1, "Offline prongs used");
+        fHistV0OptimalTrackParamUse->GetXaxis()->SetBinLabel(2, "OTF prongs used");
+        fHistV0OptimalTrackParamUse->GetXaxis()->SetBinLabel(3, "OTF prong use unsuccessful");
+        fListHist->Add(fHistV0OptimalTrackParamUse);
     }
     
     PostData(1, fListHist    );
@@ -575,7 +585,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
     if (fkUseOptimalTrackParams) {
         Int_t nv0s = 0;
         nv0s = event->GetNumberOfV0s();
-        
+        fOTFMap.clear(); //don't forget to clean up!
         for (Int_t iV0 = 0; iV0 < nv0s; iV0++) //extra-crazy test
         {   // This is the begining of the V0 loop
             AliESDv0 *v0 = ((AliESDEvent*)event)->GetV0(iV0);
@@ -657,6 +667,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
                     AliESDv0 *v0_otf = ((AliESDEvent*)event)->GetV0(lEquivalentOTFV0);
                     if(!v0_otf){
                         AliWarning(Form("Invalid V0 at position %i!", lEquivalentOTFV0));
+                        fHistV0OptimalTrackParamUse->Fill(2.5);
                     }else{
                         AliExternalTrackParam ptimproved(*(v0_otf->GetParamP()));
                         AliExternalTrackParam ntimproved(*(v0_otf->GetParamN()));
@@ -669,7 +680,11 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
                             pt = ntimproved;
                             nt = ptimproved;
                         }
+                        fHistV0OptimalTrackParamUse->Fill(1.5);
                     }
+                }else{
+                    //OTF not available for this pair
+                    fHistV0OptimalTrackParamUse->Fill(0.5);
                 }
             }
             AliExternalTrackParam *ntp=&nt, *ptp=&pt;

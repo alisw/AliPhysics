@@ -342,8 +342,8 @@ private:
     TH1D *fHistEventCounter; //!
     TH1D *fHistCentrality; //!
     TH1D *fHistNumberOfCandidates; //!
-     
-    TH1D *fHistV0ToBachelorPropagationStatus; //! 
+    TH1D *fHistV0ToBachelorPropagationStatus; //!
+    TH1D *fHistV0OptimalTrackParamUse; //! 
 
     AliAnalysisTaskWeakDecayVertexer(const AliAnalysisTaskWeakDecayVertexer&);            // not implemented
     AliAnalysisTaskWeakDecayVertexer& operator=(const AliAnalysisTaskWeakDecayVertexer&); // not implemented

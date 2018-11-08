@@ -313,6 +313,7 @@ fTreeCascVarBachTrack(0),
 fTreeCascVarPosTrack(0),
 fTreeCascVarNegTrack(0),
 fTreeCascVarOTFV0(0x0),
+fTreeCascVarOTFV0Bump(0x0),
 fTreeCascVarMagneticField(0),
 fTreeCascVarBachOriginalX(0),
 fTreeCascVarPosOriginalX(0),
@@ -545,6 +546,7 @@ fTreeCascVarBachTrack(0),
 fTreeCascVarPosTrack(0),
 fTreeCascVarNegTrack(0),
 fTreeCascVarOTFV0(0),
+fTreeCascVarOTFV0Bump(0x0),
 fTreeCascVarMagneticField(0),
 fTreeCascVarBachOriginalX(0),
 fTreeCascVarPosOriginalX(0),
@@ -866,6 +868,7 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarPosTrack", &fTreeCascVarPosTrack,16000,99);
         fTreeCascade->Branch("fTreeCascVarNegTrack", &fTreeCascVarNegTrack,16000,99);
         fTreeCascade->Branch("fTreeCascVarOTFV0", &fTreeCascVarOTFV0,16000,99);
+        fTreeCascade->Branch("fTreeCascVarOTFV0Bump", &fTreeCascVarOTFV0Bump,16000,99);
         
         //for sandbox mode
         fTreeCascade->Branch("fTreeCascVarMagneticField",&fTreeCascVarMagneticField,"fTreeCascVarMagneticField/F");
@@ -1700,6 +1703,45 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             
             if ( v0->GetOnFlyStatus()  &&
                 (
+                 (
+                  esdTrackBach->Charge() > 0 && (
+                                                 (v0->GetPindex() == lCascPosTrackArray[iCasc] && v0->GetNindex() == lCascBachTrackArray[iCasc] ) ||
+                                                 (v0->GetNindex() == lCascPosTrackArray[iCasc] && v0->GetPindex() == lCascNegTrackArray[iCasc] )
+                                                 )
+                  )
+                 ||
+                 (
+                  esdTrackBach->Charge() < 0 && (
+                                                 (v0->GetPindex() == lCascNegTrackArray[iCasc] && v0->GetNindex() == lCascBachTrackArray[iCasc] ) ||
+                                                 (v0->GetNindex() == lCascNegTrackArray[iCasc] && v0->GetPindex() == lCascNegTrackArray[iCasc] )
+                                                 )
+                  )
+                 )
+                ){
+                //Found corresponding OTF V0! Save it to TTree, please
+                AliESDv0 lV0ToStore(*v0), *lPointerToV0ToStore=&lV0ToStore;
+                fTreeCascVarOTFV0Bump = lPointerToV0ToStore;
+                lFoundOTF = kTRUE;
+                break; //stop looking
+            }
+        }
+        if( !lFoundOTF ) {
+            AliESDv0 lV0ToStore, *lPointerToV0ToStore=&lV0ToStore;
+            fTreeCascVarOTFV0Bump = lPointerToV0ToStore;
+        }
+        //=================================================================================
+        //OTF loop: try to find equivalent OTF V0, store empty object if not found
+        fTreeCascVarOTFV0Bump = 0x0;
+        
+        lFoundOTF = kFALSE;
+        
+        for(Long_t iOTFv0=0; iOTFv0<nv0s; iOTFv0++){
+            AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iOTFv0);
+            if (!v0) continue;
+            
+            if ( v0->GetOnFlyStatus()  &&
+                (
+                 //Check if this is the bump -> case switch for positive hyperons
                  (v0->GetPindex() == lCascPosTrackArray[iCasc] && v0->GetNindex() == lCascNegTrackArray[iCasc] ) ||
                  (v0->GetNindex() == lCascPosTrackArray[iCasc] && v0->GetPindex() == lCascNegTrackArray[iCasc] )
                  )

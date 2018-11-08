@@ -555,6 +555,7 @@ private:
     
     //Sandbox on-the-fly V0 for comparison, please
     AliESDv0 *fTreeCascVarOTFV0;
+    AliESDv0 *fTreeCascVarOTFV0Bump;
     
     Float_t fTreeCascVarMagneticField;
     
