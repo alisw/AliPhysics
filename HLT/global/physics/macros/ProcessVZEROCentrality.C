@@ -135,8 +135,10 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
     //Prepare reference histogram in case it does not exist
     if(!hReferenceV0M){
         hReferenceV0M = new TH1F("fHistReferenceV0M", "", 1000, -0.5, 999.5);
-        for(Int_t i=1; i<900; i++)
+        for(Int_t i=1; i<900; i++){
+            //cout<<"Reference i = "<<i<<", "<<lReferenceY[i]<<endl;
             hReferenceV0M->SetBinContent(i, lReferenceY[i]);
+        }
         hReferenceV0M->SetDirectory(0);
     }
     if(!fNBD){
@@ -161,8 +163,10 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
             continue;
         }
         
-        Float_t lCentBounds[101];
-        Float_t lCentBoundsRaw[101];
+        const Int_t lCentralityBins = 200;
+        
+        Float_t lCentBounds[lCentralityBins+1];
+        Float_t lCentBoundsRaw[lCentralityBins+1];
         
         cout<<"=================================================="<<endl;
         cout<<" Step 1: now doing unanchored calibration of "<<lStudiedTriggers[itrig]<<endl;
@@ -171,19 +175,19 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         cout<<"Determining calibration on-the-fly..."<<endl;
         lCentBoundsRaw[0] = 0.0;
         cout<<"Inspect boundaries: "<<flush;
-        for(Int_t i=0; i<100; i++){
-            lCentBounds[i] = i;
+        for(Int_t i=0; i<lCentralityBins; i++){
+            lCentBounds[i] = i*(100./((Double_t)(lCentralityBins)));
             if (i!=0) lCentBoundsRaw[i] = GetBoundaryForPercentile( histo,  100-lCentBounds[i] );
             cout<<lCentBoundsRaw[i]<<" "<<flush;
         }
-        lCentBoundsRaw[100] = 1e+5;
-        cout<<lCentBoundsRaw[100]<<" (end)"<<endl;
+        lCentBoundsRaw[lCentralityBins] = 1e+5;
+        cout<<lCentBoundsRaw[lCentralityBins]<<" (end)"<<endl;
         
         cout<<"Classifying..."<<endl;
-        TH1F* fHistCentrality             = new TH1F(Form("fHistCentrality%s",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
-        TH1F* fHistCentrality_Central     = new TH1F(Form("fHistCentrality%s_Central",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
-        TH1F* fHistCentrality_SemiCentral = new TH1F(Form("fHistCentrality%s_SemiCentral",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
-        TH1F* fHistCentrality_Extra       = new TH1F(Form("fHistCentrality%s_Extra",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
+        TH1F* fHistCentrality             = new TH1F(Form("fHistCentrality%s",lStudiedTriggers[itrig].Data()), "", lCentralityBins, 0, 100);
+        TH1F* fHistCentrality_Central     = new TH1F(Form("fHistCentrality%s_Central",lStudiedTriggers[itrig].Data()), "", lCentralityBins, 0, 100);
+        TH1F* fHistCentrality_SemiCentral = new TH1F(Form("fHistCentrality%s_SemiCentral",lStudiedTriggers[itrig].Data()), "", lCentralityBins, 0, 100);
+        TH1F* fHistCentrality_Extra       = new TH1F(Form("fHistCentrality%s_Extra",lStudiedTriggers[itrig].Data()), "", lCentralityBins, 0, 100);
         
         fHistCentrality->SetStats(0);
         fHistCentrality_Central->SetStats(0);
@@ -230,9 +234,9 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         fHistCentrality_Central->Sumw2();
         fHistCentrality_SemiCentral->Sumw2();
         
-        TH1F *hClassifier = new TH1F(Form("hClassifier_%s", lStudiedTriggers[itrig].Data()), "", 100, lCentBoundsRaw);
-        for(Int_t i=0; i<101; i++){
-            hClassifier -> SetBinContent( i+1 , 99.5 - i );
+        TH1F *hClassifier = new TH1F(Form("hClassifier_%s", lStudiedTriggers[itrig].Data()), "", lCentralityBins, lCentBoundsRaw);
+        for(Int_t i=0; i<lCentralityBins+1; i++){
+            hClassifier -> SetBinContent( i+1 , 100.-100./((Double_t)(lCentralityBins))*0.5 - 100./((Double_t)(lCentralityBins))*i );
         }
         hClassifier->SetTitle(Form("%s <-> centrality map (unanchored)", lStudiedTriggers[itrig].Data()));
         hClassifier->GetYaxis()->SetTitle("Centrality (%)");
@@ -340,10 +344,10 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         
         //Repeat procedure done before
         cout<<"Classifying after KNO-scaling anchoring..."<<endl;
-        TH1F* fHistCentralityKNO             = new TH1F(Form("fHistCentralityKNO%s",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
-        TH1F* fHistCentralityKNO_Central     = new TH1F(Form("fHistCentralityKNO%s_Central",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
-        TH1F* fHistCentralityKNO_SemiCentral = new TH1F(Form("fHistCentralityKNO%s_SemiCentral",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
-        TH1F* fHistCentralityKNO_Extra       = new TH1F(Form("fHistCentralityKNO%s_Extra",lStudiedTriggers[itrig].Data()), "", 100, 0, 100);
+        TH1F* fHistCentralityKNO             = new TH1F(Form("fHistCentralityKNO%s",lStudiedTriggers[itrig].Data()), "", lCentralityBins, 0, 100);
+        TH1F* fHistCentralityKNO_Central     = new TH1F(Form("fHistCentralityKNO%s_Central",lStudiedTriggers[itrig].Data()), "", lCentralityBins, 0, 100);
+        TH1F* fHistCentralityKNO_SemiCentral = new TH1F(Form("fHistCentralityKNO%s_SemiCentral",lStudiedTriggers[itrig].Data()), "", lCentralityBins, 0, 100);
+        TH1F* fHistCentralityKNO_Extra       = new TH1F(Form("fHistCentralityKNO%s_Extra",lStudiedTriggers[itrig].Data()), "", lCentralityBins, 0, 100);
         
         fHistCentralityKNO->SetStats(0);
         fHistCentralityKNO_Central->SetStats(0);
@@ -387,20 +391,20 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         fHistCentralityKNO_Extra->GetYaxis()->SetTitle("Event count");
         
         cout<<"Determining calibration on-the-fly..."<<endl;
-        Float_t lCentBoundsRawKNO[101];
+        Float_t lCentBoundsRawKNO[lCentralityBins+1];
         lCentBoundsRawKNO[0] = 0.0;
         cout<<"Inspect boundaries: "<<flush;
-        for(Int_t i=0; i<100; i++){
+        for(Int_t i=0; i<lCentralityBins; i++){
             //lCentBounds[i] = i;
             if (i!=0) lCentBoundsRawKNO[i] = GetBoundaryForPercentile( histo_KNOanchored,  100-lCentBounds[i] );
             cout<<lCentBoundsRawKNO[i]<<" "<<flush;
         }
-        lCentBoundsRawKNO[100] = 1e+5;
-        cout<<lCentBoundsRawKNO[100]<<" (end)"<<endl;
+        lCentBoundsRawKNO[lCentralityBins] = 1e+5;
+        cout<<lCentBoundsRawKNO[lCentralityBins]<<" (end)"<<endl;
         
-        TH1F *hClassifierKNO = new TH1F(Form("hClassifierKNO_%s",lStudiedTriggers[itrig].Data()), "", 100, lCentBoundsRawKNO);
-        for(Int_t i=0; i<101; i++){
-            hClassifierKNO -> SetBinContent( i+1 , 99.5 - i );
+        TH1F *hClassifierKNO = new TH1F(Form("hClassifierKNO_%s",lStudiedTriggers[itrig].Data()), "", lCentralityBins, lCentBoundsRawKNO);
+        for(Int_t i=0; i<lCentralityBins+1; i++){
+            hClassifierKNO -> SetBinContent( i+1 , 100.-100./((Double_t)(lCentralityBins))*0.5 - 100./((Double_t)(lCentralityBins))*i );
         }
         hClassifierKNO->SetTitle(Form("%s <-> centrality map (anchored)", lStudiedTriggers[itrig].Data()));
         hClassifierKNO->GetYaxis()->SetTitle("Centrality (%)");
@@ -521,6 +525,12 @@ Int_t process(TCollection *lIn = 0x0, TCollection *lOut = 0x0) {
         
         Plot2->GetYaxis()->SetRangeUser(0, lMaxY*1.1);
         Plot2->SetFillStyle(0);
+        
+        //Size options...
+        Plot2_sub0 ->SetMarkerSize(0.33);
+        Plot2_sub1 ->SetMarkerSize(0.33);
+        Plot2_sub2 ->SetMarkerSize(0.33);
+        Plot2_sub3 ->SetMarkerSize(0.33);
         
         Plot2->GetListOfFunctions()->Add(Plot2_sub0);
         Plot2->GetListOfFunctions()->Add(Plot2_sub3);
