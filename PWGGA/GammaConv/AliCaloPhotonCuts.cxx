@@ -211,7 +211,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistNCellsBigger100MeVvsMod(NULL),
   fHistNCellsBigger1500MeVvsMod(NULL),
   fHistEnergyOfModvsMod(NULL),
-  fHistClusterEnergyvsNCells(NULL),
+  fHistClusterEnergyvsNCellsAfterQA(NULL),
   fHistCellEnergyvsCellID(NULL),
   fHistCellTimevsCellID(NULL),
   fHistClusterEM02BeforeQA(NULL),
@@ -405,7 +405,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistNCellsBigger100MeVvsMod(NULL),
   fHistNCellsBigger1500MeVvsMod(NULL),
   fHistEnergyOfModvsMod(NULL),
-  fHistClusterEnergyvsNCells(NULL),
+  fHistClusterEnergyvsNCellsBeforeQA(NULL),
+  fHistClusterEnergyvsNCellsAfterQA(NULL),
   fHistCellEnergyvsCellID(NULL),
   fHistCellTimevsCellID(NULL),
   fHistClusterEM02BeforeQA(NULL),
@@ -852,11 +853,16 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistEnergyOfModvsMod->GetXaxis()->SetTitle("E_{mod} (GeV)");
       fHistEnergyOfModvsMod->GetYaxis()->SetTitle("module ID");
       fHistExtQA->Add(fHistEnergyOfModvsMod);
-      fHistClusterEnergyvsNCells      = new TH2F(Form("ClusterEnergyVsNCells_afterQA %s",GetCutNumber().Data()),"ClusterEnergyVsNCells_afterQA",nBinsClusterE, arrClusEBinning,
+      fHistClusterEnergyvsNCellsBeforeQA      = new TH2F(Form("ClusterEnergyVsNCells_beforeQA %s",GetCutNumber().Data()),"ClusterEnergyVsNCells_beforeQA",nBinsClusterE, arrClusEBinning,
+                                                          50, 0, 50);
+      fHistClusterEnergyvsNCellsBeforeQA->GetXaxis()->SetTitle("E_{cl} (GeV)");
+      fHistClusterEnergyvsNCellsBeforeQA->GetYaxis()->SetTitle("N_{cells}");
+      fHistExtQA->Add(fHistClusterEnergyvsNCellsBeforeQA);
+      fHistClusterEnergyvsNCellsAfterQA      = new TH2F(Form("ClusterEnergyVsNCells_afterQA %s",GetCutNumber().Data()),"ClusterEnergyVsNCells_afterQA",nBinsClusterE, arrClusEBinning,
                                                  50, 0, 50);
-      fHistClusterEnergyvsNCells->GetXaxis()->SetTitle("E_{cl} (GeV)");
-      fHistClusterEnergyvsNCells->GetYaxis()->SetTitle("N_{cells}");
-      fHistExtQA->Add(fHistClusterEnergyvsNCells);
+      fHistClusterEnergyvsNCellsAfterQA->GetXaxis()->SetTitle("E_{cl} (GeV)");
+      fHistClusterEnergyvsNCellsAfterQA->GetYaxis()->SetTitle("N_{cells}");
+      fHistExtQA->Add(fHistClusterEnergyvsNCellsAfterQA);
       fHistClusterDistanceInTimeCut   = new TH2F(Form("ClusterDistanceTo_withinTimingCut %s",GetCutNumber().Data()),"ClusterDistanceTo_withinTimingCut",20,-10,10,20,-10,10);
       fHistClusterDistanceInTimeCut->GetXaxis()->SetTitle("R_{cl,row} within time cut (cell)");
       fHistClusterDistanceInTimeCut->GetYaxis()->SetTitle("R_{cl,col} within time cut (cell)");
@@ -938,8 +944,14 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistEnergyOfModvsMod->GetXaxis()->SetTitle("E_{cl} (GeV)");
       fHistEnergyOfModvsMod->GetYaxis()->SetTitle("N_{cells}");
       fHistExtQA->Add(fHistEnergyOfModvsMod);
-      fHistClusterEnergyvsNCells      = new TH2F(Form("ClusterEnergyVsNCells_afterQA %s",GetCutNumber().Data()),"ClusterEnergyVsNCells_afterQA",nBinsClusterE, arrClusEBinning, 50, 0, 50);
-      fHistExtQA->Add(fHistClusterEnergyvsNCells);
+      fHistClusterEnergyvsNCellsBeforeQA      = new TH2F(Form("ClusterEnergyVsNCells_beforeQA %s",GetCutNumber().Data()),"ClusterEnergyVsNCells_beforeQA",nBinsClusterE, arrClusEBinning, 50, 0, 50);
+      fHistClusterEnergyvsNCellsBeforeQA->GetXaxis()->SetTitle("E_{cl} (GeV)");
+      fHistClusterEnergyvsNCellsBeforeQA->GetYaxis()->SetTitle("N_{cells}");
+      fHistExtQA->Add(fHistClusterEnergyvsNCellsBeforeQA);
+      fHistClusterEnergyvsNCellsAfterQA      = new TH2F(Form("ClusterEnergyVsNCells_afterQA %s",GetCutNumber().Data()),"ClusterEnergyVsNCells_afterQA",nBinsClusterE, arrClusEBinning, 50, 0, 50);
+      fHistClusterEnergyvsNCellsAfterQA->GetXaxis()->SetTitle("E_{cl} (GeV)");
+      fHistClusterEnergyvsNCellsAfterQA->GetYaxis()->SetTitle("N_{cells}");
+      fHistExtQA->Add(fHistClusterEnergyvsNCellsAfterQA);
       fHistClusterDistanceInTimeCut   = new TH2F(Form("ClusterDistanceTo_withinTimingCut %s",GetCutNumber().Data()),"ClusterDistanceTo_withinTimingCut",20,-10,10,20,-10,10);
       fHistClusterDistanceInTimeCut->GetXaxis()->SetTitle("R_{cl,row} within time cut (cell)");
       fHistClusterDistanceInTimeCut->GetYaxis()->SetTitle("R_{cl,col} within time cut (cell)");
@@ -1021,9 +1033,16 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistEnergyOfModvsMod->GetXaxis()->SetTitle("E_{cl} (GeV)");
       fHistEnergyOfModvsMod->GetYaxis()->SetTitle("N_{cells}");
       fHistExtQA->Add(fHistEnergyOfModvsMod);
-      fHistClusterEnergyvsNCells      = new TH2F(Form("ClusterEnergyVsNCells_afterQA %s",GetCutNumber().Data()),"ClusterEnergyVsNCells_afterQA",nBinsClusterE, arrClusEBinning,
+      fHistClusterEnergyvsNCellsBeforeQA      = new TH2F(Form("ClusterEnergyVsNCells_beforeQA %s",GetCutNumber().Data()),"ClusterEnergyVsNCells_beforeQA",nBinsClusterE, arrClusEBinning,
+                                                50, 0, 50);
+      fHistClusterEnergyvsNCellsBeforeQA->GetXaxis()->SetTitle("E_{cl} (GeV)");
+      fHistClusterEnergyvsNCellsBeforeQA->GetYaxis()->SetTitle("N_{cells}");
+      fHistExtQA->Add(fHistClusterEnergyvsNCellsBeforeQA);
+      fHistClusterEnergyvsNCellsAfterQA      = new TH2F(Form("ClusterEnergyVsNCells_afterQA %s",GetCutNumber().Data()),"ClusterEnergyVsNCells_afterQA",nBinsClusterE, arrClusEBinning,
                                                  50, 0, 50);
-      fHistExtQA->Add(fHistClusterEnergyvsNCells);
+      fHistClusterEnergyvsNCellsAfterQA->GetXaxis()->SetTitle("E_{cl} (GeV)");
+      fHistClusterEnergyvsNCellsAfterQA->GetYaxis()->SetTitle("N_{cells}");
+      fHistExtQA->Add(fHistClusterEnergyvsNCellsAfterQA);
       fHistClusterDistanceInTimeCut   = new TH2F(Form("ClusterDistanceTo_withinTimingCut %s",GetCutNumber().Data()),"ClusterDistanceTo_withinTimingCut",20,-10,10,20,-10,10);
       fHistClusterDistanceInTimeCut->GetXaxis()->SetTitle("R_{cl,row} within time cut (cell)");
       fHistClusterDistanceInTimeCut->GetYaxis()->SetTitle("R_{cl,col} within time cut (cell)");
@@ -1733,6 +1752,8 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 
   AliVCaloCells* cells = NULL;
   if(fExtendedMatchAndQA > 1){
+    
+    if(fHistClusterEnergyvsNCellsBeforeQA) fHistClusterEnergyvsNCellsBeforeQA->Fill(cluster->E(),cluster->GetNCells());
     if(cluster->IsEMCAL()){ //EMCAL
       cells = event->GetEMCALCells();
     }else if(cluster->IsPHOS()){ //PHOS
@@ -2095,7 +2116,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       }
     }
 
-    if(fHistClusterEnergyvsNCells) fHistClusterEnergyvsNCells->Fill(cluster->E(),cluster->GetNCells());
+    if(fHistClusterEnergyvsNCellsAfterQA) fHistClusterEnergyvsNCellsAfterQA->Fill(cluster->E(),cluster->GetNCells());
     if(cluster->IsEMCAL()){
       Int_t iSuperModule = -1;
       fGeomEMCAL = AliEMCALGeometry::GetInstance();
