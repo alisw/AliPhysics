@@ -6,7 +6,11 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Int_t trackCut=0,
                                               Bool_t SetTPCCorrection=kFALSE,
                                               Bool_t useAODFilterCuts=kFALSE,
                                               Bool_t hasMC=kFALSE,
-                                              TString TMVAweight = "TMVAClassification_BDTG.weights_094.xml" ){
+                                              TString TMVAweight = "TMVAClassification_BDTG.weights_094.xml",
+                                              Int_t maxTrCuts=0,
+                                              Int_t maxPIDCuts=0        
+        
+        ){
   
   TString directoryBaseName = "slehnerLMEETMVA";
   TString outputFileName = "AnalysisResults.root";
@@ -73,7 +77,7 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Int_t trackCut=0,
       Int_t MVACut=0;
       Int_t trackCut = 0;
       Int_t PIDCut = 0;
-      for(trackCut = 0; trackCut <=5; ++trackCut){
+      for(trackCut = 0; trackCut <=maxTrCuts; ++trackCut){
         AliDielectron * diel_low = Config_slehner_diele_TMVA(trackCut,PIDCut,MVACut,useAODFilterCuts,hasMC);
         if(!diel_low){
           Printf("=======================================");
@@ -87,7 +91,7 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Int_t trackCut=0,
         printf("successfully added AliDielectron: %s\n",diel_low->GetName());           
       }
       trackCut = 0;
-      for(PIDCut = 0; PIDCut <= 8; ++PIDCut){
+      for(PIDCut = 0; PIDCut <= maxPIDCuts; ++PIDCut){
         AliDielectron * diel_low = Config_slehner_diele_TMVA(trackCut,PIDCut,MVACut,useAODFilterCuts,hasMC);
         if(!diel_low){
           Printf("=======================================");
