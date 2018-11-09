@@ -658,6 +658,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
                 if (TMath::Abs(ptrk->GetD(xPrimaryVertex,yPrimaryVertex,b))<fV0VertexerSels[2]) continue;
             
             AliExternalTrackParam nt(*ptrk), pt(*ptrk);
+            /*
             if( fkUseOptimalTrackParams ){
                 //reroute to pointers obtained with on-the-fly finding, please
                 map<pair<int,int>, int>::iterator iter = fOTFMap.find(make_pair(nidx,pidx));
@@ -687,6 +688,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
                     fHistV0OptimalTrackParamUse->Fill(0.5);
                 }
             }
+             */
             AliExternalTrackParam *ntp=&nt, *ptp=&pt;
             Double_t xn, xp, dca;
             
