@@ -917,6 +917,9 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
 	fTrigger[14]  = trigger.Contains("CCUP25-B");//*0VBA *0VBC 0STG 0OM2
 	fTrigger[15]  = trigger.Contains("CCUP26-B");//*0VBA *0VBC 0SH1 
 	fTrigger[16]  = trigger.Contains("CCUP27-B");//*0VBA *0VBC 0STG 
+	fTrigger[17]  = trigger.Contains("CCUP29-B");//*0VBA *0VBC *0UBA *0UBC 0STG
+	fTrigger[18]  = trigger.Contains("CCUP30-B");//*0VBA *0VBC *0UBA *0UBC 0STG 0OM2
+	fTrigger[19]  = trigger.Contains("CCUP31-B");// *0VBA *0VBC *0UBA *0UBC 0STG 0OMU
 	}
   if(fTracking == 1){ 
   	fTrigger[0] = trigger.Contains("CCUP14-B"); 
@@ -928,6 +931,9 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   	fTrigger[6] = trigger.Contains("CCUP24-B");
 	fTrigger[7] = trigger.Contains("CCUP26-B");//*0VBA *0VBC 0SH1 
 	fTrigger[8] = trigger.Contains("CCUP27-B");//*0VBA *0VBC 0STG
+	fTrigger[9]  = trigger.Contains("CCUP29-B");//*0VBA *0VBC *0UBA *0UBC 0STG
+	fTrigger[10]  = trigger.Contains("CCUP30-B");//*0VBA *0VBC *0UBA *0UBC 0STG 0OM2
+	fTrigger[11]  = trigger.Contains("CCUP31-B");// *0VBA *0VBC *0UBA *0UBC 0STG 0OMU
 	} 
    if(fTracking == 8){ 
   	fTrigger[0]  = trigger.Contains("CMUP10-B");	// *0VBA *0UBA *0UBC 0MSL			
