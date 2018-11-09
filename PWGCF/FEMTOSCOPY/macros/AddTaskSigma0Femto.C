@@ -370,9 +370,15 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   std::vector<float> kMin;
   std::vector<float> kMax;
   for (int i = 0; i < 78; ++i) {
-    NBins.push_back(750);
-    kMin.push_back(0.);
-    kMax.push_back(3.);
+    if (suffix == "0") {
+      NBins.push_back(750);
+      kMin.push_back(0.);
+      kMax.push_back(3.);
+    } else {
+      NBins.push_back(250);
+      kMin.push_back(0.);
+      kMax.push_back(1.);
+    }
   }
 
   AliFemtoDreamCollConfig *config =
