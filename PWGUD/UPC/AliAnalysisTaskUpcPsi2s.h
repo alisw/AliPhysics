@@ -17,7 +17,7 @@ class AliTOFTriggerMask;
 class TBits;
 class TFile;
 
-#define ntrg 20
+#define ntrgMB 20
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
@@ -64,8 +64,8 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   Int_t fRunNum;
   UInt_t fPerNum, fOrbNum;
   //trigger
-  Bool_t fTrigger[ntrg];
-  Bool_t fTriggerInputsMC[ntrg];
+  Bool_t fTrigger[ntrgMB];
+  Bool_t fTriggerInputsMC[ntrgMB];
   UInt_t fL0inputs, fL1inputs;
   AliTOFTriggerMask *fTOFmask;
   Bool_t fIsPhysicsSelected;
