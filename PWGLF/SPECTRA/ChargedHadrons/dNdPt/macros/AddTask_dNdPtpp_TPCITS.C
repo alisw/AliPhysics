@@ -1,7 +1,8 @@
-AddTask_dNdPtpp_TPCITS(Int_t cutMode =222 , char *particleMode ="default", char* eventTrigger="kINT7"){
+AddTask_dNdPtpp_TPCITS(Int_t cutMode =222, char *particleMode ="default", char* eventTrigger="kINT7"){
  
    TString stEventTrigger(eventTrigger);
    TString stParticleMode(particleMode);
+   TString stControlString("default");
  
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {Error("AddTask_dNdPtpp_TPCITS", "No analysis manager found.");return 0;}
@@ -32,7 +33,7 @@ AddTask_dNdPtpp_TPCITS(Int_t cutMode =222 , char *particleMode ="default", char*
    accCuts->SetPtRange(ptMin,1.e10);
  
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
-   AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(cutMode,hasMC);
+   AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(cutMode,stControlString);
    if (!esdTrackCuts) { printf("ERROR: esdTrackCuts could not be created\n"); return; }
    esdTrackCuts->SetHistogramsOn(kTRUE);
  
