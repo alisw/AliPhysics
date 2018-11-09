@@ -71,6 +71,7 @@ set(SRCS
     AliJetResponseMaker.cxx
     AliJetTriggerSelectionTask.cxx
     AliNanoAODArrayMaker.cxx
+    AliPWGJETrainHelpers.cxx
     Tracks/AliAnalysisTaskEmcalTriggerBase.cxx
     Tracks/AliAnalysisTaskEmcalTriggerPosition.cxx
     Tracks/AliAnalysisTaskPtEMCalTrigger.cxx
