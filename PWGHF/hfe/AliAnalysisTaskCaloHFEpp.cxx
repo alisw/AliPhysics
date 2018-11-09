@@ -141,7 +141,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fzvtx_Ntrkl(0),
 				fzvtx_Nch(0),
 				fzvtx_Ntrkl_Corr(0),
-				fzvtx_Ntrkl_CorrWeight(0),
+				fzvtx_Corr(0),
+				fNtrkl_Corr(0),
 				fNchNtr(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
@@ -282,7 +283,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fzvtx_Ntrkl(0),
 				fzvtx_Nch(0),
 				fzvtx_Ntrkl_Corr(0),
-				fzvtx_Ntrkl_CorrWeight(0),
+				fzvtx_Corr(0),
+				fNtrkl_Corr(0),
 				fNchNtr(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
@@ -422,7 +424,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fzvtx_Ntrkl = new TH2F("fzvtx_Ntrkl","Zvertex vs N tracklet; zvtx; SPD Tracklets",200,-10.,10.,300,0.,300);
 				fzvtx_Nch = new TH2F("fzvtx_Nch","Zvertex vs N charged; zvtx; N_{ch}",200,-10.,10.,300,0.,300);
 				fzvtx_Ntrkl_Corr = new TH2F("fzvtx_Ntrkl_Corr","Zvertex vs N tracklet after correction; zvtx; SPD Tracklets",200,-10.,10.,300,0.,300);
-				fzvtx_Ntrkl_CorrWeight = new TH2F("fzvtx_Ntrkl_CorrWeight","Zvertex vs N tracklet after correction; zvtx; SPD Tracklets",200,-10.,10.,300,0.,300);
+				fzvtx_Corr = new TH1F("fzvtx_Corr","Zvertex after correction; zvtx; counts",200,-10.,10.);
+				fNtrkl_Corr = new TH1F("fNtrkl_Corr","N_{tracklet} after correction; zvtx; counts",300,0.,300.);
 				fNchNtr = new TH2F("fNchNtr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",300,0.,300.,300,0.,300);
 				fHist_eff_HFE     = new TH1F("fHist_eff_HFE","efficiency :: HFE",600,0,60);
 				fHist_eff_match   = new TH1F("fHist_eff_match","efficiency :: matched cluster",600,0,60);
@@ -540,7 +543,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fOutputList->Add(fzvtx_Ntrkl);
 				fOutputList->Add(fzvtx_Nch);
 				fOutputList->Add(fzvtx_Ntrkl_Corr);
-				fOutputList->Add(fzvtx_Ntrkl_CorrWeight);
+				fOutputList->Add(fzvtx_Corr);
+				fOutputList->Add(fNtrkl_Corr);
 				fOutputList->Add(fNchNtr);
 				//==== MC output ====
 				fOutputList->Add(fMCcheckMother);
@@ -808,9 +812,10 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				if(fMCarray){
 								WeightZvtx = fCorrZvtx->Eval(Zvertex);
 								WeightNtrkl = fCorrNtrkl->Eval(correctednAcc);
-								fzvtx_Ntrkl_CorrWeight->Fill(Zvertex*WeightZvtx,correctednAcc*WeightNtrkl);
-								fNchNtr->Fill(correctednAcc*WeightNtrkl,Nch);
-								fzvtx_Nch->Fill(Zvertex*WeightZvtx,Nch);
+								fzvtx_Corr->Fill(Zvertex,WeightZvtx);
+								fNtrkl_Corr->Fill(correctednAcc,WeightNtrkl);
+								fNchNtr->Fill(correctednAcc,Nch,WeightNtrkl);
+								fzvtx_Nch->Fill(Zvertex,Nch,WeightZvtx);
 				}
 
 

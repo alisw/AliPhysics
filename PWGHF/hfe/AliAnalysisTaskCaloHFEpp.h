@@ -174,7 +174,8 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fzvtx_Ntrkl;
 		TH2F*                   fzvtx_Nch;
 		TH2F*                   fzvtx_Ntrkl_Corr;
-		TH2F*                   fzvtx_Ntrkl_CorrWeight;
+		TH1F*                   fzvtx_Corr;
+		TH1F*                   fNtrkl_Corr;
 		TH2F*                   fNchNtr;
 
 		//==== Trigger or Calorimeter flag ====
