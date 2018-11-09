@@ -933,6 +933,8 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","1111124067032230000","0163103100000010"); // -50ns, 30ns timing cut, NL DExt PCMEMC+BTv3
   } else if ( trainConfig == 420){ // EMCAL clusters no NonLin
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","11111000a7032230000","0163103100000010"); // -50ns, 30ns timing cut, no NL INT7
+  } else if ( trainConfig == 421){ // EMCAL clusters no NonLin
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","11111060a7032230000","0163103100000010"); // -50ns, 30ns timing cut, no NL INT7
     //5 TeV JJ MC configs without trackmatching
   } else if ( trainConfig == 430){ // EMCAL clusters no NonLin
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","1111100060032230000","0163103100000010"); // -50ns, 30ns timing cut, no NL INT7
