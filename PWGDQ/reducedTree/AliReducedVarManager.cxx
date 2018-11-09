@@ -149,6 +149,12 @@ AliReducedVarManager::Variables AliReducedVarManager::fgVarDependencyY = kNothin
 TH2F* AliReducedVarManager::fgPairEffMap = 0x0;
 AliReducedVarManager::Variables AliReducedVarManager::fgEffMapVarDependencyX = kNothing;
 AliReducedVarManager::Variables AliReducedVarManager::fgEffMapVarDependencyY = kNothing;
+TH1F* AliReducedVarManager::fgAssocHadronEffMap1D = 0x0;
+TH2F* AliReducedVarManager::fgAssocHadronEffMap2D = 0x0;
+TH3F* AliReducedVarManager::fgAssocHadronEffMap3D = 0x0;
+AliReducedVarManager::Variables AliReducedVarManager::fgAssocHadronEffMapVarDependencyX = kNothing;
+AliReducedVarManager::Variables AliReducedVarManager::fgAssocHadronEffMapVarDependencyY = kNothing;
+AliReducedVarManager::Variables AliReducedVarManager::fgAssocHadronEffMapVarDependencyZ = kNothing;
 TH1F* AliReducedVarManager::fgRunTotalLuminosity = 0x0;
 TH1F* AliReducedVarManager::fgRunTotalIntensity0 = 0x0;
 TH1F* AliReducedVarManager::fgRunTotalIntensity1 = 0x0;
@@ -312,6 +318,11 @@ void AliReducedVarManager::SetVariableDependencies() {
   if(fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff] || fgUsedVars[kOneOverPairEffSq]){
     fgUsedVars[fgEffMapVarDependencyX] = kTRUE;
     fgUsedVars[fgEffMapVarDependencyY] = kTRUE;
+  }
+  if(fgUsedVars[kAssocHadronEff] || fgUsedVars[kOneOverAssocHadronEff]){
+    fgUsedVars[fgAssocHadronEffMapVarDependencyX] = kTRUE;
+    fgUsedVars[fgAssocHadronEffMapVarDependencyY] = kTRUE;
+    fgUsedVars[fgAssocHadronEffMapVarDependencyZ] = kTRUE;
   }
   if(fgUsedVars[kNTracksITSoutVsSPDtracklets] || fgUsedVars[kNTracksTPCoutVsSPDtracklets] ||
      fgUsedVars[kNTracksTOFoutVsSPDtracklets] || fgUsedVars[kNTracksTRDoutVsSPDtracklets])
@@ -2089,6 +2100,44 @@ void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc
   if(fgUsedVars[kDeltaEta])     values[kDeltaEta]     = trig->Eta() - assoc->Eta();
   if(fgUsedVars[kDeltaEtaAbs])  values[kDeltaEtaAbs]  = TMath::Abs(trig->Eta() - assoc->Eta());
   if(fgUsedVars[kMass] && (trig->IsA()==PAIR::Class())) values[kMass] = ((PAIR*)trig)->Mass();
+
+  // hadron efficiency variables
+  if (fgUsedVars[kAssocHadronEff] || fgUsedVars[kOneOverAssocHadronEff]) {
+    Float_t hadronEff         = 1.;
+    Float_t oneOverHadronEff  = 1.;
+    if (fgAssocHadronEffMap1D) {
+      // 1D map
+      Int_t binX = fgAssocHadronEffMap1D->GetXaxis()->FindBin(values[fgAssocHadronEffMapVarDependencyX]);
+      if(binX==0) binX = 1;
+      if(binX==fgAssocHadronEffMap1D->GetXaxis()->GetNbins()+1) binX -= 1;
+      hadronEff = fgAssocHadronEffMap1D->GetBinContent(binX);
+    } else if (fgAssocHadronEffMap2D) {
+      // 2D map
+      Int_t binX = fgAssocHadronEffMap2D->GetXaxis()->FindBin(values[fgAssocHadronEffMapVarDependencyX]);
+      if(binX==0) binX = 1;
+      if(binX==fgAssocHadronEffMap2D->GetXaxis()->GetNbins()+1) binX -= 1;
+      Int_t binY = fgAssocHadronEffMap2D->GetYaxis()->FindBin(values[fgAssocHadronEffMapVarDependencyY]);
+      if(binY==0) binY = 1;
+      if(binY==fgAssocHadronEffMap2D->GetYaxis()->GetNbins()+1) binY -= 1;
+      hadronEff = fgAssocHadronEffMap2D->GetBinContent(binX, binY);
+    } else if (fgAssocHadronEffMap3D) {
+      // 3D map
+      Int_t binX = fgAssocHadronEffMap3D->GetXaxis()->FindBin(values[fgAssocHadronEffMapVarDependencyX]);
+      if(binX==0) binX = 1;
+      if(binX==fgAssocHadronEffMap3D->GetXaxis()->GetNbins()+1) binX -= 1;
+      Int_t binY = fgAssocHadronEffMap3D->GetYaxis()->FindBin(values[fgAssocHadronEffMapVarDependencyY]);
+      if(binY==0) binY = 1;
+      if(binY==fgAssocHadronEffMap3D->GetYaxis()->GetNbins()+1) binY -= 1;
+      Int_t binZ = fgAssocHadronEffMap3D->GetZaxis()->FindBin(values[fgAssocHadronEffMapVarDependencyZ]);
+      if(binZ==0) binZ = 1;
+      if(binZ==fgAssocHadronEffMap3D->GetZaxis()->GetNbins()+1) binZ -= 1;
+      hadronEff = fgAssocHadronEffMap3D->GetBinContent(binX, binY);
+    }
+    if (!hadronEff) hadronEff       = 1.; // NOTE: should this be the default in case of eff=0?
+    if (hadronEff) oneOverHadronEff = 1./hadronEff;
+    values[kAssocHadronEff]         = hadronEff;
+    values[kOneOverAssocHadronEff]  = oneOverHadronEff;
+  }
 }
 
 
@@ -2694,6 +2743,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kPairEff]           = "pair eff.";             fgVariableUnits[kPairEff]           = "";
   fgVariableNames[kOneOverPairEff]    = "1/pair eff.";           fgVariableUnits[kOneOverPairEff]    = "";
   fgVariableNames[kOneOverPairEffSq]  = "1/pair eff. squared";   fgVariableUnits[kOneOverPairEffSq]  = "";
+  fgVariableNames[kAssocHadronEff]        = "assoc. hadron eff.";   fgVariableUnits[kAssocHadronEff]        = "";
+  fgVariableNames[kOneOverAssocHadronEff] = "1/assoc. hadron eff."; fgVariableUnits[kOneOverAssocHadronEff] = "";
   for(Int_t i=0;i<2;++i) {
      fgVariableNames[kPairLegTPCchi2+i] = Form("TPC #chi^{2}, leg %d", i+1);
      fgVariableUnits[kPairLegTPCchi2+i] = "";
@@ -2904,6 +2955,87 @@ void AliReducedVarManager::SetPairEfficiencyMap(TH2F* effMap, AliReducedVarManag
   if(effMap) {
     fgPairEffMap = (TH2F*)effMap->Clone(Form("AliReducedVarManager_PairEffMap"));
     fgPairEffMap->SetDirectory(0x0);
+  }
+}
+
+//____________________________________________________________________________________
+void AliReducedVarManager::SetAssociatedHadronEfficiencyMap(TH1F* map, AliReducedVarManager::Variables varX) {
+  //
+  // initialize the associated hadron efficiency map (1D), used for correlation analysis
+  //
+  if (fgAssocHadronEffMap1D || fgAssocHadronEffMap2D || fgAssocHadronEffMap3D) {
+    cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() Efficiency map already defined!" << endl;
+    return;
+  }
+  if(varX>kNVars || varX<=kNothing) {
+    cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() The X-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+    cout << "                           Efficiency map not used! Check it out!" << endl;
+    return;
+  }
+  fgAssocHadronEffMapVarDependencyX = varX;
+  if (map) {
+    fgAssocHadronEffMap1D = (TH1F*)map->Clone(Form("AliReducedVarManager_AssocHadronEffMap"));
+    fgAssocHadronEffMap1D->SetDirectory(0x0);
+  }
+}
+
+//____________________________________________________________________________________
+void AliReducedVarManager::SetAssociatedHadronEfficiencyMap(TH2F* map, AliReducedVarManager::Variables varX, AliReducedVarManager::Variables varY) {
+  //
+  // initialize the associated hadron efficiency map (2D), used for correlation analysis
+  //
+  if (fgAssocHadronEffMap1D || fgAssocHadronEffMap2D || fgAssocHadronEffMap3D) {
+    cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() Efficiency map already defined!" << endl;
+    return;
+  }
+  if(varX>kNVars || varX<=kNothing) {
+    cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() The X-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+    cout << "                           Efficiency map not used! Check it out!" << endl;
+    return;
+  }
+  if(varY>kNVars || varY<=kNothing) {
+    cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() The Y-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+    cout << "                           Efficiency map not used! Check it out!" << endl;
+    return;
+  }
+  fgAssocHadronEffMapVarDependencyX = varX;
+  fgAssocHadronEffMapVarDependencyY = varY;
+  if (map) {
+    fgAssocHadronEffMap2D = (TH2F*)map->Clone(Form("AliReducedVarManager_AssocHadronEffMap"));
+    fgAssocHadronEffMap2D->SetDirectory(0x0);
+  }
+}
+
+//____________________________________________________________________________________
+void AliReducedVarManager::SetAssociatedHadronEfficiencyMap(TH3F* map, AliReducedVarManager::Variables varX, AliReducedVarManager::Variables varY, AliReducedVarManager::Variables varZ) {
+  //
+  // initialize the associated hadron efficiency map (3D), used for correlation analysis
+  //
+  if (fgAssocHadronEffMap1D || fgAssocHadronEffMap2D || fgAssocHadronEffMap3D) {
+    cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() Efficiency map already defined!" << endl;
+    return;
+  }
+  if(varX>kNVars || varX<=kNothing) {
+    cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() The X-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+    cout << "                           Efficiency map not used! Check it out!" << endl;
+    return;
+  }
+  if(varY>kNVars || varY<=kNothing) {
+    cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() The Y-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+    cout << "                           Efficiency map not used! Check it out!" << endl;
+    return;
+  }
+  if(varZ>kNVars || varZ<=kNothing) {
+    cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() The Z-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+    cout << "                           Efficiency map not used! Check it out!" << endl;
+    return;
+  }
+  fgAssocHadronEffMapVarDependencyX = varX;
+  fgAssocHadronEffMapVarDependencyY = varY;
+  fgAssocHadronEffMapVarDependencyZ = varZ;
+  if (map) {
+    fgAssocHadronEffMap3D = (TH3F*)map->Clone(Form("AliReducedVarManager_AssocHadronEffMap"));
+    fgAssocHadronEffMap3D->SetDirectory(0x0);
   }
 }
 
