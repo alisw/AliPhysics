@@ -9,7 +9,9 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
                                                                 Bool_t PIDCorr=kFALSE,
                                                                 Bool_t useAODFilterCuts=kFALSE,
                                                                 TString TMVAweight = "TMVAClassification_BDTG.weights_094.xml",
-                                                                int genGroup=0
+                                                                Int_t genGroup=0,
+                                                                Int_t maxTrCuts=0,
+                                                                Int_t maxPIDCuts=0
         ) {
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
@@ -169,13 +171,13 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
     Int_t MVACut=0;
     Int_t trackCut = 0;
     Int_t PIDCut = 0;
-    for(trackCut = 0; trackCut <=5; ++trackCut){
+    for(trackCut = 0; trackCut <=maxTrCuts; ++trackCut){
         std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVA Cut: "<<MVACut*0.2<<" added"<< std::endl;
         AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight);
         task->AddTrackCuts(filter);
     }
     trackCut = 0;
-    for(PIDCut = 0; PIDCut <= 8; ++PIDCut){  
+    for(PIDCut = 0; PIDCut <=maxPIDCuts; ++PIDCut){  
         std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVA Cut: "<<MVACut*0.2<<" added"<< std::endl;
         AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight);
         task->AddTrackCuts(filter);
