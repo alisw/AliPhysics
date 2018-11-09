@@ -136,7 +136,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s(const char *name)
 void AliAnalysisTaskUpcPsi2s::Init()
 {
   
-  for(Int_t i=0; i<ntrg; i++) {
+  for(Int_t i=0; i<ntrgMB; i++) {
   	fTrigger[i] = kFALSE;
 	fTriggerInputsMC[i] = kFALSE;
 	}
@@ -221,7 +221,7 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
 //  fJPsiTree ->Branch("fOrbNum", &fOrbNum, "fOrbNum/i");
   
 //  fJPsiTree ->Branch("fBCrossNum", &fBCrossNum, "fBCrossNum/s");
-  fJPsiTree ->Branch("fTrigger", &fTrigger[0], Form("fTrigger[%i]/O", ntrg));
+  fJPsiTree ->Branch("fTrigger", &fTrigger[0], Form("fTrigger[%i]/O", ntrgMB));
   fJPsiTree ->Branch("fL0inputs", &fL0inputs, "fL0inputs/i");
 //  fJPsiTree ->Branch("fL1inputs", &fL1inputs, "fL1inputs/i");
 //  fJPsiTree ->Branch("fNtracklets", &fNtracklets, "fNtracklets/s");
@@ -278,7 +278,7 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   }
   if(isMC) {
     fJPsiTree ->Branch("fGenPart", &fGenPart);
-    fJPsiTree ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], Form("fTriggerInputsMC[%i]/O", ntrg));
+    fJPsiTree ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], Form("fTriggerInputsMC[%i]/O", ntrgMB));
 //    fJPsiTree ->Branch("fMCVtxPos", &fMCVtxPos[0], "fMCVtxPos[3]/F");
 //    fJPsiTree ->Branch("fFOFiredChips", &fFOFiredChips);
   }
@@ -291,7 +291,7 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
 //  fPsi2sTree ->Branch("fOrbNum", &fOrbNum, "fOrbNum/i");
   
 //  fPsi2sTree ->Branch("fBCrossNum", &fBCrossNum, "fBCrossNum/s");
-  fPsi2sTree ->Branch("fTrigger", &fTrigger[0], Form("fTrigger[%i]/O", ntrg));
+  fPsi2sTree ->Branch("fTrigger", &fTrigger[0], Form("fTrigger[%i]/O", ntrgMB));
   fPsi2sTree ->Branch("fL0inputs", &fL0inputs, "fL0inputs/i");
 //  fPsi2sTree ->Branch("fL1inputs", &fL1inputs, "fL1inputs/i");
 //  fPsi2sTree ->Branch("fNtracklets", &fNtracklets, "fNtracklets/s");
@@ -346,7 +346,7 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   }
   if(isMC) {
     fPsi2sTree ->Branch("fGenPart", &fGenPart);
-    fPsi2sTree ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], Form("fTriggerInputsMC[%i]/O", ntrg));
+    fPsi2sTree ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], Form("fTriggerInputsMC[%i]/O", ntrgMB));
 //    fPsi2sTree ->Branch("fMCVtxPos", &fMCVtxPos[0], "fMCVtxPos[3]/F");
 //    fPsi2sTree ->Branch("fFOFiredChips", &fFOFiredChips);
   }
@@ -948,7 +948,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   	fTrigger[9]  = trigger.Contains("CMUP23-B");   // *0UBC *0UGC *0VBA *0VGA *0SH2 *0VC5 0MUL
 	}
   Bool_t isTriggered = kFALSE;
-  for(Int_t i=0; i<ntrg; i++) {
+  for(Int_t i=0; i<ntrgMB; i++) {
     if( fTrigger[i] ) isTriggered = kTRUE;
   }
   if(!isMC && !isTriggered ) return;
@@ -1668,7 +1668,7 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
   fTrigger[9]  = trigger.Contains("CCUP9-B"); //*0VBA *0VBC *0UBA *0UBC 0STP
   
   Bool_t isTriggered = kFALSE;
-  for(Int_t i=0; i<ntrg; i++) {
+  for(Int_t i=0; i<ntrgMB; i++) {
     if( fTrigger[i] ) isTriggered = kTRUE;
   }
   if(!isMC && !isTriggered ) return;
@@ -1943,7 +1943,7 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
 //_____________________________________________________________________________
 void AliAnalysisTaskUpcPsi2s::RunESDMC(AliESDEvent* esd)
 {
-  for(Int_t i=0; i<ntrg; i++) fTriggerInputsMC[i] = kFALSE;
+  for(Int_t i=0; i<ntrgMB; i++) fTriggerInputsMC[i] = kFALSE;
   fTriggerInputsMC[0] = esd->GetHeader()->IsTriggerInputFired("0VBA"); //VZERO A
   fTriggerInputsMC[1] = esd->GetHeader()->IsTriggerInputFired("0VBC"); //VZERO C
   fTriggerInputsMC[2] = esd->GetHeader()->IsTriggerInputFired("0OMU"); //TOF two hits with topology

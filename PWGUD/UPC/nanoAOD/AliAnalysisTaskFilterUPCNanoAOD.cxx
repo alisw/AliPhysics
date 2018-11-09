@@ -34,14 +34,15 @@ ClassImp(AliAnalysisTaskFilterUPCNanoAOD)
 /// \endcond
 
 //_____________________________________________________________________________
-AliAnalysisTaskFilterUPCNanoAOD::AliAnalysisTaskFilterUPCNanoAOD(Bool_t withSPDTracklets,Bool_t withMuonTracks)
+AliAnalysisTaskFilterUPCNanoAOD::AliAnalysisTaskFilterUPCNanoAOD(Bool_t withSPDTracklets,Bool_t withMuonTracks,TString extraTriggers)
 : AliAnalysisTaskSE("AliAnalysisTaskFilterUPCNanoAOD"),
 fBranchReplicator(new AliAODUPCReplicator("UPCReplicator",
                                            "UPC",
                                            kTRUE,
                                            withSPDTracklets,
 					   withMuonTracks)),
-					   fWithMuonTracks(withMuonTracks)
+					   fWithMuonTracks(withMuonTracks),
+					   fExtraTriggers(extraTriggers)
 {
   /// ctor. For the parameters \see AliAODUPCReplicator::AliAODUPCReplicator
 }
@@ -89,6 +90,11 @@ void AliAnalysisTaskFilterUPCNanoAOD::UserExec(Option_t*)
   
   if(trigger.Contains("CCUP")) isTriggered = kTRUE; // UPC central barrel
   if(trigger.Contains("CMUP") && fWithMuonTracks) isTriggered = kTRUE; // UPC MUON
+  
+ //Other triggers like CTEST etc.
+  TString token;
+  Ssiz_t from = 0;
+  while (fExtraTriggers.Tokenize(token, from, "[/]"))if(trigger.Contains(token.Data()))isTriggered = kTRUE;;
   
   
   //Vertex
