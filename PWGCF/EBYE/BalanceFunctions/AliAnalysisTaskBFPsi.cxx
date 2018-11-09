@@ -120,6 +120,10 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistEtaPhiPosCorr(0),
   fHistEtaPhiNeg(0),
   fHistEtaPhiNegCorr(0),
+  fHistEtaPhiVzPlus(0),
+  fHistEtaPhiVzMinus(0),
+  fHistEtaPhiVzPlusCorr(0),
+  fHistEtaPhiVzMinusCorr(0),
   fHistPhiBefore(0),
   fHistPhiAfter(0),
   fHistPhiPos(0),
@@ -485,18 +489,46 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fHistEtaVzPosCorr); 			 
   fHistEtaVzNeg  = new TH3F("fHistEtaVzNeg","#eta vs Vz distribution (-);#eta;V_{z} (cm);Centrality percentile",40,-1.6,1.6,140,-12.,12.,220,-5,105);
   fList->Add(fHistEtaVzNeg); 
-   fHistEtaVzNegCorr  = new TH3F("fHistEtaVzNegCorr","#eta vs Vz distribution (-);#eta;V_{z} (cm);Centrality percentile",40,-1.6,1.6,140,-12.,12.,220,-5,105);
+  fHistEtaVzNegCorr  = new TH3F("fHistEtaVzNegCorr","#eta vs Vz distribution (-);#eta;V_{z} (cm);Centrality percentile",40,-1.6,1.6,140,-12.,12.,220,-5,105);
   fList->Add(fHistEtaVzNegCorr); 			 
 
   fHistEtaPhiPos  = new TH3F("fHistEtaPhiPos","#eta-#phi distribution (+);#eta;#phi (rad);Centrality percentile",40,-1.6,1.6,72,0.,2.*TMath::Pi(),220,-5,105);
   fList->Add(fHistEtaPhiPos);
-   fHistEtaPhiPosCorr  = new TH3F("fHistEtaPhiPosCorr","#eta-#phi distribution (+);#eta;#phi (rad);Centrality percentile",40,-1.6,1.6,72,0.,2.*TMath::Pi(),220,-5,105);
-   fList->Add(fHistEtaPhiPosCorr);
-   fHistEtaPhiNeg  = new TH3F("fHistEtaPhiNeg","#eta-#phi distribution (-);#eta;#phi (rad);Centrality percentile",40,-1.6,1.6,72,0.,2.*TMath::Pi(),220,-5,105); 	       	 
+  fHistEtaPhiPosCorr  = new TH3F("fHistEtaPhiPosCorr","#eta-#phi distribution (+);#eta;#phi (rad);Centrality percentile",40,-1.6,1.6,72,0.,2.*TMath::Pi(),220,-5,105);
+  fList->Add(fHistEtaPhiPosCorr);
+  fHistEtaPhiNeg  = new TH3F("fHistEtaPhiNeg","#eta-#phi distribution (-);#eta;#phi (rad);Centrality percentile",40,-1.6,1.6,72,0.,2.*TMath::Pi(),220,-5,105);
   fList->Add(fHistEtaPhiNeg);
   fHistEtaPhiNegCorr  = new TH3F("fHistEtaPhiNegCorr","#eta-#phi distribution (-);#eta;#phi (rad);Centrality percentile",40,-1.6,1.6,72,0.,2.*TMath::Pi(),220,-5,105); 	       	 
   fList->Add(fHistEtaPhiNegCorr);
   
+  Int_t phiBin = 100;
+  Int_t etaBin = 16;
+  Int_t vertex_bin = 9;
+
+  Double_t nArrayPhi[phiBin+1];
+  for(Int_t iBin = 0; iBin <= phiBin; iBin++)
+        nArrayPhi[iBin] = iBin*TMath::TwoPi()/phiBin;
+
+  Double_t nArrayEta[17]={-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
+  Double_t nArrayVertex[10]={-10, -7, -5, -3, -1, 1, 3, 5, 7, 10};
+
+  fHistEtaPhiVzPlus = new TH3F("fHistEtaPhiVzPlus",
+                                 "Survived positive primaries;#phi;#eta;V_{z} (cm)",
+                                 phiBin, nArrayPhi, etaBin, nArrayEta, vertex_bin, nArrayVertex);
+  fHistEtaPhiVzPlusCorr = new TH3F("fHistEtaPhiVzPlusCorr",
+                                     "Survived positive primaries;#phi;#eta;V_{z} (cm)",
+                                     phiBin, nArrayPhi, etaBin, nArrayEta, vertex_bin, nArrayVertex);
+  fHistEtaPhiVzMinus = new TH3F("fHistEtaPhiVzMinus",
+                                  "Survived negative primaries;#phi;#eta;V_{z} (cm)",
+                                  phiBin, nArrayPhi, etaBin,nArrayEta, vertex_bin, nArrayVertex);
+  fHistEtaPhiVzMinusCorr = new TH3F("fHistEtaPhiVzMinusCorr",
+                                      "Survived negative primaries;#phi;#eta;V_{z} (cm)",
+                                      phiBin, nArrayPhi, etaBin,nArrayEta, vertex_bin, nArrayVertex);
+  fList->Add(fHistEtaPhiVzPlus);
+  fList->Add(fHistEtaPhiVzPlusCorr);
+  fList->Add(fHistEtaPhiVzMinus);
+  fList->Add(fHistEtaPhiVzMinusCorr);
+
   fHistPhiBefore  = new TH2F("fHistPhiBefore","#phi distribution;#phi;Centrality percentile",200,0.,2*TMath::Pi(),220,-5,105);
   fList->Add(fHistPhiBefore);
   fHistPhiAfter  = new TH2F("fHistPhiAfter","#phi distribution;#phi;Centrality percentile",200,0.,2*TMath::Pi(),220,-5,105);
@@ -2562,18 +2594,20 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  fHistEtaVzPos->Fill(vEta,event->GetPrimaryVertex()->GetZ(),
 			      gCentrality); 		 
 	  fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);
+         fHistEtaPhiVzPlus->Fill(vPhi, vEta, event->GetPrimaryVertex()->GetZ());
 	}
       }
       else if(vCharge < 0) {
 	if (fUseRapidity){
 	  fHistEtaVzNeg->Fill(vY,event->GetPrimaryVertex()->GetZ(),
 			      gCentrality); 	
-	  fHistEtaPhiNeg->Fill(vY,vPhi,gCentrality); 
+         fHistEtaPhiNeg->Fill(vY,vPhi,gCentrality);
 	}
 	else{
 	  fHistEtaVzNeg->Fill(vEta,event->GetPrimaryVertex()->GetZ(),
 			      gCentrality);
 	  fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+         fHistEtaPhiVzMinus->Fill(vPhi, vEta, event->GetPrimaryVertex()->GetZ());
 	}
       }
       //=======================================correction
@@ -2602,6 +2636,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  else{
 	    fHistEtaPhiPosCorr->Fill(vEta, vPhi,gCentrality, correction);
 	    fHistEtaVzPosCorr->Fill(vEta, event->GetPrimaryVertex()->GetZ(),gCentrality, correction);
+           fHistEtaPhiVzPlusCorr->Fill(vPhi, vEta, event->GetPrimaryVertex()->GetZ(), correction);
 	  }
 	}
 	else if(vCharge < 0){
@@ -2612,6 +2647,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  else{
 	    fHistEtaPhiNegCorr->Fill(vEta, vPhi,gCentrality, correction);
 	    fHistEtaVzNegCorr->Fill(vEta, event->GetPrimaryVertex()->GetZ(),gCentrality, correction);
+           fHistEtaPhiVzMinusCorr->Fill(vPhi, vEta, event->GetPrimaryVertex()->GetZ(), correction);
+
 	  }
 	}
 	fHistPhiCorr->Fill(vPhi,gCentrality, correction);
@@ -3180,12 +3217,16 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       if(vCharge > 0) {
 	fHistEtaVzPos->Fill(vEta,mcEvent->GetPrimaryVertex()->GetZ(),
 			    gCentrality); 		 
-	fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality); 		 
+	fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);
+       fHistEtaPhiVzPlus->Fill(vPhi, vEta, event->GetPrimaryVertex()->GetZ());
+
       }
       else if(vCharge < 0) {
 	fHistEtaVzNeg->Fill(vEta,mcEvent->GetPrimaryVertex()->GetZ(),
 			    gCentrality); 		 
 	fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+       fHistEtaPhiVzMinus->Fill(vPhi, vEta, event->GetPrimaryVertex()->GetZ());
+
       }
 
       Int_t label_pdg = TMath::Abs(aodTrack->GetLabel());
@@ -3214,10 +3255,13 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	if(vCharge > 0){
 	  fHistEtaPhiPosCorr->Fill(vEta, vPhi,gCentrality, correction);
 	  fHistEtaVzPosCorr->Fill(vEta, event->GetPrimaryVertex()->GetZ(),gCentrality, correction);
+         fHistEtaPhiVzPlusCorr->Fill(vPhi, vEta, event->GetPrimaryVertex()->GetZ(), correction);
+
 	}
 	else if(vCharge < 0){
 	  fHistEtaPhiNegCorr->Fill(vEta, vPhi,gCentrality, correction);
 	  fHistEtaVzNegCorr->Fill(vEta, event->GetPrimaryVertex()->GetZ(),gCentrality, correction);
+         fHistEtaPhiVzMinusCorr->Fill(vPhi, vEta, event->GetPrimaryVertex()->GetZ(), correction);
 	}
 	fHistPhiCorr->Fill(vPhi,gCentrality, correction);
 	//Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
