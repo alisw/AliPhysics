@@ -17,7 +17,7 @@ class AliTOFTriggerMask;
 class TBits;
 class TFile;
 
-#define ntrg 17
+#define ntrg 20
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
@@ -176,7 +176,7 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   AliAnalysisTaskUpcPsi2s(const AliAnalysisTaskUpcPsi2s&); //not implemented
   AliAnalysisTaskUpcPsi2s& operator =(const AliAnalysisTaskUpcPsi2s&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcPsi2s, 8); 
+  ClassDef(AliAnalysisTaskUpcPsi2s, 9); 
 };
 
 #endif
