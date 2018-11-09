@@ -524,7 +524,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistNCellsBigger100MeVvsMod;             // NCells with >0.1 GeV vs Module Number
     TH2F*     fHistNCellsBigger1500MeVvsMod;            // NCells with >1.5 GeV vs Module Number
     TH2F*     fHistEnergyOfModvsMod;                    // Deposited Energy vs Module Number
-    TH2F*     fHistClusterEnergyvsNCells;               // Cluster Energy vs NCells
+    TH2F*     fHistClusterEnergyvsNCellsBeforeQA;       // Cluster Energy vs NCells before QA
+    TH2F*     fHistClusterEnergyvsNCellsAfterQA;        // Cluster Energy vs NCells after QA
     TH2F*     fHistCellEnergyvsCellID;                  // Cell Energy vs CellID
     TH2F*     fHistCellTimevsCellID;                    // Cell Time vs CellID
     TH2F*     fHistClusterEM02BeforeQA;                 // 2-dim plot E vs. M02
@@ -605,7 +606,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,71)
+    ClassDef(AliCaloPhotonCuts,72)
 };
 
 #endif
