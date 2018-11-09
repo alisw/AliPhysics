@@ -1482,9 +1482,9 @@ void AliAnalysisTaskEmcalJetBtagSV::FillDeltaPt(Int_t nVtx, AliAODVertex* pVtx, 
           fhDeltaPtLxy7->Fill(deltapt, fillWeight);
       }                  
 
-	delete sigmavertex;
-	delete decLenXY;
-	delete sigdecLenXY;
+	delete [] sigmavertex;
+	delete [] decLenXY;
+	delete [] sigdecLenXY;
 	
 
 }
