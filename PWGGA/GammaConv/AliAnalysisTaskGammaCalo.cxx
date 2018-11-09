@@ -3905,7 +3905,8 @@ void AliAnalysisTaskGammaCalo::ProcessAODMCParticles()
             } else if(particle->GetPdgCode() == 221){
               fHistoMCEtaInAccPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Eta with gamma in acc
               if(fIsMC > 1) fHistoMCEtaWOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Eta with gamma in acc
-              if(fConvJetReader->GetTrueNJets()>0){
+              if(fDoJetAnalysis){
+                if(fConvJetReader->GetTrueNJets()>0){
                   fHistoMCEtaJetInAccPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Pi0 with gamma in acc in jet event
                   fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
                   fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
@@ -3926,6 +3927,7 @@ void AliAnalysisTaskGammaCalo::ProcessAODMCParticles()
                   fTrueVectorJetEta.clear();
                   fTrueVectorJetPhi.clear();
                 }
+              }
             }
           }
         }
