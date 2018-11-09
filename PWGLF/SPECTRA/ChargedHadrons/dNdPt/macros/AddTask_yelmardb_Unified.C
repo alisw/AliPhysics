@@ -139,9 +139,6 @@ AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutModeLow = 100, In
     if(cutMode == 121) {task->SetZvtx(20.);}
 
 
-
-    //if(cutMode==118 || cutMode==119){max. 5-dim Chi2 TPC constrained track vs. global track;}
-
     //Matching Efficiency
     if(cutMode==200)
     {
