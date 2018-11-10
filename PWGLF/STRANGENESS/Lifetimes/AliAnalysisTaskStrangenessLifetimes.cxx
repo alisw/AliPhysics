@@ -412,7 +412,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
         
       int currentPDG = part->GetPdgCode();
         
-      if (currentPDG==pdgCodes[2]) {
+      if (currentPDG==pdgCodes[2] && (part->GetLastDaughter()-part->GetFirstDaughter())==1) {
           fHistNsigmaPosHe->Fill(std::abs(fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kHe3)));
           fHistdEdxVsPt->Fill(pTrack->GetTPCmomentum(),pTrack->GetTPCsignal());
 
