@@ -69,7 +69,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fCutR(0),                               fCutEta(0),                             fCutPhi(0),
   fClusterWindow(0),                      fMass(0),                           
   fStepSurface(0),                        fStepCluster(0),
-  fITSTrackSA(kFALSE),                    fEMCalSurfaceDistance(440.),
+  fITSTrackSA(kFALSE),                    fUseOuterTrackParam(kFALSE),            fEMCalSurfaceDistance(440.),
   fTrackCutsType(0),                      fCutMinTrackPt(0),                      fCutMinNClusterTPC(0), 
   fCutMinNClusterITS(0),                  fCutMaxChi2PerClusterTPC(0),            fCutMaxChi2PerClusterITS(0),
   fCutRequireTPCRefit(kFALSE),            fCutRequireITSRefit(kFALSE),            fCutAcceptKinkDaughters(kFALSE),
@@ -129,7 +129,8 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fCutR(reco.fCutR),        fCutEta(reco.fCutEta),           fCutPhi(reco.fCutPhi),
   fClusterWindow(reco.fClusterWindow),
   fMass(reco.fMass),        fStepSurface(reco.fStepSurface), fStepCluster(reco.fStepCluster),
-  fITSTrackSA(reco.fITSTrackSA),                             fEMCalSurfaceDistance(440.),
+  fITSTrackSA(reco.fITSTrackSA),                             fUseOuterTrackParam(reco.fUseOuterTrackParam),                           
+  fEMCalSurfaceDistance(440.),
   fTrackCutsType(reco.fTrackCutsType),                       fCutMinTrackPt(reco.fCutMinTrackPt), 
   fCutMinNClusterTPC(reco.fCutMinNClusterTPC),               fCutMinNClusterITS(reco.fCutMinNClusterITS), 
   fCutMaxChi2PerClusterTPC(reco.fCutMaxChi2PerClusterTPC),   fCutMaxChi2PerClusterITS(reco.fCutMaxChi2PerClusterITS),
@@ -231,6 +232,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fStepSurface               = reco.fStepSurface;
   fStepCluster               = reco.fStepCluster;
   fITSTrackSA                = reco.fITSTrackSA;
+  fUseOuterTrackParam        = reco.fUseOuterTrackParam;
   fEMCalSurfaceDistance      = reco.fEMCalSurfaceDistance;
   
   fTrackCutsType             = reco.fTrackCutsType;
@@ -2731,8 +2733,13 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
         if ( phi <= 10 || phi >= 250 ) continue;
       }
       
-      if (!fITSTrackSA)
-        trackParam =  const_cast<AliExternalTrackParam*>(esdTrack->GetInnerParam());  // if TPC Available
+      if (!fITSTrackSA) // if TPC Available
+      {
+        if ( fUseOuterTrackParam )
+          trackParam =  const_cast<AliExternalTrackParam*>(esdTrack->GetOuterParam());  
+        else
+          trackParam =  const_cast<AliExternalTrackParam*>(esdTrack->GetInnerParam());  
+      }
       else
         trackParam =  new AliExternalTrackParam(*esdTrack); // If ITS Track Standing alone		
       
@@ -2906,8 +2913,13 @@ Int_t AliEMCALRecoUtils::FindMatchedClusterInEvent(const AliESDtrack *track,
   }
   
   AliExternalTrackParam *trackParam = 0;
-  if (!fITSTrackSA)
-    trackParam = const_cast<AliExternalTrackParam*>(track->GetInnerParam());  // If TPC
+  if (!fITSTrackSA) // If TPC
+  {
+    if ( fUseOuterTrackParam )
+      trackParam = const_cast<AliExternalTrackParam*>(track->GetOuterParam());  
+    else 
+      trackParam = const_cast<AliExternalTrackParam*>(track->GetInnerParam());  
+  }
   else
     trackParam = new AliExternalTrackParam(*track);
   
