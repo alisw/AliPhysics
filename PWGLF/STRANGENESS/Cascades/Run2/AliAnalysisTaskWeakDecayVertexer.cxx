@@ -324,7 +324,7 @@ void AliAnalysisTaskWeakDecayVertexer::UserCreateOutputObjects()
     }
     if(! fHistV0Statistics ) {
         //Histogram Output: Event-by-Event
-        fHistV0Statistics = new TH1D( "fHistV0Statistics", "Candidate count;stage;Count",8,0,8);
+        fHistV0Statistics = new TH1D( "fHistV0Statistics", "Candidate count;stage;Count",9,0,9);
         fHistV0Statistics->GetXaxis()->SetBinLabel(1, "Pairs considered");
         fHistV0Statistics->GetXaxis()->SetBinLabel(2, "Pass neg/pos DCA to PV ");
         fHistV0Statistics->GetXaxis()->SetBinLabel(3, "Pass V0 dau dca");
@@ -333,6 +333,7 @@ void AliAnalysisTaskWeakDecayVertexer::UserCreateOutputObjects()
         fHistV0Statistics->GetXaxis()->SetBinLabel(6, "Pass radius cut");
         fHistV0Statistics->GetXaxis()->SetBinLabel(7, "Pass CosPA cut");
         fHistV0Statistics->GetXaxis()->SetBinLabel(8, "Within pT range");
+        fHistV0Statistics->GetXaxis()->SetBinLabel(9, "Passes all, OTF track used");
         fListHist->Add(fHistV0Statistics);
     }
     PostData(1, fListHist    );
@@ -667,6 +668,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             fHistV0Statistics->Fill(1.5); //pass distance to PV
             
             AliExternalTrackParam nt(*ntrk), pt(*ptrk);
+            Bool_t lUsedOptimalParams = kFALSE;
             
             if( fkUseOptimalTrackParams ){
                 //reroute to pointers obtained with on-the-fly finding, please
@@ -691,6 +693,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
                             nt = ptimproved;
                         }
                         fHistV0OptimalTrackParamUse->Fill(1.5);
+                        lUsedOptimalParams=kTRUE;
                     }
                 }else{
                     //OTF not available for this pair
@@ -777,6 +780,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             if(lTransvMom>fMaxPtV0) continue;
             
             fHistV0Statistics->Fill(7.5); //within pT range
+            if (lUsedOptimalParams) fHistV0Statistics->Fill(8.5); //good V0, used OTF params
             
             event->AddV0(&vertex);
             
