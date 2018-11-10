@@ -92,8 +92,8 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   TH1D* fHistEtaNeg;                //! Pseudorapidity of the negative prong
   TH2D* fHistArmenteros;            //! Pseudorapidity of the negative prong
   TH1D* fHistNsigmaPosHe;
-  TH2D* dEdxVsPt; 
-  TH1D* Nhyp;
+  TH2D* fHistdEdxVsPt; 
+  TH1D* fHistNhyp;
   float fMinPtToSave;  // minimum pt
   float fMaxPtToSave;  // maximum pt
   float fMaxTPCpionSigma;
