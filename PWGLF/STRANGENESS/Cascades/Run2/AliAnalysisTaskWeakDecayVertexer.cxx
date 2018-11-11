@@ -147,6 +147,7 @@ fkDoPureGeometricMinimization( kTRUE ),
 fkDoCascadeRefit( kFALSE ) ,
 fMaxIterationsWhenMinimizing(27),
 fkUseOptimalTrackParams(kFALSE),
+fkUseOptimalTrackParamsBachelor(kFALSE),
 fMinPtV0(   -1 ), //pre-selection
 fMaxPtV0( 1000 ),
 fMinPtCascade(   0.3 ),
@@ -159,6 +160,7 @@ fHistCentrality(0),
 fHistNumberOfCandidates(0), //bookkeep total number of candidates analysed
 fHistV0ToBachelorPropagationStatus(0),
 fHistV0OptimalTrackParamUse(0),
+fHistV0OptimalTrackParamUseBachelor(0),
 fHistV0Statistics(0)
 //________________________________________________
 {
@@ -202,6 +204,7 @@ fkDoPureGeometricMinimization( kTRUE ),
 fkDoCascadeRefit( kFALSE ) ,
 fMaxIterationsWhenMinimizing(27),
 fkUseOptimalTrackParams(kFALSE),
+fkUseOptimalTrackParamsBachelor(kFALSE),
 fMinPtV0(   -1 ), //pre-selection
 fMaxPtV0( 1000 ),
 fMinPtCascade(   0.3 ), //pre-selection
@@ -214,6 +217,7 @@ fHistCentrality(0),
 fHistNumberOfCandidates(0), //bookkeep total number of candidates analysed
 fHistV0ToBachelorPropagationStatus(0),
 fHistV0OptimalTrackParamUse(0),
+fHistV0OptimalTrackParamUseBachelor(0),
 fHistV0Statistics(0)
 //________________________________________________
 {
@@ -321,6 +325,14 @@ void AliAnalysisTaskWeakDecayVertexer::UserCreateOutputObjects()
         fHistV0OptimalTrackParamUse->GetXaxis()->SetBinLabel(2, "OTF prongs used");
         fHistV0OptimalTrackParamUse->GetXaxis()->SetBinLabel(3, "OTF prong use unsuccessful");
         fListHist->Add(fHistV0OptimalTrackParamUse);
+    }
+    if(! fHistV0OptimalTrackParamUseBachelor ) {
+        //Histogram Output: Event-by-Event
+        fHistV0OptimalTrackParamUseBachelor = new TH1D( "fHistV0OptimalTrackParamUseBachelor", "Candidate count;Occurrence;Count",3,0,3);
+        fHistV0OptimalTrackParamUseBachelor->GetXaxis()->SetBinLabel(1, "Offline prong used");
+        fHistV0OptimalTrackParamUseBachelor->GetXaxis()->SetBinLabel(2, "OTF prong used");
+        fHistV0OptimalTrackParamUseBachelor->GetXaxis()->SetBinLabel(3, "OTF prong use unsuccessful");
+        fListHist->Add(fHistV0OptimalTrackParamUseBachelor);
     }
     if(! fHistV0Statistics ) {
         //Histogram Output: Event-by-Event
@@ -478,7 +490,7 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
         Tracks2V0vertices(lESDevent);
         
         //reset on-the-fly, job is done
-        if(fkUseOptimalTrackParams)
+        if(fkUseOptimalTrackParams && !fkUseOptimalTrackParamsBachelor)
             SelectiveResetV0s(lESDevent, 1);
     }
     
@@ -503,6 +515,9 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
             V0sTracks2CascadeVerticesUncheckedCharges(lESDevent);
         }
     }
+    //reset on-the-fly, job is done
+    if(fkUseOptimalTrackParamsBachelor)
+        SelectiveResetV0s(lESDevent, 1);
     
     ncascades = lESDevent->GetNumberOfCascades();
     fHistNumberOfCandidates->Fill(3.5, ncascades);
@@ -809,6 +824,21 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
     Double_t b=event->GetMagneticField();
     Int_t nV0=(Int_t)event->GetNumberOfV0s();
     
+    //populate map if requested to do so
+    if (fkUseOptimalTrackParamsBachelor) {
+        Int_t nv0s = 0;
+        nv0s = event->GetNumberOfV0s();
+        fOTFMap.clear(); //don't forget to clean up!
+        for (Int_t iV0 = 0; iV0 < nv0s; iV0++) //extra-crazy test
+        {   // This is the begining of the V0 loop
+            AliESDv0 *v0 = ((AliESDEvent*)event)->GetV0(iV0);
+            if(v0->GetOnFlyStatus()>0){
+                //map convention: negative track first, positive track second
+                fOTFMap.insert(make_pair(make_pair(v0->GetNindex(), v0->GetPindex()), iV0));
+            }
+        }//finished preparing map
+    }
+    
     //stores relevant V0s in an array
     TObjArray vtcs(nV0);
     Long_t i;
@@ -938,7 +968,29 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
             if (btrk->GetSign()>0) continue;  // bachelor's charge
             
             AliESDv0 *pv0=&v0;
-            AliExternalTrackParam bt(*btrk), *pbt=&bt;
+            AliExternalTrackParam bt(*btrk);
+            if(fkUseOptimalTrackParamsBachelor) {
+                //Look for a better bachelor description, please
+                //reroute to pointers obtained with on-the-fly finding
+                map<pair<int,int>, int>::iterator iter = fOTFMap.find(make_pair(bidx,v->GetPindex()));
+                if(iter != fOTFMap.end())
+                {
+                    Int_t lEquivalentOTFV0 = (*iter).second; // or iter->second;
+                    AliESDv0 *v0_otf = ((AliESDEvent*)event)->GetV0(lEquivalentOTFV0);
+                    if(!v0_otf){
+                        AliWarning(Form("Invalid V0 at position %i!", lEquivalentOTFV0));
+                        fHistV0OptimalTrackParamUseBachelor->Fill(2.5);
+                    }else{
+                        AliExternalTrackParam btimproved(*(v0_otf->GetParamN()));
+                        bt = btimproved;
+                        fHistV0OptimalTrackParamUseBachelor->Fill(1.5);
+                    }
+                }else{
+                    //OTF not available for this pair
+                    fHistV0OptimalTrackParamUseBachelor->Fill(0.5);
+                }
+            }
+            AliExternalTrackParam *pbt=&bt;
             
             Double_t dca=PropagateToDCA(pv0,pbt,event,b,lBachMassForTracking);
             if (dca > fCascadeVertexerSels[4]) continue;
@@ -1011,7 +1063,29 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
             if (btrk->GetSign()<0) continue;  // bachelor's charge
             
             AliESDv0 *pv0=&v0;
-            AliExternalTrackParam bt(*btrk), *pbt=&bt;
+            AliExternalTrackParam bt(*btrk);
+            if(fkUseOptimalTrackParamsBachelor) {
+                //Look for a better bachelor description, please
+                //reroute to pointers obtained with on-the-fly finding
+                map<pair<int,int>, int>::iterator iter = fOTFMap.find(make_pair(bidx,v->GetNindex()));
+                if(iter != fOTFMap.end())
+                {
+                    Int_t lEquivalentOTFV0 = (*iter).second; // or iter->second;
+                    AliESDv0 *v0_otf = ((AliESDEvent*)event)->GetV0(lEquivalentOTFV0);
+                    if(!v0_otf){
+                        AliWarning(Form("Invalid V0 at position %i!", lEquivalentOTFV0));
+                        fHistV0OptimalTrackParamUseBachelor->Fill(2.5);
+                    }else{
+                        AliExternalTrackParam btimproved(*(v0_otf->GetParamP()));
+                        bt = btimproved;
+                        fHistV0OptimalTrackParamUseBachelor->Fill(1.5);
+                    }
+                }else{
+                    //OTF not available for this pair
+                    fHistV0OptimalTrackParamUseBachelor->Fill(0.5);
+                }
+            }
+            AliExternalTrackParam *pbt=&bt;
             
             Double_t dca=PropagateToDCA(pv0,pbt,event,b,lBachMassForTracking);
             if (dca > fCascadeVertexerSels[4]) continue;

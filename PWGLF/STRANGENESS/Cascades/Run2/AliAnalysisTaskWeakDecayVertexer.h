@@ -270,6 +270,9 @@ public:
     void SetUseOptimalTrackParams (Bool_t lOpt){
         fkUseOptimalTrackParams = lOpt;
     }
+    void SetUseOptimalTrackParamsBachelor (Bool_t lOpt){
+        fkUseOptimalTrackParamsBachelor = lOpt;
+    }
     //---------------------------------------------------------------------------------------
     
 
@@ -319,6 +322,7 @@ private:
     
     //Bool_t to conrtol the use of on-the-fly AliExternalTrackParams
     Bool_t fkUseOptimalTrackParams; //if true, use better track estimates from OTF V0s
+    Bool_t fkUseOptimalTrackParamsBachelor; //if true, use better track estimates from OTF V0s
     
     //Min/Max pT for cascades
     Float_t fMinPtV0; //minimum pt above which we keep candidates in TTree output
@@ -344,6 +348,7 @@ private:
     TH1D *fHistNumberOfCandidates; //!
     TH1D *fHistV0ToBachelorPropagationStatus; //!
     TH1D *fHistV0OptimalTrackParamUse; //!
+    TH1D *fHistV0OptimalTrackParamUseBachelor; //!
     
     //V0 statistics
     TH1D *fHistV0Statistics; //! 
