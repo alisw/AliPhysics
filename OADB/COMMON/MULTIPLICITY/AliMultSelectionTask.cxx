@@ -166,6 +166,7 @@ fEvSel_IsNotAsymmetricInVZERO(0),
 fEvSel_IsNotIncompleteDAQ(0),
 fEvSel_HasGoodVertex2016(0),
 fEvSel_TriggerMask(0),
+fFiredTriggerClasses(""),
 fnContributors(0),
 fTrackCuts(0), fTrackCutsGlobal2015(0), fTrackCutsITSsa2010(0),
 fTrackCutsFiltBit32(0),
@@ -333,6 +334,7 @@ fEvSel_IsNotIncompleteDAQ(0),
 fEvSel_HasGoodVertex2016(0),
 fEvSel_VtxZ(0),
 fEvSel_TriggerMask(0),
+fFiredTriggerClasses(""),
 fEvSelCode(0),
 fNDebug(1),
 fAliCentralityV0M(0),
@@ -666,6 +668,8 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         fTreeEvent->Branch("fEvSel_IsNotIncompleteDAQ", &fEvSel_IsNotIncompleteDAQ, "fEvSel_IsNotIncompleteDAQ/O");
         fTreeEvent->Branch("fEvSel_HasGoodVertex2016", &fEvSel_HasGoodVertex2016, "fEvSel_HasGoodVertex2016/O");
         fTreeEvent->Branch("fEvSel_TriggerMask", &fEvSel_TriggerMask, "fEvSel_TriggerMask/i");
+        fTreeEvent->Branch("fFiredTriggerClasses", &fFiredTriggerClasses);
+        //A.T. FIXME change into AliMultVariable
         //A.T. FIXME change into AliMultVariable
         fTreeEvent->Branch("fnContributors", &fnContributors, "fnContributors/I");
         
@@ -1074,6 +1078,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
         AliWarning("ERROR: ESD / AOD event not available \n");
         return;
     }
+    
+    fFiredTriggerClasses = lVevent->GetFiredTriggerClasses();
     
     if(!fkGeneratorOnly){
         if(lVerbose) Printf("Casting AliVVZERO...");
