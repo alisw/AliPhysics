@@ -7,8 +7,8 @@ histogram=\'CINT7ZAC-B-NOPF-CENT,fHistITSSPDvertexZ,SPD z vertex position,ITSSPD
 histogram=\'CTVXZAC-B-NOPF-CENT,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,\'
 histogram=\'CINT7-B-NOPF-MUFAST,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,\'
 histogram=\'C0TVX-B-NOPF-MUFAST,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,\'
-histogram=\'C0V0M-B-NOPF-CENTNOTRD,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,\'
-histogram=\'CTVXV0M-B-NOPF-CENT,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,\'
+histogram=\'C0V0M-B-NOPF-MUFAST,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,\'
+histogram=\'CTVXV0M-B-NOPF-MUFAST,fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,\'
 histogram=\',fHistITSSPDvertexZ,SPD z vertex position,ITSSPDvertexZ,\'
 EOF
 )

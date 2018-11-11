@@ -38,10 +38,10 @@ int process(TCollection* in, TCollection* out)
     if (name.Contains("fHistITSSPDvertexZ_C0TVX-B-NOPF-MUFAST")) {
       h5 = tmp;
     } else
-    if (name.Contains("fHistITSSPDvertexZ_C0V0M-B-NOPF-CENTNOTRD")) {
+    if (name.Contains("fHistITSSPDvertexZ_C0V0M-B-NOPF-MUFAST")) {
       h7 = tmp;
     } else
-    if (name.Contains("fHistITSSPDvertexZ_CTVXV0M-B-NOPF-CENT")) {
+    if (name.Contains("fHistITSSPDvertexZ_CTVXV0M-B-NOPF-MUFAST")) {
       h8 = tmp;
     }
   }
@@ -57,7 +57,7 @@ int process(TCollection* in, TCollection* out)
     out->Add(h6);
   }
   if (h7 &&h8) {
-    h9 = new TH1F("RatioITSSPDvertexZ_h9","Ratio ITSSPDvertexZ CTVXV0M-B-NOPF-CENT/C0V0M-B-NOPF-CENTNOTRD",200,-100,100);
+    h9 = new TH1F("RatioITSSPDvertexZ_h9","Ratio ITSSPDvertexZ CTVXV0M-B-NOPF-MUFAST/C0V0M-B-NOPF-MUFAST",200,-100,100);
     h9->Divide(h8,h7);
     out->Add(h9);
   }
