@@ -28,7 +28,7 @@
 /// \param bFillAOD: Bool, keep the new clusters in output file.
 /// \param bMC: Bool, simulation or data.
 /// \param exotic: Bool, remove exotic clusters.
-/// \param name: TString, name of clusterizer: V1, V2, V1Unfold, NxN.
+/// \param name: TString, name of clusterizer: V1, V2, V3 (faster V2), V1Unfold, NxN.
 /// \param trigger: TString, name of triggered events to be analyzed.
 /// \param tm: Bool, perform track matching recalculation.
 /// \param minEcell: float, minimum cell energy entering the cluster.
@@ -54,7 +54,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(const char  * clusArrTit 
                                                        const Bool_t  bFillAOD   = kFALSE,                                                
                                                        const Int_t   bMC        = kFALSE,
                                                        const Bool_t  exotic     = kTRUE,
-                                                       const TString name       = "V1Unfold", // V1, V2, NxN, V1Unfold
+                                                       const TString name       = "V1Unfold", 
                                                        const TString trigger    = "", 
                                                        const Int_t   tm         = 1, 
                                                        const Int_t   minEcell   = 50,
@@ -191,6 +191,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(const char  * clusArrTit 
   //
   // Clusterizer type
   //
+  if(name.Contains("V3")) params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv3); // faster V2
   if(name.Contains("V2")) params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv2);
   if(name.Contains("V1")) params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv1);
   if(name.Contains("NxN"))
