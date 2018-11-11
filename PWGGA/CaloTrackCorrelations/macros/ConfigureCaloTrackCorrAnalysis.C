@@ -341,6 +341,18 @@ AliAnaElectron* ConfigureElectronAnalysis(TString col,           Bool_t simulati
   AliAnaElectron *ana = new AliAnaElectron();
   ana->SetDebug(debug); //10 for lots of messages
   
+  if      ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7,  80, 187) ; // EMC 
+  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7, 260, 327) ; // DMC  
+  
+  if ( calorimeter.Contains("CAL") ) ana->GetFiducialCut()->DoEMCALFiducialCut(kTRUE);  
+  
+  ana->SetCalorimeter(calorimeter);
+  if(calorimeter == "DCAL") 
+  {
+    TString calo = "EMCAL";
+    ana->SetCalorimeter(calo);
+  }
+  
   //ana->FillAODWithElectrons();
   //ana->FillAODWithHadrons();
   ana->FillAODWithAny();
@@ -362,7 +374,7 @@ AliAnaElectron* ConfigureElectronAnalysis(TString col,           Bool_t simulati
   
   // Electron selection cuts with tracks
   ana->SetM20Range(-10, 0.35);
-  ana->SetEOverP(0.85, 1.2);
+  ana->SetEOverP(0.9, 1.2);
   
 //  // TO DO, find a more suitable way to set this
 //  if     (kRunNumber < 146861) ana->SetdEdxCut(72, 90);
@@ -370,19 +382,17 @@ AliAnaElectron* ConfigureElectronAnalysis(TString col,           Bool_t simulati
 //  else                         ana->SetdEdxCut(74, 90);
 //  
 //  if(simulation)  ana->SetdEdxCut(80, 100);
+    
+  ana->SwitchOffCaloPID();
+//  
+//  AliCaloPID* caloPID = ana->GetCaloPID();
+//  
+//  caloPID->SetEMCALLambda0CutMax(0.35);
+//  caloPID->SetEMCALLambda0CutMin(0.10);
   
-  ana->SetCalorimeter(calorimeter);
+  ana->SwitchOnFillShowerShapeHistograms();  
   
-  ana->SwitchOnCaloPID();
-  
-  AliCaloPID* caloPID = ana->GetCaloPID();
-  
-  caloPID->SetEMCALLambda0CutMax(0.35);
-  caloPID->SetEMCALLambda0CutMin(0.10);
-  
-  ana->SwitchOffFillShowerShapeHistograms();  
   ana->SwitchOffFillWeightHistograms()  ;
-  ana->SwitchOffFiducialCut();
     
   ana->SetOutputAODName(Form("Electron_%s",kAnaCaloTrackCorr.Data()));
   ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");

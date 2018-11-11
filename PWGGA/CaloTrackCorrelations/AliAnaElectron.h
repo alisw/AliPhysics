@@ -79,20 +79,29 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   
   // ** Cluster selection methods **
   
-  void         SetdEdxCut(Double_t min, Double_t max) { fdEdxMin    = min ; 
-                                                        fdEdxMax    = max          ; }
+  void         SetdEdxCut(Float_t min, Float_t max) { fdEdxMin    = min ; 
+                                                      fdEdxMax    = max ; }
   
-  void         SetEOverP(Double_t min, Double_t max)  { fEOverPMin  = min ; 
-                                                        fEOverPMax  = max          ; }
+  void         SetEOverP(Float_t min, Float_t max)  { fEOverPMin  = min ; 
+                                                      fEOverPMax  = max ; }
 
-  void         SetM20Range(Float_t min, Float_t max)  { fM20Min  = min ; 
-                                                        fM20Max  = max             ; }
+  void         SetNSigma(Float_t min, Float_t max)  { fNSigmaMin  = min ; 
+                                                      fNSigmaMax  = max ; }
   
-  void         SetdEdxCutForHadron(Double_t min, Double_t max) { fdEdxMinHad    = min ; 
-                                                                 fdEdxMaxHad    = max ; }
+  void         SetdEdxCutForHadron(Float_t min, Float_t max) { fdEdxMinHad    = min ; 
+                                                               fdEdxMaxHad    = max ; }
   
-  void         SetEOverPForHadron(Double_t min, Double_t max)  { fEOverPMinHad  = min ; 
-                                                                 fEOverPMaxHad  = max ; }
+  void         SetEOverPForHadron(Float_t min, Float_t max)  { fEOverPMinHad  = min ; 
+                                                               fEOverPMaxHad  = max ; }
+  
+  void         SetNSigmaForHadron(Float_t min, Float_t max)  { fNSigmaMinHad  = min ; 
+                                                               fNSigmaMaxHad  = max ; }
+  
+  void         SetM20Range(Float_t min, Float_t max)  { fM20Min     = min ; 
+                                                        fM20Max     = max ; }
+  
+  void         SetM02Range(Float_t min, Float_t max)  { fM02Min     = min ; 
+                                                        fM02Max     = max ; }
 
   void         SetMinDistanceToBadChannel(Float_t m1, Float_t m2, Float_t m3) {
                 fMinDist = m1; fMinDist2 = m2; fMinDist3 = m3; }
@@ -103,7 +112,7 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   Double_t     GetTimeCutMax()                  const { return fTimeCutMax         ; }	
 	
   void         SetNCellCut(Int_t n)                   { fNCellsCut = n             ; }
-  Double_t     GetNCellCut()                    const { return fNCellsCut          ; }
+  Int_t        GetNCellCut()                    const { return fNCellsCut          ; }
   
   void         SetNLMCut(Int_t min, Int_t max)        { fNLMCutMin = min;
                                                         fNLMCutMax = max                ; }
@@ -134,6 +143,7 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   
   private:
  
+  // Basic cuts
   Float_t  fMinDist ;                           ///<  Minimal distance to bad channel to accept cluster
   Float_t  fMinDist2;                           ///<  Cuts on Minimal distance to study acceptance evaluation
   Float_t  fMinDist3;                           ///<  One more cut on distance used for acceptance-efficiency study
@@ -142,22 +152,33 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNCellsCut ;                         ///<  Accept for the analysis clusters with more than fNCellsCut cells
   Int_t    fNLMCutMin  ;                        ///<  Remove clusters/cells with number of local maxima smaller than this value
   Int_t    fNLMCutMax  ;                        ///<  Remove clusters/cells with number of local maxima larger than this value
+  
+  // Activate certain analysis/histograms
   Bool_t   fFillSSHistograms ;                  ///<  Fill shower shape histograms
   Bool_t   fFillOnlySimpleSSHisto;              ///<  Fill selected cluster histograms, selected SS histograms
   Bool_t   fFillWeightHistograms ;              ///<  Fill weigth histograms
   Int_t    fNOriginHistograms;                  ///<  Fill only NOriginHistograms of the 14 defined types
 
+  // Electron cuts
   Float_t  fdEdxMin;                            ///<  Max dEdx for electrons
   Float_t  fdEdxMax;                            ///<  Min dEdx for electrons
-  Float_t  fEOverPMin;                          ///<  Max E/p for electrons, after dEdx cut
-  Float_t  fEOverPMax;                          ///<  Min E/p for electrons, after dEdx cut
-  Float_t  fM20Min;                             ///<  Max short axis for electrons
-  Float_t  fM20Max;                             ///<  Min short axis for electrons
+  Float_t  fEOverPMin;                          ///<  Max E/p for electrons
+  Float_t  fEOverPMax;                          ///<  Min E/p for electrons
+  Float_t  fNSigmaMin;                          ///<  Max nSigma for electrons
+  Float_t  fNSigmaMax;                          ///<  Min nSigma for electrons
   
+  Float_t  fM20Min;                             ///<  Max short axis for electrons
+  Float_t  fM20Max;                             ///<  Min short axis for electrons 
+  Float_t  fM02Min;                             ///<  Max long axis for electrons
+  Float_t  fM02Max;                             ///<  Min long axis for electrons
+  
+  // Hadron cuts
   Float_t  fdEdxMinHad;                         ///<  Max dEdx for hadrons
   Float_t  fdEdxMaxHad;                         ///<  Min dEdx for hadrons
-  Float_t  fEOverPMinHad;                       ///<  Max E/p for hadrons, after dEdx cut
-  Float_t  fEOverPMaxHad;                       ///<  Min E/p for hadrons, after dEdx cut
+  Float_t  fEOverPMinHad;                       ///<  Max E/p for hadrons
+  Float_t  fEOverPMaxHad;                       ///<  Min E/p for hadrons
+  Float_t  fNSigmaMinHad;                       ///<  Max nSigma for hadrons
+  Float_t  fNSigmaMaxHad;                       ///<  Min nSigma for hadrons
   
   Int_t    fAODParticle;                        ///<  Select the type of particle to put in AODs for other analysis
   
@@ -168,36 +189,62 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   //Histograms
   TH2F * fhdEdxvsE;                             //!<! Matched track dEdx vs cluster E
   TH2F * fhdEdxvsP;                             //!<! Matched track dEdx vs track P
+  TH2F * fhdEdxvsECutM02;                       //!<! Matched track dEdx vs cluster E, M02 cut
+  TH2F * fhdEdxvsPCutM02;                       //!<! Matched track dEdx vs track P, M02 cut
+  TH2F * fhdEdxvsECutM02AndM20;                 //!<! Matched track dEdx vs cluster E, M02 and M20 cut
+  TH2F * fhdEdxvsPCutM02AndM20;                 //!<! Matched track dEdx vs track P, M02 and M20 cut
+  TH2F * fhdEdxvsECutEOverP;                    //!<! Matched track dEdx vs cluster E, cut on E/P
+  TH2F * fhdEdxvsPCutEOverP;                    //!<! Matched track dEdx vs track P, cut on E/P
+  TH2F * fhdEdxvsECutNSigma;                    //!<! Matched track dEdx vs cluster E, cut on TPC nSigma
+  TH2F * fhdEdxvsPCutNSigma;                    //!<! Matched track dEdx vs track P, cut on TPC nSigma
+  TH2F * fhdEdxvsECutM02CutNSigma;              //!<! Matched track dEdx vs cluster E, M02 cut, cut on TPC nSigma
+  TH2F * fhdEdxvsPCutM02CutNSigma;              //!<! Matched track dEdx vs track P, M02 cut, cut on TPC nSigma
+  TH2F * fhdEdxvsECutM02AndM20CutNSigma;        //!<! Matched track dEdx vs cluster E, M02 and M20 cut, cut on TPC nSigma
+  TH2F * fhdEdxvsPCutM02AndM20CutNSigma;        //!<! Matched track dEdx vs track P, M02 and M20 cut, cut on TPC nSigma
+  
   TH2F * fhEOverPvsE;                           //!<! Matched track E cluster over P track vs cluster E
   TH2F * fhEOverPvsP;                           //!<! Matched track E cluster over P track vs track P
-
-  TH2F * fhdEdxvsECutM02;                       //!<! Matched track dEdx vs cluster E, mild M02 cut
-  TH2F * fhdEdxvsPCutM02;                       //!<! Matched track dEdx vs track P, mild M02 cut
-  
-  TH2F * fhEOverPvsECutM02;                     //!<! Matched track E cluster over P track vs cluster E, after dEdx cut, mild M02 cut
-  TH2F * fhEOverPvsPCutM02;                     //!<! Matched track E cluster over P track vs track P, after dEdx cut, mild M02 cut
- 
-  TH2F * fhdEdxvsECutM02AndM20;                 //!<! Matched track dEdx vs cluster E, mild M02 cut plus tight M20 cut
-  TH2F * fhdEdxvsPCutM02AndM20;                 //!<! Matched track dEdx vs track P, mild M02 cut plus tight M20 cut
- 
-  TH2F * fhEOverPvsECutM02AndM20;               //!<! Matched track E cluster over P track vs cluster E, after dEdx cut, mild M02 cut plus tight M20 cut
-  TH2F * fhEOverPvsPCutM02AndM20;               //!<! Matched track E cluster over P track vs track P, after dEdx cut, mild M02 cut plus tight M20 cut
-  
-  TH2F * fhdEdxvsECutEOverP;                    //!<! Matched track dEdx vs cluster E , cut on EOverP
-  TH2F * fhdEdxvsPCutEOverP;                    //!<! Matched track dEdx vs track P, cut on EOverP
-  
+  TH2F * fhEOverPvsECutM02;                     //!<! Matched track E cluster over P track vs cluster E, after dEdx cut, M02 cut
+  TH2F * fhEOverPvsPCutM02;                     //!<! Matched track E cluster over P track vs track P, after dEdx cut, M02 cut  
+  TH2F * fhEOverPvsECutM02AndM20;               //!<! Matched track E cluster over P track vs cluster E, after dEdx cut, M02 and M20 cut 
+  TH2F * fhEOverPvsPCutM02AndM20;               //!<! Matched track E cluster over P track vs track P, after dEdx cut, M02 and M20 cut
   TH2F * fhEOverPvsECutdEdx;                    //!<! Matched track E cluster over P track vs cluster E, after dEdx cut
   TH2F * fhEOverPvsPCutdEdx;                    //!<! Matched track E cluster over P track vs track P, after dEdx cut
-  TH2F * fhEOverPvsECutM02CutdEdx;              //!<! Matched track E cluster over P track vs cluster E, after dEdx cut and mild M02 cut
-  TH2F * fhEOverPvsPCutM02CutdEdx;              //!<! Matched track E cluster over P track vs track P, after dEdx cut and mild M02 cut
-  TH2F * fhEOverPvsECutM02AndM20CutdEdx;        //!<! Matched track E cluster over P track vs cluster E, after dEdx cut and mild M02 cut and M20 cut
-  TH2F * fhEOverPvsPCutM02AndM20CutdEdx;        //!<! Matched track E cluster over P track vs track P, after dEdx cut and mild M02 cut and M20 cut
- 
+  TH2F * fhEOverPvsECutM02CutdEdx;              //!<! Matched track E cluster over P track vs cluster E, after dEdx cut M02 cut
+  TH2F * fhEOverPvsPCutM02CutdEdx;              //!<! Matched track E cluster over P track vs track P, after dEdx cut M02 cut
+  TH2F * fhEOverPvsECutM02AndM20CutdEdx;        //!<! Matched track E cluster over P track vs cluster E, after dEdx cut M02 and M20 cut
+  TH2F * fhEOverPvsPCutM02AndM20CutdEdx;        //!<! Matched track E cluster over P track vs track P, after dEdx cut M02 and M20 cut
+  TH2F * fhEOverPvsECutNSigma;                  //!<! Matched track E cluster over P track vs cluster E, after TPC nSigma cut
+  TH2F * fhEOverPvsPCutNSigma;                  //!<! Matched track E cluster over P track vs track P, after TPC nSigma cut
+  TH2F * fhEOverPvsECutM02CutNSigma;            //!<! Matched track E cluster over P track vs cluster E, after dEdx cut, M02 cut, after TPC nSigma cut
+  TH2F * fhEOverPvsPCutM02CutNSigma;            //!<! Matched track E cluster over P track vs track P, after dEdx cut, M02 cut, after TPC nSigma cut  
+  TH2F * fhEOverPvsECutM02AndM20CutNSigma;      //!<! Matched track E cluster over P track vs cluster E, after dEdx cut, M02 and M20 cut, after TPC nSigma cut 
+  TH2F * fhEOverPvsPCutM02AndM20CutNSigma;      //!<! Matched track E cluster over P track vs track P, after dEdx cut, M02 and M20 cut, after TPC nSigma cut
+  
+  TH2F * fhNSigmavsE;                           //!<! Matched track TPC nSigma vs cluster E
+  TH2F * fhNSigmavsP;                           //!<! Matched track TPC nSigma vs track P
+  TH2F * fhNSigmavsECutM02;                     //!<! Matched track TPC nSigma vs cluster E, after dEdx cut, M02 cut
+  TH2F * fhNSigmavsPCutM02;                     //!<! Matched track TPC nSigma vs track P, after dEdx cut, M02 cut  
+  TH2F * fhNSigmavsECutM02AndM20;               //!<! Matched track TPC nSigma vs cluster E, after dEdx cut, M02 and M20 cut 
+  TH2F * fhNSigmavsPCutM02AndM20;               //!<! Matched track TPC nSigma vs track P, after dEdx cut, mild M02 and M20 cut
+  TH2F * fhNSigmavsECutdEdx;                    //!<! Matched track TPC nSigma vs cluster E, after dEdx cut
+  TH2F * fhNSigmavsPCutdEdx;                    //!<! Matched track TPC nSigma vs track P, after dEdx cut
+  TH2F * fhNSigmavsECutM02CutdEdx;              //!<! Matched track TPC nSigma vs cluster E, after dEdx cut M02 cut
+  TH2F * fhNSigmavsPCutM02CutdEdx;              //!<! Matched track TPC nSigma vs track P, after dEdx cut M02 cut
+  TH2F * fhNSigmavsECutM02AndM20CutdEdx;        //!<! Matched track TPC nSigma vs cluster E, after dEdx cut M02 and M20 cut
+  TH2F * fhNSigmavsPCutM02AndM20CutdEdx;        //!<! Matched track TPC nSigma vs track P, after dEdx cut M02 and M20 cut
+  TH2F * fhNSigmavsECutEOverP;                  //!<! Matched track TPC nSigma vs cluster E, after E/P cut
+  TH2F * fhNSigmavsPCutEOverP;                  //!<! Matched track TPC nSigma vs track P, after E/P cut
+  
   TH2F * fhMCdEdxvsE[10];                       //!<! Matched track dEdx vs cluster E, coming from MC particle
   TH2F * fhMCdEdxvsP[10];                       //!<! Matched track dEdx vs track P, coming from MC particle
-  TH2F * fhMCEOverPvsE[10];                     //!<! Matched track E cluster over P track vs cluster E, after dEdx cut, coming from MC particle
-  TH2F * fhMCEOverPvsP[10];                     //!<! Matched track E cluster over P track vs track P, after dEdx cut, coming from MC particle
-  
+  TH2F * fhMCNSigmavsE[10];                     //!<! Matched track TPC nSigma vs cluster E, after dEdx cut, coming from MC particle
+  TH2F * fhMCNSigmavsP[10];                     //!<! Matched track TPC nSigma vs track P, after dEdx cut, coming from MC particle
+  TH2F * fhMCEOverPvsE[10];                     //!<! Matched track E cluster over P track vs cluster E, coming from MC particle
+  TH2F * fhMCEOverPvsP[10];                     //!<! Matched track E cluster over P track vs track P, coming from MC particle
+  TH2F * fhMCEOverPvsEAfterCuts[10][2];         //!<! Matched track E cluster over P track vs cluster E, after cuts, coming from MC particle
+  TH2F * fhMCEOverPvsPAfterCuts[10][2];         //!<! Matched track E cluster over P track vs track P, after cuts, coming from MC particle
+
   TH2F * fhNCellsE[2];                          //!<! Number of cells in cluster vs E
   TH2F * fhNLME[2];                             //!<! Number of local maxima in cluster vs E
   TH2F * fhMaxCellDiffClusterE[2];              //!<! Fraction of energy carried by cell with maximum energy
@@ -210,7 +257,7 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEtaPhi[2]  ;                         //!<! Pseudorapidity vs Phi of identified  electron for transerse momentum > 0.5
   TH2F * fhEtaPhi05[2]  ;                       //!<! Pseudorapidity vs Phi of identified  electron for transerse momentum < 0.5
   
-  //Shower shape
+  // Shower shape
   
   TH2F * fhDispE[2];                            //!<! cluster dispersion vs E
   TH2F * fhLam0E[2];                            //!<! cluster lambda0 vs  E
@@ -237,7 +284,7 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhSphericityE[2] ;                     //!<! shower sphericity in eta vs phi
   TH2F * fhDispEtaDispPhiEBin[2][5] ;           //!<! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
 
- //  Weight studies
+  //  Weight studies
   
   TH2F * fhECellClusterRatio;                   //!<! E cell / e cluster vs e cluster for selected electrons
   TH2F * fhECellClusterLogRatio;                //!<! log (E cell / E cluster)  vs E cluster for selected electrons
@@ -285,7 +332,7 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   AliAnaElectron & operator = (const AliAnaElectron & el) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaElectron,6) ;
+  ClassDef(AliAnaElectron,7) ;
   /// \endcond
 
 } ;
