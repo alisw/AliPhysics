@@ -85,7 +85,15 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   void         SetEOverP(Double_t min, Double_t max)  { fEOverPMin  = min ; 
                                                         fEOverPMax  = max          ; }
 
+  void         SetM20Range(Float_t min, Float_t max)  { fM20Min  = min ; 
+                                                        fM20Max  = max             ; }
   
+  void         SetdEdxCutForHadron(Double_t min, Double_t max) { fdEdxMinHad    = min ; 
+                                                                 fdEdxMaxHad    = max ; }
+  
+  void         SetEOverPForHadron(Double_t min, Double_t max)  { fEOverPMinHad  = min ; 
+                                                                 fEOverPMaxHad  = max ; }
+
   void         SetMinDistanceToBadChannel(Float_t m1, Float_t m2, Float_t m3) {
                 fMinDist = m1; fMinDist2 = m2; fMinDist3 = m3; }
 
@@ -143,7 +151,14 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   Float_t  fdEdxMax;                            ///<  Min dEdx for electrons
   Float_t  fEOverPMin;                          ///<  Max E/p for electrons, after dEdx cut
   Float_t  fEOverPMax;                          ///<  Min E/p for electrons, after dEdx cut
-
+  Float_t  fM20Min;                             ///<  Max short axis for electrons
+  Float_t  fM20Max;                             ///<  Min short axis for electrons
+  
+  Float_t  fdEdxMinHad;                         ///<  Max dEdx for hadrons
+  Float_t  fdEdxMaxHad;                         ///<  Min dEdx for hadrons
+  Float_t  fEOverPMinHad;                       ///<  Max E/p for hadrons, after dEdx cut
+  Float_t  fEOverPMaxHad;                       ///<  Min E/p for hadrons, after dEdx cut
+  
   Int_t    fAODParticle;                        ///<  Select the type of particle to put in AODs for other analysis
   
   TLorentzVector fMomentum;                     //!<! cluster momentum
@@ -153,19 +168,31 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   //Histograms
   TH2F * fhdEdxvsE;                             //!<! Matched track dEdx vs cluster E
   TH2F * fhdEdxvsP;                             //!<! Matched track dEdx vs track P
-  TH2F * fhEOverPvsE;                           //!<! Matched track E cluster over P track vs cluster E, after dEdx cut
-  TH2F * fhEOverPvsP;                           //!<! Matched track E cluster over P track vs track P, after dEdx cut
+  TH2F * fhEOverPvsE;                           //!<! Matched track E cluster over P track vs cluster E
+  TH2F * fhEOverPvsP;                           //!<! Matched track E cluster over P track vs track P
 
   TH2F * fhdEdxvsECutM02;                       //!<! Matched track dEdx vs cluster E, mild M02 cut
   TH2F * fhdEdxvsPCutM02;                       //!<! Matched track dEdx vs track P, mild M02 cut
+  
   TH2F * fhEOverPvsECutM02;                     //!<! Matched track E cluster over P track vs cluster E, after dEdx cut, mild M02 cut
   TH2F * fhEOverPvsPCutM02;                     //!<! Matched track E cluster over P track vs track P, after dEdx cut, mild M02 cut
+ 
+  TH2F * fhdEdxvsECutM02AndM20;                 //!<! Matched track dEdx vs cluster E, mild M02 cut plus tight M20 cut
+  TH2F * fhdEdxvsPCutM02AndM20;                 //!<! Matched track dEdx vs track P, mild M02 cut plus tight M20 cut
+ 
+  TH2F * fhEOverPvsECutM02AndM20;               //!<! Matched track E cluster over P track vs cluster E, after dEdx cut, mild M02 cut plus tight M20 cut
+  TH2F * fhEOverPvsPCutM02AndM20;               //!<! Matched track E cluster over P track vs track P, after dEdx cut, mild M02 cut plus tight M20 cut
   
   TH2F * fhdEdxvsECutEOverP;                    //!<! Matched track dEdx vs cluster E , cut on EOverP
   TH2F * fhdEdxvsPCutEOverP;                    //!<! Matched track dEdx vs track P, cut on EOverP
+  
+  TH2F * fhEOverPvsECutdEdx;                    //!<! Matched track E cluster over P track vs cluster E, after dEdx cut
+  TH2F * fhEOverPvsPCutdEdx;                    //!<! Matched track E cluster over P track vs track P, after dEdx cut
   TH2F * fhEOverPvsECutM02CutdEdx;              //!<! Matched track E cluster over P track vs cluster E, after dEdx cut and mild M02 cut
   TH2F * fhEOverPvsPCutM02CutdEdx;              //!<! Matched track E cluster over P track vs track P, after dEdx cut and mild M02 cut
-
+  TH2F * fhEOverPvsECutM02AndM20CutdEdx;        //!<! Matched track E cluster over P track vs cluster E, after dEdx cut and mild M02 cut and M20 cut
+  TH2F * fhEOverPvsPCutM02AndM20CutdEdx;        //!<! Matched track E cluster over P track vs track P, after dEdx cut and mild M02 cut and M20 cut
+ 
   TH2F * fhMCdEdxvsE[10];                       //!<! Matched track dEdx vs cluster E, coming from MC particle
   TH2F * fhMCdEdxvsP[10];                       //!<! Matched track dEdx vs track P, coming from MC particle
   TH2F * fhMCEOverPvsE[10];                     //!<! Matched track E cluster over P track vs cluster E, after dEdx cut, coming from MC particle
@@ -258,7 +285,7 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   AliAnaElectron & operator = (const AliAnaElectron & el) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaElectron,5) ;
+  ClassDef(AliAnaElectron,6) ;
   /// \endcond
 
 } ;
