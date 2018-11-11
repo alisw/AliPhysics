@@ -610,23 +610,25 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
         
     emcCells.SetCell(idignew,dig->GetId(),energy, time,digLabel,0.,highGain);
 
+    mapDigitAndCellIndex[idignew] = idig; // needed to pack cell MC labels in cluster 
+        
+    // Trigger stuff
+    //
     const Int_t nSamples = 64;//rdig->GetNSamples();
     Int_t samples[nSamples]={0};
 
     if (dig->GetNALTROSamplesLG()) {
        dig->GetALTROSamplesLG(samples); fESDCalofriend->Add(dig->GetId(),1,nSamples,samples);
     }
-    
-    //Reset
-    for (int idig=0;idig<nSamples;idig++) samples[idig]=0;
+  
+    // Reset
+    for (int isamp=0;isamp<nSamples;isamp++) samples[isamp]=0;
 
     if (dig->GetNALTROSamplesHG()) {
        dig->GetALTROSamplesHG(samples); fESDCalofriend->Add(dig->GetId(),0,nSamples,samples);
     }
     
-    mapDigitAndCellIndex[idignew] = idig; // needed to pack cell MC labels in cluster 
-        
-    idignew++;
+    idignew++;     
   }
   
   emcCells.SetNumberOfCells(idignew);
