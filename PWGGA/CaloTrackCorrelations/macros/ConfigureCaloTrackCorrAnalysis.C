@@ -29,6 +29,7 @@
 #include <TROOT.h>
 
 #include "AliAnaPhoton.h"
+#include "AliAnaElectron.h"
 #include "AliAnaPi0.h"
 #include "AliAnaPi0EbE.h"
 #include "AliHistogramRanges.h"
@@ -318,6 +319,84 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   ana->FillNPrimaryHistograms(6); // 6 max
 
   return ana;
+}
+
+///
+/// Configure the task doing electron (or charged hadron) cluster selections
+/// Basically the track matching, minor shower shape cut, NLM selection, dEdx, E/p ...
+///
+/// \param col : A string with the colliding system
+/// \param simulation : A bool identifying the data as simulation
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
+/// \param year : The year the data was taken, used to configure some histograms
+/// \param printSettings : A bool to enable the print of the settings per task
+/// \param debug : An int to define the debug level of all the tasks
+/// \param histoString : String to add to histo name in case multiple configurations are considered. Very important!!!!
+///
+AliAnaElectron* ConfigureElectronAnalysis(TString col,           Bool_t simulation,
+                                          TString calorimeter,   Int_t  year,
+                                          Bool_t  printSettings, Int_t  debug, 
+                                          TString histoString)
+{
+  AliAnaElectron *ana = new AliAnaElectron();
+  ana->SetDebug(debug); //10 for lots of messages
+  
+  //ana->FillAODWithElectrons();
+  //ana->FillAODWithHadrons();
+  ana->FillAODWithAny();
+  
+  if(calorimeter == "PHOS")
+  {
+    ana->SetNCellCut(2);// At least 2 cells
+    ana->SetMinPt(0.3);
+    ana->SetMinDistanceToBadChannel(2, 4, 5);
+  }
+  else 
+  {// EMCAL
+    ana->SetNCellCut(1);// At least 2 cells
+    ana->SetMinPt(0.7); // no effect minium EMCAL cut.
+    ana->SetMaxPt(100); 
+    //ana->SetTimeCut(400,900);// Time window of [400-900] ns
+    ana->SetMinDistanceToBadChannel(2, 4, 6);
+  }
+  
+  // Electron selection cuts with tracks
+  ana->SetM20Range(-10, 0.35);
+  ana->SetEOverP(0.85, 1.2);
+  
+//  // TO DO, find a more suitable way to set this
+//  if     (kRunNumber < 146861) ana->SetdEdxCut(72, 90);
+//  else if(kRunNumber < 154000) ana->SetdEdxCut(54, 70);
+//  else                         ana->SetdEdxCut(74, 90);
+//  
+//  if(simulation)  ana->SetdEdxCut(80, 100);
+  
+  ana->SetCalorimeter(calorimeter);
+  
+  ana->SwitchOnCaloPID();
+  
+  AliCaloPID* caloPID = ana->GetCaloPID();
+  
+  caloPID->SetEMCALLambda0CutMax(0.35);
+  caloPID->SetEMCALLambda0CutMin(0.10);
+  
+  ana->SwitchOffFillShowerShapeHistograms();  
+  ana->SwitchOffFillWeightHistograms()  ;
+  ana->SwitchOffFiducialCut();
+    
+  ana->SetOutputAODName(Form("Electron_%s",kAnaCaloTrackCorr.Data()));
+  ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
+
+  // Set Histograms name tag, bins and ranges
+  
+  //ana->AddToHistogramsName(Form("AnaElectron_TM%d_",tm));
+  ana->AddToHistogramsName("AnaElectron_");
+  
+  SetAnalysisCommonParameters(ana,histoString,calorimeter,year,col,simulation,printSettings,debug) ; // see method below
+    
+  // if(kPrintAnaInfo) ana->Print("");
+  
+  return ana ;
 }
 
 ///
@@ -1538,6 +1617,13 @@ void ConfigureCaloTrackCorrAnalysis
   if ( analysisString.Contains("Charged") ) 
   { 
     anaList->AddAt(ConfigureChargedAnalysis(simulation,printSettings,debug,histoString), n++); // track selection checks
+  }
+ 
+  // Charged analysis
+  if ( analysisString.Contains("Electron") ) 
+  { 
+    anaList->AddAt(ConfigureElectronAnalysis
+                   (col,simulation,calorimeter,year,printSettings,debug,histoString), n++); // electron/hadron selection checks
   }
   
   // Cluster Shape studies
