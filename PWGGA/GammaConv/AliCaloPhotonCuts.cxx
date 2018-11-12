@@ -3417,7 +3417,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
           }
         }else if(fUseTMMIPsubtraction){
           //Subtracting the MIP energy is there is a match
-          cluster->SetE(cluster->E()-0.215);
+          cluster->SetE(cluster->E()-0.290);
         }else{
           fVectorMatchedClusterIDs.push_back(cluster->GetID());
         }
