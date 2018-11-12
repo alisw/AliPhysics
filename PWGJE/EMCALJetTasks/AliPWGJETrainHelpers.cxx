@@ -13,9 +13,10 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include <cstdlib>
 #include <iostream>
 #include <string>
-#include <cstdlib>
+#include <vector>
 
 #include <TSystem.h>
 #include <TString.h>
@@ -23,14 +24,13 @@
 
 #include "AliPWGJETrainHelpers.h"
 
-void AliPWGJETrainHelpers::ExtractAliEnProductionValuesForLEGOTrain(std::string& period, std::string& collType,
-                                  bool& mc, bool& isRun2)
+std::vector<std::string> AliPWGJETrainHelpers::ExtractAliEnProductionValuesForLEGOTrain()
 {
   // Automatically set shared common variables
   // The run period (ex. "LHC15o")
-  period = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTAG");
+  std::string period = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTAG");
   // either "pp", "pPb" or "PbPb"
-  collType = gSystem->Getenv("ALIEN_JDL_LPMINTERACTIONTYPE");
+  std::string collType = gSystem->Getenv("ALIEN_JDL_LPMINTERACTIONTYPE");
   // Used to get mc
   std::string prodType = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTYPE");
 
@@ -56,17 +56,22 @@ void AliPWGJETrainHelpers::ExtractAliEnProductionValuesForLEGOTrain(std::string&
   }
   // Validate the extract variables. Each one must be set at this point.
   if (period == "" || collType == "" || prodType == "") {
-    // Somehow failed to extract the vaariables which should always be available.
+    // Somehow failed to extract the variables which should always be available.
     ::Fatal("AliPWGJETrainHelpers", "Somehow failed to extract the period, collision type, or production type.\n");
   }
 
   // Determine if it's an MC production.
-  mc = (prodType == "MC");
+  const bool mc = (prodType == "MC");
 
   // Determine if it's Run2
   std::string yearString = period.substr(3, 2);
   int productionYear = std::atoi(yearString.c_str());
-  isRun2 = productionYear > 14;
+  const bool isRun2 = productionYear > 14;
 
-  // Values are returned via the function arguments, so there is nothing else to do here.
+  // We need to return multiple values, so we use a vector and convert the bools to strings temporarily.
+  // They should be converted back after returning.
+  // (Not that the bool text doesn't really matter as long as it's non-zero, but we select "true" as it
+  // corresponds to the variables being true).
+  return std::vector<std::string>{period, collType, mc ? "true" : "", isRun2 ? "true" : ""};
 }
+

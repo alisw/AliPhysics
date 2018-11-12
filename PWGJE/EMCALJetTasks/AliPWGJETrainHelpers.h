@@ -24,23 +24,27 @@ class AliPWGJETrainHelpers
    * Usage should look like:
    *
    * ~~~{.cxx}
-   * std::string period = "";
-   * std::string collType = "";
-   * bool kMC = false;
-   * bool kIsRun2 = false;
-   * AliPWGJETrainHelpers::ExtractAliEnProductionValuesForLEGOTrain(period, collType, kMC, kIsRun2);
-   * // Set the final string variables, which are expected to be c strings.
-   * const char* kPeriod = period.c_str();
-   * const char* kColType = collType.c_str();
+   * // Determine the variables.
+   * std::vector<std::string> tempVariables = AliPWGJETrainHelpers::ExtractAliEnProductionValuesForLEGOTrain();
+   * // Assign them to their final global variables.
+   * const char* kPeriod = tempVariables.at(0).c_str();
+   * const char* kColType = tempVariables.at(1).c_str();
+   * const bool kMC = (tempVariables.at(2) == "true" ? true : false);
+   * const bool kIsRun2 = (tempVariables.at(3) == "true" ? true : false);
    * ~~~
    *
-   * @param[out] period The run period. For example, "LHC15o".
-   * @param[out] collType The collision type. Can be "pp", "pPb", "PbPb", etc.
-   * @param[out] mc True if this is an MC production.
-   * @param[out] isRun2 True if the run period is in Run 2.
+   * Note that we cannot return the values by taking them by reference in the arguments because that would involve
+   * reassigning global variables, which is not allowed.
+   *
+   * The returned parameters correspond to:
+   *
+   * - period (std::string): The run period. For example, "LHC15o".
+   * - collType (std::string): The collision type. Can be "pp", "pPb", "PbPb", etc.
+   * - mc (bool): True if this is an MC production.
+   * - isRun2 (bool): True if the run period is in Run 2.
+   * @return std::vector<std::string> containing {run period, collision type, mc, isRun2}.
    */
-  static void ExtractAliEnProductionValuesForLEGOTrain(std::string& period, std::string& collType,
-                             bool& mc, bool& isRun2);
+  static std::vector<std::string> ExtractAliEnProductionValuesForLEGOTrain();
 };
 
 #endif /* AliPWGJETrainHelpers.h */
