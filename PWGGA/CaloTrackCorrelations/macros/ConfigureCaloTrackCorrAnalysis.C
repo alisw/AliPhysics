@@ -404,7 +404,7 @@ AliAnaElectron* ConfigureElectronAnalysis(TString col,           Bool_t simulati
   
   SetAnalysisCommonParameters(ana,histoString,calorimeter,year,col,simulation,printSettings,debug) ; // see method below
     
-  // if(kPrintAnaInfo) ana->Print("");
+  if(printSettings) ana->Print("");
   
   return ana ;
 }

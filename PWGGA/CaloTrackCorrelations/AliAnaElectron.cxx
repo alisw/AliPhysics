@@ -45,7 +45,7 @@ ClassImp(AliAnaElectron) ;
 //________________________________
 AliAnaElectron::AliAnaElectron() :
 AliAnaCaloTrackCorrBaseClass(),
-fMinDist(0.),                         fMinDist2(0.),                         fMinDist3(0.), 
+fMinDist(0.),                        
 fTimeCutMin(-1),                      fTimeCutMax(999999),         
 fNCellsCut(0),                        fNLMCutMin(-1),                        fNLMCutMax(10),
 fFillSSHistograms(kFALSE),            fFillOnlySimpleSSHisto(1),
@@ -256,7 +256,7 @@ Bool_t  AliAnaElectron::ClusterSelected(AliVCluster* calo, Int_t nMaxima)
 
   AliDebug(1,Form("Current Event %d; After  selection : E %2.2f, pT %2.2f, Ecl %2.2f, phi %2.2f, eta %2.2f",
                   GetReader()->GetEventNumber(), 
-                  fMomentum.E(), fMomentum.Pt(),calo->E(),
+                  fMomentum.E(), fMomentum.Pt(),fMomentum.E(),
                   GetPhi(fMomentum.Phi())*TMath::RadToDeg(),fMomentum.Eta()));
   
   // All checks passed, cluster selected
@@ -485,13 +485,9 @@ TObjString *  AliAnaElectron::GetAnalysisCuts()
   parList+=onePar ;  
   snprintf(onePar,buffersize," %2.2f <  E/P < %2.2f;",fEOverPMinHad, fEOverPMaxHad) ;
   parList+=onePar ;  
-  snprintf(onePar,buffersize,"fMinDist =%2.2f (Minimal distance to bad channel to accept cluster);",fMinDist) ;
+  snprintf(onePar,buffersize,"fMinDist =%2.2f;",fMinDist) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fMinDist2=%2.2f (Cuts on Minimal distance to study acceptance evaluation);",fMinDist2) ;
-  parList+=onePar ;
-  snprintf(onePar,buffersize,"fMinDist3=%2.2f (One more cut on distance used for acceptance-efficiency study);",fMinDist3) ;
-  parList+=onePar ;  
-  
+ 
   //Get parameters set in base class.
   parList += GetBaseParametersList() ;
   
@@ -1449,17 +1445,16 @@ void AliAnaElectron::InitParameters()
   AddToHistogramsName("AnaElectron_");
   
   fMinDist     = 2.;
-  fMinDist2    = 4.;
-  fMinDist3    = 5.;
 	
   fTimeCutMin  = -1;
   fTimeCutMax  = 9999999;
+  
   fNCellsCut   = 1;
   
-  fM20Min = 0.05;
-  fM20Max = 0.30;
+//  fM20Min = 0.00;
+//  fM20Max = 0.30;
   
-  fM02Min = 0.10;
+  fM02Min = 0.05;
   fM02Max = 0.35;
   
 //fdEdxMin     = 75;//76. for LHC11a, but for LHC11c pass1 56.                
@@ -1517,7 +1512,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
   for(Int_t icalo = 0; icalo < nCaloClusters; icalo++)
   {
 	  AliVCluster * calo =  (AliVCluster*) (pl->At(icalo));	
-    //printf("calo %d, %f\n",icalo,calo->E());
+    //printf("calo %d, %f\n",icalo,cluE);
     
     //Get the index where the cluster comes, to retrieve the corresponding vertex
     Int_t evtIndex = 0 ; 
@@ -1561,19 +1556,20 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
       continue;
     }
     
-    if ( track->P() < 0.01 )
+    Float_t cluE = calo ->E();
+    Float_t traP = track->P();
+    
+    if ( traP < 0.1 )
     {
-      AliWarning(Form("Too Low P track %f GeV/#it{c}, continue\n",track->P()));
+      AliWarning(Form("Too Low P track %f GeV/#it{c}, continue\n",traP));
       continue;
     }
-    
-    //printf("track dedx %f, p %f, cluster E %f\n",track->GetTPCsignal(),track->P(),calo->E());
     
     //
     // Get Identification cuts
     // 
     Float_t dEdx   = track->GetTPCsignal();
-    Float_t eOverp = calo->E()/track->P();
+    Float_t eOverp = cluE/traP;
     
     Float_t m02    = calo->GetM02();
     Float_t m20    = calo->GetM20();
@@ -1581,96 +1577,96 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     Double_t nSigma = pidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
     
     AliDebug(1,Form("Cluster E %2.2f, Track P %2.2f, E/P %2.2f, dEdx %2.2f, n sigma %2.2f",
-                    calo->E(),track->P(),eOverp, dEdx,nSigma));
+                    cluE,traP,eOverp, dEdx,nSigma));
     
     //printf("Cluster E %2.2f, Track P %2.2f, E/P %2.2f, dEdx %2.2f, n sigma %2.2f\n",
-    //       calo->E(),track->P(),eOverp, dEdx,nSigma);
+    //       cluE,traP,eOverp, dEdx,nSigma);
     
     //
     // Plot different track PID distributions without and with different cut combinations
     //
-    fhdEdxvsE  ->Fill(calo ->E(),   dEdx, GetEventWeight());
-    fhdEdxvsP  ->Fill(track->P(),   dEdx, GetEventWeight());
+    fhdEdxvsE  ->Fill(cluE,   dEdx, GetEventWeight());
+    fhdEdxvsP  ->Fill(traP,   dEdx, GetEventWeight());
     
-    fhEOverPvsE->Fill(calo ->E(), eOverp, GetEventWeight());
-    fhEOverPvsP->Fill(track->P(), eOverp, GetEventWeight()); 
+    fhEOverPvsE->Fill(cluE, eOverp, GetEventWeight());
+    fhEOverPvsP->Fill(traP, eOverp, GetEventWeight()); 
  
-    fhNSigmavsE->Fill(calo ->E(), nSigma, GetEventWeight());
-    fhNSigmavsP->Fill(track->P(), nSigma, GetEventWeight()); 
+    fhNSigmavsE->Fill(cluE, nSigma, GetEventWeight());
+    fhNSigmavsP->Fill(traP, nSigma, GetEventWeight()); 
     
     if ( eOverp < fEOverPMax && eOverp > fEOverPMin )
     {
-      fhdEdxvsECutEOverP  ->Fill(calo ->E(), dEdx  , GetEventWeight());
-      fhdEdxvsPCutEOverP  ->Fill(track->P(), dEdx  , GetEventWeight());
+      fhdEdxvsECutEOverP  ->Fill(cluE, dEdx  , GetEventWeight());
+      fhdEdxvsPCutEOverP  ->Fill(traP, dEdx  , GetEventWeight());
       
-      fhNSigmavsECutEOverP->Fill(calo ->E(), nSigma, GetEventWeight());
-      fhNSigmavsPCutEOverP->Fill(track->P(), nSigma, GetEventWeight());
+      fhNSigmavsECutEOverP->Fill(cluE, nSigma, GetEventWeight());
+      fhNSigmavsPCutEOverP->Fill(traP, nSigma, GetEventWeight());
     }
     
     if ( m02 > fM02Min && m02 < fM02Max )
     {
-      fhdEdxvsECutM02  ->Fill(calo ->E(), dEdx  , GetEventWeight());
-      fhdEdxvsPCutM02  ->Fill(track->P(), dEdx  , GetEventWeight());
-      fhEOverPvsECutM02->Fill(calo ->E(), eOverp, GetEventWeight());
-      fhEOverPvsPCutM02->Fill(track->P(), eOverp, GetEventWeight());
-      fhNSigmavsECutM02->Fill(calo ->E(), nSigma, GetEventWeight());
-      fhNSigmavsPCutM02->Fill(track->P(), nSigma, GetEventWeight());
+      fhdEdxvsECutM02  ->Fill(cluE, dEdx  , GetEventWeight());
+      fhdEdxvsPCutM02  ->Fill(traP, dEdx  , GetEventWeight());
+      fhEOverPvsECutM02->Fill(cluE, eOverp, GetEventWeight());
+      fhEOverPvsPCutM02->Fill(traP, eOverp, GetEventWeight());
+      fhNSigmavsECutM02->Fill(cluE, nSigma, GetEventWeight());
+      fhNSigmavsPCutM02->Fill(traP, nSigma, GetEventWeight());
       
       if ( m20 > fM20Min && m20 < fM20Max )
       {
-        fhdEdxvsECutM02AndM20  ->Fill(calo ->E(), dEdx  , GetEventWeight());
-        fhdEdxvsPCutM02AndM20  ->Fill(track->P(), dEdx  , GetEventWeight());
-        fhEOverPvsECutM02AndM20->Fill(calo ->E(), eOverp, GetEventWeight());
-        fhEOverPvsPCutM02AndM20->Fill(track->P(), eOverp, GetEventWeight());
-        fhNSigmavsECutM02AndM20->Fill(calo ->E(), nSigma, GetEventWeight());
-        fhNSigmavsPCutM02AndM20->Fill(track->P(), nSigma, GetEventWeight());
+        fhdEdxvsECutM02AndM20  ->Fill(cluE, dEdx  , GetEventWeight());
+        fhdEdxvsPCutM02AndM20  ->Fill(traP, dEdx  , GetEventWeight());
+        fhEOverPvsECutM02AndM20->Fill(cluE, eOverp, GetEventWeight());
+        fhEOverPvsPCutM02AndM20->Fill(traP, eOverp, GetEventWeight());
+        fhNSigmavsECutM02AndM20->Fill(cluE, nSigma, GetEventWeight());
+        fhNSigmavsPCutM02AndM20->Fill(traP, nSigma, GetEventWeight());
       }
     } // shower shape cut
     
     if ( dEdx < fdEdxMax && dEdx > fdEdxMin )
     {
-      fhEOverPvsECutdEdx->Fill(calo ->E(), eOverp, GetEventWeight());
-      fhEOverPvsPCutdEdx->Fill(track->P(), eOverp, GetEventWeight());
-      fhNSigmavsECutdEdx->Fill(calo ->E(), nSigma, GetEventWeight());
-      fhNSigmavsPCutdEdx->Fill(track->P(), nSigma, GetEventWeight());
+      fhEOverPvsECutdEdx->Fill(cluE, eOverp, GetEventWeight());
+      fhEOverPvsPCutdEdx->Fill(traP, eOverp, GetEventWeight());
+      fhNSigmavsECutdEdx->Fill(cluE, nSigma, GetEventWeight());
+      fhNSigmavsPCutdEdx->Fill(traP, nSigma, GetEventWeight());
       
       if ( m02 > fM02Min && m02 < fM02Max )
       {
-        fhEOverPvsECutM02CutdEdx->Fill(calo ->E(), eOverp, GetEventWeight());
-        fhEOverPvsPCutM02CutdEdx->Fill(track->P(), eOverp, GetEventWeight());
-        fhNSigmavsECutM02CutdEdx->Fill(calo ->E(), nSigma, GetEventWeight());
-        fhNSigmavsPCutM02CutdEdx->Fill(track->P(), nSigma, GetEventWeight());
+        fhEOverPvsECutM02CutdEdx->Fill(cluE, eOverp, GetEventWeight());
+        fhEOverPvsPCutM02CutdEdx->Fill(traP, eOverp, GetEventWeight());
+        fhNSigmavsECutM02CutdEdx->Fill(cluE, nSigma, GetEventWeight());
+        fhNSigmavsPCutM02CutdEdx->Fill(traP, nSigma, GetEventWeight());
         
         if ( m20 > fM20Min && m20 < fM20Max )
         {
-          fhEOverPvsECutM02AndM20CutdEdx->Fill(calo ->E(), eOverp, GetEventWeight());
-          fhEOverPvsPCutM02AndM20CutdEdx->Fill(track->P(), eOverp, GetEventWeight());        
-          fhNSigmavsECutM02AndM20CutdEdx->Fill(calo ->E(), eOverp, GetEventWeight());
-          fhNSigmavsPCutM02AndM20CutdEdx->Fill(track->P(), eOverp, GetEventWeight());
+          fhEOverPvsECutM02AndM20CutdEdx->Fill(cluE, eOverp, GetEventWeight());
+          fhEOverPvsPCutM02AndM20CutdEdx->Fill(traP, eOverp, GetEventWeight());        
+          fhNSigmavsECutM02AndM20CutdEdx->Fill(cluE, eOverp, GetEventWeight());
+          fhNSigmavsPCutM02AndM20CutdEdx->Fill(traP, eOverp, GetEventWeight());
         }
       } // shower shape cut
     }// dE/dx
     
     if ( nSigma < fNSigmaMax && nSigma > fNSigmaMin )
     {
-      fhdEdxvsECutNSigma  ->Fill(calo ->E(), dEdx, GetEventWeight());
-      fhdEdxvsPCutNSigma  ->Fill(track->P(), dEdx, GetEventWeight());
-      fhEOverPvsECutNSigma->Fill(calo ->E(), eOverp, GetEventWeight());
-      fhEOverPvsPCutNSigma->Fill(track->P(), eOverp, GetEventWeight());     
+      fhdEdxvsECutNSigma  ->Fill(cluE, dEdx, GetEventWeight());
+      fhdEdxvsPCutNSigma  ->Fill(traP, dEdx, GetEventWeight());
+      fhEOverPvsECutNSigma->Fill(cluE, eOverp, GetEventWeight());
+      fhEOverPvsPCutNSigma->Fill(traP, eOverp, GetEventWeight());     
       
       if ( m02 > fM02Min && m02 < fM02Max )
       {
-        fhdEdxvsECutM02CutNSigma  ->Fill(calo ->E(), dEdx, GetEventWeight());
-        fhdEdxvsPCutM02CutNSigma  ->Fill(track->P(), dEdx, GetEventWeight());
-        fhEOverPvsECutM02CutNSigma->Fill(calo ->E(), eOverp, GetEventWeight());
-        fhEOverPvsPCutM02CutNSigma->Fill(track->P(), eOverp, GetEventWeight());   
+        fhdEdxvsECutM02CutNSigma  ->Fill(cluE, dEdx, GetEventWeight());
+        fhdEdxvsPCutM02CutNSigma  ->Fill(traP, dEdx, GetEventWeight());
+        fhEOverPvsECutM02CutNSigma->Fill(cluE, eOverp, GetEventWeight());
+        fhEOverPvsPCutM02CutNSigma->Fill(traP, eOverp, GetEventWeight());   
         
         if ( m20 > fM20Min && m20 < fM20Max )
         {
-          fhdEdxvsECutM02AndM20CutNSigma  ->Fill(calo ->E(), dEdx, GetEventWeight());
-          fhdEdxvsPCutM02AndM20CutNSigma  ->Fill(track->P(), dEdx, GetEventWeight());
-          fhEOverPvsECutM02AndM20CutNSigma->Fill(calo ->E(), eOverp, GetEventWeight());
-          fhEOverPvsPCutM02AndM20CutNSigma->Fill(track->P(), eOverp, GetEventWeight());   
+          fhdEdxvsECutM02AndM20CutNSigma  ->Fill(cluE, dEdx, GetEventWeight());
+          fhdEdxvsPCutM02AndM20CutNSigma  ->Fill(traP, dEdx, GetEventWeight());
+          fhEOverPvsECutM02AndM20CutNSigma->Fill(cluE, eOverp, GetEventWeight());
+          fhEOverPvsPCutM02AndM20CutNSigma->Fill(traP, eOverp, GetEventWeight());   
         }
       } // shower shape cut
     }// n sigma
@@ -1719,15 +1715,15 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
       Int_t mcFlag = -1;
       if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) )
       {
-        fhMCdEdxvsE  [kmcPhoton]->Fill(calo ->E(), dEdx  , GetEventWeight());
-        fhMCdEdxvsP  [kmcPhoton]->Fill(track->P(), dEdx  , GetEventWeight());
-        fhMCNSigmavsE[kmcPhoton]->Fill(calo ->E(), nSigma, GetEventWeight());
-        fhMCNSigmavsP[kmcPhoton]->Fill(track->P(), nSigma, GetEventWeight());
-        fhMCEOverPvsE[kmcPhoton]->Fill(calo ->E(), eOverp, GetEventWeight());
-        fhMCEOverPvsP[kmcPhoton]->Fill(track->P(), eOverp, GetEventWeight());
+        fhMCdEdxvsE  [kmcPhoton]->Fill(cluE, dEdx  , GetEventWeight());
+        fhMCdEdxvsP  [kmcPhoton]->Fill(traP, dEdx  , GetEventWeight());
+        fhMCNSigmavsE[kmcPhoton]->Fill(cluE, nSigma, GetEventWeight());
+        fhMCNSigmavsP[kmcPhoton]->Fill(traP, nSigma, GetEventWeight());
+        fhMCEOverPvsE[kmcPhoton]->Fill(cluE, eOverp, GetEventWeight());
+        fhMCEOverPvsP[kmcPhoton]->Fill(traP, eOverp, GetEventWeight());
  
-        fhMCEOverPvsEAfterCuts[kmcPhoton][pidIndex]->Fill(calo ->E(), eOverp, GetEventWeight());
-        fhMCEOverPvsPAfterCuts[kmcPhoton][pidIndex]->Fill(track->P(), eOverp, GetEventWeight());
+        fhMCEOverPvsEAfterCuts[kmcPhoton][pidIndex]->Fill(cluE, eOverp, GetEventWeight());
+        fhMCEOverPvsPAfterCuts[kmcPhoton][pidIndex]->Fill(traP, eOverp, GetEventWeight());
         
         if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) )
         {
@@ -1770,15 +1766,15 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
       
       if ( mcFlag > 0 && fhMCdEdxvsE[mcFlag])
       {
-        fhMCdEdxvsE  [mcFlag]->Fill(calo ->E(), dEdx  , GetEventWeight());
-        fhMCdEdxvsP  [mcFlag]->Fill(track->P(), dEdx  , GetEventWeight());
-        fhMCNSigmavsE[mcFlag]->Fill(calo ->E(), nSigma, GetEventWeight());
-        fhMCNSigmavsP[mcFlag]->Fill(track->P(), nSigma, GetEventWeight());
-        fhMCEOverPvsE[mcFlag]->Fill(calo ->E(), eOverp, GetEventWeight());
-        fhMCEOverPvsP[mcFlag]->Fill(track->P(), eOverp, GetEventWeight());
+        fhMCdEdxvsE  [mcFlag]->Fill(cluE, dEdx  , GetEventWeight());
+        fhMCdEdxvsP  [mcFlag]->Fill(traP, dEdx  , GetEventWeight());
+        fhMCNSigmavsE[mcFlag]->Fill(cluE, nSigma, GetEventWeight());
+        fhMCNSigmavsP[mcFlag]->Fill(traP, nSigma, GetEventWeight());
+        fhMCEOverPvsE[mcFlag]->Fill(cluE, eOverp, GetEventWeight());
+        fhMCEOverPvsP[mcFlag]->Fill(traP, eOverp, GetEventWeight());
         
-        fhMCEOverPvsEAfterCuts[mcFlag][pidIndex]->Fill(calo ->E(), eOverp, GetEventWeight());
-        fhMCEOverPvsPAfterCuts[mcFlag][pidIndex]->Fill(track->P(), eOverp, GetEventWeight());        
+        fhMCEOverPvsEAfterCuts[mcFlag][pidIndex]->Fill(cluE, eOverp, GetEventWeight());
+        fhMCEOverPvsPAfterCuts[mcFlag][pidIndex]->Fill(traP, eOverp, GetEventWeight());        
       }
       
     }// set MC tag and fill Histograms with MC
@@ -1855,14 +1851,6 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
       Int_t nSM = GetModuleNumber(calo);
       aodpart.SetSModNumber(nSM);
       
-      //...............................................
-      //Set bad channel distance bit
-      Double_t distBad=calo->GetDistanceToBadChannel() ; //Distance to bad channel
-      if      ( distBad > fMinDist3 ) aodpart.SetDistToBad(2) ;
-      else if ( distBad > fMinDist2 ) aodpart.SetDistToBad(1) ;
-      else                            aodpart.SetDistToBad(0) ;
-      //printf("DistBad %f Bit %d\n",distBad, aodpart.DistToBad());
-
       // MC tag
       aodpart.SetTag(tag);
       
@@ -2095,16 +2083,29 @@ void AliAnaElectron::Print(const Option_t * opt) const
     return;
   
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
-  AliAnaCaloTrackCorrBaseClass::Print(" ");
+  //AliAnaCaloTrackCorrBaseClass::Print(" ");
 
-  printf("Calorimeter            =     %s\n", GetCalorimeterString().Data()) ;
-  printf(" %2.2f < dEdx < %2.2f  \n",fdEdxMin,fdEdxMax) ;
-  printf(" %2.2f <  E/P < %2.2f  \n",fEOverPMin,fEOverPMax) ;
-  printf("Min Distance to Bad Channel   = %2.1f\n",fMinDist);
-  printf("Min Distance to Bad Channel 2 = %2.1f\n",fMinDist2);
-  printf("Min Distance to Bad Channel 3 = %2.1f\n",fMinDist3);
-  printf("Time Cut: %3.1f < TOF  < %3.1f\n", fTimeCutMin, fTimeCutMax);
-  printf("Number of cells in cluster is        > %d \n", fNCellsCut);
+  printf("Calorimeter = %s\n", GetCalorimeterString().Data()) ;
+  printf("Select particle type (0-both): %d",fAODParticle);
+  
+  printf("Basic cuts:");
+  printf("\t Dist. to bad channel > %2.1f \n",fMinDist);
+  printf("\t %3.1f < TOF  < %3.1f\n", fTimeCutMin, fTimeCutMax);
+  printf("\t %d < NLM < %d  \n",fNLMCutMin,fNLMCutMax) ;
+  printf("\t N cells > %d \n", fNCellsCut);
+  
+  printf("Electron cuts:\n");
+  printf(" \t %2.2f < dEdx < %2.2f  \n",fdEdxMin,fdEdxMax) ;
+  printf(" \t %2.2f <  E/P < %2.2f  \n",fEOverPMin,fEOverPMax) ;
+  printf(" \t %2.2f <  nSig< %2.2f  \n",fNSigmaMin,fNSigmaMax) ;
+  printf(" \t %2.2f <  M02 < %2.2f  \n",fM02Min,fM02Max) ;
+  printf(" \t %2.2f <  M20 < %2.2f  \n",fM20Min,fM20Max) ;
+  
+  printf("Hadron cuts:\n");
+  printf(" \t %2.2f < dEdx < %2.2f  \n",fdEdxMinHad,fdEdxMaxHad) ;
+  printf(" \t %2.2f <  E/P < %2.2f  \n",fEOverPMinHad,fEOverPMaxHad) ;
+  printf(" \t %2.2f <  nSig< %2.2f  \n",fNSigmaMinHad,fNSigmaMaxHad) ;
+  
   printf("    \n") ;
 } 
 
