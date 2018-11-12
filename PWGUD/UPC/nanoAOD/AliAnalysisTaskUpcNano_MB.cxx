@@ -149,8 +149,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTrackCutsBit0->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
   fTrackCutsBit5 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
   
-  fTrackCutsBit1 = new AliESDtrackCuts("ITS stand-alone Track Cuts", "ESD Track Cuts");
-  fTrackCutsBit1->SetRequireITSStandAlone(kTRUE);
+  fTrackCutsBit1 = AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kFALSE,kTRUE);
   
   fOutputList = new TList();
   fOutputList ->SetOwner();
@@ -314,7 +313,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   if(!fEvent) return;
   TString trigger = fEvent->GetFiredTriggerClasses();
   if(!isMC && !trigger.Contains("CCUP29-B") && !trigger.Contains("CCUP30-B") && !trigger.Contains("CCUP31-B"))return;
-   
+  
   fRunNumber = fEvent->GetRunNumber();
   
   AliVVZERO *fV0data = fEvent->GetVZEROData();
@@ -357,6 +356,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   if( fADAdecision != 0 || fADCdecision != 0) return;
     
   fHistEvents->Fill(1);
+  //cout<<"Event, tracks = "<<fEvent ->GetNumberOfTracks()<<endl; 
   
   TDatabasePDG *pdgdat = TDatabasePDG::Instance();
   
@@ -402,7 +402,6 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     if(isESD){ 
     	AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(iTrack));
 	if( !trk ) continue;
-	
 	if(fTrackCutsBit0->AcceptTrack(trk))nGoodTracksLoose++;
     	if(!fTrackCutsBit5->AcceptTrack(trk))goodTPCTrack = kFALSE;
     	else{
@@ -414,6 +413,11 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     else{ 
     	AliAODTrack *trk = dynamic_cast<AliAODTrack*>(fEvent->GetTrack(iTrack));
     	if( !trk ) continue;
+	
+	//if(trk->IsMuonTrack())cout<<"Muon"<<endl;
+	//else{ for(Int_t i = 0; i<10; i++)cout<<trk->TestFilterBit(1<<i)<<" ";
+		//cout<<endl;
+		//}
     
     	if(trk->TestFilterBit(1<<0) && (trk->HasPointOnITSLayer(0) || trk->HasPointOnITSLayer(1)))nGoodTracksLoose++;
     	if(!(trk->TestFilterBit(1<<5)))goodTPCTrack = kFALSE;
@@ -438,6 +442,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 	TrackIndexALL[nGoodTracksTPC+nGoodTracksITS] = iTrack;
     	TrackPtALL[nGoodTracksTPC+nGoodTracksITS] = trk->Pt();
     	nGoodTracksITS++;
+	//cout<<"good its track"<<endl;
     	}
      
 	
