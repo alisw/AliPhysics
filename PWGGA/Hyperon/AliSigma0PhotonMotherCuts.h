@@ -184,13 +184,14 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistSigmaLambdaPCorr;   //!
   TH2F *fHistSigmaPhotonPCorr;   //!
 
-  TH1F *fHistMCTruthPtMult[14];                   //!
-  TH2F *fHistMCTruthPtY;                          //!
-  TH2F *fHistMCTruthDaughterPtY;                  //!
-  TH2F *fHistMCTruthDaughterPtYAccept;            //!
-  TH2F *fHistMCTruthPtYHighMult;                  //!
-  TH2F *fHistMCTruthDaughterPtYHighMult;          //!
-  TH2F *fHistMCTruthDaughterPtYAcceptHighMult;    //!
+  TH1F *fHistMCTruthPt;                         //!
+  TH1F *fHistMCTruthPtMult[14];                 //!
+  TH2F *fHistMCTruthPtY;                        //!
+  TH2F *fHistMCTruthDaughterPtY;                //!
+  TH2F *fHistMCTruthDaughterPtYAccept;          //!
+  TH2F *fHistMCTruthPtYHighMult;                //!
+  TH2F *fHistMCTruthDaughterPtYHighMult;        //!
+  TH2F *fHistMCTruthDaughterPtYAcceptHighMult;  //!
 
   TH2F *fHistMCTrueSigmaLambdaPtCorr;  //!
   TH2F *fHistMCTrueSigmaPhotonPtCorr;  //!
