@@ -94,7 +94,7 @@ public:
   Bool_t GetGoldV0() const {return fGoldV0;}
   void SetGoldV0(Bool_t g) {fGoldV0=g;}
   Float_t GetChi22() const {return fChi22;}
-  void SetChi22(Float_t c) {fChi22=c;}
+  void SetChi22(Float_t c) {fChi22 = c<0.f ? 999.f : c;}
   Float_t GetDeadZoneProbability(Int_t ilayer) const {return fDeadZoneProbability[ilayer];}
   void SetDeadZoneProbability(Int_t ilayer,Float_t d) {fDeadZoneProbability[ilayer]=d;}
   //
