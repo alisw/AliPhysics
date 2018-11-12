@@ -419,6 +419,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
       trgData->SetL1FrameMask(fSTURawStream->GetFrameReceived());
       trgData->SetL1V0(v0);
       trgData->SetL1TriggerType(type);
+      trgData->SetMedian(fSTURawStream->GetRho());
       
       trgData->SetL1RawData(fSTURawStream->GetRawData());
       
