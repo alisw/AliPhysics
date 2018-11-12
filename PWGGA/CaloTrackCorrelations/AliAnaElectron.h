@@ -322,6 +322,13 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEmbedElectronELambda0MostlyBkg ;     //!<! Lambda0 vs E for embedded electrons with 50%<fraction<10%
   TH2F * fhEmbedElectronELambda0FullBkg ;       //!<! Lambda0 vs E for embedded electrons with less than 10% of the cluster energy
   
+  // Track matching residuals
+  TH2F * fhDEtavsE [3][2];                      //!<! Track-cluster Matching eta residual vs cluster E
+  TH2F * fhDPhivsE [3][2];                      //!<! Track-cluster Matching phi residual vs cluster E
+  TH2F * fhDEtavsP [3][2];                      //!<! Track-cluster Matching eta residual vs track P
+  TH2F * fhDPhivsP [3][2];                      //!<! Track-cluster Matching phi residual vs track P
+  TH2F * fhDEtaDPhi[3][2];                      //!<! Track-cluster Matching eta vs phi residual
+  
   /// Copy constructor not implemented.
   AliAnaElectron(              const AliAnaElectron & el) ;
     
@@ -329,7 +336,7 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   AliAnaElectron & operator = (const AliAnaElectron & el) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaElectron,8) ;
+  ClassDef(AliAnaElectron,9) ;
   /// \endcond
 
 } ;

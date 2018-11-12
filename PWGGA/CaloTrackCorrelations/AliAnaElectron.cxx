@@ -53,7 +53,7 @@ fFillWeightHistograms(kFALSE),        fNOriginHistograms(8),
 fdEdxMin(0.),                         fdEdxMax(400.), 
 fEOverPMin(0),                        fEOverPMax(2),
 fNSigmaMin(-100),                     fNSigmaMax(100),
-fM20Min(0),                           fM20Max(100),
+fM20Min(-1),                          fM20Max(100),
 fM02Min(0),                           fM02Max(100),
 fdEdxMinHad(0.),                      fdEdxMaxHad(400.), 
 fEOverPMinHad(0),                     fEOverPMaxHad(100),
@@ -168,6 +168,19 @@ fhEmbedElectronELambda0MostlyBkg(0),  fhEmbedElectronELambda0FullBkg(0)
     for(Int_t i = 0; i < 5; i++)
     {
       fhDispEtaDispPhiEBin[index][i] = 0 ;
+    }
+  }
+  
+  // Mathching Residuals
+  for(Int_t indexPID = 0; indexPID < 3; indexPID++)
+  {
+    for(Int_t ich = 0; ich < 2; ich++)
+    { 
+      fhDEtavsE [indexPID][ich] = 0 ;      
+      fhDPhivsE [indexPID][ich] = 0 ;     
+      fhDEtavsP [indexPID][ich] = 0 ;       
+      fhDPhivsP [indexPID][ich] = 0 ;       
+      fhDEtaDPhi[indexPID][ich] = 0 ;
     }
   }
   
@@ -519,6 +532,13 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   Int_t tbins       = GetHistogramRanges()->GetHistoTimeBins() ;        Float_t tmax      = GetHistogramRanges()->GetHistoTimeMax();         Float_t tmin      = GetHistogramRanges()->GetHistoTimeMin();
   Int_t nNSigmabins = GetHistogramRanges()->GetHistoNSigmaBins();       Float_t nSigmamax = GetHistogramRanges()->GetHistoNSigmaMax();       Float_t nSigmamin = GetHistogramRanges()->GetHistoNSigmaMin();
   
+  Int_t   nresetabins = GetHistogramRanges()->GetHistoTrackResidualEtaBins();
+  Float_t resetamax   = GetHistogramRanges()->GetHistoTrackResidualEtaMax();
+  Float_t resetamin   = GetHistogramRanges()->GetHistoTrackResidualEtaMin();
+  Int_t   nresphibins = GetHistogramRanges()->GetHistoTrackResidualPhiBins();
+  Float_t resphimax   = GetHistogramRanges()->GetHistoTrackResidualPhiMax();
+  Float_t resphimin   = GetHistogramRanges()->GetHistoTrackResidualPhiMin();
+  
   // MC labels, titles, for originator particles
   TString ptypess[] = { "#gamma","hadron?","#pi^{0}","#eta","#gamma->e^{#pm}","e^{#pm}"} ;
   TString pnamess[] = { "Photon","Hadron" ,"Pi0"    ,"Eta" ,"Conversion"     ,"Electron"} ;
@@ -528,27 +548,27 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   TString pname[] = { "Photon","PhotonPi0Decay","PhotonOtherDecay","Pi0","Eta","Electron",
     "Conversion", "Hadron", "AntiNeutron","AntiProton"                        } ;
   
-  TString pidParticle[] = {"Electron","ChargedHadron"} ;
+  TString pidParticle[] = {"Electron","ChargedHadron","NoPID"} ;
   
   //
   // E/p histograms
   //
   fhEOverPvsE  = new TH2F 
-  ("hEOverPvsE","matched track #it{E/p} vs cluster #it{E}", 
+  ("hEOverP_clusE","matched track #it{E/p} vs cluster #it{E}", 
    nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax); 
   fhEOverPvsE->SetXTitle("#it{E} (GeV)");
   fhEOverPvsE->SetYTitle("#it{E/p}");
   outputContainer->Add(fhEOverPvsE);  
   
   fhEOverPvsP  = new TH2F 
-  ("hEOverPvsP","matched track #it{E/p} vs track #it{p}", 
+  ("hEOverP_TraP","matched track #it{E/p} vs track #it{p}", 
    nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax); 
   fhEOverPvsP->SetXTitle("#it{p} (GeV/#it{c})");
   fhEOverPvsP->SetYTitle("#it{E/p}");
   outputContainer->Add(fhEOverPvsP);  
   
   fhEOverPvsECutM02  = new TH2F 
-  ("hEOverPvsECutM02",
+  ("hEOverP_clusE_CutM02",
    "matched track #it{E/p} vs cluster #it{E}, #sigma_{long}^{2} cut", 
    nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
   fhEOverPvsECutM02->SetXTitle("#it{E} (GeV)");
@@ -556,7 +576,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhEOverPvsECutM02);
   
   fhEOverPvsPCutM02  = new TH2F 
-  ("hEOverPvsPCutM02",
+  ("hEOverP_TraP_CutM02",
    "matched track #it{E/p} vs track #it{p}, #sigma_{long}^{2} cut", 
    nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
   fhEOverPvsPCutM02->SetXTitle("#it{p} (GeV/#it{c})");
@@ -564,21 +584,21 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhEOverPvsPCutM02);
   
   fhEOverPvsECutdEdx  = new TH2F 
-  ("hEOverPvsECutdEdx","matched track #it{E/p} vs cluster #it{E}, <d#it{E}/d#it{x}> cut", 
+  ("hEOverP_clusE_CutdEdx","matched track #it{E/p} vs cluster #it{E}, <d#it{E}/d#it{x}> cut", 
    nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax); 
   fhEOverPvsECutdEdx->SetXTitle("#it{E} (GeV)");
   fhEOverPvsECutdEdx->SetYTitle("#it{E/p}");
   outputContainer->Add(fhEOverPvsECutdEdx);  
   
   fhEOverPvsPCutdEdx  = new TH2F 
-  ("hEOverPvsPCutdEdx","matched track #it{E/p} vs track #it{p}, <d#it{E}/d#it{x}> cut", 
+  ("hEOverP_TraP_CutdEdx","matched track #it{E/p} vs track #it{p}, <d#it{E}/d#it{x}> cut", 
    nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax); 
   fhEOverPvsPCutdEdx->SetXTitle("#it{p} (GeV/#it{c})");
   fhEOverPvsPCutdEdx->SetYTitle("#it{E/p}");
   outputContainer->Add(fhEOverPvsPCutdEdx);  
   
   fhEOverPvsECutM02AndM20  = new TH2F 
-  ("hEOverPvsECutM02AndM20",
+  ("hEOverP_clusE_CutM02AndM20",
    "matched track #it{E/p} vs cluster #it{E}, #sigma_{long}^{2} cut, #sigma_{short}^{2} cut", 
    nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
   fhEOverPvsECutM02AndM20->SetXTitle("#it{E} (GeV)");
@@ -586,7 +606,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhEOverPvsECutM02AndM20);
   
   fhEOverPvsPCutM02AndM20  = new TH2F 
-  ("hEOverPvsPCutM02AndM20",
+  ("hEOverP_TraP_CutM02AndM20",
    "matched track #it{E/p} vs track #it{p}, #sigma_{long}^{2} cut, #sigma_{short}^{2} cut", 
    nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
   fhEOverPvsPCutM02AndM20->SetXTitle("#it{p} (GeV/#it{c})");
@@ -594,7 +614,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhEOverPvsPCutM02AndM20);
   
   fhEOverPvsECutM02CutdEdx  = new TH2F 
-  ("hEOverPvsECutM02CutdEdx",
+  ("hEOverP_clusE_CutM02CutdEdx",
    "matched track #it{E/p} vs cluster #it{E}, <d#it{E}/d#it{x}> cut, #sigma_{long}^{2} cut", 
    nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
   fhEOverPvsECutM02CutdEdx->SetXTitle("#it{E} (GeV)");
@@ -602,7 +622,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhEOverPvsECutM02CutdEdx);
   
   fhEOverPvsPCutM02CutdEdx  = new TH2F 
-  ("hEOverPvsPCutM02CutdEdx",
+  ("hEOverP_TraP_CutM02CutdEdx",
    "matched track #it{E/p} vs track #it{p}, <d#it{E}/d#it{x}> cut, #sigma_{long}^{2} cut", 
    nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
   fhEOverPvsPCutM02CutdEdx->SetXTitle("#it{p} (GeV/#it{c})");
@@ -610,7 +630,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhEOverPvsPCutM02CutdEdx);
   
   fhEOverPvsECutM02AndM20CutdEdx  = new TH2F 
-  ("hEOverPvsECutM02AndM20CutdEdx",
+  ("hEOverP_clusE_CutM02AndM20CutdEdx",
    "matched track #it{E/p} vs cluster #it{E}, <d#it{E}/d#it{x}> cut, #sigma_{long}^{2} cut, #sigma_{short}^{2} cut",
    nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
   fhEOverPvsECutM02AndM20CutdEdx->SetXTitle("#it{E} (GeV)");
@@ -618,7 +638,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhEOverPvsECutM02AndM20CutdEdx);
   
   fhEOverPvsPCutM02AndM20CutdEdx  = new TH2F 
-  ("hEOverPvsPCutM02AndM20CutdEdx",
+  ("hEOverP_TraP_CutM02AndM20CutdEdx",
    "matched track #it{E/p} vs track #it{p}, <d#it{E}/d#it{x}> cut, #sigma_{long}^{2} cut, #sigma_{short}^{2} cut",
    nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
   fhEOverPvsPCutM02AndM20CutdEdx->SetXTitle("#it{p} (GeV/#it{c})");
@@ -626,21 +646,21 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhEOverPvsPCutM02AndM20CutdEdx);
   
   fhEOverPvsECutNSigma  = new TH2F 
-  ("hEOverPvsECutNSigma","matched track #it{E/p} vs cluster #it{E}, n#sigma cut cut", 
+  ("hEOverP_clusE_CutNSigma","matched track #it{E/p} vs cluster #it{E}, n#sigma cut cut", 
    nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax); 
   fhEOverPvsECutNSigma->SetXTitle("#it{E} (GeV)");
   fhEOverPvsECutNSigma->SetYTitle("#it{E/p}");
   outputContainer->Add(fhEOverPvsECutNSigma);  
   
   fhEOverPvsPCutNSigma  = new TH2F 
-  ("hEOverPvsPCutNSigma","matched track #it{E/p} vs track #it{p}, n#sigma cut cut", 
+  ("hEOverP_TraP_CutNSigma","matched track #it{E/p} vs track #it{p}, n#sigma cut cut", 
    nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax); 
   fhEOverPvsPCutNSigma->SetXTitle("#it{p} (GeV/#it{c})");
   fhEOverPvsPCutNSigma->SetYTitle("#it{E/p}");
   outputContainer->Add(fhEOverPvsPCutNSigma);  
   
   fhEOverPvsECutM02CutNSigma  = new TH2F 
-  ("hEOverPvsECutM02CutNSigma",
+  ("hEOverP_clusE_CutM02CutNSigma",
    "matched track #it{E/p} vs cluster #it{E}, n#sigma cut, #sigma_{long}^{2} cut", 
    nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
   fhEOverPvsECutM02CutNSigma->SetXTitle("#it{E} (GeV)");
@@ -648,7 +668,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhEOverPvsECutM02CutNSigma);
   
   fhEOverPvsPCutM02CutNSigma  = new TH2F 
-  ("hEOverPvsPCutM02CutNSigma",
+  ("hEOverP_TraP_CutM02CutNSigma",
    "matched track #it{E/p} vs track #it{p}, n#sigma cut, #sigma_{long}^{2} cut", 
    nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
   fhEOverPvsPCutM02CutNSigma->SetXTitle("#it{p} (GeV/#it{c})");
@@ -656,7 +676,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhEOverPvsPCutM02CutNSigma);
   
   fhEOverPvsECutM02AndM20CutNSigma  = new TH2F 
-  ("hEOverPvsECutM02AndM20CutNSigma",
+  ("hEOverP_clusE_CutM02AndM20CutNSigma",
    "matched track #it{E/p} vs cluster #it{E}, n#sigma cut, #sigma_{long}^{2} cut, #sigma_{short}^{2} cut",
    nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
   fhEOverPvsECutM02AndM20CutNSigma->SetXTitle("#it{E} (GeV)");
@@ -664,32 +684,31 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhEOverPvsECutM02AndM20CutNSigma);
   
   fhEOverPvsPCutM02AndM20CutNSigma  = new TH2F 
-  ("hEOverPvsPCutM02AndM20CutNSigma",
+  ("hEOverP_TraP_CutM02AndM20CutNSigma",
    "matched track #it{E/p} vs track #it{p}, n#sigma cut, #sigma_{long}^{2} cut, #sigma_{short}^{2} cut",
    nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
   fhEOverPvsPCutM02AndM20CutNSigma->SetXTitle("#it{p} (GeV/#it{c})");
   fhEOverPvsPCutM02AndM20CutNSigma->SetYTitle("#it{E/p}");
   outputContainer->Add(fhEOverPvsPCutM02AndM20CutNSigma);
   
-  
    // dE/dX histograms
   
   fhdEdxvsE  = new TH2F 
-  ("hdEdxvsE","matched track <d#it{E}/d#it{x}> vs cluster #it{E} ", 
+  ("hdEdx_clusE","matched track <d#it{E}/d#it{x}> vs cluster #it{E} ", 
    nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
   fhdEdxvsE->SetXTitle("#it{E} (GeV)");
   fhdEdxvsE->SetYTitle("<d#it{E}/d#it{x}>");
   outputContainer->Add(fhdEdxvsE);  
   
   fhdEdxvsP  = new TH2F 
-  ("hdEdxvsP","matched track <d#it{E}/d#it{x}> vs track #it{p} ", 
+  ("hdEdx_TraP","matched track <d#it{E}/d#it{x}> vs track #it{p} ", 
    nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax); 
   fhdEdxvsP->SetXTitle("#it{p} (GeV/#it{c})");
   fhdEdxvsP->SetYTitle("<d#it{E}/d#it{x}>");
   outputContainer->Add(fhdEdxvsP);  
   
   fhdEdxvsECutM02  = new TH2F 
-  ("hdEdxvsECutM02",
+  ("hdEdx_clusE_CutM02",
    "matched track <d#it{E}/d#it{x}> vs cluster #it{E}, #sigma_{long}^{2} cut", 
    nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
   fhdEdxvsECutM02->SetXTitle("#it{E} (GeV)");
@@ -697,7 +716,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhdEdxvsECutM02);
   
   fhdEdxvsPCutM02  = new TH2F 
-  ("hdEdxvsPCutM02",
+  ("hdEdx_TraP_CutM02",
    "matched track <d#it{E}/d#it{x}> vs track #it{p}, #sigma_{long}^{2} cut", 
    nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
   fhdEdxvsPCutM02->SetXTitle("#it{p} (GeV/#it{c})");
@@ -705,7 +724,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhdEdxvsPCutM02);
   
   fhdEdxvsECutM02AndM20  = new TH2F 
-  ("hdEdxvsECutM02AndM20",
+  ("hdEdx_clusE_CutM02AndM20",
    "matched track <d#it{E}/d#it{x}> vs cluster #it{E}, #sigma_{long}^{2} cut", 
    nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
   fhdEdxvsECutM02AndM20->SetXTitle("#it{E} (GeV)");
@@ -713,7 +732,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhdEdxvsECutM02AndM20);
   
   fhdEdxvsPCutM02AndM20  = new TH2F 
-  ("hdEdxvsPCutM02AndM20",
+  ("hdEdx_TraP_CutM02AndM20",
    "matched track <d#it{E}/d#it{x}> vs track #it{p}, #sigma_{long}^{2} cut", 
    nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
   fhdEdxvsPCutM02AndM20->SetXTitle("#it{p} (GeV/#it{c})");
@@ -721,35 +740,35 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhdEdxvsPCutM02AndM20);
   
   fhdEdxvsECutEOverP  = new TH2F 
-  ("hdEdxvsECutEOverP","matched track <d#it{E}/d#it{x}> vs cluster #it{E}, cut on #it{E/p}", 
+  ("hdEdx_clusE_CutEOverP","matched track <d#it{E}/d#it{x}> vs cluster #it{E}, cut on #it{E/p}", 
    nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
   fhdEdxvsECutEOverP->SetXTitle("#it{E} (GeV)");
   fhdEdxvsECutEOverP->SetYTitle("<d#it{E}/d#it{x}>");
   outputContainer->Add(fhdEdxvsECutEOverP);
   
   fhdEdxvsPCutEOverP  = new TH2F 
-  ("hdEdxvsPCutEOverP","matched track <d#it{E}/d#it{x}> vs track #it{p}, cut on #it{E/p}", 
+  ("hdEdx_TraP_CutEOverP","matched track <d#it{E}/d#it{x}> vs track #it{p}, cut on #it{E/p}", 
    nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
   fhdEdxvsPCutEOverP->SetXTitle("#it{p} (GeV/#it{c})");
   fhdEdxvsPCutEOverP->SetYTitle("<d#it{E}/d#it{x}>");
   outputContainer->Add(fhdEdxvsPCutEOverP);
   
   fhdEdxvsECutNSigma  = new TH2F 
-  ("hdEdxvsECutNSigma","matched track <d#it{E}/d#it{x}> vs cluster #it{E}, n#sigma cut", 
+  ("hdEdx_clusE_CutNSigma","matched track <d#it{E}/d#it{x}> vs cluster #it{E}, n#sigma cut", 
    nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
   fhdEdxvsECutNSigma->SetXTitle("#it{E} (GeV)");
   fhdEdxvsECutNSigma->SetYTitle("<d#it{E}/d#it{x}>");
   outputContainer->Add(fhdEdxvsECutNSigma);  
   
   fhdEdxvsPCutNSigma  = new TH2F 
-  ("hdEdxvsPCutNSigma","matched track <d#it{E}/d#it{x}> vs track #it{p}, n#sigma cut", 
+  ("hdEdx_TraP_CutNSigma","matched track <d#it{E}/d#it{x}> vs track #it{p}, n#sigma cut", 
    nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax); 
   fhdEdxvsPCutNSigma->SetXTitle("#it{p} (GeV/#it{c})");
   fhdEdxvsPCutNSigma->SetYTitle("<d#it{E}/d#it{x}>");
   outputContainer->Add(fhdEdxvsPCutNSigma);  
   
   fhdEdxvsECutM02CutNSigma  = new TH2F 
-  ("hdEdxvsECutM02CutNSigma",
+  ("hdEdx_clusE_CutM02CutNSigma",
    "matched track <d#it{E}/d#it{x}> vs cluster #it{E}, #sigma_{long}^{2} cut, n#sigma cut", 
    nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
   fhdEdxvsECutM02CutNSigma->SetXTitle("#it{E} (GeV)");
@@ -757,7 +776,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhdEdxvsECutM02CutNSigma);
   
   fhdEdxvsPCutM02CutNSigma  = new TH2F 
-  ("hdEdxvsPCutM02CutNSigma",
+  ("hdEdx_TraP_CutM02CutNSigma",
    "matched track <d#it{E}/d#it{x}> vs track #it{p}, #sigma_{long}^{2} cut, n#sigma cut", 
    nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
   fhdEdxvsPCutM02CutNSigma->SetXTitle("#it{p} (GeV/#it{c})");
@@ -765,7 +784,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhdEdxvsPCutM02CutNSigma);
   
   fhdEdxvsECutM02AndM20CutNSigma  = new TH2F 
-  ("hdEdxvsECutM02AndM20CutNSigma",
+  ("hdEdx_clusE_CutM02AndM20CutNSigma",
    "matched track <d#it{E}/d#it{x}> vs cluster #it{E}, #sigma_{long}^{2} cut, n#sigma cut", 
    nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
   fhdEdxvsECutM02AndM20CutNSigma->SetXTitle("#it{E} (GeV)");
@@ -773,32 +792,31 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhdEdxvsECutM02AndM20CutNSigma);
   
   fhdEdxvsPCutM02AndM20CutNSigma  = new TH2F 
-  ("hdEdxvsPCutM02AndM20CutNSigma",
+  ("hdEdx_TraP_CutM02AndM20CutNSigma",
    "matched track <d#it{E}/d#it{x}> vs track #it{p}, #sigma_{long}^{2} cut, n#sigma cut", 
    nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
   fhdEdxvsPCutM02AndM20CutNSigma->SetXTitle("#it{p} (GeV/#it{c})");
   fhdEdxvsPCutM02AndM20CutNSigma->SetYTitle("<d#it{E}/d#it{x}>");
   outputContainer->Add(fhdEdxvsPCutM02AndM20CutNSigma);
-
   
    // TPC nSigma histograms
   
   fhNSigmavsE  = new TH2F 
-  ("hNSigmavsE","matched track <d#it{E}/d#it{x}> vs cluster #it{E} ", 
+  ("hNSigma_clusE","matched track <d#it{E}/d#it{x}> vs cluster #it{E} ", 
    nptbins,ptmin,ptmax, nNSigmabins, nSigmamin, nSigmamax);
   fhNSigmavsE->SetXTitle("#it{E} (GeV)");
   fhNSigmavsE->SetYTitle("n#sigma");
   outputContainer->Add(fhNSigmavsE);  
   
   fhNSigmavsP  = new TH2F 
-  ("hNSigmavsP","matched track n#sigma vs track #it{p} ", 
+  ("hNSigma_TraP","matched track n#sigma vs track #it{p} ", 
    nptbins,ptmin,ptmax, nNSigmabins, nSigmamin, nSigmamax); 
   fhNSigmavsP->SetXTitle("#it{p} (GeV/#it{c})");
   fhNSigmavsP->SetYTitle("n#sigma");
   outputContainer->Add(fhNSigmavsP);  
   
   fhNSigmavsECutM02  = new TH2F 
-  ("hNSigmavsECutM02",
+  ("hNSigma_clusE_CutM02",
    "matched track n#sigma vs cluster #it{E}, #sigma_{long}^{2} cut", 
    nptbins,ptmin,ptmax, nNSigmabins, nSigmamin, nSigmamax);
   fhNSigmavsECutM02->SetXTitle("#it{E} (GeV)");
@@ -806,7 +824,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhNSigmavsECutM02);
   
   fhNSigmavsPCutM02  = new TH2F 
-  ("hNSigmavsPCutM02",
+  ("hNSigma_TraP_CutM02",
    "matched track n#sigma vs track #it{p}, #sigma_{long}^{2} cut", 
    nptbins,ptmin,ptmax, nNSigmabins, nSigmamin, nSigmamax);
   fhNSigmavsPCutM02->SetXTitle("#it{p} (GeV/#it{c})");
@@ -814,7 +832,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhNSigmavsPCutM02);
   
   fhNSigmavsECutM02AndM20  = new TH2F 
-  ("hNSigmavsECutM02AndM20",
+  ("hNSigma_clusE_CutM02AndM20",
    "matched track n#sigma vs cluster #it{E}, #sigma_{long}^{2} cut", 
    nptbins,ptmin,ptmax, nNSigmabins, nSigmamin, nSigmamax);
   fhNSigmavsECutM02AndM20->SetXTitle("#it{E} (GeV)");
@@ -822,7 +840,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhNSigmavsECutM02AndM20);
   
   fhNSigmavsPCutM02AndM20  = new TH2F 
-  ("hNSigmavsPCutM02AndM20",
+  ("hNSigma_TraP_CutM02AndM20",
    "matched track n#sigma vs track #it{p}, #sigma_{long}^{2} cut", 
    nptbins,ptmin,ptmax, nNSigmabins, nSigmamin, nSigmamax);
   fhNSigmavsPCutM02AndM20->SetXTitle("#it{p} (GeV/#it{c})");
@@ -830,35 +848,35 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhNSigmavsPCutM02AndM20);
   
   fhNSigmavsECutEOverP  = new TH2F 
-  ("hNSigmavsECutEOverP","matched track n#sigma vs cluster #it{E}, cut on #it{E/p}", 
+  ("hNSigma_clusE_CutEOverP","matched track n#sigma vs cluster #it{E}, cut on #it{E/p}", 
    nptbins,ptmin,ptmax, nNSigmabins, nSigmamin, nSigmamax);
   fhNSigmavsECutEOverP->SetXTitle("#it{E} (GeV)");
   fhNSigmavsECutEOverP->SetYTitle("n#sigma");
   outputContainer->Add(fhNSigmavsECutEOverP);
   
   fhNSigmavsPCutEOverP  = new TH2F 
-  ("hNSigmavsPCutEOverP","matched track n#sigma vs track #it{p}, cut on #it{E/p}", 
+  ("hNSigma_TraP_CutEOverP","matched track n#sigma vs track #it{p}, cut on #it{E/p}", 
    nptbins,ptmin,ptmax, nNSigmabins, nSigmamin, nSigmamax);
   fhNSigmavsPCutEOverP->SetXTitle("#it{p} (GeV/#it{c})");
   fhNSigmavsPCutEOverP->SetYTitle("n#sigma");
   outputContainer->Add(fhNSigmavsPCutEOverP);
   
   fhNSigmavsECutdEdx  = new TH2F 
-  ("hNSigmavsECutdEdx","matched track n#sigma vs cluster #it{E}, <d#it{E}/d#it{x}> cut", 
+  ("hNSigma_clusE_CutdEdx","matched track n#sigma vs cluster #it{E}, <d#it{E}/d#it{x}> cut", 
    nptbins,ptmin,ptmax, nNSigmabins, nSigmamin, nSigmamax);
   fhNSigmavsECutdEdx->SetXTitle("#it{E} (GeV)");
   fhNSigmavsECutdEdx->SetYTitle("n#sigma");
   outputContainer->Add(fhNSigmavsECutdEdx);  
   
   fhNSigmavsPCutdEdx  = new TH2F 
-  ("hNSigmavsPCutdEdx","matched track n#sigma vs track #it{p}, <d#it{E}/d#it{x}> cut", 
+  ("hNSigma_TraP_CutdEdx","matched track n#sigma vs track #it{p}, <d#it{E}/d#it{x}> cut", 
    nptbins,ptmin,ptmax, nNSigmabins, nSigmamin, nSigmamax); 
   fhNSigmavsPCutdEdx->SetXTitle("#it{p} (GeV/#it{c})");
   fhNSigmavsPCutdEdx->SetYTitle("n#sigma");
   outputContainer->Add(fhNSigmavsPCutdEdx);  
   
   fhNSigmavsECutM02CutdEdx  = new TH2F 
-  ("hNSigmavsECutM02CutdEdx",
+  ("hNSigma_clusE_CutM02CutdEdx",
    "matched track n#sigma vs cluster #it{E}, #sigma_{long}^{2} cut, <d#it{E}/d#it{x}> cut", 
    nptbins,ptmin,ptmax, nNSigmabins, nSigmamin, nSigmamax);
   fhNSigmavsECutM02CutdEdx->SetXTitle("#it{E} (GeV)");
@@ -866,7 +884,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhNSigmavsECutM02CutdEdx);
   
   fhNSigmavsPCutM02CutdEdx  = new TH2F 
-  ("hNSigmavsPCutM02CutdEdx",
+  ("hNSigma_TraP_CutM02CutdEdx",
    "matched track n#sigma vs track #it{p}, #sigma_{long}^{2} cut, <d#it{E}/d#it{x}> cut", 
    nptbins,ptmin,ptmax, nNSigmabins, nSigmamin, nSigmamax);
   fhNSigmavsPCutM02CutdEdx->SetXTitle("#it{p} (GeV/#it{c})");
@@ -874,7 +892,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhNSigmavsPCutM02CutdEdx);
   
   fhNSigmavsECutM02AndM20CutdEdx  = new TH2F 
-  ("hNSigmavsECutM02AndM20CutdEdx",
+  ("hNSigma_clusE_CutM02AndM20CutdEdx",
    "matched track n#sigma vs cluster #it{E}, #sigma_{long}^{2} cut, <d#it{E}/d#it{x}> cut", 
    nptbins,ptmin,ptmax, nNSigmabins, nSigmamin, nSigmamax);
   fhNSigmavsECutM02AndM20CutdEdx->SetXTitle("#it{E} (GeV)");
@@ -882,7 +900,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   outputContainer->Add(fhNSigmavsECutM02AndM20CutdEdx);
   
   fhNSigmavsPCutM02AndM20CutdEdx  = new TH2F 
-  ("hNSigmavsPCutM02AndM20CutdEdx",
+  ("hNSigma_TraP_CutM02AndM20CutdEdx",
    "matched track n#sigma vs track #it{p}, #sigma_{long}^{2} cut, <d#it{E}/d#it{x}> cut", 
    nptbins,ptmin,ptmax, nNSigmabins, nSigmamin, nSigmamax);
   fhNSigmavsPCutM02AndM20CutdEdx->SetXTitle("#it{p} (GeV/#it{c})");
@@ -895,7 +913,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
     for(Int_t i = 0; i < fNOriginHistograms; i++)
     {
       fhMCdEdxvsE[i]  = new TH2F
-      (Form("hdEdxvsE_MC%s",pname[i].Data()),
+      (Form("hdEdx_clusE__MC%s",pname[i].Data()),
        Form("matched track <d#it{E}/d#it{x}> vs cluster #it{E} from %s",ptype[i].Data()),
        nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
       fhMCdEdxvsE[i]->SetXTitle("#it{E} (GeV)");
@@ -903,7 +921,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
       outputContainer->Add(fhMCdEdxvsE[i]) ;
       
       fhMCdEdxvsP[i]  = new TH2F
-      (Form("hdEdxvsP_MC%s",pname[i].Data()),
+      (Form("hdEdx_TraP__MC%s",pname[i].Data()),
        Form("matched track <d#it{E}/d#it{x}> vs track P from %s",ptype[i].Data()),
        nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
       fhMCdEdxvsP[i]->SetXTitle("#it{E} (GeV)");
@@ -911,7 +929,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
       outputContainer->Add(fhMCdEdxvsP[i]) ;
  
       fhMCNSigmavsE[i]  = new TH2F
-      (Form("hNSigmavsE_MC%s",pname[i].Data()),
+      (Form("hNSigma_clusE__MC%s",pname[i].Data()),
        Form("matched track n#sigma vs cluster #it{E} from %s",ptype[i].Data()),
        nptbins,ptmin,ptmax, nNSigmabins, nSigmamin, nSigmamax);
       fhMCNSigmavsE[i]->SetXTitle("#it{E} (GeV)");
@@ -919,7 +937,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
       outputContainer->Add(fhMCNSigmavsE[i]) ;
       
       fhMCNSigmavsP[i]  = new TH2F
-      (Form("hNSigmavsP_MC%s",pname[i].Data()),
+      (Form("hNSigma_TraP__MC%s",pname[i].Data()),
        Form("matched track n#sigma vs track P from %s",ptype[i].Data()),
        nptbins,ptmin,ptmax, nNSigmabins, nSigmamin, nSigmamax);
       fhMCNSigmavsP[i]->SetXTitle("#it{E} (GeV)");
@@ -927,7 +945,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
       outputContainer->Add(fhMCNSigmavsP[i]) ;
       
       fhMCEOverPvsE[i]  = new TH2F
-      (Form("hEOverPvsE_MC%s",pname[i].Data()),
+      (Form("hEOverP_clusE__MC%s",pname[i].Data()),
        Form("matched track #it{E/p} vs cluster #it{E} from %s",ptype[i].Data()),
        nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
       fhMCEOverPvsE[i]->SetXTitle("#it{E} (GeV)");
@@ -935,7 +953,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
       outputContainer->Add(fhMCEOverPvsE[i]) ;
       
       fhMCEOverPvsP[i]  = new TH2F
-      (Form("hEOverPvsP_MC%s",pname[i].Data()),
+      (Form("hEOverP_TraP__MC%s",pname[i].Data()),
        Form("matched track #it{E/p} vs track P from %s",ptype[i].Data()),
        nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
       fhMCEOverPvsP[i]->SetXTitle("#it{E} (GeV)");
@@ -945,7 +963,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
       for(Int_t j = 0; j < 2; j++)
       {
         fhMCEOverPvsEAfterCuts[i][j]  = new TH2F
-        (Form("hEOverPvsE_%s_MC%s",pidParticle[j].Data(), pname[i].Data()),
+        (Form("hEOverP_clusE__%s_MC%s",pidParticle[j].Data(), pname[i].Data()),
          Form("matched track #it{E/p} vs cluster #it{E}, id %s from MC %s",pidParticle[j].Data(),ptype[i].Data()),
          nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
         fhMCEOverPvsEAfterCuts[i][j]->SetXTitle("#it{E} (GeV)");
@@ -953,7 +971,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
         outputContainer->Add(fhMCEOverPvsEAfterCuts[i][j]) ;
         
         fhMCEOverPvsPAfterCuts[i][j]  = new TH2F
-        (Form("hEOverPvsP_%s_MC%s",pidParticle[j].Data(),pname[i].Data()),
+        (Form("hEOverP_TraP__%s_MC%s",pidParticle[j].Data(),pname[i].Data()),
          Form("matched track #it{E/p} vs track P, id %s, from MC %s",pidParticle[j].Data(),ptype[i].Data()),
          nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
         fhMCEOverPvsPAfterCuts[i][j]->SetXTitle("#it{E} (GeV)");
@@ -965,6 +983,61 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   } // Is MC
   
   
+  // Matching residuals
+  TString sCharge[] = {"Positive","Negative"};
+  for(Int_t indexPID = 0; indexPID < 3; indexPID++)
+  {
+    for(Int_t ich = 0; ich < 2; ich++)
+    { 
+      fhDEtavsE[indexPID][ich]  = new TH2F
+      (Form("hDEta_clusE_%s_%s",sCharge[ich].Data(),pidParticle[indexPID].Data()),
+       Form("#Delta #eta of cluster - %s track vs #it{E}_{cluster}, ID: %s",
+            sCharge[ich].Data(),pidParticle[indexPID].Data()),
+       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
+      fhDEtavsE[indexPID][ich]->SetYTitle("#Delta #eta");
+      fhDEtavsE[indexPID][ich]->SetXTitle("#it{E}_{cluster} (GeV)");
+      outputContainer->Add(fhDEtavsE[indexPID][ich]) ;
+
+      fhDPhivsE[indexPID][ich]  = new TH2F
+      (Form("hDPhi_clusE_%s_%s",sCharge[ich].Data(),pidParticle[indexPID].Data()),
+       Form("#Delta #varphi of cluster - %s track vs #it{E}_{cluster}, ID: %s",
+            sCharge[ich].Data(),pidParticle[indexPID].Data()),
+       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
+      fhDPhivsE[indexPID][ich]->SetYTitle("#Delta #varphi (rad)");
+      fhDPhivsE[indexPID][ich]->SetXTitle("#it{E}_{cluster} (GeV)");
+      outputContainer->Add(fhDPhivsE[indexPID][ich]) ;
+
+      fhDEtavsP[indexPID][ich]  = new TH2F
+      (Form("hDEta_clusE_%s_%s",sCharge[ich].Data(),pidParticle[indexPID].Data()),
+       Form("#Delta #eta of cluster - %s track vs #it{p}_{track}, ID: %s",
+            sCharge[ich].Data(),pidParticle[indexPID].Data()),
+       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
+      fhDEtavsP[indexPID][ich]->SetYTitle("#Delta #eta");
+      fhDEtavsP[indexPID][ich]->SetXTitle("#it{p}_{track} (GeV/#it{c})");
+      outputContainer->Add(fhDEtavsP[indexPID][ich]) ;
+      
+      fhDPhivsP[indexPID][ich]  = new TH2F
+      (Form("hDPhi_clusE_%s_%s",sCharge[ich].Data(),pidParticle[indexPID].Data()),
+       Form("#Delta #varphi of cluster - %s track vs #it{p}_{track}, ID: %s",
+            sCharge[ich].Data(),pidParticle[indexPID].Data()),
+       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
+      fhDPhivsP[indexPID][ich]->SetYTitle("#Delta #varphi (rad)");
+      fhDPhivsP[indexPID][ich]->SetXTitle("#it{p}_{track} (GeV/#it{c})");
+      outputContainer->Add(fhDPhivsP[indexPID][ich]) ;
+      
+      fhDEtaDPhi[indexPID][ich]  = new TH2F
+      (Form("hDEtaDPhi_%s_%s",sCharge[ich].Data(),pidParticle[indexPID].Data()),
+       Form("#Delta #eta vs #Delta #varphi of cluster - %s track, ID: %s",
+            sCharge[ich].Data(),pidParticle[indexPID].Data()),
+       nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax);
+      fhDEtaDPhi[indexPID][ich]->SetYTitle("#Delta #varphi (rad)");
+      fhDEtaDPhi[indexPID][ich]->SetXTitle("#Delta #eta");
+      outputContainer->Add(fhDEtaDPhi[indexPID][ich]) ;
+    }
+  }
+  
+      
+      
   if ( fFillWeightHistograms )
   {
     fhECellClusterRatio  = new TH2F ("hECellClusterRatio"," cell energy / cluster energy vs cluster energy, for selected electrons",
@@ -1579,8 +1652,8 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     AliDebug(1,Form("Cluster E %2.2f, Track P %2.2f, E/P %2.2f, dEdx %2.2f, n sigma %2.2f",
                     cluE,traP,eOverp, dEdx,nSigma));
     
-    //printf("Cluster E %2.2f, Track P %2.2f, E/P %2.2f, dEdx %2.2f, n sigma %2.2f\n",
-    //       cluE,traP,eOverp, dEdx,nSigma);
+    printf("Cluster E %2.2f, Track P %2.2f, E/P %2.2f, dEdx %2.2f, n sigma %2.2f\n",
+           cluE,traP,eOverp, dEdx,nSigma);
     
     //
     // Plot different track PID distributions without and with different cut combinations
@@ -1671,37 +1744,79 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
       } // shower shape cut
     }// n sigma
     
+    //--------------------------------------------------------------------------
     // Select as hadron or electron or none
-    //
+    //--------------------------------------------------------------------------
     Int_t pid      = -1;
-    Int_t pidIndex = -1;// Electron
+    Int_t pidIndex = -1;
 
+    //
     // Electron?
+    //
     if ( dEdx   < fdEdxMax   && dEdx   > fdEdxMin   &&
          eOverp < fEOverPMax && eOverp > fEOverPMin && 
          nSigma < fNSigmaMax && nSigma > fNSigmaMin &&
          m02    < fM02Max    && m02    > fM02Min    &&
          m20    < fM20Max    && m20    > fM20Min        )
     {
-      pid  = AliCaloPID::kElectron;
+      pid = AliCaloPID::kElectron;
       pidIndex = 0;
-    } // E/p
-    
-
+    } 
+  
+    //
     // Hadron?
+    //
     else if ( dEdx   < fdEdxMaxHad   && dEdx   > fdEdxMinHad    && 
               eOverp < fEOverPMaxHad && eOverp > fEOverPMinHad  &&
               nSigma < fNSigmaMaxHad && nSigma > fNSigmaMinHad    )
     {
-        pid  = AliCaloPID::kChargedHadron;
+        pid = AliCaloPID::kChargedHadron;
         pidIndex = 1;
     }
     
+    //--------------------------------------------------------------------------
+    // Histograms with track matching residuals, with and without PID selection
+    //--------------------------------------------------------------------------
+    
+    Float_t dEta = calo->GetTrackDz();
+    Float_t dPhi = calo->GetTrackDx();
+    Bool_t positive = kFALSE;
+    if(track) positive = (track->Charge()>0);
+    
+    AliDebug(1,Form("\tt charge %d, dEta %2.2f, dPhi %2.2f",
+                    positive,dEta,dPhi));
+    
+    printf("\t charge %d, dEta %2.2f, dPhi %2.2f\n",positive,dEta,dPhi);
+    
+    // Any accepted cluster
+    fhDEtavsE[2][positive]->Fill(cluE, dEta, GetEventWeight());
+    fhDPhivsE[2][positive]->Fill(cluE, dPhi, GetEventWeight());
+    fhDEtavsP[2][positive]->Fill(traP, dEta, GetEventWeight());
+    fhDPhivsP[2][positive]->Fill(traP, dPhi, GetEventWeight());
+    
+    if ( cluE > 1 && track->P() > 1 ) 
+      fhDEtaDPhi[2][positive]->Fill(dEta,dPhi, GetEventWeight());
+    
+    // Identified clusters
+    if ( pidIndex != -1 )
+    {
+      fhDEtavsE[pidIndex][positive]->Fill(cluE, dEta, GetEventWeight());
+      fhDPhivsE[pidIndex][positive]->Fill(cluE, dPhi, GetEventWeight());
+      fhDEtavsP[pidIndex][positive]->Fill(traP, dEta, GetEventWeight());
+      fhDPhivsP[pidIndex][positive]->Fill(traP, dPhi, GetEventWeight());
+      
+      if ( cluE > 1 && track->P() > 1 ) 
+        fhDEtaDPhi[pidIndex][positive]->Fill(dEta,dPhi, GetEventWeight());
+    }
+    
+    //--------------------------------------------------------------------------
+    // From no on select either identified electron or hadron clusters
+    //--------------------------------------------------------------------------
     if ( pidIndex < 0 )  continue;
     
-    //--------------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // Play with the MC stack if available
-    //--------------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     
     // Check origin of the candidates
     Int_t tag = -1 ;
@@ -2104,9 +2219,7 @@ void AliAnaElectron::Print(const Option_t * opt) const
   printf("Hadron cuts:\n");
   printf(" \t %2.2f < dEdx < %2.2f  \n",fdEdxMinHad,fdEdxMaxHad) ;
   printf(" \t %2.2f <  E/P < %2.2f  \n",fEOverPMinHad,fEOverPMaxHad) ;
-  printf(" \t %2.2f < nSig < %2.2f  \n",fNSigmaMinHad,fNSigmaMaxHad) ;
-  
-  printf("    \n") ;
+  printf(" \t %2.2f < nSig < %2.2f  \n",fNSigmaMinHad,fNSigmaMaxHad) ;  
 } 
 
 //______________________________________________________
