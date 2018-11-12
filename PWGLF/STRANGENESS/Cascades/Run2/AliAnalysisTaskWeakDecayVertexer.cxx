@@ -1067,7 +1067,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
             if(fkUseOptimalTrackParamsBachelor) {
                 //Look for a better bachelor description, please
                 //reroute to pointers obtained with on-the-fly finding
-                map<pair<int,int>, int>::iterator iter = fOTFMap.find(make_pair(bidx,v->GetNindex()));
+                map<pair<int,int>, int>::iterator iter = fOTFMap.find(make_pair(v->GetNindex(),bidx));
                 if(iter != fOTFMap.end())
                 {
                     Int_t lEquivalentOTFV0 = (*iter).second; // or iter->second;
