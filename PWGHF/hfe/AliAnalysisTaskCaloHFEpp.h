@@ -67,6 +67,11 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		void                    SetMassMin(Double_t MassMin) {massMin = MassMin;};
 		void                    SetNref(Double_t nref) {Nref = nref;};
 
+		void      SetWeightNtrkl(TH1D* hWeight){
+						if(fweightNtrkl) delete fweightNtrkl;
+						fweightNtrkl=new TH1D(*hWeight);
+		}
+
 		void 			SetMultiProfileLHC16i(TProfile * hprof){
 						if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
 						fMultEstimatorAvg[0]=new TProfile(*hprof);
@@ -233,6 +238,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		AliAnalysisTaskCaloHFEpp& operator=(const AliAnalysisTaskCaloHFEpp&); // not implemented
 		Int_t fetarange;
 		TProfile*		fMultEstimatorAvg[6];
+		TH1D*       fweightNtrkl;
 
 
 		ClassDef(AliAnalysisTaskCaloHFEpp, 1);

@@ -191,7 +191,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fHist_eff_match(0),
 				fHist_eff_TPC(0),
 				fHist_eff_M20(0),
-				fHist_eff_Iso(0)
+				fHist_eff_Iso(0),
+				fweightNtrkl(0)
 
 {
 				// default constructor, don't allocate memory here!
@@ -333,7 +334,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fHist_eff_match(0),
 				fHist_eff_TPC(0),
 				fHist_eff_M20(0),
-				fHist_eff_Iso(0)
+				fHist_eff_Iso(0),
+				fweightNtrkl(0)
 {
 				// constructor
 				DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -355,6 +357,7 @@ AliAnalysisTaskCaloHFEpp::~AliAnalysisTaskCaloHFEpp()
 				for(Int_t i=0; i<6; i++) {
 								if (fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i];
 				}
+				if(fweightNtrkl) delete fweightNtrkl;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
@@ -456,7 +459,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fEta010->SetParameters(1.82736e+00,-8.08208e+01,2.32670e+04,4.66500e+00,1.75496e+00); 
 
 				fCorrZvtx = new TF1("fCorrZvtx","pol4");
-				fCorrZvtx->SetParameters(1.03336,0.00458321,-0.00161536,1.34027e-05,-9.30713e-06);
+				fCorrZvtx->SetParameters(0.989494,-0.000148672,0.00145737,4.02038e-05,-2.07891e-05);
 
 				fCorrNtrkl = new TF1("fCorrNtrkl","pol8");
 				fCorrNtrkl->SetParameters(1.32267,-0.186463,0.0300275,-0.00205886,7.30481e-05,-1.45858e-06,1.65515e-08,-9.94577e-11,2.45483e-13);
@@ -811,7 +814,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 				if(fMCarray){
 								WeightZvtx = fCorrZvtx->Eval(Zvertex);
-								WeightNtrkl = fCorrNtrkl->Eval(correctednAcc);
+								WeightNtrkl = fweightNtrkl->GetBinContent(correctednAcc);
 								fzvtx_Corr->Fill(Zvertex,WeightZvtx);
 								fNtrkl_Corr->Fill(correctednAcc,WeightNtrkl);
 								fNchNtr->Fill(correctednAcc,Nch,WeightNtrkl);
