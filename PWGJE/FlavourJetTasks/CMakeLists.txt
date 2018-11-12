@@ -63,6 +63,7 @@ if(FASTJET_FOUND)
            AliAnalysisTaskDmesonJets.cxx
            AliAnalysisTaskDmesonJetsSub.cxx
            AliAnalysisTaskDmesonJetsDetectorResponse.cxx
+           AliAnalysisTaskHFSubstructure.cxx
            AliDJetTTreeReader.cxx
            AliDJetTHnReader.cxx
            )
