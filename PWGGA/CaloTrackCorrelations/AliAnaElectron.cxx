@@ -1464,7 +1464,7 @@ void AliAnaElectron::InitParameters()
   fEOverPMax   = 1.2; // for LHC11a and LHC11c pass1
   
   fNSigmaMax   = 3;
-  fNSigmaMax   =-1;
+  fNSigmaMin   =-1;
   
   fNSigmaMaxHad=-4;
   fNSigmaMinHad=-10;
@@ -2086,7 +2086,7 @@ void AliAnaElectron::Print(const Option_t * opt) const
   //AliAnaCaloTrackCorrBaseClass::Print(" ");
 
   printf("Calorimeter = %s\n", GetCalorimeterString().Data()) ;
-  printf("Select particle type (0-both): %d",fAODParticle);
+  printf("Select particle type (0-both): %d\n",fAODParticle);
   
   printf("Basic cuts:");
   printf("\t Dist. to bad channel > %2.1f \n",fMinDist);
@@ -2097,14 +2097,14 @@ void AliAnaElectron::Print(const Option_t * opt) const
   printf("Electron cuts:\n");
   printf(" \t %2.2f < dEdx < %2.2f  \n",fdEdxMin,fdEdxMax) ;
   printf(" \t %2.2f <  E/P < %2.2f  \n",fEOverPMin,fEOverPMax) ;
-  printf(" \t %2.2f <  nSig< %2.2f  \n",fNSigmaMin,fNSigmaMax) ;
+  printf(" \t %2.2f < nSig < %2.2f  \n",fNSigmaMin,fNSigmaMax) ;
   printf(" \t %2.2f <  M02 < %2.2f  \n",fM02Min,fM02Max) ;
   printf(" \t %2.2f <  M20 < %2.2f  \n",fM20Min,fM20Max) ;
   
   printf("Hadron cuts:\n");
   printf(" \t %2.2f < dEdx < %2.2f  \n",fdEdxMinHad,fdEdxMaxHad) ;
   printf(" \t %2.2f <  E/P < %2.2f  \n",fEOverPMinHad,fEOverPMaxHad) ;
-  printf(" \t %2.2f <  nSig< %2.2f  \n",fNSigmaMinHad,fNSigmaMaxHad) ;
+  printf(" \t %2.2f < nSig < %2.2f  \n",fNSigmaMinHad,fNSigmaMaxHad) ;
   
   printf("    \n") ;
 } 
