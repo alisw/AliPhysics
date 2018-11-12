@@ -60,8 +60,6 @@ class AliRhoParameter;
 #include "AliAnalysisTaskEmcal.h"
 #include "AliJetContainer.h"
 
-const Int_t nVar = 8;
-const Int_t nVar_Splittings = 8;
 
 class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
 {
@@ -112,6 +110,11 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
    kDecayD0toKpi        = BIT(1),
    kDecayDStartoKpipi   = BIT(2)
  };
+
+ enum TreeSize {
+   nVar = 10,
+   nVar_Splittings =8
+  };
 
  //enum ECandidateType_t  { kD0toKpi, kDstartoKpipi, kD0toKpiLikeSign };
  enum ECandidateType_t  {kD0toKpi};
@@ -165,6 +168,9 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  void SetAcceptedDecay(UInt_t AcceptedDecay)                      {fAcceptedDecay = AcceptedDecay;}
  void SetRejectISR(Bool_t RejectISR)                              {fRejectISR = RejectISR;}
  Bool_t GetRejectISR()                                            {return fRejectISR;}
+ void SetPromptReject(Bool_t PromptReject)                        {fPromptReject = PromptReject;}
+ Bool_t GetPromptRejectR()                                        {return fPromptReject;}
+ 
 
 
  
@@ -175,7 +181,8 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  Bool_t                              FillHistograms()      ;
  Bool_t                              fIncludeInclusive     ;
  Bool_t                              fIsBDecay             ;
- Bool_t                              fRejectISR            ;            
+ Bool_t                              fRejectISR            ;
+ Bool_t                              fPromptReject         ;     
  
  TString                            fBranchName            ; 
  TString                            fCutsFileName          ; 
