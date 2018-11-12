@@ -151,7 +151,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     fTrackCuts2 -> SetAcceptKinkDaughters(kFALSE);
     fTrackCuts2 -> SetMinNClustersTPC(50);
     fTrackCuts2 -> SetRequireTPCRefit(kTRUE);
-    fTrackCuts2 -> SetMaxChi2PerClusterTPC(4); //From Enrico
+    fTrackCuts2 -> SetMaxChi2PerClusterTPC(4);
     //fTrackCuts2 -> SetEtaRange(-0.8,0.8);
     fTrackCuts2 -> SetPtRange(0.15, 1e20);
     // ----------------------------------------------------------------------
@@ -159,9 +159,10 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     fHistos = new THistManager("Xi1530hists");
     
     auto binType = AxisStr("Type",{"DATA","LS","Mixing","MCReco","MCTrue"});
-    if (IsAA) binCent = AxisFix("Cent",10,0,100);
-    //else binCent = AxisFix("Cent",300,0,300);
-    else binCent = AxisVar("Cent",{0,1,5,10,15,20,30,40,50,70,100}); // 0 ~ -1, overflow, 0 ~ +1, underflow
+    if (IsAA && !IsHighMult) binCent = AxisFix("Cent",10,0,100); // for AA study
+    else if (!IsHighMult) binCent = AxisVar("Cent",{0,1,5,10,15,20,30,40,50,70,100}); // for kINT7 study
+    else binCent = AxisVar("Cent",{0,0.001,0.01,0.1,1,2}); // for HM study, 1-2 bin for overflow.
+    
     auto binPt   = AxisFix("Pt",200,0,20);
     auto binMass = AxisFix("Mass",1000,1.0,2.0);
     binZ = AxisVar("Z",{-10,-5,-3,-1,1,3,5,10});
@@ -178,7 +179,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
         CreateTHnSparse("htriggered_CINT7","",3,{MCType,binCent,binTrklet},"s"); // inv mass distribution of Xi
     }
     
-    std::vector<TString> ent = {"All","CINT7","InCompleteDAQ","No BG","No pile up","Tracklet>1","Good vertex","|Zvtx|<10cm","AliMultSelection", "INELg0True"};
+    std::vector<TString> ent = {"All","Trigger","InCompleteDAQ","No BG","No pile up","Tracklet>1","Good vertex","|Zvtx|<10cm","AliMultSelection", "INELg0True"};
     auto hNofEvt = fHistos->CreateTH1("hEventNumbers","",ent.size(), 0, ent.size());
     for(auto i=0u;i<ent.size();i++) hNofEvt->GetXaxis()->SetBinLabel(i+1,ent.at(i).Data());
     
@@ -278,7 +279,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
         fHistos -> CreateTH1("htriggered_CINT7_reco","",10,0,10,"s");
         fHistos -> CreateTH1("htriggered_CINT7_GoodVtx","",10,0,10,"s");
     }
-    fEMpool.resize(binCent.GetNbins(),std::vector<eventpool> (binZ.GetNbins()));
+    fEMpool.resize(binCent.GetNbins()+1,std::vector<eventpool> (binZ.GetNbins()+1));
     PostData(1, fHistos->GetListOfHistograms());
 }
 
@@ -351,8 +352,6 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
                                                            , AliESDtrackCuts::kTracklets
                                                            , 0.8); // tracklet in eta +_0.8
     fCent = GetMultiplicty(fEvt); // Centrality(AA), Multiplicity(pp)
-    FillTHnSparse("hMult",{fCent});
-    fHistos->FillTH1("hMult_QA",fCent);
     
     // PID response ----------------------------------------------------------
     fPIDResponse = (AliPIDResponse*) inputHandler->GetPIDResponse();
@@ -401,7 +400,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     // Fill Numver of Events -------------------------------------------------
     fHistos -> FillTH1("hEventNumbers","All",1);
     if(IsSelectedTrig)
-        fHistos -> FillTH1("hEventNumbers","CINT7",1);
+        fHistos -> FillTH1("hEventNumbers","Trigger",1);
     if(IsSelectedTrig && !IncompleteDAQ)
         fHistos -> FillTH1("hEventNumbers","InCompleteDAQ",1);
     if(IsSelectedTrig && !IncompleteDAQ && !SPDvsClustersBG)
@@ -447,7 +446,12 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     // -----------------------------------------------------------------------
     
     // Check tracks and casade, Fill histo************************************
-    if (IsPS && IsGoodVertex && IsVtxInZCut && IsMultSelcted){ // In Good Event condition,
+    //if (IsPS && IsGoodVertex && IsVtxInZCut && IsMultSelcted){ // In Good Event condition, // disabled
+    if (    (!IsHighMult && IsINEL0Rec && IsMultSelcted) // In Good Event condition in kINT7 mode,
+        || (IsHighMult && IsINEL0Rec) ){ // IsMultSelcted -> diable in HM mode
+        FillTHnSparse("hMult",{fCent});
+        fHistos->FillTH1("hMult_QA",fCent); //Draw Multiplicity QA plot in only selected event.
+        
         if(IsMC) FillMCinput(fMCStack); // Note that MC input Event is filled at this moment.
         if (this -> GoodTracksSelection()      // If Good track
             && this -> GoodCascadeSelection()) // and Good cascade is in this event,
@@ -895,7 +899,8 @@ Double_t AliAnalysisTaskXi1530::GetMultiplicty(AliVEvent *fEvt){
         if (!(MultSelection->IsEventSelected()))
         {
             AliInfo("This event is not selected: AliMultSelection");
-            fCent = 999;
+            if(!IsHighMult) fCent = 999;
+            else fCent = MultSelection->GetMultiplicityPercentile("V0M");
         }
         else fCent = MultSelection->GetMultiplicityPercentile("V0M");
     }
