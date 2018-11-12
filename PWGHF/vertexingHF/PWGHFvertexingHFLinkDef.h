@@ -111,6 +111,7 @@
 #pragma link C++ class AliHFCutVarFDsubMinimiser+;
 #pragma link C++ class AliHFVnVsMassFitter+;
 #pragma link C++ class AliHFCutOptTreeHandler+;
-
+#pragma link C++ class AliAnalysisTaskSELc2V0bachelorTMVAApp+;
+#pragma link C++ class IClassifierReader+;
 
 #endif
