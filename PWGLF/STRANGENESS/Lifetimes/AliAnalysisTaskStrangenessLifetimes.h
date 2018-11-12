@@ -91,9 +91,9 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   TH1D* fHistEtaPos;                //! Pseudorapidity of the positive prong
   TH1D* fHistEtaNeg;                //! Pseudorapidity of the negative prong
   TH2D* fHistArmenteros;            //! Pseudorapidity of the negative prong
-  TH1D* fHistNsigmaPosHe;
-  TH2D* fHistdEdxVsPt; 
-  TH1D* fHistNhyp;
+  TH1D* fHistNsigmaPosHe;           //!
+  TH2D* fHistdEdxVsPt;              //!
+  TH1D* fHistNhyp;                  //!
   float fMinPtToSave;  // minimum pt
   float fMaxPtToSave;  // maximum pt
   float fMaxTPCpionSigma;
@@ -110,7 +110,7 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   AliAnalysisTaskStrangenessLifetimes& operator=(
       const AliAnalysisTaskStrangenessLifetimes&);  // not implemented
 
-  ClassDef(AliAnalysisTaskStrangenessLifetimes, 1);
+  ClassDef(AliAnalysisTaskStrangenessLifetimes, 2);
 };
 
 #endif
