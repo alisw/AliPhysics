@@ -103,8 +103,7 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   void         SetM02Range(Float_t min, Float_t max)  { fM02Min     = min ; 
                                                         fM02Max     = max ; }
 
-  void         SetMinDistanceToBadChannel(Float_t m1, Float_t m2, Float_t m3) {
-                fMinDist = m1; fMinDist2 = m2; fMinDist3 = m3; }
+  void         SetMinDistanceToBadChannel(Float_t m)  { fMinDist    = m ; }
 
   void         SetTimeCut(Double_t min, Double_t max) { fTimeCutMin = min; 
                                                         fTimeCutMax = max          ; }
@@ -145,13 +144,11 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
  
   // Basic cuts
   Float_t  fMinDist ;                           ///<  Minimal distance to bad channel to accept cluster
-  Float_t  fMinDist2;                           ///<  Cuts on Minimal distance to study acceptance evaluation
-  Float_t  fMinDist3;                           ///<  One more cut on distance used for acceptance-efficiency study
   Double_t fTimeCutMin  ;                       ///<  Remove clusters/cells with time smaller than this value, in ns
   Double_t fTimeCutMax  ;                       ///<  Remove clusters/cells with time larger than this value, in ns
   Int_t    fNCellsCut ;                         ///<  Accept for the analysis clusters with more than fNCellsCut cells
-  Int_t    fNLMCutMin  ;                        ///<  Remove clusters/cells with number of local maxima smaller than this value
-  Int_t    fNLMCutMax  ;                        ///<  Remove clusters/cells with number of local maxima larger than this value
+  Int_t    fNLMCutMin  ;                        ///<  Remove clusters/cells with number of local maxima smaller
+  Int_t    fNLMCutMax  ;                        ///<  Remove clusters/cells with number of local maxima larger
   
   // Activate certain analysis/histograms
   Bool_t   fFillSSHistograms ;                  ///<  Fill shower shape histograms
@@ -325,6 +322,13 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEmbedElectronELambda0MostlyBkg ;     //!<! Lambda0 vs E for embedded electrons with 50%<fraction<10%
   TH2F * fhEmbedElectronELambda0FullBkg ;       //!<! Lambda0 vs E for embedded electrons with less than 10% of the cluster energy
   
+  // Track matching residuals
+  TH2F * fhDEtavsE [3][2];                      //!<! Track-cluster Matching eta residual vs cluster E
+  TH2F * fhDPhivsE [3][2];                      //!<! Track-cluster Matching phi residual vs cluster E
+  TH2F * fhDEtavsP [3][2];                      //!<! Track-cluster Matching eta residual vs track P
+  TH2F * fhDPhivsP [3][2];                      //!<! Track-cluster Matching phi residual vs track P
+  TH2F * fhDEtaDPhi[3][2];                      //!<! Track-cluster Matching eta vs phi residual
+  
   /// Copy constructor not implemented.
   AliAnaElectron(              const AliAnaElectron & el) ;
     
@@ -332,7 +336,7 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   AliAnaElectron & operator = (const AliAnaElectron & el) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaElectron,7) ;
+  ClassDef(AliAnaElectron,9) ;
   /// \endcond
 
 } ;

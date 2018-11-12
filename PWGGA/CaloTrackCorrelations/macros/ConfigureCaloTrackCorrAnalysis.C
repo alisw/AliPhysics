@@ -323,7 +323,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
 
 ///
 /// Configure the task doing electron (or charged hadron) cluster selections
-/// Basically the track matching, minor shower shape cut, NLM selection, dEdx, E/p ...
+/// Basically the track matching, minor shower shape cut, NLM selection, dEdx, E/p, TPC nSigma.
 ///
 /// \param col : A string with the colliding system
 /// \param simulation : A bool identifying the data as simulation
@@ -353,15 +353,16 @@ AliAnaElectron* ConfigureElectronAnalysis(TString col,           Bool_t simulati
     ana->SetCalorimeter(calo);
   }
   
+  // What particles to select:
   //ana->FillAODWithElectrons();
   //ana->FillAODWithHadrons();
-  ana->FillAODWithAny();
+  ana->FillAODWithAny(); // Both
   
   if(calorimeter == "PHOS")
   {
     ana->SetNCellCut(2);// At least 2 cells
     ana->SetMinPt(0.3);
-    ana->SetMinDistanceToBadChannel(2, 4, 5);
+    ana->SetMinDistanceToBadChannel(2);
   }
   else 
   {// EMCAL
@@ -369,27 +370,22 @@ AliAnaElectron* ConfigureElectronAnalysis(TString col,           Bool_t simulati
     ana->SetMinPt(0.7); // no effect minium EMCAL cut.
     ana->SetMaxPt(100); 
     //ana->SetTimeCut(400,900);// Time window of [400-900] ns
-    ana->SetMinDistanceToBadChannel(2, 4, 6);
+    ana->SetMinDistanceToBadChannel(2);
   }
   
   // Electron selection cuts with tracks
-  ana->SetM20Range(-10, 0.35);
-  ana->SetEOverP(0.9, 1.2);
+  //ana->SetM02Range(0.05, 0.35);
+  //ana->SetM20Range(-10, 0.3);
+  //ana->SetEOverP(0.9, 1.2);
+  //ana->SetNSigma(-1, 3);
+  //ana->SetNSigmaForHadron(-10, -4);
   
-//  // TO DO, find a more suitable way to set this
 //  if     (kRunNumber < 146861) ana->SetdEdxCut(72, 90);
 //  else if(kRunNumber < 154000) ana->SetdEdxCut(54, 70);
 //  else                         ana->SetdEdxCut(74, 90);
 //  
 //  if(simulation)  ana->SetdEdxCut(80, 100);
-    
-  ana->SwitchOffCaloPID();
-//  
-//  AliCaloPID* caloPID = ana->GetCaloPID();
-//  
-//  caloPID->SetEMCALLambda0CutMax(0.35);
-//  caloPID->SetEMCALLambda0CutMin(0.10);
-  
+      
   ana->SwitchOnFillShowerShapeHistograms();  
   
   ana->SwitchOffFillWeightHistograms()  ;
@@ -404,7 +400,8 @@ AliAnaElectron* ConfigureElectronAnalysis(TString col,           Bool_t simulati
   
   SetAnalysisCommonParameters(ana,histoString,calorimeter,year,col,simulation,printSettings,debug) ; // see method below
     
-  // if(kPrintAnaInfo) ana->Print("");
+  //if(printSettings) 
+  ana->Print("");
   
   return ana ;
 }
