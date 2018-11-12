@@ -19,8 +19,8 @@ AliAnalysisTaskEmcalJetShapeExtra* AddTaskEmcalJetShapeExtra(const char * njetsB
 						     TString     trigClass      = "",
 						     TString     kEmcalTriggers = "",
 						     TString     tag            = "",
-                                             AliAnalysisTaskEmcalJetShapeExtra::JetShapeType jetShapeType,
-                                             AliAnalysisTaskEmcalJetShapeExtra::JetShapeSub jetShapeSub
+							     AliAnalysisTaskEmcalJetShapeExtra::JetShapeType jetShapeType=AliAnalysisTaskEmcalJetShapeExtra::kPythiaDef,
+							     AliAnalysisTaskEmcalJetShapeExtra::JetShapeSub jetShapeSub=AliAnalysisTaskEmcalJetShapeExtra::kNoSub
                                              
 )
 {
