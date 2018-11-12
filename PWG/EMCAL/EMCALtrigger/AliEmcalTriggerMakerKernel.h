@@ -116,6 +116,11 @@ public:
   void SetL0Threshold(Int_t t)                                   { fL0Threshold              = t; }
 
   /**
+   * @brief Switch on median subtraction of the online ADC value
+   */
+  void SetOnlineBackgroundSubtraction(Bool_t doSubtraction) { fDoBackgroundSubtraction = doSubtraction; }
+
+  /**
    * @brief Get L0 amplitude of a given trigger channel (in col-row space)
    * @param[in] col Column of the trigger channel
    * @param[in] row Row of the trigger channel
@@ -440,6 +445,11 @@ protected:
   enum{
     kColsEta = 48
   };
+  enum {
+    kIndRhoEMCAL = 0,
+    kIndRhoDCAL = 1,
+    kNIndRho = 2
+  };
 
   /**
    * @brief Accept trigger patch as Level0 patch.
@@ -505,6 +515,7 @@ protected:
   TF1                                       *fSmearModelSigma;            ///< Smearing parameterization for the width
   Double_t                                  fSmearThreshold;              ///< Smear threshold: Only cell energies above threshold are smeared
   Double_t                                  fScaleShift;                  ///< Scale shift simulation
+  Bool_t                                    fDoBackgroundSubtraction;     ///< Swtich for background subtraction (only online ADC)
 
   const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
   AliEMCALTriggerDataGrid<double>           *fPatchAmplitudes;            //!<! TRU Amplitudes (for L0)
@@ -513,6 +524,7 @@ protected:
   AliEMCALTriggerDataGrid<double>           *fPatchEnergySimpleSmeared;   //!<! Data grid for smeared energy values from cell energies
   AliEMCALTriggerDataGrid<char>             *fLevel0TimeMap;              //!<! Map needed to store the level0 times
   AliEMCALTriggerDataGrid<int>              *fTriggerBitMap;              //!<! Map of trigger bits
+  Double_t                                  fRhoValues[kNIndRho];         //!<! Rho values for background subtraction (only online ADC)
 
   Double_t                                  fADCtoGeV;                    //!<! Conversion factor from ADC to GeV
 
