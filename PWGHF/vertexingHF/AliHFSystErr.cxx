@@ -2016,7 +2016,7 @@ void AliHFSystErr::InitDplustoKpipi2017pp5TeV(){
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
-  fRawYield->SetBinContent(2,0.09);
+  fRawYield->SetBinContent(2,0.04);
   fRawYield->SetBinContent(3,0.02);
   fRawYield->SetBinContent(4,0.02);
   fRawYield->SetBinContent(5,0.02);
