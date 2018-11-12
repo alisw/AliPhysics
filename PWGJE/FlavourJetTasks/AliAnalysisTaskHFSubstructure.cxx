@@ -238,7 +238,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
   
   TFile* Cuts_File = TFile::Open(fCutsFileName); 
   TString cutsname="D0toKpiCuts";
-  cutsname += TString::Format("_%s", fCutsType.Data()); 
+  if (fCutsType!="") cutsname += TString::Format("_%s", fCutsType.Data()); 
   fRDHFCuts = dynamic_cast<AliRDHFCuts*>(Cuts_File->Get(cutsname));
 
   
