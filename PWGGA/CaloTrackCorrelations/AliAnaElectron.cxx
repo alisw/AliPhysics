@@ -304,14 +304,14 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTa
   
   fhLam0E[pidIndex] ->Fill(energy, lambda0, GetEventWeight());
   fhLam1E[pidIndex] ->Fill(energy, lambda1, GetEventWeight());
-  fhDispE[pidIndex] ->Fill(energy, disp   , GetEventWeight());
+   if ( !fFillOnlySimpleSSHisto ) fhDispE[pidIndex] ->Fill(energy, disp   , GetEventWeight());
   
   if ( GetCalorimeter() == kEMCAL &&  GetFirstSMCoveredByTRD() >= 0 &&
        GetModuleNumber(cluster) >= GetFirstSMCoveredByTRD() )
   {
     fhLam0ETRD[pidIndex]->Fill(energy, lambda0, GetEventWeight());
     fhLam1ETRD[pidIndex]->Fill(energy, lambda1, GetEventWeight());
-    fhDispETRD[pidIndex]->Fill(energy, disp   , GetEventWeight());
+     if ( !fFillOnlySimpleSSHisto ) fhDispETRD[pidIndex]->Fill(energy, disp   , GetEventWeight());
   }
   
   if ( !fFillOnlySimpleSSHisto )
@@ -1099,12 +1099,15 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
       fhLam1E[pidIndex]->SetXTitle("#it{E} (GeV)");
       outputContainer->Add(fhLam1E[pidIndex]);  
       
-      fhDispE[pidIndex]  = new TH2F (Form("h%sDispE",pidParticle[pidIndex].Data()),
-                                     Form("%s: dispersion^{2} vs E",pidParticle[pidIndex].Data()), 
-                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-      fhDispE[pidIndex]->SetYTitle("#it{D}^{2}");
-      fhDispE[pidIndex]->SetXTitle("#it{E} (GeV) ");
-      outputContainer->Add(fhDispE[pidIndex]);
+      if ( !fFillOnlySimpleSSHisto )
+      {
+        fhDispE[pidIndex]  = new TH2F (Form("h%sDispE",pidParticle[pidIndex].Data()),
+                                       Form("%s: dispersion^{2} vs E",pidParticle[pidIndex].Data()), 
+                                       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhDispE[pidIndex]->SetYTitle("#it{D}^{2}");
+        fhDispE[pidIndex]->SetXTitle("#it{E} (GeV) ");
+        outputContainer->Add(fhDispE[pidIndex]);
+      }
       
       if ( GetCalorimeter() == kEMCAL &&  GetFirstSMCoveredByTRD() >=0 )
       {
@@ -1122,12 +1125,15 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
         fhLam1ETRD[pidIndex]->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhLam1ETRD[pidIndex]);  
         
-        fhDispETRD[pidIndex]  = new TH2F (Form("h%sDispETRD",pidParticle[pidIndex].Data()),
-                                          Form("%s: dispersion^{2} vs #it{E}, EMCal SM covered by TRD",pidParticle[pidIndex].Data()), 
-                                          nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhDispETRD[pidIndex]->SetYTitle("Dispersion^{2}");
-        fhDispETRD[pidIndex]->SetXTitle("#it{E} (GeV) ");
-        outputContainer->Add(fhDispETRD[pidIndex]);   
+        if ( !fFillOnlySimpleSSHisto )
+        {
+          fhDispETRD[pidIndex]  = new TH2F (Form("h%sDispETRD",pidParticle[pidIndex].Data()),
+                                            Form("%s: dispersion^{2} vs #it{E}, EMCal SM covered by TRD",pidParticle[pidIndex].Data()), 
+                                            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+          fhDispETRD[pidIndex]->SetYTitle("Dispersion^{2}");
+          fhDispETRD[pidIndex]->SetXTitle("#it{E} (GeV) ");
+          outputContainer->Add(fhDispETRD[pidIndex]);  
+        }
       } 
       
       if ( !fFillOnlySimpleSSHisto )
@@ -1493,9 +1499,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
       } // Embedded histograms
     } // Histos with MC
   } // Fill SS MC histograms
-  
-  printf("Histograms created!\n");
-  
+    
   return outputContainer ;
 }
 
@@ -1652,8 +1656,8 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     AliDebug(1,Form("Cluster E %2.2f, Track P %2.2f, E/P %2.2f, dEdx %2.2f, n sigma %2.2f",
                     cluE,traP,eOverp, dEdx,nSigma));
     
-    printf("Cluster E %2.2f, Track P %2.2f, E/P %2.2f, dEdx %2.2f, n sigma %2.2f\n",
-           cluE,traP,eOverp, dEdx,nSigma);
+    //printf("Cluster E %2.2f, Track P %2.2f, E/P %2.2f, dEdx %2.2f, n sigma %2.2f\n",
+    //       cluE,traP,eOverp, dEdx,nSigma);
     
     //
     // Plot different track PID distributions without and with different cut combinations
@@ -1748,18 +1752,27 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     // Select as hadron or electron or none
     //--------------------------------------------------------------------------
     Int_t pid      = -1;
+    Int_t pidNoSS  = -1;
     Int_t pidIndex = -1;
 
     //
     // Electron?
     //
+    
+    if ( dEdx   < fdEdxMax   && dEdx   > fdEdxMin   &&
+         eOverp < fEOverPMax && eOverp > fEOverPMin && 
+         nSigma < fNSigmaMax && nSigma > fNSigmaMin   )
+    {
+      pidNoSS = AliCaloPID::kElectron;
+    }
+    
     if ( dEdx   < fdEdxMax   && dEdx   > fdEdxMin   &&
          eOverp < fEOverPMax && eOverp > fEOverPMin && 
          nSigma < fNSigmaMax && nSigma > fNSigmaMin &&
          m02    < fM02Max    && m02    > fM02Min    &&
          m20    < fM20Max    && m20    > fM20Min        )
     {
-      pid = AliCaloPID::kElectron;
+      pid      = AliCaloPID::kElectron;
       pidIndex = 0;
     } 
   
@@ -1770,7 +1783,8 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
               eOverp < fEOverPMaxHad && eOverp > fEOverPMinHad  &&
               nSigma < fNSigmaMaxHad && nSigma > fNSigmaMinHad    )
     {
-        pid = AliCaloPID::kChargedHadron;
+        pid      = AliCaloPID::kChargedHadron;
+        pidNoSS  = AliCaloPID::kChargedHadron;
         pidIndex = 1;
     }
     
@@ -1786,7 +1800,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     AliDebug(1,Form("\tt charge %d, dEta %2.2f, dPhi %2.2f",
                     positive,dEta,dPhi));
     
-    printf("\t charge %d, dEta %2.2f, dPhi %2.2f\n",positive,dEta,dPhi);
+    //printf("\t charge %d, dEta %2.2f, dPhi %2.2f\n",positive,dEta,dPhi);
     
     // Any accepted cluster
     fhDEtavsE[2][positive]->Fill(cluE, dEta, GetEventWeight());
@@ -1808,11 +1822,6 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
       if ( cluE > 1 && track->P() > 1 ) 
         fhDEtaDPhi[pidIndex][positive]->Fill(dEta,dPhi, GetEventWeight());
     }
-    
-    //--------------------------------------------------------------------------
-    // From no on select either identified electron or hadron clusters
-    //--------------------------------------------------------------------------
-    if ( pidIndex < 0 )  continue;
     
     //--------------------------------------------------------------------------
     // Play with the MC stack if available
@@ -1895,12 +1904,12 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     }// set MC tag and fill Histograms with MC
     
     //---------------------------------
-    //Fill some shower shape histograms
+    // Fill some shower shape histograms
     //---------------------------------
 
-    FillShowerShapeHistograms(calo,tag,pid);
+    FillShowerShapeHistograms(calo,tag,pidNoSS);
   
-    if ( pid == AliCaloPID::kElectron )
+    if ( pidNoSS == AliCaloPID::kElectron )
       WeightHistograms(calo);
     
 // Do not rely for the moment on AliCaloPID method, all electron/hadron 
@@ -1928,6 +1937,12 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 //      AliDebug(1,Form("PDG of identified particle %d",pid));
 //    }
         
+    
+    //--------------------------------------------------------------------------
+    // From no on select either identified electron or hadron clusters
+    //--------------------------------------------------------------------------
+    if ( pidIndex < 0 )  continue;
+    
     AliDebug(1,Form("Selection cuts passed: pT %3.2f, type %d",fMomentum.Pt(),pidIndex));
     
     Float_t maxCellFraction = 0;
