@@ -150,6 +150,13 @@ AliAnalysisTask* AddNuTaskPionPion(TString container,
   mgr->ConnectInput(femtotask, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(femtotask, AliAnalysisTaskFemtoNu::RESULT_STORAGE_OUTPUT_SLOT, out_container);
 
+  // quiet a warning
+  out_container = mgr->CreateContainer(container + "_list",
+                                       TList::Class(),
+                                       AliAnalysisManager::kOutputContainer,
+                                       outputfile);
+  mgr->ConnectOutput(femtotask, 0, out_container);
+
   std::cout << "============== AddNuTaskPionPion : Done ===============\n\n";
   return femtotask;
 }
