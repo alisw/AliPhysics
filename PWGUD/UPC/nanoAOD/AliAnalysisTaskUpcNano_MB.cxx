@@ -80,6 +80,7 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
 	hITSPIDKaon(0),
 	hITSPIDKaonCorr(0),
 	hTPCdEdxCorr(0),
+	hTriggerCounter(0),
 	fSPDfile(0),
   	hBCmod4(0),
   	hSPDeff(0) 
@@ -113,6 +114,7 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
 	hITSPIDKaon(0),
 	hITSPIDKaonCorr(0),
 	hTPCdEdxCorr(0),
+	hTriggerCounter(0),
 	fSPDfile(0),
   	hBCmod4(0),
   	hSPDeff(0) 
@@ -291,6 +293,9 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   hTPCdEdxCorr->GetYaxis()->SetTitle("dE/dx^{TPC} (a.u.)");
   fOutputList->Add(hTPCdEdxCorr);
   
+  hTriggerCounter = new TH2I("hTriggerCounter","Number of analyzed UPC triggers per run",3,1,4,2000,295000,297000);
+  fOutputList->Add(hTriggerCounter);
+  
   fSPDfile = AliDataFile::OpenOADB("PWGUD/UPC/SPDFOEfficiency_run245067.root");
   fSPDfile->Print();
   fSPDfile->Map();
@@ -311,10 +316,20 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 
   AliVEvent *fEvent = InputEvent();
   if(!fEvent) return;
-  TString trigger = fEvent->GetFiredTriggerClasses();
-  if(!isMC && !trigger.Contains("CCUP29-B") && !trigger.Contains("CCUP30-B") && !trigger.Contains("CCUP31-B"))return;
   
   fRunNumber = fEvent->GetRunNumber();
+  TString trigger = fEvent->GetFiredTriggerClasses();
+  
+  if(fRunNumber>=295881){
+  	if(!isMC && !trigger.Contains("CCUP29-B-SPD2-CENTNOTRD") && !trigger.Contains("CCUP30-B-NOPF-CENTNOTRD") && !trigger.Contains("CCUP31-B-SPD2-CENTNOTRD"))return;
+	}
+  else{ 
+  	if(!isMC && !trigger.Contains("CCUP29-B-NOPF-CENTNOTRD") && !trigger.Contains("CCUP30-B-NOPF-CENTNOTRD") && !trigger.Contains("CCUP31-B-NOPF-CENTNOTRD"))return;
+	} 
+  
+  if(trigger.Contains("CCUP29-B"))hTriggerCounter->Fill(1,fRunNumber); 
+  if(trigger.Contains("CCUP30-B"))hTriggerCounter->Fill(2,fRunNumber); 
+  if(trigger.Contains("CCUP31-B"))hTriggerCounter->Fill(3,fRunNumber);
   
   AliVVZERO *fV0data = fEvent->GetVZEROData();
   AliVAD *fADdata = fEvent->GetADData();
@@ -413,11 +428,6 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     else{ 
     	AliAODTrack *trk = dynamic_cast<AliAODTrack*>(fEvent->GetTrack(iTrack));
     	if( !trk ) continue;
-	
-	//if(trk->IsMuonTrack())cout<<"Muon"<<endl;
-	//else{ for(Int_t i = 0; i<10; i++)cout<<trk->TestFilterBit(1<<i)<<" ";
-		//cout<<endl;
-		//}
     
     	if(trk->TestFilterBit(1<<0) && (trk->HasPointOnITSLayer(0) || trk->HasPointOnITSLayer(1)))nGoodTracksLoose++;
     	if(!(trk->TestFilterBit(1<<5)))goodTPCTrack = kFALSE;
@@ -642,6 +652,9 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   	if(qTrack[0]*qTrack[1]<0)fSign = -1;
 	if(qTrack[0]*qTrack[1]>0)fSign = 1;
 	fChannel = 0;
+	if(trigger.Contains("CCUP29-B"))fChannel = 29; 
+	if(trigger.Contains("CCUP30-B"))fChannel = 30; 
+	if(trigger.Contains("CCUP31-B"))fChannel = 31;
 	vRhoCandidate = vPion[0]+vPion[1];
 	FillTree(fTreeRho,vRhoCandidate);
 	 
