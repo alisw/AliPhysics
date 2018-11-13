@@ -58,8 +58,7 @@ AliAodSkimTask *AddTaskAodSkim(const Double_t mine           = -1,
   if (gammabr) {
     task->SetGammaBrName(gammabr);
     task->SetCopyConv(kTRUE);
-    const char *fname="AliAODGammaConversion.root";
-    input->AddFriend(fname); 
+    input->AddFriend((char*)"AliAODGammaConversion.root");
   } else {
     task->SetCopyConv(kFALSE);
   }
