@@ -2173,9 +2173,9 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   Int_t   ndedxbins   = GetHistogramRanges()->GetHistodEdxBins();
   Float_t dedxmax     = GetHistogramRanges()->GetHistodEdxMax();
   Float_t dedxmin     = GetHistogramRanges()->GetHistodEdxMin();
-  Int_t   nPoverEbins = GetHistogramRanges()->GetHistoPOverEBins();
-  Float_t pOverEmax   = GetHistogramRanges()->GetHistoPOverEMax();
-  Float_t pOverEmin   = GetHistogramRanges()->GetHistoPOverEMin();
+  Int_t   nPoverEbins = GetHistogramRanges()->GetHistoEOverPBins();
+  Float_t pOverEmax   = GetHistogramRanges()->GetHistoEOverPMax();
+  Float_t pOverEmin   = GetHistogramRanges()->GetHistoEOverPMin();
   
   Int_t   nratbins = GetHistogramRanges()->GetHistoRatioBins();
   Float_t ratmin   = GetHistogramRanges()->GetHistoRatioMin() ;
