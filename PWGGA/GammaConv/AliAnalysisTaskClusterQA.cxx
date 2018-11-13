@@ -913,13 +913,16 @@ Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidates(AliAODConversionPho
 
   TrueClusterCandidate->SetCaloPhotonMCFlags(fMCEvent, kFALSE);
 
-  Int_t clusterClass    = 0;
-  Bool_t isPrimary      = fEventCuts->IsConversionPrimaryESD( fMCEvent, TrueClusterCandidate->GetCaloPhotonMCLabel(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
-
   // cluster classification:
   // 1    - nice merged cluster (2 gamma | contributions from 2 gamma) from pi0/eta
   // 2    - contribution from only 1 partner (1 gamma, 1 fully coverted gamma) from pi0/eta
   // 3    - contribution from part of 1 partner (1 electron) from pi0/eta
+
+
+  Int_t clusterClass    = 0;
+  Bool_t isPrimary      = fEventCuts->IsConversionPrimaryESD( fMCEvent, TrueClusterCandidate->GetCaloPhotonMCLabel(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+
+
   Long_t motherLab = -1;
   if (TrueClusterCandidate->IsMerged() || TrueClusterCandidate->IsMergedPartConv()){
       clusterClass    = 1;
@@ -993,18 +996,36 @@ Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidates(AliAODConversionPho
       if (motherPDG == 221)
         mcLabelCluster = 32;  // NOTE electron from decayed eta
     }
+
   // leading particle is a photon or the conversion is fully contained and its not from pi0 || eta
   } else if (TrueClusterCandidate->IsLargestComponentPhoton() || TrueClusterCandidate->IsConversionFullyContained()
                || TrueClusterCandidate->IsElectronFromFragPhoton()){
-    if (motherLab == -1)
-      mcLabelCluster = 40; // NOTE  direct photon
-    else
-      mcLabelCluster = 41;
+
+      if(TrueClusterCandidate->IsLargestComponentPhoton()){
+          // cluster is produced by a photon that either has no mother or the mother is neither from a pi^0 nor eta, e.g. inital collision
+
+          if (motherLab == -1)                      mcLabelCluster = 40; // direct photon from initial collision
+          else if ((motherLab >0) && (motherLab<9)) mcLabelCluster = 41; // photon from quark
+          else if (motherLab == 11)                 mcLabelCluster = 42; // photon from electron
+          else if (motherLab == 22)                 mcLabelCluster = 43; // photon from photon (fragmentation?)
+          else{
+              mcLabelCluster = 44; // other (e.g. from meson decays that are not pi0 or eta0)
+              cout << "Single cluster is mainly produced by a photon and mother is " << motherLab << endl;
+          }
+      } else if(TrueClusterCandidate->IsConversionFullyContained()){
+          // cluster is from a fully contained conversion
+                                                    mcLabelCluster = 45;
+      } else if(TrueClusterCandidate->IsElectronFromFragPhoton()){
+                                                    mcLabelCluster = 46; // electron from frac
+      }
+
   // leading particle is an electron and its not from pi0 || eta and no electron from fragmentation photon conversion
   } else if (TrueClusterCandidate->IsLargestComponentElectron() &&  !TrueClusterCandidate->IsElectronFromFragPhoton()){
-    mcLabelCluster = 50; // NOTE cluster from hadron
+    mcLabelCluster = 50; // NOTE single electron
   } else {
-    mcLabelCluster = 60; // NOTE BG cluster
+    // leading particle from hadron
+    mcLabelCluster = 60; // NOTE hadron cluster
+    cout << "Single cluster is mainly produced by hadron with id:" << motherLab << endl;
   }
   
   delete mesoncand;
