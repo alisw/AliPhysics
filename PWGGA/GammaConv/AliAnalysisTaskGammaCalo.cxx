@@ -375,6 +375,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fIsMC(0),
   fDoTHnSparse(kTRUE),
   fSetPlotHistsExtQA(kFALSE),
+  fDoSoftAnalysis(kFALSE),
   fWeightJetJetMC(1),
   fDoInOutTimingCluster(kFALSE),
   fMinTimingCluster(0),
@@ -708,6 +709,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fIsMC(0),
   fDoTHnSparse(kTRUE),
   fSetPlotHistsExtQA(kFALSE),
+  fDoSoftAnalysis(kFALSE),
   fWeightJetJetMC(1),
   fDoInOutTimingCluster(kFALSE),
   fMinTimingCluster(0),
@@ -2856,8 +2858,17 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
     if (triggered == kTRUE) {
       if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetUseSphericity()!=0){
         if(fV0Reader->GetSphericity() != -1 && fV0Reader->GetSphericity() != 0){
-          if(fDoJetAnalysis){
+          if(fDoJetAnalysis && !fDoSoftAnalysis){
             if(fConvJetReader->GetNJets() > 0){
+                fHistoNEvents[iCut]->Fill(eventQuality, fWeightJetJetMC); // Should be 0 here
+                if (fIsMC>1) fHistoNEventsWOWeight[iCut]->Fill(eventQuality); // Should be 0 here
+                fHistoNGoodESDTracks[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
+                fHistoVertexZ[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetZ(), fWeightJetJetMC);
+                fHistoEventSphericity[iCut]->Fill(fV0Reader->GetSphericity(), fWeightJetJetMC);
+                fHistoEventSphericityvsNtracks[iCut]->Fill(fV0Reader->GetSphericity(), fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
+            }
+          }else if(fDoJetAnalysis && fDoSoftAnalysis){
+            if(fConvJetReader->GetNJets() < 1){  
                 fHistoNEvents[iCut]->Fill(eventQuality, fWeightJetJetMC); // Should be 0 here
                 if (fIsMC>1) fHistoNEventsWOWeight[iCut]->Fill(eventQuality); // Should be 0 here
                 fHistoNGoodESDTracks[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);

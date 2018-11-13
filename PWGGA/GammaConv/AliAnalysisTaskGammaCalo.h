@@ -121,6 +121,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
 
     void SetJetAnalysis(Bool_t DoJets)  {fDoJetAnalysis = DoJets;}
+    
+    void SetSoftAnalysis(Bool_t DoSoft)  {fDoSoftAnalysis = DoSoft;}
 
   protected:
     AliV0ReaderV1*        fV0Reader;                                            // basic photon Selection Task
@@ -456,6 +458,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Int_t                 fIsMC;                                                // flag for MC information
     Bool_t                fDoTHnSparse;                                         // flag for using THnSparses for background estimation
     Bool_t                fSetPlotHistsExtQA;                                   // flag for extended QA hists
+    Bool_t                fDoSoftAnalysis;                                      // bool for Sphericity analysis without jets
     Double_t              fWeightJetJetMC;                                      // weight for Jet-Jet MC
     Bool_t                fDoInOutTimingCluster;                                // manual timing cut for cluster to combine cluster within timing cut and without
     Double_t              fMinTimingCluster;                                    // corresponding ranges, min
@@ -476,7 +479,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 51);
+    ClassDef(AliAnalysisTaskGammaCalo, 52);
 };
 
 #endif
