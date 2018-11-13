@@ -73,7 +73,8 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase():
   fEnableNoINTTriggers(false),
   fEnableCentralityTriggers(false),
   fExclusiveMinBias(false),
-  fUseTriggerSelectionContainer(false)
+  fUseTriggerSelectionContainer(false),
+  fSelectCentralityTriggers2018(false)
 {
   SetNeedEmcalGeom(true);
   SetMakeGeneralHistograms(kTRUE);
@@ -102,7 +103,8 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase(const char *nam
   fEnableNoINTTriggers(false),
   fEnableCentralityTriggers(false),
   fExclusiveMinBias(false),
-  fUseTriggerSelectionContainer(false)
+  fUseTriggerSelectionContainer(false),
+  fSelectCentralityTriggers2018(false)
 {
   SetNeedEmcalGeom(true);
   SetMakeGeneralHistograms(kTRUE);
@@ -127,6 +129,10 @@ void AliAnalysisTaskEmcalTriggerBase::UserCreateOutputObjects() {
 
   // Create trigger correlation histogram
   std::vector<std::string> binlabels = {"MB"};
+  if(fEnableCentralityTriggers) {
+    binlabels.emplace_back("CENT");
+    binlabels.emplace_back("SEMICENT");
+  }
   if(fEnableV0Triggers){
     const std::array<const std::string, 5> vzlabels = {{"EMC7", "EG1", "EG2", "EJ1", "EJ2"}};
     for(const auto & vlab : vzlabels) binlabels.emplace_back(vlab);
@@ -237,6 +243,19 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
          emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgn],
          emc8Triggers[AliEmcalTriggerOfflineSelection::kTrgn],
          emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgn];
+  
+  // check the centrality triggers
+  // temp hack to overcome missing support for 2018 by the physics selection 
+  if(fEnableCentralityTriggers) {
+    if(fSelectCentralityTriggers2018) {
+      auto triggers = PWG::EMCAL::Triggerinfo::DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data());
+      for(auto t : triggers) {
+        if(t.Triggercluster() != "CENT") continue;
+        if(t.Triggerclass() == "CV0H7") isCENT = true;
+        else if(t.Triggerclass() == "CMID7") isSemiCENT = true;
+      }
+    }
+  }
 
   if(fExclusiveMinBias){
     AliDebugStream(1) << "Min bias mode\n";
