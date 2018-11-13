@@ -365,8 +365,8 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=295588
   if (run>=244917 && run<=246994) {
     for (Int_t i=0;i<classes.GetEntriesFast();i++){
       AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
-      TObjArray* tokens = TString(cl->GetName()).Tokenize("-");
-      TString cluster = tokens->At(3)->GetName();
+      TObjArray* tokensArray = TString(cl->GetName()).Tokenize("-");
+      TString cluster = tokensArray->At(3)->GetName();
       TString lifetimeClassName = Form("C0VHM-B-NOPF-%s",cluster.Data());
       if (run<245256) lifetimeClassName = Form("C0V0M-B-NOPF-%s",cluster.Data());
       TObject* lifetimeClass = classes.FindObject(lifetimeClassName.Data());
@@ -379,8 +379,8 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=295588
           class_lumi[i]=class_lumi[index]*ds_ratio;
         }
       }
-      tokens->Delete();
-      delete tokens;
+      tokensArray->Delete();
+      delete tokensArray;
     }
   }
 
