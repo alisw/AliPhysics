@@ -147,12 +147,12 @@ public:
   
   // E over p
   
-  Int_t   GetHistoPOverEBins()           const { return fHistoPOverEBins     ; }
-  Float_t GetHistoPOverEMin()            const { return fHistoPOverEMin      ; }
-  Float_t GetHistoPOverEMax()            const { return fHistoPOverEMax      ; }
+  Int_t   GetHistoEOverPBins()           const { return fHistoEOverPBins     ; }
+  Float_t GetHistoEOverPMin()            const { return fHistoEOverPMin      ; }
+  Float_t GetHistoEOverPMax()            const { return fHistoEOverPMax      ; }
 	
-  void    SetHistoPOverERangeAndNBins      (Float_t min, Float_t max, Int_t n) {
-    fHistoPOverEBins     = n ; fHistoPOverEMax     = max ; fHistoPOverEMin     = min ; }
+  void    SetHistoEOverPRangeAndNBins      (Float_t min, Float_t max, Int_t n) {
+    fHistoEOverPBins     = n ; fHistoEOverPMax     = max ; fHistoEOverPMin     = min ; }
 
   Int_t   GetHistoNSigmaBins()           const { return fHistoNSigmaBins     ; }
   Float_t GetHistoNSigmaMin()            const { return fHistoNSigmaMin      ; }
@@ -375,9 +375,9 @@ private:
   Int_t    fHistoFinePtBins;                  ///< fine binning for fhAmpId histogram
   Float_t  fHistoFinePtMax;                   ///< maximum pt value for fhAmpId histogram
   Float_t  fHistoFinePtMin;                   ///< minimum pt value for fhAmpId histogram
-  Int_t    fHistoPOverEBins;                  ///< E/p histogram number of bins.
-  Float_t  fHistoPOverEMax;                   ///< E/p maximum value.
-  Float_t  fHistoPOverEMin;                   ///< E/p minimum value.
+  Int_t    fHistoEOverPBins;                  ///< E/p histogram number of bins.
+  Float_t  fHistoEOverPMax;                   ///< E/p maximum value.
+  Float_t  fHistoEOverPMin;                   ///< E/p minimum value.
   Int_t    fHistoNSigmaBins;                  ///< TPC nSigma histogram number of bins.
   Float_t  fHistoNSigmaMax;                   ///< TPC nSigma maximum value.
   Float_t  fHistoNSigmaMin;                   ///< TPC nSigma minimum value. 

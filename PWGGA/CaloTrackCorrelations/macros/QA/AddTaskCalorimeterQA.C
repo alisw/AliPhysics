@@ -224,7 +224,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   
   emcalQA->GetHistogramRanges()->SetHistoMassRangeAndNBins(0., 0.65, 325) ;
   emcalQA->GetHistogramRanges()->SetHistoAsymmetryRangeAndNBins(0., 1. , 10 );
-  emcalQA->GetHistogramRanges()->SetHistoPOverERangeAndNBins(0,2.,50);
+  emcalQA->GetHistogramRanges()->SetHistoEOverPRangeAndNBins(0,2.,50);
   emcalQA->GetHistogramRanges()->SetHistodEdxRangeAndNBins(0.,200.,100);
   emcalQA->GetHistogramRanges()->SetHistodRRangeAndNBins(0.,0.10,50);
   //emcalQA->GetHistogramRanges()->SetHistoTimeRangeAndNBins( 400,900,250);
