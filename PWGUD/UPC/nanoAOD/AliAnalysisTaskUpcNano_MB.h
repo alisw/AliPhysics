@@ -75,7 +75,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   AliAnalysisTaskUpcNano_MB(const AliAnalysisTaskUpcNano_MB&); //not implemented
   AliAnalysisTaskUpcNano_MB& operator =(const AliAnalysisTaskUpcNano_MB&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcNano_MB, 18); 
+  ClassDef(AliAnalysisTaskUpcNano_MB, 19); 
 };
 
 #endif
