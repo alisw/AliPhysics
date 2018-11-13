@@ -94,8 +94,8 @@ AliEmcalJetTree::AliEmcalJetTree(const char* name) : TNamed(name, name), fJetTre
 
 
 //________________________________________________________________________
-Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Float_t vertexX, Float_t vertexY, Float_t vertexZ, Float_t centrality, Long64_t eventID, Float_t magField,
-  AliParticleContainer* trackCont, Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchedPt, Float_t truePtFraction, Float_t ptHard, Float_t eventWeight, Float_t impactParameter,
+Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t vertexX, Float_t vertexY, Float_t vertexZ, Float_t centrality, Long64_t eventID, Float_t magField,
+  Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchedPt, Float_t truePtFraction, Float_t ptHard, Float_t eventWeight, Float_t impactParameter,
   Float_t* trackPID_ITS, Float_t* trackPID_TPC, Float_t* trackPID_TOF, Float_t* trackPID_TRD, Short_t* trackPID_Reco, Int_t* trackPID_Truth,
   Int_t numTriggerTracks, Float_t* triggerTrackPt, Float_t* triggerTrackDeltaEta, Float_t* triggerTrackDeltaPhi,
   Float_t* trackIP_d0, Float_t* trackIP_z0, Float_t* trackIP_d0cov, Float_t* trackIP_z0cov,
@@ -107,7 +107,7 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Floa
   if(!fInitialized)
     AliFatal("Tree is not initialized.");
 
-  fBuffer_JetPt                                   = jet->Pt() - bgrdDensity*jet->Area();
+  fBuffer_JetPt                                   = jet->Pt() - fJetContainer->GetRhoVal()*jet->Area();
 
   // Check if jet type is contained in extraction list
   if( (fExtractionJetTypes_PM.size() || fExtractionJetTypes_HM.size()) &&
@@ -122,7 +122,7 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Floa
     if(fBuffer_JetPt>=fExtractionPercentagePtBins[i*2] && fBuffer_JetPt<fExtractionPercentagePtBins[i*2+1])
     {
       inPtRange = kTRUE;
-      if(gRandom->Rndm() >= fExtractionPercentages[i])
+      if(fRandomGenerator->Rndm() >= fExtractionPercentages[i])
         return kFALSE;
       break;
     }
@@ -138,7 +138,7 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Floa
   // Set event properties
   if(fSaveEventProperties)
   {
-    fBuffer_Event_BackgroundDensity               = bgrdDensity;
+    fBuffer_Event_BackgroundDensity               = fJetContainer->GetRhoVal();
     fBuffer_Event_Vertex_X                        = vertexX;
     fBuffer_Event_Vertex_Y                        = vertexY;
     fBuffer_Event_Vertex_Z                        = vertexZ;
@@ -155,10 +155,10 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Floa
 
   // Extract basic constituent properties directly from AliEmcalJet object
   fBuffer_NumConstituents = 0;
-  if(trackCont && (fSaveConstituents || fSaveConstituentsIP))
+  if(fTrackContainer && (fSaveConstituents || fSaveConstituentsIP))
     for(Int_t i = 0; i < jet->GetNumberOfTracks(); i++)
     {
-      AliVParticle* particle = static_cast<AliVParticle*>(jet->TrackAt(i, trackCont->GetArray()));
+      AliVParticle* particle = static_cast<AliVParticle*>(jet->TrackAt(i, fTrackContainer->GetArray()));
       if(!particle) continue;
 
       if(fSaveConstituents)
@@ -214,7 +214,7 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Floa
   }
 
   // Set jet shape observables
-  fBuffer_Shape_Mass  = jet->M();
+  fBuffer_Shape_Mass  = jet->M() - fJetContainer->GetRhoMassVal();
 
   // Set Monte Carlo information
   if(fSaveMCInformation)
@@ -251,6 +251,9 @@ void AliEmcalJetTree::InitializeTree()
 
   if(fInitialized)
     AliFatal("Tree is already initialized.");
+
+  if(!fJetContainer)
+    AliFatal("fJetContainer not set in tree");
 
   // ### Prepare the jet tree
   fJetTree = new TTree(Form("JetTree_%s", GetName()), "");
@@ -369,8 +372,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fTruthMinLabel(0),
   fTruthMaxLabel(100000),
   fSaveTrackPDGCode(kTRUE),
-  fEventWeight(0.),
-  fImpactParameter(0.),
+  fRandomSeed(0),
+  fRandomSeedCones(0),
   fEventCut_TriggerTrackMinPt(0),
   fEventCut_TriggerTrackMaxPt(0),
   fEventCut_TriggerTrackMinLabel(-9999999),
@@ -381,10 +384,17 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fTruthJetsArrayName(""),
   fTruthJetsRhoName(""),
   fTruthParticleArrayName("mcparticles"),
+  fRandomGenerator(0),
+  fRandomGeneratorCones(0),
+  fEventWeight(0.),
+  fImpactParameter(0.),
   fTriggerTracks_Pt(),
   fTriggerTracks_Eta(),
   fTriggerTracks_Phi()
 {
+  fRandomGenerator = new TRandom3();
+  fRandomGeneratorCones = new TRandom3();
+
   SetMakeGeneralHistograms(kTRUE);
   fJetTree = new AliEmcalJetTree(GetName());
   fJetTree->SetSaveEventProperties(kTRUE);
@@ -409,8 +419,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fTruthMinLabel(0),
   fTruthMaxLabel(100000),
   fSaveTrackPDGCode(kTRUE),
-  fEventWeight(0.),
-  fImpactParameter(0.),
+  fRandomSeed(0),
+  fRandomSeedCones(0),
   fEventCut_TriggerTrackMinPt(0),
   fEventCut_TriggerTrackMaxPt(0),
   fEventCut_TriggerTrackMinLabel(-9999999),
@@ -421,10 +431,17 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fTruthJetsArrayName(""),
   fTruthJetsRhoName(""),
   fTruthParticleArrayName("mcparticles"),
+  fRandomGenerator(0),
+  fRandomGeneratorCones(0),
+  fEventWeight(0.),
+  fImpactParameter(0.),
   fTriggerTracks_Pt(),
   fTriggerTracks_Eta(),
   fTriggerTracks_Phi()
 {
+  fRandomGenerator = new TRandom3();
+  fRandomGeneratorCones = new TRandom3();
+
   SetMakeGeneralHistograms(kTRUE);
   fJetTree = new AliEmcalJetTree(GetName());
   fJetTree->SetSaveEventProperties(kTRUE);
@@ -453,11 +470,17 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
   if(!fTracksCont)
     AliFatal("Particle input container not found attached to jets!");
 
+  fRandomGenerator->SetSeed(fRandomSeed);
+  fRandomGeneratorCones->SetSeed(fRandomSeedCones);
+
   // Activate saving of trigger tracks if this is demanded
   if(fEventCut_TriggerTrackMinPt || fEventCut_TriggerTrackMaxPt)
     fJetTree->SetSaveTriggerTracks(kTRUE);
 
   // ### Initialize the jet tree (settings must all be given at this stage)
+  fJetTree->SetTrackContainer(fTracksCont);
+  fJetTree->SetJetContainer(fJetsCont);
+  fJetTree->SetRandomGenerator(fRandomGenerator);
   fJetTree->InitializeTree();
   OpenFile(2);
   PostData(2, fJetTree->GetTreePointer());
@@ -545,7 +568,7 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
 
   if(!IsTriggerTrackInEvent())
     return kFALSE;
-  if(gRandom->Rndm() >= fEventPercentage)
+  if(fRandomGenerator->Rndm() >= fEventPercentage)
     return kFALSE;
 
   // ################################### EVENT PROPERTIES
@@ -650,7 +673,7 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     }
 
     // Fill jet to tree
-    Bool_t accepted = fJetTree->AddJetToTree(jet, fJetsCont->GetRhoVal(), vtxX, vtxY, vtxZ, fCent, eventID, InputEvent()->GetMagneticField(), fTracksCont,
+    Bool_t accepted = fJetTree->AddJetToTree(jet, vtxX, vtxY, vtxZ, fCent, eventID, InputEvent()->GetMagneticField(),
               currentJetType_PM,currentJetType_HM,currentJetType_IC,matchedJetPt,truePtFraction,fPtHard,fEventWeight,fImpactParameter,
               vecSigITS, vecSigTPC, vecSigTOF, vecSigTRD, vecRecoPID, vecTruePID,
               fTriggerTracks_Pt, triggerTracks_dEta, triggerTracks_dPhi,
@@ -1038,8 +1061,8 @@ void AliAnalysisTaskJetExtractor::FillJetControlHistograms(AliEmcalJet* jet)
   for(Int_t iCone=0; iCone<kNumRandomConesPerEvent; iCone++)
   {
     // Throw random cone
-    Double_t tmpRandConeEta = fJetsCont->GetJetEtaMin() + gRandom->Rndm()*TMath::Abs(fJetsCont->GetJetEtaMax()-fJetsCont->GetJetEtaMin());
-    Double_t tmpRandConePhi = gRandom->Rndm()*TMath::TwoPi();
+    Double_t tmpRandConeEta = fJetsCont->GetJetEtaMin() + fRandomGeneratorCones->Rndm()*TMath::Abs(fJetsCont->GetJetEtaMax()-fJetsCont->GetJetEtaMin());
+    Double_t tmpRandConePhi = fRandomGeneratorCones->Rndm()*TMath::TwoPi();
     Double_t tmpRandConePt  = 0;
     // Fill pT that is in cone
     fTracksCont->ResetCurrentID();
@@ -1275,13 +1298,9 @@ void AliAnalysisTaskJetExtractor::Terminate(Option_t *)
 
 // ### ADDTASK MACRO
 //________________________________________________________________________
-AliAnalysisTaskJetExtractor* AliAnalysisTaskJetExtractor::AddTaskJetExtractor(const char* configFile, AliRDHFJetsCutsVertex* vertexerCuts, const char* taskNameSuffix)
+AliAnalysisTaskJetExtractor* AliAnalysisTaskJetExtractor::AddTaskJetExtractor(TString trackArray, TString jetArray, TString rhoObject, Double_t jetRadius, TString configFile, AliRDHFJetsCutsVertex* vertexerCuts, const char* taskNameSuffix)
 {  
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  TString     trackArray         = "tracks";
-  TString     jetArray           = "Jet_AKTChargedR040_tracks_pT0150_E_scheme";
-  TString     rhoObject          = "";
-  Double_t    jetRadius          = 0.4;
   Double_t    minJetEta          = 0.5;
   Double_t    minJetPt           = 0.15;
   Double_t    minTrackPt         = 0.15;
@@ -1293,11 +1312,12 @@ AliAnalysisTaskJetExtractor* AliAnalysisTaskJetExtractor::AddTaskJetExtractor(co
   // ###### Load configuration from YAML files
   PWG::Tools::AliYAMLConfiguration fYAMLConfig;
   fYAMLConfig.AddConfiguration("alien:///alice/cern.ch/user/r/rhaake/ConfigFiles/JetExtractor_BaseConfig.yaml", "baseConfig");
-  fYAMLConfig.AddConfiguration(configFile, "customConfig");
+  if(configFile != "")
+    fYAMLConfig.AddConfiguration(configFile.Data(), "customConfig");
   fYAMLConfig.Initialize();
 
-  fYAMLConfig.GetProperty("TrackArray", trackArray);
-  fYAMLConfig.GetProperty("JetArray", jetArray);
+  fYAMLConfig.GetProperty("TrackArray", trackArray, kFALSE);
+  fYAMLConfig.GetProperty("JetArray", jetArray, kFALSE);
   fYAMLConfig.GetProperty("RhoName", rhoObject, kFALSE);
   fYAMLConfig.GetProperty("JetRadius", jetRadius);
   fYAMLConfig.GetProperty("MinJetEta", minJetEta);
