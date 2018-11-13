@@ -60,6 +60,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   TH1D *hITSPIDKaon;		//!
   TH2D *hITSPIDKaonCorr;	//!
   TH2D *hTPCdEdxCorr;		//!
+  TH2I *hTriggerCounter;	//!
   
   Float_t fPt, fY, fM, fDiLeptonM, fDiLeptonPt, fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4], fPIDsigma;
   Int_t fChannel, fSign, fRunNumber, fNFiredMaxiPads, fNTOFtrgPads, fTrackIndex[2];
