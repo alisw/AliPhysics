@@ -2,7 +2,7 @@ AliAnalysisTaskHFSubstructure* AddTaskAliAnalysisTaskHFSubstructure(const char *
                                                                     const char * ntracksDet,
                                                                     const char * ntracksTrue,
 								    const Double_t R,
-								    AliAnalysisTaskHFSubstructure::ECandidateType_t ECandidateType = AliAnalysisTaskHFSubstructure::kD0toKpi
+								    AliAnalysisTaskHFSubstructure::ECandidateType_t ECandidateType = AliAnalysisTaskHFSubstructure::kD0toKpi,
 								    AliAnalysisTaskHFSubstructure::JetShapeType jetShapeType = AliAnalysisTaskHFSubstructure::kData) {
   
   
@@ -27,19 +27,19 @@ AliAnalysisTaskHFSubstructure* AddTaskAliAnalysisTaskHFSubstructure(const char *
   TString tag="";
   if (ECandidateType == AliAnalysisTaskHFSubstructure::kD0toKpi) tag="kD0toKpi";
   if (jetShapeType==AliAnalysisTaskHFSubstructure::kData){
-    wagonName1 = Form("AliAnalysisTaskHFSubstructure_%s_TC%s%s",ntracksData,tag.Data());
-    wagonName2 = Form("AliAnalysisTaskHFSubstructure_%s_TC%s%sTree",ntracksData,tag.Data());
-    wagonName3 = Form("AliAnalysisTaskHFSubstructure_%s_TC%s%sTreeSplittings",ntracksData,tag.Data());
+    wagonName1 = Form("AliAnalysisTaskHFSubstructure_%s_TC%s",ntracksData,tag.Data());
+    wagonName2 = Form("AliAnalysisTaskHFSubstructure_%s_TC%sTree",ntracksData,tag.Data());
+    wagonName3 = Form("AliAnalysisTaskHFSubstructure_%s_TC%sTreeSplittings",ntracksData,tag.Data());
   }
   if (jetShapeType == AliAnalysisTaskHFSubstructure::kDetSignal || jetShapeType == AliAnalysisTaskHFSubstructure::kDetBackground || jetShapeType == AliAnalysisTaskHFSubstructure::kDetReflection || jetShapeType == AliAnalysisTaskHFSubstructure::kTrueDet){
-    wagonName1 = Form("AliAnalysisTaskHFSubstructure_%s_TC%s%s",ntracksDet,tag.Data());
-    wagonName2 = Form("AliAnalysisTaskHFSubstructure_%s_TC%s%sTree",ntracksDet,tag.Data());
-    wagonName3 = Form("AliAnalysisTaskHFSubstructure_%s_TC%s%sTreeSplittings",ntracksDet,tag.Data());
+    wagonName1 = Form("AliAnalysisTaskHFSubstructure_%s_TC%s",ntracksDet,tag.Data());
+    wagonName2 = Form("AliAnalysisTaskHFSubstructure_%s_TC%sTree",ntracksDet,tag.Data());
+    wagonName3 = Form("AliAnalysisTaskHFSubstructure_%s_TC%sTreeSplittings",ntracksDet,tag.Data());
   }
   if (jetShapeType==AliAnalysisTaskHFSubstructure::kTrue){
-    wagonName1 = Form("AliAnalysisTaskHFSubstructure_%s_TC%s%s",ntracksTrue,tag.Data());
-    wagonName2 = Form("AliAnalysisTaskHFSubstructure_%s_TC%s%sTree",ntracksTrue,tag.Data());
-    wagonName3 = Form("AliAnalysisTaskHFSubstructure_%s_TC%s%sTreeSplittings",ntracksTrue,tag.Data());
+    wagonName1 = Form("AliAnalysisTaskHFSubstructure_%s_TC%s",ntracksTrue,tag.Data());
+    wagonName2 = Form("AliAnalysisTaskHFSubstructure_%s_TC%sTree",ntracksTrue,tag.Data());
+    wagonName3 = Form("AliAnalysisTaskHFSubstructure_%s_TC%sTreeSplittings",ntracksTrue,tag.Data());
   }
   //Configure jet tagger task
   AliAnalysisTaskHFSubstructure *task = new AliAnalysisTaskHFSubstructure(wagonName1);
@@ -64,7 +64,6 @@ AliAnalysisTaskHFSubstructure* AddTaskAliAnalysisTaskHFSubstructure(const char *
 
   
 
-  TString strType(type);
 
   task->SetUseAliAnaUtils(kFALSE);
 
