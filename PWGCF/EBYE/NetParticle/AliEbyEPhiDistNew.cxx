@@ -351,7 +351,7 @@ void AliEbyEPhiDistNew::UserExec (Option_t *){
     }
     
     //const Int_t dim = 38; // number of pT bins * 2
-    const Int_t kPhi = 18; // number of Phi Bins
+    const Int_t kPhi = 36; // number of Phi Bins
     Int_t pTPhi[kPhi];
     Int_t pTPhiMC[kPhi];
     
@@ -548,7 +548,7 @@ void AliEbyEPhiDistNew::UserExec (Option_t *){
                     
                 }
                 if(icharge == 0){
-                    pTPhi[iphibin] += 1;
+                    pTPhi[iphibin + fNphiBins] += 1;
                 }
             }
         }
@@ -685,7 +685,7 @@ void AliEbyEPhiDistNew::UserExec (Option_t *){
                     pTPhiMC[iphibinMC] += 1;
                 }
                 if (icharge == 0){
-                    pTPhiMC[iphibinMC] += 1;
+                    pTPhiMC[iphibinMC + fNphiBins] += 1;
                 }
             }
             fEventCounter -> Fill(9);
@@ -743,7 +743,7 @@ void AliEbyEPhiDistNew::UserExec (Option_t *){
                     pTPhiMC[iphibinMC] += 1;
                 }
                 if (icharge == 0) {
-                    pTPhiMC[iphibinMC] += 1;
+                    pTPhiMC[iphibinMC + fNphiBins] += 1;
                 }
             }
             
@@ -998,17 +998,17 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
     
     //---------------------------| el, mu,  pi,  k,    p   | Pt cut offs from spectra
     //ITS--------------
-    Double_t ptLowITS[5]       = { 0., 0., 0.2,  0.2,  0.3  };
+    Double_t ptLowITS[5]       = { 0., 0., 0.35,  0.35,  0.3  };
     Double_t ptHighITS[5]      = { 0., 0., 0.6,  0.6,  1.1  };
     //TPC---------------
-    Double_t ptLowTPC[5]       = { 0., 0., 0.3,  0.325, 0.3  };
-    Double_t ptHighTPC[5]      = { 0., 0., 1.5,  1.5,   2.0  };
+    Double_t ptLowTPC[5]       = { 0., 0., 0.6,  0.6, 0.3  };
+    Double_t ptHighTPC[5]      = { 0., 0., 1.55,  1.55,   2.0  };
     //TOF----
-    Double_t ptLowTOF[5]       = { 0., 0., 1.5,  1.5,  1.1  };
-    Double_t ptHighTOF[5]      = { 0., 0., 2.0,  2.0,    2.0  };
+    Double_t ptLowTOF[5]       = { 0., 0., 1.55,  1.55,  1.1  };
+    Double_t ptHighTOF[5]      = { 0., 0., 1.55,  1.55,    2.0  };
     //TPCTOF----------
-    Double_t ptLowTPCTOF[5]    = { 0., 0., 1.5, 1.5,   0.8  };
-    Double_t ptHighTPCTOF[5]   = { 0., 0., 2.0,  2.00,   2.0  };
+    Double_t ptLowTPCTOF[5]    = { 0., 0., 1.55, 1.55,   0.8  };
+    Double_t ptHighTPCTOF[5]   = { 0., 0., 1.55,  1.55,   2.0  };
     
     
     //----------------------------------ITS PID---------------------------------------
@@ -1036,14 +1036,14 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
         pid[1] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kTPC, track, fParticleSpecies);
         
         if (fParticleSpecies == 2){ //pion
-            if (track->Pt() > 0.525 && track->Pt() < 1.5) {
+            if (track->Pt() > 0.35 && track->Pt() < 1.55) {
                 if (TMath::Abs(pid[1]) < 2.) // cut on nsigma
                     isAcceptedTPC = kTRUE;
             }
         }// Pion
         
         if (fParticleSpecies == 3){ //kaon
-            if (track->Pt() > 0.525 && track->Pt() < 1.5) {
+            if (track->Pt() > 0.35 && track->Pt() < 1.55) {
                 if (TMath::Abs(pid[1]) < 2.) // cut on nsigma
                     isAcceptedTPC = kTRUE;
             }
@@ -1117,7 +1117,8 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
         
         if(fPidStrategy == 0){
             //isAccepted = isAcceptedTPC && isAcceptedTOF;
-            isAccepted = isAcceptedTPC;
+            if ( pt > ptLowTPC[fParticleSpecies] && pt < ptHighTPC[fParticleSpecies] ) isAccepted = isAcceptedTPC;
+            else if (pt > ptLowITS[fParticleSpecies] && pt < ptHighITS[fParticleSpecies]) isAccepted = isAcceptedITS;
         }
         else if( fPidStrategy == 1){
             Double_t nsigCombined = TMath::Sqrt( pid[1]*pid[1] +  pid[2]*pid[2] );
@@ -1130,7 +1131,7 @@ Bool_t AliEbyEPhiDistNew::IsPidPassed(AliVTrack * track) {
     else if( fParticleSpecies == 3){//for kaon: TPC and/or TOF
         
         if ( pt > ptLowTPC[fParticleSpecies] && pt < ptHighTPC[fParticleSpecies] ) isAccepted = isAcceptedTPC;
-        else isAccepted =  isAcceptedTOF;
+        else if (pt > ptLowITS[fParticleSpecies] && pt < ptHighITS[fParticleSpecies]) isAccepted = isAcceptedITS;
     }
     
     else if( fParticleSpecies == 4){//for proton
