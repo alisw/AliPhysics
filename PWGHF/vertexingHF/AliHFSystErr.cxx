@@ -1139,7 +1139,7 @@ void AliHFSystErr::InitD0toKpi2017pp5TeV(){
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",50,0,50);
   // fNorm->SetBinContent(1,0.0); // bin 0.-1.
-  for(Int_t i=1;i<=50;i++) fNorm->SetBinContent(i,0.05);
+  for(Int_t i=1;i<=50;i++) fNorm->SetBinContent(i,0.021);
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",50,0,50);
@@ -1258,7 +1258,7 @@ void AliHFSystErr::InitD0toKpi2017pp5TeVLowPtAn() {
 
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",24,0,24);
-  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.05); // 5% error on sigmaV0and
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.021); // 2.1% error on sigmaV0and
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",24,0,24);
@@ -1309,7 +1309,7 @@ void AliHFSystErr::InitD0toKpi2017pp5TeVLowPtAn_finebins() {
 
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",32,0,16);
-  for(Int_t i=1;i<=32;i++) fNorm->SetBinContent(i,0.05); // 5% error on sigmaV0and
+  for(Int_t i=1;i<=32;i++) fNorm->SetBinContent(i,0.021); // 2.1% error on sigmaV0and
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",32,0,16);
@@ -1995,7 +1995,7 @@ void AliHFSystErr::InitDplustoKpipi2017pp5TeV(){
   SetNameTitle("AliHFSystErr","SystErrDplustoKpipi2017pp");
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",36,0,36);
-  for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.023); // 4% error on sigmaV0and
+  for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.021); // 2.1% error on sigmaV0and
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",36,0,36);
@@ -2308,7 +2308,7 @@ void AliHFSystErr::InitDstoKKpi2017pp5TeV(){
 
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",24,0,24);
-  for(Int_t i=1; i<=24; i++) fNorm->SetBinContent(i, 0.05); // from V0
+  for(Int_t i=1; i<=24; i++) fNorm->SetBinContent(i, 0.021); // from V0
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",24,0,24);
@@ -3737,7 +3737,7 @@ void AliHFSystErr::InitDstartoD0pi2017pp5TeV(){
 
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",36,0,36);
-  for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.05); // 5% error on sigmaV0and (will be updated after VdM scan)
+  for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.021); // 2.1% error on sigmaV0and (will be updated after VdM scan)
   for(Int_t i=1;i<=36;i++) fNorm->SetBinError(i,0.);
 
   // Branching ratio
