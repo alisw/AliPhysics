@@ -19,7 +19,7 @@ class AliFJWrapper;
 #include "AliFJWrapper.h"
 #include "AliClusterContainer.h"
 #include "TF1.h"
-const Int_t nVar = 28;
+
 class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
  public:
   
@@ -43,6 +43,9 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   enum DerivSubtrOrder {
     kSecondOrder = 0,
     kFirstOrder = 1
+  };
+  enum TreeSize {
+    nVar = 28
   };
 
   AliAnalysisTaskSubJetFraction();
@@ -122,6 +125,7 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
 
 
 
+
   
 
  protected:
@@ -150,6 +154,7 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
   JetShapeType                        fJetShapeType;               // jet type to be used
   JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
   JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet
+  TreeSize                            fTreeSize;
   Double_t                            fShapesVar[nVar];                  // jet shapes used for the tagging
   std::vector<std::vector<Double_t>>            fShapesVar_Tracks_Rec;
   std::vector<std::vector<Double_t>>            fShapesVar_Tracks_Truth;

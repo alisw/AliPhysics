@@ -50,19 +50,6 @@
 //Globals
 
 
-Double_t XBinsPt[66]={0.15,0.20,0.25,0.30,0.35,0.40,0.45,0.50,0.55,0.60,0.65,0.70,0.75,0.80,0.85,0.9,0.95,1.00,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.20,2.40,2.60,2.80,3.00,3.20,3.40,3.60,3.80,4.00,4.50,5.00,5.50,6.00,6.50,7.00,8.00,9.00,10.00,11.00,12.00,13.00,14.00,15.00,16.00,18.00,20.00,22.00,24.00,26.00,28.00,30.00,32.00,34.00,36.00,40.00,45.00,50.00}; //Lower edges of new bins for rebbing purposes for track pt                                                                                                           
-Double_t XBinsPtSize=66;
-Double_t XBinsJetPt[35]={0,0.50,1.00,2.00,3.00,4.00,5.00,6.00,7.00,8.00,9.00,10.00,12.00,14.00,16.00,18.00,20.00,25.00,30.00,35.00,40.00,45.00,50.00,60.00,70.00,80.00,90.00,100.00,120.00,140.00,160.00,180.00,200.00,250.00,300.00}; //for jet pt
-Int_t XBinsJetPtSize=35;
-Double_t XBinsJetMass[28]={0,0.50,1.00,2.00,3.00,4.00,5.00,6.00,7.00,8.00,9.00,10.00,12.00,14.00,16.00,18.00,20.00,25.00,30.00,35.00,40.00,45.00,50.00,60.00,70.00,80.00,90.00,100.00}; //for jet mass
-Int_t XBinsJetMassSize=28;
-Double_t Eta_Up=1.00;
-Double_t Eta_Low=-1.00;
-Int_t Eta_Bins=100;
-Double_t Phi_Up=2*(TMath::Pi());
-Double_t Phi_Low=(-1*(TMath::Pi()));
-Int_t Phi_Bins=100;
-
 
 
 
@@ -80,6 +67,7 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fJetShapeType(kData),
   fJetShapeSub(kNoSub),
   fJetSelection(kInclusive),
+  fTreeSize(nVar),
   fPtThreshold(-9999.),
   fRMatching(0.2),
   fPtMinTriggerHadron(20.),
@@ -243,6 +231,7 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fJetShapeType(kData),
   fJetShapeSub(kNoSub),
   fJetSelection(kInclusive),
+  fTreeSize(nVar),
   fPtThreshold(-9999.),
   fRMatching(0.2),
   fPtMinTriggerHadron(20.),
@@ -500,6 +489,14 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
       fTreeResponseMatrixAxis->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar], Form("%s/D", fShapesVarNames[ivar].Data()));
     }
   }
+
+  Double_t Eta_Up=1.00;
+  Double_t Eta_Low=-1.00;
+  Int_t Eta_Bins=100;
+  Double_t Phi_Up=2*(TMath::Pi());
+  Double_t Phi_Low=(-1*(TMath::Pi()));
+  Int_t Phi_Bins=100;
+
   
   if (!fFullTree){
     const Int_t nVarMin = 22; 

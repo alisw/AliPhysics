@@ -68,6 +68,7 @@
 using std::cout;
 using std::endl;
 
+
 ClassImp(AliAnalysisTaskHFSubstructure)
 
 //________________________________________________________________________
@@ -78,6 +79,7 @@ AliAnalysisTaskEmcal("AliAnalysisTaskHFSubstructure", kTRUE),
   fIncludeInclusive(kFALSE),
   fIsBDecay(kFALSE),
   fRejectISR(kFALSE),
+  fPromptReject(kFALSE),
   fBranchName(0),
   fCandidateArray(0),
   fAodEvent(0),
@@ -118,6 +120,7 @@ AliAnalysisTaskHFSubstructure::AliAnalysisTaskHFSubstructure(const char *name) :
   fIncludeInclusive(kFALSE),
   fIsBDecay(kFALSE),
   fRejectISR(kFALSE),
+  fPromptReject(kFALSE),
   fBranchName(0),
   fCandidateArray(0),
   fAodEvent(0),
@@ -181,7 +184,9 @@ void AliAnalysisTaskHFSubstructure::UserCreateOutputObjects()
   fShapesVarNames[5] = "Inv_M_D_Truth";
   fShapesVarNames[6] = "Flag_D";
   fShapesVarNames[7] = "Flag_D_Truth";
-   
+  fShapesVarNames[8] = "Prompt_PDG";
+  fShapesVarNames[9] = "Prompt_PDG_Truth";
+  
   for(Int_t ivar=0; ivar < nVar; ivar++){
     cout<<"looping over variables"<<endl;
     fTreeResponseMatrixAxis->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar], Form("%s/D", fShapesVarNames[ivar].Data()));
@@ -233,7 +238,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
   
   TFile* Cuts_File = TFile::Open(fCutsFileName); 
   TString cutsname="D0toKpiCuts";
-  cutsname += TString::Format("_%s", fCutsType.Data()); 
+  if (fCutsType!="") cutsname += TString::Format("_%s", fCutsType.Data()); 
   fRDHFCuts = dynamic_cast<AliRDHFCuts*>(Cuts_File->Get(cutsname));
 
   
@@ -280,6 +285,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
       fhEvent->Fill(2); 
       Int_t Matched_Truth_Particle_PDG=0;
+      Int_t Is_Prompt_Correct_Quark_PDG=-1;
       if (fJetShapeType != kData){    
 
    
@@ -299,8 +305,14 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 		Int_t Original_Quark_PDG=4; 
 		if (fIsBDecay) Original_Quark_PDG=5; 
 		if (TMath::Abs(Matched_Truth_Particle_Mother->GetPdgCode())==Original_Quark_PDG) Is_Prompt_Correct_Quark=kTRUE; 
-		if (TMath::Abs(Matched_Truth_Particle_Mother->GetPdgCode()) == 4) fhEvent->Fill(4); 
-		if (TMath::Abs(Matched_Truth_Particle_Mother->GetPdgCode()) == 5) fhEvent->Fill(5); 	  
+		if (TMath::Abs(Matched_Truth_Particle_Mother->GetPdgCode()) == 4){
+		  Is_Prompt_Correct_Quark_PDG=4;
+		  fhEvent->Fill(4);
+		}
+		if (TMath::Abs(Matched_Truth_Particle_Mother->GetPdgCode()) == 5){
+		  Is_Prompt_Correct_Quark_PDG=5;
+		  fhEvent->Fill(5);
+		}
 		if (Matched_Truth_Particle_Mother_Label==Matched_Truth_Particle_Mother->GetMother()) break; 
 	        Matched_Truth_Particle_Mother_Label=Matched_Truth_Particle_Mother->GetMother();
 	      }
@@ -310,9 +322,9 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	  }
 	}
 	else continue; 
-	if (!Is_Prompt_Correct_Quark) continue; 
+	if (fPromptReject && !Is_Prompt_Correct_Quark) continue; 
 
-	//	if (TMath::Abs(Matched_Truth_Particle_PDG)!=fCandidatePDG) continue; 
+	//if (TMath::Abs(Matched_Truth_Particle_PDG)!=fCandidatePDG) continue; 
 
       }
 
@@ -462,6 +474,8 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	  fShapesVar[5] = 0.0;
 	  fShapesVar[6] = Flag_D;
 	  fShapesVar[7] = 0.0;
+	  fShapesVar[8] = Is_Prompt_Correct_Quark_PDG;
+	  fShapesVar[9] = 0.0;
 
 
 	  fShapesVar_Splittings_DeltaR.push_back(Splittings_DeltaR);
@@ -561,6 +575,8 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	fShapesVar[5] = 0.0;
 	fShapesVar[6] = 0.0;
 	fShapesVar[7] = 0.0;
+	fShapesVar[8] = 0.0;
+	fShapesVar[9] = 0.0;
 
 
 	fShapesVar_Splittings_DeltaR.push_back(Splittings_DeltaR);
@@ -655,7 +671,8 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       const Int_t D_Candidtae_N_Daughters=2;
       Int_t D_Candidtae_Daughters_PDG[D_Candidtae_N_Daughters] = {211,321}; 
       Int_t D_Candidate_MatchedTruth_Label = D_Candidate->MatchToMC(fCandidatePDG, Particle_Container->GetArray(), D_Candidtae_N_Daughters, D_Candidtae_Daughters_PDG); 
-      Bool_t Is_Prompt_Correct_Quark=kFALSE; 
+      Bool_t Is_Prompt_Correct_Quark=kFALSE;
+      Int_t Is_Prompt_Correct_Quark_PDG=-1;
       AliAODMCParticle* Matched_Truth_Particle; 
       if (D_Candidate_MatchedTruth_Label >= 0) { 
 	Matched_Truth_Particle = static_cast<AliAODMCParticle*>(Particle_Container->GetArray()->At(D_Candidate_MatchedTruth_Label)); 
@@ -668,8 +685,14 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	    if (Matched_Truth_Particle_Mother){
 	      Int_t Original_Quark_PDG=4; 
 	      if (fIsBDecay) Original_Quark_PDG=5; 
-	      if (TMath::Abs(Matched_Truth_Particle_Mother->GetPdgCode()) == 4) fhEvent->Fill(12); 
-	      if (TMath::Abs(Matched_Truth_Particle_Mother->GetPdgCode()) == 5) fhEvent->Fill(13);
+	      if (TMath::Abs(Matched_Truth_Particle_Mother->GetPdgCode()) == 4){
+		fhEvent->Fill(12);		
+		Is_Prompt_Correct_Quark_PDG=4;
+	      }
+	      if (TMath::Abs(Matched_Truth_Particle_Mother->GetPdgCode()) == 5){
+		fhEvent->Fill(13);
+		Is_Prompt_Correct_Quark_PDG=5;
+	      }
 	      if (TMath::Abs(Matched_Truth_Particle_Mother->GetPdgCode())==Original_Quark_PDG) Is_Prompt_Correct_Quark=kTRUE; 
 	      if (Matched_Truth_Particle_Mother_Label==Matched_Truth_Particle_Mother->GetMother()) break; 
 	      Matched_Truth_Particle_Mother_Label=Matched_Truth_Particle_Mother->GetMother();
@@ -680,7 +703,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	}
       }
       else continue;
-      if (!Is_Prompt_Correct_Quark) continue; 
+      if (fPromptReject && !Is_Prompt_Correct_Quark) continue; 
 
     
       if (Mass_Hypo_Type==1 && Matched_Truth_Particle_PDG!=fCandidatePDG){
@@ -883,6 +906,9 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	  fShapesVar[5] = Inv_Mass_D_Truth;
 	  fShapesVar[6] = Flag_D;
 	  fShapesVar[7] = Flag_D_Truth;
+	  fShapesVar[8] = Is_Prompt_Correct_Quark_PDG;
+	  fShapesVar[9] = 0.0;
+
 
 
 	  fShapesVar_Splittings_DeltaR.push_back(Splittings_DeltaR);
@@ -939,7 +965,34 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	  }
 	}
 	if (!Is_Unmatched_D) continue; 
-	fhEvent->Fill(38); 
+	fhEvent->Fill(38);
+
+
+	Bool_t Is_Prompt_Correct_Quark=kFALSE;
+	Int_t Is_Prompt_Correct_Quark_PDG=-1;
+	Int_t Truth_D_Particle_Mother_Label=Truth_D_Particle->GetMother(); 
+	while (Truth_D_Particle_Mother_Label >= 0) {
+	  AliAODMCParticle* Truth_D_Particle_Mother = static_cast<AliAODMCParticle*>(Particle_Container->GetArray()->At(Truth_D_Particle_Mother_Label)); 
+	  if (Truth_D_Particle_Mother){
+	    Int_t Original_Quark_PDG=4; 
+	    if (fIsBDecay) Original_Quark_PDG=5; 
+	    if (TMath::Abs(Truth_D_Particle_Mother->GetPdgCode()) == 4){
+	      fhEvent->Fill(39);		
+	      Is_Prompt_Correct_Quark_PDG=4;
+	    }
+	    if (TMath::Abs(Truth_D_Particle_Mother->GetPdgCode()) == 5){
+	      fhEvent->Fill(40);
+	      Is_Prompt_Correct_Quark_PDG=5;
+	    }
+	    if (TMath::Abs(Truth_D_Particle_Mother->GetPdgCode())==Original_Quark_PDG) Is_Prompt_Correct_Quark=kTRUE; 
+	    if (Truth_D_Particle_Mother_Label==Truth_D_Particle_Mother->GetMother()) break; 
+	    Truth_D_Particle_Mother_Label=Truth_D_Particle_Mother->GetMother();
+	  }
+	  else break; 
+	}
+
+	if (fPromptReject && !Is_Prompt_Correct_Quark) continue; 
+
 
 	Bool_t Is_D_SubJet_Truth=kFALSE;
 	fastjet::JetDefinition Jet_Definition_Truth(fastjet::cambridge_algorithm, fJetRadius*2.5,static_cast<fastjet::RecombinationScheme>(0), fastjet::Best);
@@ -1005,6 +1058,8 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	fShapesVar[5] = Inv_Mass_D_Truth;
 	fShapesVar[6] = 0.0;
 	fShapesVar[7] = Flag_D_Truth;
+	fShapesVar[8] = Is_Prompt_Correct_Quark_PDG;
+	fShapesVar[9] = 0.0;
 
 
 	fShapesVar_Splittings_DeltaR.push_back(Splittings_DeltaR_Truth);
@@ -1057,28 +1112,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       for (Int_t i_Particle=0; i_Particle<Particle_Container->GetNParticles(); i_Particle++){ 
 	Truth_Particle = static_cast<AliAODMCParticle*>(Particle_Container->GetAcceptParticle(i_Particle));
 	if (TMath::Abs(Truth_Particle->GetPdgCode())==fCandidatePDG){ 
-	  fhEvent->Fill(3); 
-
-	
-	  Bool_t Is_Prompt_Correct_Quark=kFALSE;
-	  Int_t Truth_Particle_Mother_Label=Truth_Particle->GetMother(); 
-	  while (Truth_Particle_Mother_Label >= 0) {
-	    AliAODMCParticle* Truth_Particle_Mother = static_cast<AliAODMCParticle*>(Particle_Container->GetArray()->At(Truth_Particle_Mother_Label)); 
-	    if (Truth_Particle_Mother){
-	      Int_t Original_Quark_PDG=4; 
-	      if (fIsBDecay) Original_Quark_PDG=5; 
-	      if (TMath::Abs(Truth_Particle_Mother->GetPdgCode()) ==Original_Quark_PDG) Is_Prompt_Correct_Quark=kTRUE; 
-	      if (TMath::Abs(Truth_Particle_Mother->GetPdgCode()) ==4) fhEvent->Fill(4); 
-	      if (TMath::Abs(Truth_Particle_Mother->GetPdgCode()) ==5) fhEvent->Fill(5); 
-	      if (Truth_Particle_Mother_Label==Truth_Particle_Mother->GetMother()) break; 
-	      Truth_Particle_Mother_Label=Truth_Particle_Mother->GetMother();
-	    }
-	    else break; 
-	  }
-
-	  if(!Is_Prompt_Correct_Quark) continue;
-	  fhEvent->Fill(6); 
-	  
+	  fhEvent->Fill(3); 	  
 	  std::pair<Int_t, Int_t> Inclusive_Jet_Truth_Labels;
 	  Inclusive_Jet_Truth_Labels.first=Truth_Particle->GetLabel(); 
 	  Inclusive_Jet_Truth_Labels.second=NTruthD; 
@@ -1111,12 +1145,36 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	  }
 	}
 
-	if (!Is_DJet_Truth) fhEvent->Fill(7); 
-	if (Is_DJet_Truth) fhEvent->Fill(8); 
+	if (!Is_DJet_Truth) fhEvent->Fill(4); 
+	if (Is_DJet_Truth) fhEvent->Fill(5);
 
-	
 	if (!fIncludeInclusive && !Is_DJet_Truth) continue; 
-	
+
+	Bool_t Is_Prompt_Correct_Quark=kFALSE;
+	Int_t Is_Prompt_Correct_Quark_PDG=-1;
+	Int_t Truth_D_Particle_Mother_Label=Truth_D_Particle->GetMother(); 
+	while (Truth_D_Particle_Mother_Label >= 0) {
+	  AliAODMCParticle* Truth_D_Particle_Mother = static_cast<AliAODMCParticle*>(Particle_Container->GetArray()->At(Truth_D_Particle_Mother_Label)); 
+	  if (Truth_D_Particle_Mother){
+	    Int_t Original_Quark_PDG=4; 
+	    if (fIsBDecay) Original_Quark_PDG=5; 
+	    if (TMath::Abs(Truth_D_Particle_Mother->GetPdgCode()) ==Original_Quark_PDG) Is_Prompt_Correct_Quark=kTRUE; 
+	    if (TMath::Abs(Truth_D_Particle_Mother->GetPdgCode()) ==4){
+	      fhEvent->Fill(6);
+	      Is_Prompt_Correct_Quark_PDG=4;
+	    }
+	    if (TMath::Abs(Truth_D_Particle_Mother->GetPdgCode()) ==5){
+	      fhEvent->Fill(7);
+	      Is_Prompt_Correct_Quark_PDG=5;
+	    }
+	    if (Truth_D_Particle_Mother_Label==Truth_D_Particle_Mother->GetMother()) break; 
+	    Truth_D_Particle_Mother_Label=Truth_D_Particle_Mother->GetMother();
+	  }
+	  else break; 
+	}
+
+	if(fPromptReject && !Is_Prompt_Correct_Quark) continue;
+	fhEvent->Fill(8); 
 
 	Bool_t Is_D_SubJet_Truth=kFALSE;
 	fastjet::JetDefinition Jet_Definition_Truth(fastjet::cambridge_algorithm, fJetRadius*2.5,static_cast<fastjet::RecombinationScheme>(0), fastjet::Best); 
@@ -1191,6 +1249,9 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	fShapesVar[5] = Inv_Mass_D_Truth;
 	fShapesVar[6] = 0.0;
 	fShapesVar[7] = Flag_D_Truth;
+	fShapesVar[8] = 0.0;
+	fShapesVar[9] = Is_Prompt_Correct_Quark_PDG;
+	
 
 
 	fShapesVar_Splittings_DeltaR.push_back(Splittings_DeltaR_Truth);
