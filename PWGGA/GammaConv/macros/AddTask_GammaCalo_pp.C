@@ -959,19 +959,19 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","11111110a7032230000","01631031000000d0"); // std
     cuts.AddCutCalo("00010113","11111110a00f2230000","01631031000000d0"); // std
   } else if (trainConfig == 445){ // EMCAL clusters pp 5 TeV Sphericity Cuts in jet events
-    cuts.AddCutCalo("00010113","11111110a7032230000","01631031000000d0"); // std
-    cuts.AddCutCalo("h0010113","11111110a7032230000","01631031000000d0"); // std
-    cuts.AddCutCalo("i0010113","11111110a7032230000","01631031000000d0"); // std
-    cuts.AddCutCalo("j0010113","11111110a7032230000","01631031000000d0"); // std
-    cuts.AddCutCalo("q0010113","11111110a7032230000","01631031000000d0"); // std
-    cuts.AddCutCalo("r0010113","11111110a7032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("00010113","11111110a7032230000","21631031000000d0"); // std
+    cuts.AddCutCalo("h0010113","11111110a7032230000","21631031000000d0"); // std
+    cuts.AddCutCalo("i0010113","11111110a7032230000","21631031000000d0"); // std
+    cuts.AddCutCalo("j0010113","11111110a7032230000","21631031000000d0"); // std
+    cuts.AddCutCalo("q0010113","11111110a7032230000","21631031000000d0"); // std
+    cuts.AddCutCalo("r0010113","11111110a7032230000","21631031000000d0"); // std
   } else if (trainConfig == 446){ // EMCAL clusters pp 5 TeV Sphericity Cuts in soft events
-    cuts.AddCutCalo("00010113","11111110a7032230000","01631031000000d0"); // std
-    cuts.AddCutCalo("h0010113","11111110a7032230000","01631031000000d0"); // std
-    cuts.AddCutCalo("i0010113","11111110a7032230000","01631031000000d0"); // std
-    cuts.AddCutCalo("j0010113","11111110a7032230000","01631031000000d0"); // std
-    cuts.AddCutCalo("q0010113","11111110a7032230000","01631031000000d0"); // std
-    cuts.AddCutCalo("r0010113","11111110a7032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("00010113","11111110a7032230000","21631031000000d0"); // std
+    cuts.AddCutCalo("h0010113","11111110a7032230000","21631031000000d0"); // std
+    cuts.AddCutCalo("i0010113","11111110a7032230000","21631031000000d0"); // std
+    cuts.AddCutCalo("j0010113","11111110a7032230000","21631031000000d0"); // std
+    cuts.AddCutCalo("q0010113","11111110a7032230000","21631031000000d0"); // std
+    cuts.AddCutCalo("r0010113","11111110a7032230000","21631031000000d0"); // std
 
   } else if (trainConfig == 450){ // EMCAL standard cuts, different triggers
     cuts.AddCutCalo("00010113","1111111067032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL kSDM PCMEMC INT7
@@ -1301,7 +1301,7 @@ void AddTask_GammaCalo_pp(
   // *********************************************************************************************************
 
   } else if (trainConfig == 900){
-    cuts.AddCutCalo("00010113","11111110a7032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("00010113","11111110a7032230000","31631031000000d0"); // std
 
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
@@ -1458,7 +1458,6 @@ void AddTask_GammaCalo_pp(
   task->SetDoTHnSparse(enableTHnSparse);
   task->SetProduceTreeEOverP(doTreeEOverP);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
-  if(trainConfig == 900 || trainConfig == 445 || trainConfig == 446)  task->SetJetAnalysis(kTRUE);
   if(trainConfig == 446) task->SetSoftAnalysis(kTRUE);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   if(trainConfig == 106 || trainConfig == 125 || trainConfig == 145){
