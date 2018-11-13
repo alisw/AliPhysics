@@ -3333,7 +3333,8 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
         fPeriodEnum != kLHC15g1a && fPeriodEnum != kLHC15g1b &&                                     // LHC11a Jet Jet MC's
         fPeriodEnum != kLHC13b4_fix && fPeriodEnum != kLHC13b4_plus &&                              // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's
-        fPeriodEnum != kLHC12P2JJ                                                                   // LHC12 JetJet MC
+        fPeriodEnum != kLHC12P2JJ  &&                                                                 // LHC12 JetJet MC
+        fPeriodEnum != kLHC18b11c                                                                   // LHC18 GammaJet MC anchored to LHC15o
      ){
     NTrials = -1;
     XSection = -1;
@@ -5971,6 +5972,9 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if ( periodName.CompareTo("LHC15k5c") == 0 || periodName.CompareTo("LHC15k5c2") == 0){
     fPeriodEnum = kLHC15k5c;
     fEnergyEnum = k13TeV;
+  } else if ( periodName.CompareTo("LHC18b11c") == 0){
+    fPeriodEnum = kLHC18b11c;
+    fEnergyEnum = kPbPb5TeV;
 
   // LHC16x anchored MCs
   // 13TeV LHC16* anchors full field Pythia 8 MB

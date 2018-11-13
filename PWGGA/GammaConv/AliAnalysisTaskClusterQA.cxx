@@ -107,6 +107,7 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA() : AliAnalysisTaskSE(),
   fBuffer_Surrounding_Tracks_RelativeEta(0),
   fBuffer_Surrounding_Tracks_RelativePhi(0),
   fBuffer_Cluster_MC_Label(-10),
+  fBuffer_Mother_MC_Label(-10),
   hNCellsInClustersVsCentrality(NULL),
   hNActiveCellsVsCentrality(NULL),
   hNActiveCellsAbove50MeVVsCentrality(NULL),
@@ -202,6 +203,7 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalys
   fBuffer_Surrounding_Tracks_RelativeEta(0),
   fBuffer_Surrounding_Tracks_RelativePhi(0),
   fBuffer_Cluster_MC_Label(-10),
+  fBuffer_Mother_MC_Label(-10),
   hNCellsInClustersVsCentrality(NULL),
   hNActiveCellsVsCentrality(NULL),
   hNActiveCellsAbove50MeVVsCentrality(NULL),
@@ -352,6 +354,7 @@ void AliAnalysisTaskClusterQA::UserCreateOutputObjects()
   if(fSaveMCInformation)
   {
     fClusterTree->Branch("Cluster_MC_Label",                &fBuffer_Cluster_MC_Label,                         "Cluster_MC_Label/I");
+    fClusterTree->Branch("Mother_MC_Label",                &fBuffer_Mother_MC_Label,                         "Mother_MC_Label/I");
   }
 
   fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
@@ -618,6 +621,21 @@ void AliAnalysisTaskClusterQA::ProcessQATreeCluster(AliVEvent *event, AliVCluste
     }
     fBuffer_Surrounding_NCells = nActiveCellsSurroundingInR;
   }
+
+  // write PDG code of mother of particle that mainly contributed to cluster to tree
+  if(fIsMC> 0){
+    if (cluster->GetNLabels()>0){
+      if((cluster->GetLabelAt(0)!=-1)){
+        fBuffer_Mother_MC_Label = (fMCEvent->Particle(cluster->GetLabelAt(0)))->GetPdgCode();   // mother of leading contribution
+      } else{
+        // mother is initial collision
+        fBuffer_Mother_MC_Label = 0;
+      }
+    } else{
+      // no mothers found (should not happen)
+      fBuffer_Mother_MC_Label = 0;
+    }
+  }
   if(fIsMC) fBuffer_Cluster_MC_Label = MakePhotonCandidates(cluster, cells,indexCluster);
   if(fSaveTracks) ProcessTracksAndMatching(cluster,indexCluster);
   // Add everything to the tree
@@ -753,7 +771,7 @@ Int_t AliAnalysisTaskClusterQA::MakePhotonCandidates(AliVCluster* clus, AliVCalo
   Int_t mclabel = -3;
   // create pi0 candidate
   AliAODConversionMother *pi0cand = new AliAODConversionMother(PhotonCandidate1,PhotonCandidate2);
-  if((((AliConversionMesonCuts*)fMesonCuts)->MesonIsSelected(pi0cand,kTRUE,fEventCuts->GetEtaShift()))){
+//  if((((AliConversionMesonCuts*)fMesonCuts)->MesonIsSelected(pi0cand,kTRUE,fEventCuts->GetEtaShift()))){
     if(fIsMC> 0 && PhotonCandidate && PhotonCandidate1 && PhotonCandidate2 && fSaveMCInformation){
       // if(fInputEvent->IsA()==AliESDEvent::Class())
         mclabel = ProcessTrueClusterCandidates(PhotonCandidate, clus->GetM02(), PhotonCandidate1, PhotonCandidate2);
@@ -761,9 +779,9 @@ Int_t AliAnalysisTaskClusterQA::MakePhotonCandidates(AliVCluster* clus, AliVCalo
         // ProcessTrueClusterCandidatesAOD(PhotonCandidate, clus->GetM02(), PhotonCandidate1, PhotonCandidate2);
         return mclabel;
       }
-  } else {
-    return -7;
-  }
+//  } else {
+//    return -7;
+//  }
   return -1;
 }
 
@@ -889,6 +907,7 @@ Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidates(AliAODConversionPho
                                     AliAODConversionPhoton *TrueSubClusterCandidate1,
                                     AliAODConversionPhoton *TrueSubClusterCandidate2)
 {
+
   Int_t mcLabelCluster = -5;
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
   Double_t mcProdVtxX   = primVtxMC->GetX();
@@ -897,19 +916,27 @@ Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidates(AliAODConversionPho
 
   TParticle *Photon = NULL;
   if (!TrueClusterCandidate->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set task will abort");
-  if (TrueClusterCandidate->GetCaloPhotonMCLabel(0) < 0) return mcLabelCluster;
-  if (TrueClusterCandidate->GetNCaloPhotonMCLabels()>0) Photon = fMCEvent->Particle(TrueClusterCandidate->GetCaloPhotonMCLabel(0));
-    else return mcLabelCluster;
-    
+  if (TrueClusterCandidate->GetCaloPhotonMCLabel(0) < 0){
+      mcLabelCluster = -10;
+      return mcLabelCluster;
+  }
+  if (TrueClusterCandidate->GetNCaloPhotonMCLabels()>0){
+    Photon = fMCEvent->Particle(TrueClusterCandidate->GetCaloPhotonMCLabel(0));
+  } else{
+     mcLabelCluster = -11;
+     return mcLabelCluster;
+  }
   if(Photon == NULL){
+    mcLabelCluster = -12;
     return mcLabelCluster;
   }
   AliAODConversionMother *mesoncand = new AliAODConversionMother(TrueSubClusterCandidate1,TrueSubClusterCandidate2);
-  Bool_t mesonIsSelected            = (((AliConversionMesonCuts*)fMesonCuts)->MesonIsSelected(mesoncand,kTRUE,fEventCuts->GetEtaShift()));
-  if (!mesonIsSelected){
-    delete mesoncand;
-    return mcLabelCluster;
-  }
+//  Bool_t mesonIsSelected            = (((AliConversionMesonCuts*)fMesonCuts)->MesonIsSelected(mesoncand,kTRUE,fEventCuts->GetEtaShift()));
+//  if (!mesonIsSelected){
+//    delete mesoncand;
+//    mcLabelCluster = -13;
+//    return mcLabelCluster;
+//  }
 
   TrueClusterCandidate->SetCaloPhotonMCFlags(fMCEvent, kFALSE);
 
@@ -999,25 +1026,54 @@ Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidates(AliAODConversionPho
 
   // leading particle is a photon or the conversion is fully contained and its not from pi0 || eta
   } else if (TrueClusterCandidate->IsLargestComponentPhoton() || TrueClusterCandidate->IsConversionFullyContained()
-               || TrueClusterCandidate->IsElectronFromFragPhoton()){
+             || TrueClusterCandidate->IsElectronFromFragPhoton()){
 
-      if(TrueClusterCandidate->IsLargestComponentPhoton()){
-          // cluster is produced by a photon that either has no mother or the mother is neither from a pi^0 nor eta, e.g. inital collision
+    if(TrueClusterCandidate->IsLargestComponentPhoton()){
+      // cluster is produced by a photon that either has no mother or the mother is neither from a pi^0 nor eta, e.g. inital collision
 
-          if (motherLab == -1)                      mcLabelCluster = 40; // direct photon from initial collision
-          else if ((motherLab >0) && (motherLab<9)) mcLabelCluster = 41; // photon from quark
-          else if (motherLab == 11)                 mcLabelCluster = 42; // photon from electron
-          else if (motherLab == 22)                 mcLabelCluster = 43; // photon from photon (fragmentation?)
-          else{
-              mcLabelCluster = 44; // other (e.g. from meson decays that are not pi0 or eta0)
-              cout << "Single cluster is mainly produced by a photon and mother is " << motherLab << endl;
+      if (motherLab == -1)                      mcLabelCluster = 40; // direct photon from initial collision
+      else if ((motherLab >0) && (motherLab<9)) mcLabelCluster = 41; // photon from quark
+      else if (motherLab == 11)                 mcLabelCluster = 42; // photon from electron
+      else if (motherLab == 22){ // check for frag photon
+
+        TParticle *dummyMother = fMCEvent->Particle(motherLab);
+        Bool_t originReached   = kFALSE;
+        Bool_t isFragPhoton    = kFALSE;
+
+        while (dummyMother->GetPdgCode() == 22 && !originReached){ // follow photon's history, as long as the mother is a photon
+          if (dummyMother->GetMother(0) > -1){
+            dummyMother = fMCEvent->Particle(dummyMother->GetMother(0));
+            if (TMath::Abs(dummyMother->GetPdgCode()) == 22){ // if mother of mother is again a photon, continue
+              if (dummyMother->GetMother(0) > -1){
+                dummyMother   = fMCEvent->Particle(dummyMother->GetMother(0));
+              } else {
+                originReached = kTRUE;
+              }
+            } else {
+              originReached = kTRUE;
+            }
+            isFragPhoton = (TMath::Abs(dummyMother->GetPdgCode()) < 6);// photon stems from quark = fragmentation photon
+          } else {
+            originReached = kTRUE;
           }
-      } else if(TrueClusterCandidate->IsConversionFullyContained()){
-          // cluster is from a fully contained conversion
-                                                    mcLabelCluster = 45;
-      } else if(TrueClusterCandidate->IsElectronFromFragPhoton()){
-                                                    mcLabelCluster = 46; // electron from frac
+        }
+
+        if(isFragPhoton) mcLabelCluster = 43; // Fragmentation photon
+        else{
+          mcLabelCluster = 47; // something like   cluster <- photon <- photon <- X (not photon)
+          AliInfo(Form("Mother of photon is photon etc. but origin is not quark. ID: %i", motherLab));
+        }
       }
+      else{
+        mcLabelCluster = 44; // other (e.g. from meson decays that are not pi0 or eta0)
+        AliInfo(Form("Single cluster is mainly produced by a photon and mother is %i", motherLab));
+      }
+    } else if(TrueClusterCandidate->IsConversionFullyContained()){
+      // cluster is from a fully contained conversion
+      mcLabelCluster = 45;
+    } else if(TrueClusterCandidate->IsElectronFromFragPhoton()){
+      mcLabelCluster = 46; // electron from frac
+    }
 
   // leading particle is an electron and its not from pi0 || eta and no electron from fragmentation photon conversion
   } else if (TrueClusterCandidate->IsLargestComponentElectron() &&  !TrueClusterCandidate->IsElectronFromFragPhoton()){
@@ -1025,7 +1081,7 @@ Int_t AliAnalysisTaskClusterQA::ProcessTrueClusterCandidates(AliAODConversionPho
   } else {
     // leading particle from hadron
     mcLabelCluster = 60; // NOTE hadron cluster
-    cout << "Single cluster is mainly produced by hadron with id:" << motherLab << endl;
+    AliInfo(Form("Single cluster is mainly produced by hadron with id: %i", motherLab));
   }
   
   delete mesoncand;

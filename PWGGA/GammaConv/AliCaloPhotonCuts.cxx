@@ -6422,7 +6422,8 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC18g6") == 0 )      return kPP13T18P1Pyt8;
   else if ( namePeriod.CompareTo("LHC18P1Pyt8LowB") ==0 ||
             namePeriod.CompareTo("LHC18h1") ==0  )      return kPP13T18P1Pyt8LowB;
-
+  // PbPb 5 TeV 2015 Gamma-Jet MC
+  else if ( namePeriod.CompareTo("LHC18b11c")) return  kLHC18b11c;
 
   // data starts here
   else if ( namePeriod.CompareTo("LHC10b") == 0 ||
