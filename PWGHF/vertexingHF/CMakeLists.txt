@@ -99,7 +99,6 @@ set(SRCS
   AliAnalysisTaskSEDStarCharmFraction.cxx
   AliAnalysisTaskSESignificance.cxx
   AliAnalysisTaskSEHFQA.cxx
-  AliAnalysisTaskSEHFTreeCreator.cxx
   AliAnalysisTaskTrackingSysPropagation.cxx
   AliMultiDimVector.cxx
   AliSignificanceCalculator.cxx
@@ -140,9 +139,8 @@ set(SRCS
   AliAnalysisTaskSEB0toDminuspi.cxx
   AliAnalysisTaskSEDstoK0sK.cxx
   AliHFVnVsMassFitter.cxx
-  AliHFCutOptTreeHandler.cxx
   AliAnalysisTaskSELc2V0bachelorTMVAApp.cxx
-  )
+   )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")

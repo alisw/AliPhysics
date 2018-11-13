@@ -7,12 +7,16 @@
 /* $Id$ */
 
 ///*************************************************************************
-/// \class Class AliAnalysisTaskSEHFTreeCreator
+/// \class AliAnalysisTaskSEHFTreeCreator
 /// 
-/// \author Authors:
-/// Andrea Festanti andrea.festanti@cern.ch
-/// Fabrizio Grosa  fabrizio.grosa@cern.ch
-/// Gian Michele Innocenti gian.michele.innocenti@cern.ch 
+// \authors:
+// F. Catalano, fabio.catalano@cern.ch
+// A. Festanti, andrea.festanti@cern.ch
+// F. Grosa, fabrizio.grosa@cern.ch
+// G. Innocenti, gian.michele.innocenti@cern.ch
+// F. Prino, prino@to.infn.it
+// L. Vermunt, luuk.vermunt@cern.ch
+// L. Van Doremalen
 ///*************************************************************************
 
 #include <TROOT.h>
@@ -28,7 +32,10 @@
 #include "AliRDHFCutsDstoKKpi.h"
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliNormalizationCounter.h"
-#include "AliHFCutOptTreeHandler.h"
+#include "AliHFTreeHandler.h"
+#include "AliHFTreeHandlerD0toKpi.h"
+#include "AliHFTreeHandlerDplustoKpipi.h"
+#include "AliHFTreeHandlerDstoKKpi.h"
 
 
 class AliAODEvent;
@@ -36,6 +43,8 @@ class AliAODEvent;
 class AliAnalysisTaskSEHFTreeCreator : public AliAnalysisTaskSE
 {
 public:
+
+
     
     AliAnalysisTaskSEHFTreeCreator();
     AliAnalysisTaskSEHFTreeCreator(const char *name,TList *cutsList);
@@ -60,14 +69,17 @@ public:
     void SetPIDoptD0Tree(Int_t opt){fPIDoptD0=opt;}
     void SetPIDoptDsTree(Int_t opt){fPIDoptDs=opt;}
     void SetPIDoptDplusTree(Int_t opt){fPIDoptDplus=opt;}
-        
+    void SetFillMCGenTrees(Bool_t fillMCgen) {fFillMCGenTrees=fillMCgen;}
     
     Int_t  GetSystem() const {return fSys;}
     Bool_t GetWriteOnlySignalTree() const {return fWriteOnlySignal;}
     
-    void Process2Prong(TClonesArray *array2prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t centrality);
-    void Process3Prong(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t centrality);
-    
+    void Process2Prong(TClonesArray *array2prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
+    void Process3Prong(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
+    void ProcessMCGen(TClonesArray *mcarray);
+  
+    Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
+
 private:
     
     AliAnalysisTaskSEHFTreeCreator(const AliAnalysisTaskSEHFTreeCreator&);
@@ -76,6 +88,7 @@ private:
     
     
     TH1F                    *fNentries;                  //!<!   histogram with number of events on output slot 1
+    TH2F                    *fHistoNormCounter;          //!<!   histogram with number of events on output slot 1
     TList                   *fListCuts;                  //      list of cuts sent to output slot 2
     AliRDHFCutsD0toKpi      *fFiltCutsD0toKpi;           //      D0toKpi filtering (or loose) cuts
     AliRDHFCutsDstoKKpi     *fFiltCutsDstoKKpi;          //      DstoKKpi filtering (or loose) cuts
@@ -90,27 +103,41 @@ private:
     Int_t                   fSys;                        // fSys=0 -> p-p; fSys=1 ->PbPb
     Int_t                   fAODProtection;              // flag to activate protection against AOD-dAOD mismatch.
                                                          // -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
-    Int_t                    fWriteVariableTreeD0;       // flag to decide whether to write the candidate variables on a tree variables
+    Int_t                   fWriteVariableTreeD0;         // flag to decide whether to write the candidate variables on a tree variables
                                                          // 0 don't fill
     													 // 1 fill standard tree
-    Int_t                    fWriteVariableTreeDs;       // flag to decide whether to write the candidate variables on a tree variables
+    Int_t                   fWriteVariableTreeDs;         // flag to decide whether to write the candidate variables on a tree variables
  														 // 0 don't fill
    														 // 1 fill standard tree
-    Int_t                    fWriteVariableTreeDplus;    // flag to decide whether to write the candidate variables on a tree variables
+    Int_t                   fWriteVariableTreeDplus;      // flag to decide whether to write the candidate variables on a tree variables
     													 // 0 don't fill
                                                          // 1 fill standard tree
-    TList                   *fListTree;                  //!<!
     TTree                   *fVariablesTreeD0;           //!<! tree of the candidate variables
     TTree                   *fVariablesTreeDs;           //!<! tree of the candidate variables
     TTree                   *fVariablesTreeDplus;        //!<! tree of the candidate variables
-    Bool_t                  fWriteOnlySignal;
-    AliHFCutOptTreeHandler  *fTreeHandlerD0;             //!<! helper object for the tree with topological variables
-    AliHFCutOptTreeHandler  *fTreeHandlerDs;             //!<! helper object for the tree with topological variables
-    AliHFCutOptTreeHandler  *fTreeHandlerDplus;          //!<! helper object for the tree with topological variables
-    Int_t                   fPIDoptD0;
-    Int_t                   fPIDoptDs;
-    Int_t                   fPIDoptDplus;
-    
+    TTree                   *fGenTreeD0;                 //!<! tree of the gen D0 variables
+    TTree                   *fGenTreeDs;                 //!<! tree of the gen Ds variables
+    TTree                   *fGenTreeDplus;              //!<! tree of the gen D+ variables
+    TTree                   *fTreeEvChar;                //!<!
+    bool                    fWriteOnlySignal;
+    AliHFTreeHandlerD0toKpi        *fTreeHandlerD0;             //!<! handler object for the tree with topological variables
+    AliHFTreeHandlerDstoKKpi       *fTreeHandlerDs;             //!<! handler object for the tree with topological variables
+    AliHFTreeHandlerDplustoKpipi   *fTreeHandlerDplus;          //!<! handler object for the tree with topological variables
+    AliHFTreeHandlerD0toKpi        *fTreeHandlerGenD0;             //!<! handler object for the tree with topological variables
+    AliHFTreeHandlerDstoKKpi       *fTreeHandlerGenDs;             //!<! handler object for the tree with topological variables
+    AliHFTreeHandlerDplustoKpipi   *fTreeHandlerGenDplus;          //!<! handler object for the tree with topological variables
+    int                     fPIDoptD0;
+    int                     fPIDoptDs;
+    int                     fPIDoptDplus;
+    Float_t                 fCentrality;
+    Float_t                 fzVtxReco;
+    Float_t                 fzVtxGen;
+    Int_t                   fNcontributors;
+    Int_t                   fNtracks;
+    Int_t                   fIsEvRej;
+    Int_t                   fRunNumber;
+
+    Bool_t                  fFillMCGenTrees;
     
     
     /// \cond CLASSIMP
