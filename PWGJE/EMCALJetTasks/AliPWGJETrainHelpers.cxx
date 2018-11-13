@@ -26,32 +26,45 @@
 
 std::vector<std::string> AliPWGJETrainHelpers::ExtractAliEnProductionValuesForLEGOTrain()
 {
+  // NOTE: `Getenv(...)` returns `nullptr` if the environment variable isn't available.
+  //       std::string _cannot_ be set to `nullptr`, so we retrieve the result as a `const char*`
+  //       and then convert it to a `std::string` if it is not null. We use std::string for
+  //       convenience and to simplify string comparison.
+
   // Automatically set shared common variables
   // The run period (ex. "LHC15o")
-  std::string period = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTAG");
-  // either "pp", "pPb" or "PbPb"
-  std::string collType = gSystem->Getenv("ALIEN_JDL_LPMINTERACTIONTYPE");
-  // Used to get mc
-  std::string prodType = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTYPE");
+  const char * tempPeriod = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTAG");
+  std::string period = tempPeriod ? tempPeriod : "";
+  // Either "pp", "pPb" or "PbPb"
+  const char * tempCollType = gSystem->Getenv("ALIEN_JDL_LPMINTERACTIONTYPE");
+  std::string collType = tempCollType ? tempCollType : "";
+  // Used to get MC.
+  const char * tempProdType = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTYPE");
+  std::string prodType = tempProdType ? tempProdType : "";
 
   // In the case of the metadataset, the standard environment variables above will not be set.
   // Instead, we attempt to retrieve the variable from the first enabled metadataset. This requires looping
-  // over the available metadatasets untils we find a non-null value.
+  // over the available metadatasets until we find a non-null value.
   // We assume that all children in the metadataset should have the same collision system and production type.
   // Although this isn't the case for the period, since the variables are supposed to be the same
   // in all metadatasets (according to Markus Z.), the track cuts presumably must all be the same for
   // all periods in a metadataset.
-  const std::string childDatasets = gSystem->Getenv("CHILD_DATASETS"); // Used to get mc
+  const char * tempChildDatasets = gSystem->Getenv("CHILD_DATASETS");
+  // Used to get MC.
+  const std::string childDatasets = tempChildDatasets ? tempChildDatasets : "";
   const int nChildDatasets = std::atoi(childDatasets.c_str());
   for (int i = 1; i <= nChildDatasets; i++) {
     if (period == "") {
-      period = gSystem->Getenv(TString::Format("ALIEN_JDL_child_%i_LPMPRODUCTIONTAG", i));
+      tempPeriod = gSystem->Getenv(TString::Format("ALIEN_JDL_child_%i_LPMPRODUCTIONTAG", i));
+      period = tempPeriod ? tempPeriod : "";
     }
     if (collType == "") {
-      collType = gSystem->Getenv(TString::Format("ALIEN_JDL_child_%i_LPMINTERACTIONTYPE", i));
+      tempCollType = gSystem->Getenv(TString::Format("ALIEN_JDL_child_%i_LPMINTERACTIONTYPE", i));
+      collType = tempCollType ? tempCollType : "";
     }
     if (prodType == "") {
-      prodType = gSystem->Getenv(TString::Format("ALIEN_JDL_child_%i_LPMPRODUCTIONTYPE", i));
+      tempProdType = gSystem->Getenv(TString::Format("ALIEN_JDL_child_%i_LPMPRODUCTIONTYPE", i));
+      prodType = tempProdType ? tempProdType : "";
     }
   }
   // Validate the extract variables. Each one must be set at this point.
@@ -63,7 +76,7 @@ std::vector<std::string> AliPWGJETrainHelpers::ExtractAliEnProductionValuesForLE
   // Determine if it's an MC production.
   const bool mc = (prodType == "MC");
 
-  // Determine if it's Run2
+  // Determine if it's Run 2
   std::string yearString = period.substr(3, 2);
   int productionYear = std::atoi(yearString.c_str());
   const bool isRun2 = productionYear > 14;
