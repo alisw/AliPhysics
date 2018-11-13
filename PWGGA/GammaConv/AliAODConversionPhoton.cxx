@@ -329,8 +329,8 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
         while (dummyMother->GetPdgCode() == 22 && !originReached){ // follow conversion photon's history, as long as the mother is a photon
           if (dummyMother->GetMother(0) > -1){
             dummyMother = mcEvent->Particle(dummyMother->GetMother(0));
-            if (TMath::Abs(dummyMother->GetPdgCode()) == 11){ // in case of additional conversion skip to photon's grandma, which should be a photon
-              if (dummyMother->GetMother(0) > -1){
+            if ((TMath::Abs(dummyMother->GetPdgCode()) == 11) || (TMath::Abs(dummyMother->GetPdgCode()) == 22)){ // in case of additional conversion skip to photon's grandma, which should be a photon
+              if (dummyMother->GetMother(0) > -1){                                                               // also mother of photon could be a photon (can happen for fragmentation)
                 dummyMother   = mcEvent->Particle(dummyMother->GetMother(0));
               } else {
                 originReached = kTRUE;

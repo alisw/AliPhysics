@@ -202,6 +202,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       //
       kPP13T18P1Pyt8,
       kPP13T18P1Pyt8LowB,
+      // Pb-Pb 5 TeV 2015 Gamma-Jet
+      kLHC18b11c,
 
       // Data starts here
       k10pp7TeV,
@@ -606,7 +608,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,72)
+    ClassDef(AliCaloPhotonCuts,73)
 };
 
 #endif
