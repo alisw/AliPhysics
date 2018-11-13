@@ -233,7 +233,7 @@ void AliForwardNUATask::UserExec(Option_t *)
   return;
 }
 
-Double_t AliForwardNUATask::InterpolateWeight(TH2D& forwarddNdedp,Int_t phiBin, Int_t etaBin, Double_t weight)
+Double_t AliForwardNUATask::InterpolateWeight(const TH2D& forwarddNdedp,Int_t phiBin, Int_t etaBin, Double_t weight)
 {
   if ((phiBin == 17) && (etaBin > 125 && etaBin < 137)){
 
@@ -261,7 +261,7 @@ Double_t AliForwardNUATask::InterpolateWeight(TH2D& forwarddNdedp,Int_t phiBin, 
      Double_t up = forwarddNdedp.GetBinContent(etaBin, 19);
      Double_t low = forwarddNdedp.GetBinContent(etaBin, 16);
      weight = ((up+low/2)+low)/2;
-    std::cout << weight << std::endl;
+    //std::cout << weight << std::endl;
   }
   if ((phiBin == 14) && (etaBin > 168 && etaBin < 185)){
     if (weight > 0) return weight;

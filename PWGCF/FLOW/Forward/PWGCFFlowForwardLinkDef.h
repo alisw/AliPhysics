@@ -10,6 +10,5 @@
 #pragma link C++ class AliForwardNUATask+;
 #pragma link C++ class AliForwardNUETask+;
 #pragma link C++ class AliForwardSecondariesTask+;
-#pragma link C++ class AliForwardMCClosure+;
 
 #endif /* __CINT__ */

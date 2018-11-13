@@ -1,14 +1,14 @@
 //
-// Helper class to calculate Q cumulant in forward & central regions 
+// Helper class to calculate Q cumulant in forward & central regions
 //
 #ifndef AliForwardGenericFramework_H
 #define AliForwardGenericFramework_H
 /**
  * @file AliForwardGenericFramework.h
  * @author Freja Thoresen <freja.thoresen@cern.ch>
- * 
+ *
  * @brief
- * 
+ *
  * @ingroup pwgcf_forward_flow
  */
 #include <TObject.h>
@@ -35,16 +35,16 @@ public:
   AliForwardGenericFramework();
 
   /**
-   * Destructor 
+   * Destructor
    */
   virtual ~AliForwardGenericFramework(){}
-   
-    
+
+
   AliForwardFlowRun2Settings fSettings;
   /**
-   * Do cumulants calculations for current event with 
+   * Do cumulants calculations for current event with
    * centrality cent
-   * 
+   *
    * @param cent Event centrality
    */
   void CumulantsAccumulate(TH2D& dNdetadphi, TList* outputList, double cent,double vertexpos,TString detType,Bool_t doRefFlow, Bool_t doDiffFlow);

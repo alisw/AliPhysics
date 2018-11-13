@@ -72,7 +72,7 @@ class AliForwardFlowRun2Settings : public TObject {
 
   TString centrality_estimator;
   // return true if good event
-  Bool_t ExtraEventCutFMD(TH2D forwarddNdedp, double cent, Bool_t mc);
+  Bool_t ExtraEventCutFMD(TH2D& forwarddNdedp, double cent, Bool_t mc);
 
   // flags used for method of cumulant
   enum EFlowFlags {

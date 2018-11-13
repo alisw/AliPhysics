@@ -18,6 +18,7 @@
 #include "TRandom.h"
 #include "AliForwardFlowRun2Settings.h"
 #include "AliEventCuts.h"
+#include "AliForwardGenericFramework.h"
 #include <TF1.h>
 
 class AliAODForwardMult;
@@ -30,6 +31,7 @@ class TParticle;
 class TCutG;
 class TH2D;
 class AliESDEvent;
+
 /**
  * @defgroup pwglf_forward_tasks_flow Flow tasks
  *
@@ -91,7 +93,8 @@ public:
    */
   virtual void UserExec(Option_t *option);
 
-  void FillHists(TH2D centraldNdedp, TH2D forwarddNdedp);
+  void FillCentral();
+  void FillForward();
 
 // Check if a given particle itself hit the FMD. If so, return the
   // (first) track reference of such a hit
@@ -109,6 +112,11 @@ public:
    */
   virtual void Terminate(Option_t *option);
 
+  void FillFromTrackrefs(TH2D*& fwd, TH2D*& cen) const;
+  void FillFromPrimaries(TH2D*& fwd, TH2D*& cen) const;
+  void FillFromTracklets(TH2D*& cen) const;
+  void FillFromTracks(TH2D*& cen) const;
+
   //private:
   AliAODEvent*            fAOD;           //! input event
   AliMCEvent*            fAODMC;           //! input event
@@ -116,14 +124,19 @@ public:
   TList*    fAnalysisList; //!
 
   TList* fEventList; //!
-  TRandom fRandom;
+  TRandom fRandom; //!
+
+  TH2D*   centralDist;//!
+  TH2D*   forwardDist;//!
+
+  AliForwardGenericFramework calculator; //!
 
   // A class combining all the settings for this analysis
   AliForwardFlowRun2Settings fSettings;
 
-AliEventCuts fEventCuts;
+  AliEventCuts fEventCuts;
 
-Bool_t useEvent;
+  Bool_t useEvent;
 
 
 

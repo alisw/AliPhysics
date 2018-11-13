@@ -112,7 +112,7 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2(bool nua_mode, bool doetagap, bool doN
 
   task->fSettings.centrality_estimator = centrality; // "V0M";// RefMult08; // "V0M" // "SPDTracklets";
   std::cout << "Container name: " << resName << std::endl;
-  resName = "hej";
+  //resName = "hej";
   std::cout << "______________________________________________________________________________" << std::endl;
 
   AliAnalysisDataContainer *coutput_recon =

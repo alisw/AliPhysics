@@ -35,7 +35,7 @@ AliForwardFlowRun2Settings::AliForwardFlowRun2Settings() :
 }
 
 
-Bool_t AliForwardFlowRun2Settings::ExtraEventCutFMD(TH2D forwarddNdedp, double cent, Bool_t mc){
+Bool_t AliForwardFlowRun2Settings::ExtraEventCutFMD(TH2D& forwarddNdedp, double cent, Bool_t mc){
   Bool_t useEvent = true;
   Int_t nBadBins = 0;
   Int_t phibins = forwarddNdedp.GetNbinsY();
@@ -51,11 +51,11 @@ Bool_t AliForwardFlowRun2Settings::ExtraEventCutFMD(TH2D forwarddNdedp, double c
 
 
     for (Int_t phiBin = 0; phiBin <= phibins; phiBin++) {
-      if (!mc){
-        if ( fabs(eta) > 1.7) {
-          if (phiBin == 0 && forwarddNdedp.GetBinContent(etaBin, 0) == 0) useEvent = false;
-        }
-      }
+      // if (!mc){
+      //   if ( fabs(eta) > 1.7) {
+      //     if (phiBin == 0 && forwarddNdedp.GetBinContent(etaBin, 0) == 0) break;
+      //   }
+      // }
       Double_t weight = forwarddNdedp.GetBinContent(etaBin, phiBin);
       if (!weight){
         weight = 0;

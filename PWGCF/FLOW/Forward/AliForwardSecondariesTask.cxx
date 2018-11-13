@@ -314,7 +314,7 @@ std::cout << cent << std::endl;
 std::cout << "nPrim = " << nPrim << std::endl;
 
 
-  UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
+  //UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
 
   static_cast<TH1D*>(fEventList->FindObject("Centrality"))->Fill(v0cent);
   static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(event_vtx_z);
@@ -329,10 +329,10 @@ THnD* delta_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_eta"));
 
 
   THnD* fnoPrim = static_cast<THnD*>(fDeltaList->FindObject("fnoPrim"));//->Fill(event_vtx_z,event_vtx_z,event_vtx_z);
-  TList* eventList = static_cast<TList*>(fOutputList->FindObject("EventInfo"));
+  //TList* eventList = static_cast<TList*>(fOutputList->FindObject("EventInfo"));
 
-  const AliVVertex* aodVtx = fAOD->GetPrimaryVertex();
-  Double_t vertex  = aodVtx->GetZ();
+  //const AliVVertex* aodVtx = fAOD->GetPrimaryVertex();
+  //Double_t vertex  = aodVtx->GetZ();
 
   /*for (Int_t iTr = 0; iTr < nTracks; iTr++) {
     AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
@@ -351,7 +351,7 @@ THnD* delta_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_eta"));
 
 
   if (useEvent){
-  UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
+  Double_t randomInt = static_cast<Double_t>(fRandom.Integer(fSettings.fnoSamples));
   std::vector< Int_t > listOfMothers;
 
   for (Int_t iTr = 0; iTr < nTracks; iTr++) {

@@ -45,20 +45,25 @@
 #include "AliStack.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
-#include "AliForwardSecondariesTask.h"
+//#include "AliForwardSecondariesTask.h"
 using namespace std;
 ClassImp(AliForwardFlowRun2Task)
 #if 0
 ; // For emacs
 #endif
 
+
 //_____________________________________________________________________
 AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
   fAOD(0),           // input event
+  fAODMC(0),           // input event
   fOutputList(0),    // output list
   fAnalysisList(0),
   fEventList(0),
   fRandom(0),
+  centralDist(),
+  forwardDist(),
+  calculator(),
   fSettings(),
   fEventCuts(),
   useEvent(true)
@@ -71,10 +76,14 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
 //_____________________________________________________________________
   AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTaskSE(name),
   fAOD(0),           // input event
+  fAODMC(0),           // input event
   fOutputList(0),    // output list
   fAnalysisList(0),
   fEventList(0),
   fRandom(0),
+  centralDist(),
+  forwardDist(),
+  calculator(),
   fSettings(),
   fEventCuts(),
   useEvent(true)
@@ -94,6 +103,8 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
     //
     //  Create output objects
     //
+    bool saveAutoAdd = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(false);
 
     fOutputList = new TList();          // the final output list
     fOutputList->SetOwner(kTRUE);       // memory stuff: the list is owner of all objects it contains and will delete them if requested
@@ -155,7 +166,10 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
       static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d", n)))->GetAxis(3)->SetName("cent");
       static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d", n)))->GetAxis(4)->SetName("identifier");
     }
+
+
     PostData(1, fOutputList);
+    TH1::AddDirectory(saveAutoAdd);
   }
 
 
@@ -168,76 +182,89 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   //  Parameters:
   //   option: Not used
   //
-  AliAODForwardMult* aodfmult = 0;
-  TH2D centraldNdedp;
-  TH2D forwarddNdedp;
-  AliMCEvent* fAODMC;
-  if (fSettings.mc){
+
+  Double_t centralEta = (fSettings.useSPD ? 2.5 : 1.5);
+  TH2D centralDist_tmp = TH2D("c","",400,-centralEta,centralEta,400,0,2*TMath::Pi());
+  centralDist_tmp.SetDirectory(0);
+
+  TH2D forwardTrRef  ("ft","",200,-4,6,20,0,TMath::TwoPi());
+  TH2D forwardPrim  ("fp","",400,-4,6,400,0,TMath::TwoPi());
+  forwardTrRef.SetDirectory(0);
+  forwardPrim.SetDirectory(0);
+
+  centralDist = &centralDist_tmp;
+  centralDist->SetDirectory(0);
+
+  // std::cout << "" << '\n';
+  // std::cout << "construction finished" << '\n';
+
+  // std::cout << "freed directories for temps" << '\n';
+
+  if (!fSettings.mc) {
+    // std::cout << "Not MC" << '\n';
+
+    AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
+    // std::cout << "Got AOD" << '\n';
+
+    if(!aodevent)
+      throw std::runtime_error("Not AOD as expected");
+
+    //..AliEventCuts selection
+    // if (!fEventCuts.AcceptEvent(fInputEvent)) {
+    //   PostData(1, fOutputList);
+
+
+    //   return;
+    // }
+    // std::cout << "is AOD" << '\n';
+
+    AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(aodevent->FindListObject("Forward"));
+    forwardDist = &aodfmult->GetHistogram();
+    // std::cout << "Got the forward histogram" << '\n';
+
+    if (fSettings.useSPD) FillFromTracklets(centralDist);
+    else                  FillFromTracks(centralDist);
+    // std::cout << "filled central" << '\n';
+
+  }
+  else {
     fAODMC = this->MCEvent();
-    if(!fAOD){
-      Printf("%s:%d AODEvent not found in Input Manager",(char*)__FILE__,__LINE__);
-      return;
-    }
-    if (fSettings.use_primaries) forwarddNdedp = TH2D("forwarddNdedp","forwarddNdedp",400,-4,6,400,0,2*TMath::Pi());
-    else forwarddNdedp = TH2D("forwarddNdedp","forwarddNdedp",200,-4,6,20,0,2*TMath::Pi());
+    if(!fAODMC)
+      throw std::runtime_error("Not MC as expected");
 
-    if (fSettings.esd){
-      AliStack* stack = fAODMC->Stack();
-    }
-  }
-  else{
-    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+    forwardDist = (fSettings.use_primaries ? &forwardPrim : &forwardTrRef);
 
-    //..check if I have AOD
-    if(!fAOD){
-      Printf("%s:%d AODEvent not found in Input Manager",(char*)__FILE__,__LINE__);
-      return;
-    }
-    aodfmult = static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
-    forwarddNdedp = aodfmult->GetHistogram();
+    if (!fSettings.use_primaries) FillFromTrackrefs(centralDist, forwardDist);
+    else                          FillFromPrimaries(centralDist, forwardDist);
   }
-
-  //..AliEventCuts selection
-  if (!fSettings.esd && !fEventCuts.AcceptEvent(fInputEvent)) {
-    PostData(1, fOutputList);
-    return;
-  }
+  forwardDist->SetDirectory(0);
 
   // Get centrality
-  AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
+  AliMultSelection *MultSelection = (AliMultSelection*)dynamic_cast<AliAODEvent*>(InputEvent())->FindListObject("MultSelection");
   double cent = MultSelection->GetMultiplicityPercentile(fSettings.centrality_estimator);
+  // std::cout << "got mult selection" << '\n';
 
   // Get vertex
-  double zvertex = fAOD->GetPrimaryVertex()->GetZ();
+  double zvertex = dynamic_cast<AliAODEvent*>(InputEvent())->GetPrimaryVertex()->GetZ();
 
-if (fSettings.useSPD) centraldNdedp = TH2D("centraldNdedp","centraldNdedp",400,-2.5,2.5,400,0,2*TMath::Pi());
-else centraldNdedp = TH2D("centraldNdedp","centraldNdedp",400,-1.5,1.5,400,0,2*TMath::Pi());
-
-
-
-  FillHists(centraldNdedp, forwarddNdedp);
-
-  if (!fSettings.ExtraEventCutFMD(forwarddNdedp, cent, fSettings.mc)) {
+  if (!fSettings.ExtraEventCutFMD(*forwardDist, cent, fSettings.mc)) {
     useEvent = false;
+    static_cast<TH1D*>(fEventList->FindObject("EventCuts_FMD"))->Fill(1.0);
   }
-  static_cast<TH1D*>(fEventList->FindObject("FMDHits"))->Fill(0.5);
 
   if (useEvent){
-    static_cast<TH1D*>(fEventList->FindObject("FMDHits"))->Fill(1.5);
-
     UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
 
     static_cast<TH1D*>(fEventList->FindObject("Centrality"))->Fill(cent);
     static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(zvertex);
 
     //AliForwardQCumulantRun2 calculator = AliForwardQCumulantRun2();
-    AliForwardGenericFramework calculator = AliForwardGenericFramework();
     calculator.fSettings = fSettings;
 
-    calculator.CumulantsAccumulate(centraldNdedp,fOutputList, cent, zvertex,"central",true,true);
-    calculator.CumulantsAccumulate(forwarddNdedp, fOutputList, cent, zvertex,"forward",false,true);
+    calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",true,true);
+    //calculator.CumulantsAccumulate(*forwardDist, fOutputList, cent, zvertex,"forward",false,true);
     calculator.saveEvent(fOutputList, cent, zvertex,  randomInt);
-    calculator.reset();
+    //calculator.reset();
 
     PostData(1, fOutputList);
   }
@@ -245,71 +272,72 @@ else centraldNdedp = TH2D("centraldNdedp","centraldNdedp",400,-1.5,1.5,400,0,2*T
 }
 
 
-void AliForwardFlowRun2Task::FillHists(TH2D centraldNdedp, TH2D forwarddNdedp){
-  TH1D* dNdeta = static_cast<TH1D*>(fEventList->FindObject("dNdeta"));
+void AliForwardFlowRun2Task::FillFromTrackrefs(TH2D*& fwd, TH2D*& cen) const
+{
+  Int_t nTracks = this->MCEvent()->Stack()->GetNtrack();
 
-  if (fSettings.mc && fSettings.esd && !fSettings.use_primaries){
-    Int_t nTracks = this->MCEvent()->Stack()->GetNtrack();
-
-    for (Int_t iTr = 0; iTr < nTracks; iTr++) {
-        AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
-      if (p->Charge() == 0) continue;
-
-      if (AliTrackReference *ref = this->IsHitFMD(p)) {
-        forwarddNdedp.Fill(p->Eta(),p->Phi(),1);
-        dNdeta->Fill(p->Eta(),1);
-      }
-      if (AliTrackReference *ref = this->IsHitTPC(p)) {
-        centraldNdedp.Fill(p->Eta(),p->Phi(),1);
-        dNdeta->Fill(p->Eta(),1);
-      }
-    }
-  }
-
-  else if (fSettings.use_primaries && fSettings.mc){
-    Int_t nTracksMC   = this->MCEvent()->GetNumberOfTracks();
-
-    for (Int_t iTr = 0; iTr < nTracksMC; iTr++) {
+  for (Int_t iTr = 0; iTr < nTracks; iTr++) {
       AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
-      if (!p->IsPhysicalPrimary()) continue;
-      if (p->Charge() == 0) continue;
+    if (p->Charge() == 0) continue;
 
-      if ( (p->Eta() < -1.7 && p->Eta() > -3.4) || (p->Eta() > 1.7 && p->Eta() < 5.0) ){
-        forwarddNdedp.Fill(p->Eta(),p->Phi());
-        dNdeta->Fill(p->Eta(),1);
-      }
-      if (p->Pt()>=0.2 && p->Pt()<=5) {
-        if (fabs(p->Eta()) < 1.1) {
-          centraldNdedp.Fill(p->Eta(),p->Phi());
-          dNdeta->Fill(p->Eta(),1);
-        }
-      }
+    for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
+      AliTrackReference* ref = p->GetTrackReference(iTrRef);
+      // Check hit on FMD
+      if (!ref) continue;
+      if (AliTrackReference::kTPC != ref->DetectorId())
+        cen->Fill(p->Eta(),p->Phi());
+      else if (AliTrackReference::kFMD != ref->DetectorId())
+        fwd->Fill(p->Eta(),p->Phi());
     }
   }
-  else if (fSettings.fFlowFlags & fSettings.kSPD){
-    AliAODTracklets* aodTracklets = fAOD->GetTracklets();
+}
 
-    for (Int_t i = 0; i < aodTracklets->GetNumberOfTracklets(); i++) {
-      centraldNdedp.Fill(aodTracklets->GetEta(i),aodTracklets->GetPhi(i), 1);
-      dNdeta->Fill(aodTracklets->GetEta(i),1);
+void AliForwardFlowRun2Task::FillFromPrimaries(TH2D*& fwd, TH2D*& cen) const
+{
+  Int_t nTracksMC   = this->MCEvent()->GetNumberOfTracks();
+
+  for (Int_t iTr = 0; iTr < nTracksMC; iTr++) {
+    AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
+    if (!p->IsPhysicalPrimary()) continue;
+    if (p->Charge() == 0) continue;
+
+    Double_t eta = p->Eta();
+    if (eta < cen->GetXaxis()->GetXmax() && eta > cen->GetXaxis()->GetXmin()) {
+      if (p->Pt()>=0.2 && p->Pt()<=5)
+        cen->Fill(eta,p->Phi());
+    }
+    if (eta < 5 /*fwd->GetXaxis()-GetXmax()*/ && eta > -3.5 /*fwd->GetXaxis()-GetXmin()*/) {
+      if (TMath::Abs(eta) >= 1.7)
+        fwd->Fill(eta,p->Phi());
     }
   }
-  else{
-    Int_t  iTracks(fAOD->GetNumberOfTracks());
-    for(Int_t i(0); i < iTracks; i++) {
+}
 
-    // loop  over  all  the  tracks
-      AliAODTrack* track = static_cast<AliAODTrack *>(fAOD->GetTrack(i));
-      if (track->TestFilterBit(fSettings.tracktype)){
-        if (track->Pt() >= 0.2 && track->Pt() <= 5){
-          centraldNdedp.Fill(track->Eta(),track->Phi(), 1);
-          dNdeta->Fill(track->Eta(),1);
-        }
-      }
-    }
-    for (Int_t etaBin = 1; etaBin <= forwarddNdedp.GetNbinsX(); etaBin++) {
-      for (Int_t phiBin = 1; phiBin <= forwarddNdedp.GetNbinsY(); phiBin++) {
-         dNdeta->Fill(forwarddNdedp.GetXaxis()->GetBinCenter(etaBin),forwarddNdedp.GetBinContent(etaBin, phiBin));
+void AliForwardFlowRun2Task::FillFromTracklets(TH2D*& cen) const {
+  AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
+
+  AliAODTracklets* aodTracklets = aodevent->GetTracklets();
+
+  for (Int_t i = 0; i < aodTracklets->GetNumberOfTracklets(); i++) {
+    cen->Fill(aodTracklets->GetEta(i),aodTracklets->GetPhi(i), 1);
+  }
+}
+
+
+void AliForwardFlowRun2Task::FillFromTracks(TH2D*& cen) const {
+  // std::cout << "FillFromTracks" << '\n';
+  // std::cout << "Tracktype = " << fSettings.tracktype << '\n';
+  AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
+
+  Int_t  iTracks(aodevent->GetNumberOfTracks());
+  for(Int_t i(0); i < iTracks; i++) {
+
+  // loop  over  all  the  tracks
+    AliAODTrack* track = static_cast<AliAODTrack *>(aodevent->GetTrack(i));
+    if (track->TestFilterBit(fSettings.tracktype)){
+      if (track->Pt() >= 0.2 && track->Pt() <= 5){
+        // std::cout << "Filling.." << '\n';
+        cen->Fill(track->Eta(),track->Phi(), 1);
       }
     }
   }
@@ -350,6 +378,9 @@ AliTrackReference* AliForwardFlowRun2Task::IsHitTPC(AliMCParticle* p) {
 //_____________________________________________________________________
 void AliForwardFlowRun2Task::Terminate(Option_t */*option*/)
 {
+  std::cout << "Terminating" << '\n';
+  //delete centralDist;
+  //delete forwardDist;
   return;
 }
 

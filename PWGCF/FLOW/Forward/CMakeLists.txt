@@ -47,7 +47,6 @@ set(SRCS
   AliForwardQCumulantRun2.cxx
   AliForwardFlowRun2Task.cxx
   AliForwardSecondariesTask.cxx
-  AliForwardMCClosure.cxx
   )
 
 # Headers from sources

@@ -6,9 +6,9 @@
 /**
  * @file AliForwardSecondariesTask.h
  * @author Freja Thoresen <freja.thoresen@cern.ch>
- * 
+ *
  * @brief
- * 
+ *
  * @ingroup pwgcf_forward_flow
  */
 #include "AliAnalysisTaskSE.h"
@@ -28,9 +28,9 @@ class AliAODForwardMult;
 class TH2D;
 class AliESDEvent;
 /**
- * @defgroup pwglf_forward_tasks_flow Flow tasks 
+ * @defgroup pwglf_forward_tasks_flow Flow tasks
  *
- * Code to do flow 
+ * Code to do flow
  *
  * @ingroup pwglf_forward_tasks
  */
@@ -49,14 +49,14 @@ class AliESDEvent;
 class AliForwardSecondariesTask : public AliAnalysisTaskSE
 {
 public:
-  /** 
-   * Constructor 
+  /**
+   * Constructor
    */
   AliForwardSecondariesTask();
-  /** 
+  /**
    * Constructor
-   * 
-   * @param name Name of task 
+   *
+   * @param name Name of task
    */
   AliForwardSecondariesTask(const char* name);
   /**
@@ -64,34 +64,34 @@ public:
    */
   virtual ~AliForwardSecondariesTask() {}
 
-  /** 
-   * Copy constructor 
-   * 
-   * @param o Object to copy from 
+  /**
+   * Copy constructor
+   *
+   * @param o Object to copy from
    */
   AliForwardSecondariesTask(const AliForwardSecondariesTask& o);
 
-  /** 
-   * @{ 
-   * @name Task interface methods 
+  /**
+   * @{
+   * @name Task interface methods
    */
 
-  /** 
-   * Create output objects 
+  /**
+   * Create output objects
    */
   virtual void UserCreateOutputObjects();
-  
-  /** 
-   * Process each event 
+
+  /**
+   * Process each event
    *
    * @param option Not used
-   */  
+   */
   virtual void UserExec(Option_t *option);
 
-  /** 
+  /**
    * End of job
-   * 
-   * @param option Not used 
+   *
+   * @param option Not used
    */
   virtual void Terminate(Option_t *option);
 
@@ -143,7 +143,7 @@ Double_t WrapPi(Double_t phi);
   // Check if a given particle itself hit the FMD. If so, return the
   // (first) track reference of such a hit
   AliTrackReference* IsHitITS(AliMCParticle* p);
-  
+
   // Get an iterable container of all the daughters of a given particle
   std::vector< AliMCParticle* > GetDaughters(AliMCParticle* p);
   // Get the number of hits which p's chain causes on the FMD
@@ -161,11 +161,11 @@ Double_t WrapPi(Double_t phi);
 
   //private:
   TList*                  fOutputList;    //! output list
-  //TList* fDiffList; //! 
-  TList* fEventList; //! 
+  //TList* fDiffList; //!
+  TList* fEventList; //!
   TList* fDeltaList; //!
   TRandom fRandom;
-  
+
   // A class combining all the settings for this analysis
   AliForwardFlowRun2Settings fSettings;
 
@@ -175,15 +175,15 @@ TF1 *fMultCentLowCut; //!
 
 
   // Simple dN/deta of particles hitting the ITS or FMD
-  TH1F *fdNdeta;
-  
+  TH1F *fdNdeta;//!
+
   // Check to see the abundance of pi0 and pich in a sample
-  TH1F *fPiCheck;
+  TH1F *fPiCheck;//!
 
   // dN/deta distribution based on origin of particles
-  TH2F *fdNdetaOrigin;
+  TH2F *fdNdetaOrigin;//!
   // X-ray plot showing the origin of secondary particles
-  TH2F *fxray;
+  TH2F *fxray;//!
   // Distribution of observed particles relative to their primary particle
   THn *fNsecondaries; //!
   // Efficiency of various particle species to produces hits on the FMD
@@ -213,7 +213,7 @@ protected:
 
   // Find the primary particle of a decay chain if it is charged.
   // If `p` is alreay the primary return p. If it was not possible
-  // to find the mother or if the mother was not charged, return NULL 
+  // to find the mother or if the mother was not charged, return NULL
   AliMCParticle* GetChargedMother(AliMCParticle*);
 
   // Complimentary to `GetChargedMother`
@@ -252,5 +252,5 @@ protected:
 
 #endif
 // Local Variables:
-//   mode: C++ 
+//   mode: C++
 // End:
