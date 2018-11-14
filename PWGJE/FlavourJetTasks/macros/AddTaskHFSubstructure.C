@@ -1,4 +1,4 @@
-AliAnalysisTaskHFSubstructure* AddTaskAliAnalysisTaskHFSubstructure(const char * ntracksData,
+AliAnalysisTaskHFSubstructure* AddTaskHFSubstructure(const char * ntracksData,
                                                                     const char * ntracksDet,
                                                                     const char * ntracksTrue,
 								    const Double_t R,
@@ -10,7 +10,7 @@ AliAnalysisTaskHFSubstructure* AddTaskAliAnalysisTaskHFSubstructure(const char *
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
     {
-      Error("AddTaskAliAnalysisTaskHFSubstructure","No analysis manager found.");
+      Error("AddTaskHFSubstructure","No analysis manager found.");
       return 0;
     }
   Bool_t ismc=kFALSE;
