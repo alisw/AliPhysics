@@ -183,11 +183,6 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
       }
     }
 
-
-    if(inputHandler->IsA()==AliAODInputHandler::Class()){
-      // AOD mode
-      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
-    }
     fV0ReaderV1->Init();
 
     AliLog::SetGlobalLogLevel(AliLog::kInfo);
@@ -279,6 +274,10 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCut("00010103", "00000009266302008750404000");
     cuts.AddCut("00010103", "00000009266300008650404000");
     cuts.AddCut("00010103", "0d0000d9266300008850404000");   // increased pT to 60 MeV for e+e-
+ } else if (trainConfig == 25) {
+    cuts.AddCut("00010103", "00000009a27300008250a04120");
+    cuts.AddCut("00010103", "0c000009a27300008250a04120");
+    cuts.AddCut("00010103", "0d000009a27300008250a04120");
 
    // Offline V0Finder is used
 
@@ -342,7 +341,11 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCut("00010103", "10000009266302008750404000");
     cuts.AddCut("00010103", "10000009266300008650404000");
     cuts.AddCut("00010103", "1d0000d9266300008850404000");   // increased pT to 60 MeV for e+e-
-
+ } else if (trainConfig == 125) {
+    cuts.AddCut("00010103", "10000009a27300008250a04120");
+    cuts.AddCut("00010103", "1c000009a27300008250a04120");
+    cuts.AddCut("00010103", "1d000009a27300008250a04120");
+    
   } else  if(trainConfig == 111){
     cuts.AddCut("00000003", "10000070000000000500004000");
   // 7 TeV testconfig for pileup checks
@@ -404,7 +407,8 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     TString mcInputMultHisto    = "";
     if (doMultiplicityWeighting>0){
       cout << "INFO enableling mult weighting" << endl;
-      if( periodNameAnchor.CompareTo("LHC16d")==0  || 
+      if( periodNameAnchor.CompareTo("LHC15n")==0  ||
+	  periodNameAnchor.CompareTo("LHC16d")==0  ||
 	  periodNameAnchor.CompareTo("LHC17p")==0  ||  
 	  periodNameAnchor.CompareTo("LHC17q")==0  ){
 	TString cutNumber = cuts.GetEventCut(i);
