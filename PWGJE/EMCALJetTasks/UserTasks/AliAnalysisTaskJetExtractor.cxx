@@ -95,7 +95,7 @@ AliEmcalJetTree::AliEmcalJetTree(const char* name) : TNamed(name, name), fJetTre
 
 //________________________________________________________________________
 Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t vertexX, Float_t vertexY, Float_t vertexZ, Float_t centrality, Long64_t eventID, Float_t magField,
-  Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchedPt, Float_t truePtFraction, Float_t ptHard, Float_t eventWeight, Float_t impactParameter,
+  Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchDistance, Float_t matchedPt, Float_t matchedMass, Float_t truePtFraction, Float_t ptHard, Float_t eventWeight, Float_t impactParameter,
   Float_t* trackPID_ITS, Float_t* trackPID_TPC, Float_t* trackPID_TOF, Float_t* trackPID_TRD, Short_t* trackPID_Reco, Int_t* trackPID_Truth,
   Int_t numTriggerTracks, Float_t* triggerTrackPt, Float_t* triggerTrackDeltaEta, Float_t* triggerTrackDeltaPhi,
   Float_t* trackIP_d0, Float_t* trackIP_z0, Float_t* trackIP_d0cov, Float_t* trackIP_z0cov,
@@ -139,6 +139,7 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t vertexX, Float_t 
   if(fSaveEventProperties)
   {
     fBuffer_Event_BackgroundDensity               = fJetContainer->GetRhoVal();
+    fBuffer_Event_BackgroundDensityMass           = fJetContainer->GetRhoMassVal();
     fBuffer_Event_Vertex_X                        = vertexX;
     fBuffer_Event_Vertex_Y                        = vertexY;
     fBuffer_Event_Vertex_Z                        = vertexZ;
@@ -214,7 +215,7 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t vertexX, Float_t 
   }
 
   // Set jet shape observables
-  fBuffer_Shape_Mass  = jet->M() - fJetContainer->GetRhoMassVal();
+  fBuffer_Shape_Mass  = jet->M() - fJetContainer->GetRhoMassVal()*jet->Area();
 
   // Set Monte Carlo information
   if(fSaveMCInformation)
@@ -222,7 +223,9 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t vertexX, Float_t 
     fBuffer_Jet_MC_MotherParton = motherParton;
     fBuffer_Jet_MC_MotherHadron = motherHadron;
     fBuffer_Jet_MC_MotherIC = partonInitialCollision;
+    fBuffer_Jet_MC_MatchDistance = matchDistance;
     fBuffer_Jet_MC_MatchedPt = matchedPt;
+    fBuffer_Jet_MC_MatchedMass = matchedMass;
     fBuffer_Jet_MC_TruePtFraction = truePtFraction;
   }
 
@@ -267,6 +270,7 @@ void AliEmcalJetTree::InitializeTree()
   if(fSaveEventProperties)
   {
     fJetTree->Branch("Event_BackgroundDensity",&fBuffer_Event_BackgroundDensity,"Event_BackgroundDensity/F");
+    fJetTree->Branch("Event_BackgroundDensityMass",&fBuffer_Event_BackgroundDensityMass,"Event_BackgroundDensityMass/F");
     fJetTree->Branch("Event_Vertex_X",&fBuffer_Event_Vertex_X,"Event_Vertex_X/F");
     fJetTree->Branch("Event_Vertex_Y",&fBuffer_Event_Vertex_Y,"Event_Vertex_Y/F");
     fJetTree->Branch("Event_Vertex_Z",&fBuffer_Event_Vertex_Z,"Event_Vertex_Z/F");
@@ -326,7 +330,9 @@ void AliEmcalJetTree::InitializeTree()
     fJetTree->Branch("Jet_MC_MotherParton",&fBuffer_Jet_MC_MotherParton,"Jet_MC_MotherParton/I");
     fJetTree->Branch("Jet_MC_MotherHadron",&fBuffer_Jet_MC_MotherHadron,"Jet_MC_MotherHadron/I");
     fJetTree->Branch("Jet_MC_MotherIC",&fBuffer_Jet_MC_MotherIC,"Jet_MC_MotherIC/I");
+    fJetTree->Branch("Jet_MC_MatchDistance",&fBuffer_Jet_MC_MatchDistance,"Jet_MC_MatchDistance/F");
     fJetTree->Branch("Jet_MC_MatchedPt",&fBuffer_Jet_MC_MatchedPt,"Jet_MC_MatchedPt/F");
+    fJetTree->Branch("Jet_MC_MatchedMass",&fBuffer_Jet_MC_MatchedMass,"Jet_MC_MatchedMass/F");
     fJetTree->Branch("Jet_MC_TruePtFraction",&fBuffer_Jet_MC_TruePtFraction,"Jet_MC_TruePtFraction/F");
   }
 
@@ -383,6 +389,7 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fTruthParticleArray(0),
   fTruthJetsArrayName(""),
   fTruthJetsRhoName(""),
+  fTruthJetsRhoMassName(""),
   fTruthParticleArrayName("mcparticles"),
   fRandomGenerator(0),
   fRandomGeneratorCones(0),
@@ -430,6 +437,7 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fTruthParticleArray(0),
   fTruthJetsArrayName(""),
   fTruthJetsRhoName(""),
+  fTruthJetsRhoMassName(""),
   fTruthParticleArrayName("mcparticles"),
   fRandomGenerator(0),
   fRandomGeneratorCones(0),
@@ -519,6 +527,10 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
 void AliAnalysisTaskJetExtractor::ExecOnce()
 {
   AliAnalysisTaskEmcalJet::ExecOnce();
+
+  // ### Need to explicitly tell jet container to load rho mass object
+  fJetsCont->LoadRhoMass(InputEvent());
+
   if (fTruthParticleArrayName != "")
     fTruthParticleArray = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTruthParticleArrayName.Data()));
 
@@ -619,7 +631,9 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
   {
     FillJetControlHistograms(jet);
 
+    Double_t matchDistance = 0;
     Double_t matchedJetPt = 0;
+    Double_t matchedJetMass = 0;
     Double_t truePtFraction = 0;
     Int_t currentJetType_HM = 0;
     Int_t currentJetType_PM = 0;
@@ -628,8 +642,9 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     {
       // Get jet type from MC (hadron matching, parton matching definition - for HF jets)
       GetJetType(jet, currentJetType_HM, currentJetType_PM, currentJetType_IC);
-      // Get true pT estimators
-      GetJetTruePt(jet, matchedJetPt, truePtFraction);
+      // Get true estimators: for pt, jet mass, ...
+      truePtFraction = GetTrueJetPtFraction(jet);
+      matchDistance = GetMatchedTrueJetObservables(jet, matchedJetPt, matchedJetMass);
     }
 
     // ### CONSTITUENT LOOP: Retrieve PID values + impact parameters
@@ -674,7 +689,7 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
 
     // Fill jet to tree
     Bool_t accepted = fJetTree->AddJetToTree(jet, vtxX, vtxY, vtxZ, fCent, eventID, InputEvent()->GetMagneticField(),
-              currentJetType_PM,currentJetType_HM,currentJetType_IC,matchedJetPt,truePtFraction,fPtHard,fEventWeight,fImpactParameter,
+              currentJetType_PM,currentJetType_HM,currentJetType_IC,matchDistance,matchedJetPt,matchedJetMass,truePtFraction,fPtHard,fEventWeight,fImpactParameter,
               vecSigITS, vecSigTPC, vecSigTOF, vecSigTRD, vecRecoPID, vecTruePID,
               fTriggerTracks_Pt, triggerTracks_dEta, triggerTracks_dPhi,
               vec_d0, vec_z0, vec_d0cov, vec_z0cov,
@@ -722,25 +737,57 @@ Bool_t AliAnalysisTaskJetExtractor::IsTriggerTrackInEvent()
   return kTRUE;
 }
 
-
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractor::GetJetTruePt(AliEmcalJet* jet, Double_t& matchedJetPt, Double_t& truePtFraction)
+Double_t AliAnalysisTaskJetExtractor::GetTrueJetPtFraction(AliEmcalJet* jet)
 {
   // #################################################################################
-  // ##### METHOD 1: If fTruthJetsArrayName is set, a matching jet is searched for
-  Double_t     bestMatchDeltaR = 999.;
+  // ##### FRACTION OF TRUE PT IN JET: Defined as "not from toy"
+  Double_t pt_nonMC = 0.;
+  Double_t pt_all   = 0.;
+  Double_t truePtFraction = 0;
+
+  for(Int_t iConst = 0; iConst < jet->GetNumberOfTracks(); iConst++)
+  {
+    // Loop over all valid jet constituents
+    AliVParticle* particle = static_cast<AliVParticle*>(jet->TrackAt(iConst, fTracksCont->GetArray()));
+    if(!particle) continue;
+    if(particle->Pt() < 1e-6) continue;
+
+    // Particles marked w/ labels within label range are considered from toy
+    if( (particle->GetLabel() >= fTruthMinLabel) && (particle->GetLabel() < fTruthMaxLabel))
+      pt_nonMC += particle->Pt();
+    pt_all += particle->Pt();
+  }
+  if(pt_all)
+    truePtFraction = (pt_nonMC/pt_all);
+  return truePtFraction;
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskJetExtractor::GetMatchedTrueJetObservables(AliEmcalJet* jet, Double_t& matchedJetPt, Double_t& matchedJetMass)
+{
+  // #################################################################################
+  // ##### OBSERVABLES FROM MATCHED JETS: Jet pt, jet mass
+  Double_t     bestMatchDeltaR = 8.; // 8 is higher than maximum possible matching distance
   if(fTruthJetsArrayName != "")
   {
-    // "True" background
+    // "True" background for pt
     AliRhoParameter* rho = static_cast<AliRhoParameter*>(InputEvent()->FindListObject(fTruthJetsRhoName.Data()));
     Double_t trueRho = 0;
     if(rho)
      trueRho = rho->GetVal();
 
+    // "True" background for mass
+    AliRhoParameter* rhoMass = static_cast<AliRhoParameter*>(InputEvent()->FindListObject(fTruthJetsRhoMassName.Data()));
+    Double_t trueRhoMass = 0;
+    if(rhoMass)
+     trueRhoMass = rhoMass->GetVal();
+
     TClonesArray* truthArray = static_cast<TClonesArray*>(InputEvent()->FindListObject(Form("%s", fTruthJetsArrayName.Data())));
 
     // Loop over all true jets to find the best match
     matchedJetPt = 0;
+    matchedJetMass = 0;
     if(truthArray)
       for(Int_t i=0; i<truthArray->GetEntries(); i++)
       {
@@ -760,32 +807,13 @@ void AliAnalysisTaskJetExtractor::GetJetTruePt(AliEmcalJet* jet, Double_t& match
         if(deltaR < bestMatchDeltaR)
         {
           bestMatchDeltaR = deltaR;
-          matchedJetPt = truthJet->Pt() - truthJet->Area()* trueRho;
+          matchedJetPt   = truthJet->Pt() - truthJet->Area()* trueRho;
+          matchedJetMass = truthJet->M() - truthJet->Area()* trueRhoMass;
         }
       }
   }
 
-  // #################################################################################
-  // ##### METHOD 2: Calculate fraction of "true" pT -- pT which is not from a toy
-  Double_t pt_nonMC = 0.;
-  Double_t pt_all   = 0.;
-  truePtFraction = 0;
-
-  for(Int_t iConst = 0; iConst < jet->GetNumberOfTracks(); iConst++)
-  {
-    // Loop over all valid jet constituents
-    AliVParticle* particle = static_cast<AliVParticle*>(jet->TrackAt(iConst, fTracksCont->GetArray()));
-    if(!particle) continue;
-    if(particle->Pt() < 1e-6) continue;
-
-    // Particles marked w/ labels within label range are considered from toy
-    if( (particle->GetLabel() >= fTruthMinLabel) && (particle->GetLabel() < fTruthMaxLabel))
-      pt_nonMC += particle->Pt();
-    pt_all += particle->Pt();
-  }
-  if(pt_all)
-    truePtFraction = (pt_nonMC/pt_all);
-
+  return bestMatchDeltaR;
 }
 
 
