@@ -205,7 +205,6 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
     if(cluster->GetType() != AliVCluster::kPHOSNeutral) continue;
     if(cluster->E() < 0.1) continue;//energy is set to 0 GeV in PHOS Tender, if its position is one th bad channel.//0.05 GeV is threshold of seed in a cluster by clustering algorithm.
 
-    if(cluster->GetM20() > 2.0) continue;
 
     //printf("energy = %e , coreE = %e\n",cluster->E(),cluster->GetCoreEnergy());
 
@@ -1010,8 +1009,10 @@ Int_t AliAnalysisTaskPHOSObjectCreator::FindPrimary(AliCaloPhoton *ph,  Bool_t&s
 //________________________________________________________________________
 Bool_t AliAnalysisTaskPHOSObjectCreator::PassSTDCut(AliVCluster *cluster)
 {
-  if(cluster->E() > 1.0 && cluster->GetM02() < 0.1) return kFALSE;
-  else return kTRUE;
+  if(cluster->GetM20() > 2.0) return kFALSE;
+  //if(cluster->E() > 1.0 && cluster->GetM02() < 0.1) return kFALSE;
+  if(cluster->E() > 1.0 && cluster->GetNCells() < 2.5) return kFALSE;
+  return kTRUE;
 
 }
 //________________________________________________________________________
@@ -1025,7 +1026,7 @@ void AliAnalysisTaskPHOSObjectCreator::EstimateSTDCutEfficiency(TClonesArray *ar
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)array->At(i1);
-    if(ph1->GetNsigmaCoreDisp() > 3.0) continue;
+    if(ph1->GetNsigmaCoreDisp() > 2.5) continue;
     if(ph1->Energy() < 0.5) continue;
 
     for(Int_t i2=0;i2<multClust;i2++){
