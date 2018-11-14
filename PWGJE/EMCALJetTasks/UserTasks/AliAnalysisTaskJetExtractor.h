@@ -194,9 +194,12 @@ class AliEmcalJetTree : public TNamed
     Bool_t          GetSaveJetShapes() {return fSaveJetShapes;}
     Bool_t          GetSaveMCInformation() {return fSaveMCInformation;}
     Bool_t          GetSaveSecondaryVertices() {return fSaveSecondaryVertices;}
+    Bool_t          GetSaveTriggerTracks() {return fSaveTriggerTracks;}
 
     std::vector<Float_t> GetExtractionPercentagePtBins() {return fExtractionPercentagePtBins;}
     std::vector<Float_t> GetExtractionPercentages() {return fExtractionPercentages;}
+    std::vector<Int_t> GetExtractionJetTypes_HM() {return fExtractionJetTypes_HM;}
+    std::vector<Int_t> GetExtractionJetTypes_PM() {return fExtractionJetTypes_PM;}
 
     TTree*          GetTreePointer() {return fJetTree;}
 
