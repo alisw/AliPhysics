@@ -70,7 +70,7 @@
 
 #include <iostream>
 #include <fstream>
-
+#include <vector>
 
 #include <AliCDBManager.h>
 #include <AliCDBEntry.h>
@@ -123,6 +123,9 @@ class AliTPCCalDet;
 #include "AliTPCComposedCorrection.h"
 #include "AliTPCPreprocessorOnline.h"
 #include "AliTimeStamp.h"
+#include "AliTriggerConfiguration.h"
+#include "AliTriggerClass.h"
+#include "AliTriggerCluster.h"
 #include "AliTriggerRunScalers.h"
 #include "AliTriggerScalers.h"
 #include "AliTriggerScalersRecord.h"
@@ -2048,15 +2051,40 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
   // check active state by analysing the scalers
   //
   // initialise graph with active running
-  bool hltMode = getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0;
+  const bool hltMode = getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0;
 
   AliCDBEntry *entry = NULL;
   if (!hltMode) entry = GetCDBEntry("GRP/CTP/Scalers");
   if (entry) {
     // entry->SetOwner(kTRUE);
-    AliTriggerRunScalers *sca = (AliTriggerRunScalers*)entry->GetObject();
+
+    // === | make list of class ids where the TPC is present |===
+    std::vector<Int_t> classIdList;
+
+    const AliCDBEntry *ctpEntry = AliCDBManager::Instance()->Get("GRP/CTP/Config");
+    if (!entry) {
+//       AliError("Cannot extract \"GRP/CTP/Config\"");
+    } else {
+      const AliTriggerConfiguration* cfg = (AliTriggerConfiguration*)ctpEntry->GetObject();
+      const TObjArray& classes = cfg->GetClasses();
+
+      for (Int_t ic=0;ic<classes.GetEntriesFast();ic++) {
+        const AliTriggerClass* cl = (AliTriggerClass*) classes[ic];
+        if (!cl) continue;
+        const AliTriggerCluster* clust = cl->GetCluster();
+        const TString dets = clust->GetDetectorsInCluster();
+        if (!dets.Contains("TPC")) continue;
+        const Int_t  classId = cfg->GetClassIndexFromName(cl->GetName());
+        classIdList.push_back(classId);
+      }
+    }
+
+    const AliTriggerRunScalers *sca = (AliTriggerRunScalers*)entry->GetObject();
     Int_t nchannels = sca->GetNumClasses(); // number of scaler channels (i.e. trigger classes)
-    Int_t npoints = sca->GetScalersRecords()->GetEntries(); // number of samples
+    if (classIdList.size()) {
+      nchannels = Int_t(classIdList.size());
+    }
+    const Int_t npoints = sca->GetScalersRecords()->GetEntries(); // number of samples
 
     // require at least two points from the scalers.
     if (npoints>1) {
@@ -2074,8 +2102,19 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
           AliWarning(Form("Time of scaler record %d: %.0f is outside the GRP times (%d, %d). Skipping this record.", i, time, startTimeGRP, stopTimeGRP));
           continue;
         }
+
         ULong64_t sum=0;
-        for (int j=0; j<nchannels; j++) sum += ((AliTriggerScalers*) rec->GetTriggerScalers()->At(j))->GetL2CA();
+
+        for (int j=0; j<nchannels; j++) {
+          const AliTriggerScalers* scalers = 0x0;
+          if (classIdList.size()) {
+            scalers = rec->GetTriggerScalersForClass(classIdList[j]);
+          } else {
+            scalers = (AliTriggerScalers*) rec->GetTriggerScalers()->At(j);
+          }
+          sum += scalers->GetL2CA();
+        }
+
         if (TMath::Abs(time-timeLast)<.001 && sum==lastSum ) continue;
         if (active && sum==lastSum){
           fGrRunState->SetPoint(fGrRunState->GetN(),timeLast-.01,1);
