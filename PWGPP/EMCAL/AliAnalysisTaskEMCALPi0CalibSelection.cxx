@@ -21,6 +21,7 @@
 #include "AliAnalysisTaskEMCALPi0CalibSelection.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
+#include "AliMultSelection.h"
 #include "AliEMCALGeometry.h"
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
@@ -46,6 +47,8 @@ fCorrectClusters(kFALSE), fRecalPosition(kTRUE),
 fCaloClustersArr(0x0),    fEMCALCells(0x0),
 //fCuts(0x0),               
 fOutputContainer(0x0),
+fCheckCentrality(kFALSE), fCentralityClass("V0M"),
+fCentMin(-1),             fCentMax(10000000), 
 fVertex(),                fFilteredInput(kFALSE),
 fImportGeometryFromFile(1), fImportGeometryFilePath(""),
 fEmin(0.5),               fEmax(15.),      
@@ -198,6 +201,7 @@ fHmggMaskFrame(0x0),      fHmggDifferentSMMaskFrame(0x0),
 fHOpeningAngle(0x0),      fHOpeningAngleDifferentSM(0x0),  
 fHAsymmetry(0x0),         fHAsymmetryDifferentSM(0x0),  
 fhNEvents(0x0),
+fhCentrality(0x0),        fhCentralitySelected(0x0),
 fhClusterTime(0x0),       fhClusterPairDiffTime(0x0)
 {
   for(Int_t iMod=0; iMod < AliEMCALGeoParams::fgkEMCALModules; iMod++)
@@ -1006,6 +1010,23 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
   fhNEvents        = new TH1I("hNEvents", "Number of analyzed events"   , 1 , 0 , 1  ) ;
   fOutputContainer->Add(fhNEvents);
   
+  if ( fCheckCentrality )
+  {
+    fhCentrality   = new TH1F
+    ("hCentrality",
+     Form("Number of events in centrality bins, |vz|<10 cm, method <%s> ",fCentralityClass.Data()),
+     100,0.,100.) ;
+    fhCentrality->SetXTitle("Centrality bin");
+    fOutputContainer->Add(fhCentrality) ;  
+    
+    fhCentralitySelected   = new TH1F
+    ("hCentralitySelected",
+     Form("Number of selected events in centrality bin, |vz|<10 cm, method <%s> ",fCentralityClass.Data()),
+     100,0.,100.) ;
+    fhCentralitySelected->SetXTitle("Centrality bin");
+    fOutputContainer->Add(fhCentralitySelected) ;  
+  }
+
   fHmgg = new TH2F("hmgg","2-cluster invariant mass",fNbins,fMinBin,fMaxBin,100,0,10);
   fHmgg->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
   fHmgg->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
@@ -1744,6 +1765,24 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   {
     AliWarning("Input event not available!");
     return;
+  }
+  
+  // Centrality selection
+  
+  if ( fCheckCentrality )
+  {
+    AliMultSelection* multSelection = (AliMultSelection * ) event->FindListObject("MultSelection") ;
+    if ( multSelection ) 
+    {
+      Float_t cent = multSelection->GetMultiplicityPercentile(fCentralityClass, kTRUE);
+      fhCentrality->Fill(cent);
+      
+      AliDebug(1,Form("Centrality %f for class <%s>\n",cent,fCentralityClass.Data()));
+      
+      if ( cent < fCentMin || cent >= fCentMax ) return ;
+      
+      fhCentralitySelected->Fill(cent);
+    }
   }
   
   AliDebug(1,Form("<<< %s: Event %d >>>",event->GetName(), (Int_t)Entry()));

@@ -74,6 +74,13 @@ public:
     
   // Analysis parameter setting
   
+  void    SwitchOnCentrality()                           { fCheckCentrality  = kTRUE ; }
+  void    SwitchOffCentrality()                          { fCheckCentrality  = kFALSE; }
+
+  void    SetCentralityClass(TString name)               { fCentralityClass   = name ; }
+  
+  void    SetCentralityRange(Float_t min, Float_t max)   { fCentMin = min; fCentMax = max; }
+  
   void    SetPairDTimeCut(Float_t t)                     { fDTimeCut    = t          ; }
   
   void    SetClusterMinTime(Float_t tmin)                { fTimeMin     = tmin       ; }
@@ -238,7 +245,14 @@ private:
     
   TList             * fOutputContainer;  //!<! Histogram container.
     
-  Double_t            fVertex[3];        //!<! Primary vertex.
+  Bool_t              fCheckCentrality;  ///< Activate centrality selection
+  
+  TString             fCentralityClass;  ///< Set which centrality class
+  
+  Float_t             fCentMin;          ///< Minimum centrality selected         
+  Float_t             fCentMax;          ///< Maximum centrality selected
+  
+  Double_t            fVertex[3];        ///< Primary vertex.
     
   Bool_t              fFilteredInput;    ///<  Read input produced with filter.
 
@@ -316,11 +330,11 @@ private:
   TLorentzVector      fMomentum12;       ///<  Cluster pair kinematics, temporal
     
   // Histograms
-
+  
   ///< Two-cluster invariant mass assigned to each cell.
   TH1F*     fHmpi0[AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; //!
   TH1F*     fhEnergy[AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows];     //!<! Energy distribution for each cell.
-  
+
   TH2F*     fHmgg;                                                                 //!<! Two-cluster invariant mass vs pt of pair.
   TH2F*     fHmggDifferentSM;                                                      //!<! Two-cluster invariant mass vs pt of pair, each cluster in different SM.
   TH2F*     fHmggSM[AliEMCALGeoParams::fgkEMCALModules];                           //!<! Two-cluster invariant mass per SM.
@@ -370,6 +384,10 @@ private:
 
   TH1I*     fhNEvents;                                                             //!<! Number of events counter histogram.
  
+  TH1F *  fhCentrality;                                                            //!<! Centrality all events.
+  
+  TH1F *  fhCentralitySelected;                                                    //!<! Centrality selected events.
+  
   // Cluster time histograms
   TH2F*     fHTpi0[4];                                                             //!<! Time of cell under pi0 mass, for 4 bunch crossings.
   TH2F*     fhClusterTime ;                                                        //!<! Timing of clusters vs energy.
@@ -386,7 +404,7 @@ private:
   AliAnalysisTaskEMCALPi0CalibSelection& operator=(const AliAnalysisTaskEMCALPi0CalibSelection&) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,24) ;
+  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,25) ;
   /// \endcond
 
 };
