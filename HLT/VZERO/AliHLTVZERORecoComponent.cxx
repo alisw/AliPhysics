@@ -1,6 +1,6 @@
 // $Id$
 /**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
+ * This file is property of and copyright by the ALICE HLT Project        *
  * ALICE Experiment at CERN, All rights reserved.                         *
  *                                                                        *
  * Primary Authors: Jochen Thaeder <jochen@thaeder.de>                    *
@@ -24,12 +24,15 @@
 #include "TMap.h"
 #include "TObjString.h"
 #include "TDatime.h"
+#include "TObjArray.h"
 
 #include "AliLog.h"
 #include "AliRunInfo.h"
 #include "AliGRPObject.h"
 #include "AliRawReaderMemory.h"
 #include "AliGeomManager.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 
 #include "AliVZERORecoParam.h"
 #include "AliVZEROReconstructor.h"
@@ -54,7 +57,7 @@ ClassImp(AliHLTVZERORecoComponent)
 // #################################################################################
 AliHLTVZERORecoComponent::AliHLTVZERORecoComponent() :
   AliHLTProcessor(),
-  fRunInfo(NULL),  
+  fRunInfo(NULL),
   fVZERORecoParam(NULL),
   fVZEROReconstructor(NULL),
   fRawReader(NULL) {
@@ -83,7 +86,7 @@ AliHLTVZERORecoComponent::~AliHLTVZERORecoComponent() {
  */
 
 // #################################################################################
-const Char_t* AliHLTVZERORecoComponent::GetComponentID() { 
+const Char_t* AliHLTVZERORecoComponent::GetComponentID() {
   // see header file for class documentation
   return "VZEROReconstruction";
 }
@@ -95,14 +98,14 @@ void AliHLTVZERORecoComponent::GetInputDataTypes( vector<AliHLTComponentDataType
 }
 
 // #################################################################################
-AliHLTComponentDataType AliHLTVZERORecoComponent::GetOutputDataType() 
+AliHLTComponentDataType AliHLTVZERORecoComponent::GetOutputDataType()
 {
   // see header file for class documentation
   return kAliHLTMultipleDataType;
 }
 
 int AliHLTVZERORecoComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
-{ 
+{
   // see header file for class documentation
   tgtList.clear();
   tgtList.push_back( kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO);
@@ -156,7 +159,7 @@ AliHLTComponent* AliHLTVZERORecoComponent::Spawn() {
  * ---------------------------------------------------------------------------------
  * Protected functions to implement AliHLTComponent's interface.
  * These functions provide initialization as well as the actual processing
- * capabilities of the component. 
+ * capabilities of the component.
  * ---------------------------------------------------------------------------------
  */
 
@@ -194,9 +197,9 @@ Int_t AliHLTVZERORecoComponent::DoInit( Int_t argc, const Char_t** argv ) {
   UInt_t activeDetectors = 0;
   
   if (pGRP) {
-    lhcState        = pGRP->GetLHCState(); 	  	   
-    beamType        = pGRP->GetBeamType(); 
-    runType         = pGRP->GetRunType(); 
+    lhcState        = pGRP->GetLHCState();
+    beamType        = pGRP->GetBeamType();
+    runType         = pGRP->GetRunType();
     beamEnergy      = pGRP->GetBeamEnergy();
     activeDetectors = pGRP->GetDetectorMask();
   }
@@ -224,11 +227,49 @@ Int_t AliHLTVZERORecoComponent::DoInit( Int_t argc, const Char_t** argv ) {
       break;
     }
 
-    fVZERORecoParam = new AliVZERORecoParam;
+    fVZERORecoParam = 0;
+    AliCDBEntry *entry = AliCDBManager::Instance()->Get("VZERO/Calib/RecoParam");
+    TObject* recoParamTmp1 = entry->GetObject();
+    TObjArray* recoParamTmp2 = dynamic_cast<TObjArray*>(recoParamTmp1);
+    if (recoParamTmp2)
+    {
+        AliRecoParam::EventSpecie_t type;
+        if (pGRP->GetBeamType() == "Pb-Pb" ||
+            pGRP->GetBeamType() == "PbPb" ||
+            pGRP->GetBeamType() == "A-A" ||
+            pGRP->GetBeamType() == "AA" )
+        {
+            type = AliRecoParam::kHighMult;
+            HLTInfo("Using High Multiplicity RecoParam");
+        }
+        else
+        {
+            type = AliRecoParam::kDefault;
+            HLTInfo("Using Low Multiplicity RecoParam");
+        }
+        for (int i = 0;i < recoParamTmp2->GetEntriesFast();i++)
+        {
+            AliVZERORecoParam* recoParamTmp3 = dynamic_cast<AliVZERORecoParam*>(recoParamTmp2->UncheckedAt(i));
+            if (recoParamTmp3)
+            {
+                if ((recoParamTmp3->GetEventSpecie() & type))
+                {
+                    fVZERORecoParam = recoParamTmp3;
+                    break;
+                }
+            }
+        }
+    }
+    
+    if (!fVZERORecoParam)
+    {
+        HLTInfo("Using default RecoParam");
+        fVZERORecoParam = new AliVZERORecoParam;
+    }
     if (!fVZERORecoParam) {
       iResult=-ENOMEM;
       break;
-    }  
+    }
 
     fVZEROReconstructor = new AliVZEROReconstructor;
     if (!fVZEROReconstructor) {
@@ -242,7 +283,7 @@ Int_t AliHLTVZERORecoComponent::DoInit( Int_t argc, const Char_t** argv ) {
   if (iResult<0) {
     // implement cleanup
 
-    if (fRawReader) 
+    if (fRawReader)
       delete fRawReader;
     fRawReader = NULL;
 
@@ -291,7 +332,7 @@ Int_t AliHLTVZERORecoComponent::ScanConfigurationArgument(Int_t /*argc*/, const 
 Int_t AliHLTVZERORecoComponent::DoDeinit() {
   // see header file for class documentation
 
-  if (fRawReader) 
+  if (fRawReader)
     delete fRawReader;
   fRawReader = NULL;
   
@@ -317,7 +358,7 @@ Int_t AliHLTVZERORecoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
   Int_t iResult=0;
 
   // -- Only use data event
-  if (!IsDataEvent()) 
+  if (!IsDataEvent())
     return 0;
  
   //cout<<"\n\n\nVZero Reconstruction Do Event\n\n\n"<<endl;
@@ -361,7 +402,7 @@ Int_t AliHLTVZERORecoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
     AliESDVZEROfriend *esdVZEROfriend = fVZEROReconstructor->GetESDVZEROfriend();
    
     // Send info every 10 s
-    const TDatime time;    
+    const TDatime time;
     static UInt_t lastTime=0;
     if (time.Get()-lastTime>10) {
       lastTime=time.Get();
@@ -375,7 +416,7 @@ Int_t AliHLTVZERORecoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
   
   // -- Clean up
   delete digitsTree;
-  fRawReader->ClearBuffers();   
+  fRawReader->ClearBuffers();
 
   return iResult;
 }
