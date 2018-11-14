@@ -900,11 +900,18 @@ void AliAnalysisTaskQAHighPtDeDxTest::UserExec(Option_t *)
 void AliAnalysisTaskQAHighPtDeDxTest::AnalyzeESD(AliESDEvent* esdEvent)
 {
 
+ 	fEventCuts.SetupLHC15o();
+        fEventCuts.SetManualMode();
+
+	fEventCuts.fUseStrongVarCorrelationCut = true;
+        fEventCuts.fUseVariablesCorrelationCuts = true;
 
 	if (!fEventCuts.AcceptEvent(esdEvent)){
 		PostData(1, fListOfObjects);
 		return;
 	}
+
+
 
 	UInt_t maskPhysSel = ((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 	maskPhysSel &= AliVEvent::kINT7;
