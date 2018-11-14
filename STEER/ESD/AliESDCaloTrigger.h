@@ -120,7 +120,7 @@ public:
         Int_t   GetL1FrameMask(                                     ) const {return fL1FrameMask;}
         Int_t   GetL1FrameMask(    Int_t  i                         ) const {return ((i)?fL1DCALFrameMask:fL1FrameMask);}
   
-        Int_t   GetMedian(         Int_t  i                         ) const {return fMedian[i];}
+        Int_t   GetMedian(         Int_t  i                         ) const {return (fMedian[i] & 0x3FFFF);}
   
         Int_t   GetTriggerBitWord(                                  ) const {return fTriggerBitWord;}
         void    GetTriggerBitWord( Int_t& bw                        ) const {bw = fTriggerBitWord;}
