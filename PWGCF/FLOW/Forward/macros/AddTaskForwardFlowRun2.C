@@ -19,7 +19,7 @@
  *
  * @ingroup pwglf_forward_flow
  */
-AliAnalysisTaskSE* AddTaskForwardFlowRun2(bool nua_mode, bool doetagap, bool doNUA, Double_t gap, bool mc, bool prim, Int_t tracktype, TString centrality, bool esd)
+AliAnalysisTaskSE* AddTaskForwardFlowRun2(bool nua_mode, bool doetagap, bool doNUA, Double_t gap, bool mc, bool prim, Int_t tracktype, TString centrality, bool esd,TString name1)
 {
   std::cout << "______________________________________________________________________________" << std::endl;
 
@@ -30,7 +30,9 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2(bool nua_mode, bool doetagap, bool doN
   if (!mgr)
     Fatal("","No analysis manager to connect to.");
 
-  AliForwardFlowRun2Task* task = new AliForwardFlowRun2Task("hej");
+  TString name = name1;
+
+  AliForwardFlowRun2Task* task = new AliForwardFlowRun2Task(name);
   TString resName = "ForwardFlow";
 
   if (doetagap){
@@ -46,7 +48,13 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2(bool nua_mode, bool doetagap, bool doN
     task->fSettings.gap = 0.0;
   }
 
+
+  task->fSettings.use_primaries = prim;
+  if (prim) resName += "_prim";
+  if (!prim && mc) resName += "_tr";
+
   task->fSettings.mc = mc;
+  task->fSettings.esd = esd;
   std::cout << "Using tracktype = " << tracktype << std::endl;
   if (tracktype == 0){
     task->fSettings.fFlowFlags = task->fSettings.kSPD;
@@ -55,23 +63,23 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2(bool nua_mode, bool doetagap, bool doN
   else{
     task->fSettings.fFlowFlags = task->fSettings.kTPC;
     if (tracktype == 768){
-      task->fSettings.tracktype = AliForwardFlowRun2Settings::kHybrid;
+      task->fSettings.tracktype = AliForwardSettings::kHybrid;
       resName += "_hybrid";
     }
     else if (tracktype == 128){
-      task->fSettings.tracktype = AliForwardFlowRun2Settings::kTPCOnly;
+      task->fSettings.tracktype = AliForwardSettings::kTPCOnly;
       resName += "_TPConly";
     }
     else if (tracktype == 32){
-      task->fSettings.tracktype = AliForwardFlowRun2Settings::kGlobal;
+      task->fSettings.tracktype = AliForwardSettings::kGlobal;
       resName += "_global";
     }
     else if (tracktype == 64){
-      task->fSettings.tracktype = AliForwardFlowRun2Settings::kGlobalLoose;
+      task->fSettings.tracktype = AliForwardSettings::kGlobalLoose;
       resName += "_globalLoose";
     }
     else if (tracktype == 96){
-      task->fSettings.tracktype = AliForwardFlowRun2Settings::kGlobalComb;
+      task->fSettings.tracktype = AliForwardSettings::kGlobalComb;
       resName += "_globalComb";
     }
     else{

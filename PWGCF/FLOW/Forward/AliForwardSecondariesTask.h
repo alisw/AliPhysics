@@ -16,7 +16,8 @@
 #include <TH2D.h>
 #include <TH3F.h>
 #include "TRandom.h"
-#include "AliForwardFlowRun2Settings.h"
+#include "AliForwardSettings.h"
+#include "AliForwardFlowUtil.h"
 //#include "AliEventCuts.h"
 #include <TF1.h>
 class AliMCParticle;
@@ -131,13 +132,7 @@ Double_t WrapPi(Double_t phi);
 
   Bool_t AddMotherIfFirstTimeSeen(AliMCParticle* p, std::vector<Int_t> v);
 
-// Check if a given particle itself hit the FMD. If so, return the
-  // (first) track reference of such a hit
-  AliTrackReference* IsHitFMD(AliMCParticle* p);
 
-// Check if a given particle itself hit the FMD. If so, return the
-  // (first) track reference of such a hit
-  AliTrackReference* IsHitTPC(AliMCParticle* p);
 
 
   // Check if a given particle itself hit the FMD. If so, return the
@@ -167,7 +162,8 @@ Double_t WrapPi(Double_t phi);
   TRandom fRandom;
 
   // A class combining all the settings for this analysis
-  AliForwardFlowRun2Settings fSettings;
+  AliForwardSettings fSettings;
+  AliForwardFlowUtil fUtil;
 
 TF1 *fMultTOFLowCut; //!
 TF1 *fMultTOFHighCut; //!

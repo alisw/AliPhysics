@@ -1,7 +1,7 @@
-#ifndef AliForwardFlowRun2Settings_cxx
-#define AliForwardFlowRun2Settings_cxx
+#ifndef AliForwardSettings_cxx
+#define AliForwardSettings_cxx
 /**
- * @file AliForwardFlowRun2Settings.h
+ * @file AliForwardSettings.h
  * @author Freja Thoresen <freja.thoresen@cern.ch>
  *
  * @brief
@@ -13,11 +13,11 @@
 #include "TH3.h"
 #include "TH2.h"
 
-class AliForwardFlowRun2Settings : public TObject {
+class AliForwardSettings : public TObject {
   typedef std::vector< Double_t > edgeContainer;
 
  public:
-  AliForwardFlowRun2Settings();
+  AliForwardSettings();
 
   // Types of data this analysis can access
   enum {kMCTRUTH, kRECON};
@@ -68,11 +68,10 @@ class AliForwardFlowRun2Settings : public TObject {
   Bool_t useTPC;
   Bool_t useSPD;
   Bool_t use_primaries;
-
+  Bool_t etagap;
 
   TString centrality_estimator;
   // return true if good event
-  Bool_t ExtraEventCutFMD(TH2D& forwarddNdedp, double cent, Bool_t mc);
 
   // flags used for method of cumulant
   enum EFlowFlags {
@@ -129,6 +128,6 @@ class AliForwardFlowRun2Settings : public TObject {
   };
 
 private:
-  ClassDef(AliForwardFlowRun2Settings, 2);
+  ClassDef(AliForwardSettings, 2);
 };
 #endif

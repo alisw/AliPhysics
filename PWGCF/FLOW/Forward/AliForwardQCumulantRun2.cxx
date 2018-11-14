@@ -2,7 +2,7 @@
 #include "TMath.h"
 #include <iostream>
 #include "TRandom.h"
-#include "AliForwardFlowRun2Settings.h"
+#include "AliForwardSettings.h"
 #include "TH1D.h"
 #include <complex>
 #include <cmath>

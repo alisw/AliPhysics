@@ -2,7 +2,7 @@
 #include "TMath.h"
 #include <iostream>
 #include "TRandom.h"
-#include "AliForwardFlowRun2Settings.h"
+#include "AliForwardSettings.h"
 #include "TH1D.h"
 #include <complex>
 #include <cmath>
@@ -17,7 +17,7 @@ AliForwardGenericFramework::AliForwardGenericFramework()
 {
   Int_t rbins[4] = {2, 6, 5, 2} ; // kind (real or imaginary), n, p, eta
   Int_t dimensions = 4;
-  if (fSettings.fFlowFlags & fSettings.kEtaGap) {
+  if (fSettings.etagap) {
      rbins[3] = 2 ; // two bins in eta for gap, one for standard
   }
 
@@ -25,23 +25,18 @@ AliForwardGenericFramework::AliForwardGenericFramework()
   Double_t xmax[4] = { 1,   5.5, 4.5,  6}; // kind (real or imaginary), n, p, eta SKAL VAERE -6 - 6
 
   fQvector = new THnD("Qvector", "Qvector", dimensions, rbins, xmin, xmax);
-  // fQvector->SetDirectory(0);
+
   Int_t dbins[4] = {2, 6, 4, fSettings.fNDiffEtaBins} ; // kind (real or imaginary), n, p, eta
   xmin[3] = -4.0;
 
   fpvector = new THnD("pvector", "pvector", dimensions, dbins, xmin, xmax);
   fqvector = new THnD("qvector", "qvector", dimensions, dbins, xmin, xmax);
-  // fpvector->SetDirectory(0);
-  // fqvector->SetDirectory(0);
-
-  useEvent = true;
 
   fAutoRef = TH1F("fAutoRef","fAutoRef", fSettings.fNRefEtaBins, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge); // not used at the moment
   fAutoDiff = TH1F("fAutoDiff","fAutoDiff", fSettings.fNDiffEtaBins, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge); // not used at the moment
   fAutoRef.SetDirectory(0);
   fAutoDiff.SetDirectory(0);
 }
-
 
 
 //_____________________________________________________________________
@@ -54,24 +49,18 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
   for (Int_t etaBin = 1; etaBin <= dNdetadphi.GetNbinsX(); etaBin++) {
 
     Double_t eta = dNdetadphi.GetXaxis()->GetBinCenter(etaBin);
-    //std::cout << "eta = " << eta << '\n';
     Double_t difEtaBin = fpvector->GetAxis(3)->FindBin(eta);
-    //std::cout << "difEtaBin = " << difEtaBin << '\n';
     Double_t difEta = fpvector->GetAxis(3)->GetBinCenter(difEtaBin);
-    //std::cout << "difEta = " << difEta << '\n';
     Double_t refEtaBin = fQvector->GetAxis(3)->FindBin(eta);
-    //std::cout << "refEtaBin = " << refEtaBin << '\n';
     Double_t refEta = fQvector->GetAxis(3)->GetBinCenter(refEtaBin);
-    //std::cout << "refEta = " << refEta << '\n';
 
     for (Int_t phiBin = 1; phiBin <= dNdetadphi.GetNbinsY(); phiBin++) {
       Double_t phi = dNdetadphi.GetYaxis()->GetBinCenter(phiBin);
       Double_t weight = dNdetadphi.GetBinContent(etaBin, phiBin);
-      //std::cout << "weight = " << weight << '\n';
 
-      //if (!fSettings.mc && dNdetadphi.GetBinContent(etaBin, 0) == 0 && detType == "forward") break;
-
-
+      if (!fSettings.use_primaries){
+        if (!fSettings.mc && dNdetadphi.GetBinContent(etaBin, 0) == 0 && detType == "forward") break;
+      }
       if (fSettings.doNUA){
         // holes in the FMD
         if ((phiBin == 17 || phiBin == 18 || phiBin == 14) && (weight == 0)){
@@ -95,7 +84,6 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
       }
 
     if (weight == 0) continue;
-
     for (Int_t n = 0; n <= 5; n++) {
       for (Int_t p = 1; p <= 4; p++) {
         Double_t realPart = TMath::Power(weight, p)*TMath::Cos(n*phi);
@@ -108,7 +96,7 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
           fpvector->Fill(re, realPart);
           fpvector->Fill(im, imPart);
 
-          if (!(fSettings.fFlowFlags & fSettings.kEtaGap) & doRefFlow){
+          if (!(fSettings.etagap) && doRefFlow){
             fqvector->Fill(re, realPart);
             fqvector->Fill(im, imPart);
             if (weight > 1.00001 ){
@@ -118,13 +106,13 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
         }
 
         if (doRefFlow){
-          if ((fSettings.fFlowFlags & fSettings.kEtaGap) && fabs(eta)<=fSettings.gap) continue;
+          if ((fSettings.etagap) && fabs(eta)<=fSettings.gap) continue;
 
           Double_t req[4] = {0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
           Double_t imq[4] = {-0.5, static_cast<Double_t>(n), static_cast<Double_t>(p), refEta};
           fQvector->Fill(req, realPart);
           fQvector->Fill(imq, imPart);
-          if (weight > 1.00001){
+          if (!(fSettings.etagap) && weight > 1.00001){
             fAutoRef.Fill(eta, TMath::Gamma(weight+1)/TMath::Gamma(weight-1));
           }
         }
@@ -165,7 +153,7 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
         Double_t refEtaBinA = fQvector->GetAxis(3)->FindBin(eta);
         Double_t refEtaBinB = refEtaBinA;
 
-        if ((fSettings.fFlowFlags & fSettings.kEtaGap)) {
+        if ((fSettings.etagap)) {
         //  if (eta > 3.75) refEtaBinB = fQvector->GetAxis(3)->FindBin(-3.75); // code for if FMD is reference
           refEtaBinB = fQvector->GetAxis(3)->FindBin(-eta);
         }
@@ -181,7 +169,7 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
           // REFERENCE FLOW --------------------------------------------------------------------------------
           if (prevRefEtaBin){ // only used once
 
-            if (!(fSettings.fFlowFlags & fSettings.kEtaGap)){
+            if (!(fSettings.etagap)){
               Double_t z[5] = {noSamples, zvertex, refEtaA, cent, fSettings.kW2Two};
               fQcorrfactor->Fill(z, fAutoRef.GetBinContent(etaBin));
             }
@@ -207,7 +195,7 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
             prevRefEtaBin = kFALSE;
           }
           // DIFFERENTIAL FLOW -----------------------------------------------------------------------------
-          if (n == 2 && (!(fSettings.fFlowFlags & fSettings.kEtaGap))){
+          if (n == 2 && (!(fSettings.etagap))){
             Double_t k[5] = {noSamples, zvertex, eta, cent, fSettings.kW2Two};
             fpcorrfactor->Fill(k, fAutoDiff.GetBinContent(etaBin));
           }

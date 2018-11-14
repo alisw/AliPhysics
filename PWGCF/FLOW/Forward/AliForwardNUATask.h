@@ -16,10 +16,10 @@
 #include <TH2D.h>
 #include <TH3F.h>
 #include "TRandom.h"
-#include "AliForwardFlowRun2Settings.h"
+#include "AliForwardSettings.h"
 #include "AliEventCuts.h"
 #include <TF1.h>
-
+#include "AliForwardFlowUtil.h"
 class AliAODForwardMult;
 class TH2D;
 class AliESDEvent;
@@ -97,12 +97,14 @@ public:
   AliAODEvent*            fAOD;           //! input event
   TList*                  fOutputList;    //! output list
   TList* fEventList; //!
-
+  TH2D*   centralDist;//!
+  TH2D*   forwardDist;//!
   // A class combining all the settings for this analysis
-  AliForwardFlowRun2Settings fSettings;
+  AliForwardSettings fSettings;
+  AliForwardFlowUtil fUtil;
+  Bool_t useEvent;
 
 AliEventCuts fEventCuts;
-Bool_t nua_mode;
 
   enum {
     kTPCOnly = 128, // TPC only tracks

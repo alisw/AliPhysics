@@ -21,7 +21,7 @@
 #include "TRandom.h"
 #include <THn.h>
 #include "TString.h"
-#include "AliForwardFlowRun2Settings.h"
+#include "AliForwardSettings.h"
 #include "TComplex.h"
 /**
  * Class to handle cumulant calculations.
@@ -40,7 +40,7 @@ public:
   virtual ~AliForwardGenericFramework(){}
 
 
-  AliForwardFlowRun2Settings fSettings;
+  AliForwardSettings fSettings;
   /**
    * Do cumulants calculations for current event with
    * centrality cent
@@ -64,11 +64,9 @@ public:
    */
   void reset();
 
-
-  THnD* fQvector;     // Accumulated reference particles
-  THnD* fpvector;    // Accumulated differential particles
-  THnD* fqvector;    // Accumulated differential particles
-
+  THnD* fQvector;//!     // Accumulated reference particles
+  THnD* fpvector;//!    // Accumulated differential particles
+  THnD* fqvector;//!    // Accumulated differential particles
 
   TComplex Q(int n, int p, int etaBin);
   TComplex p(int n, int p, int etaBin);
@@ -76,8 +74,6 @@ public:
 
   TH1F fAutoRef;
   TH1F fAutoDiff;
-  bool useEvent;
-  bool doNUA;
 
   TComplex Two(int n1, int n2, int eta1, int eta2);
   TComplex TwoDiff(int n1, int n2, int refetabin, int diffetabin);

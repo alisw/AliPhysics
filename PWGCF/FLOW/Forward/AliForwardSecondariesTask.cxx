@@ -42,7 +42,7 @@
 #include "AliAODCentralMult.h"
 #include "AliAODEvent.h"
 
-#include "AliForwardUtil.h"
+#include "AliForwardFlowUtil.h"
 
 #include "AliVVZERO.h"
 #include "AliAODVertex.h"
@@ -73,6 +73,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
     fDeltaList(0),
   fRandom(0),
   fSettings(),
+  fUtil(),
   fMultTOFLowCut(),
   fMultTOFHighCut(),
   fMultCentLowCut(),
@@ -101,6 +102,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fDeltaList(0),
   fRandom(0),
   fSettings(),
+  fUtil(),
   fMultTOFLowCut(),
   fMultTOFHighCut(),
   fMultCentLowCut(),
@@ -346,9 +348,6 @@ THnD* delta_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_eta"));
 
 
   bool useEvent = kTRUE;
-  //if (nTracks < 10) useEvent = kFALSE;
-  //if (!fSettings.ExtraEventCutFMD(forwarddNdedp, v0cent, true)) useEvent = kFALSE;
-
 
   if (useEvent){
   Double_t randomInt = static_cast<Double_t>(fRandom.Integer(fSettings.fnoSamples));
@@ -358,7 +357,7 @@ THnD* delta_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_eta"));
     AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
 
     // Ignore things that do not make a signal in the FMD or ITS
-    AliTrackReference* tr = this->IsHitFMD(p);
+    AliTrackReference* tr = fUtil.IsHitFMD(p);
     if (tr && p->Charge() != 0){ // || this->IsHitTPC(p)){// { && p->Charge()!=0
 
       AliMCParticle* mother = GetMother(p);
@@ -573,7 +572,7 @@ std::vector< AliMCParticle* > AliForwardSecondariesTask::GetDaughters(AliMCParti
 
 Int_t AliForwardSecondariesTask::ParticleProducedNHitsOnFMD(AliMCParticle* p) {
   // "Explore" the current particle (Graph theory wise)
-  Int_t counter = this->IsHitFMD(p) ? 1 : 0;
+  Int_t counter = fUtil.IsHitFMD(p) ? 1 : 0;
 
   // Find the decays ("edges") leading downstream from this particle ("vertex")
   // Perform depth-first-search in decay chain for hits on FMD
@@ -630,36 +629,7 @@ AliMCParticle* AliForwardSecondariesTask::GetFirstNonPrimaryMother(AliMCParticle
 }
 
 
-AliTrackReference* AliForwardSecondariesTask::IsHitFMD(AliMCParticle* p) {
-  //std::cout << "p->GetNumberOfTrackReferences() = " << p->GetNumberOfTrackReferences() << std::endl;
-  for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
-    AliTrackReference* ref = p->GetTrackReference(iTrRef);
-    // Check hit on FMD
-    //std::cout << "ref->DetectorId() = " << ref->DetectorId() << std::endl;
-    //std::cout << "AliTrackReference::kFMD = " << AliTrackReference::kFMD << std::endl;
-    if (!ref || AliTrackReference::kFMD != ref->DetectorId()) {
-      continue;
-    }
-    else {
-      return ref;
-    }
-  }
-  return 0x0;
-}
 
-AliTrackReference* AliForwardSecondariesTask::IsHitTPC(AliMCParticle* p) {
-  for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
-    AliTrackReference* ref = p->GetTrackReference(iTrRef);
-    // Check hit on TPC
-    if (!ref || AliTrackReference::kTPC != ref->DetectorId()) {
-      continue;
-    }
-    else {
-      return ref;
-    }
-  }
-  return 0x0;
-}
 
 AliTrackReference* AliForwardSecondariesTask::IsHitITS(AliMCParticle* p) {
   for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {

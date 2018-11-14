@@ -16,10 +16,12 @@
 #include <TH2D.h>
 #include <TH3F.h>
 #include "TRandom.h"
-#include "AliForwardFlowRun2Settings.h"
+#include "AliForwardSettings.h"
 #include "AliEventCuts.h"
 #include "AliForwardGenericFramework.h"
 #include <TF1.h>
+#include "AliAODVertex.h"
+#include "AliForwardFlowUtil.h"
 
 class AliAODForwardMult;
 class TH2D;
@@ -93,18 +95,6 @@ public:
    */
   virtual void UserExec(Option_t *option);
 
-  void FillCentral();
-  void FillForward();
-
-// Check if a given particle itself hit the FMD. If so, return the
-  // (first) track reference of such a hit
-  AliTrackReference* IsHitFMD(AliMCParticle* p);
-
-// Check if a given particle itself hit the FMD. If so, return the
-  // (first) track reference of such a hit
-  AliTrackReference* IsHitTPC(AliMCParticle* p);
-
-
   /**
    * End of job
    *
@@ -112,14 +102,10 @@ public:
    */
   virtual void Terminate(Option_t *option);
 
-  void FillFromTrackrefs(TH2D*& fwd, TH2D*& cen) const;
-  void FillFromPrimaries(TH2D*& fwd, TH2D*& cen) const;
-  void FillFromTracklets(TH2D*& cen) const;
-  void FillFromTracks(TH2D*& cen) const;
 
   //private:
-  AliAODEvent*            fAOD;           //! input event
-  AliMCEvent*            fAODMC;           //! input event
+  AliVEvent*            fAOD;           //! input event
+  //AliMCEvent*            fAODMC;           //! input event
   TList*                  fOutputList;    //! output list
   TList*    fAnalysisList; //!
 
@@ -132,7 +118,8 @@ public:
   AliForwardGenericFramework calculator; //!
 
   // A class combining all the settings for this analysis
-  AliForwardFlowRun2Settings fSettings;
+  AliForwardSettings fSettings;
+  AliForwardFlowUtil fUtil;
 
   AliEventCuts fEventCuts;
 

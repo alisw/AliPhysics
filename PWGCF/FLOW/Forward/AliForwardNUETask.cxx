@@ -24,7 +24,7 @@
 #include "AliAODCentralMult.h"
 #include "AliAODEvent.h"
 
-#include "AliForwardUtil.h"
+#include "AliForwardFlowUtil.h"
 
 #include "AliVVZERO.h"
 #include "AliAODVertex.h"
@@ -57,6 +57,7 @@ AliForwardNUETask::AliForwardNUETask() : AliAnalysisTaskSE(),
   fOutputList(0),    // output list
   fEventList(0),
   fSettings(),
+  fUtil(),
   fEventCuts(),
   nua_mode(kFALSE)
   {
@@ -71,6 +72,7 @@ AliForwardNUETask::AliForwardNUETask() : AliAnalysisTaskSE(),
   fOutputList(0),
   fEventList(0),
   fSettings(),
+  fUtil(),
   fEventCuts(),
   nua_mode(kFALSE)
   {
@@ -177,7 +179,7 @@ void AliForwardNUETask::UserExec(Option_t *)
   if (iTracks < 10) useEvent = kFALSE;
 
   // extra cut on the FMD
-  if (!fSettings.ExtraEventCutFMD(forwarddNdedp, cent, true)) useEvent = false;
+  if (!fUtil.ExtraEventCutFMD(forwarddNdedp, cent, true)) useEvent = false;
   if (useEvent) {
 
     // loop for the SPD
@@ -224,11 +226,8 @@ void AliForwardNUETask::UserExec(Option_t *)
           Double_t weight = forwarddNdedp.GetBinContent(etaBin, phiBin);
 
           //if (nua_mode) weight = AliForwardNUATask::InterpolateWeight(forwarddNdedp,phiBin,etaBin,weight);
-
           // If empty, do not fill hist
           if (weight == 0) continue;
-
-          //fFMDHits->Fill(weight);
           nua_fmd->Fill(eta,zvertex,weight);
         } // End of phi loop
       } // End of eta bin
