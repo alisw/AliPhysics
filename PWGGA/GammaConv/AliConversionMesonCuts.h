@@ -178,6 +178,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t   DoConvCaloMixing(){return fDoConvCaloMixing;}
     Bool_t   DoSectorMixing(){return fDoSectorMixing;}
     Bool_t   DoSphericityMixing(){return fDoSphericityMixing;}
+    Bool_t   DoJetAnalysis(){return fDoJetAnalysis;}
+    Bool_t   DoJetQA(){return fDoJetQA;}
     Bool_t   UseElecSharingCut(){return fDoSharedElecCut;}
     Bool_t   UseToCloseV0sCut(){return fDoToCloseV0sCut;}
     Bool_t   UseMCPSmearing(){return fUseMCPSmearing;}
@@ -280,11 +282,13 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fBackgroundUseSideband;         ///<
     Bool_t      fBackgroundUseSidebandBothSides;///<
     Bool_t      fBackgroundUseLikeSign;         ///<
+    Bool_t      fDoJetAnalysis;                 ///< switch to run a jet analysis
+    Bool_t      fDoJetQA;                       ///< switch to run a jet QA analysis
 
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,27)
+    ClassDef(AliConversionMesonCuts,28)
     /// \endcond
 };
 
