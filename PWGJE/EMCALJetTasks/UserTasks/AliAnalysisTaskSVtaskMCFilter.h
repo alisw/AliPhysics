@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKSVTASKMCFILTER_H
-#define ALIANALYSISTASKSVTASKMCFILTER_H
+#ifndef AliAnalysisTaskSVtaskMCFilter_H
+#define AliAnalysisTaskSVtaskMCFilter_H
 
 /**************************************************************************
  * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
@@ -40,10 +40,11 @@ class AliAnalysisTaskSVtaskMCFilter : public AliAnalysisTaskEmcal
 
    void     UserCreateOutputObjects();
    Bool_t   Run();
-
+   
    void     SetInputTracksName(const Char_t* name){ fInputTracksName = name; }
    void     SetFilteredTracksName(const Char_t* name){ fFilteredTracksName = name; }
-
+   void     SetFilterType(Bool_t param) {fFilterType = param; }
+   
  protected:
    void ExecOnce();
 
@@ -51,6 +52,7 @@ class AliAnalysisTaskSVtaskMCFilter : public AliAnalysisTaskEmcal
    TClonesArray   *fFilteredTracksArray;   //! output PYTHIA only tracks 
    TString	  fFilteredTracksName;     //  name of output container  
    TString	  fInputTracksName;        //  name of input container
+   Bool_t         fFilterType;             //  filtering for tracks=1 or mcParticles=0  //AID
 
    AliAODEvent    *fAodEvent;               //!
    AliAODMCHeader *fMCHeader;               //!
@@ -62,8 +64,7 @@ class AliAnalysisTaskSVtaskMCFilter : public AliAnalysisTaskEmcal
     AliAnalysisTaskSVtaskMCFilter(const AliAnalysisTaskSVtaskMCFilter &source);
     AliAnalysisTaskSVtaskMCFilter& operator=(const AliAnalysisTaskSVtaskMCFilter& source);
     
-    ClassDef(AliAnalysisTaskSVtaskMCFilter, 1); 
+    ClassDef(AliAnalysisTaskSVtaskMCFilter, 2); 
 };
 
 #endif
-
