@@ -37,7 +37,9 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     void SetIsMC(Int_t isMC)                                      { fIsMC                       = isMC    ;}
     void SetDoMesonAnalysis(Bool_t flag)                          { fDoMesonAnalysis            = flag    ;}
     void SetDoMesonQA(Int_t flag)                                 { fDoMesonQA                  = flag    ;}
+    void SetDoMesonQATHnSparse(Int_t flag)                        { fDoMesonQATHnSparse         = flag    ;}
     void SetDoPhotonQA(Int_t flag)                                { fDoPhotonQA                 = flag    ;}
+    void SetDoPhotonQATHnSparse(Int_t flag)                       { fDoPhotonQATHnSparse        = flag    ;}
     void SetDoClusterSelectionForTriggerNorm(Bool_t flag)         { fEnableClusterCutsForTrigger= flag    ;}
     void SetDoChargedPrimary(Bool_t flag)                         { fDoChargedPrimary           = flag    ;}
     void SetDoPlotVsCentrality(Bool_t flag)                       { fDoPlotVsCentrality         = flag    ;}
@@ -117,6 +119,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fHistoConvGammaInvMass;                     //!
     TH1F**                            fHistoConvGammaInvMassReco;                 //!
     TTree**                           tESDConvGammaPtDcazCat;                     //!
+    THnSparseF**                      sESDConvGamma;                              //!
     Float_t                           fPtGamma;                                   //!
     Float_t                           fDCAzPhoton;                                //!
     Float_t                           fRConvPhoton;                               //!
@@ -263,6 +266,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fhJetJetNTrials;                            //! array of histos with ntrials for jetjet
     TProfile**                        fHistoEtaShift;                             //!
     TTree**                           tESDMesonsInvMassPtDcazMinDcazMaxFlag;      //!
+    THnSparseF**                      sESDMesonMinDCA;                            //!
+    THnSparseF**                      sESDMesonMaxDCA;                            //!
     Float_t                           fInvMass;                                   //!
     Float_t                           fPt;                                        //!
     Float_t                           fDCAzGammaMin;                              //!
@@ -293,7 +298,9 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Int_t                             fIsHeavyIon;                                //
     Bool_t                            fDoMesonAnalysis;                           //
     Int_t                             fDoMesonQA;                                 //
+    Bool_t                            fDoMesonQATHnSparse;                        //
     Int_t                             fDoPhotonQA;                                //
+    Bool_t                            fDoPhotonQATHnSparse;                       //
     Bool_t                            fDoChargedPrimary;                          //
     Bool_t                            fDoPlotVsCentrality;                        //
     Bool_t                            fIsFromSelectedHeader;                      //
@@ -310,7 +317,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 43);
+    ClassDef(AliAnalysisTaskGammaConvV1, 44);
 };
 
 #endif

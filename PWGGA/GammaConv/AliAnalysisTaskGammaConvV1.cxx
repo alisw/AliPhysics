@@ -93,6 +93,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fHistoConvGammaInvMass(NULL),
   fHistoConvGammaInvMassReco(NULL),
   tESDConvGammaPtDcazCat(NULL),
+  sESDConvGamma(NULL),
   fPtGamma(0),
   fDCAzPhoton(0),
   fRConvPhoton(0),
@@ -232,6 +233,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fhJetJetNTrials(NULL),
   fHistoEtaShift(NULL),
   tESDMesonsInvMassPtDcazMinDcazMaxFlag(NULL),
+  sESDMesonMinDCA(NULL),
+  sESDMesonMaxDCA(NULL),
   fInvMass(0),
   fPt(0),
   fDCAzGammaMin(0),
@@ -255,7 +258,9 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fIsHeavyIon(0),
   fDoMesonAnalysis(kTRUE),
   fDoMesonQA(0),
+  fDoMesonQATHnSparse(kFALSE),
   fDoPhotonQA(0),
+  fDoPhotonQATHnSparse(kFALSE),
   fDoChargedPrimary(kFALSE),
   fDoPlotVsCentrality(kFALSE),
   fIsFromSelectedHeader(kTRUE),
@@ -305,6 +310,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fHistoConvGammaInvMass(NULL),
   fHistoConvGammaInvMassReco(NULL),
   tESDConvGammaPtDcazCat(NULL),
+  sESDConvGamma(NULL),
   fPtGamma(0),
   fDCAzPhoton(0),
   fRConvPhoton(0),
@@ -444,6 +450,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fhJetJetNTrials(NULL),
   fHistoEtaShift(NULL),
   tESDMesonsInvMassPtDcazMinDcazMaxFlag(NULL),
+  sESDMesonMinDCA(NULL),
+  sESDMesonMaxDCA(NULL),
   fInvMass(0),
   fPt(0),
   fDCAzGammaMin(0),
@@ -467,7 +475,9 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fIsHeavyIon(0),
   fDoMesonAnalysis(kTRUE),
   fDoMesonQA(0),
+  fDoMesonQATHnSparse(kFALSE),
   fDoPhotonQA(0),
+  fDoPhotonQATHnSparse(kFALSE),
   fDoChargedPrimary(kFALSE),
   fDoPlotVsCentrality(kFALSE),
   fIsFromSelectedHeader(kTRUE),
@@ -873,6 +883,9 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   if ((fDoPhotonQA == 2)||(fDoPhotonQA == 5)){
     tESDConvGammaPtDcazCat      = new TTree*[fnCuts];
   }
+  if (fDoPhotonQATHnSparse){
+    sESDConvGamma               = new THnSparseF*[fnCuts];
+  }
   if(fDoMesonAnalysis){
     fHistoMotherInvMassPt           = new TH2F*[fnCuts];
     fHistoMotherBackInvMassPt       = new TH2F*[fnCuts];
@@ -890,6 +903,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     }
     if(fDoMesonQA == 3){
       sPtRDeltaROpenAngle       = new THnSparseF*[fnCuts];
+    }
+    if (fDoMesonQATHnSparse){
+      sESDMesonMinDCA           = new THnSparseF*[fnCuts];
+      sESDMesonMaxDCA           = new THnSparseF*[fnCuts];
     }
   }
 
@@ -1105,6 +1122,15 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       }
     }
 
+    if (fDoPhotonQATHnSparse){
+      Int_t    bins_base[4] = {3, 200,  200,   720};//category,pt,dcaz,R
+      Double_t xmin_base[4] = {0,   0,  -10,     0};
+      Double_t xmax_base[4] = {3,  20,   10,   180};
+      sESDConvGamma[iCut] = new THnSparseF(Form("%s_%s_%s Photon DCA",cutstringEvent.Data(), cutstringPhoton.Data(), cutstringMeson.Data()),"",4,bins_base,xmin_base,xmax_base);
+      sESDConvGamma[iCut]->Sumw2();
+      fCutFolder[iCut]->Add(sESDConvGamma[iCut]);
+    }
+
     if(fDoPhotonQA > 0 && fIsMC < 2){
 
       fHistoConvGammaPsiPairPt[iCut]= new TH2F("ESD_ConvGamma_PsiPair_Pt", "ESD_ConvGamma_PsiPair_Pt", 500, 0, 5, nBinsQAPt, arrQAPtBinning);
@@ -1154,6 +1180,17 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
         if(fIsMC>0){
           tESDMesonsInvMassPtDcazMinDcazMaxFlag[iCut]->Branch("mesonMCInfo",&iMesonMCInfo,"iMesonMCInfo/b");
         }
+      }
+      if(fDoMesonQATHnSparse){
+	Int_t    bins_base[4] = {6, 200,  800, 200};//category,pt,dcaz[min,max],InvMass
+	Double_t xmin_base[4] = {0,   0,    0, -10};
+	Double_t xmax_base[4] = {6,  20,  0.8,  10};
+	sESDMesonMinDCA[iCut] = new THnSparseF(Form("%s_%s_%s Meson min DCA",cutstringEvent.Data(), cutstringPhoton.Data(), cutstringMeson.Data()),"",4,bins_base,xmin_base,xmax_base);
+	sESDMesonMinDCA[iCut]->Sumw2();
+	fCutFolder[iCut]->Add(sESDMesonMinDCA[iCut]);
+	sESDMesonMaxDCA[iCut] = new THnSparseF(Form("%s_%s_%s Meson max DCA",cutstringEvent.Data(), cutstringPhoton.Data(), cutstringMeson.Data()),"",4,bins_base,xmin_base,xmax_base);
+	sESDMesonMaxDCA[iCut]->Sumw2();
+	fCutFolder[iCut]->Add(sESDMesonMaxDCA[iCut]);
       }
       if(fDoMesonQA > 0 ){
         if (fIsMC < 2){
@@ -2154,6 +2191,14 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
             tESDConvGammaPtDcazCat[fiCut]->Fill();
           }
         }
+	if (fDoPhotonQATHnSparse){
+	  Double_t cont_photonvar[4];
+	  cont_photonvar[0]=PhotonCandidate->GetPhotonQuality();
+	  cont_photonvar[1]=PhotonCandidate->Pt();
+	  cont_photonvar[2]=PhotonCandidate->GetDCAzToPrimVtx();
+	  cont_photonvar[3]=PhotonCandidate->GetConversionRadius();
+	  sESDConvGamma[fiCut]->Fill(cont_photonvar);
+	}
       }
     } else if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseElecSharingCut()){ // if Shared Electron cut is enabled, Fill array, add to step one
       ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->FillElectonLabelArray(PhotonCandidate,nV0);
@@ -2241,6 +2286,14 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
               tESDConvGammaPtDcazCat[fiCut]->Fill();
             }
           }
+	  if (fDoPhotonQATHnSparse){
+	    Double_t cont_photonvar[4];
+	    cont_photonvar[0]=PhotonCandidate->GetPhotonQuality();
+	    cont_photonvar[1]=PhotonCandidate->Pt();
+	    cont_photonvar[2]=PhotonCandidate->GetDCAzToPrimVtx();
+	    cont_photonvar[3]=PhotonCandidate->GetConversionRadius();
+	    sESDConvGamma[fiCut]->Fill(cont_photonvar);
+	  }
         }
       } else GammaCandidatesStepTwo->Add(PhotonCandidate); // Close v0s cut enabled -> add to list two
     }
@@ -2320,6 +2373,14 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
             tESDConvGammaPtDcazCat[fiCut]->Fill();
           }
         }
+	if (fDoPhotonQATHnSparse){
+	  Double_t cont_photonvar[4];
+	  cont_photonvar[0]=PhotonCandidate->GetPhotonQuality();
+	  cont_photonvar[1]=PhotonCandidate->Pt();
+	  cont_photonvar[2]=PhotonCandidate->GetDCAzToPrimVtx();
+	  cont_photonvar[3]=PhotonCandidate->GetConversionRadius();
+	  sESDConvGamma[fiCut]->Fill(cont_photonvar);
+	}
       }
     }
   }
@@ -3285,6 +3346,27 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
               if ( (fInvMass > 0.08 && fInvMass < 0.6) ) tESDMesonsInvMassPtDcazMinDcazMaxFlag[fiCut]->Fill();
             }
           }
+	  if (fDoMesonQATHnSparse){
+	    if (TMath::Abs(gamma0->GetDCAzToPrimVtx()) < TMath::Abs(gamma1->GetDCAzToPrimVtx())){
+              fDCAzGammaMin = gamma0->GetDCAzToPrimVtx();
+              fDCAzGammaMax = gamma1->GetDCAzToPrimVtx();
+            } else {
+              fDCAzGammaMin = gamma1->GetDCAzToPrimVtx();
+              fDCAzGammaMax = gamma0->GetDCAzToPrimVtx();
+            }
+	    Double_t cont_mesonvarMinDCA[4];
+	    cont_mesonvarMinDCA[0]=pi0cand->GetMesonQuality();
+	    cont_mesonvarMinDCA[1]=pi0cand->Pt();
+	    cont_mesonvarMinDCA[2]=pi0cand->M();
+	    cont_mesonvarMinDCA[3]=fDCAzGammaMin;
+	    sESDMesonMinDCA[fiCut]->Fill(cont_mesonvarMinDCA);
+	    Double_t cont_mesonvarMaxDCA[4];
+	    cont_mesonvarMaxDCA[0]=pi0cand->GetMesonQuality();
+	    cont_mesonvarMaxDCA[1]=pi0cand->Pt();
+	    cont_mesonvarMaxDCA[2]=pi0cand->M();
+	    cont_mesonvarMaxDCA[3]=fDCAzGammaMax;
+	    sESDMesonMaxDCA[fiCut]->Fill(cont_mesonvarMaxDCA);
+	  }
         }
         delete pi0cand;
         pi0cand=0x0;
