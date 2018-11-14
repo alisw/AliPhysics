@@ -87,9 +87,14 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration
 
   pi0calib->SetTriggerName(trigger);
   
+  // Centrality selection
+//  pi0calib->SwitchOnCentrality();
+//  pi0calib->SetCentralityRange(50.,90.);
+//  pi0calib->SetCentralityClass("V0M");
+  
+  //
   // Cluster recalculation, Reco Utils configuration
-  
-  
+  //
   AliEMCALRecoUtils * reco = pi0calib->GetEMCALRecoUtils();
   
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
