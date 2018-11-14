@@ -144,6 +144,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fzvtx_Corr(0),
 				fNtrkl_Corr(0),
 				fNchNtr(0),
+				fNchNtr_Corr(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
 				fEMCEG2(kFALSE),
@@ -191,7 +192,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fHist_eff_match(0),
 				fHist_eff_TPC(0),
 				fHist_eff_M20(0),
-				fHist_eff_Iso(0)
+				fHist_eff_Iso(0),
+				fweightNtrkl(0)
 
 {
 				// default constructor, don't allocate memory here!
@@ -286,6 +288,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fzvtx_Corr(0),
 				fNtrkl_Corr(0),
 				fNchNtr(0),
+				fNchNtr_Corr(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
 				fEMCEG2(kFALSE),
@@ -333,7 +336,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fHist_eff_match(0),
 				fHist_eff_TPC(0),
 				fHist_eff_M20(0),
-				fHist_eff_Iso(0)
+				fHist_eff_Iso(0),
+				fweightNtrkl(0)
 {
 				// constructor
 				DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -355,6 +359,7 @@ AliAnalysisTaskCaloHFEpp::~AliAnalysisTaskCaloHFEpp()
 				for(Int_t i=0; i<6; i++) {
 								if (fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i];
 				}
+				if(fweightNtrkl) delete fweightNtrkl;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
@@ -427,6 +432,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fzvtx_Corr = new TH1F("fzvtx_Corr","Zvertex after correction; zvtx; counts",200,-10.,10.);
 				fNtrkl_Corr = new TH1F("fNtrkl_Corr","N_{tracklet} after correction; zvtx; counts",300,0.,300.);
 				fNchNtr = new TH2F("fNchNtr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",300,0.,300.,300,0.,300);
+				fNchNtr_Corr = new TH2F("fNchNtr_Corr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",300,0.,300.,300,0.,300);
 				fHist_eff_HFE     = new TH1F("fHist_eff_HFE","efficiency :: HFE",600,0,60);
 				fHist_eff_match   = new TH1F("fHist_eff_match","efficiency :: matched cluster",600,0,60);
 				fHist_eff_TPC     = new TH1F("fHist_eff_TPC","efficiency :: TPC cut",600,0,60);
@@ -456,7 +462,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fEta010->SetParameters(1.82736e+00,-8.08208e+01,2.32670e+04,4.66500e+00,1.75496e+00); 
 
 				fCorrZvtx = new TF1("fCorrZvtx","pol4");
-				fCorrZvtx->SetParameters(1.03336,0.00458321,-0.00161536,1.34027e-05,-9.30713e-06);
+				fCorrZvtx->SetParameters(0.989494,-0.000148672,0.00145737,4.02038e-05,-2.07891e-05);
 
 				fCorrNtrkl = new TF1("fCorrNtrkl","pol8");
 				fCorrNtrkl->SetParameters(1.32267,-0.186463,0.0300275,-0.00205886,7.30481e-05,-1.45858e-06,1.65515e-08,-9.94577e-11,2.45483e-13);
@@ -546,6 +552,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fOutputList->Add(fzvtx_Corr);
 				fOutputList->Add(fNtrkl_Corr);
 				fOutputList->Add(fNchNtr);
+				fOutputList->Add(fNchNtr_Corr);
 				//==== MC output ====
 				fOutputList->Add(fMCcheckMother);
 				fOutputList->Add(fCheckEtaMC);
@@ -809,12 +816,13 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
 
 
+				fNchNtr->Fill(correctednAcc,Nch);
 				if(fMCarray){
 								WeightZvtx = fCorrZvtx->Eval(Zvertex);
-								WeightNtrkl = fCorrNtrkl->Eval(correctednAcc);
+								WeightNtrkl = fweightNtrkl->GetBinContent(correctednAcc);
 								fzvtx_Corr->Fill(Zvertex,WeightZvtx);
 								fNtrkl_Corr->Fill(correctednAcc,WeightNtrkl);
-								fNchNtr->Fill(correctednAcc,Nch,WeightNtrkl);
+								fNchNtr_Corr->Fill(correctednAcc,Nch,WeightNtrkl);
 								fzvtx_Nch->Fill(Zvertex,Nch,WeightZvtx);
 				}
 

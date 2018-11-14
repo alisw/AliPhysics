@@ -37,6 +37,7 @@ class TVector3;
 class THnSparse;
 class TObject;
 class TRandom3;
+class TObjString; 
 
 class AliESDpid;
 class AliESDtrackCuts;
@@ -254,6 +255,7 @@ private:
     
     //Full Physics Selection Trigger info
     UInt_t fEvSel_TriggerMask; //! save full info for checking later
+    TString fFiredTriggerClasses; //!
     
     //Other Selections: more dedicated filtering to be studied!
 

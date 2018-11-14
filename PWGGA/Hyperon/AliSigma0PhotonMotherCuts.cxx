@@ -67,6 +67,7 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fHistSigmaPhotonPtCorr(nullptr),
       fHistSigmaLambdaPCorr(nullptr),
       fHistSigmaPhotonPCorr(nullptr),
+      fHistMCTruthPt(nullptr),
       fHistMCTruthPtMult(),
       fHistMCTruthPtY(nullptr),
       fHistMCTruthDaughterPtY(nullptr),
@@ -150,6 +151,7 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fHistSigmaPhotonPtCorr(nullptr),
       fHistSigmaLambdaPCorr(nullptr),
       fHistSigmaPhotonPCorr(nullptr),
+      fHistMCTruthPt(nullptr),
       fHistMCTruthPtMult(),
       fHistMCTruthPtY(nullptr),
       fHistMCTruthDaughterPtY(nullptr),
@@ -585,6 +587,9 @@ void AliSigma0PhotonMotherCuts::ProcessMC() const {
     if (mcParticle->GetNDaughters() != 2) continue;
     if (mcParticle->PdgCode() != fPDG) continue;
 
+    if (std::abs(mcParticle->Y()) <= fRapidityMax) {
+      fHistMCTruthPt->Fill(mcParticle->Pt());
+    }
     if (multBin >= 0 && std::abs(mcParticle->Y()) <= fRapidityMax) {
       fHistMCTruthPtMult[multBin]->Fill(mcParticle->Pt());
     }
@@ -911,10 +916,14 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
       fHistogramsMC->SetName("MC");
     }
 
+    fHistMCTruthPt = new TH1F("fHistMCTruthPt",
+                              "; #it{p}_{T} (GeV/#it{c}); Entries", 100, 0, 10);
+    fHistogramsMC->Add(fHistMCTruthPt);
+
     for (int i = 0; i < static_cast<int>(multBins.size() - 1); i++) {
       fHistMCTruthPtMult[i] =
           new TH1F(Form("fHistMCTruthPtMult%i", i),
-                   Form("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c})",
+                   Form("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); Entries",
                         multBins[i], multBins[i + 1]),
                    100, 0, 10);
       fHistogramsMC->Add(fHistMCTruthPtMult[i]);

@@ -94,8 +94,8 @@ AliEmcalJetTree::AliEmcalJetTree(const char* name) : TNamed(name, name), fJetTre
 
 
 //________________________________________________________________________
-Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Float_t vertexX, Float_t vertexY, Float_t vertexZ, Float_t centrality, Long64_t eventID, Float_t magField,
-  AliParticleContainer* trackCont, Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchedPt, Float_t truePtFraction, Float_t ptHard, Float_t eventWeight, Float_t impactParameter,
+Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t vertexX, Float_t vertexY, Float_t vertexZ, Float_t centrality, Long64_t eventID, Float_t magField,
+  Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchDistance, Float_t matchedPt, Float_t matchedMass, Float_t truePtFraction, Float_t ptHard, Float_t eventWeight, Float_t impactParameter,
   Float_t* trackPID_ITS, Float_t* trackPID_TPC, Float_t* trackPID_TOF, Float_t* trackPID_TRD, Short_t* trackPID_Reco, Int_t* trackPID_Truth,
   Int_t numTriggerTracks, Float_t* triggerTrackPt, Float_t* triggerTrackDeltaEta, Float_t* triggerTrackDeltaPhi,
   Float_t* trackIP_d0, Float_t* trackIP_z0, Float_t* trackIP_d0cov, Float_t* trackIP_z0cov,
@@ -107,7 +107,7 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Floa
   if(!fInitialized)
     AliFatal("Tree is not initialized.");
 
-  fBuffer_JetPt                                   = jet->Pt() - bgrdDensity*jet->Area();
+  fBuffer_JetPt                                   = jet->Pt() - fJetContainer->GetRhoVal()*jet->Area();
 
   // Check if jet type is contained in extraction list
   if( (fExtractionJetTypes_PM.size() || fExtractionJetTypes_HM.size()) &&
@@ -122,7 +122,7 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Floa
     if(fBuffer_JetPt>=fExtractionPercentagePtBins[i*2] && fBuffer_JetPt<fExtractionPercentagePtBins[i*2+1])
     {
       inPtRange = kTRUE;
-      if(gRandom->Rndm() >= fExtractionPercentages[i])
+      if(fRandomGenerator->Rndm() >= fExtractionPercentages[i])
         return kFALSE;
       break;
     }
@@ -138,7 +138,8 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Floa
   // Set event properties
   if(fSaveEventProperties)
   {
-    fBuffer_Event_BackgroundDensity               = bgrdDensity;
+    fBuffer_Event_BackgroundDensity               = fJetContainer->GetRhoVal();
+    fBuffer_Event_BackgroundDensityMass           = fJetContainer->GetRhoMassVal();
     fBuffer_Event_Vertex_X                        = vertexX;
     fBuffer_Event_Vertex_Y                        = vertexY;
     fBuffer_Event_Vertex_Z                        = vertexZ;
@@ -155,10 +156,10 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Floa
 
   // Extract basic constituent properties directly from AliEmcalJet object
   fBuffer_NumConstituents = 0;
-  if(trackCont && (fSaveConstituents || fSaveConstituentsIP))
+  if(fTrackContainer && (fSaveConstituents || fSaveConstituentsIP))
     for(Int_t i = 0; i < jet->GetNumberOfTracks(); i++)
     {
-      AliVParticle* particle = static_cast<AliVParticle*>(jet->TrackAt(i, trackCont->GetArray()));
+      AliVParticle* particle = static_cast<AliVParticle*>(jet->TrackAt(i, fTrackContainer->GetArray()));
       if(!particle) continue;
 
       if(fSaveConstituents)
@@ -214,7 +215,7 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Floa
   }
 
   // Set jet shape observables
-  fBuffer_Shape_Mass  = jet->M();
+  fBuffer_Shape_Mass  = jet->M() - fJetContainer->GetRhoMassVal()*jet->Area();
 
   // Set Monte Carlo information
   if(fSaveMCInformation)
@@ -222,7 +223,9 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Floa
     fBuffer_Jet_MC_MotherParton = motherParton;
     fBuffer_Jet_MC_MotherHadron = motherHadron;
     fBuffer_Jet_MC_MotherIC = partonInitialCollision;
+    fBuffer_Jet_MC_MatchDistance = matchDistance;
     fBuffer_Jet_MC_MatchedPt = matchedPt;
+    fBuffer_Jet_MC_MatchedMass = matchedMass;
     fBuffer_Jet_MC_TruePtFraction = truePtFraction;
   }
 
@@ -252,6 +255,9 @@ void AliEmcalJetTree::InitializeTree()
   if(fInitialized)
     AliFatal("Tree is already initialized.");
 
+  if(!fJetContainer)
+    AliFatal("fJetContainer not set in tree");
+
   // ### Prepare the jet tree
   fJetTree = new TTree(Form("JetTree_%s", GetName()), "");
 
@@ -264,6 +270,7 @@ void AliEmcalJetTree::InitializeTree()
   if(fSaveEventProperties)
   {
     fJetTree->Branch("Event_BackgroundDensity",&fBuffer_Event_BackgroundDensity,"Event_BackgroundDensity/F");
+    fJetTree->Branch("Event_BackgroundDensityMass",&fBuffer_Event_BackgroundDensityMass,"Event_BackgroundDensityMass/F");
     fJetTree->Branch("Event_Vertex_X",&fBuffer_Event_Vertex_X,"Event_Vertex_X/F");
     fJetTree->Branch("Event_Vertex_Y",&fBuffer_Event_Vertex_Y,"Event_Vertex_Y/F");
     fJetTree->Branch("Event_Vertex_Z",&fBuffer_Event_Vertex_Z,"Event_Vertex_Z/F");
@@ -323,7 +330,9 @@ void AliEmcalJetTree::InitializeTree()
     fJetTree->Branch("Jet_MC_MotherParton",&fBuffer_Jet_MC_MotherParton,"Jet_MC_MotherParton/I");
     fJetTree->Branch("Jet_MC_MotherHadron",&fBuffer_Jet_MC_MotherHadron,"Jet_MC_MotherHadron/I");
     fJetTree->Branch("Jet_MC_MotherIC",&fBuffer_Jet_MC_MotherIC,"Jet_MC_MotherIC/I");
+    fJetTree->Branch("Jet_MC_MatchDistance",&fBuffer_Jet_MC_MatchDistance,"Jet_MC_MatchDistance/F");
     fJetTree->Branch("Jet_MC_MatchedPt",&fBuffer_Jet_MC_MatchedPt,"Jet_MC_MatchedPt/F");
+    fJetTree->Branch("Jet_MC_MatchedMass",&fBuffer_Jet_MC_MatchedMass,"Jet_MC_MatchedMass/F");
     fJetTree->Branch("Jet_MC_TruePtFraction",&fBuffer_Jet_MC_TruePtFraction,"Jet_MC_TruePtFraction/F");
   }
 
@@ -369,8 +378,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fTruthMinLabel(0),
   fTruthMaxLabel(100000),
   fSaveTrackPDGCode(kTRUE),
-  fEventWeight(0.),
-  fImpactParameter(0.),
+  fRandomSeed(0),
+  fRandomSeedCones(0),
   fEventCut_TriggerTrackMinPt(0),
   fEventCut_TriggerTrackMaxPt(0),
   fEventCut_TriggerTrackMinLabel(-9999999),
@@ -380,11 +389,19 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fTruthParticleArray(0),
   fTruthJetsArrayName(""),
   fTruthJetsRhoName(""),
+  fTruthJetsRhoMassName(""),
   fTruthParticleArrayName("mcparticles"),
+  fRandomGenerator(0),
+  fRandomGeneratorCones(0),
+  fEventWeight(0.),
+  fImpactParameter(0.),
   fTriggerTracks_Pt(),
   fTriggerTracks_Eta(),
   fTriggerTracks_Phi()
 {
+  fRandomGenerator = new TRandom3();
+  fRandomGeneratorCones = new TRandom3();
+
   SetMakeGeneralHistograms(kTRUE);
   fJetTree = new AliEmcalJetTree(GetName());
   fJetTree->SetSaveEventProperties(kTRUE);
@@ -409,8 +426,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fTruthMinLabel(0),
   fTruthMaxLabel(100000),
   fSaveTrackPDGCode(kTRUE),
-  fEventWeight(0.),
-  fImpactParameter(0.),
+  fRandomSeed(0),
+  fRandomSeedCones(0),
   fEventCut_TriggerTrackMinPt(0),
   fEventCut_TriggerTrackMaxPt(0),
   fEventCut_TriggerTrackMinLabel(-9999999),
@@ -420,11 +437,19 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fTruthParticleArray(0),
   fTruthJetsArrayName(""),
   fTruthJetsRhoName(""),
+  fTruthJetsRhoMassName(""),
   fTruthParticleArrayName("mcparticles"),
+  fRandomGenerator(0),
+  fRandomGeneratorCones(0),
+  fEventWeight(0.),
+  fImpactParameter(0.),
   fTriggerTracks_Pt(),
   fTriggerTracks_Eta(),
   fTriggerTracks_Phi()
 {
+  fRandomGenerator = new TRandom3();
+  fRandomGeneratorCones = new TRandom3();
+
   SetMakeGeneralHistograms(kTRUE);
   fJetTree = new AliEmcalJetTree(GetName());
   fJetTree->SetSaveEventProperties(kTRUE);
@@ -453,16 +478,20 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
   if(!fTracksCont)
     AliFatal("Particle input container not found attached to jets!");
 
+  fRandomGenerator->SetSeed(fRandomSeed);
+  fRandomGeneratorCones->SetSeed(fRandomSeedCones);
+
   // Activate saving of trigger tracks if this is demanded
   if(fEventCut_TriggerTrackMinPt || fEventCut_TriggerTrackMaxPt)
     fJetTree->SetSaveTriggerTracks(kTRUE);
 
   // ### Initialize the jet tree (settings must all be given at this stage)
+  fJetTree->SetTrackContainer(fTracksCont);
+  fJetTree->SetJetContainer(fJetsCont);
+  fJetTree->SetRandomGenerator(fRandomGenerator);
   fJetTree->InitializeTree();
   OpenFile(2);
   PostData(2, fJetTree->GetTreePointer());
-
-  PrintConfig();
 
   // ### Add control histograms (already some created in base task)
   AddHistogram2D<TH2D>("hTrackCount", "Number of tracks in acceptance vs. centrality", "COLZ", 500, 0., 5000., 100, 0, 100, "N tracks","Centrality", "dN^{Events}/dN^{Tracks}");
@@ -496,6 +525,10 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
 void AliAnalysisTaskJetExtractor::ExecOnce()
 {
   AliAnalysisTaskEmcalJet::ExecOnce();
+
+  // ### Need to explicitly tell jet container to load rho mass object
+  fJetsCont->LoadRhoMass(InputEvent());
+
   if (fTruthParticleArrayName != "")
     fTruthParticleArray = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTruthParticleArrayName.Data()));
 
@@ -536,6 +569,8 @@ void AliAnalysisTaskJetExtractor::ExecOnce()
     }
   }
 
+  PrintConfig();
+
 }
 
 //________________________________________________________________________
@@ -545,7 +580,7 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
 
   if(!IsTriggerTrackInEvent())
     return kFALSE;
-  if(gRandom->Rndm() >= fEventPercentage)
+  if(fRandomGenerator->Rndm() >= fEventPercentage)
     return kFALSE;
 
   // ################################### EVENT PROPERTIES
@@ -596,7 +631,9 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
   {
     FillJetControlHistograms(jet);
 
+    Double_t matchDistance = 0;
     Double_t matchedJetPt = 0;
+    Double_t matchedJetMass = 0;
     Double_t truePtFraction = 0;
     Int_t currentJetType_HM = 0;
     Int_t currentJetType_PM = 0;
@@ -605,8 +642,9 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     {
       // Get jet type from MC (hadron matching, parton matching definition - for HF jets)
       GetJetType(jet, currentJetType_HM, currentJetType_PM, currentJetType_IC);
-      // Get true pT estimators
-      GetJetTruePt(jet, matchedJetPt, truePtFraction);
+      // Get true estimators: for pt, jet mass, ...
+      truePtFraction = GetTrueJetPtFraction(jet);
+      matchDistance = GetMatchedTrueJetObservables(jet, matchedJetPt, matchedJetMass);
     }
 
     // ### CONSTITUENT LOOP: Retrieve PID values + impact parameters
@@ -650,8 +688,8 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     }
 
     // Fill jet to tree
-    Bool_t accepted = fJetTree->AddJetToTree(jet, fJetsCont->GetRhoVal(), vtxX, vtxY, vtxZ, fCent, eventID, InputEvent()->GetMagneticField(), fTracksCont,
-              currentJetType_PM,currentJetType_HM,currentJetType_IC,matchedJetPt,truePtFraction,fPtHard,fEventWeight,fImpactParameter,
+    Bool_t accepted = fJetTree->AddJetToTree(jet, vtxX, vtxY, vtxZ, fCent, eventID, InputEvent()->GetMagneticField(),
+              currentJetType_PM,currentJetType_HM,currentJetType_IC,matchDistance,matchedJetPt,matchedJetMass,truePtFraction,fPtHard,fEventWeight,fImpactParameter,
               vecSigITS, vecSigTPC, vecSigTOF, vecSigTRD, vecRecoPID, vecTruePID,
               fTriggerTracks_Pt, triggerTracks_dEta, triggerTracks_dPhi,
               vec_d0, vec_z0, vec_d0cov, vec_z0cov,
@@ -699,25 +737,57 @@ Bool_t AliAnalysisTaskJetExtractor::IsTriggerTrackInEvent()
   return kTRUE;
 }
 
-
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractor::GetJetTruePt(AliEmcalJet* jet, Double_t& matchedJetPt, Double_t& truePtFraction)
+Double_t AliAnalysisTaskJetExtractor::GetTrueJetPtFraction(AliEmcalJet* jet)
 {
   // #################################################################################
-  // ##### METHOD 1: If fTruthJetsArrayName is set, a matching jet is searched for
-  Double_t     bestMatchDeltaR = 999.;
+  // ##### FRACTION OF TRUE PT IN JET: Defined as "not from toy"
+  Double_t pt_nonMC = 0.;
+  Double_t pt_all   = 0.;
+  Double_t truePtFraction = 0;
+
+  for(Int_t iConst = 0; iConst < jet->GetNumberOfTracks(); iConst++)
+  {
+    // Loop over all valid jet constituents
+    AliVParticle* particle = static_cast<AliVParticle*>(jet->TrackAt(iConst, fTracksCont->GetArray()));
+    if(!particle) continue;
+    if(particle->Pt() < 1e-6) continue;
+
+    // Particles marked w/ labels within label range are considered from toy
+    if( (particle->GetLabel() >= fTruthMinLabel) && (particle->GetLabel() < fTruthMaxLabel))
+      pt_nonMC += particle->Pt();
+    pt_all += particle->Pt();
+  }
+  if(pt_all)
+    truePtFraction = (pt_nonMC/pt_all);
+  return truePtFraction;
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskJetExtractor::GetMatchedTrueJetObservables(AliEmcalJet* jet, Double_t& matchedJetPt, Double_t& matchedJetMass)
+{
+  // #################################################################################
+  // ##### OBSERVABLES FROM MATCHED JETS: Jet pt, jet mass
+  Double_t     bestMatchDeltaR = 8.; // 8 is higher than maximum possible matching distance
   if(fTruthJetsArrayName != "")
   {
-    // "True" background
+    // "True" background for pt
     AliRhoParameter* rho = static_cast<AliRhoParameter*>(InputEvent()->FindListObject(fTruthJetsRhoName.Data()));
     Double_t trueRho = 0;
     if(rho)
      trueRho = rho->GetVal();
 
+    // "True" background for mass
+    AliRhoParameter* rhoMass = static_cast<AliRhoParameter*>(InputEvent()->FindListObject(fTruthJetsRhoMassName.Data()));
+    Double_t trueRhoMass = 0;
+    if(rhoMass)
+     trueRhoMass = rhoMass->GetVal();
+
     TClonesArray* truthArray = static_cast<TClonesArray*>(InputEvent()->FindListObject(Form("%s", fTruthJetsArrayName.Data())));
 
     // Loop over all true jets to find the best match
     matchedJetPt = 0;
+    matchedJetMass = 0;
     if(truthArray)
       for(Int_t i=0; i<truthArray->GetEntries(); i++)
       {
@@ -737,32 +807,13 @@ void AliAnalysisTaskJetExtractor::GetJetTruePt(AliEmcalJet* jet, Double_t& match
         if(deltaR < bestMatchDeltaR)
         {
           bestMatchDeltaR = deltaR;
-          matchedJetPt = truthJet->Pt() - truthJet->Area()* trueRho;
+          matchedJetPt   = truthJet->Pt() - truthJet->Area()* trueRho;
+          matchedJetMass = truthJet->M() - truthJet->Area()* trueRhoMass;
         }
       }
   }
 
-  // #################################################################################
-  // ##### METHOD 2: Calculate fraction of "true" pT -- pT which is not from a toy
-  Double_t pt_nonMC = 0.;
-  Double_t pt_all   = 0.;
-  truePtFraction = 0;
-
-  for(Int_t iConst = 0; iConst < jet->GetNumberOfTracks(); iConst++)
-  {
-    // Loop over all valid jet constituents
-    AliVParticle* particle = static_cast<AliVParticle*>(jet->TrackAt(iConst, fTracksCont->GetArray()));
-    if(!particle) continue;
-    if(particle->Pt() < 1e-6) continue;
-
-    // Particles marked w/ labels within label range are considered from toy
-    if( (particle->GetLabel() >= fTruthMinLabel) && (particle->GetLabel() < fTruthMaxLabel))
-      pt_nonMC += particle->Pt();
-    pt_all += particle->Pt();
-  }
-  if(pt_all)
-    truePtFraction = (pt_nonMC/pt_all);
-
+  return bestMatchDeltaR;
 }
 
 
@@ -1038,8 +1089,8 @@ void AliAnalysisTaskJetExtractor::FillJetControlHistograms(AliEmcalJet* jet)
   for(Int_t iCone=0; iCone<kNumRandomConesPerEvent; iCone++)
   {
     // Throw random cone
-    Double_t tmpRandConeEta = fJetsCont->GetJetEtaMin() + gRandom->Rndm()*TMath::Abs(fJetsCont->GetJetEtaMax()-fJetsCont->GetJetEtaMin());
-    Double_t tmpRandConePhi = gRandom->Rndm()*TMath::TwoPi();
+    Double_t tmpRandConeEta = fJetsCont->GetJetEtaMin() + fRandomGeneratorCones->Rndm()*TMath::Abs(fJetsCont->GetJetEtaMax()-fJetsCont->GetJetEtaMin());
+    Double_t tmpRandConePhi = fRandomGeneratorCones->Rndm()*TMath::TwoPi();
     Double_t tmpRandConePt  = 0;
     // Fill pT that is in cone
     fTracksCont->ResetCurrentID();
@@ -1133,8 +1184,93 @@ void AliAnalysisTaskJetExtractor::AddPIDInformation(AliVParticle* particle, Floa
 //________________________________________________________________________
 void AliAnalysisTaskJetExtractor::PrintConfig()
 {
-  // Print properties for extraction
-  // to be implemented later
+  std::cout << "#########################################\n";
+  std::cout << "Settings for extractor task " << GetName() << std::endl;
+  std::cout << std::endl;
+
+  std::cout << "### Event cuts ###" << std::endl;
+  std::cout << std::endl;
+  if(fEventCut_TriggerTrackMinPt || fEventCut_TriggerTrackMaxPt)
+   std::cout << Form("* Trigger track requirement: pT=%3.1f-%3.1f GeV/c, labels=%d-%d", fEventCut_TriggerTrackMinPt, fEventCut_TriggerTrackMaxPt, fEventCut_TriggerTrackMinLabel, fEventCut_TriggerTrackMaxLabel) << std::endl;
+  if(fEventPercentage < 1)
+   std::cout << Form("* Artificially lowered event efficiency: %f", fEventPercentage) << std::endl;
+  if(fRandomSeed || fRandomSeedCones)
+   std::cout << Form("* Random seeds explicitly set: %lu (for event/jet eff.), %lu (RCs)", fRandomSeed, fRandomSeedCones) << std::endl;
+  std::cout << std::endl;
+
+  std::cout << "### Jet properties ###" << std::endl;
+  std::cout << "* Jet array name = " << fJetsCont->GetName() << std::endl;
+  std::cout << "* Rho name = " << fJetsCont->GetRhoName() << std::endl;
+  std::cout << "* Rho mass name = " << fJetsCont->GetRhoMassName() << std::endl;
+  std::cout << std::endl;
+
+  std::cout << "### Tree extraction properties ###" << std::endl;
+  std::vector<Float_t> extractionPtBins      = fJetTree->GetExtractionPercentagePtBins();
+  std::vector<Float_t> extractionPercentages = fJetTree->GetExtractionPercentages();
+  std::vector<Int_t>   extractionHM          = fJetTree->GetExtractionJetTypes_HM();
+  std::vector<Int_t>   extractionPM          = fJetTree->GetExtractionJetTypes_PM();
+  if(extractionPercentages.size())
+  {
+    std::cout << "* Extraction bins: (";
+    for(Int_t i=0; i<static_cast<Int_t>(extractionPercentages.size()-1); i++)
+      std::cout << extractionPtBins[i*2] << "-" << extractionPtBins[i*2+1] << " = " << extractionPercentages[i] << ", ";
+    std::cout << extractionPtBins[(extractionPercentages.size()-1)*2] << "-" << extractionPtBins[(extractionPercentages.size()-1)*2+1] << " = " << extractionPercentages[(extractionPercentages.size()-1)];
+
+    std::cout << ")" << std::endl;
+  }
+  if(extractionHM.size())
+  {
+    std::cout << "* Extraction of hadron-matched jets with types: (";
+    for(Int_t i=0; i<static_cast<Int_t>(extractionHM.size()-1); i++)
+      std::cout << extractionHM[i] << ", ";
+    std::cout << extractionHM[extractionHM.size()-1];
+    std::cout << ")" << std::endl;
+  }
+  if(extractionPM.size())
+  {
+    std::cout << "* Extraction of parton-matched jets with types: (";
+    for(Int_t i=0; i<static_cast<Int_t>(extractionPM.size()-1); i++)
+      std::cout << extractionPM[i] << ", ";
+    std::cout << extractionPM[extractionPM.size()-1];
+    std::cout << ")" << std::endl;
+  }
+  std::cout << std::endl;
+
+  std::cout << "### Extracted data groups ###" << std::endl;
+  if(fJetTree->GetSaveEventProperties())
+    std::cout << "* Basic event properties (ID, vertex, centrality, bgrd. densities, ...)" << std::endl;
+  if(fJetTree->GetSaveConstituents())
+    std::cout << "* Jet constituents, basic properties (pt, eta, phi, charge, ...)" << std::endl;
+  if(fJetTree->GetSaveConstituentsIP())
+    std::cout << "* Jet constituents, IPs" << std::endl;
+  if(fJetTree->GetSaveConstituentPID())
+    std::cout << "* Jet constituents, PID" << std::endl;
+  if(fJetTree->GetSaveMCInformation())
+    std::cout << "* MC information (origin, matched jets, ...)" << std::endl;
+  if(fJetTree->GetSaveSecondaryVertices())
+    std::cout << "* Secondary vertices" << std::endl;
+  if(fJetTree->GetSaveJetShapes())
+    std::cout << "* Jet shapes (jet mass)" << std::endl;
+  if(fJetTree->GetSaveTriggerTracks())
+    std::cout << "* Trigger tracks" << std::endl;
+  std::cout << std::endl;
+  std::cout << "### Further settings ###" << std::endl;
+  if(fTruthJetsArrayName != "")
+    std::cout << Form("* True jet matching active, array=%s, rho=%s, rho_mass=%s", fTruthJetsArrayName.Data(), fTruthJetsRhoName.Data(), fTruthJetsRhoMassName.Data()) << std::endl;
+  if(fTruthParticleArray)
+    std::cout << Form("* Particle level information available (for jet origin calculation, particle code): %s", fTruthParticleArrayName.Data()) << std::endl;
+  if(extractionHM.size())
+    std::cout << Form("* Hadron--jet matching radius=%3.3f", fHadronMatchingRadius) << std::endl;
+  if(fJetTree->GetSaveMCInformation())
+    std::cout << Form("* True particle label range for pt fraction=%d-%d", fTruthMinLabel, fTruthMaxLabel) << std::endl;
+  if(fJetTree->GetSaveMCInformation() && fSaveTrackPDGCode && fJetTree->GetSaveConstituentPID())
+    std::cout << Form("* Particle PID codes will be PDG codes") << std::endl;
+  else if(fJetTree->GetSaveMCInformation() && !fSaveTrackPDGCode && fJetTree->GetSaveConstituentPID())
+    std::cout << Form("* Particle PID codes will follow AliAODPid convention") << std::endl;
+  if(fJetTree->GetSaveMCInformation() && fSetEmcalJetFlavour)
+    std::cout << Form("* AliEmcalJet flavour tag is set from HF-jet tagging") << std::endl;
+
+  std::cout << "#########################################\n\n";
 }
 
 
@@ -1275,13 +1411,9 @@ void AliAnalysisTaskJetExtractor::Terminate(Option_t *)
 
 // ### ADDTASK MACRO
 //________________________________________________________________________
-AliAnalysisTaskJetExtractor* AliAnalysisTaskJetExtractor::AddTaskJetExtractor(const char* configFile, AliRDHFJetsCutsVertex* vertexerCuts, const char* taskNameSuffix)
+AliAnalysisTaskJetExtractor* AliAnalysisTaskJetExtractor::AddTaskJetExtractor(TString trackArray, TString jetArray, TString rhoObject, Double_t jetRadius, TString configFile, AliRDHFJetsCutsVertex* vertexerCuts, const char* taskNameSuffix)
 {  
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  TString     trackArray         = "tracks";
-  TString     jetArray           = "Jet_AKTChargedR040_tracks_pT0150_E_scheme";
-  TString     rhoObject          = "";
-  Double_t    jetRadius          = 0.4;
   Double_t    minJetEta          = 0.5;
   Double_t    minJetPt           = 0.15;
   Double_t    minTrackPt         = 0.15;
@@ -1293,11 +1425,12 @@ AliAnalysisTaskJetExtractor* AliAnalysisTaskJetExtractor::AddTaskJetExtractor(co
   // ###### Load configuration from YAML files
   PWG::Tools::AliYAMLConfiguration fYAMLConfig;
   fYAMLConfig.AddConfiguration("alien:///alice/cern.ch/user/r/rhaake/ConfigFiles/JetExtractor_BaseConfig.yaml", "baseConfig");
-  fYAMLConfig.AddConfiguration(configFile, "customConfig");
+  if(configFile != "")
+    fYAMLConfig.AddConfiguration(configFile.Data(), "customConfig");
   fYAMLConfig.Initialize();
 
-  fYAMLConfig.GetProperty("TrackArray", trackArray);
-  fYAMLConfig.GetProperty("JetArray", jetArray);
+  fYAMLConfig.GetProperty("TrackArray", trackArray, kFALSE);
+  fYAMLConfig.GetProperty("JetArray", jetArray, kFALSE);
   fYAMLConfig.GetProperty("RhoName", rhoObject, kFALSE);
   fYAMLConfig.GetProperty("JetRadius", jetRadius);
   fYAMLConfig.GetProperty("MinJetEta", minJetEta);

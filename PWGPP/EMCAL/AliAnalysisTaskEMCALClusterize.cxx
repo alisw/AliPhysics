@@ -48,6 +48,7 @@
 #include "AliEMCALClusterizerNxN.h"
 #include "AliEMCALClusterizerv1.h"
 #include "AliEMCALClusterizerv2.h"
+#include "AliEMCALClusterizerv3.h"
 #include "AliEMCALRecPoint.h"
 #include "AliEMCALDigit.h"
 
@@ -1549,6 +1550,8 @@ void AliAnalysisTaskEMCALClusterize::InitClusterization()
     fClusterizer = new AliEMCALClusterizerv1 (fGeom);
   else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv2) 
     fClusterizer = new AliEMCALClusterizerv2(fGeom);
+  else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv3) 
+    fClusterizer = new AliEMCALClusterizerv3(fGeom);
   else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerNxN)
   { 
     fClusterizer = new AliEMCALClusterizerNxN(fGeom);

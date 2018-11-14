@@ -1693,7 +1693,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             if ( v0->GetOnFlyStatus()  &&
                 (
                  (v0->GetPindex() == lCascPosTrackArray[iCasc] && v0->GetNindex() == lCascBachTrackArray[iCasc] ) ||
-                 (v0->GetNindex() == lCascPosTrackArray[iCasc] && v0->GetPindex() == lCascNegTrackArray[iCasc] )
+                 (v0->GetNindex() == lCascPosTrackArray[iCasc] && v0->GetPindex() == lCascBachTrackArray[iCasc] )
                  )
                 ){
                 //Found corresponding OTF V0! Save it to TTree, please
@@ -1717,7 +1717,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             if ( v0->GetOnFlyStatus()  &&
                 (
                  (v0->GetPindex() == lCascNegTrackArray[iCasc] && v0->GetNindex() == lCascBachTrackArray[iCasc] ) ||
-                 (v0->GetNindex() == lCascNegTrackArray[iCasc] && v0->GetPindex() == lCascNegTrackArray[iCasc] )
+                 (v0->GetNindex() == lCascNegTrackArray[iCasc] && v0->GetPindex() == lCascBachTrackArray[iCasc] )
                  )
                 ){
                 //Found corresponding OTF V0! Save it to TTree, please

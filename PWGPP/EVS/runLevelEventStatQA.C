@@ -308,7 +308,12 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=295588
   else if (run>=280236 && run<=282007) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
   else if (run>=282008 && run<=282441) { refSigma= 21.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // pp@5.02TeV. Taking previous estimates
   else if (run>=282442 && run<=294999) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
-  else if (run>=295000               ) { refSigma=4000.; refEff = 0.50; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // PbPb at 5.02TeV, sigma from Martino cs(INEL) = 8000 mb
+  else if (run>=295000 && run<=295670) { refSigma=4000.; refEff = 0.50; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // PbPb at 5.02TeV, sigma from Martino cs(INEL) = 8000 mb
+  else if (run>=295671 && run<=295715) { refSigma=4000.; refEff = 0.0675; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // bug in the trigger config
+  else if (run>=295716 && run<=295716) { refSigma=4000.; refEff = 0.50; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // run ok
+  else if (run>=295717 && run<=295720) { refSigma=4000.; refEff = 0.0675; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // bug in the trigger config
+  else if (run>=295721               ) { refSigma=4000.; refEff = 0.50; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // PbPb at 5.02TeV, sigma from Martino cs(INEL) = 8000 mb
+  
   
   Double_t orbitRate = 11245.;
   TString partition;
@@ -360,8 +365,8 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=295588
   if (run>=244917 && run<=246994) {
     for (Int_t i=0;i<classes.GetEntriesFast();i++){
       AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
-      TObjArray* tokens = TString(cl->GetName()).Tokenize("-");
-      TString cluster = tokens->At(3)->GetName();
+      TObjArray* tokensArray = TString(cl->GetName()).Tokenize("-");
+      TString cluster = tokensArray->At(3)->GetName();
       TString lifetimeClassName = Form("C0VHM-B-NOPF-%s",cluster.Data());
       if (run<245256) lifetimeClassName = Form("C0V0M-B-NOPF-%s",cluster.Data());
       TObject* lifetimeClass = classes.FindObject(lifetimeClassName.Data());
@@ -374,8 +379,8 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=295588
           class_lumi[i]=class_lumi[index]*ds_ratio;
         }
       }
-      tokens->Delete();
-      delete tokens;
+      tokensArray->Delete();
+      delete tokensArray;
     }
   }
 
@@ -501,25 +506,30 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=295588
     }
   }
   
-  // special treatment for Pb-Pb 2018
+  // special treatment for UPC triggers in Pb-Pb 2018
   if (run>=295000) {
     for (Int_t i=0;i<classes.GetEntriesFast();i++){
       AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
-      TObjArray* tokens = TString(cl->GetName()).Tokenize("-");
-      TString cluster = tokens->At(3)->GetName();
-      TString lifetimeClassName = Form("C0V0M-B-NOPF-%s",cluster.Data());
-      TObject* lifetimeClass = classes.FindObject(lifetimeClassName.Data());
-      if (lifetimeClass) {
-        Int_t index = classes.IndexOf(lifetimeClass);
-        if (class_ds[index]>0) {
-          printf("%s %f %f\n",lifetimeClassName.Data(),class_ds[i],class_ds[index]);
-          Float_t ds_ratio = class_ds[i]/class_ds[index];
-          class_lifetime[i]=class_lifetime[index]*ds_ratio;
-          class_lumi[i]=class_lumi[index]*ds_ratio;
-        }
-      }
-      tokens->Delete();
-      delete tokens;
+      if (!TString(cl->GetName()).Contains("CCUP")) continue;
+      TObject* lifetimeClass = 0;
+      if (!lifetimeClass) lifetimeClass = classes.FindObject("CEMC8EG1-B-NOPF-CENTNOTRD");
+      if (!lifetimeClass) lifetimeClass = classes.FindObject("CPHI8PER-B-NOPF-CENTNOTRD");
+      if (!lifetimeClass) lifetimeClass = classes.FindObject("CPHI7PER-B-NOPF-CENTNOPMD");
+      if (!lifetimeClass) continue;
+      Int_t index = classes.IndexOf(lifetimeClass);
+      class_lifetime[i]=class_lifetime[index]*class_ds[i];
+      class_lumi[i]=class_lumi[index]*class_ds[i];
+    }
+
+    for (Int_t i=0;i<classes.GetEntriesFast();i++){
+      AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
+      if (!TString(cl->GetName()).Contains("CMUP")) continue;
+      TObject* lifetimeClass = 0;
+      if (!lifetimeClass) lifetimeClass = classes.FindObject("CMUL7-B-NOPF-MUFAST");
+      if (!lifetimeClass) continue;
+      Int_t index = classes.IndexOf(lifetimeClass);
+      class_lifetime[i]=class_lifetime[index]*class_ds[i];
+      class_lumi[i]=class_lumi[index]*class_ds[i];
     }
   }
   

@@ -150,6 +150,8 @@
 #pragma link C++ class AliFemtoPairCutRadialDistanceKKdist;
 // AliFemtoKKTrackCutTest class:
 #pragma link C++ class AliFemtoKKTrackCutTest;
+// Sphericity for KK analysis in pp13TeV
+#pragma link C++ class AliFemtoSphericityEventCutKK;
 
 #pragma link C++ class AliFemtoCorrFctnInvMass;
 

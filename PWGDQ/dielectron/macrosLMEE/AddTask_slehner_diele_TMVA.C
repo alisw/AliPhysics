@@ -8,7 +8,8 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Int_t trackCut=0,
                                               Bool_t hasMC=kFALSE,
                                               TString TMVAweight = "TMVAClassification_BDTG.weights_094.xml",
                                               Int_t maxTrCuts=0,
-                                              Int_t maxPIDCuts=0        
+                                              Int_t maxPIDCuts=0,
+                                              Int_t MVACut=0       
         
         ){
   
@@ -74,7 +75,6 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Int_t trackCut=0,
 //  }
   
 //      for(Int_t MVACut = 0; MVACut <= 0; ++MVACut){
-      Int_t MVACut=0;
       Int_t trackCut = 0;
       Int_t PIDCut = 0;
       for(trackCut = 0; trackCut <=maxTrCuts; ++trackCut){
@@ -85,7 +85,7 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Int_t trackCut=0,
           Printf("=======================================");
           return NULL; 
         }  
-        std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVAcut: "<<MVACut*0.2<<" being added"<< std::endl;
+        std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVAcut: "<<-1+MVACut*0.2<<" being added"<< std::endl;
         diel_low->GetTrackFilter().AddCuts(SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight));   
         task->AddDielectron(diel_low);
         printf("successfully added AliDielectron: %s\n",diel_low->GetName());           
@@ -99,7 +99,7 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Int_t trackCut=0,
           Printf("=======================================");
           return NULL; 
         }  
-        std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVAcut: "<<MVACut*0.2<<" being added"<< std::endl;
+        std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVAcut: "<<-1+MVACut*0.2<<" being added"<< std::endl;
         diel_low->GetTrackFilter().AddCuts(SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight));   
         task->AddDielectron(diel_low);
         printf("successfully added AliDielectron: %s\n",diel_low->GetName());           

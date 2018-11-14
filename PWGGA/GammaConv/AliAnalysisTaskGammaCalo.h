@@ -120,7 +120,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 
     void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
 
-    void SetJetAnalysis(Bool_t DoJets)  {fDoJetAnalysis = DoJets;}
+    void SetSoftAnalysis(Bool_t DoSoft)  {fDoSoftAnalysis = DoSoft;}
 
   protected:
     AliV0ReaderV1*        fV0Reader;                                            // basic photon Selection Task
@@ -147,6 +147,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliConversionMesonCuts*   fMesonCuts;                                       // MesonCutObject
     AliAnalysisTaskConvJet*   fConvJetReader;                                   // JetReader
     Bool_t                fDoJetAnalysis;                                       // Bool to produce Jet Plots
+    Bool_t                fDoJetQA;                                             // Bool to produce Jet QA Plots
     TList**               fJetHistograms;                                       // Jet Histograms
     TList**               fTrueJetHistograms;                                   // True Jet Histograms
 
@@ -437,6 +438,13 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Float_t               fClusterIsoSumClusterEt;                              //! sum of Et of clusters within R<0.2
     Float_t               fClusterIsoSumTrackEt;                                //! sum of Et of tracks within R<0.2
 
+    //tree for Jet-pi0 correlation studies
+    TTree**               tTreeJetPi0Correlations;
+    Float_t               fJetPt;                                               //! pt of pi0-tagged jet
+    Float_t               fTrueJetPt;                                           //! true pt of pi0-tagged jet
+    Float_t               fPi0Pt;                                               //! pt of pi0 inside jet
+    Float_t               fPi0InvMass;                                          //! mass of pi0 inside jet
+
     // hists for nonlineartiy calibration
 //    TH2F**                fHistoTruePi0NonLinearity;                            //! E_truth/E_rec vs E_rec for TruePi0s
 //    TH2F**                fHistoTrueEtaNonLinearity;                            //! E_truth/E_rec vs E_rec for TrueEtas
@@ -456,6 +464,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Int_t                 fIsMC;                                                // flag for MC information
     Bool_t                fDoTHnSparse;                                         // flag for using THnSparses for background estimation
     Bool_t                fSetPlotHistsExtQA;                                   // flag for extended QA hists
+    Bool_t                fDoSoftAnalysis;                                      // bool for Sphericity analysis without jets
     Double_t              fWeightJetJetMC;                                      // weight for Jet-Jet MC
     Bool_t                fDoInOutTimingCluster;                                // manual timing cut for cluster to combine cluster within timing cut and without
     Double_t              fMinTimingCluster;                                    // corresponding ranges, min
@@ -476,7 +485,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 51);
+    ClassDef(AliAnalysisTaskGammaCalo, 53);
 };
 
 #endif

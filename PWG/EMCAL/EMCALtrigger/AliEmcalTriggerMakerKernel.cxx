@@ -66,6 +66,7 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fSmearModelSigma(nullptr),
   fSmearThreshold(0.1),
   fScaleShift(0.),
+  fDoBackgroundSubtraction(false),
   fGeometry(nullptr),
   fPatchAmplitudes(nullptr),
   fPatchADCSimple(nullptr),
@@ -79,6 +80,7 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   memset(fL1ThresholdsOffline, 0, sizeof(ULong64_t) * 4);
   fCellTimeLimits[0] = -10000.;
   fCellTimeLimits[1] = 10000.;
+  memset(fRhoValues, 0, sizeof(Double_t) * kNIndRho);
 }
 
 AliEmcalTriggerMakerKernel::~AliEmcalTriggerMakerKernel() {
@@ -170,6 +172,7 @@ void AliEmcalTriggerMakerKernel::ConfigureForPP2015()
   AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetGammaHighBit() | 1<<fTriggerBitConfig->GetGammaLowBit(), 2, 1);
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit(), 16, 4);
   AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit(), 8, 4);
+  SetOnlineBackgroundSubtraction(true);     // Subtract background energy from online ADC values
   fConfigured = true;
 }
 
@@ -399,6 +402,12 @@ void AliEmcalTriggerMakerKernel::ReadTriggerData(AliVCaloTrigger *trigger){
       }
     }
   }
+
+  // Reading of the rho values (only PbPb)
+  if(fDoBackgroundSubtraction) {
+    fRhoValues[kIndRhoEMCAL] = trigger->GetMedian(0);     // EMCAL STU at position 0
+    fRhoValues[kIndRhoDCAL] = trigger->GetMedian(1);      // DCAL STU at position 1
+  }
 }
 
 void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
@@ -540,6 +549,11 @@ void AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inputeven
       if(patchit->GetADC() > fBkgThreshold) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kRecalcOffset + fTriggerBitConfig->GetBkgBit());
       if(patchit->GetOfflineADC() > fBkgThreshold) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kOfflineOffset + fTriggerBitConfig->GetBkgBit());
       onlinebits &= bkgPatchMask;
+    }
+    if(fDoBackgroundSubtraction) {
+      double area = TMath::Power(static_cast<double>(patchit->GetPatchSize())/4., 2);
+      double rhoval = (patchit->GetRowStart() >= 64) ? fRhoValues[kIndRhoDCAL] : fRhoValues[kIndRhoEMCAL];
+      patchit->SetADC(patchit->GetADC() - area * rhoval);
     }
     // convert
     AliEMCALTriggerPatchInfo fullpatch;

@@ -76,6 +76,24 @@ void AliAodSkimTask::CleanTrack(AliAODTrack *t)
     AliAODPid *pid = t->GetDetPid();
     delete pid;
     t->SetDetPID(0);
+  } else {
+    AliAODPid *pid = t->GetDetPid();
+    AliAODPid *nid = new AliAODPid;
+    nid->SetTPCsignal(pid->GetTPCsignal());
+    nid->SetTPCsignalN(pid->GetTPCsignalN());
+    nid->SetTPCmomentum(pid->GetTPCmomentum());
+    nid->SetTPCTgl(pid->GetTPCTgl());
+    /* Not used and getter not implemented
+    AliTPCdEdxInfo *dedx = new AliTPCdEdxInfo(pid->GetTPCdEdxInfo());
+    nid->SetTPCdEdxInfo(dedx); */
+    nid->SetTOFsignal(pid->GetTOFsignal());
+    Double_t val[5];
+    pid->GetTOFpidResolution(val);
+    nid->SetTOFpidResolution(val);
+    pid->GetIntegratedTimes(val,5);
+    nid->SetIntegratedTimes(val);
+    delete pid;
+    t->SetDetPID(nid);
   }
 }
 
@@ -240,15 +258,6 @@ void AliAodSkimTask::UserExec(Option_t *)
   if (fDoCopyClusters) { 
     TClonesArray *out = eout->GetCaloClusters();	         
     TClonesArray *in  = evin->GetCaloClusters();  
-    if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
-      AliFatal(Form("%s: Previous event not deleted. This should not happen!",GetName()));
-    }
-    out->AbsorbObjects(in);
-  }
-
-  if (fDoCopyDiMuons) { 
-    TClonesArray *out = eout->GetDimuons();
-    TClonesArray *in  = evin->GetDimuons();
     if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
       AliFatal(Form("%s: Previous event not deleted. This should not happen!",GetName()));
     }

@@ -37,7 +37,8 @@ fHistoV0SBins(0),             fHistoV0SMax(0),             fHistoV0SMin(0),
 fHistoV0MBins(0),             fHistoV0MMax(0),             fHistoV0MMin(0),
 fHistoTrMBins(0),             fHistoTrMMax(0),             fHistoTrMMin(0),
 fHistoFinePtBins(1000),       fHistoFinePtMax(5.),         fHistoFinePtMin(0.),
-fHistoPOverEBins(100),        fHistoPOverEMax(100.),       fHistoPOverEMin(0.),
+fHistoEOverPBins(100),        fHistoEOverPMax(100.),       fHistoEOverPMin(0.),
+fHistoNSigmaBins(100),        fHistoNSigmaMax(100.),       fHistoNSigmaMin(-100),
 fHistodEdxBins(100),          fHistodEdxMax(100.),         fHistodEdxMin(0.),
 fHistodRBins(100),            fHistodRMax(100.),           fHistodRMin(0.),
 fHistoTimeBins(100),          fHistoTimeMax(100.),         fHistoTimeMin(0.),
@@ -78,7 +79,8 @@ void AliHistogramRanges::InitParameters()
   fHistoV0SBins          = 100 ;  fHistoV0SMax          = 10000 ; fHistoV0SMin          = 0   ;
   fHistoV0MBins          = 100;   fHistoV0MMax          = 10000 ; fHistoV0MMin          = 0   ;
   fHistoTrMBins          = 200 ;  fHistoTrMMax          = 200   ; fHistoTrMMin          = 0   ;
-  fHistoPOverEBins       = 100 ;  fHistoPOverEMax       = 10.   ; fHistoPOverEMin       = 0.  ;
+  fHistoEOverPBins       = 100 ;  fHistoEOverPMax       = 10.   ; fHistoEOverPMin       = 0.  ;
+  fHistoNSigmaBins       = 300 ;  fHistoNSigmaMax       = 15.   ; fHistoNSigmaMin       =-15.  ;
   fHistodEdxBins         = 200 ;  fHistodEdxMax         = 400.  ; fHistodEdxMin         = 0.  ;  
   fHistodRBins           = 300 ;  fHistodRMax           = 3.15  ; fHistodRMin           = 0.  ;
   fHistoTimeBins         = 200;   fHistoTimeMax         = 200   ; fHistoTimeMin         =-200.;//ns
@@ -118,7 +120,8 @@ void AliHistogramRanges::Print(const Option_t * /*opt*/) const
   printf("Histograms: %d < V0 Signal < %d, Nbin = %d\n"              , fHistoV0SMin,         fHistoV0SMax,         fHistoV0SBins);
   printf("Histograms: %d < V0 Mult < %d, Nbin = %d\n"                , fHistoV0MMin,         fHistoV0MMax,         fHistoV0MBins);
   printf("Histograms: %d < Track Mult < %d, Nbin = %d\n"             , fHistoTrMMin,         fHistoTrMMax,         fHistoTrMBins);
-  printf("Histograms: %3.1f < p/E  < %3.1f, Nbin = %d\n"             , fHistoPOverEMin,      fHistoPOverEMax,      fHistoPOverEBins);
+  printf("Histograms: %3.1f < E/p  < %3.1f, Nbin = %d\n"             , fHistoEOverPMin,      fHistoEOverPMax,      fHistoEOverPBins);
+  printf("Histograms: %3.1f < nSigma  < %3.1f, Nbin = %d\n"          , fHistoNSigmaMin,      fHistoNSigmaMax,      fHistoNSigmaBins);
   printf("Histograms: %3.1f < dEdx < %3.1f, Nbin = %d\n"             , fHistodEdxMin,        fHistodEdxMax,        fHistodEdxBins);
   printf("Histograms: %3.1f < dR (track cluster)< %3.1f, Nbin = %d\n", fHistodRMin,          fHistodRMax,          fHistodRBins);
   printf("Histograms: %3.1f < R=sqrt{x^2+y^2}   < %3.1f, Nbin = %d\n", fHistoRMin,           fHistoRMax,           fHistoRBins);

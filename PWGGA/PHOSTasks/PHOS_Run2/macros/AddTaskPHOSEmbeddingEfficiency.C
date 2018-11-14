@@ -1,7 +1,7 @@
 AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
     const char* name     = "EmbeddingEfficiency",
     const TString parname = "Pi0",
-    const UInt_t trigger = AliVEvent::kINT7,
+    UInt_t trigger = AliVEvent::kINT7,
     const TString CollisionSystem = "PbPb",
     const Bool_t isMC = kFALSE,
     const Int_t L1input = -1,//L1H,L1M,L1L
@@ -49,17 +49,6 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
 	if     (trigger == (UInt_t)AliVEvent::kAny)  TriggerName = "kAny";
 	else if(trigger == (UInt_t)AliVEvent::kINT7) TriggerName = "kINT7";
 	else if(trigger == (UInt_t)AliVEvent::kPHI7) TriggerName = "kPHI7";
-
-//  if(trigger == (UInt_t)AliVEvent::kPHI7){
-//    if(triggerinput.Contains("L1") || triggerinput.Contains("L0")){
-//      TriggerName = TriggerName + "_" + triggerinput;
-//
-//    }
-//    else{
-//      ::Error("AddTaskPHOSEmbeddingEfficiency", "PHOS trigger analysis requires at least trigger input (L0 or L1[H,M,L]).");
-//      return NULL;
-//    }
-//  }
 
   if(trigger & AliVEvent::kPHI7){
     if(L1input > 0){
@@ -128,7 +117,7 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
   else if(L0input == 17) Ethre = 0.0;//LHC17p
   if(trigger & AliVEvent::kPHI7)      task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,ApplyTOFTrigger,-1);
   else if(trigger & AliVEvent::kINT7) task->SetPHOSTriggerAnalysisMB(L1input,L0input,Ethre,isMC,ApplyTOFTrigger,-1);
-  if(kMC && (trigger & AliVEvent::kPHI7)) trigger = AliVEvent::kINT7;//change trigger selection in MC when you do PHOS trigger analysis.
+  if(isMC && (trigger & AliVEvent::kPHI7)) trigger = AliVEvent::kINT7;//change trigger selection in MC when you do PHOS trigger analysis.
   if(ForceActiveTRU) task->SetForceActiveTRU(L1input,L0input,Ethre,isMC);//this is to measure rejection factor from cluster energy kPHI7/kINT7 with same acceptance.
 
   task->SelectCollisionCandidates(trigger);
@@ -162,11 +151,13 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
   //centrality setting
   task->SetCentralityEstimator("V0M");
 
-  //setting esd track selection for hybrid track
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
-  AliESDtrackCuts *cutsG = CreateTrackCutsPWGJE(10001008);//for good global tracks
+  AliESDtrackCuts *cutsG = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);//standard cuts with very loose DCA
+  cutsG->SetMaxDCAToVertexXY(2.4);
+  cutsG->SetMaxDCAToVertexZ(3.2);
+  cutsG->SetDCAToVertex2D(kTRUE);
   task->SetESDtrackCutsForGlobal(cutsG);
-  AliESDtrackCuts *cutsGC = CreateTrackCutsPWGJE(10011008);//for good global-constrained tracks
+
+  AliESDtrackCuts *cutsGC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();//standard cuts with tight DCA cut
   task->SetESDtrackCutsForGlobalConstrained(cutsGC);
 
   //bunch space for TOF cut

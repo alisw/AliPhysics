@@ -765,7 +765,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   histoRanges->SetHistodRRangeAndNBins(0.,0.06,60);//QA
   
   // QA, electron, charged
-  histoRanges->SetHistoPOverERangeAndNBins(0,1.5,150);
+  histoRanges->SetHistoEOverPRangeAndNBins(0,1.5,150);
   histoRanges->SetHistodEdxRangeAndNBins(0.,200.,200);
   
   // QA

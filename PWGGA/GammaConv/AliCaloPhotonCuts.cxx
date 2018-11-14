@@ -3417,7 +3417,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
           }
         }else if(fUseTMMIPsubtraction){
           //Subtracting the MIP energy is there is a match
-          cluster->SetE(cluster->E()-0.215);
+          cluster->SetE(cluster->E()-0.290);
         }else{
           fVectorMatchedClusterIDs.push_back(cluster->GetID());
         }
@@ -6422,7 +6422,8 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC18g6") == 0 )      return kPP13T18P1Pyt8;
   else if ( namePeriod.CompareTo("LHC18P1Pyt8LowB") ==0 ||
             namePeriod.CompareTo("LHC18h1") ==0  )      return kPP13T18P1Pyt8LowB;
-
+  // PbPb 5 TeV 2015 Gamma-Jet MC
+  else if ( namePeriod.CompareTo("LHC18b11c")) return  kLHC18b11c;
 
   // data starts here
   else if ( namePeriod.CompareTo("LHC10b") == 0 ||

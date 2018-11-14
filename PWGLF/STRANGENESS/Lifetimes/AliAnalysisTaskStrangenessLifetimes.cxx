@@ -10,7 +10,7 @@
 #include <TH2D.h>
 #include <TList.h>
 #include <TMath.h>
-
+#include <stdio.h>
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
@@ -100,6 +100,9 @@ AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
       fHistEtaPos{nullptr},
       fHistEtaNeg{nullptr},
       fHistArmenteros{nullptr},
+      fHistNsigmaPosHe{nullptr},
+      fHistdEdxVsPt{nullptr},
+      fHistNhyp{nullptr},
       fMinPtToSave{0.1},
       fMaxPtToSave{100},
       fMaxTPCpionSigma{10.},
@@ -221,8 +224,10 @@ void AliAnalysisTaskStrangenessLifetimes::UserCreateOutputObjects() {
 
   fHistNsigmaPosHe =
       new TH1D("fHistNsigmaPosHe", ";n_{#sigma} TPC Pos He; Counts",60,0,20);       
-  dEdxVsPt=new TH2D("dedxpt",";pt;dedx;counts",100,0,10,100,0,1500);
-  Nhyp=new TH1D("num of hyper",";pt;counts",60,0,10);
+  fHistdEdxVsPt = 
+      new TH2D("fHistdedxpt",";pt;dedx;counts",100,0,10,100,0,1500);
+  fHistNhyp = 
+      new TH1D("num of hyper",";pt;counts",60,0,10);
 
   if (man->GetMCtruthEventHandler()) {
     fHistMCct[0] = new TH1D("fHistMCctK0s", ";MC ct (cm); Counts", 4000, 0, 40);
@@ -240,8 +245,8 @@ void AliAnalysisTaskStrangenessLifetimes::UserCreateOutputObjects() {
     fListHist->Add(fHistMCctSecondaryFromMaterial[0]);
     fListHist->Add(fHistMCctSecondaryFromMaterial[1]);
   }
-  fListHist->Add(Nhyp);
-  fListHist->Add(dEdxVsPt);
+  fListHist->Add(fHistNhyp);
+  fListHist->Add(fHistdEdxVsPt);
   fListHist->Add(fHistNsigmaPosHe);
   fListHist->Add(fHistV0radius);
   fListHist->Add(fHistV0pt);
@@ -282,7 +287,6 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
   }
 
   std::array<int,3> pdgCodes{310, 3122, 1010010030};
-  int hePDG=1000020030;
   AliMCEvent* mcEvent = MCEvent();
   if (!mcEvent && fMC) {
     ::Fatal("AliAnalysisTaskStrangenessLifetimes::UserExec","Could not retrieve MC event");
@@ -371,7 +375,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
           if (v0part.GetPDGcode()==pdgCodes[2]) {
              if( (part->GetLastDaughter()-part->GetFirstDaughter())==2 ) v0part.SetNBodies(3);
              else{ v0part.SetNBodies(2);
-             Nhyp->Fill(v0part.GetPt());}
+             fHistNhyp->Fill(v0part.GetPt());}
           }
           fMCvector.push_back(v0part);
         }
@@ -403,16 +407,16 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
       if (!one || !two)
         ::Fatal("AliAnalysisTaskStrangenessLifetimes::UserExec",
           "Missing V0 tracks %p %p",(void*)one,(void*)two);
-        int ilab = std::abs(ComputeMother(mcEvent, one, two));
-        TParticle* part = mcEvent->Particle(ilab);
+      int ilab = std::abs(ComputeMother(mcEvent, one, two));
+      TParticle* part = mcEvent->Particle(ilab);
         
-        int currentPDG = part->GetPdgCode();
+      int currentPDG = part->GetPdgCode();
         
-        if (currentPDG==pdgCodes[2]) {
-           fHistNsigmaPosHe->Fill(std::abs(fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kHe3)));
-           dEdxVsPt->Fill(pTrack->GetTPCmomentum(),pTrack->GetTPCsignal());
+      if (currentPDG==pdgCodes[2] && (part->GetLastDaughter()-part->GetFirstDaughter())==1) {
+          fHistNsigmaPosHe->Fill(std::abs(fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kHe3)));
+          fHistdEdxVsPt->Fill(pTrack->GetTPCmomentum(),pTrack->GetTPCsignal());
 
-        }
+      }
         
     }    
     

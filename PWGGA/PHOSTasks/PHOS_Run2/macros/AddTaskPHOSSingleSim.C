@@ -69,7 +69,7 @@ AliAnalysisTaskPHOSSingleSim* AddTaskPHOSSingleSim(
   Double_t Ethre = 0.0;
 
   if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,kFALSE,dummy);
-  if(kMC && trigger == (UInt_t)AliVEvent::kPHI7) trigger = AliVEvent::kAny;//change trigger selection in MC when you do PHOS trigger analysis.
+  if(isMC && trigger == (UInt_t)AliVEvent::kPHI7) trigger = AliVEvent::kAny;//change trigger selection in MC when you do PHOS trigger analysis.
 
   //task->SelectCollisionCandidates(trigger);
 
@@ -98,11 +98,13 @@ AliAnalysisTaskPHOSSingleSim* AddTaskPHOSSingleSim(
   //centrality setting
   task->SetCentralityEstimator("HybridTrack");
 
-  //setting esd track selection for hybrid track
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
-  AliESDtrackCuts *cutsG = CreateTrackCutsPWGJE(10001008);//for good global tracks
+  AliESDtrackCuts *cutsG = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);//standard cuts with very loose DCA
+  cutsG->SetMaxDCAToVertexXY(2.4);
+  cutsG->SetMaxDCAToVertexZ(3.2);
+  cutsG->SetDCAToVertex2D(kTRUE);
   task->SetESDtrackCutsForGlobal(cutsG);
-  AliESDtrackCuts *cutsGC = CreateTrackCutsPWGJE(10011008);//for good global-constrained tracks
+
+  AliESDtrackCuts *cutsGC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();//standard cuts with tight DCA cut
   task->SetESDtrackCutsForGlobalConstrained(cutsGC);
 
   //bunch space for TOF cut

@@ -839,7 +839,7 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges,TString calorimeter 
   histoRanges->SetHistodRRangeAndNBins(0.,0.15,150);//QA
 
   // QA, electron, charged
-  histoRanges->SetHistoPOverERangeAndNBins(0,10.,100);
+  histoRanges->SetHistoEOverPRangeAndNBins(0,10.,100);
   histoRanges->SetHistodEdxRangeAndNBins(0.,200.,200);
   
   // QA

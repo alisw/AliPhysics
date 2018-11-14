@@ -1009,8 +1009,26 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
     cout << "AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() Fatal: There was an issue with the J/psi signal extraction!" << endl;
     return kFALSE;
   }
-  fBackgroundCF2D->Scale( 1./fTrigValSig[kBkg]);
-  fSignalCF2D->Scale(     1./fTrigValSig[kSig]);
+
+  // scale by number of signal/background counts and propagate uncertainty
+  for (Int_t xBin=1; xBin<=fSignalCF2D->GetNbinsX(); xBin++) {
+    for (Int_t yBin=1; yBin<=fSignalCF2D->GetNbinsY(); yBin++) {
+      Double_t bkgBinCont  = fBackgroundCF2D->GetBinContent( xBin, yBin);
+      Double_t bkgBinErr   = fBackgroundCF2D->GetBinError(   xBin, yBin);
+      Double_t sigBinCont  = fSignalCF2D->GetBinContent(     xBin, yBin);
+      Double_t sigBinErr   = fSignalCF2D->GetBinError(       xBin, yBin);
+
+      Double_t bkg    = bkgBinCont/fTrigValSig[kBkg];
+      Double_t bkgErr = TMath::Sqrt(TMath::Power(bkgBinErr/fTrigValSig[kBkg], 2) + TMath::Power(bkgBinCont*fTrigValSig[kBkgErr]/fTrigValSig[kBkg]/fTrigValSig[kBkg], 2));
+      Double_t sig    = sigBinCont/fTrigValSig[kSig];
+      Double_t sigErr = TMath::Sqrt(TMath::Power(sigBinErr/fTrigValSig[kSig], 2) + TMath::Power(sigBinCont*fTrigValSig[kSigErr]/fTrigValSig[kSig]/fTrigValSig[kSig], 2));
+
+      fBackgroundCF2D->SetBinContent( xBin, yBin, bkg);
+      fBackgroundCF2D->SetBinError(   xBin, yBin, bkgErr);
+      fSignalCF2D->SetBinContent(     xBin, yBin, sig);
+      fSignalCF2D->SetBinError(       xBin, yBin, sigErr);
+    }
+  }
   
   // project 1D correlation from 2D
   fBackgroundCF1D = ProjectToDeltaPhi(fBackgroundCF2D,  "backgroundCF_1D");

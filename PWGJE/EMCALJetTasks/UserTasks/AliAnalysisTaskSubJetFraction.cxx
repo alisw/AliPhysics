@@ -50,19 +50,6 @@
 //Globals
 
 
-Double_t XBinsPt[66]={0.15,0.20,0.25,0.30,0.35,0.40,0.45,0.50,0.55,0.60,0.65,0.70,0.75,0.80,0.85,0.9,0.95,1.00,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.20,2.40,2.60,2.80,3.00,3.20,3.40,3.60,3.80,4.00,4.50,5.00,5.50,6.00,6.50,7.00,8.00,9.00,10.00,11.00,12.00,13.00,14.00,15.00,16.00,18.00,20.00,22.00,24.00,26.00,28.00,30.00,32.00,34.00,36.00,40.00,45.00,50.00}; //Lower edges of new bins for rebbing purposes for track pt                                                                                                           
-Double_t XBinsPtSize=66;
-Double_t XBinsJetPt[35]={0,0.50,1.00,2.00,3.00,4.00,5.00,6.00,7.00,8.00,9.00,10.00,12.00,14.00,16.00,18.00,20.00,25.00,30.00,35.00,40.00,45.00,50.00,60.00,70.00,80.00,90.00,100.00,120.00,140.00,160.00,180.00,200.00,250.00,300.00}; //for jet pt
-Int_t XBinsJetPtSize=35;
-Double_t XBinsJetMass[28]={0,0.50,1.00,2.00,3.00,4.00,5.00,6.00,7.00,8.00,9.00,10.00,12.00,14.00,16.00,18.00,20.00,25.00,30.00,35.00,40.00,45.00,50.00,60.00,70.00,80.00,90.00,100.00}; //for jet mass
-Int_t XBinsJetMassSize=28;
-Double_t Eta_Up=1.00;
-Double_t Eta_Low=-1.00;
-Int_t Eta_Bins=100;
-Double_t Phi_Up=2*(TMath::Pi());
-Double_t Phi_Low=(-1*(TMath::Pi()));
-Int_t Phi_Bins=100;
-
 
 
 
@@ -80,6 +67,7 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fJetShapeType(kData),
   fJetShapeSub(kNoSub),
   fJetSelection(kInclusive),
+  fTreeSize(nVar),
   fPtThreshold(-9999.),
   fRMatching(0.2),
   fPtMinTriggerHadron(20.),
@@ -243,6 +231,7 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fJetShapeType(kData),
   fJetShapeSub(kNoSub),
   fJetSelection(kInclusive),
+  fTreeSize(nVar),
   fPtThreshold(-9999.),
   fRMatching(0.2),
   fPtMinTriggerHadron(20.),
@@ -477,29 +466,37 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
       fShapesVarNames[8] = "JetMultiplicity_Rec";
       fShapesVarNames[9] = "JetMultiplicity_Truth";
       fShapesVarNames[10] = "Parton_1_Flag";
-      fShapesVarNames[11] = "Blank_2";
+      fShapesVarNames[11] = "Parton_2_Flag";
       fShapesVarNames[12] = "Parton_1_Eta";
-      fShapesVarNames[13] = "Blank_4";
+      fShapesVarNames[13] = "Parton_2_Eta";
       fShapesVarNames[14] = "Parton_1_Phi";
-      fShapesVarNames[15] = "Blank_6";
-      fShapesVarNames[16] = "Parton_2_Flag";
-      fShapesVarNames[17] = "Blank_8";
-      fShapesVarNames[18] = "Parton_2_Eta";
-      fShapesVarNames[19] = "Blank_10";
-      fShapesVarNames[20] = "Parton_2_Phi";
-      fShapesVarNames[21] = "Blank_12";
-      fShapesVarNames[22] = "Blank_13";
-      fShapesVarNames[23] = "Blank_14";
-      fShapesVarNames[24] = "Blank_15";
-      fShapesVarNames[25] = "Blank_16";
-      fShapesVarNames[26] = "Blank_17";
-      fShapesVarNames[27] = "Blank_18";
+      fShapesVarNames[15] = "Parton_2_Phi";
+      fShapesVarNames[16] = "Angularity";
+      fShapesVarNames[17] = "Angularity_Truth";
+      fShapesVarNames[18] = "PTD";
+      fShapesVarNames[19] = "PTD_Truth";
+      fShapesVarNames[20] = "Blank_1";
+      fShapesVarNames[21] = "Blank_2";
+      fShapesVarNames[22] = "Blank_3";
+      fShapesVarNames[23] = "Blank_4";
+      fShapesVarNames[24] = "Blank_5";
+      fShapesVarNames[25] = "Blank_6";
+      fShapesVarNames[26] = "Blank_7";
+      fShapesVarNames[27] = "Blank_8";
     }
     for(Int_t ivar=0; ivar < nVar; ivar++){
       cout<<"looping over variables"<<endl;
       fTreeResponseMatrixAxis->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar], Form("%s/D", fShapesVarNames[ivar].Data()));
     }
   }
+
+  Double_t Eta_Up=1.00;
+  Double_t Eta_Low=-1.00;
+  Int_t Eta_Bins=100;
+  Double_t Phi_Up=2*(TMath::Pi());
+  Double_t Phi_Low=(-1*(TMath::Pi()));
+  Int_t Phi_Bins=100;
+
   
   if (!fFullTree){
     const Int_t nVarMin = 22; 
@@ -559,18 +556,18 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
       fShapesVarNames[7] = "Mass_Truth";
       fShapesVarNames[8] = "JetMultiplicity_Rec";
       fShapesVarNames[9] = "JetMultiplicity_Truth";
-      fShapesVarNames[10] = "Blank_1";
-      fShapesVarNames[11] = "Blank_2";
-      fShapesVarNames[12] = "Blank_3";
-      fShapesVarNames[13] = "Blank_4";
-      fShapesVarNames[14] = "Blank_5";
-      fShapesVarNames[15] = "Blank_6";
-      fShapesVarNames[16] = "Blank_7";
-      fShapesVarNames[17] = "Blank_8";
-      fShapesVarNames[18] = "Blank_9";
-      fShapesVarNames[19] = "Blank_10";
-      fShapesVarNames[20] = "Blank_11";
-      fShapesVarNames[21] = "Blank_12";
+      fShapesVarNames[10] = "Parton_1_Flag";
+      fShapesVarNames[11] = "Parton_2_Flag";
+      fShapesVarNames[12] = "Parton_1_Eta";
+      fShapesVarNames[13] = "Parton_2_Eta";
+      fShapesVarNames[14] = "Parton_1_Phi";
+      fShapesVarNames[15] = "Parton_2_Phi";
+      fShapesVarNames[16] = "Angularity";
+      fShapesVarNames[17] = "Angularity_Truth";
+      fShapesVarNames[18] = "PTD";
+      fShapesVarNames[19] = "PTD_Truth";
+      fShapesVarNames[20] = "Blank_1";
+      fShapesVarNames[21] = "Blank_2";
     }
     
     for(Int_t ivar=0; ivar < nVarMin; ivar++){
@@ -967,6 +964,8 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
     Bool_t EventCounter=kFALSE;
     Int_t JetNumber=-1;
     Double_t JetPtThreshold=-2;
+    const AliEmcalPythiaInfo *Parton_Info = 0x0;
+    Parton_Info=GetPythiaInfo();
     fhEventCounter->Fill(1);
     if(JetCont1) {
       fhEventCounter->Fill(2);
@@ -1051,15 +1050,15 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  if (fMLOn==0) fShapesVar[8]=FjNSubJettiness(Jet1,0,2,0,1,1);
 	  else fShapesVar[8]=Jet1->GetNumberOfTracks();
 	  if (fMLOn==0) fShapesVar[10]=FjNSubJettiness(Jet1,0,2,0,1,9);
-	  else fShapesVar[10]=0.0;
+	  else fShapesVar[10]=Parton_Info->GetPartonFlag6();
 	  if (fMLOn==0) fShapesVar[12]=FjNSubJettiness(Jet1,0,2,0,1,3,fBeta_SD,fZCut);
-	  else fShapesVar[12]=0.0;
+	  else fShapesVar[12]=Parton_Info->GetPartonEta6();
 	  if (fMLOn==0) fShapesVar[14]=FjNSubJettiness(Jet1,0,2,0,1,5,fBeta_SD,fZCut);
-	  else fShapesVar[14]=0.0;
+	  else fShapesVar[14]=Parton_Info->GetPartonPhi6();
 	  if (fMLOn==0) fShapesVar[16]=Jet1->GetLeadingTrack(JetCont1->GetParticleContainer()->GetArray())->Pt();
-	  else fShapesVar[16]=0.0;
+	  else fShapesVar[16]=Angularity(Jet1,0);
 	  if (fMLOn==0) fShapesVar[18]=RelativePhiEventPlane(fEPV0,Jet1->Phi());
-	  else fShapesVar[18]=0.0;
+	  else fShapesVar[18]=PTD(Jet1,0);
 	  //fShapesVar[20]=RelativePhiEventPlane(((AliVAODHeader*)(InputEvent()->GetHeader()))->GetEventplane(),Jet1->Phi());
 	  if (fMLOn==0) fShapesVar[20]=FjNSubJettiness(Jet1,0,2,0,1,6,fBeta_SD,fZCut);
 	  else fShapesVar[20]=0.0;
@@ -1083,15 +1082,15 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	    if (fMLOn==0) fShapesVar[9]=FjNSubJettiness(Jet4,3,2,0,1,1);
 	    else fShapesVar[9]=Jet4->GetNumberOfTracks();
 	    if (fMLOn==0) fShapesVar[11]=FjNSubJettiness(Jet4,3,2,0,1,9);
-	    else fShapesVar[11]=0.0;
+	    else fShapesVar[11]=Parton_Info->GetPartonFlag7();
 	    if (fMLOn==0) fShapesVar[13]=FjNSubJettiness(Jet4,3,2,0,1,3,fBeta_SD,fZCut);
-	    else fShapesVar[13]=0.0;
+	    else fShapesVar[13]=Parton_Info->GetPartonEta7();
 	    if (fMLOn==0) fShapesVar[15]=FjNSubJettiness(Jet4,3,2,0,1,5,fBeta_SD,fZCut);
-	    else fShapesVar[15]=0.0;
+	    else fShapesVar[15]=Parton_Info->GetPartonPhi7();
 	    if (fMLOn==0) fShapesVar[17]=Jet4->GetLeadingTrack(JetCont4->GetParticleContainer()->GetArray())->Pt();
-	    else fShapesVar[17]=0.0;
+	    else fShapesVar[17]=Angularity(Jet4,3);
 	    if (fMLOn==0) fShapesVar[19]=RelativePhiEventPlane(fEPV0,Jet4->Phi());
-	    else fShapesVar[19]=0.0;
+	    else fShapesVar[19]=PTD(Jet4,3);
 	    //fShapesVar[21]=RelativePhiEventPlane(((AliVAODHeader*)(InputEvent()->GetHeader()))->GetEventplane(),Jet4->Phi());
 	    if (fMLOn==0) fShapesVar[21]=FjNSubJettiness(Jet4,3,2,0,1,6,fBeta_SD,fZCut);
 	    else fShapesVar[21]=0.0;
@@ -1146,6 +1145,8 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
     Bool_t JetsMatched=kFALSE;
     Double_t Pythia_Event_Weight=1;
     Bool_t EventCounter=kFALSE;
+    const AliEmcalPythiaInfo *Parton_Info = 0x0;
+    Parton_Info=GetPythiaInfo();
     fhEventCounter_1->Fill(1);
     if(JetCont1) {
       fhEventCounter_1->Fill(2); //Number of events with a jet container                                                                                               
@@ -1253,15 +1254,15 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  if (fMLOn==0) fShapesVar[8]=FjNSubJettiness(Jet1,0,2,0,1,1);
 	  else fShapesVar[8]=Jet1->GetNumberOfTracks();
 	  if (fMLOn==0)  fShapesVar[10]=FjNSubJettiness(Jet1,0,2,0,1,9);
-	  else fShapesVar[10]=0.0;
+	  else fShapesVar[10]=Parton_Info->GetPartonFlag6();
 	  if (fMLOn==0) fShapesVar[12]=FjNSubJettiness(Jet1,0,2,0,1,3,fBeta_SD,fZCut);
-	  else fShapesVar[12]=0.0;
+	  else fShapesVar[12]=Parton_Info->GetPartonEta6();
 	  if (fMLOn==0) fShapesVar[14]=FjNSubJettiness(Jet1,0,2,0,1,5,fBeta_SD,fZCut);
-	  else fShapesVar[14]=0.0;
+	  else fShapesVar[14]=Parton_Info->GetPartonPhi6();
 	  if (fMLOn==0) fShapesVar[16]=Jet1->GetLeadingTrack(JetCont1->GetParticleContainer()->GetArray())->Pt();
-	  else fShapesVar[16]=0.0;
+	  else fShapesVar[16]=Angularity(Jet1,0);
 	  if (fMLOn==0) fShapesVar[18]=-2; //event plane calculation only needed for PbPb recoils
-	  else fShapesVar[18]=0.0;
+	  else fShapesVar[18]=PTD(Jet1,0);
 	  if (fMLOn==0) fShapesVar[20]=FjNSubJettiness(Jet1,0,2,0,1,6,fBeta_SD,fZCut);
 	  else fShapesVar[20]=0.0;
 	  Reclusterer1 = Recluster(Jet1, 0, fSubJetRadius, fSubJetMinPt, fSubJetAlgorithm, "SubJetFinder_1");
@@ -1284,15 +1285,15 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	    if (fMLOn==0) fShapesVar[9]=FjNSubJettiness(Jet2,1,2,0,1,1);
 	    else fShapesVar[9]=Jet2->GetNumberOfTracks();
 	    if (fMLOn==0) fShapesVar[11]=FjNSubJettiness(Jet2,1,2,0,1,9);
-	    else fShapesVar[11]=0.0;
+	    else fShapesVar[11]=Parton_Info->GetPartonFlag7();
 	    if (fMLOn==0) fShapesVar[13]=FjNSubJettiness(Jet2,1,2,0,1,3,fBeta_SD,fZCut);
-	    else fShapesVar[13]=0.0;
+	    else fShapesVar[13]=Parton_Info->GetPartonEta7();
 	    if (fMLOn==0) fShapesVar[15]=FjNSubJettiness(Jet2,1,2,0,1,5,fBeta_SD,fZCut);
-	    else fShapesVar[15]=0.0;
+	    else fShapesVar[15]=Parton_Info->GetPartonPhi7();
 	    if (fMLOn==0) fShapesVar[17]=Jet2->GetLeadingTrack(JetCont2->GetParticleContainer()->GetArray())->Pt();
-	    else fShapesVar[17]=0.0;
+	    else fShapesVar[17]=Angularity(Jet2,1);
 	    if (fMLOn==0) fShapesVar[19]=-2;
-	    else fShapesVar[19]=0.0;
+	    else fShapesVar[19]=PTD(Jet2,1);
 	    if (fMLOn==0) fShapesVar[21]=FjNSubJettiness(Jet2,1,2,0,1,6,fBeta_SD,fZCut);
 	    else fShapesVar[21]=0.0;
 	    Reclusterer2 = Recluster(Jet2, 1, fSubJetRadius, 0, fSubJetAlgorithm, "SubJetFinder_2");
@@ -1439,9 +1440,9 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  if (fMLOn==0) fShapesVar[14]=FjNSubJettiness(Jet1,0,2,0,1,5,fBeta_SD,fZCut);
 	  else fShapesVar[14]=0.0;
 	  if (fMLOn==0) fShapesVar[16]=Jet1->GetLeadingTrack(JetCont->GetParticleContainer()->GetArray())->Pt();
-	  else fShapesVar[16]=0.0;
+	  else fShapesVar[16]=Angularity(Jet1,0);
 	  if (fMLOn==0) fShapesVar[18]=-2; //event plane calculation not needed for data
-	  else fShapesVar[18]=0.0;
+	  else fShapesVar[18]=PTD(Jet1,0);
 	  if (fMLOn==0) fShapesVar[20]=FjNSubJettiness(Jet1,0,2,0,1,6,fBeta_SD,fZCut);
 	  else fShapesVar[20]=0.0;
 	  AliEmcalJetFinder *Reclusterer1 = Recluster(Jet1, 0, fSubJetRadius, fSubJetMinPt, fSubJetAlgorithm, "SubJetFinder");
@@ -1597,12 +1598,12 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  if (fMLOn==0) fShapesVar[14]=FjNSubJettinessFastJet(ExtraProng_Jet_01_10,0,2,0,1,0);
 	  else fShapesVar[14]=Parton_Info->GetPartonPhi6();
 	  if (fMLOn==0) fShapesVar[16]=FjNSubJettinessFastJet(ExtraProng_Jet_01_20,0,2,0,1,0);
-	  else fShapesVar[16]=Parton_Info->GetPartonFlag7();
+	  else fShapesVar[16]=Angularity(Jet1,0);
 	  // fShapesVar[18]=FjNSubJettinessFastJet(ExtraProng_Jet_01_30,0,2,0,1,0);
 	  if (fMLOn==0) fShapesVar[18]=FjNSubJettinessFastJet(kTTrack_1_2_1,0,2,0,1,0);
-	  else fShapesVar[18]=Parton_Info->GetPartonEta7();
+	  else fShapesVar[18]=PTD(Jet1,0);
 	  if (fMLOn==0) fShapesVar[20]=FjNSubJettinessFastJet(ExtraProng_Jet_03_15,0,2,0,1,0);
-	  else fShapesVar[20]=Parton_Info->GetPartonPhi7();
+	  else fShapesVar[20]=0.0;
 	  AliEmcalJetFinder *Reclusterer1 = Recluster(Jet1, 0, fSubJetRadius, fSubJetMinPt, fSubJetAlgorithm, "SubJetFinder");
 	  if (fFullTree){
 	    if (fMLOn==0) fShapesVar[22]=FjNSubJettiness(Jet1,0,2,0,1,2);
@@ -1626,11 +1627,11 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  if (fMLOn==0) fShapesVar[9]=FjNSubJettinessFastJet(kTTrack_1_2_1,0,1,0,1,0);
 	  else fShapesVar[9]=0.0;
 	  if (fMLOn==0) fShapesVar[11]=FjNSubJettinessFastJet(ExtraProng_Jet_03_15,0,1,0,1,0);
-	  else fShapesVar[11]=0.0;
+	  else fShapesVar[11]=Parton_Info->GetPartonFlag7();
 	  if (fMLOn==0) fShapesVar[13]=FjNSubJettinessFastJet(Randomised_Jet,0,2,0,1,0);
-	  else fShapesVar[13]=0.0;
+	  else fShapesVar[13]=Parton_Info->GetPartonEta7();
 	  if (fMLOn==0) fShapesVar[15]=FjNSubJettinessFastJet(ExtraProng_Jet_01_15,0,2,0,1,0);
-	  else fShapesVar[15]=0.0;
+	  else fShapesVar[15]=Parton_Info->GetPartonPhi7();
 	  if (fMLOn==0) fShapesVar[17]=FjNSubJettinessFastJet(ExtraProng_Jet_01_25,0,2,0,1,0);
 	  else fShapesVar[17]=0.0;
 	  if (fMLOn==0) fShapesVar[19]=FjNSubJettinessFastJet(ExtraProng_Jet_03_10,0,2,0,1,0);

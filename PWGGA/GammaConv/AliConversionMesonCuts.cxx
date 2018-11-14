@@ -151,7 +151,9 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fMaxOpanPtDepCut(kFALSE),
   fBackgroundUseSideband(kFALSE),
   fBackgroundUseSidebandBothSides(kFALSE),
-  fBackgroundUseLikeSign(kFALSE)
+  fBackgroundUseLikeSign(kFALSE),
+  fDoJetAnalysis(kFALSE),
+  fDoJetQA(kFALSE)
 {
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
   fCutString=new TObjString((GetCutNumber()).Data());
@@ -243,7 +245,9 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fMaxOpanPtDepCut(ref.fMaxOpanPtDepCut),
   fBackgroundUseSideband(ref.fBackgroundUseSideband),
   fBackgroundUseSidebandBothSides(ref.fBackgroundUseSidebandBothSides),
-  fBackgroundUseLikeSign(ref.fBackgroundUseLikeSign)
+  fBackgroundUseLikeSign(ref.fBackgroundUseLikeSign),
+  fDoJetAnalysis(ref.fDoJetAnalysis),
+  fDoJetQA(ref.fDoJetQA)
 
 {
   // Copy Constructor
@@ -1316,6 +1320,13 @@ Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){
     break;
   case 1:
     fMesonKind = 1;
+  case 2:
+    fMesonKind = 0;
+    fDoJetAnalysis = kTRUE;
+  case 3:
+    fMesonKind = 0;
+    fDoJetAnalysis = kTRUE;
+    fDoJetQA = kTRUE;
     break;
   default:
     cout<<"Warning: Meson kind not defined"<<mesonKind<<endl;
