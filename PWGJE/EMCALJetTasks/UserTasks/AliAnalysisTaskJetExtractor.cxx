@@ -493,8 +493,6 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
   OpenFile(2);
   PostData(2, fJetTree->GetTreePointer());
 
-  PrintConfig();
-
   // ### Add control histograms (already some created in base task)
   AddHistogram2D<TH2D>("hTrackCount", "Number of tracks in acceptance vs. centrality", "COLZ", 500, 0., 5000., 100, 0, 100, "N tracks","Centrality", "dN^{Events}/dN^{Tracks}");
   AddHistogram2D<TH2D>("hBackgroundPt", "Background p_{T} distribution", "", 150, 0., 150., 100, 0, 100, "Background p_{T} (GeV/c)", "Centrality", "dN^{Events}/dp_{T}");
@@ -570,6 +568,8 @@ void AliAnalysisTaskJetExtractor::ExecOnce()
       fOutput->Add(evweight);
     }
   }
+
+  PrintConfig();
 
 }
 
@@ -1184,8 +1184,93 @@ void AliAnalysisTaskJetExtractor::AddPIDInformation(AliVParticle* particle, Floa
 //________________________________________________________________________
 void AliAnalysisTaskJetExtractor::PrintConfig()
 {
-  // Print properties for extraction
-  // to be implemented later
+  std::cout << "#########################################\n";
+  std::cout << "Settings for extractor task " << GetName() << std::endl;
+  std::cout << std::endl;
+
+  std::cout << "### Event cuts ###" << std::endl;
+  std::cout << std::endl;
+  if(fEventCut_TriggerTrackMinPt || fEventCut_TriggerTrackMaxPt)
+   std::cout << Form("* Trigger track requirement: pT=%3.1f-%3.1f GeV/c, labels=%d-%d", fEventCut_TriggerTrackMinPt, fEventCut_TriggerTrackMaxPt, fEventCut_TriggerTrackMinLabel, fEventCut_TriggerTrackMaxLabel) << std::endl;
+  if(fEventPercentage < 1)
+   std::cout << Form("* Artificially lowered event efficiency: %f", fEventPercentage) << std::endl;
+  if(fRandomSeed || fRandomSeedCones)
+   std::cout << Form("* Random seeds explicitly set: %lu (for event/jet eff.), %lu (RCs)", fRandomSeed, fRandomSeedCones) << std::endl;
+  std::cout << std::endl;
+
+  std::cout << "### Jet properties ###" << std::endl;
+  std::cout << "* Jet array name = " << fJetsCont->GetName() << std::endl;
+  std::cout << "* Rho name = " << fJetsCont->GetRhoName() << std::endl;
+  std::cout << "* Rho mass name = " << fJetsCont->GetRhoMassName() << std::endl;
+  std::cout << std::endl;
+
+  std::cout << "### Tree extraction properties ###" << std::endl;
+  std::vector<Float_t> extractionPtBins      = fJetTree->GetExtractionPercentagePtBins();
+  std::vector<Float_t> extractionPercentages = fJetTree->GetExtractionPercentages();
+  std::vector<Int_t>   extractionHM          = fJetTree->GetExtractionJetTypes_HM();
+  std::vector<Int_t>   extractionPM          = fJetTree->GetExtractionJetTypes_PM();
+  if(extractionPercentages.size())
+  {
+    std::cout << "* Extraction bins: (";
+    for(Int_t i=0; i<static_cast<Int_t>(extractionPercentages.size()-1); i++)
+      std::cout << extractionPtBins[i*2] << "-" << extractionPtBins[i*2+1] << " = " << extractionPercentages[i] << ", ";
+    std::cout << extractionPtBins[(extractionPercentages.size()-1)*2] << "-" << extractionPtBins[(extractionPercentages.size()-1)*2+1] << " = " << extractionPercentages[(extractionPercentages.size()-1)];
+
+    std::cout << ")" << std::endl;
+  }
+  if(extractionHM.size())
+  {
+    std::cout << "* Extraction of hadron-matched jets with types: (";
+    for(Int_t i=0; i<static_cast<Int_t>(extractionHM.size()-1); i++)
+      std::cout << extractionHM[i] << ", ";
+    std::cout << extractionHM[extractionHM.size()-1];
+    std::cout << ")" << std::endl;
+  }
+  if(extractionPM.size())
+  {
+    std::cout << "* Extraction of parton-matched jets with types: (";
+    for(Int_t i=0; i<static_cast<Int_t>(extractionPM.size()-1); i++)
+      std::cout << extractionPM[i] << ", ";
+    std::cout << extractionPM[extractionPM.size()-1];
+    std::cout << ")" << std::endl;
+  }
+  std::cout << std::endl;
+
+  std::cout << "### Extracted data groups ###" << std::endl;
+  if(fJetTree->GetSaveEventProperties())
+    std::cout << "* Basic event properties (ID, vertex, centrality, bgrd. densities, ...)" << std::endl;
+  if(fJetTree->GetSaveConstituents())
+    std::cout << "* Jet constituents, basic properties (pt, eta, phi, charge, ...)" << std::endl;
+  if(fJetTree->GetSaveConstituentsIP())
+    std::cout << "* Jet constituents, IPs" << std::endl;
+  if(fJetTree->GetSaveConstituentPID())
+    std::cout << "* Jet constituents, PID" << std::endl;
+  if(fJetTree->GetSaveMCInformation())
+    std::cout << "* MC information (origin, matched jets, ...)" << std::endl;
+  if(fJetTree->GetSaveSecondaryVertices())
+    std::cout << "* Secondary vertices" << std::endl;
+  if(fJetTree->GetSaveJetShapes())
+    std::cout << "* Jet shapes (jet mass)" << std::endl;
+  if(fJetTree->GetSaveTriggerTracks())
+    std::cout << "* Trigger tracks" << std::endl;
+  std::cout << std::endl;
+  std::cout << "### Further settings ###" << std::endl;
+  if(fTruthJetsArrayName != "")
+    std::cout << Form("* True jet matching active, array=%s, rho=%s, rho_mass=%s", fTruthJetsArrayName.Data(), fTruthJetsRhoName.Data(), fTruthJetsRhoMassName.Data()) << std::endl;
+  if(fTruthParticleArray)
+    std::cout << Form("* Particle level information available (for jet origin calculation, particle code): %s", fTruthParticleArrayName.Data()) << std::endl;
+  if(extractionHM.size())
+    std::cout << Form("* Hadron--jet matching radius=%3.3f", fHadronMatchingRadius) << std::endl;
+  if(fJetTree->GetSaveMCInformation())
+    std::cout << Form("* True particle label range for pt fraction=%d-%d", fTruthMinLabel, fTruthMaxLabel) << std::endl;
+  if(fJetTree->GetSaveMCInformation() && fSaveTrackPDGCode && fJetTree->GetSaveConstituentPID())
+    std::cout << Form("* Particle PID codes will be PDG codes") << std::endl;
+  else if(fJetTree->GetSaveMCInformation() && !fSaveTrackPDGCode && fJetTree->GetSaveConstituentPID())
+    std::cout << Form("* Particle PID codes will follow AliAODPid convention") << std::endl;
+  if(fJetTree->GetSaveMCInformation() && fSetEmcalJetFlavour)
+    std::cout << Form("* AliEmcalJet flavour tag is set from HF-jet tagging") << std::endl;
+
+  std::cout << "#########################################\n\n";
 }
 
 
