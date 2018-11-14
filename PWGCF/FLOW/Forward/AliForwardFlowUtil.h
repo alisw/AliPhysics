@@ -26,7 +26,7 @@ class AliForwardFlowUtil : public TObject {
    AliForwardFlowUtil();
 
   Bool_t ExtraEventCutFMD(TH2D& forwarddNdedp, double cent, Bool_t mc);
-  void FillFromTrackrefs(TH2D*& cen, TH2D*& fwd,const AliAODVertex vertex) const;
+  void FillFromTrackrefs(TH2D*& cen, TH2D*& fwd) const;
   void FillFromPrimaries(TH2D*& cen, TH2D*& fwd) const;
   void FillFromTracklets(TH2D*& cen) const;
   void FillFromTracks(TH2D*& cen, Int_t tracktype) const;

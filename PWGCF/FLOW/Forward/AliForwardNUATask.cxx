@@ -147,7 +147,7 @@ void AliForwardNUATask::UserExec(Option_t *)
   if (!fSettings.mc) {
 
     AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
-
+    fUtil.fAODevent = aodevent;
     if(!aodevent)
       throw std::runtime_error("Not AOD as expected");
 
@@ -164,15 +164,15 @@ void AliForwardNUATask::UserExec(Option_t *)
     else                  fUtil.FillFromTracks(centralDist, fSettings.tracktype);
   }
   else {
-    AliMCEvent* mcevent = dynamic_cast<AliMCEvent*>(InputEvent());
-
+    AliMCEvent* mcevent = this->MCEvent();
+    fUtil.fMCevent = mcevent;
 
     if(!mcevent)
       throw std::runtime_error("Not MC as expected");
 
     forwardDist = (fSettings.use_primaries ? &forwardPrim : &forwardTrRef);
-    const AliAODVertex vertex = *((AliAODVertex*)(this->MCEvent()->GetPrimaryVertex()));
-    if (!fSettings.use_primaries) fUtil.FillFromTrackrefs(centralDist, forwardDist, vertex);
+
+    if (!fSettings.use_primaries) fUtil.FillFromTrackrefs(centralDist, forwardDist);
     else                          fUtil.FillFromPrimaries(centralDist, forwardDist);
   }
   forwardDist->SetDirectory(0);
@@ -195,6 +195,8 @@ void AliForwardNUATask::UserExec(Option_t *)
     // loop for the TPC
     for (Int_t etaBin = 1; etaBin <= centralDist->GetNbinsX(); etaBin++) {
       for (Int_t phiBin = 1; phiBin <= centralDist->GetNbinsX(); phiBin++) {
+        if (centralDist->GetBinContent(etaBin,phiBin) == 0) continue;
+
         nua_tpc->Fill(centralDist->GetBinCenter(etaBin),centralDist->GetBinCenter(phiBin),zvertex,centralDist->GetBinContent(etaBin,phiBin));
       }
     }

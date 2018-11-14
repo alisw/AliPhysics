@@ -217,15 +217,14 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
     else                  fUtil.FillFromTracks(centralDist, fSettings.tracktype);
   }
   else {
-    AliMCEvent* mcevent = dynamic_cast<AliMCEvent*>(InputEvent());
-
+    AliMCEvent* mcevent = this->MCEvent();
 
     if(!mcevent)
       throw std::runtime_error("Not MC as expected");
 
     forwardDist = (fSettings.use_primaries ? &forwardPrim : &forwardTrRef);
-    const AliAODVertex vertex = *((AliAODVertex*)(this->MCEvent()->GetPrimaryVertex()));
-    if (!fSettings.use_primaries) fUtil.FillFromTrackrefs(centralDist, forwardDist, vertex);
+
+    if (!fSettings.use_primaries) fUtil.FillFromTrackrefs(centralDist, forwardDist);
     else                          fUtil.FillFromPrimaries(centralDist, forwardDist);
   }
   forwardDist->SetDirectory(0);

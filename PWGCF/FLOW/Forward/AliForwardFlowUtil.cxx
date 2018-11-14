@@ -123,7 +123,7 @@ Double_t AliForwardFlowUtil::GetCentrality(TString centrality_estimator){
 }
 
 
-void AliForwardFlowUtil::FillFromTrackrefs(TH2D*& cen, TH2D*& fwd,const AliAODVertex vertex) const
+void AliForwardFlowUtil::FillFromTrackrefs(TH2D*& cen, TH2D*& fwd) const
 {
 
   Int_t nTracks = fMCevent->Stack()->GetNtrack();
@@ -137,9 +137,9 @@ void AliForwardFlowUtil::FillFromTrackrefs(TH2D*& cen, TH2D*& fwd,const AliAODVe
       // Check hit on FMD
       if (!ref) continue;
       if (AliTrackReference::kTPC != ref->DetectorId()){
-        Double_t x      = ref->X() - vertex.GetX();
-        Double_t y      = ref->Y() - vertex.GetY();
-        Double_t z      = ref->Z() - vertex.GetZ();
+        Double_t x      = ref->X() - fevent->GetPrimaryVertex()->GetX();
+        Double_t y      = ref->Y() - fevent->GetPrimaryVertex()->GetY();
+        Double_t z      = ref->Z() - fevent->GetPrimaryVertex()->GetZ();
         Double_t rr     = TMath::Sqrt(x * x + y * y);
         Double_t thetaR = TMath::ATan2(rr, z);
         Double_t phiR   = TMath::ATan2(y,x);
@@ -153,9 +153,9 @@ void AliForwardFlowUtil::FillFromTrackrefs(TH2D*& cen, TH2D*& fwd,const AliAODVe
         cen->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),phiR);
       }
       else if (AliTrackReference::kFMD != ref->DetectorId()) {
-        Double_t x      = ref->X() - vertex.GetX();
-        Double_t y      = ref->Y() - vertex.GetY();
-        Double_t z      = ref->Z() - vertex.GetZ();
+        Double_t x      = ref->X() - fevent->GetPrimaryVertex()->GetX();
+        Double_t y      = ref->Y() - fevent->GetPrimaryVertex()->GetY();
+        Double_t z      = ref->Z() - fevent->GetPrimaryVertex()->GetZ();
         Double_t rr     = TMath::Sqrt(x * x + y * y);
         Double_t thetaR = TMath::ATan2(rr, z);
         Double_t phiR   = TMath::ATan2(y,x);
