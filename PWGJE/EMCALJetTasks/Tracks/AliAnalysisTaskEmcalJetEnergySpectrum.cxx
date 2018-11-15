@@ -151,7 +151,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     if(!maxjet || (j->E() > maxjet->E())) maxjet = j;
     double datapoint[6] = {eventCentrality, j->Pt(), j->Eta(), j->Phi(), j->NEF(), 0.};
     for(auto t : trgclusters){
-      datapoint[4] = static_cast<double>(t);
+      datapoint[5] = static_cast<double>(t);
       fHistos->FillTHnSparse("hJetTHnSparse", datapoint);
     }
   }
