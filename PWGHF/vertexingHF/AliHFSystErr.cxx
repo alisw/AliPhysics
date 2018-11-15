@@ -1325,7 +1325,8 @@ void AliHFSystErr::InitD0toKpi2017pp5TeVLowPtAn_finebins() {
   fTrackingEff->SetBinContent(4,0.035); //  1.5-2
   fTrackingEff->SetBinContent(5,0.04); // 2-2.5
   fTrackingEff->SetBinContent(6,0.04); // 2.5-3.
-  for(Int_t i=7;i<=32;i++) fTrackingEff->SetBinContent(i,0.045);// >3
+  for(Int_t i=7;i<=12;i++) fTrackingEff->SetBinContent(i,0.045);//3-6
+  for(Int_t i=13;i<=32;i++) fTrackingEff->SetBinContent(i,0.05);// >6
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",32,0,16);
