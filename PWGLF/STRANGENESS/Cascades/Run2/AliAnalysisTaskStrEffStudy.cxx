@@ -1685,11 +1685,13 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         //lNegTrackArray[iV0], lPosTrackArray[iV0]
         Int_t nv0s = lESDevent->GetNumberOfV0s();
         
+        AliESDv0 lV0ToStorePosBach, *lPointerToV0ToStorePosBach=&lV0ToStorePosBach;
+        AliESDv0 lV0ToStoreNegBach, *lPointerToV0ToStoreNegBach=&lV0ToStoreNegBach;
+        
         Bool_t lFoundOTF = kFALSE;
         for(Long_t iOTFv0=0; iOTFv0<nv0s; iOTFv0++){
             AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iOTFv0);
             if (!v0) continue;
-            
             if ( v0->GetOnFlyStatus()  &&
                 (
                  (v0->GetPindex() == lCascPosTrackArray[iCasc] && v0->GetNindex() == lCascBachTrackArray[iCasc] ) ||
@@ -1697,15 +1699,13 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
                  )
                 ){
                 //Found corresponding OTF V0! Save it to TTree, please
-                AliESDv0 lV0ToStorePosBach(*v0), *lPointerToV0ToStorePosBach=&lV0ToStorePosBach;
-                fTreeCascVarOTFV0PosBach = lPointerToV0ToStorePosBach;
+                fTreeCascVarOTFV0PosBach = v0;
                 lFoundOTF = kTRUE;
                 fTreeCascVarPosBachAsOTF = kTRUE;
                 break; //stop looking
             }
         }
         if( !lFoundOTF ) {
-            AliESDv0 lV0ToStorePosBach, *lPointerToV0ToStorePosBach=&lV0ToStorePosBach;
             fTreeCascVarOTFV0PosBach = lPointerToV0ToStorePosBach;
         }
         //---->
@@ -1713,7 +1713,6 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         for(Long_t iOTFv0=0; iOTFv0<nv0s; iOTFv0++){
             AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iOTFv0);
             if (!v0) continue;
-            
             if ( v0->GetOnFlyStatus()  &&
                 (
                  (v0->GetPindex() == lCascNegTrackArray[iCasc] && v0->GetNindex() == lCascBachTrackArray[iCasc] ) ||
@@ -1721,15 +1720,13 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
                  )
                 ){
                 //Found corresponding OTF V0! Save it to TTree, please
-                AliESDv0 lV0ToStoreNegBach(*v0), *lPointerToV0ToStoreNegBach=&lV0ToStoreNegBach;
-                fTreeCascVarOTFV0NegBach = lPointerToV0ToStoreNegBach;
+                fTreeCascVarOTFV0NegBach = v0;
                 lFoundOTF = kTRUE;
                 fTreeCascVarNegBachAsOTF = kTRUE;
                 break; //stop looking
             }
         }
         if( !lFoundOTF ) {
-            AliESDv0 lV0ToStoreNegBach, *lPointerToV0ToStoreNegBach=&lV0ToStoreNegBach;
             fTreeCascVarOTFV0NegBach = lPointerToV0ToStoreNegBach;
         }
         
@@ -1738,6 +1735,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeCascVarOTFV0 = 0x0;
         
         lFoundOTF = kFALSE;
+        AliESDv0 lV0ToStore, *lPointerToV0ToStore=&lV0ToStore;
         
         for(Long_t iOTFv0=0; iOTFv0<nv0s; iOTFv0++){
             AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iOTFv0);
@@ -1751,14 +1749,12 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
                  )
                 ){
                 //Found corresponding OTF V0! Save it to TTree, please
-                AliESDv0 lV0ToStore(*v0), *lPointerToV0ToStore=&lV0ToStore;
-                fTreeCascVarOTFV0 = lPointerToV0ToStore;
+                fTreeCascVarOTFV0 = v0;
                 lFoundOTF = kTRUE;
                 break; //stop looking
             }
         }
         if( !lFoundOTF ) {
-            AliESDv0 lV0ToStore, *lPointerToV0ToStore=&lV0ToStore;
             fTreeCascVarOTFV0 = lPointerToV0ToStore;
         }
         //=================================================================================
