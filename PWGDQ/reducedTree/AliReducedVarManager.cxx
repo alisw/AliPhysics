@@ -2131,7 +2131,7 @@ void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc
       Int_t binZ = fgAssocHadronEffMap3D->GetZaxis()->FindBin(values[fgAssocHadronEffMapVarDependencyZ]);
       if(binZ==0) binZ = 1;
       if(binZ==fgAssocHadronEffMap3D->GetZaxis()->GetNbins()+1) binZ -= 1;
-      hadronEff = fgAssocHadronEffMap3D->GetBinContent(binX, binY);
+      hadronEff = fgAssocHadronEffMap3D->GetBinContent(binX, binY, binZ);
     }
     if (!hadronEff) hadronEff       = 1.; // NOTE: should this be the default in case of eff=0?
     if (hadronEff) oneOverHadronEff = 1./hadronEff;
