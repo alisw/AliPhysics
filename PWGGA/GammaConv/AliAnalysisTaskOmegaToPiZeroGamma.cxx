@@ -214,7 +214,8 @@ AliAnalysisTaskOmegaToPiZeroGamma::AliAnalysisTaskOmegaToPiZeroGamma(): AliAnaly
   fupperFactor(0),
   fMinPi0Pt(0),
   fmaxfit(NULL),
-  fDoPiZeroGammaAngleCut(kFALSE)
+  fDoPiZeroGammaAngleCut(kFALSE),
+  fTrackMatcherRunningMode(0)
 {
 
 }
@@ -373,7 +374,8 @@ AliAnalysisTaskOmegaToPiZeroGamma::AliAnalysisTaskOmegaToPiZeroGamma(const char 
   fupperFactor(0),
   fMinPi0Pt(0),
   fmaxfit(NULL),
-  fDoPiZeroGammaAngleCut(kFALSE)
+  fDoPiZeroGammaAngleCut(kFALSE),
+  fTrackMatcherRunningMode(0)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -1329,7 +1331,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::UserCreateOutputObjects(){
       fOutputContainer->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
 
   for(Int_t iMatcherTask = 0; iMatcherTask < 3; iMatcherTask++){
-    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i",iMatcherTask)));
+    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i_%i",iMatcherTask,fTrackMatcherRunningMode)));
     if(temp) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
   }
 

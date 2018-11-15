@@ -85,18 +85,18 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   RDHFLctoV0An->AddTrackCuts(esdTrackCuts);
   RDHFLctoV0An->AddTrackCutsV0daughters(esdTrackCutsV0daughters);
   RDHFLctoV0An->SetUseTrackSelectionWithFilterBits(kFALSE);//(kTRUE);
+  RDHFLctoV0An->SetTriggerClass("");
+  RDHFLctoV0An->SetTriggerMask(AliVEvent::kINT7);
+  RDHFLctoV0An->SetOptPileup(AliRDHFCuts::kRejectMVPileupEvent); // multi vertexer pileup rejection
   if (fCollisionSystem==kpPb) {
     // //
     // // Trigger selection
     // //
-    RDHFLctoV0An->SetTriggerClass("");     
     if (fDataType==kData) {
       RDHFLctoV0An->SetTriggerMask(AliVEvent::kINT7);
     } else if (fDataType==kLHC13d3) {
       RDHFLctoV0An->SetTriggerMask(AliVEvent::kINT7 | AliVEvent::kMB);
     }
-    // multi vertexer pileup rejection
-    RDHFLctoV0An-> SetOptPileup(AliRDHFCuts::kRejectMVPileupEvent); 
   }
   RDHFLctoV0An->SetLowPtCut(1.0); // default value 1.0 GeV/c
   if (fCollisionSystem==kpp7TeV) {
@@ -118,7 +118,6 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
     RDHFLctoV0An->SetHighPtCut(999.); // default value 2.5 GeV/c
     RDHFLctoV0An->SetPidSelectionFlag(10); // 10: -2<tof<3 for pt>3 GeV/c, -3<tpc<2 for pt>4 GeV/c 
   }
-  RDHFLctoV0An->SetNPtBins(nptbins);
 
   Float_t* ptbins;
   ptbins=new Float_t[nptbins+1];

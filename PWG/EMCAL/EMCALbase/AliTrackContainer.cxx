@@ -150,7 +150,7 @@ void AliTrackContainer::SetArray(const AliVEvent *event)
           fEmcalTrackSelection->SetSelectionModeAll();
         }
 
-        fEmcalTrackSelection->AddTrackCuts(fListOfCuts);
+        if(fListOfCuts) fEmcalTrackSelection->AddTrackCuts(fListOfCuts);
       }
     }
     else {
@@ -199,7 +199,7 @@ void AliTrackContainer::NextEvent(const AliVEvent * event)
       trackarray->Clear();
     }
 
-    int naccepted(0), nrejected(0), nhybridTracks1(0), nhybridTracks2(0), nhybridTracks3(0);
+    int naccepted(0), nrejected(0), nhybridTracks1(0), nhybridTracks2a(0), nhybridTracks2b(0), nhybridTracks3(0);
     Int_t i = 0;
     for(auto accresult : *acceptedTracks) {
       if (i >= fTrackTypes.GetSize()) fTrackTypes.Set((i+1)*2);
@@ -219,9 +219,13 @@ void AliTrackContainer::NextEvent(const AliVEvent * event)
               fTrackTypes[i] = kHybridGlobal;
               nhybridTracks1++;
               break;
-            case PWG::EMCAL::AliEmcalTrackSelResultHybrid::kHybridConstrained:
-              fTrackTypes[i] = kHybridConstrained;
-              nhybridTracks2++;
+            case PWG::EMCAL::AliEmcalTrackSelResultHybrid::kHybridConstrainedTrue:
+              fTrackTypes[i] = kHybridConstrainedTrue;
+              nhybridTracks2a++;
+              break;
+            case PWG::EMCAL::AliEmcalTrackSelResultHybrid::kHybridConstrainedFake:
+              fTrackTypes[i] = kHybridConstrainedFake;
+              nhybridTracks2b++;
               break;
             case PWG::EMCAL::AliEmcalTrackSelResultHybrid::kHybridConstrainedNoITSrefit:
               fTrackTypes[i] = kHybridConstrainedNoITSrefit;
@@ -235,7 +239,7 @@ void AliTrackContainer::NextEvent(const AliVEvent * event)
       }
      i++;
     }
-    AliDebugStream(1) << "Accepted: " << naccepted << ", Rejected: " << nrejected << ", hybrid: (" << nhybridTracks1 << " | " << nhybridTracks2 << " | " << nhybridTracks3 << ")" << std::endl;
+    AliDebugStream(1) << "Accepted: " << naccepted << ", Rejected: " << nrejected << ", hybrid: (" << nhybridTracks1 << " | [" << nhybridTracks2a << " | " << nhybridTracks2b  << "] | " << nhybridTracks3 << ")" << std::endl;
   }
   else {
     fFilteredTracks.SetOwner(false);
@@ -345,7 +349,7 @@ Bool_t AliTrackContainer::GetMomentumFromTrack(TLorentzVector &mom, const AliVTr
     Bool_t useConstrainedParams = kFALSE;
     if (fLoadedClass->InheritsFrom("AliESDtrack") && IsHybridTrackSelection()) {
       Char_t trackType = GetTrackType(track);
-      if (trackType == kHybridConstrained || trackType == kHybridConstrainedNoITSrefit) {
+      if (trackType == kHybridConstrainedTrue || trackType == kHybridConstrainedNoITSrefit) {
         AliDebugStream(2) << "Found a constrained track" << std::endl;
         useConstrainedParams = kTRUE;
       }
@@ -397,7 +401,7 @@ Bool_t AliTrackContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
     if (mass < 0) mass = vp->M();
 
     if (fLoadedClass->InheritsFrom("AliESDtrack") && IsHybridTrackSelection() &&
-        (fTrackTypes[i] == kHybridConstrained || fTrackTypes[i] == kHybridConstrainedNoITSrefit)) {
+        (fTrackTypes[i] == kHybridConstrainedTrue || fTrackTypes[i] == kHybridConstrainedNoITSrefit)) {
       AliDebugStream(2) << "Found a constrained track" << std::endl;
       AliESDtrack *track = static_cast<AliESDtrack*>(vp);
       mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), mass);
@@ -431,7 +435,7 @@ Bool_t AliTrackContainer::GetNextMomentum(TLorentzVector &mom)
     if (mass < 0) mass = vp->M();
 
     if (fLoadedClass->InheritsFrom("AliESDtrack") && IsHybridTrackSelection() &&
-        (fTrackTypes[fCurrentID] == kHybridConstrained || fTrackTypes[fCurrentID] == kHybridConstrainedNoITSrefit)) {
+        (fTrackTypes[fCurrentID] == kHybridConstrainedTrue || fTrackTypes[fCurrentID] == kHybridConstrainedNoITSrefit)) {
       AliDebugStream(2) << "Found a constrained track" << std::endl; 
       AliESDtrack *track = static_cast<AliESDtrack*>(vp);
       mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), mass);
@@ -468,7 +472,7 @@ Bool_t AliTrackContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i) const
     if (mass < 0) mass = vp->M();
 
     if (fLoadedClass->InheritsFrom("AliESDtrack") && IsHybridTrackSelection() &&
-        (fTrackTypes[i] == kHybridConstrained || fTrackTypes[i] == kHybridConstrainedNoITSrefit)) {
+        (fTrackTypes[i] == kHybridConstrainedTrue || fTrackTypes[i] == kHybridConstrainedNoITSrefit)) {
       AliDebugStream(2) << "Found a constrained track" << std::endl;
       AliESDtrack *track = static_cast<AliESDtrack*>(vp);
       mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), mass);
@@ -503,7 +507,7 @@ Bool_t AliTrackContainer::GetNextAcceptMomentum(TLorentzVector &mom)
     if (mass < 0) mass = vp->M();
 
     if (fLoadedClass->InheritsFrom("AliESDtrack") && IsHybridTrackSelection() &&
-        (fTrackTypes[fCurrentID] == kHybridConstrained || fTrackTypes[fCurrentID] == kHybridConstrainedNoITSrefit)) {
+        (fTrackTypes[fCurrentID] == kHybridConstrainedTrue || fTrackTypes[fCurrentID] == kHybridConstrainedNoITSrefit)) {
       AliDebugStream(2) << "Found a constrained track" << std::endl;
       AliESDtrack *track = static_cast<AliESDtrack*>(vp);
       mom.SetPtEtaPhiM(track->GetConstrainedParam()->Pt(), track->GetConstrainedParam()->Eta(), track->GetConstrainedParam()->Phi(), mass);
@@ -620,7 +624,8 @@ bool AliTrackContainer::IsHybridTrackSelection() const {
          (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks2010wNoRefit) ||
          (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks2010woNoRefit) ||
          (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks2011wNoRefit) ||
-         (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks2011woNoRefit);
+         (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks2011woNoRefit) ||
+         (fTrackFilterType == AliEmcalTrackSelection::kHybridTracks2018TRD);
 }
 
 PWG::EMCAL::AliEmcalTrackSelResultHybrid::HybridType_t AliTrackContainer::GetHybridDefinition(const PWG::EMCAL::AliEmcalTrackSelResultPtr &selectionResult) const {

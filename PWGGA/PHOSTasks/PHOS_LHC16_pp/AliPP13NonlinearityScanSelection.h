@@ -3,7 +3,7 @@
 
 // --- Custom header files ---
 #include "AliPP13SelectionWeights.h"
-#include "AliPP13PhysPhotonSelectionMC.h"
+#include "AliPP13SpectrumSelectionMC.h"
 
 // --- AliRoot header files ---
 #include <AliVCluster.h>
@@ -13,14 +13,14 @@
 
 // NB: Don't use pointers in the array, this way will be easier
 //
-class AliPP13NonlinearityScanSelection : public AliPP13PhysPhotonSelectionMC
+class AliPP13NonlinearityScanSelection : public AliPP13SpectrumSelectionMC
 {
-	enum ScanSize {kNbinsA = 11, kNbinsSigma = 11};
+	enum ScanSize {kNbinsA = 9, kNbinsSigma = 9};
 public:
-	AliPP13NonlinearityScanSelection(): AliPP13PhysPhotonSelectionMC() {}
+	AliPP13NonlinearityScanSelection(): AliPP13SpectrumSelectionMC() {}
 	AliPP13NonlinearityScanSelection(const char * name, const char * title, AliPP13ClusterCuts cuts, 
 			AliPP13SelectionWeightsMC * sw, Float_t precA = 0.01, Float_t precSigma = 0.1):
-		AliPP13PhysPhotonSelectionMC(name, title, cuts, sw),
+		AliPP13SpectrumSelectionMC(name, title, cuts, sw),
 		fInvariantMass(),
 		fMixInvariantMass(),
 		fPrecisionA(precA),
@@ -34,10 +34,10 @@ public:
 		{
 			for(Int_t ib = 0; ib < kNbinsSigma; ++ib)
 			{
-				AliPP13SelectionWeightsMC swi;
+				AliPP13SelectionWeightsMC & swi = fWeightsScan[ia][ib];
+				swi.fNonGlobal = sw->fNonGlobal;
 				swi.fNonA = nona - fPrecisionA * kNbinsA / 2 + ia * fPrecisionA;
 				swi.fNonSigma = nonSigma - fPrecisionSigma * kNbinsSigma / 2 + ib * fPrecisionSigma;
-				fWeightsScan[ia][ib] = swi;
 			}
 		}
 	}
@@ -55,7 +55,7 @@ protected:
 private:
 
 	// Set of weights that are need for NonlinearityScan
-	AliPP13SelectionWeightsMC fWeightsScan[kNbinsA][kNbinsSigma];//!
+	AliPP13SelectionWeightsMC fWeightsScan[kNbinsA][kNbinsSigma];
 
 	// Parameters of nonlinearity parametrization
 	TH1 * fInvariantMass[kNbinsA][kNbinsSigma];    //!

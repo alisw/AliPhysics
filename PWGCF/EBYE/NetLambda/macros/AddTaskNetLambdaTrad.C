@@ -25,9 +25,9 @@ AliAnalysisTaskNetLambdaTrad *AddTaskNetLambdaTrad(const char* outputFileName = 
     if (!outputFileName)
         outputFileName = AliAnalysisManager::GetCommonFileName();
     
-    outputFileName = "NetlamdaMCresults.root";
+    outputFileName = "AnalysisResults.root";
     
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(containerName, TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName);
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("LambdaList", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName);
     AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("Mcvariables", TTree::Class(),AliAnalysisManager::kOutputContainer,Form("%s", outputFileName));
     
     mgr->ConnectInput  (ana, 0, mgr->GetCommonInputContainer());
@@ -35,3 +35,4 @@ AliAnalysisTaskNetLambdaTrad *AddTaskNetLambdaTrad(const char* outputFileName = 
     mgr->ConnectOutput (ana, 2, coutput2);
     return ana;
 }
+

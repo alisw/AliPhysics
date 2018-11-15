@@ -135,6 +135,8 @@ private:
   AliAnalysisTaskCombinHF& operator=(const AliAnalysisTaskCombinHF& source);
   Double_t ComputeInvMassKK(AliAODTrack* tr1, AliAODTrack* tr2) const;
   Double_t ComputeInvMassKK(TLorentzVector* tr1, TLorentzVector* tr2) const;
+  Double_t CosPiKPhiRFrame(TLorentzVector* dauK1, TLorentzVector* dauK2, TLorentzVector* daupi) const;
+  Double_t CosPiDsLabFrame(TLorentzVector* dauK1, TLorentzVector* dauK2, TLorentzVector* daupi) const;
 
   TList   *fOutput; //!<! list send on output slot 0
   TH1F *fHistNEvents;         //!<!hist. for No. of events

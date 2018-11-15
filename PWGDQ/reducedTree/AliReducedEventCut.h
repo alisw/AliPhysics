@@ -22,9 +22,11 @@ class AliReducedEventCut : public AliReducedVarCut {
     fEventTagFilterExclude |= exclude;
   };
   void AddEventTagFilterBit(UShort_t bit, Bool_t exclude = kFALSE)  {
-    if(bit>63) return; fEventFilter |= (ULong64_t(1)<<bit);
-    fEventTagFilterEnabled = kTRUE;
-    if (exclude) fEventTagFilterExclude |= (ULong64_t(1)<<bit);
+    if(bit<64) {
+      fEventFilter |= (ULong64_t(1)<<bit);
+      fEventTagFilterEnabled = kTRUE;
+      if(exclude) fEventTagFilterExclude |= (ULong64_t(1)<<bit);
+    }
   };
   void EnableVertexDistanceCut() {
     fEventFilter |= (ULong64_t(1)<<13);

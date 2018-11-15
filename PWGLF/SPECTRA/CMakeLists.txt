@@ -62,6 +62,7 @@ set(SRCS
   ChargedHadrons/dNdPtVsMultpp/AliAnalysisTaskPPvsMultINEL0.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectra.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectraMultiplicity.cxx
+  PiKaPr/TPC/rTPC/AliAnalysisTaskQAHighPtDeDxTest.cxx
   PiKaPr/TPCTOF/AliAnalysisCombinedHadronSpectra.cxx
   PiKaPr/TPCTOFpA/AliAnalysisTPCTOFpA.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDEvent.cxx
@@ -121,6 +122,7 @@ set(SRCS
   AntiprotonToProton/train/AliAnalysisTaskProtonQA.cxx
   AntiprotonToProton/train/AliAnalysisTaskProtonAbsorbtion.cxx
   Spherocity/AliTransverseEventShape.cxx
+  Spherocity/AliSpherocityUtils.cxx
 )
 
 # Headers from sources
@@ -200,6 +202,7 @@ install(DIRECTORY IdentifiedHighPt/train/macros1 DESTINATION  PWGLF/SPECTRA/Iden
 install(DIRECTORY Kinks/macros DESTINATION  PWGLF/SPECTRA/Kinks)
 install(DIRECTORY PiKaPr/TestAOD DESTINATION PWGLF/SPECTRA/PiKaPr)
 install(DIRECTORY PiKaPr/ITSsa DESTINATION PWGLF/SPECTRA/PiKaPr)
+install(DIRECTORY PiKaPr/TPC/rTPC DESTINATION PWGLF/SPECTRA/PiKaPr/TPC)
 install(DIRECTORY PiKaPr/TPCTOFfits DESTINATION PWGLF/SPECTRA/PiKaPr)
 install(FILES PiKaPr/TOF/PbPb502/task/AddTaskTOFSpectra.C DESTINATION  PWGLF/SPECTRA/PiKaPr/TOF)
 install(FILES PiKaPr/TOF/PbPb502/task/AliUtilTOFParams.h DESTINATION  PWGLF/SPECTRA/PiKaPr/TOF/utilities)
@@ -213,5 +216,5 @@ install(DIRECTORY MultEvShape DESTINATION PWGLF/SPECTRA FILES_MATCHING PATTERN "
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/MultEvShape/priorsDist_data_LHC10d_newAliroot.root)
   install(FILES MultEvShape/priorsDist_data_LHC10d_newAliroot.root DESTINATION PWGLF/SPECTRA/MultEvShape)
 endif()
-install(FILES Spherocity/macros/AddTaskEventShape.C DESTINATION  PWGLF/SPECTRA/Spherocity/macros)
+install(DIRECTORY Spherocity DESTINATION  PWGLF/SPECTRA)
 install(DIRECTORY AntiprotonToProton/train DESTINATION PWGLF/SPECTRA/AntiprotonToProton)

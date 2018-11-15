@@ -17,6 +17,7 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
+#include "AliAODMCParticle.h"
 
 #include <AliPID.h>
 #include <AliPIDCombined.h>
@@ -79,6 +80,14 @@ AliAnalysisTaskAccCont::AliAnalysisTaskAccCont(const char *name)
   fUseOfflineTrigger(kFALSE),
   fPbPb(kFALSE),
   fpPb(kFALSE),
+  fCheckPileUp(kFALSE),
+  fMCrec(kFALSE),
+  fArrayMC(0),
+  fExcludeSecondariesInMCrec(kFALSE),
+  fExcludeElectronsInMCrec(kFALSE),
+  fExcludeInjectedSignals(kFALSE),
+  fRejectCheckGenName(kFALSE),
+  fGenToBeKept("Hijing"),
   fPileupLHC15oSlope(3.38),
   fPileupLHC15oOffset(15000),
   fUseOutOfBunchPileUpCutsLHC15o(kFALSE),
@@ -102,7 +111,8 @@ AliAnalysisTaskAccCont::AliAnalysisTaskAccCont(const char *name)
   fPIDMomCut(0.7),
   fUtils(0),
   fPIDResponse(0),
-  fPIDCombined(0){
+  fPIDCombined(0),
+  fHistPdg(0){
     // Constructor
     
     // Define input and output slots here
@@ -259,8 +269,10 @@ void AliAnalysisTaskAccCont::UserCreateOutputObjects() {
 
     hBayesProbab = new TH3F("hBayesProbab", "BayesProbab vs p vs pT for ID particles; Probability;p [GeV/c]; p_{T} [GeV/c]", 100, 0.5, 1, 100, 0, 10, 100, 0, 10);
     fListResults->Add(hBayesProbab);
-
-    
+  
+    fHistPdg  = new TH1F("fHistPdg","Pdg code distribution;pdg code;Entries",6401,-3200.5,3200.5);
+    fListResults->Add(fHistPdg);
+     
     // Post output data
     PostData(1, fListQA);
     PostData(2, fListResults);
@@ -282,7 +294,17 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
         Printf("ERROR: AOD header not available");
         return;
     }
+
+    if (fMCrec){
+        
+        fArrayMC = dynamic_cast<TClonesArray*>(gAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+        
+        if (!fArrayMC) {
+            AliError("No array of MC particles found !!!");
+        }
     
+    }
+
     Int_t nAcceptedTracks = 0;
     Float_t gCentrality = -1;
     
@@ -317,7 +339,7 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
     if(isSelected) {
         fHistEventStats->Fill(2,gCentrality); //triggered events
         
-        const AliAODVertex *vertex = gAOD->GetPrimaryVertex();
+        const AliVVertex *vertex = gAOD->GetPrimaryVertex();
         if(vertex) {
             Double32_t fCov[6];
             vertex->GetCovarianceMatrix(fCov);
@@ -401,10 +423,13 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
 				      }
 				    }
 				    
+ 				    if (fCheckPileUp){
 				    if(fUtils->IsPileUpEvent(gAOD)){ 
 				      fHistEventStats->Fill(6,gCentrality);
 				      return;
 				    }
+				    }
+
     				    fHistEventStats->Fill(5,gCentrality); 	    
 				    
 
@@ -423,8 +448,40 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
                                             Printf("ERROR: Could not receive track %d", iTracks);
                                             continue;
                                         }
-                                        
-                                        // AOD track cuts
+
+                                        if(fExcludeSecondariesInMCrec){
+                                            
+                                            Int_t label = TMath::Abs(aodTrack->GetLabel());
+                                            
+                                            AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
+                                            
+                                            if (!AODmcTrack->IsPhysicalPrimary())
+                                                continue;
+                                        }
+
+					if(fExcludeElectronsInMCrec){
+
+					    Int_t tracklabel = TMath::Abs(aodTrack->GetLabel());
+                 			    AliAODMCParticle *trackAODMC = (AliAODMCParticle*) fArrayMC->At(tracklabel);
+					    if(TMath::Abs(trackAODMC->GetPdgCode()) == 11) continue;
+                 
+ 					}
+					
+					if (fExcludeInjectedSignals){
+					  if (fRejectCheckGenName){
+					    TString generatorName;
+					    AliMCEvent* mcevent = dynamic_cast<AliMCEvent*>(MCEvent());
+					    Int_t label = TMath::Abs(aodTrack->GetLabel());
+					    Bool_t hasGenerator = mcevent->GetCocktailGenerator(label,generatorName);
+					 
+					    if((!hasGenerator) || (!generatorName.Contains(fGenToBeKept.Data())))
+					      continue;
+					    
+					    //  Printf("mother =%d, generatorName=%s", label, generatorName.Data()); 
+					  }
+					}
+				
+					// AOD track cuts
                                         fHistTrackStats->Fill(gCentrality,aodTrack->GetFilterMap());
                                         //Printf("filterbit is: %i",GetFilterMap());
                                         if(!aodTrack->TestFilterBit(fAODtrackCutBit)) continue;
@@ -773,6 +830,12 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
 					      fHistDCAXYptchargedminus_ext->Fill(pt,eta,dca[0]);
 						}	
 					}
+
+					 if (fMCrec){
+                                        Int_t Label = TMath::Abs(aodTrack->GetLabel());
+                                        AliAODMCParticle *trackAODMCforpdg = (AliAODMCParticle*) fArrayMC->At(Label);
+                                        fHistPdg->Fill(trackAODMCforpdg->GetPdgCode());
+                                        }
 					
                                         nAcceptedTracks += 1;
                                     } //track loop

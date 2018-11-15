@@ -1516,6 +1516,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb::UserExec(Option_t *)
                 fHistGeneratedPtVsYVsCentrality_V0COmegaMinus       -> Fill (lThisPt, lThisRap, lPercentileEmbeddedSelection_V0C);
                 fHistGeneratedPtVsYVsCentrality_V0MOmegaMinus       -> Fill (lThisPt, lThisRap, lPercentileEmbeddedSelection_V0M);
             }
+            if( lThisPDG ==  -3334 ) {
+                fHistGeneratedPtVsYVsCentrality_V0AOmegaPlus       -> Fill (lThisPt, lThisRap, lPercentileEmbeddedSelection_V0A);
+                fHistGeneratedPtVsYVsCentrality_V0COmegaPlus       -> Fill (lThisPt, lThisRap, lPercentileEmbeddedSelection_V0C);
+                fHistGeneratedPtVsYVsCentrality_V0MOmegaPlus       -> Fill (lThisPt, lThisRap, lPercentileEmbeddedSelection_V0M);
+            }
         }
     }//End of loop on tracks
     //----- End Loop on Cascades ------------------------------------------------------------

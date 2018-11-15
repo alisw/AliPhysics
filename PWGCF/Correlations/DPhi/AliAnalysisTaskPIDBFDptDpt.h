@@ -119,6 +119,10 @@ public:
     virtual     void    SetUse_AliHelperPID( bool v )       { useAliHelperPID   = v; }
     virtual     void    SetUse_CircularCutPID( bool v )     { useCircularCutPID = v; }
     virtual     void    SetIfContaminationInMC( bool v )    { NoContamination   = v; }
+    virtual     void    SetIfContaminationWeakInMC( bool v )    { NoContaminationWeak   = v; }
+    virtual     void    SetIfContaminationWeakMaterialInMC( bool v )    { NoContaminationWeakMaterial   = v; }
+    virtual     void    SetIfWeakInMC( bool v )             { NoWeak   = v; }
+    virtual     void    SetIfMaterialInMC( bool v )         { NoMaterial   = v; }
     virtual     void    SetUseWeights(int v)                { _useWeights   = v; }
     virtual     void    SetUseRapidity(int v)               { _useRapidity  = v; }
     virtual     void    SetEventPlane(bool v)               { _useEventPlane  = v; }
@@ -215,6 +219,10 @@ protected:
     bool      useAliHelperPID;
     bool      useCircularCutPID;
     bool      NoContamination;
+    bool      NoContaminationWeak;
+    bool      NoContaminationWeakMaterial;
+    bool      NoWeak;
+    bool      NoMaterial;
     int      _useWeights;
     int      _useRapidity;
     bool     _useEventPlane;
@@ -359,6 +367,11 @@ protected:
     double __s2PtNNw_12;
     
     double * __n1_1_vsPt;   //!
+    double * __n1_1_vsPt_pdg;   //!
+    double * __n1_1_vsPt_pdg_Weak;   //!
+    double * __n1_1_vsPt_pdg_Weak_Material;   //!
+    double * __n1_1_vsPt_Weak;   //!
+    double * __n1_1_vsPt_Material;   //!
     double * __n1_1_vsEtaPhi;     //!
     double * __s1pt_1_vsEtaPhi;    //!
     float  * __n1_1_vsZEtaPhiPt;    //!
@@ -457,6 +470,11 @@ protected:
     // PARTICLE 1 (satisfies filter 1)
     // Primary filled quantities
     TH1F      *  _n1_1_vsPt;
+    TH1F      *  _n1_1_vsPt_pdg;
+    TH1F      *  _n1_1_vsPt_pdg_Weak;
+    TH1F      *  _n1_1_vsPt_pdg_Weak_Material;
+    TH1F      *  _n1_1_vsPt_Weak;
+    TH1F      *  _n1_1_vsPt_Material;
     TH2F      *  _n1_1_vsEtaVsPhi;
     TH2F      *  _s1pt_1_vsEtaVsPhi;
     TH3F      *  _n1_1_vsZVsEtaVsPhiVsPt;
@@ -605,7 +623,9 @@ protected:
     TString vsEta; 
     TString vsEtaPhi; 
     TString vsPtVsPt;
-    
+    TString pdg;
+    TString Weak;
+    TString Material;
     
     ClassDef(AliAnalysisTaskPIDBFDptDpt,1)
 }; 

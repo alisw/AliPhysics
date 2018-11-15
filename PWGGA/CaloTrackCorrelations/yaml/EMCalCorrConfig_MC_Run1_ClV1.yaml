@@ -1,0 +1,39 @@
+configurationName: "EMCal MC Correction Cluster V1 Run1"
+pass: "pass1"
+CellEnergy:
+    enabled: false
+    createHistos: false
+CellBadChannel:
+    enabled: true
+    createHistos: true
+CellTimeCalib:
+    enabled: false
+    createHistos: false
+Clusterizer:
+    enabled: true
+    clusterizer: kClusterizerv1
+    cellE: 0.1
+    seedE: 0.5
+    cellTimeMin: -50e-6
+    cellTimeMax:  50e-6
+    clusterTimeLength: 1e6
+    createHistos: true
+    recalDistToBadChannels: true
+    recalShowerShape: false
+    remapMcAod: true
+    setCellMCLabelFromCluster: 0                    # use 2 if V1 and E cell 50 MeV
+ClusterExotics:
+    enabled: true
+    createHistos: true
+ClusterNonLinearity:
+    enabled: true
+    setForceClusterE: true
+    createHistos: true
+    nonLinFunct: kPi0MCv3
+ClusterTrackMatcher:
+    enabled: true
+    createHistos: true
+CellEmulateCrosstalk:                               # Component to emulate crosstalk
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+

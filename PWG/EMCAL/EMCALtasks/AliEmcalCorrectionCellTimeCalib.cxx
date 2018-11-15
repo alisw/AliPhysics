@@ -218,6 +218,14 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
       AliError(Form("Can not get hAllTimeAvBC%d",i));
       continue;
     }
+    
+    // Shift parameters for bc0 and bc1 in this pass
+    if ( pass=="spc_calo" && (i==0 || i==1) ) 
+    {
+      for(Int_t icell = 0; icell < h->GetNbinsX(); icell++) 
+        h->SetBinContent(icell,h->GetBinContent(icell)-100);
+    }
+    
     h->SetDirectory(0);
     fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(i,h);
   }

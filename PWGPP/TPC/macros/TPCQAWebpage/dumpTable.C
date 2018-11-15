@@ -98,47 +98,48 @@ void initQuery(){
   queryLink+="TPC_event_info.png:";
   //
   query+="rawLowCounter75:";
-  queryDescriptor+="#ROC RawQA <small>(Q<sub>max</sub><0.75&timesMed.) || (Occ<0.75&timesMed.)</small>  :";
+  queryDescriptor+="#ROC RawQA <br/><small>(Q<sub>max</sub>&lt;0.75&times;Med.)</small>  :";
+  //queryDescriptor+="#ROC RawQA <small>(Q<sub>max</sub>&lt;0.75&times;Med.) || (Occ&lt;0.75&times;Med.)</small>  :";
   queryFormat+="0:";
   queryLink+="rawQAInformation.png:";
   //
   query+="ocdbStatusCounter:";
-  queryDescriptor+="#ROC OCDB <small>(Non Active Map)</small>:";
+  queryDescriptor+="#ROC OCDB<br/><small>(Non Active Map)</small>:";
   queryFormat+="0:";
   queryLink+="canvasROCStatusOCDB.png:";
   //
   query+="ocdbHVStatusCounter:";
-  queryDescriptor+="#ROC Low Voltage <small>(HV disabled)</small>:";
+  queryDescriptor+="#ROC Low Voltage<br/><small>(HV disabled)</small>:";
   queryFormat+="0:";
   queryLink+="canvasROCStatusOCDB.png:";
   //
   query+="sectorNclMissing70:";
-  queryDescriptor+="#ROC QA <small>(N<sub>cl</sub><0.70&timesMed.)</small>:";
+  queryDescriptor+="#ROC QA<br/><small>(N<sub>cl</sub>&lt;0.70&times;Med.)</small>:";
   queryFormat+="0:";
   queryLink+="cluster_in_detail.png:";
   //
   query+="sectorNtrMissing70:";
-  queryDescriptor+="#ROC QA <small>(N<sub>tr</sub><0.70&timesMed.)</small>:";
+  queryDescriptor+="#ROC QA<br/><small>(N<sub>tr</sub>&lt;0.70&times;Med.)</small>:";
   queryFormat+="0:";
   queryLink+="eta_phi_pt.png:";
   //
   query+="qaClOccupancyCounter60:";
-  queryDescriptor+="#ROC Cluster <small>(Occ<0.60&timesMed.)</small>:";
+  queryDescriptor+="#ROC Cluster<br/><small>(Occ&lt;0.60&times;Med.)</small>:";
   queryFormat+="0:";
   queryLink+="/cluster_occupancy.png:";
   //
   query+="(MIPquality_Warning+10*MIPquality_Outlier+100*(wrongdEdxSectorCounter5>0)):";
-  queryDescriptor+="MIP <small>status</small>:";
+  queryDescriptor+="MIP<br/><small>status</small>:";
   queryFormat+="0:";
   queryLink+="TPC_dEdx_track_info.png:";
   //
   query+="(dcar_Warning+10*dcar_Outlier):";
-  queryDescriptor+="DCAr <small>status</small>:";
+  queryDescriptor+="DCAr<br/><small>status</small>:";
   queryFormat+="0:";
   queryLink+="dca_and_phi.png:";
   //
   query+="(dcaz_Warning+10*dcaz_Outlier)";
-  queryDescriptor+="DCAz <small>status</small>:";
+  queryDescriptor+="DCAz<br/><small>status</small>:";
   queryFormat+="0";
   queryLink+="dca_and_phi.png";
   //

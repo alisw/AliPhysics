@@ -46,6 +46,11 @@ class AliEsdSkimTask : public AliAnalysisTaskSE {
   void SetRemoveCP(Bool_t b)       { fRemoveCP      = b; }
   void SetResetCov(Bool_t b)       { fResetCov      = b; }
   void SetTracks(const char *n)    { fTracks        = n; }
+  void SetDoAllTracks(Bool_t b)    { fDoAllTracks   = b; }
+  void SetDoV0s(Bool_t b)          { fDoV0s         = b; }
+  void SetDoCascades(Bool_t b)     { fDoCascades    = b; }
+  void SetDoKinks(Bool_t b)        { fDoKinks       = b; }
+  void SetDoErrorLogs(Bool_t b)    { fDoErrorLogs   = b; }
 
  protected:
   AliESDEvent     *fEvent;        //!esd event
@@ -68,6 +73,10 @@ class AliEsdSkimTask : public AliAnalysisTaskSE {
   Bool_t           fDoPileup;     // do pileup
   Bool_t           fDoClus;       // do clusters
   Bool_t           fDoMuonTracks; // do muon tracks
+  Bool_t           fDoV0s;        // do v0s 
+  Bool_t           fDoCascades;   // do cascades
+  Bool_t           fDoKinks;      // do kinks
+  Bool_t           fDoErrorLogs;  // do error logs
   TString          fEmcNames;     // name of clusters
   Bool_t           fDoMiniTracks; // strip down tracks
   TString          fTracks;       // name of tracks (e.g. tracks propagated to EMCAL surface)
@@ -78,6 +87,7 @@ class AliEsdSkimTask : public AliAnalysisTaskSE {
   Bool_t           fDoRP;         // do reaction plane
   Bool_t           fRemoveCP;     // if false then keep constrained parameters (only reset covariance)
   Bool_t           fResetCov;     // if true reset covariance matrix of track
+  Bool_t           fDoAllTracks;  // if true then keep full tracks
   Bool_t           fDoPicoTracks; // if true then do pico tracks
   Int_t            fCheckCond;    // if !=0 check certain conditions before event is accepted
 
@@ -85,6 +95,6 @@ class AliEsdSkimTask : public AliAnalysisTaskSE {
   AliEsdSkimTask(const AliEsdSkimTask&);            // not implemented
   AliEsdSkimTask &operator=(const AliEsdSkimTask&); // not implemented
 
- ClassDef(AliEsdSkimTask, 5); // Esd trimming and skimming task
+ ClassDef(AliEsdSkimTask, 6); // Esd trimming and skimming task
 };
 #endif

@@ -39,11 +39,16 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void SetCentralityMaxHFEjet(Int_t centMax) {fcentMax = centMax;};
   void SetDebugHFEjet(Bool_t dbHFEj) {idbHFEj = dbHFEj;};
   void SetHybridTrack(Bool_t Hybrid){iHybrid = Hybrid;};
+  void SetOccCorr(Bool_t OccCorr){iOccCorr = OccCorr;};
   void SetMinSig(Double_t mimSig){fmimSig = mimSig;};
   void SetMinEop(Double_t mimEop){fmimEop = mimEop;};
+  void SetMinM20(Double_t mimM20){fmimM20 = mimM20;};
+  void SetMaxM20(Double_t maxM20){fmaxM20 = maxM20;};
+  void SetJetEtaCut(Double_t JetEtaCut){fJetEtaCut = JetEtaCut;};
   void SetMCdata(Bool_t mcData) {fmcData = mcData;};
   void SetInvMassCut0(Double_t InvmassCut) {fInvmassCut = InvmassCut;};
   void SetInvMassCut1(Double_t ptAssocut) {fptAssocut = ptAssocut;};
+  void SetMCcorr(Bool_t MCcorr){iMCcorr = MCcorr;};
 
  protected:
   void                        ExecOnce();
@@ -63,11 +68,16 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Float_t fcentMax; // max. centrality
     Bool_t idbHFEj;
     Bool_t iHybrid;
+    Bool_t iOccCorr;
     Double_t fmimSig; // max. centrality
     Double_t fmimEop; // max. centrality
+    Double_t fmimM20; // max. centrality
+    Double_t fmaxM20; // max. centrality
+    Double_t fJetEtaCut; // max. centrality
     Double_t fInvmassCut;  
     Double_t fptAssocut;  
     Bool_t fmcData;
+    Bool_t iMCcorr;
     Int_t NembMCpi0;
     Int_t NembMCeta;
     Int_t NpureMCproc;
@@ -90,9 +100,15 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fHistZcorr; //!
   TH1F                        *fHistCent; //!
   TH2F                        *fHistTPCnSigma;
+  TH2F                        *fHistTPCnSigma_ele;
+  TH2F                        *fHistTPCnSigma_had;
+  TH2F                        *fHistTPCnSigma_eMC;
   TH2F                        *fHistEopNsig;
   TH2F                        *fHistEop;
+  TH2F                        *fHistEopHFE;
   TH2F                        *fHistEopHad;
+  TH2F                        *fHistEopHFjet;
+  TH2F                        *fHistNsigHFjet;
   TH1F                        *fHistJetOrg;
   TH2F                        *fHistJetOrgArea;
   TH1F                        *fHistJetBG;
@@ -118,13 +134,34 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fHistIncjetOrg;
   TH2F                        *fHistIncjetBG;
   TH2F                        *fHistHFjet;
+  TH1F                        *fHistHFdijet;
   TH2F                        *fHistULSjet;
   TH2F                        *fHistLSjet;
+  TH2F                        *fHistHadjet;
+  TH2F                        *fHistHFjet_DCA;
+  TH2F                        *fHistULSjet_DCA;
+  TH2F                        *fHistLSjet_DCA;
+  TH2F                        *fHistHadjet_DCA; 
+  TH2F                        *fHistHFjetOrder;
+  TH2F                        *fHistDiJetPhi; 
+  TH2F                        *fHistDiJetMomBalance; 
+  TH2F                        *fHistDiJetMomBalance_All; 
+  TH2F                        *fHistDiJetPhi_MC; 
+  TH2F                        *fHistDiJetMomBalance_MC; 
   TH2F                        *fInvmassULS;
   TH2F                        *fInvmassLS;
+  TH2F                        *fInvmassHFuls;
+  TH2F                        *fInvmassHFls;
+  TH1F                        *fLxy_uls;
+  TH1F                        *fLxy_ls;
+  TH2D                        *feJetCorr;
   THnSparse                   *HFjetCorr0;
   THnSparse                   *HFjetCorr1;
+  THnSparse                   *HFjetCorr2;
+  THnSparse                   *HFjetCorr3;
   THnSparse                   *HFjetParticle;
+  TH2D                        *HFjetDCA_c;
+  TH2D                        *HFjetDCA_b;
   TH1F                        *fQAHistJetPhi;
   TH1F                        *fQAHistTrPhiJet;
   TH1F                        *fQAHistTrPhi;
@@ -135,6 +172,8 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1F                        *fHistClustEtime;
   TH2F                        *fEMCClsEtaPhi;
   TH1F                        *fHistBGfrac;
+  TH1F                        *fHistBGfracHFEev;
+  TH2D                        *fHistJetEnergyReso;
   TF1                         *fPi0Weight;
   TF1                         *fEtaWeight;
   TRandom                     *generator;
@@ -144,16 +183,21 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   AliParticleContainer       *fTracksCont;                 //!Tracks
   AliClusterContainer        *fCaloClustersCont;           //!Clusters  
   Bool_t tagHFjet(AliEmcalJet* jet, double *epT, int MCpid, double &maxpT_e);
+  Double_t ReduceJetEnergyScale(AliEmcalJet* jetC, double *epT, double effval);
   //void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
   void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec);
-  Double_t CalRandomCone(Double_t HFjetPhi, Double_t HFjetEta, Double_t HFjetArea);
-  Bool_t isHeavyFlavour(int Mompdg);
+  Double_t CalRandomCone(Double_t HFjetPhi[], Double_t HFjetEta[], Double_t HFjetArea);
+  Bool_t isHeavyFlavour(int Mompdg, Bool_t &ich, Bool_t &ibe);
   Bool_t isPhotonic(int Mompdg);
   //void MakeParticleLevelJet(THnSparse *pJet);
   void MakeParticleLevelJet();
   //void SetCentralityMim(Int_t centMim) {fcentMim = centMim;};
   //void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
+  void GetFakeHadronJet(Double_t pthad, Double_t *hpTarray, Double_t &rho);
+        
+  Double_t CalOccCorrection();
   void FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
+  Double_t IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE);
 
  private:
 
@@ -170,6 +214,6 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   AliAnalysisHFjetTagHFE(const AliAnalysisHFjetTagHFE&);            // not implemented
   AliAnalysisHFjetTagHFE &operator=(const AliAnalysisHFjetTagHFE&); // not implemented
 
-  ClassDef(AliAnalysisHFjetTagHFE, 6) // jet sample analysis task
+  ClassDef(AliAnalysisHFjetTagHFE, 7) // jet sample analysis task
 };
 #endif

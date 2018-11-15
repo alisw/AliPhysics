@@ -385,7 +385,7 @@ void AliXiStarPbPb::XiStarInit()
     fMultBins = 10;
     
     
-    if(fMCcase) fEventsToMix = 0;
+    if(fMCcase) fEventsToMix = 2;
     else fEventsToMix = 0; //5
     
     fMultLimits[0]=0, fMultLimits[1]=1250, fMultLimits[2]=2500, fMultLimits[3]=3750, fMultLimits[4]=5000, fMultLimits[5]=6250, fMultLimits[6]=7500, fMultLimits[7]=8750, fMultLimits[8]=10000, fMultLimits[9]=13000, fMultLimits[10]=20000;
@@ -1502,10 +1502,19 @@ void AliXiStarPbPb::Exec(Option_t *)
         xiVtx[2] = Xicandidate->Zv();
         xiPt = Xicandidate->Pt();
         xiY = Xicandidate->RapXi();
-        xiMass = Xicandidate->M();
+     //   xiMass = Xicandidate->M();
         xiCharge = Xicandidate->Charge();
         
+        Double_t lV0quality  = 0.;
         
+        if(xiCharge == -1){
+            Xicandidate->ChangeMassHypothesis(lV0quality, 3312);
+            xiMass = Xicandidate->GetEffMassXi();
+        }            else{
+            Xicandidate->ChangeMassHypothesis(lV0quality, -3312);
+            xiMass = Xicandidate->GetEffMassXi();
+        }
+
         
         if(sqrt( pow(tempX[0],2) + pow(tempX[1],2) ) > fMaxDecayLength) continue;
         if(decayLengthXY > fMaxDecayLength) continue;

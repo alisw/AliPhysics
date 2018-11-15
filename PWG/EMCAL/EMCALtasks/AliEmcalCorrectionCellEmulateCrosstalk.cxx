@@ -32,8 +32,11 @@ AliEmcalCorrectionCellEmulateCrosstalk::AliEmcalCorrectionCellEmulateCrosstalk()
   fRandom(0),
   fRandomizeTCard(kTRUE),
   fTCardCorrMinAmp(0.01),
+  fTCardCorrMinInduced(0), 
+  fTCardCorrMaxInducedELeak(0), 
   fTCardCorrMaxInduced(100),
-  fPrintOnce(kFALSE)
+  fPrintOnce(kFALSE),
+  fAODCellsTmp(0x0)
 {
   for(Int_t i = 0; i < fgkNsm;    i++)
   {
@@ -51,7 +54,6 @@ AliEmcalCorrectionCellEmulateCrosstalk::AliEmcalCorrectionCellEmulateCrosstalk()
   }
   
   ResetArrays();
-  
 }
 
 /**
@@ -59,6 +61,8 @@ AliEmcalCorrectionCellEmulateCrosstalk::AliEmcalCorrectionCellEmulateCrosstalk()
  */
 AliEmcalCorrectionCellEmulateCrosstalk::~AliEmcalCorrectionCellEmulateCrosstalk()
 {
+  fAODCellsTmp->DeleteContainer();
+  delete fAODCellsTmp;
 }
 
 /**
@@ -75,6 +79,8 @@ Bool_t AliEmcalCorrectionCellEmulateCrosstalk::Initialize()
   GetProperty("randomizeTCardInducedEnergy", fRandomizeTCard);
   GetProperty("inducedTCardMinimumCellEnergy", fTCardCorrMinAmp);
   GetProperty("inducedTCardMaximum", fTCardCorrMaxInduced);
+  GetProperty("inducedTCardMaximumELeak", fTCardCorrMaxInducedELeak);
+  GetProperty("inducedTCardMinimum", fTCardCorrMinInduced);
 
   // Handle array initialization
   // For the format of these values, see the "default" yaml configuration file
@@ -163,7 +169,7 @@ Bool_t AliEmcalCorrectionCellEmulateCrosstalk::Run()
     AliError("Event ptr = 0, returning");
     return kFALSE;
   }
-  
+ 
   // START PROCESSING ---------------------------------------------------------
   // Test if cells present
   if (fCaloCells->GetNumberOfCells()<=0)
@@ -205,14 +211,21 @@ void AliEmcalCorrectionCellEmulateCrosstalk::MakeCellTCardCorrelation()
   Int_t    id     = -1;
   Float_t  amp    = -1;
   
+  if (fPrintOnce) {
+    PrintTCardParam();
+    fPrintOnce = 0;
+  }
+  
+  Int_t nCells = fCaloCells->GetNumberOfCells();
+  
   // Loop on all cells with signal
-  for (Int_t icell = 0; icell < fCaloCells->GetNumberOfCells(); icell++)
+  for (Int_t icell = 0; icell < nCells; icell++)
   {
     id  = fCaloCells->GetCellNumber(icell);
     amp = fCaloCells->GetAmplitude (icell); // fCaloCells->GetCellAmplitude(id);
-    
+
     if ( amp <= fTCardCorrMinAmp ) continue ;
-    
+
     //
     // First get the SM, col-row of this tower
     Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1;
@@ -222,12 +235,15 @@ void AliEmcalCorrectionCellEmulateCrosstalk::MakeCellTCardCorrelation()
     //
     // Determine randomly if we want to create a correlation for this cell,
     // depending the SM number of the cell
-    Float_t rand = fRandom.Uniform(0, 1);
-    
-    if ( rand > fTCardCorrInduceEnerProb[imod] ) continue;
+    if ( fTCardCorrInduceEnerProb[imod] < 1 )
+    {  
+      Float_t rand = fRandom.Uniform(0, 1);
+      
+      if ( rand > fTCardCorrInduceEnerProb[imod] ) continue;
+    }
     
     AliDebug(1,Form("Reference cell absId %d, iEta %d, iPhi %d, amp %2.3f",id,ieta,iphi,amp));
-    
+
     //
     // Get the absId of the cells in the cross and same T-Card
     Int_t absIDup = -1;
@@ -280,167 +296,103 @@ void AliEmcalCorrectionCellEmulateCrosstalk::MakeCellTCardCorrelation()
     if ( TMath::FloorNint(iphi/8) != TMath::FloorNint((iphi+2)/8) ) { absIDup2 = -1 ; absIDup2lr = -1 ; }
     if ( TMath::FloorNint(iphi/8) != TMath::FloorNint((iphi-2)/8) ) { absIDdo2 = -1 ; absIDdo2lr = -1 ; }
     
+    // Calculate induced energy to T-Card cells
     //
-    // Check if they are not declared bad or exist
-    Bool_t okup   = AcceptCell(absIDup   );
-    Bool_t okdo   = AcceptCell(absIDdo   );
-    Bool_t oklr   = AcceptCell(absIDlr   );
-    Bool_t okuplr = AcceptCell(absIDuplr );
-    Bool_t okdolr = AcceptCell(absIDdolr );
-    Bool_t okup2  = AcceptCell(absIDup2  );
-    Bool_t okdo2  = AcceptCell(absIDdo2  );
-    Bool_t okup2lr= AcceptCell(absIDup2lr);
-    Bool_t okdo2lr= AcceptCell(absIDdo2lr);
+    AliDebug(1,Form("cell up %d:"  ,absIDup));
+    CalculateInducedEnergyInTCardCell(absIDup   , id, imod, amp, 0);    
+    AliDebug(1,Form("cell down %d:",absIDdo));
+    CalculateInducedEnergyInTCardCell(absIDdo   , id, imod, amp, 0);
     
-    AliDebug(1,Form("Same T-Card cells:\n \t up %d (%d), down %d (%d), left-right %d (%d), up-lr %d (%d), down-lr %d (%d)\n"
-                    "\t up2 %d (%d), down2 %d (%d), up2-lr %d (%d), down2-lr %d (%d)",
-                    absIDup ,okup ,absIDdo ,okdo ,absIDlr,oklr,absIDuplr ,okuplr ,absIDdolr ,okdolr ,
-                    absIDup2,okup2,absIDdo2,okdo2,             absIDup2lr,okup2lr,absIDdo2lr,okdo2lr));
+    AliDebug(1,Form("cell up left-right %d:"  ,absIDuplr));
+    CalculateInducedEnergyInTCardCell(absIDuplr , id, imod, amp, 1);    
+    AliDebug(1,Form("cell down left-right %d:",absIDdolr));
+    CalculateInducedEnergyInTCardCell(absIDdolr , id, imod, amp, 1);
     
-    //
-    // Generate some energy for the nearby cells in same TCard , depending on this cell energy
-    // Check if originally the tower had no or little energy, in which case tag it as new
-    Float_t fracupdown     = fTCardCorrInduceEnerFrac[0][imod]+amp*fTCardCorrInduceEnerFracP1[0][imod];
-    Float_t fracupdownleri = fTCardCorrInduceEnerFrac[1][imod]+amp*fTCardCorrInduceEnerFracP1[1][imod];
-    Float_t fracleri       = fTCardCorrInduceEnerFrac[2][imod]+amp*fTCardCorrInduceEnerFracP1[2][imod];
-    Float_t frac2nd        = fTCardCorrInduceEnerFrac[3][imod]+amp*fTCardCorrInduceEnerFracP1[3][imod];
+    AliDebug(1,Form("cell left-right %d:",absIDlr));
+    CalculateInducedEnergyInTCardCell(absIDlr   , id, imod, amp, 2);
     
-    AliDebug(1,Form("Fraction for SM %d (min %2.3f, max %2.3f):\n"
-                    "\t up-down   : c %2.3e, p1 %2.3e, p2 %2.4e, sig %2.3e, fraction %2.3f\n"
-                    "\t up-down-lr: c %2.3e, p1 %2.3e, p2 %2.4e, sig %2.3e, fraction %2.3f\n"
-                    "\t left-right: c %2.3e, p1 %2.3e, p2 %2.4e, sig %2.3e, fraction %2.3f\n"
-                    "\t 2nd row   : c %2.3e, p1 %2.3e, p2 %2.4e, sig %2.3e, fraction %2.3f",
-                    imod, fTCardCorrInduceEnerFracMin[imod], fTCardCorrInduceEnerFracMax[imod],
-                    fTCardCorrInduceEner[0][imod],fTCardCorrInduceEnerFrac[0][imod],fTCardCorrInduceEnerFracP1[0][imod],fTCardCorrInduceEnerFracWidth[0][imod],fracupdown,
-                    fTCardCorrInduceEner[1][imod],fTCardCorrInduceEnerFrac[1][imod],fTCardCorrInduceEnerFracP1[1][imod],fTCardCorrInduceEnerFracWidth[1][imod],fracupdownleri,
-                    fTCardCorrInduceEner[2][imod],fTCardCorrInduceEnerFrac[2][imod],fTCardCorrInduceEnerFracP1[2][imod],fTCardCorrInduceEnerFracWidth[2][imod],fracleri,
-                    fTCardCorrInduceEner[3][imod],fTCardCorrInduceEnerFrac[3][imod],fTCardCorrInduceEnerFracP1[3][imod],fTCardCorrInduceEnerFracWidth[3][imod],frac2nd));
+    AliDebug(1,Form("cell up 2nd row %d:"  ,absIDup2));
+    CalculateInducedEnergyInTCardCell(absIDup2  , id, imod, amp, 3);    
+    AliDebug(1,Form("cell down 2nd row %d:",absIDdo2));
+    CalculateInducedEnergyInTCardCell(absIDdo2  , id, imod, amp, 3);
     
-    if( fracupdown     < fTCardCorrInduceEnerFracMin[imod] ) fracupdown     = fTCardCorrInduceEnerFracMin[imod];
-    if( fracupdown     > fTCardCorrInduceEnerFracMax[imod] ) fracupdown     = fTCardCorrInduceEnerFracMax[imod];
-    if( fracupdownleri < fTCardCorrInduceEnerFracMin[imod] ) fracupdownleri = fTCardCorrInduceEnerFracMin[imod];
-    if( fracupdownleri > fTCardCorrInduceEnerFracMax[imod] ) fracupdownleri = fTCardCorrInduceEnerFracMax[imod];
-    if( fracleri       < fTCardCorrInduceEnerFracMin[imod] ) fracleri       = fTCardCorrInduceEnerFracMin[imod];
-    if( fracleri       > fTCardCorrInduceEnerFracMax[imod] ) fracleri       = fTCardCorrInduceEnerFracMax[imod];
-    if( frac2nd        < fTCardCorrInduceEnerFracMin[imod] ) frac2nd        = fTCardCorrInduceEnerFracMin[imod];
-    if( frac2nd        > fTCardCorrInduceEnerFracMax[imod] ) frac2nd        = fTCardCorrInduceEnerFracMax[imod];
-    
-    // Randomize the induced fraction, if requested
-    if(fRandomizeTCard)
-    {
-      fracupdown     = fRandom.Gaus(fracupdown    ,fTCardCorrInduceEnerFracWidth[0][imod]);
-      fracupdownleri = fRandom.Gaus(fracupdownleri,fTCardCorrInduceEnerFracWidth[1][imod]);
-      fracleri       = fRandom.Gaus(fracleri      ,fTCardCorrInduceEnerFracWidth[2][imod]);
-      frac2nd        = fRandom.Gaus(frac2nd       ,fTCardCorrInduceEnerFracWidth[3][imod]);
-      
-      AliDebug(1,Form("Randomized fraction: up-down %2.3f; up-down-left-right %2.3f; left-right %2.3f; 2nd row %2.3f",
-                      fracupdown,fracupdownleri,fracleri,frac2nd));
-    }
-    
-    // Calculate induced energy
-    Float_t indEupdown     = fTCardCorrInduceEner[0][imod]+amp*fracupdown;
-    Float_t indEupdownleri = fTCardCorrInduceEner[1][imod]+amp*fracupdownleri;
-    Float_t indEleri       = fTCardCorrInduceEner[2][imod]+amp*fracleri;
-    Float_t indE2nd        = fTCardCorrInduceEner[3][imod]+amp*frac2nd;
-    
-    AliDebug(1,Form("Induced energy: up-down %2.3f; up-down-left-right %2.3f; left-right %2.3f; 2nd row %2.3f",
-                    indEupdown,indEupdownleri,indEleri,indE2nd));
-    
-    // Check if we induce too much energy, in such case use a constant value
-    if ( fTCardCorrMaxInduced < indE2nd        ) indE2nd        = fTCardCorrMaxInduced;
-    if ( fTCardCorrMaxInduced < indEupdownleri ) indEupdownleri = fTCardCorrMaxInduced;
-    if ( fTCardCorrMaxInduced < indEupdown     ) indEupdown     = fTCardCorrMaxInduced;
-    if ( fTCardCorrMaxInduced < indEleri       ) indEleri       = fTCardCorrMaxInduced;
-    
-    AliDebug(1,Form("Induced energy, saturated?: up-down %2.3f; up-down-left-right %2.3f; left-right %2.3f; 2nd row %2.3f",
-                    indEupdown,indEupdownleri,indEleri,indE2nd));
-    
-    //
-    // Add the induced energy, check if cell existed
-    if ( okup )
-    {
-      fTCardCorrCellsEner[absIDup] += indEupdown;
-      
-      if ( fCaloCells->GetCellAmplitude(absIDup) < 0.01 ) fTCardCorrCellsNew[absIDup] = kTRUE;
-    }
-    
-    if ( okdo )
-    {
-      fTCardCorrCellsEner[absIDdo] += indEupdown;
-      
-      if ( fCaloCells->GetCellAmplitude(absIDdo) < 0.01 ) fTCardCorrCellsNew[absIDdo] = kTRUE;
-    }
-    
-    if ( oklr )
-    {
-      fTCardCorrCellsEner[absIDlr] += indEleri;
-      
-      if ( fCaloCells->GetCellAmplitude(absIDlr) < 0.01 ) fTCardCorrCellsNew[absIDlr]  = kTRUE;
-    }
-    
-    if ( okuplr )
-    {
-      fTCardCorrCellsEner[absIDuplr] += indEupdownleri;
-      
-      if ( fCaloCells->GetCellAmplitude(absIDuplr ) < 0.01 ) fTCardCorrCellsNew[absIDuplr]  = kTRUE;
-    }
-    
-    if ( okdolr )
-    {
-      fTCardCorrCellsEner[absIDdolr] += indEupdownleri;
-      
-      if ( fCaloCells->GetCellAmplitude(absIDdolr ) < 0.01 ) fTCardCorrCellsNew[absIDdolr]  = kTRUE;
-    }
-    
-    if ( okup2 )
-    {
-      fTCardCorrCellsEner[absIDup2] += indE2nd;
-      
-      if ( fCaloCells->GetCellAmplitude(absIDup2) < 0.01 ) fTCardCorrCellsNew[absIDup2] = kTRUE;
-    }
-    
-    if ( okup2lr )
-    {
-      fTCardCorrCellsEner[absIDup2lr] += indE2nd;
-      
-      if ( fCaloCells->GetCellAmplitude(absIDup2lr) < 0.01 ) fTCardCorrCellsNew[absIDup2lr] = kTRUE;
-    }
-    
-    if ( okdo2 )
-    {
-      fTCardCorrCellsEner[absIDdo2] += indE2nd;
-      
-      if ( fCaloCells->GetCellAmplitude(absIDdo2) < 0.01 ) fTCardCorrCellsNew[absIDdo2] = kTRUE;
-    }
-    
-    if ( okdo2lr )
-    {
-      fTCardCorrCellsEner[absIDdo2lr] += indE2nd;
-      
-      if ( fCaloCells->GetCellAmplitude(absIDdo2lr) < 0.01 ) fTCardCorrCellsNew[absIDdo2lr] = kTRUE;
-    }
-    
-    //
-    // Subtract the added energy to main cell, if energy conservation is requested
-    if ( fTCardCorrClusEnerConserv )
-    {
-      if ( oklr    ) fTCardCorrCellsEner[id] -= indEleri;
-      if ( okuplr  ) fTCardCorrCellsEner[id] -= indEupdownleri;
-      if ( okdolr  ) fTCardCorrCellsEner[id] -= indEupdownleri;
-      if ( okup    ) fTCardCorrCellsEner[id] -= indEupdown;
-      if ( okdo    ) fTCardCorrCellsEner[id] -= indEupdown;
-      if ( okup2   ) fTCardCorrCellsEner[id] -= indE2nd;
-      if ( okup2lr ) fTCardCorrCellsEner[id] -= indE2nd;
-      if ( okdo2   ) fTCardCorrCellsEner[id] -= indE2nd;
-      if ( okdo2lr ) fTCardCorrCellsEner[id] -= indE2nd;
-    } // conserve energy
+    AliDebug(1,Form("cell up left-right 2nd row %d:"  ,absIDup2lr));
+    CalculateInducedEnergyInTCardCell(absIDup2lr, id, imod, amp, 3);    
+    AliDebug(1,Form("cell down left-right 2nd row %d:",absIDdo2lr));
+    CalculateInducedEnergyInTCardCell(absIDdo2lr, id, imod, amp, 3);
     
   } // cell loop
   
 }
 
+//_______________________________________________________
+/// Calculate the induced energy in a cell belonging to the
+/// same T-Card as the reference cell.
+/// Used in MakeCellTCardCorrelation()
+/// \param absId Id number of cell in same T-Card as reference cell
+/// \param absIdRef Id number of reference cell
+/// \param sm Supermodule number of cell 
+/// \param ampRef Amplitude of the reference cell
+/// \param cellCase Type of cell with respect reference cell 0: up or down, 1: up or down on the diagonal, 2: left or right, 3: 2nd row up/down both left/right
+//_______________________________________________________
+void AliEmcalCorrectionCellEmulateCrosstalk::CalculateInducedEnergyInTCardCell
+(Int_t absId, Int_t absIdRef, Int_t sm, Float_t ampRef, Int_t cellCase) 
+{
+  // Check that the cell exists
+  if ( !AcceptCell(absId) ) return ; 
+  
+  // Get the fraction
+  Float_t frac = fTCardCorrInduceEnerFrac[cellCase][sm] + ampRef * fTCardCorrInduceEnerFracP1[cellCase][sm];
+  
+  // Use an absolute minimum and maximum fraction if calculated one is out of range
+  if ( frac < fTCardCorrInduceEnerFracMin[sm] ) frac = fTCardCorrInduceEnerFracMin[sm];
+  if ( frac > fTCardCorrInduceEnerFracMax[sm] ) frac = fTCardCorrInduceEnerFracMax[sm];   
+  
+  AliDebug(1,Form("\t fraction %2.3f",frac));
+  
+  // Randomize the induced fraction, if requested
+  if ( fRandomizeTCard )
+  {
+    frac = fRandom.Gaus(frac, fTCardCorrInduceEnerFracWidth[cellCase][sm]);
+    
+    AliDebug(1,Form("\t randomized fraction %2.3f",frac));
+  }
+  
+  // If too small or negative, do nothing else
+  if ( frac < 0.0001 ) return;
+  
+  // Calculate induced energy
+  Float_t inducedE = fTCardCorrInduceEner[cellCase][sm] + ampRef * frac;
+  
+  // Check if we induce too much energy, in such case use a constant value
+  if ( fTCardCorrMaxInduced < inducedE ) inducedE = fTCardCorrMaxInduced;
+  
+  AliDebug(1,Form("\t induced E %2.3f",inducedE));
+  
+  // Add the induced energy, check if cell existed
+  // Check that the induced+amp is large enough to avoid extra linearity effects
+  // typically of the order of the clusterization cell energy cut
+  // But if it is below 1 ADC, typically 10 MeV, also do it, to match Beam test linearity
+  Float_t amp = fCaloCells->GetCellAmplitude(absId) ;
+  if ( (amp+inducedE) > fTCardCorrMinInduced || inducedE < fTCardCorrMaxInducedELeak )
+  {
+    fTCardCorrCellsEner[absId] += inducedE;
+    
+    // If original energy of cell was null, create new one 
+    if ( amp < 0.01 ) fTCardCorrCellsNew[absId] = kTRUE;
+  }
+  else return ;
+  
+  // Subtract the added energy to main cell, if energy conservation is requested
+  if ( fTCardCorrClusEnerConserv )
+  fTCardCorrCellsEner[absIdRef] -= inducedE;
+}
+
+
 /**
  * Add to existing cells the found induced energies in MakeCellTCardCorrelation() if new signal is larger than 10 MeV.
+ * Need to destroy/create the default cells list and do a copy from the old to the new via a temporal arrat fAODCellsTmp
+ * Not too nice or fast, but it works.
  */
 void AliEmcalCorrectionCellEmulateCrosstalk::AddInducedEnergiesToExistingCells()
 {
@@ -450,22 +402,26 @@ void AliEmcalCorrectionCellEmulateCrosstalk::AddInducedEnergiesToExistingCells()
   Int_t     mclabel = -1;
   Double_t  efrac   = 0.;
   
-  for (Int_t icell = 0; icell < fCaloCells->GetNumberOfCells(); icell++)
+  // Add the induced energy to the cells and copy them into a new temporal container
+  // used in AddInducedEnergiesToNewCells() to refill the default cells list fCaloCells
+  // Create the data member only once. Done here, not sure where to do this properly in the framework.
+  //
+  if ( !fAODCellsTmp )
+    fAODCellsTmp = new AliAODCaloCells("tmpCaloCellsAOD","tmpCaloCellsAOD",AliAODCaloCells::kEMCALCell);
+  
+  Int_t nCells = fCaloCells->GetNumberOfCells();
+  fAODCellsTmp->CreateContainer(nCells);
+
+  for (Int_t icell = 0; icell < nCells; icell++)
   {
-    
     // Get cell
     fCaloCells->GetCell(icell, absId, amp, time, mclabel, efrac);
-    
-    if(amp <= 0.01) continue ; // accept if > 10 MeV
-    
+        
     amp+=fTCardCorrCellsEner[absId];
-    
-    //if(fTCardCorrCellsEner[absId] > 0.05) printf("\t absId %d amp %2.2f\n",absId,fTCardCorrCellsEner[absId]);
 
-    // Set new amplitude
-    fCaloCells->SetCell(icell, absId, amp, time, mclabel, efrac);
+    // Set new amplitude in new temporal container
+    fAODCellsTmp->SetCell(icell, absId, amp, time, mclabel, efrac);
   }
-  
 }
   
 /**
@@ -473,8 +429,50 @@ void AliEmcalCorrectionCellEmulateCrosstalk::AddInducedEnergiesToExistingCells()
  */
 void AliEmcalCorrectionCellEmulateCrosstalk::AddInducedEnergiesToNewCells()
 {
-  Int_t nCells = fCaloCells->GetNumberOfCells();
+  // Count how many new cells
+  //
+  Int_t nCells    = fCaloCells->GetNumberOfCells();
+  Int_t nCellsNew = 0;
+  for(Int_t j = 0; j < fgkNEMCalCells; j++)
+  {
+    // Newly created?
+    if ( !fTCardCorrCellsNew[j] ) continue;
+    
+    // Accept only if at least 10 MeV
+    if (  fTCardCorrCellsEner[j] < 0.01 ) continue;
+    
+    nCellsNew++;
+  }
+    
+  // Delete default cells container and create new one with larger arrays
+  // to contain new cells.
+  //
+  fCaloCells->DeleteContainer();
+  fCaloCells->CreateContainer(nCells+nCellsNew);
   
+  // Recover the original input from fAODCellsTmp filled in AddInducedEnergiesToExistingCells()
+  //
+  Short_t   absId      = -1;
+  Float_t   amp        = -1;
+  Double_t  time       =  0;
+  Int_t     mclabel    = -1;
+  Double_t  efrac      = -1;
+  Bool_t    highgain   =  1;
+  Int_t     cellNumber = -1;
+  
+  for(Int_t j = 0; j < nCells; j++)
+  {
+    absId      = fAODCellsTmp->GetCellNumber(j);
+    amp        = fAODCellsTmp->GetAmplitude(j);
+    time       = fAODCellsTmp->GetTime(j);
+    mclabel    = fAODCellsTmp->GetMCLabel(j);
+    efrac      = fAODCellsTmp->GetEFraction(j);
+    highgain   = fAODCellsTmp->GetHighGain(j);
+    fCaloCells->SetCell(j, absId, amp, time, mclabel, efrac, highgain);
+  }
+  
+  // Add the new cells
+  //
   for(Int_t j = 0; j < fgkNEMCalCells; j++)
   {
     // Newly created?
@@ -484,17 +482,21 @@ void AliEmcalCorrectionCellEmulateCrosstalk::AddInducedEnergiesToNewCells()
     if (  fTCardCorrCellsEner[j] < 0.01 ) continue;
     
     // Add new cell
-    Int_t     cellNumber = nCells;
-    Short_t   absId      = j;
-    Float_t   amp        = fTCardCorrCellsEner[j];
-    Double_t  time       = 615.*1e-9;
-    Int_t     mclabel    = -1;
-    Double_t  efrac      = 0.;
-    fCaloCells->SetCell(cellNumber, absId, amp, time, mclabel, efrac);
-        
+    cellNumber = nCells;
+    absId      = j;
+    amp        = fTCardCorrCellsEner[j];
+    time       = 615.*1e-9;
+    mclabel    = -1;
+    efrac      = 0.;
+
+    Int_t ok = fCaloCells->SetCell(cellNumber, absId, amp, time, mclabel, efrac,1);
+    
+    if ( !ok ) AliError("Induced new cell could not be added!");
+      
     nCells++;
   }
   
+  if ( nCellsNew > 0 ) fCaloCells->Sort();  
 }
 
 /**
@@ -507,6 +509,8 @@ void AliEmcalCorrectionCellEmulateCrosstalk::ResetArrays()
     fTCardCorrCellsEner[j] = 0.;
     fTCardCorrCellsNew [j] = kFALSE;
   }
+
+  if ( fAODCellsTmp ) fAODCellsTmp->DeleteContainer();
 }
 
 /**
@@ -535,9 +539,12 @@ Bool_t AliEmcalCorrectionCellEmulateCrosstalk::AcceptCell(Int_t absID)
 void AliEmcalCorrectionCellEmulateCrosstalk::PrintTCardParam()
 {
   printf("T-Card emulation activated, energy conservation <%d>, randomize E <%d>, induced energy parameters:\n",
-        fTCardCorrClusEnerConserv,fRandomizeTCard);
-  printf("T-Card emulation super-modules fraction: Min cell E %2.2f Max induced E %2.2f\n",
-        fTCardCorrMinAmp,fTCardCorrMaxInduced);
+         fTCardCorrClusEnerConserv,fRandomizeTCard);
+  
+  printf("T-Card emulation super-modules fraction: Min cell E %2.1f MeV; "
+         "induced Min E %2.1f MeV; Max at low E %2.1f MeV; Max E %2.2f GeV\n",
+         fTCardCorrMinAmp         *1000, fTCardCorrMinInduced*1000,
+         fTCardCorrMaxInducedELeak*1000, fTCardCorrMaxInduced              );
 
   for(Int_t ism = 0; ism < fgkNsm; ism++)
   {

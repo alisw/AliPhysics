@@ -27,7 +27,7 @@
 #include "../AliJEventPool.h"
 
 #include "../AliJTrack.h"
-#include "../AliJAcceptanceCorrection.h"
+//#include "../AliJAcceptanceCorrection.h"
 
 #include "../AliJEfficiency.h"
 //#include <iostream>
@@ -53,7 +53,7 @@ AliJIaaAna::AliJIaaAna() :
 	fevt(0),
 	fhistos(0),
 	fcorrelations(0),
-	fAcceptanceCorrection(0x0),
+	//fAcceptanceCorrection(0x0),
 	fassocPool(0),
 	ftriggList(0),
 	fassocList(0),
@@ -88,7 +88,7 @@ AliJIaaAna::AliJIaaAna(Bool_t execLocal) :
 	fevt(0),
 	fhistos(0),
 	fcorrelations(0),
-	fAcceptanceCorrection(0x0),
+	//fAcceptanceCorrection(0x0),
 	fassocPool(0),
 	ftriggList(0),
 	fassocList(0),
@@ -109,7 +109,7 @@ AliJIaaAna::~AliJIaaAna(){
 	// destructor
 
 	delete fhistos; //
-	delete fAcceptanceCorrection; //
+	//delete fAcceptanceCorrection; //
 	delete fcorrelations; //
 
 	delete fassocPool;//
@@ -139,7 +139,7 @@ AliJIaaAna::AliJIaaAna(const AliJIaaAna& obj) :
 	fevt(obj.fevt),
 	fhistos(obj.fhistos),
 	fcorrelations(obj.fcorrelations),
-	fAcceptanceCorrection(obj.fAcceptanceCorrection),
+	//fAcceptanceCorrection(obj.fAcceptanceCorrection),
 	fassocPool(obj.fassocPool),
 	ftriggList(obj.ftriggList),
 	fassocList(obj.fassocList),
@@ -196,14 +196,14 @@ void AliJIaaAna::UserCreateOutputObjects(){
 	fhistos->fHMG->Print();
 
 	// Create a class for acceptance correction
-	fAcceptanceCorrection = new AliJAcceptanceCorrection(fcard);
+	//fAcceptanceCorrection = new AliJAcceptanceCorrection(fcard);
 
 	// Set the number of hits per bin required in the acceptance correction histograms
-	int hitsPerBin = fcard->Get("HitsPerBinAcceptance");
-	fAcceptanceCorrection->SetMinCountsPerBinInclusive(hitsPerBin);
-	if(fcard->Get("AcceptanceTestMode") == 1){
-		fAcceptanceCorrection->SetTestMode(true);
-	}
+	//int hitsPerBin = fcard->Get("HitsPerBinAcceptance");
+	//fAcceptanceCorrection->SetMinCountsPerBinInclusive(hitsPerBin);
+	//if(fcard->Get("AcceptanceTestMode") == 1){
+	//	fAcceptanceCorrection->SetTestMode(true);
+	//}
 
 	// Create the class doing correlation analysis
 	fcorrelations = new AliJIaaCorrelations( fcard, fhistos);
@@ -214,7 +214,7 @@ void AliJIaaAna::UserCreateOutputObjects(){
 	if( fInclusiveFile.Length() ) {
 		fhistos->ReadInclusiveHistos(fInclusiveFile);
 		fcorrelations->SetSamplingInclusive(); //kperp background and triangle. Default is flat
-		fAcceptanceCorrection->ReadMixedEventHistograms(fInclusiveFile);
+		//fAcceptanceCorrection->ReadMixedEventHistograms(fInclusiveFile);
 		cout<<"Background and acceptance sampling from " << fInclusiveFile <<endl;
 	} else {
 		cout << "Background and acceptance sampled from flat distributions." <<endl;
@@ -222,7 +222,7 @@ void AliJIaaAna::UserCreateOutputObjects(){
 	cout<< " -----" <<endl <<endl;
 
 	// Tell the correlation analysis to use the defined acceptance correction
-	fcorrelations->SetAcceptanceCorrection(fAcceptanceCorrection);
+	//fcorrelations->SetAcceptanceCorrection(fAcceptanceCorrection);
 	if(fcard->Get("UseZVertexBins") == 1){
 		fcorrelations->UseZVertexAcceptance(true);
 	}
@@ -294,6 +294,7 @@ void AliJIaaAna::UserExec(){
 	if(cBin<0) return;
 
 	int zBin        = fcard->GetBin(kZVertType, fZvert); //should be alway >0; checked in fdmg->IsGoodEvent()
+  if (zBin<0) return;
 
 	fhistos->fhZVert[cBin]->Fill(fZvert);
 
@@ -348,6 +349,7 @@ void AliJIaaAna::UserExec(){
 
 		if( !triggerTrack->IsInTriggerBin() ) continue;
 		iptt = triggerTrack->GetTriggBin();
+    
 		fhistos->fhIphiTrigg[cBin][iptt]->Fill( triggerTrack->Phi(), effCorr);
 		fhistos->fhIetaTrigg[cBin][iptt]->Fill( triggerTrack->Eta(), effCorr);
 
@@ -419,8 +421,8 @@ void AliJIaaAna::RunCorrelations(TClonesArray *triggList, TClonesArray *assoList
                 if(fenableEP) {
                         double phis = GetPhiS2(triggerTrack->Phi(),fPsi2);
                         phis *= 180./TMath::Pi(); // card in degree 0-360
-                        if (!AccecptEPBins( phis, fEPmin, fEPmax)) return; // EP Enable && in phiS bin
-                        fhistos->fhPhiS[cBin]->Fill(phis);
+                        if (!AccecptEPBins( phis, fEPmin, fEPmax)) continue; // EP Enable && in phiS bin
+                        fhistos->fhPhiS[cBin][iptt]->Fill(phis);
                 }
                 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                 double effCorr = 1.0/triggerTrack->GetTrackEff();
@@ -489,6 +491,7 @@ Bool_t AliJIaaAna::AccecptEPBins(double phis, double min, double max) {
 	if( phis>180.-max && phis<180.-min ) accept = kTRUE; 
 	if( phis>180.+min && phis<180.+max ) accept = kTRUE; 
 	if( phis>360.-max && phis<360.-min ) accept = kTRUE; 
+
 	return accept;
 }
 //----------------------------------------------------------------------------------------------------------------------------

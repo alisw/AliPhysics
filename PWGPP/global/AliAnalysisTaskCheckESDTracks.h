@@ -79,7 +79,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
 
  private:
 
-  enum EVarsTree {kNumOfIntVar=10, kNumOfFloatVar=34};
+  enum EVarsTree {kNumOfIntVar=11, kNumOfFloatVar=34};
 
   AliAnalysisTaskCheckESDTracks(const AliAnalysisTaskCheckESDTracks &source);
   AliAnalysisTaskCheckESDTracks& operator=(const AliAnalysisTaskCheckESDTracks &source);
@@ -99,6 +99,12 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH2F* fHistdEdxVsP[9];              //!<!  histo of dE/dx for hypos (all tracks)
   TH2F* fHistdEdxVsPTPCsel[9];        //!<!  histo of dE/dx for hypos (TPC cuts)
   TH2F* fHistdEdxVsPTPCselITSref[9];  //!<!  histo of dE/dx for hypos (ITSrefit)
+  TH2F* fHistdEdxVsP0[9];              //!<!  histo of dE/dx for hypos (all tracks)
+  TH2F* fHistdEdxVsPTPCsel0[9];        //!<!  histo of dE/dx for hypos (TPC cuts)
+  TH2F* fHistdEdxVsPTPCselITSref0[9];  //!<!  histo of dE/dx for hypos (ITSrefit)
+  TH2F* fHistCorrelHypo0HypoTPCsel;        //!<!  correl. f PID hypos in tracking steps
+  TH2F* fHistCorrelHypo0HypoTPCselITSref;  //!<!  correl. f PID hypos in tracking steps
+
   TH2F* fHistnSigmaVsPdEdxTPCsel[9];  //!<!  histo of nSigma for particle species
 
   TH3F* fHistEtaPhiPtTPCsel;         //!<!  histo of eta,phi,pt (TPC cuts)
@@ -164,14 +170,16 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH2F* fHistdEdxVsPBadHyp[3];                //!<!  histo of dE/dx for protons
   TH3F* fHistImpParXYPtMulBadHypTPCselSPDany[3];   //!<!  histo of impact parameter
 
-  TH2F* fHistPtResidVsPtTPCselAll;                              //!<!  Pt residuals for TPC only tracks tracked with good mass hypothesis
-  TH2F* fHistPtResidVsPtTPCselITSrefAll;                        //!<!  Pt residuals for ITS+TPC tracks tracked with good mass hypothesis
+  TH2F* fHistPtResidVsPtTPConlyAll;                             //!<!  Pt residuals for TPC only tracks
+  TH2F* fHistPtResidVsPtTPCselAll;                              //!<!  Pt residuals for TPC+ITS track with TPC only cuts
+  TH2F* fHistPtResidVsPtTPCselITSrefAll;                        //!<!  Pt residuals for ITS+TPC tracks 
   TH2F* fHistPtResidVsPtTPCselGoodHyp[AliPID::kSPECIESC];       //!<!  Pt residuals for TPC only tracks tracked with good mass hypothesis (for each species)
   TH2F* fHistPtResidVsPtTPCselBadHyp[AliPID::kSPECIESC];        //!<!  Pt residuals for TPC only tracks tracked with bad mass hypothesis (for each species)
   TH2F* fHistPtResidVsPtTPCselITSrefGoodHyp[AliPID::kSPECIESC]; //!<!  Pt residuals for ITS+TPC tracks tracked with good mass hypothesis (for each species)
   TH2F* fHistPtResidVsPtTPCselITSrefBadHyp[AliPID::kSPECIESC];  //!<!  Pt residuals for ITS+TPC tracks tracked with bad mass hypothesis (for each species)
-  TH2F* fHistOneOverPtResidVsPtTPCselAll;                              //!<!  1/Pt residuals for TPC only tracks tracked with good mass hypothesis
-  TH2F* fHistOneOverPtResidVsPtTPCselITSrefAll;                        //!<!  1/Pt residuals for ITS+TPC tracks tracked with good mass hypothesis
+  TH2F* fHistOneOverPtResidVsPtTPConlyAll;                             //!<!  1/Pt residuals for TPC only tracks
+  TH2F* fHistOneOverPtResidVsPtTPCselAll;                              //!<!  1/Pt residuals for TPC+ITS track with TPC only cuts
+  TH2F* fHistOneOverPtResidVsPtTPCselITSrefAll;                        //!<!  1/Pt residuals for ITS+TPC tracks
   TH2F* fHistOneOverPtResidVsPtTPCselGoodHyp[AliPID::kSPECIESC];       //!<!  1/Pt residuals for TPC only tracks tracked with good mass hypothesis (for each species)
   TH2F* fHistOneOverPtResidVsPtTPCselBadHyp[AliPID::kSPECIESC];        //!<!  1/Pt residuals for TPC only tracks tracked with bad mass hypothesis (for each species)
   TH2F* fHistOneOverPtResidVsPtTPCselITSrefGoodHyp[AliPID::kSPECIESC]; //!<!  1/Pt residuals for ITS+TPC tracks tracked with good mass hypothesis (for each species)
@@ -217,7 +225,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,10);
+  ClassDef(AliAnalysisTaskCheckESDTracks,12);
 };
 
 

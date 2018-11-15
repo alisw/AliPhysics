@@ -338,16 +338,17 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
   
-  fHistNEvents = new TH1F("hNEvents", "number of events ",9,-0.5,8.5);
+  fHistNEvents = new TH1F("hNEvents", "number of events ",10,-0.5,9.5);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"n. passing IsEvSelected");
   fHistNEvents->GetXaxis()->SetBinLabel(3,"n. rejected due to trigger");
   fHistNEvents->GetXaxis()->SetBinLabel(4,"n. rejected due to phys sel");
   fHistNEvents->GetXaxis()->SetBinLabel(5,"n. rejected due to not reco vertex");
   fHistNEvents->GetXaxis()->SetBinLabel(6,"n. rejected for contr vertex");
-  fHistNEvents->GetXaxis()->SetBinLabel(7,"n. rejected for vertex out of accept");
-  fHistNEvents->GetXaxis()->SetBinLabel(8,"n. rejected for pileup events");
-  fHistNEvents->GetXaxis()->SetBinLabel(9,"no. of out centrality events");
+  fHistNEvents->GetXaxis()->SetBinLabel(7,"n. rejected for zSPD-zTrack");
+  fHistNEvents->GetXaxis()->SetBinLabel(8,"n. rejected for vertex out of accept");
+  fHistNEvents->GetXaxis()->SetBinLabel(9,"n. rejected for pileup");
+  fHistNEvents->GetXaxis()->SetBinLabel(10,"no. of out centrality events");
   
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
   fHistNEvents->SetMinimum(0);
@@ -615,14 +616,15 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     if(fAnalysisCuts->IsEventRejectedDuePhysicsSelection()) fHistNEvents->Fill(3);
   }else{
     if(fAnalysisCuts->IsEventRejectedDueToCentrality()){
-      fHistNEvents->Fill(8);
+      fHistNEvents->Fill(9);
     }else{
-      if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex() || fAnalysisCuts->IsEventRejectedDueToVertexContributors()){
+      if(fAnalysisCuts->IsEventRejectedDueToBadPrimaryVertex()){
 	if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex())fHistNEvents->Fill(4);
 	if(fAnalysisCuts->IsEventRejectedDueToVertexContributors())fHistNEvents->Fill(5);
+	if(fAnalysisCuts->IsEventRejectedDueToBadTrackVertex())fHistNEvents->Fill(6);
       }else{
-	if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion())fHistNEvents->Fill(6);
-	else if(fAnalysisCuts->IsEventRejectedDueToPileup())fHistNEvents->Fill(7);
+	if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion())fHistNEvents->Fill(7);
+	else if(fAnalysisCuts->IsEventRejectedDueToPileup())fHistNEvents->Fill(8);
       }
     }
   }
@@ -1450,7 +1452,10 @@ void AliAnalysisTaskCombinHF::DoMixingWithPools(Int_t poolIndex){
           pz[2] = trK2->Pz();
           Double_t massKK=ComputeInvMassKK(trK,trK2);
           Double_t deltaMass=massKK-TDatabasePDG::Instance()->GetParticle(333)->Mass();
-          if(chargeK2*chargeK<0 && TMath::Abs(deltaMass)<fPhiMassCut){
+          Double_t cos1=CosPiKPhiRFrame(trK,trK2,trPi1);
+          Double_t kincutPiKPhi=TMath::Abs(cos1*cos1*cos1);
+          Double_t cosPiDsLabFrame=CosPiDsLabFrame(trK,trK2,trPi1);
+          if(chargeK2*chargeK<0 && TMath::Abs(deltaMass)<fPhiMassCut && kincutPiKPhi>fCutCos3PiKPhiRFrame && cosPiDsLabFrame<fCutCosPiDsLabFrame){
             FillMEHistos(431,3,tmpRD3,px,py,pz,pdgs);
           }
         }
@@ -1527,6 +1532,79 @@ Double_t AliAnalysisTaskCombinHF::ComputeInvMassKK(TLorentzVector* tr1, TLorentz
   Double_t m2=etot*etot-(pxtot*pxtot+pytot*pytot+pztot*pztot);
   return TMath::Sqrt(m2);
 }
+
+//----------------------------------------------------------------------
+Double_t AliAnalysisTaskCombinHF::CosPiKPhiRFrame(TLorentzVector* dauK1, TLorentzVector* dauK2, TLorentzVector* daupi) const {
+  /// computes cosine of angle between pi and K in the phi rest frame
+  
+  Double_t massK=TDatabasePDG::Instance()->GetParticle(321)->Mass();
+  Double_t masspi=TDatabasePDG::Instance()->GetParticle(211)->Mass();
+
+  Double_t eK1 = TMath::Sqrt(massK*massK+dauK1->P()*dauK1->P());
+  Double_t eK2 = TMath::Sqrt(massK*massK+dauK2->P()*dauK2->P());
+  Double_t epi = TMath::Sqrt(masspi*masspi+daupi->P()*daupi->P());
+
+  Double_t ePhi=eK1+eK2;
+  Double_t pxPhi=dauK1->Px()+dauK2->Px();
+  Double_t pyPhi=dauK1->Py()+dauK2->Py();
+  Double_t pzPhi=dauK1->Pz()+dauK2->Pz();
+  Double_t bxPhi=pxPhi/ePhi;
+  Double_t byPhi=pyPhi/ePhi;
+  Double_t bzPhi=pzPhi/ePhi;
+  
+  TVector3 vecK1Phiframe;
+  TLorentzVector vecK1(dauK1->Px(),dauK1->Py(),dauK1->Pz(),eK1);
+  vecK1.Boost(-bxPhi,-byPhi,-bzPhi);
+  vecK1.Boost(vecK1Phiframe);
+  vecK1Phiframe=vecK1.BoostVector();
+  
+  TVector3 vecPiPhiframe;
+  TLorentzVector vecPi(daupi->Px(),daupi->Py(),daupi->Pz(),epi);
+  vecPi.Boost(-bxPhi,-byPhi,-bzPhi);
+  vecPi.Boost(vecPiPhiframe);
+  vecPiPhiframe=vecPi.BoostVector();
+  
+  Double_t innera=vecPiPhiframe.Dot(vecK1Phiframe);
+  Double_t norm1a=TMath::Sqrt(vecPiPhiframe.Dot(vecPiPhiframe));
+  Double_t norm2a=TMath::Sqrt(vecK1Phiframe.Dot(vecK1Phiframe));
+  Double_t cosK1PhiFrame=innera/(norm1a*norm2a);
+  
+  return cosK1PhiFrame;
+}
+
+//----------------------------------------------------------------------
+Double_t AliAnalysisTaskCombinHF::CosPiDsLabFrame(TLorentzVector* dauK1, TLorentzVector* dauK2, TLorentzVector* daupi) const {
+  /// computes cosine of angle between pi and Ds in the Ds rest frame
+  
+  Double_t massDs=TDatabasePDG::Instance()->GetParticle(431)->Mass();
+  Double_t masspi=TDatabasePDG::Instance()->GetParticle(211)->Mass();
+
+  Double_t pxD=dauK1->Px()+dauK2->Px()+daupi->Px();
+  Double_t pyD=dauK1->Px()+dauK2->Px()+daupi->Px();
+  Double_t pzD=dauK1->Px()+dauK2->Px()+daupi->Px();
+  Double_t pD=TMath::Sqrt(pxD*pxD+pyD*pyD+pzD*pzD);
+  Double_t eD=TMath::Sqrt(massDs*massDs+pD*pD);
+  Double_t epi = TMath::Sqrt(masspi*masspi+daupi->P()*daupi->P());
+  Double_t bxD=pxD/eD;
+  Double_t byD=pyD/eD;
+  Double_t bzD=pzD/eD;
+  
+  TVector3 piDsframe;
+  TLorentzVector vecPi(daupi->Px(),daupi->Py(),daupi->Pz(),epi);
+  vecPi.Boost(-bxD,-byD,-bzD);
+  vecPi.Boost(piDsframe);
+  piDsframe=vecPi.BoostVector();
+  
+  TVector3 vecDs(pxD,pyD,pzD);
+  
+  Double_t inner=vecDs.Dot(piDsframe);
+  Double_t norm1=TMath::Sqrt(vecDs.Dot(vecDs));
+  Double_t norm2=TMath::Sqrt(piDsframe.Dot(piDsframe));
+  Double_t cosPiDsFrame=inner/(norm1*norm2);
+  
+  return cosPiDsFrame;
+}
+
 //_________________________________________________________________
 void AliAnalysisTaskCombinHF::Terminate(Option_t */*option*/)
 {

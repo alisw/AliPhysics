@@ -134,6 +134,8 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fEmbeddedEventUsed(true),
   fCentMin(-999),
   fCentMax(-999),
+  fRandomRejectionFactor(1.),
+  fRandom(0),
   fAutoConfigurePtHardBins(false),
   fAutoConfigureBasePath(""),
   fAutoConfigureTrainTypePath(""),
@@ -204,6 +206,8 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fEmbeddedEventUsed(true),
   fCentMin(-999),
   fCentMax(-999),
+  fRandomRejectionFactor(1.),
+  fRandom(0),
   fAutoConfigurePtHardBins(false),
   fAutoConfigureBasePath("alien:///alice/cern.ch/user/a/alitrain/"),
   fAutoConfigureTrainTypePath("PWGJE/Jets_EMC_PbPb/"),
@@ -360,6 +364,8 @@ void AliAnalysisTaskEmcalEmbeddingHelper::RetrieveTaskPropertiesFromYAMLConfig()
   res = fYAMLConfig.GetProperty("autoConfigureBasePath", fAutoConfigureBasePath, false);
   res = fYAMLConfig.GetProperty("autoConfigureTrainTypePath", fAutoConfigureTrainTypePath, false);
   res = fYAMLConfig.GetProperty("autoConfigureIdentifier", fAutoConfigureIdentifier, false);
+  // Random rejection 
+  res = fYAMLConfig.GetProperty("randomRejectionFactor", fRandomRejectionFactor, false);
 }
 
 /**
@@ -1213,7 +1219,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
     // Internal event cut statistics
     histName = "fHistInternalEventCutsStats";
     histTitle = "Number of events to pass each cut";
-    binLabels = {"passedEventCuts", "centrality", "passedAllCuts"};
+    binLabels = {"passedEventCuts", "centrality", "passedRandomRejection", "passedAllCuts"};
     auto histInternalEventCutsStats = fHistManager.CreateTH1(histName, histTitle, binLabels.size(), 0, binLabels.size());
     // Set label names
     for (unsigned int i = 1; i <= binLabels.size(); i++) {
@@ -1601,7 +1607,17 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserExec(Option_t*)
           fHistManager.FillTH1("fHistInternalEventCutsStats", "centrality", 1);
         }
       }
-
+      // Now reject events based on a rejection factor if set, where the fraction of events 
+      // kept is equal to 1 / fRandomRejectionFactor
+      if(fRandomRejectionFactor > 1.) {
+        Double_t rand = fRandom.Rndm();
+        if(fRandomRejectionFactor > 1./rand) {
+          fEmbeddedEventUsed = false;
+        }
+        else {
+          fHistManager.FillTH1("fHistInternalEventCutsStats", "passedRandomRejection", 1);
+        }
+      }
       if (fEmbeddedEventUsed) {
         // Record all cuts passed
         fHistManager.FillTH1("fHistInternalEventCutsStats", "passedAllCuts", 1);
@@ -1805,6 +1821,7 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) 
   tempSS << "Pt hard jet pt rejection factor: " << fPtHardJetPtRejectionFactor << "\n";
   tempSS << "Z vertex cut: " << fZVertexCut << "\n";
   tempSS << "Max difference between internal and embedded vertex: " << fMaxVertexDist << "\n";
+  tempSS << "Random event rejection factor: " << fRandomRejectionFactor << "\n";
 
   if (includeFileList) {
     tempSS << "\nFiles to embed:\n";

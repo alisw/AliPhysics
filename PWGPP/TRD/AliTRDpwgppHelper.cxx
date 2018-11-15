@@ -29,12 +29,12 @@
 
 #include "AliTRDpwgppHelper.h"
 
-#include "info/AliTRDtrackInfo.h"
-#include "info/AliTRDv0Info.h"
-#include "info/AliTRDchmbInfo.h"
-#include "info/AliTRDtriggerInfo.h"
-#include "info/AliTRDeventInfo.h"
-#include "info/AliTRDeventCuts.h"
+#include "AliTRDtrackInfo.h"
+#include "AliTRDv0Info.h"
+#include "AliTRDchmbInfo.h"
+#include "AliTRDtriggerInfo.h"
+#include "AliTRDeventInfo.h"
+#include "AliTRDeventCuts.h"
 #include "AliTRDinfoGen.h"
 #include "AliTRDcheckESD.h"
 #include "AliTRDcheckDET.h"

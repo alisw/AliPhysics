@@ -24,7 +24,7 @@
 //  Modified by: Jihye Song (jihye.song@cern.ch)
 //  Last Modified by: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //
-//  Last Modified Date: 2018/01/29
+//  Last Modified Date: 2018/09/01
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -47,6 +47,7 @@
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
+#include "AliAnalysisUtils.h"
 
 
 #include "AliESDEvent.h"
@@ -93,6 +94,9 @@ AliXiStarpp13TeV::AliXiStarpp13TeV():
     fEC(0x0),
     fEvt(0x0),
     fDevelopeMode(0),
+    fHMTrigger(0),
+    fPIDOption(0),
+    fSetSystematic(0),
 
     fTempStruct(0x0),
     fZvertexBins(0),
@@ -152,7 +156,7 @@ AliXiStarpp13TeV::AliXiStarpp13TeV():
 
 }
 //________________________________________________________________________
-AliXiStarpp13TeV::AliXiStarpp13TeV(const char *name, Bool_t AODdecision,  Bool_t MCdecision, Int_t CutListOption, Bool_t DevelopmentMode)
+AliXiStarpp13TeV::AliXiStarpp13TeV(const char *name, Bool_t AODdecision,  Bool_t MCdecision, Int_t CutListOption, Bool_t DevelopmentMode, Bool_t HMTrigger, Bool_t PIDOption, Bool_t SetSystematic)
     : AliAnalysisTaskSE(name),
       fname(name),
       fESD(0x0),
@@ -162,6 +166,8 @@ AliXiStarpp13TeV::AliXiStarpp13TeV(const char *name, Bool_t AODdecision,  Bool_t
       fEC(0x0),
       fEvt(0x0),
       fDevelopeMode(DevelopmentMode),
+      fHMTrigger(HMTrigger),
+      fPIDOption(PIDOption),
       fTempStruct(0x0),
       fZvertexBins(0),
       fEventsToMix(0),
@@ -177,6 +183,7 @@ AliXiStarpp13TeV::AliXiStarpp13TeV(const char *name, Bool_t AODdecision,  Bool_t
       fTrueMassK(0),
       fTrueMassLam(0),
       fTrueMassXi(0),
+      fSetSystematic(SetSystematic),
 
       fESDTrack4(0x0),
       fXiTrack(0x0),
@@ -384,8 +391,8 @@ void AliXiStarpp13TeV::XiStarInit()
     else fEventsToMix = 10; // original 40 jisong
 
     // multiplicity edges for event mixing bins
-    fMultLimits[0]=0, fMultLimits[1]=5, fMultLimits[2]=10, fMultLimits[3]=15, fMultLimits[4]=20, fMultLimits[5]=25;
-    fMultLimits[6]=30, fMultLimits[7]=35, fMultLimits[8]=40, fMultLimits[9]=45, fMultLimits[10]=50, fMultLimits[11]=150;
+    fMultLimits[0]=0, fMultLimits[1]=1, fMultLimits[2]=5, fMultLimits[3]=10, fMultLimits[4]=15, fMultLimits[5]=20;
+    fMultLimits[6]=30, fMultLimits[7]=40, fMultLimits[8]=50, fMultLimits[9]=70, fMultLimits[10]=100, fMultLimits[11]=150;
 
 
     fEC = new AliXiStarpp13TeVEventCollection **[fZvertexBins];
@@ -472,8 +479,6 @@ void AliXiStarpp13TeV::XiStarInit()
     fCutValues[20][12] = 0.985;
 
 
-
-
     // PDG mass values
     fTrueMassPr=.93827, fTrueMassPi=.13957, fTrueMassK=.493677, fTrueMassLam=1.11568, fTrueMassXi=1.32171;
 
@@ -537,15 +542,19 @@ void AliXiStarpp13TeV::UserCreateOutputObjects()
     fMultDist5->GetXaxis()->SetTitle("Multiplicity");
     fOutputList->Add(fMultDist5);
 
-    TH1F *fMultDist_pp = new TH1F("fMultDist_pp","Multiplicity Distribution of PP",1000,0,1000);
-    fMultDist_pp->GetXaxis()->SetTitle("Multiplicity");
+    TH1F *fMultDist_pp = new TH1F("fMultDist_pp","Multiplicity Distribution of PP",300,0,300);
+    fMultDist_pp->GetXaxis()->SetTitle("Multiplicity Percentile");
     fOutputList->Add(fMultDist_pp);
 
+    TH1F *fMultDist_pp_afterPileUpReject = new TH1F("fMultDist_pp_afterPileUpReject","Multiplicity Distribution of PP",300,0,300);
+    fMultDist_pp_afterPileUpReject->GetXaxis()->SetTitle("Multiplicity Percentile");
+    fOutputList->Add(fMultDist_pp_afterPileUpReject);
 
     TH1F *hEventSelecInfo = new TH1F("hEventSelecInfo","hEventSelecInfo",10,0,10);
     fOutputList->Add(hEventSelecInfo);
     hEventSelecInfo->GetXaxis()->SetBinLabel(2,"kMB");
     hEventSelecInfo->GetXaxis()->SetBinLabel(3,"kINT7");
+    hEventSelecInfo->GetXaxis()->SetBinLabel(4,"kHighMultV0");
     hEventSelecInfo->GetXaxis()->SetBinLabel(8,"kAny");
     hEventSelecInfo->GetXaxis()->SetBinLabel(9,"kAndMB");
 
@@ -811,25 +820,24 @@ void AliXiStarpp13TeV::UserCreateOutputObjects()
     fOutputList->Add(fQATPCNSigPion2);
 
 
-
     for(Int_t cv=0; cv<kNCutVariations; cv++) {
-
+        if(!fSetSystematic && cv > 0) continue;
         if(cv==0) {
             TString *nameXi=new TString("fXi_");
             TString *nameXibar=new TString("fXibar_");
             *nameXi += cv;
             *nameXibar += cv;
-            CutVar[cv].fXi = new TH3F(nameXi->Data(),"Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.2,1.4);
+            CutVar[cv].fXi = new TH3F(nameXi->Data(),"Invariant Mass Distribution", 100,0,10, 100,0,100,200,1.2,1.4);
             fOutputList->Add(CutVar[cv].fXi);
-            CutVar[cv].fXibar = new TH3F(nameXibar->Data(),"Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.2,1.4);
+            CutVar[cv].fXibar = new TH3F(nameXibar->Data(),"Invariant Mass Distribution", 100,0,10, 100,0,100,200,1.2,1.4);
             fOutputList->Add(CutVar[cv].fXibar);
             //
             TString *nameMCrecXi = new TString("fMCrecXi_");
             TString *nameMCrecXibar = new TString("fMCrecXibar_");
             *nameMCrecXi += cv;
             *nameMCrecXibar += cv;
-            CutVar[cv].fMCrecXi = new TH3F(nameMCrecXi->Data(),"Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.2,1.4);
-            CutVar[cv].fMCrecXibar = new TH3F(nameMCrecXibar->Data(),"Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.2,1.4);
+            CutVar[cv].fMCrecXi = new TH3F(nameMCrecXi->Data(),"Invariant Mass Distribution", 100,0,10, 100,0,100,200,1.2,1.4);
+            CutVar[cv].fMCrecXibar = new TH3F(nameMCrecXibar->Data(),"Invariant Mass Distribution", 100,0,10, 100,0,100,200,1.2,1.4);
             fOutputList->Add(CutVar[cv].fMCrecXi);
             fOutputList->Add(CutVar[cv].fMCrecXibar);
         }
@@ -851,14 +859,14 @@ void AliXiStarpp13TeV::UserCreateOutputObjects()
         *nameXiPlusPiPlusbkg += cv;
         *nameXiPlusPiMinusbkg += cv;
         // Change the Y Info to multiplicity -2,2, 200 -> 0,100,100
-        CutVar[cv].fXiMinusPiPlus  = new TH3F(nameXiMinusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,100,1.4,1.6);
-        CutVar[cv].fXiMinusPiMinus = new TH3F(nameXiMinusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,100,1.4,1.6);
-        CutVar[cv].fXiPlusPiPlus   = new TH3F(nameXiPlusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,100,1.4,1.6);
-        CutVar[cv].fXiPlusPiMinus  = new TH3F(nameXiPlusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,100,1.4,1.6);
-        CutVar[cv].fXiMinusPiPlusbkg  = new TH3F(nameXiMinusPiPlusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,100,1.4,1.6);
-        CutVar[cv].fXiMinusPiMinusbkg = new TH3F(nameXiMinusPiMinusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,100,1.4,1.6);
-        CutVar[cv].fXiPlusPiPlusbkg   = new TH3F(nameXiPlusPiPlusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,100,1.4,1.6);
-        CutVar[cv].fXiPlusPiMinusbkg  = new TH3F(nameXiPlusPiMinusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,100,1.4,1.6);
+        CutVar[cv].fXiMinusPiPlus  = new TH3F(nameXiMinusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,200,1.4,1.6);
+        CutVar[cv].fXiMinusPiMinus = new TH3F(nameXiMinusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,200,1.4,1.6);
+        CutVar[cv].fXiPlusPiPlus   = new TH3F(nameXiPlusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,200,1.4,1.6);
+        CutVar[cv].fXiPlusPiMinus  = new TH3F(nameXiPlusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,200,1.4,1.6);
+        CutVar[cv].fXiMinusPiPlusbkg  = new TH3F(nameXiMinusPiPlusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,200,1.4,1.6);
+        CutVar[cv].fXiMinusPiMinusbkg = new TH3F(nameXiMinusPiMinusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,200,1.4,1.6);
+        CutVar[cv].fXiPlusPiPlusbkg   = new TH3F(nameXiPlusPiPlusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,200,1.4,1.6);
+        CutVar[cv].fXiPlusPiMinusbkg  = new TH3F(nameXiPlusPiMinusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100,200,1.4,1.6);
 
         fOutputList->Add(CutVar[cv].fXiMinusPiPlus);
         fOutputList->Add(CutVar[cv].fXiMinusPiMinus);
@@ -875,8 +883,8 @@ void AliXiStarpp13TeV::UserCreateOutputObjects()
         TString *nameMCrecXiPlusPiMinus = new TString("fMCrecXiPlusPiMinus_");
         *nameMCrecXiMinusPiPlus += cv;
         *nameMCrecXiPlusPiMinus += cv;
-        CutVar[cv].fMCrecXiMinusPiPlus  = new TH3F(nameMCrecXiMinusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.4,1.6);
-        CutVar[cv].fMCrecXiPlusPiMinus  = new TH3F(nameMCrecXiPlusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.4,1.6);
+        CutVar[cv].fMCrecXiMinusPiPlus  = new TH3F(nameMCrecXiMinusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10, 100,0,100,200,1.4,1.6);
+        CutVar[cv].fMCrecXiPlusPiMinus  = new TH3F(nameMCrecXiPlusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10, 100,0,100,200,1.4,1.6);
         fOutputList->Add(CutVar[cv].fMCrecXiMinusPiPlus);
         fOutputList->Add(CutVar[cv].fMCrecXiPlusPiMinus);
         //
@@ -892,25 +900,25 @@ void AliXiStarpp13TeV::UserCreateOutputObjects()
 
     //
 
-    TH3F *fMCinputTotalXiStar1 = new TH3F("fMCinputTotalXiStar1","Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.4,1.6);
-    TH3F *fMCinputTotalXiStarbar1 = new TH3F("fMCinputTotalXiStarbar1","Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.4,1.6);
+    TH3F *fMCinputTotalXiStar1 = new TH3F("fMCinputTotalXiStar1","Invariant Mass Distribution", 100,0,10, 100,0,100,200,1.4,1.6);
+    TH3F *fMCinputTotalXiStarbar1 = new TH3F("fMCinputTotalXiStarbar1","Invariant Mass Distribution", 100,0,10, 100,0,100,200,1.4,1.6);
     fOutputList->Add(fMCinputTotalXiStar1);
     fOutputList->Add(fMCinputTotalXiStarbar1);
 
-    TH3F *fMCinputTotalXi1 = new TH3F("fMCinputTotalXi1","Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.2,1.4);
-    TH3F *fMCinputTotalXibar1 = new TH3F("fMCinputTotalXibar1","Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.2,1.4);
+    TH3F *fMCinputTotalXi1 = new TH3F("fMCinputTotalXi1","Invariant Mass Distribution", 100,0,10, 100,0,100,200,1.2,1.4);
+    TH3F *fMCinputTotalXibar1 = new TH3F("fMCinputTotalXibar1","Invariant Mass Distribution", 100,0,10, 100,0,100,200,1.2,1.4);
     fOutputList->Add(fMCinputTotalXi1);
     fOutputList->Add(fMCinputTotalXibar1);
 
     //
 
-    TH3F *fMCinputTotalXiStar3 = new TH3F("fMCinputTotalXiStar3","Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.4,1.6);
-    TH3F *fMCinputTotalXiStarbar3 = new TH3F("fMCinputTotalXiStarbar3","Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.4,1.6);
+    TH3F *fMCinputTotalXiStar3 = new TH3F("fMCinputTotalXiStar3","Invariant Mass Distribution", 100,0,10, 100,0,100,200,1.4,1.6);
+    TH3F *fMCinputTotalXiStarbar3 = new TH3F("fMCinputTotalXiStarbar3","Invariant Mass Distribution", 100,0,10, 100,0,100,200,1.4,1.6);
     fOutputList->Add(fMCinputTotalXiStar3);
     fOutputList->Add(fMCinputTotalXiStarbar3);
 
-    TH3F *fMCinputTotalXi3 = new TH3F("fMCinputTotalXi3","Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.2,1.4);
-    TH3F *fMCinputTotalXibar3 = new TH3F("fMCinputTotalXibar3","Invariant Mass Distribution", 100,0,10, 100,0,100,100,1.2,1.4);
+    TH3F *fMCinputTotalXi3 = new TH3F("fMCinputTotalXi3","Invariant Mass Distribution", 100,0,10, 100,0,100,200,1.2,1.4);
+    TH3F *fMCinputTotalXibar3 = new TH3F("fMCinputTotalXibar3","Invariant Mass Distribution", 100,0,10, 100,0,100,200,1.2,1.4);
     fOutputList->Add(fMCinputTotalXi3);
     fOutputList->Add(fMCinputTotalXibar3);
 
@@ -923,13 +931,10 @@ void AliXiStarpp13TeV::UserCreateOutputObjects()
        hV0AC->GetXaxis()->SetTitle("V0A-V0C(ns)");
        hV0AC->GetYaxis()->SetTitle("V0A+V0C(ns)");
        fOutputList->Add(hV0AC);
-
-
        TH2F *hV0ACkMB = new TH2F("hV0ACkMB","V0A and V0C timing kMB select",500,-20,30,800,-30,50);
        hV0ACkMB->GetXaxis()->SetTitle("V0A-V0C(ns)");
        hV0ACkMB->GetYaxis()->SetTitle("V0A+V0C(ns)");
        fOutputList->Add(hV0ACkMB);
-
        TH1F *hV0Info = new TH1F("hV0Info","V0 Fired information",5,0,5);
        fOutputList->Add(hV0Info);
     */
@@ -971,6 +976,9 @@ void AliXiStarpp13TeV::Exec(Option_t *)
     Bool_t isSelectedkINT7 =(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7);
     if(isSelectedkINT7) ((TH1F*)fOutputList->FindObject("hEventSelecInfo"))->Fill(2);
 
+    Bool_t isSelectedkHighMultV0 =(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kHighMultV0);
+    if(isSelectedkHighMultV0) ((TH1F*)fOutputList->FindObject("hEventSelecInfo"))->Fill(3);
+
     Bool_t isSelectedkAny =(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kAny));
     if(isSelectedkAny) ((TH1F*)fOutputList->FindObject("hEventSelecInfo"))->Fill(7);
 
@@ -979,9 +987,17 @@ void AliXiStarpp13TeV::Exec(Option_t *)
     if(isSelected) ((TH1F*)fOutputList->FindObject("hEventSelecInfo"))->Fill(8);
 
 
-    if(!isSelectedkINT7) {
-        if(fDevelopeMode)std::cout<<"Event Rejected"<<std::endl;
-        return;
+    if(fHMTrigger){
+        if(!isSelectedkHighMultV0) {
+            if(fDevelopeMode)std::cout<<"Event Rejected: No kHighMultV0 trigger"<<std::endl;
+            return;
+        }
+    }
+    else{
+        if(!isSelectedkINT7) {
+            if(fDevelopeMode)std::cout<<"Event Rejected: No kINT7 trigger"<<std::endl;
+            return;
+        }
     }
 
 
@@ -993,7 +1009,7 @@ void AliXiStarpp13TeV::Exec(Option_t *)
 
     // ---- AliPIDResponse ---- //
     fPIDResponse = inputHandler->GetPIDResponse();
-    double nSigTPCPID = 100.0;
+    double nSigTPCPID = 3.0;
 
 
     // TClonesArray *mcArray       = 0x0;
@@ -1015,7 +1031,7 @@ void AliXiStarpp13TeV::Exec(Option_t *)
     Double_t xiStarMom;
     Double_t xiMass, xiStarMass;
     Double_t xiPt, xiStarPt;
-    Double_t xiY, xiStarY, MCxiY, MCxiStarY,MCxiYout, MCxiStarYout ;
+    Double_t xiY, xiStarY, MCxiStarY;
     Double_t xiCharge;
     Double_t decayLengthXY;
     Double_t pDaughter1[3];
@@ -1053,15 +1069,26 @@ void AliXiStarpp13TeV::Exec(Option_t *)
     // Before the AliMulti
     ((TH1F*)fOutputList->FindObject("hNumberOfEvent"))->Fill(0);
 
-    // ESDs
+    // IncompleteDAQ Check
+    if(fESD->IsIncompleteDAQ()) {
+        if(fDevelopeMode)std::cout << "Reject: IsIncompleteDAQ" << std::endl;;
+        return;
+    }
+
+    // Muliplicity Check
     AliMultSelection *MultSelection = (AliMultSelection*) fESD->FindListObject("MultSelection");
     Float_t lPerc = 300; //nonsense
 
     if(MultSelection) {
+        if(!(MultSelection->IsEventSelected())){
+            AliInfo("This event is not selected: AliMultSelection");
+            return;  
+        } 
         lPerc = MultSelection->GetMultiplicityPercentile("V0M");
         //Quality check
-        Int_t lEvSelCode = MultSelection->GetEvSelCode();
-        if(lEvSelCode > 0) lPerc = lEvSelCode; //disregard!
+        //Int_t lEvSelCode = MultSelection->GetEvSelCode();
+        //if(lEvSelCode > 0) lPerc = lEvSelCode; //disregard!
+        //if(lEvSelCode == 0) lPerc = lEvSelCode + 300;
     }
     else {
         //If this happens, re-check if AliMultSelectionTask ran before your task!
@@ -1069,6 +1096,15 @@ void AliXiStarpp13TeV::Exec(Option_t *)
     }
     if(fDevelopeMode)std::cout << "Multiplicity: " << lPerc << std::endl;
     ((TH1F*)fOutputList->FindObject("fMultDist_pp"))->Fill(lPerc);
+
+
+    // Pile-Up rejection
+    AliAnalysisUtils * utils = new AliAnalysisUtils();
+    if (utils->IsPileUpSPD(fESD)) {
+        if(fDevelopeMode)std::cout << "Reject: IsPileUpSPD" << std::endl;;
+        return;
+    }
+    ((TH1F*)fOutputList->FindObject("fMultDist_pp_afterPileUpReject"))->Fill(lPerc);
 
     // After the AliMulti
     ((TH1F*)fOutputList->FindObject("hNumberOfEvent"))->Fill(1);
@@ -1122,12 +1158,44 @@ void AliXiStarpp13TeV::Exec(Option_t *)
         }
     }
 
-    // Vertex systematic study default : 10 , loose : 11 , tight : 9
+    // Vertex systematic study default : 10 , loose : 11 , tight : 9 (cm)
     if(fabs(primaryVtx[2]) > 10.) return; // Z-Vertex Cut
     ((TH1F*)fOutputList->FindObject("hNumberOfEvent"))->Fill(3);
 
+    /*
+    // Vertex z position different cut
+    Double_t            vzTrk = 1000000.0;
+    Double_t            vzSPD = 1000000.0;
+    const AliESDVertex *vTrk  = fESD->GetPrimaryVertexTracks();
+    const AliESDVertex *vSPD  = fESD->GetPrimaryVertexSPD();
+    if(!vTrk || !vSPD) return;
+    if(vTrk) vzTrk = TMath::Abs(vTrk->GetZ());
+    if(vSPD) vzSPD = TMath::Abs(vSPD->GetZ());
+
+    Float_t fMaxZDifferenceSPDTrack = 0.5; // cm
+    if(TMath::Abs(vzTrk - vzSPD)>fMaxZDifferenceSPDTrack) {
+        if(fDevelopeMode)std::cout << "Reject: z position difference: " << TMath::Abs(vzTrk - vzSPD) << std::endl;;
+        return;
+    }
+
+    // Vertex z resolution cut
+    if(!vSPD || !vSPD->GetStatus()) return;
+    Float_t fMaxZResolutionSPD = 0.02; // cm
+    if(vSPD->IsFromVertexerZ() && vSPD->GetZRes()>=fMaxZResolutionSPD){
+        if(fDevelopeMode)std::cout << "Reject: Vertex z resolution: " << vSPD->GetZRes() << std::endl;;
+        return;  
+    } 
+    */
+
     ((TH1F*)fOutputList->FindObject("fMultDist2"))->Fill(fESD->GetNumberOfTracks());
-    if(fESD->IsPileupFromSPD()) return; // Reject Pile-up events
+    
+    /* // Disabled due to this is implimented in AliMultSelection::IsEventSelected()
+    // INEL > 0 Check
+    Int_t nINEL=AliESDtrackCuts::GetReferenceMultiplicity(fESD,AliESDtrackCuts::kTracklets,1.,0.);   
+    if(nINEL<1){        
+        if(fDevelopeMode)std::cout << "Reject: INEL < 1" << std::endl;;
+        return;
+    }*/
 
     ((TH1F*)fOutputList->FindObject("fMultDist3"))->Fill(fESD->GetNumberOfTracks());
     ((TH3F*)fOutputList->FindObject("fVertexDist3"))->Fill(primaryVtx[0], primaryVtx[1], primaryVtx[2]);
@@ -1137,7 +1205,7 @@ void AliXiStarpp13TeV::Exec(Option_t *)
     // multiplicity
 
     if(PrimaryVertexESD->GetNContributors() >= 1) ((TH1F*)fOutputList->FindObject("fMultDist4"))->Fill(fESD->GetNumberOfTracks());
-    if(PrimaryVertexESD->GetNContributors() < 1) return; // Enrico cut
+    if(PrimaryVertexESD->GetNContributors() < 1) return; // Enrico cut // 2018.08.15 -> looks like INEL cut...? right? (blim)
     ((TH1F*)fOutputList->FindObject("hNumberOfEvent"))->Fill(5);
 
     if(fDevelopeMode)std::cout << "There are " << fESD->GetNumberOfTracks() << " tracks in this event" << std::endl;;
@@ -1232,12 +1300,13 @@ void AliXiStarpp13TeV::Exec(Option_t *)
 
     // set Multiplicity bin
     for(Int_t i=0; i<fMultBins; i++) {
-        if( ( myTracks > fMultLimits[i]) && ( myTracks <= fMultLimits[i+1]) ) {
+        if( ( lPerc > fMultLimits[i]) && ( lPerc <= fMultLimits[i+1]) ) {
             mBin=i;
             break;
         }
     }
 
+    if(fDevelopeMode)std::cout<<"01"<<std::endl;
 
     ////////////////////////////////////
     // Add event to buffer if > 0 tracks
@@ -1300,10 +1369,10 @@ void AliXiStarpp13TeV::Exec(Option_t *)
 
 
             if(mcInputTrackXiStar->GetPdgCode() == +kXiStarCode) {
-                ((TH3F*)fOutputList->FindObject("fMCinputTotalXiStar3"))->Fill(mcInputTrackXiStar->Pt(), mcInputTrackXiStar->Y(), mcInputTrackXiStar->GetCalcMass());
+                ((TH3F*)fOutputList->FindObject("fMCinputTotalXiStar3"))->Fill(mcInputTrackXiStar->Pt(), lPerc, mcInputTrackXiStar->GetCalcMass());
             }
             else {
-                ((TH3F*)fOutputList->FindObject("fMCinputTotalXiStarbar3"))->Fill(mcInputTrackXiStar->Pt(), mcInputTrackXiStar->Y(), mcInputTrackXiStar->GetCalcMass());
+                ((TH3F*)fOutputList->FindObject("fMCinputTotalXiStarbar3"))->Fill(mcInputTrackXiStar->Pt(), lPerc, mcInputTrackXiStar->GetCalcMass());
 
             }
 
@@ -1313,7 +1382,7 @@ void AliXiStarpp13TeV::Exec(Option_t *)
     ((TH1F*)fOutputList->FindObject("hNumberOfEvent"))->Fill(7);
     ////////////////////////////////////////////////
     // Reconstruction
-
+    if(fDevelopeMode)std::cout<<"02"<<std::endl;
     for(Int_t i=0; i<fESD->GetNumberOfCascades(); i++) {
 
         AliESDcascade *Xicandidate = fESD->GetCascade(i);
@@ -1420,9 +1489,10 @@ void AliXiStarpp13TeV::Exec(Option_t *)
         if(fTPCNSigPion2>-nSigTPCPID&&fTPCNSigPion2<nSigTPCPID)((TH2F*)fOutputList->FindObject("hdEdxPion2After"))->Fill(fTPCPIDMomXi[2],fNSigTPCXi[2]);
 
 
-        /* TPC PID OFF */   //    if(fTPCNSigProton<-nSigTPCPID||fTPCNSigProton>nSigTPCPID) continue; // PID for proton
-        /* TPC PID OFF */   //   if(fTPCNSigPion1<-nSigTPCPID||fTPCNSigPion1>nSigTPCPID) continue; // PID for 1st pion
-        /* TPC PID OFF */   //   if(fTPCNSigPion2<-nSigTPCPID||fTPCNSigPion2>nSigTPCPID) continue; // PID for 2nd pion
+        // PID Cuts
+        if(fPIDOption && abs(fTPCNSigProton)>nSigTPCPID) continue; // PID for proton
+        if(fPIDOption && abs(fTPCNSigPion1)>nSigTPCPID) continue; // PID for 1st pion
+        if(fPIDOption && abs(fTPCNSigPion2)>nSigTPCPID) continue; // PID for 2nd pion
 
         ((TH1F*)fOutputList->FindObject("fQATPCNSigProton"))->Fill(fTPCNSigProton);
         ((TH1F*)fOutputList->FindObject("fQATPCNSigPion1"))->Fill(fTPCNSigPion1);
@@ -1532,7 +1602,7 @@ void AliXiStarpp13TeV::Exec(Option_t *)
 
 
 
-
+        if(fDevelopeMode)std::cout<<"001"<<std::endl;
         // MC associaton
         mcXiFilled = kFALSE;
         if(fMCcase ) {
@@ -1587,7 +1657,7 @@ void AliXiStarpp13TeV::Exec(Option_t *)
 
         fXiTrack->Set(xiVtx, xiP, fCovMatrix, Short_t(xiCharge));
 
-
+        if(fDevelopeMode)std::cout<<"002"<<std::endl;
 
         //////////////////////////////////////////////////////////
         // Reconstruct Xi(1530)
@@ -1672,7 +1742,7 @@ void AliXiStarpp13TeV::Exec(Option_t *)
                 ((TH1F*)fOutputList->FindObject("fQAXiStarYDist"))->Fill(xiStarY);
 
                 for(int cv=0; cv<kNCutVariations; cv++) {
-
+                    if(!fSetSystematic && cv > 0) continue;
 
                     if(fDecayParameters[0] < fCutValues[cv][0]) continue;// Nclus proton
                     if(fDecayParameters[1] < fCutValues[cv][1]) continue;// Nclus pion first
@@ -1826,53 +1896,42 @@ Double_t AliXiStarpp13TeV::LinearPropagateToDCA(AliESDtrack *v, AliESDtrack *t, 
     //--------------------------------------------------------------------
     // This function returns the DCA between the V0 and the track
     //--------------------------------------------------------------------
-
     Double_t alpha=t->GetAlpha(), cs1=TMath::Cos(alpha), sn1=TMath::Sin(alpha);
     Double_t r[3]; t->GetXYZ(r);
     Double_t x1=r[0], y1=r[1], z1=r[2];
     Double_t p[3]; t->GetPxPyPz(p);
     Double_t px1=p[0], py1=p[1], pz1=p[2];
-
     Double_t x2[3]={0};
     Double_t p2[3]={0};
     Double_t vx2,vy2,vz2;     // position and momentum of V0
     Double_t px2,py2,pz2;
-
     v->GetXYZ(x2);
     v->GetPxPyPz(p2);
     vx2=x2[0], vy2=x2[1], vz2=x2[2];
     px2=p2[0], py2=p2[1], pz2=p2[2];
-
     // calculation dca
-
     Double_t dd= Det(vx2-x1,vy2-y1,vz2-z1,px1,py1,pz1,px2,py2,pz2);
     Double_t ax= Det(py1,pz1,py2,pz2);
     Double_t ay=-Det(px1,pz1,px2,pz2);
     Double_t az= Det(px1,py1,px2,py2);
-
     Double_t dca=TMath::Abs(dd)/TMath::Sqrt(ax*ax + ay*ay + az*az);
-
     //points of the DCA
     Double_t t1 = Det(vx2-x1,vy2-y1,vz2-z1,px2,py2,pz2,ax,ay,az)/
     Det(px1,py1,pz1,px2,py2,pz2,ax,ay,az);
-
     x1 += px1*t1; y1 += py1*t1; //z1 += pz1*t1;
-
-
     //propagate track to the points of DCA
-
     x1=x1*cs1 + y1*sn1;
     if (!t->PropagateTo(x1,b)) {
         Error("PropagateToDCA","Propagation failed !");
         return 1.e+33;
     }
-
     return dca;
 }
 */
 
 //________________________________________________________________________
-Double_t AliXiStarpp13TeV::Det(Double_t a00, Double_t a01, Double_t a10, Double_t a11) const {// Taken from AliCascadeVertexer
+Double_t AliXiStarpp13TeV::Det(Double_t a00, Double_t a01, Double_t a10, Double_t a11) const {
+// Taken from AliCascadeVertexer
     //--------------------------------------------------------------------
     // This function calculates locally a 2x2 determinant
     //--------------------------------------------------------------------
@@ -1881,13 +1940,10 @@ Double_t AliXiStarpp13TeV::Det(Double_t a00, Double_t a01, Double_t a10, Double_
 //________________________________________________________________________
 Double_t AliXiStarpp13TeV::Det(Double_t a00,Double_t a01,Double_t a02,
                                Double_t a10,Double_t a11,Double_t a12,
-                               Double_t a20,Double_t a21,Double_t a22) const {// Taken from AliCascadeVertexer
+                               Double_t a20,Double_t a21,Double_t a22) const {
+                               // Taken from AliCascadeVertexer
     //--------------------------------------------------------------------
     // This function calculates locally a 3x3 determinant
     //--------------------------------------------------------------------
     return  a00*Det(a11,a12,a21,a22)-a01*Det(a10,a12,a20,a22)+a02*Det(a10,a11,a20,a21);
 }
-//________________________________________________________________________
-
-
-

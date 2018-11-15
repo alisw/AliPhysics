@@ -2108,12 +2108,21 @@ TH1F *hMeanVxOCDB = new TH1F("hMeanVxOCDB","Diamond OCDB Vx",nRuns,0.,nRuns);
 
 gStyle->SetOptStat(0);
 TCanvas *cVertexDisto;
+    Double_t ymin = 0.;
+    Double_t ymax = 0.;
+
 if(hMeanVx->GetEntries()>0){
     cVertexDisto=new TCanvas("cVertexDisto","cVertexDisto",1200,800);
     cVertexDisto->Divide(3,2);
     cVertexDisto->cd(1);
-    hMeanVx->SetMinimum(0.065);
-    hMeanVx->SetMaximum(0.085);
+    //
+    ymin = hMeanVx->GetMinimum();
+    ymax = hMeanVx->GetMaximum();
+    hMeanVx->SetMinimum(0.9*ymin);
+    hMeanVx->SetMaximum(1.1*ymax);
+    //
+//    hMeanVx->SetMinimum(0.065);
+//    hMeanVx->SetMaximum(0.085);
     hMeanVx->GetYaxis()->SetTitle("Vertex X coordinate");
     hMeanVx->GetXaxis()->SetTitle("run number");
     hMeanVx->Draw();
@@ -2132,14 +2141,20 @@ if(hMeanVx->GetEntries()>0){
     legVtx->Draw();
     
     cVertexDisto->cd(2);
-        if(hMeanVySPD->GetEntries()>0){  // pp runs
-            hMeanVy->SetMinimum(0.32);
-            hMeanVy->SetMaximum(0.38);
-        }
-        else{                       // PbPb runs
-            hMeanVy->SetMinimum(0.32);
-            hMeanVy->SetMaximum(0.38);
-        }
+    ymin = hMeanVy->GetMinimum();
+    ymax = hMeanVy->GetMaximum();
+    hMeanVy->SetMinimum(0.9*ymin);
+    hMeanVy->SetMaximum(1.1*ymax);
+
+//        if(hMeanVySPD->GetEntries()>0){  // pp runs
+
+//            hMeanVy->SetMinimum(0.32);
+//            hMeanVy->SetMaximum(0.38);
+//        }
+//        else{                       // PbPb runs
+//            hMeanVy->SetMinimum(0.32);
+//            hMeanVy->SetMaximum(0.38);
+//        }
     hMeanVy->GetYaxis()->SetTitle("Vertex Y coordinate");
     hMeanVy->GetXaxis()->SetTitle("run number");
     hMeanVy->Draw();
@@ -2148,8 +2163,12 @@ if(hMeanVx->GetEntries()>0){
     legVtx->Draw();
 
     cVertexDisto->cd(3);
-        hMeanVz->SetMinimum(-8.);
-        hMeanVz->SetMaximum(8.);
+    ymin = hMeanVz->GetMinimum();
+    ymax = hMeanVz->GetMaximum();
+    hMeanVz->SetMinimum(0.9*ymin);
+    hMeanVz->SetMaximum(1.1*ymax);
+//        hMeanVz->SetMinimum(-8.);
+//        hMeanVz->SetMaximum(8.);
         hMeanVz->GetYaxis()->SetTitle("Vertex Z coordinate");
         hMeanVz->GetXaxis()->SetTitle("run number");
         hMeanVz->Draw();
@@ -2169,7 +2188,7 @@ if(hMeanVx->GetEntries()>0){
 
     cVertexDisto->cd(5);
         hSigmaVy->SetMinimum(0.);
-        hSigmaVy->SetMaximum(0.2);
+        hSigmaVy->SetMaximum(0.1);
         hSigmaVy->GetYaxis()->SetTitle("sigma on y coordinate");
         hSigmaVy->GetXaxis()->SetTitle("run number");
         hSigmaVy->Draw();

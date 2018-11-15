@@ -179,12 +179,11 @@ void AliAnalysisTaskTransTask::UserExec(Option_t *)
 
   // AD
   AliVAD *dataAD = dynamic_cast<AliVAD*>(fAOD->GetADData());
-  if(!dataAD) {PostData(2, fOutputList); return;}
-  fCounter->Fill(7);    
-
-  fADADecision = dataAD->GetADADecision();
-  fADCDecision = dataAD->GetADCDecision();
-
+  if(dataAD) {
+    fCounter->Fill(7);    
+    fADADecision = dataAD->GetADADecision();
+    fADCDecision = dataAD->GetADCDecision();
+    }
   // fill the tree
   fAnaTree->Fill();
   

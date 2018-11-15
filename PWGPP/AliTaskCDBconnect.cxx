@@ -20,6 +20,7 @@
 #include <TRegexp.h>
 #include <TGeoGlobalMagField.h>
 #include "TGeoManager.h"
+#include <TInterpreter.h>
  
 #include "AliAnalysisManager.h"
 #include "AliGeomManager.h"
@@ -136,6 +137,10 @@ void AliTaskCDBconnect::InitGRP()
   if (cdb->GetRun()!=fRun) {    
     fLock = cdb->SetLock(kFALSE,fLock);
     cdb->SetRun(fRun);
+    if (gSystem->AccessPathName("localOCDBaccessConfig.C", kFileExists)==0) {
+      // If we are using a specific storage override, this is the place to load it
+      gInterpreter->ProcessLine("localOCDBaccessConfig()");
+    }
     fLock = cdb->SetLock(kTRUE,fLock);
   }
   if (gSystem->AccessPathName("OCDB.root",kFileExists)==0) cdb->SetSnapshotMode("OCDB.root"); 
@@ -216,4 +221,23 @@ void AliTaskCDBconnect::SetSpecificStorage(const char* calibType, const char* db
   if (subVersion<0) subVersion = -1;
   nmpath->SetUniqueID((UInt_t(version+1)<<16)+UInt_t(subVersion+1));
   fSpecCDBUri.AddLast(nmpath);
+}
+
+//______________________________________________________________________________
+AliTaskCDBconnect* AliTaskCDBconnect::AddTaskCDBconnect(const char* path/*="raw://"*/, Int_t run) {
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddTaskCDBconnect", "No analysis manager to connect to.");
+    return NULL;
+  }
+  AliTaskCDBconnect *task= new AliTaskCDBconnect("CDBconnect", path, run);
+  mgr->AddTask(task);
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+  mgr->ConnectInput(task,  0, cinput1);
+  return task;
+}
+
+//______________________________________________________________________________
+AliTaskCDBconnect* AliTaskCDBconnect::AddTaskCDBconnect() {
+  return AliTaskCDBconnect::AddTaskCDBconnect("cvmfs://");
 }

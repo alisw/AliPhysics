@@ -155,7 +155,7 @@ Int_t MakeTrendingITSQA(TString qafilename,       // full path of the QA output;
     }
 
 //    char defaultQAoutput[30]="QAresults.root";
-    char * treePostFileName="trending.root";
+    const char *treePostFileName = "trending.root";
 
     if (IsOnGrid) TGrid::Connect("alien://");
     TFile * fin = TFile::Open(qafilename,"r");

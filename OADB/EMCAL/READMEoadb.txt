@@ -17,6 +17,8 @@ Furthermore, the "export" command should be used in addition to adding the path 
 export ALICE_DATA=/path/to/my/local/oadb
 ~~~
 
+The code for the creation of the OADB files as well as for bookkeeping of input files can be found in the following repository: https://gitlab.cern.ch/alice-EMC/EMCCalib
+
 In addition, a short history of changes to the files in EOS will be listed here:
 
 - 20180213: Moved all files to EOS.
@@ -31,5 +33,29 @@ In addition, a short history of changes to the files in EOS will be listed here:
 - 20180406: Update of EMCALBadChannels.root with new maps for LHC17i,l and additional bad channels for LHC16h,i,j,l,q,t
 - 20180423: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with LHC17i time calibrations
 - 20180504: Update of EMCALBadChannels.root with additional bad channels for LHC17n
+- 20180524: Update of EMCALBadChannels.root with new maps for LHC17r
+- 20180530: Update of EMCALTimeCalib.root with updated LHC17m and LHC17k time calibrations
+- 20180531: Update of EMCALTimeL1PhaseCalib.root with two missing runs from LHC16kv time calibration
+- 20180606: Update of EMCALBadChannels.root with new maps for LHC17c,f
+- 20180612: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with LHC17l time calibrations, as well as final calibrations for LHC16i and LHC16j
+- 20180615: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with increased run range for LHC17l
+- 20180618: Update of EMCALBadChannels.root with runwise maps for LHC18d (except for runs 286129 286350 286341 286313)
+- 20180621: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with LHC16o and LHC16p time calibrations
+- 20180622: Update of EMCALBadChannels.root with additional cells for LHC16j and LHC16l and a fix for the LHC16h maps which were not properly added in OADB before
+- 20180706: Update of EMCALBadChannels.root with additional cells for LHC16p and update of EMCALTimeCalib.root with updated calibrations for LHC17o
+- 20180711: Update of EMCALBadChannels.root with new maps for LHC18d
+- 20180711: Update of EMCALBadChannels.root with new maps for LHC17d, LHC18e, LHC18f as well as updates to the maps of LHC17m and LHC17o
+- 20180713: Update of EMCALTimeCalib.root with fixed run range for period LHC16i
+- 20180713: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with LHC18d time calibrations
+- 20180718: Update of EMCALBadChannels.root with new maps for LHC18b and LHC18c including special maps for some runs
+- 20180730: Update of EMCALBadChannels.root with new maps for LHC16f (nominal and lowB) as well as LHC16g
+- 20180713: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with updated LHC16h time calibrations
+- 20180821: Update of EMCALBadChannels.root with additional cells for LHC17l,m,o
+- 20180910: Update of EMCalBadChannels.root with additional cells for LHC16f, LHC16i, LHC17g and LHC18b
+- 20180911: Recreated and updated EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with updated LHC16kl and new LHC17r time calibrations
+- 20180924: Update of EMCALBadChannels.root with additional cells for LHC16k and LHC16o
+- 20181011: Update of EMCALBadChannels.root with additional cells for LHC17h and LHC17i
+- 20181106: Update of EMCALRecalib.root with the change: "from run 295275 no calibration is applied to SMs 17/18 since the online voltages were updated"
+- 20181013: Update of EMCALBadChannels.root with new maps for LHC18g, LHC18h, LHC18i
 
 */

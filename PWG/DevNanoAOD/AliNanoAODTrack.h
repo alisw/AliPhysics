@@ -121,7 +121,7 @@ public:
 
 
   // Bool_t IsOn(Int_t mask) const {return (fFlags&mask)>0;}
-  ULong_t GetStatus() const { AliFatal("Not implemented"); return 0; }
+  ULong64_t GetStatus() const { AliFatal("Not implemented"); return 0; }
   // ULong_t GetFlags() const { return fFlags; }
 
   //  Int_t   GetID() const { return (Int_t)fID; } // FIXME another int (short)

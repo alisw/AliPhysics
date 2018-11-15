@@ -15,7 +15,7 @@ AliAnalysisTask *AddTaskJCIaaEPMulti(TString taskName, int EPdetID, TString card
 		TString mytaskName = Form("%s_EP%.0f_%.0f",taskName.Data(),EPbins[i],EPbins[i+1]);
 		myTask[i] = new AliJCIaaEPTask(mytaskName.Data(),"JOD");
 		myTask[i]->SetDebugLevel(5);
-		myTask[i]->SetJFlowBaseTaskName("JFlowBaseTask");  // AliJCatalystTask has this name hard coded
+		myTask[i]->SetJFlowBaseTaskName("JFlowBaseTask");  // AliJFlowBaseTask has this name hard coded
 		myTask[i]->SetEPDector( EPdetID );
 		myTask[i]->SetEPmin(EPbins[i]);
 		myTask[i]->SetEPmax(EPbins[i+1]);

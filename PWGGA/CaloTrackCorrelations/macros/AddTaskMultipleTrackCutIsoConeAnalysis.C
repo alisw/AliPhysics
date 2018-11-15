@@ -14,13 +14,19 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
+// Root
 #include <TString.h>
 #include <TSystem.h>
 #include <TROOT.h>
 
+// Analysis
+#include "AliIsolationCut.h"
 #include "AliAnalysisTaskCaloTrackCorrelation.h"
+
+// Macros
 #include "AddTaskCaloTrackCorrBase.C"
 #include "ConfigureCaloTrackCorrAnalysis.C"
+#include "GetAlienGlobalProductionVariables.C"
 
 #endif
 
@@ -33,6 +39,7 @@
 /// \param simulation : A bool identifying the data as simulation
 /// \param year: The year the data was taken, used to configure some histograms
 /// \param col: A string with the colliding system
+/// \param period: A string with data period 
 /// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
 /// \param gloCutsString : A string with list of global cuts/parameters (activate pile-up ...)
@@ -57,8 +64,9 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMultipleTrackCutIsoConeAnalysis
 (
  TString  calorimeter   = "EMCAL", // "DCAL", "PHOS"
  Bool_t   simulation    = kFALSE,
- Int_t    year          = 2011,
- TString  col           = "pp",
+ Int_t    year          = -1,
+ TString  col           = "",
+ TString  period        = "",
  Int_t    rejectEMCTrig = 0,
  TString  clustersArray = "",
  TString  gloCutsString = "",
@@ -80,18 +88,35 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMultipleTrackCutIsoConeAnalysis
  const char *trigSuffix = "EMC7"
 )
 {
+  printf("AddTaskMultipleTrackCutIsoConeAnalysis::Start configuration\n");
+  
+#if defined(__CINT__)
+  
+  printf("AddTaskMultipleTrackCutIsoConeAnalysis::Load macros\n");
+  // Load macros
+  //
   // Load macros
   //
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/AddTaskCaloTrackCorrBase.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/ConfigureCaloTrackCorrAnalysis.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/GetAlienGlobalProductionVariables.C");
+
+#endif
+
+  // First check the ALIEN environment settings
+  //
+  GetAlienGlobalProductionVariables(simulation,col,period,year,kTRUE);
   
   // Init base task
   //
   AliAnalysisTaskCaloTrackCorrelation * task = AddTaskCaloTrackCorrBase
-  (calorimeter, simulation, year, col, rejectEMCTrig, clustersArray, gloCutsString,
+  (calorimeter, simulation, year, col, period, rejectEMCTrig, clustersArray, gloCutsString,
    calibrate, nonLinOn, minCen, maxCen, mixOn, outputfile, printSettings, debug, trigSuffix);
   
   if ( !task ) return NULL;
+  
+  // No need to continue configuration if event is not processed
+  if ( !task->GetAnalysisMaker()->IsEventProcessed() ) return task ;
   
   TList * anaList = task->GetAnalysisMaker()->GetListOfAnalysisContainers();
   printf("TList name: %s\n",anaList->GetName());
@@ -126,6 +151,8 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMultipleTrackCutIsoConeAnalysis
   ConfigureCaloTrackCorrAnalysis
   ( anaList, calorimeter, simulation, year, col, "QA_Charged", "", 
    -1, -1, -1, -1, -1, -1,-1,-1,0, printSettings, debug);
+  
+  printf("AddTaskMultipleTrackCutIsoConeAnalysis::End configuration\n");
   
   return task;
 }

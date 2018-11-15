@@ -223,7 +223,7 @@ void AliJIaaAnalysis::UserCreateOutputObjects(){
 	cout<< " -----" <<endl <<endl;
 
 	// Tell the correlation analysis to use the defined acceptance correction
-	fcorrelations->SetAcceptanceCorrection(fAcceptanceCorrection);
+	//fcorrelations->SetAcceptanceCorrection(fAcceptanceCorrection);
 	if(fcard->Get("UseZVertexBins") == 1){
 		fcorrelations->UseZVertexAcceptance(true);
 	}

@@ -242,6 +242,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetMinCrossedRowsTPCPtDep(const char *rows="");
   void SetMinRatioClsOverCrossRowsTPC(Float_t ratio=0.) {fCutRatioClsOverCrossRowsTPC = ratio;}
   void SetMinRatioSignalNOverCrossRowsTPC(Float_t ratio=0.) {fCutRatioSignalNOverCrossRowsTPC = ratio;}
+  void SetUseTPCtrackCutsOnThisDaughter(Bool_t flag=kTRUE) {fUseTPCtrackCutsOnThisDaughter=flag;}
 
   AliAODPidHF* GetPidHF() const {return fPidHF;}
   Float_t *GetPtBinLimits() const {return fPtBinLimits;}
@@ -287,6 +288,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   const char* GetMinCrossedRowsTPCPtDep() const {return fCutMinCrossedRowsTPCPtDep;}
   Float_t GetMinRatioClsOverCrossRowsTPC() const {return fCutRatioClsOverCrossRowsTPC;}
   Float_t GetMinRatioSignalNOverCrossRowsTPC() const {return fCutRatioSignalNOverCrossRowsTPC;}
+  Bool_t GetUseTPCtrackCutsOnThisDaughter() const {return fUseTPCtrackCutsOnThisDaughter;}
   Bool_t IsSelected(TObject *obj) {return IsSelected(obj,AliRDHFCuts::kAll);}
   Bool_t IsSelected(TList *list) {if(!list) return kTRUE; return kFALSE;}
   Int_t  IsEventSelectedInCentrality(AliVEvent *event);
@@ -321,6 +323,9 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t IsEventRejectedDueToVertexContributors() const {
     return fEvRejectionBits&(1<<kTooFewVtxContrib);
   }
+  Bool_t IsEventRejectedDueToMissingSPDVertex() const {
+    return fEvRejectionBits&(1<<kBadSPDVertex);
+  }
   Bool_t IsEventRejectedDueToZVertexOutsideFiducialRegion() const {
     return fEvRejectionBits&(1<<kZVtxOutFid);
   }
@@ -345,7 +350,13 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t IsEventRejectedDuePhysicsSelection() const {
     return fEvRejectionBits&(1<<kPhysicsSelection);
   }
-
+  Bool_t IsEventRejectedDueToBadPrimaryVertex() const{
+    if(!IsEventRejectedDueToCentrality() && !IsEventRejectedDueToCentralityFlattening() && !IsEventRejectedDueToTrigger() && !IsEventRejectedDuePhysicsSelection() && !IsEventRejectedDueToTRKV0CentralityCorrel()){
+      if(IsEventRejectedDueToBadTrackVertex() || IsEventRejectedDueToNotRecoVertex() || IsEventRejectedDueToVertexContributors()) return kTRUE;
+      if((fCutOnzVertexSPD>1 || fApplyZcutOnSPDvtx) && IsEventRejectedDueToMissingSPDVertex()) return kTRUE;
+    }
+    return kFALSE;
+  }
 
   void SetFixRefs(Bool_t fix=kTRUE) {fFixRefs=fix; return;}
   void SetUsePhysicsSelection(Bool_t use=kTRUE){fUsePhysicsSelection=use; return;}
@@ -385,6 +396,7 @@ class AliRDHFCuts : public AliAnalysisCuts
     fCutGeoNcrNclFractionNcr=fncr; fCutGeoNcrNclFractionNcl=fncl;
   }
 
+  void SetZcutOnSPDvtx() { fApplyZcutOnSPDvtx=kTRUE; }
 
  protected:
 
@@ -468,10 +480,11 @@ class AliRDHFCuts : public AliAnalysisCuts
   Double_t fCutGeoNcrNclFractionNcr; /// 4th parameter of GeoNcrNcl cut
   Double_t fCutGeoNcrNclFractionNcl; /// 5th parameter of GeoNcrNcl cut
   Bool_t fUseV0ANDSelectionOffline; ///flag to apply V0AND selection offline
-  
+  Bool_t fUseTPCtrackCutsOnThisDaughter; ///flag to apply TPC track quality cuts on specific D-meson daughter (used for different strategies for soft pion and D0daughters from Dstar decay)
+  Bool_t fApplyZcutOnSPDvtx; //flag to apply the cut on |Zvtx| > X cm using the z coordinate of the SPD vertex
 
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCuts,41);  /// base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,43);  /// base class for cuts on AOD reconstructed heavy-flavour decays
   /// \endcond
 };
 

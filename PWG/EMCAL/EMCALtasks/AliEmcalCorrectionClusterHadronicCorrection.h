@@ -58,6 +58,7 @@ protected:
   Double_t               fPhiMatch;                  ///< phi match value (pp=0.050)
   Double_t               fEtaMatch;                  ///< eta match value (pp=0.025)
   Bool_t                 fDoTrackClus;               ///< loop over tracks first
+  Bool_t                 fDoMomDepMatching;          ///< set the values fPhiMatch and fEtaMatch depending on the track momentum
   Double_t               fHadCorr;                   ///< hadronic correction (fraction)
   Double_t               fEexclCell;                 ///< energy/cell that we cannot subtract from the clusters
   Bool_t                 fPlotOversubtractionHistograms; ///< compute and plot oversubtracted energy from embedded/signal matches (embedding only)

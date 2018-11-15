@@ -62,11 +62,15 @@ public:
 
   void SetSwapPatches(Bool_t doSwap) { fSwapPatches = doSwap; }
 
+  void AddRequiredTriggerOverlap(const char *trigger);
+  void AddExcludedTriggerOverlap(const char *trigger);
+
   static AliAnalysisTaskEmcalRecalcPatchesRef *AddTaskEmcalRecalcPatches(const char *suffix);
 
 protected:
   virtual void CreateUserObjects() {}
   virtual void CreateUserHistos();
+  virtual bool IsUserEventSelected();
   virtual bool Run();
   virtual void UserFillHistosAfterEventSelection();
   std::vector<const AliEMCALTriggerPatchInfo *> SelectAllPatchesByType(const TClonesArray &patches, EPatchType_t patchtype) const;
@@ -80,6 +84,8 @@ private:
   Bool_t                fEnableSumw2;         ///< Enable sum of weights
   TArrayI               fOnlineThresholds;    ///< Online thresholds
   Bool_t                fSwapPatches;         ///< Look explicitly for the wrong patches
+  TObjArray             fRequiredOverlaps;    ///< Add option to require overlap with certain triggers
+  TObjArray             fExcludedOverlaps;    ///< Add option to exclude overlap with certain triggers
 
   AliAnalysisTaskEmcalRecalcPatchesRef(const AliAnalysisTaskEmcalRecalcPatchesRef &);
   AliAnalysisTaskEmcalRecalcPatchesRef &operator=(const AliAnalysisTaskEmcalRecalcPatchesRef &);

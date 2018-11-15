@@ -41,7 +41,7 @@ public:
   /// \param title The title with which to give the output
   /// \param nbins The number of bins in each direction of , and q
   ///
-  AliFemtoCorrFctn3DLCMSPosQuad(const char* name, const int nbins, const float QHi);
+  AliFemtoCorrFctn3DLCMSPosQuad(const TString &name, const int nbins, const float QHi);
 
   /// Copy Constructor
   AliFemtoCorrFctn3DLCMSPosQuad(const AliFemtoCorrFctn3DLCMSPosQuad& aCorrFctn);
@@ -77,5 +77,8 @@ inline AliFemtoCorrFctn* AliFemtoCorrFctn3DLCMSPosQuad::Clone() const
 {
   return new AliFemtoCorrFctn3DLCMSPosQuad(*this);
 }
+
+inline void AliFemtoCorrFctn3DLCMSPosQuad::Finish()
+{}
 
 #endif

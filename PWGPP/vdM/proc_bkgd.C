@@ -1,5 +1,6 @@
 // -*- C++ -*-
 
+#include <TFile.h>
 #include <TGraphErrors.h>
 #include <TCanvas.h>
 #include <TH1.h>

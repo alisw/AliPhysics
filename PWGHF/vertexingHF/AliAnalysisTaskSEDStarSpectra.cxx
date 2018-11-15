@@ -354,7 +354,8 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     Double_t arrayForSparse[3]={invMass,ptCand,impparXY};
     Double_t arrayForSparseTrue[3]={invMass,ptCand,trueImpParXY};
    
-  // set the D0 search window bin by bin - useful to calculate side band bkg
+  // set the D0 and D* search window  bin by bin - D* window useful to speed up the reconstruction and D0 window used *ONLY* to calculate side band bkg for the background subtraction methods, for the standard analysis the value in the cut file is considered
+    
     if (0<=Dstarpt && Dstarpt<0.5){
       if(fAnalysis==1){
 	fD0Window=0.035;
@@ -950,8 +951,7 @@ void AliAnalysisTaskSEDStarSpectra::FillSpectrum(AliAODRecoCascadeHF *part, Int_
   // D0 window
   Double_t mPDGD0=TDatabasePDG::Instance()->GetParticle(421)->Mass();
   Double_t invmassD0   = part->InvMassD0();  
-  if (TMath::Abs(invmassD0-mPDGD0)>fD0Window) return; 
-
+ 
 
   Int_t ptbin=cuts->PtBin(part->Pt());  
   Double_t pt = part->Pt();

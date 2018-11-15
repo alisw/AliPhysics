@@ -64,6 +64,7 @@ set(SRCS
       core/AliDielectronPID.cxx
       core/AliDielectronQnEPcorrection.cxx
       core/AliDielectronSignalMC.cxx
+      core/AliDielectronTMVACuts.cxx
       core/AliDielectronTrackCuts.cxx
       core/AliDielectronTrackRotator.cxx
       core/AliDielectronV0Cuts.cxx
@@ -102,7 +103,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(ROOT_DEPENDENCIES Core EG Gpad Graf Hist MathCore Matrix Minuit Net Physics RIO Tree)
+set(ROOT_DEPENDENCIES Core EG Gpad Graf Hist MathCore Matrix Minuit Net Physics RIO TMVA Tree)
 set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGflowTasks PWGflowBase PWGTRD STEERBase TRDbase )
 set(ALIPHYSICS_DEPENCIES PWGPPevcharQnInterface)
 set(LIBDEPS ${ALIPHYSICS_DEPENCIES} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})

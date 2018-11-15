@@ -104,6 +104,8 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     // FUnction to enable very detailed M02 distribution
     void SetEnableDetailedM02Distribtuon(Bool_t enableDetM02) { fDoDetailedM02          = enableDetM02                                                    ; }
 
+    void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
+
   protected:
     AliV0ReaderV1*          fV0Reader;                                          // basic photon Selection Task
     TString                 fV0ReaderName;
@@ -275,12 +277,13 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TTree*                  tBrokenFiles;                                       // tree for keeping track of broken files
     TObjString*             fFileNameBroken;                                    // string object for broken file name
     Bool_t                  fDoDetailedM02;                                     // detailed M02 distribution
+    Int_t                   fTrackMatcherRunningMode;                           // CaloTrackMatcher running mode
 
   private:
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 27);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 28);
 };
 
 #endif

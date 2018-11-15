@@ -1,6 +1,7 @@
 #ifndef ALIANALYSISTASKEFFCONTBF_H
 #define ALIANALYSISTASKEFFCONTBF_H
 
+
 // ---------------------------------------------------------------------
 //
 // Task for calculating the efficiency and contamination of the Balance 
@@ -84,6 +85,8 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
     fElectronRejectionMinPt  = minPt;
     fElectronRejectionMaxPt  = maxPt;
   }
+
+  void SetExcludeElectronsInMC()  {fExcludeElectronsInMC = kTRUE;}
   
   void SetUseParticleID(Bool_t usePID=kFALSE, AliPID::EParticleType partOfInterest = AliPID::kPion) {
     fUsePIDstrategy = usePID;
@@ -189,6 +192,10 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   TH2F        *fHistGeneratedPhiEtaPlusMinus;//!correction map for +- (generated)
   TH2F        *fHistSurvivedPhiEtaPlusMinus;//!correction map +- (survived)
 
+  // check pdg    
+  TH1F        *fHistPdgGen;
+  TH1F        *fHistPdgSurv;
+
   Bool_t  fUseCentrality;// Bool_t use centrality or not
   TString fCentralityEstimator;// "V0M","TRK","TKL","ZDC","FMD"
   Float_t fCentralityPercentileMin; // min centrality percentile 
@@ -198,7 +205,7 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   Bool_t fRejectLabelAboveThreshold;// 
   TString fGenToBeKept; // name of the generator that should be kept in the analysis (in case of rejection of injected signals)
   Bool_t fRejectCheckGenName; // Flag for using the rejection of injected signals on a track by track base (different cocktails with respect to fInjectedSignals) 
-
+  Bool_t fExcludeElectronsInMC;
   
   AliPIDResponse *fPIDResponse;     //! PID response object
   Bool_t   fElectronRejection;//flag to use electron rejection

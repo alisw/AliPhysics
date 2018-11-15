@@ -81,6 +81,12 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const AliFemtoModelCo
 }
 
 
+AliFemtoModelCorrFctnTrueQ3D&
+AliFemtoModelCorrFctnTrueQ3D::operator=(const AliFemtoModelCorrFctnTrueQ3D&)
+{
+  return *this;
+}
+
 AliFemtoModelCorrFctnTrueQ3D::~AliFemtoModelCorrFctnTrueQ3D()
 {
   delete fNumeratorGenerated;

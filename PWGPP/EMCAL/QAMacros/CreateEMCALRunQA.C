@@ -1433,7 +1433,7 @@ Int_t TrendingEMCALTree(Long_t RunId, TString fCalorimeter, TString system, TStr
       IM[ism]->Sumw2();
 
       TString projname = Form("SM_%d", ism);
-      MggSM[ism] = (TH1F *)IM[ism]->ProjectionY(projname.Data(), 2, 20, "") ; // MG modif
+      MggSM[ism] = (TH1F *)IM[ism]->ProjectionY(projname.Data(), 10, 50, "") ; // MG modif
 
       if(MggSM[ism]->GetEntries()>100){
 	fitMass->SetParameter(0, MggSM[ism]->GetBinContent(MggSM[ism]->GetMaximumBin()));
@@ -1483,7 +1483,7 @@ Int_t TrendingEMCALTree(Long_t RunId, TString fCalorimeter, TString system, TStr
 
     fhIM = (TH2F *)outputList->FindObject(fCalorimeter+"_hIM");
     fhIM->Sumw2();
-    fhMggEMCAL = (TH1F *)fhIM->ProjectionY("MggEMCAL", 2, 20, "") ; // to modify projection range
+    fhMggEMCAL = (TH1F *)fhIM->ProjectionY("MggEMCAL", 10, 50, "") ; // to modify projection range
 
     if(fhMggEMCAL->GetEntries()==0){
       Error(__FUNCTION__, "The Pi0 histogram in EMCal is empty !");  tree->Fill();
@@ -1548,7 +1548,7 @@ Int_t TrendingEMCALTree(Long_t RunId, TString fCalorimeter, TString system, TStr
       // if(!fhIMDCAL) continue;
       fhIMDCAL->Sumw2();
 
-      fhMggDCAL = (TH1F *)fhIMDCAL->ProjectionY("MggDCAL", 2, 20, "") ; // to modify projection range
+      fhMggDCAL = (TH1F *)fhIMDCAL->ProjectionY("MggDCAL", 10, 50, "") ; // to modify projection range
       if(fhMggDCAL->GetEntries()==0){
 	Error(__FUNCTION__, "The Pi0 histogram in DCal is empty !");  tree->Fill();
 	ret=-8;
@@ -1948,6 +1948,13 @@ Int_t TrendingEMCALTree(Long_t RunId, TString fCalorimeter, TString system, TStr
     cT->SaveAs(outfilenameT);
   if(SavePlots)
     cT->SaveAs(outfilename2T);
+
+    fout->cd();
+    fout->Cd(Form("%s/%s/%ld/%s/%s", period.Data(), pass.Data(), RunId, "RunLevelQA", fTrigger.Data()));
+
+
+     cT->Write();
+     delete cT;
   
  TString   outfilename7 =  QAPATH + "OccupancyMapTrigger" + fTrigger(r) + ".pdf" ;
  TString   outfilename8= QAPATH + "OccupancyMapTrigger" + fTrigger(r) + ".png" ;

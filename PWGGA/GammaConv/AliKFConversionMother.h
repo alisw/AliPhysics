@@ -4,7 +4,7 @@
  * See cxx source for full Copyright notice     */
 
 ////////////////////////////////////////////////
-//--------------------------------------------- 
+//---------------------------------------------
 // Class containing the aod information from conversions
 //---------------------------------------------
 ////////////////////////////////////////////////
@@ -17,17 +17,17 @@
 
 class AliKFConversionMother : public AliKFParticle {
 
- public: 
+ public:
 
   //Constructors
-  AliKFConversionMother();    
+  AliKFConversionMother();
   //AliKFConversionMother(AliKFParticle &kfparticle);
  // AliKFConversionMother(const AliKFParticle &d1,const AliKFParticle &d2);
   AliKFConversionMother(const AliKFConversionPhoton &d1,const AliKFConversionPhoton &d2);
 
 
   //Copy Constructor
-  AliKFConversionMother(const AliKFConversionMother & g);           
+  AliKFConversionMother(const AliKFConversionMother & g);
   //assignment operator
   AliKFConversionMother & operator = (const AliKFConversionMother & g);
 
@@ -55,13 +55,12 @@ class AliKFConversionMother : public AliKFParticle {
   Double_t Phi() const;
 
  private:
-
-    Int_t fLabel[2]; // Labels of two decay gammas
-    Int_t fMCLabel; // MC label
     Double_t fOpeningAngle; // of decay gammas
     Double_t fAlpha; // of the meson
+    Int_t fLabel[2]; // Labels of two decay gammas
+    Int_t fMCLabel; // MC label
 
-  ClassDef(AliKFConversionMother,1)
+  ClassDef(AliKFConversionMother,2)
 };
 
 

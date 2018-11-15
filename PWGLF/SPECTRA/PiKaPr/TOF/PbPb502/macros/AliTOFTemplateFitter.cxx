@@ -1,4 +1,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
+#include "AliTOFTemplateFitter.h"
+
+#include "TLatex.h"
 #include "TMath.h"
 #include "TSystem.h"
 #include <AliUtilTOFParams.h>
@@ -9,15 +12,14 @@
 #include <RooFitResult.h>
 #include <RooGaussianTail.h>
 #include <RooHistPdf.h>
+#include <RooPlot.h>
 #include <RooRealVar.h>
 #include <TCanvas.h>
 #include <TFile.h>
 #include <TFractionFitter.h>
 #include <TH1.h>
 #include <TH2.h>
-#include <TOFsignal.C>
 #include <TObjArray.h>
-#include <TPaveText.h>
 #include <UtilMessages.h>
 #include <UtilPlots.h>
 #ifdef USECDECONVOLUTION
@@ -37,31 +39,17 @@ using namespace RooFit;
 /// N. Jacazio,  nicolo.jacazio[AROBASe]bo.infn.it                        //
 ////////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////
+//Internal variables
 TCanvas* cFit = 0x0; //TCanvas of the single fit
-
-//_________________________________________________________________________________________________
-Double_t ComputeChi2(const TH1* hdata, const TH1* hfit, const Double_t xlow, const Double_t xhigh)
-{ //Macro to compute chi2
-  if (xhigh < xlow) {
-    Warningmsg("ComputeChi2", Form("Range for Chi2 not well defined [%f, %f]", xlow, xhigh));
-    return -1;
-  }
-  TH1* h1 = (TH1*)hdata->Clone("h1");
-  TH1* h2 = (TH1*)hfit->Clone("h2");
-  for (Int_t bin = 1; bin < h1->GetXaxis()->FindBin(xlow); bin++)
-    h1->SetBinContent(bin, 0);
-  for (Int_t bin = h1->GetXaxis()->FindBin(xlow) + 1; bin <= h1->GetNbinsX(); bin++)
-    h1->SetBinContent(bin, 0);
-  for (Int_t bin = 1; bin < h2->GetXaxis()->FindBin(xlow); bin++)
-    h2->SetBinContent(bin, 0);
-  for (Int_t bin = h2->GetXaxis()->FindBin(xlow) + 1; bin <= h2->GetNbinsX(); bin++)
-    h2->SetBinContent(bin, 0);
-
-  const Double_t chi2 = h1->Chi2Test(h2, "UUCHI2/NDF");
-  delete h1;
-  delete h2;
-  return chi2;
-}
+///////////////////////////////////////
+///Internal functions//
+///////////////////////
+//Function to create the standard fit canvas
+void CreateFitCanvas(TString tag);
+//Function to compute chi2
+Double_t ComputeChi2(const TH1* hdata, const TH1* hfit, const Double_t xlow, const Double_t xhigh);
+///////////////////////////////////////
 
 //_________________________________________________________________________________________________
 Bool_t PerformFitWithTFF(TH1F* hData, TObjArray* mc, Double_t* range, Double_t* fitrange, TArrayD& fraction, TArrayD& fractionErr, TObjArray*& prediction)
@@ -289,6 +277,9 @@ Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray* mc, Double_t* range, Double_
       f->GetRange(r[0], r[1]);
       Int_t n = f->GetNpar();
       Infomsgcolor("PerformFitWithRooFit", Form("Template function #%i/%i summary: name (%s)  first bin (%.3f) last bin (%.3f) #parameters %i", c + 1, ntemplates, f->GetName(), r[0], r[1], n), cyanTxt);
+    } else if (cname.BeginsWith("Roo")) {
+      templatetype[c] = 2;
+      Infomsgcolor("PerformFitWithRooFit", Form("Template Roo function #%i/%i summary: name (%s)", c + 1, ntemplates, mc->At(c)->GetName()), cyanTxt);
     } else
       Fatalmsg("PerformFitWithRooFit", Form("Input class %s for template %i is not recognized!", cname.Data(), c));
   }
@@ -301,13 +292,9 @@ Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray* mc, Double_t* range, Double_
     TLine linemax(maxx, 0, maxx, hData->GetMaximum());
     linemin.SetLineColor(kRed);
     linemax.SetLineColor(kRed);
-
-    if (cFit == 0x0) {
-      cFit = new TCanvas("TemplateRooFit", "Fit with roofit");
-    }
-    cFit->Clear();
-    cFit->Divide(2);
-
+    //
+    CreateFitCanvas("RooFit");
+    //
     cFit->cd(1);
     gPad->SetLogy();
     hData->DrawCopy()->GetXaxis()->SetRangeUser(minx, maxx);
@@ -359,7 +346,7 @@ Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray* mc, Double_t* range, Double_
         cFit->Update();
         gSystem->ProcessEvents();
       }
-    } else { //RooAbsPdf
+    } else if (templatetype[temp] == 1) { //TF1
       TF1* f = (TF1*)mc->At(temp);
       if (npar != f->GetNpar())
         Fatalmsg("PerformFitWithRooFit", "Different number of parameters");
@@ -382,7 +369,24 @@ Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray* mc, Double_t* range, Double_
         cFit->cd(2);
         f->DrawCopy("same");
       }
-    }
+    } else if (templatetype[temp] == 2) { //Roo function
+      TString cname = mc->At(temp)->ClassName();
+      if (cname.EqualTo("RooqGaussian")) {
+        ftemplates[temp] = new RooqGaussian((RooqGaussian*)mc->At(temp), x);
+        // ftemplates[temp] = new RooqGaussian(*(RooqGaussian*)mc->At(temp));
+        ftemplates[temp]->SetTitle(Form("Input template %i", temp));
+      } else
+        Fatalmsg("PerformFitWithRooFit", "Function not implemented");
+      if (showfit) {
+        RooPlot* pdfplot = x.frame();
+        ftemplates[temp]->plotOn(pdfplot);
+        cFit->cd(1);
+        pdfplot->Draw("same");
+        cFit->cd(2);
+        pdfplot->Draw("same");
+      }
+    } else
+      ::Fatal("PerformFitWithRooFit", "Template type undefined");
   }
   if (hData->Integral() < min) { //Check on data
     Warningmsg("PerformFitWithRooFit", Form("%s does NOT have sufficient entries (%.0f/%.0f) but it has %.0f entries", hData->GetName(), hData->Integral(), min, hData->GetEntries()));
@@ -452,9 +456,9 @@ Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray* mc, Double_t* range, Double_
       roohPdf[temp] = new RooHistPdf(Form("PDF%s", htemplates[temp]->GetName()), Form("PDF%s", htemplates[temp]->GetTitle()), x, *roohtemplates[temp]);
       break;
     }
-    case 1: {
+    case 1:
+    case 2:
       break;
-    }
     default:
       Fatalmsg("PerformFitWithRooFit", "Cannot find good histogram type");
       break;
@@ -522,14 +526,13 @@ Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray* mc, Double_t* range, Double_
     } else {
       for (Int_t temp = 0; temp < ntemplates; temp++) {
         switch ((templatetype[temp])) {
-        case 0: {
+        case 0:
           templist.add(*roohPdf[temp]);
           break;
-        }
-        case 1: {
+        case 1:
+        case 2:
           templist.add(*ftemplates[temp]);
           break;
-        }
         default:
           Fatalmsg("PerformFitWithRooFit", "Cannot find good histogram type");
           break;
@@ -564,15 +567,37 @@ Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray* mc, Double_t* range, Double_
     htemp->SetLineColor(kMagenta);
     htemp->Scale(normtoone ? hData->GetEntries() : hData->GetBinWidth(hData->GetNbinsX() / 2));
     prediction->Add(htemp);
-
+    //
+    currpad = gPad;
+    if (showfit) {
+      cFit->cd(3);
+      hData->DrawCopy()->GetXaxis()->SetRangeUser(minx, maxx);
+      htemp->Draw("same");
+    }
     //     convolution->plotOn(dataFrame, LineColor(kGreen));
     for (Int_t temp = 0; temp < ntemplates; temp++) {
+      if (!roohPdf[temp]) {
+        htemp = (TH1F*)ftemplates[temp]->createHistogram(x.GetName(), hData->GetNbinsX());
+        htemp->SetName(Form("roofitprediction%s%i", hData->GetName(), temp));
+        htemp->Scale((normtoone ? hData->GetEntries() : 1) * frac[temp]->getVal());
+        prediction->Add(htemp);
+        continue;
+      }
       //       convolution->plotOn(dataFrame, Components(*roohPdf[temp]), LineColor(htemplates[temp]->GetLineColor()));
+      Printf("Creating histogram from %s", roohPdf[temp]->GetName());
       htemp = (TH1F*)roohPdf[temp]->createHistogram(Form("roofitprediction%s%i", hData->GetName(), temp), x);
       htemp->SetTitle(Form("Fitted Template %i", temp));
       htemp->Scale((normtoone ? hData->GetEntries() : 1) * frac[temp]->getVal());
       htemp->SetLineColor(htemplates[temp]->GetLineColor());
       prediction->Add(htemp);
+      if (showfit)
+        htemp->Draw("same");
+    }
+    if (showfit) {
+      cFit->cd(3);
+      cFit->Flush();
+      cFit->Update();
+      gSystem->ProcessEvents();
     }
   }
 
@@ -589,6 +614,8 @@ Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray* mc, Double_t* range, Double_
   TString f;
 
   for (Int_t temp = 0; temp < ntemplates; temp++) {
+    if (!htemplates[temp])
+      continue;
     htemplates[temp]->SetLineStyle(2);
     htemplates[temp]->DrawCopy("same");
 
@@ -690,15 +717,13 @@ Bool_t PerformFitWithFunctions(TH1F* hData, TObjArray* func, TF1* funcsum, Doubl
     return kFALSE;
 
   TVirtualPad* currpad = gPad;
-  TCanvas* cFit = 0x0;
   if (showfit) { //TCanvas for debug purposes
     TLine* linemin = new TLine(minx, 0, minx, hData->GetMaximum());
     TLine* linemax = new TLine(maxx, 0, maxx, hData->GetMaximum());
     linemin->SetLineColor(kRed);
     linemax->SetLineColor(kRed);
 
-    cFit = new TCanvas("TemplateRooFit", "Fit with functions");
-    cFit->Divide(2);
+    CreateFitCanvas("Functions");
     cFit->cd(1);
     gPad->SetLogy();
     hData->DrawCopy()->GetXaxis()->SetRangeUser(minx, maxx);
@@ -974,4 +999,49 @@ Bool_t UseBinCounting(TH1F* hData, TObjArray* mc, Double_t* rangelol, TArrayD& f
     fractionErr[i] = 0;
   }
   return kFALSE;
+}
+
+////////////////////////////////
+///////////Internals////////////
+////////////////////////////////
+
+//_________________________________________________________________________________________________
+void CreateFitCanvas(TString tag)
+{
+  if (!cFit)
+    cFit = new TCanvas("cFit" + tag, "Fit with " + tag);
+  //
+  cFit->Clear();
+  cFit->Divide(3);
+  TLatex label;
+  cFit->cd(1);
+  label.DrawLatex(.9, .9, "Std.");
+  cFit->cd(2);
+  label.DrawLatex(.9, .9, "Std. Norm.");
+  cFit->cd(3);
+  label.DrawLatex(.9, .9, "Fit");
+}
+
+//_________________________________________________________________________________________________
+Double_t ComputeChi2(const TH1* hdata, const TH1* hfit, const Double_t xlow, const Double_t xhigh)
+{ //Macro to compute chi2
+  if (xhigh < xlow) {
+    Warningmsg("ComputeChi2", Form("Range for Chi2 not well defined [%f, %f]", xlow, xhigh));
+    return -1;
+  }
+  TH1* h1 = (TH1*)hdata->Clone("h1");
+  TH1* h2 = (TH1*)hfit->Clone("h2");
+  for (Int_t bin = 1; bin < h1->GetXaxis()->FindBin(xlow); bin++)
+    h1->SetBinContent(bin, 0);
+  for (Int_t bin = h1->GetXaxis()->FindBin(xlow) + 1; bin <= h1->GetNbinsX(); bin++)
+    h1->SetBinContent(bin, 0);
+  for (Int_t bin = 1; bin < h2->GetXaxis()->FindBin(xlow); bin++)
+    h2->SetBinContent(bin, 0);
+  for (Int_t bin = h2->GetXaxis()->FindBin(xlow) + 1; bin <= h2->GetNbinsX(); bin++)
+    h2->SetBinContent(bin, 0);
+
+  const Double_t chi2 = h1->Chi2Test(h2, "UUCHI2/NDF");
+  delete h1;
+  delete h2;
+  return chi2;
 }

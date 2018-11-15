@@ -42,6 +42,7 @@ public:
 
   // event selection
   void SetEventCuts(Double_t z = 10, Double_t r = 1, Double_t cL = 0, Double_t cH = 80, Double_t dZ = 0.1) {fdCutVertexZ = z; fdCutVertexR2 = r * r; fdCutCentLow = cL; fdCutCentHigh = cH; fdCutDeltaZMax = dZ;}
+  void SetUseMultiplicity(Bool_t val = kTRUE) {fbUseMultiplicity = val;}
 
   // mixed events
   void SetCorrelations(Bool_t val = kTRUE) {fbCorrelations = val;}
@@ -159,6 +160,7 @@ private:
   Double_t fdCutCentHigh; // [%] maximum centrality
   Double_t fdCutDeltaZMax; // [cm] maximum |Delta z| between nominal prim vtx and SPD vtx
   Double_t fdCentrality; //! [%] centrality
+  Bool_t fbUseMultiplicity; // switch for getting centrality from AliMultSelection instead of from AliCentrality
 
   // Mixed events parameters
   Bool_t fbCorrelations; // switch for V0-jet correlations
@@ -219,6 +221,7 @@ private:
   TH1D* fh1EventCent2Jets; //! number of events for different centralities
   TH1D* fh1EventCent2NoJets; //! number of events for different centralities
   TH2D* fh2EventCentTracks; //! number of tracks vs centrality
+  TH2D* fh2EventCentMult; //! reference multiplicity vs centrality
   TH1D* fh1VtxZ[fgkiNBinsCent]; //! z coordinate of the primary vertex
   TH1D* fh1VtxZME[fgkiNBinsCent]; //! z coordinate of the primary vertex for events used in mixed events
   TH2D* fh2VtxXY[fgkiNBinsCent]; //! xy coordinates of the primary vertex
@@ -468,7 +471,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 19) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 20) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif

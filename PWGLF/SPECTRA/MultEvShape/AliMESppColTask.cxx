@@ -141,8 +141,6 @@ void AliMESppColTask::UserExec(Option_t *opt)
 	vec_hNoEvts[1] = mult_comb08; // combined multiplicity with |eta| < 0.8
 	vec_hNoEvts[2] = directivity;
 	vec_hNoEvts[3] = sfer; 
-
-	
 	
 	// event multiplicity and shape for MC (from MC event)
 	Double_t MC_directivity_plus = -2;
@@ -164,6 +162,43 @@ void AliMESppColTask::UserExec(Option_t *opt)
 	
 	vec_hNoEvts[0] = 4.;
 	hNoEvts->Fill(vec_hNoEvts);
+	
+	//-------------------ESD Loop--------------------
+	AliMEStrackInfo *t(NULL), *tMC(NULL);
+  for(Int_t it(0); it<fTracks->GetEntries(); it++){
+    if(!(t = (AliMEStrackInfo*)fTracks->At(it))) continue;
+	 if( !(t->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
+	 if( TMath::Abs(t->Eta())> 0.8 ) continue;
+	 if( t->Pt()< 0.2 ) continue;
+	 if( HasMCdata() ){
+		if( !(tMC= (AliMEStrackInfo*)fMCtracks->At(t->GetLabel())) ) continue;
+	}
+	Double_t vec_hTrk[4];
+	THnSparseD *hTrk = (THnSparseD*)fHistosQA->At(145);
+	vec_hTrk[0]=mult_comb08;
+	vec_hTrk[1]=directivity;
+	vec_hTrk[2]=sfer;
+	vec_hTrk[3]=t->Pt();
+	
+	hTrk->Fill(vec_hTrk);
+  }
+	if( HasMCdata() ){
+	  for(Int_t it(0); it<fMCtracks->GetEntries(); it++){
+    	if(!(tMC = (AliMEStrackInfo*)fMCtracks->At(it))) continue;
+		if( !(tMC->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
+		if( TMath::Abs(tMC->Eta())> 0.8 ) continue;
+		if( tMC->Pt()< 0.2 ) continue;
+		Double_t vec_hMCTrk[4];
+		THnSparseD *hMCTrk = (THnSparseD*)fHistosQA->At(146);
+		vec_hMCTrk[0]=MC_mult_glob08;
+		vec_hMCTrk[1]=MC_directivity;
+		vec_hMCTrk[2]=MC_sfer;
+		vec_hMCTrk[3]=tMC->Pt();
+		hMCTrk->Fill(vec_hMCTrk);
+	  }
+	}
+	  //---------------end of ESD loop--------------------
+	
 	
 	
 	// ESD tracks
@@ -510,7 +545,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
               Double_t ptAs= associate->Pt();
               Double_t phiAs= associate->Phi();
               Double_t etaAs= associate->Eta();
-              Double_t dPhi(-999.), dEta(-999.), yy(-999.), yx(-999.);
+              Double_t dPhi(-999.), dEta(-999.);
               if(ptL>ptAs && jm>-1 && ptL>=1.0 && ptL<=2.0){                     
                 dPhi = RangePhi(phiL-phiAs);
                 dEta=etaL-etaAs;
@@ -561,7 +596,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
               Double_t ptAs= associate->Pt();
               Double_t phiAs= associate->Phi();
               Double_t etaAs= associate->Eta();
-              Double_t dPhi(-999.), dEta(-999.), yy(-999.), yx(-999.);
+              Double_t dPhi(-999.), dEta(-999.);
               if(ptL>ptAs && jm>-1 && ptL>=1.0 && ptL<=2.0){                     
                 dPhi = RangePhi(phiL-phiAs);
                 dEta=etaL-etaAs;
@@ -612,7 +647,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
               Double_t ptAs= associate->Pt();
               Double_t phiAs= associate->Phi();
               Double_t etaAs= associate->Eta();
-              Double_t dPhi(-999.), dEta(-999.), yy(-999.), yx(-999.);
+              Double_t dPhi(-999.), dEta(-999.);
               if(ptL>ptAs && jm>-1 && ptL>=1.0 && ptL<=2.0){                     
                 dPhi = RangePhi(phiL-phiAs);
                 dEta=etaL-etaAs;
@@ -663,7 +698,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
               Double_t ptAs= associate->Pt();
               Double_t phiAs= associate->Phi();
               Double_t etaAs= associate->Eta();
-              Double_t dPhi(-999.), dEta(-999.), yy(-999.), yx(-999.);
+              Double_t dPhi(-999.), dEta(-999.);
               if(ptL>ptAs && jm>-1 && ptL>=1.0 && ptL<=2.0){                     
                 dPhi = RangePhi(phiL-phiAs);
                 dEta=etaL-etaAs;
@@ -711,7 +746,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
               Double_t ptAs= associate->Pt();
               Double_t phiAs= associate->Phi();
               Double_t etaAs= associate->Eta();
-              Double_t dPhi(-999.), dEta(-999.), yy(-999.), yx(-999.);
+              Double_t dPhi(-999.), dEta(-999.);
               if(ptL>ptAs && jm>-1 && ptL>=1.0 && ptL<=2.0){                     
                 dPhi = RangePhi(phiL-phiAs);
                 dEta=etaL-etaAs;
@@ -759,7 +794,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
               Double_t ptAs= associate->Pt();
               Double_t phiAs= associate->Phi();
               Double_t etaAs= associate->Eta();
-              Double_t dPhi(-999.), dEta(-999.), yy(-999.), yx(-999.);
+              Double_t dPhi(-999.), dEta(-999.);
               if(ptL>ptAs && jm>-1 && ptL>=1.0 && ptL<=2.0){                     
                 dPhi = RangePhi(phiL-phiAs);
                 dEta=etaL-etaAs;
@@ -824,5 +859,16 @@ Bool_t AliMESppColTask::BuildQAHistos()
         fHistosQA->AddAt(hMEMC[im+12*sel], im+12*sel+109);
       }
   }
+  
+  //
+  const Int_t ndimTrk(4);
+  const Int_t cldNbinsTrk[ndimTrk]   = {150, 30, 30, 50};
+  const Double_t cldMinTrk[ndimTrk]  = {0.5, 0., 0.,  0.},
+					  cldMaxTrk[ndimTrk]  = {150.5, 1., 1., 5.};
+  THnSparseD *hTrk = new THnSparseD("infoTrk","infoTrk;combined0.8;dirNeg;sfericity;p_{T};",ndimTrk, cldNbinsTrk, cldMinTrk, cldMaxTrk);
+  fHistosQA->AddAt(hTrk, 145);
+  
+  THnSparseD *hMCTrk = new THnSparseD("infoMCTrk","infoMCTrk;MCmult;MCdirNeg;MCsfericity;MCp_{T};",ndimTrk, cldNbinsTrk, cldMinTrk, cldMaxTrk);
+  fHistosQA->AddAt(hMCTrk, 146);
   return kTRUE;
 }

@@ -184,7 +184,8 @@ public:
 		kHybridTracks2010wNoRefit,	///< Hybrid tracks using the 2010 definition including NoITSrefit tracks (ESD-only)
 		kHybridTracks2010woNoRefit,	///< Hybrid tracks using the 2010 definition excluding NoITSrefit tracks (ESD-only)
 		kHybridTracks2011wNoRefit,	///< Hybrid tracks using the 2011 definition including NoITSrefit tracks (ESD-only)
-		kHybridTracks2011woNoRefit 	///< Hybrid tracks using the 2011 definition excluding NoITSrefit tracks (ESD-only)
+		kHybridTracks2011woNoRefit,	///< Hybrid tracks using the 2011 definition excluding NoITSrefit tracks (ESD-only)
+		kHybridTracks2018TRD				///< Hybrid tracks using the 2018 TRD test definition
   };
 
   /**

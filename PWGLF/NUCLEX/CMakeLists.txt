@@ -53,6 +53,7 @@ set(SRCS
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3Dev.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3AOD.cxx
+  Nuclei/Absorption/AliAnalysisTaskDeuteronAbsorption.cxx
   Nuclei/DeltaMasses/AliAnalysisNucleiMass.cxx
   Nuclei/DeltaMasses/AliAnalysisNuclMult.cxx
   Nuclei/DeuteronpA/AliAnalysisDeuteronpA.cxx
@@ -68,11 +69,13 @@ set(SRCS
   Nuclei/Nucleipp/AliLnAODtrackCuts.cxx
   Nuclei/Nucleipp/AliLnHistoMap.cxx
   Nuclei/Nucleipp/AliLnID.cxx
+  Nuclei/NucleiReducedTree/AliAnalysisTaskReducedTreeNuclei.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2SP.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2pPb.cxx
   Nuclei/v2/AliAnalysisTaskAllPtcv2.cxx
   Nuclei/NucleiKine/AliAnalysisTaskNucleiKine.cxx
+  Nuclei/NucleiKine/AliAnalysisTaskNucleiKineCor.cxx
   Utils/NuclexFilter/AliAODMCNuclExReplicator.cxx
   Utils/NuclexFilter/AliAODNuclExReplicator.cxx
   Utils/NuclexFilter/AliAnalysisTaskESDNuclExFilter.cxx
@@ -82,6 +85,7 @@ set(SRCS
   Utils/RecoDecay/AliAODRecoDecayLF2Prong.cxx
   Utils/CODEX/AliAnalysisCODEX.cxx
   Utils/CODEX/AliAnalysisCODEXtask.cxx
+  Utils/NucleiSkimAOD/AliAnalysisTaskNucleiSkimAOD.cxx
   )
 
 # Headers from sources

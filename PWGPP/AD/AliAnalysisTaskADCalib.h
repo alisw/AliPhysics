@@ -36,6 +36,7 @@ public:
     fBCRangeExtrapolation[0] = bcMin;
     fBCRangeExtrapolation[1] = bcMax;
   }
+  void EnableChargeEqualization() { fDoChargeEqualization = kTRUE; }
 
   void  ProcessOutput(const Char_t *filename, AliCDBStorage* db, Int_t runNumber, Int_t runNumberEnd=-1);
   Int_t GetStatus() const;
@@ -69,7 +70,7 @@ private:
   TList            *fList;             //! output histograms
                                        // TH2s (charge in a BC vs. tail charge)
                                        // THnSparse (time1,time2,tail charge)
-
+  Bool_t fDoChargeEqualization;        // kTRUE  -> charge equalization
   enum EStatusCode_t {
     kOk,
     kInputError,       // open file error, missing histos
@@ -80,5 +81,5 @@ private:
   } ;
   Int_t fStatus; //! calibration status (after ProcessOutput)
 
-  ClassDef(AliAnalysisTaskADCalib, 4);
+  ClassDef(AliAnalysisTaskADCalib, 5);
 } ;

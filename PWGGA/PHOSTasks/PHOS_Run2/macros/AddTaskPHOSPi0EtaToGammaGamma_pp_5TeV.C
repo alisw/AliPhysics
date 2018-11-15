@@ -46,19 +46,9 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
 	TString TriggerName="";
 	if     (trigger == (UInt_t)AliVEvent::kAny)  TriggerName = "kAny";
 	else if(trigger == (UInt_t)AliVEvent::kINT7) TriggerName = "kINT7";
-	else if(trigger == (UInt_t)AliVEvent::kPHI7) TriggerName = "kPHI7";
+	else if(trigger & AliVEvent::kPHI7)          TriggerName = "kPHI7";
 
-  //if(trigger == (UInt_t)AliVEvent::kPHI7){
-  //  if(triggerinput.Contains("L1") || triggerinput.Contains("L0")){
-  //    TriggerName = TriggerName + "_" + triggerinput;
-  //  }
-  //  else{
-  //    ::Error("AddTaskPHOSPi0EtaToGammaGamma", "PHOS trigger analysis requires at least trigger input (L0 or L1[H,M,L]).");
-  //    return NULL;
-  //  }
-  //}
-
-  if(trigger == (UInt_t)AliVEvent::kPHI7){
+  if(trigger & AliVEvent::kPHI7){
     if(L1input > 0){
       if(L1input == 7)      TriggerName = TriggerName + "_" + "L1H";
       else if(L1input == 6) TriggerName = TriggerName + "_" + "L1M";
@@ -95,7 +85,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
   }
   else taskname = Form("%s_%s_%s_Cen%d_%d%s_BS%dns_DBC%dcell_Emin%dMeV",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),(Int_t)bs,(Int_t)(distBC),(Int_t)(Emin*1e+3));
 
-  if(trigger == (UInt_t)AliVEvent::kPHI7 && ApplyTOFTrigger) taskname += "_TOFTrigger";
+  if((trigger & AliVEvent::kPHI7) && ApplyTOFTrigger) taskname += "_TOFTrigger";
   if(ForceActiveTRU) taskname += "_ForceActiveTRU";
 
   AliAnalysisTaskPHOSPi0EtaToGammaGamma* task = new AliAnalysisTaskPHOSPi0EtaToGammaGamma(taskname);
@@ -107,8 +97,9 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
   else if(L0input == 9)  Ethre = 0.0;//LHC15n//threshold was s et to 3 GeV, but efficiency can be measured down to 2 GeV
   else if(L0input == 17) Ethre = 0.0;//LHC17p//threshold was s et to 4 GeV, but efficiency can be measured down to 3 GeV
 
-  if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,ApplyTOFTrigger,-1);
-  if(kMC && trigger == (UInt_t)AliVEvent::kPHI7) trigger = AliVEvent::kINT7;//change trigger selection in MC when you do PHOS trigger analysis.
+  if(trigger & AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,ApplyTOFTrigger,-1);
+  else if(trigger & AliVEvent::kINT7) task->SetPHOSTriggerAnalysisMB(L1input,L0input,Ethre,isMC,ApplyTOFTrigger,-1);
+  if(isMC && (trigger & AliVEvent::kPHI7)) trigger = AliVEvent::kINT7;//change trigger selection in MC when you do PHOS trigger analysis.
   if(ForceActiveTRU) task->SetForceActiveTRU(L1input,L0input,Ethre,isMC);//this is to measure rejection factor from cluster energy kPHI7/kINT7 with same acceptance.
 
   task->SelectCollisionCandidates(trigger);
@@ -120,10 +111,10 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
  
   task->SetTenderFlag(usePHOSTender);
   task->SetMCFlag(isMC);
-  task->SetCoreEnergyFlag(useCoreE);
+//  task->SetCoreEnergyFlag(useCoreE);
 
   task->SetEventCuts(isMC,pf);
-  task->SetClusterCuts(useCoreDisp,NsigmaCPV,NsigmaDisp,distBC);
+  task->SetClusterCuts(useCoreDisp,NsigmaCPV,NsigmaDisp,useCoreE,distBC);
 
   task->SetCentralityMin(CenMin);
   task->SetCentralityMax(CenMax);
@@ -137,11 +128,13 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
   //centrality setting
   task->SetCentralityEstimator("HybridTrack");
 
-  //setting esd track selection for hybrid track
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
-  AliESDtrackCuts *cutsG = CreateTrackCutsPWGJE(10001008);//for good global tracks
+  AliESDtrackCuts *cutsG = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);//standard cuts with very loose DCA
+  cutsG->SetMaxDCAToVertexXY(2.4);
+  cutsG->SetMaxDCAToVertexZ(3.2);
+  cutsG->SetDCAToVertex2D(kTRUE);
   task->SetESDtrackCutsForGlobal(cutsG);
-  AliESDtrackCuts *cutsGC = CreateTrackCutsPWGJE(10011008);//for good global-constrained tracks
+
+  AliESDtrackCuts *cutsGC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();//standard cuts with tight DCA cut
   task->SetESDtrackCutsForGlobalConstrained(cutsGC);
 
   //bunch space for TOF cut
@@ -164,10 +157,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
 
     TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1) + [3]/(TMath::Exp(-(x-[4])/[5]) + 1)",0,100);//20180211
     f1trg->SetParameters(0.210,2.72,0.190,0.0676,3.97,0.364);
-
     f1trg->SetNpx(1000);
     task->SetTriggerEfficiency(f1trg);
-    //printf("TOF cut efficiency as a function of E is %s\n",f1tof->GetTitle());
   }
 
   if(isMC){

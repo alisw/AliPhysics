@@ -3,6 +3,7 @@
 
 #include "AliESDCaloCluster.h"
 #include "AliESDCaloCells.h"
+#include "AliESDEvent.h"
 
 class CEPRawCaloClusterTrack : public TObject {
 
@@ -26,6 +27,11 @@ class CEPRawCaloClusterTrack : public TObject {
     Double_t        fM20;            /// 2nd moment along the second eigen axis
     /// Time in the higest amplitude cell
     Double_t        fTime;
+    /// Distant in eta-phi space to the nearest track
+    Double_t        fPhiEtaDistToNearestTrack;
+    /// Is there even a possibility to match tracks
+    Bool_t          fHasTrackToMatch;
+
 
   public:
                     CEPRawCaloClusterTrack();
@@ -49,7 +55,10 @@ class CEPRawCaloClusterTrack : public TObject {
 
 
     /// Global Setter
-    void            SetCaloClusterVariables(AliESDCaloCluster* ClusterObj, AliESDCaloCells* CaloCells);
+    void            SetCaloClusterVariables(AliESDCaloCluster* ClusterObj, 
+                                            AliESDCaloCells* CaloCells,
+                                            AliESDEvent* ESDobj,
+                                            TArrayI* TTindices);
 
     /// Accessors
     Float_t         GetCaloClusterE()                 const { return fE;           }
@@ -62,6 +71,15 @@ class CEPRawCaloClusterTrack : public TObject {
     Float_t         GetCaloClusterM20()   const  { return fM20; }
     Float_t         GetCaloClusterM02()   const  { return fM02; }
     Float_t         GetCaloClusterTime()  const  { return fTime; }
+
+    Float_t         GetCaloClusterEtaPhiDistNearTrk() const { return fPhiEtaDistToNearestTrack; }
+    Bool_t          GetCaloClusterHasTrkToMatch() const { return fHasTrackToMatch; }
+    // to test if cluster is bg we check:
+    //  - if (!fHasTrackToMatch)
+    //  or if(fPhiEtaDistToNearestTrack>cutdPhiEta)
+    //  the last part has to be done as many clusters arise from pions but these clusters are
+    //  mostly close to the the pion track
+    Bool_t          IsClusterFromBG(Double_t cutdPhiEta) const;
     
     void            GetCaloClusterGlobalPosition(Float_t &x, Float_t &y, Float_t &z);
 

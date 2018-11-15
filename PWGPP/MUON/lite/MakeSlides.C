@@ -39,39 +39,35 @@ TString GetTriggerShort ( TString trigName )
 }
 
 //_________________________________
-TObjArray* GetRunList ( TString filename )
+std::vector<int> GetRunList(TString filename)
 {
-  TFile* file = TFile::Open(filename.Data());
-  if ( ! file ) return NULL;
+  std::vector<int> runList;
 
-  TCanvas* can = static_cast<TCanvas*>(file->Get("Global/AllTriggers"));
-  if ( ! can ) return NULL;
-
-  TH2* histo = NULL;
-  TIter next(can->GetListOfPrimitives());
-  TObject* obj = NULL;
-
-  while ( (obj = next()) ) {
-    if ( obj->InheritsFrom(TH2::Class()) ) {
-      histo = static_cast<TH2*>(obj);
-      break;
+  TFile *file = TFile::Open(filename.Data());
+  if (file) {
+    TCanvas *can = static_cast<TCanvas *>(file->Get("Global/AllTriggers"));
+    if (can) {
+      TH2 *histo = nullptr;
+      TIter next(can->GetListOfPrimitives());
+      TObject *obj = nullptr;
+      while ((obj = next())) {
+        if (obj->InheritsFrom(TH2::Class())) {
+          histo = static_cast<TH2 *>(obj);
+          break;
+        }
+      }
+      if (histo) {
+        TAxis *axis = histo->GetXaxis();
+        if (axis->GetNbins() > 0) {
+          for (Int_t ibin = 1; ibin <= axis->GetNbins(); ibin++) {
+            runList.push_back(TString(axis->GetBinLabel(ibin)).Atoi());
+          }
+        }
+      }
     }
   }
 
-  if ( ! histo ) return NULL;
-
-  TAxis* axis = histo->GetXaxis();
-  if ( axis->GetNbins() == 0 ) return NULL;
-
-  TObjArray* runList = new TObjArray();
-  runList->SetOwner();
-
-  for ( Int_t ibin=1; ibin<=axis->GetNbins(); ibin++ ) {
-    runList->Add(new TObjString(axis->GetBinLabel(ibin)));
-  }
-
   delete file;
-
   return runList;
 }
 
@@ -81,6 +77,13 @@ Bool_t PrintToPdf ( TString objName, TString filename, Bool_t closeFile, Bool_t 
   Bool_t isOk = kFALSE;
   TFile* file = TFile::Open(filename.Data());
   if ( ! file ) return isOk;
+
+  // The canvases must be drawn in order to be printed
+  // But drawing takes time.
+  // We set it temporary to batch mode to avoid drawing
+  // and come back to the initial mode in the end
+  bool isBatch = gROOT->IsBatch();
+  gROOT->SetBatch(true);
 
   TObject* obj = file->FindObjectAny(objName.Data());
   if ( obj ) {
@@ -113,6 +116,8 @@ Bool_t PrintToPdf ( TString objName, TString filename, Bool_t closeFile, Bool_t 
   }
 
   delete file;
+
+  gROOT->SetBatch(isBatch);
 
   return isOk;
 }
@@ -335,132 +340,154 @@ void MakeSummary ( TString period, ofstream &outFile )
 }
 
 //_________________________________
-std::map<Int_t,std::vector<Double_t>> GetRunInfo ( TString evsQA )
+std::map<int,std::vector<double>> GetRunInfo ( TString evsQA )
 {
-  std::map<Int_t,std::vector<Double_t>> map;
+  std::map<int,std::vector<double>> evsInfo;
   if ( gSystem->AccessPathName(evsQA.Data()) == 0 ) {
     TFile* file = TFile::Open(evsQA);
     TTree* tree = static_cast<TTree*>(file->Get("trending"));
     if ( tree ) {
-      Int_t run, fill, bcs;
-      Double_t mu;
+      int run, fill, bcs;
+      double mu;
       tree->SetBranchAddress("run",&run);
       tree->SetBranchAddress("fill",&fill);
       tree->SetBranchAddress("bcs",&bcs);
       tree->SetBranchAddress("mu",&mu);
       for ( Long64_t ientry=0; ientry<tree->GetEntries(); ientry++ ) {
         tree->GetEntry(ientry);
-        auto search = map.find(run);
-        if ( search != map.end() ) continue;
-        auto vec = &(map[run]);
-        vec->push_back((Double_t)fill);
-        vec->push_back((Double_t)bcs);
+        auto search = evsInfo.find(run);
+        if ( search != evsInfo.end() ) continue;
+        auto vec = &(evsInfo[run]);
+        vec->push_back((double)fill);
+        vec->push_back((double)bcs);
         vec->push_back(mu);
       }
     }
     delete file;
   }
-  return map;
+  return evsInfo;
+}
+
+//_________________________________
+std::map<int, TString> GetRunSummary(ifstream& inFile)
+{
+  std::map<int, TString> runSummary;
+  TString currLine;
+  int readRun = -1;
+  TString runInfo = "";
+  int nOpen = 0, nClosed = 0;
+  while ( ! inFile.eof() ) {
+    currLine.ReadLine(inFile,kFALSE);
+    int nOpenInLine = currLine.CountChar('{');
+    int nClosedInLine = currLine.CountChar('}');
+    if ( currLine.Contains("runTab") ) {
+      TString sRun = currLine(TRegexp("{[0-9][0-9][0-9][0-9][0-9][0-9]}"));
+      sRun.Remove(TString::kLeading,'{');
+      sRun.Remove(TString::kTrailing,'}');
+      readRun = sRun.Atoi();
+      nOpen = nOpenInLine;
+      nClosed = nClosedInLine;
+      runInfo = currLine + "\n";
+    }
+    else if ( currLine.Contains("colorLegend") ) {
+      break;
+    }
+
+    if ( readRun < 0 ) continue;
+
+    if ( nOpen > nClosed ) {
+      runInfo += currLine + "\n";
+    }
+    else if ( nOpen == nClosed ) {
+      runSummary[readRun] = runInfo;
+      readRun = -1;
+    }
+  }
+  return runSummary;
 }
 
 //_________________________________
 void MakeRunSummary ( ofstream &outFile, TString trackerQA, TString evsQA = "", ifstream* inFile = 0x0 )
 {
 
-  std::map<Int_t,std::vector<Double_t>> map = GetRunInfo(evsQA);
+  std::map<int,std::vector<double>> evsInfo = GetRunInfo(evsQA);
+  std::map<int, TString> runSummary;
+  if ( inFile ) runSummary = GetRunSummary(*inFile);
 
-  TObjArray* runListArr = GetRunList(trackerQA);
-  runListArr->Sort();
+  std::vector<int> runList = GetRunList(trackerQA);
+  for ( auto& runNum : runList ) {
+    // Add current runs if needed.
+    // Do nothing if runs were already there...
+    runSummary[runNum];
+  }
 
-  Bool_t readSummary = ( inFile ) ? kTRUE : kFALSE;
+  int previousFill = -1;
+  double previousMu = -1.;
+  for ( auto& entry : runSummary ) {
+    if ( entry.second.IsNull() ) {
+      TString runInfo = "";
+      auto search = evsInfo.find(entry.first);
+      if ( search != evsInfo.end() ) {
+        auto vec = search->second;
+        int fill = (int)vec[0];
+        double mu = vec[2];
+        double relDiff = TMath::Abs( mu - previousMu);
+        if ( previousMu != 0. ) relDiff /= previousMu;
+        if ( fill != previousFill || relDiff > 0.5 ) {
+          previousFill = fill;
+          previousMu = mu;
+          runInfo = Form("Fill %i, IB %i, mu %.3f",fill,(Int_t)vec[1],mu);
+        }
+      }
+      entry.second = Form("   \\runTab{%i}{%s}\n",entry.first,runInfo.Data());
+    }
+  }
+
+  if ( runSummary.empty() ) runSummary[0] = "   \\runTab[\\errorColor]{0}{xxx}";
 
   TString romanNum[10] = {"I","II","III","IV","V","VI","VII","VIII","IX","X"};
 
-  Int_t nRuns = runListArr->GetEntries();
-  Int_t nRunsPerPage = 40;
-  Int_t nRunsPerColumn = nRunsPerPage/2;
+  int maxLinesPerColumn = 20;
+  int nCharPerLine = 42;
 
-  Int_t nPages = nRuns/nRunsPerPage;
-  if ( nRuns%nRunsPerPage > 0 ) nPages++;
-
-  Int_t irun = 0;
-  Int_t readRun = -2, currRun = -1;
-
-  Int_t previousFill = -1;
-  Double_t previousMu = 0.;
-
-  for ( Int_t ipage=0; ipage<nPages; ipage++ ) {
+  auto it = runSummary.begin();
+  int ipage = 0;
+  while ( it != runSummary.end() ) {
     TString title = "Run summary";
-    if ( nPages > 1 ) title += Form(" (%s)",romanNum[ipage].Data());
-    BeginFrame(title,outFile);
+    TString pageNum = romanNum[ipage % 10];
+    for (int idec = 0; idec < ipage / 10; ++idec) {
+      pageNum.Prepend("X");
+    }
+    title += Form(" (%s)", pageNum.Data());
+    BeginFrame(title, outFile);
     outFile << " \\begin{columns}[onlytextwidth,T]" << endl;
     outFile << "  \\footnotesize" << endl;
-    for ( Int_t icol=0; icol<2; icol++ ) {
-      Bool_t needsHline = ( icol == 0 || irun < nRuns );
+    for (int icol = 0; icol < 2; ++icol) {
       outFile << "  \\column{0.5\\textwidth}" << endl;
       outFile << "  \\centering" << endl;
       outFile << "  \\begin{tabular}{|cp{0.63\\textwidth}|}" << endl;
-      if ( needsHline ) outFile << "   \\hline" << endl;
-      if ( nRuns == 0 ) {
-        outFile << "   \\runTab[\\errorColor]{xxx}{xxx}" << endl;
-      }
-      else {
-        while ( irun<nRuns ) {
-          currRun = static_cast<TObjString*>(runListArr->UncheckedAt(irun++))->GetString().Atoi();
-          Bool_t isNew = kTRUE;
-          TString readLines = "", currLine = "";
-          while ( readSummary ) {
-            currLine.ReadLine(*inFile,kFALSE);
-            if ( currLine.Contains("runTab") ) {
-              TString sRun = currLine(TRegexp("{[0-9][0-9][0-9][0-9][0-9][0-9]}"));
-              sRun.Remove(TString::kLeading,'{');
-              sRun.Remove(TString::kTrailing,'}');
-              readRun = sRun.Atoi();
-              if ( readRun <= currRun ) readLines += currLine + "\n";
-              if ( readRun == currRun ) {
-                isNew = kFALSE;
-                break;
-              }
-            }
-            else if ( currLine.Contains("colorLegend") ) readSummary = kFALSE;
-          }
-          if ( isNew ) {
-            auto search = map.find(currRun);
-            TString info = "";
-            if ( search != map.end() ) {
-              auto vec = search->second;
-              Int_t fill = (Int_t)vec[0];
-              Double_t mu = vec[2];
-              Double_t ratio = previousMu > 0. ? mu/previousMu : 10.;
-              if ( fill != previousFill || TMath::Abs(1.-ratio) > 0.5 ) {
-                previousFill = fill;
-                previousMu = mu;
-                info = Form("Fill %i, IB %i, mu %.3f",fill,(Int_t)vec[1],mu);
-              }
-            }
-            outFile << "   \\runTab{" << currRun << "}{" << info.Data() << "}" << endl;
-          }
-          else outFile << readLines.Data();
-          if ( irun%nRunsPerColumn == 0 ) break;
+      outFile << "   \\hline" << endl;
+      int nLines = 0;
+      for (; it != runSummary.end(); ++it) {
+        int nChars = it->second.Length() - it->second.Index("{");
+        nLines += 1 + nChars/nCharPerLine; 
+        if (nLines > maxLinesPerColumn) {
+          break;
         }
+        outFile << it->second.Data();
       }
-
-      if ( needsHline ) outFile << "   \\hline" << endl;
-      if ( icol == 1 && ipage == nPages -1 ) {
+      outFile << "   \\hline" << endl;
+      if (it == runSummary.end() && icol == 1) {
         outFile << "   \\hline" << endl;
         outFile << "   \\colorLegend" << endl;
         outFile << "   \\hline" << endl;
       }
       outFile << "  \\end{tabular}" << endl;
-      if ( icol == 0 ) outFile << endl;
-      else {
-        outFile << " \\end{columns}" << endl;
-        EndFrame(outFile);
-      }
     } // loop on columns
+    outFile << " \\end{columns}" << endl;
+    EndFrame(outFile);
+    ++ipage;
   } // loop on pages
-
-  delete runListArr;
 }
 
 //_________________________________
@@ -594,16 +621,14 @@ void StartAppendix ( ofstream &outFile )
 //_________________________________
 void WriteRunList ( TString trackerQA, TString outFilename = "runListQA.txt" )
 {
-  TObjArray* runListArr = GetRunList(trackerQA);
+  std::vector<int> runList = GetRunList(trackerQA);
 
   ofstream outFile(outFilename);
-  for ( Int_t irun=0; irun<runListArr->GetEntries(); irun++ ) {
-    outFile << static_cast<TObjString*>(runListArr->At(irun))->GetString().Atoi() << endl;
+  for ( auto& runNum : runList ) {
+    outFile << runNum << endl;
   }
   outFile.close();
-  delete runListArr;
 }
-
 
 //_________________________________
 TObjArray* UpdateExisting ( TString texFilename, TString trackerQA, TString evsQA )
@@ -700,7 +725,8 @@ void MakeSlides ( TString period, TString pass, TString triggerList, TString aut
     MakeSingleFigureSlide(Form("AsymMatchedtrigger%s",currTrig.Data()),trackerQA,Form("Charge asymmetry in %s events",shortTrig.Data()),outFile);
     MakeSingleFigureSlide(Form("BeamGasMatchedtrigger%s",currTrig.Data()),trackerQA,Form("Rel. num. of beam-gas tracks (id. by p$\\times$DCA cuts) in %s events",shortTrig.Data()),outFile,currTrig);
   }
-  MakeSingleFigureSlide("cNClusters",trackerQA,"Average number of clusters per track and dispersion",outFile);    MakeSingleFigureSlide("cNClustersPerCh",trackerQA,"Average number of clusters per chamber",outFile,"","clustersPerChamber");
+  MakeSingleFigureSlide("cNClusters",trackerQA,"Average number of clusters per track and dispersion",outFile);
+  MakeSingleFigureSlide("cNClustersPerCh",trackerQA,"Average number of clusters per chamber",outFile,"","clustersPerChamber");
 
   if ( outFile.is_open() ) StartAppendix(outFile);
   MakeSingleFigureSlide("PhysSelCutOnCollTrigger",trackerQA,"Physics selection effects",outFile);

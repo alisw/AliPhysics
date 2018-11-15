@@ -58,7 +58,9 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
   // #########################################################
   // #########################################################
   // Possibility to set generator. If nothing set all generators are taken into account
-  task->SetGeneratorName(generatorName);
+  // task->SetGeneratorName(generatorName);
+  task->SetGeneratorMCSignalName(generatorNameForMCSignal);
+  task->SetGeneratorULSSignalName(generatorNameForULSSignal);
 
   // #########################################################
   // #########################################################
@@ -110,6 +112,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
   // Resolution File, If resoFilename = "" no correction is applied
   task->SetResolutionFile(resoFilename);
   task->SetResolutionFileFromAlien(resoFilenameFromAlien);
+  task->SetSmearGenerated(SetGeneratedSmearingHistos);
   task->SetResolutionDeltaPtBinsLinear   (DeltaMomMin, DeltaMomMax, NbinsDeltaMom);
   task->SetResolutionRelPtBinsLinear   (RelMomMin, RelMomMax, NbinsRelMom);
   task->SetResolutionEtaBinsLinear  (DeltaEtaMin, DeltaEtaMax, NbinsDeltaEta);
@@ -123,6 +126,11 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
 
   // #########################################################
   // #########################################################
+  // Set MCSignal and Cutsetting to fill the support histograms
+  task->SetSupportHistoMCSignalAndCutsetting(nMCSignal, nCutsetting);
+
+  // #########################################################
+  // #########################################################
   // Set Cocktail weighting
   task->SetDoCocktailWeighting(DoCocktailWeighting);
   task->SetCocktailWeighting(CocktailFilename);
@@ -133,6 +141,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
   // Pairing related config
   task->SetDoPairing(DoPairing);
   task->SetULSandLS(DoULSLS);
+  task->SetDeactivateLS(DeactivateLS);
 
   // #########################################################
   // #########################################################
@@ -140,6 +149,9 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
   // e.g. secondaries and primaries. or primaries from charm and resonances
   AddSingleLegMCSignal(task);
   AddPairMCSignal(task);
+  std::vector<bool> DielectronsPairNotFromSameMother = AddSingleLegMCSignal(task);
+  task->AddMCSignalsWhereDielectronPairNotFromSameMother(DielectronsPairNotFromSameMother);
+
 
   // #########################################################
   // #########################################################

@@ -29,6 +29,7 @@ class AliRsnCutEventUtils : public AliRsnCut {
   Bool_t         IsPileUpMultBins();
   void           SetUseVertexSelection2013pA(Bool_t vtxpA2013 = kTRUE, Double_t maxVtxZ = 10.0) {fUseVertexSelection2013pA = vtxpA2013; fMaxVtxZ = maxVtxZ;}
   void           SetUseVertexSelection2013pAIDspectra(Bool_t enable = kTRUE, Double_t maxVtxZ = 10.0) {fUseVertexSelection2013pAspectra = enable; fUseVertexSelection2013pA = kFALSE; fMaxVtxZ = maxVtxZ;}
+  Bool_t         Init(TObject *object);
   Bool_t         IsSelected(TObject *object);
   AliAnalysisUtils* GetAnalysisUtils() { return fUtils; }
   void           SetAnalysisUtils(AliAnalysisUtils* utils){ fUtils = utils; }

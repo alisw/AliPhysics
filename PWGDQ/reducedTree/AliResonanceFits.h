@@ -130,6 +130,7 @@ class AliResonanceFits : public TObject {
     kChisqSideBands,     // chi2/ndf in the side bands around peak
     kChisqMCPeak,          // chi2/ndf wrt MC signal shape in the peak region
     kChisqMCTotal,     // chi2/ndf wrt MC signal shape
+    kFitProbability,        // probability from TFitResult::Prob()
     kMCYieldFraction,     // yield fraction in counting window
     kBkgScale,                     // scale factor for the bkg
     kBkgScaleErr,              // error on the scale factor
@@ -178,13 +179,23 @@ class AliResonanceFits : public TObject {
   // set various ranges
   void SetMassFitRange(Double_t min, Double_t max) {fgMassFitRange[0] = min+1.0e-6; fgMassFitRange[1] = max-1.0e-6; fUserEnabledMassFitRange = kTRUE; fMatchingIsDone = kFALSE;}
   void SetPtFitRange(Double_t min, Double_t max) {fgPtFitRange[0] = min+1.0e-6; fgPtFitRange[1] = max-1.0e-6; fUserEnabledPtFitRange = kTRUE; fMatchingIsDone = kFALSE;}
+  void AddMassExclusionRange(Double_t min, Double_t max) {
+     if(fgNMassExclusionRanges==10) return;        // maximum 10 mass exclusion ranges
+     fgMassExclusionRanges[fgNMassExclusionRanges][0] = min + 1.0e-6; fgMassExclusionRanges[fgNMassExclusionRanges][1] = max -1.0e-6;
+     fgNMassExclusionRanges++;
+     fMatchingIsDone = kFALSE;
+  }
   void SetMassExclusionRange(Double_t min, Double_t max) {
-      fgMassExclusionRange[0] = min + 1.0e-6; fgMassExclusionRange[1] = max -1.0e-6;
-      fUserEnabledMassExclusionRange = kTRUE;
-      fMatchingIsDone = kFALSE;
+     fgMassExclusionRanges[0][0] = min + 1.0e-6; fgMassExclusionRanges[0][1] = max -1.0e-6;
+     fgNMassExclusionRanges = 1;
+     fMatchingIsDone = kFALSE;
   }
   void SetResidualFitFunction(TF1* fitFunc) {fResidualFitFunc = (TF1*)fitFunc->Clone("ResidualFitFunction");}
-  void SetBkgFitFunction(TF1* fitFunc) {fBkgFitFunction = (TF1*)fitFunc->Clone("BkgFitFunction");}
+  void SetBkgFitFunction(TF1* fitFunc, Bool_t forceNew=kFALSE) {
+     if(!forceNew && fBkgFitFunction) return;
+     if(fBkgFitFunction) delete fBkgFitFunction;
+     fBkgFitFunction = (TF1*)fitFunc->Clone("BkgFitFunction");
+  }
   
   Bool_t Process();
   Double_t* ComputeOutputValues(Double_t minMass, Double_t maxMass, Double_t minPt=-1., Double_t maxPt=-1.);
@@ -211,7 +222,8 @@ class AliResonanceFits : public TObject {
   Int_t GetMEMatchingMethod() const {return fgOptionMEMatching;}
   Int_t GetMinuitFitOption() const {return fOptionMinuit;}
   Double_t* GetMassFitRange() const {return fgMassFitRange;}
-  Double_t* GetMassExclusionRange() const {return fgMassExclusionRange;}
+  Int_t     GetNMassExclusionRanges() const {return fgNMassExclusionRanges;}
+  Double_t* GetMassExclusionRange(Int_t i=0) const {return (i<fgNMassExclusionRanges ? fgMassExclusionRanges[i] : 0x0);}
   const Double_t* GetFitValues() const {return fFitValues;}
   TF1* GetResidualFitFunction() const {return fResidualFitFunc;}
   TF1* GetBkgFitFunction() const {return fBkgFitFunction;}
@@ -266,8 +278,9 @@ class AliResonanceFits : public TObject {
    Bool_t     fUserEnabledMassFitRange;   // default false, enabled when SetMassFitRange() is called
    static Double_t fgPtFitRange[2];                  // pt range used in the bkg to signal matching or in the fit procedure
    Bool_t     fUserEnabledPtFitRange;        // default false, enabled when SetPtFitRange() is called
-   static Double_t fgMassExclusionRange[2];         // mass exclusion range, used in matching / fitting
-   Bool_t     fUserEnabledMassExclusionRange;     // false when not set by user
+   //static Double_t fgMassExclusionRange[2];         // mass exclusion range, used in matching / fitting
+   static Double_t fgMassExclusionRanges[10][2];     // mass exclusion range, used in matching / fitting
+   static Int_t fgNMassExclusionRanges;                // number of mass exclusion ranges
   
    // Utility data members
    TH1* fSplusB;               //  total signal + bkg projection
@@ -284,7 +297,8 @@ class AliResonanceFits : public TObject {
    TFitResultPtr fFitResult;                // fit result of the residual fit
    
    /////////////////////////////////
-   TH1* fSplusResidualBkg;    //  combinatorial bkg subtracted minv distribution (signal + residual bkg) 
+   TH1* fSplusResidualBkg;    //  combinatorial bkg subtracted minv distribution (signal + residual bkg)   
+   TH1* fSplusBblind;       //  bkg minv distribution; signal blind (area around signal excluded)   
    TH1* fBkgCombinatorial;    //  combinatorial bkg (used when the residual bkg fit option is switched on)
    TH1* fBkgResidual;             // residual bkg obtained after fitting the combinatorial bkg subtracted distribution
    ////////////////////////////////
@@ -306,16 +320,18 @@ class AliResonanceFits : public TObject {
    void ApplyUserRanges(THnF* h);
    void AddSlice();
    TH1* BuildLSbkg(TH1* selsLeg1, TH1* selsLeg2, TH1* meos=0x0, TH1* melsLeg1=0x0, TH1* melsLeg2=0x0);
+   void SqrtTH1(TH1* h, Bool_t is2D=kFALSE);
    void  ComputeEntryScale(TH1* signal, TH1* bkg);
    void  ComputeWeightedScale(TH1* sig, TH1* bkg);
    void  FitScale(TH1* sig, TH1* bkg, Bool_t fixScale=kFALSE);
+   void  ComputeScale(TH1* scaleHist, TH1* bkgHist);
    static void Fcn(Int_t&, Double_t*, Double_t &f, Double_t *par, Int_t);
    static Double_t Chi2(TH1* sig, TH1* bkg, Double_t scale, Double_t scaleError=0.0);
    void FitInvMass();
    void FitResidualBkg();
    static Double_t GlobalFitFunction(Double_t *x, Double_t* par);
 
-   ClassDef(AliResonanceFits, 4);
+   ClassDef(AliResonanceFits, 5);
 };
 
 #endif

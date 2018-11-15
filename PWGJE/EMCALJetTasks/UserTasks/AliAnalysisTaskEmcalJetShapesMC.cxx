@@ -68,6 +68,7 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC() :
   fSwitchSDMinNSub(0),
   fAdditionalTracks(0),
   fHardCutoff(0),
+  fOptionalPartonInfo(0),
   fminpTTrig(20.),
   fmaxpTTrig(50.),
   fangWindowRecoil(0.6),
@@ -95,13 +96,19 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC() :
   fHLundIterativeInject(0x0),
   fNbOfConstvspT(0x0),
   fTreeObservableTagging(0x0),
+  fTf1SoftOmega(0x0),
+  fTf1SoftKt(0x0),
   fTf1Omega(0x0),
   fTf1Kt(0x0),
   fScaleELoss(kFALSE),
-  xfraction(1)
+  xfraction(1),
+  fAddMedScat(kFALSE),
+  fAddMedScatPtFrac(1),
+  fAddMedScatN(100)
+  
 
 {
-  for(Int_t i=0;i<10;i++){
+  for(Int_t i=0;i<13;i++){
     fShapesVar[i]=0;}
   SetMakeGeneralHistograms(kTRUE);
    DefineOutput(1, TList::Class());
@@ -126,6 +133,7 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
   fSwitchSDMinNSub(0),
   fAdditionalTracks(0),
   fHardCutoff(0),
+  fOptionalPartonInfo(0),
   fminpTTrig(20.),
   fmaxpTTrig(50.),
   fangWindowRecoil(0.6),
@@ -153,15 +161,20 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
   fHLundIterativeInject(0x0),
   fNbOfConstvspT(0x0),
   fTreeObservableTagging(0x0),
+  fTf1SoftOmega(0x0),
+  fTf1SoftKt(0x0),
   fTf1Omega(0x0),
   fTf1Kt(0x0),
   fScaleELoss(kFALSE),
-  xfraction(1)
+  xfraction(1),
+  fAddMedScat(kFALSE),
+  fAddMedScatPtFrac(1),
+  fAddMedScatN(100)
 {
   // Standard constructor.
   
   
-  for(Int_t i=0;i<10;i++){
+  for(Int_t i=0;i<13;i++){
     fShapesVar[i]=0;}
   
   SetMakeGeneralHistograms(kTRUE);
@@ -181,6 +194,8 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   }
 
    if(fRandom)      delete fRandom;
+   if(fTf1SoftOmega)    delete fTf1SoftOmega;
+   if(fTf1SoftKt)        delete fTf1SoftKt;
    if(fTf1Omega)    delete fTf1Omega;
    if(fTf1Kt)        delete fTf1Kt;
 
@@ -202,7 +217,7 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeObservableTagging = new TTree(nameoutput, nameoutput);
   
-  const Int_t nVar = 10;
+  const Int_t nVar = 13;
 
   TString *fShapesVarNames = new TString [nVar];
   
@@ -222,8 +237,9 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   // fShapesVarNames[10] = "DeltaRkt";
   // fShapesVarNames[11] = "DeltaRMin";
   fShapesVarNames[9] = "SDSymm";
-  // fShapesVarNames[13] = "SDDeltaR";
-  // fShapesVarNames[14] = "SDGroomedFrac"; 
+  fShapesVarNames[10] = "scaledptJet";
+   fShapesVarNames[11] = "zg";
+  fShapesVarNames[12] = "rg"; 
   // fShapesVarNames[15] = "SDGroomedN"; 
   // fShapesVarNames[16] = "SDMass";
   // fShapesVarNames[17] = "SDSymmkt";
@@ -309,7 +325,7 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
 
 
 
-  //log(1/theta),log(z*theta),jetpT,algo// 
+    //log(1/theta),log(z*theta),jetpT,algo// 
    const Int_t dimSpec   = 6;
    const Int_t nBinsSpec[6]     = {50,50,10,3,22,10};
    const Double_t lowBinSpec[6] = {0.0,-10,  0,0,0,0};
@@ -431,7 +447,7 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
       
       fShapesVar[0] = 0.;
       
-      if (fJetShapeType == kGenShapes){
+      if (fOptionalPartonInfo==1){
         const AliEmcalPythiaInfo *partonsInfo = 0x0;
         partonsInfo = GetPythiaInfo();
         //Printf("partonsInfo=%p",  partonsInfo);
@@ -485,7 +501,7 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
       fShapesVar[3] = GetJetMass(jet1,0);
       fShapesVar[4] = 1.*GetJetNumberOfConstituents(jet1,0);
       fShapesVar[5] = GetJetAngularity(jet1,0);
-     
+      SoftDrop(jet1,jetCont,0.1,0,0);
      
       RecursiveParents(jet1,jetCont,0,fShapesVar[0]);
       RecursiveParents(jet1,jetCont,1,fShapesVar[0]);
@@ -1173,7 +1189,7 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
    for(Int_t i=0;i<fAdditionalTracks;i++){
 
      Double_t ppx,ppy,ppz,kTscale,lim2o,lim1o;
-    Double_t lim2=xQs;   
+     Double_t lim2=xQs;   
     Double_t lim1=10000;
     
     //generation of kT according to 1/kT^4, with minimum QS=2 GeV and maximum ~sqrt(ptjet*T)	
@@ -1244,10 +1260,10 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
   NGroomedBranches=finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count();
   GroomedPt=finaljet.perp();
   GroomedMass=finaljet.m();
-  // if(beta==0){
-  // if(ReclusterAlgo==0){
-  // fShapesVar[12]=SymParam;
-  // fShapesVar[13]=DeltaR;
+ 
+  
+   fShapesVar[11]=SymParam;
+   fShapesVar[12]=DeltaR;
   // fShapesVar[14]=zeta;
   // fShapesVar[15]=angle;
   // fShapesVar[16]=GroomedMass;}
@@ -1356,6 +1372,53 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
       fInputVectors.push_back(PseudoTracks);
      
     }
+  /*if(fAddMedScat){
+    for(int i = 0; i < fAddMedScatN; i++){
+      TRandom3 rand1(0),rand2(0),rand3(0); //set range +- jet R
+      Double_t randN1 = 0.4*0.4*rand1.Rndm();
+      Double_t randN2 = 2*TMath::Pi()*rand2.Rndm();
+      Double_t phi_rand = (fJet->Phi())+TMath::Sqrt(randN1)*TMath::Sin(randN2);
+      Double_t eta_rand = (fJet->Eta())+TMath::Sqrt(randN1)*TMath::Cos(randN2);
+      Double_t fAddMedScatPt = (fAddMedScatPtFrac*fJet->Pt())/fAddMedScatN;
+      PseudoTracks.reset(fAddMedScatPt*TMath::Cos(phi_rand),fAddMedScatPt*TMath::Sin(phi_rand),fAddMedScatPt/TMath::Tan(eta_rand),fAddMedScatPt);
+      PseudoTracks.set_user_index(i+fJet->GetNumberOfTracks()+100);
+      fInputVectors.push_back(PseudoTracks);
+    }
+    }*/
+  if(fAddMedScat){
+    for(int i = 0; i < fAddMedScatN; i++){
+      Double_t ppx,ppy,ppz,SoftkTscale,lim2o,lim1o;
+      Double_t lim1=0.1;   
+      Double_t lim2=0.5;
+      fTf1SoftKt= new TF1("fTf1SoftKt","1/(x)",lim1,lim2);
+      SoftkTscale=fTf1SoftKt->GetRandom();
+
+      lim2o=SoftkTscale;
+      lim1o=SoftkTscale/TMath::Sin(0.1);
+      fTf1SoftOmega= new TF1("fTf1SoftOmega","1/x",lim2o,lim1o);
+      omega=fTf1SoftOmega->GetRandom();
+      sinpptheta=SoftkTscale/omega;
+      pptheta=TMath::ASin(sinpptheta);
+      if(pptheta>fJetRadius) continue;
+
+      TLorentzVector pTrackCMS(SoftkTscale/TMath::Sqrt(2),SoftkTscale/TMath::Sqrt(2),omega*TMath::Cos(pptheta),omega);
+      TVector3 MyJet(fJet->Px(),fJet->Py(),fJet->Pz());
+      TVector3 direction = MyJet.Unit();
+      //rotate the track to the jet frame 
+      pTrackCMS.RotateUz(direction);
+   
+      //add the rotated track to the jet
+      PseudoTracksLab.reset(pTrackCMS.Px(),pTrackCMS.Py(),pTrackCMS.Pz(),pTrackCMS.E());
+     
+      PseudoTracksLab.set_user_index(i+fJet->GetNumberOfTracks()+100);
+
+      omega2=PseudoTracksLab.perp();
+      angle2=pTrackCMS.Angle(MyJet);
+     
+      fInputVectors.push_back(PseudoTracksLab);
+    }
+  }
+
 
     //add tracks to the jet prior to the reclusterer in case of iterative mapping of splittings
    
@@ -1431,6 +1494,7 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
    double ndepth=0;
    double nsd=0;
    double nall=0;
+   fShapesVar[10]=fOutputJets[0].perp();
     while(jj.has_parents(j1,j2)){
      
     if(j1.perp() < j2.perp()) swap(j1,j2);
@@ -1467,9 +1531,10 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
   }
 
  
-  
-   if(fTf1Kt){ delete fTf1Kt;}
-   if(fTf1Omega){ delete fTf1Omega;}
+  if(fTf1SoftKt){ delete fTf1SoftKt;}
+  if(fTf1SoftOmega){ delete fTf1SoftOmega;}
+  if(fTf1Kt){ delete fTf1Kt;}
+  if(fTf1Omega){ delete fTf1Omega;}
  
   
   return;
@@ -1477,6 +1542,142 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
   
 }
 
+
+AliAnalysisTaskEmcalJetShapesMC* AliAnalysisTaskEmcalJetShapesMC::AddTaskJetShapesMC(const char * njetsBase,
+                                                    const Double_t jetradius,
+                                                    const Double_t subjetradius,
+                                                    const char *ntracksPartLevel,
+                                                    const char *type,
+                                                    const char *CentEst,
+                                                    Int_t       pSel,
+                                                    TString     trigClass,
+                                                    TString     kEmcalTriggers,
+                                                    TString     tag,
+                                                    const char *rhoName,
+                                                    AliAnalysisTaskEmcalJetShapesMC::JetShapeType jetShapeType,
+                                                    AliAnalysisTaskEmcalJetShapesMC::JetShapeSub jetShapeSub,
+                                                    AliAnalysisTaskEmcalJetShapesMC::JetSelectionType jetSelection,
+                                                    Float_t minpTHTrigger,  Float_t maxpTHTrigger,
+                                                    AliAnalysisTaskEmcalJetShapesMC::DerivSubtrOrder derivSubtrOrder) {
+  
+
+  
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr)
+    {
+      ::Error("AliAnalysisTaskEmcalJetShapesMC","No analysis manager found.");
+      return 0;
+    }
+  Bool_t ismc=kFALSE;
+  ismc = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE;
+
+  // Check the analysis type using the event handlers connected to the analysis manager.
+  //==============================================================================
+  if (!mgr->GetInputEventHandler())
+    {
+      ::Error("AddTaskJetShapesMC", "This task requires an input event handler");
+      return NULL;
+    }
+
+  TString wagonName1 = Form("JetShapesMC_%s_Histos%s%s",njetsBase,trigClass.Data(),tag.Data());
+  TString wagonName2 = Form("JetShapesMC_%s_Tree%s%s",njetsBase,trigClass.Data(),tag.Data());
+
+  //Configure jet tagger task
+  AliAnalysisTaskEmcalJetShapesMC *task = new AliAnalysisTaskEmcalJetShapesMC(wagonName1.Data());
+  
+  //task->SetNCentBins(4);
+  task->SetJetShapeType(jetShapeType);
+  task->SetJetShapeSub(jetShapeSub);
+  task->SetJetSelection(jetSelection);
+  task->SetDerivativeSubtractionOrder(derivSubtrOrder);
+  task->SetJetRadius(jetradius);
+  task->SetSubjetRadius(subjetradius);
+  
+  if (jetSelection == AliAnalysisTaskEmcalJetShapesMC::kRecoil) task->SetPtTriggerSelections(minpTHTrigger, maxpTHTrigger);
+
+  TString thename(njetsBase);
+
+  AliParticleContainer *trackContPartLevel = task->AddMCParticleContainer(ntracksPartLevel);
+  
+  AliJetContainer *jetContBase=0x0;
+  TString strType(type);
+
+  jetContBase = task->AddJetContainer(njetsBase,strType,jetradius);
+  if(jetContBase) {
+    jetContBase->SetRhoName(rhoName);
+    jetContBase->ConnectParticleContainer(trackContPartLevel);
+    //jetContBase->ConnectClusterContainer(clusterCont);
+    jetContBase->SetPercAreaCut(0.6);
+  }
+  
+  task->SetCaloTriggerPatchInfoName(kEmcalTriggers.Data());
+  task->SetCentralityEstimator(CentEst);
+  task->SelectCollisionCandidates(pSel);
+  task->SetUseAliAnaUtils(kFALSE);
+  
+  mgr->AddTask(task);
+  
+  //Connnect input
+  mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer() );
+  
+  //Connect output
+  TString contName1(wagonName1);
+  TString contName2(wagonName2);
+  
+  if (jetShapeType == AliAnalysisTaskEmcalJetShapesMC::kGenShapes) {
+    contName1 += "_GenShapes";
+    contName2 += "_GenShapes";
+  }
+  
+  switch (jetShapeSub) {
+      
+    case AliAnalysisTaskEmcalJetShapesMC::kNoSub:
+      contName1 += "_NoSub";
+      contName2 += "_NoSub";
+      break;
+      
+    case AliAnalysisTaskEmcalJetShapesMC::kConstSub:
+      contName1 += "_ConstSub";
+      contName2 += "_ConstSub";
+      break;
+      
+    case AliAnalysisTaskEmcalJetShapesMC::kDerivSub:
+      contName1 += "_DerivSub";
+      contName2 += "_DerivSub";
+      break;
+
+
+  }
+  
+  switch (jetSelection) {
+    case AliAnalysisTaskEmcalJetShapesMC::kInclusive:
+      contName1 += "_Incl";
+      contName2 += "_Incl";
+      break;
+
+
+    case AliAnalysisTaskEmcalJetShapesMC::kRecoil:
+      TString recoilTriggerString = Form("_Recoil_%.0f_%0.f", minpTHTrigger, maxpTHTrigger);
+      contName1 += recoilTriggerString;
+      contName2 += recoilTriggerString;
+
+      break;
+    
+  }
+
+  
+  TString outputfile = Form("%s",AliAnalysisManager::GetCommonFileName());
+ 
+  
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName1.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contName2.Data(),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+    
+  mgr->ConnectOutput(task,1,coutput1);
+  mgr->ConnectOutput(task,2,coutput2);
+
+  return task;  
+
+}
 
 
 

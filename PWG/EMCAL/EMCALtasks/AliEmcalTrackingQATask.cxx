@@ -1,3 +1,4 @@
+#include <cstring>
 #include <iostream>
 
 #include <THnSparse.h>
@@ -24,6 +25,7 @@ AliEmcalTrackingQATask::AliEmcalTrackingQATask() :
   AliAnalysisTaskEmcalLight("AliEmcalTrackingQA", kTRUE),
   fDoSigma1OverPt(kFALSE),
   fDoSigmaPtOverPtGen(kFALSE),
+  fDoSeparateTRDrefit(kFALSE),
   fIsEsd(kFALSE),
   fGeneratorLevel(nullptr),
   fDetectorLevel(nullptr),
@@ -51,6 +53,7 @@ AliEmcalTrackingQATask::AliEmcalTrackingQATask(const char *name) :
   AliAnalysisTaskEmcalLight("AliEmcalTrackingQA", kTRUE),
   fDoSigma1OverPt(kFALSE),
   fDoSigmaPtOverPtGen(kFALSE),
+  fDoSeparateTRDrefit(kFALSE),
   fIsEsd(kFALSE),
   fGeneratorLevel(nullptr),
   fDetectorLevel(nullptr),
@@ -216,7 +219,7 @@ void AliEmcalTrackingQATask::AllocateDetectorLevelTHnSparse()
   axis.push_back(std::make_tuple("#eta", fEtaHistBins.begin(), fEtaHistBins.end()));
   axis.push_back(std::make_tuple("#phi", fPhiHistBins.begin(), fPhiHistBins.end()));
   axis.push_back(std::make_tuple("MC Generator", fIntegerHistBins.begin(), fIntegerHistBins.begin() + 3));
-  axis.push_back(std::make_tuple("track type", fIntegerHistBins.begin(), fIntegerHistBins.begin() + 4));
+  axis.push_back(std::make_tuple("track type", fIntegerHistBins.begin(), fIntegerHistBins.begin() + (fDoSeparateTRDrefit ? 9 : 5)));
 
   if (fDoSigma1OverPt) {
     axis.push_back(std::make_tuple("#sigma(1/#it{p}_{T}) (GeV/#it{c})^{-1}", f1OverPtResHistBins.begin(), f1OverPtResHistBins.end()));
@@ -273,7 +276,7 @@ void AliEmcalTrackingQATask::AllocateMatchedParticlesTHnSparse()
   axis.push_back(std::make_tuple("#it{p}_{T}^{det} (GeV/#it{c})", fPtHistBins.begin(), fPtHistBins.end()));
   axis.push_back(std::make_tuple("#eta^{det}", fEtaHistBins.begin(), fEtaHistBins.end()));
   axis.push_back(std::make_tuple("#phi^{det}", fPhiHistBins.begin(), fPhiHistBins.end()));
-  axis.push_back(std::make_tuple("track type", fIntegerHistBins.begin(), fIntegerHistBins.begin() + 4));
+  axis.push_back(std::make_tuple("track type", fIntegerHistBins.begin(), fIntegerHistBins.begin() + (fDoSeparateTRDrefit ? 9 : 5)));
 
   if (fDoSigma1OverPt) {
     axis.push_back(std::make_tuple("(#it{p}_{T}^{gen} - #it{p}_{T}^{det}) / #it{p}_{T}^{gen}", fPtRelDiffHistBins.begin(), fPtRelDiffHistBins.end()));
@@ -293,6 +296,7 @@ void AliEmcalTrackingQATask::AllocateMatchedParticlesTHnSparse()
 void AliEmcalTrackingQATask::FillDetectorLevelTHnSparse(Double_t cent, Double_t trackEta, Double_t trackPhi, Double_t trackPt, 
     Double_t sigma1OverPt, Int_t mcGen, Byte_t trackType)
 {
+  AliDebugStream(10) << "Filling detector level THnSparse" << std::endl;
   std::vector<Double_t> contents(fTracks->GetNdimensions());
 
   for (Int_t i = 0; i < fTracks->GetNdimensions(); i++) {
@@ -390,16 +394,22 @@ void AliEmcalTrackingQATask::FillMatchedParticlesTHnSparse(Double_t cent, Double
  */
 Bool_t AliEmcalTrackingQATask::FillHistograms()
 {
+  AliDebugStream(1) << "Called: Tracks [" << fDetectorLevel->GetNTracks() << "], Accepted [" << fDetectorLevel->GetNAcceptedTracks() << "]\n";
   auto iterable = fDetectorLevel->accepted_momentum();
   for (auto trackIterator = iterable.begin(); trackIterator != iterable.end(); trackIterator++) {
     auto track = trackIterator->second;
     Byte_t type = fDetectorLevel->GetTrackType(track);
-    if (type <= 2) {
+    AliDebugStream(2) << "Next track of type " << static_cast<Int_t>(type) << std::endl;
+    Byte_t ntracklets = 0;
+    if (type <= 3) {
       Double_t sigma = 0;
       
       if (fIsEsd) {
         AliESDtrack *esdTrack = dynamic_cast<AliESDtrack*>(track);
-        if (esdTrack) sigma = TMath::Sqrt(esdTrack->GetSigma1Pt2());
+        if (esdTrack){
+          sigma = TMath::Sqrt(esdTrack->GetSigma1Pt2());
+          ntracklets = esdTrack->GetTRDntracklets();
+        }
       }
       else { // AOD
         AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(track);
@@ -418,6 +428,13 @@ Bool_t AliEmcalTrackingQATask::FillHistograms()
         exParam.Set(xyz,pxpypz,cov,sign);
 
         sigma = TMath::Sqrt(exParam.GetSigma1Pt2());
+        ntracklets = track->GetTRDntrackletsPID();
+      }
+
+      if(fDoSeparateTRDrefit) {
+        // Gold condition:
+        // - at least 3 TRD tracklets (with this cut track without TRD in global track fit is at % level)
+        if(ntracklets < 3) type += 4;    // failed TRD gold condition
       }
 
       Int_t label = TMath::Abs(track->GetLabel());
@@ -473,7 +490,7 @@ Bool_t AliEmcalTrackingQATask::FillHistograms()
  * @param isMC Whether it is an MC analysis
  * @return Pointer to the newly created object
  */
-AliEmcalTrackingQATask* AliEmcalTrackingQATask::AddTaskTrackingQA(Bool_t isMC)
+AliEmcalTrackingQATask* AliEmcalTrackingQATask::AddTaskTrackingQA(Bool_t isMC, const char *suffix)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -507,6 +524,7 @@ AliEmcalTrackingQATask* AliEmcalTrackingQATask::AddTaskTrackingQA(Bool_t isMC)
 
   // Init the task and do settings
   TString name("AliEmcalTrackingQATask");
+  if(strlen(suffix)) name += TString::Format("_%s", suffix);
   AliInfoClassStream() << "Allocating task." << std::endl;
   AliEmcalTrackingQATask *qaTask = new AliEmcalTrackingQATask(name);
   qaTask->SetVzRange(-10,10);

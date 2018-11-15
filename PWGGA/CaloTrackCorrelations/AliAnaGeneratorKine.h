@@ -74,8 +74,8 @@ public:
     
   void    MakeAnalysisFillHistograms() ;
   
-  void    SetTriggerDetector( TString & det ) ;
-  void    SetTriggerDetector( Int_t  det )    ;
+  void    SetTriggerDetector( TString det ) ;
+  void    SetTriggerDetector( Int_t   det ) ;
   
   void    SetMinChargedPt   ( Float_t pt )   { fMinChargedPt    = pt   ; }
   void    SetMinNeutralPt   ( Float_t pt )   { fMinNeutralPt    = pt   ; }

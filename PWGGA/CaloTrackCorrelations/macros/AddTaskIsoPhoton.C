@@ -803,9 +803,6 @@ void ConfigureMC(AliAnaCaloTrackCorrBaseClass* ana, Bool_t simu = kFALSE)
 {
   if(simu) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else     ana->SwitchOffDataMC() ;
-
-  //Set here generator name, default pythia
-  //ana->GetMCAnalysisUtils()->SetMCGenerator("");
 }
 
 ///
@@ -845,7 +842,7 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter
   histoRanges->SetHistodRRangeAndNBins(0.,0.15,150);//QA
 
   // QA, electron, charged
-  histoRanges->SetHistoPOverERangeAndNBins(0,  2.5 ,500);
+  histoRanges->SetHistoEOverPRangeAndNBins(0,  2.5 ,500);
   histoRanges->SetHistodEdxRangeAndNBins  (0.,250.0,500);
 
   // QA

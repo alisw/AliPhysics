@@ -101,17 +101,18 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
   // event shape for data (from ESD)
   Double_t directivity_plus = fEvInfo->GetEventShape()->GetDirectivity(1);
-  // Double_t directivity_minus = fEvInfo->GetEventShape()->GetDirectivity(0);
+  Double_t directivity_minus = fEvInfo->GetEventShape()->GetDirectivity(0);
 
   vec_hNoEvts[0] = 0.;
   // hNoEvts->Fill(vec_hNoEvts);
 
-/*
+
+  Double_t directivity = -2;
+  
+  /*
   // select events with both dirs in the same interval
   const Int_t lenght = 4;
   Double_t intervals[lenght] = {0., 0.3, 0.6, 1.0};
-
-  Double_t directivity = -2;
 
   // NOTE: the intervals are considered half-closed: (a,b]
   if( (directivity_plus >= intervals[0]) && (directivity_plus <= intervals[lenght-1]) ){
@@ -129,17 +130,24 @@ void AliMESpidTask::UserExec(Option_t *opt)
       }
   }
 */
-  Double_t directivity = directivity_plus;
+  // select events with both dirs close 
+  if(TMath::Abs(directivity_plus - directivity_minus) < 0.2){
+    directivity = (directivity_plus + directivity_minus) / 2.0;
+  }
 
+/*
+  // select events using only dir plus
+  Double_t directivity = directivity_plus;
+*/
 
   // event shape for MC (from MC event)
   Double_t MC_directivity_plus = 0;
-  // Double_t MC_directivity_minus = 0;
+  Double_t MC_directivity_minus = 0;
   Double_t MC_directivity = 0;
   if( HasMCdata() ){ // run only on MC
-      MC_directivity_plus = fMCevInfo->GetEventShape()->GetDirectivity(1);
+      // MC_directivity_plus = fMCevInfo->GetEventShape()->GetDirectivity(1);
       // MC_directivity_minus = fMCevInfo->GetEventShape()->GetDirectivity(0);
-      // MC_directivity =  (MC_directivity_plus + MC_directivity_minus) / 2.0;
+      MC_directivity =  (MC_directivity_plus + MC_directivity_minus) / 2.0;
       MC_directivity = MC_directivity_plus;
   }
 
@@ -177,7 +185,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
   vec_hNoEvts[6] = 0;
   if( HasMCdata() ){
     vec_hNoEvts[4] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kGlob08);
-	vec_hNoEvts[5] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kV0M);
+	  vec_hNoEvts[5] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kV0M);
     vec_hNoEvts[6] = MC_directivity;
   }
 

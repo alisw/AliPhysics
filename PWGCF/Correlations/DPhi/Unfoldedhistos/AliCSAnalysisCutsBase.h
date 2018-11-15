@@ -126,6 +126,7 @@ public:
     /// \name 2013MC
     /// \brief MC's corresponding to 2013 data
     ///@{
+    kLHC13b2,         ///< anchored LHC13[b-c] pass 2
     kLHC13b2_efix,    ///< anchored LHC13[b-c] pass 2
     kLHC13e7,         ///< anchored LHC13[b-c] pass 2
     kLHC14b2,         ///< anchored LHC13[b-c] pass 2

@@ -55,8 +55,8 @@ public:
 		else return -999.;
 	}
 
-	ULong_t GetFlags() const {return fFlags;}
-	ULong_t GetStatus() const {return GetFlags();}
+	ULong64_t GetFlags() const {return fFlags;}
+	ULong64_t GetStatus() const {return GetFlags();}
 	UInt_t GetFilterMap() const {return fFilterMap;}
 	Bool_t TestFilterMask(UInt_t filterMask) const {return (Bool_t)((filterMask & fFilterMap) == filterMask);}
 
@@ -166,7 +166,7 @@ private:
 	Double_t			fY[3];				// Reconstructed Rapidity for pi,K,p.
 	Double_t			fPhi;				// Reconstructed Phi.
 
-	ULong_t				fFlags;				// Reconstruction Flags.
+	ULong64_t			fFlags;				// Reconstruction Flags.
 	UInt_t				fFilterMap;			// FilterMap.
 
 	Short_t				fID;				// Track ID.
@@ -211,7 +211,7 @@ public:
 private:
 	Int_t				fDebug;				// Debug flag.
 
-	ClassDef(AliTrackDiHadronPID,1);
+	ClassDef(AliTrackDiHadronPID,2);
 
 };
 

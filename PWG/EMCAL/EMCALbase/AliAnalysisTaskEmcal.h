@@ -698,6 +698,19 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   virtual Bool_t              IsEventSelected();
 
   /**
+   * @brief Selection of a hardware trigger
+   * 
+   * The function is used in the default implementation of 
+   * IsEventSelected in order to perform the trigger selection.
+   * Users can reimplement the function in order to perform the
+   * trigger selection of their choise. The default implementation
+   * checks for the trigger bits specified in the task configuration.
+   * 
+   * @return True if the event is selected as triggered event, false otherwise 
+   */
+  virtual Bool_t              IsTriggerSelected();
+
+  /**
    * @brief Retrieve common objects from event.
    *
    * Several object used for the analysis are handled by the

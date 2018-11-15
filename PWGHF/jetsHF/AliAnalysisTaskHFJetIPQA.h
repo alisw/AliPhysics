@@ -72,12 +72,13 @@ public:
 
     //UTILITY STRUCT DEFINITIONS
     struct SJetIpPati {
-        SJetIpPati(Double_t v1, Double_t v2, Bool_t b, Bool_t c,Int_t tl): first(v1),second(v2),is_electron(b),is_fromB(c),trackLabel(tl){}
+        SJetIpPati(Double_t v1, Double_t v2, Bool_t b, Bool_t c,Int_t tl,Double_t pt): first(v1),second(v2),is_electron(b),is_fromB(c),trackLabel(tl),trackpt(pt){}
         Double_t first; // to be compatible with std::pair
         Double_t second;// to be compatible with std::pair
         Bool_t   is_electron; // added for electron contribution check
         Bool_t   is_fromB; // added for electron contribution check
         Int_t trackLabel=-1 ;
+        Double_t trackpt=-99;
     };
     //FUNCTION DEFINITIONS
     AliAnalysisTaskHFJetIPQA();
@@ -93,6 +94,7 @@ public:
     void SetUseMonteCarloWeighingLinus(TH1F *Pi0 ,TH1F *Eta,TH1F *EtaP,TH1F *Rho,TH1F *Phi,TH1F *Omega,TH1F *K0s,TH1F *Lambda,TH1F *ChargedPi,
                                        TH1F *ChargedKaon,TH1F *Proton,TH1F *D0,TH1F *DPlus,TH1F *DStarPlus,
                                        TH1F *DSPlus,TH1F *LambdaC,TH1F *BPlus,TH1F *B0,TH1F *LambdaB,TH1F *BStarPlus);
+    void SetFlukaFactor(TGraph* GraphOmega, TGraph* GraphXi, TGraph* K0Star, TGraph* Phi);
     void localtoglobal(double alpha, double *local, double *global);
     Bool_t FillTrackHistograms(AliVTrack * track, double * dca , double *cov,double weight);
     void EventwiseCleanup();
@@ -110,6 +112,7 @@ public:
     AliExternalTrackParam GetExternalParamFromJet(const AliEmcalJet *jet, const AliAODEvent *event);
     Bool_t GetImpactParameterWrtToJet(const AliAODTrack *track, const AliAODEvent *event, const AliEmcalJet *jet, Double_t *dca, Double_t *cov, Double_t *XYZatDCA, Double_t &jetsign);
     Bool_t getJetVtxMass( AliEmcalJet *jet, double &value);
+    void SetJetRadius(Double_t fJetRadRead){fJetRadius=fJetRadRead;}
     int GetMCTruth(AliAODTrack *track, int &motherpdg);
     bool GetPIDCombined(AliAODTrack * track, double *prob, int &nDetectors, UInt_t &usedDet , AliPID::EParticleType &MostProbablePID, bool setTrackPID );
     void setFProductionNumberPtHard(Int_t value=-1)
@@ -254,6 +257,7 @@ private:
     AliPIDCombined *fCombined ;//!
     Float_t fXsectionWeightingFactor;//
     Int_t   fProductionNumberPtHard;//
+    Double_t fJetRadius;//
     Double_t fMCglobalDCAxyShift;//
     Double_t fMCglobalDCASmear;//
     Double_t fVertexRecalcMinPt;//
@@ -323,7 +327,7 @@ private:
 
 
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 26)
+    ClassDef(AliAnalysisTaskHFJetIPQA, 28)
 };
 
 #endif

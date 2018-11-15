@@ -55,6 +55,13 @@ void AddTask_K0toPi0Pi0(Bool_t runLightOutput = kFALSE,
    //=========  Set Cutnumber for V0Reader ================================
   //TString cutnumberPhoton = "00200008400000002200000000";
   TString cutnumberPhoton = "00000000000000000000000000";
+  if (  periodNameV0Reader.CompareTo("LHC16f") == 0 || periodNameV0Reader.CompareTo("LHC17g")==0 || periodNameV0Reader.CompareTo("LHC18c")==0 ||
+        periodNameV0Reader.CompareTo("LHC17d1") == 0  || periodNameV0Reader.CompareTo("LHC17d12")==0 ||
+        periodNameV0Reader.CompareTo("LHC17h3")==0 || periodNameV0Reader.CompareTo("LHC17k1")==0 ||
+        periodNameV0Reader.CompareTo("LHC17f8b") == 0 ||
+        periodNameV0Reader.CompareTo("LHC16P1JJLowB") == 0 || periodNameV0Reader.CompareTo("LHC16P1Pyt8LowB") == 0 )
+    cutnumberPhoton         = "00000088400000000100000000";
+
   if (trainConfig != 4){
     TString cutnumberEvent = "00000003";
   }else if(trainConfig == 4){

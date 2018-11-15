@@ -105,6 +105,8 @@ AliAnalysisTaskSE(),
   fPriorsUsed(),
   fpartOfInterest(),
   fFB(),
+  fRejectCheckGenName(kFALSE),
+  fGenToBeKept("Hijing"),
   fbayesth1(0.75),
   fbayesth2(0.80),
   fbayesth3(0.9)
@@ -373,11 +375,7 @@ void AliAnalysisTaskPIDPerformCombIDPtDep::UserExec(Option_t *)
     }
 
     AliMultSelection *multSelection;
-    if(!multSelection) {
-      AliWarning("AliMultSelection object not found!");
-    }
-    
-    
+
     //Centrality stuff
     Double_t nCentrality = 0;
     if(fUseCentrality){
@@ -392,6 +390,11 @@ void AliAnalysisTaskPIDPerformCombIDPtDep::UserExec(Option_t *)
       
       else {
 	multSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
+          
+    if(!multSelection) {
+            AliWarning("AliMultSelection object not found!");
+    }
+          
 	nCentrality = multSelection->GetMultiplicityPercentile(fCentralityEstimator, kTRUE);
 
 	if ((nCentrality < fCentralityPercentileMin) || (nCentrality >= fCentralityPercentileMax)) return;
@@ -458,11 +461,14 @@ void AliAnalysisTaskPIDPerformCombIDPtDep::UserExec(Option_t *)
       //Printf("AODmcTrack=%p, pdgcode =%d, gAODmcCharge=%d", AODmcTrack, pdgcode, gAODmcCharge);
       Int_t pdgIndex =-1;
      
+        
+      if (fRejectCheckGenName){
       TString generatorName;
       Bool_t hasGenerator = mcEvent->GetCocktailGenerator(label,generatorName);
-      if((!hasGenerator) || (!generatorName.Contains("Hijing")))
-	continue;
-
+      if((!hasGenerator) || (!generatorName.Contains(fGenToBeKept.Data())))
+        continue;
+      }
+        
       if (!(AODmcTrack->IsPhysicalPrimary())) continue;
 
       Double_t y = AODmcTrack->Y();

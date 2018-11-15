@@ -37,7 +37,7 @@
 #include "TF1.h"
 #include "TFile.h"
 #include "TDatabasePDG.h"
-#include "AliMathBase.h"
+#include "AliExternalTrackParam.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 #include "AliTPCdEdxInfo.h"
@@ -3328,14 +3328,14 @@ void  AliAnalysisTaskEbyeIterPID::SelectCleanSamplesFromV0s(AliESDv0 *v0, AliESD
   Double_t EPullEff  = v0->GetEffMass(0,0)/TMath::Sqrt((5e-03)*(5e-03)+(1.e-04*v0->Pt())*(1.e-04*v0->Pt()));
 
   // 
-  //   tree->SetAlias("dEdx0DProton","AliMathBase::BetheBlochAleph(track0.fIp.P()/massProton)");
-  //   tree->SetAlias("dEdx1DProton","AliMathBase::BetheBlochAleph(track1.fIp.P()/massProton)");
-  //   tree->SetAlias("dEdx0DPion","AliMathBase::BetheBlochAleph(track0.fIp.P()/massPion)");
-  //   tree->SetAlias("dEdx1DPion","AliMathBase::BetheBlochAleph(track1.fIp.P()/massPion)");
-  Double_t dEdx0DProton = AliMathBase::BetheBlochAleph(track0->GetInnerParam()->GetP()/massProton);
-  Double_t dEdx1DProton = AliMathBase::BetheBlochAleph(track1->GetInnerParam()->GetP()/massProton);
-  Double_t dEdx0DPion   = AliMathBase::BetheBlochAleph(track0->GetInnerParam()->GetP()/massPion);
-  Double_t dEdx1DPion   = AliMathBase::BetheBlochAleph(track1->GetInnerParam()->GetP()/massPion);
+  //   tree->SetAlias("dEdx0DProton","AliExternalTrackParam::BetheBlochAleph(track0.fIp.P()/massProton)");
+  //   tree->SetAlias("dEdx1DProton","AliExternalTrackParam::BetheBlochAleph(track1.fIp.P()/massProton)");
+  //   tree->SetAlias("dEdx0DPion","AliExternalTrackParam::BetheBlochAleph(track0.fIp.P()/massPion)");
+  //   tree->SetAlias("dEdx1DPion","AliExternalTrackParam::BetheBlochAleph(track1.fIp.P()/massPion)");
+  Double_t dEdx0DProton = AliExternalTrackParam::BetheBlochAleph(track0->GetInnerParam()->GetP()/massProton);
+  Double_t dEdx1DProton = AliExternalTrackParam::BetheBlochAleph(track1->GetInnerParam()->GetP()/massProton);
+  Double_t dEdx0DPion   = AliExternalTrackParam::BetheBlochAleph(track0->GetInnerParam()->GetP()/massPion);
+  Double_t dEdx1DPion   = AliExternalTrackParam::BetheBlochAleph(track1->GetInnerParam()->GetP()/massPion);
 
   //   tree->SetAlias("K0Like0","exp(-K0Pull^2)*livetimeLikeK0");
   //   tree->SetAlias("LLike0","exp(-LPull^2)*livetimeLikeLambda");

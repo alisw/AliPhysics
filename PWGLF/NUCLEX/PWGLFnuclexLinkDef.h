@@ -1,6 +1,6 @@
 #ifdef __CINT__
 
-#pragma link off all glols;
+#pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
 
@@ -28,6 +28,8 @@
 #pragma link C++ typedef FourVector_t;
 
 /// Nuclei
+/// * Absorption
+#pragma link C++ class AliAnalysisTaskDeuteronAbsorption+;
 /// * DeltaMasses
 #pragma link C++ class AliAnalysisNucleiMass+;
 #pragma link C++ class AliAnalysisNuclMult+;
@@ -43,7 +45,8 @@
 #pragma link C++ class AliAnalysisTaskNucleiYieldESD+;
 #pragma link C++ class AliAnalysisTaskNucleiPIDqa+;
 #pragma link C++ class AliAnalysisTaskSignalLoss+;
-
+/// * ReducedTreeNuclei
+#pragma link C++ class AliAnalysisTaskReducedTreeNuclei+;
 /// * Nucleipp
 #pragma link C++ class AliLnID+;
 #pragma link C++ class AliLnHistoMap+;
@@ -57,6 +60,7 @@
 #pragma link C++ class AliAnalysisTaskAllPtcv2+;
 /// * NucleiKine
 #pragma link C++ class AliAnalysisTaskNucleiKine+;
+#pragma link C++ class AliAnalysisTaskNucleiKineCor+;
 
 /// Hypernuclei
 /// * Hyp2body
@@ -89,4 +93,6 @@
 #pragma link C++ class AliAnalysisCODEX::Track+;
 #pragma link C++ class std::vector<AliAnalysisCODEX::Track>+;
 #pragma link C++ class AliAnalysisCODEXtask+;
+/// * NucleiSkimAOD
+#pragma link C++ class AliAnalysisTaskNucleiSkimAOD+;
 #endif

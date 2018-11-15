@@ -71,7 +71,11 @@ AliAnalysisTaskRecursiveSoftDrop::AliAnalysisTaskRecursiveSoftDrop() :
   fhJetEta(0x0),
   fhDetJetPt_Matched(0x0),
   fTreeRecursive_Det(0),
-  fTreeRecursive_True(0)
+  fTreeRecursive_True(0),
+  fAddMedScat(kFALSE),
+  fAddMedScatPtFrac(1),
+  fAddMedScatN(100),
+  fDoSubJetAreaSub(kFALSE)
 
 {
   for(Int_t i=0;i<5;i++){
@@ -101,7 +105,12 @@ AliAnalysisTaskRecursiveSoftDrop::AliAnalysisTaskRecursiveSoftDrop(const char *n
   fhJetEta(0x0),
   fhDetJetPt_Matched(0x0),
   fTreeRecursive_Det(0),
-  fTreeRecursive_True(0)
+  fTreeRecursive_True(0),
+  fAddMedScat(kFALSE),
+  fAddMedScatPtFrac(1),
+  fAddMedScatN(100),
+  fDoSubJetAreaSub(kFALSE)
+
 {
   // Standard constructor.
   for(Int_t i=0;i<5;i++){
@@ -340,6 +349,20 @@ void AliAnalysisTaskRecursiveSoftDrop::RecursiveParents(AliEmcalJet *fJet,AliJet
       fInputVectors.push_back(PseudoTracks);
      
     }
+  if(fAddMedScat){
+    for(int i = 0; i < fAddMedScatN; i++){
+      TRandom3 rand1(0),rand2(0),rand3(0); //set range +- jet R
+      Double_t randN1 = 0.4*0.4*rand1.Rndm();
+      Double_t randN2 = 2*TMath::Pi()*rand2.Rndm();
+      Double_t phi_rand = (fJet->Phi())+TMath::Sqrt(randN1)*TMath::Sin(randN2);
+      Double_t eta_rand = (fJet->Eta())+TMath::Sqrt(randN1)*TMath::Cos(randN2);
+      Double_t fAddMedScatPt = (fAddMedScatPtFrac*fJet->Pt())/fAddMedScatN;
+      PseudoTracks.reset(fAddMedScatPt*TMath::Cos(phi_rand),fAddMedScatPt*TMath::Sin(phi_rand),fAddMedScatPt/TMath::Tan(eta_rand),fAddMedScatPt);
+      PseudoTracks.set_user_index(i+fJet->GetNumberOfTracks()+100);
+      fInputVectors.push_back(PseudoTracks);
+    }
+  }
+
 
 
 
@@ -370,9 +393,15 @@ void AliAnalysisTaskRecursiveSoftDrop::RecursiveParents(AliEmcalJet *fJet,AliJet
     Double_t jet_pT=jj.perp();
     while(jj.has_parents(j1,j2)){
       n++;
-      if(j1.perp() < j2.perp()) swap(j1,j2);
+      double area1 = j1.area();
+      double area2 = j2.area();
+      if((j1.perp()-area1*GetRhoVal(0)) < (j2.perp()-area2*GetRhoVal(0))) swap(j1,j2);
+      area1 = j1.area();
+      area2 = j2.area();
       double delta_R=j1.delta_R(j2);
-      double z=j2.perp()/(j1.perp()+j2.perp());
+      double z = 0;
+      if(fJetShapeSub==kNoSub && fDoSubJetAreaSub == kTRUE) z = (j2.perp()-area2*GetRhoVal(0))/((j1.perp()-area1*GetRhoVal(0))+(j2.perp()-area2*GetRhoVal(0)));
+      else z=j2.perp()/(j1.perp()+j2.perp());
       if(bTruth) {
 	fShapesVar_True[0]=jet_pT;
 	fShapesVar_True[1]=z;

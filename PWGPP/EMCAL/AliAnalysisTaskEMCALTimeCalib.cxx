@@ -16,6 +16,7 @@
 #include <TChain.h>
 #include <TTree.h>
 #include <TFile.h>
+#include <TF1.h>
 #include <TH1F.h>
 #include <TH1D.h>
 #include <TH2D.h>
@@ -35,12 +36,12 @@
 #include "AliVEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliAODInputHandler.h"
-#include "AliESDpid.h"
-#include "AliTOFcalib.h"
+//#include "AliESDpid.h"
+//#include "AliTOFcalib.h"
 #include "AliCDBManager.h"
 #include "AliRunTag.h"
 
-#include "AliTOFT0maker.h"
+//#include "AliTOFT0maker.h"
 #include "AliVCluster.h"
 #include "AliESDCaloCluster.h"
 #include "AliVCaloCells.h"
@@ -57,15 +58,15 @@
 ClassImp(AliAnalysisTaskEMCALTimeCalib) ;
 /// \endcond
 
-using std::cout;
-using std::endl;
+//using std::cout;
+//using std::endl;
 
 //________________________________________________________________________
 /// Constructor
 AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
 : AliAnalysisTaskSE(name),
   fRunNumber(-1),
-  fTOFmaker(0),
+  //  fTOFmaker(0),
   fOutputList(0x0),
   fgeom(0),
   fGeometryName(),
@@ -176,7 +177,7 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   //set default cuts for calibration and geometry name
   SetDefaultCuts();
 
-  //T0 TOF time
+  //T0 TOF time 
   PrepareTOFT0maker();
 
   // Define input and output slots here
@@ -361,20 +362,20 @@ void AliAnalysisTaskEMCALTimeCalib::PrepareTOFT0maker()
   cdb->SetDefaultStorage("raw://");
   cdb->SetRun(fRunNumber);
   
-  AliESDpid *extPID=new AliESDpid();
-
-  // Wonder if some have to be declared as private variables??
-  // AliESDpid *extPID = new AliESDpid();
-  // AliTOFcalib * tofCalib = new AliTOFcalib();
-  // tofCalib->SetCalibrateTOFsignal(kTRUE);
-  // tofCalib->Init();
-  
-  fTOFmaker = new AliTOFT0maker(extPID);
-  fTOFmaker->SetTimeResolution(115.0); // if you want set the TOF res
-  // fTOFmaker = new AliTOFT0maker(extPID,tofCalib);
-  // fTOFmaker->SetTimeResolution(130.0);
-
-  //cout<<"extPID "<<extPID<<" fTOFmaker "<<fTOFmaker<<endl;
+//  AliESDpid *extPID=new AliESDpid();
+//
+//  // Wonder if some have to be declared as private variables??
+//  // AliESDpid *extPID = new AliESDpid();
+//  // AliTOFcalib * tofCalib = new AliTOFcalib();
+//  // tofCalib->SetCalibrateTOFsignal(kTRUE);
+//  // tofCalib->Init();
+//  
+//  fTOFmaker = new AliTOFT0maker(extPID);
+//  fTOFmaker->SetTimeResolution(115.0); // if you want set the TOF res
+//  // fTOFmaker = new AliTOFT0maker(extPID,tofCalib);
+//  // fTOFmaker->SetTimeResolution(130.0);
+//
+//  //cout<<"extPID "<<extPID<<" fTOFmaker "<<fTOFmaker<<endl;
   
 }// End PrepareTOFT0maker
 
@@ -772,21 +773,21 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
 //    //  	cout<<"tofT0maker per run"<<fRunNumber<<endl;
 //  }// fi Check if run number has changed
   
-  // --- Use of AliTOFT0maker
-  Double_t calcolot0=0.0;
-  if(!AODEvent()){
-    Double_t* timeTOFtable;
-    timeTOFtable=fTOFmaker->ComputeT0TOF(dynamic_cast<AliESDEvent*>(event));
-    AliDebug(2,Form("TOF time %f ps, resolution %f ps, tracks at TOF %f/used %f",timeTOFtable[0],timeTOFtable[1],timeTOFtable[3],timeTOFtable[7]));
-    //cout<<"event time "<<timeTOFtable[0]<<" resolution "<<timeTOFtable[1]<<"ps av. ev. time "<<timeTOFtable[2]<<" trks at TOF "<<timeTOFtable[3]<<" calc evnt time "<<timeTOFtable[4]<<" resolution "<<timeTOFtable[5]<<" tracks used "<<timeTOFtable[7]<<endl;
-    calcolot0=timeTOFtable[0];
-  }
+//  // --- Use of AliTOFT0maker
+//  Double_t calcolot0=0.0;
+//  if(!AODEvent()){
+//    Double_t* timeTOFtable;
+//    timeTOFtable=fTOFmaker->ComputeT0TOF(dynamic_cast<AliESDEvent*>(event));
+//    AliDebug(2,Form("TOF time %f ps, resolution %f ps, tracks at TOF %f/used %f",timeTOFtable[0],timeTOFtable[1],timeTOFtable[3],timeTOFtable[7]));
+//    //cout<<"event time "<<timeTOFtable[0]<<" resolution "<<timeTOFtable[1]<<"ps av. ev. time "<<timeTOFtable[2]<<" trks at TOF "<<timeTOFtable[3]<<" calc evnt time "<<timeTOFtable[4]<<" resolution "<<timeTOFtable[5]<<" tracks used "<<timeTOFtable[7]<<endl;
+//    calcolot0=timeTOFtable[0];
+//  }
 
-  if(fFillHeavyHisto) {
-    fhcalcEvtTime->Fill(calcolot0);
-    if(calcolot0 != 0 && event->GetTOFHeader()->GetDefaultEventTimeVal() != 0 )
-      fhEvtTimeDiff->Fill(calcolot0-event->GetTOFHeader()->GetDefaultEventTimeVal());
-  }
+//  if(fFillHeavyHisto) {
+//    fhcalcEvtTime->Fill(calcolot0);
+//    if(calcolot0 != 0 && event->GetTOFHeader()->GetDefaultEventTimeVal() != 0 )
+//      fhEvtTimeDiff->Fill(calcolot0-event->GetTOFHeader()->GetDefaultEventTimeVal());
+//  }
 
   TRefArray* caloClusters = new TRefArray();
   event->GetEMCALClusters(caloClusters);
@@ -968,12 +969,12 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
 	}
       }
       
-      if(fFillHeavyHisto) {
-	if(amp>0.9) {
-	  fhTcellvsTOFT0HD->Fill(calcolot0, hkdtime);
-	}
-	fhTcellvsTOFT0->Fill(calcolot0, hkdtime-offset-offsetPerSM-L1shiftOffset);
-      }
+//      if(fFillHeavyHisto) {
+//	if(amp>0.9) {
+//	  fhTcellvsTOFT0HD->Fill(calcolot0, hkdtime);
+//	}
+//	fhTcellvsTOFT0->Fill(calcolot0, hkdtime-offset-offsetPerSM-L1shiftOffset);
+//      }
 
       hkdtime = hkdtime-timeBCoffset;//time corrected by manual offset (default=0)
       Float_t hkdtimecorr;
@@ -1026,7 +1027,7 @@ void AliAnalysisTaskEMCALTimeCalib::Terminate(Option_t *)
 {
   fOutputList = dynamic_cast<TList*> (GetOutputData(1));
   
-  if(fTOFmaker) delete fTOFmaker;
+  //  if(fTOFmaker) delete fTOFmaker;
 
   if(fL1PhaseList) {
     fL1PhaseList->SetOwner();
@@ -1381,7 +1382,7 @@ const  Double_t upperLimit[]={
       if(ccBC[i]->GetBinContent(j)>0.) emptyCounter++;
     }
     if(emptyCounter<1500) shouldBeEmpty[i]=kTRUE;
-    cout<<"Non-zero channels "<<emptyCounter<<" BC"<<i<<" should be empty: "<<shouldBeEmpty[i]<<endl;
+    printf("Non-zero channels %d BC %d should be empty: %d \n",emptyCounter,i,shouldBeEmpty[i]);
   }
 
   TH1C *hRun=new TH1C(Form("h%d",runNumber),Form("h%d",runNumber),19,0,19);
@@ -1462,7 +1463,7 @@ const  Double_t upperLimit[]={
       hRun->SetBinContent(i,(4-minIndexTmp+minimumIndex)%4);
       //cout<<newMean/25.<<" int "<<(Int_t)(newMean/25.)<<" dif "<< newMean/25.-(Int_t)(newMean/25.)<<endl;
       }
-    cout << "run with missing BC; new L1 phase set to " << hRun->GetBinContent(i)<<endl;
+    printf("run with missing BC; new L1 phase set to %d\n",(Int_t)hRun->GetBinContent(i));
     }//end of patch for LHC16q and other runs with not filled BCs
   }//end of loop over SM
 

@@ -205,6 +205,8 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
     if(cluster->GetType() != AliVCluster::kPHOSNeutral) continue;
     if(cluster->E() < 0.1) continue;//energy is set to 0 GeV in PHOS Tender, if its position is one th bad channel.//0.05 GeV is threshold of seed in a cluster by clustering algorithm.
 
+    if(cluster->GetM20() > 2.0) continue;
+
     //printf("energy = %e , coreE = %e\n",cluster->E(),cluster->GetCoreEnergy());
 
     distance = cluster->GetDistanceToBadChannel();//in cm.
@@ -309,6 +311,7 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
       Bool_t sure = kTRUE;
       Int_t label = FindPrimary(ph,sure);
       ph->SetPrimary(label);
+      //ph->SetPrimary(cluster->GetLabel());
     }
 
     ph->SetLambdas(M20,M02);

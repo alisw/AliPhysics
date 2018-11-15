@@ -28,7 +28,7 @@ class AliPID;
  
 //================================correction
 #define kCENTRALITY 101
-#define kNBRUN 100
+#define kNBRUN 200
 //const Double_t centralityArrayForPbPb[kCENTRALITY+1] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.};
 //const TString centralityArrayForPbPb_string[kCENTRALITY] = {"0-5","5-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80"};
 //================================correction
@@ -39,7 +39,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   enum eCorrProcedure{kNoCorr, kDataDrivCorr, kMCCorr};
   
   AliAnalysisTaskBFPsi(const char *name = "AliAnalysisTaskBFPsi");
-  virtual ~AliAnalysisTaskBFPsi(); 
+  virtual ~AliAnalysisTaskBFPsi();
    
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -166,6 +166,15 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fPDGCodeToBeAnalyzed = gPdgCode;
   }
 
+   void SetRejectInjectedSignals() {fExcludeInjectedSignals = kTRUE;}
+
+   void SetRejectInjectedSignalsGenName(TString genToBeKept) {
+    fGenToBeKept = genToBeKept; 
+    fRejectCheckGenName=kTRUE;
+    fExcludeInjectedSignals = kTRUE;
+  }
+
+   
   //Centrality
   void SetCentralityEstimator(const char* centralityEstimator) {fCentralityEstimator = centralityEstimator;}
   const char* GetCentralityEstimator(void)  const              {return fCentralityEstimator;}
@@ -241,6 +250,10 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fUsePID = kTRUE; fUsePIDPropabilities = kFALSE; fUsePIDnSigma = kTRUE;
     fPIDNSigma = gMaxNSigma;} //not used at the moment. Values are hardcoded in the .cxx for the different species
   
+  void SetUseNSigmaPIDNewTrial(Double_t gMaxNSigmaNewTrial) {
+        fUsePIDNewTrial = kTRUE; fUsePIDPropabilities = kFALSE; fUsePIDnSigma = kTRUE;
+        fPIDNSigma = gMaxNSigmaNewTrial;}
+    
   void SetPIDMomCut(Float_t pidMomCut)  {fPIDMomCut = pidMomCut;} // pT threshold to move from TPC only and TPC+TOF for both methods: Bayes and nSigma Combined. usually 0.6 for pi and p and 0.4 for K.
   
   void SetDetectorUsedForPID(kDetectorUsedForPID detConfig) {
@@ -319,7 +332,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TList *fListNUA;  //fList of TH3F for NUA run-by-run corrections
   TList *fListNUE;   //fList of TH1F for NUE run-by-run corrections
 
-  AliAnalysisTaskBFPsi::eCorrProcedure fCorrProcedure; 
+  AliAnalysisTaskBFPsi::eCorrProcedure fCorrProcedure;
 
   //defualt kFALSE to be switch on for old correction method
   
@@ -360,6 +373,10 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH3F *fHistEtaPhiPosCorr;//eta-phi pos particles after corrections  (QA histogram) 
   TH3F *fHistEtaPhiNeg;//eta-phi neg particles (QA histogram)
   TH3F *fHistEtaPhiNegCorr;//eta-phi neg particles after corrections (QA histogram)
+  TH3F *fHistEtaPhiVzPlus;//eta-phi-Vz pos particles (QA histogram)
+  TH3F *fHistEtaPhiVzMinus;//eta-phi-Vz neg particles (QA histogram)
+  TH3F *fHistEtaPhiVzPlusCorr;//eta-phi-Vz pos particles after corrections  (QA histogram)
+  TH3F *fHistEtaPhiVzMinusCorr;//eta-phi-Vz neg particles after corrections (QA histogram)
   TH2F *fHistPhiBefore;//phi before v2 afterburner (QA histogram)
   TH2F *fHistPhiAfter;//phi after v2 afterburner (QA histogram)
   TH2F *fHistPhiPos;//phi for positive particles (QA histogram)
@@ -369,6 +386,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2F *fHistPhivZ;//phi vs Vz (QA histos) 
   TH2F *fHistEtavZ;//eta vs Vz (QA histos)
 
+  TH1F *fHistPdgMC;
+  TH1F *fHistPdgMCAODrec;//pdg code of accepted tracks in MCAODrec
   TH1F *fHistSphericity; //sphericity of accepted tracks
   TH2F *fHistMultiplicityVsSphericity; //multiplicity vs sphericity of accepted tracks
   TH2F *fHistMeanPtVsSphericity; //mean pT vs sphericity of accepted tracks
@@ -429,6 +448,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Double_t fMassParticleOfInterest;//particle mass (for rapidity calculation) 
 
   Bool_t fUsePID; //flag to use PID 
+  Bool_t fUsePIDNewTrial;
   Bool_t fUsePIDnSigma;//flag to use nsigma method for PID
   Bool_t fUsePIDPropabilities;//flag to use probability method for PID
   Bool_t fUseRapidity;//flag to use rapidity instead of pseudorapidity in correlation histograms
@@ -525,6 +545,11 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Int_t fPDGCodeToBeAnalyzed; //Analyze a set of particles in MC and MCAODrec
   Int_t fExcludeResonancePDGInMC;// exclude the resonance with this PDG from the MC analysis
   Int_t fIncludeResonancePDGInMC;// include excluvely this resonance with this PDG to the MC and MCAODrec analysis
+
+  Bool_t fExcludeInjectedSignals; //Flag to reject MC injected signals from MC analysis
+  Bool_t fRejectCheckGenName; // Flag to activate the injected signal rejection based on the name of the MC generator 
+  TString fGenToBeKept; //String to select the generator name that has to be kept for analysis
+  
   TString fEventClass; //Can be "EventPlane", "Centrality", "Multiplicity"
   TString fCustomBinning;//for setting customized binning (for output AliTHn of AliBalancePsi)
   
@@ -545,7 +570,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
   
-  ClassDef(AliAnalysisTaskBFPsi, 14); // example of analysis
+  ClassDef(AliAnalysisTaskBFPsi, 15); // example of analysis
 };
 
 

@@ -92,6 +92,19 @@ class AliAODv0;
 #include "AliCascadeResult.h"
 #include "AliAnalysisTaskWeakDecayVertexer.h"
 
+//stuff for mat corr
+#include <TChain.h>
+#include <TGeoGlobalMagField.h>
+#include "TGeoManager.h"
+#include <TRegexp.h>
+
+#include "AliGeomManager.h"
+#include "AliCDBManager.h"
+#include "AliGRPManager.h"
+#include "AliESDInputHandler.h"
+#include "AliLog.h"
+#include "AliTrackerBase.h"
+
 using std::cout;
 using std::endl;
 
@@ -103,14 +116,16 @@ AliAnalysisTaskWeakDecayVertexer::AliAnalysisTaskWeakDecayVertexer()
 //Options for general task operation
 fTrigType(AliVEvent::kMB),
 fkDoExtraEvSels(kTRUE),
+fkForceResetV0s(kFALSE),
+fkForceResetCascades(kFALSE),
 fMinCentrality(0.0),
-fMaxCentrality(90.0),
+fMaxCentrality(300.0),
 fkRevertexAllEvents(kTRUE),
 //________________________________________________
 //Flags for both V0+cascade vertexer
-fkPreselectDedx ( kTRUE ),
-fkPreselectDedxLambda ( kTRUE ),
-fkExtraCleanup    ( kTRUE ), //extra cleanup: eta, etc
+fkPreselectDedx ( kFALSE ),
+fkPreselectDedxLambda ( kFALSE ),
+fkExtraCleanup    ( kFALSE ), //extra cleanup: eta, etc
 //________________________________________________
 //Flags for V0 vertexer
 fkRunV0Vertexer (kFALSE),
@@ -119,6 +134,8 @@ fkXYCase1 ( kTRUE ),
 fkXYCase2 ( kTRUE ),
 fkResetInitialPositions ( kFALSE ),
 fkDoImprovedDCAV0DauPropagation( kFALSE ),
+fkDoMaterialCorrection( kFALSE ),
+fRunNumber(-1),
 //________________________________________________
 //Flags for cascade vertexer
 fkRunCascadeVertexer    ( kFALSE ),
@@ -126,9 +143,11 @@ fkUseUncheckedChargeCascadeVertexer ( kFALSE ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDoImprovedDCACascDauPropagation ( kFALSE ),
 fkDoXYPlanePreOptCascade( kFALSE ),
-fkDoPureGeometricMinimization( kFALSE ),
+fkDoPureGeometricMinimization( kTRUE ),
 fkDoCascadeRefit( kFALSE ) ,
 fMaxIterationsWhenMinimizing(27),
+fkUseOptimalTrackParams(kFALSE),
+fkUseOptimalTrackParamsBachelor(kFALSE),
 fMinPtV0(   -1 ), //pre-selection
 fMaxPtV0( 1000 ),
 fMinPtCascade(   0.3 ),
@@ -139,7 +158,10 @@ fMassWindowAroundCascade(0.060),
 fHistEventCounter(0),
 fHistCentrality(0),
 fHistNumberOfCandidates(0), //bookkeep total number of candidates analysed
-fHistV0ToBachelorPropagationStatus(0)
+fHistV0ToBachelorPropagationStatus(0),
+fHistV0OptimalTrackParamUse(0),
+fHistV0OptimalTrackParamUseBachelor(0),
+fHistV0Statistics(0)
 //________________________________________________
 {
     
@@ -151,14 +173,16 @@ AliAnalysisTaskWeakDecayVertexer::AliAnalysisTaskWeakDecayVertexer(const char *n
 //Options for general task operation
 fTrigType(AliVEvent::kMB),
 fkDoExtraEvSels(kTRUE),
+fkForceResetV0s(kFALSE),
+fkForceResetCascades(kFALSE),
 fMinCentrality(0.0),
-fMaxCentrality(90.0),
+fMaxCentrality(300.0),
 fkRevertexAllEvents(kTRUE),
 //________________________________________________
 //Flags for both V0+cascade vertexer
-fkPreselectDedx ( kTRUE ),
-fkPreselectDedxLambda ( kTRUE ),
-fkExtraCleanup    ( kTRUE ), //extra cleanup: eta, etc
+fkPreselectDedx ( kFALSE ),
+fkPreselectDedxLambda ( kFALSE ),
+fkExtraCleanup    ( kFALSE ), //extra cleanup: eta, etc
 //________________________________________________
 //Flags for V0 vertexer
 fkRunV0Vertexer (kFALSE),
@@ -167,6 +191,8 @@ fkXYCase1 ( kTRUE ),
 fkXYCase2 ( kTRUE ),
 fkResetInitialPositions ( kFALSE ),
 fkDoImprovedDCAV0DauPropagation( kFALSE ),
+fkDoMaterialCorrection( kFALSE ),
+fRunNumber(-1), 
 //________________________________________________
 //Flags for cascade vertexer
 fkRunCascadeVertexer    ( kFALSE ),
@@ -174,9 +200,11 @@ fkUseUncheckedChargeCascadeVertexer ( kFALSE ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDoImprovedDCACascDauPropagation ( kFALSE ),
 fkDoXYPlanePreOptCascade( kFALSE ),
-fkDoPureGeometricMinimization( kFALSE ),
+fkDoPureGeometricMinimization( kTRUE ),
 fkDoCascadeRefit( kFALSE ) ,
 fMaxIterationsWhenMinimizing(27),
+fkUseOptimalTrackParams(kFALSE),
+fkUseOptimalTrackParamsBachelor(kFALSE),
 fMinPtV0(   -1 ), //pre-selection
 fMaxPtV0( 1000 ),
 fMinPtCascade(   0.3 ), //pre-selection
@@ -187,7 +215,10 @@ fMassWindowAroundCascade(0.060),
 fHistEventCounter(0),
 fHistCentrality(0),
 fHistNumberOfCandidates(0), //bookkeep total number of candidates analysed
-fHistV0ToBachelorPropagationStatus(0)
+fHistV0ToBachelorPropagationStatus(0),
+fHistV0OptimalTrackParamUse(0),
+fHistV0OptimalTrackParamUseBachelor(0),
+fHistV0Statistics(0)
 //________________________________________________
 {
     
@@ -287,7 +318,36 @@ void AliAnalysisTaskWeakDecayVertexer::UserCreateOutputObjects()
         fHistV0ToBachelorPropagationStatus->GetXaxis()->SetBinLabel(10,"Propag OK");
         fListHist->Add(fHistV0ToBachelorPropagationStatus);
     }
-    
+    if(! fHistV0OptimalTrackParamUse ) {
+        //Histogram Output: Event-by-Event
+        fHistV0OptimalTrackParamUse = new TH1D( "fHistV0OptimalTrackParamUse", "Candidate count;Occurrence;Count",3,0,3);
+        fHistV0OptimalTrackParamUse->GetXaxis()->SetBinLabel(1, "Offline prongs used");
+        fHistV0OptimalTrackParamUse->GetXaxis()->SetBinLabel(2, "OTF prongs used");
+        fHistV0OptimalTrackParamUse->GetXaxis()->SetBinLabel(3, "OTF prong use unsuccessful");
+        fListHist->Add(fHistV0OptimalTrackParamUse);
+    }
+    if(! fHistV0OptimalTrackParamUseBachelor ) {
+        //Histogram Output: Event-by-Event
+        fHistV0OptimalTrackParamUseBachelor = new TH1D( "fHistV0OptimalTrackParamUseBachelor", "Candidate count;Occurrence;Count",3,0,3);
+        fHistV0OptimalTrackParamUseBachelor->GetXaxis()->SetBinLabel(1, "Offline prong used");
+        fHistV0OptimalTrackParamUseBachelor->GetXaxis()->SetBinLabel(2, "OTF prong used");
+        fHistV0OptimalTrackParamUseBachelor->GetXaxis()->SetBinLabel(3, "OTF prong use unsuccessful");
+        fListHist->Add(fHistV0OptimalTrackParamUseBachelor);
+    }
+    if(! fHistV0Statistics ) {
+        //Histogram Output: Event-by-Event
+        fHistV0Statistics = new TH1D( "fHistV0Statistics", "Candidate count;stage;Count",9,0,9);
+        fHistV0Statistics->GetXaxis()->SetBinLabel(1, "Pairs considered");
+        fHistV0Statistics->GetXaxis()->SetBinLabel(2, "Pass neg/pos DCA to PV ");
+        fHistV0Statistics->GetXaxis()->SetBinLabel(3, "Pass V0 dau dca");
+        fHistV0Statistics->GetXaxis()->SetBinLabel(4, "Pass X within R2D cut");
+        fHistV0Statistics->GetXaxis()->SetBinLabel(5, "Pass eta cut");
+        fHistV0Statistics->GetXaxis()->SetBinLabel(6, "Pass radius cut");
+        fHistV0Statistics->GetXaxis()->SetBinLabel(7, "Pass CosPA cut");
+        fHistV0Statistics->GetXaxis()->SetBinLabel(8, "Within pT range");
+        fHistV0Statistics->GetXaxis()->SetBinLabel(9, "Passes all, OTF track used");
+        fListHist->Add(fHistV0Statistics);
+    }
     PostData(1, fListHist    );
 }// end UserCreateOutputObjects
 
@@ -311,11 +371,37 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
         return;
     }
     
+    if(fkForceResetV0s)      lESDevent->ResetV0s();
+    if(fkForceResetCascades) lESDevent->ResetCascades();
+    
     Double_t lMagneticField = -10;
     lMagneticField = lESDevent->GetMagneticField( );
     
     //Event taken for analysis! 
     fHistEventCounter->Fill(0.5);
+    
+    if(fkDoMaterialCorrection) {
+        if( lESDevent->GetRunNumber() != fRunNumber){
+            fRunNumber = lESDevent->GetRunNumber();
+            AliWarning(Form("Material corrections enabled! New run detected: %i, loading geometry...",fRunNumber));
+            if (!gGeoManager) {
+                AliCDBManager::Instance()->SetRaw(1);
+                AliCDBManager::Instance()->SetRun(fRunNumber);
+                AliGeomManager::LoadGeometry();
+                AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC TRD");
+            }
+            if (!TGeoGlobalMagField::Instance()->GetField()) {
+                AliGRPManager gm;
+                if(!gm.ReadGRPEntry()) {
+                    AliWarning("Cannot get GRP entry");
+                }
+                if( !gm.SetMagField() ) {
+                    AliWarning("Problem with magnetic field setup");
+                }
+            }
+            AliWarning("Geometry loaded for this run. ");
+        }
+    }
     
     //------------------------------------------------
     // Primary Vertex Requirements Section:
@@ -358,7 +444,7 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
             return;
         }
         
-        if( lPercentile>fMinCentrality && lPercentile<fMaxCentrality ) {
+        if( lPercentile>fMaxCentrality || lPercentile<fMinCentrality ) {
             //Event outside desired window
             PostData(1, fListHist    );
             return;
@@ -380,7 +466,6 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
     //Fill centrality histogram
     fHistCentrality->Fill(lPercentile);
     
-    
     //============================================================
     // V0 Revertexing part
     //============================================================
@@ -393,14 +478,25 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
     Info("UserExec","Number of pre-reco'ed V0 vertices: %ld",nv0s);
     
     if( fkRunV0Vertexer ){
-        lESDevent->ResetV0s();
-        //Only regenerate candidates if within interesting interval
+        if ( !fkUseOptimalTrackParams ){
+            //reset all V0s, please
+            lESDevent->ResetV0s();
+        }else{
+            //reset only offline V0s, please
+            //important: reset cascades or RemoveV0s will NOT DO IT
+            lESDevent->ResetCascades();
+            SelectiveResetV0s(lESDevent, 0);
+        }
         Tracks2V0vertices(lESDevent);
+        
+        //reset on-the-fly, job is done
+        if(fkUseOptimalTrackParams && !fkUseOptimalTrackParamsBachelor)
+            SelectiveResetV0s(lESDevent, 1);
     }
     
     nv0s = lESDevent->GetNumberOfV0s();
     fHistNumberOfCandidates->Fill(1.5, nv0s);
-    
+
     //============================================================
     // Cascade revertexing part
     //============================================================
@@ -419,6 +515,9 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
             V0sTracks2CascadeVerticesUncheckedCharges(lESDevent);
         }
     }
+    //reset on-the-fly, job is done
+    if(fkUseOptimalTrackParamsBachelor)
+        SelectiveResetV0s(lESDevent, 1);
     
     ncascades = lESDevent->GetNumberOfCascades();
     fHistNumberOfCandidates->Fill(3.5, ncascades);
@@ -511,6 +610,21 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
     //This function reconstructs V0 vertices
     //--------------------------------------------------------------------
     
+    //populate map if requested to do so
+    if (fkUseOptimalTrackParams) {
+        Int_t nv0s = 0;
+        nv0s = event->GetNumberOfV0s();
+        fOTFMap.clear(); //don't forget to clean up!
+        for (Int_t iV0 = 0; iV0 < nv0s; iV0++) //extra-crazy test
+        {   // This is the begining of the V0 loop
+            AliESDv0 *v0 = ((AliESDEvent*)event)->GetV0(iV0);
+            if(v0->GetOnFlyStatus()>0){
+                //map convention: negative track first, positive track second
+                fOTFMap.insert(make_pair(make_pair(v0->GetNindex(), v0->GetPindex()), iV0));
+            }
+        }//finished preparing map
+    }
+     
     const AliESDVertex *vtxT3D=event->GetPrimaryVertex();
     
     Double_t xPrimaryVertex=vtxT3D->GetX();
@@ -538,7 +652,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
         //Track pre-selection: clusters
         Float_t lThisTrackLength = -1;
         if (esdTrack->GetInnerParam()) lThisTrackLength = esdTrack->GetLengthInActiveZone(1, 2.0, 220.0, b);
-        if (esdTrack->GetTPCNcls() < 70 && lThisTrackLength<80 ) continue;
+        if (esdTrack->GetTPCNcls() < 70 && lThisTrackLength<80 &&fkExtraCleanup ) continue;
         
         Double_t d=esdTrack->GetD(xPrimaryVertex,yPrimaryVertex,b);
         if (TMath::Abs(d)<fV0VertexerSels[2]) continue;
@@ -548,28 +662,60 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
         else pos[npos++]=i;
     }
     
-    
     for (i=0; i<nneg; i++) {
         Long_t nidx=neg[i];
         AliESDtrack *ntrk=event->GetTrack(nidx);
+        if(!ntrk) continue;
         
         for (Int_t k=0; k<npos; k++) {
             Int_t pidx=pos[k];
             AliESDtrack *ptrk=event->GetTrack(pidx);
+            if(!ptrk) continue;
             
-            //Pre-select dE/dx: only proceed if at least one of these tracks looks like a proton
-            /*
-             if(fkPreselectDedxLambda){
-             Double_t lNSigPproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( ptrk, AliPID::kProton ));
-             Double_t lNSigNproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( ntrk, AliPID::kProton ));
-             if( lNSigPproton>5.0 && lNSigNproton>5.0 ) continue;
-             }
-             */
+            fHistV0Statistics->Fill(0.5); //number of considered pairs
+            
+            Double_t lNegMassForTracking = ntrk->GetMassForTracking();
+            Double_t lPosMassForTracking = ptrk->GetMassForTracking();
             
             if (TMath::Abs(ntrk->GetD(xPrimaryVertex,yPrimaryVertex,b))<fV0VertexerSels[1])
                 if (TMath::Abs(ptrk->GetD(xPrimaryVertex,yPrimaryVertex,b))<fV0VertexerSels[2]) continue;
             
-            AliExternalTrackParam nt(*ntrk), pt(*ptrk), *ntp=&nt, *ptp=&pt;
+            fHistV0Statistics->Fill(1.5); //pass distance to PV
+            
+            AliExternalTrackParam nt(*ntrk), pt(*ptrk);
+            Bool_t lUsedOptimalParams = kFALSE;
+            
+            if( fkUseOptimalTrackParams ){
+                //reroute to pointers obtained with on-the-fly finding, please
+                map<pair<int,int>, int>::iterator iter = fOTFMap.find(make_pair(nidx,pidx));
+                if(iter != fOTFMap.end())
+                {
+                    Int_t lEquivalentOTFV0 = (*iter).second; // or iter->second;
+                    AliESDv0 *v0_otf = ((AliESDEvent*)event)->GetV0(lEquivalentOTFV0);
+                    if(!v0_otf){
+                        AliWarning(Form("Invalid V0 at position %i!", lEquivalentOTFV0));
+                        fHistV0OptimalTrackParamUse->Fill(2.5);
+                    }else{
+                        AliExternalTrackParam ptimproved(*(v0_otf->GetParamP()));
+                        AliExternalTrackParam ntimproved(*(v0_otf->GetParamN()));
+                        if( v0_otf->GetParamP()->Charge() > 0 && v0_otf->GetParamN()->Charge() < 0 ) {
+                            //V0 daughter track swapping is required! Note: everything is swapped here... P->N, N->P
+                            pt = ptimproved;
+                            nt = ntimproved;
+                        }else{
+                            //swap charges if charges are swapped
+                            pt = ntimproved;
+                            nt = ptimproved;
+                        }
+                        fHistV0OptimalTrackParamUse->Fill(1.5);
+                        lUsedOptimalParams=kTRUE;
+                    }
+                }else{
+                    //OTF not available for this pair
+                    fHistV0OptimalTrackParamUse->Fill(0.5);
+                }
+            }
+            AliExternalTrackParam *ntp=&nt, *ptp=&pt;
             Double_t xn, xp, dca;
             
             //Improved call: use own function, including XY-pre-opt stage
@@ -584,46 +730,35 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             
             if( fkDoImprovedDCAV0DauPropagation ){
                 //Improved: use own call
-                dca=GetDCAV0Dau(ptp, ntp, xp, xn, b);
+                dca=GetDCAV0Dau(ptp, ntp, xp, xn, b, lNegMassForTracking, lPosMassForTracking);
             }else{
                 //Old: use old call
                 dca=nt.GetDCA(&pt,b,xn,xp);
             }
             
             if (dca > fV0VertexerSels[3]) continue;
+            
+            fHistV0Statistics->Fill(2.5); //pass dca
+            
             if ((xn+xp) > 2*fV0VertexerSels[6]) continue;
             if ((xn+xp) < 2*fV0VertexerSels[5]) continue;
             
-            /* FIXME: this correction is not implemented
-             Bool_t corrected=kFALSE;
-             if ((nt.GetX() > 3.) && (xn < 3.)) {
-             //correct for the beam pipe material
-             corrected=kTRUE;
-             }
-             if ((pt.GetX() > 3.) && (xp < 3.)) {
-             //correct for the beam pipe material
-             corrected=kTRUE;
-             }
-             if (corrected) {
-             
-             if( fkDoImprovedDCAV0DauPropagation ){
-             //Improved: use own call
-             dca=GetDCAV0Dau(&pt, &nt, xp, xn, b);
-             }else{
-             //Old: use old call
-             dca=nt.GetDCA(&pt,b,xn,xp);
-             }
-             if (dca > fV0VertexerSels[3]) continue;
-             if ((xn+xp) > 2*fV0VertexerSels[6]) continue;
-             if ((xn+xp) < 2*fV0VertexerSels[5]) continue;
-             }
-             */
+            fHistV0Statistics->Fill(3.5); //pass X within R2D cut
             
-            nt.PropagateTo(xn,b); pt.PropagateTo(xp,b);
+            if(!fkDoMaterialCorrection){
+                nt.PropagateTo(xn,b);
+                pt.PropagateTo(xp,b);
+            }else{
+                AliExternalTrackParam *ntp=&nt, *ptp=&pt;
+                AliTrackerBase::PropagateTrackTo(ntp, xn, lNegMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE );
+                AliTrackerBase::PropagateTrackTo(ptp, xp, lPosMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE );
+            }
             
             //select maximum eta range (after propagation)
             if (TMath::Abs(nt.Eta())>0.8&&fkExtraCleanup) continue;
             if (TMath::Abs(pt.Eta())>0.8&&fkExtraCleanup) continue;
+            
+            fHistV0Statistics->Fill(4.5); //pass eta cut
             
             AliESDv0 vertex(nt,nidx,pt,pidx);
             
@@ -638,10 +773,14 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             if (r2 < fV0VertexerSels[5]*fV0VertexerSels[5]) continue;
             if (r2 > fV0VertexerSels[6]*fV0VertexerSels[6]) continue;
             
+            fHistV0Statistics->Fill(5.5); //pass radius cut
+            
             Float_t cpa=vertex.GetV0CosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex);
             
             //Simple cosine cut (no pt dependence for now)
             if (cpa < fV0VertexerSels[4]) continue;
+            
+            fHistV0Statistics->Fill(6.5); //pass cosPA
             
             vertex.SetDcaV0Daughters(dca);
             vertex.SetV0CosineOfPointingAngle(cpa);
@@ -654,6 +793,9 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             lTransvMom      = TMath::Sqrt( lMomX*lMomX   + lMomY*lMomY );
             if(lTransvMom<fMinPtV0) continue;
             if(lTransvMom>fMaxPtV0) continue;
+            
+            fHistV0Statistics->Fill(7.5); //within pT range
+            if (lUsedOptimalParams) fHistV0Statistics->Fill(8.5); //good V0, used OTF params
             
             event->AddV0(&vertex);
             
@@ -681,6 +823,21 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
     
     Double_t b=event->GetMagneticField();
     Int_t nV0=(Int_t)event->GetNumberOfV0s();
+    
+    //populate map if requested to do so
+    if (fkUseOptimalTrackParamsBachelor) {
+        Int_t nv0s = 0;
+        nv0s = event->GetNumberOfV0s();
+        fOTFMap.clear(); //don't forget to clean up!
+        for (Int_t iV0 = 0; iV0 < nv0s; iV0++) //extra-crazy test
+        {   // This is the begining of the V0 loop
+            AliESDv0 *v0 = ((AliESDEvent*)event)->GetV0(iV0);
+            if(v0->GetOnFlyStatus()>0){
+                //map convention: negative track first, positive track second
+                fOTFMap.insert(make_pair(make_pair(v0->GetNindex(), v0->GetPindex()), iV0));
+            }
+        }//finished preparing map
+    }
     
     //stores relevant V0s in an array
     TObjArray vtcs(nV0);
@@ -749,7 +906,9 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
         
         if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
         if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
-        if ( ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) && lSmallestTrackLength<80 ) continue;
+        if ( ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) && lSmallestTrackLength<80 ){
+            if(fkExtraCleanup) continue;
+        }
         
         //7) Daughter eta
         Double_t lNegEta = nTrack->Eta();
@@ -783,7 +942,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
         //Track pre-selection: Track Quality
         Float_t lThisTrackLength = -1;
         if (esdtr->GetInnerParam()) lThisTrackLength = esdtr->GetLengthInActiveZone(1, 2.0, 220.0, b);
-        if (esdtr->GetTPCNcls() < 70 && lThisTrackLength<80 ) continue;
+        if (esdtr->GetTPCNcls() < 70 && lThisTrackLength<80 && fkExtraCleanup ) continue;
         
         if (TMath::Abs(esdtr->GetD(xPrimaryVertex,yPrimaryVertex,b))<fCascadeVertexerSels[3]) continue;
         trk[ntr++]=i;
@@ -804,13 +963,36 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
             if (bidx==v0.GetIndex(0)) continue; //Bo:  consistency 0 for neg
             
             AliESDtrack *btrk=event->GetTrack(bidx);
+            Float_t lBachMassForTracking=btrk->GetMassForTracking();
             
             if (btrk->GetSign()>0) continue;  // bachelor's charge
             
             AliESDv0 *pv0=&v0;
-            AliExternalTrackParam bt(*btrk), *pbt=&bt;
+            AliExternalTrackParam bt(*btrk);
+            if(fkUseOptimalTrackParamsBachelor) {
+                //Look for a better bachelor description, please
+                //reroute to pointers obtained with on-the-fly finding
+                map<pair<int,int>, int>::iterator iter = fOTFMap.find(make_pair(bidx,v->GetPindex()));
+                if(iter != fOTFMap.end())
+                {
+                    Int_t lEquivalentOTFV0 = (*iter).second; // or iter->second;
+                    AliESDv0 *v0_otf = ((AliESDEvent*)event)->GetV0(lEquivalentOTFV0);
+                    if(!v0_otf){
+                        AliWarning(Form("Invalid V0 at position %i!", lEquivalentOTFV0));
+                        fHistV0OptimalTrackParamUseBachelor->Fill(2.5);
+                    }else{
+                        AliExternalTrackParam btimproved(*(v0_otf->GetParamN()));
+                        bt = btimproved;
+                        fHistV0OptimalTrackParamUseBachelor->Fill(1.5);
+                    }
+                }else{
+                    //OTF not available for this pair
+                    fHistV0OptimalTrackParamUseBachelor->Fill(0.5);
+                }
+            }
+            AliExternalTrackParam *pbt=&bt;
             
-            Double_t dca=PropagateToDCA(pv0,pbt,event,b);
+            Double_t dca=PropagateToDCA(pv0,pbt,event,b,lBachMassForTracking);
             if (dca > fCascadeVertexerSels[4]) continue;
             
             //eta cut - test
@@ -856,6 +1038,9 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
                TMath::Abs(lInvMassOmega-1.672)>fMassWindowAroundCascade ) continue;
             
             cascade.SetDcaXiDaughters(dca);
+            
+            //Change back to default XiMinus hypothesis
+            cascade.ChangeMassHypothesis(lV0quality , 3312);
             event->AddCascade(&cascade);
             ncasc++;
         } // end loop tracks
@@ -873,17 +1058,40 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
             if (bidx==v0.GetIndex(1)) continue; //Bo:  consistency 1 for pos
             
             AliESDtrack *btrk=event->GetTrack(bidx);
+            Float_t lBachMassForTracking=btrk->GetMassForTracking();
             
             if (btrk->GetSign()<0) continue;  // bachelor's charge
             
             AliESDv0 *pv0=&v0;
-            AliExternalTrackParam bt(*btrk), *pbt=&bt;
+            AliExternalTrackParam bt(*btrk);
+            if(fkUseOptimalTrackParamsBachelor) {
+                //Look for a better bachelor description, please
+                //reroute to pointers obtained with on-the-fly finding
+                map<pair<int,int>, int>::iterator iter = fOTFMap.find(make_pair(v->GetNindex(),bidx));
+                if(iter != fOTFMap.end())
+                {
+                    Int_t lEquivalentOTFV0 = (*iter).second; // or iter->second;
+                    AliESDv0 *v0_otf = ((AliESDEvent*)event)->GetV0(lEquivalentOTFV0);
+                    if(!v0_otf){
+                        AliWarning(Form("Invalid V0 at position %i!", lEquivalentOTFV0));
+                        fHistV0OptimalTrackParamUseBachelor->Fill(2.5);
+                    }else{
+                        AliExternalTrackParam btimproved(*(v0_otf->GetParamP()));
+                        bt = btimproved;
+                        fHistV0OptimalTrackParamUseBachelor->Fill(1.5);
+                    }
+                }else{
+                    //OTF not available for this pair
+                    fHistV0OptimalTrackParamUseBachelor->Fill(0.5);
+                }
+            }
+            AliExternalTrackParam *pbt=&bt;
             
-            Double_t dca=PropagateToDCA(pv0,pbt,event,b);
+            Double_t dca=PropagateToDCA(pv0,pbt,event,b,lBachMassForTracking);
             if (dca > fCascadeVertexerSels[4]) continue;
             
             //eta cut - test
-            if (TMath::Abs(pbt->Eta())>0.8) continue;
+            if (TMath::Abs(pbt->Eta())>0.8 && fkExtraCleanup) continue;
             
             AliESDcascade cascade(*pv0,*pbt,bidx); //constucts a cascade candidate
             //PH         if (cascade.GetChi2Xi() > fChi2max) continue;
@@ -925,6 +1133,9 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
                TMath::Abs(lInvMassOmega-1.672)>fMassWindowAroundCascade ) continue;
             
             cascade.SetDcaXiDaughters(dca);
+            
+            //Change back to default XiPlus hypothesis
+            cascade.ChangeMassHypothesis(lV0quality , -3312);
             event->AddCascade(&cascade);
             ncasc++;
             
@@ -1105,12 +1316,13 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesUncheckedCharg
             if (v0.GetIndex(0)==v0.GetIndex(1)) continue; //Bo:  consistency 0 for neg
             
             AliESDtrack *btrk=event->GetTrack(bidx);
+            Float_t lBachMassForTracking=btrk->GetMassForTracking();
             
             //Do not check charges!
             AliESDv0 *pv0=&v0;
             AliExternalTrackParam bt(*btrk), *pbt=&bt;
             
-            Double_t dca=PropagateToDCA(pv0,pbt,event,b);
+            Double_t dca=PropagateToDCA(pv0,pbt,event,b,lBachMassForTracking);
             if (dca > fCascadeVertexerSels[4]) continue;
             
             //eta cut - test
@@ -1165,7 +1377,7 @@ Double_t AliAnalysisTaskWeakDecayVertexer::Det(Double_t a00,Double_t a01,Double_
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExternalTrackParam *t, AliESDEvent *event, Double_t b) {
+Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExternalTrackParam *t, AliESDEvent *event, Double_t b, Double_t lBachMassForTracking) {
     //--------------------------------------------------------------------
     // This function returns the DCA between the V0 and the track
     //--------------------------------------------------------------------
@@ -1220,21 +1432,23 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
         
         //DCA Calculation improved -> non-linear propagation
         //Preparatory step 1: get two tracks corresponding to V0
-        UInt_t lKeyPos = (UInt_t)TMath::Abs(v->GetPindex());
-        UInt_t lKeyNeg = (UInt_t)TMath::Abs(v->GetNindex());
-        AliESDtrack *pTrack=((AliESDEvent*)event)->GetTrack(lKeyPos);
-        AliESDtrack *nTrack=((AliESDEvent*)event)->GetTrack(lKeyNeg);
         
-        //Uncertainties: bachelor track as well as V0
-        Double_t dy2=t->GetSigmaY2() + pTrack->GetSigmaY2() + nTrack->GetSigmaY2();
-        Double_t dz2=t->GetSigmaZ2() + pTrack->GetSigmaZ2() + nTrack->GetSigmaZ2();
-        Double_t dx2=dy2;
+        Double_t dy2=1e-10;
+        Double_t dz2=1e-10;
+        Double_t dx2=1e-10;
         
-        if( fkDoPureGeometricMinimization ){
-            //Override uncertainties with small values -> pure geometry
-            dx2 = 1e-10;
-            dy2 = 1e-10;
-            dz2 = 1e-10;
+        if( !fkDoPureGeometricMinimization ){
+            UInt_t lKeyPos = (UInt_t)TMath::Abs(v->GetPindex());
+            UInt_t lKeyNeg = (UInt_t)TMath::Abs(v->GetNindex());
+            if( event ){
+                AliESDtrack *pTrack=((AliESDEvent*)event)->GetTrack(lKeyPos);
+                AliESDtrack *nTrack=((AliESDEvent*)event)->GetTrack(lKeyNeg);
+            
+                //Uncertainties: bachelor track as well as V0
+                dy2=t->GetSigmaY2() + pTrack->GetSigmaY2() + nTrack->GetSigmaY2();
+                dz2=t->GetSigmaZ2() + pTrack->GetSigmaZ2() + nTrack->GetSigmaZ2();
+                dx2=dy2;
+            }
         }
         
         //Create dummy V0 track
@@ -1291,7 +1505,11 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
                 Double_t lPreprocessX = bX*cs + bY*sn;
                 
                 //Propagate bachelor track: already know where to!
-                t->PropagateTo(lPreprocessX,b);
+                if( !fkDoMaterialCorrection ){
+                    t->PropagateTo(lPreprocessX,b);
+                }else{
+                    AliTrackerBase::PropagateTrackTo(t, lPreprocessX, lBachMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE );
+                }
                 
             }else{
                 //test two points in which DCAxy=0 for their DCA3D, pick smallest
@@ -1347,7 +1565,11 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
                         for(Int_t icoord = 0; icoord<3; icoord++) {
                             xyz[icoord] = lV0xyzptA[icoord];
                         }
-                        t->PropagateTo( xBachA , b );
+                        if( !fkDoMaterialCorrection ){
+                            t->PropagateTo(xBachA,b);
+                        }else{
+                            AliTrackerBase::PropagateTrackTo(t, xBachA, lBachMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE );
+                        }
                     }
                 }else{
                     //B is the better point! move there, if DCA isn't crazy + x is OK
@@ -1355,7 +1577,11 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
                         for(Int_t icoord = 0; icoord<3; icoord++) {
                             xyz[icoord] = lV0xyzptB[icoord];
                         }
-                        t->PropagateTo( xBachB , b );
+                        if( !fkDoMaterialCorrection ){
+                            t->PropagateTo(xBachB,b);
+                        }else{
+                            AliTrackerBase::PropagateTrackTo(t, xBachB, lBachMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE );
+                        }
                     }
                 }
             }
@@ -1459,11 +1685,15 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
         Double_t xthis=r1[0]*cs + r1[1]*sn;
         
         //Propagate bachelor to the point of DCA
-        if (!t->PropagateTo(xthis,b)) {
-            //AliWarning(" propagation failed !";
-            //Count curved propagation failures
-            fHistV0ToBachelorPropagationStatus->Fill(8.5);
-            return 1e+33;
+        if( !fkDoMaterialCorrection ){
+            if (!t->PropagateTo(xthis,b)) {
+                //AliWarning(" propagation failed !";
+                //Count curved propagation failures
+                fHistV0ToBachelorPropagationStatus->Fill(8.5);
+                return 1e+33;
+            }
+        }else{
+            AliTrackerBase::PropagateTrackTo(t, xthis, lBachMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE );
         }
         
         //V0 distance to bachelor: the desired distance
@@ -1566,15 +1796,12 @@ void AliAnalysisTaskWeakDecayVertexer::CheckChargeV0(AliESDv0 *v0)
     return;
 }
 
-Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *pt, AliExternalTrackParam *nt, Double_t &xp, Double_t &xn, Double_t b) {
+Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *pt, AliExternalTrackParam *nt, Double_t &xp, Double_t &xn, Double_t b, Double_t lNegMassForTracking, Double_t lPosMassForTracking) {
     //--------------------------------------------------------------
     // Propagates this track and the argument track to the position of the
     // distance of closest approach.
     // Returns the (weighed !) distance of closest approach.
     //--------------------------------------------------------------
-    Double_t dy2=nt -> GetSigmaY2() + pt->GetSigmaY2();
-    Double_t dz2=nt -> GetSigmaZ2() + pt->GetSigmaZ2();
-    Double_t dx2=dy2;
     
     //if( fkDoPureGeometricMinimization ){
         //Override uncertainties with small values -> pure geometry
@@ -1587,6 +1814,11 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
     p1[6]=TMath::Sin(p1[2]); p1[7]=TMath::Cos(p1[2]);
     Double_t p2[8]; pt->GetHelixParameters(p2,b);
     p2[6]=TMath::Sin(p2[2]); p2[7]=TMath::Cos(p2[2]);
+    
+    //Minimum X: allow for negative X if it means we're still *after* the primary vertex in the track ref frame
+    Double_t lMinimumX = -3; //
+    //Maximum X: some very big value, should not be a problem
+    Double_t lMaximumX = 300;
     
     if( fkDoImprovedDCAV0DauPropagation){
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1669,7 +1901,7 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
             Double_t snPos=TMath::Sin(pt->GetAlpha());
             Double_t xThisPos=xPosOptPosition*csPos + yPosOptPosition*snPos;
             
-            if( xThisNeg < fV0VertexerSels[6] && xThisPos < fV0VertexerSels[6] && xThisNeg > 0.0 && xThisPos > 0.0){
+            if( xThisNeg < lMaximumX && xThisPos < lMaximumX && xThisNeg > lMinimumX && xThisPos > lMinimumX){
                 Double_t lCase1NegR[3]; nt->GetXYZAt(xThisNeg,b, lCase1NegR);
                 Double_t lCase1PosR[3]; pt->GetXYZAt(xThisPos,b, lCase1PosR);
                 lPreprocessDCAxy = TMath::Sqrt(
@@ -1739,7 +1971,7 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
             //Test the two cases, please
             
             //Case 2a
-            if( xThisNeg[0] < fV0VertexerSels[6] && xThisPos[0] < fV0VertexerSels[6] && xThisNeg[0] > 0.0 && xThisPos[0] > 0.0 ){
+            if( xThisNeg[0] < lMaximumX && xThisPos[0] < lMaximumX && xThisNeg[0] > lMinimumX && xThisPos[0] > lMinimumX ){
                 Double_t lCase2aNegR[3]; nt->GetXYZAt(xThisNeg[0],b, lCase2aNegR);
                 Double_t lCase2aPosR[3]; pt->GetXYZAt(xThisPos[0],b, lCase2aPosR);
                 lCase2aDCA = TMath::Sqrt(
@@ -1750,7 +1982,7 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
             }
             
             //Case 2b
-            if( xThisNeg[1] < fV0VertexerSels[6] && xThisPos[1] < fV0VertexerSels[6] && xThisNeg[1] > 0.0 && xThisPos[1] > 0.0 ){
+            if( xThisNeg[1] < lMaximumX && xThisPos[1] < lMaximumX && xThisNeg[1] > lMinimumX && xThisPos[1] > lMinimumX ){
                 Double_t lCase2bNegR[3]; nt->GetXYZAt(xThisNeg[1],b, lCase2bNegR);
                 Double_t lCase2bPosR[3]; pt->GetXYZAt(xThisPos[1],b, lCase2bPosR);
                 lCase2bDCA = TMath::Sqrt(
@@ -1800,8 +2032,13 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
         //End of preprocessing stage!
         //at this point lPreprocessxp, lPreprocessxn are already good starting points: update helixparams
         if( lPreprocessDCAxy < 999 ) { //some improvement... otherwise discard in all cases, please
-            nt->PropagateTo(lPreprocessxn, b);
-            pt->PropagateTo(lPreprocessxp, b);
+            if(fkDoMaterialCorrection) {
+                AliTrackerBase::PropagateTrackTo(nt, lPreprocessxn, lNegMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE );
+                AliTrackerBase::PropagateTrackTo(pt, lPreprocessxp, lPosMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE );
+            }else{
+                nt->PropagateTo(lPreprocessxn, b);
+                pt->PropagateTo(lPreprocessxp, b);
+            }
         }
         
         //don't redefine!
@@ -1813,6 +2050,10 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
         p2[7]=TMath::Cos(p2[2]);
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     }
+    
+    Double_t dy2=nt -> GetSigmaY2() + pt->GetSigmaY2();
+    Double_t dz2=nt -> GetSigmaZ2() + pt->GetSigmaZ2();
+    Double_t dx2=dy2;
     
     Double_t r1[3],g1[3],gg1[3]; Double_t t1=0.;
     Evaluate(p1,t1,r1,g1,gg1);
@@ -1935,4 +2176,20 @@ void AliAnalysisTaskWeakDecayVertexer::GetHelixCenter(const AliExternalTrackPara
     center[0] =	xpos + xpoint;
     center[1] =	ypos + ypoint;
     return;
+}
+
+///________________________________________________________________________
+void AliAnalysisTaskWeakDecayVertexer::SelectiveResetV0s(AliESDEvent *event, Int_t lType){
+    //Selectively reset V0s
+    Long_t iV0=0;
+    while(iV0 < event->GetNumberOfV0s() ) //extra-crazy test
+    {   // This is the begining of the V0 loop
+        AliESDv0 *v0 = ((AliESDEvent*)event)->GetV0(iV0);
+        if (!v0) continue;
+        if ( v0->GetOnFlyStatus() == lType ){
+            event->RemoveV0(iV0);
+        } else {
+            iV0++;
+        }
+    }
 }

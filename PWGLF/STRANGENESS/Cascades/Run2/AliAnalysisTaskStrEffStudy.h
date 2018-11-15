@@ -408,6 +408,9 @@ private:
     Float_t fTreeVariableDecayX;
     Float_t fTreeVariableDecayY;
     Float_t fTreeVariableDecayZ;
+    Float_t fTreeVariableDecayXMC;
+    Float_t fTreeVariableDecayYMC;
+    Float_t fTreeVariableDecayZMC;
     Float_t fTreeVariableInvMassK0s; //!
     Float_t fTreeVariableInvMassLambda; //!
     Float_t fTreeVariableInvMassAntiLambda; //!
@@ -428,8 +431,8 @@ private:
     Float_t fTreeVariableNegSigmaZ2;
     
     //Sandbox mode
-    AliExternalTrackParam *fTreeVariablePosTrack;
-    AliExternalTrackParam *fTreeVariableNegTrack;
+    AliESDtrack *fTreeVariablePosTrack;
+    AliESDtrack *fTreeVariableNegTrack;
     
     AliESDv0 *fTreeVariableOTFV0;
     
@@ -441,6 +444,10 @@ private:
     Float_t fTreeVariablePVx;
     Float_t fTreeVariablePVy;
     Float_t fTreeVariablePVz;
+    
+    AliESDVertex *fTreeVariableAliESDvertex;
+    
+    Int_t fTreeVariableRun;
     
 //===========================================================================================
 //   Variables for Cascade Candidate Tree
@@ -542,12 +549,16 @@ private:
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     //Save full info for full re-vertex offline replay ('sandbox mode')
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    AliExternalTrackParam *fTreeCascVarBachTrack;
-    AliExternalTrackParam *fTreeCascVarPosTrack;
-    AliExternalTrackParam *fTreeCascVarNegTrack;
+    AliESDtrack *fTreeCascVarBachTrack;
+    AliESDtrack *fTreeCascVarPosTrack;
+    AliESDtrack *fTreeCascVarNegTrack;
     
     //Sandbox on-the-fly V0 for comparison, please
     AliESDv0 *fTreeCascVarOTFV0;
+    AliESDv0 *fTreeCascVarOTFV0NegBach;
+    AliESDv0 *fTreeCascVarOTFV0PosBach;
+    Bool_t fTreeCascVarNegBachAsOTF;
+    Bool_t fTreeCascVarPosBachAsOTF;
     
     Float_t fTreeCascVarMagneticField;
     
@@ -558,6 +569,9 @@ private:
     Float_t fTreeCascVarPVx;
     Float_t fTreeCascVarPVy;
     Float_t fTreeCascVarPVz;
+    AliESDVertex *fTreeCascVarAliESDvertex;
+    
+    
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     
 //===========================================================================================
@@ -578,7 +592,11 @@ private:
     TH3D *fHistGeneratedPtVsYVsCentralityXiPlus;
     TH3D *fHistGeneratedPtVsYVsCentralityOmegaMinus;
     TH3D *fHistGeneratedPtVsYVsCentralityOmegaPlus;
-
+    
+    //Hypertriton
+    TH3D *fHistGeneratedPtVsYVsCentralityHypTrit;
+    TH3D *fHistGeneratedPtVsYVsCentralityAntiHypTrit;
+    
     AliAnalysisTaskStrEffStudy(const AliAnalysisTaskStrEffStudy&);            // not implemented
     AliAnalysisTaskStrEffStudy& operator=(const AliAnalysisTaskStrEffStudy&); // not implemented
 

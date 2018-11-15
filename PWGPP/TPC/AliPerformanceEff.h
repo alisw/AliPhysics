@@ -89,7 +89,6 @@ private:
   // analysis folder 
   TFolder *fAnalysisFolder; // folder for analysed histograms
   
-  int fNEvent; //!
   static bool fReadNClsTree; //
   TFile* fNClsTreeFile; //!
   TTree* fNClsTree; //!

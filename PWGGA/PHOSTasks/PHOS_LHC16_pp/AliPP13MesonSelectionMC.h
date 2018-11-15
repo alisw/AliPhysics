@@ -5,7 +5,7 @@
 #include <map>
 
 // --- Custom header files ---
-#include "AliPP13PhysPhotonSelectionMC.h"
+#include "AliPP13SpectrumSelectionMC.h"
 #include "AliPP13ParticlesHistogram.h"
 #include "AliPP13SelectionWeights.h"
 
@@ -79,7 +79,7 @@ struct ParticleSpectrum
 };
 
 
-class AliPP13MesonSelectionMC: public AliPP13PhysPhotonSelectionMC
+class AliPP13MesonSelectionMC: public AliPP13SpectrumSelectionMC
 {
 public:
 	enum Modes {kGenerated = 0, kReconstructed = 1, kNhists = 2};
@@ -93,7 +93,7 @@ public:
 	};
 
 	AliPP13MesonSelectionMC():
-		AliPP13PhysPhotonSelectionMC(),
+		AliPP13SpectrumSelectionMC(),
 		fPrimaryPi0(),
 		fSecondaryPi0(),
 		fFeedDownPi0(),
@@ -124,7 +124,7 @@ public:
 
 	AliPP13MesonSelectionMC(const char * name, const char * title, 
 			AliPP13ClusterCuts cuts, AliPP13SelectionWeights * w):
-		AliPP13PhysPhotonSelectionMC(name, title, cuts, w),
+		AliPP13SpectrumSelectionMC(name, title, cuts, w),
 		fPrimaryPi0(),
 		fSecondaryPi0(),
 		fFeedDownPi0(),
@@ -178,7 +178,6 @@ public:
 protected:
 	virtual void ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags);
 
-	virtual Bool_t IsPrimary(const AliAODMCParticle * particle) const;
 	virtual AliAODMCParticle * GetParent(Int_t label, Int_t & plabel, TClonesArray * particles) const;
 	virtual AliAODMCParticle * GetParent(Int_t label, TClonesArray * particles) const
 	{

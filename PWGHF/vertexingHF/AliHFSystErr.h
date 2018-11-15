@@ -77,12 +77,15 @@ class AliHFSystErr : public TNamed
     fIs5TeVAnalysis = flag;
     if(flag) AliInfo("Settings for the 5TeV analysis");  
   }
-  void SetIsBDTAnalysis(Bool_t flag){
-    fIsBDTAnalysis = flag;
-    if(flag) AliInfo("Settings for the Lc BDT analysis");  
+  void SetStandardBins(Bool_t flag){
+    fStandardBins= flag;
   }
 
-
+  void SetIsBDTAnalysis(Bool_t flag){
+    fIsBDTAnalysis = flag;
+    if(flag) AliInfo("Settings for the Lc and Ds BDT analysis");  
+  }
+  
   void SetIsPbPb2010EnergyScan(Bool_t flag) {
     fIsCentScan = flag;
     if(flag) AliInfo(" Settings for the PbPb 2010 energy scan");
@@ -229,7 +232,9 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi2010ppPass4();
   void InitD0toKpi2015pp5TeV();
   void InitD0toKpi2017pp5TeV();
+  void InitD0toKpi2017pp5TeV_finebins();
   void InitD0toKpi2017pp5TeVLowPtAn();
+  void InitD0toKpi2017pp5TeVLowPtAn_finebins();
   void InitD0toKpi2016pp13TeV();
   void InitD0toKpi2011PbPb07half();
   void InitD0toKpi2010PbPb020();
@@ -247,6 +252,7 @@ class AliHFSystErr : public TNamed
   void InitDplustoKpipi2012pp();
   void InitDplustoKpipi2015pp5TeV();
   void InitDplustoKpipi2017pp5TeV();
+  void InitDplustoKpipi2017pp5TeV_finebins();
   void InitDplustoKpipi2016pp13TeV();
   void InitDplustoKpipi2011PbPb07half();
   void InitDplustoKpipi2010PbPb020();
@@ -269,11 +275,13 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2016pPb0100();
   void InitDstartoD0pi2010ppPass4();
   void InitDstartoD0pi2017pp5TeV();
+  void InitDstartoD0pi2017pp5TeV_finebins();
   void InitDstartoKpipi2016pp13TeV();
 
   void InitDstoKKpi2010pp();
   void InitDstoKKpi2010ppPass4();
   void InitDstoKKpi2017pp5TeV();
+  void InitDstoKKpi2017pp5TeVBDT();
   void InitDstoKKpi2011PbPb07half();
   void InitDstoKKpi2011PbPb010();
   void InitDstoKKpi2011PbPb2050();
@@ -295,6 +303,7 @@ class AliHFSystErr : public TNamed
   void InitLctopK0S2013pPbBDT();
   void InitLctopK0S2016pPb();
   void InitLctopK0S2016pPbBDT();
+  void InitLctopK0S2017pp5TeV();
 
   void InitD0toKpi2015PbPb010();
   void InitD0toKpi2015PbPb3050();
@@ -334,12 +343,13 @@ class AliHFSystErr : public TNamed
   Bool_t fIsLowPtAnalysis; /// flag for the low pt analysis (no topological cuts)
   Bool_t fIsPass4Analysis; /// flag for the pass4 analysis
   Bool_t fIs5TeVAnalysis; /// flag for the pp5TeV analysis
-  Bool_t fIsBDTAnalysis;   /// flag for the Lc BDT analysis
+  Bool_t fIsBDTAnalysis;   /// flag for the Lc BDT analysis and Ds BDT analysis
   Bool_t fIsCentScan;      /// flag fot the PbPb centrality scan
+  Bool_t fStandardBins;    /// flag for the standard bins in pp@5TeV
   Bool_t fIsRapidityScan;  /// flag for the pPb vs y measurement
 
   /// \cond CLASSIMP    
-  ClassDef(AliHFSystErr,9);  /// class for systematic errors of charm hadrons
+  ClassDef(AliHFSystErr,10);  /// class for systematic errors of charm hadrons
   /// \endcond
 };
 

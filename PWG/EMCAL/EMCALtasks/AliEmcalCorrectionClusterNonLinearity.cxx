@@ -28,7 +28,11 @@ const std::map <std::string, AliEMCALRecoUtils::NonlinearityFunctions> AliEmcalC
     { "kPi0MCv5", AliEMCALRecoUtils::kPi0MCv5 },
     { "kSDMv6", AliEMCALRecoUtils::kSDMv6 },
     { "kPi0MCv6", AliEMCALRecoUtils::kPi0MCv6 },
-    { "kBeamTestCorrectedv3", AliEMCALRecoUtils::kBeamTestCorrectedv3 }
+    { "kBeamTestCorrectedv3", AliEMCALRecoUtils::kBeamTestCorrectedv3 },
+    { "kPCMv1", AliEMCALRecoUtils::kPCMv1 },
+    { "kPCMplusBTCv1", AliEMCALRecoUtils::kPCMplusBTCv1 },
+    { "kPCMsysv1", AliEMCALRecoUtils::kPCMsysv1 },
+    { "kBeamTestCorrectedv4", AliEMCALRecoUtils::kBeamTestCorrectedv4 }
 };
 
 /**
@@ -39,8 +43,8 @@ AliEmcalCorrectionClusterNonLinearity::AliEmcalCorrectionClusterNonLinearity() :
   fEnergyDistBefore(0),
   fEnergyTimeHistBefore(0),
   fEnergyDistAfter(0),
-  fEnergyTimeHistAfter(0)
-
+  fEnergyTimeHistAfter(0),
+  fSetForceClusterE(kFALSE)
 {
 }
 
@@ -63,6 +67,8 @@ Bool_t AliEmcalCorrectionClusterNonLinearity::Initialize()
   GetProperty("nonLinFunct", nonLinFunctStr);
   UInt_t nonLinFunct = fgkNonlinearityFunctionMap.at(nonLinFunctStr);
 
+  GetProperty("setForceClusterE", fSetForceClusterE);
+  
   // init reco utils
   if (!fRecoUtils)
     fRecoUtils  = new AliEMCALRecoUtils;
@@ -129,13 +135,17 @@ Bool_t AliEmcalCorrectionClusterNonLinearity::Run()
         if (fRecoUtils->GetNonLinearityFunction() != AliEMCALRecoUtils::kNoCorrection) {
           Double_t energy = fRecoUtils->CorrectClusterEnergyLinearity(clus);
           clus->SetNonLinCorrEnergy(energy);
+          if ( fSetForceClusterE ) clus->SetE(energy);
         }
       }
 
       // Fill histograms only if cluster is not exotic, as in ClusterMaker (the clusters are flagged, not removed)
       if (fCreateHisto && !clus->GetIsExotic()) {
-        fEnergyDistAfter->Fill(clus->GetNonLinCorrEnergy());
-        fEnergyTimeHistAfter->Fill(clus->GetNonLinCorrEnergy(), clus->GetTOF());
+        Float_t energy = clus->GetNonLinCorrEnergy();
+        if(fSetForceClusterE) energy = clus->E();
+        
+        fEnergyDistAfter->Fill(energy);
+        fEnergyTimeHistAfter->Fill(energy, clus->GetTOF());
       }
     }
   }

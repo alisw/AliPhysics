@@ -1087,6 +1087,7 @@ Bool_t AliAnalysisTaskEmcal::HasTriggerType(TriggerType trigger)
 
 Bool_t AliAnalysisTaskEmcal::IsEventSelected()
 {
+  AliDebugStream(1) << "Using default event selection" << std::endl;
   if (fOffTrigger != AliVEvent::kAny) {
     UInt_t res = 0;
     const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(InputEvent());
@@ -1095,7 +1096,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     } else {
       const AliAODEvent *aev = dynamic_cast<const AliAODEvent*>(InputEvent());
       if (aev) {
-	 res = ((AliVAODHeader*)aev->GetHeader())->GetOfflineTrigger();
+	      res = ((AliVAODHeader*)aev->GetHeader())->GetOfflineTrigger();
       }
     }
     if ((res & fOffTrigger) == 0) {
@@ -1104,67 +1105,9 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     }
   }
 
-  if (!fTrigClass.IsNull()) {
-    TString fired;
-    const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(InputEvent());
-    if (eev) {
-      fired = eev->GetFiredTriggerClasses();
-    } else {
-      const AliAODEvent *aev = dynamic_cast<const AliAODEvent*>(InputEvent());
-      if (aev) {
-        fired = aev->GetFiredTriggerClasses();
-      }
-    }
-    if (!fired.Contains("-B-")) {
-      if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
-      return kFALSE;
-    }
-
-    std::unique_ptr<TObjArray> arr(fTrigClass.Tokenize("|"));
-    if (!arr) {
-      if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
-      return kFALSE;
-    }
-    Bool_t match = 0;
-    for (Int_t i=0;i<arr->GetEntriesFast();++i) {
-      TObject *obj = arr->At(i);
-      if (!obj)
-        continue;
-
-      //Check if requested trigger was fired
-      TString objStr = obj->GetName();
-      if(fEMCalTriggerMode == kOverlapWithLowThreshold &&
-          (objStr.Contains("J1") || objStr.Contains("J2") || objStr.Contains("G1") || objStr.Contains("G2"))) {
-        // This is relevant for EMCal triggers with 2 thresholds
-        // If the kOverlapWithLowThreshold was requested than the overlap between the two triggers goes with the lower threshold trigger
-        TString trigType1 = "J1";
-        TString trigType2 = "J2";
-        if(objStr.Contains("G")) {
-          trigType1 = "G1";
-          trigType2 = "G2";
-        }
-        if(objStr.Contains(trigType2) && fired.Contains(trigType2.Data())) { //requesting low threshold + overlap
-          match = 1;
-          break;
-        } 
-        else if(objStr.Contains(trigType1) && fired.Contains(trigType1.Data()) && !fired.Contains(trigType2.Data())) { //high threshold only
-          match = 1;
-          break;
-        }
-      }
-      else {
-        // If this is not an EMCal trigger, or no particular treatment of EMCal triggers was requested,
-        // simply check that the trigger was fired
-        if (fired.Contains(obj->GetName())) {
-          match = 1;
-          break;
-        }
-      }
-    }
-    if (!match) {
-      if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
-      return kFALSE;
-    }
+  if(!IsTriggerSelected()) {
+    if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
+    return kFALSE;
   }
 
   if (fTriggerTypeSel != kND) {
@@ -1291,6 +1234,58 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
   // Reject filter for MC data
   if (!CheckMCOutliers()) return kFALSE;
 
+  return kTRUE;
+}
+
+Bool_t AliAnalysisTaskEmcal::IsTriggerSelected(){
+  // Default implementation of trigger selection
+  // same as previously (code moved from IsEventSelected
+  // to trigger selection). Users should re-implement
+  // this function in case they have certain needs, in
+  // particular for EMCAL triggers
+  AliDebugStream(1) << "Using default trigger selection" << std::endl;
+  if (!fTrigClass.IsNull()) {
+    TString fired = InputEvent()->GetFiredTriggerClasses();
+    if (!fired.Contains("-B-")) return kFALSE;
+
+    std::unique_ptr<TObjArray> arr(fTrigClass.Tokenize("|"));
+    if (!arr) return kFALSE;
+    Bool_t match = false;
+    for (Int_t i=0;i<arr->GetEntriesFast();++i) {
+      TObject *obj = arr->At(i);
+      if (!obj) continue;
+
+      //Check if requested trigger was fired
+      TString objStr = obj->GetName();
+      if(fEMCalTriggerMode == kOverlapWithLowThreshold &&
+          (objStr.Contains("J1") || objStr.Contains("J2") || objStr.Contains("G1") || objStr.Contains("G2"))) {
+        // This is relevant for EMCal triggers with 2 thresholds
+        // If the kOverlapWithLowThreshold was requested than the overlap between the two triggers goes with the lower threshold trigger
+        TString trigType1 = "J1";
+        TString trigType2 = "J2";
+        if(objStr.Contains("G")) {
+          trigType1 = "G1";
+          trigType2 = "G2";
+        }
+        if(objStr.Contains(trigType2) && fired.Contains(trigType2.Data())) { //requesting low threshold + overlap
+          match = 1;
+          break;
+        } else if(objStr.Contains(trigType1) && fired.Contains(trigType1.Data()) && !fired.Contains(trigType2.Data())) { //high threshold only
+          match = 1;
+          break;
+        }
+      }
+      else {
+        // If this is not an EMCal trigger, or no particular treatment of EMCal triggers was requested,
+        // simply check that the trigger was fired
+        if (fired.Contains(obj->GetName())) {
+          match = 1;
+          break;
+        }
+      }
+    }
+    if (!match) return kFALSE;
+  }
   return kTRUE;
 }
 

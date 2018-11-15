@@ -26,19 +26,21 @@ TF1* GetEtaCorrection(){
 }
 
   // ***** Background selection for PbPb 5TeV *****                                // TOF sigma and ITS sigma added                                  // mfaggin (13-Mar-2018)
-Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigma, double sigmaTPChigh, double TOFs, double ITSsMin, double ITSsMax, int hadcontphi = 0){
+//Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigma, double sigmaTPChigh, double TOFs, double ITSsMin, double ITSsMax, int hadcontphi = 0){
+Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double* sigma, double sigmaTPChigh, double TOFs, double ITSsMin, double ITSsMax, int hadcontphi = 0){
   //TFile *in = TFile::Open(Form("$TRAIN_ROOT/util/hfe/%s", filename.Data()));   // GSI version 
   TFile *in = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/%s", filename.Data()));   // GRID version 
   gROOT->cd();
   //int isig = static_cast<int>(sigma * 100.);  // original
-  int isig      = static_cast<int>(sigma * 1000.);   
+
+  //int isig      = static_cast<int>(sigma * 1000.);   
   int isigTPChigh = static_cast<int>(sigmaTPChigh * 1000.);   
   int nTOFsigma = static_cast<int>(TOFs*10);
   int nITSsigmaMin = static_cast<int>(ITSsMin*10);
   int nITSsigmaMax = static_cast<int>(ITSsMax*10);
 
-  printf("File opened: %s\n", in->GetName());
-  printf("Getting hadron background for the TPC sigmaLow cut: %d\n", isig);
+  printf("\n----------------------------------------------------------------------------------------\nFile opened: %s\n\n", in->GetName());
+  //printf("Getting hadron background for the TPC sigmaLow cut: %d\n", isig);
   printf("Getting hadron background for the TPC sigmaHigh cut: %d\n", isigTPChigh);
   printf("Getting hadron background for TOF sigma (INTEGER*10): %d\n", nTOFsigma);
   printf("Getting hadron background for ITS sigma MIN (INTEGER*10): %d and ITS sigma MAX (INTEGER*10) %d\n", nITSsigmaMin,nITSsigmaMax);
@@ -60,6 +62,10 @@ Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigm
         else                            functions[icent] = dynamic_cast<TF1 *>(in->Get(Form("hback_ITSMinm%dMax%d_TOF%d_%d_%d", 0-nITSsigmaMin, nITSsigmaMax, nTOFsigma, isig, icent)));
     }
 */
+
+    int isig      = static_cast<int>(sigma[icent] * 1000.);
+    printf("\nGetting hadron background for the TPC sigmaLow cut: %d\n", isig);
+
     TString funcName="hback_ITS";
     if( (nITSsigmaMin==0-nITSsigmaMax) || (nITSsigmaMin==0 && nITSsigmaMax==0) )        funcName += nITSsigmaMax;
     else{
@@ -128,6 +134,7 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb5TeV(Bool_t useMC, Bool_t isAOD, TString app
                                      ,Bool_t hadcontsyst = kFALSE
                                      ,Int_t phisystconsistenthadcont    // mfaggin, 13-Mar-2018
                                      ,Bool_t RejKinks           // mfaggin, 12-Apr-2018
+                                     ,Int_t filBIT              // EXPONENT that then defines the filterbit (filterbit=2^chosenfilBIT)
                                      )
 {
   Bool_t kAnalyseTaggedTracks = kFALSE;
@@ -167,7 +174,9 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb5TeV(Bool_t useMC, Bool_t isAOD, TString app
     hfecuts->SetRejectKinkDaughters();
   }
   else  hfecuts->SetAcceptKinkMothers();
-  if(isAOD) hfecuts->SetAODFilterBit(2);  
+  //if(isAOD) hfecuts->SetAODFilterBit(2);  
+  if(isAOD) hfecuts->SetAODFilterBit(filBIT);   // EXPONENT that then defines the filterbit (filterbit=2^chosenfilBIT) (mfaggin, 07-Jun-2018)
+  printf("\n\n========= (ConfigHFEnpePbPb5TeV.C file) filBIT set: %d, namely FILTERBIT %d\n\n",filBIT,pow(2,filBIT));
 
   if((itshitpixel==AliHFEextraCuts::kAny) || (itshitpixel==AliHFEextraCuts::kSecond))     
   hfecuts->SetProductionVertex(0,7,0,7);
@@ -382,11 +391,16 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb5TeV(Bool_t useMC, Bool_t isAOD, TString app
     //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_TPCcut47_5percent.root", hBackground, tpcdEdxcutlow[0], TOFs, ITSsMin, ITSsMax);     // mfaggin 09-Jan-2018
 
     //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_newFunc2018Jan17.root", hBackground, tpcdEdxcutlow[0], paramsTPCdEdxcuthigh[4], TOFs, ITSsMin, ITSsMax);     // mfaggin 17-Jan-2018
+/*
     if(itshitpixel==AliHFEextraCuts::kAny)      status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_newFunc_kAny.root", hBackground, tpcdEdxcutlow[0], paramsTPCdEdxcuthigh[4], TOFs, ITSsMin, ITSsMax);
     if(hadcontsyst)                             status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_hadcontsyst.root", hBackground, tpcdEdxcutlow[0], paramsTPCdEdxcuthigh[4], TOFs, ITSsMin, ITSsMax);
     if(phisystconsistenthadcont)                status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_LandauExpKaonProt_systPhi.root", hBackground, tpcdEdxcutlow[0], paramsTPCdEdxcuthigh[4], TOFs, ITSsMin, ITSsMax, phisystconsistenthadcont);
     else                                        status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_LandauExpKaonProt.root", hBackground, tpcdEdxcutlow[0], paramsTPCdEdxcuthigh[4], TOFs, ITSsMin, ITSsMax);     // mfaggin 19-Jan-2018
-
+*/
+    if(itshitpixel==AliHFEextraCuts::kAny)      status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_newFunc_kAny.root", hBackground, tpcdEdxcutlow, paramsTPCdEdxcuthigh[4], TOFs, ITSsMin, ITSsMax);
+    else if(hadcontsyst)                             status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_hadcontsyst.root", hBackground, tpcdEdxcutlow, paramsTPCdEdxcuthigh[4], TOFs, ITSsMin, ITSsMax);
+    else if(phisystconsistenthadcont)                status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_LandauExpKaonProt_systPhi.root", hBackground, tpcdEdxcutlow, paramsTPCdEdxcuthigh[4], TOFs, ITSsMin, ITSsMax, phisystconsistenthadcont);
+    else                                        status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_LandauExpKaonProt.root", hBackground, tpcdEdxcutlow, paramsTPCdEdxcuthigh[4], TOFs, ITSsMin, ITSsMax);     // mfaggin 22-Jun-2018
 
   for(Int_t a=0;a<12;a++) {
       //printf("back %f \n",hBackground[a]);

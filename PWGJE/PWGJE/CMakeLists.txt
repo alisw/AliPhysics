@@ -51,22 +51,22 @@ set(SRCS
     AliPWG4HighPtQATPConly.cxx
     AliPWG4HighPtSpectra.cxx
     AliPWG4HighPtTrackQA.cxx
-    ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskIDFFTCF.cxx
-    ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetAntenna.cxx
-    ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetProtonCorr.cxx
-    ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetShape.cxx
-    ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetsTriggerTRD.cxx
-    ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskPPJetSpectra.cxx
-    ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliIDFFUtils.cxx
+    ../UserTasks/AliAnalysisTaskIDFFTCF.cxx
+    ../UserTasks/AliAnalysisTaskJetAntenna.cxx
+    ../UserTasks/AliAnalysisTaskJetProtonCorr.cxx
+    ../UserTasks/AliAnalysisTaskJetShape.cxx
+    ../UserTasks/AliAnalysisTaskJetsTriggerTRD.cxx
+    ../UserTasks/AliAnalysisTaskPPJetSpectra.cxx
+    ../UserTasks/AliIDFFUtils.cxx
    )
 
 if(FASTJET_FOUND)
     set(SRCS ${SRCS}
-        ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskCheckSingleTrackJetRejection.cxx
-        ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetHadronCorrelation.cxx
-        ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskJetHBOM.cxx
+        ../UserTasks/AliAnalysisTaskCheckSingleTrackJetRejection.cxx
+        ../UserTasks/AliAnalysisTaskJetHadronCorrelation.cxx
+        ../UserTasks/AliAnalysisTaskJetHBOM.cxx
         AliAnalysisTaskJetFFMoments.cxx
-        ${AliPhysics_SOURCE_DIR}/PWGJE/UserTasks/AliAnalysisTaskFragmentationTriggered.cxx
+        ../UserTasks/AliAnalysisTaskFragmentationTriggered.cxx
     )
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
     link_directories(${FASTJET_LIBS_DIR})

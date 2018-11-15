@@ -50,7 +50,7 @@ class BadChannelAna : public TObject {
 public:
       BadChannelAna() ;                // default ctor
 	  ~BadChannelAna();                // dtor
-	  BadChannelAna(TString period, TString train, TString trigger, Int_t runNumber,Int_t trial, TString workDir, TString listName);
+	  BadChannelAna(TString period, TString train, TString trigger, Int_t runNumber,Int_t trial, TString workDir, TString listName, Bool_t runByRun=0);
 
 	  void Run(Bool_t mergeOnly=0);
 
@@ -64,8 +64,8 @@ public:
       void SetLowerBound(Double_t input)                   {fEndLowerBound      = input;}
       void AddManualMasking(std::vector<Int_t> cellVector) {fManualMask.swap(cellVector) ;}
 	  void AddMaskSM(Int_t iSM);
-      void AddPeriodAnalysis(Int_t criteria, Double_t nsigma, Double_t emin, Double_t emax);
-
+	  void RunMaskSM();
+	  void AddPeriodAnalysis(Int_t criteria, Double_t nsigma, Double_t emin, Double_t emax);
 
 protected:
 
@@ -76,12 +76,12 @@ protected:
 	  void PeriodAnalysis(Int_t criterum=7, Double_t nsigma = 4.0, Double_t emin=0.1, Double_t emax=2.0);
 
 	  TH1F* BuildHitAndEnergyMean(Int_t crit, Double_t emin = 0.1, Double_t emax=2.);
-          TH1F* BuildHitAndEnergyMeanScaled(Int_t crit, Double_t emin = 0.1, Double_t emax=2.);
+	  TH1F* BuildHitAndEnergyMeanScaled(Int_t crit, Double_t emin = 0.1, Double_t emax=2.);
 	  TH1F* BuildTimeMean(Int_t crit, Double_t tmin, Double_t tmax);
 
 	  void FlagAsDead();
 	  void FlagAsBad(Int_t crit, TH1F* inhisto, Double_t nsigma = 4., Double_t dnbins = 200);
-          void FlagAsBad_Time(Int_t crit, TH1F* inhisto, Double_t tCut = 1.5);
+	  void FlagAsBad_Time(Int_t crit, TH1F* inhisto, Double_t nSig = 3);
 
 	  void SummarizeResultsByFlag();
 	  void SummarizeResults();
@@ -106,6 +106,7 @@ protected:
 
 	  //Genergal paths
 	  TString fAnalysisOutput;              ///< The list with bad channels and histograms are saved in this folder
+	  TString fAnalysisOutputRbR;           ///< For a compact summary of true run-by-run BC maps
 	  TString fAnalysisInput;               ///< Here the .root files of each run of the period are saved
 	  TString fRunList;                     ///< Thats the full path and name of the file which contains a list of all runs to be merged together
 	  TString fRunListFileName;             ///< This is the name of the file with the run numbers to be merged, by default it's 'runList.txt'
@@ -123,6 +124,7 @@ protected:
 	  Bool_t  fTestRoutine;                 ///< This is a flag, if set true will produce some extra quality check histograms
       Bool_t  fPrint;                       ///< If set true more couts with information of the excluded cells will be printed
 	  Bool_t  fTrackCellRecord;             ///< Track the non-zero elements in the flags throughout the routine
+	  Bool_t  fRunBRunMap;                  ///< Produce truely run-by-run maps in a separate folder
 
 	  //histogram settings
 	  Int_t   fNMaxCols;                    ///< Maximum No of colums in module (eta direction)
@@ -136,6 +138,7 @@ protected:
 	  Int_t fCriterionCounter;              //!<! This value will be written in fflag and updates after each PeriodAnalysis, to distinguish the steps at which cells are marked as bad
 	  std::vector<Bool_t> fWarmCell;        //!<! fWarmCell[CellID] = 0 (really bad), fWarmCell[CellID] = 1 (candidate for warm),
 	  std::vector<Int_t> fManualMask;       //!<! Is a list of cells that should be addidionally masked by hand.
+	  std::vector<Int_t> fSMMask;           //!<! fSMMask is filled with SM numbers that need to be masked by hand.
 
 	  //Calorimeter information for the investigated runs
 	  AliCalorimeterUtils* fCaloUtils;      //!<! Calorimeter information for the investigated runs

@@ -119,20 +119,24 @@ TList* AliCEPUtils::GetQArnumHists(Int_t rnummin, Int_t rnummax)
   lhh->Add(fhh04);
   TH1F* fhh05 = new TH1F("nCCUP25","nCCUP25",nch,rnummin,rnummax);
   lhh->Add(fhh05);
-  TH1F* fhh06 = new TH1F("nMBOR","nMBOR",nch,rnummin,rnummax);
+  TH1F* fhh06 = new TH1F("nCCUP26","nCCUP26",nch,rnummin,rnummax);
   lhh->Add(fhh06);
-  TH1F* fhh07 = new TH1F("nSaved","nSaved",nch,rnummin,rnummax);
+  TH1F* fhh07 = new TH1F("nCCUP27","nCCUP27",nch,rnummin,rnummax);
   lhh->Add(fhh07);
-  TH1F* fhh08 = new TH1F("nV0DG","nV0DG",nch,rnummin,rnummax);
+  TH1F* fhh08 = new TH1F("nMBOR","nMBOR",nch,rnummin,rnummax);
   lhh->Add(fhh08);
-  TH1F* fhh09 = new TH1F("nADDG","nADDG",nch,rnummin,rnummax);
+  TH1F* fhh09 = new TH1F("nSaved","nSaved",nch,rnummin,rnummax);
   lhh->Add(fhh09);
-  TH1F* fhh10 = new TH1F("nFMDDG","nFMDDG",nch,rnummin,rnummax);
+  TH1F* fhh10 = new TH1F("nV0DG","nV0DG",nch,rnummin,rnummax);
   lhh->Add(fhh10);
-  TH1F* fhh11 = new TH1F("nETDG","nETDG",nch,rnummin,rnummax);
+  TH1F* fhh11 = new TH1F("nADDG","nADDG",nch,rnummin,rnummax);
   lhh->Add(fhh11);
-  TH1F* fhh12 = new TH1F("nETNDG","nETNDG",nch,rnummin,rnummax);
+  TH1F* fhh12 = new TH1F("nFMDDG","nFMDDG",nch,rnummin,rnummax);
   lhh->Add(fhh12);
+  TH1F* fhh13 = new TH1F("nETDG","nETDG",nch,rnummin,rnummax);
+  lhh->Add(fhh13);
+  TH1F* fhh14 = new TH1F("nETNDG","nETNDG",nch,rnummin,rnummax);
+  lhh->Add(fhh14);
 
   return lhh;
 
@@ -1739,6 +1743,216 @@ void AliCEPUtils::InitTrackCuts(Bool_t IsRun1, Int_t clusterCut)
 }
 
 // ------------------------------------------------------------------------------
+Bool_t AliCEPUtils::IsGoodEMCCluster (AliESDCaloCluster* Cluster)
+{
+
+  Bool_t goodCluster =
+    Cluster->IsEMCAL() &&
+    Cluster->GetNCells()>1 &&
+    !Cluster->GetIsExotic();
+
+  return goodCluster;
+  
+}
+// ------------------------------------------------------------------------------
+// evaluate the distances between the cluster positions and the EMCal hits of
+// the selected tracks.
+// For each cluster find the minimum distance (dEtaPhiMin) and finally return
+// the maximum of these values (dEtaPhiMinMax)
+// Only if this value is small it is assumed, that all EMCal clusters are
+// associated with a charged track and not with a gamma
+Double_t AliCEPUtils::CaloClusterTrackdmax( AliESDEvent *Event, TArrayI* TTindices )
+{
+  
+  // time and amplitude cuts
+  Double_t cTimeMax    = 50.;
+  Double_t cellAmplMin =  0.;
+  
+  // initialisations
+  Double_t dval = 20.;
+  Float_t x[3];
+  TVector3 v3;
+  Double_t cluster_phi, cluster_eta;
+  AliESDCaloCluster* aliCluster = NULL;
+  Double_t trkPhiOnEmc, trkEtaOnEmc;
+  AliESDtrack *tmptrk = NULL;
+  
+  Double_t dEta, dPhi, dEtaPhi;
+  Double_t dEtaPhiMin=0.;
+  
+  // get number of clusters
+  UInt_t nCaloTracks = Event->GetNumberOfCaloClusters();
+
+  UInt_t nEMCcluster=0, nPHOScluster=0;
+  for (UInt_t ii=0; ii<nCaloTracks; ii++) {
+    aliCluster = (AliESDCaloCluster*)Event->GetCaloCluster(ii);
+        
+    if (IsGoodEMCCluster(aliCluster)) nEMCcluster++;
+    if (aliCluster->IsPHOS())         nPHOScluster++;
+  }
+  //printf("cluster EMC %i PHOS %i tracks %i",
+  //  nEMCcluster,nPHOScluster,TTindices->GetSize());
+  if (nEMCcluster<=0) {
+    //printf("\n");
+    return 0.;
+  }
+  
+  // get the eta/phi values for all track hits on EMC
+  TArrayI *tind = new TArrayI();
+  TArrayD *teta = new TArrayD();
+  TArrayD *tphi = new TArrayD();
+  Int_t cnt = -1;
+  for (Int_t jj=0; jj<TTindices->GetSize(); jj++) {
+    tmptrk = (AliESDtrack*) Event->GetTrack(TTindices->At(jj)); 
+      
+    // track position on emcal
+    trkEtaOnEmc = tmptrk->GetTrackEtaOnEMCal();
+
+    // Map phi to [0,2pi)
+    trkPhiOnEmc = tmptrk->GetTrackPhiOnEMCal();
+    trkPhiOnEmc = (trkPhiOnEmc>0.) ? trkPhiOnEmc : trkPhiOnEmc+2.*TMath::Pi();
+    
+    if (trkPhiOnEmc>0. && TMath::Abs(trkEtaOnEmc)<0.75) {
+      cnt++;
+      
+      // update cluster buffers
+      tind->Set(cnt+1);
+      tind->SetAt(jj,cnt);
+      teta->Set(cnt+1);
+      teta->AddAt(trkEtaOnEmc,cnt);
+      tphi->Set(cnt+1);
+      tphi->AddAt(trkPhiOnEmc,cnt);
+    }
+    
+  }
+  //printf(" track hits %i\n",tind->GetSize());
+  
+  // check if the number of track hits => number of EMC clusters
+  if (nEMCcluster>tind->GetSize()) {
+    delete tind;
+    delete teta;
+    delete tphi;
+    
+    return dval;
+  }
+  
+  // get the eta/phi values for all EMC clusters
+  Short_t cellNb, cellNb_max_ampl;
+  Double_t cellAmpl, cellAmpl_max, cTime;
+  AliESDCaloCells* CaloCells = (AliESDCaloCells*)Event->GetEMCALCells();
+
+  TArrayI *cind = new TArrayI();
+  TArrayD *ctim = new TArrayD();
+  TArrayD *camp = new TArrayD();
+  TArrayD *ceta = new TArrayD();
+  TArrayD *cphi = new TArrayD();
+  cnt = -1;
+  for (UInt_t ii=0; ii<nCaloTracks; ii++) {
+    aliCluster = (AliESDCaloCluster*)Event->GetCaloCluster(ii);
+    if (!IsGoodEMCCluster(aliCluster)) continue;
+
+    // determine cluster time = time of cluster cell with largest amplitude
+    cellAmpl_max = 0.;
+    for (UInt_t jj=0; jj<aliCluster->GetNCells(); jj++) {
+      cellNb = aliCluster->GetCellAbsId(jj);
+      cellAmpl = CaloCells->GetCellAmplitude(cellNb);
+      if (cellAmpl>=cellAmpl_max) {
+        cellAmpl_max = cellAmpl;
+        cellNb_max_ampl = cellNb;
+      }
+    }
+    cTime = 1.E9*CaloCells->GetCellTime(cellNb_max_ampl);   // [ns]
+    
+    // cut on time and amplitude
+    if (TMath::Abs(cTime)>cTimeMax || cellAmpl_max<cellAmplMin) continue;
+    
+    // get cluster position
+    aliCluster->GetPosition(x);
+    
+    // v3 phi is in the range [-pi,pi) -> map it to [0, 2pi)
+    v3 = TVector3(x[0], x[1], x[2]);
+    cluster_phi = (v3.Phi()>0.) ? v3.Phi() : v3.Phi() + 2.*TMath::Pi();
+    cluster_eta = v3.Eta();
+    
+    // update cluster buffers
+    cnt++;
+    cind->Set(cnt+1);
+    cind->SetAt(ii,cnt);
+    ctim->Set(cnt+1);
+    ctim->SetAt(cTime,cnt);
+    camp->Set(cnt+1);
+    camp->SetAt(cellAmpl_max,cnt);
+    ceta->Set(cnt+1);
+    ceta->AddAt(cluster_eta,cnt);
+    cphi->Set(cnt+1);
+    cphi->AddAt(cluster_phi,cnt);
+    
+    //printf("cluster %i nCells %i",cnt, aliCluster->GetNCells());
+    //printf(" time %.6f [ns] amplitude %.6f\n",cTime, cellAmpl_max);
+    
+  }
+  //printf("\n");
+  
+  // find track/cluster matches
+  Int_t cm, tm;
+  TArrayI *cu = new TArrayI(cind->GetSize()); cu->Reset(0);
+  TArrayI *tu = new TArrayI(tind->GetSize()); tu->Reset(0);
+  
+  // loop this (number of clusters) times
+  for (UInt_t ii=0; ii<cind->GetSize(); ii++) {
+    
+    // find minimum dEtaPhi with reminaning clusters and tracks
+    cm = 0;
+    tm = 0;
+    dEtaPhiMin = dval;
+    for (UInt_t jj=0; jj<cind->GetSize(); jj++) {
+      if (cu->At(jj)) continue;
+      for (UInt_t kk=0; kk<tind->GetSize(); kk++) {
+        if (tu->At(kk)) continue;
+  
+        // compute dEtaPhi for given cluster/track pair
+        dEta = teta->At(kk) - ceta->At(jj);
+        dPhi = tphi->At(kk) - cphi->At(jj);
+        dEtaPhi = TMath::Sqrt( dEta*dEta + dPhi*dPhi );
+        //printf("  c %i time %.2f amp %.4f ceta %.2f cphi %.2f t %i teta %.2f tphi %.2f dEtaPhi %.2f\n",
+        //  jj,ctim->At(jj),camp->At(jj),ceta->At(jj),cphi->At(jj),kk,teta->At(kk),tphi->At(kk),dEtaPhi);
+
+        // update dEtaPhiMin
+        if (dEtaPhi<dEtaPhiMin) {
+          cm = jj;
+          tm = kk;
+          dEtaPhiMin = dEtaPhi;
+        }
+      }
+    }
+    //printf("    cluster %i track %i dEtaPhiMin %.2f\n", cm,tm,dEtaPhiMin);
+    //printf("  c %i time %.2f amp %.4f ceta %.2f cphi %.2f t %i teta %.2f tphi %.2f dEtaPhi %.2f\n",
+    //  cm,ctim->At(cm),camp->At(cm),ceta->At(cm),cphi->At(cm),tm,teta->At(tm),tphi->At(tm),dEtaPhiMin);
+    
+    // update cu (clusters used) and tu (tracks used)
+    cu->SetAt(1,cm);
+    tu->SetAt(1,tm);
+      
+  }
+  //printf("  dEtaPhiMinMax %f\n",dEtaPhiMin);
+  
+  // clean up
+  delete cind;
+  delete ctim;
+  delete camp;
+  delete ceta;
+  delete cphi;
+  delete tind;
+  delete teta;
+  delete tphi;
+  delete cu;
+  delete tu;
+  
+  return dEtaPhiMin;
+
+}
+
+// ------------------------------------------------------------------------------
 void AliCEPUtils::EMCAnalysis (
   AliESDEvent *Event,
   TList *lhh,
@@ -2018,3 +2232,52 @@ void AliCEPUtils::SetMCTruth (
                       
 }
                   
+//------------------------------------------------------------------------------
+void AliCEPUtils::GetMyPriors( TString fnPriors, TH1F** mypriors )
+{
+  
+  // create leaf names
+  TString priorName;
+
+  // open fnPriors
+  TFile *priorff = TFile::Open(fnPriors.Data(),"READ");
+  if (priorff) {
+    printf("File %s opened!\n",fnPriors.Data());
+    
+    // get list of keys
+    TIter nextkey(priorff->GetListOfKeys());
+    TKey *key;
+    TString ss;
+    Int_t step, laststep = 0;
+    while (key = (TKey*)nextkey()) {
+      TObject *oo = (TObject*) key->ReadObj();
+      if (TString(oo->ClassName()).EqualTo("TH1F")) {
+        ss = TString(oo->GetName());
+        if (ss.Contains("priors") && ss.Contains("step")) {
+          step = TString(ss(ss.Length()-1)).Atoi();
+          //printf("%s: step %i\n",fnPriors.Data(),step);
+          if (step > laststep) laststep = step;
+        }
+      }
+    }
+    
+    // get priors for 5 [e,mu,pi,K,p] particle species
+    for (Int_t ii=0; ii<AliPID::kSPECIES; ii++) {
+      priorName = Form("priors%istep%i",ii,laststep);
+      printf("Trying to get %s - ",priorName.Data());
+      mypriors[ii] = (TH1F*)priorff->Get(priorName);
+      if (mypriors[ii]) {
+        mypriors[ii]->SetLineStyle(kSolid);
+      } else {
+        printf("NOT ");
+      }
+      printf("ok\n");
+
+    }
+  }
+  
+  return;
+
+} 
+
+//------------------------------------------------------------------------------

@@ -10,7 +10,8 @@ AliAnalysisTaskCheckEvSel *AddTaskCheckEvSel(TString suffix="",
 					     Int_t optPileup=AliRDHFCuts::kRejectPileupEvent,
 					     Int_t minContPileup=3,
 					     Double_t minDzPileup=0.6,
-					     Bool_t multDepPileup=kFALSE)
+					     Bool_t multDepPileup=kFALSE,
+					     Bool_t doVtxNtuple=kFALSE)
 {
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -35,6 +36,9 @@ AliAnalysisTaskCheckEvSel *AddTaskCheckEvSel(TString suffix="",
       evselCuts->ConfigurePileupCuts(minContPileup,minDzPileup);
       evselCuts->SetUseMultDepPileupCut(multDepPileup);
     }
+    else if(optPileup==AliRDHFCuts::kRejectMVPileupEvent){
+      evselCuts->ConfigurePileupCuts(minContPileup,minDzPileup);
+    }
     evselCuts->SetCutOnzVertexSPD(cutOnZVertexSPD);
   }else{
     TFile* filecuts=TFile::Open(filecutName.Data());
@@ -48,6 +52,7 @@ AliAnalysisTaskCheckEvSel *AddTaskCheckEvSel(TString suffix="",
   }
   AliAnalysisTaskCheckEvSel *dTask = new AliAnalysisTaskCheckEvSel(readMC,system,evselCuts);
   dTask->SetCutOnzVertexSPD(cutOnZVertexSPD);
+  dTask->SetEnableVertexNtuple(doVtxNtuple);
   mgr->AddTask(dTask);
   
   

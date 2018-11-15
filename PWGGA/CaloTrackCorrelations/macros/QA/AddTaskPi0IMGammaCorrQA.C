@@ -19,15 +19,26 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
+// ROOT
 #include <TString.h>
 #include <TROOT.h>
 #include <TSystem.h>
 
+// AliPhysics
 #include "AliLog.h"
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
+#include "AliVTrack.h"
+#include "AliESDtrackCuts.h"
+
+// CaloTrackCorrelations frame, base
 #include "AliAnalysisTaskCaloTrackCorrelation.h"
+#include "AliAnaCaloTrackCorrMaker.h"
 #include "AliCaloTrackESDReader.h"
 #include "AliCaloTrackAODReader.h"
 #include "AliCalorimeterUtils.h"
+
+// CaloTrackCorrelations frame, analysis
 #include "AliAnaPhoton.h"
 #include "AliAnaPi0.h"
 #include "AliHistogramRanges.h"
@@ -36,19 +47,17 @@
 #include "AliAnaChargedParticles.h"
 #include "AliAnaCalorimeterQA.h"
 #include "AliAnaGeneratorKine.h"
-#include "AliAnalysisTaskCaloTrackCorrelation.h"
-#include "AliAnaCaloTrackCorrMaker.h"
-#include "AliAnalysisManager.h"
-#include "AliInputEventHandler.h"
-#include "AliVTrack.h"
-#include "ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
-#include "AliESDtrackCuts.h"
-#include "CreateTrackCutsPWGJE.C"
-#include "CheckActiveEMCalTriggerPerPeriod.C"
-//#include "ConfigureEMCALRecoUtils.C"
-#include "GetAlienGlobalProductionVariables.C"
 
-#endif // CINT
+// Loaded macros of CaloTrackCorr and other
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+//#include "ConfigureEMCALRecoUtils.C"
+#include "PWGGA/CaloTrackCorrelations/macros/ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
+#include "PWGGA/CaloTrackCorrelations/macros/CheckActiveEMCalTriggerPerPeriod.C"
+#include "PWGGA/CaloTrackCorrelations/macros/GetAlienGlobalProductionVariables.C"
+#include "PWGJE/macros/CreateTrackCutsPWGJE.C"
+
+
+#endif // no CINT
 
 
 ///
@@ -111,7 +120,7 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges, TString calorimeter
   histoRanges->SetHistodRRangeAndNBins(0.,0.05,50);//QA
   
   // QA, electron, charged
-  histoRanges->SetHistoPOverERangeAndNBins(0,  2. ,100);
+  histoRanges->SetHistoEOverPRangeAndNBins(0,  2. ,100);
   histoRanges->SetHistodEdxRangeAndNBins  (0.,200.,100);
   
   // QA
@@ -207,7 +216,10 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType, TString collision, B
   
   if(inputDataType=="ESD")
   {
+#if defined(__CINT__)
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
+#endif
+
     if(year > 2010)
     {
       //Hybrids 2011
@@ -734,6 +746,10 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->SetAssocPtBinLimit(3, 10) ;
   ana->SetAssocPtBinLimit(4, 20) ;
 
+  ana->SetNTriggerPtBins(1); 
+  ana->SetTriggerPtBinLimit(0, 10) ;
+  ana->SetTriggerPtBinLimit(1, 20) ;
+  
   ana->SelectIsolated(kFALSE); // do correlation with isolated photons
 
   //if(!simulation) ana->SwitchOnFillPileUpHistograms();
@@ -880,13 +896,21 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
                                                              const char *   suffix        = "default"
                                                              )
 {
+  printf("AddTaskPi0IMGammaCorrQA::Start configuration\n");
+
+#if defined(__CINT__)
+  printf("AddTaskPi0IMGammaCorrQA::Load macros\n");
+  // Load macros
+  //
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/GetAlienGlobalProductionVariables.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/CheckActiveEMCalTriggerPerPeriod.C");
+#endif
+  
   // Check the global variables, and reset the provided ones if empty.
   //
   TString trigger  = suffix;
-  
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/GetAlienGlobalProductionVariables.C");
-  
-  Int_t   year        = 2017;
+  Int_t   year        = -1;
   Bool_t  printGlobal = kFALSE;
   if ( trigger.Contains("default") || trigger.Contains("INT") || trigger.Contains("MB") ) printGlobal = kTRUE;
   
@@ -957,7 +981,6 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   // Do not configure the wagon for certain analysis combinations
   // But create the task so that the sub-wagon train can run
   //
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/CheckActiveEMCalTriggerPerPeriod.C");
   Bool_t doAnalysis = CheckActiveEMCalTriggerPerPeriod(simulation,trigger,period,year);
   if(!doAnalysis) 
   {
@@ -1055,7 +1078,6 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   //
   if(!simulation)
   {    
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C");
     TString caloTriggerString = "";
     UInt_t mask = ConfigureAndGetEventTriggerMaskAndCaloTriggerString(trigger, year, caloTriggerString);
     
@@ -1073,6 +1095,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   maker->SwitchOnDataControlHistograms(); 
   
   if(debugLevel > 0) maker->Print("");
+  
+  printf("AddTaskPi0IMGammaCorrQA::End configuration\n");
   
   return task;
 }

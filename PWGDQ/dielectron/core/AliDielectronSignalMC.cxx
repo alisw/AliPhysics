@@ -143,6 +143,7 @@ AliDielectronSignalMC* AliDielectronSignalMC::GetJpsiMCsignalDef(EJpsiSignals kS
 {
   AliDielectronSignalMC *mcSignal = new AliDielectronSignalMC();
   mcSignal->SetName(fgkJpsiSignals[kSignal]);
+  mcSignal->SetTitle(fgkJpsiSignals[kSignal]);
   switch (kSignal) {
     case kBegin:
       printf("No AliDielectronSignalMC defined for kBegin returning NULL");

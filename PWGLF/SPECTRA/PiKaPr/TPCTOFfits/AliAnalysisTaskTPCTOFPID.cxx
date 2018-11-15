@@ -239,7 +239,8 @@ AliAnalysisTaskTPCTOFPID::UserCreateOutputObjects()
   fPIDTree = new TTree("PIDTree","PIDTree");
   fPIDTree->Branch("AnalysisEvent", "AliAnalysisPIDEvent", &fAnalysisEvent);  
   fPIDTree->Branch("AnalysisTrack", "TClonesArray", &fAnalysisTrackArray); 
-  fPIDTree->Branch("AnalysisV0Track","TClonesArray",&fAnalysisV0TrackArray);
+  //Temporarily disabling V0 to limit output
+  //fPIDTree->Branch("AnalysisV0Track","TClonesArray",&fAnalysisV0TrackArray);
   if (fMCFlag)
     fPIDTree->Branch("AnalysisParticle", "TClonesArray", &fAnalysisParticleArray);
 
@@ -726,7 +727,8 @@ AliAnalysisTaskTPCTOFPID::UserExec(Option_t *option)
     
 
   } /* end of loop over ESD tracks */
-  ProcessV0s();
+  //Temporarily disabling V0 to limit output
+  //ProcessV0s();
   fPIDTree->Fill();
 
   PostData(1,fPIDTree);

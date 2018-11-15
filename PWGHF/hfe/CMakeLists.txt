@@ -116,6 +116,7 @@ set(SRCS
   AliAnalysisTaskBeautyCal.cxx
   AliAnalysisTaskTPCCalBeauty.cxx
   AliAnalysisTaskFlowITSTPCTOFQCSP.cxx
+  AliAnalysisTaskHFEIPDistribution.cxx
   AliAnalysisTaskHFEMulti.cxx
   AliAnalysisTaskHFEMultiplicity.cxx
   AliAnalysisTaskHFEtemplate.cxx
@@ -124,7 +125,8 @@ set(SRCS
   AliAnalysisTaskHFEEfficiency.cxx
   AliAnalysisTaskHaHFECorrel.cxx
   AliAnalysisHFETPCTOFNew.cxx
-  AliAnalysisHFETPCTOFBeauty.cxx	
+  AliAnalysisHFETPCTOFBeauty.cxx
+  AliAnalysisHFEppTPCTOFBeauty.cxx	
   AliAnalysisTaskCaloHFEpPbRun2.cxx
   AliAnalysisTaskHFEmultTPCTOF.cxx
   AliAnalysisTaskCaloHFEpp.cxx

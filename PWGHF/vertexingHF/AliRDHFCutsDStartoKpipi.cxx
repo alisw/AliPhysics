@@ -52,7 +52,9 @@ AliRDHFCutsDStartoKpipi::AliRDHFCutsDStartoKpipi(const char* name) :
   fTrackCutsSoftPi(0),
   fMaxPtPid(9999.),
   fTPCflag(999.),
-  fCircRadius(0.)
+  fCircRadius(0.),
+  fUseTPCtrackCutsOnD0Daughters(kTRUE),
+  fUseTPCtrackCutsOnSoftPion(kFALSE)
 {
   //
   // Default Constructor
@@ -122,7 +124,9 @@ AliRDHFCutsDStartoKpipi::AliRDHFCutsDStartoKpipi(const AliRDHFCutsDStartoKpipi &
   fTrackCutsSoftPi(0),
   fMaxPtPid(9999.),
   fTPCflag(999.),
-  fCircRadius(0.)
+  fCircRadius(0.),
+  fUseTPCtrackCutsOnD0Daughters(source.fUseTPCtrackCutsOnD0Daughters),
+  fUseTPCtrackCutsOnSoftPion(source.fUseTPCtrackCutsOnSoftPion)
 {
   //
   // Copy constructor
@@ -350,6 +354,12 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
   // selection on daughter tracks 
   if(selectionLevel==AliRDHFCuts::kAll || 
      selectionLevel==AliRDHFCuts::kTracks) {
+
+    if(fUseTPCtrackCutsOnD0Daughters || !fUseTPCtrackCutsOnSoftPion){
+    //if by mistake both flags turned off in cutobject => only apply to D0daughters (default option)
+      SetUseTPCtrackCutsOnThisDaughter(kTRUE);
+    } else { SetUseTPCtrackCutsOnThisDaughter(kFALSE); }
+
     if(!AreDaughtersSelected(dd,aod)) return 0;
     if(fTrackCutsSoftPi) {
       AliAODVertex *vAOD = d->GetPrimaryVtx();
@@ -357,6 +367,10 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
       vAOD->GetXYZ(pos);
       vAOD->GetCovarianceMatrix(cov);
       const AliESDVertex vESD(pos,cov,100.,100);
+
+      if(fUseTPCtrackCutsOnSoftPion){ SetUseTPCtrackCutsOnThisDaughter(kTRUE); }
+      else{ SetUseTPCtrackCutsOnThisDaughter(kFALSE); }
+
       if(!IsDaughterSelected(b,&vESD,fTrackCutsSoftPi,aod)) return 0;
     }
   }

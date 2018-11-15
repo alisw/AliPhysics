@@ -22,7 +22,7 @@ ClassImp(AliPP13PythiaInfoSelection);
 void AliPP13PythiaInfoSelection::CountMBEvent()
 {
 
-	AliPP13PhotonSelection::CountMBEvent();
+	AliPP13PhysicsSelection::CountMBEvent();
 
 	// Fetch the histgram file
 	TTree * tree = AliAnalysisManager::GetAnalysisManager()->GetTree();

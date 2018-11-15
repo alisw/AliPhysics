@@ -46,14 +46,14 @@ public:
 
     void SetSamplingInclusive(){fsamplingMethod = 1;} // Setter for inclusive sampling
     void UseZVertexAcceptance(bool useZ){fUseZVertexBinsAcceptance = useZ;} // Setter for fUseZVertexBinsAcceptance
-    void SetAcceptanceCorrection(AliJAcceptanceCorrection *accCorr){fAcceptanceCorrection = accCorr;} // Setter for acceptance correction
+    //void SetAcceptanceCorrection(AliJAcceptanceCorrection *accCorr){fAcceptanceCorrection = accCorr;} // Setter for acceptance correction
     void SetMagneticFieldPolarity(double magneticFieldPolarity){fMagneticFieldPolarity = magneticFieldPolarity;}
 
 protected:
 
     AliJCard* fcard; // Card with binning information etc.
     AliJIaaHistograms* fhistos;  // Histograms needed in the analysis
-    AliJAcceptanceCorrection *fAcceptanceCorrection;  // Acceptance correction container
+    //AliJAcceptanceCorrection *fAcceptanceCorrection;  // Acceptance correction container
     int fnReal; // Number of events
     int fnMix; // Number of mixed events
     int fsamplingMethod; // Sampling method flag (flat or inclusive)

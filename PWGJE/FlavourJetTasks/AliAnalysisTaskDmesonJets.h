@@ -461,6 +461,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     void SetChargedPtRange(Double_t min, Double_t max)    { fMinChargedPt = min; fMaxChargedPt = max; }
     void SetNeutralPtRange(Double_t min, Double_t max)    { fMinNeutralPt = min; fMaxNeutralPt = max; }
     void SetRhoName(TString n)                            { fRhoName      = n  ; }
+    void SetRecombinationScheme(ERecoScheme_t reco)       { fRecoScheme   = reco;}
     Double_t GetRadius() const { return fRadius; }
     TString GetRhoName() const { return fRhoName; }
 

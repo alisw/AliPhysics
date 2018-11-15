@@ -74,35 +74,23 @@ class CutHandlerConvMaterial{
 
 void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,                  // change different set of cuts
                                 Int_t   isMC                    = 0,
-                                TString periodname              = "LHC10b",           // period name
+                                TString periodName              = "",           // period name
                                 TString periodNameV0Reader      = "",
                                 TString periodNameAnchor        = "",
-                                Bool_t 	enableV0findingEffi     = kFALSE              // enables V0finding efficiency histograms
-      ){
-
-  // ================= Load Librariers =================================
-  gSystem->Load("libCore");
-  gSystem->Load("libTree");
-  gSystem->Load("libGeom");
-  gSystem->Load("libVMC");
-  gSystem->Load("libPhysics");
-  gSystem->Load("libMinuit");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libESD");
-  gSystem->Load("libAOD");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSISalice");
-  gSystem->Load("libCDB");
-  gSystem->Load("libSTEER");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libTender");
-  gSystem->Load("libTenderSupplies");
-  gSystem->Load("libPWGflowBase");
-  gSystem->Load("libPWGflowTasks");
-  gSystem->Load("libPWGGAGammaConv");
-
+				Int_t   doDeDxMaps              =  0,
+                                Bool_t 	enableV0findingEffi     = kFALSE,    // enables V0finding efficiency histograms
+				Bool_t  enableElecDeDxPostCalibration = kFALSE,
+				TString fileNameElecDeDxPostCalibration = "dEdxCorrectionMap_Period_Pass.root",
+                                Int_t   doMultiplicityWeighting           = 0,
+				TString fileNameInputForMultWeighing    = "/alice/cern.ch/user/a/amarin/multWeightFile/histosForMultWeighting_pp.root",            //
+				TString additionalTrainConfig   = "0"       // additional counter for trainconfig, this has to be always the last parameter
+                              ){
 
   Int_t IsHeavyIon = 0;
+  if (additionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + additionalTrainConfig.Atoi();
+  }
+
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -121,7 +109,7 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
   }
 
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton = "00000000000000000500000000";
+  TString cutnumberPhoton = "00000000000000000500004000";
   //"00200008400000002200000000";
 
   TString cutnumberEvent = "00000103";
@@ -133,7 +121,7 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     enableConstructGamma=kTRUE;
   }
   if (trainConfig>100 && trainConfig<200 ){
-    cutnumberPhoton = "10000000000000000500000000";
+    cutnumberPhoton = "10000000000000000500004000";
   }
 
   if (trainConfig ==  8 || trainConfig ==  10 || trainConfig ==  1008 || trainConfig ==  2008 || trainConfig ==  3008 ) {
@@ -195,11 +183,6 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
       }
     }
 
-
-    if(inputHandler->IsA()==AliAODInputHandler::Class()){
-      // AOD mode
-      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
-    }
     fV0ReaderV1->Init();
 
     AliLog::SetGlobalLogLevel(AliLog::kInfo);
@@ -222,7 +205,12 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
   fMaterialHistos->SetIsMC(isMC);
   fMaterialHistos->SetIsHeavyIon(IsHeavyIon);
   fMaterialHistos->SetV0ReaderName(V0ReaderName);
+  fMaterialHistos->SetDoDeDxMaps(doDeDxMaps);
+  if (doMultiplicityWeighting>0 && isMC==0){
+    doMultiplicityWeighting = 0;
+  }
 
+  fMaterialHistos->SetDoMultWeights(doMultiplicityWeighting);
   CutHandlerConvMaterial cuts;
   if(trainConfig == 1){
     cuts.AddCut("00000103", "00000009266302004204400000");
@@ -277,8 +265,21 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCut("00000103", "00000009266300008884404000");
     cuts.AddCut("00000103", "00000009266300008854404000");
     cuts.AddCut("00000103", "00000009266370008854404000");
+ } else if (trainConfig == 23) {
+    //    cuts.AddCut("00010103", "00000009266300008884404000"); //- AM 28.03.18
+    cuts.AddCut("00010103", "0c000009266300008850404000");
+    cuts.AddCut("00010103", "0d000009266300008850404000");
+ } else if (trainConfig == 24) {
+    cuts.AddCut("00010103", "00000009266300008750404000");
+    cuts.AddCut("00010103", "00000009266302008750404000");
+    cuts.AddCut("00010103", "00000009266300008650404000");
+    cuts.AddCut("00010103", "0d0000d9266300008850404000");   // increased pT to 60 MeV for e+e-
+ } else if (trainConfig == 25) {
+    cuts.AddCut("00010103", "00000009a27300008250a04120");
+    cuts.AddCut("00010103", "0c000009a27300008250a04120");
+    cuts.AddCut("00010103", "0d000009a27300008250a04120");
 
-    // Offline V0Finder is used
+   // Offline V0Finder is used
 
   } else  if(trainConfig == 101){
     cuts.AddCut("00000103", "10000009266302004204400000");
@@ -327,13 +328,24 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCut("00010103", "10000009266300008850404000");
     cuts.AddCut("00010103", "10000009266300008254404000");
     cuts.AddCut("00010103", "10000009227300008854404000");
- 
+
  } else if (trainConfig == 122) {
     cuts.AddCut("00000103", "10000009266300008884404000");
     cuts.AddCut("00000103", "10000009266300008854404000");
     cuts.AddCut("00000103", "10000009266370008854404000");
-
-
+ } else if (trainConfig == 123) {
+    cuts.AddCut("00010103", "1c000009266300008850404000");
+    cuts.AddCut("00010103", "1d000009266300008850404000");
+ } else if (trainConfig == 124) {
+    cuts.AddCut("00010103", "10000009266300008750404000");
+    cuts.AddCut("00010103", "10000009266302008750404000");
+    cuts.AddCut("00010103", "10000009266300008650404000");
+    cuts.AddCut("00010103", "1d0000d9266300008850404000");   // increased pT to 60 MeV for e+e-
+ } else if (trainConfig == 125) {
+    cuts.AddCut("00010103", "10000009a27300008250a04120");
+    cuts.AddCut("00010103", "1c000009a27300008250a04120");
+    cuts.AddCut("00010103", "1d000009a27300008250a04120");
+    
   } else  if(trainConfig == 111){
     cuts.AddCut("00000003", "10000070000000000500004000");
   // 7 TeV testconfig for pileup checks
@@ -387,14 +399,49 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
   AliConvEventCuts **analysisEventCuts        = new AliConvEventCuts*[numberOfCuts];
   ConvCutList->SetOwner(kTRUE);
   AliConversionPhotonCuts **analysisCuts      = new AliConversionPhotonCuts*[numberOfCuts];
+  cout<<"names"<< periodNameAnchor.Data()<< " " << periodName.Data()<< " " << periodNameV0Reader.Data()<< endl;
   for(Int_t i = 0; i<numberOfCuts; i++){
     analysisEventCuts[i]          = new AliConvEventCuts();
+
+    TString dataInputMultHisto  = "";
+    TString mcInputMultHisto    = "";
+    if (doMultiplicityWeighting>0){
+      cout << "INFO enableling mult weighting" << endl;
+      if( periodNameAnchor.CompareTo("LHC15n")==0  ||
+	  periodNameAnchor.CompareTo("LHC16d")==0  ||
+	  periodNameAnchor.CompareTo("LHC17p")==0  ||  
+	  periodNameAnchor.CompareTo("LHC17q")==0  ){
+	TString cutNumber = cuts.GetEventCut(i);
+	TString centCut = cutNumber(0,3);  // first three digits of event cut
+	dataInputMultHisto = Form("%s_%s", periodNameAnchor.Data(), centCut.Data());
+	mcInputMultHisto   = Form("%s_%s", periodName.Data(), centCut.Data());
+	cout<< "Histogram names data/MC:: "<< dataInputMultHisto.Data()<< " " << mcInputMultHisto.Data()<< endl;
+       }
+      analysisEventCuts[i]->SetUseWeightMultiplicityFromFile(kTRUE, fileNameInputForMultWeighing, dataInputMultHisto, mcInputMultHisto );
+    }
+
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kTRUE);
 
     analysisCuts[i]               = new AliConversionPhotonCuts();
+    if (enableElecDeDxPostCalibration>0){
+      if (isMC == 0){
+	if( analysisCuts[i]->InitializeElecDeDxPostCalibration(fileNameElecDeDxPostCalibration)){
+	  analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+	} else {
+	  enableElecDeDxPostCalibration=kFALSE;
+	  analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+	}
+
+      } else{
+	cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
+	enableElecDeDxPostCalibration=kFALSE;
+	analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+      }
+    }
+
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     ConvCutList->Add(analysisCuts[i]);
