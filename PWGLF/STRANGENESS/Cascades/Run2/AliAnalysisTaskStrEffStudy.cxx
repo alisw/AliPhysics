@@ -1697,16 +1697,16 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
                  )
                 ){
                 //Found corresponding OTF V0! Save it to TTree, please
-                AliESDv0 lV0ToStore(*v0), *lPointerToV0ToStore=&lV0ToStore;
-                fTreeCascVarOTFV0PosBach = lPointerToV0ToStore;
+                AliESDv0 lV0ToStorePosBach(*v0), *lPointerToV0ToStorePosBach=&lV0ToStorePosBach;
+                fTreeCascVarOTFV0PosBach = lPointerToV0ToStorePosBach;
                 lFoundOTF = kTRUE;
                 fTreeCascVarPosBachAsOTF = kTRUE;
                 break; //stop looking
             }
         }
         if( !lFoundOTF ) {
-            AliESDv0 lV0ToStore, *lPointerToV0ToStore=&lV0ToStore;
-            fTreeCascVarOTFV0PosBach = lPointerToV0ToStore;
+            AliESDv0 lV0ToStorePosBach, *lPointerToV0ToStorePosBach=&lV0ToStorePosBach;
+            fTreeCascVarOTFV0PosBach = lPointerToV0ToStorePosBach;
         }
         //---->
         lFoundOTF = kFALSE;
@@ -1721,16 +1721,16 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
                  )
                 ){
                 //Found corresponding OTF V0! Save it to TTree, please
-                AliESDv0 lV0ToStore(*v0), *lPointerToV0ToStore=&lV0ToStore;
-                fTreeCascVarOTFV0NegBach = lPointerToV0ToStore;
+                AliESDv0 lV0ToStoreNegBach(*v0), *lPointerToV0ToStoreNegBach=&lV0ToStoreNegBach;
+                fTreeCascVarOTFV0NegBach = lPointerToV0ToStoreNegBach;
                 lFoundOTF = kTRUE;
                 fTreeCascVarNegBachAsOTF = kTRUE;
                 break; //stop looking
             }
         }
         if( !lFoundOTF ) {
-            AliESDv0 lV0ToStore, *lPointerToV0ToStore=&lV0ToStore;
-            fTreeCascVarOTFV0NegBach = lPointerToV0ToStore;
+            AliESDv0 lV0ToStoreNegBach, *lPointerToV0ToStoreNegBach=&lV0ToStoreNegBach;
+            fTreeCascVarOTFV0NegBach = lPointerToV0ToStoreNegBach;
         }
         
         //=================================================================================
