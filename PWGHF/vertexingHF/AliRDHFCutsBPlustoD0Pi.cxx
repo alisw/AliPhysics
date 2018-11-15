@@ -415,13 +415,12 @@ AliRDHFCutsBPlustoD0Pi::AliRDHFCutsBPlustoD0Pi(const AliRDHFCutsBPlustoD0Pi &sou
   if (source.fCutsRDD0forD0ptbin) SetCutsD0forD0ptbin(source.fGlobalIndexD0forD0ptbin, source.fCutsRDD0forD0ptbin);
   if (source.fCutsRDForCutOptimization) SetCutsForCutOptimization(source.fGlobalIndexCutOptimization, source.fCutsRDForCutOptimization);
 
-
-  if (source.fHardSelectionArrayITSD0FirstDaughter) SetHardSelectionArrayITSD0FirstDaughter(source.fHardSelectionArrayITSD0FirstDaughter);
-  if (source.fSoftSelectionArrayITSD0FirstDaughter) SetSoftSelectionArrayITSD0FirstDaughter(source.fSoftSelectionArrayITSD0FirstDaughter);
-  if (source.fHardSelectionArrayITSD0SecondDaughter) SetHardSelectionArrayITSD0SecondDaughter(source.fHardSelectionArrayITSD0SecondDaughter);
-  if (source.fSoftSelectionArrayITSD0SecondDaughter) SetSoftSelectionArrayITSD0SecondDaughter(source.fSoftSelectionArrayITSD0SecondDaughter);
-  if (source.fHardSelectionArrayITSBPlusPion)  SetHardSelectionArrayITSBPlusPion(source.fHardSelectionArrayITSBPlusPion);
-  if (source.fSoftSelectionArrayITSBPlusPion) SetSoftSelectionArrayITSBPlusPion(source.fSoftSelectionArrayITSBPlusPion);
+  SetHardSelectionArrayITSD0FirstDaughter(source.fHardSelectionArrayITSD0FirstDaughter);
+  SetSoftSelectionArrayITSD0FirstDaughter(source.fSoftSelectionArrayITSD0FirstDaughter);
+  SetHardSelectionArrayITSD0SecondDaughter(source.fHardSelectionArrayITSD0SecondDaughter);
+  SetSoftSelectionArrayITSD0SecondDaughter(source.fSoftSelectionArrayITSD0SecondDaughter);
+  SetHardSelectionArrayITSBPlusPion(source.fHardSelectionArrayITSBPlusPion);
+  SetSoftSelectionArrayITSBPlusPion(source.fSoftSelectionArrayITSBPlusPion);
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsBPlustoD0Pi::~AliRDHFCutsBPlustoD0Pi() {
@@ -570,17 +569,17 @@ AliRDHFCutsBPlustoD0Pi &AliRDHFCutsBPlustoD0Pi::operator=(const AliRDHFCutsBPlus
   if (source.fCutsRDD0forD0ptbin) SetCutsD0forD0ptbin(source.fGlobalIndexD0forD0ptbin, source.fCutsRDD0forD0ptbin);
   if (source.fCutsRDForCutOptimization) SetCutsForCutOptimization(source.fGlobalIndexCutOptimization, source.fCutsRDForCutOptimization);
 
-  if (source.fHardSelectionArrayITSD0FirstDaughter) SetHardSelectionArrayITSD0FirstDaughter(source.fHardSelectionArrayITSD0FirstDaughter);
-  if (source.fSoftSelectionArrayITSD0FirstDaughter) SetSoftSelectionArrayITSD0FirstDaughter(source.fSoftSelectionArrayITSD0FirstDaughter);
-  if (source.fHardSelectionArrayITSD0SecondDaughter) SetHardSelectionArrayITSD0SecondDaughter(source.fHardSelectionArrayITSD0SecondDaughter);
-  if (source.fSoftSelectionArrayITSD0SecondDaughter) SetSoftSelectionArrayITSD0SecondDaughter(source.fSoftSelectionArrayITSD0SecondDaughter);
-  if (source.fHardSelectionArrayITSBPlusPion)  SetHardSelectionArrayITSBPlusPion(source.fHardSelectionArrayITSBPlusPion);
-  if (source.fSoftSelectionArrayITSBPlusPion) SetSoftSelectionArrayITSBPlusPion(source.fSoftSelectionArrayITSBPlusPion);
+  SetHardSelectionArrayITSD0FirstDaughter(source.fHardSelectionArrayITSD0FirstDaughter);
+  SetSoftSelectionArrayITSD0FirstDaughter(source.fSoftSelectionArrayITSD0FirstDaughter);
+  SetHardSelectionArrayITSD0SecondDaughter(source.fHardSelectionArrayITSD0SecondDaughter);
+  SetSoftSelectionArrayITSD0SecondDaughter(source.fSoftSelectionArrayITSD0SecondDaughter);
+  SetHardSelectionArrayITSBPlusPion(source.fHardSelectionArrayITSBPlusPion);
+  SetSoftSelectionArrayITSBPlusPion(source.fSoftSelectionArrayITSBPlusPion);
 
   return *this;
 }
 //--------------------------------------------------------------------------
-void AliRDHFCutsBPlustoD0Pi::GetCutVarsForOpt(AliAODRecoDecayHF *d, Float_t *vars, Int_t nvars, Int_t *pdgdaughters) {
+void AliRDHFCutsBPlustoD0Pi::GetCutVarsForOpt(AliAODRecoDecayHF */*d*/, Float_t */*vars*/, Int_t /*nvars*/, Int_t */*pdgdaughters*/) {
   // not yet used
 
   return;
@@ -1858,7 +1857,7 @@ Bool_t AliRDHFCutsBPlustoD0Pi::IsInFiducialAcceptance(Double_t pt, Double_t y) c
   return kTRUE;
 }
 //_______________________________________________________________________________-
-Int_t AliRDHFCutsBPlustoD0Pi::IsSelectedPID(AliAODRecoDecayHF* obj)
+Int_t AliRDHFCutsBPlustoD0Pi::IsSelectedPID(AliAODRecoDecayHF* /*obj*/)
 {
   //
   // PID method, n sigma approach default // not used for BPlus, done seperately for each daughter
