@@ -40,13 +40,14 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
 
         Int_t                   GetOStatus() { return fOStatus; }
         void                    SetOStatus(Int_t stat) {  fOStatus=stat; }
+        void                    SetCutsCrosscheck(Bool_t stat) {  fCutsCrosscheck=stat; }
 
         void                    SetPtTrigMin(Double_t var) {fPtTrigMin=var;}
         void                    SetPtAsocMin(Double_t var) {fPtAsocMin=var;}
-        void                    Corelations(TObjArray *triggers, TObjArray *associated, THnSparse * fHistKor, Double_t lPVz,THnSparse* fHistNumOfTrig,Bool_t hh,Bool_t V0h,Float_t perc);
+        void                    Corelations(TObjArray *triggers, TObjArray *associated, THnSparse * fHistKor, Double_t lPVz,THnSparse* fHistNumOfTrig,Bool_t hh,Bool_t V0h,Float_t perc,TH3F *fHistPtHard, Double_t ptHard);
         void                    CorelationsMixing(TObjArray *triggers, TObjArray *bgTracks, THnSparse * fHistKor, Double_t lPVz,Float_t perc);
         void                    TopologCuts(THnSparse* fHist,Double_t pttrig,Double_t mass,Double_t dcaNeg, Double_t dcaPos,Double_t dcaDau, Double_t V0rad, Double_t cosPA,Double_t lifetime,Double_t massSell,Double_t triggType, Double_t status);
-        void                    FillMC(const AliAODv0 *V0,TClonesArray *mcArray,Int_t pdgV0,Int_t pdgDau1, Int_t pdgDau2, TObjArray * mcTracksV0Sel,Int_t i,Int_t triggerType, Double_t mass, Double_t massMin, Double_t massMax, TObjArray * selectedMCV0Triggersrec,THnSparse * fHistRecV0, TH3F * fHistMassPtCut,Int_t * motherLabelPrevious,Double_t lPVz, const AliAODTrack * myTrackPos, const AliAODTrack * myTrackNeg,Bool_t status);
+    void                    FillMC(const AliAODv0 *V0,TClonesArray *mcArray,Int_t pdgV0,Int_t pdgDau1, Int_t pdgDau2, TObjArray * mcTracksV0Sel,Int_t i,Int_t triggerType, Double_t mass, TObjArray * selectedMCV0Triggersrec,THnSparse * fHistRecV0, TH3F * fHistMassPtCut,Int_t * motherLabelPrevious,Double_t lPVz, const AliAODTrack * myTrackPos,const AliAODTrack * myTrackNeg,Bool_t status, THnSparse * histPur);
     private:
         AliAODEvent*            fAOD;           		//! input event
         AliPIDResponse*         fPIDResponse;           //!
@@ -54,6 +55,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         TH3F*					fHistLambdaMassPtCut;	//! 
         TH3F*					fHistK0MassPtCut;		//!
         TH3F*                   fHistAntiLambdaMassPtCut; //!
+        TH3F*                   fHistPtHard;                //!
         THnSparse*              fHistKorelacie;             //!
         THnSparse*              fHistdPhidEtaMix;           //!
         TH1D*                   fHistV0Multiplicity;         //!
@@ -76,6 +78,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Int_t                         fOStatus; //
         Double_t                      fPtTrigMin; //
         Double_t                      fPtAsocMin; //
+        Bool_t                        fCutsCrosscheck; //
 
         THnSparse*              fHistKorelacieMCrec; //!  
         THnSparse*              fHistNumberOfTriggersGen;  //!
@@ -92,18 +95,19 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         TH1F*                   fHistMultipPercentile;     //!
         THnSparse*              fHistTopolCut;             //!
         THnSparse*              fHistTopolCutMC;           //!
+        THnSparse*              fHistPurityCheck;          //!
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 2);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 3);
 };
 
 class AliV0ChParticle : public AliVParticle
 {
     public:
-      AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Bool_t status)
-        : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fRecStatus(status)
+      AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Bool_t status,Double_t mass)
+        : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fRecStatus(status), fMass(mass)
       {
       }
       AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label, Bool_t status)
@@ -114,8 +118,8 @@ class AliV0ChParticle : public AliVParticle
     : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDh(iDh), fRecStatus(status)
     {
     }
-    AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label,Int_t idpos, Int_t idneg, Bool_t status)
-    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDpos(idpos), fIDneg(idneg), fRecStatus(status)
+    AliV0ChParticle(Float_t eta, Float_t phi, Float_t pt, Short_t candidate, Int_t label,Int_t idpos, Int_t idneg, Bool_t status,Double_t mass)
+    : fEta(eta), fPhi(phi), fpT(pt), fCandidate(candidate), fLabel(label), fIDpos(idpos), fIDneg(idneg), fRecStatus(status), fMass(mass)
     {
     }
      virtual ~AliV0ChParticle() {}
@@ -156,6 +160,7 @@ class AliV0ChParticle : public AliVParticle
     Int_t   GetIDPos()            const { return fIDpos; }
     Int_t   GetIDNeg()            const { return fIDneg; }
     Bool_t  GetRecStatus()        const { return fRecStatus; }
+    Double_t GetMass()            const { return fMass; }
   
       private:
       Double_t fEta;      // eta
@@ -167,8 +172,9 @@ class AliV0ChParticle : public AliVParticle
       Int_t fIDpos;   // Label of possitive charged daughter
       Int_t fIDneg;   // Label of negative charged daughter
       Bool_t fRecStatus;   // reconstruction status
+      Double_t fMass; // mass
   
-      ClassDef( AliV0ChParticle, 1) // class required for correlatios calculation and event mixing
+      ClassDef( AliV0ChParticle, 2) // class required for correlatios calculation and event mixing
  };
 
 #endif

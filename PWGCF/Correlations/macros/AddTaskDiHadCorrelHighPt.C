@@ -29,6 +29,7 @@ AliAnalysisTaskDiHadCorrelHighPt* AddTaskDiHadCorrelHighPt(TString name = "name"
     task->SetPtTrigMin(3);
     task->SetPtAsocMin(1);
     task->SetOStatus(1);
+    task->SetCutsCrosscheck(kFALSE);
     // add your task to the manager
     mgr->AddTask(task);
     // your task needs input: here we connect the manager to your task
