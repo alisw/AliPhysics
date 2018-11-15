@@ -79,7 +79,7 @@ AliAnalysisTask *AddAliEbyEPhiDistNew (
     
     const Char_t *ctsk = Form("%sNET%s",pidname[pidtype], taskname);
     
-    AliEbyEPhiDistNew1 *task = new AliEbyEPhiDistNew1(ctsk);
+    AliEbyEPhiDistNew *task = new AliEbyEPhiDistNew(ctsk);
     
     
     task->SetRunPeriod(runName);
