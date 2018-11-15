@@ -1220,8 +1220,9 @@ void AliHFSystErr::InitD0toKpi2017pp5TeV_finebins(){
   fRawYield->SetBinContent(1,0.1);//pt bin not used for this analysis  0-0.5, bins
   fRawYield->SetBinContent(2,0.1);//pt bin not used for this analysis  0.5-1 bins
   fRawYield->SetBinContent(3,0.07);// 1-1.5
-  for(Int_t i=4;i<=6;i++) fRawYield->SetBinContent(i,0.03);//(1.5-2)
-  for(Int_t i=7;i<=23;i++) fRawYield->SetBinContent(i,0.02);
+  for(Int_t i=4;i<=6;i++) fRawYield->SetBinContent(i,0.03);//(1.5-2 2-2.5 2.5-3)
+  for(Int_t i=7;i<=19;i++) fRawYield->SetBinContent(i,0.02);//3-3.5 --> 12
+  for(Int_t i=20;i<=23;i++) fRawYield->SetBinContent(i,0.05);//>12
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",23,xbins);
