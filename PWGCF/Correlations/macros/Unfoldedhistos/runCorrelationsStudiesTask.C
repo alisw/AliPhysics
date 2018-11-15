@@ -61,16 +61,49 @@ AliMultSelectionTask *AddTaskMultSelection(
     const TString lMasterJobSessionFlag = "");
 extern AliAnalysisTaskSE *AddCorrelationsStudiesTask(const char *, const char *, const char *, const char *);
 
-#include "runCorrelationsStudiesConfigMacro.H"
 #endif // ifdef __ECLIPSE_IDE declaration and includes for the ECLIPSE IDE
+
+#ifdef __CLING__
+
+#include <Riostream.h>
+#include <TROOT.h>
+#include <TSystem.h>
+#include <TChain.h>
+#include <TError.h>
+
+// Tell  ROOT where to find AliRoot headers
+R__ADD_INCLUDE_PATH($ALICE_ROOT)
+#include <include/AliLog.h>
+#include <include/AliAnalysisGrid.h>
+#include <include/AliAnalysisManager.h>
+#include <include/AliESDInputHandler.h>
+#include <include/AliAODInputHandler.h>
+#include <include/AliMCEventHandler.h>
+
+#include <ANALYSIS/macros/AddTaskPIDResponse.C>
+
+// Tell ROOT where to find AliPhysics headers
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <include/AliCentralitySelectionTask.h>
+
+#include <PWGCF/Correlations/macros/Unfoldedhistos/CreateAlienHandler.C>
+#include <OADB/macros/AddTaskPhysicsSelection.C>
+#include <OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C>
+#include <OADB/macros/AddTaskCentrality.C>
+#include <PWGCF/Correlations/macros/Unfoldedhistos/AddCorrelationsStudiesTask.C>
+#include <PWG/EMCAL/macros/CreateESDChain.C>
+#endif
+
+#include "runCorrelationsStudiesConfigMacro.H"
+#include "runCorrelationsStudiesConfigMacro.C"
 
 void runCorrelationsStudiesTask(const char *sRunMode = "full", Bool_t gridMerge = kTRUE) {
 
+#ifndef __CLING__
   gSystem->AddIncludePath("-I$ALICE_PHYSICS/include");
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+#endif
 
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/Correlations/macros/Unfoldedhistos/runCorrelationsStudiesConfigMacro.H");
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/Correlations/macros/Unfoldedhistos/runCorrelationsStudiesConfigMacro.C");
   runCorrelationsStudiesConfigMacro();
 
   AliAnalysisGrid       *alienHandler   =   NULL;
@@ -119,7 +152,9 @@ void runCorrelationsStudiesTask(const char *sRunMode = "full", Bool_t gridMerge 
     }
 
     if (bGRIDPlugin) {
+#ifndef __CLING__
       gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/Correlations/macros/Unfoldedhistos/CreateAlienHandler.C");
+#endif
       alienHandler = CreateAlienHandler(sRunMode,gridMerge);
       if (!alienHandler) return;
 
@@ -127,23 +162,31 @@ void runCorrelationsStudiesTask(const char *sRunMode = "full", Bool_t gridMerge 
     }
 
     if (bUsePIDResponse ) {
+#ifndef __CLING__
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+#endif
       AddTaskPIDResponse(bMC,kTRUE,kTRUE,szpass);
     }
 
     if (bUseESD) {
       if (bUsePhysicsSelection) {
+#ifndef __CLING__
         gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
+#endif
         AddTaskPhysicsSelection(bMC);
       }
 
       if (bUseMultiplicityTask) {
+#ifndef __CLING__
         gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
+#endif
         AddTaskMultSelection(kFALSE); // user mode:
       }
 
       if (bUseCentralityTask) {
+#ifndef __CLING__
         gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
+#endif
         AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
         if (bMC) {
           taskCentrality->SetMCInput();
@@ -153,7 +196,9 @@ void runCorrelationsStudiesTask(const char *sRunMode = "full", Bool_t gridMerge 
     /* this ends what we do outside the trains scope */
   }
 
+#ifndef __CLING__
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/Correlations/macros/Unfoldedhistos/AddCorrelationsStudiesTask.C");
+#endif
 
   /* load the configurations and start the corresponding tasks */
   ifstream configfile;
@@ -219,12 +264,18 @@ void runCorrelationsStudiesTask(const char *sRunMode = "full", Bool_t gridMerge 
       }
       // No need to create a chain - this is handled by the plugin
       if (bUseESD) {
+#ifndef __CLING__
         gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
+#endif
         chain = CreateESDChain(szLocalFileList.Data(),numFiles);
       }
       else if (bUseAOD) {
+#ifndef __CLING__
         gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateAODChain.C");
         chain = CreateAODChain(szLocalFileList.Data(),numFiles);
+#else
+        Fatal("runCorrelationsStudiesTask","CreateAODChain for local data files under ROOT6 not available");
+#endif
       }
     }
 
