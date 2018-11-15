@@ -1152,7 +1152,8 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 		else fNentries->Fill(15);
 		if(isSelectedPID>0) FillEffHists(kIsSelectedPID);
 		//PID selection using maximum probability configuration
-		Int_t selectionProb = GetPIDselectionMaxProb(d);
+		Int_t selectionProb = 0;
+    if(fRDCutsAnalysis->GetPidHF()) selectionProb = GetPIDselectionMaxProb(d);
 
 		Int_t selection=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate,aod);
 		if(!selection) continue;
@@ -1662,38 +1663,39 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 	AliVTrack *track0=dynamic_cast<AliVTrack*>(part->GetDaughter(0));
 	AliVTrack *track1=dynamic_cast<AliVTrack*>(part->GetDaughter(1));
 	AliVTrack *track2=dynamic_cast<AliVTrack*>(part->GetDaughter(2));
-	if(fRDCutsAnalysis->GetPidHF()->GetUseCombined()) {//check this
-		//bayesian probabilities
-		Double_t prob0[AliPID::kSPECIES];
-		Double_t prob1[AliPID::kSPECIES];
-		Double_t prob2[AliPID::kSPECIES];
+  // PID
+  // fill w -1
+  for(Int_t iprob=18;iprob<=26;iprob++) {
+    tmp[iprob]=-1;
+  }
+  if(fRDCutsAnalysis->GetIsUsePID() ) {
+    if(fRDCutsAnalysis->GetPidHF()->GetUseCombined()) {//check this
+      //bayesian probabilities
+      Double_t prob0[AliPID::kSPECIES];
+      Double_t prob1[AliPID::kSPECIES];
+      Double_t prob2[AliPID::kSPECIES];
 
-		if (!track0 || !track1 || !track2) {
-			AliError("AliVTrack missing - wont fill Ntuple");
-			return;
-		}
-		fRDCutsAnalysis->GetPidHF()->GetPidCombined()->ComputeProbabilities(track0,fRDCutsAnalysis->GetPidHF()->GetPidResponse(),prob0);
-		fRDCutsAnalysis->GetPidHF()->GetPidCombined()->ComputeProbabilities(track1,fRDCutsAnalysis->GetPidHF()->GetPidResponse(),prob1);
-		fRDCutsAnalysis->GetPidHF()->GetPidCombined()->ComputeProbabilities(track2,fRDCutsAnalysis->GetPidHF()->GetPidResponse(),prob2);
-		//if(prob0[AliPID::kPion] < 0.3 && prob0[AliPID::kProton] < 0.3) return;
-		//if(prob1[AliPID::kKaon] < 0.3) return;
-		//if(prob2[AliPID::kPion] < 0.3 && prob2[AliPID::kProton] < 0.3) return;
-		tmp[18]=prob0[AliPID::kPion];			//track 0, pion
-		tmp[19]=prob0[AliPID::kKaon];     		//kaon
-		tmp[20]=prob0[AliPID::kProton];			//proton
-		tmp[21]=prob1[AliPID::kPion];			//track 1, pion		
-		tmp[22]=prob1[AliPID::kKaon];     		//kaon
-		tmp[23]=prob1[AliPID::kProton];			//proton
-		tmp[24]=prob2[AliPID::kPion];			//track 2, pion
-		tmp[25]=prob2[AliPID::kKaon];     		//kaon
-		tmp[26]=prob2[AliPID::kProton];			//proton
-	}
-	else {
-		//fill w 0
-		for(Int_t iprob=18;iprob<=26;iprob++) {
-			tmp[iprob]=-1;
-		}
-	}
+      if (!track0 || !track1 || !track2) {
+        AliError("AliVTrack missing - wont fill Ntuple");
+        return;
+      }
+      fRDCutsAnalysis->GetPidHF()->GetPidCombined()->ComputeProbabilities(track0,fRDCutsAnalysis->GetPidHF()->GetPidResponse(),prob0);
+      fRDCutsAnalysis->GetPidHF()->GetPidCombined()->ComputeProbabilities(track1,fRDCutsAnalysis->GetPidHF()->GetPidResponse(),prob1);
+      fRDCutsAnalysis->GetPidHF()->GetPidCombined()->ComputeProbabilities(track2,fRDCutsAnalysis->GetPidHF()->GetPidResponse(),prob2);
+      //if(prob0[AliPID::kPion] < 0.3 && prob0[AliPID::kProton] < 0.3) return;
+      //if(prob1[AliPID::kKaon] < 0.3) return;
+      //if(prob2[AliPID::kPion] < 0.3 && prob2[AliPID::kProton] < 0.3) return;
+      tmp[18]=prob0[AliPID::kPion];			//track 0, pion
+      tmp[19]=prob0[AliPID::kKaon];     		//kaon
+      tmp[20]=prob0[AliPID::kProton];			//proton
+      tmp[21]=prob1[AliPID::kPion];			//track 1, pion		
+      tmp[22]=prob1[AliPID::kKaon];     		//kaon
+      tmp[23]=prob1[AliPID::kProton];			//proton
+      tmp[24]=prob2[AliPID::kPion];			//track 2, pion
+      tmp[25]=prob2[AliPID::kKaon];     		//kaon
+      tmp[26]=prob2[AliPID::kProton];			//proton
+    }
+  }
 	if(fFillNtuple>=2) { //fill with further variables
 		Double_t d00 = part->Getd0Prong(0);
 		Double_t d01 = part->Getd0Prong(1);
@@ -1945,7 +1947,7 @@ Int_t AliAnalysisTaskSELambdacTMVA::GetPIDselectionMaxProb(AliAODRecoDecayHF3Pro
 
 	Int_t selection = 0;
 
-	if(fRDCutsAnalysis->GetPidHF()->GetUseCombined()) {//check this
+	if(fRDCutsAnalysis->GetPidHF()->GetUseCombined()) {// get triplet identity based on the maximum probability
 		AliVTrack *track0=dynamic_cast<AliVTrack*>(part->GetDaughter(0));
 		AliVTrack *track1=dynamic_cast<AliVTrack*>(part->GetDaughter(1));
 		AliVTrack *track2=dynamic_cast<AliVTrack*>(part->GetDaughter(2));
@@ -2035,7 +2037,7 @@ void AliAnalysisTaskSELambdacTMVA::FillRecoNtuple(AliAODEvent *aod,AliAODRecoDec
 		if(daughLab<0) continue;
 		else{
 			AliAODMCParticle* pdaugh = dynamic_cast<AliAODMCParticle*>(arrayMC->At(daughLab));
-			isTOFpid[i] = fRDCutsAnalysis->GetPidHF()->CheckTOFPIDStatus(daugh);
+			isTOFpid[i] = fRDCutsAnalysis->GetIsUsePID() ? fRDCutsAnalysis->GetPidHF()->CheckTOFPIDStatus(daugh) : kFALSE;
 			MCpt[i] = pdaugh->Pt();
 		}
 	}
@@ -2049,7 +2051,8 @@ void AliAnalysisTaskSELambdacTMVA::FillRecoNtuple(AliAODEvent *aod,AliAODRecoDec
 	// Selection
 	Int_t selectionCand=fRDCutsAnalysis->IsSelected(part,AliRDHFCuts::kCandidate,aod);
 	Int_t selectionPID=fRDCutsAnalysis->IsSelected(part,AliRDHFCuts::kPID,aod);
-	Int_t selectionPIDprob = GetPIDselectionMaxProb(part);
+  Int_t selectionPIDprob = 0;
+  if(fRDCutsAnalysis->GetIsUsePID()) selectionPIDprob = GetPIDselectionMaxProb(part);
 	tmp[12]=selectionCand;
 	tmp[13]=selectionPID;
 	tmp[14]=selectionPIDprob;
