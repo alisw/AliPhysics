@@ -196,6 +196,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreePhi ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/F");
   fTreePhi ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreePhi ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
+  fTreePhi ->Branch("fTriggers", &fTriggers, "fTriggers[8]/O");
   if(isMC) fTreePhi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
   fOutputList->Add(fTreePhi);
   
@@ -212,6 +213,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeRho ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreeRho ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   fTreeRho ->Branch("fInEtaRec", &fInEtaRec, "fInEtaRec/O");
+  fTreeRho ->Branch("fTriggers", &fTriggers, "fTriggers[8]/O");
   
   if(isMC) fTreeRho ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
   fOutputList->Add(fTreeRho);
@@ -321,11 +323,21 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   TString trigger = fEvent->GetFiredTriggerClasses();
   
   if(fRunNumber>=295881){
-  	if(!isMC && !trigger.Contains("CCUP29-B-SPD2-CENTNOTRD") && !trigger.Contains("CCUP30-B-NOPF-CENTNOTRD") && !trigger.Contains("CCUP31-B-SPD2-CENTNOTRD"))return;
+  	if(!isMC && !trigger.Contains("CCUP29-B-SPD2-CENTNOTRD") && !trigger.Contains("CCUP30-B-SPD2-CENTNOTRD") && !trigger.Contains("CCUP31-B-SPD2-CENTNOTRD"))return;
 	}
   else{ 
   	if(!isMC && !trigger.Contains("CCUP29-B-NOPF-CENTNOTRD") && !trigger.Contains("CCUP30-B-NOPF-CENTNOTRD") && !trigger.Contains("CCUP31-B-NOPF-CENTNOTRD"))return;
-	} 
+	}
+
+  UInt_t fL0inputs = fEvent->GetHeader()->GetL0TriggerInputs();
+  fTriggers[0] = trigger.Contains("CCUP29-B-SPD2-CENTNOTRD");
+  fTriggers[1] = trigger.Contains("CCUP29-B-NOPF-CENTNOTRD");
+  fTriggers[2] = trigger.Contains("CCUP30-B-SPD2-CENTNOTRD");
+  fTriggers[3] = trigger.Contains("CCUP30-B-NOPF-CENTNOTRD");
+  fTriggers[4] = trigger.Contains("CCUP31-B-SPD2-CENTNOTRD");
+  fTriggers[5] = trigger.Contains("CCUP31-B-NOPF-CENTNOTRD");
+  fTriggers[6] =  fL0inputs & (1 << 11); //OM2
+  fTriggers[7] =  fL0inputs & (1 << 12); //OMU
   
   if(trigger.Contains("CCUP29-B"))hTriggerCounter->Fill(1,fRunNumber); 
   if(trigger.Contains("CCUP30-B"))hTriggerCounter->Fill(2,fRunNumber); 
@@ -543,7 +555,6 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   if(nGoodTracksTPC == 2 && nGoodTracksLoose == 2 && nGoodTracksITS == 0){
   	for(Int_t iTrack=0; iTrack<2; iTrack++) {
     	AliVTrack *trk = dynamic_cast<AliVTrack*>(fEvent->GetTrack(TrackIndexTPC[iTrack]));
-	fTrackIndex[iTrack] = TrackIndexTPC[iTrack]; 
 	
 	if(TMath::Abs(trk->Eta())>cutEta) fInEtaRec = kFALSE;
 	
@@ -624,7 +635,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   	  }
   } 
   
-  
+ 
   //Two track loop
   if(nGoodTracksITS == 2 && nGoodTracksTPC== 0){
   	for(Int_t iTrack=0; iTrack<2; iTrack++) {
@@ -652,9 +663,6 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   	if(qTrack[0]*qTrack[1]<0)fSign = -1;
 	if(qTrack[0]*qTrack[1]>0)fSign = 1;
 	fChannel = 0;
-	if(trigger.Contains("CCUP29-B"))fChannel = 29; 
-	if(trigger.Contains("CCUP30-B"))fChannel = 30; 
-	if(trigger.Contains("CCUP31-B"))fChannel = 31;
 	vRhoCandidate = vPion[0]+vPion[1];
 	FillTree(fTreeRho,vRhoCandidate);
 	 
