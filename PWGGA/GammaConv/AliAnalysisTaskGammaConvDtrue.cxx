@@ -47,6 +47,7 @@ AliAnalysisTaskGammaConvDtrue::AliAnalysisTaskGammaConvDtrue(const char *name):
   AliAnalysisTaskEmcal(name),
   fHistos(nullptr)
 {
+  this->SetMakeGeneralHistograms(true);
   DefineOutput(1, TList::Class());
 }
 
