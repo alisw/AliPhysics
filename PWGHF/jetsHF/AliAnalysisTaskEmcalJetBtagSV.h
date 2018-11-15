@@ -236,6 +236,9 @@ private:
   TH2F*                       fhDCAinXVsPtSecondary; //!<! X DCA versus pT for secondaries //AID// 
   TH2F*                       fhDCAinYVsPtSecondary; //!<! Y DCA versus pT for secondaries //AID//
   TH2D*                       fhFractionOfSecInJet; //!<! Fraction of jet pT carried by secondaries //AID//
+  TH1D*                       fhPtTrkTruePrimRec; //!<! pt spectrum of true reconstructed primary tracks    
+  TH1D*                       fhPtTrkTruePrimGen; //!<! pt spectrum of true generated primary track    
+  TH1D*                       fhPtTrkSecOrFakeRec; //!<! pt spectrum of reconstructed fake or secondary tracks     
 	
   THnSparse*                  fhnDetRespMtx;     //!<! THnSparse to fill response matrix
   THn*                        fhnGenerated;      //!<! THn to fill MC generated histo
@@ -271,7 +274,7 @@ private:
   Double_t                    fPtCut;            //<! min cut on track pT   //AID  
   Double_t                    fEtaCut;           //<! cut on track eta   //AID  
 
-  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 7);  // analysis task for MC study //AID//
+  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 8);  // analysis task for MC study //AID//
 };
 
 //-------------------------------------------------------------------------------------

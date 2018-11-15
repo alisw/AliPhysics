@@ -121,6 +121,9 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV() :
   fhDCAinXVsPtSecondary(NULL), //AID//
   fhDCAinYVsPtSecondary(NULL), //AID//
   fhFractionOfSecInJet(NULL), //AID//
+  fhPtTrkTruePrimRec(0x0),
+  fhPtTrkTruePrimGen(0x0),
+  fhPtTrkSecOrFakeRec(0x0),
   fhnDetRespMtx(NULL),
   fhnGenerated(NULL),
   fhXsec(NULL),
@@ -210,6 +213,9 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV(const char* name):
   fhDCAinXVsPtSecondary(NULL), //AID//
   fhDCAinYVsPtSecondary(NULL), //AID//
   fhFractionOfSecInJet(NULL), //AID//
+  fhPtTrkTruePrimRec(0x0),
+  fhPtTrkTruePrimGen(0x0),
+  fhPtTrkSecOrFakeRec(0x0),
   fhXsec(NULL),
   fhTrials(NULL),
   fEvent(NULL),
@@ -348,6 +354,13 @@ void AliAnalysisTaskEmcalJetBtagSV::UserCreateOutputObjects()
      fhDCAinYVsPtSecondary   = (TH2F*) fhDCAinXVsPt->Clone("fhDCAinYVsPtSecondary");//AID//
      fhFractionOfSecInJet    = new TH2D("fhFractionOfSecInJet", "Frac of jet pT carried by secondary tracks",50,0,50,210,0,1.05);//AID//
      fhFractionOfSecInJet->Sumw2();
+
+     fhPtTrkTruePrimRec = new TH1D("fhPtTrkTruePrimRec","Pt spectrum of reconstructed true generator level phys prim particles", 1000, 0, 100); 
+     fhPtTrkTruePrimRec->Sumw2(); 
+     fhPtTrkTruePrimGen = new TH1D("fhPtTrkTruePrimGen","Pt spectrum of generator level phys prim particles", 1000, 0, 100);  
+     fhPtTrkTruePrimGen->Sumw2();
+     fhPtTrkSecOrFakeRec = new TH1D("fhPtTrkSecOrFakeRec","Pt spectrum of reconstructed fake or secondary tracks", 1000, 0, 100);      
+     fhPtTrkSecOrFakeRec->Sumw2();
   }
 
   fOutputList->Add(fZVertex);                                //AID//
@@ -366,6 +379,10 @@ void AliAnalysisTaskEmcalJetBtagSV::UserCreateOutputObjects()
      fOutputList->Add(fhDCAinXVsPtSecondary);                //AID//
      fOutputList->Add(fhDCAinYVsPtSecondary);                //AID//
      fOutputList->Add(fhFractionOfSecInJet);                 //AID//
+
+     fOutputList->Add(fhPtTrkTruePrimRec); 
+     fOutputList->Add(fhPtTrkTruePrimGen);
+     fOutputList->Add(fhPtTrkSecOrFakeRec);
   }
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -627,12 +644,23 @@ void AliAnalysisTaskEmcalJetBtagSV::UserExec(Option_t* /*option*/)
         
        //AID//++++++++++++++++++++++++++++++++++++
        Int_t iTracks =  fEvent->GetNumberOfTracks();    //AID
-       Int_t label;                                     //AID
+       Int_t label, labelMC;                                     //AID
+       Bool_t labelfound=0;
        AliAODMCParticle* particleMC = NULL;             //AID
        AliAODMCParticle* particleMCMother = NULL;       //AID
 
-       for(Int_t it = 0; it < iTracks; it++){           //AID
-          AliAODTrack *track = static_cast <AliAODTrack*>( fEvent->GetTrack(it));
+       for (Int_t it = 0; it < fMCPartArray->GetEntries(); it++) {
+           particleMC   = (AliAODMCParticle*) fMCPartArray->At(it);
+           if(particleMC->IsPhysicalPrimary()){
+               if(particleMC->Pt() < fPtCut) continue;
+               if(TMath::Abs(particleMC->Eta()) > fEtaCut) continue; 
+               if(! particleMC->Charge()) continue; 
+               fhPtTrkTruePrimGen->Fill(particleMC->Pt());
+           }
+       }
+        
+       for (Int_t it = 0; it < fRecTrkArray->GetEntries(); it++) {
+          AliAODTrack *track = static_cast <AliAODTrack*>( fRecTrkArray->ConstructedAt(it));
           if(!track) continue;
           UInt_t trkFilterMap = track->GetFilterMap();  
           if (!TESTBIT(trkFilterMap, 4) && !TESTBIT(trkFilterMap, 9)) continue;
@@ -640,18 +668,25 @@ void AliAnalysisTaskEmcalJetBtagSV::UserExec(Option_t* /*option*/)
           if (track->Pt() < fPtCut) continue;
 
           label = TMath::Abs(track->GetLabel());        //AID
-          if(label < fMCPartArray->GetEntriesFast()){   //AID
-             particleMC   = (AliAODMCParticle*) fMCPartArray->At(label);
 
-             if(particleMC){                            //AID
-                if(particleMC->IsPhysicalPrimary()){
-                   fhDCAinXVsPtPhysPrimary->Fill(track->Pt(), track->XAtDCA());
-                   fhDCAinYVsPtPhysPrimary->Fill(track->Pt(), track->YAtDCA());
-                }else{
-                   fhDCAinXVsPtSecondary->Fill(track->Pt(), track->XAtDCA());
-                   fhDCAinYVsPtSecondary->Fill(track->Pt(), track->YAtDCA());
-                }
+          particleMC = NULL; 
+          labelfound=0;
+          for(Int_t it = 0; it < fMCPartArray->GetEntries(); it++) { //find gen level particle with the same label
+             particleMC   = (AliAODMCParticle*) fMCPartArray->At(it);
+             labelMC = TMath::Abs(particleMC->GetLabel());
+             if(labelMC==label && label > -1){
+                labelfound=1;
+                break;
              }
+          }
+          if(labelfound && particleMC && particleMC->IsPhysicalPrimary()){
+             fhDCAinXVsPtPhysPrimary->Fill(track->Pt(), track->XAtDCA());
+             fhDCAinYVsPtPhysPrimary->Fill(track->Pt(), track->YAtDCA());
+             fhPtTrkTruePrimRec->Fill(particleMC->Pt());
+          }else{
+             fhDCAinXVsPtSecondary->Fill(track->Pt(), track->XAtDCA());
+             fhDCAinYVsPtSecondary->Fill(track->Pt(), track->YAtDCA());
+             fhPtTrkSecOrFakeRec->Fill(track->Pt());
           }//AID
        }//AID
        
@@ -676,14 +711,22 @@ void AliAnalysisTaskEmcalJetBtagSV::UserExec(Option_t* /*option*/)
                 }
  
                 label = TMath::Abs(constTrackRec->GetLabel());        //AID
-                if(label < fMCPartArray->GetEntriesFast()){   //AID
-                   particleMC   = (AliAODMCParticle*) fMCPartArray->At(label);
-             
-                   if(!particleMC->IsPhysicalPrimary()){
-                      sumsec += constTrackRec->Pt();
+
+                particleMC = NULL; 
+                labelfound=0;
+                for(Int_t it = 0; it < fMCPartArray->GetEntries(); it++) { //find gen level particle with the same label
+                   particleMC   = (AliAODMCParticle*) fMCPartArray->At(it);
+                   labelMC = TMath::Abs(particleMC->GetLabel());
+                   if(labelMC==label && label > -1){
+                      labelfound=1;
+                      break;
                    }
-                   sumall += constTrackRec->Pt();
                 }
+ 
+                if(!(labelfound && particleMC && particleMC->IsPhysicalPrimary())){
+                   sumsec += constTrackRec->Pt();
+                }
+                sumall += constTrackRec->Pt();
              }
              if(sumall>0){
                 Double_t ptJet_wBkgRej = jet->Pt() - (jet->Area() * rho);
