@@ -70,6 +70,7 @@ fTime(0x0),
 fNL0Times(0x0),
 fL0Times(new TArrayI()),
 fL1TimeSum(0x0),
+fTriggerBits(0x0),
 fL1Threshold(),
 fL1V0(),
 fL1FrameMask(0),
@@ -132,13 +133,18 @@ void AliESDCaloTrigger::Copy(TObject &obj) const
 	if (dest.fNEntries) dest.DeAllocate();
 	
 	dest.Allocate(fNEntries);
-	
+
+	Bool_t newclass=1;
+	if (fL1SubRegion==0)
+	  newclass=0;
 	for (Int_t i = 0; i < fNEntries; i++) 
         {
            Int_t times[10];
            for (Int_t j = 0; j < 10; j++) times[j] = fL0Times->At(10 * i + j);
-
-           dest.Add(fColumn[i], fRow[i], fAmplitude[i], fTime[i], times, fNL0Times[i], fL1TimeSum[i], fL1SubRegion[i], fTriggerBits[i]);
+	   Int_t l1subreg = 0;
+	   if (newclass)
+	     l1subreg=fL1SubRegion[i];
+           dest.Add(fColumn[i], fRow[i], fAmplitude[i], fTime[i], times, fNL0Times[i], fL1TimeSum[i], l1subreg, fTriggerBits[i]);
         }	
 
         for (int i = 0; i < 4; i++) dest.SetL1Threshold(i, fL1Threshold[i]);
