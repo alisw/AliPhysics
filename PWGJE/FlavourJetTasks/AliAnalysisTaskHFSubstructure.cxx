@@ -28,6 +28,7 @@
 #include <THashList.h>
 #include <TFile.h>
 #include <TRandom3.h>
+#include <TGrid.h>
 
 
 // Aliroot general
@@ -235,7 +236,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
 
   fhEvent->Fill(0); 
-  
+  if(fCutsFileName.Contains("alien://")) TGrid::Connect("alien://");
   TFile* Cuts_File = TFile::Open(fCutsFileName); 
   TString cutsname="D0toKpiCuts";
   if (fCutsType!="") cutsname += TString::Format("_%s", fCutsType.Data()); 
