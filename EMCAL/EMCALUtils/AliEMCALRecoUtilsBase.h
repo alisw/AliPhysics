@@ -47,7 +47,8 @@ public:
                                                Double_t   step=20, 
                                                Double_t   minpT=0.35,
                                                Bool_t     useMassForTracking = kFALSE, 
-                                               Bool_t     useDCA = kFALSE);
+                                               Bool_t     useDCA = kFALSE,
+                                               Bool_t     useOuterParam = kFALSE);
  
   static Bool_t ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, 
                                                Double_t emcalR, 
