@@ -1131,7 +1131,7 @@ void AliHFSystErr::InitD0toKpi2010ppLowPtAn() {
 void AliHFSystErr::InitD0toKpi2017pp5TeV(){
   // TO BE DONE
   // D0->Kpi syst errors. Responsible: C. Terrevoli
-  //  2015 pp sample - 5TeV
+  //  2017 pp sample - 5TeV
   //
   printf("D0 in pp@5TeV  2017 \n");
   SetNameTitle("AliHFSystErr","SystErrD0toKpi2017pp5TeV");
@@ -1211,7 +1211,8 @@ void AliHFSystErr::InitD0toKpi2017pp5TeV_finebins(){
   fTrackingEff->SetBinContent(4,0.035); //  1.5-2
   fTrackingEff->SetBinContent(5,0.04); // 2-2.5
   fTrackingEff->SetBinContent(6,0.04); // 2.5-3.
-  for(Int_t i=7;i<=23;i++) fTrackingEff->SetBinContent(i,0.045);//3-3.5 3.5-4 4-4.5 4.5-5
+  for(Int_t i=7;i<=12;i++) fTrackingEff->SetBinContent(i,0.045);//3-3.5 3.5-4 4-4.5 4.5-5 5-5.5 5.5-6
+  for(Int_t i=13;i<=23;i++) fTrackingEff->SetBinContent(i,0.05);// >6
 
   // Raw yield extraction
 
