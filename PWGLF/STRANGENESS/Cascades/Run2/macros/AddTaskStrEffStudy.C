@@ -39,22 +39,25 @@ AliAnalysisTaskStrEffStudy *AddTaskStrEffStudy( Bool_t lSaveEventTree = kTRUE, B
                                                                  TList::Class(),
                                                                  AliAnalysisManager::kOutputContainer,
                                                                  outputFileName );
+    AliAnalysisDataContainer *coutputTree = 0x0;
     if( lSaveEventTree ){
-        AliAnalysisDataContainer *coutputTree = mgr->CreateContainer("cTreeEvent",
+        coutputTree = mgr->CreateContainer("cTreeEvent",
                                                                      TTree::Class(),
                                                                      AliAnalysisManager::kOutputContainer,
                                                                      outputFileName );
         coutputTree->SetSpecialOutput();
     }
+    AliAnalysisDataContainer *coutputTreeV0 = 0x0;
     if( lSaveV0 ){
-        AliAnalysisDataContainer *coutputTreeV0 = mgr->CreateContainer("cTreeV0",
+        coutputTreeV0 = mgr->CreateContainer("cTreeV0",
                                                                        TTree::Class(),
                                                                        AliAnalysisManager::kOutputContainer,
                                                                        outputFileName );
         coutputTreeV0->SetSpecialOutput();
     }
+    AliAnalysisDataContainer *coutputTreeCascade = 0x0;
     if (lSaveCascade){
-        AliAnalysisDataContainer *coutputTreeCascade = mgr->CreateContainer("cTreeCascade",
+        coutputTreeCascade = mgr->CreateContainer("cTreeCascade",
                                                                             TTree::Class(),
                                                                             AliAnalysisManager::kOutputContainer,
                                                                             outputFileName );
