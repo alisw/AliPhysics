@@ -123,6 +123,8 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
   fTPCaloneTrackCuts(0),
   fDoPropagateTrackToEMCal(kTRUE),
   fEMCalSurfaceDistance(440),
+  fUseMassForPropToEMCal(0),
+  fUseOuterParamForPropToEMCal(0),
   fRefitVertexTracks(-1),
   fRefitVertexTracksNCuts(0),
   fRefitVertexTracksCuts(0),
@@ -207,6 +209,8 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name, Bool_t addP
   fTPCaloneTrackCuts(0),
   fDoPropagateTrackToEMCal(kTRUE),
   fEMCalSurfaceDistance(440),
+  fUseMassForPropToEMCal(0),
+  fUseOuterParamForPropToEMCal(0),
   fRefitVertexTracks(-1),
   fRefitVertexTracksNCuts(0),
   fRefitVertexTracksCuts(0),
@@ -2413,8 +2417,14 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
   if (fDoPropagateTrackToEMCal) {
     const Int_t ntrack = esd->GetNumberOfTracks();
     for (Int_t i=0;i<ntrack;++i) {
+      const Double_t mass=0.1396;
+      const Double_t step=20; 
+      const Double_t minpT=0.35;
+      const Bool_t useMassForTracking = fUseMassForPropToEMCal;
+      const Bool_t useDCA = kFALSE;
+      const Bool_t useOuterParam = fUseOuterParamForPropToEMCal;
       AliESDtrack *t = esd->GetTrack(i);
-      AliEMCALRecoUtilsBase::ExtrapolateTrackToEMCalSurface(t,fEMCalSurfaceDistance);
+      AliEMCALRecoUtilsBase::ExtrapolateTrackToEMCalSurface(t,fEMCalSurfaceDistance,mass,step,minpT,useMassForTracking,useDCA,useOuterParam);
     }
   }
  
