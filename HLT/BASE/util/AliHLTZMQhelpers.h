@@ -49,6 +49,9 @@ struct AliHLTDataTopic : public DataTopic
   {
     SetID(dataType.fID);
     SetOrigin(dataType.fOrigin);
+    if (strncmp(dataType.fID,"ROOT",4)==0) {
+      SetSerialization(kSerializationHLTROOT);
+    }
   }
 
   //copy ctor
@@ -59,7 +62,7 @@ struct AliHLTDataTopic : public DataTopic
     SetID(blockData.fDataType.fID);
     SetOrigin(blockData.fDataType.fOrigin);
     if (strncmp(blockData.fDataType.fID,"ROOT",4)==0) {
-      SetSerialization(kSerializationROOT);
+      SetSerialization(kSerializationHLTROOT);
     }
   }
 
@@ -68,6 +71,9 @@ struct AliHLTDataTopic : public DataTopic
   {
     SetID(dataType.fID);
     SetOrigin(dataType.fOrigin);
+    if (strncmp(dataType.fID,"ROOT",4)==0) {
+      SetSerialization(kSerializationHLTROOT);
+    }
     return *this;
   }
 
@@ -78,7 +84,7 @@ struct AliHLTDataTopic : public DataTopic
     SetID(blockData.fDataType.fID);
     SetOrigin(blockData.fDataType.fOrigin);
     if (strncmp(blockData.fDataType.fID,"ROOT",4)==0) {
-      SetSerialization(kSerializationROOT);
+      SetSerialization(kSerializationHLTROOT);
     }
     return *this;
   }

@@ -235,6 +235,7 @@ extern const DataTopic kDataTypeConfig;
 extern const DataTopic kDataTypeTObject;
 extern const DataTopic kDataTypeTH1;
 
+extern const ULong64_t kSerializationHLTROOT;
 extern const ULong64_t kSerializationROOT;
 extern const ULong64_t kSerializationNONE;
 

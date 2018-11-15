@@ -26,38 +26,38 @@ int process(TCollection* in, TCollection* out)
     TH1* tmp = dynamic_cast<TH1*>(object);
     if (!tmp) continue;
     TString name(tmp->GetName());
-    if (name.Contains("HistITSSPDvertexZ_CINT7ZAC-B-NOPF-CENT")) {
+    if (name.Contains("fHistITSSPDvertexZ_CINT7ZAC-B-NOPF-CENT")) {
       h1 = tmp;
     } else
-    if (name.Contains("HistITSSPDvertexZ_CTVXZAC-B-NOPF-CENT")) {
+    if (name.Contains("fHistITSSPDvertexZ_CTVXZAC-B-NOPF-CENT")) {
       h2 = tmp;
     } else
-    if (name.Contains("HistITSSPDvertexZ_CINT7-B-NOPF-MUFAST")) {
+    if (name.Contains("fHistITSSPDvertexZ_CINT7-B-NOPF-MUFAST")) {
       h4 = tmp;
     } else
-    if (name.Contains("HistITSSPDvertexZ_C0TVX-B-NOPF-MUFAST")) {
+    if (name.Contains("fHistITSSPDvertexZ_C0TVX-B-NOPF-MUFAST")) {
       h5 = tmp;
     } else
-    if (name.Contains("HistITSSPDvertexZ_C0V0M-B-NOPF-CENT")) {
+    if (name.Contains("fHistITSSPDvertexZ_C0V0M-B-NOPF-MUFAST")) {
       h7 = tmp;
     } else
-    if (name.Contains("HistITSSPDvertexZ_CTVXV0M-B-NOPF-CENT")) {
+    if (name.Contains("fHistITSSPDvertexZ_CTVXV0M-B-NOPF-MUFAST")) {
       h8 = tmp;
     }
   }
 
   if (h1 && h2) {
-    h3 = new TH1F("RatioITSSPDVertexZ_h3","Ratio ITSSPDvertexZ CINT7ZAC-B-NOPF-CENT/CTVXZAC-B-NOPF-CENT",200,-100,100);
+    h3 = new TH1F("RatioITSSPDvertexZ_h3","Ratio ITSSPDvertexZ CINT7ZAC-B-NOPF-CENT/CTVXZAC-B-NOPF-CENT",200,-100,100);
     h3->Divide(h1,h2);
     out->Add(h3);
   }
   if (h4 && h5) {
-    h6 = new TH1F("RatioITSSPDVertexZ_h6","Ratio ITSSPDvertexZ C0TVX-B-NOPF-MUFAST/CINT7-B-NOPF-MUFAST",200,-100,100);
+    h6 = new TH1F("RatioITSSPDvertexZ_h6","Ratio ITSSPDvertexZ C0TVX-B-NOPF-MUFAST/CINT7-B-NOPF-MUFAST",200,-100,100);
     h6->Divide(h5,h4);
     out->Add(h6);
   }
   if (h7 &&h8) {
-    h9 = new TH1F("RatioITSSPDVertexZ_h9","Ratio ITSSPDvertexZ CTVXV0M-B-NOPF-CENT/C0V0M-B-NOPF-CENT",200,-100,100);
+    h9 = new TH1F("RatioITSSPDvertexZ_h9","Ratio ITSSPDvertexZ CTVXV0M-B-NOPF-MUFAST/C0V0M-B-NOPF-MUFAST",200,-100,100);
     h9->Divide(h8,h7);
     out->Add(h9);
   }

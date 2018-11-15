@@ -104,8 +104,6 @@ TString fNameAnnotation = "";
 Bool_t fTitleAnnotationWithContainerName = kFALSE;
 Bool_t fIgnoreDefaultNamesWhenUnpacking = kFALSE;
 
-AliHLTDataTopic fInfoTopic = kAliHLTDataTypeInfo;
-
 Int_t fRunNumber = 0;
 std::string fInfo;           //cache for the info string
 
@@ -159,7 +157,7 @@ const char* fUSAGE =
     " -id : some string identifier\n"
     " -in : data in, zmq config string, e.g. PUSH>tcp://localhost:123123\n"
     " -out : data out\n"
-    " -mon : monitoring socket\n"
+    " -mon : monitoring socket, ignores updates in the INFO block (like runnumber)\n"
     " -sync : sync socket, will send the INFO block on run change, has to be PUB or SUB\n"
     " -Verbose : print some info\n"
     " -pushback-period : push the merged data once every n milliseconds (if updated)\n"
@@ -514,7 +512,7 @@ Int_t DoControl(aliZMQmsg::iterator block, void* socket)
     ProcessOptionString(requestBody.c_str());
     return 1;
   }
-  else if (topic.GetID().compare(0,4,"INFO")==0)
+  else if (topic.GetID().compare(0,4,"INFO")==0 && socket!=fZMQmon)
   {
     //check if we have a runnumber in the string
     alizmq_msg_iter_data(block, fInfo);
@@ -543,6 +541,8 @@ Int_t DoControl(aliZMQmsg::iterator block, void* socket)
       }
       if (fZMQsync)
       {
+        DataTopic fInfoTopic = kDataTypeInfo;
+        fInfoTopic.SetOrigin(kAliHLTDataOriginOut);
         fBytesOUT += alizmq_msg_send(fInfoTopic, fInfo, fZMQsync, ZMQ_DONTWAIT);
         fNumberOfMessagesSent++;
       }
@@ -652,6 +652,10 @@ Int_t DoReceive(aliZMQmsg::iterator block, void* socket)
                        zmq_msg_size(block->second));
   TObject* object = NULL;
   alizmq_msg_iter_data(block, object);
+  if (!object) {
+    if (fVerbose) {printf("message does not contain a TObject!\n");}
+    return 0;
+  }
 
   //if we get a collection, always set ownership to prevent mem leaks
   //if we request unpacking: unpack what was requestd, otherwise just add
@@ -746,7 +750,7 @@ Int_t DoRequest(void*& socket, TString* config)
   //request
   if (fRequestResetOnRequest) {
     if (fVerbose) Printf("sending an ResetOnRequest request");
-    alizmq_msg_send(kAliHLTDataTypeConfig, "ResetOnRequest",socket,0);
+    alizmq_msg_send(kDataTypeConfig, "ResetOnRequest",socket,0);
     fNumberOfMessagesSent++;
   } else {
     if (fVerbose) Printf("sending an empty request");
@@ -771,6 +775,8 @@ Int_t DoSend(void* socket)
 
   aliZMQmsg message;
   //forward the (run-)info string
+  DataTopic fInfoTopic = kDataTypeInfo;
+  fInfoTopic.SetOrigin(kAliHLTDataOriginOut);
   alizmq_msg_add(&message, &fInfoTopic, fInfo);
   Bool_t reset = kFALSE;
   Int_t rc = 0;
@@ -779,7 +785,8 @@ Int_t DoSend(void* socket)
   for (mergeMap_t::iterator i = fMergeObjectMap.begin(); i!=fMergeObjectMap.end(); ++i)
   {
     //the topic
-    AliHLTDataTopic topic = kAliHLTDataTypeTObject|kAliHLTDataOriginOut;
+    DataTopic topic = kDataTypeTObject;
+    topic.SetOrigin(kAliHLTDataOriginOut);
     //the data
     string objectName = i->first;
     AliZMQROOTMergerEntry& entry = i->second;
