@@ -544,8 +544,8 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
             dig = (AliEMCALTriggerRawDigit*)fRawDigits->At(fRawDigitIndex[idx]);
         }
           
-        if (  (v0a & 0x1)       ) dig->SetTriggerBit(kL1GammaHigh,1);
-        if ( ((v0a >> 1) & 0x1) ) dig->SetTriggerBit(kL1GammaLow, 1);          
+        if (  (v0a & 0x1)       ) dig->SetTriggerBit(kL1GammaLow,1);
+        if ( ((v0a >> 1) & 0x1) ) dig->SetTriggerBit(kL1GammaHigh, 1);          
       } 
 
       for (int ithr = 0; ithr < 2; ithr++)
