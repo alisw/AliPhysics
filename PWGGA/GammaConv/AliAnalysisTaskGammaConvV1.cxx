@@ -839,10 +839,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fhJetJetNTrials         = new TH1F*[fnCuts];
   }
   fHistoNGoodESDTracks      = new TH1F*[fnCuts];
-  fHistoVertexZ             = new TH1F*[fnCuts];                   
+  fHistoVertexZ             = new TH1F*[fnCuts];
   if(fDoPlotVsCentrality){
-    fHistoCentrality        = new TH1F*[fnCuts];                   
-    fHistoCentralityVsPrimaryTracks = new TH2F*[fnCuts];            
+    fHistoCentrality        = new TH1F*[fnCuts];
+    fHistoCentralityVsPrimaryTracks = new TH2F*[fnCuts];
   }
   if(fDoCentralityFlat > 0){
     fWeightCentrality            = new Double_t[fnCuts];
@@ -862,7 +862,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fHistoNV0Tracks                            = new TH1F*[fnCuts];
   }
 
-  fHistoEtaShift                             = new TProfile*[fnCuts];  
+  fHistoEtaShift                             = new TProfile*[fnCuts];
 
   // gamma histos:
   fHistoConvGammaPt                          = new TH1F*[fnCuts];
