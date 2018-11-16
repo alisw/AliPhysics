@@ -626,9 +626,6 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistHadjet_DCA = new TH2F("fHistHadjet_DCA","DCA of Hade jet",50,0,50,1000,-0.5,0.5); 
   fOutput->Add(fHistHadjet_DCA);
 
-  HFjetDCA_b = new TH2D("HFjetDCA_b","DCA of b->e",50,0,50,1000,-0.5,0.5); 
-  fOutput->Add(HFjetDCA_b);
-
   fHistHFjetOrder = new TH2F("fHistHFjetOrder","HF jet;p_{T}",300,-100.,200.,30,0,30);
   fOutput->Add(fHistHFjetOrder);
 
