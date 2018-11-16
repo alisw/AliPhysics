@@ -181,9 +181,9 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     Double_t min[11] = {fPtTrigMin,fPtAsocMin, -kPi/2, -2., -10., 0.,-0.8,-0.8,0.44,0,0};
     Double_t max[11] = {15., 15., -kPi/2+2*kPi, 2., 10., 4.,0.8,0.8, 1.15,100,2};
     
-    Int_t binsMix[9] = {12,14,216,200,40,4,10,2,5000};
-    Double_t minMix[9] ={fPtTrigMin,fPtAsocMin, -kPi/2, -2., -10., 0.,0,0,0.45};
-    Double_t maxMix[9] = {15., 15., -kPi/2+2*kPi, 2., 10., 4.,100,2,1.15};
+    Int_t binsMix[7] = {12,14,216,200,40,4,10};
+    Double_t minMix[7] ={fPtTrigMin,fPtAsocMin, -kPi/2, -2., -10., 0.,0};
+    Double_t maxMix[7] = {15., 15., -kPi/2+2*kPi, 2., 10., 4.,100};
     
 	Int_t  NofCentBins  = 10;
     Double_t MBins[]={0,10,20,30,40,50,60,70,80,90,100};
@@ -234,7 +234,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fOutputList->Add(fHistKorelacie);
     fHistKorelacie->Sumw2();
     
-	fHistdPhidEtaMix = new THnSparseF ("fHistdPhidEtaMix", "fHistdPhidEtaMix", 9, binsMix, minMix, maxMix);
+	fHistdPhidEtaMix = new THnSparseF ("fHistdPhidEtaMix", "fHistdPhidEtaMix", 7, binsMix, minMix, maxMix);
     fHistdPhidEtaMix->GetAxis(0)->SetTitle("p_{T}^{trig}");
     fHistdPhidEtaMix->GetAxis(1)->SetTitle("p_{T}^{assoc}");
     fHistdPhidEtaMix->GetAxis(2)->SetTitle("#Delta#phi");
@@ -242,12 +242,10 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistdPhidEtaMix->GetAxis(4)->SetTitle("p_{vz}");
     fHistdPhidEtaMix->GetAxis(5)->SetTitle("trigger");
     fHistdPhidEtaMix->GetAxis(6)->SetTitle("multiplicity percentile");
-    fHistdPhidEtaMix->GetAxis(7)->SetTitle("OnFly/Offline");
-    fHistdPhidEtaMix->GetAxis(8)->SetTitle("mass");
     fHistdPhidEtaMix->Sumw2();
 	fOutputList->Add(fHistdPhidEtaMix);
     
-    fHistMCMixingRec = new THnSparseF ("fHistMCMixingRec", "fHistMCMixingRec", 9, binsMix, minMix, maxMix);
+    fHistMCMixingRec = new THnSparseF ("fHistMCMixingRec", "fHistMCMixingRec", 7, binsMix, minMix, maxMix);
     fHistMCMixingRec->GetAxis(0)->SetTitle("p_{T}^{trig}");
     fHistMCMixingRec->GetAxis(1)->SetTitle("p_{T}^{assoc}");
     fHistMCMixingRec->GetAxis(2)->SetTitle("#Delta#phi");
@@ -255,8 +253,6 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistMCMixingRec->GetAxis(4)->SetTitle("p_{vz}");
     fHistMCMixingRec->GetAxis(5)->SetTitle("trigger");
     fHistMCMixingRec->GetAxis(6)->SetTitle("multiplicity percentile");
-    fHistMCMixingRec->GetAxis(7)->SetTitle("OnFly/Offline");
-    fHistMCMixingRec->GetAxis(8)->SetTitle("mass");
     fOutputList->Add(fHistMCMixingRec);
     fHistMCMixingRec->Sumw2();
 
@@ -1258,13 +1254,15 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorelationsMixing(TObjArray *triggers, TO
     const Double_t kPi = TMath::Pi();
     Int_t nAssoc = bgTracks->GetEntriesFast();
     Int_t nTrig = triggers->GetEntriesFast();
-    Double_t status = 0.;
 
     for (Int_t i=0; i<nTrig; i++){
         AliV0ChParticle* trig = (AliV0ChParticle*)  triggers->At(i);
-        if (trig->GetRecStatus()) status=0.5;
-        if (!trig->GetRecStatus()) status=1.5;
         
+        Double_t massTrig = 0.;
+        if(trig->WhichCandidate()<4) massTrig=trig->GetMass();
+        if(trig->WhichCandidate()==1&&(massTrig<0.486||massTrig>0.509)) continue;
+        if((trig->WhichCandidate()==2||trig->WhichCandidate()==3)&&(massTrig<1.1112||massTrig>1.12)) continue;
+
         for (Int_t j=0; j<nAssoc; j++){
              AliAODTrack* assoc = (AliAODTrack*) bgTracks->At(j);
 
@@ -1279,7 +1277,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::CorelationsMixing(TObjArray *triggers, TO
             if (deltaPhi > (1.5*kPi)) deltaPhi -= 2.0*kPi;
             if (deltaPhi < (-0.5*kPi)) deltaPhi += 2.0*kPi;
             
-            Double_t korel[8] = {trig->Pt(),assocPt,deltaPhi,deltaEta, lPVz,trig->WhichCandidate()-0.5,perc,status};
+            Double_t korel[7] = {trig->Pt(),assocPt,deltaPhi,deltaEta, lPVz,trig->WhichCandidate()-0.5,perc};
             fHistKor->Fill(korel);
         }
     }
