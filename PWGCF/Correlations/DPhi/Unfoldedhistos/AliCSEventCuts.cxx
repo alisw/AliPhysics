@@ -1855,6 +1855,9 @@ void AliCSEventCuts::SetActual2015PileUpRemoval()
       delete f2015V0MtoTrkTPCout;
     }
     switch (GetGlobalAnchorPeriod()) {
+    case kLHC10bg:
+      f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",GetCutsString()),"-318.0+5.3*x");
+      break;
     case kLHC10h:
       f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",GetCutsString()),"-1000+3.1*x");
       break;
