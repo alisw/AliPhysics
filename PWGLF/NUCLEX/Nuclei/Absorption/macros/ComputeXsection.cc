@@ -1,4 +1,5 @@
 #include "TDirectory.h"
+#include "TFile.h"
 #include "TF1.h"
 #include "TLegend.h"
 #include "TList.h"
@@ -27,12 +28,13 @@ double FromRatioToCrossSectionUnc(double x, double ex) {
 void ComputeXsection(std::string fileName="AnalysisResults.root")
 {
   TFile inputFile(fileName.data());
-  TList *inputList = (TList*)inputFile.Get("DeuteronAbsorption/Absorption");
+  TList *inputList = (TList*)inputFile.Get("DeuteronAbsorption/standard");
 
   constexpr double massInterval = 0.2; /// 20% around the expected mass
 
   TH2F *fHist2Matching[4][2][2];
   TH1D *fHist1MomSpectrum[4][2][2];
+  TH1D *fHist1MomSpectrumTPC[4][2][2];
   TH1D *fHist1RatioTRDnoTRD[4][2];
   TH1D *fHist1DoubleRatio[4];
   TH1D *fHist1CrossSection[4];
@@ -49,8 +51,9 @@ void ComputeXsection(std::string fileName="AnalysisResults.root")
     {"^{3}#bar{H}", "^{3}H"},
   };
 
-  TFile outputFile("xsection.root","recreate");
+  TFile outputFile(Form("xsection_%s",fileName.data()),"recreate");
   TDirectory* spectraDir = outputFile.mkdir("Spectra");
+  TDirectory* matchingDir = outputFile.mkdir("Matching");
   TDirectory* trdNoTrdDir = outputFile.mkdir("TRDnoTRD");
   TDirectory* acceptanceDir = outputFile.mkdir("Acceptance");
   TDirectory* doubleRatioDir = outputFile.mkdir("DoubleRatios");
@@ -82,12 +85,19 @@ void ComputeXsection(std::string fileName="AnalysisResults.root")
       const double maxMass = Sq(AliPID::ParticleMass(AliAnalysisTaskDeuteronAbsorption::fgkSpecies[iSpecies])) * (1. + massInterval);
       const int maxBin = fHist2Matching[iSpecies][iCharge][0]->GetYaxis()->FindBin(maxMass);
       std::cout << "Mass^2 limits used for " << AliAnalysisTaskDeuteronAbsorption::fgkParticleNames[iSpecies].data() << ": " << minMass << ", " << maxMass << std::endl;
-      spectraDir->cd();
       for (int iTRD = 0; iTRD < 2; ++iTRD) {
+        spectraDir->cd();
+        fHist1MomSpectrumTPC[iSpecies][iCharge][iTRD] = fHist2Matching[iSpecies][iCharge][iTRD]->ProjectionX(Form("fHist1MomSpectrumTPC%s_%s_%s", AliAnalysisTaskDeuteronAbsorption::fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), wTRD[iTRD].data()));
+        fHist1MomSpectrumTPC[iSpecies][iCharge][iTRD]->Rebin(kRebin);
+        fHist1MomSpectrumTPC[iSpecies][iCharge][iTRD]->Sumw2();
+        fHist1MomSpectrumTPC[iSpecies][iCharge][iTRD]->Write();
         fHist1MomSpectrum[iSpecies][iCharge][iTRD] = fHist2Matching[iSpecies][iCharge][iTRD]->ProjectionX(Form("fHist1MomSpectrum%s_%s_%s", AliAnalysisTaskDeuteronAbsorption::fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), wTRD[iTRD].data()),minBin,maxBin);
         fHist1MomSpectrum[iSpecies][iCharge][iTRD]->Rebin(kRebin);
         fHist1MomSpectrum[iSpecies][iCharge][iTRD]->Sumw2();
         fHist1MomSpectrum[iSpecies][iCharge][iTRD]->Write();
+        matchingDir->cd();
+        fHist1MomSpectrumTPC[iSpecies][iCharge][iTRD]->Divide(fHist1MomSpectrum[iSpecies][iCharge][iTRD], fHist1MomSpectrumTPC[iSpecies][iCharge][iTRD],1.,1.,"B");
+        fHist1MomSpectrumTPC[iSpecies][iCharge][iTRD]->Write(Form("fHist1TOFmatching%s_%s_%s", AliAnalysisTaskDeuteronAbsorption::fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), wTRD[iTRD].data()));
       }
       trdNoTrdDir->cd();
       fHist1RatioTRDnoTRD[iSpecies][iCharge] = static_cast<TH1D*>(fHist1MomSpectrum[iSpecies][iCharge][1]->Clone(Form("fHist1RatioTRDnoTRD%s_%s", AliAnalysisTaskDeuteronAbsorption::fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data())));
