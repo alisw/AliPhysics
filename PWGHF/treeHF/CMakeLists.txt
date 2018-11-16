@@ -88,5 +88,5 @@ install(FILES ${HDRS} DESTINATION include)
 
 install(DIRECTORY
             macros
-        DESTINATION PWGHF/vertexingHF/)
+        DESTINATION PWGHF/treeHF)
 
