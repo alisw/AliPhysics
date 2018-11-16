@@ -1,6 +1,6 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-// Update: Nov 7
+// Update: Nov 16
 
 #ifndef AliAnalysisTaskNetLambdaTrad_h
 #define AliAnalysisTaskNetLambdaTrad_h
@@ -68,24 +68,17 @@ protected:
     TH2F*  f2fHistAntiLambdaMisId;
     TH2F*  f2fHistV0CentVsPtLambda;
     TH2F*  f2fHistV0CentVsPtAntiLambda;
-    //    TH3F*  f3fHistLambdafromXi;
-    //    TH3F*  f3fHistAntiLambdafromXi;
     TH2F*  f2fHistLRecstat;
     TH2F*  f2fHistARecstat;
     TH2F*  f2fHistLGenstat;
     TH2F*  f2fHistAGenstat;
-//    TH2F*  f2fHisthXiPlus;
-//    TH2F*  f2fHisthXiMinus;
-//    TH2F*  f2fHisthXiZero;
-//    TH2F*  f2fHisthXiZeroAnti;
     TH1F*  f1fHistmassctLambda;
     TH1F*  f1fHistmassctAntiLambda;
     
     
     Float_t fCentrality;
     Int_t fTreeVariablePID;
-    //    Int_t fTreeVariablePIDMother;
-    //    Int_t fTreeVariablePrimaryStatusMother;
+    Float_t fTreeVariablePtMC;
     
     Int_t fTreeVariablePIDPositive;
     Int_t fTreeVariablePIDNegative;
@@ -103,17 +96,13 @@ protected:
     Bool_t fIsAOD;
     UInt_t fEvSel;
     Int_t  fNptBins;
-    //    Int_t  xibinnumb;
     
     
     THnSparse *fPtBinNplusNminusCh;
     THnSparse *fPtBinNplusNminusChTruth;
-
+    
     
     Int_t    GetPtBin(Double_t pt);
-    
-    
-    
     
     ClassDef(AliAnalysisTaskNetLambdaTrad,5);
 };
