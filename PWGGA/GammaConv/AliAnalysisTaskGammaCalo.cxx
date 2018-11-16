@@ -4384,7 +4384,7 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
                             }
                           }
                           fJetPt = fVectorJetPt.at(i);
-                          fTrueJetPt = fTrueVectorJetPt.at(i);
+                          fTrueJetPt = fTrueVectorJetPt.at(match);
                           fPi0Pt = pi0cand->Pt();
                           fPi0InvMass = pi0cand->M();
                           tTreeJetPi0Correlations[fiCut]->Fill();
