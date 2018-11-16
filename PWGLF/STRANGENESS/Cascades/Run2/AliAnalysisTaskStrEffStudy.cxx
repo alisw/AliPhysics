@@ -315,6 +315,7 @@ fTreeCascVarNegTrack(0),
 fTreeCascVarOTFV0(0x0),
 fTreeCascVarOTFV0NegBach(0x0),
 fTreeCascVarOTFV0PosBach(0x0),
+fTreeCascVarV0AsOTF(0),
 fTreeCascVarNegBachAsOTF(0),
 fTreeCascVarPosBachAsOTF(0),
 fTreeCascVarMagneticField(0),
@@ -550,6 +551,7 @@ fTreeCascVarNegTrack(0),
 fTreeCascVarOTFV0(0),
 fTreeCascVarOTFV0NegBach(0x0),
 fTreeCascVarOTFV0PosBach(0x0),
+fTreeCascVarV0AsOTF(0),
 fTreeCascVarNegBachAsOTF(0),
 fTreeCascVarPosBachAsOTF(0),
 fTreeCascVarMagneticField(0),
@@ -889,6 +891,7 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         
         fTreeCascade->Branch("fTreeCascVarAliESDvertex", &fTreeCascVarAliESDvertex,16000,99);
     }
+    fTreeCascade->Branch("fTreeCascVarV0AsOTF",&fTreeCascVarV0AsOTF,"fTreeCascVarV0AsOTF/O");
     fTreeCascade->Branch("fTreeCascVarNegBachAsOTF",&fTreeCascVarNegBachAsOTF,"fTreeCascVarNegBachAsOTF/O");
     fTreeCascade->Branch("fTreeCascVarPosBachAsOTF",&fTreeCascVarPosBachAsOTF,"fTreeCascVarPosBachAsOTF/O");
     //------------------------------------------------
@@ -1736,7 +1739,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         
         lFoundOTF = kFALSE;
         AliESDv0 lV0ToStore, *lPointerToV0ToStore=&lV0ToStore;
-        
+        fTreeCascVarV0AsOTF = kFALSE;
         for(Long_t iOTFv0=0; iOTFv0<nv0s; iOTFv0++){
             AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iOTFv0);
             if (!v0) continue;
@@ -1751,6 +1754,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
                 //Found corresponding OTF V0! Save it to TTree, please
                 fTreeCascVarOTFV0 = v0;
                 lFoundOTF = kTRUE;
+                fTreeCascVarV0AsOTF = kTRUE;
                 break; //stop looking
             }
         }
