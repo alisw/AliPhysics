@@ -557,6 +557,7 @@ private:
     AliESDv0 *fTreeCascVarOTFV0;
     AliESDv0 *fTreeCascVarOTFV0NegBach;
     AliESDv0 *fTreeCascVarOTFV0PosBach;
+    Bool_t fTreeCascVarV0AsOTF; 
     Bool_t fTreeCascVarNegBachAsOTF;
     Bool_t fTreeCascVarPosBachAsOTF;
     
