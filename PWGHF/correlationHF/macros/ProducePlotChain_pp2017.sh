@@ -31,6 +31,12 @@ declare templateDirPP="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Fin
 declare templateDirPPb="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_pp2017/Inputs/Templates_pPb"
 declare -a templateDirSystemSuffix=( "none" "none" "none" "none" ) #### THIS IS KEPT JUST FOR BACKWARD COMPATIBILITY WITH OLD TEMPLATES! NO NEED TO TOUCH IT UNLESS YOU WANT TO USE OLD TEMPLATES
 declare -a templateDir=( "$templateDirPP" "$templateDirPPb" "$templateDirPPb"  "$templateDirPP")
+
+###these for loading beta values from MC, in case of fixed beta approach!
+declare betaTemplDirPP="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_pp2017/Inputs/Templates_pp/FitResults/Trends_pp/PYTHIA8"
+declare betaTemplDirPPb="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_pp2017/Inputs/Templates_pPb/FitResults/Trends_pPb/PYTHIA8"
+declare -a betaTemplDir=( "$betaTemplDirPP" "$betaTemplDirPPb" "$betaTemplDirPPb"  "$betaTemplDirPP")
+
 ### the following is needed for hte comparison to MC (as well as MC fitting)
 declare -a Nmccase=( 6 6 6 6 )
 declare -a mccasePP=( 1 1 1 1 0 1 0 0 ) # according to CompareFitResults array: Perugia0, Perugia2010, Perugia2011, PYTHIA8, HERWIG, POHWEG+Perugia2011, POWHEG+Perugia2011 with EPS09, EPOS 3
@@ -102,7 +108,7 @@ declare -i doFeedDownGlob=0
 declare -ia doFeedDownMes=( 1 1 1 ) ## Dzero, Dstar, Dplus values
 declare doInitAndReflStep=0 ## NOTE THAT THIS STEP IS NECESSARY ALSO IN CASE THE PLOTS DO NOT HAVE TO BE REFLECTED. THE "reflect" PARAMETER ABOVE IS WHAT DETERMINED WHETHER OR NOT THE PLOTS WILL BE REFLECTED INSIDE THIS STEP. THIS PARAMETER IS JUST A SWITCH: YOU CAN SET IT TO 0 IN CASE YOU ALREADY DID IT AND YOU DO NOT WANT TO REPEAT IT
 declare doAverage=0
-declare dofit=0
+declare dofit=1
 declare doDrawFitFigure=0
 declare dofitMC=0
 declare dofitawayside=1
@@ -561,7 +567,7 @@ if [ ${dofit} = 1 ]; then
     echo "Produce Plot Chain: fit data distributions"
     cd ${baseDir}/AllPlots/Averages/FitResults/    
     while [ ${collsyst} -le ${lastcollsyst} ]; do
-	$HFCJlocalCodeDir/DoFit.sh ${collsyst} ${reflect} ${averageOpt} ${baseDir}/AllPlots/Averages/  ${baseDir}/AllPlots/Averages/FitResults/ ${includev2[${collsyst}]} ${dofitawayside} ${doNewPedestalVars}
+	$HFCJlocalCodeDir/DoFit.sh ${collsyst} ${reflect} ${averageOpt} ${baseDir}/AllPlots/Averages/  ${baseDir}/AllPlots/Averages/FitResults/ ${includev2[${collsyst}]} ${dofitawayside} ${doNewPedestalVars} ${betaTemplDir[${collsyst}]}
 	collsyst=${collsyst}+1
     done
 fi
