@@ -1008,7 +1008,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
       outputContainer->Add(fhDPhivsE[indexPID][ich]) ;
 
       fhDEtavsP[indexPID][ich]  = new TH2F
-      (Form("hDEta_clusE_%s_%s",sCharge[ich].Data(),pidParticle[indexPID].Data()),
+      (Form("hDEta_TraP_%s_%s",sCharge[ich].Data(),pidParticle[indexPID].Data()),
        Form("#Delta #eta of cluster - %s track vs #it{p}_{track}, ID: %s",
             sCharge[ich].Data(),pidParticle[indexPID].Data()),
        nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
@@ -1017,7 +1017,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
       outputContainer->Add(fhDEtavsP[indexPID][ich]) ;
       
       fhDPhivsP[indexPID][ich]  = new TH2F
-      (Form("hDPhi_clusE_%s_%s",sCharge[ich].Data(),pidParticle[indexPID].Data()),
+      (Form("hDPhi_TraP_%s_%s",sCharge[ich].Data(),pidParticle[indexPID].Data()),
        Form("#Delta #varphi of cluster - %s track vs #it{p}_{track}, ID: %s",
             sCharge[ich].Data(),pidParticle[indexPID].Data()),
        nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);

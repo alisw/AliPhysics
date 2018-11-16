@@ -3583,8 +3583,8 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
   
   if( !caloClusters || !cells )
   {
-    AliFatal(Form("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - No CaloClusters or CaloCells available"));
-    return; // trick coverity
+    AliWarning(Form("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - No CaloClusters or CaloCells available"));
+    return; 
   }
   
   if(caloClusters->GetEntriesFast() == 0) return ;
