@@ -35,7 +35,7 @@ AliEmcalCorrectionClusterTrackMatcher::AliEmcalCorrectionClusterTrackMatcher() :
   fMaxDistance(0.1),
   fUsePIDmass(kTRUE),
   fUseDCA(kTRUE),
-  fUseOuterParam(kFALSE),
+  fUseOuterParamInESDs(kFALSE),
   fUpdateTracks(kTRUE),
   fUpdateClusters(kTRUE),
   fClusterContainerIndexMap(),
@@ -78,7 +78,7 @@ Bool_t AliEmcalCorrectionClusterTrackMatcher::Initialize()
   
   GetProperty("usePIDmass", fUsePIDmass);
   GetProperty("useDCA", fUseDCA);
-  GetProperty("useOuterParam", fUseOuterParam);
+  GetProperty("useOuterParamInESDs", fUseOuterParamInESDs);
   GetProperty("maxDist", fMaxDistance);
   GetProperty("updateClusters", fUpdateClusters);
   GetProperty("updateTracks", fUpdateTracks);
@@ -335,7 +335,7 @@ void AliEmcalCorrectionClusterTrackMatcher::GenerateEmcalParticles()
         }
         
         // Propagate the track
-        AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(track, fPropDist, mass, 20, 0.35, kFALSE, fUseDCA, fUseOuterParam);
+        AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(track, fPropDist, mass, 20, 0.35, kFALSE, fUseDCA, fUseOuterParamInESDs);
       }
 
       // Reset properties of the track to fix TRefArray errors which occur when AddTrackMatched(obj) is called.

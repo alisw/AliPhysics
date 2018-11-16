@@ -206,7 +206,7 @@ ClusterTrackMatcher:                                # Cluster-track matcher comp
     createHistos: false                             # Whether the task should create output histograms
     maxDist: 0.1                                    # Max distance between a matched cluster and track
     useDCA: true                                    # Use DCA as starting point for track propagation, rather than primary vertex
-    useOuterParam: false                            # Use TPC outer parameters instead of inner for track propagation, ESDs only
+    useOuterParamInESDs: false                      # Use TPC outer parameters instead of inner for track propagation, ESDs only, it does nothing on AODs
     usePIDmass: true                                # Use PID-based mass hypothesis for track propagation, rather than pion mass hypothesis
     enableFracEMCRecalc: "sharedParameters:enableFracEMCRecalc"
     removeNMCGenerators: "sharedParameters:removeNMCGenerators"
