@@ -1323,6 +1323,7 @@ Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){
   case 2:
     fMesonKind = 0;
     fDoJetAnalysis = kTRUE;
+    break;
   case 3:
     fMesonKind = 0;
     fDoJetAnalysis = kTRUE;
