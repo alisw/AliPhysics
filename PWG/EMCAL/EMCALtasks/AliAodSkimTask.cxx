@@ -13,10 +13,11 @@
 #include <AliAODInputHandler.h>
 #include <AliAODMCHeader.h>
 #include <AliAODMCParticle.h>
+#include <AliAODVertex.h>
 #include <AliAnalysisManager.h>
 #include <AliLog.h>
 #include "AliAodSkimTask.h"
-
+#include "TObjectTable.h"
 using namespace std;
 ClassImp(AliAodSkimTask)
 
@@ -24,7 +25,7 @@ AliAodSkimTask::AliAodSkimTask(const char* name) :
   AliAnalysisTaskSE(name), fClusMinE(-1), fCutMC(1), fYCutMC(0.7), fCutMinPt(0), fCutFilterBit(-1), fGammaBr(""),
   fDoCopyHeader(1),  fDoCopyVZERO(1),  fDoCopyTZERO(1),  fDoCopyVertices(1),  fDoCopyTOF(1), fDoCopyTracklets(1), fDoCopyTracks(1), fDoRemoveTracks(0), fDoCleanTracks(0), 
   fDoRemCovMat(0), fDoRemPid(0), fDoCopyTrigger(1), fDoCopyPTrigger(0), fDoCopyCells(1), fDoCopyPCells(0), fDoCopyClusters(1), fDoCopyDiMuons(0),  fDoCopyTrdTracks(0), 
-  fDoCopyV0s(0), fDoCopyCascades(0), fDoCopyZDC(1), fDoCopyConv(0), fDoCopyMC(1), fDoCopyMCHeader(1), 
+  fDoCopyV0s(0), fDoCopyCascades(0), fDoCopyZDC(1), fDoCopyConv(0), fDoCopyMC(1), fDoCopyMCHeader(1), fDoVertWoRefs(), fDoVertMain(0), fDoCleanTracklets(0),
   fTrials(0), fPyxsec(0), fPytrials(0), fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0), fHevs(0), fHclus(0)
 {
   if (name) {
@@ -195,9 +196,22 @@ void AliAodSkimTask::UserExec(Option_t *)
     TClonesArray *out = eout->GetVertices(); 
     TClonesArray *in  = evin->GetVertices();      
     if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
-      AliFatal(Form("%s: Previous event not deleted. This should not happen!",GetName()));
+      AliFatal(Form("%s: Previous vertices not deleted. This should not happen!",GetName()));
     }
-    out->AbsorbObjects(in);
+    for (Int_t i=0,j=0; i<in->GetEntries(); ++i) {
+      AliAODVertex *v = static_cast<AliAODVertex*>(in->At(i));
+      if (fDoVertMain) {
+	if (i>2) 
+	  break;
+	TString tmp(v->GetName());
+	if (!tmp.Contains("PrimaryVertex")&&!tmp.Contains("SPDVertex")&&!tmp.Contains("TPCVertex"))
+	  continue;
+      }
+      if (fDoVertWoRefs) {
+	v->RemoveDaughters();
+      }
+      new ((*out)[j++]) AliAODVertex(*v);
+    }
   }
 
   if (fDoCopyTOF) {   
@@ -210,17 +224,17 @@ void AliAodSkimTask::UserExec(Option_t *)
     TClonesArray *out = eout->GetTracks();	                 
     TClonesArray *in  = evin->GetTracks();	
     if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
-      AliFatal(Form("%s: Previous event not deleted. This should not happen!",GetName()));
+      AliFatal(Form("%s: Previous tracks not deleted. This should not happen!",GetName()));
     }
-    out->AbsorbObjects(in);
-    if (fDoRemoveTracks||fDoCleanTracks) {
-      for (Int_t i=0;i<out->GetEntriesFast();++i) {
-	AliAODTrack *t = static_cast<AliAODTrack*>(out->At(i));
-	if (KeepTrack(t)) 
-	  CleanTrack(t);
-	else {
-	  new ((*out)[i]) AliAODTrack;
-	}
+    for (Int_t i=0;i<in->GetEntriesFast();++i) {
+      AliAODTrack *t = static_cast<AliAODTrack*>(in->At(i));
+      if (KeepTrack(t)) {
+	CleanTrack(t);
+	if (fDoVertMain)
+	  t->SetProdVertex(0);
+	new ((*out)[i]) AliAODTrack(*t);
+      } else {
+	new ((*out)[i]) AliAODTrack;
       }
     }
   }
@@ -229,6 +243,11 @@ void AliAodSkimTask::UserExec(Option_t *)
     AliAODTracklets *out = eout->GetTracklets();
     AliAODTracklets *in  = evin->GetTracklets();
     *out = *in;
+    if (fDoCleanTracklets) {
+      Int_t n=in->GetNumberOfTracklets();
+      out->SetTitle(Form("Ntracklets=%d",n));
+      out->DeleteContainer();
+    }
   }
 
   if (fDoCopyTrigger) { 
@@ -259,7 +278,7 @@ void AliAodSkimTask::UserExec(Option_t *)
     TClonesArray *out = eout->GetCaloClusters();	         
     TClonesArray *in  = evin->GetCaloClusters();  
     if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
-      AliFatal(Form("%s: Previous event not deleted. This should not happen!",GetName()));
+      AliFatal(Form("%s: Previous clusters not deleted. This should not happen!",GetName()));
     }
     out->AbsorbObjects(in);
   }
@@ -268,7 +287,7 @@ void AliAodSkimTask::UserExec(Option_t *)
     TClonesArray *out = static_cast<TClonesArray*>(eout->FindListObject("trdTracks"));
     TClonesArray *in  = static_cast<TClonesArray*>(eout->FindListObject("trdTracks"));
     if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
-      AliFatal(Form("%s: Previous event not deleted. This should not happen!",GetName()));
+      AliFatal(Form("%s: Previous trdtracks not deleted. This should not happen!",GetName()));
     }
     out->AbsorbObjects(in);
   }
@@ -277,7 +296,7 @@ void AliAodSkimTask::UserExec(Option_t *)
     TClonesArray *out = eout->GetV0s();
     TClonesArray *in  = evin->GetV0s();
     if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
-      AliFatal(Form("%s: Previous event not deleted. This should not happen!",GetName()));
+      AliFatal(Form("%s: Previous v0s not deleted. This should not happen!",GetName()));
     }
     out->AbsorbObjects(in);
   }
@@ -301,7 +320,7 @@ void AliAodSkimTask::UserExec(Option_t *)
     TClonesArray *out = eout->GetDimuons();
     TClonesArray *in  = evin->GetDimuons();
     if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
-      AliFatal(Form("%s: Previous event not deleted. This should not happen!",GetName()));
+      AliFatal(Form("%s: Previous dimuons not deleted. This should not happen!",GetName()));
     }
     out->AbsorbObjects(in);
   }
@@ -335,7 +354,7 @@ void AliAodSkimTask::UserExec(Option_t *)
     }
     if (in && out) {
       if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
-	AliFatal(Form("%s: Previous event not deleted. This should not happen!",GetName()));
+	AliFatal(Form("%s: Previous mcparticles not deleted. This should not happen!",GetName()));
       }
       out->AbsorbObjects(in);
       if (fCutMC) {
@@ -428,7 +447,10 @@ void AliAodSkimTask::Terminate(Option_t *)
      return;
    if (fHevs==0)
      return;
-   cout << "AliAodSkimTask " << GetName() << " terminated with accepted fraction of events: " << fHevs->GetBinContent(2)/fHevs->GetEntries() 
+   Int_t norm = fHevs->GetEntries();
+   if (norm<1) 
+     norm=1;
+   cout << "AliAodSkimTask " << GetName() << " terminated with accepted fraction of events: " << fHevs->GetBinContent(2)/norm
 	<< " (" << fHevs->GetBinContent(2) << "/" << fHevs->GetEntries() << ")" << endl;
 }
 
