@@ -87,6 +87,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				massMin(0),
 				Nref(0),
 				Nch(0),
+				MinNtr(0),
+				MaxNtr(0),
 				//==== basic parameters ====
 				fNevents(0),
 				fHist_VertexZ(0),
@@ -145,6 +147,10 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fNtrkl_Corr(0),
 				fNchNtr(0),
 				fNchNtr_Corr(0),
+				fDCAxy_Pt_ele(0),
+				fDCAxy_Pt_had(0),
+				fDCAxy_Pt_LS(0),
+				fDCAxy_Pt_ULS(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
 				fEMCEG2(kFALSE),
@@ -231,6 +237,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				massMin(0),
 				Nref(0),
 				Nch(0),
+				MinNtr(0),
+				MaxNtr(0),
 				//==== basic parameters ====
 				fNevents(0),
 				fHist_VertexZ(0),
@@ -289,6 +297,10 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fNtrkl_Corr(0),
 				fNchNtr(0),
 				fNchNtr_Corr(0),
+				fDCAxy_Pt_ele(0),
+				fDCAxy_Pt_had(0),
+				fDCAxy_Pt_LS(0),
+				fDCAxy_Pt_ULS(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
 				fEMCEG2(kFALSE),
@@ -433,6 +445,11 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fNtrkl_Corr = new TH1F("fNtrkl_Corr","N_{tracklet} after correction; zvtx; counts",300,0.,300.);
 				fNchNtr = new TH2F("fNchNtr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",300,0.,300.,300,0.,300);
 				fNchNtr_Corr = new TH2F("fNchNtr_Corr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",300,0.,300.,300,0.,300);
+
+				fDCAxy_Pt_ele = new TH2F("fDCAxy_Pt_ele","DCA_{xy} vs Pt (electron);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+				fDCAxy_Pt_had = new TH2F("fDCAxy_Pt_had","DCA_{xy} vs Pt (hadron);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+				fDCAxy_Pt_LS = new TH2F("fDCAxy_Pt_LS","DCA_{xy} vs Pt LS pairs;p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+				fDCAxy_Pt_ULS = new TH2F("fDCAxy_Pt_ULS","DCA_{xy} vs Pt ULS pairs;p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
 				fHist_eff_HFE     = new TH1F("fHist_eff_HFE","efficiency :: HFE",600,0,60);
 				fHist_eff_match   = new TH1F("fHist_eff_match","efficiency :: matched cluster",600,0,60);
 				fHist_eff_TPC     = new TH1F("fHist_eff_TPC","efficiency :: TPC cut",600,0,60);
@@ -553,6 +570,10 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fOutputList->Add(fNtrkl_Corr);
 				fOutputList->Add(fNchNtr);
 				fOutputList->Add(fNchNtr_Corr);
+				fOutputList->Add(fDCAxy_Pt_ele);
+				fOutputList->Add(fDCAxy_Pt_had);
+				fOutputList->Add(fDCAxy_Pt_LS);
+				fOutputList->Add(fDCAxy_Pt_ULS);
 				//==== MC output ====
 				fOutputList->Add(fMCcheckMother);
 				fOutputList->Add(fCheckEtaMC);
@@ -604,6 +625,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				Double_t CutEopHad = -3.5;
 				Double_t CutptAsso = ptAssoMin;
 				TString  TriggerPt = pTe;
+				Int_t CutMinNtr = MinNtr;
+				Int_t CutMaxNtr = MaxNtr;
 				cout<< "!!!!!!!!!!! pTe ;; "<<TriggerPt.Data()<<endl;
 				//################################################################# //
 
@@ -767,6 +790,12 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				fHist_VertexZ->Fill(Zvertex);                     // plot the pt value of the track in a histogram
 
 
+				//////////////////////////////
+				// Get sign of B field
+				//////////////////////////////
+				int Bsign = 0;
+				if(fAOD->GetMagneticField() < 0) Bsign = -1;
+				if(fAOD->GetMagneticField() > 0) Bsign = 1;
 
 				//////////////////////////////
 				// Multiplicity
@@ -825,6 +854,12 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 								fNchNtr_Corr->Fill(correctednAcc,Nch,WeightNtrkl);
 								fzvtx_Nch->Fill(Zvertex,Nch,WeightZvtx);
 				}
+
+
+				//////////////////////////////////
+				// Separate by multiplicity class
+				//////////////////////////////////
+				if(correctednAcc<CutMinNtr || correctednAcc > CutMaxNtr) return;
 
 
 				//////////////////////////////
@@ -1112,7 +1147,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 																fM20_2->Fill(TrkPt,m20);
 
 																///////-----Identify Non-HFE////////////////////////////
-																SelectPhotonicElectron(iTracks,track,fFlagNonHFE,pidM,TrkPt);
+																SelectPhotonicElectron(iTracks,track,fFlagNonHFE,pidM,TrkPt,DCA[0],Bsign);
 																IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagNonHFE,fFlagIsolation,pid_eleB,pid_eleD);
 																if(fFlagIsolation)fHistPt_Iso->Fill(track->Pt());
 
@@ -1160,10 +1195,12 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 																				fHistPt_Inc->Fill(track->Pt());
 																				fTPCnsig_ele->Fill(fTPCnSigma);
 																				fEop_ele->Fill(eop);
+																				fDCAxy_Pt_ele->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
 																}
 												}
 												if(fTPCnSigma< CutEopHad && m20>CutM20[0] && m20<CutM20[1]){
 																fEopPt_had -> Fill(TrkPt,eop);
+																fDCAxy_Pt_had->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
 												}
 								}
 
@@ -1179,7 +1216,7 @@ void AliAnalysisTaskCaloHFEpp::Terminate(Option_t *)
 				// called at the END of the analysis (when all events are processed)
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt)
+void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt, Double_t DCAxy, Int_t Bsign)
 {
 				////// ////////////////////////////////////
 				//////Non-HFE - Invariant mass method//////
@@ -1278,12 +1315,16 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 								if(fFlagLS){
 												if(mass < 0.002)cout <<"Px="<<aAssotrack->Px() <<" Py="<<aAssotrack->Py()<<" Pz="<<aAssotrack->Pz()<<endl;
 												if(mass < 0.002)cout <<"Px="<<track->Px() <<" Py="<<track->Py()<<" Pz="<<track->Pz()<<endl;
-												if(track->Pt()>1){fInv_pT_LS->Fill(TrkPt,mass);}
+												if(track->Pt()>1){
+																fInv_pT_LS->Fill(TrkPt,mass);
+																if(mass<CutmassMin)fDCAxy_Pt_LS->Fill(TrkPt,DCAxy*charge*Bsign);
+												}
 								}
 								if(fFlagULS){
 												if(track->Pt()>1){
 																fInv_pT_ULS->Fill(TrkPt,mass);
 																fInv_pT_ULS_forW->Fill(TrkPt,mass);
+																if(mass<CutmassMin)fDCAxy_Pt_ULS->Fill(TrkPt,DCAxy*charge*Bsign);
 												}
 								}
 
