@@ -2140,7 +2140,7 @@ Int_t AliVertexingHFUtils::CheckBplusDecay(AliMCEvent* mcEvent, Int_t label, Int
 	if(!resdau) return -1;
 	Int_t pdgresdau=resdau->GetPdgCode();
 	if(TMath::Abs(pdgresdau)==321){
-	  if(pdgD*pdgresdau>0) return -1;
+	  if(pdgD*pdgresdau<0) return -1;
 	  sumPxDau+=resdau->Px();
 	  sumPyDau+=resdau->Py();
 	  sumPzDau+=resdau->Pz();
@@ -2149,7 +2149,7 @@ Int_t AliVertexingHFUtils::CheckBplusDecay(AliMCEvent* mcEvent, Int_t label, Int
 	  if(nFoundKpi>3) return -1;
 	}
 	if(TMath::Abs(pdgresdau)==211){
-	  if(pdgD*pdgresdau<0) return -1;
+	  if(pdgD*pdgresdau>0) return -1;
 	  sumPxDau+=resdau->Px();
 	  sumPyDau+=resdau->Py();
 	  sumPzDau+=resdau->Pz();
@@ -2212,7 +2212,7 @@ Int_t AliVertexingHFUtils::CheckBplusDecay(TClonesArray* arrayMC, AliAODMCPartic
 	if(!resdau) return -1;
 	Int_t pdgresdau=resdau->GetPdgCode();
 	if(TMath::Abs(pdgresdau)==321){
-	  if(pdgD*pdgresdau>0) return -1;
+	  if(pdgD*pdgresdau<0) return -1;
 	  sumPxDau+=resdau->Px();
 	  sumPyDau+=resdau->Py();
 	  sumPzDau+=resdau->Pz();
@@ -2221,7 +2221,7 @@ Int_t AliVertexingHFUtils::CheckBplusDecay(TClonesArray* arrayMC, AliAODMCPartic
 	  if(nFoundKpi>3) return -1;
 	}
 	if(TMath::Abs(pdgresdau)==211){
-	  if(pdgD*pdgresdau<0) return -1;
+	  if(pdgD*pdgresdau>0) return -1;
 	  sumPxDau+=resdau->Px();
 	  sumPyDau+=resdau->Py();
 	  sumPzDau+=resdau->Pz();
