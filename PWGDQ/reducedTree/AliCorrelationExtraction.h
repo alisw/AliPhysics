@@ -15,6 +15,7 @@
 #include <TObject.h>
 #include <THn.h>
 #include <THnSparse.h>
+#include <TH1.h>
 #include <TF1.h>
 
 #include "AliResonanceFits.h"
@@ -95,6 +96,7 @@ class AliCorrelationExtraction : public TObject {
     void SetMEOSPairHistogram(THnF* h) {fMEOSPair = h; fProcessDone = kFALSE;}
     void SetSELSPairHistogram(THnF* hpp, THnF* hmm) {fSEPPPair = hpp; fSEMMPair = hmm; fProcessDone = kFALSE;}
     void SetMELSPairHistogram(THnF* hpp, THnF* hmm) {fMEPPPair = hpp; fMEMMPair = hmm; fProcessDone = kFALSE;}
+    void SetHadronEfficiencyHistogram(TH1D* h, Int_t var) {fHadronEff = h; fEfficiencyVariable = var; fProcessDone = kFALSE;}
     void SetAliResonanceFitsObject(AliResonanceFits* resonanceFits) {fResonanceFits = (AliResonanceFits*)resonanceFits->Clone("ResonanceFits"); fProcessDone = kFALSE;}
     void SetBackgroundMethod(Int_t method) {fOptionBkgMethod = method; fProcessDone = kFALSE;}
     void SetBackgroundFitFunction(TF1* fitFunc) {fBkgFitFunction = (TF1*)fitFunc->Clone("BkgFitFunction"); fProcessDone = kFALSE;}
@@ -131,7 +133,9 @@ class AliCorrelationExtraction : public TObject {
     TH2D*             GetCombinatorialBackgroundCF2D(Int_t massWindow) const {return (fProcessDone ? fCombinatorialBackgroundCF2D[massWindow] : 0x0);}
     TH1D*             GetSignalCF1D() const {return (fProcessDone ? fSignalCF1D : 0x0);}
     TH1D*             GetSignalCF1D(Int_t phiBin, Int_t etaBin) const {return (fProcessDone ? fSignalCF1DInvMass[phiBin][etaBin] : 0x0);}
+    TH1D*             GetSignalCF1DEfficiencyCorrected() const {return (fProcessDone ? fSignalCF1DEffCorr : 0x0);}
     TH2D*             GetSignalCF2D() const {return (fProcessDone ? fSignalCF2D : 0x0);}
+    TH2D*             GetSignalCF2DEfficiencyCorrected() const {return (fProcessDone ? fSignalCF2DEffCorr : 0x0);}
     AliResonanceFits* GetAliResonanceFitsObject() const {return (fProcessDone ? fResonanceFits : 0x0);}
     Int_t             GetBackgroundMethod() const {return (fProcessDone ? fOptionBkgMethod : 0x0);}
     TF1*              GetBackgroundFitFunction() const {return (fProcessDone ? fBkgFitFunction : 0x0);}
@@ -181,6 +185,8 @@ class AliCorrelationExtraction : public TObject {
     THnF*       fMEPPPair;
     THnF*       fMEMMPair;
   
+    TH1D*       fHadronEff;
+
     // output histograms
     TH2D* fSEOSNorm;
     TH2D* fSEOSNormBackgroundMassWindow[kNMaxBackgroundMassRanges];
@@ -210,9 +216,11 @@ class AliCorrelationExtraction : public TObject {
     TH1D* fCombinatorialBackgroundCF1D[kNMaxBackgroundMassRanges];
     TH2D* fCombinatorialBackgroundCF2D[kNMaxBackgroundMassRanges];
     TH1D* fSignalCF1D;
+    TH1D* fSignalCF1DEffCorr;
     TH1D* fSignalCF1DInvMass[kNMaxDeltaPhiBins][kNMaxDeltaEtaBins];
     TH2D* fSignalCF2D;
-  
+    TH2D* fSignalCF2DEffCorr;
+
     // variables
     Int_t     fNVariables;                                    // number of variables to be handled
     Int_t     fVariables[kNMaxVariables];                     // list of variables
@@ -230,6 +238,8 @@ class AliCorrelationExtraction : public TObject {
     Int_t     fDeltaPhiVariableIndex;
     Int_t     fDeltaEtaVariable;
     Int_t     fDeltaEtaVariableIndex;
+    Int_t     fEfficiencyVariable;                            // variable the efficiency (fHadronEff) is a function of
+    Int_t     fEfficiencyVariableIndex;                       // index of fEfficiencyVariable in fSEOS, etc.
 
     // user options
     Bool_t            fVerboseFlag;
@@ -268,8 +278,9 @@ class AliCorrelationExtraction : public TObject {
     Bool_t  CalculateBackgroundCorrelationSuperposition();
     Bool_t  CalculateBackgroundCorrelationSuperpositionTwoComponent();
     Bool_t  CalculateSignalCorrelation();
+    Bool_t  EfficiencyCorrection();
   
-  ClassDef(AliCorrelationExtraction, 0);
+  ClassDef(AliCorrelationExtraction, 1);
 };
 
 #endif
