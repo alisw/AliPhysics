@@ -3435,7 +3435,6 @@ void AliAnalysisTaskGammaCalo::ProcessJets()
       }
       fHistoEventwJets[fiCut]->Fill(0);
     }
-  }else{
     fVectorJetPt.clear();
     fVectorJetPx.clear();
     fVectorJetPy.clear();
@@ -4341,9 +4340,15 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
           fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), tempPi0CandWeight);
           if(fDoJetAnalysis){
             if(fConvJetReader->GetNJets()>0){
+              fVectorJetPt = fConvJetReader->GetVectorJetPt();
+              fVectorJetPx = fConvJetReader->GetVectorJetPx();
+              fVectorJetPy = fConvJetReader->GetVectorJetPy();
+              fVectorJetPz = fConvJetReader->GetVectorJetPz();
+              fVectorJetEta = fConvJetReader->GetVectorJetEta();
+              fVectorJetPhi = fConvJetReader->GetVectorJetPhi();
               fHistoJetMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), tempPi0CandWeight);
               Double_t RJetPi0Cand = 0;
-              if(fVectorJetPt.size() == fConvJetReader->GetNJets() && fVectorJetEta.size() == fConvJetReader->GetNJets() && fVectorJetPhi.size() == fConvJetReader->GetNJets() && fVectorJetArea.size() == fConvJetReader->GetNJets()){
+              if(fVectorJetPt.size() == fConvJetReader->GetNJets() && fVectorJetEta.size() == fConvJetReader->GetNJets() && fVectorJetPhi.size() == fConvJetReader->GetNJets()){
                 Int_t counter = 0;
                 for(Int_t i=0; i<fConvJetReader->GetNJets(); i++){
                   Double_t DeltaEta = fVectorJetEta.at(i)-pi0cand->Eta();
@@ -4368,6 +4373,9 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
 
                       if(fDoJetQA){
                         if(fIsMC > 0 && fConvJetReader->GetTrueNJets()>0){
+                          fTrueVectorJetPt = fConvJetReader->GetTrueVectorJetPt();
+                          fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+                          fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
                           Double_t min = 100;
                           Int_t match = 0;
                           for(Int_t j = 0; j<fConvJetReader->GetTrueNJets(); j++){
@@ -4388,6 +4396,10 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
                           fPi0Pt = pi0cand->Pt();
                           fPi0InvMass = pi0cand->M();
                           tTreeJetPi0Correlations[fiCut]->Fill();
+
+                          fTrueVectorJetPt.clear();
+                          fTrueVectorJetEta.clear();
+                          fTrueVectorJetPhi.clear();
                         }
                       }
                     }
@@ -4395,6 +4407,12 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
                 }
                 fHistoDoubleCounting[fiCut]->Fill(counter);
               }
+              fVectorJetPt.clear();
+              fVectorJetPx.clear();
+              fVectorJetPy.clear();
+              fVectorJetPz.clear();
+              fVectorJetEta.clear();
+              fVectorJetPhi.clear();
             }
           }
           // fill new histograms
