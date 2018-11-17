@@ -26,6 +26,7 @@
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoDecayHF3Prong.h"
+#include "AliAODMCParticle.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAODRecoDecayHF2Prong);
@@ -178,6 +179,122 @@ Bool_t AliAODRecoDecayHF2Prong::SelectBtoJPSI(const Double_t *cuts,Int_t &okB)
   if(CosPointingAngle()   < cuts[8]) { okB = 0; return kFALSE; }
 
   return kTRUE;
+}
+//-----------------------------------------------------------------------------
+Int_t AliAODRecoDecayHF2Prong::MatchToMCB2Prong(Int_t pdgabs,Int_t pdgabs2prong,Int_t *pdgDg,Int_t *pdgDg2prong,TClonesArray *mcArray) const
+{
+    //
+    // Check if this candidate is matched to a MC signal
+    // If no, return -1
+    // If yes, return label (>=0) of the AliAODMCParticle
+    // 
+    // NB: This function is only for non-resonant decays
+    // NB: No cut on mom conservation due to long decay time
+    
+    // Check number of daughters. Candidate is AliAODRecoDecayHF2Prong, so only continue when 2 daughters
+    Int_t ndg = GetNDaughters();
+    if (!ndg) { AliError("HF2Prong: No daughters available"); return -1;}
+    if (ndg != 2) { AliError(Form("HF2Prong: %d daughters instead of 2",ndg)); return -1;}
+    
+    // loop on daughters and write the labels
+    Int_t dgLabels[2] = {-1};
+    if(pdgabs2prong == 0){
+        for(Int_t i=0; i<ndg; i++) {
+            AliAODTrack *trk = (AliAODTrack*)GetDaughter(i);
+            dgLabels[i] = trk->GetLabel();
+        }
+    } else {
+        AliAODTrack *trk = (AliAODTrack*)GetDaughter(0);
+        dgLabels[0] = trk->GetLabel();
+        AliAODRecoDecayHF2Prong* daug2prong = (AliAODRecoDecayHF2Prong*)GetDaughter(1);
+        //Daughter prong (independent on their decay time) will also be far from PV, so call this function again.
+        Int_t pdgempty[2]={0,0};
+        dgLabels[1] = daug2prong->MatchToMCB2Prong(pdgabs2prong, 0, pdgDg2prong, pdgempty, mcArray);
+    }
+    if (dgLabels[0] == -1) return -1;
+    if (dgLabels[1] == -1) return -1;
+    
+    Int_t labMom[2] = {0, 0};
+    Int_t i, j, lab, labMother, pdgMother, pdgPart;
+    AliAODMCParticle *part = 0;
+    AliAODMCParticle *mother = 0;
+    Double_t pxSumDgs = 0., pySumDgs = 0., pzSumDgs = 0.;
+    Bool_t pdgUsed[2] = {kFALSE, kFALSE};
+    
+    // loop on daughter labels
+    for (i = 0; i < ndg; i++){
+        labMom[i] = -1;
+        lab = TMath::Abs(dgLabels[i]);
+        if (lab < 0){
+            printf("daughter with negative label %d\n", lab);
+            return -1;
+        }
+        part = (AliAODMCParticle*)mcArray->At(lab);
+        if (!part){
+            printf("no MC particle\n");
+            return -1;
+        }
+        
+        // check the PDG of the daughter, if requested
+        pdgPart = TMath::Abs(part->GetPdgCode());
+        for (j = 0; j < ndg; j++){
+            if (!pdgUsed[j] && pdgPart == pdgDg[j]){
+                pdgUsed[j] = kTRUE;
+                break;
+            }
+        }
+        
+        mother = part;
+        while (mother->GetMother() >= 0){
+            labMother = mother->GetMother();
+            mother = (AliAODMCParticle*)mcArray->At(labMother);
+            if (!mother){
+                printf("no MC mother particle\n");
+                break;
+            }
+            pdgMother = TMath::Abs(mother->GetPdgCode());
+            if (pdgMother == pdgabs){
+                labMom[i] = labMother;
+                // keep sum of daughters' momenta, to check for mom conservation
+                pxSumDgs += part->Px();
+                pySumDgs += part->Py();
+                pzSumDgs += part->Pz();
+                break;
+            } else break;
+        }
+        if (labMom[i] == -1) return -1; // mother PDG not ok for this daughter
+    } // end loop on daughters
+    
+    // check if the candidate is signal
+    labMother = labMom[0];
+    // all labels have to be the same and !=-1
+    for (i = 0; i < ndg; i++){
+        if (labMom[i] == -1)        return -1;
+        if (labMom[i] != labMother) return -1;
+    }
+    
+    // check that all daughter PDGs are matched
+    for (i = 0; i < ndg; i++){
+        if (pdgUsed[i] == kFALSE) return -1;
+    }
+    
+    // check the number of daughters (we are not looking at resonant decay)
+    if(mother->GetNDaughters() != 2) return -1;
+    
+    // Check for mom conservation
+    mother = (AliAODMCParticle*)mcArray->At(labMother);
+    Double_t pxMother = mother->Px();
+    Double_t pyMother = mother->Py();
+    Double_t pzMother = mother->Pz();
+    if ((TMath::Abs(pxMother - pxSumDgs) / (TMath::Abs(pxMother) + 1.e-13)) > 0.005 ||
+        (TMath::Abs(pyMother - pySumDgs) / (TMath::Abs(pyMother) + 1.e-13)) > 0.005 ||
+        (TMath::Abs(pzMother - pzSumDgs) / (TMath::Abs(pzMother) + 1.e-13)) > 0.005)
+    {
+        // Only show warning if mom conservation is not within 0.5%. 
+        // This can be due to large propagation distance through magnetic field.
+        AliWarning(Form("Mom. cons. not within 0.5%% perc for decay pdgabs = %d daughters = %d",pdgabs,(Int_t)mother->GetNDaughters()));
+    }
+    return labMother;
 }
 //-----------------------------------------------------------------------------
 Int_t AliAODRecoDecayHF2Prong::MatchToMCB3Prong(Int_t pdgabs,Int_t pdgabs3prong, Int_t *pdgBDg,Int_t *pdgDg3prong, TClonesArray *mcArray) const
