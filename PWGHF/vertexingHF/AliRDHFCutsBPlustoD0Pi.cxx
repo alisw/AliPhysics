@@ -3005,6 +3005,129 @@ Int_t AliRDHFCutsBPlustoD0Pi::IsBplusPionSelectedMVA(TObject* obj,Int_t selectio
   return 1;
 
 }
+//---------------------------------------------------------------------------
+Int_t AliRDHFCutsBPlustoD0Pi::IsD0SelectedPreRecVtxMVA(AliAODRecoDecayHF2Prong* d, AliAODTrack* pion, AliAODVertex *primaryVertex, Double_t bz, Int_t selLevel = 0)
+{
+  //
+  // Preselection before reconstruction Bplus vertex to save time.
+  //
+  // selLevel =
+  //  0: Everything
+  //  1: PID of D0 daughters (using charge pion track. Always true when PID is off)
+  //  2: Invariant mass cut D0 (Update earlier D0forD0ptbin cut with correct D0/D0bar mass)
+  //  3: Bplus invariant mass cut without reconstruction vertex
+  //  4: Everything except Bplus invariant mass cut
+  //
+  // returnvalue:
+  //  1: selected
+  //  0: selected (but Wrong-Sign pair)
+  // -1: all other (rejected)
+
+  if (!fCutsRD) {
+    cout << "Cut matrice not inizialized. Exit..." << endl;
+    return -1;
+  }
+
+  if (!d) {
+    cout << "candidate D0 null" << endl;
+    return -1;
+  }
+
+  if (!pion) {
+    cout << "candidate Pion null" << endl;
+    return -1;
+  }
+
+  if (!primaryVertex) {
+    cout << "primaryVertex null" << endl;
+    return -1;
+  }
+    
+  if(selLevel > 4 || selLevel < 0){
+    AliWarning(Form("selLevel %d is not supported. return -1.",selLevel));
+    return -1;
+  }
+
+  Int_t returnvaluePID = 1;
+  Int_t returnvalueD0 = 1;
+  Int_t returnvalueBplus = 1;
+
+  // PID D0 daughters (check if the pions have the opposite charge)
+  if(selLevel == 0 || selLevel == 1 || selLevel == 4){
+    AliAODTrack* track0 = (AliAODTrack*)d->GetDaughter(0);
+    AliAODTrack* track1 = (AliAODTrack*)d->GetDaughter(1);
+
+    if (pion->Charge() == -1) {
+      if      ((SelectPID(track0, 2)) && (SelectPID(track1, 3))) returnvaluePID = 1;
+      else if ((SelectPID(track0, 3)) && (SelectPID(track1, 2))) returnvaluePID = 0;
+      else returnvaluePID = -1;
+    } else if (pion->Charge() == 1) {
+      if      ((SelectPID(track0, 3)) && (SelectPID(track1, 2))) returnvaluePID = 1;
+      else if ((SelectPID(track0, 2)) && (SelectPID(track1, 3))) returnvaluePID = 0;
+      else returnvaluePID = -1;
+    } else {
+      returnvaluePID = -1;
+    }
+  }
+
+  // D0 window - invariant mass cut
+  if(selLevel == 0 || selLevel == 2 || selLevel == 4){
+    Double_t pdgMassD0 = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+    Int_t ptbin = PtBinD0forD0ptbin(d->Pt());
+    if(ptbin == -1) returnvalueD0 = -1;
+
+    if (pion->Charge() == -1) {
+      Double_t invMassDifference = TMath::Abs(d->InvMassD0() - pdgMassD0);
+      if(!ApplyCutOnVariableD0forD0ptbinMVA(0, ptbin, invMassDifference)) returnvalueD0 = -1;
+    } else if (pion->Charge() == 1) {
+      Double_t invMassDifference = TMath::Abs(d->InvMassD0bar() - pdgMassD0);
+      if(!ApplyCutOnVariableD0forD0ptbinMVA(0, ptbin, invMassDifference)) returnvalueD0 = -1;
+    } else {
+      returnvalueD0 = -1;
+    }
+  }
+
+  // Bplus invariant mass window (using PV instead of SV, to speed thing up)
+  if(selLevel == 0 || selLevel == 3){
+    AliExternalTrackParam firstTrack;
+    firstTrack.CopyFromVTrack(pion);
+    AliExternalTrackParam secondTrack;
+    secondTrack.CopyFromVTrack(d);
+    
+    Double_t d0z0[2], covd0z0[3], d0[2], d0err[2];
+    firstTrack.PropagateToDCA(primaryVertex, bz, 100., d0z0, covd0z0);
+    d0[0] = d0z0[0]; d0err[0] = TMath::Sqrt(covd0z0[0]);
+    secondTrack.PropagateToDCA(primaryVertex, bz, 100., d0z0, covd0z0);
+    d0[1] = d0z0[0]; d0err[1] = TMath::Sqrt(covd0z0[0]);
+    
+    Double_t px[2],py[2],pz[2],momentum[3];
+    firstTrack.GetPxPyPz(momentum);
+    px[0] = momentum[0]; py[0] = momentum[1]; pz[0] = momentum[2];
+    secondTrack.GetPxPyPz(momentum);
+    px[1] = momentum[0]; py[1] = momentum[1]; pz[1] = momentum[2];
+    
+    Double_t xdummy = 0., ydummy = 0.;
+    Double_t dca = secondTrack.GetDCA(&firstTrack, bz, xdummy, ydummy);
+    
+    AliAODRecoDecayHF2Prong trackBPlus(primaryVertex, px, py, pz, d0, d0err, dca);
+    
+    UInt_t pdg2[2] = {211,421};
+    Double_t invMassBPlus = trackBPlus.InvMass(2,pdg2);
+    Double_t mBPlusPDG = TDatabasePDG::Instance()->GetParticle(521)->Mass();
+    Double_t invMassDifference = TMath::Abs(mBPlusPDG - invMassBPlus) - 0.1; //-0.1 to be on the safe side as invmass is not completely correct here, will be recomputed in IsSelected()
+
+    Int_t ptbin = PtBin(trackBPlus.Pt());
+    if (ptbin == -1) returnvalueBplus = -1;
+    else{
+      if(!ApplyCutOnVariableMVA(39, ptbin, invMassDifference)) returnvalueBplus = -1;
+    }
+  }
+
+  if(returnvaluePID == 1 && returnvalueD0 == 1 && returnvalueBplus == 1) return 1;
+  else if(returnvaluePID == 0 && returnvalueD0 == 1 && returnvalueBplus == 1) return 0;
+  else return -1;
+
+}
 //----------------------------------------------------------------------------------
 Bool_t AliRDHFCutsBPlustoD0Pi::IsInFiducialAcceptance(Double_t /*pt*/, Double_t y) const
 {

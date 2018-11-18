@@ -52,6 +52,7 @@ class AliRDHFCutsBPlustoD0Pi : public AliRDHFCuts
   Int_t IsBplusPionSelectedMVA(TObject* obj,Int_t selectionLevel, AliAODEvent* aod, AliAODVertex *primaryVertex, Double_t bz);
   Int_t IsD0FromBPlusSelectedMVA(Double_t ptBPlus, TObject* obj,Int_t selectionLevel, AliAODEvent* aod, AliAODVertex *primaryVertex, Double_t bz);
   Int_t IsD0forD0ptbinSelectedMVA(TObject* obj,Int_t selectionLevel, AliAODEvent* aod, AliAODVertex *primaryVertex, Double_t bz);
+  Int_t IsD0SelectedPreRecVtxMVA(AliAODRecoDecayHF2Prong* d, AliAODTrack* pion, AliAODVertex *primaryVertex, Double_t bz, Int_t selLevel);
 
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF *rd);
   virtual Int_t SelectPID(AliAODTrack *track, Int_t type);
