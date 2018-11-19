@@ -50,7 +50,9 @@ AliAnalysisTaskPHOSObjectCreator::AliAnalysisTaskPHOSObjectCreator(const char *n
   fBunchSpace(25.),
   fMCArrayESD(0x0),
   fMCArrayAOD(0x0),
-  fIsM4Excluded(kTRUE)
+  fIsM4Excluded(kTRUE),
+  fIsSingleSim(kFALSE),
+  fIsEmbedding(kFALSE)
 {
   // Constructor
   for(Int_t i=0;i<3;i++){
@@ -1023,6 +1025,21 @@ void AliAnalysisTaskPHOSObjectCreator::EstimateSTDCutEfficiency(TClonesArray *ar
   TLorentzVector p12;
   Double_t m12=0;
   Double_t energy=0;
+  Double_t weight = 1.;
+
+  if(fIsSingleSim || fIsEmbedding){
+    TF1 *f1 = new TF1("f1","[0]/TMath::TwoPi() * ([2]-1)*([2]-2)/([2]*[1]*([2]*[1] + 0.139*([2]-2) )) * TMath::Power(1+(TMath::Sqrt(x*x+0.139*0.139) - 0.139)/([2]*[1]),-[2])",0,100);//1/2pi x 1/Nev x 1/pT x d2N/dpTdy //TSallis pi0 in pp
+    f1->SetNpx(1000);
+    f1->SetParameters(2.70,0.132,6.64);
+    AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(0);//0 is always generated particle in single simulation.
+    Double_t pT = p->Pt();
+    weight = pT * f1->Eval(pT);
+
+    delete f1;
+    f1 = 0x0;
+  }
+
+  AliInfo(Form("weight is %e",weight));
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)array->At(i1);
@@ -1039,11 +1056,14 @@ void AliAnalysisTaskPHOSObjectCreator::EstimateSTDCutEfficiency(TClonesArray *ar
       m12 = p12.M();
       energy = ph2->Energy();
 
-      fHistoMggvsEProbe->Fill(m12,energy);
-      if(PassSTDCut(cluster)) fHistoMggvsEPassingProbe->Fill(m12,energy);
+      fHistoMggvsEProbe->Fill(m12,energy,weight);
+      if(PassSTDCut(cluster)) fHistoMggvsEPassingProbe->Fill(m12,energy,weight);
 
     }//end of ph2
 
   }//end of ph1
 
 }
+
+
+
