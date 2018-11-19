@@ -14,6 +14,7 @@
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliMCEventHandler.h"
+#include "AliAODv0KineCuts.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
 #include "AliCentrality.h"
@@ -39,7 +40,7 @@ ClassImp(AliAnalysisTaskHFEIPDistribution)
 
 //________________________________________________________________________
 AliAnalysisTaskHFEIPDistribution::AliAnalysisTaskHFEIPDistribution()
-  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0)
+  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fAODV0Cuts(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0)
 {
   // default Constructor
   // Define input and output slots here
@@ -68,8 +69,7 @@ AliAnalysisTaskHFEIPDistribution::AliAnalysisTaskHFEIPDistribution()
 
 //________________________________________________________________________
 AliAnalysisTaskHFEIPDistribution::AliAnalysisTaskHFEIPDistribution(const char *name)
-  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0),
-  EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0)
+  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fAODV0Cuts(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0)
 {
   // HFE cuts
     /*hfetrackCuts = new AliHFEcuts("V0trackCuts", "Track Cuts for tagged track Analysis");
@@ -133,10 +133,15 @@ void AliAnalysisTaskHFEIPDistribution::UserCreateOutputObjects()
     fpTIP3050IP =  new TH2D("pTIP3050IP", "", 18, ptbinningX, 400, -0.2, 0.2);
     fpTIP3050OOP =  new TH2D("pTIP3050OOP", "", 18, ptbinningX, 400, -0.2, 0.2);
 
-    EventSelectionSteps = new TH1D(Form("EventSelectionSteps"),Form("EventSelectionSteps"), 10, -0.5, 9.5);
+    fPionV0pTRNoCuts = new TH2D(Form("fPionV0pTRNoCuts"),Form("fPionV0pTRNoCuts"), 18, ptbinningX, 80, 0., 20.);
+    fPionV0pTRWithCuts = new TH2D(Form("fPionV0pTRWithCuts"),Form("fPionV0pTRWithCuts"), 18, ptbinningX, 80, 0., 20.);
+    fPionV0pTTPC = new TH2D(Form("fPionV0pTTPC"),Form("fPionV0pTTPC"), 18, ptbinningX, 200, -10., 10.);
+    fPionV0pTTPCWithCuts = new TH2D(Form("fPionV0pTTPCWithCuts"),Form("fPionV0pTTPCWithCuts"), 18, ptbinningX, 200, -10., 10.);
 
+    EventSelectionSteps = new TH1D(Form("EventSelectionSteps"),Form("EventSelectionSteps"), 10, -0.5, 9.5);
     
     fExtraCuts = new AliHFEextraCuts("hfeExtraCuts","HFE Extra Cuts");
+    fAODV0Cuts = new AliAODv0KineCuts();
     
     fOutputContainer = new TObjArray(1);
     fOutputContainer->SetName(GetName());
@@ -157,6 +162,10 @@ void AliAnalysisTaskHFEIPDistribution::UserCreateOutputObjects()
     fOutputContainer->Add(fpTIP3050IP);
     fOutputContainer->Add(fpTIP3050OOP);
     fOutputContainer->Add(EventSelectionSteps);
+    fOutputContainer->Add(fPionV0pTRNoCuts);
+    fOutputContainer->Add(fPionV0pTRWithCuts);
+    fOutputContainer->Add(fPionV0pTTPC);
+    fOutputContainer->Add(fPionV0pTTPCWithCuts);
 
     PostData(1, fOutputContainer);
     
@@ -226,6 +235,38 @@ Bool_t AliAnalysisTaskHFEIPDistribution::PassesElectronPID(AliAODTrack *track, A
     if(TMath::Abs(pid->NumberOfSigmasTOF(track, AliPID::kElectron)>3.))return kFALSE;
     return kTRUE;
 }
+Bool_t AliAnalysisTaskHFEIPDistribution::PassesMinimalTrackCuts(AliAODTrack *track)
+{
+    if(TMath::Abs(track->Eta())>0.8) return kFALSE;
+    ULong_t status = track->GetStatus();
+    // Basic tracking
+    if(!((status & AliVTrack::kITSrefit) && (status & AliVTrack::kTPCrefit))) return kFALSE;
+    return kTRUE;
+}
+
+Bool_t AliAnalysisTaskHFEIPDistribution::PassesITSTrackCuts(AliAODTrack *track)
+{
+    if(TMath::Abs(track->Eta())>0.8) return kFALSE;
+    ULong_t status = track->GetStatus();
+    // Basic tracking
+    if(!((status & AliVTrack::kITSrefit) && (status & AliVTrack::kTPCrefit))) return kFALSE;
+    // ITS tracking
+    if(!(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1) && track->GetITSNcls()>=4)) return kFALSE;
+    Int_t nclustersITS(track->GetITSclusters(NULL)),
+          nclustersTPC(track->GetTPCNcls()),
+          nclustersTPCall(track->GetTPCClusterMap().CountBits()),
+          nclustersTPCshared(0);
+    // ITS Quality
+    if(track->GetITSchi2()/double(track->GetITSNcls()) > 10.) return kFALSE; 
+      UChar_t ITSShared = track->GetITSSharedClusterMap();
+      Int_t nSharedITS = 0;
+      for(int i=0;i<6;i++)
+          if((ITSShared >> i) & 1)
+              nSharedITS++;
+    if(nSharedITS > 3) return kFALSE; 
+    return kTRUE;
+}
+
 
 //________________________________________________________________________
 void AliAnalysisTaskHFEIPDistribution::Process(AliAODEvent *const aodEvent)
@@ -300,6 +341,12 @@ void AliAnalysisTaskHFEIPDistribution::Process(AliAODEvent *const aodEvent)
   Double_t qVx, qVy;
   double epCorrArray[2];
   double epCorr;
+
+  AliAODv0 * v0;
+  AliAODTrack* V0Daughter[2];
+  Int_t V0MotherPdg, V0Daughter1Pdg, V0Daughter2Pdg;
+  double recoRadius=0.;
+
   if(analyzeEvent)
   {
 
@@ -356,7 +403,30 @@ void AliAnalysisTaskHFEIPDistribution::Process(AliAODEvent *const aodEvent)
 
           
       }
-      
+    fAODV0Cuts->SetEvent(aodEvent);
+    for(int i= 0;i<aodEvent->GetNumberOfV0s();i++)
+    {
+      //
+      v0 = aodEvent->GetV0(i);
+      //if(!PassesTrackCuts(track));
+      if(fAODV0Cuts->ProcessV0(v0, V0MotherPdg, V0Daughter1Pdg, V0Daughter2Pdg))
+      {
+        recoRadius = v0->RadiusSecVtx();
+        if(TMath::Abs(V0MotherPdg)==310 && recoRadius>0.5)
+        {
+          V0Daughter[0] = dynamic_cast<AliAODTrack *> (v0->GetSecondaryVtx()->GetDaughter(0)); // This is how to get the daughter particles in AODs, apparently
+          V0Daughter[1] = dynamic_cast<AliAODTrack *> (v0->GetSecondaryVtx()->GetDaughter(1));
+          if(PassesMinimalTrackCuts(V0Daughter[0])) fPionV0pTRNoCuts->Fill(V0Daughter[0]->Pt(), recoRadius);
+          if(PassesMinimalTrackCuts(V0Daughter[1])) fPionV0pTRNoCuts->Fill(V0Daughter[1]->Pt(), recoRadius);
+          if(PassesITSTrackCuts(V0Daughter[0])) fPionV0pTRWithCuts->Fill(V0Daughter[0]->Pt(), recoRadius);
+          if(PassesITSTrackCuts(V0Daughter[1])) fPionV0pTRWithCuts->Fill(V0Daughter[1]->Pt(), recoRadius);
+          if(PassesMinimalTrackCuts(V0Daughter[0])) fPionV0pTTPC->Fill(V0Daughter[0]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[0], AliPID::kPion));
+          if(PassesMinimalTrackCuts(V0Daughter[1])) fPionV0pTTPC->Fill(V0Daughter[1]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[1], AliPID::kPion));
+          if(PassesMinimalTrackCuts(V0Daughter[0]) && V0Daughter[0]->GetTPCNcls()>=110 && V0Daughter[0]->GetTPCsignalN()>=80) fPionV0pTTPCWithCuts->Fill(V0Daughter[0]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[0], AliPID::kPion));
+          if(PassesMinimalTrackCuts(V0Daughter[1]) && V0Daughter[1]->GetTPCNcls()>=110 && V0Daughter[1]->GetTPCsignalN()>=80) fPionV0pTTPCWithCuts->Fill(V0Daughter[1]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[1], AliPID::kPion));
+        }
+      }
+    }
   }
   
 
