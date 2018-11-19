@@ -651,7 +651,7 @@ Int_t DoReceive(aliZMQmsg::iterator block, void* socket)
   if (fVerbose) Printf("in: data: %s, size: %zu bytes", dataTopic.Description().c_str(),
                        zmq_msg_size(block->second));
   TObject* object = NULL;
-  alizmq_msg_iter_data(block, object);
+  alizmq_msg_iter_data_hlt(block, object);
   if (!object) {
     if (fVerbose) {printf("message does not contain a TObject!\n");}
     return 0;

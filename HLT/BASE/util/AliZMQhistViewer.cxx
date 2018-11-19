@@ -21,7 +21,7 @@
 #include "TObjString.h"
 #include "TDirectory.h"
 #include "TList.h"
-#include "AliZMQhelpers.h"
+#include "AliHLTZMQhelpers.h"
 #include "TMessage.h"
 #include "TSystem.h"
 #include "TApplication.h"
@@ -228,7 +228,7 @@ int AliZMQhistViewer::GetData(void* socket)
     //incoming ROOT objects
     {
       TObject* tmp = NULL;
-      alizmq_msg_iter_data(i, tmp);
+      alizmq_msg_iter_data_hlt(i, tmp);
       if (!tmp) continue;
 
       std::vector<TObject*> listOfObjects; listOfObjects.reserve(100);

@@ -31,7 +31,6 @@
 #include "TClass.h"
 #include "TSystem.h"
 #include "TList.h"
-#include "AliHLTMessage.h"
 
 #include <netinet/in.h>
 
@@ -836,11 +835,7 @@ int AliZMQhelpers::alizmq_msg_iter_data(aliZMQmsg::iterator it, TObject*& object
   void* data = zmq_msg_data(message);
   object=NULL;
 
-  if (topic->fDataSerialization==kSerializationHLTROOT) //serialized by the HLT chain
-  {
-    object = AliHLTMessage::Extract(data,size);
-  }
-  else if (topic->fDataSerialization==kSerializationROOT) //serialized by the ZMQ framework or ROOT
+  if (topic->fDataSerialization==kSerializationROOT) //serialized by the ZMQ framework or ROOT
   {
     object = ZMQTMessage::Extract(data, size);
   }

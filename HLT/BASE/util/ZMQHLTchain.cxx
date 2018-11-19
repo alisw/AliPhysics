@@ -255,7 +255,7 @@ int Run()
         if (alizmq_msg_iter_check_id(i, kAliHLTDataTypeGlobalTrigger)==0)
         {
           TObject* obj = NULL;
-          alizmq_msg_iter_data(i, obj);
+          alizmq_msg_iter_data_hlt(i, obj);
           if (obj) { trgMask = GetTriggerClasses(obj); }
           delete obj;
           if (fVerbose) printf("block kAliHLTDataTypeGlobalTrigger found\n");
@@ -289,7 +289,7 @@ int Run()
         else if (alizmq_msg_iter_check_id(i, kAliHLTDataTypeCDBEntry)==0)
         {
           printf("GRP received\n");
-          alizmq_msg_iter_data(i, grpEntry);
+          alizmq_msg_iter_data_hlt(i, grpEntry);
         }
         //get the INFO block
         else if (alizmq_msg_iter_check_id(i, "INFO")==0)
