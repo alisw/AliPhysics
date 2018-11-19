@@ -2,7 +2,7 @@
 // $Id$
 #ifndef ALIHLTTPCDATACOMPRESSIONCOMPONENT_H
 #define ALIHLTTPCDATACOMPRESSIONCOMPONENT_H
-//* This file is property of and copyright by the                          * 
+//* This file is property of and copyright by the                          *
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
@@ -48,7 +48,7 @@ class AliHLTTPCReverseTransformInfoV1;
  *  -  kAliHLTDataTypeTrack|kAliHLTDataOriginTPC
  * Output Data Types: <br>
  *  -  AliHLTTPCDefinitions::RemainingClustersCompressedDataType());
- *  -  AliHLTTPCDefinitions::RemainingClusterIdsDataType());	 
+ *  -  AliHLTTPCDefinitions::RemainingClusterIdsDataType());
  *  -  AliHLTTPCDefinitions::ClusterIdTracksDataType()
  *  -  AliHLTTPCDefinitions::ClusterTracksCompressedDataType()
  *  -  AliHLTTPCDefinitions::RawClustersDataTypeNotCompressed()); //Used if we cannot compress
@@ -58,13 +58,13 @@ class AliHLTTPCReverseTransformInfoV1;
  * <h3>Format v1</h3>
  * Format v1 stores the cluster parameters with the following precision:
  * <pre>
- *   padrow number & local padrow in partition    &   6 \\ 
- *   pad position  & pitch 0.4/0.6 cm -> 1/60     &  14 \\ 
- *   timebin       & 0.25cm/timebin   -> 1/25     &  15 \\ 
- *   sigmaY2       &                              &   8 \\ 
- *   sigmaZ2       &                              &   8 \\ 
- *   total charge  & encoded 10bit number         &   8 \\ 
- *   max charge    & encoded 16bit number         &  11 \\ 
+ *   padrow number & local padrow in partition    &   6 \\
+ *   pad position  & pitch 0.4/0.6 cm -> 1/60     &  14 \\
+ *   timebin       & 0.25cm/timebin   -> 1/25     &  15 \\
+ *   sigmaY2       &                              &   8 \\
+ *   sigmaZ2       &                              &   8 \\
+ *   total charge  & encoded 10bit number         &   8 \\
+ *   max charge    & encoded 16bit number         &  11 \\
  * <pre>
  * For the padrow, only the difference to the last padrow is stored. The
  * clusters are ordered by padrow such that there are only positive differences.
@@ -124,7 +124,7 @@ public:
     kCompressionModeV1TrackModel,
     kCompressionModeV2,
     kCompressionModeV2TrackModel,
-    kNofCompressionModes    
+    kNofCompressionModes
   };
 
   enum {
@@ -168,18 +168,18 @@ public:
 #ifdef HAVE_ALITPCCOMMON
   /// calculate correction factor and offset for a linear approximation of the
   /// drift time transformation by just probing the range of timebins
-  static int CalculateDriftTimeTransformation(AliHLTTPCClusterTransformation& transform, int slice, int padrow,
+  /*static int CalculateDriftTimeTransformation(AliHLTTPCClusterTransformation& transform, int slice, int padrow,
 				       float& m, float& n, AliHLTTPCReverseTransformInfoV1* rev = NULL);
   static int CalculateDriftTimeTransformation(AliHLTTPCFastTransform& transform, int slice, int padrow,
-				       float& m, float& n, AliHLTTPCReverseTransformInfoV1* rev = NULL);
+				       float& m, float& n, AliHLTTPCReverseTransformInfoV1* rev = NULL);*/
 #endif
 
 protected:
   /// inherited from AliHLTProcessor: data processing
-  int DoEvent( const AliHLTComponentEventData& evtData, 
-	       const AliHLTComponentBlockData* blocks, 
+  int DoEvent( const AliHLTComponentEventData& evtData,
+	       const AliHLTComponentBlockData* blocks,
 	       AliHLTComponentTriggerData& trigData,
-	       AliHLTUInt8_t* outputPtr, 
+	       AliHLTUInt8_t* outputPtr,
 	       AliHLTUInt32_t& size,
 	       AliHLTComponentBlockDataList& outputBlocks );
   using AliHLTProcessor::DoEvent;
@@ -234,7 +234,7 @@ private:
   int fMode; //! mode
   int fDeflaterMode; //! deflater mode
   int fVerificationMode; //! mode for verification and unit tests
-  int fProvideClusterIds; //! provide blocks of HLT cluster ids 
+  int fProvideClusterIds; //! provide blocks of HLT cluster ids
   int fCreateFlags; //! Store cluster flags in compressed data
 
   float fMaxDeltaPad; //! maximum deviation in pad
