@@ -1012,7 +1012,7 @@ Int_t AliAnalysisTaskPHOSObjectCreator::FindPrimary(AliCaloPhoton *ph,  Bool_t&s
 Bool_t AliAnalysisTaskPHOSObjectCreator::PassSTDCut(AliVCluster *cluster)
 {
   if(cluster->GetM20() > 2.0) return kFALSE;
-  //if(cluster->E() > 1.0 && cluster->GetM02() < 0.1) return kFALSE;
+  if(cluster->E() > 1.0 && cluster->GetM02() < 0.1) return kFALSE;
   if(cluster->E() > 1.0 && cluster->GetNCells() < 2.5) return kFALSE;
   return kTRUE;
 
@@ -1044,7 +1044,7 @@ void AliAnalysisTaskPHOSObjectCreator::EstimateSTDCutEfficiency(TClonesArray *ar
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)array->At(i1);
     if(ph1->GetNsigmaCoreDisp() > 2.5) continue;
-    if(ph1->Energy() < 0.5) continue;
+    if(ph1->Energy() < 1.0) continue;//to get high S/B
 
     for(Int_t i2=0;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)array->At(i2);
