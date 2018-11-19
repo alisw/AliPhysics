@@ -77,7 +77,7 @@ void AliAodSkimTask::CleanTrack(AliAODTrack *t)
     AliAODPid *pid = t->GetDetPid();
     delete pid;
     t->SetDetPID(0);
-  } else {
+  } else if (t->GetDetPid()) {
     AliAODPid *pid = t->GetDetPid();
     AliAODPid *nid = new AliAODPid;
     nid->SetTPCsignal(pid->GetTPCsignal());
@@ -85,8 +85,8 @@ void AliAodSkimTask::CleanTrack(AliAODTrack *t)
     nid->SetTPCmomentum(pid->GetTPCmomentum());
     nid->SetTPCTgl(pid->GetTPCTgl());
     /* Not used and getter not implemented
-    AliTPCdEdxInfo *dedx = new AliTPCdEdxInfo(pid->GetTPCdEdxInfo());
-    nid->SetTPCdEdxInfo(dedx); */
+       AliTPCdEdxInfo *dedx = new AliTPCdEdxInfo(pid->GetTPCdEdxInfo());
+       nid->SetTPCdEdxInfo(dedx); */
     nid->SetTOFsignal(pid->GetTOFsignal());
     Double_t val[5];
     pid->GetTOFpidResolution(val);
