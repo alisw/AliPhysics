@@ -1711,6 +1711,7 @@ void AliAnalysisTaskESDfilter::ConvertCaloTrigger(TString calo, const AliESDEven
   };
   aodTrigger.SetL1V0(v0);	
   aodTrigger.SetL1FrameMask(esdTrigger.GetL1FrameMask());
+  for(int i = 0; i < 2; i++) aodTrigger.SetMedian(i, esdTrigger.GetMedian(i));
 }
 
 //______________________________________________________________________________
