@@ -46,11 +46,11 @@ const ULong64_t AliZMQhelpers::kSerializationHLTROOT = CharArr2uint64("HLTROOT")
 const ULong64_t AliZMQhelpers::kSerializationROOT = CharArr2uint64("ROOT   ");
 const ULong64_t AliZMQhelpers::kSerializationNONE = CharArr2uint64("NONE   ");
 
-const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeStreamerInfos("ROOTSTRI","***\n",AliZMQhelpers::kSerializationROOT);
-const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeInfo("INFO____","***\n",AliZMQhelpers::kSerializationNONE);
-const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeConfig("CONFIG__","***\n",AliZMQhelpers::kSerializationNONE);
-const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeTObject("ROOTTOBJ","***\n",AliZMQhelpers::kSerializationROOT);
-const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeTH1("ROOTHIST","***\n",AliZMQhelpers::kSerializationROOT);
+const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeStreamerInfos("ROOTSTRI","***\n",0,AliZMQhelpers::kSerializationROOT);
+const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeInfo("INFO____","***\n",0,AliZMQhelpers::kSerializationNONE);
+const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeConfig("CONFIG__","***\n",0,AliZMQhelpers::kSerializationNONE);
+const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeTObject("ROOTTOBJ","***\n",0,AliZMQhelpers::kSerializationROOT);
+const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeTH1("ROOTHIST","***\n",0,AliZMQhelpers::kSerializationROOT);
 
 //_______________________________________________________________________________________
 void* AliZMQhelpers::alizmq_context()

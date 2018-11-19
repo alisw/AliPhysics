@@ -171,12 +171,12 @@ struct DataTopic : public BaseDataTopic
   }
 
   //ctor
-  DataTopic(const char* id, const char* origin, int spec )
+  DataTopic(const char* id, const char* origin, int spec, ULong64_t serialization )
     : BaseDataTopic(sizeof(DataTopic), fgkDataTopicDescription, fgkTopicSerialization)
     , fDataDescription()
     , fDataOrigin(0)
     , fReserved(0)
-    , fDataSerialization(0)
+    , fDataSerialization(serialization)
     , fSpecification(spec)
     , fPayloadSize(0)
   {
