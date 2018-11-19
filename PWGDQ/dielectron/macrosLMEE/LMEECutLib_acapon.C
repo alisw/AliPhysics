@@ -291,7 +291,7 @@ static TH3D LMEECutLib::SetEtaCorrectionTPCTTree( Int_t corrXdim, Int_t corrYdim
 
 }
 
-static TH3D LMEECutLib::SetEtaCorrectionITSTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise, Int_t selection, Bool_t hasMC) {
+TH3D LMEECutLib::SetEtaCorrectionITSTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise, Int_t selection, Bool_t hasMC){
 	
 
   ::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> SetEtaCorrectionITSTTree() >>>>>>>>>>>>>>>>>>>>>> ");
@@ -418,7 +418,7 @@ static TH3D LMEECutLib::SetEtaCorrectionTOFTTree( Int_t corrXdim, Int_t corrYdim
 
   std::cout << "starting LMEECutLib::SetEtaCorrectionTOFTTree()\n";
   std::string file_name;
-	if(hasMC){
+	if(!hasMC){
 		file_name = "/home/aaron/Data/diElecOutput/PIDcalibration/outputTOF.root";
 	}else{
 		file_name = "/home/aaron/Data/diElecOutput/PIDcalibration/outputTOF_MC.root";
