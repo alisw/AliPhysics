@@ -40,7 +40,7 @@ public:
     kLambda = 8
   };
 
-  AliFemtoCorrFctnDEtaDPhiSimple(const char *title, const int aPhiBins, const int aEtaBins);
+  AliFemtoCorrFctnDEtaDPhiSimple(const char *title, const int aPhiBins=20, const int aEtaBins=20);
   AliFemtoCorrFctnDEtaDPhiSimple(const AliFemtoCorrFctnDEtaDPhiSimple &aCorrFctn);
   virtual ~AliFemtoCorrFctnDEtaDPhiSimple();
 
