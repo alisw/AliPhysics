@@ -583,10 +583,12 @@ class AliReducedVarManager : public TObject {
     kDeltaTheta,
     kDeltaEta,
     kDeltaEtaAbs,
-    kTriggerPt,     // pt of J/psi candidate
-    kTriggerRap,    // rapidity of J/psi candidate
-    kTriggerRapAbs, // absolute rapidity of J/psi candidate
-    kAssociatedPt,  // pt of associated track
+    kTriggerPt,       // pt of J/psi candidate
+    kTriggerRap,      // rapidity of J/psi candidate
+    kTriggerRapAbs,   // absolute rapidity of J/psi candidate
+    kAssociatedPt,    // pt of associated track
+    kAssociatedEta,   // eta of associated track
+    kAssociatedPhi,   // phi of associated track
     // TRD GTU online tracks
     kTRDGTUtracklets,   // TRD online track #tracklets
     kTRDGTUlayermask,   // TRD online track hit in layer0 yes/no
@@ -745,7 +747,7 @@ class AliReducedVarManager : public TObject {
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
-  ClassDef(AliReducedVarManager, 5);
+  ClassDef(AliReducedVarManager, 6);
 };
 
 #endif

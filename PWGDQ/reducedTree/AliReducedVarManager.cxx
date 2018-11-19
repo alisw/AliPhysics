@@ -2082,6 +2082,8 @@ void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc
   if(fgUsedVars[kTriggerRap] && (trig->IsA()==PAIR::Class())) 	  values[kTriggerRap]     = ((PAIR*)trig)->Rapidity();
   if(fgUsedVars[kTriggerRapAbs] && (trig->IsA()==PAIR::Class()))  values[kTriggerRapAbs]  = TMath::Abs(((PAIR*)trig)->Rapidity());
   if(fgUsedVars[kAssociatedPt]) values[kAssociatedPt] = assoc->Pt();
+  if(fgUsedVars[kAssociatedEta]) values[kAssociatedEta] = assoc->Eta();
+  if(fgUsedVars[kAssociatedPhi]) values[kAssociatedPhi] = assoc->Phi();
 
   if(fgUsedVars[kDeltaPhi]) {
     Double_t delta = trig->Phi() - assoc->Phi();
@@ -2853,6 +2855,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kTriggerRap]    = "#it{y} trigger particle";    fgVariableUnits[kTriggerRap]    = "";
   fgVariableNames[kTriggerRapAbs] = "|#it{y}| trigger particle";  fgVariableUnits[kTriggerRapAbs] = "";
   fgVariableNames[kAssociatedPt]  = "p_{T} associated particle";  fgVariableUnits[kAssociatedPt]  = "GeV/c";
+  fgVariableNames[kAssociatedEta] = "#eta associated particle";   fgVariableUnits[kAssociatedEta] = "";
+  fgVariableNames[kAssociatedPhi] = "#varphi associated particle";fgVariableUnits[kAssociatedPhi] = "rad.";
 }
 
 
