@@ -40,7 +40,7 @@ public:
     kLambda = 8
   };
 
-  AliFemtoCorrFctnDEtaDPhiSimple(const char *title, const int &aPhiBins, const int &aEtaBins);
+  AliFemtoCorrFctnDEtaDPhiSimple(const char *title, const int aPhiBins, const int aEtaBins);
   AliFemtoCorrFctnDEtaDPhiSimple(const AliFemtoCorrFctnDEtaDPhiSimple &aCorrFctn);
   virtual ~AliFemtoCorrFctnDEtaDPhiSimple();
 
@@ -60,7 +60,9 @@ public:
 
   void WriteHistos();
   virtual TList *GetOutputList();
-  virtual AliFemtoCorrFctn *Clone() const { return new AliFemtoCorrFctnDEtaDPhiSimple(*this); }
+
+  virtual AliFemtoCorrFctn *Clone() const
+    { return new AliFemtoCorrFctnDEtaDPhiSimple(*this); }
 
 protected:
   TH2D *fDPhiDEtaNumerator;   // Numerator of dEta dPhi function
