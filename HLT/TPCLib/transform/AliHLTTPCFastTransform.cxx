@@ -16,8 +16,8 @@
 
 /** @file   AliHLTTPCFastTransform.cxx
     @author Sergey Gorbubnov
-    @date   
-    @brief 
+    @date
+    @brief
 */
 
 #include "AliHLTTPCFastTransform.h"
@@ -61,13 +61,13 @@ AliHLTTPCFastTransform::AliHLTTPCFastTransform()
   // or
   // refer to README to build package
   // or
-  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt    
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
   for( Int_t i=0; i<fkNSec; i++)
     for( Int_t j=0; j<fkNRows; j++ ) fRows[i][j] = NULL;
 }
 
-AliHLTTPCFastTransform::~AliHLTTPCFastTransform() 
-{ 
+AliHLTTPCFastTransform::~AliHLTTPCFastTransform()
+{
   // see header file for class documentation
   DeInit();
 }
@@ -79,7 +79,7 @@ void  AliHLTTPCFastTransform::DeInit()
 
   for( Int_t i=0; i<fkNSec; i++){
     for( Int_t j=0; j<fkNRows; j++ ){
-      delete fRows[i][j]; 
+      delete fRows[i][j];
       fRows[i][j] = 0;
     }
   }
@@ -94,23 +94,23 @@ void  AliHLTTPCFastTransform::DeInit()
 
 Int_t  AliHLTTPCFastTransform::Init( AliTPCTransform *transform, Long_t TimeStamp, int useOrigTransform )
 {
-  // Initialisation 
+  // Initialisation
 
   DeInit();
   fInitialisationMode = 1;
   fUseOrigTransform = useOrigTransform;
 
-  AliTPCcalibDB* pCalib=AliTPCcalibDB::Instance();  
+  AliTPCcalibDB* pCalib=AliTPCcalibDB::Instance();
   if(!pCalib ) return Error( -1, "AliHLTTPCFastTransform::Init: No TPC calibration instance found");
 
-  AliTPCParam *tpcParam = pCalib->GetParameters(); 
+  AliTPCParam *tpcParam = pCalib->GetParameters();
   if( !tpcParam ) return Error( -2, "AliHLTTPCFastTransform::Init: No TPCParam object found");
 
-  if( !transform ) transform = pCalib->GetTransform();    
+  if( !transform ) transform = pCalib->GetTransform();
   if( !transform ) return Error( -3, "AliHLTTPCFastTransform::Init: No TPC transformation found");
  
   tpcParam->Update();
-  tpcParam->ReadGeoMatrices();  
+  tpcParam->ReadGeoMatrices();
 
 
   // at the moment initialise all the rows
@@ -118,7 +118,7 @@ Int_t  AliHLTTPCFastTransform::Init( AliTPCTransform *transform, Long_t TimeStam
   int nSec = tpcParam->GetNSector();
   if( nSec>fkNSec ) nSec = fkNSec;
 
-  for( Int_t i=0; i<nSec; i++ ){     
+  for( Int_t i=0; i<nSec; i++ ){
     int nRows = tpcParam->GetNRow(i);
     if( nRows>fkNRows ) nRows = fkNRows;
     for( int j=0; j<nRows; j++){
@@ -139,7 +139,7 @@ Int_t  AliHLTTPCFastTransform::Init( AliTPCTransform *transform, Long_t TimeStam
 
     fAlignment = new Float_t [fkNSec*21];
     for( Int_t iSec=0; iSec<fkNSec; iSec++ ){
-      Float_t *t = fAlignment + iSec*21, *r = t+3, *v = t+12;      
+      Float_t *t = fAlignment + iSec*21, *r = t+3, *v = t+12;
       for( int i=0; i<21; i++ ) t[i]=0.f;
       r[0] = r[4] = r[8] = 1.f;
       v[0] = v[4] = v[8] = 1.f;
@@ -157,7 +157,7 @@ Int_t  AliHLTTPCFastTransform::Init( AliTPCTransform *transform, Long_t TimeStam
 	  CalcAdjugateRotation(r,v,1);
 	}
       }
-    } 
+    }
   }
   
   return SetCurrentTimeStamp( TimeStamp );
@@ -224,10 +224,10 @@ Int_t AliHLTTPCFastTransform::ReadFromObject( const AliHLTTPCFastTransformObject
   fTimeBorder1 = obj.GetTimeSplit1();
   fTimeBorder2 = obj.GetTimeSplit2();
 
-  AliTPCcalibDB* pCalib=AliTPCcalibDB::Instance();  
+  AliTPCcalibDB* pCalib=AliTPCcalibDB::Instance();
   if(!pCalib ) return Error( -1, "AliHLTTPCFastTransform::Init: No TPC calibration instance found");
 
-  AliTPCParam *tpcParam = pCalib->GetParameters(); 
+  AliTPCParam *tpcParam = pCalib->GetParameters();
   if( !tpcParam ) return Error( -2, "AliHLTTPCFastTransform::Init: No TPCParam object found");
 
   tpcParam->Update();
@@ -261,7 +261,7 @@ Int_t AliHLTTPCFastTransform::ReadFromObject( const AliHLTTPCFastTransformObject
   
   const TArrayF &alignment =obj.GetAlignment();
   delete[] fAlignment;
-  fAlignment = 0;  
+  fAlignment = 0;
   if( alignment.GetSize() == fkNSec*21 ){
     fAlignment = new Float_t [fkNSec*21];
     for( Int_t i=0; i<fkNSec*21; i++ ) fAlignment[i] = alignment[i];
@@ -327,16 +327,16 @@ Int_t AliHLTTPCFastTransform::SetCurrentTimeStamp( Long_t TimeStamp )
   Long_t lastTS = fLastTimeStamp;
   fLastTimeStamp = -1; // deinitialise
 
-  if( !fOrigTransform ) return Error( -1, "AliHLTTPCFastTransform::SetCurrentTimeStamp: TPC transformation has not been set properly"); 
+  if( !fOrigTransform ) return Error( -1, "AliHLTTPCFastTransform::SetCurrentTimeStamp: TPC transformation has not been set properly");
 
-  AliTPCcalibDB* pCalib=AliTPCcalibDB::Instance();  
-  if(!pCalib ) return Error( -2, "AliHLTTPCFastTransform::SetCurrentTimeStamp: No TPC calibration found"); 
+  AliTPCcalibDB* pCalib=AliTPCcalibDB::Instance();
+  if(!pCalib ) return Error( -2, "AliHLTTPCFastTransform::SetCurrentTimeStamp: No TPC calibration found");
   
-  AliTPCParam *tpcParam = pCalib->GetParameters(); 
-  if( !tpcParam ) return  Error( -3, "AliHLTTPCFastTransform::SetCurrentTimeStamp: No TPCParam object found"); 
+  AliTPCParam *tpcParam = pCalib->GetParameters();
+  if( !tpcParam ) return  Error( -3, "AliHLTTPCFastTransform::SetCurrentTimeStamp: No TPCParam object found");
   
   
-  if( TimeStamp<0  ) return 0; 
+  if( TimeStamp<0  ) return 0;
 
   fLastTimeStamp = lastTS;
 
@@ -345,7 +345,7 @@ Int_t AliHLTTPCFastTransform::SetCurrentTimeStamp( Long_t TimeStamp )
    
   if (fUseCorrectionMap) fOrigTransform->SetCorrectionMapMode(kTRUE); //If the simulation set this to false to simulate distortions, we need to reverse it for the transformation
   fOrigTransform->SetCurrentTimeStamp( static_cast<UInt_t>(TimeStamp) );
-  fLastTimeStamp = TimeStamp;  
+  fLastTimeStamp = TimeStamp;
   
   if (fUseOrigTransform) return(0);
 
@@ -355,14 +355,14 @@ Int_t AliHLTTPCFastTransform::SetCurrentTimeStamp( Long_t TimeStamp )
   Int_t is[]={0};
   bool sign = 0;
   for( fLastTimeBin=0; fLastTimeBin<nTimeBins; fLastTimeBin++){
-    // static cast is okay since fLastTimeBin has limited value range  
+    // static cast is okay since fLastTimeBin has limited value range
     Double_t xx[]={0,0,static_cast<Double_t>(fLastTimeBin)};
     fOrigTransform->Transform(xx,is,0,1);
     bool s = (xx[2]>=0);
     if( fLastTimeBin==0 ) sign = s;
     else if( sign!=s ){
       fLastTimeBin--;
-      break;    
+      break;
     }
   }
   fTimeBorder1 = 60;
@@ -371,7 +371,7 @@ Int_t AliHLTTPCFastTransform::SetCurrentTimeStamp( Long_t TimeStamp )
   int nSec = tpcParam->GetNSector();
   if( nSec>fkNSec ) nSec = fkNSec;
 
-  for( Int_t i=fMinInitSec; i<fMaxInitSec; i++ ){     
+  for( Int_t i=fMinInitSec; i<fMaxInitSec; i++ ){
     int nRows = tpcParam->GetNRow(i);
     if( nRows>fkNRows ) nRows = fkNRows;
     for( int j=0; j<nRows; j++){
@@ -384,8 +384,9 @@ Int_t AliHLTTPCFastTransform::SetCurrentTimeStamp( Long_t TimeStamp )
 
 #ifdef HAVE_ALITPCCOMMON
   AliHLTTPCReverseTransformInfoV1* info = fOrigTransform->GetReverseTransformInfo();
+  TVectorD param(3);
 
-  AliHLTTPCDataCompressionComponent::CalculateDriftTimeTransformation(*this, 0, 0, info->fDriftTimeFactorA, info->fDriftTimeOffsetA, info);
+  /*AliHLTTPCDataCompressionComponent::CalculateDriftTimeTransformation(*this, 0, 0, info->fDriftTimeFactorA, info->fDriftTimeOffsetA, info);
   AliHLTTPCDataCompressionComponent::CalculateDriftTimeTransformation(*this, 18, 0, info->fDriftTimeFactorC, info->fDriftTimeOffsetC, info);
   
   TLinearFitter fitter(3,"hyp2");
@@ -398,7 +399,7 @@ Int_t AliHLTTPCFastTransform::SetCurrentTimeStamp( Long_t TimeStamp )
       {
         for (int l = 0;l < fLastTimeBin;l += fLastTimeBin / 10)
         {
-	  int sector, sectorrow;
+          int sector, sectorrow;
           if (j < AliHLTTPCGeometry::GetNRowLow())
           {
             sector = i;
@@ -413,7 +414,7 @@ Int_t AliHLTTPCFastTransform::SetCurrentTimeStamp( Long_t TimeStamp )
           Transform(sector, sectorrow, k, l, xyz);
           float xyz2[3];
           AliHLTTPCClusterStatComponent::TransformForward(i, j, k, l, xyz2, info);
-          Double_t x[2] = {xyz[0], AliHLTTPCGeometry::GetZLength() - fabs(xyz[2])}; 
+          Double_t x[2] = {xyz[0], AliHLTTPCGeometry::GetZLength() - fabs(xyz[2])};
           fitter.AddPoint(x, xyz[1] - xyz2[1]);
           nPoints++;
         }
@@ -421,8 +422,7 @@ Int_t AliHLTTPCFastTransform::SetCurrentTimeStamp( Long_t TimeStamp )
     }
   }
   fitter.Eval();
-  TVectorD param(3);
-  fitter.GetParameters(param);
+  fitter.GetParameters(param);*/
   info->fCorrectY1 = param[0];
   info->fCorrectY2 = param[1];
   info->fCorrectY3 = param[2];
@@ -437,14 +437,14 @@ Int_t AliHLTTPCFastTransform::InitRow( Int_t iSector, Int_t iRow )
 {
   // see header file for class documentation
   
-  AliTPCcalibDB* pCalib=AliTPCcalibDB::Instance();  
+  AliTPCcalibDB* pCalib=AliTPCcalibDB::Instance();
 
   if( iSector<0 || iSector>=fkNSec || iRow<0 || iRow>=fkNRows || !fOrigTransform || (fLastTimeStamp<0) ||
       !fRows[iSector][iRow] || !pCalib || !pCalib->GetParameters() ){
     return Error( -1, "AliHLTTPCFastTransform::InitRow: Internal error");
   }
 
-  AliTPCParam *tpcParam = pCalib->GetParameters(); 
+  AliTPCParam *tpcParam = pCalib->GetParameters();
 
   Int_t nPads = tpcParam->GetNPads(iSector,iRow);
   
@@ -456,14 +456,14 @@ Int_t AliHLTTPCFastTransform::InitRow( Int_t iSector, Int_t iRow )
   fRows[iSector][iRow]->fSpline[1].Init(         0.5, nPads-1+0.5, 15, fTimeBorder1, fTimeBorder2,         10);
   fRows[iSector][iRow]->fSpline[2].Init(         0.5, nPads-1+0.5, 15, fTimeBorder2, fLastTimeBin,         5);
 
-  for( Int_t i=0; i<3; i++){    
+  for( Int_t i=0; i<3; i++){
     Int_t is[]={iSector};
     for( Int_t j=0; j<fRows[iSector][iRow]->fSpline[i].GetNPoints(); j++){
       Float_t pad, time;
       fRows[iSector][iRow]->fSpline[i].GetAB(j,pad,time);
       Double_t xx[]={static_cast<Double_t>(iRow),pad,time};
       fOrigTransform->Transform(xx,is,0,1);
-      fRows[iSector][iRow]->fSpline[i].Fill(j,xx);    
+      fRows[iSector][iRow]->fSpline[i].Fill(j,xx);
     }
     fRows[iSector][iRow]->fSpline[i].Consolidate();
   }
@@ -472,8 +472,8 @@ Int_t AliHLTTPCFastTransform::InitRow( Int_t iSector, Int_t iRow )
 
 
 
-Int_t AliHLTTPCFastTransform::GetRowSize( Int_t iSec, Int_t iRow ) const 
-{ 
+Int_t AliHLTTPCFastTransform::GetRowSize( Int_t iSec, Int_t iRow ) const
+{
   // see header file for class documentation
   Int_t s = sizeof(AliHLTTPCFastTransform::AliRowTransform);
   if( fRows[iSec][iRow] ) for( Int_t i=0; i<3; i++) s+=fRows[iSec][iRow]->fSpline[i].GetMapSize();
@@ -481,7 +481,7 @@ Int_t AliHLTTPCFastTransform::GetRowSize( Int_t iSec, Int_t iRow ) const
 }
 
 Int_t AliHLTTPCFastTransform::GetSize() const
-{ 
+{
   // see header file for class documentation
   Int_t s = sizeof(AliHLTTPCFastTransform);
   for( Int_t i=0; i<fkNSec; i++ )
@@ -533,19 +533,19 @@ void AliHLTTPCFastTransform::Print(const char* /*option*/) const
 #include "TNtuple.h"
 #include "AliFlexibleSpline2D3D.h"
 
-Int_t AliHLTTPCFastTransform::WriteQATree( char *fileName ) 
+Int_t AliHLTTPCFastTransform::WriteQATree( char *fileName )
 {
   // Set the current time stamp
  
-  if( !fOrigTransform ) return Error( -1, "AliHLTTPCFastTransform::WriteQATree: TPC transformation has not been set properly"); 
+  if( !fOrigTransform ) return Error( -1, "AliHLTTPCFastTransform::WriteQATree: TPC transformation has not been set properly");
 
-  AliTPCcalibDB* pCalib=AliTPCcalibDB::Instance();  
+  AliTPCcalibDB* pCalib=AliTPCcalibDB::Instance();
 
-  if(!pCalib ) return Error( -2, "AliHLTTPCFastTransform::WriteQATree: No TPC calibration found"); 
+  if(!pCalib ) return Error( -2, "AliHLTTPCFastTransform::WriteQATree: No TPC calibration found");
   
-  AliTPCParam *tpcParam = pCalib->GetParameters(); 
+  AliTPCParam *tpcParam = pCalib->GetParameters();
 
-  if( !tpcParam ) return  Error( -3, "AliHLTTPCFastTransform::WriteQATree: No TPCParam object found"); 
+  if( !tpcParam ) return  Error( -3, "AliHLTTPCFastTransform::WriteQATree: No TPCParam object found");
         
   if( fUseCorrectionMap ) fOrigTransform->SetCorrectionMapMode(kTRUE); //If the simulation set this to false to simulate distortions, we need to reverse it for the transformation
 
@@ -567,7 +567,7 @@ Int_t AliHLTTPCFastTransform::WriteQATree( char *fileName )
      int nRows = tpcParam->GetNRow(iSec);
       if( nRows>fkNRows ) nRows = fkNRows;
       for( int iRow=0; iRow<nRows; iRow++){
-	Int_t nPads = tpcParam->GetNPads(iSec,iRow);     
+	Int_t nPads = tpcParam->GetNPads(iSec,iRow);
 	for( float pad=0.5; pad<nPads; pad+=1.){
 	  for( float time =0; time < fLastTimeBin; time++ ){
 	    Int_t is[]={iSec};
@@ -587,7 +587,7 @@ Int_t AliHLTTPCFastTransform::WriteQATree( char *fileName )
       int nRows = tpcParam->GetNRow(iSec);
       if( nRows>fkNRows ) nRows = fkNRows;
       for( int iRow=0; iRow<nRows; iRow++){
-	Int_t nPads = tpcParam->GetNPads(iSec,iRow);     
+	Int_t nPads = tpcParam->GetNPads(iSec,iRow);
 	for( float pad=0.5; pad<nPads; pad+=1.){
 	  for( float time =0; time < fLastTimeBin; time++ ){
 	    float fast[3];
@@ -600,7 +600,7 @@ Int_t AliHLTTPCFastTransform::WriteQATree( char *fileName )
     timer2.Stop();
     
     int nKnotsU = 15;
-    int nAxisTicksU = tpcParam->GetNPads(0, 10);    
+    int nAxisTicksU = tpcParam->GetNPads(0, 10);
     int nKnotsV = 20;
     int nAxisTicksV = fLastTimeBin+1;
     
@@ -628,7 +628,7 @@ Int_t AliHLTTPCFastTransform::WriteQATree( char *fileName )
       if( nRows>fkNRows ) nRows = fkNRows;
       float *dt = data + nKnotsTot*fkNRows*iSec;
       for( int iRow=0; iRow<nRows; iRow++){
-	Int_t nPads = tpcParam->GetNPads(iSec,iRow);     
+	Int_t nPads = tpcParam->GetNPads(iSec,iRow);
 	float scaleP = 1./nPads;
 	for( float pad=0.5; pad<nPads; pad+=1.){
 	  for( float time =0; time < fLastTimeBin; time++ ){
@@ -652,7 +652,7 @@ Int_t AliHLTTPCFastTransform::WriteQATree( char *fileName )
       if( nRows>fkNRows ) nRows = fkNRows;
       float *dt = data + nKnotsTot*fkNRows*iSec;
       for( int iRow=0; iRow<nRows; iRow++){
-	Int_t nPads = tpcParam->GetNPads(iSec,iRow);     
+	Int_t nPads = tpcParam->GetNPads(iSec,iRow);
 	float scaleP = 1./nPads;
 	for( float pad=0.5; pad<nPads; pad+=1.){
 	  for( float time =0; time < fLastTimeBin; time++ ){
@@ -689,19 +689,19 @@ Int_t AliHLTTPCFastTransform::WriteQATree( char *fileName )
   }
 
 
-  if(0){ 
+  if(0){
     TFile *file = new TFile(fileName,"RECREATE");
-    if( !file || !file->IsOpen() ) return Error( -1, "Can't recreate QA file !"); 
+    if( !file || !file->IsOpen() ) return Error( -1, "Can't recreate QA file !");
     file->cd();
     TNtuple *nt = new TNtuple("fastTransformQA", "fastTransformQA", "sec:row:pad:time:x:y:z:fx:fy:fz");
  
-    for( Int_t iSec=fMinInitSec; iSec<fMaxInitSec; iSec++ ){     
-      //for( Int_t iSec=0; iSec<2; iSec++ ){     
+    for( Int_t iSec=fMinInitSec; iSec<fMaxInitSec; iSec++ ){
+      //for( Int_t iSec=0; iSec<2; iSec++ ){
       int nRows = tpcParam->GetNRow(iSec);
       if( nRows>fkNRows ) nRows = fkNRows;
       for( int iRow=0; iRow<nRows; iRow++){
 	cout<<"Write fastTransform QA for TPC sector "<<iSec<<", row "<<iRow<<" .."<<endl;
-	Int_t nPads = tpcParam->GetNPads(iSec,iRow);     
+	Int_t nPads = tpcParam->GetNPads(iSec,iRow);
 	for( float pad=0.5; pad<nPads; pad+=1.){
 	  for( float time =0; time < fLastTimeBin; time++ ){
 	    Int_t is[]={iSec};
@@ -710,7 +710,7 @@ Int_t AliHLTTPCFastTransform::WriteQATree( char *fileName )
 	    fOrigTransform->Transform(orig,is,0,1);
 	    int errF = Transform( iSec, iRow, pad, time, fast );
 	    if( errF ){
-	      Error( -3, "AliHLTTPCFastTransform::WriteQATree: fast transformation failed!!"); 
+	      Error( -3, "AliHLTTPCFastTransform::WriteQATree: fast transformation failed!!");
 	      continue;
 	    }
 	    float entry[] = {(float) iSec, (float) iRow, pad, time, (float) orig[0], (float) orig[1], (float) orig[2], fast[0], fast[1], fast[2] };
