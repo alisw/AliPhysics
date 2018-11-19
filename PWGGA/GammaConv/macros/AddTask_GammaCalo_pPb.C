@@ -895,7 +895,7 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("c0410113","1111141057032230000","01631031000000d0"); // 0-4
   // AOD validation
   } else if (trainConfig == 226){
-    cuts.AddCutCalo("80010113","1111151017032230000","01631031000000d0"); // 0-100
+    cuts.AddCutCalo("80010113","1111141057032230000","01631031000000d0"); // 0-100
   // pPb 8 TeV EPOS+PythiaJets JJ simulation QA
   } else if (trainConfig == 227){ // variations when using special JJ case (Jets+MB)
     cuts.AddCutCalo("80010143","1111100017032230000","01631031000000d0"); // INT7
