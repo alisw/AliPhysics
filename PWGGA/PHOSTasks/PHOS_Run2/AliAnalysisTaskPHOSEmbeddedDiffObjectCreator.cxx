@@ -69,8 +69,8 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserCreateOutputObjects()
 
   Init();//initialize PHOS object array
 
-  fOutputContainer = new THashList();
-  fOutputContainer->SetOwner(kTRUE);
+  //fOutputContainer = new THashList();
+  //fOutputContainer->SetOwner(kTRUE);
   AliAnalysisTaskPHOSObjectCreator::UserCreateOutputObjects();
   PostData(1,fOutputContainer);
 }
