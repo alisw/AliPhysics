@@ -226,8 +226,8 @@ void AliEbyEPhiDistNew::CreatePhiHist() {
     Double_t EtaBins[ebin+1];
     for (Int_t ie = 0; ie <= ebin; ie++) EtaBins[ie] = ie - 0.5;
     
-    const Int_t ptBins = 19;
-    Double_t pidPtBins[ptBins+1] = {0.35, 0.4, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.55};
+    const Int_t ptBins = 13;
+    Double_t pidPtBins[ptBins+1] = {0.35, 0.4, 0.50, 0.60, 0.70, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.55};
     
     const Int_t phiBins = 18;
     Double_t pidPhiBins[phiBins+1] = {0.0, 0.348, 0.697, 1.04, 1.39, 1.74, 2.09, 2.44, 2.79, 3.14, 3.48, 3.83, 4.18, 4.53, 4.88, 5.23, 5.58, 5.93,  6.28};
