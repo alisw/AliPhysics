@@ -302,8 +302,9 @@ class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
   
   // Shower Shape MC
 
-  TH2F * fhMCELambda0[2][6] ;                   //!<! E vs Lambda0 from MC particle
-  
+  TH2F * fhMCELambda0[2][6] ;                   //!<! E vs shower shape long axis from MC particle
+  TH2F * fhMCELambda1[2][6] ;                   //!<! E vs shower shape short axis from MC particle
+
   TH2F * fhMCEDispEta[2][6] ;                   //!<! shower dispersion in eta direction from MC particle
   TH2F * fhMCEDispPhi[2][6] ;                   //!<! shower dispersion in phi direction from MC particle
   TH2F * fhMCESumEtaPhi[2][6] ;                 //!<! shower dispersion in eta vs phi direction from MC particle
