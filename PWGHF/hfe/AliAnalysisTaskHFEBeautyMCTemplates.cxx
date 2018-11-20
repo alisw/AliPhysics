@@ -227,15 +227,15 @@ void AliAnalysisTaskHFEBeautyMCTemplates::PrintHierarchy(AliMCParticle * mcple, 
   AliMCParticle * mother;
   Int_t pdgCode = 0;
   mother=mcple;
-  cout << "Decay chain: " ;
+  //std::cout << "Decay chain: " ;
   while(mother!=0)
   {
     pdgCode = mother->PdgCode();
-    cout << pdgCode << " " ;
+    //std::cout << pdgCode << " " ;
     mother =  (AliMCParticle*) fMCEvent->GetTrack(mother->GetMother());
   }
   //mother =  (AliMCParticle*) fMCEvent->GetTrack((mcple->Particle())->GetFirstMother());
-  cout << endl;
+  //std::cout << std::endl;
   
 }
 
@@ -514,7 +514,7 @@ void AliAnalysisTaskHFEBeautyMCTemplates::Process(AliAODEvent *const aodEvent)
 
         if(Source != 1 && SourceNew==1)
         {
-          //cout << "old def #" << Source << " , new def beauty ";
+          //std::cout << "old def #" << Source << " , new def beauty ";
           //PrintHierarchy(mcple, fMCEvent);
           if(MotherPDG(mcple, fMCEvent) == 22)
             fDCAConversionBeauty->Fill(pt, IP);
@@ -523,7 +523,7 @@ void AliAnalysisTaskHFEBeautyMCTemplates::Process(AliAODEvent *const aodEvent)
         }
         if(Source != 0 && SourceNew==0)
         {
-          //cout << "old def #" << static_cast<Int_t>(fSignalCuts->GetSignalSource((AliAODMCParticle*)mcple)) << " , new def charm ";
+          //std::cout << "old def #" << static_cast<Int_t>(fSignalCuts->GetSignalSource((AliAODMCParticle*)mcple)) << " , new def charm ";
           //PrintHierarchy(mcple, fMCEvent);
           if(MotherPDG(mcple, fMCEvent) == 22)
             fDCAConversionCharm->Fill(pt, IP);
@@ -544,9 +544,9 @@ void AliAnalysisTaskHFEBeautyMCTemplates::Process(AliAODEvent *const aodEvent)
       /*if(!IsAddedSignal(mcple) && TMath::Abs(dcaxyD*track->Charge()*fieldConfiguration)<0.0001)
       {
         if(fMCEvent->GetTrack(mcple->GetMother()))
-          cout << "IP is " << dcaxyD*track->Charge()*fieldConfiguration << " pdg: " << pdgCode << " mother pdg: " << ((AliMCParticle*) fMCEvent->GetTrack(mcple->GetMother()))->PdgCode() << " radius: " << radius << endl;
+          std::cout << "IP is " << dcaxyD*track->Charge()*fieldConfiguration << " pdg: " << pdgCode << " mother pdg: " << ((AliMCParticle*) fMCEvent->GetTrack(mcple->GetMother()))->PdgCode() << " radius: " << radius << std::endl;
         else
-          cout << "IP is " << dcaxyD*track->Charge()*fieldConfiguration << " pdg: " << pdgCode << " no mother" << " radius: " << radius << endl;
+          std::cout << "IP is " << dcaxyD*track->Charge()*fieldConfiguration << " pdg: " << pdgCode << " no mother" << " radius: " << radius << std::endl;
       }*/
     }
     // Now fill V0 plots
