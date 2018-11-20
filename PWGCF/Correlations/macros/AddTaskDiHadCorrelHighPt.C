@@ -22,7 +22,7 @@ AliAnalysisTaskDiHadCorrelHighPt* AddTaskDiHadCorrelHighPt(TString name = "name"
     }
     // by default, a file is open for writing. here, we get the filename
     TString fileName = AliAnalysisManager::GetCommonFileName();
-    fileName += ":MyTask";      // create a subfolder in the file
+    fileName += ":AliAnalysisTaskDiHadCorrelHighPt";      // create a subfolder in the file
     // now we create an instance of your task
     AliAnalysisTaskDiHadCorrelHighPt* task = new AliAnalysisTaskDiHadCorrelHighPt(name.Data(),analysisMC);
     if(!task) return 0x0;
