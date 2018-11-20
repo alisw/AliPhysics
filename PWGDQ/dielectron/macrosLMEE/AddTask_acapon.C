@@ -1,5 +1,4 @@
-//Names should contain a comma seperated list of cut settings
-//Current options: all, electrons, TTreeCuts, V0_TPCcorr, V0_ITScorr
+
 AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root",
                                 TString names          = "kCutSet1",
                                 Bool_t SDDstatus       = kFALSE,
