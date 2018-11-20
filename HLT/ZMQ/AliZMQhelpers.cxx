@@ -637,7 +637,6 @@ int AliZMQhelpers::alizmq_msg_iter_init_streamer_infos(aliZMQmsg::iterator it)
               pSchema->BuildOld();
               pInfos->AddAtAndExpand(pSchema, version);
               pSchemas->Remove(pSchema);
-              printf("adding %s %i\n",pSchema->GetName(),version);
               //AliDebug(0,Form("adding schema definition %d version %d to class %s", i, version, pSchema->GetName()));
             } else {
               if (pInfo && pInfo->GetClassVersion()==version) {
