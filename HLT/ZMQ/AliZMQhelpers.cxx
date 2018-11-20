@@ -437,6 +437,8 @@ int AliZMQhelpers::alizmq_msg_add(aliZMQmsg* message, DataTopic* topic, TObject*
     return -1;
   }
 
+  topic->SetPayloadSize(tmessage->Length());
+
   if (streamers) {
     alizmq_update_streamerlist(streamers, tmessage->GetStreamerInfos());
   }
@@ -540,9 +542,15 @@ int AliZMQhelpers::alizmq_msg_prepend_streamer_infos(aliZMQmsg* message, aliZMQr
     listOfInfos.Add(*i);
   }
   ZMQTMessage* tmessage = ZMQTMessage::Stream(&listOfInfos, 1); //compress
+  if (!tmessage) {
+    zmq_close(topicMsg);
+    delete topicMsg;
+    return -1;
+  }
   zmq_msg_t* dataMsg = new zmq_msg_t;
   rc = zmq_msg_init_data( dataMsg, tmessage->Buffer(), tmessage->Length(),
        alizmq_deleteTObject, tmessage);
+  topic.SetPayloadSize(tmessage->Length());
   if (rc<0) {
     zmq_msg_close(topicMsg);
     zmq_msg_close(dataMsg);
@@ -672,6 +680,7 @@ int AliZMQhelpers::alizmq_msg_send(DataTopic& topic, TObject* object, void* sock
 
   //we are definitely serializing ROOT objects here...
   topic.SetSerialization(kSerializationROOT);
+  topic.SetPayloadSize(tmessage->Length());
 
   //then send the object topic
   rc = zmq_send( socket, &topic, sizeof(topic), ZMQ_SNDMORE );

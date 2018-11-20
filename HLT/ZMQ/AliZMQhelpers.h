@@ -221,6 +221,7 @@ struct DataTopic : public BaseDataTopic
   inline void SetOrigin(const char* s) {fDataOrigin = *reinterpret_cast<const UInt_t*>(s);}
   inline void SetSpecification(UInt_t spec) {fSpecification=spec;}
   inline void SetSerialization(ULong64_t s) {fDataSerialization=s;}
+  inline void SetPayloadSize(ULong64_t s) {fPayloadSize=s;}
   static DataTopic* Get(void* buf) {
     BaseDataTopic* bdt = BaseDataTopic::Get(buf);
     return (bdt && bdt->fHeaderDescription==fgkDataTopicDescription)?
