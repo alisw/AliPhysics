@@ -23,7 +23,7 @@ class AliCutHandlerPCM{
     void AddCutHeavyMesonCalo(TString eventCut, TString clusterCut, TString pionCut, TString ndmCut, TString mesonCut);
     void AddCutHeavyMesonPCMCalo(TString eventCut, TString photonCut, TString clusterCut, TString pionCut, TString ndmCut, TString mesonCut);
 
-    TString GetSpecialSettingFromAddConfig (TString additionalTrainConfig, TString configString, TString fileNameMatBudWeights);
+    TString GetSpecialSettingFromAddConfig (TString additionalTrainConfig, TString configString, TString fileNameMatBudWeights, TString addTaskName);
     TString GetSpecialFileNameFromString (TString fileNameExternalInputs, TString configString);
 
     Bool_t AreValid(){return fValidCuts;}

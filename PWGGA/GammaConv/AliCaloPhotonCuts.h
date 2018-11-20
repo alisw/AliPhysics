@@ -308,7 +308,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     void        SetIsPureCaloCut(Int_t merged)                  {fIsPureCalo = merged; return;}
     Int_t       GetIsPureCaloCut()                              {return fIsPureCalo;}
     Int_t       GetNactiveEmcalCells()                          {return fNactiveEmcalCells;}
-
+    Int_t       GetIsConversionRecovery()                       {return fUseRecConv;}
+    Float_t     GetInvMassConversionRecovery()                  {return fMaxMGGRecConv;}
 
     // Cut functions
     Bool_t      AcceptanceCuts(AliVCluster* cluster, AliVEvent *event, Double_t weight);
@@ -473,8 +474,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Double_t  fMaxM20;                                  // maximum M20
     Double_t  fMinM20;                                  // minimum M20
     Bool_t    fUseM20;                                  // flag for switching on M20 cut
-    Double_t  fMaxMGGRecConv;                           // maximum invariant mass below which the 2 clusters are gonna be combined assuming they are from a photon
-    Bool_t    fUseRecConv;                              // flag to switch on conversion recovery
+    Float_t   fMaxMGGRecConv;                           // maximum invariant mass below which the 2 clusters are gonna be combined assuming they are from a photon
+    Int_t     fUseRecConv;                              // flag to switch on conversion recovery
     Double_t  fMaxDispersion;                           // maximum dispersion
     Bool_t    fUseDispersion;                           // flag for switching on dispersion cut
     Int_t     fMinNLM;                                  // minimum number of local maxima in cluster
@@ -608,7 +609,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,73)
+    ClassDef(AliCaloPhotonCuts,74)
 };
 
 #endif
