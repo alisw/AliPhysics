@@ -27,7 +27,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
+
 class TClonesArray;
 class AliRDHFCuts;
 class AliAODEvent;
@@ -47,7 +47,7 @@ class TTree;
 class AliEMCALGeometry;
 class TRandom;
 class AliRhoParameter;
-*/
+
 //C++
 #include <exception>
 #include <list>
@@ -113,7 +113,7 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
 
  enum TreeSize {
    nVar = 10,
-   nVar_Splittings =8
+   nVar_Splittings =12
   };
 
  //enum ECandidateType_t  { kD0toKpi, kDstartoKpipi, kD0toKpiLikeSign };
@@ -202,7 +202,7 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
 
  AliRDHFCuts                       *fRDHFCuts              ; 
  AliFJWrapper                      *fFastJetWrapper        ;
- AliFJWrapper                      *fFastJetWrapper_Truth        ;
+ AliFJWrapper                      *fFastJetWrapper_Truth  ;
 
  std::vector<std::vector<Double_t>>            fShapesVar_Splittings_DeltaR;
  std::vector<std::vector<Double_t>>            fShapesVar_Splittings_DeltaR_Truth;
@@ -212,6 +212,10 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  std::vector<std::vector<Double_t>>            fShapesVar_Splittings_LeadingSubJetpT_Truth;
  std::vector<std::vector<Double_t>>            fShapesVar_Splittings_HardestSubJetD0;
  std::vector<std::vector<Double_t>>            fShapesVar_Splittings_HardestSubJetD0_Truth;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_RadiatorE;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_RadiatorE_Truth;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_RadiatorpT;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_RadiatorpT_Truth;
  TTree                               *fTreeResponseMatrixAxis;
  TTree                               *fTreeSplittings;
 
@@ -229,7 +233,7 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  AliAnalysisTaskHFSubstructure(const AliAnalysisTaskHFSubstructure&);            
  AliAnalysisTaskHFSubstructure &operator=(const AliAnalysisTaskHFSubstructure&); 
 
- ClassDef(AliAnalysisTaskHFSubstructure, 1)
+ ClassDef(AliAnalysisTaskHFSubstructure, 2)
     
    };
 
