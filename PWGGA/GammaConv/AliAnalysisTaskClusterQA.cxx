@@ -496,6 +496,7 @@ void AliAnalysisTaskClusterQA::UserExec(Option_t *){
       delete clus;
       continue;
     }
+    ResetBuffer();
     ProcessQATreeCluster(fInputEvent,clus,i);
   }
   if(fSaveAdditionalHistos)
@@ -506,7 +507,6 @@ void AliAnalysisTaskClusterQA::UserExec(Option_t *){
 
 ///________________________________________________________________________
 void AliAnalysisTaskClusterQA::ProcessQATreeCluster(AliVEvent *event, AliVCluster* cluster, Long_t indexCluster){
-
   Float_t clusPos[3]                      = { 0,0,0 };
   cluster->GetPosition(clusPos);
   TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
@@ -611,11 +611,11 @@ void AliAnalysisTaskClusterQA::ProcessQATreeCluster(AliVEvent *event, AliVCluste
       Double_t dR2 = pow(leadcelleta-surrcelleta,2) + pow(leadcellphi-surrcellphi,2);
       // Select those cells that are within fConeRadius of the leading cluster cell
       if( dR2 < fConeRadius){
-        fBuffer_Surrounding_Cells_E[aCell]              = cells->GetCellAmplitude(cellNumber);
-        fBuffer_Surrounding_Cells_ID[aCell]             = cellNumber;
-        fBuffer_Surrounding_Cells_R[aCell]             = dR2;
-        fBuffer_Surrounding_Cells_RelativeEta[aCell]      = leadcelleta-surrcelleta;
-        fBuffer_Surrounding_Cells_RelativePhi[aCell]   = leadcellphi-surrcellphi;
+        fBuffer_Surrounding_Cells_E[nActiveCellsSurroundingInR]                = cells->GetCellAmplitude(cellNumber);
+        fBuffer_Surrounding_Cells_ID[nActiveCellsSurroundingInR]               = cellNumber;
+        fBuffer_Surrounding_Cells_R[nActiveCellsSurroundingInR]                = dR2;
+        fBuffer_Surrounding_Cells_RelativeEta[nActiveCellsSurroundingInR]      = leadcelleta-surrcelleta;
+        fBuffer_Surrounding_Cells_RelativePhi[nActiveCellsSurroundingInR]      = leadcellphi-surrcellphi;
         nActiveCellsSurroundingInR+=1;
       }
     }
@@ -1116,3 +1116,43 @@ Float_t AliAnalysisTaskClusterQA::GetCentrality(AliVEvent *event)
 
   return -1;
 }
+void AliAnalysisTaskClusterQA::ResetBuffer(){
+  fBuffer_EventID                         = 0;
+  fBuffer_ClusterE                        = 0;
+  fBuffer_ClusterPhi                      = 0;
+  fBuffer_ClusterEta                      = 0;
+  fBuffer_ClusterIsEMCAL                  = kFALSE;
+  fBuffer_MC_Cluster_Flag                 = 0;
+  fBuffer_ClusterNumCells                 = 0;
+  fBuffer_LeadingCell_ID                  = 0;
+  fBuffer_LeadingCell_E                   = 0;
+  fBuffer_LeadingCell_Eta                 = 0;
+  fBuffer_LeadingCell_Phi                 = 0;
+  fBuffer_ClusterM02                      = 0;
+  fBuffer_ClusterM20                      = 0;
+  fBuffer_Event_Vertex_X                  = 0;
+  fBuffer_Event_Vertex_Y                  = 0;
+  fBuffer_Event_Vertex_Z                  = 0;
+  fBuffer_Event_Multiplicity              = 0;
+  fBuffer_Event_NumActiveCells            = 0;
+  fBuffer_Cluster_MC_Label                = -10;
+  fBuffer_Mother_MC_Label                 = -10;
+
+  for(Int_t cell = 0; cell < kMaxActiveCells; cell++){
+    fBuffer_Cells_E[cell]                       = 0;
+    fBuffer_Cells_RelativeEta[cell]             = 0;
+    fBuffer_Cells_RelativePhi[cell]             = 0;
+    fBuffer_Surrounding_Cells_ID[cell]          = 0;
+    fBuffer_Surrounding_Cells_R[cell]           = 0;
+    fBuffer_Surrounding_Cells_E[cell]           = 0;
+    fBuffer_Surrounding_Cells_RelativeEta[cell] = 0;
+    fBuffer_Surrounding_Cells_RelativePhi[cell] = 0;
+  }
+  for(Int_t track = 0; track < kMaxNTracks; track++){
+    fBuffer_Surrounding_Tracks_R[track]           = 0;
+    fBuffer_Surrounding_Tracks_Pt[track]          = 0;
+    fBuffer_Surrounding_Tracks_RelativeEta[track] = 0;
+    fBuffer_Surrounding_Tracks_RelativePhi[track] = 0;
+  }
+}
+
