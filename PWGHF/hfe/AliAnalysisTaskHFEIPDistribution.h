@@ -69,8 +69,8 @@ class AliAnalysisTaskHFEIPDistribution : public AliAnalysisTaskSE {
   TH2D * fpTIP2040OOP;
   TH2D * fpTIP3050IP;
   TH2D * fpTIP3050OOP;
-  TH2D * fPionV0pTRNoCuts;
-  TH2D * fPionV0pTRWithCuts;
+  TH3D * fPionV0pTRNoCuts;
+  TH3D * fPionV0pTRWithCuts;
   TH2D * fPionV0pTTPC;
   TH2D * fPionV0pTTPCWithCuts;
 
