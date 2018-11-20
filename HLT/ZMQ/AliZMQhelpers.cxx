@@ -31,7 +31,6 @@
 #include "TClass.h"
 #include "TSystem.h"
 #include "TList.h"
-#include "AliHLTMessage.h"
 
 #include <netinet/in.h>
 
@@ -47,11 +46,11 @@ const ULong64_t AliZMQhelpers::kSerializationHLTROOT = CharArr2uint64("HLTROOT")
 const ULong64_t AliZMQhelpers::kSerializationROOT = CharArr2uint64("ROOT   ");
 const ULong64_t AliZMQhelpers::kSerializationNONE = CharArr2uint64("NONE   ");
 
-const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeStreamerInfos("ROOTSTRI","***\n",AliZMQhelpers::kSerializationROOT);
-const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeInfo("INFO____","***\n",AliZMQhelpers::kSerializationNONE);
-const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeConfig("CONFIG__","***\n",AliZMQhelpers::kSerializationNONE);
-const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeTObject("ROOTTOBJ","***\n",AliZMQhelpers::kSerializationROOT);
-const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeTH1("ROOTHIST","***\n",AliZMQhelpers::kSerializationROOT);
+const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeStreamerInfos("ROOTSTRI","***\n",0,AliZMQhelpers::kSerializationROOT);
+const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeInfo("INFO____","***\n",0,AliZMQhelpers::kSerializationNONE);
+const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeConfig("CONFIG__","***\n",0,AliZMQhelpers::kSerializationNONE);
+const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeTObject("ROOTTOBJ","***\n",0,AliZMQhelpers::kSerializationROOT);
+const AliZMQhelpers::DataTopic AliZMQhelpers::kDataTypeTH1("ROOTHIST","***\n",0,AliZMQhelpers::kSerializationROOT);
 
 //_______________________________________________________________________________________
 void* AliZMQhelpers::alizmq_context()
@@ -438,6 +437,8 @@ int AliZMQhelpers::alizmq_msg_add(aliZMQmsg* message, DataTopic* topic, TObject*
     return -1;
   }
 
+  topic->SetPayloadSize(tmessage->Length());
+
   if (streamers) {
     alizmq_update_streamerlist(streamers, tmessage->GetStreamerInfos());
   }
@@ -541,9 +542,15 @@ int AliZMQhelpers::alizmq_msg_prepend_streamer_infos(aliZMQmsg* message, aliZMQr
     listOfInfos.Add(*i);
   }
   ZMQTMessage* tmessage = ZMQTMessage::Stream(&listOfInfos, 1); //compress
+  if (!tmessage) {
+    zmq_close(topicMsg);
+    delete topicMsg;
+    return -1;
+  }
   zmq_msg_t* dataMsg = new zmq_msg_t;
   rc = zmq_msg_init_data( dataMsg, tmessage->Buffer(), tmessage->Length(),
        alizmq_deleteTObject, tmessage);
+  topic.SetPayloadSize(tmessage->Length());
   if (rc<0) {
     zmq_msg_close(topicMsg);
     zmq_msg_close(dataMsg);
@@ -630,7 +637,6 @@ int AliZMQhelpers::alizmq_msg_iter_init_streamer_infos(aliZMQmsg::iterator it)
               pSchema->BuildOld();
               pInfos->AddAtAndExpand(pSchema, version);
               pSchemas->Remove(pSchema);
-              printf("adding %s %i\n",pSchema->GetName(),version);
               //AliDebug(0,Form("adding schema definition %d version %d to class %s", i, version, pSchema->GetName()));
             } else {
               if (pInfo && pInfo->GetClassVersion()==version) {
@@ -673,6 +679,7 @@ int AliZMQhelpers::alizmq_msg_send(DataTopic& topic, TObject* object, void* sock
 
   //we are definitely serializing ROOT objects here...
   topic.SetSerialization(kSerializationROOT);
+  topic.SetPayloadSize(tmessage->Length());
 
   //then send the object topic
   rc = zmq_send( socket, &topic, sizeof(topic), ZMQ_SNDMORE );
@@ -836,15 +843,18 @@ int AliZMQhelpers::alizmq_msg_iter_data(aliZMQmsg::iterator it, TObject*& object
   void* data = zmq_msg_data(message);
   object=NULL;
 
-  if (topic->fDataSerialization==kSerializationHLTROOT) //serialized by the HLT chain
-  {
-    object = AliHLTMessage::Extract(data,size);
-  }
-  else if (topic->fDataSerialization==kSerializationROOT) //serialized by the ZMQ framework or ROOT
+  if (topic->fDataSerialization==kSerializationROOT) //serialized by the ZMQ framework or ROOT
   {
     object = ZMQTMessage::Extract(data, size);
+  } else {
+    return -1; //return -1 if payload not expected to be ROOT serialized data
   }
-  return 0;
+
+  if (object) {
+    return 0;  //all OK
+  } else {
+    return 1;  //something went wrong in the deserialization, maybe missing streamers
+  }
 }
 
 //_______________________________________________________________________________________

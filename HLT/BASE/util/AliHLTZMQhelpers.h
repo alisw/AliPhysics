@@ -128,6 +128,7 @@ int alizmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socket,
                     int compression=0, aliZMQrootStreamerInfo* streamers=NULL);
 int alizmq_msg_send(const AliHLTDataTopic& topic, const std::string& data, void* socket, int flags);
 int alizmq_msg_add(aliZMQmsg* message, DataTopic* topic, AliRawData* object);
+int alizmq_msg_iter_data_hlt(aliZMQmsg::iterator it, TObject*& object);
 
 //file operations
 int alizmq_file_write(AtomicFile& file, aliZMQmsg* message, bool deserializeROOTobjects=kTRUE);
