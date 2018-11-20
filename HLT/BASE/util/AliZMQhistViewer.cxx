@@ -102,7 +102,7 @@ int AliZMQhistViewer::Run(void* arg)
     //send a request if we are using REQ
     if (fZMQsocketModeIN==ZMQ_REQ)
     {
-      string request;
+      string request("SchemaOnRequest=1");
 
       if (fSelectionRegexp || fUnSelectionRegexp) 
       {
@@ -113,7 +113,7 @@ int AliZMQhistViewer::Run(void* arg)
       }
 
       if (fVerbose) Printf("sending request CONFIG %s", request.c_str());
-      alizmq_msg_send("", "", fZMQin, 0);
+      alizmq_msg_send("CONFIG", request, fZMQin, 0);
     }
 
     //wait for the data
