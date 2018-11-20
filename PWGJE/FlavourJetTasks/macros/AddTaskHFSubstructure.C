@@ -50,17 +50,29 @@ AliAnalysisTaskHFSubstructure* AddTaskHFSubstructure(const char * ntracksData,
   task->SetJetRadius(R);
 
 
-  AliParticleContainer *trackContData=0x0;  //why not track containers?
-  AliParticleContainer *trackContDet=0x0;
-  AliParticleContainer *trackContTrue=0x0;
+  // AliParticleContainer *trackContData=0x0;  //why not track containers?
+  //AliParticleContainer *trackContDet=0x0;
+  //AliParticleContainer *trackContTrue=0x0;
 
 
-  if (jetShapeType == AliAnalysisTaskHFSubstructure::kData) trackContData = task->AddTrackContainer(ntracksData);
-  else if (jetShapeType == AliAnalysisTaskHFSubstructure::kDetSignal || jetShapeType == AliAnalysisTaskHFSubstructure::kDetBackground || jetShapeType == AliAnalysisTaskHFSubstructure::kDetReflection || jetShapeType == AliAnalysisTaskHFSubstructure::kTrueDet){
-    trackContDet = task->AddTrackContainer(ntracksDet);
-    trackContTrue = task->AddMCParticleContainer(ntracksTrue);
+  if (jetShapeType == AliAnalysisTaskHFSubstructure::kData){
+    AliHFTrackContainer* trackContData = new AliHFTrackContainer(ntracksData);
+    task->AdoptParticleContainer(trackContData);
   }
-  else if (jetShapeType == AliAnalysisTaskHFSubstructure::kTrue) trackContTrue = task->AddMCParticleContainer(ntracksTrue);
+  else if (jetShapeType == AliAnalysisTaskHFSubstructure::kDetSignal || jetShapeType == AliAnalysisTaskHFSubstructure::kDetBackground || jetShapeType == AliAnalysisTaskHFSubstructure::kDetReflection || jetShapeType == AliAnalysisTaskHFSubstructure::kTrueDet){
+    AliHFTrackContainer* trackContDet = new AliHFTrackContainer(ntracksDet);
+    task->AdoptParticleContainer(trackContDet);
+    AliMCParticleContainer* trackContTrue = new AliHFAODMCParticleContainer(ntracksTrue);
+    trackContTrue->SetEtaLimits(-1.5, 1.5);
+    trackContTrue->SetPtLimits(0, 1000);
+    task->AdoptParticleContainer(trackContTrue);
+  }
+  else if (jetShapeType == AliAnalysisTaskHFSubstructure::kTrue){
+    AliMCParticleContainer* trackContTrue = new AliHFAODMCParticleContainer(ntracksTrue);
+    trackContTrue->SetEtaLimits(-1.5, 1.5);
+    trackContTrue->SetPtLimits(0, 1000);
+    task->AdoptParticleContainer(trackContTrue);
+  }
 
   
 
