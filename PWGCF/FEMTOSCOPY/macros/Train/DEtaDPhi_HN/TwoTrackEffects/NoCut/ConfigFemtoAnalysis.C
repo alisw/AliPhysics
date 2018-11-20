@@ -646,7 +646,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 					//******** Two - track cuts ************
 					sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
-			    sqpcetaphitpc[aniter]->SetDataType(AliFemtoPairCutAntiGamma::kKine)
+			    sqpcetaphitpc[aniter]->SetDataType(AliFemtoPairCutAntiGamma::kKine);
 
 					//sqpcetaphitpc[aniter] = new AliFemtoShareQualityPairCut();
 					sqpcetaphitpc[aniter]->SetShareQualityMax(shareQuality);	// two track cuts on splitting and merging  //1- wylaczany 0 -wlaczany
