@@ -838,8 +838,15 @@ int AliZMQhelpers::alizmq_msg_iter_data(aliZMQmsg::iterator it, TObject*& object
   if (topic->fDataSerialization==kSerializationROOT) //serialized by the ZMQ framework or ROOT
   {
     object = ZMQTMessage::Extract(data, size);
+  } else {
+    return -1; //return -1 if payload not expected to be ROOT serialized data
   }
-  return 0;
+
+  if (object) {
+    return 0;  //all OK
+  } else {
+    return 1;  //something went wrong in the deserialization, maybe missing streamers
+  }
 }
 
 //_______________________________________________________________________________________

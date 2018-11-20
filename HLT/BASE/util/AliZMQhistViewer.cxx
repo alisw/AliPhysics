@@ -102,7 +102,12 @@ int AliZMQhistViewer::Run(void* arg)
     //send a request if we are using REQ
     if (fZMQsocketModeIN==ZMQ_REQ)
     {
-      string request("SchemaOnRequest=1");
+      string request;
+
+      if (fRequestSchema) {
+        request+=" SchemaOnRequest=1";
+        fRequestSchema=false;
+      }
 
       if (fSelectionRegexp || fUnSelectionRegexp) 
       {
@@ -228,8 +233,12 @@ int AliZMQhistViewer::GetData(void* socket)
     //incoming ROOT objects
     {
       TObject* tmp = NULL;
+      int rc{0};
       alizmq_msg_iter_data_hlt(i, tmp);
-      if (!tmp) continue;
+      if (!tmp) {
+        if (rc>0) {fRequestSchema=true;} //could not deserialize, request streamers next time
+        continue;
+      }
 
       std::vector<TObject*> listOfObjects; listOfObjects.reserve(100);
       AliAnalysisDataContainer* analKont = dynamic_cast<AliAnalysisDataContainer*>(tmp);
