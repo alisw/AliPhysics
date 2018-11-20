@@ -24,17 +24,16 @@
 //main function
 //***************************************************************************************
 void AddTask_GammaHeavyMeson_CaloMode_pPb(
-  Int_t     selectedMeson                 = 0,                    // select the corresponding meson: 0 pi0, 1 eta, 2 eta'
+  Int_t     selectedMeson                 = 0,        // select the corresponding meson: 0 pi0, 1 eta, 2 eta'
   Int_t     trainConfig                   = 1,        // change different set of cuts
   Int_t     isMC                          = 0,        // run MC
   TString   photonCutNumberV0Reader       = "",       // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
   TString   periodNameV0Reader            = "",
-  TString   periodname                    = "",        // period name
   // general setting for task
   Int_t     enableQAMesonTask             = 0,        // enable QA in AliAnalysisTaskGammaConvV1
   Int_t     enableQAClusterTask           = 0,        // enable additional QA task
   Int_t     enableExtMatchAndQA           = 0,        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
-  Bool_t    enableLightOutput             = kFALSE,   // switch to run light output (only essential histograms for afterburner)
+  Int_t     enableLightOutput             = 0,        // switch to run light output (only essential histograms for afterburner)
   Bool_t    enableTHnSparse               = kFALSE,   // switch on THNsparse
   Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
   Bool_t    enableTriggerOverlapRej       = kFALSE,   // enable trigger overlap rejection
@@ -101,6 +100,8 @@ void AddTask_GammaHeavyMeson_CaloMode_pPb(
     localDebugFlag = strLocalDebugFlag.Atoi();
 
   Int_t isHeavyIon = 2;
+  // meson reco mode: 0 - PCM-PCM, 1 - PCM-Calo, 2 - Calo-Calo
+  Int_t mesonRecoMode = 2;
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -138,11 +139,8 @@ void AddTask_GammaHeavyMeson_CaloMode_pPb(
   task->SetCorrectionTaskSetting(corrTaskSetting);
 
   task->SetMesonRecoMode(mesonRecoMode); // meson reco mode: 0 - PCM-PCM, 1 - PCM-Calo, 2 - Calo-Calo
-  if (runLightOutput > 1) task->SetLightOutput(kTRUE);
+  if (enableLightOutput > 1) task->SetLightOutput(kTRUE);
   task->SetDoPrimaryTrackMatching(kTRUE);
-
-  //create cut handler
-  CutHandlerHeavyMesonCalo cuts;
 
   //****************************************************************
   // Run 1, EMC
@@ -276,7 +274,7 @@ void AddTask_GammaHeavyMeson_CaloMode_pPb(
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
-    if (runLightOutput > 0) analysisEventCuts[i]->SetLightOutput(kTRUE);
+    if (enableLightOutput > 0) analysisEventCuts[i]->SetLightOutput(kTRUE);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
@@ -286,14 +284,14 @@ void AddTask_GammaHeavyMeson_CaloMode_pPb(
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
-    if (runLightOutput > 0) analysisClusterCuts[i]->SetLightOutput(kTRUE);
+    if (enableLightOutput > 0) analysisClusterCuts[i]->SetLightOutput(kTRUE);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();
-    analysisMesonCuts[i]->SetLightOutput(runLightOutput);
+    analysisMesonCuts[i]->SetLightOutput(enableLightOutput);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     analysisMesonCuts[i]->SetIsMergedClusterCut(2);
     analysisMesonCuts[i]->SetCaloMesonCutsObject(analysisClusterCuts[i]);
@@ -309,7 +307,7 @@ void AddTask_GammaHeavyMeson_CaloMode_pPb(
   task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetMesonType(selectedMeson);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
-  task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
+  task->SetDoPhotonQA(enableQAClusterTask);  //Attention new switch small for Photon QA
   task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
   task->SetUseTHnSparse(enableTHnSparse);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);

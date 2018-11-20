@@ -24,7 +24,7 @@
 //main function
 //***************************************************************************************
 void AddTask_GammaHeavyMeson_ConvMode_pp(
-  Int_t     selectedMeson                 = 0,                    // select the corresponding meson: 0 pi0, 1 eta, 2 eta'
+  Int_t     selectedMeson                 = 0,        // select the corresponding meson: 0 pi0, 1 eta, 2 eta'
   Int_t     trainConfig                   = 1,        // change different set of cuts
   Int_t     isMC                          = 0,        // run MC
   TString   photonCutNumberV0Reader       = "",       // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
@@ -32,7 +32,8 @@ void AddTask_GammaHeavyMeson_ConvMode_pp(
   // general setting for task
   Int_t     enableQAMesonTask             = 0,        // enable QA in AliAnalysisTaskGammaConvV1
   Int_t     enableQAPhotonTask            = 0,        // enable additional QA task
-  Bool_t    enableLightOutput             = kFALSE,   // switch to run light output (only essential histograms for afterburner)
+  Int_t     enableExtMatchAndQA           = 0,        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
+  Int_t     enableLightOutput             = 0,        // switch to run light output (only essential histograms for afterburner)
   Bool_t    enableTHnSparse               = kFALSE,   // switch on THNsparse
   Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
   Bool_t    enableTriggerOverlapRej       = kFALSE,   // enable trigger overlap rejection
@@ -49,16 +50,18 @@ void AddTask_GammaHeavyMeson_ConvMode_pp(
   Bool_t    enableElecDeDxPostCalibration = kFALSE,
   // special settings
   Bool_t    enableChargedPrimary          = kFALSE,
-  Bool_t    doSmear                       = kFALSE,                 // switches to run user defined smearing
+  Bool_t    doSmear                       = kFALSE,   // switches to run user defined smearing
   Double_t  bremSmear                     = 1.,
-  Double_t  smearPar                      = 0.,                     // conv photon smearing params
-  Double_t  smearParConst                 = 0.,                      // conv photon smearing params
+  Double_t  smearPar                      = 0.,       // conv photon smearing params
+  Double_t  smearParConst                 = 0.,       // conv photon smearing params
   // subwagon config
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig + special settings
                                         ) {
 
   Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
   Int_t isHeavyIon = 0;
+  // meson reco mode: 0 - PCM-PCM, 1 - PCM-Calo, 2 - Calo-Calo
+  Int_t mesonRecoMode = 0;
 
   AliCutHandlerPCM cuts;
 
@@ -119,10 +122,7 @@ void AddTask_GammaHeavyMeson_ConvMode_pp(
   task->SetCorrectionTaskSetting(corrTaskSetting);
 
   task->SetMesonRecoMode(mesonRecoMode); // meson reco mode: 0 - PCM-PCM, 1 - PCM-Calo, 2 - Calo-Calo
-  if (runLightOutput > 1) task->SetLightOutput(kTRUE);
-
-  //create cut handler
-  CutHandlerHeavyMesonConv cuts;
+  if (enableLightOutput > 1) task->SetLightOutput(kTRUE);
 
   // *********************************************************************************************************
   // 2.76 TeV  pp Run1
@@ -239,10 +239,10 @@ void AddTask_GammaHeavyMeson_ConvMode_pp(
   Int_t numberOfCuts = cuts.GetNCuts();
 
   TList *HeaderList = new TList();
-  if (periodName.Contains("LHC12i3")){
+  if (generatorName.Contains("LHC12i3")){
     TObjString *Header2 = new TObjString("BOX");
     HeaderList->Add(Header2);
-  } else if (periodName.CompareTo("LHC14e2b")==0){
+  } else if (generatorName.CompareTo("LHC14e2b")==0){
     TObjString *Header2 = new TObjString("pi0_1");
     HeaderList->Add(Header2);
     TObjString *Header3 = new TObjString("eta_2");
@@ -252,27 +252,27 @@ void AddTask_GammaHeavyMeson_ConvMode_pp(
   TString energy = "";
   TString mcName = "";
   TString mcNameAdd = "";
-  if (periodName.Contains("WOSDD")){
+  if (generatorName.Contains("WOSDD")){
     mcNameAdd = "_WOSDD";
-  } else if (periodName.Contains("WSDD")){
+  } else if (generatorName.Contains("WSDD")){
     mcNameAdd = "_WSDD";
   }
-  if (periodName.Contains("LHC12i3")){
+  if (generatorName.Contains("LHC12i3")){
     energy = "2760GeV";
     mcName = "Pythia8_LHC12i3";
-  } else if (periodName.Contains("LHC12f1a")){
+  } else if (generatorName.Contains("LHC12f1a")){
     energy = "2760GeV";
     mcName = "Pythia8_LHC12f1a";
-  } else if (periodName.Contains("LHC12f1b")){
+  } else if (generatorName.Contains("LHC12f1b")){
     energy = "2760GeV";
     mcName = "Phojet_LHC12f1b";
-  } else if (periodName.Contains("LHC14e2a")){
+  } else if (generatorName.Contains("LHC14e2a")){
     energy = "8TeV";
     mcName = "Pythia8_LHC14e2a";
-  } else if (periodName.Contains("LHC14e2b")){
+  } else if (generatorName.Contains("LHC14e2b")){
     energy = "8TeV";
     mcName = "Pythia8_LHC14e2b";
-  } else if (periodName.Contains("LHC14e2c")){
+  } else if (generatorName.Contains("LHC14e2c")){
     energy = "8TeV";
     mcName = "Phojet_LHC14e2c";
   }
@@ -299,7 +299,7 @@ void AddTask_GammaHeavyMeson_ConvMode_pp(
 
     TString mcInputNamePi0        = "";
     TString mcInputNameEta        = "";
-    if (fAddedSignal && (periodName.Contains("LHC12i3") || periodName.CompareTo("LHC14e2b")==0)){
+    if (fAddedSignal && (generatorName.Contains("LHC12i3") || generatorName.CompareTo("LHC14e2b")==0)){
       mcInputNamePi0              = Form("Pi0_%s%s_addSig_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
       mcInputNameEta              = Form("Eta_%s%s_addSig_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
     } else {
@@ -328,7 +328,7 @@ void AddTask_GammaHeavyMeson_ConvMode_pp(
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
-    if (runLightOutput > 0) analysisEventCuts[i]->SetLightOutput(kTRUE);
+    if (enableLightOutput > 0) analysisEventCuts[i]->SetLightOutput(kTRUE);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
 
@@ -351,7 +351,7 @@ void AddTask_GammaHeavyMeson_ConvMode_pp(
       analysisClusterCuts[i]    = new AliCaloPhotonCuts();
       analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
       analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
-      analysisClusterCuts[i]->SetLightOutput(runLightOutput);
+      analysisClusterCuts[i]->SetLightOutput(enableLightOutput);
       analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
       ClusterCutList->Add(analysisClusterCuts[i]);
       analysisClusterCuts[i]->SetFillCutHistograms("");
@@ -360,14 +360,14 @@ void AddTask_GammaHeavyMeson_ConvMode_pp(
 
     analysisCuts[i] = new AliConversionPhotonCuts();
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
-    if (runLightOutput > 0) analysisCuts[i]->SetLightOutput(kTRUE);
+    if (enableLightOutput > 0) analysisCuts[i]->SetLightOutput(kTRUE);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();
-    if (runLightOutput > 0) analysisMesonCuts[i]->SetLightOutput(kTRUE);
+    if (enableLightOutput > 0) analysisMesonCuts[i]->SetLightOutput(kTRUE);
     analysisMesonCuts[i]->SetRunningMode(0);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     MesonCutList->Add(analysisMesonCuts[i]);

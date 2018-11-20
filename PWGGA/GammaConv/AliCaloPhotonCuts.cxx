@@ -1753,7 +1753,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 
   AliVCaloCells* cells = NULL;
   if(fExtendedMatchAndQA > 1){
-    
+
     if(fHistClusterEnergyvsNCellsBeforeQA) fHistClusterEnergyvsNCellsBeforeQA->Fill(cluster->E(),cluster->GetNCells());
     if(cluster->IsEMCAL()){ //EMCAL
       cells = event->GetEMCALCells();
@@ -5015,6 +5015,14 @@ Bool_t AliCaloPhotonCuts::SetRecConv(Int_t recConv)
     case 7:
       if (!fUseRecConv) fUseRecConv=1;
       fMaxMGGRecConv=0.05;
+      break;
+    case 8:
+      if (!fUseRecConv) fUseRecConv=1;
+      fMaxMGGRecConv=0.01;
+      break;
+    case 9:
+      if (!fUseRecConv) fUseRecConv=1;
+      fMaxMGGRecConv=0.007;
       break;
     default:
       AliError(Form("Conversion Recovery Cut not defined %d",recConv));
