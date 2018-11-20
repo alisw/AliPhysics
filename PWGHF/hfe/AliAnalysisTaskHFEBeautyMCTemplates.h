@@ -93,8 +93,8 @@ class AliAnalysisTaskHFEBeautyMCTemplates : public AliAnalysisTaskSE {
   TH1D * fGroundStateCharmMotherpT;
   TH2D * fDCAHadrons;
   TH2D * fDCAHadronsCorrected;
-  TH2D * fPionV0pTRNoCuts;
-  TH2D * fPionV0pTRWithCuts;
+  TH3D * fPionV0pTRNoCuts;  // pt, R, cent
+  TH3D * fPionV0pTRWithCuts;
   
   //AliHFEcuts * hfetrackCuts;           // Track cuts
   AliHFEsignalCuts * fSignalCuts;

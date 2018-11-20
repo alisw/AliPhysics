@@ -125,8 +125,8 @@ void AliAnalysisTaskHFEBeautyMCTemplates::UserCreateOutputObjects()
     fGroundStateBeautyMotherpT = new TH1D(Form("fGroundStateBeautyMotherpT"),Form("fGroundStateBeautyMotherpT"), 40, 0., 20.);
     fGroundStateCharmMotherpT = new TH1D(Form("fGroundStateCharmMotherpT"),Form("fGroundStateCharmMotherpT"), 40, 0., 20.);
 
-    fPionV0pTRNoCuts = new TH2D(Form("fPionV0pTRNoCuts"),Form("fPionV0pTRNoCuts"), 18, ptbinningX, 80, 0., 20.);
-    fPionV0pTRWithCuts = new TH2D(Form("fPionV0pTRWithCuts"),Form("fPionV0pTRWithCuts"), 18, ptbinningX, 80, 0., 20.);
+    fPionV0pTRNoCuts = new TH3D(Form("fPionV0pTRNoCuts"),Form("fPionV0pTRNoCuts"), 40, 0., 10., 80, 0., 20., 10, 0., 100.);
+    fPionV0pTRWithCuts = new TH3D(Form("fPionV0pTRWithCuts"),Form("fPionV0pTRWithCuts"), 40, 0., 10., 80, 0., 20., 10, 0., 100.);
 
     fRd = new TRandom3(0);
     
@@ -563,10 +563,10 @@ void AliAnalysisTaskHFEBeautyMCTemplates::Process(AliAODEvent *const aodEvent)
         {
           V0Daughter[0] = dynamic_cast<AliAODTrack *> (v0->GetSecondaryVtx()->GetDaughter(0)); // This is how to get the daughter particles in AODs, apparently
           V0Daughter[1] = dynamic_cast<AliAODTrack *> (v0->GetSecondaryVtx()->GetDaughter(1));
-          if(PassesMinimalTrackCuts(V0Daughter[0])) fPionV0pTRNoCuts->Fill(V0Daughter[0]->Pt(), recoRadius);
-          if(PassesMinimalTrackCuts(V0Daughter[1])) fPionV0pTRNoCuts->Fill(V0Daughter[1]->Pt(), recoRadius);
-          if(PassesITSTrackCuts(V0Daughter[0])) fPionV0pTRWithCuts->Fill(V0Daughter[0]->Pt(), recoRadius);
-          if(PassesITSTrackCuts(V0Daughter[1])) fPionV0pTRWithCuts->Fill(V0Daughter[1]->Pt(), recoRadius);
+          if(PassesMinimalTrackCuts(V0Daughter[0])) fPionV0pTRNoCuts->Fill(V0Daughter[0]->Pt(), recoRadius, centrality);
+          if(PassesMinimalTrackCuts(V0Daughter[1])) fPionV0pTRNoCuts->Fill(V0Daughter[1]->Pt(), recoRadius, centrality);
+          if(PassesITSTrackCuts(V0Daughter[0])) fPionV0pTRWithCuts->Fill(V0Daughter[0]->Pt(), recoRadius, centrality);
+          if(PassesITSTrackCuts(V0Daughter[1])) fPionV0pTRWithCuts->Fill(V0Daughter[1]->Pt(), recoRadius, centrality);
         }
       }
     }
