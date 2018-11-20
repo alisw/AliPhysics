@@ -201,6 +201,16 @@ ClusterNonLinearity:                                # Cluster non-linearity corr
         - defaultCells                              # This object is defined above in the cells section of the input objects
     clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
         - defaultClusterContainer_1                 # This object is defined above in the cluster section of the input objects
+ClusterNonLinearityMCAfterburner:                   # MC Cluster additional non-linearity afterburner correction component - To be applied after the standard non-linearity correction
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    afterburnerVersion: kNoCorrection               # Sets the version of the correction to be used. kPCM_EMCal=Standard, kEMCal_EMCal, kPCM_EMCalFunctionRatio, kEMCal_EMCalFunctionRatio=systematic variations 
+    setMCPeriod: ""                                 # Set here the MC production name. Only specific productions have corrections
+    setForceClusterE: false                         # Only for backwards compatibility, force cluster->E() to be set to the cluster non-linearity corrected energy. Off by default. For the standard methods, see: http://alidoc.cern.ch/AliPhysics/master/READMEcontainers.html#emcalContainerClusterEnergyCorrections
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+    clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
+        - defaultClusterContainer_1                 # This object is defined above in the cluster section of the input objects
 ClusterTrackMatcher:                                # Cluster-track matcher component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
@@ -265,6 +275,7 @@ executionOrder:
     - Clusterizer
     - ClusterExotics
     - ClusterNonLinearity
+    - ClusterNonLinearityMCAfterburner
     - ClusterTrackMatcher
     - ClusterHadronicCorrection
     - ClusterEnergyVariation
