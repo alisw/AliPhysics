@@ -1,7 +1,7 @@
 
 #if !defined (__CINT__) || defined (__CLING__)
 #include "AliAnalysisManager.h"
-#include "AliAnalysisTaskrTPCPPMultiplicty.h"
+#include "AliAnalysisTaskPPvsMult.h"
 #include "AliAnalysisFilter.h"
 #include "TInterpreter.h"
 #include "TChain.h"
@@ -9,24 +9,15 @@
 #include <TList.h>
 #endif
 
-AliAnalysisTaskrTPCPPMultiplicty* AddTaskrTPCPPMultiplicty(
+AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 		Bool_t AnalysisMC = kFALSE,
-		Bool_t lowpT      = kFALSE,
-		Int_t typerun =0, // 0 for pp and 1 for Pb-Pb or pPb
+		Int_t system =1, // 0 for pp and 1 for Pb-Pb
 		Bool_t PostCalib = kFALSE,
-		Bool_t MakePid = kTRUE
-
+		Bool_t LowpT = kFALSE,
+		Bool_t MakePid = kFALSE
 		)   
 {
 
-	Double_t vtxCut       = 10;
-	const Float_t minCent = 0.0;
-	const Float_t maxCent = 90.0;
-	const Float_t minMult = 0.0;
-	const Float_t maxMult = 100.0;
-	const Int_t nclCut    = 70;
-	const Double_t etaCut = 0.8;
-	const Bool_t ispileuprej = kTRUE;
 
 	// get the manager via the static access member. since it's static, you don't need
 	// an instance of the class to call the function
@@ -56,43 +47,44 @@ AliAnalysisTaskrTPCPPMultiplicty* AddTaskrTPCPPMultiplicty(
 
 	// by default, a file is open for writing. here, we get the filename
 	TString fileName = AliAnalysisManager::GetCommonFileName();
-	fileName += Form(":%.2f-%.2f",minCent,maxCent);      // create a subfolder in the file
+	//fileName += Form(":%.2f-%.2f",minCent,maxCent);      // create a subfolder in the file
+	fileName += ":Output";      // create a subfolder in the file
 
 
 	// now we create an instance of your task
-	AliAnalysisTaskrTPCPPMultiplicty* task = new AliAnalysisTaskrTPCPPMultiplicty("taskHighPtDeDxpp");   
+	AliAnalysisTaskPPvsMult* task = new AliAnalysisTaskPPvsMult("taskHighPtDeDxpp");   
 	if(!task) return 0x0;
 
 
 	TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-
+//	task->SelectCollisionCandidates(AliVEvent::kAnyINT);
 	task->SetAnalysisType(type);
 	task->SetAnalysisMC(AnalysisMC);
-	task->SetAnalysislowpT(lowpT);
-	if(typerun==1){
+	task->SetAddLowPt(LowpT);
+
+	if(system==1){
 		task->SetAnalysisPbPb(kTRUE);
-		task->SetMinCent(minCent);
-		task->SetMaxCent(maxCent);
+		task->SetMinCent(0.0);
+		task->SetMaxCent(90.0);
+//		task->SetCentralityEstimator(centralityEstimator);
 	}
 	else
 		task->SetAnalysisPbPb(kFALSE);
 	
-	task->SetMinMult(minMult);
-	task->SetMaxMult(maxMult);
-	task->SetNcl(nclCut);
+	task->SetNcl(70);
 	task->SetDebugLevel(0);
-	task->SetEtaCut(etaCut);
-	task->SetVtxCut(vtxCut);
-
+	task->SetEtaCut(0.8);
+//	task->SetVtxCut(10.0);
+//	task->SetTrigger(AliVEvent::kINT7);
+//	task->SetPileUpRej(ispileuprej);
 	//Set Filtesr
 	task->SetTrackFilterGolden(trackFilterGolden);
 	task->SetTrackFilterTPC(trackFilterTPC);
 	task->SetTrackFilter2015PbPb(trackFilterGolden2015PbPb);
-	task->SetStoreMcIn(AnalysisMC);     // def: kFALSE
+//	task->SetStoreMcIn(AnalysisMC);     // def: kFALSE
 	task->SetAnalysisTask(PostCalib);
 	task->SetAnalysisPID(MakePid);
 
-//	task->SelectCollisionCandidates(kTriggerInt AliVEvent::kINT7 );
 	// add your task to the manager
 	mgr->AddTask(task);
 	// your task needs input: here we connect the manager to your task

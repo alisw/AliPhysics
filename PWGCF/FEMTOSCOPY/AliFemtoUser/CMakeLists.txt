@@ -132,6 +132,7 @@ set(SRCS
   AliFemtoModelCorrFctnKStarFull.cxx
   AliFemtoModelWeightGeneratorBasicLednicky.cxx
   AliFemtoAnalysisLambdaKaon.cxx
+  AliFemtoModelCorrFctnDEtaDPhiAK.cxx
   AliFemtoModelCorrFctnDEtaDPhiRM.cxx
   AliFemtoCutMonitorPairKT.cxx
   AliFemtoPairCutMInv.cxx

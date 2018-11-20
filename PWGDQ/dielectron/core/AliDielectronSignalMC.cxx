@@ -155,6 +155,7 @@ AliDielectronSignalMC* AliDielectronSignalMC::GetJpsiMCsignalDef(EJpsiSignals kS
       mcSignal->SetMotherPDGs(443,443);
       mcSignal->SetMothersRelation(AliDielectronSignalMC::kSame);
       mcSignal->SetFillPureMCStep(kTRUE);
+      mcSignal->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
       mcSignal->SetCheckBothChargesLegs(kTRUE,kTRUE);
       mcSignal->SetCheckBothChargesMothers(kTRUE,kTRUE);
       return mcSignal;;
