@@ -28,26 +28,26 @@ void AddTask_GammaCaloMerged_pp(
   Int_t     isMC                          = 0,        // run MC
   TString   photonCutNumberV0Reader       = "",       // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
   TString   periodNameV0Reader            = "",
-  TString   periodname                    = "",        // period name
   // general setting for task
   Int_t     enableQAMesonTask             = 0,        // enable QA in AliAnalysisTaskGammaConvV1
   Int_t     enableQAClusterTask           = 0,        // enable additional QA task
-  Int_t     enableExtMatchAndQA           = 0,                            // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
-  Int_t     enableLightOutput             = 0,   // switch to run light output (only essential histograms for afterburner)
+  Int_t     enableExtMatchAndQA           = 0,        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
+  Int_t     enableLightOutput             = 0,        // switch to run light output (only essential histograms for afterburner)
   Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
   Bool_t    enableTriggerOverlapRej       = kFALSE,   // enable trigger overlap rejection
   Float_t   maxFacPtHard                  = 3.,       // maximum factor between hardest jet and ptHard generated
   // settings for weights
   // FPTW:fileNamePtWeights, separate with ;
   TString   fileNameExternalInputs        = "",
-  Bool_t    doWeightingPart               = kFALSE,        // enable Weighting
+  Bool_t    doWeightingPart               = kFALSE,   // enable Weighting
+  TString   generatorName                 = "",       // generator name
   // special settings
-  Int_t     selectedMeson                 = 1,                  // put flag for selected meson
+  Int_t     selectedMeson                 = 1,        // put flag for selected meson
   Bool_t    enableSortingMCLabels         = kTRUE,    // enable sorting for MC cluster labels
-  Bool_t    enableDetailedPrintout        = kFALSE,             // enable detailed printout
-  Double_t  minEnergyForExoticsCut        = 1.0,                // minimum energy to be used for exotics CutHandler
-  Bool_t    enableExoticsQA               = kFALSE,             // switch to run QA for exotic clusters
-  Bool_t    runDetailedM02                = kFALSE,             // switch on very detailed M02 distribution
+  Bool_t    enableDetailedPrintout        = kFALSE,   // enable detailed printout
+  Double_t  minEnergyForExoticsCut        = 1.0,      // minimum energy to be used for exotics CutHandler
+  Bool_t    enableExoticsQA               = kFALSE,   // switch to run QA for exotic clusters
+  Bool_t    runDetailedM02                = kFALSE,   // switch on very detailed M02 distribution
   // subwagon config
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
   ) {
@@ -1101,10 +1101,10 @@ void AddTask_GammaCaloMerged_pp(
   TList *MesonCutList         = new TList();
 
   TList *HeaderList           = new TList();
-  if (periodname.Contains("LHC12i3")){
+  if (generatorName.Contains("LHC12i3")){
     TObjString *Header2       = new TObjString("BOX");
     HeaderList->Add(Header2);
-  } else if (periodname.CompareTo("LHC14e2b")==0){
+  } else if (generatorName.CompareTo("LHC14e2b")==0){
     TObjString *Header2       = new TObjString("pi0_1");
     HeaderList->Add(Header2);
     TObjString *Header3       = new TObjString("eta_2");
@@ -1114,27 +1114,27 @@ void AddTask_GammaCaloMerged_pp(
   TString energy      = "";
   TString mcName      = "";
   TString mcNameAdd   = "";
-  if (periodname.Contains("WOSDD")){
+  if (generatorName.Contains("WOSDD")){
     mcNameAdd         = "_WOSDD";
-  } else if (periodname.Contains("WSDD")){
+  } else if (generatorName.Contains("WSDD")){
     mcNameAdd         = "_WSDD";
   }
-  if (periodname.Contains("LHC12i3")){
+  if (generatorName.Contains("LHC12i3")){
     energy            = "2760GeV";
     mcName            = "Pythia8_LHC12i3";
-  } else if (periodname.Contains("LHC12f1a")){
+  } else if (generatorName.Contains("LHC12f1a")){
     energy            = "2760GeV";
     mcName            = "Pythia8_LHC12f1a";
-  } else if (periodname.Contains("LHC12f1b")){
+  } else if (generatorName.Contains("LHC12f1b")){
     energy            = "2760GeV";
     mcName            = "Phojet_LHC12f1b";
-  } else if (periodname.Contains("LHC14e2a")){
+  } else if (generatorName.Contains("LHC14e2a")){
     energy            = "8TeV";
     mcName            = "Pythia8_LHC14e2a";
-  } else if (periodname.Contains("LHC14e2b")){
+  } else if (generatorName.Contains("LHC14e2b")){
     energy            = "8TeV";
     mcName            = "Pythia8_LHC14e2b";
-  } else if (periodname.Contains("LHC14e2c")){
+  } else if (generatorName.Contains("LHC14e2c")){
     energy            = "8TeV";
     mcName            = "Phojet_LHC14e2c";
   }

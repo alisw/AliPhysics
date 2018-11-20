@@ -28,26 +28,26 @@ void AddTask_GammaCaloMerged_pPb(
   Int_t     isMC                          = 0,        // run MC
   TString   photonCutNumberV0Reader       = "",       // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
   TString   periodNameV0Reader            = "",
-  TString   periodname                    = "",        // period name
   // general setting for task
   Int_t     enableQAMesonTask             = 0,        // enable QA in AliAnalysisTaskGammaConvV1
   Int_t     enableQAClusterTask           = 0,        // enable additional QA task
-  Int_t     enableExtMatchAndQA           = 0,                            // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
-  Int_t     enableLightOutput             = 0,   // switch to run light output (only essential histograms for afterburner)
+  Int_t     enableExtMatchAndQA           = 0,        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
+  Int_t     enableLightOutput             = 0,        // switch to run light output (only essential histograms for afterburner)
   Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
   Bool_t    enableTriggerOverlapRej       = kFALSE,   // enable trigger overlap rejection
   Float_t   maxFacPtHard                  = 3.,       // maximum factor between hardest jet and ptHard generated
   // settings for weights
   // FPTW:fileNamePtWeights, separate with ;
   TString   fileNameExternalInputs        = "",
-  Int_t    doWeightingPart                = 0,        // enable Weighting
+  Int_t     doWeightingPart               = 0,        // enable Weighting
+  TString   generatorName                 = "",       // period name
   // special settings
-  Int_t     selectedMeson                 = 1,                  // put flag for selected meson
+  Int_t     selectedMeson                 = 1,        // put flag for selected meson
   Bool_t    enableSortingMCLabels         = kTRUE,    // enable sorting for MC cluster labels
-  Bool_t    enableDetailedPrintout        = kFALSE,             // enable detailed printout
-  Double_t  minEnergyForExoticsCut        = 1.0,                // minimum energy to be used for exotics CutHandler
-  Bool_t    enableExoticsQA               = kFALSE,             // switch to run QA for exotic clusters
-  Bool_t    runDetailedM02                = kFALSE,             // switch on very detailed M02 distribution
+  Bool_t    enableDetailedPrintout        = kFALSE,   // enable detailed printout
+  Double_t  minEnergyForExoticsCut        = 1.0,      // minimum energy to be used for exotics CutHandler
+  Bool_t    enableExoticsQA               = kFALSE,   // switch to run QA for exotic clusters
+  Bool_t    runDetailedM02                = kFALSE,   // switch on very detailed M02 distribution
   // subwagon config
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
   ) {
