@@ -4,7 +4,7 @@ AliAnalysisTask *AddTaskMLTreeMakerwCutLib(
                                                     Int_t evCut=1,
                                                     Double_t centmin=0.,
                                                     Double_t centmax=100.,
-                                                    Bool_t SetTPCCorrection=kFALSE,
+                                                    Bool_t SetPIDCorrection=kFALSE,
                                                     Bool_t useAODFilterCuts=kFALSE,
                                                     Bool_t isMC,
                                                     TString TMVAweight = "TMVAClassification_BDTG.weights_094.xml"
@@ -46,11 +46,13 @@ TString weightFile=TMVAweight;
 LMEECutLib* cutlib = new LMEECutLib();      
 AliAnalysisTaskMLTreeMaker *task = new AliAnalysisTaskMLTreeMaker("treemaker",weightFile);   
 
-if(SetTPCCorrection){
-    TH3D mean = cutlib->SetEtaCorrectionTPC(AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly, kFALSE,1);
-    TH3D width = cutlib->SetEtaCorrectionTPC(AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly, kFALSE,2);
-    task->SetUseCorr(kTRUE);
-    task->SetCorrWidthMean((TH3D*)width.Clone(),(TH3D*)mean.Clone());
+if(SetPIDCorrection){
+  task->SetUseCorr(kTRUE);
+  for(int det=1; det<4; det++){
+    TH3D mean = cutlib->SetEtaCorrection(det, isMC, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly, 1);
+    TH3D width = cutlib->SetEtaCorrection(det, isMC, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly, 2);
+    task->SetCorrWidthMean(det,(TH3D*)width.Clone(),(TH3D*)mean.Clone());
+  }
 }
 else  task->SetUseCorr(kFALSE);
 
