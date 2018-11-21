@@ -28,7 +28,7 @@ class AliHFCorrFitter{
  public:
     
   // enums
-  enum FunctionType{kConstwoGaus = 1, kTwoGausPeriodicity =2, kConstThreeGausPeriodicity = 3, kConstThreeGausPeriodicityAS =4, kv2Modulation =5, kTwoGausPeriodicityWithv2Modulation = 6, kModifNSGausPeriodicity =7, kModifNSGausPeriodicityFixBeta =8};  
+  enum FunctionType{kConstwoGaus = 1, kTwoGausPeriodicity =2, kConstThreeGausPeriodicity = 3, kConstThreeGausPeriodicityAS =4, kv2Modulation =5, kTwoGausPeriodicityWithv2Modulation = 6, kModifNSGausPeriodicity =7, kModifNSGausPeriodicityFixBeta =8, kModifNSGausPeriodicityConstrainedBeta =9};  
 
   // constructors
   AliHFCorrFitter();
@@ -148,6 +148,6 @@ class AliHFCorrFitter{
   Double_t			  fMaxAsspt;
   Double_t			  fIspPb;
   Double_t        fBetaVal;
-  ClassDef(AliHFCorrFitter,5);
+  ClassDef(AliHFCorrFitter,6);
 };
 #endif
