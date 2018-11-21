@@ -2782,7 +2782,7 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
     if ( fCurrentRun >= 280234 && fCurrentRun <= 280235 ) lProductionName = "LHC17n";
     
     //Registered production: Run 2 Pb-Pb 2018
-    if ( fCurrentRun >= 295581 && fCurrentRun <= 296000 ) lProductionName = "LHC18q";
+    if ( fCurrentRun >= 295581 && fCurrentRun <= 300000 ) lProductionName = "LHC18q";
     
     //WARNING: change line above if you want to register anything else!
     //         Please note that this is temporary!
