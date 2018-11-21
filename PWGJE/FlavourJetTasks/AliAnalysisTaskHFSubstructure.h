@@ -170,6 +170,7 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  Bool_t GetRejectISR()                                            {return fRejectISR;}
  void SetPromptReject(Bool_t PromptReject)                        {fPromptReject = PromptReject;}
  Bool_t GetPromptRejectR()                                        {return fPromptReject;}
+ void SetAlienConnect(Bool_t AlienConnect)                        {fAlienConnect = AlienConnect;}
  
 
 
@@ -182,7 +183,8 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  Bool_t                              fIncludeInclusive     ;
  Bool_t                              fIsBDecay             ;
  Bool_t                              fRejectISR            ;
- Bool_t                              fPromptReject         ;     
+ Bool_t                              fPromptReject         ;
+ Bool_t                              fAlienConnect         ;
  
  TString                            fBranchName            ; 
  TString                            fCutsFileName          ; 
