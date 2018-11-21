@@ -384,9 +384,9 @@ private:
 
   TH1I*     fhNEvents;                                                             //!<! Number of events counter histogram.
  
-  TH1F *  fhCentrality;                                                            //!<! Centrality all events.
+  TH1F *    fhCentrality;                                                          //!<! Centrality all events.
   
-  TH1F *  fhCentralitySelected;                                                    //!<! Centrality selected events.
+  TH1F *    fhCentralitySelected;                                                  //!<! Centrality selected events.
   
   // Cluster time histograms
   TH2F*     fHTpi0[4];                                                             //!<! Time of cell under pi0 mass, for 4 bunch crossings.
