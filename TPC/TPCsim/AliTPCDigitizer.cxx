@@ -902,11 +902,14 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option) {
     TObjArray *arrTRF = (TObjArray *) timeResFunc.At(isector); /// get ion tail for sector
     if (arrTRF == nullptr) continue;
     TGraphErrors *graphTRFPRF = (TGraphErrors *) arrTRF->At(0);
+
     if (graphTRFPRF == NULL) continue;
+    Int_t nPoints=graphTRFPRF->GetN();
     Int_t nTimes = crossTalkMatrix->GetNcols();
     for (Int_t iwire = 0; iwire < crossTalkMatrix->GetNrows(); iwire++) {
       for (Int_t itime = 0; itime < crossTalkMatrix->GetNcols(); itime++) {
         for (Int_t jtime = itime + 1; jtime < crossTalkMatrix->GetNcols(); jtime++) {
+          if (jtime - itime>=nPoints) continue;
           Double_t trf = graphTRFPRF->GetY()[jtime - itime];
           if (trf < 0) {
             matrixTail(iwire, jtime) += (*crossTalkMatrix)(iwire, itime) * trf;
