@@ -2822,9 +2822,9 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t i
 	 
          double delta_R = j1.delta_R(j2);
          zg = j2.perp()/(j1.perp()+j2.perp());   
-                     
+         double yh=j1.e()+j2.e();            
          double y = log(1.0/delta_R);
-         double lnpt_rel = log(zg*delta_R);
+         double lnpt_rel = log(j2.perp()*delta_R);
 	 double frac=j1.perp()/output_jets[0].perp();
 	 double lundEntries[9] = {y, lnpt_rel, output_jets[0].perp(), nall, type, flagSubjet, xconstperp, invmass,frac};
 	   hname = TString::Format("%s/LundIterative", jetDef.GetName());
@@ -3199,9 +3199,9 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
   }
 
       Int_t dimx   = 9;
-      Int_t nbinsx[9]   = {50,50,10,20,2,2,20,20,10};
+      Int_t nbinsx[9]   = {50,100,10,20,2,2,20,20,100};
       Double_t minx[9] =  {0,-10,0,0,0,0,0,1.4,0};
-      Double_t maxx[9]  = {5,0,100,20,2,2,20,2.4,1};
+      Double_t maxx[9]  = {5,10,100,20,2,2,20,2.4,100};
       TString titlex[9]={"log(1/deltaR)","log(zteta)","jet pt","n","type","flagSubjet","ptD","invmass","frac"};
 
 
