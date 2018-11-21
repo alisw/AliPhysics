@@ -1013,7 +1013,7 @@ Bool_t AliAnalysisTaskPHOSObjectCreator::PassSTDCut(AliVCluster *cluster)
 {
   if(cluster->GetM20() > 2.0) return kFALSE;
   if(cluster->E() > 1.0 && cluster->GetM02() < 0.1) return kFALSE;
-  if(cluster->E() > 1.0 && cluster->GetNCells() < 2.5) return kFALSE;
+  //if(cluster->E() > 1.0 && cluster->GetNCells() < 2.5) return kFALSE;
   return kTRUE;
 
 }
