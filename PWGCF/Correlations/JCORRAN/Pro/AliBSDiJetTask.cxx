@@ -726,7 +726,7 @@ void AliBSDiJetTask::MeasurePtHardBinScalingFactor(){
 	if(fIsMC){
 		if (fOption.Contains("AOD")){
 			AliVEvent *event = InputEvent();
-			//if (fOption.Contains("Emb")) event = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent();
+			if (fOption.Contains("Emb")) event = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent();
 			if (!event) {
 				Printf("ERROR: Could not retrieve event");
 				sf = 0;
@@ -749,6 +749,8 @@ void AliBSDiJetTask::MeasurePtHardBinScalingFactor(){
 				}
 			}
 			sf = XSection/NTrials;
+			cout<<"XSection : "<<XSection<<endl;
+			cout<<"NTrials : "<<NTrials<<endl;
 
 			fMCArray = (TClonesArray*) event->FindListObject("mcparticles");
 			const Int_t nTracksMC = fMCArray->GetEntriesFast();
