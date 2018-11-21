@@ -434,7 +434,7 @@ AliRDHFCutsBPlustoD0Pi::~AliRDHFCutsBPlustoD0Pi() {
   //
   // Default Destructor
   //
-  if (fTrackCutsSoftPi) { delete [] fTrackCutsSoftPi; fTrackCutsSoftPi = nullptr;}
+  if (fTrackCutsSoftPi) { delete fTrackCutsSoftPi; fTrackCutsSoftPi = nullptr;}
   if (fIsCutUsed) { delete [] fIsCutUsed; fIsCutUsed = nullptr; }
   if (fCutsRDD0forD0ptbin) { delete [] fCutsRDD0forD0ptbin; fCutsRDD0forD0ptbin = nullptr; }
   if (fPtBinLimitsD0forD0ptbin) { delete [] fPtBinLimitsD0forD0ptbin; fPtBinLimitsD0forD0ptbin = nullptr; }
