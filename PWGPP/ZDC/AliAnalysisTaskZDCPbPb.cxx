@@ -347,7 +347,8 @@ void AliAnalysisTaskZDCPbPb::UserExec(Option_t */*option*/)
     fhZPApmc->Fill(towZPA[0]/1000.);
 
     Double_t xyZNC[2]={-99.,-99.}, xyZNA[2]={-99.,-99.};
-    esdZDC->GetZNCentroidInPbPb(2510., xyZNC, xyZNA);
+    //esdZDC->GetZNCentroidInPbPb(2510., xyZNC, xyZNA);
+    esdZDC->GetZNCentroidInpp(xyZNC, xyZNA);
 
     fhZNCCentroid->Fill(xyZNC[0], xyZNC[1]);
     fhZNACentroid->Fill(xyZNA[0], xyZNA[1]);
