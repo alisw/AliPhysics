@@ -4906,7 +4906,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
     if (fDoMesonQA > 1){
       if(gamma0MotherLabel>-1 && gamma1MotherLabel>-1){ // Both Tracks are Photons and have a mother but not Pi0 or Eta
         fHistoTrueBckGGInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
-        if(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetClusterType() != 2){
+        if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() != 2){
           if(gamma1MotherLabel < AODMCTrackArray->GetEntries()){
             AliAODMCParticle *trackgamma1 = NULL;
             trackgamma1 = (AliAODMCParticle*)AODMCTrackArray->At(gamma1MotherLabel);
