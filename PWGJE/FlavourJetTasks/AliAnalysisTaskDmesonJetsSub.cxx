@@ -2826,7 +2826,7 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t i
          double y = log(1.0/delta_R);
          double lnpt_rel = log(j2.perp()*delta_R);
 	 double frac=j1.perp()/output_jets[0].perp();
-	 double lundEntries[9] = {y, lnpt_rel, output_jets[0].perp(), nall, type, flagSubjet, xconstperp, invmass,frac};
+	 double lundEntries[9] = {y, lnpt_rel, output_jets[0].perp(), nall, type, flagSubjet, xconstperp, invmass,yh};
 	   hname = TString::Format("%s/LundIterative", jetDef.GetName());
            THnSparse* h = static_cast<THnSparse*>(fHistManager->FindObject(hname)); 
 	   //   if(!h) cout<<"caca"<<endl;
