@@ -76,7 +76,8 @@ void MiniV0efficiency::SlaveBegin(TTree * /*tree*/) {
       new TH1D("fHistV0ctDataH", ";V0 #it{ct} (#it{cm}); Counts", 40, 0., 40.);
   fHistV0ctMC[2] =
       new TH1D("fHistV0ctMCH", ";V0 #it{ct} (#it{cm}); Counts", 40, 0., 40.);
-  fHistV0ptDataNC= new TH1D("fHistV0ptDataNC", ";V0 #it{p}_{T} (GeV/#it{c}); Counts", 40, 0., 10.);    
+
+  ptAnalysisH = new TH2D("ptAnalysisH","H_pt_Analysis",40,-1.,1.,40,0.,10.);
 
   ctAnalysis[2]=new TH2D("ctAnalysisH","H_ct_Analysis",40,-1.,1.,40,0.,40.);
   ctAnalysis[2]->SetXTitle("ctRec-ctGen(#it{cm})");
@@ -112,7 +113,7 @@ Bool_t MiniV0efficiency::Process(Long64_t entry) {
     auto& miniMC=MCparticles[i];
     if(miniMC.IsPrimary()){ 
       int part=miniMC.GetPDGcode();
-      if(miniMC.GetNBodies()==3 || part!=p_vec[2]){  
+      if(miniMC.GetNBodies()==2 || part!=p_vec[2]){  
         int ind=miniMC.GetRecoIndex();
         for (int j=0;j<3;j++){
           if(p_vec[j]==part){
@@ -120,28 +121,25 @@ Bool_t MiniV0efficiency::Process(Long64_t entry) {
             fHistV0ptMC[j]->Fill(miniMC.GetPt());
             fHistV0ctMC[j]->Fill(MCmass*(miniMC.GetDistOverP()));
             if(ind>=0){
-            auto& minidata= V0s[ind];  
-            if(minidata.GetCandidateInvMass(j)!=-1){ 
-              fHistV0ptData[j]->Fill(minidata.GetV0pt());
-              fHistV0ctData[j]->Fill(MCmass*(minidata.GetDistOverP()));
-              ctAnalysis[j]->Fill(MCmass*(minidata.GetDistOverP())-MCmass*(miniMC.GetDistOverP()),MCmass*(miniMC.GetDistOverP()));}
-            else{
-              if(j==2){fHistV0ptDataNC->Fill(minidata.GetV0pt()); } 
-
+              auto& minidata= V0s[ind];  
+              if(minidata.GetCandidateInvMass(j)!=-1){ 
+                fHistV0ptData[j]->Fill(minidata.GetV0pt());
+                fHistV0ctData[j]->Fill(MCmass*(minidata.GetDistOverP()));
+                ctAnalysis[j]->Fill(MCmass*(minidata.GetDistOverP())-MCmass*(miniMC.GetDistOverP()),MCmass*(miniMC.GetDistOverP()));
+                if(j==2) ptAnalysisH->Fill(miniMC.GetPt()-minidata.GetV0pt(),miniMC.GetPt());
+              }
             }  
-            }
           }
 
         }
-      }
+      }      
     }
   }
 
+return kTRUE;
 
-  return kTRUE;
 
-
-  } 
+} 
 
 
 
@@ -176,7 +174,7 @@ void MiniV0efficiency::Terminate() {
     GetOutputList()->Add(Effvsct[j]); 
     GetOutputList()->Add(ctAnalysis[j]);
    }
-  GetOutputList()->Add(fHistV0ptDataNC);
+  GetOutputList()->Add(ptAnalysisH);
   TFile output(Form("results/%s", fOutputFileName.data()),"RECREATE");
   GetOutputList()->Write();
   output.Close();

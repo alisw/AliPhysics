@@ -15,7 +15,7 @@ class TTree;
 #include "Math/Vector4D.h"
 #include "MCparticle.h"
 #include "MiniV0.h"
- 
+
 
 class AliPIDResponse;
 class AliESDtrack;
@@ -100,7 +100,7 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   float fMaxTPCprotonSigma;
   float fMaxTPChe3Sigma;
 
-  std::vector<Lifetimes::MiniV0<3> > fV0vector;
+  std::vector<Lifetimes::MiniV0 > fV0vector;
   std::vector<Lifetimes::MCparticle> fMCvector;
 
   float fMultiplicity;
