@@ -155,7 +155,16 @@ int AliZMQhelpers::alizmq_msg_iter_data_hlt(aliZMQmsg::iterator it, TObject*& ob
   {
     object = ZMQTMessage::Extract(data, size);
   }
-  return 0;
+  else
+  {
+    return -1; //return -1 if payload not expected to be ROOT serialized data
+  }
+
+  if (object) {
+    return 0;  //all OK
+  } else {
+    return 1;  //something went wrong in the deserialization, maybe missing streamers
+  }
 }
 
 //______________________________________________________________________________

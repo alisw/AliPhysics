@@ -234,7 +234,7 @@ int AliZMQhistViewer::GetData(void* socket)
     {
       TObject* tmp = NULL;
       int rc{0};
-      alizmq_msg_iter_data_hlt(i, tmp);
+      rc = alizmq_msg_iter_data_hlt(i, tmp);
       if (!tmp) {
         if (rc>0) {fRequestSchema=true;} //could not deserialize, request streamers next time
         continue;
