@@ -100,7 +100,7 @@ const Char_t* AliReducedVarManager::fgkOfflineTriggerNames[64] = {
     "Central/HighMultV0",                           "SemiCentral",                                              "DG/DG5",                                "ZED",         
     "SPI7/SPI",                                             "INT8",                                                          "MuonSingleLowPt8",                "MuonSingleHighPt8", 
     "MuonLikeLowPt8",                               "MuonUnlikeLowPt8",                                    "MuonUnlikeLowPt0/INT6",       "UserDefined",      
-    "TRD",                                                   "N/A",                                                            "FastOnly",                               "N/A",         
+    "TRD",                                                   "MuonCalo/CaloOnly",                                                            "FastOnly",                               "N/A",         
     "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A",              
     "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A",
     "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A",               
