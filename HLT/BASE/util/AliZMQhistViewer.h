@@ -136,7 +136,7 @@ struct AliZMQhistViewer : public AliOptionParser, public TQObject {
   Bool_t fScaleLogZ ;
   Bool_t fResetOnRequest ;
   Int_t fHistStats ;
-  bool fRequestSchema{true};
+  bool fRequestSchema ;
 
   Bool_t fAllowResetAtSOR ;
 

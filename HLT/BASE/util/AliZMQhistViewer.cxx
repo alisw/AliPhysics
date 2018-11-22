@@ -72,6 +72,7 @@ AliZMQhistViewer::AliZMQhistViewer():
   fScaleLogZ ( kFALSE),
   fResetOnRequest ( kFALSE),
   fHistStats (0),
+  fRequestSchema(true),
   fAllowResetAtSOR ( kTRUE),
   iterations(0),
   fIncoming(NULL),
