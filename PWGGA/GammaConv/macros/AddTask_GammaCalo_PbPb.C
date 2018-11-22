@@ -1096,6 +1096,17 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("18983013","1111100057032230000","01631031000000d0"); // 80-90
     cuts.AddCutCalo("16883013","1111100057032230000","01631031000000d0"); // 60-80
 
+  // **********************************************************************************************************
+  // ***************************** EMC configurations PbPb run 2 2018 *****************************************
+  // **********************************************************************************************************
+  } else if (trainConfig == 750){ // EMCAL clusters - centrality selection for PbPb EMCal
+    cuts.AddCutCalo("10910013","1111100050032230000","0163103100000050"); //  0-100%
+  } else if (trainConfig == 751){ // EMCAL clusters - centrality selection for PbPb EMCal
+    cuts.AddCutCalo("10110013","1111100050032230000","0163103100000050"); //  0-10%
+    cuts.AddCutCalo("11310013","1111100050032230000","0163103100000050"); // 10-20%
+    cuts.AddCutCalo("13510013","1111100050032230000","0163103100000050"); // 20-50%
+    cuts.AddCutCalo("15910013","1111100050032230000","0163103100000050"); // 50-90%
+
 
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
