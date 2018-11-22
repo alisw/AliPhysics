@@ -47,7 +47,7 @@ fCorrectClusters(kFALSE), fRecalPosition(kTRUE),
 fCaloClustersArr(0x0),    fEMCALCells(0x0),
 //fCuts(0x0),               
 fOutputContainer(0x0),
-fCheckCentrality(kFALSE), fCentralityClass("V0M"),
+fCheckCentrality(kFALSE), fCentralityClass("V0M"),  fCentWithEventSel(kFALSE),
 fCentMin(-1),             fCentMax(10000000), 
 fVertex(),                fFilteredInput(kFALSE),
 fImportGeometryFromFile(1), fImportGeometryFilePath(""),
@@ -173,7 +173,7 @@ fCorrectClusters(kFALSE), fRecalPosition(kTRUE),
 fCaloClustersArr(0x0),    fEMCALCells(0x0),
 //fCuts(0x0),               
 fOutputContainer(0x0),
-fCheckCentrality(kFALSE), fCentralityClass("V0M"),
+fCheckCentrality(kFALSE), fCentralityClass("V0M"),  fCentWithEventSel(kFALSE),
 fCentMin(-1),             fCentMax(10000000), 
 fVertex(),                fFilteredInput(kFALSE),
 fImportGeometryFromFile(1), fImportGeometryFilePath(""),
@@ -1776,10 +1776,10 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
     AliMultSelection* multSelection = (AliMultSelection * ) event->FindListObject("MultSelection") ;
     if ( multSelection ) 
     {
-      Float_t cent = multSelection->GetMultiplicityPercentile(fCentralityClass, kTRUE);
+      Float_t cent = multSelection->GetMultiplicityPercentile(fCentralityClass, fCentWithEventSel);
       fhCentrality->Fill(cent);
       
-      AliDebug(1,Form("Centrality %2.1f for class <%s>\n",cent,fCentralityClass.Data()));
+      AliDebug(1,Form("Centrality %2.1f for class <%s>, event sel %d\n",cent,fCentralityClass.Data(),fCentWithEventSel));
       //printf("Centrality %2.1f for class <%s>, select in [%1.1f,%1.1f]\n",cent,fCentralityClass.Data(),fCentMin,fCentMax);
       
       if ( cent < fCentMin || cent >= fCentMax ) return ;
@@ -1853,7 +1853,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::PrintInfo()
   printf("EMCAL Geometry name: < %s >, Load Matrices %d\n",fEMCALGeoName.Data(), fLoadMatrices) ;
 
   if ( fCheckCentrality )
-    printf("Select centrality bin [%1.1f,%1.1f] for class <%s>\n",fCentMin,fCentMax,fCentralityClass.Data());
+    printf("Select centrality bin [%1.1f,%1.1f] for class <%s>, event sel. %d\n",fCentMin,fCentMax,fCentralityClass.Data(),fCentWithEventSel);
   
   if(fLoadMatrices) { for(Int_t ism = 0; ism < AliEMCALGeoParams::fgkEMCALModules; ism++) if(fMatrix[ism]) fMatrix[ism]->Print() ; }
 }
