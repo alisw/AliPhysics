@@ -3,6 +3,9 @@
 
 class AliPIDResponse;
 class TTreeSRedirector;
+class TTreeStream;
+class TTree;
+class TGraph;
 
 class AliESDtools : public TNamed
 {
@@ -30,6 +33,7 @@ class AliESDtools : public TNamed
   static Double_t GetTrackMatchEff(Int_t index, Int_t toolIndex){return (*fgInstance->fCacheTrackMatchEff)[index];}
   static Double_t GetMeanHisTPCVertexA(){return fgInstance->fHisTPCVertexA->GetMean();}
   static Double_t GetMeanHisTPCVertexC(){return fgInstance->fHisTPCVertexC->GetMean();}
+  static Int_t SetDefaultAliases(TTree* tree);
   //
   Int_t fVerbose;                                 // verbosity flag
   TTree *fESDtree;                                //! esd Tree pointer - class is not owner

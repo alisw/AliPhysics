@@ -36,7 +36,6 @@
   tree->SetEntryList(entryList)
   tree->Scan("AliESDtools::GetTrackMatchEff(0,0):AliESDtools::GetTrackCounters(0,0):AliESDtools::GetTrackCounters(4,0):AliESDtools::GetMeanHisTPCVertexA():AliESDtools::GetMeanHisTPCVertexC():Entry$",\
       "AliESDtools::SCalculateEventVariables(Entry$)")
-
   /// 2.) Exercise: stream event information
   TTreeSRedirector *pcstream = new TTreeSRedirector("test.root","recreate")
   tools->SetStreamer(pcstream);
@@ -475,14 +474,15 @@ Int_t AliESDtools::CalculateEventVariables(){
   //
   //
   Int_t nNumberOfTracks = fEvent->GetNumberOfTracks();
-  Float_t tpcDCAarrPhiA[36][nNumberOfTracks];
-  Float_t tpcDCAarrPhiC[36][nNumberOfTracks];
-  for (Int_t i=0;i<36;i++){
-    for (Int_t j=0;j<nNumberOfTracks;j++){
-      tpcDCAarrPhiA[i][j]=kDCAtpcNULL;
-      tpcDCAarrPhiC[i][j]=kDCAtpcNULL;
-    }
-  }
+  /// TODO -decide should we monitor DCA?
+//  Float_t tpcDCAarrPhiA[36][nNumberOfTracks];
+//  Float_t tpcDCAarrPhiC[36][nNumberOfTracks];
+//  for (Int_t i=0;i<36;i++){
+//    for (Int_t j=0;j<nNumberOfTracks;j++){
+//      tpcDCAarrPhiA[i][j]=kDCAtpcNULL;
+//      tpcDCAarrPhiC[i][j]=kDCAtpcNULL;
+//    }
+//  }
   //
   // --------------------------------------------------------------
   //      Track LOOP
@@ -855,4 +855,74 @@ Int_t AliESDtools::DumpEventVariables() {
                      "\n";
 
   return 0;
+}
+/// Set default tree alaiases and corresponding metadata for anotation
+/// \param tree - input tree
+/// \return
+Int_t AliESDtools::SetDefaultAliases(TTree* tree) {
+  if (!tree) return 0;
+  /// FLAGS
+  tree->SetAlias("hasTPC", "(Tracks[].fFlags&0x10>0)&&Tracks[].fTPCncls>20");
+  tree->SetAlias("hasITS", "(Tracks[].fFlags&0x1>0)&&Tracks[].fITSncls>2");
+  tree->SetAlias("hasTRD", "(Tracks[].fFlags&0x100>0)&&Tracks[].fTRDncls/20>2");
+  TStatToolkit::AddMetadata(tree, "hasTPC.AxisTitle", "TPC in");
+  TStatToolkit::AddMetadata(tree, "hasITS.AxisTitle", "ITS in");
+  TStatToolkit::AddMetadata(tree, "hasTRD.AxisTitle", "TRD in");
+  /// Track properties
+  tree->SetAlias("qP", "sign(esdTrack.fIp.fP[4])/(esdTrack.fIp.P())");
+  tree->SetAlias("qPt", "sign(esdTrack.fIp.fP[4])/(esdTrack.fIp.Pt())");
+  tree->SetAlias("tgl", "esdTrack.fIp.fP[3]");
+  tree->SetAlias("atgl", "abs(esdTrack.fIp.fP[3]+0)");
+  tree->SetAlias("mult", "(Tracks@.GetEntries()+0)");
+  tree->SetAlias("tgl", "(Tracks[].fP[3]+0)");
+  ///dEdx ratios
+  tree->SetAlias("mdEdx", "50./Tracks[].fTPCsignal");
+  tree->SetAlias("ratioTotMax0", "fTPCdEdxInfo.GetSignalTot(0)/fTPCdEdxInfo.GetSignalMax(0)");
+  tree->SetAlias("ratioTotMax1", "fTPCdEdxInfo.GetSignalTot(1)/fTPCdEdxInfo.GetSignalMax(1)");
+  tree->SetAlias("ratioTotMax2", "fTPCdEdxInfo.GetSignalTot(2)/fTPCdEdxInfo.GetSignalMax(2)");
+  tree->SetAlias("ratioTotMax3", "fTPCdEdxInfo.GetSignalTot(3)/fTPCdEdxInfo.GetSignalMax(3)");
+  tree->SetAlias("logRatioTot03", "log(fTPCdEdxInfo.GetSignalTot(0)/fTPCdEdxInfo.GetSignalTot(3))");
+  tree->SetAlias("logRatioTot13", "log(fTPCdEdxInfo.GetSignalTot(1)/fTPCdEdxInfo.GetSignalTot(3))");
+  tree->SetAlias("logRatioTot23", "log(fTPCdEdxInfo.GetSignalTot(2)/fTPCdEdxInfo.GetSignalTot(3))");
+  tree->SetAlias("logRatioMax03", "log(fTPCdEdxInfo.GetSignalMax(0)/fTPCdEdxInfo.GetSignalMax(3))");  //
+  tree->SetAlias("logRatioMax13", "log(fTPCdEdxInfo.GetSignalMax(1)/fTPCdEdxInfo.GetSignalMax(3))");  //
+  tree->SetAlias("logRatioMax23", "log(fTPCdEdxInfo.GetSignalMax(2)/fTPCdEdxInfo.GetSignalMax(3))");
+  tree->SetAlias("logRatioTot01", "log(fTPCdEdxInfo.GetSignalTot(0)/fTPCdEdxInfo.GetSignalTot(1))");
+  tree->SetAlias("logRatioTot12", "log(fTPCdEdxInfo.GetSignalTot(1)/fTPCdEdxInfo.GetSignalTot(2))");
+  tree->SetAlias("logRatioTot02", "log(fTPCdEdxInfo.GetSignalTot(0)/fTPCdEdxInfo.GetSignalTot(2))");
+  tree->SetAlias("logRatioMax01", "log(fTPCdEdxInfo.GetSignalMax(0)/fTPCdEdxInfo.GetSignalMax(1))");  //
+  tree->SetAlias("logRatioMax12", "log(fTPCdEdxInfo.GetSignalMax(1)/fTPCdEdxInfo.GetSignalMax(2))");  //
+  tree->SetAlias("logRatioMax02", "log(fTPCdEdxInfo.GetSignalMax(0)/fTPCdEdxInfo.GetSignalMax(2))");  //
+  /// Faction of clusters and ncrossed rows
+  tree->SetAlias("nclFractionROCA", "(Tracks[].GetTPCClusterInfo(3,0)+0)");
+  tree->SetAlias("nclFractionROC0", "(Tracks[].GetTPCClusterInfo(3,0,0,63)+0)");
+  tree->SetAlias("nclFractionROC1", "(Tracks[].GetTPCClusterInfo(3,0,64,128)+0)");
+  tree->SetAlias("nclFractionROC2", "(Tracks[].GetTPCClusterInfo(3,0,129,159)+0)");
+  tree->SetAlias("nCross0", "esdTrack.fTPCdEdxInfo.GetNumberOfCrossedRows(0)");
+  tree->SetAlias("nCross1", "esdTrack.fTPCdEdxInfo.GetNumberOfCrossedRows(1)");
+  tree->SetAlias("nCross2", "esdTrack.fTPCdEdxInfo.GetNumberOfCrossedRows(2)");
+  tree->SetAlias("nFraction0", "esdTrack.GetTPCClusterInfo(1,0,0,62)");
+  tree->SetAlias("nFraction1", "esdTrack.GetTPCClusterInfo(1,0,63,127)");
+  tree->SetAlias("nFraction2", "esdTrack.GetTPCClusterInfo(1,0,127,159)");
+  tree->SetAlias("nFraction3", "esdTrack.GetTPCClusterInfo(1,0,0,159)");
+  tree->SetAlias("n3Fraction0", "esdTrack.GetTPCClusterInfo(3,0,0,62)");
+  tree->SetAlias("n3Fraction1", "esdTrack.GetTPCClusterInfo(3,0,63,127)");
+  tree->SetAlias("n3Fraction2", "esdTrack.GetTPCClusterInfo(3,0,127,159)");
+  tree->SetAlias("n3Fraction3", "esdTrack.GetTPCClusterInfo(3,0,0,159)");
+  //
+  for (Int_t i = 0; i < 3; i++) {
+    TStatToolkit::AddMetadata(tree, Form("nCross%d.AxisTitle", i), Form("# crossed (ROC%d)", i));
+    TStatToolkit::AddMetadata(tree, Form("nclFractionROC%d.AxisTitle", i), Form("fraction of cl (ROC%d)", i));
+    TStatToolkit::AddMetadata(tree, Form("nFraction%d.AxisTitle", i), Form("p_{cl1}(ROC%d)", i));
+    TStatToolkit::AddMetadata(tree, Form("n3Fraction%d.AxisTitle", i), Form("p_{cl3}(ROC%d)", i));
+  }
+  for (Int_t i = 0; i < 4; i++)
+    TStatToolkit::AddMetadata(tree, Form("ratioTotMax%d.AxisTitle", i), Form("Q_{max%d}/Q_{tot%d}", i,i));
+  for (Int_t i = 0; i < 3; i++) {
+    for (Int_t j = i + 1; j < 4; j++) {
+      TStatToolkit::AddMetadata(tree, Form("logRatioMax%d%d.AxisTitle", i, j), Form("log(Q_{MaxRPC%d}/Q_{MaxROC%d})", i, j));
+      TStatToolkit::AddMetadata(tree, Form("logRatioTot%d%d.AxisTitle", i, j), Form("log(Q_{TotRPC%d}/Q_{TotROC%d})", i, j));
+    }
+  }
+  return 1;
 }
