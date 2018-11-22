@@ -724,7 +724,7 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
   fPidHF->SetOldPid(kTRUE);
   SetRemoveDaughtersFromPrim(kTRUE);
   
-  PrintAll();
+  //  PrintAll();
 
   for(Int_t iic=0;iic<nvars;iic++){delete [] anacutsval[iic];}
   delete [] anacutsval;
@@ -862,7 +862,7 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPbPb2010() {
   SetUseCentrality(AliRDHFCuts::kCentV0M);
   SetRemoveDaughtersFromPrim(kFALSE);
     
-  PrintAll();
+  //  PrintAll();
 
   for(Int_t iic=0;iic<nvars;iic++){delete [] anacutsval[iic];}
   delete [] anacutsval;
