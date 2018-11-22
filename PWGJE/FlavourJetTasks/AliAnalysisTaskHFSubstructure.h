@@ -47,6 +47,7 @@ class TTree;
 class AliEMCALGeometry;
 class TRandom;
 class AliRhoParameter;
+class TFile;
 
 //C++
 #include <exception>
@@ -59,6 +60,8 @@ class AliRhoParameter;
 
 #include "AliAnalysisTaskEmcal.h"
 #include "AliJetContainer.h"
+#include "TFile.h"
+#include "AliRDHFCutsD0toKpi.h"
 
 
 class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
@@ -154,8 +157,6 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  Bool_t GetIsBDecay()                                             {return fIsBDecay;} 
  void SetBranchName(TString BranchName)                           {fBranchName = BranchName;}
  TString GetBranchName()                                          {return fBranchName;}
- void SetCutsFileName(TString CutsFileName)                       {fCutsFileName = CutsFileName;}
- TString GetCutsFileName()                                        {return fCutsFileName;}
  void SetCutsType(TString CutsType)                               {fCutsType = CutsType;}
  TString GetCutsType()                                            {return fCutsType;}
  void SetCandidatePDG(Int_t CandidatePDG)                         {fCandidatePDG = CandidatePDG;}
@@ -171,6 +172,10 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  void SetPromptReject(Bool_t PromptReject)                        {fPromptReject = PromptReject;}
  Bool_t GetPromptRejectR()                                        {return fPromptReject;}
  void SetAlienConnect(Bool_t AlienConnect)                        {fAlienConnect = AlienConnect;}
+ void SetCuts(TString CutsFileName)                               {TFile *fCutsFile = TFile::Open(CutsFileName);
+                                                                   TString cutsname="D0toKpiCuts";
+                                                                   if (fCutsType!="") cutsname += TString::Format("_%s", fCutsType.Data()); 
+                                                                   fRDHFCuts = dynamic_cast<AliRDHFCuts*>(fCutsFile->Get(cutsname));}
  
 
 
@@ -187,7 +192,6 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  Bool_t                              fAlienConnect         ;
  
  TString                            fBranchName            ; 
- TString                            fCutsFileName          ; 
  TString                            fCutsType;
  Int_t                              fCandidatePDG          ; 
  UInt_t                             fRejectedOrigin        ; 
@@ -195,7 +199,8 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
 
  Double_t                           fJetRadius             ;
  Double_t                           fJetMinPt              ;
- Double_t                           fShapesVar[nVar]       ; 
+ Double_t                           fShapesVar[nVar]       ;
+
    
 
  TClonesArray                      *fCandidateArray        ; 

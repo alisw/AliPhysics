@@ -83,7 +83,6 @@ AliAnalysisTaskEmcal("AliAnalysisTaskHFSubstructure", kTRUE),
   fPromptReject(kFALSE),
   fAlienConnect(kFALSE),
   fBranchName(0),
-  fCutsFileName(0),
   fCutsType(0),
   fCandidatePDG(421),
   fRejectedOrigin(0),
@@ -133,7 +132,6 @@ AliAnalysisTaskHFSubstructure::AliAnalysisTaskHFSubstructure(const char *name) :
   fPromptReject(kFALSE),
   fAlienConnect(kFALSE),
   fBranchName(0),
-  fCutsFileName(0),
   fCutsType(0),
   fCandidatePDG(421),
   fRejectedOrigin(0),
@@ -265,11 +263,11 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
   if (Matching_AOD_deltaAODlevel <= 0) return kTRUE;
 
   fhEvent->Fill(0); 
-  if(fCutsFileName.Contains("alien://") && fAlienConnect) TGrid::Connect("alien://");
-  TFile* Cuts_File = TFile::Open(fCutsFileName); 
-  TString cutsname="D0toKpiCuts";
-  if (fCutsType!="") cutsname += TString::Format("_%s", fCutsType.Data()); 
-  fRDHFCuts = dynamic_cast<AliRDHFCuts*>(Cuts_File->Get(cutsname));
+  //if(fCutsFileName.Contains("alien://") && fAlienConnect) TGrid::Connect("alien://");
+  //TFile* Cuts_File = TFile::Open(fCutsFileName); 
+  //TString cutsname="D0toKpiCuts";
+  //if (fCutsType!="") cutsname += TString::Format("_%s", fCutsType.Data()); 
+  //fRDHFCuts = dynamic_cast<AliRDHFCuts*>(fCutsFile->Get(cutsname));
 
   
   fAodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
@@ -1377,12 +1375,6 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
     }
     delete Particle_Container; 
   }
-
-
-
-  delete Cuts_File;
-
-
 
 
   
