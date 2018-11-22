@@ -45,10 +45,10 @@ void AddTask_GammaConvV1_pp(
     Bool_t    enableElecDeDxPostCalibration = kFALSE,
     // special settings
     Bool_t    enableChargedPrimary          = kFALSE,
-    Bool_t    doSmear                       = kFALSE,                 // switches to run user defined smearing
+    Bool_t    doSmear                       = kFALSE,   // switches to run user defined smearing
     Double_t  bremSmear                     = 1.,
-    Double_t  smearPar                      = 0.,                     // conv photon smearing params
-    Double_t  smearParConst                 = 0.,                      // conv photon smearing params
+    Double_t  smearPar                      = 0.,       // conv photon smearing params
+    Double_t  smearParConst                 = 0.,       // conv photon smearing params
     // subwagon config
     TString   additionalTrainConfig         = "0"       // additional counter for trainconfig + special settings
                             ) {
