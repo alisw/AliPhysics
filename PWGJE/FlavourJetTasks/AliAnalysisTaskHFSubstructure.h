@@ -208,8 +208,8 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  AliAODEvent                       *fAodEvent              ; 
 
  AliRDHFCuts                       *fRDHFCuts              ; 
- AliFJWrapper                      *fFastJetWrapper        ;
- AliFJWrapper                      *fFastJetWrapper_Truth  ;
+ AliFJWrapper                      *fFastJetWrapper        ; //!<! 
+ AliFJWrapper                      *fFastJetWrapper_Truth  ; //!<! 
 
  std::vector<std::vector<Double_t>>            fShapesVar_Splittings_DeltaR;
  std::vector<std::vector<Double_t>>            fShapesVar_Splittings_DeltaR_Truth;
