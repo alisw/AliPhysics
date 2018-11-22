@@ -791,7 +791,7 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPP2010() {
  SetUsePID(kTRUE);
  SetOptPileup(kTRUE);
  
- PrintAll();
+ // PrintAll();
 
  for(Int_t iiv=0;iiv<nvars;iiv++){
   delete [] prodcutsval[iiv];
@@ -894,7 +894,7 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPbPb2010() {
  SetUsePID(kTRUE);
 
 
- PrintAll();
+ // PrintAll();
 
  for(Int_t iiv=0;iiv<nvars;iiv++){
   delete [] prodcutsval[iiv];
@@ -1393,7 +1393,7 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPPb2013() {
 
  SetUsePID(kTRUE);
 
- PrintAll();
+ // PrintAll();
 
  for(Int_t iiv=0;iiv<nvars;iiv++){
   delete [] prodcutsval[iiv];
