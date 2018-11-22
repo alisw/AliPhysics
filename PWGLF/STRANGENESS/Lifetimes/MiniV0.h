@@ -34,11 +34,11 @@ class MiniV0 {
   Double32_t GetPosProngTPCnsigmaProton() const {return fNsigmaProtonPos;}
   Double32_t GetNegProngEta() const { return fEtaNeg;}
   Double32_t GetPosProngEta() const { return fEtaPos;}
-  bool IsCowboy() const { return fChi2V0 & (1 << 7); }
+  bool IsCowboy() const { return fFlags & kCowboySailor; }
   bool IsLikeSign() const { return fV0radius < 0.; } //TODO: switch to signbit with ROOT6
   bool IsFake() const { return fV0pt < 0.; }         //TODO: switch to signbit with ROOT6
-  bool NegativeProngHasTOF() const { return fEtaNeg & (1 << 7); }
-  bool PositiveProngHasTOF() const { return fEtaPos & (1 << 7); }
+  bool NegativeProngHasTOF() const { return fFlags & kNegativeTOF; }
+  bool PositiveProngHasTOF() const { return fFlags & kPositiveTOF; }
   bool OneProngHasTOF() const { return NegativeProngHasTOF() || PositiveProngHasTOF(); }
   bool NegativeProngHasITSrefit() const { return fITSInfo & (1 << 7); }
   bool PositiveProngHasITSrefit() const { return fITSInfo & (1 << 6); }
@@ -60,14 +60,14 @@ class MiniV0 {
   void SetLeastXedRowsOverFindable(float ratio) { fLeastXedOverFindable = ratio; }
   void SetMaxChi2perCluster(float chi2) { fMaxChi2PerCluster = chi2; }
   void SetProngsTPCnsigmas(float pPi, float pP, float nPi, float nP);
-  void SetProngsEtaTOF(float posEta, float negEta);
+  void SetProngsEta(float posEta, float negEta);
   void SetITSinformation(bool, bool, bool, bool, int);
-  void SetCowboyAndSailor(bool cs) { fFlags = flipBits(fFlags, kCowboySailor, cs); }
+  void SetCowboyAndSailor(bool cs) { fFlags = flipBits(fFlags, static_cast<unsigned char>(kCowboySailor), cs); }
   void SetTOFbits(bool pTOF, bool nTOF);
-  void SetOptimalParameters(bool opt) { fFlags = flipBits(fFlags, kOptimalParams, opt); }
+  void SetOptimalParameters(bool opt) { fFlags = flipBits(fFlags, static_cast<unsigned char>(kOptimalParams), opt); }
 
  private:
-  enum {
+  enum Flags {
     kCowboySailor = 1,
     kNegativeTOF = 1 << 1,
     kPositiveTOF = 1 << 2,
@@ -117,7 +117,7 @@ inline void MiniV0::SetProngsTPCnsigmas(float pPi, float pP, float nPi,
   fNsigmaProtonPos = pP;
 }
 
-inline void MiniV0::SetProngsEtaTOF(float posEta, float negEta) {
+inline void MiniV0::SetProngsEta(float posEta, float negEta) {
   fEtaNeg = negEta;
   fEtaPos = posEta;
 }
@@ -132,8 +132,8 @@ inline void MiniV0::SetITSinformation(bool negRefit, bool posRefit, bool negSPD,
 }
 
 inline void MiniV0::SetTOFbits(bool pTOF, bool nTOF) {
-  flipBits(fFlags, kPositiveTOF, pTOF);
-  flipBits(fFlags, kNegativeTOF, nTOF);
+  flipBits(fFlags, static_cast<unsigned char>(kPositiveTOF), pTOF);
+  flipBits(fFlags, static_cast<unsigned char>(kNegativeTOF), nTOF);
 }
 
 
