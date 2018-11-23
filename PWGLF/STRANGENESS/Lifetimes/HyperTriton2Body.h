@@ -34,6 +34,10 @@ class HyperTriton2Body {
   Double32_t GetPosProngTPCnsigmaHe3() const {return fNsigmaHe3Pos;}
   Double32_t GetNegProngEta() const { return fEtaNeg;}
   Double32_t GetPosProngEta() const { return fEtaPos;}
+  Double32_t GetNegProngPt() const { return fPtNeg;}
+  Double32_t GetPosProngPt() const { return fPtPos;}
+  Double32_t GetNegProngPhi() const { return fPhiNeg;}
+  Double32_t GetPosProngPhi() const { return fPhiPos;}  
   bool IsCowboy() const { return fChi2V0 & (1 << 7); }
   bool IsLikeSign() const { return fV0radius < 0.; } //TODO: switch to signbit with ROOT6
   bool IsFake() const { return fV0pt < 0.; }         //TODO: switch to signbit with ROOT6
@@ -45,7 +49,7 @@ class HyperTriton2Body {
   bool NegativeProngHasSPDcluster() const { return fITSInfo & (1 << 5); }
   bool PositiveProngHasSPDcluster() const { return fITSInfo & (1 << 4); }
   int  GetLeastNumberOfITSclusters() const { return fITSInfo & 0x07; }
-
+ 
   void SetV0radiusAndLikeSign(float r, bool ls = false) { fV0radius = ls ? -r : r; }
   void SetV0ptAndFake(float pt, bool fake) { fV0pt = fake ? -pt : pt; }
   void SetV0eta(float eta) { fV0eta = eta; }
@@ -61,6 +65,8 @@ class HyperTriton2Body {
   void SetMaxChi2perCluster(float chi2) { fMaxChi2PerCluster = chi2; }
   void SetProngsTPCnsigmas(float pPi, float pP, float nPi, float nP);
   void SetProngsEtaTOF(float posEta, float negEta);
+  void HyperTriton2Body::SetProngsPt(float posPt, float negPt);
+  void HyperTriton2Body::SetProngsPhi(float posPhi, float negPhi);
   void SetITSinformation(bool, bool, bool, bool, int);
   void SetCowboyAndSailor(bool cs) { fFlags = flipBits(fFlags, kCowboySailor, cs); }
   void SetTOFbits(bool pTOF, bool nTOF);
@@ -93,6 +99,10 @@ class HyperTriton2Body {
   Double32_t fNsigmaHe3Pos;  
   Double32_t fNsigmaPionNeg;            //[0.0,8.0,4] # sigma TPC pion for the positive prong
   Double32_t fNsigmaHe3Neg;          //[0.0,8.0,4] # sigma TPC proton for the positive prong
+  Double32_t fPtPos;
+  Double32_t fPtNeg;
+  Double32_t fPhiPos;
+  Double32_t fPhiNeg;
   Double32_t fEtaPos;                   //[-1.0,1.0,7] Pseudorapidity of the positive prong. MSB is the TOF bit.
   Double32_t fEtaNeg;                   //[-1.0,1.0,7] Pseudorapidity of the negative prong. MSB is the TOF bit.
   unsigned char fITSInfo;               // Starting from the MSB: kITSrefit for neg and pos, kSPDany for neg and pos, least number of ITS clusters (last 4 bits)
@@ -122,6 +132,16 @@ inline void HyperTriton2Body::SetProngsTPCnsigmas(float pPi, float pHe, float nP
 inline void HyperTriton2Body::SetProngsEtaTOF(float posEta, float negEta) {
   fEtaNeg = negEta;
   fEtaPos = posEta;
+}
+
+inline void HyperTriton2Body::SetProngsPt(float posPt, float negPt) {
+  fPtNeg = negPt;
+  fPtPos = posPt;
+}
+
+inline void HyperTriton2Body::SetProngsPhi(float posPhi, float negPhi) {
+  fPhiNeg = negPhi;
+  fPhiPos = posPhi;
 }
 
 inline void HyperTriton2Body::SetITSinformation(bool negRefit, bool posRefit, bool negSPD, bool posSPD, int nITS) {
