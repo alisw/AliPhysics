@@ -98,7 +98,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   hMCConversionRRejLarge(NULL),
   hMCAllGammaPt(NULL),
   hMCAllSecondaryGammaPt(NULL),
-  hMCSecondaryConvGammaPt(NULL),
+  hMCSecondaryConvGammaPtR(NULL),
   hMCTrueConversionRPhi(NULL),
   hMCTrueConversionRZ(NULL),
   hMCTrueConversionRPt(NULL),
@@ -199,7 +199,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   hMCConversionRRejLarge(NULL),
   hMCAllGammaPt(NULL),
   hMCAllSecondaryGammaPt(NULL),
-  hMCSecondaryConvGammaPt(NULL),
+  hMCSecondaryConvGammaPtR(NULL),
   hMCTrueConversionRPhi(NULL),
   hMCTrueConversionRZ(NULL),
   hMCTrueConversionRPt(NULL),
@@ -316,7 +316,7 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
   hMCConversionRRejSmall    = new TH1F*[fnCuts];
   hMCAllGammaPt             = new TH1F*[fnCuts];
   hMCAllSecondaryGammaPt    = new TH2F*[fnCuts];
-  hMCSecondaryConvGammaPt   = new TH2F*[fnCuts];
+  hMCSecondaryConvGammaPtR  = new TH3F*[fnCuts];
 
   hMCTrueConversionRPhi     = new TH2F*[fnCuts];
   hMCTrueConversionRZ       = new TH2F*[fnCuts];
@@ -482,12 +482,12 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 	hMCAllSecondaryGammaPt[iCut]->GetYaxis()->SetBinLabel(4,"rest");
 	fMCList[iCut]->Add(hMCAllSecondaryGammaPt[iCut]);
 
-	hMCSecondaryConvGammaPt[iCut]  = new TH2F("MC_SecondaryConvGamma_Pt", "MC_SecondaryConvGamma_Pt", nBinsPt, 0., 20., 4, -0.5, 3.5);
-	hMCSecondaryConvGammaPt[iCut]->GetYaxis()->SetBinLabel(1,"K0s");
-	hMCSecondaryConvGammaPt[iCut]->GetYaxis()->SetBinLabel(2,"K0l");
-	hMCSecondaryConvGammaPt[iCut]->GetYaxis()->SetBinLabel(3,"Lambda");
-	hMCSecondaryConvGammaPt[iCut]->GetYaxis()->SetBinLabel(4,"rest");
-	fMCList[iCut]->Add(hMCSecondaryConvGammaPt[iCut]);
+	hMCSecondaryConvGammaPtR[iCut]  = new TH3F("MC_SecondaryConvGamma_PtR", "MC_SecondaryConvGamma_PtR", nBinsPt, 0., 20., nBinsR,0.,200.,4, -0.5, 3.5);
+	hMCSecondaryConvGammaPtR[iCut]->GetZaxis()->SetBinLabel(1,"K0s");
+	hMCSecondaryConvGammaPtR[iCut]->GetZaxis()->SetBinLabel(2,"K0l");
+	hMCSecondaryConvGammaPtR[iCut]->GetZaxis()->SetBinLabel(3,"Lambda");
+	hMCSecondaryConvGammaPtR[iCut]->GetZaxis()->SetBinLabel(4,"rest");
+	fMCList[iCut]->Add(hMCSecondaryConvGammaPtR[iCut]);
 
 
         hMCConversionRPhi[iCut]     = new TH2F("MC_Conversion_RPhi","MC_Conversion_RPhi",nBinsPhi,0.,2*TMath::Pi(),nBinsR,0.,200.);
@@ -844,20 +844,21 @@ void AliAnalysisTaskMaterialHistos::ProcessMCPhotons(){
 	  hMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),3.);
 	}
 	if(((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCEvent,kTRUE)){
+	  TParticle* tmpDaughter1 = (TParticle *)fMCEvent->Particle(particle->GetFirstDaughter());
           if (particle->GetMother(0) > -1 && fMCEvent->Particle(particle->GetMother(0))->GetMother(0) > -1) {
             if (fMCEvent->Particle(fMCEvent->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 310){
-              hMCSecondaryConvGammaPt[fiCut]->Fill(particle->Pt(),0.);
+              hMCSecondaryConvGammaPtR[fiCut]->Fill(particle->Pt(),tmpDaughter1->R(),0.);
             } else if (fMCEvent->Particle(fMCEvent->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 130) {
-              hMCSecondaryConvGammaPt[fiCut]->Fill(particle->Pt(),1.);
+              hMCSecondaryConvGammaPtR[fiCut]->Fill(particle->Pt(),tmpDaughter1->R(),1.);
             } else if (fMCEvent->Particle(fMCEvent->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 3122) {
-              hMCSecondaryConvGammaPt[fiCut]->Fill(particle->Pt(),2.);
+              hMCSecondaryConvGammaPtR[fiCut]->Fill(particle->Pt(),tmpDaughter1->R(),2.);
             } else {
 	      //              if ( !(TMath::Abs(fMCEvent->Particle(particle->GetMother(0))->GetPdgCode()) == 11 && 
 	      //   fMCEvent->Particle(fMCEvent->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 22) )
-                hMCSecondaryConvGammaPt[fiCut]->Fill(particle->Pt(),3.);
+                hMCSecondaryConvGammaPtR[fiCut]->Fill(particle->Pt(),tmpDaughter1->R(),3.);
             }
           } else {
-            hMCSecondaryConvGammaPt[fiCut]->Fill(particle->Pt(),3.);
+            hMCSecondaryConvGammaPtR[fiCut]->Fill(particle->Pt(),tmpDaughter1->R(),3.);
           }
         }
       }
