@@ -41,6 +41,8 @@ public:
         TLorentzVector particle;
     };
 
+    void SetEtaPhiRegion(UInt_t etaphi){ ETA_PHI_REGION = etaphi; };
+
     void SetKaonEtaCut(Float_t eta) { KAON_ETA_CUT = eta; };
     void SetKaonTPCCut(Float_t tpcNSigma) { KAON_TPC_CUT = tpcNSigma; };
     void SetKaonTOFCut(Float_t tofNSigma) { KAON_TOF_CUT = tofNSigma; };
@@ -66,6 +68,8 @@ private:
     Bool_t IS_HH;
     Float_t MULT_LOW;
     Float_t MULT_HIGH;
+    
+    UInt_t ETA_PHI_REGION;
 
     Float_t KAON_ETA_CUT;
     Float_t KAON_TPC_CUT;
@@ -157,7 +161,7 @@ private:
     AliAnalysisTaskHadronPhiCorr(const AliAnalysisTaskHadronPhiCorr&); // not implemented
     AliAnalysisTaskHadronPhiCorr& operator=(const AliAnalysisTaskHadronPhiCorr&); // not implemented
    
-    ClassDef(AliAnalysisTaskHadronPhiCorr, 1); // example of analysis
+    ClassDef(AliAnalysisTaskHadronPhiCorr, 2); // example of analysis
 };
 
 #endif
