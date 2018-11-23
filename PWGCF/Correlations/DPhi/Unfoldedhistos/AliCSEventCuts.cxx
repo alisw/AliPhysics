@@ -65,8 +65,8 @@ Float_t AliCSEventCuts::fgkTrackVertexSigmas_pPb = 1e14;
 
 const Float_t AliCSEventCuts::fgkPrimaryTracksFor_pp[10] = { 0, 2, 5, 10, 15, 30, 50, 100, 500, 1000};
 const Float_t AliCSEventCuts::fgkJpsiPileUpCutCoeff_pp[10][2] = {
-    {-300.0,10.0},
-    {-400.0,10.0},
+    {-300.0,15.0},
+    {-380.0,15.0},
     {-450.0,10.0},
     {-700.0,10.0},
     {0.0,0.0},
