@@ -57,5 +57,6 @@ In addition, a short history of changes to the files in EOS will be listed here:
 - 20181011: Update of EMCALBadChannels.root with additional cells for LHC17h and LHC17i
 - 20181106: Update of EMCALRecalib.root with the change: "from run 295275 no calibration is applied to SMs 17/18 since the online voltages were updated"
 - 20181013: Update of EMCALBadChannels.root with new maps for LHC18g, LHC18h, LHC18i
+- 20181122: Update of EMCALBadChannels.root with new maps for LHC18m
 
 */
