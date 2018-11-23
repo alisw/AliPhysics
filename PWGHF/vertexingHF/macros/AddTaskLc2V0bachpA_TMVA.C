@@ -22,6 +22,7 @@ AliAnalysisTaskSELc2V0bachelorTMVA* AddTaskLc2V0bachpA_TMVA(TString finname="Lc2
     filecuts=TFile::Open(finname.Data());
     if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
       Printf("FATAL: Input file not found : check your cut object");
+      return NULL;
     }
   }
   

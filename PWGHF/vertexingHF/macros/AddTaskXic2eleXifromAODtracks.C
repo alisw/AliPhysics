@@ -26,6 +26,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
     filecuts=TFile::Open(finname.Data());
     if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
       Printf("FATAL: Input file not found : check your cut object");
+      return NULL;
     }
   }
 
