@@ -21,9 +21,11 @@
 #include "AliPDG.h"
 #include "AliPIDResponse.h"
 #include "AliVVertex.h"
+#include "HyperTriton2Body.h"
 
 using Lifetimes::MCparticle;
 using Lifetimes::MiniV0;
+using Lifetimes::HyperTriton2Body;
 using std::cout;
 using std::endl;
 
@@ -110,6 +112,7 @@ AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
       fMaxTPChe3Sigma{10.},
       fV0vector{},
       fMCvector{},
+      fV0Hyvector{},
       fMultiplicity{} {
   // Standard output
   DefineInput(0, TChain::Class());
@@ -138,6 +141,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserCreateOutputObjects() {
   fTreeV0 = new TTree("fTreeV0", "V0 Candidates");
   fTreeV0->Branch("fMultiplicity", &fMultiplicity, "fMultiplicity/F");
   fTreeV0->Branch("V0s", &fV0vector);
+  fTreeV0->Branch("V0Hyper",&fV0Hyvector);
   if (man->GetMCtruthEventHandler()) {
     fTreeV0->Branch("MCparticles",&fMCvector);
   }
@@ -358,6 +362,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
   }
 
   fV0vector.clear();
+  fV0Hyvector.clear();
   for (int iV0 = 0; iV0 < esdEvent->GetNumberOfV0s();
        iV0++) {  // This is the begining of the V0 loop (we analyse only offline
                  // V0s)
@@ -601,28 +606,9 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
       fHistEtaNeg->Fill(nTrack->Eta());
       fHistArmenteros->Fill(v0->AlphaV0(), v0->PtArmV0());
 
+
       // Filling the V0 vector
-      MiniV0 miniV0;
-      miniV0.SetV0ptAndFake(v0Pt, false);
-      miniV0.SetV0eta(v0->Eta());
-      miniV0.SetLeastNumberOfXedRows(minXedRows);
-      miniV0.SetDistOverP(distOverP);
-      for (int iPdg = 0; iPdg < 2; ++iPdg)
-        miniV0.SetInvMass(iPdg, masses[iPdg]);
-      miniV0.SetArmenterosVariables(v0->AlphaV0(), v0->PtArmV0());
-      miniV0.SetV0CosPA(cosPA);
-      miniV0.SetV0Chi2(v0->GetChi2V0());
-      miniV0.SetProngsDCA(v0->GetDcaV0Daughters());
-      miniV0.SetProngsPvDCA(dcaPosToPrimVertex, dcaNegToPrimVertex);
-      miniV0.SetV0radiusAndLikeSign(v0Radius);
-      miniV0.SetLeastXedRowsOverFindable(minXedRowsOverFindable);
-      miniV0.SetMaxChi2perCluster(maxChi2PerCluster);
-      miniV0.SetProngsEta(pTrack->Eta(), nTrack->Eta());
-      miniV0.SetProngsTPCnsigmas(nSigmaPosPion, nSigmaPosProton,
-                                 nSigmaNegPion, nSigmaNegProton);
-      miniV0.SetITSinformation(negITSrefit, posITSrefit, negSPDany, posSPDany, ITSnCl);
-      miniV0.SetTOFbits(posTOF, negTOF);
-      miniV0.SetCowboyAndSailor(isCowboy);
+
       if (fMC) {
         AliESDtrack* one = esdEvent->GetTrack(v0->GetNindex());
         AliESDtrack* two = esdEvent->GetTrack(v0->GetPindex());
@@ -642,12 +628,23 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
           }
         }
       }
-      fV0vector.push_back(miniV0);
+      if (isHyperCandidate){
+         auto miniHyper = HyperTriton2Body::FillHyperTriton2Body(v0,pTrack,nTrack,nSigmaPosHe3,
+         nSigmaNegHe3,nSigmaPosPion,nSigmaNegPion,magneticField,primaryVertex);
+         fV0Hyvector.push_back(miniHyper);
+      }  
+
+      else{
+         auto miniV0 = MiniV0::FillMiniV0(v0,pTrack,nTrack,nSigmaPosProton,nSigmaNegProton,
+         nSigmaPosPion,nSigmaNegPion,magneticField,primaryVertex);
+         fV0vector.push_back(miniV0);
+
+      }
 
     }
   }
 
-  if (fV0vector.size() || fMCvector.size()) fTreeV0->Fill();
+  if (fV0vector.size() || fMCvector.size() || fV0Hyvector.size()) fTreeV0->Fill();
 
   PostData(1, fListHist);
   PostData(2, fTreeV0);

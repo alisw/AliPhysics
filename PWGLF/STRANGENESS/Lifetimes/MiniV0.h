@@ -4,13 +4,16 @@
 #include <cmath>
 #include <cstdlib>
 #include <limits>
-
+#include "AliESDEvent.h"
+#include "AliESDtrack.h"
 #include "Rtypes.h"
 #include "Utils.h"
 
 
+
 namespace Lifetimes {
 
+constexpr double Squ(double x) { return x * x; }
 class MiniV0 {
  public:
   float GetV0radius() const { return std::abs(fV0radius); }
@@ -65,6 +68,8 @@ class MiniV0 {
   void SetCowboyAndSailor(bool cs) { fFlags = flipBits(fFlags, static_cast<unsigned char>(kCowboySailor), cs); }
   void SetTOFbits(bool pTOF, bool nTOF);
   void SetOptimalParameters(bool opt) { fFlags = flipBits(fFlags, static_cast<unsigned char>(kOptimalParams), opt); }
+  static MiniV0 FillMiniV0(AliESDv0 *v0, AliESDtrack *pTrack , AliESDtrack *nTrack, float nsigmaposproton
+,float nsigmanegproton, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3]);
 
  private:
   enum Flags {
@@ -135,6 +140,98 @@ inline void MiniV0::SetTOFbits(bool pTOF, bool nTOF) {
   flipBits(fFlags, static_cast<unsigned char>(kPositiveTOF), pTOF);
   flipBits(fFlags, static_cast<unsigned char>(kNegativeTOF), nTOF);
 }
+
+static inline MiniV0 FillMiniV0(AliESDv0 *v0, AliESDtrack *pTrack , AliESDtrack *nTrack, float nsigmaposproton
+,float nsigmanegproton, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3]){
+
+MiniV0 miniV0;
+double decayVtx[3];
+v0->GetXYZ(decayVtx[0], decayVtx[1], decayVtx[2]);
+double v0Radius = std::hypot(decayVtx[0], decayVtx[1]);
+double masses[2];
+v0->ChangeMassHypothesis(310);
+masses[0] = v0->GetEffMass();
+v0->ChangeMassHypothesis(3122);
+masses[1] = v0->GetEffMass();
+
+double v0Pt = v0->Pt();
+double tV0mom[3];
+v0->GetPxPyPz(tV0mom[0], tV0mom[1], tV0mom[2]);
+double lV0TotalMomentum = std::sqrt(tV0mom[0] * tV0mom[0] + tV0mom[1] * tV0mom[1] + tV0mom[2] * tV0mom[2]);
+float distOverP = std::sqrt(Squ(decayVtx[0] - primaryVertex[0]) +
+                            Squ(decayVtx[1] - primaryVertex[1]) +
+                            Squ(decayVtx[2] - primaryVertex[2])) /
+                  (lV0TotalMomentum + 1e-16); 
+unsigned char posXedRows = pTrack->GetTPCClusterInfo(2, 1);
+unsigned char negXedRows = nTrack->GetTPCClusterInfo(2, 1);
+float posChi2PerCluster =
+    pTrack->GetTPCchi2() / (pTrack->GetTPCNcls() + 1.e-16);
+float negChi2PerCluster =
+    nTrack->GetTPCchi2() / (nTrack->GetTPCNcls() + 1.e-16);
+float posXedRowsOverFindable = float(posXedRows) / pTrack->GetTPCNclsF();
+float negXedRowsOverFindable = float(negXedRows) / nTrack->GetTPCNclsF();
+unsigned char minXedRows =
+    posXedRows < negXedRows ? posXedRows : negXedRows;
+float minXedRowsOverFindable =
+    posXedRowsOverFindable < negXedRowsOverFindable
+        ? posXedRowsOverFindable
+        : negXedRowsOverFindable;
+float maxChi2PerCluster = posChi2PerCluster > negChi2PerCluster
+                              ? posChi2PerCluster
+                              : negChi2PerCluster;
+
+double cosPA = v0->GetV0CosineOfPointingAngle(primaryVertex[0], primaryVertex[1], primaryVertex[2]);
+
+double dcaPosToPrimVertex = std::abs(
+    pTrack->GetD(primaryVertex[0], primaryVertex[1], magneticField));
+
+double dcaNegToPrimVertex = std::abs(
+    nTrack->GetD(primaryVertex[0], primaryVertex[1], magneticField));
+
+bool negTOF = nTrack->GetTOFsignal() * 1.e-3 < 100; // in ns, loose cut on TOF beta (<~0.2)
+bool posTOF = pTrack->GetTOFsignal() * 1.e-3 < 100; // in ns, loose cut on TOF beta (<~0.2)
+
+bool posITSrefit = pTrack->GetStatus() & AliESDtrack::kITSrefit;
+bool negITSrefit = nTrack->GetStatus() & AliESDtrack::kITSrefit;
+bool posSPDany = pTrack->HasPointOnITSLayer(0) || pTrack->HasPointOnITSLayer(1);
+bool negSPDany = nTrack->HasPointOnITSLayer(0) || nTrack->HasPointOnITSLayer(1);
+int ITSnCl = (nTrack->GetITSclusters(0) > pTrack->GetITSclusters(0)) ? pTrack->GetITSclusters(0) : nTrack->GetITSclusters(0);    
+
+double momPos[3];
+v0->GetPPxPyPz(momPos[0], momPos[1], momPos[2]);
+double momNeg[3];
+v0->GetNPxPyPz(momNeg[0], momNeg[1], momNeg[2]);
+
+double lVecProd = momPos[0] * momNeg[1] - momPos[1] * momNeg[0];
+bool isCowboy = lVecProd * magneticField < 0;
+
+
+miniV0.SetV0ptAndFake(v0Pt, false);
+miniV0.SetV0eta(v0->Eta());
+miniV0.SetLeastNumberOfXedRows(minXedRows);
+miniV0.SetDistOverP(distOverP);
+miniV0.SetInvMass(0,masses[0]);
+miniV0.SetInvMass(1,masses[1]);
+miniV0.SetArmenterosVariables(v0->AlphaV0(), v0->PtArmV0());
+miniV0.SetV0CosPA(cosPA);
+miniV0.SetV0Chi2(v0->GetChi2V0());
+miniV0.SetProngsDCA(v0->GetDcaV0Daughters());
+miniV0.SetProngsPvDCA(dcaPosToPrimVertex, dcaNegToPrimVertex);
+miniV0.SetV0radiusAndLikeSign(v0Radius);
+miniV0.SetLeastXedRowsOverFindable(minXedRowsOverFindable);
+miniV0.SetMaxChi2perCluster(maxChi2PerCluster);
+miniV0.SetProngsEta(pTrack->Eta(), nTrack->Eta());
+miniV0.SetProngsTPCnsigmas(nsigmapospion, nsigmaposproton,
+                                 nsigmanegpion, nsigmanegproton);
+miniV0.SetITSinformation(negITSrefit, posITSrefit, negSPDany, posSPDany, ITSnCl);
+miniV0.SetTOFbits(posTOF, negTOF);
+miniV0.SetCowboyAndSailor(isCowboy);
+
+return miniV0;
+
+}
+
+
 
 
 }  // namespace Lifetimes
