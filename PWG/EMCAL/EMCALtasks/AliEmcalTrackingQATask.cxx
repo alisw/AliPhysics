@@ -437,7 +437,7 @@ Bool_t AliEmcalTrackingQATask::FillHistograms()
         // Gold condition:
         // - at least 3 TRD tracklets (with this cut track without TRD in global track fit is at % level)
         if(fUseTRDUpdateFlag) {
-          if(!(track->GetStatus() && AliVTrack::kTRDupdate)) type += 4;
+          if(!(track->GetStatus() & AliVTrack::kTRDupdate)) type += 4;
         } else  {
           if(ntracklets < 3) type += 4;    // failed TRD gold condition
         }
