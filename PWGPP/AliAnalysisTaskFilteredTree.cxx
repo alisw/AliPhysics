@@ -688,10 +688,16 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
       if(!accCuts->AcceptTrack(track)) continue;
 
       // downscale low-pT tracks
-      Double_t scalempt= TMath::Min(track->Pt(),10.);
-      Double_t downscaleF = gRandom->Rndm();
-      downscaleF *= fLowPtTrackDownscaligF;
-      if( downscaleCounter>0 && TMath::Exp(2*scalempt)<downscaleF) continue;
+      /// MODIFICATION of the code 05.10.2018 - using "realistic pt" spectra and downsampling in qpt and pt
+      /// Old disabled code
+      ///    Double_t scalempt= TMath::Min(track->Pt(),10.);
+      ///    Double_t downscaleF = gRandom->Rndm();
+      ///    downscaleF *= fLowPtTrackDownscaligF;
+      ///    if( downscaleCounter>0 && TMath::Exp(2*scalempt)<downscaleF) continue;
+      /// New code using flat pt and flat q/pt mixture
+      Int_t selectionPtMask=PtSelectionMask(track->Pt(), fLowPtTrackDownscaligF, 0.2*fLowPtTrackDownscaligF);
+      if( downscaleCounter>0 && selectionPtMask==0) continue;
+
       //printf("TMath::Exp(2*scalempt) %e, downscaleF %e \n",TMath::Exp(2*scalempt), downscaleF);
 
       AliExternalTrackParam * tpcInner = (AliExternalTrackParam *)(track->GetTPCInnerParam());
@@ -712,6 +718,7 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
       downscaleCounter++;
       (*fTreeSRedirector)<<"highPt"<<
         "gid="<<gid<<
+        "selectionPtMask="<<selectionPtMask<<
         "fileName.="<<&fCurrentFileName<<            
         "runNumber="<<runNumber<<
         "evtTimeStamp="<<evtTimeStamp<<
@@ -991,6 +998,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       Double_t downscaleF = gRandom->Rndm();
       downscaleF *= fLowPtTrackDownscaligF;
       if( downscaleCounter>0 && TMath::Exp(2*scalempt)<downscaleF) continue;
+
       //printf("TMath::Exp(2*scalempt) %e, downscaleF %e \n",TMath::Exp(2*scalempt), downscaleF);
 
       // Dump to the tree 
@@ -3366,4 +3374,25 @@ void AliAnalysisTaskFilteredTree::ProcessMC(){
     Int_t result = GetMCInfoTrack(iMc, trackInfoF,trackInfoO);
 
   }
+}
+
+/// Pt based track downsampling (flat in pt and q/pt)
+///    - previously used approximation - exponential downscaling valid only in limitted range of the pt
+///    - landau approximation very good in long pt range (0.2-8 GeV)
+///    - to test tsallis function - PWGLF/CommonUtils/AdditionalFunctions.h
+/// \param pt           - track pt
+/// \param downscalePt  - downsampling fraction Pt
+/// \param downscaleQPt  - downsampling fraction Pt
+/// \param ptMPV        - landau most pronable pt value
+/// \param sigma        - landau sigma of most probable value
+/// \return             -  selection mask
+///                     -  bit 1 selected - pt flat downsampling
+///                     -  bit 2 selected - q/pt flat downsampling
+Int_t AliAnalysisTaskFilteredTree::PtSelectionMask(Double_t pt, Double_t downscalePt, Double_t downscaleQPt , Double_t ptMPV, Double_t sigma){
+  /// spectra approximated by landau distribution
+  //Double_t probNorm=TMath::Exp(-pt*ptSlope)/TMath::Exp(-ptSlope); /// normalized to 1 at 1 GeV
+  Double_t probNorm=TMath::Landau(pt,ptMPV,sigma)/TMath::Landau(1,ptMPV,sigma);
+  Bool_t ptSelected=probNorm*gRandom->Rndm()<downscalePt;
+  Bool_t qptSelected=probNorm*gRandom->Rndm()*(0.001+pt)<downscaleQPt;
+  return ptSelected+2*qptSelected;
 }

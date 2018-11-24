@@ -1,14 +1,28 @@
 #ifndef ALIDNDPTTRACKDUMPTASK_H
 #define ALIDNDPTTRACKDUMPTASK_H
 
-//------------------------------------------------------------------------------
-// Task to dump track information 
-// TPC constrained and TPC+ITS combined 
-// for outliers analysis.
-// 
-// Author: J.Otwinowski 19/06/2011 
-//------------------------------------------------------------------------------
 
+//------------------------------------------------------------------------------
+/*
+   Class to process/filter reconstruction information from ESD, ESD friends, MC and provide them for later reprocessing
+   Filtering schema - low pt part is downscaled - to have flat pt spectra of selected topologies (tracks and V0s)
+   Downscaling schema is controlled by downscaling factors
+   Usage:
+     1.) Filtering on Lego train
+     2.) expert QA for tracking (resolution efficiency)
+     3.) pt resolution studies using V0s
+     4.) dEdx calibration using V0s
+     5.) pt resolution and dEdx studies using cosmic
+     +
+     6.) Info used for later raw data OFFLINE triggering  (highPt, V0, laser, cosmic, high dEdx)
+
+   Exported trees (with full objects and derived variables):
+   1.) "highPt"     - filtered trees with esd tracks, derived variables(propagated tracks), optional MC info +optional space points
+   2.) "V0s" -      - filtered trees with selected V0s (rough KF chi2 cut), KF particle and corresponding esd tracks + optional space points
+   3.) "Laser"      - dump laser tracks with space points if exists
+   4.) "CosmicTree" - cosmic track candidate (random or triggered) + esdTracks(up/down)+ optional points
+   5.) "dEdx"       - tree with high dEdx tpc tracks
+*/
 class AliESDEvent;
 class AliMCEvent;
 class AliFilteredTreeEventCuts;
@@ -122,6 +136,9 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   Int_t GetMCInfoTrack(Int_t label,   std::map<std::string,float> &trackInfoF, std::map<std::string,TObject*> &trackInfoO);  //TODO- test before enabling
   Int_t GetMCInfoKink(Int_t label,    std::map<std::string,float> &kinkInfoF, std::map<std::string,TObject*> &kinkInfoO);  // TODO
   static Int_t GetMCTrackDiff(const TParticle &particle, const AliExternalTrackParam &param, TClonesArray &trackRefArray, TVectorF &mcDiff); //TODO test before enabling
+  ///
+  static Int_t PtSelectionMask(Double_t pt, Double_t downscalePt=0.005, Double_t downscaleQPt=0.001 , Double_t ptMPV=0.28, Double_t sigma=0.1);
+
  private:
 
   AliESDEvent *fESD;    //! ESD event
