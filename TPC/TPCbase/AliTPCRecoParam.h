@@ -139,6 +139,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void  SetUseExBCorrection(Int_t flag){fUseExBCorrection=flag;}
   void  SetUseTOFCorrection(Bool_t flag) {fUseTOFCorrection = flag;}
   void  SetUseIonTailCorrection(Int_t flag) {fUseIonTailCorrection = flag;}
+  void  SetIonTailCorrection(Int_t factor) {fIonTailCorrection = factor;}
   void  SetCrosstalkCorrection(Float_t crosstalkCorrection) {fCrosstalkCorrection= crosstalkCorrection; }
   void  SetCrosstalkCorrectionMissingCharge(Float_t crosstalkCorrection) {fCrosstalkCorrectionMissingCharge= crosstalkCorrection; }
   //
@@ -162,6 +163,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Int_t GetUseExBCorrection() const {return fUseExBCorrection;}
   Bool_t GetUseTOFCorrection() {return fUseTOFCorrection;}
   Int_t GetUseIonTailCorrection() const {return fUseIonTailCorrection;}
+  Float_t GetIonTailCorrection() const {return fIonTailCorrection;}
   Double_t GetCrosstalkCorrection() const {return fCrosstalkCorrection;}
  Double_t GetCrosstalkCorrectionMissingCharge() const {return fCrosstalkCorrectionMissingCharge;}
 
@@ -281,6 +283,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Bool_t fUseMultiplicityCorrectionDedx; ///< use Dedx multiplicity correction
   Bool_t fUseAlignmentTime;              ///< use time dependent alignment correction
   Int_t fUseIonTailCorrection;   ///< use ion tail correction
+  Float_t fIonTailCorrection;      ///< ion tail tail correction factor - NEW SINCE 2018- additonal scaling correcting for imperfect knowledge of the integral of ion tail - shoudl be ~ 1
   Double_t fCrosstalkCorrection;   ///< crosstalk correction factor (fro each signal substracted by (mean signal in wite patch)xfCrosstalkCorrection) - Effect important only after removing oc capacitors in 2012
   Double_t fCrosstalkCorrectionMissingCharge;   ///< crosstalk correction factor - missing charge factor (from each signal substracted by (mean signal in wite patch)xfCrosstalkCorrection) - Effect important only after removing  capacitors in 2012
  //
