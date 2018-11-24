@@ -258,7 +258,6 @@ Bool_t AliAnalysisTaskHFSubstructure::Run()
 Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 {
 
-
   Int_t Matching_AOD_deltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
   if (Matching_AOD_deltaAODlevel <= 0) return kTRUE;
 
@@ -275,7 +274,6 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
   fRDHFCuts->IsEventSelected(fAodEvent);
   fhEvent->Fill(1); 
-
   fFastJetWrapper=new AliFJWrapper("fastjetwrapper","fastjetwrapper");
   fFastJetWrapper->SetAreaType(fastjet::active_area); 
   fFastJetWrapper->SetGhostArea(0.005);  
@@ -284,8 +282,6 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
   fFastJetWrapper->SetRecombScheme(static_cast<fastjet::RecombinationScheme>(0));
 
   fFastJetWrapper_Truth=new AliFJWrapper("fastjetwrapper_truth","fastjetwrapper_truth");
-
-
   
   if (fJetShapeType == kData || fJetShapeType == kDetSignal || fJetShapeType == kDetBackground || fJetShapeType == kDetReflection){
     
@@ -299,21 +295,22 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
     std::vector<AliAODRecoDecayHF2Prong*> D_Candidates_Vector;
     D_Candidates_Vector.clear();
 
-   
+
     Int_t N_DMesons=0;
     //AliHFTrackContainer* Track_Container=(AliHFTrackContainer *) GetTrackContainer(0);
     AliHFTrackContainer* Track_Container=dynamic_cast<AliHFTrackContainer*>(GetTrackContainer(0));
     if (!Track_Container) return kTRUE;
     Track_Container->SetDMesonCandidate(NULL);
-    for (Int_t i_D = 0; i_D < fCandidateArray->GetEntriesFast(); i_D++) {  
-      AliAODRecoDecayHF2Prong* D_Candidate = static_cast<AliAODRecoDecayHF2Prong*>(fCandidateArray->At(i_D)); 
+    for (Int_t i_D = 0; i_D < fCandidateArray->GetEntriesFast(); i_D++) {
+      AliAODRecoDecayHF2Prong* D_Candidate = static_cast<AliAODRecoDecayHF2Prong*>(fCandidateArray->At(i_D));
       if (!D_Candidate) continue;
       if (!fRDHFCuts->IsInFiducialAcceptance(D_Candidate->Pt(), D_Candidate->Y(fCandidatePDG))) continue;
+      
       Int_t Mass_Hypo_Type=fRDHFCuts->IsSelected(D_Candidate, AliRDHFCuts::kAll, fAodEvent);
-      Int_t N_Mass_Hypotheses=1; 
-      if (Mass_Hypo_Type <= 0 || Mass_Hypo_Type>3) continue;  
+      Int_t N_Mass_Hypotheses=1;
+      if (Mass_Hypo_Type <= 0 || Mass_Hypo_Type>3) continue;
       else if (Mass_Hypo_Type ==3) N_Mass_Hypotheses=2;
-      fhEvent->Fill(2); 
+      fhEvent->Fill(2);
       Int_t Matched_Truth_Particle_PDG=0;
       Int_t Is_Prompt_Correct_Quark_PDG=-1;
       if (fJetShapeType != kData){    
@@ -347,11 +344,11 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	        Matched_Truth_Particle_Mother_Label=Matched_Truth_Particle_Mother->GetMother();
 	      }
 	      else break;
-	      delete Matched_Truth_Particle_Mother;
+	      //delete Matched_Truth_Particle_Mother;
 	    }
 	    Matched_Truth_Particle_PDG = Matched_Truth_Particle->PdgCode();
 	  }
-	  delete Matched_Truth_Particle;
+	  //delete Matched_Truth_Particle;
 	}
 	else continue; 
 	if (fPromptReject && !Is_Prompt_Correct_Quark) continue; 
@@ -411,7 +408,6 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	      }
 	    }
 	}
-
 	
 	fFastJetWrapper->Clear();
 	AliTLorentzVector D_Candidate_LorentzVector(0,0,0,0);
@@ -424,7 +420,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	  if(!Track) continue;
 	  fFastJetWrapper->AddInputVector(Track->Px(), Track->Py(), Track->Pz(), Track->E(),i_Track+100);
 	}
-	delete Track;
+	//	delete Track;
 
 	fFastJetWrapper->Run();
 	std::vector<fastjet::PseudoJet> Inclusive_Jets = fFastJetWrapper->GetInclusiveJets(); 
@@ -528,7 +524,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	  fTreeSplittings->Fill();
       }
       }
-      delete D_Candidate;
+      //delete D_Candidate;
     }
     if(N_DMesons==0) fhEvent->Fill(16); 
     if(N_DMesons==1) fhEvent->Fill(17); 
@@ -537,7 +533,6 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
     if(N_DMesons==4) fhEvent->Fill(20); 
     if(N_DMesons==5) fhEvent->Fill(21); 
     if(N_DMesons==6) fhEvent->Fill(22); 
-  
 
     if (fIncludeInclusive){ 
       fFastJetWrapper->Clear(); 
@@ -559,7 +554,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	Track = static_cast<AliAODTrack*>(Track_Container->GetAcceptParticle(i_Track));
 	fFastJetWrapper->AddInputVector(Track->Px(), Track->Py(), Track->Pz(), Track->E(),i_Track+100);
       }
-      delete Track;
+      //delete Track;
       fFastJetWrapper->Run(); 
       std::vector<fastjet::PseudoJet> Inclusive_Jets = fFastJetWrapper->GetInclusiveJets(); 
       for (UInt_t i_Jet=0; i_Jet < Inclusive_Jets.size(); i_Jet++){ 
@@ -644,8 +639,8 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
       }
     }
-    delete Track_Container;
-    if (fJetShapeType != kData) delete Particle_Container;
+    // delete Track_Container;
+    // if (fJetShapeType != kData) delete Particle_Container;
   }
 
 
@@ -691,7 +686,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	}
 	else fFastJetWrapper_Truth->AddInputVector(Truth_Particle->Px(), Truth_Particle->Py(), Truth_Particle->Pz(), Truth_Particle->E(),i_Particle+100); 
       }
-      delete Truth_Particle;
+      // delete Truth_Particle;
       fFastJetWrapper_Truth->Run();
       Inclusive_Jets_Truth = fFastJetWrapper_Truth->GetInclusiveJets(); 
       if (NTruthD==0) fhEvent->Fill(3); 
@@ -754,7 +749,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	      Matched_Truth_Particle_Mother_Label=Matched_Truth_Particle_Mother->GetMother();
 	    }
 	    else break;
-	    delete Matched_Truth_Particle_Mother;
+	    // delete Matched_Truth_Particle_Mother;
 	  }
 	  Matched_Truth_Particle_PDG = Matched_Truth_Particle->PdgCode();
 	}
@@ -815,7 +810,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	if(!Track) continue;
 	fFastJetWrapper->AddInputVector(Track->Px(), Track->Py(), Track->Pz(), Track->E(),i_Track+100); 
       }
-      delete Track;
+      // delete Track;
       fFastJetWrapper->Run(); 
 
       
@@ -999,10 +994,10 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	
 	}
       }
-      delete Matched_Truth_Particle;
-      delete D_Candidate;
+      // delete Matched_Truth_Particle;
+      // delete D_Candidate;
     }
-    delete Track_Container;
+    // delete Track_Container;
     if(NMatched_DMeson_Jets==0) fhEvent->Fill(24); 
     if(NMatched_DMeson_Jets==1) fhEvent->Fill(25); 
     if(NMatched_DMeson_Jets==2) fhEvent->Fill(26); 
@@ -1065,7 +1060,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	    Truth_D_Particle_Mother_Label=Truth_D_Particle_Mother->GetMother();
 	  }
 	  else break;
-	  delete Truth_D_Particle_Mother;
+	  // delete Truth_D_Particle_Mother;
 	}
 
 	if (fPromptReject && !Is_Prompt_Correct_Quark) continue; 
@@ -1159,10 +1154,10 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	
 	fTreeResponseMatrixAxis->Fill();
 	fTreeSplittings->Fill();
-	delete Truth_D_Particle;		
+	// delete Truth_D_Particle;		
       }	 
     }
-    delete Particle_Container;
+    // delete Particle_Container;
   }
 
 
@@ -1207,7 +1202,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	}
 	else fFastJetWrapper_Truth->AddInputVector(Truth_Particle->Px(), Truth_Particle->Py(), Truth_Particle->Pz(), Truth_Particle->E(),i_Particle+100); 
       }
-      delete Truth_Particle;
+      // delete Truth_Particle;
       fFastJetWrapper_Truth->Run();
       Inclusive_Jets_Truth = fFastJetWrapper_Truth->GetInclusiveJets(); 
 
@@ -1257,7 +1252,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	    Truth_D_Particle_Mother_Label=Truth_D_Particle_Mother->GetMother();
 	  }
 	  else break;
-	  delete Truth_D_Particle_Mother;
+	  // delete Truth_D_Particle_Mother;
 	}
 
 	if(fPromptReject && !Is_Prompt_Correct_Quark) continue;
@@ -1363,7 +1358,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	fTreeSplittings->Fill();
 	
 
-	delete Truth_D_Particle;
+	//	delete Truth_D_Particle;
       }
     if (NTruthD==0) fhEvent->Fill(11); 
     if (NTruthD==1) fhEvent->Fill(12); 
@@ -1373,14 +1368,13 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
     if (NTruthD==5) fhEvent->Fill(16); 
     if (NTruthD==6) fhEvent->Fill(17);
     }
-    delete Particle_Container; 
+    //delete Particle_Container; 
   }
 
-
+  delete fFastJetWrapper_Truth;
+  delete fFastJetWrapper;
   
- return kTRUE;
-
-
+  return kTRUE;
 
  
 }
