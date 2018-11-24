@@ -862,17 +862,16 @@ Int_t AliESDtools::DumpEventVariables() {
 Int_t AliESDtools::SetDefaultAliases(TTree* tree) {
   if (!tree) return 0;
   /// FLAGS
-  tree->SetAlias("hasTPC", "(Tracks[].fFlags&0x10>0)&&Tracks[].fTPCncls>20");
-  tree->SetAlias("hasITS", "(Tracks[].fFlags&0x1>0)&&Tracks[].fITSncls>2");
-  tree->SetAlias("hasTRD", "(Tracks[].fFlags&0x100>0)&&Tracks[].fTRDncls/20>2");
+  tree->SetAlias("hasTPC", "((Tracks[].fFlags&0x10)>0)&&Tracks[].fTPCncls>20");
+  tree->SetAlias("hasITS", "((Tracks[].fFlags&0x1)>0)&&Tracks[].fITSncls>2");
+  tree->SetAlias("hasTRD", "((Tracks[].fFlags&0x100)>0)&&Tracks[].fTRDncls/20>2");
   TStatToolkit::AddMetadata(tree, "hasTPC.AxisTitle", "TPC in");
   TStatToolkit::AddMetadata(tree, "hasITS.AxisTitle", "ITS in");
   TStatToolkit::AddMetadata(tree, "hasTRD.AxisTitle", "TRD in");
   /// Track properties
-  tree->SetAlias("qP", "sign(esdTrack.fIp.fP[4])/(esdTrack.fIp.P())");
-  tree->SetAlias("qPt", "sign(esdTrack.fIp.fP[4])/(esdTrack.fIp.Pt())");
-  tree->SetAlias("tgl", "esdTrack.fIp.fP[3]");
-  tree->SetAlias("atgl", "abs(esdTrack.fIp.fP[3]+0)");
+  tree->SetAlias("qP", "sign(Tacks[].fIp.fP[4])/(Tracks[].fIp.P())");
+  tree->SetAlias("qPt", "Tracks[].fIp.fP[4]");
+  tree->SetAlias("atgl", "abs(Tracks[].fIp.fP[3]+0)");
   tree->SetAlias("mult", "(Tracks@.GetEntries()+0)");
   tree->SetAlias("tgl", "(Tracks[].fP[3]+0)");
   ///dEdx ratios
