@@ -60,9 +60,9 @@ dumpOCDBXML(){
    #  dumpOCDBXML /lustre/nyx/alice/users/miranov/NOTESData/alice-tpc-notes/JIRA/ALIROOT-7077/test1211_PbPb_MCTail_2_2/OCDB/OCDBrec.root TPC*Calib*RecoParam TPC_Calib_RecoParam.xml
 HELP_USAGE
    [ -z $1 ] && return
-    alilog_info "dumpOCDBXML $1\n $2 \n$3"
-    lambdaOCDB $1 $3  $2 ""
-    root -b -q lambdaOCDB.C
+    alilog_info "dumpOCDBXML Begin $1 $2 $3"
+    lambdaOCDB $1 $3  $2 "" >>/dev/null
+    alilog_info "dumpOCDBXML End  $1 $2 $3"
 }
 
 lambdaOCDB(){
@@ -77,20 +77,15 @@ lambdaOCDB(){
 # * param4: Object lambda
 
 #  * Example 1: print content of the Reco param and save object to another file
-{
-    lambdaOCDB /cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/TPC/Calib/RecoParam/Run0_244339_v18_s0.root Run0_244339_v18_s0.xml AliCDBEntry  o.Print\(\"all\"\)\; ; root -b -q lambdaOCDB.C
-}
+    lambdaOCDB /cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/TPC/Calib/RecoParam/Run0_244339_v18_s0.root Run0_244339_v18_s0.xml AliCDBEntry  o.Print\(\"all\"\)\;
 #  * Example 2: create lambda code and execute it:
-{
     lambdaCode='AliTPCRecoParam*p=o;p->Dump();'
-    lambdaOCDB /cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/TPC/Calib/RecoParam/Run0_244339_v18_s0.root Run0_244339_v18_s0.xml  AliCDBEntry \$lambdaCode  ; root -b -q lambdaOCDB.C
-}
+    lambdaOCDB /cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/TPC/Calib/RecoParam/Run0_244339_v18_s0.root Run0_244339_v18_s0.xml  AliCDBEntry \$lambdaCode;
 #  * Example 4: create lambda code to change ion tail
-{
     lambdaCode='TObjArray*p=(TObjArray*)o;for(i=0;i<4;i++)((AliTPCRecoParam*)p->At(i))->SetCrosstalkCorrection(1.5);'
-    lambdaOCDB /cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/TPC/Calib/RecoParam/Run0_244339_v18_s0.root Run0_244339_v18_s0.xml AliCDBEntry  \$lambdaCode  ; root -b -q lambdaOCDB.C
-}
+    lambdaOCDB /cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB/TPC/Calib/RecoParam/Run0_244339_v18_s0.root Run0_244339_v18_s0.xml AliCDBEntry  \$lambdaCode;
 HELP_USAGE
+[ -z $1 ] && return
 
 cat  << LambdaOCDB   > lambdaOCDB.C
     {
@@ -104,6 +99,8 @@ cat  << LambdaOCDB   > lambdaOCDB.C
         delete fout;
     }
 LambdaOCDB
+      alilog_info "lambdaOCD  $1 $2 $3 $4"
+    root -b -q lambdaOCDB.C
 }
 
 
