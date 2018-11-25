@@ -174,6 +174,7 @@ fkExtraCleanup    ( kTRUE ),
 //---> Flags for hypertriton tests
 fkHypertritonMode ( kFALSE ),
 fkHeavyDaughterPID ( kFALSE ),
+fkSandboxV0Prongs( kTRUE ), 
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -694,6 +695,7 @@ fkExtraCleanup    ( kTRUE ),
 //---> Flags for hypertriton tests
 fkHypertritonMode ( kFALSE ),
 fkHeavyDaughterPID ( kFALSE ),
+fkSandboxV0Prongs( kTRUE ),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -2412,9 +2414,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             Printf("ERROR: Could not retreive one of the daughter track");
             continue;
         }
-        
-        fTreeVariablePosTrack = pTrack;
-        fTreeVariableNegTrack = nTrack;
+        AliExternalTrackParam nt(*nTrack), pt(*pTrack);
+        if (fkSandboxV0Prongs){
+            AliExternalTrackParam ptprong(*(v0->GetParamP()));
+            AliExternalTrackParam ntprong(*(v0->GetParamN()));
+            nt = ntprong;
+            pt = ptprong;
+        }
+        fTreeVariablePosTrack = &pt;
+        fTreeVariableNegTrack = &nt;
         
         fTreeVariablePosPIDForTracking = pTrack->GetPIDForTracking();
         fTreeVariableNegPIDForTracking = nTrack->GetPIDForTracking();
