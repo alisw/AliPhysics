@@ -1,7 +1,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-// Updated Oct 31: TRAIN TEST /NOV24
+// Updated Oct 31: TRAIN TEST/NOV25
 
 
 #include "AliAnalysisManager.h"
@@ -376,7 +376,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                 eta = mctrack->Eta();
             }
             
-            if (gpt > 3.81) continue;
+//            if (gpt > 3.81) continue;
             abseta = TMath::Abs(eta);
             if(abseta > 0.8) continue;
             
@@ -583,7 +583,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         
         Float_t v0Radius = TMath::Sqrt(vertx[0]*vertx[0]+vertx[1]*vertx[1]);
         
-        if (V0pt > 3.81) continue;
+//        if (V0pt > 3.81) continue;
         if(TMath::Abs(peta) > 1) continue;
         if(TMath::Abs(neta) > 1) continue;
         if(cosPointingAngle < 0.999) continue;
@@ -661,7 +661,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         fTreeVariablePID = lthisV0->PdgCode();
                         
                         mcpt = lthisV0->Pt();
-                        if (mcpt > 3.81) continue;
+//                        if (mcpt > 3.81) continue;
                         mceta = lthisV0->Eta();
                         
                         isSecFromMaterial = (static_cast<AliAODMCParticle*>(lthisV0))->IsSecondaryFromMaterial();
@@ -730,7 +730,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         fTreeVariablePID = esdlthisV0->GetPdgCode();
                         
                         mcpt = esdlthisV0->Pt();
-                        if (mcpt > 3.81) continue;
+//                        if (mcpt > 3.81) continue;
                         mceta = esdlthisV0->Eta();
                         isSecFromMaterial = stack->IsSecondaryFromMaterial(posTparticle);
                         isSecFromWeakDecay = stack->IsSecondaryFromWeakDecay(posTparticle);
