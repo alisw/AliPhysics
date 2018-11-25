@@ -118,6 +118,9 @@ public:
     void SetHeavyDaughterPID ( Bool_t lOpt = kTRUE) {
         fkHeavyDaughterPID = lOpt;
     }
+    void SetSandboxV0Prongs ( Bool_t lOpt = kTRUE) {
+        fkSandboxV0Prongs = lOpt;
+    }
     //---------------------------------------------------------------------------------------
     void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
         fkDoExtraEvSels = lUseExtraEvSels;
@@ -344,7 +347,7 @@ private:
     
     Bool_t fkHypertritonMode; //if true, save everything in hypertriton mass window
     Bool_t fkHeavyDaughterPID; //if true, save everything that has perfect PID in heavy daughters (akin to dedx)
-    
+    Bool_t fkSandboxV0Prongs; //if true, sandbox mode will save the V0 prongs and not ESD track parametrizations
     
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
     
