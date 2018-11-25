@@ -5911,6 +5911,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
     case 62: //12 with new ECalib
       if((fCurrentMC==k17l3b || fCurrentMC==k18j2) && fClusterType==1){
         energy /= FunctionNL_kSDM(energy, 0.95565, -3.39479, -0.510495);
+        energy /= 0.9972974486;
       }
       break;
     case 63: //21 with new ECalib
@@ -5921,6 +5922,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
     case 64: //22 with new ECalib
       if((fCurrentMC==k17l3b || fCurrentMC==k18j2) && fClusterType==1){
         energy /= (FunctionNL_DExp(energy, 0.9671756224, 0.9580061524, -2.4592540166, 1.0144265411, 0.7007731928, -2.1689124045));
+        energy /= 0.9973908612;
       }
       break;
     case 65: //50MeV TB update
@@ -5934,6 +5936,25 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       if (fClusterType == 1|| fClusterType == 3){
         if(isMC == 0) energy *= FunctionNL_kTestBeamMod(energy, 0.978526, 0.980207, 0.311926, 0.596070, 0.062173, 160.714850, 41.312966);
         else energy *= FunctionNL_kPi0MCMod(energy, 1.011841, 0.999134, 0.110756, 2.736180, 0.002017, 110.402252, -73.996864);
+      }
+      break;
+    case 67: //EVI TB + EMC Corr update
+      if (fClusterType == 1|| fClusterType == 3){
+        if(isMC == 0) energy *= FunctionNL_kTestBeamv4(energy);
+        else{
+          energy *= FunctionNL_kPi0MCv3(energy);
+          energy /= FunctionNL_DPOW(energy, -0.8802886739, 1.8764944987, -0.0020594487, 0.9891399006, 0.0139889085, -2.0388063034);
+        }
+      }
+      break;
+    case 68: //50MeV TB + EMC Corr update
+      if (fClusterType == 1|| fClusterType == 3){
+        if(isMC == 0)
+          energy *= FunctionNL_kTestBeamMod(energy, 0.972947, 0.986154, 0.214860, 0.717724, 0.069200, 155.497605, 48.868069);
+        else{
+          energy *= FunctionNL_kPi0MCMod(energy, 0.898861, 1.109502, 0.083507, 1.910893, 0.285469, 469.340995, 3605.837798);
+          energy /= FunctionNL_DPOW(energy, 0.9969964995, -0.0023796998, -6.1181405682, 0.9926523280, 0.0080737917, -3.6584464200);
+        }
       }
       break;
 
