@@ -638,6 +638,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option) {
   //AliDebug(1,Form(" recoParam->GetUseIonTailCorrection() =  %d ", recoParam->GetUseIonTailCorrection()));
   ::Info("AliTPCDigitizer::DigitizeWithTailAndCrossTalk", "recoParam->GetCrosstalkCorrection()  =   %f", recoParam->GetCrosstalkCorrection());
   ::Info("AliTPCDigitizer::DigitizeWithTailAndCrossTalk", "recoParam->GetUseIonTailCorrection() =  %d ", recoParam->GetUseIonTailCorrection());
+  ::Info("AliTPCDigitizer::DigitizeWithTailAndCrossTalk", "recoParam->GetIonTailCorrection() =  %f ", recoParam->GetIonTailCorrection());
 
   Int_t nROCs = 72;
   char s[100];
@@ -1061,6 +1062,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option) {
         if (lowerElem<zeroElem) lowerElem=zeroElem;
         //
         qIonTail=0;
+        Float_t ionTainNorm=recoParam->GetUseIonTailCorrection();  //normalization correction for ion tail
         if (q>0 && recoParam->GetUseIonTailCorrection()){
           for (Int_t i=0;i<nInputs; i++) if (active[i]){
               Short_t *pdigC= digarr[i]->GetDigits();
@@ -1087,7 +1089,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option) {
                     //TODO fix problem in range the range of histogram to be known in advance
                     continue;
                   }
-                  if (graphTRFPRF->GetY()[grIndex]<0)qIonTail+=qCElem*graphTRFPRF->GetY()[grIndex];
+                  if (graphTRFPRF->GetY()[grIndex]<0)qIonTail+=qCElem*graphTRFPRF->GetY()[grIndex]*ionTailNorm;
                 }
               }
             }
