@@ -889,8 +889,8 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","11111630a7032230000","01631031000000d0"); // -12.5ns, 13ns timing cut, TB NL INT7
     cuts.AddCutCalo("00010113","11111640a7032230000","01631031000000d0"); // -12.5ns, 13ns timing cut, TB NL INT7
   } else if (trainConfig == 422){ // EMCAL clusters no NonLin
-    cuts.AddCutCalo("00010113","11111000a7032230000","01631031000000d0"); // -12.5ns, 13ns timing cut, no NL INT7
-    cuts.AddCutCalo("00010113","11111060a7032230000","01631031000000d0"); // -12.5ns, 13ns timing cut, TB NL INT7
+    cuts.AddCutCalo("00010113","11111670a7032230000","01631031000000d0"); // -12.5ns, 13ns timing cut, TB NL INT7
+    cuts.AddCutCalo("00010113","11111680a7032230000","01631031000000d0"); // -12.5ns, 13ns timing cut, TB NL INT7
   } else if (trainConfig == 423){ // EMCAL clusters no NonLin
     cuts.AddCutCalo("00010113","11111000a7032230000","01631031000000d0"); // -12.5ns, 13ns timing cut, no NL INT7
     cuts.AddCutCalo("00010113","11111060a7032230000","01631031000000d0"); // -12.5ns, 13ns timing cut, TB NL INT7
