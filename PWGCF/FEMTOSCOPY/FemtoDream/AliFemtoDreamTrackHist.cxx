@@ -213,16 +213,15 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
     TString NSigTPCName = Form("NSigTPC_%s", sName[i].Data());
     fNSigTPC[i] = new TH2F(NSigTPCName.Data(), NSigTPCName.Data(), ptBins,
                            ptmin, ptmax, 3. * twoDBins, -60., 60.);
-    fNSigTPC[i]->GetXaxis()->SetTitle("p_{TPC}");
+    fNSigTPC[i]->GetXaxis()->SetTitle("p_{TPC}[GeV/c]");
     fNSigTPC[i]->GetYaxis()->SetTitle("n#sigma_{TPC}");
 
     fTrackCutQA[i]->Add(fNSigTPC[i]);
 
     TString NSigTPCModName = Form("NSigTPCMod_%s", sName[i].Data());
     fNSigTPCMod[i] = new TH2F(NSigTPCModName.Data(), NSigTPCModName.Data(), ptBins,
-                           ptmin, ptmax, 3. * twoDBins, -1., 5.);
-    fNSigTPCMod[i]->Sumw2();
-    fNSigTPCMod[i]->GetXaxis()->SetTitle("p_{TPC}");
+                           ptmin, 1., 3. * twoDBins, -1., 5.);
+    fNSigTPCMod[i]->GetXaxis()->SetTitle("p_{TPC}[GeV/c]");
     fNSigTPCMod[i]->GetYaxis()->SetTitle("|n#sigma_{TPC}|");
 
     fTrackCutQA[i]->Add(fNSigTPCMod[i]);
@@ -231,7 +230,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
     TString NSigTOFName = Form("NSigTOF_%s", sName[i].Data());
     fNSigTOF[i] = new TH2F(NSigTOFName.Data(), NSigTOFName.Data(), ptBins,
                            ptmin, ptmax, 3. * twoDBins, -60., 60.);
-    fNSigTOF[i]->GetXaxis()->SetTitle("p_{TPC}");
+    fNSigTOF[i]->GetXaxis()->SetTitle("p_{TPC}[GeV/c]");
     fNSigTOF[i]->GetYaxis()->SetTitle("n#sigma_{TOF}");
 
     fTrackCutQA[i]->Add(fNSigTOF[i]);
@@ -258,8 +257,8 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
 
     TString NSigComTPCTOFName = Form("NSigComTPCTOF_%s", sName[i].Data());
     fNSigComTPCTOF[i] = new TH2F(NSigComTPCTOFName.Data(), NSigComTPCTOFName.Data(), ptBins,
-                           ptmin, ptmax, 3. * twoDBins, -1., 5.);
-    fNSigComTPCTOF[i]->GetXaxis()->SetTitle("p_{TPC}");
+                           ptmin, 7, 3. * twoDBins, -1., 7.);
+    fNSigComTPCTOF[i]->GetXaxis()->SetTitle("p_{TPC}[GeV/c]");
     fNSigComTPCTOF[i]->GetYaxis()->SetTitle("n#sigma_{comb}=#sqrt{n#sigma_{TPC}^{2}+n#sigma_{TOF}^{2}}");
 
     fTrackCutQA[i]->Add(fNSigComTPCTOF[i]);
