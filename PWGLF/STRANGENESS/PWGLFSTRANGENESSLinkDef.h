@@ -57,4 +57,5 @@
 #pragma link C++ class Lifetimes::MCparticle+;
 #pragma link C++ class std::vector<Lifetimes::MCparticle>+;
 #pragma link C++ class Lifetimes::HyperTriton2Body+;
+#pragma link C++ class std::vector<Lifetimes::HyperTriton2Body>+;
 #endif

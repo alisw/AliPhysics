@@ -141,7 +141,7 @@ inline void MiniV0::SetTOFbits(bool pTOF, bool nTOF) {
   flipBits(fFlags, static_cast<unsigned char>(kNegativeTOF), nTOF);
 }
 
-static inline MiniV0 FillMiniV0(AliESDv0 *v0, AliESDtrack *pTrack , AliESDtrack *nTrack, float nsigmaposproton
+inline MiniV0 MiniV0::FillMiniV0(AliESDv0 *v0, AliESDtrack *pTrack , AliESDtrack *nTrack, float nsigmaposproton
 ,float nsigmanegproton, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3]){
 
 MiniV0 miniV0;

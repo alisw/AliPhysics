@@ -188,7 +188,7 @@ inline void HyperTriton2Body::SetTOFbits(bool pTOF, bool nTOF) {
   flipBits(fFlags, static_cast<unsigned char>(kNegativeTOF), nTOF);
 }
 
-static inline HyperTriton2Body FillHyperTriton2Body(AliESDv0 *v0, AliESDtrack *pTrack , AliESDtrack *nTrack, float nsigmaposhe3
+inline HyperTriton2Body HyperTriton2Body::FillHyperTriton2Body(AliESDv0 *v0, AliESDtrack *pTrack , AliESDtrack *nTrack, float nsigmaposhe3
 ,float nsigmaneghe3, float nsigmapospion,float nsigmanegpion, float magneticField , double primaryVertex[3]){
 
 HyperTriton2Body miniHyper;
