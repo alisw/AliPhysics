@@ -63,18 +63,11 @@ public:
 		virtual void  SetMinCent(Float_t minvalc) {fMinCent = minvalc;}
 		virtual void  SetMaxCent(Float_t maxvalc) {fMaxCent = maxvalc;}
 //		virtual void  SetStoreMcIn(Bool_t value) {fStoreMcIn = value;}
-<<<<<<< HEAD:PWGLF/SPECTRA/PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsMult.h
 		virtual void  SetAnalysisPbPb(Bool_t isanaPbPb) { fAnalysisPbPb = isanaPbPb; }
 		virtual void  SetAnalysisTask(Bool_t PostCalib) { fdEdxCalibrated = PostCalib; }
 		virtual void  SetAnalysisPID(Bool_t makePid) { fMakePid = makePid; }
 		virtual void  SetAddLowPt(Bool_t addlowpt) { fLowPt = addlowpt; }
 		virtual void  SetPeriod(Int_t isLHC16l) { fLHC16l = isLHC16l; }
-=======
-		virtual void  SetAnalysisPbPb(Bool_t isanaPbPb) {fAnalysisPbPb = isanaPbPb;}
-		virtual void  SetAnalysisTask(Bool_t PostCalib) {fdEdxCalibrated = PostCalib;}
-		virtual void  SetAnalysisPID(Bool_t makePid) {fMakePid = makePid;}
-		virtual void  SetAddLowPt(Bool_t addlowpt) {fLowPt = addlowpt;}
->>>>>>> 79366e2cfb3fe7e05629a7ed4f2951ec15a505c8:PWGLF/SPECTRA/PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsMult.h
 
 	private:
 		virtual Float_t GetVertex(const AliVEvent* event) const;
@@ -179,10 +172,7 @@ public:
 		Bool_t       fdEdxCalibrated;
 		Bool_t       fMakePid;
 		Bool_t       fLowPt;
-<<<<<<< HEAD:PWGLF/SPECTRA/PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsMult.h
 		Int_t  fLHC16l;
-=======
->>>>>>> 79366e2cfb3fe7e05629a7ed4f2951ec15a505c8:PWGLF/SPECTRA/PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsMult.h
 		TH1F* fcent;
 		TH1F* fcentAfterPrimaries;
 		TH1F* fcentAfterV0s;
