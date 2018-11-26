@@ -167,7 +167,7 @@ bool AliFemtoDreamEventCuts::isSelected(AliFemtoDreamEvent *evt) {
   }
 
   if (pass && fDoSpherCuts) {
-    if (evt->GetSpher() <= fSpherCutsLow || evt->GetSpher() > fSpherCutsUp) {
+    if (evt->GetSpher() <= fSpherCutsLow || evt->GetSpher() >= fSpherCutsUp) {
       pass = false;
     } else {
       if (!fMinimalBooking)
