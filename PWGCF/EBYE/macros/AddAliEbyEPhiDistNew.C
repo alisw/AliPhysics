@@ -95,7 +95,7 @@ AliAnalysisTask *AddAliEbyEPhiDistNew (
     task->SetIsRapidityCut( IsRapCut );
     task->SetUseTotalMomentumCut( IsTotalMom );
     task->SetKinematicsCuts( ptl, pth, Eta );
-    task->SetNumberOfPtBins(13);
+    task->SetNumberOfPtBins(24);
     task->SetPhi(phil,phih);
     task->SetNumberOfPhiBins(18);
     task->SetTPCTrackQualityCuts( TPCCrossRow, Chi2NDF );
