@@ -375,15 +375,17 @@ void AliEmcalCorrectionClusterNonLinearityMCAfterburner::InitNonLinearityParam(T
       }
       // pp 5.02 TeV (2017) - LHC17pq
       else if(namePeriod=="k17l3b" || namePeriod=="k18j2" || namePeriod=="k17l4b" || namePeriod=="k18b8") {
-        fNonLinearityAfterburnerFunction = 1;
-        //Iteration-1 paramters
-        fNLAfterburnerPara[0] = 0.951531;
-        fNLAfterburnerPara[1] = -3.01394;
-        fNLAfterburnerPara[2] = -0.964505;
-        //Iteration-2 parameters
-        fNLAfterburnerPara[3] = 1.0027;
-        fNLAfterburnerPara[4] = 0;
-        fNLAfterburnerPara[5] = 0;
+        fNonLinearityAfterburnerFunction = 2;
+        //These are parameters extracted by Nicolas Schmidt in 25.Nov 2018 (to be used after kPi0MCv3 and kBeamTestCorrectedv4)
+        fNLAfterburnerPara[0] = -0.8802886739;
+        fNLAfterburnerPara[1] = 1.8764944987;
+        fNLAfterburnerPara[2] = -0.0020594487;
+        fNLAfterburnerPara[3] = 0.9891399006;
+        fNLAfterburnerPara[4] = 0.0139889085;
+        fNLAfterburnerPara[5] = -2.0388063034;
+        fNLAfterburnerPara[6] = 1;
+        fNLAfterburnerPara[7] = 0;
+        fNLAfterburnerPara[8] = 0;
       }
       //pp 13 TeV LHC16 || LHC17 || LHC18 (4)
       else if ( namePeriod=="kPP13T16P1Pyt8" || namePeriod=="kPP13T17P1Pyt8" || namePeriod=="kPP13T18P1Pyt8" || namePeriod=="kPP13T17P1JJ" || namePeriod=="kPP13T16P1JJ" || namePeriod=="kPP13T16P1Pyt8LowB" || namePeriod=="kPP13T17P1Pyt8LowB") {
