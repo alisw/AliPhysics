@@ -173,7 +173,6 @@ void AliEmcalTriggerMakerKernel::ConfigureForPP2015()
   AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetGammaHighBit() | 1<<fTriggerBitConfig->GetGammaLowBit(), 2, 1);
   AddL1TriggerAlgorithm(0, 63, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit(), 16, 4);
   AddL1TriggerAlgorithm(64, 103, 1<<fTriggerBitConfig->GetJetHighBit() | 1<<fTriggerBitConfig->GetJetLowBit(), 8, 4);
-  SetOnlineBackgroundSubtraction(true);     // Subtract background energy from online ADC values
   fConfigured = true;
 }
 
@@ -553,7 +552,7 @@ void AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inputeven
       onlinebits &= bkgPatchMask;
     }
     if(fDoBackgroundSubtraction) {
-      double area = TMath::Power(static_cast<double>(patchit->GetPatchSize())/4., 2);
+      double area = TMath::Power(static_cast<double>(patchit->GetPatchSize())/8., 2);
       double rhoval = (patchit->GetRowStart() >= 64) ? fRhoValues[kIndRhoDCAL] : fRhoValues[kIndRhoEMCAL];
       AliDebugStream(1) << "Subtracting background for area " << area << ": " << rhoval  << " -> " << (area * rhoval) << std::endl;
       patchit->SetADC(patchit->GetADC() - area * rhoval);
