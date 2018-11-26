@@ -329,16 +329,19 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
 
     //log(1/theta),log(z*theta),jetpT,algo//
    const Int_t dimSpec   = 6;
-   const Int_t nBinsSpec[6]     = {50,50,10,3,22,10};
-   const Double_t lowBinSpec[6] = {0.0,-10,  0,0,0,0};
-   const Double_t hiBinSpec[6]  = {5.0,  0,200,3,22,10};
+   const Int_t nBinsSpec[6]     = {50,100,60,3,22,10};
+   const Double_t lowBinSpec[6] = {0.9,-10,0.0,0.0,0.0,0.0};
+   const Double_t hiBinSpec[6]  = {5.0,2.0,600.0,3.0,22.0,10.0};
    fHLundIterative = new THnSparseF("fHLundIterative",
                    "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo,partonFlavor,depth]",
                    dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
   fOutput->Add(fHLundIterative);
+  const Int_t nBinsSpec_ktaxis[6]     = {50,100,60,3,22,10};
+  const Double_t lowBinSpec_ktaxis[6] = {0.9,-4.0,0.0,0.0,0.0,0.0};
+  const Double_t hiBinSpec_ktaxis[6]  = {5.0,8.0,600.0,3.0,22.0,10.0};
   fHLundIterative_ktaxis = new THnSparseF("fHLundIterative_ktaxis",
                   "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo,partonFlavor,depth]",
-                  dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
+                  dimSpec,nBinsSpec_ktaxis,lowBinSpec_ktaxis,hiBinSpec_ktaxis);
   fOutput->Add(fHLundIterative_ktaxis);
 
   if(fAdditionalTracks>0){
