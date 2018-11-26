@@ -722,7 +722,7 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
       new AliFemtoDreamPartCollection(fConfig, fConfig->GetMinimalBookingME());
 
   if (!fConfig->GetMinimalBookingME() && fPairCleaner &&
-      fPairCleaner->GetHistList() && !fIsMC) {
+      fPairCleaner->GetHistList()) {
     fOutputFemto->Add(fPairCleaner->GetHistList());
   }
 
