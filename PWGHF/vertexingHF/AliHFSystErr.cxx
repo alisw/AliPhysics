@@ -2086,13 +2086,13 @@ void AliHFSystErr::InitDplustoKpipi2017pp5TeV_finebins(){
   fTrackingEff->SetBinContent(8,0.06); // 4.5-5.
   fTrackingEff->SetBinContent(9,0.06); // 5-5.5.
   fTrackingEff->SetBinContent(10,0.06); // 5.5-6.
-  fTrackingEff->SetBinContent(11,0.065); // 6.6-7.
-  fTrackingEff->SetBinContent(12,0.065); // 7-7.5.
-  fTrackingEff->SetBinContent(13,0.065); // 7.5-8.
-  fTrackingEff->SetBinContent(14,0.065); // 8-9.
-  fTrackingEff->SetBinContent(15,0.065); // 9-10.
-
-  for(Int_t i=16;i<=20;i++) fTrackingEff->SetBinContent(i,0.07);
+  fTrackingEff->SetBinContent(11,0.065); // 6-6.5.
+  fTrackingEff->SetBinContent(12,0.065); // 6.5-7.
+  fTrackingEff->SetBinContent(13,0.065); // 7-7.5.
+  fTrackingEff->SetBinContent(14,0.065); // 7.5-8.
+  fTrackingEff->SetBinContent(15,0.065); // 8-9
+  fTrackingEff->SetBinContent(16,0.065); // 9-10
+  for(Int_t i=17;i<=20;i++) fTrackingEff->SetBinContent(i,0.07);
 
   // Raw yield extraction
 
@@ -2101,8 +2101,8 @@ void AliHFSystErr::InitDplustoKpipi2017pp5TeV_finebins(){
   fRawYield->SetBinContent(2,0.03);//1.5-2
   fRawYield->SetBinContent(3,0.03);// 2-2.5
   fRawYield->SetBinContent(4,0.03);// 2.5-3 
-  for(Int_t i=5;i<=14;i++) fRawYield->SetBinContent(i,0.02);//3-9
-  for(Int_t i=15;i<=18;i++) fRawYield->SetBinContent(i,0.03);//9-16
+  for(Int_t i=5;i<=15;i++) fRawYield->SetBinContent(i,0.02);//3-9
+  for(Int_t i=16;i<=18;i++) fRawYield->SetBinContent(i,0.03);//9-16
   fRawYield->SetBinContent(19,0.04);// 16-24
   fRawYield->SetBinContent(20,0.07);// 24-36
 
