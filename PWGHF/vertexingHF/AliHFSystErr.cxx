@@ -1165,8 +1165,8 @@ void AliHFSystErr::InitD0toKpi2017pp5TeV(){
   fCutsEff = new TH1F("fCutsEff","fCutsEff",50,0,50);
   //  fCutsEff->SetBinContent(1,0.0);
   for(Int_t i=1;i<=3;i++) fCutsEff->SetBinContent(i,0.05);
-  for(Int_t i=3;i<=8;i++) fCutsEff->SetBinContent(i,0.03);
-  for(Int_t i=8;i<=50;i++) fCutsEff->SetBinContent(i,0.03);
+  for(Int_t i=4;i<=8;i++) fCutsEff->SetBinContent(i,0.03);
+  for(Int_t i=9;i<=50;i++) fCutsEff->SetBinContent(i,0.03);
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",50,0,50);
