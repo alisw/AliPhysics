@@ -6,6 +6,7 @@
 #include "runCorrelationsStudiesConfigMacro.H"
 
 void load2010bTestRunNumber();
+void load2010cTestRunNumber();
 void load2010bRunNumbers();
 void loadLocal2010hMCTestRunNumber();
 void load2010hTestRunNumber();
@@ -67,7 +68,7 @@ void runCorrelationsStudiesConfigMacro() {
   nNoOfTestFiles = 2;
 
   /* load the run numbers */
-  load2010bTestRunNumber();
+  load2010cTestRunNumber();
   // loadLocal2010hMCTestRunNumber();
   // load2010hTestRunNumber();
   // load2010hMCTestRunNumber();
@@ -138,6 +139,23 @@ void load2010bTestRunNumber() {
 
   /* the list of runs to analyze */
   listOfActiveRuns.Add(new TObjString("114918"));
+}
+
+void load2010cTestRunNumber() {
+  bUseESD                    = kTRUE;
+  bUseAOD                    = !bUseESD;
+
+  /* the GRID working directory */
+  szGridWorkingDir = "CorrelationStudies_2010cTest";
+
+  /* 2010b */
+  szDataDir = "/alice/data/2010/LHC10c";
+
+  /* 2010b */
+  szDataPattern = "*pass4/*/AliESDs.root";
+
+  /* the list of runs to analyze */
+  listOfActiveRuns.Add(new TObjString("120616"));
 }
 
 void load2010bRunNumbers() {

@@ -1881,12 +1881,13 @@ void AliCSEventCuts::SetActual2015PileUpRemoval()
     case kLHC10bg:
     {
       Int_t multix = -1;
-      for (Int_t i = 0; i < 10; i++)
-        if (fgkPrimaryTracksFor_pp[i] < fCentrality)
-          continue;
-        else {
-          multix = i-1;
+      for (Int_t i = 0; i < 9; i++)
+        if (fCentrality < fgkPrimaryTracksFor_pp[i+1]) {
+          multix = i;
           break;
+        }
+        else {
+          continue;
         }
       if (multix < 0) {
         f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",GetCutsString()),"0.0+0.0*x");
