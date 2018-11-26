@@ -13,11 +13,19 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 		Int_t system =1, // 0 for pp and 1 for Pb-Pb
 		Bool_t PostCalib = kFALSE,
 		Bool_t LowpT = kFALSE,
+<<<<<<< HEAD:PWGLF/SPECTRA/PiKaPr/TPC/rTPC/AddTaskPPvsMult.C
 		Bool_t MakePid = kFALSE,
 		const Int_t LHC16l = 1  // 1-LHC16l 0-LHC16k 
 		)   
 {
 
+=======
+		Bool_t MakePid = kFALSE
+		)   
+{
+
+
+>>>>>>> 79366e2cfb3fe7e05629a7ed4f2951ec15a505c8:PWGLF/SPECTRA/PiKaPr/TPC/rTPC/AddTaskPPvsMult.C
 	// get the manager via the static access member. since it's static, you don't need
 	// an instance of the class to call the function
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -59,7 +67,10 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 	task->SetAnalysisType(type);
 	task->SetAnalysisMC(AnalysisMC);
 	task->SetAddLowPt(LowpT);
+<<<<<<< HEAD:PWGLF/SPECTRA/PiKaPr/TPC/rTPC/AddTaskPPvsMult.C
 	task->SetPeriod(LHC16l);
+=======
+>>>>>>> 79366e2cfb3fe7e05629a7ed4f2951ec15a505c8:PWGLF/SPECTRA/PiKaPr/TPC/rTPC/AddTaskPPvsMult.C
 
 	if(system==1){
 		task->SetAnalysisPbPb(kTRUE);

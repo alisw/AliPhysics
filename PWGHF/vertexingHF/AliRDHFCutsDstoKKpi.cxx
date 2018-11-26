@@ -1143,7 +1143,7 @@ void AliRDHFCutsDstoKKpi::SetStandardCutsPP2010() {
   SetCuts(nvars,nptbins,anacutsval);
   SetRemoveDaughtersFromPrim(kTRUE);
   
-  PrintAll();
+  //  PrintAll();
 
   for(Int_t iic=0;iic<nvars;iic++){delete [] anacutsval[iic];}
   delete [] anacutsval;

@@ -502,8 +502,9 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
 Bool_t AliCaloTrackMatcher::PropagateV0TrackToClusterAndGetMatchingResidual(AliVTrack* inSecTrack, AliVCluster* cluster, AliVEvent* event, Float_t &dEta, Float_t &dPhi){
 
   //if V0-track to cluster match is already available return stored residuals
+//   cout << "matching sec track: " << inSecTrack->GetID() << "\t to cluster" << cluster->GetID() << endl;
   if(GetSecTrackClusterMatchingResidual(inSecTrack->GetID(),cluster->GetID(), dEta, dPhi)){
-  //cout << "RESIDUAL ALREADY AVAILABLE! - " << dEta << "/" << dPhi << endl;
+//     cout << "RESIDUAL ALREADY AVAILABLE! - " << dEta << "/" << dPhi << endl;
     return kTRUE;
   }
 

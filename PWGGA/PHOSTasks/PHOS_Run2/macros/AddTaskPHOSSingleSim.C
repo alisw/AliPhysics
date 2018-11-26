@@ -68,7 +68,9 @@ AliAnalysisTaskPHOSSingleSim* AddTaskPHOSSingleSim(
 
   Double_t Ethre = 0.0;
 
-  if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,kFALSE,dummy);
+  //if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,kFALSE,dummy);
+  if(trigger == (UInt_t)AliVEvent::kPHI7)       task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,kFALSE,dummy);
+  else if(trigger  == (UInt_t) AliVEvent::kAny) task->SetPHOSTriggerAnalysisMB(L1input,L0input,Ethre,isMC,kFALSE,dummy);
   if(isMC && trigger == (UInt_t)AliVEvent::kPHI7) trigger = AliVEvent::kAny;//change trigger selection in MC when you do PHOS trigger analysis.
 
   //task->SelectCollisionCandidates(trigger);

@@ -151,6 +151,10 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fDCAxy_Pt_had(0),
 				fDCAxy_Pt_LS(0),
 				fDCAxy_Pt_ULS(0),
+				fDCAxy_Pt_Dpm(0),
+				fDCAxy_Pt_D0(0),
+				fDCAxy_Pt_Ds(0),
+				fDCAxy_Pt_B(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
 				fEMCEG2(kFALSE),
@@ -301,6 +305,10 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fDCAxy_Pt_had(0),
 				fDCAxy_Pt_LS(0),
 				fDCAxy_Pt_ULS(0),
+				fDCAxy_Pt_Dpm(0),
+				fDCAxy_Pt_D0(0),
+				fDCAxy_Pt_Ds(0),
+				fDCAxy_Pt_B(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
 				fEMCEG2(kFALSE),
@@ -403,7 +411,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fHistPhi_EMcal = new TH1F("fHistPhi_EMcal", "EMCAL selected cluster #phi distribution; #phi; counts", 200, 0, 10);    
 				fHist_VertexZ = new TH1F("fHist_VertexZ", "Z Vertex position; Vtx_{z}; counts", 200, -25, 25);     
 				fHist_Centrality = new TH1F("fHist_Centrality", "Centrality", 100, 0, 100);
-				fNevents = new TH1F("fNevents","No of events",7,-0.5,6.5);
+				fNevents = new TH1F("fNevents","No of events",8,-0.5,7.5);
 				fTPCNcls = new TH1F("fTPCNcls","No of TPC clusters; N^{TPC}_{cls}; counts",100,0.0,200.);           
 				fITSNcls = new TH1F("fITSNcls","No of ITS clusters; N^{ITS}_{cls}; counts",100,0.0,20.); 
 				fTPCCrossedRow = new TH1F("fTPCCrossedRow","No of TPC CrossedRow; N^{ITS}_{CrossedRow}; counts",500,0.,500.); 
@@ -438,18 +446,22 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fRiso_phidiff_LS    = new TH2F("fRiso_phidiff_LS","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 				fRiso_phidiff_35    = new TH2F("fRiso_phidiff_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 				fRiso_phidiff_LS_35 = new TH2F("fRiso_phidiff_LS_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
-				fzvtx_Ntrkl = new TH2F("fzvtx_Ntrkl","Zvertex vs N tracklet; zvtx; SPD Tracklets",200,-10.,10.,300,0.,300);
-				fzvtx_Nch = new TH2F("fzvtx_Nch","Zvertex vs N charged; zvtx; N_{ch}",200,-10.,10.,300,0.,300);
-				fzvtx_Ntrkl_Corr = new TH2F("fzvtx_Ntrkl_Corr","Zvertex vs N tracklet after correction; zvtx; SPD Tracklets",200,-10.,10.,300,0.,300);
-				fzvtx_Corr = new TH1F("fzvtx_Corr","Zvertex after correction; zvtx; counts",200,-10.,10.);
-				fNtrkl_Corr = new TH1F("fNtrkl_Corr","N_{tracklet} after correction; zvtx; counts",300,0.,300.);
-				fNchNtr = new TH2F("fNchNtr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",300,0.,300.,300,0.,300);
-				fNchNtr_Corr = new TH2F("fNchNtr_Corr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",300,0.,300.,300,0.,300);
+				fzvtx_Ntrkl = new TH2F("fzvtx_Ntrkl","Zvertex vs N tracklet; zvtx; SPD Tracklets",400,-20.,20.,301,-0.5,300.5);
+				fzvtx_Nch = new TH2F("fzvtx_Nch","Zvertex vs N charged; zvtx; N_{ch}",400,-20.,20.,301,-0.5,300.5);
+				fzvtx_Ntrkl_Corr = new TH2F("fzvtx_Ntrkl_Corr","Zvertex vs N tracklet after correction; zvtx; SPD Tracklets",400,-20.,20.,301,-0.5,300.5);
+				fzvtx_Corr = new TH1F("fzvtx_Corr","Zvertex after correction; zvtx; counts",400,-20.,20.);
+				fNtrkl_Corr = new TH1F("fNtrkl_Corr","N_{tracklet} after correction; zvtx; counts",301,-0.5,300.5);
+				fNchNtr = new TH2F("fNchNtr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",301,-0.5,300.5,301,-0.5,300.5);
+				fNchNtr_Corr = new TH2F("fNchNtr_Corr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",301,-0.5,300.5,301,-0.5,300.5);
 
 				fDCAxy_Pt_ele = new TH2F("fDCAxy_Pt_ele","DCA_{xy} vs Pt (electron);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
 				fDCAxy_Pt_had = new TH2F("fDCAxy_Pt_had","DCA_{xy} vs Pt (hadron);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
 				fDCAxy_Pt_LS = new TH2F("fDCAxy_Pt_LS","DCA_{xy} vs Pt LS pairs;p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
 				fDCAxy_Pt_ULS = new TH2F("fDCAxy_Pt_ULS","DCA_{xy} vs Pt ULS pairs;p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+				fDCAxy_Pt_Dpm = new TH2F("fDCAxy_Pt_Dpm","DCA_{xy} vs Pt D+-(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+				fDCAxy_Pt_D0= new TH2F("fDCAxy_Pt_D0","DCA_{xy} vs Pt D0(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+				fDCAxy_Pt_Ds= new TH2F("fDCAxy_Pt_Ds","DCA_{xy} vs Pt Ds(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+				fDCAxy_Pt_B= new TH2F("fDCAxy_Pt_B","DCA_{xy} vs Pt all B meson(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
 				fHist_eff_HFE     = new TH1F("fHist_eff_HFE","efficiency :: HFE",600,0,60);
 				fHist_eff_match   = new TH1F("fHist_eff_match","efficiency :: matched cluster",600,0,60);
 				fHist_eff_TPC     = new TH1F("fHist_eff_TPC","efficiency :: TPC cut",600,0,60);
@@ -574,6 +586,10 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fOutputList->Add(fDCAxy_Pt_had);
 				fOutputList->Add(fDCAxy_Pt_LS);
 				fOutputList->Add(fDCAxy_Pt_ULS);
+				fOutputList->Add(fDCAxy_Pt_Dpm);
+				fOutputList->Add(fDCAxy_Pt_D0);
+				fOutputList->Add(fDCAxy_Pt_Ds);
+				fOutputList->Add(fDCAxy_Pt_B);
 				//==== MC output ====
 				fOutputList->Add(fMCcheckMother);
 				fOutputList->Add(fCheckEtaMC);
@@ -784,11 +800,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				// 5. SPD vertex resolution cut //
 				if (TMath::Sqrt(cov[5]) > 0.25) return;
 				fNevents->Fill(5); 
-				// 6. Z Vtx position cut 
-				if(TMath::Abs(Zvertex)>10.0)return;
-				fNevents->Fill(6); 
-				fHist_VertexZ->Fill(Zvertex);                     // plot the pt value of the track in a histogram
 
+				if(TMath::Abs(Zvertex)>20.0)return;
 
 				//////////////////////////////
 				// Get sign of B field
@@ -842,6 +855,11 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				fzvtx_Ntrkl_Corr->Fill(Zvertex,correctednAcc);
 
 
+				// 6. Z Vtx position cut 
+				if(TMath::Abs(Zvertex)>10.0)return;
+				fNevents->Fill(6); 
+				fHist_VertexZ->Fill(Zvertex);                     // plot the pt value of the track in a histogram
+
 				if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
 
 
@@ -860,6 +878,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				// Separate by multiplicity class
 				//////////////////////////////////
 				if(correctednAcc<CutMinNtr || correctednAcc > CutMaxNtr) return;
+				fNevents->Fill(7); 
 
 
 				//////////////////////////////
@@ -1196,6 +1215,11 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 																				fTPCnsig_ele->Fill(fTPCnSigma);
 																				fEop_ele->Fill(eop);
 																				fDCAxy_Pt_ele->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+																				// 411 : D+, 421 :  D0, 413 : D*+, 423 : D*0, 431 : D_s+, 433 : D_s*+
+																				if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)== 413){fDCAxy_Pt_Dpm->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+																				if(TMath::Abs(pidM)==421 || TMath::Abs(pidM)== 423){fDCAxy_Pt_D0->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+																				if(TMath::Abs(pidM)==431 || TMath::Abs(pidM)== 433){fDCAxy_Pt_Ds->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+																				if(pid_eleB){fDCAxy_Pt_B->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
 																}
 												}
 												if(fTPCnSigma< CutEopHad && m20>CutM20[0] && m20<CutM20[1]){
@@ -1348,6 +1372,7 @@ Bool_t AliAnalysisTaskCaloHFEpp::IsDdecay(int mpid)
     return kFALSE;
    } 
 }
+// 411 : D+, 421 :  D0, 413 : D*+, 423 : D*0, 431 : D_s+, 433 : D_s*+
 
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskCaloHFEpp::IsBdecay(int mpid)
@@ -1362,6 +1387,7 @@ Bool_t AliAnalysisTaskCaloHFEpp::IsBdecay(int mpid)
     return kFALSE;
    } 
 }
+// 511 : B0, 521 :  B+, 513 : B*0, 523 : B*+, 531 : B_s0, 533 : B_s*0
 
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskCaloHFEpp::IsPdecay(int mpid)
@@ -1477,14 +1503,14 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
       if(pTtrue<2.0)continue;
 
 
-      if(pdgMom!=0)
-       {
-         AliAODMCParticle* fMCparticleMom = (AliAODMCParticle*) fMCarray->At(labelMom);
-				 if(IsDdecay(pdgMom)){fHistMCorgD->Fill(fMCparticle->Pt());}
-				 if(IsBdecay(pdgMom)){fHistMCorgB->Fill(fMCparticle->Pt());}
-        }
+			if(pdgMom!=0)
+			{
+							AliAODMCParticle* fMCparticleMom = (AliAODMCParticle*) fMCarray->At(labelMom);
+							if(IsDdecay(pdgMom)){fHistMCorgD->Fill(fMCparticle->Pt());}
+							if(IsBdecay(pdgMom)){fHistMCorgB->Fill(fMCparticle->Pt());}
+			}
 
-     }
+		 }
 
  return;
 }

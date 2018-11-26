@@ -91,7 +91,7 @@ AliFemtoAnalysisPionPion::AnalysisParams::calc_automult(const AliFemtoAnalysisPi
 
     bin_width = (mult_max - mult_min) / mult_bins,
 
-  // magic numbers fitting the exp curve
+    // magic numbers fitting the exp curve
     min_mult = 4293.2 * std::exp(-centhi / 24.01),
     max_mult = 4293.2 * std::exp(-centlo / 24.01),
 

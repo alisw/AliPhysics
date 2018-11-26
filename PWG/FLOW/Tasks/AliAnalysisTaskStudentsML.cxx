@@ -59,8 +59,9 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fMultiHisto(NULL),
  fMaxCorrelator(8),
  bUseWeights(kFALSE),
- kNumber(2),  //number of correlation
- kh1(2), kh2(-2), kh3(0), kh4(0), kh5(0), kh6(0), kh7(0), kh8(0),  //harmonics
+ kNumber(6),  //number of correlation
+ kh1(2), kh2(2), kh3(-1), kh4(-1), kh5(-1), kh6(-1), kh7(0), kh8(0),  //harmonics
+ ka1(2), ka2(-2), ka3(1), ka4(-1), ka5(1), ka6(-1), ka7(0), ka8(0),  //second set of harmonics
  kSum((kh1<0?-1*kh1:kh1)+(kh2<0?-1*kh2:kh2)+(kh3<0?-1*kh3:kh3)+(kh4<0?-1*kh4:kh4)
                 + (kh5<0?-1*kh5:kh5)+(kh6<0?-1*kh6:kh6)+(kh7<0?-1*kh7:kh7)+(kh8<0?-1*kh8:kh8)), // We will not go beyond 8-p correlations
  kMaxHarmonic(kSum+1),
@@ -74,6 +75,7 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fBin(NULL),
  func1(NULL),
  fCentrality(NULL),
+ fCentralitySecond(NULL),
  fCounterHistogram(NULL),
  // Final results:
  fFinalResultsList(NULL)
@@ -126,8 +128,9 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  fMultiHisto(NULL),
  fMaxCorrelator(8),
  bUseWeights(kFALSE),
- kNumber(2),  //number of correlation
- kh1(2), kh2(-2), kh3(0), kh4(0), kh5(0), kh6(0), kh7(0), kh8(0),  //harmonics
+ kNumber(6),  //number of correlation
+ kh1(2), kh2(2), kh3(-1), kh4(-1), kh5(-1), kh6(-1), kh7(0), kh8(0),  //harmonics
+ ka1(2), ka2(-2), ka3(1), ka4(-1), ka5(1), ka6(-1), ka7(0), ka8(0),  //second set of harmonics
  kSum((kh1<0?-1*kh1:kh1)+(kh2<0?-1*kh2:kh2)+(kh3<0?-1*kh3:kh3)+(kh4<0?-1*kh4:kh4)
                 + (kh5<0?-1*kh5:kh5)+(kh6<0?-1*kh6:kh6)+(kh7<0?-1*kh7:kh7)+(kh8<0?-1*kh8:kh8)), // We will not go beyond 8-p correlations
  kMaxHarmonic(kSum+1),
@@ -142,6 +145,7 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  func1(NULL),
  // Final results:
  fCentrality(NULL),
+ fCentralitySecond(NULL),
  fCounterHistogram(NULL),
  fFinalResultsList(NULL)
 {
@@ -304,29 +308,21 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
  //b.1) analysis
  if(fParticles>0){fMultiHisto->Fill(fParticles);}
  
- //*** for testing.
- /*fAngles = new TArrayD(fParticles); 
  
- for(Int_t k=0;k<fParticles;k++) 
-  {  
-   fAngles->AddAt(func1->GetRandom(),nCounter);
-   nCounter += 1;
-  } */
- 
- if(fParticles>=kNumber)
+ if(fParticles>=8) //do the correlation only if there are more than 8 particles in the event
  { 
 
    if(ams->GetMultiplicityPercentile("V0M") >= fMinCentrality && ams->GetMultiplicityPercentile("V0M") < fMaxCentrality)
    {
-    if(0. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 5. ){fCentral=2.5;}
-    if(5. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 10. ){fCentral=7.5;}
-    if(10. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 20. ){fCentral=15.5;}
-    if(20. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 30. ){fCentral=25.5;}
-    if(30. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 40. ){fCentral=35.5;}
-    if(40. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 50. ){fCentral=45.5;}
-    if(50. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 60. ){fCentral=55.5;}
-    if(60. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 70. ){fCentral=65.5;}
-    if(70. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 80. ){fCentral=75.5;}
+    if(0. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 5. ){fCentral=0.5;}
+    if(5. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 10. ){fCentral=1.5;}
+    if(10. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 20. ){fCentral=2.5;}
+    if(20. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 30. ){fCentral=3.5;}
+    if(30. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 40. ){fCentral=4.5;}
+    if(40. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 50. ){fCentral=5.5;}
+    if(50. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 60. ){fCentral=6.5;}
+    if(60. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 70. ){fCentral=7.5;}
+    if(70. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 80. ){fCentral=8.5;}
    }
    else
    {
@@ -336,29 +332,18 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
 
     Correlation();  //do the correlation
     fCentrality->Fill(fCentral,fRecursion[0][kNumber-2]->GetBinContent(1),fRecursion[0][kNumber-2]->GetBinContent(2)); //safe output 
-    
+    fCentralitySecond->Fill(fCentral,fRecursionSecond[0][kNumber-2]->GetBinContent(1),fRecursionSecond[0][kNumber-2]->GetBinContent(2)); 
     
     fRecursion[0][kNumber-2]->Reset(); //Reset
     fRecursion[1][kNumber-2]->Reset(); //Reset
+
+    fRecursionSecond[0][kNumber-2]->Reset(); //Reset
+    fRecursionSecond[1][kNumber-2]->Reset(); //Reset
  
  
-    //Testing with nested loops
-    
-   /* for(Int_t m=0;m<fParticles;m++) //making all possible pairs for 500 particles 
-    { 
-      for(Int_t k=0;k<fParticles;k++) 
-     	{  
-          if(m==k){continue;} //no autocorellation
-          else
-          { 
- 	   fCentrality->Fill(55.5,TMath::Cos(2.0*( (fAngles->GetAt(m)) - (fAngles->GetAt(k)) ) )); //fill TProfile
-	  }
-	} //for(Int_t k=0;k<fParticles;k++)
-    } //for(Int_t m=0;m<fParticles;m++) 
-  */
 
 
- } //if(fParticles>=kNumber)
+ } //if(fParticles>=8)
 
  
 
@@ -409,6 +394,7 @@ void AliAnalysisTaskStudentsML::InitializeArrays()
      {
    
       fRecursion[cs][c] = NULL; //! [cs]: real (0) or imaginary part (1) ....
+      fRecursionSecond[cs][c] = NULL; //! [cs]: real (0) or imaginary part (1) ....
    
      }  
     }  //for(Int_t cs=0;cs<2;cs++)
@@ -504,13 +490,17 @@ void AliAnalysisTaskStudentsML::BookFinalResultsHistograms()
 {
  // Book all histograms to hold the final results.
   
- fCentrality = new TProfile("fCentrality","Result Analysis Centrality Dependence",80,0.,80.); //histogram for multiplicity
+ fCentrality = new TProfile("fCentrality","Result Analysis Centrality Dependence",9,0.,9.); //histogram for multiplicity
  fCentrality->GetXaxis()->SetTitle("Centrality");
  fCentrality->GetYaxis()->SetTitle("flow");
  fFinalResultsList->Add(fCentrality);
  fCentrality->Sumw2();
 
- 
+ fCentralitySecond = new TProfile("fCentralitySecond","Result Analysis Centrality Dependence",9,0.,9.); //histogram for multiplicity
+ fCentralitySecond->GetXaxis()->SetTitle("Centrality");
+ fCentralitySecond->GetYaxis()->SetTitle("flow");
+ fFinalResultsList->Add(fCentralitySecond);
+ fCentralitySecond->Sumw2(); 
 
  Cosmetics();
  
@@ -533,6 +523,9 @@ void AliAnalysisTaskStudentsML::Cosmetics()
    
    fRecursion[cs][c] = new TProfile("","",2,0.,2.); 
    fRecursion[cs][c]->Sumw2();
+
+   fRecursionSecond[cs][c] = new TProfile("","",2,0.,2.); 
+   fRecursionSecond[cs][c]->Sumw2();
  
    //NOTE for fRecursion: 1.) [cs] will say if its the real (0) or imaginary part (1) 
    // 2.) [c] gives gives the kind of correlation. [n] is the (n+2)-particle correlation
@@ -710,6 +703,21 @@ void AliAnalysisTaskStudentsML::Correlation()
          fRecursion[0][4]->Fill(1.5,wSixRecursion,1.);
          fRecursion[1][4]->Fill(0.5,sixRecursion.Im(),wSixRecursion); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6)>>
          fRecursion[1][4]->Fill(1.5,wSixRecursion,1.);
+
+
+         Int_t harmonicsSixNumSecond[6] = {ka1,ka2,ka3,ka4,ka5,ka6};       
+         Int_t harmonicsSixDenSecond[6] = {0,0,0,0,0,0};       
+         TComplex sixRecursionSecond = Recursion(6,harmonicsSixNumSecond)/Recursion(6,harmonicsSixDenSecond).Re();
+         Double_t wSixRecursionSecond = Recursion(6,harmonicsSixDenSecond).Re();
+
+
+	 fRecursionSecond[0][4]->Fill(0.5,sixRecursionSecond.Re(),wSixRecursionSecond); // <<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6)>>
+         fRecursionSecond[0][4]->Fill(1.5,wSixRecursionSecond,1.);
+         fRecursionSecond[1][4]->Fill(0.5,sixRecursionSecond.Im(),wSixRecursionSecond); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6)>>
+         fRecursionSecond[1][4]->Fill(1.5,wSixRecursionSecond,1.);
+
+
+
          }//  6-p correlation
         
         

@@ -1753,7 +1753,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 
   AliVCaloCells* cells = NULL;
   if(fExtendedMatchAndQA > 1){
-    
+
     if(fHistClusterEnergyvsNCellsBeforeQA) fHistClusterEnergyvsNCellsBeforeQA->Fill(cluster->E(),cluster->GetNCells());
     if(cluster->IsEMCAL()){ //EMCAL
       cells = event->GetEMCALCells();
@@ -5016,6 +5016,14 @@ Bool_t AliCaloPhotonCuts::SetRecConv(Int_t recConv)
       if (!fUseRecConv) fUseRecConv=1;
       fMaxMGGRecConv=0.05;
       break;
+    case 8:
+      if (!fUseRecConv) fUseRecConv=1;
+      fMaxMGGRecConv=0.01;
+      break;
+    case 9:
+      if (!fUseRecConv) fUseRecConv=1;
+      fMaxMGGRecConv=0.007;
+      break;
     default:
       AliError(Form("Conversion Recovery Cut not defined %d",recConv));
       return kFALSE;
@@ -5894,6 +5902,61 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       break;
 
 // *************** 60 + x **** modified tender Settings 2 - pPb
+// *************** 60 + x **** temporary special settings for pp 5 TeV + TB studies
+    case 61: //11 with new ECalib
+      if((fCurrentMC==k17l3b || fCurrentMC==k18j2) && fClusterType==1){
+        energy /= FunctionNL_kSDM(energy, 0.95515, -3.19364, -0.936124);
+      }
+      break;
+    case 62: //12 with new ECalib
+      if((fCurrentMC==k17l3b || fCurrentMC==k18j2) && fClusterType==1){
+        energy /= FunctionNL_kSDM(energy, 0.95565, -3.39479, -0.510495);
+        energy /= 0.9972974486;
+      }
+      break;
+    case 63: //21 with new ECalib
+      if((fCurrentMC==k17l3b || fCurrentMC==k18j2) && fClusterType==1){
+        energy /= (FunctionNL_DExp(energy, 0.9814238552, 0.4630567354, -2.9816023028, 1.0293861994, 0.5615679532, -2.3995137175));
+      }
+      break;
+    case 64: //22 with new ECalib
+      if((fCurrentMC==k17l3b || fCurrentMC==k18j2) && fClusterType==1){
+        energy /= (FunctionNL_DExp(energy, 0.9671756224, 0.9580061524, -2.4592540166, 1.0144265411, 0.7007731928, -2.1689124045));
+        energy /= 0.9973908612;
+      }
+      break;
+    case 65: //50MeV TB update
+      if (fClusterType == 1|| fClusterType == 3){
+        if(isMC == 0)
+          energy *= FunctionNL_kTestBeamMod(energy, 0.972947, 0.986154, 0.214860, 0.717724, 0.069200, 155.497605, 48.868069);
+        else energy *= FunctionNL_kPi0MCMod(energy, 0.898861, 1.109502, 0.083507, 1.910893, 0.285469, 469.340995, 3605.837798);
+      }
+      break;
+    case 66: //100MeV TB update
+      if (fClusterType == 1|| fClusterType == 3){
+        if(isMC == 0) energy *= FunctionNL_kTestBeamMod(energy, 0.978526, 0.980207, 0.311926, 0.596070, 0.062173, 160.714850, 41.312966);
+        else energy *= FunctionNL_kPi0MCMod(energy, 1.011841, 0.999134, 0.110756, 2.736180, 0.002017, 110.402252, -73.996864);
+      }
+      break;
+    case 67: //EVI TB + EMC Corr update
+      if (fClusterType == 1|| fClusterType == 3){
+        if(isMC == 0) energy *= FunctionNL_kTestBeamv4(energy);
+        else{
+          energy *= FunctionNL_kPi0MCv3(energy);
+          energy /= FunctionNL_DPOW(energy, -0.8802886739, 1.8764944987, -0.0020594487, 0.9891399006, 0.0139889085, -2.0388063034);
+        }
+      }
+      break;
+    case 68: //50MeV TB + EMC Corr update
+      if (fClusterType == 1|| fClusterType == 3){
+        if(isMC == 0)
+          energy *= FunctionNL_kTestBeamMod(energy, 0.972947, 0.986154, 0.214860, 0.717724, 0.069200, 155.497605, 48.868069);
+        else{
+          energy *= FunctionNL_kPi0MCMod(energy, 0.898861, 1.109502, 0.083507, 1.910893, 0.285469, 469.340995, 3605.837798);
+          energy /= FunctionNL_DPOW(energy, 0.9969964995, -0.0023796998, -6.1181405682, 0.9926523280, 0.0080737917, -3.6584464200);
+        }
+      }
+      break;
 
 
 // *************** 70 + x **** default tender Settings - PbPb
@@ -6186,7 +6249,15 @@ Float_t AliCaloPhotonCuts::FunctionNL_kTestBeamv4(Float_t e){ // supplied by Evi
   return ( 0.97 / ( 0.9892 *( 1. / ( 1. + 0.1976 * exp( -e / 0.865 ) ) * 1. / ( 1. + 0.06775 * exp( ( e - 156.6 ) / 47.18 ) ) ) ) );
 }
 
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_kTestBeamMod(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6){
+  return ( p0 / ( p1 *( 1. / ( 1. + p2 * exp( -e / p3 ) ) * 1. / ( 1. + p4 * exp( ( e - p5 ) / p6 ) ) ) ) );
+}
 
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_kPi0MCMod(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6){
+  return ( p0 / ( p1 *( 1. / ( 1. + p2 * exp( -e / p3 ) ) * 1. / ( 1. + p4 * exp( ( e - p5 ) / p6 ) ) ) ) );
+}
 //************************************************************************
 //________________________________________________________________________
 Float_t AliCaloPhotonCuts::FunctionM02(Float_t E, Float_t a, Float_t b, Float_t c, Float_t d, Float_t e){

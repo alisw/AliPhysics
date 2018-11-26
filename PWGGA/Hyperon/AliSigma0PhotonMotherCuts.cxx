@@ -272,6 +272,15 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
       const float rap = sigma.GetRapidity();
       const int multBin = GetMultiplicityBin(lPercentile);
 
+      int label = -10;
+      int pdgLambdaMother = 0;
+      int pdgPhotonMother = 0;
+      if (fIsMC) {
+        label =
+            sigma.MatchToMC(fMCEvent, fPDG, {{fPDGDaughter1, fPDGDaughter2}},
+                            pdgLambdaMother, pdgPhotonMother);
+      }
+
       // Now write out the stuff to the Femto containers
       if (invMass < fMassSigma + fSigmaMassCut &&
           invMass > fMassSigma - fSigmaMassCut) {
@@ -285,23 +294,16 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
           fHistSigmaLambdaPCorr->Fill(sigma.GetP(), lambda.GetP());
           fHistSigmaPhotonPCorr->Fill(sigma.GetP(), photon.GetP());
 
-          if (fIsMC) {
-            int pdgLambdaMother = 0;
-            int pdgPhotonMother = 0;
-            const int label = sigma.MatchToMC(fMCEvent, fPDG,
-                                              {{fPDGDaughter1, fPDGDaughter2}},
-                                              pdgLambdaMother, pdgPhotonMother);
-            if (label > 0) {
-              fHistMCTrueSigmaLambdaPtCorr->Fill(pT, lambda.GetPt());
-              fHistMCTrueSigmaPhotonPtCorr->Fill(pT, photon.GetPt());
-              fHistMCTrueSigmaLambdaPCorr->Fill(sigma.GetP(), lambda.GetP());
-              fHistMCTrueSigmaPhotonPCorr->Fill(sigma.GetP(), photon.GetP());
-            } else {
-              fHistMCBkgSigmaLambdaPtCorr->Fill(pT, lambda.GetPt());
-              fHistMCBkgSigmaPhotonPtCorr->Fill(pT, photon.GetPt());
-              fHistMCBkgSigmaLambdaPCorr->Fill(sigma.GetP(), lambda.GetP());
-              fHistMCBkgSigmaPhotonPCorr->Fill(sigma.GetP(), photon.GetP());
-            }
+          if (fIsMC && label > 0) {
+            fHistMCTrueSigmaLambdaPtCorr->Fill(pT, lambda.GetPt());
+            fHistMCTrueSigmaPhotonPtCorr->Fill(pT, photon.GetPt());
+            fHistMCTrueSigmaLambdaPCorr->Fill(sigma.GetP(), lambda.GetP());
+            fHistMCTrueSigmaPhotonPCorr->Fill(sigma.GetP(), photon.GetP());
+          } else if (fIsMC && label <= 0) {
+            fHistMCBkgSigmaLambdaPtCorr->Fill(pT, lambda.GetPt());
+            fHistMCBkgSigmaPhotonPtCorr->Fill(pT, photon.GetPt());
+            fHistMCBkgSigmaLambdaPCorr->Fill(sigma.GetP(), lambda.GetP());
+            fHistMCBkgSigmaPhotonPCorr->Fill(sigma.GetP(), photon.GetP());
           }
         }
         ++nSigma;
@@ -328,16 +330,10 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
       fHistPtMult[multBin]->Fill(pT, invMass);
 
       if (fIsMC) {
-        int pdgLambdaMother = 0;
-        int pdgPhotonMother = 0;
-        const int label =
-            sigma.MatchToMC(fMCEvent, fPDG, {{fPDGDaughter1, fPDGDaughter2}},
-                            pdgLambdaMother, pdgPhotonMother);
         if (label > 0) {
           fHistMCV0Pt->Fill(sigma.GetPt());
           fHistMCV0Mass->Fill(invMass);
         }
-
         if (!fIsLightweight) {
           // let's where the other particle comes from if one of them stems from
           // a Sigma0

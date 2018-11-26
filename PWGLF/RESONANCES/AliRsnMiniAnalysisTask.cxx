@@ -47,7 +47,7 @@
 
 #include "AliRsnMiniAnalysisTask.h"
 #include "AliRsnMiniResonanceFinder.h"
-
+//#include "AliSpherocityUtils.h"
 
 ClassImp(AliRsnMiniAnalysisTask)
 
@@ -1245,6 +1245,8 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
   Float_t Spherocity = 2;
   Float_t pt[10000],phi[1000];
 
+  if (ntracksLoop>2)
+    {
   //computing total pt
   Float_t sumapt = 0;
   for(Int_t i1 = 0; i1 < ntracksLoop; ++i1){
@@ -1254,12 +1256,12 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
   }
 
   //Getting thrust
-  for(Int_t i = 0; i < 360/0.01; ++i){
+  for(Int_t i = 0; i < 360/0.1; ++i){
 	Float_t numerador = 0;
 	Float_t phiparam  = 0;
 	Float_t nx = 0;
 	Float_t ny = 0;
-	phiparam=( (TMath::Pi()) * i * 0.01 ) / 180; // parametrization of the angle
+	phiparam=( (TMath::Pi()) * i * 0.1 ) / 180; // parametrization of the angle
 	nx = TMath::Cos(phiparam);            // x component of an unitary vector n
 	ny = TMath::Sin(phiparam);            // y component of an unitary vector n
 	for(Int_t i1 = 0; i1 < ntracksLoop; ++i1){
@@ -1278,6 +1280,7 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
   }
   spherocity=((Spherocity)*TMath::Pi()*TMath::Pi())/4.0;
   return spherocity;
+    }
 }
 
 //__________________________________________________________________________________________________

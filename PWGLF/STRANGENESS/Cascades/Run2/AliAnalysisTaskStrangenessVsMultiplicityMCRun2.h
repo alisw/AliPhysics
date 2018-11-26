@@ -112,6 +112,15 @@ public:
     void SetExtraCleanup ( Bool_t lExtraCleanup = kTRUE) {
         fkExtraCleanup = lExtraCleanup;
     }
+    void SetHypertritonMode ( Bool_t lOpt = kTRUE) {
+        fkHypertritonMode = lOpt;
+    }
+    void SetHeavyDaughterPID ( Bool_t lOpt = kTRUE) {
+        fkHeavyDaughterPID = lOpt;
+    }
+    void SetSandboxV0Prongs ( Bool_t lOpt = kTRUE) {
+        fkSandboxV0Prongs = lOpt;
+    }
     //---------------------------------------------------------------------------------------
     void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
         fkDoExtraEvSels = lUseExtraEvSels;
@@ -335,6 +344,10 @@ private:
     Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
     Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit() to improve precision
     Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
+    
+    Bool_t fkHypertritonMode; //if true, save everything in hypertriton mass window
+    Bool_t fkHeavyDaughterPID; //if true, save everything that has perfect PID in heavy daughters (akin to dedx)
+    Bool_t fkSandboxV0Prongs; //if true, sandbox mode will save the V0 prongs and not ESD track parametrizations
     
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
     

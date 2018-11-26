@@ -59,13 +59,13 @@ public:
   TH1D* fHistV0ptData[3];
   TH1D* fHistV0ctMC[3];
   TH1D* fHistV0ctData[3]; 
-  TH1D* fHistV0ptDataNC; 
   TH1D* EffvsPt[3];
   TH1D* Effvsct[3];
   TH2D* ctAnalysis[3];
+  TH2D* ptAnalysisH;  
 
 
-  ClassDef(MiniV0efficiency,0);
+  ClassDef(MiniV0efficiency,1);
 
 };
 

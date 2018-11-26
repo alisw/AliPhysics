@@ -77,6 +77,8 @@ public:
   void    SwitchOnCentrality()                           { fCheckCentrality  = kTRUE ; }
   void    SwitchOffCentrality()                          { fCheckCentrality  = kFALSE; }
 
+  void    SetCentralityWithPhysSel( Bool_t ps )          { fCentWithEventSel = ps    ; }
+  
   void    SetCentralityClass(TString name)               { fCentralityClass   = name ; }
   
   void    SetCentralityRange(Float_t min, Float_t max)   { fCentMin = min; fCentMax = max; }
@@ -249,6 +251,8 @@ private:
   
   TString             fCentralityClass;  ///< Set which centrality class
   
+  Bool_t              fCentWithEventSel; ///< Embedded event selection
+  
   Float_t             fCentMin;          ///< Minimum centrality selected         
   Float_t             fCentMax;          ///< Maximum centrality selected
   
@@ -384,9 +388,9 @@ private:
 
   TH1I*     fhNEvents;                                                             //!<! Number of events counter histogram.
  
-  TH1F *  fhCentrality;                                                            //!<! Centrality all events.
+  TH1F *    fhCentrality;                                                          //!<! Centrality all events.
   
-  TH1F *  fhCentralitySelected;                                                    //!<! Centrality selected events.
+  TH1F *    fhCentralitySelected;                                                  //!<! Centrality selected events.
   
   // Cluster time histograms
   TH2F*     fHTpi0[4];                                                             //!<! Time of cell under pi0 mass, for 4 bunch crossings.
@@ -404,7 +408,7 @@ private:
   AliAnalysisTaskEMCALPi0CalibSelection& operator=(const AliAnalysisTaskEMCALPi0CalibSelection&) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,25) ;
+  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,26) ;
   /// \endcond
 
 };

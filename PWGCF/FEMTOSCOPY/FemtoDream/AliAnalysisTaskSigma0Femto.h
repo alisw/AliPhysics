@@ -32,6 +32,7 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   void SetIsHeavyIon(bool isHeavyIon) { fIsHeavyIon = isHeavyIon; }
   void SetIsMC(bool isMC) { fIsMC = isMC; }
   void SetLightweight(bool isLightweight) { fIsLightweight = isLightweight; }
+  void SetIsRun1(bool isRun1) { fIsRun1 = isRun1; }
   void SetV0Percentile(float v0perc) { fV0PercentileMax = v0perc; }
   void SetTrigger(UInt_t trigger) { fTrigger = trigger; }
   void SetProtonCuts(AliFemtoDreamTrackCuts *cuts) {
@@ -52,6 +53,8 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   }
 
   bool AcceptEvent(AliVEvent *event);
+  bool AcceptEventRun1(AliVEvent *event);
+  bool AcceptEventRun2(AliVEvent *event);
   void CastToVector(std::vector<AliSigma0ParticleV0> &container,
                     const AliVEvent *inputEvent);
   void CastToVector(std::vector<AliSigma0ParticlePhotonMother> &sigmaContainer,
@@ -95,6 +98,7 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   bool fIsMC;                //
   bool fIsHeavyIon;          //
   bool fIsLightweight;       //
+  bool fIsRun1;              //
   bool fPhotonLegPileUpCut;  //
   float fV0PercentileMax;    //
   UInt_t fTrigger;           //

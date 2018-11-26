@@ -18,7 +18,28 @@
 #include "AliFemtoCutMonitorParticleYPt.h"
 
 #include "AliFemtoCorrFctnKStar.h"
+#include "AliFemtoCorrFctnDEtaDPhiSimple.h"
 
+#include "AliFemtoAvgSepCorrFctn.h"
+#include "AliFemtoCorrFctnDPhiStarDEta.h"
+#include "AliFemtoQinvCorrFctn.h"
+#include "AliFemtoModelWeightGeneratorBasic.h"
+#include "AliFemtoModelCorrFctnDEtaDPhiStar.h"
+#include "AliFemtoModelCorrFctnDEtaDPhiAK.h"
+
+// #include "AliFemtoCorrFctnQ3DLCMS.h"
+// #include "AliFemtoCorrFctnQ3DPF.h"
+#include "AliFemtoCorrFctn3DLCMSPosQuad.h"
+#include "AliFemtoCorrFctn3DLCMSSym.h"
+#include "AliFemtoModelCorrFctnTrueQ6D.h"
+#include "AliFemtoQinvCorrFctn.h"
+
+#include "AliFemtoModelCorrFctnTrueQ3D.h"
+#include "AliFemtoModelCorrFctnTrueQ3DByParent.h"
+
+#include "AliFemtoKtBinnedCorrFunc.h"
+// #include "AliFemt"
+#include "AliFemtoModelCorrFctnTrueQ.h"
 #include <TROOT.h>
 
 #endif
@@ -83,6 +104,11 @@ struct MacroParams {
   bool do_trueq3dbp_cf;
   bool do_kt_trueq3dbp_cf;
 
+  bool do_truedetadphi_cf;
+  bool do_kt_truedetadphi_cf;
+
+  bool do_detadphi_simple_cf;
+  bool do_kt_detadphi_simple_cf;
 };
 
 void
@@ -144,6 +170,10 @@ ConfigFemtoAnalysis(const TString& param_str="")
   macro_config.do_kt_trueq3d_cf = false;
   macro_config.do_trueq3dbp_cf = false;
   macro_config.do_kt_trueq3dbp_cf = false;
+  macro_config.do_truedetadphi_cf = false;
+  macro_config.do_kt_truedetadphi_cf = false;
+  macro_config.do_detadphi_simple_cf = false;
+  macro_config.do_kt_detadphi_simple_cf = false;
 
   macro_config.qinv_bin_size_MeV = 5.0f;
   macro_config.qinv_max_GeV = 1.0f;
@@ -180,7 +210,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
   // Begin to build the manager and analyses
   AliFemtoManager *manager = new AliFemtoManager();
 
-  AliFemtoEventReaderAOD::EstEventMult multest = macro_config.eventreader_use_multiplicity;
+  AliFemtoEventReaderAOD::EstEventMult multest = static_cast<AliFemtoEventReaderAOD::EstEventMult>(macro_config.eventreader_use_multiplicity);
   AliFemtoEventReaderAOD *rdr = new AliFemtoEventReaderAODMultSelection();
     rdr->SetFilterBit(macro_config.eventreader_filter_bit);
     rdr->SetEPVZERO(macro_config.eventreader_epvzero);
@@ -313,15 +343,13 @@ ConfigFemtoAnalysis(const TString& param_str="")
         model_cf->ConnectToManager(model_manager);
         analysis->AddCorrFctn(model_cf);
       }
-
       if (macro_config.do_q3d_cf) {
         TString cf_title("_q3D");
         analysis->AddCorrFctn(new AliFemtoCorrFctn3DLCMSSym(cf_title, macro_config.q3d_bin_count, macro_config.q3d_maxq));
       }
 
       if (macro_config.do_trueq3d_cf) {
-        TString cf_title("Trueq3D_");
-        AliFemtoModelCorrFctnTrueQ3D *m_cf = new AliFemtoModelCorrFctnTrueQ3D(cf_title, macro_config.q3d_bin_count, macro_config.q3d_maxq);
+        AliFemtoModelCorrFctnTrueQ3D *m_cf = new AliFemtoModelCorrFctnTrueQ3D("", macro_config.q3d_bin_count, macro_config.q3d_maxq);
         m_cf->SetManager(model_manager);
         analysis->AddCorrFctn(m_cf);
       }
@@ -357,7 +385,6 @@ ConfigFemtoAnalysis(const TString& param_str="")
         }
         analysis->AddCorrFctn(kt_binned_cfs);
       }
-
       if (macro_config.do_kt_lcms_cf && !macro_config.do_kt_trueq3d_cf) {
         AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_Q3D_LCMS",
           new AliFemtoCorrFctnQ3DLCMS("", macro_config.q3d_bin_count, macro_config.q3d_maxq));
@@ -429,6 +456,48 @@ ConfigFemtoAnalysis(const TString& param_str="")
         m_cf->SetManager(model_manager);
 
         AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_TrueQ3DByP", m_cf);
+
+        for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
+          float low = macro_config.kt_ranges[kt_idx],
+                high = macro_config.kt_ranges[kt_idx+1];
+          kt_binned_cfs->AddKtRange(low, high);
+        }
+        analysis->AddCorrFctn(kt_binned_cfs);
+      }
+
+      if (macro_config.do_truedetadphi_cf) {
+        AliFemtoModelCorrFctnDEtaDPhiAK *m_cf = new AliFemtoModelCorrFctnDEtaDPhiAK("", macro_config.q3d_bin_count, macro_config.q3d_maxq);
+        analysis->AddCorrFctn(m_cf);
+      }
+
+      if (macro_config.do_kt_truedetadphi_cf) {
+        AliFemtoModelCorrFctnTrueQ3DByParent *m_cf =
+          new AliFemtoModelCorrFctnDEtaDPhiAK("",
+                                              macro_config.q3d_bin_count,
+                                              macro_config.q3d_maxq);
+        m_cf->SetManager(model_manager);
+
+        AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_TrueDetaDphi", m_cf);
+
+        for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
+          float low = macro_config.kt_ranges[kt_idx],
+                high = macro_config.kt_ranges[kt_idx+1];
+          kt_binned_cfs->AddKtRange(low, high);
+        }
+        analysis->AddCorrFctn(kt_binned_cfs);
+      }
+
+      if (macro_config.do_detadphi_simple_cf) {
+        AliFemtoCorrFctnDEtaDPhiSimple *m_cf = new AliFemtoCorrFctnDEtaDPhiSimple("", macro_config.delta_phi_bin_count, macro_config.delta_eta_bin_count);
+        m_cf->SetReadHiddenInfo(analysis_config.is_mc_analysis);
+        analysis->AddCorrFctn(m_cf);
+      }
+
+      if (macro_config.do_kt_detadphi_simple_cf) {
+        AliFemtoCorrFctnDEtaDPhiSimple *m_cf = new AliFemtoCorrFctnDEtaDPhiSimple("", macro_config.delta_phi_bin_count, macro_config.delta_eta_bin_count);
+        m_cf->SetReadHiddenInfo(analysis_config.is_mc_analysis);
+
+        AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_DetaDphiSimple", m_cf);
 
         for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
           float low = macro_config.kt_ranges[kt_idx],

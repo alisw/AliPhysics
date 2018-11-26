@@ -120,7 +120,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
  		TH1F**            hMCConversionRRejLarge;       //!
 		TH1F**            hMCAllGammaPt;                //!
 		TH2F**            hMCAllSecondaryGammaPt;       //!
-		TH2F**            hMCSecondaryConvGammaPt;      //!
+		TH3F**            hMCSecondaryConvGammaPtR;      //!
 
 
 		TH2F**            hMCTrueConversionRPhi;        //!
@@ -160,7 +160,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
 
 
-        ClassDef(AliAnalysisTaskMaterialHistos, 18);
+        ClassDef(AliAnalysisTaskMaterialHistos, 19);
 };
 
 #endif

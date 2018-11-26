@@ -614,16 +614,16 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistLSjet = new TH2F("fHistLSjet","LS jet;p_{T}",20,0,20,300,-100.,200.);
   fOutput->Add(fHistLSjet);
 
-  fHistHFjet_DCA = new TH2F("fHistHFjet_DCA","DCA of HFe jet",50,0,50,1000,-0.5,0.5); 
+  fHistHFjet_DCA = new TH2F("fHistHFjet_DCA","DCA of HFe jet",100,0,100,1000,-0.5,0.5); 
   fOutput->Add(fHistHFjet_DCA);
 
-  fHistULSjet_DCA = new TH2F("fHistULSjet_DCA","DCA of ULSe jet",50,0,50,1000,-0.5,0.5); 
+  fHistULSjet_DCA = new TH2F("fHistULSjet_DCA","DCA of ULSe jet",100,0,100,1000,-0.5,0.5); 
   fOutput->Add(fHistULSjet_DCA);
 
-  fHistLSjet_DCA = new TH2F("fHistLSjet_DCA","DCA of LSe jet",50,0,50,1000,-0.5,0.5); 
+  fHistLSjet_DCA = new TH2F("fHistLSjet_DCA","DCA of LSe jet",100,0,100,1000,-0.5,0.5); 
   fOutput->Add(fHistLSjet_DCA);
 
-  fHistHadjet_DCA = new TH2F("fHistHadjet_DCA","DCA of Hade jet",50,0,50,1000,-0.5,0.5); 
+  fHistHadjet_DCA = new TH2F("fHistHadjet_DCA","DCA of Hade jet",100,0,100,1000,-0.5,0.5); 
   fOutput->Add(fHistHadjet_DCA);
 
   fHistHFjetOrder = new TH2F("fHistHFjetOrder","HF jet;p_{T}",300,-100.,200.,30,0,30);
@@ -691,10 +691,10 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   HFjetParticle->Sumw2();
   fOutput->Add(HFjetParticle);
 
-  HFjetDCA_c = new TH2D("HFjetDCA_c","DCA of c->e",50,0,50,1000,-0.5,0.5); 
+  HFjetDCA_c = new TH2D("HFjetDCA_c","DCA of c->e",100,0,100,1000,-0.5,0.5); 
   fOutput->Add(HFjetDCA_c);
 
-  HFjetDCA_b = new TH2D("HFjetDCA_b","DCA of b->e",50,0,50,1000,-0.5,0.5); 
+  HFjetDCA_b = new TH2D("HFjetDCA_b","DCA of b->e",100,0,100,1000,-0.5,0.5); 
   fOutput->Add(HFjetDCA_b);
 
   // QA

@@ -1178,8 +1178,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 	   const Double_t binning_cent_fmdfmd[7]={0.,5.,10.,20.,40.,60.,100.1};
 	   //const Int_t iTrackBin_tpcfmd[6]={ndetatpcfmd,1,nfmdbin,6,72,20};
 	   const Int_t iTrackBin_tpcfmd[7]={ndetatpcfmd,1,nfmdbin,6,72,20,4};
-	   fHistReconstTrack = new AliTHn("fHistReconstTrack", "fHistReconstTrack", nCFSteps, 6, iTrackBin_tpcfmd);
-	   fHistReconstTrackMix= new AliTHn("fHistReconstTrackMix", "fHistReconstTrackMix", nCFSteps, 6,iTrackBin_tpcfmd);
+	   fHistReconstTrack = new AliTHn("fHistReconstTrack", "fHistReconstTrack", nCFSteps, 7, iTrackBin_tpcfmd);
+	   fHistReconstTrackMix= new AliTHn("fHistReconstTrackMix", "fHistReconstTrackMix", nCFSteps, 7,iTrackBin_tpcfmd);
 	   if(fAnaMode=="TPCFMD") {
 	     fHistReconstTrack->SetBinLimits(0,binning_detaFMDTPC);
 	     fHistReconstTrack->SetBinLimits(2,binning_etafmd);
@@ -1205,7 +1205,6 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 	   fHistReconstTrack->SetVarTitle(4,"#Delta#phi");
 	   fHistReconstTrack->SetVarTitle(5,"z vertex");
 	   fHistReconstTrack->SetVarTitle(6,"TPC eta");
-	   
 	   fHistReconstTrackMix->SetBinLimits(1,binning_pt_fmdtpc);
 	   fHistReconstTrackMix->SetBinLimits(3,binning_cent_fmdfmd);
 	   fHistReconstTrackMix->SetBinLimits(4,binning_dphi);
