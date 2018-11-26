@@ -15,6 +15,7 @@ class TTree;
 #include "Math/Vector4D.h"
 #include "MCparticle.h"
 #include "MiniV0.h"
+#include "HyperTriton2Body.h"
 
 
 class AliPIDResponse;
@@ -102,7 +103,7 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
 
   std::vector<Lifetimes::MiniV0 > fV0vector;
   std::vector<Lifetimes::MCparticle> fMCvector;
-
+  std::vector<Lifetimes::HyperTriton2Body> fV0Hyvector;
   float fMultiplicity;
 
   AliAnalysisTaskStrangenessLifetimes(
@@ -110,7 +111,7 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   AliAnalysisTaskStrangenessLifetimes& operator=(
       const AliAnalysisTaskStrangenessLifetimes&);  // not implemented
 
-  ClassDef(AliAnalysisTaskStrangenessLifetimes, 2);
+  ClassDef(AliAnalysisTaskStrangenessLifetimes, 3);
 };
 
 #endif
