@@ -65,6 +65,7 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV() :
   AliAnalysisTaskEmcalJet("AnalysisTaskEmcalJetBtagSV", kTRUE),
   fCorrMode(kFALSE),
   fDoBkgRej(kTRUE),
+  fDoRndmCone(kFALSE),
   fDoQAVtx(kFALSE),
   fDoFillV0Trks(kFALSE),
   fDoDetRespMtx(kFALSE),
@@ -83,7 +84,6 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV() :
   fTaggingRadius(0.4),
   fSigmaSVCut(0.04),      //newDeltaPt//
   fMCWeight(1.),
-  fInitialized(kFALSE),
   fMCXsec(0.),
   fMCAvgTrials(0.),
   fZNApercentile(0.),
@@ -91,13 +91,14 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV() :
   fCheckMCCrossSection(kFALSE),
   fSkipWeightInfo(kFALSE),
   fUseWeight(kFALSE),
+  fInitialized(kFALSE),
   fOutputList(NULL),
   fhJetVtxSim(NULL),
   fhJetVtxData(NULL),
   fhQaVtx(NULL),
   fhEntries(NULL),
-  fhEvtRej(NULL),
   fhZNApercentQa(NULL),
+  fhEvtRej(NULL),
   fhHFjetQa(NULL),
   fhRhoQa(NULL),
   fhMCRhoQa(NULL),
@@ -157,6 +158,7 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV(const char* name):
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fCorrMode(kFALSE),
   fDoBkgRej(kTRUE),
+  fDoRndmCone(kFALSE),
   fDoQAVtx(kFALSE),
   fDoFillV0Trks(kFALSE),
   fDoDetRespMtx(kFALSE),
@@ -175,7 +177,6 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV(const char* name):
   fTaggingRadius(0.4),
   fSigmaSVCut(0.04),      //newDeltaPt//
   fMCWeight(1.),
-  fInitialized(kFALSE),
   fMCXsec(0.),
   fMCAvgTrials(0.),
   fZNApercentile(0.),
@@ -183,15 +184,14 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV(const char* name):
   fCheckMCCrossSection(kFALSE),
   fSkipWeightInfo(kFALSE),
   fUseWeight(kFALSE),
+  fInitialized(kFALSE),
   fOutputList(NULL),
   fhJetVtxSim(NULL),
   fhJetVtxData(NULL),
   fhQaVtx(NULL),
-  fhnDetRespMtx(NULL),
-  fhnGenerated(NULL),
   fhEntries(NULL),
-  fhEvtRej(NULL),
   fhZNApercentQa(NULL),
+  fhEvtRej(NULL),
   fhHFjetQa(NULL),
   fhRhoQa(NULL),
   fhMCRhoQa(NULL),  
@@ -203,6 +203,8 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV(const char* name):
   fZVertex(NULL),  //AID//
   fhTrackEta(NULL), //AID//
   fhTrackPhi(NULL), //AID//
+  fhJetEta(NULL), //AID//
+  fhJetPhi(NULL), //AID//
   fhOneOverPtVsPhiNeg(NULL), //AID//
   fhOneOverPtVsPhiPos(NULL), //AID//
   fhSigmaPtOverPtVsPt(NULL), //AID//
@@ -216,6 +218,8 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV(const char* name):
   fhPtTrkTruePrimRec(0x0),
   fhPtTrkTruePrimGen(0x0),
   fhPtTrkSecOrFakeRec(0x0),
+  fhnDetRespMtx(NULL),
+  fhnGenerated(NULL),
   fhXsec(NULL),
   fhTrials(NULL),
   fEvent(NULL),
@@ -767,24 +771,27 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseDataMode()
   fhRhoQa->Fill(rho);
   
   Double_t deltapt=99999;   //newDeltaPt
-  if (fDoRndmCone) {
+  if(fDoRndmCone){
      deltapt = GetDeltaPtRandomCone(fTaggingRadius, rho);  //newDeltaPt
      if(deltapt<9999){ 
-     fhDeltaPt->Fill(deltapt);
-     //-------------------fhDeltaPtTrack10-----------------
-     Bool_t fillDeltaPt = kFALSE;
-     for (Int_t i = 0; i < fRecTrkArray->GetEntries(); i++) {
-       AliAODTrack* trk = static_cast<AliAODTrack*>(fRecTrkArray->ConstructedAt(i));
-         UInt_t trkFilterMap = trk->GetFilterMap();  
-          if (!TESTBIT(trkFilterMap, 4) && !TESTBIT(trkFilterMap, 9)) continue;
-          if ( (fabs(trk->Eta()) < fEtaCut) && (trk->Pt() > 10) ) {
-             fillDeltaPt = kTRUE;
-             break;
-          }
-      }
+        fhDeltaPt->Fill(deltapt);
+        //-------------------fhDeltaPtTrack10-----------------
+        Double_t    signalPhi, signalEta;
+        Bool_t fillDeltaPt = kFALSE;
+        for(Int_t i = 0; i < fRecTrkArray->GetEntries(); i++) {
+           AliAODTrack* trk = static_cast<AliAODTrack*>(fRecTrkArray->ConstructedAt(i));
+           UInt_t trkFilterMap = trk->GetFilterMap();  
+           if(!TESTBIT(trkFilterMap, 4) && !TESTBIT(trkFilterMap, 9)) continue;
+           if( (fabs(trk->Eta()) < fEtaCut) && (trk->Pt() > 10) ) {
+              fillDeltaPt = kTRUE;
+              signalPhi =  trk->Phi();
+              signalEta =  trk->Eta();
+              break;
+           }
+        }
            
-     if (fillDeltaPt)
-       fhDeltaPtTrack10->Fill(deltapt, fMCWeight);
+        if(fillDeltaPt)
+           fhDeltaPtTrack10->Fill(GetDeltaPtRandomConeWithoutSignalPt(fTaggingRadius,rho, signalEta, signalPhi), fMCWeight);
             //--------------------------------------------------------     
      } 
   }
@@ -793,18 +800,19 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseDataMode()
   aVtxDisp.reserve(5);   // reserve space for 5 vertex sigma position
 
   AliEmcalJet* jet;
-  for (Int_t jetcand = 0; jetcand < nJets; ++jetcand) {
-    jet = (AliEmcalJet*) fRecJetArray->UncheckedAt(jetcand);
-
-    if (!fCutsHFjets->IsJetSelected(jet)) {
-      AliDebugF(5, MSGDEBUG("--> Jet with pt=%3.2f and eta=%3.2f not selected in FindVertices"),
-                jet->Pt(), jet->Eta());
-      continue;
-    }
-    Double_t ptJet_wBkgRej = jet->Pt() - (jet->Area() * rho);
-    // Run b-tagger
-    Int_t  nDauRejCount = 0;
-    Int_t nVtx = fTagger->FindVertices(jet,
+  Int_t fillDelPtMask = 0; //newDelPt// 
+  for(Int_t jetcand = 0; jetcand < nJets; ++jetcand) {
+     jet = (AliEmcalJet*) fRecJetArray->UncheckedAt(jetcand);
+     
+     if(!fCutsHFjets->IsJetSelected(jet)) {
+        AliDebugF(5, MSGDEBUG("--> Jet with pt=%3.2f and eta=%3.2f not selected in FindVertices"),
+                 jet->Pt(), jet->Eta());
+        continue;
+     }
+     Double_t ptJet_wBkgRej = jet->Pt() - (jet->Area() * rho);
+     // Run b-tagger
+     Int_t  nDauRejCount = 0;
+     Int_t nVtx = fTagger->FindVertices(jet,
                                        fRecTrkArray,
                                        (AliAODEvent*)fEvent,
                                        esdVtx,
@@ -814,15 +822,15 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseDataMode()
                                        aVtxDisp,
                                        nDauRejCount);
     fhHFjetQa->Fill(12, nDauRejCount);
-    if (nVtx < 0) {
-      fhHFjetQa->Fill(-1 * nVtx);
-      continue;
+    if(nVtx < 0){
+       fhHFjetQa->Fill(-1 * nVtx);
+       continue;
     }
     //------------------------newDeltaPt-------------------------
-   if (fDoRndmCone && nVtx > 0) {
-      if(deltapt<9999){ 
-	  FillDeltaPt( nVtx, pVtx,aVtxDisp,deltapt);   	  
-      } 
+   if(fDoRndmCone && nVtx > 0 && fillDelPtMask < 7){
+      //if(deltapt<9999){ 
+         fillDelPtMask = FillDeltaPt( rho, nVtx, pVtx, aVtxDisp, jet->Eta(), jet->Phi(), fillDelPtMask);      
+      //} 
    }  
  //-------------------------------------------------
     
@@ -876,7 +884,7 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode()
      if(deltapt<9999){ 
         fhDeltaPt->Fill(deltapt, fMCWeight);
         //-------------------fhDeltaPtTrack10-----------------
-            
+        Double_t signalPhi, signalEta;    
         Bool_t fillDeltaPt = kFALSE;
         for(Int_t i = 0; i < fRecTrkArray->GetEntries(); i++) {
             AliAODTrack* trk = static_cast<AliAODTrack*>(fRecTrkArray->ConstructedAt(i));
@@ -884,11 +892,13 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode()
             if (!TESTBIT(trkFilterMap, 4) && !TESTBIT(trkFilterMap, 9)) continue;
             if ( (fabs(trk->Eta()) < fEtaCut) && (trk->Pt() > 10) ) {
                fillDeltaPt = kTRUE;
+                signalPhi =  trk->Phi();
+                signalEta =  trk->Eta();
                break;
             }
-        }		
+        }       
         if (fillDeltaPt)
-         fhDeltaPtTrack10->Fill(deltapt, fMCWeight);
+         fhDeltaPtTrack10->Fill(GetDeltaPtRandomConeWithoutSignalPt(fTaggingRadius,rho, signalEta, signalPhi), fMCWeight);
        //--------------------------------------------------------     
      } 
   }
@@ -898,6 +908,8 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode()
 
   // Loop on MC jets
   AliEmcalJet* jetMC;
+  Int_t fillDelPtMask=0; //newDeltaPt//
+    
   for (Int_t jetcand = 0; jetcand < nMCJets; ++jetcand) {
 
     jetMC = (AliEmcalJet*)fMCJetArray->UncheckedAt(jetcand);
@@ -968,15 +980,15 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode()
         continue;
       }
 
-//------------------------newDeltaPt-------------------------
+      //------------------------newDeltaPt-------------------------
 
-   if (fDoRndmCone && nVtx > 0) {
-       if(deltapt<9999){ 
-	     FillDeltaPt( nVtx, pVtx,aVtxDisp,deltapt);                 
-       } 
-   }  
- //-------------------------------------------------
-       // Fill jet-with-vertex container
+      if (fDoRndmCone && nVtx > 0 && fillDelPtMask < 7) {
+          //if(deltapt<9999){ 
+            fillDelPtMask = FillDeltaPt( rho, nVtx, pVtx,aVtxDisp, jet->Eta(), jet->Phi(), fillDelPtMask);                 
+          //} 
+      }  
+      //-------------------------------------------------
+      // Fill jet-with-vertex container
       fhJetVtxSim->FillStepJetVtxSim(AliHFJetsContainer::kCFStepReco,
                                      nVtx,
                                      fZNApercentile,
@@ -990,10 +1002,10 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode()
                                      ptpart,
                                      fMCWeight);
 
-      if (fDoQAVtx) {
-        fhQaVtx->FillStepQaVtx(AliHFJetsContainer::kCFStepReco, nVtx, 0, pVtx, jet,
-                               fHFvertexing, fMCPartArray, aVtxDisp, partonnat, fMCWeight);
-      }
+       if (fDoQAVtx) {
+         fhQaVtx->FillStepQaVtx(AliHFJetsContainer::kCFStepReco, nVtx, 0, pVtx, jet,
+                                fHFvertexing, fMCPartArray, aVtxDisp, partonnat, fMCWeight);
+       }
     }
 
 
@@ -1492,42 +1504,103 @@ Bool_t AliAnalysisTaskEmcalJetBtagSV::IsOutlier(){ //FK// whole function
    }
 }
 
-//_____________________________________________________________________________________
-void AliAnalysisTaskEmcalJetBtagSV::FillDeltaPt(Int_t nVtx, AliAODVertex* pVtx, vctr_pair_dbl_int aVtxDisp, Double_t deltapt){ //
+//-------------------------------------newDeltaPt-----------------------------------
+Int_t AliAnalysisTaskEmcalJetBtagSV::FillDeltaPt(Double_t rho, 
+                                                 Int_t nVtx, 
+                                                 AliAODVertex* pVtx, 
+                                                 vctr_pair_dbl_int aVtxDisp, 
+                                                 Double_t signalEta, 
+                                                 Double_t signalPhi,  
+                                                 Int_t fillMask){
    // fills delta pt for events with SV
    Int_t *idxLxy = new Int_t[nVtx];
    Double_t *sigmavertex     = new Double_t[nVtx];
    Double_t *decLenXY        = new Double_t[nVtx];
    Double_t *sigdecLenXY     = new Double_t[nVtx];
-   Double_t sigmaSV, Lxy;
+   Double_t sigmaSV, lxy;
    for (Int_t vtxID = 0; vtxID < nVtx; ++vtxID) {
       AliAODVertex *svtx = (AliAODVertex *)fHFvertexing->UncheckedAt(vtxID);  
       decLenXY[vtxID] = pVtx->DistanceXYToVertex(svtx);
       sigdecLenXY[vtxID] = decLenXY[vtxID]/pVtx->ErrorDistanceXYToVertex(svtx);;
       sigmavertex[vtxID] = aVtxDisp[vtxID].first;
    }
-    TMath::Sort(nVtx, decLenXY, idxLxy);
-    sigmaSV = sigmavertex[idxLxy[0]];
-    Lxy  = sigdecLenXY[idxLxy[0]];
+   TMath::Sort(nVtx, decLenXY, idxLxy);
+   sigmaSV = sigmavertex[idxLxy[0]];
+   lxy  = sigdecLenXY[idxLxy[0]];
   
-	Double_t fillWeight; // 1 for Data mode, fMCWeight for for correction mode;
-	if (fCorrMode) 
-		fillWeight = fMCWeight;
-	else 
-	   fillWeight = 1;
-	
-    if (sigmaSV < fSigmaSVCut){
-       if (Lxy > 5)
-          fhDeltaPtLxy5->Fill(deltapt, fillWeight); 
-       if (Lxy > 6)  
-          fhDeltaPtLxy6->Fill(deltapt, fillWeight);
-       if (Lxy > 7) 
-          fhDeltaPtLxy7->Fill(deltapt, fillWeight);
-      }                  
+   Double_t fillWeight; // 1 for Data mode, fMCWeight for for correction mode;
+   if(fCorrMode){ 
+      fillWeight = fMCWeight;
+   }else{ 
+      fillWeight = 1;
+   }
+   
+   if(sigmaSV < fSigmaSVCut){
+      if(lxy > 5 && (fillMask & 1) == 0){
+         fhDeltaPtLxy5->Fill(GetDeltaPtRandomConeWithoutSignalPt(fTaggingRadius,rho, signalEta, signalPhi), fillWeight); 
+         fillMask = fillMask | 1;
+      }
+      if(lxy > 6 && ( (fillMask & 2) >> 1) == 0){
+         fhDeltaPtLxy6->Fill(GetDeltaPtRandomConeWithoutSignalPt(fTaggingRadius,rho, signalEta, signalPhi), fillWeight);
+         fillMask = fillMask | 2;
+      }       
+      if(lxy > 7 && ((fillMask & 4) >> 2) == 0 ){
+         fillMask = fillMask | 4; 
+         fhDeltaPtLxy7->Fill(GetDeltaPtRandomConeWithoutSignalPt(fTaggingRadius,rho, signalEta, signalPhi), fillWeight);
+      }       
+   }                  
 
-	delete [] sigmavertex;
-	delete [] decLenXY;
-	delete [] sigdecLenXY;
-	
+   delete [] sigmavertex;
+   delete [] decLenXY;
+   delete [] sigdecLenXY;
+
+   return fillMask;
 
 }
+//------------------------------------------------------------------------------------
+Double_t AliAnalysisTaskEmcalJetBtagSV::GetDeltaPtRandomConeWithoutSignalPt (Double_t jetradius, 
+                                                                             Double_t rhovalue, 
+                                                                             Double_t signalEta, 
+                                                                             Double_t signalPhi )
+{
+   Double_t minConeEta = jetradius - fEtaCut;
+   Double_t maxConeEta = fEtaCut - jetradius;
+
+    // throw random cone
+   Double_t coneEta, conePhi, deta, dphi,dist;
+
+
+   do{
+       coneEta = minConeEta + fRandom->Rndm()*(maxConeEta - minConeEta);
+       conePhi = fRandom->Rndm()*TMath::TwoPi();
+       deta = coneEta - signalEta;
+       dphi = TVector2::Phi_mpi_pi((conePhi - signalPhi));
+       dist = sqrt(deta*deta + dphi*dphi);
+    }
+    while(dist<2*jetradius);
+    
+
+    // collect track pt within cone
+    Double_t conePt = 0.;
+    for (Int_t i = 0; i < fEvent->GetNumberOfTracks(); i++) {
+        AliAODTrack* trk = static_cast<AliAODTrack*>(fEvent->GetTrack(i));
+
+        // track filter hardwired...
+        UInt_t trkFilterMap = trk->GetFilterMap();  
+        if (!TESTBIT(trkFilterMap, 4) && !TESTBIT(trkFilterMap, 9)) continue;
+            
+        
+        if ( (fabs(trk->Eta()) < fEtaCut) && (trk->Pt() > fPtCut) ) {
+             dphi = TVector2::Phi_mpi_pi((trk->Phi() - conePhi));
+             deta = trk->Eta() - coneEta;
+             dist = sqrt(deta*deta + dphi*dphi);
+            if (dist < jetradius) conePt += trk->Pt();
+        }
+    } // track loop
+
+  return conePt - jetradius*jetradius*TMath::Pi() * rhovalue;
+    
+}   
+
+
+    
