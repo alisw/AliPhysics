@@ -24,7 +24,14 @@ ClassImp(AliSigma0ParticleBase)
       fDCAz(0.f),
       fDCAr(0.f),
       fUse(true),
-      fPhistar() {}
+      fPhistar() {
+  fP[0] = -0.;
+  fP[1] = -0.;
+  fP[2] = -0.;
+  fPMC[0] = -0.;
+  fPMC[1] = -0.;
+  fPMC[2] = -0.;
+}
 
 //____________________________________________________________________________________________________
 AliSigma0ParticleBase::AliSigma0ParticleBase(const AliESDtrack *track, int pdg,
@@ -54,9 +61,9 @@ AliSigma0ParticleBase::AliSigma0ParticleBase(const AliESDtrack *track, int pdg,
   fP[0] = trackMom[0];
   fP[1] = trackMom[1];
   fP[2] = trackMom[2];
-  fPMC[0] = -1.;
-  fPMC[1] = -1.;
-  fPMC[2] = -1.;
+  fPMC[0] = -0.;
+  fPMC[1] = -0.;
+  fPMC[2] = -0.;
 
   fCharge = track->Charge();
   fPDGCode = pdg;
