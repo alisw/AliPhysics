@@ -87,7 +87,13 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt() : AliAnalys
     fHistMultipPercentile(0),
     fHistTopolCut(0),
     fHistTopolCutMC(0),
-fHistPurityCheck(0)
+    fHistPurityCheck(0),
+    fCosPointAngleK0(0.97),
+    fCosPointAngleLam(0.995),
+    fDCAV0Daughters(1),
+    fDCAposDaughter(0.06),
+    fDCAnegDaughter(0.06),
+    fnumOfTPCcrossedRows(70)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -128,7 +134,13 @@ AliAnalysisTaskDiHadCorrelHighPt::AliAnalysisTaskDiHadCorrelHighPt(const char* n
     fHistMultipPercentile(0),
     fHistTopolCut(0),
     fHistTopolCutMC(0),
-fHistPurityCheck(0)
+    fHistPurityCheck(0),
+    fCosPointAngleK0(0.97),
+    fCosPointAngleLam(0.995),
+    fDCAV0Daughters(1),
+    fDCAposDaughter(0.06),
+    fDCAnegDaughter(0.06),
+    fnumOfTPCcrossedRows(70)
 {
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -419,10 +431,10 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserCreateOutputObjects()
     fHistTopolCutMC->GetAxis(10)->SetTitle("OnFly/Offline"); // 0.5 - "On-The-Fly", 1.5 Offline
     fHistTopolCutMC->GetAxis(1)->Set(1002,binsMass);
     
-    Int_t binsPur[4] = {12,1002,3,2};
-    Double_t binsPurMin[4] = {fPtTrigMin,0.44,0.,0.};
-    Double_t binsPurMax[4] = {15,1.15,3.,2.};
-    fHistPurityCheck = new THnSparseF("fHistPurityCheck","fHistPurityCheck",4,binsPur,binsPurMin,binsPurMax);
+    Int_t binsPur[5] = {12,1002,3,8,8};
+    Double_t binsPurMin[5] = {fPtTrigMin,0.44,0.,0.,0};
+    Double_t binsPurMax[5] = {15,1.15,3.,8.,8.};
+    fHistPurityCheck = new THnSparseF("fHistPurityCheck","fHistPurityCheck",5,binsPur,binsPurMin,binsPurMax);
     fOutputList->Add(fHistPurityCheck);
     fHistPurityCheck->Sumw2();
     fHistPurityCheck->GetAxis(0)->SetTitle("p_{T}");
@@ -1003,6 +1015,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
 	{
 		
         for (Int_t jMix=0; jMix<TMath::Min(nMix,10); jMix++)
+      //  for (Int_t jMix=0; jMix<nMix; jMix++)
  		{// loop through mixing events
  			TObjArray* bgTracks = fPool->GetEvent(jMix);
             if(fAnalysisMC) {
@@ -1042,15 +1055,15 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodPrimaryTrack(const AliAODTrack 
 Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodV0AngleK0(const AliAODv0 *t, AliAODVertex *pv)
 {
 		//V0 Cosine of Pointing Angle
-	    if(t->CosPointingAngle(pv)<=0.97) return kFALSE;
-		
+	    if(t->CosPointingAngle(pv)<=fCosPointAngleK0) return kFALSE;
+    
 		return kTRUE;
 }
 //____________________________________________________________________________
 Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodV0AngleLambda(const AliAODv0 *t, AliAODVertex *pv)
 {
 		//V0 Cosine of Pointing Angle
-		if(t->CosPointingAngle(pv)<=0.995) return kFALSE;
+		if(t->CosPointingAngle(pv)<=fCosPointAngleLam) return kFALSE;
 		
 		return kTRUE;
 }
@@ -1151,7 +1164,7 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodDaughterTrack(const AliAODTrack
 	// TPC refit
  	if (!t->IsOn(AliAODTrack::kTPCrefit)) return kFALSE;
 	Float_t nCrossedRowsTPC = t->GetTPCClusterInfo(2,1);
-	if (nCrossedRowsTPC < 70) return kFALSE;
+	if (nCrossedRowsTPC < fnumOfTPCcrossedRows) return kFALSE;
 	Int_t findable=t->GetTPCNclsF();
 	if (findable <= 0) return kFALSE;
 	if (nCrossedRowsTPC/findable < 0.8) return kFALSE;
@@ -1196,11 +1209,11 @@ Bool_t AliAnalysisTaskDiHadCorrelHighPt::IsMyGoodV0Topology(const AliAODv0 *v0){
         return kFALSE;
     }
 	//DCA Negative Track to PV
-	if(v0->DcaNegToPrimVertex()<=0.060) return kFALSE;
+	if(v0->DcaNegToPrimVertex()<=fDCAposDaughter) return kFALSE;
 	//DCA Positive Track to PV
-	if(v0->DcaPosToPrimVertex()<=0.060) return kFALSE;
+	if(v0->DcaPosToPrimVertex()<=fDCAnegDaughter) return kFALSE;
 	//DCA V0 daughters
-	if(v0->DcaV0Daughters()>=1.0) return kFALSE;
+	if(v0->DcaV0Daughters()>=fDCAV0Daughters) return kFALSE;
 	//V0 2D Decay Radius
 	if(v0->RadiusV0()<=0.5) return kFALSE;
 	
@@ -1314,7 +1327,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::TopologCuts(THnSparse* fHist,Double_t ptt
 //____________________________________________________________
 void AliAnalysisTaskDiHadCorrelHighPt::FillMC(const AliAODv0 *V0,TClonesArray *mcArray,Int_t pdgV0,Int_t pdgDau1, Int_t pdgDau2,Int_t triggerType, Double_t mass, TObjArray * selectedMCV0Triggersrec,THnSparse * fHistRecV0, TH3F * fHistMassPtCut,Double_t lPVz, const AliAODTrack * myTrackPos,const AliAODTrack * myTrackNeg,Bool_t status,THnSparse * histPur){
     
-    Double_t purity[4] ={V0->Pt(),mass,triggerType-0.5,0.5};
+    Double_t purity[5] ={V0->Pt(),mass,triggerType-0.5,0.5,-1};
     histPur->Fill(purity);
     
     Int_t myTrackPosLabel = TMath::Abs(myTrackPos->GetLabel());
@@ -1327,15 +1340,23 @@ void AliAnalysisTaskDiHadCorrelHighPt::FillMC(const AliAODv0 *V0,TClonesArray *m
     if (!mcNegTrack) return;
     Int_t NegTrackPdg = mcNegTrack->GetPdgCode();
     
+    Double_t puri[5] ={V0->Pt(),mass,triggerType-0.5,1.5,-1};
+    histPur->Fill(puri);
+    
     Int_t myTrackPosMotherLabel = mcPosTrack->GetMother();
     Int_t myTrackNegMotherLabel = mcNegTrack->GetMother();
     
     if ((myTrackPosMotherLabel==-1)||(myTrackNegMotherLabel==-1)) return;
+    Double_t pur[5] ={V0->Pt(),mass,triggerType-0.5,2.5,-1};
+    histPur->Fill(pur);
     
     if (myTrackPosMotherLabel!=myTrackNegMotherLabel) return;
+    Double_t pu[5] ={V0->Pt(),mass,triggerType-0.5,3.5,-1};
+    histPur->Fill(pu);
     
     AliAODMCParticle *mcPosMother = (AliAODMCParticle*)mcArray->At(myTrackPosMotherLabel);
     if (!mcPosMother) return;
+
     Int_t MotherPdg = mcPosMother->GetPdgCode();
     Int_t MotherOfMotherLabel = mcPosMother->GetMother();
     
@@ -1355,16 +1376,34 @@ void AliAnalysisTaskDiHadCorrelHighPt::FillMC(const AliAODv0 *V0,TClonesArray *m
         IsFromCascade = (((MoMPdg == 3222)|| (MoMPdg==3212)|| (MoMPdg==3112) || (MoMPdg==3224) || (MoMPdg==3214) || (MoMPdg==3114) || (MoMPdg==3322) || (MoMPdg==3312)|| (MoMPdg==3324) || (MoMPdg==3314) || (MoMPdg==3334)) && (mcPosMotherOfMother->IsPhysicalPrimary()));
     }
     
+    Double_t purit[5] ={V0->Pt(),mass,triggerType-0.5,4.5,-1};
+    histPur->Fill(purit);
+    
     Bool_t isGoodID = (MotherPdg==pdgV0);
     Bool_t isFromMaterial = mcPosMother->IsSecondaryFromMaterial();
 
+    if(!isGoodID) {
+        Int_t ident =0;
+        cout << MotherPdg << endl;
+        if(MotherPdg==211) ident =1;
+        else if(MotherPdg==3122) ident=2;
+        else if(MotherPdg==-3122) ident=3;
+        else if(MotherPdg==-211) ident =4;
+        else if(MotherPdg==310) ident =5;
+        else if(MotherPdg==22) ident =6;
+        else if(MotherPdg==223) ident =7;
+        else ident=8;
+        Double_t purity[5] ={V0->Pt(),mass,triggerType-0.5,5.5,ident-0.5};
+        histPur->Fill(purity);
+    }
+    
     if(isGoodID){
-        Double_t purity[4] ={V0->Pt(),mass,triggerType-0.5,1.5};
+        Double_t purity[5] ={V0->Pt(),mass,triggerType-0.5,6.5,-1};
         histPur->Fill(purity);
     }
 
     if(!isFromMaterial&&isGoodID){
-        Double_t purity[4] ={V0->Pt(),mass,triggerType-0.5,2.5};
+        Double_t purity[5] ={V0->Pt(),mass,triggerType-0.5,7.5,-1};
         histPur->Fill(purity);
     }
     
