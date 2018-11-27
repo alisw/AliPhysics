@@ -543,8 +543,14 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
         int currentPDG = part->GetPdgCode();
         for (auto code : pdgCodes) {
           if (code == std::abs(currentPDG)) {
-            if (isHyperCandidate) fMCvector[mcMap[ilab]].SetRecoIndex(fV0Hyvector.size());
-            else fMCvector[mcMap[ilab]].SetRecoIndex(fV0vector.size());
+            if (isHyperCandidate) {
+              fMCvector[mcMap[ilab]].SetRecoIndex(fV0Hyvector.size());
+              fMCvector[mcMap[ilab]].SetHyperCandidate(true);
+            }  
+            else {
+              fMCvector[mcMap[ilab]].SetRecoIndex(fV0vector.size());
+              fMCvector[mcMap[ilab]].SetHyperCandidate(false);
+            }
             break;
           }
         }
