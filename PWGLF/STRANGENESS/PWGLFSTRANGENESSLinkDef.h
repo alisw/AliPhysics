@@ -58,4 +58,5 @@
 #pragma link C++ class std::vector<Lifetimes::MCparticle>+;
 #pragma link C++ class Lifetimes::HyperTriton2Body+;
 #pragma link C++ class std::vector<Lifetimes::HyperTriton2Body>+;
+#pragma link C++ class Lifetimes::MiniV0efficiency+;
 #endif
