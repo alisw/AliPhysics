@@ -87,7 +87,7 @@ const Int_t nCent               = 11;
 //const Double_t CentMax[nCent] = {5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0};
 const Double_t CentMin[nCent]   = {0.0,1.0,5.0 ,10.0,15.0,20.0,30.0,40.0,50.0,70.0,0.0};
 const Double_t CentMax[nCent]   = {1.0,5.0,10.0,15.0,20.0,30.0,40.0,50.0,70.0,100.0,100.0};
-const Char_t *centName[11]      = {"0.0-5.0","5.0-10.0","10.0-20.0","20.0-30.0","30.0-40.0","40.0-50.0","50.0-60.0","60.0-70.0","70.0-80.0","80.0-90.0","MB"};
+//const Char_t *centName[11]      = {"0.0-5.0","5.0-10.0","10.0-20.0","20.0-30.0","30.0-40.0","40.0-50.0","50.0-60.0","60.0-70.0","70.0-80.0","80.0-90.0","MB"};
 
 const Double_t aPos[nCent]      = { 0,0,0,0,0,0,0,0,0,49.9799 ,49.9659 };
 const Double_t bPos[nCent]      = { 0,0,0,0,0,0,0,0,0,2.99619 ,2.91366 };
@@ -783,17 +783,17 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
 	else{
 		for(Int_t cent=0; cent<nCent; cent++) {
 			for(Int_t pid=0; pid<7; pid++) {
-				hMcIn[cent][pid]=new TH1D(Form("hIn_%f-%f-%s",CentMin[cent],CentMax[cent],Pid[pid]), Form("MC in (pid %s)", Pid[pid]),nPtBins,ptBins);
+				hMcIn[cent][pid]=new TH1D(Form("hIn_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]), Form("MC in (pid %s)", Pid[pid]),nPtBins,ptBins);
 				hMcIn[cent][pid]->Sumw2();
-				hMcInNeg[cent][pid]=new TH1D(Form("hInNeg_%f-%f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC in (pid %s)",Pid[pid]),nPtBins,ptBins);
+				hMcInNeg[cent][pid]=new TH1D(Form("hInNeg_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC in (pid %s)",Pid[pid]),nPtBins,ptBins);
 				hMcInNeg[cent][pid]->Sumw2();
-				hMcInPos[cent][pid]=new TH1D(Form("hInPos_%f-%f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC in (pid %s)",Pid[pid]),nPtBins,ptBins);
+				hMcInPos[cent][pid]=new TH1D(Form("hInPos_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC in (pid %s)",Pid[pid]),nPtBins,ptBins);
 				hMcInPos[cent][pid]->Sumw2();
-				hMcOut[cent][pid]=new TH1D(Form("hMcOut_%f-%f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC out (pid %s)",Pid[pid]),nPtBins,ptBins);
+				hMcOut[cent][pid]=new TH1D(Form("hMcOut_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC out (pid %s)",Pid[pid]),nPtBins,ptBins);
 				hMcOut[cent][pid]->Sumw2();
-				hMcOutNeg[cent][pid]=new TH1D(Form("hMcOutNeg_%f-%f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC out (pid %s)",Pid[pid]),nPtBins,ptBins);
+				hMcOutNeg[cent][pid]=new TH1D(Form("hMcOutNeg_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC out (pid %s)",Pid[pid]),nPtBins,ptBins);
 				hMcOutNeg[cent][pid]->Sumw2();
-				hMcOutPos[cent][pid]=new TH1D(Form("hMcOutPos_%f-%f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC out (pid %s)",Pid[pid]),nPtBins,ptBins);
+				hMcOutPos[cent][pid]=new TH1D(Form("hMcOutPos_%.2f-%.2f-%s",CentMin[cent],CentMax[cent],Pid[pid]),Form("MC out (pid %s)",Pid[pid]),nPtBins,ptBins);
 				hMcOutPos[cent][pid]->Sumw2();
 
 				fListOfObjects->Add(hMcIn[cent][pid]);
@@ -830,12 +830,12 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
 					hDCApTMate2[i_cent][pid][q] = new TH2D(Form("hDCA2_%s%sMatecent%d",Pid[pid],Q[q],i_cent),"from material; #it{p}_{T} (GeV/#it{c}); DCA_{xy} (cm)", nPtBins, ptBins, 800, -4.0, 4.0 );
 					hDCApTMate2[i_cent][pid][q]->Sumw2();
 
-					fListOfObjects->Add(hDCApTPrim[i_cent][pid][q]);
-					fListOfObjects->Add(hDCApTPrim2[i_cent][pid][q]);
-					fListOfObjects->Add(hDCApTWDec[i_cent][pid][q]);
-					fListOfObjects->Add(hDCApTWDec2[i_cent][pid][q]);
-					fListOfObjects->Add(hDCApTMate[i_cent][pid][q]);
-					fListOfObjects->Add(hDCApTMate2[i_cent][pid][q]);
+//					fListOfObjects->Add(hDCApTPrim[i_cent][pid][q]);
+//					fListOfObjects->Add(hDCApTPrim2[i_cent][pid][q]);
+//					fListOfObjects->Add(hDCApTWDec[i_cent][pid][q]);
+//					fListOfObjects->Add(hDCApTWDec2[i_cent][pid][q]);
+//					fListOfObjects->Add(hDCApTMate[i_cent][pid][q]);
+//					fListOfObjects->Add(hDCApTMate2[i_cent][pid][q]);
 				}	// charge MC
 			}	// pid MC
 		}	//cent DCA MC
