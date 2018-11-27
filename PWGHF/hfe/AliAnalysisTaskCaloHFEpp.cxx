@@ -800,8 +800,11 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				// 5. SPD vertex resolution cut //
 				if (TMath::Sqrt(cov[5]) > 0.25) return;
 				fNevents->Fill(5); 
+				// 6. Z Vtx position cut 
+				if(TMath::Abs(Zvertex)>10.0)return;
+				fNevents->Fill(6); 
+				fHist_VertexZ->Fill(Zvertex);                     // plot the pt value of the track in a histogram
 
-				if(TMath::Abs(Zvertex)>20.0)return;
 
 				//////////////////////////////
 				// Get sign of B field
@@ -841,6 +844,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				}
 				fzvtx_Ntrkl->Fill(Zvertex,nAcc);
 
+
 				//-----------Tracklet correction-------------------------
 				Double_t correctednAcc   = nAcc;
 				Double_t fRefMult = Nref;
@@ -855,10 +859,6 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				fzvtx_Ntrkl_Corr->Fill(Zvertex,correctednAcc);
 
 
-				// 6. Z Vtx position cut 
-				if(TMath::Abs(Zvertex)>10.0)return;
-				fNevents->Fill(6); 
-				fHist_VertexZ->Fill(Zvertex);                     // plot the pt value of the track in a histogram
 
 				if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
 
