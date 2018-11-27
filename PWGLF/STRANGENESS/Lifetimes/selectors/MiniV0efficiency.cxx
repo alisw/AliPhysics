@@ -9,6 +9,8 @@
 #include <AliPDG.h>
 #include "MiniV0.h"
 #include "MCparticle.h"
+#include "HyperTriton2Body.h"
+#include "Riostream.h"
 using namespace Lifetimes;
 using namespace std;
 
@@ -106,35 +108,43 @@ Bool_t MiniV0efficiency::Process(Long64_t entry) {
   // Use fStatus to set the return value of TTree::Process().
   //
   // The return value is currently not used.
-
   fReader.SetEntry(entry);
-  int p_vec[3]={310,3122,1010010030};
+  unsigned int p_vec[3]={310,3122,1010010030};
   for(int i=0;i<(static_cast<int>(MCparticles.GetSize()));i++){
     auto& miniMC=MCparticles[i];
     if(miniMC.IsPrimary()){ 
-      int part=miniMC.GetPDGcode();
-      if(miniMC.GetNBodies()==2 || part!=p_vec[2]){  
-        int ind=miniMC.GetRecoIndex();
-        for (int j=0;j<3;j++){
-          if(p_vec[j]==part){
-            float MCmass=miniMC.GetMass();
-            fHistV0ptMC[j]->Fill(miniMC.GetPt());
-            fHistV0ctMC[j]->Fill(MCmass*(miniMC.GetDistOverP()));
-            if(ind>=0){
-              auto& minidata= V0s[ind];  
-              if(minidata.GetCandidateInvMass(j)!=-1){ 
+      unsigned int part=std::abs(miniMC.GetPDGcode());
+      int ind=miniMC.GetRecoIndex();
+      cout<<part<<endl;
+      cout<<ind<<endl;
+      for (int j=0;j<3;j++){
+        if(p_vec[j]==part){
+          float MCmass=miniMC.GetMass();
+          fHistV0ptMC[j]->Fill(miniMC.GetPt());
+          fHistV0ctMC[j]->Fill(MCmass*(miniMC.GetDistOverP()));
+          if(ind>=0){
+            if(miniMC.GetNBodies()==2 && part==p_vec[2]  && miniMC.IsHyperCandidate()==true){
+              auto& minihyper= V0Hyper[ind];  
+              if(minihyper.GetCandidateInvMass()!=-1){ 
+                fHistV0ptData[2]->Fill(minihyper.GetV0pt());
+                fHistV0ctData[2]->Fill(MCmass*(minihyper.GetDistOverP()));
+                ctAnalysis[2]->Fill(MCmass*(minihyper.GetDistOverP())-MCmass*(miniMC.GetDistOverP()),MCmass*(miniMC.GetDistOverP()));
+                ptAnalysisH->Fill(miniMC.GetPt()-minihyper.GetV0pt(),miniMC.GetPt());            
+
+              }
+            }  
+            else if(part!=p_vec[2] && miniMC.IsHyperCandidate()==false ){              
+                auto& minidata= V0s[ind];  
                 fHistV0ptData[j]->Fill(minidata.GetV0pt());
                 fHistV0ctData[j]->Fill(MCmass*(minidata.GetDistOverP()));
                 ctAnalysis[j]->Fill(MCmass*(minidata.GetDistOverP())-MCmass*(miniMC.GetDistOverP()),MCmass*(miniMC.GetDistOverP()));
-                if(j==2) ptAnalysisH->Fill(miniMC.GetPt()-minidata.GetV0pt(),miniMC.GetPt());
-              }
-            }  
-          }
-
+            }
+          }  
         }
-      }      
-    }
+ 
+     }      
   }
+}
 
 return kTRUE;
 
