@@ -553,7 +553,7 @@ void AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inputeven
     }
     if(fDoBackgroundSubtraction) {
       double area = TMath::Power(static_cast<double>(patchit->GetPatchSize())/8., 2);
-      double rhoval = (patchit->GetRowStart() >= 64) ? fRhoValues[kIndRhoDCAL] : fRhoValues[kIndRhoEMCAL];
+      double rhoval = (patchit->GetRowStart() >= 64) ? fRhoValues[kIndRhoDCAL] : fRhoValues[kIndRhoEMCAL];  // Rho values are for a detector measured in the opposite arm
       AliDebugStream(1) << "Subtracting background for area " << area << ": " << rhoval  << " -> " << (area * rhoval) << std::endl;
       patchit->SetADC(patchit->GetADC() - area * rhoval);
     }

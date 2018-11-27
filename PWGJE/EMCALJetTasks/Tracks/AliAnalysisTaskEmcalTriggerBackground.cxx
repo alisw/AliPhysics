@@ -40,7 +40,9 @@ void AliAnalysisTaskEmcalTriggerBackground::UserCreateOutputObjects() {
 
     fHistos = new THistManager("backgroundtaskhists");
     fHistos->CreateTH2("hRhoEMCAL", "Rho values in EMCAL", 1000, 0., 1000, 1000, 0., 1000.);
+    fHistos->CreateTH2("hRhoEMCALMedianDCAL", "Rho value in EMCAL vs Median DCAL", 1000, 0., 1000, 1000, 0., 1000.);
     fHistos->CreateTH2("hRhoDCAL", "Rho values in DCAL", 1000, 0., 1000, 1000, 0., 1000.);
+    fHistos->CreateTH2("hRhoDCALMedianEMCAL", "Rho value in DCAL vs Median EMCAL", 1000, 0., 1000, 1000, 0., 1000.);
 
     for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
 }
@@ -63,6 +65,8 @@ bool AliAnalysisTaskEmcalTriggerBackground::Run() {
 
     fHistos->FillTH2("hRhoEMCAL", fCaloTriggers->GetMedian(0), medEMCAL);
     fHistos->FillTH2("hRhoDCAL", fCaloTriggers->GetMedian(1), medDCAL);
+    fHistos->FillTH2("hRhoEMCALMedianDCAL", fCaloTriggers->GetMedian(0), medDCAL);
+    fHistos->FillTH2("hRhoDCALMedianEMCAL", fCaloTriggers->GetMedian(1), medEMCAL);
     return true;
 }
 
