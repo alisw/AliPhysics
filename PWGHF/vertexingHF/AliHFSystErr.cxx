@@ -3837,9 +3837,9 @@ void AliHFSystErr::InitDstartoD0pi2017pp5TeV_finebins(){
     fCutsEff->SetBinContent(4,0.05);
     fCutsEff->SetBinContent(5,0.05);
     fCutsEff->SetBinContent(6,0.03);
-    fCutsEff->SetBinContent(7,0.03);
-    for(Int_t i= 8;i<=13;i++) fCutsEff->SetBinContent(i,0.02);
-    for(Int_t i=14;i<=72;i++) fCutsEff->SetBinContent(i,0.01);
+    fCutsEff->SetBinContent(7,0.02);
+    fCutsEff->SetBinContent(8,0.02);
+    for(Int_t i=9;i<=72;i++) fCutsEff->SetBinContent(i,0.01);
     for(Int_t i=1;i<=72;i++) fCutsEff->SetBinError(i,0.);
     
     // PID efficiency (from PID/noPID)
