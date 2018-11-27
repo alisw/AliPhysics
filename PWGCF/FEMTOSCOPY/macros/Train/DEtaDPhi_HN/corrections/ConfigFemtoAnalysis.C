@@ -61,7 +61,7 @@
 #include <string.h>
 
 //________________________________________________________________________
-AliFemtoManager* ConfigFemtoAnalysis(const char* par) {
+AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 	double PionMass = 0.13956995;
 	double KaonMass = 0.493677;
