@@ -852,12 +852,12 @@ void AliHFCorrFitSystematics::Fitv2Systematics(){
         fFitter->SetFuncType(fFitFuncType[fReferenceIndex]);
         fFitter->SetPtRanges(fVecLowEdgeDpt[iPtBin],fVecUpEdgeDpt[iPtBin],fAssocTrackPtMin,fAssocTrackPtMax);
         if(fIspPb) fFitter->SetIspPb(kTRUE);
-        if(fFitFuncType[fReferenceIndex]==8) { //fix beta to MC
+        if(fFitFuncType[fReferenceIndex]==8||fFitFuncType[fReferenceIndex]==9) { //fix beta to MC
            TFile *fileBeta = new TFile(Form("%s/CanvasFinalTrendBeta_pthad%1.1fto%1.1f.root",fBetaDir.Data(),fAssocTrackPtMin,fAssocTrackPtMax),"r");
            TCanvas *cBeta = (TCanvas*)fileBeta->Get("CanvasFinalTrendBeta");
            TH1D *hBeta = (TH1D*)cBeta->FindObject("FinalTrendBeta");
            Double_t betaMC = hBeta->GetBinContent(hBeta->FindBin((fVecLowEdgeDpt[iPtBin]+fVecUpEdgeDpt[iPtBin])/2.));
-           printf("*** Fixing beta in %1.1f<pTD<%1.1f, %1.1f<pTass<%1.1f to %f\n",fVecLowEdgeDpt[iPtBin],fVecUpEdgeDpt[iPtBin],fAssocTrackPtMin,fAssocTrackPtMax,betaMC);
+           printf("*** Fixing/constraining beta in %1.1f<pTD<%1.1f, %1.1f<pTass<%1.1f to %f\n",fVecLowEdgeDpt[iPtBin],fVecUpEdgeDpt[iPtBin],fAssocTrackPtMin,fAssocTrackPtMax,betaMC);
            fFitter->SetBetaVal(betaMC);
            fileBeta->Close();
            cv2->cd(iPtBin+1);
@@ -880,7 +880,7 @@ void AliHFCorrFitSystematics::Fitv2Systematics(){
         fValuev2ASYield[iPtBin] = fFitter->GetASYield();
         fValuev2ASSigma[iPtBin] = fFitter->GetASSigma();
         fValuev2Pedestal[iPtBin] = fFitter->GetPedestal();
-        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fValuev2Beta[iPtBin] = fFitter->GetBeta();
+        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fValuev2Beta[iPtBin] = fFitter->GetBeta();
     
         
         fSystValuev2NSYield[iPtBin] = (fValuev2NSYield[iPtBin]-fReferenceHistoNSYield->GetBinContent(iPtBin+1))/fReferenceHistoNSYield->GetBinContent(iPtBin+1);
@@ -888,7 +888,7 @@ void AliHFCorrFitSystematics::Fitv2Systematics(){
         fSystValuev2ASYield[iPtBin] = (fValuev2ASYield[iPtBin]-fReferenceHistoASYield->GetBinContent(iPtBin+1))/fReferenceHistoASYield->GetBinContent(iPtBin+1);
         fSystValuev2ASSigma[iPtBin] = (fValuev2ASSigma[iPtBin]-fReferenceHistoASSigma->GetBinContent(iPtBin+1))/fReferenceHistoASSigma->GetBinContent(iPtBin+1);
         fSystValuev2Pedestal[iPtBin] = (fValuev2Pedestal[iPtBin]-fReferenceHistoPedestal->GetBinContent(iPtBin+1))/fReferenceHistoPedestal->GetBinContent(iPtBin+1);
-        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fSystValuev2Beta[iPtBin] = (fValuev2Beta[iPtBin]-fReferenceHistoBeta->GetBinContent(iPtBin+1))/fReferenceHistoBeta->GetBinContent(iPtBin+1);
+        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fSystValuev2Beta[iPtBin] = (fValuev2Beta[iPtBin]-fReferenceHistoBeta->GetBinContent(iPtBin+1))/fReferenceHistoBeta->GetBinContent(iPtBin+1);
     }
 
     cv2->SaveAs(Form("Canvas_v2SystemForFitting_AssocPt%1.1ftp%1.1f.png",fAssocTrackPtMin,fAssocTrackPtMax));
@@ -972,12 +972,12 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
       fFitter->SetFuncType(fFitFuncType[fReferenceIndex]);
       fFitter->SetPtRanges(fVecLowEdgeDpt[iPtBin],fVecUpEdgeDpt[iPtBin],fAssocTrackPtMin,fAssocTrackPtMax);
       if(fIspPb) fFitter->SetIspPb(kTRUE);      
-        if(fFitFuncType[fReferenceIndex]==8) { //fix beta to MC
+        if(fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) { //fix beta to MC
         TFile *fileBeta = new TFile(Form("%s/CanvasFinalTrendBeta_pthad%1.1fto%1.1f.root",fBetaDir.Data(),fAssocTrackPtMin,fAssocTrackPtMax),"r");
         TCanvas *cBeta = (TCanvas*)fileBeta->Get("CanvasFinalTrendBeta");
         TH1D *hBeta = (TH1D*)cBeta->FindObject("FinalTrendBeta");
         Double_t betaMC = hBeta->GetBinContent(hBeta->FindBin((fVecLowEdgeDpt[iPtBin]+fVecUpEdgeDpt[iPtBin])/2.));
-        printf("*** Fixing beta in %1.1f<pTD<%1.1f, %1.1f<pTass<%1.1f to %f\n",fVecLowEdgeDpt[iPtBin],fVecUpEdgeDpt[iPtBin],fAssocTrackPtMin,fAssocTrackPtMax,betaMC);
+        printf("*** Fixing/constraining beta in %1.1f<pTD<%1.1f, %1.1f<pTass<%1.1f to %f\n",fVecLowEdgeDpt[iPtBin],fVecUpEdgeDpt[iPtBin],fAssocTrackPtMin,fAssocTrackPtMax,betaMC);
         fFitter->SetBetaVal(betaMC);
         fileBeta->Close();
       }
@@ -993,14 +993,14 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
       fReferenceHistoASYield->SetBinContent(iPtBin+1,fFitter->GetASYield());
       fReferenceHistoASSigma->SetBinContent(iPtBin+1,fFitter->GetASSigma());
       fReferenceHistoPedestal->SetBinContent(iPtBin+1,fFitter->GetPedestal());
-      if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fReferenceHistoBeta->SetBinContent(iPtBin+1,fFitter->GetBeta());
+      if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fReferenceHistoBeta->SetBinContent(iPtBin+1,fFitter->GetBeta());
       
       fReferenceHistoNSYield->SetBinError(iPtBin+1,fFitter->GetNSYieldError());
       fReferenceHistoNSSigma->SetBinError(iPtBin+1,fFitter->GetNSSigmaError());
       fReferenceHistoASYield->SetBinError(iPtBin+1,fFitter->GetASYieldError());
       fReferenceHistoASSigma->SetBinError(iPtBin+1,fFitter->GetASSigmaError());
       fReferenceHistoPedestal->SetBinError(iPtBin+1,fFitter->GetPedestalError());
-      if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fReferenceHistoBeta->SetBinError(iPtBin+1,fFitter->GetBetaError());
+      if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fReferenceHistoBeta->SetBinError(iPtBin+1,fFitter->GetBetaError());
     }
     fOutputFile->cd();
     fCanvasRefernce->Write();
@@ -1095,12 +1095,12 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
             
             fFitter->SetFixMeanType(3);
             fFitter->SetFuncType(fFitFuncType[iSystMode]);
-            if(fFitFuncType[iSystMode]==8) { //fix beta to MC
+            if(fFitFuncType[iSystMode]==8 || fFitFuncType[iSystMode]==9) { //fix beta to MC
                 TFile *fileBeta = new TFile(Form("%s/CanvasFinalTrendBeta_pthad%1.1fto%1.1f.root",fBetaDir.Data(),fAssocTrackPtMin,fAssocTrackPtMax),"r");
                 TCanvas *cBeta = (TCanvas*)fileBeta->Get("CanvasFinalTrendBeta");
                 TH1D *hBeta = (TH1D*)cBeta->FindObject("FinalTrendBeta");
                 Double_t betaMC = hBeta->GetBinContent(hBeta->FindBin((fVecLowEdgeDpt[iPtBin]+fVecUpEdgeDpt[iPtBin])/2.));
-                printf("*** Fixing beta in %1.1f<pTD<%1.1f, %1.1f<pTass<%1.1f to %f\n",fVecLowEdgeDpt[iPtBin],fVecUpEdgeDpt[iPtBin],fAssocTrackPtMin,fAssocTrackPtMax,betaMC);
+                printf("*** Fixing/constraining beta in %1.1f<pTD<%1.1f, %1.1f<pTass<%1.1f to %f\n",fVecLowEdgeDpt[iPtBin],fVecUpEdgeDpt[iPtBin],fAssocTrackPtMin,fAssocTrackPtMax,betaMC);
                 fFitter->SetBetaVal(betaMC);
                 fileBeta->Close();
                 fCanvasFitting[iSystMode]->cd(iPtBin+1);
@@ -1117,21 +1117,21 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
             fValueHistoASYield->SetBinContent(iPtBin+1,fFitter->GetASYield());
             fValueHistoASSigma->SetBinContent(iPtBin+1,fFitter->GetASSigma());
             fValueHistoPedestal->SetBinContent(iPtBin+1,fFitter->GetPedestal());
-            if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fValueHistoBeta->SetBinContent(iPtBin+1,fFitter->GetBeta());
+            if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fValueHistoBeta->SetBinContent(iPtBin+1,fFitter->GetBeta());
 
             fValueHistoNSYield->SetBinError(iPtBin+1,fFitter->GetNSYieldError());
             fValueHistoNSSigma->SetBinError(iPtBin+1,fFitter->GetNSSigmaError());
             fValueHistoASYield->SetBinError(iPtBin+1,fFitter->GetASYieldError());
             fValueHistoASSigma->SetBinError(iPtBin+1,fFitter->GetASSigmaError());
             fValueHistoPedestal->SetBinError(iPtBin+1,fFitter->GetPedestalError());
-            if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fValueHistoBeta->SetBinError(iPtBin+1,fFitter->GetBetaError());
+            if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fValueHistoBeta->SetBinError(iPtBin+1,fFitter->GetBetaError());
             
             if(!ComputeRatios(fReferenceHistoNSYield, fValueHistoNSYield, fRatioHistoNSYield)) return kFALSE;
             if(!ComputeRatios(fReferenceHistoNSSigma, fValueHistoNSSigma, fRatioHistoNSSigma)) return kFALSE;
             if(!ComputeRatios(fReferenceHistoASYield, fValueHistoASYield, fRatioHistoASYield)) return kFALSE;
             if(!ComputeRatios(fReferenceHistoASSigma, fValueHistoASSigma, fRatioHistoASSigma)) return kFALSE;
             if(!ComputeRatios(fReferenceHistoPedestal, fValueHistoPedestal, fRatioHistoPedestal)) return kFALSE;
-            if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) if(!ComputeRatios(fReferenceHistoBeta, fValueHistoBeta, fRatioHistoBeta)) return kFALSE;
+            if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) if(!ComputeRatios(fReferenceHistoBeta, fValueHistoBeta, fRatioHistoBeta)) return kFALSE;
             
         }// end loop on D meson pt
         
@@ -1185,8 +1185,8 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
                     fRatioASSigma[index] = TMath::Abs(fRatioHistoASSigma->GetBinContent(iPtBin+1)-1);
                     fValuePedestal[index] = fValueHistoPedestal->GetBinContent(iPtBin+1);
                     fRatioPedestal[index] = TMath::Abs(fRatioHistoPedestal->GetBinContent(iPtBin+1)-1);
-                    if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fValueBeta[index] = fValueHistoBeta->GetBinContent(iPtBin+1);
-                    if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fRatioBeta[index] = TMath::Abs(fRatioHistoBeta->GetBinContent(iPtBin+1)-1);
+                    if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fValueBeta[index] = fValueHistoBeta->GetBinContent(iPtBin+1);
+                    if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fRatioBeta[index] = TMath::Abs(fRatioHistoBeta->GetBinContent(iPtBin+1)-1);
                 }
                 
                // cout << "Bin center = " << fValueHistoNSYield->GetBinCenter(iPtBin+1) << endl;
@@ -1222,7 +1222,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
                     fValueSystematicBaselineASYield[iPtBin] += fRatioASYield[index]*fRatioASYield[index];
                     fValueSystematicBaselineASSigma[iPtBin] += fRatioASSigma[index]*fRatioASSigma[index];
                     fValueSystematicBaselinePedestal[iPtBin] += fRatioPedestal[index]*fRatioPedestal[index];                    
-                    if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fValueSystematicBaselineBeta[iPtBin] += fRatioBeta[index]*fRatioBeta[index];
+                    if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fValueSystematicBaselineBeta[iPtBin] += fRatioBeta[index]*fRatioBeta[index];
    
                     
                 }
@@ -1233,7 +1233,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
                     if(fValueSystematicBaselineASYield[iPtBin]< fRatioASYield[index]) fValueSystematicBaselineASYield[iPtBin] = fRatioASYield[index];
                     if(fValueSystematicBaselineASSigma[iPtBin]< fRatioASSigma[index]) fValueSystematicBaselineASSigma[iPtBin] = fRatioASSigma[index];
                     if(fValueSystematicBaselinePedestal[iPtBin]< fRatioPedestal[index]) fValueSystematicBaselinePedestal[iPtBin] = fRatioPedestal[index];
-                    if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) if(fValueSystematicBaselineBeta[iPtBin]< fRatioBeta[index]) fValueSystematicBaselineBeta[iPtBin] = fRatioBeta[index];
+                    if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) if(fValueSystematicBaselineBeta[iPtBin]< fRatioBeta[index]) fValueSystematicBaselineBeta[iPtBin] = fRatioBeta[index];
           
                     
                 }
@@ -1243,7 +1243,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
                      fRMSHistoASYield[iPtBin]->Fill(fValueASYield[index]);
                      fRMSHistoASSigma[iPtBin]->Fill(fValueASSigma[index]);
                      fRMSHistoPedestal[iPtBin]->Fill(fValuePedestal[index]);
-                     if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fRMSHistoBeta[iPtBin]->Fill(fValueBeta[index]);
+                     if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fRMSHistoBeta[iPtBin]->Fill(fValueBeta[index]);
 
 
                  }
@@ -1254,7 +1254,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
                       fValueSystematicBaseline_FromBaselStatUp_ASYield[iPtBin] = fRatioASYield[index];
                       fValueSystematicBaseline_FromBaselStatUp_ASSigma[iPtBin] = fRatioASSigma[index];
                       fValueSystematicBaseline_FromBaselStatUp_Pedestal[iPtBin] = fRatioPedestal[index];
-                      if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fValueSystematicBaseline_FromBaselStatUp_Beta[iPtBin] = fRatioBeta[index];
+                      if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fValueSystematicBaseline_FromBaselStatUp_Beta[iPtBin] = fRatioBeta[index];
                     }
                     else if(fVecSystMode[iSystMode] == kTransverseLowStatUnc) {
                       fValueSystematicBaseline_FromBaselStatLo_NSYield[iPtBin] = fRatioNSYield[index];
@@ -1262,7 +1262,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
                       fValueSystematicBaseline_FromBaselStatLo_ASYield[iPtBin] = fRatioASYield[index];
                       fValueSystematicBaseline_FromBaselStatLo_ASSigma[iPtBin] = fRatioASSigma[index];
                       fValueSystematicBaseline_FromBaselStatLo_Pedestal[iPtBin] = fRatioPedestal[index];
-                      if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fValueSystematicBaseline_FromBaselStatLo_Beta[iPtBin] = fRatioBeta[index];
+                      if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fValueSystematicBaseline_FromBaselStatLo_Beta[iPtBin] = fRatioBeta[index];
                     }
                     else {
                        fRMSHistoNSYield[iPtBin]->Fill(fValueNSYield[index]);
@@ -1270,7 +1270,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
                        fRMSHistoASYield[iPtBin]->Fill(fValueASYield[index]);
                        fRMSHistoASSigma[iPtBin]->Fill(fValueASSigma[index]);
                        fRMSHistoPedestal[iPtBin]->Fill(fValuePedestal[index]);                 
-                       if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fRMSHistoBeta[iPtBin]->Fill(fValueBeta[index]);                      
+                       if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fRMSHistoBeta[iPtBin]->Fill(fValueBeta[index]);                      
                     }
                  }                 
                 
@@ -1323,14 +1323,14 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
         fValueHistoASYield->Write();
         fValueHistoASSigma->Write();
         fValueHistoPedestal->Write();
-        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fValueHistoBeta->Write();
+        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fValueHistoBeta->Write();
         
         fRatioHistoNSYield->Write();
         fRatioHistoNSSigma->Write();
         fRatioHistoASYield->Write();
         fRatioHistoASSigma->Write();
         fRatioHistoPedestal->Write();
-        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fRatioHistoBeta->Write();
+        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fRatioHistoBeta->Write();
         
        
      } // end loop on systematic modes
@@ -1351,7 +1351,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
             fValueSystematicBaselineASYield[iPtBin] = TMath::Sqrt(fValueSystematicBaselineASYield[iPtBin]);
             fValueSystematicBaselineASSigma[iPtBin] = TMath::Sqrt(fValueSystematicBaselineASSigma[iPtBin]);
             fValueSystematicBaselinePedestal[iPtBin] = TMath::Sqrt(fValueSystematicBaselinePedestal[iPtBin]);
-            if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fValueSystematicBaselineBeta[iPtBin] = TMath::Sqrt(fValueSystematicBaselineBeta[iPtBin]);
+            if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fValueSystematicBaselineBeta[iPtBin] = TMath::Sqrt(fValueSystematicBaselineBeta[iPtBin]);
 
         }
         if(fCombineSystematics == kRMS){
@@ -1362,7 +1362,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
 	    fValueSystematicBaselineASYield[iPtBin] = fRMSHistoASYield[iPtBin]->GetRMS()/fReferenceHistoASYield->GetBinContent(iPtBin+1);
 	    fValueSystematicBaselineASSigma[iPtBin] = fRMSHistoASSigma[iPtBin]->GetRMS()/fReferenceHistoASSigma->GetBinContent(iPtBin+1);
 	    fValueSystematicBaselinePedestal[iPtBin] = fRMSHistoPedestal[iPtBin]->GetRMS()/fReferenceHistoPedestal->GetBinContent(iPtBin+1);
-      if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fValueSystematicBaselineBeta[iPtBin] = fRMSHistoBeta[iPtBin]->GetRMS()/fReferenceHistoBeta->GetBinContent(iPtBin+1);
+      if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fValueSystematicBaselineBeta[iPtBin] = fRMSHistoBeta[iPtBin]->GetRMS()/fReferenceHistoBeta->GetBinContent(iPtBin+1);
 	  }
           fOutputFile->cd();
 	  fRMSHistoNSYield[iPtBin]->Write();
@@ -1370,7 +1370,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
 	  fRMSHistoASYield[iPtBin]->Write();
 	  fRMSHistoASSigma[iPtBin]->Write();
 	  fRMSHistoPedestal[iPtBin]->Write();
-    if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fRMSHistoBeta[iPtBin]->Write();
+    if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fRMSHistoBeta[iPtBin]->Write();
 	  
         }
 
@@ -1382,13 +1382,13 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
             fValueSystematicBaselineASYield[iPtBin] = fRMSHistoASYield[iPtBin]->GetRMS()/fReferenceHistoASYield->GetBinContent(iPtBin+1);
             fValueSystematicBaselineASSigma[iPtBin] = fRMSHistoASSigma[iPtBin]->GetRMS()/fReferenceHistoASSigma->GetBinContent(iPtBin+1);
             fValueSystematicBaselinePedestal[iPtBin] = fRMSHistoPedestal[iPtBin]->GetRMS()/fReferenceHistoPedestal->GetBinContent(iPtBin+1);
-            if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fValueSystematicBaselineBeta[iPtBin] = fRMSHistoBeta[iPtBin]->GetRMS()/fReferenceHistoBeta->GetBinContent(iPtBin+1);
+            if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fValueSystematicBaselineBeta[iPtBin] = fRMSHistoBeta[iPtBin]->GetRMS()/fReferenceHistoBeta->GetBinContent(iPtBin+1);
             fRMSRelative_NSYield[iPtBin] = fValueSystematicBaselineNSYield[iPtBin];
             fRMSRelative_NSSigma[iPtBin] = fValueSystematicBaselineNSSigma[iPtBin];
             fRMSRelative_ASYield[iPtBin] = fValueSystematicBaselineASYield[iPtBin];
             fRMSRelative_ASSigma[iPtBin] = fValueSystematicBaselineASSigma[iPtBin];
             fRMSRelative_Pedestal[iPtBin] = fValueSystematicBaselinePedestal[iPtBin];
-            if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fRMSRelative_Beta[iPtBin] = fValueSystematicBaselineBeta[iPtBin];
+            if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fRMSRelative_Beta[iPtBin] = fValueSystematicBaselineBeta[iPtBin];
           }
           //now substitute RMS with lowstat/uppstat variations, if are larger
           if(fValueSystematicBaselineNSYield[iPtBin] < TMath::Abs(fValueSystematicBaseline_FromBaselStatUp_NSYield[iPtBin])) fValueSystematicBaselineNSYield[iPtBin] = TMath::Abs(fValueSystematicBaseline_FromBaselStatUp_NSYield[iPtBin]);
@@ -1396,14 +1396,14 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
           if(fValueSystematicBaselineASYield[iPtBin] < TMath::Abs(fValueSystematicBaseline_FromBaselStatUp_ASYield[iPtBin])) fValueSystematicBaselineASYield[iPtBin] = TMath::Abs(fValueSystematicBaseline_FromBaselStatUp_ASYield[iPtBin]);
           if(fValueSystematicBaselineASSigma[iPtBin] < TMath::Abs(fValueSystematicBaseline_FromBaselStatUp_ASSigma[iPtBin])) fValueSystematicBaselineASSigma[iPtBin] = TMath::Abs(fValueSystematicBaseline_FromBaselStatUp_ASSigma[iPtBin]);
           if(fValueSystematicBaselinePedestal[iPtBin] < TMath::Abs(fValueSystematicBaseline_FromBaselStatUp_Pedestal[iPtBin])) fValueSystematicBaselinePedestal[iPtBin] = TMath::Abs(fValueSystematicBaseline_FromBaselStatUp_Pedestal[iPtBin]);
-          if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) if(fValueSystematicBaselineBeta[iPtBin] < TMath::Abs(fValueSystematicBaseline_FromBaselStatUp_Beta[iPtBin])) fValueSystematicBaselineBeta[iPtBin] = TMath::Abs(fValueSystematicBaseline_FromBaselStatUp_Beta[iPtBin]);
+          if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) if(fValueSystematicBaselineBeta[iPtBin] < TMath::Abs(fValueSystematicBaseline_FromBaselStatUp_Beta[iPtBin])) fValueSystematicBaselineBeta[iPtBin] = TMath::Abs(fValueSystematicBaseline_FromBaselStatUp_Beta[iPtBin]);
 
           if(fValueSystematicBaselineNSYield[iPtBin] < TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_NSYield[iPtBin])) fValueSystematicBaselineNSYield[iPtBin] = TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_NSYield[iPtBin]);
           if(fValueSystematicBaselineNSSigma[iPtBin] < TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_NSSigma[iPtBin])) fValueSystematicBaselineNSSigma[iPtBin] = TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_NSSigma[iPtBin]);
           if(fValueSystematicBaselineASYield[iPtBin] < TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_ASYield[iPtBin])) fValueSystematicBaselineASYield[iPtBin] = TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_ASYield[iPtBin]);
           if(fValueSystematicBaselineASSigma[iPtBin] < TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_ASSigma[iPtBin])) fValueSystematicBaselineASSigma[iPtBin] = TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_ASSigma[iPtBin]);
           if(fValueSystematicBaselinePedestal[iPtBin] < TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_Pedestal[iPtBin])) fValueSystematicBaselinePedestal[iPtBin] = TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_Pedestal[iPtBin]);
-          if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) if(fValueSystematicBaselineBeta[iPtBin] < TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_Beta[iPtBin])) fValueSystematicBaselineBeta[iPtBin] = TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_Beta[iPtBin]);
+          if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) if(fValueSystematicBaselineBeta[iPtBin] < TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_Beta[iPtBin])) fValueSystematicBaselineBeta[iPtBin] = TMath::Abs(fValueSystematicBaseline_FromBaselStatLo_Beta[iPtBin]);
 
           fOutputFile->cd();
           fRMSHistoNSYield[iPtBin]->Write();
@@ -1411,7 +1411,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
           fRMSHistoASYield[iPtBin]->Write();
           fRMSHistoASSigma[iPtBin]->Write();
           fRMSHistoPedestal[iPtBin]->Write();
-          if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fRMSHistoBeta[iPtBin]->Write();
+          if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fRMSHistoBeta[iPtBin]->Write();
           
         }        
         
@@ -1489,7 +1489,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
         SystematicsLegendPedestal->Draw("same");
         DefinePaveText();
     
-        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) 
+        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) 
         {
           TLegend * SystematicsLegendBeta = new TLegend(0.43,0.6,0.85,0.8);
           SystematicsLegendBeta->SetFillColor(0);
@@ -1557,7 +1557,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
     DefinePaveText();
     
     TLegend * TotalSystematicsLegendBeta = new TLegend(0.43,0.6,0.85,0.8);
-    if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) {
+    if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) {
       cout <<"drawing beta final " << endl;
       TotalSystematicsLegendBeta->SetFillColor(0);
       TotalSystematicsLegendBeta->SetTextSize(0.02);
@@ -1583,14 +1583,14 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
         fValueSystematicASYieldUp[iPtBin] = fValueSystematicBaselineASYield[iPtBin]*fValueSystematicBaselineASYield[iPtBin];
         fValueSystematicASSigmaUp[iPtBin] = fValueSystematicBaselineASSigma[iPtBin]*fValueSystematicBaselineASSigma[iPtBin];
         fValueSystematicPedestalUp[iPtBin] = fValueSystematicBaselinePedestal[iPtBin]*fValueSystematicBaselinePedestal[iPtBin];
-        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fValueSystematicBetaUp[iPtBin] = fValueSystematicBaselineBeta[iPtBin]*fValueSystematicBaselineBeta[iPtBin];
+        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fValueSystematicBetaUp[iPtBin] = fValueSystematicBaselineBeta[iPtBin]*fValueSystematicBaselineBeta[iPtBin];
 
         fValueSystematicNSYieldLow[iPtBin] = fValueSystematicBaselineNSYield[iPtBin]*fValueSystematicBaselineNSYield[iPtBin];
         fValueSystematicNSSigmaLow[iPtBin]= fValueSystematicBaselineNSSigma[iPtBin]*fValueSystematicBaselineNSSigma[iPtBin];
         fValueSystematicASYieldLow[iPtBin] = fValueSystematicBaselineASYield[iPtBin]*fValueSystematicBaselineASYield[iPtBin];
         fValueSystematicASSigmaLow[iPtBin] = fValueSystematicBaselineASSigma[iPtBin]*fValueSystematicBaselineASSigma[iPtBin];
         fValueSystematicPedestalLow[iPtBin] = fValueSystematicBaselinePedestal[iPtBin]*fValueSystematicBaselinePedestal[iPtBin];
-        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fValueSystematicBetaLow[iPtBin] = fValueSystematicBaselineBeta[iPtBin]*fValueSystematicBaselineBeta[iPtBin];
+        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fValueSystematicBetaLow[iPtBin] = fValueSystematicBaselineBeta[iPtBin]*fValueSystematicBaselineBeta[iPtBin];
         
         
         if(fUseCorrelatedSystematics){
@@ -1599,14 +1599,14 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
             fValueSystematicASYieldUp[iPtBin] += fVecMaxCorrelatedSyst[iPtBin]*fVecMaxCorrelatedSyst[iPtBin];
             if(fUseCorrelatedSystematicsForWidths)fValueSystematicASSigmaUp[iPtBin] += fVecMaxCorrelatedSyst[iPtBin]*fVecMaxCorrelatedSyst[iPtBin];
             fValueSystematicPedestalUp[iPtBin] += fVecMaxCorrelatedSyst[iPtBin]*fVecMaxCorrelatedSyst[iPtBin];
-            if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) {if(fUseCorrelatedSystematicsForWidths)fValueSystematicBetaUp[iPtBin] += fVecMaxCorrelatedSyst[iPtBin]*fVecMaxCorrelatedSyst[iPtBin];}
+            if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) {if(fUseCorrelatedSystematicsForWidths)fValueSystematicBetaUp[iPtBin] += fVecMaxCorrelatedSyst[iPtBin]*fVecMaxCorrelatedSyst[iPtBin];}
 
             fValueSystematicNSYieldLow[iPtBin] += fVecMinCorrelatedSyst[iPtBin]*fVecMinCorrelatedSyst[iPtBin];
             if(fUseCorrelatedSystematicsForWidths)fValueSystematicNSSigmaLow[iPtBin] += fVecMinCorrelatedSyst[iPtBin]*fVecMinCorrelatedSyst[iPtBin];
             fValueSystematicASYieldLow[iPtBin] += fVecMinCorrelatedSyst[iPtBin]*fVecMinCorrelatedSyst[iPtBin];
             if(fUseCorrelatedSystematicsForWidths)fValueSystematicASSigmaLow[iPtBin] += fVecMinCorrelatedSyst[iPtBin]*fVecMinCorrelatedSyst[iPtBin];
             fValueSystematicPedestalLow[iPtBin] += fVecMinCorrelatedSyst[iPtBin]*fVecMinCorrelatedSyst[iPtBin];
-            if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) {if(fUseCorrelatedSystematicsForWidths)fValueSystematicBetaLow[iPtBin] += fVecMinCorrelatedSyst[iPtBin]*fVecMinCorrelatedSyst[iPtBin];}
+            if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) {if(fUseCorrelatedSystematicsForWidths)fValueSystematicBetaLow[iPtBin] += fVecMinCorrelatedSyst[iPtBin]*fVecMinCorrelatedSyst[iPtBin];}
 
         }
             
@@ -1616,14 +1616,14 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
                if(fSystValuev2ASYield[iPtBin]>=0)  fValueSystematicASYieldUp[iPtBin] += fSystValuev2ASYield[iPtBin]*fSystValuev2ASYield[iPtBin];
                if(fSystValuev2ASSigma[iPtBin]>=0)  fValueSystematicASSigmaUp[iPtBin] += fSystValuev2ASSigma[iPtBin]*fSystValuev2ASSigma[iPtBin];
                if(fSystValuev2Pedestal[iPtBin]>=0)  fValueSystematicPedestalUp[iPtBin] += fSystValuev2Pedestal[iPtBin]*fSystValuev2Pedestal[iPtBin];
-               if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) {if(fSystValuev2Beta[iPtBin]>=0)  fValueSystematicBetaUp[iPtBin] += fSystValuev2Beta[iPtBin]*fSystValuev2Beta[iPtBin];}
+               if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) {if(fSystValuev2Beta[iPtBin]>=0)  fValueSystematicBetaUp[iPtBin] += fSystValuev2Beta[iPtBin]*fSystValuev2Beta[iPtBin];}
                 
                if(fSystValuev2NSYield[iPtBin]<0) fValueSystematicNSYieldLow[iPtBin] +=  fSystValuev2NSYield[iPtBin]*fSystValuev2NSYield[iPtBin];
                if(fSystValuev2NSSigma[iPtBin]<0) fValueSystematicNSSigmaLow[iPtBin] += fSystValuev2NSSigma[iPtBin]*fSystValuev2NSSigma[iPtBin];
                if(fSystValuev2ASYield[iPtBin]<0) fValueSystematicASYieldLow[iPtBin] += fSystValuev2ASYield[iPtBin]*fSystValuev2ASYield[iPtBin];
                if(fSystValuev2ASSigma[iPtBin]<0) fValueSystematicASSigmaLow[iPtBin] += fSystValuev2ASSigma[iPtBin]*fSystValuev2ASSigma[iPtBin];
                if(fSystValuev2Pedestal[iPtBin]<0) fValueSystematicPedestalLow[iPtBin] += fSystValuev2Pedestal[iPtBin]*fSystValuev2Pedestal[iPtBin];
-               if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) {if(fSystValuev2Beta[iPtBin]<0) fValueSystematicBetaLow[iPtBin] += fSystValuev2Beta[iPtBin]*fSystValuev2Beta[iPtBin];}
+               if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) {if(fSystValuev2Beta[iPtBin]<0) fValueSystematicBetaLow[iPtBin] += fSystValuev2Beta[iPtBin]*fSystValuev2Beta[iPtBin];}
             }
             
         //cout << "Input yield = " << fValueSystematicNSYieldUp[iPtBin] << endl;
@@ -1632,14 +1632,14 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
         fValueSystematicASYieldUp[iPtBin] = TMath::Sqrt(fValueSystematicASYieldUp[iPtBin]);
         fValueSystematicASSigmaUp[iPtBin] = TMath::Sqrt(fValueSystematicASSigmaUp[iPtBin]);
         fValueSystematicPedestalUp[iPtBin] = TMath::Sqrt(fValueSystematicPedestalUp[iPtBin]);
-        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fValueSystematicBetaUp[iPtBin] = TMath::Sqrt(fValueSystematicBetaUp[iPtBin]);
+        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fValueSystematicBetaUp[iPtBin] = TMath::Sqrt(fValueSystematicBetaUp[iPtBin]);
 
         fValueSystematicNSYieldLow[iPtBin] = TMath::Sqrt(fValueSystematicNSYieldLow[iPtBin]);
         fValueSystematicNSSigmaLow[iPtBin] = TMath::Sqrt(fValueSystematicNSSigmaLow[iPtBin]);
         fValueSystematicASYieldLow[iPtBin] = TMath::Sqrt(fValueSystematicASYieldLow[iPtBin]);
         fValueSystematicASSigmaLow[iPtBin] = TMath::Sqrt(fValueSystematicASSigmaLow[iPtBin]);
         fValueSystematicPedestalLow[iPtBin] = TMath::Sqrt(fValueSystematicPedestalLow[iPtBin]);
-        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fValueSystematicBetaLow[iPtBin] = TMath::Sqrt(fValueSystematicBetaLow[iPtBin]);
+        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fValueSystematicBetaLow[iPtBin] = TMath::Sqrt(fValueSystematicBetaLow[iPtBin]);
         //cout << "Output yield = " << fValueSystematicNSYieldUp[iPtBin] << endl;
         
       //  cout << "The systematic error on the yield (" << iPtBin << ") = " << fValueSystematicNSYield[iPtBin] << endl;
@@ -1660,7 +1660,7 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
     fCanvasTotalSystematicSourcesPedestal->cd();
     DrawTotalBaselineSystematicOnCanvas(fSystematicSourcesPedestal,fValueSystematicPedestalLow, fValueSystematicPedestalUp ,TotalSystematicsLegendPedestal,kFALSE);
     
-    if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) {
+    if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) {
       fCanvasTotalSystematicSourcesBeta->cd();
       DrawTotalBaselineSystematicOnCanvas(fSystematicSourcesBeta,fValueSystematicBetaLow, fValueSystematicBetaUp ,TotalSystematicsLegendBeta,kFALSE);
     }
@@ -1671,14 +1671,14 @@ Bool_t AliHFCorrFitSystematics::RunFits(){
     fCanvasSystematicSourcesASYield->Write();
     fCanvasSystematicSourcesASSigma->Write();
     fCanvasSystematicSourcesPedestal->Write();
-    if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fCanvasSystematicSourcesBeta->Write();
+    if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fCanvasSystematicSourcesBeta->Write();
     
     fCanvasTotalSystematicSourcesNSYield->Write();
     fCanvasTotalSystematicSourcesNSSigma->Write();
     fCanvasTotalSystematicSourcesASYield->Write();
     fCanvasTotalSystematicSourcesASSigma->Write();
     fCanvasSystematicSourcesPedestal->Write();
-    if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) fCanvasSystematicSourcesBeta->Write();
+    if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) fCanvasSystematicSourcesBeta->Write();
 
     // add here part to compute the final systematics
     //
@@ -1811,7 +1811,7 @@ void AliHFCorrFitSystematics::DrawTotalSystematicsOnCanvas(TString variable, TLe
             }
         }
 
-        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) {
+        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) {
           if(variable == "Beta"){
             ValueBaselineSystUp[i] = fValueSystematicBaselineBeta[i];
             ValueCorrSystUp[i] = fVecMaxCorrelatedSyst[i];
@@ -1929,6 +1929,7 @@ void AliHFCorrFitSystematics::DrawBaselineSystematicsOnCanvas(TH1D * histoinput,
 
     if(fFitFuncType[iSystMode] == 7) suffix = Form("ModGausNS, %s",suffix.Data());
     if(fFitFuncType[iSystMode] == 8) suffix = Form("ModGausNS_Fix#beta, %s",suffix.Data());
+    if(fFitFuncType[iSystMode] == 9) suffix = Form("ModGausNS_Limit#beta, %s",suffix.Data());
 
     TString legendentry = "";
     legendentry += suffix;
@@ -2062,7 +2063,7 @@ void AliHFCorrFitSystematics::PrintAllSystematicsOnShell(){
              std::cout << "Systematic on AS yield due to this source = " << fRatioASYield[index] << std::endl;
              std::cout << "Systematic on AS sigma due to this source = " << fRatioASSigma[index] << std::endl;
              std::cout << "Systematic on pedestal due to this source = " << fRatioPedestal[index] << std::endl;
-             if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) std::cout << "Systematic on beta due to this source = " << fRatioBeta[index] << std::endl;
+             if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) std::cout << "Systematic on beta due to this source = " << fRatioBeta[index] << std::endl;
              
             // fRatioNSSigma[index]
             //  fRatioASYield[index]
@@ -2087,7 +2088,7 @@ void AliHFCorrFitSystematics::PrintAllSystematicsOnShell(){
         std::cout << "Systematic on AS yield (baseline) = +/- " << fValueSystematicBaselineASYield[iPtBin] << std::endl;
         std::cout << "Systematic on AS sigma (baseline) = +/- " << fValueSystematicBaselineASSigma[iPtBin] << std::endl;
         std::cout << "Systematic on pedestal (baseline) = +/- " << fValueSystematicBaselinePedestal[iPtBin] << std::endl;
-        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) std::cout << "Systematic on beta (baseline) = +/- " << fValueSystematicBaselineBeta[iPtBin] << std::endl;
+        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) std::cout << "Systematic on beta (baseline) = +/- " << fValueSystematicBaselineBeta[iPtBin] << std::endl;
 
         // fRatioNSSigma[index]
         //  fRatioASYield[index]
@@ -2110,7 +2111,7 @@ void AliHFCorrFitSystematics::PrintAllSystematicsOnShell(){
            if(fUseCorrelatedSystematicsForWidths) std::cout << "Systematic on AS sigma (DPHI NORM) = +" << fVecMaxCorrelatedSyst[iPtBin] << " , -" << fVecMinCorrelatedSyst[iPtBin]<< std::endl;
             else std::cout << "Systematic on AS sigma (DPHI NORM) = +" << 0 << " , -" << 0<< std::endl;
             std::cout << "Systematic on pedestal (DPHI NORM) = +" << fVecMaxCorrelatedSyst[iPtBin] << " , -" << fVecMinCorrelatedSyst[iPtBin]<< std::endl;
-           if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) {
+           if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) {
              if(fUseCorrelatedSystematicsForWidths) std::cout << "Systematic on beta (DPHI NORM) = +" << fVecMaxCorrelatedSyst[iPtBin] << " , -" << fVecMinCorrelatedSyst[iPtBin]<< std::endl;
              else std::cout << "Systematic on beta (DPHI NORM) = +" << 0 << " , -" << 0<< std::endl;
            }
@@ -2145,7 +2146,7 @@ void AliHFCorrFitSystematics::PrintAllSystematicsOnShell(){
             if(fSystValuev2Pedestal[iPtBin]>=0)  std::cout << "Systematic on Pedestal(v2 hyp.) = +" << fSystValuev2Pedestal[iPtBin] << std::endl;
             if(fSystValuev2Pedestal[iPtBin]<0)  std::cout << "Systematic on Pedestal (v2 hyp.) = " << fSystValuev2Pedestal[iPtBin] << std::endl;
         
-            if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8)  {
+            if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9)  {
               if(fSystValuev2Beta[iPtBin]>=0)  std::cout << "Systematic on beta (v2 hyp.) = +" << fSystValuev2Beta[iPtBin] << std::endl;
               if(fSystValuev2Beta[iPtBin]<0)  std::cout << "Systematic on beta (v2 hyp.) = " << fSystValuev2Beta[iPtBin] << std::endl;
             }
@@ -2172,7 +2173,7 @@ void AliHFCorrFitSystematics::PrintAllSystematicsOnShell(){
         std::cout << "Systematic on AS yield (total) = +" << fValueSystematicASYieldUp[iPtBin] << " , -" << fValueSystematicASYieldLow[iPtBin] << std::endl;
         std::cout << "Systematic on AS sigma (total) = +" << fValueSystematicASSigmaUp[iPtBin] << " , -" << fValueSystematicASSigmaLow[iPtBin]<< std::endl;
         std::cout << "Systematic on pedestal (total) = +" << fValueSystematicPedestalUp[iPtBin] << " , -" << fValueSystematicPedestalLow[iPtBin]<< std::endl;
-        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) std::cout << "Systematic on beta (total) = +" << fValueSystematicBetaUp[iPtBin] << " , -" << fValueSystematicBetaLow[iPtBin]<< std::endl;
+        if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) std::cout << "Systematic on beta (total) = +" << fValueSystematicBetaUp[iPtBin] << " , -" << fValueSystematicBetaLow[iPtBin]<< std::endl;
 
         // fRatioNSSigma[index]
         //  fRatioASYield[index]
@@ -2332,7 +2333,7 @@ Bool_t AliHFCorrFitSystematics::DrawFinalPlots(Bool_t drawNSy, Bool_t drawNSsigm
       fv2SystematicsPedestal = new TGraphAsymmErrors();
       fv2SystematicsPedestal->SetName("fv2SystematicsPedestal");
     }
-    if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8) {
+    if(fFitFuncType[fReferenceIndex]==7 || fFitFuncType[fReferenceIndex]==8 || fFitFuncType[fReferenceIndex]==9) {
       fFullSystematicsBeta = new TGraphAsymmErrors();
       fFullSystematicsBeta->SetName("fFullSystematicsBeta");
       if(fPlotV2SystSeparately){

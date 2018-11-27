@@ -370,29 +370,30 @@ TString AliCutHandlerPCM::GetMesonCut(Int_t i){
 }
 
 TString AliCutHandlerPCM::GetElectronCut(Int_t i){
-
-    if(fValidCutsElectron&&i<fNMaxCuts&&i>=0)
-        return fElectronCutArray[i];
-    else {
-        cout<<" ERROR in AliCutHandlerPCM: GetElectronCut wrong index i "<<endl;
-    }
+  if(fValidCutsElectron&&i<fNMaxCuts&&i>=0)
+    return fElectronCutArray[i];
+  else {
+    cout<<" ERROR in AliCutHandlerPCM: GetElectronCut wrong index i "<<endl;
+    return "";
+  }
 }
 
 TString AliCutHandlerPCM::GetNDMCut(Int_t i){ // Neutral Decay Meson Cut
-
-    if(fValidCutsNDM&&i<fNMaxCuts&&i>=0)
-        return fNeutralDecayMesonCutArray[i];
-    else {
-        cout<<" ERROR in AliCutHandlerPCM: GetNDMCut wrong index i "<<endl;
-    }
+  if(fValidCutsNDM&&i<fNMaxCuts&&i>=0)
+    return fNeutralDecayMesonCutArray[i];
+  else {
+    cout<<" ERROR in AliCutHandlerPCM: GetNDMCut wrong index i "<<endl;
+    return "";
+  }
 }
-TString AliCutHandlerPCM::GetPionCut(Int_t i){ // Get charged pion cut
 
-    if(fValidCutsChargedPion&&i<fNMaxCuts&&i>=0)
-        return fChargedPionCutArray[i];
-    else {
-        cout<<" ERROR in AliCutHandlerPCM: GetPionCut wrong index i "<<endl;
-    }
+TString AliCutHandlerPCM::GetPionCut(Int_t i){ // Get charged pion cut
+  if(fValidCutsChargedPion&&i<fNMaxCuts&&i>=0)
+    return fChargedPionCutArray[i];
+  else {
+    cout<<" ERROR in AliCutHandlerPCM: GetPionCut wrong index i "<<endl;
+    return "";
+  }
 }
 
 TString AliCutHandlerPCM::GetSpecialFileNameFromString (TString fileNameExternalInputs = "", TString configString = ""){
@@ -414,7 +415,13 @@ TString AliCutHandlerPCM::GetSpecialFileNameFromString (TString fileNameExternal
 }
 
 
-TString AliCutHandlerPCM::GetSpecialSettingFromAddConfig (TString additionalTrainConfig = "", TString configString = "", TString fileNameMatBudWeights = ""){
+TString AliCutHandlerPCM::GetSpecialSettingFromAddConfig (
+  TString additionalTrainConfig   = "",
+  TString configString            = "",
+  TString fileNameMatBudWeights   = "",
+  TString addTaskName             = "AddTask_GammaCalo_pp"
+){
+
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
   if(rAddConfigArr->GetEntries()<1){
     cout << "WARNING: Empty string in GetSpecialSettingFromAddConfig during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl;
@@ -454,15 +461,16 @@ TString AliCutHandlerPCM::GetSpecialSettingFromAddConfig (TString additionalTrai
         cout << Form("INFO: GetSpecialSettingFromAddConfig will use running mode '%i' for the TrackMatcher!",tempStr.Atoi()) << endl;
         return tempStr;
       }else if(tempStr.CompareTo("EPCLUSTree") == 0&& !configString.CompareTo("EPCLUSTree")){
-        cout << "INFO: AddTask_GammaCalo_pp activating 'EPCLUSTree'" << endl;
+        cout << "INFO: "<< addTaskName.Data() << " activating 'EPCLUSTree'" << endl;
         return "1";
       }else if(tempStr.CompareTo("INVMASSCLUSTree") == 0&& !configString.CompareTo("INVMASSCLUSTree")){
-        cout << "INFO: AddTask_GammaCalo_pp activating 'INVMASSCLUSTree'" << endl;
+        cout << "INFO: "<< addTaskName.Data() << " activating 'INVMASSCLUSTree'" << endl;
         return "1";
       }else if(tempStr.BeginsWith("MODIFYACC")&& !configString.CompareTo("MODIFYACC")){
+        cout << "INFO: "<< addTaskName.Data() << " activating 'MODIFYACC'" << endl;
         return tempStr;
       }else if(tempStr.BeginsWith("LOCALDEBUGFLAG")&& !configString.CompareTo("LOCALDEBUGFLAG")){
-        cout << "INFO: AddTask_GammaCalo_pp activating 'LOCALDEBUGFLAG'" << endl;
+        cout << "INFO: "<< addTaskName.Data() << " activating 'LOCALDEBUGFLAG'" << endl;
         TString tempType = tempStr;
         tempType.Replace(0,14,"");
         return tempType;

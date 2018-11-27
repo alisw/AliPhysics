@@ -381,7 +381,7 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
      "MuonSingleHighPt7/MUSH7/MUSHPB", "MuonLikeLowPt7/MUL7/MuonLikePB", "MuonUnlikeLowPt7/MUU7/MuonUnlikePB", "EMC7/EMC8", 
      "MUS7/MuonSingleLowPt7", "PHI1", "PHI7/PHI8/PHOSPb", "EMCEJE", "EMCEGA", "Central/HighMultV0", "SemiCentral", "DG/DG5", "ZED", 
      "SPI7/SPI", "INT8", "MuonSingleLowPt8", "MuonSingleHighPt8", "MuonLikeLowPt8", "MuonUnlikeLowPt8", "MuonUnlikeLowPt0/INT6", "UserDefined", 
-     "TRD", "N/A", "FastOnly", "N/A"
+     "TRD", "MuonCalo/CaloOnly", "FastOnly", "N/A"
   };  
   const Char_t* selectionNames[14] = {"All events", 
      "Physics Selection events (PS)", "Rejected due to PS",

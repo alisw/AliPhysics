@@ -171,6 +171,11 @@ fkUseLightVertexer ( kTRUE ),
 fkDoV0Refit ( kTRUE ),
 fkExtraCleanup    ( kTRUE ),
 
+//---> Flags for hypertriton tests
+fkHypertritonMode ( kFALSE ),
+fkHeavyDaughterPID ( kFALSE ),
+fkSandboxV0Prongs( kTRUE ), 
+
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
 
@@ -686,6 +691,11 @@ fkRunVertexers    ( kFALSE ),
 fkUseLightVertexer ( kTRUE ),
 fkDoV0Refit ( kTRUE ),
 fkExtraCleanup    ( kTRUE ),
+
+//---> Flags for hypertriton tests
+fkHypertritonMode ( kFALSE ),
+fkHeavyDaughterPID ( kFALSE ),
+fkSandboxV0Prongs( kTRUE ),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -2404,9 +2414,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             Printf("ERROR: Could not retreive one of the daughter track");
             continue;
         }
-        
-        fTreeVariablePosTrack = pTrack;
-        fTreeVariableNegTrack = nTrack;
+        AliExternalTrackParam nt(*nTrack), pt(*pTrack);
+        if (fkSandboxV0Prongs){
+            AliExternalTrackParam ptprong(*(v0->GetParamP()));
+            AliExternalTrackParam ntprong(*(v0->GetParamN()));
+            nt = ntprong;
+            pt = ptprong;
+        }
+        fTreeVariablePosTrack = &pt;
+        fTreeVariableNegTrack = &nt;
         
         fTreeVariablePosPIDForTracking = pTrack->GetPIDForTracking();
         fTreeVariableNegPIDForTracking = nTrack->GetPIDForTracking();
@@ -2567,6 +2583,22 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         lInvMassAntiLambda = v0->GetEffMass();
         lAlphaV0 = v0->AlphaV0();
         lPtArmV0 = v0->PtArmV0();
+        
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        //Calculate Hypertriton mass
+        TLorentzVector Hypertriton;
+        TLorentzVector lvHe3, lvPi;
+        
+        lvHe3.SetXYZM(2*lMomPos[0],2*lMomPos[1],2*lMomPos[2],AliPID::ParticleMass(AliPID::kHe3));
+        lvPi.SetXYZM(lMomNeg[1],lMomNeg[1],lMomNeg[2],AliPID::ParticleMass(AliPID::kPion));
+        Hypertriton=lvHe3+lvPi;
+        Double_t lHypertritonMass = Hypertriton.M();
+        
+        lvHe3.SetXYZM(2*lMomNeg[0],2*lMomNeg[1],2*lMomNeg[2],AliPID::ParticleMass(AliPID::kHe3));
+        lvPi.SetXYZM(lMomPos[1],lMomPos[1],lMomPos[2],AliPID::ParticleMass(AliPID::kPion));
+        Hypertriton=lvHe3+lvPi;
+        Double_t lAntiHypertritonMass = Hypertriton.M();
+        //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         
         fTreeVariableMVPileupFlag = fMVPileupFlag;
         
@@ -2802,12 +2834,26 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 )
                ||
                //Case 4: Hypertriton experimental
-               TMath::Abs(fTreeVariablePID) == 1010010030
+               (
+                fkHypertritonMode&&
+               (
+                (lHypertritonMass    <3.05 &&(!fkPreselectPID || fTreeVariablePID == 1010010030 ) ) ||
+                (lAntiHypertritonMass<3.05 &&(!fkPreselectPID || fTreeVariablePID ==-1010010030 ) )
+                )
+               )
                ) {
                 //Pre-selection in case this is AA...
                 
                 //Random denial unless hypertriton (hypertriton experiment)
                 Bool_t lKeepV0 = kTRUE;
+                if( fkHeavyDaughterPID && fkHypertritonMode ){
+                    //if heavy daughter PID invoked: discard everything whose heavy daugher isn't of desired type
+                    //this is appropriate if dE/dx leads to high purity in track sample used
+                    //FIXME: this is only applied for hypertritons here!
+                    lKeepV0=kFALSE;
+                    if( TMath::Abs(fTreeVariablePIDPositive) == 1000020030) lKeepV0 = kTRUE;
+                    if( TMath::Abs(fTreeVariablePIDNegative) == 1000020030) lKeepV0 = kTRUE;
+                }
                 if(fkDownScaleV0 && ( fRand->Uniform() > fDownScaleFactorV0 )) lKeepV0 = kFALSE;
                 if(TMath::Abs(fTreeVariablePID) == 1010010030) lKeepV0 = kTRUE;
                 
@@ -5030,9 +5076,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         
         //Random denial
         Bool_t lKeepCascade = kTRUE;
+        if( fkHeavyDaughterPID ){
+            lKeepCascade = kFALSE;
+            if( TMath::Abs(fTreeCascVarPIDPositive) == 2212) lKeepCascade = kTRUE;
+            if( TMath::Abs(fTreeCascVarPIDNegative) == 2212) lKeepCascade = kTRUE;
+        }
         if(fkDownScaleCascade && ( fRand->Uniform() > fDownScaleFactorCascade )) lKeepCascade = kFALSE;
+        if ( fkAlwaysKeepTrue && (TMath::Abs(fTreeCascVarPID)==3312||TMath::Abs(fTreeCascVarPID)==3334)) lKeepCascade = kTRUE;
         
-        if ( fkAlwaysKeepTrue && (TMath::Abs(fTreeCascVarPID)==3312||TMath::Abs(fTreeCascVarPID)==3334)) lKeepCascade = kTRUE; 
+
         
         //Lowest pT cutoff (this is all background anyways)
         if( fTreeCascVarPt < fMinPtToSave ) lKeepCascade = kFALSE;

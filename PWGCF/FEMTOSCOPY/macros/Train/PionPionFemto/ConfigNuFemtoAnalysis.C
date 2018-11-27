@@ -20,11 +20,26 @@
 #include "AliFemtoCorrFctnKStar.h"
 #include "AliFemtoCorrFctnDEtaDPhiSimple.h"
 
+#include "AliFemtoAvgSepCorrFctn.h"
+#include "AliFemtoCorrFctnDPhiStarDEta.h"
+#include "AliFemtoQinvCorrFctn.h"
+#include "AliFemtoModelWeightGeneratorBasic.h"
+#include "AliFemtoModelCorrFctnDEtaDPhiStar.h"
+#include "AliFemtoModelCorrFctnDEtaDPhiAK.h"
+
+// #include "AliFemtoCorrFctnQ3DLCMS.h"
+// #include "AliFemtoCorrFctnQ3DPF.h"
+#include "AliFemtoCorrFctn3DLCMSPosQuad.h"
+#include "AliFemtoCorrFctn3DLCMSSym.h"
+#include "AliFemtoModelCorrFctnTrueQ6D.h"
+#include "AliFemtoQinvCorrFctn.h"
+
 #include "AliFemtoModelCorrFctnTrueQ3D.h"
 #include "AliFemtoModelCorrFctnTrueQ3DByParent.h"
 
 #include "AliFemtoKtBinnedCorrFunc.h"
-
+// #include "AliFemt"
+#include "AliFemtoModelCorrFctnTrueQ.h"
 #include <TROOT.h>
 
 #endif
@@ -195,7 +210,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
   // Begin to build the manager and analyses
   AliFemtoManager *manager = new AliFemtoManager();
 
-  AliFemtoEventReaderAOD::EstEventMult multest = macro_config.eventreader_use_multiplicity;
+  AliFemtoEventReaderAOD::EstEventMult multest = static_cast<AliFemtoEventReaderAOD::EstEventMult>(macro_config.eventreader_use_multiplicity);
   AliFemtoEventReaderAOD *rdr = new AliFemtoEventReaderAODMultSelection();
     rdr->SetFilterBit(macro_config.eventreader_filter_bit);
     rdr->SetEPVZERO(macro_config.eventreader_epvzero);
@@ -328,7 +343,6 @@ ConfigFemtoAnalysis(const TString& param_str="")
         model_cf->ConnectToManager(model_manager);
         analysis->AddCorrFctn(model_cf);
       }
-
       if (macro_config.do_q3d_cf) {
         TString cf_title("_q3D");
         analysis->AddCorrFctn(new AliFemtoCorrFctn3DLCMSSym(cf_title, macro_config.q3d_bin_count, macro_config.q3d_maxq));
@@ -371,7 +385,6 @@ ConfigFemtoAnalysis(const TString& param_str="")
         }
         analysis->AddCorrFctn(kt_binned_cfs);
       }
-
       if (macro_config.do_kt_lcms_cf && !macro_config.do_kt_trueq3d_cf) {
         AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_Q3D_LCMS",
           new AliFemtoCorrFctnQ3DLCMS("", macro_config.q3d_bin_count, macro_config.q3d_maxq));
@@ -474,15 +487,14 @@ ConfigFemtoAnalysis(const TString& param_str="")
         analysis->AddCorrFctn(kt_binned_cfs);
       }
 
-
       if (macro_config.do_detadphi_simple_cf) {
-        AliFemtoCorrFctnDEtaDPhiSimple *cf = new AliFemtoCorrFctnDEtaDPhiSimple("", 29, 29);
-        cf->SetReadHiddenInfo(analysis_config.is_mc_analysis);
-        analysis->AddCorrFctn(cf);
+        AliFemtoCorrFctnDEtaDPhiSimple *m_cf = new AliFemtoCorrFctnDEtaDPhiSimple("", macro_config.delta_phi_bin_count, macro_config.delta_eta_bin_count);
+        m_cf->SetReadHiddenInfo(analysis_config.is_mc_analysis);
+        analysis->AddCorrFctn(m_cf);
       }
 
       if (macro_config.do_kt_detadphi_simple_cf) {
-        AliFemtoCorrFctnDEtaDPhiSimple *m_cf = new AliFemtoCorrFctnDEtaDPhiSimple("", 29, 29);
+        AliFemtoCorrFctnDEtaDPhiSimple *m_cf = new AliFemtoCorrFctnDEtaDPhiSimple("", macro_config.delta_phi_bin_count, macro_config.delta_eta_bin_count);
         m_cf->SetReadHiddenInfo(analysis_config.is_mc_analysis);
 
         AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_DetaDphiSimple", m_cf);

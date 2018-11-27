@@ -776,9 +776,11 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     TLorentzVector momentum ;
     clu->GetMomentum(momentum, vtx5);
     
-    AliCaloPhoton *p = new ((*fPHOSEvent)[inList]) AliCaloPhoton(momentum.Px(),momentum.Py(),momentum.Pz(),clu->E() );
-//    momentum*= clu->GetCoreEnergy()/momentum.E() ;
-//    AliCaloPhoton *p = new ((*fPHOSEvent)[inList]) AliCaloPhoton(momentum.Px(),momentum.Py(),momentum.Pz(),clu->GetCoreEnergy() );
+//    AliCaloPhoton *p = new ((*fPHOSEvent)[inList]) AliCaloPhoton(momentum.Px(),momentum.Py(),momentum.Pz(),clu->E() );
+
+    momentum*= CorrectNonlinearity(clu->E())/clu->E() ;
+    AliCaloPhoton *p = new ((*fPHOSEvent)[inList]) AliCaloPhoton(momentum.Px(),momentum.Py(),momentum.Pz(),CorrectNonlinearity(clu->E()) );
+
     inList++;
     
     p->SetModule(mod) ;
@@ -2630,4 +2632,12 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
         fCentWeight=1. ; //TrigCentralityWeightPP(fCentrality); 
      return kTRUE ;
 
+}
+
+
+
+Double_t AliAnalysisTaskTaggedPhotons::CorrectNonlinearity(Double_t en){
+
+  //As in PHOS Calibration Paper
+    return 0.03+0.09*TMath::Sqrt(en)+1.05*en+0.000249*en*en ;
 }

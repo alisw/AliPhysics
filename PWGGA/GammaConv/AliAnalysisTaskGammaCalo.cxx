@@ -5669,24 +5669,26 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
     if (fDoMesonQA > 0 && fDoMesonQA < 3){
       if(gamma0MotherLabel>-1 && gamma1MotherLabel>-1){ // Both Tracks are Photons and have a mother but not Pi0 or Eta
         fHistoTrueBckGGInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), tempTruePi0CandWeight);
-        if(gamma0MotherLabel < AODMCTrackArray->GetEntries() && gamma1MotherLabel < AODMCTrackArray->GetEntries()){
-          AliAODMCParticle *trackgamma0 = NULL;
-          AliAODMCParticle *trackgamma1 = NULL;
-          trackgamma0 = (AliAODMCParticle*)AODMCTrackArray->At(gamma0MotherLabel);
-          trackgamma1 = (AliAODMCParticle*)AODMCTrackArray->At(gamma1MotherLabel);
-          if( trackgamma0 != NULL && trackgamma1 != NULL){
+        if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() != 2){
+          if(gamma0MotherLabel < AODMCTrackArray->GetEntries() && gamma1MotherLabel < AODMCTrackArray->GetEntries()){
+            AliAODMCParticle *trackgamma0 = NULL;
+            AliAODMCParticle *trackgamma1 = NULL;
+            trackgamma0 = (AliAODMCParticle*)AODMCTrackArray->At(gamma0MotherLabel);
+            trackgamma1 = (AliAODMCParticle*)AODMCTrackArray->At(gamma1MotherLabel);
+            if( trackgamma0 != NULL && trackgamma1 != NULL){
 
-            if( ((((AliAODMCParticle*)AODMCTrackArray->At(gamma0MotherLabel))->GetPdgCode() == 111
-                || ((AliAODMCParticle*)AODMCTrackArray->At(gamma0MotherLabel))->GetPdgCode() == 221)
-                && (TrueGammaCandidate0->IsMerged() || TrueGammaCandidate0->IsMergedPartConv()))
-                ||
-                ((((AliAODMCParticle*)AODMCTrackArray->At(gamma1MotherLabel))->GetPdgCode() == 111
-                || ((AliAODMCParticle*)AODMCTrackArray->At(gamma1MotherLabel))->GetPdgCode() == 221)
-                && (TrueGammaCandidate1->IsMerged() || TrueGammaCandidate1->IsMergedPartConv()))
-            ){
-              fHistoTrueBckFullMesonContainedInOneClusterInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), tempTruePi0CandWeight);
-            }else if( (TrueGammaCandidate0->E()/Pi0Candidate->E() > 0.7) || (TrueGammaCandidate1->E()/Pi0Candidate->E() > 0.7) ){
-              fHistoTrueBckAsymEClustersInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), tempTruePi0CandWeight);
+              if( ((((AliAODMCParticle*)AODMCTrackArray->At(gamma0MotherLabel))->GetPdgCode() == 111
+                  || ((AliAODMCParticle*)AODMCTrackArray->At(gamma0MotherLabel))->GetPdgCode() == 221)
+                  && (TrueGammaCandidate0->IsMerged() || TrueGammaCandidate0->IsMergedPartConv()))
+                  ||
+                  ((((AliAODMCParticle*)AODMCTrackArray->At(gamma1MotherLabel))->GetPdgCode() == 111
+                  || ((AliAODMCParticle*)AODMCTrackArray->At(gamma1MotherLabel))->GetPdgCode() == 221)
+                  && (TrueGammaCandidate1->IsMerged() || TrueGammaCandidate1->IsMergedPartConv()))
+              ){
+                fHistoTrueBckFullMesonContainedInOneClusterInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), tempTruePi0CandWeight);
+              }else if( (TrueGammaCandidate0->E()/Pi0Candidate->E() > 0.7) || (TrueGammaCandidate1->E()/Pi0Candidate->E() > 0.7) ){
+                fHistoTrueBckAsymEClustersInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), tempTruePi0CandWeight);
+              }
             }
           }
         }

@@ -3432,6 +3432,16 @@ Bool_t AliConversionPhotonCuts::SetPhotonAsymmetryCut(Int_t doPhotonAsymmetryCut
     fMinPPhotonAsymmetryCut=8.;
     fMinPhotonAsymmetry=0.05;
     break;
+  case 8:
+    fDoPhotonAsymmetryCut=1;
+    fDoPhotonPDependentAsymCut=1;
+    fFAsymmetryCut = new TF1("fFAsymmetryCut","[0] + [1]*tanh(2*TMath::Power(x,[2]))",0.,100.);
+    fFAsymmetryCut->SetParameter(0,0.5);
+    fFAsymmetryCut->SetParameter(1,0.46);
+    fFAsymmetryCut->SetParameter(2,0.7);
+    fMinPPhotonAsymmetryCut=0.0;
+    fMinPhotonAsymmetry=0.;
+    break;
   default:
     AliError(Form("PhotonAsymmetryCut not defined %d",doPhotonAsymmetryCut));
     return kFALSE;

@@ -159,6 +159,9 @@ private:
   static Float_t      fgkTrackVertexSigmas;                         ///< number of tolerated track vertex sigmas for the distance between SPD and tracks vertex
   static Float_t      fgkTrackVertexSigmas_pPb;                     ///< number of tolerated track vertex sigmas for the distance between SPD and tracks vertex for pPb
 
+  static const Float_t fgkPrimaryTracksFor_pp[10];                  ///< multiplicity classes for p-p events
+  static const Float_t fgkJpsiPileUpCutCoeff_pp[10][2];             ///< coefficients for multiplicity class J/psi pile-up rejection cut for p-p events
+
   SystemType          fSystem;                ///< the type of system being analyzed
   Double_t            fVertexZ;               ///< the vertex \f$z\f$ coordinate
   Double_t            fCentrality;            ///< the event centrality
@@ -228,7 +231,7 @@ private:
   AliCSEventCuts& operator=(const AliCSEventCuts&);
 
   /// \cond CLASSIMP
-  ClassDef(AliCSEventCuts,8);
+  ClassDef(AliCSEventCuts,9);
   /// \endcond
 };
 

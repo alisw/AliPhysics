@@ -69,6 +69,7 @@ protected:
   Int_t   FindPrimary(AliVCluster*, Bool_t&);
   Double_t TrigCentralityWeight(Double_t x); //Correction for PHOS trigger centrality bias
   Double_t MBCentralityWeight(Double_t x);   //Correction for Pileup cut centrality bias
+  Double_t CorrectNonlinearity(Double_t en);
   
   void FillHistogram(const char * key,Double_t x) const ; //Fill 1D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y) const ; //Fill 2D histogram witn name key

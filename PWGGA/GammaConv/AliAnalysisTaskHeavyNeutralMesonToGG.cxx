@@ -1488,9 +1488,9 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserExec(Option_t *){
       return;
     }
 
-    if(fInputEvent->IsA()==AliAODEvent::Class()){
-      fInputEvent->InitMagneticField();
-    }
+//     if(fInputEvent->IsA()==AliAODEvent::Class()){
+//       fInputEvent->InitMagneticField();
+//     }
 
     fReaderGammas = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
 

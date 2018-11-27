@@ -145,7 +145,7 @@ fDphiHHMixed(0)
 }
 //________________________________________________________________________
 AliAnalysisTaskHadronPhiCorr::AliAnalysisTaskHadronPhiCorr()
-: AliAnalysisTaskSE("DefaultTask_HfeEMCQA"),
+: AliAnalysisTaskSE("DefaultTask_hPhiCorr"),
 fVevent(0),
 fPoolMgr(0x0),
 fLSPoolMgr(0x0),
@@ -788,12 +788,27 @@ void AliAnalysisTaskHadronPhiCorr::UserExec(Option_t *){
                 distPoint[2] += 2.0*TMath::Pi(); //change from range (-Pi, Pi) to (0, 2Pi)
             }
             distPoint[3] = phi.particle.Eta();
-            fKKLSDist->Fill(distPoint);
  
             //accept only those kaon pairs that fall within our mass range:
             if(phi.particle.M() > 1.07 || phi.particle.M()<0.98) continue;
 
-            phiLikeSignCandidates.push_back(phi);
+            //check for eta-phi range set for efficiency crosscheck
+            if(ETA_PHI_REGION <= 0){
+                phiLikeSignCandidates.push_back(phi);
+                fKKLSDist->Fill(distPoint);
+            }else if(ETA_PHI_REGION == 1 && TMath::Abs(phi.particle.Eta()) > 0.2 && distPoint[2] < TMath::Pi()){
+                phiLikeSignCandidates.push_back(phi);
+                fKKLSDist->Fill(distPoint);
+            }else if(ETA_PHI_REGION == 2 && TMath::Abs(phi.particle.Eta()) <= 0.2 && distPoint[2] < TMath::Pi()){
+                phiLikeSignCandidates.push_back(phi);
+                fKKLSDist->Fill(distPoint);   
+            }else if(ETA_PHI_REGION == 3 && TMath::Abs(phi.particle.Eta()) > 0.2 && distPoint[2] >= TMath::Pi()){
+                phiLikeSignCandidates.push_back(phi);
+                fKKLSDist->Fill(distPoint); 
+            }else if(ETA_PHI_REGION == 4 && TMath::Abs(phi.particle.Eta()) <= 0.2 && distPoint[2] >= TMath::Pi()){
+                phiLikeSignCandidates.push_back(phi);
+                fKKLSDist->Fill(distPoint);
+            }       
         }
         for(Int_t i_kminus =0; i_kminus < (int)kMinusList.size(); i_kminus++){
             phi.particle.SetPx(kPlusList[i_kplus].particle.Px() + kMinusList[i_kminus].particle.Px());
@@ -810,11 +825,27 @@ void AliAnalysisTaskHadronPhiCorr::UserExec(Option_t *){
                 distPoint[2] += 2.0*TMath::Pi();
             }
             distPoint[3] = phi.particle.Eta();
-            fKKUSDist->Fill(distPoint);
+            
  
             //accept only those kaon pairs that fall within our mass range:
             if(phi.particle.M() < 1.07 && phi.particle.M() > 0.98){
-                phiCandidates.push_back(phi);
+                //check for eta-phi range set for efficiency crosscheck
+                if(ETA_PHI_REGION <= 0){
+                    phiCandidates.push_back(phi);
+                    fKKUSDist->Fill(distPoint);
+                }else if(ETA_PHI_REGION == 1 && TMath::Abs(phi.particle.Eta()) > 0.2 && distPoint[2] < TMath::Pi()){
+                    phiCandidates.push_back(phi);
+                    fKKUSDist->Fill(distPoint);
+                }else if(ETA_PHI_REGION == 2 && TMath::Abs(phi.particle.Eta()) <= 0.2 && distPoint[2] < TMath::Pi()){
+                    phiCandidates.push_back(phi);
+                    fKKUSDist->Fill(distPoint);    
+                }else if(ETA_PHI_REGION == 3 && TMath::Abs(phi.particle.Eta()) > 0.2 && distPoint[2] >= TMath::Pi()){
+                    phiCandidates.push_back(phi);
+                    fKKUSDist->Fill(distPoint);  
+                }else if(ETA_PHI_REGION == 4 && TMath::Abs(phi.particle.Eta()) <= 0.2 && distPoint[2] >= TMath::Pi()){
+                    phiCandidates.push_back(phi);
+                    fKKUSDist->Fill(distPoint);
+                }
             }
        }
     }
@@ -835,11 +866,27 @@ void AliAnalysisTaskHadronPhiCorr::UserExec(Option_t *){
                 distPoint[2] += 2.0*TMath::Pi();
             }
             distPoint[3] = phi.particle.Eta();
-            fKKLSDist->Fill(distPoint);
  
             //accept only those kaon pairs that fall within our mass range for our phi list:
             if(phi.particle.M() < 1.07 && phi.particle.M() > 0.98){ 
-                phiLikeSignCandidates.push_back(phi); 
+                //check for eta-phi range set for efficiency crosscheck
+                if(ETA_PHI_REGION <= 0){
+                    phiLikeSignCandidates.push_back(phi);
+                    fKKLSDist->Fill(distPoint);
+                }else if(ETA_PHI_REGION == 1 && TMath::Abs(phi.particle.Eta()) > 0.2 && distPoint[2] < TMath::Pi()){
+                    phiLikeSignCandidates.push_back(phi);
+                    fKKLSDist->Fill(distPoint);     
+                }else if(ETA_PHI_REGION == 2 && TMath::Abs(phi.particle.Eta()) <= 0.2 && distPoint[2] < TMath::Pi()){
+                    phiLikeSignCandidates.push_back(phi);
+                    fKKLSDist->Fill(distPoint);    
+                }else if(ETA_PHI_REGION == 3 && TMath::Abs(phi.particle.Eta()) > 0.2 && distPoint[2] >= TMath::Pi()){
+                    phiLikeSignCandidates.push_back(phi);
+                    fKKLSDist->Fill(distPoint);  
+                }else if(ETA_PHI_REGION == 4 && TMath::Abs(phi.particle.Eta()) <= 0.2 && distPoint[2] >= TMath::Pi()){
+                    phiLikeSignCandidates.push_back(phi);
+                    fKKLSDist->Fill(distPoint);
+                }
+
             }
       }        
     }        

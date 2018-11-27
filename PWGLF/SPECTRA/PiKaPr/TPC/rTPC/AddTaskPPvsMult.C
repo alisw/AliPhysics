@@ -1,4 +1,3 @@
-
 #if !defined (__CINT__) || defined (__CLING__)
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskPPvsMult.h"
@@ -14,10 +13,10 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 		Int_t system =1, // 0 for pp and 1 for Pb-Pb
 		Bool_t PostCalib = kFALSE,
 		Bool_t LowpT = kFALSE,
-		Bool_t MakePid = kFALSE
+		Bool_t MakePid = kFALSE,
+		const Int_t LHC16l = 1  // 1-LHC16l 0-LHC16k 
 		)   
 {
-
 
 	// get the manager via the static access member. since it's static, you don't need
 	// an instance of the class to call the function
@@ -55,12 +54,12 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 	AliAnalysisTaskPPvsMult* task = new AliAnalysisTaskPPvsMult("taskHighPtDeDxpp");   
 	if(!task) return 0x0;
 
-
 	TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 //	task->SelectCollisionCandidates(AliVEvent::kAnyINT);
 	task->SetAnalysisType(type);
 	task->SetAnalysisMC(AnalysisMC);
 	task->SetAddLowPt(LowpT);
+	task->SetPeriod(LHC16l);
 
 	if(system==1){
 		task->SetAnalysisPbPb(kTRUE);
@@ -95,4 +94,3 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 	// when you will run your analysis in an analysis train on grid
 	return task;
 }
-

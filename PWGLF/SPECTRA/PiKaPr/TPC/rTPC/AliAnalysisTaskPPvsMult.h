@@ -63,10 +63,11 @@ public:
 		virtual void  SetMinCent(Float_t minvalc) {fMinCent = minvalc;}
 		virtual void  SetMaxCent(Float_t maxvalc) {fMaxCent = maxvalc;}
 //		virtual void  SetStoreMcIn(Bool_t value) {fStoreMcIn = value;}
-		virtual void  SetAnalysisPbPb(Bool_t isanaPbPb) {fAnalysisPbPb = isanaPbPb;}
-		virtual void  SetAnalysisTask(Bool_t PostCalib) {fdEdxCalibrated = PostCalib;}
-		virtual void  SetAnalysisPID(Bool_t makePid) {fMakePid = makePid;}
-		virtual void  SetAddLowPt(Bool_t addlowpt) {fLowPt = addlowpt;}
+		virtual void  SetAnalysisPbPb(Bool_t isanaPbPb) { fAnalysisPbPb = isanaPbPb; }
+		virtual void  SetAnalysisTask(Bool_t PostCalib) { fdEdxCalibrated = PostCalib; }
+		virtual void  SetAnalysisPID(Bool_t makePid) { fMakePid = makePid; }
+		virtual void  SetAddLowPt(Bool_t addlowpt) { fLowPt = addlowpt; }
+		virtual void  SetPeriod(Int_t isLHC16l) { fLHC16l = isLHC16l; }
 
 	private:
 		virtual Float_t GetVertex(const AliVEvent* event) const;
@@ -171,6 +172,7 @@ public:
 		Bool_t       fdEdxCalibrated;
 		Bool_t       fMakePid;
 		Bool_t       fLowPt;
+		Int_t  fLHC16l;
 		TH1F* fcent;
 		TH1F* fcentAfterPrimaries;
 		TH1F* fcentAfterV0s;

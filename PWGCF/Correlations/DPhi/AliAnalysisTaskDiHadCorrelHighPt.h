@@ -48,6 +48,14 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    CorelationsMixing(TObjArray *triggers, TObjArray *bgTracks, THnSparse * fHistKor, Double_t lPVz,Float_t perc);
         void                    TopologCuts(THnSparse* fHist,Double_t pttrig,Double_t mass,Double_t dcaNeg, Double_t dcaPos,Double_t dcaDau, Double_t V0rad, Double_t cosPA,Double_t lifetime,Double_t massSell,Double_t triggType, Double_t status);
     void                    FillMC(const AliAODv0 *V0,TClonesArray *mcArray,Int_t pdgV0,Int_t pdgDau1, Int_t pdgDau2,Int_t triggerType, Double_t mass, TObjArray * selectedMCV0Triggersrec,THnSparse * fHistRecV0, TH3F * fHistMassPtCut,Double_t lPVz, const AliAODTrack * myTrackPos,const AliAODTrack * myTrackNeg,Bool_t status, THnSparse * histPur);
+    
+        void                    SetCosPAK0(Float_t cosPAK0) { fCosPointAngleK0 = cosPAK0; }
+        void                    SetCosPALam(Float_t cosPALam) { fCosPointAngleLam = cosPALam; }
+        void                    SetDCAV0Daughters(Float_t dca) { fDCAV0Daughters = dca; }
+        void                    SetDCAposDaughter(Float_t dcapos) { fDCAposDaughter = dcapos; }
+        void                    SetDCAnegDaughter(Float_t dcaneg) { fDCAnegDaughter = dcaneg; }
+        void                    SetNTPCcrossedRows(Int_t Ncr) { fnumOfTPCcrossedRows = Ncr; }
+    
     private:
         AliAODEvent*            fAOD;           		//! input event
         AliPIDResponse*         fPIDResponse;           //!
@@ -96,11 +104,18 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         THnSparse*              fHistTopolCut;             //!
         THnSparse*              fHistTopolCutMC;           //!
         THnSparse*              fHistPurityCheck;          //!
+    
+        Float_t                 fCosPointAngleK0; //
+        Float_t                 fCosPointAngleLam; //
+        Float_t                 fDCAV0Daughters; //
+        Float_t                 fDCAposDaughter; //
+        Float_t                 fDCAnegDaughter; //
+        Int_t                   fnumOfTPCcrossedRows; //
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 4);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 5);
 };
 
 class AliV0ChParticle : public AliVParticle

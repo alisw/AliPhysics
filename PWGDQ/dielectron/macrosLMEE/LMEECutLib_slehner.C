@@ -24,16 +24,33 @@ public:
   TH1 *fPostPIDCntrdCorr;   // post pid correction object for electron sigma centroids in TPC
 };
 
-static TH3D LMEECutLib::SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise, int sel) {
+static TH3D LMEECutLib::SetEtaCorrection(Int_t det, Bool_t isMC, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, int sel) {
 //For usage with TreeMaker
 //For efficiency task postcalibration is set in AddTask_slehner_ElectronEfficiency.C
+  TString detstr;
+  TString type;
+  switch(det) {
+    case 1: detstr="its";break;
+    case 2: detstr="tpc";break;
+    case 3: detstr="tof";break;
+    } 
+  switch(isMC) {
+    case kTRUE: type="mc";break;
+    case kFALSE: type="data";break;
+    }
     
-  ::Info("LMEECutLib::SetEtaCorrectionTPC","starting LMEECutLib::SetEtaCorrectionTPC()\n");
-  TString path="alien:///alice/cern.ch/user/s/selehner/recal/recalib_data_tpc_nsigmaele.root";
-  gSystem->Exec(TString::Format("alien_cp %s .",path.Data()));
-  ::Info("LMEECutLib::SetEtaCorrectionTPC","Copy TPC correction from Alien: %s",path.Data());
-  _file = TFile::Open("recalib_data_tpc_nsigmaele.root");
+  ::Info("LMEECutLib::SetCorrection",(TString("Starting Correction for ")+detstr).Data());
+  TString path="alien:///alice/cern.ch/user/s/selehner/recal/";
+  TString fName= "recalib_"+type+"_"+detstr+"_nsigmaele.root";
   
+  _file = TFile::Open(fName.Data());
+  if(!_file){
+    gSystem->Exec(TString::Format("alien_cp %s .",path.Data()));
+    _file = TFile::Open(fName.Data());
+    if(!_file) ::Error("LMEECutLib::SetEtaCorrection",(TString("Cannot get correction from Alien: ")+path+fName).Data());
+    else  ::Info("LMEECutLib::SetEtaCorrection",(TString("Copy correction from Alien: ")+path+fName).Data());
+  }    
+    
   TH3D* mean = dynamic_cast<TH3D*>(_file->Get("sum_mean_correction"));
   TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
   
@@ -46,7 +63,7 @@ static TH3D LMEECutLib::SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int
   fPostPIDCntrdCorr = (TH1*)mean->Clone(key.Data());
   // check for corrections and add their variables to the fill map
   if(fPostPIDCntrdCorr)  {
-    printf("POST TPC PID CORRECTION added for centroids:  ");
+    printf("POST %s on %s PID CORRECTION added for centroids:  ",detstr.Data(),type.Data());
     switch(fPostPIDCntrdCorr->GetDimension()) {
     case 3: printf(" %s, ",fPostPIDCntrdCorr->GetZaxis()->GetName());
     case 2: printf(" %s, ",fPostPIDCntrdCorr->GetYaxis()->GetName());
@@ -58,8 +75,13 @@ static TH3D LMEECutLib::SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int
     fUsedVars->SetBitNumber(corrZdim, kTRUE);
   }
   
-  if(fPostPIDCntrdCorr)     AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorr);
-  
+  if(fPostPIDCntrdCorr)  {   
+    switch(det) {
+      case 1: AliDielectronPID::SetCentroidCorrFunctionITS(fPostPIDCntrdCorr);
+      case 2: AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorr);
+      case 3: AliDielectronPID::SetCentroidCorrFunctionTOF(fPostPIDCntrdCorr);
+    } 
+  }
   
   
   // AliDielectron::SetWidthCorrFunction
@@ -72,11 +94,11 @@ static TH3D LMEECutLib::SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int
   fPostPIDWdthCorr = (TH1*)width->Clone(key.Data());
   // check for corrections and add their variables to the fill map
   if(fPostPIDWdthCorr)  {
-    printf("POST TPC PID CORRECTION added for widths:  ");
+    printf("POST %s on %s PID CORRECTION added for widths:  ",detstr.Data(),type.Data());
     switch(fPostPIDWdthCorr->GetDimension()) {
-    case 3: printf(" %s, ",fPostPIDWdthCorr->GetZaxis()->GetName());
-    case 2: printf(" %s, ",fPostPIDWdthCorr->GetYaxis()->GetName());
-    case 1: printf(" %s ",fPostPIDWdthCorr->GetXaxis()->GetName());
+    case 3: printf(" %s, ",fPostPIDWdthCorr->GetZaxis()->GetName());break;
+    case 2: printf(" %s, ",fPostPIDWdthCorr->GetYaxis()->GetName());break;
+    case 1: printf(" %s ",fPostPIDWdthCorr->GetXaxis()->GetName());break;
     }
     printf("\n");
     fUsedVars->SetBitNumber(corrXdim, kTRUE);
@@ -85,24 +107,29 @@ static TH3D LMEECutLib::SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int
         }
     }
   
-  if(fPostPIDWdthCorr)      AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorr);
-
+  if(fPostPIDWdthCorr){
+    switch(det) {
+      case 1: AliDielectronPID::SetWidthCorrFunctionITS(fPostPIDCntrdCorr); break;
+      case 2: AliDielectronPID::SetWidthCorrFunction(fPostPIDCntrdCorr); break;
+      case 3: AliDielectronPID::SetWidthCorrFunctionTOF(fPostPIDCntrdCorr);  break;
+  }
   if(sel==1){
-        if(mean)   ::Info("LMEECutLib::SetEtaCorrectionTPC","Mean Correction Histo loaded, entries: %f",mean->GetEntries());
+        if(mean)   ::Info("LMEECutLib::SetEtaCorrection","Mean Correction Histo loaded, entries: %f",mean->GetEntries());
         else {
-        ::Info("LMEECutLib::SetEtaCorrectionTPC","Mean Correction Histo not loaded! entries: %f",mean->GetEntries());
+        ::Info("LMEECutLib::SetEtaCorrection","Mean Correction Histo not loaded! entries: %f",mean->GetEntries());
         return 0;
         }
       return *mean;
   }
   else{
-        if(width)   ::Info("LMEECutLib::SetEtaCorrectionTPC","Width Correction Histo loaded, entries: %f",width->GetEntries());
+        if(width)   ::Info("LMEECutLib::SetEtaCorrection","Width Correction Histo loaded, entries: %f",width->GetEntries());
         else {
-        ::Info("LMEECutLib::SetEtaCorrectionTPC","Width Correction Histo not loaded! entries: %f",width->GetEntries());
+        ::Info("LMEECutLib::SetEtaCorrection","Width Correction Histo not loaded! entries: %f",width->GetEntries());
         return 0;
         }
       return *width;
   }
+}
 }  
 
 // Note: event cuts are identical for all analysis 'cutDefinition's that run together!

@@ -28,8 +28,12 @@
 #include "AliLog.h"
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
+#include "AliMCEvent.h"
+#include "AliMCEventHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliMultSelection.h"
+#include "TList.h"
+#include "TH1D.h"
 #include "TFile.h"
 #include "TComplex.h"
 #include "TMath.h"
@@ -43,851 +47,1349 @@ ClassImp(AliAnalysisTaskTwoMultiCorrelations)
 
 AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const char *name, Bool_t useParticleWeights):
   AliAnalysisTaskSE(name),
-  fMaxNumberCorrelations(8), // General parameters
-  fHighHarmonic(6),
-  fNumberDifferentHarmonics(2),
+  fMaxNumberCorrelations(8),
+  fMaxFlowHarmonic(6),
+  fNumberHarmonicsInSC(4),
+  fAnalysisType(NULL),
+  fProcessBothKineAndReco(kFALSE),
+  fProcessOnlyKine(kFALSE),
+  fProcessOnlyReco(kFALSE),
   fUseParticleWeights(kFALSE),
   fComputeNestedLoops(kFALSE),
-  fComputeSine(kFALSE),
-  fHarmonicOne(2),  // Harmonics
+  fMainList(NULL),
+  fControlListPreCuts(NULL),
+  fControlListPostCuts(NULL),
+  fFinalList(NULL),
+  fListTwoParticles(NULL),
+  fListThreeParticles(NULL),
+  fListFourParticles(NULL),
+  fListSixParticles(NULL),
+  fCentralityMin(0.),
+  fCentralityMax(100.),
+  fPtMin(0.2),
+  fPtMax(5.),
+  fEtaMin(-0.8),
+  fEtaMax(0.8),
+  fHarmonicOne(2),
   fHarmonicTwo(-2),
-  fHarmonicThree(4),
-  fHarmonicFour(-4),
-  fHarmonicFive(0),
-  fHarmonicSix(0),
-  fHarmonicSeven(0),
-  fHarmonicEight(0),
-  fMinCentrality(0.0),  // Ranges
-  fMaxCentrality(100.0),
-  fMinPtCut(0.2),
-  fMaxPtCut(5.0),
-  fMinEtaCut(-0.8),
-  fMaxEtaCut(0.8),
-  fOutputMainList(NULL),  // Structure of the output file
-  fPreCutControlList(NULL),
-  fPostCutControlList(NULL),
-  fCorrelationResultsList(NULL),
-  fCentralityPreCutHisto(NULL), // Control histograms before the cuts
-  fMultiplicityPreCutHisto(NULL),
-  fPtPreCutControlHisto(NULL),
-  fEtaPreCutControlHisto(NULL),
-  fPhiPreCutHisto(NULL),
-  fMultiplicityPostCutHisto(NULL),  // Control histograms after the cuts
-  fPtPostCutControlHisto(NULL),
-  fEtaPostCutControlHisto(NULL),
-  fPhiPostCutHisto(NULL)
+  fHarmonicThree(3),
+  fHarmonicFour(-3),
+  fHarmonicFive(4),
+  fHarmonicSix(-4),
+  fHarmonicSeven(5),
+  fHarmonicEight(-5),
+  fHistoCentralityPreCuts(NULL),
+  fHistoPtPreCuts(NULL),
+  fHistoEtaPreCuts(NULL),
+  fHistoPhiPreCuts(NULL),
+  fHistoMultiplicityPreCuts(NULL),
+  fHistoMultiplicityPostCuts(NULL),
+  fHistoPtPostCuts(NULL),
+  fHistoEtaPostCuts(NULL),
+  fHistoPhiPostCuts(NULL),
+  fProfileCosineEightParticles(NULL)
 {
-// Constructor of the class
+// Constructor of the class.
   AliDebug(2, "AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const char *name, Bool_t useParticleWeights)");
 
-// Creation of a new main list
-  fOutputMainList = new TList();
-  fOutputMainList->SetName("outputAnalysis");
-  fOutputMainList->SetOwner(kTRUE);
+// Create the main list.
+  fMainList = new TList();
+  fMainList->SetName("outputAnalysis");
+  fMainList->SetOwner(kTRUE);
 
-// Definition of the input and output slots
+// Define the input and output slots.
   DefineOutput(1, TList::Class());
 
-// Initialisation of the fQvectors to zero
+// Initialise the fQvectors to zero.
   InitialiseArraysOfQvectors();
 
-// Initialisation of the pointers for the TProfiles to NULL
+// Initialise the pointers of the TProfiles to NULL.
   InitialiseArraysOfTProfiles();
 
-// Use of the particle weights
+// Use the particle weights?
   if(useParticleWeights)
   {
-    // not needed for the time being, maybe insert here the call for the file with particle weights???
-  }
-} // End of the constructor
+    // Not needed for 2010 Heavy Ions data.
+    // TBI for later data taking periods...
+  } // End: if(useParticleWeights)
+} // End: AliAnalysisTaskTwoMultiCorrelations(const chat*, Bool_t)
 
 //======================================================================================//
 
 AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations():
   AliAnalysisTaskSE(),
-  fMaxNumberCorrelations(8), // General parameters
-  fHighHarmonic(6),
-  fNumberDifferentHarmonics(2),
+  fMaxNumberCorrelations(8),
+  fMaxFlowHarmonic(6),
+  fNumberHarmonicsInSC(4),
+  fAnalysisType(NULL),
+  fProcessBothKineAndReco(kFALSE),
+  fProcessOnlyKine(kFALSE),
+  fProcessOnlyReco(kFALSE),
   fUseParticleWeights(kFALSE),
   fComputeNestedLoops(kFALSE),
-  fComputeSine(kFALSE),
-  fHarmonicOne(2),  // Harmonics
+  fMainList(NULL),
+  fControlListPreCuts(NULL),
+  fControlListPostCuts(NULL),
+  fFinalList(NULL),
+  fListTwoParticles(NULL),
+  fListThreeParticles(NULL),
+  fListFourParticles(NULL),
+  fListSixParticles(NULL),
+  fCentralityMin(0.),
+  fCentralityMax(100.),
+  fPtMin(0.2),
+  fPtMax(5.),
+  fEtaMin(-0.8),
+  fEtaMax(0.8),
+  fHarmonicOne(2),
   fHarmonicTwo(-2),
-  fHarmonicThree(4),
-  fHarmonicFour(-4),
-  fHarmonicFive(0),
-  fHarmonicSix(0),
-  fHarmonicSeven(0),
-  fHarmonicEight(0),
-  fMinCentrality(0.0),  // Ranges
-  fMaxCentrality(100.0),
-  fMinPtCut(0.2),
-  fMaxPtCut(5.0),
-  fMinEtaCut(-0.8),
-  fMaxEtaCut(0.8),
-  fOutputMainList(NULL),  // Structure of the output file
-  fPreCutControlList(NULL),
-  fPostCutControlList(NULL),
-  fCorrelationResultsList(NULL),
-  fCentralityPreCutHisto(NULL), // Control histograms before the cuts
-  fMultiplicityPreCutHisto(NULL),
-  fPtPreCutControlHisto(NULL),
-  fEtaPreCutControlHisto(NULL),
-  fPhiPreCutHisto(NULL),
-  fMultiplicityPostCutHisto(NULL),  // Control histograms after the cuts
-  fPtPostCutControlHisto(NULL),
-  fEtaPostCutControlHisto(NULL),
-  fPhiPostCutHisto(NULL)
-  //fEstimatedFlowWithQcProfile(NULL) // Anisotropic flow estimated with Q-cumulants
+  fHarmonicThree(3),
+  fHarmonicFour(-3),
+  fHarmonicFive(4),
+  fHarmonicSix(-4),
+  fHarmonicSeven(5),
+  fHarmonicEight(-5),
+  fHistoCentralityPreCuts(NULL),
+  fHistoPtPreCuts(NULL),
+  fHistoEtaPreCuts(NULL),
+  fHistoPhiPreCuts(NULL),
+  fHistoMultiplicityPreCuts(NULL),
+  fHistoMultiplicityPostCuts(NULL),
+  fHistoPtPostCuts(NULL),
+  fHistoEtaPostCuts(NULL),
+  fHistoPhiPostCuts(NULL),
+  fProfileCosineEightParticles(NULL)
 {
-// Dummy constructor of the class
-
+// Dummy constructor of the class.
     AliDebug(2, "AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const char *name, Bool_t useParticleWeights)");
 
-// Initialisation of the ffQvectors to zero
+// Initialise the fQvectors to zero.
   InitialiseArraysOfQvectors();
 
-// Initialisation of the pointers for the TProfiles to NULL
+// Initialise the pointers of the TProfiles to NULL.
   InitialiseArraysOfTProfiles();
-} // End of the dummy constructor
+} // End: AliAnalysisTaskTwoMultiCorrelations()
 
 //======================================================================================//
 
 AliAnalysisTaskTwoMultiCorrelations::~AliAnalysisTaskTwoMultiCorrelations()
 {
-// Destructor of the class
-  // Delete the main TList => delete automatically everything holds in it
-
-  if(fOutputMainList) {delete fOutputMainList;}
-} // End of the destructor
+// Destructor of the class.
+  if(fMainList) {delete fMainList;}
+} // End: ~AliAnalysisTaskTwoMultiCorrelations()
 
 //======================================================================================//
 
 void AliAnalysisTaskTwoMultiCorrelations::UserCreateOutputObjects()
 {
-// Method called at every worker node to initialise the lists
-
-// First part of the trick to avoid name clashes
+// Initialisation of the lists at the beginning of the analysis.
+// Avoid name clashes.
   Bool_t oldHistAddStatus = TH1::AddDirectoryStatus(); 
   TH1::AddDirectory(kFALSE);
 
-// Booking and nesting of all the lists
+// Book and nest all the lists.
   this->BookAndNestAllLists();
 
-// Booking of all the secondary lists
-  this->BookPreCutControlList();
-  this->BookPostCutControlList();
-  this->BookCorrelationResultsList();
+// Book all the secondary lists.
+  this->BookControlListPreCuts();
+  this->BookControlListPostCuts();
+  this->BookFinalList();
 
-// Second part of the trick to avoid name clashes
+// Initialise the pointer for the analysis type.
+  fAnalysisType = new TString();
+
+// Still avoid name clashes.
   TH1::AddDirectory(oldHistAddStatus);
-
-  PostData(1,fOutputMainList);
-} // End of AliAnalysisTaskTwoMultiCorrelations::UserCreateOutputObjects()
+  PostData(1,fMainList);
+} // End: UserCreateOutputObjects()
 
 //======================================================================================//
 
 void AliAnalysisTaskTwoMultiCorrelations::UserExec(Option_t *)
 {
-// Method called for each event, contains all the calculations
-/// Note to self: find a way to include non-unit particle weights and select them via fUseParticleWeights
+// Do the main analysis for each event.
+// TBI: find a way to include non-unit particle weights and select them via fUseParticleWeights...
+  TString sMethodName = "void AliAnalysisTaskTwoMultiCorrelations::UserExec(Option_t *)";
 
-// Obtention of the pointer to the AOD event (from TaskSE)
-  AliAODEvent *currentEvent = dynamic_cast<AliAODEvent*>(InputEvent());
-  if(!currentEvent){return;}  // Protection against NULL pointer
-
-// Gestion of the centrality
-  AliMultSelection *ams = (AliMultSelection*)currentEvent->FindListObject("MultSelection");
-  if(!ams){return;}
-  if(ams->GetMultiplicityPercentile("V0M") >= fMinCentrality && ams->GetMultiplicityPercentile("V0M") < fMaxCentrality)
+// Select of the analysis type (MC/AOD) from TaskSE.
+  AliMCEvent *currentMCEvent = MCEvent();
+  AliAODEvent *currentAODEvent = dynamic_cast<AliAODEvent*>(InputEvent());
+  //if(!currentAODEvent){return;}  // Protection against NULL pointer
+  if (1 != (Int_t)fProcessBothKineAndReco+(Int_t)fProcessOnlyKine+(Int_t)fProcessOnlyReco)
   {
-    fCentralityPreCutHisto->Fill(ams->GetMultiplicityPercentile("V0M"));
+    Fatal(sMethodName.Data(),"ERROR: only one fProcess must be kTRUE in 'SetAnalysisType'");
   }
-  else {return;} // This event does not belong to the centrality class specified for this particular analysis
+  else if (fProcessBothKineAndReco) {*fAnalysisType="MC_AOD";}
+  else if (fProcessOnlyKine) {*fAnalysisType="MC";}
+  else if (fProcessOnlyReco) {*fAnalysisType="AOD";}
 
-// Loop over the multiplicity of the event
-  Int_t nParticles = currentEvent->GetNumberOfTracks(); // Number of particles in the event
-  Int_t nParticlesAfterCuts = 0;  // Number of particles remaining after the cuts
-  Int_t *goodIndices = new Int_t[nParticles](); // Array where the index of a particle which passes the cuts is saved with 1 and if not with 0
+// Call of the specific analysis.
+  if (fAnalysisType->EqualTo("AOD")) {AODanalysis(currentAODEvent);}
+  else if (fAnalysisType->EqualTo("MC")) {MCanalysis(currentMCEvent);}
+  else if (fAnalysisType->EqualTo("MC_AOD")) {Fatal(sMethodName.Data(),"TBI...");}
+  else {Fatal(sMethodName.Data(),"ERROR: fAnalysisType not defined");}
 
-  // Filling of the control histogram for the multiplicity before the cuts
-  fMultiplicityPreCutHisto->Fill(nParticles);
+// ...
 
-  for (Int_t iParticle = 0; iParticle < nParticles; iParticle++)
-  {
-  // Obtention of the pointer to the current particle
-    AliAODTrack *currentParticle = dynamic_cast<AliAODTrack*>(currentEvent->GetTrack(iParticle));
-    if(!currentParticle){continue;} // Protection against NULL pointer
-    if(!currentParticle->TestFilterBit(128)){continue;} // Filter bit 128 denotes TPC-only tracks
-
-  // Filling of some control histograms before the application of the cuts
-    Double_t preCutPt = currentParticle->Pt();  // Transverse momentum
-    Double_t preCutEta = currentParticle->Eta();  // Pseudorapidity
-    Double_t preCutPhi = currentParticle->Phi(); // Azimuthal angles
-
-    fPtPreCutControlHisto->Fill(preCutPt);
-    fEtaPreCutControlHisto->Fill(preCutEta);
-    fPhiPreCutHisto->Fill(preCutPhi);
-
-  // Determination of the number of particles which pass the cuts and set the flag 1/0 of goodIndices[iParticle]
-    if ( (fMinEtaCut < preCutEta) && (preCutEta < fMaxEtaCut) && (fMinPtCut < preCutPt) && (preCutPt < fMaxPtCut) )
-    {
-      nParticlesAfterCuts++;
-      goodIndices[iParticle] = 1;
-    }
-    else {goodIndices[iParticle] = 0;}
-
-  } // End: for (Int_t iParticle = 0; iParticle < nParticles; iParticle++)
-
-// Filling of the control histogram for the multiplicity after the cuts
-  fMultiplicityPostCutHisto->Fill(nParticlesAfterCuts);
-
-// Definition of the varibles for the analysis
-  Double_t *pt = new Double_t[nParticlesAfterCuts](); // Array of transverse momenta
-  Double_t *eta = new Double_t[nParticlesAfterCuts](); // Array of pseudorapidity
-  Double_t *phi = new Double_t[nParticlesAfterCuts]();  // Array of azimuthal angles
-  Double_t *particleWeights = new Double_t[nParticlesAfterCuts]();  // Array of üarticle weights
-  Int_t fullHarmonicsArray[8] = {fHarmonicOne, fHarmonicTwo, fHarmonicThree, fHarmonicFour, fHarmonicFive, fHarmonicSix, fHarmonicSeven, fHarmonicEight};  // Harmonics (n_1,... n_8)
-  Int_t *harmonics = new Int_t[2*fNumberDifferentHarmonics]();
-  Int_t index = 0;  // Index of the "good index", increased when the loop reaches a 1 in goodIndices
-
-// Filling of the harmonics' array
-  for (Int_t iArray = 0; iArray < 2*fNumberDifferentHarmonics; iArray++)
-  {
-    harmonics[iArray] = fullHarmonicsArray[iArray];
-  } // End: for (Int_t iArray = 0; iArray < 2*fNumberDifferentHarmonics; iArray++)
-
-// Do the analysis only if the number of particles after the cuts is higher than the one for the m-particle correlation (in order to avoid the division by zero) 
-  if (nParticlesAfterCuts > (2*fNumberDifferentHarmonics))
-  {
-  // Loop over the initial number of particles, index takes care of keeping only the ones which pass the cuts
-    for (Int_t iiParticle = 0; iiParticle < nParticles; iiParticle++)
-    {
-    // Obtention of the pointer to the current particle
-      AliAODTrack *keptParticle = dynamic_cast<AliAODTrack*>(currentEvent->GetTrack(iiParticle));
-      if(!keptParticle){continue;} // Protection against NULL pointer
-      if(!keptParticle->TestFilterBit(128)){continue;} // Filter bit 128 denotes TPC-only tracks
-
-    // Filling of the azimuthal angles and particle weights and the control histograms only if goodIndices[iiParticle] == 1
-      if (goodIndices[iiParticle] == 1)
-      {
-        pt[index] = keptParticle->Pt();
-        eta[index] = keptParticle->Eta(); 
-        phi[index] = keptParticle->Phi();
-        particleWeights[index] = 1.;
-        //if (fUseParticleWeights) {continue;}  // Note to self: add the gestion of non-unit weight from external file
-        //else {particleWeights[iiParticle] = 1.;}
-
-        fPtPostCutControlHisto->Fill(pt[index]);
-        fEtaPostCutControlHisto->Fill(eta[index]);
-        fPhiPostCutHisto->Fill(phi[index]);
-
-        index++;
-      }
-      else {continue;} // End of if ( (-0.8 < eta) && (eta < 0.8) && (0.2 < pT) && (pT < 5.0) )
-    } // End: for (Int_t iiParticle = 0; iiParticle < nParticlesAfterCuts; iiParticle++)
-
-  // Computation of the Q-vectors for the current event
-    CalculateQvectors(nParticlesAfterCuts, phi, particleWeights);
-
-  // Computation of the multiparticle correlations
-  /// 2-particle correlation
-    for (Int_t iDiffHarmo = 0; iDiffHarmo < fNumberDifferentHarmonics; iDiffHarmo++)
-    {
-      Int_t numeratorFirstTwoParticle[2] = {harmonics[2*iDiffHarmo],harmonics[(2*iDiffHarmo)+1]};  // iDiffHarmo-th pair of harmonics for the numerator
-      Int_t numeratorLastTwoParticle[2] = {harmonics[2],harmonics[3]};  // the alternative expression is computed only for 2 different harmonics, which implies harmonics has a length of 4
-      ComputeTwoParticleCorrelationWithQvectors(numeratorFirstTwoParticle, numeratorLastTwoParticle, iDiffHarmo);
-
-      if (fComputeNestedLoops) {ComputeCorrelationsWithTwoNestedLoops(numeratorFirstTwoParticle, numeratorLastTwoParticle, iDiffHarmo, nParticles, phi, particleWeights);}
-    } // End: for (Int_t iDiffHarmo = 0; iDiffHarmo < fNumberDifferentHarmonics; iDiffHarmo++)
-
-  /// 4-particle correlation
-    if (fNumberDifferentHarmonics >= 2)
-    {
-      Int_t iCombi = 0; // i-th combination of 4 ordonnated elements without repetition out of fNumberDifferentHarmonics*2
-      for (Int_t i = 0; i < fNumberDifferentHarmonics-1; i++)
-      {
-      // Loop for the first two particles' harmonics
-        for (Int_t j = i+1; j < fNumberDifferentHarmonics; j++)
-        {
-          Int_t numeratorFourParticle[4] = {harmonics[2*i],harmonics[(2*i)+1], harmonics[2*j],harmonics[(2*j)+1]};
-          ComputeFourParticleCorrelationWithQvectors(numeratorFourParticle, iCombi);
-
-          if (fComputeNestedLoops) {ComputeCorrelationsWithFourNestedLoops(numeratorFourParticle, iCombi, nParticles, phi, particleWeights);}
-          iCombi++;
-        } // End: for (Int_t j = i+1; j <= fkNumberDifferentHarmonics; j++)
-      } // End: for (Int_t i = 0; i < fkNumberDifferentHarmonics, i++)
-    } // End: if (fNumberDifferentHarmonics >= 2)
-
-  /// 6-particle correlation
-    if (fNumberDifferentHarmonics >= 3)
-    {
-      Int_t jCombi = 0; // (i-1)-th combination of 6 ordonnated elements without repetition out of fkNumberDifferentHarmonics*2
-      for (Int_t i = 0; i < fNumberDifferentHarmonics-2; i++)
-      {
-      // Loop over the first two particles' harmonics
-        for (Int_t j = i+1; j < fNumberDifferentHarmonics-1; j++)
-        {
-        // Loop over the second particle pair's harmonics
-          for (Int_t k = j+1; k < fNumberDifferentHarmonics; k++)
-          {
-          // Loop over the third particle pair's harmonics
-            Int_t numeratorSixParticle[6] = {harmonics[2*i],harmonics[(2*i)+1], harmonics[2*j],harmonics[(2*j)+1],harmonics[2*k],harmonics[(2*k)+1]};
-            ComputeSixParticleCorrelationWithQvectors(numeratorSixParticle, jCombi);
-            jCombi++;
-          } // End: for (Int_t k = j+1; k < fNumberDifferentHarmonics; k++)
-        } // End: for (Int_t j = i+1; j < fNumberDifferentHarmonics-1; j++)
-      } // End: for (Int_t i = 0; i < fNumberDifferentHarmonics-2; i++)
-    } // End: if (fNumberDifferentHarmonics >= 3)
-
-  /// 8-particle correlation
-    if (fNumberDifferentHarmonics >= 4)
-    {
-      ComputeEightParticleCorrelationWithQvectors(harmonics);
-    } // End: if (fNumberDifferentHarmonics >= 4)   
-
-  // Release of the allocated memory
-    delete [] harmonics;
-    delete [] goodIndices;
-    delete [] pt;
-    delete [] eta;
-    delete [] phi;
-    delete [] particleWeights;
-
-  } // End of if (nParticlesAfterCuts >= fNparticlesCorrelations)
-
-// PostData
-  PostData(1,fOutputMainList);
-} // End of void AliAnalysisTaskTwoMultiCorrelations::UserExec(Option_t *)
+// PostData.
+  PostData(1, fMainList);
+} // End: UserExec(Option_t *)
 
 //======================================================================================//
 
 void AliAnalysisTaskTwoMultiCorrelations::Terminate(Option_t *)
 {
-// Method called at the end of the execution, once the run over the events is over
-// Organisation of the method
-  // 1.) Access to the merged output list
-  // 2.) Estimation of anisotropic flow with Q-cumulants
-  // 3.) Creation of the output file and save of the main list in it
+// Post-analysis done once all the events are done.
+// Access the merged main list.
+  fMainList = (TList*)GetOutputData(1);
+  if(!fMainList){exit(1);}
 
-// 1.) Access to the merged output list
-  fOutputMainList = (TList*)GetOutputData(1);
-  if(!fOutputMainList){exit(1);}
-
-// 3.) Creation of the output file and save of the main list in it
+// Create the output file and save the main list in it
   TFile *outputFile = new TFile("AnalysisResults.root", "RECREATE");
-  fOutputMainList->Write(fOutputMainList->GetName(),TObject::kSingleKey);
+  fMainList->Write(fMainList->GetName(),TObject::kSingleKey);
   delete outputFile;
-} // End of void AliAnalysisTaskTwoMultiCorrelations::Terminate(Option_t *)
+} // End: Terminate(Option_t *)
 
 //======================================================================================//
+// Methods called in the constructor.
+//--------------------------------------------------------------------------------------//
 
 void AliAnalysisTaskTwoMultiCorrelations::InitialiseArraysOfQvectors()
 {
-// Method to initialise the Q-vectors to zero
-  for (Int_t iHarmo = 0; iHarmo < (fHighHarmonic*fMaxNumberCorrelations)+1; iHarmo++)
+// Initialisation of the Q-vectors to zero.
+  for (Int_t iHarmo = 0; iHarmo < 49; iHarmo++)
   {
-    for (Int_t iPower = 0; iPower < fMaxNumberCorrelations+1; iPower++)
+    for (Int_t iPower = 0; iPower < 9; iPower++)
     {
       fQvectors[iHarmo][iPower] = TComplex(0.,0.);
-    } // End: for (Int_t iPower = 0; iPower < fMaxNumberCorrelations+1; iPower++)
-  } // End: for (Int_t iHarmo = 0; iHarmo < maxHarmo; iHarmo++)
+    } // End: for (Int_t iPower = 0; iPower < 9; iPower++)
+  } // End: for (Int_t iHarmo = 0; iHarmo < 49; iHarmo++)
+} // End: InitialiseArraysOfQvectors()
 
-} // End: void InitialiseArraysOffQvectors() 
-
-//======================================================================================//
+//--------------------------------------------------------------------------------------//
 
 void AliAnalysisTaskTwoMultiCorrelations::InitialiseArraysOfTProfiles()
 {
-// Method to initialise the 1-d and 2-d arrays of TProfiles containing the results
-  for (Int_t cs = 0; cs < 2; cs++)
+// Initialisation of the pointers to the TProfiles.
+  for (Int_t i = 0; i < 6; i++)
   {
-    for (Int_t t = 0; t < 4; t++) // 2-p and 6-p correlations
-    {
-      fTwoParticleCorrelationProfile[cs][t] = NULL;
-      fSixParticleCorrelationProfile[cs][t] = NULL;
-      fTwoCosineAverageProfile[cs][t] = NULL;
-      fTwoNestedCorrelationProfile[cs][t] = NULL;  
-      fTwoCosineAverageNestedProfile[cs][t] = NULL;
-    } // End: for (Int_t t = 0; t < 4; t++)
+    fProfileCosineTwoParticles[i] = NULL;
+    fProfileCosineTwoNestedLoops[i] = NULL;
+    fProfileCosineFourParticles[i] = NULL;
+    fProfileCosineFourNestedLoops[i] = NULL;
+  } // End: for (Int_t i = 0; i < 6; i++)
 
-    for (Int_t f = 0; f < 6; f++) // 4-p correlations
-    {
-      fFourParticleCorrelationProfile[cs][f] = NULL;
-      fFourNestedCorrelationProfile[cs][f] = NULL;
-    } // End: for (Int_t f = 0; f < 6; f++)
+  for (Int_t j = 0; j < 5; j++)
+  {
+    fProfileTwoCosine[j] = NULL;
+    fProfileTwoCosineNestedLoops[j] = NULL;
+  } // End: for (Int_t j = 0; j < 5; j++)
 
-    fEightParticleCorrelationProfile[cs] = NULL;  // 8-p correlations
+  for (Int_t k = 0; k < 4; k++)
+  {
+    fProfileCosineThreeParticles[k] = NULL;
+    fProfileCosineThreeNestedLoops[k] = NULL;
+    fProfileCosineSixParticles[k] = NULL;
+  } // End: for (Int_t k = 0; k < 4; k++)
 
-  } // End: for (Int_t cs = 0; cs < endCs; cs++)
-} // End: void InitialiseArraysOfTProfiles()
+} // End: InitialiseArraysOfTProfiles()
 
 //======================================================================================//
+// Methods called in UserCreateOutputObjects.
+//--------------------------------------------------------------------------------------//
 
 void AliAnalysisTaskTwoMultiCorrelations::BookAndNestAllLists()
 {
-// Method to book and nest all the lists where the results are kept in the output file
-
+// Book all the lists.
   TString sMethodName = "void AliAnalysisTaskTwoMultiCorrelations::BookAndNestAllLists()";
-  if(!fOutputMainList){Fatal(sMethodName.Data(),"Main list fOutputMainList is NULL");}
+  if(!fMainList){Fatal(sMethodName.Data(),"Main list 'fMainList' is NULL");}
 
-// Control histograms before the cuts
-  fPreCutControlList = new TList();
-  fPreCutControlList->SetName("PreCutControlList");
-  fPreCutControlList->SetOwner(kTRUE);
-  fOutputMainList->Add(fPreCutControlList);
+// Control histograms before the cuts.
+  fControlListPreCuts = new TList();
+  fControlListPreCuts->SetName("ControlListPreCuts");
+  fControlListPreCuts->SetOwner(kTRUE);
+  fMainList->Add(fControlListPreCuts);
 
 // Control histograms after the cuts
-  fPostCutControlList = new TList();
-  fPostCutControlList->SetName("PostCutControlList");
-  fPostCutControlList->SetOwner(kTRUE);
-  fOutputMainList->Add(fPostCutControlList);
+  fControlListPostCuts = new TList();
+  fControlListPostCuts->SetName("ControlListPostCuts");
+  fControlListPostCuts->SetOwner(kTRUE);
+  fMainList->Add(fControlListPostCuts);
 
-// Results for the multiparticle correlations
-  fCorrelationResultsList = new TList();
-  fCorrelationResultsList->SetName("CorrelationResultsList");
-  fCorrelationResultsList->SetOwner(kTRUE);
-  fOutputMainList->Add(fCorrelationResultsList);
-} // End: AliAnalysisTaskTwoMultiCorrelations::BookAndNestAllLists()
+// Results for the multiparticle correlations divided by number of particles involved.
+  fFinalList = new TList();
+  fFinalList->SetName("FinalList");
+  fFinalList->SetOwner(kTRUE);
+  fMainList->Add(fFinalList);
 
-//======================================================================================//
+  fListTwoParticles = new TList();
+  fListTwoParticles->SetName("ListTwoParticles");
+  fListTwoParticles->SetOwner(kTRUE);
+  fFinalList->Add(fListTwoParticles);
 
-void AliAnalysisTaskTwoMultiCorrelations::BookPreCutControlList()
+  fListThreeParticles = new TList();
+  fListThreeParticles->SetName("ListThreeParticles");
+  fListThreeParticles->SetOwner(kTRUE);
+  fFinalList->Add(fListThreeParticles);
+
+  fListFourParticles = new TList();
+  fListFourParticles->SetName("ListFourParticles");
+  fListFourParticles->SetOwner(kTRUE);
+  fFinalList->Add(fListFourParticles);
+
+  fListSixParticles = new TList();
+  fListSixParticles->SetName("ListSixParticles");
+  fListSixParticles->SetOwner(kTRUE);
+  fFinalList->Add(fListSixParticles);
+} // End: BookAndNestAllLists()
+
+//--------------------------------------------------------------------------------------//
+
+void AliAnalysisTaskTwoMultiCorrelations::BookControlListPreCuts()
 {
-// Method to prepare the list with the control histograms before the application of the cuts
-/// Centrality distribution
-/// Multiplicity distribution
-/// Transverse momentum distribution
-/// Pseudorapidity distribution
-/// Azimuthal angles
+// Book the histograms with the observables before the cuts.
+// Centrality distribution.
+  fHistoCentralityPreCuts = new TH1D("fHistoCentralityPreCuts", "Centrality distribution before the cuts", 100, 0., 100.);
+  fHistoCentralityPreCuts->SetStats(kTRUE);
+  fHistoCentralityPreCuts->GetXaxis()->SetTitle("Centrality percentile");
+  fControlListPreCuts->Add(fHistoCentralityPreCuts);
 
-// Centrality distribution
-  fCentralityPreCutHisto = new TH1D("fCentralityPreCutHisto", "Centrality distribution before the cuts", 100, 0., 100.);
-  fCentralityPreCutHisto->SetStats(kTRUE);
-  fCentralityPreCutHisto->GetXaxis()->SetTitle("Centrality percentile");
-  fPreCutControlList->Add(fCentralityPreCutHisto);
+// Transverse momentum distribution.
+  fHistoPtPreCuts = new TH1D("fHistoPtPreCuts", "Transverse momentum distribution before the cuts", 1000, 0., 20.);
+  fHistoPtPreCuts->SetStats(kTRUE);
+  fHistoPtPreCuts->GetXaxis()->SetTitle("p_{T}");
+  fControlListPreCuts->Add(fHistoPtPreCuts);
 
-// Multiplicity distribution
-  fMultiplicityPreCutHisto = new TH1D("fMultiplicityPreCutHisto", "Multiplicity distribution before the cuts", 10000000, 0., 10000000.);
-  fMultiplicityPreCutHisto->SetStats(kTRUE);
-  fMultiplicityPreCutHisto->GetXaxis()->SetTitle("Multiplicity");
-  fPreCutControlList->Add(fMultiplicityPreCutHisto);
+// Pseudorapidity distribution.
+  fHistoEtaPreCuts = new TH1D("fHistoEtaPreCuts", "Pseudorapidity distribution before the cuts", 1000, -1., 1.);
+  fHistoEtaPreCuts->SetStats(kTRUE);
+  fHistoEtaPreCuts->GetXaxis()->SetTitle("#eta");
+  fControlListPreCuts->Add(fHistoEtaPreCuts);
 
-// Transverse momentum distribution
-  fPtPreCutControlHisto = new TH1D("fPtPreCutControlHisto", "Transverse momentum distribution before the cuts", 1000, 0., 20.);
-  fPtPreCutControlHisto->SetStats(kTRUE);
-  fPtPreCutControlHisto->GetXaxis()->SetTitle("p_{T}");
-  fPreCutControlList->Add(fPtPreCutControlHisto);
+// Azimuthal angles distribution.
+  fHistoPhiPreCuts = new TH1D("fHistoPhiPreCuts", "Azimuthal angles distribution before the cuts", 1000, 0., 6.3);
+  fHistoPhiPreCuts->SetStats(kTRUE);
+  fHistoPhiPreCuts->GetXaxis()->SetTitle("#phi");
+  fControlListPreCuts->Add(fHistoPhiPreCuts);
 
-// Pseudorapidity distribution
-  fEtaPreCutControlHisto = new TH1D("fEtaPreCutControlHisto", "Pseudorapidity distribution before the cuts", 1000, -1., 1.);
-  fEtaPreCutControlHisto->SetStats(kTRUE);
-  fEtaPreCutControlHisto->GetXaxis()->SetTitle("eta");
-  fPreCutControlList->Add(fEtaPreCutControlHisto);
+// Multiplicity distribution.
+  fHistoMultiplicityPreCuts = new TH1D("fHistoMultiplicityPreCuts", "Multiplicity distribution before the cuts", 10000000, 0., 10000000.);
+  fHistoMultiplicityPreCuts->SetStats(kTRUE);
+  fHistoMultiplicityPreCuts->GetXaxis()->SetTitle("Multiplicity");
+  fControlListPreCuts->Add(fHistoMultiplicityPreCuts);
+} // End: BookControlListPreCuts()
 
-// Azimuthal angles
-  fPhiPreCutHisto = new TH1D("fPhiPreCutHisto", "Azimuthal angles distribution before the cuts", 1000, 0., 6.3);
-  fPhiPreCutHisto->SetStats(kTRUE);
-  fPhiPreCutHisto->GetXaxis()->SetTitle("phi");
-  fPreCutControlList->Add(fPhiPreCutHisto);
-} // End: void AliAnalysisTaskTwoMultiCorrelations::BookPreCutControlList()
+//--------------------------------------------------------------------------------------//
 
-//======================================================================================//
-
-void AliAnalysisTaskTwoMultiCorrelations::BookPostCutControlList()
+void AliAnalysisTaskTwoMultiCorrelations::BookControlListPostCuts()
 {
-// Method to prepare the list with the control histograms after the application of the cuts
-/// Multiplicity distribution
-/// Transverse momentum distribution
-/// Pseudorapidity distribution
-/// Azimuthal angles
+// Book the histograms with the observables after the cuts.
+// Multiplicity distribution.
+  fHistoMultiplicityPostCuts = new TH1D("fHistoMultiplicityPostCuts", "Multiplicity distribution after the cuts", 10000000, 0., 10000000.);
+  fHistoMultiplicityPostCuts->SetStats(kTRUE);
+  fHistoMultiplicityPostCuts->GetXaxis()->SetTitle("Multiplicity");
+  fControlListPostCuts->Add(fHistoMultiplicityPostCuts);
 
-// Multiplicity distribution
-  fMultiplicityPostCutHisto = new TH1D("fMultiplicityPostCutHisto", "Multiplicity distribution after the cuts", 10000000, 0., 10000000.);
-  fMultiplicityPostCutHisto->SetStats(kTRUE);
-  fMultiplicityPostCutHisto->GetXaxis()->SetTitle("Multiplicity");
-  fPostCutControlList->Add(fMultiplicityPostCutHisto);
+// Transverse momentum distribution.
+  fHistoPtPostCuts = new TH1D("fHistoPtPostCuts", "Transverse momentum distribution before the cuts", 1000, 0., 20.);
+  fHistoPtPostCuts->SetStats(kTRUE);
+  fHistoPtPostCuts->GetXaxis()->SetTitle("p_{T}");
+  fControlListPostCuts->Add(fHistoPtPostCuts);
 
-// Transverse momentum distribution
-  fPtPostCutControlHisto = new TH1D("fPtPostCutControlHisto", "Transverse momentum distribution after the cuts", 1000, 0., 20.);
-  fPtPostCutControlHisto->SetStats(kTRUE);
-  fPtPostCutControlHisto->GetXaxis()->SetTitle("p_{T}");
-  fPostCutControlList->Add(fPtPostCutControlHisto);
+// Pseudorapidity distribution.
+  fHistoEtaPostCuts = new TH1D("fHistoEtaPostCuts", "Pseudorapidity distribution before the cuts", 1000, -1., 1.);
+  fHistoEtaPostCuts->SetStats(kTRUE);
+  fHistoEtaPostCuts->GetXaxis()->SetTitle("#eta");
+  fControlListPostCuts->Add(fHistoEtaPostCuts);
 
-// Pseudorapidity distribution
-  fEtaPostCutControlHisto = new TH1D("fEtaPostCutControlHisto", "Pseudorapidity distribution after the cuts", 1000, -1., 1.);
-  fEtaPostCutControlHisto->SetStats(kTRUE);
-  fEtaPostCutControlHisto->GetXaxis()->SetTitle("eta");
-  fPostCutControlList->Add(fEtaPostCutControlHisto);
+// Azimuthal angles distribution.
+  fHistoPhiPostCuts = new TH1D("fHistoPhiPostCuts", "Azimuthal angles distribution before the cuts", 1000, 0., 6.3);
+  fHistoPhiPostCuts->SetStats(kTRUE);
+  fHistoPhiPostCuts->GetXaxis()->SetTitle("#phi");
+  fControlListPostCuts->Add(fHistoPhiPostCuts);
+} // End: BookControlListPostCuts()
 
-// Azimuthal angles
-  fPhiPostCutHisto = new TH1D("fPhiPostCutHisto", "Azimuthal angles distribution after the cuts", 1000, 0., 6.3);
-  fPhiPostCutHisto->SetStats(kTRUE);
-  fPhiPostCutHisto->GetXaxis()->SetTitle("phi");
-  fPostCutControlList->Add(fPhiPostCutHisto);
-} // End: void AliAnalysisTaskTwoMultiCorrelations::BookPreCutControlList()
+//--------------------------------------------------------------------------------------//
 
-//======================================================================================//
-
-void AliAnalysisTaskTwoMultiCorrelations::BookCorrelationResultsList()
+void AliAnalysisTaskTwoMultiCorrelations::BookFinalList()
 {
-// Method to prepare the list with the results from the computation of Q-vectors and nested loops
-/// TProfiles for 2-p and 6-p correlations
-/// TProfiles for 4-p correlations
-/// TProfiles for 8-p correlations
-
-  Int_t endCs = 1;  // Number of components to save (1: only Cosine, 2: Cosine and Sine)
-  if (fComputeSine) {endCs = 2;}
-
-  for (Int_t cs = 0; cs < endCs; cs++)
+// Book the TProfiles with the results for the multiparticle correlations.
+// For 2-particle correlations.
+  for (Int_t t = 0; t < 6; t++)
   {
-    for (Int_t t = 0; t < 4; t++)
+    fProfileCosineTwoParticles[t] = new TProfile("", "", 1, 0., 1.);
+    fProfileCosineTwoParticles[t]->SetStats(kTRUE);
+    fProfileCosineTwoParticles[t]->Sumw2();
+    fProfileCosineTwoParticles[t]->SetName(Form("fProfileCosineTwoParticles_%d", t));
+    fListTwoParticles->Add(fProfileCosineTwoParticles[t]);
+
+    if (fComputeNestedLoops)
     {
-    // TProfiles for 2-p and 6-p correlations
-    // cs: {cos, sin}, t: {m,n,p,q} for 2-p and t: {mnp, mnq, mpq, npq} for 6-p
-      fTwoParticleCorrelationProfile[cs][t] = new TProfile("", "", 1, 0., 1.);
-      fTwoParticleCorrelationProfile[cs][t]->SetStats(kTRUE);
-      fTwoParticleCorrelationProfile[cs][t]->SetName(Form("fTwoParticleCorrelationProfile_cs%d_combi%d", cs, t));
-      fTwoParticleCorrelationProfile[cs][t]->SetTitle(Form("Q-vectors, #LT #LT 2 #GT #GT, cs = %d, combi = %d", cs, t));
-      fTwoParticleCorrelationProfile[cs][t]->Sumw2();
-      fTwoParticleCorrelationProfile[cs][t]->GetXaxis()->SetTitle("#LT #LT 2 #GT #GT");
-      fCorrelationResultsList->Add(fTwoParticleCorrelationProfile[cs][t]);
+      fProfileCosineTwoNestedLoops[t] = new TProfile("", "", 1, 0., 1.);
+      fProfileCosineTwoNestedLoops[t]->SetStats(kTRUE);
+      fProfileCosineTwoNestedLoops[t]->Sumw2();
+      fProfileCosineTwoNestedLoops[t]->SetName(Form("fProfileCosineTwoNestedLoops_%d", t));
+      fListTwoParticles->Add(fProfileCosineTwoNestedLoops[t]);
+    } // End: if (fComputeNestedLoops)
+  } // End: for (Int_t t = 0; t < 6; t++)
 
-      fSixParticleCorrelationProfile[cs][t] = new TProfile("", "", 1, 0., 1.);
-      fSixParticleCorrelationProfile[cs][t]->SetStats(kTRUE);
-      fSixParticleCorrelationProfile[cs][t]->SetName(Form("fSixParticleCorrelationProfile_cs%d_combi%d", cs, t));
-      fSixParticleCorrelationProfile[cs][t]->SetTitle(Form("Q-vectors, #LT #LT 6 #GT #GT, cs = %d, combi = %d", cs, t));
-      fSixParticleCorrelationProfile[cs][t]->Sumw2();
-      fSixParticleCorrelationProfile[cs][t]->GetXaxis()->SetTitle("#LT #LT 6 #GT #GT");
-      fCorrelationResultsList->Add(fSixParticleCorrelationProfile[cs][t]);
+  for (Int_t c = 0; c < 5; c++)
+  {
+    fProfileTwoCosine[c] = new TProfile("", "", 1, 0., 1.);
+    fProfileTwoCosine[c]->SetStats(kTRUE);
+    fProfileTwoCosine[c]->Sumw2();
+    fProfileTwoCosine[c]->SetName(Form("fProfileTwoCosine_%d", c));
+    fListTwoParticles->Add(fProfileTwoCosine[c]);
 
-      fTwoCosineAverageProfile[cs][t] = new TProfile("", "", 2, 0., 2.);
-      fTwoCosineAverageProfile[cs][t]->SetStats(kTRUE);
-      fTwoCosineAverageProfile[cs][t]->SetName(Form("fTwoCosineAverageProfile_cs%d_combi%d", cs, t));
-      fTwoCosineAverageProfile[cs][t]->SetTitle(Form("Q-vectors, #LT #LT cos(m (phi1-phi2)) #GT #LT cos(n (phi1-phi2)) #GT #GT, cs = %d, combi = %d", cs, t)); // only [cos,sin][0] is useful)
-      fTwoCosineAverageProfile[cs][t]->Sumw2();
-      fTwoCosineAverageProfile[cs][t]->GetXaxis()->SetTitle("#LT #LT cos(m (phi1-phi2)) #GT #LT cos(n (phi1-phi2)) #GT #GT");
-      fCorrelationResultsList->Add(fTwoCosineAverageProfile[cs][t]);
-
-      if (fComputeNestedLoops)
-      {
-        fTwoNestedCorrelationProfile[cs][t] = new TProfile("", "", 1, 0., 1.);
-        fTwoNestedCorrelationProfile[cs][t]->SetStats(kTRUE);
-        fTwoNestedCorrelationProfile[cs][t]->SetName(Form("fTwoNestedCorrelationProfile_cs%d_combi%d", cs, t));
-        fTwoNestedCorrelationProfile[cs][t]->SetTitle(Form("Nested loops, #LT #LT 2 #GT #GT, cs = %d, combi = %d", cs, t));
-        fTwoNestedCorrelationProfile[cs][t]->Sumw2();
-        fTwoNestedCorrelationProfile[cs][t]->GetXaxis()->SetTitle("#LT #LT 2 #GT #GT");
-        fCorrelationResultsList->Add(fTwoNestedCorrelationProfile[cs][t]);
-
-        fTwoCosineAverageNestedProfile[cs][t] = new TProfile("", "", 1, 0., 1.);
-        fTwoCosineAverageNestedProfile[cs][t]->SetStats(kTRUE);
-        fTwoCosineAverageNestedProfile[cs][t]->SetName(Form("fTwoCosineAverageNestedProfile_cs%d_combi%d", cs, t));
-        fTwoCosineAverageNestedProfile[cs][t]->SetTitle(Form("Nested loops, #LT #LT cos(m (phi1-phi2)) #GT #LT cos(n (phi1-phi2)) #GT #GT, cs = %d, combi = %d", cs, t));
-        fTwoCosineAverageNestedProfile[cs][t]->Sumw2();
-        fTwoCosineAverageNestedProfile[cs][t]->GetXaxis()->SetTitle("#LT #LT cos(m (phi1-phi2)) #GT #LT cos(n (phi1-phi2)) #GT #GT");
-        fCorrelationResultsList->Add(fTwoCosineAverageNestedProfile[cs][t]);
-      } // End: if (fComputeNestedLoops)
-    } // End: for (Int_t t = 0; t < 4; t++)
-
-    for (Int_t t = 0; t < 6; t++)
+    if (fComputeNestedLoops)
     {
-    // TProfiles for 4-p correlations
-    // cs: {cos, sin}, f: {mn,mp,mq,np,nq,pq}
-      fFourParticleCorrelationProfile[cs][t] = new TProfile("", "", 1, 0., 1.);
-      fFourParticleCorrelationProfile[cs][t]->SetStats(kTRUE);
-      fFourParticleCorrelationProfile[cs][t]->SetName(Form("fFourParticleCorrelationProfile_cs%d_combi%d", cs, t));
-      fFourParticleCorrelationProfile[cs][t]->SetTitle(Form("Q-vectors, #LT #LT 4 #GT #GT, cs = %d, combi = %d", cs, t));
-      fFourParticleCorrelationProfile[cs][t]->Sumw2();
-      fFourParticleCorrelationProfile[cs][t]->GetXaxis()->SetTitle("#LT #LT 4 #GT #GT");
-      fCorrelationResultsList->Add(fFourParticleCorrelationProfile[cs][t]);
+      fProfileTwoCosineNestedLoops[c] = new TProfile("", "", 1, 0., 1.);
+      fProfileTwoCosineNestedLoops[c]->SetStats(kTRUE);
+      fProfileTwoCosineNestedLoops[c]->Sumw2();
+      fProfileTwoCosineNestedLoops[c]->SetName(Form("fProfileTwoCosineNestedLoops_%d", c));
+      fListTwoParticles->Add(fProfileTwoCosineNestedLoops[c]);
+    } // End: if (fComputeNestedLoops)
+  } // End: for (Int_t c = 0; c < 4; c++)
 
-      if (fComputeNestedLoops)
-      {
-        fFourNestedCorrelationProfile[cs][t] = new TProfile("", "", 1, 0., 1.);
-        fFourNestedCorrelationProfile[cs][t]->SetStats(kTRUE);
-        fFourNestedCorrelationProfile[cs][t]->SetName(Form("fFourNestedCorrelationProfile_cs%d_combi%d", cs, t));
-        fFourNestedCorrelationProfile[cs][t]->SetTitle(Form("Nested loops, #LT #LT 4 #GT #GT, cs = %d, combi = %d", cs, t));
-        fFourNestedCorrelationProfile[cs][t]->Sumw2();
-        fFourNestedCorrelationProfile[cs][t]->GetXaxis()->SetTitle("#LT #LT 4 #GT #GT");
-        fCorrelationResultsList->Add(fFourNestedCorrelationProfile[cs][t]);
-      } // End: if (fComputeNestedLoops)
-    } // End: for (Int_t t = 0; t < 6; t++)
+// For 3-particle correlations.
+  for (Int_t th = 0; th < 4; th++)
+  {
+    fProfileCosineThreeParticles[th] = new TProfile("","", 1, 0., 1.);
+    fProfileCosineThreeParticles[th]->SetStats(kTRUE);
+    fProfileCosineThreeParticles[th]->Sumw2();
+    fProfileCosineThreeParticles[th]->SetName(Form("fProfileCosineThreeParticles_%d", th));
+    fListThreeParticles->Add(fProfileCosineThreeParticles[th]);
 
-    // TProfiles for 8-p correlations
-    fEightParticleCorrelationProfile[cs] = new TProfile("", "", 1, 0., 1.);
-    fEightParticleCorrelationProfile[cs]->SetStats(kTRUE);
-    fEightParticleCorrelationProfile[cs]->SetName(Form("fEightParticleCorrelationProfile_cs%d", cs));
-    fEightParticleCorrelationProfile[cs]->SetTitle(Form("Q-vectors, #LT #LT 8 #GT #GT, cs = %d", cs));
-    fEightParticleCorrelationProfile[cs]->Sumw2();
-    fEightParticleCorrelationProfile[cs]->GetXaxis()->SetTitle("#LT #LT 8 #GT #GT");
-    fCorrelationResultsList->Add(fEightParticleCorrelationProfile[cs]);
-  } // End: for (Int_t cs = 0; cs < endCs; cs++)
-} // End: void AliAnalysisTaskTwoMultiCorrelations::BookCorrelationResultsList()
+    if (fComputeNestedLoops)
+    {
+      fProfileCosineThreeNestedLoops[th] = new TProfile("","", 1, 0., 1.);
+      fProfileCosineThreeNestedLoops[th]->SetStats(kTRUE);
+      fProfileCosineThreeNestedLoops[th]->Sumw2();
+      fProfileCosineThreeNestedLoops[th]->SetName(Form("fProfileCosineThreeNestedLoops_%d", th));
+      fListThreeParticles->Add(fProfileCosineThreeNestedLoops[th]);
+    } // End: if (fComputeNestedLoops)
+  } // End: for (Int_t th = 0; th < 4; th++)
+
+// For 4-particle correlations.
+  for (Int_t f = 0; f < 6; f++)
+  {
+    fProfileCosineFourParticles[f] = new TProfile("", "", 1, 0., 1.);
+    fProfileCosineFourParticles[f]->SetStats(kTRUE);
+    fProfileCosineFourParticles[f]->Sumw2();
+    fProfileCosineFourParticles[f]->SetName(Form("fProfileCosineFourParticles_%d", f));
+    fListFourParticles->Add(fProfileCosineFourParticles[f]);
+
+    if (fComputeNestedLoops)
+    {
+      fProfileCosineFourNestedLoops[f] = new TProfile("", "", 1, 0., 1.);
+      fProfileCosineFourNestedLoops[f]->SetStats(kTRUE);
+      fProfileCosineFourNestedLoops[f]->Sumw2();
+      fProfileCosineFourNestedLoops[f]->SetName(Form("fProfileCosineFourNestedLoops_%d", f));
+      fListFourParticles->Add(fProfileCosineFourNestedLoops[f]);
+    } // End: if (fComputeNestedLoops)
+  } // End: for (Int_t f = 0; f < 6; f++)
+
+// For 6- and 8-particle correlations.
+  for (Int_t s = 0; s < 4; s++)
+  {
+    fProfileCosineSixParticles[s] = new TProfile("", "", 1, 0., 1.);
+    fProfileCosineSixParticles[s]->SetStats(kTRUE);
+    fProfileCosineSixParticles[s]->Sumw2();
+    fProfileCosineSixParticles[s]->SetName(Form("fProfileCosineSixParticles_%d", s));
+    fListSixParticles->Add(fProfileCosineSixParticles[s]);
+  } // End: for (Int_t s = 0; s < 4; s++) 
+
+  fProfileCosineEightParticles = new TProfile("", "", 1, 0., 1.);
+  fProfileCosineEightParticles->SetStats(kTRUE);
+  fProfileCosineEightParticles->Sumw2();
+  fProfileCosineEightParticles->SetName("fProfileCosineEightParticles");
+  fListSixParticles->Add(fProfileCosineEightParticles);
+
+} // End: BookFinalList()
 
 //======================================================================================//
+// Methods called in UserExec(Option_t *).
+//--------------------------------------------------------------------------------------//
 
-void AliAnalysisTaskTwoMultiCorrelations::CalculateQvectors(Int_t nParticles, Double_t phi[], Double_t particleWeight[])
+void AliAnalysisTaskTwoMultiCorrelations::AODanalysis(AliAODEvent *aAODevent)
 {
-// Method calculating the "general" definition of the Q-vector Q_(n,p) for arbitrary (n,p)
-  Double_t pWeightPowerP = 0.;  // Particle weight rised to the power p
-
-// Filling of the array of Q-vectors
-  for (Int_t iParticle = 0; iParticle < nParticles; iParticle++)
+// Compute the multi-particle correlations for the given AOD event.
+// Define the centrality according to ALICE standards.
+  AliMultSelection *ams = (AliMultSelection*)aAODevent->FindListObject("MultSelection");
+  if(!ams){return;}
+  if(ams->GetMultiplicityPercentile("V0M") >= fCentralityMin && ams->GetMultiplicityPercentile("V0M") < fCentralityMax)
   {
-    for (Int_t iHarmo = 0; iHarmo < (fHighHarmonic*fMaxNumberCorrelations)+1; iHarmo++)
+    fHistoCentralityPreCuts->Fill(ams->GetMultiplicityPercentile("V0M"));
+  }
+  else {return;} // Event not belong to the specified centrality class.
+
+//**************************************************************************************//
+// Determine which particles pass the cuts.
+  long long nParticlesBeforeCuts = aAODevent->GetNumberOfTracks(); // Number of particles before the cuts.
+  long long nParticlesAfterCuts = 0;  // Number of particles after the cuts.
+  Int_t *particlesIndices = new Int_t[nParticlesBeforeCuts](); // List of the particles saved with the corresponding index = 1 if they pass the cuts or 0 if they do not.
+
+  for (long long iParticle = 0; iParticle < nParticlesBeforeCuts; iParticle++)
+  {
+  // Pointer to the current particle.
+    AliAODTrack *currentParticle = dynamic_cast<AliAODTrack*>(aAODevent->GetTrack(iParticle));
+    if(!currentParticle){continue;} // Protection against NULL pointer.
+    if(!currentParticle->TestFilterBit(128)){continue;} // Filter bit 128 denotes TPC-only tracks.
+
+  // Control histograms of some observables before the cuts.
+    Double_t ptPreCuts = currentParticle->Pt();  // Transverse momentum.
+    fHistoPtPreCuts->Fill(ptPreCuts);
+    Double_t etaPreCuts = currentParticle->Eta();  // Pseudorapidity.
+    fHistoEtaPreCuts->Fill(etaPreCuts);
+    Double_t phiPreCuts = currentParticle->Phi(); // Azimuthal angles.
+    fHistoPhiPreCuts->Fill(phiPreCuts);
+
+  // Apply the cuts and set the flag 1/0 of particlesIndices[].
+    if ( (fEtaMin < etaPreCuts) && (etaPreCuts < fEtaMax) && (fPtMin < ptPreCuts) && (ptPreCuts < fPtMax) )
     {
-      for (Int_t iPower = 0; iPower < fMaxNumberCorrelations+1; iPower++)
+      nParticlesAfterCuts++;
+      particlesIndices[iParticle] = 1;
+    }  // End: if ("cuts")
+    else {particlesIndices[iParticle] = 0;}
+  } // End: for (long long iParticle = 0; iParticle < nParticlesBeforeCuts; iParticle++)
+
+//**************************************************************************************//
+// Control histograms for the multiplicity before and after the cuts.
+  fHistoMultiplicityPreCuts->Fill(nParticlesBeforeCuts);
+  fHistoMultiplicityPostCuts->Fill(nParticlesAfterCuts);
+
+//**************************************************************************************//
+// Prepare the variables for the AOD analysis.
+  Double_t *pt = new Double_t[nParticlesAfterCuts](); // Transverse momenta.
+  Double_t *eta = new Double_t[nParticlesAfterCuts](); // Pseudorapidity.
+  Double_t *phi = new Double_t[nParticlesAfterCuts]();  // Azimuthal angles.
+  Double_t *particleWeights = new Double_t[nParticlesAfterCuts]();  // Particle weights
+  Int_t index = 0;  // Index of the particles which pass the cuts.
+
+  if (nParticlesAfterCuts <= 2*fNumberHarmonicsInSC) {return;}  // Analysis done only if the number of particles after the cuts is larger than the maximum number of particles needed for the studied GSC.
+  for (long long iiParticle = 0; iiParticle < nParticlesBeforeCuts; iiParticle++)
+  {
+  // Pointer to the current particle.
+    AliAODTrack *keptParticle = dynamic_cast<AliAODTrack*>(aAODevent->GetTrack(iiParticle));
+    if(!keptParticle){continue;}  // Protection against NULL pointer.
+    if(!keptParticle->TestFilterBit(128)){continue;}  // Filter bit 128 denotes TPC-only tracks.
+
+  // Control histograms.
+    if (particlesIndices[iiParticle] == 1)
+    {
+      pt[index] = keptParticle->Pt(); // Transverse momentum.
+      fHistoPtPostCuts->Fill(pt[index]);
+      eta[index] = keptParticle->Eta();
+      fHistoEtaPostCuts->Fill(eta[index]);
+      phi[index] = keptParticle->Phi();
+      fHistoPhiPostCuts->Fill(phi[index]);
+      particleWeights[index] = 1.;
+      //if (fUseParticleWeights) {continue;}  // TBI
+      //else {particleWeights[iiParticle] = 1.;}
+      index++;
+    } // End: if (particlesIndices[iiParticle] == 1)
+    else {continue;}
+  } // End: for (long long iiParticle = 0; iiParticle < nParticlesBeforeCuts; iiParticle++)
+
+//**************************************************************************************//
+// Calculate all the Q-vectors for this event.
+  CalculateQvectors(nParticlesAfterCuts, phi, particleWeights);
+
+//**************************************************************************************//
+// Do the full analysis for this event.
+  GSCfullAnalysis(nParticlesAfterCuts, phi, particleWeights);
+
+//**************************************************************************************//
+// Resets of the general variables of the events.
+  delete [] pt;
+  delete [] eta;
+  delete [] phi;
+  delete [] particleWeights;
+  index = 0;
+} // End: AODanalysis(AliAODEvent*)
+
+//--------------------------------------------------------------------------------------//
+void AliAnalysisTaskTwoMultiCorrelations::MCanalysis(AliMCEvent *aMCevent)
+{
+// Compute the multi-particle correlations for the given MC event.
+// Define the centrality according to ALICE standards in the case of reconstructed particles.
+  if (!fProcessOnlyKine)
+  {
+    AliMultSelection *ams = (AliMultSelection*)aMCevent->FindListObject("MultSelection");
+    if(!ams){return;}
+    if(ams->GetMultiplicityPercentile("V0M") >= fCentralityMin && ams->GetMultiplicityPercentile("V0M") < fCentralityMax)
+    {
+      fHistoCentralityPreCuts->Fill(ams->GetMultiplicityPercentile("V0M"));
+    }
+    else {return;} // Event not belong to the specified centrality class.
+  } // End: if (!fProcessOnlyKine)
+
+// Determine which particles pass the cuts.
+  long long nParticlesBeforeCuts = aMCevent->GetNumberOfTracks(); // Number of particles before the cuts.
+  long long nParticlesAfterCuts = 0;  // Number of particles after the cuts.
+  Int_t *particlesIndices = new Int_t[nParticlesBeforeCuts](); // List of the particles saved with the corresponding index = 1 if they pass the cuts or 0 if they do not.
+
+  for (long long iParticle = 0; iParticle < nParticlesBeforeCuts; iParticle++)
+  {
+  // Pointer to the current particle.
+    AliAODMCParticle *currentParticle = dynamic_cast<AliAODMCParticle*>(aMCevent->GetTrack(iParticle));
+    if(!currentParticle){continue;} // Protection against NULL pointer.
+
+  // Control histograms of some observables before the cuts.
+    Double_t ptPreCuts = currentParticle->Pt();  // Transverse momentum.
+    fHistoPtPreCuts->Fill(ptPreCuts);
+    Double_t etaPreCuts = currentParticle->Eta();  // Pseudorapidity.
+    fHistoEtaPreCuts->Fill(etaPreCuts);
+    Double_t phiPreCuts = currentParticle->Phi(); // Azimuthal angles.
+    fHistoPhiPreCuts->Fill(phiPreCuts);
+
+  // Apply the cuts and set the flag 1/0 of particlesIndices[].
+    if ( (fEtaMin < etaPreCuts) && (etaPreCuts < fEtaMax) && (fPtMin < ptPreCuts) && (ptPreCuts < fPtMax) )
+    {
+      nParticlesAfterCuts++;
+      particlesIndices[iParticle] = 1;
+    }  // End: if ("cuts")
+    else {particlesIndices[iParticle] = 0;}
+  } // End: for (long long iParticle = 0; iParticle < nParticlesBeforeCuts; iParticle++)
+
+//**************************************************************************************//
+// Control histograms for the multiplicity before and after the cuts.
+  fHistoMultiplicityPreCuts->Fill(nParticlesBeforeCuts);
+  fHistoMultiplicityPostCuts->Fill(nParticlesAfterCuts);
+
+//**************************************************************************************//
+// Prepare the variables for the MC analysis.
+  Double_t *pt = new Double_t[nParticlesAfterCuts](); // Transverse momenta.
+  Double_t *eta = new Double_t[nParticlesAfterCuts](); // Pseudorapidity.
+  Double_t *phi = new Double_t[nParticlesAfterCuts]();  // Azimuthal angles.
+  Double_t *particleWeights = new Double_t[nParticlesAfterCuts]();  // Particle weights
+  Int_t index = 0;  // Index of the particles which pass the cuts.
+
+  if (nParticlesAfterCuts <= 2*fNumberHarmonicsInSC) {return;}  // Analysis done only if the number of particles after the cuts is larger than the maximum number of particles needed for the studied GSC.
+  for (long long iiParticle = 0; iiParticle < nParticlesBeforeCuts; iiParticle++)
+  {
+  // Pointer to the current particle.
+    AliAODMCParticle *keptParticle = dynamic_cast<AliAODMCParticle*>(aMCevent->GetTrack(iiParticle));
+    if(!keptParticle){continue;}  // Protection against NULL pointer.
+
+  // Control histograms.
+    if (particlesIndices[iiParticle] == 1)
+    {
+      pt[index] = keptParticle->Pt(); // Transverse momentum.
+      fHistoPtPostCuts->Fill(pt[index]);
+      eta[index] = keptParticle->Eta();
+      fHistoEtaPostCuts->Fill(eta[index]);
+      phi[index] = keptParticle->Phi();
+      fHistoPhiPostCuts->Fill(phi[index]);
+      particleWeights[index] = 1.;
+      //if (fUseParticleWeights) {continue;}  // TBI
+      //else {particleWeights[iiParticle] = 1.;}
+      index++;
+    } // End: if (particlesIndices[iiParticle] == 1)
+    else {continue;}
+  } // End: for (long long iiParticle = 0; iiParticle < nParticlesBeforeCuts; iiParticle++)
+
+//**************************************************************************************//
+// Calculate all the Q-vectors for this event.
+  CalculateQvectors(nParticlesAfterCuts, phi, particleWeights);
+
+//**************************************************************************************//
+// Do the full analysis for this event.
+  GSCfullAnalysis(nParticlesAfterCuts, phi, particleWeights);
+
+//**************************************************************************************//
+// Resets of the general variables of the events.
+  delete [] pt;
+  delete [] eta;
+  delete [] phi;
+  delete [] particleWeights;
+  index = 0;
+} // End: MCDanalysis(AliMCEvent*)
+//--------------------------------------------------------------------------------------//
+
+void AliAnalysisTaskTwoMultiCorrelations::CalculateQvectors(long long nParticles, Double_t angles[], Double_t weights[])
+{
+// Calculate all the Q-vectors for a given set of azimuthal angles and particles weights.
+  Double_t iAngle = 0.; // Angle of the current particle.
+  Double_t iWeight = 1.;  // Particle weight of the current particle.
+  Double_t weightToPowerP = 1.; // Particle weight rised to the power p.
+
+// Ensure all the Q-vectors are initially zero.
+  for (Int_t iHarmo = 0; iHarmo < 49; iHarmo++)
+  {
+    for (Int_t iPower = 0; iPower < 9; iPower++)
+    {
+      fQvectors[iHarmo][iPower] = TComplex(0.,0.);
+    } // End: for (Int_t iPower = 0; iPower < 9; iPower++)
+  } // End: for (Int_t iHarmo = 0; iHarmo < 49; iHarmo++)
+
+// Compute the Q-vectors.
+  for (long long iParticle = 0; iParticle < nParticles; iParticle++)
+  {
+    iAngle = angles[iParticle];
+    if (fUseParticleWeights) {iWeight = weights[iParticle];}
+    for (Int_t iHarmo = 0; iHarmo < 49; iHarmo++)
+    {
+      for (Int_t iPower = 0; iPower < 9; iPower++)
       {
-        pWeightPowerP = pow(particleWeight[iParticle], iPower);
-        fQvectors[iHarmo][iPower] += TComplex(pWeightPowerP*TMath::Cos(iHarmo*phi[iParticle]),pWeightPowerP*TMath::Sin(iHarmo*phi[iParticle]));
-      } // End: for (Int_t iPower = 0; iPower < maxPower; iPower++)
-    } // End: for (Int_t iHarmo = 0; iHarmo < maxHarmo; iHarmo++)
+        if (fUseParticleWeights) {weightToPowerP = TMath::Power(iWeight, iPower);}
+        fQvectors[iHarmo][iPower] += TComplex(weightToPowerP*TMath::Cos(iHarmo*iAngle), weightToPowerP*TMath::Sin(iHarmo*iAngle));
+      } // End: for (Int_t iPower = 0; iPower < 9; iPower++)
+    } // End: for (Int_t iHarmo = 0; iHarmo < 49; iHarmo++)
   } // End: for (Int_t iParticle = 0; iParticle < nParticles; iParticle++)
-} // End: void AliAnalysisTaskTwoMultiCorrelations::CalculateQvectors(Int_t nParticles, Double_t phi[], Double_t particleWeight[])
+} // End: CalculateQvectors(long long, Double_t[], Double_t[])
 
-//======================================================================================//
+//--------------------------------------------------------------------------------------//
+
+void AliAnalysisTaskTwoMultiCorrelations::GSCfullAnalysis(long long nParticles, Double_t angles[], Double_t weights[])
+{
+// Compute all the needed multiparticle correlators (with possible cross-check from nested loops) for the chosen harmonics.
+  Int_t harmonicsArray[8] = {fHarmonicOne, fHarmonicTwo, fHarmonicThree, fHarmonicFour, fHarmonicFive, fHarmonicSix, fHarmonicSeven, fHarmonicEight}; // Harmonics (n_1,... n_8).
+
+// Compute the denominator of each case of correlators.
+  Int_t twoZerosArray[2] = {0};  // For 2p correlations.
+  Double_t twoParticleDenominator = CalculateRecursion(2, twoZerosArray).Re();
+  Int_t threeZerosArray[3] = {0}; // For 3p correlations.
+  Double_t threeParticleDenominator = CalculateRecursion(3, threeZerosArray).Re();
+  Int_t fourZerosArray[4] = {0}; // For 4p correlations.
+  Double_t fourParticleDenominator = CalculateRecursion(4, fourZerosArray).Re();
+  Int_t sixZerosArray[6] = {0};  // For 6p correlations.
+  Double_t sixParticleDenominator = CalculateRecursion(6, sixZerosArray).Re();
+  Int_t eightZerosArray[8] = {0}; // For 8p correlations.
+  Double_t eightParticleDenominator = CalculateRecursion(8, eightZerosArray).Re();
+  eightParticleDenominator++;  // Dummy line since this variable is not useful yet.
+
+//**************************************************************************************//
+// Compute the 2-particle correlations.
+  Int_t firstHarmonicArray[2] = {harmonicsArray[0], harmonicsArray[1]}; // Array with (k,-k).
+  Int_t secondHarmonicArray[2] = {harmonicsArray[2], harmonicsArray[3]};  // Array with (l,-l).
+  Int_t thirdHarmonicArray[2] = {harmonicsArray[4], harmonicsArray[5]}; // Array with (m,-m).
+  Int_t fourthHarmonicArray[2] = {harmonicsArray[6], harmonicsArray[7]};  // Array with (n,-n).
+
+  Double_t tempoThirdHarmoNested = 0.;
+
+/// 1st harmonic: <2>_{k,-k}.
+  TComplex firstHarmonicComplex = (CalculateRecursion(2, firstHarmonicArray))/twoParticleDenominator; // Complex value of <2>_{k,-k}.
+  Double_t firstHarmonicValue = firstHarmonicComplex.Re();  // Value of <2>_{k,-k}.
+  fProfileCosineTwoParticles[0]->Fill(0.5, firstHarmonicValue, twoParticleDenominator);
+  fProfileCosineTwoParticles[0]->SetTitle(Form("#LT2#GT_{k,-k}, k = %d", firstHarmonicArray[0]));    
+  fProfileCosineTwoParticles[0]->GetYaxis()->SetTitle(Form("#LT#LT2#GT#GT_{%d,%d}", firstHarmonicArray[0], firstHarmonicArray[1]));
+
+/// 2nd harmonic: <2>_{l,-l}.
+  TComplex secondHarmonicComplex = (CalculateRecursion(2, secondHarmonicArray))/twoParticleDenominator; // Complex value of <2>_{l,-l}.
+  Double_t secondHarmonicValue = secondHarmonicComplex.Re();  // Value of <2>_{l,-l}.
+  fProfileCosineTwoParticles[1]->Fill(0.5, secondHarmonicValue, twoParticleDenominator);
+  fProfileCosineTwoParticles[1]->SetTitle(Form("#LT2#GT_{l,-l}, l = %d", secondHarmonicArray[0]));
+  fProfileCosineTwoParticles[1]->GetYaxis()->SetTitle(Form("#LT#LT2#GT#GT_{%d,%d}", secondHarmonicArray[0], secondHarmonicArray[1]));
+
+/// 3rd harmonic: <2>_{m,-m}.
+  TComplex thirdHarmonicComplex = TComplex(0.,0.);  // Complex value of <2>_{m,-m}.
+  Double_t thirdHarmonicValue = 0.; // Value of <2>_{m,-m}.
+  if (fNumberHarmonicsInSC >= 3)
+  {
+    thirdHarmonicComplex = (CalculateRecursion(2, thirdHarmonicArray))/twoParticleDenominator;
+    thirdHarmonicValue = thirdHarmonicComplex.Re();
+    fProfileCosineTwoParticles[2]->Fill(0.5, thirdHarmonicValue, twoParticleDenominator);
+    fProfileCosineTwoParticles[2]->SetTitle(Form("#LT2#GT_{m,-m}, m = %d", thirdHarmonicArray[0]));
+    fProfileCosineTwoParticles[2]->GetYaxis()->SetTitle(Form("#LT#LT2#GT#GT_{%d,%d}", thirdHarmonicArray[0], thirdHarmonicArray[1]));
+  } // End: if (fNumberHarmonicsInSC >= 3)
+    
+/// 4th harmonic: <2>_{n,-n}.
+  TComplex fourthHarmonicComplex = TComplex(0.,0.); // Complex value of <2>_{n,-n}.
+  Double_t fourthHarmonicValue = 0.;  // Value of <2>_{n,-n}.
+  if (fNumberHarmonicsInSC == 4)
+  {
+    fourthHarmonicComplex = (CalculateRecursion(2, fourthHarmonicArray))/twoParticleDenominator;
+    fourthHarmonicValue = fourthHarmonicComplex.Re();
+    fProfileCosineTwoParticles[3]->Fill(0.5, fourthHarmonicValue, twoParticleDenominator);
+    fProfileCosineTwoParticles[3]->SetTitle(Form("#LT2#GT_{n,-n}, n = %d", fourthHarmonicArray[0]));
+    fProfileCosineTwoParticles[3]->GetYaxis()->SetTitle(Form("#LT#LT2#GT#GT_{%d,%d}", fourthHarmonicArray[0], fourthHarmonicArray[1]));
+  } // End: if (fNumberHarmonicsInSC == 4)
+
+/// Sum first two harmonics: <2>_{k+l,-k-l}.
+  Int_t sumTwoHarmonicsArray[2] = {firstHarmonicArray[0]+secondHarmonicArray[0], firstHarmonicArray[1]+secondHarmonicArray[1]}; // Array with (k+l,-k-l).
+  TComplex sumTwoHarmonicsComplex = TComplex(0.,0.);  // Complex value of <2>_{k+l,-k-l}.
+  Double_t sumTwoHarmonicsValue = 0.; // <2>_{k+l,-k-l}.
+  if (fNumberHarmonicsInSC == 2)
+  {
+    sumTwoHarmonicsComplex = (CalculateRecursion(2, sumTwoHarmonicsArray))/twoParticleDenominator;
+    sumTwoHarmonicsValue = sumTwoHarmonicsComplex.Re();
+    fProfileCosineTwoParticles[4]->Fill(0.5, sumTwoHarmonicsValue, twoParticleDenominator);
+    fProfileCosineTwoParticles[4]->SetTitle(Form("#LT2#GT_{k+l,-k-l}, k = %d, l = %d", firstHarmonicArray[0], secondHarmonicArray[0]));
+    fProfileCosineTwoParticles[4]->GetYaxis()->SetTitle(Form("#LT#LT2#GT#GT_{%d,%d}", sumTwoHarmonicsArray[0], sumTwoHarmonicsArray[1]));
+  } // End: if (fNumberHarmonicsInSC == 2)
+
+/// Difference first two harmonics: <2>_{k-l,-k+l}.
+  Int_t diffTwoHarmonicsArray[2] = {firstHarmonicArray[0]+secondHarmonicArray[1], firstHarmonicArray[1]+secondHarmonicArray[0]};  // Array with (k-l,-k+l).
+  TComplex diffTwoHarmonicsComplex = TComplex(0.,0.); // Complex value of <2>_{k-l,-k+l}.
+  Double_t diffTwoHarmonicsValue = 0.;  // <2>_{k-l,-k+l}.
+  if (fNumberHarmonicsInSC == 2)
+  {
+    diffTwoHarmonicsComplex = (CalculateRecursion(2, diffTwoHarmonicsArray))/twoParticleDenominator;
+    diffTwoHarmonicsValue = diffTwoHarmonicsComplex.Re();
+    fProfileCosineTwoParticles[5]->Fill(0.5, diffTwoHarmonicsValue, twoParticleDenominator);
+    fProfileCosineTwoParticles[5]->SetTitle(Form("#LT2#GT_{k-l,-k+l}, k = %d, l = %d", firstHarmonicArray[0], secondHarmonicArray[0]));
+    fProfileCosineTwoParticles[5]->GetYaxis()->SetTitle(Form("#LT#LT2#GT#GT_{%d,%d}", diffTwoHarmonicsArray[0], diffTwoHarmonicsArray[1]));
+  } // End: if (fNumberHarmonicsInSC == 2)
+
+/// <2>_{k,-k}<2>_{l,-l}.
+  Double_t doubleCosineValueFirstCase = firstHarmonicValue*secondHarmonicValue;
+  fProfileTwoCosine[0]->Fill(0.5, doubleCosineValueFirstCase);
+  fProfileTwoCosine[0]->SetTitle(Form("#LT2#GT_{k,-k}#LT2#GT_{l,-l}, k = %d, l = %d", firstHarmonicArray[0], secondHarmonicArray[0]));
+  fProfileTwoCosine[0]->GetYaxis()->SetTitle(Form("#LT#LT2#GT_{%d,%d}#LT2#GT_{%d,%d}#GT", firstHarmonicArray[0], firstHarmonicArray[1], secondHarmonicArray[0], secondHarmonicArray[1]));
+
+/// <2>_{k,-k}<2>_{m,-m}.
+  Double_t doubleCosineValueSecondCase = 0.;
+  if (fNumberHarmonicsInSC >= 3)
+  {
+    doubleCosineValueSecondCase = firstHarmonicValue*thirdHarmonicValue;
+    fProfileTwoCosine[1]->Fill(0.5, doubleCosineValueSecondCase);
+    fProfileTwoCosine[1]->SetTitle(Form("#LT2#GT_{k,-k}#LT2#GT_{m,-m}, k = %d, m = %d", firstHarmonicArray[0], thirdHarmonicArray[0]));
+    fProfileTwoCosine[1]->GetYaxis()->SetTitle(Form("#LT#LT2#GT_{%d,%d}#LT2#GT_{%d,%d}#GT", firstHarmonicArray[0], firstHarmonicArray[1], thirdHarmonicArray[0], thirdHarmonicArray[1]));
+  } // End: if (fNumberHarmonicsInSC >= 3)
+
+/// <2>_{l,-l}<2>_{m,-m}.
+  Double_t doubleCosineValueThirdCase = 0.;
+  if (fNumberHarmonicsInSC >= 3)
+  {
+    doubleCosineValueThirdCase = secondHarmonicValue*thirdHarmonicValue;
+    fProfileTwoCosine[2]->Fill(0.5, doubleCosineValueThirdCase);
+    fProfileTwoCosine[2]->SetTitle(Form("#LT2#GT_{l,-l}#LT2#GT_{m,-m}, l = %d, m = %d", secondHarmonicArray[0], thirdHarmonicArray[0]));
+    fProfileTwoCosine[2]->GetYaxis()->SetTitle(Form("#LT#LT2#GT_{%d,%d}#LT2#GT_{%d,%d}#GT", secondHarmonicArray[0], secondHarmonicArray[1], thirdHarmonicArray[0], thirdHarmonicArray[1]));
+  } // End: if (fNumberHarmonicsInSC >= 3)
+
+/// <2>_{k,-k}<2>_{l,-l}<2>_{m,-m}.
+  Double_t doubleCosineValueFourthCase = 0.;
+  if (fNumberHarmonicsInSC >= 3)
+  {
+    doubleCosineValueFourthCase = firstHarmonicValue*secondHarmonicValue*thirdHarmonicValue;
+    fProfileTwoCosine[3]->Fill(0.5, doubleCosineValueFourthCase);
+    fProfileTwoCosine[3]->SetTitle(Form("#LT2#GT_{k,-k}#LT2#GT_{l,-l}#LT2#GT_{m,-m}, k = %d, l = %d, m = %d", firstHarmonicArray[0], secondHarmonicArray[0], thirdHarmonicArray[0]));
+    fProfileTwoCosine[3]->GetYaxis()->SetTitle(Form("#LT#LT2#GT_{%d,%d}#LT2#GT_{%d,%d}#LT2#GT_{%d,%d}#GT", firstHarmonicArray[0], firstHarmonicArray[1], secondHarmonicArray[0], secondHarmonicArray[1], thirdHarmonicArray[0], thirdHarmonicArray[1]));
+  } // End: if (fNumberHarmonicsInSC >= 3)
+
+/// Cross-check with nested loops for two-particle correlations.
+  if (fComputeNestedLoops)
+  {
+  // 1st harmonic: <2>_{k,-k}.
+    Double_t firstHarmonicValueNested = ComputeTwoNestedLoops(nParticles, firstHarmonicArray, angles, weights, fProfileCosineTwoNestedLoops[0]);
+    fProfileCosineTwoNestedLoops[0]->SetTitle(Form("#LT2#GT_{k,-k}, k = %d", firstHarmonicArray[0]));
+    fProfileCosineTwoNestedLoops[0]->GetYaxis()->SetTitle(Form("#LT#LT2#GT#GT_{%d, %d}", firstHarmonicArray[0], firstHarmonicArray[1]));
+
+  // 2nd harmonic: <2>_{l,-l}.
+    Double_t secondHarmonicValueNested = ComputeTwoNestedLoops(nParticles, secondHarmonicArray, angles, weights, fProfileCosineTwoNestedLoops[1]);
+    fProfileCosineTwoNestedLoops[1]->SetTitle(Form("#LT2#GT_{l,-l}, l = %d", secondHarmonicArray[0]));
+    fProfileCosineTwoNestedLoops[1]->GetYaxis()->SetTitle(Form("#LT#LT2#GT#GT_{%d, %d}", secondHarmonicArray[0], secondHarmonicArray[1]));
+
+  // 3rd harmonic: <2>_{m,-m}.
+    Double_t thirdHarmonicValueNested = 0.;
+    if (fNumberHarmonicsInSC >= 3)
+    {
+      thirdHarmonicValueNested = ComputeTwoNestedLoops(nParticles, thirdHarmonicArray, angles, weights, fProfileCosineTwoNestedLoops[2]);
+      fProfileCosineTwoNestedLoops[2]->SetTitle(Form("#LT2#GT_{m,-m}, m = %d", thirdHarmonicArray[0]));
+      fProfileCosineTwoNestedLoops[2]->GetYaxis()->SetTitle(Form("#LT#LT2#GT#GT_{%d, %d}", thirdHarmonicArray[0], thirdHarmonicArray[1]));
+    } // End: if (fNumberHarmonicsInSC >= 3)
+    tempoThirdHarmoNested = thirdHarmonicValueNested;
+
+  // 4th harmonic: <2>_{n,-n}.
+    Double_t fourthHarmonicValueNested = 0.;
+    fourthHarmonicValueNested++;  // Dummy line since this variable is not useful yet.
+    if (fNumberHarmonicsInSC == 4)
+    {
+      fourthHarmonicValueNested = ComputeTwoNestedLoops(nParticles, fourthHarmonicArray, angles, weights, fProfileCosineTwoNestedLoops[3]);
+      fProfileCosineTwoNestedLoops[3]->SetTitle(Form("#LT2#GT_{n,-n}, n = %d", fourthHarmonicArray[0]));
+      fProfileCosineTwoNestedLoops[3]->GetYaxis()->SetTitle(Form("#LT#LT2#GT#GT_{%d, %d}", fourthHarmonicArray[0], fourthHarmonicArray[1]));
+    } // End: if (fNumberHarmonicsInSC == 4)
+
+  // Sum first two harmonics: <2>_{k+l,-k-l}.
+    Double_t sumTwoHarmonicsValueNested = 0.;
+    sumTwoHarmonicsValueNested++;  // Dummy line since this variable is not useful yet.
+    if (fNumberHarmonicsInSC == 2)
+    {
+      sumTwoHarmonicsValueNested = ComputeTwoNestedLoops(nParticles, sumTwoHarmonicsArray, angles, weights, fProfileCosineTwoNestedLoops[4]);
+      fProfileCosineTwoNestedLoops[4]->SetTitle(Form("#LT2#GT_{n,-n}, n = %d", sumTwoHarmonicsArray[0]));
+      fProfileCosineTwoNestedLoops[4]->GetYaxis()->SetTitle(Form("#LT#LT2#GT#GT_{%d, %d}", sumTwoHarmonicsArray[0], sumTwoHarmonicsArray[1]));
+    } // End: if (fNumberHarmonicsInSC == 2)
+
+  // Difference first two harmonics: <2>_{k-l,-k+l}.
+    Double_t diffTwoHarmonicsValueNested = 0.;
+    diffTwoHarmonicsValueNested++;  // Dummy line since this variable is not useful yet.
+    if (fNumberHarmonicsInSC == 2)
+    {
+      diffTwoHarmonicsValueNested = ComputeTwoNestedLoops(nParticles, diffTwoHarmonicsArray, angles, weights, fProfileCosineTwoNestedLoops[5]);
+      fProfileCosineTwoNestedLoops[5]->SetTitle(Form("#LT2#GT_{n,-n}, n = %d", diffTwoHarmonicsArray[0]));
+      fProfileCosineTwoNestedLoops[5]->GetYaxis()->SetTitle(Form("#LT#LT2#GT#GT_{%d, %d}", diffTwoHarmonicsArray[0], diffTwoHarmonicsArray[1]));
+    } // End: if (fNumberHarmonicsInSC == 2)
+
+  // <<2>_{k,-k}<2>_{l,-l}>.
+    Double_t doubleCosineFirstCaseNested = firstHarmonicValueNested*secondHarmonicValueNested;
+    fProfileTwoCosineNestedLoops[0]->Fill(0.5, doubleCosineFirstCaseNested);
+    fProfileTwoCosineNestedLoops[0]->SetTitle(Form("#LT2#GT_{k,-k}#LT2#GT_{l,-l}, k = %d, l = %d", firstHarmonicArray[0], secondHarmonicArray[0]));
+    fProfileTwoCosineNestedLoops[0]->GetYaxis()->SetTitle(Form("#LT#LT2#GT_{%d,%d}#LT2#GT_{%d,%d}#GT", firstHarmonicArray[0], firstHarmonicArray[1], secondHarmonicArray[0], secondHarmonicArray[1]));
+
+  // <2>_{k,-k}<2>_{m,-m}.
+    Double_t doubleCosineSecondCaseNested = 0.;
+    if (fNumberHarmonicsInSC >= 3)
+    {
+      doubleCosineSecondCaseNested = firstHarmonicValueNested*thirdHarmonicValueNested;
+      fProfileTwoCosineNestedLoops[1]->Fill(0.5, doubleCosineSecondCaseNested);
+      fProfileTwoCosineNestedLoops[1]->SetTitle(Form("#LT2#GT_{k,-k}#LT2#GT_{m,-m}, k = %d, m = %d", firstHarmonicArray[0], thirdHarmonicArray[0]));
+      fProfileTwoCosineNestedLoops[1]->GetYaxis()->SetTitle(Form("#LT#LT2#GT_{%d,%d}#LT2#GT_{%d,%d}#GT", firstHarmonicArray[0], firstHarmonicArray[1], thirdHarmonicArray[0], thirdHarmonicArray[1]));
+    } // End: if (fNumberHarmonicsInSC >= 3)
+
+  // <2>_{l,-l}<2>_{m,-m}.
+    Double_t doubleCosineThirdCaseNested = 0.;
+    if (fNumberHarmonicsInSC >= 3)
+    {
+      doubleCosineThirdCaseNested = secondHarmonicValueNested*thirdHarmonicValueNested;
+      fProfileTwoCosineNestedLoops[2]->Fill(0.5, doubleCosineThirdCaseNested);
+      fProfileTwoCosineNestedLoops[2]->SetTitle(Form("#LT2#GT_{l,-l}#LT2#GT_{m,-m}, l = %d, m = %d", secondHarmonicArray[0], thirdHarmonicArray[0]));
+      fProfileTwoCosineNestedLoops[2]->GetYaxis()->SetTitle(Form("#LT#LT2#GT_{%d,%d}#LT2#GT_{%d,%d}#GT", secondHarmonicArray[0], secondHarmonicArray[1], thirdHarmonicArray[0], thirdHarmonicArray[1]));
+    } // End: if (fNumberHarmonicsInSC >= 3)
+
+  // <2>_{k,-k}<2>_{l,-l}<2>_{m,-m}.
+    Double_t doubleCosineFourthCaseNested = 0.;
+    if (fNumberHarmonicsInSC >= 3)
+    {
+      doubleCosineFourthCaseNested = firstHarmonicValueNested*secondHarmonicValueNested*thirdHarmonicValueNested;
+      fProfileTwoCosineNestedLoops[3]->Fill(0.5, doubleCosineFourthCaseNested);
+      fProfileTwoCosineNestedLoops[3]->SetTitle(Form("#LT2#GT_{k,-k}#LT2#GT_{l,-l}#LT2#GT_{m,-m}, k = %d, l = %d, m = %d", firstHarmonicArray[0], secondHarmonicArray[0], thirdHarmonicArray[0]));
+      fProfileTwoCosineNestedLoops[3]->GetYaxis()->SetTitle(Form("#LT#LT2#GT_{%d,%d}#LT2#GT_{%d,%d}#LT2#GT_{%d,%d}#GT", firstHarmonicArray[0], firstHarmonicArray[1], secondHarmonicArray[0], secondHarmonicArray[1], thirdHarmonicArray[0], thirdHarmonicArray[1]));
+    } // End: if (fNumberHarmonicsInSC >= 3)
+
+  // Reset of the observables for the two nested loops.
+    firstHarmonicValueNested = 0.;
+    secondHarmonicValueNested = 0.;
+    thirdHarmonicValueNested = 0.;
+    fourthHarmonicValueNested = 0.;
+    sumTwoHarmonicsValueNested = 0.;
+    diffTwoHarmonicsValueNested = 0.;
+    doubleCosineFirstCaseNested = 0.;
+    doubleCosineSecondCaseNested = 0.;
+    doubleCosineThirdCaseNested = 0.;
+    doubleCosineFourthCaseNested = 0.;
+  } // End: if (fComputeNestedLoops)
+
+//**************************************************************************************//
+// Compute the 3-particle correlations.
+/// Case one: <3>_{k+l,-k,-l}.
+  Int_t threeParticleCaseOneArray[3] = {harmonicsArray[0]+harmonicsArray[2], harmonicsArray[1], harmonicsArray[3]};
+  TComplex threeParticleCaseOneComplex = TComplex(0.,0.); // Complex value of <3>_{k+l,-k,-l}.
+  Double_t threeParticleCaseOneValue = 0.;  // Value of <3>_{k+l,-k,-l}.
+  if (fNumberHarmonicsInSC == 2)
+  {
+    threeParticleCaseOneComplex = (CalculateRecursion(3, threeParticleCaseOneArray))/threeParticleDenominator;
+    threeParticleCaseOneValue = threeParticleCaseOneComplex.Re();
+    fProfileCosineThreeParticles[0]->Fill(0.5, threeParticleCaseOneValue, threeParticleDenominator);
+    fProfileCosineThreeParticles[0]->SetTitle(Form("#LT3#GT_{k+l,-k,-l}, k = %d, l = %d", harmonicsArray[0], harmonicsArray[2]));
+    fProfileCosineThreeParticles[0]->GetYaxis()->SetTitle(Form("#LT#LT3#GT#GT_{%d,%d,%d}", threeParticleCaseOneArray[0], threeParticleCaseOneArray[1], threeParticleCaseOneArray[2]));
+  } // End: if (fNumberHarmonicsInSC == 2)
+
+/// Case two: <3>_{k-l,-k,+l}.
+  Int_t threeParticleCaseTwoArray[3] = {harmonicsArray[0]+harmonicsArray[3], harmonicsArray[1], harmonicsArray[2]};
+  TComplex threeParticleCaseTwoComplex = TComplex(0.,0.); // Complex value of <3>_{k+l,-k,-l}.
+  Double_t threeParticleCaseTwoValue = 0.;  // Value of <3>_{k-l,-k,+l}.
+  if (fNumberHarmonicsInSC == 2)
+  {
+    threeParticleCaseTwoComplex = (CalculateRecursion(3, threeParticleCaseTwoArray))/threeParticleDenominator;
+    threeParticleCaseTwoValue = threeParticleCaseTwoComplex.Re();
+    fProfileCosineThreeParticles[1]->Fill(0.5, threeParticleCaseTwoValue, threeParticleDenominator);
+    fProfileCosineThreeParticles[1]->SetTitle(Form("#LT3#GT_{k-l,-k,l}, k = %d, l = %d", harmonicsArray[0], harmonicsArray[2]));
+    fProfileCosineThreeParticles[1]->GetYaxis()->SetTitle(Form("#LT#LT3#GT#GT_{%d,%d,%d}", threeParticleCaseTwoArray[0], threeParticleCaseTwoArray[1], threeParticleCaseTwoArray[2]));
+  } // End: if (fNumberHarmonicsInSC == 2)
+
+/// Case three: <3>_{k,l-k,-l}.
+  Int_t threeParticleCaseThreeArray[3] = {harmonicsArray[0], harmonicsArray[2]+harmonicsArray[1], harmonicsArray[3]};
+  TComplex threeParticleCaseThreeComplex = TComplex(0.,0.); // Complex value of <3>_{k,l-k,-l}.
+  Double_t threeParticleCaseThreeValue = 0.;  // Value of <3>_{k,l-k,-l}.
+  if (fNumberHarmonicsInSC == 2)
+  {
+    threeParticleCaseThreeComplex = (CalculateRecursion(3, threeParticleCaseThreeArray))/threeParticleDenominator;
+    threeParticleCaseThreeValue = threeParticleCaseThreeComplex.Re();
+    fProfileCosineThreeParticles[2]->Fill(0.5, threeParticleCaseThreeValue, threeParticleDenominator);
+    fProfileCosineThreeParticles[2]->SetTitle(Form("#LT3#GT_{k,l-k,-l}, k = %d, l = %d", harmonicsArray[0], harmonicsArray[2]));
+    fProfileCosineThreeParticles[2]->GetYaxis()->SetTitle(Form("#LT#LT3#GT#GT_{%d,%d,%d}", threeParticleCaseThreeArray[0], threeParticleCaseThreeArray[1], threeParticleCaseThreeArray[2]));
+  } // End: if (fNumberHarmonicsInSC == 2)
+
+/// Case four: <3>_{k,-k-l,l}.
+  Int_t threeParticleCaseFourArray[3] = {harmonicsArray[0], harmonicsArray[1]+harmonicsArray[3], harmonicsArray[2]};
+  TComplex threeParticleCaseFourComplex = TComplex(0.,0.); // Complex value of <3>_{k,-k-l,l}.
+  Double_t threeParticleCaseFourValue = 0.;  // Value of <3>_{k,-k-l,l}.
+  if (fNumberHarmonicsInSC == 2)
+  {
+    threeParticleCaseFourComplex = (CalculateRecursion(3, threeParticleCaseFourArray))/threeParticleDenominator;
+    threeParticleCaseFourValue = threeParticleCaseFourComplex.Re();
+    fProfileCosineThreeParticles[3]->Fill(0.5, threeParticleCaseFourValue, threeParticleDenominator);
+    fProfileCosineThreeParticles[3]->SetTitle(Form("#LT3#GT_{k,-k-l,l}, k = %d, l = %d", harmonicsArray[0], harmonicsArray[2]));
+    fProfileCosineThreeParticles[3]->GetYaxis()->SetTitle(Form("#LT#LT3#GT#GT_{%d,%d,%d}", threeParticleCaseFourArray[0], threeParticleCaseFourArray[1], threeParticleCaseFourArray[2]));
+  } // End: if (fNumberHarmonicsInSC == 2)
+    
+/// Cross-check with nested loops for three-particle correlations.
+  if (fComputeNestedLoops)
+  {
+  // Case one: <3>_{k+l,-k,-l}.
+    Double_t threeParticleCaseOneNested = 0.;
+    threeParticleCaseOneNested++;  // Dummy line since this variable is not useful yet.
+    if (fNumberHarmonicsInSC == 2)
+    {
+      threeParticleCaseOneNested = ComputeThreeNestedLoops(nParticles, threeParticleCaseOneArray, angles, weights, fProfileCosineThreeNestedLoops[0]);
+      fProfileCosineThreeNestedLoops[0]->SetTitle(Form("#LT3#GT_{k+l,-k,-l}, k = %d, l = %d", harmonicsArray[0], harmonicsArray[2]));
+      fProfileCosineThreeNestedLoops[0]->GetYaxis()->SetTitle(Form("#LT#LT3#GT#GT_{%d,%d,%d}", threeParticleCaseOneArray[0], threeParticleCaseOneArray[1], threeParticleCaseOneArray[2]));
+    } // End: if (fNumberHarmonicsInSC == 2)
+
+  // Case two: <3>_{k-l,-k,+l}.
+    Double_t threeParticleCaseTwoNested = 0.;
+    threeParticleCaseTwoNested++;  // Dummy line since this variable is not useful yet.
+    if (fNumberHarmonicsInSC == 2)
+    {
+      threeParticleCaseTwoNested = ComputeThreeNestedLoops(nParticles, threeParticleCaseTwoArray, angles, weights, fProfileCosineThreeNestedLoops[1]);
+      fProfileCosineThreeNestedLoops[1]->SetTitle(Form("#LT3#GT_{k-l,-k,l}, k = %d, l = %d", harmonicsArray[0], harmonicsArray[2]));
+      fProfileCosineThreeNestedLoops[1]->GetYaxis()->SetTitle(Form("#LT#LT3#GT#GT_{%d,%d,%d}", threeParticleCaseTwoArray[0], threeParticleCaseTwoArray[1], threeParticleCaseTwoArray[2]));
+    } // End: if (fNumberHarmonicsInSC == 2)
+
+  // Case three: <3>_{k,l-k,-l}.
+    Double_t threeParticleCaseThreeNested = 0.;
+    threeParticleCaseThreeNested++;  // Dummy line since this variable is not useful yet.
+    if (fNumberHarmonicsInSC == 2)
+    {
+      threeParticleCaseThreeNested = ComputeThreeNestedLoops(nParticles, threeParticleCaseThreeArray, angles, weights, fProfileCosineThreeNestedLoops[2]);
+      fProfileCosineThreeNestedLoops[2]->SetTitle(Form("#LT3#GT_{k,l-k,-l}, k = %d, l = %d", harmonicsArray[0], harmonicsArray[2]));
+      fProfileCosineThreeNestedLoops[2]->GetYaxis()->SetTitle(Form("#LT#LT3#GT#GT_{%d,%d,%d}", threeParticleCaseThreeArray[0], threeParticleCaseThreeArray[1], threeParticleCaseThreeArray[2]));
+    } // End: if (fNumberHarmonicsInSC == 2)
+
+  // Case four: <3>_{k,-k-l,l}.
+    Double_t threeParticleCaseFourNested = 0.;
+    threeParticleCaseFourNested++;  // Dummy line since this variable is not useful yet.
+    if (fNumberHarmonicsInSC == 2)
+    {
+      threeParticleCaseFourNested = ComputeThreeNestedLoops(nParticles, threeParticleCaseFourArray, angles, weights, fProfileCosineThreeNestedLoops[3]);
+      fProfileCosineThreeNestedLoops[3]->SetTitle(Form("#LT3#GT_{k,-k-l,l}, k = %d, l = %d", harmonicsArray[0], harmonicsArray[2]));
+      fProfileCosineThreeNestedLoops[3]->GetYaxis()->SetTitle(Form("#LT#LT3#GT#GT_{%d,%d,%d}", threeParticleCaseFourArray[0], threeParticleCaseFourArray[1], threeParticleCaseFourArray[2]));
+    } // End: if (fNumberHarmonicsInSC == 2)
+
+  // Reset of the observables for the three nested loops.
+    threeParticleCaseOneNested = 0.;
+    threeParticleCaseTwoNested = 0.;
+    threeParticleCaseThreeNested = 0.;
+    threeParticleCaseFourNested = 0.;
+  } // End: if (fComputeNestedLoops)
+
+//**************************************************************************************//
+// Compute the 4-particle correlations.
+/// Case one: <4>_{k,-k,l,-l}.
+  Int_t fourParticleCaseOneArray[4] = {harmonicsArray[0], harmonicsArray[1], harmonicsArray[2], harmonicsArray[3]};
+  TComplex fourParticleCaseOneComplex = (CalculateRecursion(4, fourParticleCaseOneArray))/fourParticleDenominator; // Complex value of <4>_{k,-k,l,-l}.
+  Double_t fourParticleCaseOneValue = fourParticleCaseOneComplex.Re();  // Value of <4>_{k,-k,l,-l}.
+  fProfileCosineFourParticles[0]->Fill(0.5, fourParticleCaseOneValue, fourParticleDenominator);
+  fProfileCosineFourParticles[0]->SetTitle(Form("#LT4#GT_{k,-k,l,-l}, k = %d, l = %d", fourParticleCaseOneArray[0], fourParticleCaseOneArray[2]));
+  fProfileCosineFourParticles[0]->GetYaxis()->SetTitle(Form("#LT#LT4#GT#GT_{%d,%d,%d,%d}", fourParticleCaseOneArray[0], fourParticleCaseOneArray[1],fourParticleCaseOneArray[2],fourParticleCaseOneArray[3]));
+
+/// Case two: <4>_{k,-k,m,-m}.
+  Int_t fourParticleCaseTwoArray[4] = {harmonicsArray[0], harmonicsArray[1], harmonicsArray[4], harmonicsArray[5]};
+  TComplex fourParticleCaseTwoComplex = TComplex(0.,0.); // Complex value of <4>_{k,-k,m,-m}.
+  Double_t fourParticleCaseTwoValue = 0.;  // Value of <4>_{k,-k,m,-m}.
+  if (fNumberHarmonicsInSC >= 3)
+  {
+    fourParticleCaseTwoComplex = (CalculateRecursion(4, fourParticleCaseTwoArray))/fourParticleDenominator;
+    fourParticleCaseTwoValue = fourParticleCaseTwoComplex.Re();
+    fProfileCosineFourParticles[1]->Fill(0.5, fourParticleCaseTwoValue, fourParticleDenominator);
+    fProfileCosineFourParticles[1]->SetTitle(Form("#LT4#GT_{k,-k,m,-m}, k = %d, m = %d", fourParticleCaseTwoArray[0], fourParticleCaseTwoArray[2]));
+    fProfileCosineFourParticles[1]->GetYaxis()->SetTitle(Form("#LT#LT4#GT#GT_{%d,%d,%d,%d}", fourParticleCaseTwoArray[0], fourParticleCaseTwoArray[1],fourParticleCaseTwoArray[2],fourParticleCaseTwoArray[3]));
+  } // End: if (fNumberHarmonicsInSC >= 3)
+
+/// Case three: <4>_{l,-l,m,-m}.
+  Int_t fourParticleCaseThreeArray[4] = {harmonicsArray[2], harmonicsArray[3], harmonicsArray[4], harmonicsArray[5]};
+  TComplex fourParticleCaseThreeComplex = TComplex(0.,0.);  // Complex value of <4>_{l,-l,m,-m}.
+  Double_t fourParticleCaseThreeValue = 0.; // Value of <4>_{l,-l,m,-m}.
+  if (fNumberHarmonicsInSC >= 3)
+  {
+    fourParticleCaseThreeComplex = (CalculateRecursion(4, fourParticleCaseThreeArray))/fourParticleDenominator;
+    fourParticleCaseThreeValue = fourParticleCaseThreeComplex.Re();
+    fProfileCosineFourParticles[2]->Fill(0.5, fourParticleCaseThreeValue, fourParticleDenominator);
+    fProfileCosineFourParticles[2]->SetTitle(Form("#LT4#GT_{l,-l,m,-m}, l = %d, m = %d", fourParticleCaseThreeArray[0], fourParticleCaseThreeArray[2]));
+    fProfileCosineFourParticles[2]->GetYaxis()->SetTitle(Form("#LT#LT4#GT#GT_{%d,%d,%d,%d}", fourParticleCaseThreeArray[0], fourParticleCaseThreeArray[1],fourParticleCaseThreeArray[2],fourParticleCaseThreeArray[3]));
+  } // End: if (fNumberHarmonicsInSC >= 3)
+
+/// TBI: cases with four different harmonics...
+
+/// <4>_{k,-k,l,-l}<2>_{m,-m}.
+  Double_t doubleCosineValueFifthCase = 0.;
+  if (fNumberHarmonicsInSC >= 3)
+  {
+    doubleCosineValueFifthCase = fourParticleCaseOneValue*thirdHarmonicValue;
+    fProfileTwoCosine[4]->Fill(0.5, doubleCosineValueFifthCase);
+    fProfileTwoCosine[4]->SetTitle(Form("#LT4#GT_{k,-k,l,-l}#LT2#GT_{m,-m}, k = %d, l = %d, m = %d", fourParticleCaseOneArray[0], fourParticleCaseOneArray[2], thirdHarmonicArray[0]));
+    fProfileTwoCosine[4]->GetYaxis()->SetTitle(Form("#LT#LT4#GT_{%d,%d,%d,%d}#LT2#GT_{%d,%d}#GT", fourParticleCaseOneArray[0], fourParticleCaseOneArray[1], fourParticleCaseOneArray[2], fourParticleCaseOneArray[3], thirdHarmonicArray[0], thirdHarmonicArray[1]));
+  } // End: if (fNumberHarmonicsInSC >= 3)
+
+/// Cross-check with nested loops for four-particle correlations.
+  if (fComputeNestedLoops)
+  {
+  // Case one: <4>_{k,-k,l,-l}.
+    Double_t fourParticleCaseOneNested = ComputeFourNestedLoops(nParticles, fourParticleCaseOneArray, angles, weights, fProfileCosineFourNestedLoops[0]);
+    fProfileCosineFourNestedLoops[0]->SetTitle(Form("#LT4#GT_{k,-k,l,-l}, k = %d, l = %d", harmonicsArray[0], harmonicsArray[2]));
+    fProfileCosineFourNestedLoops[0]->GetYaxis()->SetTitle(Form("#LT#LT4#GT#GT_{%d,%d,%d,%d}", fourParticleCaseOneArray[0], fourParticleCaseOneArray[1], fourParticleCaseOneArray[2],fourParticleCaseOneArray[3]));
+
+  // Case two: <4>_{k,m,-k,-m}.
+    Double_t fourParticleCaseTwoNested = 0.;
+    fourParticleCaseTwoNested++;  // Dummy line since this variable is not useful yet.
+    if (fNumberHarmonicsInSC >= 3)
+    {
+      fourParticleCaseTwoNested = ComputeFourNestedLoops(nParticles, fourParticleCaseTwoArray, angles, weights, fProfileCosineFourNestedLoops[1]);
+      fProfileCosineFourNestedLoops[1]->SetTitle(Form("#LT4#GT_{k,-k,m,-m}, k = %d, m = %d", harmonicsArray[0], harmonicsArray[4]));
+      fProfileCosineFourNestedLoops[1]->GetYaxis()->SetTitle(Form("#LT#LT4#GT#GT_{%d,%d,%d,%d}", fourParticleCaseTwoArray[0], fourParticleCaseTwoArray[1], fourParticleCaseTwoArray[2],fourParticleCaseTwoArray[3]));
+    } // End: if (fNumberHarmonicsInSC >= 3) 
+
+  // Case three: <4>_{l,m,-l,-m}.
+    Double_t fourParticleCaseThreeNested = 0.;
+    fourParticleCaseThreeNested++;  // Dummy line since this variable is not useful yet.
+    if (fNumberHarmonicsInSC >= 3)
+    {
+      fourParticleCaseThreeNested = ComputeFourNestedLoops(nParticles, fourParticleCaseThreeArray, angles, weights, fProfileCosineFourNestedLoops[2]);
+      fProfileCosineFourNestedLoops[2]->SetTitle(Form("#LT4#GT_{l,-l,m,-m}, l = %d, m = %d", harmonicsArray[2], harmonicsArray[4]));
+      fProfileCosineFourNestedLoops[2]->GetYaxis()->SetTitle(Form("#LT#LT4#GT#GT_{%d,%d,%d,%d}", fourParticleCaseThreeArray[0], fourParticleCaseThreeArray[1], fourParticleCaseThreeArray[2],fourParticleCaseThreeArray[3]));
+    } // End: if (fNumberHarmonicsInSC >= 3)
+
+  // TBI: cases with four harmonics...
+
+  // <4>_{k,-k,l,-l}<2>_{m,-m}.
+    Double_t doubleCosineFifthCaseNested = 0.;
+    doubleCosineFifthCaseNested++;  // Dummy line since this variable is not useful yet.
+    if (fNumberHarmonicsInSC >= 3)
+    {
+      doubleCosineFifthCaseNested = fourParticleCaseOneNested*tempoThirdHarmoNested;
+      fProfileTwoCosineNestedLoops[4]->Fill(0.5, doubleCosineFifthCaseNested);
+      fProfileTwoCosineNestedLoops[4]->SetTitle(Form("#LT4#GT_{k,-k,l,-l}#LT2#GT_{m,-m}, k = %d, l = %d, m = %d", fourParticleCaseOneArray[0], fourParticleCaseOneArray[2], thirdHarmonicArray[0]));
+      fProfileTwoCosineNestedLoops[4]->GetYaxis()->SetTitle(Form("#LT#LT4#GT_{%d,%d,%d,%d}#LT2#GT_{%d,%d}#GT", fourParticleCaseOneArray[0], fourParticleCaseOneArray[1], fourParticleCaseOneArray[2], fourParticleCaseOneArray[3], thirdHarmonicArray[0], thirdHarmonicArray[1]));
+    } // End: if (fNumberHarmonicsInSC >= 3)
+      
+  // Reset of the observables for the four nested loops.
+    fourParticleCaseOneNested = 0.;
+    fourParticleCaseTwoNested = 0.;
+    fourParticleCaseThreeNested = 0.;
+    //
+    doubleCosineFifthCaseNested = 0.;
+  } // End: if (fComputeNestedLoops)
+
+//**************************************************************************************//
+// Compute the 6-particle correlations.
+/// Case one: <6>_{k,-k,l,-l,m,-m}.
+  Int_t sixParticleCaseOneArray[6] = {harmonicsArray[0], harmonicsArray[1], harmonicsArray[2], harmonicsArray[3], harmonicsArray[4], harmonicsArray[5]};
+  TComplex sixParticleCaseOneComplex = TComplex(0.,0.); // Complex value of <6>_{k,-k,l,-l,m,-m}.
+  Double_t sixParticleCaseOneValue = 0.;  // Value of <6>_{k,-k,l,-l,m,-m}.
+  if (fNumberHarmonicsInSC >= 3)
+  {
+    sixParticleCaseOneComplex = (CalculateRecursion(6, sixParticleCaseOneArray))/sixParticleDenominator;
+    sixParticleCaseOneValue = sixParticleCaseOneComplex.Re();
+    fProfileCosineSixParticles[0]->Fill(0.5, sixParticleCaseOneValue, sixParticleDenominator);
+    fProfileCosineSixParticles[0]->SetTitle(Form("#LT6#GT_{k,-k,l,-l,m,-m}, k = %d, l = %d, m = %d", sixParticleCaseOneArray[0], sixParticleCaseOneArray[2], sixParticleCaseOneArray[4]));
+    fProfileCosineSixParticles[0]->GetYaxis()->SetTitle(Form("#LT#LT6#GT#GT_{%d,%d,%d,%d,%d,%d}", sixParticleCaseOneArray[0], sixParticleCaseOneArray[1], sixParticleCaseOneArray[2], sixParticleCaseOneArray[3], sixParticleCaseOneArray[4], sixParticleCaseOneArray[5]));
+  } // End: if (fNumberHarmonicsInSC >= 3)
+
+//**************************************************************************************//
+// Compute the 8-particle correlations.
+/// TBI
+
+//**************************************************************************************//
+// Reset of the variables to zero.
+  twoParticleDenominator = 0.;
+  threeParticleDenominator = 0.;
+  fourParticleDenominator = 0.;
+  sixParticleDenominator = 0.;
+  eightParticleDenominator = 0.;
+  tempoThirdHarmoNested = 0.;
+
+  firstHarmonicComplex = TComplex(0.,0.);
+  firstHarmonicValue = 0.;
+  secondHarmonicComplex = TComplex(0.,0.);
+  secondHarmonicValue = 0.;
+  thirdHarmonicComplex = TComplex(0.,0.);
+  thirdHarmonicValue = 0.;
+  fourthHarmonicComplex = TComplex(0.,0.);
+  fourthHarmonicValue = 0.;
+
+  doubleCosineValueFirstCase = 0.,
+  doubleCosineValueSecondCase = 0.;
+  doubleCosineValueThirdCase = 0.;
+
+  threeParticleCaseOneComplex = TComplex(0.,0.);
+  threeParticleCaseOneValue = 0.;
+  threeParticleCaseTwoComplex = TComplex(0.,0.);
+  threeParticleCaseTwoValue = 0.;
+  threeParticleCaseThreeComplex = TComplex(0.,0.);
+  threeParticleCaseThreeValue = 0.;
+  threeParticleCaseFourComplex = TComplex(0.,0.);
+  threeParticleCaseFourValue = 0.;
+
+  fourParticleCaseOneComplex = TComplex(0.,0.);
+  fourParticleCaseOneValue = 0.;
+  fourParticleCaseTwoComplex = TComplex(0.,0.);
+  fourParticleCaseTwoValue = 0.;
+  fourParticleCaseThreeComplex = TComplex(0.,0.);
+  fourParticleCaseThreeValue = 0.;
+  // TBI: cases with four possible harmonics: kn, ln, mn...
+  doubleCosineValueFifthCase = 0.;
+
+  sixParticleCaseOneComplex = TComplex(0.,0.);
+  sixParticleCaseOneValue = 0.;
+} // End: GSCfullAnalysis(long long, Double_t[], Double_t[])
+
+//--------------------------------------------------------------------------------------//
 
 TComplex AliAnalysisTaskTwoMultiCorrelations::Q(Int_t n, Int_t p)
 {
-// Method used to simply the usage of the Q-vectors with the fact that Q(-n,p)=Q(n,p)*
+// Simplify the use of the Q-vectors.
   if (n >= 0) {return fQvectors[n][p];}
   return TComplex::Conjugate(fQvectors[-n][p]);
-} // End: TComplex AliAnalysisTaskTwoMultiCorrelations::Q(Int_t n, Int_p) 
+} // End: Q(Int_t, Int_t)
 
-//======================================================================================//
+//--------------------------------------------------------------------------------------//
 
-TComplex AliAnalysisTaskTwoMultiCorrelations::CalculateRecursionWithQvectors(Int_t nPartCorr, Int_t harmonics[], Int_t p, Int_t skip)
+TComplex AliAnalysisTaskTwoMultiCorrelations::CalculateRecursion(Int_t n, Int_t *harmonic, Int_t mult, Int_t skip)
 {
-// Calculate the recursion for the numerator of the m-particle correlations using the Q-vectors according to the generic framework
-// The recursion method was originally developped by Kristjan Gulbrandsen (gulbrand@nbi.dk)
-  Int_t nMinusOne = 0;  // Harmonic n-1
-  TComplex stopQvector = TComplex(0.,0.); // Stop condition of the recusion
-  Int_t pPlusOne = 0; // Power p+1
-  Int_t nMinusTwo = 0;  // Harmonic n-2
-  Int_t counterOne = 0; // First counter for the intermediate indices
-  Int_t hHold = 0;  // Temporary harmonic
-  TComplex tempQvector = TComplex(0,0); // Temporary Q-vector
-  Int_t counterTwo = 0; // Second counter for the intermediate indices
+// Calculate multi-particle correlators by using recursion (an improved faster version) originally developed by Kristjan Gulbrandsen (gulbrand@nbi.dk).
+  Int_t nm1 = n-1;
+  TComplex c(Q(harmonic[nm1], mult));
+  if (nm1 == 0) return c;
+  c *= CalculateRecursion(nm1, harmonic);
+  if (nm1 == skip) return c;
 
-// Stop conditions of the recursion
-  nMinusOne = nPartCorr-1;
-  stopQvector = Q(harmonics[nMinusOne],p);
+  Int_t multp1 = mult+1;
+  Int_t nm2 = n-2;
+  Int_t counter1 = 0;
+  Int_t hhold = harmonic[counter1];
+  harmonic[counter1] = harmonic[nm2];
+  harmonic[nm2] = hhold + harmonic[nm1];
+  TComplex c2(CalculateRecursion(nm1, harmonic, multp1, nm2));
+  Int_t counter2 = n-3;
 
-  if (nMinusOne == 0) {return stopQvector;}
-  stopQvector *= CalculateRecursionWithQvectors(nMinusOne, harmonics);
-  if (nMinusOne == skip) {return stopQvector;}
+  while (counter2 >= skip) {
+    harmonic[nm2] = harmonic[counter1];
+    harmonic[counter1] = hhold;
+    ++counter1;
+    hhold = harmonic[counter1];
+    harmonic[counter1] = harmonic[nm2];
+    harmonic[nm2] = hhold + harmonic[nm1];
+    c2 += CalculateRecursion(nm1, harmonic, multp1, counter2);
+    --counter2;
+  }
+  harmonic[nm2] = harmonic[counter1];
+  harmonic[counter1] = hhold;
 
-// Computation of the recursion itself
-  pPlusOne = p+1;
-  nMinusTwo = nPartCorr-2;
-  hHold = harmonics[counterOne];
-  harmonics[counterOne] = harmonics[nMinusTwo];
-  harmonics[nMinusTwo] = hHold + harmonics[nMinusOne];
-  tempQvector = CalculateRecursionWithQvectors(nMinusOne, harmonics, pPlusOne, nMinusTwo);
-  counterTwo = nPartCorr-3;
+  if (mult == 1) return c-c2;
+  return c-Double_t(mult)*c2;
+} // End: CalculateRecursion(Int_t, Int_t[], Int_t, Int_t)
 
-  while (counterTwo >= skip)
+//--------------------------------------------------------------------------------------//
+
+Double_t AliAnalysisTaskTwoMultiCorrelations::ComputeTwoNestedLoops(long long nParticles, Int_t *harmonic, Double_t angles[], Double_t weights[], TProfile *profile)
+{
+// Calculate the two-particle correlations using two nested loops.
+  Double_t twoParticleCosine = 0.;  // cos(k(phi_1 - phi_2)).
+  Double_t twoParticleWeight = 1.;  // Total particle weights.
+  TProfile twoProfile;  // Returns <cos(k(phi1-phi2))>.
+  twoProfile.Sumw2();
+
+  for (long long m = 0; m < nParticles; m++)
   {
-    harmonics[nMinusTwo] = harmonics[counterOne];
-    harmonics[counterOne] = hHold;
-    ++counterOne;
-    
-    hHold = harmonics[counterOne];
-    harmonics[counterOne] = harmonics[nMinusTwo];
-    harmonics[nMinusTwo] = hHold + harmonics[nMinusOne];
-    tempQvector += CalculateRecursionWithQvectors(nMinusOne, harmonics, pPlusOne, counterTwo);
-    --counterTwo;
-  } // End: while (counterTwo >= skip)
-
-  harmonics[nMinusTwo] = harmonics[counterOne];
-  harmonics[counterOne] = hHold;
-
-// Return of the result after the recursion
-  if (p == 1) {return stopQvector - tempQvector;}
-  return stopQvector - (Double_t(p)*tempQvector);
-
-// Reset of the variables to zero
-  nMinusOne = 0;
-  stopQvector = TComplex(0.,0.);
-  pPlusOne = 0;
-  nMinusTwo = 0;
-  counterOne = 0;
-  hHold = 0;
-  tempQvector = TComplex(0,0);
-  counterTwo = 0;
-
-} // End: TComplex AliAnalysisTaskTwoMultiCorrelations::CalculateRecursionWithQvectors(TComplex Qvectors[][9], Int_t nPartCorr, Int_t harmonics[], Int_t p, Int_t skip)
-
-//======================================================================================//
-
-void AliAnalysisTaskTwoMultiCorrelations::ComputeTwoParticleCorrelationWithQvectors(Int_t numeratorFirstTwoParticleHarmonics[], Int_t numeratorLastTwoParticleHarmonics[], Int_t indexTProfile)
-{
-// Method to compute the 2-p correlation with the Q-vectors (<<cos(h1*phi1+h2*phi2)>>,<<sin(h1*phi1+h2*phi2)>>)
-  Int_t denominatorTwoParticleHarmonics[2] = {0,0}; // Harmonics with value 0 for the denominator
-  Double_t denominator = 0.;  // Denominator (and event weight of the TProfile)
-  TComplex firstTwoParticleCorrelation = TComplex(0.,0.); // 2-p correlation for the two first particle, used in the "normal" expression
-  TComplex lastTwoParticleCorrelation = TComplex(0.,0.);  // 2-p correlation to compute <<cos(m(phi1-phi2))><cos(n(phi1-phi2))>>
-
-// Computation of the 2-p correlations
-  denominator = (CalculateRecursionWithQvectors(2, denominatorTwoParticleHarmonics)).Re();
-  firstTwoParticleCorrelation = (CalculateRecursionWithQvectors(2, numeratorFirstTwoParticleHarmonics))/denominator;
-  lastTwoParticleCorrelation = (CalculateRecursionWithQvectors(2, numeratorLastTwoParticleHarmonics))/denominator;
-
-// Filling of the TProfiles
-  fTwoParticleCorrelationProfile[0][indexTProfile]->Fill(0.5,firstTwoParticleCorrelation.Re(),denominator);  // Cosine component
-  fTwoCosineAverageProfile[0][indexTProfile]->Fill(1.5,lastTwoParticleCorrelation.Re());
-  fTwoCosineAverageProfile[0][indexTProfile]->Fill(0.5,(fTwoParticleCorrelationProfile[0][indexTProfile]->GetBinContent(1))*(fTwoCosineAverageProfile[0][indexTProfile]->GetBinContent(2)));
-  if (fComputeSine) {fTwoParticleCorrelationProfile[1][indexTProfile]->Fill(0.5,firstTwoParticleCorrelation.Im(),denominator);} // Sine component
-
-// Reset of the variables to zero
-  denominator = 0;
-  firstTwoParticleCorrelation = TComplex(0.,0.);
-  lastTwoParticleCorrelation = TComplex(0.,0.);
-} // End: void AliAnalysisTaskTwoMultiCorrelations::ComputeTwoParticleCorrelationWithQvectors(Int_t numeratorFirstTwoParticleHarmonics[], Int_t numeratorLastTwoParticleHarmonics[], Int_t indexTProfile)
-
-//======================================================================================//
-
-void AliAnalysisTaskTwoMultiCorrelations::ComputeFourParticleCorrelationWithQvectors(Int_t numeratorFourParticleHarmonics[], Int_t indexTProfile)
-{
-// Method to compute the 4-p correlation with the Q-vectors (<<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4)>>,<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4)>>)
-  Int_t denominatorFourParticleHarmonics[4] = {0,0,0,0};  // Harmonics with value 0 for the denominator
-  Double_t denominator = 0.;  // Denominator (and event weight of the TProfile)
-  TComplex fourParticleCorrelation = TComplex(0.,0.); // 4-p correlation
-
-// Computation of the 4-p correlation
-  denominator = (CalculateRecursionWithQvectors(4, denominatorFourParticleHarmonics)).Re();
-  fourParticleCorrelation = CalculateRecursionWithQvectors(4, numeratorFourParticleHarmonics)/denominator;
-
-// Filling of the TProfiles
-  fFourParticleCorrelationProfile[0][indexTProfile]->Fill(0.5,fourParticleCorrelation.Re(),denominator); // Cosine component 
-  if (fComputeSine) {fFourParticleCorrelationProfile[1][indexTProfile]->Fill(0.5,fourParticleCorrelation.Im(),denominator);} // Sine component
-} // End: void AliAnalysisTaskTwoMultiCorrelations::ComputeFourParticleCorrelationWithQvectors(Int_t numeratorFourParticleHarmonics[], Int_t indexTProfile)
-
-//======================================================================================//
-
-void AliAnalysisTaskTwoMultiCorrelations::ComputeSixParticleCorrelationWithQvectors(Int_t numeratorSixParticleHarmonics[], Int_t indexTProfile)
-{
-// Method to compute the 6-p correlation with the Q-vectors (<<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6)>>,<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6)>>)
-  Int_t denominatorSixParticleHarmonics[6] = {0,0,0,0,0,0}; // Harmonics with value 0 for the denominator
-  Double_t denominator = 0.;  // Denominator = event weight for the TProfile
-  TComplex sixParticleCorrelation = TComplex(0.,0.);  // 6-p correlation
-
-// Computation of the 6-p correlation
-  denominator = (CalculateRecursionWithQvectors(6, denominatorSixParticleHarmonics)).Re();
-  sixParticleCorrelation = CalculateRecursionWithQvectors(6, numeratorSixParticleHarmonics)/denominator;
-
-// Filling of the TProfiles
-  fSixParticleCorrelationProfile[0][indexTProfile]->Fill(0.5, sixParticleCorrelation.Re(), denominator); // Cosine component
-  if (fComputeSine) {fSixParticleCorrelationProfile[1][indexTProfile]->Fill(0.5, sixParticleCorrelation.Im(), denominator);} // Sine component
-} // End: void AliAnalysisTaskTwoMultiCorrelations::ComputeSixParticleCorrelationWithQvectors(Int_t numeratorSixParticleHarmonics[], Int_t indexTProfile)
-
-//======================================================================================//
-
-void AliAnalysisTaskTwoMultiCorrelations::ComputeEightParticleCorrelationWithQvectors(Int_t numeratorEightParticleHarmonics[])
-{
-// Method to compute the 8-p correlation with the Q-vectors (<<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>,<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>)
-  Int_t denominatorEightParticleHarmonics[8] = {0,0,0,0,0,0,0,0}; // Harmonics with value 0 for the denominator
-  Double_t denominator = 0.;  // Denominator = event weight for the TProfile
-  TComplex eightParticleCorrelation = TComplex(0.,0.);  // (<<cos>>,<<sin>>)
-
-// Computation of the 8-p correlation
-  denominator = (CalculateRecursionWithQvectors(8, denominatorEightParticleHarmonics)).Re();
-  eightParticleCorrelation = CalculateRecursionWithQvectors(8, numeratorEightParticleHarmonics)/denominator;
-
-// Filling of the TProfiles
-  fEightParticleCorrelationProfile[0]->Fill(0.5, eightParticleCorrelation.Re(), denominator); // Cosine component
-  if(fComputeSine) {fEightParticleCorrelationProfile[1]->Fill(0.5, eightParticleCorrelation.Im(), denominator);} // Sine component
-} // End: void AliAnalysisTaskTwoMultiCorrelations::ComputeEightParticleCorrelationWithQvectors(Int_t numeratorEightParticleHarmonics[], Int_t indexTProfile)
-
-//======================================================================================//
-
-void AliAnalysisTaskTwoMultiCorrelations::ComputeCorrelationsWithTwoNestedLoops(Int_t numeratorTwoParticleHarmonics[], Int_t numeratorTwoLastParticleHarmonics[], Int_t indexTProfile, Int_t nParticles, Double_t phi[], Double_t particleWeight[])
-{
-// Method to compute the 2-particle correlation with two nested loops (for cross-checking results)
-  Double_t twoParticleCos = 0.;  // Cos component of the correlation = single-event 2-p correlation, <2>_(n1...nm)
-  Double_t twoParticleSecondCos = 0.; // Second cosine average in the average with two cosine
-  Double_t twoParticleSin = 0.; // Sin component of the correlation
-  Double_t totalParticleWeight = 0.;  // Particle weight for the 2-p correlation
-
-// Computation of the 2-p single-event average, <2>
-  for (Int_t k = 0; k < nParticles; k++)
-  {
-    for (Int_t l = 0; l < nParticles; l++)
+    for (long long n = 0; n < nParticles; n++)
     {
-    // Removal of the autocorrelations k == l 
-      if (k == l) {continue;}
-      
-    // Computation of <2> for a pair of particles
-      twoParticleCos = TMath::Cos(numeratorTwoParticleHarmonics[0]*phi[k] + numeratorTwoParticleHarmonics[1]*phi[l]);
-      twoParticleSecondCos = TMath::Cos(numeratorTwoLastParticleHarmonics[0]*phi[k] + numeratorTwoLastParticleHarmonics[1]*phi[l]);
+    // Remove the autocorrelations m==n.
+      if (m == n) {continue;}
+    // Compute cos(k(phi_1-phi_2)).
+      twoParticleCosine = TMath::Cos(harmonic[0]*angles[m] + harmonic[1]*angles[n]);
+      twoParticleWeight = weights[m] + weights[n];
+      profile->Fill(0.5, twoParticleCosine, twoParticleWeight);
+      twoProfile.Fill(0.5, twoParticleCosine, twoParticleWeight);
 
-      if (fComputeSine) {twoParticleSin = TMath::Sin(numeratorTwoParticleHarmonics[0]*phi[k] + numeratorTwoParticleHarmonics[1]*phi[l]);}
-      totalParticleWeight = particleWeight[k] * particleWeight[l];
+    // Reset the variables to default.
+      twoParticleCosine = 0.;
+      twoParticleWeight = 1.;
+    } // End: for (long long n = 0; n < nParticles; n++)
+  } // End: for (long long m = 0; m < nParticles; m++)
 
-    // Filling of the TProfile
-      fTwoNestedCorrelationProfile[0][indexTProfile]->Fill(0.5, twoParticleCos,totalParticleWeight);
-      fTwoCosineAverageNestedProfile[0][indexTProfile]->Fill(1.5,twoParticleSecondCos);
-      if (fComputeSine) {fTwoNestedCorrelationProfile[1][indexTProfile]->Fill(0.5, twoParticleSin,totalParticleWeight);}
-    } // End of the loop over the second particle of the pair
-  } // End of the loop over the first particle of the pair
+// Return <cos(k(phi_1-phi_2))>.
+  return twoProfile.GetBinContent(1);
+} // End: ComputeTwoNestedLoops(long long, Int_t*, Double_t[], Double_t[], TProfile*)
 
-// Filling of the TProfile bin for <<cos><cos>>
-  fTwoCosineAverageNestedProfile[0][indexTProfile]->Fill(0.5,(fTwoNestedCorrelationProfile[0][indexTProfile]->GetBinContent(1))*(fTwoCosineAverageNestedProfile[0][indexTProfile]->GetBinContent(2)));
+//--------------------------------------------------------------------------------------//
 
-// Reset of the local variables before changing the event
-  twoParticleCos = 0.;
-  twoParticleSecondCos = 0.;
-  twoParticleSin = 0.;
-  totalParticleWeight = 0.;
-
-} // End: void AliAnalysisTaskTwoMultiCorrelations::ComputeCorrelationsWithTwoNestedLoops(Int_t numeratorTwoParticleHarmonics[], Int_t numeratorTwoLastParticleHarmonics[], Int_t indexTProfile, Int_t nParticles, Double_t phi[], Double_t particleWeight[])
-
-//======================================================================================//
-
-void AliAnalysisTaskTwoMultiCorrelations::ComputeCorrelationsWithFourNestedLoops(Int_t numeratorFourParticleHarmonics[], Int_t indexTProfile, Int_t nParticles, Double_t phi[], Double_t particleWeight[])
+Double_t AliAnalysisTaskTwoMultiCorrelations::ComputeThreeNestedLoops(long long nParticles, Int_t *harmonic, Double_t angles[], Double_t weights[], TProfile *profile)
 {
-// Method to compute the 4-particle correlation with four nested loops (for cross-checking results)
-  Double_t fourParticleCos = 0.;  // Cos component of the correlation = single-event 4-p correlation, <4>_(n1,... nm)
-  Double_t fourParticleSin = 0.;  // Sin component of the correlation
-  Double_t totalParticleWeight = 0.;  // Particle weight for the 4-p correlation
+// Calculate the three-particle correlations using three nested loops.
+  Double_t threeParticleCosine = 0.;  // cos(kphi_1 +lphi_2 +mphi_3).
+  Double_t threeParticleWeight = 1.;  // Total particle weights.
+  TProfile threeProfile;  // Returns <cos(kphi_1 +lphi_2 +mphi_3)>.
+  threeProfile.Sumw2();
 
-// Computation of the 4-p correlation, <4>
-  for (Int_t k = 0; k < nParticles; k++)
+  for (long long k = 0; k < nParticles; k++)
   {
-    for (Int_t l = 0; l < nParticles; l++)
+    for (long long l = 0; l < nParticles; l++)
     {
-      // Removal of the autocorrelations k == l
       if (k == l) {continue;}
 
-      for (Int_t m = 0; m < nParticles; m++)
+      for (long long m = 0; m < nParticles; m++)
       {
-        // Removal of the autocorrelations k == m, l == m
         if ((k == m) || (l == m)) {continue;}
+      // Compute cos(kphi_1 +lphi_2 +mphi_3).
+        threeParticleCosine = TMath::Cos(harmonic[0]*angles[k] + harmonic[1]*angles[l] + harmonic[2]*angles[m]);
+        threeParticleWeight = weights[k] + weights[l] + weights[m];
+        profile->Fill(0.5, threeParticleCosine, threeParticleWeight);
+        threeProfile.Fill(0.5, threeParticleCosine, threeParticleWeight);
 
-        for (Int_t n = 0; n < nParticles; n++)
+      // Reset the variables to default.
+        threeParticleCosine = 0.;
+        threeParticleWeight = 1.;
+      } // End: for (long long m = 0; m < nParticles; m++)
+    } // End: for (long long l = 0; l < nParticles; l++)
+} // End: for (long long k = 0; k < nParticles; k++)
+
+  // Return <cos(kphi_1 +lphi_2 +mphi_3)>.
+  return threeProfile.GetBinContent(1);
+} // End: ComputeThreeNestedLoops(long long, Int_t*, Double_t[], Double_t[], TProfile*)
+
+//--------------------------------------------------------------------------------------//
+
+Double_t AliAnalysisTaskTwoMultiCorrelations::ComputeFourNestedLoops(long long nParticles, Int_t *harmonic, Double_t angles[], Double_t weights[], TProfile *profile)
+{
+// Calculate the four-particle correlations using four nested loops.
+  Double_t fourParticleCosine = 0.; // cos(kphi_1 +lphi_2 +mphi_3 +nphi_4).
+  Double_t fourParticleWeight = 1.; // Total particle weights.
+  TProfile fourProfile; // Returns <cos(kphi_1 +lphi_2 +mphi_3 +nphi_4)>.
+  fourProfile.Sumw2();
+
+  for (long long k = 0; k < nParticles; k++)
+  {
+    for (long long l = 0; l < nParticles; l++)
+    {
+      if (k == l) {continue;}
+      for (long long m = 0; m < nParticles; m++)
+      {
+        if ((k == m) || (l == m)) {continue;}
+        for (long long n = 0; n < nParticles; n++)
         {
-          // Removal of the autocorrelations k == n, l == n, m == n
           if ((k == n) || (l == n) || (m == n)) {continue;}
+        // Computate cos(k(phi_1 - phi_2) + l(phi_3-phi_4)).
+          fourParticleCosine = TMath::Cos(harmonic[0]*angles[k] + harmonic[1]*angles[l] + harmonic[2]*angles[m] + harmonic[3]*angles[n]);
+          fourParticleWeight = weights[k] + weights[l] + weights[m] + weights[n];
+          profile->Fill(0.5, fourParticleCosine, fourParticleWeight);
+          fourProfile.Fill(0.5, fourParticleCosine, fourParticleWeight);
 
-          // Computation of <4> for a quadruplet of particles
-          fourParticleCos = TMath::Cos(numeratorFourParticleHarmonics[0]*phi[k] + numeratorFourParticleHarmonics[1]*phi[l] + numeratorFourParticleHarmonics[2]*phi[m] + numeratorFourParticleHarmonics[3]*phi[n]);
-          if (fComputeSine) {fourParticleSin = TMath::Sin(numeratorFourParticleHarmonics[0]*phi[k] + numeratorFourParticleHarmonics[1]*phi[l] + numeratorFourParticleHarmonics[2]*phi[m] + numeratorFourParticleHarmonics[3]*phi[n]);}
-          totalParticleWeight = particleWeight[k]*particleWeight[l]*particleWeight[m]*particleWeight[n];
+        // Reset the variables to default.
+          fourParticleCosine = 0.;
+          fourParticleWeight = 1.;
+        } // End: for (long long n = 0; n < nParticles; n++)
+      } // End: for (long long m = 0; m < nParticles; m++)
+    } // End: for (long long l = 0; l < nParticles; l++)
+  } // End: for (long long k = 0; k < nParticles; k++)
 
-          // Filling of the TProfile
-          fFourNestedCorrelationProfile[0][indexTProfile]->Fill(0.5, fourParticleCos,totalParticleWeight);
-          if (fComputeSine) {fFourNestedCorrelationProfile[1][indexTProfile]->Fill(0.5, fourParticleSin,totalParticleWeight);}
-
-        } // End of the loop over the fourth particle of the quadruplet
-      } // End of the loop over the third particle of the quadruplet
-    } // End of the loop over the second particle of the quadruplet
-  } // End of the loop over the first particle of the quadruplet
-
-// 3.) Reset of the local variables before changing the event
-  fourParticleCos = 0.;
-  fourParticleSin = 0.;
-  totalParticleWeight = 0.;
-
-} // End: void AliAnalysisTaskTwoMultiCorrelations::ComputeCorrelationsWithFourNestedLoops(Int_t numeratorFourParticleHarmonics[], Int_t indexTProfile, Int_t nParticles, Double_t phi[], Double_t particleWeight[])
+  // Return <cos(kphi_1 +lphi_2 +mphi_3 +nphi_4)>.
+  return fourProfile.GetBinContent(1);
+} // End: Double_t ComputeFourNestedLoops
 
 //======================================================================================//
+// Methods called in Terminate(Option_t *).
+//--------------------------------------------------------------------------------------//
+
+//======================================================================================//
+
