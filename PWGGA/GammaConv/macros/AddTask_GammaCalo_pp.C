@@ -1208,6 +1208,12 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 610){ // no NL tight timing
     cuts.AddCutCalo("00010113","38855000a7032230000","01631031000000d0"); // -12.5 to 13 ns timing and M02 0.1-0.5
     cuts.AddCutCalo("00010113","38855060a7032230000","01631031000000d0"); // -12.5 to 13 ns timing and M02 0.1-0.5 TB NL
+  } else if (trainConfig == 611){ // new NL variations
+    cuts.AddCutCalo("00010113","38855610a7032230000","01631031000000d0"); // -12.5 to 13 ns timing and M02 0.1-0.5
+    cuts.AddCutCalo("00010113","38855630a7032230000","01631031000000d0"); // -12.5 to 13 ns timing and M02 0.1-0.5
+  } else if (trainConfig == 612){ // new NL variations
+    cuts.AddCutCalo("00010113","38855620a7032230000","01631031000000d0"); // -12.5 to 13 ns timing and M02 0.1-0.5
+    cuts.AddCutCalo("00010113","38855640a7032230000","01631031000000d0"); // -12.5 to 13 ns timing and M02 0.1-0.5
 
   } else if (trainConfig == 660){ // INT7 DCAL standard cut but with E/p TM veto
     cuts.AddCutCalo("00010113","3885511087041220000","01631031000000d0"); // std INT7
