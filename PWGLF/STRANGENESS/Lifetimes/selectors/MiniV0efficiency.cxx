@@ -81,7 +81,7 @@ void MiniV0efficiency::SlaveBegin(TTree * /*tree*/) {
 
   ptAnalysisH = new TH2D("ptAnalysisH","H_pt_Analysis",40,-1.,1.,40,0.,10.);
 
-  ctAnalysis[2]=new TH2D("ctAnalysisH","H_ct_Analysis",40,-1.,1.,40,0.,40.);
+  ctAnalysis[2]=new TH2D("ctAnalysisH","H_ct_Analysis",40,-2.,2.,40,0.,40.);
   ctAnalysis[2]->SetXTitle("ctRec-ctGen(#it{cm})");
   ctAnalysis[2]->SetYTitle("ctGen(#it{cm})");
 
@@ -109,19 +109,19 @@ Bool_t MiniV0efficiency::Process(Long64_t entry) {
   //
   // The return value is currently not used.
   fReader.SetEntry(entry);
-  unsigned int p_vec[3]={310,3122,1010010030};
+  int p_vec[3]={310,3122,1010010030};
   for(int i=0;i<(static_cast<int>(MCparticles.GetSize()));i++){
     auto& miniMC=MCparticles[i];
     if(miniMC.IsPrimary()){ 
-      unsigned int part=std::abs(miniMC.GetPDGcode());
+      int part=miniMC.GetPDGcode();
       int ind=miniMC.GetRecoIndex();
-      cout<<part<<endl;
-      cout<<ind<<endl;
       for (int j=0;j<3;j++){
         if(p_vec[j]==part){
           float MCmass=miniMC.GetMass();
-          fHistV0ptMC[j]->Fill(miniMC.GetPt());
-          fHistV0ctMC[j]->Fill(MCmass*(miniMC.GetDistOverP()));
+          if(miniMC.GetNBodies()==2 || part!=p_vec[2]){
+            fHistV0ptMC[j]->Fill(miniMC.GetPt());
+            fHistV0ctMC[j]->Fill(MCmass*(miniMC.GetDistOverP()));
+          }
           if(ind>=0){
             if(miniMC.GetNBodies()==2 && part==p_vec[2]  && miniMC.IsHyperCandidate()==true){
               auto& minihyper= V0Hyper[ind];  
