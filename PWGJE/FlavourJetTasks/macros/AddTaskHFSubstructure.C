@@ -3,7 +3,7 @@ AliAnalysisTaskHFSubstructure* AddTaskHFSubstructure(const char * ntracksData,
                                                                     const char * ntracksTrue,
 								    const Double_t R,
 								    AliAnalysisTaskHFSubstructure::ECandidateType_t ECandidateType = AliAnalysisTaskHFSubstructure::kD0toKpi,
-								    AliAnalysisTaskHFSubstructure::JetShapeType jetShapeType = AliAnalysisTaskHFSubstructure::kData) {
+						     AliAnalysisTaskHFSubstructure::JetShapeType jetShapeType = AliAnalysisTaskHFSubstructure::kData, Bool_t IncludeInclusive=kFALSE) {
   
   
   
@@ -48,7 +48,7 @@ AliAnalysisTaskHFSubstructure* AddTaskHFSubstructure(const char * ntracksData,
   task->SetECandidateType_t(ECandidateType);
   task->SetJetShapeType(jetShapeType);
   task->SetJetRadius(R);
-
+  task->SetIncludeInclusive(IncludeInclusive);
 
   // AliParticleContainer *trackContData=0x0;  //why not track containers?
   //AliParticleContainer *trackContDet=0x0;
@@ -95,31 +95,42 @@ AliAnalysisTaskHFSubstructure* AddTaskHFSubstructure(const char * ntracksData,
   if (jetShapeType == AliAnalysisTaskHFSubstructure::kData){
     contName1 += "_Data";
     contName2 += "_Data";
+    contName3 += "_Data";
   }
 
   if (jetShapeType == AliAnalysisTaskHFSubstructure::kDetSignal){
     contName1 += "_DetSignal";
     contName2 += "_DetSignal";
+    contName3 += "_DetSignal";
   }
   
   if (jetShapeType == AliAnalysisTaskHFSubstructure::kDetBackground){
     contName1 += "_DetBackground";
     contName2 += "_DetBackgroundl";
+    contName3 += "_DetBackgroundl";
   }
   
   if (jetShapeType == AliAnalysisTaskHFSubstructure::kDetReflection){
     contName1 += "_DetReflection";
     contName2 += "_DetReflection";
+    contName3 += "_DetReflection";
   }
   
   if (jetShapeType == AliAnalysisTaskHFSubstructure::kTrueDet){
     contName1 += "_TrueDet";
     contName2 += "_TrueDet";
+    contName3 += "_TrueDet";
   }
   
   if (jetShapeType == AliAnalysisTaskHFSubstructure::kTrue){
     contName1 += "_True";
     contName2 += "_True";
+    contName3 += "_True";
+  }
+  if (IncludeInclusive){
+    contName1 += "_Inclusive";
+    contName2 += "_Inclusive";
+    contName3 += "_Inclusive";
   }
 
 
