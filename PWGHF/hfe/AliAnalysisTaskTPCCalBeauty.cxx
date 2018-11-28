@@ -688,8 +688,12 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     //fPi0EtaWeight = new TF1("fPi0EtaWeight","[0] / TMath::Power(TMath::Exp(-[1]*x - [2]*x*x) + x/[3], [4])");
     
     //Deepa's Weight
-    fPi0Weight->SetParameters(8.96715e+02,-1.77016e-01,2.47560e-03,1.50783e+00,4.41819e+00);
-    fEtaWeight->SetParameters(4.18393e+02,-5.20750e-02,-3.11517e-04,2.04739e+00,5.30788e+00);
+    //fPi0Weight->SetParameters(8.96715e+02,-1.77016e-01,2.47560e-03,1.50783e+00,4.41819e+00);
+    //fEtaWeight->SetParameters(4.18393e+02,-5.20750e-02,-3.11517e-04,2.04739e+00,5.30788e+00);
+    
+    //Default 0
+    fPi0Weight->SetParameters(0,1,1,1,1);
+    fEtaWeight->SetParameters(0,1,1,1,1);
     
     //0-10%
     if (fCentralityMin==0 && fCentralityMax==10 && fApplyCentrality){
