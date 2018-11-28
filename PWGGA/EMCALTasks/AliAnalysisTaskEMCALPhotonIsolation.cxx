@@ -4937,8 +4937,12 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
 
     mcpart = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTr));
 
+    fGenPromptPhotonSel->Fill(0.5);
+
     if(mcpart->GetStatus()>10)
       continue;
+
+    fGenPromptPhotonSel->Fill(1.5);
 
     if(!mcpart->IsPrimary())
       continue;
@@ -4946,9 +4950,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     if(!mcpart->IsPhysicalPrimary())
       continue;
 
+    fGenPromptPhotonSel->Fill(2.5);
+
     pdg = mcpart->GetPdgCode();
     if(pdg != 22 /*|| mcpart->GetLabel()!=8*/)
       continue;
+
+    fGenPromptPhotonSel->Fill(3.5);
 
     momidx = mcpart->GetMother();
     if(momidx > 0 && momidx < nTracks){
@@ -4960,7 +4968,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
 
     if(mompdg != 22) continue;              // Discard particles whose mother is not a photon
 
+    fGenPromptPhotonSel->Fill(4.5);
+
     if(fPythiaHeader->ProcessType() != 201 && fPythiaHeader->ProcessType() != 202) continue; // Discard particles which do not come from prompt photon processes
+    // OR
+    // if(fmcHeader->GetEventType() != 14 && fmcHeader->GetEventType() != 29) continue; // Discard particles which do not come from prompt photon processes
+
+    fGenPromptPhotonSel->Fill(5.5);
 
     eta = mcpart->Eta();
     phi = mcpart->Phi();
@@ -5001,6 +5015,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       if((TMath::Abs(eta) > etaMax_fidu) || (phi < phiMinEMCal_fidu || phi > phiMaxEMCal_fidu))
 	continue;
     }
+
+    fGenPromptPhotonSel->Fill(6.5);
 
     photonlabel = iTr;
     eT = mcpart->E()*(TMath::Sin(mcpart->Theta())); // Transform to transverse Energy
