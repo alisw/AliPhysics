@@ -228,6 +228,11 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   if      ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7,  80, 187) ; // EMC 
   else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7, 260, 327) ; // DMC  
   
+  if ( kAnaCutsString.Contains("TightAcc") )
+  {
+    if ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.27, 103, 157) ; // EMC 
+  }
+  
   if ( calorimeter.Contains("CAL") ) ana->GetFiducialCut()->DoEMCALFiducialCut(kTRUE);  
   
   ana->SetCalorimeter(calorimeter);
@@ -238,7 +243,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   }
   
   ana->SwitchOnFillShowerShapeHistograms();  // Filled before photon shower shape selection
-  if( kAnaCutsString.Contains("MultiIso") ) ana->SwitchOffFillShowerShapeHistograms();
+  if ( kAnaCutsString.Contains("MultiIso") ) ana->SwitchOffFillShowerShapeHistograms();
     
   if ( kAnaCutsString.Contains("PerSM") ) 
     ana->SwitchOnFillShowerShapeHistogramsPerSM(); 
@@ -842,6 +847,11 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   if      ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.60,  86, 174) ;
   else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.60, 266, 314) ; 
   else if ( calorimeter == "PHOS"  ) ana->GetFiducialCut()->SetSimplePHOSFiducialCut (0.10, 266, 314) ; 
+  
+  if ( kAnaCutsString.Contains("TightAcc") )
+  {
+    if ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.27, 103, 157) ; // EMC 
+  }
   
   // Same Eta as EMCal, cut in phi if EMCAL was triggering
   if(particle=="Hadron"  || particle.Contains("CTS"))
