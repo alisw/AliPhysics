@@ -22,7 +22,8 @@ class AliCutHandlerPCM{
     void AddCutHeavyMesonPCM(TString eventCut, TString photonCut, TString pionCut, TString ndmCut, TString mesonCut);
     void AddCutHeavyMesonCalo(TString eventCut, TString clusterCut, TString pionCut, TString ndmCut, TString mesonCut);
     void AddCutHeavyMesonPCMCalo(TString eventCut, TString photonCut, TString clusterCut, TString pionCut, TString ndmCut, TString mesonCut);
-
+    void AddCutPCMMaterial(TString eventCut, TString photonCut);
+ 
     TString GetSpecialSettingFromAddConfig (TString additionalTrainConfig, TString configString, TString fileNameMatBudWeights, TString addTaskName);
     TString GetSpecialFileNameFromString (TString fileNameExternalInputs, TString configString);
 
