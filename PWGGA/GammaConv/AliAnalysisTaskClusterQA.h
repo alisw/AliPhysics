@@ -101,6 +101,9 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Int_t ProcessTrueClusterCandidates(AliAODConversionPhoton *TrueClusterCandidate, Float_t m02,
                                         AliAODConversionPhoton *TrueSubClusterCandidate1,
                                         AliAODConversionPhoton *TrueSubClusterCandidate2);
+    Int_t ProcessTrueClusterCandidatesAOD(AliAODConversionPhoton *TrueClusterCandidate, Float_t m02,
+                                        AliAODConversionPhoton *TrueSubClusterCandidate1,
+                                        AliAODConversionPhoton *TrueSubClusterCandidate2);
     UInt_t IsTruePhotonESD          ( AliAODConversionPhoton *TruePhotonCandidate );
     UInt_t IsTruePhotonAOD          ( AliAODConversionPhoton *TruePhotonCandidate );
     void CountTracks                ();
@@ -198,7 +201,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     TH2F*           hEActiveCells100MeVVsCentrality;
     TH2F*           hEActiveCells150MeVVsCentrality;
     
-    ClassDef(AliAnalysisTaskClusterQA, 6);
+    ClassDef(AliAnalysisTaskClusterQA, 7);
 };
 
 const Int_t kMaxActiveCells = 18000;
