@@ -92,8 +92,8 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
    kDetSignal   = 1,  
    kDetBackground   = 2,  
    kDetReflection   = 3, 
-   kTrueDet   = 3,  
-   kTrue   = 4,  
+   kTrueDet   = 4,  
+   kTrue   = 5,  
  };
  enum EMesonOrigin_t {
    kUnknownQuark = BIT(0),
