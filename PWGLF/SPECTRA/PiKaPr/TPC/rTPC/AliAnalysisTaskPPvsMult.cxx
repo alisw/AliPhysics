@@ -89,35 +89,35 @@ const Double_t CentMin[nCent]   = {0.0,1.0,5.0 ,10.0,15.0,20.0,30.0,40.0,50.0,70
 const Double_t CentMax[nCent]   = {1.0,5.0,10.0,15.0,20.0,30.0,40.0,50.0,70.0,100.0,100.0};
 //const Char_t *centName[11]      = {"0.0-5.0","5.0-10.0","10.0-20.0","20.0-30.0","30.0-40.0","40.0-50.0","50.0-60.0","60.0-70.0","70.0-80.0","80.0-90.0","MB"};
 
-const Double_t aPos[nCent]      = { 0,0,0,0,0,0,0,0,0,49.9799 ,49.9659 };
-const Double_t bPos[nCent]      = { 0,0,0,0,0,0,0,0,0,2.99619 ,2.91366 };
-const Double_t cPos[nCent]      = { 0,0,0,0,0,0,0,0,0,-45.718 ,-45.5994};
-const Double_t dPos[nCent]      = { 0,0,0,0,0,0,0,0,0,290.013 ,290.042 };
-const Double_t ePos[nCent]      = { 0,0,0,0,0,0,0,0,0,-1018.42,-1014.49};
-const Double_t fPos[nCent]      = { 0,0,0,0,0,0,0,0,0,1948.68 ,1931.84 };
-const Double_t gPos[nCent]      = { 0,0,0,0,0,0,0,0,0,-1864.06,-1839.36};
-const Double_t hPos[nCent]      = { 0,0,0,0,0,0,0,0,0,692.752 ,680.421 };
+const Double_t aPos[nCent]      = {49.9799,49.9659,0,0,0,0,0,0,0,0,0};
+const Double_t bPos[nCent]      = {2.99619,2.91366,0,0,0,0,0,0,0,0,0};
+const Double_t cPos[nCent]      = {-45.718,-45.5994,0,0,0,0,0,0,0,0,0};
+const Double_t dPos[nCent]      = {290.013,290.042,0,0,0,0,0,0,0,0,0};
+const Double_t ePos[nCent]      = {-1018.42,-1014.49,0,0,0,0,0,0,0,0,0};
+const Double_t fPos[nCent]      = {1948.68,1931.84,0,0,0,0,0,0,0,0,0};
+const Double_t gPos[nCent]      = {-1864.06,-1839.36,0,0,0,0,0,0,0,0,0};
+const Double_t hPos[nCent]      = {692.752,680.421,0,0,0,0,0,0,0,0,0};
 
-const Double_t aNeg[nCent]      = { 0,0,0,0,0,0,0,0,0,50.078 ,50.046 };
-const Double_t bNeg[nCent]      = { 0,0,0,0,0,0,0,0,0,6.67199,6.79992};
-const Double_t cNeg[nCent]      = { 0,0,0,0,0,0,0,0,0,103.662,109.86 };
-const Double_t dNeg[nCent]      = { 0,0,0,0,0,0,0,0,0,611.034,668.241};
-const Double_t eNeg[nCent]      = { 0,0,0,0,0,0,0,0,0,1695.63,1916.44};
-const Double_t fNeg[nCent]      = { 0,0,0,0,0,0,0,0,0,2395.88,2815.04};
-const Double_t gNeg[nCent]      = { 0,0,0,0,0,0,0,0,0,1669.22,2057.21};
-const Double_t hNeg[nCent]      = { 0,0,0,0,0,0,0,0,0,455.362,595.391};
+const Double_t aNeg[nCent]      = {50.078,50.046,0,0,0,0,0,0,0,0,0};
+const Double_t bNeg[nCent]      = {6.67199,6.79992,0,0,0,0,0,0,0,0,0};
+const Double_t cNeg[nCent]      = {103.662,109.86,0,0,0,0,0,0,0,0,0};
+const Double_t dNeg[nCent]      = {611.034,668.241,0,0,0,0,0,0,0,0,0};
+const Double_t eNeg[nCent]      = {1695.63,1916.44,0,0,0,0,0,0,0,0,0};
+const Double_t fNeg[nCent]      = {2395.88,2815.04,0,0,0,0,0,0,0,0,0};
+const Double_t gNeg[nCent]      = {1669.22,2057.21,0,0,0,0,0,0,0,0,0};
+const Double_t hNeg[nCent]      = {455.362,595.391,0,0,0,0,0,0,0,0,0};
 
-const Double_t aPosEl[nCent]    = { 0,0,0,0,0,0,0,0,0,80.1263 ,79.9957 };
-const Double_t bPosEl[nCent]    = { 0,0,0,0,0,0,0,0,0,5.28525 ,7.03079 };
-const Double_t cPosEl[nCent]    = { 0,0,0,0,0,0,0,0,0,-32.7731,-42.9098};
-const Double_t dPosEl[nCent]    = { 0,0,0,0,0,0,0,0,0,68.4524 ,88.7057 };
-const Double_t ePosEl[nCent]    = { 0,0,0,0,0,0,0,0,0,-44.1566,-56.6554};
+const Double_t aPosEl[nCent]    = {80.1263,79.9957,0,0,0,0,0,0,0,0,0};
+const Double_t bPosEl[nCent]    = {5.28525,7.03079,0,0,0,0,0,0,0,0,0};
+const Double_t cPosEl[nCent]    = {-32.7731,-42.9098,0,0,0,0,0,0,0,0,0};
+const Double_t dPosEl[nCent]    = {68.4524,88.7057,0,0,0,0,0,0,0,0,0};
+const Double_t ePosEl[nCent]    = {-44.1566,-56.6554,0,0,0,0,0,0,0,0,0};
 
-const Double_t aNegEl[nCent]    = { 0,0,0,0,0,0,0,0,0,79.8351 ,79.7387 };
-const Double_t bNegEl[nCent]    = { 0,0,0,0,0,0,0,0,0,-8.46921,-8.60021};
-const Double_t cNegEl[nCent]    = { 0,0,0,0,0,0,0,0,0,-44.5947,-44.1718};
-const Double_t dNegEl[nCent]    = { 0,0,0,0,0,0,0,0,0,-86.2242,-84.4984};
-const Double_t eNegEl[nCent]    = { 0,0,0,0,0,0,0,0,0,-53.6285,-51.945 };
+const Double_t aNegEl[nCent]    = {79.8351,79.7387,0,0,0,0,0,0,0,0,0};
+const Double_t bNegEl[nCent]    = {-8.46921,-8.60021,0,0,0,0,0,0,0,0,0};
+const Double_t cNegEl[nCent]    = {-44.5947,-44.1718,0,0,0,0,0,0,0,0,0};
+const Double_t dNegEl[nCent]    = {-86.2242,-84.4984,0,0,0,0,0,0,0,0,0};
+const Double_t eNegEl[nCent]    = {-53.6285,-51.945,0,0,0,0,0,0,0,0,0};
 
 ClassImp(AliAnalysisTaskPPvsMult)
 	AliAnalysisTaskPPvsMult::AliAnalysisTaskPPvsMult():
@@ -1495,15 +1495,15 @@ void AliAnalysisTaskPPvsMult::ProduceArrayTrksESD( AliESDEvent *ESDevent, const 
 		if(fdEdxCalibrated){
 			if(eta < 0){
 				if(fLHC16l == 1)
-				dedx *= 50/EtaCalibrationNeg(10,eta);
+				dedx *= 50/EtaCalibrationNeg(0,eta);
 				else
-				dedx *= 50/EtaCalibrationNeg(11,eta);
+				dedx *= 50/EtaCalibrationNeg(1,eta);
 			}
 			else{
 				if(fLHC16l == 1)
-				dedx *= 50/EtaCalibrationPos(10,eta);
+				dedx *= 50/EtaCalibrationPos(0,eta);
 				else
-				dedx *= 50/EtaCalibrationPos(11,eta);
+				dedx *= 50/EtaCalibrationPos(1,eta);
 			}
 		}
 
@@ -2014,15 +2014,15 @@ void AliAnalysisTaskPPvsMult::ProduceArrayV0ESD( AliESDEvent *ESDevent, const In
 						       if(fdEdxCalibrated){
 							       if(eta < 0){
 									if(fLHC16l == 1)
-								        dedx   *= 50.0/EtaCalibrationNeg(10,eta);
+								        dedx   *= 50.0/EtaCalibrationNeg(0,eta);
 									else
-								        dedx   *= 50.0/EtaCalibrationNeg(11,eta);
+								        dedx   *= 50.0/EtaCalibrationNeg(1,eta);
 							       }
 							       else{
 									if(fLHC16l == 1)
-								        dedx   *= 50.0/EtaCalibrationPos(10,eta);
+								        dedx   *= 50.0/EtaCalibrationPos(0,eta);
 									else
-								        dedx   *= 50.0/EtaCalibrationPos(11,eta);
+								        dedx   *= 50.0/EtaCalibrationPos(1,eta);
 							       }
 						       }
 
@@ -2082,11 +2082,11 @@ void AliAnalysisTaskPPvsMult::ProduceArrayV0ESD( AliESDEvent *ESDevent, const In
 						       if( dmassG<0.01 && dmassG>0.0001 ) {
 							       if(nTrack->Eta() > 0){
 								if(fLHC16l == 1){
-								       if( TMath::Abs(nTrack->GetTPCsignal()-EtaCalibrationPosEl(10,nTrack->Eta())) < 5)
+								       if( TMath::Abs(nTrack->GetTPCsignal()-EtaCalibrationPosEl(0,nTrack->Eta())) < 5)
 									       fillPos = kTRUE;
 									}
 								else{
-								       if( TMath::Abs(nTrack->GetTPCsignal()-EtaCalibrationPosEl(11,nTrack->Eta())) < 5)
+								       if( TMath::Abs(nTrack->GetTPCsignal()-EtaCalibrationPosEl(1,nTrack->Eta())) < 5)
 									       fillPos = kTRUE;
 		cout << "-------------------LHC16k"  << endl;
 									}
@@ -2094,11 +2094,11 @@ void AliAnalysisTaskPPvsMult::ProduceArrayV0ESD( AliESDEvent *ESDevent, const In
 								}
 							       if(nTrack->Eta() < 0){
 								if(fLHC16l == 1){
-								       if( TMath::Abs(nTrack->GetTPCsignal()-EtaCalibrationNegEl(10,nTrack->Eta())) < 5)
+								       if( TMath::Abs(nTrack->GetTPCsignal()-EtaCalibrationNegEl(0,nTrack->Eta())) < 5)
 									       fillPos = kTRUE;
 								}
 								else{
-								       if( TMath::Abs(nTrack->GetTPCsignal()-EtaCalibrationNegEl(11,nTrack->Eta())) < 5)
+								       if( TMath::Abs(nTrack->GetTPCsignal()-EtaCalibrationNegEl(1,nTrack->Eta())) < 5)
 									       fillPos = kTRUE;
 		cout << "-------------------LHC16k"  << endl;
 								}
@@ -2130,15 +2130,15 @@ void AliAnalysisTaskPPvsMult::ProduceArrayV0ESD( AliESDEvent *ESDevent, const In
 					       if(fdEdxCalibrated){
 						       if(eta < 0){
 								if(fLHC16l == 1)
-							        dedx *= 50/EtaCalibrationNeg(10,eta);
+							        dedx *= 50/EtaCalibrationNeg(0,eta);
 								else
-							        dedx *= 50/EtaCalibrationNeg(11,eta);
+							        dedx *= 50/EtaCalibrationNeg(1,eta);
 							}
 						       else{
 								if(fLHC16l == 1)
-							        dedx *= 50/EtaCalibrationPos(10,eta);
+							        dedx *= 50/EtaCalibrationPos(0,eta);
 								else
-							        dedx *= 50/EtaCalibrationPos(11,eta);
+							        dedx *= 50/EtaCalibrationPos(1,eta);
 							}
 					       }
 
