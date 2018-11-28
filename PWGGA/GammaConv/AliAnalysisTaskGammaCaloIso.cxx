@@ -3325,7 +3325,9 @@ void AliAnalysisTaskGammaCaloIso::ProcessClusters()
       fHistoClusterCandidates[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC);// fill with isolated clusters
 
       if(fIsMC){
-        ProcessMCParticlesIsolation(clus, PhotonCandidate);
+        if(fInputEvent->IsA()==AliAODEvent::Class()){
+          ProcessMCParticlesIsolationAOD(clus, PhotonCandidate);
+        }
       }
 
     } else{
@@ -4882,75 +4884,57 @@ void AliAnalysisTaskGammaCaloIso::CalculatePi0CandidatesIsolation(){
   }
 }
 
-void AliAnalysisTaskGammaCaloIso::ProcessMCParticlesIsolation(AliVCluster *cluster,AliAODConversionPhoton *photoncandidate){
+void AliAnalysisTaskGammaCaloIso::ProcessMCParticlesIsolationAOD(AliVCluster *cluster,AliAODConversionPhoton *photoncandidate){
 
     Int_t pdgcode; //choose a value for mother pdg that's out of range for all the particles that aren't photons, conversion electrons (positrons)
     Float_t corrPt=photoncandidate->Pt(); //set default value for correction
     Int_t* mclabelsCluster  = cluster->GetLabels();
 
-    // check if esd or aod
-     AliESDEvent *esdev = dynamic_cast<AliESDEvent*>(fInputEvent);
      AliAODEvent *aodev = 0;
-     if (!esdev) {
-       aodev = dynamic_cast<AliAODEvent*>(fInputEvent);
-       if (!aodev) {
-         AliError("Task needs AOD or ESD event, returning");
-         return;
-       }
+     aodev = dynamic_cast<AliAODEvent*>(fInputEvent);
+     if (!aodev) {
+       AliError("Task needs AOD event, returning");
+       return;
      }
 
-     if(esdev){
-       //
-       if (cluster->GetNLabels()>0){
-         //create object TParticle in case of ESD
-         TParticle* particleLead   = (TParticle*)fMCEvent->Particle(mclabelsCluster[0]);
-         //get particles PDG code
-         pdgcode = particleLead->GetPdgCode();
-         //fill Pt and PDG code in 2D histogram
-         fHistoIsoClusterPDGtoPt[fiCut]->Fill(pdgcode,photoncandidate->Pt(), fWeightJetJetMC);
-         //if particle is (conversion) e-,e+ or photon, check for mother PDG
-         if(pdgcode == 22 || pdgcode == 11 || pdgcode == -11){
-           if (particleLead->GetMother(0) > -1){ //Does a mother particle exist?
-             TParticle* motherDummy = fMCEvent->Particle(particleLead->GetMother(0));//create mother particle
-             while(motherDummy->GetPdgCode() == 22 || motherDummy->GetPdgCode() == 11 || motherDummy->GetPdgCode() == -11){// loop to track down photon chains
-       //        cout << motherDummy->GetMother(0) << endl;
-               motherDummy = fMCEvent->Particle(motherDummy->GetMother(0));
-             }
-             //wrong code, how do implement GetLabel() for TParticle?
-             fHistoIsoMotherPDGtoPt[fiCut]->Fill(motherDummy->GetPdgCode(),photoncandidate->Pt(), fWeightJetJetMC);
-           }
-         }
-       }
-
-     }else if(aodev){ // same procedure for AODsesdt
        TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+
        if (AODMCTrackArray == NULL){
         AliError("No MC particle list available in AOD");
         return;
        }
+
        // check mother of cluster
        if(cluster->GetNLabels()>0){
-         //create object TParticle in case of AOD to get access to PDG function
+
+           //create object TParticle in case of AOD to get access to PDG function
          AliAODMCParticle* particleLead = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(mclabelsCluster[0]));
          pdgcode = particleLead->GetPdgCode();
+
          //fill Pt and PDG code for all selected clusters in 2D histogram
          fHistoIsoClusterPDGtoPt[fiCut]->Fill(pdgcode,photoncandidate->Pt(), fWeightJetJetMC);
+
          if(particleLead->IsSecondaryFromMaterial()){
            //fill PDG to Pt for Material Secondaries as subset of the above
            fHistoIsoClusterPDGtoPtMatSec[fiCut]->Fill(pdgcode, photoncandidate->Pt(), fWeightJetJetMC);
          }
+
          //if there is a mother of the cluster and the cluster pdg code belongs to a photon, e- or e+
          //e+ e- from photon conversion because of detector interaction; might track back to prompt photons
          if(particleLead->GetMother() > -1 && (pdgcode == 22 || pdgcode == 11 || pdgcode == -11)){
+
            //need to track all photons, electrons and positrons back to their original photon source to get a more accurate
            //account of the prompt photons energy spectrum; otherwise energy is lost in electromagnetic shower
            Int_t motherpdg = pdgcode;//because of following method
            AliAODMCParticle* motherDummy = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particleLead->GetMother()));
+
            if(particleLead->IsSecondaryFromMaterial()){
              fHistoIsoMatSecConversionfromPhoton[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC); //shower particle that might come from gamma jets
+
              //this if condition follows the particles paths to get the original energies of the prompt photons
              if(pdgcode==22 || motherDummy->GetPdgCode()==22){//if neither the cluster nor its mother is a photon -> no need to track back
-              // cout << "__________________Start while loop" << endl;
+
+               // cout << "__________________Start while loop" << endl;
                while (motherpdg == 11 || motherpdg == -11 || motherDummy->GetPdgCode() == 11 || motherDummy->GetPdgCode() == -11){
                  motherDummy = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(motherDummy->GetMother()));
                  motherpdg = motherDummy->GetPdgCode();
@@ -4962,27 +4946,33 @@ void AliAnalysisTaskGammaCaloIso::ProcessMCParticlesIsolation(AliVCluster *clust
                //  cout << "pdgcode2: " << motherDummy->PdgCode() << endl;
                }// should track photon shower back to pure photon chain
               // cout << "Mother after shower: " << motherDummy->GetPdgCode() << endl;
+
                if(motherDummy->GetPdgCode()==22) corrPt = motherDummy->Pt();//use Pt of second least photon as correction, (easier than last photon before cascade)
              }
            }
+
            if(pdgcode == 22 && motherDummy->GetPdgCode() == 111){
              fHistoIsoPhotonfromPi0[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
              //AliAODMCParticle* motherDummyPi0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(motherDummy->GetMother()));
              //fHistoIsoPi0MotherPDGtoPtMatSec[fiCut]->Fill(motherDummyPi0->GetPdgCode(), photoncandidate->Pt(), fWeightJetJetMC);
            }
+
            //Photon loop, to find the mother from the first photon, e+ and e- just to be safe
            while(motherDummy->GetPdgCode() == 22 || motherDummy->GetPdgCode() == 11 || motherDummy->GetPdgCode() == -11){
              if(motherDummy->GetPdgCode() != 22) cout << "Another untracked conversion Particle, PDGCode: " << pdgcode << endl;
              motherDummy = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(motherDummy->GetMother()));
            }
            fHistoIsoMotherPDGtoPt[fiCut]->Fill(motherDummy->GetPdgCode(), photoncandidate->Pt(), fWeightJetJetMC);
+
            if(((motherDummy->GetPdgCode()>-7 && motherDummy->GetPdgCode()<7) || motherDummy->GetPdgCode()==21) && motherDummy->GetLabel()!=2 && motherDummy->GetLabel()!=3){
              fHistoIsoFragPhotons[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
            }
+
            if(motherDummy->GetLabel()==2 || motherDummy->GetLabel()==3){ //proceed here if particle tracks back to GammaJet
              //fill histogram
              fHistoIsoInitPhotons[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC); //fill
              fHistoIsoInitPhotonsConversionCorrection[fiCut]->Fill(corrPt, fWeightJetJetMC);
+
              if(CheckVectorForDoubleCount(fVectorDoubleCountMCInitIsoPhotons,motherDummy->GetLabel())){
                fHistoDoubleCountMCIsoInitPhotonPt[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
                fHistoDoubleCountMCIsoInitPhotonCorrectPt[fiCut]->Fill(corrPt, fWeightJetJetMC);
@@ -4990,7 +4980,7 @@ void AliAnalysisTaskGammaCaloIso::ProcessMCParticlesIsolation(AliVCluster *clust
            }
          }
        }
-     }
+
      return;
 }
 

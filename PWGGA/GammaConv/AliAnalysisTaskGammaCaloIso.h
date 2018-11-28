@@ -51,7 +51,7 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
     void ProcessTrueClusterCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate, AliVCluster* clus);
     void ProcessTrueMesonCandidates( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
     void ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
-    void ProcessMCParticlesIsolation(AliVCluster *cluster, AliAODConversionPhoton *photoncandidate);
+    void ProcessMCParticlesIsolationAOD(AliVCluster *cluster, AliAODConversionPhoton *photoncandidate);
 
 
     // switches for additional analysis streams or outputs
