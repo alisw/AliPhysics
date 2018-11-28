@@ -4,8 +4,6 @@
 
 cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
 
-this will not work
-
 project(AliPhysics CXX C)
 enable_testing()
 
