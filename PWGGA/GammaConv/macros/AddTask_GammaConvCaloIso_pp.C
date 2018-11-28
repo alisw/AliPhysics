@@ -16,23 +16,23 @@
 
 //***************************************************************************************
 //This AddTask is supposed to set up the main task
-//($ALIPHYSICS/PWGGA/GammaConv/AliAnalysisTaskGammaCaloIso.cxx) for
+//($ALIPHYSICS/PWGGA/GammaConv/AliAnalysisTaskGammaConvCaloIso.cxx) for
 //pp together with all supporting classes
 //***************************************************************************************
 
 //***************************************************************************************
 //main function
 //***************************************************************************************
-void AddTask_GammaCaloIso_pp(
+void AddTask_GammaConvCaloIso_pp(
   Int_t     trainConfig                   = 1,        // change different set of cuts
   Int_t     isMC                          = 0,        // run MC
   TString   photonCutNumberV0Reader       = "",       // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
   TString   periodNameV0Reader            = "",
   // general setting for task
   Int_t     enableQAMesonTask             = 0,        // enable QA in AliAnalysisTaskGammaConvV1
-  Int_t     enableQAClusterTask           = 0,        // enable additional QA task
-  Int_t     enableExtMatchAndQA           = 0,                            // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
-  Bool_t    enableLightOutput             = kFALSE,   // switch to run light output (only essential histograms for afterburner)
+  Int_t     enableQAPhotonTask            = 0,        // enable additional QA task
+  Int_t     enableExtMatchAndQA           = 0,        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
+  Int_t     enableLightOutput             = 0,        // switch to run light output (only essential histograms for afterburner)
   Bool_t    enableTHnSparse               = kFALSE,   // switch on THNsparse
   Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
   Bool_t    enableTriggerOverlapRej       = kFALSE,   // enable trigger overlap rejection
@@ -47,23 +47,27 @@ void AddTask_GammaCaloIso_pp(
   TString   periodNameAnchor              = "",       //
   // special settings
   Bool_t    enableSortingMCLabels         = kTRUE,    // enable sorting for MC cluster labels
+  Bool_t    enableTreeConvGammaShape      = kFALSE,   // enable additional tree for conversion properties for clusters
+  Bool_t    doSmear                       = kFALSE,   // switches to run user defined smearing
+  Double_t  bremSmear                     = 1.,
+  Double_t  smearPar                      = 0.,       // conv photon smearing params
+  Double_t  smearParConst                 = 0.,       // conv photon smearing params
+  Bool_t    doPrimaryTrackMatching        = kTRUE,    // enable basic track matching for all primary tracks to cluster
   // subwagon config
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
-) {
+  ) {
 
-  AliCutHandlerPCM cuts(13);
+  AliCutHandlerPCM cuts;
 
+  TString fileNamePtWeights     = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FPTW:");
+  TString fileNameMultWeights   = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMUW:");
 
-  TString addTaskName                 = "AddTask_GammaCaloIso_pp";
+  TString addTaskName                 = "AddTask_GammaConvCaloIso_pp";
   TString sAdditionalTrainConfig      = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "", "", addTaskName);
   if (sAdditionalTrainConfig.Atoi() > 0){
     trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
     cout << "INFO: " << addTaskName.Data() << " running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
   }
-
-  TString fileNamePtWeights           = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FPTW:");
-  TString fileNameMultWeights         = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMUW:");
-
   TString corrTaskSetting             = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "CF", "", addTaskName);
   if(corrTaskSetting.CompareTo(""))
     cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
@@ -77,6 +81,11 @@ void AddTask_GammaCaloIso_pp(
   TString strdoTreeEOverP             = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "EPCLUSTree", "", addTaskName);
   if(strdoTreeEOverP.Atoi()==1)
     doTreeEOverP = kTRUE;
+
+  Bool_t doTreeClusterShowerShape = kFALSE; // switch to produce EOverP tree
+  TString strdoTreeClusterShowerShape             = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "INVMASSCLUSTree", "", addTaskName);
+  if(strdoTreeClusterShowerShape.Atoi()==1)
+    doTreeClusterShowerShape = kTRUE;
 
   TH1S* histoAcc = 0x0;         // histo for modified acceptance
   TString strModifiedAcc              = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "MODIFYACC", "", addTaskName);
@@ -128,47 +137,38 @@ void AddTask_GammaCaloIso_pp(
   //================================================
   //========= Add task to the ANALYSIS manager =====
   //================================================
-  AliAnalysisTaskGammaCaloIso *task=NULL;
-  task= new AliAnalysisTaskGammaCaloIso(Form("GammaCaloIso_%i",trainConfig));
+  AliAnalysisTaskGammaConvCaloIso *task=NULL;
+  task= new AliAnalysisTaskGammaConvCaloIso(Form("GammaConvCaloIso_%i",trainConfig));
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
-  task->SetLightOutput(enableLightOutput);
-  task->SetCorrectionTaskSetting(corrTaskSetting);
+  if (enableLightOutput > 1) task->SetLightOutput(kTRUE);
+  task->SetDoPrimaryTrackMatching(doPrimaryTrackMatching);
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
 
-  // here is the order of the cluster cut string
-  // usually for EMCal we start with 11111: default values for            "ClusterType", "EtaMin", "EtaMax", "PhiMin", "PhiMax"
-  // then two numbers for nonlinearity, e.g. 21: this is                  "NonLinearity1", "NonLinearity2"
-  // Then some cuts on the clusters, e.g. 06003222: this is               "DistanceToBadChannel", "Timing", "TrackMatching", "ExoticCell", "MinEnergy", "MinNCells", "MinM02", "MaxM02"
-  // finally some for now unused cuts, usually 0000: this is              "MinMaxM20", "RecConv", "MaximumDispersion", "NLM"
-
+  // cluster cuts
+  // 0 "ClusterType",  1 "EtaMin", 2 "EtaMax", 3 "PhiMin", 4 "PhiMax", 5 "DistanceToBadChannel", 6 "Timing", 7 "TrackMatching", 8 "ExoticCell",
+  // 9 "MinEnergy", 10 "MinNCells", 11 "MinM02", 12 "MaxM02", 13 "MinMaxM20", 14 "RecConv", 15 "MaximumDispersion", 16 "NLM"
 
   // *****************************************************************************************************
-  // ******************** pp 13 TeV cuts paper EMC *****************************************************
+  // pp 13 TeV setup, Isolation
   // *****************************************************************************************************
-  if (trainConfig == 33){ //Isolation Cut variations, Trackmatching, M02
-  cuts.AddCutCalo("00083113","11111000670322l0000","0163103100000050"); // EMCEG1, with TrackMatcher on
-  cuts.AddCutCalo("00083113","11111000600322l0000","0163103100000050"); // EMCEG1, with TrackMatcher off
-  cuts.AddCutCalo("00083113","1111100067032230000","0163103100000050"); // EMCEG1, with shape cut changed slightly
-  cuts.AddCutCalo("00083113","e2211000600322l0000","0163103100000050"); // EMCEG1, with TrackMatcher off
-
   //PhotonIsolation Variations, LHC17i3 MC without non linearity
-  } else if (trainConfig == 34){ // without TrackMatching
-  cuts.AddCutCalo("00083113","1111100067032230000","0163103100000050"); //with TrackMatching
-  cuts.AddCutCalo("00083113","b221100060032230000","0163103100000050"); //without TrackMatching, R=0.1
-  cuts.AddCutCalo("00083113","c221100060032230000","0163103100000050"); //without TrackMatching, R=0.2
-  cuts.AddCutCalo("00083113","d221100060032230000","0163103100000050"); //without TrackMatching, R=0.3
-  cuts.AddCutCalo("00083113","e221100060032230000","0163103100000050"); //without TrackMatching, R=0.4
-
+  if (trainConfig == 33){ // without TrackMatching
+    cuts.AddCutPCMCalo("00083113","00200009327000008250400000","1111100067032230000","0163103100000010"); //without TrackMatching
+   /* cuts.AddCutPCMCalo("00083113","00200009327000008250400000","b221100060032230000","0163103100000010"); //without TrackMatching
+    cuts.AddCutPCMCalo("00083113","00200009327000008250400000","c221100060032230000","0163103100000010"); //without TrackMatching
+    cuts.AddCutPCMCalo("00083113","00200009327000008250400000","d221100060032230000","0163103100000010"); //without TrackMatching
+    cuts.AddCutPCMCalo("00083113","00200009327000008250400000","e221100060032230000","0163103100000010"); //without TrackMatching
+*/
   } else {
-    Error(Form("GammaCaloIso_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
+    Error(Form("GammaConvCaloIso_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
 
   if(!cuts.AreValid()){
     cout << "\n\n****************************************************" << endl;
-    cout << "ERROR: No valid cuts stored in CutHandlerCalo! Returning..." << endl;
+    cout << "ERROR: No valid cuts stored in CutHandlerConvCalo! Returning..." << endl;
     cout << "****************************************************\n\n" << endl;
     return;
   }
@@ -176,6 +176,7 @@ void AddTask_GammaCaloIso_pp(
   Int_t numberOfCuts = cuts.GetNCuts();
 
   TList *EventCutList = new TList();
+  TList *ConvCutList = new TList();
   TList *ClusterCutList = new TList();
   TList *MesonCutList = new TList();
 
@@ -206,8 +207,11 @@ void AddTask_GammaCaloIso_pp(
       mcName = "Pythia8_LHC17i3c1";
   }
 
+
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
+  ConvCutList->SetOwner(kTRUE);
+  AliConversionPhotonCuts **analysisCuts = new AliConversionPhotonCuts*[numberOfCuts];
   ClusterCutList->SetOwner(kTRUE);
   AliCaloPhotonCuts **analysisClusterCuts = new AliCaloPhotonCuts*[numberOfCuts];
   MesonCutList->SetOwner(kTRUE);
@@ -245,7 +249,6 @@ void AddTask_GammaCaloIso_pp(
     fAddedSignalString = fAddedSignalString(6,1);
     Bool_t fAddedSignal = kFALSE;
     if (fAddedSignalString.CompareTo("2") == 0) fAddedSignal = kTRUE;
-
     TString mcInputNamePi0 = "";
     TString mcInputNameEta = "";
     if (fAddedSignal && (generatorName.Contains("LHC12i3") || generatorName.CompareTo("LHC14e2b")==0)){
@@ -256,7 +259,8 @@ void AddTask_GammaCaloIso_pp(
       mcInputNameEta = Form("Eta_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
     }
 
-    if (doWeightingPart) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNamePtWeights, mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
+    if (doWeightingPart) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile( kTRUE, kTRUE, kFALSE, fileNamePtWeights,
+                                                                                           mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
 
     TString dataInputMultHisto  = "";
     TString mcInputMultHisto    = "";
@@ -267,71 +271,84 @@ void AddTask_GammaCaloIso_pp(
     if (periodNameAnchor.CompareTo("LHC13g") == 0 && triggerString.CompareTo("10")== 0 )
       triggerString         = "00";
 
-
     dataInputMultHisto      = Form("%s_%s", periodNameAnchor.Data(), triggerString.Data());
     mcInputMultHisto        = Form("%s_%s", periodNameV0Reader.Data(), triggerString.Data());
 
-    if (enableMultiplicityWeighting) analysisEventCuts[i]->SetUseWeightMultiplicityFromFile( kTRUE, fileNameMultWeights, dataInputMultHisto, mcInputMultHisto );
+    if (enableMultiplicityWeighting){
+      cout << "enableling mult weighting" << endl;
+      analysisEventCuts[i]->SetUseWeightMultiplicityFromFile( kTRUE, fileNameMultWeights, dataInputMultHisto, mcInputMultHisto );
+    }
 
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
-    analysisEventCuts[i]->SetLightOutput(enableLightOutput);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
+    if (enableLightOutput > 0 && enableLightOutput < 3) analysisEventCuts[i]->SetLightOutput(kTRUE);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
+
+    analysisCuts[i] = new AliConversionPhotonCuts();
+    analysisCuts[i]->SetV0ReaderName(V0ReaderName);
+    if (enableLightOutput > 0 && enableLightOutput < 3) analysisCuts[i]->SetLightOutput(kTRUE);
+    analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
+    analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
+    ConvCutList->Add(analysisCuts[i]);
+    analysisCuts[i]->SetFillCutHistograms("",kFALSE);
 
     analysisClusterCuts[i] = new AliCaloPhotonCuts(isMC);
     analysisClusterCuts[i]->SetHistoToModifyAcceptance(histoAcc);
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
-    analysisClusterCuts[i]->SetLightOutput(enableLightOutput);
+    if (enableLightOutput > 0 && enableLightOutput < 3) analysisClusterCuts[i]->SetLightOutput(kTRUE);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();
-    analysisMesonCuts[i]->SetLightOutput(enableLightOutput);
+    if (enableLightOutput > 0) analysisMesonCuts[i]->SetLightOutput(kTRUE);
+    analysisMesonCuts[i]->SetRunningMode(2);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
-    analysisMesonCuts[i]->SetIsMergedClusterCut(2);
-    analysisMesonCuts[i]->SetCaloMesonCutsObject(analysisClusterCuts[i]);
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
+    if(doSmear) analysisMesonCuts[i]->SetDefaultSmearing(bremSmear,smearPar,smearParConst);
   }
+
   task->SetEventCutList(numberOfCuts,EventCutList);
+  task->SetConversionCutList(numberOfCuts,ConvCutList);
   task->SetCaloCutList(numberOfCuts,ClusterCutList);
   task->SetMesonCutList(numberOfCuts,MesonCutList);
+  task->SetMoveParticleAccordingToVertex(kTRUE);
   task->SetDoMesonAnalysis(kTRUE);
   task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
-  task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
-  task->SetDoTHnSparse(enableTHnSparse);
-  task->SetProduceTreeEOverP(doTreeEOverP);
+  task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
+  task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
+  task->SetUseTHnSparse(enableTHnSparse);
+  task->SetDoTreeInvMassShowerShape(doTreeClusterShowerShape);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
-  if(trainConfig == 446) task->SetSoftAnalysis(kTRUE);
+  if(enableTreeConvGammaShape) task->SetDoTreeConvGammaShowerShape(kTRUE);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
-  if(trainConfig == 106 || trainConfig == 125 || trainConfig == 145){
-    task->SetInOutTimingCluster(-30e-9,35e-9);
-  }
-  task->SetLocalDebugFlag(localDebugFlag);
 
   //connect containers
   AliAnalysisDataContainer *coutput =
-    mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaCaloIso_%i",trainConfig) : Form("GammaCaloIso_%i_%s",trainConfig,corrTaskSetting.Data()), TList::Class(),
-              AliAnalysisManager::kOutputContainer,Form("GammaCaloIso_%i.root",trainConfig));
+    mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaConvCaloIso_%i",trainConfig) : Form("GammaConvCaloIso_%i_%s",trainConfig,corrTaskSetting.Data()), TList::Class(),
+              AliAnalysisManager::kOutputContainer, Form("GammaConvCaloIso_%i.root",trainConfig) );
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);
+  if(enableQAPhotonTask>1){
+    for(Int_t i = 0; i<numberOfCuts; i++){
+      mgr->ConnectOutput(task,2+i,mgr->CreateContainer(Form("%s_%s_%s_%s Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),cuts.GetClusterCut(i).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvCaloIso_%i.root",trainConfig)) );
+    }
+  }
 
   return;
 
 }
-
-

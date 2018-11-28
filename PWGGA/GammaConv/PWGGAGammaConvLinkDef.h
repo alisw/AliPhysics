@@ -61,6 +61,7 @@
 #pragma link C++ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero+;
 #pragma link C++ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson+;
 #pragma link C++ class AliAnalysisTaskGammaConvCalo+;
+#pragma link C++ class AliAnalysisTaskGammaConvCaloIso+;
 #pragma link C++ class AliAnalysisTaskGammaCalo+;
 #pragma link C++ class AliAnalysisTaskGammaCaloIso+;
 #pragma link C++ class AliAnalysisTaskGammaCaloMerged+;
