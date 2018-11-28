@@ -42,7 +42,18 @@ class AliHFSystErr : public TNamed
   void  ResetRawYieldErr(Double_t pt, Double_t val){
     fRawYield->SetBinContent(fRawYield->FindBin(pt),val);
   }
-
+  void  ResetCutEfficErr(Double_t pt, Double_t val){
+    fCutsEff->SetBinContent(fCutsEff->FindBin(pt),val);
+  }
+  void  ResetPIDEfficErr(Double_t pt, Double_t val){
+    fPIDEff->SetBinContent(fPIDEff->FindBin(pt),val);
+  }
+  void  ResetMCPtShapeErr(Double_t pt, Double_t val){
+    fMCPtShape->SetBinContent(fMCPtShape->FindBin(pt),val);
+  }
+  void  ResetTrackEfficErr(Double_t pt, Double_t val){
+    fTrackingEff->SetBinContent(fTrackingEff->FindBin(pt),val);
+  }
   /// Setting  the run number
   ///  set the two last numbers of the year (is 10 for 2010)
   void SetRunNumber(Int_t number) { 

@@ -40,6 +40,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void SetDebugHFEjet(Bool_t dbHFEj) {idbHFEj = dbHFEj;};
   void SetHybridTrack(Bool_t Hybrid){iHybrid = Hybrid;};
   void SetOccCorr(Bool_t OccCorr){iOccCorr = OccCorr;};
+  void SetPPcoll(Bool_t ppcoll){ippcoll = ppcoll;};
   void SetMinSig(Double_t mimSig){fmimSig = mimSig;};
   void SetMinEop(Double_t mimEop){fmimEop = mimEop;};
   void SetMinM20(Double_t mimM20){fmimM20 = mimM20;};
@@ -69,6 +70,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Bool_t idbHFEj;
     Bool_t iHybrid;
     Bool_t iOccCorr;
+    Bool_t ippcoll;
     Double_t fmimSig; // max. centrality
     Double_t fmimEop; // max. centrality
     Double_t fmimM20; // max. centrality

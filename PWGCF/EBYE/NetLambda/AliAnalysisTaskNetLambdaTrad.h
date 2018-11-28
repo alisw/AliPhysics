@@ -74,6 +74,8 @@ protected:
     TH2F* f2fHistARecstat;
     TH2F*  f2fHistLGenstat;
     TH2F* f2fHistAGenstat;
+    TH2F*  f2fHistXiPlus;
+    TH2F* f2fHistXiMinus;
     
     
     

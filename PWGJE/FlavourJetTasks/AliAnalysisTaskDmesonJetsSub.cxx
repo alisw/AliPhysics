@@ -2826,8 +2826,8 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t i
          double y = log(1.0/delta_R);
          double lnpt_rel = log(j2.perp()*delta_R);
 	 double frac=j1.perp()/output_jets[0].perp();
-	 double lundEntries[9] = {y, lnpt_rel, output_jets[0].perp(), nall, type, flagSubjet, xconstperp, invmass,yh};
-	 hname = TString::Format("%s/LundIterative", GetName());
+	 double lundEntries[10] = {y, lnpt_rel, output_jets[0].perp(), nall, type, flagSubjet, xconstperp, invmass,yh,TMath::Abs(output_jets[0].eta())};
+	 hname = TString::Format("%s/%s/LundIterative", GetName(), jetDef.GetName());
            THnSparse* h = static_cast<THnSparse*>(fHistManager->FindObject(hname)); 
 	   //   if(!h) cout<<"caca"<<endl;
 	   h->Fill(lundEntries);
@@ -3198,11 +3198,11 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
     maxTracks = 500;
   }
 
-      Int_t dimx   = 9;
-      Int_t nbinsx[9]   = {50,100,10,20,2,2,20,20,100};
-      Double_t minx[9] =  {0,-10,0,0,0,0,0,1.4,0};
-      Double_t maxx[9]  = {5,10,100,20,2,2,20,2.4,100};
-      TString titlex[9]={"log(1/deltaR)","log(zteta)","jet pt","n","type","flagSubjet","ptD","invmass","frac"};
+      Int_t dimx   = 10;
+      Int_t nbinsx[10]   = {50,100,10,20,2,2,20,20,100,9};
+      Double_t minx[10] =  {0,-10,0,0,0,0,0,1.4,0,0};
+      Double_t maxx[10]  = {5,10,100,20,2,2,20,2.4,100,0.9};
+      TString titlex[10]={"log(1/deltaR)","log(zteta)","jet pt","n","type","flagSubjet","ptD","invmass","frac","abs(eta)"};
 
 
 
@@ -3421,11 +3421,12 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
         hname = TString::Format("%s/%s/fHistLeadDPtVsNTracks", param.GetName(), jetDef.GetName());
         htitle = hname + ";no. of tracks;#it{p}_{T,D} (GeV/#it{c});counts";
         fHistManager.CreateTH2(hname, htitle, 200, 0, maxTracks, 300, 0, 150);
-      }
+      
       hname = TString::Format("%s/%s/LundIterative",param.GetName(),jetDef.GetName());
       THnSparse* h = fHistManager.CreateTHnSparse(hname,hname,dimx,nbinsx,minx,maxx);
       for (Int_t j = 0; j < dimx; j++) {
       h->GetAxis(j)->SetTitle(titlex[j]);}
+      }
     }
     switch (fOutputType) {
     case kTreeOutput:
