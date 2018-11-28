@@ -78,6 +78,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   idbHFEj(kFALSE),
   iHybrid(kTRUE),
   iOccCorr(kFALSE),
+  ippcoll(kFALSE),
   fmimSig(-1.0),
   fmimEop(0.8),
   fmimM20(0.01),
@@ -228,6 +229,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   idbHFEj(kFALSE),
   iHybrid(kTRUE),
   iOccCorr(kFALSE),
+  ippcoll(kFALSE),
   fmimSig(-1.0),
   fmimEop(0.8),
   fmimM20(0.01),
@@ -1074,7 +1076,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
          //AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(0);
          fJetsCont->ResetCurrentID();
          AliEmcalJet *jet = fJetsCont->GetNextAcceptJet();
-         rho = fJetsCont->GetRhoVal();
+         if(!ippcoll)rho = fJetsCont->GetRhoVal();
          //if(idbHFEj)cout << "rho = " << rho << endl; 
          //cout << "rho = " << rho << endl; 
          
