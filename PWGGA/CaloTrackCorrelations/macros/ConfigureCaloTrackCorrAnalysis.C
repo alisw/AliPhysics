@@ -532,6 +532,17 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
   }
   else  ///////////////////////////////////
   {
+    ana->SwitchOnFiducialCut(); 
+    if      ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7,  80, 187) ; // EMC 
+    else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7, 260, 327) ; // DMC  
+    
+    if ( kAnaCutsString.Contains("TightAcc") )
+    {
+      if ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.27, 103, 157) ; // EMC 
+    }
+    
+    if ( calorimeter.Contains("CAL") ) ana->GetFiducialCut()->DoEMCALFiducialCut(kTRUE);  
+    
     // cluster splitting settings
     ana->SetMinEnergy(6);
     ana->SetMaxEnergy(100.);
