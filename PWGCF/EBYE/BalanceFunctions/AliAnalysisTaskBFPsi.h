@@ -69,13 +69,13 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   
   void SetCentralityArrayBins(Int_t nCentralityBins, Double_t *centralityArrayForCorrections){
     fCentralityArrayBinsForCorrections = nCentralityBins;
-    for (Int_t i=0; i<=nCentralityBins; i++)
+    for (Int_t i=0; i<=nCentralityBins-1; i++)
       fCentralityArrayForCorrections[i] = centralityArrayForCorrections[i];
   }
 
   void SetArrayRuns(Int_t nRuns, Int_t *runsArrayForCorrections){
     fTotalNbRun = nRuns;
-    for (Int_t i=0; i<=nRuns; i++)
+    for (Int_t i=0; i<=nRuns-1; i++)
       fRunNb[i] = runsArrayForCorrections[i];
   }
  
