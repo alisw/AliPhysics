@@ -165,7 +165,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
 
 
-        ClassDef(AliAnalysisTaskMaterialHistos, 19);
+        ClassDef(AliAnalysisTaskMaterialHistos, 20);
 };
 
 #endif

@@ -63,7 +63,7 @@ class AliCutHandlerPCM{
     AliCutHandlerPCM(const AliCutHandlerPCM&);                  // Prevent copy-construction
     AliCutHandlerPCM &operator=(const AliCutHandlerPCM&);       // Prevent assignment
 
-    ClassDef(AliCutHandlerPCM,2);
+    ClassDef(AliCutHandlerPCM,4);
 };
 
 #endif
