@@ -18,13 +18,13 @@ public:
   static AliDielectronPID* GetPIDCutsAna();
   AliDielectronCutGroup* GetTrackCuts(int trsel=0, int pidsel=0, Int_t MVACut=0, Bool_t useAODFilterCuts, TString TMVAweight="TMVAClassification_BDTG.weights_094.xml");
   AliDielectronEventCuts* GetEventCuts(Double_t centMin, Double_t centMax);
-  void TH3D SetEtaCorrection( Int_t det, Bool_t isMC, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, int sel);
+  void SetEtaCorrection( Int_t det, Bool_t isMC, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, int sel);
   static AliDielectronPID* pidFilterCuts;
   static TBits *fUsedVars;               // used variables
   TH1 *fPostPIDCntrdCorr;   // post pid correction object for electron sigma centroids in TPC
 };
 
-void TH3D LMEECutLib::SetEtaCorrection(Int_t det, Bool_t isMC, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, int sel) {
+void LMEECutLib::SetEtaCorrection(Int_t det, Bool_t isMC, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, int sel) {
 //For usage with TreeMaker
 //For efficiency task postcalibration is set in AddTask_slehner_ElectronEfficiency.C
   TString detstr;
