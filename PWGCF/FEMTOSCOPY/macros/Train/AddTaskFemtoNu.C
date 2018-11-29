@@ -1,5 +1,5 @@
 ///
-/// \file AddTaskFemtoSubtrains.C
+/// \file AddTaskFemtoNu.C
 ///
 
 
@@ -14,7 +14,15 @@
 #endif
 
 
-/// Create Femtoscopy AliAnalysisTask
+/// Create a femtoscopic analysis task with results stored in an
+/// AliFemtoResultStorage object instead of TList for more efficient
+/// file merging.
+///
+/// Behavior is the same as standard AddTaskFemto:
+///
+/// - Output file is the manager's CommonFileName
+/// - Results are stored in the `/PWG2FEMTO` TDirectory
+/// - Config macro path is relative to `$ALICE_PHYSICS`
 ///
 AliAnalysisTaskFemto*
 AddTaskFemtoNu(TString configMacroName,
@@ -33,7 +41,7 @@ AddTaskFemtoNu(TString configMacroName,
   }
 
   AliAnalysisTaskFemtoNu *task =
-    new AliAnalysisTaskFemtoNu("TaskFemto",
+    new AliAnalysisTaskFemtoNu(containerName,
                                "$ALICE_PHYSICS/"+configMacroName,
                                configMacroParameters,
                                kFALSE);
@@ -48,6 +56,13 @@ AddTaskFemtoNu(TString configMacroName,
 }
 
 
+/// Handle creating trains with subwagons:
+///
+/// - The subwagon name is joined to the containername with a '_'
+/// - The subwagon name is appended to the configMacroParameters
+///   as the last parameter, moving subwagon handling to the config
+///   macro
+///
 AliAnalysisTaskFemto*
 AddTaskFemtoNu(TString configMacroName,
                TString containerName,
