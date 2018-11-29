@@ -85,6 +85,11 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fCentBin(0), 
   fRunNumber(0),
   fIsMB(kTRUE),
+  fIsUserDefinedNonlinearity(kFALSE),
+  fNonlin1(0),
+  fNonlin2(0),
+  fNonlin3(1.),
+  fNonlin4(0),
   fIsMC(0),
   fIsFastMC(0)
 {
@@ -125,6 +130,11 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fCentBin(0),
   fRunNumber(0),
   fIsMB(0),
+  fIsUserDefinedNonlinearity(kFALSE),
+  fNonlin1(0),
+  fNonlin2(0),
+  fNonlin3(1.),
+  fNonlin4(0),
   fIsMC(0),
   fIsFastMC(0)
 {
@@ -169,6 +179,11 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fCentBin(0),
   fRunNumber(0),
   fIsMB(kTRUE),
+  fIsUserDefinedNonlinearity(kFALSE),
+  fNonlin1(0),
+  fNonlin2(0),
+  fNonlin3(1.),
+  fNonlin4(0),
   fIsMC(0),
   fIsFastMC(0)
 {
@@ -778,8 +793,13 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     
 //    AliCaloPhoton *p = new ((*fPHOSEvent)[inList]) AliCaloPhoton(momentum.Px(),momentum.Py(),momentum.Pz(),clu->E() );
 
-    momentum*= CorrectNonlinearity(clu->E())/clu->E() ;
-    AliCaloPhoton *p = new ((*fPHOSEvent)[inList]) AliCaloPhoton(momentum.Px(),momentum.Py(),momentum.Pz(),CorrectNonlinearity(clu->E()) );
+    Double_t e = clu->E();
+    if (fIsUserDefinedNonlinearity){
+      momentum*= CorrectNonlinearity(clu->E())/clu->E() ;
+      e = CorrectNonlinearity(clu->E());
+    }
+
+    AliCaloPhoton *p = new ((*fPHOSEvent)[inList]) AliCaloPhoton(momentum.Px(),momentum.Py(),momentum.Pz(),e );
 
     inList++;
     
@@ -2634,10 +2654,9 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
 
 }
 
-
-
 Double_t AliAnalysisTaskTaggedPhotons::CorrectNonlinearity(Double_t en){
 
   //As in PHOS Calibration Paper
-    return 0.03+0.09*TMath::Sqrt(en)+1.05*en+0.000249*en*en ;
+//    return 0.03+0.09*TMath::Sqrt(en)+1.05*en+0.000249*en*en ;
+  return fNonlin1+fNonlin2*TMath::Sqrt(en)+fNonlin3*en+fNonlin4*en*en;
 }
