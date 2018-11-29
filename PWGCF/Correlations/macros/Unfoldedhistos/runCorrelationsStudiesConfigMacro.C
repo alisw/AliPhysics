@@ -61,14 +61,14 @@ void runCorrelationsStudiesConfigMacro() {
   szpass = "2";
 
   /* Running conditions */
-  szAliPhysicsVersion = "vAN-20171222-1";
+  szAliPhysicsVersion = "vAN-20181128_ROOT6-1";
 
   /* the number of files we want to test */
   nNoOfInputFiles = 30;
   nNoOfTestFiles = 2;
 
   /* load the run numbers */
-  load2010cTestRunNumber();
+  // load2010cTestRunNumber();
   // loadLocal2010hMCTestRunNumber();
   // load2010hTestRunNumber();
   // load2010hMCTestRunNumber();
@@ -87,6 +87,7 @@ void runCorrelationsStudiesConfigMacro() {
   // loadAMPT2015oHIRTestRunNumber();
   // load2017nRunNumbers();
   // loadAMPT2760RunNumbers();
+  load2018qRunNumbers();
 
   szRunPrefix = bMC ? "" : "000";
 
@@ -796,13 +797,17 @@ void loadAMPT2760RunNumbers() {
 }
 
 void load2018qRunNumbers() {
-  const Int_t nruns = 10;
+  const Int_t nruns = 14;
   const char *runs[nruns] = {
+      "296068",
+      "296066",
+      "296065",
+      "296063",
       "296062",
       "296061",
       "296060",
       "295589",
-      "295587",
+      "295588",
       "295587",
       "295586",
       "295585",
