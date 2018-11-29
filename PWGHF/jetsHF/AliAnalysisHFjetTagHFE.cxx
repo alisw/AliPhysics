@@ -1013,11 +1013,13 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
      fHistCent->Fill(centrality);    
 
      // MC (particle level Jet)
+     Double_t pthard = 0.0;
      if(fmcData)
        {
-        MakeParticleLevelJet();
+        MakeParticleLevelJet(pthard);
        }
      if(idbHFEj)cout << "check fmcData ..." << endl;
+
 
   /////////////////////////////
   //EMCAL cluster information//
@@ -1572,7 +1574,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                     if(fFlagLS)fHistLSjet->Fill(pt,corrPt);
                     if(fFlagLS && pt>4.0) fHistLSjet_DCA->Fill(corrPt,epTarray[3]);
                
-                    if(iMCHF)
+                    //if(iMCHF)
+                    if(iMCHF && pTeJetTrue<pthard)
                       {
                        double HFjetVals[7];
                        HFjetVals[0]=track->Pt(); HFjetVals[1]=0.0; HFjetVals[2] = corrPt; HFjetVals[3] = pTeJet; HFjetVals[4] = pTeJetTrue; HFjetVals[5] = 0.0; HFjetVals[6] = 0.0;
@@ -1953,7 +1956,7 @@ Bool_t AliAnalysisHFjetTagHFE::isPhotonic(int Mompdg)
 }
 
 //void AliAnalysisHFjetTagHFE::MakeParticleLevelJet(THnSparse *pJet)
-void AliAnalysisHFjetTagHFE::MakeParticleLevelJet()
+void AliAnalysisHFjetTagHFE::MakeParticleLevelJet(Double_t &pthard)
 {  
          if(idbHFEj)cout << "Making Particle Level Jet ..." << endl;
          if(idbHFEj)cout << fJetsContPart << endl;
@@ -1979,6 +1982,9 @@ void AliAnalysisHFjetTagHFE::MakeParticleLevelJet()
             if(MCgen.Contains(embpi0))NembMCpi0 = NpureMCproc-1;
             if(MCgen.Contains(embeta))NembMCeta = NpureMCproc-1;
             NpureMCproc += gh->NProduced();
+
+            AliGenPythiaEventHeader* ph= dynamic_cast<AliGenPythiaEventHeader*>(gh);
+            if(ph)pthard = ph->GetPtHard();
            }
         }
     }
@@ -2038,7 +2044,7 @@ void AliAnalysisHFjetTagHFE::MakeParticleLevelJet()
                      double jetEta = jetPart->Eta();
                      //double jetEtacut = 0.9-0.3; // how get R size ?
                      //double jetEtacut = 0.6; // how get R size ?
-                     if(fabs(jetEta)<fJetEtaCut)
+                     if(fabs(jetEta)<fJetEtaCut && jetPart->Pt()<pthard)
                         {
                          Bool_t iTagHFjet = tagHFjet( jetPart, MCpTarray, 0, MChfepT);
                          //if(idbHFEj)cout << "iTagHFjet = " << iTagHFjet << endl;
