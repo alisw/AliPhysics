@@ -192,7 +192,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   Bool_t isHeavyFlavour(int Mompdg, Bool_t &ich, Bool_t &ibe);
   Bool_t isPhotonic(int Mompdg);
   //void MakeParticleLevelJet(THnSparse *pJet);
-  void MakeParticleLevelJet();
+  void MakeParticleLevelJet(Double_t &pthard);
   //void SetCentralityMim(Int_t centMim) {fcentMim = centMim;};
   //void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
   void GetFakeHadronJet(Double_t pthad, Double_t *hpTarray, Double_t &rho);
