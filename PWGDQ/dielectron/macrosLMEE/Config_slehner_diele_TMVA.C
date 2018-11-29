@@ -72,9 +72,14 @@ void SetTPCCorr(AliDielectron *die, Bool_t hasMC){
   TString path="alien:///alice/cern.ch/user/s/selehner/recal/";
   if(hasMC) TString fName= "recalib_mc_tpc_nsigmaele.root";
   else      TString fName= "recalib_data_tpc_nsigmaele.root";
-  gSystem->Exec(TString::Format("alien_cp %s .",(path+fName).Data()));
-  ::Info("Config_slehner_LMEE_TMVA","Get TPC correction from Alien: %s",(path+fName).Data());
-  _file = TFile::Open(fName.Data());
+  TFile* _file = TFile::Open(fName.Data());
+//  _file = TFile::Open(fName.Data());
+  if(!_file){
+    gSystem->Exec(TString::Format("alien_cp %s .",(path+fName).Data()));
+    ::Info("Config_slehner_LMEE_TMVA","Get TPC correction from Alien: %s",(path+fName).Data());
+    _file = TFile::Open(fName.Data());
+    if(!_file)  ::Error("Config_slehner_LMEE_TMVA","Cannot get TPC correction from Alien: %s",(path+fName).Data());
+  }
   
   TH3D* mean = dynamic_cast<TH3D*>(_file->Get("sum_mean_correction"));
   TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
@@ -244,9 +249,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Track","nSigmaITSEl:pt", "", 100,0,10,100,-5,5,AliDielectronVarManager::kPt,AliDielectronVarManager::kITSnSigmaEle);  
   histos->UserHistogram("Track","nSigmaTPCEl:pt", "", 100,0,10,100,-5,5,AliDielectronVarManager::kPt,AliDielectronVarManager::kTPCnSigmaEle);  
   histos->UserHistogram("Track","nSigmaTOFEl:pt", "", 100,0,10,100,-5,5,AliDielectronVarManager::kPt,AliDielectronVarManager::kTOFnSigmaEle);  
-  histos->UserHistogram("Track","nSigmaITSEl:eta", "", 100,0,10,100,-5,5,AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaEle);  
-  histos->UserHistogram("Track","nSigmaTPCEl:eta", "", 100,0,10,100,-5,5,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEle);  
-  histos->UserHistogram("Track","nSigmaTOFEl:eta", "", 100,0,10,100,-5,5,AliDielectronVarManager::kEta,AliDielectronVarManager::kTOFnSigmaEle);  
+  histos->UserHistogram("Track","nSigmaITSEl:eta", "", 100,-1,1,100,-5,5,AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaEle);  
+  histos->UserHistogram("Track","nSigmaTPCEl:eta", "", 100,-1,1,100,-5,5,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEle);  
+  histos->UserHistogram("Track","nSigmaTOFEl:eta", "", 100,-1,1,100,-5,5,AliDielectronVarManager::kEta,AliDielectronVarManager::kTOFnSigmaEle);  
  
 
 //  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00, 0.02, 0.04, 0.06, 0.08, 0.10, 0.14, 0.18, 0.22, 0.30, 0.38, 0.46, 0.62, 0.7, 0.86, 1.1, 1.70, 2.30, 2.70, 2.90, 3.00, 3.10, 3.30, 4.00, 5.00");

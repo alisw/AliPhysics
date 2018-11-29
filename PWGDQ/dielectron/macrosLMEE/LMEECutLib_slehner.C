@@ -18,13 +18,13 @@ public:
   static AliDielectronPID* GetPIDCutsAna();
   AliDielectronCutGroup* GetTrackCuts(int trsel=0, int pidsel=0, Int_t MVACut=0, Bool_t useAODFilterCuts, TString TMVAweight="TMVAClassification_BDTG.weights_094.xml");
   AliDielectronEventCuts* GetEventCuts(Double_t centMin, Double_t centMax);
-  static TH3D SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise);
+  void TH3D SetEtaCorrection( Int_t det, Bool_t isMC, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, int sel);
   static AliDielectronPID* pidFilterCuts;
   static TBits *fUsedVars;               // used variables
   TH1 *fPostPIDCntrdCorr;   // post pid correction object for electron sigma centroids in TPC
 };
 
-static TH3D LMEECutLib::SetEtaCorrection(Int_t det, Bool_t isMC, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, int sel) {
+void TH3D LMEECutLib::SetEtaCorrection(Int_t det, Bool_t isMC, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, int sel) {
 //For usage with TreeMaker
 //For efficiency task postcalibration is set in AddTask_slehner_ElectronEfficiency.C
   TString detstr;
@@ -43,16 +43,17 @@ static TH3D LMEECutLib::SetEtaCorrection(Int_t det, Bool_t isMC, Int_t corrXdim,
   TString path="alien:///alice/cern.ch/user/s/selehner/recal/";
   TString fName= "recalib_"+type+"_"+detstr+"_nsigmaele.root";
   
-  _file = TFile::Open(fName.Data());
-  if(!_file){
+  TFile* corrfile;
+  corrfile= TFile::Open(fName.Data());
+  if(!corrfile){
     gSystem->Exec(TString::Format("alien_cp %s .",path.Data()));
-    _file = TFile::Open(fName.Data());
-    if(!_file) ::Error("LMEECutLib::SetEtaCorrection",(TString("Cannot get correction from Alien: ")+path+fName).Data());
+    corrfile = TFile::Open(fName.Data());
+    if(!corrfile) ::Error("LMEECutLib::SetEtaCorrection",(TString("Cannot get correction from Alien: ")+path+fName).Data());
     else  ::Info("LMEECutLib::SetEtaCorrection",(TString("Copy correction from Alien: ")+path+fName).Data());
   }    
     
-  TH3D* mean = dynamic_cast<TH3D*>(_file->Get("sum_mean_correction"));
-  TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
+  TH3D* mean = dynamic_cast<TH3D*>(corrfile->Get("sum_mean_correction"));
+  TH3D* width= dynamic_cast<TH3D*>(corrfile->Get("sum_width_correction"));
   
   // AliDielectron::SetCentroidCorrFunction
   UInt_t valType[20] = {0};
