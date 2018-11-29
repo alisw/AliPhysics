@@ -50,7 +50,8 @@ public:
            //for pp: 
   void SetCentralityWeights(TString filename="MBCentralityWeights.root") ;
   void SetMultiplicityBins(TArrayI ar){fNCenBin=ar.GetSize() ; fCenBinEdges.Copy(ar);}
-
+  void SetUserDefinedNonlinearity(Bool_t isUserDef=kTRUE){fIsUserDefinedNonlinearity=isUserDef; }
+  void SetNonlinearityParameters(Double_t a, Double_t b, Double_t c, Double_t d){fNonlin1=a;fNonlin2=b;fNonlin3=c;fNonlin4=d;};
 protected:
   void    FillMCHistos() ;
   void    FillTaggingHistos() ;
@@ -105,6 +106,11 @@ private:
   Float_t fMinBCDistance;       //minimal distance to bad channel
   Float_t fTimeCut ;            //Time cut
   Double_t fWeightParamPi0[7] ; //!Parameters to calculate weights
+  Double_t fNonlin1;
+  Double_t fNonlin2;
+  Double_t fNonlin3;
+  Double_t fNonlin4;
+
   //
   Double_t fRP;           //! Reaction plane orientation
   Double_t fCentrality;   //!
@@ -114,6 +120,7 @@ private:
   Bool_t fIsMB ;          //which trigger to use
   Bool_t fIsMC ;          //Is this is MC
   Bool_t fIsFastMC;       //This is fast MC, bypass event checks
+  Bool_t fIsUserDefinedNonlinearity; //Correct for Nonlinearity in the class, not TenderSupply - use for Nonlinearity studies
   TH2I * fPHOSBadMap[6] ; //! 
   TH1F * fCentralityWeights[6]; //!Weights to correct centrality non-flatness
     
