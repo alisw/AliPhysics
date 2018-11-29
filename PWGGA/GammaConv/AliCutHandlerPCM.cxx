@@ -315,6 +315,25 @@ void AliCutHandlerPCM::AddCutHeavyMesonPCMCalo(TString eventCut,TString photonCu
   return;
 }
 
+void AliCutHandlerPCM::AddCutPCMMaterial(TString eventCut, TString photonCut){
+  if(fNCuts>=fNMaxCuts) {
+    cout << "ERROR in AliCutHandlerPCM: Exceeded maximum number of cuts!" << endl;
+    fValidCuts = false;
+    return;
+  }
+  if( eventCut.Length()!=8 || photonCut.Length()!=26 ) {
+    cout << "ERROR in AliCutHandlerPCM: Incorrect length of cut string!" << endl;
+    fValidCutsEvent = kFALSE;
+    fValidCutsPCM   = kFALSE;
+    fValidCuts      = false;
+    return;
+  }
+  fMode                     = 0;
+  fEventCutArray[fNCuts]    = eventCut;
+  fPhotonCutArray[fNCuts]   = photonCut;
+  fNCuts++;
+  return;
+}
 
 
 
