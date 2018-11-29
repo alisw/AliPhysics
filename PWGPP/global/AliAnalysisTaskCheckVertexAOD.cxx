@@ -148,14 +148,14 @@ void AliAnalysisTaskCheckVertexAOD::UserCreateOutputObjects() {
   fHistPrimVtxType->GetXaxis()->SetBinLabel(8,"Other");
   fOutput->Add(fHistPrimVtxType);
 
-  fHistXspdVsContrib=new TH2F("hXspdVsContrib"," ; n_{Contributors} ; x_{Vertex} (cm)",100,0.,fMaxMult,300,-1.,1.);
-  fHistYspdVsContrib=new TH2F("hYspdVsContrib"," ; n_{Contributors} ; y_{Vertex} (cm)",100,0.,fMaxMult,300,-1.,1.);
+  fHistXspdVsContrib=new TH2F("hXspdVsContrib"," ; n_{Contributors} ; x_{Vertex} (cm)",100,0.,fMaxMult,1000,-1.,1.);
+  fHistYspdVsContrib=new TH2F("hYspdVsContrib"," ; n_{Contributors} ; y_{Vertex} (cm)",100,0.,fMaxMult,1000,-1.,1.);
   fHistZspdVsContrib=new TH2F("hZspdVsContrib"," ; n_{Contributors} ; z_{Vertex} (cm)",100,0.,fMaxMult,300,-20.,20.);
-  fHistXtrkVsContrib=new TH2F("hXtrkVsContrib"," ; n_{Contributors} ; x_{Vertex} (cm)",100,0.,fMaxMult,300,-1.,1.);
-  fHistYtrkVsContrib=new TH2F("hYtrkVsContrib"," ; n_{Contributors} ; y_{Vertex} (cm)",100,0.,fMaxMult,300,-1.,1.);
+  fHistXtrkVsContrib=new TH2F("hXtrkVsContrib"," ; n_{Contributors} ; x_{Vertex} (cm)",100,0.,fMaxMult,1000,-1.,1.);
+  fHistYtrkVsContrib=new TH2F("hYtrkVsContrib"," ; n_{Contributors} ; y_{Vertex} (cm)",100,0.,fMaxMult,1000,-1.,1.);
   fHistZtrkVsContrib=new TH2F("hZtrkVsContrib"," ; n_{Contributors} ; z_{Vertex} (cm)",100,0.,fMaxMult,300,-20.,20.);
-  fHistXtpcVsContrib=new TH2F("hXtpcVsContrib"," ; n_{Contributors} ; x_{Vertex} (cm)",100,0.,fMaxMult,300,-1.,1.);
-  fHistYtpcVsContrib=new TH2F("hYtpcVsContrib"," ; n_{Contributors} ; y_{Vertex} (cm)",100,0.,fMaxMult,300,-1.,1.);
+  fHistXtpcVsContrib=new TH2F("hXtpcVsContrib"," ; n_{Contributors} ; x_{Vertex} (cm)",100,0.,fMaxMult,1000,-1.,1.);
+  fHistYtpcVsContrib=new TH2F("hYtpcVsContrib"," ; n_{Contributors} ; y_{Vertex} (cm)",100,0.,fMaxMult,1000,-1.,1.);
   fHistZtpcVsContrib=new TH2F("hZtpcVsContrib"," ; n_{Contributors} ; z_{Vertex} (cm)",100,0.,fMaxMult,300,-20.,20.);
   fOutput->Add(fHistXspdVsContrib);
   fOutput->Add(fHistYspdVsContrib);
@@ -167,14 +167,14 @@ void AliAnalysisTaskCheckVertexAOD::UserCreateOutputObjects() {
   fOutput->Add(fHistYtpcVsContrib);
   fOutput->Add(fHistZtpcVsContrib);
 
-  fHistXspdVsMult=new TH2F("hXspdVsMult"," ; n_{Tracklets} ; x_{Vertex} (cm)",100,0.,fMaxMult,300,-1.,1.);
-  fHistYspdVsMult=new TH2F("hYspdVsMult"," ; n_{Tracklets} ; y_{Vertex} (cm)",100,0.,fMaxMult,300,-1.,1.);
+  fHistXspdVsMult=new TH2F("hXspdVsMult"," ; n_{Tracklets} ; x_{Vertex} (cm)",100,0.,fMaxMult,1000,-1.,1.);
+  fHistYspdVsMult=new TH2F("hYspdVsMult"," ; n_{Tracklets} ; y_{Vertex} (cm)",100,0.,fMaxMult,1000,-1.,1.);
   fHistZspdVsMult=new TH2F("hZspdVsMult"," ; n_{Tracklets} ; z_{Vertex} (cm)",100,0.,fMaxMult,300,-20.,20.);
-  fHistXtrkVsMult=new TH2F("hXtrkVsMult"," ; n_{Tracklets} ; x_{Vertex} (cm)",100,0.,fMaxMult,300,-1.,1.);
-  fHistYtrkVsMult=new TH2F("hYtrkVsMult"," ; n_{Tracklets} ; y_{Vertex} (cm)",100,0.,fMaxMult,300,-1.,1.);
+  fHistXtrkVsMult=new TH2F("hXtrkVsMult"," ; n_{Tracklets} ; x_{Vertex} (cm)",100,0.,fMaxMult,1000,-1.,1.);
+  fHistYtrkVsMult=new TH2F("hYtrkVsMult"," ; n_{Tracklets} ; y_{Vertex} (cm)",100,0.,fMaxMult,1000,-1.,1.);
   fHistZtrkVsMult=new TH2F("hZtrkVsMult"," ; n_{Tracklets} ; z_{Vertex} (cm)",100,0.,fMaxMult,300,-20.,20.);
-  fHistXtpcVsMult=new TH2F("hXtpcVsMult"," ; n_{Tracklets} ; x_{Vertex} (cm)",100,0.,fMaxMult,300,-1.,1.);
-  fHistYtpcVsMult=new TH2F("hYtpcVsMult"," ; n_{Tracklets} ; y_{Vertex} (cm)",100,0.,fMaxMult,300,-1.,1.);
+  fHistXtpcVsMult=new TH2F("hXtpcVsMult"," ; n_{Tracklets} ; x_{Vertex} (cm)",100,0.,fMaxMult,1000,-1.,1.);
+  fHistYtpcVsMult=new TH2F("hYtpcVsMult"," ; n_{Tracklets} ; y_{Vertex} (cm)",100,0.,fMaxMult,1000,-1.,1.);
   fHistZtpcVsMult=new TH2F("hZtpcVsMult"," ; n_{Tracklets} ; z_{Vertex} (cm)",100,0.,fMaxMult,300,-20.,20.);
   fOutput->Add(fHistXspdVsMult);
   fOutput->Add(fHistYspdVsMult);
