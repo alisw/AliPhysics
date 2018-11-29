@@ -6607,10 +6607,6 @@ Int_t AliAnalysisTaskSEB0toDStarPi::MatchCandidateToMonteCarlo(Int_t pdgabs, Ali
   { 
     return -1;
   }
- 
-  if(pdgabs==511) std::cout << std::endl << "daughters = " << mother->GetNDaughters() << std::endl;
-  if(pdgabs==511) std::cout << "pxMother = " << pxMother << "pyMother = " << pyMother << "pzMother = " << pzMother << std::endl;
-  if(pdgabs==511) std::cout << "pxSumDgs = " << pxSumDgs << "pySumDgs = " << pySumDgs << "pzSumDgs = " << pzSumDgs << std::endl;
 
   // Check if label matches a signal label
   // Int_t bIsSignal = kFALSE;
