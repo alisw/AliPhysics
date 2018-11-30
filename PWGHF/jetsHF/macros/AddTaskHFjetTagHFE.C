@@ -162,9 +162,9 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
       //AliJetContainer* jetContMC = jetTask->AddJetContainer(AliJetContainer::kChargedJet, AliJetContainer::antikt_algorithm, AliJetContainer::pt_scheme, jetradius, AliJetContainer::kTPCfid, "JetMC");
       //AliJetContainer* jetContMC = jetTask->AddJetContainer("JetMC_AKTChargedR030_mcparticles_pT0150_pt_scheme");
       AliJetContainer* jetContMC;
-      if(jetradius==0.3) = jetTask->AddJetContainer("JetMC_AKTChargedR030_mcparticles_pT0150_pt_scheme");
-      if(jetradius==0.2) = jetTask->AddJetContainer("JetMC_AKTChargedR020_mcparticles_pT0150_pt_scheme");
-      if(jetradius==0.4) = jetTask->AddJetContainer("JetMC_AKTChargedR040_mcparticles_pT0150_pt_scheme");
+      if(jetradius==0.3)jetTask->AddJetContainer("JetMC_AKTChargedR030_mcparticles_pT0150_pt_scheme");
+      if(jetradius==0.2)jetTask->AddJetContainer("JetMC_AKTChargedR020_mcparticles_pT0150_pt_scheme");
+      if(jetradius==0.4)jetTask->AddJetContainer("JetMC_AKTChargedR040_mcparticles_pT0150_pt_scheme");
      
       if (jetContMC) {
       //jetCont->SetRhoName(nrho);
