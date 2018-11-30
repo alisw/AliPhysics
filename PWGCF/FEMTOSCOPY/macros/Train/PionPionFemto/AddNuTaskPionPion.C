@@ -121,6 +121,7 @@ AliAnalysisTask* AddNuTaskPionPion(TString container,
   }
 
   cout << "[AddTaskPionPion]\n"
+          "   container: " << container << "\n"
           "   output: '" << output_filename << "'\n"
           "   macro: '" << macro << "'\n"
           "   params: '" << params << "'\n";

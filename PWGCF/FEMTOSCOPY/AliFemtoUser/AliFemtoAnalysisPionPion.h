@@ -245,7 +245,8 @@ struct AliFemtoAnalysisPionPion::CutParams {
 
   UInt_t pion_1_min_tpc_ncls;
   Bool_t pion_1_remove_kinks,
-         pion_1_set_label;
+         pion_1_set_label,
+         pion_1_use_tpctof;
 
   // PION - 2
   Float_t pion_2_PtMin,
