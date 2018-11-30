@@ -1646,14 +1646,18 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
                 if(fIsFromD){
                     fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
                     fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+                    fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
+                    fMCparticleGGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleGMother->GetMother());
                     pdg_mother = fMCparticleMother->GetPdgCode();
+                    float pdg_gmother = fMCparticleGMother->GetPdgCode();
+                    float pdg_ggmother = fMCparticleGGMother->GetPdgCode();
                     
                     if(TMath::Abs(pdg_mother)>400 && TMath::Abs(pdg_mother)<500){///charmed meson 
 						qadca[1]=0.5; 
 						if(TMath::Abs(pdg_mother) == 421) qadca[1]=16.5; ///to check DCA D0
 						if(TMath::Abs(pdg_mother) == 411) qadca[1]=17.5; ///to check DCA D+-
-						if(TMath::Abs(pdg_mother) == 413 || TMath::Abs(pdg_mother) == 423) qadca[1]=18.5; ///to check DCA Dstar and its resonances by Sudhir Nov 22 2018 413 = Dstar+ and 423 = Dstar0
-											 
+						if(TMath::Abs(pdg_gmother) == 413 || TMath::Abs(pdg_gmother) == 423) qadca[1]=18.5; ///to check DCA Dstar and its resonances by Sudhir Nov 22 2018 413 = Dstar+ and 423 = Dstar0
+						//cout<<"PDG Dstar Bef Corr:    "<<TMath::Abs(pdg_gmother)<<endl;					 
 						 hCharmMotherPt->Fill(fMCparticleMother->Pt());
 						 hCharmMotherPt_vsElecPt->Fill(fPt,fMCparticleMother->Pt());
 						 hElecPt_vsCharmMotherPt->Fill(fMCparticleMother->Pt(),fPt);
@@ -1701,8 +1705,8 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 							qadca[1]=7.5;
 							if(TMath::Abs(pdg_mother) == 421) qadca[1]=12.5; ///to check DCA D0 - corrected
 							if(TMath::Abs(pdg_mother) == 411) qadca[1]=13.5; ///to check DCA D+- - corrected
-							if(TMath::Abs(pdg_mother) == 413 || TMath::Abs(pdg_mother) == 423) qadca[1]=14.5; ///to check DCA Dstar and its resonances by Sudhir Nov 22 2018 413 = Dstar+ and 423 = Dstar0 after correction
-							
+							if(TMath::Abs(pdg_gmother) == 413 || TMath::Abs(pdg_gmother) == 423) qadca[1]=14.5; ///to check DCA Dstar and its resonances by Sudhir Nov 22 2018 413 = Dstar+ and 423 = Dstar0 after correction
+							//cout<<TMath::Abs(pdg_gmother)<<endl;
 							hCharmMotherPt_corr->Fill(fMCparticleMother->Pt());
 							hCharmMotherPt_corr2->Fill(fMCparticleMother->Pt());
 							hCharmMotherPt_vsElecPt_corr->Fill(fPt,fMCparticleMother->Pt());
