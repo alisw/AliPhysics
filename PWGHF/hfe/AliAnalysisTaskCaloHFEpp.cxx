@@ -91,6 +91,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				MaxNtr(0),
 				//==== basic parameters ====
 				fNevents(0),
+				fNevents_DB(0),
 				fHist_VertexZ(0),
 				fHist_Centrality(0),
 				fHist_Mult(0),
@@ -245,6 +246,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				MaxNtr(0),
 				//==== basic parameters ====
 				fNevents(0),
+				fNevents_DB(0),
 				fHist_VertexZ(0),
 				fHist_Centrality(0),
 				fHist_Mult(0),
@@ -412,6 +414,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fHist_VertexZ = new TH1F("fHist_VertexZ", "Z Vertex position; Vtx_{z}; counts", 200, -25, 25);     
 				fHist_Centrality = new TH1F("fHist_Centrality", "Centrality", 100, 0, 100);
 				fNevents = new TH1F("fNevents","No of events",8,-0.5,7.5);
+				fNevents_DB = new TH1F("fNevents_DB","No of events",2,-0.5,1.5);
 				fTPCNcls = new TH1F("fTPCNcls","No of TPC clusters; N^{TPC}_{cls}; counts",100,0.0,200.);           
 				fITSNcls = new TH1F("fITSNcls","No of ITS clusters; N^{ITS}_{cls}; counts",100,0.0,20.); 
 				fTPCCrossedRow = new TH1F("fTPCCrossedRow","No of TPC CrossedRow; N^{ITS}_{CrossedRow}; counts",500,0.,500.); 
@@ -526,6 +529,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 
 				//==== basic parameters ====
 				fOutputList->Add(fNevents);
+				fOutputList->Add(fNevents_DB);
 				fOutputList->Add(fHist_VertexZ);          
 				fOutputList->Add(fHist_Centrality);       
 				fOutputList->Add(fHist_Mult);           
@@ -1010,6 +1014,9 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 								Double_t pTmom = -1.0;
 								Int_t pidM = -1;
 								Int_t ilabelM = -1;
+								Double_t pTGMom = -1.0;
+								Int_t pidGM = -1;
+								Int_t ilabelGM = -1;
 								Bool_t iEmbPi0 = kFALSE; 
 								Bool_t iEmbEta = kFALSE;
 								Bool_t pid_eleD = kFALSE;
@@ -1023,9 +1030,21 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 												if(TMath::Abs(pdg)==11)pid_ele = 1.0;
 												if(pid_ele==1.0)FindMother(fMCTrackpart, ilabelM, pidM, pTmom);
 
-												pid_eleD = IsDdecay(pidM);
 												pid_eleB = IsBdecay(pidM);
 												pid_eleP = IsPdecay(pidM);
+												pid_eleD = IsDdecay(pidM);
+												if(pid_eleD || pid_eleB)fNevents_DB->Fill(0);
+
+												if(pid_eleD){
+																AliAODMCParticle* fMCTrackpartMom = (AliAODMCParticle*) fMCarray->At(ilabelM);
+																FindMother(fMCTrackpartMom,ilabelGM,pidGM,pTGMom);
+																if(IsBdecay(pidGM)){
+																				pid_eleB = IsBdecay(pidGM);
+																				pid_eleD = kFALSE;
+																}
+												}
+
+												if(pid_eleD || pid_eleB)fNevents_DB->Fill(1);
 
 												if(pidM==111)
 												{
@@ -1216,9 +1235,11 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 																				fEop_ele->Fill(eop);
 																				fDCAxy_Pt_ele->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
 																				// 411 : D+, 421 :  D0, 413 : D*+, 423 : D*0, 431 : D_s+, 433 : D_s*+
-																				if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)== 413){fDCAxy_Pt_Dpm->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
-																				if(TMath::Abs(pidM)==421 || TMath::Abs(pidM)== 423){fDCAxy_Pt_D0->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
-																				if(TMath::Abs(pidM)==431 || TMath::Abs(pidM)== 433){fDCAxy_Pt_Ds->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+																				if(pid_eleD){
+																								if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)== 413){fDCAxy_Pt_Dpm->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+																								if(TMath::Abs(pidM)==421 || TMath::Abs(pidM)== 423){fDCAxy_Pt_D0->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+																								if(TMath::Abs(pidM)==431 || TMath::Abs(pidM)== 433){fDCAxy_Pt_Ds->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+																				}
 																				if(pid_eleB){fDCAxy_Pt_B->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
 																}
 												}
