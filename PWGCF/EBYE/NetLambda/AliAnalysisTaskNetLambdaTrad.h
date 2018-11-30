@@ -61,8 +61,8 @@ protected:
     TH2F* f2fHistAntiLambdaSecFromWeakDecay;
     TH2F*  f2fHistLambdaMisId;
     TH2F* f2fHistAntiLambdaMisId;
-    TH2F*  f2fHistAntiLambdaLfover;
-    TH2F* f2fHistLambdaLfover;
+    TH2F*  f2fHistAntiLambdaRecPt;
+    TH2F* f2fHistLambdaRecPt;
     TH2F*  f2fHistInvMassVsPtLambdaRec;
     TH2F* f2fHistInvMassVsPtAntiLambdaRec;
     TH2F*  f2fHistPtmassctLambda;
