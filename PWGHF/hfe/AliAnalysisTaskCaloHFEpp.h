@@ -129,6 +129,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 
 		//==== basic parameters ====
 		TH1F*                   fNevents;
+		TH1F*                   fNevents_DB;
 		TH1F*                   fHist_VertexZ;        //! dummy histogram
 		TH1F*                   fHist_Centrality;        //! dummy histogram
 		TH2F*                   fHist_Mult;        //! dummy histogram
