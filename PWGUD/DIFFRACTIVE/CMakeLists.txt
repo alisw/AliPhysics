@@ -25,7 +25,6 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE
                     ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/DGTrigger
                     ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/CEPdevel
                     ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/CEPdevel/RawBuffers
-                    ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/Resonance
                    )
 
 # Additional include folders in alphabetical order except ROOT
@@ -68,8 +67,6 @@ set(SRCS
     CEPdevel/CEPEventBuffer.cxx
     CEPdevel/CEPTrackBuffer.cxx
     CEPdevel/AliAnalysisTaskCEP.cxx
-    Resonance/AliAnalysisTaskf0f2.cxx
-    Resonance/AliAnalysisPseudoRapidityDensity.cxx
    )
 
 # Headers from sources

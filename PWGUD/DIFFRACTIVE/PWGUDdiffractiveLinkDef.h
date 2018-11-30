@@ -51,8 +51,6 @@
 #pragma link C++ class CEPEventBuffer+;
 #pragma link C++ class CEPTrackBuffer+;
 #pragma link C++ class AliAnalysisTaskCEP+;
-#pragma link C++ class AliAnalysisTaskf0f2+;
-#pragma link C++ class AliAnalysisPseudoRapidityDensity+;
 #pragma link C++ class AliSPDGeometryUtils+;
 
 #endif

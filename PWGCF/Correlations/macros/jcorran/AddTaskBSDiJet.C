@@ -54,8 +54,9 @@ AliBSDiJetTask * AddTaskBSDiJet(TString taskname, bool isAA, Double_t leadingPar
 		//embeddingHelper->SetInputFilename("alice/data/2015/LHC15o/");
 		//embeddingHelper->SetFilePattern("alien:///alice/data/2015/LHC15o/000246844/pass1/AOD194/");
 		//embeddingHelper->SetFilePattern("alien:///alice/sim/2016/LHC16j5/15/246488/AOD200/");
-		if (option.Contains("LHC15o")) gSystem->Exec(Form("alien_find /alice/sim/2016/LHC16j5/%d/ AliAOD.root | grep AOD200 | perl -nle'print \"alien://\".$_' > embfile.txt",pthardbin));
+		if (option.Contains("LHC15o")) gSystem->Exec(Form("alien_find /alice/sim/2016/LHC16j5/ AliAOD.root | grep AOD200 | perl -nle'print \"alien://\".$_' | sort -R | head -300 > embfile.txt"));
 		embeddingHelper->SetFileListFilename("./embfile.txt");
+
 		//embeddingHelper->SetFilePattern("alien:///alice/sim/2016/LHC16j5/%d/%d/AOD200/");
 		//embeddingHelper->SetFileListFilename("alien:///alice/cern.ch/user/k/kimb/Emb_LHC15o.txt");
 		// If the embedded file is an ESD, then set:
