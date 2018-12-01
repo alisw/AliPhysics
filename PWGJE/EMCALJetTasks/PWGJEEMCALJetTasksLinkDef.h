@@ -266,5 +266,6 @@
 #pragma link C++ class AliAnalysisTaskEmcalSubjet+;
 #pragma link C++ class AliAnalysisTaskJetCoreEmcal+;
 #pragma link C++ class AliAnalysisTaskSVtaskMCFilter+;
+#pragma link C++ class AliAnalysisTaskEA+;
 #endif
 #endif

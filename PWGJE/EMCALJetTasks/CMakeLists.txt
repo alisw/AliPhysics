@@ -249,6 +249,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
         UserTasks/AliAnalysisTaskJetPP.cxx
         UserTasks/AliAnalysisTaskSVtaskMCFilter.cxx
+        UserTasks/AliAnalysisTaskEA.cxx
         UserTasks/AliAnalysisTaskSubJetFraction.cxx
 	UserTasks/AliAnalysisTaskRecoilJetYield.cxx
 	UserTasks/AliAnalysisTaskRecursiveSoftDrop.cxx
