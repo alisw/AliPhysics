@@ -212,6 +212,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void CheckPileUp() {fCheckPileUp = kTRUE;}
   void CheckPrimaryFlagAOD() {fCheckPrimaryFlagAOD = kTRUE;}
   void UseMCforKinematics() {fUseMCforKinematics = kTRUE;}
+  void SetRebinnedCorrHistos() {fRebinCorrHistos = kTRUE;}
   void SetCentralityWeights(TH1* hist) { fCentralityWeights = hist; }
   Bool_t AcceptEventCentralityWeight(Double_t centrality);
 
@@ -490,7 +491,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fCheckPileUp;//Usage of the "Pile-Up" event check
   Bool_t fCheckPrimaryFlagAOD;// Usage of check on AliAODtrack::kPrimary (default = OFF)
   Bool_t fUseMCforKinematics;//Usage of MC information for filling the kinematics information of particles (only in MCAODrec mode)
-
+  Bool_t fRebinCorrHistos;//Rebinning of corrected plots
   Bool_t fUseAdditionalVtxCuts;//usage of additional clean up cuts for primary vertex.
 
   Bool_t fUseOutOfBunchPileUpCutsLHC15o;//usage of correlation cuts to exclude out of bunche pile up. To be used for 2015 PbPb data.
