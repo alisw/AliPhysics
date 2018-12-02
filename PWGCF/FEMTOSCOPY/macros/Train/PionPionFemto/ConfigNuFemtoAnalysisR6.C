@@ -1,9 +1,13 @@
 ///
-/// \file PWGCF/FEMTOSCOPY/macros/Train/PionPionFemto/ConfigNuFemtoAnalysisRun.C
+/// \file PWGCF/FEMTOSCOPY/macros/Train/PionPionFemto/ConfigNuFemtoAnalysisR6.C
 ///
-/// \brief The configuration macro which sets up identical pion-pion analyses
+/// \brief The configuration macro which sets up identical pion-pion analyses (ROOT6)
 /// \author Andrew Kubera, Ohio State University, andrew.kubera@cern.ch
 ///
+
+#if __cplusplus < 201103L
+#error "This file requires use of the c++11 standard (ROOT6)"
+#endif
 
 #if !defined(__CINT__) && !defined(__CLING__)
 
@@ -46,71 +50,69 @@
 
 #endif
 
-typedef AliFemtoAnalysisPionPion AFAPP;
-
-bool DEFAULT_DO_KT = kFALSE;
+using AFAPP = AliFemtoAnalysisPionPion;
 
 struct MacroParams {
   std::vector<int> centrality_ranges;
   std::vector<unsigned char> pair_codes;
   std::vector<float> kt_ranges;
 
-  int eventreader_filter_bit;
-  bool eventreader_epvzero;
-  bool eventreader_dca_globaltrack;
-  bool eventreader_centrality_flattening;
-  int eventreader_use_multiplicity;
+  int eventreader_filter_bit { 7 };
+  bool eventreader_epvzero { true };
+  bool eventreader_dca_globaltrack { true };
+  bool eventreader_centrality_flattening { false };
+  int eventreader_use_multiplicity { AliFemtoEventReaderAOD::kCentrality };
 
-  float qinv_bin_size_MeV;
-  float qinv_max_GeV;
+  float qinv_bin_size_MeV { 5.0 };
+  float qinv_max_GeV { 1.0 };
 
-  UInt_t delta_phi_bin_count;
-  Float_t delta_phi_min;
-  Float_t delta_phi_max;
+  UInt_t delta_phi_bin_count { 72 };
+  Float_t delta_phi_min { -0.1 };
+  Float_t delta_phi_max { 0.1 };
 
-  UInt_t delta_eta_bin_count;
-  Float_t delta_eta_min;
-  Float_t delta_eta_max;
+  UInt_t delta_eta_bin_count { 72 };
+  Float_t delta_eta_min { -0.1 };
+  Float_t delta_eta_max { 0.1 };
 
-  UInt_t q3d_bin_count;
-  Float_t q3d_maxq;
+  UInt_t q3d_bin_count { 59 };
+  Float_t q3d_maxq { 0.295 };
 
-  UInt_t ylm_max_l;
-  UInt_t ylm_ibin;
-  Float_t ylm_vmin;
-  Float_t ylm_vmax;
-  Bool_t ylm_useLCMS;
+  UInt_t ylm_max_l { 3 };
+  UInt_t ylm_ibin { 30 };
+  Float_t ylm_vmin { 0.0 };
+  Float_t ylm_vmax { 0.3 };
+  Bool_t ylm_useLCMS { false };
 
-  bool do_deltaeta_deltaphi_cf;
-  bool do_avg_sep_cf;
+  bool do_deltaeta_deltaphi_cf { false };
+  bool do_avg_sep_cf { false };
 
-  bool do_qinv_cf;
-  bool do_kt_qinv_cf;
-  bool do_q3d_cf;
-  bool do_kt_q3d_cf;
-  bool do_kt_lcms_cf;
-  bool do_kt_q3dpf_cf;
-  bool do_pqq3d_cf;
-  bool do_kt_pqq3d_cf;
+  bool do_qinv_cf { false };
+  bool do_kt_qinv_cf { false };
+  bool do_q3d_cf {false};
+  bool do_kt_q3d_cf { false };
+  bool do_kt_lcms_cf { false };
+  bool do_kt_q3dpf_cf { false };
+  bool do_pqq3d_cf { false };
+  bool do_kt_pqq3d_cf { false };
 
-  bool do_moco6_cf;
+  bool do_moco6_cf { false };
 
-  bool do_ylm_cf; // not implemented yet
-  bool do_kt_ylm_cf;
+  bool do_ylm_cf { false };
+  bool do_kt_ylm_cf { false };
 
   // monte-carlo correlation functions
-  bool do_trueq_cf;
-  bool do_kt_trueq_cf;
-  bool do_trueq3d_cf;
-  bool do_kt_trueq3d_cf;
-  bool do_trueq3dbp_cf;
-  bool do_kt_trueq3dbp_cf;
+  bool do_trueq_cf { false };
+  bool do_kt_trueq_cf { false };
+  bool do_trueq3d_cf { false };
+  bool do_kt_trueq3d_cf { false };
+  bool do_trueq3dbp_cf { false };
+  bool do_kt_trueq3dbp_cf { false };
 
-  bool do_truedetadphi_cf;
-  bool do_kt_truedetadphi_cf;
+  bool do_truedetadphi_cf { false };
+  bool do_kt_truedetadphi_cf { false };
 
-  bool do_detadphi_simple_cf;
-  bool do_kt_detadphi_simple_cf;
+  bool do_detadphi_simple_cf { false };
+  bool do_kt_detadphi_simple_cf { false };
 };
 
 void
@@ -150,58 +152,6 @@ ConfigFemtoAnalysis(const TString& param_str="")
   AFAPP::AnalysisParams analysis_config = AFAPP::DefaultConfig();
   AFAPP::CutParams cut_config = AFAPP::DefaultCutConfig();
   MacroParams macro_config;
-
-  // default
-  macro_config.do_qinv_cf = false;
-  macro_config.do_kt_qinv_cf = false;
-  macro_config.do_q3d_cf = false;
-  macro_config.do_kt_q3d_cf = false;
-  macro_config.do_kt_lcms_cf = false;
-  macro_config.do_kt_q3dpf_cf = false;
-  macro_config.do_pqq3d_cf = false;
-  macro_config.do_kt_pqq3d_cf = false;
-  macro_config.do_deltaeta_deltaphi_cf = false;
-  macro_config.do_avg_sep_cf = false;
-  macro_config.do_ylm_cf = false;
-  macro_config.do_kt_ylm_cf = false;
-  macro_config.do_moco6_cf = false;
-
-  macro_config.do_trueq_cf = false;
-  macro_config.do_kt_trueq_cf = false;
-  macro_config.do_trueq3d_cf = false;
-  macro_config.do_kt_trueq3d_cf = false;
-  macro_config.do_trueq3dbp_cf = false;
-  macro_config.do_kt_trueq3dbp_cf = false;
-  macro_config.do_truedetadphi_cf = false;
-  macro_config.do_kt_truedetadphi_cf = false;
-  macro_config.do_detadphi_simple_cf = false;
-  macro_config.do_kt_detadphi_simple_cf = false;
-
-  macro_config.qinv_bin_size_MeV = 5.0f;
-  macro_config.qinv_max_GeV = 1.0f;
-
-  macro_config.delta_phi_bin_count = 72;
-  macro_config.delta_phi_min = -0.1;
-  macro_config.delta_phi_max =  0.1;
-
-  macro_config.delta_eta_bin_count = 72;
-  macro_config.delta_eta_min = -0.1;
-  macro_config.delta_eta_max =  0.1;
-
-  macro_config.q3d_bin_count = 59;
-  macro_config.q3d_maxq = 0.295;
-
-  macro_config.ylm_max_l = 3;
-  macro_config.ylm_ibin = 30;
-  macro_config.ylm_vmin = 0.0;
-  macro_config.ylm_vmax = 0.3;
-  macro_config.ylm_useLCMS = false;
-
-  macro_config.eventreader_filter_bit = 7;
-  macro_config.eventreader_epvzero = true;
-  macro_config.eventreader_dca_globaltrack = true;
-  macro_config.eventreader_centrality_flattening = false;
-  macro_config.eventreader_use_multiplicity = AliFemtoEventReaderAOD::kCentrality;
 
   // Read parameter string and update configurations
   BuildConfiguration(param_str, analysis_config, cut_config, macro_config);
