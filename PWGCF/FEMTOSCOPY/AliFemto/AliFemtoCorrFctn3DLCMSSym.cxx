@@ -136,16 +136,21 @@ TList* AliFemtoCorrFctn3DLCMSSym::GetOutputList()
 //_________________________
 void AliFemtoCorrFctn3DLCMSSym::Finish()
 {
-  // here is where we should normalize, fit, etc...
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6, 10, 8)
+  // remove {under,over}flow to shrink file sizes
+  fNumerator->ClearUnderflowAndOverflow();
+  fDenominator->ClearUnderflowAndOverflow();
+  fNumeratorW->ClearUnderflowAndOverflow();
+  fDenominatorW->ClearUnderflowAndOverflow();
+#endif
 }
 
 //____________________________
 AliFemtoString AliFemtoCorrFctn3DLCMSSym::Report()
 {
-  // Construct the report
-  TString report = "LCMS Frame Bertsch-Pratt 3D Correlation Function Report:\n";
-  report += TString::Format("Number of entries in numerator:\t%E\n", fNumerator->GetEntries());
-  report += TString::Format("Number of entries in denominator:\t%E\n", fDenominator->GetEntries());
+  AliFemtoString report = "LCMS Frame Bertsch-Pratt 3D Correlation Function Report:\n";
+  report += Form("Number of entries in numerator:\t%E\n", fNumerator->GetEntries());
+  report += Form("Number of entries in denominator:\t%E\n", fDenominator->GetEntries());
 
   if (fPairCut) {
     report += "Here is the PairCut specific to this CorrFctn\n";
@@ -154,7 +159,7 @@ AliFemtoString AliFemtoCorrFctn3DLCMSSym::Report()
     report += "No PairCut specific to this CorrFctn\n";
   }
 
-  return AliFemtoString((const char *)report);
+  return report;
 }
 //____________________________
 void AliFemtoCorrFctn3DLCMSSym::AddRealPair(AliFemtoPair* pair)
