@@ -27,7 +27,7 @@ class AliAODv0;
 class THnSparse;
 class AliAODcascade;
 class AliAODVertex;
-class TProfile;
+
 
 #ifndef ALIANALYSISTASKSEH
 #include "AliAnalysisTaskSE.h"
@@ -75,7 +75,9 @@ public:
       fCentBins[ix] = CentBins[ix];
     }
   }
-
+  void DumpTObjTable(const char* note);
+  
+  
 private:
   AliAnalysisTaskSEpPbCorrelationsYS(
       const AliAnalysisTaskSEpPbCorrelationsYS &det);
@@ -87,7 +89,7 @@ private:
   void DefineCorrOutput();
   void DefinedQAHistos();
 
-  TObjArray *GetAcceptedTracksLeading(AliAODEvent *faod,Bool_t leading);
+  TObjArray *GetAcceptedTracksLeading(AliAODEvent *faod,Bool_t leading,TObjArray*tracks);
   TObjArray *GetAcceptedTracksPID(AliAODEvent *faod);
   TObjArray *GetAcceptedV0Tracks(const AliAODEvent *faod);
   TObjArray *GetAcceptedCascadeTracks(AliAODEvent *faod);
@@ -103,9 +105,11 @@ private:
   Bool_t IsAcceptedCascade(const AliAODcascade *casc);
   Bool_t IsAcceptedCascadeOmega(const AliAODcascade *casc);
 
+  TObjArray* CloneTrack(TObjArray* track);
   Double_t RangePhi(Double_t DPhi);
   Double_t RangePhi_FMD(Double_t DPhi);
   Double_t RangePhi2(Double_t DPhi);
+
 
 /*
   void FillCorrelationTracksCentralForward(Double_t MultipOrCent, TObjArray *triggerArray,
@@ -196,8 +200,10 @@ private:
 
   THnSparseF *fHistMass_Lambda_MC;
 
-  //	Double_t fPtMinDaughter;
+  //	Double_t fPtMinDaughter
 
+  AliEventCuts fEventCuts; 
+  AliAnalysisUtils* fUtils;
   AliAODEvent *fEvent; //  AOD Event
   AliMCEvent* mcEvent;
   AliAODVertex *lPrimaryBestVtx;
@@ -256,7 +262,7 @@ private:
   AliTHn* fhistfmd;
   THnSparseF* fhistits;
   AliTHn* fhSecFMD;
-
+  //  const TH2D& d2Ndetadphi;
   TH2F*fFMDV0;
   TH2F*fFMDV0_post;
   TH2F*fFMDV0A;
