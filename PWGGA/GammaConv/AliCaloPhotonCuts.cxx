@@ -5941,14 +5941,14 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
 // *************** 60 + x **** modified tender Settings 2 - pPb
 // *************** 60 + x **** temporary special settings for pp 5 TeV + TB studies
     case 61: //11 with new ECalib
-      if((fCurrentMC==k17l3b || fCurrentMC==k18j2) && fClusterType==1){
+      if(fCurrentMC==k17l3b || fCurrentMC==k18j2){
          if(fClusterType==1){
             energy /= FunctionNL_kSDM(energy, 0.95515, -3.19364, -0.936124);
          }
       }
       break;
     case 62: //12 with new ECalib
-      if((fCurrentMC==k17l3b || fCurrentMC==k18j2) && fClusterType==1){
+      if(fCurrentMC==k17l3b || fCurrentMC==k18j2){
         if(fClusterType==1){
           energy /= FunctionNL_kSDM(energy, 0.95565, -3.39479, -0.510495);
           energy /= 0.9972974486;
@@ -5958,14 +5958,14 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       }
       break;
     case 63: //21 with new ECalib
-      if((fCurrentMC==k17l3b || fCurrentMC==k18j2) && fClusterType==1){
+      if(fCurrentMC==k17l3b || fCurrentMC==k18j2){
         if(fClusterType==1){
           energy /= (FunctionNL_DExp(energy, 0.9814238552, 0.4630567354, -2.9816023028, 1.0293861994, 0.5615679532, -2.3995137175));
         }
       }
       break;
     case 64: //22 with new ECalib
-      if((fCurrentMC==k17l3b || fCurrentMC==k18j2) && fClusterType==1){
+      if(fCurrentMC==k17l3b || fCurrentMC==k18j2){
        if(fClusterType==1){
           energy /= (FunctionNL_DExp(energy, 0.9671756224, 0.9580061524, -2.4592540166, 1.0144265411, 0.7007731928, -2.1689124045));
           energy /= 0.9973908612;
