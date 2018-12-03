@@ -5710,8 +5710,10 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         } else if( fCurrentMC==k18f3bc ) {
           if(fClusterType==1 ){
             energy /= FunctionNL_kSDM(energy, 0.94058, -3.01613, -0.633012) ;
+            energy /= 0.9977804942 ;
           } else if (fClusterType==3){
             energy /= FunctionNL_kSDM(energy, 0.96232, -3.92883, -0.735246) ;
+            energy /= FunctionNL_kSDM(energy, 0.968415, -3.71181, -0.169342) ;
           }
         } else {
           fPeriodNameAvailable = kFALSE;
@@ -5751,8 +5753,10 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         } else if( fCurrentMC==k18f3bc ) {
           if(fClusterType==1 ){
             energy /= FunctionNL_kSDM(energy, 0.959162, -4.58126, -0.495856) ;
+            energy /= 0.998 ;
           } else if (fClusterType==3){
             energy /= FunctionNL_kSDM(energy, 0.943033, -3.96729, -0.383147) ;
+            energy /= 0.99858 ;
           }
         } else fPeriodNameAvailable = kFALSE;
       }
@@ -5835,8 +5839,10 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         } else if( fCurrentMC==k18f3bc ) {
           if(fClusterType==1 ){
             energy /= FunctionNL_DExp(energy, 0.9725126980, 0.6103856108, -3.0948482125, 1.0353908764, 0.5838986758, -2.3256942180 );
+            energy /= FunctionNL_DExp(energy, 1.0275565185, 0.7150701150, -2.2907879895, 1.0356734923, 0.5692435467, -2.3326775814 );
           } else if (fClusterType==3){
             energy /= FunctionNL_DPOW(energy, 0.9984202064, -0.0234949772, -0.4999999701, 1.0436429747, -0.0402608501, -0.4999988777 );
+            energy /= FunctionNL_DPOW(energy, 1.0206520740, -0.0284859767, -0.4999999308, 1.0418924549, -0.0385631705, -0.4999999717 );
           }
         } else fPeriodNameAvailable = kFALSE;
       }
@@ -5882,8 +5888,10 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
        } else if( fCurrentMC==k18f3bc ) {
           if(fClusterType==1 ){
             energy /= FunctionNL_DPOW(energy, 1.0115133381, -0.0800376623, -0.4999999999, 1.0586512028, -0.0940942550, -0.4999999982 );
+            energy /= 0.9963;
           } else if (fClusterType==3){
             energy /= FunctionNL_DExp(energy, 0.9615753216, 1.0083998720, -2.3788968272, 1.0114418980, 1.0697887890, -2.1228591720 );
+            energy /= 0.993;
           }
         } else fPeriodNameAvailable = kFALSE;
       }
@@ -5933,14 +5941,14 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
 // *************** 60 + x **** modified tender Settings 2 - pPb
 // *************** 60 + x **** temporary special settings for pp 5 TeV + TB studies
     case 61: //11 with new ECalib
-      if((fCurrentMC==k17l3b || fCurrentMC==k18j2) && fClusterType==1){
+      if(fCurrentMC==k17l3b || fCurrentMC==k18j2){
          if(fClusterType==1){
             energy /= FunctionNL_kSDM(energy, 0.95515, -3.19364, -0.936124);
          }
       }
       break;
     case 62: //12 with new ECalib
-      if((fCurrentMC==k17l3b || fCurrentMC==k18j2) && fClusterType==1){
+      if(fCurrentMC==k17l3b || fCurrentMC==k18j2){
         if(fClusterType==1){
           energy /= FunctionNL_kSDM(energy, 0.95565, -3.39479, -0.510495);
           energy /= 0.9972974486;
@@ -5950,14 +5958,14 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       }
       break;
     case 63: //21 with new ECalib
-      if((fCurrentMC==k17l3b || fCurrentMC==k18j2) && fClusterType==1){
+      if(fCurrentMC==k17l3b || fCurrentMC==k18j2){
         if(fClusterType==1){
           energy /= (FunctionNL_DExp(energy, 0.9814238552, 0.4630567354, -2.9816023028, 1.0293861994, 0.5615679532, -2.3995137175));
         }
       }
       break;
     case 64: //22 with new ECalib
-      if((fCurrentMC==k17l3b || fCurrentMC==k18j2) && fClusterType==1){
+      if(fCurrentMC==k17l3b || fCurrentMC==k18j2){
        if(fClusterType==1){
           energy /= (FunctionNL_DExp(energy, 0.9671756224, 0.9580061524, -2.4592540166, 1.0144265411, 0.7007731928, -2.1689124045));
           energy /= 0.9973908612;
