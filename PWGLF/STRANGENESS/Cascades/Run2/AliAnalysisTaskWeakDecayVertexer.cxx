@@ -88,8 +88,6 @@ class AliAODv0;
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisUtils.h"
 #include "AliEventCuts.h"
-#include "AliV0Result.h"
-#include "AliCascadeResult.h"
 #include "AliAnalysisTaskWeakDecayVertexer.h"
 
 //stuff for mat corr
@@ -119,7 +117,7 @@ fkDoExtraEvSels(kTRUE),
 fkForceResetV0s(kFALSE),
 fkForceResetCascades(kFALSE),
 fMinCentrality(0.0),
-fMaxCentrality(300.0),
+fMaxCentrality(301.0),
 fkRevertexAllEvents(kTRUE),
 //________________________________________________
 //Flags for both V0+cascade vertexer
@@ -410,8 +408,8 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
     
     //classical Proton-proton like selection
     const AliESDVertex *lPrimaryBestESDVtx     = lESDevent->GetPrimaryVertex();
-    const AliESDVertex *lPrimaryTrackingESDVtx = lESDevent->GetPrimaryVertexTracks();
-    const AliESDVertex *lPrimarySPDVtx         = lESDevent->GetPrimaryVertexSPD();
+    //const AliESDVertex *lPrimaryTrackingESDVtx = lESDevent->GetPrimaryVertexTracks();
+    //const AliESDVertex *lPrimarySPDVtx         = lESDevent->GetPrimaryVertexSPD();
     
     Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
     lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
@@ -475,7 +473,7 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
     nv0s = lESDevent->GetNumberOfV0s();
     fHistNumberOfCandidates->Fill(0.5, nv0s);
     
-    Info("UserExec","Number of pre-reco'ed V0 vertices: %ld",nv0s);
+    Info("UserExec","Number of pre-reco'ed V0 vertices: %i",nv0s);
     
     if( fkRunV0Vertexer ){
         if ( !fkUseOptimalTrackParams ){
@@ -1177,7 +1175,6 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesUncheckedCharg
     //stores relevant V0s in an array
     TObjArray vtcs(nV0);
     Int_t i;
-    Long_t lNumberOfLikeSignV0s = 0;
     for (i=0; i<nV0; i++) {
         AliESDv0 *v=event->GetV0(i);
         if ( v->GetOnFlyStatus() && !fkUseOnTheFlyV0Cascading) continue;
@@ -2153,25 +2150,13 @@ void AliAnalysisTaskWeakDecayVertexer::GetHelixCenter(const AliExternalTrackPara
     phi -= TMath::Pi()/2.;
     Double_t xpoint =	radius * TMath::Cos(phi);
     Double_t ypoint =	radius * TMath::Sin(phi);
-    if(b<0){
-        if(charge > 0){
-            xpoint = - xpoint;
-            ypoint = - ypoint;
-        }
-        if(charge < 0){
-            xpoint =	xpoint;
-            ypoint =	ypoint;
-        }
+    if(b<0&&charge > 0){
+        xpoint = - xpoint;
+        ypoint = - ypoint;
     }
-    if(b>0){
-        if(charge > 0){
-            xpoint =	xpoint;
-            ypoint =	ypoint;
-        }
-        if(charge < 0){
-            xpoint = - xpoint;
-            ypoint = - ypoint;
-        }
+    if(b>0 && charge < 0){
+        xpoint = - xpoint;
+        ypoint = - ypoint;
     }
     center[0] =	xpos + xpoint;
     center[1] =	ypos + ypoint;

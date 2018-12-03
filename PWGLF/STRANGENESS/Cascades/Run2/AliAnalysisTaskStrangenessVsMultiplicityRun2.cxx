@@ -4824,6 +4824,233 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0RadiusSweep()
+//Meant to do radius sweep for debugging purposes
+{
+    //======================================================
+    // V0 Configurations To use
+    //======================================================
+    
+    // STEP 1: Decide on binning (needed to improve on memory consumption)
+    
+    // pT binning
+    Double_t lPtbinlimitsV0[] ={0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.5, 8.0, 10, 12, 14, 15, 17, 20};
+    Long_t lPtbinnumbV0 = sizeof(lPtbinlimitsV0)/sizeof(Double_t) - 1;
+    Double_t lPtbinlimitsXi[] ={0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.5, 8.0, 10, 12, 14, 16, 19, 22, 25};
+    Long_t lPtbinnumbXi = sizeof(lPtbinlimitsXi)/sizeof(Double_t) - 1;
+    
+    // centrality binning
+    Double_t lCentbinlimitsV0[] = {0, 1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 85, 90};
+    Long_t lCentbinnumbV0 = sizeof(lCentbinlimitsV0)/sizeof(Double_t) - 1;
+    
+    // TStrings for output names
+    TString lParticleNameV0[] =
+    {
+        "K0Short",
+        "Lambda",
+        "AntiLambda"
+    };
+    const Int_t lNPart = 3;
+    TString lConfNameV0[] =
+    {
+        "Loose",
+        "Central",
+        "Tight"
+    };
+    const Int_t lNConf = 3;
+    TString lCutNameV0[] =
+    {
+        "DCANegToPV",
+        "DCAPosToPV",
+        "DCAV0Daughters",
+        "V0CosPA",
+        "V0Radius",
+        "ProperLifetime",
+        "TrackLength",
+        "LeastNbrCrsOvFind",
+        "TPCdEdx",
+        "APParameter",
+        "V0RadiusMax",
+        "LeastNbrCrsRows"
+    };
+    const Int_t lNCutsForSyst = 10;
+    
+    // STEP 2: Decide on a set of selections
+    
+    //1st index: Particle Species
+    //2nd index: Loose / Central / Tight
+    //3rd index: Number of selection (as ordered above)
+    Double_t lcutsV0[lNPart][lNConf][lNCutsForSyst];
+    
+    //1st index: Particle Species: K0Short, Lambda, AntiLambda
+    //2nd index: Loose / Central / Tight: 2%, 5%, 10% signal loss
+    Double_t parExp0Const[lNPart][lNConf];
+    Double_t parExp0Slope[lNPart][lNConf];
+    Double_t parExp1Const[lNPart][lNConf];
+    Double_t parExp1Slope[lNPart][lNConf];
+    Double_t parConst[lNPart][lNConf];
+    
+    //=============================================================================================
+    // K0SHORT V0 COS PA PARAMETRIZATION
+    //---------------------------------------------------------------------------------------------
+    //                       LOOSE                         CENTRAL                           TIGHT
+    parExp0Const[0][0] =  0.20428;  parExp0Const[0][1] =  0.22692;  parExp0Const[0][2] =  0.28814;
+    parExp0Slope[0][0] = -0.73728;  parExp0Slope[0][1] = -1.59317;  parExp0Slope[0][2] = -2.27069;
+    parExp1Const[0][0] =  0.09887;  parExp1Const[0][1] =  0.05994;  parExp1Const[0][2] =  0.04320;
+    parExp1Slope[0][0] = -0.02822;  parExp1Slope[0][1] = -0.26997;  parExp1Slope[0][2] = -0.29839;
+    parConst[0][0] = -0.05302;      parConst[0][1] =  0.00907;      parConst[0][2] =  0.00704;
+    //=============================================================================================
+    
+    //=============================================================================================
+    // LAMBDA V0 COS PA PARAMETRIZATION
+    //---------------------------------------------------------------------------------------------
+    //                       LOOSE                         CENTRAL                           TIGHT
+    parExp0Const[1][0] =  0.22775;  parExp0Const[1][1] =  0.36284;  parExp0Const[1][2] =  0.54877;
+    parExp0Slope[1][0] = -1.11579;  parExp0Slope[1][1] = -1.87960;  parExp0Slope[1][2] = -2.72912;
+    parExp1Const[1][0] =  0.06266;  parExp1Const[1][1] =  0.04543;  parExp1Const[1][2] =  0.03411;
+    parExp1Slope[1][0] = -0.17086;  parExp1Slope[1][1] = -0.20447;  parExp1Slope[1][2] = -0.26965;
+    parConst[1][0] =  0.01489;      parConst[1][1] =  0.01085;      parConst[1][2] =  0.00889;
+    //=============================================================================================
+    
+    //=============================================================================================
+    // ANTILAMBDA V0 COS PA PARAMETRIZATION
+    //---------------------------------------------------------------------------------------------
+    //                       LOOSE                         CENTRAL                           TIGHT
+    parExp0Const[2][0] =  0.22667;  parExp0Const[2][1] =  0.35809;  parExp0Const[2][2] =  0.54114;
+    parExp0Slope[2][0] = -0.93618;  parExp0Slope[2][1] = -1.93860;  parExp0Slope[2][2] = -2.71000;
+    parExp1Const[2][0] =  0.06857;  parExp1Const[2][1] =  0.05306;  parExp1Const[2][2] =  0.03664;
+    parExp1Slope[2][0] = -0.07015;  parExp1Slope[2][1] = -0.24518;  parExp1Slope[2][2] = -0.28124;
+    parConst[2][0] = -0.00707;      parConst[2][1] =  0.01213;      parConst[2][2] =  0.00905;
+    //=============================================================================================
+    
+    //================================================================================
+    // K0SHORT SELECTIONS
+    //--------------------------------------------------------------------------------
+    //                  LOOSE                        CENTRAL                   TIGHT
+    lcutsV0[0][0][ 0] = 0.05;    lcutsV0[0][1][ 0] =  0.10; lcutsV0[0][2][0] = 0.17; //DCANegToPV
+    lcutsV0[0][0][ 1] = 0.05;    lcutsV0[0][1][ 1] =  0.10; lcutsV0[0][2][1] = 0.17; //DCAPosToPV
+    lcutsV0[0][0][ 2] = 0.95;    lcutsV0[0][1][ 2] =   0.8; lcutsV0[0][2][2] =  0.7; //DCAV0Daughters
+    lcutsV0[0][0][ 3] = 0.95;    lcutsV0[0][1][ 3] =  0.95; lcutsV0[0][2][3] = 0.95; //V0CosPA
+    lcutsV0[0][0][ 4] = 4.50;    lcutsV0[0][1][ 4] =  5.00; lcutsV0[0][2][4] = 5.50; //V0Radius
+    lcutsV0[0][0][ 5] =   25;    lcutsV0[0][1][ 5] =    20; lcutsV0[0][2][5] =   15; //Proper Lifetime (in cm)
+    lcutsV0[0][0][ 6] =   80;    lcutsV0[0][1][ 6] =    90; lcutsV0[0][2][6] =  100; //Track Length
+    lcutsV0[0][0][ 7] =  0.7;    lcutsV0[0][1][ 7] =   0.8; lcutsV0[0][2][7] = 0.85; //Least Ratio CrdRows/Findable
+    lcutsV0[0][0][ 8] =  4.0;    lcutsV0[0][1][ 8] =   3.0; lcutsV0[0][2][8] =  2.5; //TPC dE/dx
+    lcutsV0[0][0][ 9] = 0.18;    lcutsV0[0][1][ 9] =  0.20; lcutsV0[0][2][9] = 0.22; //AP Parameter
+    //================================================================================
+    
+    //================================================================================
+    // LAMBDA SELECTIONS
+    //--------------------------------------------------------------------------------
+    //                  LOOSE                        CENTRAL                   TIGHT
+    lcutsV0[1][0][ 0] = 0.10;    lcutsV0[1][1][ 0] =  0.25; lcutsV0[1][2][0] = 0.40; //DCANegToPV
+    lcutsV0[1][0][ 1] = 0.08;    lcutsV0[1][1][ 1] =  0.10; lcutsV0[1][2][1] = 0.13; //DCAPosToPV
+    lcutsV0[1][0][ 2] =  1.0;    lcutsV0[1][1][ 2] =   0.8; lcutsV0[1][2][2] = 0.65; //DCAV0Daughters
+    lcutsV0[1][0][ 3] = 0.97;    lcutsV0[1][1][ 3] =  0.98; lcutsV0[1][2][3] = 0.99; //V0CosPA
+    lcutsV0[1][0][ 4] = 4.00;    lcutsV0[1][1][ 4] =  5.00; lcutsV0[1][2][4] = 6.00; //V0Radius
+    lcutsV0[1][0][ 5] =   30;    lcutsV0[1][1][ 5] =    25; lcutsV0[1][2][5] =   20; //Proper Lifetime (in cm)
+    lcutsV0[1][0][ 6] =   80;    lcutsV0[1][1][ 6] =    90; lcutsV0[1][2][6] =  100; //Track Length
+    lcutsV0[1][0][ 7] =  0.7;    lcutsV0[1][1][ 7] =   0.8; lcutsV0[1][2][7] = 0.85; //Least Ratio CrdRows/Findable
+    lcutsV0[1][0][ 8] =  4.0;    lcutsV0[1][1][ 8] =   3.0; lcutsV0[1][2][8] =  2.5; //TPC dE/dx
+    lcutsV0[1][0][ 9] = 0.18;    lcutsV0[1][1][ 9] =  0.20; lcutsV0[1][2][9] = 0.22; //AP Parameter
+    //================================================================================
+    
+    //================================================================================
+    // ANTILAMBDA SELECTIONS
+    //--------------------------------------------------------------------------------
+    //                  LOOSE                        CENTRAL                   TIGHT
+    lcutsV0[2][0][ 0] = 0.08;    lcutsV0[2][1][ 0] =  0.10; lcutsV0[2][2][0] = 0.13; //DCANegToPV
+    lcutsV0[2][0][ 1] = 0.10;    lcutsV0[2][1][ 1] =  0.25; lcutsV0[2][2][1] = 0.40; //DCAPosToPV
+    lcutsV0[2][0][ 2] =  1.0;    lcutsV0[2][1][ 2] =   0.8; lcutsV0[2][2][2] = 0.65; //DCAV0Daughters
+    lcutsV0[2][0][ 3] = 0.97;    lcutsV0[2][1][ 3] =  0.98; lcutsV0[2][2][3] = 0.99; //V0CosPA
+    lcutsV0[2][0][ 4] = 4.00;    lcutsV0[2][1][ 4] =  5.00; lcutsV0[2][2][4] = 6.00; //V0Radius
+    lcutsV0[2][0][ 5] =   30;    lcutsV0[2][1][ 5] =    25; lcutsV0[2][2][5] =   20; //Proper Lifetime (in cm)
+    lcutsV0[2][0][ 6] =   80;    lcutsV0[2][1][ 6] =    90; lcutsV0[2][2][6] =  100; //Track Length
+    lcutsV0[2][0][ 7] =  0.7;    lcutsV0[2][1][ 7] =   0.8; lcutsV0[2][2][7] = 0.85; //Least Ratio CrdRows/Findable
+    lcutsV0[2][0][ 8] =  4.0;    lcutsV0[2][1][ 8] =   3.0; lcutsV0[2][2][8] =  2.5; //TPC dE/dx
+    lcutsV0[2][0][ 9] = 0.18;    lcutsV0[2][1][ 9] =  0.20; lcutsV0[2][2][9] = 0.22; //AP Parameter
+    //================================================================================
+    
+    //STEP 3: Creation of output objects
+    
+    //Map to mass hypothesis
+    AliV0Result::EMassHypo lMassHypoV0[lNPart];
+    lMassHypoV0[0] = AliV0Result::kK0Short;
+    lMassHypoV0[1] = AliV0Result::kLambda;
+    lMassHypoV0[2] = AliV0Result::kAntiLambda;
+    
+    //Array of results
+    AliV0Result *lV0Result[1000];
+    Long_t lNV0 = 0;
+    
+    //Central results: Stored in indices 0, 1, 2 (careful!)
+    for(Int_t i = 0 ; i < lNPart ; i ++)
+    {
+        //Central result, customized binning: the one to use, usually
+        lV0Result[lNV0] = new AliV0Result( Form("%s_Central",lParticleNameV0[i].Data() ),lMassHypoV0[i],"",lCentbinnumbV0,lCentbinlimitsV0, lPtbinnumbV0,lPtbinlimitsV0);
+        
+        //feeddown matrix
+        if ( i!=0 ) lV0Result[lNV0] -> SetupFeeddownMatrix(lPtbinnumbXi,lPtbinlimitsXi);
+        
+        //Setters for V0 Cuts
+        lV0Result[lNV0]->SetCutDCANegToPV            ( lcutsV0[i][1][ 0] ) ;
+        lV0Result[lNV0]->SetCutDCAPosToPV            ( lcutsV0[i][1][ 1] ) ;
+        lV0Result[lNV0]->SetCutDCAV0Daughters        ( lcutsV0[i][1][ 2] ) ;
+        lV0Result[lNV0]->SetCutV0CosPA               ( lcutsV0[i][1][ 3] ) ;
+        //Set Variable cut
+        lV0Result[lNV0]->SetCutVarV0CosPA               ( parExp0Const[i][1], parExp0Slope[i][1], parExp1Const[i][1], parExp1Slope[i][1], parConst[i][1] ) ;
+        
+        lV0Result[lNV0]->SetCutV0Radius              ( lcutsV0[i][1][ 4] ) ;
+        
+        //Miscellaneous
+        lV0Result[lNV0]->SetCutProperLifetime        ( lcutsV0[i][1][ 5] ) ;
+        lV0Result[lNV0]->SetCutLeastNumberOfCrossedRows ( -1 ) ; //no cut here
+        lV0Result[lNV0]->SetCutMinTrackLength ( lcutsV0[i][1][ 6] ) ;
+        lV0Result[lNV0]->SetCutLeastNumberOfCrossedRowsOverFindable               ( lcutsV0[i][1][ 7] ) ;
+        lV0Result[lNV0]->SetCutTPCdEdx               ( lcutsV0[i][1][ 8] ) ;
+        lV0Result[lNV0]->SetCutArmenterosParameter               ( lcutsV0[i][1][ 9] ) ;
+        
+        //Add result to pool
+        lNV0++;
+    }
+    
+    for(Int_t i = 0 ; i < lNPart ; i ++)
+    {
+            //Create a new object from default
+            lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_LooseRadius", lParticleNameV0[i].Data() ) );
+            lV0Result[lNV0] -> SetCutV0Radius   ( 0.9 );
+            lV0Result[lNV0] -> SetCutMaxV0Radius( 5.0 );
+            //Add result to pool
+            lNV0++;
+    }
+    
+    //Rapidity sweep
+    Double_t lRadii[] = {0.9, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10};
+    Int_t lNRadii = sizeof(lRadii)/sizeof(Double_t);
+    
+    for(Int_t i = 0 ; i < lNPart ; i ++)
+    {
+        for(Int_t ir=0; ir<lNRadii-1; ir++)
+        {
+            //Create a new object from default
+            lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_RadiusSweep_%.1f_%.1f",lParticleNameV0[i].Data(),lRadii[ir], lRadii[ir]) );
+            lV0Result[lNV0] -> SetCutV0Radius   ( lRadii[ir  ] );
+            lV0Result[lNV0] -> SetCutMaxV0Radius( lRadii[ir+1] );
+            
+            //Add result to pool
+            lNV0++;
+        }
+    }
+    
+    for (Int_t iconf = 0; iconf<lNV0; iconf++){
+        cout<<"Radius sweep: adding config named"<<lV0Result[iconf]->GetName()<<endl;
+        AddConfiguration(lV0Result[iconf]);
+    }
+    
+    cout<<"Added "<<lNV0<<" V0 configurations to output."<<endl;
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfiguration(Bool_t lUseFull, Bool_t lDoSystematics)
 //Meant to add some standard cascade analysis Configuration + its corresponding systematics
 {
