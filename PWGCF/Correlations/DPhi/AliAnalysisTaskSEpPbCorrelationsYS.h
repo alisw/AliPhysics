@@ -13,6 +13,7 @@
 #include "TH3.h"
 #include "THnSparse.h"
 #include "TString.h"
+#include "AliEventCuts.h"
 
 class TList;
 class AliCFContainer;
