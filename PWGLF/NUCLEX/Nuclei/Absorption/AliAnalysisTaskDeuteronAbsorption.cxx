@@ -242,8 +242,10 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
 
     // Process TOF information
     ULong_t status = (ULong_t)track->GetStatus();
-    double length = track->GetIntegratedLength();
-    bool hasTOF = ((status & AliESDtrack::kTOFout) == AliESDtrack::kTOFout) && length >= 350.;
+    bool hasTOFout  = status & AliVTrack::kTOFout;
+    bool hasTOFtime = status & AliVTrack::kTIME;
+    const float length = track->GetIntegratedLength();
+    bool hasTOF = hasTOFout && hasTOFtime && (length > 350.);
     //
     double tof = track->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetStartTime(ptot);
     //
