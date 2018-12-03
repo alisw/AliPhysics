@@ -55,6 +55,9 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetDCAposDaughter(Float_t dcapos) { fDCAposDaughter = dcapos; }
         void                    SetDCAnegDaughter(Float_t dcaneg) { fDCAnegDaughter = dcaneg; }
         void                    SetNTPCcrossedRows(Int_t Ncr) { fnumOfTPCcrossedRows = Ncr; }
+        void                    SetEffAnalysis(Bool_t eff) { fEfficiency = eff; }
+        void                    SetPurityCheckAnalysis(Bool_t pur) { fPurityCheck = pur; }
+        void                    SetCorrelationsAnalysis(Bool_t corr) { fCorrelations = corr; }
     
     private:
         AliAODEvent*            fAOD;           		//! input event
@@ -111,11 +114,14 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Float_t                 fDCAposDaughter; //
         Float_t                 fDCAnegDaughter; //
         Int_t                   fnumOfTPCcrossedRows; //
+        Bool_t                  fEfficiency; //
+        Bool_t                  fPurityCheck;//
+        Bool_t                  fCorrelations;//
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 5);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 6);
 };
 
 class AliV0ChParticle : public AliVParticle
