@@ -151,6 +151,7 @@ fMaxPtV0( 1000 ),
 fMinPtCascade(   0.3 ),
 fMaxPtCascade( 100.00 ),
 fMassWindowAroundCascade(0.060),
+fMinXforXYtest( -3.0 ),
 //________________________________________________
 //Histos
 fHistEventCounter(0),
@@ -208,6 +209,7 @@ fMaxPtV0( 1000 ),
 fMinPtCascade(   0.3 ), //pre-selection
 fMaxPtCascade( 100.00 ),
 fMassWindowAroundCascade(0.060),
+fMinXforXYtest( -3.0 ),
 //________________________________________________
 //Histos
 fHistEventCounter(0),
@@ -1813,7 +1815,7 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
     p2[6]=TMath::Sin(p2[2]); p2[7]=TMath::Cos(p2[2]);
     
     //Minimum X: allow for negative X if it means we're still *after* the primary vertex in the track ref frame
-    Double_t lMinimumX = -3; //
+    Double_t lMinimumX = fMinXforXYtest; //
     //Maximum X: some very big value, should not be a problem
     Double_t lMaximumX = 300;
     
