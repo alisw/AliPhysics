@@ -108,7 +108,16 @@ public:
   Bool_t SetSigmaParams(TH2D* hSigmaPar1Map, Double_t sigmaPar0);
   
   Double_t GetSigmaPar1(const AliVTrack *track, AliPID::EParticleType species, ETPCdEdxSource dedxSource = kdEdxDefault) const;
-
+  
+  Bool_t GetIsNewPbPb() const {return fIsNewPbPbParam; };
+ 
+  const TF1* GetMultSlopeFunction() const  { return fCorrFuncSlope; };
+  void SetParameterMultSlope(Int_t parIndex, Double_t parValue)  
+      { if (fCorrFuncSlope) fCorrFuncSlope->SetParameter(parIndex, parValue); };
+      
+  const TF1* GetMultCurvFunction() const  { return fCorrFuncCurv; };
+  void SetParameterMultCurv(Int_t parIndex, Double_t parValue)  
+      { if (fCorrFuncCurv) fCorrFuncCurv->SetParameter(parIndex, parValue); };      
   
   const TF1* GetMultiplicityCorrectionFunction() const  { return fCorrFuncMultiplicity; };
   void SetParameterMultiplicityCorrection(Int_t parIndex, Double_t parValue)  
@@ -308,6 +317,9 @@ private:
   Double_t fSigmaPar0; // Parameter 0 of the dEdx sigma parametrisation
   
   Int_t fCurrentEventMultiplicity; // Multiplicity of the current event
+  Bool_t fIsNewPbPbParam;
+  TF1* fCorrFuncSlope;
+  TF1* fCorrFuncCurv;
   TF1* fCorrFuncMultiplicity; //! Function to correct for the multiplicity dependence of the TPC dEdx
   TF1* fCorrFuncMultiplicityTanTheta; //! Function to correct the additional tanTheta dependence of the multiplicity dependence of the TPC dEdx
   TF1* fCorrFuncSigmaMultiplicity; //! Function to correct for the multiplicity dependence of the TPC dEdx resolution

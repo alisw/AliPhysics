@@ -84,6 +84,9 @@ AliTPCPIDResponse::AliTPCPIDResponse():
   fhEtaSigmaPar1(0x0),
   fSigmaPar0(0.0),
   fCurrentEventMultiplicity(0),
+  fCorrFuncSlope(0x0),
+  fCorrFuncCurv(0x0),
+  fIsNewPbPbParam(kFALSE),
   fCorrFuncMultiplicity(0x0),
   fCorrFuncMultiplicityTanTheta(0x0),
   fCorrFuncSigmaMultiplicity(0x0),
@@ -103,6 +106,9 @@ AliTPCPIDResponse::AliTPCPIDResponse():
   AliLog::SetClassDebugLevel("AliTPCPIDResponse", AliLog::kInfo); 
   
   for (Int_t i=0; i<fgkNumberOfGainScenarios; i++) {fRes0[i]=0.07;fResN2[i]=0.0;}
+  
+  fCorrFuncSlope = new TF1("fCorrFuncSlope", "[0] + [1] * x",0,0.2);
+  fCorrFuncCurv = new TF1("fCorrFuncCurv","[0] + [1] * x",0,0.2);
   
   fCorrFuncMultiplicity = new TF1("fCorrFuncMultiplicity", 
                                   "[0] + [1]*TMath::Max([4], TMath::Min(x, [3])) + [2] * TMath::Power(TMath::Max([4], TMath::Min(x, [3])), 2)",
@@ -198,6 +204,9 @@ AliTPCPIDResponse::AliTPCPIDResponse(const AliTPCPIDResponse& that):
   fhEtaCorr(0x0),
   fhEtaSigmaPar1(0x0),
   fSigmaPar0(that.fSigmaPar0),
+  fCorrFuncSlope(0x0),
+  fCorrFuncCurv(0x0),
+  fIsNewPbPbParam(that.fIsNewPbPbParam),
   fCurrentEventMultiplicity(that.fCurrentEventMultiplicity),
   fCorrFuncMultiplicity(0x0),
   fCorrFuncMultiplicityTanTheta(0x0),
@@ -226,6 +235,14 @@ AliTPCPIDResponse::AliTPCPIDResponse(const AliTPCPIDResponse& that):
   }
   
   // Copy multiplicity correction functions
+  if (that.fCorrFuncSlope) {
+    fCorrFuncSlope = new TF1(*(that.fCorrFuncSlope));
+  }
+  
+  if (that.fCorrFuncCurv) {
+    fCorrFuncCurv = new TF1(*(that.fCorrFuncCurv));
+  }  
+  
   if (that.fCorrFuncMultiplicity) {
     fCorrFuncMultiplicity = new TF1(*(that.fCorrFuncMultiplicity));
   }
@@ -279,6 +296,18 @@ AliTPCPIDResponse& AliTPCPIDResponse::operator=(const AliTPCPIDResponse& that)
   }
   
   fSigmaPar0 = that.fSigmaPar0;
+  
+  delete fCorrFuncSlope;
+  fCorrFuncSlope = 0x0;
+  if (that.fCorrFuncSlope) {
+    fCorrFuncSlope = new TF1(*(that.fCorrFuncSlope));
+  }  
+  
+  delete fCorrFuncCurv;
+  fCorrFuncCurv = 0x0;
+  if (that.fCorrFuncCurv) {
+    fCorrFuncCurv = new TF1(*(that.fCorrFuncCurv));
+  }    
   
   delete fCorrFuncMultiplicity;
   fCorrFuncMultiplicity = 0x0;
@@ -1122,12 +1151,28 @@ Double_t AliTPCPIDResponse::GetMultiplicityCorrectionFast(const AliVTrack *track
     return 1.0;
   
   const Double_t dEdxExpectedInv = 1. / dEdxExpected;
-  Double_t relSlope = fCorrFuncMultiplicity->Eval(dEdxExpectedInv);
   
-  const Double_t tanTheta = GetTrackTanTheta(track);
-  relSlope += fCorrFuncMultiplicityTanTheta->Eval(tanTheta);
+  Double_t multCorrectionFactor = 1.0;
+  
+  if (!fIsNewPbPbParam) {
+    Double_t relSlope = fCorrFuncMultiplicity->Eval(dEdxExpectedInv);
+    
+    const Double_t tanTheta = GetTrackTanTheta(track);
+    relSlope += fCorrFuncMultiplicityTanTheta->Eval(tanTheta);
+    
+    multCorrectionFactor+= relSlope * multiplicity;
+  }
+  else {
+    Double_t relSlope = fCorrFuncSlope->Eval(dEdxExpectedInv);
+    Double_t relCurv = fCorrFuncCurv->Eval(dEdxExpectedInv);
+    
+    if (multiplicity <= -relSlope/(2*relCurv)) 
+      multCorrectionFactor += relSlope * multiplicity + relCurv * multiplicity * multiplicity;
+    else
+      multCorrectionFactor -= 0.25 *relSlope * relSlope/relCurv;  
+  }
 
-  return (1. + relSlope * multiplicity);
+  return multCorrectionFactor;
 }
 
 
@@ -1803,19 +1848,29 @@ Bool_t AliTPCPIDResponse::SetMultiplicityCorrectionFromString(const TString& mul
   if (!(arrParameters=GetMultiplicityCorrectionArrayFromString(multiplicityData))) {
     return kFALSE;
   }
+  
+  if (((TObjString*)arrParameters->At(arrParameters->GetLast()))->String() == "1") {
+    fIsNewPbPbParam = kTRUE;
+  }
 
   TString log("Setting multiplicity correction parameters for mean; tan theta; sigma: ");
   log.Append(multiplicityData);
   AliInfo(log.Data());
-
+  
   const TObjArray *arrPar1 = static_cast<TObjArray*>(arrParameters->At(0));
   for (Int_t ipar=0; ipar<arrPar1->GetEntriesFast(); ++ipar) {
-    SetParameterMultiplicityCorrection(ipar, static_cast<TObjString*>(arrPar1->At(ipar))->String().Atof());
+    if (fIsNewPbPbParam) 
+      SetParameterMultSlope(ipar, static_cast<TObjString*>(arrPar1->At(ipar))->String().Atof());
+    else
+      SetParameterMultiplicityCorrection(ipar, static_cast<TObjString*>(arrPar1->At(ipar))->String().Atof());
   }
 
   const TObjArray *arrPar2 = static_cast<TObjArray*>(arrParameters->At(1));
   for (Int_t ipar=0; ipar<arrPar2->GetEntriesFast(); ++ipar) {
-    SetParameterMultiplicityCorrectionTanTheta(ipar, static_cast<TObjString*>(arrPar2->At(ipar))->String().Atof());
+    if (fIsNewPbPbParam) 
+      SetParameterMultCurv(ipar, static_cast<TObjString*>(arrPar2->At(ipar))->String().Atof());
+    else    
+      SetParameterMultiplicityCorrectionTanTheta(ipar, static_cast<TObjString*>(arrPar2->At(ipar))->String().Atof());
   }
 
   const TObjArray *arrPar3 = static_cast<TObjArray*>(arrParameters->At(2));
@@ -1835,9 +1890,12 @@ TObjArray* AliTPCPIDResponse::GetMultiplicityCorrectionArrayFromString(const TSt
   // where parMC are the parameters for AliTPCPIDResponse::SetParameterMultiplicityCorrection
   // parMCTT are the parameters for AliTPCPIDResponse::SetParameterMultiplicityCorrectionTanTheta
   // parMSC are the parameters for AliTPCPIDResponse::SetParameterMultiplicitySigmaCorrection
+  
+  //For the new PbPb parametrization it should be in the following format: parMC_0,parMC1;parMCC_0,parMCC_1;parMSC_0,parMSC_1,parMSC_2, parMSC_3 where parMC_i are the parameters for the Slope parametrization and parMCC_i the parameters for the curvature parametrization
 
   const Int_t nSets=3;
-  const Int_t nPars[nSets]={5,3,4};
+  const Int_t nPars_0[nSets]={5,3,4};
+  const Int_t nPars_1[nSets]={2,2,4};
 
   AliTPCPIDResponse temp;
   TObjArray *arrCorrectionSets = corrections.Tokenize(";");
@@ -1846,21 +1904,36 @@ TObjArray* AliTPCPIDResponse::GetMultiplicityCorrectionArrayFromString(const TSt
     delete arrCorrectionSets;
     return 0x0;
   }
-
+  
   for (Int_t iset=0 ;iset<nSets; ++iset) {
     TObjString *string=(TObjString*)arrCorrectionSets->RemoveAt(iset);
     TObjArray *arrTmp=string->String().Tokenize(",");
     delete string;
     string=0x0;
 
-    if (arrTmp->GetEntriesFast() != nPars[iset]){
-      temp.Error("AliTPCPIDResponse::CheckMultiplicityCorrectionString","Number of parameters in set %d not equal to %d. Please read documentation of this function", iset, nPars[iset]);
+    if (arrTmp->GetEntriesFast() != nPars_0[iset] && arrTmp->GetEntriesFast() != nPars_1[iset]){
+      temp.Error("AliTPCPIDResponse::CheckMultiplicityCorrectionString","Number of parameters in set %d not equal to %d or %d. Please read documentation of this function", iset, nPars_0[iset], nPars_1[iset]);
       delete arrCorrectionSets;
       delete arrTmp;
       return 0x0;
     }
 
     arrCorrectionSets->AddAt(arrTmp, iset);
+  }
+  
+  Bool_t matchesParSet = kTRUE;
+  for (Int_t iset=0;iset<nSets;++iset) 
+    matchesParSet = matchesParSet && ((TObjArray*)arrCorrectionSets->At(iset))->GetEntriesFast() == nPars_0[iset];
+  
+  if (matchesParSet)
+    arrCorrectionSets->AddLast(new TObjString("0"));
+  else {
+    matchesParSet = kTRUE;
+    for (Int_t iset=0;iset<nSets;++iset) {
+      matchesParSet = matchesParSet && ((TObjArray*)arrCorrectionSets->At(iset))->GetEntriesFast() == nPars_1[iset];
+    }
+    if (matchesParSet)
+      arrCorrectionSets->AddLast(new TObjString("1"));
   }
 
   return arrCorrectionSets;
