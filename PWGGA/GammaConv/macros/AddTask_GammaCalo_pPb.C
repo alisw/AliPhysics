@@ -1206,6 +1206,11 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80052113","1111152057032230000","01631031000000d0"); // EMC7
     cuts.AddCutCalo("80085113","1111152057032230000","01631031000000d0"); // EG2
     cuts.AddCutCalo("80083113","1111152057032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 413){ // EMCAL clusters standard cuts, triggers, TB NL
+    cuts.AddCutCalo("80010113","1111106057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("80052113","1111106057032230000","01631031000000d0"); // EMC7
+    cuts.AddCutCalo("80085113","1111106057032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("80083113","1111106057032230000","01631031000000d0"); // EG1
 
   } else if (trainConfig == 480){ // EMCAL clusters standard cuts, triggers, no nonlin, open timing CALO+CALOFAST readout  - NO TM
     cuts.AddCutCalo("800a0113","1111100010032230000","01631031000000d0"); // INT7
