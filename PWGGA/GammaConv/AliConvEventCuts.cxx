@@ -4952,26 +4952,34 @@ Float_t AliConvEventCuts::GetWeightForMultiplicity(Int_t mult){
   if(valueMC!=0)   relativeErrorMC   = errorMC / valueMC;
   if(valueData!=0) relativeErrorData = errorData / valueData;
 
+  Double_t errorTolerance = 0.2;
+  Double_t cutOff = -1.0;  // if > 0 : if rel error too large => weight with 0 instead of 1 above this value
+
+  //  For these periods allow larger statistical error in the MC to apply the multiplicity weight
   if ( fPeriodEnum == kLHC16NomB || fPeriodEnum == kLHC16P1Pyt8 || fPeriodEnum == kLHC16P1PHO || 
-       fPeriodEnum == kLHC17pq  ||  fPeriodEnum == kLHC17P1PHO  || fPeriodEnum == kLHC17l3b  || fPeriodEnum == kLHC18j2  || fPeriodEnum == kLHC17l4b  || 
-       fPeriodEnum == kLHC16g1  || fPeriodEnum == kLHC16h4  ||
+       fPeriodEnum == kLHC17pq  ||  fPeriodEnum == kLHC17P1PHO  || fPeriodEnum == kLHC17l3b  || fPeriodEnum == kLHC18j2  || fPeriodEnum == kLHC17l4b){
+    errorTolerance = 0.6;
+  }
+
+  if ( fPeriodEnum == kLHC16g1  || fPeriodEnum == kLHC16h4  ||
        fPeriodEnum == kLHC16g1a || fPeriodEnum == kLHC16g1b || fPeriodEnum == kLHC16g1c ||
        fPeriodEnum == kLHC16i1a || fPeriodEnum == kLHC16i1b || fPeriodEnum == kLHC16i1c ||
        fPeriodEnum == kLHC16i2a || fPeriodEnum == kLHC16i2b || fPeriodEnum == kLHC16i2c ||
-       fPeriodEnum == kLHC16i3a || fPeriodEnum == kLHC16i3b || fPeriodEnum == kLHC16i3c      ) {  //  For these periods allow larger statistical error in the MC to apply the multiplicity weight
+       fPeriodEnum == kLHC16i3a || fPeriodEnum == kLHC16i3b || fPeriodEnum == kLHC16i3c      ) {
+    errorTolerance = 0.6;
+    cutOff = 2800;  // MC distribution still significant while data error already too large
+      }
 
-    if (relativeErrorData < 0.6 && relativeErrorMC < 0.6 ){
-        if (isfinite(valueMultData) && isfinite(valueMultMC) ){
-          weightMult               = valueMultData/valueMultMC;
-        }
-     }
-  } else {
-    if (relativeErrorData < 0.2 && relativeErrorMC < 0.2 ){
-       if (isfinite(valueMultData) && isfinite(valueMultMC) ){
-          weightMult               = valueMultData/valueMultMC;
-       }
+  if (relativeErrorData < errorTolerance && relativeErrorMC < errorTolerance ){
+    if (isfinite(valueMultData) && isfinite(valueMultMC) ){
+      weightMult               = valueMultData/valueMultMC;
+    }
+  } else if(cutOff>0){
+    if(mult>cutOff) {
+      weightMult = 0;
     }
   }
+
   return weightMult;
 }
 
