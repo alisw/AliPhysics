@@ -208,6 +208,7 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)KStarCf);
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)AvgSepCf);
     if(fAnalysisType==kProtPiM || fAnalysisType==kAProtPiP || fAnalysisType==kPiPPiM) fCollectionOfCfs->push_back((AliFemtoV0PurityBgdEstimator*)CreateV0PurityBgdEstimator());
+    if(fAnalysisParams.buildSphericalHarmonics) fCollectionOfCfs->push_back((AliFemtoCorrFctnDirectYlm*)CreateCorrFctnDirectYlm(fAnalysisTags[fAnalysisType], 2, tNbinsKStar, tKStarMin, tKStarMax, false));
   }
 
   if(fIsMCRun)
@@ -1587,6 +1588,13 @@ AliFemtoV0PurityBgdEstimator* AliFemtoAnalysisLambdaKaon::CreateV0PurityBgdEstim
 }
 
 //___________________________________________________________________
+AliFemtoCorrFctnDirectYlm* AliFemtoAnalysisLambdaKaon::CreateCorrFctnDirectYlm(const char* name, int maxl, unsigned int bins, double min, double max, int useLCMS)
+{
+  AliFemtoCorrFctnDirectYlm *tCf = new AliFemtoCorrFctnDirectYlm(TString::Format("DirectYlmCf_%s", name), maxl, bins, min, max, useLCMS); 
+  return tCf;
+}
+
+//___________________________________________________________________
 void AliFemtoAnalysisLambdaKaon::AddCutMonitors(AliFemtoEventCut* aEventCut, AliFemtoParticleCut* aPartCut1, AliFemtoParticleCut* aPartCut2, AliFemtoPairCut* aPairCut)
 {
   aEventCut->AddCutMonitorPass(new AliFemtoCutMonitorEventMult("_EvPass"));
@@ -1842,6 +1850,8 @@ AliFemtoAnalysisLambdaKaon::DefaultAnalysisParams()
   tReturnParams.monitorPart2CutPassOnly = false;
   tReturnParams.monitorPairCutPassOnly = false;
   tReturnParams.useMCWeightGenerator = false;
+
+  tReturnParams.buildSphericalHarmonics = false;
 
   return tReturnParams;
 }
