@@ -3,6 +3,11 @@
 #include <TTreeReader.h>
 #include <TTreeReaderValue.h>
 
+#include <fstream>
+#include <iostream> 
+#include <string> 
+#include <vector>
+
 #include "AliExternalBDT.h"
 
 #define DELTA 1.0e-6
