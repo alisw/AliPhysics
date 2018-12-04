@@ -89,36 +89,15 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const char *name,
   fdensreal = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
   fdensimag = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
 
-  char bufname[200];
   for (int ihist = 0; ihist < fMaxJM; ihist++) {
-    snprintf(bufname,
-             200,
-             "NumReYlm%i%i%s",
-             felsi[ihist],
-             femsi[ihist] < 0 ? felsi[ihist] - femsi[ihist] : femsi[ihist],
-             name);
-    fnumsreal[ihist] = new TH1D(bufname, bufname, ibin, vmin, vmax);
-    snprintf(bufname,
-             200,
-             "NumImYlm%i%i%s",
-             felsi[ihist],
-             femsi[ihist] < 0 ? felsi[ihist] - femsi[ihist] : femsi[ihist],
-             name);
-    fnumsimag[ihist] = new TH1D(bufname, bufname, ibin, vmin, vmax);
-    snprintf(bufname,
-             200,
-             "DenReYlm%i%i%s",
-             felsi[ihist],
-             femsi[ihist] < 0 ? felsi[ihist] - femsi[ihist] : femsi[ihist],
-             name);
-    fdensreal[ihist] = new TH1D(bufname, bufname, ibin, vmin, vmax);
-    snprintf(bufname,
-             200,
-             "DenImYlm%i%i%s",
-             felsi[ihist],
-             femsi[ihist] < 0 ? felsi[ihist] - femsi[ihist] : femsi[ihist],
-             name);
-    fdensimag[ihist] = new TH1D(bufname, bufname, ibin, vmin, vmax);
+    const TString suffix = TString::Format("Ylm%i%i%s",
+                                           felsi[ihist],
+                                           femsi[ihist] < 0 ? felsi[ihist] - femsi[ihist] : femsi[ihist],
+                                           name);
+    fnumsreal[ihist] = new TH1D("NumRe" + suffix, "NumRe" + suffix, ibin, vmin, vmax);
+    fnumsimag[ihist] = new TH1D("NumIm" + suffix, "NumIm" + suffix, ibin, vmin, vmax);
+    fdensreal[ihist] = new TH1D("DenRe" + suffix, "DenRe" + suffix, ibin, vmin, vmax);
+    fdensimag[ihist] = new TH1D("DenIm" + suffix, "DenIm" + suffix, ibin, vmin, vmax);
 
     fnumsreal[ihist]->Sumw2();
     fnumsimag[ihist]->Sumw2();
@@ -126,20 +105,14 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const char *name,
     fdensimag[ihist]->Sumw2();
   }
 
-  snprintf(bufname, 200, "BinCountNum%s", name);
-  fbinctn = new TH1D(bufname, bufname, ibin, vmin, vmax);
-
-  snprintf(bufname, 200, "BinCountDen%s", name);
-  fbinctd = new TH1D(bufname, bufname, ibin, vmin, vmax);
+  fbinctn = new TH1D(TString("BinCountNum") + name, "Bin Occupation (Numerator)", ibin, vmin, vmax);
+  fbinctd = new TH1D(TString("BinCountDen") + name, "Bin Occupation (Denominator)", ibin, vmin, vmax);
 
   fYlmBuffer = (complex<double>*)malloc(sizeof(complex<double>) * fMaxJM);
 
   // Covariance matrices
   fcovmnum = (double*)malloc(sizeof(double) * fMaxJM * fMaxJM * 4 * ibin);
   fcovmden = (double*)malloc(sizeof(double) * fMaxJM * fMaxJM * 4 * ibin);
-
-  fcovnum = 0;
-  fcovden = 0;
 
   AliFemtoYlm::InitializeYlms();
 }
@@ -781,58 +754,36 @@ AliFemtoCorrFctnDirectYlm::ReadFromFile(TFile *infile, const char *name, int max
   }
   cout << "Reading in numerators and denominators" << endl;
 
-  char bufname[200];
   for (int ihist = 0; ihist < fMaxJM; ihist++) {
-    snprintf(bufname,
-             200,
-             "NumReYlm%i%i%s",
-             felsi[ihist],
-             femsi[ihist] < 0 ? felsi[ihist] - femsi[ihist] : femsi[ihist],
-             name);
+
+    TString suffix = TString::Format("Ylm%i%i%s",
+                                     felsi[ihist],
+                                     femsi[ihist] < 0 ? felsi[ihist] - femsi[ihist] : femsi[ihist],
+                                     name);
     if (fnumsreal[ihist])
       delete fnumsreal[ihist];
-    fnumsreal[ihist] = new TH1D(*((TH1D*)infile->Get(bufname)));
+    fnumsreal[ihist] = new TH1D(*((TH1D*)infile->Get("NumRe" + suffix)));
 
-    snprintf(bufname,
-             200,
-             "NumImYlm%i%i%s",
-             felsi[ihist],
-             femsi[ihist] < 0 ? felsi[ihist] - femsi[ihist] : femsi[ihist],
-             name);
     if (fnumsimag[ihist])
       delete fnumsimag[ihist];
-    fnumsimag[ihist] = new TH1D(*((TH1D*)infile->Get(bufname)));
+    fnumsimag[ihist] = new TH1D(*((TH1D*)infile->Get("NumIm" + suffix)));
 
-    snprintf(bufname,
-             200,
-             "DenReYlm%i%i%s",
-             felsi[ihist],
-             femsi[ihist] < 0 ? felsi[ihist] - femsi[ihist] : femsi[ihist],
-             name);
     if (fdensreal[ihist])
       delete fdensreal[ihist];
-    fdensreal[ihist] = new TH1D(*((TH1D*)infile->Get(bufname)));
+    fdensreal[ihist] = new TH1D(*((TH1D*)infile->Get("DenRe" + suffix)));
 
-    snprintf(bufname,
-             200,
-             "DenImYlm%i%i%s",
-             felsi[ihist],
-             femsi[ihist] < 0 ? felsi[ihist] - femsi[ihist] : femsi[ihist],
-             name);
     if (fdensimag[ihist])
       delete fdensimag[ihist];
-    fdensimag[ihist] = new TH1D(*((TH1D*)infile->Get(bufname)));
+    fdensimag[ihist] = new TH1D(*((TH1D*)infile->Get("DenIm" + suffix)));
   }
 
   if (fcovnum)
     delete fcovnum;
-  snprintf(bufname, 200, "covNum%s", name);
-  fcovnum = new TH3D(*((TH3D*)infile->Get(bufname)));
+  fcovnum = new TH3D(*((TH3D*)infile->Get(Form("CovNum%s", name))));
 
   if (fcovden)
     delete fcovden;
-  snprintf(bufname, 200, "CovDen%s", name);
-  fcovden = new TH3D(*((TH3D*)infile->Get(bufname)));
+  fcovden = new TH3D(*((TH3D*)infile->Get(Form("CovDen%s", name))));
 
   if ((fcovnum) && (fcovden)) {
     cout << "Unpacking covariance matrices from file " << endl;
@@ -962,12 +913,11 @@ void
 AliFemtoCorrFctnDirectYlm::PackCovariances()
 {
   // Migrate the covariance matrix into a 3D histogram for storage
-  char bufname[200];
-  snprintf(bufname, 200, "CovNum%s", fnumsreal[0]->GetName() + 10);
 
   //  if (fcovnum) delete fcovnum;
   if (!fcovnum) {
     auto *nax = fnumsreal[0]->GetXaxis();
+    const char *bufname = Form("CovNum%s", fnumsreal[0]->GetName() + 10);
     fcovnum = new TH3D(bufname, bufname,
                        fnumsreal[0]->GetNbinsX(), nax->GetXmin(), nax->GetXmax(),
                        GetMaxJM() * 2, -0.5, GetMaxJM() * 2 - 0.5,
@@ -982,11 +932,10 @@ AliFemtoCorrFctnDirectYlm::PackCovariances()
         fcovnum->SetBinContent(ibin, ilmz + 1, ilmp + 1, value);
       }
 
-  snprintf(bufname, 100, "CovDen%s", fnumsreal[0]->GetName() + 10);
-
   //  if (fcovden) delete fcovden;
   if (!fcovden) {
     auto *dax = fdensreal[0]->GetXaxis();
+    const char *bufname = Form("CovDen%s", fnumsreal[0]->GetName() + 10);
     fcovden = new TH3D(bufname, bufname,
                        fdensreal[0]->GetNbinsX(), dax->GetXmin(), dax->GetXmax(),
                        GetMaxJM() * 2, -0.5, GetMaxJM() * 2 - 0.5,

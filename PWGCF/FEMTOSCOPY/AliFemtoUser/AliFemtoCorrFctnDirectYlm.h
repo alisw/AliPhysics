@@ -60,16 +60,16 @@ public:
 
   void ReadFromFile(TFile *infile, const char *name, int maxl);
 
-  TH1D *GetNumRealHist(int el, int em);
-  TH1D *GetNumImagHist(int el, int em);
+  TH1D* GetNumRealHist(int el, int em);
+  TH1D* GetNumImagHist(int el, int em);
 
-  TH1D *GetDenRealHist(int el, int em);
-  TH1D *GetDenImagHist(int el, int em);
+  TH1D* GetDenRealHist(int el, int em);
+  TH1D* GetDenImagHist(int el, int em);
 
   void SetUseLCMS(int aUseLCMS);
   int GetUseLCMS();
 
-  virtual AliFemtoCorrFctn *Clone() const { return new AliFemtoCorrFctnDirectYlm(*this); }
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnDirectYlm(*this); }
 
 private:
   double ClebschGordan(double aJot1, double aEm1, double aJot2, double aEm2, double aJot, double aEm);
