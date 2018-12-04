@@ -3,17 +3,11 @@
 #include <TTreeReader.h>
 #include <TTreeReaderValue.h>
 
-#include <fstream>
-#include <iostream>
-#include <stdlib.h>
-#include <string>
-#include <vector>
-
-#include <AliExternalBDT.h>
+#include "AliExternalBDT.h"
 
 #define DELTA 1.0e-6
 
-int AliExternalBDTTest(string path = "") {
+int test_AliEsternalBDT(string path = "") {
 
   string tree_path, model_path;
 
