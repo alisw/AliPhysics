@@ -1,72 +1,69 @@
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// AliFemtoCorrFctnDirectYlm - Correlation function that is binned in Ylms    //
-// directly. Provides a way to store the numerator and denominator            //
-// in Ylms directly and correctly calculate the correlation                   //
-// function from them.                                                        //
-//                                                                            //
-// Authors: Adam Kisiel kisiel@mps.ohio-state.edu                             //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemtoUser/AliFemtoCorrFctnDirectYml.cxx
+///
+
+
 #include "AliFemtoCorrFctnDirectYlm.h"
 #include <TMath.h>
 #include <iostream>
 
 using namespace std;
 
-AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const char *name, int maxl, int ibin=30, double vmin=0.0, double vmax=0.3, int aUseLCMS=0):
-  fnumsreal(0),
-  fnumsimag(0),
-  fdensreal(0),
-  fdensimag(0),
-  fbinctn(0),
-  fbinctd(0),
-  fcovnum(0),
-  fcovden(0),
-  fcovmnum(0),
-  fcovmden(0),
-  fMaxL(0),
-  fMaxJM(0),
-  fels(0),
-  fems(0),
-  felsi(0),
-  femsi(0),
-  fYlmBuffer(0),
-  factorials(0),
-  fSout(0.0),
-  fSside(0.0),
-  fSlong(0.0),
-  fUseLCMS(aUseLCMS)
-{
-  // Main constructor
-  fMaxL = maxl;
-  fMaxJM = (maxl+1)*(maxl+1);
 
+AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const char *name,
+                                                     int maxl,
+                                                     int ibin,
+                                                     double vmin,
+                                                     double vmax,
+                                                     int aUseLCMS)
+  : AliFemtoCorrFctn()
+  , fnumsreal(nullptr)
+  , fnumsimag(nullptr)
+  , fdensreal(nullptr)
+  , fdensimag(nullptr)
+  , fbinctn(nullptr)
+  , fbinctd(nullptr)
+  , fcovnum(nullptr)
+  , fcovden(nullptr)
+  , fcovmnum(nullptr)
+  , fcovmden(nullptr)
+  , fMaxL(maxl)
+  , fMaxJM((maxl + 1) * (maxl + 1))
+  , fels(nullptr)
+  , fems(nullptr)
+  , felsi(nullptr)
+  , femsi(nullptr)
+  , fYlmBuffer(nullptr)
+  , factorials(nullptr)
+  , fSout(0.0)
+  , fSside(0.0)
+  , fSlong(0.0)
+  , fUseLCMS(aUseLCMS)
+{
   // *DEB*  cout <<  "Size is " << sizeof(double) << " " << sizeof(complex<double>) << endl;
 
   // Fill in factorials table
-  factorials = (double *) malloc(sizeof(double) * (4 * (maxl + 1)));
+  factorials = (double*)malloc(sizeof(double) * (4 * (maxl + 1)));
   int fac = 1;
   factorials[0] = 1;
-  for (int iter=1; iter<4*(maxl+1); iter++)
-    {
-      fac *= iter;
-      factorials[iter] = fac;
-    }
+  for (int iter = 1; iter < 4 * (maxl + 1); iter++) {
+    fac *= iter;
+    factorials[iter] = fac;
+  }
 
   // Fill in els and ems table
   int el = 0;
   int em = 0;
   int il = 0;
-  fels = (double *) malloc(sizeof(double) * (fMaxJM));
-  fems = (double *) malloc(sizeof(double) * (fMaxJM));
-  felsi = (int *) malloc(sizeof(int) * (fMaxJM));
-  femsi = (int *) malloc(sizeof(int) * (fMaxJM));
+  fels = (double*)malloc(sizeof(double) * (fMaxJM));
+  fems = (double*)malloc(sizeof(double) * (fMaxJM));
+  felsi = (int*)malloc(sizeof(int) * (fMaxJM));
+  femsi = (int*)malloc(sizeof(int) * (fMaxJM));
   do {
     fels[il] = el;
     fems[il] = em;
-    felsi[il] = (int) el;
-    femsi[il] = (int) em;
+    felsi[il] = (int)el;
+    femsi[il] = (int)em;
 
     // *DEB*    cout << "il el em " << il << " " << felsi[il] << " " << femsi[il] << endl;
     em++;
@@ -75,8 +72,7 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const char *name, int maxl,
       el++;
       em = -el;
     }
-  }
-  while (el <= maxl);
+  } while (el <= maxl);
 
   // *DEB*  for (il=0; il<fMaxJM; il++)
   // *DEB*    cout << "il el em " << il << " " << felsi[il] << " " << femsi[il] << endl;
@@ -84,24 +80,44 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const char *name, int maxl,
   // Create numerator and denominator historgrams
   //  int sthp = sizeof(TH1D *);
   //  fnumsreal = (TH1D **) malloc(sthp * fMaxJM);
-//   fnumsreal = new TH1D * [fMaxJM];
-//   fnumsimag = new TH1D * [fMaxJM];
-//   fdensreal = new TH1D * [fMaxJM];
-//   fdensimag = new TH1D * [fMaxJM];
-  fnumsreal = (TH1D **) malloc(sizeof(TH1D *) * fMaxJM);
-  fnumsimag = (TH1D **) malloc(sizeof(TH1D *) * fMaxJM);
-  fdensreal = (TH1D **) malloc(sizeof(TH1D *) * fMaxJM);
-  fdensimag = (TH1D **) malloc(sizeof(TH1D *) * fMaxJM);
+  //   fnumsreal = new TH1D * [fMaxJM];
+  //   fnumsimag = new TH1D * [fMaxJM];
+  //   fdensreal = new TH1D * [fMaxJM];
+  //   fdensimag = new TH1D * [fMaxJM];
+  fnumsreal = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
+  fnumsimag = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
+  fdensreal = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
+  fdensimag = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
 
   char bufname[200];
-  for (int ihist=0; ihist<fMaxJM; ihist++) {
-    snprintf(bufname , 200,  "NumReYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
+  for (int ihist = 0; ihist < fMaxJM; ihist++) {
+    snprintf(bufname,
+             200,
+             "NumReYlm%i%i%s",
+             felsi[ihist],
+             femsi[ihist] < 0 ? felsi[ihist] - femsi[ihist] : femsi[ihist],
+             name);
     fnumsreal[ihist] = new TH1D(bufname, bufname, ibin, vmin, vmax);
-    snprintf(bufname , 200,  "NumImYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
+    snprintf(bufname,
+             200,
+             "NumImYlm%i%i%s",
+             felsi[ihist],
+             femsi[ihist] < 0 ? felsi[ihist] - femsi[ihist] : femsi[ihist],
+             name);
     fnumsimag[ihist] = new TH1D(bufname, bufname, ibin, vmin, vmax);
-    snprintf(bufname , 200,  "DenReYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
+    snprintf(bufname,
+             200,
+             "DenReYlm%i%i%s",
+             felsi[ihist],
+             femsi[ihist] < 0 ? felsi[ihist] - femsi[ihist] : femsi[ihist],
+             name);
     fdensreal[ihist] = new TH1D(bufname, bufname, ibin, vmin, vmax);
-    snprintf(bufname , 200,  "DenImYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
+    snprintf(bufname,
+             200,
+             "DenImYlm%i%i%s",
+             felsi[ihist],
+             femsi[ihist] < 0 ? felsi[ihist] - femsi[ihist] : femsi[ihist],
+             name);
     fdensimag[ihist] = new TH1D(bufname, bufname, ibin, vmin, vmax);
 
     fnumsreal[ihist]->Sumw2();
@@ -110,17 +126,17 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const char *name, int maxl,
     fdensimag[ihist]->Sumw2();
   }
 
-  snprintf(bufname , 200,  "BinCountNum%s", name);
+  snprintf(bufname, 200, "BinCountNum%s", name);
   fbinctn = new TH1D(bufname, bufname, ibin, vmin, vmax);
 
-  snprintf(bufname , 200,  "BinCountDen%s", name);
+  snprintf(bufname, 200, "BinCountDen%s", name);
   fbinctd = new TH1D(bufname, bufname, ibin, vmin, vmax);
 
-  fYlmBuffer = (complex<double> *) malloc(sizeof(complex<double>) * fMaxJM);
+  fYlmBuffer = (complex<double>*)malloc(sizeof(complex<double>) * fMaxJM);
 
   // Covariance matrices
-  fcovmnum = (double *) malloc(sizeof(double) * fMaxJM * fMaxJM * 4 * ibin);
-  fcovmden = (double *) malloc(sizeof(double) * fMaxJM * fMaxJM * 4 * ibin);
+  fcovmnum = (double*)malloc(sizeof(double) * fMaxJM * fMaxJM * 4 * ibin);
+  fcovmden = (double*)malloc(sizeof(double) * fMaxJM * fMaxJM * 4 * ibin);
 
   fcovnum = 0;
   fcovden = 0;
@@ -128,88 +144,61 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const char *name, int maxl,
   AliFemtoYlm::InitializeYlms();
 }
 
-
-AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm():
-  fnumsreal(0),
-  fnumsimag(0),
-  fdensreal(0),
-  fdensimag(0),
-  fbinctn(0),
-  fbinctd(0),
-  fcovnum(0),
-  fcovden(0),
-  fcovmnum(0),
-  fcovmden(0),
-  fMaxL(0),
-  fMaxJM(0),
-  fels(0),
-  fems(0),
-  felsi(0),
-  femsi(0),
-  fYlmBuffer(0),
-  factorials(0),
-  fSout(0.0),
-  fSside(0.0),
-  fSlong(0.0),
-  fUseLCMS(0)
+AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm()
+  : AliFemtoCorrFctnDirectYlm("AliFemtoCorrFctnDirectYlm", 2)
 {
-  // Default constructor
-  AliFemtoCorrFctnDirectYlm("AliFemtoCorrFctnDirectYlm",2);
 }
 
-AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const AliFemtoCorrFctnDirectYlm& aCorrFctn):
-  AliFemtoCorrFctn(),
-  fnumsreal(0),
-  fnumsimag(0),
-  fdensreal(0),
-  fdensimag(0),
-  fbinctn(0),
-  fbinctd(0),
-  fcovnum(0),
-  fcovden(0),
-  fcovmnum(0),
-  fcovmden(0),
-  fMaxL(0),
-  fMaxJM(0),
-  fels(0),
-  fems(0),
-  felsi(0),
-  femsi(0),
-  fYlmBuffer(0),
-  factorials(0),
-  fSout(0.0),
-  fSside(0.0),
-  fSlong(0.0),
-  fUseLCMS(0)
+AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const AliFemtoCorrFctnDirectYlm& aCorrFctn)
+  : AliFemtoCorrFctn(aCorrFctn)
+  , fnumsreal(nullptr)
+  , fnumsimag(nullptr)
+  , fdensreal(nullptr)
+  , fdensimag(nullptr)
+  , fbinctn(nullptr)
+  , fbinctd(nullptr)
+  , fcovnum(nullptr)
+  , fcovden(nullptr)
+  , fcovmnum(nullptr)
+  , fcovmden(nullptr)
+  , fMaxL(aCorrFctn.fMaxL)
+  , fMaxJM((fMaxL + 1) * (fMaxL + 1))
+  , fels(nullptr)
+  , fems(nullptr)
+  , felsi(nullptr)
+  , femsi(nullptr)
+  , fYlmBuffer(nullptr)
+  , factorials(nullptr)
+  , fSout(0.0)
+  , fSside(0.0)
+  , fSlong(0.0)
+  , fUseLCMS(0)
 {
   // Copy constructor
   int ibin = 0;
-  if (aCorrFctn.fbinctn)
+  if (aCorrFctn.fbinctn) {
     ibin = aCorrFctn.fbinctn->GetNbinsX();
-
-  fMaxL = aCorrFctn.fMaxL;
-  fMaxJM = (fMaxL+1)*(fMaxL+1);
+  }
 
   // Fill in factorials table
-  factorials = (double *) malloc(sizeof(double) * (4 * (fMaxL + 1)));
-  for (int iter=1; iter<4*(fMaxL+1); iter++)
-    {
-      factorials[iter] = aCorrFctn.factorials[iter];
-    }
+  factorials = (double*)malloc(sizeof(double) * (4 * (fMaxL + 1)));
+  for (int iter = 1; iter < 4 * (fMaxL + 1); iter++) {
+    factorials[iter] = aCorrFctn.factorials[iter];
+  }
 
   // Fill in els and ems table
   int el = 0;
   int em = 0;
   int il = 0;
-  fels = (double *) malloc(sizeof(double) * (fMaxJM));
-  fems = (double *) malloc(sizeof(double) * (fMaxJM));
-  felsi = (int *) malloc(sizeof(int) * (fMaxJM));
-  femsi = (int *) malloc(sizeof(int) * (fMaxJM));
+  fels = (double*)malloc(sizeof(double) * (fMaxJM));
+  fems = (double*)malloc(sizeof(double) * (fMaxJM));
+  felsi = (int*)malloc(sizeof(int) * (fMaxJM));
+  femsi = (int*)malloc(sizeof(int) * (fMaxJM));
   do {
     fels[il] = el;
     fems[il] = em;
-    felsi[il] = (int) el;
-    femsi[il] = (int) em;
+    felsi[il] = (int)el;
+    femsi[il] = (int)em;
 
     em++;
     il++;
@@ -217,15 +206,14 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const AliFemtoCorrFctnDirec
       el++;
       em = -el;
     }
-  }
-  while (el <= fMaxL);
+  } while (el <= fMaxL);
 
-  fnumsreal = (TH1D **) malloc(sizeof(TH1D *) * fMaxJM);
-  fnumsimag = (TH1D **) malloc(sizeof(TH1D *) * fMaxJM);
-  fdensreal = (TH1D **) malloc(sizeof(TH1D *) * fMaxJM);
-  fdensimag = (TH1D **) malloc(sizeof(TH1D *) * fMaxJM);
+  fnumsreal = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
+  fnumsimag = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
+  fdensreal = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
+  fdensimag = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
 
-  for (int ihist=0; ihist<fMaxJM; ihist++) {
+  for (int ihist = 0; ihist < fMaxJM; ihist++) {
     if (aCorrFctn.fnumsreal[ihist])
       fnumsreal[ihist] = new TH1D(*aCorrFctn.fnumsreal[ihist]);
     else
@@ -253,13 +241,13 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const AliFemtoCorrFctnDirec
   else
     fbinctd = 0;
 
-  fYlmBuffer = (complex<double> *) malloc(sizeof(complex<double>) * fMaxJM);
+  fYlmBuffer = (complex<double>*)malloc(sizeof(complex<double>) * fMaxJM);
 
   // Covariance matrices
-  fcovmnum = (double *) malloc(sizeof(double) * fMaxJM * fMaxJM * 4 * ibin);
-  fcovmden = (double *) malloc(sizeof(double) * fMaxJM * fMaxJM * 4 * ibin);
+  fcovmnum = (double*)malloc(sizeof(double) * fMaxJM * fMaxJM * 4 * ibin);
+  fcovmden = (double*)malloc(sizeof(double) * fMaxJM * fMaxJM * 4 * ibin);
 
-  for (int iter=0; iter<fMaxJM * fMaxJM * 4 * ibin; iter++) {
+  for (int iter = 0; iter < fMaxJM * fMaxJM * 4 * ibin; iter++) {
     fcovmnum[iter] = aCorrFctn.fcovmnum[iter];
     fcovmden[iter] = aCorrFctn.fcovmden[iter];
   }
@@ -283,7 +271,8 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const AliFemtoCorrFctnDirec
   fUseLCMS = aCorrFctn.fUseLCMS;
 }
 
-AliFemtoCorrFctnDirectYlm& AliFemtoCorrFctnDirectYlm::operator=(const AliFemtoCorrFctnDirectYlm& aCorrFctn)
+AliFemtoCorrFctnDirectYlm&
+AliFemtoCorrFctnDirectYlm::operator=(const AliFemtoCorrFctnDirectYlm& aCorrFctn)
 {
   // assignment operator
   if (this == &aCorrFctn)
@@ -294,35 +283,39 @@ AliFemtoCorrFctnDirectYlm& AliFemtoCorrFctnDirectYlm::operator=(const AliFemtoCo
     ibin = aCorrFctn.fbinctn->GetNbinsX();
 
   fMaxL = aCorrFctn.fMaxL;
-  fMaxJM = (fMaxL+1)*(fMaxL+1);
+  fMaxJM = (fMaxL + 1) * (fMaxL + 1);
 
   // Fill in factorials table
-  if (factorials) free (factorials);
-  factorials = (double *) malloc(sizeof(double) * (4 * (fMaxL + 1)));
-  for (int iter=1; iter<4*(fMaxL+1); iter++)
-    {
-      factorials[iter] = aCorrFctn.factorials[iter];
-    }
+  if (factorials)
+    free(factorials);
+  factorials = (double*)malloc(sizeof(double) * (4 * (fMaxL + 1)));
+  for (int iter = 1; iter < 4 * (fMaxL + 1); iter++) {
+    factorials[iter] = aCorrFctn.factorials[iter];
+  }
 
   // Fill in els and ems table
   int el = 0;
   int em = 0;
   int il = 0;
 
-  if (fels) free (fels);
-  if (fems) free (fems);
-  if (felsi) free (felsi);
-  if (femsi) free (femsi);
+  if (fels)
+    free(fels);
+  if (fems)
+    free(fems);
+  if (felsi)
+    free(felsi);
+  if (femsi)
+    free(femsi);
 
-  fels = (double *) malloc(sizeof(double) * (fMaxJM));
-  fems = (double *) malloc(sizeof(double) * (fMaxJM));
-  felsi = (int *) malloc(sizeof(int) * (fMaxJM));
-  femsi = (int *) malloc(sizeof(int) * (fMaxJM));
+  fels = (double*)malloc(sizeof(double) * (fMaxJM));
+  fems = (double*)malloc(sizeof(double) * (fMaxJM));
+  felsi = (int*)malloc(sizeof(int) * (fMaxJM));
+  femsi = (int*)malloc(sizeof(int) * (fMaxJM));
   do {
     fels[il] = el;
     fems[il] = em;
-    felsi[il] = (int) el;
-    femsi[il] = (int) em;
+    felsi[il] = (int)el;
+    femsi[il] = (int)em;
 
     em++;
     il++;
@@ -330,20 +323,23 @@ AliFemtoCorrFctnDirectYlm& AliFemtoCorrFctnDirectYlm::operator=(const AliFemtoCo
       el++;
       em = -el;
     }
-  }
-  while (el <= fMaxL);
+  } while (el <= fMaxL);
 
-  if (fnumsreal) free (fnumsreal);
-  if (fnumsimag) free (fnumsimag);
-  if (fdensreal) free (fdensreal);
-  if (fdensimag) free (fdensimag);
+  if (fnumsreal)
+    free(fnumsreal);
+  if (fnumsimag)
+    free(fnumsimag);
+  if (fdensreal)
+    free(fdensreal);
+  if (fdensimag)
+    free(fdensimag);
 
-  fnumsreal = (TH1D **) malloc(sizeof(TH1D *) * fMaxJM);
-  fnumsimag = (TH1D **) malloc(sizeof(TH1D *) * fMaxJM);
-  fdensreal = (TH1D **) malloc(sizeof(TH1D *) * fMaxJM);
-  fdensimag = (TH1D **) malloc(sizeof(TH1D *) * fMaxJM);
+  fnumsreal = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
+  fnumsimag = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
+  fdensreal = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
+  fdensimag = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
 
-  for (int ihist=0; ihist<fMaxJM; ihist++) {
+  for (int ihist = 0; ihist < fMaxJM; ihist++) {
     if (aCorrFctn.fnumsreal[ihist])
       fnumsreal[ihist] = new TH1D(*aCorrFctn.fnumsreal[ihist]);
     else
@@ -371,19 +367,23 @@ AliFemtoCorrFctnDirectYlm& AliFemtoCorrFctnDirectYlm::operator=(const AliFemtoCo
   else
     fbinctd = 0;
 
-  if (fYlmBuffer) free (fYlmBuffer);
+  if (fYlmBuffer) {
+    free(fYlmBuffer);
+  }
 
-  fYlmBuffer = (complex<double> *) malloc(sizeof(complex<double>) * fMaxJM);
+  fYlmBuffer = (complex<double>*)malloc(sizeof(complex<double>) * fMaxJM);
 
   // Covariance matrices
 
-  if (fcovmnum) free (fcovmnum);
-  if (fcovmden) free (fcovmden);
+  if (fcovmnum)
+    free(fcovmnum);
+  if (fcovmden)
+    free(fcovmden);
 
-  fcovmnum = (double *) malloc(sizeof(double) * fMaxJM * fMaxJM * 4 * ibin);
-  fcovmden = (double *) malloc(sizeof(double) * fMaxJM * fMaxJM * 4 * ibin);
+  fcovmnum = (double*)malloc(sizeof(double) * fMaxJM * fMaxJM * 4 * ibin);
+  fcovmden = (double*)malloc(sizeof(double) * fMaxJM * fMaxJM * 4 * ibin);
 
-  for (int iter=0; iter<fMaxJM * fMaxJM * 4 * ibin; iter++) {
+  for (int iter = 0; iter < fMaxJM * fMaxJM * 4 * ibin; iter++) {
     fcovmnum[iter] = aCorrFctn.fcovmnum[iter];
     fcovmden[iter] = aCorrFctn.fcovmden[iter];
   }
@@ -401,8 +401,9 @@ AliFemtoCorrFctnDirectYlm& AliFemtoCorrFctnDirectYlm::operator=(const AliFemtoCo
   fSside = aCorrFctn.fSside;
   fSlong = aCorrFctn.fSlong;
 
-  if (aCorrFctn.fPairCut)
+  if (aCorrFctn.fPairCut) {
     fPairCut = aCorrFctn.fPairCut;
+  }
 
   fUseLCMS = aCorrFctn.fUseLCMS;
 
@@ -412,7 +413,7 @@ AliFemtoCorrFctnDirectYlm& AliFemtoCorrFctnDirectYlm::operator=(const AliFemtoCo
 AliFemtoCorrFctnDirectYlm::~AliFemtoCorrFctnDirectYlm()
 {
   // Destructor
-  for (int ihist=0; ihist<fMaxJM; ihist++) {
+  for (int ihist = 0; ihist < fMaxJM; ihist++) {
     delete fnumsreal[ihist];
     delete fnumsimag[ihist];
     delete fdensreal[ihist];
@@ -427,10 +428,10 @@ AliFemtoCorrFctnDirectYlm::~AliFemtoCorrFctnDirectYlm()
   //  delete fdensreal;
   //  delete fdensimag;
 
-  free( fnumsreal);
-  free( fnumsimag);
-  free( fdensreal);
-  free( fdensimag);
+  free(fnumsreal);
+  free(fnumsimag);
+  free(fdensreal);
+  free(fdensimag);
 
   free(factorials);
   free(fels);
@@ -442,13 +443,22 @@ AliFemtoCorrFctnDirectYlm::~AliFemtoCorrFctnDirectYlm()
   free(fcovmnum);
   free(fcovmden);
 
-  if (fcovnum) delete fcovnum;
-  if (fcovden) delete fcovden;
+  if (fcovnum)
+    delete fcovnum;
+  if (fcovden)
+    delete fcovden;
 
-  if (fPairCut) delete fPairCut;
+  if (fPairCut)
+    delete fPairCut;
 }
 
-double AliFemtoCorrFctnDirectYlm::ClebschGordan(double aJot1, double aEm1, double aJot2, double aEm2, double aJot, double aEm)
+double
+AliFemtoCorrFctnDirectYlm::ClebschGordan(double aJot1,
+                                         double aEm1,
+                                         double aJot2,
+                                         double aEm2,
+                                         double aJot,
+                                         double aEm)
 {
   // Calculate Clebsh-Gordan coefficient
   int mint, maxt;
@@ -458,81 +468,94 @@ double AliFemtoCorrFctnDirectYlm::ClebschGordan(double aJot1, double aEm1, doubl
 
   maxt = lrint(aJot1 + aJot2 - aJot);
   mint = 0;
-  if (lrint(aJot1 - aEm1) < maxt) maxt = lrint(aJot1 - aEm1);
-  if (lrint(aJot2 + aEm2) < maxt) maxt = lrint(aJot2 + aEm2);
-  if (lrint(-(aJot-aJot2+aEm1)) > mint) mint = lrint(-(aJot-aJot2+aEm1));
-  if (lrint(-(aJot-aJot1-aEm2)) > mint) mint = lrint(-(aJot-aJot1-aEm2));
+  if (lrint(aJot1 - aEm1) < maxt)
+    maxt = lrint(aJot1 - aEm1);
+  if (lrint(aJot2 + aEm2) < maxt)
+    maxt = lrint(aJot2 + aEm2);
+  if (lrint(-(aJot - aJot2 + aEm1)) > mint)
+    mint = lrint(-(aJot - aJot2 + aEm1));
+  if (lrint(-(aJot - aJot1 - aEm2)) > mint)
+    mint = lrint(-(aJot - aJot1 - aEm2));
 
-  for (titer = mint; titer<=maxt; titer ++)
-    {
-      coef = TMath::Power(-1, titer);
-      coef *= TMath::Sqrt((2*aJot+1)*
-			  factorials[lrint(aJot1+aEm1)] *
-			  factorials[lrint(aJot1-aEm1)] *
-			  factorials[lrint(aJot2+aEm2)] *
-			  factorials[lrint(aJot2-aEm2)] *
-			  factorials[lrint(aJot+aEm)] *
-			  factorials[lrint(aJot-aEm)]);
-      coef /= (factorials[titer] *
-	       factorials[lrint(aJot1+aJot2-aJot-titer)] *
-	       factorials[lrint(aJot1-aEm1-titer)] *
-	       factorials[lrint(aJot2+aEm2-titer)] *
-	       factorials[lrint(aJot-aJot2+aEm1+titer)] *
-	       factorials[lrint(aJot-aJot1-aEm2+titer)]);
+  for (titer = mint; titer <= maxt; titer++) {
+    coef = TMath::Power(-1, titer);
+    coef *= TMath::Sqrt((2 * aJot + 1)
+                        * factorials[lrint(aJot1 + aEm1)]
+                        * factorials[lrint(aJot1 - aEm1)]
+                        * factorials[lrint(aJot2 + aEm2)]
+                        * factorials[lrint(aJot2 - aEm2)]
+                        * factorials[lrint(aJot + aEm)]
+                        * factorials[lrint(aJot - aEm)]);
+    coef /= (factorials[titer]
+             * factorials[lrint(aJot1 + aJot2 - aJot - titer)]
+             * factorials[lrint(aJot1 - aEm1 - titer)]
+             * factorials[lrint(aJot2 + aEm2 - titer)]
+             * factorials[lrint(aJot - aJot2 + aEm1 + titer)]
+             * factorials[lrint(aJot - aJot1 - aEm2 + titer)]);
 
-      cgc += coef;
-    }
+    cgc += coef;
+  }
 
   cgc *= DeltaJ(aJot1, aJot2, aJot);
 
   return cgc;
 }
 
-double AliFemtoCorrFctnDirectYlm::DeltaJ(double aJot1, double aJot2, double aJot)
+double
+AliFemtoCorrFctnDirectYlm::DeltaJ(double aJot1, double aJot2, double aJot)
 {
   // Calculate J for the Clebsh-Gordan coefficient
-  if ((aJot1+aJot2-aJot) < 0) {
+  if ((aJot1 + aJot2 - aJot) < 0) {
     //    cout << "J1+J2-J3 < 0 !!!" << " " << aJot1 << " " << aJot2 << " " << aJot << endl;
     return 0;
   }
-  if ((aJot1-aJot2+aJot) < 0) {
+  if ((aJot1 - aJot2 + aJot) < 0) {
     //    cout << "J1-J2+J3 < 0 !!!" << " " << aJot1 << " " << aJot2 << " " << aJot << endl;
     return 0;
   }
-  if ((-aJot1+aJot2+aJot) < 0) {
+  if ((-aJot1 + aJot2 + aJot) < 0) {
     //    cout << "-J1+J2+J3 < 0 !!!" << " " << aJot1 << " " << aJot2 << " " << aJot << endl;
     return 0;
   }
-  if ((aJot1+aJot2+aJot+1) < 0) {
+  if ((aJot1 + aJot2 + aJot + 1) < 0) {
     //    cout << "J1+J2+J3+1 < 0 !!!" << " " << aJot1 << " " << aJot2 << " " << aJot << endl;
     return 0;
   }
-  double res = TMath::Sqrt(1.0 *
-			   factorials[lrint(aJot1+aJot2-aJot)] *
-			   factorials[lrint(aJot1-aJot2+aJot)] *
-			   factorials[lrint(-aJot1+aJot2+aJot)] /
-			   factorials[lrint(aJot1+aJot2+aJot+1)]);
+  double res = TMath::Sqrt(1.0 * factorials[lrint(aJot1 + aJot2 - aJot)]
+                               * factorials[lrint(aJot1 - aJot2 + aJot)]
+                               * factorials[lrint(-aJot1 + aJot2 + aJot)]
+                               / factorials[lrint(aJot1 + aJot2 + aJot + 1)]);
 
   return res;
 }
 
-double AliFemtoCorrFctnDirectYlm::WignerSymbol(double aJot1, double aEm1, double aJot2, double aEm2, double aJot, double aEm)
+double
+AliFemtoCorrFctnDirectYlm::WignerSymbol(double aJot1,
+                                        double aEm1,
+                                        double aJot2,
+                                        double aEm2,
+                                        double aJot,
+                                        double aEm)
 {
   // Get Wigner symbol
-  if (lrint(aEm1+aEm2+aEm) != 0.0)
+  if (lrint(aEm1 + aEm2 + aEm) != 0.0) {
     return 0.0;
+  }
   double cge = ClebschGordan(aJot1, aEm1, aJot2, aEm2, aJot, -aEm);
-  if (lrint(abs(aJot1 - aJot2 - aEm)) % 2)
+  if (lrint(abs(aJot1 - aJot2 - aEm)) % 2) {
     cge *= -1.0;
-  cge /= sqrt(2*aJot + 1);
+  }
+  cge /= sqrt(2 * aJot + 1);
 
-  if (cge == -0.0) cge = 0.0;
+  if (cge == -0.0) {
+    cge = 0.0;
+  }
 
   return cge;
 }
 
-
-void AliFemtoCorrFctnDirectYlm::GetMtilde(complex<double> *aMat, double *aMTilde)
+void
+AliFemtoCorrFctnDirectYlm::GetMtilde(complex<double> *aMat, double *aMTilde)
 {
   // Create the Mtilde for a given q bin
   double lzero, mzero;
@@ -545,79 +568,90 @@ void AliFemtoCorrFctnDirectYlm::GetMtilde(complex<double> *aMat, double *aMTilde
 
   complex<double> mcomp;
 
-  for (int izero = 0; izero<GetMaxJM(); izero++) {
+  for (int izero = 0; izero < GetMaxJM(); izero++) {
     GetElEmForIndex(izero, &lzero, &mzero);
     GetElEmForIndex(izero, &lzeroi, &mzeroi);
-    for (int ibis = 0; ibis<GetMaxJM(); ibis++) {
+    for (int ibis = 0; ibis < GetMaxJM(); ibis++) {
       GetElEmForIndex(ibis, &lbis, &mbis);
       GetElEmForIndex(ibis, &lbisi, &mbisi);
       complex<double> val = complex<double>(0.0, 0.0);
-      for (int iprim = 0; iprim<GetMaxJM(); iprim++) {
+      for (int iprim = 0; iprim < GetMaxJM(); iprim++) {
 
-	GetElEmForIndex(iprim, &lprim, &mprim);
-	GetElEmForIndex(iprim, &lprimi, &mprimi);
+        GetElEmForIndex(iprim, &lprim, &mprim);
+        GetElEmForIndex(iprim, &lprimi, &mprimi);
 
-	if (abs(mzeroi) % 2) mcomp = complex<double>(-1.0, 0.0); // (-1)^m
-	else mcomp = complex<double>(1.0, 0.0);
+        if (abs(mzeroi) % 2)
+          mcomp = complex<double>(-1.0, 0.0); // (-1)^m
+        else
+          mcomp = complex<double>(1.0, 0.0);
 
-	mcomp *= sqrt((2*lzero+1)*(2*lprim+1)*(2*lbis+1));   // P1
-	mcomp *= WignerSymbol(lzero, 0, lprim, 0, lbis, 0); // W1
-	mcomp *= WignerSymbol(lzero, -mzero, lprim, mprim, lbis, mbis); // W2
-	mcomp *= aMat[iprim];
-	val += mcomp;
+        mcomp *= sqrt((2 * lzero + 1) * (2 * lprim + 1) * (2 * lbis + 1)); // P1
+        mcomp *= WignerSymbol(lzero, 0, lprim, 0, lbis, 0);                // W1
+        mcomp *= WignerSymbol(lzero, -mzero, lprim, mprim, lbis, mbis);    // W2
+        mcomp *= aMat[iprim];
+        val += mcomp;
       }
-      aMTilde[(izero*2)*(2*GetMaxJM()) + (ibis*2)]     =  real(val);
-      aMTilde[(izero*2+1)*(2*GetMaxJM()) + (ibis*2)]   =  imag(val);
+      aMTilde[(izero * 2) * (2 * GetMaxJM()) + (ibis * 2)] = real(val);
+      aMTilde[(izero * 2 + 1) * (2 * GetMaxJM()) + (ibis * 2)] = imag(val);
       if (imag(val) != 0.0)
-	aMTilde[(izero*2)*(2*GetMaxJM()) + (ibis*2+1)]   = -imag(val);
+        aMTilde[(izero * 2) * (2 * GetMaxJM()) + (ibis * 2 + 1)] = -imag(val);
       else
-	aMTilde[(izero*2)*(2*GetMaxJM()) + (ibis*2+1)]   = 0.0;
-      aMTilde[(izero*2+1)*(2*GetMaxJM()) + (ibis*2+1)] =  real(val);
-
+        aMTilde[(izero * 2) * (2 * GetMaxJM()) + (ibis * 2 + 1)] = 0.0;
+      aMTilde[(izero * 2 + 1) * (2 * GetMaxJM()) + (ibis * 2 + 1)] = real(val);
     }
   }
 }
 
-int  AliFemtoCorrFctnDirectYlm::GetMaxJM() const
-{ return fMaxJM; }
+int
+AliFemtoCorrFctnDirectYlm::GetMaxJM() const
+{
+  return fMaxJM;
+}
 
-void AliFemtoCorrFctnDirectYlm::GetElEmForIndex(int aIndex, double *aEl, double *aEm) const
+void
+AliFemtoCorrFctnDirectYlm::GetElEmForIndex(int aIndex, double *aEl, double *aEm) const
 {
   // Get l,m for a given index
   *aEl = fels[aIndex];
   *aEm = fems[aIndex];
 }
 
-void AliFemtoCorrFctnDirectYlm::GetElEmForIndex(int aIndex, int *aEl, int *aEm) const
+void
+AliFemtoCorrFctnDirectYlm::GetElEmForIndex(int aIndex, int *aEl, int *aEm) const
 {
   // Get l,m for a given index
   *aEl = felsi[aIndex];
   *aEm = femsi[aIndex];
 }
 
-int AliFemtoCorrFctnDirectYlm::GetBin(int qbin, int ilmzero, int zeroimag, int ilmprim, int primimag)
+int
+AliFemtoCorrFctnDirectYlm::GetBin(int qbin, int ilmzero, int zeroimag, int ilmprim, int primimag)
 {
-  return (qbin*GetMaxJM()*GetMaxJM()*4 +
-	  (ilmprim*2 + primimag) * GetMaxJM()*2 +
-	  ilmzero*2 + zeroimag);
+  return qbin * GetMaxJM() * GetMaxJM() * 4
+         + (ilmprim * 2 + primimag) * GetMaxJM() * 2
+         + ilmzero * 2
+         + zeroimag;
 }
 
-void AliFemtoCorrFctnDirectYlm::AddRealPair(double qout, double qside, double qlong, double weight)
+void
+AliFemtoCorrFctnDirectYlm::AddRealPair(double qout, double qside, double qlong, double weight)
 {
   // Fill numerator
-  double kv = sqrt(qout*qout + qside*qside + qlong*qlong);
+  double kv = sqrt(qout * qout + qside * qside + qlong * qlong);
   int nqbin = fbinctn->GetXaxis()->FindFixBin(kv) - 1;
 
   // Use saved ylm values for same qout, qside, qlong
   if ((qout != fSout) || (qside != fSside) || (qlong != fSlong)) {
     AliFemtoYlm::YlmUpToL(fMaxL, qout, qside, qlong, fYlmBuffer);
-    fSout = qout; fSside = qside; fSlong = qlong;
+    fSout = qout;
+    fSside = qside;
+    fSlong = qlong;
   }
-  for (int ilm=0; ilm<GetMaxJM(); ilm++) {
+  for (int ilm = 0; ilm < GetMaxJM(); ilm++) {
     //    fYlmBuffer[ilm] = AliFemtoYlm::Ylm(elsi[ilm], emsi[ilm], qout, qside, qlong);
 
-    fnumsreal[ilm]->Fill(kv, real(fYlmBuffer[ilm])*weight);
-    fnumsimag[ilm]->Fill(kv, -imag(fYlmBuffer[ilm])*weight);
+    fnumsreal[ilm]->Fill(kv, real(fYlmBuffer[ilm]) * weight);
+    fnumsimag[ilm]->Fill(kv, -imag(fYlmBuffer[ilm]) * weight);
 
     fbinctn->Fill(kv, 1.0);
   }
@@ -625,32 +659,37 @@ void AliFemtoCorrFctnDirectYlm::AddRealPair(double qout, double qside, double ql
   // Fill in the error matrix
   //  int tabshift = nqbin*GetMaxJM()*GetMaxJM()*4;
   if (nqbin < fbinctn->GetNbinsX())
-    for (int ilmzero=0; ilmzero<GetMaxJM(); ilmzero++)
-      for (int ilmprim=0; ilmprim<GetMaxJM(); ilmprim++) {
-	fcovmnum[GetBin(nqbin, ilmzero, 0, ilmprim, 0)] += real(fYlmBuffer[ilmzero])*real(fYlmBuffer[ilmprim])*weight*weight;
-	fcovmnum[GetBin(nqbin, ilmzero, 0, ilmprim, 1)] += real(fYlmBuffer[ilmzero])*-imag(fYlmBuffer[ilmprim])*weight*weight;
-	fcovmnum[GetBin(nqbin, ilmzero, 1, ilmprim, 0)] += -imag(fYlmBuffer[ilmzero])*real(fYlmBuffer[ilmprim])*weight*weight;
-	fcovmnum[GetBin(nqbin, ilmzero, 1, ilmprim, 1)] += -imag(fYlmBuffer[ilmzero])*-imag(fYlmBuffer[ilmprim])*weight*weight;
-
+    for (int ilmzero = 0; ilmzero < GetMaxJM(); ilmzero++)
+      for (int ilmprim = 0; ilmprim < GetMaxJM(); ilmprim++) {
+        fcovmnum[GetBin(nqbin, ilmzero, 0, ilmprim, 0)] +=
+          real(fYlmBuffer[ilmzero]) * real(fYlmBuffer[ilmprim]) * weight * weight;
+        fcovmnum[GetBin(nqbin, ilmzero, 0, ilmprim, 1)] +=
+          real(fYlmBuffer[ilmzero]) * -imag(fYlmBuffer[ilmprim]) * weight * weight;
+        fcovmnum[GetBin(nqbin, ilmzero, 1, ilmprim, 0)] +=
+          -imag(fYlmBuffer[ilmzero]) * real(fYlmBuffer[ilmprim]) * weight * weight;
+        fcovmnum[GetBin(nqbin, ilmzero, 1, ilmprim, 1)] +=
+          -imag(fYlmBuffer[ilmzero]) * -imag(fYlmBuffer[ilmprim]) * weight * weight;
       }
-
 }
 
-void AliFemtoCorrFctnDirectYlm::AddMixedPair(double qout, double qside, double qlong, double weight)
+void
+AliFemtoCorrFctnDirectYlm::AddMixedPair(double qout, double qside, double qlong, double weight)
 {
   // Fill denominator
-  double kv = sqrt(qout*qout + qside*qside + qlong*qlong);
+  double kv = sqrt(qout * qout + qside * qside + qlong * qlong);
 
   // Use saved ylm values for same qout, qside, qlong
   if ((qout != fSout) || (qside != fSside) || (qlong != fSlong)) {
     AliFemtoYlm::YlmUpToL(fMaxL, qout, qside, qlong, fYlmBuffer);
-    fSout = qout; fSside = qside; fSlong = qlong;
+    fSout = qout;
+    fSside = qside;
+    fSlong = qlong;
   }
-  for (int ilm=0; ilm<GetMaxJM(); ilm++) {
+  for (int ilm = 0; ilm < GetMaxJM(); ilm++) {
     //    fYlmBuffer[ilm] = AliFemtoYlm::Ylm(elsi[ilm], emsi[ilm], qout, qside, qlong);
 
-    fdensreal[ilm]->Fill(kv, real(fYlmBuffer[ilm])*weight);
-    fdensimag[ilm]->Fill(kv, -imag(fYlmBuffer[ilm])*weight);
+    fdensreal[ilm]->Fill(kv, real(fYlmBuffer[ilm]) * weight);
+    fdensimag[ilm]->Fill(kv, -imag(fYlmBuffer[ilm]) * weight);
 
     fbinctd->Fill(kv, 1.0);
   }
@@ -659,46 +698,58 @@ void AliFemtoCorrFctnDirectYlm::AddMixedPair(double qout, double qside, double q
   int nqbin = fbinctn->GetXaxis()->FindFixBin(kv) - 1;
   //  int tabshift = nqbin*GetMaxJM()*GetMaxJM()*4;
   if (nqbin < fbinctn->GetNbinsX())
-    for (int ilmzero=0; ilmzero<GetMaxJM(); ilmzero++)
-      for (int ilmprim=0; ilmprim<GetMaxJM(); ilmprim++) {
-	fcovmden[GetBin(nqbin, ilmzero, 0, ilmprim, 0)] += real(fYlmBuffer[ilmzero])*real(fYlmBuffer[ilmprim]);
-	fcovmden[GetBin(nqbin, ilmzero, 0, ilmprim, 1)] += real(fYlmBuffer[ilmzero])*-imag(fYlmBuffer[ilmprim]);
-	fcovmden[GetBin(nqbin, ilmzero, 1, ilmprim, 0)] += -imag(fYlmBuffer[ilmzero])*real(fYlmBuffer[ilmprim]);
-	fcovmden[GetBin(nqbin, ilmzero, 1, ilmprim, 1)] += -imag(fYlmBuffer[ilmzero])*-imag(fYlmBuffer[ilmprim]);
-
-    }
+    for (int ilmzero = 0; ilmzero < GetMaxJM(); ilmzero++)
+      for (int ilmprim = 0; ilmprim < GetMaxJM(); ilmprim++) {
+        fcovmden[GetBin(nqbin, ilmzero, 0, ilmprim, 0)] +=
+          real(fYlmBuffer[ilmzero]) * real(fYlmBuffer[ilmprim]);
+        fcovmden[GetBin(nqbin, ilmzero, 0, ilmprim, 1)] +=
+          real(fYlmBuffer[ilmzero]) * -imag(fYlmBuffer[ilmprim]);
+        fcovmden[GetBin(nqbin, ilmzero, 1, ilmprim, 0)] +=
+          -imag(fYlmBuffer[ilmzero]) * real(fYlmBuffer[ilmprim]);
+        fcovmden[GetBin(nqbin, ilmzero, 1, ilmprim, 1)] +=
+          -imag(fYlmBuffer[ilmzero]) * -imag(fYlmBuffer[ilmprim]);
+      }
 }
 
-void AliFemtoCorrFctnDirectYlm::AddRealPair(double *qvec, double weight) {
+void
+AliFemtoCorrFctnDirectYlm::AddRealPair(double *qvec, double weight)
+{
   AddRealPair(qvec[0], qvec[1], qvec[2], weight);
 }
 
-void AliFemtoCorrFctnDirectYlm::AddMixedPair(double *qvec, double weight) {
+void
+AliFemtoCorrFctnDirectYlm::AddMixedPair(double *qvec, double weight)
+{
   AddMixedPair(qvec[0], qvec[1], qvec[2], weight);
 }
 
-void AliFemtoCorrFctnDirectYlm::Finish()
+void
+AliFemtoCorrFctnDirectYlm::Finish()
 {
   PackCovariances();
 }
 
-void AliFemtoCorrFctnDirectYlm::Write()
+void
+AliFemtoCorrFctnDirectYlm::Write()
 {
   // Write out output histograms
   if ((!fcovnum) || (!fcovden))
     PackCovariances();
 
-  for (int ilm=0; ilm<fMaxJM; ilm++) {
+  for (int ilm = 0; ilm < fMaxJM; ilm++) {
     fnumsreal[ilm]->Write();
     fdensreal[ilm]->Write();
     fnumsimag[ilm]->Write();
     fdensimag[ilm]->Write();
   }
-  if (fcovnum) fcovnum->Write();
-  if (fcovden) fcovden->Write();
+  if (fcovnum)
+    fcovnum->Write();
+  if (fcovden)
+    fcovden->Write();
 }
 
-TList* AliFemtoCorrFctnDirectYlm::GetOutputList()
+TList*
+AliFemtoCorrFctnDirectYlm::GetOutputList()
 {
   // Prepare the list of objects to be written to the output
   if ((!fcovnum) || (!fcovden))
@@ -706,94 +757,130 @@ TList* AliFemtoCorrFctnDirectYlm::GetOutputList()
 
   TList *tOutputList = new TList();
 
-  for (int ilm=0; ilm<fMaxJM; ilm++) {
+  for (int ilm = 0; ilm < fMaxJM; ilm++) {
     tOutputList->Add(fnumsreal[ilm]);
     tOutputList->Add(fdensreal[ilm]);
     tOutputList->Add(fnumsimag[ilm]);
     tOutputList->Add(fdensimag[ilm]);
   }
-  if (fcovnum) tOutputList->Add(fcovnum);
-  if (fcovden) tOutputList->Add(fcovden);
+  if (fcovnum)
+    tOutputList->Add(fcovnum);
+  if (fcovden)
+    tOutputList->Add(fcovden);
 
   return tOutputList;
 }
 
-
-void AliFemtoCorrFctnDirectYlm::ReadFromFile(TFile *infile, const char *name, int maxl)
+void
+AliFemtoCorrFctnDirectYlm::ReadFromFile(TFile *infile, const char *name, int maxl)
 {
   // Raad in the numerator and denominator from file
   if (maxl != fMaxL) {
-    cout << "Cannot read function for L " << maxl << " into a container with L "<< fMaxL << endl;
+    cout << "Cannot read function for L " << maxl << " into a container with L " << fMaxL << endl;
     return;
   }
   cout << "Reading in numerators and denominators" << endl;
 
   char bufname[200];
-  for (int ihist=0; ihist<fMaxJM; ihist++) {
-    snprintf(bufname , 200,  "NumReYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
-    if (fnumsreal[ihist]) delete fnumsreal[ihist];
-    fnumsreal[ihist] = new TH1D(*((TH1D *) infile->Get(bufname)));
+  for (int ihist = 0; ihist < fMaxJM; ihist++) {
+    snprintf(bufname,
+             200,
+             "NumReYlm%i%i%s",
+             felsi[ihist],
+             femsi[ihist] < 0 ? felsi[ihist] - femsi[ihist] : femsi[ihist],
+             name);
+    if (fnumsreal[ihist])
+      delete fnumsreal[ihist];
+    fnumsreal[ihist] = new TH1D(*((TH1D*)infile->Get(bufname)));
 
-    snprintf(bufname , 200,  "NumImYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
-    if (fnumsimag[ihist]) delete fnumsimag[ihist];
-    fnumsimag[ihist] = new TH1D(*((TH1D *) infile->Get(bufname)));
+    snprintf(bufname,
+             200,
+             "NumImYlm%i%i%s",
+             felsi[ihist],
+             femsi[ihist] < 0 ? felsi[ihist] - femsi[ihist] : femsi[ihist],
+             name);
+    if (fnumsimag[ihist])
+      delete fnumsimag[ihist];
+    fnumsimag[ihist] = new TH1D(*((TH1D*)infile->Get(bufname)));
 
-    snprintf(bufname , 200,  "DenReYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
-    if (fdensreal[ihist]) delete fdensreal[ihist];
-    fdensreal[ihist] = new TH1D(*((TH1D *) infile->Get(bufname)));
+    snprintf(bufname,
+             200,
+             "DenReYlm%i%i%s",
+             felsi[ihist],
+             femsi[ihist] < 0 ? felsi[ihist] - femsi[ihist] : femsi[ihist],
+             name);
+    if (fdensreal[ihist])
+      delete fdensreal[ihist];
+    fdensreal[ihist] = new TH1D(*((TH1D*)infile->Get(bufname)));
 
-    snprintf(bufname , 200,  "DenImYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
-    if (fdensimag[ihist]) delete fdensimag[ihist];
-    fdensimag[ihist] = new TH1D(*((TH1D *) infile->Get(bufname)));
+    snprintf(bufname,
+             200,
+             "DenImYlm%i%i%s",
+             felsi[ihist],
+             femsi[ihist] < 0 ? felsi[ihist] - femsi[ihist] : femsi[ihist],
+             name);
+    if (fdensimag[ihist])
+      delete fdensimag[ihist];
+    fdensimag[ihist] = new TH1D(*((TH1D*)infile->Get(bufname)));
   }
 
-  if (fcovnum) delete fcovnum;
-  snprintf(bufname , 200,  "covNum%s", name);
-  fcovnum = new TH3D (*((TH3D *) infile->Get(bufname)));
+  if (fcovnum)
+    delete fcovnum;
+  snprintf(bufname, 200, "covNum%s", name);
+  fcovnum = new TH3D(*((TH3D*)infile->Get(bufname)));
 
-  if (fcovden) delete fcovden;
-  snprintf(bufname , 200,  "CovDen%s", name);
-  fcovden = new TH3D (*((TH3D *) infile->Get(bufname)));
+  if (fcovden)
+    delete fcovden;
+  snprintf(bufname, 200, "CovDen%s", name);
+  fcovden = new TH3D(*((TH3D*)infile->Get(bufname)));
 
   if ((fcovnum) && (fcovden)) {
     cout << "Unpacking covariance matrices from file " << endl;
     UnpackCovariances();
-  }
-  else {
+  } else {
 
     cout << "Creating fake covariance matrices" << endl;
 
-    for (int ibin=1; ibin<=fnumsreal[0]->GetNbinsX(); ibin++) {
+    for (int ibin = 1; ibin <= fnumsreal[0]->GetNbinsX(); ibin++) {
       double nent = fnumsreal[0]->GetEntries();
       double nentd = fdensreal[0]->GetEntries();
-      for (int ilmx=0; ilmx<GetMaxJM(); ilmx++) {
-	for (int ilmy=0; ilmy<GetMaxJM(); ilmy++) {
-	  double t1t2rr = fnumsreal[ilmx]->GetBinContent(ibin)*fnumsreal[ilmy]->GetBinContent(ibin)/nent/nent;
-	  double t1t2ri = fnumsreal[ilmx]->GetBinContent(ibin)*fnumsimag[ilmy]->GetBinContent(ibin)/nent/nent;
-	  double t1t2ir = fnumsimag[ilmx]->GetBinContent(ibin)*fnumsreal[ilmy]->GetBinContent(ibin)/nent/nent;
-	  double t1t2ii = fnumsimag[ilmx]->GetBinContent(ibin)*fnumsimag[ilmy]->GetBinContent(ibin)/nent/nent;
-	  if (ilmx == ilmy) {
-	    fcovmnum[GetBin(ibin-1, ilmx, 0, ilmy, 0)] = nent*(TMath::Power(fnumsreal[ilmx]->GetBinError(ibin)/nent,2)*(nent-1) + t1t2rr);
-	    fcovmnum[GetBin(ibin-1, ilmx, 0, ilmy, 1)] = nent*t1t2ri;
-	    fcovmnum[GetBin(ibin-1, ilmx, 1, ilmy, 0)] = nent*t1t2ir;
-	    fcovmnum[GetBin(ibin-1, ilmx, 1, ilmy, 1)] = nent*(TMath::Power(fnumsimag[ilmx]->GetBinError(ibin)/nent,2)*(nent-1) + t1t2rr);
-	  }
-	  else {
-	    fcovmnum[GetBin(ibin-1, ilmx, 0, ilmy, 0)] = nent*t1t2rr;
-	    fcovmnum[GetBin(ibin-1, ilmx, 0, ilmy, 1)] = nent*t1t2ri;
-	    fcovmnum[GetBin(ibin-1, ilmx, 1, ilmy, 0)] = nent*t1t2ir;
-	    fcovmnum[GetBin(ibin-1, ilmx, 1, ilmy, 1)] = nent*t1t2ii;
-	  }
-	  t1t2rr = fdensreal[ilmx]->GetBinContent(ibin)*fdensreal[ilmy]->GetBinContent(ibin)/nentd/nentd;
-	  t1t2ri = fdensreal[ilmx]->GetBinContent(ibin)*fdensimag[ilmy]->GetBinContent(ibin)/nentd/nentd;
-	  t1t2ir = fdensimag[ilmx]->GetBinContent(ibin)*fdensreal[ilmy]->GetBinContent(ibin)/nentd/nentd;
-	  t1t2ii = fdensimag[ilmx]->GetBinContent(ibin)*fdensimag[ilmy]->GetBinContent(ibin)/nentd/nentd;
+      for (int ilmx = 0; ilmx < GetMaxJM(); ilmx++) {
+        for (int ilmy = 0; ilmy < GetMaxJM(); ilmy++) {
+          double t1t2rr =
+            fnumsreal[ilmx]->GetBinContent(ibin) * fnumsreal[ilmy]->GetBinContent(ibin) / nent / nent;
+          double t1t2ri =
+            fnumsreal[ilmx]->GetBinContent(ibin) * fnumsimag[ilmy]->GetBinContent(ibin) / nent / nent;
+          double t1t2ir =
+            fnumsimag[ilmx]->GetBinContent(ibin) * fnumsreal[ilmy]->GetBinContent(ibin) / nent / nent;
+          double t1t2ii =
+            fnumsimag[ilmx]->GetBinContent(ibin) * fnumsimag[ilmy]->GetBinContent(ibin) / nent / nent;
+          if (ilmx == ilmy) {
+            fcovmnum[GetBin(ibin - 1, ilmx, 0, ilmy, 0)] =
+              nent * (TMath::Power(fnumsreal[ilmx]->GetBinError(ibin) / nent, 2) * (nent - 1) + t1t2rr);
+            fcovmnum[GetBin(ibin - 1, ilmx, 0, ilmy, 1)] = nent * t1t2ri;
+            fcovmnum[GetBin(ibin - 1, ilmx, 1, ilmy, 0)] = nent * t1t2ir;
+            fcovmnum[GetBin(ibin - 1, ilmx, 1, ilmy, 1)] =
+              nent * (TMath::Power(fnumsimag[ilmx]->GetBinError(ibin) / nent, 2) * (nent - 1) + t1t2rr);
+          } else {
+            fcovmnum[GetBin(ibin - 1, ilmx, 0, ilmy, 0)] = nent * t1t2rr;
+            fcovmnum[GetBin(ibin - 1, ilmx, 0, ilmy, 1)] = nent * t1t2ri;
+            fcovmnum[GetBin(ibin - 1, ilmx, 1, ilmy, 0)] = nent * t1t2ir;
+            fcovmnum[GetBin(ibin - 1, ilmx, 1, ilmy, 1)] = nent * t1t2ii;
+          }
+          t1t2rr =
+            fdensreal[ilmx]->GetBinContent(ibin) * fdensreal[ilmy]->GetBinContent(ibin) / nentd / nentd;
+          t1t2ri =
+            fdensreal[ilmx]->GetBinContent(ibin) * fdensimag[ilmy]->GetBinContent(ibin) / nentd / nentd;
+          t1t2ir =
+            fdensimag[ilmx]->GetBinContent(ibin) * fdensreal[ilmy]->GetBinContent(ibin) / nentd / nentd;
+          t1t2ii =
+            fdensimag[ilmx]->GetBinContent(ibin) * fdensimag[ilmy]->GetBinContent(ibin) / nentd / nentd;
 
-	  fcovmden[GetBin(ibin-1, ilmx, 0, ilmy, 0)] = nentd*t1t2rr;
-	  fcovmden[GetBin(ibin-1, ilmx, 0, ilmy, 1)] = nentd*t1t2ri;
-	  fcovmden[GetBin(ibin-1, ilmx, 1, ilmy, 0)] = nentd*t1t2ir;
-	  fcovmden[GetBin(ibin-1, ilmx, 1, ilmy, 1)] = nentd*t1t2ii;
-	}
+          fcovmden[GetBin(ibin - 1, ilmx, 0, ilmy, 0)] = nentd * t1t2rr;
+          fcovmden[GetBin(ibin - 1, ilmx, 0, ilmy, 1)] = nentd * t1t2ri;
+          fcovmden[GetBin(ibin - 1, ilmx, 1, ilmy, 0)] = nentd * t1t2ir;
+          fcovmden[GetBin(ibin - 1, ilmx, 1, ilmy, 1)] = nentd * t1t2ii;
+        }
       }
     }
   }
@@ -802,24 +889,26 @@ void AliFemtoCorrFctnDirectYlm::ReadFromFile(TFile *infile, const char *name, in
   Finish();
 }
 
-int AliFemtoCorrFctnDirectYlm::PackYlmVector(const double *invec, double *outvec)
+int
+AliFemtoCorrFctnDirectYlm::PackYlmVector(const double *invec, double *outvec)
 {
   // Pack a vector in l,m into an array using
   // only independent components
   int ioutcount = 0;
   int em, el;
-  for (int ilm=0; ilm<GetMaxJM(); ilm++) {
+  for (int ilm = 0; ilm < GetMaxJM(); ilm++) {
     GetElEmForIndex(ilm, &el, &em);
-    outvec[ioutcount++] = invec[ilm*2];
+    outvec[ioutcount++] = invec[ilm * 2];
     if (em == 0)
       continue;
-    outvec[ioutcount++] = invec[ilm*2 + 1];
+    outvec[ioutcount++] = invec[ilm * 2 + 1];
   }
 
   return ioutcount;
 }
 
-int AliFemtoCorrFctnDirectYlm::PackYlmMatrix(const double *inmat, double *outmat)
+int
+AliFemtoCorrFctnDirectYlm::PackYlmMatrix(const double *inmat, double *outmat)
 {
   // Pack a matrix in l,m x l,m into an array using
   // only independent components
@@ -829,34 +918,38 @@ int AliFemtoCorrFctnDirectYlm::PackYlmMatrix(const double *inmat, double *outmat
   int emp, elp;
   int finalsize = 0;
 
-  for (int ilm=0; ilm<GetMaxJM(); ilm++) {
+  for (int ilm = 0; ilm < GetMaxJM(); ilm++) {
     GetElEmForIndex(ilm, &elz, &emz);
     finalsize++;
-    if (emz == 0) continue;
+    if (emz == 0)
+      continue;
     finalsize++;
   }
 
-  for (int ilmz=0; ilmz<GetMaxJM(); ilmz++) {
+  for (int ilmz = 0; ilmz < GetMaxJM(); ilmz++) {
     GetElEmForIndex(ilmz, &elz, &emz);
     ioutcountp = 0;
-    for (int ilmp=0; ilmp<GetMaxJM(); ilmp++) {
+    for (int ilmp = 0; ilmp < GetMaxJM(); ilmp++) {
       GetElEmForIndex(ilmp, &elp, &emp);
-      outmat[ioutcountz*finalsize + ioutcountp] = inmat[GetBin(0, ilmz, 0, ilmp, 0)];
+      outmat[ioutcountz * finalsize + ioutcountp] = inmat[GetBin(0, ilmz, 0, ilmp, 0)];
       ioutcountp++;
-      if (emp == 0) continue;
-      outmat[ioutcountz*finalsize + ioutcountp] = inmat[GetBin(0, ilmz, 0, ilmp, 1)];
+      if (emp == 0)
+        continue;
+      outmat[ioutcountz * finalsize + ioutcountp] = inmat[GetBin(0, ilmz, 0, ilmp, 1)];
       ioutcountp++;
     }
     ioutcountz++;
 
-    if (emz == 0) continue;
+    if (emz == 0)
+      continue;
     ioutcountp = 0;
-    for (int ilmp=0; ilmp<GetMaxJM(); ilmp++) {
+    for (int ilmp = 0; ilmp < GetMaxJM(); ilmp++) {
       GetElEmForIndex(ilmp, &elp, &emp);
-      outmat[ioutcountz*finalsize + ioutcountp] = inmat[GetBin(0, ilmz, 1, ilmp, 0)];
+      outmat[ioutcountz * finalsize + ioutcountp] = inmat[GetBin(0, ilmz, 1, ilmp, 0)];
       ioutcountp++;
-      if (emp == 0) continue;
-      outmat[ioutcountz*finalsize + ioutcountp] = inmat[GetBin(0, ilmz, 1, ilmp, 1)];
+      if (emp == 0)
+        continue;
+      outmat[ioutcountz * finalsize + ioutcountp] = inmat[GetBin(0, ilmz, 1, ilmp, 1)];
       ioutcountp++;
     }
     ioutcountz++;
@@ -865,107 +958,128 @@ int AliFemtoCorrFctnDirectYlm::PackYlmMatrix(const double *inmat, double *outmat
   return ioutcountz;
 }
 
-void AliFemtoCorrFctnDirectYlm::PackCovariances()
+void
+AliFemtoCorrFctnDirectYlm::PackCovariances()
 {
   // Migrate the covariance matrix into a 3D histogram for storage
   char bufname[200];
-  snprintf(bufname , 200,  "CovNum%s", fnumsreal[0]->GetName()+10);
+  snprintf(bufname, 200, "CovNum%s", fnumsreal[0]->GetName() + 10);
 
   //  if (fcovnum) delete fcovnum;
-  if (!fcovnum)
-    fcovnum = new TH3D(bufname,bufname,
-		       fnumsreal[0]->GetNbinsX(), fnumsreal[0]->GetXaxis()->GetXmin(), fnumsreal[0]->GetXaxis()->GetXmax(),
-		       GetMaxJM()*2, -0.5, GetMaxJM()*2 - 0.5,
-		       GetMaxJM()*2, -0.5, GetMaxJM()*2 - 0.5);
+  if (!fcovnum) {
+    auto *nax = fnumsreal[0]->GetXaxis();
+    fcovnum = new TH3D(bufname, bufname,
+                       fnumsreal[0]->GetNbinsX(), nax->GetXmin(), nax->GetXmax(),
+                       GetMaxJM() * 2, -0.5, GetMaxJM() * 2 - 0.5,
+                       GetMaxJM() * 2, -0.5, GetMaxJM() * 2 - 0.5);
+  }
 
-  for (int ibin=1; ibin<=fcovnum->GetNbinsX(); ibin++)
-    for (int ilmz=0; ilmz<GetMaxJM()*2; ilmz++)
-      for (int ilmp=0; ilmp<GetMaxJM()*2; ilmp++)
-	fcovnum->SetBinContent(ibin, ilmz+1, ilmp+1, fcovmnum[GetBin(ibin-1, ilmz/2, ilmz%2, ilmp/2, ilmp%2)]);
+  for (int ibin = 1; ibin <= fcovnum->GetNbinsX(); ibin++)
+    for (int ilmz = 0; ilmz < GetMaxJM() * 2; ilmz++)
+      for (int ilmp = 0; ilmp < GetMaxJM() * 2; ilmp++) {
+        auto bin = GetBin(ibin - 1, ilmz / 2, ilmz % 2, ilmp / 2, ilmp % 2);
+        auto value = fcovmnum[bin];
+        fcovnum->SetBinContent(ibin, ilmz + 1, ilmp + 1, value);
+      }
 
-  snprintf(bufname , 100,  "CovDen%s", fnumsreal[0]->GetName()+10);
+  snprintf(bufname, 100, "CovDen%s", fnumsreal[0]->GetName() + 10);
 
   //  if (fcovden) delete fcovden;
-  if (!fcovden)
-    fcovden  = new TH3D(bufname,bufname,
-			fdensreal[0]->GetNbinsX(), fdensreal[0]->GetXaxis()->GetXmin(), fdensreal[0]->GetXaxis()->GetXmax(),
-			GetMaxJM()*2, -0.5, GetMaxJM()*2 - 0.5,
-			GetMaxJM()*2, -0.5, GetMaxJM()*2 - 0.5);
+  if (!fcovden) {
+    auto *dax = fdensreal[0]->GetXaxis();
+    fcovden = new TH3D(bufname, bufname,
+                       fdensreal[0]->GetNbinsX(), dax->GetXmin(), dax->GetXmax(),
+                       GetMaxJM() * 2, -0.5, GetMaxJM() * 2 - 0.5,
+                       GetMaxJM() * 2, -0.5, GetMaxJM() * 2 - 0.5);
+  }
 
-  for (int ibin=1; ibin<=fcovden->GetNbinsX(); ibin++)
-    for (int ilmz=0; ilmz<GetMaxJM()*2; ilmz++)
-      for (int ilmp=0; ilmp<GetMaxJM()*2; ilmp++)
-	fcovden->SetBinContent(ibin, ilmz+1, ilmp+1, fcovmden[GetBin(ibin-1, ilmz/2, ilmz%2, ilmp/2, ilmp%2)]);
-
+  for (int ibin = 1; ibin <= fcovden->GetNbinsX(); ibin++)
+    for (int ilmz = 0; ilmz < GetMaxJM() * 2; ilmz++)
+      for (int ilmp = 0; ilmp < GetMaxJM() * 2; ilmp++) {
+        auto bin = GetBin(ibin - 1, ilmz / 2, ilmz % 2, ilmp / 2, ilmp % 2);
+        auto value = fcovmden[bin];
+        fcovden->SetBinContent(ibin, ilmz + 1, ilmp + 1, value);
+      }
 }
 
-void AliFemtoCorrFctnDirectYlm::UnpackCovariances()
+void
+AliFemtoCorrFctnDirectYlm::UnpackCovariances()
 {
   // Extract the covariance matrices from storage
   if (fcovnum) {
-    for (int ibin=1; ibin<=fcovnum->GetNbinsX(); ibin++)
-      for (int ilmz=0; ilmz<GetMaxJM()*2; ilmz++)
-	for (int ilmp=0; ilmp<GetMaxJM()*2; ilmp++)
-	  fcovmnum[GetBin(ibin-1, ilmz/2, ilmz%2, ilmp/2, ilmp%2)] = fcovnum->GetBinContent(ibin, ilmz+1, ilmp+1);
-
+    for (int ibin = 1; ibin <= fcovnum->GetNbinsX(); ibin++)
+      for (int ilmz = 0; ilmz < GetMaxJM() * 2; ilmz++)
+        for (int ilmp = 0; ilmp < GetMaxJM() * 2; ilmp++)
+          fcovmnum[GetBin(ibin - 1, ilmz / 2, ilmz % 2, ilmp / 2, ilmp % 2)] =
+            fcovnum->GetBinContent(ibin, ilmz + 1, ilmp + 1);
   }
   if (fcovden) {
-    for (int ibin=1; ibin<=fcovden->GetNbinsX(); ibin++)
-      for (int ilmz=0; ilmz<GetMaxJM()*2; ilmz++)
-	for (int ilmp=0; ilmp<GetMaxJM()*2; ilmp++)
-	  fcovmden[GetBin(ibin-1, ilmz/2, ilmz%2, ilmp/2, ilmp%2)] = fcovden->GetBinContent(ibin, ilmz+1, ilmp+1);
+    for (int ibin = 1; ibin <= fcovden->GetNbinsX(); ibin++)
+      for (int ilmz = 0; ilmz < GetMaxJM() * 2; ilmz++)
+        for (int ilmp = 0; ilmp < GetMaxJM() * 2; ilmp++)
+          fcovmden[GetBin(ibin - 1, ilmz / 2, ilmz % 2, ilmp / 2, ilmp % 2)] =
+            fcovden->GetBinContent(ibin, ilmz + 1, ilmp + 1);
   }
 }
 
-int AliFemtoCorrFctnDirectYlm::GetIndexForLM(int el, int em) const
+int
+AliFemtoCorrFctnDirectYlm::GetIndexForLM(int el, int em) const
 {
   // Get array index for a given l,m
-  for (int iter=0; iter<fMaxJM; iter++)
-    if ((el == felsi[iter]) && (em == femsi[iter]))
+  for (int iter = 0; iter < fMaxJM; iter++) {
+    if ((el == felsi[iter]) && (em == femsi[iter])) {
       return iter;
+    }
+  }
   return -1;
 }
 
-TH1D *AliFemtoCorrFctnDirectYlm::GetNumRealHist(int el, int em)
+TH1D*
+AliFemtoCorrFctnDirectYlm::GetNumRealHist(int el, int em)
 {
   // Get numerator hist for a given l,m
-  if (GetIndexForLM(el, em)>=0)
+  if (GetIndexForLM(el, em) >= 0) {
     return fnumsreal[GetIndexForLM(el, em)];
-  else
-    return 0;
+  }
+  return nullptr;
 }
-TH1D *AliFemtoCorrFctnDirectYlm::GetNumImagHist(int el, int em)
+TH1D*
+AliFemtoCorrFctnDirectYlm::GetNumImagHist(int el, int em)
 {
   // Get numerator hist for a given l,m
-  if (GetIndexForLM(el, em)>=0)
+  if (GetIndexForLM(el, em) >= 0) {
     return fnumsimag[GetIndexForLM(el, em)];
-  else
-    return 0;
+  }
+  return nullptr;
 }
 
-TH1D *AliFemtoCorrFctnDirectYlm::GetDenRealHist(int el, int em)
+TH1D*
+AliFemtoCorrFctnDirectYlm::GetDenRealHist(int el, int em)
 {
   // Get denominator hist for a given l,m
-  if (GetIndexForLM(el, em)>=0)
+  if (GetIndexForLM(el, em) >= 0) {
     return fdensreal[GetIndexForLM(el, em)];
-  else
-    return 0;
+  }
+  return nullptr;
 }
-TH1D *AliFemtoCorrFctnDirectYlm::GetDenImagHist(int el, int em)
+TH1D*
+AliFemtoCorrFctnDirectYlm::GetDenImagHist(int el, int em)
 {
   // Get denominator hist for a given l,m
-  if (GetIndexForLM(el, em)>=0)
+  if (GetIndexForLM(el, em) >= 0) {
     return fdensimag[GetIndexForLM(el, em)];
-  else
-    return 0;
+  }
+  return nullptr;
 }
 
-AliFemtoString AliFemtoCorrFctnDirectYlm::Report()
+AliFemtoString
+AliFemtoCorrFctnDirectYlm::Report()
 {
   return "AliFemtoCorrFctnDirectYlm::Finish";
 }
 
-void AliFemtoCorrFctnDirectYlm::AddRealPair(AliFemtoPair* aPair)
+void
+AliFemtoCorrFctnDirectYlm::AddRealPair(AliFemtoPair *aPair)
 {
   // Fill in the numerator
   if (fPairCut && !fPairCut->Pass(aPair)) {
@@ -978,7 +1092,8 @@ void AliFemtoCorrFctnDirectYlm::AddRealPair(AliFemtoPair* aPair)
     AddRealPair(aPair->KOut(), aPair->KSide(), aPair->KLong(), 1.0);
 }
 
-void AliFemtoCorrFctnDirectYlm::AddMixedPair(AliFemtoPair* aPair)
+void
+AliFemtoCorrFctnDirectYlm::AddMixedPair(AliFemtoPair *aPair)
 {
   // Fill in the denominator
   if (fPairCut && !fPairCut->Pass(aPair)) {
@@ -991,13 +1106,14 @@ void AliFemtoCorrFctnDirectYlm::AddMixedPair(AliFemtoPair* aPair)
     AddMixedPair(aPair->KOut(), aPair->KSide(), aPair->KLong(), 1.0);
 }
 
-void AliFemtoCorrFctnDirectYlm::SetUseLCMS(int aUseLCMS)
+void
+AliFemtoCorrFctnDirectYlm::SetUseLCMS(int aUseLCMS)
 {
   fUseLCMS = aUseLCMS;
 }
 
-int  AliFemtoCorrFctnDirectYlm::GetUseLCMS()
+int
+AliFemtoCorrFctnDirectYlm::GetUseLCMS()
 {
   return fUseLCMS;
 }
-
