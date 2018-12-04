@@ -55,6 +55,13 @@ struct MacroParams {
   std::vector<unsigned char> pair_codes;
   std::vector<float> kt_ranges;
 
+  // monte carlo weight generator
+  bool mcwg_lednicky;
+  bool mcwg_square;
+  bool mcwg_coul;
+  bool mcwg_strong;
+  bool mcwg_3body;
+
   int eventreader_filter_bit;
   bool eventreader_epvzero;
   bool eventreader_dca_globaltrack;
@@ -150,6 +157,12 @@ ConfigFemtoAnalysis(const TString& param_str="")
   AFAPP::AnalysisParams analysis_config = AFAPP::DefaultConfig();
   AFAPP::CutParams cut_config = AFAPP::DefaultCutConfig();
   MacroParams macro_config;
+
+  macro_config.mcwg_lednicky = true;
+  macro_config.mcwg_square = false;
+  macro_config.mcwg_coul = true;
+  macro_config.mcwg_strong = true;
+  macro_config.mcwg_3body = true;
 
   // default
   macro_config.do_qinv_cf = false;
@@ -320,8 +333,24 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       if (analysis_config.is_mc_analysis) {
           model_manager = new AliFemtoModelManager();
-          AliFemtoModelWeightGeneratorBasic *weight_gen = new AliFemtoModelWeightGeneratorBasic();
-          weight_gen->ShouldPrintEmptyParticleNotification(kFALSE);
+          AliFemtoModelWeightGenerator *weight_gen = NULL;
+
+          if (macro_config.mcwg_lednicky) {
+            AliFemtoModelWeightGeneratorLednicky *led_weight_gen = new AliFemtoModelWeightGeneratorLednicky();
+
+            if (macro_config.mcwg_square) { led_weight_gen->SetSquare(); } else { led_weight_gen->SetSphere(); }
+            if (macro_config.mcwg_coul) { led_weight_gen->SetCoulOn(); } else { led_weight_gen->SetCoulOff(); }
+            if (macro_config.mcwg_strong) { led_weight_gen->SetStrongOn(); } else { led_weight_gen->SetStrongOff(); }
+            if (macro_config.mcwg_3body) { led_weight_gen->Set3BodyOn(); } else { led_weight_gen->Set3BodyOff(); }
+
+            weight_gen = led_weight_gen;
+          }
+          else {
+            AliFemtoModelWeightGeneratorBasic *basic_weight_gen = new AliFemtoModelWeightGeneratorBasic();
+            basic_weight_gen->ShouldPrintEmptyParticleNotification(kFALSE);
+            weight_gen = basic_weight_gen;
+          }
+
           weight_gen->SetPairType(AliFemtoModelWeightGenerator::PionPlusPionPlus());
           model_manager->AcceptWeightGenerator(weight_gen);
       }
