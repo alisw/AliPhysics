@@ -59,9 +59,9 @@ class LMEECutLib {
 
 	//PID correction function used by SimpleTTreeMaker
 	//i.e it doesn't need an AliDielectron object
-	static TH3D SetEtaCorrectionTPCTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim);
-	static TH3D SetEtaCorrectionITSTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t hasMC);
-	static TH3D SetEtaCorrectionTOFTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t hasMC);
+	static TH3D SetEtaCorrectionTPCTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Int_t selection );
+	static TH3D SetEtaCorrectionITSTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Int_t selection, Bool_t hasMC);
+	static TH3D SetEtaCorrectionTOFTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Int_t selection, Bool_t hasMC);
 
 	static TBits* fUsedVars; //Used Variables for correction
 	static TH1* fPostPIDCntrdCorrTPC; //Post PID correction object for electron sigma centroids in TPC
@@ -745,7 +745,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 		case kAllSpecies:
 		case kElectrons:
 			varCutsFilter->AddCut(AliDielectronVarManager::kEta, -0.80, 0.80);
-			varCutsFilter->AddCut(AliDielectronVarManager::kPt, 0.2, 10.);
+			varCutsFilter->AddCut(AliDielectronVarManager::kPt, 0.2, 20.);
 			varCutsFilter->AddCut(AliDielectronVarManager::kImpactParXY,  - 1.0, 1.0);
 			varCutsFilter->AddCut(AliDielectronVarManager::kImpactParZ,   - 3.0, 3.0);
 			if(wSDD){
@@ -774,7 +774,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 			break;
 		case kTTreeCuts:
 			varCutsFilter->AddCut(AliDielectronVarManager::kEta, -0.80, 0.80);
-			varCutsFilter->AddCut(AliDielectronVarManager::kPt, 0.2, 10.);
+			varCutsFilter->AddCut(AliDielectronVarManager::kPt, 0.2, 20.);
 			varCutsFilter->AddCut(AliDielectronVarManager::kNclsTPC,      70.0, 200.); 
 			varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCr,      60.0, 200.); 
 			varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.3, 1.1); 
@@ -799,7 +799,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 		case kCutSet1:
 
 			varCutsFilter->AddCut(AliDielectronVarManager::kEta,            -0.80, 0.80);
-			varCutsFilter->AddCut(AliDielectronVarManager::kPt,             0.2,   10.);
+			varCutsFilter->AddCut(AliDielectronVarManager::kPt,             0.2,   20.);
 			varCutsFilter->AddCut(AliDielectronVarManager::kNclsTPC,        80.0,  200.);
 			varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCr,      100.0, 200.);
 			varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8,   1.1);
@@ -860,7 +860,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 			// Despite pdg selection, apply loose cuts to trim away edges of
 			// distribution which has poor data/MC agreement
 			varCutsFilter->AddCut(AliDielectronVarManager::kEta, -0.80, 0.80);
-			varCutsFilter->AddCut(AliDielectronVarManager::kPt, 0.2, 10.);
+			varCutsFilter->AddCut(AliDielectronVarManager::kPt, 0.2, 20.);
 			varCutsFilter->AddCut(AliDielectronVarManager::kNclsTPC,      70.0, 200.); 
 			varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCr,      60.0, 200.); 
 			varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.3, 1.1); 
