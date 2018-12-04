@@ -118,6 +118,7 @@ struct AnalysisParams
   bool useMCWeightGenerator;
 
   bool buildSphericalHarmonics;
+  bool useLCMSforSH;
 };
 
 struct EventCutParams
