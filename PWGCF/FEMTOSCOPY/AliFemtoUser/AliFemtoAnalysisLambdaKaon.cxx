@@ -208,7 +208,7 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)KStarCf);
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)AvgSepCf);
     if(fAnalysisType==kProtPiM || fAnalysisType==kAProtPiP || fAnalysisType==kPiPPiM) fCollectionOfCfs->push_back((AliFemtoV0PurityBgdEstimator*)CreateV0PurityBgdEstimator());
-    if(fAnalysisParams.buildSphericalHarmonics) fCollectionOfCfs->push_back((AliFemtoCorrFctnDirectYlm*)CreateCorrFctnDirectYlm(fAnalysisTags[fAnalysisType], 2, tNbinsKStar, tKStarMin, tKStarMax, false));
+    if(fAnalysisParams.buildSphericalHarmonics) fCollectionOfCfs->push_back((AliFemtoCorrFctnDirectYlm*)CreateCorrFctnDirectYlm(fAnalysisTags[fAnalysisType], 2, tNbinsKStar, tKStarMin, tKStarMax, fAnalysisParams.useLCMSforSH));
   }
 
   if(fIsMCRun)
@@ -1852,6 +1852,7 @@ AliFemtoAnalysisLambdaKaon::DefaultAnalysisParams()
   tReturnParams.useMCWeightGenerator = false;
 
   tReturnParams.buildSphericalHarmonics = false;
+  tReturnParams.useLCMSforSH = false;
 
   return tReturnParams;
 }
