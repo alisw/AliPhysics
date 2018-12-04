@@ -4970,9 +4970,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
 
     fGenPromptPhotonSel->Fill(4.5);
 
-    if(fPythiaHeader->ProcessType() != 201 && fPythiaHeader->ProcessType() != 202) continue; // Discard particles which do not come from prompt photon processes
+    // if(fPythiaHeader->ProcessType() != 201 && fPythiaHeader->ProcessType() != 202) continue; // Discard particles which do not come from prompt photon processes
     // OR
-    // if(fmcHeader->GetEventType() != 14 && fmcHeader->GetEventType() != 29) continue; // Discard particles which do not come from prompt photon processes
+    if(fmcHeader->GetEventType() != 14 && fmcHeader->GetEventType() != 29) continue; // Discard particles which do not come from prompt photon processes
 
     fGenPromptPhotonSel->Fill(5.5);
 

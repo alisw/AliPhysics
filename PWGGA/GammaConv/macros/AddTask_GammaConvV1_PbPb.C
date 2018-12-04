@@ -2503,9 +2503,9 @@ void AddTask_GammaConvV1_PbPb(
         TString cutNumber = cuts.GetEventCut(i);
         TString centCut = cutNumber(0,3);  // first three digits of event cut
         dataInputMultHisto = Form("%s_%s", periodNameAnchor.Data(), centCut.Data());
-        mcInputMultHisto   = Form("%s_%s", generatorName.Data(), centCut.Data());
+        mcInputMultHisto   = Form("%s_%s", periodNameV0Reader.Data(), centCut.Data());
         cout << "INFO read " << dataInputMultHisto.Data() << " and " <<  mcInputMultHisto.Data() << " from " << fileNameMultWeights.Data() << endl;
-            } else {
+      } else {
         if(i == 0){
           dataInputMultHisto      = Form("%s_0005", periodNameAnchor.Data());
           mcInputMultHisto        = "LHC14a1a_0005";
