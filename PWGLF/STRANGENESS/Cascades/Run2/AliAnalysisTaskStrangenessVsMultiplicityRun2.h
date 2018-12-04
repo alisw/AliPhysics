@@ -212,6 +212,7 @@ public:
     void AddStandardV0RadiusSweep();
     void AddStandardCascadeConfiguration(Bool_t lUseFull = kFALSE, Bool_t lDoSystematics = kTRUE);
     void AddCascadeConfiguration276TeV(); //Adds old 2.76 PbPb cut level analyses
+    void AddCascadeConfigurationPreliminaryCrosscheck(); //
 //---------------------------------------------------------------------------------------
     Float_t GetDCAz(AliESDtrack *lTrack);
     Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
