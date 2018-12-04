@@ -40,7 +40,8 @@ AliAnalysisTask* AddTaskMuMuCount(const char* foldername,
   AliAnalysisMuMuCutElement* ps = eventTrue;
   AliAnalysisMuMuCutElement* psI = eventTrue;
   AliAnalysisMuMuCutElement* psIiM = eventTrue;
-  AliAnalysisMuMuCutElement* psM = eventTrue;
+  AliAnalysisMuMuCutElement* psMUL = eventTrue;
+  AliAnalysisMuMuCutElement* psMSL = eventTrue;
 
   if (!simulations)
   {
@@ -53,9 +54,12 @@ AliAnalysisTask* AddTaskMuMuCount(const char* foldername,
   psIiM = cr->AddEventCut(*eventCutter,"IsPhysicsSelectedINT7inMUON","const AliInputEventHandler&","");
   cr->AddCutCombination(psIiM);
   
-  psM = cr->AddEventCut(*eventCutter,"IsPhysicsSelectedMUL","const AliInputEventHandler&","");
-  cr->AddCutCombination(psM);
-  
+  psMUL = cr->AddEventCut(*eventCutter,"IsPhysicsSelectedMUL","const AliInputEventHandler&","");
+  cr->AddCutCombination(psMUL);
+
+  psMSL = cr->AddEventCut(*eventCutter,"IsPhysicsSelectedMSL","const AliInputEventHandler&","");
+  cr->AddCutCombination(psMSL);
+
   }
 
   cr->AddCutCombination(eventTrue);
