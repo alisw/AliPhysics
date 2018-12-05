@@ -378,6 +378,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                 fHistoMCPi0inJetInAccPt;                              // Histogram with weighted pi0 in a jet in acceptance, pT
     TH1F**                 fHistoMCEtaJetInAccPt;                                // Histogram with weighted eta in a jet event in acceptance, pT
     TH1F**                 fHistoMCEtainJetInAccPt;                              // Histogram with weighted eta in a jet in acceptance, pT
+    TH1F**                 fHistoMCPi0JetEventGenerated;                         // Histogram with mesons in a jet event generated, pT
+    TH1F**                 fHistoMCPi0inJetGenerated;                            // Histogram with mesons in a jet generated, pT
     TH2F**                 fHistoTrueSecondaryPi0FromK0sJetInvMassPt;            // Histogram with validated secondary mothers from K0s in an event with a jet, invMass, pt
     TH2F**                 fHistoTrueSecondaryPi0FromK0sinJetInvMassPt;          // Histogram with validated secondary mothers from K0s in a jet, invMass, pt
     TH2F**                 fHistoTrueSecondaryPi0FromLambdaJetInvMassPt;         // Histogram with validated secondary mothers from lambda in an event with a jet, invMass, pt
