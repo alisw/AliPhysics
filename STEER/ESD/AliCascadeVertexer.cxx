@@ -164,11 +164,18 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
       AliESDv0 *pv0=&v0;
       AliExternalTrackParam bt(*btrk), *pbt=&bt;
       
-      Double_t dca=PropagateToDCA(pv0,pbt,b);
+      Double_t dca=100;
+      if(!fUseImprovedFinding){
+        dca = PropagateToDCA(pv0,pbt,b);
+      }else{
+        dca = PropagateToDCACurvedBachelor(pv0,pbt,b);
+      }
       if (dca > fDCAmax) continue;
       
       AliESDcascade cascade(*pv0,*pbt,bidx); //constucts a cascade candidate
       //PH         if (cascade.GetChi2Xi() > fChi2max) continue;
+      
+      if(fUseImprovedFinding) cascade.RefitCascade(pbt); //imp pos + cov mat
       
       Double_t x,y,z; cascade.GetXYZcascade(x,y,z); // Bo: bug correction
       Double_t r2=x*x + y*y;
