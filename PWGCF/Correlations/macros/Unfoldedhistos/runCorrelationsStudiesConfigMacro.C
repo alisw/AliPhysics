@@ -68,7 +68,7 @@ void runCorrelationsStudiesConfigMacro() {
   nNoOfTestFiles = 2;
 
   /* load the run numbers */
-  // load2010cTestRunNumber();
+  load2010bTestRunNumber();
   // loadLocal2010hMCTestRunNumber();
   // load2010hTestRunNumber();
   // load2010hMCTestRunNumber();
@@ -87,7 +87,7 @@ void runCorrelationsStudiesConfigMacro() {
   // loadAMPT2015oHIRTestRunNumber();
   // load2017nRunNumbers();
   // loadAMPT2760RunNumbers();
-  load2018qRunNumbers();
+  // load2018qRunNumbers();
 
   szRunPrefix = bMC ? "" : "000";
 

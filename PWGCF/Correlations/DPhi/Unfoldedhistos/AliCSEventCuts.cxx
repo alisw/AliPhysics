@@ -1021,6 +1021,7 @@ Bool_t AliCSEventCuts::SetCentralityMax(Int_t max)
 Bool_t AliCSEventCuts::UseNewMultiplicityFramework() const{
 
   switch (GetGlobalAnchorPeriod()) {
+  case kLHC10bg:
   case kLHC15oLIR:
   case kLHC15oHIR:
   case kLHC17n:
@@ -1044,10 +1045,6 @@ Float_t AliCSEventCuts::GetEventCentrality(AliVEvent *event) const
 {
   AliESDEvent *esdEvent=dynamic_cast<AliESDEvent*>(event);
   AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(event);
-
-  /* for p-p systems just return FB32 accepted multiplicity */
-  if (fSystem == kpp)
-    return this->fNoOfFB32AccTracks;
 
   if (esdEvent != NULL) {
     /* for the time being, only ESD input supported with fast MC productions */
@@ -2398,19 +2395,10 @@ void AliCSEventCuts::DefineHistograms(){
       fHistogramsList->Add(fhCutsCorrelation);
     }
 
-    if(fSystem  > kpp){
-      fhCentrality[0] = new TH1F(Form("CentralityB_ %s",GetCutsString()),"Centrality before cut; centrality",400,0,100);
-      fhCentrality[1] = new TH1F(Form("CentralityA_ %s",GetCutsString()),"Centrality; centrality",400,0,100);
-      fHistogramsList->Add(fhCentrality[0]);
-      fHistogramsList->Add(fhCentrality[1]);
-    }
-    else {
-      /* for pp systems use multiplicity instead */
-      fhCentrality[0] = new TH1F(Form("MultiplicityB_ %s",GetCutsString()),"Multiplicity before cut; multiplicity",400,0,400);
-      fhCentrality[1] = new TH1F(Form("MultiplicityA_ %s",GetCutsString()),"Multiplicity; multiplicity",400,0,400);
-      fHistogramsList->Add(fhCentrality[0]);
-      fHistogramsList->Add(fhCentrality[1]);
-    }
+    fhCentrality[0] = new TH1F(Form("CentralityB_ %s",GetCutsString()),"Centrality before cut; centrality",400,0,100);
+    fhCentrality[1] = new TH1F(Form("CentralityA_ %s",GetCutsString()),"Centrality; centrality",400,0,100);
+    fHistogramsList->Add(fhCentrality[0]);
+    fHistogramsList->Add(fhCentrality[1]);
 
     fhVertexZ[0] = new TH1F(Form("VertexZB_%s",GetCutsString()),"Vertex Z; z_{vtx}",1000,-50,50);
     fhVertexZ[1] = new TH1F(Form("VertexZA_%s",GetCutsString()),"Vertex Z; z_{vtx}",1000,-50,50);
