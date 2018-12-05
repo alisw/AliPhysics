@@ -65,6 +65,10 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
     evtCuts->SetSphericityCuts(0.7,1.0);
   }
 
+  if (suffix=="4") {
+    evtCuts->SetSphericityCuts(0.,1.0);
+  }
+
   AliAnalysisTaskGrandma *task = new AliAnalysisTaskGrandma("myFirstTask",
                                                             isMC);
 //  task->SetTrackBufferSize(2000);
