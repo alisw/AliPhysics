@@ -735,11 +735,11 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
             fDWeightVar2->SetBinContent(idata,ratioVar2[idata-1]);
         }
     }else if (fCentralityMin==30 && fCentralityMax==50 && fApplyCentrality) {
-        Double_t ratio[13] = {0.566977,0.233989,0.0909109,0.0346338,0.0155742,0.00734675,0.00362088,0.00189595,0.000670163,0.000284606,5.13181e-05,8.84883e-06,0};
+        Double_t ratio[13] = {0.566977,0.233989,0.0909109,0.0346338,0.0155742,0.00734675,0.00362088,0.00189595,0.000670163,0.000284606,5.13181e-05,8.84883e-06,8.84883e-06};
         Double_t err[13] = {0.0804276,0.0123637,0.00326455,0.0013947,0.000671652,0.000375317,0.000216074,9.65006e-05,4.67481e-05,2.13019e-05,5.85888e-06,1.75491e-06,0};
-        Double_t ratioNew[13];
-        Double_t ratioVar1[13];
-        Double_t ratioVar2[13];
+        Double_t ratioNew[13] = {0.566977,0.233989,0.0909109,0.0346338,0.0155742,0.00734675,0.00362088,0.00189595,0.000670163,0.000284606,5.13181e-05,8.84883e-06,8.84883e-06};;
+        Double_t ratioVar1[13] = {0.566977,0.233989,0.0909109,0.0346338,0.0155742,0.00734675,0.00362088,0.00189595,0.000670163,0.000284606,5.13181e-05,8.84883e-06,8.84883e-06};;
+        Double_t ratioVar2[13] = {0.566977,0.233989,0.0909109,0.0346338,0.0155742,0.00734675,0.00362088,0.00189595,0.000670163,0.000284606,5.13181e-05,8.84883e-06,8.84883e-06};;
         for (int idata=1; idata<14; idata++) {
             fDWeight->SetBinContent(idata,ratio[idata-1]);
             fDWeight->SetBinError(idata,err[idata-1]);
@@ -748,11 +748,11 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
             fDWeightVar2->SetBinContent(idata,ratioVar2[idata-1]);
         }
     }else{
-        Double_t ratio[13];
+        Double_t ratio[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
         Double_t err[13];
-        Double_t ratioNew[13];
-        Double_t ratioVar1[13];
-        Double_t ratioVar2[13];
+        Double_t ratioNew[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
+        Double_t ratioVar1[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
+        Double_t ratioVar2[13] = {1,1,1,1,1,1,1,1,1,1,1,1,1};
         
         for (int idata=1; idata<14; idata++) {
             fDWeight->SetBinContent(idata,ratio[idata-1]);
