@@ -66,7 +66,6 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
   calculator(),
   fSettings(),
   fUtil(),
-  fEventCuts(),
   useEvent(true)
   {
   //
@@ -86,7 +85,6 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
   calculator(),
   fSettings(),
   fUtil(),
-  fEventCuts(),
   useEvent(true)
   {
   //
@@ -95,8 +93,11 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
   //  Parameters:
   //   name: Name of task
   //
-    DefineOutput(1, TList::Class());
-  }
+
+  // Rely on validation task for event and track selection
+  DefineInput(1, AliAnalysisTaskValidation::Class());
+  DefineOutput(1, TList::Class());
+}
 
 //_____________________________________________________________________
   void AliForwardFlowRun2Task::UserCreateOutputObjects()
@@ -109,7 +110,6 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
 
     fOutputList = new TList();          // the final output list
     fOutputList->SetOwner(kTRUE);       // memory stuff: the list is owner of all objects it contains and will delete them if requested
-    fEventCuts.AddQAplotsToList(fOutputList);
 
     TRandom r = TRandom();              // random integer to use for creation of samples (used for error bars).
                                           // Needs to be created here, otherwise it will draw the same random number.
@@ -183,6 +183,9 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   //  Parameters:
   //   option: Not used
   //
+  // Get the event validation object
+  AliAnalysisTaskValidation* ev_val = dynamic_cast<AliAnalysisTaskValidation*>(this->GetInputData(1));
+
   fUtil.fevent = fInputEvent;
 
   Double_t centralEta = (fSettings.useSPD ? 2.5 : 1.5);
@@ -190,7 +193,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   centralDist_tmp.SetDirectory(0);
 
   TH2D forwardTrRef  ("ft","",200,-4,6,20,0,TMath::TwoPi());
-  TH2D forwardPrim  ("fp","",400,-4,6,400,0,TMath::TwoPi());
+  TH2D forwardPrim  ("fp","",200,-4,6,20,0,TMath::TwoPi());
   forwardTrRef.SetDirectory(0);
   forwardPrim.SetDirectory(0);
 
@@ -200,15 +203,14 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   if (!fSettings.mc) {
 
     AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
-
+    fUtil.fAODevent = aodevent;
     if(!aodevent)
       throw std::runtime_error("Not AOD as expected");
 
-    //..AliEventCuts selection
-    if (!fSettings.esd && !fEventCuts.AcceptEvent(fInputEvent)) {
-      PostData(1, fOutputList);
-      return;
-    }
+      if (!ev_val->IsValidEvent()){
+        PostData(1, this->fOutputList);
+        return;
+      }
 
     AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(aodevent->FindListObject("Forward"));
     forwardDist = &aodfmult->GetHistogram();
@@ -218,15 +220,33 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   }
   else {
     AliMCEvent* mcevent = this->MCEvent();
+    fUtil.fMCevent = mcevent;
+
+    fUtil.mc = kTRUE;
 
     if(!mcevent)
       throw std::runtime_error("Not MC as expected");
 
     forwardDist = (fSettings.use_primaries ? &forwardPrim : &forwardTrRef);
 
-    if (!fSettings.use_primaries) fUtil.FillFromTrackrefs(centralDist, forwardDist);
-    else                          fUtil.FillFromPrimaries(centralDist, forwardDist);
+    if (fSettings.use_primaries_cen && fSettings.use_primaries_fwd){
+      fUtil.FillFromPrimaries(centralDist, forwardDist);
+    }
+    else if (!fSettings.use_primaries_cen && !fSettings.use_primaries_fwd){
+      fUtil.FillFromTrackrefs(centralDist, forwardDist);
+    }
+    else if (fSettings.use_primaries_cen && !fSettings.use_primaries_fwd){
+      //fUtil.FillFromTrackrefs(centralDist, forwardDist);
+      fUtil.FillFromPrimaries(centralDist);
+      fUtil.FillFromTrackrefs(forwardDist);
+    }
+    else if (!fSettings.use_primaries_cen && fSettings.use_primaries_fwd){
+      //fUtil.FillFromTrackrefs(centralDist, forwardDist);
+      fUtil.FillFromTrackrefs(centralDist);
+      fUtil.FillFromPrimaries(forwardDist);
+    }
   }
+
   forwardDist->SetDirectory(0);
 
   Double_t zvertex = fUtil.GetZ();
@@ -253,6 +273,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
     PostData(1, fOutputList);
   }
+
   return;
 }
 

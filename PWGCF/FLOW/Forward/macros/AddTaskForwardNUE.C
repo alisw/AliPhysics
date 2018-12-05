@@ -9,8 +9,6 @@
 
 AliAnalysisTaskSE* AddTaskForwardNUE(Bool_t nua_mode)
 {
-  Int_t mode = kRECON;
-
   // --- Get analysis manager ----------------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
@@ -27,7 +25,6 @@ AliAnalysisTaskSE* AddTaskForwardNUE(Bool_t nua_mode)
   task->nua_mode = nua_mode;
   std::cout << resName << std::endl;
 
-  if (mode == kRECON) {
     AliAnalysisDataContainer *coutput_recon =
     mgr->CreateContainer(resName,
      TList::Class(),
@@ -37,22 +34,7 @@ AliAnalysisTaskSE* AddTaskForwardNUE(Bool_t nua_mode)
     mgr->AddTask(task);
     mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
     mgr->ConnectOutput(task, 1, coutput_recon);
-  }
-  else if (mode == kTRUTH) {
-    AliAnalysisDataContainer *coutput_truth =
-    mgr->CreateContainer(resName,
-     TList::Class(),
-     AliAnalysisManager::kOutputContainer,
-     mgr->GetCommonFileName());
 
-    task->fSettings.fDataType = task->fSettings.kMCTRUTH;
-    mgr->AddTask(task);
-    mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(task, 1, coutput_truth);
-  }
-  else {
-    ::Error("AddTaskForwardNUA", "Invalid mode specified");
-  }
 
 
   return task;

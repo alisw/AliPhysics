@@ -58,16 +58,17 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
       Double_t phi = dNdetadphi.GetYaxis()->GetBinCenter(phiBin);
       Double_t weight = dNdetadphi.GetBinContent(etaBin, phiBin);
 
-      if (!fSettings.use_primaries){
-        if (!fSettings.mc && dNdetadphi.GetBinContent(etaBin, 0) == 0 && detType == "forward") break;
+      if (!fSettings.use_primaries && !fSettings.mc){
+        if (dNdetadphi.GetBinContent(etaBin, 0) == 0 && detType == "forward") break;
       }
       if (fSettings.doNUA){
         // holes in the FMD
-        if ((phiBin == 17 || phiBin == 18 || phiBin == 14) && (weight == 0)){
-          if (detType == "forward") weight = 1.;
+        if (!fSettings.mc){
+          if ((phiBin == 17 || phiBin == 18 || phiBin == 14) && (weight == 0)){
+            if (detType == "forward") weight = 1.;
+          }
         }
-        Bool_t nua_mode = kTRUE;
-        if (nua_mode) weight = AliForwardNUATask::InterpolateWeight(dNdetadphi,phiBin,etaBin,weight);
+        if (fSettings.nua_mode) weight = AliForwardNUATask::InterpolateWeight(dNdetadphi,phiBin,etaBin,weight);
 
         if (detType == "central") {
           Double_t nuaeta = fSettings.nuacentral->GetXaxis()->FindBin(eta);
@@ -75,7 +76,8 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
           Double_t nuavtz = fSettings.nuacentral->GetZaxis()->FindBin(zvertex);
           weight = weight*fSettings.nuacentral->GetBinContent(nuaeta,nuaphi,nuavtz);
         }
-        else if (detType == "forward") {
+
+        if (detType == "forward") {
           Double_t nuaeta = fSettings.nuaforward->GetXaxis()->FindBin(eta);
           Double_t nuaphi = fSettings.nuaforward->GetYaxis()->FindBin(phi);
           Double_t nuavtz = fSettings.nuaforward->GetZaxis()->FindBin(zvertex);
@@ -307,7 +309,6 @@ TComplex AliForwardGenericFramework::FourDiff(int n1, int n2, int n3, int n4, in
                     + 2.*Q(n3,1,refetabin)*q(n1+n2+n4,3,qetabin)-p(n1,1,diffetabin)*Q(n2,1,refetabin)*Q(n3+n4,2,refetabin)+q(n1+n2,2,qetabin)*Q(n3+n4,2,refetabin)
                     + 2.*Q(n2,1,refetabin)*q(n1+n3+n4,3,qetabin)+2.*p(n1,1,diffetabin)*Q(n2+n3+n4,3,refetabin)-6.*q(n1+n2+n3+n4,4,qetabin);
   return formula;
-
 }
 
 

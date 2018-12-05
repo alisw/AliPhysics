@@ -19,7 +19,7 @@
  *
  * @ingroup pwglf_forward_flow
  */
-AliAnalysisTaskSE* AddTaskForwardNUA(bool nua_mode, bool mc, bool prim, Int_t tracktype, TString centrality, bool esd,TString name1)
+AliAnalysisTaskSE* AddTaskForwardNUA(bool nua_mode, bool makeFakeHoles, bool mc,  bool esd,bool prim_cen,bool prim_fwd , Int_t tracktype, TString centrality,TString name1)
 {
   std::cout << "______________________________________________________________________________" << std::endl;
 
@@ -35,9 +35,11 @@ AliAnalysisTaskSE* AddTaskForwardNUA(bool nua_mode, bool mc, bool prim, Int_t tr
   AliForwardNUATask* task = new AliForwardNUATask(name);
   TString resName = "ForwardNUA";
 
-  task->fSettings.use_primaries = prim;
-  if (prim) resName += "_prim";
-  if (!prim && mc) resName += "_tr";
+    task->fSettings.use_primaries_cen = prim_cen;
+    if (mc) resName += (prim_cen ? "_primcen" : "_trcen");
+
+    task->fSettings.use_primaries_fwd = prim_fwd;
+    if (mc) resName += (prim_fwd ? "_primfwd" : "_trfwd");
 
   task->fSettings.mc = mc;
   task->fSettings.esd = esd;
@@ -76,11 +78,16 @@ AliAnalysisTaskSE* AddTaskForwardNUA(bool nua_mode, bool mc, bool prim, Int_t tr
   resName += "_" + centrality;
   if (mc) resName += "_mc";
 
+  if (makeFakeHoles){
+    task->fSettings.makeFakeHoles = kTRUE;
+    resName += "_fakeholes";
+  }
+
   task->fSettings.centrality_estimator = centrality; // "V0M";// RefMult08; // "V0M" // "SPDTracklets";
 
   if (nua_mode)
     resName += "_NUA_extrapolated";
-  else resName += "_NUA_filled";
+  else resName += "_NUA";
 
   task->fSettings.nua_mode = nua_mode; // "V0M";// RefMult08; // "V0M" // "SPDTracklets";
 

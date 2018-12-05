@@ -23,7 +23,7 @@
 #include "AliAODForwardMult.h"
 #include "AliAODCentralMult.h"
 #include "AliAODEvent.h"
-
+#include "AliAODMCParticle.h"
 #include "AliForwardFlowUtil.h"
 
 #include "AliVVZERO.h"
@@ -82,6 +82,8 @@ AliForwardNUETask::AliForwardNUETask() : AliAnalysisTaskSE(),
   //  Parameters:
   //   name: Name of task
   //
+  DefineInput(1, AliAnalysisTaskValidation::Class());
+
     DefineOutput(1, TList::Class());
   }
 
@@ -115,7 +117,7 @@ AliForwardNUETask::AliForwardNUETask() : AliAnalysisTaskSE(),
     fOutputList->Add(new TH2F("NUA_spd_prim","NUA_spd_prim", 400, -2.5, 2.5,fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
 
     // create hist for tpc (eta, pt, z, filterbit )
-    Int_t dimensions = 5;
+    Int_t dimensions = 4;
     Int_t bins[4] = {400, 25, fSettings.fNZvtxBins, 4} ;
     Double_t xmin[5] = {-1.5, 0.0, fSettings.fZVtxAcceptanceLowEdge, 0};
     Double_t xmax[5] = {1.5, 5.0, fSettings.fZVtxAcceptanceUpEdge, 5};
@@ -132,6 +134,8 @@ AliForwardNUETask::AliForwardNUETask() : AliAnalysisTaskSE(),
 //_____________________________________________________________________
 void AliForwardNUETask::UserExec(Option_t *)
 {
+  AliAnalysisTaskValidation* ev_val = dynamic_cast<AliAnalysisTaskValidation*>(this->GetInputData(1));
+
   //
   //  Analyses the event with use of the helper class AliForwardQCumulantRun2
   //
@@ -151,8 +155,8 @@ void AliForwardNUETask::UserExec(Option_t *)
   }
 
   //..AliEventCuts selection
-  if(!fEventCuts.AcceptEvent(fInputEvent)) {
-    PostData(1, fOutputList);
+  if (!fSettings.esd && !ev_val->IsValidEvent()){
+    PostData(1, this->fOutputList);
     return;
   }
 
@@ -183,7 +187,6 @@ void AliForwardNUETask::UserExec(Option_t *)
   if (useEvent) {
 
     // loop for the SPD
-
     AliAODTracklets* aodTracklets = fAOD->GetTracklets();
     for (Int_t i = 0; i < aodTracklets->GetNumberOfTracklets(); i++) {
       nua_spd->Fill(aodTracklets->GetEta(i),zvertex,1);
@@ -235,23 +238,23 @@ void AliForwardNUETask::UserExec(Option_t *)
 
     Int_t nTracksMC   = fAODMC->GetNumberOfTracks();
 
-        for (Int_t iTr = 0; iTr < nTracksMC; iTr++) {
-          AliMCParticle* p = static_cast< AliMCParticle* >(fAODMC->GetTrack(iTr));
-          if (!p->IsPhysicalPrimary()) continue;
-          if (p->Charge() == 0) continue;
+    for (Int_t iTr = 0; iTr < nTracksMC; iTr++) {
+      AliAODMCParticle* p = static_cast< AliAODMCParticle* >(fAODMC->GetTrack(iTr));
+      if (!p->IsPhysicalPrimary()) continue;
+      if (p->Charge() == 0) continue;
 
-            if ( (p->Eta() < -1.7 && p->Eta() > -3.4) || (p->Eta() > 1.7 && p->Eta() < 5.0) ){
-              nua_fmd_prim->Fill(p->Eta(),zvertex);
-            }
-            if (p->Pt()>=0.2 && p->Pt()<=5) {
-              if (fabs(p->Eta()) < 1.1) {
-                nua_tpc_prim->Fill(p->Eta(),p->Pt(),zvertex);
-              }
-            }
-            if (fabs(p->Eta()) < 2.5) {
-              nua_spd_prim->Fill(p->Eta(),zvertex);
-            }
+      if ( (p->Eta() < -1.7 && p->Eta() > -3.4) || (p->Eta() > 1.7 && p->Eta() < 5.0) ){
+        nua_fmd_prim->Fill(p->Eta(),zvertex);
+      }
+      if (p->Pt()>=0.2 && p->Pt()<=5) {
+        if (fabs(p->Eta()) < 1.1) {
+          nua_tpc_prim->Fill(p->Eta(),p->Pt(),zvertex);
         }
+      }
+      if (fabs(p->Eta()) < 2.5) {
+        nua_spd_prim->Fill(p->Eta(),zvertex);
+      }
+    }
 
   PostData(1, fOutputList);
   return;

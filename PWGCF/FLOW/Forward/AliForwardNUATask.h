@@ -14,12 +14,14 @@
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
 #include <TH2D.h>
-#include <TH3F.h>
+#include <TH3D.h>
 #include "TRandom.h"
 #include "AliForwardSettings.h"
 #include "AliEventCuts.h"
 #include <TF1.h>
 #include "AliForwardFlowUtil.h"
+#include <AliAnalysisTaskValidation.h>
+
 class AliAODForwardMult;
 class TH2D;
 class AliESDEvent;
@@ -85,6 +87,7 @@ public:
   virtual void UserExec(Option_t *option);
 
   static Double_t InterpolateWeight(const TH2D& forwarddNdedp,Int_t phiBin, Int_t etaBin, Double_t weight);
+  void MakeFakeHoles(TH2D& forwarddNdedp);
 
   /**
    * End of job
@@ -103,8 +106,6 @@ public:
   AliForwardSettings fSettings;
   AliForwardFlowUtil fUtil;
   Bool_t useEvent;
-
-AliEventCuts fEventCuts;
 
   enum {
     kTPCOnly = 128, // TPC only tracks

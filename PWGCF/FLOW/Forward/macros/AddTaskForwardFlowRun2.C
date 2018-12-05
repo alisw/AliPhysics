@@ -19,7 +19,7 @@
  *
  * @ingroup pwglf_forward_flow
  */
-AliAnalysisTaskSE* AddTaskForwardFlowRun2(bool nua_mode, bool doetagap, bool doNUA, Double_t gap, bool mc, bool prim, Int_t tracktype, TString centrality, bool esd,TString name1)
+AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, TString nua_file, bool nua_mode, bool doetagap, Double_t gap, bool mc,  bool esd,bool prim_cen,bool prim_fwd , UInt_t tracktype, TString centrality,TString name1)
 {
   std::cout << "______________________________________________________________________________" << std::endl;
 
@@ -49,9 +49,11 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2(bool nua_mode, bool doetagap, bool doN
   }
 
 
-  task->fSettings.use_primaries = prim;
-  if (prim) resName += "_prim";
-  if (!prim && mc) resName += "_tr";
+  task->fSettings.use_primaries_cen = prim_cen;
+  if (mc) resName += (prim_cen ? "_primcen" : "_trcen");
+
+  task->fSettings.use_primaries_fwd = prim_fwd;
+  if (mc) resName += (prim_fwd ? "_primfwd" : "_trfwd");
 
   task->fSettings.mc = mc;
   task->fSettings.esd = esd;
@@ -100,11 +102,11 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2(bool nua_mode, bool doetagap, bool doN
     if (nua_mode) {
       // INTERPOLATE
       resName += "_NUA_extrapolated";
-        file = new TFile("/home/thoresen/Programs/alice/AliPhysics/PWGCF/FLOW/Forward/corrections/LHC15o_pass5_lowIR_selected.root");
+        file = new TFile(nua_file);
     }
     else {
       // FILL
-        file = new TFile("/home/thoresen/Programs/alice/AliPhysics/PWGCF/FLOW/Forward/corrections/LHC15o_pass5_lowIR_selected.root");
+        file = new TFile(nua_file);
         resName += "_NUA_filled";
     }
 

@@ -20,6 +20,8 @@
 #include "AliEventCuts.h"
 #include <TF1.h>
 #include "AliForwardFlowUtil.h"
+#include <AliAnalysisTaskValidation.h>
+
 class AliAODForwardMult;
 class TH2D;
 class AliESDEvent;

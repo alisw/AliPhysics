@@ -21,10 +21,6 @@
  */
 AliAnalysisTaskSE* AddTaskForwardSecondaries()
 {
-  Bool_t etagap = false;
-  Int_t mode = kRECON;
-  bool doNUA = false;
-
   std::cout << "AddTaskForwardSecondaries" << std::endl;
 
   // --- Get analysis manager ----------------------------------------
@@ -34,69 +30,17 @@ AliAnalysisTaskSE* AddTaskForwardSecondaries()
 
   const char* name = Form("ForwardFlowQC");
   AliForwardSecondariesTask* task = new AliForwardSecondariesTask(name);
-
   TString resName = "Secondaries";
 
-  task->fSettings.doNUA = doNUA;
-
-
-  if (task->fSettings.doNUA){
-
-    //TString nua_filepath = std::getenv("NUA_FILE");
-    //if (!nua_filepath) {
-      TString nua_filepath = "/home/thoresen/Documents/PhD/analysis/nua.root";
-      std::cerr << "Environment variable 'NUA_FILE' not found (this should be a path to nua.root).\n";
-      std::cerr << "   Using default value: '" << nua_filepath << "'\n";
-    //}
-
-    TFile *file = new TFile(nua_filepath);
-
-    file->GetObject("nuacentral", task->fSettings.nuacentral);
-
-    task->fSettings.nuacentral->SetDirectory(0);
-    file->GetObject("nuaforward", task->fSettings.nuaforward);
-    task->fSettings.nuaforward->SetDirectory(0);
-    file->Close();
-  }
-
-
-  if (etagap){
-    // if etagap otherwise comment out, and it will be standard
-    task->fSettings.fFlowFlags = task->fSettings.kEtaGap;
-    task->fSettings.fNRefEtaBins = 1;
-    task->fSettings.gap = 0.5;
-  }
-  else {
-    task->fSettings.fNRefEtaBins = 1; // eller skal det være et andet antal?
-  }
-
-  if (mode == kRECON) {
-    AliAnalysisDataContainer *coutput_recon =
-    mgr->CreateContainer(resName,
-     TList::Class(),
-     AliAnalysisManager::kOutputContainer,
-     mgr->GetCommonFileName());
-    task->fSettings.fDataType = task->fSettings.kRECON;
-    mgr->AddTask(task);
-    mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(task, 1, coutput_recon);
-  }
-  else if (mode == kTRUTH) {
-    AliAnalysisDataContainer *coutput_truth =
-    mgr->CreateContainer(resName,
-     TList::Class(),
-     AliAnalysisManager::kOutputContainer,
-     mgr->GetCommonFileName());
-
-    task->fSettings.fDataType = task->fSettings.kMCTRUTH;
-    mgr->AddTask(task);
-    mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(task, 1, coutput_truth);
-  }
-  else {
-    ::Error("AddTaskForwardSecondaries", "Invalid mode specified");
-  }
-
+  AliAnalysisDataContainer *coutput_recon =
+  mgr->CreateContainer(resName,
+   TList::Class(),
+   AliAnalysisManager::kOutputContainer,
+   mgr->GetCommonFileName());
+  task->fSettings.fDataType = task->fSettings.kRECON;
+  mgr->AddTask(task);
+  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 1, coutput_recon);
 
   return task;
 }

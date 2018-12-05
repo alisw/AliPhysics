@@ -33,7 +33,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
   ${AliPhysics_SOURCE_DIR}/OADB
   ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
   ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD/analysis2
-  ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/c2
+  ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/C2
   ${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/Forward
   ${AliRoot_SOURCE_DIR}/PYTHIA6/pythia6
   )
@@ -41,6 +41,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
   AliForwardSettings.cxx
+  AliAnalysisTaskValidation.cxx
   AliForwardFlowUtil.cxx
   AliForwardNUATask.cxx
   AliForwardNUETask.cxx

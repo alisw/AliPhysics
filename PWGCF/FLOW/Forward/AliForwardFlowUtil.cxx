@@ -45,7 +45,8 @@
 AliForwardFlowUtil::AliForwardFlowUtil():
 fevent(),
 fAODevent(),
-fMCevent()
+fMCevent(),
+mc(kFALSE)
 {
 }
 
@@ -107,7 +108,8 @@ Bool_t AliForwardFlowUtil::ExtraEventCutFMD(TH2D& forwarddNdedp, double cent, Bo
 
 
 Double_t AliForwardFlowUtil::GetZ(){
-  return fevent->GetPrimaryVertex()->GetZ();
+  if (mc) return fMCevent->GetPrimaryVertex()->GetZ();
+  else return fevent->GetPrimaryVertex()->GetZ();
 }
 
 
@@ -115,8 +117,6 @@ Double_t AliForwardFlowUtil::GetCentrality(TString centrality_estimator){
   // Get MultSelection
   AliMultSelection *MultSelection;
 
-  //if (fSettings.esd) MultSelection = (AliMultSelection*)dynamic_cast<AliMCEvent*>(InputEvent())->FindListObject("MultSelection");
-  //else
   MultSelection  = (AliMultSelection*)fevent->FindListObject("MultSelection");
 
   return MultSelection->GetMultiplicityPercentile(centrality_estimator);
@@ -136,10 +136,10 @@ void AliForwardFlowUtil::FillFromTrackrefs(TH2D*& cen, TH2D*& fwd) const
       AliTrackReference* ref = p->GetTrackReference(iTrRef);
       // Check hit on FMD
       if (!ref) continue;
-      if (AliTrackReference::kTPC != ref->DetectorId()){
-        Double_t x      = ref->X() - fevent->GetPrimaryVertex()->GetX();
-        Double_t y      = ref->Y() - fevent->GetPrimaryVertex()->GetY();
-        Double_t z      = ref->Z() - fevent->GetPrimaryVertex()->GetZ();
+      if (AliTrackReference::kTPC == ref->DetectorId()){
+        Double_t x      = ref->X() - fMCevent->GetPrimaryVertex()->GetX();
+        Double_t y      = ref->Y() - fMCevent->GetPrimaryVertex()->GetY();
+        Double_t z      = ref->Z() - fMCevent->GetPrimaryVertex()->GetZ();
         Double_t rr     = TMath::Sqrt(x * x + y * y);
         Double_t thetaR = TMath::ATan2(rr, z);
         Double_t phiR   = TMath::ATan2(y,x);
@@ -152,10 +152,10 @@ void AliForwardFlowUtil::FillFromTrackrefs(TH2D*& cen, TH2D*& fwd) const
         }
         cen->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),phiR);
       }
-      else if (AliTrackReference::kFMD != ref->DetectorId()) {
-        Double_t x      = ref->X() - fevent->GetPrimaryVertex()->GetX();
-        Double_t y      = ref->Y() - fevent->GetPrimaryVertex()->GetY();
-        Double_t z      = ref->Z() - fevent->GetPrimaryVertex()->GetZ();
+      else if (AliTrackReference::kFMD == ref->DetectorId()) {
+        Double_t x      = ref->X() - fMCevent->GetPrimaryVertex()->GetX();
+        Double_t y      = ref->Y() - fMCevent->GetPrimaryVertex()->GetY();
+        Double_t z      = ref->Z() - fMCevent->GetPrimaryVertex()->GetZ();
         Double_t rr     = TMath::Sqrt(x * x + y * y);
         Double_t thetaR = TMath::ATan2(rr, z);
         Double_t phiR   = TMath::ATan2(y,x);
@@ -172,6 +172,59 @@ void AliForwardFlowUtil::FillFromTrackrefs(TH2D*& cen, TH2D*& fwd) const
   }
 }
 
+
+
+void AliForwardFlowUtil::FillFromTrackrefs(TH2D*& fwd) const
+{
+
+  Int_t nTracks = fMCevent->Stack()->GetNtrack();
+
+  for (Int_t iTr = 0; iTr < nTracks; iTr++) {
+      AliMCParticle* p = static_cast< AliMCParticle* >(fMCevent->GetTrack(iTr));
+    if (p->Charge() == 0) continue;
+
+    for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
+      AliTrackReference* ref = p->GetTrackReference(iTrRef);
+      // Check hit on FMD
+      if (!ref) continue;
+
+      else if (AliTrackReference::kFMD == ref->DetectorId()) {
+        Double_t x      = ref->X() - fMCevent->GetPrimaryVertex()->GetX();
+        Double_t y      = ref->Y() - fMCevent->GetPrimaryVertex()->GetY();
+        Double_t z      = ref->Z() - fMCevent->GetPrimaryVertex()->GetZ();
+        Double_t rr     = TMath::Sqrt(x * x + y * y);
+        Double_t thetaR = TMath::ATan2(rr, z);
+        Double_t phiR   = TMath::ATan2(y,x);
+
+        if (phiR < 0) {
+          phiR += 2*TMath::Pi();
+        }
+        if (thetaR < 0) {
+          thetaR += 2*TMath::Pi();
+        }
+        fwd->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),phiR);
+      }
+    }
+  }
+}
+
+
+void AliForwardFlowUtil::FillFromPrimaries(TH2D*& cen) const
+{
+  Int_t nTracksMC = fMCevent->GetNumberOfTracks();
+
+  for (Int_t iTr = 0; iTr < nTracksMC; iTr++) {
+    AliMCParticle* p = static_cast< AliMCParticle* >(fMCevent->GetTrack(iTr));
+    if (!p->IsPhysicalPrimary()) continue;
+    if (p->Charge() == 0) continue;
+
+    Double_t eta = p->Eta();
+    if (TMath::Abs(eta) < 1.1) {
+      if (p->Pt()>=0.2 && p->Pt()<=5)
+        cen->Fill(eta,p->Phi(),1);
+    }
+  }
+}
 
 void AliForwardFlowUtil::FillFromPrimaries(TH2D*& cen, TH2D*& fwd) const
 {
@@ -204,12 +257,14 @@ void AliForwardFlowUtil::FillFromTracklets(TH2D*& cen) const {
 }
 
 
-void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, Int_t tracktype) const {
+void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
   Int_t  iTracks(fevent->GetNumberOfTracks());
   for(Int_t i(0); i < iTracks; i++) {
 
   // loop  over  all  the  tracks
     AliAODTrack* track = static_cast<AliAODTrack *>(fAODevent->GetTrack(i));
+
+
     if (track->TestFilterBit(tracktype)){
       if (track->Pt() >= 0.2 && track->Pt() <= 5){
         cen->Fill(track->Eta(),track->Phi(), 1);
@@ -217,6 +272,104 @@ void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, Int_t tracktype) const {
     }
   }
 }
+
+
+
+void AliForwardFlowUtil::FillFromTrackrefs(TH3D*& cen, TH3D*& fwd, Double_t zvertex) const
+{
+
+  Int_t nTracks = fMCevent->Stack()->GetNtrack();
+
+  for (Int_t iTr = 0; iTr < nTracks; iTr++) {
+      AliMCParticle* p = static_cast< AliMCParticle* >(fMCevent->GetTrack(iTr));
+    if (p->Charge() == 0) continue;
+
+    for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
+      AliTrackReference* ref = p->GetTrackReference(iTrRef);
+      // Check hit on FMD
+      if (!ref) continue;
+      if (AliTrackReference::kTPC == ref->DetectorId()){
+        Double_t x      = ref->X() - fMCevent->GetPrimaryVertex()->GetX();
+        Double_t y      = ref->Y() - fMCevent->GetPrimaryVertex()->GetY();
+        Double_t z      = ref->Z() - fMCevent->GetPrimaryVertex()->GetZ();
+        Double_t rr     = TMath::Sqrt(x * x + y * y);
+        Double_t thetaR = TMath::ATan2(rr, z);
+        Double_t phiR   = TMath::ATan2(y,x);
+
+        if (phiR < 0) {
+          phiR += 2*TMath::Pi();
+        }
+        if (thetaR < 0) {
+          thetaR += 2*TMath::Pi();
+        }
+        cen->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),phiR, zvertex);
+      }
+      else if (AliTrackReference::kFMD == ref->DetectorId()) {
+        Double_t x      = ref->X() - fMCevent->GetPrimaryVertex()->GetX();
+        Double_t y      = ref->Y() - fMCevent->GetPrimaryVertex()->GetY();
+        Double_t z      = ref->Z() - fMCevent->GetPrimaryVertex()->GetZ();
+        Double_t rr     = TMath::Sqrt(x * x + y * y);
+        Double_t thetaR = TMath::ATan2(rr, z);
+        Double_t phiR   = TMath::ATan2(y,x);
+
+        if (phiR < 0) {
+          phiR += 2*TMath::Pi();
+        }
+        if (thetaR < 0) {
+          thetaR += 2*TMath::Pi();
+        }
+        fwd->Fill(-TMath::Log(TMath::Tan(thetaR / 2)),phiR, zvertex);
+      }
+    }
+  }
+}
+
+
+void AliForwardFlowUtil::FillFromPrimaries(TH3D*& cen, TH3D*& fwd, Double_t zvertex) const
+{
+  Int_t nTracksMC = fMCevent->GetNumberOfTracks();
+
+  for (Int_t iTr = 0; iTr < nTracksMC; iTr++) {
+    AliMCParticle* p = static_cast< AliMCParticle* >(fMCevent->GetTrack(iTr));
+    if (!p->IsPhysicalPrimary()) continue;
+    if (p->Charge() == 0) continue;
+
+    Double_t eta = p->Eta();
+    if (TMath::Abs(eta) < 1.1) {
+      if (p->Pt()>=0.2 && p->Pt()<=5)
+        cen->Fill(eta,p->Phi(),zvertex,1);
+    }
+    if (eta < 5 /*fwd->GetXaxis()-GetXmax()*/ && eta > -3.5 /*fwd->GetXaxis()-GetXmin()*/) {
+      if (TMath::Abs(eta) >= 1.7)
+        fwd->Fill(eta,p->Phi(),zvertex,1);
+    }
+  }
+}
+
+
+void AliForwardFlowUtil::FillFromTracklets(TH3D*& cen, Double_t zvertex) const {
+  AliAODTracklets* aodTracklets = fAODevent->GetTracklets();
+
+  for (Int_t i = 0; i < aodTracklets->GetNumberOfTracklets(); i++) {
+    cen->Fill(aodTracklets->GetEta(i),aodTracklets->GetPhi(i),zvertex, 1);
+  }
+}
+
+
+void AliForwardFlowUtil::FillFromTracks(TH3D*& cen, Int_t tracktype, Double_t zvertex) const {
+  Int_t  iTracks(fevent->GetNumberOfTracks());
+  for(Int_t i(0); i < iTracks; i++) {
+
+  // loop  over  all  the  tracks
+    AliAODTrack* track = static_cast<AliAODTrack *>(fAODevent->GetTrack(i));
+    if (track->TestFilterBit(tracktype)){
+      if (track->Pt() >= 0.2 && track->Pt() <= 5){
+        cen->Fill(track->Eta(),track->Phi(), zvertex, 1);
+      }
+    }
+  }
+}
+
 
 
 AliTrackReference* AliForwardFlowUtil::IsHitFMD(AliMCParticle* p) {

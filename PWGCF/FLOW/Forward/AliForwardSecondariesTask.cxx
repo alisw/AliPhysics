@@ -131,62 +131,66 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
 //_____________________________________________________________________
   void AliForwardSecondariesTask::UserCreateOutputObjects()
   {
+
   //
   //  Create output objects
   //
-  	std::cout << "AliForwardSecondariesTask::UserCreateOutputObjects()" << std::endl;
+  std::cout << "AliForwardSecondariesTask::UserCreateOutputObjects()" << std::endl;
 
   this->fOutputList = new TList();
   this->fOutputList->SetOwner(kTRUE);
 
-  //fEventCuts.AddQAplotsToList(fOutputList);
-
     TRandom fRandom = TRandom();              // random integer to use for creation of samples (used for error bars).
                                         // Needs to be created here, otherwise it will draw the same random number.
 
-fDeltaList = new TList();
-fDeltaList->SetName("Delta");
+    fDeltaList = new TList();
+    fDeltaList->SetName("Delta");
 
-    Int_t bins_phi[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 41, fSettings.fCentBins, 200} ;
-    Double_t xmin_phi[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -4};
-    Double_t xmax_phi[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 6}; //
-    Int_t dimensions_phi = 5;
+    Int_t bins_phi_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 21, fSettings.fCentBins, 200} ;
+    Double_t xmin_phi_eta[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -4};
+    Double_t xmax_phi_eta[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 6}; //
+    Int_t dimensions = 5;
 
-    Int_t bins_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 201, fSettings.fCentBins, 20} ;
-    Double_t xmin_eta[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -4, 0, 0.0};
-    Double_t xmax_eta[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 6, 100, 2*TMath::Pi()}; //
-    Int_t dimensions_eta = 5;
+    Int_t bins_eta_phi[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 201, fSettings.fCentBins, 20} ;
+    Double_t xmin_eta_phi[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -4, 0, 0.0};
+    Double_t xmax_eta_phi[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 6, 100, 2*TMath::Pi()}; //
 
-    Int_t bins_phi1[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 41, fSettings.fCentBins, 20} ;
-    Double_t xmin_phi1[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, 0.0};
-    Double_t xmax_phi1[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 2*TMath::Pi()}; //
-    Int_t dimensions_phi1 = 5;
+    Int_t bins_phi[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 21, fSettings.fCentBins, 20} ;
+    Double_t xmin_phi[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0.0, 0.0};
+    Double_t xmax_phi[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 2*TMath::Pi()}; //
 
-    Int_t bins_eta1[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 201, fSettings.fCentBins, 200} ;
-    Double_t xmin_eta1[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -4, 0, -4.0};
-    Double_t xmax_eta1[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 6, 100, 6}; //
-    Int_t dimensions_eta1 = 5;
+    Int_t bins_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 201, fSettings.fCentBins, 200} ;
+    Double_t xmin_eta[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -4, 0, -4};
+    Double_t xmax_eta[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 6, 100, 6}; //
 
-    fDeltaList->Add(new THnD("delta_phi", "delta_phi",dimensions_phi1,bins_phi1, xmin_phi1, xmax_phi1)); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
-    fDeltaList->Add(new THnD("delta_eta", "delta_eta",dimensions_eta1,bins_eta1, xmin_eta1, xmax_eta1)); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
+    fDeltaList->Add(new THnD("delta_phi_eta", "delta_phi_eta",dimensions,bins_phi_eta, xmin_phi_eta, xmax_phi_eta)); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
+    fDeltaList->Add(new THnD("delta_eta_phi", "delta_eta_phi",dimensions,bins_eta_phi, xmin_eta_phi, xmax_eta_phi));// (samples, vertex,eta_mother - eta_tr ,centrality,phi_mother,phi_tr,phi_p)
+    fDeltaList->Add(new THnD("delta_phi", "delta_phi",dimensions,bins_phi, xmin_phi, xmax_phi)); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
+    fDeltaList->Add(new THnD("delta_eta", "delta_eta",dimensions,bins_eta, xmin_eta, xmax_eta));// (samples, vertex,eta_mother - eta_tr ,centrality,phi_mother,phi_tr,phi_p)
 
-    fDeltaList->Add(new THnD("delta_phi_mother", "delta_phi_mother",dimensions_phi,bins_phi, xmin_phi, xmax_phi)); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
-    fDeltaList->Add(new THnD("delta_phi_tr", "delta_phi_tr",dimensions_phi,bins_phi, xmin_phi, xmax_phi)); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
-    fDeltaList->Add(new THnD("delta_eta_mother", "delta_eta_mother",dimensions_eta,bins_eta, xmin_eta, xmax_eta));// (samples, vertex,eta_mother - eta_tr ,centrality,phi_mother,phi_tr,phi_p)
-    fDeltaList->Add(new THnD("delta_eta_tr", "delta_eta_tr",dimensions_eta,bins_eta, xmin_eta, xmax_eta));// (samples, vertex,eta_mother - eta_tr ,centrality,phi_mother,phi_tr,phi_p)
+    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta"))->GetAxis(0)->SetName("samples");
+    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta"))->GetAxis(1)->SetName("vertex");
+    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta"))->GetAxis(2)->SetName("phi_mother - phi_tr");
+    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta"))->GetAxis(3)->SetName("centrality");
+    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta"))->GetAxis(4)->SetName("eta");
 
-    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_mother"))->GetAxis(0)->SetName("samples");
-    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_mother"))->GetAxis(1)->SetName("vertex");
-    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_mother"))->GetAxis(2)->SetName("phi_mother - phi_tr");
-    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_mother"))->GetAxis(3)->SetName("centrality");
-    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_mother"))->GetAxis(4)->SetName("eta");
+    static_cast<THnD*>(fDeltaList->FindObject("delta_eta_phi"))->GetAxis(0)->SetName("samples");
+    static_cast<THnD*>(fDeltaList->FindObject("delta_eta_phi"))->GetAxis(1)->SetName("vertex");
+    static_cast<THnD*>(fDeltaList->FindObject("delta_eta_phi"))->GetAxis(2)->SetName("eta_mother - eta_tr");
+    static_cast<THnD*>(fDeltaList->FindObject("delta_eta_phi"))->GetAxis(3)->SetName("centrality");
+    static_cast<THnD*>(fDeltaList->FindObject("delta_eta_phi"))->GetAxis(4)->SetName("phi");
 
-    static_cast<THnD*>(fDeltaList->FindObject("delta_eta_mother"))->GetAxis(0)->SetName("samples");
-    static_cast<THnD*>(fDeltaList->FindObject("delta_eta_mother"))->GetAxis(1)->SetName("vertex");
-    static_cast<THnD*>(fDeltaList->FindObject("delta_eta_mother"))->GetAxis(2)->SetName("eta_mother - eta_tr");
-    static_cast<THnD*>(fDeltaList->FindObject("delta_eta_mother"))->GetAxis(3)->SetName("centrality");
-    static_cast<THnD*>(fDeltaList->FindObject("delta_eta_mother"))->GetAxis(4)->SetName("phi");
+    static_cast<THnD*>(fDeltaList->FindObject("delta_phi"))->GetAxis(0)->SetName("samples");
+    static_cast<THnD*>(fDeltaList->FindObject("delta_phi"))->GetAxis(1)->SetName("vertex");
+    static_cast<THnD*>(fDeltaList->FindObject("delta_phi"))->GetAxis(2)->SetName("phi_mother - phi_tr");
+    static_cast<THnD*>(fDeltaList->FindObject("delta_phi"))->GetAxis(3)->SetName("centrality");
+    static_cast<THnD*>(fDeltaList->FindObject("delta_phi"))->GetAxis(4)->SetName("phi");
 
+    static_cast<THnD*>(fDeltaList->FindObject("delta_eta"))->GetAxis(0)->SetName("samples");
+    static_cast<THnD*>(fDeltaList->FindObject("delta_eta"))->GetAxis(1)->SetName("vertex");
+    static_cast<THnD*>(fDeltaList->FindObject("delta_eta"))->GetAxis(2)->SetName("eta_mother - eta_tr");
+    static_cast<THnD*>(fDeltaList->FindObject("delta_eta"))->GetAxis(3)->SetName("centrality");
+    static_cast<THnD*>(fDeltaList->FindObject("delta_eta"))->GetAxis(4)->SetName("eta");
 
       //static_cast<THnD*>(static_cast<TList*>(fStdQCList->At(0))->FindObject(Form("cumuRef_v%d", n)))->GetAxis(0)->SetName("samples");
 
@@ -198,9 +202,6 @@ fDeltaList->SetName("Delta");
      20, 0., 100., 500, 0., 5.)); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram
     fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
     fEventList->SetName("EventInfo");
-
-
-
 
     Int_t bins_prim[4] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fCentBins, 200} ;
     Double_t xmin_prim[4] = {0,fSettings.fZVtxAcceptanceLowEdge, 0, -4};
@@ -224,21 +225,15 @@ fDeltaList->SetName("Delta");
 void AliForwardSecondariesTask::UserExec(Option_t *)
 {
   //
-  //  Analyses the event with use of the helper class AliForwardQCumulantRun2
-  //
   //  Parameters:
   //   option: Not used
   //
   AliMCEvent* fAOD = this->MCEvent();
   AliStack* stack = fAOD->Stack();
   if(!fAOD) {
-        std::cout << "no aod" << std::endl;
-
+    std::cout << "no aod" << std::endl;
     return;
-    }
-
-    //std::cout << "fMC->GetNumberOfTracks()" << fAOD->GetNumberOfTracks() << std::endl;
-
+  }
   if (!stack) {
     std::cout << "no stack" << std::endl;
     return;
@@ -250,102 +245,19 @@ void AliForwardSecondariesTask::UserExec(Option_t *)
     return;
   }
 
-    //AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
-    //double v0cent = MultSelection->GetMultiplicityPercentile("SPDTracklets");
-double v0cent = 5.;
-std::cout << "the cent is " << v0cent << std::endl;
-    static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(event_vtx_z);
-
-
-
-
-/*
-
-  AliAODMCHeader* fAODMCHeader = static_cast<AliAODMCHeader*>(fAOD->FindListObject(AliAODMCHeader::StdBranchName()));
-
-  Double_t impactParam[] = { 0.00,  3.72,  5.23,  7.31,  8.88, 10.20,
-          11.38, 12.47, 13.50, 14.51, 16.679};
-  Double_t centrality[]  = { 0.,    5.,   10.,   20.,   30.,   40.,
-          50.,   60.,   70.,   80.,  100.};
-
-  Int_t nPoints = sizeof(impactParam)/sizeof(Double_t);
-  TGraph* fImpactParToCent = new TGraph(nPoints, impactParam, centrality);
-  std::cout << fAOD->GetCentrality()->GetCentralityPercentile("V0M")<< std::endl;
-
-    double fCent = 0;
-    if (fAODMCHeader){
-  AliGenEventHeaderTunedPbPb* header =
-    dynamic_cast<AliGenEventHeaderTunedPbPb*>(fAODMCHeader->GetCocktailHeader(0));
-  if (header) fCent = header->GetCentrality();}
-
-    double cent = 0;
-
-
-if (fAODMCHeader){
-  Double_t b = fAODMCHeader->GetImpactParameter();
-  cent = fImpactParToCent->Eval(b);
-}
-
-std::cout << fCent << std::endl;
-std::cout << cent << std::endl;
-
-*/
-
-  //..AliEventCuts selection
-  //if(!fEventCuts.AcceptEvent(fAOD)) {
-  	//std::cout << "Not accepted by EventCuts" << std::endl;
-    //PostData(1, fOutputList);
-    //return;
-  //}  GetCentralityPercentile
-    //AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
-    //float v0Centr = MultSelection->GetMultiplicityPercentile("V0M");
-//std::cout << "CENT = " << v0Centr << std::endl;
-  //AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
-  //float v0cent = 5.;//fAOD->GetCentrality()->GetCentralityPercentile("V0M");
-  //std::cout << MultSelection->GetMultiplicityPercentile("V0M") << std::endl;
-
-  // Get detector objects
-  //AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
-
- // TH2D spddNdedp = TH2D("spddNdedp","spddNdedp",400,-1.5,1.5,400,0,2*TMath::Pi()); // Histogram to contain the central tracks
-  //TH2D forwarddNdedp = TH2D("forwarddNdedp","forwarddNdedp",200,-4,6,40,0,2*TMath::Pi()); // also known as dNdetadphi
+  AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
+  Double_t v0cent = MultSelection->GetMultiplicityPercentile("V0M");
 
   Int_t nTracks   = fAOD->GetNumberOfTracks();
-  //Int_t nTracks   = stack->GetNtrack();
   Int_t nPrim     = stack->GetNprimary();
-std::cout << "nPrim = " << nPrim << std::endl;
-
-
-  //UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
 
   static_cast<TH1D*>(fEventList->FindObject("Centrality"))->Fill(v0cent);
   static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(event_vtx_z);
-
-THnD* delta_phi_mother = static_cast<THnD*>(fDeltaList->FindObject("delta_phi_mother")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
-THnD* delta_eta_mother = static_cast<THnD*>(fDeltaList->FindObject("delta_eta_mother"));
-THnD* delta_phi_tr = static_cast<THnD*>(fDeltaList->FindObject("delta_phi_tr")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
-THnD* delta_eta_tr = static_cast<THnD*>(fDeltaList->FindObject("delta_eta_tr"));
-
-THnD* delta_phi = static_cast<THnD*>(fDeltaList->FindObject("delta_phi")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
-THnD* delta_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_eta"));
-
-
+  THnD* delta_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_eta")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
+  THnD* delta_phi = static_cast<THnD*>(fDeltaList->FindObject("delta_phi")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
+  THnD* delta_phi_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
+  THnD* delta_eta_phi = static_cast<THnD*>(fDeltaList->FindObject("delta_eta_phi")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
   THnD* fnoPrim = static_cast<THnD*>(fDeltaList->FindObject("fnoPrim"));//->Fill(event_vtx_z,event_vtx_z,event_vtx_z);
-  //TList* eventList = static_cast<TList*>(fOutputList->FindObject("EventInfo"));
-
-  //const AliVVertex* aodVtx = fAOD->GetPrimaryVertex();
-  //Double_t vertex  = aodVtx->GetZ();
-
-  /*for (Int_t iTr = 0; iTr < nTracks; iTr++) {
-    AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
-    if (AliTrackReference *ref = this->IsHitFMD(p)) {
-      forwarddNdedp.Fill(p->Eta(),p->Phi(),1);
-    }
-    if (AliTrackReference *ref = this->IsHitTPC(p)) {
-      spddNdedp.Fill(p->Eta(),p->Phi(),1);
-    }
-  }*/
-
 
   bool useEvent = kTRUE;
 
@@ -356,13 +268,14 @@ THnD* delta_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_eta"));
   for (Int_t iTr = 0; iTr < nTracks; iTr++) {
     AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
 
-    // Ignore things that do not make a signal in the FMD or ITS
+    // Ignore things that do not make a signal in the FMD
     AliTrackReference* tr = fUtil.IsHitFMD(p);
-    if (tr && p->Charge() != 0){ // || this->IsHitTPC(p)){// { && p->Charge()!=0
+    if (tr && p->Charge() != 0){
 
       AliMCParticle* mother = GetMother(p);
-      if (!mother) continue;
-      //if (!mother) mother = p;
+      //if (!mother) continue;
+      if (!mother) mother = p;
+
       Double_t eta_mother = mother->Eta();
       Double_t phi_mother = mother->Phi();
 
@@ -373,28 +286,20 @@ THnD* delta_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_eta"));
       Double_t eta_tr = etaPhi[0];
 
       // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr)
-      Double_t phi[5] = {randomInt,event_vtx_z, WrapPi(phi_mother - phi_tr), v0cent, eta_mother};
-      Double_t eta[5] = {randomInt,event_vtx_z, (eta_mother - eta_tr), v0cent, phi_mother};
-
-      Double_t phi1[5] = {randomInt,event_vtx_z, WrapPi(phi_mother - phi_tr), v0cent, phi_tr};
-      Double_t eta1[5] = {randomInt,event_vtx_z, (eta_mother - eta_tr), v0cent, eta_tr};
-      delta_phi->Fill(phi1,1);
-      delta_eta->Fill(eta1,1);
+      Double_t phi[5] = {randomInt,event_vtx_z, WrapPi(phi_mother - phi_tr), v0cent, eta_tr};
+      Double_t eta[5] = {randomInt,event_vtx_z, (eta_mother - eta_tr), v0cent, phi_tr};
 
       //if (!(fabs(eta_tr - eta_mother) < 0.1)) continue;
-      delta_phi_mother->Fill(phi,1);
-      delta_eta_mother->Fill(eta,1);
+      delta_phi_eta->Fill(phi,1);
+      delta_eta_phi->Fill(eta,1);
 
-      phi[4] = eta_tr;
-      eta[4] = phi_tr;
-      delta_phi_tr->Fill(phi,1);
-      delta_eta_tr->Fill(eta,1);
+      phi[4] = phi_tr;
+      eta[4] = eta_tr;
 
-      //if (!hasParticleMaterialInteractionInAncestors(p)) continue;
-      //std::cout << "particle is from material" << std::endl;
+      delta_phi->Fill(phi,1);
+      delta_eta->Fill(eta,1);
 
-      //deltaphi_tr=TMath::ATan2(TMath::Sin(deltaphi_tr), TMath::Cos(deltaphi_tr));
-      Double_t x_prim[4] =  {randomInt,event_vtx_z,v0cent,eta_mother};
+      Double_t x_prim[4] =  {randomInt,event_vtx_z,v0cent,eta_tr};
       Bool_t isNewPrimary = AddMotherIfFirstTimeSeen(mother,listOfMothers);
       if (!isNewPrimary){
         listOfMothers.push_back(mother->GetLabel());
@@ -402,8 +307,6 @@ THnD* delta_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_eta"));
       }
     }
   }
-
-
 
   PostData(1, fOutputList);
 } // End of useEvent

@@ -4,6 +4,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliForwardSettings+;
+#pragma link C++ class AliAnalysisTaskValidation+;
 #pragma link C++ class AliForwardFlowUtil+;
 #pragma link C++ class AliForwardGenericFramework+;
 #pragma link C++ class AliForwardQCumulantRun2+;

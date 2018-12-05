@@ -30,7 +30,10 @@ AliForwardSettings::AliForwardSettings() :
   useTPC{kTRUE},
   useSPD(kFALSE),
   use_primaries(kFALSE),
+  use_primaries_cen(kFALSE),
+  use_primaries_fwd(kFALSE),
   centrality_estimator('SPDTracklets'),//CL0, V0M
-  etagap(kTRUE)
+  etagap(kTRUE),
+  makeFakeHoles(kFALSE)
 {
 }

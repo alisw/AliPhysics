@@ -22,7 +22,8 @@
 #include <TF1.h>
 #include "AliAODVertex.h"
 #include "AliForwardFlowUtil.h"
-
+#include <AliAnalysisTaskValidation.h>
+//#include </path/to/custom/header/headerFile.h>
 class AliAODForwardMult;
 class TH2D;
 class AliESDEvent;
@@ -120,8 +121,6 @@ public:
   // A class combining all the settings for this analysis
   AliForwardSettings fSettings;
   AliForwardFlowUtil fUtil;
-
-  AliEventCuts fEventCuts;
 
   Bool_t useEvent;
 

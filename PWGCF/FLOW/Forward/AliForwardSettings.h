@@ -68,7 +68,10 @@ class AliForwardSettings : public TObject {
   Bool_t useTPC;
   Bool_t useSPD;
   Bool_t use_primaries;
+  Bool_t use_primaries_cen;
+  Bool_t use_primaries_fwd;
   Bool_t etagap;
+  Bool_t makeFakeHoles;
 
   TString centrality_estimator;
   // return true if good event
