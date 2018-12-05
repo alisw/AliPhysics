@@ -108,7 +108,7 @@ AliAnalysisTaskEA* AddTaskEA(
    task->SetDebugLevel(0); //No debug messages 0
 
    // output container
-   contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:ChJetSpectra%s", AliAnalysisManager::GetCommonFileName(), myContName.Data()));
+   AliAnalysisDataContainer *contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:ChJetSpectra%s", AliAnalysisManager::GetCommonFileName(), myContName.Data()));
  
  
    // #### ADD ANALYSIS TASK
