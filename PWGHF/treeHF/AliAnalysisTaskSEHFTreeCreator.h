@@ -16,7 +16,7 @@
 // G. Innocenti, gian.michele.innocenti@cern.ch
 // F. Prino, prino@to.infn.it
 // L. Vermunt, luuk.vermunt@cern.ch
-// L. Van Doremalen
+// L. van Doremalen, lennart.van.doremalen@cern.ch
 ///*************************************************************************
 
 #include <TROOT.h>
@@ -31,11 +31,15 @@
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliRDHFCutsDstoKKpi.h"
 #include "AliRDHFCutsDplustoKpipi.h"
+#include "AliRDHFCutsLctopKpi.h"
+#include "AliRDHFCutsBPlustoD0Pi.h"
 #include "AliNormalizationCounter.h"
 #include "AliHFTreeHandler.h"
 #include "AliHFTreeHandlerD0toKpi.h"
 #include "AliHFTreeHandlerDplustoKpipi.h"
 #include "AliHFTreeHandlerDstoKKpi.h"
+#include "AliHFTreeHandlerLctopKpi.h"
+#include "AliHFTreeHandlerBplustoD0pi.h"
 
 
 class AliAODEvent;
@@ -66,9 +70,13 @@ public:
     void SetFillD0Tree(Int_t opt){fWriteVariableTreeD0=opt;}
     void SetFillDsTree(Int_t opt){fWriteVariableTreeDs=opt;}
     void SetFillDplusTree(Int_t opt){fWriteVariableTreeDplus=opt;}
+    void SetFillLctopKpiTree(Int_t opt){fWriteVariableTreeLctopKpi=opt;}
+    void SetFillBplusTree(Int_t opt){fWriteVariableTreeBplus=opt;}
     void SetPIDoptD0Tree(Int_t opt){fPIDoptD0=opt;}
     void SetPIDoptDsTree(Int_t opt){fPIDoptDs=opt;}
     void SetPIDoptDplusTree(Int_t opt){fPIDoptDplus=opt;}
+    void SetPIDoptLctopKpiTree(Int_t opt){fPIDoptLctopKpi=opt;}
+    void SetPIDoptBplusTree(Int_t opt){fPIDoptBplus=opt;}
     void SetFillMCGenTrees(Bool_t fillMCgen) {fFillMCGenTrees=fillMCgen;}
     
     Int_t  GetSystem() const {return fSys;}
@@ -79,7 +87,8 @@ public:
     void ProcessMCGen(TClonesArray *mcarray);
   
     Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
-
+    AliAODVertex* ReconstructBplusVertex(const AliVVertex *primary, TObjArray *tracks, Double_t bField, Double_t dispersion);
+    
 private:
     
     AliAnalysisTaskSEHFTreeCreator(const AliAnalysisTaskSEHFTreeCreator&);
@@ -92,10 +101,14 @@ private:
     TList                   *fListCuts;                  //      list of cuts sent to output slot 2
     AliRDHFCutsD0toKpi      *fFiltCutsD0toKpi;           //      D0toKpi filtering (or loose) cuts
     AliRDHFCutsDstoKKpi     *fFiltCutsDstoKKpi;          //      DstoKKpi filtering (or loose) cuts
-    AliRDHFCutsDplustoKpipi *fFiltCutsDplustoKpipi;      //      DplustoKpipi filtering (or loose) cuts 
+    AliRDHFCutsDplustoKpipi *fFiltCutsDplustoKpipi;      //      DplustoKpipi filtering (or loose) cuts
+    AliRDHFCutsLctopKpi     *fFiltCutsLctopKpi    ;      //      LctopKpi filtering (or loose) cuts
+    AliRDHFCutsBPlustoD0Pi  *fFiltCutsBplustoD0pi;       //      BplustoD0pi filtering (or loose) cuts
     AliRDHFCutsD0toKpi      *fCutsD0toKpi;               //      D0toKpi analysis cuts
     AliRDHFCutsDstoKKpi     *fCutsDstoKKpi;              //      DstoKKpi analysis cuts
     AliRDHFCutsDplustoKpipi *fCutsDplustoKpipi;          //      DplustoKpipi analysis cuts
+    AliRDHFCutsLctopKpi     *fCutsLctopKpi;              //      LctopKpi analysis cuts
+    AliRDHFCutsBPlustoD0Pi  *fCutsBplustoD0pi;           //      BplustoD0pi analysis cuts
     Bool_t                  fReadMC;                     //     flag for MC array: kTRUE = read it, kFALSE = do not read it
     TList                   *fListCounter;               //!<!   list for normalization counter on output slot 3
     AliNormalizationCounter *fCounter;                   //!<!   AliNormalizationCounter
@@ -112,23 +125,40 @@ private:
     Int_t                   fWriteVariableTreeDplus;      // flag to decide whether to write the candidate variables on a tree variables
     													 // 0 don't fill
                                                          // 1 fill standard tree
+    Int_t                   fWriteVariableTreeLctopKpi;      // flag to decide whether to write the candidate variables on a tree variables
+    													 // 0 don't fill
+                                                         // 1 fill standard tree
+    Int_t                    fWriteVariableTreeBplus;    // flag to decide whether to write the candidate variables on a tree variables
+                                                          // 0 don't fill
+                                                          // 1 fill standard tree
+
     TTree                   *fVariablesTreeD0;           //!<! tree of the candidate variables
     TTree                   *fVariablesTreeDs;           //!<! tree of the candidate variables
     TTree                   *fVariablesTreeDplus;        //!<! tree of the candidate variables
+    TTree                   *fVariablesTreeLctopKpi;     //!<! tree of the candidate variables
+    TTree                   *fVariablesTreeBplus;        //!<! tree of the candidate variables
     TTree                   *fGenTreeD0;                 //!<! tree of the gen D0 variables
     TTree                   *fGenTreeDs;                 //!<! tree of the gen Ds variables
     TTree                   *fGenTreeDplus;              //!<! tree of the gen D+ variables
+    TTree                   *fGenTreeLctopKpi;           //!<! tree of the gen LctopKpi variables
+    TTree                   *fGenTreeBplus;              //!<! tree of the gen B+ variables
     TTree                   *fTreeEvChar;                //!<!
     bool                    fWriteOnlySignal;
     AliHFTreeHandlerD0toKpi        *fTreeHandlerD0;             //!<! handler object for the tree with topological variables
     AliHFTreeHandlerDstoKKpi       *fTreeHandlerDs;             //!<! handler object for the tree with topological variables
     AliHFTreeHandlerDplustoKpipi   *fTreeHandlerDplus;          //!<! handler object for the tree with topological variables
+    AliHFTreeHandlerLctopKpi       *fTreeHandlerLctopKpi;          //!<! handler object for the tree with topological variables
+    AliHFTreeHandlerBplustoD0pi    *fTreeHandlerBplus;          //!<! handler object for the tree with topological variables
     AliHFTreeHandlerD0toKpi        *fTreeHandlerGenD0;             //!<! handler object for the tree with topological variables
     AliHFTreeHandlerDstoKKpi       *fTreeHandlerGenDs;             //!<! handler object for the tree with topological variables
     AliHFTreeHandlerDplustoKpipi   *fTreeHandlerGenDplus;          //!<! handler object for the tree with topological variables
+    AliHFTreeHandlerLctopKpi       *fTreeHandlerGenLctopKpi;       //!<! handler object for the tree with topological variables
+    AliHFTreeHandlerBplustoD0pi    *fTreeHandlerGenBplus;          //!<! handler object for the tree with topological variables
     int                     fPIDoptD0;
     int                     fPIDoptDs;
     int                     fPIDoptDplus;
+    int                     fPIDoptLctopKpi;
+    int                     fPIDoptBplus;
     Float_t                 fCentrality;
     Float_t                 fzVtxReco;
     Float_t                 fzVtxGen;
@@ -141,7 +171,7 @@ private:
     
     
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,1);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,2);
     /// \endcond
 };
 
