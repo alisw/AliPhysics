@@ -28,6 +28,12 @@
 #include <stdexcept>
 #include <cerrno>
 
+#if __cplusplus > 201402L
+#define AUTO_PTR std::unique_ptr
+#else
+#define AUTO_PTR std::auto_ptr
+#endif
+
 ClassImp(AliHLTTPCDataCompressionUnpackerComponent)
 
 AliHLTTPCDataCompressionUnpackerComponent::AliHLTTPCDataCompressionUnpackerComponent()
@@ -182,13 +188,13 @@ int AliHLTTPCDataCompressionUnpackerComponent::DoEvent( const AliHLTComponentEve
 int AliHLTTPCDataCompressionUnpackerComponent::DoInit(int argc, const char** argv )
 {
   /// inherited from AliHLTComponent: component initialization
-  auto_ptr<AliHLTTPCDataCompressionDecoder> decoder(new AliHLTTPCDataCompressionDecoder);
+  AUTO_PTR<AliHLTTPCDataCompressionDecoder> decoder(new AliHLTTPCDataCompressionDecoder);
   if (!decoder.get()) {
     return -ENOMEM;
   }
   decoder->SetPadrowModeLocal();
 
-  auto_ptr<AliClusterWriter> clw(new AliClusterWriter);
+  AUTO_PTR<AliClusterWriter> clw(new AliClusterWriter);
   if (!clw.get())
     return -ENOMEM;
 

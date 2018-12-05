@@ -73,7 +73,7 @@ AliMFTCALadder& AliMFTCALadder::operator=(const AliMFTCALadder& ladder)
     caHit = (AliMFTCAHit*)(ladder.fHits->At(i));
     new ((*fHits)[i]) AliMFTCAHit(*caHit);
   }
-
+  return *this;
 }
 
 //___________________________________________________________________________

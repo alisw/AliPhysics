@@ -53,6 +53,12 @@
 #include "TList.h"
 #include <memory>
 
+#if __cplusplus > 201402L
+#define AUTO_PTR std::unique_ptr
+#else
+#define AUTO_PTR std::auto_ptr
+#endif
+
 ClassImp(AliHLTTPCDataCompressionMonitorComponent)
 
 AliHLTTPCDataCompressionMonitorComponent::AliHLTTPCDataCompressionMonitorComponent()
@@ -508,10 +514,10 @@ int AliHLTTPCDataCompressionMonitorComponent::DoInit( int argc, const char** arg
   if (argc && (iResult = ConfigureFromArgumentString(argc, argv)) < 0)
     return iResult;
 
-  std::auto_ptr<AliHLTTPCHWCFData> hwClusterDecoder(new AliHLTTPCHWCFData);
-  std::auto_ptr<AliDataContainer> dataContainer(new AliDataContainer);
+  AUTO_PTR<AliHLTTPCHWCFData> hwClusterDecoder(new AliHLTTPCHWCFData);
+  AUTO_PTR<AliDataContainer> dataContainer(new AliDataContainer);
 
-  std::auto_ptr<TH2I> histoHWCFDataSize(new TH2I("HWCFDataSize",
+  AUTO_PTR<TH2I> histoHWCFDataSize(new TH2I("HWCFDataSize",
 						 "HW ClusterFinder Size",
 						 100, 0., 80000., 100, 0., 80000.));
   if (histoHWCFDataSize.get()) {
@@ -521,7 +527,7 @@ int AliHLTTPCDataCompressionMonitorComponent::DoInit( int argc, const char** arg
     if (yaxis) yaxis->SetTitle("compressed data size [kb]");
   }
 
-  std::auto_ptr<TH2I> histoHWCFReductionFactor(new TH2I("HWCFReductionFactor",
+  AUTO_PTR<TH2I> histoHWCFReductionFactor(new TH2I("HWCFReductionFactor",
 							"Data reduction HW ClusterFinder vs. raw data size",
 							100, 0., 80000., 30, 0., 3.));
   if (histoHWCFReductionFactor.get()) {
@@ -531,7 +537,7 @@ int AliHLTTPCDataCompressionMonitorComponent::DoInit( int argc, const char** arg
     if (yaxis) yaxis->SetTitle("reduction factor");
   }
 
-  std::auto_ptr<TH2I> histoTotalReductionFactor(new TH2I("TotalReductionFactor",
+  AUTO_PTR<TH2I> histoTotalReductionFactor(new TH2I("TotalReductionFactor",
 							 "Total reduction Factor vs. raw data size",
 							 100, 0., 80000., 100, 0., 10.));
   if (histoTotalReductionFactor.get()) {
@@ -541,7 +547,7 @@ int AliHLTTPCDataCompressionMonitorComponent::DoInit( int argc, const char** arg
     if (yaxis) yaxis->SetTitle("reduction factor");
   }
 
-  std::auto_ptr<TH2I> histoNofClusters(new TH2I("NofClusters",
+  AUTO_PTR<TH2I> histoNofClusters(new TH2I("NofClusters",
 					       "Number of HLT TPC clusters",
 					       100, 0., 80000., 500, 0., 3000000.));
   if (histoNofClusters.get()) {
@@ -551,7 +557,7 @@ int AliHLTTPCDataCompressionMonitorComponent::DoInit( int argc, const char** arg
     if (yaxis) yaxis->SetTitle("N. of clusters");
   }
 
-  std::auto_ptr<TH2I> histoNofClustersReductionFactor(new TH2I("ReductionFactorVsNofClusters",
+  AUTO_PTR<TH2I> histoNofClustersReductionFactor(new TH2I("ReductionFactorVsNofClusters",
 							       "Reduction Factor vs. Number of HLT TPC clusters",
 							       500, 0., 3000000., 100, 0., 10.));
   if (histoNofClustersReductionFactor.get()) {
@@ -561,7 +567,7 @@ int AliHLTTPCDataCompressionMonitorComponent::DoInit( int argc, const char** arg
     if (yaxis) yaxis->SetTitle("reduction factor");
   }
 
-  std::auto_ptr<AliHLTComponentBenchmark> benchmark(new AliHLTComponentBenchmark);
+  AUTO_PTR<AliHLTComponentBenchmark> benchmark(new AliHLTComponentBenchmark);
   if (benchmark.get()) {
     benchmark->SetTimer(0,"total");
     benchmark->SetTimer(1,"clusterdecoding");
@@ -569,7 +575,7 @@ int AliHLTTPCDataCompressionMonitorComponent::DoInit( int argc, const char** arg
     return -ENOMEM;
   }
 
-  auto_ptr<AliHLTTPCDataCompressionDecoder> decoder(new AliHLTTPCDataCompressionDecoder);
+  AUTO_PTR<AliHLTTPCDataCompressionDecoder> decoder(new AliHLTTPCDataCompressionDecoder);
   if (!decoder.get()) {
     return -ENOMEM;
   }

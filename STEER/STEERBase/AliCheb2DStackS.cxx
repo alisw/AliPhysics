@@ -160,7 +160,6 @@ void AliCheb2DStackS::EvalDeriv(int sliceID, int dim, const float  *par, float *
   const UChar_t *cols = &fNCols[fColEntry[sliceID]];       // array of columns per row for current slice
   const Short_t *cfs  = &fCoeffs[fCoeffsEntry[sliceID]];   // array of coefficients for current slice
   const Float_t *scl  = &fParScale[pid];
-  const Float_t *hvr  = &fParHVar[pid];
   float sclMap = fBScaleZ; // to convert derivative from -1:1 mapped range to real one
   if (dim==0) { 
     float tmn = fBMin[ktgp], tmx = fBMax[ktgp];
@@ -410,7 +409,8 @@ void AliCheb2DStackS::PrintSlice(int isl, const Option_t* opt) const
     if (showcf) {
       printf("\n");
       for (int ir=0;ir<nr;ir++) {
-	for (int ic=0;ic<cols[ir];ic++) printf("%+6d ",*cfs++); printf("\n");
+	for (int ic=0;ic<cols[ir];ic++) printf("%+6d ",*cfs++);
+	printf("\n");
       }
     }
     cols += nr; // cols entry for next dimension

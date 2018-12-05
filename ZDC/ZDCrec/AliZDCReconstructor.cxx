@@ -1696,4 +1696,5 @@ int AliZDCReconstructor::GetChannelSignal(int det, int quad, Bool_t intime) cons
         else if(quad==4)  return kZDCAMon;
       }
     }
+    return 0;
 }

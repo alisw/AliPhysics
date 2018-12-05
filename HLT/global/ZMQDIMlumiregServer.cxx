@@ -473,13 +473,11 @@ int AliHLTDCSPublisherServer::SetLuminosityRegion(AliLuminosityRegion& lumiRegio
   for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
   {
     //Printf("have some data!");
-    TObject* object;
+    TObject* object(NULL);
     alizmq_msg_iter_data(i, object);
     if (!object) {
-      //Printf("no tobject!");
       continue;
     }
-    //Printf("have an TObject");
     TH1F* hist = dynamic_cast<TH1F*>(object);
     if (!hist) {delete object; continue;}
     std::string name = hist->GetName();

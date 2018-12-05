@@ -57,7 +57,6 @@ void TStatToolkit::EvaluateUni(Int_t nvectors, Double_t *data, Double_t &mean, D
   
   Double_t sumx  =0;
   Double_t sumx2 =0;
-  Int_t    bestindex = -1;
   Double_t bestmean  = 0; 
   Double_t bestsigma = (data[index[nvectors-1]]-data[index[0]]+1.);   // maximal possible sigma
   bestsigma *=bestsigma;
@@ -75,7 +74,6 @@ void TStatToolkit::EvaluateUni(Int_t nvectors, Double_t *data, Double_t &mean, D
     if (csigma<bestsigma){
       bestmean  = cmean;
       bestsigma = csigma;
-      bestindex = i-hh;
     }
     
     sumx  += data[index[i]]-data[index[i-hh]];
@@ -114,7 +112,6 @@ void TStatToolkit::EvaluateUniExternal(Int_t nvectors, Double_t *data, Double_t 
   //
   Double_t sumx  =0;
   Double_t sumx2 =0;
-  Int_t    bestindex = -1;
   Double_t bestmean  = 0; 
   Double_t bestsigma = -1;
   for (Int_t i=0; i<hh; i++){
@@ -130,7 +127,6 @@ void TStatToolkit::EvaluateUniExternal(Int_t nvectors, Double_t *data, Double_t 
     if (csigma<bestsigma ||  bestsigma<0){
       bestmean  = cmean;
       bestsigma = csigma;
-      bestindex = i-hh;
     }
     //
     //
@@ -500,6 +496,7 @@ Double_t TStatToolkit::RobustBinMedian(TH1* hist, Double_t fractionCut/*=1.*/)
   const Int_t nbins1D=hist->GetNbinsX();
   Double_t binMedian=0;
   Double_t limits[2]={hist->GetBinCenter(1), hist->GetBinCenter(nbins1D)};
+  (void) limits[0];
 
   Double_t* integral=hist->GetIntegral();
   for (Int_t i=1; i<nbins1D-1; i++){
@@ -2353,6 +2350,7 @@ Double_t TStatToolkit::GetDefaultStat(TTree * tree, const char * var, const char
     return TMath::RMS(entries, tree->GetV1());
   case kMedian:  
     return TMath::Median(entries, tree->GetV1());    
+  default:;
   }
   return 0;
 }
@@ -2435,6 +2433,8 @@ Double_t TStatToolkit::GetDistance(const TVectorD &values, const ENormType normT
       norm=sum;
     }
     break;
+    default:
+      return 0;
   }
   if (normaliseToEntries && values.GetNrows()>0) {
     norm/=values.GetNrows();
@@ -2525,11 +2525,11 @@ void TStatToolkit::MakeDistortionMap(Int_t iter, THnBase * histo, TTreeSRedirect
   static TF1 fgaus("fgaus","gaus",-10,10);
   const Double_t kMinEntries=50;
   Int_t ndim=histo->GetNdimensions();
-  Int_t axis[ndim];
+//  Int_t axis[ndim];
   Double_t meanVector[ndim];
   Int_t binVector[ndim];
   Double_t centerVector[ndim];
-  for (Int_t idim=0; idim<ndim; idim++) axis[idim]=idim;
+//  for (Int_t idim=0; idim<ndim; idim++) axis[idim]=idim;
   //
   if (iter==0){
     char tname[100];
@@ -2542,9 +2542,7 @@ void TStatToolkit::MakeDistortionMap(Int_t iter, THnBase * histo, TTreeSRedirect
     //
     // 1.) Calculate  properties   - mean, rms, gaus fit, chi2, entries
     // 2.) Dump properties to tree 1D properties  - plus dimension descriptor f
-    Int_t axis1D[1]={0};
     Int_t dimProject   = TMath::Nint(projectionInfo(iter,0));
-    axis1D[0]=dimProject;
     TH1 *his1DFull = histo->Projection(dimProject);
     Double_t mean= his1DFull->GetMean();
     Double_t rms= his1DFull->GetRMS();
@@ -2574,7 +2572,6 @@ void TStatToolkit::MakeDistortionMap(Int_t iter, THnBase * histo, TTreeSRedirect
     "chi2G="<<chi2G;      // chi2 of the gaus fit
     
     for (Int_t idim=0; idim<ndim; idim++){
-      axis1D[0]=idim;
       TH1 *his1DAxis = histo->Projection(idim);
       meanVector[idim] = his1DAxis->GetMean();
       snprintf(aname, 100, "%sMean=",histo->GetAxis(idim)->GetName());
@@ -2736,7 +2733,7 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
   //  TVectorF  vecLTM(9);
   while(1) {
     //
-    double dimVarCen = histo->GetAxis(dimVarID)->GetBinCenter(idx[dimVarID]); // center of currently varied bin
+    //double dimVarCen = histo->GetAxis(dimVarID)->GetBinCenter(idx[dimVarID]); // center of currently varied bin
     //
     if (grpOn) { //>> grouping requested?
       memset(binY,0,tgtNb*sizeof(double)); // need to accumulate
@@ -2759,9 +2756,11 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
       } // set limits for grouping
       if (verbose>0) {
         printf("output bin: ");
-        for (int i=0;i<ndim;i++) if (i!=tgtDim) printf("[D:%d]:%d ",i,idxSav[i]); printf("\n");
+        for (int i=0;i<ndim;i++) if (i!=tgtDim) printf("[D:%d]:%d ",i,idxSav[i]);
+        printf("\n");
         printf("integrates: ");
-        for (int i=0;i<ndim;i++) if (i!=tgtDim) printf("[D:%d]:%d-%d ",i,idxmin[i],idxmax[i]); printf("\n");
+        for (int i=0;i<ndim;i++) if (i!=tgtDim) printf("[D:%d]:%d-%d ",i,idxmin[i],idxmax[i]);
+        printf("\n");
       }
       //
       for (Int_t jDim=0; jDim<ndim+2; jDim++) meanVectorMI[jDim]=0;
@@ -2808,7 +2807,7 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
     }
     // 
     // >> ------------- do fit
-    float mean=0,mom2=0,rms=0,m3=0, m4=0, nrm=0,meanG=0,rmsG=0,chi2G=0,maxVal=0,entriesG=0,mean0=0, rms0=0, curt0=0;
+    float mean=0,mom2=0,rms=0,m3=0, m4=0, nrm=0,meanG=0,rmsG=0,chi2G=0,maxVal=0,entriesG=0,mean0=0, rms0=0;
     hfit->Reset();
     for (int ip=tgtNb;ip--;) {
       //grafFit.SetPoint(ip,binX[ip],binY[ip]);
@@ -3146,4 +3145,9 @@ Int_t TStatToolkit::AdaptHistoMetadata(TTree* tree, TH1 *histogram, TString opti
   if (palette) palette->SetX2NDC(0.92);
   histogram->Draw(option.Data());
   return 1;
+}
+
+THashList * TStatToolkit::GetMetadata(TTree *tree) {
+  TList *list=(TList*)(tree->GetUserInfo());
+  return (THashList*)((list!=nullptr)? list->FindObject("metaTable"):0);
 }

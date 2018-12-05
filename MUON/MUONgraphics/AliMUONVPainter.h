@@ -93,7 +93,7 @@ public:
   AliMUONContour* Contour() const { return fContour; }
 
   /// Get our name
-  virtual const char* GetName() const { return Name().Data(); }
+  virtual const char* GetName() const { return fName.Data(); }
   
   /// Get our name
   virtual TString Name() const { return fName; }

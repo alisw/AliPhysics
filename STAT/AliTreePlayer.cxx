@@ -79,9 +79,9 @@ Int_t AliTreeFormulaF::Compile(const char *expression) {
   //    variable: TTreeFormula
   // 3. GetFormatted string
   //
-  Int_t sLength = fquery.Length();     // original format string
-  Int_t iVar = 0;
-  Int_t varBegin = -1;
+  //Int_t sLength = fquery.Length();     // original format string
+  //Int_t iVar = 0;
+  //Int_t varBegin = -1;
   fFormulaArray = new TObjArray;
   fFormatArray = new TObjArray;
   fTextArray = new TObjArray;
@@ -108,6 +108,7 @@ Int_t AliTreeFormulaF::Compile(const char *expression) {
   }
   TString stext(fquery(lastI, fquery.Length() - lastI));
   fTextArray->AddAtAndExpand(new TObjString(stext.Data()), nVars);
+  return 0;
 }
 
 ///
@@ -115,6 +116,7 @@ Int_t AliTreeFormulaF::Compile(const char *expression) {
 /// \return
 char *AliTreeFormulaF::PrintValue(Int_t mode) const {
    PrintValue(mode, 0, "");
+   return NULL;
 }
 
 /// Overwrite TTreeFormula PrintValue
@@ -129,7 +131,6 @@ char *AliTreeFormulaF::PrintValue(Int_t mode) const {
 char *AliTreeFormulaF::PrintValue(Int_t mode, Int_t instance, const char *decform) const {
   std::stringstream stream;
   Int_t nVars = fFormulaArray->GetEntries();
-  const char *format=NULL;
   for (Int_t iVar = 0; iVar <= nVars; iVar++) {
     stream << fTextArray->At(iVar)->GetName();
     if (fDebug&2) cout<<"T"<<iVar<<"\t\t"<<fTextArray->At(iVar)->GetName()<<endl;
@@ -657,7 +658,7 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
 
   // print header
   if (isHTML){
-    fprintf(default_fp,"<table class=\"display\" cellspacing=\"0\" width=\"100%\">\n"); // add metadata info
+    fprintf(default_fp,"%s", "<table class=\"display\" cellspacing=\"0\" width=\"100%\">\n"); // add metadata info
     fprintf(default_fp,"\t<thead class=\"header\">\n"); // add metadata info
     fprintf(default_fp,"\t<tr>\n"); // add metadata info
     for (Int_t iCol=0; iCol<nCols; iCol++){
@@ -687,7 +688,7 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
     fprintf(default_fp,"\t</tfoot>\n"); // add metadata info
     fprintf(default_fp,"\t<tbody>\n"); // add metadata info
   }
-  if (isCSV){
+  if (isCSV && outputFormat.Contains("csvroot")){
     // add header info
     for (Int_t iCol=0; iCol<nCols; iCol++){
       fprintf(default_fp,"%s%s",columnNameList[iCol]->GetName(), outputFormatList[iCol]->GetName());

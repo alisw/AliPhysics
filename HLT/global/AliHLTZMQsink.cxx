@@ -289,6 +289,7 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
         }
 
         fInfoString += ";HLT_MODE=" + fECSparamMap["HLT_MODE"];
+        fInfoString += ";BEAM_TYPE=" + fECSparamMap["BEAM_TYPE"];
         break;
       }
     }

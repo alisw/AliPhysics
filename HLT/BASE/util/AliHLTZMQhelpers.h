@@ -49,6 +49,9 @@ struct AliHLTDataTopic : public DataTopic
   {
     SetID(dataType.fID);
     SetOrigin(dataType.fOrigin);
+    if (strncmp(dataType.fID,"ROOT",4)==0) {
+      SetSerialization(kSerializationHLTROOT);
+    }
   }
 
   //copy ctor
@@ -59,7 +62,7 @@ struct AliHLTDataTopic : public DataTopic
     SetID(blockData.fDataType.fID);
     SetOrigin(blockData.fDataType.fOrigin);
     if (strncmp(blockData.fDataType.fID,"ROOT",4)==0) {
-      SetSerialization(kSerializationROOT);
+      SetSerialization(kSerializationHLTROOT);
     }
   }
 
@@ -68,6 +71,9 @@ struct AliHLTDataTopic : public DataTopic
   {
     SetID(dataType.fID);
     SetOrigin(dataType.fOrigin);
+    if (strncmp(dataType.fID,"ROOT",4)==0) {
+      SetSerialization(kSerializationHLTROOT);
+    }
     return *this;
   }
 
@@ -78,7 +84,7 @@ struct AliHLTDataTopic : public DataTopic
     SetID(blockData.fDataType.fID);
     SetOrigin(blockData.fDataType.fOrigin);
     if (strncmp(blockData.fDataType.fID,"ROOT",4)==0) {
-      SetSerialization(kSerializationROOT);
+      SetSerialization(kSerializationHLTROOT);
     }
     return *this;
   }
@@ -112,6 +118,9 @@ class AtomicFile {
   ~AtomicFile();
   TFile* GetFile() {return tempFile;}
   void Close();
+  private:
+  AtomicFile(const AliZMQhelpers::AtomicFile&) {}
+  const AliZMQhelpers::AtomicFile& operator=(const AliZMQhelpers::AtomicFile&) {return *this;}
 };
 
 int alizmq_msg_iter_check_id(aliZMQmsg::iterator it, const AliHLTDataTopic& topic);
@@ -119,6 +128,7 @@ int alizmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socket,
                     int compression=0, aliZMQrootStreamerInfo* streamers=NULL);
 int alizmq_msg_send(const AliHLTDataTopic& topic, const std::string& data, void* socket, int flags);
 int alizmq_msg_add(aliZMQmsg* message, DataTopic* topic, AliRawData* object);
+int alizmq_msg_iter_data_hlt(aliZMQmsg::iterator it, TObject*& object);
 
 //file operations
 int alizmq_file_write(AtomicFile& file, aliZMQmsg* message, bool deserializeROOTobjects=kTRUE);

@@ -464,7 +464,7 @@ struct eventStruct AliStorageDatabase::GetOldestEvent()
     TSQLResult *result = fServer->Query(Form("SELECT * FROM %s WHERE permanent = 0 ORDER BY run_number,event_number;",fTable.c_str()));
     
     TSQLRow *row;
-    struct eventStruct oldestEvent = {0,0};
+    struct eventStruct oldestEvent(0,0);
     
     if((row = result->Next()))
     {
@@ -484,7 +484,7 @@ AliESDEvent* AliStorageDatabase::GetLastEvent()
     TSQLResult *result = fServer->Query(Form("SELECT * FROM %s ORDER BY run_number,event_number;",fTable.c_str()));
     
     TSQLRow *row;
-    struct eventStruct lastEvent = {0,0};
+    struct eventStruct lastEvent(0,0);
     
     while((row = result->Next()))
     {
@@ -503,7 +503,7 @@ AliESDEvent* AliStorageDatabase::GetFirstEvent()
     TSQLResult *result = fServer->Query(Form("SELECT * FROM %s ORDER BY run_number,event_number DESC;",fTable.c_str()));
     
     TSQLRow *row;
-    struct eventStruct firstEvent = {0,0};
+    struct eventStruct firstEvent(0,0);
     
     while((row = result->Next()))
     {

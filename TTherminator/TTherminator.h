@@ -33,13 +33,14 @@
 
 #include <TGenerator.h>
 #include <map>
-#include <THGlobal.h>
-#include "ReadPar.h"
-#include "Parser.h"
-#include "ParticleDB.h"
-#include "ParticleType.h"
-#include "DecayTable.h"
+//#include <THGlobal.h>
+#include "Therminator/ReadPar.h"
+#include "Therminator/Parser.h"
+#include "Therminator/ParticleDB.h"
+#include "Therminator/ParticleType.h"
+#include "Therminator/DecayTable.h"
 #include "Therminator/Event.h"
+#include "Therminator/THGlobal.h"
 
 class TTherminator: public TGenerator {
  public:

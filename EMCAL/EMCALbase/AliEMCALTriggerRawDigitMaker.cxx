@@ -419,6 +419,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
       trgData->SetL1FrameMask(fSTURawStream->GetFrameReceived());
       trgData->SetL1V0(v0);
       trgData->SetL1TriggerType(type);
+      trgData->SetMedian(fSTURawStream->GetRho());
       
       trgData->SetL1RawData(fSTURawStream->GetRawData());
       
@@ -518,6 +519,35 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 //         }
 //       }
       
+      UInt_t v0a = fSTURawStream->GetV0A();
+      UInt_t v0c = fSTURawStream->GetV0C();
+
+      // Store the max GA patch in median mode (from Run 2)
+      if (fGeometry->GetTriggerMappingVersion() == 2 && ((v0a >> 4) & 0x1) && ((v0a & 0x1) || ((v0a >> 1) & 0x1)) ) {
+        //
+        y    =   v0c        & 0xF;
+        x    = ( v0c >> 4 ) & 0x1F;
+        iTRU = ( v0c >> 9 ) & 0x1F;
+          
+        iTRU = fGeometry->GetTRUIndexFromSTUIndex(iTRU, detectorID);          
+        fGeometry->GetAbsFastORIndexFromPositionInTRU(iTRU, x, y, idx);
+          
+        if (fRawDigitIndex[idx] >= 0) 
+        {
+            dig = (AliEMCALTriggerRawDigit*)fRawDigits->At(fRawDigitIndex[idx]);
+        }
+        else
+        {
+            fRawDigitIndex[idx] = fRawDigits->GetEntriesFast();
+            new((*fRawDigits)[fRawDigits->GetEntriesFast()]) AliEMCALTriggerRawDigit(idx, 0x0, 0);
+            
+            dig = (AliEMCALTriggerRawDigit*)fRawDigits->At(fRawDigitIndex[idx]);
+        }
+          
+        if (  (v0a & 0x1)       ) dig->SetTriggerBit(kL1GammaLow,1);
+        if ( ((v0a >> 1) & 0x1) ) dig->SetTriggerBit(kL1GammaHigh, 1);          
+      } 
+
       for (int ithr = 0; ithr < 2; ithr++)
       {
         for (Int_t i = 0; i < fSTURawStream->GetNL1GammaPatch(ithr); i++) 
@@ -614,7 +644,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
         }
       }
       
-      if (detectorID) 
+      if (detectorID) // DCAL STU
       {
         UInt_t sregion[36] = {0};
         fSTURawStream->GetPHOSSubregion(sregion);

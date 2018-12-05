@@ -693,9 +693,11 @@ void AliTOFTrigger::PrepareTOFMapFromRaw(AliRawReader *fRawReader,Int_t deltaBC)
 	  Int_t index[2]={iLTMindex,iChannelIndex};
 	  
 	  UInt_t indexDCS    = fgFromTriggertoDCS[index[0]];
+	  
+	  Int_t tof = tofRawDatum->GetTOF();
+      if (iLTMindex==64 || iLTMindex==65) tof+=500; // align tof for ltm=64,65 with other ltms...
 
-
-	  if(fTOFTrigMask->IsON(indexDCS,index[1]) && TMath::Abs(tofRawDatum->GetTOF()-deltaBC) < 500) fTOFTrigMap->SetON(index[0],index[1]);
+	  if(TMath::Abs(tof-deltaBC) < 500) fTOFTrigMap->SetON(index[0],index[1]);
 
 
 //	  if(!fTOFTrigMask->IsON(indexDCS,index[1])){
@@ -765,7 +767,7 @@ void AliTOFTrigger::PrepareTOFMapFromDigit(TTree *treeD, Float_t startTimeHit, F
     UInt_t indexDCS    = fgFromTriggertoDCS[indexLTM[0]];
 
     // skip digits for channels not included in the trigger active mask
-    if (!fTOFTrigMask->IsON(indexDCS,channelCTTM)) continue;
+    // if (!fTOFTrigMask->IsON(indexDCS,channelCTTM)) continue;
     fTOFTrigMap->SetON(indexLTM[0],channelCTTM);
   }
 

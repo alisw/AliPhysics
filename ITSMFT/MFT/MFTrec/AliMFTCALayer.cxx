@@ -89,7 +89,7 @@ AliMFTCALayer& AliMFTCALayer::operator=(const AliMFTCALayer& layer)
     caHit = (AliMFTCAHit*)(layer.fHits->At(i));
     new ((*fHits)[i]) AliMFTCAHit(*caHit);
   }
-
+  return *this;
 }
 
 //___________________________________________________________________________

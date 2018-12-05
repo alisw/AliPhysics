@@ -36,6 +36,12 @@
 #include <memory>
 #include <algorithm>
 
+#if __cplusplus > 201402L
+#define AUTO_PTR std::unique_ptr
+#else
+#define AUTO_PTR std::auto_ptr
+#endif
+
 ClassImp(AliHLTTPCDataPublisherComponent)
 
 AliHLTTPCDataPublisherComponent::AliHLTTPCDataPublisherComponent()
@@ -423,7 +429,7 @@ int AliHLTTPCDataPublisherComponent::DoInit( int argc, const char** argv )
   if ((iResult=AliHLTRawReaderPublisherComponent::DoInit(0, NULL))<0)
     return iResult;
 
-  auto_ptr<AliRawClusterContainer> container(new AliRawClusterContainer);
+  AUTO_PTR<AliRawClusterContainer> container(new AliRawClusterContainer);
   if (!container.get()) return -ENOMEM;
 
   fClusters=container.release();

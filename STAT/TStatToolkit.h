@@ -44,10 +44,12 @@
 #include "TVectorF.h"
 #include "TMatrixD.h"
 #include "TMatrixF.h"
+#include "TList.h"
 #include <float.h>
 //#include "TGraph2D.h"
 //#include "TGraph.h"
 class THashList;
+
 
 namespace TStatToolkit {
   enum TStatType {kEntries, kSum, kMean, kRMS, kMedian, kLTM, kLTMRMS}; 
@@ -88,6 +90,7 @@ namespace TStatToolkit {
   //
   THashList *AddMetadata(TTree*, const char *vartagName,const char *varTagValue);
   TNamed *GetMetadata(TTree* tree, const char *vartagName, TString *prefix=0, Bool_t fullMatch=kFALSE);
+  THashList * GetMetadata(TTree *tree);
   TGraph * MakeGraphSparse(TTree * tree, const char * expr="Entry", const char * cut="1",  Int_t mstyle=25, Int_t mcolor=1, Float_t msize=-1, Float_t offset=0.0);
   TGraphErrors * MakeGraphErrors(TTree * tree, const char * expr="Entry", const char * cut="1",  Int_t mstyle=25, Int_t mcolor=1, Float_t msize=-1, Float_t offset=0.0, Int_t entries=10000000, Int_t firstEntry=0);
   TMultiGraph * MakeMultGraph(TTree * tree, const char *groupName, const char* expr, const char * cut, const char * markers, const char *colors, Bool_t drawSparse, Float_t msize, Float_t sigmaRange, TLegend * legend, Bool_t comp=kTRUE );
@@ -256,7 +259,7 @@ Bool_t TStatToolkit::LTMHisto(TH1 *his1D, TVectorT<T> &params , Float_t fraction
   for (Int_t ibin0=1; ibin0<=nbins; ibin0++) sumCont+=his1D->GetBinContent(ibin0);
   //
   Double_t minRMS=his1D->GetRMS()*10000;
-  Int_t maxBin=0;
+  //Int_t maxBin=0;
   //
   for (Int_t ibin0=1; ibin0<nbins; ibin0++){
     Double_t sum0=0, sum1=0, sum2=0;
@@ -331,7 +334,7 @@ Bool_t TStatToolkit::LTMHisto(TH1 *his1D, TVectorT<T> &params , Float_t fraction
 	params[6]=ibin1;
 	params[7]=his1D->GetBinCenter(ibin0);
 	params[8]=his1D->GetBinCenter(ibin1);
-	maxBin=ibin0;
+	//maxBin=ibin0;
       }
     }else{
       break;
@@ -473,7 +476,8 @@ void TStatToolkit::LTM(TH1 * his, TVectorT<T> *param , Float_t fraction,  Bool_t
   npoints2=TMath::Max(Int_t(0.5*Float_t(npoints)),npoints2);
   TStatToolkit::EvaluateUni(npoints, data, mean,sigma,npoints2);
   delete [] data;
-  if (verbose)  printf("Mean\t%f\t Sigma2\t%f\n", mean,sigma);if (param){
+  if (verbose)  printf("Mean\t%f\t Sigma2\t%f\n", mean,sigma);
+  if (param){
     (*param)[0] = his->GetMaximum();
     (*param)[1] = mean;
     (*param)[2] = sigma;    
@@ -713,5 +717,6 @@ void TStatToolkit::Reorder(int np, T *arr, const int *idx)
   delete[] arrCHeap;
   //
 }
+
 
 #endif

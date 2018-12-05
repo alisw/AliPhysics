@@ -163,8 +163,7 @@ TPad *AliPainter::DivideTPad(TPad *pad, const char *division, const char *classI
     if (maxNCols < TString(padRows->At(iRow + 1)->GetName()).Atoi())
       maxNCols = TString(padRows->At(iRow + 1)->GetName()).Atoi();
 
-    for (Int_t iRow = 0; iRow < nRows; iRow++) {
-
+  for (Int_t iRow = 0; iRow < nRows; iRow++) {
     tempStr = TString(padRows->At(iRow + 1)->GetName());
     Int_t nCols = TString(tempStr(0, 1)).Atoi();
     if (verbose == 4) ::Info("AliPainter::DivideTPad", "Number of columns in %d row is %d", nRows, nCols);
@@ -477,7 +476,7 @@ void AliPainter::DrawHistogram(THnBase* hisN, const char* expression, TPad* pad,
     if (pad->GetMother() != nullptr)
       pad->cd();
     else {
-      TCanvas* c1 = new TCanvas();
+      new TCanvas();
       pad->Draw();
       pad->cd();
     }
@@ -556,8 +555,8 @@ template <typename T>
   }
 
 //    if (verbose == 4) {
-//     ::Info("AliPainter::DrawHistogram", \
-//             "AliTMinuitToolkit::Fit(%s) - Non supported fitter %s. We will try to use standard root fitter.", \
+//     ::Info("AliPainter::DrawHistogram",
+//             "AliTMinuitToolkit::Fit(%s) - Non supported fitter %s. We will try to use standard root fitter.",
 //             fitStr.Data(), fitMap["name"].Data());
 //      ::Info("AliPainter::FitHistogram", "%s->Fit(%s)", inHis.GetName(), fitStr.Data());
 //    }

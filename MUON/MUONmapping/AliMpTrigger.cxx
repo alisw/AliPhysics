@@ -202,7 +202,7 @@ const char*
 AliMpTrigger::GetName() const
 {
   /// returns the name (=id+bending/non-bending) of this slat
-  TString name(GetID());
+  static TString name(GetID());
   if ( fPlaneType == AliMp::kBendingPlane )
   {
     name += ".Bending";

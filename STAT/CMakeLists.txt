@@ -23,8 +23,7 @@ add_subdirectory(test)
 include_directories(${AliRoot_SOURCE_DIR}/${MODULE})
 
 # Additional include directories in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIR}
-                   )
+include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
 
 # Sources in alphabetical order
 set(SRCS

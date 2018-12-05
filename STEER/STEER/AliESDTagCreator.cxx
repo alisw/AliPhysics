@@ -211,7 +211,7 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
   
   AliInfo(Form("Creating the ESD tags......."));	
   
-  Int_t firstEvent = 0,lastEvent = 0;
+  Int_t firstEvent = 0;
   AliESDEvent *esd = new AliESDEvent();
   esd->ReadFromTree(chain);
   //  AliESD *esdold = 0x0;
@@ -322,7 +322,7 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
       tag->Clear("");
     }      
   }//event loop
-  lastEvent = chain->GetEntries();
+  //lastEvent = chain->GetEntries();
   
   //gSystem->GetMemInfo(meminfo);
   //AliInfo(Form("After the event and track loop - Memory used: %d MB - Increase: %d MB",meminfo->fMemUsed,meminfo->fMemUsed - tempmem));
@@ -606,9 +606,8 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
   Float_t lhcLuminosity = 0.0;
   TString lhcState = "test";
   //UInt_t detectorMask = 0;
-  Int_t detectorMask = 0;
-
-  detectorMask = grpData->GetDetectorMask();
+  //Int_t detectorMask = detectorMask = grpData->GetDetectorMask();
+  
   time_t startTime = grpData->GetTimeStart();
   TTimeStamp t1(startTime);
   time_t endTime = grpData->GetTimeEnd();
@@ -804,9 +803,7 @@ void AliESDTagCreator::CreateESDTagsFullRun(TTree *chain, AliGRPObject *grpData,
   Float_t lhcLuminosity = 0.0;
   TString lhcState = "test";
   //UInt_t detectorMask = 0;
-  Int_t detectorMask = 0;
-
-  detectorMask = grpData->GetDetectorMask();
+  //Int_t detectorMask = grpData->GetDetectorMask();
   time_t startTime = grpData->GetTimeStart();
   TTimeStamp t1(startTime);
   time_t endTime = grpData->GetTimeEnd();
@@ -994,7 +991,7 @@ void AliESDTagCreator::FillEventTag(TTree *chain, AliEventTag *evTag, Int_t iEve
   ////////////
   Double_t fMUONMASS = 0.105658369;
   //Variables
-  Double_t fX,fY,fZ ;
+  //Double_t fX,fY,fZ ;
   Double_t fThetaX, fThetaY, fPyz, fChisquare;
   Double_t fPxRec, fPyRec, fPzRec, fEnergy;
   Int_t fCharge;
@@ -1125,9 +1122,9 @@ void AliESDTagCreator::FillEventTag(TTree *chain, AliEventTag *evTag, Int_t iEve
     if (muonTrack == 0x0) continue;
     
     // Coordinates at vertex
-    fZ = muonTrack->GetZ(); 
-    fY = muonTrack->GetBendingCoor();
-    fX = muonTrack->GetNonBendingCoor(); 
+    //fZ = muonTrack->GetZ(); 
+    //fY = muonTrack->GetBendingCoor();
+    //fX = muonTrack->GetNonBendingCoor(); 
     
     fThetaX = muonTrack->GetThetaX();
     fThetaY = muonTrack->GetThetaY();
@@ -1136,7 +1133,7 @@ void AliESDTagCreator::FillEventTag(TTree *chain, AliEventTag *evTag, Int_t iEve
     fPzRec = - fPyz / TMath::Sqrt(1.0 + TMath::Tan(fThetaY)*TMath::Tan(fThetaY));
     fPxRec = fPzRec * TMath::Tan(fThetaX);
     fPyRec = fPzRec * TMath::Tan(fThetaY);
-    fCharge = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
+    //fCharge = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
     
     //ChiSquare of the track if needed
     fChisquare = muonTrack->GetChi2()/(2.0 * muonTrack->GetNHit() - 5);

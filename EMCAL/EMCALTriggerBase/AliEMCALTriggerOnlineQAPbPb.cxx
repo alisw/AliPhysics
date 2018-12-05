@@ -279,7 +279,7 @@ void AliEMCALTriggerOnlineQAPbPb::ProcessPatch(const AliEMCALTriggerPatchInfo* p
       patch->GetTriggerBitConfig()->GetBkgBit()
   };
 
-  Int_t offsets[3] = { 0, AliEMCALTriggerPatchInfo::kRecalcOffset, AliEMCALTriggerPatchInfo::kOfflineOffset };
+  Int_t offsets[3] = { 5, AliEMCALTriggerPatchInfo::kRecalcOffset, AliEMCALTriggerPatchInfo::kOfflineOffset };// online patches start at the MC offset
   Int_t amplitudes[3] = { patch->GetADCAmp(),  patch->GetADCAmp(),  patch->GetADCOfflineAmp() };
   Double_t bkg[3] = {0};
 
@@ -350,7 +350,7 @@ void AliEMCALTriggerOnlineQAPbPb::ProcessBkgPatch(const AliEMCALTriggerPatchInfo
 {
   TString hname;
 
-  Int_t offsets[3] = { 0, AliEMCALTriggerPatchInfo::kRecalcOffset, AliEMCALTriggerPatchInfo::kOfflineOffset };
+  Int_t offsets[3] = { 5, AliEMCALTriggerPatchInfo::kRecalcOffset, AliEMCALTriggerPatchInfo::kOfflineOffset }; // online patches start at the MC offset
   Int_t amplitudes[3] = { patch->GetADCAmp(),  patch->GetADCAmp(),  patch->GetADCOfflineAmp() };
   Int_t bkgTriggerBit = patch->GetTriggerBitConfig()->GetBkgBit();
 

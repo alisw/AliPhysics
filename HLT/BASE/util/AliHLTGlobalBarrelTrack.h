@@ -44,14 +44,16 @@ class AliHLTGlobalBarrelTrack : public AliKalmanTrack
   /// the standard assignment operator for AliHLTGlobalBarrelTrack is in principle
   /// covered by the template definition, however, compiler does not seem to recognize
   /// correctly -> effC++ warning, 
-  AliHLTGlobalBarrelTrack& operator=(const AliHLTGlobalBarrelTrack& t) {
+  const AliHLTGlobalBarrelTrack& operator=(const AliHLTGlobalBarrelTrack& t) {
     if (this==&t) return *this;
-    this->~AliHLTGlobalBarrelTrack(); new (this) AliHLTGlobalBarrelTrack(t);
+    this->~AliHLTGlobalBarrelTrack();
+    new (this) AliHLTGlobalBarrelTrack(t);
     return *this;
   }
   template <class c>
-  AliHLTGlobalBarrelTrack& operator=(const c& t) {
-    this->~AliHLTGlobalBarrelTrack(); new (this) AliHLTGlobalBarrelTrack(t);
+  const AliHLTGlobalBarrelTrack& operator=(const c& t) {
+    this->~AliHLTGlobalBarrelTrack();
+    new (this) AliHLTGlobalBarrelTrack(t);
     return *this;
   }
 

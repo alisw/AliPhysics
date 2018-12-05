@@ -52,11 +52,12 @@ AliTMinuitToolkit::AliTMinuitToolkit(const char *streamerName, const char *mode)
         fVarNames(nullptr),           // variable names
         fValueNames(nullptr),         // value  names
         fPointIndex(0),              // point index - to specify points for likelihood calculation (used for Bootstrap and CrossValidation)
-        fParam(nullptr),
         fInitialParam(nullptr),
+        fParam(nullptr),
         fRMSEstimator(nullptr),       // parameter spread as estimated in Bootstrap resp. TwoFold cross validation
         fMISACEstimators(nullptr),    // MISAC estimators - median, mean, rms
         fCovar(nullptr),
+        fStatus(0),
         fChi2(0),
         fMaxCalls(0),
         fPrecision(0),
@@ -282,7 +283,6 @@ void AliTMinuitToolkit::Fit(Option_t *option) {
     TString newOption=sOption;
     regBootstrap.Substitute(newOption,"");
     UInt_t nPoints= static_cast<UInt_t>(TString(&(sOption.Data()[sOption.Index(regBootstrap) + 9])).Atoi());
-    if (nPoints<0) nPoints=5;
     return Bootstrap(nPoints, nullptr,newOption.Data());
   }
   // run two fold minimization if specified
@@ -290,7 +290,6 @@ void AliTMinuitToolkit::Fit(Option_t *option) {
     TString newOption=sOption;
     regTwofold.Substitute(newOption,"");
     UInt_t nPoints= static_cast<UInt_t>(TString(&(sOption.Data()[sOption.Index(regTwofold) + 7])).Atoi());
-    if (nPoints<0) nPoints=5;
     return TwoFoldCrossValidation(nPoints, nullptr,newOption.Data());
   }
   // run MISAC
@@ -301,7 +300,6 @@ void AliTMinuitToolkit::Fit(Option_t *option) {
     Int_t index2=sOption.Index(",",index1+1)+1;
     Int_t nPoints=TString(&(sOption.Data()[index1])).Atoi();
     UInt_t nIter= static_cast<UInt_t>(TString(&(sOption.Data()[index2])).Atoi());
-    if (nPoints<0) nPoints=5;
     return MISAC(nPoints,nIter, nullptr,newOption.Data());
   }
   fStatus=0;
@@ -590,7 +588,7 @@ void AliTMinuitToolkit::Bootstrap(ULong_t nIter, const char * reportName, Option
   TObjString rName("bootstrap");
   if (reportName!= nullptr) rName=reportName;
   std::vector< std::vector<double> > vecPar(static_cast<unsigned long>(nPar), std::vector<double>(nIter));
-  for (Int_t iter=0; iter<nIter; iter++){
+  for (UInt_t iter=0; iter<nIter; iter++){
     for (Int_t iPoint=0; iPoint<nPoints; iPoint++){
       fPointIndex[iPoint]= static_cast<Int_t>(gRandom->Rndm() * nPoints);
     }
@@ -599,7 +597,7 @@ void AliTMinuitToolkit::Bootstrap(ULong_t nIter, const char * reportName, Option
     if (fcnP<0) fcnP=fFCNCounter;
     Int_t fcnCounter=fFCNCounter-fcnP;
     fcnP=fFCNCounter;
-    for (UInt_t iPar=0; iPar<nPar;iPar++)  vecPar[iPar][iter]=(*fParam)(iPar);
+    for (Int_t iPar=0; iPar<nPar;iPar++)  vecPar[iPar][iter]=(*fParam)(iPar);
     if (fStreamer){
       (*fStreamer)<<"bootstrap"<<
                   "iter="<<iter<<
@@ -647,7 +645,7 @@ void AliTMinuitToolkit::TwoFoldCrossValidation(UInt_t nIter, const char *reportN
   Int_t fcnP = -1;
   TObjString rName(reportName);
   std::vector<std::vector<double> > vecPar(static_cast<unsigned long>(2 * nPar + 4), std::vector<double>(nIter));  //store vectors and chi2
-  for (Int_t iter = 0; iter < nIter; iter++) {
+  for (UInt_t iter = 0; iter < nIter; iter++) {
     for (Int_t iPoint = 0; iPoint < nPoints; iPoint++) {
       rndmCV[iPoint] = gRandom->Rndm() * nPoints;
     }
@@ -755,8 +753,8 @@ void AliTMinuitToolkit::MISAC(Int_t nFitPoints, UInt_t nIter, const char * repor
   }
   // 2. Calculate normalized distance between each fits
   std::vector< std::vector<double> > logDistance(nIter, std::vector<double>(nIter));  //store vectors and chi2
-  for (Int_t iter0=0; iter0<nIter; iter0++){
-    for (Int_t iter1=0; iter1<nIter; iter1++){
+  for (UInt_t iter0=0; iter0<nIter; iter0++){
+    for (UInt_t iter1=0; iter1<nIter; iter1++){
       if ( ((fitStatus[iter0]&kCovarFailed)==0 && (fitStatus[iter1]&kCovarFailed))==0){
         TMatrixD covar(*(covarArray[iter0]));
         covar+=*(covarArray[iter1]);
@@ -779,7 +777,7 @@ void AliTMinuitToolkit::MISAC(Int_t nFitPoints, UInt_t nIter, const char * repor
     }
   }
   // 3. Reject outliers and calculate robust mean
-  for (Int_t iter=0; iter<nIter; iter++){
+  for (UInt_t iter=0; iter<nIter; iter++){
     medDistance[iter]=TMath::Median(nIter, logDistance[iter].data());
   }
   Double_t medMedDistance=TMath::Median(nIter,medDistance.data());
@@ -790,7 +788,7 @@ void AliTMinuitToolkit::MISAC(Int_t nFitPoints, UInt_t nIter, const char * repor
   for (Int_t iPar=0;iPar<nPar; iPar++){
     std::vector<double>workingArray(nIter);
     Int_t nAccepted=0;
-    for (Int_t iter=0; iter<nIter; iter++){
+    for (UInt_t iter=0; iter<nIter; iter++){
       if (medDistance[iter]<0) continue;
       if (medDistance[iter]/medMedDistance>kRelMedDistanceCut) continue;
       workingArray[nAccepted]=(*(paramArray[iter]))(iPar,0);
@@ -807,7 +805,7 @@ void AliTMinuitToolkit::MISAC(Int_t nFitPoints, UInt_t nIter, const char * repor
   }
   // 5. Dump results into tree in verbose mode
   if (fStreamer){
-    for (Int_t iter=0; iter<nIter; iter++){
+    for (UInt_t iter=0; iter<nIter; iter++){
       (*fStreamer)<<"misac"<<
                   "iter="<<iter<<          // iteration
                   "reportName.="<<&rName<<

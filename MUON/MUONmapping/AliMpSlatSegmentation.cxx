@@ -157,7 +157,7 @@ AliMpSlatSegmentation::GetName() const
 {
   /// The name of this segmentation is "SlatSegmentation"+slatName
 
-  TString name("SlatSegmentation");
+  static TString name("SlatSegmentation");
   if ( fkSlat) 
   {
     name += ".";

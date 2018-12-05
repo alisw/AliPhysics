@@ -95,8 +95,6 @@ TString fNameAnnotation = "";
 Bool_t fTitleAnnotationWithContainerName = kFALSE;
 Bool_t fIgnoreDefaultNamesWhenUnpacking = kFALSE;
 
-AliHLTDataTopic fInfoTopic = kAliHLTDataTypeInfo;
-
 Int_t fRunNumber = 0;
 std::string fInfo;           //cache for the info string
 
@@ -382,9 +380,10 @@ Int_t DoProcessAllData(void* outputsocket)
     gROOT->ProcessLineFast(Form("process((TCollection*)%p,(TCollection*)%p)",&fInputObjects,&fOutputObjects),&error);
     if (error != TInterpreter::kNoError) {printf("error %i executing process(...)\n");}
     DoSend(outputsocket);
-    fOutputObjects.Clear(); //just clear, objects are destroyed by transport
+    fOutputObjects.Delete(); //Delete output objects, they are already serialized.
     fInputObjects.Delete(); //Delete input objects after use
   }
+  return 0;
 }
 
 //_____________________________________________________________________
@@ -399,7 +398,13 @@ Int_t DoReceive(aliZMQmsg::iterator block, void* socket)
   if (fVerbose) Printf("in: data: %s, size: %zu bytes", dataTopic.Description().c_str(),
                        zmq_msg_size(block->second));
   TObject* object = NULL;
-  alizmq_msg_iter_data(block, object);
+  alizmq_msg_iter_data_hlt(block, object);
+  if (!object) {
+    if (fVerbose) {
+      printf("message has no TObject!\n");
+    }
+    return 0;
+  }
 
   //if we get a collection, always set ownership to prevent mem leaks
   //if we request unpacking: unpack what was requestd, otherwise just add
@@ -467,9 +472,13 @@ Int_t DoSend(void* socket)
 
   //send back merged data, one object per frame
 
+  DataTopic fInfoTopic = kDataTypeInfo;
+  fInfoTopic.SetOrigin(kAliHLTDataOriginOut);
+
   aliZMQmsg message;
   //forward the (run-)info string
   alizmq_msg_add(&message, &fInfoTopic, fInfo);
+  fInfo.clear();
   Bool_t reset = kFALSE;
   Int_t rc = 0;
   int parts = 1;
@@ -478,7 +487,8 @@ Int_t DoSend(void* socket)
   while (TObject* object = next())
   {
     //the topic
-    AliHLTDataTopic topic = kAliHLTDataTypeTObject|kAliHLTDataOriginOut;
+    DataTopic topic = kDataTypeTObject;
+    topic.SetOrigin(kAliHLTDataOriginOut);
     //the data
     string objectName = object->GetName();
 

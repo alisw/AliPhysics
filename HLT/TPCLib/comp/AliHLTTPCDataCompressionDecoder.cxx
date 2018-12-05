@@ -30,6 +30,12 @@
 #include "TFile.h"
 #include <memory>
 
+#if __cplusplus > 201402L
+#define AUTO_PTR std::unique_ptr
+#else
+#define AUTO_PTR std::auto_ptr
+#endif
+
 ClassImp(AliHLTTPCDataCompressionDecoder)
 
 AliHLTTPCDataCompressionDecoder::AliHLTTPCDataCompressionDecoder()
@@ -94,7 +100,7 @@ AliHLTDataInflater* AliHLTTPCDataCompressionDecoder::CreateInflater(int deflater
   switch (deflater) {
   case 1:
     {
-      std::auto_ptr<AliHLTDataInflaterSimple> inflatersimple(new AliHLTDataInflaterSimple);
+      AUTO_PTR<AliHLTDataInflaterSimple> inflatersimple(new AliHLTDataInflaterSimple);
       if (!inflatersimple.get()) return NULL;
       for (vector<AliHLTTPCDefinitions::AliClusterParameterId_t>::const_iterator id=parameterids.begin();
 	   id!=parameterids.end(); id++) {
@@ -111,7 +117,7 @@ AliHLTDataInflater* AliHLTTPCDataCompressionDecoder::CreateInflater(int deflater
     break;
   case 2:
     {
-      std::auto_ptr<AliHLTDataInflaterHuffman> inflaterhuffman(new AliHLTDataInflaterHuffman);
+      AUTO_PTR<AliHLTDataInflaterHuffman> inflaterhuffman(new AliHLTDataInflaterHuffman);
       if (!inflaterhuffman.get()) return NULL;
       TObject* pConf=NULL;
       if (fHuffmanTableFile.empty()) {

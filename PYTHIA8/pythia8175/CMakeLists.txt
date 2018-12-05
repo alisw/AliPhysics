@@ -21,8 +21,8 @@ add_definitions(-D_MODULE_="${MODULE}")
 include_directories(${AliRoot_SOURCE_DIR}/PYTHIA8/${MODULE})
 
 # Additional includes - alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIR}
-                    ${AliRoot_SOURCE_DIR}/PYTHIA8/${MODULE}/include
+include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
+include_directories(${AliRoot_SOURCE_DIR}/PYTHIA8/${MODULE}/include
 		   )
 
 # Sources - alphabetical order

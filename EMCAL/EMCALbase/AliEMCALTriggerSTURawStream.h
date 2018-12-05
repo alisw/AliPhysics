@@ -47,20 +47,23 @@ public:
   
   virtual Bool_t  GetL0GammaPatch(const Int_t i,                Int_t& x, Int_t& y          ) const;
   virtual Bool_t  GetL1GammaPatch(const Int_t i, const Int_t j, Int_t& x, Int_t& y, Int_t& z) const;
+  virtual Bool_t  GetL1GammaMaxPatch(                           Int_t& x, Int_t& y, Int_t& z) const; // TRU, X, Y
   virtual Bool_t  GetL1JetPatch(  const Int_t i, const Int_t j, Int_t& x, Int_t& y          ) const;
   
-  virtual UInt_t  GetV0A()            const { return fV0A           ; }
-  virtual UInt_t  GetV0C()            const { return fV0C           ; }
-  virtual UInt_t  GetG(int i, int j)  const { return fG[i][j]       ; }//[ABC][high/low]
-  virtual UInt_t  GetJ(int i, int j)  const { return fJ[i][j]       ; }//[ABC][high/low]
-  virtual UInt_t  GetPHOSScale(int i) const { return fS[i]          ; }
-  virtual UInt_t  GetRho()            const { return fRho           ; }
-  virtual UInt_t  GetRegionEnable()   const { return fRegionEnable  ; }
-  virtual UInt_t  GetFrameReceived()  const { return fFrameReceived ; }
-  virtual UInt_t  GetFwVersion()      const { return fFwVersion     ; }
-  virtual UInt_t  GetPatchSize()      const { return fPatchSize     ; }
-  virtual Int_t   GetRawData()        const { return fGetRawData    ; }
+  virtual UInt_t  GetV0A()            const { return fV0A            ; }
+  virtual UInt_t  GetV0C()            const { return fV0C            ; }
+  virtual UInt_t  GetG(int i, int j)  const { return fG[i][j]        ; }//[ABC][high/low]
+  virtual UInt_t  GetJ(int i, int j)  const { return fJ[i][j]        ; }//[ABC][high/low]
+  virtual UInt_t  GetPHOSScale(int i) const { return fS[i]           ; }
+  virtual UInt_t  GetRho()            const { return (fRho & 0x3FFFF); }
+  virtual UInt_t  GetRegionEnable()   const { return fRegionEnable   ; }
+  virtual UInt_t  GetFrameReceived()  const { return fFrameReceived  ; }
+  virtual UInt_t  GetFwVersion()      const { return fFwVersion      ; }
+  virtual UInt_t  GetPatchSize()      const { return fPatchSize      ; }
+  virtual Int_t   GetRawData()        const { return fGetRawData     ; }
   virtual Int_t   GetnTRU()           const { return (fDetector==kEMCAL)?nTRUEMCAL:(fDetector==kDCAL)?nTRUDCAL:0 ; }
+  
+  virtual Int_t   GetEMCALDCALFrameReceived() const { return (fRho >> 18  & 0x3); } // 1b per port
   
 private:
   

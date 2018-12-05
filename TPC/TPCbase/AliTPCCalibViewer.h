@@ -44,7 +44,7 @@ public:
    virtual Long64_t Draw(const char* varexp, const TCut& selection, Option_t* option = "", Long64_t nentries = 1000000000, Long64_t firstentry = 0) { return fTree->Draw(varexp, selection, option, nentries, firstentry); };
    virtual Long64_t Draw(const char* varexp, const char* selection, Option_t* option = "", Long64_t nentries = 1000000000, Long64_t firstentry = 0) { return fTree->Draw(varexp, selection, option, nentries, firstentry); };
 
-   const char* AddAbbreviations(const Char_t *c, Bool_t printDrawCommand = kFALSE);
+   TString AddAbbreviations(const Char_t *c, Bool_t printDrawCommand = kFALSE);
    Int_t EasyDraw(const char* drawCommand, const char* sector, const char* cuts = 0, const char* drawOptions = 0, Bool_t writeDrawCommand = kFALSE) const;   // easy drawing of data, use '~' for abbreviation of '.fElements'
    Int_t EasyDraw(const char* drawCommand, Int_t sector, const char* cuts = 0, const char* drawOptions = 0, Bool_t writeDrawCommand = kFALSE) const;   // easy drawing of data, use '~' for abbreviation of '.fElements'
    Int_t EasyDraw1D(const char* drawCommand, const char* sector, const char* cuts = 0, const char* drawOptions = 0, Bool_t writeDrawCommand = kFALSE) const;   // easy drawing of data, use '~' for abbreviation of '.fElements'

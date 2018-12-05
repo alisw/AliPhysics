@@ -48,7 +48,7 @@ extern "C" {
     //for (size_t i = 0; i < SIZE; ++i) {
     //  tmp[i] = ' ';
     //}
-    for (size_t i = SIZE-1; i >= 0; --i) {
+    for (long int i = SIZE-1; i >= 0; --i) {
       if (tmp[i] != ' ') break;
       tmp[i] = '\0';
     }

@@ -18,6 +18,7 @@ set(MODULE EveHLT)
 add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
+include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
 include_directories(${AliRoot_SOURCE_DIR}/EVE/${MODULE})
 
 # Additional include folders in alphabetical order

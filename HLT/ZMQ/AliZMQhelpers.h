@@ -171,12 +171,12 @@ struct DataTopic : public BaseDataTopic
   }
 
   //ctor
-  DataTopic(const char* id, const char* origin, int spec )
+  DataTopic(const char* id, const char* origin, int spec, ULong64_t serialization )
     : BaseDataTopic(sizeof(DataTopic), fgkDataTopicDescription, fgkTopicSerialization)
     , fDataDescription()
     , fDataOrigin(0)
     , fReserved(0)
-    , fDataSerialization(0)
+    , fDataSerialization(serialization)
     , fSpecification(spec)
     , fPayloadSize(0)
   {
@@ -221,6 +221,7 @@ struct DataTopic : public BaseDataTopic
   inline void SetOrigin(const char* s) {fDataOrigin = *reinterpret_cast<const UInt_t*>(s);}
   inline void SetSpecification(UInt_t spec) {fSpecification=spec;}
   inline void SetSerialization(ULong64_t s) {fDataSerialization=s;}
+  inline void SetPayloadSize(ULong64_t s) {fPayloadSize=s;}
   static DataTopic* Get(void* buf) {
     BaseDataTopic* bdt = BaseDataTopic::Get(buf);
     return (bdt && bdt->fHeaderDescription==fgkDataTopicDescription)?
@@ -235,6 +236,7 @@ extern const DataTopic kDataTypeConfig;
 extern const DataTopic kDataTypeTObject;
 extern const DataTopic kDataTypeTH1;
 
+extern const ULong64_t kSerializationHLTROOT;
 extern const ULong64_t kSerializationROOT;
 extern const ULong64_t kSerializationNONE;
 

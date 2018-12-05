@@ -25,8 +25,8 @@ if(ZEROMQ_FOUND)
 endif(ZEROMQ_FOUND)
 
 # Additional include folders in alphabetical order
-include_directories(${ROOT_INCLUDE_DIR}
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
+include_directories(${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/EVE/macros/data
                     ${AliRoot_SOURCE_DIR}/HLT/BASE
                     ${AliRoot_SOURCE_DIR}/HLT/BASE/util

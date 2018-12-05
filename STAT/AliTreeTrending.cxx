@@ -111,6 +111,7 @@ Bool_t AliTreeTrending::SetCssStyle(const char * cssStyle){
        fCurrentCssStyle = cssStyle;
      }
   }
+  return true;
 }
 
 
@@ -210,8 +211,8 @@ Bool_t  AliTreeTrending::InitSummaryTrending(TString statusDescription[3], Float
   fWorkingCanvas->cd();
   gPad->SetTicks(1,2);
   // fWorkingCanvas->SetRightMargin(SpaceForLegend/canvas_width);
-  double leftLegend  = 1 - 180./fWorkingCanvas->GetWw();
-  double rightLegend = 1 - 10./fWorkingCanvas->GetWw();
+  //double leftLegend  = 1 - 180./fWorkingCanvas->GetWw();
+  //double rightLegend = 1 - 10./fWorkingCanvas->GetWw();
 
   // 2.) initialize status aliases (outliers etc.), status bar criteria, status lines, ...
   TString sStatusBarVars  = statusDescription[0];
@@ -293,7 +294,7 @@ void AliTreeTrending::AppendStatusPad(Float_t padRatio, Float_t bottomMargin, Fl
   pad2->SetName("Bottom.class(statusPad)");
   AliDrawStyle::TPadApplyStyle(fCurrentCssStyle.Data(),pad2); //"testStyle" to be changed to
   
-  const Int_t nVars = fStatusGraphM->GetYaxis()->GetNbins();
+  //const Int_t nVars = fStatusGraphM->GetYaxis()->GetNbins();
   TGraph* grAxis = (TGraph*) fStatusGraphM->GetListOfGraphs()->At(0);
   Int_t entries = grAxis->GetN();
   fStatusGraphM->GetXaxis()->SetLabelSize(5.7*TMath::Min(TMath::Max(5./entries,0.01),0.03));
@@ -350,7 +351,7 @@ TMultiGraph * AliTreeTrending::MakeMultiGraphStatus(TTree *fTree, TString mgrNam
       graphArray->AddAt(multGr, iVar);
       ((TMultiGraph *) graphArray->At(iVar))->SetTitle(oaStatusBarNames->At(iVar)->GetName());
       for (Int_t igr = 0; igr < multGr->GetListOfGraphs()->GetEntries(); igr++) {  // Code names and codes to the object names
-        TGraph *cgr = (TGraph *) multGr->GetListOfGraphs()->At(igr);
+        //TGraph *cgr = (TGraph *) multGr->GetListOfGraphs()->At(igr);
         //cgr->SetName(TString((oaStatusBarNames->At(iVar)->GetName())).Data());
       }
     } else {

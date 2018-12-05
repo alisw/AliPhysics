@@ -94,7 +94,7 @@ AliMFTCATrack& AliMFTCATrack::operator=(const AliMFTCATrack& track)
   fMCindex = track.fMCindex;
   fChargeSign = track.fChargeSign;
   fPt = track.fPt;
-
+  return *this;
 }
 
 //___________________________________________________________________________

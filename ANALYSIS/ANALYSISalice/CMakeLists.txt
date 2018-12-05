@@ -20,8 +20,8 @@ set(MODULE ANALYSISalice)
 include_directories(${AliRoot_SOURCE_DIR}/ANALYSIS/${MODULE})
 
 # Additional include directories
-include_directories(${ROOT_INCLUDE_DIR}
-                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
+include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
+include_directories(${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISaliceBase
                     ${AliRoot_SOURCE_DIR}/STEER/AOD
                     ${AliRoot_SOURCE_DIR}/STEER/ESD

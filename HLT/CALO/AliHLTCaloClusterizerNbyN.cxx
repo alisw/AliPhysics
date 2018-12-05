@@ -44,5 +44,6 @@ AliHLTCaloClusterizerNbyN::~AliHLTCaloClusterizerNbyN()
 Int_t AliHLTCaloClusterizerNbyN::ClusterizeEvent(Int_t nDigits)
 {
   HLTFatal("Clusterizer deprecated");
+  return 0;
 }
 

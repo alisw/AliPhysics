@@ -15,7 +15,7 @@ AliGenerator* AddMCGenPythia8(Float_t e_cms = 2760.,
   gSystem->Load("liblhapdf");
  
   AliGenerator *genP = NULL;
-  genP = CreatePythia8Gen(e_cms, kCR, kF,kProcess,ptHardMin,ptHardMax);
+  genP = CreatePythia8Gen(e_cms, kCR, kF,kProcess,ptHardMin,ptHardMax,tune);
   
   return genP;
 }

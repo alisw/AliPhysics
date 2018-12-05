@@ -196,7 +196,7 @@ void AliMFTTrackFinder::LoadClusters( TClonesArray *clusterArrayFront[AliMFTCons
 }
 
 //___________________________________________________________________________
-void AliMFTTrackFinder::ReadParam(Char_t *parfile)
+void AliMFTTrackFinder::ReadParam(const Char_t *parfile)
 {
   
   AliInfo(Form("Reading Parameter File %s ",parfile));

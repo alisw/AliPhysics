@@ -33,6 +33,12 @@
 #include <AliDAQ.h>
 using namespace std;
 
+#if __cplusplus > 201402L
+#define AUTO_PTR std::unique_ptr
+#else
+#define AUTO_PTR std::auto_ptr
+#endif
+
 ClassImp(AliHLTCreateGRP)
 
 /** Static string to define a local storage for the OCDB contact. */
@@ -298,7 +304,7 @@ template <typename T> AliDCSSensor* AliHLTCreateGRP::CreateSensor(const char* id
 
 	if (!id) return NULL;
 
-	std::auto_ptr<AliDCSSensor> pSensor(new AliDCSSensor);
+	AUTO_PTR<AliDCSSensor> pSensor(new AliDCSSensor);
 	if (!pSensor.get())
 	{
 		//HLTFatal("memory allocation failed");
@@ -320,7 +326,7 @@ template <typename T> AliDCSSensor* AliHLTCreateGRP::CreateSensor(const char* id
 	x[1]=(endtime-starttime)/kSecInHour;
 	y[0]=value;
 	y[1]=value;
-	std::auto_ptr<TGraph> pGraph(new TGraph(2,x,y));
+	AUTO_PTR<TGraph> pGraph(new TGraph(2,x,y));
 	if (!pGraph.get())
 	{
 		//HLTFatal("can not create graph for id %s", id);

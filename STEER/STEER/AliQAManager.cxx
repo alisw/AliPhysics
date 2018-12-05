@@ -95,7 +95,8 @@ AliQAManager::AliQAManager() :
   fTasks(""),  
   fEventSpecie(AliRecoParam::kDefault), 
   fPrintImage(kTRUE), 
-  fSaveData(kTRUE) 
+  fSaveData(kTRUE) ,
+  fActiveOnlineDetectors()
 {
   // default ctor
   fMaxEvents = fNumberOfEvents ; 
@@ -132,7 +133,8 @@ AliQAManager::AliQAManager(AliQAv1::MODE_t mode, const Char_t* gAliceFilename) :
   fTasks(""), 
   fEventSpecie(AliRecoParam::kDefault), 
   fPrintImage(kTRUE), 
-  fSaveData(kTRUE) 
+  fSaveData(kTRUE),
+  fActiveOnlineDetectors()
 {
   // default ctor
   fMaxEvents = fNumberOfEvents ; 
@@ -169,7 +171,8 @@ AliQAManager::AliQAManager(const AliQAManager & qas) :
   fTasks(qas.fTasks), 
   fEventSpecie(qas.fEventSpecie), 
   fPrintImage(qas.fPrintImage), 
-  fSaveData(qas.fSaveData) 
+  fSaveData(qas.fSaveData),
+  fActiveOnlineDetectors()
 
 {
   // cpy ctor

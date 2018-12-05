@@ -21,7 +21,7 @@ add_definitions(-D_MODULE_="${MODULE}")
 include_directories(${AliRoot_SOURCE_DIR}/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIR})
+include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
 
 # Sources
 set(SRCS

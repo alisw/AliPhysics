@@ -1,4 +1,3 @@
-# **************************************************************************
 # * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
 # *                                                                        *
 # * Author: The ALICE Off-line Project.                                    *
@@ -21,8 +20,8 @@ add_definitions(-D_MODULE_="${MODULE}")
 include_directories(${AliRoot_SOURCE_DIR}/FMD/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIR}
-                    ${AliRoot_SOURCE_DIR}/FMD/FMDbase
+include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
+include_directories(${AliRoot_SOURCE_DIR}/FMD/FMDbase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
                     ${AliRoot_SOURCE_DIR}/STEER/ESD

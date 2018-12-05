@@ -158,7 +158,6 @@ TObjArray *  AliElasticSearchRoot::GetIndexLayout(const char *indexName){
   TObjArray * mappingArray = mapping.Tokenize("{},:\"");  
   Int_t nDesc=mappingArray->GetEntries();
   TObjArray *layoutArray = new TObjArray(nDesc/3);
-  Int_t nFields=0;
   for (Int_t iEntry=0; iEntry<nDesc-1; iEntry++){
     if (TString(mappingArray->At(iEntry)->GetName()).EqualTo("type")){
       layoutArray->AddLast(new TNamed(mappingArray->At(iEntry-1)->GetName(), mappingArray->At(iEntry+1)->GetName()));

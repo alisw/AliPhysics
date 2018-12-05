@@ -108,7 +108,7 @@ AliMFTCACell& AliMFTCACell::operator=(const AliMFTCACell& cell)
   fIsMerged = cell.fIsMerged;
   fMFTClsId[0] = cell.fMFTClsId[0];  
   fMFTClsId[1] = cell.fMFTClsId[1];  
- 
+  return *this;
 }
 
 //___________________________________________________________________________

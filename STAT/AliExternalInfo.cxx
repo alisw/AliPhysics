@@ -93,7 +93,7 @@ void AliExternalInfo::ReadConfig( TString configLocation, Int_t verbose){
       ::Info("AliExternalInfo::ReadConfig","Path: %s\t%s",cName.Data(), configFileName.Data());
     }
     if (gSystem->AccessPathName(configFileName)!=0) {   // be aware of strange convention for the gSystem->AccessPathName - 0 mean it is OK
-      ::Error("AliExternalInfo::ReadConfig", TString::Format("Could not find config file '%s'", configFileName.Data()));
+      ::Error("AliExternalInfo::ReadConfig", "Could not find config file '%s'", configFileName.Data());
       const TString defaultConfigFileName=gSystem->ExpandPathName(fgkDefaultConfig);
       if (defaultConfigFileName!=configFileName) {
 	      ::Error("AliExternalInfo::ReadConfig", "Using default config file instead");
@@ -103,7 +103,7 @@ void AliExternalInfo::ReadConfig( TString configLocation, Int_t verbose){
     
     std::ifstream configFile(configFileName);
     if (!configFile.is_open()) {
-      ::Error("AliExternalInfo::ReadConfig", TString::Format("Could not open config file '%s'", configFileName.Data()));
+      ::Error("AliExternalInfo::ReadConfig", "Could not open config file '%s'", configFileName.Data());
       return;
     }
     
@@ -247,7 +247,7 @@ void AliExternalInfo::SetupVariables(TString& internalFilename, TString& interna
   if (indexName.Length()<=0) indexName="run";
   // Create the local path where to store the information of the resource
   internalLocation += pathStructure;
-  ::Info("AliExternalInfo::SetupVariables", TString::Format("Information will be stored/retrieved in/from %s", internalLocation.Data()));
+  ::Info("AliExternalInfo::SetupVariables", "Information will be stored/retrieved in/from %s", internalLocation.Data());
 
   if (!(period.Last('*') == period.Length() - 1) || !(pass.Last('*') == pass.Length() - 1) || period.Length() == 0){
 //     std::cout << "mkdir " << internalLocation.Data() << std::endl;
@@ -269,7 +269,7 @@ void AliExternalInfo::SetupVariables(TString& internalFilename, TString& interna
 /// the class definition as an abbrevation
 /// \return If downloading and creation of tree was successful true, else false
 Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
-  ::Info("AliExternalInfo::Cache", TString::Format("Caching of %s %s from %s in start path %s", period.Data(), pass.Data(), type.Data(), fLocalStorageDirectory.Data()));
+  ::Info("AliExternalInfo::Cache", "Caching of %s %s from %s in start path %s", period.Data(), pass.Data(), type.Data(), fLocalStorageDirectory.Data());
 
   // initialization of local variables
   TString internalFilename = ""; // Resulting path to the file
@@ -318,7 +318,7 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
     // Download resources in the form of .root files in a tree
     if (resourceIsTree == kTRUE ) {
       externalLocation += pathStructure + rootFileName;
-      ::Info("AliExternalInfo::Cache", TString::Format("Information retrieved from: %s", externalLocation.Data()));
+      ::Info("AliExternalInfo::Cache", "Information retrieved from: %s", externalLocation.Data());
       // Check if external location is a http address or locally accessible
       //    std::cout << externalLocation(0, 4) << std::endl;
       TFile *file = TFile::Open(externalLocation);
@@ -373,7 +373,7 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
 
       tree.Write();
       tempfile.Close();
-      if (fVerbose>0) ::Info("AliExternalInfo::Cache", TString::Format("Write tree to file: %s", internalFilename.Data()));
+      if (fVerbose>0) ::Info("AliExternalInfo::Cache", "Write tree to file: %s", internalFilename.Data());
       return kTRUE;
     }
   }
@@ -444,18 +444,18 @@ TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass, Int_
   SetupVariables(internalFilename, internalLocation, resourceIsTree, pathStructure, detector, rootFileName, treeName, type, period, pass,indexName);
 
   //std::cout << "internalFilename: " << internalFilename << " rootFileName: " << rootFileName << std::endl;
-  if (fVerbose>1) ::Info("AliExternalInfo::GetTree", TString::Format("Caching start internalFileName\t%s\trootFileName\t%s", internalFilename.Data(), rootFileName.Data()).Data());
+  if (fVerbose>1) ::Info("AliExternalInfo::GetTree", "Caching start internalFileName\t%s\trootFileName\t%s", internalFilename.Data(), rootFileName.Data());
   if (gSystem->AccessPathName(internalFilename.Data()) == kTRUE) {
     if (Cache(type, period, pass) == kFALSE) {
-      ::Error("AliExternalInfo::GetTree", TString::Format("Caching failed internalFileName\t%s\trootFileName\t%s", internalFilename.Data(), rootFileName.Data()).Data());
+      ::Error("AliExternalInfo::GetTree", "Caching failed internalFileName\t%s\trootFileName\t%s", internalFilename.Data(), rootFileName.Data());
       return tree;
     }
   }else{
     Bool_t downloadNeeded = IsDownloadNeeded(internalFilename, type);
     if (downloadNeeded){
-      ::Info("AliExternalInfo::GetTree", TString::Format("Caching %s", internalFilename.Data()).Data());
+      ::Info("AliExternalInfo::GetTree", "Caching %s", internalFilename.Data());
       if (Cache(type, period, pass) == kFALSE) {
-	::Error("AliExternalInfo::GetTree", TString::Format("Caching failed internalFileName\t%s\trootFileName\t%s", internalFilename.Data(), rootFileName.Data()).Data());
+	::Error("AliExternalInfo::GetTree", "Caching failed internalFileName\t%s\trootFileName\t%s", internalFilename.Data(), rootFileName.Data());
 	return tree;
       }
     }    
@@ -473,11 +473,11 @@ TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass, Int_
   delete arr;
   TTreeSRedirector::FixLeafNameBug(tree);
   if (tree != 0x0) {
-    if (fVerbose>1) ::Info("AliExternalInfo::GetTree", TString::Format("Successfully read %s/%s",internalFilename.Data(), tree->GetName()));
+    if (fVerbose>1) ::Info("AliExternalInfo::GetTree", "Successfully read %s/%s",internalFilename.Data(), tree->GetName());
     if (buildIndex==1) BuildIndex(tree, type);
   } else {
     //::Error("AliExternalInfo::GetTree", "Error while reading tree: ");
-    ::Error("AliExternalInfo::GetTree", TString::Format("ERROR READING: %s", treeName.Data()));
+    ::Error("AliExternalInfo::GetTree", "ERROR READING: %s", treeName.Data());
     delete treefile;
   }
 
@@ -609,7 +609,7 @@ TChain* AliExternalInfo::GetChain(TString type, TString period, TString pass, In
 
   TString files=gSystem->GetFromPipe(cmd.Data());
   TObjArray *arrFiles=files.Tokenize("\n");
-  ::Info("AliExternalInfo::GetChain", TString::Format("Files to add to chain: %s", files.Data()));
+  ::Info("AliExternalInfo::GetChain", "Files to add to chain: %s", files.Data());
 
   //function to get tree namee based on type
   chain=new TChain(treeName.Data());
@@ -757,8 +757,8 @@ Bool_t AliExternalInfo::AddChain(TString type, TString period, TString pass){
 
   // Setting up all the local variables
   SetupVariables(internalFilename, internalLocation, resourceIsTree, pathStructure, detector, rootFileName, treeName, type, period, pass,indexName);
-  ::Info("AliExternalInfo::AddChain", TString::Format("Add to internal Chain: %s", internalFilename.Data()));
-  ::Info("AliExternalInfo::AddChain", TString::Format("with tree name: %s",        treeName.Data()));
+  ::Info("AliExternalInfo::AddChain", "Add to internal Chain: %s", internalFilename.Data());
+  ::Info("AliExternalInfo::AddChain", "with tree name: %s",        treeName.Data());
   fChain->AddFile(internalFilename.Data(), TChain::kBigNumber, treeName);
 
   return kTRUE;
@@ -834,11 +834,11 @@ Bool_t AliExternalInfo::IsDownloadNeeded(TString file, TString type){
     long int timeFileModified = st.st_mtime;
     // std::cout << "------ File is " << timeNow - timeFileModified << " seconds old" << std::endl;
     if (timeNow - timeFileModified < timeOut) {
-      ::Info("AliExternalInfo::IsDownloadNeeded", TString::Format("-- File is %li s old; NOT older than the set timelimit %d s",timeNow - timeFileModified, timeOut));
+      ::Info("AliExternalInfo::IsDownloadNeeded", "-- File is %li s old; NOT older than the set timelimit %d s",timeNow - timeFileModified, timeOut);
       return kFALSE; // if file is younger than the set time limit, it will not be downloaded again
     }
     else {
-      ::Info("AliExternalInfo::IsDownloadNeeded", TString::Format("-- File is %li s old; Older than the set timelimit %d s",timeNow - timeFileModified, timeOut));
+      ::Info("AliExternalInfo::IsDownloadNeeded", "-- File is %li s old; Older than the set timelimit %d s",timeNow - timeFileModified, timeOut);
       return kTRUE;
     }
   }
@@ -1048,7 +1048,7 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
     Int_t entries=dumptree->GetEntries();
     for (Int_t i=0; i<entries; i++){            //loop over all IDs
       dumptree->GetEntry(i);
-      ::Info("AliExternalInfo::GetTreeAliVersRD", TString::Format("Getting ProdCyle ID: %d",id));
+      ::Info("AliExternalInfo::GetTreeAliVersRD", "Getting ProdCyle ID: %d",id);
       TTree * tree= GetTreeProdCycleByID(TString::Format("%d",id));         //get tree with production info for each ID
 
       if (tree==NULL) {
@@ -1168,8 +1168,6 @@ TTree*  AliExternalInfo::GetTreeAliVersMC(){
    TString slast;
    TString sanprod;
    TObjArray *subStrL;
-   Int_t runNTPC;
-   Int_t runNITS;
    
    TBranch* brMCanchprodname= dumptree->Branch("anchorProdTag_ForGuess",&sMCanchprodname);
    TBranch* brfirst= dumptree->Branch("First_Run",&first);

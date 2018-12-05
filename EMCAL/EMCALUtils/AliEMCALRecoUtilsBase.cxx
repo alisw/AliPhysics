@@ -85,7 +85,8 @@ Bool_t AliEMCALRecoUtilsBase::ExtrapolateTrackToEMCalSurface(AliVTrack *track,
                                                              Double_t step, 
                                                              Double_t minpt,
                                                              Bool_t useMassForTracking, 
-                                                             Bool_t useDCA)
+                                                             Bool_t useDCA,
+                                                             Bool_t useOuterParam)
 { 
   track->SetTrackPhiEtaPtOnEMCal(-999, -999, -999);
   
@@ -137,7 +138,12 @@ Bool_t AliEMCALRecoUtilsBase::ExtrapolateTrackToEMCalSurface(AliVTrack *track,
   AliExternalTrackParam *trackParam = 0;
   if (esdt) 
   {
-    const AliExternalTrackParam *in = esdt->GetInnerParam();
+    AliExternalTrackParam *in = 0;
+
+    if ( useOuterParam ) 
+      in = const_cast<AliExternalTrackParam*>(esdt->GetOuterParam()) ;
+    else                
+      in = const_cast<AliExternalTrackParam*>(esdt->GetInnerParam()) ;
     
     if (!in)
       return kFALSE;

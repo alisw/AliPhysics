@@ -21,9 +21,9 @@ add_definitions(-D_MODULE_="${MODULE}")
 include_directories(${AliRoot_SOURCE_DIR}/ITSMFT/ITS/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIR}
-  	            ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT/COMMONITSMFTBase
-  	            ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT/COMMONITSMFTSim
+include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
+include_directories(${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT/COMMONITSMFTBase
+                    ${AliRoot_SOURCE_DIR}/ITSMFT/COMMONITSMFT/COMMONITSMFTSim
                     ${AliRoot_SOURCE_DIR}/ITSMFT/ITS/ITSUpgradeBase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec

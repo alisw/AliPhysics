@@ -49,6 +49,12 @@
 #include "AliHLTTPCGMTracksToTPCSeeds.h"
 #endif
 
+#if __cplusplus > 201402L
+#define AUTO_PTR std::unique_ptr
+#else
+#define AUTO_PTR std::auto_ptr
+#endif
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCClusterAccessHLTOUT)
 
@@ -200,7 +206,7 @@ int AliHLTTPCClusterAccessHLTOUT::ScanParameters(const char* params)
   int row=-1;
   fCurrentSector=-1;
   fCurrentRow=-1;
-  std::auto_ptr<TObjArray> tokens(strparams.Tokenize(" "));
+  AUTO_PTR<TObjArray> tokens(strparams.Tokenize(" "));
   if (!tokens.get()) return -ENOMEM;
   for (int i=0; i< tokens->GetEntriesFast(); i++) {
     if (!tokens->At(i)) continue;

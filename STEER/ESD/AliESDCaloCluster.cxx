@@ -120,7 +120,7 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
   if(clus.fClusterMCEdepFraction && clus.fNLabel > 0)
   {
     fClusterMCEdepFraction = new UShort_t[clus.fNLabel];
-    for (Int_t i=0; i<clus.fNLabel; i++) fClusterMCEdepFraction[i]=clus.fClusterMCEdepFraction[i];
+    for (UInt_t i=0; i<clus.fNLabel; i++) fClusterMCEdepFraction[i]=clus.fClusterMCEdepFraction[i];
   }
 
   for (Int_t i = 0; i <= kLastUserDefEnergy; i++) 
@@ -202,7 +202,7 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
       fClusterMCEdepFraction = new UShort_t[source.fNLabel];
     }
     
-    for (Int_t i=0; i<source.fNLabel; i++) 
+    for (UInt_t i=0; i<source.fNLabel; i++) 
       fClusterMCEdepFraction[i]=source.fClusterMCEdepFraction[i];
   }
 
@@ -271,8 +271,10 @@ void AliESDCaloCluster::Copy(TObject &obj) const
 //_______________________________________________________________________
 AliESDCaloCluster::~AliESDCaloCluster()
 { 
-  if(fTracksMatched) delete fTracksMatched; fTracksMatched = 0;
-  if(fLabels)        delete fLabels;        fLabels        = 0;
+  if(fTracksMatched) delete fTracksMatched;
+  fTracksMatched = 0;
+  if(fLabels)        delete fLabels;
+  fLabels        = 0;
   
   if(fCellsAmpFraction)       { delete[] fCellsAmpFraction;       fCellsAmpFraction       = 0 ; }
   if(fCellsAbsId)             { delete[] fCellsAbsId;             fCellsAbsId             = 0 ; }
@@ -286,8 +288,10 @@ AliESDCaloCluster::~AliESDCaloCluster()
 //_______________________________________________________________________
 void AliESDCaloCluster::Clear(const Option_t*)
 { 
-  if(fTracksMatched) delete fTracksMatched; fTracksMatched = 0;
-  if(fLabels)        delete fLabels;        fLabels        = 0;
+  if(fTracksMatched) delete fTracksMatched;
+  fTracksMatched = 0;
+  if(fLabels)        delete fLabels;
+  fLabels        = 0;
   
   if(fCellsAmpFraction)       { delete[] fCellsAmpFraction;       fCellsAmpFraction       = 0 ; }
   if(fCellsAbsId)             { delete[] fCellsAbsId;             fCellsAbsId             = 0 ; }
@@ -489,7 +493,7 @@ UInt_t  AliESDCaloCluster::PackMCEdepFraction(Float_t * eDep) const
 //______________________________________________________________________________
 Float_t  AliESDCaloCluster::GetClusterMCEdepFraction(Int_t mcIndex) const
 { 
-  if ( mcIndex < 0 ||  mcIndex >= GetNLabels() || !fClusterMCEdepFraction) return 0. ;
+  if ( mcIndex < 0 ||  mcIndex >= (Int_t) GetNLabels() || !fClusterMCEdepFraction) return 0. ;
 
   return  fClusterMCEdepFraction[mcIndex]/100. ; 
 }

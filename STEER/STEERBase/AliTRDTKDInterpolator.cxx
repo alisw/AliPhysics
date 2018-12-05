@@ -307,8 +307,8 @@ void AliTRDTKDInterpolator::BuildInterpolation()
 
     TLinearFitter fitter(fLambda, Form("hyp%d", fLambda-1));
 
-    Int_t nodeIndex(0); Float_t param[6], *pp(NULL);
-    nodeIndex=GetNTNodes(); pp=&param[0];
+    Int_t nodeIndex(0);
+    nodeIndex=GetNTNodes();
     while(nodeIndex--){
 
 	fitter.ClearPoints();

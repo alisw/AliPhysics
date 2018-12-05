@@ -148,6 +148,7 @@ Int_t AliHLTEMCALClusterMonitor::MakeHisto(AliHLTCaloClusterDataStruct *caloClus
   for(Int_t i=0; i<nClusters; i++)
     for(Int_t j=0; j<i; j++)
     {
+      if(lorentzVecs[i].E() < 2. || lorentzVecs[j].E() < 2. ) continue;
       TVector3 clusterVector_1(lorentzVecs[i].X(), lorentzVecs[i].Y(), lorentzVecs[i].Z());
       TVector3 clusterVector_2(lorentzVecs[j].X(), lorentzVecs[j].Y(), lorentzVecs[j].Z());
       Float_t invMass = TMath::Sqrt(2*TMath::Abs(lorentzVecs[i].E())*TMath::Abs(lorentzVecs[j].E())*(1-TMath::Cos(clusterVector_1.Angle(clusterVector_2))));

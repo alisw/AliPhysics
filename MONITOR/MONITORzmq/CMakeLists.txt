@@ -23,6 +23,7 @@ include_directories(${AliRoot_SOURCE_DIR}/MONITOR/${MODULE}
                    )
 
 # Additional include folders in alphabetical order
+include_directories(SYSTEM ${ROOT_INCLUDE_DIR})
 include_directories(${AliRoot_SOURCE_DIR}/MONITOR/MONITOR
                     ${AliRoot_SOURCE_DIR}/STEER/CDB
                     ${AliRoot_SOURCE_DIR}/STEER/ESD

@@ -76,7 +76,7 @@ class AliESDTrdTrack : public AliVTrdTrack {
 
  protected:
 
-  void AppendBits(ULong64_t &word, Int_t nBits, Int_t val) const { word = (word << nBits) | (val & ~(~0 << nBits)); }
+  void AppendBits(ULong64_t &word, UInt_t nBits, UInt_t val) const { word = (word << nBits) | (val & ~(~((ULong64_t) 0) << nBits)); }
 
   Int_t    fSector;			  // sector in which the track was found
   Char_t   fStack;			  // stack in which the track was found

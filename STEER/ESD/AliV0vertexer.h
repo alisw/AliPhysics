@@ -39,6 +39,9 @@ public:
   Bool_t Preoptimize(const AliExternalTrackParam *nt, AliExternalTrackParam *pt, Double_t lPreprocessxn, Double_t lPreprocessxp, const Double_t b);
   
 private:
+  AliV0vertexer(const AliV0vertexer&) : fEtaMax(), fChi2max(), fDNmin(), fDPmin(), fDCAmax(), fCPAmin(), fRmin(), fRmax(), fV0HypSelArray(NULL) {}
+  const AliV0vertexer& operator=(const AliV0vertexer&) {return *this;}
+
   static
   Double_t fgEtaMax;      // maximal allowed Eta
   static

@@ -561,6 +561,18 @@ void AliEMCALTriggerSTURawStream::DecodeL1JetPatchIndexes(const int i, UInt_t *w
 }
 
 ///
+/// Get max gamma patch 
+//_____________________________________________________________________________
+Bool_t AliEMCALTriggerSTURawStream::GetL1GammaMaxPatch(Int_t& x, Int_t& y, Int_t& z) const
+{
+    z =   fV0C & 0xF;
+    y = ( fV0C >> 4 ) & 0x1F;
+    x = ( fV0C >> 9 ) & 0x1F;
+
+    return kTRUE;
+}
+
+///
 /// Decode L1 gamma patch indeces
 //_____________________________________________________________________________
 void AliEMCALTriggerSTURawStream::DecodeL1GammaPatchIndexes(const int i, UInt_t *word32, const int offset)

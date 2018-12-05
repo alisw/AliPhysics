@@ -137,6 +137,36 @@ int AliZMQhelpers::alizmq_msg_add(aliZMQmsg* message, DataTopic* topic, AliRawDa
   return message->size();
 }
 
+//_______________________________________________________________________________________
+int AliZMQhelpers::alizmq_msg_iter_data_hlt(aliZMQmsg::iterator it, TObject*& object)
+{
+  zmq_msg_t* topicMessage = it->first;
+  DataTopic* topic = reinterpret_cast<DataTopic*>(zmq_msg_data(topicMessage));
+  zmq_msg_t* message = it->second;
+  size_t size = zmq_msg_size(message);
+  void* data = zmq_msg_data(message);
+  object=NULL;
+
+  if (topic->fDataSerialization==kSerializationHLTROOT) //serialized by the HLT chain
+  {
+    object = AliHLTMessage::Extract(data,size);
+  }
+  else if (topic->fDataSerialization==kSerializationROOT) //serialized by the ZMQ framework or ROOT
+  {
+    object = ZMQTMessage::Extract(data, size);
+  }
+  else
+  {
+    return -1; //return -1 if payload not expected to be ROOT serialized data
+  }
+
+  if (object) {
+    return 0;  //all OK
+  } else {
+    return 1;  //something went wrong in the deserialization, maybe missing streamers
+  }
+}
+
 //______________________________________________________________________________
 int AliZMQhelpers::alizmq_file_write(AtomicFile& afile, AliHLTDataTopic topic, TObject* object)
 {

@@ -21,7 +21,7 @@
 #include "TObjString.h"
 #include "TDirectory.h"
 #include "TList.h"
-#include "AliZMQhelpers.h"
+#include "AliHLTZMQhelpers.h"
 #include "TMessage.h"
 #include "TSystem.h"
 #include "TApplication.h"
@@ -72,6 +72,7 @@ AliZMQhistViewer::AliZMQhistViewer():
   fScaleLogZ ( kFALSE),
   fResetOnRequest ( kFALSE),
   fHistStats (0),
+  fRequestSchema(true),
   fAllowResetAtSOR ( kTRUE),
   iterations(0),
   fIncoming(NULL),
@@ -104,6 +105,11 @@ int AliZMQhistViewer::Run(void* arg)
     {
       string request;
 
+      if (fRequestSchema) {
+        request+=" SchemaOnRequest=1";
+        fRequestSchema=false;
+      }
+
       if (fSelectionRegexp || fUnSelectionRegexp) 
       {
         if (fSelectionRegexp) request += " select="+fSelectionRegexp->GetPattern();
@@ -113,7 +119,7 @@ int AliZMQhistViewer::Run(void* arg)
       }
 
       if (fVerbose) Printf("sending request CONFIG %s", request.c_str());
-      alizmq_msg_send("", "", fZMQin, 0);
+      alizmq_msg_send("CONFIG", request, fZMQin, 0);
     }
 
     //wait for the data
@@ -228,8 +234,12 @@ int AliZMQhistViewer::GetData(void* socket)
     //incoming ROOT objects
     {
       TObject* tmp = NULL;
-      alizmq_msg_iter_data(i, tmp);
-      if (!tmp) continue;
+      int rc{0};
+      rc = alizmq_msg_iter_data_hlt(i, tmp);
+      if (!tmp) {
+        if (rc>0) {fRequestSchema=true;} //could not deserialize, request streamers next time
+        continue;
+      }
 
       std::vector<TObject*> listOfObjects; listOfObjects.reserve(100);
       AliAnalysisDataContainer* analKont = dynamic_cast<AliAnalysisDataContainer*>(tmp);

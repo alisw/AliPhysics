@@ -1,6 +1,6 @@
 // $Id$
 //**************************************************************************
-//* This file is property of and copyright by the                          * 
+//* This file is property of and copyright by the                          *
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
@@ -48,6 +48,12 @@
 #include "TH1F.h"
 #include "TFile.h"
 #include <memory>
+
+#if __cplusplus > 201402L
+#define AUTO_PTR std::unique_ptr
+#else
+#define AUTO_PTR std::auto_ptr
+#endif
 
 ClassImp(AliHLTTPCDataCompressionComponent)
 
@@ -155,8 +161,8 @@ void AliHLTTPCDataCompressionComponent::GetOCDBObjectDescription(TMap* const tar
   }
 }
 
-int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/, 
-						const AliHLTComponentBlockData* /*inputBlocks*/, 
+int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/,
+						const AliHLTComponentBlockData* /*inputBlocks*/,
 						AliHLTComponentTriggerData& /*trigData*/,
 						AliHLTUInt8_t* outputPtr,
 						AliHLTUInt32_t& size,
@@ -299,7 +305,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
     // think about moving that to some common code used by
     // both compression and decoding
     AliHLTExternalTrackParam param;
-    memset(&param, 0, sizeof(param));    
+    memset(&param, 0, sizeof(param));
     float alpha=track->GetAlpha();
     while (alpha<0.) alpha+=TMath::TwoPi();
     while (alpha>TMath::TwoPi()) alpha-=TMath::TwoPi();
@@ -340,7 +346,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
   // loop over raw cluster blocks, assign to tracks and write
   // unassigned clusters
   for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::fgkRawClustersDataType);
-       pDesc!=NULL; pDesc=GetNextInputBlock()) {    
+       pDesc!=NULL; pDesc=GetNextInputBlock()) {
     if (GetBenchmarkInstance()) {
       GetBenchmarkInstance()->Start(1);
       GetBenchmarkInstance()->AddInput(pDesc->fSize);
@@ -485,21 +491,21 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
 	  memcpy(outputPtr+bd.fOffset, &(*fpWrittenAssociatedClusterIds)[0], bd.fSize);
 	  bd.fDataType    = AliHLTTPCDefinitions::ClusterIdTracksDataType();
 	  bd.fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(minSlice, maxSlice, minPatch, maxPatch);
-	  outputBlocks.push_back(bd);    
+	  outputBlocks.push_back(bd);
 	  size += bd.fSize;
 	} else {
 	  iResult=-ENOSPC;
 	}
 	
 	fpWrittenAssociatedClusterIds->clear();
-      }    
+      }
     }
 
   } while (0);
 
   fRawInputClusters->Clear();
 
-  // Write header block 
+  // Write header block
   
   if( iResult>=0 && isInputPresent ){
     pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::RawClustersDescriptorDataType() );
@@ -519,7 +525,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
       } else {
 	AliHLTTPCDataCompressionDescriptor compDesc;
 	compDesc.SetMergedClustersFlag( clDesc.GetMergedClustersFlag() );
-	*(AliHLTTPCDataCompressionDescriptor*)(outputPtr + bd.fOffset ) = compDesc; 
+	*(AliHLTTPCDataCompressionDescriptor*)(outputPtr + bd.fOffset ) = compDesc;
 	outputBlocks.push_back(bd);
 	size += bd.fSize;
 	outputDataSize+=bd.fSize;
@@ -596,7 +602,7 @@ int AliHLTTPCDataCompressionComponent::ProcessTrackClusters(AliHLTGlobalBarrelTr
     AliHLTTPCTrackGeometry* pTrackPoints=dynamic_cast<AliHLTTPCTrackGeometry*>(track.GetTrackGeometry());
     if (!pTrackPoints) {
       HLTError("invalid track geometry type for track %d, expecting AliHLTTPCTrackGeometry", trackId.Data());
-      continue;	
+      continue;
     }
 
     UInt_t nofTrackPoints=track.GetNumberOfPoints();
@@ -658,7 +664,7 @@ int AliHLTTPCDataCompressionComponent::ProcessRemainingClusters(AliHLTGlobalBarr
       AliHLTTPCTrackGeometry* pTrackPoints=dynamic_cast<AliHLTTPCTrackGeometry*>(track.GetTrackGeometry());
       if (!pTrackPoints) {
 	HLTError("invalid track geometry type for track %d, expecting AliHLTTPCTrackGeometry", trackId.Data());
-	continue;	
+	continue;
       }
       AliHLTUInt32_t pointId=AliHLTTPCGeometry::CreateClusterID(slice, partition, padrow);
       AliHLTTrackGeometry::AliHLTTrackPoint* point=pTrackPoints->GetRawTrackPoint(pointId);
@@ -817,7 +823,7 @@ int AliHLTTPCDataCompressionComponent::DoInit( int argc, const char** argv )
   cdbPath += GetComponentID();
   //
   iResult = ConfigureFromCDBTObjString(cdbPath);
-  if (iResult < 0) 
+  if (iResult < 0)
     return iResult;
 
   //Stage 3: command line arguments.
@@ -830,7 +836,7 @@ int AliHLTTPCDataCompressionComponent::DoInit( int argc, const char** argv )
     HLTInfo("configured from command line: mode %d, deflater mode %d", fMode, fDeflaterMode);
   }
 
-  std::auto_ptr<AliHLTComponentBenchmark> benchmark(new AliHLTComponentBenchmark);
+  AUTO_PTR<AliHLTComponentBenchmark> benchmark(new AliHLTComponentBenchmark);
   if (benchmark.get()) {
     benchmark->SetTimer(0,"total");
     benchmark->SetTimer(1,"rawclusterinput");
@@ -851,25 +857,25 @@ int AliHLTTPCDataCompressionComponent::DoInit( int argc, const char** argv )
     // optimized storage format: differential pad and time storage
     spacePointContainerMode|=AliHLTTPCRawSpacePointContainer::kModeDifferentialPadTime;
   }
-  std::auto_ptr<AliHLTTPCRawSpacePointContainer> rawInputClusters(new AliHLTTPCRawSpacePointContainer(spacePointContainerMode, fCreateFlags));
-  std::auto_ptr<AliHLTTPCSpacePointContainer> inputClusters(new AliHLTTPCSpacePointContainer);
+  AUTO_PTR<AliHLTTPCRawSpacePointContainer> rawInputClusters(new AliHLTTPCRawSpacePointContainer(spacePointContainerMode, fCreateFlags));
+  AUTO_PTR<AliHLTTPCSpacePointContainer> inputClusters(new AliHLTTPCSpacePointContainer);
 
-  std::auto_ptr<TH1F> histoCompFactor(new TH1F("CompressionFactor",
+  AUTO_PTR<TH1F> histoCompFactor(new TH1F("CompressionFactor",
 					       "HLT TPC data compression factor",
 					       100, 0., 10.));
-  std::auto_ptr<TH1F> histoResidualPad(new TH1F("PadResidual",
+  AUTO_PTR<TH1F> histoResidualPad(new TH1F("PadResidual",
 						"HLT TPC pad residual",
 						100, -fMaxDeltaPad, fMaxDeltaPad));
-  std::auto_ptr<TH1F> histoResidualTime(new TH1F("TimeResidual",
+  AUTO_PTR<TH1F> histoResidualTime(new TH1F("TimeResidual",
 						 "HLT TPC time residual",
 						 100, -fMaxDeltaTime, fMaxDeltaTime));
-  std::auto_ptr<TH1F> histoClustersOnTracks(new TH1F("ClustersOnTracks",
+  AUTO_PTR<TH1F> histoClustersOnTracks(new TH1F("ClustersOnTracks",
 						 "Clusters in track model compression",
 						 200, 0., 600));
-  std::auto_ptr<TH1F> histoClusterRatio(new TH1F("ClusterRatio",
+  AUTO_PTR<TH1F> histoClusterRatio(new TH1F("ClusterRatio",
 						 "Fraction of clusters in track model compression",
 						 100, 0., 1.));
-  std::auto_ptr<TH1F> histoTrackClusterRatio(new TH1F("UsedTrackClusters",
+  AUTO_PTR<TH1F> histoTrackClusterRatio(new TH1F("UsedTrackClusters",
 						 "Fraction of track clusters in track model compression",
 						 100, 0., 1.));
 
@@ -922,7 +928,7 @@ int AliHLTTPCDataCompressionComponent::InitDeflater(int mode)
   int iResult=0;
   if (mode==kDeflaterModeHuffman || mode==kDeflaterModeHuffmanTrainer) {
     // huffman deflater
-    std::auto_ptr<AliHLTDataDeflaterHuffman> deflater(new AliHLTDataDeflaterHuffman(mode==kDeflaterModeHuffmanTrainer));
+    AUTO_PTR<AliHLTDataDeflaterHuffman> deflater(new AliHLTDataDeflaterHuffman(mode==kDeflaterModeHuffmanTrainer));
     if (!deflater.get()) return -ENOMEM;
 
     if (!deflater->IsTrainingMode()) {
@@ -984,7 +990,7 @@ int AliHLTTPCDataCompressionComponent::InitDeflater(int mode)
     return 0;
   }
   if (mode==kDeflaterModeSimple) {
-    std::auto_ptr<AliHLTDataDeflaterSimple> deflater(new AliHLTDataDeflaterSimple);
+    AUTO_PTR<AliHLTDataDeflaterSimple> deflater(new AliHLTDataDeflaterSimple);
     if (!deflater.get()) return -ENOMEM;
 
     if (!fHistogramFile.IsNull())
@@ -1159,7 +1165,7 @@ int AliHLTTPCDataCompressionComponent::ScanConfigurationArgument(int argc, const
       if ((bMissingParam=(++i>=argc))) break;
       TString parameter=argv[i];
       if (parameter.IsDigit()) {
-	fVerificationMode=parameter.Atoi();	
+	fVerificationMode=parameter.Atoi();
 	return 2;
       } else {
 	HLTError("invalid parameter for argument %s, expecting number instead of %s", argument.Data(), parameter.Data());
@@ -1200,17 +1206,17 @@ int AliHLTTPCDataCompressionComponent::InitDriftTimeTransformation()
   }
 
 #ifdef HAVE_ALITPCCOMMON
-  if ((iResult=CalculateDriftTimeTransformation(transform, 0, 0, fDriftTimeFactorA, fDriftTimeOffsetA))<0) return iResult;
+  /*if ((iResult=CalculateDriftTimeTransformation(transform, 0, 0, fDriftTimeFactorA, fDriftTimeOffsetA))<0) return iResult;
   if (fVerbosity>0) HLTInfo("drift time transformation A side: m=%f n=%f", fDriftTimeFactorA, fDriftTimeOffsetA);
   if ((iResult=CalculateDriftTimeTransformation(transform, 18, 0, fDriftTimeFactorC, fDriftTimeOffsetC))<0) return iResult;
-  if (fVerbosity>0) HLTInfo("drift time transformation C side: m=%f n=%f", fDriftTimeFactorC, fDriftTimeOffsetC);
+  if (fVerbosity>0) HLTInfo("drift time transformation C side: m=%f n=%f", fDriftTimeFactorC, fDriftTimeOffsetC);*/
 #endif
 
   return 0;
 }
 
 #ifdef HAVE_ALITPCCOMMON
-template <class T> static inline int GenericCalculateDriftTimeTransformation(T& transform,
+/*template <class T> static inline int GenericCalculateDriftTimeTransformation(T& transform,
 									int slice, int padrow,
 									float& m, float& n,
 									AliHLTTPCReverseTransformInfoV1* rev)
@@ -1271,5 +1277,5 @@ int AliHLTTPCDataCompressionComponent::CalculateDriftTimeTransformation(AliHLTTP
 }
 int AliHLTTPCDataCompressionComponent::CalculateDriftTimeTransformation(AliHLTTPCFastTransform& transform, int slice, int padrow, float& m, float& n, AliHLTTPCReverseTransformInfoV1* rev) {
     return GenericCalculateDriftTimeTransformation(transform, slice, padrow, m, n, rev);
-}
+}*/
 #endif
