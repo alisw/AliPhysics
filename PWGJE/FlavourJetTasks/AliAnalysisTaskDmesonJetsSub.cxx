@@ -3200,9 +3200,9 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
   }
 
       Int_t dimx   = 10;
-      Int_t nbinsx[10]   = {50,100,10,20,2,2,20,20,100,9};
-      Double_t minx[10] =  {0,-10,0,0,0,0,0,1.4,0,0};
-      Double_t maxx[10]  = {5,10,100,20,2,2,20,2.4,100,0.9};
+      Int_t nbinsx[10]   = {50,100,10,20,2,2,20,100,100,9};
+      Double_t minx[10] =  {0,-10,0,0,0,0,0,1.6,0,0};
+      Double_t maxx[10]  = {5,10,100,20,2,2,20,2,100,0.9};
       TString titlex[10]={"log(1/deltaR)","log(zteta)","jet pt","n","type","flagSubjet","ptD","invmass","frac","abs(eta)"};
 
 
