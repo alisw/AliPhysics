@@ -42,11 +42,6 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	Float_t pio2   = TMath::PiOver2();
 	Float_t twopi  = TMath::TwoPi();
 
-	int      eta_limiting = 1;
-	Double_t cut_width    = 2.0;
-	short    do_lead_only = 0;     // 0 = all,  1 = only leading
-
-	
     private:    
 
         AliAODEvent*          fAOD;               //! input event
@@ -54,6 +49,7 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	AliPIDResponse*       fPIDResponse;
 	AliAnalysisUtils*     fAnalysisUtils;
 
+	TH1I* prot_pos_count;
 	TH1F* deut_eta_pos_pt1;
 	TH1F* deut_eta_neg_pt1;
 	TH1F* deut_eta_pos_pt2;
@@ -199,8 +195,8 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	TH2F*                 tof_phi_eta_pos_deut;        // 42
 	TH2F*                 tof_phi_eta_neg_deut;        // 43
 	
-	TH1F*                 deut_pt_compare_pos;         // 44
-	TH1F*                 deut_pt_compare_neg;         // 45
+//	TH1F*                 deut_pt_compare_pos;         // 44
+//	TH1F*                 deut_pt_compare_neg;         // 45
 	TH1F*                 tpc_sector_fraction;         // 46
 	TH1F*                 primary_vertex_z;            // 47
 	TH1F*                 primary_vertex_z_cut1;       // 48
@@ -338,7 +334,12 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	TH2F*                 deut_deut_ptA_ptB_diff;
 
 	TH1F*                 deut_deut_inv_mass;
+	TH1F*                 quad_prot_inv_mass;
 
+	TH2F*                 deut_emcal_pt_dphi_pos;
+	TH2F*                 deut_emcal_pt_dphi_neg;
+	TH1F*                 emcal_cluster_phi;
+	
         AliAnalysisTaskCorPIDTOFQA(const AliAnalysisTaskCorPIDTOFQA&);                        // not implemented
         AliAnalysisTaskCorPIDTOFQA& operator=(const AliAnalysisTaskCorPIDTOFQA&);             // not implemented
 
