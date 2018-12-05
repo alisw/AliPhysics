@@ -24,6 +24,8 @@ AliReducedEventCut::AliReducedEventCut() :
   fEventFilter(0),
   fEventTriggerMaskEnabled(kFALSE), 
   fEventTriggerMask(0),
+  fEventTriggerClassEnabled(kFALSE),
+  fEventTriggerClass(""),
   fEventL1MaskEnabled(kFALSE),
   fEventL1Mask(0),
   fEventL0MaskEnabled(kFALSE),
@@ -42,6 +44,8 @@ AliReducedEventCut::AliReducedEventCut(const Char_t* name, const Char_t* title) 
   fEventFilter(0),
   fEventTriggerMaskEnabled(kFALSE), 
   fEventTriggerMask(0),
+  fEventTriggerClassEnabled(kFALSE),
+  fEventTriggerClass(""),
   fEventL1MaskEnabled(kFALSE),
   fEventL1Mask(0),
   fEventL0MaskEnabled(kFALSE),
@@ -95,7 +99,7 @@ Bool_t AliReducedEventCut::IsSelected(TObject* obj, Float_t* values) {
     if(!obj->InheritsFrom(AliReducedEventInfo::Class())) return kFALSE;
     AliReducedEventInfo* eventInfo = (AliReducedEventInfo*)obj;
     TString trgClasses = eventInfo->TriggerClass();
-    if (!trgClasses.Contains(fEventTriggerClass.Data())) return kFALSE;
+    if (!(trgClasses.Contains(fEventTriggerClass.Data()))) return kFALSE;
   }
 
    if(fEventL1MaskEnabled) {

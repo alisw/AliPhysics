@@ -53,7 +53,7 @@ class AliReducedEventCut : public AliReducedVarCut {
   ULong64_t fEventFilter;               // filter for the event tag map
   Bool_t    fEventTriggerMaskEnabled;   // if true apply the filter on the event trigger mask
   ULong64_t fEventTriggerMask;          // filter for the event trigger mask
-  TString   fEventTriggerClassEnabled;  // if true apply the filter on the event trigger class
+  Bool_t    fEventTriggerClassEnabled;  // if true apply the filter on the event trigger class
   TString   fEventTriggerClass;         // filter for the event trigger class
   Bool_t    fEventL1MaskEnabled;        // if true apply the filter on the event L1 trigger inputs mask
   ULong64_t fEventL1Mask;               // filter for the event L1 trigger inputs mask
