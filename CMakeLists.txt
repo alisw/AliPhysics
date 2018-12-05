@@ -207,25 +207,6 @@ else()
       endif()
   endif()
 
-  # If no Fortran, i.e on Windows
-  # We need to specify ROOT fortran
-  # (f95 comes before gfortran in default module)
-  include(CheckLanguage)
-
-  if(ROOT_FORTRAN)
-    message(STATUS "Using the Fortran compiler defined by ROOT configuration: ${ROOT_FORTRAN}")
-    set(CMAKE_Fortran_COMPILER ${ROOT_FORTRAN})
-  else()
-    message(STATUS "Using default system Fortran compiler")
-  endif(ROOT_FORTRAN)
-
-  check_language(Fortran)
-  if(CMAKE_Fortran_COMPILER)
-    enable_language(Fortran OPTIONAL)
-  else()
-    message(STATUS "No Fortran support.")
-  endif()
-
   # Optional: Doxygen for reference doc generation
   find_package(Doxygen)
   if(DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND)
