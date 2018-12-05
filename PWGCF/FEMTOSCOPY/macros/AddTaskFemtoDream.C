@@ -439,11 +439,16 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
   mgr->ConnectInput(task, 0, cinput);
 
   AliAnalysisDataContainer *coutputQA;
-  TString addon = "";
+  TString addon = "";    
   if (CentEst == "kInt7") {
     addon += "MB";
   } else if (CentEst == "kHM") {
     addon += "HM";
+  }
+  if (SphericityRange != 0 ) {
+    addon += "_Sphericity_
+    addon += SphericityRange;
+    addon += "_";
   }
   std::cout << "CONTAINTER NAME: " << addon.Data() << std::endl;
   TString QAName = Form("%sQA", addon.Data());
