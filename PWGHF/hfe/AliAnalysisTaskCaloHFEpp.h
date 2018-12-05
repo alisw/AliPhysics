@@ -129,7 +129,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 
 		//==== basic parameters ====
 		TH1F*                   fNevents;
-		TH1F*                   fNevents_DB;
+		TH1F*                   fNDB;
 		TH1F*                   fHist_VertexZ;        //! dummy histogram
 		TH1F*                   fHist_Centrality;        //! dummy histogram
 		TH2F*                   fHist_Mult;        //! dummy histogram
@@ -195,6 +195,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fDCAxy_Pt_Dpm;
 		TH2F*                   fDCAxy_Pt_D0;
 		TH2F*                   fDCAxy_Pt_Ds;
+		TH2F*                   fDCAxy_Pt_lambda;
 		TH2F*                   fDCAxy_Pt_B;
 
 		//==== Trigger or Calorimeter flag ====
