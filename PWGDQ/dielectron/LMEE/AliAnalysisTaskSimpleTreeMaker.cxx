@@ -352,7 +352,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 	fTree->Branch("nITS",              &nITS,              "nITS/F");
 	fTree->Branch("fITSshared",        &fITSshared,        "fITSshared/F");
 	fTree->Branch("chi2ITS",           &chi2ITS,           "chi2ITS/F");
-	fTree->Branch("SPDfirst",          &SPDfirst,          "SPDfirst/F");
+	fTree->Branch("SPDfirst",          &SPDfirst,          "SPDfirst/O");
 	fTree->Branch("DCAxy",             &DCA[0],            "DCAxy/F");
 	fTree->Branch("DCAz",              &DCA[1],            "DCAz/F");
 	fTree->Branch("goldenChi2",        &goldenChi2,        "goldenChi2/F");
@@ -798,7 +798,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 				nTPCshared = (dynamic_cast<AliESDtrack*>(track))->GetTPCnclsS();
 			}
 
-			chi2TPC = track->GetTPCchi2(); // Function only implemented in ESDs. Returns dumym value for AODs
+			chi2TPC = track->GetTPCchi2(); 
 
 			// DCA values
 			Float_t  DCAesd[2] = {0.0, 0.0};
