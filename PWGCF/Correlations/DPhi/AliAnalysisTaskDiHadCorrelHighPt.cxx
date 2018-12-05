@@ -655,21 +655,21 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
 
             if (mcTrack->Pt()>fPtTrigMin&&TrEtaMax){
                 if(IsK0) {
-                    mcTracksV0Sel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),1,mcTrack->GetLabel(),labelPos-1,labelNeg-1,kFALSE,mcTrack->M()));
+                    mcTracksV0Sel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),1,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
                     if (fEfficiency){
                         Double_t v0effic[5]={mcTrack->Pt(),lPVz,0.5,mcTrack->Eta(),1.5};
                         fHistGenV0->Fill(v0effic); // for recunstruction efficiency calculation
                     }
                 }
                 if(IsLambda) {
-                    mcTracksV0Sel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),2,mcTrack->GetLabel(),labelPos-1,labelNeg-1,kFALSE,mcTrack->M()));
+                    mcTracksV0Sel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),2,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
                     if (fEfficiency){
                         Double_t v0effic[5]={mcTrack->Pt(),lPVz,1.5,mcTrack->Eta(),1.5};
                         fHistGenV0->Fill(v0effic); // for recunstruction efficiency calculation
                     }
                 }
                 if(IsAntiLambda) {
-                    mcTracksV0Sel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),3,mcTrack->GetLabel(),labelPos-1,labelNeg-1,kFALSE,mcTrack->M()));
+                    mcTracksV0Sel->Add(new AliV0ChParticle(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),3,mcTrack->GetLabel(),labelPos,labelNeg,kFALSE,mcTrack->M()));
                     if (fEfficiency){
                         Double_t v0effic[5]={mcTrack->Pt(),lPVz,2.5,mcTrack->Eta(),1.5};
                         fHistGenV0->Fill(v0effic); // for recunstruction efficiency calculation
