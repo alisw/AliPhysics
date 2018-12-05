@@ -1090,6 +1090,7 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   eventInfo->fOnlineTriggerMask = event->GetTriggerMask();
   eventInfo->fOnlineTriggerMaskNext50 = event->GetTriggerMaskNext50();
   eventInfo->fTriggerMask = inputHandler->IsEventSelected();
+  eventInfo->fTriggerClass = event->GetFiredTriggerClasses();
   eventInfo->fIsPhysicsSelection = (isSelected!=0 ? kTRUE : kFALSE);
   eventInfo->fIsSPDPileup = event->IsPileupFromSPD(3,0.8,3.,2.,5.);
   eventInfo->fIsSPDPileupMultBins = event->IsPileupFromSPDInMultBins();

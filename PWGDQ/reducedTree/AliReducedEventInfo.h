@@ -40,6 +40,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   ULong64_t TriggerMask()                     const {return fTriggerMask;}
   ULong64_t OnlineTriggerMask()               const {return fOnlineTriggerMask;}
   ULong64_t OnlineTriggerMaskNext50()         const {return fOnlineTriggerMaskNext50;}
+  TString   TriggerClass()                    const {return fTriggerClass;}
   Bool_t    IsPhysicsSelection()              const {return fIsPhysicsSelection;}
   Bool_t    IsSPDPileup()                     const {return fIsSPDPileup;}
   Bool_t    IsSPDPileupMultBins()             const {return fIsSPDPileupMultBins;}
@@ -170,6 +171,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   ULong64_t fTriggerMask;           // trigger mask
   ULong64_t fOnlineTriggerMask;     // online trigger mask  (bits 1-50)
   ULong64_t fOnlineTriggerMaskNext50;   // online trigger mask (bits 51-100)
+  TString   fTriggerClass;          // trigger class
   Float_t   fMultiplicityEstimators[13];   // multiplicity estimators: "OnlineV0M", "OnlineV0A", "OnlineV0C", "ADM", "ADA", "ADC", "SPDClusters", "SPDTracklets", "RefMult05", "RefMult08"
   Float_t   fMultiplicityEstimatorPercentiles[13];   // multiplicity estimators: "OnlineV0M", "OnlineV0A", "OnlineV0C", "ADM", "ADA", "ADC", "SPDClusters", "SPDTracklets", "RefMult05", "RefMult08"
   Bool_t    fIsPhysicsSelection;    // PhysicsSelection passed event
@@ -221,7 +223,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   AliReducedEventInfo& operator= (const AliReducedEventInfo &c);
   AliReducedEventInfo(const AliReducedEventInfo &c);
 
-  ClassDef(AliReducedEventInfo, 10);
+  ClassDef(AliReducedEventInfo, 11);
 };
 
 #endif
