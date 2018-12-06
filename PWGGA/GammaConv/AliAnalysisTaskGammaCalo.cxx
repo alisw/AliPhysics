@@ -310,6 +310,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fHistoMCEtainJetInAccPt(NULL),
   fHistoMCPi0JetEventGenerated(NULL),
   fHistoMCPi0inJetGenerated(NULL),
+  fHistoMCEtaJetEventGenerated(NULL),
+  fHistoMCEtainJetGenerated(NULL),
   fHistoTrueSecondaryPi0FromK0sJetInvMassPt(NULL),
   fHistoTrueSecondaryPi0FromK0sinJetInvMassPt(NULL),
   fHistoTrueSecondaryPi0FromLambdaJetInvMassPt(NULL),
@@ -653,6 +655,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoMCEtainJetInAccPt(NULL),
   fHistoMCPi0JetEventGenerated(NULL),
   fHistoMCPi0inJetGenerated(NULL),
+  fHistoMCEtaJetEventGenerated(NULL),
+  fHistoMCEtainJetGenerated(NULL),
   fHistoTrueSecondaryPi0FromK0sJetInvMassPt(NULL),
   fHistoTrueSecondaryPi0FromK0sinJetInvMassPt(NULL),
   fHistoTrueSecondaryPi0FromLambdaJetInvMassPt(NULL),
@@ -1649,6 +1653,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoMCEtainJetInAccPt                 = new TH1F*[fnCuts];
       fHistoMCPi0JetEventGenerated            = new TH1F*[fnCuts];
       fHistoMCPi0inJetGenerated               = new TH1F*[fnCuts];
+      fHistoMCEtaJetEventGenerated            = new TH1F*[fnCuts];
+      fHistoMCEtainJetGenerated               = new TH1F*[fnCuts];
       fHistoTrueSecondaryPi0FromK0sJetInvMassPt      = new TH2F*[fnCuts];
       fHistoTrueSecondaryPi0FromK0sinJetInvMassPt    = new TH2F*[fnCuts];
       fHistoTrueSecondaryPi0FromLambdaJetInvMassPt   = new TH2F*[fnCuts];
@@ -2069,6 +2075,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fTrueJetHistograms[iCut]->Add(fHistoMCPi0JetEventGenerated[iCut]);
         fHistoMCPi0inJetGenerated[iCut]    = new TH1F("MC_Pi0_inJet_Generated", "MC_Pi0_inJet_Generated", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
         fTrueJetHistograms[iCut]->Add(fHistoMCPi0inJetGenerated[iCut]);
+        fHistoMCEtaJetEventGenerated[iCut]    = new TH1F("MC_Eta_JetEvent_Generated", "MC_Eta_JetEvent_Generated", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
+        fTrueJetHistograms[iCut]->Add(fHistoMCEtaJetEventGenerated[iCut]);
+        fHistoMCEtainJetGenerated[iCut]    = new TH1F("MC_Eta_inJet_Generated", "MC_Eta_inJet_Generated", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
+        fTrueJetHistograms[iCut]->Add(fHistoMCEtainJetGenerated[iCut]);
         fHistoTrueSecondaryPi0FromK0sJetInvMassPt[iCut] = new TH2F("ESD_TrueSecondaryPi0FromK0sJet_InvMass_Pt", "ESD_TrueSecondaryPi0FromK0sJet_InvMass_Pt", 800, 0, 0.8, nBinsPt, arrPtBinning);
         fTrueJetHistograms[iCut]->Add(fHistoTrueSecondaryPi0FromK0sJetInvMassPt[iCut]);
         fHistoTrueSecondaryPi0FromK0sinJetInvMassPt[iCut] = new TH2F("ESD_TrueSecondaryPi0FromK0s_inJet_InvMass_Pt", "ESD_TrueSecondaryPi0FromK0s_inJet_InvMass_Pt", 800, 0, 0.8, nBinsPt, arrPtBinning);
@@ -3956,6 +3966,29 @@ void AliAnalysisTaskGammaCalo::ProcessAODMCParticles()
             }
           } else if(particle->GetPdgCode() == 221){
             fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // All MC Eta
+            if(fDoJetAnalysis){
+              if(fConvJetReader->GetTrueNJets()>0){
+                fHistoMCEtaJetEventGenerated[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Pi0 with gamma in acc in jet event
+                fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+                fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+                Double_t RJetPi0Cand;
+                for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
+                  Double_t DeltaEta = fTrueVectorJetEta.at(i)-particle->Eta();
+                  Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-particle->Phi());
+                  if(DeltaPhi > M_PI) {
+                    DeltaPhi = 2*M_PI - DeltaPhi;
+                  }
+                  RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+                  if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                    if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                      fHistoMCEtainJetGenerated[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Pi0 with gamma in acc in a jet
+                    }
+                  }
+                }
+                fTrueVectorJetEta.clear();
+                fTrueVectorJetPhi.clear();
+              }
+            }
             fHistoMCEtaWOWeightPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
             if (fIsMC > 1) fHistoMCEtaWOEvtWeightPt[fiCut]->Fill(particle->Pt());
             if (fDoMesonQA > 0 && fDoMesonQA < 3){
@@ -4231,6 +4264,29 @@ void AliAnalysisTaskGammaCalo::ProcessMCParticles()
             }
           } else if(particle->GetPdgCode() == 221){
             fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // All MC Eta
+            if(fDoJetAnalysis){
+              if(fConvJetReader->GetTrueNJets()>0){
+                fHistoMCEtaJetEventGenerated[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Pi0 with gamma in acc in jet event
+                fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
+                fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
+                Double_t RJetPi0Cand;
+                for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
+                  Double_t DeltaEta = fTrueVectorJetEta.at(i)-particle->Eta();
+                  Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-particle->Phi());
+                  if(DeltaPhi > M_PI) {
+                    DeltaPhi = 2*M_PI - DeltaPhi;
+                  }
+                  RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
+                  if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                    if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
+                      fHistoMCEtainJetGenerated[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Pi0 with gamma in acc in a jet
+                    }
+                  }
+                }
+                fTrueVectorJetEta.clear();
+                fTrueVectorJetPhi.clear();
+              }
+            }
             fHistoMCEtaWOWeightPt[fiCut]->Fill(particle->Pt(), tempParticleWeight);
             if (fIsMC > 1)fHistoMCEtaWOEvtWeightPt[fiCut]->Fill(particle->Pt());
             if (fDoMesonQA > 0 && fDoMesonQA < 3){
