@@ -26,7 +26,7 @@ set(SRCS
   )
 
 set(HDRS
-  TMVAClassification_BDT_BDT_Default_6_12.class.C
+  LHC16i2_TMVAClassification_BDT_BDT_Default_6_12.class.C
   )
 
 
