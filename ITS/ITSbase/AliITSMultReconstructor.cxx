@@ -88,7 +88,8 @@
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
 #include "AliRefArray.h"
-
+#include "AliStrLine.h"
+#include "AliVertexerTracks.h"
 //____________________________________________________________________
 ClassImp(AliITSMultReconstructor)
 
@@ -430,6 +431,7 @@ void AliITSMultReconstructor::Reconstruct(AliESDEvent* esd, TTree* treeRP)
     FindTracklets(0);
   }
   //
+  FindCentroid();
   CreateMultiplicityObject();
 }
 
@@ -539,6 +541,7 @@ void AliITSMultReconstructor::CreateMultiplicityObject()
   }
   //
   fMult = new AliMultiplicity(fNTracklets,fNSingleCluster,fNFiredChips[0],fNFiredChips[1],fastOrFiredMap);
+  fMult->SetCentroidXY(fCentroid[0], fCentroid[1] );
   fMult->SetMultTrackRefs( fBuildRefs );
   fMult->SetSPD2SinglesStored(fStoreSPD2SingleCl);
   fMult->SetNumberOfSingleClustersSPD2(fNSingleClusterSPD2);
@@ -907,7 +910,7 @@ void AliITSMultReconstructor::ClusterPos2Angles(const Float_t *vtx)
   for (int ilr=0;ilr<2;ilr++) {
     for (Int_t iC=0; iC<fNClustersLay[ilr]; iC++) {    
       float* clPar = GetClusterOfLayer(ilr,iC);
-      CalcThetaPhi(clPar[kClTh]-vtx[0],clPar[kClPh]-vtx[1],clPar[kClZ]-vtx[2],clPar[kClTh],clPar[kClPh]);
+      CalcThetaPhi(clPar[kClX]-vtx[0],clPar[kClY]-vtx[1],clPar[kClZ]-vtx[2],clPar[kClTh],clPar[kClPh]);
       if (ilr==0) {
 	clPar[kClPh] = clPar[kClPh] + fPhiRotationAngle;   // rotation of inner layer for comb studies  
 	if (fHistOn) {
@@ -1286,4 +1289,28 @@ AliITSRecPoint* AliITSMultReconstructor::GetRecPoint(Int_t lr, Int_t n) const
     AliError("To access the clusters SetCreateClustersCopy should have been called");
     return 0;
   }
+}
+
+//____________________________________________________________________
+Bool_t AliITSMultReconstructor::FindCentroid()
+{
+  // calculate centroid of tracklets
+  fCentroid[0] = fCentroid[1] = -999;
+  if (!fNTracklets) return kFALSE;
+  Double_t wmat[9]={1.,0.,0.,0.,1.,0.,0.,0.,1.};
+  AliStrLine **lines = new AliStrLine*[fNTracklets];  
+  for (Int_t it = 0; it < fNTracklets; it++) {
+    float* tlInfo = fTracklets[it];    
+    float* clpar0 = GetClusterLayer1( int(tlInfo[kClID1]) ), *clpar1 = GetClusterLayer2( int(tlInfo[kClID2]) );
+    Double_t xyz0[3] = {clpar0[kClX],clpar0[kClY],clpar0[kClZ]}, xyz1[3] = {clpar1[kClX],clpar1[kClY],clpar1[kClZ]};
+    lines[it] = new AliStrLine(xyz0,xyz1,kTRUE);
+    lines[it]->SetWMatrix(wmat);
+  }
+
+  AliESDVertex newspdVtx = AliVertexerTracks::TrackletVertexFinder(lines,fNTracklets,0);
+  for(Int_t it = 0; it < fNTracklets; ++it) delete lines[it];
+  delete [] lines;
+  fCentroid[0] = newspdVtx.GetX();
+  fCentroid[1] = newspdVtx.GetY();
+  return kTRUE;
 }

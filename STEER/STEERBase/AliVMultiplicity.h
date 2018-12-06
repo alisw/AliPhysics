@@ -31,6 +31,10 @@ class AliVMultiplicity : public TNamed {
   Bool_t  GetScaleDThetaBySin2T()                     const {return TestBit(kScaleDThtbySin2);}
   void    SetMultTrackRefs(Bool_t v)                        {SetBit(kMultTrackRefs,v);}
   void    SetScaleDThetaBySin2T(Bool_t v)                   {SetBit(kScaleDThtbySin2,v);}
+  virtual Float_t GetCentroidX() const = 0;
+  virtual Float_t GetCentroidY() const = 0;
+  virtual void SetCentroidXY(float x, float y) = 0;
+  
   //
   virtual void Clear(Option_t* opt="");
   //

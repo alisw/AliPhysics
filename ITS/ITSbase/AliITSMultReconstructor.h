@@ -39,7 +39,7 @@ class AliITSMultReconstructor : public AliTrackleter
 {
 public:
   //
-  enum {kClTh,kClPh,kClZ,kClMC0,kClMC1,kClMC2,kClNPar};
+  enum {kClX,kClY,kClZ,kClTh,kClPh,kClMC0,kClMC1,kClMC2,kClNPar};
   enum {kTrTheta,kTrPhi,kTrDPhi,kTrDTheta,kTrLab1,kTrLab2,kClID1,kClID2,kTrNPar};
   enum {kSCTh,kSCPh,kSCLab,kSCID,kSCNPar};   
   enum {kITSTPC,kITSSAP,kITSTPCBit=BIT(kITSTPC),kITSSAPBit=BIT(kITSSAP)}; // RS
@@ -49,7 +49,8 @@ public:
   void Reconstruct(AliESDEvent* esd, TTree* treeRP);
   void Reconstruct(TTree* tree, Float_t* vtx, Float_t* vtxRes=0);   // old reconstructor invocation
   void ReconstructMix(TTree* clusterTree, TTree* clusterTreeMix, const Float_t* vtx, Float_t* vtrRes=0);
-  void FindTracklets(const Float_t* vtx); 
+  void FindTracklets(const Float_t* vtx);
+  Bool_t FindCentroid();
   void LoadClusterFiredChips(TTree* tree);
   void FlagClustersInOverlapRegions(Int_t ic1,Int_t ic2);
   void FlagTrackClusters(Int_t id);
@@ -267,6 +268,9 @@ public:
   Bool_t        fRecoDone;             // flag that reconstruction is done
   Bool_t        fBuildRefs;            // build cluster to tracks references
   Bool_t        fStoreSPD2SingleCl;    // do we store SPD2 singles
+  //
+  Float_t fCentroid[2]; //! centroid in transverse plane
+
   //
   AliITSsegmentationSPD fSPDSeg;       // SPD segmentation model
   //
