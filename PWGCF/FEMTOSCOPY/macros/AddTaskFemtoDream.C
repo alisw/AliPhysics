@@ -446,7 +446,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
     addon += "HM";
   }
   if (SphericityRange != 0 ) {
-    addon += "_Sphericity_
+    addon += "_Sphericity_";
     addon += SphericityRange;
     addon += "_";
   }
