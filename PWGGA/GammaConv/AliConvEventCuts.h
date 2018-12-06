@@ -440,6 +440,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    GetIsFromPileup()                                                   { return fRemovePileUp                                      ; }
       Bool_t    GetIsFromPileupSPD()                                                { return fRemovePileUpSPD                                   ; }
       Int_t     GetUseSphericity()                                                  { return fUseSphericity                                     ; }
+      Bool_t    GetUseSphericityTrue()                                              { return fUseSphericityTrue                                 ; }
       Int_t     GetPastFutureLowBC()                                                { return fPastFutureRejectionLow                            ; }
       Int_t     GetPastFutureHighBC()                                               { return fPastFutureRejectionHigh                           ; }
       Bool_t    GetDoPileUpRejectV0MTPCout()                                        { return fDoPileUpRejectV0MTPCout                           ; }
@@ -512,6 +513,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void    InitCutHistograms(  TString name="",
                                   Bool_t preCut = kTRUE);
       void    SetLightOutput( Bool_t flag ){fDoLightOutput = flag; return;}
+      void    SetUseSphericityTrue( Bool_t flag ){fUseSphericityTrue = flag;}
 
       ///Cut functions
       Int_t   IsParticleFromBGEvent(  Int_t index,
@@ -588,6 +590,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t                      fRemovePileUp;                          ///< flag specifies if any pileup cut is applied
       Bool_t                      fRemovePileUpSPD;                       ///< flag specifies if SPD pileup cuts are applied
       Int_t                       fUseSphericity;                         ///< flag that specifies the sphericityCut
+      Bool_t                      fUseSphericityTrue;                     ///< switch for true sphericity cuts
       Int_t                       fPastFutureRejectionLow;                ///< sets bunch crossing event rejection in past
       Int_t                       fPastFutureRejectionHigh;               ///< sets bunch crossing event rejection in future. If both are 0, the cut is not applied
       Int_t                       fDoPileUpRejectV0MTPCout;               ///< reject event if # TPCout tracks does not follow expected V0M mult
@@ -687,7 +690,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,58)
+      ClassDef(AliConvEventCuts,59)
       /// \endcond
 };
 
