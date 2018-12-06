@@ -164,6 +164,7 @@ class AliTPCcalibDB : public TObject
   Float_t GetChamberGoodHighVoltageFraction(UInt_t roc)   const { return (roc<72)?fChamberHVgoodFraction[roc]:0.; }
   AliDCSSensor* GetChamberHVSensor(UInt_t roc)            const { return (roc<72)?fHVsensors[roc]:0x0;            }
   Double_t GetGainCorrectionHVandPT(Int_t timeStamp, Int_t run, Int_t sector, Int_t deltaCache, Int_t mode);
+  const TGraph* GetRunState() const { return fGrRunState; }
   Bool_t  IsDataTakingActive(time_t timeStamp);
   //
   //Goofie Values
