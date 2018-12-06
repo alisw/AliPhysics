@@ -43,7 +43,7 @@ set(ALIROOT_DEPENDENCIES ANALYSISalice EVGEN)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} ${TREELITE_ROOT}/lib/libtreelite.so ${TREELITE_ROOT}/lib/libtreelite_runtime.so)
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} treelite treelite_runtime)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library. Note the extra includes ("Tracks UserTasks")
@@ -55,7 +55,7 @@ add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 
 # Add a library to the project using the object
 add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
-target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} ${TREELITE_ROOT}/lib/libtreelite.so ${TREELITE_ROOT}/lib/libtreelite_runtime.so)
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} -L${TREELITE_ROOT}/lib treelite treelite_runtime)
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
