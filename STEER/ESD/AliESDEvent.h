@@ -370,6 +370,9 @@ public:
   Int_t GetNumberOfTPCClusters()      const {return fNTPCClusters;}
   void  SetNumberOfTPCClusters(int n)       {fNTPCClusters = n;}
 
+  void SetTPCTrackBeforeClean(int n) {fNTPCTrackBeforeClean = n;}
+  Int_t GetNTPCTrackBeforeClean() const {return fNTPCTrackBeforeClean;}
+  
   Bool_t Clean(TObjArray* track2destroy,const AliGRPRecoParam *grpRecoParam);
   int CleanV0s(const AliGRPRecoParam *grpRecoParam);
 
@@ -677,9 +680,10 @@ protected:
   UInt_t fDAQDetectorPattern; // Detector pattern from DAQ: bit 0 is SPD, bit 4 is TPC, etc. See event.h
   UInt_t fDAQAttributes; // Third word of attributes from DAQ: bit 7 corresponds to HLT decision 
   Int_t  fNTPCClusters;  // number of TPC clusters
+  Int_t  fNTPCTrackBeforeClean; // unumber of TPC tracks before Clean (if any)
   Int_t  fNumberOfESDTracks; // number of ESDtracks (unchanged in case of filtering)
   
-  ClassDef(AliESDEvent,28)  //ESDEvent class 
+  ClassDef(AliESDEvent,29)  //ESDEvent class 
 };
 #endif 
 
