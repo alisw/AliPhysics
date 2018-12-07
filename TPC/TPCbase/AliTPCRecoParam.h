@@ -139,7 +139,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void  SetUseExBCorrection(Int_t flag){fUseExBCorrection=flag;}
   void  SetUseTOFCorrection(Bool_t flag) {fUseTOFCorrection = flag;}
   void  SetUseIonTailCorrection(Int_t flag) {fUseIonTailCorrection = flag;}
-  void  SetIonTailCorrection(Int_t factor) {fIonTailCorrection = factor;}
+  void  SetIonTailCorrection(Float_t factor) {fIonTailCorrection = factor;}
   void  SetCrosstalkCorrection(Float_t crosstalkCorrection) {fCrosstalkCorrection= crosstalkCorrection; }
   void  SetCrosstalkCorrectionMissingCharge(Float_t crosstalkCorrection) {fCrosstalkCorrectionMissingCharge= crosstalkCorrection; }
   //
@@ -331,7 +331,7 @@ public:
                                       // Use static function, other option will be to use
                                       // additional specific storage ?
   /// \cond CLASSIMP
-  ClassDef(AliTPCRecoParam, 33)
+  ClassDef(AliTPCRecoParam, 35)
   /// \endcond
 };
 

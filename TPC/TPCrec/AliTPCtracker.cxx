@@ -1744,7 +1744,11 @@ int AliTPCtracker::GetAdjustedLabels(const AliTPCclusterMI* cl, int *lbReal)
   return nlb;
 }
 
-
+///  0.) load ion tail parameters
+///  1.) Filling part -- loop over clusters
+///  1.0)
+///  2.) dump the crosstalk matrices to tree for further investigation
+///  3.)  convolute common mode signal with ion tail if specified
 void  AliTPCtracker::CalculateXtalkCorrection(){
   //
   // Calculate crosstalk estimate
@@ -1759,7 +1763,6 @@ void  AliTPCtracker::CalculateXtalkCorrection(){
     TMatrixD * crossTalkMatrix = (TMatrixD*)fCrossTalkSignalArray->At(isector);
     if (crossTalkMatrix)(*crossTalkMatrix)*=0;
   }
-  
   //
   // 1.) Filling part -- loop over clusters
   //
@@ -1767,65 +1770,67 @@ void  AliTPCtracker::CalculateXtalkCorrection(){
   for (Int_t iter=0; iter<nIterations;iter++){
     for (Int_t isector=0; isector<36; isector++){      // loop over sectors
       for (Int_t iside=0; iside<2; iside++){           // loop over sides A/C
-	AliTPCtrackerSector &sector= (isector<18)?fInnerSec[isector%18]:fOuterSec[isector%18];
-	Int_t nrows = sector.GetNRows();
-	Int_t sec=0;
-	if (isector<18) sec=isector+18*iside;
-	if (isector>=18) sec=18+isector+18*iside;
-	for (Int_t row = 0;row<nrows;row++){           // loop over rows       
-	  //
-	  //
-	  Int_t wireSegmentID     = fkParam->GetWireSegment(sec,row);
-	  Float_t nPadsPerSegment = (Float_t)(fkParam->GetNPadsPerSegment(wireSegmentID));
-	  TMatrixD &crossTalkSignal =  *((TMatrixD*)fCrossTalkSignalArray->At(sec));
-	  TMatrixD &crossTalkSignalCache =  *((TMatrixD*)fCrossTalkSignalArray->At(sec+nROCs*2));   // this is the cache value of the crosstalk from previous iteration
-	  TMatrixD &crossTalkSignalBelow =  *((TMatrixD*)fCrossTalkSignalArray->At(sec+nROCs));
-	  Int_t nCols=crossTalkSignal.GetNcols();
-	  //
-	  AliTPCtrackerRow&  tpcrow = sector[row];       
-	  Int_t ncl = tpcrow.GetN1();                  // number of clusters in the row
-	  if (iside>0) ncl=tpcrow.GetN2();
-	  for (Int_t i=0;i<ncl;i++) {  // loop over clusters
-	    AliTPCclusterMI *clXtalk= (iside>0)?(tpcrow.GetCluster2(i)):(tpcrow.GetCluster1(i));
-	    
-	    Int_t timeBinXtalk = clXtalk->GetTimeBin();      
-	    Double_t rmsPadMin2=0.5*0.5+(fkParam->GetDiffT()*fkParam->GetDiffT())*(TMath::Abs((clXtalk->GetZ()-fkParam->GetZLength())))/(fkParam->GetPadPitchWidth(sec)*fkParam->GetPadPitchWidth(sec)); // minimal PRF width - 0.5 is the PRF in the pad units - we should et it from fkparam getters 
-	    Double_t rmsTimeMin2=1+(fkParam->GetDiffL()*fkParam->GetDiffL())*(TMath::Abs((clXtalk->GetZ()-fkParam->GetZLength())))/(fkParam->GetZWidth()*fkParam->GetZWidth()); // minimal PRF width - 1 is the TRF in the time bin units - we should et it from fkParam getters
-	    Double_t rmsTime2   = clXtalk->GetSigmaZ2()/(fkParam->GetZWidth()*fkParam->GetZWidth()); 
-	    Double_t rmsPad2    = clXtalk->GetSigmaY2()/(fkParam->GetPadPitchWidth(sec)*fkParam->GetPadPitchWidth(sec)); 
-	    if (rmsPadMin2>rmsPad2){
-	      rmsPad2=rmsPadMin2;
-	    }
-	    if (rmsTimeMin2>rmsTime2){
-	      rmsTime2=rmsTimeMin2;
-	    }
-	    
-	    Double_t norm= 2.*TMath::Exp(-1.0/(2.*rmsTime2))+2.*TMath::Exp(-4.0/(2.*rmsTime2))+1.;
-	    Double_t qTotXtalk = 0.;   
-	    Double_t qTotXtalkMissing = 0.;   
-	    for (Int_t itb=timeBinXtalk-2, idelta=-2; itb<=timeBinXtalk+2; itb++,idelta++) {
-	      if (itb<0 || itb>=nCols) continue;
-	      Double_t missingCharge=0;
-	      Double_t trf= TMath::Exp(-idelta*idelta/(2.*rmsTime2));
-	      if (missingChargeFactor>0) {
-		for (Int_t dpad=-2; dpad<=2; dpad++){
-		  Double_t qPad =   clXtalk->GetMax()*TMath::Exp(-dpad*dpad/(2.*rmsPad2))*trf;
-		  if (TMath::Nint(qPad-crossTalkSignalCache[wireSegmentID][itb])<=fkParam->GetZeroSup()){
-		    missingCharge+=qPad+crossTalkSignalCache[wireSegmentID][itb];
-		  }else{
-		    missingCharge+=crossTalkSignalCache[wireSegmentID][itb];
-		  }
-		}
-	      }
-	      qTotXtalk = clXtalk->GetQ()*trf/norm+missingCharge*missingChargeFactor;
-	      qTotXtalkMissing = missingCharge;
-	      crossTalkSignal[wireSegmentID][itb]+= qTotXtalk/nPadsPerSegment; 
-	      crossTalkSignalBelow[wireSegmentID][itb]+= qTotXtalkMissing/nPadsPerSegment; 
-	    } // end of time bin loop
-	  } // end of cluster loop	
-	} // end of rows loop
+        AliTPCtrackerSector &sector= (isector<18)?fInnerSec[isector%18]:fOuterSec[isector%18];
+        Int_t nrows = sector.GetNRows();
+        Int_t sec=0;
+        if (isector<18) sec=isector+18*iside;
+        if (isector>=18) sec=18+isector+18*iside;
+        for (Int_t row = 0;row<nrows;row++){           // loop over rows
+          //
+          //
+          Int_t wireSegmentID     = fkParam->GetWireSegment(sec,row);
+          Float_t nPadsPerSegment = (Float_t)(fkParam->GetNPadsPerSegment(wireSegmentID));
+          TMatrixD &crossTalkSignal =  *((TMatrixD*)fCrossTalkSignalArray->At(sec));
+          TMatrixD &crossTalkSignalCache =  *((TMatrixD*)fCrossTalkSignalArray->At(sec+nROCs*2));   // this is the cache value of the crosstalk from previous iteration
+          TMatrixD &crossTalkSignalBelow =  *((TMatrixD*)fCrossTalkSignalArray->At(sec+nROCs));
+          Int_t nCols=crossTalkSignal.GetNcols();
+          //
+          AliTPCtrackerRow&  tpcrow = sector[row];
+          Int_t ncl = tpcrow.GetN1();                  // number of clusters in the row
+          if (iside>0) ncl=tpcrow.GetN2();
+          for (Int_t i=0;i<ncl;i++) {  // loop over clusters
+            AliTPCclusterMI *clXtalk= (iside>0)?(tpcrow.GetCluster2(i)):(tpcrow.GetCluster1(i));
+
+            Int_t timeBinXtalk = clXtalk->GetTimeBin();
+            Double_t rmsPadMin2=0.5*0.5+(fkParam->GetDiffT()*fkParam->GetDiffT())*(TMath::Abs((clXtalk->GetZ()-fkParam->GetZLength())))/(fkParam->GetPadPitchWidth(sec)*fkParam->GetPadPitchWidth(sec)); // minimal PRF width - 0.5 is the PRF in the pad units - we should et it from fkparam getters
+            Double_t rmsTimeMin2=1+(fkParam->GetDiffL()*fkParam->GetDiffL())*(TMath::Abs((clXtalk->GetZ()-fkParam->GetZLength())))/(fkParam->GetZWidth()*fkParam->GetZWidth()); // minimal PRF width - 1 is the TRF in the time bin units - we should et it from fkParam getters
+            Double_t rmsTime2   = clXtalk->GetSigmaZ2()/(fkParam->GetZWidth()*fkParam->GetZWidth());
+            Double_t rmsPad2    = clXtalk->GetSigmaY2()/(fkParam->GetPadPitchWidth(sec)*fkParam->GetPadPitchWidth(sec));
+            if (rmsPadMin2>rmsPad2){
+              rmsPad2=rmsPadMin2;
+            }
+            if (rmsTimeMin2>rmsTime2){
+              rmsTime2=rmsTimeMin2;
+            }
+
+            Double_t norm= 2.*TMath::Exp(-1.0/(2.*rmsTime2))+2.*TMath::Exp(-4.0/(2.*rmsTime2))+1.;
+            Double_t qTotXtalk = 0.;
+            Double_t qTotXtalkMissing = 0.;
+            for (Int_t itb=timeBinXtalk-2, idelta=-2; itb<=timeBinXtalk+2; itb++,idelta++) {
+              if (itb<0 || itb>=nCols) continue;
+              Double_t missingCharge=0;
+              Double_t trf= TMath::Exp(-idelta*idelta/(2.*rmsTime2));
+              if (missingChargeFactor>0) {
+                for (Int_t dpad=-2; dpad<=2; dpad++){
+                  Double_t qPad =   clXtalk->GetMax()*TMath::Exp(-dpad*dpad/(2.*rmsPad2))*trf;
+                  if (TMath::Nint(qPad-crossTalkSignalCache[wireSegmentID][itb])<=fkParam->GetZeroSup()){
+                    missingCharge+=qPad+crossTalkSignalCache[wireSegmentID][itb];
+                  }else{
+                    missingCharge+=crossTalkSignalCache[wireSegmentID][itb];
+                  }
+                }
+              }
+              qTotXtalk = clXtalk->GetQ()*trf/norm+missingCharge*missingChargeFactor;
+              qTotXtalkMissing = missingCharge;
+              crossTalkSignal[wireSegmentID][itb]+= qTotXtalk/nPadsPerSegment;
+              crossTalkSignalBelow[wireSegmentID][itb]+= qTotXtalkMissing/nPadsPerSegment;
+            } // end of time bin loop
+          } // end of cluster loop
+        } // end of rows loop
       }  // end of side loop
     }    // end of sector loop
+
+
     //
     // copy crosstalk matrix to cached used for next itteration
     //
@@ -1834,43 +1839,132 @@ void  AliTPCtracker::CalculateXtalkCorrection(){
     //     a.) to estimate fluctuation of pedestal in indiviula wire segments
     //     b.) to check correlation between regions
     //     c.) to check relative conribution of signal below threshold to crosstalk
-    
+
     if (AliTPCReconstructor::StreamLevel()&kStreamCrosstalkMatrix) {
       for (Int_t isector=0; isector<nROCs; isector++){  //set all ellemts of crosstalk matrix to 0
-	TMatrixD * crossTalkMatrix = (TMatrixD*)fCrossTalkSignalArray->At(isector);
-	TMatrixD * crossTalkMatrixBelow = (TMatrixD*)fCrossTalkSignalArray->At(isector+nROCs);
-	TMatrixD * crossTalkMatrixCache = (TMatrixD*)fCrossTalkSignalArray->At(isector+nROCs*2);
-	TVectorD vecAll(crossTalkMatrix->GetNrows());
-	TVectorD vecBelow(crossTalkMatrix->GetNrows());
-	TVectorD vecCache(crossTalkMatrixCache->GetNrows());
-	//
-	for (Int_t itime=0; itime<crossTalkMatrix->GetNcols(); itime++){
-	  for (Int_t iwire=0; iwire<crossTalkMatrix->GetNrows(); iwire++){
-	    vecAll[iwire]=(*crossTalkMatrix)(iwire,itime);
-	    vecBelow[iwire]=(*crossTalkMatrixBelow)(iwire,itime);
-	    vecCache[iwire]=(*crossTalkMatrixCache)(iwire,itime);
-	  }
-	  (*fDebugStreamer)<<"crosstalkMatrix"<<
-	    "iter="<<iter<<                      //iteration
-	    "sector="<<isector<<                 // sector
-	    "itime="<<itime<<                    // time bin index
-	    "vecAll.="<<&vecAll<<                // crosstalk charge + charge below threshold
-	    "vecCache.="<<&vecCache<<                // crosstalk charge + charge below threshold	  
-	    "vecBelow.="<<&vecBelow<<            // crosstalk contribution from signal below threshold
-	    "\n";
-	}
+        TMatrixD * crossTalkMatrix = (TMatrixD*)fCrossTalkSignalArray->At(isector);
+        TMatrixD * crossTalkMatrixBelow = (TMatrixD*)fCrossTalkSignalArray->At(isector+nROCs);
+        TMatrixD * crossTalkMatrixCache = (TMatrixD*)fCrossTalkSignalArray->At(isector+nROCs*2);
+        TVectorD vecAll(crossTalkMatrix->GetNrows());
+        TVectorD vecBelow(crossTalkMatrix->GetNrows());
+        TVectorD vecCache(crossTalkMatrixCache->GetNrows());
+        //
+        for (Int_t itime=0; itime<crossTalkMatrix->GetNcols(); itime++){
+          for (Int_t iwire=0; iwire<crossTalkMatrix->GetNrows(); iwire++){
+            vecAll[iwire]=(*crossTalkMatrix)(iwire,itime);
+            vecBelow[iwire]=(*crossTalkMatrixBelow)(iwire,itime);
+            vecCache[iwire]=(*crossTalkMatrixCache)(iwire,itime);
+          }
+          (*fDebugStreamer)<<"crosstalkMatrix"<<
+                           "iter="<<iter<<                      //iteration
+                           "sector="<<isector<<                 // sector
+                           "itime="<<itime<<                    // time bin index
+                           "vecAll.="<<&vecAll<<                // crosstalk charge + charge below threshold
+                           "vecCache.="<<&vecCache<<                // crosstalk charge + charge below threshold
+                           "vecBelow.="<<&vecBelow<<            // crosstalk contribution from signal below threshold
+                           "\n";
+        }
       }
     }
     if (iter<nIterations-1) for (Int_t isector=0; isector<nROCs*2; isector++){  //set all ellemts of crosstalk matrix to 0 
-      TMatrixD * crossTalkMatrix = (TMatrixD*)fCrossTalkSignalArray->At(isector);
-      TMatrixD * crossTalkMatrixCache = (TMatrixD*)fCrossTalkSignalArray->At(isector+nROCs*2);
-      if (crossTalkMatrix){
-	(*crossTalkMatrixCache)*=0;
-	(*crossTalkMatrixCache)+=(*crossTalkMatrix);
-	(*crossTalkMatrix)*=0;
+        TMatrixD * crossTalkMatrix = (TMatrixD*)fCrossTalkSignalArray->At(isector);
+        TMatrixD * crossTalkMatrixCache = (TMatrixD*)fCrossTalkSignalArray->At(isector+nROCs*2);
+        if (crossTalkMatrix){
+          (*crossTalkMatrixCache)*=0;
+          (*crossTalkMatrixCache)+=(*crossTalkMatrix);
+          (*crossTalkMatrix)*=0;
+        }
       }
-    }      
   }
+  /// 3.)  convolute common mode signal with ion tail if specified
+  // Retrieve ion tail parameters
+  TObjArray *ionTailArr = (TObjArray*)AliTPCcalibDB::Instance()->GetIonTailArray();
+  if (!ionTailArr) {AliFatal("TPC - Missing IonTail OCDB object");}
+  Float_t factorIROC=2, factorOROC=2;
+  //if (AliReconstructor::GetMCEvent()){     // if is MC event reconstruction  - this does not work
+  if (gSystem->AccessPathName("TPC.SDigits.root",kFileExists)==kFALSE){ // Is MC data?
+    // TODO -THIS IS HACK - apply MC ion tail correction onnly in case TPC summable digits exist. AccessPathName - use inverted logic
+    TObject *rocFactorIROC  = ionTailArr->FindObject("factorIROCMC");
+    TObject *rocFactorOROC  = ionTailArr->FindObject("factorOROCMC");
+    if (rocFactorIROC==NULL){
+      rocFactorIROC  = ionTailArr->FindObject("factorIROC");
+      rocFactorOROC  = ionTailArr->FindObject("factorOROC");
+    }
+    factorIROC      = (atof(rocFactorIROC->GetTitle()));
+    factorOROC      = (atof(rocFactorOROC->GetTitle()));
+    ::Info("AliTPCtracker::ApplyTailCancellation","Applied MC ion tail correction\t%f\t%f", factorIROC, factorOROC);
+  }else{                                  // Get ion tail correction factor for real data
+    TObject *rocFactorIROC  = ionTailArr->FindObject("factorIROC");
+    TObject *rocFactorOROC  = ionTailArr->FindObject("factorOROC");
+    factorIROC      = (atof(rocFactorIROC->GetTitle()));
+    factorOROC      = (atof(rocFactorOROC->GetTitle()));
+    ::Info("AliTPCtracker::ApplyTailCancellation","Applied raw data ion tail correction\t%f\t%f", factorIROC, factorOROC);
+  }
+  const Int_t nTRFs = 20;
+  Int_t nIonTailBins = 0;
+  TObjArray timeResFunc(nROCs);
+  for (Int_t isec = 0; isec < nROCs; isec++) {        //loop overs sectors
+    //
+    // Array of TGraphErrors for a given sector
+    TGraphErrors **graphRes = new TGraphErrors *[nTRFs];
+    Float_t *trfIndexArr = new Float_t[nTRFs];
+    for (Int_t icache = 0; icache < nTRFs; icache++) {
+      graphRes[icache] = NULL;
+      trfIndexArr[icache] = 0;
+    }
+    if (!AliTPCcalibDB::Instance()->GetTailcancelationGraphs(isec, graphRes, trfIndexArr)) continue;
+    //
+    // fill all TGraphErrors of trfs (time response function) of a given sector to a TObjArray
+    TObjArray *timeResArr = new TObjArray(nTRFs);
+    timeResArr->SetOwner(kTRUE);
+    TGraphErrors *lastGraph = NULL;
+    for (Int_t ires = 0; ires < nTRFs; ires++) {
+      if (graphRes[ires]) {
+        timeResArr->AddAt(graphRes[ires], ires);
+        lastGraph = graphRes[ires];
+      } else {
+        if (lastGraph != nullptr) timeResArr->AddAt(new TGraphErrors(*lastGraph), ires);
+      }
+    }
+    timeResFunc.AddAt(timeResArr, isec); // Fill all trfs into a single TObjArray
+    nIonTailBins = graphRes[0]->GetN();
+    delete trfIndexArr;
+  }
+
+
+  for (Int_t isector = 0; isector < nROCs; isector++) {  //set all elements of crosstalk matrix to 0
+    TMatrixD *crossTalkMatrix = (TMatrixD *) fCrossTalkSignalArray->At(isector);
+    TMatrixD matrixTail(crossTalkMatrix->GetNrows(), crossTalkMatrix->GetNcols());
+    TObjArray *arrTRF = (TObjArray *) timeResFunc.At(isector); /// get ion tail for sector
+    if (arrTRF == nullptr) continue;
+    TGraphErrors *graphTRFPRF = (TGraphErrors *) arrTRF->At(0);
+
+    if (graphTRFPRF == NULL) continue;
+    Int_t nPoints=graphTRFPRF->GetN();
+    Int_t nTimes = crossTalkMatrix->GetNcols();
+    Double_t factorTail=(isector<36) ? factorIROC:factorOROC;
+    for (Int_t iwire = 0; iwire < crossTalkMatrix->GetNrows(); iwire++) {
+      for (Int_t itime = 0; itime < crossTalkMatrix->GetNcols(); itime++) {
+        for (Int_t jtime = itime + 1; jtime < crossTalkMatrix->GetNcols(); jtime++) {
+          if (jtime - itime>=nPoints) continue;
+          Double_t trf = graphTRFPRF->GetY()[jtime - itime];
+          if (trf < 0) {
+            matrixTail(iwire, jtime) += (*crossTalkMatrix)(iwire, itime) * trf*factorTail;
+          }
+        }
+      }
+    }
+    if ((AliTPCReconstructor::StreamLevel() & kStreamCrosstalkMatrix) > 0) {
+      (*fDebugStreamer) << "crosstalkMatrixTail" <<
+                        "sector=" << isector <<
+                        "crossMatrix.=" << crossTalkMatrix <<
+                        "tailMatrix.=" << &matrixTail <<
+                        "\n";
+    }
+    (*crossTalkMatrix) += matrixTail;
+  }
+
+
 
   sw.Stop();
   AliInfoF("timing: %e/%e real/cpu",sw.RealTime(),sw.CpuTime());
@@ -2288,50 +2382,50 @@ void  AliTPCtracker::ApplyXtalkCorrection(){
   for (Int_t isector=0; isector<36; isector++){  //loop tracking sectors
     for (Int_t iside=0; iside<2; iside++){       // loop over sides A/C
       AliTPCtrackerSector &sector= (isector<18)?fInnerSec[isector%18]:fOuterSec[isector%18];
-      Int_t nrows     = sector.GetNRows();       
+      Int_t nrows     = sector.GetNRows();
       for (Int_t row = 0;row<nrows;row++){           // loop over rows       
-	AliTPCtrackerRow&  tpcrow = sector[row];     // row object   
-	Int_t ncl = tpcrow.GetN1();                  // number of clusters in the row
-	if (iside>0) ncl=tpcrow.GetN2();
-	Int_t xSector=0;    // sector number in the TPC convention 0-72
-	if (isector<18){  //if IROC
-	  xSector=isector+(iside>0)*18;
-	}else{
-	  xSector=isector+18;  // isector -18 +36   
-	  if (iside>0) xSector+=18;
-	}
-	TMatrixD &crossTalkMatrix= *((TMatrixD*)fCrossTalkSignalArray->At(xSector));
-    const Int_t nCols=crossTalkMatrix.GetNcols();
-	Int_t wireSegmentID     = fkParam->GetWireSegment(xSector,row);
-	for (Int_t i=0;i<ncl;i++) {
-	  AliTPCclusterMI *cluster= (iside>0)?(tpcrow.GetCluster2(i)):(tpcrow.GetCluster1(i));
-	  Int_t iTimeBin=TMath::Nint(cluster->GetTimeBin());
-      if (iTimeBin >= nCols) continue;
-      Double_t xTalk= crossTalkMatrix[wireSegmentID][iTimeBin];
-	  cluster->SetMax(cluster->GetMax()+xTalk);
-	  const Double_t kDummy=4;
-	  Double_t sumxTalk=xTalk*kDummy; // should be calculated via time response function
-	  cluster->SetQ(cluster->GetQ()+sumxTalk);
+        AliTPCtrackerRow&  tpcrow = sector[row];     // row object
+        Int_t ncl = tpcrow.GetN1();                  // number of clusters in the row
+        if (iside>0) ncl=tpcrow.GetN2();
+        Int_t xSector=0;    // sector number in the TPC convention 0-72
+        if (isector<18){  //if IROC
+          xSector=isector+(iside>0)*18;
+        }else{
+          xSector=isector+18;  // isector -18 +36
+          if (iside>0) xSector+=18;
+        }
+        TMatrixD &crossTalkMatrix= *((TMatrixD*)fCrossTalkSignalArray->At(xSector));
+        const Int_t nCols=crossTalkMatrix.GetNcols();
+        Int_t wireSegmentID     = fkParam->GetWireSegment(xSector,row);
+        for (Int_t i=0;i<ncl;i++) {
+          AliTPCclusterMI *cluster= (iside>0)?(tpcrow.GetCluster2(i)):(tpcrow.GetCluster1(i));
+          Int_t iTimeBin=TMath::Nint(cluster->GetTimeBin());
+          if (iTimeBin >= nCols) continue;
+          Double_t xTalk= crossTalkMatrix[wireSegmentID][iTimeBin];
+          cluster->SetMax(cluster->GetMax()+xTalk);
+          const Double_t kDummy=4;
+          Double_t sumxTalk=xTalk*kDummy; // should be calculated via time response function
+          cluster->SetQ(cluster->GetQ()+sumxTalk);
 
 
           if ((AliTPCReconstructor::StreamLevel()&kStreamXtalk)>0) {  // flag: stream crosstalk correctio as applied to cluster
             TTreeSRedirector &cstream = *fDebugStreamer;
             if (gRandom->Rndm() > 0.){
               cstream<<"Xtalk"<<
-                "isector=" << isector <<               // sector [0,36]
-                "iside=" << iside <<                   // side A or C
-                "row=" << row <<                       // padrow
-                "i=" << i <<                           // index of the cluster 
-                "xSector=" << xSector <<               // sector [0,72] 
-                "wireSegmentID=" << wireSegmentID <<   // anode wire segment id [0,10] 
-                "iTimeBin=" << iTimeBin <<             // timebin of the corrected cluster 
-                "xTalk=" << xTalk <<                   // Xtalk contribution added to Qmax
-                "sumxTalk=" << sumxTalk <<             // Xtalk contribution added to Qtot (roughly 3*Xtalk) 
-                "cluster.=" << cluster <<              // corrected cluster object 
-                "\n";
+                     "isector=" << isector <<               // sector [0,36]
+                     "iside=" << iside <<                   // side A or C
+                     "row=" << row <<                       // padrow
+                     "i=" << i <<                           // index of the cluster
+                     "xSector=" << xSector <<               // sector [0,72]
+                     "wireSegmentID=" << wireSegmentID <<   // anode wire segment id [0,10]
+                     "iTimeBin=" << iTimeBin <<             // timebin of the corrected cluster
+                     "xTalk=" << xTalk <<                   // Xtalk contribution added to Qmax
+                     "sumxTalk=" << sumxTalk <<             // Xtalk contribution added to Qtot (roughly 3*Xtalk)
+                     "cluster.=" << cluster <<              // corrected cluster object
+                     "\n";
             }
           }// dump the results to the debug streamer if in debug mode
-	}
+        }
       }
     }
   }
