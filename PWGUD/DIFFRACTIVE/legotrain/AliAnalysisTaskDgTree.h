@@ -10,14 +10,16 @@
 #include "AliAnalysisTaskSE.h"
 #include "TBits.h"
 #include "TArrayI.h"
+#include "AliPIDCombined.h"
+#include "AliESDtrackCuts.h"
+
 class TList;
 class TTree;
 class TH1D;
 class TH2D;
 class TObjString;
 class TClonesArray;
-class AliESDtrackCuts;
-class AliPIDCombined;
+
 class AliAnalysisTaskDgTree : public AliAnalysisTaskSE {
  public: 
   AliAnalysisTaskDgTree(const char* name = "AliAnalysisTaskDgTree");
@@ -28,18 +30,18 @@ class AliAnalysisTaskDgTree : public AliAnalysisTaskSE {
  protected:
   AliAnalysisTaskDgTree(const  AliAnalysisTaskDgTree &task);
   AliAnalysisTaskDgTree& operator=(const  AliAnalysisTaskDgTree &task);
-  AliPIDCombined* fPIDCombined; //
+  AliPIDCombined* fPIDCombined;     //
   AliESDtrackCuts* fTrackCutsBit0;  //!
   AliESDtrackCuts* fTrackCutsBit1;  //!
   AliESDtrackCuts* fTrackCutsBit5;  //!
   TList* fListOfHistos;             //! list of output histograms
-  TH2D* fTriggersVsRun;
-  TH1D* fEventStatistics;
+  TH2D* fTriggersVsRun;             //!
+  TH1D* fEventStatistics;           //!
   TTree* fTree;                     //! analysis tree
   TObjString* fChunkFileName;       //
   TClonesArray* fTracks;            //!
   TClonesArray* fTracklets;         //!
-  TClonesArray* fSATracks;         //!
+  TClonesArray* fSATracks;          //!
   TObjString fClassesFired;
   Int_t fEventInFile;
   UInt_t fPeriod;
