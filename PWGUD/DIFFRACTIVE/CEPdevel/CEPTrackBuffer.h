@@ -80,8 +80,8 @@ class CEPTrackBuffer : public TObject {
     void SetTPCnclsS(Int_t nclss)    { fTPCnclsS = nclss; }
     void SetinVertex(Bool_t invert)  { finVertex = invert; }
     
-    void SetXYv(Int_t xyv)           { fXYv = xyv; }
-    void SetZv(Int_t zv)             { fZv = zv; }
+    void SetXYv(Double_t xyv)           { fXYv = xyv; }
+    void SetZv(Double_t zv)             { fZv = zv; }
     
     void SetMomentum(TVector3 mom)   { fMomentum = mom; }
     
