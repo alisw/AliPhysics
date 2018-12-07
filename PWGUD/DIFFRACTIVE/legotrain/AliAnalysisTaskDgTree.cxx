@@ -66,7 +66,6 @@ AliAnalysisTaskDgTree::AliAnalysisTaskDgTree(const char* name) :
   fL0inputs(0),
   fL1inputs(0),
   fRunNumber(0),
-  fNofTracklets(0),
   fV0ADecision(),
   fV0CDecision(),
   fADADecision(),
@@ -86,6 +85,7 @@ AliAnalysisTaskDgTree::AliAnalysisTaskDgTree(const char* name) :
   fSTG(),
   fOM2(),
   fOMU(),
+  fNofTracklets(0),
   fFOmap(),
   fFiredChipMap(),
   fTOFhits(),
@@ -306,10 +306,10 @@ void AliAnalysisTaskDgTree::UserExec(Option_t *){
     Float_t phi   = mult->GetPhi(i);
     Float_t eta   = -TMath::Log(TMath::Tan(mult->GetTheta(i)/2));
     Float_t dphi  = mult->GetDeltaPhi(i);
-    AliUpcParticle* tracklet = new ((*fTracklets)[fTracklets->GetEntriesFast()]) AliUpcParticle(dphi,eta,phi,0,0,0);
+    new ((*fTracklets)[fTracklets->GetEntriesFast()]) AliUpcParticle(dphi,eta,phi,0,0,0);
   }
   
-  for (Int_t ipart=0;ipart<fInputEvent->GetNumberOfTracks();ipart++){
+  for (Long_t ipart=0;ipart<fInputEvent->GetNumberOfTracks();ipart++){
     AliESDtrack* track = (AliESDtrack*) fInputEvent->GetTrack(ipart);
     if (!fTrackCutsBit1->AcceptTrack(track)) continue;
     ULong_t status = track->GetStatus();
@@ -320,13 +320,14 @@ void AliAnalysisTaskDgTree::UserExec(Option_t *){
     Float_t phi    = track->Phi();
     Short_t charge = track->Charge();
     Int_t   label  = track->GetLabel();
+    float* fstatus = (float *) &status;
     AliUpcParticle* part = new ((*fSATracks)[fSATracks->GetEntriesFast()]) AliUpcParticle(pt,eta,phi,charge,label,2);
     part->SetAt(itsMap,0);
-    part->SetAt(*((Float_t*) &status),1);
+    part->SetAt(*(fstatus),1);
   }
 
   AliPIDResponse* pid = fInputHandler->GetPIDResponse();
-  for (Int_t ipart=0;ipart<fInputEvent->GetNumberOfTracks();ipart++){
+  for (Long_t ipart=0;ipart<fInputEvent->GetNumberOfTracks();ipart++){
     AliESDtrack* track = (AliESDtrack*) fInputEvent->GetTrack(ipart);
     if (!track) continue;
     Bool_t isBit0 = fTrackCutsBit0->AcceptTrack(track);
@@ -334,7 +335,7 @@ void AliAnalysisTaskDgTree::UserExec(Option_t *){
     if (!isBit0) continue;
     UChar_t itsMap = track->GetITSClusterMap();
     if (!TESTBIT(itsMap,0) && !TESTBIT(itsMap,1)) continue;
-    UInt_t filterMap = 0;
+    ULong_t filterMap = 0;
     if (isBit0) filterMap |= 1 << 0;
     if (isBit5) filterMap |= 1 << 5;
     Float_t pt     = track->Pt();
@@ -343,16 +344,24 @@ void AliAnalysisTaskDgTree::UserExec(Option_t *){
     Short_t charge = track->Charge();
     Int_t   label  = track->GetLabel();
     ULong_t status = track->GetStatus();
-    Int_t indexITSModule0 = track->GetITSModuleIndex(0);
-    Int_t indexITSModule1 = track->GetITSModuleIndex(1);
-    Int_t indexITSModule6 = track->GetITSModuleIndex(6);
-    Int_t indexITSModule7 = track->GetITSModuleIndex(7);
+    Long_t indexITSModule0 = track->GetITSModuleIndex(0);
+    Long_t indexITSModule1 = track->GetITSModuleIndex(1);
+    Long_t indexITSModule6 = track->GetITSModuleIndex(6);
+    Long_t indexITSModule7 = track->GetITSModuleIndex(7);
+    float* fstatus          = (float *) &status;
+    float* ffilterMap       = (float *) &filterMap;
+    float* fipart           = (float *) &fipart;
+    float* findexITSModule0 = (float *) &indexITSModule0;
+    float* findexITSModule1 = (float *) &indexITSModule1;
+    float* findexITSModule6 = (float *) &indexITSModule6;
+    float* findexITSModule7 = (float *) &indexITSModule7;
+    
     Float_t b[2]; // [dcaToVertexXY,dcaToVertexZ]
     track->GetImpactParameters(b[0],b[1]);
 
     AliUpcParticle* part = new ((*fTracks)[fTracks->GetEntriesFast()]) AliUpcParticle(pt,eta,phi,charge,label,25);
     part->SetAt(itsMap,0);
-    part->SetAt(*((Float_t*) &status),1);
+    part->SetAt(*(fstatus),1);
     part->SetAt(track->GetTPCNcls(),2);
     part->SetAt(track->GetTPCCrossedRows(),3);
     part->SetAt(track->GetTPCNclsF(),4);
@@ -367,12 +376,12 @@ void AliAnalysisTaskDgTree::UserExec(Option_t *){
     part->SetAt(pid->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kPion),13);
     part->SetAt(pid->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kKaon),14);
     part->SetAt(pid->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kProton),15);
-    part->SetAt(*((Float_t*) &filterMap),16);
-    part->SetAt(*((Float_t*) &ipart),17);
-    part->SetAt(*((Float_t*) &indexITSModule0),18);
-    part->SetAt(*((Float_t*) &indexITSModule1),19);
-    part->SetAt(*((Float_t*) &indexITSModule6),20);
-    part->SetAt(*((Float_t*) &indexITSModule7),21);
+    part->SetAt(*(ffilterMap)      ,16);
+    part->SetAt(*(fipart)          ,17);
+    part->SetAt(*(findexITSModule0),18);
+    part->SetAt(*(findexITSModule1),19);
+    part->SetAt(*(findexITSModule6),20);
+    part->SetAt(*(findexITSModule7),21);
     part->SetAt(b[0],22); // dcaToVertexXY
     part->SetAt(b[1],23); // ddcaToVertexZ
     part->SetAt(track->GetChi2TPCConstrainedVsGlobal(vertex),24);
