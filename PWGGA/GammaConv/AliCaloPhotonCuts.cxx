@@ -6055,7 +6055,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
       if(isMC>0){
         if( fCurrentMC== kPbPb5T15HIJING){
           if(fClusterType==1){
-            energy /= (FunctionNL_kSDM(energy, 0.91336, -2.57765, -0.334976) ; //updated 7 Dec 2018 - peripheral (60-80%) pcmcalo correction
+            energy /= (FunctionNL_kSDM(energy, 0.91336, -2.57765, -0.334976) ); //updated 7 Dec 2018 - peripheral (60-80%) pcmcalo correction
           }
         } else if( fCurrentMC==kXeXe5T17HIJING ){
           if (fClusterType == 1 ){
