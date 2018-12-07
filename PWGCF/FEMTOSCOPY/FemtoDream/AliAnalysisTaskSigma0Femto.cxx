@@ -643,14 +643,14 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     fQA->Add(fHistTriggerAfter);
   }
 
-  std::vector<float> multBins = {{0, 0.01, 0.05, 0.1, 0.9, 1., 5., 10., 15.,
-                                  20., 30., 40., 50., 70., 100.}};
+  std::vector<float> multBinsLow = {{0, 0.01, 0.05, 0.1, 5., 15., 30., 50.}};
+  std::vector<float> multBinsUp = {{0.01, 0.05, 0.1, 5., 15., 30., 50., 100.}};
   fHistMultiplicity =
-      new TH1I("fHistMultiplicity", "; Multiplicity bin; Entries", 14, 0, 14);
+      new TH1I("fHistMultiplicity", "; Multiplicity bin; Entries", 8, 0, 8);
   fHistMultiplicity->GetXaxis()->LabelsOption("u");
-  for (int i = 0; i < static_cast<int>(multBins.size() - 1); i++) {
+  for (int i = 0; i < static_cast<int>(multBinsLow.size()); i++) {
     fHistMultiplicity->GetXaxis()->SetBinLabel(
-        i + 1, Form("V0M: %.2f - %.2f %%", multBins[i], multBins[i + 1]));
+        i + 1, Form("V0M: %.2f - %.2f %%", multBinsLow[i], multBinsUp[i]));
   }
   fQA->Add(fHistMultiplicity);
 
