@@ -1120,9 +1120,13 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
 	    hESDConversionRPt[fiCut]->Fill(gamma->GetPhotonPt(),gamma->GetConversionRadius(),fWeightMultMC);
 	}else if ( !(pdgCodeNeg==pdgCodePos)){
             Bool_t gammaIsPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, posDaughter->GetMother(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
-            if(pdgCode == 111)      fKind = 3; // pi0 Dalitz
-            else if (pdgCode == 221)fKind = 4; // eta Dalitz
-            else if (!(negDaughter->GetUniqueID() != 5 || posDaughter->GetUniqueID() !=5)){
+            if(pdgCode == 111) {
+	      fKind = 3; // pi0 Dalitz
+	      hESDConversionRPt[fiCut]->Fill(gamma->GetPhotonPt(),gamma->GetConversionRadius(),fWeightMultMC);
+            }else if (pdgCode == 221){
+	      fKind = 4; // eta Dalitz
+	      hESDConversionRPt[fiCut]->Fill(gamma->GetPhotonPt(),gamma->GetConversionRadius(),fWeightMultMC);
+            }else if (!(negDaughter->GetUniqueID() != 5 || posDaughter->GetUniqueID() !=5)){
                 if(pdgCode == 22 && gammaIsPrimary){
                     fKind = 0; // primary photons
                 } else if (pdgCode == 22){
@@ -1167,7 +1171,10 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
         hMCTrueConversionRPhi[fiCut]->Fill(gamma->GetPhotonPhi(),gamma->GetConversionRadius());
         hMCTrueConversionRZ[fiCut]->Fill(gamma->GetConversionZ(),gamma->GetConversionRadius());
         hMCTrueConversionREta[fiCut]->Fill(gamma->GetPhotonEta(),gamma->GetConversionRadius());
-        hMCTrueConversionRPt[fiCut]->Fill(gamma->GetPhotonPt(),gamma->GetConversionRadius(),weighted*fWeightMultMC);
+
+        if(fKind==0) hMCTrueConversionRPt[fiCut]->Fill(gamma->GetPhotonPt(),gamma->GetConversionRadius(),weighted*fWeightMultMC);
+        if(fKind==5) hMCTrueConversionRPt[fiCut]->Fill(gamma->GetPhotonPt(),gamma->GetConversionRadius(),fWeightMultMC);
+
         hMCTrueConversionWOWeightRPt[fiCut]->Fill(gamma->GetPhotonPt(),gamma->GetConversionRadius());
 
 	if(fKind==0) hESDConversionRPt[fiCut]->Fill(gamma->GetPhotonPt(),gamma->GetConversionRadius(),weighted*fWeightMultMC);
