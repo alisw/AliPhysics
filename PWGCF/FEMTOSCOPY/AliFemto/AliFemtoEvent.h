@@ -19,22 +19,29 @@ class AliEventplane;
 
 
 /// \class AliFemtoEvent
-/// \brief AliFemtoEvent holds the event information specific and a track list.
+/// \brief AliFemtoEvent holds the event information specific and a
+///        track list.
 ///
-/// AliFemtoEvent is the "transient microDST". Objects of this class are
-/// generated from the input data by an AliFemtoEventReader, and then presented
-/// to the cuts of the various active Analyses.
+/// AliFemtoEvent is the "transient microDST".
+/// Objects of this class are generated from the input data by an
+/// AliFemtoEventReader, and then presented to the cuts of the
+/// various active Analyses.
 ///
 class AliFemtoEvent {
 public:
+  /// default constructor
   AliFemtoEvent();
+
+  /// copy constructor with track and v0 cuts
   AliFemtoEvent(const AliFemtoEvent& ev,
                 AliFemtoTrackCut* tCut=NULL,
                 AliFemtoV0Cut* vCut=NULL,
                 AliFemtoXiCut* xCut=NULL,
-                AliFemtoKinkCut* kCut=NULL); ///< copy constructor with track and v0 cuts
+                AliFemtoKinkCut* kCut=NULL);
 
-  AliFemtoEvent(const AliFemtoEvent& ev); ///< copy constructor
+  /// copy constructor
+  AliFemtoEvent(const AliFemtoEvent& ev);
+
   ~AliFemtoEvent();
   AliFemtoEvent& operator=(const AliFemtoEvent& aEvent);
 
