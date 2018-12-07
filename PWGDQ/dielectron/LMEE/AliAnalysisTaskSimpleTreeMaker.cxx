@@ -349,14 +349,14 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 	fTree->Branch("nTPCshared",        &nTPCshared,        "nTPCshared/F");
 	fTree->Branch("fTPCcrossOverFind", &fTPCcrossOverFind, "fTPCcrossOverFind/F");
 	fTree->Branch("chi2TPC",           &chi2TPC,           "chi2TPC/F");
-	fTree->Branch("nITS",              &nITS,              "nITS/F");
+	fTree->Branch("nITS",              &nITS,              "nITS/I");
 	fTree->Branch("fITSshared",        &fITSshared,        "fITSshared/F");
 	fTree->Branch("chi2ITS",           &chi2ITS,           "chi2ITS/F");
 	fTree->Branch("SPDfirst",          &SPDfirst,          "SPDfirst/O");
 	fTree->Branch("DCAxy",             &DCA[0],            "DCAxy/F");
 	fTree->Branch("DCAz",              &DCA[1],            "DCAz/F");
 	fTree->Branch("goldenChi2",        &goldenChi2,        "goldenChi2/F");
-	fTree->Branch("charge",            &charge,            "charge/F");
+	fTree->Branch("charge",            &charge,            "charge/I");
 	fTree->Branch("EsigITS",           &EnSigmaITS,     "EsigITS/F");
 	if(fUseITScorr){
 		fTree->Branch("EsigITScorr",     &EnSigmaITScorr, "EsigITScorr/F");
@@ -405,7 +405,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 		fTree->Branch("gLabelFirstMother", &gLabelFirstMother,    "gLabelFirstMother/I");
 		fTree->Branch("labelMinInitial",   &gLabelMinFirstMother, "labelMinInitial/I");
 		fTree->Branch("labelMaxInitial",   &gLabelMaxFirstMother, "labelMaxInitial/I");
-		fTree->Branch("isInjected",        &isInj,                "isInjected/O");
+		fTree->Branch("isInjected",        &isInj,                "isInjected/I");
 	}
 	//Event variables
 	fTree->Branch("vertexX",         &primaryVertex[0], "vertexX/F");
@@ -417,7 +417,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 	fTree->Branch("multiplicityV0C", &multiplicityV0C,  "multiplicityV0C/F");
 	fTree->Branch("multiplicityCL1", &multiplicityCL1,  "multiplicityCL1/F");
 	fTree->Branch("gridPID",         &fGridPID,         "gridPID/I");
-	fTree->Branch("TOFstartMask",    &TOFstartMask,     "TOFstartMask/F");
+	fTree->Branch("TOFstartMask",    &TOFstartMask,     "TOFstartMask/I");
 
 	//Get grid PID which can be used later to assign unique event numbers
 	if(fIsGRIDanalysis){
