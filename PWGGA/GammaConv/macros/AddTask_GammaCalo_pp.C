@@ -1291,6 +1291,11 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","2446600044012300000","0163103100000010"); // INT7 w/ TM NCells 2
   } else if (trainConfig ==806){//Comparing CellQA Config from GammaConv
     cuts.AddCutCalo("00010113","2446600000012300000","0163103100000010"); // INT7
+  } else if (trainConfig ==807){//Non Lin Studies
+    cuts.AddCutCalo("00010113","2446600000013300000","0163103100000010"); // INT7
+    cuts.AddCutCalo("00010113","2446611000013300000","0163103100000010"); // INT7 //case 11=> FunctionNL_kSDM
+    cuts.AddCutCalo("00010113","2446621000013300000","0163103100000010"); // INT7 //case 21=> unctionNL_DPOW
+
 
   // *********************************************************************************************************
   // 5 TeV 2017 pp - Jet configurations
