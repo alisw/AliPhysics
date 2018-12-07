@@ -1062,7 +1062,7 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option) {
         if (lowerElem<zeroElem) lowerElem=zeroElem;
         //
         qIonTail=0;
-        Float_t ionTainNorm=recoParam->GetUseIonTailCorrection();  //normalization correction for ion tail
+        Float_t ionTailNorm=recoParam->GetIonTailCorrection();  //normalization correction for ion tail
         if (q>0 && recoParam->GetUseIonTailCorrection()){
           for (Int_t i=0;i<nInputs; i++) if (active[i]){
               Short_t *pdigC= digarr[i]->GetDigits();
