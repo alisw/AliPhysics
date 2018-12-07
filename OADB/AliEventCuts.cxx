@@ -82,7 +82,7 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fVZEROvsTPCoutPolCut{1.e8,0.,0.,0.,0.},
   fRequireExactTriggerMask{false},
   fTriggerMask{AliVEvent::kAny},
-  fTriggerClasses{""},
+  fTriggerClasses{},
   fContainer{},
   fkLabels{"raw","selected"},
   fManualMode{false},
@@ -160,7 +160,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   /// A special bit is set in this case
   TString classes = ev->GetFiredTriggerClasses();
   for (const std::string& myClass : fTriggerClasses) {
-    if (classes.Contains(myClass.data())) {
+    if (classes.Contains(myClass.data()) && !myClass.empty()) {
       fFlag |= BIT(kTrigger);
       fFlag |= BIT(kTriggerClasses);
       break;
