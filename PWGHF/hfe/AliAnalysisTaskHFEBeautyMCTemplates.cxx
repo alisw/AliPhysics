@@ -443,6 +443,7 @@ void AliAnalysisTaskHFEBeautyMCTemplates::Process(AliAODEvent *const aodEvent)
   Double_t IP=0., IPUncorr, CorrBeautyRAA, CorrBeautyHalfRAA, CorrCharm3050, IPCorrection, OOPCorrection, BeautyIPCorrection, BeautyOOPCorrection;
   Double_t rndm = 0.;
   Int_t Source, SourceNew;
+  Double_t CorrGaussWidth=0.;
   
   if(analyzeEvent)
   {
@@ -463,13 +464,15 @@ void AliAnalysisTaskHFEBeautyMCTemplates::Process(AliAODEvent *const aodEvent)
         SourceNew = FindSource(mcple, fMCEvent, MotherPt, GSMotherPt); // This also fills the motherPt
         fExtraCuts->GetHFEImpactParameters((AliVTrack *)track,dcaxyD,dcaErr);
         dcaErr =  dcaxyD / dcaErr; // because dcaerr is actually the dca significance
-        IP = dcaxyD*track->Charge()*fieldConfiguration+fRd->Gaus(0., 0.458*dcaErr); // 0.458 corresponds to a 10% width change
+        CorrGaussWidth = TMath::Sqrt((1. + 0.054*TMath::Power(pt, 0.56))*(1. + 0.054*TMath::Power(pt, 0.56))-1.);
+        IP = dcaxyD*track->Charge()*fieldConfiguration+fRd->Gaus(0., CorrGaussWidth*dcaErr); // 0.458 corresponds to a 10% width change
         if(Source == 0)
         {
            // Just to fill the motherpT
           pTEdgeOfBin = fDCABeauty->GetXaxis()->GetBinLowEdge(fDCABeauty->GetXaxis()->FindBin(pt));
-          CorrCharm3050 = 1410.16*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(TMath::Exp(-MotherPt*0.11023)+234.578*TMath::Exp(-MotherPt*0.439153))
-                /(1410.16*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(TMath::Exp(-pTEdgeOfBin*0.11023)+234.578*TMath::Exp(-pTEdgeOfBin*0.439153)));
+          CorrCharm3050 = 15.8864*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(MotherPt*(2.09819*TMath::Exp(-MotherPt*0.739794)+0.0396785*TMath::Exp(-MotherPt*0.169834))) / (15.8864*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(pTEdgeOfBin*(2.09819*TMath::Exp(-pTEdgeOfBin*0.739794)+0.0396785*TMath::Exp(-pTEdgeOfBin*0.169834))));
+          //CorrCharm3050 = 1410.16*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(TMath::Exp(-MotherPt*0.11023)+234.578*TMath::Exp(-MotherPt*0.439153)) // old (10h)
+          //      /(1410.16*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(TMath::Exp(-pTEdgeOfBin*0.11023)+234.578*TMath::Exp(-pTEdgeOfBin*0.439153)));
           IPCorrection = ((MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.8*4/3.14159+1) / ((pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.8*4/3.14159+1);
           OOPCorrection = (1-(MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.8*4/3.14159) / (1-(pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.8*4/3.14159);
           fDCACharm->Fill(pt, IP);
@@ -500,8 +503,9 @@ void AliAnalysisTaskHFEBeautyMCTemplates::Process(AliAODEvent *const aodEvent)
         if(SourceNew == 0)
         {
           pTEdgeOfBin = fDCABeauty->GetXaxis()->GetBinLowEdge(fDCABeauty->GetXaxis()->FindBin(pt));
-          CorrCharm3050 = 1410.16*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(TMath::Exp(-MotherPt*0.11023)+234.578*TMath::Exp(-MotherPt*0.439153))
-                /(1410.16*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(TMath::Exp(-pTEdgeOfBin*0.11023)+234.578*TMath::Exp(-pTEdgeOfBin*0.439153)));
+          CorrCharm3050 = 15.8864*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(MotherPt*(2.09819*TMath::Exp(-MotherPt*0.739794)+0.0396785*TMath::Exp(-MotherPt*0.169834))) / (15.8864*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(pTEdgeOfBin*(2.09819*TMath::Exp(-pTEdgeOfBin*0.739794)+0.0396785*TMath::Exp(-pTEdgeOfBin*0.169834))));
+          //1410.16*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(TMath::Exp(-MotherPt*0.11023)+234.578*TMath::Exp(-MotherPt*0.439153)) // old
+          //      /(1410.16*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(TMath::Exp(-pTEdgeOfBin*0.11023)+234.578*TMath::Exp(-pTEdgeOfBin*0.439153)));
           IPCorrection = ((MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.8*4/3.14159+1) / ((pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.8*4/3.14159+1);
           OOPCorrection = (1-(MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.8*4/3.14159) / (1-(pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.8*4/3.14159);
           fDCACharmNew->Fill(pt, IP);
@@ -563,7 +567,8 @@ void AliAnalysisTaskHFEBeautyMCTemplates::Process(AliAODEvent *const aodEvent)
       {
         fExtraCuts->GetHFEImpactParameters((AliVTrack *)track,dcaxyD,dcaErr);  // DCA only calculated for electrons otherwise
         dcaErr =  dcaxyD / dcaErr; // because dcaerr is actually the dca significance
-        IP = dcaxyD*track->Charge()*fieldConfiguration+fRd->Gaus(0., 0.458*dcaErr); // 0.458 corresponds to a 10% width change
+        CorrGaussWidth = TMath::Sqrt((1. + 0.054*TMath::Power(pt, 0.56))*(1. + 0.054*TMath::Power(pt, 0.56))-1.);
+        IP = dcaxyD*track->Charge()*fieldConfiguration+fRd->Gaus(0., CorrGaussWidth*dcaErr); // 0.458 corresponds to a 10% width change
         IPUncorr = dcaxyD*track->Charge()*fieldConfiguration;
         fDCAHadrons->Fill(pt, dcaxyD*track->Charge()*fieldConfiguration); // dcaxyD*track->Charge()*fieldConfiguration , for now leav factors out to check on center changes etc.
         
