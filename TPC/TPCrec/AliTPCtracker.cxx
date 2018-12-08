@@ -1767,6 +1767,7 @@ void  AliTPCtracker::CalculateXtalkCorrection(){
   // 1.) Filling part -- loop over clusters
   //
   Double_t missingChargeFactor= AliTPCReconstructor::GetRecoParam()->GetCrosstalkCorrectionMissingCharge();
+  Double_t correctionFactor=AliTPCReconstructor::GetRecoParam()->GetCrosstalkCorrection();
   for (Int_t iter=0; iter<nIterations;iter++){
     for (Int_t isector=0; isector<36; isector++){      // loop over sectors
       for (Int_t iside=0; iside<2; iside++){           // loop over sides A/C
@@ -1820,7 +1821,7 @@ void  AliTPCtracker::CalculateXtalkCorrection(){
                   }
                 }
               }
-              qTotXtalk = clXtalk->GetQ()*trf/norm+missingCharge*missingChargeFactor;
+              qTotXtalk = correctionFactor*clXtalk->GetQ()*trf/norm+missingCharge*missingChargeFactor;
               qTotXtalkMissing = missingCharge;
               crossTalkSignal[wireSegmentID][itb]+= qTotXtalk/nPadsPerSegment;
               crossTalkSignalBelow[wireSegmentID][itb]+= qTotXtalkMissing/nPadsPerSegment;
