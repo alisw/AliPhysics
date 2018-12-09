@@ -1,5 +1,5 @@
 ///
-/// \file PWGCF/FEMTOSCOPY/macros/Train/PionPionFemto/ConfigNuFemtoAnalysisRun.C
+/// \file PWGCF/FEMTOSCOPY/macros/Train/PionPionFemto/ConfigNuFemtoAnalysis.C
 ///
 /// \brief The configuration macro which sets up identical pion-pion analyses
 /// \author Andrew Kubera, Ohio State University, andrew.kubera@cern.ch
@@ -24,25 +24,25 @@
 #include "AliFemtoCorrFctnDPhiStarDEta.h"
 #include "AliFemtoQinvCorrFctn.h"
 #include "AliFemtoModelWeightGeneratorBasic.h"
+#include "AliFemtoModelWeightGeneratorLednicky.h"
+
 #include "AliFemtoModelCorrFctnDEtaDPhiStar.h"
 #include "AliFemtoModelCorrFctnDEtaDPhiAK.h"
-
-// #include "AliFemtoCorrFctnQ3DLCMS.h"
-// #include "AliFemtoCorrFctnQ3DPF.h"
 #include "AliFemtoCorrFctn3DLCMSPosQuad.h"
 #include "AliFemtoCorrFctn3DLCMSSym.h"
 #include "AliFemtoModelCorrFctnTrueQ6D.h"
 #include "AliFemtoQinvCorrFctn.h"
 
 #include "AliFemtoCorrFctnDirectYlm.h"
+#include "AliFemtoCorrFctnQ3D.h"
 
 #include "AliFemtoModelCorrFctnTrueQ3D.h"
 #include "AliFemtoModelCorrFctnTrueQ3DByParent.h"
-
 #include "AliFemtoKtBinnedCorrFunc.h"
-// #include "AliFemt"
 #include "AliFemtoModelCorrFctnTrueQ.h"
+
 #include <TROOT.h>
+#include <TBase64.h>
 
 #endif
 
@@ -374,7 +374,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
         analysis->AddCorrFctn(trueq_cf);
       }
       if (macro_config.do_q3d_cf) {
-        analysis->AddCorrFctn(new AliFemtoCorrFctn3DLCMSSym("_q3D", macro_config.q3d_bin_count, macro_config.q3d_maxq));
+        analysis->AddCorrFctn(new AliFemtoCorrFctn3DLCMSSym("Q3D", macro_config.q3d_bin_count, macro_config.q3d_maxq));
       }
 
       if (macro_config.do_trueq3d_cf) {
@@ -437,14 +437,13 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_pqq3d_cf) {
-        AliFemtoCorrFctn3DLCMSPosQuad *cf = AliFemtoCorrFctn3DLCMSPosQuad(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq);
+        AliFemtoCorrFctn3DLCMSPosQuad *cf = new AliFemtoCorrFctn3DLCMSPosQuad("PQ3D", macro_config.q3d_bin_count, macro_config.q3d_maxq);
         analysis->AddCorrFctn(cf);
       }
 
       if (macro_config.do_kt_pqq3d_cf) {
-        TString q3d_cf_name("_q3d");
         AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_PQ3D",
-          new AliFemtoCorrFctn3DLCMSPosQuad(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq));
+          new AliFemtoCorrFctn3DLCMSPosQuad("", macro_config.q3d_bin_count, macro_config.q3d_maxq));
 
         for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
           float low = macro_config.kt_ranges[kt_idx],
@@ -498,11 +497,11 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_kt_truedetadphi_cf) {
-        AliFemtoModelCorrFctnTrueQ3DByParent *kt_truedetadphi_cf =
+        AliFemtoModelCorrFctnDEtaDPhiAK *kt_truedetadphi_cf =
           new AliFemtoModelCorrFctnDEtaDPhiAK("",
                                               macro_config.q3d_bin_count,
                                               macro_config.q3d_maxq);
-        kt_truedetadphi_cf->SetManager(model_manager);
+        kt_truedetadphi_cf->ConnectToManager(model_manager);
 
         AliFemtoKtBinnedCorrFunc *kt_truedetadphi_cfs = new AliFemtoKtBinnedCorrFunc("KT_TrueDetaDphi", kt_truedetadphi_cf);
 
