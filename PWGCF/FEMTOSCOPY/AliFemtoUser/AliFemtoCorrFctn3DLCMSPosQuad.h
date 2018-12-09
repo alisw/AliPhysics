@@ -2,8 +2,10 @@
 /// \file AliFemtoUser/AliFemtoCorrFctn3DLCMSPosQuad.h
 ///
 
-#ifndef ALIFEMTOCORRFCTN3DLCMS_H
-#define ALIFEMTOCORRFCTN3DLCMS_H
+
+
+#ifndef ALIFEMTOCORRFCTN3DLCMSPOSQUAD_H
+#define ALIFEMTOCORRFCTN3DLCMSPOSQUAD_H
 
 // forward declare classes
 class TH3F;
