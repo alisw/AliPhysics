@@ -1,24 +1,27 @@
 ///
-/// \file PWGCF/FEMTOSCOPY/macros/Train/PionPionFemto/AddTaskPionPion.C
+/// \file PWGCF/FEMTOSCOPY/macros/Train/PionPionFemto/AddNuTaskPionPionRoot6.C
 /// \author Andrew Kubera, Ohio State University, andrew.kubera@cern.ch
 ///
 
-#ifndef __CINT__
+#if !defined(__CINT__) && !defined(__CLING__)
+
+#include <TROOT.h>
 
 #include <TString.h>
 #include <TList.h>
 #include <TObjArray.h>
+#include <TObjString.h>
 
-#include "AliAnalysisTaskFemto.h"
-#include "AliAnalysisManager.h"
+#include <AliAnalysisManager.h>
+
+#include "AliAnalysisTaskFemtoNu.h"
 
 #endif
 
-///
-/// \brief Adds an AliAnalysisTaskFemto analysis object, constructed
+/// \brief Adds an AliAnalysisTaskFemtoNu analysis object, constructed
 ///        with parameters provided, to the global AliAnalysisManager.
 ///
-/// This macro creates and returns an AliAnalysisTaskFemto object.
+/// This macro creates and returns an :class:`AliAnalysisTaskFemto` object.
 /// The task object is given a macro
 /// is given the config macro "Train/PionPionFemto/ConfigFemtoAnalysis.C"
 /// which is run to create the analysis objects.
@@ -56,30 +59,29 @@
 ///     If this macro is run in a train with subwagons, this will be
 ///     set with the identifier.
 ///
-AliAnalysisTaskFemto* AddTaskPionPion(TString configuration,
-                                      TString params,
-                                      TString subwagon_suffix="")
-{ // Adds a Pion-Pion Femtoscopy task to the manager
+AliAnalysisTask* AddNuTaskPionPionRoot6(TString container,
+                                        TString configuration,
+                                        TString params,
+                                        TString subwagon_suffix)
+{
+  std::cout << "\n\n============== AddNuTaskPionPion (ROOT6 Version) ===============\n";
 
   const TString AUTO_DIRECTORY = "$ALICE_PHYSICS/PWGCF/FEMTOSCOPY/macros/Train/PionPionFemto",
-                DEFAULT_MACRO = "%%/ConfigFemtoAnalysis.C",
-                DEFAULT_CONTAINER_NAME = "pionpion_femtolist",
+                DEFAULT_MACRO = "%%/ConfigNuFemtoAnalysisR6.C",
                 DEFAULT_OUTPUT_CONTAINER = "PWG2FEMTO",
-                DEFAULT_TASK_NAME = "TaskPionPion",
                 DEFAULT_SUBWAGON_TYPE = "centrality";
 
-  // Get the global manager
+  // Get the global analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTaskPionPion", "Could not get the global AliAnalysisManager.");
-    return NULL;
+    Error("AddNuTaskPionPion", "Could not get the global AliAnalysisManager.");
+    return nullptr;
   }
 
   TString macro = DEFAULT_MACRO,
           output_filename = mgr->GetCommonFileName(),
-          task_name = DEFAULT_TASK_NAME,
-          container = DEFAULT_CONTAINER_NAME,
           output_container = DEFAULT_OUTPUT_CONTAINER,
+          subwagon_array = "",
           subwagon_type = DEFAULT_SUBWAGON_TYPE;
 
   bool verbose = kFALSE;
@@ -87,10 +89,15 @@ AliAnalysisTaskFemto* AddTaskPionPion(TString configuration,
   TObjArray* lines = configuration.Tokenize("\n;");
 
   TIter next_line(lines);
-  TObject *line_obj = NULL;
+  TObject *line_obj = nullptr;
 
-  while (line_obj = next_line()) {
-    TString cmd = ((TObjString*)line_obj)->String().Strip(TString::kBoth, ' ');
+  while ((line_obj = next_line())) {
+    TObjString *s = static_cast<TObjString*>(line_obj);
+    TString cmd = s->String().Strip(TString::kBoth, ' ');
+    if (cmd.IsWhitespace()) {
+      continue;
+    }
+
     cmd.ReplaceAll("'", '"');
     std::cout << "running `" << cmd  << "`\n";
     gROOT->ProcessLineFast(cmd + ';');
@@ -101,16 +108,20 @@ AliAnalysisTaskFemto* AddTaskPionPion(TString configuration,
 
   // Dealing with subwagons
   if (!subwagon_suffix.IsWhitespace()) {
-    subwagon_type.ToLower();
-
-    if (subwagon_type == "centrality") {
-      params = TString::Format("~use_subwagon_centrality=true; ~subwagon_centrality='%s';", subwagon_suffix.Data()) + params.Data();
-    } else {
-      std::cerr << "AddTaskPionPion - Unexpected subwagon_type '" << subwagon_type << "' - Ignoring\n";
+    Int_t index = subwagon_suffix.Atoi();
+    TObjArray *values = subwagon_array.Tokenize(",");
+    TIter next_value(values);
+    for (int i=0; i<index; ++i) {
+      next_value();
     }
+    TString ss = ((TObjString*)next_value())->String();
+    params += Form("%s = %s;", subwagon_type.Data(), ss.Data());
+
+    container += "_" + subwagon_suffix;
   }
 
   cout << "[AddTaskPionPion]\n"
+          "   container: " << container << "\n"
           "   output: '" << output_filename << "'\n"
           "   macro: '" << macro << "'\n"
           "   params: '" << params << "'\n";
@@ -125,28 +136,47 @@ AliAnalysisTaskFemto* AddTaskPionPion(TString configuration,
                                               .ReplaceAll("\"", "\\\"")
                                               .ReplaceAll("\t", "\\t") + '"';
 
-  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto(
-    task_name,
+  AliAnalysisTaskFemto *femtotask = new AliAnalysisTaskFemtoNu(
+    container,
     macro,
     analysis_params,
     verbose
   );
 
-  mgr->AddTask(taskfemto);
+  mgr->AddTask(femtotask);
 
   const TString outputfile = (output_container == "")
                            ? output_filename
                            : TString::Format("%s:%s", output_filename.Data(), output_container.Data());
 
   AliAnalysisDataContainer *out_container = mgr->CreateContainer(container,
-                                                                 TList::Class(),
+                                                                 AliFemtoResultStorage::Class(),
                                                                  AliAnalysisManager::kOutputContainer,
                                                                  outputfile);
 
-  // connect task to the containers
-  mgr->ConnectInput(taskfemto, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(taskfemto, 0, out_container);
+  mgr->ConnectInput(femtotask, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(femtotask, AliAnalysisTaskFemtoNu::RESULT_STORAGE_OUTPUT_SLOT, out_container);
 
-  // Return the task pointer
-  return taskfemto;
+  // quiet a warning
+  out_container = mgr->CreateContainer(container + "_list",
+                                       TList::Class(),
+                                       AliAnalysisManager::kOutputContainer,
+                                       outputfile);
+  mgr->ConnectOutput(femtotask, 0, out_container);
+
+  std::cout << "============== AddNuTaskPionPion : Done ===============\n\n";
+  return femtotask;
+}
+
+AliAnalysisTask* AddNuTaskPionPionRoot6(TString container,
+                                        TString configuration,
+                                        TString params="")
+{
+  return AddNuTaskPionPionRoot6(container, configuration, params, "");
+}
+
+AliAnalysisTask* AddNuTaskPionPionRoot6(TString container)
+{
+  AddNuTaskPionPionRoot6(container, "", "");
+  return nullptr;
 }

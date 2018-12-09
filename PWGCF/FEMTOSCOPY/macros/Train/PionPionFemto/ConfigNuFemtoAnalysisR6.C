@@ -28,25 +28,25 @@
 #include "AliFemtoCorrFctnDPhiStarDEta.h"
 #include "AliFemtoQinvCorrFctn.h"
 #include "AliFemtoModelWeightGeneratorBasic.h"
+#include "AliFemtoModelWeightGeneratorLednicky.h"
+
 #include "AliFemtoModelCorrFctnDEtaDPhiStar.h"
 #include "AliFemtoModelCorrFctnDEtaDPhiAK.h"
-
-// #include "AliFemtoCorrFctnQ3DLCMS.h"
-// #include "AliFemtoCorrFctnQ3DPF.h"
 #include "AliFemtoCorrFctn3DLCMSPosQuad.h"
 #include "AliFemtoCorrFctn3DLCMSSym.h"
 #include "AliFemtoModelCorrFctnTrueQ6D.h"
 #include "AliFemtoQinvCorrFctn.h"
 
 #include "AliFemtoCorrFctnDirectYlm.h"
+#include "AliFemtoCorrFctnQ3D.h"
 
 #include "AliFemtoModelCorrFctnTrueQ3D.h"
 #include "AliFemtoModelCorrFctnTrueQ3DByParent.h"
-
 #include "AliFemtoKtBinnedCorrFunc.h"
-// #include "AliFemt"
 #include "AliFemtoModelCorrFctnTrueQ.h"
+
 #include <TROOT.h>
+#include <TBase64.h>
 
 #endif
 
@@ -56,6 +56,13 @@ struct MacroParams {
   std::vector<int> centrality_ranges;
   std::vector<unsigned char> pair_codes;
   std::vector<float> kt_ranges;
+
+  // monte carlo weight generator
+  bool mcwg_lednicky { true };
+  bool mcwg_square { false };
+  bool mcwg_coul { true };
+  bool mcwg_strong { true };
+  bool mcwg_3body { true };
 
   int eventreader_filter_bit { 7 };
   bool eventreader_epvzero { true };
@@ -186,7 +193,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
     macro_config.pair_codes.push_back(0);
   }
 
-  AliFemtoModelManager *model_manager = NULL;
+  AliFemtoModelManager *model_manager = nullptr;
 
   AFAPP::PionType PI_PLUS = AliFemtoAnalysisPionPion::kPiPlus,
                  PI_MINUS = AliFemtoAnalysisPionPion::kPiMinus,
@@ -270,8 +277,24 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       if (analysis_config.is_mc_analysis) {
           model_manager = new AliFemtoModelManager();
-          AliFemtoModelWeightGeneratorBasic *weight_gen = new AliFemtoModelWeightGeneratorBasic();
-          weight_gen->ShouldPrintEmptyParticleNotification(kFALSE);
+          AliFemtoModelWeightGenerator *weight_gen = nullptr;
+
+          if (macro_config.mcwg_lednicky) {
+            AliFemtoModelWeightGeneratorLednicky *led_weight_gen = new AliFemtoModelWeightGeneratorLednicky();
+
+            if (macro_config.mcwg_square) { led_weight_gen->SetSquare(); } else { led_weight_gen->SetSphere(); }
+            if (macro_config.mcwg_coul) { led_weight_gen->SetCoulOn(); } else { led_weight_gen->SetCoulOff(); }
+            if (macro_config.mcwg_strong) { led_weight_gen->SetStrongOn(); } else { led_weight_gen->SetStrongOff(); }
+            if (macro_config.mcwg_3body) { led_weight_gen->Set3BodyOn(); } else { led_weight_gen->Set3BodyOff(); }
+
+            weight_gen = led_weight_gen;
+          }
+          else {
+            AliFemtoModelWeightGeneratorBasic *basic_weight_gen = new AliFemtoModelWeightGeneratorBasic();
+            basic_weight_gen->ShouldPrintEmptyParticleNotification(kFALSE);
+            weight_gen = basic_weight_gen;
+          }
+
           weight_gen->SetPairType(AliFemtoModelWeightGenerator::PionPlusPionPlus());
           model_manager->AcceptWeightGenerator(weight_gen);
       }
@@ -295,7 +318,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
         analysis->AddCorrFctn(trueq_cf);
       }
       if (macro_config.do_q3d_cf) {
-        analysis->AddCorrFctn(new AliFemtoCorrFctn3DLCMSSym("_q3D", macro_config.q3d_bin_count, macro_config.q3d_maxq));
+        analysis->AddCorrFctn(new AliFemtoCorrFctn3DLCMSSym("Q3D", macro_config.q3d_bin_count, macro_config.q3d_maxq));
       }
 
       if (macro_config.do_trueq3d_cf) {
@@ -358,14 +381,13 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_pqq3d_cf) {
-        AliFemtoCorrFctn3DLCMSPosQuad *cf = AliFemtoCorrFctn3DLCMSPosQuad(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq);
+        AliFemtoCorrFctn3DLCMSPosQuad *cf = new AliFemtoCorrFctn3DLCMSPosQuad("PQ3D", macro_config.q3d_bin_count, macro_config.q3d_maxq);
         analysis->AddCorrFctn(cf);
       }
 
       if (macro_config.do_kt_pqq3d_cf) {
-        TString q3d_cf_name("_q3d");
         AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_PQ3D",
-          new AliFemtoCorrFctn3DLCMSPosQuad(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq));
+          new AliFemtoCorrFctn3DLCMSPosQuad("", macro_config.q3d_bin_count, macro_config.q3d_maxq));
 
         for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
           float low = macro_config.kt_ranges[kt_idx],
@@ -419,11 +441,11 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_kt_truedetadphi_cf) {
-        AliFemtoModelCorrFctnTrueQ3DByParent *kt_truedetadphi_cf =
+        AliFemtoModelCorrFctnDEtaDPhiAK *kt_truedetadphi_cf =
           new AliFemtoModelCorrFctnDEtaDPhiAK("",
                                               macro_config.q3d_bin_count,
                                               macro_config.q3d_maxq);
-        kt_truedetadphi_cf->SetManager(model_manager);
+        kt_truedetadphi_cf->ConnectToManager(model_manager);
 
         AliFemtoKtBinnedCorrFunc *kt_truedetadphi_cfs = new AliFemtoKtBinnedCorrFunc("KT_TrueDetaDphi", kt_truedetadphi_cf);
 
@@ -510,7 +532,7 @@ BuildConfiguration(const TString &text,
   TObjArray* lines = text.Tokenize("\n;");
 
   TIter next_line(lines);
-  TObject *line_obj = NULL;
+  TObject *line_obj = nullptr;
 
   while ((line_obj = next_line())) {
 
@@ -541,7 +563,7 @@ BuildConfiguration(const TString &text,
       TObjArray *range_groups = centrality_ranges.Tokenize(",");
 
       TIter next_range_group(range_groups);
-      TObjString *range_group = NULL;
+      TObjString *range_group = nullptr;
 
       while ((range_group = (TObjString*)next_range_group())) {
         TObjArray *subrange = range_group->String().Tokenize(":");
@@ -574,7 +596,7 @@ BuildConfiguration(const TString &text,
       TObjArray *range_groups = kt_ranges.Tokenize(",");
 
       TIter next_range_group(range_groups);
-      TObjString *range_group = NULL;
+      TObjString *range_group = nullptr;
 
       while ((range_group = (TObjString*)next_range_group())) {
         TObjArray *subrange = range_group->String().Tokenize(":");
