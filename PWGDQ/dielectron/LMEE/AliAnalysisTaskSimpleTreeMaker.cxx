@@ -639,12 +639,12 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 							continue;
 						}
           }
+					// Fill mother particle information
+					HasMother   = kTRUE;
+					iPdgMother  = motherMCtrack->PdgCode();
+					// Get mother label so tracks can be correctly paired
+					motherLabel = TMath::Abs(motherMCtrack->GetLabel());
 				}
-				// Fill mother particle information
-				HasMother   = kTRUE;
-				iPdgMother  = motherMCtrack->PdgCode();
-				// Get mother label so tracks can be correctly paired
-				motherLabel = TMath::Abs(motherMCtrack->GetLabel());
 				// Check which generator was used
 				// Returns kTRUE if from injected sample
 				isInj = CheckGenerator(track->GetLabel());
