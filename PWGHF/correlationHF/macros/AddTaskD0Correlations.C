@@ -276,8 +276,8 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
 
       if(!SignLow||!SignUpp) {printf("Error! No Signal ranges found in the Associated track cut file, but useCutFileMassRanges==kTRUE, and fSpeed==2! Exiting...\n"); return;}
 
-      massD0Task->SetSignLowLim(LSBLow->GetMatrixArray());
-      massD0Task->SetSignHighLim(LSBUpp->GetMatrixArray());
+      massD0Task->SetSignLowLim(SignLow->GetMatrixArray());
+      massD0Task->SetSignHighLim(SignUpp->GetMatrixArray());
 
     }
 
