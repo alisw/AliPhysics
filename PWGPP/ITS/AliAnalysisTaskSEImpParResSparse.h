@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskSEImpParResSparse_H
-#define AliAnalysisTaskSEImpParResSparse_H
+#ifndef ALIANALYSISTASKSEIMPPARRESSPARSE_H
+#define ALIANALYSISTASKSEIMPPARRESSPARSE_H
 
 /* Copyright(c) 1998-2010, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -23,8 +23,10 @@ class AliESDtrackCuts;
 
 #include "AliAnalysisTaskSE.h"
 #include <THnSparse.h>
-#include "AliESDEvent.h"
-#include "AliESDtrack.h"
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+  #include "AliESDEvent.h"
+  #include "AliESDtrack.h"
+#endif
 
 
 class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
