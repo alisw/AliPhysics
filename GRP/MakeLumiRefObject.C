@@ -98,7 +98,7 @@ void MakeLumiRefObject(TString cdbPath="local://./")
   AddLumiRef(refArr, 295000, 4000.0, 0.50, "C0V0M-B-NOPF-CENTNOTRD", "PbPb at 5.02TeV, sigma from Martino cs(INEL) = 8000 mb");
   AddLumiRef(refArr, 295671, 4000.0, 0.0675,"C0V0M-B-NOPF-CENTNOTRD", "PbPb at 5.02TeV, sigma from Martino cs(INEL) = 8000 mb");
   AddLumiRef(refArr, 295716, 4000.0, 0.50, "C0V0M-B-NOPF-CENTNOTRD", "PbPb at 5.02TeV, sigma from Martino cs(INEL) = 8000 mb");
-  AddLumiRef(refArr, 295617, 4000.0, 0.0675,"C0V0M-B-NOPF-CENTNOTRD", "PbPb at 5.02TeV, sigma from Martino cs(INEL) = 8000 mb");
+  AddLumiRef(refArr, 295717, 4000.0, 0.0675,"C0V0M-B-NOPF-CENTNOTRD", "PbPb at 5.02TeV, sigma from Martino cs(INEL) = 8000 mb");
   AddLumiRef(refArr, 295721, 4000.0, 0.50, "C0V0M-B-NOPF-CENTNOTRD", "PbPb at 5.02TeV, sigma from Martino cs(INEL) = 8000 mb");
   
   // add new entries above
