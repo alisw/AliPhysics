@@ -230,17 +230,24 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
 
   if(standardbins==1) {
     printf("Standard bins (from D0Mass cuts object)\n");
-    massD0Task->SetNPtBinsCorr(RDHFD0Corrs->GetNPtBins()); 
+    Int_t nbins=RDHFD0Corrs->GetNPtBins();
+    massD0Task->SetNPtBinsCorr(nbins); 
     massD0Task->SetPtBinsLimsCorr(RDHFD0Corrs->GetPtBinLimits());
+    Double_t pttreshlow[50];
+    Double_t pttreshup[50];
+    for(int k=0;k<nbins;k++) {pttreshlow[k]=0.; pttreshup[k]=999.;}
+    massD0Task->SetPtTreshLow(pttreshlow);
+    massD0Task->SetPtTreshUp(pttreshup);
   } else {
     Double_t ptlimits[15] = {0,0.5,1,2,3,4,5,6,7,8,12,16,20,24,9999};
     massD0Task->SetNPtBinsCorr(14);
     massD0Task->SetPtBinsLimsCorr(ptlimits);
+    Double_t pttreshlow[15] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+    Double_t pttreshup[15] = {999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.};
+    massD0Task->SetPtTreshLow(pttreshlow);
+    massD0Task->SetPtTreshUp(pttreshup);
   }
-  Double_t pttreshlow[15] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
-  Double_t pttreshup[15] = {999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.};
-  massD0Task->SetPtTreshLow(pttreshlow);
-  massD0Task->SetPtTreshUp(pttreshup);
+
 
   //needed for fSpeed==0 and ==1 (i.e. when inv mass axis of THnSparse has the normal signal bins)
   Double_t LeftSignReg_LowPt = 1.7968;
@@ -276,8 +283,8 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
 
       if(!SignLow||!SignUpp) {printf("Error! No Signal ranges found in the Associated track cut file, but useCutFileMassRanges==kTRUE, and fSpeed==2! Exiting...\n"); return;}
 
-      massD0Task->SetSignLowLim(LSBLow->GetMatrixArray());
-      massD0Task->SetSignHighLim(LSBUpp->GetMatrixArray());
+      massD0Task->SetSignLowLim(SignLow->GetMatrixArray());
+      massD0Task->SetSignHighLim(SignUpp->GetMatrixArray());
 
     }
 
