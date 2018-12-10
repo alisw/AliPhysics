@@ -1311,7 +1311,9 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 900){
     cuts.AddCutCalo("00010113","11111110a7032230000","2i631031000000d0"); // std
   } else if (trainConfig == 901){
-    cuts.AddCutCalo("00010113","11111110a7032230000","31631031000000d0"); // std
+    cuts.AddCutCalo("00010113","11111110a7032230000","21631031000000d0"); // std
+  } else if (trainConfig == 902){
+    cuts.AddCutCalo("00010113","11111110a7032230000","31631031000000d0");
 
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
