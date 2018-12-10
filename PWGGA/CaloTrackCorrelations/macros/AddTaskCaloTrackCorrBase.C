@@ -284,7 +284,7 @@ void ConfigureTrackCuts ( AliCaloTrackReader* reader,
   reader->SetCTSPtMin(0.2);
   reader->SetCTSPtMax(1000);
   
-  reader->GetFiducialCut()->SetSimpleCTSFiducialCut(0.8, 0, 360) ;
+  reader->GetFiducialCut()->SetSimpleCTSFiducialCut(0.9, 0, 360) ;
   
   reader->SwitchOffUseTrackTimeCut();
   reader->SetTrackTimeCut(0,50);
