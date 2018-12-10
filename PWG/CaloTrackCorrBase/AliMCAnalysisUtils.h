@@ -126,6 +126,9 @@ class AliMCAnalysisUtils : public TObject {
   Int_t   GetPythiaProcess()      const { return fPyProcess       ; }
   Int_t   GetPythiaFirstParticle()const { return fPyFirstParticle ; } 
   Int_t   GetPythiaVersion()      const { return fPyVersion       ; }
+  Int_t   GetPythiaMinPartParent()const { return fMinPartonicParent;}
+  Int_t   GetPythiaMaxPartParent()const { return fMaxPartonicParent;}
+  
   
   void    SetDebug(Int_t deb)           { fDebug=deb           ; }
   Int_t   GetDebug()              const { return fDebug        ; }	
