@@ -6094,6 +6094,7 @@ void AliAnalysisTaskGammaCalo::RotateParticle(AliAODConversionPhoton *gamma){
 //________________________________________________________________________
 void AliAnalysisTaskGammaCalo::UpdateEventByEventData(){
   //see header file for documentation
+  if(fDoJetAnalysis && fConvJetReader->GetNJets() == 0) return;
   if(fClusterCandidates->GetEntries() >0 ){
     if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoSectorMixing() ){
       fBGHandler[fiCut]->AddEvent(fClusterCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fV0Reader->GetPtMaxSector(),fClusterCandidates->GetEntries(),fEventPlaneAngle);
