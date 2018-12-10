@@ -711,11 +711,15 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
   {
     // Calculate the cross section weights, apply them to all histograms 
     // and fill xsec and trial histo. Sumw2 must be activated.
-    //maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionCalculation(); 
-    //maker->SwitchOnSumw2Histograms();
+    if ( cutsString.Contains("MCWeigth") )
+    {
+      maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionCalculation(); 
+      maker->SwitchOnSumw2Histograms();
+    }
     
     // For recent productions where the cross sections and trials are not stored in separate file
-    //maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionFromEventHeader() ;
+    if ( cutsString.Contains("MCEvtHeadW") )
+      maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionFromEventHeader() ;
     
     // Just fill cross section and trials histograms.
     maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionHistoFill(); 
