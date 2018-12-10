@@ -961,6 +961,13 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("j0010113","11111110a7032230000","21631031000000d0"); // std
     cuts.AddCutCalo("q0010113","11111110a7032230000","21631031000000d0"); // std
     cuts.AddCutCalo("r0010113","11111110a7032230000","21631031000000d0"); // std
+  } else if (trainConfig == 447){ // EMCAL clusters pp 5 TeV True Sphericity Cuts
+    cuts.AddCutCalo("00010113","11111110a7032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("h0010113","11111110a7032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("i0010113","11111110a7032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("j0010113","11111110a7032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("q0010113","11111110a7032230000","01631031000000d0"); // std
+    cuts.AddCutCalo("r0010113","11111110a7032230000","01631031000000d0"); // std
 
   } else if (trainConfig == 450){ // EMCAL standard cuts, different triggers
     cuts.AddCutCalo("00010113","1111111067032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL kSDM PCMEMC INT7
@@ -1426,6 +1433,7 @@ void AddTask_GammaCalo_pp(
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisEventCuts[i]->SetLightOutput(enableLightOutput);
+    if(trainConfig == 447) analysisEventCuts[i]->SetUseSphericityTrue(kTRUE);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);

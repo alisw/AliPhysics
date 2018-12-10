@@ -345,6 +345,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                fHistoEventSphericity;                                //! array of histos with event Sphericity
     TH2F**                fHistoEventSphericityvsNtracks;                       //! array of histos with event Sphericity vs Ntracks
     TH2F**                fHistoEventSphericityvsNJets;                         //! array of histos with event Sphericity vs NJets
+    TH2F**                fHistoTrueSphericityvsRecSphericity;                  //! array of histos with true sphericity vs rec. sphericity
+    TH2F**                fHistoTrueMultiplicityvsRecMultiplicity;               //! array of histos with true multiplicity vs rec. multiplicity
 
     TH1F**                 fHistoPtJet;                                          // Histogram of Jet Pt
     TH1F**                 fHistoJetEta;                                         // Histogram of Jet Eta
