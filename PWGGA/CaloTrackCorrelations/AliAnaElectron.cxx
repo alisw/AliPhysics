@@ -1839,8 +1839,11 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     Int_t tag = -1 ;
     if ( IsDataMC() )
     {
-      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(), calo->GetNLabels(), GetMC(),
-                                              GetReader()->GetNameOfMCEventHederGeneratorToAccept());
+      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(), 
+                                              calo->GetClusterMCEdepFraction(),
+                                              calo->GetNLabels(), GetMC(),
+                                              GetReader()->GetNameOfMCEventHederGeneratorToAccept(),
+                                              cluE);
       
       AliDebug(1,Form("Origin of candidate, bit map %d",tag));
          

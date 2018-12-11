@@ -1043,7 +1043,8 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     // Get tag of this particle photon from fragmentation, decay, prompt ...
     // Set the origin of the photon.
     tag = GetMCAnalysisUtils()->CheckOrigin(i, GetMC(),
-                                            GetReader()->GetNameOfMCEventHederGeneratorToAccept());
+                                            GetReader()->GetNameOfMCEventHederGeneratorToAccept(),
+                                            photonE); // not needed
     
     if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
     {
@@ -1786,13 +1787,13 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, In
     // Check the origin and fill histograms
     
     Int_t mcIndex = -1;
-    
+    Bool_t conversion = GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion);
     if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)     &&
-       !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) &&
        !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)        &&
        !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta))
     {
-      mcIndex = kmcssPhoton ;
+      if   ( !conversion ) mcIndex = kmcssPhoton    ;
+      else                 mcIndex = kmcssPhotonConv;
       
 //      if(!GetReader()->IsEmbeddedClusterSelectionOn())
 //      {
@@ -1837,22 +1838,15 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, In
         }
       } // embedded
     } // photon no conversion
-    else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)     &&
-               GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) &&
-              !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)        &&
-              !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta))
-    {
-      mcIndex = kmcssConversion ;
-    }//conversion photon
-
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron))
     {
       mcIndex = kmcssElectron ;
     }//electron
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)  )
     {
-      mcIndex = kmcssPi0 ;
-      
+      if   ( !conversion ) mcIndex = kmcssPi0    ;
+      else                 mcIndex = kmcssPi0Conv;
+
       // Fill histograms to check shape of embedded clusters
       if(GetReader()->IsEmbeddedClusterSelectionOn())
       {
@@ -1877,7 +1871,9 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm, In
     }//pi0
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)  )
     {
-      mcIndex = kmcssEta ;
+      if   ( !conversion ) mcIndex = kmcssEta    ;
+      else                 mcIndex = kmcssEtaConv;
+      
     }//eta
     else
     {
@@ -3548,13 +3544,17 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       outputContainer->Add(fhPhiPrimMCAcc[i]) ;
     }
     
-    if(fFillSSHistograms)
+    if ( fFillSSHistograms )
     {
-      TString ptypess[] = { "#gamma","hadron?","#pi^{0}","#eta","#gamma->e^{#pm}","e^{#pm}"} ;
+      TString ptypess[] = { "#gamma","#gamma->e^{#pm}",
+        "#pi^{0}","#pi^{0}->#gamma->e^{#pm}",
+        "#eta"   ,"#eta->#gamma->e^{#pm}"
+        ,"e^{#pm}","other"} ;
       
-      TString pnamess[] = { "Photon","Hadron","Pi0","Eta","Conversion","Electron"} ;
+      TString pnamess[] = { "Photon","PhotonConv",
+        "Pi0","Pi0Conv","Eta","EtaConv","Electron","Other"} ;
       
-      for(Int_t i = 0; i < 6; i++)
+      for(Int_t i = 0; i < fgkNssTypes; i++)
       {
         fhMCELambda0[i]  = new TH2F(Form("hELambda0_MC%s",pnamess[i].Data()),
                                     Form("cluster from %s : E vs #lambda_{0}^{2}",ptypess[i].Data()),
@@ -4585,13 +4585,23 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     // Check origin of the candidates
     Int_t tag = -1;
-    
     if ( IsDataMC() )
     {
-      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(), GetMC(), 
+      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),
+                                              calo->GetClusterMCEdepFraction(),
+                                              calo->GetNLabels(), 
+                                              GetMC(), 
                                               GetReader()->GetNameOfMCEventHederGeneratorToAccept(),
+                                              fMomentum.E(), 
                                               pl); // check lost decays
-          
+        
+//      if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) )
+//      {
+//        printf("Pi0 cluster E %2.2f, pT %2.2f, eta %2.2f, phi %2.2f, conversion %d\n",
+//               fMomentum.E(),fMomentum.Pt(),fMomentum.Eta()/0.0143,GetPhi(fMomentum.Phi())/0.0143,
+//               GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion));
+//      } 
+      
       AliDebug(1,Form("Origin of candidate, bit map %d",tag));
       
 //      if( calo->E() > 2 &&
@@ -4611,9 +4621,9 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
 //        GetMCAnalysisUtils()->PrintMCTag(tag);
 //        GetMCAnalysisUtils()->PrintAncestry(GetMC(),calo->GetLabel());//,10);
 //      }
-      
+
     }// Work with stack also
-    
+
     //-----------------------------
     // Cluster selection
     //-----------------------------
