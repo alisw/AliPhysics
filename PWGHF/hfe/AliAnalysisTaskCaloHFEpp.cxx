@@ -472,7 +472,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fDCAxy_Pt_B= new TH2F("fDCAxy_Pt_B","DCA_{xy} vs Pt all B meson(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
 
 				Double_t eop_range[21] = {2.,2.5,3.,3.5,4.,4.5,5.0,5.5,6.,8.,10.,12.,14.,16.,19.,22.,26.,30.,35.,40.,50.};
-				fPt_Btoe= new TH2F("fPt_Btoe","B meson vs electron;electron p_{t} (GeV/c);B p_{t} (GeV/c)",20,eop_range,20,eop_range);
+				fPt_Btoe = new TH2F("fPt_Btoe","B meson vs electron;electron p_{t} (GeV/c);B p_{t} (GeV/c)",20,eop_range,20,eop_range);
 				fHist_eff_HFE     = new TH1F("fHist_eff_HFE","efficiency :: HFE",600,0,60);
 				fHist_eff_match   = new TH1F("fHist_eff_match","efficiency :: matched cluster",600,0,60);
 				fHist_eff_TPC     = new TH1F("fHist_eff_TPC","efficiency :: TPC cut",600,0,60);
@@ -1549,13 +1549,12 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
 											fHistMCorgD->Fill(fMCparticle->Pt());
 											FindMother(fMCparticleMom,labelGM,pdgGM,pTGMom);
 											if(IsBdecay(pdgGM)){
-															AliAODMCParticle* fMCparticleGMom = (AliAODMCParticle*) fMCarray->At(labelGM);
-															fPt_Btoe->Fill(fMCparticle->Pt(),fMCparticleGMom->Pt())
+															fPt_Btoe->Fill(fMCparticle->Pt(),pTGMom);
 											}
 							}
 							if(IsBdecay(pdgMom)){
 											fHistMCorgB->Fill(fMCparticle->Pt());
-											fPt_Btoe->Fill(fMCparticle->Pt(),fMCparticleMom->Pt())
+											fPt_Btoe->Fill(fMCparticle->Pt(),pTmom);
 							}
 			}
 
