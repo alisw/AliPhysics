@@ -68,6 +68,12 @@ AliAnalysisTaskSE* AddTaskFemtoDream(bool isMC = false,
       evtCuts->SetSphericityCuts(0.3, 0.7);
     } else if (SphericityRange == 3) {
       evtCuts->SetSphericityCuts(0.7, 1.0);
+    } else if (SphericityRange == 4) {
+      evtCuts->SetSphericityCuts(0.7, 0.8);
+    } else if (SphericityRange == 5) {
+      evtCuts->SetSphericityCuts(0.8, 0.9);
+    } else if (SphericityRange == 6) {
+      evtCuts->SetSphericityCuts(0.9, 1.0);
     } else {
       std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
       std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
