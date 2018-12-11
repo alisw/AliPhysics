@@ -713,6 +713,42 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
   TH1F* histogram_mc_B0_pt_bins_acc = (TH1F*)hist_mc_B0_pt_bins_acc->Clone();
   fOutputB0MC->Add(histogram_mc_B0_pt_bins_acc);
 
+  TString name_mc_B0_pt_bins_lim_acc ="mc_B0_pt_bins_lim_acc";
+  TH1F* hist_mc_B0_pt_bins_lim_acc = new TH1F(name_mc_B0_pt_bins_lim_acc.Data(),"Pt monte carlo B0 in B0->D*#pi; p_{T} [GeV/c]; Entries",fnPtBins,0,fnPtBins);
+  hist_mc_B0_pt_bins_lim_acc->Sumw2();
+  hist_mc_B0_pt_bins_lim_acc->SetLineColor(6);
+  hist_mc_B0_pt_bins_lim_acc->SetMarkerStyle(20);
+  hist_mc_B0_pt_bins_lim_acc->SetMarkerSize(0.6);
+  hist_mc_B0_pt_bins_lim_acc->SetMarkerColor(6);
+  for (Int_t i = 0; i < fnPtBins; ++i)
+  {
+    TString bin_name = "";
+    bin_name += fPtBinLimits[i];
+    bin_name += "-";
+    bin_name += fPtBinLimits[i+1];
+    hist_mc_B0_pt_bins_lim_acc->GetXaxis()->SetBinLabel(i+1,bin_name);
+  }
+  TH1F* histogram_mc_B0_pt_bins_lim_acc = (TH1F*)hist_mc_B0_pt_bins_lim_acc->Clone();
+  fOutputB0MC->Add(histogram_mc_B0_pt_bins_lim_acc);
+
+  TString name_mc_B0_pt_bins_acc_lim_acc ="mc_B0_pt_bins_acc_lim_acc";
+  TH1F* hist_mc_B0_pt_bins_acc_lim_acc = new TH1F(name_mc_B0_pt_bins_acc_lim_acc.Data(),"Pt monte carlo B0 in B0->D*#pi; p_{T} [GeV/c]; Entries",fnPtBins,0,fnPtBins);
+  hist_mc_B0_pt_bins_acc_lim_acc->Sumw2();
+  hist_mc_B0_pt_bins_acc_lim_acc->SetLineColor(6);
+  hist_mc_B0_pt_bins_acc_lim_acc->SetMarkerStyle(20);
+  hist_mc_B0_pt_bins_acc_lim_acc->SetMarkerSize(0.6);
+  hist_mc_B0_pt_bins_acc_lim_acc->SetMarkerColor(6);
+  for (Int_t i = 0; i < fnPtBins; ++i)
+  {
+    TString bin_name = "";
+    bin_name += fPtBinLimits[i];
+    bin_name += "-";
+    bin_name += fPtBinLimits[i+1];
+    hist_mc_B0_pt_bins_acc_lim_acc->GetXaxis()->SetBinLabel(i+1,bin_name);
+  }
+  TH1F* histogram_mc_B0_pt_bins_acc_lim_acc = (TH1F*)hist_mc_B0_pt_bins_acc_lim_acc->Clone();
+  fOutputB0MC->Add(histogram_mc_B0_pt_bins_acc_lim_acc);
+
   TString name_mc_B0_pt ="mc_B0_pt";
   TH1F* hist_mc_B0_pt = new TH1F(name_mc_B0_pt.Data(),"Pt monte carlo B0 in B0->D*#pi; p_{T} [GeV/c]; Entries",400,0,20);
   hist_mc_B0_pt->Sumw2();
@@ -2277,6 +2313,11 @@ void AliAnalysisTaskSEB0toDStarPi::B0toDStarPiSignalTracksInMC(TClonesArray * mc
 
       fillthis= "mc_B0_pt_bins";
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(ptMC[0]);
+      if(TMath::Abs(yMC[0]) < 0.5) 
+      {
+        fillthis= "mc_B0_pt_bins_lim_acc";
+        ((TH1F*)(listout->FindObject(fillthis)))->Fill(ptMC[0]);
+      }
 
       // We check if the tracks are in acceptance
       if(ptMC[1] < 0.1 || TMath::Abs(pseudoYMC[1]) > 0.9 ) continue;
@@ -2300,6 +2341,12 @@ void AliAnalysisTaskSEB0toDStarPi::B0toDStarPiSignalTracksInMC(TClonesArray * mc
 
       fillthis= "mc_B0_pt_bins_acc";
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(ptMC[0]);
+
+      if(TMath::Abs(yMC[0]) < 0.5) 
+      {
+        fillthis= "mc_B0_pt_bins_acc_lim_acc";
+        ((TH1F*)(listout->FindObject(fillthis)))->Fill(ptMC[0]);
+      }
 
       fillthis= "B0s_in_analysis";
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(2);
@@ -6607,10 +6654,6 @@ Int_t AliAnalysisTaskSEB0toDStarPi::MatchCandidateToMonteCarlo(Int_t pdgabs, Ali
   { 
     return -1;
   }
- 
-  if(pdgabs==511) std::cout << std::endl << "daughters = " << mother->GetNDaughters() << std::endl;
-  if(pdgabs==511) std::cout << "pxMother = " << pxMother << "pyMother = " << pyMother << "pzMother = " << pzMother << std::endl;
-  if(pdgabs==511) std::cout << "pxSumDgs = " << pxSumDgs << "pySumDgs = " << pySumDgs << "pzSumDgs = " << pzSumDgs << std::endl;
 
   // Check if label matches a signal label
   // Int_t bIsSignal = kFALSE;
