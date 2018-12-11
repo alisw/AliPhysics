@@ -66,11 +66,13 @@ class AliMCAnalysisUtils : public TObject {
   Int_t   CheckCommonAncestor(Int_t index1, Int_t index2, const AliMCEvent* mcevent, 
 			      Int_t & ancPDG, Int_t & ancStatus, TLorentzVector & momentum, TVector3 & prodVertex) ;
   
-  Int_t   CheckOrigin(Int_t label, AliMCEvent* mcevent, TString selectHeaderName) ;  
-  Int_t   CheckOrigin(const Int_t *labels, Int_t nlabels, AliMCEvent* mcevent, 
-                      TString selectHeaderName, const TObjArray *arrayCluster = 0x0) ; 
+  Int_t   CheckOrigin(Int_t label, AliMCEvent* mcevent, TString selectHeaderName, Float_t clusE) ;  
+  Int_t   CheckOrigin(const Int_t *labels, const UShort_t * edepFrac, Int_t nlabels, 
+                      AliMCEvent* mcevent, TString selectHeaderName, Float_t clusE,
+                      const TObjArray *arrayCluster = 0x0) ; 
   
-  void    CheckOverlapped2GammaDecay(const Int_t *labels, Int_t nlabels, Int_t mesonIndex, const AliMCEvent* mcevent, Int_t & tag); 
+  void    CheckOverlapped2GammaDecay(const Int_t *labels, const UShort_t * edepFrac, Int_t nlabels, 
+                                     Int_t mesonIndex, Float_t clusE, const AliMCEvent* mcevent, Int_t & tag); 
   
   void    CheckLostDecayPair(const TObjArray *arrayCluster, Int_t iMom, Int_t iParent, const AliMCEvent* mcevent, Int_t & tag); 
   
