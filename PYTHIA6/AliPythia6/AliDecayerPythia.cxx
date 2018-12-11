@@ -475,25 +475,25 @@ void AliDecayerPythia::ForceDecay()
       ForceHadronicD(0,1,0);
 	break;
     case kHadronicDPionicD0:
-        ForceHadronicD(1,0,0,1);
+        ForceHadronicD(1,0,3,1);
         break;
     case kHadronicDWithV0PionicD0:
-        ForceHadronicD(1,1,0,1);
+        ForceHadronicD(1,1,3,1);
         break;
     case kHadronicDWithout4BodiesPionicD0:
-        ForceHadronicD(0,0,0,1);
+        ForceHadronicD(0,0,3,1);
         break;
     case kHadronicDWithout4BodiesWithV0PionicD0:
-        ForceHadronicD(0,1,0,1);
+        ForceHadronicD(0,1,3,1);
         break;
     case kHadronicDPionicD0pure:
-        ForceHadronicD(0,0,0,2);
+        ForceHadronicD(0,0,3,2);
         break;
     case kHadronicDPionicD0K:
-        ForceHadronicD(0,0,0,3);
+        ForceHadronicD(0,0,3,3);
         break;
     case kHadronicDPionicD0pi:
-        ForceHadronicD(0,0,0,4);
+        ForceHadronicD(0,0,3,4);
         break;
     case kPhiKK:
 	ForceParticleDecay(333,321,2); // Phi->K+K-
@@ -892,11 +892,17 @@ void AliDecayerPythia::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, In
 
    Int_t prodLcpK0S[2] = {2212,311};
    Int_t multLcpK0S[2] = {1,1};
+
+   Int_t prodLcLambdaPiPlPi0[3] = {iLambda, kPiPlus, kPi0};
+   Int_t multLcLambdaPiPlPi0[3] = {1,1,1};
     if (optForceLcChannel == 1) { //pKpi
       ForceParticleDecay(4122,prodLcpKpi,multLcpKpi,3,1);
     }
     if (optForceLcChannel == 2) { //pK0S
       ForceParticleDecay(4122,prodLcpK0S,multLcpK0S,2,1);
+    }
+    if(optForceLcChannel == 3) { // Lambda Pi+ Pi0
+      ForceParticleDecay(4122, prodLcLambdaPiPlPi0, multLcLambdaPiPlPi0, 3, 1);
     }
       
 
