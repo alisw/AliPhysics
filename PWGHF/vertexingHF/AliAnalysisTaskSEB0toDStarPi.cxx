@@ -1088,6 +1088,19 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
   TH1F* hist_B0s_per_bin_in_Acc_mc = (TH1F*)hist_B0s_per_bin_in_Acc->Clone();
   fOutputB0MC->Add(hist_B0s_per_bin_in_Acc_mc);
 
+  TString name_B0s_per_bin_in_Lim_Acc ="B0s_per_bin_in_Lim_Acc";
+  TH1F* hist_B0s_per_bin_in_Lim_Acc = new TH1F(name_B0s_per_bin_in_Lim_Acc.Data(),"Number of B0 to kpipipi in the Analysis per bin with all daughters in acceptance; Entries",fnPtBins,0,fnPtBins); 
+  for (Int_t i = 0; i < fnPtBins; ++i)
+  {
+    TString bin_name = "";
+    bin_name += fPtBinLimits[i];
+    bin_name += "-";
+    bin_name += fPtBinLimits[i+1];
+    hist_B0s_per_bin_in_Lim_Acc->GetXaxis()->SetBinLabel(i+1,bin_name);
+  }
+  TH1F* hist_B0s_per_bin_in_Lim_Acc_mc = (TH1F*)hist_B0s_per_bin_in_Lim_Acc->Clone();
+  fOutputB0MC->Add(hist_B0s_per_bin_in_Lim_Acc_mc);
+
  //======================================================================================================================================================
 
   //we make the histograms for the Pions and Kaon
@@ -2317,6 +2330,15 @@ void AliAnalysisTaskSEB0toDStarPi::B0toDStarPiSignalTracksInMC(TClonesArray * mc
       {
         fillthis= "mc_B0_pt_bins_lim_acc";
         ((TH1F*)(listout->FindObject(fillthis)))->Fill(ptMC[0]);
+      }
+
+      if(TMath::Abs(yMC[0]) < 0.5) 
+      {
+        fillthis= "B0s_per_bin_in_Lim_Acc";
+        for (Int_t j = 0; j < fnPtBins; ++j)
+        {
+          if(fPtBinLimits[j] < ptMC[0] && ptMC[0] < fPtBinLimits[j+1]) {((TH1F*)(listout->FindObject(fillthis)))->Fill(j); break;}
+        }
       }
 
       // We check if the tracks are in acceptance
