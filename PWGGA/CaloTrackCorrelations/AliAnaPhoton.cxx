@@ -2024,9 +2024,9 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
     
     // Check dEdx and E/p of matched clusters
     
-    if(TMath::Abs(dEta) < 0.05 && TMath::Abs(dPhi) < 0.05)
+    if ( TMath::Abs(dEta) < 0.02 && TMath::Abs(dPhi) < 0.02 )
     {
-      if(track)
+      if ( track )
       {
         Float_t dEdx   = track->GetTPCsignal();
         Float_t eOverp = ener/track->P();
@@ -2034,7 +2034,7 @@ void AliAnaPhoton::FillTrackMatchingResidualHistograms(AliVCluster* cluster,
         fhdEdx  [cut]->Fill(ener, dEdx  , GetEventWeight());
         fhEOverP[cut]->Fill(ener, eOverp, GetEventWeight());
         
-        if(fFillTMHistoTrackPt)
+        if ( fFillTMHistoTrackPt )
         {
           fhdEdxTrackPt  [cut]->Fill(track->Pt(), dEdx  , GetEventWeight());
           fhEOverPTrackPt[cut]->Fill(track->Pt(), eOverp, GetEventWeight());
