@@ -91,6 +91,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fDoJetQA(kFALSE),
   fJetHistograms(NULL),
   fTrueJetHistograms(NULL),
+  fJetSector(0),
   fHistoMotherInvMassPt(NULL),
   fSparseMotherInvMassPtZM(NULL),
   fHistoMotherBackInvMassPt(NULL),
@@ -438,6 +439,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fDoJetQA(kFALSE),
   fJetHistograms(NULL),
   fTrueJetHistograms(NULL),
+  fJetSector(0),
   fHistoMotherInvMassPt(NULL),
   fSparseMotherInvMassPtZM(NULL),
   fHistoMotherBackInvMassPt(NULL),
@@ -826,7 +828,7 @@ void AliAnalysisTaskGammaCalo::InitBack(){
       }
 
       if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->BackgroundHandlerType() == 0){
-        if( ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->DoSectorMixing() ){
+        if( ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->DoSectorMixing() || ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->DoSectorJetMixing()){
           fBGHandler[iCut] = new AliGammaConversionAODBGHandler(
                                     collisionSystem,centMin,centMax,
                                     ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetNumberOfBGEvents(),
@@ -3465,6 +3467,9 @@ void AliAnalysisTaskGammaCalo::ProcessJets()
       fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
     }
     if(fVectorJetPt.size() == fConvJetReader->GetNJets() && fVectorJetEta.size() == fConvJetReader->GetNJets() && fVectorJetPhi.size() == fConvJetReader->GetNJets() && fVectorJetArea.size() == fConvJetReader->GetNJets()){
+      fJetSector = 0;
+      Double_t tempMaxJetPt = 0.;
+      Int_t MaxPtJetID = 0;
       for(Int_t i=0; i<fConvJetReader->GetNJets(); i++){
         fHistoPtJet[fiCut]->Fill(fVectorJetPt.at(i));
         fHistoJetEta[fiCut]->Fill(fVectorJetEta.at(i));
@@ -3488,8 +3493,24 @@ void AliAnalysisTaskGammaCalo::ProcessJets()
           }
           fHistoTruevsRecJetPt[fiCut]->Fill(fVectorJetPt.at(i), fTrueVectorJetPt.at(match));
         }
+        if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoSectorJetMixing()){ //Determine jet with max pt in event
+          if(fVectorJetPt.at(i) > tempMaxJetPt){
+            tempMaxJetPt = fVectorJetPt.at(i);
+            MaxPtJetID = i;
+          }
+        }
       }
       fHistoEventwJets[fiCut]->Fill(0);
+
+      if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoSectorJetMixing()){
+        Double_t PtMaxPhi = fVectorJetPhi.at(MaxPtJetID);
+        fJetSector = 0;
+        if((PtMaxPhi > (TMath::Pi()/4.)) && (PtMaxPhi < (3*TMath::Pi()/4.))) fJetSector = 1;
+        if((PtMaxPhi > (3*TMath::Pi()/4.)) && (PtMaxPhi < (5*TMath::Pi()/4.))) fJetSector = 2;
+        if((PtMaxPhi > (5*TMath::Pi()/4.)) && (PtMaxPhi < (7*TMath::Pi()/4.))) fJetSector = 3;
+        if((PtMaxPhi > (7*TMath::Pi()/4.)) && (PtMaxPhi < (TMath::Pi()/4.))) fJetSector = 4;
+        if(fVectorJetEta.at(MaxPtJetID)>0) fJetSector += 4;
+      }
     }
     fVectorJetPt.clear();
     fVectorJetPx.clear();
@@ -6098,6 +6119,8 @@ void AliAnalysisTaskGammaCalo::UpdateEventByEventData(){
   if(fClusterCandidates->GetEntries() >0 ){
     if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoSectorMixing() ){
       fBGHandler[fiCut]->AddEvent(fClusterCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fV0Reader->GetPtMaxSector(),fClusterCandidates->GetEntries(),fEventPlaneAngle);
+    } else if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoSectorJetMixing() ){
+      fBGHandler[fiCut]->AddEvent(fClusterCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(), fJetSector ,fClusterCandidates->GetEntries(),fEventPlaneAngle);
     } else if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
       fBGHandler[fiCut]->AddEvent(fClusterCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fV0Reader->GetNumberOfPrimaryTracks(),fEventPlaneAngle);
     } else { // means we use #V0s for multiplicity
