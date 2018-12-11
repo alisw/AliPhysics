@@ -164,11 +164,13 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   static const Int_t fgkNmcPrimTypes = 7;
   
   /// For MC histograms with shower shape in arrays, index in the array corresponds to a MC originating particle type
-  enum mcssTypes  { kmcssPhoton = 0,      kmcssOther = 1,       kmcssPi0 = 2,
-                    kmcssEta = 3,         kmcssConversion = 4,  kmcssElectron = 5  };  
+  enum mcssTypes  { kmcssPhoton   = 0, kmcssPhotonConv = 1,        
+                    kmcssPi0      = 2, kmcssPi0Conv    = 3,
+                    kmcssEta      = 4, kmcssEtaConv    = 5,
+                    kmcssElectron = 6, kmcssOther      = 7 } ;  
   
   /// Total number of MC histograms for shower shape studies.
-  static const Int_t fgkNssTypes = 6 ;
+  static const Int_t fgkNssTypes = 8 ;
 
   /// For MC histograms with cocktail generator checks in arrays, index in the array corresponds to a MC originating particle type
   enum mcGenTypes { kmcGenPi0Merged = 1,  kmcGenPi0Decay = 2,   kmcGenEtaDecay = 3,
