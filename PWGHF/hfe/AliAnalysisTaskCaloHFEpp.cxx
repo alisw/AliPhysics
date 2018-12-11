@@ -157,6 +157,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fDCAxy_Pt_Ds(0),
 				fDCAxy_Pt_lambda(0),
 				fDCAxy_Pt_B(0),
+				fPt_Btoe(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
 				fEMCEG2(kFALSE),
@@ -313,6 +314,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fDCAxy_Pt_Ds(0),
 				fDCAxy_Pt_lambda(0),
 				fDCAxy_Pt_B(0),
+				fPt_Btoe(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
 				fEMCEG2(kFALSE),
@@ -468,6 +470,9 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fDCAxy_Pt_Ds= new TH2F("fDCAxy_Pt_Ds","DCA_{xy} vs Pt Ds(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
 				fDCAxy_Pt_lambda = new TH2F("fDCAxy_Pt_lambda","DCA_{xy} vs Pt lambda(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
 				fDCAxy_Pt_B= new TH2F("fDCAxy_Pt_B","DCA_{xy} vs Pt all B meson(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
+
+				Double_t eop_range[21] = {2.,2.5,3.,3.5,4.,4.5,5.0,5.5,6.,8.,10.,12.,14.,16.,19.,22.,26.,30.,35.,40.,50.};
+				fPt_Btoe= new TH2F("fPt_Btoe","B meson vs electron;electron p_{t} (GeV/c);B p_{t} (GeV/c)",20,eop_range,20,eop_range);
 				fHist_eff_HFE     = new TH1F("fHist_eff_HFE","efficiency :: HFE",600,0,60);
 				fHist_eff_match   = new TH1F("fHist_eff_match","efficiency :: matched cluster",600,0,60);
 				fHist_eff_TPC     = new TH1F("fHist_eff_TPC","efficiency :: TPC cut",600,0,60);
@@ -598,6 +603,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fOutputList->Add(fDCAxy_Pt_Ds);
 				fOutputList->Add(fDCAxy_Pt_lambda);
 				fOutputList->Add(fDCAxy_Pt_B);
+				fOutputList->Add(fPt_Btoe);
 				//==== MC output ====
 				fOutputList->Add(fMCcheckMother);
 				fOutputList->Add(fCheckEtaMC);
@@ -1532,12 +1538,25 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
       if(TMath::Abs(pdgGen)!=11)continue;
       if(pTtrue<2.0)continue;
 
+      Int_t pdgGM = -99;
+      Int_t labelGM = -1;
+      Double_t pTGMom = -1.0;
 
 			if(pdgMom!=0)
 			{
 							AliAODMCParticle* fMCparticleMom = (AliAODMCParticle*) fMCarray->At(labelMom);
-							if(IsDdecay(pdgMom)){fHistMCorgD->Fill(fMCparticle->Pt());}
-							if(IsBdecay(pdgMom)){fHistMCorgB->Fill(fMCparticle->Pt());}
+							if(IsDdecay(pdgMom)){
+											fHistMCorgD->Fill(fMCparticle->Pt());
+											FindMother(fMCparticleMom,labelGM,pdgGM,pTGMom);
+											if(IsBdecay(pdgGM)){
+															AliAODMCParticle* fMCparticleGMom = (AliAODMCParticle*) fMCarray->At(labelGM);
+															fPt_Btoe->Fill(fMCparticle->Pt(),fMCparticleGMom->Pt())
+											}
+							}
+							if(IsBdecay(pdgMom)){
+											fHistMCorgB->Fill(fMCparticle->Pt());
+											fPt_Btoe->Fill(fMCparticle->Pt(),fMCparticleMom->Pt())
+							}
 			}
 
 		 }

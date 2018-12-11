@@ -197,6 +197,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fDCAxy_Pt_Ds;
 		TH2F*                   fDCAxy_Pt_lambda;
 		TH2F*                   fDCAxy_Pt_B;
+		TH2F*                   fPt_Btoe;
 
 		//==== Trigger or Calorimeter flag ====
     Bool_t                  fEMCEG1;//EMcal Threshold EG1
