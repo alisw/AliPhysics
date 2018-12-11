@@ -1584,6 +1584,12 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
   else if ( dataType == AliCaloTrackReader::kAOD ) 
     pidResponse = (dynamic_cast<AliAODInputHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler()))->GetPIDResponse();
   
+  if ( !pidResponse )
+  {
+    AliFatal("AliPIDResponse not available, did you initialize the task?");
+    return; // not needed, coverity ...
+  }
+  
   //Init arrays, variables, get number of clusters
   Int_t nCaloClusters = pl->GetEntriesFast();
   //List to be used in conversion analysis, to tag the cluster as candidate for conversion
