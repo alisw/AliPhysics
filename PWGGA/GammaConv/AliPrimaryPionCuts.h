@@ -47,6 +47,8 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 		kPidedxSigmaTPCCut,
 		kPiTOFSigmaPID,
 		kMassCut,
+		kKadedxSigmaTPCcut,
+		kKaTOFSigmaPID,
 		kNCuts
 	};
 
@@ -105,6 +107,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 
 	Bool_t SetTPCdEdxCutPionLine(Int_t pidedxSigmaCut);
 	Bool_t SetITSdEdxCutPionLine(Int_t ededxSigmaCut);
+	void SetSelectKaons(Bool_t doSelect) { fDoKaonSelection = doSelect; }
 	Bool_t SetITSClusterCut(Int_t clsITSCut);
 	Bool_t SetTPCClusterCut(Int_t clsTPCCut);
 	Bool_t SetEtaCut(Int_t etaCut);
@@ -152,6 +155,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	Double_t fMassCut;	
 	Bool_t   fDoWeights;
     Double_t fMaxDCAToVertexZ;
+	Bool_t 	 fDoKaonSelection; 		///< Select kaons instead of pions
 	
 
 
@@ -183,7 +187,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	AliPrimaryPionCuts& operator=(const AliPrimaryPionCuts&); // not implemented
 
 
-    ClassDef(AliPrimaryPionCuts,6)
+    ClassDef(AliPrimaryPionCuts,7)
 };
 
 #endif

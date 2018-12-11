@@ -88,6 +88,7 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	fMassCut(10),
 	fDoWeights(kFALSE),
     fMaxDCAToVertexZ(8000),
+	fDoKaonSelection(),
 	fCutString(NULL),
   fCutStringRead(""),
 	fHistCutIndex(NULL),
@@ -386,8 +387,8 @@ Bool_t AliPrimaryPionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
 	Int_t cutIndex=0;
 
 	if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
-	if(fHistITSdEdxbefore)fHistITSdEdxbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kPion));
-	if(fHistTPCdEdxbefore)fHistTPCdEdxbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kPion));
+	if(fHistITSdEdxbefore)fHistITSdEdxbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, fDoKaonSelection ? AliPID::kKaon : AliPID::kPion));
+	if(fHistTPCdEdxbefore)fHistTPCdEdxbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, fDoKaonSelection ? AliPID::kKaon : AliPID::kPion));
 	if(fHistTPCdEdxSignalbefore)fHistTPCdEdxSignalbefore->Fill(fCurrentTrack->P(),TMath::Abs(fCurrentTrack->GetTPCsignal()));
 
 	cutIndex++;
@@ -407,9 +408,9 @@ Bool_t AliPrimaryPionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
 		
 		
 	if(fDodEdxSigmaTPCCut == kTRUE){
-		// TPC Pion Line
-		if( fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaBelowPionLineTPC ||
-			fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)>fPIDnSigmaAbovePionLineTPC){
+		// TPC Pion/Kaon Line
+		if( fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,fDoKaonSelection ? AliPID::kKaon : AliPID::kPion)<fPIDnSigmaBelowPionLineTPC ||
+			fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,fDoKaonSelection ? AliPID::kKaon : AliPID::kPion)>fPIDnSigmaAbovePionLineTPC){
 			if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
 			return kFALSE;
 		}
@@ -417,15 +418,15 @@ Bool_t AliPrimaryPionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
 	} else { cutIndex+=1; }
 	
 	if( ( fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid ) && ( !( fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch) ) ){
-		if(fHistTOFbefore) fHistTOFbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion));
+		if(fHistTOFbefore) fHistTOFbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, fDoKaonSelection ? AliPID::kKaon : AliPID::kPion));
 		if(fUseTOFpid){
-			if( fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion)>fPIDnSigmaAbovePionLineTOF ||
-				fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion)<fPIDnSigmaBelowPionLineTOF ){
+			if( fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, fDoKaonSelection ? AliPID::kKaon : AliPID::kPion)>fPIDnSigmaAbovePionLineTOF ||
+				fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, fDoKaonSelection ? AliPID::kKaon : AliPID::kPion)<fPIDnSigmaBelowPionLineTOF ){
 				if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
 				return kFALSE;
 			}
 		}
-		if(fHistTOFafter)fHistTOFafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion));
+		if(fHistTOFafter)fHistTOFafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, fDoKaonSelection ? AliPID::kKaon : AliPID::kPion));
 	} else if ( fRequireTOF == kTRUE ) {
 		if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
 		return kFALSE;
@@ -433,7 +434,7 @@ Bool_t AliPrimaryPionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
 	cutIndex++;
 		
 	if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
-	if(fHistTPCdEdxafter)fHistTPCdEdxafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kPion));
+	if(fHistTPCdEdxafter)fHistTPCdEdxafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, fDoKaonSelection ? AliPID::kKaon : AliPID::kPion));
 	if(fHistTPCdEdxSignalafter)fHistTPCdEdxSignalafter->Fill(fCurrentTrack->P(),TMath::Abs(fCurrentTrack->GetTPCsignal()));
 	
 	return kTRUE;
@@ -586,6 +587,20 @@ Bool_t AliPrimaryPionCuts::SetCut(cutIds cutID, const Int_t value) {
 				UpdateCutString();
 				return kTRUE;
 			} else return kFALSE;
+		case kKadedxSigmaTPCcut:
+			SetSelectKaons(true);
+			if( SetTPCdEdxCutPionLine(value)) { 
+				fCuts[kPidedxSigmaTPCCut] = value;
+				UpdateCutString();
+				return kTRUE;
+			} else return kFALSE;
+		case kKaTOFSigmaPID:
+			SetSelectKaons(true);
+			if( SetTOFPionPIDCut(value)) {
+				fCuts[kPiTOFSigmaPID] = value;
+				UpdateCutString();
+				return kTRUE;
+			} else return kFALSE;
 		case kNCuts:
 			cout << "Error:: Cut id out of range"<< endl;
 			return kFALSE;
@@ -629,6 +644,7 @@ void AliPrimaryPionCuts::PrintCutsWithValues() {
 	if (fDodEdxSigmaITSCut)printf("\t %3.2f < ITS n_sigma pi < %3.2f \n", fPIDnSigmaBelowPionLineITS, fPIDnSigmaAbovePionLineITS );
 	if (fDodEdxSigmaTPCCut)printf("\t %3.2f < TPC n_sigma pi < %3.2f \n", fPIDnSigmaBelowPionLineTPC, fPIDnSigmaAbovePionLineTPC );
 	if (fDoTOFsigmaCut)printf("\t %3.2f < TOF n_sigma pi < %3.2f \n", fPIDnSigmaBelowPionLineTOF, fPIDnSigmaAbovePionLineTOF );
+	if (fDoKaonSelection)printf("\tSelecting kaons instead of pions\n");
 	if (fDoMassCut) printf("two-pion mass cut < %3.2f \n", fMassCut);
 	printf("\n\n");
 }
