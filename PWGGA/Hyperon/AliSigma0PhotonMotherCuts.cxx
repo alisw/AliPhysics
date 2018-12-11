@@ -272,6 +272,15 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
       const float rap = sigma.GetRapidity();
       const int multBin = GetMultiplicityBin(lPercentile);
 
+      int label = -10;
+      int pdgLambdaMother = 0;
+      int pdgPhotonMother = 0;
+      if (fIsMC) {
+        label =
+            sigma.MatchToMC(fMCEvent, fPDG, {{fPDGDaughter1, fPDGDaughter2}},
+                            pdgLambdaMother, pdgPhotonMother);
+      }
+
       // Now write out the stuff to the Femto containers
       if (invMass < fMassSigma + fSigmaMassCut &&
           invMass > fMassSigma - fSigmaMassCut) {
@@ -285,23 +294,16 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
           fHistSigmaLambdaPCorr->Fill(sigma.GetP(), lambda.GetP());
           fHistSigmaPhotonPCorr->Fill(sigma.GetP(), photon.GetP());
 
-          if (fIsMC) {
-            int pdgLambdaMother = 0;
-            int pdgPhotonMother = 0;
-            const int label = sigma.MatchToMC(fMCEvent, fPDG,
-                                              {{fPDGDaughter1, fPDGDaughter2}},
-                                              pdgLambdaMother, pdgPhotonMother);
-            if (label > 0) {
-              fHistMCTrueSigmaLambdaPtCorr->Fill(pT, lambda.GetPt());
-              fHistMCTrueSigmaPhotonPtCorr->Fill(pT, photon.GetPt());
-              fHistMCTrueSigmaLambdaPCorr->Fill(sigma.GetP(), lambda.GetP());
-              fHistMCTrueSigmaPhotonPCorr->Fill(sigma.GetP(), photon.GetP());
-            } else {
-              fHistMCBkgSigmaLambdaPtCorr->Fill(pT, lambda.GetPt());
-              fHistMCBkgSigmaPhotonPtCorr->Fill(pT, photon.GetPt());
-              fHistMCBkgSigmaLambdaPCorr->Fill(sigma.GetP(), lambda.GetP());
-              fHistMCBkgSigmaPhotonPCorr->Fill(sigma.GetP(), photon.GetP());
-            }
+          if (fIsMC && label > 0) {
+            fHistMCTrueSigmaLambdaPtCorr->Fill(pT, lambda.GetPt());
+            fHistMCTrueSigmaPhotonPtCorr->Fill(pT, photon.GetPt());
+            fHistMCTrueSigmaLambdaPCorr->Fill(sigma.GetP(), lambda.GetP());
+            fHistMCTrueSigmaPhotonPCorr->Fill(sigma.GetP(), photon.GetP());
+          } else if (fIsMC && label <= 0) {
+            fHistMCBkgSigmaLambdaPtCorr->Fill(pT, lambda.GetPt());
+            fHistMCBkgSigmaPhotonPtCorr->Fill(pT, photon.GetPt());
+            fHistMCBkgSigmaLambdaPCorr->Fill(sigma.GetP(), lambda.GetP());
+            fHistMCBkgSigmaPhotonPCorr->Fill(sigma.GetP(), photon.GetP());
           }
         }
         ++nSigma;
@@ -328,16 +330,10 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
       fHistPtMult[multBin]->Fill(pT, invMass);
 
       if (fIsMC) {
-        int pdgLambdaMother = 0;
-        int pdgPhotonMother = 0;
-        const int label =
-            sigma.MatchToMC(fMCEvent, fPDG, {{fPDGDaughter1, fPDGDaughter2}},
-                            pdgLambdaMother, pdgPhotonMother);
         if (label > 0) {
           fHistMCV0Pt->Fill(sigma.GetPt());
           fHistMCV0Mass->Fill(invMass);
         }
-
         if (!fIsLightweight) {
           // let's where the other particle comes from if one of them stems from
           // a Sigma0
@@ -697,28 +693,16 @@ int AliSigma0PhotonMotherCuts::GetMultiplicityBin(float percentile) {
     return 1;
   else if (0.05 < percentile && percentile <= 0.1)
     return 2;
-  else if (0.1 < percentile && percentile <= 0.9)
+  else if (0.1 < percentile && percentile <= 5.)
     return 3;
-  else if (0.9 < percentile && percentile <= 1.)
+  else if (5. < percentile && percentile <= 15.)
     return 4;
-  else if (1. < percentile && percentile <= 5.)
+  else if (15. < percentile && percentile <= 30.)
     return 5;
-  else if (5. < percentile && percentile <= 10.)
+  else if (30. < percentile && percentile <= 50.)
     return 6;
-  else if (10. < percentile && percentile <= 15.)
+  else if (50. < percentile && percentile <= 100.)
     return 7;
-  else if (15. < percentile && percentile <= 20.)
-    return 8;
-  else if (20. < percentile && percentile <= 30.)
-    return 9;
-  else if (30. < percentile && percentile <= 40.)
-    return 10;
-  else if (40. < percentile && percentile <= 50.)
-    return 11;
-  else if (50. < percentile && percentile <= 70.)
-    return 12;
-  else if (70. < percentile && percentile <= 100.)
-    return 13;
   else
     return -1;
 }
@@ -794,15 +778,16 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
                                  100, 0, 10, 300, 1., 1.3);
   fHistograms->Add(fHistMixedInvMassPt);
 
-  std::vector<float> multBins = {{0, 0.01, 0.05, 0.1, 0.9, 1., 5., 10., 15.,
-                                  20., 30., 40., 50., 70., 100.}};
 
-  for (int i = 0; i < static_cast<int>(multBins.size() - 1); i++) {
+  std::vector<float> multBinsLow = {{0, 0.01, 0.05, 0.1, 5., 15., 30., 50.}};
+  std::vector<float> multBinsUp = {{0.01, 0.05, 0.1, 5., 15., 30., 50., 100.}};
+
+  for (int i = 0; i < static_cast<int>(multBinsUp.size()); i++) {
     fHistPtMult[i] =
         new TH2F(Form("fHistPtMult_%i", i),
                  Form("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); "
                       "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
-                      multBins[i], multBins[i + 1]),
+					  multBinsLow[i], multBinsUp[i]),
                  100, 0, 10, 300, 1.15, 1.3);
     fHistograms->Add(fHistPtMult[i]);
 
@@ -810,7 +795,7 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
         new TH2F(Form("fHistMixedInvMassBinnedMultPt_%i", i),
                  Form("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); "
                       "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
-                      multBins[i], multBins[i + 1]),
+					  multBinsLow[i], multBinsUp[i]),
                  100, 0, 10, 300, 1.15, 1.3);
     fHistograms->Add(fHistMixedInvMassBinnedMultPt[i]);
   }
@@ -920,11 +905,11 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
                               "; #it{p}_{T} (GeV/#it{c}); Entries", 100, 0, 10);
     fHistogramsMC->Add(fHistMCTruthPt);
 
-    for (int i = 0; i < static_cast<int>(multBins.size() - 1); i++) {
+    for (int i = 0; i < static_cast<int>(multBinsUp.size()); i++) {
       fHistMCTruthPtMult[i] =
           new TH1F(Form("fHistMCTruthPtMult%i", i),
                    Form("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); Entries",
-                        multBins[i], multBins[i + 1]),
+                        multBinsLow[i], multBinsUp[i]),
                    100, 0, 10);
       fHistogramsMC->Add(fHistMCTruthPtMult[i]);
     }

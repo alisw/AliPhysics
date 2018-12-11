@@ -135,6 +135,7 @@ AliAnalysisTaskFemtoNu::CreateOutputObjects()
   fStorage = new AliFemtoResultStorage(fName, *femto_mgr);
 
   PostData(RESULT_STORAGE_OUTPUT_SLOT, fStorage);
+  PostData(0, new TList());
 }
 
 void

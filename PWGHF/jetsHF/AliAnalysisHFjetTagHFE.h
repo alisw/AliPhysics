@@ -40,11 +40,13 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void SetDebugHFEjet(Bool_t dbHFEj) {idbHFEj = dbHFEj;};
   void SetHybridTrack(Bool_t Hybrid){iHybrid = Hybrid;};
   void SetOccCorr(Bool_t OccCorr){iOccCorr = OccCorr;};
+  void SetPPcoll(Bool_t ppcoll){ippcoll = ppcoll;};
   void SetMinSig(Double_t mimSig){fmimSig = mimSig;};
   void SetMinEop(Double_t mimEop){fmimEop = mimEop;};
   void SetMinM20(Double_t mimM20){fmimM20 = mimM20;};
   void SetMaxM20(Double_t maxM20){fmaxM20 = maxM20;};
   void SetJetEtaCut(Double_t JetEtaCut){fJetEtaCut = JetEtaCut;};
+  void SetEleEtaCut(Double_t EleEtaCut){fEleEtaCut = EleEtaCut;};
   void SetMCdata(Bool_t mcData) {fmcData = mcData;};
   void SetInvMassCut0(Double_t InvmassCut) {fInvmassCut = InvmassCut;};
   void SetInvMassCut1(Double_t ptAssocut) {fptAssocut = ptAssocut;};
@@ -69,11 +71,13 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Bool_t idbHFEj;
     Bool_t iHybrid;
     Bool_t iOccCorr;
+    Bool_t ippcoll;
     Double_t fmimSig; // max. centrality
     Double_t fmimEop; // max. centrality
     Double_t fmimM20; // max. centrality
     Double_t fmaxM20; // max. centrality
     Double_t fJetEtaCut; // max. centrality
+    Double_t fEleEtaCut; // max. centrality
     Double_t fInvmassCut;  
     Double_t fptAssocut;  
     Bool_t fmcData;
@@ -190,7 +194,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   Bool_t isHeavyFlavour(int Mompdg, Bool_t &ich, Bool_t &ibe);
   Bool_t isPhotonic(int Mompdg);
   //void MakeParticleLevelJet(THnSparse *pJet);
-  void MakeParticleLevelJet();
+  void MakeParticleLevelJet(Double_t &pthard);
   //void SetCentralityMim(Int_t centMim) {fcentMim = centMim;};
   //void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
   void GetFakeHadronJet(Double_t pthad, Double_t *hpTarray, Double_t &rho);

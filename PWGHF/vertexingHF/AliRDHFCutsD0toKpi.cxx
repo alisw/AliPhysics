@@ -379,7 +379,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
   }
 
   if(!fCutsRD){
-    cout<<"Cut matrice not inizialized. Exit..."<<endl;
+    cout<<"Cut matrix not inizialized. Exit..."<<endl;
     return 0;
   }
   //PrintAll();
@@ -1417,7 +1417,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPP2010() {
 
   SetLowPt(kFALSE);
 
-  PrintAll();
+  //  PrintAll();
 
   delete pidObj;
   pidObj=NULL;
@@ -1549,7 +1549,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPP2010vsMult() {
   //activate pileup rejection (for pp)
   SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
 
-  PrintAll();
+  //  PrintAll();
 
   delete pidObj;
   pidObj=NULL;
@@ -1675,7 +1675,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPP2011_276TeV() {
   SetUseSpecialCuts(kTRUE);
   SetMaximumPtSpecialCuts(2.);
 
-  PrintAll();
+  //  PrintAll();
 
   delete pidObj;
   pidObj=NULL;
@@ -1809,7 +1809,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010() {
   SetUsePID(kTRUE);
   SetUseDefaultPID(kFALSE);
 
-  PrintAll();
+  //  PrintAll();
 
   delete pidObj;
   pidObj=NULL;
@@ -1941,7 +1941,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010Peripherals() {
 
   SetLowPt(kTRUE,2.);
 
-  PrintAll();
+  //  PrintAll();
 
   delete pidObj;
   pidObj=NULL;

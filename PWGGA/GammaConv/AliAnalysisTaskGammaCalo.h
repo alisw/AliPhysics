@@ -344,6 +344,9 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                fHistoJetJetNTrials;                                  //! array of histos with ntrials for jetjet
     TH1F**                fHistoEventSphericity;                                //! array of histos with event Sphericity
     TH2F**                fHistoEventSphericityvsNtracks;                       //! array of histos with event Sphericity vs Ntracks
+    TH2F**                fHistoEventSphericityvsNJets;                         //! array of histos with event Sphericity vs NJets
+    TH2F**                fHistoTrueSphericityvsRecSphericity;                  //! array of histos with true sphericity vs rec. sphericity
+    TH2F**                fHistoTrueMultiplicityvsRecMultiplicity;               //! array of histos with true multiplicity vs rec. multiplicity
 
     TH1F**                 fHistoPtJet;                                          // Histogram of Jet Pt
     TH1F**                 fHistoJetEta;                                         // Histogram of Jet Eta
@@ -377,6 +380,10 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                 fHistoMCPi0inJetInAccPt;                              // Histogram with weighted pi0 in a jet in acceptance, pT
     TH1F**                 fHistoMCEtaJetInAccPt;                                // Histogram with weighted eta in a jet event in acceptance, pT
     TH1F**                 fHistoMCEtainJetInAccPt;                              // Histogram with weighted eta in a jet in acceptance, pT
+    TH1F**                 fHistoMCPi0JetEventGenerated;                         // Histogram with mesons in a jet event generated, pT
+    TH1F**                 fHistoMCPi0inJetGenerated;                            // Histogram with mesons in a jet generated, pT
+    TH1F**                 fHistoMCEtaJetEventGenerated;                         // Histogram with mesons in a jet event generated, pT
+    TH1F**                 fHistoMCEtainJetGenerated;                            // Histogram with mesons in a jet generated, pT
     TH2F**                 fHistoTrueSecondaryPi0FromK0sJetInvMassPt;            // Histogram with validated secondary mothers from K0s in an event with a jet, invMass, pt
     TH2F**                 fHistoTrueSecondaryPi0FromK0sinJetInvMassPt;          // Histogram with validated secondary mothers from K0s in a jet, invMass, pt
     TH2F**                 fHistoTrueSecondaryPi0FromLambdaJetInvMassPt;         // Histogram with validated secondary mothers from lambda in an event with a jet, invMass, pt
@@ -485,7 +492,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 53);
+    ClassDef(AliAnalysisTaskGammaCalo, 55);
 };
 
 #endif

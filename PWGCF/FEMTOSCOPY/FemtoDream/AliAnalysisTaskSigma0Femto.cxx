@@ -30,6 +30,7 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fIsMC(false),
       fIsHeavyIon(false),
       fIsLightweight(false),
+      fIsRun1(false),
       fPhotonLegPileUpCut(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
@@ -75,6 +76,7 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
       fIsMC(false),
       fIsHeavyIon(false),
       fIsLightweight(false),
+      fIsRun1(false),
       fPhotonLegPileUpCut(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
@@ -278,6 +280,59 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
 
 //____________________________________________________________________________________________________
 bool AliAnalysisTaskSigma0Femto::AcceptEvent(AliVEvent *event) {
+  if (fIsRun1) {
+    return AcceptEventRun1(event);
+  } else {
+    return AcceptEventRun2(event);
+  }
+}
+
+//____________________________________________________________________________________________________
+bool AliAnalysisTaskSigma0Femto::AcceptEventRun1(AliVEvent *event) {
+  if (!fIsLightweight) {
+    fHistRunNumber->Fill(0.f, event->GetRunNumber());
+    FillTriggerHisto(fHistTriggerBefore);
+  }
+  fHistCutQA->Fill(0);
+
+  auto esdEvent = static_cast<AliESDEvent *>(event);
+  // Checks if we have a primary vertex  // Get primary vertices form ESD
+  bool eventVtxExist = false;
+  if (esdEvent->GetPrimaryVertexTracks()->GetNContributors() > 0) {
+    eventVtxExist = true;
+  } else if (esdEvent->GetPrimaryVertexSPD()->GetNContributors() > 0) {
+    eventVtxExist = true;
+  }
+  if (!eventVtxExist) {
+    return false;
+  }
+
+  const auto esdVertex5 = esdEvent->GetPrimaryVertex();
+
+  if (!(std::abs(esdVertex5->GetZ()) < 10.)) {
+    return false;
+  }
+
+  // Check for pileup and fill pileup histograms
+  if (esdEvent->IsPileupFromSPD()) {
+    return false;
+  }
+  if (!fIsLightweight) {
+    FillTriggerHisto(fHistTriggerAfter);
+  }
+  fHistCutQA->Fill(2);
+
+  bool isConversionEventSelected =
+      ((AliConvEventCuts *)fV0Reader->GetEventCuts())
+          ->EventIsSelected(event, static_cast<AliMCEvent *>(fMCEvent));
+  if (!isConversionEventSelected) return false;
+
+  fHistCutQA->Fill(4);
+  return true;
+}
+
+//____________________________________________________________________________________________________
+bool AliAnalysisTaskSigma0Femto::AcceptEventRun2(AliVEvent *event) {
   if (!fIsLightweight) {
     fHistRunNumber->Fill(0.f, event->GetRunNumber());
     FillTriggerHisto(fHistTriggerBefore);
@@ -588,14 +643,14 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     fQA->Add(fHistTriggerAfter);
   }
 
-  std::vector<float> multBins = {{0, 0.01, 0.05, 0.1, 0.9, 1., 5., 10., 15.,
-                                  20., 30., 40., 50., 70., 100.}};
+  std::vector<float> multBinsLow = {{0, 0.01, 0.05, 0.1, 5., 15., 30., 50.}};
+  std::vector<float> multBinsUp = {{0.01, 0.05, 0.1, 5., 15., 30., 50., 100.}};
   fHistMultiplicity =
-      new TH1I("fHistMultiplicity", "; Multiplicity bin; Entries", 14, 0, 14);
+      new TH1I("fHistMultiplicity", "; Multiplicity bin; Entries", 8, 0, 8);
   fHistMultiplicity->GetXaxis()->LabelsOption("u");
-  for (int i = 0; i < static_cast<int>(multBins.size() - 1); i++) {
+  for (int i = 0; i < static_cast<int>(multBinsLow.size()); i++) {
     fHistMultiplicity->GetXaxis()->SetBinLabel(
-        i + 1, Form("V0M: %.2f - %.2f %%", multBins[i], multBins[i + 1]));
+        i + 1, Form("V0M: %.2f - %.2f %%", multBinsLow[i], multBinsUp[i]));
   }
   fQA->Add(fHistMultiplicity);
 
@@ -667,7 +722,7 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
       new AliFemtoDreamPartCollection(fConfig, fConfig->GetMinimalBookingME());
 
   if (!fConfig->GetMinimalBookingME() && fPairCleaner &&
-      fPairCleaner->GetHistList() && !fIsMC) {
+      fPairCleaner->GetHistList()) {
     fOutputFemto->Add(fPairCleaner->GetHistList());
   }
 

@@ -222,6 +222,7 @@
 #pragma link C++ class EmcalTriggerJets::AliAnalysisTaskEmcalClustersInJets+;
 #pragma link C++ class EmcalTriggerJets::AliAnalysisTaskEmcalTriggerCorrelationMC+;
 #pragma link C++ class EmcalTriggerJets::AliAnalysisTaskEmcalEG1Correlation+;
+#pragma link C++ class EmcalTriggerJets::AliAnalysisTaskEmcalTriggerBackground+;
 #pragma link C++ class AliAnalysisTaskJetsEvshape+;
 #pragma link C++ class AliJetEmbeddingSelRhoTask+;
 #pragma link C++ class Cumulants+;
@@ -265,5 +266,6 @@
 #pragma link C++ class AliAnalysisTaskEmcalSubjet+;
 #pragma link C++ class AliAnalysisTaskJetCoreEmcal+;
 #pragma link C++ class AliAnalysisTaskSVtaskMCFilter+;
+#pragma link C++ class AliAnalysisTaskEA+;
 #endif
 #endif

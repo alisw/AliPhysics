@@ -896,6 +896,9 @@ TString AliJetContainer::GenerateJetName(EJetType_t jetType, EJetAlgo_t jetAlgo,
   case kNeutralJet:
     typeString = "Neutral";
     break;
+  case kUndefinedJetType:
+    typeString = "Undefined";
+    break;
   }
 
   TString radiusString = TString::Format("R%03.0f", radius*100.0);

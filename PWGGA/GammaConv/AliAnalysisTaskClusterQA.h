@@ -82,6 +82,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     void ProcessTracksAndMatching(AliVCluster* clus, Long_t indexCluster);
     Int_t  GetMCClusterFlag(AliVCluster* clus, AliVCaloCells* cells);
    Float_t GetCentrality(AliVEvent *event);
+    void ResetBuffer();
   private:
         
     AliAnalysisTaskClusterQA     ( const AliAnalysisTaskClusterQA& ); // Prevent copy-construction
@@ -98,6 +99,9 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
                                       AliAODTrack *elec,
                                       AliAODTrack *posi );
     Int_t ProcessTrueClusterCandidates(AliAODConversionPhoton *TrueClusterCandidate, Float_t m02,
+                                        AliAODConversionPhoton *TrueSubClusterCandidate1,
+                                        AliAODConversionPhoton *TrueSubClusterCandidate2);
+    Int_t ProcessTrueClusterCandidatesAOD(AliAODConversionPhoton *TrueClusterCandidate, Float_t m02,
                                         AliAODConversionPhoton *TrueSubClusterCandidate1,
                                         AliAODConversionPhoton *TrueSubClusterCandidate2);
     UInt_t IsTruePhotonESD          ( AliAODConversionPhoton *TruePhotonCandidate );
@@ -197,7 +201,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     TH2F*           hEActiveCells100MeVVsCentrality;
     TH2F*           hEActiveCells150MeVVsCentrality;
     
-    ClassDef(AliAnalysisTaskClusterQA, 5);
+    ClassDef(AliAnalysisTaskClusterQA, 7);
 };
 
 const Int_t kMaxActiveCells = 18000;

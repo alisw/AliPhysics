@@ -145,6 +145,7 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalClustersInJets.cxx
     Tracks/AliAnalysisTaskEmcalTriggerCorrelationMC.cxx
     Tracks/AliAnalysisTaskEmcalEG1Correlation.cxx
+    Tracks/AliAnalysisTaskEmcalTriggerBackground.cxx
     Tracks/AliAnalysisTaskEmcalTriggerSelectionTest.cxx
     UserTasks/AliAnalysisTaskJetUEStudies.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
@@ -248,6 +249,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
         UserTasks/AliAnalysisTaskJetPP.cxx
         UserTasks/AliAnalysisTaskSVtaskMCFilter.cxx
+        UserTasks/AliAnalysisTaskEA.cxx
         UserTasks/AliAnalysisTaskSubJetFraction.cxx
 	UserTasks/AliAnalysisTaskRecoilJetYield.cxx
 	UserTasks/AliAnalysisTaskRecursiveSoftDrop.cxx

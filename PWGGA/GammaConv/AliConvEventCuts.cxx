@@ -92,6 +92,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fRemovePileUp(kFALSE),
   fRemovePileUpSPD(kFALSE),
   fUseSphericity(0),
+  fUseSphericityTrue(kFALSE),
   fPastFutureRejectionLow(0),
   fPastFutureRejectionHigh(0),
   fDoPileUpRejectV0MTPCout(0),
@@ -125,6 +126,10 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fNameFitDataPi0(""),
   fNameFitDataEta(""),
   fNameFitDataK0s(""),
+  fDoReweightHistoMCGamma(kFALSE),
+  fPathTrFGammaReweighting(""),
+  fNameHistoReweightingGamma(""),
+  fNameDataHistoReweightingGamma(""),
   fHistoEventCuts(NULL),
   fHistoPastFutureBits(NULL),
   hCentrality(NULL),
@@ -146,6 +151,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fFitDataPi0(NULL),
   fFitDataEta(NULL),
   fFitDataK0s(NULL),
+  hReweightMCHistGamma(NULL),
+  hReweightDataHistGamma(NULL),
   fAddedSignalPDGCode(0),
   fPreSelCut(kFALSE),
   fTriggerSelectedManually(kFALSE),
@@ -208,6 +215,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fRemovePileUp(ref.fRemovePileUp),
   fRemovePileUpSPD(ref.fRemovePileUpSPD),
   fUseSphericity(ref.fUseSphericity),
+  fUseSphericityTrue(ref.fUseSphericityTrue),
   fPastFutureRejectionLow(ref.fPastFutureRejectionLow),
   fPastFutureRejectionHigh(ref.fPastFutureRejectionHigh),
   fDoPileUpRejectV0MTPCout(ref.fDoPileUpRejectV0MTPCout),
@@ -241,6 +249,10 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fNameFitDataPi0(ref.fNameFitDataPi0),
   fNameFitDataEta(ref.fNameFitDataEta),
   fNameFitDataK0s(ref.fNameFitDataK0s),
+  fDoReweightHistoMCGamma(ref.fDoReweightHistoMCGamma),
+  fPathTrFGammaReweighting(ref.fPathTrFGammaReweighting),
+  fNameHistoReweightingGamma(ref.fNameHistoReweightingGamma),
+  fNameDataHistoReweightingGamma(ref.fNameDataHistoReweightingGamma),
   fHistoEventCuts(NULL),
   fHistoPastFutureBits(NULL),
   hCentrality(ref.hCentrality),
@@ -262,6 +274,8 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fFitDataPi0(ref.fFitDataPi0),
   fFitDataEta(ref.fFitDataEta),
   fFitDataK0s(ref.fFitDataK0s),
+  hReweightMCHistGamma(ref.hReweightMCHistGamma),
+  hReweightDataHistGamma(ref.hReweightDataHistGamma),
   fAddedSignalPDGCode(ref.fAddedSignalPDGCode),
   fPreSelCut(ref.fPreSelCut),
   fTriggerSelectedManually(ref.fTriggerSelectedManually),
@@ -362,6 +376,12 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     hReweightMCHistK0s->SetName("MCInputForWeightingK0s");
     fHistograms->Add(hReweightMCHistK0s);
   }
+
+  if (hReweightMCHistGamma){
+    hReweightMCHistGamma->SetName("MCInputForWeightingGamma");
+    fHistograms->Add(hReweightMCHistGamma);
+  }
+
 
   if (hReweightMultData){
     hReweightMultData->SetName(Form("hReweightMultData_%s",GetCutNumber().Data()));
@@ -849,6 +869,39 @@ void AliConvEventCuts::LoadReweightingHistosMCFromFile() {
   delete f;
 }
 
+///________________________________________________________________________
+void AliConvEventCuts::LoadGammaPtReweightingHistosMCFromFile() {
+
+  AliInfo("Entering loading of histograms for gamma pT weighting");
+  TFile *f = TFile::Open(fPathTrFGammaReweighting.Data());
+  if(!f){
+    AliError(Form("file for gamma pT  weighting %s not found",fPathTrFGammaReweighting.Data()));
+    return;
+  }
+  if (fNameHistoReweightingGamma.CompareTo("") != 0 && fDoReweightHistoMCGamma ){
+    cout << "I have to find: " <<  fNameHistoReweightingGamma.Data() << endl;
+    TH1D *hReweightMCHistGammatemp = (TH1D*)f->Get(fNameHistoReweightingGamma.Data());
+    if(hReweightMCHistGammatemp){
+      hReweightMCHistGamma = new TH1D(*hReweightMCHistGammatemp);
+      hReweightMCHistGamma->SetDirectory(0);
+      AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingGamma.Data(),fPathTrFGammaReweighting.Data() ));
+    } else AliWarning(Form("%s not found in %s", fNameHistoReweightingGamma.Data() ,fPathTrFGammaReweighting.Data()));
+  }
+  if (fNameDataHistoReweightingGamma.CompareTo("") != 0 && fDoReweightHistoMCGamma ){
+    cout << "I have to find: " <<  fNameDataHistoReweightingGamma.Data() << endl;
+    TH1D *hReweightDataHistGammatemp = (TH1D*)f->Get(fNameDataHistoReweightingGamma.Data());
+    if(hReweightDataHistGammatemp){
+      hReweightDataHistGamma = new TH1D(*hReweightDataHistGammatemp);
+      hReweightDataHistGamma->SetDirectory(0);
+      AliInfo(Form("%s has been loaded from %s", fNameDataHistoReweightingGamma.Data(),fPathTrFGammaReweighting.Data() ));
+    } else AliWarning(Form("%s not found in %s",fPathTrFGammaReweighting.Data(), fNameDataHistoReweightingGamma.Data() ));
+  }
+
+
+  f->Close();
+  delete f;
+}
+
 
 ///________________________________________________________________________
 Bool_t AliConvEventCuts::InitializeCutsFromCutString(const TString analysisCutSelection ) {
@@ -864,9 +917,15 @@ Bool_t AliConvEventCuts::InitializeCutsFromCutString(const TString analysisCutSe
     AliInfo("Multiplicity weighting was enabled");
     LoadWeightingMultiplicityFromFile();
   }
+
   if(fDoReweightHistoMCPi0 || fDoReweightHistoMCEta || fDoReweightHistoMCK0s) {
     AliInfo("Particle Weighting was enabled");
     LoadReweightingHistosMCFromFile();
+  }
+
+  if(fDoReweightHistoMCGamma) {
+    AliInfo("Gamma pT Weighting was enabled");
+    LoadGammaPtReweightingHistosMCFromFile();
   }
 
 
@@ -2264,7 +2323,7 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
       fPeriodEnum == kLHC16qt ||                                                                                           // pPb 5TeV LHC16qt
       fPeriodEnum == kLHC16r || fPeriodEnum == kLHC16s ||                                                                  // pPb 8TeV LHC16rs
       fPeriodEnum == kLHC17f2a || fPeriodEnum == kLHC17f2b || fPeriodEnum == kLHC17g8a || fPeriodEnum == kLHC18f3 ||       // MC pPb 5TeV LHC16qt
-      fPeriodEnum == kLHC16rP1JJ || fPeriodEnum == kLHC16sP1JJ ||
+      fPeriodEnum == kLHC16rP1JJ || fPeriodEnum == kLHC16sP1JJ || fPeriodEnum == kLHC18f3bc ||
       fPeriodEnum == kLHC17f3 || fPeriodEnum == kLHC17f4 ||                                                                 // MC pPb 8TeV LHC16sr
       fPeriodEnum == kLHC17n ||                                                                                             // Xe-Xe LHC17n
       fPeriodEnum == kLHC17j7 ||                                                                                            // MC Xe-Xe LHC17n
@@ -4760,41 +4819,80 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
   }
 
   if(fUseSphericity > 0){
-    Double_t eventSphericity = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity();
-    if(eventSphericity == -1) return 14;
-    if(fUseSphericity == 1 && eventSphericity>0.5){
-      return 14;
-    }
-    if(fUseSphericity == 2 && eventSphericity<0.5){
-      return 14;
-    }
-    if(fUseSphericity == 3 && eventSphericity==-1){
-      return 14;
-    }
-    Int_t nPrimTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
-    if(fUseSphericity == 4 && (eventSphericity==-1 || nPrimTracks > 20)){
-      return 14;
-    }
-    if(fUseSphericity == 5 && (eventSphericity==-1 || nPrimTracks < 20)){
-      return 14;
-    }
-    if(fUseSphericity == 6 && (eventSphericity>0.5 || nPrimTracks > 20)){
-      return 14;
-    }
-    if(fUseSphericity == 7 && (eventSphericity>0.5 || nPrimTracks < 20)){
-      return 14;
-    }
-    if(fUseSphericity == 8 && (eventSphericity<0.5 || nPrimTracks > 20)){
-      return 14;
-    }
-    if(fUseSphericity == 9 && (eventSphericity<0.5 || nPrimTracks < 20)){
-      return 14;
-    }
-    if(fUseSphericity == 10 && eventSphericity>0.3){
-      return 14;
-    }
-    if(fUseSphericity == 11 && eventSphericity<0.7){
-      return 14;
+    if(fUseSphericityTrue){
+        Double_t eventSphericityTrue = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericityTrue();
+        if(eventSphericityTrue == -1) return 14;
+        if(fUseSphericity == 1 && eventSphericityTrue>0.5){
+        return 14;
+        }
+        if(fUseSphericity == 2 && eventSphericityTrue<0.5){
+        return 14;
+        }
+        if(fUseSphericity == 3 && eventSphericityTrue==-1){
+        return 14;
+        }
+        Int_t nPrimTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
+        if(fUseSphericity == 4 && (eventSphericityTrue==-1 || nPrimTracks > 20)){
+        return 14;
+        }
+        if(fUseSphericity == 5 && (eventSphericityTrue==-1 || nPrimTracks < 20)){
+        return 14;
+        }
+        if(fUseSphericity == 6 && (eventSphericityTrue>0.5 || nPrimTracks > 20)){
+        return 14;
+        }
+        if(fUseSphericity == 7 && (eventSphericityTrue>0.5 || nPrimTracks < 20)){
+        return 14;
+        }
+        if(fUseSphericity == 8 && (eventSphericityTrue<0.5 || nPrimTracks > 20)){
+        return 14;
+        }
+        if(fUseSphericity == 9 && (eventSphericityTrue<0.5 || nPrimTracks < 20)){
+        return 14;
+        }
+        if(fUseSphericity == 10 && eventSphericityTrue>0.3){
+        return 14;
+        }
+        if(fUseSphericity == 11 && eventSphericityTrue<0.7){
+        return 14;
+        }
+    }else if(!fUseSphericityTrue){
+        Double_t eventSphericity = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity();
+        if(eventSphericity == -1) return 14;
+        if(fUseSphericity == 1 && eventSphericity>0.5){
+        return 14;
+        }
+        if(fUseSphericity == 2 && eventSphericity<0.5){
+        return 14;
+        }
+        if(fUseSphericity == 3 && eventSphericity==-1){
+        return 14;
+        }
+        Int_t nPrimTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
+        if(fUseSphericity == 4 && (eventSphericity==-1 || nPrimTracks > 20)){
+        return 14;
+        }
+        if(fUseSphericity == 5 && (eventSphericity==-1 || nPrimTracks < 20)){
+        return 14;
+        }
+        if(fUseSphericity == 6 && (eventSphericity>0.5 || nPrimTracks > 20)){
+        return 14;
+        }
+        if(fUseSphericity == 7 && (eventSphericity>0.5 || nPrimTracks < 20)){
+        return 14;
+        }
+        if(fUseSphericity == 8 && (eventSphericity<0.5 || nPrimTracks > 20)){
+        return 14;
+        }
+        if(fUseSphericity == 9 && (eventSphericity<0.5 || nPrimTracks < 20)){
+        return 14;
+        }
+        if(fUseSphericity == 10 && eventSphericity>0.3){
+        return 14;
+        }
+        if(fUseSphericity == 11 && eventSphericity<0.7){
+        return 14;
+        }
     }
   }
 
@@ -4895,26 +4993,34 @@ Float_t AliConvEventCuts::GetWeightForMultiplicity(Int_t mult){
   if(valueMC!=0)   relativeErrorMC   = errorMC / valueMC;
   if(valueData!=0) relativeErrorData = errorData / valueData;
 
+  Double_t errorTolerance = 0.2;
+  Double_t cutOff = -1.0;  // if > 0 : if rel error too large => weight with 0 instead of 1 above this value
+
+  //  For these periods allow larger statistical error in the MC to apply the multiplicity weight
   if ( fPeriodEnum == kLHC16NomB || fPeriodEnum == kLHC16P1Pyt8 || fPeriodEnum == kLHC16P1PHO || 
-       fPeriodEnum == kLHC17pq  ||  fPeriodEnum == kLHC17P1PHO  || fPeriodEnum == kLHC17l3b  || fPeriodEnum == kLHC18j2  || fPeriodEnum == kLHC17l4b  || 
-       fPeriodEnum == kLHC16g1  || fPeriodEnum == kLHC16h4  ||
+       fPeriodEnum == kLHC17pq  ||  fPeriodEnum == kLHC17P1PHO  || fPeriodEnum == kLHC17l3b  || fPeriodEnum == kLHC18j2  || fPeriodEnum == kLHC17l4b){
+    errorTolerance = 0.6;
+  }
+
+  if ( fPeriodEnum == kLHC16g1  || fPeriodEnum == kLHC16h4  ||
        fPeriodEnum == kLHC16g1a || fPeriodEnum == kLHC16g1b || fPeriodEnum == kLHC16g1c ||
        fPeriodEnum == kLHC16i1a || fPeriodEnum == kLHC16i1b || fPeriodEnum == kLHC16i1c ||
        fPeriodEnum == kLHC16i2a || fPeriodEnum == kLHC16i2b || fPeriodEnum == kLHC16i2c ||
-       fPeriodEnum == kLHC16i3a || fPeriodEnum == kLHC16i3b || fPeriodEnum == kLHC16i3c      ) {  //  For these periods allow larger statistical error in the MC to apply the multiplicity weight
+       fPeriodEnum == kLHC16i3a || fPeriodEnum == kLHC16i3b || fPeriodEnum == kLHC16i3c      ) {
+    errorTolerance = 0.6;
+    cutOff = 2800;  // MC distribution still significant while data error already too large
+      }
 
-    if (relativeErrorData < 0.6 && relativeErrorMC < 0.6 ){
-        if (isfinite(valueMultData) && isfinite(valueMultMC) ){
-          weightMult               = valueMultData/valueMultMC;
-        }
-     }
-  } else {
-    if (relativeErrorData < 0.2 && relativeErrorMC < 0.2 ){
-       if (isfinite(valueMultData) && isfinite(valueMultMC) ){
-          weightMult               = valueMultData/valueMultMC;
-       }
+  if (relativeErrorData < errorTolerance && relativeErrorMC < errorTolerance ){
+    if (isfinite(valueMultData) && isfinite(valueMultMC) ){
+      weightMult               = valueMultData/valueMultMC;
+    }
+  } else if(cutOff>0){
+    if(mult>cutOff) {
+      weightMult = 0;
     }
   }
+
   return weightMult;
 }
 
@@ -5006,6 +5112,76 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
   } else if (PDGCode ==  310 && functionResultMC != 0 && isfinite(functionResultMC)){
     weight = functionResultMC;
   }
+  return weight;
+}
+
+
+//_________________________________________________________________________
+Float_t AliConvEventCuts::GetWeightForGamma(Int_t index, AliMCEvent *mcEvent, AliVEvent *event){
+  // Gamma pT weighting for the material budget weights
+
+  if(index < 0) return 0; // No Particle
+
+  // check if MC production should be weighted. If it is with added particles check that particle is not rejected
+  Int_t kCaseGen = 0;
+  if ( fPeriodEnum == kLHC16NomB || fPeriodEnum == kLHC16P1Pyt8 || fPeriodEnum == kLHC16P1PHO || 
+    fPeriodEnum == kLHC17pq  ||  fPeriodEnum == kLHC17P1PHO  || fPeriodEnum == kLHC17l3b  )
+    kCaseGen = 2;  // regular MC   
+
+ 
+  if (kCaseGen == 0) return 1.;
+  if (kCaseGen == 1 && !IsParticleFromBGEvent(index, mcEvent, event)) return 1.;
+
+  // get pT and pdg code
+  Double_t gammaPt = 0;
+  Int_t PDGCode = 0;
+
+  if(!event || event->IsA()==AliESDEvent::Class()){
+    gammaPt = ((TParticle*)mcEvent->Particle(index))->Pt();
+    PDGCode = ((TParticle*)mcEvent->Particle(index))->GetPdgCode();
+  } else if(event->IsA()==AliAODEvent::Class()){
+    TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (AODMCTrackArray){
+      AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index));
+      gammaPt = aodMCParticle->Pt();
+      PDGCode = aodMCParticle->GetPdgCode();
+    } else {
+      return 1;
+    }
+  }
+
+  // get MC value
+  Float_t functionResultMC = 1.;
+  if ( PDGCode == 22 && fDoReweightHistoMCGamma && hReweightMCHistGamma!= 0x0){
+    functionResultMC = hReweightMCHistGamma->Interpolate(gammaPt);
+  }
+
+
+  // get data value
+  Float_t functionResultData = 1;
+  if ( PDGCode ==  22 && fDoReweightHistoMCGamma && hReweightDataHistGamma!= 0x0){
+    functionResultData = hReweightDataHistGamma->Interpolate(gammaPt);
+  }
+
+
+
+  // calculate weight from data and MC
+  Double_t weight = 1;
+  if (PDGCode ==  22 ){
+    if (functionResultData != 0. && functionResultMC != 0. && isfinite(functionResultData) && isfinite(functionResultMC)){
+      weight = functionResultData/functionResultMC;
+      // if ( kCaseGen == 3){   // never true ?
+      //   if (PDGCode ==  22){
+      // 	  if (!(fDoReweightHistoMCGamma && hReweightMCHistGamma!= 0x0 && PDGCode ==  22)){
+      // 	    weight = 1.;
+      // 	  }
+      //   }
+      // }
+      if (!isfinite(functionResultData)) weight = 1.;
+      if (!isfinite(weight)) weight = 1.;
+    }
+  } 
+
   return weight;
 }
 
@@ -6069,6 +6245,9 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
               periodName.CompareTo("LHC17f2b_cent_woSDD_fix") == 0){
     fPeriodEnum = kLHC17f2b;
     fEnergyEnum = kpPb5TeVR2;
+  } else if (periodName.Contains("LHC18f3b") || periodName.Contains("LHC18f3c") ){
+    fPeriodEnum = kLHC18f3bc;
+    fEnergyEnum = kpPb8TeV;
   } else if (periodName.Contains("LHC18f3") ){
     fPeriodEnum = kLHC18f3;
     fEnergyEnum = kpPb5TeVR2;

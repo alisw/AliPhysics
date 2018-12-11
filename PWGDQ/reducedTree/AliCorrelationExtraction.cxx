@@ -1795,8 +1795,8 @@ Bool_t AliCorrelationExtraction::EfficiencyCorrection() {
       Double_t binErr     = fSignalCF2DEffCorr->GetBinError(   i, j);
       Double_t binContNew = binCont/eff;
       Double_t binErrNew  = TMath::Sqrt(TMath::Power(binErr/eff, 2) + TMath::Power(binCont*effErr/eff/eff, 2));
-      fSignalCF2DEffCorr->SetBinContent(i, binContNew);
-      fSignalCF2DEffCorr->SetBinError(  i, binErrNew);
+      fSignalCF2DEffCorr->SetBinContent(i, j, binContNew);
+      fSignalCF2DEffCorr->SetBinError(  i, j, binErrNew);
     }
   }
 

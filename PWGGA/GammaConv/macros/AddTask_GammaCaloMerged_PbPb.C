@@ -28,28 +28,28 @@ void AddTask_GammaCaloMerged_PbPb(
   Int_t     isMC                          = 0,        // run MC
   TString   photonCutNumberV0Reader       = "",       // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
   TString   periodNameV0Reader            = "",
-  TString   periodName                    = "",        // period name
   // general setting for task
   Int_t     enableQAMesonTask             = 0,        // enable QA in AliAnalysisTaskGammaConvV1
   Int_t     enableQAClusterTask           = 0,        // enable additional QA task
-  Int_t     enableExtMatchAndQA           = 0,                            // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
-  Int_t     enableLightOutput             = 0,   // switch to run light output (only essential histograms for afterburner)
+  Int_t     enableExtMatchAndQA           = 0,        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
+  Int_t     enableLightOutput             = 0,        // switch to run light output (only essential histograms for afterburner)
   Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
   Bool_t    enableTriggerOverlapRej       = kFALSE,   // enable trigger overlap rejection
   Float_t   maxFacPtHard                  = 3.,       // maximum factor between hardest jet and ptHard generated
   // settings for weights
   // FPTW:fileNamePtWeights, FCEF:fileNameCentFlattening, separate with ;
   TString   fileNameExternalInputs        = "",
-  Bool_t    doWeightingPart               = kFALSE,        // enable Weighting
-  Int_t     enableCentFlattening          = 0,                  // enable centrality flattening
-  Int_t     headerSelectionInt            = 0,                  // enable centrality flattening
+  Bool_t    doWeightingPart               = kFALSE,   // enable Weighting
+  Int_t     enableCentFlattening          = 0,        // enable centrality flattening
+  Int_t     headerSelectionInt            = 0,        // set header selection
+  TString   generatorName                 = "",
   // special settings
-  Int_t     selectedMeson                 = 1,                  // put flag for selected meson
+  Int_t     selectedMeson                 = 1,        // put flag for selected meson
   Bool_t    enableSortingMCLabels         = kTRUE,    // enable sorting for MC cluster labels
-  Bool_t    enableDetailedPrintout        = kFALSE,             // enable detailed printout
-  Double_t  minEnergyForExoticsCut        = 1.0,                // minimum energy to be used for exotics CutHandler
-  Bool_t    enableExoticsQA               = kFALSE,             // switch to run QA for exotic clusters
-  Bool_t    runDetailedM02                = kFALSE,             // switch on very detailed M02 distribution
+  Bool_t    enableDetailedPrintout        = kFALSE,   // enable detailed printout
+  Double_t  minEnergyForExoticsCut        = 1.0,      // minimum energy to be used for exotics CutHandler
+  Bool_t    enableExoticsQA               = kFALSE,   // switch to run QA for exotic clusters
+  Bool_t    runDetailedM02                = kFALSE,   // switch on very detailed M02 distribution
   // subwagon config
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
 ) {
@@ -59,24 +59,25 @@ void AddTask_GammaCaloMerged_PbPb(
   TString fileNamePtWeights     = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FPTW:");
   TString fileNameCentFlattening= cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FCEF:");
 
-  TString sAdditionalTrainConfig      = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "", "");
+  TString addTaskName                 = "AddTask_GammaMerged_PbPb";
+  TString sAdditionalTrainConfig      = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "", "", addTaskName);
   if (sAdditionalTrainConfig.Atoi() > 0){
     trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
-    cout << "INFO: AddTask_GammaConvV1_pPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+    cout << "INFO: " << addTaskName.Data() << " running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
   }
-  TString corrTaskSetting             = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "CF", "");
+
+  TString corrTaskSetting             = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "CF", "", addTaskName);
   if(corrTaskSetting.CompareTo(""))
     cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
 
   Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
-  TString strTrackMatcherRunningMode  = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "TM", "");
+  TString strTrackMatcherRunningMode  = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "TM", "", addTaskName);
   if(additionalTrainConfig.Contains("TM"))
     trackMatcherRunningMode = strTrackMatcherRunningMode.Atoi();
 
   TH1S* histoAcc = 0x0;         // histo for modified acceptance
-  TString strModifiedAcc              = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "MODIFYACC", "");
+  TString strModifiedAcc              = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "MODIFYACC", "", addTaskName);
   if(strModifiedAcc.Contains("MODIFYACC")){
-    cout << "INFO: AddTask_GammaCalo_pp activating 'MODIFYacc'" << endl;
     TString tempType = strModifiedAcc;
     tempType.Replace(0,9,"");
     cout << "INFO: connecting to alien..." << endl;
@@ -97,7 +98,7 @@ void AddTask_GammaCaloMerged_PbPb(
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr           = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error(Form("AddTask_GammaCaloMerged_PbPb_%i",trainConfig), "No analysis manager found.");
+    Error(Form("%s_%i", addTaskName.Data(),  trainConfig), "No analysis manager found.");
     return ;
   }
 
@@ -207,16 +208,16 @@ void AddTask_GammaCaloMerged_PbPb(
   TList *MesonCutList           = new TList();
 
   TList *HeaderList             = new TList();
-  if (periodName.CompareTo("LHC13d2")==0){
+  if (generatorName.CompareTo("LHC13d2")==0){
     TObjString *Header1 = new TObjString("pi0_1");
     HeaderList->Add(Header1);
 //    TObjString *Header3 = new TObjString("eta_2");
 //    HeaderList->Add(Header3);
 
-  } else if (periodName.CompareTo("LHC12a17x_fix")==0){
+  } else if (generatorName.CompareTo("LHC12a17x_fix")==0){
     TObjString *Header1 = new TObjString("PARAM");
     HeaderList->Add(Header1);
-  } else if (periodName.CompareTo("LHC14a1a")==0){
+  } else if (generatorName.CompareTo("LHC14a1a")==0){
     if (headerSelectionInt == 1){
       TObjString *Header1 = new TObjString("pi0_1");
       HeaderList->Add(Header1);
@@ -229,7 +230,7 @@ void AddTask_GammaCaloMerged_PbPb(
       TObjString *Header2 = new TObjString("eta_2");
       HeaderList->Add(Header2);
     }
-  } else if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0){
+  } else if (generatorName.CompareTo("LHC14a1b")==0 || generatorName.CompareTo("LHC14a1c")==0){
     TObjString *Header1 = new TObjString("BOX");
     HeaderList->Add(Header1);
   }
@@ -258,7 +259,7 @@ void AddTask_GammaCaloMerged_PbPb(
     analysisEventCuts[i]          = new AliConvEventCuts();
 
     // switch on centrality flattening
-    if(periodName.CompareTo("LHC11h") && (enableCentFlattening > 0)){
+    if(generatorName.CompareTo("LHC11h") && (enableCentFlattening > 0)){
       cout << "entering the flattening loop -> searching for file: " << fileNameCentFlattening.Data() << endl;
       if( fileNameCentFlattening.Contains("Low") ){
         analysisEventCuts[i]->SetUseWeightFlatCentralityFromFile(enableCentFlattening, fileNameCentFlattening, "CentLowRange");

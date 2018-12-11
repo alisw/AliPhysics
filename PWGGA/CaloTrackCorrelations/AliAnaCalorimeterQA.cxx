@@ -1053,7 +1053,9 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     Int_t  mcOK = kFALSE;
     Int_t  pdg  = -1;
     if(IsDataMC() && nLabel > 0 && labels) 
-      mcOK = ClusterMCHistograms(matched, labels, nLabel, pdg);
+      mcOK = ClusterMCHistograms(matched, labels, 
+                                 clus->GetClusterMCEdepFraction(),
+                                 nLabel, pdg);
 
     // Matched clusters with tracks, also do some MC comparison, needs input from ClusterMCHistograms
     if( matched &&  fFillAllTMHisto)
@@ -1106,7 +1108,9 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
 /// \param nLabels: number of mc labels 
 /// \param pdg: id of primary particle originating the cluster
 //__________________________________________________________________________________
-Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * labels,
+Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,
+                                                const Int_t * labels,
+                                                const UShort_t * edepFrac,
                                                 Int_t nLabels, Int_t & pdg )
 {
   if(!labels || nLabels<=0)
@@ -1146,8 +1150,8 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * lab
   Int_t charge  = 0;
   
   // Check the origin.
-  Int_t tag = GetMCAnalysisUtils()->CheckOrigin(labels, nLabels, GetMC(),
-                                                GetReader()->GetNameOfMCEventHederGeneratorToAccept());
+  Int_t tag = GetMCAnalysisUtils()->CheckOrigin(labels, edepFrac,nLabels, GetMC(),
+                                                GetReader()->GetNameOfMCEventHederGeneratorToAccept(),e);
   
   if ( !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown) )
   { 

@@ -164,8 +164,8 @@ fPtTrackClusRatiovsPt(0),
 fPtTrackClusRatiovsPtWithCPV(0),
 fClusEvsClusT(0),
 fClustEnBefAftNonLin(0),
-fPT(0),
 fPTbeforeNonLinScaling(0),
+fPT(0),
 fE(0),
 fNLM(0),
 fNLM2_NC_Acc(0),
@@ -386,8 +386,8 @@ fPtTrackClusRatiovsPt(0),
 fPtTrackClusRatiovsPtWithCPV(0),
 fClusEvsClusT(0),
 fClustEnBefAftNonLin(0),
-fPT(0),
 fPTbeforeNonLinScaling(0),
+fPT(0),
 fE(0),
 fNLM(0),
 fNLM2_NC_Acc(0),
@@ -4930,15 +4930,19 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
   }
 
   AliAODMCParticle *mcpart, *mom, *mcpp;
-  Int_t pdg, mompdg, photonlabel;
+  Int_t pdg = 0, photonlabel = 0, momidx = 0, mcppmomidx = 0, mompdg = 0;
 
   for(int iTr = 0; iTr < nTracks; iTr ++){
     eT=0.; phi=0.; eta=0.;
 
     mcpart = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTr));
 
+    fGenPromptPhotonSel->Fill(0.5);
+
     if(mcpart->GetStatus()>10)
       continue;
+
+    fGenPromptPhotonSel->Fill(1.5);
 
     if(!mcpart->IsPrimary())
       continue;
@@ -4946,9 +4950,31 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     if(!mcpart->IsPhysicalPrimary())
       continue;
 
+    fGenPromptPhotonSel->Fill(2.5);
+
     pdg = mcpart->GetPdgCode();
     if(pdg != 22 /*|| mcpart->GetLabel()!=8*/)
       continue;
+
+    fGenPromptPhotonSel->Fill(3.5);
+
+    momidx = mcpart->GetMother();
+    if(momidx > 0 && momidx < nTracks){
+      mom    = static_cast<AliAODMCParticle*>(fAODMCParticles->At(momidx));
+      mompdg = TMath::Abs(mom->GetPdgCode());
+    }
+    else
+      mompdg = pdg;
+
+    if(mompdg != 22) continue;              // Discard particles whose mother is not a photon
+
+    fGenPromptPhotonSel->Fill(4.5);
+
+    // if(fPythiaHeader->ProcessType() != 201 && fPythiaHeader->ProcessType() != 202) continue; // Discard particles which do not come from prompt photon processes
+    // OR
+    if(fmcHeader->GetEventType() != 14 && fmcHeader->GetEventType() != 29) continue; // Discard particles which do not come from prompt photon processes
+
+    fGenPromptPhotonSel->Fill(5.5);
 
     eta = mcpart->Eta();
     phi = mcpart->Phi();
@@ -4990,16 +5016,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
 	continue;
     }
 
+    fGenPromptPhotonSel->Fill(6.5);
+
     photonlabel = iTr;
-
-    int momidx = mcpart->GetMother();
-    if(momidx>0){
-      mom    = static_cast<AliAODMCParticle*>(fAODMCParticles->At(momidx));
-      mompdg = TMath::Abs(mom->GetPdgCode());
-    }
-    else
-      mompdg = mcpart->GetPdgCode();
-
     eT = mcpart->E()*(TMath::Sin(mcpart->Theta())); // Transform to transverse Energy
 
     if(fWho == 1)
@@ -5061,11 +5080,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       if(mcpp->GetStatus()>10 || (!mcpp->IsPhysicalPrimary() || !mcpp->IsPrimary()))
 	continue;
 
-      int mumidx = mcpp->GetMother();
-      if(mumidx < 0 || mumidx > nTracks)
+      mcppmomidx = mcpp->GetMother();
+      if(mcppmomidx < 0 || mcppmomidx > nTracks)
 	continue;
 
-      if(mumidx == photonlabel)
+      if(mcppmomidx == photonlabel)
 	continue;
 
       if(mcpp->E() < 0.3) // Minimal energy for clusters allowed at reconstructed level

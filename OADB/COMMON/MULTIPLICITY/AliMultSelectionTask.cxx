@@ -2147,7 +2147,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     if (sel) {
         sel->SetName(fStoredObjectName.Data());
     }
-    
+    /*
     //Full Manual Bypass Mode (DEBUG ONLY)
     if ( fAlternateOADBFullManualBypassMC.EqualTo("")==kFALSE ) {
         AliWarning(" Extra option detected: FULL MANUAL BYPASS of MONTE CARLO OADB Location ");
@@ -2157,31 +2157,31 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         //If bypassed, pass info
         AliWarning( Form("MC-BYPASS confirmation: %s", fAlternateOADBForEstimators.Data()) );
     }
+     */
     
     //=====================================================================
     //Option to override estimators from alternate oadb file
     if ( (fAlternateOADBForEstimators.EqualTo("")==kFALSE && fAlternateOADBFullManualBypass.EqualTo("")==kTRUE ) ||
         fAlternateOADBFullManualBypassMC.EqualTo("")==kFALSE
         ) {
-        AliWarning("Extra option detected: Load estimators from OADB file called: ");
-        AliWarning(Form(" path: %s", fAlternateOADBForEstimators.Data() ));
         
-        TString lmuOADBref = fAlternateOADBForEstimators.Data();
+        TString lmuOADBref = "";
+        TString fileNameAlter = "";
         
-        TString fileNameAlter =(Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), fAlternateOADBForEstimators.Data() ));
-        
-        /*
-         //Full Manual Bypass Mode (DEBUG ONLY)
-         if ( fAlternateOADBFullManualBypassMC.EqualTo("")==kFALSE ) {
-         AliWarning(" Extra option detected: FULL MANUAL BYPASS of MONTE CARLO OADB Location ");
-         AliWarning(" --- Warning: Use with care ---");
-         AliWarning(Form(" New complete path: %s", fAlternateOADBFullManualBypassMC.Data() ));
-         fileNameAlter = Form("%s", fAlternateOADBFullManualBypassMC.Data() );
-         //If bypassed, pass info
-         lmuOADBref = Form("MC-BYPASS: %s", fAlternateOADBFullManualBypassMC.Data());
-         }
-         */
-        
+        //Full Manual Bypass Mode (DEBUG ONLY)
+        if ( fAlternateOADBFullManualBypassMC.EqualTo("")==kFALSE ) {
+            AliWarning(" Extra option detected: FULL MANUAL BYPASS of MONTE CARLO OADB Location ");
+            AliWarning(" --- Warning: Use with care ---");
+            AliWarning(Form(" New complete path: %s", fAlternateOADBFullManualBypassMC.Data() ));
+            fileNameAlter = Form("%s", fAlternateOADBFullManualBypassMC.Data() );
+            //If bypassed, pass info
+            lmuOADBref = Form("MC-BYPASS: %s", fAlternateOADBFullManualBypassMC.Data());
+        }else{
+            AliWarning("Extra option detected: Load estimators from OADB file called: ");
+            AliWarning(Form(" path: %s", fAlternateOADBForEstimators.Data() ));
+            lmuOADBref = fAlternateOADBForEstimators.Data();
+            fileNameAlter =(Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), fAlternateOADBForEstimators.Data() ));
+        }
         //Managed to open, save name of opened OADB file
         lHistTitle.Append(Form(", muOADB: %s",lmuOADBref.Data()));
         
@@ -2782,7 +2782,8 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
     if ( fCurrentRun >= 280234 && fCurrentRun <= 280235 ) lProductionName = "LHC17n";
     
     //Registered production: Run 2 Pb-Pb 2018
-    if ( fCurrentRun >= 295581 && fCurrentRun <= 296000 ) lProductionName = "LHC18q";
+    if ( fCurrentRun >= 295581 && fCurrentRun <= 296689 ) lProductionName = "LHC18q";
+    if ( fCurrentRun >= 296690 && fCurrentRun <= 300000 ) lProductionName = "LHC18r";
     
     //WARNING: change line above if you want to register anything else!
     //         Please note that this is temporary!

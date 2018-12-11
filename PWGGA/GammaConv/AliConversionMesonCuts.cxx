@@ -2011,6 +2011,11 @@ Bool_t AliConversionMesonCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
     fAlphaCutMeson      = 1.0;
     fAlphaPtDepCut      = kFALSE;
     break;
+  case 13:  //d 0-0.1
+    fAlphaMinCutMeson   = 0.0;
+    fAlphaCutMeson      = 0.1;
+    fAlphaPtDepCut      = kFALSE;
+    break;
   default:
     cout<<"Warning: AlphaMesonCut not defined "<<alphaMesonCut<<endl;
     return kFALSE;

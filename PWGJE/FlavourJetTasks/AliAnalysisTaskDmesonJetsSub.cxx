@@ -2822,15 +2822,16 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t i
 	 
          double delta_R = j1.delta_R(j2);
          zg = j2.perp()/(j1.perp()+j2.perp());   
-                     
+         double yh=j1.e()+j2.e();            
          double y = log(1.0/delta_R);
-         double lnpt_rel = log(zg*delta_R);
+         double lnpt_rel = log(j2.perp()*delta_R);
 	 double frac=j1.perp()/output_jets[0].perp();
-	 double lundEntries[9] = {y, lnpt_rel, output_jets[0].perp(), nall, type, flagSubjet, xconstperp, invmass,frac};
-	   hname = TString::Format("%s/LundIterative", jetDef.GetName());
+	 double lundEntries[10] = {y, lnpt_rel, output_jets[0].perp(), nall, type, flagSubjet, xconstperp, invmass,yh,TMath::Abs(output_jets[0].eta())};
+         
+	  hname = TString::Format("%s/%s/LundIterative", GetName(), jetDef.GetName());
            THnSparse* h = static_cast<THnSparse*>(fHistManager->FindObject(hname)); 
-	   //   if(!h) cout<<"caca"<<endl;
-	   h->Fill(lundEntries);
+	    
+	  h->Fill(lundEntries);
                 jj=j1;
       }
 
@@ -3198,11 +3199,11 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
     maxTracks = 500;
   }
 
-      Int_t dimx   = 9;
-      Int_t nbinsx[9]   = {50,50,10,20,2,2,20,20,10};
-      Double_t minx[9] =  {0,-10,0,0,0,0,0,1.4,0};
-      Double_t maxx[9]  = {5,0,100,20,2,2,20,2.4,1};
-      TString titlex[9]={"log(1/deltaR)","log(zteta)","jet pt","n","type","flagSubjet","ptD","invmass","frac"};
+      Int_t dimx   = 10;
+      Int_t nbinsx[10]   = {50,100,10,20,2,2,20,100,100,9};
+      Double_t minx[10] =  {0,-10,0,0,0,0,0,1.6,0,0};
+      Double_t maxx[10]  = {5,10,100,20,2,2,20,2,100,0.9};
+      TString titlex[10]={"log(1/deltaR)","log(zteta)","jet pt","n","type","flagSubjet","ptD","invmass","frac","abs(eta)"};
 
 
 
@@ -3422,10 +3423,12 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
         htitle = hname + ";no. of tracks;#it{p}_{T,D} (GeV/#it{c});counts";
         fHistManager.CreateTH2(hname, htitle, 200, 0, maxTracks, 300, 0, 150);
       }
-       hname = TString::Format("%s/LundIterative",jetDef.GetName());
+      hname = TString::Format("%s/%s/LundIterative",param.GetName(),jetDef.GetName());
+      cout<<"at the begining"<<hname<<endl;
       THnSparse* h = fHistManager.CreateTHnSparse(hname,hname,dimx,nbinsx,minx,maxx);
       for (Int_t j = 0; j < dimx; j++) {
       h->GetAxis(j)->SetTitle(titlex[j]);}
+      
     }
     switch (fOutputType) {
     case kTreeOutput:

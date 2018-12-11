@@ -35,6 +35,7 @@ class AliReducedEventCut : public AliReducedVarCut {
   
   void AddEventTriggerFilter(ULong64_t filter) {fEventTriggerMask |= filter; fEventTriggerMaskEnabled = kTRUE;};
   void AddEventTriggerFilterBit(UShort_t bit)  {if(bit>63) return; fEventTriggerMask |= (ULong64_t(1)<<bit); fEventTriggerMaskEnabled = kTRUE;};
+  void AddEventTriggerClassFilter(TString triggerClass) { fEventTriggerClass = triggerClass; fEventTriggerClassEnabled = kTRUE;};
   
   void AddEventL1InputFilter(UInt_t filter) {fEventL1Mask |= filter; fEventL1MaskEnabled = kTRUE;};
   void AddEventL1InputFilterBit(UShort_t bit)  {if(bit>31) return; fEventL1Mask |= (UInt_t(1)<<bit); fEventL1MaskEnabled = kTRUE;};
@@ -52,6 +53,8 @@ class AliReducedEventCut : public AliReducedVarCut {
   ULong64_t fEventFilter;               // filter for the event tag map
   Bool_t    fEventTriggerMaskEnabled;   // if true apply the filter on the event trigger mask
   ULong64_t fEventTriggerMask;          // filter for the event trigger mask
+  Bool_t    fEventTriggerClassEnabled;  // if true apply the filter on the event trigger class
+  TString   fEventTriggerClass;         // filter for the event trigger class
   Bool_t    fEventL1MaskEnabled;        // if true apply the filter on the event L1 trigger inputs mask
   ULong64_t fEventL1Mask;               // filter for the event L1 trigger inputs mask
   Bool_t    fEventL0MaskEnabled;        // if true apply the filter on the event L0 trigger inputs mask
@@ -60,7 +63,7 @@ class AliReducedEventCut : public AliReducedVarCut {
   AliReducedEventCut(const AliReducedEventCut &c);
   AliReducedEventCut& operator= (const AliReducedEventCut &c);
   
-  ClassDef(AliReducedEventCut,4);
+  ClassDef(AliReducedEventCut,5);
 };
 
 #endif
