@@ -166,6 +166,10 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   THnSparse                   *HFjetParticle;
   TH2D                        *HFjetDCA_c;
   TH2D                        *HFjetDCA_b;
+  TH2D                        *HFjetDCA_Dp;
+  TH2D                        *HFjetDCA_Dz;
+  TH2D                        *HFjetDCA_Ds;
+  TH2D                        *HFjetDCA_Lc;
   TH1F                        *fQAHistJetPhi;
   TH1F                        *fQAHistTrPhiJet;
   TH1F                        *fQAHistTrPhi;
