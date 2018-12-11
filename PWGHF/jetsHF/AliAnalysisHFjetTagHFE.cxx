@@ -84,6 +84,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fmimM20(0.01),
   fmaxM20(0.35),
   fJetEtaCut(0.6),
+  fEleEtaCut(0.6),
   fInvmassCut(0.1),
   fptAssocut(0.15),
   NembMCpi0(0),
@@ -235,6 +236,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fmimM20(0.01),
   fmaxM20(0.35),
   fJetEtaCut(0.6),
+  fEleEtaCut(0.6),
   fInvmassCut(0.1),
   fptAssocut(0.15),
   NembMCpi0(0),
@@ -921,6 +923,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             cout << "fmimSig = " << fmimSig << endl;
             cout << "fmimEop = " << fmimEop << endl;
             cout << "fJetEtaCut = " << fJetEtaCut << endl;
+            cout << "fEleEtaCut = " << fEleEtaCut << endl;
             cout << "fInvmassCut = " << fInvmassCut << endl;
             cout << "fptAssocut = " << fptAssocut << endl;
            }
@@ -1236,7 +1239,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
           if(atrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
         //cout << "DCA = " << d0z0[0] << " ; " << d0z0[1] << endl;
  
-        if(fabs(eta)>0.6)continue;
+        //if(fabs(eta)>0.6)continue;
+        if(fabs(eta)>fEleEtaCut)continue;
 
         //fQAHistTrPhi->Fill(phi); // QA
         fQAHistNits->Fill(atrack->GetITSNcls());
@@ -2009,10 +2013,13 @@ void AliAnalysisHFjetTagHFE::MakeParticleLevelJet(Double_t &pthard)
         if(idbHFEj)cout << "Mom = " << pdgMom << endl;
         Double_t etaMC = fMCparticle->Eta();
  
-        if(pdg==111 && iMC>NembMCpi0 && iMC<NembMCeta && TMath::Abs(etaMC)<0.6)fHistMCorgPi0->Fill(fMCparticle->Pt());
-        if(pdg==221 && iMC>NembMCeta && TMath::Abs(etaMC)<0.6)fHistMCorgEta->Fill(fMCparticle->Pt());
+        //if(pdg==111 && iMC>NembMCpi0 && iMC<NembMCeta && TMath::Abs(etaMC)<0.6)fHistMCorgPi0->Fill(fMCparticle->Pt());
+        //if(pdg==221 && iMC>NembMCeta && TMath::Abs(etaMC)<0.6)fHistMCorgEta->Fill(fMCparticle->Pt());
+        if(pdg==111 && iMC>NembMCpi0 && iMC<NembMCeta && TMath::Abs(etaMC)<fEleEtaCut)fHistMCorgPi0->Fill(fMCparticle->Pt());
+        if(pdg==221 && iMC>NembMCeta && TMath::Abs(etaMC)<fEleEtaCut)fHistMCorgEta->Fill(fMCparticle->Pt());
 
-        if(fabs(pdg)==11 && pdgMom!=0 && TMath::Abs(etaMC)<0.6)
+        //if(fabs(pdg)==11 && pdgMom!=0 && TMath::Abs(etaMC)<0.6)
+        if(fabs(pdg)==11 && pdgMom!=0 && TMath::Abs(etaMC)<fEleEtaCut)
           {
            Bool_t ich = kFALSE;
            Bool_t ibe = kFALSE;

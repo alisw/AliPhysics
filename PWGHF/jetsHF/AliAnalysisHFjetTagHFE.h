@@ -46,6 +46,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void SetMinM20(Double_t mimM20){fmimM20 = mimM20;};
   void SetMaxM20(Double_t maxM20){fmaxM20 = maxM20;};
   void SetJetEtaCut(Double_t JetEtaCut){fJetEtaCut = JetEtaCut;};
+  void SetEleEtaCut(Double_t EleEtaCut){fEleEtaCut = EleEtaCut;};
   void SetMCdata(Bool_t mcData) {fmcData = mcData;};
   void SetInvMassCut0(Double_t InvmassCut) {fInvmassCut = InvmassCut;};
   void SetInvMassCut1(Double_t ptAssocut) {fptAssocut = ptAssocut;};
@@ -76,6 +77,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Double_t fmimM20; // max. centrality
     Double_t fmaxM20; // max. centrality
     Double_t fJetEtaCut; // max. centrality
+    Double_t fEleEtaCut; // max. centrality
     Double_t fInvmassCut;  
     Double_t fptAssocut;  
     Bool_t fmcData;
