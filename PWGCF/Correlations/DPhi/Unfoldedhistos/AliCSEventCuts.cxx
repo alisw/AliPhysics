@@ -63,20 +63,6 @@ Float_t AliCSEventCuts::fgkSPDTracksVtxDistanceSigmas_pPb = 1e14;
 Float_t AliCSEventCuts::fgkTrackVertexSigmas = 20.0;
 Float_t AliCSEventCuts::fgkTrackVertexSigmas_pPb = 1e14;
 
-const Float_t AliCSEventCuts::fgkPrimaryTracksFor_pp[10] = { 0, 2, 5, 10, 15, 30, 50, 100, 500, 1000};
-const Float_t AliCSEventCuts::fgkJpsiPileUpCutCoeff_pp[10][2] = {
-    {-300.0,15.0},
-    {-380.0,15.0},
-    {-450.0,10.0},
-    {-700.0,10.0},
-    {0.0,0.0},
-    {0.0,0.0},
-    {0.0,0.0},
-    {0.0,0.0},
-    {0.0,0.0},
-    {0.0,0.0},
-};
-
 /// Default constructor for serialization
 AliCSEventCuts::AliCSEventCuts() :
     AliCSAnalysisCutsBase(),
@@ -244,10 +230,7 @@ void AliCSEventCuts::NotifyRun() {
     SetActualVertexQuality();
 
     /* set the 2015 pileup rejection according to the data period */
-    if (fSystem != kpp) {
-      /* for pp has to be done at event level */
-      SetActual2015PileUpRemoval();
-    }
+    SetActual2015PileUpRemoval();
 
     /* we adapt the different cuts accordingly with the data period */
     fUseNewMultFramework = UseNewMultiplicityFramework();
@@ -261,7 +244,7 @@ void AliCSEventCuts::NotifyRun() {
 }
 
 /// A new event is starting to be analyzed
-/// Store MC needed data in case of AOD format and perform event level initialization
+/// Store MC needed data in case of AOD format
 void AliCSEventCuts::NotifyEvent() {
   /* let's produce some feedback about MC dataset configuration */
   if (fgIsMC) {
@@ -390,11 +373,6 @@ Bool_t AliCSEventCuts::IsEventAccepted(AliVEvent *fInputEvent) {
   /* centrality cut */
   fCentrality = GetEventCentrality(fInputEvent);
   fAltCentrality = GetEventAltCentrality(fInputEvent);
-  /* set the 2015 pileup rejection according to the data period */
-  if (fSystem == kpp) {
-    /* for pp has to be done at event level */
-    SetActual2015PileUpRemoval();
-  }
   AliInfo(Form("Event centrality: %f", Float_t(fCentrality)));
   if (fCutsEnabledMask.TestBitNumber(kCentralityCut)) {
     if (fCentrality < fCentralityMin || fCentralityMax <= fCentrality ) {
@@ -940,7 +918,7 @@ Bool_t AliCSEventCuts::SetCentralityType(Int_t ctype)
 ///
 /// For **p-p** systems \f$min\f$ and \f$max\f$ are indexes of the array
 /// ~~~~{.cpp}
-/// static const Float_t fgkPrimaryTracksFor_pp [10] = { 0, 2, 5, 10, 15, 30, 50, 100, 500, 1000};
+/// static const Float_t primaryTracksFor_pp [10] = { 0, 2, 5, 10, 15, 30, 50, 100, 500, 1000};
 /// ~~~~
 Bool_t AliCSEventCuts::SetCentralityMin(Int_t min)
 {
@@ -959,11 +937,13 @@ Bool_t AliCSEventCuts::SetCentralityMin(Int_t min)
 ///
 /// For **p-p** systems \f$min\f$ and \f$max\f$ are indexes of the array
 /// ~~~~{.cpp}
-/// static const Float_t fgkPrimaryTracksFor_pp [10] = { 0, 2, 5, 10, 15, 30, 50, 100, 500, 1000};
+/// static const Float_t primaryTracksFor_pp [10] = { 0, 2, 5, 10, 15, 30, 50, 100, 500, 1000};
 /// ~~~~
 /// If \f$max = 0\f$ then \f$max = 10\f$
 Bool_t AliCSEventCuts::SetCentralityMax(Int_t max)
 {
+  static const Float_t primaryTracksFor_pp [10] = { 0, 2, 5, 10, 15, 30, 50, 100, 500, 1000};
+
   /* first check if the cut is active */
   if (fCutsEnabledMask.TestBitNumber(kCentralityCut)) {
     /* we rescue the min value */
@@ -977,8 +957,8 @@ Bool_t AliCSEventCuts::SetCentralityMax(Int_t max)
     }
 
     if(fSystem == kpp){
-      fCentralityMin = fgkPrimaryTracksFor_pp[min];
-      fCentralityMax = fgkPrimaryTracksFor_pp[max];
+      fCentralityMin = primaryTracksFor_pp[min];
+      fCentralityMax = primaryTracksFor_pp[max];
     }
     else {
       /* full range */
@@ -1876,25 +1856,8 @@ void AliCSEventCuts::SetActual2015PileUpRemoval()
     }
     switch (GetGlobalAnchorPeriod()) {
     case kLHC10bg:
-    {
-      Int_t multix = -1;
-      for (Int_t i = 0; i < 9; i++)
-        if (fCentrality < fgkPrimaryTracksFor_pp[i+1]) {
-          multix = i;
-          break;
-        }
-        else {
-          continue;
-        }
-      if (multix < 0) {
-        f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",GetCutsString()),"0.0+0.0*x");
-        AliError(Form("2015 additional pileup removal for pp system wrong multiplicity %lf", fCentrality));
-      }
-      else {
-        f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",GetCutsString()),TString::Format("%f+%f*x",fgkJpsiPileUpCutCoeff_pp[multix][0],fgkJpsiPileUpCutCoeff_pp[multix][1]).Data());
-      }
-    }
-    break;
+      f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",GetCutsString()),"-300.0+4.0*x");
+      break;
     case kLHC10h:
       f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",GetCutsString()),"-1000+3.1*x");
       break;
@@ -1913,7 +1876,7 @@ void AliCSEventCuts::SetActual2015PileUpRemoval()
       f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",GetCutsString()),"-900+6.0*x");
       break;
     case kLHC18q:
-      f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",GetCutsString()),"0+0.0*x");
+      f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",GetCutsString()),"-1500.0+6.0*x");
       break;
     default:
       f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",GetCutsString()),"-1000+2.8*x");
@@ -2395,10 +2358,19 @@ void AliCSEventCuts::DefineHistograms(){
       fHistogramsList->Add(fhCutsCorrelation);
     }
 
-    fhCentrality[0] = new TH1F(Form("CentralityB_ %s",GetCutsString()),"Centrality before cut; centrality",400,0,100);
-    fhCentrality[1] = new TH1F(Form("CentralityA_ %s",GetCutsString()),"Centrality; centrality",400,0,100);
-    fHistogramsList->Add(fhCentrality[0]);
-    fHistogramsList->Add(fhCentrality[1]);
+    if(fSystem  > kpp){
+      fhCentrality[0] = new TH1F(Form("CentralityB_ %s",GetCutsString()),"Centrality before cut; centrality",400,0,100);
+      fhCentrality[1] = new TH1F(Form("CentralityA_ %s",GetCutsString()),"Centrality; centrality",400,0,100);
+      fHistogramsList->Add(fhCentrality[0]);
+      fHistogramsList->Add(fhCentrality[1]);
+    }
+    else {
+      /* for pp systems use multiplicity instead */
+      fhCentrality[0] = new TH1F(Form("MultiplicityB_ %s",GetCutsString()),"Multiplicity before cut; multiplicity",400,0,400);
+      fhCentrality[1] = new TH1F(Form("MultiplicityA_ %s",GetCutsString()),"Multiplicity; multiplicity",400,0,400);
+      fHistogramsList->Add(fhCentrality[0]);
+      fHistogramsList->Add(fhCentrality[1]);
+    }
 
     fhVertexZ[0] = new TH1F(Form("VertexZB_%s",GetCutsString()),"Vertex Z; z_{vtx}",1000,-50,50);
     fhVertexZ[1] = new TH1F(Form("VertexZA_%s",GetCutsString()),"Vertex Z; z_{vtx}",1000,-50,50);
