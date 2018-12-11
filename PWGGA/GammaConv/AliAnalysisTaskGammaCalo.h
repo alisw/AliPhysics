@@ -150,6 +150,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Bool_t                fDoJetQA;                                             // Bool to produce Jet QA Plots
     TList**               fJetHistograms;                                       // Jet Histograms
     TList**               fTrueJetHistograms;                                   // True Jet Histograms
+    Int_t                 fJetSector;                                           // Sector of the detector with the maximum pt jet
 
     //histograms for mesons reconstructed quantities
     TH2F**                fHistoMotherInvMassPt;                                //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
@@ -492,7 +493,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 55);
+    ClassDef(AliAnalysisTaskGammaCalo, 56);
 };
 
 #endif
