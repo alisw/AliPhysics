@@ -100,6 +100,9 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fNumberOfPrimaryTracks(0),
   fNumberOfTPCoutTracks(0),
   fSphericity(0),
+  fSphericityAxisMainPhi(0),
+  fSphericityAxisSecondaryPhi(0),
+  fInEMCalAcceptance(kFALSE),
   fNumberOfRecTracks(0),
   fSphericityTrue(0),
   fNumberOfTruePrimaryTracks(0),
@@ -1472,6 +1475,12 @@ void AliV0ReaderV1::CalculateSphericity(){
   double_t P(0);
   fNumberOfRecTracks = 0;
   fSphericity = -1;
+  TMatrixD EigenV(2,2);
+  TVector2* EigenVector;
+  fSphericityAxisMainPhi = 0;
+  Double_t MirroredMainSphericityAxis = 0;
+  fSphericityAxisSecondaryPhi = 0;
+  fInEMCalAcceptance = kFALSE;
   if(fInputEvent->IsA()==AliESDEvent::Class()){
     static AliESDtrackCuts *EsdTrackCuts = 0x0;
     static int prevRun = -1;
@@ -1538,6 +1547,19 @@ void AliV0ReaderV1::CalculateSphericity(){
     }else{
       St = (1/P)*S;
       fSphericity = (2*TMatrixDEigen(St).GetEigenValues()(1,1))/(TMatrixDEigen(St).GetEigenValues()(0,0)+TMatrixDEigen(St).GetEigenValues()(1,1));
+      EigenV.Zero();
+      EigenV = TMatrixDEigen(St).GetEigenVectors();
+      EigenVector = new TVector2(EigenV(0,0), EigenV(1,0));
+      fSphericityAxisMainPhi = EigenVector->Phi();
+      MirroredMainSphericityAxis = fSphericityAxisMainPhi + TMath::Pi();
+      if(MirroredMainSphericityAxis > 2*TMath::Pi()) MirroredMainSphericityAxis -= 2*TMath::Pi();
+      EigenVector = new TVector2(EigenV(0,1), EigenV(1,1));
+      fSphericityAxisSecondaryPhi = EigenVector->Phi();
+      if(fSphericityAxisMainPhi > 1.396263 && fSphericityAxisMainPhi < 3.263766){
+          fInEMCalAcceptance = kTRUE;
+      }else if((MirroredMainSphericityAxis > 1.396263) && (MirroredMainSphericityAxis < 3.263766)){
+          fInEMCalAcceptance = kTRUE;
+      }
     }
   }
   else if(fInputEvent->IsA()==AliAODEvent::Class()){
@@ -1563,6 +1585,19 @@ void AliV0ReaderV1::CalculateSphericity(){
     }else{
       St = (1/P)*S;
       fSphericity = (2*TMatrixDEigen(St).GetEigenValues()(1,1))/(TMatrixDEigen(St).GetEigenValues()(0,0)+TMatrixDEigen(St).GetEigenValues()(1,1));
+      EigenV.Zero();
+      EigenV = TMatrixDEigen(St).GetEigenVectors();
+      EigenVector = new TVector2(EigenV(0,0), EigenV(1,0));
+      fSphericityAxisMainPhi = EigenVector->Phi();
+      MirroredMainSphericityAxis = fSphericityAxisMainPhi + TMath::Pi();
+      if(MirroredMainSphericityAxis > 2*TMath::Pi()) MirroredMainSphericityAxis -= 2*TMath::Pi();
+      EigenVector = new TVector2(EigenV(0,1), EigenV(1,1));
+      fSphericityAxisSecondaryPhi = EigenVector->Phi();
+      if(fSphericityAxisMainPhi > 1.396263 && fSphericityAxisMainPhi < 3.263766){
+          fInEMCalAcceptance = kTRUE;
+      }else if((MirroredMainSphericityAxis > 1.396263) && (MirroredMainSphericityAxis < 3.263766)){
+          fInEMCalAcceptance = kTRUE;
+      }
     }
   }
   return;

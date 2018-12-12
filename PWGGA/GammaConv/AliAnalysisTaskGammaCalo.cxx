@@ -275,6 +275,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fProfileJetJetXSection(NULL),
   fHistoJetJetNTrials(NULL),
   fHistoEventSphericity(NULL),
+  fHistoEventSphericityAxis(NULL),
   fHistoEventSphericityvsNtracks(NULL),
   fHistoEventSphericityvsNJets(NULL),
   fHistoTrueSphericityvsRecSphericity(NULL),
@@ -623,6 +624,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fProfileJetJetXSection(NULL),
   fHistoJetJetNTrials(NULL),
   fHistoEventSphericity(NULL),
+  fHistoEventSphericityAxis(NULL),
   fHistoEventSphericityvsNtracks(NULL),
   fHistoEventSphericityvsNJets(NULL),
   fHistoTrueSphericityvsRecSphericity(NULL),
@@ -1130,6 +1132,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   fHistoNGammaCandidates      = new TH1F*[fnCuts];
   fHistoNGammaCandidatesBasic = new TH1F*[fnCuts];
   fHistoEventSphericity       = new TH1F*[fnCuts];
+  fHistoEventSphericityAxis   = new TH1F*[fnCuts];
   fHistoEventSphericityvsNtracks    = new TH2F*[fnCuts];
   fHistoEventSphericityvsNJets      = new TH2F*[fnCuts];
   fHistoTrueSphericityvsRecSphericity = new TH2F*[fnCuts];
@@ -1295,6 +1298,9 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoEventSphericity[iCut]->GetXaxis()->SetTitle("S");
       fESDList[iCut]->Add(fHistoEventSphericity[iCut]);
       fV0Reader->SetCalcSphericity(kTRUE);
+      fHistoEventSphericityAxis[iCut] = new TH1F("EventSphericityAxisPhi", "EventSphericityAxisPhi", 200, 0, 2*TMath::Pi());
+      fHistoEventSphericityAxis[iCut]->GetXaxis()->SetTitle("Phi");
+      fESDList[iCut]->Add(fHistoEventSphericityAxis[iCut]);
       fHistoEventSphericityvsNtracks[iCut]  = new TH2F("EventSphericity vs Ntracks", "EventSphericity vs Ntracks", 100, 0, 1, 100, 0, 100);
       fHistoEventSphericityvsNtracks[iCut]->GetXaxis()->SetTitle("S");
       fHistoEventSphericityvsNtracks[iCut]->GetYaxis()->SetTitle("Ntracks");
@@ -1375,6 +1381,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoNGoodESDTracks[iCut]->Sumw2();
       if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetUseSphericity()!=0){
         fHistoEventSphericity[iCut]->Sumw2();
+        fHistoEventSphericityAxis[iCut]->Sumw2();
         fHistoEventSphericityvsNtracks[iCut]->Sumw2();
         if(fDoJetAnalysis) fHistoEventSphericityvsNJets[iCut]->Sumw2();
         fHistoTrueSphericityvsRecSphericity[iCut]->Sumw2();
@@ -2964,6 +2971,7 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
                 fHistoEventSphericityvsNtracks[iCut]->Fill(fV0Reader->GetSphericityTrue(), fV0Reader->GetNumberOfTruePrimaryTracks(), fWeightJetJetMC);
             }else{
                 fHistoEventSphericity[iCut]->Fill(fV0Reader->GetSphericity(), fWeightJetJetMC);
+                fHistoEventSphericityAxis[iCut]->Fill(fV0Reader->GetPhiMainSphericityAxis(), fWeightJetJetMC);
                 fHistoEventSphericityvsNtracks[iCut]->Fill(fV0Reader->GetSphericity(), fV0Reader->GetNumberOfRecTracks(), fWeightJetJetMC);
             }
             if(fIsMC>0){

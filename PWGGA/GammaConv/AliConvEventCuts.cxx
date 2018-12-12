@@ -1307,6 +1307,14 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
     fIsHeavyIon=0;
     fUseSphericity=11;
     break;
+  case 28: // s: pp -> Sphericity < 0.5 + Sphericity axis in EMCal coverage
+    fIsHeavyIon=0;
+    fUseSphericity=12;
+    break;
+  case 29: // t: pp -> Sphericity < 0.5 + Sphericity axis not in EMCal coverage
+    fIsHeavyIon=0;
+    fUseSphericity=13;
+    break;
 
   default:
     AliError(Form("SetHeavyIon not defined %d",isHeavyIon));
@@ -4891,6 +4899,13 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
         return 14;
         }
         if(fUseSphericity == 11 && eventSphericity<0.7){
+        return 14;
+        }
+        Double_t InAcceptance = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->IsSphericityAxisInEMCalAcceptance();
+        if(fUseSphericity == 12 && (eventSphericity>0.3 || !InAcceptance)){
+        return 14;
+        }
+        if(fUseSphericity == 13 && (eventSphericity>0.3 || InAcceptance)){
         return 14;
         }
     }
