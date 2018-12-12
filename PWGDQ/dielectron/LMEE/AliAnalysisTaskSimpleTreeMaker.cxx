@@ -175,7 +175,8 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
 	fWidthTOF(0),
 	fMeanTOF(0),
 	TOFstartMask(0),
-	fGeneratorHashes(0)
+	fGeneratorHashes(0),
+	ignoreFirstMother(kFALSE)
 {
 
 }
@@ -281,7 +282,8 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
 	fWidthTOF(0),
 	fMeanTOF(0),
 	TOFstartMask(0),
-	fGeneratorHashes(0)
+	fGeneratorHashes(0),
+	ignoreFirstMother(kFALSE)
 
 {
 	if(fIsV0tree){
@@ -592,6 +594,12 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 				iPdgMother      = -9999;
 				HasMother       = kFALSE;
 				motherLabel     = -9999;
+				isInj = 0; // Default is "not injected" (needed because DPMJET)
+				// First mother information
+				iPdgFirstMother      = -9999;
+				gLabelFirstMother    = -9999;
+				gLabelMinFirstMother = -9999;
+				gLabelMaxFirstMother = -9999;
 
 				if(fIsAOD){
 					mcTrack = dynamic_cast<AliAODMCParticle*>(fMCevent->GetTrack(TMath::Abs(track->GetLabel())));
@@ -645,73 +653,72 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 					// Get mother label so tracks can be correctly paired
 					motherLabel = TMath::Abs(motherMCtrack->GetLabel());
 				}
-				// Check which generator was used
-				// Returns kTRUE if from injected sample
-				isInj = CheckGenerator(track->GetLabel());
 
-				// Begin parent history check
-				iPdgFirstMother      = -9999;
-				gLabelFirstMother    = -1;
-				gLabelMinFirstMother = -1;
-				gLabelMaxFirstMother = -1;
+				if(!ignoreFirstMother){
+					// Check which generator was used
+					// Returns kTRUE if from injected sample
+					isInj = CheckGenerator(track->GetLabel());
 
-				// If index is minus then particle has no mother particle
-				// Otherwise, begin search for original particle
-				Int_t gFirstMotherIndex = motherMCtrack->GetMother();
-				if(gFirstMotherIndex != -1){
+					
 
-					// Retreive grandmother particle of track
-					AliMCParticle* firstMotherTrack = (AliMCParticle*)(fMCevent->GetTrack(gFirstMotherIndex));
-					// Scan down decay chain until a negative index is returned
-					// I.e. first particle in decay is found
-					while(gFirstMotherIndex > 0){
+					// If index is minus then particle has no mother particle
+					// Otherwise, begin search for original particle
+					Int_t gFirstMotherIndex = motherMCtrack->GetMother();
+					if(gFirstMotherIndex != -1){
 
-						gLabelFirstMother = gFirstMotherIndex; // Use label as temp. index storage
-						firstMotherTrack  = (AliMCParticle*)(fMCevent->GetTrack(gLabelFirstMother));
-						gFirstMotherIndex = firstMotherTrack->GetMother();
-					}
+						// Retreive grandmother particle of track
+						AliMCParticle* firstMotherTrack = (AliMCParticle*)(fMCevent->GetTrack(gFirstMotherIndex));
+						// Scan down decay chain until a negative index is returned
+						// I.e. first particle in decay is found
+						while(gFirstMotherIndex > 0){
 
-					// If greatgrand-mother (etc) was found, store pdg code
-					// Otherwise, grandmother was already primary
-					if(gLabelFirstMother != -1) {
-						iPdgFirstMother = firstMotherTrack->PdgCode();
-					}
-					else{
-						gLabelFirstMother = gFirstMotherIndex; // set mother to first mother
-						iPdgFirstMother   = iPdgMother;
-					}
-
-					Int_t nParticles = fMCevent->GetNumberOfTracks();
-					//Needed for HIJING....
-					// find range of -1 - minimum
-					gLabelMinFirstMother = gLabelFirstMother;
-					while(gFirstMotherIndex < 0){
-						gLabelMinFirstMother--;
-						if(gLabelMinFirstMother < 0){
-							gFirstMotherIndex = 0;
-						}
-						else{
-							firstMotherTrack = (AliMCParticle*)(fMCevent->GetTrack(gLabelMinFirstMother));
+							gLabelFirstMother = gFirstMotherIndex; // Use label as temp. index storage
+							firstMotherTrack  = (AliMCParticle*)(fMCevent->GetTrack(gLabelFirstMother));
 							gFirstMotherIndex = firstMotherTrack->GetMother();
 						}
-					}
-					gLabelMinFirstMother ++; // set back by one
-					gFirstMotherIndex = -1; // set back to -1
 
-					// find range of -1 - maximum
-					gLabelMaxFirstMother = gLabelFirstMother;
-
-					while(gFirstMotherIndex < 0){
-						gLabelMaxFirstMother++;
-						if(gLabelMaxFirstMother > nParticles){
-							gFirstMotherIndex = 0;
+						// If greatgrand-mother (etc) was found, store pdg code
+						// Otherwise, grandmother was already primary
+						if(gLabelFirstMother != -1) {
+							iPdgFirstMother = firstMotherTrack->PdgCode();
 						}
 						else{
-							firstMotherTrack = (AliMCParticle*)(fMCevent->GetTrack(gLabelMaxFirstMother));
-							gFirstMotherIndex = firstMotherTrack->GetMother();
+							gLabelFirstMother = gFirstMotherIndex; // set mother to first mother
+							iPdgFirstMother   = iPdgMother;
 						}
+
+						Int_t nParticles = fMCevent->GetNumberOfTracks();
+						//Needed for HIJING....
+						// find range of -1 - minimum
+						gLabelMinFirstMother = gLabelFirstMother;
+						while(gFirstMotherIndex < 0){
+							gLabelMinFirstMother--;
+							if(gLabelMinFirstMother < 0){
+								gFirstMotherIndex = 0;
+							}
+							else{
+								firstMotherTrack = (AliMCParticle*)(fMCevent->GetTrack(gLabelMinFirstMother));
+								gFirstMotherIndex = firstMotherTrack->GetMother();
+							}
+						}
+						gLabelMinFirstMother ++; // set back by one
+						gFirstMotherIndex = -1; // set back to -1
+
+						// find range of -1 - maximum
+						gLabelMaxFirstMother = gLabelFirstMother;
+
+						while(gFirstMotherIndex < 0){
+							gLabelMaxFirstMother++;
+							if(gLabelMaxFirstMother > nParticles){
+								gFirstMotherIndex = 0;
+							}
+							else{
+								firstMotherTrack = (AliMCParticle*)(fMCevent->GetTrack(gLabelMaxFirstMother));
+								gFirstMotherIndex = firstMotherTrack->GetMother();
+							}
+						}
+						gLabelMaxFirstMother --; // set back by one
 					}
-					gLabelMaxFirstMother --; // set back by one
 				}
 			}// End if(hasMC)
 
