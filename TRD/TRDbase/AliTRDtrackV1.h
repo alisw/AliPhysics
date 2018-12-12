@@ -26,7 +26,6 @@ class AliTRDcluster;
 class AliTRDReconstructor;
 class AliTRDtrackV1 : public AliKalmanTrack
 {
-  friend class AliHLTTRDTrack; // allow HLT special access
 public:
   enum ETRDtrackSize { 
     kNdet      = AliTRDgeometry::kNdet
