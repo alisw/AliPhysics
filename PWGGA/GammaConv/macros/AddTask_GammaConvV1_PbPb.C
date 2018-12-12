@@ -2548,10 +2548,10 @@ void AddTask_GammaConvV1_PbPb(
         TString eventCutString  = cuts.GetEventCut(i);
         TString eventCutShort   = eventCutString(0,6);   // first six digits
         weightPi0         = kTRUE;
-        histoNameMCPi0PT  = Form("Pi0_%s_5TeV_%s",   generatorName.Data(), eventCutString.Data());  // MC
-        fitNamePi0PT      = Form("Pi0_Data_5TeV_%s", eventCutShort.Data());                      // fit to data
+        histoNameMCPi0PT  = Form("Pi0_%s_5TeV_%s",   periodNameV0Reader.Data(), eventCutString.Data());  // MC
+        fitNamePi0PT      = Form("Pi0_Data_5TeV_%s", eventCutShort.Data());                              // fit to data
         weightEta         = kTRUE;
-        histoNameMCEtaPT  = Form("Eta_%s_5TeV_%s",   generatorName.Data(), eventCutString.Data());
+        histoNameMCEtaPT  = Form("Eta_%s_5TeV_%s",   periodNameV0Reader.Data(), eventCutString.Data());
         fitNameEtaPT      = Form("Eta_Data_5TeV_%s", eventCutShort.Data());
       }
       analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(weightPi0, weightEta, weightK0s, fileNamePtWeights, histoNameMCPi0PT, histoNameMCEtaPT, histoNameMCK0sPT, fitNamePi0PT, fitNameEtaPT, fitNameK0sPT);
