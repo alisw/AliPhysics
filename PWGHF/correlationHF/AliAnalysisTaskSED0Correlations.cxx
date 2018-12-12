@@ -2865,7 +2865,7 @@ void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, Dou
     } //in this way if sidebands overlap with signal range in Mass axis, those overlapping bins will be void. But this creates no problems...
     if(fSpeed==kOneBinSBandS) { //filling of sidebands in speed mode: 1 bin for LSB, 1 for RSB, no filling outside signal region and SB
       if(mD0 > fSignLowLim.at(ptbin) && mD0 < fSignUppLim.at(ptbin)) {allowD0 = 1; fillSpPhiD0[1] = 0;} //in Signal region-->Bin 1 (-0.5->0.5)!
-      if(mD0bar > fSignLowLim.at(ptbin) && mD0bar < fSignUppLim.at(ptbin)) {allowD0bar = 1; fillSpPhiD0[1] = 0;} //in Signal region-->Bin 1 (-0.5->0.5)!
+      if(mD0bar > fSignLowLim.at(ptbin) && mD0bar < fSignUppLim.at(ptbin)) {allowD0bar = 1; fillSpPhiD0bar[1] = 0;} //in Signal region-->Bin 1 (-0.5->0.5)!
       if(mD0 > fLSBLowLim.at(ptbin) && mD0 < fLSBUppLim.at(ptbin)) {allowD0 = 1; fillSpPhiD0[1] = 1;} //in LSB!-->Bin 2 (0.5->1.5)!
       if(mD0bar > fLSBLowLim.at(ptbin) && mD0bar < fLSBUppLim.at(ptbin)) {allowD0bar = 1; fillSpPhiD0bar[1] = 1;} //in LSB!-->Bin 2 (0.5->1.5)!
       if(mD0 > fRSBLowLim.at(ptbin) && mD0 < fRSBUppLim.at(ptbin)) {allowD0 = 1; fillSpPhiD0[1] = 1;} //in RSB!-->Bin 2 (0.5->1.5)!
