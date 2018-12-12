@@ -131,6 +131,9 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     Int_t              GetPtHardFromFile()                              {return fPtHardBin;}
     Int_t              GetNumberOfPrimaryTracks()                       {return fNumberOfPrimaryTracks;}
     Double_t           GetSphericity()                                  {return fSphericity;}
+    Double_t           GetPhiMainSphericityAxis()                       {return fSphericityAxisMainPhi;}
+    Double_t           GetPhiSecondarySphericityAxis()                  {return fSphericityAxisSecondaryPhi;}
+    Bool_t             IsSphericityAxisInEMCalAcceptance()              {return fInEMCalAcceptance;}
     Int_t              GetNumberOfRecTracks()                           {return fNumberOfRecTracks;}
     Double_t           GetSphericityTrue()                              {return fSphericityTrue;}
     Int_t              GetNumberOfTruePrimaryTracks()                   {return fNumberOfTruePrimaryTracks;}
@@ -210,7 +213,10 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     Bool_t         fCalcSphericity;               // enable sphericity calculation
     Bool_t         fCalcSector;                   // enable sector of ptmax particle calculation
     Double_t       fSphericity;                   // Sphericity of the event
-    Int_t          fNumberOfRecTracks;             // Number of reconstructed tracks used in sphericity calculation
+    Double_t       fSphericityAxisMainPhi;        // Phi of the main sphericity axis
+    Double_t       fSphericityAxisSecondaryPhi;   // Phi of the secondary sphericity axis
+    Bool_t         fInEMCalAcceptance;            // Flag for the sphericity axis in the EMCal acceptance
+    Int_t          fNumberOfRecTracks;            // Number of reconstructed tracks used in sphericity calculation
     Double_t       fSphericityTrue;               // True sphericity of the event
     Int_t          fNumberOfTruePrimaryTracks;    // True number of primary tracks used in sphericity calculation
     Int_t          fPtMaxSector;                  // Sector of the detector with the maximum pt particle
@@ -274,7 +280,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
 
 
-    ClassDef(AliV0ReaderV1, 20)
+    ClassDef(AliV0ReaderV1, 21)
 
 };
 
