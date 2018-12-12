@@ -373,7 +373,7 @@ Bool_t AliCSEventCuts::IsEventAccepted(AliVEvent *fInputEvent) {
   /* centrality cut */
   fCentrality = GetEventCentrality(fInputEvent);
   fAltCentrality = GetEventAltCentrality(fInputEvent);
-  AliInfo(Form("Event centrality: %f", Float_t(fCentrality)));
+  AliInfo(Form("Event centrality: %f, alt: %f", Float_t(fCentrality),Float_t(fAltCentrality)));
   if (fCutsEnabledMask.TestBitNumber(kCentralityCut)) {
     if (fCentrality < fCentralityMin || fCentralityMax <= fCentrality ) {
       fCutsActivatedMask.SetBitNumber(kCentralityCut);
@@ -916,10 +916,6 @@ Bool_t AliCSEventCuts::SetCentralityType(Int_t ctype)
 /// \return kTRUE always
 /// If \f$max < min\f$ or \f$min = max \neq 0\f$ any positive centrality value is accepted.
 ///
-/// For **p-p** systems \f$min\f$ and \f$max\f$ are indexes of the array
-/// ~~~~{.cpp}
-/// static const Float_t primaryTracksFor_pp [10] = { 0, 2, 5, 10, 15, 30, 50, 100, 500, 1000};
-/// ~~~~
 Bool_t AliCSEventCuts::SetCentralityMin(Int_t min)
 {
   /* re-evaluate centrality ranges in case called individually */
@@ -935,15 +931,9 @@ Bool_t AliCSEventCuts::SetCentralityMin(Int_t min)
 /// \return kTRUE if the min and max values are consistent
 /// If \f$max < min\f$ or \f$min = max \neq 0\f$ any positive centrality value is accepted.
 ///
-/// For **p-p** systems \f$min\f$ and \f$max\f$ are indexes of the array
-/// ~~~~{.cpp}
-/// static const Float_t primaryTracksFor_pp [10] = { 0, 2, 5, 10, 15, 30, 50, 100, 500, 1000};
-/// ~~~~
 /// If \f$max = 0\f$ then \f$max = 10\f$
 Bool_t AliCSEventCuts::SetCentralityMax(Int_t max)
 {
-  static const Float_t primaryTracksFor_pp [10] = { 0, 2, 5, 10, 15, 30, 50, 100, 500, 1000};
-
   /* first check if the cut is active */
   if (fCutsEnabledMask.TestBitNumber(kCentralityCut)) {
     /* we rescue the min value */
@@ -956,38 +946,32 @@ Bool_t AliCSEventCuts::SetCentralityMax(Int_t max)
       fCentralityMax = 1e6;
     }
 
-    if(fSystem == kpp){
-      fCentralityMin = primaryTracksFor_pp[min];
-      fCentralityMax = primaryTracksFor_pp[max];
-    }
-    else {
-      /* full range */
-      if (max == 0) max = 10;
-      switch (fCentralityModifier) {
-      case 0:
-        fCentralityMin = min * 10;
-        fCentralityMax = max * 10;
-        break;
-      case 1:
-        fCentralityMin = min * 5;
-        fCentralityMax = max * 5;
-        break;
-      case 2:
-        fCentralityMin = 50 + min * 5;
-        fCentralityMax = 50 + max * 5;
-        break;
-      case 3:
-        fCentralityMin = min;
-        fCentralityMax = max;
-        break;
-      case 4:
-        fCentralityMin = 10 + min;
-        fCentralityMax = 10 + max;
-        break;
-      default:
-        AliError("Inconsistent centrality modifier");
-        return kFALSE;
-      }
+    /* full range */
+    if (max == 0) max = 10;
+    switch (fCentralityModifier) {
+    case 0:
+      fCentralityMin = min * 10;
+      fCentralityMax = max * 10;
+      break;
+    case 1:
+      fCentralityMin = min * 5;
+      fCentralityMax = max * 5;
+      break;
+    case 2:
+      fCentralityMin = 50 + min * 5;
+      fCentralityMax = 50 + max * 5;
+      break;
+    case 3:
+      fCentralityMin = min;
+      fCentralityMax = max;
+      break;
+    case 4:
+      fCentralityMin = 10 + min;
+      fCentralityMax = 10 + max;
+      break;
+    default:
+      AliError("Inconsistent centrality modifier");
+      return kFALSE;
     }
     return kTRUE;
   }
@@ -1964,9 +1948,9 @@ Bool_t AliCSEventCuts::StoreEventCentralities(AliVEvent *event) {
       AliMultSelection *MultSelection = (AliMultSelection*) event->FindListObject("MultSelection");
       if (MultSelection != NULL) {
         fV0ACentrality = MultSelection->GetMultiplicityPercentile("V0A");
-        fV0CCentrality = MultSelection->GetMultiplicityPercentile("V0M");
+        fV0CCentrality = MultSelection->GetMultiplicityPercentile("V0C");
         fV0MCentrality = MultSelection->GetMultiplicityPercentile("V0M");
-        fCL0Centrality = MultSelection->GetMultiplicityPercentile("CL1");
+        fCL0Centrality = MultSelection->GetMultiplicityPercentile("CL0");
         fCL1Centrality = MultSelection->GetMultiplicityPercentile("CL1");
       }
       else {
@@ -1998,9 +1982,9 @@ Bool_t AliCSEventCuts::StoreEventCentralities(AliVEvent *event) {
         return kFALSE;
       }
       fV0ACentrality = MultSelection->GetMultiplicityPercentile("V0A");
-      fV0CCentrality = MultSelection->GetMultiplicityPercentile("V0M");
+      fV0CCentrality = MultSelection->GetMultiplicityPercentile("V0C");
       fV0MCentrality = MultSelection->GetMultiplicityPercentile("V0M");
-      fCL0Centrality = MultSelection->GetMultiplicityPercentile("CL1");
+      fCL0Centrality = MultSelection->GetMultiplicityPercentile("CL0");
       fCL1Centrality = MultSelection->GetMultiplicityPercentile("CL1");
     }
     else{
@@ -2359,15 +2343,15 @@ void AliCSEventCuts::DefineHistograms(){
     }
 
     if(fSystem  > kpp){
-      fhCentrality[0] = new TH1F(Form("CentralityB_ %s",GetCutsString()),"Centrality before cut; centrality",400,0,100);
-      fhCentrality[1] = new TH1F(Form("CentralityA_ %s",GetCutsString()),"Centrality; centrality",400,0,100);
+      fhCentrality[0] = new TH1F(Form("CentralityB_ %s",GetCutsString()),"Centrality before cut; centrality (%)",400,0,100);
+      fhCentrality[1] = new TH1F(Form("CentralityA_ %s",GetCutsString()),"Centrality; centrality (%)",400,0,100);
       fHistogramsList->Add(fhCentrality[0]);
       fHistogramsList->Add(fhCentrality[1]);
     }
     else {
       /* for pp systems use multiplicity instead */
-      fhCentrality[0] = new TH1F(Form("MultiplicityB_ %s",GetCutsString()),"Multiplicity before cut; multiplicity",400,0,400);
-      fhCentrality[1] = new TH1F(Form("MultiplicityA_ %s",GetCutsString()),"Multiplicity; multiplicity",400,0,400);
+      fhCentrality[0] = new TH1F(Form("MultiplicityB_ %s",GetCutsString()),"Multiplicity (%) before cut; multiplicity (%)",400,0,100);
+      fhCentrality[1] = new TH1F(Form("MultiplicityA_ %s",GetCutsString()),"Multiplicity (%); multiplicity (%)",400,0,100);
       fHistogramsList->Add(fhCentrality[0]);
       fHistogramsList->Add(fhCentrality[1]);
     }
@@ -2437,7 +2421,7 @@ void AliCSEventCuts::DefineHistograms(){
       fHistogramsList->Add(fhV0MvsTracksTPCout[0]);
       fHistogramsList->Add(fhV0MvsTracksTPCout[1]);
 
-      Double_t maxTPCoutTracksInitial[knSystems] = {0,1000,1000,30000,30000,1000};
+      Double_t maxTPCoutTracksInitial[knSystems] = {0,1000,1000,13000,13000,1000};
       Double_t maxV0multiplicityInitial[knSystems] = {0,1000,1000,40000,40000,1000};
       fhV0MvsTracksInitialTPCout[0] =
           new TH2F(Form("V0MvsTracksInitialTPCoutB_%s", GetCutsString()),"V0 multiplicity vs tracks with kTPCout on before cut;# tracks with kTPCout on (initial method);V0 multiplicity",
