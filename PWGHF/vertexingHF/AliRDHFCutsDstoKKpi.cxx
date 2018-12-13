@@ -55,7 +55,8 @@ AliRDHFCutsDstoKKpi::AliRDHFCutsDstoKKpi(const char* name) :
   fUsed0MeasMinusExpCut(kFALSE),
   fMaxd0MeasMinusExp(0x0),
   fUsed0Cut(kFALSE),
-  fMaxd0(0x0)
+  fMaxd0(0x0),
+  fCheckK0star(kTRUE)
 {
   //
   // Default Constructor
@@ -161,7 +162,8 @@ AliRDHFCutsDstoKKpi::AliRDHFCutsDstoKKpi(const AliRDHFCutsDstoKKpi &source) :
   fUsed0MeasMinusExpCut(source.fUsed0MeasMinusExpCut),
   fMaxd0MeasMinusExp(0x0),
   fUsed0Cut(source.fUsed0Cut),
-  fMaxd0(0x0)
+  fMaxd0(0x0),
+  fCheckK0star(source.fCheckK0star)
 {
   //
   // Copy constructor
@@ -194,6 +196,7 @@ AliRDHFCutsDstoKKpi &AliRDHFCutsDstoKKpi::operator=(const AliRDHFCutsDstoKKpi &s
   fUsed0Cut=source.fUsed0Cut;
   if(source.fMaxd0MeasMinusExp) Setd0MeasMinusExpCut(source.fnPtBins,source.fMaxd0MeasMinusExp);
   if(source.fMaxd0) Setd0Cut(source.fnPtBins,source.fMaxd0);
+  if(source.fCheckK0star) fCheckK0star=source.fCheckK0star;
 
   return *this;
 }
@@ -700,17 +703,21 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
       if(fUseRefPhiMass) mPhiRef = fPhiMassRef;
       if(okDsKKpi){
 	Double_t mass01phi=d->InvMass2Prongs(0,1,321,321);
-	Double_t mass12K0s=d->InvMass2Prongs(1,2,321,211);
 	if(TMath::Abs(mass01phi-mPhiRef)<fCutsRD[GetGlobalIndex(12,ptbin)]) okMassPhiKKpi=1;
-	if(TMath::Abs(mass12K0s-mK0starPDG)<fCutsRD[GetGlobalIndex(13,ptbin)]) okMassK0starKKpi = 1;
+	if(fCheckK0star){
+	  Double_t mass12K0s=d->InvMass2Prongs(1,2,321,211);
+	  if(TMath::Abs(mass12K0s-mK0starPDG)<fCutsRD[GetGlobalIndex(13,ptbin)]) okMassK0starKKpi = 1;
+	}
 	if(!okMassPhiKKpi && !okMassK0starKKpi) okDsKKpi=0;
 	if(okMassPhiKKpi) okDsPhiKKpi=1;
 	if(okMassK0starKKpi) okDsK0starKKpi=1;
       }
       if(okDspiKK){
-	Double_t mass01K0s=d->InvMass2Prongs(0,1,211,321);
+	if(fCheckK0star){
+	  Double_t mass01K0s=d->InvMass2Prongs(0,1,211,321);
+	  if(TMath::Abs(mass01K0s-mK0starPDG)<fCutsRD[GetGlobalIndex(13,ptbin)]) okMassK0starpiKK = 1;
+	}
 	Double_t mass12phi=d->InvMass2Prongs(1,2,321,321);
-	if(TMath::Abs(mass01K0s-mK0starPDG)<fCutsRD[GetGlobalIndex(13,ptbin)]) okMassK0starpiKK = 1;
 	if(TMath::Abs(mass12phi-mPhiRef)<fCutsRD[GetGlobalIndex(12,ptbin)]) okMassPhipiKK=1;
 	if(!okMassPhipiKK && !okMassK0starpiKK) okDspiKK=0;
 	if(okMassPhipiKK) okDsPhipiKK=1;
