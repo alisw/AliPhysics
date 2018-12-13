@@ -53,7 +53,7 @@ AliAnalysisTaskDeuteronAbsorption::AliAnalysisTaskDeuteronAbsorption(const char 
                                                                                          fMindEdx{100.},
                                                                                          fMinTPCsignalN{50},
                                                                                          fPIDResponse{nullptr},
-                                                                                         fESDtrackCuts{nullptr},
+                                                                                         fESDtrackCuts{AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true)},
                                                                                          fOutputList{nullptr},
                                                                                          fHistZv{nullptr},
                                                                                          fHist3TPCpid{nullptr},
@@ -161,7 +161,7 @@ void AliAnalysisTaskDeuteronAbsorption::UserCreateOutputObjects()
 
   // create track cuts object
   if (fESDtrackCuts == nullptr) {
-    fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, kTRUE);
+    fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true);
     fESDtrackCuts->SetEtaRange(-0.8, 0.8);
   }
   PostData(1, fOutputList); // postdata will notify the analysis manager of changes / updates to the
@@ -203,6 +203,11 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
     isMC = (mcEvent != nullptr);
   }
 
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
+  if(!(handl->IsEventSelected() & AliVEvent::kINT7))
+    return;
+
   // check for a proper primary vertex and monitor
   const AliESDVertex *vertex = esdEvent->GetPrimaryVertexTracks();
   if (vertex->GetNContributors() < 1)
@@ -229,23 +234,22 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
     AliESDtrack *track = static_cast<AliESDtrack *>(esdEvent->GetTrack(i)); // get a track (type AliESDDTrack) from the event
     if (!track)
       continue;
-    //
     if (!fESDtrackCuts->AcceptTrack(track))
       continue; // check if track passes the cuts
     if (!track->GetInnerParam())
       continue;                                     // check if track is a proper TPC track
-    Double_t ptot = track->GetInnerParam()->GetP(); // momentum for dEdx determination
     if (track->GetTPCsignalN() < fMinTPCsignalN)
       continue;
 
-    double sign = track->GetSign();
-
     // Process TOF information
     ULong_t status = (ULong_t)track->GetStatus();
-    double length = track->GetIntegratedLength();
-    bool hasTOF = ((status & AliESDtrack::kTOFout) == AliESDtrack::kTOFout) && length >= 350.;
+    bool hasTOFout  = status & AliVTrack::kTOFout;
+    bool hasTOFtime = status & AliVTrack::kTIME;
+    const float length = track->GetIntegratedLength();
+    bool hasTOF = hasTOFout && hasTOFtime && (length > 350.);
     //
-    double tof = track->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetStartTime(ptot);
+    double ptot = track->GetTPCmomentum(); // momentum for dEdx determination
+    double tof = track->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetStartTime(track->P());
     //
     double beta = -1.;
     double mass2 = -1;
@@ -256,7 +260,8 @@ void AliAnalysisTaskDeuteronAbsorption::UserExec(Option_t *)
       if ((1 - beta * beta) > 0)
         mass2 = ptot * ptot * (1. / (beta * beta) - 1.);
     }
-
+    //
+    double sign = track->GetSign();
     // fill QA histograms
     double tpcNsigmas[4]{999., 999., 999., 999.};
     fHist3TPCpidAll->Fill(ptot * sign, track->GetTPCsignal(), track->Phi());

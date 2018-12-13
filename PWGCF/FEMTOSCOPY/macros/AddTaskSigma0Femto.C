@@ -206,11 +206,18 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   v0Cuts->SetPID(3122);
   v0Cuts->SetPosPID(AliPID::kProton, 2212);
   v0Cuts->SetNegPID(AliPID::kPion, -211);
+
+  // TEMPORARY FIX TO GET MORE YIELD IN MC
+  v0Cuts->SetV0OnFlyStatus(false);
+
   AliSigma0V0Cuts *antiv0Cuts = AliSigma0V0Cuts::LambdaCuts();
   antiv0Cuts->SetIsMC(isMC);
   antiv0Cuts->SetPID(-3122);
   antiv0Cuts->SetPosPID(AliPID::kPion, 211);
   antiv0Cuts->SetNegPID(AliPID::kProton, -2212);
+
+  // TEMPORARY FIX TO GET MORE YIELD IN MC
+  antiv0Cuts->SetV0OnFlyStatus(false);
 
   if (suffix != "0") {
     v0Cuts->SetLightweight(true);
@@ -370,9 +377,15 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   std::vector<float> kMin;
   std::vector<float> kMax;
   for (int i = 0; i < 78; ++i) {
-    NBins.push_back(750);
-    kMin.push_back(0.);
-    kMax.push_back(3.);
+    if (suffix == "0") {
+      NBins.push_back(750);
+      kMin.push_back(0.);
+      kMax.push_back(3.);
+    } else {
+      NBins.push_back(250);
+      kMin.push_back(0.);
+      kMax.push_back(1.);
+    }
   }
 
   AliFemtoDreamCollConfig *config =
@@ -443,7 +456,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
                    "Info; fix it wont work! \n";
     }
   }
-  config->SetdPhidEtaPlots(etaPhiPlotsAtTPCRadii);
+  config->SetdPhidEtaPlots(false);
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);

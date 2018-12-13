@@ -18,24 +18,42 @@ public:
   static AliDielectronPID* GetPIDCutsAna();
   AliDielectronCutGroup* GetTrackCuts(int trsel=0, int pidsel=0, Int_t MVACut=0, Bool_t useAODFilterCuts, TString TMVAweight="TMVAClassification_BDTG.weights_094.xml");
   AliDielectronEventCuts* GetEventCuts(Double_t centMin, Double_t centMax);
-  static TH3D SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise);
+  void SetEtaCorrection( Int_t det, Bool_t isMC, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, int sel);
   static AliDielectronPID* pidFilterCuts;
   static TBits *fUsedVars;               // used variables
   TH1 *fPostPIDCntrdCorr;   // post pid correction object for electron sigma centroids in TPC
 };
 
-static TH3D LMEECutLib::SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise, int sel) {
+void LMEECutLib::SetEtaCorrection(Int_t det, Bool_t isMC, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, int sel) {
 //For usage with TreeMaker
 //For efficiency task postcalibration is set in AddTask_slehner_ElectronEfficiency.C
+  TString detstr;
+  TString type;
+  switch(det) {
+    case 1: {detstr="its";break;}
+    case 2: {detstr="tpc";break;}
+    case 3: {detstr="tof";break;}
+    } 
+  switch(isMC) {
+    case {kTRUE: type="mc";break;}
+    case {kFALSE: type="data";break;}
+    }
     
-  ::Info("LMEECutLib::SetEtaCorrectionTPC","starting LMEECutLib::SetEtaCorrectionTPC()\n");
-  TString path="alien:///alice/cern.ch/user/s/selehner/recal/recalib_data_tpc_nsigmaele.root";
-  gSystem->Exec(TString::Format("alien_cp %s .",path.Data()));
-  ::Info("LMEECutLib::SetEtaCorrectionTPC","Copy TPC correction from Alien: %s",path.Data());
-  _file = TFile::Open("recalib_data_tpc_nsigmaele.root");
+  ::Info("LMEECutLib::SetCorrection",(TString("Starting Correction for ")+detstr).Data());
+  TString path="alien:///alice/cern.ch/user/s/selehner/recal/";
+  TString fName= "recalib_"+type+"_"+detstr+"_nsigmaele.root";
   
-  TH3D* mean = dynamic_cast<TH3D*>(_file->Get("sum_mean_correction"));
-  TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
+  TFile* corrfile;
+  corrfile= TFile::Open(fName.Data());
+  if(!corrfile){
+    gSystem->Exec(TString::Format("alien_cp %s .",path.Data()));
+    corrfile = TFile::Open(fName.Data());
+    if(!corrfile) ::Error("LMEECutLib::SetEtaCorrection",(TString("Cannot get correction from Alien: ")+path+fName).Data());
+    else  ::Info("LMEECutLib::SetEtaCorrection",(TString("Copy correction from Alien: ")+path+fName).Data());
+  }    
+    
+  TH3D* mean = dynamic_cast<TH3D*>(corrfile->Get("sum_mean_correction"));
+  TH3D* width= dynamic_cast<TH3D*>(corrfile->Get("sum_width_correction"));
   
   // AliDielectron::SetCentroidCorrFunction
   UInt_t valType[20] = {0};
@@ -46,7 +64,7 @@ static TH3D LMEECutLib::SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int
   fPostPIDCntrdCorr = (TH1*)mean->Clone(key.Data());
   // check for corrections and add their variables to the fill map
   if(fPostPIDCntrdCorr)  {
-    printf("POST TPC PID CORRECTION added for centroids:  ");
+    printf("POST %s on %s PID CORRECTION added for centroids:  ",detstr.Data(),type.Data());
     switch(fPostPIDCntrdCorr->GetDimension()) {
     case 3: printf(" %s, ",fPostPIDCntrdCorr->GetZaxis()->GetName());
     case 2: printf(" %s, ",fPostPIDCntrdCorr->GetYaxis()->GetName());
@@ -58,8 +76,13 @@ static TH3D LMEECutLib::SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int
     fUsedVars->SetBitNumber(corrZdim, kTRUE);
   }
   
-  if(fPostPIDCntrdCorr)     AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorr);
-  
+  if(fPostPIDCntrdCorr)  {   
+    switch(det) {
+      case 1: {AliDielectronPID::SetCentroidCorrFunctionITS(fPostPIDCntrdCorr); break;}
+      case 2: {AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorr); break;}
+      case 3: {AliDielectronPID::SetCentroidCorrFunctionTOF(fPostPIDCntrdCorr); break;}
+    } 
+  }
   
   
   // AliDielectron::SetWidthCorrFunction
@@ -72,11 +95,11 @@ static TH3D LMEECutLib::SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int
   fPostPIDWdthCorr = (TH1*)width->Clone(key.Data());
   // check for corrections and add their variables to the fill map
   if(fPostPIDWdthCorr)  {
-    printf("POST TPC PID CORRECTION added for widths:  ");
+    printf("POST %s on %s PID CORRECTION added for widths:  ",detstr.Data(),type.Data());
     switch(fPostPIDWdthCorr->GetDimension()) {
-    case 3: printf(" %s, ",fPostPIDWdthCorr->GetZaxis()->GetName());
-    case 2: printf(" %s, ",fPostPIDWdthCorr->GetYaxis()->GetName());
-    case 1: printf(" %s ",fPostPIDWdthCorr->GetXaxis()->GetName());
+    case 3: {printf(" %s, ",fPostPIDWdthCorr->GetZaxis()->GetName());break;}
+    case 2: {printf(" %s, ",fPostPIDWdthCorr->GetYaxis()->GetName());break;}
+    case 1: {printf(" %s ",fPostPIDWdthCorr->GetXaxis()->GetName());break;}
     }
     printf("\n");
     fUsedVars->SetBitNumber(corrXdim, kTRUE);
@@ -85,24 +108,29 @@ static TH3D LMEECutLib::SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int
         }
     }
   
-  if(fPostPIDWdthCorr)      AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorr);
-
+  if(fPostPIDWdthCorr){
+    switch(det) {
+      case 1: {AliDielectronPID::SetWidthCorrFunctionITS(fPostPIDCntrdCorr); break;}
+      case 2: {AliDielectronPID::SetWidthCorrFunction(fPostPIDCntrdCorr); break;}
+      case 3: {AliDielectronPID::SetWidthCorrFunctionTOF(fPostPIDCntrdCorr);  break;}
+  }
   if(sel==1){
-        if(mean)   ::Info("LMEECutLib::SetEtaCorrectionTPC","Mean Correction Histo loaded, entries: %f",mean->GetEntries());
+        if(mean)   ::Info("LMEECutLib::SetEtaCorrection","Mean Correction Histo loaded, entries: %f",mean->GetEntries());
         else {
-        ::Info("LMEECutLib::SetEtaCorrectionTPC","Mean Correction Histo not loaded! entries: %f",mean->GetEntries());
+        ::Info("LMEECutLib::SetEtaCorrection","Mean Correction Histo not loaded! entries: %f",mean->GetEntries());
         return 0;
         }
       return *mean;
   }
   else{
-        if(width)   ::Info("LMEECutLib::SetEtaCorrectionTPC","Width Correction Histo loaded, entries: %f",width->GetEntries());
+        if(width)   ::Info("LMEECutLib::SetEtaCorrection","Width Correction Histo loaded, entries: %f",width->GetEntries());
         else {
-        ::Info("LMEECutLib::SetEtaCorrectionTPC","Width Correction Histo not loaded! entries: %f",width->GetEntries());
+        ::Info("LMEECutLib::SetEtaCorrection","Width Correction Histo not loaded! entries: %f",width->GetEntries());
         return 0;
         }
       return *width;
   }
+}
 }  
 
 // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
@@ -150,7 +178,7 @@ AliDielectronPID* LMEECutLib::GetPIDCutsAna(int sel, Bool_t useAODFilterCuts) {
     
       case 2:
         pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2, 3.0 , 0. ,100., kFALSE);
-        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 3.5 , 0. ,100., kTRUE);   //<-
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 3.0 , 0. ,100., kTRUE);   //<-
         pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
         pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
         break;
@@ -163,14 +191,39 @@ AliDielectronPID* LMEECutLib::GetPIDCutsAna(int sel, Bool_t useAODFilterCuts) {
         break;
     
       case 4:
-        // additional PID cuts: carsten analysis PID cut (Physics Forum 12.04.18)
         pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -4, 4.0 , 0. ,100., kFALSE);   //<-
         pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4.5 , 0. ,100., kTRUE);
         pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
         pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
         break;      
-
-            
+    
+      case 5:
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2, 3.0 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 5.5 , 0. ,100., kTRUE);   //<-
+        pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+        break;
+    
+      case 6:
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2, 3.0 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4.5 , 0. ,100., kTRUE);
+        pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kRequire); //<-
+        break;    
+    
+      case 7:
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2, 3.0 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4.5 , 0. ,100., kTRUE);
+        pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
+//        pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable); //<-
+        break;
+    
+      case 8:
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2, 3.0 , 0. ,100., kFALSE);
+//        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4.5 , 0. ,100., kTRUE);
+        pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+        break;
   }
   
   return(pidFilterCuts);       //Add nanoAODfilter PID cuts
@@ -216,8 +269,8 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MV
             trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
             break;
      case 1:
-            trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -0.5,   0.5);                     //<-
-            trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -1.0,   1.0);                     //<-
+            trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -0.3,   0.3);                     //<-
+            trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
 //          trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
             trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      100.0, 160.0);
 //          trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
@@ -233,13 +286,13 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MV
 //          trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
 //          trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
             trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 160.0);            
-            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.97, 1.03);          //<- 
+            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.98, 1.02);          //<- 
             break;
       case 3:
             trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
             trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);                    
 //          trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
-            trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      130.0, 160.0);     //<-
+            trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      130.0, 150.0);     //<-
 //          trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
 //          trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
             trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 160.0);            
@@ -252,8 +305,8 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MV
             trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      100.0, 160.0);
 //          trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
 //          trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
-            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 160.0);   //<-
-            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);   //<-
+            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 160.0);   
+            trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.90, 1.10);   
             break;
       case 5:     // Carsten's cuts from Physics Forum 12.04.18, with conversion rejection cuts
             trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);

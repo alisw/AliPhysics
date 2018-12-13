@@ -1,6 +1,6 @@
 AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
     const char* name     = "Pi0EtaToGammaGamma",
-    const UInt_t trigger = AliVEvent::kINT7,
+    UInt_t trigger = AliVEvent::kINT7,
     const TString CollisionSystem = "PbPb",
     const Bool_t isMC = kFALSE,
     const Int_t L1input = -1,//L1H,L1M,L1L
@@ -48,18 +48,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   TString TriggerName="";
   if     (trigger == (UInt_t)AliVEvent::kAny)  TriggerName = "kAny";
   else if(trigger == (UInt_t)AliVEvent::kINT7) TriggerName = "kINT7";
-  else if(trigger & AliVEvent::kPHI7) TriggerName = "kPHI7";
+  else if(trigger & AliVEvent::kPHI7)          TriggerName = "kPHI7";
 
-  //if(trigger == (UInt_t)AliVEvent::kPHI7){
-  //  if(triggerinput.Contains("L1") || triggerinput.Contains("L0")){
-  //    TriggerName = TriggerName + "_" + triggerinput;
-
-  //  }
-  //  else{
-  //    ::Error("AddTaskPHOSPi0EtaToGammaGamma", "PHOS trigger analysis requires at least trigger input (L0 or L1[H,M,L]).");
-  //    return NULL;
-  //  }
-  //}
   if(trigger & AliVEvent::kPHI7){
     if(L1input > 0){
       if(L1input == 7)      TriggerName = TriggerName + "_" + "L1H";
@@ -128,7 +118,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   else if(L0input == 17) Ethre = 0.0;//LHC17p
   if(trigger & AliVEvent::kPHI7)      task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,ApplyTOFTrigger,-1);
   else if(trigger & AliVEvent::kINT7) task->SetPHOSTriggerAnalysisMB(L1input,L0input,Ethre,isMC,ApplyTOFTrigger,-1);
-  if(kMC && (trigger & AliVEvent::kPHI7)) trigger = AliVEvent::kINT7;//change trigger selection in MC when you do PHOS trigger analysis.
+  if(isMC && (trigger & AliVEvent::kPHI7)) trigger = AliVEvent::kINT7;//change trigger selection in MC when you do PHOS trigger analysis.
   if(ForceActiveTRU) task->SetForceActiveTRU(L1input,L0input,Ethre,isMC);//this is to measure rejection factor from cluster energy kPHI7/kINT7 with same acceptance.
   task->SelectCollisionCandidates(trigger);
   task->SetTriggerThreshold(Ethre);
@@ -160,11 +150,13 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   //centrality setting
   task->SetCentralityEstimator("V0M");
 
-  //setting esd track selection for hybrid track
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
-  AliESDtrackCuts *cutsG = CreateTrackCutsPWGJE(10001008);//for good global tracks
+  AliESDtrackCuts *cutsG = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);//standard cuts with very loose DCA
+  cutsG->SetMaxDCAToVertexXY(2.4);
+  cutsG->SetMaxDCAToVertexZ(3.2);
+  cutsG->SetDCAToVertex2D(kTRUE);
   task->SetESDtrackCutsForGlobal(cutsG);
-  AliESDtrackCuts *cutsGC = CreateTrackCutsPWGJE(10011008);//for good global-constrained tracks
+
+  AliESDtrackCuts *cutsGC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();//standard cuts with tight DCA cut
   task->SetESDtrackCutsForGlobalConstrained(cutsGC);
 
   //bunch space for TOF cut
@@ -196,16 +188,20 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   if(!isMC && Trgcorrection){
     if(L1input == 7){
       printf("L1H is selected\n");
-      TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
+      //TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
+      //f1trg->SetParameters(0.431,8.83,0.79);//from MB //acc x trigger efficiency 6-50GeV
+      TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1) + [3]/(TMath::Exp(-(x-[4])/[5]) + 1)",0,100);
+      f1trg->SetParameters(0.218,8.02,0.588,0.236,10.3,0.883);//from MB //acc x trigger efficiency 5-40GeV
       f1trg->SetNpx(1000);
-      f1trg->SetParameters(0.431,8.83,0.79);//from MB //acc x trigger efficiency 6-50GeV
       task->SetTriggerEfficiency(f1trg);
     }
     else if(L1input==6){
       printf("L1M is selected\n");
-      TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
+      //TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
+      //f1trg->SetParameters(0.445,4.43,0.72);//from MB //acc x trigger efficiency 6-50GeV
+      TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1) + [3]/(TMath::Exp(-(x-[4])/[5]) + 1)",0,100);
+      f1trg->SetParameters(0.220,3.87,0.334,0.230,5.32,0.523);//from MB //acc x trigger efficiency 2-40GeV
       f1trg->SetNpx(1000);
-      f1trg->SetParameters(0.445,4.43,0.72);//from MB //acc x trigger efficiency 6-50GeV
       task->SetTriggerEfficiency(f1trg);
     }
   }

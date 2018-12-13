@@ -18,7 +18,7 @@ AliDielectron* Config_slehner_diele_TMVA(
                                         Int_t trCut=0,
                                         Int_t PIDCut=0,
                                         Int_t MVACut= 0,
-					Bool_t useTPCCorr=kFALSE,
+					Bool_t usePIDCorr=kFALSE,
 					Bool_t hasMC=kFALSE
         )
 {
@@ -41,6 +41,12 @@ AliDielectron* Config_slehner_diele_TMVA(
     die->SetMixingHandler(mix);
   }
  
+ if(usePIDCorr){
+   SetITSCorr(die,hasMC);
+   SetTPCCorr(die,hasMC);
+   SetTOFCorr(die,hasMC);
+ }
+  
  die->SetUseKF(kFALSE);   //keep this one, otherwise masses are slightly wrong and R factors very wrong!
  InitHistograms(die,0);
 
@@ -61,12 +67,19 @@ AliDielectronCutGroup* SetupTrackCutsAndSettings(Int_t selTr, Int_t selPID, Int_
 
 
 //______________________________________________________________________________________
-void SetTPCCorr(AliDielectron *die){
-  ::Info("Config_slehner_LMEE_TMVA","starting LMEECutLib::SetEtaCorrectionTPC()\n");
-  TString path="alien:///alice/cern.ch/user/s/selehner/recal/recalib_data_tpc_nsigmaele.root";
-  gSystem->Exec(TString::Format("alien_cp %s .",path.Data()));
-  ::Info("Config_slehner_LMEE_TMVA","Copy TPC correction from Alien: %s",path.Data());
-  _file = TFile::Open("recalib_data_tpc_nsigmaele.root");
+void SetTPCCorr(AliDielectron *die, Bool_t hasMC){
+  ::Info("Config_slehner_LMEE_TMVA","starting LMEECutLib::SetEtaCorrection for TPC\n");
+  TString path="alien:///alice/cern.ch/user/s/selehner/recal/";
+  if(hasMC) TString fName= "recalib_mc_tpc_nsigmaele.root";
+  else      TString fName= "recalib_data_tpc_nsigmaele.root";
+  TFile* _file = TFile::Open(fName.Data());
+//  _file = TFile::Open(fName.Data());
+  if(!_file){
+    gSystem->Exec(TString::Format("alien_cp %s .",(path+fName).Data()));
+    ::Info("Config_slehner_LMEE_TMVA","Get TPC correction from Alien: %s",(path+fName).Data());
+    _file = TFile::Open(fName.Data());
+    if(!_file)  ::Error("Config_slehner_LMEE_TMVA","Cannot get TPC correction from Alien: %s",(path+fName).Data());
+  }
   
   TH3D* mean = dynamic_cast<TH3D*>(_file->Get("sum_mean_correction"));
   TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
@@ -76,10 +89,52 @@ void SetTPCCorr(AliDielectron *die){
     ::Info("Config_slehner_LMEE_TMVA","Mean Correction Histo not loaded! entries: %f",mean->GetEntries());
     return 0;
   }
-
     die->SetCentroidCorrFunction(mean, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
-    die->SetWidthCorrFunction(width, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
-       
+    die->SetWidthCorrFunction(width, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);     
+}
+
+//______________________________________________________________________________________
+void SetITSCorr(AliDielectron *die, Bool_t hasMC){
+  ::Info("Config_slehner_LMEE_TMVA","starting LMEECutLib::SetEtaCorrection for ITS\n");
+  TString path="alien:///alice/cern.ch/user/s/selehner/recal/";
+  if(hasMC) TString fName= "recalib_mc_its_nsigmaele.root";
+  else      TString fName= "recalib_data_its_nsigmaele.root";
+  gSystem->Exec(TString::Format("alien_cp %s .",(path+fName).Data()));
+  ::Info("Config_slehner_LMEE_TMVA","Get ITS correction from Alien: %s",(path+fName).Data());
+  _file = TFile::Open(fName.Data());
+  
+  TH3D* mean = dynamic_cast<TH3D*>(_file->Get("sum_mean_correction"));
+  TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
+
+  if(mean)   ::Info("Config_slehner_LMEE_TMVA","Mean Correction Histo loaded, entries: %f",mean->GetEntries());
+  else {
+    ::Info("Config_slehner_LMEE_TMVA","Mean Correction Histo not loaded! entries: %f",mean->GetEntries());
+    return 0;
+  }
+    die->SetCentroidCorrFunctionITS(mean, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+    die->SetWidthCorrFunctionITS(width, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);     
+}
+
+//______________________________________________________________________________________
+void SetTOFCorr(AliDielectron *die, Bool_t hasMC){
+  ::Info("Config_slehner_LMEE_TMVA","starting LMEECutLib::SetEtaCorrection for TOF\n");
+  TString path="alien:///alice/cern.ch/user/s/selehner/recal/";
+  if(hasMC) TString fName= "recalib_mc_tof_nsigmaele.root";
+  else      TString fName= "recalib_data_tof_nsigmaele.root";
+  gSystem->Exec(TString::Format("alien_cp %s .",(path+fName).Data()));
+  ::Info("Config_slehner_LMEE_TMVA","Get TOF correction from Alien: %s",(path+fName).Data());
+  _file = TFile::Open(fName.Data());
+  
+  TH3D* mean = dynamic_cast<TH3D*>(_file->Get("sum_mean_correction"));
+  TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
+
+  if(mean)   ::Info("Config_slehner_LMEE_TMVA","Mean Correction Histo loaded, entries: %f",mean->GetEntries());
+  else {
+    ::Info("Config_slehner_LMEE_TMVA","Mean Correction Histo not loaded! entries: %f",mean->GetEntries());
+    return 0;
+  }
+    die->SetCentroidCorrFunctionTOF(mean, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+    die->SetWidthCorrFunctionTOF(width, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);     
 }
 
 //______________________________________________________________________________________
@@ -173,24 +228,31 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
   //add histograms to track class
 
-  histos->UserHistogram("Track","nITS","nITS;nITS;nTracks",10,0,10.,AliDielectronVarManager::kNclsITS); 
-  histos->UserHistogram("Track", "ITS1Shared", "ITS1Shared", 10,0,10., AliDielectronVarManager::kClsS1ITS);
-  histos->UserHistogram("Track", "ITS2Shared", "ITS2Shared", 10,0,10., AliDielectronVarManager::kClsS2ITS);
-  histos->UserHistogram("Track", "ITS3Shared", "ITS3Shared", 10,0,10., AliDielectronVarManager::kClsS3ITS);
-  histos->UserHistogram("Track", "ITS4Shared", "ITS4Shared", 10,0,10., AliDielectronVarManager::kClsS4ITS);
-  histos->UserHistogram("Track", "ITS5Shared", "ITS5Shared", 10,0,10., AliDielectronVarManager::kClsS5ITS);
-  histos->UserHistogram("Track", "ITS6Shared", "ITS6Shared", 10,0,10., AliDielectronVarManager::kClsS6ITS);
-  histos->UserHistogram("Track","nITSshared_frac", "nITSshared_frac",100,0,1.1,AliDielectronVarManager::kNclsSFracITS);
-  histos->UserHistogram("Track","NCrossedRowsTPC","",200,0,200,  AliDielectronVarManager::kNclsCrTPC);
-  histos->UserHistogram("Track","NClustersTPC", "",200,0,200, AliDielectronVarManager::kNclsTPC);
-  histos->UserHistogram("Track","NTPCSignal","" ,200,0,200,  AliDielectronVarManager::kTPCsignalN);
-  histos->UserHistogram("Track","log(abs(DCAxy))","", 100,-20,2,  AliDielectronVarManager::kLogDCAXY);
-  histos->UserHistogram("Track","log(abs(DCAz))" ,"", 100,-20,2,  AliDielectronVarManager::kLogDCAZ);  
-  histos->UserHistogram("Track","chi2GlobalPerNDF","", 100,0,10,  AliDielectronVarManager::kChi2GlobalNDF);
-  histos->UserHistogram("Track","chi2ITS","" , 100,0,100,  AliDielectronVarManager::kITSchi2);
-  histos->UserHistogram("Track","eta","" , 100,-0.8,0.8, AliDielectronVarManager::kEta);
-  histos->UserHistogram("Track","phi","" , 100,0,7, AliDielectronVarManager::kPhi);
+//  histos->UserHistogram("Track","nITS","nITS;nITS;nTracks",10,0,10.,AliDielectronVarManager::kNclsITS); 
+//  histos->UserHistogram("Track", "ITS1Shared", "ITS1Shared", 10,0,10., AliDielectronVarManager::kClsS1ITS);
+//  histos->UserHistogram("Track", "ITS2Shared", "ITS2Shared", 10,0,10., AliDielectronVarManager::kClsS2ITS);
+//  histos->UserHistogram("Track", "ITS3Shared", "ITS3Shared", 10,0,10., AliDielectronVarManager::kClsS3ITS);
+//  histos->UserHistogram("Track", "ITS4Shared", "ITS4Shared", 10,0,10., AliDielectronVarManager::kClsS4ITS);
+//  histos->UserHistogram("Track", "ITS5Shared", "ITS5Shared", 10,0,10., AliDielectronVarManager::kClsS5ITS);
+//  histos->UserHistogram("Track", "ITS6Shared", "ITS6Shared", 10,0,10., AliDielectronVarManager::kClsS6ITS);
+//  histos->UserHistogram("Track","nITSshared_frac", "nITSshared_frac",100,0,1.1,AliDielectronVarManager::kNclsSFracITS);
+//  histos->UserHistogram("Track","NCrossedRowsTPC","",200,0,200,  AliDielectronVarManager::kNclsCrTPC);
+//  histos->UserHistogram("Track","NClustersTPC", "",200,0,200, AliDielectronVarManager::kNclsTPC);
+//  histos->UserHistogram("Track","NTPCSignal","" ,200,0,200,  AliDielectronVarManager::kTPCsignalN);
+//  histos->UserHistogram("Track","log(abs(DCAxy))","", 100,-20,2,  AliDielectronVarManager::kLogDCAXY);
+//  histos->UserHistogram("Track","log(abs(DCAz))" ,"", 100,-20,2,  AliDielectronVarManager::kLogDCAZ);  
+//  histos->UserHistogram("Track","chi2GlobalPerNDF","", 100,0,10,  AliDielectronVarManager::kChi2GlobalNDF);
+//  histos->UserHistogram("Track","chi2ITS","" , 100,0,100,  AliDielectronVarManager::kITSchi2);
+//  histos->UserHistogram("Track","eta","" , 100,-0.8,0.8, AliDielectronVarManager::kEta);
+//  histos->UserHistogram("Track","phi","" , 100,0,7, AliDielectronVarManager::kPhi);
   histos->UserHistogram("Track","pt", "", 100,0,10,AliDielectronVarManager::kPt);  
+  histos->UserHistogram("Track","nSigmaITSEl:pt", "", 100,0,10,100,-5,5,AliDielectronVarManager::kPt,AliDielectronVarManager::kITSnSigmaEle);  
+  histos->UserHistogram("Track","nSigmaTPCEl:pt", "", 100,0,10,100,-5,5,AliDielectronVarManager::kPt,AliDielectronVarManager::kTPCnSigmaEle);  
+  histos->UserHistogram("Track","nSigmaTOFEl:pt", "", 100,0,10,100,-5,5,AliDielectronVarManager::kPt,AliDielectronVarManager::kTOFnSigmaEle);  
+  histos->UserHistogram("Track","nSigmaITSEl:eta", "", 100,-1,1,100,-5,5,AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaEle);  
+  histos->UserHistogram("Track","nSigmaTPCEl:eta", "", 100,-1,1,100,-5,5,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEle);  
+  histos->UserHistogram("Track","nSigmaTOFEl:eta", "", 100,-1,1,100,-5,5,AliDielectronVarManager::kEta,AliDielectronVarManager::kTOFnSigmaEle);  
+ 
 
 //  TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00, 0.02, 0.04, 0.06, 0.08, 0.10, 0.14, 0.18, 0.22, 0.30, 0.38, 0.46, 0.62, 0.7, 0.86, 1.1, 1.70, 2.30, 2.70, 2.90, 3.00, 3.10, 3.30, 4.00, 5.00");
   TVectorD* mbins=  AliDielectronHelper::MakeArbitraryBinning(" 0.00, 0.02 ,0.04 ,0.08 ,0.14 ,0.22 ,0.38 ,0.54 ,1.1 ,1.7 ,2.5 ,2.9 ,3.0 ,3.1 ,3.3 ,3.5 ,4.0 ,5.0"); //Carsten's binning
@@ -198,9 +260,13 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   TVectorD* ptbins= AliDielectronHelper::MakeArbitraryBinning("0.0,0.4,0.6,1,2.5,8");
   TVectorD* centbins= AliDielectronHelper::MakeLinBinning(20,0,100);
 
-  histos->UserHistogram("Pair","InvMass_pPt_cent","Inv.Mass:PairPt:Cent;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c); Centrality (V0M)",
-                        mbins, ptbins, centbins,
-                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentrality);
+//  histos->UserHistogram("Pair","InvMass_pPt_cent","Inv.Mass:PairPt:Cent;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c); Centrality (V0M)",
+//                        mbins, ptbins, centbins,
+//                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentrality);
+
+  histos->UserHistogram("Pair","InvMass_pPt","Inv.Mass:PairPt;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c); ",
+                        mbins, ptbins,
+                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt);
   
 //  histos->UserHistogram("Pair",
 //                        "InvMass_pPt","Inv.Mass:PairPt;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c)",

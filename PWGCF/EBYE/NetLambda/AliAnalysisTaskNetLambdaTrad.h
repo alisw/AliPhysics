@@ -1,6 +1,6 @@
+
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-// Update: Nov 5
 
 #ifndef AliAnalysisTaskNetLambdaTrad_h
 #define AliAnalysisTaskNetLambdaTrad_h
@@ -47,46 +47,42 @@ protected:
     TH1D*  fHistCentrality;
     
     
-    
     TH2F*  f2fHistGenCentVsPtLambda;
     TH2F*  f2fHistGenCentVsPtAntiLambda;
     TH2F*  f2fHistRecCentVsPtLambda;
     TH2F*  f2fHistRecCentVsPtAntiLambda;
     TH2F*  f2fHistInvMassVsPtLambda;
-    TH2F*  f2fHistInvMassVsPtLambdaRec;
     TH2F*  f2fHistInvMassVsPtAntiLambda;
-    TH2F*  f2fHistInvMassVsPtAntiLambdaRec;
     TH2F*  f2fHistRecPrimariesCentVsPtLambda;
     TH2F*  f2fHistRecPrimariesCentVsPtAntiLambda;
-    TH2F*  f2fHistPtmassctLambda;
-    TH2F*  f2fHistPtmassctAntiLambda;
-    TH2F*  f2fHistLambdaSecFromWeakDecay;
-    TH2F*  f2fHistAntiLambdaSecFromWeakDecay;
-    TH2F*  f2fHistLambdaMaterial;
-    TH2F*  f2fHistAntiLambdaMaterial;
-    TH2F*  f2fHistLambdaMisId;
-    TH2F*  f2fHistAntiLambdaMisId;
-    TH2F*  f2fHistV0CentVsPtLambda;
-    TH2F*  f2fHistV0CentVsPtAntiLambda;
-//    TH3F*  f3fHistLambdafromXi;
-//    TH3F*  f3fHistAntiLambdafromXi;
-    TH2F*  f2fHistLRecstat;
-    TH2F*  f2fHistARecstat;
-    TH2F*  f2fHistLGenstat;
-    TH2F*  f2fHistAGenstat;
-    TH2F*  f2fHisthXiPlus;
-    TH2F*  f2fHisthXiMinus;
-    TH2F*  f2fHisthXiZero;
-    TH2F*  f2fHisthXiZeroAnti;
     TH1F*  f1fHistmassctLambda;
     TH1F*  f1fHistmassctAntiLambda;
+    TH2F*  f2fHistLambdaSecFromWeakDecay;
+    TH2F* f2fHistAntiLambdaSecFromWeakDecay;
+    TH2F*  f2fHistLambdaMisId;
+    TH2F* f2fHistAntiLambdaMisId;
+    TH2F*  f2fHistAntiLambdaRecPt;
+    TH2F* f2fHistLambdaRecPt;
+    TH2F*  f2fHistInvMassVsPtLambdaRec;
+    TH2F* f2fHistInvMassVsPtAntiLambdaRec;
+    TH2F*  f2fHistPtmassctLambda;
+    TH2F* f2fHistPtmassctAntiLambda;
+    TH2F*  f2fHistLambdaMaterial;
+    TH2F* f2fHistAntiLambdaMaterial;
+    TH2F*  f2fHistLRecstat;
+    TH2F* f2fHistARecstat;
+    TH2F*  f2fHistLGenstat;
+    TH2F* f2fHistAGenstat;
+    TH2F*  f2fHistXiPlus;
+    TH2F* f2fHistXiMinus;
+    TH3F*  f2fHistLambdafromXi;
+    TH3F* f2fHistAntiLambdafromXi;
+    
     
     
     Float_t fCentrality;
     Int_t fTreeVariablePID;
-//    Int_t fTreeVariablePIDMother;
-//    Int_t fTreeVariablePrimaryStatusMother;
-    
+    Int_t fTreeVariablePIDParent;
     Int_t fTreeVariablePIDPositive;
     Int_t fTreeVariablePIDNegative;
     Int_t fTreeVariableLeastNbrCrossedRows;
@@ -103,15 +99,10 @@ protected:
     Bool_t fIsAOD;
     UInt_t fEvSel;
     Int_t  fNptBins;
-//    Int_t  xibinnumb;
-
     
-    THnSparse *fPtBinNplusNminusV0;
-    THnSparse *fPtBinNplusNminusV0masscut;
-    THnSparse *fPtBinNplusNminusRec;
-    THnSparse *fPtBinNplusNminusRecPri;
-    THnSparse *fPtBinNplusNminusGen;
-    
+    THnSparse *fPtBinNplusNminusCh;
+    THnSparse *fPtBinNplusNminusChCut;
+    THnSparse *fPtBinNplusNminusChTruth;
     Int_t    GetPtBin(Double_t pt);
     
     
@@ -122,4 +113,5 @@ protected:
 
 
 #endif
+
 

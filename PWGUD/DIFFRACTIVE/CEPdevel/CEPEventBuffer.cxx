@@ -181,6 +181,9 @@ Bool_t CEPEventBuffer::RemoveTrack(Int_t ind)
       fnTracksCombined--;
     }
     
+    // free memory
+    delete trk;
+    
     done = kTRUE;
   }
   //printf("... done %i!\n",done);

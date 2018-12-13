@@ -37,16 +37,17 @@
 ClassImp(AliAnalysisTaskGammaConvDtrue)
 
 AliAnalysisTaskGammaConvDtrue::AliAnalysisTaskGammaConvDtrue():
-  AliAnalysisTaskSE(),
+  AliAnalysisTaskEmcal(),
   fHistos(nullptr)
 {
 
 }
 
 AliAnalysisTaskGammaConvDtrue::AliAnalysisTaskGammaConvDtrue(const char *name):
-  AliAnalysisTaskSE(name),
+  AliAnalysisTaskEmcal(name, true),
   fHistos(nullptr)
 {
+  this->SetMakeGeneralHistograms(true);
   DefineOutput(1, TList::Class());
 }
 
@@ -55,6 +56,8 @@ AliAnalysisTaskGammaConvDtrue::~AliAnalysisTaskGammaConvDtrue(){
 }
 
 void AliAnalysisTaskGammaConvDtrue::UserCreateOutputObjects(){
+  AliAnalysisTaskEmcal::UserCreateOutputObjects();
+
   fHistos = new THistManager(Form("Histos_%s", GetName()));
 
   fHistos->CreateTH1("hTrueD0pt", "True D0 pt spectrum", 200, 0., 200.);
@@ -64,13 +67,14 @@ void AliAnalysisTaskGammaConvDtrue::UserCreateOutputObjects(){
   fHistos->CreateTH2("hPiPlFromD0pt", "pt of the pi+ from D0 decay", 200, 0., 200., 200, 0., 200.);
   fHistos->CreateTH2("hPiMiFromD0pt", "pt of the pi- from D0 decay", 200, 0., 200., 200, 0., 200.);
 
-  PostData(1, fHistos->GetListOfHistograms());
+  for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
+  PostData(1, fOutput);
 }
 
-void AliAnalysisTaskGammaConvDtrue::UserExec(Option_t *){
+bool AliAnalysisTaskGammaConvDtrue::Run(){
   if(!fMCEvent) {
     AliErrorStream() << "No MC event available" << std::endl;
-    return;
+    return false;
   }
   for(int ipart = 0; ipart < fMCEvent->GetNumberOfTracks(); ipart++){
     auto part = fMCEvent->GetTrack(ipart);
@@ -91,8 +95,7 @@ void AliAnalysisTaskGammaConvDtrue::UserExec(Option_t *){
     fHistos->FillTH2("hPiPlFromD0pt", part->Pt(), decay.fPiPldaughter->Pt());
     fHistos->FillTH2("hPiMiFromD0pt", part->Pt(), decay.fPiMidaughter->Pt());
   }
-
-  PostData(1, fHistos->GetListOfHistograms());
+  return true;
 }
 
 AliAnalysisTaskGammaConvDtrue::D03PionDecay AliAnalysisTaskGammaConvDtrue::CheckFor3PionDecay(AliVParticle *d0mother) const {

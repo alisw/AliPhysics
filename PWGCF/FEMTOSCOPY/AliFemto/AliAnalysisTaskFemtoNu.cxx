@@ -88,6 +88,18 @@ AliAnalysisTaskFemtoNu::SetupContainers(const TString &outputfile)
 
   mgr->ConnectInput(this, 0, in_container);
   mgr->ConnectOutput(this, RESULT_STORAGE_OUTPUT_SLOT, out_container);
+
+  // this is required to silence a runtime warning about no container
+  // for output slot 0 (defined by AliAnalysiTaskFemto)
+  //
+  // when this class gets re-written without TList output remove this
+  // line
+  //
+  auto *list_container = mgr->CreateContainer(fName + "_list",
+                                              TList::Class(),
+                                              AliAnalysisManager::kOutputContainer,
+                                              dest);
+  mgr->ConnectOutput(this, 0, list_container);
 }
 
 
@@ -123,6 +135,7 @@ AliAnalysisTaskFemtoNu::CreateOutputObjects()
   fStorage = new AliFemtoResultStorage(fName, *femto_mgr);
 
   PostData(RESULT_STORAGE_OUTPUT_SLOT, fStorage);
+  PostData(0, new TList());
 }
 
 void

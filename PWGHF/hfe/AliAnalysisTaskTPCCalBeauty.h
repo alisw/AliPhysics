@@ -175,8 +175,10 @@ private:
     TH2F                *fInclElecDCAnoSign;   //! Inclusive electron DCA vs. pT, no sign
     TH2F                *fElecEoPnoSig;  //! Elec EoP w/o sigma cut
     TH2F                *fInclElecEoP;   //! Inclusive electron EoP vs. pT
+    TH2F                *fInclElecEoPNoM20;   //! Inclusive electron EoP vs. pT
     TH2F                *fTPCElecEoP;   //! EoP vs. pT, -0.1<nsig<3 cut
     TH2F                *fHadronEoP;     //! Hadron EoP vs. pT
+    TH2F                *fHadronEoPNoM20;     //! Hadron EoP vs. pT
     TH2F                *fHadronDCA;     //! Hadron DCA vs. pT
     TH2F                *fHadronCamDCAHij;     //! Hadron DCA vs. pT, no sign, no E/p cut
     TH2F                *fHadronCamDCA;     //! Hadron DCA vs. pT, no sign, no E/p cut
@@ -293,6 +295,10 @@ private:
     TH1F                *fElecAftEMCeID; //!
     TH1F                *fHFElecAftEMCeID; //!
     TH1F                *fBElecAftEMCeID; //!
+    
+    TH1F                *fElecAftEoP; //!
+    TH1F                *fHFElecAftEoP; //!
+    TH1F                *fBElecAftEoP; //!
     
     THnSparse           *fElectronSprs;  //! Sparse with electron cut parameters
     

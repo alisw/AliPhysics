@@ -32,8 +32,10 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
 										 Double_t ptAsso,
 										 TString  pte = "pte",
 										 Double_t MassMin,
-										 Int_t nref,
-										 TString estimatorFilename)
+										 Double_t nref,
+										 TString estimatorFilename,
+										 Int_t minNtr,
+										 Int_t maxNtr)
 {
     // get the manager via the static access member. since it's static, you don't need
     // an instance of the class to call the function
@@ -73,6 +75,8 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
 		task -> SetptCut(pte);
 		task -> SetMassMin(MassMin);
 		task -> SetNref(nref);
+		task -> SetMinNtr(minNtr);
+		task -> SetMaxNtr(maxNtr);
 
 		TFile* fEstimator=TFile::Open(estimatorFilename.Data());
 		if(!fEstimator){
@@ -161,6 +165,13 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
 		task->SetMultiProfileMCLHC16l(multEstimatorAvgMC[1]);
 
 
+		// Get weight for N_{tracklet}
+		TH1D* weightNtrkl = (TH1D*)fEstimator->Get("weightNtrkl")->Clone("weightNtrkl_clone");
+		if(!weightNtrkl){
+						AliFatal("Multiplicity estimator for weight not found! Please check your estimator file");
+						return;
+		}
+		task->SetWeightNtrkl(weightNtrkl);
 
 
     if(!task) return 0x0;

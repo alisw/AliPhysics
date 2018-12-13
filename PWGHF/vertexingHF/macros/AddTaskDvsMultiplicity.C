@@ -12,14 +12,16 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
 							 Int_t recoEstimator = AliAnalysisTaskSEDvsMultiplicity::kNtrk10,
 							 Int_t MCEstimator = AliAnalysisTaskSEDvsMultiplicity::kEta10,
 							 Bool_t isPPbData=kFALSE,
-							 Int_t year = 16)
+							 Int_t year = 16,
+               Bool_t isLcV0=kTRUE
+               )
 {
   //
   // Macro for the AliAnalysisTaskSE for D candidates vs Multiplicity
   // Invariant mass histogram in pt and multiplicity bins in a 3D histogram
   //   different estimators implemented
   //==============================================================================
-    
+ 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskDvsMultiplicity", "No analysis manager to connect to.");
@@ -92,6 +94,7 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
   dMultTask->SetMultiplicityEstimator(recoEstimator);
   dMultTask->SetMCPrimariesEstimator(MCEstimator);
   dMultTask->SetMCOption(MCOption);
+  dMultTask->SetLcToV0decay(isLcV0);
   if(isPPbData) dMultTask->SetIsPPbData();
     
   if(NchWeight){
@@ -230,21 +233,20 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
   outputfile += ":PWG3_D2H_DMult_";
   outputfile += Name.Data(); 
   outputfile += finDirname.Data(); 
-    
   AliAnalysisDataContainer *coutputCuts = mgr->CreateContainer(cutsname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
   AliAnalysisDataContainer *coutput = mgr->CreateContainer(outname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
   AliAnalysisDataContainer *coutputNorm = mgr->CreateContainer(normname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
   AliAnalysisDataContainer *coutputProf = mgr->CreateContainer(profname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-    
+
   mgr->ConnectInput(dMultTask,0,mgr->GetCommonInputContainer());
-    
+
   mgr->ConnectOutput(dMultTask,1,coutput);
-    
+
   mgr->ConnectOutput(dMultTask,2,coutputCuts);
-    
-  mgr->ConnectOutput(dMultTask,3,coutputNorm);  
-    
+
+  mgr->ConnectOutput(dMultTask,3,coutputNorm);
+
   mgr->ConnectOutput(dMultTask,4,coutputProf);
-    
+
   return dMultTask;
 }

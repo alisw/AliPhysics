@@ -9,7 +9,7 @@ ClassImp(AliSigma0ParticlePhotonMother)
       fRecMassPhoton(0),
       fRecMassLambda(0),
       fRecMass(0),
-      fMCLabelMother(-1),
+      fMCLabel(-1),
       fPDGCode(-1),
       fV0(),
       fPhoton() {}
@@ -23,7 +23,7 @@ AliSigma0ParticlePhotonMother::AliSigma0ParticlePhotonMother(
       fRecMassPhoton(0),
       fRecMassLambda(0),
       fRecMass(0),
-      fMCLabelMother(-1),
+      fMCLabel(-1),
       fPDGCode(-1),
       fV0(),
       fPhoton() {
@@ -34,12 +34,19 @@ AliSigma0ParticlePhotonMother::AliSigma0ParticlePhotonMother(
                  photonCandidate.GetPz(), photonCandidate.GetRecMass());
   TLorentzVector trackSum = track1 + track2;
 
+  TLorentzVector track1MC, track2MC;
+  track1MC.SetXYZM(lambdaCandidate.GetPxMC(), lambdaCandidate.GetPyMC(),
+                   lambdaCandidate.GetPzMC(), lambdaCandidate.GetRecMass());
+  track2MC.SetXYZM(photonCandidate.GetPxMC(), photonCandidate.GetPyMC(),
+                   photonCandidate.GetPzMC(), photonCandidate.GetRecMass());
+  TLorentzVector trackSumMC = track1MC + track2MC;
+
   fP[0] = trackSum.Px();
   fP[1] = trackSum.Py();
   fP[2] = trackSum.Pz();
-  fPMC[0] = -1.;
-  fPMC[1] = -1.;
-  fPMC[2] = -1.;
+  fPMC[0] = trackSumMC.Px();
+  fPMC[1] = trackSumMC.Px();
+  fPMC[2] = trackSumMC.Px();
 
   //  fPDGCode = pdg;
   fPt = std::sqrt(fP[0] * fP[0] + fP[1] * fP[1]);
@@ -73,6 +80,7 @@ AliSigma0ParticlePhotonMother &AliSigma0ParticlePhotonMother::operator=(
   fPMC[1] = obj.GetPyMC();
   fPMC[2] = obj.GetPzMC();
 
+  fMCLabel = obj.GetMCLabel();
   fPDGCode = obj.GetPDGcode();
   fMass = obj.GetMass();
   fQ = obj.GetQ();
@@ -122,7 +130,7 @@ int AliSigma0ParticlePhotonMother::MatchToMC(
     return -1;
   }
 
-  fMCLabelMother = labMotherV0;
+  fMCLabel = labMotherV0;
   fPDGCode = pdgLambdaMother;
 
   fPMC[0] = partMotherV0->Px();

@@ -394,9 +394,12 @@ struct Configuration<AliFemtoESDTrackCut> : AbstractConfiguration<AliFemtoPartic
           max_impact_z = 3.0,
           max_tpc_chi_ndof = 0.032,
           max_its_chi_ndof = 0.032;
+
   Float_t sigma = 3.;
   Bool_t electron_rejection = true,
-         remove_kinks = true;
+         remove_kinks = true,
+         sigma_dual = false,
+         sigma_tpconly = false;
 
   // Pion
   Int_t most_probable { 2 };
@@ -407,7 +410,10 @@ struct Configuration<AliFemtoESDTrackCut> : AbstractConfiguration<AliFemtoPartic
       ("pt", pt)
       ("rapidity", rapidity)
       ("eta", eta)
-      ("sigma", nSigma)
+      ("sigma", sigma)
+      ("sigma_dual", sigma_dual)
+      ("sigma_tpconly", sigma_tpconly)
+
       ("max_impact_xy", max_impact_xy)
       ("min_impact_xy", min_impact_xy)
       ("max_impact_z", max_impact_z)
@@ -425,6 +431,10 @@ struct Configuration<AliFemtoESDTrackCut> : AbstractConfiguration<AliFemtoPartic
     cut.SetEta(eta.first, eta.second);
     cut.SetRapidity(rapidity.first, rapidity.second);
     cut.SetMostProbablePion();
+
+    cut.SetNsigma(sigma);
+    cut.SetNsigmaTPCTOF(sigma_dual);
+    cut.SetNsigmaTPConly(sigma_tpconly);
 
     /// Settings for TPC-Inner Runmode
     cut.SetStatus(status);
@@ -454,6 +464,8 @@ struct Configuration<AliFemtoESDTrackCut> : AbstractConfiguration<AliFemtoPartic
                 ("rapidity", cut.GetRapidity())
                 ("eta", cut.GetEta())
                 ("sigma", cut.GetNsigma())
+                ("sigma_dual", cut.GetDualNsigma())
+                ("sigma_tpc_only", cut.GetNsigmaTPConly())
                 ("charge", cut.GetCharge())
                 ("most_probable", cut.GetMostProbable())
                 ("prob_electron", cut.GetProbElectron())

@@ -45,7 +45,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   void FillEventBuffer(
       const std::vector<AliSigma0ParticleV0> &photonCandidates,
       const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
-  int GetMultiplicityBin(float percentile) const;
+  static int GetMultiplicityBin(float percentile);
   void ProcessMC() const;
   bool CheckDaughters(const AliMCParticle *particle) const;
   bool CheckDaughtersInAcceptance(const AliMCParticle *particle) const;
@@ -124,8 +124,8 @@ class AliSigma0PhotonMotherCuts : public TObject {
 
   deque<vector<AliSigma0ParticleV0> > fLambdaMixed;            //!
   deque<vector<AliSigma0ParticleV0> > fPhotonMixed;            //!
-  deque<vector<AliSigma0ParticleV0> > fLambdaMixedBinned[14];  //!
-  deque<vector<AliSigma0ParticleV0> > fPhotonMixedBinned[14];  //!
+  deque<vector<AliSigma0ParticleV0> > fLambdaMixedBinned[8];   //!
+  deque<vector<AliSigma0ParticleV0> > fPhotonMixedBinned[8];   //!
 
   AliSigma0V0Cuts *fLambdaCuts;  //
   AliSigma0V0Cuts *fPhotonCuts;  //
@@ -166,11 +166,11 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistInvMassPt;                     //!
   TH2F *fHistEtaPhi;                        //!
   TH2F *fHistPtRapidity;                    //!
-  TH2F *fHistPtMult[14];                    //!
+  TH2F *fHistPtMult[8];                     //!
   TH2F *fHistArmenterosBefore;              //!
   TH2F *fHistArmenterosAfter;               //!
   TH2F *fHistMixedInvMassPt;                //!
-  TH2F *fHistMixedInvMassBinnedMultPt[14];  //!
+  TH2F *fHistMixedInvMassBinnedMultPt[8];   //!
 
   TH2F *fHistLambdaPtPhi;   //!
   TH2F *fHistLambdaPtEta;   //!
@@ -184,13 +184,14 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistSigmaLambdaPCorr;   //!
   TH2F *fHistSigmaPhotonPCorr;   //!
 
-  TH1F *fHistMCTruthPtMult[14];                   //!
-  TH2F *fHistMCTruthPtY;                          //!
-  TH2F *fHistMCTruthDaughterPtY;                  //!
-  TH2F *fHistMCTruthDaughterPtYAccept;            //!
-  TH2F *fHistMCTruthPtYHighMult;                  //!
-  TH2F *fHistMCTruthDaughterPtYHighMult;          //!
-  TH2F *fHistMCTruthDaughterPtYAcceptHighMult;    //!
+  TH1F *fHistMCTruthPt;                         //!
+  TH1F *fHistMCTruthPtMult[8];                  //!
+  TH2F *fHistMCTruthPtY;                        //!
+  TH2F *fHistMCTruthDaughterPtY;                //!
+  TH2F *fHistMCTruthDaughterPtYAccept;          //!
+  TH2F *fHistMCTruthPtYHighMult;                //!
+  TH2F *fHistMCTruthDaughterPtYHighMult;        //!
+  TH2F *fHistMCTruthDaughterPtYAcceptHighMult;  //!
 
   TH2F *fHistMCTrueSigmaLambdaPtCorr;  //!
   TH2F *fHistMCTrueSigmaPhotonPtCorr;  //!

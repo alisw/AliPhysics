@@ -100,6 +100,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		TH2F**            hESDConversionRPhi;           //!
 		TH2F**            hESDConversionRZ;             //!
 		TH2F**            hESDConversionRPt;            //!
+		TH2F**            hESDConversionWOWeightRPt;    //!
 		TH2F**            hESDConversionREta;           //!
 		TH1F**            hESDConversionDCA;            //!
 		TH1F**            hESDConversionPsiPair;        //!
@@ -115,18 +116,22 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 
  		TH2F**            hMCConversionRPhi;            //!
 		TH2F**            hMCConversionRPt;             //!
+		TH2F**            hMCConversionWOWeightRPt;             //!
 		TH2F**            hMCConversionREta;            //!
  		TH1F**            hMCConversionRRejSmall;       //!
  		TH1F**            hMCConversionRRejLarge;       //!
 		TH1F**            hMCAllGammaPt;                //!
+		TH1F**            hMCAllGammaWOWeightPt;        //!
 		TH2F**            hMCAllSecondaryGammaPt;       //!
-		TH2F**            hMCSecondaryConvGammaPt;      //!
+		TH3F**            hMCSecondaryConvGammaPtR;      //!
 
 
 		TH2F**            hMCTrueConversionRPhi;        //!
 		TH2F**            hMCTrueConversionRZ;          //!
 		TH2F**            hMCTrueConversionRPt;         //!
+		TH2F**            hMCTrueConversionWOWeightRPt;         //!
 		TH2F**            hMCTrueConversionRPtMCRPt;    //!
+		TH2F**            hMCTrueConversionWOWeightRPtMCRPt;    //!
 		TH2F**            hMCTrueConversionREta;        //!
 		TH1F**            hMCTrueConversionDCA;         //!
 		TH1F**            hMCTrueConversionPsiPair;     //!
@@ -136,10 +141,10 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
  		TH1F**            hMCTrueConversionRRejSmall;   //!
  		TH1F**            hMCTrueConversionRRejLarge;   //!
 		TH2F**            hMCTruePrimConversionRPt;     //!
+		TH2F**            hMCTruePrimConversionWOWeightRPt;     //!
 		TH2F**            hMCTrueSecConversionRPt;      //!
 		TH3F**            hMCTrueSecondaryConvGammaRPt;//!
 		TH3F**            hMCTrueSecondaryConvGammaMCRPt;//!
-
  		TH2F**            hMCTruePi0DalConversionRPt;   //!
 		TH1F**            hMCTruePi0DalConversionEta;   //!
 		TH2F**            hMCTrueEtaDalConversionRPt;   //!
@@ -160,7 +165,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
 
 
-        ClassDef(AliAnalysisTaskMaterialHistos, 18);
+        ClassDef(AliAnalysisTaskMaterialHistos, 20);
 };
 
 #endif

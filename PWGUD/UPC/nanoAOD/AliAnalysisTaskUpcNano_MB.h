@@ -60,12 +60,11 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   TH1D *hITSPIDKaon;		//!
   TH2D *hITSPIDKaonCorr;	//!
   TH2D *hTPCdEdxCorr;		//!
+  TH2I *hTriggerCounter;	//!
   
   Float_t fPt, fY, fM, fDiLeptonM, fDiLeptonPt, fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4], fPIDsigma;
-  Int_t fChannel, fSign, fRunNumber, fNFiredMaxiPads, fNTOFtrgPads, fTrackIndex[2];
-  Bool_t fTriggerInputsMC[10], fInEtaGen, fInEtaRec;
-  TArrayI fTOFhits;
-  TArrayI fTrackIndices;
+  Int_t fChannel, fSign, fRunNumber;
+  Bool_t fTriggerInputsMC[10], fTriggers[8], fInEtaGen, fInEtaRec;
   
   TFile *fSPDfile;
   TH1D *hBCmod4;
@@ -74,7 +73,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   AliAnalysisTaskUpcNano_MB(const AliAnalysisTaskUpcNano_MB&); //not implemented
   AliAnalysisTaskUpcNano_MB& operator =(const AliAnalysisTaskUpcNano_MB&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcNano_MB, 16); 
+  ClassDef(AliAnalysisTaskUpcNano_MB, 20); 
 };
 
 #endif

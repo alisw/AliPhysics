@@ -88,7 +88,7 @@ public:
 
   /// Deafult parameters
   ///
-  /// - Name: "CF_TrueQ3D"
+  /// - Prefix: "CF_TrueQ3D"
   /// - Binning Paramters: (56, -0.14, 0.14)
   ///
   AliFemtoModelCorrFctnTrueQ3D();
@@ -96,16 +96,24 @@ public:
   /// Custom title
   ///
   /// Use default binning parameters
-  AliFemtoModelCorrFctnTrueQ3D(const char *title);
+  AliFemtoModelCorrFctnTrueQ3D(const char *prefix);
 
   /// Symmetric constructor
   ///
   /// Construct with nbins from -qmax to qmax in both directions
-  AliFemtoModelCorrFctnTrueQ3D(const char *title, UInt_t nbins, Double_t qmax);
+  AliFemtoModelCorrFctnTrueQ3D(const char *prefix, UInt_t nbins, Double_t qmax);
 
   /// Custom constructor
   ///
-  AliFemtoModelCorrFctnTrueQ3D(const char *title, UInt_t nbins, Double_t aQinvLo, Double_t aQinvHi);
+  AliFemtoModelCorrFctnTrueQ3D(const char *prefix, UInt_t nbins, Double_t aQinvLo, Double_t aQinvHi);
+
+  /// Unnamed, q-symmetric constructor
+  ///
+  AliFemtoModelCorrFctnTrueQ3D(UInt_t nbins, Double_t qmax);
+
+  /// Unnamed constructor
+  ///
+  AliFemtoModelCorrFctnTrueQ3D(UInt_t nbins, Double_t qmin, Double_t qmax);
 
   /// Construct from parameter object
   ///

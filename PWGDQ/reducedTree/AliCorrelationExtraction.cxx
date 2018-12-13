@@ -58,6 +58,7 @@ AliCorrelationExtraction::AliCorrelationExtraction() :
   fMEOSPair(0x0),
   fMEPPPair(0x0),
   fMEMMPair(0x0),
+  fHadronEff(0x0),
   fSEOSNorm(0x0),
   fSEOSNormBackgroundMassWindow(),
   fSEPPNormBackgroundMassWindow(),
@@ -86,8 +87,10 @@ AliCorrelationExtraction::AliCorrelationExtraction() :
   fCombinatorialBackgroundCF1D(),
   fCombinatorialBackgroundCF2D(),
   fSignalCF1D(0x0),
+  fSignalCF1DEffCorr(0x0),
   fSignalCF1DInvMass(),
   fSignalCF2D(0x0),
+  fSignalCF2DEffCorr(0x0),
   fNVariables(0),
   fVariables(),
   fVarLimits(),
@@ -104,6 +107,8 @@ AliCorrelationExtraction::AliCorrelationExtraction() :
   fDeltaPhiVariableIndex(-1),
   fDeltaEtaVariable(AliReducedVarManager::kDeltaEta),
   fDeltaEtaVariableIndex(-1),
+  fEfficiencyVariable(AliReducedVarManager::kAssociatedPt),
+  fEfficiencyVariableIndex(-1),
   fVerboseFlag(kFALSE),
   fUseMixingVars(kFALSE),
   fResonanceFits(0x0),
@@ -191,6 +196,7 @@ AliCorrelationExtraction::~AliCorrelationExtraction()
   if (fMEOSPair)        delete fMEOSPair;
   if (fMEPPPair)        delete fMEPPPair;
   if (fMEMMPair)        delete fMEMMPair;
+  if (fHadronEff)       delete fHadronEff;
   if (fResonanceFits)   delete fResonanceFits;
   if (fBkgFitFunction)  delete fBkgFitFunction;
 }
@@ -414,20 +420,22 @@ Bool_t AliCorrelationExtraction::Initialize() {
   AliReducedVarManager::SetDefaultVarNames();
 
   // clean up output histograms
-  if (fSEOSNorm)        {delete fSEOSNorm;        fSEOSNorm         = 0x0;}
-  if (fMEOSNorm)        {delete fMEOSNorm;        fMEOSNorm         = 0x0;}
-  if (fSEPPPairInvMass) {delete fSEPPPairInvMass; fSEPPPairInvMass  = 0x0;}
-  if (fSEMMPairInvMass) {delete fSEMMPairInvMass; fSEMMPairInvMass  = 0x0;}
-  if (fMEOSPairInvMass) {delete fMEOSPairInvMass; fMEOSPairInvMass  = 0x0;}
-  if (fMEPPPairInvMass) {delete fMEPPPairInvMass; fMEPPPairInvMass  = 0x0;}
-  if (fMEMMPairInvMass) {delete fMEMMPairInvMass; fMEMMPairInvMass  = 0x0;}
-  if (fInclusiveCF1D)   {delete fInclusiveCF1D;   fInclusiveCF1D    = 0x0;}
-  if (fInclusiveCF2D)   {delete fInclusiveCF2D;   fInclusiveCF2D    = 0x0;}
-  if (fInclusiveCF3D)   {delete fInclusiveCF3D;   fInclusiveCF3D    = 0x0;}
-  if (fBackgroundCF1D)  {delete fBackgroundCF1D;  fBackgroundCF1D   = 0x0;}
-  if (fBackgroundCF2D)  {delete fBackgroundCF2D;  fBackgroundCF2D   = 0x0;}
-  if (fSignalCF1D)      {delete fSignalCF1D;      fSignalCF1D       = 0x0;}
-  if (fSignalCF2D)      {delete fSignalCF2D;      fSignalCF2D       = 0x0;}
+  if (fSEOSNorm)          {delete fSEOSNorm;          fSEOSNorm           = 0x0;}
+  if (fMEOSNorm)          {delete fMEOSNorm;          fMEOSNorm           = 0x0;}
+  if (fSEPPPairInvMass)   {delete fSEPPPairInvMass;   fSEPPPairInvMass    = 0x0;}
+  if (fSEMMPairInvMass)   {delete fSEMMPairInvMass;   fSEMMPairInvMass    = 0x0;}
+  if (fMEOSPairInvMass)   {delete fMEOSPairInvMass;   fMEOSPairInvMass    = 0x0;}
+  if (fMEPPPairInvMass)   {delete fMEPPPairInvMass;   fMEPPPairInvMass    = 0x0;}
+  if (fMEMMPairInvMass)   {delete fMEMMPairInvMass;   fMEMMPairInvMass    = 0x0;}
+  if (fInclusiveCF1D)     {delete fInclusiveCF1D;     fInclusiveCF1D      = 0x0;}
+  if (fInclusiveCF2D)     {delete fInclusiveCF2D;     fInclusiveCF2D      = 0x0;}
+  if (fInclusiveCF3D)     {delete fInclusiveCF3D;     fInclusiveCF3D      = 0x0;}
+  if (fBackgroundCF1D)    {delete fBackgroundCF1D;    fBackgroundCF1D     = 0x0;}
+  if (fBackgroundCF2D)    {delete fBackgroundCF2D;    fBackgroundCF2D     = 0x0;}
+  if (fSignalCF1D)        {delete fSignalCF1D;        fSignalCF1D         = 0x0;}
+  if (fSignalCF1DEffCorr) {delete fSignalCF1DEffCorr; fSignalCF1DEffCorr  = 0x0;}
+  if (fSignalCF2D)        {delete fSignalCF2D;        fSignalCF2D         = 0x0;}
+  if (fSignalCF2DEffCorr) {delete fSignalCF2DEffCorr; fSignalCF2DEffCorr  = 0x0;}
   for (Int_t i=0; i<kNMaxBackgroundMassRanges; ++i) {
     if (fSEOSNormBackgroundMassWindow[i])       {delete fSEOSNormBackgroundMassWindow[i];       fSEOSNormBackgroundMassWindow[i]      = 0x0;}
     if (fSEPPNormBackgroundMassWindow[i])       {delete fSEPPNormBackgroundMassWindow[i];       fSEPPNormBackgroundMassWindow[i]      = 0x0;}
@@ -550,6 +558,17 @@ Bool_t AliCorrelationExtraction::Initialize() {
   if (fDeltaEtaVariableIndex<0) {
     cout << "AliCorrelationExtraction::Initialize() Fatal: Delta eta dimension not found in list of user defined dimensions!" << endl;
     return kFALSE;
+  }
+
+  // check for efficiency variable
+  if (fHadronEff) {
+    for(Int_t i=0; i<fNVariables; ++i) {
+      if (fVariables[i]==fEfficiencyVariable) fEfficiencyVariableIndex = fVarIndices[i];
+    }
+    if (fEfficiencyVariableIndex<0) {
+      cout << "AliCorrelationExtraction::Initialize() Fatal: Efficiency dimension not found in list of user defined dimensions!" << endl;
+      return kFALSE;
+    }
   }
   
   // apply user ranges
@@ -1009,8 +1028,26 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
     cout << "AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() Fatal: There was an issue with the J/psi signal extraction!" << endl;
     return kFALSE;
   }
-  fBackgroundCF2D->Scale( 1./fTrigValSig[kBkg]);
-  fSignalCF2D->Scale(     1./fTrigValSig[kSig]);
+
+  // scale by number of signal/background counts and propagate uncertainty
+  for (Int_t xBin=1; xBin<=fSignalCF2D->GetNbinsX(); xBin++) {
+    for (Int_t yBin=1; yBin<=fSignalCF2D->GetNbinsY(); yBin++) {
+      Double_t bkgBinCont  = fBackgroundCF2D->GetBinContent( xBin, yBin);
+      Double_t bkgBinErr   = fBackgroundCF2D->GetBinError(   xBin, yBin);
+      Double_t sigBinCont  = fSignalCF2D->GetBinContent(     xBin, yBin);
+      Double_t sigBinErr   = fSignalCF2D->GetBinError(       xBin, yBin);
+
+      Double_t bkg    = bkgBinCont/fTrigValSig[kBkg];
+      Double_t bkgErr = TMath::Sqrt(TMath::Power(bkgBinErr/fTrigValSig[kBkg], 2) + TMath::Power(bkgBinCont*fTrigValSig[kBkgErr]/fTrigValSig[kBkg]/fTrigValSig[kBkg], 2));
+      Double_t sig    = sigBinCont/fTrigValSig[kSig];
+      Double_t sigErr = TMath::Sqrt(TMath::Power(sigBinErr/fTrigValSig[kSig], 2) + TMath::Power(sigBinCont*fTrigValSig[kSigErr]/fTrigValSig[kSig]/fTrigValSig[kSig], 2));
+
+      fBackgroundCF2D->SetBinContent( xBin, yBin, bkg);
+      fBackgroundCF2D->SetBinError(   xBin, yBin, bkgErr);
+      fSignalCF2D->SetBinContent(     xBin, yBin, sig);
+      fSignalCF2D->SetBinError(       xBin, yBin, sigErr);
+    }
+  }
   
   // project 1D correlation from 2D
   fBackgroundCF1D = ProjectToDeltaPhi(fBackgroundCF2D,  "backgroundCF_1D");
@@ -1670,6 +1707,106 @@ Bool_t AliCorrelationExtraction::CalculateSignalCorrelation() {
 }
 
 //_______________________________________________________________________________
+Bool_t AliCorrelationExtraction::EfficiencyCorrection() {
+  //
+  // correct signal correlation for hadron efficiency
+  //
+  TH1D*                 normHist = NULL;
+  if (fSEOS)            normHist = (TH1D*)fSEOS->Projection(fEfficiencyVariableIndex, "e");
+  else if (fSEOSSparse) normHist = (TH1D*)fSEOSSparse->Projection(fEfficiencyVariableIndex, "e");
+  if (!normHist) {
+    cout << "AliCorrelationExtraction::EfficiencyCorrection() Fatal: There was an issue with the histogram needed for normalization! Efficiency correction can't be applied!" << endl;
+    return kFALSE;
+  }
+
+  // compare normalization and efficiency bins and find common binning
+  std::vector<Double_t> normBins;
+  std::vector<Double_t> effBins;
+  Double_t* normBinsArr = (Double_t*)(normHist->GetXaxis()->GetXbins())->GetArray();
+  Double_t* effBinsArr  = (Double_t*)(fHadronEff->GetXaxis()->GetXbins())->GetArray();
+  normBins.assign(normBinsArr, normBinsArr+(normHist->GetNbinsX()+1));
+  effBins.assign(effBinsArr, effBinsArr+(fHadronEff->GetNbinsX()+1));
+  if (fVerboseFlag) {
+    cout << "AliCorrelationExtraction::EfficiencyCorrection() normBins   = {";
+    for (Int_t i=0; i<normBins.size(); ++i) cout << normBins.at(i) << ", ";
+    cout << "}" << endl;
+    cout << "AliCorrelationExtraction::EfficiencyCorrection() effBins    = {";
+    for (Int_t i=0; i<effBins.size(); ++i) cout << effBins.at(i) << ", ";
+    cout << "}" << endl;
+  }
+  std::vector<Double_t> commonBins;
+  std::set_intersection(normBins.begin(), normBins.end(), effBins.begin(), effBins.end(), std::back_inserter(commonBins));
+  if (commonBins.size()<2) {
+    cout << "AliCorrelationExtraction::EfficiencyCorrection() Fatal: No common binning in efficiency and normalization histograms found! Efficiency correction can't be applied!" << endl;
+    return kFALSE;
+  }
+  if (fVerboseFlag) {
+    cout << "AliCorrelationExtraction::EfficiencyCorrection() commonBins = {";
+    for (Int_t i=0; i<commonBins.size(); ++i) cout << commonBins.at(i) << ", ";
+    cout << "}" << endl;
+  }
+
+  // rebin norm and eff histograms to matching binning
+  Double_t* newBins = new Double_t[commonBins.size()];
+  for (Int_t i=0; i<commonBins.size(); ++i) newBins[i] = commonBins.at(i);
+  TH1D* normHistTmp = (TH1D*)normHist->Clone(   "normHistTmp");
+  TH1D* effHistTmp  = (TH1D*)fHadronEff->Clone( "effHistTmp");
+  for (Int_t i=1; i<normHistTmp->GetNbinsX()+1; ++i) {
+    normHistTmp->SetBinContent( i, normHistTmp->GetXaxis()->GetBinWidth(i)*normHistTmp->GetBinContent(i));
+    normHistTmp->SetBinError(   i, normHistTmp->GetXaxis()->GetBinWidth(i)*normHistTmp->GetBinError(  i));
+  }
+  for (Int_t i=1; i<effHistTmp->GetNbinsX()+1; ++i) {
+    effHistTmp->SetBinContent( i, effHistTmp->GetXaxis()->GetBinWidth(i)*effHistTmp->GetBinContent(i));
+    effHistTmp->SetBinError(   i, effHistTmp->GetXaxis()->GetBinWidth(i)*effHistTmp->GetBinError(  i));
+  }
+  normHistTmp = (TH1D*)normHistTmp->Rebin(commonBins.size()-1, "normHistTmp", newBins);
+  effHistTmp  = (TH1D*)effHistTmp->Rebin( commonBins.size()-1, "effHistTmp",  newBins);
+  normHistTmp->Scale( 1., "width");
+  effHistTmp->Scale(  1., "width");
+
+  // calculate weighted average of efficiency:
+  // 1/eff_{tot} = sum_{i=1}^{n} N_{bin i}/N_{tot}*1/eff_{bin i}
+  Double_t normTotErr = 0.;
+  Double_t normTot    = normHistTmp->IntegralAndError(1, normHistTmp->GetNbinsX(), normTotErr);
+  Double_t oneOverEff = 0.;
+  for (Int_t i=1; i<effHistTmp->GetNbinsX()+1; ++i) oneOverEff += normHistTmp->GetBinContent(i)/normTot/effHistTmp->GetBinContent(i);
+  Double_t eff    = 1./oneOverEff;
+  Double_t effErr = 0.;
+  fHadronEff->IntegralAndError(fHadronEff->GetXaxis()->FindBin(commonBins.front()+1e-6), fHadronEff->GetXaxis()->FindBin(commonBins.back()-1e-6), effErr);
+  if (!eff || !effErr) {
+    cout << "AliCorrelationExtraction::EfficiencyCorrection() Fatal: There was an issue with the efficiency calculation! Efficiency correction can't be applied!" << endl;
+    return kFALSE;
+  }
+
+  // correct signal histogram (1D and 2D) for efficiency
+  fSignalCF1DEffCorr = (TH1D*)fSignalCF1D->Clone("signalCF_1D_efficiencyCorrected");
+  for (Int_t i=1; i<fSignalCF1DEffCorr->GetNbinsX()+1; ++i) {
+    Double_t binCont    = fSignalCF1DEffCorr->GetBinContent( i);
+    Double_t binErr     = fSignalCF1DEffCorr->GetBinError(   i);
+    Double_t binContNew = binCont/eff;
+    Double_t binErrNew  = TMath::Sqrt(TMath::Power(binErr/eff, 2) + TMath::Power(binCont*effErr/eff/eff, 2));
+    fSignalCF1DEffCorr->SetBinContent(i, binContNew);
+    fSignalCF1DEffCorr->SetBinError(  i, binErrNew);
+  }
+  fSignalCF2DEffCorr = (TH2D*)fSignalCF2D->Clone("signalCF_2D_efficiencyCorrected");
+  for (Int_t i=1; i<fSignalCF2DEffCorr->GetNbinsX()+1; ++i) {
+    for (Int_t j=1; j<fSignalCF2DEffCorr->GetNbinsY()+1; ++j) {
+      Double_t binCont    = fSignalCF2DEffCorr->GetBinContent( i, j);
+      Double_t binErr     = fSignalCF2DEffCorr->GetBinError(   i, j);
+      Double_t binContNew = binCont/eff;
+      Double_t binErrNew  = TMath::Sqrt(TMath::Power(binErr/eff, 2) + TMath::Power(binCont*effErr/eff/eff, 2));
+      fSignalCF2DEffCorr->SetBinContent(i, j, binContNew);
+      fSignalCF2DEffCorr->SetBinError(  i, j, binErrNew);
+    }
+  }
+
+  delete normHist;
+  delete normHistTmp;
+  delete effHistTmp;
+  return kTRUE;
+}
+
+//_______________________________________________________________________________
 Bool_t AliCorrelationExtraction::Process() {
   //
   // main function for correlation extraction
@@ -1732,6 +1869,9 @@ Bool_t AliCorrelationExtraction::Process() {
     fProcessDone = CalculateSignalCorrelation();
   }
 
+  // correct for hadron efficiency
+  if (fHadronEff) fProcessDone = EfficiencyCorrection();
+
   return fProcessDone;
 }
   
@@ -1760,9 +1900,10 @@ void AliCorrelationExtraction::PrintUserOptions() {
   if (fMEMMSparse)  cout << "fMEMMSparse  = " << fMEMMSparse << endl;
   if (fSEPPPair)    cout << "fSEPPPair    = " << fSEPPPair << endl;
   if (fSEMMPair)    cout << "fSEMMPair    = " << fSEMMPair << endl;
-  if (fMEOSPair)    cout << "fMEOSPair    = " << fSEPPPair << endl;
-  if (fMEPPPair)    cout << "fMEPPPair    = " << fSEMMPair << endl;
-  if (fMEMMPair)    cout << "fMEMMPair    = " << fSEMMPair << endl;
+  if (fMEOSPair)    cout << "fMEOSPair    = " << fMEOSPair << endl;
+  if (fMEPPPair)    cout << "fMEPPPair    = " << fMEPPPair << endl;
+  if (fMEMMPair)    cout << "fMEMMPair    = " << fMEMMPair << endl;
+  if (fHadronEff)   cout << "fHadronEff   = " << fHadronEff << endl;
   cout << "variables: ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
   cout << "fNVariables = " << fNVariables << endl;
   for(Int_t i=0; i<fNVariables; ++i) {
@@ -1781,9 +1922,12 @@ void AliCorrelationExtraction::PrintUserOptions() {
       }
     }
   }
-  cout << "fMassVariable     = " << AliReducedVarManager::fgVariableNames[fMassVariable] << ",\tindex = " << fMassVariableIndex << endl;
-  cout << "fDeltaPhiVariable = " << AliReducedVarManager::fgVariableNames[fDeltaPhiVariable] << ",\tindex = " << fDeltaPhiVariableIndex << endl;
-  cout << "fDeltaEtaVariable = " << AliReducedVarManager::fgVariableNames[fDeltaEtaVariable] << ",\tindex = " << fDeltaEtaVariableIndex << endl;
+  cout << "fMassVariable       = " << AliReducedVarManager::fgVariableNames[fMassVariable] << ",\tindex = " << fMassVariableIndex << endl;
+  cout << "fDeltaPhiVariable   = " << AliReducedVarManager::fgVariableNames[fDeltaPhiVariable] << ",\tindex = " << fDeltaPhiVariableIndex << endl;
+  cout << "fDeltaEtaVariable   = " << AliReducedVarManager::fgVariableNames[fDeltaEtaVariable] << ",\tindex = " << fDeltaEtaVariableIndex << endl;
+  if (fHadronEff)
+    cout << "fEfficiencyVariable = " << AliReducedVarManager::fgVariableNames[fEfficiencyVariable] << ",\tindex = " << fEfficiencyVariableIndex << endl;
+
   if (fMassVariableIndexPair>=0) cout << "LS pair mass variable set: index = " << fMassVariableIndexPair << endl;
   cout << "general user options: +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
   cout << "fVerboseFlag     = " << fVerboseFlag << endl;

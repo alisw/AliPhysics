@@ -16,7 +16,7 @@
 #include <iostream>
 
 AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D():
-  AliFemtoModelCorrFctnTrueQ3D("CF_TrueQ3D")
+  AliFemtoModelCorrFctnTrueQ3D("CF_TrueQ3D_")
 {
 }
 
@@ -39,24 +39,33 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const char *title, UI
   , fDenominatorReconstructed(nullptr)
   , fRng(new TRandom())
 {
-  fNumeratorGenerated = new TH3D(TString::Format("%s_NumGen", title), "Numerator (MC-Generated Momentum)",
+  fNumeratorGenerated = new TH3D(TString::Format("%sNumGen", title), "Numerator (MC-Generated Momentum)",
                                  nbins, qmin, qmax,
                                  nbins, qmin, qmax,
                                  nbins, qmin, qmax);
-  fNumeratorReconstructed = new TH3D(TString::Format("%s_NumRec", title), "Numerator (Reconstructed Momentum)",
+  fNumeratorReconstructed = new TH3D(TString::Format("%sNumRec", title), "Numerator (Reconstructed Momentum)",
                                  nbins, qmin, qmax,
                                  nbins, qmin, qmax,
                                  nbins, qmin, qmax);
-  fDenominatorGenerated = new TH3D(TString::Format("%s_DenGen", title), "Denominator (MC-Generated Momentum)",
+  fDenominatorGenerated = new TH3D(TString::Format("%sDenGen", title), "Denominator (MC-Generated Momentum)",
                                    nbins, qmin, qmax,
                                    nbins, qmin, qmax,
                                    nbins, qmin, qmax);
-  fDenominatorReconstructed = new TH3D(TString::Format("%s_DenRec", title), "Denominator (Reconstructed Momentum)",
+  fDenominatorReconstructed = new TH3D(TString::Format("%sDenRec", title), "Denominator (Reconstructed Momentum)",
                                    nbins, qmin, qmax,
                                    nbins, qmin, qmax,
                                    nbins, qmin, qmax);
 }
 
+AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(UInt_t nbins, Double_t qmax):
+  AliFemtoModelCorrFctnTrueQ3D(nbins, -abs(qmax), abs(qmax))
+{
+}
+
+AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(UInt_t nbins, Double_t qmin, Double_t qmax):
+  AliFemtoModelCorrFctnTrueQ3D("", nbins, qmin, qmax)
+{
+}
 
 AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const AliFemtoModelCorrFctnTrueQ3D::Parameters &params):
   AliFemtoModelCorrFctnTrueQ3D(params.title.Data(), params.bin_count, params.qmin, params.qmax)
@@ -122,9 +131,8 @@ static
 std::tuple<Double_t, Double_t, Double_t>
 Qcms(const AliFemtoLorentzVector &p1, const AliFemtoLorentzVector &p2)
 {
-  const AliFemtoLorentzVector p = p1 + p2
-                            , d = p1 - p2
-                            ;
+  const AliFemtoLorentzVector p = p1 + p2,
+                              d = p1 - p2;
 
   Double_t k1 = p.Perp(),
            k2 = d.x()*p.x() + d.y()*p.y();

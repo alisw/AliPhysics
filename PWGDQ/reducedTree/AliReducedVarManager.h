@@ -12,6 +12,7 @@
 #include <TString.h>
 #include <TChain.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TProfile2D.h>
 
 #include <AliReducedPairInfo.h>
@@ -53,24 +54,24 @@ class AliReducedVarManager : public TObject {
   // NOTE: Check consistency with updates in aliroot!!!
   enum EOfflineTriggerTypes { 
     kMB                = BIT(0), // Minimum bias trigger, i.e. interaction trigger, offline SPD or V0 selection
-    kINT1              = BIT( 0), // V0A | V0C | SPD minimum bias trigger
+    kINT1              = BIT(0), // V0A | V0C | SPD minimum bias trigger
     kINT7              = BIT(1), // V0AND trigger, offline V0 selection
     kMUON              = BIT(2), // Muon trigger, offline SPD or V0 selection
     kHighMult          = BIT(3), // High-multiplicity trigger (threshold defined online), offline SPD or V0 selection
-    kHighMultSPD    = BIT(3), // offline SPD high multiplicity trigger
+    kHighMultSPD       = BIT(3), // offline SPD high multiplicity trigger
     kEMC1              = BIT(4), // EMCAL trigger
     kCINT5             = BIT(5), // Minimum bias trigger without SPD. i.e. interaction trigger, offline V0 selection
-    kINT5              = BIT( 5), // V0OR minimum bias trigger
+    kINT5              = BIT(5), // V0OR minimum bias trigger
     kCMUS5             = BIT(6), // Muon trigger, offline V0 selection
     kMUSPB             = BIT(6), // idem for PbPb
-    kINT7inMUON     = BIT( 6), // INT7 in MUON or MUFAST cluster
-    kMuonSingleHighPt7 = BIT( 7), // Single muon high-pt, INT7 suite
+    kINT7inMUON        = BIT(6), // INT7 in MUON or MUFAST cluster
+    kMuonSingleHighPt7 = BIT(7), // Single muon high-pt, INT7 suite
     kMUSH7             = BIT(7), // Muon trigger: high pt, single muon, offline V0 selection, CINT7 suite
     kMUSHPB            = BIT(7), // idem for PbPb
-    kMuonLikeLowPt7    = BIT( 8), // Like-sign dimuon low-pt, INT7 suite
+    kMuonLikeLowPt7    = BIT(8), // Like-sign dimuon low-pt, INT7 suite
     kMUL7              = BIT(8), // Muon trigger: like sign dimuon, offline V0 selection, CINT7 suite
     kMuonLikePB        = BIT(8), // idem for PbPb
-    kMuonUnlikeLowPt7  = BIT( 9), // Unlike-sign dimuon low-pt, INT7 suite
+    kMuonUnlikeLowPt7  = BIT(9), // Unlike-sign dimuon low-pt, INT7 suite
     kMUU7              = BIT(9), // Muon trigger, unlike sign dimuon, offline V0 selection, CINT7 suite
     kMuonUnlikePB      = BIT(9), // idem for PbPb
     kEMC7              = BIT(10), // EMCAL trigger, INT7 suite
@@ -84,7 +85,7 @@ class AliReducedVarManager : public TObject {
     kEMCEJE            = BIT(14), // EMCAL jet patch trigger
     kEMCEGA            = BIT(15), // EMCAL gamma trigger
     kCentral           = BIT(16), // PbPb central collision trigger
-    kHighMultV0    = BIT(16), // offline V0 high multiplicity trigger
+    kHighMultV0        = BIT(16), // offline V0 high multiplicity trigger
     kSemiCentral       = BIT(17), // PbPb semicentral collision trigger
     kDG                = BIT(18), // Double gap diffractive
     kDG5               = BIT(18), // Double gap diffractive
@@ -100,10 +101,12 @@ class AliReducedVarManager : public TObject {
     kINT6              = BIT(26),
     kUserDefined       = BIT(27), // Set when custom trigger classes are set in AliPhysicsSelection, offline SPD or V0 selection
     kTRD               = BIT(28), // TRD trigger  
+    kMuonCalo          = BIT(29), // Muon-calo triggers
+    kCaloOnly          = BIT(29), // MB, EMCAL and PHOS triggers in CALO or CALOFAST cluster
     // Bits 28 and above are reserved for FLAGS
     kFastOnly          = BIT(30), // The fast cluster fired. This bit is set in to addition another trigger bit, e.g. kMB
     kAny               = 0xffffffff, // to accept any trigger
-    kAnyINT            = kMB | kINT7 | kCINT5, // to accept any interaction (aka minimum bias) trigger
+    kAnyINT            = kMB | kINT7 | kCINT5 | kINT8 | kSPI7, // to accept any interaction (aka minimum bias) trigger
     kNTriggers         = 47
   };
   
@@ -499,6 +502,8 @@ class AliReducedVarManager : public TObject {
     kPairEff,                     // pair efficiency
     kOneOverPairEff,             // 1 / pair efficiency (correction factor) 
     kOneOverPairEffSq,             // 1 / pair efficiency squared (correction factor)
+    kAssocHadronEff,                    // associated hadron efficiency
+    kOneOverAssocHadronEff,             // 1 / associated hadron efficiency (correction factor)
     kPairLegITSchi2,              // the ITS chi2 for the pair legs, used in correlations between pair legs
     kPairLegTPCchi2=kPairLegITSchi2+2,              // the TPC chi2 for the pair legs, used in correlations between pair legs
     kPairLegPt=kPairLegTPCchi2+2,                 // pair leg pt
@@ -580,10 +585,12 @@ class AliReducedVarManager : public TObject {
     kDeltaTheta,
     kDeltaEta,
     kDeltaEtaAbs,
-    kTriggerPt,     // pt of J/psi candidate
-    kTriggerRap,    // rapidity of J/psi candidate
-    kTriggerRapAbs, // absolute rapidity of J/psi candidate
-    kAssociatedPt,  // pt of associated track
+    kTriggerPt,       // pt of J/psi candidate
+    kTriggerRap,      // rapidity of J/psi candidate
+    kTriggerRapAbs,   // absolute rapidity of J/psi candidate
+    kAssociatedPt,    // pt of associated track
+    kAssociatedEta,   // eta of associated track
+    kAssociatedPhi,   // phi of associated track
     // TRD GTU online tracks
     kTRDGTUtracklets,   // TRD online track #tracklets
     kTRDGTUlayermask,   // TRD online track hit in layer0 yes/no
@@ -670,6 +677,9 @@ class AliReducedVarManager : public TObject {
 
   static void SetTPCelectronCorrectionMaps(TH2F* centroidMap, TH2F* widthMap, Variables xVarDep, Variables yVarDep);
   static void SetPairEfficiencyMap(TH2F* effMap, Variables xVarDep, Variables yVarDep);
+  static void SetAssociatedHadronEfficiencyMap(TH1F* map, Variables varX);
+  static void SetAssociatedHadronEfficiencyMap(TH2F* map, Variables varX, Variables varY);
+  static void SetAssociatedHadronEfficiencyMap(TH3F* map, Variables varX, Variables varY, Variables varZ);
   static void SetLHCDataInfo(TH1F* totalLumi, TH1F* totalInt0, TH1F* totalInt1, TH1I* fillNumber);
   static void SetGRPDataInfo(TH1I* dipolePolarity, TH1I* l3Polarity, TH1I* timeStart, TH1I* timeStop);
   static void SetRunNumbers( TString runNumbers );
@@ -705,6 +715,12 @@ class AliReducedVarManager : public TObject {
   static TH2F* fgPairEffMap;       // 2D pair efficiency map
   static Variables fgEffMapVarDependencyX;        // varX in the pair eff maps
   static Variables fgEffMapVarDependencyY;        // varY in the pair eff maps
+  static TH1F* fgAssocHadronEffMap1D;       // 1D pair efficiency map
+  static TH2F* fgAssocHadronEffMap2D;       // 2D pair efficiency map
+  static TH3F* fgAssocHadronEffMap3D;       // 3D pair efficiency map
+  static Variables fgAssocHadronEffMapVarDependencyX; // varX in assoc hadron eff map
+  static Variables fgAssocHadronEffMapVarDependencyY; // varY in assoc hadron eff map
+  static Variables fgAssocHadronEffMapVarDependencyZ; // varZ in assoc hadron eff map
   
   static TH1F* fgRunTotalLuminosity;      // total luminosity, GRP/GRP/LHCData::GetLumiAliceSBDelivered()
   static TH1F* fgRunTotalIntensity0;        // total intensity beam 1, GRP/GRP/LHCData::GetTotalIntensity(0)
@@ -733,7 +749,7 @@ class AliReducedVarManager : public TObject {
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
-  ClassDef(AliReducedVarManager, 4);
+  ClassDef(AliReducedVarManager, 6);
 };
 
 #endif

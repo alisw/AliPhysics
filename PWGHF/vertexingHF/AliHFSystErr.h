@@ -39,6 +39,21 @@ class AliHFSystErr : public TNamed
   Double_t GetTrackingEffErr(Double_t pt) const;
   Double_t GetTotalSystErr(Double_t pt,Double_t feeddownErr=0) const;
 
+  void  ResetRawYieldErr(Double_t pt, Double_t val){
+    fRawYield->SetBinContent(fRawYield->FindBin(pt),val);
+  }
+  void  ResetCutEfficErr(Double_t pt, Double_t val){
+    fCutsEff->SetBinContent(fCutsEff->FindBin(pt),val);
+  }
+  void  ResetPIDEfficErr(Double_t pt, Double_t val){
+    fPIDEff->SetBinContent(fPIDEff->FindBin(pt),val);
+  }
+  void  ResetMCPtShapeErr(Double_t pt, Double_t val){
+    fMCPtShape->SetBinContent(fMCPtShape->FindBin(pt),val);
+  }
+  void  ResetTrackEfficErr(Double_t pt, Double_t val){
+    fTrackingEff->SetBinContent(fTrackingEff->FindBin(pt),val);
+  }
   /// Setting  the run number
   ///  set the two last numbers of the year (is 10 for 2010)
   void SetRunNumber(Int_t number) { 
@@ -252,6 +267,7 @@ class AliHFSystErr : public TNamed
   void InitDplustoKpipi2012pp();
   void InitDplustoKpipi2015pp5TeV();
   void InitDplustoKpipi2017pp5TeV();
+  void InitDplustoKpipi2017pp5TeV_finebins();
   void InitDplustoKpipi2016pp13TeV();
   void InitDplustoKpipi2011PbPb07half();
   void InitDplustoKpipi2010PbPb020();

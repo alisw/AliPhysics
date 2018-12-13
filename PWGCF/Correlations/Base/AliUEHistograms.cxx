@@ -856,13 +856,13 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
         {
           if (fCutResonancesV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
           {
-            Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.1396);
+            Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.4937, 0.4937);
   
-            const Float_t kPhimass = 1.195;
+            const Float_t kPhimass = 1.019;
 
             if (TMath::Abs(mass - kPhimass*kPhimass) < fCutResonancesV * 5)
             {
-              mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.1396);
+              mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.4937, 0.4937);
 
               fControlConvResoncances->Fill(3, mass - kPhimass*kPhimass);
 

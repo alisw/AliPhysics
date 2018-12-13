@@ -483,7 +483,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
       JetCont->ResetCurrentID();
       while((Jet1=JetCont->GetNextAcceptJet())) {
 	if(!Jet1) continue;
-	if (fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) JetPt_ForThreshold = Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
+	if (fJetShapeSub==kNoSub) JetPt_ForThreshold = Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
 	else JetPt_ForThreshold = Jet1->Pt();
 	if(JetPt_ForThreshold<fPtThreshold) {
 	  continue;
@@ -500,7 +500,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
             EventCounter=kTRUE;
           }
 	  JetCounter++;
-	  if(fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) fhJetPt->Fill(Jet1->Pt()-(GetRhoVal(0)*Jet1->Area()));
+	  if(fJetShapeSub==kNoSub) fhJetPt->Fill(Jet1->Pt()-(GetRhoVal(0)*Jet1->Area()));
 	  else fhJetPt->Fill(Jet1->Pt());
 	  AliTrackContainer *TrackCont = NULL;
 	  if(fJetShapeSub==kConstSub) TrackCont = GetTrackContainer(1);
@@ -526,7 +526,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	  fJetInfoVar[4]=Jet1->M();
 	  fhJetRadius->Fill(TMath::Sqrt((Jet1->Area()/TMath::Pi()))); //Radius of Jets per event
           fhNumberOfJetTracks->Fill(Jet1->GetNumberOfTracks());
-	  if(fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) fJetInfoVar[0]= Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
+	  if(fJetShapeSub==kNoSub) fJetInfoVar[0]= Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
 	  else fJetInfoVar[0]=Jet1->Pt();
 	  
 	  fJetInfoVar[1]=0;
@@ -737,9 +737,9 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fh2PtRatio->Fill(JetDet->Pt(),JetTrue->Pt(),Pythia_Event_Weight);
 	  }
           else continue;
-          if(fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) fJetInfoVar[0]= JetDet->Pt()-(GetRhoVal(0)*JetDet->Area());
+          if(fJetShapeSub==kNoSub) fJetInfoVar[0]= JetDet->Pt()-(GetRhoVal(0)*JetDet->Area());
 	  else fJetInfoVar[0]=JetDet->Pt();
-	  if(fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) fJetInfoVar[1]= JetTrue->Pt()-(GetRhoVal(0)*JetTrue->Area());
+	  if(fJetShapeSub==kNoSub) fJetInfoVar[1]= JetTrue->Pt()-(GetRhoVal(0)*JetTrue->Area());
 	  else fJetInfoVar[1]=JetTrue->Pt();
 	  if(fDoSoftDrop) {
 	    SoftDrop(JetDet,JetContDet,fZCut,fBeta_SD,kFALSE);
@@ -800,7 +800,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
       JetCont->ResetCurrentID();
       while((Jet1=JetCont->GetNextAcceptJet())) {
 	if(!Jet1) continue;
-	if (fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) JetPt_ForThreshold = Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
+	if (fJetShapeSub==kNoSub) JetPt_ForThreshold = Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
 	else JetPt_ForThreshold = Jet1->Pt();
 	if(JetPt_ForThreshold<fPtThreshold) {
 	  continue;
@@ -827,7 +827,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	  fhJetMass->Fill(Jet1->M());
 	  fhJetRadius->Fill(TMath::Sqrt((Jet1->Area()/TMath::Pi()))); //Radius of Jets per event
           fhNumberOfJetTracks->Fill(Jet1->GetNumberOfTracks());
-	  if(fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) fJetInfoVar[0]= Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
+	  if(fJetShapeSub==kNoSub) fJetInfoVar[0]= Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
 	  else fJetInfoVar[0]=Jet1->Pt();
 	  fJetInfoVar[1]=0;
 	  if(fDoSoftDrop) {

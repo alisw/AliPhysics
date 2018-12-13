@@ -79,11 +79,11 @@ public:
     void SetOneConstSelectionOn(Bool_t t)                     { fOneConstSelectOn =t;}
     void SetMinCentrality(Float_t t)                          { fCentMin = t ; }
     void SetMaxCentrality(Float_t t)                          { fCentMax = t ; }
-    void SetSemigoodCorrect(Int_t yesno)                 {fSemigoodCorrect=yesno;}
-    void SetHolePos(Float_t poshole)                        { fHolePos = poshole; }
-    void SetHoleWidth(Float_t holewidth)                  { fHoleWidth = holewidth; }
-    void SetDerivativeSubtractionOrder(Int_t c)              {fDerivSubtrOrder = c;}
-    void SetMCweight(Int_t c)                                 {fMCweight = c;}
+    void SetSemigoodCorrect(Int_t yesno)                      {fSemigoodCorrect=yesno;}
+    void SetHolePos(Float_t poshole)                          { fHolePos = poshole; }
+    void SetHoleWidth(Float_t holewidth)                      { fHoleWidth = holewidth; }
+    void SetDerivativeSubtractionOrder(Int_t c)               { fDerivSubtrOrder = c;}
+    void SetMCweight(Int_t c)                                 { fMCweight = c;}
     
 protected:
     Bool_t                              RetrieveEventObjects();
@@ -97,6 +97,7 @@ protected:
     Bool_t                              IsFromHFdecay(AliAODMCParticle *particle);
     Bool_t                              IsFromLMdecay(AliAODMCParticle *particle);
     Bool_t                              IsPrimary(AliAODMCParticle *particle);
+    Bool_t                              HasMother(AliAODMCParticle *particle);
     Double_t                            GetPi0weight(Double_t mcPi0pT) const;
     Double_t                            GetEtaweight(Double_t mcEtapT) const;
     Bool_t                              InclElecTrackCuts(const AliVVertex *pVtx,AliAODTrack *ietrack, Int_t nMother, Double_t listMother[]);
@@ -154,6 +155,7 @@ protected:
     Bool_t                              fOneConstSelectOn;       // switch on/off one constituent selection
     Int_t                               fDerivSubtrOrder;
     Int_t                               fMCweight;               //0: no weight, 1: enhanced MC, 2: MB MC
+    Int_t                               fRunNumber;              // run number
     
     Double_t                            fAssPtCut;               // pt cut for associated electron
     Int_t                               fITSncut;                // ITC number of clusters for tagged electrons
@@ -167,7 +169,9 @@ protected:
     Double_t                            fDcaZcut;                //DCA_xy cut
     Double_t                            fIMcut;                  //invariant mass cut
     
-    TH2F                                *fh2ResponseUW;         //
+    TH1F                                *fNeventV0;
+    TH1F                                *fNeventT0;
+    TH2F                                *fh2ResponseUW;     
     TH2F                                *fh2ResponseW;
     TH2F                                *fPhiJetCorr6;
     TH2F                                *fPhiJetCorr7;
@@ -180,15 +184,14 @@ protected:
     TH2F                                *fEtaJet;
     TH2F                                *fEtaPhiJet;
     TH2F                                *fAreaJet;
-    TH2F                                *fJetEfficiency;
-    TH2F                                *fhpTjetpT;                        //control p[lot fo the recoil analysis
-    TH1F                                *fhPt;
-    TH1F                                *fhPhi;
+    TH2F                                *fJetProbDensityDetPart;
+    TH2F                                *fJetProbDensityPartDet;
     TH2F                                *fNbOfConstvspT;
     TH2F                                *fnTPCnTOFnocut;
-    TH2F                                *fnTPCnocut;
-    TH2F                                *fnTOFnocut;
-    TH2F                                *fnTPCcut;
+    TH2F                                *fnTPCnocutP;
+    TH2F                                *fnTOFnocutP;
+    TH2F                                *fnTPCcutP;
+    TH2F                                *fnTPCcutPt;
     TH2F                                *fnTPCTrueParticles[5][18];
     TH2F                                *fnULSmLSpairsPerElectron;
     TH2F                                *fInvmassLS[5];
@@ -213,7 +216,7 @@ protected:
     TH1F                                *fptJetHFE;              // pT of jets containing HFE
     TH1F                                *fptRecPE;
     TH1F                                *fptTruePE;
-    TH1F                                *fptTrueHFE[4];
+    TH1F                                *fptTrueHFE[5];
     TH1F                                *fptWrongPE;
     TH1F                                *fPtTrack;
     TH2F                                *fPhiTrack;

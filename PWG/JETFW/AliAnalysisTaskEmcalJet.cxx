@@ -423,6 +423,23 @@ void AliAnalysisTaskEmcalJet::SetJetAcceptanceType(TString cutType, Int_t c)
   } else
     cont->SetJetAcceptanceType(AliEmcalJet::kUser);
 }
+/**
+ * Set the jet type (Full, Charged, Neutral) of the \f$ i^{th} \f$
+ * jet container attached to this task
+ */
+void AliAnalysisTaskEmcalJet::SetJetType(EJetType_t type, Int_t c)
+{
+  AliJetContainer *cont = GetJetContainer(c);
+  if (cont)
+  {
+    cont->SetJetType(type);
+  }
+  else
+  {
+    AliError(Form("%s in SetJetType(...): container %d not found",GetName(),c));
+    return;
+  }
+}
 
 void AliAnalysisTaskEmcalJet::SetRhoName(const char *n, Int_t c)
 {

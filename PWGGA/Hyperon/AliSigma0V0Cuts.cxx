@@ -1115,6 +1115,193 @@ void AliSigma0V0Cuts::ProcessMC() const {
 }
 
 //____________________________________________________________________________________________________
+void AliSigma0V0Cuts::PhotonQA(AliVEvent *inputEvent,
+                               const TClonesArray *photons) {
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler *inputHandler =
+      static_cast<AliInputEventHandler *>(man->GetInputEventHandler());
+  fPIDResponse = inputHandler->GetPIDResponse();
+
+  fHistNV0->Fill(photons->GetEntriesFast());
+
+  for (int iGamma = 0; iGamma < photons->GetEntriesFast(); ++iGamma) {
+    auto *PhotonCandidate =
+        dynamic_cast<AliAODConversionPhoton *>(photons->At(iGamma));
+    if (!PhotonCandidate) continue;
+
+    const float pt = PhotonCandidate->GetPhotonPt();
+    const float invMass = PhotonCandidate->GetPhotonMass();
+    // commpute CPA
+    double momV0[3] = {0, 0, 0};
+    momV0[0] = PhotonCandidate->Px();
+    momV0[1] = PhotonCandidate->Py();
+    momV0[2] = PhotonCandidate->Pz();
+    double conv[3]{0, 0, 0};
+    conv[0] = PhotonCandidate->GetConversionX();
+    conv[1] = PhotonCandidate->GetConversionY();
+    conv[2] = PhotonCandidate->GetConversionZ();
+
+    const AliVVertex *vertex = inputEvent->GetPrimaryVertex();
+    Double_t xPV = vertex->GetX();
+    Double_t yPV = vertex->GetY();
+    Double_t zPV = vertex->GetZ();
+
+    double PosV0[3] = {conv[0] - xPV, conv[1] - yPV, conv[2] - zPV};
+    // Recalculated V0 Position vector
+
+    double momV02 =
+        momV0[0] * momV0[0] + momV0[1] * momV0[1] + momV0[2] * momV0[2];
+    double PosV02 =
+        PosV0[0] * PosV0[0] + PosV0[1] * PosV0[1] + PosV0[2] * PosV0[2];
+
+    double cosinePointingAngle =
+        (momV02 * PosV02 > 0.0)
+            ? (PosV0[0] * momV0[0] + PosV0[1] * momV0[1] +
+               PosV0[2] * momV0[2]) /
+                  std::sqrt(momV02 * PosV02)
+            : -999.f;
+
+    int v0Index = PhotonCandidate->GetV0Index();
+    AliESDv0 *v0 = static_cast<AliESDEvent *>(inputEvent)->GetV0(v0Index);
+    if (!v0) continue;
+    v0->ChangeMassHypothesis(3122);
+    const float massLambda = v0->GetEffMass();
+    v0->ChangeMassHypothesis(310);
+    const float massK0 = v0->GetEffMass();
+    v0->ChangeMassHypothesis(-3122);
+    const float massAntiLambda = v0->GetEffMass();
+
+    fHistK0Mass->Fill(massK0);
+    fHistLambdaMass->Fill(massLambda);
+    fHistAntiLambdaMass->Fill(massAntiLambda);
+
+    // Calculate vertex variables:
+    const float dcaPrim = v0->GetD(xPV, yPV, zPV);
+
+    const float armAlpha = v0->AlphaV0();
+    const float armQt = v0->PtArmV0();
+    fHistArmenterosAfter->Fill(armAlpha, armQt);
+
+    auto pos =
+        (AliESDtrack *)inputEvent->GetTrack(PhotonCandidate->GetLabel1());
+    auto neg =
+        (AliESDtrack *)inputEvent->GetTrack(PhotonCandidate->GetLabel2());
+    if (!pos || !neg) continue;
+
+    fHistV0MassPt->Fill(pt, invMass);
+
+    if (!fIsLightweight) {
+      fHistPhotonMass->Fill(PhotonCandidate->M());
+      fHistPhotonMassRefit->Fill(PhotonCandidate->GetInvMassPair());
+      fHistV0Pt->Fill(pt);
+      fHistV0Mass->Fill(invMass);
+      fHistCosPA->Fill(pt, cosinePointingAngle);
+      fHistEtaPhi->Fill(PhotonCandidate->GetPhotonEta(),
+                        PhotonCandidate->GetPhotonPhi());
+      fHistPsiPair->Fill(pt, PhotonCandidate->GetPsiPair());
+      fHistDecayVertexXAfter->Fill(pt, conv[0]);
+      fHistDecayVertexYAfter->Fill(pt, conv[1]);
+      fHistDecayVertexZAfter->Fill(pt, conv[2]);
+      fHistTransverseRadiusAfter->Fill(
+          pt, std::sqrt(conv[0] * conv[0] + conv[1] * conv[1]));
+      fHistCosPAAfter->Fill(pt, cosinePointingAngle);
+
+      fHistDCADaughtersAfter->Fill(pt, v0->GetDcaV0Daughters());
+      fHistDCA->Fill(pt, dcaPrim);
+      fHistDecayLength->Fill(
+          pt,
+          std::sqrt(conv[0] * conv[0] + conv[1] * conv[1] + conv[2] * conv[2]));
+
+      const float posPt = pos->Pt();
+      const float negPt = neg->Pt();
+      const float magField = inputEvent->GetMagneticField();
+      const float dcaDaughterToPVPos =
+          std::abs(pos->GetD(vertex->GetX(), vertex->GetY(), magField));
+      const short nClsTPCPos = pos->GetTPCNcls();
+      const float nCrossedRowsPos = pos->GetTPCClusterInfo(2, 1);
+      const short nFindablePos = pos->GetTPCNclsF();
+      const float ratioFindablePos =
+          nCrossedRowsPos / (static_cast<float>(nFindablePos) + 1.e-3);
+      const int nClsSharedTPCPos = pos->GetTPCnclsS();
+      const float chi2Pos =
+          (nClsTPCPos > 5) ? (pos->GetTPCchi2() / float(nClsTPCPos - 5)) : -1.;
+
+      const float dcaDaughterToPVNeg =
+          std::abs(neg->GetD(vertex->GetX(), vertex->GetY(), magField));
+      const short nClsTPCNeg = neg->GetTPCNcls();
+      const float nCrossedRowsNeg = neg->GetTPCClusterInfo(2, 1);
+      const short nFindableNeg = neg->GetTPCNclsF();
+      const float ratioFindableNeg =
+          nCrossedRowsNeg / (static_cast<float>(nFindableNeg) + 1.e-3);
+      const int nClsSharedTPCNeg = neg->GetTPCnclsS();
+      const float chi2Neg =
+          (nClsTPCNeg > 5) ? (neg->GetTPCchi2() / float(nClsTPCNeg - 5)) : -1.;
+
+      int nClsSharedITSPos = 0;
+      int nClsSharedITSNeg = 0;
+      for (int i = 0; i < 6; ++i) {
+        if (pos->HasSharedPointOnITSLayer(i)) ++nClsSharedITSPos;
+        if (neg->HasSharedPointOnITSLayer(i)) ++nClsSharedITSNeg;
+      }
+
+      const float pidPos = fPIDResponse->NumberOfSigmasTPC(pos, fPosPID);
+      const float pidNeg = fPIDResponse->NumberOfSigmasTPC(neg, fNegPID);
+
+      bool posTrackITS =
+          (pos->HasPointOnITSLayer(0) || pos->HasPointOnITSLayer(1) ||
+           pos->HasPointOnITSLayer(4) || pos->HasPointOnITSLayer(5));
+      bool negTrackITS =
+          (neg->HasPointOnITSLayer(0) || pos->HasPointOnITSLayer(1) ||
+           neg->HasPointOnITSLayer(4) || pos->HasPointOnITSLayer(5));
+      bool posTrackTOF = pos->GetTOFBunchCrossing() == 0;
+      bool negTrackTOF = neg->GetTOFBunchCrossing() == 0;
+
+      bool posTrackCombined = (posTrackITS || posTrackTOF);
+      bool negTrackCombined = (negTrackITS || negTrackTOF);
+
+      if (!fIsLightweight) {
+        if (posTrackITS) fHistSingleParticlePileUp[0]->Fill(0.f, posPt);
+        if (posTrackTOF) fHistSingleParticlePileUp[0]->Fill(1, posPt);
+        if (posTrackCombined) fHistSingleParticlePileUp[0]->Fill(2, posPt);
+        if (!posTrackITS && !posTrackTOF)
+          fHistSingleParticlePileUp[0]->Fill(3, posPt);
+        if (negTrackITS) fHistSingleParticlePileUp[1]->Fill(0.f, negPt);
+        if (negTrackTOF) fHistSingleParticlePileUp[1]->Fill(1, negPt);
+        if (negTrackCombined) fHistSingleParticlePileUp[1]->Fill(2, negPt);
+        if (!negTrackITS && !negTrackTOF)
+          fHistSingleParticlePileUp[1]->Fill(3, negPt);
+      }
+
+      fHistSingleParticlePt[0]->Fill(posPt);
+      fHistSingleParticleEtaAfter[0]->Fill(posPt, pos->Eta());
+      fHistSingleParticleChi2After[0]->Fill(posPt, chi2Pos);
+      fHistSingleParticleNclsTPCAfter[0]->Fill(posPt, nClsTPCPos);
+      fHistSingleParticleNclsTPCFindableAfter[0]->Fill(posPt, nFindablePos);
+      fHistSingleParticleNclsTPCRatioFindableAfter[0]->Fill(posPt,
+                                                            ratioFindablePos);
+      fHistSingleParticleNcrossedTPCAfter[0]->Fill(posPt, nCrossedRowsPos);
+      fHistSingleParticleNclsTPCSharedAfter[0]->Fill(posPt, nClsSharedTPCPos);
+      fHistSingleParticleNclsITSSharedAfter[0]->Fill(posPt, nClsSharedITSPos);
+      fHistSingleParticleDCAtoPVAfter[0]->Fill(posPt, dcaDaughterToPVPos);
+      fHistSingleParticlePID[0]->Fill(posPt, pidPos);
+
+      fHistSingleParticlePt[1]->Fill(negPt);
+      fHistSingleParticleEtaAfter[1]->Fill(negPt, neg->Eta());
+      fHistSingleParticleChi2After[1]->Fill(negPt, chi2Neg);
+      fHistSingleParticleNclsTPCAfter[1]->Fill(negPt, nClsTPCNeg);
+      fHistSingleParticleNclsTPCFindableAfter[1]->Fill(negPt, nFindableNeg);
+      fHistSingleParticleNclsTPCRatioFindableAfter[1]->Fill(negPt,
+                                                            ratioFindableNeg);
+      fHistSingleParticleNcrossedTPCAfter[1]->Fill(negPt, nCrossedRowsNeg);
+      fHistSingleParticleNclsTPCSharedAfter[1]->Fill(negPt, nClsSharedTPCNeg);
+      fHistSingleParticleNclsITSSharedAfter[1]->Fill(negPt, nClsSharedITSNeg);
+      fHistSingleParticleDCAtoPVAfter[1]->Fill(negPt, dcaDaughterToPVNeg);
+      fHistSingleParticlePID[1]->Fill(negPt, pidNeg);
+    }
+  }
+}
+
+//____________________________________________________________________________________________________
 void AliSigma0V0Cuts::CheckCutsMC() const {
   for (int iV0 = 0; iV0 < fInputEvent->GetNumberOfV0s(); ++iV0) {
     AliESDv0 *v0 = fInputEvent->GetV0(iV0);

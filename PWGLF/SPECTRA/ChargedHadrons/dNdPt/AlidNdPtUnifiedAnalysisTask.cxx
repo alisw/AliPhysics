@@ -823,6 +823,38 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
       //is original particle also fulfilling the required conditions (not only its reconstructed track)?
       if(!IsTrackAcceptedKinematics(mcParticle)) continue;
 
+       // -------------- Secondary scaling ----------------
+        Bool_t isPrim = fMCEvent->IsPhysicalPrimary(mcLabel);
+        Bool_t isWeakDecay = fMCEvent->IsSecondaryFromWeakDecay(mcLabel);
+        Bool_t isFromMaterial = fMCEvent->IsSecondaryFromMaterial(mcLabel);
+        Bool_t isFromK0s = kFALSE;
+        Bool_t isFromLambda = kFALSE;
+
+        // check whether has stange mother
+        //
+        Int_t motherPdg = -1;
+        TParticle* mother = 0;
+
+        Int_t motherLabel = mcParticle->GetFirstMother();
+        if(motherLabel>=0) mother = fMCStack->Particle(motherLabel);
+        if(mother) motherPdg = TMath::Abs(mother->GetPdgCode()); // take abs for visualisation only
+        Int_t mech = mcParticle->GetUniqueID(); // production mechanism
+
+        if(isWeakDecay && motherPdg == 310) isFromK0s = kTRUE;
+        if(isWeakDecay && motherPdg == 3122) isFromLambda = kTRUE;
+
+        if(isPrim) fDCAyEtaPtMCPrim->Fill(b[0],mcParticle->Eta(),mcParticle->Pt());
+        else
+        {
+            if(isWeakDecay)
+            {
+                fDCAyEtaPtMCSecDecays->Fill(b[0],mcParticle->Eta(),mcParticle->Pt());
+                if(isFromK0s) fDCAyEtaPtMCSecDecaysK0s->Fill(b[0],mcParticle->Eta(),mcParticle->Pt());
+                if(isFromLambda) fDCAyEtaPtMCSecDecaysLambda->Fill(b[0],mcParticle->Eta(),mcParticle->Pt());
+            }
+            if(isFromMaterial) fDCAyEtaPtMCSecMaterial->Fill(b[0],mcParticle->Eta(),mcParticle->Pt());
+        }
+
       Double_t mcRecTrackValue[4] = {mcParticle->Pt(), mcParticle->Eta(), zVertEvent, multEvent};
       fHistMCRecTrack->Fill(mcRecTrackValue);
 
@@ -894,75 +926,6 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
         Double_t mcGenPrimTrackParticleValue[4] = {mcGenParticle->Pt(), mcGenParticle->Eta(), multEvent,((Double_t) IdentifyMCParticle(iParticle)) - 0.5};
         fHistMCGenPrimTrackParticle->Fill(mcGenPrimTrackParticleValue);
       }
-
-    Float_t b[2], bCov[3];
-    track->GetImpactParameters(b,bCov);
-
-    Bool_t isPrim = kFALSE;
-    Bool_t isWeakDecay = kFALSE;
-    Bool_t isFromMaterial = kFALSE;
-    Bool_t isFromK0s = kFALSE;
-    Bool_t isFromLambda = kFALSE;
-
-
-  if(IsUseMCInfo()) {
-    if(!fMCStack) return;
-    Int_t label = TMath::Abs(track->GetLabel());
-//     TParticle* particle = fMCStack->Particle(label);
-    TParticle* particle = ((AliMCParticle*)fMCEvent->GetTrack(label))->Particle();
-
-    if(!particle) return;
-    if(particle->GetPDG() && particle->GetPDG()->Charge()==0.){
-        Printf("no mc paticle");
-        return;
-    }
-
-    //
-    isPrim = fMCEvent->IsPhysicalPrimary(label);
-    isWeakDecay = fMCEvent->IsSecondaryFromWeakDecay(label);
-    isFromMaterial = fMCEvent->IsSecondaryFromMaterial(label);
-
-    // check whether has stange mother
-    //
-    Int_t motherPdg = -1;
-    TParticle* mother = 0;
-
-    Int_t motherLabel = particle->GetFirstMother();
-    if(motherLabel>=0) mother = fMCStack->Particle(motherLabel);
-    if(mother) motherPdg = TMath::Abs(mother->GetPdgCode()); // take abs for visualisation only
-    Int_t mech = particle->GetUniqueID(); // production mechanism
-
-    if(isWeakDecay && motherPdg == 310) isFromK0s = kTRUE;
-    if(isWeakDecay && motherPdg == 3122) isFromLambda = kTRUE;
-  }
-
-
-
-    if(IsUseMCInfo()) {
-        if(isPrim)
-            {
-            fDCAyEtaPtMCPrim->Fill(b[0],track->Eta(),track->Pt());
-            }
-        else
-            {
-            if(isWeakDecay)
-                {
-                fDCAyEtaPtMCSecDecays->Fill(b[0],track->Eta(),track->Pt());
-                if(isFromK0s)
-                        {
-                        fDCAyEtaPtMCSecDecaysK0s->Fill(b[0],track->Eta(),track->Pt());
-                        }
-                if(isFromLambda)
-                        {
-                        fDCAyEtaPtMCSecDecaysLambda->Fill(b[0],track->Eta(),track->Pt());
-                        }
-                }
-            if(isFromMaterial)
-                {
-                fDCAyEtaPtMCSecMaterial->Fill(b[0],track->Eta(),track->Pt());
-                }
-            }
-        }
 
     }
 

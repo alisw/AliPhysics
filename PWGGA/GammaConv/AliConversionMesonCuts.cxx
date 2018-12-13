@@ -136,6 +136,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fDoBGProbability(kFALSE),
   fDoConvCaloMixing(kFALSE),
   fDoSectorMixing(kFALSE),
+  fDoSectorJetMixing(kFALSE),
   fDoSphericityMixing(kFALSE),
   fUseTrackMultiplicityForBG(kFALSE),
   fEnableMinOpeningAngleCut(kTRUE),
@@ -151,7 +152,9 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fMaxOpanPtDepCut(kFALSE),
   fBackgroundUseSideband(kFALSE),
   fBackgroundUseSidebandBothSides(kFALSE),
-  fBackgroundUseLikeSign(kFALSE)
+  fBackgroundUseLikeSign(kFALSE),
+  fDoJetAnalysis(kFALSE),
+  fDoJetQA(kFALSE)
 {
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
   fCutString=new TObjString((GetCutNumber()).Data());
@@ -228,6 +231,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fDoBGProbability(ref.fDoBGProbability),
   fDoConvCaloMixing(ref.fDoConvCaloMixing),
   fDoSectorMixing(ref.fDoSectorMixing),
+  fDoSectorJetMixing(ref.fDoSectorJetMixing),
   fDoSphericityMixing(ref.fDoSphericityMixing),
   fUseTrackMultiplicityForBG(ref.fUseTrackMultiplicityForBG),
   fEnableMinOpeningAngleCut(ref.fEnableMinOpeningAngleCut),
@@ -243,7 +247,9 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fMaxOpanPtDepCut(ref.fMaxOpanPtDepCut),
   fBackgroundUseSideband(ref.fBackgroundUseSideband),
   fBackgroundUseSidebandBothSides(ref.fBackgroundUseSidebandBothSides),
-  fBackgroundUseLikeSign(ref.fBackgroundUseLikeSign)
+  fBackgroundUseLikeSign(ref.fBackgroundUseLikeSign),
+  fDoJetAnalysis(ref.fDoJetAnalysis),
+  fDoJetQA(ref.fDoJetQA)
 
 {
   // Copy Constructor
@@ -1316,6 +1322,14 @@ Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){
     break;
   case 1:
     fMesonKind = 1;
+  case 2:
+    fMesonKind = 0;
+    fDoJetAnalysis = kTRUE;
+    break;
+  case 3:
+    fMesonKind = 0;
+    fDoJetAnalysis = kTRUE;
+    fDoJetQA = kTRUE;
     break;
   default:
     cout<<"Warning: Meson kind not defined"<<mesonKind<<endl;
@@ -1999,6 +2013,11 @@ Bool_t AliConversionMesonCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
     fAlphaCutMeson      = 1.0;
     fAlphaPtDepCut      = kFALSE;
     break;
+  case 13:  //d 0-0.1
+    fAlphaMinCutMeson   = 0.0;
+    fAlphaCutMeson      = 0.1;
+    fAlphaPtDepCut      = kFALSE;
+    break;
   default:
     cout<<"Warning: AlphaMesonCut not defined "<<alphaMesonCut<<endl;
     return kFALSE;
@@ -2182,14 +2201,14 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fDoBGProbability            = kFALSE;
     fUsePtmaxMethodForBG        = kTRUE;
     break;
-  case 10: // mixed event with likesign mixing
+  case 10: // a mixed event with likesign mixing
     fUseRotationMethodInBG      = kFALSE;
     fUseTrackMultiplicityForBG  = kFALSE;
     fDoBGProbability            = kFALSE;
     fBackgroundUseLikeSign      = kTRUE;
     fBackgroundUseSideband      = kFALSE;
     break;
-  case 11: // mixed event with pi0 sideband candidates (right side of pi0 peak)
+  case 11: // b mixed event with pi0 sideband candidates (right side of pi0 peak)
     fUseRotationMethodInBG      = kFALSE;
     fUseTrackMultiplicityForBG  = kFALSE;
     fDoBGProbability            = kFALSE;
@@ -2198,7 +2217,7 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fSidebandMixingLow          = 0.180;
     fSidebandMixingHigh         = 0.220;
     break;
-  case 12: // mixed event with pi0 sideband candidates (left side of pi0 peak)
+  case 12: // c mixed event with pi0 sideband candidates (left side of pi0 peak)
     fUseRotationMethodInBG      = kFALSE;
     fUseTrackMultiplicityForBG  = kFALSE;
     fDoBGProbability            = kFALSE;
@@ -2207,7 +2226,7 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fSidebandMixingLow          = 0.01;
     fSidebandMixingHigh         = 0.05;
     break;
-  case 13: // mixing event with pi0 sideband candidates (both sides of pi0 peak)
+  case 13: // d mixing event with pi0 sideband candidates (both sides of pi0 peak)
     fUseRotationMethodInBG           = kFALSE;
     fUseTrackMultiplicityForBG       = kFALSE;
     fDoBGProbability                 = kFALSE;
@@ -2260,6 +2279,12 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fUseTrackMultiplicityForBG  = kFALSE;
     fDoBGProbability            = kFALSE;
     fDoSectorMixing             = kTRUE;
+    break;
+  case 19: //j mixed event with V0 multiplicity
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fDoBGProbability            = kFALSE;
+    fDoSectorJetMixing          = kTRUE;
     break;
   default:
     cout<<"Warning: BackgroundScheme not defined "<<BackgroundScheme<<endl;

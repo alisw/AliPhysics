@@ -78,6 +78,8 @@
 #pragma link C++ class std::pair<AliAnalysisTaskDmesonJetsSub::ECandidateType_t,AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine>+;
 #pragma link C++ class AliAnalysisTaskDmesonJetsDetectorResponse+;
 
+#pragma link C++ class AliAnalysisTaskHFSubstructure+;
+
 
 #pragma link C++ class AliHFAODMCParticleContainer+;
 #pragma link C++ class AliHFTrackContainer+;

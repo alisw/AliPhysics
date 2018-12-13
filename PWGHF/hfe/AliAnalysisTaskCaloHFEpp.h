@@ -29,7 +29,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		virtual void            UserCreateOutputObjects();
 		virtual void            UserExec(Option_t* option);
 		virtual void            Terminate(Option_t* option);
-		virtual void            SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt);
+		virtual void            SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt,Double_t DCAxy,Int_t Bsign);
 		virtual void            IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso, Bool_t fFlagB, Bool_t fFlagD);
 		virtual void            CheckCorrelation(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t Riso, Bool_t fFlagPhoto);
 
@@ -46,6 +46,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Bool_t                  IsBdecay(int mpid);
 		TProfile* 		GetEstimatorHistogram(const AliAODEvent *fAOD);
 		TProfile* 		GetEstimatorHistogramMC(const AliAODEvent *fAOD);
+		Double_t      GetCorrectedNtrackletsD(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult);
 
     void                    SetEG1(Bool_t flagEG1) { fEMCEG1= flagEG1;};
     void                    SetEG2(Bool_t flagEG2) { fEMCEG2= flagEG2;};
@@ -66,6 +67,13 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		void                    SetptCut(TString pte) {pTe = pte;};
 		void                    SetMassMin(Double_t MassMin) {massMin = MassMin;};
 		void                    SetNref(Double_t nref) {Nref = nref;};
+		void                    SetMaxNtr(Double_t maxNtr) {MaxNtr = maxNtr;};
+		void                    SetMinNtr(Double_t minNtr) {MinNtr = minNtr;};
+
+		void      SetWeightNtrkl(TH1D* hWeight){
+						if(fweightNtrkl) delete fweightNtrkl;
+						fweightNtrkl=new TH1D(*hWeight);
+		}
 
 		void 			SetMultiProfileLHC16i(TProfile * hprof){
 						if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
@@ -117,9 +125,12 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Double_t massMin;
 		Double_t Nref;
 		Int_t Nch;
+		Int_t MinNtr;
+		Int_t MaxNtr;
 
 		//==== basic parameters ====
 		TH1F*                   fNevents;
+		TH1F*                   fNDB;
 		TH1F*                   fHist_VertexZ;        //! dummy histogram
 		TH1F*                   fHist_Centrality;        //! dummy histogram
 		TH2F*                   fHist_Mult;        //! dummy histogram
@@ -133,6 +144,10 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fHistoNCells;
 		TH2F*                   fM02;
 		TH2F*                   fM20;
+		TH1F*                   fM02_ele;
+		TH1F*                   fM20_ele;
+		TH1F*                   fM02_had;
+		TH1F*                   fM20_had;
 
 				//==== check cut parameters ====
 		TH1F*                   fTPCNcls;
@@ -174,7 +189,20 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fzvtx_Ntrkl;
 		TH2F*                   fzvtx_Nch;
 		TH2F*                   fzvtx_Ntrkl_Corr;
+		TH1F*                   fzvtx_Corr;
+		TH1F*                   fNtrkl_Corr;
 		TH2F*                   fNchNtr;
+		TH2F*                   fNchNtr_Corr;
+		TH2F*                   fDCAxy_Pt_ele;
+		TH2F*                   fDCAxy_Pt_had;
+		TH2F*                   fDCAxy_Pt_LS;
+		TH2F*                   fDCAxy_Pt_ULS;
+		TH2F*                   fDCAxy_Pt_Dpm;
+		TH2F*                   fDCAxy_Pt_D0;
+		TH2F*                   fDCAxy_Pt_Ds;
+		TH2F*                   fDCAxy_Pt_lambda;
+		TH2F*                   fDCAxy_Pt_B;
+		TH2F*                   fPt_Btoe;
 
 		//==== Trigger or Calorimeter flag ====
     Bool_t                  fEMCEG1;//EMcal Threshold EG1
@@ -212,6 +240,8 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
     TF1*                    fEta000;
     TF1*                    fEta005;
     TF1*                    fEta010;
+    TF1*                    fCorrZvtx;
+    TF1*                    fCorrNtrkl;
 		TH1F*               		fHistPt_HFE_MC_D;
 		TH1F*               		fHistPt_HFE_MC_B;
 		TH1F*               		fHistPt_HFE_PYTHIA;
@@ -229,6 +259,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		AliAnalysisTaskCaloHFEpp& operator=(const AliAnalysisTaskCaloHFEpp&); // not implemented
 		Int_t fetarange;
 		TProfile*		fMultEstimatorAvg[6];
+		TH1D*       fweightNtrkl;
 
 
 		ClassDef(AliAnalysisTaskCaloHFEpp, 1);

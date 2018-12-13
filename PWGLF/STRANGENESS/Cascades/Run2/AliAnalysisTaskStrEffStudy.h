@@ -555,6 +555,11 @@ private:
     
     //Sandbox on-the-fly V0 for comparison, please
     AliESDv0 *fTreeCascVarOTFV0;
+    AliESDv0 *fTreeCascVarOTFV0NegBach;
+    AliESDv0 *fTreeCascVarOTFV0PosBach;
+    Bool_t fTreeCascVarV0AsOTF; 
+    Bool_t fTreeCascVarNegBachAsOTF;
+    Bool_t fTreeCascVarPosBachAsOTF;
     
     Float_t fTreeCascVarMagneticField;
     
@@ -566,6 +571,8 @@ private:
     Float_t fTreeCascVarPVy;
     Float_t fTreeCascVarPVz;
     AliESDVertex *fTreeCascVarAliESDvertex;
+    
+    
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     
 //===========================================================================================

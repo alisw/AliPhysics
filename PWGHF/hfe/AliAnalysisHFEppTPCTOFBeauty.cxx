@@ -206,6 +206,18 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty(const char *name)
 ,fDCAxy_pt_had_onlyDCA_Phytia(0)
 ,fDCAz_pt_had(0)
 ,fDCAz_pt_had_WoPID(0)
+,fDCAxy_pt_had_onlyDCA_phi1(0)
+,fDCAxy_pt_had_onlyDCA_phi2(0)
+,fDCAxy_pt_had_onlyDCA_phi3(0)
+,fDCAxy_pt_had_onlyDCA_phi4(0)
+,fDCAxy_pt_had_phi1_ChB(0)
+,fDCAxy_pt_had_phi1_B(0)
+,fDCAxy_pt_had_phi2_ChB(0)
+,fDCAxy_pt_had_phi2_B(0)
+,fDCAxy_pt_had_phi3_ChB(0)
+,fDCAxy_pt_had_phi3_B(0)
+,fDCAxy_pt_had_phi4_ChB(0)
+,fDCAxy_pt_had_phi4_B(0)
 ,fDCAxy_pt_ele(0)
 ,fDCAz_pt_ele(0)
 ,hCharmMotherPt(0)
@@ -403,6 +415,18 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty()
 ,fDCAxy_pt_had_onlyDCA_Phytia(0)
 ,fDCAz_pt_had(0)
 ,fDCAz_pt_had_WoPID(0)
+,fDCAxy_pt_had_onlyDCA_phi1(0)
+,fDCAxy_pt_had_onlyDCA_phi2(0)
+,fDCAxy_pt_had_onlyDCA_phi3(0)
+,fDCAxy_pt_had_onlyDCA_phi4(0)
+,fDCAxy_pt_had_phi1_ChB(0)
+,fDCAxy_pt_had_phi1_B(0)
+,fDCAxy_pt_had_phi2_ChB(0)
+,fDCAxy_pt_had_phi2_B(0)
+,fDCAxy_pt_had_phi3_ChB(0)
+,fDCAxy_pt_had_phi3_B(0)
+,fDCAxy_pt_had_phi4_ChB(0)
+,fDCAxy_pt_had_phi4_B(0)
 ,fDCAxy_pt_ele(0)
 ,fDCAz_pt_ele(0)
 ,hCharmMotherPt(0)
@@ -786,6 +810,42 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     fDCAz_pt_had = new TH2F("fDCAz_pt_had",";p_{t} (GeV/c);DCAz hadrons",300,0,30,800,-0.2,0.2);
     fOutputList->Add(fDCAz_pt_had);
     
+    fDCAxy_pt_had_onlyDCA_phi1 = new TH2F("fDCAxy_pt_had_onlyDCA_phi1",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_had_onlyDCA_phi1);
+    
+    fDCAxy_pt_had_phi1_ChB = new TH2F("fDCAxy_pt_had_phi1_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_had_phi1_ChB);
+    
+    fDCAxy_pt_had_phi1_B = new TH2F("fDCAxy_pt_had_phi1_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_had_phi1_B);
+    
+    fDCAxy_pt_had_onlyDCA_phi2 = new TH2F("fDCAxy_pt_had_onlyDCA_phi2",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_had_onlyDCA_phi2);
+    
+    fDCAxy_pt_had_phi2_ChB = new TH2F("fDCAxy_pt_had_phi2_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_had_phi2_ChB);
+    
+    fDCAxy_pt_had_phi2_B = new TH2F("fDCAxy_pt_had_phi2_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_had_phi2_B);
+    
+    fDCAxy_pt_had_onlyDCA_phi3 = new TH2F("fDCAxy_pt_had_onlyDCA_phi3",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_had_onlyDCA_phi3);
+    
+    fDCAxy_pt_had_phi3_ChB = new TH2F("fDCAxy_pt_had_phi3_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_had_phi3_ChB);
+    
+    fDCAxy_pt_had_phi3_B = new TH2F("fDCAxy_pt_had_phi3_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_had_phi3_B);
+    
+    fDCAxy_pt_had_onlyDCA_phi4 = new TH2F("fDCAxy_pt_had_onlyDCA_phi4",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_had_onlyDCA_phi4);
+    
+    fDCAxy_pt_had_phi4_ChB = new TH2F("fDCAxy_pt_had_phi4_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_had_phi4_ChB);
+    
+    fDCAxy_pt_had_phi4_B = new TH2F("fDCAxy_pt_had_phi4_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_had_phi4_B);
+    
     fDCAz_pt_had_WoPID = new TH2F("fDCAz_pt_had_WoPID",";p_{t} (GeV/c);DCAz hadrons_WoPID",300,0,30,800,-0.2,0.2);
     fOutputList->Add(fDCAz_pt_had_WoPID);
     
@@ -843,9 +903,9 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     
       
     ///THnSparse to store DCA of different particle species in MC-------------
-    Int_t nBinspdg2 = 21;
+    Int_t nBinspdg2 = 30;
     Double_t minpdg2 = 0.;
-    Double_t maxpdg2 = 21.;
+    Double_t maxpdg2 = 30.;
     Double_t binLimpdg2[nBinspdg2+1];
     for(Int_t i=0; i<=nBinspdg2; i++) binLimpdg2[i]=(Double_t)minpdg2 + (maxpdg2-minpdg2)/nBinspdg2*(Double_t)i ;
     
@@ -1364,10 +1424,40 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 		 ///////////////////
 		// With PID cuts //
 	       ///////////////////
+	       
+	       Double_t phi_d0 = (track->Phi()*180.0/TMath::Pi());
         if(fTPCnSigma >= -5 && fTPCnSigma <= -3){
 			fDCAxy_pt_had_onlyDCA->Fill(fPt,DCAxy);
 			fDCAxy_pt_had->Fill(fPt,DCAxy*track->Charge()*signB);
 			fDCAz_pt_had->Fill(fPt,DCAz);	
+			
+			if(phi_d0 > 315.0 || phi_d0 < 45.0){
+			fDCAxy_pt_had_onlyDCA_phi1->Fill(fPt,DCAxy);
+			fDCAxy_pt_had_phi1_ChB->Fill(fPt,DCAxy*track->Charge()*signB);
+			fDCAxy_pt_had_phi1_B->Fill(fPt,DCAxy*signB);
+			//cout<<"Phi1 value:===   "<<phi_d0<<endl;
+			}
+			
+			if(phi_d0 > 45.0 && phi_d0 < 135.0){
+			fDCAxy_pt_had_onlyDCA_phi2->Fill(fPt,DCAxy);
+			fDCAxy_pt_had_phi2_ChB->Fill(fPt,DCAxy*track->Charge()*signB);
+			fDCAxy_pt_had_phi2_B->Fill(fPt,DCAxy*signB);
+			//cout<<"Phi2 value:===   "<<phi_d0<<endl;
+			}
+			
+			if(phi_d0 > 135.0 && phi_d0 < 225.0){
+			fDCAxy_pt_had_onlyDCA_phi3->Fill(fPt,DCAxy);
+			fDCAxy_pt_had_phi3_ChB->Fill(fPt,DCAxy*track->Charge()*signB);
+			fDCAxy_pt_had_phi3_B->Fill(fPt,DCAxy*signB);
+			//cout<<"Phi3 value:===   "<<phi_d0<<endl;
+			}
+			
+			if(phi_d0 > 225.0 && phi_d0 < 315.0){
+			fDCAxy_pt_had_onlyDCA_phi4->Fill(fPt,DCAxy);
+			fDCAxy_pt_had_phi4_ChB->Fill(fPt,DCAxy*track->Charge()*signB);
+			fDCAxy_pt_had_phi4_B->Fill(fPt,DCAxy*signB);
+			//cout<<"Phi4 value:===   "<<phi_d0<<endl;
+			}
 			
 			///Checking the effect of the improver in the resolution for hijing events separetely
 			if(fIsMC){
@@ -1556,14 +1646,37 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
                 if(fIsFromD){
                     fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
                     fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+                    fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
+                    fMCparticleGGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleGMother->GetMother());
                     pdg_mother = fMCparticleMother->GetPdgCode();
+                    float pdg_gmother = fMCparticleGMother->GetPdgCode();
+                    float pdg_ggmother = fMCparticleGGMother->GetPdgCode();
                     
                     if(TMath::Abs(pdg_mother)>400 && TMath::Abs(pdg_mother)<500){///charmed meson 
 						qadca[1]=0.5; 
-						if(TMath::Abs(pdg_mother) == 421) qadca[1]=16.5; ///to check DCA D0
-						if(TMath::Abs(pdg_mother) == 411) qadca[1]=17.5; ///to check DCA D+-
-						if(TMath::Abs(pdg_mother) == 433) qadca[1]=18.5; ///to check DCA Ds 
-											 
+						if(TMath::Abs(pdg_mother) == 421) qadca[1]=12.5; ///to check DCA  prompt D0 bef corr
+						if(TMath::Abs(pdg_mother) == 411) qadca[1]=15.5; ///to check DCA D+ bef corr
+						
+						if(TMath::Abs(pdg_mother) == 431) qadca[1]=17.5; ///to check DCA Ds+ bef corr
+						
+						if(TMath::Abs(pdg_gmother) == 413) qadca[1]=18.5; ///to check DCA Dstar+ bef corr
+						if(TMath::Abs(pdg_gmother) == 413){ 
+						if(TMath::Abs(pdg_mother) == 421){ 
+						qadca[1]=13.5; ///to check DCA Dstar+ bef corr
+						}
+						}
+						 
+						if(TMath::Abs(pdg_gmother) == 413){ 
+						if(TMath::Abs(pdg_mother) == 411){ 
+						qadca[1]=14.5; ///to check DCA Dstar+ bef corr
+						}
+						}
+						
+						if(TMath::Abs(pdg_gmother) == 413){ 
+						if(TMath::Abs(pdg_mother) == 431){ 
+						qadca[1]=16.5; ///to check DCA Dstar+ bef corr
+						}
+						}
 						 hCharmMotherPt->Fill(fMCparticleMother->Pt());
 						 hCharmMotherPt_vsElecPt->Fill(fPt,fMCparticleMother->Pt());
 						 hElecPt_vsCharmMotherPt->Fill(fMCparticleMother->Pt(),fPt);
@@ -1607,12 +1720,31 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 						 //cout<<"fMCparticleMother->Pt() = "<<fMCparticleMother->Pt()<<endl;
 						 //cout<<"probAcceptD = "<<probAcceptD<<endl;
 						 //cout<<"a = "<<a<<endl;
-						 if(a < probAcceptD){
-							qadca[1]=7.5;
-							if(TMath::Abs(pdg_mother) == 421) qadca[1]=12.5; ///to check DCA D0 - corrected
-							if(TMath::Abs(pdg_mother) == 411) qadca[1]=13.5; ///to check DCA D+- - corrected
-							if(TMath::Abs(pdg_mother) == 433) qadca[1]=14.5; ///to check DCA Ds  - corrected	
-							
+						if(a < probAcceptD){
+						qadca[1]=7.5;
+						if(TMath::Abs(pdg_mother) == 421) qadca[1]=20.5; ///to check DCA  prompt D0 bef corr
+						if(TMath::Abs(pdg_mother) == 411) qadca[1]=23.5; ///to check DCA D+ bef corr
+						
+						if(TMath::Abs(pdg_mother) == 431) qadca[1]=25.5; ///to check DCA Ds+ bef corr
+						
+						if(TMath::Abs(pdg_gmother) == 413) qadca[1]=26.5; ///to check DCA Dstar+ bef corr
+						if(TMath::Abs(pdg_gmother) == 413){ 
+						if(TMath::Abs(pdg_mother) == 421){ 
+						qadca[1]=21.5; ///to check DCA Dstar+ bef corr
+						}
+						}
+						 
+						if(TMath::Abs(pdg_gmother) == 413){ 
+						if(TMath::Abs(pdg_mother) == 411){ 
+						qadca[1]=22.5; ///to check DCA Dstar+ bef corr
+						}
+						}
+						
+						if(TMath::Abs(pdg_gmother) == 413){ 
+						if(TMath::Abs(pdg_mother) == 431){ 
+						qadca[1]=24.5; ///to check DCA Dstar+ bef corr
+						}
+						}
 							hCharmMotherPt_corr->Fill(fMCparticleMother->Pt());
 							hCharmMotherPt_corr2->Fill(fMCparticleMother->Pt());
 							hCharmMotherPt_vsElecPt_corr->Fill(fPt,fMCparticleMother->Pt());
@@ -1623,7 +1755,9 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 					
 					if(TMath::Abs(pdg_mother)>4000 && TMath::Abs(pdg_mother)<5000){///charmed baryon
 						 qadca[1]=1.5;
-						 if(TMath::Abs(pdg_mother) == 4122) qadca[1]=15.5; ///to check DCA Lc
+						 if(TMath::Abs(pdg_mother) == 4122) qadca[1]=27.5; ///to check DCA prompt Lc+
+
+						
 					}
                 }//end of electrons from charm
                 

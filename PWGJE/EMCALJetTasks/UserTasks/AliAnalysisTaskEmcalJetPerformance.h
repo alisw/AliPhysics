@@ -51,6 +51,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetPerformance(const char *name)                          ;
   virtual ~AliAnalysisTaskEmcalJetPerformance()                                 ;
   
+
   static AliAnalysisTaskEmcalJetPerformance* AddTaskEmcalJetPerformance(
     const char *ntracks            = "usedefault",
     const char *nclusters          = "usedefault",
@@ -133,11 +134,11 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
 
 
  protected:
-  void                        ExecOnce()                                        ;
-  Bool_t                      FillHistograms()                                  ;
-  Bool_t                      Run()                                             ;
-  Bool_t                      IsEventSelected()                                 ;
-  void                        RunChanged(Int_t run)                             ;
+  virtual void                ExecOnce()                                        ;
+  virtual Bool_t              FillHistograms()                                  ;
+  virtual Bool_t              Run()                                             ;
+  virtual Bool_t              IsEventSelected()                                 ;
+  virtual void                RunChanged(Int_t run)                             ;
 
   // Analysis and plotting functions
   void                        GenerateHistoBins()                               ;

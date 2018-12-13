@@ -1323,7 +1323,8 @@ Bool_t AliAnalysisTaskEmcalJetPerformance::IsEventSelected()
     }
   }
   else {
-    AliAnalysisTaskEmcal::IsEventSelected();
+    Bool_t answer = AliAnalysisTaskEmcal::IsEventSelected();
+    return answer;
   }
   return kTRUE;
 }
@@ -1362,7 +1363,6 @@ Bool_t AliAnalysisTaskEmcalJetPerformance::Run()
   if (fEmbeddingQA.IsInitialized()) {
     fEmbeddingQA.RecordEmbeddedEventProperties();
   }
-  
   return kTRUE;
 }
 

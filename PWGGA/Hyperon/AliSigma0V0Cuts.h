@@ -55,6 +55,7 @@ class AliSigma0V0Cuts : public TObject {
   float ComputePhotonMass(const AliESDv0 *v0) const;
   float ComputePhotonMassRefit(const AliESDv0 *v0) const;
   float ComputePsiPair(const AliESDv0 *v0) const;
+  void PhotonQA(AliVEvent *inputEvent, const TClonesArray *photons);
 
   void SetLightweight(bool isLightweight) { fIsLightweight = isLightweight; }
   void SetCheckCutsMC(bool checkCuts) { fCheckCutsMC = checkCuts; }
@@ -219,13 +220,13 @@ class AliSigma0V0Cuts : public TObject {
   TH2F *fHistArmenterosBefore;        //!
   TH2F *fHistArmenterosAfter;         //!
 
-  TH2F *fHistMCTruthV0PtY;                        //!
-  TH2F *fHistMCTruthV0DaughterPtY;                //!
-  TH2F *fHistMCTruthV0DaughterPtYAccept;          //!
-  TH2F *fHistMCTruthPtYHighMult;                  //!
-  TH2F *fHistMCTruthDaughterPtYHighMult;          //!
-  TH2F *fHistMCTruthDaughterPtYAcceptHighMult;    //!
-  TH1F *fHistMCV0Pt;                              //!
+  TH2F *fHistMCTruthV0PtY;                      //!
+  TH2F *fHistMCTruthV0DaughterPtY;              //!
+  TH2F *fHistMCTruthV0DaughterPtYAccept;        //!
+  TH2F *fHistMCTruthPtYHighMult;                //!
+  TH2F *fHistMCTruthDaughterPtYHighMult;        //!
+  TH2F *fHistMCTruthDaughterPtYAcceptHighMult;  //!
+  TH1F *fHistMCV0Pt;                            //!
 
   TH2F *fHistV0Mother;                                        //!
   TH2F *fHistV0MotherTrue;                                    //!

@@ -185,6 +185,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k17f3b,
       k17f4a,
       k17f4b,
+      k18f3bc,
       k17g8b,
       k17g8c,
       k18b9b,
@@ -202,6 +203,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       //
       kPP13T18P1Pyt8,
       kPP13T18P1Pyt8LowB,
+      // Pb-Pb 5 TeV 2015 Gamma-Jet
+      kLHC18b11c,
 
       // Data starts here
       k10pp7TeV,
@@ -286,11 +289,13 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Float_t     FunctionNL_kPi0MCv3(Float_t e);
     Float_t     FunctionNL_kPi0MCv5(Float_t e);
     Float_t     FunctionNL_kPi0MCv6(Float_t e);
+    Float_t     FunctionNL_kPi0MCMod(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);
     Float_t     FunctionNL_kSDMv5(Float_t e);
     Float_t     FunctionNL_kSDMv6(Float_t e);
     Float_t     FunctionNL_kTestBeamv2(Float_t e);
     Float_t     FunctionNL_kTestBeamv3(Float_t e);
     Float_t     FunctionNL_kTestBeamv4(Float_t e);
+    Float_t     FunctionNL_kTestBeamMod(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);
 
     void        InitCutHistograms(TString name="");
     void        SetFillCutHistograms(TString name="")           {if(!fHistograms){InitCutHistograms(name);} return;}
@@ -306,7 +311,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     void        SetIsPureCaloCut(Int_t merged)                  {fIsPureCalo = merged; return;}
     Int_t       GetIsPureCaloCut()                              {return fIsPureCalo;}
     Int_t       GetNactiveEmcalCells()                          {return fNactiveEmcalCells;}
-
+    Int_t       GetIsConversionRecovery()                       {return fUseRecConv;}
+    Float_t     GetInvMassConversionRecovery()                  {return fMaxMGGRecConv;}
 
     // Cut functions
     Bool_t      AcceptanceCuts(AliVCluster* cluster, AliVEvent *event, Double_t weight);
@@ -471,8 +477,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Double_t  fMaxM20;                                  // maximum M20
     Double_t  fMinM20;                                  // minimum M20
     Bool_t    fUseM20;                                  // flag for switching on M20 cut
-    Double_t  fMaxMGGRecConv;                           // maximum invariant mass below which the 2 clusters are gonna be combined assuming they are from a photon
-    Bool_t    fUseRecConv;                              // flag to switch on conversion recovery
+    Float_t   fMaxMGGRecConv;                           // maximum invariant mass below which the 2 clusters are gonna be combined assuming they are from a photon
+    Int_t     fUseRecConv;                              // flag to switch on conversion recovery
     Double_t  fMaxDispersion;                           // maximum dispersion
     Bool_t    fUseDispersion;                           // flag for switching on dispersion cut
     Int_t     fMinNLM;                                  // minimum number of local maxima in cluster
@@ -524,7 +530,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistNCellsBigger100MeVvsMod;             // NCells with >0.1 GeV vs Module Number
     TH2F*     fHistNCellsBigger1500MeVvsMod;            // NCells with >1.5 GeV vs Module Number
     TH2F*     fHistEnergyOfModvsMod;                    // Deposited Energy vs Module Number
-    TH2F*     fHistClusterEnergyvsNCells;               // Cluster Energy vs NCells
+    TH2F*     fHistClusterEnergyvsNCellsBeforeQA;       // Cluster Energy vs NCells before QA
+    TH2F*     fHistClusterEnergyvsNCellsAfterQA;        // Cluster Energy vs NCells after QA
     TH2F*     fHistCellEnergyvsCellID;                  // Cell Energy vs CellID
     TH2F*     fHistCellTimevsCellID;                    // Cell Time vs CellID
     TH2F*     fHistClusterEM02BeforeQA;                 // 2-dim plot E vs. M02
@@ -605,7 +612,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,71)
+    ClassDef(AliCaloPhotonCuts,76)
 };
 
 #endif

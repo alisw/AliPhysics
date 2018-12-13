@@ -351,7 +351,10 @@ public:
   void     SetStep(Double_t step)                     { fStepSurface = step           ; }
   void     SetStepCluster(Double_t step)              { fStepCluster = step           ; }
   void     SetITSTrackSA(Bool_t isITS)                { fITSTrackSA = isITS           ; } //Special Handle of AliExternTrackParam    
-    
+  void     SwitchOnOuterTrackParam()                  { fUseOuterTrackParam = kTRUE   ; } 
+  void     SwitchOffOuterTrackParam()                 { fUseOuterTrackParam = kFALSE  ; } 
+  
+  
   // Track Cuts 
   Bool_t   IsAccepted(AliESDtrack *track);
   void     InitTrackCuts();
@@ -527,7 +530,8 @@ private:
   Double_t   fMass;                      ///< Mass hypothesis of the track
   Double_t   fStepSurface;               ///< Length of step to extrapolate tracks to EMCal surface
   Double_t   fStepCluster;               ///< Length of step to extrapolate tracks to clusters
-  Bool_t     fITSTrackSA;                ///< If track matching is to be done with ITS tracks standing alone	
+  Bool_t     fITSTrackSA;                ///< If track matching is to be done with ITS tracks standing alone, ESDs	
+  Bool_t     fUseOuterTrackParam;        ///< Use OuterTrackParam not InnerTrackParam, ESDs
   Double_t   fEMCalSurfaceDistance;      ///< EMCal surface distance (= 430 by default, the last 10 cm are propagated on a cluster-track pair basis)
  
   // Track cuts  
@@ -552,7 +556,7 @@ private:
   Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
   
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 26) ;
+  ClassDef(AliEMCALRecoUtils, 27) ;
   /// \endcond
 
 };

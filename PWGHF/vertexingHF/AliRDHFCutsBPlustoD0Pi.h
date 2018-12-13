@@ -40,12 +40,19 @@ class AliRDHFCutsBPlustoD0Pi : public AliRDHFCuts
   using AliRDHFCuts::GetCutVarsForOpt;
   virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters);
 
+  //First two for MVA, last one for standard analysis (TBD: Merge them?)
   using AliRDHFCuts::IsSelected;
+  virtual Int_t IsSelected(TObject* obj, Int_t selectionLevel, AliAODEvent* aod);
+  virtual Int_t IsSelected(TObject* obj, Int_t selectionLevel){ return IsSelected(obj,selectionLevel,0); }
   virtual Int_t IsSelected(TObject* obj, Int_t selectionLevel, AliAODEvent* aod, Bool_t* bCutArray);
-  virtual Int_t IsSelected(TObject* obj, Int_t selectionLevel) {::Error("AliAnalysisTaskBPlustoD0Pi", "Old selection function"); return 0;}
+
+  //Last three for MVA, first two for standard analysis (TBD: Merge them?)
   Int_t IsD0FromBPlusSelected(Double_t ptBPlus, TObject* obj,Int_t selectionLevel, AliAODEvent* aod, Bool_t bCutArray[68]);
   Int_t IsD0forD0ptbinSelected(TObject* obj,Int_t selectionLevel, AliAODEvent* aod, Bool_t* bCutArray);
-
+  Int_t IsBplusPionSelectedMVA(TObject* obj,Int_t selectionLevel, AliAODEvent* aod, AliAODVertex *primaryVertex, Double_t bz);
+  Int_t IsD0FromBPlusSelectedMVA(Double_t ptBPlus, TObject* obj,Int_t selectionLevel, AliAODEvent* aod, AliAODVertex *primaryVertex, Double_t bz);
+  Int_t IsD0forD0ptbinSelectedMVA(TObject* obj,Int_t selectionLevel, AliAODEvent* aod, AliAODVertex *primaryVertex, Double_t bz);
+  Int_t IsD0SelectedPreRecVtxMVA(AliAODRecoDecayHF2Prong* d, AliAODTrack* pion, AliAODVertex *primaryVertex, Double_t bz, Int_t selLevel);
 
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF *rd);
   virtual Int_t SelectPID(AliAODTrack *track, Int_t type);
@@ -54,6 +61,10 @@ class AliRDHFCutsBPlustoD0Pi : public AliRDHFCuts
   void SetMaxPtPid(Float_t maxPt){fMaxPtPid = maxPt;}
 
   void SetOffHighPtPIDinTPC(Float_t TPCrem =999.){fTPCflag = TPCrem;}
+
+  //Pion from Bplus not really soft, but re-using code from Dstar (hence the name)
+  void AddTrackCutsSoftPi(const AliESDtrackCuts *cuts){ fTrackCutsSoftPi = new AliESDtrackCuts(*cuts); return;}
+  virtual AliESDtrackCuts *GetTrackCutsSoftPi() const {return fTrackCutsSoftPi;}
 
   void SetGetCutInfo(Bool_t value){fGetCutInfo = value;}
   void InitializeCuts();
@@ -90,8 +101,11 @@ class AliRDHFCutsBPlustoD0Pi : public AliRDHFCuts
   Bool_t GetIsCutUsed(Int_t nCutIndex, Int_t ptbin) const {return fIsCutUsed[GetGlobalIndex(nCutIndex,ptbin)];}
   Bool_t GetIsCutUsedD0forD0ptbin(Int_t nCutIndex, Int_t ptbin) const {return fIsCutUsedD0forD0ptbin[GetGlobalIndexD0forD0ptbin(nCutIndex,ptbin)];}
 
+  //Last two for MVA, first two for standard analysis (TBD: Merge them?)
   Int_t ApplyCutOnVariable(Int_t nCutIndex, Int_t ptbin, Float_t cutVariableValue, Bool_t bCutArray[68]);
   Int_t ApplyCutOnVariableD0forD0ptbin(Int_t nCutIndex, Int_t ptbin, Float_t cutVariableValue, Bool_t bCutArray[29]);
+  Int_t ApplyCutOnVariableMVA(Int_t nCutIndex, Int_t ptbin, Float_t cutVariableValue);
+  Int_t ApplyCutOnVariableD0forD0ptbinMVA(Int_t nCutIndex, Int_t ptbin, Float_t cutVariableValue);
 
   void SetVarNamesD0forD0ptbin(Int_t nVars,TString *varNames,Bool_t *isUpperCut);
 
@@ -175,10 +189,12 @@ class AliRDHFCutsBPlustoD0Pi : public AliRDHFCuts
   Double_t GetMind0D0FirstDaughter(){return fMind0D0FirstDaughter;}
   Double_t GetMind0D0SecondDaughter(){return fMind0D0SecondDaughter;}
   Double_t GetMind0BPlusPion(){return fMind0BPlusPion;}
+  Double_t GetFiducialYCut() const {return fFiducialYCut;}
 
   void SetMind0D0FirstDaughter(Double_t value){fMind0D0FirstDaughter = value; return;}
   void SetMind0D0SecondDaughter(Double_t value){fMind0D0SecondDaughter = value; return;}
   void SetMind0BPlusPion(Double_t value){fMind0BPlusPion = value; return;}
+  void SetFiducialYCut(Double_t value){fFiducialYCut = value; return;}
 
   void SetnVariablesForCutOptimization(Double_t value){fnVariablesForCutOptimization = value; return;}
   Int_t GetnVariablesForCutOptimization(){return fnVariablesForCutOptimization;}
@@ -199,6 +215,9 @@ class AliRDHFCutsBPlustoD0Pi : public AliRDHFCuts
   Double_t GetSigmaForCutOptimization(Int_t iPtBin) const {return fSigmaForCutOptimization[iPtBin];}
 
  protected:
+
+  //Pion from Bplus not really soft, but re-using code from Dstar
+  AliESDtrackCuts * fTrackCutsSoftPi;                   /// cuts for pion from Bplus (AOD converted to ESD on the flight!)
 
   Float_t fMaxPtPid;                                  ///
   Float_t fTPCflag;                                   ///
@@ -256,6 +275,7 @@ class AliRDHFCutsBPlustoD0Pi : public AliRDHFCuts
   Double_t fMind0D0FirstDaughter;                     ///
   Double_t fMind0D0SecondDaughter;                    ///
   Double_t fMind0BPlusPion;                           ///
+  Double_t fFiducialYCut;                             ///
 
   Int_t fnVariablesForCutOptimization;                ///
   Int_t fnCutsForOptimization;                        ///
@@ -266,7 +286,7 @@ class AliRDHFCutsBPlustoD0Pi : public AliRDHFCuts
   Float_t * fSigmaForCutOptimization;                 //[fnPtBins]
 
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCutsBPlustoD0Pi,2) ///
+  ClassDef(AliRDHFCutsBPlustoD0Pi,3) ///
   /// \endcond
 };
 

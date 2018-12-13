@@ -275,6 +275,10 @@ void AliAnalysisHFCorrOnFlySim::UserExec(Option_t *)
   if(!IsEventMCSelected)return;
   if(fIsEventProp)CalculateEventProperties(fMcEvent);
   if(fIsPartProp)CalculateParticleProperties(fMcEvent);
+
+  AliGenEventHeader *header = (AliGenEventHeader*)fMcEvent->GenEventHeader();
+  printf("HEADER...\n");
+  header->Print();
       
   for(Int_t iPart = 0; iPart < fMcEvent->GetNumberOfTracks(); iPart++){
     
@@ -608,12 +612,12 @@ void AliAnalysisHFCorrOnFlySim::HeavyFlavourCorrelations(TObject *obj){
             }
             TrgMomPos        =  MotherOfTrg->GetMother();
             MotherOfTrg      =  (AliVParticle*)fMcEvent->GetTrack(TrgMomPos);
-            pdgOfMother      =  TMath::Abs(MotherOfTrg->PdgCode());
+            if(MotherOfTrg) pdgOfMother = TMath::Abs(MotherOfTrg->PdgCode());
             
         }else if(pdgOfMother==423){// D*0 -> D0 or D+
             TrgMomPos        =  MotherOfTrg->GetMother();
             MotherOfTrg      =  (AliVParticle*)fMcEvent->GetTrack(TrgMomPos);
-            pdgOfMother      =  TMath::Abs(MotherOfTrg->PdgCode());
+            if(MotherOfTrg) pdgOfMother = TMath::Abs(MotherOfTrg->PdgCode());
         }
         
        if(pdgOfMother==5||(500<pdgOfMother&&pdgOfMother<600)||(5000<pdgOfMother&&pdgOfMother<6000)){

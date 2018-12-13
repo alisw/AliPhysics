@@ -313,6 +313,11 @@ fTreeCascVarBachTrack(0),
 fTreeCascVarPosTrack(0),
 fTreeCascVarNegTrack(0),
 fTreeCascVarOTFV0(0x0),
+fTreeCascVarOTFV0NegBach(0x0),
+fTreeCascVarOTFV0PosBach(0x0),
+fTreeCascVarV0AsOTF(0),
+fTreeCascVarNegBachAsOTF(0),
+fTreeCascVarPosBachAsOTF(0),
 fTreeCascVarMagneticField(0),
 fTreeCascVarBachOriginalX(0),
 fTreeCascVarPosOriginalX(0),
@@ -544,6 +549,11 @@ fTreeCascVarBachTrack(0),
 fTreeCascVarPosTrack(0),
 fTreeCascVarNegTrack(0),
 fTreeCascVarOTFV0(0),
+fTreeCascVarOTFV0NegBach(0x0),
+fTreeCascVarOTFV0PosBach(0x0),
+fTreeCascVarV0AsOTF(0),
+fTreeCascVarNegBachAsOTF(0),
+fTreeCascVarPosBachAsOTF(0),
 fTreeCascVarMagneticField(0),
 fTreeCascVarBachOriginalX(0),
 fTreeCascVarPosOriginalX(0),
@@ -552,6 +562,7 @@ fTreeCascVarPVx(0),
 fTreeCascVarPVy(0),
 fTreeCascVarPVz(0),
 fTreeCascVarAliESDvertex(0),
+
 
 //Histos
 fHistEventCounter(0),
@@ -864,6 +875,8 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarPosTrack", &fTreeCascVarPosTrack,16000,99);
         fTreeCascade->Branch("fTreeCascVarNegTrack", &fTreeCascVarNegTrack,16000,99);
         fTreeCascade->Branch("fTreeCascVarOTFV0", &fTreeCascVarOTFV0,16000,99);
+        fTreeCascade->Branch("fTreeCascVarOTFV0NegBach", &fTreeCascVarOTFV0NegBach,16000,99);
+        fTreeCascade->Branch("fTreeCascVarOTFV0PosBach", &fTreeCascVarOTFV0PosBach,16000,99);
         
         //for sandbox mode
         fTreeCascade->Branch("fTreeCascVarMagneticField",&fTreeCascVarMagneticField,"fTreeCascVarMagneticField/F");
@@ -878,6 +891,9 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         
         fTreeCascade->Branch("fTreeCascVarAliESDvertex", &fTreeCascVarAliESDvertex,16000,99);
     }
+    fTreeCascade->Branch("fTreeCascVarV0AsOTF",&fTreeCascVarV0AsOTF,"fTreeCascVarV0AsOTF/O");
+    fTreeCascade->Branch("fTreeCascVarNegBachAsOTF",&fTreeCascVarNegBachAsOTF,"fTreeCascVarNegBachAsOTF/O");
+    fTreeCascade->Branch("fTreeCascVarPosBachAsOTF",&fTreeCascVarPosBachAsOTF,"fTreeCascVarPosBachAsOTF/O");
     //------------------------------------------------
 
     //------------------------------------------------
@@ -1664,32 +1680,85 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         
         //=================================================================================
         //OTF loop: try to find equivalent OTF V0, store empty object if not found
-        fTreeCascVarOTFV0 = 0x0;
+        fTreeCascVarOTFV0NegBach = 0x0;
+        fTreeCascVarOTFV0PosBach = 0x0;
+        fTreeCascVarPosBachAsOTF = kFALSE;
+        fTreeCascVarNegBachAsOTF = kFALSE;
         
         //lNegTrackArray[iV0], lPosTrackArray[iV0]
         Int_t nv0s = lESDevent->GetNumberOfV0s();
         
-        Bool_t lFoundOTF = kFALSE;
+        AliESDv0 lV0ToStorePosBach, *lPointerToV0ToStorePosBach=&lV0ToStorePosBach;
+        AliESDv0 lV0ToStoreNegBach, *lPointerToV0ToStoreNegBach=&lV0ToStoreNegBach;
         
+        Bool_t lFoundOTF = kFALSE;
+        for(Long_t iOTFv0=0; iOTFv0<nv0s; iOTFv0++){
+            AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iOTFv0);
+            if (!v0) continue;
+            if ( v0->GetOnFlyStatus()  &&
+                (
+                 (v0->GetPindex() == lCascPosTrackArray[iCasc] && v0->GetNindex() == lCascBachTrackArray[iCasc] ) ||
+                 (v0->GetNindex() == lCascPosTrackArray[iCasc] && v0->GetPindex() == lCascBachTrackArray[iCasc] )
+                 )
+                ){
+                //Found corresponding OTF V0! Save it to TTree, please
+                fTreeCascVarOTFV0PosBach = v0;
+                lFoundOTF = kTRUE;
+                fTreeCascVarPosBachAsOTF = kTRUE;
+                break; //stop looking
+            }
+        }
+        if( !lFoundOTF ) {
+            fTreeCascVarOTFV0PosBach = lPointerToV0ToStorePosBach;
+        }
+        //---->
+        lFoundOTF = kFALSE;
+        for(Long_t iOTFv0=0; iOTFv0<nv0s; iOTFv0++){
+            AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iOTFv0);
+            if (!v0) continue;
+            if ( v0->GetOnFlyStatus()  &&
+                (
+                 (v0->GetPindex() == lCascNegTrackArray[iCasc] && v0->GetNindex() == lCascBachTrackArray[iCasc] ) ||
+                 (v0->GetNindex() == lCascNegTrackArray[iCasc] && v0->GetPindex() == lCascBachTrackArray[iCasc] )
+                 )
+                ){
+                //Found corresponding OTF V0! Save it to TTree, please
+                fTreeCascVarOTFV0NegBach = v0;
+                lFoundOTF = kTRUE;
+                fTreeCascVarNegBachAsOTF = kTRUE;
+                break; //stop looking
+            }
+        }
+        if( !lFoundOTF ) {
+            fTreeCascVarOTFV0NegBach = lPointerToV0ToStoreNegBach;
+        }
+        
+        //=================================================================================
+        //OTF loop: try to find equivalent OTF V0, store empty object if not found
+        fTreeCascVarOTFV0 = 0x0;
+        
+        lFoundOTF = kFALSE;
+        AliESDv0 lV0ToStore, *lPointerToV0ToStore=&lV0ToStore;
+        fTreeCascVarV0AsOTF = kFALSE;
         for(Long_t iOTFv0=0; iOTFv0<nv0s; iOTFv0++){
             AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iOTFv0);
             if (!v0) continue;
             
             if ( v0->GetOnFlyStatus()  &&
                 (
+                 //Check if this is the bump -> case switch for positive hyperons
                  (v0->GetPindex() == lCascPosTrackArray[iCasc] && v0->GetNindex() == lCascNegTrackArray[iCasc] ) ||
                  (v0->GetNindex() == lCascPosTrackArray[iCasc] && v0->GetPindex() == lCascNegTrackArray[iCasc] )
                  )
                 ){
                 //Found corresponding OTF V0! Save it to TTree, please
-                AliESDv0 lV0ToStore(*v0), *lPointerToV0ToStore=&lV0ToStore;
-                fTreeCascVarOTFV0 = lPointerToV0ToStore;
+                fTreeCascVarOTFV0 = v0;
                 lFoundOTF = kTRUE;
+                fTreeCascVarV0AsOTF = kTRUE;
                 break; //stop looking
             }
         }
         if( !lFoundOTF ) {
-            AliESDv0 lV0ToStore, *lPointerToV0ToStore=&lV0ToStore;
             fTreeCascVarOTFV0 = lPointerToV0ToStore;
         }
         //=================================================================================

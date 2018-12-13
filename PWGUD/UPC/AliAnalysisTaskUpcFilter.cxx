@@ -276,7 +276,7 @@ void AliAnalysisTaskUpcFilter::UserExec(Option_t *)
 
   //list of trigger classes
 
-  trgClasses[ 1] = trigger.Contains("CMUP6-B"); // p-Pb FW
+  trgClasses[ 1] = trigger.Contains("CMUP6-B"); // 0MUL *0VBA
   trgClasses[ 2] = trigger.Contains("CMUP3-B"); // Pb-p FW
   trgClasses[ 3] = trigger.Contains("CMUP8-B"); // Pb-p FW
 
@@ -307,6 +307,7 @@ void AliAnalysisTaskUpcFilter::UserExec(Option_t *)
   trgClasses[30] = trigger.Contains("CMUP21-B");   // *0VBA *0UBA *0VBC 0SH1 *0SH2 *0UGC *0VGA
   trgClasses[31] = trigger.Contains("CMUP22-B");   // *0UBC *0UGC *0VBA *0VGA *0SH2 *0VC5 0MSL 0SMB
   trgClasses[32] = trigger.Contains("CMUP23-B");   // *0UBC *0UGC *0VBA *0VGA *0SH2 *0VC5 0MUL
+  trgClasses[33] = trigger.Contains("CMUP26-B");   // *0VBA *0UBA *0UBC 0MLL
 
   
   trgClasses[41] = trigger.Contains("CMUP13-B");   // 0MUL & !0UBA & !0UBC 

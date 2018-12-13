@@ -18,36 +18,39 @@ class AliAodSkimTask: public AliAnalysisTaskSE
   public:
     AliAodSkimTask(const char *name=0);
     virtual              ~AliAodSkimTask();
-    void                  SetCleanTracks(Bool_t b)  {fDoCleanTracks=b;}
-    void                  SetClusMinE(Double_t v)   {fClusMinE=v;}
-    void                  SetCopyCascades(Bool_t b) {fDoCopyCascades=b;}
-    void                  SetCopyCells(Bool_t b)    {fDoCopyCells=b;}
-    void                  SetCopyClusters(Bool_t b) {fDoCopyClusters=b;}
-    void                  SetCopyConv(Bool_t b)     {fDoCopyConv=b;}
-    void                  SetCopyDiMuons(Bool_t b)  {fDoCopyDiMuons=b;}
-    void                  SetCopyHeader(Bool_t b)   {fDoCopyHeader=b;}
-    void                  SetCopyMC(Bool_t b)       {fDoCopyMC=b;}
-    void                  SetCopyMCHeader(Bool_t b) {fDoCopyMCHeader=b;}
-    void                  SetCopyPCells(Bool_t b)   {fDoCopyPCells=b;}
-    void                  SetCopyPTrigger(Bool_t b) {fDoCopyPTrigger=b;}
-    void                  SetCopyTOF(Bool_t b)      {fDoCopyTOF=b;}
-    void                  SetCopyTZERO(Bool_t b)    {fDoCopyTZERO=b;}
-    void                  SetCopyTracklets(Bool_t b){fDoCopyTracklets=b;}
-    void                  SetCopyTracks(Bool_t b)   {fDoCopyTracks=b;}
-    void                  SetCopyTrdTracks(Bool_t b){fDoCopyTrdTracks=b;}
-    void                  SetCopyTrigger(Bool_t b)  {fDoCopyTrigger=b;}
-    void                  SetCopyV0s(Bool_t b)      {fDoCopyV0s=b;}
-    void                  SetCopyVZERO(Bool_t b)    {fDoCopyVZERO=b;}
-    void                  SetCopyVertices(Bool_t b) {fDoCopyVertices=b;}
-    void                  SetCopyZDC(Bool_t b)      {fDoCopyZDC=b;}
-    void                  SetCutFilterBit(UInt_t b) {fCutFilterBit=b;}
-    void                  SetCutMC(Bool_t b)        {fCutMC=b;}
-    void                  SetGammaBrName(TString s) {fGammaBr=s;}
-    void                  SetMinCutPt(Double_t pt)  {fCutMinPt=pt;}
-    void                  SetRemCovMat(Bool_t b)    {fDoRemCovMat=b;}
-    void                  SetRemPid(Bool_t b)       {fDoRemPid=b;}
-    void                  SetRemoveTracks(Bool_t b) {fDoRemoveTracks=b;}
-    void                  SetYCutMC(Double_t v)     {fYCutMC=v;}
+    void                  SetCleanTracklets(Bool_t b) {fDoCleanTracklets=b;}
+    void                  SetCleanTracks(Bool_t b)    {fDoCleanTracks=b;}
+    void                  SetClusMinE(Double_t v)     {fClusMinE=v;}
+    void                  SetCopyCascades(Bool_t b)   {fDoCopyCascades=b;}
+    void                  SetCopyCells(Bool_t b)      {fDoCopyCells=b;}
+    void                  SetCopyClusters(Bool_t b)   {fDoCopyClusters=b;}
+    void                  SetCopyConv(Bool_t b)       {fDoCopyConv=b;}
+    void                  SetCopyDiMuons(Bool_t b)    {fDoCopyDiMuons=b;}
+    void                  SetCopyHeader(Bool_t b)     {fDoCopyHeader=b;}
+    void                  SetCopyMC(Bool_t b)         {fDoCopyMC=b;}
+    void                  SetCopyMCHeader(Bool_t b)   {fDoCopyMCHeader=b;}
+    void                  SetCopyPCells(Bool_t b)     {fDoCopyPCells=b;}
+    void                  SetCopyPTrigger(Bool_t b)   {fDoCopyPTrigger=b;}
+    void                  SetCopyTOF(Bool_t b)        {fDoCopyTOF=b;}
+    void                  SetCopyTZERO(Bool_t b)      {fDoCopyTZERO=b;}
+    void                  SetCopyTracklets(Bool_t b)  {fDoCopyTracklets=b;}
+    void                  SetCopyTracks(Bool_t b)     {fDoCopyTracks=b;}
+    void                  SetCopyTrdTracks(Bool_t b)  {fDoCopyTrdTracks=b;}
+    void                  SetCopyTrigger(Bool_t b)    {fDoCopyTrigger=b;}
+    void                  SetCopyV0s(Bool_t b)        {fDoCopyV0s=b;}
+    void                  SetCopyVZERO(Bool_t b)      {fDoCopyVZERO=b;}
+    void                  SetCopyVertices(Bool_t b)   {fDoCopyVertices=b;}
+    void                  SetCopyZDC(Bool_t b)        {fDoCopyZDC=b;}
+    void                  SetCutFilterBit(UInt_t b)   {fCutFilterBit=b;}
+    void                  SetCutMC(Bool_t b)          {fCutMC=b;}
+    void                  SetDoVertMain(Bool_t b)     {fDoVertMain=b;}
+    void                  SetDoVertWoRefs(Bool_t b)   {fDoVertWoRefs=b;}
+    void                  SetGammaBrName(TString s)   {fGammaBr=s;}
+    void                  SetMinCutPt(Double_t pt)    {fCutMinPt=pt;}
+    void                  SetRemCovMat(Bool_t b)      {fDoRemCovMat=b;}
+    void                  SetRemPid(Bool_t b)         {fDoRemPid=b;}
+    void                  SetRemoveTracks(Bool_t b)   {fDoRemoveTracks=b;}
+    void                  SetYCutMC(Double_t v)       {fYCutMC=v;}
     const char           *Str() const;
   protected:
     void                  UserCreateOutputObjects();
@@ -85,6 +88,9 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     Bool_t                fDoCopyConv;      //  if true copy conversions
     Bool_t                fDoCopyMC;        //  if true copy MC particles
     Bool_t                fDoCopyMCHeader;  //  if true copy MC header
+    Bool_t                fDoVertWoRefs;    //  if true then do not copy TRefs in vertices
+    Bool_t                fDoVertMain;      //  if true then only copy main vertices
+    Bool_t                fDoCleanTracklets;//  if true then clean tracklets
     UInt_t                fTrials;          //! events seen since last acceptance 
     Float_t               fPyxsec;          //! pythia xsection
     Float_t               fPytrials;        //! pythia trials
@@ -94,12 +100,12 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     TList                *fOutputList;      //! output list
     TH1F                 *fHevs;            //! events processed/accepted
     TH1F                 *fHclus;           //! cluster distribution
-    const char           *GetVersion() const { return "1.3"; }
+    const char           *GetVersion() const { return "1.4"; }
     virtual Bool_t        KeepTrack(AliAODTrack *t);
     virtual void          CleanTrack(AliAODTrack *t);
 
     AliAodSkimTask(const AliAodSkimTask&);             // not implemented
     AliAodSkimTask& operator=(const AliAodSkimTask&);  // not implemented
-    ClassDef(AliAodSkimTask, 4); // AliAodSkimTask
+    ClassDef(AliAodSkimTask, 5); // AliAodSkimTask
 };
 #endif

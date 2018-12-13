@@ -1,4 +1,4 @@
-AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutModeLow = 100, Int_t cutModeHigh = 101)
+AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutModeLow = 122, Int_t cutModeHigh = 123)
 {
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -79,8 +79,9 @@ AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutModeLow = 100, In
     task->SetZvtx(30.);
     task->SetEventTriggerRequired(kTRUE);
 
-    // Quality cuts for tracks
-
+    /// Quality cuts for tracks
+    if(cutMode != 122)
+    {
     // TPC
     task->SetTPCRefit(kTRUE);
     task->SetRatioCrossedRowsOverFindableClustersTPC(0.8);
@@ -102,9 +103,9 @@ AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutModeLow = 100, In
     task->SetMinLenghtInActiveZoneTPC(0);
     task->SetGeometricalCut(kTRUE,3,130,1.5,0.85,0.7); ///if kTRUE comment CrossedRowsTPC cut
     //task->SetMinCrossedRowsTPC(120);
+    }
 
-
-    //Switch Low/High to study systematics uncertanties
+    ///Switch Low/High to study systematics uncertanties
     if(cutMode==101){task->SetDCAtoVertexZ(1.0); }
     if(cutMode==102){task->SetDCAtoVertexZ(5.0); }
 
@@ -134,18 +135,38 @@ AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutModeLow = 100, In
     if(cutMode==118){task->SetMaxChi2TPCConstrained(25.); }
     if(cutMode==119){task->SetMaxChi2TPCConstrained(49.); }
 
-    //event cuts study
+    ///event cuts study
     if(cutMode == 120) {task->SetZvtx(5.);}
     if(cutMode == 121) {task->SetZvtx(20.);}
 
 
 
-    //if(cutMode==118 || cutMode==119){max. 5-dim Chi2 TPC constrained track vs. global track;}
 
-    //Matching Efficiency
+
+
+    ///secondary scaling study
+    if(cutMode == 122)
+    {
+    // TPC
+    //
+    task->SetTPCRefit(kTRUE);
+    task->SetRatioCrossedRowsOverFindableClustersTPC(0.8);
+    task->SetMaxchi2perTPCclu(4);
+    task->SetFractionSharedClustersTPC(0.4);
+	task->SetGeometricalCut(kTRUE,3,130,1.5,0.85,0.7); // default
+    //
+    // primary selection
+    //
+    task->SetDCAtoVertex2D(kFALSE);
+    task->SetSigmaToVertex(kFALSE);
+    task->SetDCAtoVertexZ(2.0);
+    task->SetKinkDaughters(kFALSE);
+    }
+
+    ///Matching Efficiency
     if(cutMode==200)
     {
-    // Calculate matching efficiency: TPC only with Crossed Rows
+    /// Calculate matching efficiency: TPC only with Crossed Rows
     task->SetTPCRefit(kTRUE);
     task->SetDCAtoVertexZ(3.2);
     task->SetDCAtoVertexXY(2.4);
@@ -157,13 +178,13 @@ AlidNdPtUnifiedAnalysisTask* AddTask_yelmardb_Unified(Int_t cutModeLow = 100, In
     task->SetITSRefit(kFALSE);
     task->SetClusterReqITS(kFALSE);
 
-        //Calculate matching efficiency: TPC + ITS with Crossed Rows
+        ///Calculate matching efficiency: TPC + ITS with Crossed Rows
         if (cutMode==201){
          task->SetITSRefit(kTRUE);
          task->SetClusterReqITS(kTRUE);
         }
 
-        //Calculate matching efficiency: TPC + ITS without SPD hit with Crossed Rows
+        ///Calculate matching efficiency: TPC + ITS without SPD hit with Crossed Rows
         if (cutMode==202){
          task->SetITSRefit(kTRUE);
          task->SetClusterReqITS(kFALSE);

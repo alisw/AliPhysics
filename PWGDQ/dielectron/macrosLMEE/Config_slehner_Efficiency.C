@@ -7,9 +7,9 @@ TString generatorNameForULSSignal = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;om
 //TString generatorNameForULSSignal = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7";
 
 
-Bool_t SetTPCCorrection = kFALSE;
-Bool_t SetITSCorrection = kFALSE;
-Bool_t SetTOFCorrection = kFALSE;
+Bool_t SetTPCCorrection = kTRUE;
+Bool_t SetITSCorrection = kTRUE;
+Bool_t SetTOFCorrection = kTRUE;
 
 Bool_t SetGeneratedSmearingHistos = kFALSE;
 
@@ -112,14 +112,15 @@ void setPIDCorrections(AliAnalysisTaskElectronEfficiencyV2* task){
   std::cout << "starting SetPIDCorrections()\n";
   if(SetTPCCorrection == kTRUE){
     std::cout << "Loading TPC correction" << std::endl;
-    std::string file_name = "recalib_data_tpc_nsigmaele.root";
+    std::string file_name = "recalib_mc_tpc_nsigmaele.root";
     TFile* _file = TFile::Open(file_name.c_str());
 
     if(!_file){
-      TString path="alien:///alice/cern.ch/user/s/selehner/recal/recalib_data_tpc_nsigmaele.root";
+      TString path="alien:///alice/cern.ch/user/s/selehner/recal/recalib_mc_tpc_nsigmaele.root";
       gSystem->Exec(TString::Format("alien_cp %s .",path.Data()));
       std::cout << "Copy TPC correction from Alien" << std::endl;
       _file = TFile::Open(file_name.c_str());
+      if(!_file) std::cout << "Could not get alien:///alice/cern.ch/user/s/selehner/recal/recalib_mc_tpc_nsigmaele.root" << std::endl;      
     }
     else {
       std::cout << "Correction loaded" << std::endl;
@@ -129,7 +130,7 @@ void setPIDCorrections(AliAnalysisTaskElectronEfficiencyV2* task){
     TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
 
     task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTPC, mean,  AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
-    task->SetWidthCorrFunction   (AliAnalysisTaskElectronEfficiencyV2::kTPC, width, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+    task->SetWidthCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTPC, width, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
   }
   if(SetITSCorrection == kTRUE){
     std::cout << "Loading ITS correction" << std::endl;
@@ -137,9 +138,11 @@ void setPIDCorrections(AliAnalysisTaskElectronEfficiencyV2* task){
     TFile* _file = TFile::Open(file_name.c_str());
 
     if(!_file){
-      gSystem->Exec(("alien_cp alien:///alice/cern.ch/user/c/cklein/data/recalibration/" + file_name + " .").c_str());
+      TString path="alien:///alice/cern.ch/user/s/selehner/recal/recalib_mc_its_nsigmaele.root";
+      gSystem->Exec(TString::Format("alien_cp %s .",path.Data()));
       std::cout << "Copy ITS correction from Alien" << std::endl;
       _file = TFile::Open(file_name.c_str());
+      if(!_file) std::cout << "Could not get alien:///alice/cern.ch/user/s/selehner/recal/recalib_mc_its_nsigmaele.root" << std::endl;
     }
     else {
       std::cout << "Correction loaded" << std::endl;
@@ -149,7 +152,7 @@ void setPIDCorrections(AliAnalysisTaskElectronEfficiencyV2* task){
     TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
 
     task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kITS, mean,  AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
-    task->SetWidthCorrFunction   (AliAnalysisTaskElectronEfficiencyV2::kITS, width, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+    task->SetWidthCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kITS, width, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
   }
   if(SetTOFCorrection == kTRUE){
     std::cout << "Loading TOF correction" << std::endl;
@@ -157,9 +160,11 @@ void setPIDCorrections(AliAnalysisTaskElectronEfficiencyV2* task){
     TFile* _file = TFile::Open(file_name.c_str());
 
     if(!_file){
-      gSystem->Exec(("alien_cp alien:///alice/cern.ch/user/c/cklein/data/recalibration/" + file_name + " .").c_str());
+      TString path="alien:///alice/cern.ch/user/s/selehner/recal/recalib_mc_tof_nsigmaele.root";
+      gSystem->Exec(TString::Format("alien_cp %s .",path.Data()));
       std::cout << "Copy TOF correction from Alien" << std::endl;
       _file = TFile::Open(file_name.c_str());
+      if(!_file) std::cout << "Could not get alien:///alice/cern.ch/user/s/selehner/recal/recalib_mc_tof_nsigmaele.root" << std::endl;
     }
     else {
       std::cout << "Correction loaded" << std::endl;
@@ -169,7 +174,7 @@ void setPIDCorrections(AliAnalysisTaskElectronEfficiencyV2* task){
     TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
 
     task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, mean,  AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
-    task->SetWidthCorrFunction   (AliAnalysisTaskElectronEfficiencyV2::kTOF, width, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+    task->SetWidthCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, width, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
   }
 }
 
@@ -263,12 +268,12 @@ std::vector<Bool_t> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* ta
   eleConv.SetMotherPDGs(22,22,kFALSE,kFALSE); 
 
 //  task->AddSingleLegMCSignal(partConv);
-  task->AddSingleLegMCSignal(eleConv);
+//  task->AddSingleLegMCSignal(eleConv);
   task->AddSingleLegMCSignal(eleFinalState);
   // task->AddSingleLegMCSignal(eleFinalStateFromPion);
   task->AddSingleLegMCSignal(eleFinalStateFromD);
   task->AddSingleLegMCSignal(eleFinalStateFromB);
-//   task->AddSingleLegMCSignal(eleFinalStateFromSameMotherMeson);
+//  task->AddSingleLegMCSignal(eleFinalStateFromSameMotherMeson);
 
   // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
   // ordering is according to MCSignals of single legs
@@ -366,14 +371,14 @@ void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
 
 
 
-    task->AddPairMCSignal(pair_sameMother);
-//    task->AddPairMCSignal(pair_sameMother_pion);
-//     task->AddPairMCSignal(pair_sameMother_eta);
-//     task->AddPairMCSignal(pair_sameMother_etaP);
-//     task->AddPairMCSignal(pair_sameMother_rho);
-    // task->AddPairMCSignal(pair_sameMother_omega);
-    // task->AddPairMCSignal(pair_sameMother_phi);
-    // task->AddPairMCSignal(pair_sameMother_jpsi);
-    // task->AddPairMCSignal(pair_sameMother_CharmedMesonsWithSameMother);
-     task->AddPairMCSignal(pair_conversion);
+  task->AddPairMCSignal(pair_sameMother);
+//  task->AddPairMCSignal(pair_sameMother_pion);
+//  task->AddPairMCSignal(pair_sameMother_eta);
+//  task->AddPairMCSignal(pair_sameMother_etaP);
+//  task->AddPairMCSignal(pair_sameMother_rho);
+//  task->AddPairMCSignal(pair_sameMother_omega);
+//  task->AddPairMCSignal(pair_sameMother_phi);
+//  task->AddPairMCSignal(pair_sameMother_jpsi);
+//  task->AddPairMCSignal(pair_sameMother_CharmedMesonsWithSameMother);
+//  task->AddPairMCSignal(pair_conversion);
 }

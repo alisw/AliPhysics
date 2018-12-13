@@ -2880,7 +2880,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
     if(!fIsMC && fIsPHOSTriggerAnalysis && !ph->IsTrig()) continue;//it is meaningless to look at non-triggered cluster in PHOS trigger analysis.
     if(!CheckMinimumEnergy(ph)) continue;
 
-    if(!fIsMC && !ph->IsTOFOK()) continue;
+    //if(!fIsMC && !ph->IsTOFOK()) continue;
 
     pT = ph->Pt();
     cluE = ph->Energy();
@@ -4692,7 +4692,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillTrackMatching()
     AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
     //if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
     if(!CheckMinimumEnergy(ph)) continue;
-    if(!fIsMC && !ph->IsTOFOK()) continue;
+    //if(!fIsMC && !ph->IsTOFOK()) continue;
 
     if(fIsPHOSTriggerAnalysis){
       if( fIsMC && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;//only for MC
@@ -4813,7 +4813,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixTrackMatching()
         AliCaloPhoton *ph = (AliCaloPhoton*)mixPHOS->At(iph);
         //if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
         if(!CheckMinimumEnergy(ph)) continue;
-        if(!fIsMC && !ph->IsTOFOK()) continue;
+        //if(!fIsMC && !ph->IsTOFOK()) continue;
 
         if(fIsPHOSTriggerAnalysis){
           if( fIsMC && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;//keep same TRU acceptance only in kRFE.

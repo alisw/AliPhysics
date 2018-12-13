@@ -2461,7 +2461,7 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 
 	const Int_t nBins2dSignificance =250;
 	const Int_t nBins3dSignificance =250;
-	const Int_t nBins2d=250;
+	const Int_t nBins2d=500;
 	const Int_t nBins3d =250;
 
 	if(fIsPythia) fHFJetUtils = new AliHFJetsTagging("fHFJetUtils");

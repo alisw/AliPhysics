@@ -179,10 +179,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	Reader->SetReadV0(kTRUE);
 	Reader->SetReadCascade(kTRUE);
 	Reader->SetUseAliEventCuts(kTRUE);
-	Reader->SetIsPileUpEvent(ifIsPileUp);
-	Reader->SetUseMVPlpSelection(ifIsPileUp);
-	Reader->SetTrackPileUpRemoval(ifIsPileUp);
-	Reader->SetV0PileUpRemoval(ifIsPileUp); //jesli w analize sa jakies lambdy
+	Reader->SetIsPileUpEvent(kTRUE);
+	Reader->SetUseMVPlpSelection(kTRUE);
+	Reader->SetTrackPileUpRemoval(kTRUE);
+	Reader->SetV0PileUpRemoval(kTRUE); //jesli w analize sa jakies lambdy
 
 
 	AliFemtoManager* Manager = new AliFemtoManager();

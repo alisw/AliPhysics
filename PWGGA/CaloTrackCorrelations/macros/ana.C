@@ -1,4 +1,4 @@
-/// \file ana.C 
+/// \file ana.C
 /// \ingroup CaloTrackCorrMacros
 /// \brief Example of execution macro
 ///
@@ -13,6 +13,9 @@
 ///
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
+
+R__ADD_INCLUDE_PATH($ALICE_ROOT)
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 
 // ROOT
 #include <Riostream.h>
@@ -51,44 +54,46 @@
 // Main AddTasks and associated classes
 #include "AliAnalysisTaskCaloTrackCorrelation.h"
 #include "AliAnaCaloTrackCorrMaker.h"
-#include "AddTaskGammaHadronCorrelationSelectAnalysis.C" 
-//#include "AddTaskMultipleTrackCutIsoConeAnalysis.C" // comment, does not compile with AddTaskGammaHadronCorrelationSelectAnalysis.C
-//#include "AddTaskPi0IMGammaCorrQA.C" // comment, does not compile with AddTaskGammaHadronCorrelationSelectAnalysis.C
+#include "PWGGA/CaloTrackCorrelations/macros/AddTaskGammaHadronCorrelationSelectAnalysis.C" 
+//#include "PWGGA/CaloTrackCorrelations/macros/AddTaskMultipleTrackCutIsoConeAnalysis.C" 
+// comment, does not compile with AddTaskGammaHadronCorrelationSelectAnalysis.C
+//#include "PWGGA/CaloTrackCorrelations/macros/AddTaskPi0IMGammaCorrQA.C" 
+// comment, does not compile with AddTaskGammaHadronCorrelationSelectAnalysis.C
 
 #include "AliPhysicsSelection.h"
 #include "AliPhysicsSelectionTask.h"
-#include "AddTaskPhysicsSelection.C"
+#include "OADB/macros/AddTaskPhysicsSelection.C"
 
 //#include "AliCentralitySelectionTask.h"
 //#include "AddTaskCentrality.C"
 
 #include "AliMultSelectionTask.h" 
-#include "AddTaskMultSelection.C"
+#include "OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C"
 
 //#include "AliVZEROEPSelectionTask.h"
 //#include "AliEPSelectionTask.h"
 //#include "AddTaskVZEROEPSelection.C"
-//#include "AddTaskEventplane.C"
+//#include "ANALYSIS/macros/AddTaskEventplane.C"
 
 //#include "CreateAlienHandler.C"
 
 //#include "AliAnalysisTaskCounter.h"
-//#include "AddTaskCounter.C"
+//#include "PWGGA/CaloTrackCorrelations/macros/AddTaskCounter.C"
 
 //#include "AliTender.h"
 //#include "AliEmcalTenderTask.h"
 //#include "AliEMCALTenderSupply.h"
 //#include "AliEMCALRecParam.h"
-//#include "AddTaskEMCALTender.C"
+//#include "PWG/EMCAL/macros/AddTaskEMCALTender.C"
 
 #include "AliTaskCDBconnect.h"
-#include "AddTaskCDBconnect.C"
+#include "PWGPP/PilotTrain/AddTaskCDBconnect.C"
 
 #include "AliAnalysisTaskEMCALClusterize.h"
-#include "AddTaskEMCALClusterize.C"
+#include "PWGPP/EMCAL/macros/AddTaskEMCALClusterize.C"
 
 #include "AliEmcalCorrectionTask.h"
-#include "AddTaskEmcalCorrectionTask.C"
+#include "PWG/EMCAL/macros/AddTaskEmcalCorrectionTask.C"
 
 #endif
 
@@ -132,9 +137,12 @@ char * kXML = (char*)"collection.xml"; /// Global name for the xml collection fi
 /// This is an specific case for normalization of Pythia files.
 const char * kXSFileName = (char*)"pyxsec.root"; /// Name of file with pT-hard cross sections
 
-// Container of xs if xs in file pyxsec_hist.root
+// Container of cross section if it is in file pyxsec_hist.root
 TArrayF* xsArr;
 TArrayI* trArr;
+
+/// Check during configuration the cross section, does not do anything to analysis
+Bool_t bCheckXS = kFALSE; 
 
 //---------------------------------------------------------------------------
 ///  Set some default values, but used values are set in the code!
@@ -152,7 +160,7 @@ Int_t   kRun       = 0;      /// Run number
 /// Activate here the desired analysis combinations, what correction/clusterization.
 Bool_t  bEMCCluster = kFALSE; /// Use the EMCal clusterization task 
 Bool_t  bEMCCorrFra = kFALSE; /// Use the EMCal correction framework 
-Int_t   xTalkEmul = 0;        /// Activate cross-talk emulation, 0 -no, 1 do not subtract induced energy from reference cell, 2 subtract (preferred)
+Int_t   xTalkEmul   = 0;      /// Activate cross-talk emulation, 0 -no, 1 do not subtract induced energy from reference cell, 2 subtract (preferred)
 
 Bool_t  bAnalysis   = kTRUE;  /// Do photon/pi0 isolation correlation analysis 
 //Bool_t  bAnalysisQA = kTRUE; /// Execute analysis QA train wagon, comment, does not compile with bAnalysis 
@@ -524,8 +532,6 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
       if ( kInputData == "AOD" )
       {
         kXSFileName = "pyxsec_hists.root";
-        xsArr->Set(kFile);
-        trArr->Set(kFile);
       }      
       
       cout<<"INDIR   : "<<kInDir     <<endl;
@@ -544,10 +550,17 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
       char file[120] ;
       char filexs[120] ;
       
+      if ( bCheckXS )
+      {
+        xsArr->Set(kFile);
+        trArr->Set(kFile);
+      }
+      
       for (event = 0 ; event < kFile ; event++) 
       {
         sprintf(file,   "%s/%s%d/%s", kInDir,kPattern,event,datafile.Data()) ; 
-        sprintf(filexs, "%s/%s%d/%s", kInDir,kPattern,event,kXSFileName) ;
+        if ( bCheckXS )
+          sprintf(filexs, "%s/%s%d/%s", kInDir,kPattern,event,kXSFileName) ;
         
         TFile * fData = TFile::Open(file) ; 
         // Check if file exists and add it, if not skip it
@@ -558,44 +571,48 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
             printf("++++ Adding %s\n", file) ;
             chain->AddFile(file);
             
-            if(kInputData != "AOD")
+            if ( bCheckXS )
             {
-              chainxs->Add(filexs) ;
-            }
-            else
-            {
-              TFile*  fxsec = TFile::Open(filexs);
-              if(fxsec)
+              if ( kInputData != "AOD" )
               {
-                TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0);
-                if(!key)
+                chainxs->Add(filexs) ;
+              }
+              else
+              {
+                TFile*  fxsec = TFile::Open(filexs);
+                if(fxsec)
                 {
+                  TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0);
+                  if(!key)
+                  {
+                    fxsec->Close();
+                    printf("No key!");
+                    continue;
+                  }
+                  
+                  TList *list = dynamic_cast<TList*>(key->ReadObj());
+                  if(!list)
+                  {
+                    fxsec->Close();
+                    printf("No list!");
+                    continue;
+                  }
+                  
+                  Float_t xsection = ((TProfile*)list->FindObject("h1Xsec"))  ->GetBinContent(1);
+                  Int_t   ntrials  = ((TH1F*)    list->FindObject("h1Trials"))->GetBinContent(1);
                   fxsec->Close();
-                  printf("No key!");
-                  continue;
-                }
-                
-                TList *list = dynamic_cast<TList*>(key->ReadObj());
-                if(!list)
-                {
-                  fxsec->Close();
-                  printf("No list!");
-                  continue;
-                }
-                
-                Float_t xsection = ((TProfile*)list->FindObject("h1Xsec"))  ->GetBinContent(1);
-                Int_t   ntrials  = ((TH1F*)    list->FindObject("h1Trials"))->GetBinContent(1);
-                fxsec->Close();
-                
-                xsArr->SetAt(xsection,event);
-                trArr->SetAt(ntrials,event);
-                
-                printf("recovered xs %f, ntrials %d, event %d\n",xsection,ntrials, event);
-                //chainxs->Add(tree);
-                //fileTMP->Close();
-              } // fxsec exists
-            } // xs in AODs
-          }
+                  
+                  xsArr->SetAt(xsection,event);
+                  trArr->SetAt(ntrials,event);
+                  
+                  printf("recovered xs %f, ntrials %d, event %d\n",xsection,ntrials, event);
+                  //chainxs->Add(tree);
+                  //fileTMP->Close();
+                } // fxsec exists
+              } // xs in AODs
+            } // check XS
+            
+          } // data tree chake
         }
         else 
         { 
@@ -631,56 +648,76 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
     
     TGridResult* result = collection->GetGridResult("",0 ,0);
     
-    // Makes the ESD chain 
-    printf("*** Getting the Chain       ***\n");
-    for (Int_t index = 0; index < result->GetEntries(); index++) 
+    // Makes the chain 
+    Int_t nFiles = result->GetEntries();
+    Int_t nXSFilesFound = 0;
+    if ( bCheckXS )
+    {
+      xsArr->Set(nFiles);
+      trArr->Set(nFiles);
+    }
+    
+    printf("*** Filling the Chain with %d files***\n",nFiles);
+    for (Int_t index = 0; index < nFiles; index++) 
     {
       TString alienURL = result->GetKey(index, "turl") ; 
       cout << "================== " << alienURL << endl ; 
       chain->Add(alienURL) ; 
       
-      if ( kInputData != "AOD" )
+      if ( bCheckXS )
       {
-        alienURL.ReplaceAll("AliESDs.root",kXSFileName);
-        alienURL.ReplaceAll("AliAOD.root" ,kXSFileName);
-        chainxs->Add(alienURL) ;
-      }
-      else
-      {
-        alienURL.ReplaceAll("AliESDs.root","pyxsec_hists.root");
-        alienURL.ReplaceAll("AliAOD.root", "pyxsec_hists.root");
-        
-        TFile*  fxsec = TFile::Open(alienURL);
-        if ( fxsec )
+        if ( kInputData != "AOD" )
         {
-          TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0);
-          if(!key)
+          alienURL.ReplaceAll("AliESDs.root",kXSFileName);
+          alienURL.ReplaceAll("AliAOD.root" ,kXSFileName);
+          chainxs->Add(alienURL) ;
+        }
+        else
+        {
+          alienURL.ReplaceAll("AliESDs.root","pyxsec_hists.root");
+          alienURL.ReplaceAll("AliAOD.root", "pyxsec_hists.root");
+          
+          TFile*  fxsec = TFile::Open(alienURL);
+          if ( fxsec )
           {
+            TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0);
+            if(!key)
+            {
+              fxsec->Close();
+              printf("No key!");
+              continue;
+            }
+            
+            TList *list = dynamic_cast<TList*>(key->ReadObj());
+            if ( !list )
+            {
+              fxsec->Close();
+              printf("No list!");
+              continue;
+            }
+            
+            Float_t xsection = ((TProfile*)list->FindObject("h1Xsec"))  ->GetBinContent(1);
+            Int_t   ntrials  = ((TH1F*)    list->FindObject("h1Trials"))->GetBinContent(1);
             fxsec->Close();
-            printf("No key!");
-            continue;
-          }
+            
+            xsArr->SetAt(xsection,index);
+            trArr->SetAt(ntrials,index);
+            nXSFilesFound++;
+            printf("recovered xs %f, ntrials %d, index %d\n",xsection,ntrials, index);
+            
+          } // fxsec exists
           
-          TList *list = dynamic_cast<TList*>(key->ReadObj());
-          if ( !list )
-          {
-            fxsec->Close();
-            printf("No list!");
-            continue;
-          }
-          
-          Float_t xsection = ((TProfile*)list->FindObject("h1Xsec"))  ->GetBinContent(1);
-          Int_t   ntrials  = ((TH1F*)    list->FindObject("h1Trials"))->GetBinContent(1);
-          fxsec->Close();
-          
-          xsArr->SetAt(xsection,index);
-          trArr->SetAt(ntrials,index);
-          
-          printf("recovered xs %f, ntrials %d, event %d\n",xsection,ntrials, index);
-          
-        } // fxsec exists
-      } // xs in AODs
+        } // xs in AODs
+      }
+      
+    } // loop files
+    
+    if ( bCheckXS )
+    {
+      xsArr->Set(nXSFilesFound);
+      trArr->Set(nXSFilesFound);
     }
+    
   }// xml analysis
   
   //------------------------------
@@ -854,14 +891,15 @@ Bool_t GetAverageXsection(TTree * tree, Double_t & xs, Float_t & ntr, Int_t & n)
   Double_t xsection = 0 ;
   UInt_t    ntrials = 0 ;
   Int_t      nfiles = 0 ;
-  
+    
   xs  = 0;
   ntr = 0;
   n   = 0;
+  
   if( kInputData != "AOD" &&  tree )
   {
     nfiles =  tree->GetEntries()  ;
-    
+
     tree->SetBranchAddress("xsection",&xsection);
     tree->SetBranchAddress("ntrials" ,&ntrials );
     for(Int_t i = 0; i < nfiles; i++)
@@ -873,11 +911,12 @@ Bool_t GetAverageXsection(TTree * tree, Double_t & xs, Float_t & ntr, Int_t & n)
         ntr += ntrials ;
         n++;
       }
-      cout << "xsection " <<xsection<<" ntrials "<<ntrials<<endl;
+      printf("\t i %d xsection %e, trials %d\n",i, xsection,ntrials);
     } // loop
   }
   else if( kInputData == "AOD" && xsArr )
   {
+
     nfiles = xsArr->GetSize();
     
     for(Int_t i = 0; i < nfiles; i++)
@@ -888,10 +927,18 @@ Bool_t GetAverageXsection(TTree * tree, Double_t & xs, Float_t & ntr, Int_t & n)
         ntr += trArr->GetAt(i) ;
         n++;
       }
-      cout << "xsection " <<xsArr->GetAt(i)<<" ntrials "<<trArr->GetAt(i)<<endl;
+      printf("\t i %d xsection %e, trials %f\n",i, xsArr->GetAt(i),trArr->GetAt(i));
     } // loop
   }
   else return kFALSE;
+  
+  printf("\t total xs %e, ntr %e, n used files %d, n total files %d\n",xs,ntr,n,nfiles);
+    
+  if ( n <= 0 ) 
+  {
+    printf("CAREFUL: No files %d\n",n);
+    return kFALSE;
+  }
   
   xs =   xs /  n;
   ntr =  ntr / n;
@@ -987,7 +1034,7 @@ void  LoadLibraries(Int_t /*mode*/)
 ///
 /// \param mode: analysis mode defined in enum anaModes
 //________________________
-void ana ( anaModes mode = mLocal )
+void ana ( anaModes mode = mGRID )
 {  
   //--------------------------------------------------------------------
   // Load analysis libraries
@@ -1012,19 +1059,30 @@ void ana ( anaModes mode = mLocal )
   TChain * chainxs = new TChain("Xsection") ;
   CreateChain(mode, chain, chainxs); 
   
-  Double_t scale  = -1;
-  printf("===== kMC %d, chainxs %p\n",kMC,chainxs);
+  if ( !chain )
+  { 
+    printf("STOP, no chain available\n"); 
+    return;
+  } 
   
-  if ( kMC )
+  printf("*********************************************\n");
+  printf("number of entries in chain # %lld \n", chain->GetEntries()) ;   
+  printf("*********************************************\n");
+  
+  // Recover the cross section and print average value
+  if ( kMC && bCheckXS )
   {
     //Get the cross section
+    Double_t scale    = -1;
     Double_t xsection = 0;
     Float_t  ntrials  = 0;
     Int_t    nfiles   = 0;
-    
+    printf("===== kMC %d, chainxs %p\n",kMC,chainxs);
+
+    printf("Average Cross section:\n");
     Bool_t ok = GetAverageXsection(chainxs, xsection, ntrials, nfiles);
     
-    printf("n xs files %d ntrials %f \n",nfiles, ntrials);
+    printf("\t ok %d n xs files %d ntrials %f \n",ok, nfiles, ntrials);
     if ( nfiles > 0 && ntrials > 0 )
     {
       if ( ok )
@@ -1035,30 +1093,25 @@ void ana ( anaModes mode = mLocal )
         
         scale = xsection / trials;
         
-        printf("Get Cross section : nfiles  %d, nevents %lld, nevents per file %d \n",
+        printf("\t Get Cross section : nfiles  %d, nevents %lld, nevents per file %d \n",
                nfiles, chain->GetEntries(),nEventsPerFile);
-        printf("                    ntrials %2.2f, trials %2.2f, xs %2.2e, scale factor %2.2e\n", 
+        printf("\t \t ntrials %2.2f, trials %2.2f, xs %2.2e, scale factor %2.2e\n", 
                ntrials,trials,xsection,scale);
         
-        if ( chainxs->GetEntries() != chain->GetEntries() ) 
-          printf("CAREFUL: Number of files in data chain %lld, in cross section chain %lld \n",
-                 chainxs->GetEntries(),chain->GetEntries());
+        if ( nfiles != chain->GetNtrees() ) 
+          printf("\t CAREFUL: Number of files in data chain %d, in cross section chain %d \n",
+                 chain->GetNtrees(),nfiles);
       } // ok
       
-      // comment out this line in case the simulation did not have the cross section files produced in the directory
+      // comment out this line in case the simulation did not have the 
+      // cross section files produced in the directory
       if ( scale <= 0  || !ok )
-      { printf( "STOP, cross section not available! nfiles %lld \n", chainxs->GetEntries() ) ; return ; }
+      { 
+        printf( "\t STOP, cross section not available! nfiles %lld \n", 
+               chainxs->GetEntries() ) ; 
+        return ; 
+      }
     }
-  }
-  
-  printf("*********************************************\n");
-  printf("number of entries # %lld \n", chain->GetEntries()) ; 	
-  printf("*********************************************\n");
-  
-  if ( !chain )
-  { 
-    printf("STOP, no chain available\n"); 
-    return;
   }
     
   AliLog::SetGlobalLogLevel(AliLog::kError);//Minimum prints on screen
@@ -1226,6 +1279,7 @@ void ana ( anaModes mode = mLocal )
 
     AliEmcalCorrectionTask * emcorr = AddTaskEmcalCorrectionTask();
     
+    //emcorr->SetUserConfigurationFilename("./EMCalCorrConfig_Data_ClV1_Run2TCalib_Test.yaml");
     // Data or MC specific configurations
     if ( !kMC )
     {
@@ -1263,27 +1317,27 @@ void ana ( anaModes mode = mLocal )
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/AddTaskEMCALClusterize.C"); 
 #endif
  
-    Int_t   clTM      = 2;  // Do track matching, 0 no, 1 TPC only, 2 hybrid
-    Bool_t  exo       = kTRUE;  // Remove exotic cells
-    
-    Bool_t  clnonlin  = kTRUE;  // Apply non linearity (clusterizer), CAREFUL check that not done in analysis
+    TString sClust    = "V1Unfold"; // Options: V1, V2, V1Unfold, NxN
+    Int_t   clTM      = 2;       // Do track matching, 0 no, 1 TPC only, 2 hybrid
+    Bool_t  exo       = kTRUE;   // Remove exotic cells
+    Bool_t  clnonlin  = kTRUE;   // Apply non linearity (clusterizer), CAREFUL check that not done in analysis
     Int_t   minEcell  = 100;     // 50  MeV (10 MeV used in reconstruction)
     Int_t   minEseed  = 500;     // 100 MeV
     Int_t   dTime     = 10000;   // open
     Int_t   wTime     = 10000;   // open
     Int_t   unfMinE   = 15;      // Remove cells with less than 15 MeV from cluster after unfolding
     Int_t   unfFrac   = 1;       // Remove cells with less than 1% of cluster energy after unfolding
-    Bool_t  updateCell= kTRUE;   // Calibrate cells and modify them on the fly
+    Bool_t  updateCell= kFALSE;  // Calibrate cells and modify them on the fly
     Bool_t  filterEvents = kFALSE; // Filter events with activity in EMCal
     Int_t   cenBin[]  = {-1,-1}; // Centrality bin min-max of accepted events. {-1,-1} take all
     // Calibration, bad map ...
     
-    Bool_t calibEE = kFALSE; // It is set automatically, but here we force to use ir or not in any case
-    Bool_t calibTT = kFALSE; // It is set automatically, but here we force to use ir or not in any case
-    Bool_t badMap  = kTRUE;  // It is set automatically, but here we force to use it or not in any case  
+    Bool_t calibEE = kTRUE; // It is set automatically, but here we force to use ir or not in any case
+    Bool_t calibTT = kTRUE; // It is set automatically, but here we force to use ir or not in any case
+    Bool_t badMap  = kTRUE; // It is set automatically, but here we force to use it or not in any case  
        
     AliAnalysisTaskEMCALClusterize * cl = 
-    AddTaskEMCALClusterize(clustersArray, outAOD, kMC, exo,"V1","", clTM,
+    AddTaskEMCALClusterize(clustersArray, outAOD, kMC, exo,sClust,"", clTM,
                            minEcell,minEseed,dTime,wTime,unfMinE,unfFrac,
                            calibEE,badMap,calibTT,clnonlin,
                            cenBin[0],cenBin[1],-1,1,1,filterEvents,xTalkEmul,updateCell);
@@ -1305,10 +1359,10 @@ void ana ( anaModes mode = mLocal )
     //    cl->GetRecoUtils()->SetDeadChannelAsGood();
     //    cl->GetRecoUtils()->SetHotChannelAsGood();
     
-    clustersArray = Form("V1_Ecell%d_Eseed%d",minEcell,minEseed);
+    clustersArray = Form("%s_Ecell%d_Eseed%d",sClust.Data(),minEcell,minEseed);
     cl->SetAODBranchName(clustersArray);
 
-    if ( updateCell )
+    if ( !updateCell )
     {
       cellsArray = "Cells_Updated";
       if ( xTalkEmul > 0 )
@@ -1365,6 +1419,12 @@ void ana ( anaModes mode = mLocal )
     nTrig = fixTrig+1;
   }
   
+  if ( kYear == 2011 )
+    nTrig = 2;
+
+  if ( kYear == 2010 )
+    nTrig = 1;  
+  
   // -----------------
   // Photon/Pi0/Isolation/Correlation etc
   // -----------------
@@ -1384,8 +1444,10 @@ void ana ( anaModes mode = mLocal )
     Bool_t   mixOn         = kFALSE;
     TString  outputfile    = "";
     Bool_t   printSettings = kFALSE;
-    TString  cutSelected      = "SPDPileUp";//"_ITSonly";
-    TString  analysisSelected = "Photon_InvMass"; // Activate photon selection and invariant mass analysis
+    
+    TString  cutSelected      = "SPDPileUp";//"_MCEnScale_ITSonly";
+     // Activate photon selection and invariant mass analysis
+    TString  analysisSelected = "Photon_InvMass";//_MergedPi0_Isolation_Correlation_ClusterShape_PerSM_PerTCard";
     // More options:
     // "Photon_InvMass_MergedPi0_Isolation_Correlation_ClusterShape_PerSM_PerTCard_QA_Charged_Bkg"; 
     
@@ -1503,38 +1565,38 @@ void ana ( anaModes mode = mLocal )
 //#endif
 //    //  AliAnalysisTaskEMCALTriggerQA * qatrigtask = AddTaskEMCALTriggerQA(); 
 //  } // bAnalysis QA
-  
-    //  // Simple event counting tasks
-    //  
-    //#if defined(__CINT__)
-    //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/AddTaskCounter.C");   
-    //#endif
-    //
-    //  AliAnalysisTaskCounter* count    = AddTaskCounter("",kMC);   // All, fill histo with cross section and trials if kMC is true
-    //  AliAnalysisTaskCounter* countmb  = AddTaskCounter("MB"); // Min Bias
-    //  AliAnalysisTaskCounter* countany = AddTaskCounter("Any"); 
-    //  AliAnalysisTaskCounter* countint = AddTaskCounter("AnyINT");// Min Bias
-    //  
-    //  if ( !kMC )
-    //  {
-    //    AliAnalysisTaskCounter* countemg = AddTaskCounter("EMCEGA"); 
-    //    AliAnalysisTaskCounter* countemj = AddTaskCounter("EMCEJE"); 
-    //    if ( kCollision=="PbPb" )
-    //    {
-    //      AliAnalysisTaskCounter* countcen = AddTaskCounter("Central"); 
-    //      AliAnalysisTaskCounter* countsce = AddTaskCounter("SemiCentral"); 
-    //      AliAnalysisTaskCounter* countssce= AddTaskCounter("SemiOrCentral"); 
-    //      AliAnalysisTaskCounter* countphP = AddTaskCounter("PHOSPb"); 
-    //    }
-    //    else
-    //    {
-    //      AliAnalysisTaskCounter* countem1 = AddTaskCounter("EMC1"); // Trig Th > 1.5 GeV approx
-    //      AliAnalysisTaskCounter* countem7 = AddTaskCounter("EMC7"); // Trig Th > 4-5 GeV 
-    //      AliAnalysisTaskCounter* countphp = AddTaskCounter("PHOS"); 
-    //    }
-    //  }  
-    // 
-    //  
+//  
+      // Simple event counting tasks
+//      
+//    #if defined(__CINT__)
+//      gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/AddTaskCounter.C");   
+//    #endif
+//    
+//      AliAnalysisTaskCounter* count    = AddTaskCounter("",kMC);   // All, fill histo with cross section and trials if kMC is true
+//      AliAnalysisTaskCounter* countmb  = AddTaskCounter("MB"); // Min Bias
+//      AliAnalysisTaskCounter* countany = AddTaskCounter("Any"); 
+//      AliAnalysisTaskCounter* countint = AddTaskCounter("AnyINT");// Min Bias
+//      
+//      if ( !kMC )
+//      {
+//        AliAnalysisTaskCounter* countemg = AddTaskCounter("EMCEGA"); 
+//        AliAnalysisTaskCounter* countemj = AddTaskCounter("EMCEJE"); 
+//        if ( kCollision=="PbPb" )
+//        {
+//          AliAnalysisTaskCounter* countcen = AddTaskCounter("Central"); 
+//          AliAnalysisTaskCounter* countsce = AddTaskCounter("SemiCentral"); 
+//          AliAnalysisTaskCounter* countssce= AddTaskCounter("SemiOrCentral"); 
+//          AliAnalysisTaskCounter* countphP = AddTaskCounter("PHOSPb"); 
+//        }
+//        else
+//        {
+//          AliAnalysisTaskCounter* countem1 = AddTaskCounter("EMC1"); // Trig Th > 1.5 GeV approx
+//          AliAnalysisTaskCounter* countem7 = AddTaskCounter("EMC7"); // Trig Th > 4-5 GeV 
+//          AliAnalysisTaskCounter* countphp = AddTaskCounter("PHOS"); 
+//        }
+//      }  
+//     
+      
   
   
   //-----------------------

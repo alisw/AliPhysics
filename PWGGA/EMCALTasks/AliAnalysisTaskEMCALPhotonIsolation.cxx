@@ -67,8 +67,10 @@ fDPMjetHeader(0),
 fPythiaVersion(""),
 fVariableCPV(kFALSE),
 fVariableCPVInCone(kFALSE),
+fVariableCPVBoth(kFALSE),
 fVariableCPVSyst(""),
 fNonLinRecoEnergyScaling(kFALSE),
+fExtraPerpConesFactor(1.347),
 fTracksAna(0),
 fStack(0),
 fEMCALRecoUtils(new AliEMCALRecoUtils),
@@ -161,8 +163,9 @@ fPtvsTrackPtvsDphi(0),
 fPtTrackClusRatiovsPt(0),
 fPtTrackClusRatiovsPtWithCPV(0),
 fClusEvsClusT(0),
-fPT(0),
+fClustEnBefAftNonLin(0),
 fPTbeforeNonLinScaling(0),
+fPT(0),
 fE(0),
 fNLM(0),
 fNLM2_NC_Acc(0),
@@ -286,8 +289,10 @@ fDPMjetHeader(0),
 fPythiaVersion(""),
 fVariableCPV(kFALSE),
 fVariableCPVInCone(kFALSE),
+fVariableCPVBoth(kFALSE),
 fVariableCPVSyst(""),
 fNonLinRecoEnergyScaling(kFALSE),
+fExtraPerpConesFactor(1.347),
 fTracksAna(0),
 fStack(0),
 fEMCALRecoUtils(new AliEMCALRecoUtils),
@@ -380,8 +385,9 @@ fPtvsTrackPtvsDphi(0),
 fPtTrackClusRatiovsPt(0),
 fPtTrackClusRatiovsPtWithCPV(0),
 fClusEvsClusT(0),
-fPT(0),
+fClustEnBefAftNonLin(0),
 fPTbeforeNonLinScaling(0),
+fPT(0),
 fE(0),
 fNLM(0),
 fNLM2_NC_Acc(0),
@@ -1184,6 +1190,12 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fClusEvsClusT->Sumw2();
   fOutput->Add(fClusEvsClusT);
 
+  fClustEnBefAftNonLin = new TH2F("fClustEnBefAftNonLin", "Cluster energy, non-linearity correction vs. raw", 100, 0., 100., 100, 0., 100.);
+  fClustEnBefAftNonLin->SetXTitle("Raw #it{E} (GeV)");
+  fClustEnBefAftNonLin->SetYTitle("Non-lin. corr. #it{E} (GeV)");
+  fClustEnBefAftNonLin->Sumw2();
+  fOutput->Add(fClustEnBefAftNonLin);
+
   fPT = new TH1F("hPt_NC","#it{p}_{T} distribution for clusters before candidate selection",100,0.,100.);
   fPT->Sumw2();
   fOutput->Add(fPT);
@@ -1701,6 +1713,9 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 
       fPT->Fill(vecCOI.Pt());
 
+      // Check non-linearity effect
+      fClustEnBefAftNonLin->Fill(coi->E(), coi->GetNonLinCorrEnergy());
+
       if(fQA)
 	FillQAHistograms(coi,vecCOI);
 
@@ -1880,20 +1895,31 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
       continue;
 
     // Variable CPV parameters (inspired by direct photons analysis)
-    Float_t eta_param [3] = {0.010, 4.07, -2.50};
-    Float_t phi_param [3] = {0.015, 3.65, -2.00};
+    Float_t eta_param      [3] = {0.010, 4.07, -2.50}; Float_t phi_param      [3] = {0.015, 3.65, -2.00};
+    Float_t eta_param_cone [3] = {0.010, 4.07, -2.50}; Float_t phi_param_cone [3] = {0.015, 3.65, -2.00};
 
     if      ( fVariableCPVSyst == "loose" ) {
-      eta_param[0] = 0.010; eta_param[1] = 4.78; eta_param[2] = -2.50;
-      phi_param[0] = 0.015; phi_param[1] = 3.92; phi_param[2] = -2.00;
+      if ( !fVariableCPVInCone ) {
+	eta_param[0] = 0.010; eta_param[1] = 4.78; eta_param[2] = -2.50;
+	phi_param[0] = 0.015; phi_param[1] = 3.92; phi_param[2] = -2.00;
+      }
+      eta_param_cone[0] = 0.010; eta_param_cone[1] = 4.78; eta_param_cone[2] = -2.50;
+      phi_param_cone[0] = 0.015; phi_param_cone[1] = 3.92; phi_param_cone[2] = -2.00;
     }
     else if ( fVariableCPVSyst == "tight" ) {
-      eta_param[0] = 0.015; eta_param[1] = 3.46; eta_param[2] = -2.50;
-      phi_param[0] = 0.020; phi_param[1] = 3.73; phi_param[2] = -1.75;
+      if ( !fVariableCPVInCone ) {
+	eta_param[0] = 0.015; eta_param[1] = 3.46; eta_param[2] = -2.50;
+	phi_param[0] = 0.020; phi_param[1] = 3.73; phi_param[2] = -1.75;
+      }
+      eta_param_cone[0] = 0.015; eta_param_cone[1] = 3.46; eta_param_cone[2] = -2.50;
+      phi_param_cone[0] = 0.020; phi_param_cone[1] = 3.73; phi_param_cone[2] = -1.75;
     }
     else {
       eta_param[0] = 0.010; eta_param[1] = 4.07; eta_param[2] = -2.50;
       phi_param[0] = 0.015; phi_param[1] = 3.65; phi_param[2] = -2.00;
+
+      eta_param_cone[0] = 0.010; eta_param_cone[1] = 4.07; eta_param_cone[2] = -2.50;
+      phi_param_cone[0] = 0.015; phi_param_cone[1] = 3.65; phi_param_cone[2] = -2.00;
     }
 
     Double_t deltaEta, deltaPhi;
@@ -1932,7 +1958,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
       maxdist = distCT;
 
     if(candidate){
-      if(fVariableCPV){
+      if((fVariableCPVBoth || fVariableCPV) || (fVariableCPVBoth && fVariableCPV)){
 	deltaEta = eta_param[0] + TMath::Power((mt->Pt() + eta_param[1]), eta_param[2]);
 	deltaPhi = phi_param[0] + TMath::Power((mt->Pt() + phi_param[1]), phi_param[2]);
       }
@@ -1942,9 +1968,9 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
       }
     }
     else{
-      if(fVariableCPVInCone){
-	deltaEta = eta_param[0] + TMath::Power((mt->Pt() + eta_param[1]), eta_param[2]);
-	deltaPhi = phi_param[0] + TMath::Power((mt->Pt() + phi_param[1]), phi_param[2]);
+      if((fVariableCPVBoth || fVariableCPVInCone) || (fVariableCPVBoth && fVariableCPVInCone)){
+	deltaEta = eta_param_cone[0] + TMath::Power((mt->Pt() + eta_param_cone[1]), eta_param_cone[2]);
+	deltaPhi = phi_param_cone[0] + TMath::Power((mt->Pt() + phi_param_cone[1]), phi_param_cone[2]);
       }
       else{
 	deltaEta = fdetacutIso;
@@ -3055,7 +3081,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusExtraOrthCones(TLorentzVector
   fTestEnergyCone->Fill(c.Pt(), sumEnergyConeClus, sumpTPerpConeTrack);
 
   ptIso = sumEnergyConeClus + sumpTConeCharged;
-  cones = 1.347*sumpTPerpConeTrack; // Scaling charged-only UE to neutral + charged UE
+  cones = fExtraPerpConesFactor*sumpTPerpConeTrack; // Scaling charged-only UE to neutral + charged UE
 
   Double_t isoConeArea   = 0.; // Cluster (eta, phi)-dependent cone area
   Double_t perpConesArea = 0.; // Cluster (eta, phi)-dependent perpendicular cones area
@@ -4729,7 +4755,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE, Ali
              TMath::Sqrt(TMath::Power(etap-etacone2,2)+TMath::Power(phip-phicone2,2)) < fIsoConeRadius)
             sumUE += mcpp->Pt();
 	  
-	  sumUE *= 1.347; // Neutral + charged extrapolation
+	  sumUE *= fExtraPerpConesFactor; // Neutral + charged extrapolation
 
           break;
         }
@@ -4915,15 +4941,19 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
   }
 
   AliAODMCParticle *mcpart, *mom, *mcpp;
-  Int_t pdg, mompdg, photonlabel;
+  Int_t pdg = 0, photonlabel = 0, momidx = 0, mcppmomidx = 0, mompdg = 0;
 
   for(int iTr = 0; iTr < nTracks; iTr ++){
     eT=0.; phi=0.; eta=0.;
 
     mcpart = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTr));
 
+    fGenPromptPhotonSel->Fill(0.5);
+
     if(mcpart->GetStatus()>10)
       continue;
+
+    fGenPromptPhotonSel->Fill(1.5);
 
     if(!mcpart->IsPrimary())
       continue;
@@ -4931,9 +4961,31 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     if(!mcpart->IsPhysicalPrimary())
       continue;
 
+    fGenPromptPhotonSel->Fill(2.5);
+
     pdg = mcpart->GetPdgCode();
     if(pdg != 22 /*|| mcpart->GetLabel()!=8*/)
       continue;
+
+    fGenPromptPhotonSel->Fill(3.5);
+
+    momidx = mcpart->GetMother();
+    if(momidx > 0 && momidx < nTracks){
+      mom    = static_cast<AliAODMCParticle*>(fAODMCParticles->At(momidx));
+      mompdg = TMath::Abs(mom->GetPdgCode());
+    }
+    else
+      mompdg = pdg;
+
+    if(mompdg != 22) continue;              // Discard particles whose mother is not a photon
+
+    fGenPromptPhotonSel->Fill(4.5);
+
+    // if(fPythiaHeader->ProcessType() != 201 && fPythiaHeader->ProcessType() != 202) continue; // Discard particles which do not come from prompt photon processes
+    // OR
+    if(fmcHeader->GetEventType() != 14 && fmcHeader->GetEventType() != 29) continue; // Discard particles which do not come from prompt photon processes
+
+    fGenPromptPhotonSel->Fill(5.5);
 
     eta = mcpart->Eta();
     phi = mcpart->Phi();
@@ -4975,16 +5027,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
 	continue;
     }
 
+    fGenPromptPhotonSel->Fill(6.5);
+
     photonlabel = iTr;
-
-    int momidx = mcpart->GetMother();
-    if(momidx>0){
-      mom    = static_cast<AliAODMCParticle*>(fAODMCParticles->At(momidx));
-      mompdg = TMath::Abs(mom->GetPdgCode());
-    }
-    else
-      mompdg = mcpart->GetPdgCode();
-
     eT = mcpart->E()*(TMath::Sin(mcpart->Theta())); // Transform to transverse Energy
 
     if(fWho == 1)
@@ -5046,11 +5091,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       if(mcpp->GetStatus()>10 || (!mcpp->IsPhysicalPrimary() || !mcpp->IsPrimary()))
 	continue;
 
-      int mumidx = mcpp->GetMother();
-      if(mumidx < 0 || mumidx > nTracks)
+      mcppmomidx = mcpp->GetMother();
+      if(mcppmomidx < 0 || mcppmomidx > nTracks)
 	continue;
 
-      if(mumidx == photonlabel)
+      if(mcppmomidx == photonlabel)
 	continue;
 
       if(mcpp->E() < 0.3) // Minimal energy for clusters allowed at reconstructed level

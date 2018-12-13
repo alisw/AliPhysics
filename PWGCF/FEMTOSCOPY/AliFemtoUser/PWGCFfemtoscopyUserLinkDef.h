@@ -128,6 +128,7 @@
 #pragma link C++ class AliFemtoESDTrackCutNSigmaFilter+;
 #pragma link C++ class AliFemtoModelCorrFctnKStarFull+;
 #pragma link C++ class AliFemtoModelWeightGeneratorBasicLednicky+;
+#pragma link C++ class AliFemtoModelCorrFctnDEtaDPhiAK;
 #pragma link C++ class AliFemtoModelCorrFctnDEtaDPhiRM;
 
 #pragma link C++ class AliFemtoAnalysisLambdaKaon+;
@@ -150,6 +151,8 @@
 #pragma link C++ class AliFemtoPairCutRadialDistanceKKdist;
 // AliFemtoKKTrackCutTest class:
 #pragma link C++ class AliFemtoKKTrackCutTest;
+// Sphericity for KK analysis in pp13TeV
+#pragma link C++ class AliFemtoSphericityEventCutKK;
 
 #pragma link C++ class AliFemtoCorrFctnInvMass;
 

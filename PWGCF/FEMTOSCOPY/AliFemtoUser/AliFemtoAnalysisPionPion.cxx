@@ -91,7 +91,7 @@ AliFemtoAnalysisPionPion::AnalysisParams::calc_automult(const AliFemtoAnalysisPi
 
     bin_width = (mult_max - mult_min) / mult_bins,
 
-  // magic numbers fitting the exp curve
+    // magic numbers fitting the exp curve
     min_mult = 4293.2 * std::exp(-centhi / 24.01),
     max_mult = 4293.2 * std::exp(-centlo / 24.01),
 
@@ -270,6 +270,7 @@ struct CutConfig_Pion {
             sigma = 3.0;
 
     Bool_t set_label = kTRUE,
+           use_tpctof = kTRUE,
            remove_kinks = kTRUE;
 
     /// default constructor required to use default initialized members
@@ -500,6 +501,7 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
     default_pion.min_tpc_ncls,
     default_pion.remove_kinks,
     default_pion.set_label,
+    default_pion.use_tpctof,
 
     // Pion 2
     default_pion.pt.first
@@ -569,6 +571,7 @@ AliFemtoAnalysisPionPion::BuildPionCut1(const CutParams &p) const
   cut->SetRapidity(p.pion_1_EtaMin, p.pion_1_EtaMax);
   cut->SetMostProbablePion();
   cut->SetNsigma(p.pion_1_sigma);
+  cut->SetNsigmaTPCTOF(p.pion_1_use_tpctof);
 //   cut->SetStatus(AliESDtrack::kTPCrefit | AliESDtrack::kITSrefit);
 
   /// Settings for TPC-Inner Runmode

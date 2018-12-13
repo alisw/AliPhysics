@@ -5,17 +5,35 @@ class LMEECutLib {
 	enum LMEECutSet{
 		kAllSpecies,
 		kElectrons,
-		kHighMult,
-		kMidLowMult,
-		kMidMult,
-		kLowMult,
 		kTTreeCuts,
 		kCutSet1,
 		kV0_ITScorr,
 		kV0_TPCcorr,
 		kV0_TOFcorr,
+		kV0_trackCuts,
 		kPdgSel,
-		kMCsel
+		kMCsel,
+		kResolutionTrackCuts,
+		kPIDcut1,
+		kPIDcut2,
+		kPIDcut3,
+		kPIDcut4,
+		kPIDcut5,
+		kPIDcut6,
+		kPIDcut7,
+		kPIDcut1,
+		kPIDcut9,
+		kPIDcut10,
+		kPIDcut11,
+		kPIDcut12,
+		kPIDcut13,
+		kPIDcut14,
+		kPIDcut15,
+		kPIDcut16,
+		kPIDcut17,
+		kPIDcut18,
+		kPIDcut19,
+		kPIDcut20
 	};
 
 
@@ -35,32 +53,31 @@ class LMEECutLib {
 	AliAnalysisCuts* GetTrackCuts(Int_t cutSet, Int_t PIDcuts);
 
 	//PID correction functions used within dielectron framework
-  void SetEtaCorrectionTPC(AliDielectron *die, Int_t corrZdim, Int_t corrYdim); //giving default value fails: /* = AliDielectronVarManager::kEta*/
-  void SetEtaCorrectionITS(AliDielectron *die, Int_t corrZdim, Int_t corrYdim); //giving default value fails: /* = AliDielectronVarManager::kEta*/
-  void SetEtaCorrectionTOF(AliDielectron *die, Int_t corrZdim, Int_t corrYdim); //giving default value fails: /* = AliDielectronVarManager::kEta*/
+  void SetEtaCorrectionTPC(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim); //giving default value fails: /* = AliDielectronVarManager::kEta*/
+  void SetEtaCorrectionITS(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t hasMC); //giving default value fails: /* = AliDielectronVarManager::kEta*/
+  void SetEtaCorrectionTOF(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t hasMC); //giving default value fails: /* = AliDielectronVarManager::kEta*/
 
 	//PID correction function used by SimpleTTreeMaker
 	//i.e it doesn't need an AliDielectron object
-	static TH3D SetEtaCorrectionTPCTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise);
-	static TH3D SetEtaCorrectionITSTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise);
-	static TH3D SetEtaCorrectionTOFTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise);
+	static TH3D SetEtaCorrectionTPCTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Int_t selection );
+	static TH3D SetEtaCorrectionITSTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Int_t selection, Bool_t hasMC);
+	static TH3D SetEtaCorrectionTOFTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Int_t selection, Bool_t hasMC);
 
 	static TBits* fUsedVars; //Used Variables for correction
-	TH1* fPostPIDCntrdCorrTPC; //Post PID correction object for electron sigma centroids in TPC
-	TH1* fPostPIDWdthCorrTPC; //Post PID correction object for electron sigma widths in TPC
-	TH1* fPostPIDCntrdCorrITS; //Post PID correction object for electron sigma centroids in ITS
-	TH1* fPostPIDWdthCorrITS; //Post PID correction object for electron sigma widths in ITS
-	TH1* fPostPIDCntrdCorrTOF; //Post PID correction object for electron sigma centroids in TOF
-	TH1* fPostPIDWdthCorrTOF; //Post PID correction object for electron sigma widths in TOF
+	static TH1* fPostPIDCntrdCorrTPC; //Post PID correction object for electron sigma centroids in TPC
+	static TH1* fPostPIDWdthCorrTPC; //Post PID correction object for electron sigma widths in TPC
+	static TH1* fPostPIDCntrdCorrITS; //Post PID correction object for electron sigma centroids in ITS
+	static TH1* fPostPIDWdthCorrITS; //Post PID correction object for electron sigma widths in ITS
+	static TH1* fPostPIDCntrdCorrTOF; //Post PID correction object for electron sigma centroids in TOF
+	static TH1* fPostPIDWdthCorrTOF; //Post PID correction object for electron sigma widths in TOF
 
 	private:
 			Bool_t wSDD;
 };
 
-void LMEECutLib::SetEtaCorrectionTPC(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise) {
-  //
-  // eta correction for the centroid and width of electron sigmas in the TPC, can be one/two/three-dimensional
-  //
+void LMEECutLib::SetEtaCorrectionTPC(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim){
+  
+	// eta correction for the centroid and width of electron sigmas in the TPC, can be one/two/three-dimensional
 	
   std::cout << "starting LMEECutLib::SetEtaCorrectionTPC()\n";
   std::string file_name = "/home/aaron/Data/diElecOutput/PIDcalibration/outputTPC.root";
@@ -75,24 +92,14 @@ void LMEECutLib::SetEtaCorrectionTPC(AliDielectron *die, Int_t corrXdim, Int_t c
   else {
     std::cout << "Correction loaded" << std::endl;
   }
-  if(runwise){
-    TObjArray* arr_mean = dynamic_cast<TObjArray*>(inFile->Get("mean_correction_arr"));
-    TObjArray* arr_width =dynamic_cast<TObjArray*>( inFile->Get("width_correction_arr"));
-    std::cout << arr_mean << " " << arr_width << std::endl;
-
-    die->SetWidthCorrArr(arr_width, kTRUE, corrXdim, corrYdim, corrZdim);
-    die->SetCentroidCorrArr(arr_mean, kTRUE, corrXdim, corrYdim, corrZdim);
-  }
-  else{
-    TH3D* mean = dynamic_cast<TH3D*>(inFile->Get("sum_mean_correction"));
-    TH3D* width= dynamic_cast<TH3D*>(inFile->Get("sum_width_correction"));
-    die->SetCentroidCorrFunction(mean, corrXdim, corrYdim, corrZdim);
-    die->SetWidthCorrFunction(width, corrXdim, corrYdim, corrZdim);
-  }
+	TH3D* mean = dynamic_cast<TH3D*>(inFile->Get("sum_mean_correction"));
+	TH3D* width= dynamic_cast<TH3D*>(inFile->Get("sum_width_correction"));
+	die->SetCentroidCorrFunction(mean, corrXdim, corrYdim, corrZdim);
+	die->SetWidthCorrFunction(width, corrXdim, corrYdim, corrZdim);
 
 }
 
-void LMEECutLib::SetEtaCorrectionITS(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise, Bool_t hasMC){
+void LMEECutLib::SetEtaCorrectionITS(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t hasMC){
   //
   // eta correction for the centroid and width of electron sigmas in the TPC, can be one/two/three-dimensional
   //
@@ -107,39 +114,30 @@ void LMEECutLib::SetEtaCorrectionITS(AliDielectron *die, Int_t corrXdim, Int_t c
   TFile* inFile = TFile::Open(file_name.Data());
   std::cout << inFile << std::endl;
   if(!inFile){
-		if(!hasMC){
-			gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputITS.root .");
-		}else{
+		if(hasMC){
 			gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputITS_MC.root .");
+		}else{
+			gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputITS.root .");
 		}
     std::cout << "Copy ITS correction from Alien" << std::endl;
-		if(!hasMC){
-			inFile = TFile::Open("outputITS.root");
-		}else{
+		if(hasMC){
 			inFile = TFile::Open("outputITS_MC.root");
+		}else{
+			inFile = TFile::Open("outputITS.root");
 		}
   }
   else{
     std::cout << "Correction loaded" << std::endl;
   }
-  if(runwise){
-    TObjArray* arr_mean = dynamic_cast<TObjArray*>(inFile->Get("mean_correction_arr"));
-    TObjArray* arr_width =dynamic_cast<TObjArray*>( inFile->Get("width_correction_arr"));
-    std::cout << arr_mean << " " << arr_width << std::endl;
-
-    die->SetWidthCorrArrITS(arr_width, kTRUE, corrXdim, corrYdim, corrZdim);
-    die->SetCentroidCorrArrITS(arr_mean, kTRUE, corrXdim, corrYdim, corrZdim);
-  }
-  else{
-    TH3D* mean = dynamic_cast<TH3D*>(inFile->Get("sum_mean_correction"));
-    TH3D* width= dynamic_cast<TH3D*>(inFile->Get("sum_width_correction"));
-    die->SetCentroidCorrFunctionITS(mean, corrXdim, corrYdim, corrZdim);
-    die->SetWidthCorrFunctionITS(width, corrXdim, corrYdim, corrZdim);
-  }
+ 
+	TH3D* mean = dynamic_cast<TH3D*>(inFile->Get("sum_mean_correction"));
+	TH3D* width= dynamic_cast<TH3D*>(inFile->Get("sum_width_correction"));
+	die->SetCentroidCorrFunctionITS(mean, corrXdim, corrYdim, corrZdim);
+	die->SetWidthCorrFunctionITS(width, corrXdim, corrYdim, corrZdim);
 
 }
 
-void LMEECutLib::SetEtaCorrectionTOF(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise, Bool_t hasMC){
+void LMEECutLib::SetEtaCorrectionTOF(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t hasMC){
   //
   // eta correction for the centroid and width of electron sigmas in the TPC, can be one/two/three-dimensional
   //
@@ -154,40 +152,31 @@ void LMEECutLib::SetEtaCorrectionTOF(AliDielectron *die, Int_t corrXdim, Int_t c
   TFile* inFile = TFile::Open(file_name.Data());
   std::cout << inFile << std::endl;
   if(!inFile){
-		if(!hasMC){
-			gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputTOF.root .");
-		}else{
+		if(hasMC){
 			gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputTOF_MC.root .");
+		}else{
+			gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputTOF.root .");
 		}
     std::cout << "Copy TOF correction from Alien" << std::endl;
-		if(!hasMC){
-			inFile = TFile::Open("outputTOF.root");
-		}else{
+		if(hasMC){
 			inFile = TFile::Open("outputTOF_MC.root");
+		}else{
+			inFile = TFile::Open("outputTOF.root");
 		}
   }
   else{
     std::cout << "Correction loaded" << std::endl;
   }
-  if(runwise){
-    TObjArray* arr_mean = dynamic_cast<TObjArray*>(inFile->Get("mean_correction_arr"));
-    TObjArray* arr_width =dynamic_cast<TObjArray*>( inFile->Get("width_correction_arr"));
-    std::cout << arr_mean << " " << arr_width << std::endl;
-
-    die->SetWidthCorrArrTOF(arr_width, kTRUE, corrXdim, corrYdim, corrZdim);
-    die->SetCentroidCorrArrTOF(arr_mean, kTRUE, corrXdim, corrYdim, corrZdim);
-  }
-  else{
-    TH3D* mean = dynamic_cast<TH3D*>(inFile->Get("sum_mean_correction"));
-    TH3D* width= dynamic_cast<TH3D*>(inFile->Get("sum_width_correction"));
-    die->SetCentroidCorrFunctionTOF(mean, corrXdim, corrYdim, corrZdim);
-    die->SetWidthCorrFunctionTOF(width, corrXdim, corrYdim, corrZdim);
-  }
+  
+	TH3D* mean = dynamic_cast<TH3D*>(inFile->Get("sum_mean_correction"));
+	TH3D* width= dynamic_cast<TH3D*>(inFile->Get("sum_width_correction"));
+	die->SetCentroidCorrFunctionTOF(mean, corrXdim, corrYdim, corrZdim);
+	die->SetWidthCorrFunctionTOF(width, corrXdim, corrYdim, corrZdim);
 
 }
 
 
-static TH3D LMEECutLib::SetEtaCorrectionTPCTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise, Int_t selection) {
+static TH3D LMEECutLib::SetEtaCorrectionTPCTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Int_t selection){
 	
 
   ::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> SetEtaCorrectionTPC() >>>>>>>>>>>>>>>>>>>>>> ");
@@ -294,32 +283,32 @@ static TH3D LMEECutLib::SetEtaCorrectionTPCTTree( Int_t corrXdim, Int_t corrYdim
 
 }
 
-static TH3D LMEECutLib::SetEtaCorrectionITSTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise, Int_t selection, Bool_t hasMC) {
+TH3D LMEECutLib::SetEtaCorrectionITSTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Int_t selection, Bool_t hasMC){
 	
 
   ::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> SetEtaCorrectionITSTTree() >>>>>>>>>>>>>>>>>>>>>> ");
 
   std::cout << "starting LMEECutLib::SetEtaCorrectionITSTTree()\n";
   std::string file_name;
-	if(!hasMC){
-		file_name = "/home/aaron/Data/diElecOutput/PIDcalibration/outputITS.root";
-	}else{
+	if(hasMC){
 		file_name = "/home/aaron/Data/diElecOutput/PIDcalibration/outputITS_MC.root";
+	}else{
+		file_name = "/home/aaron/Data/diElecOutput/PIDcalibration/outputITS.root";
 	}
 
   TFile* recalFile = TFile::Open(file_name.c_str());
   std::cout << recalFile << std::endl;
   if(!recalFile){
-		if(!hasMC){
-			gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputITS.root .");
-		}else{
+		if(hasMC){
 			gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputITS_MC.root .");
+		}else{
+			gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputITS.root .");
 		}
     std::cout << "Copy ITS correction from Alien" << std::endl;
-    if(!hasMC){
-        recalFile = TFile::Open("outputITS.root");
-    }else{
+    if(hasMC){
         recalFile = TFile::Open("outputITS_MC.root");
+    }else{
+        recalFile = TFile::Open("outputITS.root");
     }
   }
   else {
@@ -414,7 +403,7 @@ static TH3D LMEECutLib::SetEtaCorrectionITSTTree( Int_t corrXdim, Int_t corrYdim
 
 }
 
-static TH3D LMEECutLib::SetEtaCorrectionTOFTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise, Int_t selection, Bool_t hasMC) {
+static TH3D LMEECutLib::SetEtaCorrectionTOFTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Int_t selection, Bool_t hasMC) {
 	
 
   ::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> SetEtaCorrectionTOFTTree() >>>>>>>>>>>>>>>>>>>>>> ");
@@ -422,24 +411,24 @@ static TH3D LMEECutLib::SetEtaCorrectionTOFTTree( Int_t corrXdim, Int_t corrYdim
   std::cout << "starting LMEECutLib::SetEtaCorrectionTOFTTree()\n";
   std::string file_name;
 	if(hasMC){
-		file_name = "/home/aaron/Data/diElecOutput/PIDcalibration/outputTOF.root";
-	}else{
 		file_name = "/home/aaron/Data/diElecOutput/PIDcalibration/outputTOF_MC.root";
+	}else{
+		file_name = "/home/aaron/Data/diElecOutput/PIDcalibration/outputTOF.root";
 	}
 
   TFile* recalFile = TFile::Open(file_name.c_str());
   std::cout << recalFile << std::endl;
   if(!recalFile){
-		if(!hasMC){
-			gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputTOF.root .");
-		}else{
+		if(hasMC){
 			gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputTOF_MC.root .");
+		}else{
+			gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/PIDcalibration/outputTOF.root .");
 		}
     std::cout << "Copy TOF correction from Alien" << std::endl;
-    if(!hasMC){
-        recalFile = TFile::Open("outputTOF.root");
-    }else{
+    if(hasMC){
         recalFile = TFile::Open("outputTOF_MC.root");
+    }else{
+        recalFile = TFile::Open("outputTOF.root");
     }
   }
   else {
@@ -543,10 +532,6 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts(Int_t cutSet) {
     switch(cutSet){
         case kAllSpecies:
         case kElectrons:
-        case kHighMult:
-        case kMidMult:
-        case kMidLowMult:
-        case kLowMult:
 				case kTTreeCuts:
 				case kV0_TPCcorr:
 				case kV0_ITScorr:
@@ -574,25 +559,9 @@ AliAnalysisCuts* LMEECutLib::GetCentralityCuts(Int_t centSel) {
 		case kV0_TPCcorr:
 		case kV0_ITScorr:
 		case kV0_TOFcorr:
-			centCuts = new AliDielectronVarCuts("centCutsHigh","cent0090");
+			centCuts = new AliDielectronVarCuts("centCutsHigh","cent00100");
 			centCuts->AddCut(AliDielectronVarManager::kCentralityNew,0.,100.);
 			break;
-			break;
-		case kHighMult:
-			centCuts = new AliDielectronVarCuts("centCutsHigh","cent0020");
-			centCuts->AddCut(AliDielectronVarManager::kCentralityNew,0.,20.);
-			break;
-	 case kMidMult:
-			centCuts = new AliDielectronVarCuts("centCutsMid","cent2040");
-			centCuts->AddCut(AliDielectronVarManager::kCentralityNew,20.,40.);
-			break;
-	 case kMidLowMult:
-			centCuts = new AliDielectronVarCuts("centCutsMid","cent0460");
-			centCuts->AddCut(AliDielectronVarManager::kCentralityNew,40.,60.);
-			break;
-		case kLowMult:
-			centCuts  = new AliDielectronVarCuts("centCutsLow","cent60100");
-			centCuts->AddCut(AliDielectronVarManager::kCentralityNew,60.,100.);
 			break;
 		default: cout << "No Centrality selected" << endl;
 	}
@@ -605,10 +574,6 @@ AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet) {
 	switch (cutSet) {
 		case kAllSpecies:
 		case kElectrons:
-		case kHighMult:
-		case kMidMult:
-		case kMidLowMult:
-		case kLowMult:
 		case kCutSet1:
 			mixingHandler = new AliDielectronMixingHandler;
 			mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -7.5, -5., -2.5 , 0., 2.5, 5., 7.5 , 10.");
@@ -634,27 +599,23 @@ AliDielectronCutGroup* LMEECutLib::GetPairCuts(Int_t cutSet)  {
 	//Final OR cut group to incorporate the following cuts (below)
 	AliDielectronCutGroup* allCuts    = new AliDielectronCutGroup("allCuts", "allCuts", AliDielectronCutGroup::kCompOR);
 
-	case kCutSet1:
-     //AND cut group to select low mass pairs with large opening angle
-    AliDielectronCutGroup* convRejCut = new AliDielectronCutGroup("convRejCut", "convRejCut", AliDielectronCutGroup::kCompAND);
-    AliDielectronVarCuts* convMassCut = new AliDielectronVarCuts("convMassCut", "convMassCut");
-    AliDielectronVarCuts* convPhiVCut = new AliDielectronVarCuts("convPhiVCut", "convPhiVCut");
-    convMassCut->AddCut(AliDielectronVarManager::kM, 0.00, 0.1);
-    convPhiVCut->AddCut(AliDielectronVarManager::kPhivPair, 0., 2.);
-    convRejCut->AddCut(convMassCut);
-    convRejCut->AddCut(convPhiVCut);
+	//AND cut group to select low mass pairs with large opening angle
+	AliDielectronCutGroup* convRejCut = new AliDielectronCutGroup("convRejCut", "convRejCut", AliDielectronCutGroup::kCompAND);
+	AliDielectronVarCuts* convMassCut = new AliDielectronVarCuts("convMassCut", "convMassCut");
+	AliDielectronVarCuts* convPhiVCut = new AliDielectronVarCuts("convPhiVCut", "convPhiVCut");
+	convMassCut->AddCut(AliDielectronVarManager::kM, 0.00, 0.1);
+	convPhiVCut->AddCut(AliDielectronVarManager::kPhivPair, 0., 2.);
+	convRejCut->AddCut(convMassCut);
+	convRejCut->AddCut(convPhiVCut);
 
-    //Mass cut to include any pairs with mass greater than 0.1 GeV
-    AliDielectronVarCuts* pairMassCut = new AliDielectronVarCuts("pairMassCut", "pairMassCut");
-    pairMassCut->AddCut(AliDielectronVarManager::kM, 0.1, 5.0);
+	//Mass cut to include any pairs with mass greater than 0.1 GeV
+	AliDielectronVarCuts* pairMassCut = new AliDielectronVarCuts("pairMassCut", "pairMassCut");
+	pairMassCut->AddCut(AliDielectronVarManager::kM, 0.1, 5.0);
 
-    allCuts->AddCut(convRejCut);
-    allCuts->AddCut(pairMassCut);
+	allCuts->AddCut(convRejCut);
+	allCuts->AddCut(pairMassCut);
 
-    return allCuts;
-		break;
-	default:
-		std::cout << "No pair cut applied" << std::endl;
+	return allCuts;
 
 }
 
@@ -684,12 +645,11 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
   AliDielectronVarCuts *MotherIsPhoton = new AliDielectronVarCuts("MotherIsPhoton","MotherIsPhoton");
   MotherIsPhoton->AddCut(AliDielectronVarManager::kPdgCodeMother, 22.);
 
+	// TMVA weight file (BDT for ePID)
+	TString weightFile = "alien:///alice/cern.ch/user/a/acapon/TMVAclassifiers/TMVAClassification_BDT.weights.xml";
+
 	switch(PIDcuts){
 		case kElectrons:
-		case kHighMult:
-		case kMidMult:
-		case kMidLowMult:
-		case kLowMult:
 			if(wSDD){
 				cutsPID->AddCut(AliDielectronPID::kITS, AliPID::kElectron, -3.0,  1.0, 0.2, 100., kFALSE);
 				cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -1.5,  4.0, 0.2, 100., kFALSE);
@@ -707,17 +667,10 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
 			break;
 		case kAllSpecies:
 			break;
-		case kCutSet1:
-
+		case kCutSet1:{
 			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
-
-			// Copy xml file to local directory first
-			// Classifier trained on reweighted data
-			//TString weightFile = "alien:///alice/cern.ch/user/a/acapon/TMVAclassifiers/TMVAClassification_BDTunweighted.weights.xml";
-			// Classifier trained on PID post calibratied data
-			TString weightFile = "alien:///alice/cern.ch/user/a/acapon/TMVAclassifiers/TMVAClassification_BDT.weights.xml";
 			
-			AliDielectronTMVACuts *pidCuts = new AliDielectronTMVACuts("PIDCutsTMVA","PIDCutsTMVA");
+			AliDielectronTMVACuts* pidCuts = new AliDielectronTMVACuts("PIDCutsTMVA","PIDCutsTMVA");
 			pidCuts->AddTMVAInput("pt", AliDielectronVarManager::kPt);
 			pidCuts->AddTMVAInput("EsigTPC", AliDielectronVarManager::kTPCnSigmaEle);
 			pidCuts->AddTMVAInput("EsigITS", AliDielectronVarManager::kITSnSigmaEle);
@@ -732,22 +685,19 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
 			cuts->AddCut(cutsPID);
 			cuts->AddCut(pidCuts);
 			return cuts;
-			break;
+		}
 		case kTTreeCuts:
 		  // PID cuts used during TTree creating
-			// Momentum range relaxed as it cuts on P not Pt. Kinematic cuts applied
-			// separately.
+			// Momentum range relaxed as it cuts on P not Pt. Kinematic cuts applied separately.
 			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4., 0., 100., kFALSE);
 			//cuts->AddCut(cutsPID);
 			return cutsPID;
-			break;
 		case kV0_TPCcorr:
 			// PID cuts used to select out a very pure sample of V0 electrons using only ITS and TOF
 			cutsPID->AddCut(AliDielectronPID::kITS, AliPID::kElectron, -1., 1., 0.1, 100., kFALSE);
 			cutsPID->AddCut(AliDielectronPID::kTOF, AliPID::kElectron, -1., 1., 0.4, 100., kFALSE, AliDielectronPID::kRequire);
 			cuts->AddCut(cutsPID);
 			return cuts;
-			break;
 		case kV0_ITScorr:
 			// PID cuts used to select out a very pure sample of V0 electrons using only TPC and TOF
 			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -0.6, 1., 0.1, 100., kFALSE);
@@ -755,18 +705,15 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
 			cutsPID->AddCut(AliDielectronPID::kTOF, AliPID::kElectron, -1.,  1., 0.4, 100., kFALSE, AliDielectronPID::kRequire);
 			cuts->AddCut(cutsPID);
 			return cuts;
-			break;
 		case kV0_TOFcorr:
 			// PID cuts used to select out a very pure sample of V0 electrons using only TPC and TOF
 			cutsPID->AddCut(AliDielectronPID::kITS, AliPID::kElectron, -1., 1., 0.1, 100., kFALSE);
 			cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -0.6, 1., 0.1, 100., kFALSE);
 			cuts->AddCut(cutsPID);
 			return cuts;
-			break;
 		case kPdgSel:
 			cuts->AddCut(PdgLepton);
 			return cuts;
-			break;
 		default:
 			std::cout << "No Analysis PID Cut defined " << std::endl;
 			return 0x0;
@@ -775,18 +722,21 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
     return 0x0;
 }
 
-//Make/Tighten track Cuts that are *NOT* already
-//done in the AOD production
-//**IMPORTANT**: For AODs, select FilterBit
-//the method is ignored for ESDs
-
+// Make/Tighten track Cuts that are *NOT* already //done in the AOD production
+// **IMPORTANT**: For AODs, select FilterBit. The method is ignored for ESDs
 AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 
 	::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> GetTrackCuts() >>>>>>>>>>>>>>>>>>>>>> ");
 	AliDielectronCutGroup* trackCuts = new AliDielectronCutGroup("trackCuts", "trackCuts", AliDielectronCutGroup::kCompAND);
 
+	// Track cut groups
 	AliDielectronVarCuts* varCutsFilter     = new AliDielectronVarCuts("varCutsFilter", "varCutsFilter");
 	AliDielectronTrackCuts* trackCutsFilter = new AliDielectronTrackCuts("trackCutsFilter", "trackCutsFilter");
+
+	// V0 track cut groups
+	AliDielectronV0Cuts* gammaV0cuts = new AliDielectronV0Cuts("gammaV0cuts", "gammaV0cuts");
+	AliDielectronVarCuts* trackCutsV0 = new AliDielectronVarCuts("trackCutsV0", "trackCutsV0");
+
 
 	switch(cutSet){
     //----------
@@ -794,12 +744,8 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
     //----------
 		case kAllSpecies:
 		case kElectrons:
-		case kHighMult:
-		case kMidMult:
-		case kMidLowMult:
-		case kLowMult:
 			varCutsFilter->AddCut(AliDielectronVarManager::kEta, -0.80, 0.80);
-			varCutsFilter->AddCut(AliDielectronVarManager::kPt, 0.2, 10.);
+			varCutsFilter->AddCut(AliDielectronVarManager::kPt, 0.2, 20.);
 			varCutsFilter->AddCut(AliDielectronVarManager::kImpactParXY,  - 1.0, 1.0);
 			varCutsFilter->AddCut(AliDielectronVarManager::kImpactParZ,   - 3.0, 3.0);
 			if(wSDD){
@@ -815,7 +761,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 			//varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCrFrac,  0.3, 10.); //Number of found/findable
 			varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.3, 1.1); //Crossed rows over findable
 
-			trackCutsFilter->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+			trackCutsFilter->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD, AliDielectronTrackCuts::kAny);
 			trackCutsFilter->SetRequireITSRefit(kTRUE);
 			trackCutsFilter->SetRequireTPCRefit(kTRUE);
 
@@ -828,7 +774,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 			break;
 		case kTTreeCuts:
 			varCutsFilter->AddCut(AliDielectronVarManager::kEta, -0.80, 0.80);
-			varCutsFilter->AddCut(AliDielectronVarManager::kPt, 0.2, 10.);
+			varCutsFilter->AddCut(AliDielectronVarManager::kPt, 0.2, 20.);
 			varCutsFilter->AddCut(AliDielectronVarManager::kNclsTPC,      70.0, 200.); 
 			varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCr,      60.0, 200.); 
 			varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.3, 1.1); 
@@ -841,7 +787,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 				varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,  2.0, 100.0); // < 2
 				varCutsFilter->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0, 40.);
 			}
-			trackCutsFilter->SetAODFilterBit(16);//or 1<<4
+			trackCutsFilter->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA);//or 1<<4
 			trackCutsFilter->SetRequireITSRefit(kTRUE);
 			trackCutsFilter->SetRequireTPCRefit(kTRUE);
 			trackCuts->AddCut(varCutsFilter);
@@ -853,7 +799,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 		case kCutSet1:
 
 			varCutsFilter->AddCut(AliDielectronVarManager::kEta,            -0.80, 0.80);
-			varCutsFilter->AddCut(AliDielectronVarManager::kPt,             0.2,   10.);
+			varCutsFilter->AddCut(AliDielectronVarManager::kPt,             0.2,   20.);
 			varCutsFilter->AddCut(AliDielectronVarManager::kNclsTPC,        80.0,  200.);
 			varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCr,      100.0, 200.);
 			varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8,   1.1);
@@ -867,8 +813,8 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 			varCutsFilter->AddCut(AliDielectronVarManager::kITSchi2Cl,      0.0,   4.5);
 
 			//Select filterbit 4
-			trackCutsFilter->SetAODFilterBit(16);//or 1<<4
-			trackCutsFilter->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
+			trackCutsFilter->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA);//or 1<<4
+			trackCutsFilter->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD, AliDielectronTrackCuts::kFirst);
 			//Refits	
 			trackCutsFilter->SetRequireITSRefit(kTRUE);
 			trackCutsFilter->SetRequireTPCRefit(kTRUE);
@@ -878,12 +824,8 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 			trackCuts->AddCut(GetPIDCuts(PIDcuts));
 			trackCuts->Print();
 			return trackCuts;
-			break;
-		case kV0_TPCcorr:
-		case kV0_ITScorr:
-		case kV0_TOFcorr:
+		case kV0_trackCuts:
 			// V0 specific track cuts
-			AliDielectronV0Cuts* gammaV0cuts = new AliDielectronV0Cuts("gammaV0cuts", "gammaV0cuts");
 			gammaV0cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);
 			// Cut on the angle between the total momentum vector of the daughter
 			// tracks and a line connecting the primary and secondary vertices
@@ -905,7 +847,6 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 			// Default setting is to exclude V0 tracks
 			gammaV0cuts->SetExcludeTracks(kFALSE);
 			// Standard track cut variables
-			AliDielectronVarCuts* trackCutsV0 = new AliDielectronVarCuts("trackCutsV0", "trackCutsV0");
 			trackCutsV0->AddCut(AliDielectronVarManager::kTPCchi2Cl, 0.0, 4.0);
 			trackCutsV0->AddCut(AliDielectronVarManager::kNFclsTPCr, 100.0, 160.0);
 			trackCutsV0->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8, 1.1);
@@ -915,12 +856,11 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 			trackCuts->AddCut(GetPIDCuts(PIDcuts));
 			trackCuts->Print();
 			return trackCuts;
-			break;
 		case kMCsel:
 			// Despite pdg selection, apply loose cuts to trim away edges of
 			// distribution which has poor data/MC agreement
 			varCutsFilter->AddCut(AliDielectronVarManager::kEta, -0.80, 0.80);
-			varCutsFilter->AddCut(AliDielectronVarManager::kPt, 0.2, 10.);
+			varCutsFilter->AddCut(AliDielectronVarManager::kPt, 0.2, 20.);
 			varCutsFilter->AddCut(AliDielectronVarManager::kNclsTPC,      70.0, 200.); 
 			varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCr,      60.0, 200.); 
 			varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.3, 1.1); 
@@ -933,13 +873,37 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 				varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,  2.0, 100.0); // < 2
 				varCutsFilter->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0, 40.);
 			}
-			trackCutsFilter->SetAODFilterBit(16);//or 1<<4
+			trackCutsFilter->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA);//or 1<<4
 			trackCutsFilter->SetRequireITSRefit(kTRUE);
 			trackCutsFilter->SetRequireTPCRefit(kTRUE);
 			trackCuts->AddCut(varCutsFilter);
 			trackCuts->AddCut(trackCutsFilter);
 
 			trackCuts->AddCut(GetPIDCuts(PIDcuts));
+			trackCuts->Print();
+			return trackCuts;
+			break;
+		case kResolutionTrackCuts:
+			varCutsFilter->AddCut(AliDielectronVarManager::kPt, 0.1, 8.0);
+			varCutsFilter->AddCut(AliDielectronVarManager::kEta, -1.2, 1.2);
+      varCutsFilter->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+      varCutsFilter->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+			if(wSDD){
+				varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      3.0, 100.0); 
+				varCutsFilter->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,  15.0);
+			}else{
+				varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      2.0, 100.0); 
+				varCutsFilter->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,  20.0);
+			}
+      varCutsFilter->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   4.1);
+      varCutsFilter->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   5.0);
+      varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
+      varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.8, 1.1); 
+			
+			trackCutsFilter->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA);//or 1<<4
+			trackCutsFilter->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD, AliDielectronTrackCuts::kFirst);
+			trackCuts->AddCut(varCutsFilter);
+			trackCuts->AddCut(trackCutsFilter);
 			trackCuts->Print();
 			return trackCuts;
 			break;

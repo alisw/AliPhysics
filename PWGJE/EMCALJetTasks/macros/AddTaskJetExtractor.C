@@ -1,7 +1,6 @@
 // AddTaskJetExtractor.C
-AliAnalysisTaskJetExtractor* AddTaskJetExtractor(const char* configFile,
-                                                 const char* taskNameSuffix = 0)
+AliAnalysisTaskJetExtractor* AddTaskJetExtractor (TString trackArray, TString jetArray, TString rhoObject, Double_t jetRadius, TString configFile, const char* taskNameSuffix)
 {
   AliRDHFJetsCutsVertex* cuts = new AliRDHFJetsCutsVertex("jetCuts");
-  return AliAnalysisTaskJetExtractor::AddTaskJetExtractor(configFile, cuts, taskNameSuffix);
+  return AliAnalysisTaskJetExtractor::AddTaskJetExtractor(trackArray, jetArray, rhoObject, jetRadius, configFile, cuts, taskNameSuffix);
 }

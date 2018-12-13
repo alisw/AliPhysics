@@ -2,6 +2,7 @@
 #define AliAnalysisTaskStrangenessLifetimes_H
 
 class TH1D;
+class TGraph;
 class TH2D;
 class TList;
 class TTree;
@@ -14,6 +15,8 @@ class TTree;
 #include "Math/Vector4D.h"
 #include "MCparticle.h"
 #include "MiniV0.h"
+#include "HyperTriton2Body.h"
+
 
 class AliPIDResponse;
 class AliESDtrack;
@@ -89,15 +92,19 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   TH1D* fHistEtaPos;                //! Pseudorapidity of the positive prong
   TH1D* fHistEtaNeg;                //! Pseudorapidity of the negative prong
   TH2D* fHistArmenteros;            //! Pseudorapidity of the negative prong
-
+  TH1D* fHistNsigmaPosHe;           //!
+  TH2D* fHistdEdxVsPt;              //!
+  TH2D* fHistCtAnalysis;            //!  
+  TH1D* fHistNhyp;                  //!
   float fMinPtToSave;  // minimum pt
   float fMaxPtToSave;  // maximum pt
   float fMaxTPCpionSigma;
   float fMaxTPCprotonSigma;
   float fMaxTPChe3Sigma;
 
-  std::vector<Lifetimes::MiniV0<3> > fV0vector;
+  std::vector<Lifetimes::MiniV0 > fV0vector;
   std::vector<Lifetimes::MCparticle> fMCvector;
+  std::vector<Lifetimes::HyperTriton2Body> fV0Hyvector;
   float fMultiplicity;
 
   AliAnalysisTaskStrangenessLifetimes(
@@ -105,7 +112,7 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   AliAnalysisTaskStrangenessLifetimes& operator=(
       const AliAnalysisTaskStrangenessLifetimes&);  // not implemented
 
-  ClassDef(AliAnalysisTaskStrangenessLifetimes, 1);
+  ClassDef(AliAnalysisTaskStrangenessLifetimes, 4);
 };
 
 #endif

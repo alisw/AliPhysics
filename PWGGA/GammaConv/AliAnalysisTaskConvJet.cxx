@@ -42,11 +42,17 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() :
   AliAnalysisTaskEmcalJet(),
   fNJets(0),
   fVectorJetPt(0),
+  fVectorJetPx(0),
+  fVectorJetPy(0),
+  fVectorJetPz(0),
   fVectorJetEta(0),
   fVectorJetPhi(0),
   fVectorJetR(0),
   fTrueNJets(0),
   fTrueVectorJetPt(0),
+  fTrueVectorJetPx(0),
+  fTrueVectorJetPy(0),
+  fTrueVectorJetPz(0),
   fTrueVectorJetEta(0),
   fTrueVectorJetPhi(0),
   fTrueVectorJetR(0)
@@ -57,10 +63,16 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fNJets(0),
   fVectorJetPt(0),
+  fVectorJetPx(0),
+  fVectorJetPy(0),
+  fVectorJetPz(0),
   fVectorJetEta(0),
   fVectorJetPhi(0),
   fVectorJetR(0),
   fTrueVectorJetPt(0),
+  fTrueVectorJetPx(0),
+  fTrueVectorJetPy(0),
+  fTrueVectorJetPz(0),
   fTrueVectorJetEta(0),
   fTrueVectorJetPhi(0),
   fTrueVectorJetR(0)
@@ -113,6 +125,9 @@ void AliAnalysisTaskConvJet::DoJetLoop()
       UInt_t count = 0;
       fNJets = 0 ;
       fVectorJetPt.clear();
+      fVectorJetPx.clear();
+      fVectorJetPy.clear();
+      fVectorJetPz.clear();
       fVectorJetEta.clear();
       fVectorJetPhi.clear();
       fVectorJetR.clear();
@@ -120,6 +135,9 @@ void AliAnalysisTaskConvJet::DoJetLoop()
         if (!jet) continue;
         count++;
         fVectorJetPt.push_back(jet->Pt());
+        fVectorJetPx.push_back(jet->Px());
+        fVectorJetPy.push_back(jet->Py());
+        fVectorJetPz.push_back(jet->Pz());
         fVectorJetEta.push_back(jet->Eta());
         fVectorJetPhi.push_back(jet->Phi());
         fVectorJetR.push_back(jet->Area());
@@ -129,6 +147,9 @@ void AliAnalysisTaskConvJet::DoJetLoop()
       UInt_t count = 0;
       fTrueNJets = 0 ;
       fTrueVectorJetPt.clear();
+      fTrueVectorJetPx.clear();
+      fTrueVectorJetPy.clear();
+      fTrueVectorJetPz.clear();
       fTrueVectorJetEta.clear();
       fTrueVectorJetPhi.clear();
       fTrueVectorJetR.clear();
@@ -136,6 +157,9 @@ void AliAnalysisTaskConvJet::DoJetLoop()
         if (!jet) continue;
         count++;
         fTrueVectorJetPt.push_back(jet->Pt());
+        fTrueVectorJetPx.push_back(jet->Px());
+        fTrueVectorJetPy.push_back(jet->Py());
+        fTrueVectorJetPz.push_back(jet->Pz());
         fTrueVectorJetEta.push_back(jet->Eta());
         fTrueVectorJetPhi.push_back(jet->Phi());
         fTrueVectorJetR.push_back(jet->Area());

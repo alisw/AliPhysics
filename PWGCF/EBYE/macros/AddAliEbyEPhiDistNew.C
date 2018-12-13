@@ -13,13 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 //=========================================================================//
-//                 AliEbyE Analysis for Net-Particle study                 //
-//                         Surya Prakash Pathak                            //
-//                     surya.prakash.pathak@cern.ch                        //
+//             AliEbyE Analysis for Net-Particle study                     //
+//                           Surya Prakash Pathak                          //
+//                        surya.prakash.pathak@cern.ch                     //
 //                   Deepika Rathee  | Satyajit Jena                       //
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                                                                         //
-//                        (Last Modified 2018/09/20)                       //
+//                        (Last Modified 2018/11/07)                       //
 //                 Dealing with Wide pT Window Modified to ESDs            //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle   //
 //analysis task.                                                           //
@@ -29,41 +29,36 @@ TString fileNameBase="AnalysisResults.root";
 //Caution-> runName: LHC10h, LHC11h, LHC15o and LHC10hAMPT (only supported)
 
 
-AliAnalysisTask *AddAliEbyEPhiDistNew(
-                                                      TString runName = "LHC10h",
-                                                      Bool_t isModeAOD = 0,
-                                                      Int_t aodFilterBit = 768,
-                                                      Bool_t IsMC  = 0,
-                                                      Int_t pidtype = 1,//pidtype:charge-0, pion-1, kaon-2, proton-3
-                                                      Double_t DCAxy = 2.,
-                                                      Double_t DCAz = 2.,
-                                                      Double_t Vx = 0.3,
-                                                      Double_t Vy = 0.3,
-                                                      Double_t Vz = 10.,
-                                                      Bool_t IsRapCut = 0,
-                                                      Bool_t IsTotalMom = 0,
-                                                      Double_t Eta = 0.8,
-                                                      Int_t TPCCrossRow = 80,
-                                                      Double_t Chi2NDF = 4.,
-                                                      const char* CentEstimator = "V0M",
-                                                      Int_t pidstrategy = 0,
-                                                      Float_t nSigmaITS = 2.5,
-                                                      Float_t nSigmaTPC = 2.5,
-                                                      Float_t nSigmaTOF = 2.5,
-                                                      TString taskname = "TestHM") {
+AliAnalysisTask *AddAliEbyEPhiDistNew (
+                                       TString runName = "LHC10h",
+                                       Bool_t isModeAOD = 0,
+                                       Int_t aodFilterBit = 768,
+                                       Bool_t IsMC  = 0,
+                                       Int_t pidtype = 1,//pidtype:charge-0, pion-1, kaon-2, proton-3
+                                       Double_t DCAxy = 2.,
+                                       Double_t DCAz = 2.,
+                                       Double_t Vx = 0.3,
+                                       Double_t Vy = 0.3,
+                                       Double_t Vz = 10.,
+                                       Bool_t IsRapCut = 0,
+                                       Bool_t IsTotalMom = 0,
+                                       Double_t Eta = 0.8,
+                                       Int_t TPCCrossRow = 80,
+                                       Double_t Chi2NDF = 4.,
+                                       const char* CentEstimator = "V0M",
+                                       Int_t pidstrategy = 0,
+                                       Float_t nSigmaITS = 2.5,
+                                       Float_t nSigmaTPC = 2.5,
+                                       Float_t nSigmaTOF = 2.5,
+                                       TString taskname = "TestHM") {
     
     Double_t ptl, pth;
     Double_t phil, phih;
     
     //Set the track cuts here ---
-    if( pidtype == 0){
-        ptl = 0.18;
-        pth = 2.1;
-    }
-    else{
-        ptl = 0.35;
-        pth = 1.6;
-    }
+    
+    ptl = 0.35;
+    pth = 1.55;
     
     phil = 0.0 ; // total phi in radian
     phih = 6.28;
@@ -71,12 +66,12 @@ AliAnalysisTask *AddAliEbyEPhiDistNew(
     
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
-        ::Error("AddAliEbyEPhiDistNew", "No analysis manager to connect to.");
+        ::Error("AddAliEbyEPhiDistNew ", "No analysis manager to connect to.");
         return NULL;
     }
     
     if (!mgr->GetInputEventHandler()) {
-        ::Error("AddAliEbyEPhiDistNew", "This task requires an input event handler");
+        ::Error("AddAliEbyEPhiDistNew ", "This task requires an input event handler");
         return NULL;
     }
     
@@ -100,14 +95,9 @@ AliAnalysisTask *AddAliEbyEPhiDistNew(
     task->SetIsRapidityCut( IsRapCut );
     task->SetUseTotalMomentumCut( IsTotalMom );
     task->SetKinematicsCuts( ptl, pth, Eta );
-    if( pidtype == 0){
-        task->SetNumberOfPtBins( 16 );
-    }
-    else{
-        task->SetNumberOfPtBins( 19 );
-    }
+    task->SetNumberOfPtBins(13);
     task->SetPhi(phil,phih);
-    task->SetNumberOfPhiBins(6);
+    task->SetNumberOfPhiBins(18);
     task->SetTPCTrackQualityCuts( TPCCrossRow, Chi2NDF );
     task->SetCentralityEstimator( CentEstimator );
     

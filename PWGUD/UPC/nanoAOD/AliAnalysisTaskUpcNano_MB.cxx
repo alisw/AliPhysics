@@ -80,6 +80,7 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
 	hITSPIDKaon(0),
 	hITSPIDKaonCorr(0),
 	hTPCdEdxCorr(0),
+	hTriggerCounter(0),
 	fSPDfile(0),
   	hBCmod4(0),
   	hSPDeff(0) 
@@ -113,6 +114,7 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
 	hITSPIDKaon(0),
 	hITSPIDKaonCorr(0),
 	hTPCdEdxCorr(0),
+	hTriggerCounter(0),
 	fSPDfile(0),
   	hBCmod4(0),
   	hSPDeff(0) 
@@ -149,8 +151,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTrackCutsBit0->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
   fTrackCutsBit5 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
   
-  fTrackCutsBit1 = new AliESDtrackCuts("ITS stand-alone Track Cuts", "ESD Track Cuts");
-  fTrackCutsBit1->SetRequireITSStandAlone(kTRUE);
+  fTrackCutsBit1 = AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kFALSE,kTRUE);
   
   fOutputList = new TList();
   fOutputList ->SetOwner();
@@ -177,12 +178,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeJPsi ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/F");
   fTreeJPsi ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreeJPsi ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
-  fTreeJPsi ->Branch("fNFiredMaxiPads", &fNFiredMaxiPads, "fNFiredMaxiPads/I");
-  fTreeJPsi ->Branch("fNTOFtrgPads", &fNTOFtrgPads, "fNTOFtrgPads/I");
   fTreeJPsi ->Branch("fInEtaRec", &fInEtaRec, "fInEtaRec/O");
-  fTreeJPsi ->Branch("fTrackIndex", &fTrackIndex[0],"fTrackIndex[2]/I");
-  fTreeJPsi ->Branch("fTOFhits", &fTOFhits);
-  fTreeJPsi ->Branch("fTrackIndices", &fTrackIndices);
   if(isMC){
 	fTreeJPsi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
 	}
@@ -200,6 +196,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreePhi ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/F");
   fTreePhi ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreePhi ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
+  fTreePhi ->Branch("fTriggers", &fTriggers, "fTriggers[8]/O");
   if(isMC) fTreePhi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
   fOutputList->Add(fTreePhi);
   
@@ -215,12 +212,8 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeRho ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/F");
   fTreeRho ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreeRho ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
-  fTreeRho ->Branch("fNFiredMaxiPads", &fNFiredMaxiPads, "fNFiredMaxiPads/I");
-  fTreeRho ->Branch("fNTOFtrgPads", &fNTOFtrgPads, "fNTOFtrgPads/I");
-  fTreeRho ->Branch("fTrackIndex", &fTrackIndex[0],"fTrackIndex[2]/I");
-  fTreeRho ->Branch("fTOFhits", &fTOFhits);
-  fTreeRho ->Branch("fTrackIndices", &fTrackIndices);
   fTreeRho ->Branch("fInEtaRec", &fInEtaRec, "fInEtaRec/O");
+  fTreeRho ->Branch("fTriggers", &fTriggers, "fTriggers[8]/O");
   
   if(isMC) fTreeRho ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
   fOutputList->Add(fTreeRho);
@@ -239,7 +232,6 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreePsi2s ->Branch("fZNCtime", &fZNCtime[0],"fZNCtime[4]/F");
   fTreePsi2s ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreePsi2s ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
-  fTreePsi2s ->Branch("fNFiredMaxiPads", &fNFiredMaxiPads, "fNFiredMaxiPads/I");
   if(isMC){ 
   	fTreePsi2s ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
 	}
@@ -303,6 +295,9 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   hTPCdEdxCorr->GetYaxis()->SetTitle("dE/dx^{TPC} (a.u.)");
   fOutputList->Add(hTPCdEdxCorr);
   
+  hTriggerCounter = new TH2I("hTriggerCounter","Number of analyzed UPC triggers per run",3,1,4,2000,295000,297000);
+  fOutputList->Add(hTriggerCounter);
+  
   fSPDfile = AliDataFile::OpenOADB("PWGUD/UPC/SPDFOEfficiency_run245067.root");
   fSPDfile->Print();
   fSPDfile->Map();
@@ -311,7 +306,6 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   TH2D *hBCmod4_2D = (TH2D*) fSPDfile->Get("hCounts");
   hBCmod4 = hBCmod4_2D->ProjectionY();
   fSPDfile->Close();
- 
     
   PostData(1, fOutputList);
 
@@ -325,10 +319,29 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   AliVEvent *fEvent = InputEvent();
   if(!fEvent) return;
   
-  TString trigger = fEvent->GetFiredTriggerClasses();
-  if(!isMC && !trigger.Contains("CCUP8-B") && !trigger.Contains("CCUP9-B"))return;
-   
   fRunNumber = fEvent->GetRunNumber();
+  TString trigger = fEvent->GetFiredTriggerClasses();
+  
+  if(fRunNumber>=295881){
+  	if(!isMC && !trigger.Contains("CCUP29-B-SPD2-CENTNOTRD") && !trigger.Contains("CCUP30-B-SPD2-CENTNOTRD") && !trigger.Contains("CCUP31-B-SPD2-CENTNOTRD"))return;
+	}
+  else{ 
+  	if(!isMC && !trigger.Contains("CCUP29-B-NOPF-CENTNOTRD") && !trigger.Contains("CCUP30-B-NOPF-CENTNOTRD") && !trigger.Contains("CCUP31-B-NOPF-CENTNOTRD"))return;
+	}
+
+  UInt_t fL0inputs = fEvent->GetHeader()->GetL0TriggerInputs();
+  fTriggers[0] = trigger.Contains("CCUP29-B-SPD2-CENTNOTRD");
+  fTriggers[1] = trigger.Contains("CCUP29-B-NOPF-CENTNOTRD");
+  fTriggers[2] = trigger.Contains("CCUP30-B-SPD2-CENTNOTRD");
+  fTriggers[3] = trigger.Contains("CCUP30-B-NOPF-CENTNOTRD");
+  fTriggers[4] = trigger.Contains("CCUP31-B-SPD2-CENTNOTRD");
+  fTriggers[5] = trigger.Contains("CCUP31-B-NOPF-CENTNOTRD");
+  fTriggers[6] =  fL0inputs & (1 << 11); //OM2
+  fTriggers[7] =  fL0inputs & (1 << 12); //OMU
+  
+  if(trigger.Contains("CCUP29-B"))hTriggerCounter->Fill(1,fRunNumber); 
+  if(trigger.Contains("CCUP30-B"))hTriggerCounter->Fill(2,fRunNumber); 
+  if(trigger.Contains("CCUP31-B"))hTriggerCounter->Fill(3,fRunNumber);
   
   AliVVZERO *fV0data = fEvent->GetVZEROData();
   AliVAD *fADdata = fEvent->GetADData();
@@ -336,7 +349,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   if(isMC) RunMC(fEvent);
   
   for(Int_t i = 0; i<10; i++)if(fTriggerInputsMC[i])fHistMCTriggers->Fill(i+1);
-  
+    
   if(isESD){
   	AliESDZDC *fZDCdata = (AliESDZDC*)fEvent->GetZDCData();
   	fZNAenergy = fZDCdata->GetZNATowerEnergy()[0];
@@ -368,43 +381,9 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   Int_t fADAdecision = fADdata->GetADADecision();
   Int_t fADCdecision = fADdata->GetADCDecision();
   if( fADAdecision != 0 || fADCdecision != 0) return;
-  
-  const AliTOFHeader *tofH = fEvent->GetTOFHeader();
-  AliTOFTriggerMask *fTOFmask = tofH->GetTriggerMask();
-  fNFiredMaxiPads = fTOFmask->GetNumberMaxiPadOn();
-  fNTOFtrgPads = tofH->GetNumberOfTOFtrgPads();
-  
-  if(isESD){
-  
-  TClonesArray* tofClusters = ((AliESDEvent*)fInputEvent)->GetESDTOFClusters();
-
-  Int_t nTOFhits = 0;
-  for (Int_t icl=0;icl<tofClusters->GetEntriesFast();icl++){
-     AliESDTOFCluster* cl = (AliESDTOFCluster*) tofClusters->At(icl);
-     nTOFhits+=cl->GetNTOFhits();
-   }
-
-   fTOFhits.Reset();
-   fTrackIndices.Reset();
-   fTOFhits.Set(nTOFhits);
-   fTrackIndices.Set(nTOFhits);
-
-   Int_t hitCounts=0;
-   for (Int_t icl=0;icl<tofClusters->GetEntriesFast();icl++){
-     AliESDTOFCluster* cl = (AliESDTOFCluster*) tofClusters->At(icl);
-     for (Int_t ihit=0;ihit<cl->GetNTOFhits();ihit++){
-       AliESDTOFHit* hit = (AliESDTOFHit*) cl->GetTOFHit(ihit);
-       Int_t channel = hit->GetTOFchannel();
-       Int_t trackIndex = (cl->GetNMatchableTracks()==1) ? cl->GetTrackIndex(0) : -1;
-       fTOFhits.AddAt(channel,hitCounts);
-       fTrackIndices.AddAt(trackIndex,hitCounts);
-       hitCounts++;
-     }
-   }
-  
-  }
     
   fHistEvents->Fill(1);
+  //cout<<"Event, tracks = "<<fEvent ->GetNumberOfTracks()<<endl; 
   
   TDatabasePDG *pdgdat = TDatabasePDG::Instance();
   
@@ -443,7 +422,6 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   Double_t TrackPtTPC[5]={0,0,0,0,0};
   Double_t TrackPtALL[7]={0,0,0,0,0,0,0};
   Double_t MeanPt = -1;
-   
   //Track loop
   for(Int_t iTrack=0; iTrack<fEvent ->GetNumberOfTracks(); iTrack++) {
   Bool_t goodTPCTrack = kTRUE;
@@ -451,7 +429,6 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     if(isESD){ 
     	AliESDtrack *trk = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(iTrack));
 	if( !trk ) continue;
-	
 	if(fTrackCutsBit0->AcceptTrack(trk))nGoodTracksLoose++;
     	if(!fTrackCutsBit5->AcceptTrack(trk))goodTPCTrack = kFALSE;
     	else{
@@ -465,7 +442,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     	if( !trk ) continue;
     
     	if(trk->TestFilterBit(1<<0) && (trk->HasPointOnITSLayer(0) || trk->HasPointOnITSLayer(1)))nGoodTracksLoose++;
-    	if(!(trk->TestFilterBit(1<<5)))goodTPCTrack = kFALSE;
+    	if(!(trk->TestFilterBit(1<<4)))goodTPCTrack = kFALSE;
     	else{
     		if(trk->HasPointOnITSLayer(0) && trk->HasPointOnITSLayer(1) && trk->GetTOFsignal()<99998)nGoodTracksSPD++;
     		}
@@ -487,6 +464,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 	TrackIndexALL[nGoodTracksTPC+nGoodTracksITS] = iTrack;
     	TrackPtALL[nGoodTracksTPC+nGoodTracksITS] = trk->Pt();
     	nGoodTracksITS++;
+	//cout<<"good its track"<<endl;
     	}
      
 	
@@ -504,7 +482,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   if(nGoodTracksTPC == 0 && nGoodTracksITS == 2)fHistEvents->Fill(8);
   if(nGoodTracksTPC == 0 && nGoodTracksITS == 4)fHistEvents->Fill(9);
      
-  if(nGoodTracksTPC+nGoodTracksITS == 4 && nGoodTracksTPC > 1 && nGoodTracksSPD > 1 && (isMC || trigger.Contains("CCUP8-B"))){
+  if(nGoodTracksTPC+nGoodTracksITS == 4 && nGoodTracksTPC > 1 && nGoodTracksSPD > 1){
     	MeanPt = GetMedian(TrackPtALL);
   	for(Int_t iTrack=0; iTrack<4; iTrack++) {
 	AliVTrack *trk = dynamic_cast<AliVTrack*>(fEvent->GetTrack(TrackIndexALL[iTrack]));
@@ -574,15 +552,15 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   //Two track loop
   nHighPt = 0;
   fInEtaRec = kTRUE;
-  if(nGoodTracksTPC == 2 && nGoodTracksLoose == 2 && nGoodTracksSPD == 2 && nGoodTracksITS == 0){
+  //if(nGoodTracksTPC == 2 && nGoodTracksLoose == 2 && nGoodTracksITS == 0){
+  if(nGoodTracksTPC == 2){
   	for(Int_t iTrack=0; iTrack<2; iTrack++) {
     	AliVTrack *trk = dynamic_cast<AliVTrack*>(fEvent->GetTrack(TrackIndexTPC[iTrack]));
-	fTrackIndex[iTrack] = TrackIndexTPC[iTrack]; 
 	
 	if(TMath::Abs(trk->Eta())>cutEta) fInEtaRec = kFALSE;
 	
 	if(trk->Pt() > 1.0) nHighPt++;
-	
+
 	Float_t fPIDTPCMuon = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
     	Float_t fPIDTPCElectron = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
 	Float_t fPIDTPCPion = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
@@ -614,26 +592,26 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   Float_t nSigmaDistElectron = TMath::Sqrt(TMath::Power(nSigmaElectron[0],2) + TMath::Power(nSigmaElectron[1],2));
   Float_t nSigmaDistProton = TMath::Sqrt(TMath::Power(nSigmaProton[0],2) + TMath::Power(nSigmaProton[1],2));
 
-  if(nSigmaDistProton < 5 && (isMC || trigger.Contains("CCUP8-B"))){ 
+  if(nSigmaDistProton < 5 && (isMC || trigger.Contains("CCUP31-B"))){ 
   	  fPIDsigma = nSigmaDistProton;
   	  vJPsiCandidate = vProton[0]+vProton[1];
   	  fChannel = 2;
   	  FillTree(fTreeJPsi,vJPsiCandidate);
   	  }
-  if(nSigmaDistMuon < nSigmaDistElectron && (isMC || trigger.Contains("CCUP8-B"))){
+  if(nSigmaDistMuon < nSigmaDistElectron && (isMC || trigger.Contains("CCUP31-B"))){
   	  fPIDsigma = nSigmaDistMuon; 
   	  vJPsiCandidate = vMuon[0]+vMuon[1];
   	  fChannel = 1;
   	  FillTree(fTreeJPsi,vJPsiCandidate);
   	  }
-  if(nSigmaDistMuon > nSigmaDistElectron && (isMC || trigger.Contains("CCUP8-B"))){ 
+  if(nSigmaDistMuon > nSigmaDistElectron && (isMC || trigger.Contains("CCUP31-B"))){ 
   	  fPIDsigma = nSigmaDistElectron;
   	  vJPsiCandidate = vElectron[0]+vElectron[1];
   	  fChannel = -1;
   	  FillTree(fTreeJPsi,vJPsiCandidate);
   	  }
 
-  if(nSigmaDistMuon > nSigmaDistElectron &&(isMC || trigger.Contains("CCUP9-B"))){
+  if(nSigmaDistMuon > nSigmaDistElectron &&(isMC || trigger.Contains("CCUP29-B"))){
   	  fPIDsigma = nSigmaDistElectron;
   	  vRhoCandidate = vElectron[0]+vElectron[1];
   	  fChannel = -1;
@@ -658,7 +636,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   	  }
   } 
   
-  
+ 
   //Two track loop
   if(nGoodTracksITS == 2 && nGoodTracksTPC== 0){
   	for(Int_t iTrack=0; iTrack<2; iTrack++) {
@@ -666,42 +644,39 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     
     	Float_t fPIDITSElectron = fPIDResponse->NumberOfSigmasITS(trk,AliPID::kElectron);
     	Float_t fPIDITSPion = fPIDResponse->NumberOfSigmasITS(trk,AliPID::kPion);
-    	Float_t fPIDITSKaon = fPIDResponse->NumberOfSigmasITS(trk,AliPID::kKaon);
+    	Float_t fPIDITSMuon = fPIDResponse->NumberOfSigmasITS(trk,AliPID::kMuon);
 	        
     	qTrack[iTrack] = trk->Charge();
    
-    	vKaon[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), kaonMass);    
+    	vMuon[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), muonMass);    
     	vPion[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), pionMass);
 	vElectron[iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), electronMass);
 	
-	nSigmaKaon[iTrack] = fPIDITSKaon;
+	nSigmaMuon[iTrack] = fPIDITSMuon;
 	nSigmaPion[iTrack] = fPIDITSPion;
 	nSigmaElectron[iTrack] = fPIDITSElectron;
 	 
     	}
-	Float_t nSigmaDistKaon = TMath::Sqrt(TMath::Power(nSigmaKaon[0],2) + TMath::Power(nSigmaKaon[1],2));
+	Float_t nSigmaDistMuon = TMath::Sqrt(TMath::Power(nSigmaMuon[0],2) + TMath::Power(nSigmaMuon[1],2));
 	Float_t nSigmaDistPion = TMath::Sqrt(TMath::Power(nSigmaPion[0],2) + TMath::Power(nSigmaPion[1],2));
 	Float_t nSigmaDistElectron = TMath::Sqrt(TMath::Power(nSigmaElectron[0],2) + TMath::Power(nSigmaElectron[1],2));
-	
+
   	if(qTrack[0]*qTrack[1]<0)fSign = -1;
 	if(qTrack[0]*qTrack[1]>0)fSign = 1;
 	fChannel = 0;
 	vRhoCandidate = vPion[0]+vPion[1];
-	//FillTree(fTreeRho,vRhoCandidate);
-	
-	if(trigger.Contains("CCUP9-B")){ 
-		if(nSigmaDistPion > 4 && nSigmaDistElectron > 4 && nSigmaDistKaon < 4){
+	FillTree(fTreeRho,vRhoCandidate);
+	 
+		if(nSigmaDistMuon < nSigmaDistElectron){
 			fChannel = 1;
-			vPhiCandidate = vKaon[0]+vKaon[1];
+			vPhiCandidate = vMuon[0]+vMuon[1];
 			FillTree(fTreePhi,vPhiCandidate);
 			}
-		if(nSigmaDistPion > 4 && nSigmaDistElectron < 4 && nSigmaDistKaon > 4){
+		if(nSigmaDistMuon > nSigmaDistElectron){
 			fChannel = -1;
 			vPhiCandidate = vElectron[0]+vElectron[1];
 			FillTree(fTreePhi,vPhiCandidate);
 			}
-		}
-
 	hITSPIDKaonCorr->Fill(nSigmaKaon[0],nSigmaKaon[1]);
 	hITSPIDKaon->Fill(nSigmaKaon[0]);hITSPIDKaon->Fill(nSigmaKaon[1]);
   } 

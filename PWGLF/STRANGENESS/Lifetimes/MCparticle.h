@@ -29,9 +29,11 @@ public:
   float GetRadius() const { return fRadius; }
   int GetRecoIndex() const { return fRecoIndex; }
   float GetY() const;
+  char GetNBodies() const {return nbodies;}
   bool IsPrimary() const { return fStatus & kPrimary; }
   bool IsSecondaryFromMaterial() const { return fStatus & kSecondaryFromMaterial; }
   bool IsSecondaryFromWeakDecay() const { return fStatus & kSecondaryFromWeakDecay; }
+  bool IsHyperCandidate() const  {return fHyperCandidate; }
 
   void SetDistOverP(float d) { fDistOverTotMom = d; }
   void SetEta(float eta) { fEta = eta; }
@@ -40,6 +42,8 @@ public:
   void SetRadius(float r) { fRadius = r; }
   void SetRecoIndex(int idx) { fRecoIndex = idx; }
   void SetStatus(Status st) { fStatus = st; }
+  void SetNBodies(char n){nbodies = n;}
+  void SetHyperCandidate(bool hc) {fHyperCandidate = hc ;}
 
 private:
   float fPt;
@@ -48,7 +52,9 @@ private:
   float fRadius;
   int fPDGcode;
   int fRecoIndex;
+  bool fHyperCandidate;
   unsigned char fStatus;
+  unsigned char nbodies;
 };
 
 inline MCparticle::MCparticle() :

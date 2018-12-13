@@ -18,6 +18,7 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fV0ReaderName("NoInit"),
       fV0Cuts(nullptr),
       fAntiV0Cuts(nullptr),
+      fPhotonQA(nullptr),
       fSigmaCuts(nullptr),
       fAntiSigmaCuts(nullptr),
       fProtonTrack(nullptr),
@@ -29,6 +30,7 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fIsMC(false),
       fIsHeavyIon(false),
       fIsLightweight(false),
+      fIsRun1(false),
       fPhotonLegPileUpCut(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
@@ -44,7 +46,13 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fHistCentralityProfileCoarseAfter(nullptr),
       fHistTriggerBefore(nullptr),
       fHistTriggerAfter(nullptr),
-      fHistPhotonPileUp(nullptr) {}
+      fHistMultiplicity(nullptr),
+      fHistCorrelationPSigmaPLambda(),
+      fHistCorrelationPSigmaPGamma(),
+      fHistCorrelationPLambdaPGamma(),
+      fHistCorrelationAntiPAntiSigmaAntiPAntiLambda(),
+      fHistCorrelationAntiPAntiSigmaAntiPAntiGamma(),
+      fHistCorrelationAntiPAntiLambdaAntiPAntiGamma() {}
 
 //____________________________________________________________________________________________________
 AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
@@ -56,6 +64,7 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
       fV0ReaderName("NoInit"),
       fV0Cuts(nullptr),
       fAntiV0Cuts(nullptr),
+      fPhotonQA(nullptr),
       fSigmaCuts(nullptr),
       fAntiSigmaCuts(nullptr),
       fProtonTrack(nullptr),
@@ -67,6 +76,7 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
       fIsMC(false),
       fIsHeavyIon(false),
       fIsLightweight(false),
+      fIsRun1(false),
       fPhotonLegPileUpCut(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
@@ -82,7 +92,13 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
       fHistCentralityProfileCoarseAfter(nullptr),
       fHistTriggerBefore(nullptr),
       fHistTriggerAfter(nullptr),
-      fHistPhotonPileUp(nullptr) {
+      fHistMultiplicity(nullptr),
+      fHistCorrelationPSigmaPLambda(),
+      fHistCorrelationPSigmaPGamma(),
+      fHistCorrelationPLambdaPGamma(),
+      fHistCorrelationAntiPAntiSigmaAntiPAntiLambda(),
+      fHistCorrelationAntiPAntiSigmaAntiPAntiGamma(),
+      fHistCorrelationAntiPAntiLambdaAntiPAntiGamma() {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
@@ -164,6 +180,9 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
 
   // PHOTON SELECTION
   fGammaArray = fV0Reader->GetReconstructedGammas();  // Gammas from default Cut
+  if (!fIsLightweight) {
+    fPhotonQA->PhotonQA(fInputEvent, fGammaArray);
+  }
   std::vector<AliSigma0ParticleV0> gammaConvContainer;
   CastToVector(gammaConvContainer, fInputEvent);
 
@@ -198,17 +217,18 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
   static std::vector<AliFemtoDreamBasePart> antiSigma0lambda;
   static std::vector<AliFemtoDreamBasePart> antiSigma0photon;
 
-  CastToVector(fSigmaCuts->GetSigma(), sigma0particles);
-  CastToVector(fAntiSigmaCuts->GetSigma(), antiSigma0particles);
-  CastToVector(fSigmaCuts->GetSidebandUp(), sigma0sidebandUp);
-  CastToVector(fAntiSigmaCuts->GetSidebandUp(), antiSigma0sidebandUp);
-  CastToVector(fSigmaCuts->GetSidebandDown(), sigma0sidebandLow);
-  CastToVector(fAntiSigmaCuts->GetSidebandDown(), antiSigma0sidebandLow);
+  CastToVector(fSigmaCuts->GetSigma(), sigma0particles, fMCEvent);
+  CastToVector(fAntiSigmaCuts->GetSigma(), antiSigma0particles, fMCEvent);
+  CastToVector(fSigmaCuts->GetSidebandUp(), sigma0sidebandUp, fMCEvent);
+  CastToVector(fAntiSigmaCuts->GetSidebandUp(), antiSigma0sidebandUp, fMCEvent);
+  CastToVector(fSigmaCuts->GetSidebandDown(), sigma0sidebandLow, fMCEvent);
+  CastToVector(fAntiSigmaCuts->GetSidebandDown(), antiSigma0sidebandLow,
+               fMCEvent);
 
-  CastToVector(lambdaSigma, sigma0lambda);
-  CastToVector(photonSigma, sigma0photon);
-  CastToVector(lambdaAntiSigma, antiSigma0lambda);
-  CastToVector(photonAntiSigma, antiSigma0photon);
+  CastToVector(lambdaSigma, sigma0lambda, fMCEvent);
+  CastToVector(photonSigma, sigma0photon, fMCEvent);
+  CastToVector(lambdaAntiSigma, antiSigma0lambda, fMCEvent);
+  CastToVector(photonAntiSigma, antiSigma0photon, fMCEvent);
 
   fPairCleaner->CleanTrackAndDecay(&particles, &sigma0particles, 0);
   fPairCleaner->CleanTrackAndDecay(&antiParticles, &antiSigma0particles, 1);
@@ -246,6 +266,13 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
                         MultSelection->GetMultiplicityPercentile("V0M"));
   }
 
+  if (!fIsLightweight) {
+    FillCorrelationCorrelator(particles, sigma0particles,
+                              fSigmaCuts->GetSigma(), false);
+    FillCorrelationCorrelator(antiParticles, antiSigma0particles,
+                              fAntiSigmaCuts->GetSigma(), true);
+  }
+
   // flush the data
   PostData(1, fOutputContainer);
   PostData(2, fOutputFemto);
@@ -253,6 +280,59 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
 
 //____________________________________________________________________________________________________
 bool AliAnalysisTaskSigma0Femto::AcceptEvent(AliVEvent *event) {
+  if (fIsRun1) {
+    return AcceptEventRun1(event);
+  } else {
+    return AcceptEventRun2(event);
+  }
+}
+
+//____________________________________________________________________________________________________
+bool AliAnalysisTaskSigma0Femto::AcceptEventRun1(AliVEvent *event) {
+  if (!fIsLightweight) {
+    fHistRunNumber->Fill(0.f, event->GetRunNumber());
+    FillTriggerHisto(fHistTriggerBefore);
+  }
+  fHistCutQA->Fill(0);
+
+  auto esdEvent = static_cast<AliESDEvent *>(event);
+  // Checks if we have a primary vertex  // Get primary vertices form ESD
+  bool eventVtxExist = false;
+  if (esdEvent->GetPrimaryVertexTracks()->GetNContributors() > 0) {
+    eventVtxExist = true;
+  } else if (esdEvent->GetPrimaryVertexSPD()->GetNContributors() > 0) {
+    eventVtxExist = true;
+  }
+  if (!eventVtxExist) {
+    return false;
+  }
+
+  const auto esdVertex5 = esdEvent->GetPrimaryVertex();
+
+  if (!(std::abs(esdVertex5->GetZ()) < 10.)) {
+    return false;
+  }
+
+  // Check for pileup and fill pileup histograms
+  if (esdEvent->IsPileupFromSPD()) {
+    return false;
+  }
+  if (!fIsLightweight) {
+    FillTriggerHisto(fHistTriggerAfter);
+  }
+  fHistCutQA->Fill(2);
+
+  bool isConversionEventSelected =
+      ((AliConvEventCuts *)fV0Reader->GetEventCuts())
+          ->EventIsSelected(event, static_cast<AliMCEvent *>(fMCEvent));
+  if (!isConversionEventSelected) return false;
+
+  fHistCutQA->Fill(4);
+  return true;
+}
+
+//____________________________________________________________________________________________________
+bool AliAnalysisTaskSigma0Femto::AcceptEventRun2(AliVEvent *event) {
   if (!fIsLightweight) {
     fHistRunNumber->Fill(0.f, event->GetRunNumber());
     FillTriggerHisto(fHistTriggerBefore);
@@ -300,6 +380,9 @@ bool AliAnalysisTaskSigma0Femto::AcceptEvent(AliVEvent *event) {
 
   if (!fIsLightweight) fHistCentralityProfileCoarseAfter->Fill(lPercentile);
 
+  fHistMultiplicity->Fill(
+      AliSigma0PhotonMotherCuts::GetMultiplicityBin(lPercentile));
+
   fHistCutQA->Fill(4);
   return true;
 }
@@ -311,7 +394,6 @@ void AliAnalysisTaskSigma0Femto::CastToVector(
     auto *PhotonCandidate =
         dynamic_cast<AliAODConversionPhoton *>(fGammaArray->At(iGamma));
     if (!PhotonCandidate) continue;
-    fHistPhotonPileUp->Fill(PhotonCandidate->Pt(), 0.5);
 
     // pile up check
     if (fPhotonLegPileUpCut) {
@@ -335,7 +417,6 @@ void AliAnalysisTaskSigma0Femto::CastToVector(
 
       if (!posTrackCombined || !negTrackCombined) continue;
     }
-    fHistPhotonPileUp->Fill(PhotonCandidate->Pt(), 1.5);
 
     AliSigma0ParticleV0 phot(PhotonCandidate, inputEvent);
     if (fIsMC) {
@@ -348,20 +429,20 @@ void AliAnalysisTaskSigma0Femto::CastToVector(
 //____________________________________________________________________________________________________
 void AliAnalysisTaskSigma0Femto::CastToVector(
     std::vector<AliSigma0ParticlePhotonMother> &sigmaContainer,
-    std::vector<AliFemtoDreamBasePart> &particles) {
+    std::vector<AliFemtoDreamBasePart> &particles, const AliMCEvent *mcEvent) {
   particles.clear();
   for (const auto &sigma : sigmaContainer) {
-    particles.push_back(sigma);
+    particles.push_back({sigma, mcEvent});
   }
 }
 
 //____________________________________________________________________________________________________
 void AliAnalysisTaskSigma0Femto::CastToVector(
     std::vector<AliSigma0ParticleV0> &container,
-    std::vector<AliFemtoDreamBasePart> &particles) {
+    std::vector<AliFemtoDreamBasePart> &particles, const AliMCEvent *mcEvent) {
   particles.clear();
   for (const auto &part : container) {
-    particles.push_back(part);
+    particles.push_back({part, mcEvent});
   }
 }
 
@@ -428,13 +509,6 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
   fHistCutQA->GetXaxis()->SetBinLabel(4, "Multiplicity selection");
   fHistCutQA->GetXaxis()->SetBinLabel(5, "AliConversionCuts");
   fQA->Add(fHistCutQA);
-
-  fHistPhotonPileUp =
-      new TH2F("fHistPhotonPileUp", ";#it{p}_{T} (GeV/#it{c}^{2}; PileUp", 100,
-               0, 10, 2, 0, 2);
-  fHistPhotonPileUp->GetYaxis()->SetBinLabel(1, "Before");
-  fHistPhotonPileUp->GetYaxis()->SetBinLabel(2, "After");
-  fQA->Add(fHistPhotonPileUp);
 
   if (!fIsLightweight) {
     fHistRunNumber = new TProfile("fHistRunNumber", ";;Run Number", 1, 0, 1);
@@ -569,6 +643,17 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     fQA->Add(fHistTriggerAfter);
   }
 
+  std::vector<float> multBinsLow = {{0, 0.01, 0.05, 0.1, 5., 15., 30., 50.}};
+  std::vector<float> multBinsUp = {{0.01, 0.05, 0.1, 5., 15., 30., 50., 100.}};
+  fHistMultiplicity =
+      new TH1I("fHistMultiplicity", "; Multiplicity bin; Entries", 8, 0, 8);
+  fHistMultiplicity->GetXaxis()->LabelsOption("u");
+  for (int i = 0; i < static_cast<int>(multBinsLow.size()); i++) {
+    fHistMultiplicity->GetXaxis()->SetBinLabel(
+        i + 1, Form("V0M: %.2f - %.2f %%", multBinsLow[i], multBinsUp[i]));
+  }
+  fQA->Add(fHistMultiplicity);
+
   fOutputContainer->Add(fQA);
 
   fProtonTrack = new AliFemtoDreamTrack();
@@ -613,6 +698,16 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     fOutputContainer->Add(fAntiV0Cuts->GetCutHistograms());
   }
 
+  if (!fIsLightweight) {
+    fPhotonQA = new AliSigma0V0Cuts();
+    fPhotonQA->SetLightweight(false);
+    fPhotonQA->SetPID(22);
+    fPhotonQA->SetPosPID(AliPID::kElectron, 11);
+    fPhotonQA->SetNegPID(AliPID::kElectron, -11);
+    fPhotonQA->InitCutHistograms(TString("Photon"));
+    fOutputContainer->Add(fPhotonQA->GetCutHistograms());
+  }
+
   if (fSigmaCuts && fSigmaCuts->GetCutHistograms()) {
     fOutputContainer->Add(fSigmaCuts->GetCutHistograms());
   }
@@ -627,7 +722,7 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
       new AliFemtoDreamPartCollection(fConfig, fConfig->GetMinimalBookingME());
 
   if (!fConfig->GetMinimalBookingME() && fPairCleaner &&
-      fPairCleaner->GetHistList() && !fIsMC) {
+      fPairCleaner->GetHistList()) {
     fOutputFemto->Add(fPairCleaner->GetHistList());
   }
 
@@ -636,6 +731,87 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
   }
   if (!fConfig->GetMinimalBookingME() && fPartColl && fPartColl->GetQAList()) {
     fOutputFemto->Add(fPartColl->GetQAList());
+  }
+
+  if (!fIsLightweight) {
+    fHistCorrelationPSigmaPLambda[0] =
+        new TH2F("fHistCorrelationPSigmaPLambda",
+                 "; k* (p-#Sigma^{0}) (GeV/#it{c});  k* "
+                 "(p-#Lambda_{#Sigma^{0}}) (GeV/#it{c})",
+                 750, 0, 3, 750, 0, 3);
+    fHistCorrelationPSigmaPGamma[0] =
+        new TH2F("fHistCorrelationPSigmaPGamma",
+                 "; k* (p-#Sigma^{0}) (GeV/#it{c});  k* "
+                 "(p-#gamma_{#Sigma^{0}}) (GeV/#it{c})",
+                 750, 0, 3, 750, 0, 3);
+    fHistCorrelationPLambdaPGamma[0] =
+        new TH2F("fHistCorrelationPLambdaPGamma",
+                 "; k* (p-#Lambda_{#Sigma^{0}}) (GeV/#it{c});  k* "
+                 "(p-#gamma_{#Sigma^{0}}) (GeV/#it{c})",
+                 750, 0, 3, 750, 0, 3);
+    fHistCorrelationAntiPAntiSigmaAntiPAntiLambda[0] =
+        new TH2F("fHistCorrelationAntiPAntiSigmaAntiPAntiLambda",
+                 "; k* (#bar{p}-#bar{#Sigma}^{0}) (GeV/#it{c});  k* "
+                 "(#bar{p}-#bar{#Lambda}_{#bar{#Sigma}^{0}}) (GeV/#it{c})",
+                 750, 0, 3, 750, 0, 3);
+    fHistCorrelationAntiPAntiSigmaAntiPAntiGamma[0] =
+        new TH2F("fHistCorrelationAntiPAntiSigmaAntiPAntiGamma",
+                 "; k* (#bar{p}-#bar{#Sigma}^{0}) (GeV/#it{c});  k* "
+                 "(#bar{p}-#gamma_{#bar{#Sigma}^{0}}) (GeV/#it{c})",
+                 750, 0, 3, 750, 0, 3);
+    fHistCorrelationAntiPAntiLambdaAntiPAntiGamma[0] = new TH2F(
+        "fHistCorrelationAntiPAntiLambdaAntiPAntiGamma",
+        "; k* (#bar{p}-#bar{#Lambda}_{#bar{#Sigma}^{0}}) (GeV/#it{c});  k* "
+        "(#bar{p}-#gamma_{#bar{#Sigma}^{0}}) (GeV/#it{c})",
+        750, 0, 3, 750, 0, 3);
+    fOutputFemto->Add(fHistCorrelationPSigmaPLambda[0]);
+    fOutputFemto->Add(fHistCorrelationPSigmaPGamma[0]);
+    fOutputFemto->Add(fHistCorrelationPLambdaPGamma[0]);
+    fOutputFemto->Add(fHistCorrelationAntiPAntiSigmaAntiPAntiLambda[0]);
+    fOutputFemto->Add(fHistCorrelationAntiPAntiSigmaAntiPAntiGamma[0]);
+    fOutputFemto->Add(fHistCorrelationAntiPAntiLambdaAntiPAntiGamma[0]);
+
+    if (fIsMC) {
+      for (unsigned int i = 1; i < 3; ++i) {
+        const char *appendix = (i == 1) ? "SigmaPrim" : "Background";
+        fHistCorrelationPSigmaPLambda[i] =
+            new TH2F(Form("fHistCorrelationPSigmaPLambda_%s", appendix),
+                     "; k* (p-#Sigma^{0}) (GeV/#it{c});  k* "
+                     "(p-#Lambda_{#Sigma^{0}}) (GeV/#it{c})",
+                     750, 0, 3, 750, 0, 3);
+        fHistCorrelationPSigmaPGamma[i] =
+            new TH2F(Form("fHistCorrelationPSigmaPGamma_%s", appendix),
+                     "; k* (p-#Sigma^{0}) (GeV/#it{c});  k* "
+                     "(p-#gamma_{#Sigma^{0}}) (GeV/#it{c})",
+                     750, 0, 3, 750, 0, 3);
+        fHistCorrelationPLambdaPGamma[i] =
+            new TH2F(Form("fHistCorrelationPLambdaPGamma_%s", appendix),
+                     "; k* (p-#Lambda_{#Sigma^{0}}) (GeV/#it{c});  k* "
+                     "(p-#gamma_{#Sigma^{0}}) (GeV/#it{c})",
+                     750, 0, 3, 750, 0, 3);
+        fHistCorrelationAntiPAntiSigmaAntiPAntiLambda[i] = new TH2F(
+            Form("fHistCorrelationAntiPAntiSigmaAntiPAntiLambda_%s", appendix),
+            "; k* (#bar{p}-#bar{#Sigma}^{0}) (GeV/#it{c});  k* "
+            "(#bar{p}-#bar{#Lambda}_{#bar{#Sigma}^{0}}) (GeV/#it{c})",
+            750, 0, 3, 750, 0, 3);
+        fHistCorrelationAntiPAntiSigmaAntiPAntiGamma[i] = new TH2F(
+            Form("fHistCorrelationAntiPAntiSigmaAntiPAntiGamma_%s", appendix),
+            "; k* (#bar{p}-#bar{#Sigma}^{0}) (GeV/#it{c});  k* "
+            "(#bar{p}-#gamma_{#bar{#Sigma}^{0}}) (GeV/#it{c})",
+            750, 0, 3, 750, 0, 3);
+        fHistCorrelationAntiPAntiLambdaAntiPAntiGamma[i] = new TH2F(
+            Form("fHistCorrelationAntiPAntiLambdaAntiPAntiGamma_%s", appendix),
+            "; k* (#bar{p}-#bar{#Lambda}_{#bar{#Sigma}^{0}}) (GeV/#it{c});  k* "
+            "(#bar{p}-#gamma_{#bar{#Sigma}^{0}}) (GeV/#it{c})",
+            750, 0, 3, 750, 0, 3);
+        fOutputFemto->Add(fHistCorrelationPSigmaPLambda[i]);
+        fOutputFemto->Add(fHistCorrelationPSigmaPGamma[i]);
+        fOutputFemto->Add(fHistCorrelationPLambdaPGamma[i]);
+        fOutputFemto->Add(fHistCorrelationAntiPAntiSigmaAntiPAntiLambda[i]);
+        fOutputFemto->Add(fHistCorrelationAntiPAntiSigmaAntiPAntiGamma[i]);
+        fOutputFemto->Add(fHistCorrelationAntiPAntiLambdaAntiPAntiGamma[i]);
+      }
+    }
   }
 
   PostData(1, fOutputContainer);
@@ -710,4 +886,110 @@ void AliAnalysisTaskSigma0Femto::FillTriggerHisto(TH1F *histo) {
   if (fInputHandler->IsEventSelected() & AliVEvent::kFastOnly) histo->Fill(47);
   if (fInputHandler->IsEventSelected() & AliVEvent::kAny) histo->Fill(48);
   if (fInputHandler->IsEventSelected() & AliVEvent::kAnyINT) histo->Fill(49);
+}
+
+void AliAnalysisTaskSigma0Femto::FillCorrelationCorrelator(
+    const std::vector<AliFemtoDreamBasePart> &particles,
+    const std::vector<AliFemtoDreamBasePart> &sigmasFemto,
+    const std::vector<AliSigma0ParticlePhotonMother> &sigmas,
+    const bool isAnti) const {
+  for (const auto &proton : particles) {
+    const TVector3 protonVec = proton.GetMomentum();
+    if (!proton.UseParticle()) continue;
+
+    unsigned int sigmaCounter = 0;
+    for (const auto &sigma : sigmas) {
+      const auto &SigmaParticleFemto = sigmasFemto[sigmaCounter++];
+      if (!SigmaParticleFemto.UseParticle()) continue;
+      const TVector3 sigmaVec =
+          TVector3(sigma.GetPx(), sigma.GetPy(), sigma.GetPz());
+      const auto lambda = sigma.GetV0();
+      const TVector3 lambdaVec =
+          TVector3(lambda.GetPx(), lambda.GetPy(), lambda.GetPz());
+      const auto photon = sigma.GetPhoton();
+      const TVector3 photonVec =
+          TVector3(photon.GetPx(), photon.GetPy(), photon.GetPz());
+
+      const float kRelpSigma =
+          ComputeRelk(protonVec, 2212, sigmaVec, (isAnti) ? -3212 : 3212);
+      const float kRelpLambda =
+          ComputeRelk(protonVec, 2212, lambdaVec, (isAnti) ? -3122 : 3122);
+      const float kRelpPhoton = ComputeRelk(protonVec, 2212, photonVec, 22);
+
+      if (!isAnti) {
+        fHistCorrelationPSigmaPLambda[0]->Fill(kRelpSigma, kRelpLambda);
+        fHistCorrelationPSigmaPGamma[0]->Fill(kRelpSigma, kRelpPhoton);
+        fHistCorrelationPLambdaPGamma[0]->Fill(kRelpLambda, kRelpPhoton);
+      } else {
+        fHistCorrelationAntiPAntiSigmaAntiPAntiLambda[0]->Fill(kRelpSigma,
+                                                               kRelpLambda);
+        fHistCorrelationAntiPAntiSigmaAntiPAntiGamma[0]->Fill(kRelpSigma,
+                                                              kRelpPhoton);
+        fHistCorrelationAntiPAntiLambdaAntiPAntiGamma[0]->Fill(kRelpLambda,
+                                                               kRelpPhoton);
+      }
+
+      if (fIsMC) {
+        if (SigmaParticleFemto.GetParticleOrigin() ==
+            AliFemtoDreamBasePart::kPhysPrimary) {
+          if (!isAnti) {
+            fHistCorrelationPSigmaPLambda[1]->Fill(kRelpSigma, kRelpLambda);
+            fHistCorrelationPSigmaPGamma[1]->Fill(kRelpSigma, kRelpPhoton);
+            fHistCorrelationPLambdaPGamma[1]->Fill(kRelpLambda, kRelpPhoton);
+          } else {
+            fHistCorrelationAntiPAntiSigmaAntiPAntiLambda[1]->Fill(kRelpSigma,
+                                                                   kRelpLambda);
+            fHistCorrelationAntiPAntiSigmaAntiPAntiGamma[1]->Fill(kRelpSigma,
+                                                                  kRelpPhoton);
+            fHistCorrelationAntiPAntiLambdaAntiPAntiGamma[1]->Fill(kRelpLambda,
+                                                                   kRelpPhoton);
+          }
+        } else if (SigmaParticleFemto.GetParticleOrigin() ==
+                   AliFemtoDreamBasePart::kFake) {
+          if (!isAnti) {
+            fHistCorrelationPSigmaPLambda[2]->Fill(kRelpSigma, kRelpLambda);
+            fHistCorrelationPSigmaPGamma[2]->Fill(kRelpSigma, kRelpPhoton);
+            fHistCorrelationPLambdaPGamma[2]->Fill(kRelpLambda, kRelpPhoton);
+          } else {
+            fHistCorrelationAntiPAntiSigmaAntiPAntiLambda[2]->Fill(kRelpSigma,
+                                                                   kRelpLambda);
+            fHistCorrelationAntiPAntiSigmaAntiPAntiGamma[2]->Fill(kRelpSigma,
+                                                                  kRelpPhoton);
+            fHistCorrelationAntiPAntiLambdaAntiPAntiGamma[2]->Fill(kRelpLambda,
+                                                                   kRelpPhoton);
+          }
+        }
+      }
+    }
+  }
+}
+
+float AliAnalysisTaskSigma0Femto::ComputeRelk(const TVector3 &Part1Momentum,
+                                              const int PDGPart1,
+                                              const TVector3 &Part2Momentum,
+                                              const int PDGPart2) const {
+  float results = 0.;
+  TLorentzVector SPtrack, TPProng, trackSum, SPtrackCMS, TPProngCMS;
+  SPtrack.SetXYZM(Part1Momentum.X(), Part1Momentum.Y(), Part1Momentum.Z(),
+                  TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
+  TPProng.SetXYZM(Part2Momentum.X(), Part2Momentum.Y(), Part2Momentum.Z(),
+                  TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
+  trackSum = SPtrack + TPProng;
+
+  float beta = trackSum.Beta();
+  float betax = beta * cos(trackSum.Phi()) * sin(trackSum.Theta());
+  float betay = beta * sin(trackSum.Phi()) * sin(trackSum.Theta());
+  float betaz = beta * cos(trackSum.Theta());
+
+  SPtrackCMS = SPtrack;
+  TPProngCMS = TPProng;
+
+  SPtrackCMS.Boost(-betax, -betay, -betaz);
+  TPProngCMS.Boost(-betax, -betay, -betaz);
+
+  TLorentzVector trackRelK;
+
+  trackRelK = SPtrackCMS - TPProngCMS;
+  results = 0.5 * trackRelK.P();
+  return results;
 }

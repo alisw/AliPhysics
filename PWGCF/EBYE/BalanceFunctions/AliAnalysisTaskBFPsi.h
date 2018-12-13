@@ -69,13 +69,13 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   
   void SetCentralityArrayBins(Int_t nCentralityBins, Double_t *centralityArrayForCorrections){
     fCentralityArrayBinsForCorrections = nCentralityBins;
-    for (Int_t i=0; i<=nCentralityBins; i++)
+    for (Int_t i=0; i<=nCentralityBins-1; i++)
       fCentralityArrayForCorrections[i] = centralityArrayForCorrections[i];
   }
 
   void SetArrayRuns(Int_t nRuns, Int_t *runsArrayForCorrections){
     fTotalNbRun = nRuns;
-    for (Int_t i=0; i<=nRuns; i++)
+    for (Int_t i=0; i<=nRuns-1; i++)
       fRunNb[i] = runsArrayForCorrections[i];
   }
  
@@ -212,6 +212,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void CheckPileUp() {fCheckPileUp = kTRUE;}
   void CheckPrimaryFlagAOD() {fCheckPrimaryFlagAOD = kTRUE;}
   void UseMCforKinematics() {fUseMCforKinematics = kTRUE;}
+  void SetRebinnedCorrHistos() {fRebinCorrHistos = kTRUE;}
   void SetCentralityWeights(TH1* hist) { fCentralityWeights = hist; }
   Bool_t AcceptEventCentralityWeight(Double_t centrality);
 
@@ -250,6 +251,10 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fUsePID = kTRUE; fUsePIDPropabilities = kFALSE; fUsePIDnSigma = kTRUE;
     fPIDNSigma = gMaxNSigma;} //not used at the moment. Values are hardcoded in the .cxx for the different species
   
+  void SetUseNSigmaPIDNewTrial(Double_t gMaxNSigmaNewTrial) {
+        fUsePIDNewTrial = kTRUE; fUsePIDPropabilities = kFALSE; fUsePIDnSigma = kTRUE;
+        fPIDNSigma = gMaxNSigmaNewTrial;}
+    
   void SetPIDMomCut(Float_t pidMomCut)  {fPIDMomCut = pidMomCut;} // pT threshold to move from TPC only and TPC+TOF for both methods: Bayes and nSigma Combined. usually 0.6 for pi and p and 0.4 for K.
   
   void SetDetectorUsedForPID(kDetectorUsedForPID detConfig) {
@@ -369,6 +374,10 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH3F *fHistEtaPhiPosCorr;//eta-phi pos particles after corrections  (QA histogram) 
   TH3F *fHistEtaPhiNeg;//eta-phi neg particles (QA histogram)
   TH3F *fHistEtaPhiNegCorr;//eta-phi neg particles after corrections (QA histogram)
+  TH3F *fHistEtaPhiVzPlus;//eta-phi-Vz pos particles (QA histogram)
+  TH3F *fHistEtaPhiVzMinus;//eta-phi-Vz neg particles (QA histogram)
+  TH3F *fHistEtaPhiVzPlusCorr;//eta-phi-Vz pos particles after corrections  (QA histogram)
+  TH3F *fHistEtaPhiVzMinusCorr;//eta-phi-Vz neg particles after corrections (QA histogram)
   TH2F *fHistPhiBefore;//phi before v2 afterburner (QA histogram)
   TH2F *fHistPhiAfter;//phi after v2 afterburner (QA histogram)
   TH2F *fHistPhiPos;//phi for positive particles (QA histogram)
@@ -440,6 +449,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Double_t fMassParticleOfInterest;//particle mass (for rapidity calculation) 
 
   Bool_t fUsePID; //flag to use PID 
+  Bool_t fUsePIDNewTrial;
   Bool_t fUsePIDnSigma;//flag to use nsigma method for PID
   Bool_t fUsePIDPropabilities;//flag to use probability method for PID
   Bool_t fUseRapidity;//flag to use rapidity instead of pseudorapidity in correlation histograms
@@ -481,7 +491,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fCheckPileUp;//Usage of the "Pile-Up" event check
   Bool_t fCheckPrimaryFlagAOD;// Usage of check on AliAODtrack::kPrimary (default = OFF)
   Bool_t fUseMCforKinematics;//Usage of MC information for filling the kinematics information of particles (only in MCAODrec mode)
-
+  Bool_t fRebinCorrHistos;//Rebinning of corrected plots
   Bool_t fUseAdditionalVtxCuts;//usage of additional clean up cuts for primary vertex.
 
   Bool_t fUseOutOfBunchPileUpCutsLHC15o;//usage of correlation cuts to exclude out of bunche pile up. To be used for 2015 PbPb data.

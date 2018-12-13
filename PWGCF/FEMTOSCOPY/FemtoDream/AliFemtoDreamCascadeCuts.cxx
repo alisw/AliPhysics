@@ -220,7 +220,7 @@ AliFemtoDreamCascadeCuts* AliFemtoDreamCascadeCuts::XiCuts(
   XiCuts->SetCutv0TransverseRadius(1.4, 200);
   XiCuts->SetCutv0MinDistToPrimVtx(0.07);
   XiCuts->SetCutv0MinDaugDistToPrimVtx(0.05);
-  XiCuts->SetRejectOmegas(1672, 0.005);
+  XiCuts->SetRejectOmegas(1.672, 0.005);
   XiCuts->SetPtRangeXi(0.3, 999.9);
   return XiCuts;
 }
@@ -242,7 +242,7 @@ AliFemtoDreamCascadeCuts* AliFemtoDreamCascadeCuts::OmegaCuts(
   OmegaCuts->SetCutv0TransverseRadius(1.1, 200);
   OmegaCuts->SetCutv0MinDistToPrimVtx(0.06);
   OmegaCuts->SetCutv0MinDaugDistToPrimVtx(0.04);
-  OmegaCuts->SetRejectOmegas(1322, 0.005);
+  OmegaCuts->SetRejectOmegas(1.322, 0.005);
   OmegaCuts->SetPtRangeXi(0.3, 999.9);
   return OmegaCuts;
 }
