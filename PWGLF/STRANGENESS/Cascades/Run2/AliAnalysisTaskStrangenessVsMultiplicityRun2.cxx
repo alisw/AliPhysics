@@ -4454,6 +4454,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
         //Add result to pool
         lNV0++;
     }
+  
+  //Explore no TPC dedx
+  for(Int_t i = 0 ; i < lNPart ; i ++){
+    //Create a new object from default
+    lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_NoTPCdEdx",lParticleNameV0[i].Data() ) );
+    lV0Result[lNV0]->SetCutTPCdEdx(1e+6);
+    
+    //Add result to pool
+    lNV0++;
+  }
     
     //Explore ITS refit requirement
     for(Int_t i = 0 ; i < lNPart ; i ++){
@@ -5366,6 +5376,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
         //Add result to pool
         lN++;
     }
+  
+  //Explore no TPC dEdx use
+  for(Int_t i = 0 ; i < 4 ; i ++){
+    lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_NodEdx",lParticleName[i].Data() ) );
+    lCascadeResult[lN] -> SetCutTPCdEdx(1e+6);
+    //Add result to pool
+    lN++;
+  }
     
     //Require ITS refit (will lose tons of signal)
     for(Int_t i = 0 ; i < 4 ; i ++){
