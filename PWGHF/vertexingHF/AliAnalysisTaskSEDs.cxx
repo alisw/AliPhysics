@@ -484,7 +484,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
 
-  fHistNEvents = new TH1F("hNEvents", "number of events ", 15, -0.5, 14.5);
+  fHistNEvents = new TH1F("hNEvents", "number of events ", 16, -0.5, 15.5);
   fHistNEvents->GetXaxis()->SetBinLabel(1, "nEventsRead");
   fHistNEvents->GetXaxis()->SetBinLabel(2, "nEvents Matched dAOD");
   fHistNEvents->GetXaxis()->SetBinLabel(3, "nEvents Mismatched dAOD");
@@ -500,6 +500,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetBinLabel(13, "no. of Ds after filtering cuts");
   fHistNEvents->GetXaxis()->SetBinLabel(14, "no. of Ds after selection cuts");
   fHistNEvents->GetXaxis()->SetBinLabel(15, "no. of not on-the-fly rec Ds");
+  fHistNEvents->GetXaxis()->SetBinLabel(16, "no. of Ds rejected by preselect");
 
   fHistNEvents->GetXaxis()->SetNdivisions(1, kFALSE);
 
@@ -939,6 +940,16 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     nFiltered++;
     fHistNEvents->Fill(12);
 
+    TObjArray arrTracks(3);
+    for(Int_t ipr=0;ipr<3;ipr++){
+      AliAODTrack *tr=vHF->GetProng(aod,d,ipr);
+      arrTracks.AddAt(tr,ipr);
+    }
+    if(!fAnalysisCuts->PreSelect(arrTracks)){
+      fHistNEvents->Fill(15);
+      continue;
+    }
+    
     if (!(vHF->FillRecoCand(aod, d)))
     {                         ////Fill the data members of the candidate only if they are empty.
       fHistNEvents->Fill(14); //monitor how often this fails
