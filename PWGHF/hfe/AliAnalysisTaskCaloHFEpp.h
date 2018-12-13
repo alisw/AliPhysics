@@ -46,6 +46,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Bool_t                  IsBdecay(int mpid);
 		TProfile* 		GetEstimatorHistogram(const AliAODEvent *fAOD);
 		TProfile* 		GetEstimatorHistogramMC(const AliAODEvent *fAOD);
+		Double_t      GetCorrectedNtrackletsD(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult);
 
     void                    SetEG1(Bool_t flagEG1) { fEMCEG1= flagEG1;};
     void                    SetEG2(Bool_t flagEG2) { fEMCEG2= flagEG2;};
@@ -143,6 +144,10 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fHistoNCells;
 		TH2F*                   fM02;
 		TH2F*                   fM20;
+		TH1F*                   fM02_ele;
+		TH1F*                   fM20_ele;
+		TH1F*                   fM02_had;
+		TH1F*                   fM20_had;
 
 				//==== check cut parameters ====
 		TH1F*                   fTPCNcls;
