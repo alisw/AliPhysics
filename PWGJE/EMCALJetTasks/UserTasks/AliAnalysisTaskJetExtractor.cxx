@@ -40,6 +40,7 @@
 #include "AliLog.h"
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
+#include "AliClusterContainer.h"
 #include "AliAODTrack.h"
 #include "AliVParticle.h"
 #include "TRandom3.h"
@@ -64,7 +65,7 @@ ClassImp(AliAnalysisTaskJetExtractor)
 /// \endcond
 
 //________________________________________________________________________
-AliEmcalJetTree::AliEmcalJetTree() : TNamed("CustomTree", "CustomTree"), fJetTree(0), fInitialized(0), fSaveEventProperties(0), fSaveConstituents(0), fSaveConstituentsIP(0), fSaveConstituentPID(0), fSaveJetShapes(0), fSaveMCInformation(0), fSaveSecondaryVertices(0), fSaveTriggerTracks(0), fExtractionPercentages(), fExtractionPercentagePtBins(), fExtractionJetTypes_HM(), fExtractionJetTypes_PM()
+AliEmcalJetTree::AliEmcalJetTree() : TNamed("CustomTree", "CustomTree"), fJetTree(0), fInitialized(0), fSaveEventProperties(0), fSaveConstituents(0), fSaveConstituentsIP(0), fSaveConstituentPID(0), fSaveJetShapes(0), fSaveMCInformation(0), fSaveSecondaryVertices(0), fSaveTriggerTracks(0), fSaveCaloClusters(0), fExtractionPercentages(), fExtractionPercentagePtBins(), fExtractionJetTypes_HM(), fExtractionJetTypes_PM()
 {
   // For these arrays, we need to reserve memory
   fBuffer_Const_Pt         = new Float_t[kMaxNumConstituents];
@@ -76,10 +77,16 @@ AliEmcalJetTree::AliEmcalJetTree() : TNamed("CustomTree", "CustomTree"), fJetTre
   fBuffer_Const_ProdVtx_Y  = new Float_t[kMaxNumConstituents];
   fBuffer_Const_ProdVtx_Z  = new Float_t[kMaxNumConstituents];
 
+  fBuffer_Cluster_Pt       = new Float_t[kMaxNumConstituents];
+  fBuffer_Cluster_E        = new Float_t[kMaxNumConstituents];
+  fBuffer_Cluster_Eta      = new Float_t[kMaxNumConstituents];
+  fBuffer_Cluster_Phi      = new Float_t[kMaxNumConstituents];
+  fBuffer_Cluster_M02      = new Float_t[kMaxNumConstituents];
+  fBuffer_Cluster_Label    = new Int_t[kMaxNumConstituents];
 }
 
 //________________________________________________________________________
-AliEmcalJetTree::AliEmcalJetTree(const char* name) : TNamed(name, name), fJetTree(0), fInitialized(0), fSaveEventProperties(0), fSaveConstituents(0), fSaveConstituentsIP(0), fSaveConstituentPID(0), fSaveJetShapes(0), fSaveMCInformation(0), fSaveSecondaryVertices(0), fSaveTriggerTracks(0), fExtractionPercentages(), fExtractionPercentagePtBins(), fExtractionJetTypes_HM(), fExtractionJetTypes_PM()
+AliEmcalJetTree::AliEmcalJetTree(const char* name) : TNamed(name, name), fJetTree(0), fInitialized(0), fSaveEventProperties(0), fSaveConstituents(0), fSaveConstituentsIP(0), fSaveConstituentPID(0), fSaveJetShapes(0), fSaveMCInformation(0), fSaveSecondaryVertices(0), fSaveTriggerTracks(0), fSaveCaloClusters(0), fExtractionPercentages(), fExtractionPercentagePtBins(), fExtractionJetTypes_HM(), fExtractionJetTypes_PM()
 {
   // For these arrays, we need to reserve memory
   fBuffer_Const_Pt         = new Float_t[kMaxNumConstituents];
@@ -90,6 +97,13 @@ AliEmcalJetTree::AliEmcalJetTree(const char* name) : TNamed(name, name), fJetTre
   fBuffer_Const_ProdVtx_X  = new Float_t[kMaxNumConstituents];
   fBuffer_Const_ProdVtx_Y  = new Float_t[kMaxNumConstituents];
   fBuffer_Const_ProdVtx_Z  = new Float_t[kMaxNumConstituents];
+
+  fBuffer_Cluster_Pt       = new Float_t[kMaxNumConstituents];
+  fBuffer_Cluster_E        = new Float_t[kMaxNumConstituents];
+  fBuffer_Cluster_Eta      = new Float_t[kMaxNumConstituents];
+  fBuffer_Cluster_Phi      = new Float_t[kMaxNumConstituents];
+  fBuffer_Cluster_M02      = new Float_t[kMaxNumConstituents];
+  fBuffer_Cluster_Label    = new Int_t[kMaxNumConstituents];
 }
 
 
@@ -179,6 +193,29 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t vertexX, Float_t 
       fBuffer_NumConstituents++;
     }
 
+  // Extract basic CALOCLUSTER properties directly from AliEmcalJet object
+  fBuffer_NumClusters = 0;
+  if(fClusterContainer && fSaveCaloClusters)
+    for(Int_t i = 0; i < jet->GetNumberOfClusters(); i++)
+    {
+      AliVCluster* cluster = static_cast<AliVCluster*>(jet->ClusterAt(i, fClusterContainer->GetArray()));
+      if(!cluster) continue;
+
+      // #### Retrieve cluster pT
+      Double_t primVtx[3] = {vertexX, vertexY, vertexZ};
+      TLorentzVector clusterMomentum;
+      cluster->GetMomentum(clusterMomentum, primVtx);
+      // ####
+      fBuffer_Cluster_Pt[fBuffer_NumClusters] = clusterMomentum.Perp();
+      fBuffer_Cluster_E[fBuffer_NumClusters] = cluster->E();
+      fBuffer_Cluster_Eta[fBuffer_NumClusters] = clusterMomentum.Eta();
+      fBuffer_Cluster_Phi[fBuffer_NumClusters] = clusterMomentum.Phi();
+      fBuffer_Cluster_M02[fBuffer_NumClusters] = cluster->GetM02();
+      fBuffer_Cluster_Label[fBuffer_NumClusters] = cluster->GetLabel();
+
+      fBuffer_NumClusters++;
+    }
+
 
   // Set constituent arrays for impact parameters
   if(fSaveConstituentsIP)
@@ -266,6 +303,8 @@ void AliEmcalJetTree::InitializeTree()
   fJetTree->Branch("Jet_Eta",&fBuffer_JetEta,"Jet_Eta/F");
   fJetTree->Branch("Jet_Area",&fBuffer_JetArea,"Jet_Area/F");
   fJetTree->Branch("Jet_NumConstituents",&fBuffer_NumConstituents,"Jet_NumConstituents/I");
+  if(fSaveCaloClusters)
+    fJetTree->Branch("Jet_NumClusters",&fBuffer_NumClusters,"Jet_NumClusters/I");
 
   if(fSaveEventProperties)
   {
@@ -294,6 +333,17 @@ void AliEmcalJetTree::InitializeTree()
     fJetTree->Branch("Jet_Const_Charge",fBuffer_Const_Charge,"Jet_Const_Charge[Jet_NumConstituents]/F");
     if(fSaveMCInformation)
       fJetTree->Branch("Jet_Const_Label",fBuffer_Const_Label,"Jet_Const_Label[Jet_NumConstituents]/I");
+  }
+
+  if(fSaveCaloClusters)
+  {
+    fJetTree->Branch("Jet_Cluster_Pt",fBuffer_Cluster_Pt,"Jet_Cluster_Pt[Jet_NumClusters]/F");
+    fJetTree->Branch("Jet_Cluster_E",fBuffer_Cluster_E,"Jet_Cluster_Pt[Jet_NumClusters]/F");
+    fJetTree->Branch("Jet_Cluster_Phi",fBuffer_Cluster_Phi,"Jet_Cluster_Phi[Jet_NumClusters]/F");
+    fJetTree->Branch("Jet_Cluster_Eta",fBuffer_Cluster_Eta,"Jet_Cluster_Eta[Jet_NumClusters]/F");
+    fJetTree->Branch("Jet_Cluster_M02",fBuffer_Cluster_M02,"Jet_Cluster_M02[Jet_NumClusters]/F");
+    if(fSaveMCInformation)
+      fJetTree->Branch("Jet_Cluster_Label",fBuffer_Cluster_Label,"Jet_Cluster_Label[Jet_NumClusters]/I");
   }
 
   if(fSaveConstituentsIP)
@@ -386,6 +436,7 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fEventCut_TriggerTrackMaxLabel(+9999999),
   fJetsCont(0),
   fTracksCont(0),
+  fClustersCont(0),
   fTruthParticleArray(0),
   fTruthJetsArrayName(""),
   fTruthJetsRhoName(""),
@@ -434,6 +485,7 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fEventCut_TriggerTrackMaxLabel(+9999999),
   fJetsCont(0),
   fTracksCont(0),
+  fClustersCont(0),
   fTruthParticleArray(0),
   fTruthJetsArrayName(""),
   fTruthJetsRhoName(""),
@@ -477,6 +529,7 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
   fTracksCont       = static_cast<AliParticleContainer*>(fJetsCont->GetParticleContainer());
   if(!fTracksCont)
     AliFatal("Particle input container not found attached to jets!");
+  fClustersCont       = static_cast<AliClusterContainer*>(fJetsCont->GetClusterContainer());
 
   fRandomGenerator->SetSeed(fRandomSeed);
   fRandomGeneratorCones->SetSeed(fRandomSeedCones);
@@ -487,6 +540,7 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
 
   // ### Initialize the jet tree (settings must all be given at this stage)
   fJetTree->SetTrackContainer(fTracksCont);
+  fJetTree->SetClusterContainer(fClustersCont);
   fJetTree->SetJetContainer(fJetsCont);
   fJetTree->SetRandomGenerator(fRandomGenerator);
   fJetTree->InitializeTree();
@@ -746,9 +800,9 @@ Double_t AliAnalysisTaskJetExtractor::GetTrueJetPtFraction(AliEmcalJet* jet)
   Double_t pt_all   = 0.;
   Double_t truePtFraction = 0;
 
+  // Loop over all jet tracks+clusters
   for(Int_t iConst = 0; iConst < jet->GetNumberOfTracks(); iConst++)
   {
-    // Loop over all valid jet constituents
     AliVParticle* particle = static_cast<AliVParticle*>(jet->TrackAt(iConst, fTracksCont->GetArray()));
     if(!particle) continue;
     if(particle->Pt() < 1e-6) continue;
@@ -758,6 +812,38 @@ Double_t AliAnalysisTaskJetExtractor::GetTrueJetPtFraction(AliEmcalJet* jet)
       pt_nonMC += particle->Pt();
     pt_all += particle->Pt();
   }
+  for(Int_t iConst = 0; iConst < jet->GetNumberOfClusters(); iConst++)
+  {
+    AliVCluster* cluster = static_cast<AliVCluster*>(jet->ClusterAt(iConst, fClustersCont->GetArray()));
+    if(!cluster) continue;
+    if(cluster->E() < 1e-6) continue;
+
+    // #### Retrieve cluster pT
+    Double_t vtxX = 0;
+    Double_t vtxY = 0;
+    Double_t vtxZ = 0;
+    const AliVVertex* myVertex = InputEvent()->GetPrimaryVertex();
+    if(!myVertex && MCEvent())
+      myVertex = MCEvent()->GetPrimaryVertex();
+    if(myVertex)
+    {
+      vtxX = myVertex->GetX();
+      vtxY = myVertex->GetY();
+      vtxZ = myVertex->GetZ();
+    }
+
+    Double_t primVtx[3] = {vtxX, vtxY, vtxZ};
+    TLorentzVector clusterMomentum;
+    cluster->GetMomentum(clusterMomentum, primVtx);
+    Double_t ClusterPt = clusterMomentum.Perp();
+    // ####
+
+    // Particles marked w/ labels within label range are considered from toy
+    if( (cluster->GetLabel() >= fTruthMinLabel) && (cluster->GetLabel() < fTruthMaxLabel))
+      pt_nonMC += ClusterPt;
+    pt_all += ClusterPt;
+  }
+
   if(pt_all)
     truePtFraction = (pt_nonMC/pt_all);
   return truePtFraction;
@@ -1245,6 +1331,8 @@ void AliAnalysisTaskJetExtractor::PrintConfig()
     std::cout << "* Jet constituents, IPs" << std::endl;
   if(fJetTree->GetSaveConstituentPID())
     std::cout << "* Jet constituents, PID" << std::endl;
+  if(fJetTree->GetSaveCaloClusters())
+    std::cout << "* Jet calorimeter clusters" << std::endl;
   if(fJetTree->GetSaveMCInformation())
     std::cout << "* MC information (origin, matched jets, ...)" << std::endl;
   if(fJetTree->GetSaveSecondaryVertices())
