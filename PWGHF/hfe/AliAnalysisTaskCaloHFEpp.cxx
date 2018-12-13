@@ -24,6 +24,7 @@
 #include "TVector3.h"
 #include "TH1F.h"
 #include "TList.h"
+#include "TRandom.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
@@ -105,6 +106,10 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fHistoNCells(0),
 				fM02(0),
 				fM20(0),
+				fM02_ele(0),
+				fM20_ele(0),
+				fM02_had(0),
+				fM20_had(0),
 				//==== check cut parameters ====
 				fTPCNcls(0),
 				fITSNcls(0),
@@ -262,6 +267,10 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fHistoNCells(0),
 				fM02(0),
 				fM20(0),
+				fM02_ele(0),
+				fM20_ele(0),
+				fM02_had(0),
+				fM20_had(0),
 				//==== check cut parameters ====
 				fTPCNcls(0),
 				fITSNcls(0),
@@ -472,7 +481,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fDCAxy_Pt_B= new TH2F("fDCAxy_Pt_B","DCA_{xy} vs Pt all B meson(MC);p_{t} (GeV/c);DCAxy*charge*Bsign",600,0,60,800,-0.2,0.2);
 
 				Double_t eop_range[21] = {2.,2.5,3.,3.5,4.,4.5,5.0,5.5,6.,8.,10.,12.,14.,16.,19.,22.,26.,30.,35.,40.,50.};
-				fPt_Btoe = new TH2F("fPt_Btoe","B meson vs electron;electron p_{t} (GeV/c);B p_{t} (GeV/c)",20,eop_range,20,eop_range);
+				fPt_Btoe = new TH2F("fPt_Btoe","B meson vs electron;electron p_{t} (GeV/c);B p_{t} (GeV/c)",20,eop_range,600,0.,60.);
 				fHist_eff_HFE     = new TH1F("fHist_eff_HFE","efficiency :: HFE",600,0,60);
 				fHist_eff_match   = new TH1F("fHist_eff_match","efficiency :: matched cluster",600,0,60);
 				fHist_eff_TPC     = new TH1F("fHist_eff_TPC","efficiency :: TPC cut",600,0,60);
@@ -517,6 +526,10 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fHistNsigEop = new TH2F ("fHistNsigEop", "E/p vs TPC nsig; E/p; #sigme_{TPC-dE/dX}",300, 0.0, 3.0, 200, -10,10);   
 				fM02 = new TH2F ("fM02","M02 vs pt distribution; pt(GeV/c); M02",500,0,50,400,0,2);
 				fM20 = new TH2F ("fM20","M20 vs pt distribution; pt(GeV/c); M20",500,0,50,400,0,2);
+				fM02_ele = new TH1F ("fM02_ele","M02 distribution ele; pt(GeV/c); M02",400,0,2);
+				fM20_ele = new TH1F ("fM20_ele","M20 distribution ele; pt(GeV/c); M20",400,0,2);
+				fM02_had = new TH1F ("fM02_had","M02 distribution had; pt(GeV/c); M02",400,0,2);
+				fM20_had = new TH1F ("fM20_had","M20 distribution had; pt(GeV/c); M20",400,0,2);
 				fM02_2 = new TH2F ("fM02_2","M02 vs pt distribution (-1<nSigma<3 & 0.9<E/p<1.3); pt(GeV/c); M02",500,0,50,400,0,2);
 				fM20_2 = new TH2F ("fM20_2","M20 vs pt distribution (-1<nSigma<3 & 0.9<E/p<1.3); pt(GeV/c); M20",500,0,50,400,0,2);
 				fEopPt_ele_loose = new TH2F ("fEopPt_ele_loose","pt vs E/p distribution (-3<nSigma<3); pt(GeV/c); E/p",500,0,50,300,0,3.0);
@@ -551,6 +564,10 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fOutputList->Add(fHistoNCells);
 				fOutputList->Add(fM02);
 				fOutputList->Add(fM20);
+				fOutputList->Add(fM02_ele);
+				fOutputList->Add(fM20_ele);
+				fOutputList->Add(fM02_had);
+				fOutputList->Add(fM20_had);
 				//==== check cut parameters ====
 				fOutputList->Add(fTPCNcls);
 				fOutputList->Add(fITSNcls);
@@ -869,6 +886,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fAOD);
 				if(estimatorAvg){
 								correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex,fRefMult));
+								//correctednAcc= AliAnalysisTaskCaloHFEpp::GetCorrectedNtrackletsD(estimatorAvg,nAcc,Zvertex,fRefMult);
 				} 
 				fzvtx_Ntrkl_Corr->Fill(Zvertex,correctednAcc);
 
@@ -974,7 +992,6 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 								fTPCnSigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron); 
 								ITSchi2 = track -> GetITSchi2();
 								TPCchi2NDF = track -> Chi2perNDF();
-								fdEdx->Fill(TrkP,dEdx);
 
 								Int_t EMCalIndex = -1;
 								EMCalIndex = track->GetEMCALcluster();  // get index of EMCal cluster which matched to track
@@ -1007,6 +1024,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 								if(track -> GetTPCCrossedRows() < CutTPCNCrossedRow) continue;
 
 
+								fdEdx->Fill(TrkP,dEdx);
 								fTPCNcls->Fill(track->GetTPCNcls());
 								fITSNcls->Fill(track->GetITSNcls());
 								fTPCnsig->Fill(TrkP,fTPCnSigma);
@@ -1198,6 +1216,16 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 												fM02->Fill(TrkPt,m02);
 												fM20->Fill(TrkPt,m20);
+
+												if(TMath::Abs(pidM)==11){
+																fM02_ele->Fill(m02);
+																fM20_ele->Fill(m20);
+												}else{
+																fM02_had->Fill(m02);
+																fM20_had->Fill(m20);
+												}
+
+												fHistNsigEop->Fill(eop,fTPCnSigma);
 
 												Bool_t fFlagNonHFE=kFALSE; 
 												Bool_t fFlagIsolation=kFALSE; 
@@ -1769,10 +1797,35 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogramMC(const AliAODEvent* f
   Int_t runNo  = fAOD->GetRunNumber();
   Int_t period = -1; 
    
-  if (runNo>=256592 && runNo<=258537) period = 4; //LHC16k
+	if (runNo>=256504 && runNo<=258537) period = 4;  //LHC16k
   if (runNo>=258919 && runNo<=259888) period = 5; //LHC16l
   if (period < 4 || period > 5) return 0;
     
     
   return fMultEstimatorAvg[period];
 }
+ //____________________________________________________________________________
+Double_t AliAnalysisTaskCaloHFEpp::GetCorrectedNtrackletsD(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult)
+{
+				if(TMath::Abs(vtxZ)>10.0){
+								//    printf("ERROR: Z vertex out of range for correction of multiplicity\n");
+								return uncorrectedNacc;
+				}
+
+				if(!estimatorAvg){
+								printf("ERROR: Missing TProfile for correction of multiplicity\n");
+								return uncorrectedNacc;
+				}
+
+				Double_t localAvg = estimatorAvg->GetBinContent(estimatorAvg->FindBin(vtxZ));
+				Double_t deltaM = 0;
+				deltaM = uncorrectedNacc*(refMult/localAvg - 1);
+
+				Double_t correctedNacc = uncorrectedNacc + (deltaM>0 ? 1 : -1) * gRandom->PoissonD(TMath::Abs(deltaM));
+
+				if(correctedNacc<0) correctedNacc=0;
+
+				return correctedNacc;
+
+}
+
