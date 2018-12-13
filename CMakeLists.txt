@@ -281,6 +281,11 @@ else()
   add_subdirectory(PWGUD)
   add_subdirectory(PWGMM)
 
+  # Transition to Run3
+  if(ROOT_VERSION_MAJOR EQUAL 6)
+    add_subdirectory(RUN3)
+  endif()
+
   # List modules with PARfiles
   string(REPLACE ";" " " ALIPARFILES_FLAT "${ALIPARFILES}")
   message(STATUS "PARfile target enabled for the following modules: ${ALIPARFILES_FLAT}")
