@@ -23,6 +23,7 @@
 #include "AliParticleContainer.h"
 #include "AliAODMCParticle.h"
 
+class AliMultSelection;
 class AliJJetJtAnalysis;
 class AliJEfficiency;
 //==============================================================
@@ -57,6 +58,7 @@ class AliJJetJtTask : public AliAnalysisTaskSE {
   void SetNrandom( int Nrand) { NRandom = Nrand;}
   void SetMoveJet( int move) { moveJet = move;}
   void SetLeadingJets(int leading){fLeadingJets = leading;}
+  void SetCentCut(double cent){fCentCut = cent;}
   void FindDaughters(AliJJet * jet, AliAODMCParticle * track, AliMCParticleContainer * mcTracksCont);
   void SetSide(int side) {fSide = side;} // 0 = both sides, -1 A side, +1 C side
 
@@ -79,11 +81,13 @@ class AliJJetJtTask : public AliAnalysisTaskSE {
     int fDoMC; ///< Whether or not MC analysis is performed
     int fSide; ///< Possible to use only one side for analysis, 0: both sides, -1: A side, +1, C side
     int fLeadingJets; ///< Do only leading jets if >0
+    double fCentCut; ///<
     double zVert; ///< Vertex position
     bool fDoLog; ///< Whether or not logarithmic histograms should be filled/created
     AliAnalysisUtils *fAnaUtils;
     AliJRunTable *fRunTable;
     AliJTH1D  fEventHist; /// Histogram to store event numbers
+    AliMultSelection*               sel=nullptr;//!
 
     ClassDef(AliJJetJtTask, 1); 
 };
