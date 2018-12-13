@@ -59,7 +59,7 @@ private:
   //This function is the key fitting function
   TF1 *fGlauberNBD;
   
-  //Histograms to be used when fitting
+  //Reference histo
   TH1D *fhNanc; //basic ancestor distribution
   TH2 *fhNpNc; //correlation between Npart and Ncoll
   TH1 *fhV0M; //basic ancestor distribution
