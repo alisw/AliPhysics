@@ -52,6 +52,7 @@ mc(kFALSE)
 
 Bool_t AliForwardFlowUtil::ExtraEventCutFMD(TH2D& forwarddNdedp, double cent, Bool_t mc){
   Bool_t useEvent = true;
+  if (useEvent) return useEvent;
   Int_t nBadBins = 0;
   Int_t phibins = forwarddNdedp.GetNbinsY();
   Double_t totalFMDpar = 0;
@@ -399,4 +400,16 @@ AliTrackReference* AliForwardFlowUtil::IsHitTPC(AliMCParticle* p) {
     }
   }
   return 0x0;
+}
+
+
+
+void AliForwardFlowUtil::MakeFakeHoles(TH2D& forwarddNdedp){
+  for (Int_t etaBin = 125; etaBin <= 137; etaBin++){
+    forwarddNdedp.SetBinContent(etaBin,17, 0.0);
+    forwarddNdedp.SetBinContent(etaBin,18, 0.0);
+  }
+  for (Int_t etaBin = 168; etaBin <= 185; etaBin++){
+    forwarddNdedp.SetBinContent(etaBin,14, 0.0);
+  }
 }

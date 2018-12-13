@@ -19,7 +19,7 @@
  *
  * @ingroup pwglf_forward_flow
  */
-AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, TString nua_file, bool nua_mode, bool doetagap, Double_t gap, bool mc,  bool esd,bool prim_cen,bool prim_fwd , UInt_t tracktype, TString centrality,TString name1)
+AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, TString nua_file, bool nua_mode, bool doetagap, Double_t gap, bool mc,  bool esd,bool prim_cen,bool prim_fwd , UInt_t tracktype, TString centrality,TString name1)
 {
   std::cout << "______________________________________________________________________________" << std::endl;
 
@@ -48,6 +48,10 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, TString nua_file, bool nu
     task->fSettings.gap = 0.0;
   }
 
+    if (makeFakeHoles){
+      task->fSettings.makeFakeHoles = kTRUE;
+      resName += "_fakeholes";
+    }
 
   task->fSettings.use_primaries_cen = prim_cen;
   if (mc) resName += (prim_cen ? "_primcen" : "_trcen");

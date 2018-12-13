@@ -259,6 +259,9 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
     }
   }
 
+  if (fSettings.makeFakeHoles) fUtil.MakeFakeHoles(*forwardDist);
+
+
   if (useEvent){
     UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
 

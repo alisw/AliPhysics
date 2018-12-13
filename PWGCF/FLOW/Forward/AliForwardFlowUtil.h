@@ -45,6 +45,8 @@ class AliForwardFlowUtil : public TObject {
     // (first) track reference of such a hit
   AliTrackReference* IsHitTPC(AliMCParticle* p);
   AliTrackReference* IsHitFMD(AliMCParticle* p);
+
+  void MakeFakeHoles(TH2D& forwarddNdedp);
   AliVEvent* fevent; //!
   AliAODEvent* fAODevent; //!
   AliMCEvent* fMCevent; //!

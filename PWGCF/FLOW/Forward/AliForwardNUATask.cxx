@@ -215,6 +215,11 @@ void AliForwardNUATask::UserExec(Option_t *)
   nua_fmd->SetDirectory(0);
 
   if (useEvent) {
+    static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(zvertex);
+    static_cast<TH1D*>(fEventList->FindObject("Centrality"))->Fill(cent);
+
+
+
     // loop for the TPC
     for (Int_t etaBin = 1; etaBin <= centralDist->GetNbinsX(); etaBin++) {
       for (Int_t phiBin = 1; phiBin <= centralDist->GetNbinsY(); phiBin++) {
@@ -243,20 +248,10 @@ void AliForwardNUATask::UserExec(Option_t *)
 }
 
 
-void AliForwardNUATask::MakeFakeHoles(TH2D& forwarddNdedp){
-  for (Int_t etaBin = 125; etaBin <= 137; etaBin++){
-    forwarddNdedp.SetBinContent(etaBin,17, 0.0);
-    forwarddNdedp.SetBinContent(etaBin,18, 0.0);
-  }
-  for (Int_t etaBin = 168; etaBin <= 185; etaBin++){
-    forwarddNdedp.SetBinContent(etaBin,14, 0.0);
-  }
-}
-
 
 Double_t AliForwardNUATask::InterpolateWeight(const TH2D& forwarddNdedp,Int_t phiBin, Int_t etaBin, Double_t weight)
 {
-  if ((phiBin == 17) && (etaBin > 125 && etaBin < 137)){
+  if ((phiBin == 17) && (etaBin >= 125 && etaBin <= 137)){
 
     if (weight > 0 || forwarddNdedp.GetBinContent(etaBin, 18) > 0) return weight;
     //if (forwarddNdedp.GetBinContent(etaBin - 1, phiBin) > 0 ) return weight;
@@ -267,12 +262,12 @@ Double_t AliForwardNUATask::InterpolateWeight(const TH2D& forwarddNdedp,Int_t ph
  //    if (detType == "forward") weight = 1.;
      Double_t up = forwarddNdedp.GetBinContent(etaBin, 19);
      Double_t low = forwarddNdedp.GetBinContent(etaBin, 16);
-     weight = ((up+low/2)+low)/2;
+     weight = ((up+low)/2+low)/2;
      return weight;
     //std::cout << weight << std::endl;
 
    }
-  if ((phiBin == 18) && (etaBin > 125 && etaBin < 137)){
+  if ((phiBin == 18) && (etaBin >= 125 && etaBin <= 137)){
     if (weight > 0 || forwarddNdedp.GetBinContent(etaBin, 17) > 0 ) return weight;
     //if (forwarddNdedp.GetBinContent(etaBin - 1, phiBin) > 0 ) return weight;
     //if (forwarddNdedp.GetBinContent(etaBin - 2, phiBin) > 0 ) return weight;
@@ -281,10 +276,10 @@ Double_t AliForwardNUATask::InterpolateWeight(const TH2D& forwarddNdedp,Int_t ph
     // std::cout << "found hole, etaBin = " << etaBin << ", eta = " << eta << ", phiBin = " << phiBin << ", phi = " << phi << std::endl;
      Double_t up = forwarddNdedp.GetBinContent(etaBin, 19);
      Double_t low = forwarddNdedp.GetBinContent(etaBin, 16);
-     weight = ((up+low/2)+low)/2;
+     weight = ((up+low)/2+up)/2;
     //std::cout << weight << std::endl;
   }
-  if ((phiBin == 14) && (etaBin > 168 && etaBin < 185)){
+  if ((phiBin == 14) && (etaBin >= 168 && etaBin <= 185)){
     if (weight > 0) return weight;
     //if (forwarddNdedp.GetBinContent(etaBin + 1, phiBin) > 0 ) return weight;
     //if (forwarddNdedp.GetBinContent(etaBin + 2, phiBin) > 0 ) return weight;
@@ -292,7 +287,7 @@ Double_t AliForwardNUATask::InterpolateWeight(const TH2D& forwarddNdedp,Int_t ph
     // std::cout << "found hole, etaBin = " << etaBin << ", eta = " << eta << ", phiBin = " << phiBin << ", phi = " << phi << std::endl;
     Double_t  up = forwarddNdedp.GetBinContent(etaBin, 15);
     Double_t  low = forwarddNdedp.GetBinContent(etaBin, 13);
-     weight = (up+low/2);
+     weight = (up+low)/2;
     //std::cout << weight << std::endl;
 
    }
