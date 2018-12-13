@@ -430,7 +430,8 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
   }
 
   /// Run 2 Pb-Pb
-  if ( fCurrentRun >= 244917 && fCurrentRun <= 246994) {
+  if ( (fCurrentRun >= 244917 && fCurrentRun <= 246994) ||
+       (fCurrentRun >= 295369 && fCurrentRun <= 297624)) {
     SetupLHC15o();
     return;
   }
@@ -459,7 +460,7 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
 
   if ((fCurrentRun >= 225000 && fCurrentRun <= 244628) || // 2015 5+13 TeV sample
       (fCurrentRun >= 252235 && fCurrentRun <= 264347) || // 2016 13 TeV sample
-      (fCurrentRun >= 270531)) {                          //TODO: put end of 2017 13 TeV sample
+      (fCurrentRun >= 270531 && fCurrentRun <= 294960)) { // 2017 13 and 5 TeV + 2018 13 TeV samples
     SetupRun2pp();
     return;
   }
