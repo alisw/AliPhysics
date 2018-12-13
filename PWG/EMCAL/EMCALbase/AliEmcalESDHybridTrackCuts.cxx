@@ -142,7 +142,8 @@ void AliEmcalESDHybridTrackCuts::Init(){
 }
 
 Int_t AliEmcalESDHybridTrackCuts::GetTPCTRDNumberOfClusters(const AliVTrack *const trk) const {
-  return static_cast<Int_t>(trk->GetTPCCrossedRows()) + static_cast<Int_t>(trk->GetTRDncls());
+  auto esdtrack = static_cast<const AliESDtrack *>(trk);
+  return static_cast<Int_t>(trk->GetTPCCrossedRows()) + static_cast<Int_t>(esdtrack->GetTRDntracklets() * 20);
 }
 
 Double_t AliEmcalESDHybridTrackCuts::GetPtDepCutTPCTRDNumberOfClusters(const AliVTrack *trk) const {
@@ -245,4 +246,5 @@ void AliEmcalESDHybridTrackCuts::InitHybridTracks2018TRD(){
   // Set min. number of TPC+TRD clusters cut
   fRequireTPCTRDClusters = true;
   fMinClustersTPCTRD = 120;
+  fPtDepParamClusterCut = 10.;
 }

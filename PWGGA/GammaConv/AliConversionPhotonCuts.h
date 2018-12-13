@@ -243,6 +243,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t UseElecSharingCut(){return fDoSharedElecCut;}
     Bool_t UseToCloseV0sCut(){return fDoToCloseV0sCut;}
     Double_t GetEtaCut(){return fEtaCut;}
+    Double_t GetSingleElectronPtCut(){return fSinglePtCut;}
     void SetDodEdxSigmaCut(Bool_t k=kTRUE)  {fDodEdxSigmaCut=k;}
     void SetSwitchToKappaInsteadOfNSigdEdxTPC(Bool_t k=kTRUE) {fSwitchToKappa=k;}
     void SetDoElecDeDxPostCalibration(Bool_t k=kTRUE)  {fDoElecDeDxPostCalibration=k;}
@@ -397,7 +398,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
  
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,18)
+    ClassDef(AliConversionPhotonCuts,19)
     /// \endcond
 };
 

@@ -49,7 +49,7 @@
 #include "AliTRDtrackV1.h"
 #include "AliTRDseedV1.h"
 #include "AliTRDcluster.h"
-#include "info/AliTRDtrackInfo.h"
+#include "AliTRDtrackInfo.h"
 #include "AliTRDcalibDB.h"
 
 #include "AliTRDCalibraFillHisto.h"

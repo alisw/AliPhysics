@@ -86,6 +86,7 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
                                 TString   additionalTrainConfig         = "0"                     // additional counter for trainconfig, this has to be always the last parameter
               ) {
 
+  Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
   //parse additionalTrainConfig flag
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
   if(rAddConfigArr->GetEntries()<1){cout << "ERROR during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
@@ -95,7 +96,12 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     else{
       TObjString* temp = (TObjString*) rAddConfigArr->At(i);
       TString tempStr = temp->GetString();
-      cout << "INFO: nothing to do, no definition available!" << endl;
+      if(tempStr.BeginsWith("TM")){
+        TString tempType = tempStr;
+        tempType.Replace(0,2,"");
+        trackMatcherRunningMode = tempType.Atoi();
+        cout << Form("INFO: AddTask_OmegaToPiZeroGamma_pp will use running mode '%i' for the TrackMatcher!",trackMatcherRunningMode) << endl;
+      }
     }
   }
   TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
@@ -208,6 +214,7 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
   task->SetDoPiZeroGammaAngleCut(DoPiZeroGammaAngleCut);
   task->SetlowerFactor(lowerFactor);
   task->SetupperFactor(upperFactor);
+  task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
 
   //create cut handler
   CutHandlerPiZeroGamma cuts;
@@ -257,6 +264,9 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00085113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00083113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+  } else if( trainConfig == 61) {
+    //only MB 13TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
 
   // cuts for ReconMethod==1
   } else if(trainConfig == 101){ // EMCAL clusters pp 7 TeV
@@ -296,6 +306,9 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00085113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00083113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+  } else if( trainConfig == 161) {
+    //only MB 13TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
 
   // cuts for ReconMethod==2
   } else if(trainConfig == 201){ // EMCAL clusters pp 7 TeV
@@ -335,6 +348,9 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00085113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00083113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+  } else if( trainConfig == 261) {
+    //only MB 13TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
 
 
   // cuts for ReconMethod==3
@@ -375,6 +391,9 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00085113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00083113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+  } else if( trainConfig == 361) {
+    //only MB 13TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
 
   // cuts for ReconMethod==4
   } else if(trainConfig == 401){ // EMCAL clusters pp 7 TeV
@@ -419,6 +438,9 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00085113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00083113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+  } else if( trainConfig == 461) {
+    //only MB 13TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
 
 
   // cuts for ReconMethod==5
@@ -460,6 +482,9 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00085113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00083113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+  } else if( trainConfig == 561) {
+    //only MB 13TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
   } else {
     Error(Form("OmegaToPiZeroGamma_%i_%i", trainConfig, isMC), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -495,9 +520,9 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     //create AliCaloTrackMatcher instance, if there is none present
     TString caloCutPos = cuts.GetClusterCut(i);
     caloCutPos.Resize(1);
-    TString TrackMatcherName = Form("CaloTrackMatcher_%s",caloCutPos.Data());
+    TString TrackMatcherName = Form("CaloTrackMatcher_%s_%i",caloCutPos.Data(),trackMatcherRunningMode);
     if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
-      AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
+      AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi(),trackMatcherRunningMode);
       fTrackMatcher->SetV0ReaderName(V0ReaderName);
       mgr->AddTask(fTrackMatcher);
       mgr->ConnectInput(fTrackMatcher,0,cinput);

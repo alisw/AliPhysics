@@ -49,8 +49,8 @@
 #include "THistManager.h"
 #include <string>
 #include <vector>
-#include "Tracks/AliAnalysisTaskEmcalTriggerBase.h"
-#include "Tracks/AliCutValueRange.h"
+#include "AliAnalysisTaskEmcalTriggerBase.h"
+#include "AliCutValueRange.h"
 #include "AliEventCuts.h"
 #include <TCustomBinning.h>
 #include <TString.h>
@@ -106,6 +106,7 @@ protected:
     //void                        DoParticleLoop()                                  ;
     //void                        DoMCJetLoop()                                     ;
     //Bool_t                      IsLEDEvent() const                                ;
+    
     
     Bool_t                      fUseRecalcPatches                                 ;///<                  Switch between offline (FEE) and recalc (L1) patches
     Bool_t                      SelectSingleShowerPatch(const AliEMCALTriggerPatchInfo *patch) const;

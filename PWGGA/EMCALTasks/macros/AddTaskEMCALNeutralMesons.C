@@ -1,10 +1,21 @@
+///////////////////////////////////////////////////////////////////////////
+///\file AddTaskEMCALNeutralMesons.C
+///\brief Configuration of AliAnalysisTaskNeutralMesons
+///
+/// Neutral mesons analysis in EMCal
+///
+/// \author Paraskevi Ganoti <Paraskevi.Ganoti@cern.ch>, Athens 
+///////////////////////////////////////////////////////////////////////////
+
+
 AliAnalysisTaskNeutralMesons *AddTaskEMCALNeutralMesons(TString trigger = "MC",
 							TString geoname = "EMCAL_COMPLETEV1",
 							Int_t mctype = 1,
 							Int_t mcpart = 111,
 							Double_t lowEnrgCut = 0.3,
 							Bool_t ncellsInCl = "kFALSE",
-							TString clusterBranch = "V1Unfold_Ecell50_Eseed280_DT250_WT1000"
+							TString clusterBranch = "newEMCALClusters",
+							TString lCustomName=""
 							)
 {
 
@@ -18,14 +29,23 @@ AliAnalysisTaskNeutralMesons *AddTaskEMCALNeutralMesons(TString trigger = "MC",
   if (!mgr) {
     ::Error("AddTaskEMCALNeutralMesons", "No analysis manager to connect to.");
     return NULL;
-  }  
+  }
+ // Check the analysis type using the event handlers connected to the analysis manager.
+ //=====================================================================================
   
   if (!mgr->GetInputEventHandler()) {
     ::Error("AddTaskEMCALNeutralMesons", "This task requires an input event handler");
     return NULL;
   }
-  
-   AliAnalysisTaskNeutralMesons *task = new AliAnalysisTaskNeutralMesons("task");
+
+	TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+ 	 if(type.Contains("AOD"))
+   	  {	 
+    	    ::Error("AddTaskKinkpp13TeVMultMC", "This task requires to run on ESD");
+   	       return NULL;
+    }
+    
+   AliAnalysisTaskNeutralMesons *task = new AliAnalysisTaskNeutralMesons("taskMesons7TeV");
    task->SetMCtype(mctype);
    task->SetMCprt(mcpart);
    task->SetGeoName(geoname);
@@ -42,11 +62,12 @@ AliAnalysisTaskNeutralMesons *AddTaskEMCALNeutralMesons(TString trigger = "MC",
    AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
    mgr->ConnectInput(task,0,cinput);
 
-   AliAnalysisDataContainer *co1 = mgr->CreateContainer(Form("out_%s_%d",trigger.Data(),mcpart),
-                                                        TList::Class(),
-                                                        AliAnalysisManager::kOutputContainer,
-                                                        Form("%s:NeutralMesons",AliAnalysisManager::GetCommonFileName()));
-   mgr->ConnectOutput(task,1,co1);
+  TString outputFileName = Form("%s:PWGGANeutralMesons7TeV", AliAnalysisManager::GetCommonFileName());
+  
+  TString lContainerName="PWGGANeutralMesons7TeV";
+  lContainerName.Append(lCustomName);
+  AliAnalysisDataContainer *coutput1= mgr->CreateContainer(lContainerName.Data(),TList::Class(), AliAnalysisManager::kOutputContainer,outputFileName);
+  mgr->ConnectOutput(task, 1, coutput1);
 
    return task; 
 }

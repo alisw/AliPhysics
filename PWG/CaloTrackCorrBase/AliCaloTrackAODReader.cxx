@@ -39,10 +39,10 @@ AliCaloTrackAODReader::AliCaloTrackAODReader() :
 {
   fDataType = kAOD;
  
-  fTrackFilterMask = 128;
-  fTrackFilterMaskComplementary = 0; // in case of hybrid tracks, without using the standard method
+  //fTrackFilterMask = 128;
+  //fTrackFilterMaskComplementary = 0; // in case of hybrid tracks, without using the standard method
   
-  fSelectFractionTPCSharedClusters = kTRUE;
+  //fSelectFractionTPCSharedClusters = kTRUE;
   fCutTPCSharedClustersFraction    = 0.4;
 }
 
@@ -229,32 +229,34 @@ Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
   
   if(!aodtrack) return kFALSE;
   
+  track->GetPxPyPz(pTrack) ;
+  
   AliDebug(2,Form("AOD track type: %d (primary %d), hybrid? %d",
                   aodtrack->GetType(),AliAODTrack::kPrimary,
                   aodtrack->IsHybridGlobalConstrainedGlobal()));
   
   // Hybrid?
-  if (fSelectHybridTracks && fTrackFilterMaskComplementary == 0)
+  if ( fSelectHybridTracks && fTrackFilterMaskComplementary == 0 )
   {
-    if (!aodtrack->IsHybridGlobalConstrainedGlobal()) return kFALSE ;
+    if ( !aodtrack->IsHybridGlobalConstrainedGlobal() ) return kFALSE ;
   }
-  else // Filter Bit?
+  else if ( fTrackFilterMask > 0 || fTrackFilterMaskComplementary > 0 ) // Filter Bit?
   {
     Bool_t accept = aodtrack->TestFilterBit(fTrackFilterMask);
     
-    if(!fSelectHybridTracks && !accept) return kFALSE ;
+    if ( !fSelectHybridTracks && !accept ) return kFALSE ;
     
-    if(fSelectHybridTracks) // Second filter bit for hybrids?
+    if ( fSelectHybridTracks ) // Second filter bit for hybrids?
     {
       Bool_t acceptcomplement = aodtrack->TestFilterBit(fTrackFilterMaskComplementary);
-      if (!accept && !acceptcomplement) return kFALSE ;
+      if ( !accept && !acceptcomplement ) return kFALSE ;
     }
   }
 
   fhCTSAODTrackCutsPt[0]->Fill(aodtrack->Pt());
 
   //
-  if(fSelectSPDHitTracks)
+  if ( fSelectSPDHitTracks )
   { // Not much sense to use with TPC only or Hybrid tracks
     if(!aodtrack->HasPointOnITSLayer(0) && !aodtrack->HasPointOnITSLayer(1)) return kFALSE ;
   }
@@ -269,7 +271,7 @@ Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
     Float_t nclsS = Float_t(aodtrack->GetTPCnclsS());
     if (  ncls> 0 )  frac =  nclsS / ncls ;
     
-    if (frac > fCutTPCSharedClustersFraction)
+    if ( frac > fCutTPCSharedClustersFraction )
     {
       AliDebug(2,Form("\t Reject track, shared cluster fraction %f > %f",frac, fCutTPCSharedClustersFraction));
       return kFALSE ;
@@ -292,7 +294,6 @@ Bool_t AliCaloTrackAODReader::SelectTrack(AliVTrack* track, Double_t pTrack[3])
   
   fhCTSAODTrackCutsPt[3]->Fill(aodtrack->Pt());
   
-  track->GetPxPyPz(pTrack) ;
   
   return kTRUE;
 }

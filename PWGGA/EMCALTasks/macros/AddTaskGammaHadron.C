@@ -3,7 +3,7 @@
 AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 		Int_t       InputGammaOrPi0 = 0,                 //..gamma analysis=0, pi0 analyis=1, pi0 SB1=2, pi0 SB2=3,
 		Bool_t      InputSeMe       = 0,                 //..same event=0 mixed event =1
-		Bool_t      InputMCorData   = 0,                 // 0->MC, 1->Data
+		Bool_t      InputMCorData   = 0,                 // 0->Data, 1->MC
 		UInt_t      evtTriggerType  = AliVEvent::kEMCEGA,//..use this type of events to combine gammas(trigger) with hadrons
 		UInt_t      evtMixingType   = AliVEvent::kAnyINT,//..use only this type of events to fill your mixed event pool with tracks
 		Bool_t      isRun2          = 1,                 //..changes some settigs and cuts depending on 2013 or 2015/2016 data

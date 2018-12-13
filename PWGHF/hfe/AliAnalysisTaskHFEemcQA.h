@@ -54,7 +54,8 @@ public:
     void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
     void SetCentralityEstimator(const char *estimator) { fCentralityEstimator = estimator; }
     
-    void CheckMCgen(AliAODMCHeader* mcHeader);
+    void CheckMCgen(AliAODMCHeader* mcHeader, Int_t &NpureMC, Int_t &NpureMCproc);
+    void GetTrackMCinfo(Int_t &ilabel, std::vector<double> &MCinfo, Int_t &NpureMC, Int_t &NpureMCproc);
     void GetRawTrackInfo(AliAODTrack* rtrack);
     void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC);
     void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };
@@ -199,6 +200,10 @@ private:
     TH2F        *fHistRawNitsPhi;//!
     TH2F        *fHistRawNtpcPhi;//!
     TH2F        *fMCcheckMother;//!
+    TH2F        *fMCcheckBdecay;//!
+    TH2F        *fMCcheckDdecay;//!
+    TH2F        *fMCcheckHFdecay;//!
+    TH2F        *fHFmomCorr;//!
     TH2F        *fMCneutral;//!
     TH2F        *fEMCTrkMatch_Phi;//!
     TH2F        *fEMCTrkMatch_Eta;//!
@@ -207,7 +212,10 @@ private:
     TH1F        *fCompTrackPtinEMCreg;//!
     TH1F        *fCompTrackPtMatch;//!
     TH1F        *fCompTrackPtMatchwithEMC;//!
-    
+ 
+    TH2F        *fMCcheckPi0decay;    
+    TH2F        *fMCcheckEtadecay;    
+
     THnSparse  *fSparseElectron;//!Electron info
     Double_t *fvalueElectron;//!Electron info
     

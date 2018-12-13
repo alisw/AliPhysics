@@ -52,9 +52,15 @@ class AliSigma0ParticleBase {
   double GetMass() const { return fMass; }
   int GetQ() const { return fQ; }
   double GetPt() const { return fPt; }
+  double GetP() const {
+    return std::sqrt(fP[0] * fP[0] + fP[1] * fP[1] + fP[2] * fP[2]);
+  }
   int GetTrackLabel() const { return fTrackLabel; }
   double GetPhi() const { return fPhi; }
   double GetEta() const { return fEta; }
+  double GetTheta() const { return fTheta; }
+  double GetPhiMC() const { return fPhiMC; }
+  double GetThetaMC() const { return fThetaMC; }
   bool GetIsUse() const { return fUse; }
   double GetDCAr() { return fDCAr; }
   double GetDCAz() { return fDCAz; }
@@ -74,6 +80,9 @@ class AliSigma0ParticleBase {
   int fMClabel;
   double fPhi;
   double fEta;
+  double fTheta;
+  double fPhiMC;
+  double fThetaMC;
 
   int fCharge;
   double fDCAz;
@@ -83,7 +92,7 @@ class AliSigma0ParticleBase {
   double fPhistar[9];
 
  private:
-  ClassDef(AliSigma0ParticleBase, 2)
+  ClassDef(AliSigma0ParticleBase, 3)
 };
 
 #endif

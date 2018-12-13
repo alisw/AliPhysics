@@ -137,6 +137,8 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     void SetlowerFactor                  (Double_t lowerFactor){ flowerFactor = lowerFactor;}
     void SetupperFactor                  (Double_t upperFactor){ fupperFactor = upperFactor;}
     
+    void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
+
   protected:
     AliV0ReaderV1*                      fV0Reader;              // basic photon Selection Task
     TString                             fV0ReaderName;
@@ -316,12 +318,13 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     TF1*                    fmaxfit;                                            // function describing location of max. points in the distribution of pi0-gamma angle vs. pT
 
     Bool_t                  fDoPiZeroGammaAngleCut;                             // flag for pi0-gamma angle cut
+    Int_t                   fTrackMatcherRunningMode;                           // CaloTrackMatcher running mode
 
   private:
     AliAnalysisTaskOmegaToPiZeroGamma(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent copy-construction
     AliAnalysisTaskOmegaToPiZeroGamma &operator=(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 11);
+    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 12);
 };
 
 #endif

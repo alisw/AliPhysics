@@ -89,6 +89,7 @@ void GetAlienGlobalProductionVariables(Bool_t & simulation,
     else if(period.Contains("12")) year = 2012;
     else if(period.Contains("11")) year = 2011;
     else if(period.Contains("10")) year = 2010;
+    else                           year = 2018;
     
     if ( print ) 
       printf("GetAlienGlobalProductionVariables() -  Data year <%d> \n", year);

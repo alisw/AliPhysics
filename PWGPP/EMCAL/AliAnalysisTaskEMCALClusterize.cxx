@@ -48,6 +48,7 @@
 #include "AliEMCALClusterizerNxN.h"
 #include "AliEMCALClusterizerv1.h"
 #include "AliEMCALClusterizerv2.h"
+#include "AliEMCALClusterizerv3.h"
 #include "AliEMCALRecPoint.h"
 #include "AliEMCALDigit.h"
 
@@ -229,7 +230,7 @@ Bool_t AliAnalysisTaskEMCALClusterize::AcceptCell( Int_t absID, Bool_t badmap )
   if ( absID < 0 || absID >= 24*48*fGeom->GetNumberOfSuperModules() ) 
     return kFALSE;
   
-  Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
+  Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1, status = 0; 
   if (!fGeom->GetCellIndex(absID,imod,iTower,iIphi,iIeta)) 
     return kFALSE; 
   
@@ -239,7 +240,7 @@ Bool_t AliAnalysisTaskEMCALClusterize::AcceptCell( Int_t absID, Bool_t badmap )
     fGeom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);  
     
     if ( fRecoUtils->IsBadChannelsRemovalSwitchedOn() && 
-         fRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi) ) 
+         fRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi, status) ) 
       return kFALSE;
   }
   
@@ -1060,13 +1061,13 @@ void AliAnalysisTaskEMCALClusterize::ClusterUnfolding()
           if (fCaloCells->GetCell(icell, cellNumber, cellAmplitude, cellTime, cellMCLabel, cellEFrac) != kTRUE)
             break;
           
-          Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
+          Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1, status = 0; 
           fGeom->GetCellIndex(cellNumber,imod,iTower,iIphi,iIeta); 
           fGeom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);	
           
           //Do not include bad channels found in analysis?
           if( fRecoUtils->IsBadChannelsRemovalSwitchedOn() && 
-              fRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi))
+              fRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi, status))
             continue;
           
           fCaloCells->SetCell(icell, cellNumber, cellAmplitude*fRecoUtils->GetEMCALChannelRecalibrationFactor(imod,ieta,iphi),cellTime);
@@ -1202,6 +1203,7 @@ void AliAnalysisTaskEMCALClusterize::FillAODCaloCells()
   aodEMcells.CreateContainer(nEMcell);
   aodEMcells.SetType(AliVCaloCells::kEMCALCell);
   Double_t calibFactor = 1.;   
+  Int_t    status = 0;
   for (Int_t iCell = 0; iCell < nEMcell; iCell++) 
   { 
     Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
@@ -1213,8 +1215,9 @@ void AliAnalysisTaskEMCALClusterize::FillAODCaloCells()
       calibFactor = fRecoUtils->GetEMCALChannelRecalibrationFactor(imod,ieta,iphi);
     }
     
-    if(!fRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi))
-    { //Channel is not declared as bad
+    if(!fRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi, status))
+    { 
+      // Channel is not declared as bad
       aodEMcells.SetCell(iCell,eventEMcells.GetCellNumber(iCell),eventEMcells.GetAmplitude(iCell)*calibFactor,
                          eventEMcells.GetTime(iCell),eventEMcells.GetMCLabel(iCell),eventEMcells.GetEFraction(iCell));
     }
@@ -1547,6 +1550,8 @@ void AliAnalysisTaskEMCALClusterize::InitClusterization()
     fClusterizer = new AliEMCALClusterizerv1 (fGeom);
   else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv2) 
     fClusterizer = new AliEMCALClusterizerv2(fGeom);
+  else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv3) 
+    fClusterizer = new AliEMCALClusterizerv3(fGeom);
   else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerNxN)
   { 
     fClusterizer = new AliEMCALClusterizerNxN(fGeom);

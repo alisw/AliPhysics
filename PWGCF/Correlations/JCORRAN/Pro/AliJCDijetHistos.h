@@ -53,6 +53,7 @@ public:
 	// Event/Track histograms
 	//===================================================
 	AliJTH1D fh_events;     //! // for counting events, jets, dijets and so on.
+	AliJTH1D fh_info;       //! // General information about the run.
 	AliJTH1D fh_centrality; //! // centrality histogram
 	AliJTH1D fh_zvtx;       //! // z-vertex histogram
 

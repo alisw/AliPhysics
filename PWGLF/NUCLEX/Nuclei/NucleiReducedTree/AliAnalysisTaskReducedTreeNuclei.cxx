@@ -36,6 +36,7 @@ fQAList(NULL),
 TreeEventSelection(NULL),
 reducedTree_Helium(NULL),
 reducedTree_HyperTriton(NULL),
+triggerMask(-1),
 SelectionStep(-1),
 magFieldSign(0),
 multPercentile_V0M(-1),
@@ -256,6 +257,7 @@ fQAList(NULL),
 TreeEventSelection(NULL),
 reducedTree_Helium(NULL),
 reducedTree_HyperTriton(NULL),
+triggerMask(-1),
 SelectionStep(-1),
 magFieldSign(0),
 multPercentile_V0M(-1),
@@ -496,10 +498,16 @@ void AliAnalysisTaskReducedTreeNuclei::UserCreateOutputObjects()
    TreeEventSelection -> Branch("multPercentile_V0A",&multPercentile_V0A,"multPercentile_V0A/D");
    TreeEventSelection -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/D");
    TreeEventSelection -> Branch("multPercentile_SPDTracklets",&multPercentile_SPDTracklets,"multPercentile_SPDTracklets/D");
+   
+   TreeEventSelection -> Branch("triggerMask",&triggerMask,"triggerMask/I");
+
 
 
    //Reduced Tree (Helium3)
    reducedTree_Helium = new TTree("reducedTree_Helium","reducedTree_Helium");
+
+   reducedTree_Helium -> Branch("triggerMask",&triggerMask,"triggerMask/I");
+
    reducedTree_Helium -> Branch("magFieldSign",&magFieldSign,"magFieldSign/I");
    reducedTree_Helium -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/D");
    reducedTree_Helium -> Branch("multPercentile_V0A",&multPercentile_V0A,"multPercentile_V0A/D");
@@ -527,8 +535,8 @@ void AliAnalysisTaskReducedTreeNuclei::UserCreateOutputObjects()
 //   reducedTree_Helium -> Branch("Ntrk_ADC",&Ntrk_ADC,"Ntrk_ADC/I"); //NOT FILLED FOR LHC16q (p--Pb)
 //   reducedTree_Helium -> Branch("Ntrk_SPDClusters",&Ntrk_SPDClusters,"Ntrk_SPDClusters/I"); //NOT FILLED FOR LHC16q (p--Pb)
    reducedTree_Helium -> Branch("Ntrk_SPDTracklets",&Ntrk_SPDTracklets,"Ntrk_SPDTracklets/I");
-//   reducedTree_Helium -> Branch("Ntrk_RefMult05",&Ntrk_RefMult05,"Ntrk_RefMult05/I"); //NOT FILLED FOR LHC16q (p--Pb)
-//   reducedTree_Helium -> Branch("Ntrk_RefMult08",&Ntrk_RefMult08,"Ntrk_RefMult08/I"); //NOT FILLED FOR LHC16q (p--Pb)
+   reducedTree_Helium -> Branch("Ntrk_RefMult05",&Ntrk_RefMult05,"Ntrk_RefMult05/I"); //NOT FILLED FOR LHC16q (p--Pb)
+   reducedTree_Helium -> Branch("Ntrk_RefMult08",&Ntrk_RefMult08,"Ntrk_RefMult08/I"); //NOT FILLED FOR LHC16q (p--Pb)
    reducedTree_Helium -> Branch("nVertexContributors",&nVertexContributors,"nVertexContributors/I");
    reducedTree_Helium -> Branch("xVertex",&xVertex,"xVertex/D");
    reducedTree_Helium -> Branch("yVertex",&yVertex,"yVertex/D");
@@ -1064,6 +1072,9 @@ Bool_t AliAnalysisTaskReducedTreeNuclei::GetInputEvent ()  {
    estimator = MultSelection->GetEstimator("V0C");          if (estimator) { Ntrk_V0C = estimator->GetValue(); }
 
    SelectionStep = 2; // Event has valid multiplicity
+   
+   triggerMask = fAODevent->GetTriggerMask();
+   
    TreeEventSelection->Fill();
    return true;
 }

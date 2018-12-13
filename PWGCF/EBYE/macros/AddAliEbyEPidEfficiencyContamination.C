@@ -19,7 +19,7 @@
 //                   Deepika Rathee  | Satyajit Jena                       //
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                                                                         //
-//                        (Last Modified 2018/03/14)                       //
+//                        (Last Modified 2018/08/27)                       //
 //                 Dealing with Wide pT Window Modified to ESDs            //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle   //
 //analysis task.                                                           //
@@ -27,13 +27,13 @@
 TString fileNameBase="AnalysisResults.root";
 
 //Caution-> runName: LHC10h, LHC11h, LHC15o and LHC10hAMPT (only supported)
+//v7: support only for proton. 
 
 AliAnalysisTask *AddAliEbyEPidEfficiencyContamination(
 						      TString runName = "LHC10h",
 						      Bool_t isModeAOD = 0,
 						      Int_t aodFilterBit = 768, 
 						      Bool_t IsMC  = 0.,
-						      Bool_t IsQA = 0,
 						      Int_t pidtype = 1,//pidtype:charge-0, pion-1, kaon-2, proton-3
 						      Double_t DCAxy = 2.,
 						      Double_t DCAz = 2.,
@@ -47,12 +47,9 @@ AliAnalysisTask *AddAliEbyEPidEfficiencyContamination(
 						      Double_t Chi2NDF = 4.,
 						      const char* CentEstimator = "V0M",
 						      Int_t pidstrategy = 0,
-						      Float_t nSigmaITS = 2.,
-						      Float_t nSigmaTPC = 2.,
-						      Float_t nSigmaTOF = 3.,
-						      Float_t nSigmaTPClow = 2.,
-						      Float_t minPtTOF = 0.69,
-						      Float_t minPtTPClow = 0.69,
+						      Float_t nSigmaITS = 2.5,
+						      Float_t nSigmaTPC = 2.5,
+						      Float_t nSigmaTOF = 2.5,
 						      TString taskname = "TestHM") {
 
   Double_t ptl, pth;
@@ -94,8 +91,6 @@ AliAnalysisTask *AddAliEbyEPidEfficiencyContamination(
   }
 
    task->SetIsMC(IsMC);
-   task->RunQA(IsQA);
-
    task->SetDca( DCAxy,DCAz );
    task->SetVertexDiamond( Vx, Vy, Vz );
    task->SetIsRapidityCut( IsRapCut );
@@ -116,9 +111,6 @@ AliAnalysisTask *AddAliEbyEPidEfficiencyContamination(
    task->SetNSigmaMaxITS(nSigmaITS);
    task->SetNSigmaMaxTPC(nSigmaTPC);
    task->SetNSigmaMaxTOF(nSigmaTOF);
-   task->SetNSigmaMaxTPClow(nSigmaTPClow);
-   task->SetMinPtForTOFRequired(minPtTOF);
-   task->SetMaxPtForTPClow(minPtTPClow);
 
    if( runName == "LHC10h") task->SelectCollisionCandidates(AliVEvent::kMB);
    else if ( runName == "LHC15o") task->SelectCollisionCandidates(AliVEvent::kINT7);

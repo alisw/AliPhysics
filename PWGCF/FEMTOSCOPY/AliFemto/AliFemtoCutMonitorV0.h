@@ -42,7 +42,7 @@ public:
 
   virtual TList *GetOutputList();
 
-private:
+protected:
   TH1F *fLambdaMass;          ///< Mass assuming lambda hypothesis
   TH1F *fAntiLambdaMass;      ///< Mass assuming antilambda hypothesis
   TH1F *fK0ShortMass;         ///< Mass assuming k-short hypothesis

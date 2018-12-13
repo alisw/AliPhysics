@@ -67,11 +67,13 @@ public:
   /// \enum SystemType
   /// \brief The type of the system under analysis
   enum SystemType {
-    kNoSystem,    ///< no system defined
+    kNoSystem = 0,    ///< no system defined
     kpp,          ///< **p-p** system
     kpPb,         ///< **p-Pb** system
     kPbPb,        ///< **Pb-Pb** system
-    kXeXe         ///< **Xe-Xe** system
+    kXeXe,        ///< **Xe-Xe** system
+    kPbp,         ///< **Pb-p** system
+    knSystems     ///< number of handled systems
   };
 
 private:
@@ -138,6 +140,7 @@ private:
   void                GetCentralityEstimatorNames(const char *&sel, const char *&alt) const;
   void                SetActualActiveTrigger();
   void                SetActualSystemType();
+  void                SetActualVertexQuality();
   void                SetActual2015PileUpRemoval();
   void                SetActualFilterTracksCuts();
 
@@ -147,14 +150,19 @@ private:
 private:
   static const char  *fgkCutsNames[kNCuts];                         ///< the names of the different event cuts
   static Float_t      fgkVertexResolutionThreshold;                 ///< the vertex resolution threshold default value
+  static Float_t      fgkVertexResolutionThreshold_pPb;             ///< the vertex resolution threshold default value for pPb
   static Float_t      fgkVertexDispersionThreshold;                 ///< the vertex dispersion threshold default value (for ESD only)
   static Float_t      fgkSPDTracksVtxDistanceThreshold;             ///< the threshold for the distance between SPD and tracks vertex
+  static Float_t      fgkSPDTracksVtxDistanceThreshold_pPb;         ///< the threshold for the distance between SPD and tracks vertex for pPb
   static Float_t      fgkSPDTracksVtxDistanceSigmas;                ///< number of tolerated sigmas for the total distance between SPD and tracks vertex
+  static Float_t      fgkSPDTracksVtxDistanceSigmas_pPb;            ///< number of tolerated sigmas for the total distance between SPD and tracks vertex for pPb
   static Float_t      fgkTrackVertexSigmas;                         ///< number of tolerated track vertex sigmas for the distance between SPD and tracks vertex
+  static Float_t      fgkTrackVertexSigmas_pPb;                     ///< number of tolerated track vertex sigmas for the distance between SPD and tracks vertex for pPb
 
   SystemType          fSystem;                ///< the type of system being analyzed
   Double_t            fVertexZ;               ///< the vertex \f$z\f$ coordinate
   Double_t            fCentrality;            ///< the event centrality
+  Double_t            fAltCentrality;         ///< the event centrality from the alternate detector
   Int_t               fCentralityDetector;    ///< the detector to estimate the centrality
   Int_t               fCentralityModifier;    ///< the modifier of the centrality cut value
   Float_t             fCentralityMin;         ///< the minimum value for centrality cut
@@ -164,6 +172,9 @@ private:
   Bool_t              fUseSPDTracksVtxDist;   ///< check the distance between SPD and tracks vertex
   Float_t             fVertexResolutionTh;    ///< vertex resolution threshold
   Float_t             fVertexDispersionTh;    ///< vertex dispersion threshold (for ESD only)
+  Float_t             fSPDTrkVtxDistTh;       ///< SPD tracks vertexes distance threshold
+  Float_t             fSPDTrkVtxDistSigmas;   ///< n total sigmas for the SPD tracks vertexes distance
+  Float_t             fTrkVtxDistSigmas;      ///< track vertex n sigmas for the SPD tracks vertexes distance
   Bool_t              fUseNewMultFramework;   ///< kTRUE if the new multiplicity framework for centrality estimation must be used
   TFormula           *f2015V0MtoTrkTPCout;    ///< formula to evaluate 2015 additional pileup cut
   TF1*                fCentOutLowCut;         ///< cut low for centrality outliers
@@ -217,7 +228,7 @@ private:
   AliCSEventCuts& operator=(const AliCSEventCuts&);
 
   /// \cond CLASSIMP
-  ClassDef(AliCSEventCuts,6);
+  ClassDef(AliCSEventCuts,10);
   /// \endcond
 };
 

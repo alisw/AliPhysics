@@ -1075,7 +1075,7 @@ void ClusterCells(Int_t icalo)
   {
     TGaxis::SetMaxDigits(3);
     
-    TCanvas * cNCell = new TCanvas(Form("NCell_%s",histoTag.Data()),"",1000,1000);
+    TCanvas * cNCell = new TCanvas(Form("NClusterCell_%s",histoTag.Data()),"",1000,1000);
     cNCell->Divide(2,2);
     
     for(Int_t ie = 0; ie < nEbins; ie++)

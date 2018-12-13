@@ -9,6 +9,7 @@
 #include "AliFemtoEvent.h"
 #include "AliFemtoTrio.h"
 #include "AliFemtoTrioCut.h"
+#include "AliFemtoTrioFctn.h"
 
 #include <TH1D.h>
 #include <TH2D.h>
@@ -20,12 +21,15 @@
 /// This class calculated and stores distributions of 3-particle invariant mass
 ///
 
-class AliFemtoTrioMinvFctn
+class AliFemtoTrioMinvFctn : public AliFemtoTrioFctn
 {
 public:
   AliFemtoTrioMinvFctn(const char* name="", int nBins=1000, double min=0.0, double max=10.0,
                        bool doMinv=true, bool doDalitz=false,bool doAngles=false);
-  ~AliFemtoTrioMinvFctn();
+  AliFemtoTrioMinvFctn(const AliFemtoTrioMinvFctn&);
+  virtual ~AliFemtoTrioMinvFctn();
+
+  AliFemtoTrioMinvFctn& operator=(const AliFemtoTrioMinvFctn&);
   
   void AddRealTrio(AliFemtoTrio* trio);   // add real trio (same event)
   void AddMixedTrio(AliFemtoTrio* trio);  // add background trio (each particle from different event)

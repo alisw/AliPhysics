@@ -64,6 +64,7 @@ class AliAnalysisTaskQAHighPtDeDxTest : public AliAnalysisTaskSE {
 		virtual void  SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
 		virtual void  SetAnalysisMC(Bool_t isMC) {fAnalysisMC = isMC;}
 		//  virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
+		virtual void  SetNcl(const Int_t ncl){fNcl = ncl;}
 		virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
 		virtual void  SetPileUpRej(Bool_t isrej) {fPileUpRej = isrej;}   
 		virtual void  SetMinCent(Float_t minvalc) {fMinCent = minvalc;}
@@ -138,6 +139,7 @@ class AliAnalysisTaskQAHighPtDeDxTest : public AliAnalysisTaskSE {
 		//
 
 		Double_t     fVtxCut;             // Vtx cut on z position in cm
+		Int_t  fNcl;             // Eta cut used to select particles
 		Double_t     fEtaCut;             // Eta cut used to select particles
 		Int_t        cent; //minimum centrality
 		Float_t      fMinCent; //minimum centrality
@@ -243,6 +245,18 @@ class AliAnalysisTaskQAHighPtDeDxTest : public AliAnalysisTaskSE {
 		TH2D* hDCAxyVsPtKPosC[10];
 		TH2D* hDCAxyVsPtPPos[10];
 		TH2D* hDCAxyVsPtPPosC[10];
+
+		//    [Cent][Pid][Charge: 0:neutral 1:Neg 2:Pos]
+		TH2D* hDCApTPrim[10][7][3];
+		TH2D* hDCApTWDec[10][7][3];
+		TH2D* hDCApTMate[10][7][3];
+
+		TH2D* hDCApTPrim2[10][7][3];
+		TH2D* hDCApTWDec2[10][7][3];
+		TH2D* hDCApTMate2[10][7][3];
+
+
+
 
 
 		TF1* fEtaCalibrationNeg;

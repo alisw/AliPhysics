@@ -2,8 +2,10 @@
 /// \file AliFemtoUser/AliFemtoCorrFctn3DLCMSPosQuad.h
 ///
 
-#ifndef ALIFEMTOCORRFCTN3DLCMS_H
-#define ALIFEMTOCORRFCTN3DLCMS_H
+
+
+#ifndef ALIFEMTOCORRFCTN3DLCMSPOSQUAD_H
+#define ALIFEMTOCORRFCTN3DLCMSPOSQUAD_H
 
 // forward declare classes
 class TH3F;
@@ -41,7 +43,7 @@ public:
   /// \param title The title with which to give the output
   /// \param nbins The number of bins in each direction of , and q
   ///
-  AliFemtoCorrFctn3DLCMSPosQuad(const char* name, const int nbins, const float QHi);
+  AliFemtoCorrFctn3DLCMSPosQuad(const TString &name, const int nbins, const float QHi);
 
   /// Copy Constructor
   AliFemtoCorrFctn3DLCMSPosQuad(const AliFemtoCorrFctn3DLCMSPosQuad& aCorrFctn);
@@ -77,5 +79,8 @@ inline AliFemtoCorrFctn* AliFemtoCorrFctn3DLCMSPosQuad::Clone() const
 {
   return new AliFemtoCorrFctn3DLCMSPosQuad(*this);
 }
+
+inline void AliFemtoCorrFctn3DLCMSPosQuad::Finish()
+{}
 
 #endif

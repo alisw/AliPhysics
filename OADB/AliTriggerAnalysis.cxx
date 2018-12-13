@@ -1154,8 +1154,7 @@ Bool_t AliTriggerAnalysis::IsLaserWarmUpTPCEvent(const AliVEvent* event){
 Bool_t AliTriggerAnalysis::IsHVdipTPCEvent(const AliVEvent* event) {
   // This function flags events in which the TPC chamber HV is not at its nominal value
   // The function IsDetectorOn is implemented in AliESDEvent and AliAODEvent
-  //     by default it returns kTRUE (so also for MC). Therefore no extra treatment is required
-  //
+  if (fMC) return kFALSE; // by default return kFALSE for MC
   return !event->IsDetectorOn(AliDAQ::kTPC);
 }
 

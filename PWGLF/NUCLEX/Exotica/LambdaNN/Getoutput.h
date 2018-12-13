@@ -15,16 +15,19 @@
 #include <TLine.h>
 #include <TDatabasePDG.h>
 #include <TMath.h>
+#include <TGraph.h>
 
 //using namespace std;
 
 class Getoutput {
  public:
-  Getoutput();
+  Getoutput(const char *filename="results.root",Int_t nsTri=3, Int_t nsPi=3);
+  void Set3Hcharge(Int_t triCharge=2) {f3Hcharge=triCharge;}
   bool LoadParams(const char *paramfile="params.txt");
   bool LoadFile(const char *inputfile="AnalysisResults.root",const char *listName="clistNtupHyper");
+  void Process();
   void LoopOverV0(Int_t Hcharge=-1);
-  void StoreOutputData(const char *filename="results.root");
+  void StoreOutputData();
   bool LoadOutputData(const char *filename="results3H1.root");
    void DrawResults();
   void ClearInputData();
@@ -41,11 +44,11 @@ class Getoutput {
   Bool_t fIncludePidTOF;
   Bool_t fRejectBkg; // useful in case like-sign V0 are produced
   Bool_t fUseAODCut;
-  Int_t f3Hsign;
+  Int_t f3Hcharge;
   Double_t f3HPcut;
   Double_t array[28];
   Float_t param[20];
-
+  TString fOutFilename;
   TList *fInputList;
   TList *fHistList;
   TList *fOutputList;
@@ -79,6 +82,12 @@ class Getoutput {
   TH2F *hMumCheck[2];
   TH1I *hMonitorPlot;
  
+  TFile *fOutFile; 
+ 
+  TGraph* grTriPs;
+  TGraph* grTriMs;
+  TGraph* grPiPs;
+  TGraph* grPiMs;
 
   TNtupleD *ntTot;
 
@@ -96,9 +105,10 @@ enum { kPposx, kPposy, kPposz, kPnegx, kPnegy, kPnegz,	//0-5
  kV0mom, kPtArm, kAlphaArm,	// 11-13
  kDcaTriXY, kDcaTriZ, kV0dcaD, kDecayPath, kDecayPathXY,	// 14-18
  kV0Dca, kCosP, kV0VtxErrSum, kSign,	// 19-22
- kDcaPi, kIsTrdEle, kSigPiFromPiTof, kSigPrTof, kSigPiTof, kNclusITS,
- kPiPdgCode, kTriPdgCode, kMumPiPdgCode, kMumTriPdgCode
-};				//23-27
+ kDcaPi, kIsTrdEle, kSigPiFromPiTof, kSigPrTof, kSigPiTof, kNclusITS, //23-27
+ kTRDsig, //28 
+ kPiPdgCode, kTriPdgCode, kMumPiPdgCode, kMumTriPdgCode // 29-32
+};			
 
 enum {
  kParMinP, kParMinPv0, kParMaxP3H, kParPiLim, kPar3hLim, kParNclusITS, kParNsigmaPID, kParNsigmaTOFmass, kParDcaTriZ, kParCosP, kParV0Dca,

@@ -27,6 +27,7 @@
 #pragma link C++ class AlimPtMatrixZDC+;
 #pragma link C++ class AliAnalysisTaskSEITSsaSpectra+;
 #pragma link C++ class AliAnalysisTaskQAHighPtDeDxTest+;
+#pragma link C++ class AliAnalysisTaskPPvsMult+;
 #pragma link C++ class AliAnalysisCombinedHadronSpectra+;
 #pragma link C++ class AliAnalysisTPCTOFpA+;
 #pragma link C++ class TOFSpectrappAnalysis+;
@@ -108,4 +109,5 @@
 #pragma link C++ class AliAnalysisTaskProtonAbsorbtion+;
 // spherocity analysis
 #pragma link C++ class AliTransverseEventShape+;
+#pragma link C++ class AliSpherocityUtils+;
 #endif

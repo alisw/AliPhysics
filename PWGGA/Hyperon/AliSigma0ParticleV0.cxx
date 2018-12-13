@@ -36,9 +36,6 @@ AliSigma0ParticleV0::AliSigma0ParticleV0(AliESDv0 *v0, const AliESDtrack *pos,
   fP[0] = v0->Px();
   fP[1] = v0->Py();
   fP[2] = v0->Pz();
-  fPMC[0] = -1.;
-  fPMC[1] = -1.;
-  fPMC[2] = -1.;
 
   fPDGCode = pdg;
   fPt = v0->Pt();
@@ -95,9 +92,6 @@ AliSigma0ParticleV0::AliSigma0ParticleV0(const AliAODConversionPhoton *gamma,
   fP[0] = gamma->GetPx();
   fP[1] = gamma->GetPy();
   fP[2] = gamma->GetPz();
-  fPMC[0] = -1.;
-  fPMC[1] = -1.;
-  fPMC[2] = -1.;
 
   fPDGCode = 22;
   fPt = gamma->GetPhotonPt();
@@ -167,6 +161,15 @@ AliSigma0ParticleV0 &AliSigma0ParticleV0::operator=(
   fTrackLabelPos = obj.GetTrackLabelPos();
   fTrackLabelNeg = obj.GetTrackLabelNeg();
   fCosAlpha = obj.GetCosineAlpha();
+
+  fMCLabelPos = obj.GetMCLabelPos();
+  fMCLabelNeg = obj.GetMCLabelNeg();
+  fMCLabelV0 = obj.GetMCLabelV0();
+  fTrackPos = obj.GetPosDaughter();
+  fTrackNeg = obj.GetNegDaughter();
+
+  fRecMass = obj.GetRecMass();
+  fPDGMass = obj.GetPDGMass();
 
   return (*this);
 }
@@ -274,6 +277,9 @@ int AliSigma0ParticleV0::MatchToMC(const AliMCEvent *mcEvent,
           0.00001) {
     return -1;
   }
+  fPMC[0] = pxMother;
+  fPMC[1] = pyMother;
+  fPMC[2] = pzMother;
 
   fMCLabelV0 = labMother;
   return labMother;

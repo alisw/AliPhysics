@@ -30,15 +30,55 @@ public:
     TString title;
     AliFemtoModelManager *mc_manager;
 
-    static Parameters Default() { return {56, -0.14, 0.14, "CF_TrueQ3D"}; }
-    Parameters Title(const TString& title) {
+    /// Build Parameters object with default values
+    static Parameters Default()
+    {
+      return {
+        56, -0.14, 0.14, // histogram bin-count & range
+        "CF_TrueQ3D",    // title
+        NULL             // pointer to MC manager
+      };
+    }
+
+    Parameters Title(const TString& title) const {
       Parameters p(*this);
       p.title = title;
       return p;
     }
-    Parameters Manager(AliFemtoModelManager *manager) {
+    Parameters Manager(AliFemtoModelManager *manager) const {
       Parameters p(*this);
       p.mc_manager = manager;
+      return p;
+    }
+    Parameters QRange(Double_t max) const {
+      Parameters p(*this);
+      p.qmax = std::abs(max);
+      p.qmin = -p.qmax;
+      return p;
+    }
+    Parameters QRange(Double_t min, Double_t max) const {
+      Parameters p(*this);
+      p.qmax = max;
+      p.qmin = min;
+      return p;
+    }
+    Parameters NBin(UInt_t nbins) const {
+      Parameters p(*this);
+      p.bin_count = nbins;
+      return p;
+    }
+    Parameters AxisInfo(UInt_t nbins, Double_t q_max) const {
+      Parameters p(*this);
+      p.bin_count = nbins;
+      p.qmax = std::abs(q_max);
+      p.qmin = -p.qmax;
+      return p;
+    }
+    Parameters AxisInfo(UInt_t nbins, Double_t q_min, Double_t q_max) const {
+      Parameters p(*this);
+      p.bin_count = nbins;
+      p.qmin = q_min;
+      p.qmax = q_max;
       return p;
     }
     operator AliFemtoModelCorrFctnTrueQ3D*() {
@@ -48,7 +88,7 @@ public:
 
   /// Deafult parameters
   ///
-  /// - Name: "CF_TrueQ3D"
+  /// - Prefix: "CF_TrueQ3D"
   /// - Binning Paramters: (56, -0.14, 0.14)
   ///
   AliFemtoModelCorrFctnTrueQ3D();
@@ -56,16 +96,24 @@ public:
   /// Custom title
   ///
   /// Use default binning parameters
-  AliFemtoModelCorrFctnTrueQ3D(const char *title);
+  AliFemtoModelCorrFctnTrueQ3D(const char *prefix);
 
   /// Symmetric constructor
   ///
   /// Construct with nbins from -qmax to qmax in both directions
-  AliFemtoModelCorrFctnTrueQ3D(const char *title, UInt_t nbins, Double_t qmax);
+  AliFemtoModelCorrFctnTrueQ3D(const char *prefix, UInt_t nbins, Double_t qmax);
 
   /// Custom constructor
   ///
-  AliFemtoModelCorrFctnTrueQ3D(const char *title, UInt_t nbins, Double_t aQinvLo, Double_t aQinvHi);
+  AliFemtoModelCorrFctnTrueQ3D(const char *prefix, UInt_t nbins, Double_t aQinvLo, Double_t aQinvHi);
+
+  /// Unnamed, q-symmetric constructor
+  ///
+  AliFemtoModelCorrFctnTrueQ3D(UInt_t nbins, Double_t qmax);
+
+  /// Unnamed constructor
+  ///
+  AliFemtoModelCorrFctnTrueQ3D(UInt_t nbins, Double_t qmin, Double_t qmax);
 
   /// Construct from parameter object
   ///
@@ -79,6 +127,9 @@ public:
 
   /// Destructor - histograms destroyed, ModelManager is NOT
   virtual ~AliFemtoModelCorrFctnTrueQ3D();
+
+
+  AliFemtoModelCorrFctnTrueQ3D& operator=(const AliFemtoModelCorrFctnTrueQ3D&);
 
   /// Set the MC model manager
   virtual void SetManager(AliFemtoModelManager *);

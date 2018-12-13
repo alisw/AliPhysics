@@ -334,7 +334,7 @@ int PlotEMCALQATrendingTree(TTree* tree, const char* Trig, TFile* fout, Bool_t S
   for(Int_t ism = 12 ; ism < n ; ism++){
     tree->Draw(Form("NextInt():ClusterMeanSM[%i]:xe:ClusterRMSSM[%i]",ism,ism),"","goff");
     AverNclustersSM[ism] = new  TGraphErrors(tree->GetSelectedRows(), tree->GetV1(), tree->GetV2(),tree->GetV3(),tree->GetV4());
-    if (ism !=8)AverNclustersSM[ism]->SetMarkerColor(ism<10?ism+2:ism+1);else AverNclustersSM[ism]->SetMarkerColor(7);
+    AverNclustersSM[ism]->SetMarkerColor(ism-11);
     AverNclustersSM[ism]->SetMarkerStyle(21+(ism<10 ? ism: ism-10));
 
     AverNclustersSM[ism]->Draw("same P");
@@ -426,7 +426,7 @@ int PlotEMCALQATrendingTree(TTree* tree, const char* Trig, TFile* fout, Bool_t S
   for(Int_t ism = 12 ; ism < n ; ism++){
     tree->Draw(Form("NextInt():ClusterTotSM[%i]",ism),"","goff");
     TotNclustersSM[ism] = new  TGraph(tree->GetSelectedRows(), tree->GetV1(), tree->GetV2());
-    if (ism !=8)TotNclustersSM[ism]->SetMarkerColor(ism<10?ism+2:ism+1);else TotNclustersSM[ism]->SetMarkerColor(7);
+    TotNclustersSM[ism]->SetMarkerColor(ism-11);
     TotNclustersSM[ism]->SetMarkerStyle(21+(ism<10 ? ism: ism-10));
 
     TotNclustersSM[ism]->Draw("same P");
@@ -479,8 +479,11 @@ int PlotEMCALQATrendingTree(TTree* tree, const char* Trig, TFile* fout, Bool_t S
 
     tree->Draw(Form("NextInt():EtotalMeanSM[%i]:xe:EtotalRMSSM[%i]",ism,ism),"","goff");
     AverESM[ism] = new  TGraphErrors(tree->GetSelectedRows(), tree->GetV1(), tree->GetV2(),tree->GetV3(),tree->GetV4());
-    if (ism !=8)AverESM[ism]->SetMarkerColor(ism<10?ism+2:ism+1);else AverESM[ism]->SetMarkerColor(7);
-    AverESM[ism]->SetMarkerStyle(21+(ism<10 ? ism: ism-10));
+   if (ism<nEMCAL){   
+     if (ism !=8)AverESM[ism]->SetMarkerColor(ism<10?ism+2:ism+1);else AverESM[ism]->SetMarkerColor(7);}
+   else {AverESM[ism]->SetMarkerColor(ism-11);}   
+   if (ism !=18)AverESM[ism]->SetMarkerStyle(21+(ism<10 ? ism: ism-10));else AverESM[ism]->SetMarkerStyle(20);
+
     AverESM[ism]->Draw("same P");
 
   }
@@ -528,8 +531,10 @@ int PlotEMCALQATrendingTree(TTree* tree, const char* Trig, TFile* fout, Bool_t S
   for(Int_t ism = 0 ; ism < n ; ism++){
     tree->Draw(Form("NextInt():CellPerClusterMeanSM[%i]:xe:CellPerClusterRMSSM[%i]",ism,ism),"","goff");
     AverNcellsPerClusterSM[ism] =  new TGraphErrors(tree->GetSelectedRows(), tree->GetV1(), tree->GetV2(),tree->GetV3(),tree->GetV4());
-    if (ism !=8)AverNcellsPerClusterSM[ism]->SetMarkerColor(ism<10?ism+2:ism+1);else AverNcellsPerClusterSM[ism]->SetMarkerColor(7);
-    AverNcellsPerClusterSM[ism]->SetMarkerStyle(21+(ism<10 ? ism: ism-10));
+    if (ism<nEMCAL){
+      if (ism !=8)AverNcellsPerClusterSM[ism]->SetMarkerColor(ism<10?ism+2:ism+1);else AverNcellsPerClusterSM[ism]->SetMarkerColor(7);}
+    else {AverNcellsPerClusterSM[ism]->SetMarkerColor(ism-11);}
+    if (ism !=18)AverNcellsPerClusterSM[ism]->SetMarkerStyle(21+(ism<10 ? ism: ism-10));else AverNcellsPerClusterSM[ism]->SetMarkerStyle(20);
     AverNcellsPerClusterSM[ism]->Draw("same P");
 
   }

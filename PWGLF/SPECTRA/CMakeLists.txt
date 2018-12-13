@@ -63,6 +63,7 @@ set(SRCS
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectra.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectraMultiplicity.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskQAHighPtDeDxTest.cxx
+  PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsMult.cxx
   PiKaPr/TPCTOF/AliAnalysisCombinedHadronSpectra.cxx
   PiKaPr/TPCTOFpA/AliAnalysisTPCTOFpA.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDEvent.cxx
@@ -122,6 +123,7 @@ set(SRCS
   AntiprotonToProton/train/AliAnalysisTaskProtonQA.cxx
   AntiprotonToProton/train/AliAnalysisTaskProtonAbsorbtion.cxx
   Spherocity/AliTransverseEventShape.cxx
+  Spherocity/AliSpherocityUtils.cxx
 )
 
 # Headers from sources
@@ -215,5 +217,5 @@ install(DIRECTORY MultEvShape DESTINATION PWGLF/SPECTRA FILES_MATCHING PATTERN "
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/MultEvShape/priorsDist_data_LHC10d_newAliroot.root)
   install(FILES MultEvShape/priorsDist_data_LHC10d_newAliroot.root DESTINATION PWGLF/SPECTRA/MultEvShape)
 endif()
-install(FILES Spherocity/macros/AddTaskEventShape.C DESTINATION  PWGLF/SPECTRA/Spherocity/macros)
+install(DIRECTORY Spherocity DESTINATION  PWGLF/SPECTRA)
 install(DIRECTORY AntiprotonToProton/train DESTINATION PWGLF/SPECTRA/AntiprotonToProton)

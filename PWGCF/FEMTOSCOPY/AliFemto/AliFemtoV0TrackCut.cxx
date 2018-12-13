@@ -21,7 +21,7 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut():
   fMaxDcaV0(9999.0),
   fMinDcaV0(0.0),
   fMaxDecayLength(9999.0),
-  fMaxCosPointingAngle(0.0),
+  fMaxCosPointingAngle(0.0),//obsolete
   fMinCosPointingAngle(0.0),
   fParticleType(99.0),
   fEta(0.8),
@@ -31,7 +31,7 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut():
   fMaxEtaDaughters(100.0),
   fTPCNclsDaughters(0),
   fNdofDaughters(10),
-  fStatusDaughters(0),
+  fStatusDaughters(1),
   fPtMinPosDaughter(0.0),
   fPtMaxPosDaughter(99.0),
   fPtMinNegDaughter(0.0),
@@ -251,7 +251,6 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
   // test the particle and return
   // true if it meets all the criteria
   // false if it doesn't meet at least one of the criteria
-
   Float_t pt = aV0->PtV0();
   Float_t eta = aV0->EtaV0();
 
@@ -265,7 +264,7 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
   if (aV0->PtNeg() < fPtMinNegDaughter) return false;
   if (aV0->PtPos() > fPtMaxPosDaughter) return false;
   if (aV0->PtNeg() > fPtMaxNegDaughter) return false;
-
+  
   //V0 from kinematics information
   if (fParticleType == kLambdaMC ) {
     if (!(aV0->MassLambda() > fInvMassLambdaMin && aV0->MassLambda() < fInvMassLambdaMax) || !(aV0->PosNSigmaTPCP() == 0)) {
@@ -287,8 +286,6 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
     }
   }
 
-
-
   //quality cuts
   if(!fIgnoreOnFlyStatus) {if (aV0->OnFlyStatusV0() != fOnFlyStatus) return false;}
   if (aV0->StatusNeg() == 999 || aV0->StatusPos() == 999) return false;
@@ -298,7 +295,7 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
   if (aV0->NdofNeg() > fNdofDaughters) return false;
   if (!(aV0->StatusNeg() & fStatusDaughters)) return false;
   if (!(aV0->StatusPos() & fStatusDaughters)) return false;
-
+  
   //fiducial volume radius
   if(aV0->RadiusV0()<fRadiusV0Min || aV0->RadiusV0()>fRadiusV0Max)
     return false;
@@ -306,7 +303,7 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
   //DCA between daughter particles
   if (TMath::Abs(aV0->DcaV0Daughters()) > fMaxDcaV0Daughters)
     return false;
-
+  
   //DCA of daughters to primary vertex
   if (TMath::Abs(aV0->DcaPosToPrimVertex()) < fMinDcaDaughterPosToVert || TMath::Abs(aV0->DcaNegToPrimVertex()) < fMinDcaDaughterNegToVert)
     return false;
@@ -319,12 +316,12 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
   //cos pointing angle
   if (aV0->CosPointingAngle() < fMaxCosPointingAngle)
     return false;
-
+ 
   //this is the correct name of the data member and the corresponding methods (we are accepting cos(pointing angle bigger than certain minimum)
   //cos pointing angle
   if (aV0->CosPointingAngle() < fMinCosPointingAngle)
     return false;
-
+ 
   //decay length
   if (aV0->DecayLengthV0() > fMaxDecayLength)
     return false;
@@ -334,7 +331,6 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
 
   if (fParticleType == kAll)
     return true;
-
 
   bool pid_check = false;
   // Looking for lambdas = proton + pim

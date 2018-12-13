@@ -57,6 +57,8 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fHistNtracksSPDanyVsV0befEvSel{nullptr},
   fHistNtracksTPCselVsV0aftEvSel{nullptr},
   fHistNtracksSPDanyVsV0aftEvSel{nullptr},
+  fHistCorrelHypo0HypoTPCsel{nullptr},
+  fHistCorrelHypo0HypoTPCselITSref{nullptr},
   fHistEtaPhiPtTPCsel{nullptr},
   fHistEtaPhiPtTPCselITSref{nullptr},
   fHistEtaPhiPtTPCselSPDany{nullptr},
@@ -180,6 +182,9 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
     fHistdEdxVsP[jsp]=0x0;
     fHistdEdxVsPTPCsel[jsp]=0x0;
     fHistdEdxVsPTPCselITSref[jsp]=0x0;
+    fHistdEdxVsP0[jsp]=0x0;
+    fHistdEdxVsPTPCsel0[jsp]=0x0;
+    fHistdEdxVsPTPCselITSref0[jsp]=0x0;
     fHistnSigmaVsPdEdxTPCsel[jsp]=0x0;
   }
   DefineInput(0, TChain::Class());
@@ -295,8 +300,13 @@ AliAnalysisTaskCheckESDTracks::~AliAnalysisTaskCheckESDTracks(){
       delete fHistdEdxVsP[jsp];
       delete fHistdEdxVsPTPCsel[jsp];
       delete fHistdEdxVsPTPCselITSref[jsp];
+      delete fHistdEdxVsP0[jsp];
+      delete fHistdEdxVsPTPCsel0[jsp];
+      delete fHistdEdxVsPTPCselITSref0[jsp];
       delete fHistnSigmaVsPdEdxTPCsel[jsp];
     }
+    delete fHistCorrelHypo0HypoTPCsel;
+    delete fHistCorrelHypo0HypoTPCselITSref;
     delete fTrackTree;
   }
   delete fOutput;
@@ -367,8 +377,9 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   intVarName[5]="nTPCclu";
   intVarName[6]="TOFbc";
   intVarName[7]="trackPIDhip";
-  intVarName[8]="label";
-  intVarName[9]="truePID";
+  intVarName[8]="trackPIDhip0";
+  intVarName[9]="label";
+  intVarName[10]="truePID";
   usedVar=kNumOfIntVar-2;
   if(fReadMC) usedVar=kNumOfIntVar;
   for(Int_t ivar=0; ivar<usedVar; ivar++){
@@ -407,12 +418,28 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
     fHistdEdxVsP[jsp] = new TH2F(Form("hdEdxVsP%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
     fHistdEdxVsPTPCsel[jsp] = new TH2F(Form("hdEdxVsPTPCsel%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
     fHistdEdxVsPTPCselITSref[jsp] = new TH2F(Form("hdEdxVsPTPCselITSref%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+    fHistdEdxVsP0[jsp] = new TH2F(Form("hdEdxVsP0%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+    fHistdEdxVsPTPCsel0[jsp] = new TH2F(Form("hdEdxVsPTPCsel0%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+    fHistdEdxVsPTPCselITSref0[jsp] = new TH2F(Form("hdEdxVsPTPCselITSref0%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
     fHistnSigmaVsPdEdxTPCsel[jsp] = new TH2F(Form("hnSigmaVsPdEdxTPCsel%s",pNames[jsp].Data()),Form("  ; p_{TPC} (GeV/c) ; n#sigma(%s)",pNames[jsp].Data()),100,0.,5.,200,-10.,10.);
     fOutput->Add(fHistdEdxVsP[jsp]);
     fOutput->Add(fHistdEdxVsPTPCsel[jsp]);
     fOutput->Add(fHistdEdxVsPTPCselITSref[jsp]);
+    fOutput->Add(fHistdEdxVsP0[jsp]);
+    fOutput->Add(fHistdEdxVsPTPCsel0[jsp]);
+    fOutput->Add(fHistdEdxVsPTPCselITSref0[jsp]);
     fOutput->Add(fHistnSigmaVsPdEdxTPCsel[jsp]);
   }
+  fHistCorrelHypo0HypoTPCsel = new TH2F("hCorrelHypo0HypoTPCsel"," ; PID hypo inward ; PID hypo outward",9,-0.5,8.5,9,-0.5,8.5);
+  fHistCorrelHypo0HypoTPCselITSref = new TH2F("hCorrelHypo0HypoTPCselITSref"," ; PID hypo inward ; PID hypo outward",9,-0.5,8.5,9,-0.5,8.5);
+  for(Int_t jsp=0; jsp<9; jsp++){ 
+    fHistCorrelHypo0HypoTPCsel->GetXaxis()->SetBinLabel(jsp+1,AliPID::ParticleName(jsp));
+    fHistCorrelHypo0HypoTPCsel->GetYaxis()->SetBinLabel(jsp+1,AliPID::ParticleName(jsp));
+    fHistCorrelHypo0HypoTPCselITSref->GetXaxis()->SetBinLabel(jsp+1,AliPID::ParticleName(jsp));
+    fHistCorrelHypo0HypoTPCselITSref->GetYaxis()->SetBinLabel(jsp+1,AliPID::ParticleName(jsp));
+  }
+  fOutput->Add(fHistCorrelHypo0HypoTPCsel);
+  fOutput->Add(fHistCorrelHypo0HypoTPCselITSref);
 
   fHistEtaPhiPtTPCsel = new TH3F("hEtaPhiPtTPCsel"," ; #eta ; #varphi ; p_{T} (GeV/c)",fNEtaBins,-1.,1.,fNPhiBins,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
   fHistEtaPhiPtTPCselITSref = new TH3F("hEtaPhiPtTPCselITSref"," ; #eta ; #varphi ; p_{T} (GeV/c)",fNEtaBins,-1.,1.,fNPhiBins,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
@@ -818,6 +845,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     Int_t trlabel=track->GetLabel();
     Float_t dedx=track->GetTPCsignal();
     Int_t  pidtr=track->GetPIDForTracking();
+    Int_t  pidtr0=track->GetPIDForTracking0();
     
     Double_t nSigmaTPC[AliPID::kSPECIESC];
     for(Int_t jsp=0; jsp<AliPID::kSPECIESC; jsp++) nSigmaTPC[jsp]=-999.;
@@ -835,6 +863,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     fTreeVarFloat[25]=nSigmaTPC[3];
     fTreeVarFloat[26]=nSigmaTPC[4];
     fTreeVarInt[7]=pidtr;
+    fTreeVarInt[8]=pidtr0;
     
     Float_t ptgen=-999.;
     Float_t pgen=-999.;
@@ -876,11 +905,12 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       fTreeVarFloat[31]=pgen;
       fTreeVarFloat[32]=etagen;
       fTreeVarFloat[33]=phigen;
-      fTreeVarInt[8]=trlabel;
-      fTreeVarInt[9]=pdgCode;
+      fTreeVarInt[9]=trlabel;
+      fTreeVarInt[10]=pdgCode;
     }
 
     if(pidtr>=0 && pidtr<9) fHistdEdxVsP[pidtr]->Fill(ptrackTPC,dedx);
+    if(pidtr0>=0 && pidtr0<9) fHistdEdxVsP0[pidtr0]->Fill(ptrackTPC,dedx);
     
     if(!fTrCutsTPC->AcceptTrack(track)) continue;
     if(track->GetTPCsignalN()<fMinNumOfTPCPIDclu) continue;
@@ -929,8 +959,11 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
 
 
     if(fUseTOFbcSelection && !tofOK) continue;
+    fHistCorrelHypo0HypoTPCsel->Fill(pidtr0,pidtr);
+    if(itsRefit) fHistCorrelHypo0HypoTPCselITSref->Fill(pidtr0,pidtr);
 
     if(pidtr>=0 && pidtr<9) fHistdEdxVsPTPCsel[pidtr]->Fill(ptrackTPC,dedx);
+    if(pidtr0>=0 && pidtr0<9) fHistdEdxVsPTPCsel0[pidtr0]->Fill(ptrackTPC,dedx);
     for(Int_t jsp=0; jsp<9; jsp++){
       fHistnSigmaVsPdEdxTPCsel[jsp]->Fill(ptrackTPC,nSigmaTPC[jsp]);
     }
@@ -939,6 +972,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     fHistSig1ptCovMatPhiPtTPCsel->Fill(curvrelerr,pttrack,phitrack);
     if(itsRefit){
       if(pidtr>=0 && pidtr<9) fHistdEdxVsPTPCselITSref[pidtr]->Fill(ptrackTPC,dedx);
+      if(pidtr0>=0 && pidtr0<9) fHistdEdxVsPTPCselITSref0[pidtr0]->Fill(ptrackTPC,dedx);
       fHistTPCchi2PerClusPhiPtTPCselITSref->Fill(chi2clus,pttrack,phitrack);
       fHistSig1ptCovMatPhiPtTPCselITSref->Fill(curvrelerr,pttrack,phitrack);
       if(spdAny){ 

@@ -106,7 +106,10 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fWriteSecondTrackArray(kFALSE),
   fSetTrackFilterUsed(kFALSE),
   fWriteBaseTrack(),
+	fEventsList(0x0),
   fEventsHistogram(0x0),
+  fTRDEventsHistogram(0x0),
+  fCentEventsList(0x0),
   fTracksHistogram(0x0),
   fMCSignalsHistogram(0x0),
   fFillTrackInfo(kTRUE),
@@ -176,7 +179,10 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fWriteSecondTrackArray(kFALSE),
   fSetTrackFilterUsed(kFALSE),
   fWriteBaseTrack(),
+	fEventsList(0x0),
   fEventsHistogram(0x0),
+  fTRDEventsHistogram(0x0),
+  fCentEventsList(0x0),
   fTracksHistogram(0x0),
   fMCSignalsHistogram(0x0),
   fFillTrackInfo(kTRUE),
@@ -236,9 +242,13 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   DefineOutput(1, AliReducedBaseEvent::Class());   // reduced information tree
   if(writeTree) {
     DefineOutput(2, TTree::Class());  // reduced information tree
-    DefineOutput(3, TH2I::Class());   // event statistics information
-    DefineOutput(4, TH2I::Class());   // track statistics information
-    DefineOutput(5, TH2I::Class());   // MC signals statistics information
+		DefineOutput(3, TList::Class());  // Tlist of event statistics information
+
+//    DefineOutput(3, TH2I::Class());   // event statistics information
+//    DefineOutput(4, TH2I::Class());   // track statistics information
+//    DefineOutput(5, TH2I::Class());   // MC signals statistics information
+//    DefineOutput(6, TH2I::Class());   // TRD event statistics information
+//	 	  DefineOutput(7, TList::Class());  // Cent event statistics information
   }
 }
 
@@ -294,10 +304,10 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
     }
 
     // MC
-    if (fWriteSecondTrackArray==kFALSE) {
-      for (Int_t i=0; i<kMaxMCsignals; i++) {
+    if (fWriteSecondTrackArray==kFALSE && fMCsignals.GetEntries()) {
+      for (Int_t i=0; i<fMCsignals.GetEntries(); i++) {
         if (fMCsignalsWritingOptions[i]==kBaseTrack) {
-          printf("AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects(): Second track array will be used.\n");
+          printf("AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects(): Second track array will be used (MC signal choice).\n");
           fWriteSecondTrackArray = kTRUE;
           break;
         }
@@ -324,31 +334,32 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
      default:
         break;
   };
- 
-  if(fWriteTree)
+
+	if(fWriteTree) {
     fTree->Branch("Event",&fReducedEvent,16000,99);
 
-  // if user set active branches
-  TObjArray* aractive=fActiveBranches.Tokenize(";");
-  if(aractive->GetEntries()>0) {fTree->SetBranchStatus("*", 0);}
-  for(Int_t i=0; i<aractive->GetEntries(); i++){
-    fTree->SetBranchStatus(aractive->At(i)->GetName(), 1);
-  }
+		// if user set active branches
+		TObjArray* aractive=fActiveBranches.Tokenize(";");
+		if(aractive->GetEntries()>0) {fTree->SetBranchStatus("*", 0);}
+		for(Int_t i=0; i<aractive->GetEntries(); i++){
+			fTree->SetBranchStatus(aractive->At(i)->GetName(), 1);
+		}
 
-  // if user set inactive branches
-  TObjArray* arinactive=fInactiveBranches.Tokenize(";");
-  for(Int_t i=0; i<arinactive->GetEntries(); i++){
-    fTree->SetBranchStatus(arinactive->At(i)->GetName(), 0);
-  }
- 
-  // if MC info is not requested, then set the respective branches off
-  if(!fFillMCInfo) {
-    fTree->SetBranchStatus("fTracks.fMC*", 0); 
-  }
-  if(!fFillEventPlaneInfo) {
-    fTree->SetBranchStatus("fEventPlane.*", 0);   
-  }
- 
+		// if user set inactive branches
+		TObjArray* arinactive=fInactiveBranches.Tokenize(";");
+		for(Int_t i=0; i<arinactive->GetEntries(); i++){
+			fTree->SetBranchStatus(arinactive->At(i)->GetName(), 0);
+		}
+
+		// if MC info is not requested, then set the respective branches off
+		if(!fFillMCInfo) {
+			fTree->SetBranchStatus("fTracks.fMC*", 0);
+		}
+		if(!fFillEventPlaneInfo) {
+			fTree->SetBranchStatus("fEventPlane.*", 0);
+		}
+	}
+
   /*if(fFillBayesianPIDInfo) {
     fBayesianResponse = new AliFlowBayesianPID();
     fBayesianResponse->SetNewTrackParam();
@@ -360,19 +371,23 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
   
   AliDielectronVarManager::SetFillMap(fUsedVars);
 
+	// TList for Event statistic histograms
+	fEventsList = new TList();
+	fEventsList->SetOwner();
+
   // event statistics histogram
   fEventsHistogram = new TH2I("EventStatistics", "Event statistics", 14, -0.5,13.5,34,-2.5,31.5);
   const Char_t* offlineTriggerNames[34] = {"Total", "No Phys Sel", "MB/INT1", "INT7", "MUON", "HighMult/HighMultSPD", "EMC1", "CINT5/INT5", "CMUS5/MUSPB/INT7inMUON",
      "MuonSingleHighPt7/MUSH7/MUSHPB", "MuonLikeLowPt7/MUL7/MuonLikePB", "MuonUnlikeLowPt7/MUU7/MuonUnlikePB", "EMC7/EMC8", 
      "MUS7/MuonSingleLowPt7", "PHI1", "PHI7/PHI8/PHOSPb", "EMCEJE", "EMCEGA", "Central/HighMultV0", "SemiCentral", "DG/DG5", "ZED", 
      "SPI7/SPI", "INT8", "MuonSingleLowPt8", "MuonSingleHighPt8", "MuonLikeLowPt8", "MuonUnlikeLowPt8", "MuonUnlikeLowPt0/INT6", "UserDefined", 
-     "TRD", "N/A", "FastOnly", "N/A"
+     "TRD", "MuonCalo/CaloOnly", "FastOnly", "N/A"
   };  
   const Char_t* selectionNames[14] = {"All events", 
      "Physics Selection events (PS)", "Rejected due to PS",
-     "PE and trigger selected (TS)", "Rejected due to TS",
-     "TS and pileup checked (PC)", "Rejected due to PC", 
-     "PC and event cuts checked (EC)", "Rejected due to EC", 
+     "PS and Trigger Selected (TS)", "Rejected due to TS",
+     "TS and Pileup Checked (PC)", "Rejected due to PC",
+     "PC and Event cuts Checked (EC)", "Rejected due to EC",
      Form("Written ev. (>=%d tracks, >=%d base tracks)", fMinSelectedTracks, fMinSelectedBaseTracks), 
      Form("Written ev. (<%d tracks, >=%d base tracks)", fMinSelectedTracks, fMinSelectedBaseTracks), 
      Form("Written ev. (<%d tracks, <%d base tracks)", fMinSelectedTracks, fMinSelectedBaseTracks),
@@ -382,7 +397,29 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
      fEventsHistogram->GetYaxis()->SetBinLabel(i, offlineTriggerNames[i-1]);
   for(Int_t i=1;i<=14;++i)
      fEventsHistogram->GetXaxis()->SetBinLabel(i, selectionNames[i-1]);
-  
+	fEventsList->Add(fEventsHistogram);
+
+  // TRD event statistics histogram
+  const Char_t* offlineTRDTriggerNames[7] = {"Total", "No Phys Sel", "HQUorHSE", "HQU", "HSE", "Nuclei", "Jet"};
+  fTRDEventsHistogram = new TH2I("TRDEventStatistics", "TRD Event statistics", 14, -0.5,13.5,12,-2.5,9.5);
+  for(Int_t i=1;i<=7;++i)  fTRDEventsHistogram->GetYaxis()->SetBinLabel(i, offlineTRDTriggerNames[i-1]);
+  for(Int_t i=1;i<=14;++i) fTRDEventsHistogram->GetXaxis()->SetBinLabel(i, selectionNames[i-1]);
+	fEventsList->Add(fTRDEventsHistogram);
+
+	// Event Centrality statistics List of histograms (for the provided trigger mask)
+	fCentEventsList = new TList();
+	fCentEventsList->SetName("EventStatVsCent");
+	fCentEventsList->SetOwner();
+	const Int_t nCentEstimators = 3;
+	const Char_t* estimatorNames[nCentEstimators] = {"V0M", "ZNA", "CL1"};
+	TH2I *centEventsHistogram[nCentEstimators];
+	for (Int_t i=0; i<nCentEstimators; ++i) {
+		centEventsHistogram[i] = new TH2I(estimatorNames[i], Form("%s estimator",estimatorNames[i]), 14, -0.5,13.5,120,-5.,115.);
+		for(Int_t xi=1;xi<=14;++xi) centEventsHistogram[i]->GetXaxis()->SetBinLabel(xi, selectionNames[xi-1]);
+		fCentEventsList->Add(centEventsHistogram[i]);
+	}
+	fEventsList->Add(fCentEventsList);
+
   // track statistics histogram
   Int_t nBins = fTrackFilter.GetEntries()+4;
   Double_t xMin = -4.5;
@@ -396,6 +433,7 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
     fTracksHistogram->GetXaxis()->SetBinLabel(i, xLabels[i-1]);
   for (Int_t i=5; i<nBins+1; i++)
     fTracksHistogram->GetXaxis()->SetBinLabel(i, Form("%s passed", ((AliAnalysisCuts*)fTrackFilter.At(i-5))->GetName()));
+	fEventsList->Add(fTracksHistogram);
 
   // MC statistics histogram
   fMCSignalsHistogram = new TH2I("MCSignalsStatistics", "Monte-Carlo signals statistics", 
@@ -406,18 +444,16 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
      if(fMCsignalsWritingOptions[i-1]==kFullTrack) trackTypeStr = "full track";
      fMCSignalsHistogram->GetXaxis()->SetBinLabel(i, Form("%s (%s)", ((AliSignalMC*)fMCsignals.At(i-1))->GetName(), trackTypeStr.Data()));
   }
-  
-  // set a seed for the random number generator
+	if (fFillMCInfo) fEventsList->Add(fMCSignalsHistogram);
+
+	// set a seed for the random number generator
   TTimeStamp ts;
   gRandom->SetSeed(ts.GetNanoSec());
   
   PostData(1, fReducedEvent);
   if(fWriteTree) {
     PostData(2, fTree);
-    PostData(3, fEventsHistogram);
-    PostData(4, fTracksHistogram);
-    if(fFillMCInfo)
-       PostData(5, fMCSignalsHistogram);
+    PostData(3, fEventsList);
   }
 }
 
@@ -445,26 +481,63 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   // Was event selected ?
   UInt_t isPhysSel = AliVEvent::kAny;
   UInt_t isPhysAndTrigSel = AliVEvent::kAny;
-  
+  UInt_t trdtrgtype[5];
+  memset(trdtrgtype,0,sizeof(trdtrgtype));
+
   if(inputHandler) {
     if((isESD && inputHandler->GetEventSelection()) || isAOD){
       isPhysSel = inputHandler->IsEventSelected();
       isPhysAndTrigSel = isPhysSel & fTriggerMask;
+
+      // get type of TRD triggered event
+      AliVEvent* tempevent=  inputHandler->GetEvent();
+      TString trgClasses  = tempevent->GetFiredTriggerClasses();
+      if(trgClasses.Contains("HQU")||trgClasses.Contains("HSE")) trdtrgtype[0]=1;
+      if(trgClasses.Contains("HQU")) trdtrgtype[1]=1;
+      if(trgClasses.Contains("HSE")) trdtrgtype[2]=1;
+      if(trgClasses.Contains("HNU")) trdtrgtype[3]=1;
+      if(trgClasses.Contains("HJT")) trdtrgtype[4]=1;
     }
   }
+
+	// Get centrality object
+	const Int_t nCentEstimators = 3;
+	const Char_t* estimatorNames[nCentEstimators] = {"V0M", "ZNA", "CL1"};
+	AliVEvent* event = InputEvent();
+	AliCentrality *centrality = 0x0;
+	AliMultSelection* multSelection = 0x0;
+	Bool_t isOldCent = kFALSE;
+	if(event->GetRunNumber()<200000) isOldCent = kTRUE;
+	if(isOldCent) centrality = event->GetCentrality(); // old centrality framework
+	else multSelection = (AliMultSelection*)event->FindListObject("MultSelection"); // new centrality framework
+	if (!centrality && !multSelection) AliInfo("No centrality object found");
+
 
   // event statistics before any selection
   if(isPhysSel) {
     for(Int_t i=0;i<32;++i) 
-       if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(0.,Double_t(i));
+	if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(0.,Double_t(i));
+    for(Int_t i=0;i<5;++i)
+        if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(0.,i);
   }
-  else fEventsHistogram->Fill(0.,-1.);
+  else{
+      fEventsHistogram->Fill(0.,-1.);
+      fTRDEventsHistogram->Fill(0.,-1.);
+  }
   fEventsHistogram->Fill(0.,-2.);
-  
+  fTRDEventsHistogram->Fill(0.,-2.);
+  for (Int_t i=0;i<nCentEstimators;++i)
+	  ((TH2I*)fCentEventsList->At(i))->Fill(0.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
+
+	// rejected due to physics selection
   if(fSelectPhysics && !isPhysSel) {
      fEventsHistogram->Fill(2., -1.);
      fEventsHistogram->Fill(2., -2.);
-     PostData(3, fEventsHistogram);
+     fTRDEventsHistogram->Fill(2., -1.);
+     fTRDEventsHistogram->Fill(2., -2.);
+		for (Int_t i=0;i<nCentEstimators;++i)
+			((TH2I*)fCentEventsList->At(i))->Fill(2.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
+		PostData(3, fEventsList);
      return;
   }
   
@@ -472,49 +545,84 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   // NOTE: if physics selection was not applied (as requested by user) then we can still have events with PS not fulfilled 
   if(isPhysSel) {
      for(Int_t i=0;i<32;++i) 
-        if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(1.,Double_t(i));
+	 if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(1.,Double_t(i));
+     		for(Int_t i=0;i<5;++i)
+	 if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(1.,i);
   }
-  else fEventsHistogram->Fill(1.,-1.);
+  else{
+      fEventsHistogram->Fill(1.,-1.);
+      fTRDEventsHistogram->Fill(1.,-1.);
+  }
   fEventsHistogram->Fill(1.,-2.);
-  
+  fTRDEventsHistogram->Fill(1.,-2.);
+	for (Int_t i=0;i<nCentEstimators;++i)
+		((TH2I*)fCentEventsList->At(i))->Fill(1.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
+
   // event statistics after physics selection and trigger selection
   if(isPhysAndTrigSel) {
      for(Int_t i=0;i<32;++i) 
-        if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(3.,Double_t(i));
+	 if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(3.,Double_t(i));
+     for(Int_t i=0;i<5;++i)
+	 if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(3.,i);
      fEventsHistogram->Fill(3.,-2.);   
+     fTRDEventsHistogram->Fill(3.,-2.);
+		for (Int_t i=0;i<nCentEstimators;++i)
+			((TH2I*)fCentEventsList->At(i))->Fill(3.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
   }
   else {
      // reject events which do not fulfill the requested trigger mask
      if(isPhysSel) {
         for(Int_t i=0;i<32;++i) 
-           if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(4.,Double_t(i));
+	    if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(4.,Double_t(i));
+	for(Int_t i=0;i<5;++i)
+	    if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(4.,i);
      }
-     else fEventsHistogram->Fill(4.,-1.);
+     else{
+	 fEventsHistogram->Fill(4.,-1.);
+	 fTRDEventsHistogram->Fill(4.,-1.);
+     }
      fEventsHistogram->Fill(4.,-2.);
-     
-     PostData(3, fEventsHistogram);
+     fTRDEventsHistogram->Fill(4.,-2.);
+		for (Int_t i=0;i<nCentEstimators;++i)
+			((TH2I*)fCentEventsList->At(i))->Fill(4.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
+		PostData(3, fEventsList);
      return;
   }
 
-  // standard pileup selection
+	// rejected by pileup selection
   if(fRejectPileup && InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.)){
      if(isPhysSel) {
         for(Int_t i=0;i<32;++i) 
-           if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(6.,Double_t(i));
+	    	if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(6.,Double_t(i));
+	for(Int_t i=0;i<5;++i)
+        if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(6.,i);
      }
-     else fEventsHistogram->Fill(6.,-1.);
+     else{
+	 fEventsHistogram->Fill(6.,-1.);
+	 fTRDEventsHistogram->Fill(6.,-1.);
+     }
      fEventsHistogram->Fill(6.,-2.);   
-     
-     PostData(3, fEventsHistogram);
+     fTRDEventsHistogram->Fill(6.,-2.);
+		for (Int_t i=0;i<nCentEstimators;++i)
+			((TH2I*)fCentEventsList->At(i))->Fill(6.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
+		PostData(3, fEventsList);
      return;
   }
-  else {
+	else { 	// accepted pileup selection
      if(isPhysSel) {
         for(Int_t i=0;i<32;++i) 
-           if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(5.,Double_t(i));
+	    if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(5.,Double_t(i));
+	for(Int_t i=0;i<5;++i)
+	    if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(5.,i);
      }
-     else fEventsHistogram->Fill(5.,-1.);
+     else{
+	 fEventsHistogram->Fill(5.,-1.);
+	 fTRDEventsHistogram->Fill(5.,-1.);
+     }
      fEventsHistogram->Fill(5.,-2.);
+     fTRDEventsHistogram->Fill(5.,-2.);
+		for (Int_t i=0;i<nCentEstimators;++i)
+			((TH2I*)fCentEventsList->At(i))->Fill(5.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
   }  
   
   // user defined event filter
@@ -522,21 +630,36 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
      // event statistics for events failing selection cuts
      if(isPhysSel) {
         for(Int_t i=0;i<32;++i) 
-           if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(8.,Double_t(i));
+	    if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(8.,Double_t(i));
+	for(Int_t i=0;i<5;++i)
+        if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(8.,i);
      }
-     else fEventsHistogram->Fill(8.,-1.);
+     else{
+	 fEventsHistogram->Fill(8.,-1.);
+	 fTRDEventsHistogram->Fill(8.,-1.);
+     }
      fEventsHistogram->Fill(8.,-2.);
-     
-     PostData(3, fEventsHistogram);
+     fTRDEventsHistogram->Fill(8.,-2.);
+		for (Int_t i=0;i<nCentEstimators;++i)
+			((TH2I*)fCentEventsList->At(i))->Fill(8.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
+		PostData(3, fEventsList);
      return;
   }
   else {
      if(isPhysSel) {
         for(Int_t i=0;i<32;++i) 
-           if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(7.,Double_t(i));
+	    if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(7.,Double_t(i));
+	for(Int_t i=0;i<5;++i)
+        if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(7.,i);
      }
-     else fEventsHistogram->Fill(7.,-1.);
+     else{
+	 fEventsHistogram->Fill(7.,-1.);
+	 fTRDEventsHistogram->Fill(7.,-1.);
+     }
      fEventsHistogram->Fill(7.,-2.);
+     fTRDEventsHistogram->Fill(7.,-2.);
+		for (Int_t i=0;i<nCentEstimators;++i)
+			((TH2I*)fCentEventsList->At(i))->Fill(7.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
   }
   
   if(fFillMCInfo) {
@@ -578,11 +701,18 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
        
        if(isPhysSel) {
           for(Int_t i=0;i<32;++i) 
-             if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(Double_t(binToFill),Double_t(i));
+	      if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(Double_t(binToFill),Double_t(i));
+	  for(Int_t i=0;i<5;++i)
+	      if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(Double_t(binToFill),i);
        }
-       else
-          fEventsHistogram->Fill(Double_t(binToFill), -1.);
+       else{
+	   fEventsHistogram->Fill(Double_t(binToFill), -1.);
+	   fTRDEventsHistogram->Fill(Double_t(binToFill), -1.);
+       }
        fEventsHistogram->Fill(Double_t(binToFill),-2.);
+       fTRDEventsHistogram->Fill(Double_t(binToFill),-2.);
+			for (Int_t i=0;i<nCentEstimators;++i)
+				((TH2I*)fCentEventsList->At(i))->Fill(Double_t(binToFill),isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
     }
     
     // if the event was not already selected to be written, check that it fullfills the conditions
@@ -590,31 +720,52 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
        writeEvent = kTRUE;
        if(isPhysSel) {
           for(Int_t i=0;i<32;++i) 
-             if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(9.,Double_t(i));
+	      if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(9.,Double_t(i));
+	  for(Int_t i=0;i<5;++i)
+	      if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(9.,i);
        }
-       else 
-          fEventsHistogram->Fill(9., -1.);
+       else{
+	   fEventsHistogram->Fill(9., -1.);
+	   fTRDEventsHistogram->Fill(9., -1.);
+       }
        fEventsHistogram->Fill(9.,-2.);
+       fTRDEventsHistogram->Fill(9.,-2.);
+			for (Int_t i=0;i<nCentEstimators;++i)
+				((TH2I*)fCentEventsList->At(i))->Fill(9.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
     }
     
     // count the events not to be written
     if(!writeEvent && nTracks<fMinSelectedTracks && nTracks2>=fMinSelectedBaseTracks) {
        if(isPhysSel) {
           for(Int_t i=0;i<32;++i) 
-             if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(12.,Double_t(i));
+	      if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(12.,Double_t(i));
+	  for(Int_t i=0;i<5;++i)
+	      if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(12.,i);
        }
-       else 
+       else{
           fEventsHistogram->Fill(12., -1.);
+	  fTRDEventsHistogram->Fill(12., -1.);
+       }
        fEventsHistogram->Fill(12.,-2.);
+       fTRDEventsHistogram->Fill(12.,-2.);
+			for (Int_t i=0;i<nCentEstimators;++i)
+				((TH2I*)fCentEventsList->At(i))->Fill(12.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
     }
     if(!writeEvent && nTracks<fMinSelectedTracks && nTracks2<fMinSelectedBaseTracks) {
        if(isPhysSel) {
           for(Int_t i=0;i<32;++i) 
-             if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(13.,Double_t(i));
+	      if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(13.,Double_t(i));
+	  for(Int_t i=0;i<5;++i)
+	      if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(13.,i);
        }
-       else 
-          fEventsHistogram->Fill(13., -1.);
+       else{
+	   fEventsHistogram->Fill(13., -1.);
+	   fTRDEventsHistogram->Fill(13., -1.);
+       }
        fEventsHistogram->Fill(13.,-2.);
+       fTRDEventsHistogram->Fill(13.,-2.);
+			for (Int_t i=0;i<nCentEstimators;++i)
+				((TH2I*)fCentEventsList->At(i))->Fill(13.,isOldCent?centrality->GetCentralityPercentile(Form("%s",estimatorNames[i])):multSelection->GetMultiplicityPercentile(Form("%s",estimatorNames[i])));
     }
     
     if(writeEvent) fTree->Fill();
@@ -623,10 +774,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   PostData(1, fReducedEvent);
   if(fWriteTree) {
     PostData(2, fTree);
-    PostData(3, fEventsHistogram);
-    PostData(4, fTracksHistogram);
-    if(fFillMCInfo)
-      PostData(5, fMCSignalsHistogram);
+		PostData(3, fEventsList);
   }
 }
 
@@ -942,6 +1090,7 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   eventInfo->fOnlineTriggerMask = event->GetTriggerMask();
   eventInfo->fOnlineTriggerMaskNext50 = event->GetTriggerMaskNext50();
   eventInfo->fTriggerMask = inputHandler->IsEventSelected();
+  eventInfo->fTriggerClass = event->GetFiredTriggerClasses();
   eventInfo->fIsPhysicsSelection = (isSelected!=0 ? kTRUE : kFALSE);
   eventInfo->fIsSPDPileup = event->IsPileupFromSPD(3,0.8,3.,2.,5.);
   eventInfo->fIsSPDPileupMultBins = event->IsPileupFromSPDInMultBins();
@@ -958,6 +1107,7 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
 	if(trgClasses.Contains("HQU")) eventInfo->fTRDfired = 1;
 	if(trgClasses.Contains("HSE")) eventInfo->fTRDfired = 2;
     }
+
     eventInfo->fIRIntClosestIntMap[0] = esdEvent->GetHeader()->GetIRInt1ClosestInteractionMap();
     eventInfo->fIRIntClosestIntMap[1] = esdEvent->GetHeader()->GetIRInt2ClosestInteractionMap();
     eventVtx = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexTPC());
@@ -1009,6 +1159,7 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
 	if(trgClasses.Contains("HQU")) eventInfo->fTRDfired = 1;
 	if(trgClasses.Contains("HSE")) eventInfo->fTRDfired = 2;
     }
+
     eventInfo->fTimeStamp     = aodEvent->GetTimeStamp();
     eventInfo->fNpileupSPD    = aodEvent->GetNumberOfPileupVerticesSPD();
     eventInfo->fNpileupTracks = aodEvent->GetNumberOfPileupVerticesTracks();
@@ -1459,6 +1610,9 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
       trackInfo->fMCMom[0] = particle->Px();
       trackInfo->fMCMom[1] = particle->Py();
       trackInfo->fMCMom[2] = particle->Pz();
+      trackInfo->fMCFreezeout[0] = particle->Xv();
+      trackInfo->fMCFreezeout[1] = particle->Yv();
+      trackInfo->fMCFreezeout[2] = particle->Zv();
       
       AliVParticle* mother = event->GetTrack(particle->GetMother());
       if(mother) {

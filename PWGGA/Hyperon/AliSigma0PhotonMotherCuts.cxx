@@ -11,13 +11,16 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fHistogramsMC(nullptr),
       fIsMC(false),
       fIsLightweight(false),
-      fIsTreeOutput(true),
       fInputEvent(nullptr),
       fMCEvent(nullptr),
       fDataBasePDG(),
+      fSigma(),
+      fSidebandUp(),
+      fSidebandDown(),
       fLambdaMixed(),
       fPhotonMixed(),
-      fTreeVariables(),
+      fLambdaMixedBinned(),
+      fPhotonMixedBinned(),
       fLambdaCuts(nullptr),
       fPhotonCuts(nullptr),
       fV0Reader(nullptr),
@@ -27,49 +30,64 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fPDGDaughter1(0),
       fPDGDaughter2(0),
       fMassSigma(0),
-      fSigmaMassCut(0),
+      fSigmaMassCut(0.005),
+      fSidebandCutUp(0.05),
+      fSidebandCutDown(0.01),
       fPhotonPtMin(0),
-      fPhotonPtMax(1e30),
+      fPhotonPtMax(999.f),
       fRapidityMax(0.5),
       fArmenterosCut(false),
       fArmenterosQtLow(0.f),
       fArmenterosQtUp(0.f),
       fArmenterosAlphaLow(0.f),
       fArmenterosAlphaUp(0.f),
+      fMCHighMultThreshold(5.f),
       fHistCutBooking(nullptr),
       fHistNSigma(nullptr),
-      fHistPt(nullptr),
       fHistMassCutPt(nullptr),
       fHistInvMass(nullptr),
-      fHistInvMassBeforeArmenteros(nullptr),
-      fHistInvMassBeforeRapidity(nullptr),
       fHistInvMassRecPhoton(nullptr),
       fHistInvMassRecLambda(nullptr),
       fHistInvMassRec(nullptr),
       fHistInvMassPt(nullptr),
-      fHistInvMassEta(nullptr),
       fHistEtaPhi(nullptr),
-      fHistRapidity(nullptr),
-      fHistPtY(),
+      fHistPtRapidity(nullptr),
+      fHistPtMult(),
       fHistArmenterosBefore(nullptr),
       fHistArmenterosAfter(nullptr),
-      fHistMixedPt(nullptr),
-      fHistMixedInvMass(nullptr),
-      fHistMixedPtY(),
       fHistMixedInvMassPt(nullptr),
-      fHistMixedInvMassEta(nullptr),
+      fHistMixedInvMassBinnedMultPt(),
+      fHistLambdaPtPhi(nullptr),
+      fHistLambdaPtEta(nullptr),
+      fHistLambdaMassPt(nullptr),
+      fHistPhotonPtPhi(nullptr),
+      fHistPhotonPtEta(nullptr),
+      fHistPhotonMassPt(nullptr),
+      fHistSigmaLambdaPtCorr(nullptr),
+      fHistSigmaPhotonPtCorr(nullptr),
+      fHistSigmaLambdaPCorr(nullptr),
+      fHistSigmaPhotonPCorr(nullptr),
       fHistMCTruthPt(nullptr),
+      fHistMCTruthPtMult(),
       fHistMCTruthPtY(nullptr),
-      fHistMCTruthPtEta(nullptr),
-      fHistMCTruthDaughterPt(nullptr),
       fHistMCTruthDaughterPtY(nullptr),
-      fHistMCTruthDaughterPtEta(nullptr),
-      fHistMCTruthDaughterPtAccept(nullptr),
       fHistMCTruthDaughterPtYAccept(nullptr),
-      fHistMCTruthDaughterPtEtaAccept(nullptr),
+      fHistMCTruthPtYHighMult(nullptr),
+      fHistMCTruthDaughterPtYHighMult(nullptr),
+      fHistMCTruthDaughterPtYAcceptHighMult(nullptr),
+      fHistMCTrueSigmaLambdaPtCorr(nullptr),
+      fHistMCTrueSigmaPhotonPtCorr(nullptr),
+      fHistMCTrueSigmaLambdaPCorr(nullptr),
+      fHistMCTrueSigmaPhotonPCorr(nullptr),
+      fHistMCBkgSigmaLambdaPtCorr(nullptr),
+      fHistMCBkgSigmaPhotonPtCorr(nullptr),
+      fHistMCBkgSigmaLambdaPCorr(nullptr),
+      fHistMCBkgSigmaPhotonPCorr(nullptr),
       fHistMCV0Pt(nullptr),
       fHistMCV0Mass(nullptr),
-      fOutputTree(nullptr) {}
+      fHistMCV0Mother(nullptr),
+      fHistMCV0Check(nullptr),
+      fHistMCV0MotherCheck(nullptr) {}
 
 //____________________________________________________________________________________________________
 AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
@@ -79,13 +97,14 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fHistogramsMC(nullptr),
       fIsMC(false),
       fIsLightweight(false),
-      fIsTreeOutput(true),
       fInputEvent(nullptr),
       fMCEvent(nullptr),
       fDataBasePDG(),
+      fSigma(),
+      fSidebandUp(),
+      fSidebandDown(),
       fLambdaMixed(),
       fPhotonMixed(),
-      fTreeVariables(),
       fLambdaCuts(nullptr),
       fPhotonCuts(nullptr),
       fV0Reader(nullptr),
@@ -95,49 +114,64 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fPDGDaughter1(0),
       fPDGDaughter2(0),
       fMassSigma(0),
-      fSigmaMassCut(0),
+      fSigmaMassCut(0.005),
+      fSidebandCutUp(0.05),
+      fSidebandCutDown(0.01),
       fPhotonPtMin(0),
-      fPhotonPtMax(1e30),
+      fPhotonPtMax(999.f),
       fRapidityMax(0.5),
       fArmenterosCut(false),
       fArmenterosQtLow(0.f),
       fArmenterosQtUp(0.f),
       fArmenterosAlphaLow(0.f),
       fArmenterosAlphaUp(0.f),
+      fMCHighMultThreshold(5.f),
       fHistCutBooking(nullptr),
       fHistNSigma(nullptr),
-      fHistPt(nullptr),
       fHistMassCutPt(nullptr),
       fHistInvMass(nullptr),
-      fHistInvMassBeforeArmenteros(nullptr),
-      fHistInvMassBeforeRapidity(nullptr),
       fHistInvMassRecPhoton(nullptr),
       fHistInvMassRecLambda(nullptr),
       fHistInvMassRec(nullptr),
       fHistInvMassPt(nullptr),
-      fHistInvMassEta(nullptr),
       fHistEtaPhi(nullptr),
-      fHistRapidity(nullptr),
-      fHistPtY(),
+      fHistPtRapidity(nullptr),
+      fHistPtMult(),
       fHistArmenterosBefore(nullptr),
       fHistArmenterosAfter(nullptr),
-      fHistMixedPt(nullptr),
-      fHistMixedInvMass(nullptr),
-      fHistMixedPtY(),
       fHistMixedInvMassPt(nullptr),
-      fHistMixedInvMassEta(nullptr),
+      fHistMixedInvMassBinnedMultPt(),
+      fHistLambdaPtPhi(nullptr),
+      fHistLambdaPtEta(nullptr),
+      fHistLambdaMassPt(nullptr),
+      fHistPhotonPtPhi(nullptr),
+      fHistPhotonPtEta(nullptr),
+      fHistPhotonMassPt(nullptr),
+      fHistSigmaLambdaPtCorr(nullptr),
+      fHistSigmaPhotonPtCorr(nullptr),
+      fHistSigmaLambdaPCorr(nullptr),
+      fHistSigmaPhotonPCorr(nullptr),
       fHistMCTruthPt(nullptr),
+      fHistMCTruthPtMult(),
       fHistMCTruthPtY(nullptr),
-      fHistMCTruthPtEta(nullptr),
-      fHistMCTruthDaughterPt(nullptr),
       fHistMCTruthDaughterPtY(nullptr),
-      fHistMCTruthDaughterPtEta(nullptr),
-      fHistMCTruthDaughterPtAccept(nullptr),
       fHistMCTruthDaughterPtYAccept(nullptr),
-      fHistMCTruthDaughterPtEtaAccept(nullptr),
+      fHistMCTruthPtYHighMult(nullptr),
+      fHistMCTruthDaughterPtYHighMult(nullptr),
+      fHistMCTruthDaughterPtYAcceptHighMult(nullptr),
+      fHistMCTrueSigmaLambdaPtCorr(nullptr),
+      fHistMCTrueSigmaPhotonPtCorr(nullptr),
+      fHistMCTrueSigmaLambdaPCorr(nullptr),
+      fHistMCTrueSigmaPhotonPCorr(nullptr),
+      fHistMCBkgSigmaLambdaPtCorr(nullptr),
+      fHistMCBkgSigmaPhotonPtCorr(nullptr),
+      fHistMCBkgSigmaLambdaPCorr(nullptr),
+      fHistMCBkgSigmaPhotonPCorr(nullptr),
       fHistMCV0Pt(nullptr),
       fHistMCV0Mass(nullptr),
-      fOutputTree(nullptr) {}
+      fHistMCV0Mother(nullptr),
+      fHistMCV0Check(nullptr),
+      fHistMCV0MotherCheck(nullptr) {}
 
 //____________________________________________________________________________________________________
 AliSigma0PhotonMotherCuts &AliSigma0PhotonMotherCuts::operator=(
@@ -160,6 +194,7 @@ void AliSigma0PhotonMotherCuts::SelectPhotonMother(
     AliVEvent *inputEvent, AliMCEvent *mcEvent,
     const std::vector<AliSigma0ParticleV0> &photonCandidates,
     const std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
+  fInputEvent = inputEvent;
   fMCEvent = mcEvent;
 
   if (fIsMC) {
@@ -168,17 +203,172 @@ void AliSigma0PhotonMotherCuts::SelectPhotonMother(
         (AliV0ReaderV1 *)AliAnalysisManager::GetAnalysisManager()->GetTask(
             fV0ReaderName.Data());
   }
-
-  fInputEvent = inputEvent;
+  if (!fIsLightweight) SingleV0QA(photonCandidates, lambdaCandidates);
 
   // Particle pairing
   SigmaToLambdaGamma(photonCandidates, lambdaCandidates);
   SigmaToLambdaGammaMixedEvent(photonCandidates, lambdaCandidates);
+  SigmaToLambdaGammaMixedEventBinned(photonCandidates, lambdaCandidates);
   FillEventBuffer(photonCandidates, lambdaCandidates);
 }
 
 //____________________________________________________________________________________________________
+void AliSigma0PhotonMotherCuts::SingleV0QA(
+    const std::vector<AliSigma0ParticleV0> &photonCandidates,
+    const std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
+  // Photon QA - keep track of kinematics
+  for (const auto &photon : photonCandidates) {
+    fHistPhotonPtPhi->Fill(photon.GetPt(), photon.GetPhi());
+    fHistPhotonPtEta->Fill(photon.GetPt(), photon.GetEta());
+    fHistPhotonMassPt->Fill(photon.GetPt(), photon.GetMass());
+  }
+
+  for (const auto &lambda : lambdaCandidates) {
+    // Lambda QA - keep track of kinematics
+    fHistLambdaPtPhi->Fill(lambda.GetPt(), lambda.GetPhi());
+    fHistLambdaPtEta->Fill(lambda.GetPt(), lambda.GetEta());
+    fHistLambdaMassPt->Fill(lambda.GetPt(), lambda.GetMass());
+  }
+}
+
+//____________________________________________________________________________________________________
 void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
+    const std::vector<AliSigma0ParticleV0> &photonCandidates,
+    const std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
+  fSigma.clear();
+  fSidebandUp.clear();
+  fSidebandDown.clear();
+
+  // Mulitplicity estimator: V0M
+  Float_t lPercentile = 300;
+  AliMultSelection *MultSelection = 0x0;
+  MultSelection =
+      (AliMultSelection *)fInputEvent->FindListObject("MultSelection");
+  if (MultSelection) {
+    lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+  }
+  int nSigma = 0;
+
+  // SAME EVENT
+  for (const auto &photon : photonCandidates) {
+    if (photon.GetPt() > fPhotonPtMax || photon.GetPt() < fPhotonPtMin)
+      continue;
+
+    for (const auto &lambda : lambdaCandidates) {
+      AliSigma0ParticlePhotonMother sigma(lambda, photon, fInputEvent);
+      const float invMass = sigma.GetMass();
+      const float armAlpha = sigma.GetArmenterosAlpha();
+      const float armQt = sigma.GetArmenterosQt();
+      const float pT = sigma.GetPt();
+      if (!fIsLightweight) {
+        fHistArmenterosBefore->Fill(armAlpha, armQt);
+      }
+      // Armenteros cut
+      if (fArmenterosCut) {
+        if (armQt > fArmenterosQtUp || armQt < fArmenterosQtLow) continue;
+        if (armAlpha > fArmenterosAlphaUp || armAlpha < fArmenterosAlphaLow)
+          continue;
+      }
+      const float rap = sigma.GetRapidity();
+      const int multBin = GetMultiplicityBin(lPercentile);
+
+      int label = -10;
+      int pdgLambdaMother = 0;
+      int pdgPhotonMother = 0;
+      if (fIsMC) {
+        label =
+            sigma.MatchToMC(fMCEvent, fPDG, {{fPDGDaughter1, fPDGDaughter2}},
+                            pdgLambdaMother, pdgPhotonMother);
+      }
+
+      // Now write out the stuff to the Femto containers
+      if (invMass < fMassSigma + fSigmaMassCut &&
+          invMass > fMassSigma - fSigmaMassCut) {
+        fSigma.push_back(sigma);
+        if (!fIsLightweight) {
+          fHistMassCutPt->Fill(pT);
+          fHistEtaPhi->Fill(sigma.GetEta(), sigma.GetPhi());
+          fHistPtRapidity->Fill(pT, rap);
+          fHistSigmaLambdaPtCorr->Fill(pT, lambda.GetPt());
+          fHistSigmaPhotonPtCorr->Fill(pT, photon.GetPt());
+          fHistSigmaLambdaPCorr->Fill(sigma.GetP(), lambda.GetP());
+          fHistSigmaPhotonPCorr->Fill(sigma.GetP(), photon.GetP());
+
+          if (fIsMC && label > 0) {
+            fHistMCTrueSigmaLambdaPtCorr->Fill(pT, lambda.GetPt());
+            fHistMCTrueSigmaPhotonPtCorr->Fill(pT, photon.GetPt());
+            fHistMCTrueSigmaLambdaPCorr->Fill(sigma.GetP(), lambda.GetP());
+            fHistMCTrueSigmaPhotonPCorr->Fill(sigma.GetP(), photon.GetP());
+          } else if (fIsMC && label <= 0) {
+            fHistMCBkgSigmaLambdaPtCorr->Fill(pT, lambda.GetPt());
+            fHistMCBkgSigmaPhotonPtCorr->Fill(pT, photon.GetPt());
+            fHistMCBkgSigmaLambdaPCorr->Fill(sigma.GetP(), lambda.GetP());
+            fHistMCBkgSigmaPhotonPCorr->Fill(sigma.GetP(), photon.GetP());
+          }
+        }
+        ++nSigma;
+      }
+      if (invMass < fMassSigma + fSidebandCutUp &&
+          invMass > fMassSigma + fSidebandCutDown) {
+        fSidebandUp.push_back(sigma);
+      }
+      if (invMass > fMassSigma - fSidebandCutUp &&
+          invMass < fMassSigma - fSidebandCutDown) {
+        fSidebandDown.push_back(sigma);
+      }
+
+      fHistInvMass->Fill(invMass);
+
+      if (std::abs(rap) > fRapidityMax || multBin < 0) continue;
+      if (!fIsLightweight) {
+        fHistArmenterosAfter->Fill(armAlpha, armQt);
+        fHistInvMassRecPhoton->Fill(pT, sigma.GetRecMassPhoton());
+        fHistInvMassRecLambda->Fill(pT, sigma.GetRecMassLambda());
+        fHistInvMassRec->Fill(pT, sigma.GetRecMass());
+      }
+      fHistInvMassPt->Fill(pT, invMass);
+      fHistPtMult[multBin]->Fill(pT, invMass);
+
+      if (fIsMC) {
+        if (label > 0) {
+          fHistMCV0Pt->Fill(sigma.GetPt());
+          fHistMCV0Mass->Fill(invMass);
+        }
+        if (!fIsLightweight) {
+          // let's where the other particle comes from if one of them stems from
+          // a Sigma0
+          if (std::abs(pdgLambdaMother) == 3212 &&
+              std::abs(pdgLambdaMother) != 3212) {
+            fHistMCV0Mother->Fill(invMass, std::abs(pdgPhotonMother));
+          }
+          if (std::abs(pdgLambdaMother) == 3212 &&
+              std::abs(pdgLambdaMother) != 3212) {
+            fHistMCV0Mother->Fill(invMass, std::abs(pdgLambdaMother));
+          }
+          fHistMCV0MotherCheck->Fill(std::abs(pdgLambdaMother),
+                                     std::abs(pdgPhotonMother));
+
+          const int labV0 = photon.GetMCLabelV0();
+          const int labPhoton = lambda.GetMCLabelV0();
+          if (labV0 < 0 || labPhoton < 0) continue;
+
+          AliMCParticle *partV0 =
+              static_cast<AliMCParticle *>(fMCEvent->GetTrack(labV0));
+          AliMCParticle *partPhoton =
+              static_cast<AliMCParticle *>(fMCEvent->GetTrack(labPhoton));
+          if (!partV0 || !partPhoton) continue;
+
+          fHistMCV0Check->Fill(std::abs(partV0->PdgCode()),
+                               std::abs(partPhoton->PdgCode()));
+        }
+      }
+    }
+  }
+  if (!fIsLightweight) fHistNSigma->Fill(nSigma);
+}
+
+//____________________________________________________________________________________________________
+void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
     const std::vector<AliSigma0ParticleV0> &photonCandidates,
     const std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
   // Mulitplicity estimator: V0M
@@ -190,77 +380,6 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
     lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
   }
 
-  // SAME EVENT
-  for (const auto &photon : photonCandidates) {
-    int nSigma = 0;
-    if (photon.GetPt() > fPhotonPtMax || photon.GetPt() < fPhotonPtMin)
-      continue;
-    for (const auto &lambda : lambdaCandidates) {
-      /// Candidates with lambdas with shared daughter tracks are not used
-      if (!lambda.GetIsUse()) continue;
-      const AliSigma0ParticlePhotonMother sigma(lambda, photon, fInputEvent);
-      const float invMass = sigma.GetMass();
-      const float armAlpha = sigma.GetArmenterosAlpha();
-      const float armQt = sigma.GetArmenterosQt();
-      const float pT = sigma.GetPt();
-      if (!fIsLightweight) {
-        fHistArmenterosBefore->Fill(armAlpha, armQt);
-        fHistInvMassBeforeArmenteros->Fill(invMass);
-      }
-      // Armenteros cut
-      if (fArmenterosCut) {
-        if (armQt > fArmenterosQtUp || armQt < fArmenterosQtLow) continue;
-        if (armAlpha > fArmenterosAlphaUp || armAlpha < fArmenterosAlphaLow)
-          continue;
-      }
-      const float rap = sigma.GetRapidity();
-      if (!fIsLightweight) fHistInvMassBeforeRapidity->Fill(invMass);
-      if (std::abs(rap) > fRapidityMax) continue;
-      const int rapBin = GetRapidityBin(rap);
-      if (!fIsLightweight) {
-        fHistArmenterosAfter->Fill(armAlpha, armQt);
-        fHistPt->Fill(pT);
-        fHistInvMass->Fill(invMass);
-        fHistInvMassRecPhoton->Fill(pT, sigma.GetRecMassPhoton());
-        fHistInvMassRecLambda->Fill(pT, sigma.GetRecMassLambda());
-        fHistInvMassRec->Fill(pT, sigma.GetRecMass());
-        fHistRapidity->Fill(rap);
-        if (rapBin > -1) fHistPtY[rapBin]->Fill(pT, invMass);
-        fHistInvMassEta->Fill(sigma.GetEta(), invMass);
-      }
-      fHistInvMassPt->Fill(pT, invMass);
-      if (invMass < fMassSigma + fSigmaMassCut &&
-          invMass > fMassSigma - fSigmaMassCut) {
-        if (!fIsLightweight) {
-          fHistMassCutPt->Fill(pT);
-          fHistEtaPhi->Fill(sigma.GetEta(), sigma.GetPhi());
-        }
-        ++nSigma;
-
-        fTreeVariables[0] = invMass;
-        fTreeVariables[1] = pT;
-        fTreeVariables[2] = rap;
-        fTreeVariables[3] = lPercentile;
-        if (fIsTreeOutput) fOutputTree->Fill();
-
-        if (fIsMC) {
-          const int label =
-              sigma.MatchToMC(fMCEvent, fPDG, {{fPDGDaughter1, fPDGDaughter2}});
-          if (label > 0) {
-            fHistMCV0Pt->Fill(sigma.GetPt());
-            fHistMCV0Mass->Fill(invMass);
-          }
-        }
-      }
-    }
-    if (!fIsLightweight) fHistNSigma->Fill(nSigma);
-  }
-}
-
-//____________________________________________________________________________________________________
-void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
-    const std::vector<AliSigma0ParticleV0> &photonCandidates,
-    const std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
   // photons from this event with mixed lambdas
   for (const auto &LambdaContainer : fLambdaMixed) {
     for (const auto &Lambda : LambdaContainer) {
@@ -268,7 +387,76 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
       for (auto Photon : photonCandidates) {
         if (Photon.GetPt() > fPhotonPtMax || Photon.GetPt() < fPhotonPtMin)
           continue;
-        const AliSigma0ParticlePhotonMother sigma(Lambda, Photon, fInputEvent);
+        AliSigma0ParticlePhotonMother sigma(Lambda, Photon, fInputEvent);
+        // Armenteros cut
+        const float armAlpha = sigma.GetArmenterosAlpha();
+        const float armQt = sigma.GetArmenterosQt();
+        const float pT = sigma.GetPt();
+        if (fArmenterosCut) {
+          if (armQt > fArmenterosQtUp || armQt < fArmenterosQtLow) continue;
+          if (armAlpha > fArmenterosAlphaUp || armAlpha < fArmenterosAlphaLow)
+            continue;
+        }
+        const float invMass = sigma.GetMass();
+        const float rap = sigma.GetRapidity();
+        const int multBin = GetMultiplicityBin(lPercentile);
+        if (std::abs(rap) > fRapidityMax || multBin < 0) continue;
+        fHistMixedInvMassPt->Fill(pT, invMass);
+      }
+    }
+  }
+
+  // lambdas from this event with mixed photons
+  for (const auto &PhotonContainer : fPhotonMixed) {
+    for (const auto &Photon : PhotonContainer) {
+      if (Photon.GetPt() > fPhotonPtMax || Photon.GetPt() < fPhotonPtMin)
+        continue;
+      for (const auto &Lambda : lambdaCandidates) {
+        if (!Lambda.GetIsUse()) continue;
+        AliSigma0ParticlePhotonMother sigma(Lambda, Photon, fInputEvent);
+        // Armenteros cut
+        const float armAlpha = sigma.GetArmenterosAlpha();
+        const float armQt = sigma.GetArmenterosQt();
+        const float pT = sigma.GetPt();
+        if (fArmenterosCut) {
+          if (armQt > fArmenterosQtUp || armQt < fArmenterosQtLow) continue;
+          if (armAlpha > fArmenterosAlphaUp || armAlpha < fArmenterosAlphaLow)
+            continue;
+        }
+        const float invMass = sigma.GetMass();
+        const float rap = sigma.GetRapidity();
+        const int multBin = GetMultiplicityBin(lPercentile);
+        if (std::abs(rap) > fRapidityMax || multBin < 0) continue;
+        fHistMixedInvMassPt->Fill(pT, invMass);
+      }
+    }
+  }
+}
+
+//____________________________________________________________________________________________________
+void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEventBinned(
+    const std::vector<AliSigma0ParticleV0> &photonCandidates,
+    const std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
+  // Mulitplicity estimator: V0M
+  Float_t lPercentile = 300;
+  AliMultSelection *MultSelection = 0x0;
+  MultSelection =
+      (AliMultSelection *)fInputEvent->FindListObject("MultSelection");
+  if (MultSelection) {
+    lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+  }
+
+  const int multBin = GetMultiplicityBin(lPercentile);
+  if (multBin < 0) return;
+
+  // photons from this event with mixed lambdas
+  for (const auto &LambdaContainer : fLambdaMixedBinned[multBin]) {
+    for (const auto &Lambda : LambdaContainer) {
+      if (!Lambda.GetIsUse()) continue;
+      for (auto Photon : photonCandidates) {
+        if (Photon.GetPt() > fPhotonPtMax || Photon.GetPt() < fPhotonPtMin)
+          continue;
+        AliSigma0ParticlePhotonMother sigma(Lambda, Photon, fInputEvent);
         // Armenteros cut
         const float armAlpha = sigma.GetArmenterosAlpha();
         const float armQt = sigma.GetArmenterosQt();
@@ -281,26 +469,19 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
         const float invMass = sigma.GetMass();
         const float rap = sigma.GetRapidity();
         if (std::abs(rap) > fRapidityMax) continue;
-        fHistMixedInvMassPt->Fill(pT, invMass);
-        if (!fIsLightweight) {
-          fHistMixedPt->Fill(pT);
-          fHistMixedInvMass->Fill(invMass);
-          const int rapBin = GetRapidityBin(rap);
-          if (rapBin > -1) fHistMixedPtY[rapBin]->Fill(pT, invMass);
-          fHistMixedInvMassEta->Fill(sigma.GetEta(), invMass);
-        }
+        fHistMixedInvMassBinnedMultPt[multBin]->Fill(pT, invMass);
       }
     }
   }
 
   // lambdas from this event with mixed photons
-  for (const auto &PhotonContainer : fPhotonMixed) {
+  for (const auto &PhotonContainer : fPhotonMixedBinned[multBin]) {
     for (const auto &Photon : PhotonContainer) {
       if (Photon.GetPt() > fPhotonPtMax || Photon.GetPt() < fPhotonPtMin)
         continue;
       for (const auto &Lambda : lambdaCandidates) {
         if (!Lambda.GetIsUse()) continue;
-        const AliSigma0ParticlePhotonMother sigma(Lambda, Photon, fInputEvent);
+        AliSigma0ParticlePhotonMother sigma(Lambda, Photon, fInputEvent);
         // Armenteros cut
         const float armAlpha = sigma.GetArmenterosAlpha();
         const float armQt = sigma.GetArmenterosQt();
@@ -311,15 +492,9 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
             continue;
         }
         const float invMass = sigma.GetMass();
-        fHistMixedInvMassPt->Fill(pT, invMass);
-        if (!fIsLightweight) {
-          fHistMixedPt->Fill(pT);
-          fHistMixedInvMass->Fill(invMass);
-          const float rap = sigma.GetRapidity();
-          const int rapBin = GetRapidityBin(rap);
-          if (rapBin > -1) fHistMixedPtY[rapBin]->Fill(pT, invMass);
-          fHistMixedInvMassEta->Fill(sigma.GetEta(), invMass);
-        }
+        const float rap = sigma.GetRapidity();
+        if (std::abs(rap) > fRapidityMax) continue;
+        fHistMixedInvMassBinnedMultPt[multBin]->Fill(pT, invMass);
       }
     }
   }
@@ -350,21 +525,55 @@ void AliSigma0PhotonMotherCuts::FillEventBuffer(
       fLambdaMixed.push_back(lambdaCandidates);
     }
   }
-}
 
-//____________________________________________________________________________________________________
-float AliSigma0PhotonMotherCuts::ComputeRapidity(float pt, float pz,
-                                                 float m) const {
-  // calculates rapidity keeping the sign in case E == pz
+  // +++++++++++++++
+  // Binned mixed event in multiplicity and z-vertex position
 
-  float energy = std::sqrt(pt * pt + pz * pz + m * m);
-  if (energy != std::fabs(pz))
-    return 0.5 * std::log((energy + pz) / (energy - pz));
-  return (pz >= 0) ? 1.e30 : -1.e30;
+  // Mulitplicity estimator: V0M
+  Float_t lPercentile = 300;
+  AliMultSelection *MultSelection = 0x0;
+  MultSelection =
+      (AliMultSelection *)fInputEvent->FindListObject("MultSelection");
+  if (MultSelection) {
+    lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+  }
+  const int multBin = GetMultiplicityBin(lPercentile);
+  if (multBin < 0) return;
+
+  // Photon
+  if (static_cast<int>(photonCandidates.size()) > 0) {
+    if (static_cast<int>(fPhotonMixedBinned[multBin].size()) < fMixingDepth) {
+      fPhotonMixedBinned[multBin].push_back(photonCandidates);
+    } else {
+      fPhotonMixedBinned[multBin].pop_front();
+      fPhotonMixedBinned[multBin].push_back(photonCandidates);
+    }
+  }
+
+  // ++++++++++++++
+  // Lambda
+  if (static_cast<int>(lambdaCandidates.size()) > 0) {
+    if (static_cast<int>(fLambdaMixedBinned[multBin].size()) < fMixingDepth) {
+      fLambdaMixedBinned[multBin].push_back(lambdaCandidates);
+    } else {
+      fLambdaMixedBinned[multBin].pop_front();
+      fLambdaMixedBinned[multBin].push_back(lambdaCandidates);
+    }
+  }
 }
 
 //____________________________________________________________________________________________________
 void AliSigma0PhotonMotherCuts::ProcessMC() const {
+  // Mulitplicity estimator: V0M
+  Float_t lPercentile = 300;
+  AliMultSelection *MultSelection = 0x0;
+  MultSelection =
+      (AliMultSelection *)fInputEvent->FindListObject("MultSelection");
+  if (MultSelection) {
+    lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+  }
+  const int multBin = GetMultiplicityBin(lPercentile);
+
   // Loop over the MC tracks
   for (int iPart = 1; iPart < (fMCEvent->GetNumberOfTracks()); iPart++) {
     AliMCParticle *mcParticle =
@@ -373,20 +582,31 @@ void AliSigma0PhotonMotherCuts::ProcessMC() const {
     //    if (!mcParticle->IsPhysicalPrimary()) continue;
     if (mcParticle->GetNDaughters() != 2) continue;
     if (mcParticle->PdgCode() != fPDG) continue;
-    fHistMCTruthPt->Fill(mcParticle->Pt());
+
+    if (std::abs(mcParticle->Y()) <= fRapidityMax) {
+      fHistMCTruthPt->Fill(mcParticle->Pt());
+    }
+    if (multBin >= 0 && std::abs(mcParticle->Y()) <= fRapidityMax) {
+      fHistMCTruthPtMult[multBin]->Fill(mcParticle->Pt());
+    }
+
     fHistMCTruthPtY->Fill(mcParticle->Y(), mcParticle->Pt());
-    fHistMCTruthPtEta->Fill(mcParticle->Eta(), mcParticle->Pt());
+    if (lPercentile < fMCHighMultThreshold) {
+      fHistMCTruthPtYHighMult->Fill(mcParticle->Y(), mcParticle->Pt());
+    }
 
     if (!CheckDaughters(mcParticle)) continue;
-    fHistMCTruthDaughterPt->Fill(mcParticle->Pt());
     fHistMCTruthDaughterPtY->Fill(mcParticle->Y(), mcParticle->Pt());
-    fHistMCTruthDaughterPtEta->Fill(mcParticle->Eta(), mcParticle->Pt());
+    if (lPercentile < fMCHighMultThreshold) {
+      fHistMCTruthDaughterPtYHighMult->Fill(mcParticle->Y(), mcParticle->Pt());
+    }
 
     if (!CheckDaughtersInAcceptance(mcParticle)) continue;
-
-    fHistMCTruthDaughterPtAccept->Fill(mcParticle->Pt());
     fHistMCTruthDaughterPtYAccept->Fill(mcParticle->Y(), mcParticle->Pt());
-    fHistMCTruthDaughterPtEtaAccept->Fill(mcParticle->Eta(), mcParticle->Pt());
+    if (lPercentile < fMCHighMultThreshold) {
+      fHistMCTruthDaughterPtYAcceptHighMult->Fill(mcParticle->Y(),
+                                                  mcParticle->Pt());
+    }
   }
 }
 
@@ -466,35 +686,23 @@ bool AliSigma0PhotonMotherCuts::CheckDaughtersInAcceptance(
 }
 
 //____________________________________________________________________________________________________
-int AliSigma0PhotonMotherCuts::GetRapidityBin(float rapidity) const {
-  if (-10 < rapidity && rapidity <= -1)
+int AliSigma0PhotonMotherCuts::GetMultiplicityBin(float percentile) {
+  if (0 < percentile && percentile <= 0.01)
     return 0;
-  else if (-1 < rapidity && rapidity <= -0.5)
+  else if (0.01 < percentile && percentile <= 0.05)
     return 1;
-  else if (-0.5 < rapidity && rapidity <= -0.4)
+  else if (0.05 < percentile && percentile <= 0.1)
     return 2;
-  else if (-0.4 < rapidity && rapidity <= -0.3)
+  else if (0.1 < percentile && percentile <= 5.)
     return 3;
-  else if (-0.3 < rapidity && rapidity <= -0.2)
+  else if (5. < percentile && percentile <= 15.)
     return 4;
-  else if (-0.2 < rapidity && rapidity <= -0.1)
+  else if (15. < percentile && percentile <= 30.)
     return 5;
-  else if (-0.1 < rapidity && rapidity <= 0.f)
+  else if (30. < percentile && percentile <= 50.)
     return 6;
-  else if (0.f < rapidity && rapidity <= 0.1)
+  else if (50. < percentile && percentile <= 100.)
     return 7;
-  else if (0.1 < rapidity && rapidity <= 0.2)
-    return 8;
-  else if (0.2 < rapidity && rapidity <= 0.3)
-    return 9;
-  else if (0.3 < rapidity && rapidity <= 0.4)
-    return 10;
-  else if (0.4 < rapidity && rapidity <= 0.5)
-    return 11;
-  else if (0.5 < rapidity && rapidity <= 1.f)
-    return 12;
-  else if (1.0 < rapidity && rapidity < 10.f)
-    return 13;
   else
     return -1;
 }
@@ -505,14 +713,13 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
 
   std::cout << "============================\n"
             << " PHOTON MOTHER CUT CONFIGURATION \n"
-            << " Sigma0 mass     " << fMassSigma << "\n"
-            << " Sigma0 select   " << fSigmaMassCut << "\n"
-            << " Photon pT min   " << fPhotonPtMin << "\n"
-            << " Photon pT max   " << fPhotonPtMax << "\n"
+            << " Sigma0 mass      " << fMassSigma << "\n"
+            << " Sigma0 selection " << fSigmaMassCut << "\n"
+            << " Sigma0 sb up     " << fSidebandCutUp << "\n"
+            << " Sigma0 sb down   " << fSidebandCutDown << "\n"
+            << " Photon pT min    " << fPhotonPtMin << "\n"
+            << " Photon pT max    " << fPhotonPtMax << "\n"
             << "============================\n";
-
-  std::vector<float> rapBins = {{-10., -1.f, -0.5, -0.4, -0.3, -0.2, -0.1, 0.f,
-                                 0.1, 0.2, 0.3, 0.4, 0.5, 1.f, 10.f}};
 
   TH1::AddDirectory(kFALSE);
 
@@ -527,127 +734,160 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     fHistograms->SetName(appendix);
   }
 
-  fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 10, 0, 10);
+  fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 12, 0, 12);
   fHistCutBooking->GetXaxis()->SetBinLabel(1, "#Sigma^{0} selection");
-  fHistCutBooking->GetXaxis()->SetBinLabel(2, "#gamma #it{p}_{T} min");
-  fHistCutBooking->GetXaxis()->SetBinLabel(3, "#gamma #it{p}_{T} max");
-  fHistCutBooking->GetXaxis()->SetBinLabel(4, "#Sigma^{0} mixing depth");
-  fHistCutBooking->GetXaxis()->SetBinLabel(5, "Armenteros q_{T} low");
-  fHistCutBooking->GetXaxis()->SetBinLabel(6, "Armenteros q_{T} up");
-  fHistCutBooking->GetXaxis()->SetBinLabel(7, "Armenteros #alpha low");
-  fHistCutBooking->GetXaxis()->SetBinLabel(8, "Armenteros #alpha up");
-  fHistCutBooking->GetXaxis()->SetBinLabel(9, "Rapidity y max");
+  fHistCutBooking->GetXaxis()->SetBinLabel(2, "#Sigma^{0} sb down");
+  fHistCutBooking->GetXaxis()->SetBinLabel(3, "#Sigma^{0} sb up");
+  fHistCutBooking->GetXaxis()->SetBinLabel(4, "#gamma #it{p}_{T} min");
+  fHistCutBooking->GetXaxis()->SetBinLabel(5, "#gamma #it{p}_{T} max");
+  fHistCutBooking->GetXaxis()->SetBinLabel(6, "#Sigma^{0} mixing depth");
+  fHistCutBooking->GetXaxis()->SetBinLabel(7, "Armenteros q_{T} low");
+  fHistCutBooking->GetXaxis()->SetBinLabel(8, "Armenteros q_{T} up");
+  fHistCutBooking->GetXaxis()->SetBinLabel(9, "Armenteros #alpha low");
+  fHistCutBooking->GetXaxis()->SetBinLabel(10, "Armenteros #alpha up");
+  fHistCutBooking->GetXaxis()->SetBinLabel(11, "Rapidity y max");
+  fHistCutBooking->GetXaxis()->SetBinLabel(12, "MC Mult for efficiency");
   fHistograms->Add(fHistCutBooking);
 
   fHistCutBooking->Fill(0.f, fSigmaMassCut);
-  fHistCutBooking->Fill(1.f, fPhotonPtMin);
-  fHistCutBooking->Fill(2.f, fPhotonPtMax);
-  fHistCutBooking->Fill(3.f, fMixingDepth);
-  fHistCutBooking->Fill(4.f, fArmenterosQtLow);
-  fHistCutBooking->Fill(5.f, fArmenterosQtUp);
-  fHistCutBooking->Fill(6.f, fArmenterosAlphaLow);
-  fHistCutBooking->Fill(7.f, fArmenterosAlphaUp);
-  fHistCutBooking->Fill(8.f, fRapidityMax);
+  fHistCutBooking->Fill(1.f, fSidebandCutDown);
+  fHistCutBooking->Fill(2.f, fSidebandCutUp);
+  fHistCutBooking->Fill(3.f, fPhotonPtMin);
+  fHistCutBooking->Fill(4.f, fPhotonPtMax);
+  fHistCutBooking->Fill(5.f, fMixingDepth);
+  fHistCutBooking->Fill(6.f, fArmenterosQtLow);
+  fHistCutBooking->Fill(7.f, fArmenterosQtUp);
+  fHistCutBooking->Fill(8.f, fArmenterosAlphaLow);
+  fHistCutBooking->Fill(9.f, fArmenterosAlphaUp);
+  fHistCutBooking->Fill(10.f, fRapidityMax);
+  fHistCutBooking->Fill(11.f, fMCHighMultThreshold);
+
+  fHistInvMass =
+      new TH1F("fHistInvMass", "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries",
+               150, 1.15, 1.3);
+  fHistograms->Add(fHistInvMass);
 
   fHistInvMassPt = new TH2F("fHistInvMassPt",
                             "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
                             "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
-                            100, 0, 10, 1000, 1., 1.5);
+                            100, 0, 10, 300, 1., 1.3);
   fHistograms->Add(fHistInvMassPt);
   fHistMixedInvMassPt = new TH2F("fHistMixedInvMassPt",
                                  "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
                                  "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
-                                 100, 0, 10, 1000, 1., 1.5);
+                                 100, 0, 10, 300, 1., 1.3);
   fHistograms->Add(fHistMixedInvMassPt);
+
+
+  std::vector<float> multBinsLow = {{0, 0.01, 0.05, 0.1, 5., 15., 30., 50.}};
+  std::vector<float> multBinsUp = {{0.01, 0.05, 0.1, 5., 15., 30., 50., 100.}};
+
+  for (int i = 0; i < static_cast<int>(multBinsUp.size()); i++) {
+    fHistPtMult[i] =
+        new TH2F(Form("fHistPtMult_%i", i),
+                 Form("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); "
+                      "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
+					  multBinsLow[i], multBinsUp[i]),
+                 100, 0, 10, 300, 1.15, 1.3);
+    fHistograms->Add(fHistPtMult[i]);
+
+    fHistMixedInvMassBinnedMultPt[i] =
+        new TH2F(Form("fHistMixedInvMassBinnedMultPt_%i", i),
+                 Form("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); "
+                      "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
+					  multBinsLow[i], multBinsUp[i]),
+                 100, 0, 10, 300, 1.15, 1.3);
+    fHistograms->Add(fHistMixedInvMassBinnedMultPt[i]);
+  }
 
   if (!fIsLightweight) {
     fHistNSigma =
-        new TH1F("fHistNSigma", ";# #Sigma candidates; Entries", 20, 0, 20);
-    fHistPt =
-        new TH1F("fHistPt", "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); Entries",
-                 200, 0, 20);
+        new TH1F("fHistNSigma", ";# #Sigma candidates; Entries", 10, 0, 10);
     fHistMassCutPt = new TH1F(
         "fHistMassCutPt", "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); Entries",
-        200, 0, 20);
-    fHistInvMass = new TH1F("fHistInvMass",
-                            "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries",
-                            500, 1.15, 1.3);
-    fHistInvMassBeforeArmenteros = new TH1F(
-        "fHistInvMassBeforeArmenteros",
-        "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries", 500, 1.15, 1.3);
-
-    fHistInvMassBeforeRapidity = new TH1F(
-        "fHistInvMassBeforeRapidity",
-        "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries", 500, 1.15, 1.3);
+        100, 0, 10);
 
     fHistInvMassRecPhoton = new TH2F("fHistInvMassRecPhoton",
                                      "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
                                      "M_{#Lambda#gamma_{rec}} (GeV/#it{c}^{2})",
-                                     100, 0, 10, 500, 1.15, 1.3);
+                                     50, 0, 10, 150, 1.15, 1.3);
     fHistInvMassRecLambda = new TH2F("fHistInvMassRecLambda",
                                      "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
                                      "M_{#Lambda_{rec}#gamma} (GeV/#it{c}^{2})",
-                                     100, 0, 10, 500, 1.15, 1.3);
+                                     50, 0, 10, 150, 1.15, 1.3);
     fHistInvMassRec = new TH2F("fHistInvMassRec",
                                "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
                                "M_{#Lambda_{rec}#gamma_{rec}} (GeV/#it{c}^{2})",
-                               100, 0, 10, 500, 1.15, 1.3);
-    fHistInvMassEta = new TH2F("fHistInvMassEta",
-                               "; #eta; M_{#Lambda#gamma} (GeV/#it{c}^{2})",
-                               250, -1, 1, 500, 1.15, 1.3);
+                               50, 0, 10, 150, 1.15, 1.3);
     fHistArmenterosBefore =
         new TH2F("fHistArmenterosBefore", " ; #alpha; #it{q}_{T} (GeV/#it{c})",
-                 250, -1, 1, 250, 0, 1);
+                 100, -1, 1, 100, 0, 0.5);
     fHistArmenterosAfter =
         new TH2F("fHistArmenterosAfter", " ; #alpha; #it{q}_{T} (GeV/#it{c})",
-                 250, -1, 1, 250, 0, 1);
-    fHistEtaPhi = new TH2F("fHistEtaPhi", "; #eta; #phi", 200, -1, 1, 200,
+                 100, -1, 1, 100, 0, 0.5);
+    fHistEtaPhi = new TH2F("fHistEtaPhi", "; #eta; #phi", 100, -1, 1, 100,
                            -TMath::Pi(), TMath::Pi());
-    fHistRapidity = new TH1F("fHistRapidity", "; y; Entries", 200, -1, 1);
-    fHistMixedPt = new TH1F("fHistMixedPt",
-                            "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); Entries",
-                            100, 0, 10);
-    fHistMixedInvMass = new TH1F(
-        "fHistMixedInvMass", "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries",
-        500, 1.15, 1.3);
-    fHistMixedInvMassEta = new TH2F(
-        "fHistMixedInvMassEta", "; #eta; M_{#Lambda#gamma} (GeV/#it{c}^{2})",
-        250, 0, 1, 500, 1.15, 1.3);
+    fHistPtRapidity =
+        new TH2F("fHistPtRapidity", "; #it{p}_{T} (GeV/#it{c}); y", 100, 0, 10,
+                 50, -5, 5);
 
     fHistograms->Add(fHistNSigma);
-    fHistograms->Add(fHistPt);
     fHistograms->Add(fHistMassCutPt);
-    fHistograms->Add(fHistInvMass);
-    fHistograms->Add(fHistInvMassBeforeArmenteros);
-    fHistograms->Add(fHistInvMassBeforeRapidity);
     fHistograms->Add(fHistInvMassRecPhoton);
     fHistograms->Add(fHistInvMassRecLambda);
     fHistograms->Add(fHistInvMassRec);
-    fHistograms->Add(fHistInvMassEta);
     fHistograms->Add(fHistEtaPhi);
-    fHistograms->Add(fHistRapidity);
+    fHistograms->Add(fHistPtRapidity);
     fHistograms->Add(fHistArmenterosBefore);
     fHistograms->Add(fHistArmenterosAfter);
-    fHistograms->Add(fHistMixedPt);
-    fHistograms->Add(fHistMixedInvMass);
-    fHistograms->Add(fHistMixedInvMassEta);
 
-    for (int i = 0; i < static_cast<int>(rapBins.size() - 1); ++i) {
-      fHistPtY[i] =
-          new TH2F(Form("fHistPtY_%.2f_%.2f", rapBins[i], rapBins[i + 1]),
-                   Form("%.2f < y < %.2f ; #it{p}_{T} (GeV/#it{c}); "
-                        "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
-                        rapBins[i], rapBins[i + 1]),
-                   100, 0, 10, 500, 1.15, 1.3);
-      fHistMixedPtY[i] =
-          new TH2F(Form("fHistMixedPtY_%.2f_%.2f", rapBins[i], rapBins[i + 1]),
-                   Form("%.2f < y < %.2f ; #it{p}_{T} (GeV/#it{c}); "
-                        "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
-                        rapBins[i], rapBins[i + 1]),
-                   100, 0, 10, 500, 1.15, 1.3);
-      fHistograms->Add(fHistPtY[i]);
-      fHistograms->Add(fHistMixedPtY[i]);
-    }
+    fHistLambdaPtPhi =
+        new TH2F("fHistLambdaPtPhi", "; #it{p}_{T} (GeV/#it{c}); #phi (rad)",
+                 50, 0, 10, 50, 0, 2.f * TMath::Pi());
+    fHistLambdaPtEta =
+        new TH2F("fHistLambdaPtEta", "; #it{p}_{T} (GeV/#it{c}); #eta", 50, 0,
+                 10, 50, -1, 1);
+    fHistLambdaMassPt =
+        new TH2F("fHistLambdaMassPt", "; #it{p}_{T} (GeV/#it{c}); M_{p#pi}", 50,
+                 0, 10, 50, 1., 1.3);
+    fHistPhotonPtPhi =
+        new TH2F("fHistPhotonPtPhi", "; #it{p}_{T} (GeV/#it{c}); #phi (rad)",
+                 50, 0, 10, 50, 0, 2.f * TMath::Pi());
+    fHistPhotonPtEta =
+        new TH2F("fHistPhotonPtEta", "; #it{p}_{T} (GeV/#it{c}); #eta", 50, 0,
+                 10, 50, -1, 1);
+    fHistPhotonMassPt =
+        new TH2F("fHistPhotonMassPt", "; #it{p}_{T} (GeV/#it{c}); M_{p#pi}", 50,
+                 0, 10, 50, 0., 0.1);
+
+    fHistograms->Add(fHistLambdaPtPhi);
+    fHistograms->Add(fHistLambdaPtEta);
+    fHistograms->Add(fHistLambdaMassPt);
+    fHistograms->Add(fHistPhotonPtPhi);
+    fHistograms->Add(fHistPhotonPtEta);
+    fHistograms->Add(fHistPhotonMassPt);
+
+    fHistSigmaLambdaPtCorr = new TH2F("fHistSigmaLambdaPtCorr",
+                                      "; #Sigma^{0} #it{p}_{T} (GeV/#it{c}; "
+                                      "#Lambda #it{p}_{T} (GeV/#it{c}",
+                                      100, 0, 10, 100, 0, 10);
+    fHistSigmaPhotonPtCorr = new TH2F("fHistSigmaPhotonPtCorr",
+                                      "; #Sigma^{0} #it{p}_{T} (GeV/#it{c}; "
+                                      "#gamma #it{p}_{T} (GeV/#it{c}",
+                                      100, 0, 10, 100, 0, 10);
+    fHistSigmaLambdaPCorr = new TH2F("fHistSigmaLambdaPCorr",
+                                     "; #Sigma^{0} #it{p} (GeV/#it{c}; "
+                                     "#Lambda #it{p} (GeV/#it{c}",
+                                     100, 0, 10, 100, 0, 10);
+    fHistSigmaPhotonPCorr = new TH2F("fHistSigmaPhotonPCorr",
+                                     "; #Sigma^{0} #it{p} (GeV/#it{c}; "
+                                     "#gamma #it{p} (GeV/#it{c}",
+                                     100, 0, 10, 100, 0, 10);
+
+    fHistograms->Add(fHistSigmaLambdaPtCorr);
+    fHistograms->Add(fHistSigmaPhotonPtCorr);
+    fHistograms->Add(fHistSigmaLambdaPCorr);
+    fHistograms->Add(fHistSigmaPhotonPCorr);
   }
 
   if (fIsMC) {
@@ -662,66 +902,116 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     }
 
     fHistMCTruthPt = new TH1F("fHistMCTruthPt",
-                              "; #it{p}_{T} (GeV/#it{c}); Entries", 500, 0, 10);
+                              "; #it{p}_{T} (GeV/#it{c}); Entries", 100, 0, 10);
+    fHistogramsMC->Add(fHistMCTruthPt);
+
+    for (int i = 0; i < static_cast<int>(multBinsUp.size()); i++) {
+      fHistMCTruthPtMult[i] =
+          new TH1F(Form("fHistMCTruthPtMult%i", i),
+                   Form("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); Entries",
+                        multBinsLow[i], multBinsUp[i]),
+                   100, 0, 10);
+      fHistogramsMC->Add(fHistMCTruthPtMult[i]);
+    }
+
     fHistMCTruthPtY =
-        new TH2F("fHistMCTruthPtY", "; y; #it{p}_{T} (GeV/#it{c})", 1000, -10,
-                 10, 500, 0, 10);
-    fHistMCTruthPtEta =
-        new TH2F("fHistMCTruthPtEta", "; #eta; #it{p}_{T} (GeV/#it{c})", 500,
-                 -10, 10, 500, 0, 10);
-    fHistMCTruthDaughterPt =
-        new TH1F("fHistMCTruthDaughterPt", "; #it{p}_{T} (GeV/#it{c}); Entries",
-                 500, 0, 10);
+        new TH2F("fHistMCTruthPtY", "; y; #it{p}_{T} (GeV/#it{c})", 100, -5, 5,
+                 100, 0, 10);
     fHistMCTruthDaughterPtY =
-        new TH2F("fHistMCTruthDaughterPtY", "; y; #it{p}_{T} (GeV/#it{c})",
-                 1000, -10, 10, 500, 0, 10);
-    fHistMCTruthDaughterPtEta =
-        new TH2F("fHistMCTruthDaughterPtEta", "; #eta; #it{p}_{T} (GeV/#it{c})",
-                 500, -10, 10, 500, 0, 10);
-    fHistMCTruthDaughterPtAccept =
-        new TH1F("fHistMCTruthDaughterPtAccept",
-                 "; #it{p}_{T} (GeV/#it{c}); Entries", 500, 0, 10);
+        new TH2F("fHistMCTruthDaughterPtY", "; y; #it{p}_{T} (GeV/#it{c})", 200,
+                 -10, 10, 100, 0, 10);
     fHistMCTruthDaughterPtYAccept =
         new TH2F("fHistMCTruthDaughterPtYAccept",
-                 "; y; #it{p}_{T} (GeV/#it{c})", 1000, -10, 10, 500, 0, 10);
-    fHistMCTruthDaughterPtEtaAccept =
-        new TH2F("fHistMCTruthDaughterPtEtaAccept",
-                 "; #eta; #it{p}_{T} (GeV/#it{c})", 500, -10, 10, 500, 0, 10);
+                 "; y; #it{p}_{T} (GeV/#it{c})", 200, -10, 10, 100, 0, 10);
+    fHistMCTruthPtYHighMult =
+        new TH2F("fHistMCTruthPtYHighMult", "; y; #it{p}_{T} (GeV/#it{c})", 200,
+                 -10, 10, 100, 0, 10);
+    fHistMCTruthDaughterPtYHighMult =
+        new TH2F("fHistMCTruthDaughterPtYHighMult",
+                 "; y; #it{p}_{T} (GeV/#it{c})", 200, -10, 10, 100, 0, 10);
+    fHistMCTruthDaughterPtYAcceptHighMult =
+        new TH2F("fHistMCTruthDaughterPtYAcceptHighMult",
+                 "; y; #it{p}_{T} (GeV/#it{c})", 200, -10, 10, 100, 0, 10);
+
     fHistMCV0Pt = new TH1F("fHistMCV0Pt",
                            "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); Entries",
-                           500, 0, 20);
+                           100, 0, 10);
     fHistMCV0Mass =
         new TH1F("fHistMCV0Mass",
-                 "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries", 2000, 1., 2.);
-
-    fHistogramsMC->Add(fHistMCTruthPt);
-    fHistogramsMC->Add(fHistMCTruthPtY);
-    fHistogramsMC->Add(fHistMCTruthPtEta);
-    fHistogramsMC->Add(fHistMCTruthDaughterPt);
-    fHistogramsMC->Add(fHistMCTruthDaughterPtY);
-    fHistogramsMC->Add(fHistMCTruthDaughterPtEta);
-    fHistogramsMC->Add(fHistMCTruthDaughterPtAccept);
-    fHistogramsMC->Add(fHistMCTruthDaughterPtYAccept);
-    fHistogramsMC->Add(fHistMCTruthDaughterPtEtaAccept);
+                 "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries", 500, 1., 1.5);
     fHistogramsMC->Add(fHistMCV0Pt);
     fHistogramsMC->Add(fHistMCV0Mass);
 
-    fHistograms->Add(fHistogramsMC);
-  }
+    if (!fIsLightweight) {
+      fHistMCTrueSigmaLambdaPtCorr =
+          new TH2F("fHistMCTrueSigmaLambdaPtCorr",
+                   "; #Sigma^{0} #it{p}_{T} (GeV/#it{c}; "
+                   "#Lambda #it{p}_{T} (GeV/#it{c}",
+                   250, 0, 10, 250, 0, 10);
+      fHistMCTrueSigmaPhotonPtCorr =
+          new TH2F("fHistMCTrueSigmaPhotonPtCorr",
+                   "; #Sigma^{0} #it{p}_{T} (GeV/#it{c}; "
+                   "#gamma #it{p}_{T} (GeV/#it{c}",
+                   250, 0, 10, 250, 0, 10);
+      fHistMCTrueSigmaLambdaPCorr = new TH2F("fHistMCTrueSigmaLambdaPCorr",
+                                             "; #Sigma^{0} #it{p} (GeV/#it{c}; "
+                                             "#Lambda #it{p} (GeV/#it{c}",
+                                             250, 0, 10, 250, 0, 10);
+      fHistMCTrueSigmaPhotonPCorr = new TH2F("fHistMCTrueSigmaPhotonPCorr",
+                                             "; #Sigma^{0} #it{p} (GeV/#it{c}; "
+                                             "#gamma #it{p} (GeV/#it{c}",
+                                             250, 0, 10, 250, 0, 10);
+      fHistMCBkgSigmaLambdaPtCorr =
+          new TH2F("fHistMCBkgSigmaLambdaPtCorr",
+                   "; #Sigma^{0} #it{p}_{T} (GeV/#it{c}; "
+                   "#Lambda #it{p}_{T} (GeV/#it{c}",
+                   250, 0, 10, 250, 0, 10);
+      fHistMCBkgSigmaPhotonPtCorr =
+          new TH2F("fHistMCBkgSigmaPhotonPtCorr",
+                   "; #Sigma^{0} #it{p}_{T} (GeV/#it{c}; "
+                   "#gamma #it{p}_{T} (GeV/#it{c}",
+                   250, 0, 10, 250, 0, 10);
+      fHistMCBkgSigmaLambdaPCorr = new TH2F("fHistMCBkgSigmaLambdaPCorr",
+                                            "; #Sigma^{0} #it{p} (GeV/#it{c}; "
+                                            "#Lambda #it{p} (GeV/#it{c}",
+                                            250, 0, 10, 250, 0, 10);
+      fHistMCBkgSigmaPhotonPCorr = new TH2F("fHistMCBkgSigmaPhotonPCorr",
+                                            "; #Sigma^{0} #it{p} (GeV/#it{c}; "
+                                            "#gamma #it{p} (GeV/#it{c}",
+                                            250, 0, 10, 250, 0, 10);
 
-  if (fIsTreeOutput) {
-    if (fOutputTree != nullptr) {
-      delete fOutputTree;
-      fOutputTree = nullptr;
+      fHistMCV0Mother =
+          new TH2F("fHistMCV0Mother",
+                   "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); PDG code mother", 250,
+                   1., 2., 4000, 0, 4000);
+      fHistMCV0Check =
+          new TH2F("fHistMCV0Check",
+                   "; PDG code #Lambda candidate; PDG code #gamma candidate",
+                   4000, 0, 4000, 4000, 0, 4000);
+      fHistMCV0MotherCheck =
+          new TH2F("fHistMCV0MotherCheck",
+                   "; PDG code #Lambda mother; PDG code #gamma mother", 4000, 0,
+                   4000, 4000, 0, 4000);
+
+      fHistogramsMC->Add(fHistMCTruthPtY);
+      fHistogramsMC->Add(fHistMCTruthDaughterPtY);
+      fHistogramsMC->Add(fHistMCTruthDaughterPtYAccept);
+      fHistogramsMC->Add(fHistMCTruthPtYHighMult);
+      fHistogramsMC->Add(fHistMCTruthDaughterPtYHighMult);
+      fHistogramsMC->Add(fHistMCTruthDaughterPtYAcceptHighMult);
+      fHistogramsMC->Add(fHistMCTrueSigmaLambdaPtCorr);
+      fHistogramsMC->Add(fHistMCTrueSigmaPhotonPtCorr);
+      fHistogramsMC->Add(fHistMCTrueSigmaLambdaPCorr);
+      fHistogramsMC->Add(fHistMCTrueSigmaPhotonPCorr);
+      fHistogramsMC->Add(fHistMCBkgSigmaLambdaPtCorr);
+      fHistogramsMC->Add(fHistMCBkgSigmaPhotonPtCorr);
+      fHistogramsMC->Add(fHistMCBkgSigmaLambdaPCorr);
+      fHistogramsMC->Add(fHistMCBkgSigmaPhotonPCorr);
+      fHistogramsMC->Add(fHistMCV0Mother);
+      fHistogramsMC->Add(fHistMCV0Check);
+      fHistogramsMC->Add(fHistMCV0MotherCheck);
     }
-    if (fOutputTree == nullptr) {
-      fOutputTree = new TTree();
-      name = "tree_" + appendix;
-      fOutputTree->SetName(appendix);
-    }
-    fOutputTree->Branch("InvMass", &fTreeVariables[0], "InvMass/f");
-    fOutputTree->Branch("pT", &fTreeVariables[1], "pT/f");
-    fOutputTree->Branch("Rapidity", &fTreeVariables[2], "Rapidity/f");
-    fOutputTree->Branch("Multiplicity", &fTreeVariables[3], "Multiplicity/f");
+
+    fHistograms->Add(fHistogramsMC);
   }
 }

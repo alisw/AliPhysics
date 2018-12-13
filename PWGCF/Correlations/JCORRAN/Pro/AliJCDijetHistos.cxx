@@ -109,17 +109,40 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
     // 4:  Number of events with proper rho calculations
     // 5:  Number of jets
     // 6:  Number of accepted jets
-    // 7:  Number of accepted bg subtracted jets
-    // 8:  Number of accepted const. cut jets
-    // 9:  Number of raw dijets
-    // 10: Number of raw dijets with delta phi cut
-    // 11: Number of bg subtracted dijets
-    // 12: Number of bg subtracted dijets with delta phi cut
-    // 13: Number of const cut dijets
-    // 14: Number of const cut dijets with delta phi cut
+    // 7:  Number of accepted jets after const. cut
+    // 8:  Number of accepted bg subtracted jets
+    // 9:  Number of accepted bg subtracted const. cut jets
+    // 10: Number of kt-jets
+    // 11: Number of accepted kt-jets
+    // 12: Number of jets that drop under leading pt cut after bg subtraction
+    // 13: Number of jets that drop under subleading pt cut after bg subtraction
+    // 14: Number of raw dijets
+    // 15: Number of raw dijets after leading pt cut
+    // 16: Number of accepted raw dijets
+    // 17: Number of accepted raw dijets with delta phi cut
+    // 14: Number of bg subtr. dijets
+    // 15: Number of bg subtr. dijets after leading pt cut
+    // 16: Number of accepted bg subtr. dijets
+    // 17: Number of accepted bg subtr. dijets with delta phi cut
+    // 18: Number of bg subtr. const. cut dijets
+    // 19: Number of bg subtr. const. cut dijets after leading pt cut
+    // 20: Number of accepted bg subtr. const. cut dijets
+    // 21: Number of accepted bg subtr. const. cut dijets with delta phi cut
+    // 22: Number of const. cut dijets
+    // 23: Number of const. cut dijets after leading pt cut
+    // 24: Number of accepted const. cut dijets
+    // 25: Number of accepted const. cut dijets with delta phi cut
+    // 26: Number of kt-dijets
+    // 27: Number of kt-dijets after leading pt cut
+    // 28: Number of accepted kt-dijets
+    // 29: Number of accepted kt-dijets with delta phi cut
 	fh_events
 		<< TH1D("h_events", "h_events", 40, 0.0, 40.0 )
 		<< fHistCentBin
+		<< "END" ;
+
+	fh_info
+		<< TH1D("h_info", "h_info", 40, 0.0, 40.0 )
 		<< "END" ;
 
 	fh_centrality

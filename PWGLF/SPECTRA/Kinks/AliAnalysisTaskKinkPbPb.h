@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskKinkPbPb_cxx 
-#define AliAnalysisTaskKinkPbPb_cxx
+#ifndef AliAnalysisTaskKinkPbPb_H 
+#define AliAnalysisTaskKinkPbPb_H
 
 
 class TH1F;
@@ -11,11 +11,12 @@ class AliESDtrackCuts;
 ///class TFile;
 #include "AliAnalysisTaskSE.h"
 #include "AliITSPIDResponse.h"
+#include "AliEventCuts.h"
 
 class AliAnalysisTaskKinkPbPb : public AliAnalysisTaskSE {
  public:
 	 AliAnalysisTaskKinkPbPb();
-  	AliAnalysisTaskKinkPbPb(const char *name, Float_t lRadiusKUp,  Float_t lRadiusKLow, Int_t lNCluster, Float_t lLowQtValue, Float_t yRange, Float_t lnsigma);
+  	AliAnalysisTaskKinkPbPb(const char *name, Float_t lRadiusKUp,  Float_t lRadiusKLow, Int_t lNCluster, Float_t lLowQtValue, Float_t yRange, Float_t lnsigma, Float_t maxChi, Float_t Zpos, Bool_t strongAntiPile, Bool_t sevenSigma, Bool_t sixSigma, Bool_t eightSigma);
   	virtual ~AliAnalysisTaskKinkPbPb() {}
   
   	virtual void   UserCreateOutputObjects();
@@ -29,6 +30,12 @@ class AliAnalysisTaskKinkPbPb : public AliAnalysisTaskSE {
         void SetNCluster(Int_t lNCluster){fLowCluster=lNCluster;}
         void SetLowQtValue(Float_t   lLowQtValue){fLowQt=lLowQtValue;}
         void SetnSigma(Float_t   lnsigma){fnsigma=lnsigma;}
+        void SetMaximumChiSquare(Float_t   maxChi){fmaxChi=maxChi;}
+        void SetDCAToVertexZpos(Float_t   Zpos){fZpos=Zpos;}
+	void SetStrongAntiPileup(Bool_t strongAntiPile){fstrongAntiPile=strongAntiPile;}
+        void SetDCAxySeven(Bool_t sevenSigma){fsevenSigma=sevenSigma;}
+        void SetDCAxySix(Bool_t sixSigma){fsixSigma = sixSigma;}
+        void SetDCAxyEight(Bool_t eightSigma){feightSigma = eightSigma;}
   
  private:
 	void   Process();
@@ -130,12 +137,18 @@ class AliAnalysisTaskKinkPbPb : public AliAnalysisTaskSE {
 	Float_t fLowQt;
 	Float_t fRapiK;
 	Float_t fnsigma;
-  
+	Float_t fmaxChi;
+	Float_t fZpos;
+  	Bool_t fstrongAntiPile;
+        Bool_t fsevenSigma;
+        Bool_t fsixSigma;
+        Bool_t feightSigma;
 
 
 	Float_t fVtxCut;	
 	AliPIDResponse *fPIDResponse;
 	AliESDtrackCuts * fESDtrackCuts;
+	AliEventCuts fEventCuts;
 
  	AliAnalysisTaskKinkPbPb(const AliAnalysisTaskKinkPbPb&); // not implemented
   	AliAnalysisTaskKinkPbPb& operator=(const AliAnalysisTaskKinkPbPb&); // not implemented

@@ -100,7 +100,7 @@ const Char_t* AliReducedVarManager::fgkOfflineTriggerNames[64] = {
     "Central/HighMultV0",                           "SemiCentral",                                              "DG/DG5",                                "ZED",         
     "SPI7/SPI",                                             "INT8",                                                          "MuonSingleLowPt8",                "MuonSingleHighPt8", 
     "MuonLikeLowPt8",                               "MuonUnlikeLowPt8",                                    "MuonUnlikeLowPt0/INT6",       "UserDefined",      
-    "TRD",                                                   "N/A",                                                            "FastOnly",                               "N/A",         
+    "TRD",                                                   "MuonCalo/CaloOnly",                                                            "FastOnly",                               "N/A",         
     "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A",              
     "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A",
     "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A",               
@@ -149,6 +149,12 @@ AliReducedVarManager::Variables AliReducedVarManager::fgVarDependencyY = kNothin
 TH2F* AliReducedVarManager::fgPairEffMap = 0x0;
 AliReducedVarManager::Variables AliReducedVarManager::fgEffMapVarDependencyX = kNothing;
 AliReducedVarManager::Variables AliReducedVarManager::fgEffMapVarDependencyY = kNothing;
+TH1F* AliReducedVarManager::fgAssocHadronEffMap1D = 0x0;
+TH2F* AliReducedVarManager::fgAssocHadronEffMap2D = 0x0;
+TH3F* AliReducedVarManager::fgAssocHadronEffMap3D = 0x0;
+AliReducedVarManager::Variables AliReducedVarManager::fgAssocHadronEffMapVarDependencyX = kNothing;
+AliReducedVarManager::Variables AliReducedVarManager::fgAssocHadronEffMapVarDependencyY = kNothing;
+AliReducedVarManager::Variables AliReducedVarManager::fgAssocHadronEffMapVarDependencyZ = kNothing;
 TH1F* AliReducedVarManager::fgRunTotalLuminosity = 0x0;
 TH1F* AliReducedVarManager::fgRunTotalIntensity0 = 0x0;
 TH1F* AliReducedVarManager::fgRunTotalIntensity1 = 0x0;
@@ -312,6 +318,11 @@ void AliReducedVarManager::SetVariableDependencies() {
   if(fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff] || fgUsedVars[kOneOverPairEffSq]){
     fgUsedVars[fgEffMapVarDependencyX] = kTRUE;
     fgUsedVars[fgEffMapVarDependencyY] = kTRUE;
+  }
+  if(fgUsedVars[kAssocHadronEff] || fgUsedVars[kOneOverAssocHadronEff]){
+    fgUsedVars[fgAssocHadronEffMapVarDependencyX] = kTRUE;
+    fgUsedVars[fgAssocHadronEffMapVarDependencyY] = kTRUE;
+    fgUsedVars[fgAssocHadronEffMapVarDependencyZ] = kTRUE;
   }
   if(fgUsedVars[kNTracksITSoutVsSPDtracklets] || fgUsedVars[kNTracksTPCoutVsSPDtracklets] ||
      fgUsedVars[kNTracksTOFoutVsSPDtracklets] || fgUsedVars[kNTracksTRDoutVsSPDtracklets])
@@ -962,6 +973,15 @@ void AliReducedVarManager::FillITSlayerFlag(TRACK* track, Int_t layer, Float_t* 
 }
 
 //_________________________________________________________________
+void AliReducedVarManager::FillITSsharedLayerFlag(TRACK* track, Int_t layer, Float_t* values) {
+   //
+   // fill the ITS layer having shared cluster
+   //
+   values[kITSlayerShared] = -1.0*(layer+1);
+   if(fgUsedVars[kITSlayerShared] && track->ITSLayerHit(layer) && track->ITSClusterIsShared(layer)) values[kITSlayerShared] = layer+1;
+}
+
+//_________________________________________________________________
 void AliReducedVarManager::FillL0TriggerInputs(EVENT* event, Int_t input, Float_t* values, Int_t input2 /*=999*/) {
   //
   // fill the L0 trigger inputs
@@ -1130,6 +1150,13 @@ void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values, TRACK* leg
       values[kRapMCAbs] = TMath::Abs(p->RapidityMC(fgkPairMass[AliReducedPairInfo::kJpsiToEE]));
   }
 
+  if(fgUsedVars[kPseudoProperDecayTimeMC]){
+     if(fgEvent->IsA()==EVENT::Class()){
+     EVENT* eventInfo = (EVENT*)fgEvent;
+     Double_t lxyMC = ( (p->MCFreezeout(0) - eventInfo->VertexMC(0)) * p->MCmom(0) + (p->MCFreezeout(1) - eventInfo->VertexMC(1)) * p->MCmom(1) ) / p->PtMC();
+     values[kPseudoProperDecayTimeMC] = lxyMC * (fgkPairMass[AliReducedPairInfo::kJpsiToEE])/p->PtMC();
+     }
+  }
    // compute MC truth variables from decay legs, e.g. from the 2 electrons of a J/psi decay
    // NOTE: this may be different from the kinematics of the mother, if not all decay legs are considered / tracked
    Bool_t requestMCfromLegs = kFALSE;
@@ -1191,6 +1218,73 @@ void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values, TRACK* leg
       GetThetaPhiCM(leg1, leg2, values[kPairThetaHE], values[kPairPhiHE], values[kPairThetaCS], values[kPairPhiCS]);
 }
 
+
+//_________________________________________________________________
+void AliReducedVarManager::FillMCTruthInfo(TRACK* leg1, TRACK* leg2, Float_t* values) {
+   //
+   // Compute MC truth variables from decay legs only, no mother assumption used
+   // NOTE: This function is done specifically for pairs of MC particles which do not have any mother in the stack, e.g. electrons from gamma-gamma processes produced with Starlight
+   //      All quantities are computed just from the leg kinematics
+   //
+   
+   values[kPxMCfromLegs] = leg1->MCmom(0) + leg2->MCmom(0);
+   values[kPyMCfromLegs] = leg1->MCmom(1) + leg2->MCmom(1);
+   values[kPzMCfromLegs] = leg1->MCmom(2) + leg2->MCmom(2);
+   values[kPtMCfromLegs] = TMath::Sqrt(values[kPxMCfromLegs]*values[kPxMCfromLegs]+values[kPyMCfromLegs]*values[kPyMCfromLegs]);
+   values[kPMCfromLegs] = TMath::Sqrt(values[kPtMCfromLegs]*values[kPtMCfromLegs]+values[kPzMCfromLegs]*values[kPzMCfromLegs]);
+   values[kThetaMCfromLegs] = (values[kPMCfromLegs]>=1.0e-6 ? TMath::ACos(values[kPzMCfromLegs]/values[kPMCfromLegs]) : 0.0);
+   values[kEtaMCfromLegs] = TMath::Tan(0.5*values[kThetaMCfromLegs]);
+   values[kEtaMCfromLegs] = (values[kEtaMCfromLegs]>1.0e-6 ? -1.0*TMath::Log(values[kEtaMCfromLegs]) : 0.0);
+   values[kPhiMCfromLegs] = TMath::ATan2(values[kPyMCfromLegs],values[kPxMCfromLegs]);
+   values[kPhiMCfromLegs] = (values[kPhiMCfromLegs]<0.0 ? (TMath::TwoPi()+values[kPhiMCfromLegs]) : values[kPhiMCfromLegs]);
+   values[kPairLegPtMC+0] = TMath::Sqrt(leg1->MCmom(0)*leg1->MCmom(0)+leg1->MCmom(1)*leg1->MCmom(1));
+   values[kPairLegPtMC+1] = TMath::Sqrt(leg2->MCmom(0)*leg2->MCmom(0)+leg2->MCmom(1)*leg2->MCmom(1));
+   values[kPairLegPtMCSum] = values[kPairLegPtMC]+values[kPairLegPtMC+1];
+   
+   // NOTE: for other particle species, check the PDG code of the particles
+   Float_t m1 = fgkParticleMass[kElectron];
+   Float_t m2 = fgkParticleMass[kElectron];
+   values[kMassMCfromLegs] = m1*m1+m2*m2 + 
+      2.0*(TMath::Sqrt(m1*m1+leg1->P()*leg1->P())*TMath::Sqrt(m2*m2+leg2->P()*leg2->P()) - 
+            leg1->Px()*leg2->Px() - leg1->Py()*leg2->Py() - leg1->Pz()*leg2->Pz());
+   if(values[kMassMCfromLegs]<0.0) {
+      cout << "FillMCTruthInfo(track1, track2, values): Warning: Very small squared mass found. "
+      << "   Could be negative due to resolution of Float_t so it will be set to a small positive value." << endl; 
+      cout << "   mass^2: " << values[kMassMCfromLegs] << endl;
+      cout << "p1(p,x,y,z): " << leg1->P() << ", " << leg1->Px() << ", " << leg1->Py() << ", " << leg1->Pz() << endl;
+      cout << "p2(p,x,y,z): " << leg2->P() << ", " << leg2->Px() << ", " << leg2->Py() << ", " << leg2->Pz() << endl;
+      values[kMassMCfromLegs] = 0.0;
+   }
+   else
+      values[kMassMCfromLegs] = TMath::Sqrt(values[kMassMCfromLegs]);
+   values[kMassMC] = values[kMassMCfromLegs];
+   
+   Float_t e = TMath::Sqrt(values[kPMCfromLegs]*values[kPMCfromLegs] + values[kMassMCfromLegs] * values[kMassMCfromLegs]);
+   Float_t factor = e - values[kPzMCfromLegs];
+   values[kRapMCfromLegs] = (TMath::Abs(factor)>1.0e-6 ? (e+values[kPzMCfromLegs])/factor : 0.0);
+   values[kRapMCfromLegs] = (values[kRapMCfromLegs]>1.0e-6 ? 0.5*TMath::Log(values[kRapMCfromLegs]) : 0.0);
+   
+   values[kPtMC] = values[kPtMCfromLegs];
+   values[kPMC] = values[kPMCfromLegs];
+   values[kPxMC] = values[kPxMCfromLegs];
+   values[kPyMC] = values[kPyMCfromLegs];
+   values[kPzMC] = values[kPzMCfromLegs];
+   values[kThetaMC] = values[kThetaMCfromLegs];
+   values[kEtaMC] = values[kEtaMCfromLegs];
+   values[kPhiMC] = values[kPhiMCfromLegs];
+   values[kMassMC] = values[kMassMCfromLegs];
+   values[kRapMC] = values[kRapMCfromLegs];
+   values[kRapMCAbs] = TMath::Abs(values[kRapMCfromLegs]); 
+      
+   // polarization variables
+   Bool_t usePolarization=kFALSE;
+   if(leg1 && leg2 && (fgUsedVars[kPairThetaCS] || fgUsedVars[kPairThetaHE] || fgUsedVars[kPairPhiCS] || fgUsedVars[kPairPhiHE]))
+      usePolarization = kTRUE;
+   if(usePolarization)
+      GetThetaPhiCM(leg1, leg2, values[kPairThetaHE], values[kPairPhiHE], values[kPairThetaCS], values[kPairPhiCS]);
+}
+
+
 //_________________________________________________________________
 void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   //
@@ -1214,7 +1308,8 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
      if(fgUsedVars[kCosNPhi+ih-1]) values[kCosNPhi+ih-1] = TMath::Cos(p->Phi()*ih);
      if(fgUsedVars[kSinNPhi+ih-1]) values[kSinNPhi+ih-1] = TMath::Sin(p->Phi()*ih);
   }
-
+  values[kCharge] = p->Charge();
+  
   //pair efficiency variables
   if((fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff] || fgUsedVars[kOneOverPairEffSq]) && fgPairEffMap) {
     Int_t binX = fgPairEffMap->GetXaxis()->FindBin(values[fgEffMapVarDependencyX]);
@@ -1317,7 +1412,6 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   values[kDcaZ]        = pinfo->DCAz();
   values[kDcaXYTPC]    = pinfo->DCAxyTPC();
   values[kDcaZTPC]     = pinfo->DCAzTPC();
-  values[kCharge]      = pinfo->Charge();
 
   if(fgUsedVars[kITSncls]) values[kITSncls] = pinfo->ITSncls();
   values[kITSsignal] = pinfo->ITSsignal();
@@ -1385,7 +1479,11 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
      Float_t centroid = fgTPCelectronCentroidMap->GetBinContent(binX, binY);
      Float_t width = fgTPCelectronWidthMap->GetBinContent(binX, binY);
      if(TMath::Abs(width)<1.0e-6) width = 1.;
-     values[kTPCnSigCorrected+kElectron] = (values[kTPCnSig+kElectron] - centroid)/width;   
+     values[kTPCnSigCorrected+kElectron] = (values[kTPCnSig+kElectron] - centroid)/width;
+     /*Float_t deltaNsig = values[kTPCnSigCorrected+kElectron] - values[kTPCnSig+kElectron];
+     values[kTPCnSig+kPion] += deltaNsig;
+     values[kTPCnSig+kProton] += deltaNsig;
+     values[kTPCnSig+kKaon] += deltaNsig;*/
   }
 
   values[kTRDpidProbabilitiesLQ1D]   = pinfo->TRDpidLQ1D(0);
@@ -1526,6 +1624,7 @@ void AliReducedVarManager::FillPairInfo(PAIR* p, Float_t* values) {
   
   values[kCandidateId]   = p->CandidateId();
   values[kPairType]      = p->PairType();
+  values[kPairTypeSPD]      = p->PairTypeSPD();
   values[kPairChisquare] = p->Chi2();
   if(fgUsedVars[kMass]) {
     values[kMass] = p->Mass();
@@ -1575,6 +1674,11 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
   else if(t1->Charge()>0)         p.PairType(0);
   else                            p.PairType(2);
   values[kPairType] = p.PairType();
+  values[kPairTypeSPD] = -1.;
+  if(t1->IsA()==TRACK::Class() && t2->IsA()==TRACK::Class() ){
+   TRACK* ti1=(TRACK*)t1; TRACK* ti2=(TRACK*)t2;
+   values[kPairTypeSPD] = ti1->ITSLayerHit(0)+ti2->ITSLayerHit(0);
+  }
   values[kCandidateId] = type;
   values[kPairChisquare] = -999.;
   
@@ -1855,7 +1959,13 @@ void AliReducedVarManager::FillPairInfoME(BASETRACK* t1, BASETRACK* t2, Int_t ty
   PAIR p;
   p.PxPyPz(t1->Px()+t2->Px(), t1->Py()+t2->Py(), t1->Pz()+t2->Pz());
   p.CandidateId(type);
-    
+ 
+  values[kPairTypeSPD] = -1.;
+   if(t1->IsA()==TRACK::Class() && t2->IsA()==TRACK::Class() ){
+   TRACK* ti1=(TRACK*)t1; TRACK* ti2=(TRACK*)t2;
+   values[kPairTypeSPD] = ti1->ITSLayerHit(0)+ti2->ITSLayerHit(0);
+   }
+   
   if(t1->Charge()*t2->Charge()<0) p.PairType(1);
   else if(t1->Charge()>0)         p.PairType(0);
   else                            p.PairType(2);
@@ -1972,6 +2082,8 @@ void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc
   if(fgUsedVars[kTriggerRap] && (trig->IsA()==PAIR::Class())) 	  values[kTriggerRap]     = ((PAIR*)trig)->Rapidity();
   if(fgUsedVars[kTriggerRapAbs] && (trig->IsA()==PAIR::Class()))  values[kTriggerRapAbs]  = TMath::Abs(((PAIR*)trig)->Rapidity());
   if(fgUsedVars[kAssociatedPt]) values[kAssociatedPt] = assoc->Pt();
+  if(fgUsedVars[kAssociatedEta]) values[kAssociatedEta] = assoc->Eta();
+  if(fgUsedVars[kAssociatedPhi]) values[kAssociatedPhi] = assoc->Phi();
 
   if(fgUsedVars[kDeltaPhi]) {
     Double_t delta = trig->Phi() - assoc->Phi();
@@ -1990,6 +2102,44 @@ void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc
   if(fgUsedVars[kDeltaEta])     values[kDeltaEta]     = trig->Eta() - assoc->Eta();
   if(fgUsedVars[kDeltaEtaAbs])  values[kDeltaEtaAbs]  = TMath::Abs(trig->Eta() - assoc->Eta());
   if(fgUsedVars[kMass] && (trig->IsA()==PAIR::Class())) values[kMass] = ((PAIR*)trig)->Mass();
+
+  // hadron efficiency variables
+  if (fgUsedVars[kAssocHadronEff] || fgUsedVars[kOneOverAssocHadronEff]) {
+    Float_t hadronEff         = 1.;
+    Float_t oneOverHadronEff  = 1.;
+    if (fgAssocHadronEffMap1D) {
+      // 1D map
+      Int_t binX = fgAssocHadronEffMap1D->GetXaxis()->FindBin(values[fgAssocHadronEffMapVarDependencyX]);
+      if(binX==0) binX = 1;
+      if(binX==fgAssocHadronEffMap1D->GetXaxis()->GetNbins()+1) binX -= 1;
+      hadronEff = fgAssocHadronEffMap1D->GetBinContent(binX);
+    } else if (fgAssocHadronEffMap2D) {
+      // 2D map
+      Int_t binX = fgAssocHadronEffMap2D->GetXaxis()->FindBin(values[fgAssocHadronEffMapVarDependencyX]);
+      if(binX==0) binX = 1;
+      if(binX==fgAssocHadronEffMap2D->GetXaxis()->GetNbins()+1) binX -= 1;
+      Int_t binY = fgAssocHadronEffMap2D->GetYaxis()->FindBin(values[fgAssocHadronEffMapVarDependencyY]);
+      if(binY==0) binY = 1;
+      if(binY==fgAssocHadronEffMap2D->GetYaxis()->GetNbins()+1) binY -= 1;
+      hadronEff = fgAssocHadronEffMap2D->GetBinContent(binX, binY);
+    } else if (fgAssocHadronEffMap3D) {
+      // 3D map
+      Int_t binX = fgAssocHadronEffMap3D->GetXaxis()->FindBin(values[fgAssocHadronEffMapVarDependencyX]);
+      if(binX==0) binX = 1;
+      if(binX==fgAssocHadronEffMap3D->GetXaxis()->GetNbins()+1) binX -= 1;
+      Int_t binY = fgAssocHadronEffMap3D->GetYaxis()->FindBin(values[fgAssocHadronEffMapVarDependencyY]);
+      if(binY==0) binY = 1;
+      if(binY==fgAssocHadronEffMap3D->GetYaxis()->GetNbins()+1) binY -= 1;
+      Int_t binZ = fgAssocHadronEffMap3D->GetZaxis()->FindBin(values[fgAssocHadronEffMapVarDependencyZ]);
+      if(binZ==0) binZ = 1;
+      if(binZ==fgAssocHadronEffMap3D->GetZaxis()->GetNbins()+1) binZ -= 1;
+      hadronEff = fgAssocHadronEffMap3D->GetBinContent(binX, binY, binZ);
+    }
+    if (!hadronEff) hadronEff       = 1.; // NOTE: should this be the default in case of eff=0?
+    if (hadronEff) oneOverHadronEff = 1./hadronEff;
+    values[kAssocHadronEff]         = hadronEff;
+    values[kOneOverAssocHadronEff]  = oneOverHadronEff;
+  }
 }
 
 
@@ -2576,6 +2726,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
   
   fgVariableNames[kCandidateId]       = "pair id.";              fgVariableUnits[kCandidateId]       = "";
   fgVariableNames[kPairType]          = "pair type";             fgVariableUnits[kPairType]          = "";
+  fgVariableNames[kPairTypeSPD]          = "pair type spd legs";             fgVariableUnits[kPairTypeSPD]          = "";
   fgVariableNames[kMassV0]            = "m_{K^{0}_{S}}";         fgVariableUnits[kMassV0]            = "GeV/c^{2}";
   fgVariableNames[kMassV0+1]          = "m_{#Lambda^{0}}";       fgVariableUnits[kMassV0+1]          = "GeV/c^{2}";
   fgVariableNames[kMassV0+2]          = "m_{#bar{#Lambda^{0}}}"; fgVariableUnits[kMassV0+2]          = "GeV/c^{2}";
@@ -2583,6 +2734,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kPairChisquare]     = "pair #chi^{2}";         fgVariableUnits[kPairChisquare]     = "";
   fgVariableNames[kPairLxy]           = "L_{xy}";                fgVariableUnits[kPairLxy]           = "cm.";
   fgVariableNames[kPseudoProperDecayTime]  = "t";                fgVariableUnits[kPseudoProperDecayTime]  = "cm./c";
+  fgVariableNames[kPseudoProperDecayTimeMC]  = "t_{MC}";              fgVariableUnits[kPseudoProperDecayTimeMC]  = "cm./c";
   fgVariableNames[kPairOpeningAngle]  = "pair opening angle";    fgVariableUnits[kPairOpeningAngle]  = "rad.";    
   fgVariableNames[kPairPointingAngle] = "#theta_{pointing}";     fgVariableUnits[kPairPointingAngle] = "rad.";
   fgVariableNames[kPairThetaCS]       = "cos(#theta^{*}_{CS})";  fgVariableUnits[kPairThetaCS]       = "";  
@@ -2593,6 +2745,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kPairEff]           = "pair eff.";             fgVariableUnits[kPairEff]           = "";
   fgVariableNames[kOneOverPairEff]    = "1/pair eff.";           fgVariableUnits[kOneOverPairEff]    = "";
   fgVariableNames[kOneOverPairEffSq]  = "1/pair eff. squared";   fgVariableUnits[kOneOverPairEffSq]  = "";
+  fgVariableNames[kAssocHadronEff]        = "assoc. hadron eff.";   fgVariableUnits[kAssocHadronEff]        = "";
+  fgVariableNames[kOneOverAssocHadronEff] = "1/assoc. hadron eff."; fgVariableUnits[kOneOverAssocHadronEff] = "";
   for(Int_t i=0;i<2;++i) {
      fgVariableNames[kPairLegTPCchi2+i] = Form("TPC #chi^{2}, leg %d", i+1);
      fgVariableUnits[kPairLegTPCchi2+i] = "";
@@ -2628,6 +2782,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kITSnclsShared]     = "No.of shared ITS clusters";              fgVariableUnits[kITSnclsShared] = "";
   fgVariableNames[kNclsSFracITS]      = "Fraction of shared ITS clusters/ITS clusters";fgVariableUnits[kNclsSFracITS] = "";
   fgVariableNames[kITSlayerHit]       = "ITS layer";                    fgVariableUnits[kITSlayerHit] = "";
+  fgVariableNames[kITSlayerShared]    = "ITS layer";                    fgVariableUnits[kITSlayerShared] = "";
   fgVariableNames[kITSsignal]         = "ITS dE/dx";                    fgVariableUnits[kITSsignal] = "";    
   fgVariableNames[kITSnSig]           = "ITS n_{#sigma}^{e}";           fgVariableUnits[kITSnSig] = "#sigma";
   fgVariableNames[kITSnSig+1]         = "ITS n_{#sigma}^{#pi}";         fgVariableUnits[kITSnSig+1] = "#sigma";
@@ -2700,6 +2855,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kTriggerRap]    = "#it{y} trigger particle";    fgVariableUnits[kTriggerRap]    = "";
   fgVariableNames[kTriggerRapAbs] = "|#it{y}| trigger particle";  fgVariableUnits[kTriggerRapAbs] = "";
   fgVariableNames[kAssociatedPt]  = "p_{T} associated particle";  fgVariableUnits[kAssociatedPt]  = "GeV/c";
+  fgVariableNames[kAssociatedEta] = "#eta associated particle";   fgVariableUnits[kAssociatedEta] = "";
+  fgVariableNames[kAssociatedPhi] = "#varphi associated particle";fgVariableUnits[kAssociatedPhi] = "rad.";
 }
 
 
@@ -2802,6 +2959,87 @@ void AliReducedVarManager::SetPairEfficiencyMap(TH2F* effMap, AliReducedVarManag
   if(effMap) {
     fgPairEffMap = (TH2F*)effMap->Clone(Form("AliReducedVarManager_PairEffMap"));
     fgPairEffMap->SetDirectory(0x0);
+  }
+}
+
+//____________________________________________________________________________________
+void AliReducedVarManager::SetAssociatedHadronEfficiencyMap(TH1F* map, AliReducedVarManager::Variables varX) {
+  //
+  // initialize the associated hadron efficiency map (1D), used for correlation analysis
+  //
+  if (fgAssocHadronEffMap1D || fgAssocHadronEffMap2D || fgAssocHadronEffMap3D) {
+    cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() Efficiency map already defined!" << endl;
+    return;
+  }
+  if(varX>kNVars || varX<=kNothing) {
+    cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() The X-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+    cout << "                           Efficiency map not used! Check it out!" << endl;
+    return;
+  }
+  fgAssocHadronEffMapVarDependencyX = varX;
+  if (map) {
+    fgAssocHadronEffMap1D = (TH1F*)map->Clone(Form("AliReducedVarManager_AssocHadronEffMap"));
+    fgAssocHadronEffMap1D->SetDirectory(0x0);
+  }
+}
+
+//____________________________________________________________________________________
+void AliReducedVarManager::SetAssociatedHadronEfficiencyMap(TH2F* map, AliReducedVarManager::Variables varX, AliReducedVarManager::Variables varY) {
+  //
+  // initialize the associated hadron efficiency map (2D), used for correlation analysis
+  //
+  if (fgAssocHadronEffMap1D || fgAssocHadronEffMap2D || fgAssocHadronEffMap3D) {
+    cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() Efficiency map already defined!" << endl;
+    return;
+  }
+  if(varX>kNVars || varX<=kNothing) {
+    cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() The X-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+    cout << "                           Efficiency map not used! Check it out!" << endl;
+    return;
+  }
+  if(varY>kNVars || varY<=kNothing) {
+    cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() The Y-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+    cout << "                           Efficiency map not used! Check it out!" << endl;
+    return;
+  }
+  fgAssocHadronEffMapVarDependencyX = varX;
+  fgAssocHadronEffMapVarDependencyY = varY;
+  if (map) {
+    fgAssocHadronEffMap2D = (TH2F*)map->Clone(Form("AliReducedVarManager_AssocHadronEffMap"));
+    fgAssocHadronEffMap2D->SetDirectory(0x0);
+  }
+}
+
+//____________________________________________________________________________________
+void AliReducedVarManager::SetAssociatedHadronEfficiencyMap(TH3F* map, AliReducedVarManager::Variables varX, AliReducedVarManager::Variables varY, AliReducedVarManager::Variables varZ) {
+  //
+  // initialize the associated hadron efficiency map (3D), used for correlation analysis
+  //
+  if (fgAssocHadronEffMap1D || fgAssocHadronEffMap2D || fgAssocHadronEffMap3D) {
+    cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() Efficiency map already defined!" << endl;
+    return;
+  }
+  if(varX>kNVars || varX<=kNothing) {
+    cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() The X-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+    cout << "                           Efficiency map not used! Check it out!" << endl;
+    return;
+  }
+  if(varY>kNVars || varY<=kNothing) {
+    cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() The Y-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+    cout << "                           Efficiency map not used! Check it out!" << endl;
+    return;
+  }
+  if(varZ>kNVars || varZ<=kNothing) {
+    cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() The Z-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+    cout << "                           Efficiency map not used! Check it out!" << endl;
+    return;
+  }
+  fgAssocHadronEffMapVarDependencyX = varX;
+  fgAssocHadronEffMapVarDependencyY = varY;
+  fgAssocHadronEffMapVarDependencyZ = varZ;
+  if (map) {
+    fgAssocHadronEffMap3D = (TH3F*)map->Clone(Form("AliReducedVarManager_AssocHadronEffMap"));
+    fgAssocHadronEffMap3D->SetDirectory(0x0);
   }
 }
 

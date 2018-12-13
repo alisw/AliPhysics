@@ -440,16 +440,11 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
                          : std::distance(codes.begin(), type_location);
     fMC_type->Fill(type_bin);
 
+    #ifndef MC_PARENT_IS_THSPARSE
     auto parent_location = std::find(parent_codes.begin(), parent_codes.end(), pdg_code_parent);
     const Int_t parent_type_bin = parent_location == parent_codes.end()
                                 ? 0
                                 : std::distance(parent_codes.begin(), parent_location);
-    // if (parent_location == parent_codes.end() && mc->GetPDGPid() == 211) {
-    // std::cout << " " << mc->GetPDGPid()
-    //           << " <- " << mc->GetMotherPdgCode()
-    //           << "\n";
-    // }
-    #ifndef MC_PARENT_IS_THSPARSE
     fMC_parent->Fill(type_bin, parent_type_bin);
     #else
     Double_t value[] = {static_cast<double>(pdg_code), static_cast<double>(pdg_code_parent)};

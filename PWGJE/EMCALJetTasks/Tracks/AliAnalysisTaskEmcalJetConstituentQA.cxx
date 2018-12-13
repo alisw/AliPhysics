@@ -108,12 +108,12 @@ void AliAnalysisTaskEmcalJetConstituentQA::UserCreateOutputObjects(){
     if(!contname) continue;
     fHistos->CreateTHnSparse(Form("hJetCounter%s", contname->String().Data()), Form("jet counter for jets %s", contname->String().Data()), 4, jetbinning);
     fHistos->CreateTHnSparse(Form("hPtEtaPhiELeadingJet%s", contname->String().Data()), Form("Momemtum vector of leading jets %s", contname->String().Data()), 4, leadingjetvecbinning);
-    if(fJetType == AliJetContainer::kFullJet || fJetType == AliJetContainer::kNeutralJet){
+    if(fJetType == AliJetContainer::kFullJet || fJetType == AliJetContainer::kChargedJet){
       fHistos->CreateTHnSparse(Form("hChargedConstituents%s", contname->String().Data()), Form("charged constituents in jets %s", contname->String().Data()), 7, chargedbinning);
       fHistos->CreateTHnSparse(Form("hLeadingTrack%s", contname->String().Data()), Form("leading charged constituent in jets %s", contname->String().Data()), 5, leadingchargedbinning);
       fHistos->CreateTHnSparse(Form("hLeadingJetLeadingTrack%s", contname->String().Data()), Form("leading charged constituent in jets %s", contname->String().Data()), 5, leadingchargedbinning);
     }
-    if(fJetType == AliJetContainer::kFullJet || AliJetContainer::kNeutralJet){
+    if(fJetType == AliJetContainer::kFullJet || fJetType == AliJetContainer::kNeutralJet){
       fHistos->CreateTHnSparse(Form("hNeutralConstituents%s", contname->String().Data()), Form("neutral constituents in jets %s", contname->String().Data()), 9, neutralbinning);
       fHistos->CreateTHnSparse(Form("hHighZClusters%s", contname->String().Data()), "Properties of high-z clusters", 7, binningHighZClusters);
       fHistos->CreateTHnSparse(Form("hLeadingCluster%s", contname->String().Data()), Form("leading neutral constituent in jets %s", contname->String().Data()), 6, leadingneutralbinning);

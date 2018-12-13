@@ -17,6 +17,8 @@ Furthermore, the "export" command should be used in addition to adding the path 
 export ALICE_DATA=/path/to/my/local/oadb
 ~~~
 
+The code for the creation of the OADB files as well as for bookkeeping of input files can be found in the following repository: https://gitlab.cern.ch/alice-EMC/EMCCalib
+
 In addition, a short history of changes to the files in EOS will be listed here:
 
 - 20180213: Moved all files to EOS.
@@ -46,5 +48,19 @@ In addition, a short history of changes to the files in EOS will be listed here:
 - 20180713: Update of EMCALTimeCalib.root with fixed run range for period LHC16i
 - 20180713: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with LHC18d time calibrations
 - 20180718: Update of EMCALBadChannels.root with new maps for LHC18b and LHC18c including special maps for some runs
+- 20180730: Update of EMCALBadChannels.root with new maps for LHC16f (nominal and lowB) as well as LHC16g
+- 20180713: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with updated LHC16h time calibrations
+- 20180821: Update of EMCALBadChannels.root with additional cells for LHC17l,m,o
+- 20180828: Update of EMCALTemperatureCalibSM.root and EMCALTemperatureCalibParam.root containing new temperature calibration parameters for Run1+Run2 (only run2 active in OADB)
+- 20180910: Update of EMCalBadChannels.root with additional cells for LHC16f, LHC16i, LHC17g and LHC18b
+- 20180911: Recreated and updated EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with updated LHC16kl and new LHC17r time calibrations
+- 20180924: Update of EMCALBadChannels.root with additional cells for LHC16k and LHC16o
+- 20181011: Update of EMCALBadChannels.root with additional cells for LHC17h and LHC17i
+- 20181106: Update of EMCALRecalib.root with the change: "from run 295275 no calibration is applied to SMs 17/18 since the online voltages were updated"
+- 20181013: Update of EMCALBadChannels.root with new maps for LHC18g, LHC18h, LHC18i
+- 20181122: Update of EMCALBadChannels.root with new maps for LHC18m
+- 20181129: Update of EMCALBadChannels.root with additional cells for LHC17f
+- 20181206: Update of EMCALBadChannels.root with new maps for LHC18n and LHC18o
+- 20181207: Update of EMCALBadChannels.root with VERY PRELIMINARY maps for LHC18p,q,r
 
 */

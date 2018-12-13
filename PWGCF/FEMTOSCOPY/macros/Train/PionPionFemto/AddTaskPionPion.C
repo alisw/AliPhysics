@@ -9,6 +9,9 @@
 #include <TList.h>
 #include <TObjArray.h>
 
+#include "AliAnalysisTaskFemto.h"
+#include "AliAnalysisManager.h"
+
 #endif
 
 ///
@@ -97,7 +100,7 @@ AliAnalysisTaskFemto* AddTaskPionPion(TString configuration,
   macro.ReplaceAll("%%", AUTO_DIRECTORY);
 
   // Dealing with subwagons
-  if (subwagon_suffix) {
+  if (!subwagon_suffix.IsWhitespace()) {
     subwagon_type.ToLower();
 
     if (subwagon_type == "centrality") {

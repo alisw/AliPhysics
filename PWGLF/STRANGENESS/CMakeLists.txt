@@ -54,7 +54,6 @@ set(SRCS
   LambdaK0/AliAnalysisTaskExtractPerformanceV0pPb.cxx
   LambdaK0PbPb/AliAnalysisTaskLK0Spectra.cxx
   Lifetimes/AliAnalysisTaskStrangenessLifetimes.cxx
-  Lifetimes/MiniV0.cxx
   Cascades/AliAnalysisTaskExtractCascade.cxx
   Cascades/AliAnalysisTaskExtractCascadePbPbRun2.cxx
   Cascades/AliAnalysisTaskExtractPerformanceCascade.cxx
@@ -91,6 +90,7 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set(HDRS 
   ${HDRS}
   Lifetimes/MCparticle.h
+  Lifetimes/MiniV0.h
   Lifetimes/Utils.h
 )
 

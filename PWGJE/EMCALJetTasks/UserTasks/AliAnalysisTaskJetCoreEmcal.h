@@ -38,10 +38,9 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	virtual void     SetTTUpSig(Float_t ttups){fTTUpSig=ttups;}
 	virtual void		 SetNRPBins(Float_t nrpb){fNRPBins=nrpb;}
 	virtual void		 SetSignalFraction(Float_t sfrac){fFrac=sfrac;}
-	virtual void     SetJetEtaMin(Float_t eta){fJetEtaMin=eta;}
-	virtual void     SetJetEtaMax(Float_t eta){fJetEtaMax=eta;}
 	virtual void     SetJetHadronDeltaPhi(Float_t delta){fJetHadronDeltaPhi=delta;}
 	virtual void     SetMinFractionSharedPt(Float_t min){fMinFractionSharedPt=min;}
+	virtual void     SetMinEmbJetPt(Float_t min){fMinEmbJetPt=min;}
 	virtual void		 SetJetContName(TString cont){fJetContName=cont;}
 	virtual void		 SetJetContTrueName(TString cont){fJetContTrueName=cont;}
 	virtual void		 SetJetContPartName(TString cont){fJetContPartName=cont;}
@@ -106,10 +105,9 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	Float_t fTTUpSig; ///< maximum signal trigger track pt
 	Int_t fNRPBins;	 ///< 
 	Float_t fFrac; ///< fraction of events that are used to fill signal recoil jet population
-	Float_t fJetEtaMin; ///<  minimum jet eta
-	Float_t fJetEtaMax; ///< maximum jet eta
 	Float_t fJetHadronDeltaPhi; ///< max angle from pi (set <0 for no selection)
 	Float_t fMinFractionSharedPt; ///< min fraction of pt between hybrid / detector jets
+	Float_t fMinEmbJetPt; ///< min corrected jet pt to use in embedding
 	TString fJetContName; ///< Base level jet container name
 	TString fJetContTrueName; ///< True pp (detector) level jet container name
 	TString fJetContPartName; ///< Particle(MC) level jet container name
@@ -132,10 +130,6 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	TH1D *fh1TrigRef; //!<!
 	TH1D *fh1TrigSig; //!<!
 	TH2F *fh2Ntriggers; //!<!
-	TH2F *fh2RPJetsC10; //!<!
-	TH2F *fh2RPJetsC20; //!<!
-	TH2F *fh2RPTC10; //!<!
-	TH2F *fh2RPTC20; //!<!
 	TH2F *fhDphiPtSig; //!<!
 	TH2F *fhDphiPtRef; //!<!
 	// embedding histograms
@@ -175,7 +169,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetCoreEmcal &operator=(const AliAnalysisTaskJetCoreEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetCoreEmcal, 6);
+  ClassDef(AliAnalysisTaskJetCoreEmcal, 8);
   /// \endcond
 };
 #endif

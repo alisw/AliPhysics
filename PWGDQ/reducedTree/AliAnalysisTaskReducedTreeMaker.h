@@ -147,9 +147,12 @@ public:
   Bool_t    fSetTrackFilterUsed;          // specifier if SetTrackFilter method was used
   std::vector<Bool_t>   fWriteBaseTrack;  // specifier if tracks for certain track filter are reduced or base tracks
 
-  TH2I*  fEventsHistogram;      // event statistics histogram
-  TH2I*  fTracksHistogram;      // track statistics histogram
-  TH2I*  fMCSignalsHistogram;    // MC tracks statistics histogram
+	TList* fEventsList;      						// List of event statistics histogram
+  TH2I*  fEventsHistogram;      			// event statistics histogram
+  TH2I*  fTRDEventsHistogram;      		// TRD event statistics histogram
+  TList* fCentEventsList; 						// Cent event statistics List of histograms for different estimators
+  TH2I*  fTracksHistogram;      			// track statistics histogram
+  TH2I*  fMCSignalsHistogram;    			// MC tracks statistics histogram
 
   Bool_t fFillTrackInfo;            // fill track information
   Bool_t fFillV0Info;               // fill the V0 information
@@ -222,6 +225,6 @@ public:
   AliAnalysisTaskReducedTreeMaker(const AliAnalysisTaskReducedTreeMaker &c);
   AliAnalysisTaskReducedTreeMaker& operator= (const AliAnalysisTaskReducedTreeMaker &c);
 
-  ClassDef(AliAnalysisTaskReducedTreeMaker, 11); //Analysis Task for creating a reduced event information tree
+  ClassDef(AliAnalysisTaskReducedTreeMaker, 12); //Analysis Task for creating a reduced event information tree
 };
 #endif

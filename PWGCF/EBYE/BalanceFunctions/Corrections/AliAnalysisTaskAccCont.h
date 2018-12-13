@@ -8,6 +8,7 @@ class TH3F;
 class TObjArray;
 class AliAODEvent;
 class AliAODTrack;
+class AliVEvent;
 
 class AliAnalysisUtils;
 
@@ -39,10 +40,12 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
 
   }
 
-  void SetMCRec() {
-    fMCrec = kTRUE;
-    fExcludeSecondariesInMCrec = kTRUE;
-  }
+  void SetMCRec() {fMCrec = kTRUE;}
+
+  void SetExcludeSecondariesInMC() {fExcludeSecondariesInMCrec = kTRUE;}
+ 
+  void SetExcludeElectronsInMC()  {fExcludeElectronsInMCrec = kTRUE;}  
+
 
   void UsePileUpCutsPbPb() {fPbPb = kTRUE;}
 
@@ -67,7 +70,18 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
   void SetPIDBayesThreshold(Float_t bayesThresh) {fBayesPIDThr = bayesThresh;}
   void SetPIDMomCut(Float_t pidMomCut)  {fPIDMomCut = pidMomCut;} // momentum threshold to move from TPC only and TPC+TOF for both methods: Bayes and nSigma Combined. usually 0.7 for pi and p and o.4 for K.
   void SetUseRapidity() {fUseRapidity = kTRUE;}
+  void SetUseNSigmaPIDNewTrial() {
+      fUsePIDNewTrial = kTRUE; fUsePIDnSigma = kTRUE;
+  }
+  
+  void SetRejectInjectedSignals() {fExcludeInjectedSignals = kTRUE;}
 
+  void SetRejectInjectedSignalsGenName(TString genToBeKept) {
+    fGenToBeKept = genToBeKept; 
+    fRejectCheckGenName=kTRUE;
+    fExcludeInjectedSignals = kTRUE;
+  }
+  
   void SetNSigmaPID(Int_t nsigma) {
     fPIDNSigma = nsigma;
   }
@@ -83,7 +97,7 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
 
   // enum kParticleOfInterest { kMuon, kElectron, kPion, kKaon, kProton };
   enum kCentralityBinning { kFull, kBins, kMCgen };
-  enum kSystem { kPbPb, kpPb};
+  enum kSystem { kPbPb, kpPb };
 
   void setParticleType(AliPID::EParticleType ptype){
   fParticleOfInterest = ptype;
@@ -111,7 +125,7 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
   }
 
  private:
-  AliAODEvent* gAOD;
+  AliVEvent* gAOD;
   TList *fListQA; //fList object (QA)
   TList *fListResults; //fList object (Results)
 
@@ -141,6 +155,7 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
   TH1F *fHistChi2PerClusterTPC;
   TH1F *fHistDCAToVertexZ;
   TH1F *fHistDCAToVertexXY;
+  TH1F *fHistPdg;
      
   TH3F *fHistEtaPhiCent;
   TH3F *fHistPtEtaCent;
@@ -154,6 +169,23 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
   TH3F *fHistDCAXYptchargedplus;
   TH3F *fHistDCAXYptchargedminus_ext;
   TH3F *fHistDCAXYptchargedplus_ext;
+    
+  TH2D *fHistdEdxVsPTPCbeforePID;
+  TH2D *fHistBetavsPTOFbeforePID;
+  TH2D *fHistProbTPCvsPtbeforePID;
+  TH2D *fHistProbTPCTOFvsPtbeforePID;
+  TH2D *fHistNSigmaTPCvsPtbeforePID;
+  TH2D *fHistNSigmaTOFvsPtbeforePID;
+  TH2D *fHistBetaVsdEdXbeforePID;
+  TH2D *fHistNSigmaTPCTOFvsPtbeforePID;
+  TH3D *fHistNSigmaTPCTOFPbefPID;
+  TH2D *fHistBetavsPTOFafterPID;
+  TH2D *fHistdEdxVsPTPCafterPID;
+  TH2D *fHistBetaVsdEdXafterPID;
+  TH2D *fHistNSigmaTOFvsPtafterPID;
+  TH2D *fHistNSigmaTPCvsPtafterPID;
+  TH2D *fHistNSigmaTPCTOFvsPtafterPID;
+  TH3D *fHistNSigmaTPCTOFPafterPID;
 
   TH2F *fHistGlobalvsESDBeforePileUpCuts;
   TH2F *fHistGlobalvsESDAfterPileUpCuts;
@@ -170,6 +202,11 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
   Bool_t fCheckPileUp;
   Bool_t fMCrec;
   Bool_t fExcludeSecondariesInMCrec;
+  Bool_t fExcludeElectronsInMCrec;
+  Bool_t fExcludeInjectedSignals; //Flag to reject MC injected signals from MC analysis
+  Bool_t fRejectCheckGenName; // Flag to activate the injected signal rejection based on the name of the MC generator 
+  TString fGenToBeKept; //String to select the generator name that has to be kept for analysis
+  
 
   TClonesArray* fArrayMC;
 
@@ -183,6 +220,8 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
   Bool_t fDCAext;
   Bool_t fUseRapidity;
   Bool_t fUsePIDnSigmaComb;
+  Bool_t fUsePIDNewTrial;
+  Bool_t fUsePIDnSigma;
  
   Double_t fVxMax;//vxmax
   Double_t fVyMax;//vymax
@@ -210,7 +249,7 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
   AliAnalysisTaskAccCont(const AliAnalysisTaskAccCont&); // not implemented
   AliAnalysisTaskAccCont& operator=(const AliAnalysisTaskAccCont&); // not implemented
   
-  ClassDef(AliAnalysisTaskAccCont, 3); // example of analysis
+  ClassDef(AliAnalysisTaskAccCont, 4); // example of analysis
 };
 
 #endif

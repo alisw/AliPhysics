@@ -97,12 +97,12 @@
 
 #include "AliTRDinfoGen.h"
 #include "AliTRDpwgppHelper.h"
-#include "info/AliTRDtrackInfo.h"
-#include "info/AliTRDeventInfo.h"
-#include "info/AliTRDv0Info.h"
-#include "info/AliTRDchmbInfo.h"
-#include "info/AliTRDtriggerInfo.h"
-#include "info/AliTRDeventCuts.h"
+#include "AliTRDtrackInfo.h"
+#include "AliTRDeventInfo.h"
+#include "AliTRDv0Info.h"
+#include "AliTRDchmbInfo.h"
+#include "AliTRDtriggerInfo.h"
+#include "AliTRDeventCuts.h"
 
 ClassImp(AliTRDinfoGen)
 

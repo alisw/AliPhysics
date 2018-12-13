@@ -14,11 +14,9 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-  AliFemtoBaryoniaAnalysis.cxx
-  AliFemtoMultCorrAnalysis.cxx
-  AliFemtoTrio.cxx
-  AliFemtoTrioCut.cxx
-  AliFemtoTrioMinvFctn.cxx
+  AliAnalysisTaskFemto.cxx
+  AliAnalysisTaskFemtoMJ.cxx
+  AliAnalysisTaskFemtoNu.cxx
   AliFemtoSimpleAnalysis.cxx
   AliFemtoEventAnalysis.cxx
   AliFemtoSpatialSeparationFunction.cxx
@@ -70,6 +68,7 @@ set(SRCS
   AliFemtoCutMonitorParticleYPt.cxx
   AliFemtoCutMonitorParticleVertPos.cxx
   AliFemtoCutMonitorParticlePID.cxx
+  AliFemtoCutMonitorParticlePIDBeta.cxx
   AliFemtoCutMonitorEventMult.cxx
   AliFemtoCutMonitorEventVertex.cxx
   AliFemtoKTPairCut.cxx
@@ -81,8 +80,6 @@ set(SRCS
   AliFemtoAODTrackCut.cxx
   AliFemtoCutMonitor.cxx
   AliFemtoCorrFctn.cxx
-  AliAnalysisTaskFemto.cxx
-  AliAnalysisTaskFemtoMJ.cxx
   AliTwoTrackRes.cxx
   AliFemtoMCTrackCut.cxx
   AliFemtoEventReaderKinematicsChain.cxx
@@ -96,6 +93,7 @@ set(SRCS
   AliFemtoXiSharedDaughterCut.cxx
   AliFemtoSphericityEventCut.cxx
   AliFemtoSpherocityEventCut.cxx
+  AliFemtoResultStorage.cxx
   AliFemtoCorrFctnDPhiStarDEta.cxx
   AliFemtoCorrFctnDPhiStarDEtaStar.cxx
   AliFemtoCorrFctnDPhiStarKStarMergedFraction.cxx
@@ -109,6 +107,13 @@ set(SRCS
   AliFemtoCutMonitorPairBetaT.cxx
   AliFemtoCutMonitorXi.cxx
   AliFemtoEventReaderAODKinematicsChain.cxx
+  AliFemtoMultCorrAnalysis.cxx
+  AliFemtoTrioAnalysis.cxx
+  AliFemtoTrio.cxx
+  AliFemtoTrioCut.cxx
+  AliFemtoTrioFctn.cxx
+  AliFemtoTrioMinvFctn.cxx
+  AliFemtoTrioDEtaDPhiFctn.cxx
   )
 
 # Headers from sources
@@ -163,6 +168,13 @@ set(HDRS ${HDRS}
   AliFemtoBetaTPairCut.h
   AliFemtoCutMonitorPairBetaT.h
   AliFemtoAvgSepCalculator.h
+  AliFemtoTrioAnalysis.h
+  AliFemtoTrioCut.h
+  AliFemtoTrio.h
+  AliFemtoTrioFctn.h
+  AliFemtoTrioMinvFctn.h
+  AliFemtoTrioDEtaDPhiFctn.h
+  AliFemtoTrioFctnCollection.h
   )
 
 set ( FSRCS

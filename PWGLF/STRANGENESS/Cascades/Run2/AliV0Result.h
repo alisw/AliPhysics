@@ -100,11 +100,6 @@ public:
     
     void SetCutAtLeastOneTOF (Bool_t lCut) { fCutAtLeastOneTOF = lCut; }
     
-    //Feeddown matrix initializer
-    void InitializeFeeddownMatrix(Long_t lNLambdaPtBins, Double_t *lLambdaPtBins,
-                                  Long_t lNXiPtPins, Double_t *lXiPtPins,
-                                  Long_t lNCentBins, Double_t *lCentBins );
-    
     AliV0Result::EMassHypo GetMassHypothesis () const { return fMassHypo; }
     Double_t GetMass() const;
     TString GetParticleName() const;
@@ -163,18 +158,58 @@ public:
     //Proton Profile
     TProfile *GetProtonProfile       ()       { return fProtonProfile; }
     TProfile *GetProtonProfileToCopy () const { return fProtonProfile; }
-    void InitializeProtonProfile(Long_t lNPtBins, Double_t *lPtBins); //Initialize profile, otherwise not stored
-
+    
+    void InitializeHisto();         //Initialize main histogram as per request
+    void InitializeProtonProfile(); //Initialize profile, otherwise not stored
+    void InitializeProtonProfile(Long_t lNPtBins, Double_t *lPtBins); //kept for compatibility
+    //Feeddown matrix setup/initialize stuff
+    void SetupFeeddownMatrix(Long_t lNXiPtPins, Double_t *lXiPtPins);
+    void InitializeFeeddownMatrix(); //Initialize FD matrix histogram
+    
+    //Kept for compatibility (not to be used depending on implementation 
+    void InitializeFeeddownMatrix(Long_t lNLambdaPtBins, Double_t *lLambdaPtBins,
+                                  Long_t lNXiPtPins, Double_t *lXiPtPins,
+                                  Long_t lNCentBins, Double_t *lCentBins);
+    
     TH3F* GetHistogramFeeddown       ()       { return fHistoFeeddown; }
     TH3F* GetHistogramFeeddownToCopy () const { return fHistoFeeddown; }
     
     Bool_t HasSameCuts( AliVWeakResult *lCompare, Bool_t lCheckdEdx = kTRUE );
     void Print();
     
+    Long_t      GetNPtBins()   const { return fhNPtBounds-1;   }
+    Double_t*   GetPtBins()    const { return fhPtBins;        }
+    Long_t      GetNPtBinsFeeddown()   const { return fhNPtBoundsFeeddown-1;   }
+    Double_t*   GetPtBinsFeeddown()    const { return fhPtBinsFeeddown;        }
+    Long_t      GetNCentBins() const { return fhNCentBounds-1; }
+    Double_t*   GetCentBins()  const { return fhCentBins;      }
+    Long_t      GetNMassBins() const { return fhNMassBins;     }
+    Double_t    GetMinMass()   const { return fhMinMass;       }
+    Double_t    GetMaxMass()   const { return fhMaxMass;       }
+    
 private:
     //V0 Selection Criteria
     AliV0Result::EMassHypo fMassHypo; //For determining invariant mass
 
+    //------------------------------------------------------------------------
+    //Histogram-controlling stuff
+    //beware: comments here ARE IMPORTANT!!!
+    //They are interpreted as arrays for streaming!
+    Int_t fhNCentBounds;
+    Double_t *fhCentBins; //[fhNCentBounds]
+    Int_t fhNPtBounds;
+    Double_t *fhPtBins; //[fhNPtBounds]
+    Int_t fhNPtBoundsFeeddown;
+    Double_t *fhPtBinsFeeddown; //[fhNPtBoundsFeeddown]
+    Long_t fhNMassBins;
+    Double_t fhMinMass;
+    Double_t fhMaxMass;
+    //------------------------------------------------------------------------
+    TProfile *fProtonProfile; //Histogram for bookkeeping proton momenta (optional)
+    TH3F *fHisto; //Histogram for storing output with these configurations
+    TH3F *fHistoFeeddown; //Feeddown matrix (optional)
+    //------------------------------------------------------------------------
+    
     //Basic acceptance criteria
     Double_t fCutMinRapidity; //min rapidity
     Double_t fCutMaxRapidity; //max rapidity
@@ -222,14 +257,9 @@ private:
     Bool_t fCut276TeVLikedEdx;
     
     //At least one track has TOF signal
-    Bool_t fCutAtLeastOneTOF; 
+    Bool_t fCutAtLeastOneTOF;
     
-    TH3F *fHisto; //Histogram for storing output with these configurations
-    TH3F *fHistoFeeddown; //Feeddown matrix (optional)
-    
-    TProfile *fProtonProfile; //Histogram for bookkeeping proton momenta (optional)
-    
-    ClassDef(AliV0Result, 20)
+    ClassDef(AliV0Result, 21)
     // 1 - original implementation
     // 2 - first implementation of MC association (to be adjusted)
     // 3 - Variable binning constructor + re-order variables in main output for convenience

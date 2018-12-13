@@ -46,6 +46,8 @@ class AliAnalysisTaskTransTask : public AliAnalysisTaskSE
 	Double_t fZNCTDC[4];
 	Double_t fZPATDC[4];
 	Double_t fZPCTDC[4];
+	Double_t fZNATime;
+	Double_t fZNCTime;
 	Int_t fV0ADecision; 
 	Int_t fV0CDecision;
 	Int_t fADADecision; 
@@ -57,7 +59,7 @@ class AliAnalysisTaskTransTask : public AliAnalysisTaskSE
         AliAnalysisTaskTransTask(const AliAnalysisTaskTransTask&); // not implemented
         AliAnalysisTaskTransTask& operator=(const AliAnalysisTaskTransTask&); // not implemented
 
-        ClassDef(AliAnalysisTaskTransTask, 1);
+        ClassDef(AliAnalysisTaskTransTask, 2);
 };
 
 #endif

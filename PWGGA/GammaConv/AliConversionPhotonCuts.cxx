@@ -2791,17 +2791,25 @@ Bool_t AliConversionPhotonCuts::SetTPCdEdxCutElectronLine(Int_t ededxSigmaCut){ 
     fPIDnSigmaBelowElectronLine=-2.5;
     fPIDnSigmaAboveElectronLine=5;
     break;
-  case 10: // -3,3.
+  case 10: //a -3,3.
     fPIDnSigmaBelowElectronLine=-3;
     fPIDnSigmaAboveElectronLine=3;
     break;
-  case 11: // -3.2,3.2.
+  case 11: //b -3.2,3.2.
     fPIDnSigmaBelowElectronLine=-3.2;
     fPIDnSigmaAboveElectronLine=3.2;
     break;
-  case 12: // -2.8,2.8
+  case 12: //c -2.8,2.8
     fPIDnSigmaBelowElectronLine=-2.8;
     fPIDnSigmaAboveElectronLine=2.8;
+    break;
+  case 13: //d -1E9,1E9
+    fPIDnSigmaBelowElectronLine=-1E9;
+    fPIDnSigmaAboveElectronLine=1E9;
+    break;
+  case 14: //e -7,1
+    fPIDnSigmaBelowElectronLine=-7;
+    fPIDnSigmaAboveElectronLine=1;
     break;
   default:
     AliError("TPCdEdxCutElectronLine not defined");
@@ -2854,6 +2862,10 @@ Bool_t AliConversionPhotonCuts::SetTPCdEdxCutPionLine(Int_t pidedxSigmaCut){   /
   case 9:
     fPIDnSigmaAbovePionLine=1; // We need a bit less tight cut on dE/dx
     fPIDnSigmaAbovePionLineHighPt=0.5;
+    break;
+  case 10: //a
+    fPIDnSigmaAbovePionLine=-3; // We need a bit less tight cut on dE/dx
+    fPIDnSigmaAbovePionLineHighPt=-14;
     break;
   default:
     AliError(Form("Warning: pidedxSigmaCut not defined %d",pidedxSigmaCut));
@@ -3337,6 +3349,23 @@ Bool_t AliConversionPhotonCuts::SetPsiPairCut(Int_t psiCut) {
       fDo2DPsiPairChi2 = kTRUE;
       fIncludeRejectedPsiPair = kTRUE;
       break;
+
+  case 10:
+    fPsiPairCut = 0.25; //
+    fDo2DPsiPairChi2 = kTRUE; //
+    break;
+
+  case 11:
+    fPsiPairCut = 0.3; //
+    fDo2DPsiPairChi2 = kTRUE; //
+    break;
+
+    case 12:
+    fPsiPairCut = 0.15; //
+    fDo2DPsiPairChi2 = kTRUE; //
+    break;
+
+
     // } else {
     //   fPsiPairCut = 0.5; //
     //   break;
@@ -3403,6 +3432,16 @@ Bool_t AliConversionPhotonCuts::SetPhotonAsymmetryCut(Int_t doPhotonAsymmetryCut
     fMinPPhotonAsymmetryCut=8.;
     fMinPhotonAsymmetry=0.05;
     break;
+  case 8:
+    fDoPhotonAsymmetryCut=1;
+    fDoPhotonPDependentAsymCut=1;
+    fFAsymmetryCut = new TF1("fFAsymmetryCut","[0] + [1]*tanh(2*TMath::Power(x,[2]))",0.,100.);
+    fFAsymmetryCut->SetParameter(0,0.5);
+    fFAsymmetryCut->SetParameter(1,0.46);
+    fFAsymmetryCut->SetParameter(2,0.7);
+    fMinPPhotonAsymmetryCut=0.0;
+    fMinPhotonAsymmetry=0.;
+    break;
   default:
     AliError(Form("PhotonAsymmetryCut not defined %d",doPhotonAsymmetryCut));
     return kFALSE;
@@ -3445,11 +3484,23 @@ Bool_t AliConversionPhotonCuts::SetCosPAngleCut(Int_t cosCut) {
   case 9:
     fCosPAngleCut = 0.99;
     break;
-  case 10:
+  case 10://a
     fCosPAngleCut = 0.995;
     break;
-  case 11:
+  case 11://b
     fCosPAngleCut = 0.985;
+    break;
+  case 12://c
+    fCosPAngleCut = 0.996;
+    break;
+  case 13://d
+    fCosPAngleCut = 0.997;
+    break;
+  case 14://e
+    fCosPAngleCut = 0.998;
+    break;
+  case 15://f
+    fCosPAngleCut = 0.999;
     break;
   default:
     AliError(Form("Cosine Pointing Angle cut not defined %d",cosCut));

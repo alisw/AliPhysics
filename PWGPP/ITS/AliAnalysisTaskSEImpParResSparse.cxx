@@ -86,6 +86,7 @@ fCutGeoNcrNclLength(130.),
 fCutGeoNcrNclGeom1Pt(1.5),
 fCutGeoNcrNclFractionNcr(0.85),
 fCutGeoNcrNclFractionNcl(0.7),
+fUseFinerPhiBins(kFALSE),   // mfaggin
 fTrackType(0),
 fFillSparseForExpert(kFALSE),
 fImpParrphiSparsePtBchargePhi(0),
@@ -138,6 +139,7 @@ fCutGeoNcrNclLength(130.),
 fCutGeoNcrNclGeom1Pt(1.5),
 fCutGeoNcrNclFractionNcr(0.85),
 fCutGeoNcrNclFractionNcl(0.7),
+fUseFinerPhiBins(kFALSE),   // mfaggin
 fTrackType(0),
 fFillSparseForExpert(kFALSE),
 fImpParrphiSparsePtBchargePhi(0),
@@ -293,6 +295,10 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
     Int_t nbinsImpParSparse_rphi[4] =       {3000, 50, 4, 2};
     Double_t limitLowImpParSparse_rphi[4] = {-1500., 0.1, 0., 0.};
     Double_t limitUpImpParSparse_rphi[4] =  {1500., 25., 4., 2.};
+    if (fUseFinerPhiBins) {     // mfaggin
+        nbinsImpParSparse_rphi[2]   = 24; // 1 bin every 15°
+        limitUpImpParSparse_rphi[2] = 24;
+    }
     TString axTitle_rphi[4]={"rphi imp. par. (#mum)",
         "#it{p}_{T} (GeV/c)",
         "#phi",
@@ -301,6 +307,7 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
     for(Int_t iax=0; iax<4; iax++) fImpParrphiSparsePtEtaPhi->GetAxis(iax)->SetTitle(axTitle_rphi[iax].Data());
     BinLogAxis(fImpParrphiSparsePtEtaPhi, 1);
     fOutput->Add(fImpParrphiSparsePtEtaPhi);
+
     Int_t nbinsImpParSparse_z[4] =       {1000, 50, 4, 2};
     Double_t limitLowImpParSparse_z[4] = {-1500., 0.1, 0., 0.};
     Double_t limitUpImpParSparse_z[4] =  {1500., 25., 4., 2.};
@@ -638,7 +645,10 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         pullz[2]=phibin;
         pullrphi1[2]=phibin;
         pullz1[2]=phibin;
-        pointrphi[2]=phibin;
+
+        //pointrphi[2]=phibin;
+        pointrphi[2]=PhiBin(phi,fUseFinerPhiBins);  // mfaggin
+
         pointz[2]=phibin;
         pointrphi1[2]=phibin;
         pointz1[2]=phibin;
@@ -936,13 +946,25 @@ void AliAnalysisTaskSEImpParResSparse::BinLogPtAxis(TH1F *h) {
 }
 //________________________________________________________________________
 
-Int_t AliAnalysisTaskSEImpParResSparse::PhiBin(Double_t phi) const {
+Int_t AliAnalysisTaskSEImpParResSparse::PhiBin(Double_t phi, Bool_t usefinebinsphi) const {
     Double_t pi=TMath::Pi();
-    if(phi>2.*pi || phi<0.) return -1;
-    if((phi<=(pi/4.)) || (phi>7.*(pi/4.))) return 0;
-    if((phi>(pi/4.)) && (phi<=3.*(pi/4.))) return 1;
-    if((phi>3.*(pi/4.)) && (phi<=5.*(pi/4.))) return 2;
-    if((phi>(5.*pi/4.)) && (phi<=7.*(pi/4.))) return 3;
+    
+    if (usefinebinsphi) {   // mfaggin
+        UInt_t nBins = fImpParrphiSparsePtEtaPhi->GetAxis(2)->GetNbins();
+        Double_t width = 2.*pi/nBins;
+        for(UInt_t i = 0; i < nBins; i++)
+        {
+            if(phi>i*width && phi<=(i+1)*width)    return i;
+        }  
+    }
+
+    else {
+        if(phi>2.*pi || phi<0.) return -1;
+        if((phi<=(pi/4.)) || (phi>7.*(pi/4.))) return 0;
+        if((phi>(pi/4.)) && (phi<=3.*(pi/4.))) return 1;
+        if((phi>3.*(pi/4.)) && (phi<=5.*(pi/4.))) return 2;
+        if((phi>(5.*pi/4.)) && (phi<=7.*(pi/4.))) return 3;
+    }
     return -1;
 }
 //___________________________________________________________________________

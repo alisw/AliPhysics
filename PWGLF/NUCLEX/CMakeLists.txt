@@ -53,6 +53,7 @@ set(SRCS
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3Dev.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3AOD.cxx
+  Nuclei/Absorption/AliAnalysisTaskDeuteronAbsorption.cxx
   Nuclei/DeltaMasses/AliAnalysisNucleiMass.cxx
   Nuclei/DeltaMasses/AliAnalysisNuclMult.cxx
   Nuclei/DeuteronpA/AliAnalysisDeuteronpA.cxx
@@ -74,6 +75,7 @@ set(SRCS
   Nuclei/v2/AliAnalysisTaskNucleiv2pPb.cxx
   Nuclei/v2/AliAnalysisTaskAllPtcv2.cxx
   Nuclei/NucleiKine/AliAnalysisTaskNucleiKine.cxx
+  Nuclei/NucleiKine/AliAnalysisTaskNucleiKineCor.cxx
   Utils/NuclexFilter/AliAODMCNuclExReplicator.cxx
   Utils/NuclexFilter/AliAODNuclExReplicator.cxx
   Utils/NuclexFilter/AliAnalysisTaskESDNuclExFilter.cxx

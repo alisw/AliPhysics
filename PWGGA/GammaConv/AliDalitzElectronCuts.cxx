@@ -47,26 +47,26 @@ ClassImp(AliDalitzElectronCuts)
 
 
 const char* AliDalitzElectronCuts::fgkCutNames[AliDalitzElectronCuts::kNCuts] = {
-  "MaxChi2TPCConstrainedGlobal",
-  "ededxSigmaITSCut",
-  "ededxSigmaTPCCut",
-  "pidedxSigmaTPCCut",
-  "piMinMomdedxSigmaTPCCut",
-  "piMaxMomdedxSigmaTPCCut",
-  "LowPRejectionSigmaCut",
-  "kTOFelectronPID",
-  "clsITSCut",
-  "clsTPCCut",
-  "EtaCut",
-  "PsiPair",
-  "RejectSharedElecGamma",
-  "MaxChi2PerClusterTPC",
-  "MaxChi2PerClusterITS",
-  "PtCut",
-  "DCAcut",
-  "MassCut",
-  "Weights",
-  "VPhotonMCPSmearing"
+  "MaxChi2TPCConstrainedGlobal",    //0
+  "ededxSigmaITSCut",               //1
+  "ededxSigmaTPCCut",               //2
+  "pidedxSigmaTPCCut",              //3
+  "piMinMomdedxSigmaTPCCut",        //4
+  "piMaxMomdedxSigmaTPCCut",        //5
+  "LowPRejectionSigmaCut",          //6
+  "kTOFelectronPID",                //7
+  "clsITSCut",                      //8
+  "clsTPCCut",                      //9
+  "EtaCut",                         //10
+  "PsiPair",                        //11
+  "RejectSharedElecGamma",          //12
+  "MaxChi2PerClusterTPC",           //13
+  "MaxChi2PerClusterITS",           //14
+  "PtCut",                          //15
+  "DCAcut",                         //16
+  "MassCut",                        //17
+  "Weights",                        //18
+  "VPhotonMCPSmearing"              //19
 };
 
 //________________________________________________________________________
@@ -997,6 +997,11 @@ Bool_t AliDalitzElectronCuts::SetTPCdEdxCutElectronLine(Int_t ededxSigmaCut){
       fPIDnSigmaBelowElectronLineTPC=-2;
       fPIDnSigmaAboveElectronLineTPC=3.5;
       break;
+    case 9: // -3,4
+      fDodEdxSigmaTPCCut = kTRUE;
+      fPIDnSigmaBelowElectronLineTPC=-3;
+      fPIDnSigmaAboveElectronLineTPC=4;
+      break;
     default:
       cout<<"Warning: TPCdEdxCutElectronLine not defined"<<ededxSigmaCut<<endl;
       return kFALSE;
@@ -1046,6 +1051,14 @@ Bool_t AliDalitzElectronCuts::SetTPCdEdxCutPionLine(Int_t pidedxSigmaCut) {
     case 9:  // 1
       fPIDnSigmaAbovePionLineTPC=1.5;
       fPIDnSigmaAbovePionLineTPCHighPt=-1.0;
+      break;
+    case 10:  // a
+      fPIDnSigmaAbovePionLineTPC=1.5;
+      fPIDnSigmaAbovePionLineTPCHighPt=-1.0;
+      break;
+    case 11:  // b
+      fPIDnSigmaAbovePionLineTPC=3.0;
+      fPIDnSigmaAbovePionLineTPCHighPt=1.0;
       break;
     default:
       cout<<"Warning: pidedxSigmaCut not defined "<<pidedxSigmaCut<<endl;
@@ -1364,6 +1377,10 @@ Bool_t AliDalitzElectronCuts::SetPtCut(Int_t ptCut)
       fPtMinCut = 0.05;
       fPtMaxCut = 9999;
       break;
+    case 7:
+      fPtMinCut = 0.9;
+      fPtMaxCut = 9999;
+      break;
     default:
       cout<<"Warning: PtCut not defined "<<ptCut<<endl;
       return kFALSE;
@@ -1446,6 +1463,9 @@ Bool_t AliDalitzElectronCuts::SetMaxMomPiondEdxTPCCut(Int_t piMaxMomdedxSigmaCut
       fPIDMaxPnSigmaAbovePionLineTPC=3.5;
       break;
     case 5:  // 3. GeV
+      fPIDMaxPnSigmaAbovePionLineTPC=3.;
+      break;
+    case 6:  // 2. GeV
       fPIDMaxPnSigmaAbovePionLineTPC=3.;
       break;
     default:
@@ -1843,10 +1863,66 @@ Bool_t AliDalitzElectronCuts::SetMassCut(Int_t massCut)
       fDoMassCut = kTRUE;
       fDoMassMinCut = kFALSE;
       break;
-    case 10:
-      fMassCutPtMin  = 0.547;   //GeV
-      fMassCutLowPt  = 0.025; //GeV/c^2
-      fMassCutHighPt = 0.035; //GeV/c^2
+    case 10:    //a
+      fMassCutPtMin  = 1.0;   //GeV
+      fMassCutLowPt  = 0.02; //GeV/c^2
+      fMassCutHighPt = 0.03; //GeV/c^2
+      fMassMinCut = -999;
+      fDoMassCut = kTRUE;
+      fDoMassMinCut = kFALSE;
+      break;
+    case 11:    //b
+      fMassCutPtMin  = 1.0;   //GeV
+      fMassCutLowPt  = 0.027; //GeV/c^2
+      fMassCutHighPt = 0.054; //GeV/c^2
+      fMassMinCut = -999;
+      fDoMassCut = kTRUE;
+      fDoMassMinCut = kFALSE;
+      break;
+    case 12:    //c
+      fMassCutPtMin  = 1.0;   //GeV
+      fMassCutLowPt  = 0.02; //GeV/c^2
+      fMassCutHighPt = 0.02; //GeV/c^2
+      fMassMinCut = -999;
+      fDoMassCut = kTRUE;
+      fDoMassMinCut = kFALSE;
+      break;
+    case 13:    //d
+      fMassCutPtMin  = 1.0;   //GeV
+      fMassCutLowPt  = 0.04; //GeV/c^2
+      fMassCutHighPt = 0.04; //GeV/c^2
+      fMassMinCut = -999;
+      fDoMassCut = kTRUE;
+      fDoMassMinCut = kFALSE;
+      break;
+    case 14:    //e
+      fMassCutPtMin  = 1.0;   //GeV
+      fMassCutLowPt  = 0.06; //GeV/c^2
+      fMassCutHighPt = 0.06; //GeV/c^2
+      fMassMinCut = -999;
+      fDoMassCut = kTRUE;
+      fDoMassMinCut = kFALSE;
+      break;
+    case 15:    //f
+      fMassCutPtMin  = 1.0;   //GeV
+      fMassCutLowPt  = 0.08; //GeV/c^2
+      fMassCutHighPt = 0.08; //GeV/c^2
+      fMassMinCut = -999;
+      fDoMassCut = kTRUE;
+      fDoMassMinCut = kFALSE;
+      break;
+    case 16:    //g
+      fMassCutPtMin  = 1.0;   //GeV
+      fMassCutLowPt  = 0.15; //GeV/c^2
+      fMassCutHighPt = 0.15; //GeV/c^2
+      fMassMinCut = -999;
+      fDoMassCut = kTRUE;
+      fDoMassMinCut = kFALSE;
+      break;
+    case 17:    //h
+      fMassCutPtMin  = 1.0;   //GeV
+      fMassCutLowPt  = 0.2; //GeV/c^2
+      fMassCutHighPt = 0.2; //GeV/c^2
       fMassMinCut = -999;
       fDoMassCut = kTRUE;
       fDoMassMinCut = kFALSE;

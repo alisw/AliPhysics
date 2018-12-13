@@ -64,6 +64,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     void SetNeutralPionMode(Int_t mode){fNeutralPionMode = mode; }
     void SetTolerance(Double_t tol){fTolerance=tol;}
 
+    void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
+
   private:
 
     void InitBack();
@@ -185,6 +187,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     TH2F**                            fHistoPionTPCdEdx;                                  // array of histos of pion, p, TPC dEdx
     TH2F**                            fHistoPionPionInvMassPt;                            // array of histos of pion pion, invMass, pT_{pi+pi-}
     TH2F**                            fHistoGammaGammaInvMassPt;                          // array of histos of gamma-gamma, invMass, pT_{gamma gamma}
+    TH2F**                            fHistoGammaGammaInvMassPtBeforeCuts;                // array of histos of gamma-gamma, invMass, pT_{gamma gamma} before neutral meson cuts
     TH2F**                            fHistoMotherInvMassPt;                              // array of histos of pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
     TH2F**                            fHistoMotherInvMassPtRejectedKinematic;             // array of histos of rejected pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
     TH2F**                            fHistoBackInvMassPtGroup1;                          // Event mixing background group 1 (pi+ and pi- from same event)
@@ -304,11 +307,13 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     Bool_t                          fDoLightOutput;                                       // Flag to turn on light output
     Int_t                           fNeutralPionMode;                                     // Flag how neutral pion is reconstructed 0=PCM-PCM, 1=PCM-Calo, 2=Calo-Calo
     Double_t                        fTolerance;                                           // tolerance in rad for angle cuts
+    Int_t                           fTrackMatcherRunningMode;                             // CaloTrackMatcher running mode
+
 private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 22);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 24);
 };
 
 #endif // ALIANALYSISTASKNEUTRALMESONTOPIPLPIMIPIZERO_H

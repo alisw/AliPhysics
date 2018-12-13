@@ -1,5 +1,5 @@
 //______________________________________________________________________________________________________________________________________________________________________________________
-AliAnalysisTask *AddTaskReducedTreeNuclei_mh()  {
+AliAnalysisTask *AddTaskReducedTreeNuclei_mh(bool useTri=kFALSE)  {
 
    //Get the current analysis manager
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -10,7 +10,10 @@ AliAnalysisTask *AddTaskReducedTreeNuclei_mh()  {
    }
    
    AliAnalysisTaskReducedTreeNuclei *task = new AliAnalysisTaskReducedTreeNuclei("TaskNuclei");
-   task->SelectCollisionCandidates(AliVEvent::kINT7);
+   task->SelectCollisionCandidates(AliVEvent::kINT7 + AliVEvent::kHighMultV0);
+//    task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+   
+   task->useTritonCandidates(kFALSE);   
    mgr->AddTask(task);
    
    TString Filename = "AnalysisResults.root"; //mgr->GetCommonFileName();

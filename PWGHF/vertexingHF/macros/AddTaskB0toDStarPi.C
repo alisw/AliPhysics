@@ -3,14 +3,20 @@ AliAnalysisTaskSEB0toDStarPi *AddTaskB0toDStarPi(
                                 TString cutsfile="",
                                 TString usercomment = "doremalen",
                                 Bool_t bUseMCInfo=kFALSE,
-                                Bool_t bUseQuickSignalAnalysis=kFALSE,
+                                Int_t  nUseQuickSignalAnalysis=0,
                                 Bool_t bGetCutInfo=kTRUE, 
                                 Bool_t bShowRejection=kFALSE, 
                                 Bool_t bShowMask=kFALSE,
                                 Bool_t bUse3DHistograms=kFALSE, 
+                                Bool_t bCheckBackground=kFALSE, 
                                 Int_t nDebugLevel=0,
                                 Int_t nUpgradeSetting=0,
-                                Double_t fHistMassWindow=0.125)
+                                Int_t nDegreePerRotation=3,
+                                Int_t nNumberOfRotations=0,
+                                Double_t fHistMassWindow=0.125,
+                                Bool_t fCheckInjected = 1,
+                                Int_t fRemoveInjected = 1
+                                )
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -20,7 +26,7 @@ AliAnalysisTaskSEB0toDStarPi *AddTaskB0toDStarPi(
     return NULL;
   }  
 
-  if(bUseQuickSignalAnalysis && !bUseMCInfo){
+  if(nUseQuickSignalAnalysis != 0 && !bUseMCInfo){
     ::Error("AddTaskB0toDStarPi", "Quick signal analysis only works for Monte Carlo.");
     return NULL;
   }  
@@ -57,14 +63,20 @@ AliAnalysisTaskSEB0toDStarPi *AddTaskB0toDStarPi(
   AliAnalysisTaskSEB0toDStarPi *task = new AliAnalysisTaskSEB0toDStarPi("AliAnalysisTaskSEB0toDStarPi",RDHFB0toDStarPi);
 
   task->SetMC(bUseMCInfo);
-  task->SetQuickSignalAnalysis(bUseQuickSignalAnalysis);
+  task->SetQuickSignalAnalysis(nUseQuickSignalAnalysis);
   task->SetGetCutInfo(bGetCutInfo);
   task->SetDebugLevel(nDebugLevel);
   task->SetShowRejection(bShowRejection);
   task->SetShowMask(bShowMask);
   task->SetUse3DHistograms(bUse3DHistograms);
+  task->SetCheckBackground(bCheckBackground);
   task->SetUpgradeSetting(nUpgradeSetting);
   task->SetHistMassWindow(fHistMassWindow);
+  task->SetDegreePerRotation(nDegreePerRotation);
+  task->SetNumberOfRotations(nNumberOfRotations);
+  task->SetCheckInjected(fCheckInjected);
+  task->SetRemoveInjected(fRemoveInjected);
+
 
   mgr->AddTask(task);
 

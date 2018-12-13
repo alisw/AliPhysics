@@ -761,7 +761,7 @@ void  AliRDHFCutsDStartoKpipi::SetStandardCutsPP2010() {
   SetPidHF(pidObj);
   SetUsePID(kTRUE);
 
-  PrintAll();
+  //  PrintAll();
 
   delete pidObj;
   pidObj=NULL;
@@ -876,7 +876,7 @@ void  AliRDHFCutsDStartoKpipi::SetStandardCutsPbPb2010(){
   SetPidHF(pidObj);
   SetUsePID(kTRUE);
 
-  PrintAll();
+  //  PrintAll();
 
   delete pidObj;
   pidObj=NULL;
@@ -1030,7 +1030,7 @@ void  AliRDHFCutsDStartoKpipi::SetStandardCutsPbPb2011DStar(TH1F *hfl){
   // flattening
   SetHistoForCentralityFlattening(hfl,0.,10,0.,0);
 
-  PrintAll();
+  //  PrintAll();
 
   delete pidObj;
   pidObj=NULL;
@@ -1162,7 +1162,7 @@ void  AliRDHFCutsDStartoKpipi::SetStandardCutsPP2010DStarMult(Bool_t rec){
   SetUsePID(kTRUE);
   pidObj->SetOldPid(kTRUE);
 
-  PrintAll();
+  //  PrintAll();
 
   delete pidObj;
   pidObj=NULL;

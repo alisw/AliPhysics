@@ -37,8 +37,8 @@ class CEPEventBuffer : public TObject {
                                // and number of offline fired chips
     Short_t fFiredChips[4];    // Number of FastOR chips in the two SPD layers
                                // and number of offline fired chips
-    TBits  fSPD_0STG_Online;   //! using FastOrMap    (online)
-    TBits  fSPD_0STG_Offline;  //! using FiredChipMap (offline)
+    TBits  fSPD_0STG_Online;   // using FastOrMap    (online)
+    TBits  fSPD_0STG_Offline;  // using FiredChipMap (offline)
 
 
     Bool_t fisDGTrigger;
@@ -67,6 +67,7 @@ class CEPEventBuffer : public TObject {
     
     Int_t fnCaloCluster[2]; // number of EMCal and PHOS cluster
     Double_t fCaloEnergy[2];// total energy in EMCal/PHOS
+    Double_t fdPhiEtaMinMax;// max distance of EMC cluster and charged track hit
     
     // Monte Carlo information
     TString  fMCGenerator;
@@ -138,6 +139,8 @@ class CEPEventBuffer : public TObject {
                                         { if (ind==0 || ind==1) fnCaloCluster[ind] = nclus; }
     void SetCaloEnergy(Double_t ene, Int_t ind)
                                         { if (ind==0 || ind==1) fCaloEnergy[ind] = ene; }
+    void SetdPhiEtaMinMax(Double_t dminmax)
+                                        { fdPhiEtaMinMax = dminmax; }
     
     void SetVtxPos(TVector3 vtxpos)     { fVtxPos = TVector3(vtxpos); }
     
@@ -194,6 +197,7 @@ class CEPEventBuffer : public TObject {
     Int_t GetnV0()       const { return fnV0; }
     UInt_t GetVtxType()  const { return fVtxType; }
     TVector3 GetVtxPos() const { return fVtxPos; }
+    Double_t GetdPhiEtaMinMax() const { return fdPhiEtaMinMax; }
     
     Int_t GetnCaloCluster(Int_t ind) const { return (ind==0 || ind==1) ? fnCaloCluster[ind] : 0; }
     Double_t GetCaloEnergy(Int_t ind) const { return (ind==0 || ind==1) ? fCaloEnergy[ind] : 0; }

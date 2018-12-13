@@ -12,6 +12,8 @@ AliAnalysisTask *AddTaskBeautyCal(
                                  Int_t EtaRange = 0,
                                  Int_t ITSchi2 = 26,
                                  Double_t eopmim = 0.9,
+                                 Double_t mimM20 = 0.01,
+                                 Double_t maxM20 = 0.3,
                                  Int_t SuperMod = -1,  // default -1 to all
                                  Bool_t pileup = kFALSE,
                                  Double_t mass = 0.1, Double_t ptAss = 0.2, 
@@ -85,6 +87,8 @@ AliAnalysisTask *AddTaskBeautyCal(
     hfecalqa7->SetITSchi2(ITSchi2);
     hfecalqa7->SetMinSig(nSig);
     hfecalqa7->SetEopMim(eopmim);
+    hfecalqa7->SetMinM20(mimM20);
+    hfecalqa7->SetMaxM20(maxM20);
     hfecalqa7->SetSM(SuperMod);
     hfecalqa7->SetPileUpCut(pileup);
     hfecalqa7->SetEPana(epana);
@@ -208,6 +212,8 @@ AliAnalysisTask *AddTaskBeautyCal(
         hfecalqaTrig01->SetITSchi2(ITSchi2);
         hfecalqaTrig01->SetMinSig(nSig);
         hfecalqaTrig01->SetEopMim(eopmim);
+        hfecalqaTrig01->SetMinM20(mimM20);
+        hfecalqaTrig01->SetMaxM20(maxM20);
         hfecalqaTrig01->SetSM(SuperMod);
         hfecalqaTrig01->SetPileUpCut(pileup);
         hfecalqaTrig01->SetEPana(epana);
@@ -243,6 +249,8 @@ AliAnalysisTask *AddTaskBeautyCal(
         hfecalqaTrig02->SetITSchi2(ITSchi2);        
         hfecalqaTrig02->SetMinSig(nSig);
         hfecalqaTrig02->SetEopMim(eopmim);
+        hfecalqaTrig02->SetMinM20(mimM20);
+        hfecalqaTrig02->SetMaxM20(maxM20);
         hfecalqaTrig02->SetSM(SuperMod);
         hfecalqaTrig02->SetPileUpCut(pileup);
         hfecalqaTrig02->SetEPana(epana);
@@ -279,6 +287,8 @@ AliAnalysisTask *AddTaskBeautyCal(
         hfecalqaTrig0->SetITSchi2(ITSchi2);        
         hfecalqaTrig0->SetMinSig(nSig);
         hfecalqaTrig0->SetEopMim(eopmim);
+        hfecalqaTrig0->SetMinM20(mimM20);
+        hfecalqaTrig0->SetMaxM20(maxM20);
         hfecalqaTrig0->SetSM(SuperMod);
         hfecalqaTrig0->SetPileUpCut(pileup);
         hfecalqaTrig0->SetEPana(epana);
@@ -315,6 +325,8 @@ AliAnalysisTask *AddTaskBeautyCal(
     hfecalqaMB->SetITSchi2(ITSchi2);     
     hfecalqaMB->SetMinSig(nSig);
     hfecalqaMB->SetEopMim(eopmim);
+    hfecalqaMB->SetMinM20(mimM20);
+    hfecalqaMB->SetMaxM20(maxM20);
     hfecalqaMB->SetSM(SuperMod);
     hfecalqaMB->SetPileUpCut(pileup);     
     hfecalqaMB->SetEPana(epana);

@@ -9,7 +9,9 @@
 #include "AliFemtoEventCutEstimators.h"
 #include "AliFemtoCutMonitorEventMult.h"
 #include "AliFemtoCutMonitorV0.h"
+#include "AliFemtoCutMonitorV0CosPointingAngle.h"
 #include "AliFemtoCutMonitorXi.h"
+#include "AliFemtoCutMonitorEventVertex.h"
 
 #include "AliFemtoBasicTrackCut.h"
 #include "AliFemtoESDTrackCut.h"
@@ -41,6 +43,8 @@
 
 #include "AliFemtoModelWeightGeneratorBasicLednicky.h"
 #include "AliFemtoModelCorrFctnKStarFull.h"
+
+#include "AliFemtoCorrFctnDirectYlm.h"
 
 #include <string>
 #include <iostream>
@@ -102,6 +106,7 @@ struct AnalysisParams
   bool isMCRun;
   bool isMBAnalysis;
   bool buildMultHist;
+  bool buildmTBinned;
   bool implementVertexCorrections;
   bool removeMisidentifiedMCParticles;
   bool setV0SharedDaughterCut;
@@ -111,6 +116,9 @@ struct AnalysisParams
   bool monitorPart2CutPassOnly;
   bool monitorPairCutPassOnly;
   bool useMCWeightGenerator;
+
+  bool buildSphericalHarmonics;
+  bool useLCMSforSH;
 };
 
 struct EventCutParams
@@ -181,6 +189,8 @@ struct V0CutParams
          radiusV0Max;
 
   bool ignoreOnFlyStatus;
+
+  bool buildCosPointingAnglewParentInfo;
 };
 
 struct ESDCutParams
@@ -362,6 +372,7 @@ struct PairCutParams
   AliFemtoAvgSepCorrFctn* CreateAvgSepCorrFctn(const char* name, unsigned int bins, double min, double max);
   AliFemtoModelCorrFctnKStarFull* CreateModelCorrFctnKStarFull(const char* name, unsigned int bins, double min, double max);    //TODO check that enum to int is working
   AliFemtoV0PurityBgdEstimator* CreateV0PurityBgdEstimator();
+  AliFemtoCorrFctnDirectYlm* CreateCorrFctnDirectYlm(const char* name, int maxl, unsigned int bins, double min, double max, int useLCMS);
 
   void AddCutMonitors(AliFemtoEventCut* aEventCut, AliFemtoParticleCut* aPartCut1, AliFemtoParticleCut* aPartCut2, AliFemtoPairCut* aPairCut);
   void SetAnalysis(AliFemtoEventCut* aEventCut, AliFemtoParticleCut* aPartCut1, AliFemtoParticleCut* aPartCut2, AliFemtoPairCut* aPairCut);
@@ -413,6 +424,8 @@ protected:
   bool fIsMCRun;
   bool fIsMBAnalysis;
   bool fBuildMultHist;
+  bool fBuildmTBinned;
+  bool fBuildCosPointingAnglewParentInfo;
 
   double fMinCent, fMaxCent;
 

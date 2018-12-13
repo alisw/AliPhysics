@@ -39,7 +39,7 @@ AliAnalysisTaskV0QA *AddTaskV0QA(Bool_t bUseMCInfo=kTRUE)
 
    // Check if MC handler is connected in case kine filter requested
    AliMCEventHandler *mcH = (AliMCEventHandler*)mgr->GetMCtruthEventHandler();
-   if (!mcH && bUseMCInfo)) {
+   if (!mcH && bUseMCInfo) {
       ::Error("AddTaskV0QA", "No MC handler connected");
       return NULL;
    }   

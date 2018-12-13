@@ -68,6 +68,8 @@ AliAnalysisTaskTrackingEffPID::AliAnalysisTaskTrackingEffPID() :
   fEventCut{false},
   fUseTrackCutsForAOD{false},
   fUseGeneratedKine{true},
+  fPrimarySelectionOpt{1},
+  fMultEstimator{0},
   fIsAA{false},
   fFilterBit{4},
   fTrackCuts{0x0},
@@ -111,7 +113,7 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
   fOutputList->Add(fHistNEvents);
 
 
-  TString axTit[5]={"#eta","#varphi","#it{p}_{T} (GeV/#it{c})","N_{tracklets}","z_{vertex} (cm)"};
+  TString axTit[5]={"#eta","#varphi","#it{p}_{T} (GeV/#it{c})","Multiplicity","z_{vertex} (cm)"};
   const int nPtBins=32;
   const int nMultBins=8;
   int nbins[5]={10,18,nPtBins,nMultBins,4};
@@ -234,6 +236,20 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
   vtTrc->GetCovarianceMatrix(cov);
   const AliESDVertex vESD(pos,cov,100.,100);
   double magField = fInputEvent->GetMagneticField();
+  int nContrib = vtTrc->GetNContributors();;
+
+  int nTracksTPCITS = 0;
+  for (int iT = 0; iT < (int)fInputEvent->GetNumberOfTracks(); ++iT) {
+    /// count tracks passing ITS TPC selections
+    AliVTrack *track = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(iT));
+    int cluITS=track->GetNcls(0);
+    int cluTPC=track->GetNcls(1);
+    if(track->GetStatus()&AliESDtrack::kITSrefit && cluITS>3 && cluTPC>70) nTracksTPCITS++;
+  }
+
+  double multEstim=nTracklets;
+  if(fMultEstimator==1) multEstim=nContrib;
+  else if(fMultEstimator==2) multEstim=nTracksTPCITS;
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -244,8 +260,14 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
 
   for (int iMC = 0; iMC < fMCEvent->GetNumberOfTracks(); ++iMC) {
     AliVParticle *part = (AliVParticle*)fMCEvent->GetTrack(iMC);
-    if (!part->IsPhysicalPrimary()) continue;
-    double arrayForSparse[5]={part->Eta(),part->Phi(),part->Pt(),(double)nTracklets,zMCVertex};
+    if(fPrimarySelectionOpt==1 && !part->IsPhysicalPrimary()) continue;
+    if(fPrimarySelectionOpt==2){
+      // primary particle selection based on origin of particle
+      double pRad2=part->Xv()*part->Xv()+part->Yv()*part->Yv();
+      double distz=TMath::Abs(part->Zv()-zMCVertex);
+      if(pRad2>8 || distz>1) continue;
+    }
+    double arrayForSparse[5]={part->Eta(),part->Phi(),part->Pt(),multEstim,zMCVertex};
     const int pdg = std::abs(part->PdgCode());
     const int iCharge = part->Charge() > 0 ? 1 : 0;
     for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; ++iSpecies) {
@@ -283,7 +305,13 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
 
     AliVParticle *mcPart  = (AliVParticle*)fMCEvent->GetTrack(TMath::Abs(track->GetLabel()));
     if(!mcPart) continue;
-    if (!mcPart->IsPhysicalPrimary()) continue;
+    if (fPrimarySelectionOpt==1 && !mcPart->IsPhysicalPrimary()) continue;
+    if(fPrimarySelectionOpt==2){
+      // primary particle selection based on origin of particle
+      double pRad2=mcPart->Xv()*mcPart->Xv()+mcPart->Yv()*mcPart->Yv();
+      double distz=TMath::Abs(mcPart->Zv()-zMCVertex);
+      if(pRad2>8 || distz>1) continue;
+    }
     const int iCharge = mcPart->Charge() > 0 ? 1 : 0;
     int iSpecies = -1;
     for (int iS = 0; iS < AliPID::kSPECIESC; ++iS) {
@@ -297,7 +325,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     const double pt = fUseGeneratedKine ? mcPart->Pt() : track->Pt() * AliPID::ParticleCharge(iSpecies);
     const double eta = fUseGeneratedKine ? mcPart->Eta() : track->Eta();
     const double phi = fUseGeneratedKine ? mcPart->Phi() : track->Phi();
-    double arrayForSparseData[5]={eta,phi,pt,(double)nTracklets,zMCVertex};
+    double arrayForSparseData[5]={eta,phi,pt,multEstim,zMCVertex};
     bool TPCpid = std::abs(pid->NumberOfSigmasTPC(track, static_cast<AliPID::EParticleType>(iSpecies))) < 3;
     bool hasTOF = HasTOF(track);
     bool TOFpid = std::abs(pid->NumberOfSigmasTOF(track, static_cast<AliPID::EParticleType>(iSpecies))) < 3;

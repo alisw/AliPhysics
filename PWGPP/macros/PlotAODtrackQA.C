@@ -30,6 +30,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
 
   TString pdfFileNames="";
   TString plotFileName="";
+  gStyle->SetLegendFont(42);
+  gStyle->SetLegendBorderSize(0);
+  gStyle->SetFillStyle(0);
 
   TString varForTrending[totTrending];
   for(Int_t jbit=0; jbit<12; jbit++){
@@ -418,7 +421,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   hMatchEffVsPhiNegEtaSPDanyLowPt->Draw("samepe");
   hMatchEffVsPhiNegEtaLowPtTOFbc->Draw("samepe");
   hMatchEffVsPhiNegEtaSPDanyLowPtTOFbc->Draw("samepe");
-  TLegend* legt2=new TLegend(0.17,0.74,0.89,0.89);
+  TLegend* legt2=new TLegend(0.17,0.14,0.89,0.29);
   legt2->SetNColumns(2);
   legt2->SetMargin(0.1);
   legt2->AddEntry(hMatchEffVsPhiNegEtaLowPt,"ITSrefit","P");
@@ -1191,8 +1194,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   Int_t colors[12]={kRed+1,kRed-7,kOrange+1,kYellow+1,kGreen+1,kGreen,kCyan,kBlue+1,kMagenta,kMagenta+1,kGray+1,1};
   Int_t lstyl[12]={1,9,1,3,1,8,2,5,7,1,1,9};
   Int_t lwid[12]={2,2,2,3,2,2,3,3,3,2,2,2};
-  TLegend* leg2=new TLegend(0.65,0.2,0.89,0.89);
+  TLegend* leg2=new TLegend(0.4,0.5,0.89,0.89);
   leg2->SetMargin(0.3);
+  leg2->SetNColumns(2);
   for(Int_t jbit=0; jbit<12; jbit++){
     TString hname=Form("hImpParXYPtMulPionFiltBit%d",jbit);
     TH3F* h=(TH3F*)l->FindObject(hname.Data());
@@ -1231,9 +1235,11 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
       hphi->Draw("same");
     }
     cip->cd(4);
+    gPad->SetLogy();
     if(jbit==0){ 
-      hpt1->SetMinimum(0.);
-      hpt1->SetMaximum(1.4*hpt1->GetMaximum());
+      hpt1->SetMinimum(0.9);
+      hpt1->GetXaxis()->SetRangeUser(0.,15.);
+      hpt1->SetMaximum(4.*hpt1->GetMaximum());
       hpt1->Draw();
     }else{ 
       hpt1->Draw("same");

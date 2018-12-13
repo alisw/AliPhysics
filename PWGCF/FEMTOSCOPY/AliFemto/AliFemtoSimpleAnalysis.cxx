@@ -79,13 +79,13 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
 
   // cut is cutting on Tracks
   case hbtTrack:
-
-    DoFillParticleCollection(
-      (AliFemtoTrackCut*)partCut,
-      hbtEvent->TrackCollection(),
-      partCollection
-    );
-
+    {   
+      DoFillParticleCollection(
+			       (AliFemtoTrackCut*)partCut,
+			       hbtEvent->TrackCollection(),
+			       partCollection
+			       );
+    }
     break;
 
   // cut is cutting on V0s

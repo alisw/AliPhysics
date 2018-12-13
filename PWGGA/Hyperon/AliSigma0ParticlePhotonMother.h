@@ -29,6 +29,7 @@ class AliSigma0ParticlePhotonMother : public AliSigma0ParticleBase {
   double GetMass() const { return AliSigma0ParticleBase::GetMass(); }
 
   double GetPt() const { return AliSigma0ParticleBase::GetPt(); }
+  double GetP() const { return AliSigma0ParticleBase::GetP(); }
   int GetTrackLabel() const { return AliSigma0ParticleBase::GetTrackLabel(); }
   double GetPhi() const { return AliSigma0ParticleBase::GetPhi(); }
   double GetEta() const { return AliSigma0ParticleBase::GetEta(); }
@@ -42,21 +43,27 @@ class AliSigma0ParticlePhotonMother : public AliSigma0ParticleBase {
   float GetArmenterosAlpha() const;
   float GetArmenterosQt() const;
 
+  int GetMCLabel() const { return fMCLabel; }
+  int GetPDGCode() const { return fPDGCode; }
+
   AliSigma0ParticleV0 GetV0() const { return fV0; }
   AliSigma0ParticleV0 GetPhoton() const { return fPhoton; }
 
   int MatchToMC(const AliMCEvent *mcEvent, const int PIDmother,
-                const std::vector<int> PIDdaughters) const;
+                const std::vector<int> PIDdaughters, int &pdgLambdaMother,
+                int &pdgPhotonMother);
 
  private:
   short fType;
   double fRecMassPhoton;
   double fRecMassLambda;
   double fRecMass;
+  int fMCLabel;
+  int fPDGCode;
   AliSigma0ParticleV0 fV0;
   AliSigma0ParticleV0 fPhoton;
 
-  ClassDef(AliSigma0ParticlePhotonMother, 2)
+  ClassDef(AliSigma0ParticlePhotonMother, 4)
 };
 
 #endif

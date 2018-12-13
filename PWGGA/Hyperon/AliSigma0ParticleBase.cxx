@@ -17,11 +17,21 @@ ClassImp(AliSigma0ParticleBase)
       fMClabel(0),
       fPhi(0),
       fEta(0),
+      fTheta(0),
+      fPhiMC(0),
+      fThetaMC(0),
       fCharge(0),
       fDCAz(0.f),
       fDCAr(0.f),
       fUse(true),
-      fPhistar() {}
+      fPhistar() {
+  fP[0] = -0.;
+  fP[1] = -0.;
+  fP[2] = -0.;
+  fPMC[0] = -0.;
+  fPMC[1] = -0.;
+  fPMC[2] = -0.;
+}
 
 //____________________________________________________________________________________________________
 AliSigma0ParticleBase::AliSigma0ParticleBase(const AliESDtrack *track, int pdg,
@@ -38,6 +48,9 @@ AliSigma0ParticleBase::AliSigma0ParticleBase(const AliESDtrack *track, int pdg,
       fMClabel(0),
       fPhi(0),
       fEta(0),
+      fTheta(0),
+      fPhiMC(0),
+      fThetaMC(0),
       fCharge(0),
       fDCAz(0.f),
       fDCAr(0.f),
@@ -48,9 +61,9 @@ AliSigma0ParticleBase::AliSigma0ParticleBase(const AliESDtrack *track, int pdg,
   fP[0] = trackMom[0];
   fP[1] = trackMom[1];
   fP[2] = trackMom[2];
-  fPMC[0] = -1.;
-  fPMC[1] = -1.;
-  fPMC[2] = -1.;
+  fPMC[0] = -0.;
+  fPMC[1] = -0.;
+  fPMC[2] = -0.;
 
   fCharge = track->Charge();
   fPDGCode = pdg;
@@ -59,6 +72,7 @@ AliSigma0ParticleBase::AliSigma0ParticleBase(const AliESDtrack *track, int pdg,
   fTrackLabel = (filterbit == 128) ? -track->GetID() - 1 : track->GetID();
   fPhi = track->Phi();
   fEta = track->Eta();
+  fTheta = track->Theta();
   fUse = true;
 }
 
@@ -82,6 +96,9 @@ AliSigma0ParticleBase &AliSigma0ParticleBase::operator=(
   fTrackLabel = -obj.GetTrackLabel() - 1;  // for filterbit 128
   fPhi = obj.GetPhi();
   fEta = obj.GetEta();
+  fTheta = obj.GetTheta();
+  fPhiMC = obj.GetPhiMC();
+  fThetaMC = obj.GetThetaMC();
 
   fUse = obj.GetIsUse();
 
@@ -175,6 +192,8 @@ void AliSigma0ParticleBase::ProcessMCInfo(AliMCParticle *mcParticle,
   fPMC[2] = mcParticle->Pz();
   fPDGCode = mcParticle->PdgCode();
   fMClabel = mcParticle->GetLabel();
+  fPhiMC = mcParticle->Phi();
+  fThetaMC = mcParticle->Theta();
 
   if (mcParticle->GetMother() != 0) {
     AliMCParticle *mcMother = static_cast<AliMCParticle *>(

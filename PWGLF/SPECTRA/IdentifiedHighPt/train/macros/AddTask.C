@@ -8,7 +8,7 @@
 
   */
 
-AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typerun, UInt_t kTriggerInt, Float_t minc, Float_t maxc)
+AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typerun, UInt_t kTriggerInt, Float_t minc, Float_t maxc, Bool_t CentFrameworkAliCen)
 {
 
   // Creates a pid task and adds it to the analysis manager
@@ -105,6 +105,7 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
     // Run AOD even when filtered from LF_PbPb or LF_PbPb_MC. (Or change back to the lines above)
     taskHighPtDeDx->SetAnalysisType("AOD");
     taskHighPtDeDx->SetAnalysisMC(AnalysisMC);
+    taskHighPtDeDx->SetCentFrameworkAliCen(CentFrameworkAliCen); //kTRUE: use AliCentrality, kFALSE: use AliMultSelection
     taskHighPtDeDx->SetAnalysisPbPb(kTRUE);
     taskHighPtDeDx->SetProduceVZEROBranch(kTRUE);
     taskHighPtDeDx->SetDebugLevel(0);
@@ -153,6 +154,7 @@ if(typerun==3){//pp analysis
   // Run AOD even when filtered from LF_PbPb or LF_PbPb_MC. (Or change back to the lines above)
   taskHighPtDeDx->SetAnalysisType("AOD");
   taskHighPtDeDx->SetAnalysisMC(AnalysisMC);
+  taskHighPtDeDx->SetCentFrameworkAliCen(CentFrameworkAliCen);
   taskHighPtDeDx->SetAnalysisPbPb(kFALSE);
   taskHighPtDeDx->SetProduceVZEROBranch(kTRUE);
   taskHighPtDeDx->SetDebugLevel(0);
@@ -203,6 +205,7 @@ if(typerun==4){//ppb analysis
   // Run AOD even when filtered from LF_PbPb or LF_PbPb_MC. (Or change back to the lines above)
   taskHighPtDeDx->SetAnalysisType("AOD");
   taskHighPtDeDx->SetAnalysisMC(AnalysisMC);
+  taskHighPtDeDx->SetCentFrameworkAliCen(CentFrameworkAliCen);
   taskHighPtDeDx->SetAnalysisPbPb(kTRUE);
   taskHighPtDeDx->SetMinCent(-200);
   taskHighPtDeDx->SetMaxCent(200);

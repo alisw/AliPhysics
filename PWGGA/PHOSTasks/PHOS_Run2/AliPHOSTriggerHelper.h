@@ -29,6 +29,7 @@ class AliPHOSTriggerHelper : public TObject {
         fPHOSTRUBadMap[mod] = 0x0;
       }
       fPHOSTRUBadMap[mod] = new TH2I(*h);
+      AliInfo(Form("setting private TRU bad map M%d",mod));
     }
 
     TH2I* GetPHOSTRUBadMap(Int_t mod) {return fPHOSTRUBadMap[mod];}
@@ -68,6 +69,7 @@ class AliPHOSTriggerHelper : public TObject {
     Bool_t IsDeltaRUsed() {return fUseDeltaRMatching;}
     Bool_t IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts, Double_t Emin, Double_t ETrigger, Bool_t isCoreUsed);
     Double_t GetDistanceToClosestTRUChannel(AliCaloPhoton *ph);
+    Bool_t IsPrivateTRUBadMap() {return fIsUserTRUBadMap;}
 
   private:
     AliPHOSGeometry *fPHOSGeo;
@@ -95,7 +97,7 @@ class AliPHOSTriggerHelper : public TObject {
     AliPHOSTriggerHelper(const AliPHOSTriggerHelper&);
     AliPHOSTriggerHelper& operator=(const AliPHOSTriggerHelper&);
 
-    ClassDef(AliPHOSTriggerHelper, 18);
+    ClassDef(AliPHOSTriggerHelper, 20);
 
 };
 

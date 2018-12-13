@@ -845,6 +845,17 @@ Bool_t AliDielectronMC::ComparePDG(Int_t particlePDG, Int_t requiredPDG, Bool_t 
       if(requiredPDG<0) result = particlePDG>=-499 && particlePDG<=-400;
     }
     break;
+  case 600:     // all dielectron from same mother sources
+    result = TMath::Abs(particlePDG)==111 || // pion
+             TMath::Abs(particlePDG)==113 || // rho
+             TMath::Abs(particlePDG)==221 || // eta
+             TMath::Abs(particlePDG)==331 || // eta'
+             TMath::Abs(particlePDG)==223 || // omega
+             TMath::Abs(particlePDG)==333 || // phi
+             TMath::Abs(particlePDG)==443 || // jpsi
+             TMath::Abs(particlePDG)==100443 // psi 2S
+             ;
+    break;
   case 401:     // open charm mesons
     if(checkBothCharges)
       result = TMath::Abs(particlePDG)>=400 && TMath::Abs(particlePDG)<=439;

@@ -5,7 +5,7 @@
 AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
                                           TString trigClass = "CINT1B",
                                           AliVEvent::EOfflineTriggerTypes trigMask = AliVEvent::kMB,
-                                          AliAnalysisTrackingUncertaintiesAOT::ESpecies_t specie=(AliAnalysisTrackingUncertaintiesAOT::kSpecPion|AliAnalysisTrackingUncertaintiesAOT::kSpecKaon),
+                                          ULong64_t specie=(AliAnalysisTrackingUncertaintiesAOT::kSpecPion|AliAnalysisTrackingUncertaintiesAOT::kSpecKaon),
                                           TString outputSuffix = "",
                                           Bool_t doCutV0multTPCout = kFALSE,
                                           AliAnalysisTrackingUncertaintiesAOT::ECentrality centrSel = AliAnalysisTrackingUncertaintiesAOT::kCentOff,

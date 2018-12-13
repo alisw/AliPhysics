@@ -42,56 +42,54 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		void SetupTrackCuts(AliDielectronCutGroup* finalTrackCuts);
 		void SetupEventCuts(AliDielectronEventCuts* finalEventCuts);
 	
-		//PID calibration function to correct the width and mean of detector
-		//response (I.e should be unit guassian)
-		void SetCorrWidthMean(TH3D* width, TH3D* mean){
-			fMean  = mean;
-			fWidth = width;
+		// PID calibration function to correct the width and mean of detector
+		// response (I.e should be unit guassian)
+		void SetCorrWidthMeanTPC(TH3D* width, TH3D* mean){
+			fMeanTPC  = mean;
+			fWidthTPC = width;
+		};
+		
+		void SetCorrWidthMeanITS(TH3D* width, TH3D* mean){
+			fMeanITS  = mean;
+			fWidthITS = width;
+		};
+		
+		void SetCorrWidthMeanTOF(TH3D* width, TH3D* mean){
+			fMeanTOF  = mean;
+			fWidthTOF = width;
 		};
 
-		void SetCentralityPercentileRange(Double_t min, Double_t max){
+		void SetCentralityPercentileRange(Float_t min, Float_t max){
 				fCentralityPercentileMin = min;
 				fCentralityPercentileMax = max;
 		}
 
-		void SetPtRange(Double_t min, Double_t max){
-				fPtMin = min;
-				fPtMax = max;
+		// Kinematic cuts set here only applied to V0 TTrees
+		// For standard TTree a dielectron cut library is needed
+		void SetPtRange(Float_t min, Float_t max){
+			fPtMin = min;
+			fPtMax = max;
 		}
 
-		void SetEtaRange(Double_t min, Double_t max){
-				fEtaMin = min;
-				fEtaMax = max;
+		void SetEtaRange(Float_t min, Float_t max){
+			fEtaMin = min;
+			fEtaMax = max;
 		}
 
-		//Set inclusive electron PID cuts
-		void SetESigRangeITS(Double_t min, Double_t max){
-				fPIDcutITS = kTRUE;
-				fESigITSMin = min;
-				fESigITSMax = max;
+		// PID cut used for V0 TTrees
+		void SetESigRangeTPC(Float_t min, Float_t max){
+			fESigTPCMin = min;
+			fESigTPCMax = max;
 		}
 
-		void SetESigRangeTPC(Double_t min, Double_t max){
-				fESigTPCMin = min;
-				fESigTPCMax = max;
-		}
-
-		void SetESigRangeTOF(Double_t min, Double_t max){
-				fPIDcutTOF = kTRUE;
-				fESigTOFMin = min;
-				fESigTOFMax = max;
-		}
-
-		//Set pion PID exclusion cut
-		void SetPSigRangeTPC(Double_t min, Double_t max){
-				fPionPIDcutTPC = kTRUE;
-				fPSigTPCMin = min;
-				fPSigTPCMax = max;
+		// Kaon PID values not saved by default
+		void writeKaonPIDtoTree(Bool_t answer){
+			storeKaonPID = answer;
 		}
 
 		void SetMC(Bool_t answer){ hasMC = answer; }
 
-		//Track cut setters. StandardITSTPC2011 cuts used if nothing specified
+		// Track cut setters. StandardITSTPC2011 cuts used if nothing specified
 		void SetTPCminClusters(Int_t number){
 				fESDtrackCuts->SetMinNClustersTPC(number);
 		}
@@ -153,132 +151,150 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 			hasMC = answer;
 		}
 
-		void SetUseCorr(Bool_t answer){
+		void SetUseTPCcorr(Bool_t answer){
 			fUseTPCcorr = answer;
+		}
+
+		void SetUseITScorr(Bool_t answer){
+			fUseITScorr = answer;
+		}
+		
+		void SetUseTOFcorr(Bool_t answer){
+			fUseTOFcorr = answer;
+		}
+
+		void SetMaxPtPIDcorrection(Float_t answer){
+			maxPtPIDcorrection = answer;
 		}
 
 		Bool_t GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0);
 
-		Bool_t CheckGenerator(Int_t trackID);
+		// Check if the generator is on the list of generators
+		// If found, assign track with integer value correspding to generator
+		// 0 = gen purp, 1=Pythia CC_1, 2= Pythia BB_1, 3=Pythia B_1, 4=Jpsi2ee_1, 5=B2Jpsi2ee_1";
+		Int_t CheckGenerator(Int_t trackID);
+
+		Bool_t isDPMJET(Bool_t answer){
+			ignoreFirstMother = answer;
+		}
 
   private:
  
 		Int_t IsEventAccepted(AliVEvent* event);
-		//Int_t GetAcceptedTracks(AliVEvent *event, Double_t gCentrality);
 	
 		AliAnalysisTaskSimpleTreeMaker(const AliAnalysisTaskSimpleTreeMaker&); // not implemented
 
 		AliAnalysisTaskSimpleTreeMaker& operator=(const AliAnalysisTaskSimpleTreeMaker&); // not implemented
 
+		Int_t eventNum; //!
 		Bool_t hasMC;
 
-		AliESDtrackCuts* fESDtrackCuts; //! ESD track cuts object
+		AliESDtrackCuts* fESDtrackCuts;
 
 		AliPIDResponse* fPIDResponse; //! PID response object
 		AliMCEvent* fMCevent; //!
 
 		TTree* fTree;
 	
-		//Dielectron cut classes needed to source cuts from LMEE cut libraries
-		//The desired cut library should be specified in the AddTask
-		AliDielectronEventCuts* eventCuts; //!
-		AliAnalysisFilter* eventFilter; //!
+		// Dielectron cut classes needed to source cuts from LMEE cut libraries
+		// The desired cut library should be specified in the AddTask
+		AliDielectronEventCuts* eventCuts;
+		AliAnalysisFilter* eventFilter;
 		
-		AliDielectronVarCuts* varCuts; //!
-		AliDielectronTrackCuts *trackCuts; //!
-		AliDielectronPID *pidCuts; //!
-		AliDielectronCutGroup* cuts; //!
-		AliAnalysisFilter* trackFilter;  //!
+		AliDielectronVarCuts* varCuts;
+		AliDielectronTrackCuts *trackCuts;
+		AliDielectronPID *pidCuts;
+		AliDielectronCutGroup* cuts;
+		AliAnalysisFilter* trackFilter;
 
-		//Class needed to use PID within the Dielectron Framework
-		AliDielectronVarManager* varManager; //!
+		// Class needed to use PID within the Dielectron Framework
+		AliDielectronVarManager* varManager;
 
 		// TTree branch variables
 		// Event variables
-		Double_t primaryVertex[3];
-		Double_t multiplicityV0A;
-		Double_t multiplicityV0C;
-		Double_t multiplicityCL1;
+		Float_t primaryVertex[3];
+		Float_t multiplicityV0A;
+		Float_t multiplicityV0C;
+		Float_t multiplicityCL1;
 		Int_t runNumber;
 		Int_t event;
 		// Reconstructed
-		Double_t pt;
-		Double_t eta;
-		Double_t phi;
-		Double_t nTPCclusters;
-		Double_t nTPCcrossed;
-		Double_t fTPCcrossOverFind;
-		Double_t nTPCfindable;
+		Float_t pt;
+		Float_t eta;
+		Float_t phi;
+		Float_t nTPCclusters;
+		Float_t nTPCcrossed;
+		Float_t fTPCcrossOverFind;
+		Float_t nTPCfindable;
 		TBits tpcSharedMap;
-		Double_t nTPCshared;
-		Double_t chi2TPC;
-		Double_t DCA[2];
+		Float_t nTPCshared;
+		Float_t chi2TPC;
+		Float_t DCA[2];
 		Int_t nITS;
-		Double_t chi2ITS;
-		Double_t fITSshared;
+		Float_t chi2ITS;
+		Float_t fITSshared;
 		Bool_t SPDfirst;
 		Int_t charge;
-		Double_t EnSigmaITS;
-		Double_t EnSigmaTPC;
-		Double_t EnSigmaTPCcorr;
-		Double_t EnSigmaTOF;
-		Double_t PnSigmaTPC;
-		Double_t PnSigmaITS;
-		Double_t PnSigmaTOF;
-		Double_t KnSigmaITS;
-		Double_t KnSigmaTPC;
-		Double_t KnSigmaTOF;
-		Double_t ITSsignal;
-		Double_t TPCsignal;
-		Double_t TOFsignal;
-		Double_t goldenChi2;
-		//MC 
-		Double_t mcEta;
-		Double_t mcPhi;
-		Double_t mcPt;
-		Double_t mcVert[3];
+		Float_t EnSigmaITS;
+		Float_t EnSigmaITScorr;
+		Float_t EnSigmaTPC;
+		Float_t EnSigmaTPCcorr;
+		Float_t EnSigmaTOF;
+		Float_t EnSigmaTOFcorr;
+		Float_t maxPtPIDcorrection;
+		Float_t PnSigmaITS;
+		Float_t PnSigmaTPC;
+		Float_t PnSigmaTOF;
+		Bool_t storeKaonPID;
+		Float_t KnSigmaITS;
+		Float_t KnSigmaTPC;
+		Float_t KnSigmaTOF;
+		Float_t ITSsignal;
+		Float_t TPCsignal;
+		Float_t TOFsignal;
+		Float_t goldenChi2;
+		// MC 
+		Float_t mcEta;
+		Float_t mcPhi;
+		Float_t mcPt;
+		Float_t mcVert[3];
 		Int_t iPdg;
 		Int_t iPdgMother;
 		Bool_t HasMother;
 		Int_t motherLabel;
-		Bool_t isInj; // If track is injected (MC only)
-		//V0 features
-		Double_t pointingAngle;
-		Double_t daughtersDCA;
-		Double_t decayLength;
-		Double_t v0mass;
-		Double_t ptArm;
-		Double_t alpha;
+		Int_t isInj; 
+		// Pdg and label for initial particle in decay chain
+		Int_t iPdgFirstMother;
+		Int_t gLabelFirstMother;
+		Int_t gLabelMinFirstMother;
+		Int_t gLabelMaxFirstMother;
+		// V0 features
+		Float_t pointingAngle;
+		Float_t daughtersDCA;
+		Float_t decayLength;
+		Float_t v0mass;
+		Float_t ptArm;
+		Float_t alpha;
 
-		TH1F* fQAhist;
-		Double_t fCentralityPercentileMin;// minimum centrality threshold (default = 0)
-		Double_t fCentralityPercentileMax;// maximum centrality threshold (default = 80)
+		TH1F* fQAhist; //!
+		// Currently no cut on centrality
+		Float_t fCentralityPercentileMin;
+		Float_t fCentralityPercentileMax;
 
-		Double_t fPtMin;// minimum pT threshold (default = 0)
-		Double_t fPtMax;// maximum pT threshold (default = 10)
-		Double_t fEtaMin;// minimum eta threshold (default = -0.8)
-		Double_t fEtaMax;// maximum eta threshold (default = 0.8)
+		// Kinematic cuts used in the creation of the V0 TTrees
+		Float_t fPtMin;
+		Float_t fPtMax;
+		Float_t fEtaMin;
+		Float_t fEtaMax;
 
-		//Values and flags for PID cuts in ITS and TOF
-		Double_t fESigITSMin;
-		Double_t fESigITSMax;
-		Double_t fESigTPCMin; 
-		Double_t fESigTPCMax; 
-		Double_t fESigTOFMin;
-		Double_t fESigTOFMax;
-		
-		Bool_t fPIDcutITS;
-		Bool_t fPIDcutTOF;
-		
-		//Values and flag for pion PID cuts in TPC
-		Bool_t fPionPIDcutTPC;
-		Double_t fPSigTPCMin;
-		Double_t fPSigTPCMax;
+		// TPC PID cuts for V0 TTree
+		Float_t fESigTPCMin; 
+		Float_t fESigTPCMax; 
 		
 		Bool_t fHasSDD;
 
 		Bool_t fIsV0tree;
-		TH2F* fArmPlot;
+		TH2F* fArmPlot; //!
 
 		Bool_t fIsAOD;
 		Int_t fFilterBit;
@@ -288,13 +304,27 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		Int_t fGridPID;
 				
 		Bool_t fUseTPCcorr;
-		TH3D* fWidth; //!
-		TH3D* fMean; //!
+		TH3D* fWidthTPC;
+		TH3D* fMeanTPC;
 
-		// Store list of generator hashes which can be checked against to determine
-		// whether or not the track was injected
+		Bool_t fUseITScorr;
+		TH3D* fWidthITS;
+		TH3D* fMeanITS;
+		
+		Bool_t fUseTOFcorr;
+		TH3D* fWidthTOF;
+		TH3D* fMeanTOF;
+
+		// Temp variable (needed for testing MC issues)
+		Int_t TOFstartMask;
+
+		// Store list of generator hashes which can be checked to determine whether
+		// or not the track was injected
 		std::vector<UInt_t> fGeneratorHashes;
-		ClassDef(AliAnalysisTaskSimpleTreeMaker, 4); //
+
+		Bool_t ignoreFirstMother;
+
+		ClassDef(AliAnalysisTaskSimpleTreeMaker, 6); 
 
 };
 

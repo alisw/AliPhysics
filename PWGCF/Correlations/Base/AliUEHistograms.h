@@ -92,6 +92,7 @@ class AliUEHistograms : public TNamed
   void SetEtaOrdering(Bool_t flag) { fEtaOrdering = flag; }
   void SetPairCuts(Float_t conversions, Float_t resonances) { fCutConversionsV = conversions; fCutResonancesV = resonances; }
   void SetCutOnPhi(bool cutOnPhi) { fCutOnPhi = cutOnPhi; }
+  void SetCutOnRho(bool cutOnRho) { fCutOnRho = cutOnRho; }
   void SetRejectResonanceDaughters(Int_t value) { fRejectResonanceDaughters = value; }
   void SetOnlyOneEtaSide(Int_t flag)    { fOnlyOneEtaSide = flag; }
   void SetOnlyOneAssocEtaSide(Int_t flag)    { fOnlyOneAssocEtaSide = flag; }
@@ -156,6 +157,7 @@ protected:
   Float_t fCutConversionsV;        // cut on conversions (inv mass)
   Float_t fCutResonancesV;         // cut on resonances (inv mass)
   bool fCutOnPhi;                // cut on Phi as well with the same resonance cut as for the others
+  bool fCutOnRho;                // cut on Rho as well with the same resonance cut as for the others
   Int_t fRejectResonanceDaughters; // reject all daughters of all resonance candidates (1: test method (cut at m_inv=0.9); 2: k0; 3: lambda)
   Int_t fOnlyOneEtaSide;       // decides that only trigger particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
   Int_t fOnlyOneAssocEtaSide;       // decides that only associated particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)

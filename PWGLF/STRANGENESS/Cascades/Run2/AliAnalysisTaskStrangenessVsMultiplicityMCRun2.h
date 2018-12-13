@@ -75,6 +75,9 @@ public:
     void SetPreselectPID (Bool_t lPreselectPID = kTRUE ) {
         fkPreselectPID   = lPreselectPID;
     }
+    void SetAlwaysKeepTrue (Bool_t lAlwaysKeepTrue = kTRUE ) {
+        fkAlwaysKeepTrue   = lAlwaysKeepTrue;
+    }
     void SetUseOnTheFlyV0Cascading( Bool_t lUseOnTheFlyV0Cascading = kTRUE ){
         //Highly experimental, use with care!
         fkUseOnTheFlyV0Cascading = lUseOnTheFlyV0Cascading;
@@ -109,12 +112,25 @@ public:
     void SetExtraCleanup ( Bool_t lExtraCleanup = kTRUE) {
         fkExtraCleanup = lExtraCleanup;
     }
+    void SetHypertritonMode ( Bool_t lOpt = kTRUE) {
+        fkHypertritonMode = lOpt;
+    }
+    void SetHeavyDaughterPID ( Bool_t lOpt = kTRUE) {
+        fkHeavyDaughterPID = lOpt;
+    }
+    void SetSandboxV0Prongs ( Bool_t lOpt = kTRUE) {
+        fkSandboxV0Prongs = lOpt;
+    }
     //---------------------------------------------------------------------------------------
     void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
         fkDoExtraEvSels = lUseExtraEvSels;
     }
-    AliEventCuts* GetEventCuts (){
-        return &fEventCuts; //adddress of this object for manipulation at runtime
+    void SetPileupRejectionMode ( Int_t lMode = 1 ){
+        //mode switch
+        // 0 -> no rejection
+        // 1 -> Ionut
+        // 2 -> Anti-Ionut
+        fkPileupRejectionMode = lMode;
     }
     void SetUseOldCentrality ( Bool_t lUseOldCent = kTRUE) {
         fkUseOldCentrality = lUseOldCent;
@@ -237,9 +253,11 @@ public:
     void AddTopologicalQAV0(Int_t lRecNumberOfSteps = 100);
     void AddTopologicalQACascade(Int_t lRecNumberOfSteps = 100);
     // 3 - Standard analysis configurations + systematics
-    void AddStandardV0Configuration(Bool_t lUseFull=kFALSE, Bool_t lDoSweep = kFALSE);
-    void AddStandardCascadeConfiguration(Bool_t lUseFull=kFALSE);
+    void AddStandardV0Configuration(Bool_t lUseFull = kFALSE, Bool_t lDoSweepLooseTight = kFALSE, Int_t lSweepFullNumb = 0);
+    void AddStandardV0RadiusSweep(); 
+    void AddStandardCascadeConfiguration(Bool_t lUseFull=kFALSE, Bool_t lDoSystematics = kTRUE);
     void AddCascadeConfiguration276TeV();
+    void AddCascadeConfigurationPreliminaryCrosscheck();
     //---------------------------------------------------------------------------------------
     Float_t GetDCAz(AliESDtrack *lTrack);
     Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
@@ -262,8 +280,10 @@ private:
     // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
     // your data member object is created on the worker nodes and streaming is not needed.
     // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
-    TList  *fListHist;      //! List of Cascade histograms
-    TList  *fListV0;        // List of Cascade histograms
+    TList  *fListHist;      //! List of event histograms
+    TList  *fListK0Short;        // List of V0 histograms
+    TList  *fListLambda;        // List of V0 histograms
+    TList  *fListAntiLambda;        // List of V0 histograms
     TList  *fListXiMinus;   // List of XiMinus outputs
     TList  *fListXiPlus;   // List of XiPlus outputs
     TList  *fListOmegaMinus;   // List of XiMinus outputs
@@ -278,8 +298,8 @@ private:
     AliESDtrackCuts *fESDtrackCutsGlobal2015; // ESD track cuts used for global track definition
     AliAnalysisUtils *fUtils;         // analysis utils (for MV pileup selection)
     
-    //Implementation of event selection utility
-    AliEventCuts fEventCuts; /// Event cuts class
+    AliEventCuts fEventCuts;                 /// Event cuts class
+    AliEventCuts fEventCutsStrictAntipileup; /// Event cuts class
     
     TRandom3 *fRand;
     
@@ -290,6 +310,7 @@ private:
     Double_t fDownScaleFactorV0;
     Bool_t fkPreselectDedx;
     Bool_t fkPreselectPID;
+    Bool_t fkAlwaysKeepTrue;
     Bool_t fkUseOnTheFlyV0Cascading;
     Bool_t fkDoImprovedCascadeVertexFinding;
     Bool_t fkIfImprovedPerformInitialLinearPropag;
@@ -299,6 +320,7 @@ private:
     Bool_t fkDebugParenthood; //if true, add extra info to TTrees (full parenthood) for debugging
     Bool_t fkDebugOOBPileup; // if true, add extra information to TTrees for pileup study
     Bool_t fkDoExtraEvSels; //use AliEventCuts for event selection
+    Int_t fkPileupRejectionMode; //pileup rejection mode (0=none, 1=ionut, 2=anti-ionut)
     Bool_t fkUseOldCentrality; //if true, use AliCentrality instead of AliMultSelection
     
     Bool_t fkSaveCascadeTree;         //if true, save TTree
@@ -324,6 +346,10 @@ private:
     Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
     Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit() to improve precision
     Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
+    
+    Bool_t fkHypertritonMode; //if true, save everything in hypertriton mass window
+    Bool_t fkHeavyDaughterPID; //if true, save everything that has perfect PID in heavy daughters (akin to dedx)
+    Bool_t fkSandboxV0Prongs; //if true, sandbox mode will save the V0 prongs and not ESD track parametrizations
     
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
     
@@ -433,6 +459,7 @@ private:
     Bool_t fTreeVariableNegITSSharedClusters5;
     
     Bool_t fTreeVariableIsCowboy; //store if V0 is cowboy-like or sailor-like in XY plane
+    Int_t fTreeVariableRunNumber; //store run number for random stuff
 
     //Variables for OOB pileup study (high-multiplicity triggers pp 13 TeV - 2016 data)
     Float_t fTreeVariableNegTOFExpTDiff;      //!
@@ -809,6 +836,12 @@ private:
     Bool_t fTreeCascVarPosIsKink;
     Bool_t fTreeCascVarNegIsKink;
     
+    //Cowboy/sailor studies
+    Bool_t  fTreeCascVarIsCowboy;   //store if V0 is cowboy-like or sailor-like in XY plane
+    Float_t fTreeCascVarCowboyness; //negative -> cowboy, positive -> sailor
+    Bool_t  fTreeCascVarIsCascadeCowboy;   //store if V0 is cowboy-like or sailor-like in XY plane
+    Float_t fTreeCascVarCascadeCowboyness; //negative -> cowboy, positive -> sailor
+    
     //Well, why not? Let's give it a shot
     Int_t   fTreeCascVarSwappedPID;         //!
     
@@ -839,6 +872,10 @@ private:
     TH3D *fHistGeneratedPtVsYVsCentralityXiPlus;
     TH3D *fHistGeneratedPtVsYVsCentralityOmegaMinus;
     TH3D *fHistGeneratedPtVsYVsCentralityOmegaPlus;
+    
+    //Hypertriton
+    TH3D *fHistGeneratedPtVsYVsCentralityHypertriton;
+    TH3D *fHistGeneratedPtVsYVsCentralityAntihypertriton;
     
     AliAnalysisTaskStrangenessVsMultiplicityMCRun2(const AliAnalysisTaskStrangenessVsMultiplicityMCRun2&);            // not implemented
     AliAnalysisTaskStrangenessVsMultiplicityMCRun2& operator=(const AliAnalysisTaskStrangenessVsMultiplicityMCRun2&); // not implemented

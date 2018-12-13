@@ -474,7 +474,7 @@ AliAnalysisTaskLNNntuple::UserExec (Option_t *)
       Double_t ntuple[34] =
 	{ momPi[0], momPi[1], momPi[2], momTri[0], momTri[1],momTri[2], nSPi, nSTri,
 	  tofMass,pion->GetTPCsignal (), triton->GetTPCsignal (),
-	  v0s->P (), ptArm, alphaArm, dcaTri[0], dcaTri[1],v0s->GetDcaV0Daughters (), decayL.Mag(), decayLXY,
+	  v0s->P(), ptArm, alphaArm, dcaTri[0], dcaTri[1],v0s->GetDcaV0Daughters (), decayL.Mag(), decayLXY,
 	  v0s->GetD (vtx->GetX (), vtx->GetY (), vtx->GetZ ()),v0s->GetV0CosineOfPointingAngle (), err, pion->GetSign () + triton->GetSign ()*10,
 	  dcaPi,isHele,nSPiFromPiTof,nSPrTof,nSPiTof,pion->GetNumberOfITSClusters()+100.*triton->GetNumberOfITSClusters(),
 	  pdgPion,pdgTriton,pdgPionMum,pdgTritonMum,triton->GetTRDsignal()};
@@ -484,7 +484,7 @@ AliAnalysisTaskLNNntuple::UserExec (Option_t *)
       Double_t ntuple[30] =
 	{ momPi[0], momPi[1], momPi[2], momTri[0], momTri[1],momTri[2], nSPi, nSTri,
 	  tofMass,pion->GetTPCsignal (), triton->GetTPCsignal (),
-	  v0s->Pt(), ptArm, alphaArm, dcaTri[0], dcaTri[1], v0s->GetDcaV0Daughters (), decayL.Mag(), decayLXY,
+	  v0s->P(), ptArm, alphaArm, dcaTri[0], dcaTri[1], v0s->GetDcaV0Daughters (), decayL.Mag(), decayLXY,
 	  v0s->GetD (vtx->GetX (), vtx->GetY (), vtx->GetZ ()),v0s->GetV0CosineOfPointingAngle (), err, pion->GetSign () + triton->GetSign ()*10,
 	  dcaPi,isHele,nSPiFromPiTof,nSPrTof,nSPiTof,pion->GetNumberOfITSClusters()+100.*triton->GetNumberOfITSClusters(),triton->GetTRDsignal()};
       fNt->Fill (ntuple);
