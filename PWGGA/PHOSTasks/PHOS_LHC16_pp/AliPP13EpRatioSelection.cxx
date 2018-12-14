@@ -132,7 +132,7 @@ void AliPP13EpRatioSelection::FillClusterHistograms(const AliVCluster * cluster,
 	Float_t nsigma_min = -1.5;
 	Float_t nsigma_max = 3;
 	Float_t nsigma_cpv = 9999;
-	Float_t nsigma_disp = 9999;
+	Float_t nsigma_disp = 2.5;
 	Float_t distance_cut = 5.; // [cm]
 
 	// Don't do anything if pidresponse wasn't defined

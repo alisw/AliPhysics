@@ -48,6 +48,10 @@ void AliPP13NonlinearityScanSelection::InitSelectionHistograms()
 			fListOfHistos->Add(fMixInvariantMass[ia][ib]);
 		}
 	}
+	fPtPrimaryPi0 = new TH1F(
+	    "hPt_primary_#pi^{0}_",
+	    "Generated p_{T} spectrum of primary #pi^{0}s; p_{T}, GeV/c",
+	    nPt, ptMin, ptMax);
 
 
 	// NB: Reduce the selection size
@@ -89,14 +93,43 @@ void AliPP13NonlinearityScanSelection::ConsiderPair(const AliVCluster * c1, cons
 	}
 }
 
+//________________________________________________________________
+void AliPP13NonlinearityScanSelection::ConsiderGeneratedParticles(const EventFlags & eflags)
+{
+	if (!eflags.fMcParticles)
+		return;
+
+	for (Int_t i = 0; i < eflags.fMcParticles->GetEntriesFast(); i++)
+	{
+		AliAODMCParticle * particle = ( AliAODMCParticle *) eflags.fMcParticles->At(i);
+		Int_t code = TMath::Abs(particle->GetPdgCode());
+
+		// NB: replace this condition by find, if the number of particles will grow
+		//
+		if (code != 111) // Only neutral pions
+			continue;
+
+
+		Double_t pt = particle->Pt();
+		Double_t w = fWeights->Weights(pt, eflags);
+
+		// Use this to remove forward photons that can modify our true efficiency
+		if (TMath::Abs(particle->Y()) > 0.5) // NB: Use rapidity instead of pseudo rapidity!
+			continue;
+
+		Bool_t primary = IsPrimary(particle);
+		if (!primary)
+			continue;
+		fPtPrimaryPi0->Fill(pt, w);
+	}
+}
 
 //________________________________________________________________
 TLorentzVector AliPP13NonlinearityScanSelection::ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags) const
 {
 	// NB: Intentionally don't apply nonlinearity Correction here
-    // Float_t energy = c1->E();
-    TLorentzVector p;
-    c1->GetMomentum(p, eflags.vtxBest);
+	// Float_t energy = c1->E();
+	TLorentzVector p;
+	c1->GetMomentum(p, eflags.vtxBest);
 	return p;
 }
-
