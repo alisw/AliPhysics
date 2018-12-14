@@ -442,9 +442,10 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelectedPID(Double_t Pt, TObjArray aodtracks) {
   for(Int_t daught=0; daught<3; daught++){
     track[daught]=(AliAODTrack*)aodtracks.At(daught);
   }
-  Int_t sign = track[0]->Charge();
   
   if(!fUsePID || !track[0] || !track[1] || !track[2]) return 3;
+
+  Int_t sign = track[0]->Charge();
 
   //if(fUsePID)printf("i am inside the pid \n");
   Int_t nkaons=0;
