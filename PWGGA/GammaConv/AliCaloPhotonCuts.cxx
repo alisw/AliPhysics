@@ -5803,6 +5803,38 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         }
       }
       break;
+    case 47:
+      if (fClusterType == 1|| fClusterType == 3){
+        if(isMC == 0)
+          energy *= FunctionNL_kTestBeamMod(energy, 0.972947, 0.986154, 0.214860, 0.717724, 0.069200, 155.497605, 48.868069);
+        else {
+          energy *= FunctionNL_kPi0MCMod(energy, 1.004055, 1.009121, 0.083153, 1.444362, 0.100294, 416.897753, 324.246101);
+          if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c ) {
+            if(fClusterType==1 ){
+              energy /= FunctionNL_SPOW(energy, 0.9911279061, 0.0046281250, -5.1486761047) ;
+            } else if (fClusterType==3){
+              energy /= FunctionNL_kSDM(energy, 0.976447, -3.88631, -0.337078) ;
+            }
+          } else fPeriodNameAvailable = kFALSE;
+        }
+      }
+      break;
+    case 48:
+      if (fClusterType == 1|| fClusterType == 3){
+        if(isMC == 0)
+          energy *= FunctionNL_kTestBeamMod(energy, 0.972947, 0.986154, 0.214860, 0.717724, 0.069200, 155.497605, 48.868069);
+        else {
+          energy *= FunctionNL_kPi0MCMod(energy, 1.004055, 1.009121, 0.083153, 1.444362, 0.100294, 416.897753, 324.246101);
+          if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c ) {
+            if(fClusterType==1 ){
+              energy /= FunctionNL_SPOW(energy, 1.0010549936, 0.0155962913, -2.5907698895) ;
+            } else if (fClusterType==3){
+              energy /= FunctionNL_SPOW(energy, 0.9905473008, 0.0157137852, -2.3456519285) ;
+            }
+          } else fPeriodNameAvailable = kFALSE;
+        }
+      }
+      break;
 
 // *************** 50 + x **** modified tender Settings 1 - pPb
     // NonLinearity LHC13 pPb ConvCalo  - only shifting MC
@@ -5942,6 +5974,38 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           energy *= FunctionNL_kPi0MCv3(energy);
           if( fCurrentMC==kPPb5T16EPOS )          energy /= 0.9887044419;
           else if ( fCurrentMC==kPPb5T16DPMJet )  energy /= 0.9891917142;
+        }
+      }
+      break;
+    case 57:
+      if (fClusterType == 1|| fClusterType == 3){
+        if(isMC == 0)
+          energy *= FunctionNL_kTestBeamMod(energy, 0.972947, 0.986154, 0.214860, 0.717724, 0.069200, 155.497605, 48.868069);
+        else {
+          energy *= FunctionNL_kPi0MCMod(energy, 1.004055, 1.009121, 0.083153, 1.444362, 0.100294, 416.897753, 324.246101);
+          if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c ) {
+            if(fClusterType==1 ){
+              energy /= FunctionNL_DPOW(energy, 0.9952456542, 0.0138341175, -1.2855539410, 1.0092843163, 0.0123126175, -4.1691957278 );
+            } else if (fClusterType==3){
+              energy /= FunctionNL_DExp(energy, 0.9968158185, 15.1688406741, 3.6964381952, 1.0242323030, 0.1955714892, -3.8051558657) ;
+            }
+          } else fPeriodNameAvailable = kFALSE;
+        }
+      }
+      break;
+    case 58:
+      if (fClusterType == 1|| fClusterType == 3){
+        if(isMC == 0)
+          energy *= FunctionNL_kTestBeamMod(energy, 0.972947, 0.986154, 0.214860, 0.717724, 0.069200, 155.497605, 48.868069);
+        else {
+          energy *= FunctionNL_kPi0MCMod(energy, 1.004055, 1.009121, 0.083153, 1.444362, 0.100294, 416.897753, 324.246101);
+          if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c ) {
+            if(fClusterType==1 ){
+              energy /= FunctionNL_DPOW(energy, 0.9975703755, -0.0069259279, -4.0620824681, 0.9968577540, 0.0085314562, -2.0417077818 );
+            } else if (fClusterType==3){
+              energy /= FunctionNL_DPOW(energy, 0.9883179003, -0.0022477965, -7.4912876804, 0.9983309708, 0.0123415948, -2.2360698158 );
+            }
+          } else fPeriodNameAvailable = kFALSE;
         }
       }
       break;
@@ -6228,6 +6292,16 @@ Float_t AliCaloPhotonCuts::FunctionNL_DPOW(Float_t e, Float_t p0, Float_t p1, Fl
   Float_t ret = 1;
   if ((p3 +  p4 * TMath::Power(e,p5 ) ) != 0)
     ret = ( (p0 +  p1 * TMath::Power(e,p2 ) )/(p3 +  p4 * TMath::Power(e,p5 ) ) );
+  if (ret != 0.)
+    return ret;
+  else
+    return 1.;
+}
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_SPOW(Float_t e, Float_t p0, Float_t p1, Float_t p2){
+  Float_t ret = 1;
+  if ((p0 -  p1 * TMath::Power(e,p2 ) ) != 0)
+    ret = (p0 -  p1 * TMath::Power(e,p2 ) );
   if (ret != 0.)
     return ret;
   else
