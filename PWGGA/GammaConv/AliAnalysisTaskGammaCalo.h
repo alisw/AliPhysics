@@ -394,6 +394,10 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                 fHistoTrueSecondaryPi0FromK0linJetInvMassPt;          // Histogram with validated secondary mothers from K0l in a jet, invMass, pt
     TH2F**                 fHistoTrueSecondaryPi0InvJetMassPt;                   // Histogram with validated secondary mothers in an event with a jet, invMass, pt
     TH2F**                 fHistoTrueSecondaryPi0InvinJetMassPt;                 // Histogram with validated secondary mothers in a jet, invMass, pt
+    TH2F**                 fHistoMotherPi0inJetPtY;                              // Histogram with the rapidity of the validated pi0s in jets
+    TH2F**                 fHistoMotherEtainJetPtY;                              // Histogram with the rapidity of the validated etas in jets
+    TH2F**                 fHistoMotherPi0inJetPtPhi;                            // Histogram with the phi of the validated pi0s in jets
+    TH2F**                 fHistoMotherEtainJetPtPhi;                            // Histogram with the phi of the validated etas in jets
 
     vector<Double_t>      fVectorJetPt;                                         // Vector of JetPt
     vector<Double_t>      fVectorJetPx;                                         // Vector of JetPx
