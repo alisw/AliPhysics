@@ -119,7 +119,7 @@ void AliGenReadersEMD::Init()
 
     TFile *pFile=0;
     if (!pFile) {
-	    pFile = new TFile(fFileName);
+            pFile = TFile::Open(fFileName);
 	    pFile->cd();
 	    printf("\n %s file opened to read RELDIS EMD events\n\n", fFileName);
     }
