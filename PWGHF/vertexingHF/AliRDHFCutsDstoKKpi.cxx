@@ -625,6 +625,7 @@ Int_t AliRDHFCutsDstoKKpi::IsSelectedPID(AliAODRecoDecayHF *rd) {
   // PID selection
   // return values: 0->NOT OK, 1->OK as KKpi, 2->OK as piKK, 3->OK as both
   Int_t retCode=3;
+  if(!fUsePID) return retCode;
   if(rd) {
     Double_t Pt = rd->Pt();
     TObjArray aodtracks(3);
