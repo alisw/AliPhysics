@@ -16,10 +16,10 @@
 //______________________________________________________________________________
 // Analysis task for jT Analysis
 // author: B.K Kim,  D.J. Kim, T. Snellman
-// ALICE Group University of Jyvaskyla 
-// Finland 
+// ALICE Group University of Jyvaskyla
+// Finland
 // Fill the analysis containers for ESD or AOD
-// Adapted for AliAnalysisTaskSE and AOD objects  
+// Adapted for AliAnalysisTaskSE and AOD objects
 //////////////////////////////////////////////////////////////////////////////
 
 #include "AliAODEvent.h"
@@ -27,17 +27,18 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAODHandler.h"
 #include "AliParticleContainer.h"
+#include "AliMultSelection.h"
 #include "AliAnalysisManager.h"
 #include "AliJHistManager.h"
 #include "AliLog.h"
 #include "AliJMCTrack.h"
-#include "AliJJetJtTask.h" 
+#include "AliJJetJtTask.h"
 #include "AliJCard.h"
 #include "AliJetContainer.h"
 #include "AliJEfficiency.h"
 
 //______________________________________________________________________________
-AliJJetJtTask::AliJJetJtTask() :   
+AliJJetJtTask::AliJJetJtTask() :
   AliAnalysisTaskSE("AliJJetJtTaskTask"),
   fJetTask(NULL),
   fMCJetTask(NULL),
@@ -54,6 +55,7 @@ AliJJetJtTask::AliJJetJtTask() :
   fDoLog(0),
   NRandom(1),
   moveJet(0),
+  fCentCut(100),
   zVert(-999),
   fAnaUtils(NULL),
   fRunTable(NULL),
@@ -82,6 +84,7 @@ AliJJetJtTask::AliJJetJtTask(const char *name, TString inputformat):
   fDoLog(0),
   NRandom(1),
   moveJet(0),
+  fCentCut(100),
   zVert(-999),
   fAnaUtils(NULL),
   fRunTable(NULL),
@@ -111,6 +114,7 @@ AliJJetJtTask::AliJJetJtTask(const AliJJetJtTask& ap) :
   fSide(ap.fSide),
   NRandom(ap.NRandom),
   moveJet(ap.moveJet),
+  fCentCut(ap.fCentCut),
   zVert(ap.zVert),
   fJMCTracks(ap.fJMCTracks),
   fAnaUtils(ap.fAnaUtils),
@@ -232,12 +236,39 @@ void AliJJetJtTask::UserExec(Option_t* /*option*/)
   // centrality
   float fcent = -999;
   if(fRunTable->IsHeavyIon() || fRunTable->IsPA()){
-    AliCentrality *cent = event->GetCentrality();
-    if( ! cent ) return;
-    fcent = cent->GetCentralityPercentile("V0M");
+		if(fRunTable->IsPA()){
+      //cout << "Is PA" << endl;
+      //aodEvent->Print();
+			//AliMultSelection *sel = (AliMultSelection*)aodEvent->FindListObject("MultSelection");
+	    sel = (AliMultSelection*) InputEvent() -> FindListObject("MultSelection");
+      if(false){
+        cout << "V0A: " << sel->GetMultiplicityPercentile("V0A") << endl;
+        cout << "V0C: " << sel->GetMultiplicityPercentile("V0C") << endl;
+        cout << "V0M: " << sel->GetMultiplicityPercentile("V0M") << endl;
+        cout << "V0Mminus05: " << sel->GetMultiplicityPercentile("V0Mminus05") << endl;
+        cout << "V0Mminus10: " << sel->GetMultiplicityPercentile("V0Mminus10") << endl;
+        cout << "V0Mplus05: " << sel->GetMultiplicityPercentile("V0Mplus05") << endl;
+        cout << "V0Mplus10: " << sel->GetMultiplicityPercentile("V0Mplus10") << endl;
+        cout << "SPDtracklets: " << sel->GetMultiplicityPercentile("SPDtracklets") << endl;
+        cout << "CL0: " << sel->GetMultiplicityPercentile("CL0") << endl;
+        cout << "CL1: " << sel->GetMultiplicityPercentile("CL1") << endl;
+        cout << "ZDC: " << sel->GetMultiplicityPercentile("ZDC") << endl;
+      }
+      if (sel) {
+        fcent = sel->GetMultiplicityPercentile("V0C");
+        //cout << "fCent: " << fcent << endl;
+      }
+      else{
+        cout << "Sel not found" << endl;
+      }
+    }
+    /*AliCentrality *cent = event->GetCentrality();
+      if( ! cent ) return;
+      fcent = cent->GetCentralityPercentile("V0M");*/
   } else {
     fcent = -1;
   }
+  if(fcent > fCentCut) return;
 
   cBin = fCard->GetBin(kCentrType, fcent);;
 
