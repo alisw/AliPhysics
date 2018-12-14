@@ -1912,6 +1912,12 @@ void AliAnalysisTaskSEDs::CreateImpactParameterSparses()
   fImpParSparseMC[2] = new THnSparseF("hMassPtImpParTrueBfeed", "Mass vs. pt vs. true imppar -DfromB", kVarForImpPar, nbins, xmin, xmax);
   fImpParSparseMC[3] = new THnSparseF("hMassPtImpParBkg", "Mass vs. pt vs. imppar - backgr.", kVarForImpPar, nbins, xmin, xmax);
 
+  for(Int_t iax=0; iax<kVarForImpPar; iax++){
+    fImpParSparse->GetAxis(iax)->SetTitle(axTit[iax].Data());
+    for(Int_t ih=0; ih<4; ih++) fImpParSparseMC[ih]->GetAxis(iax)->SetTitle(axTit[iax].Data());
+  }
+
+
   if (!fReadMC)
     fOutput->Add(fImpParSparse);
   else
