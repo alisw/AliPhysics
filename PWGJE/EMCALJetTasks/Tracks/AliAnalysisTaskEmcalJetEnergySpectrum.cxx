@@ -128,7 +128,7 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
     fEventCuts = new AliEventCuts(true);
     // Do not perform trigger selection in the AliEvent cuts but let the task do this before
     fEventCuts->OverrideAutomaticTriggerSelection(AliVEvent::kAny, true);
-    fEventCuts->AddQAplotsToList(fOutput, true);
+    fOutput->Add(fEventCuts);
   }
   PostData(1, fOutput);
 }
