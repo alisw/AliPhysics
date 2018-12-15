@@ -35,8 +35,8 @@ public:
   void SetUseImprovedFinding(const Bool_t lInput);
   
   //For V0 finding improvements
-  static void GetHelixCenter(const AliExternalTrackParam *track,Double_t center[2], const Double_t b);
-  static Bool_t Preoptimize(const AliExternalTrackParam *nt, AliExternalTrackParam *pt, Double_t *lPreprocessxn, Double_t *lPreprocessxp, const Double_t b);
+  void GetHelixCenter(const AliExternalTrackParam *track,Double_t center[2], const Double_t b);
+  Bool_t Preoptimize(const AliExternalTrackParam *nt, AliExternalTrackParam *pt, Double_t lPreprocessxn, Double_t lPreprocessxp, const Double_t b);
   
 private:
   AliV0vertexer(const AliV0vertexer&) : fEtaMax(), fChi2max(), fDNmin(), fDPmin(), fDCAmax(), fCPAmin(), fRmin(), fRmax(), fV0HypSelArray(NULL) {}
