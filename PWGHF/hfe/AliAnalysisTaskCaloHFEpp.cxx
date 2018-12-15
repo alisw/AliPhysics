@@ -94,6 +94,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fNevents(0),
 				fNDB(0),
 				fHist_VertexZ(0),
+				fHist_VertexZ_all(0),
 				fHist_Centrality(0),
 				fHist_Mult(0),
 				fTrigMulti(0),
@@ -255,6 +256,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fNevents(0),
 				fNDB(0),
 				fHist_VertexZ(0),
+				fHist_VertexZ_all(0),
 				fHist_Centrality(0),
 				fHist_Mult(0),
 				fTrigMulti(0),
@@ -425,6 +427,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fHistEta_EMcal = new TH1F("fHistEta_EMcal", "EMCAL selected cluster #eta distribution; #eta; counts", 200, -4, 4);    
 				fHistPhi_EMcal = new TH1F("fHistPhi_EMcal", "EMCAL selected cluster #phi distribution; #phi; counts", 200, 0, 10);    
 				fHist_VertexZ = new TH1F("fHist_VertexZ", "Z Vertex position; Vtx_{z}; counts", 200, -25, 25);     
+				fHist_VertexZ_all = new TH1F("fHist_VertexZ_all", "All z vertex position; Vtx_{z}; counts", 600, -30, 30);     
 				fHist_Centrality = new TH1F("fHist_Centrality", "Centrality", 100, 0, 100);
 				fNevents = new TH1F("fNevents","No of events",8,-0.5,7.5);
 				fNDB = new TH1F("fNDB","No of events",2,-0.5,1.5);
@@ -552,6 +555,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fOutputList->Add(fNevents);
 				fOutputList->Add(fNDB);
 				fOutputList->Add(fHist_VertexZ);          
+				fOutputList->Add(fHist_VertexZ_all);          
 				fOutputList->Add(fHist_Centrality);       
 				fOutputList->Add(fHist_Mult);           
 				fOutputList->Add(fTrigMulti);
@@ -810,6 +814,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				Double_t Xvertex = pVtx->GetX();
 				Double_t Yvertex = pVtx->GetY();
 				Double_t Zvertex = pVtx->GetZ();
+				fHist_VertexZ_all->Fill(Zvertex);
 				//==== SPD Vtx ====
 				const AliVVertex *pVtxSPD = fVevent->GetPrimaryVertexSPD();
 				Double_t ZvertexSPD = pVtxSPD->GetZ();
@@ -1112,14 +1117,6 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 								}				
 
 
-								// 411 : D+, 421 :  D0, 413 : D*+, 423 : D*0, 431 : D_s+, 433 : D_s*+
-								if(pid_eleD){
-												if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)== 413){fDCAxy_Pt_Dpm->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
-												if(TMath::Abs(pidM)==421 || TMath::Abs(pidM)== 423){fDCAxy_Pt_D0->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
-												if(TMath::Abs(pidM)==431 || TMath::Abs(pidM)== 433){fDCAxy_Pt_Ds->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
-								}
-								if(TMath::Abs(pidM)==4122){fDCAxy_Pt_lambda->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
-								if(pid_eleB){fDCAxy_Pt_B->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
 
 
 
@@ -1227,6 +1224,15 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 												fHistNsigEop->Fill(eop,fTPCnSigma);
 
+												// 411 : D+, 421 :  D0, 413 : D*+, 423 : D*0, 431 : D_s+, 433 : D_s*+
+												if(pid_eleD){
+																if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)== 413){fDCAxy_Pt_Dpm->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+																if(TMath::Abs(pidM)==421 || TMath::Abs(pidM)== 423){fDCAxy_Pt_D0->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+																if(TMath::Abs(pidM)==431 || TMath::Abs(pidM)== 433){fDCAxy_Pt_Ds->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+												}
+												if(TMath::Abs(pidM)==4122){fDCAxy_Pt_lambda->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+												if(pid_eleB){fDCAxy_Pt_B->Fill(TrkPt,DCA[0]*Bsign*track->Charge());}
+
 												Bool_t fFlagNonHFE=kFALSE; 
 												Bool_t fFlagIsolation=kFALSE; 
 												//if(fTPCnSigma<6 && fTPCnSigma>-6 && eop < 1.2&& eop > 0.8 && m20>0.02 && m20<0.25){ //for MC
@@ -1284,6 +1290,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 																				fTPCnsig_ele->Fill(fTPCnSigma);
 																				fEop_ele->Fill(eop);
 																				fDCAxy_Pt_ele->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
+
 																}
 												}
 												if(fTPCnSigma< CutEopHad && m20>CutM20[0] && m20<CutM20[1]){
