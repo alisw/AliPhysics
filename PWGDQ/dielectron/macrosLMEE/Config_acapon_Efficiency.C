@@ -1,11 +1,7 @@
-Bool_t SetTPCCorrection = kFALSE;
-Bool_t SetITSCorrection = kFALSE;
-Bool_t SetTOFCorrection = kFALSE;
-
 Bool_t SetGeneratedSmearingHistos = kTRUE;
 
-Bool_t DoPairing    = kFALSE;
-Bool_t DoULSLS      = kFALSE;
+Bool_t DoPairing    = kTRUE;
+Bool_t DoULSLS      = kTRUE;
 Bool_t DeactivateLS = kTRUE;
 
 // Leave blank to not use resolution files
