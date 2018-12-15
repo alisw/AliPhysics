@@ -711,18 +711,20 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
   {
     // Calculate the cross section weights, apply them to all histograms 
     // and fill xsec and trial histo. Sumw2 must be activated.
-    if ( cutsString.Contains("MCWeigth") )
+    if ( cutsString.Contains("MCWeight") )
     {
       maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionCalculation(); 
       maker->SwitchOnSumw2Histograms();
+    }
+    else
+    {
+      // Just fill cross section and trials histograms.
+      maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionHistoFill();
     }
     
     // For recent productions where the cross sections and trials are not stored in separate file
     if ( cutsString.Contains("MCEvtHeadW") )
       maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionFromEventHeader() ;
-    
-    // Just fill cross section and trials histograms.
-    maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionHistoFill(); 
     
     // For productions where the cross sections and trials are not stored in separate file
     TString prodType = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTYPE");
@@ -735,6 +737,9 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
     
     // Add control histogram with pT hard to control aplication of weights 
     maker->SwitchOnPtHardHistogram();
+    
+    // Apply particle pT weights
+    //maker->SwitchOnMCParticlePtWeights();
   }
   
   if ( printSettings ) maker->Print("");
