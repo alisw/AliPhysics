@@ -26,6 +26,7 @@ AliAODTracklets::AliAODTracklets()
 {
   fFiredChips[0] = fFiredChips[1] = 0;
   for (int i=6;i--;) fITSClusters[i] = 0;
+  fCentroidXY[0] = fCentroidXY[1] = -999;
   // default constructor
 }
 
@@ -37,6 +38,7 @@ AliAODTracklets::AliAODTracklets(const char* name, const char* title)
 
   fFiredChips[0] = fFiredChips[1] = 0;
   for (int i=6;i--;) fITSClusters[i] = 0;
+  fCentroidXY[0] = fCentroidXY[1] = -999;
 }
 
 AliAODTracklets::AliAODTracklets(const AliAODTracklets& tracklet) :
@@ -66,6 +68,8 @@ AliAODTracklets::AliAODTracklets(const AliAODTracklets& tracklet) :
     fFiredChips[0] = tracklet.fFiredChips[0];
     fFiredChips[1] = tracklet.fFiredChips[1];
     for (int i=6;i--;) fITSClusters[i] = tracklet.fITSClusters[i];
+    fCentroidXY[0] = tracklet.fCentroidXY[0];
+    fCentroidXY[1] = tracklet.fCentroidXY[1];
 }
 
 AliAODTracklets& AliAODTracklets::operator=(const AliAODTracklets& tracklet)
@@ -90,6 +94,8 @@ AliAODTracklets& AliAODTracklets::operator=(const AliAODTracklets& tracklet)
     fFastOrFiredChips = tracklet.fFastOrFiredChips;
     fClusterFiredChips = tracklet.fClusterFiredChips;
     for (int i=6;i--;) fITSClusters[i] = tracklet.fITSClusters[i];
+    fCentroidXY[0] = tracklet.fCentroidXY[0];
+    fCentroidXY[1] = tracklet.fCentroidXY[1];
     return *this;
 }
 
@@ -179,7 +185,8 @@ void AliAODTracklets::Print(Option_t *opt) const
 {
   /// print
 
-  printf("N.tracklets: %4d | ScaleDThtSin2T:%s\n",fNTracks,GetScaleDThetaBySin2T() ? "ON":"OFF");
+  printf("N.tracklets: %4d | Centroid: %+.4f %+.4f | ScaleDThtSin2T:%s\n",
+	 fNTracks,fCentroidXY[0],fCentroidXY[1], GetScaleDThetaBySin2T() ? "ON":"OFF");
   TString opts = opt; opts.ToLower();
   //
   if (opts.Contains("t")) {

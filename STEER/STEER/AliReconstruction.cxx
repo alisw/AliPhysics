@@ -2560,6 +2560,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     AliSysInfo::AddStamp(Form("FillVaria_%d",iEvent), 0,0,iEvent); 
 
     // write ESD
+    fesd->SetTPCTrackBeforeClean(fesd->GetNumberOfTPCTracks()); // store NTPC tracks before clean
     UInt_t specie = fesd->GetEventSpecie();
     Bool_t keepAll = (specie==AliRecoParam::kCosmic || specie==AliRecoParam::kCalib);
     if (!keepAll) {

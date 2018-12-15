@@ -9371,7 +9371,7 @@ Bool_t  AliTPCtracker::IsTPCHVDipEvent(AliESDEvent const *esdEvent)
   // and scanning period
   const Double_t kTPCHVdip          = db->GetParameters()->GetMaxDipVoltage(); 
   const Double_t dipEventScanPeriod = db->GetParameters()->GetVoltageDipScanPeriod();
-  const Double_t tevSec             = esdEvent->GetTimeStamp();
+  const Double_t tevSec             = esdEvent->GetTimeStampCTP();
   
   for(Int_t sector=0; sector<72; sector++)
   {

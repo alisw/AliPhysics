@@ -280,6 +280,8 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
       pol1mpv->SetParameter(1,0);
     }
     chdEdxproj->cd(nDrTimeBin+1);
+    if(hmpv->GetMaximum()<85) hmpv->SetMaximum(85);
+    if(hmpv->GetMinimum()>83) hmpv->SetMinimum(83);
     hmpv->Draw();
     pol1mpv->Draw("same");
     refLine->Draw("same");

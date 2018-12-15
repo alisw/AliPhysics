@@ -37,6 +37,7 @@ AliVMultiplicity("AliMultiplicity",""),  // must be named like that to be search
   fFiredChips[1] = 0;
   for (int il=2;il--;) fSCl2Tracks[il] = fTCl2Tracks[il][0] = fTCl2Tracks[il][1] = 0;
   for(Int_t ilayer = 0; ilayer < 6; ilayer++)fITSClusters[ilayer] = 0;
+  fCentroidXY[0] = fCentroidXY[1] = -999;
 }
 
 //______________________________________________________________________
@@ -98,6 +99,7 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *th,  Float_t *ph, Float_t *
   fFiredChips[1] = nfcL2;
   fFastOrFiredChips = fFastOr;
   for(Int_t ilayer = 0; ilayer < 6; ilayer++)fITSClusters[ilayer] = 0;
+  fCentroidXY[0] = fCentroidXY[1] = -999;
 }
 
 //______________________________________________________________________
@@ -151,6 +153,7 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Int_t ns, Short_t nfcL1, Short_t nfc
   fFiredChips[1] = nfcL2;
   fFastOrFiredChips = fFastOr;
   for(Int_t ilayer=6;ilayer--;) fITSClusters[ilayer] = 0;
+  fCentroidXY[0] = fCentroidXY[1] = -999;
 }
 
 //______________________________________________________________________
@@ -260,6 +263,8 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
     if(m.fLabelsL2)memcpy(fLabelsL2,m.fLabelsL2,fNtracks*sizeof(Int_t));
     if(fUsedClusT) memcpy(fUsedClusT,m.fUsedClusT,fNtracks*sizeof(ULong64_t));
     for (int i=2;i--;) for (int j=2;j--;) if (m.fTCl2Tracks[i][j]) fTCl2Tracks[i][j] = new AliRefArray(*m.fTCl2Tracks[i][j]);
+    fCentroidXY[0] = m.fCentroidXY[0];
+    fCentroidXY[1] = m.fCentroidXY[1];
   }
   else {
     fTh = 0;
@@ -268,6 +273,7 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
     fDeltPhi = 0;
     fLabels = 0;
     fLabelsL2 = 0;
+    fCentroidXY[0] = fCentroidXY[1] = -999;
   }
   fNsingle = m.fNsingle;
   fNsingleSPD2 = m.fNsingleSPD2;
@@ -379,6 +385,8 @@ void AliMultiplicity::Clear(Option_t*)
   fFastOrFiredChips.ResetAllBits(kTRUE);
   fClusterFiredChips.ResetAllBits(kTRUE);
   fNtracksOnline = 0;
+  fCentroidXY[0] = fCentroidXY[1] = -999;
+
   //
 }
 
@@ -600,9 +608,9 @@ void AliMultiplicity::CompactBits()
 void AliMultiplicity::Print(Option_t *opt) const
 {
   // print
-  printf("N.tracklets: %4d N.singles: %4d, Multiple cluster->track refs:%s\n"
+  printf("N.tracklets: %4d N.singles: %4d, Centroid:  %+.4f %+.4f | Multiple cluster->track refs:%s\n"
 	 "Used: DPhiShift: %.3e Sig^2: dPhi:%.3e dTht:%.3e NStdDev:%.2f ScaleDThtSin2T:%s\n",
-	 fNtracks,fNsingle,GetMultTrackRefs() ? "ON":"OFF",
+	 fNtracks,fNsingle, fCentroidXY[0],fCentroidXY[1], GetMultTrackRefs() ? "ON":"OFF",
 	 fDPhiShift,fDPhiWindow2,fDThetaWindow2,fNStdDev,GetScaleDThetaBySin2T() ? "ON":"OFF");
   TString opts = opt; opts.ToLower();
   int t0spd1=-1,t1spd1=-1,t0spd2=-1,t1spd2=-1,nt[2][2]={{0}};

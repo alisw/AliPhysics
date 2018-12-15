@@ -65,6 +65,14 @@ class AliAODTracklets : public AliVMultiplicity
   virtual UInt_t GetNumberOfITSClusters(Int_t layer) const { return fITSClusters[layer];}
   virtual void   SetITSClusters(Int_t layer, UInt_t clusters) { fITSClusters[layer] = clusters; }
 
+  virtual Float_t GetCentroidX() const {return fCentroidXY[0];}
+  virtual Float_t GetCentroidY() const {return fCentroidXY[1];}
+  virtual void SetCentroidXY(float x, float y) {
+    fCentroidXY[0] = x;
+    fCentroidXY[1] = y;
+  }
+
+  
  protected:
   Int_t      fNTracks;       ///< Number of tracklets
   /// array with theta values
@@ -77,13 +85,13 @@ class AliAODTracklets : public AliVMultiplicity
   Int_t      *fLabels;       //[fNTracks]
   /// array with labels of cluster in L2 used for the tracklet
   Int_t      *fLabelsL2;     //[fNTracks]
-
+  Float_t fCentroidXY[2];    // tracklets centroid in X,Y 
   Short_t fFiredChips[2];    ///< Number of fired chips in the two SPD layers
   UInt_t fITSClusters[6];    ///< Number of ITS cluster per layer
   TBits fFastOrFiredChips;   ///< Map of FastOr fired chips
   TBits fClusterFiredChips;  ///< Map of fired chips (= at least one cluster)
 
-  ClassDef(AliAODTracklets, 5);
+  ClassDef(AliAODTracklets, 6);
 };
 
 

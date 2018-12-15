@@ -181,6 +181,7 @@ AliESDEvent::AliESDEvent():
   fDAQDetectorPattern(0xFFFF),
   fDAQAttributes(0xFFFF),
   fNTPCClusters(0),
+  fNTPCTrackBeforeClean(0),
   fNumberOfESDTracks(-1)
 {
 }
@@ -240,6 +241,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fDAQDetectorPattern(esd.fDAQDetectorPattern),
   fDAQAttributes(esd.fDAQAttributes),
   fNTPCClusters(esd.fNTPCClusters),
+  fNTPCTrackBeforeClean(esd.fNTPCTrackBeforeClean),
   fNumberOfESDTracks(esd.fNumberOfESDTracks)
 {
   printf("copying ESD event...\n");   // AU
@@ -386,6 +388,7 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
   fDAQDetectorPattern = source.fDAQDetectorPattern;
   fDAQAttributes = source.fDAQAttributes;
   fNTPCClusters = source.fNTPCClusters;
+  fNTPCTrackBeforeClean = source.fNTPCTrackBeforeClean;
   fNumberOfESDTracks = source.fNumberOfESDTracks;
 
   fNTPCFriend2Store = source.fNTPCFriend2Store;
@@ -441,6 +444,7 @@ void AliESDEvent::Reset()
   fDAQDetectorPattern = 0xFFFF;
   fDAQAttributes = 0xFFFF;
   fNTPCClusters = 0;
+  fNTPCTrackBeforeClean = 0;
   fNumberOfESDTracks = -1;
   //  reset for the old data without AliESDEvent...
   if(fESDOld)fESDOld->Reset();
@@ -1908,6 +1912,7 @@ void AliESDEvent::WriteToTree(TTree* tree) const {
   tree->Branch("fDAQDetectorPattern",(void*)&fDAQDetectorPattern,"fDAQDetectorPattern/i");
   tree->Branch("fDAQAttributes",(void*)&fDAQAttributes,"fDAQAttributes/i");
   tree->Branch("fNTPCClusters",(void*)&fNTPCClusters,"fNTPCClusters/I");
+  tree->Branch("fNTPCTrackBeforeClean",(void*)&fNTPCTrackBeforeClean,"fNTPCTrackBeforeClean/I");
   tree->Branch("fNumberOfESDTracks",(void*)&fNumberOfESDTracks,"fNumberOfESDTracks/I");
 }
 
@@ -2012,6 +2017,7 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
       tree->SetBranchAddress("fDAQDetectorPattern",&fDAQDetectorPattern);
       tree->SetBranchAddress("fDAQAttributes",&fDAQAttributes);
       tree->SetBranchAddress("fNTPCClusters",&fNTPCClusters);
+      if (tree->GetBranch("fNTPCTrackBeforeClean")) tree->SetBranchAddress("fNTPCTrackBeforeClean",&fNTPCTrackBeforeClean);
       if (tree->GetBranch("fNumberOfESDTracks")) tree->SetBranchAddress("fNumberOfESDTracks",&fNumberOfESDTracks);
       GetStdContent(); 
       fOldMuonStructure = fESDObjects->TestBit(BIT(23));
@@ -2080,6 +2086,7 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
     tree->SetBranchAddress("fDAQDetectorPattern",&fDAQDetectorPattern);
     tree->SetBranchAddress("fDAQAttributes",&fDAQAttributes);
     tree->SetBranchAddress("fNTPCClusters",&fNTPCClusters);
+    if (tree->GetBranch("fNTPCTrackBeforeClean")) tree->SetBranchAddress("fNTPCTrackBeforeClean",&fNTPCTrackBeforeClean);
     if (tree->GetBranch("fNumberOfESDTracks")) tree->SetBranchAddress("fNumberOfESDTracks",&fNumberOfESDTracks);
     GetStdContent();
     // when reading back we are not owner of the list 
@@ -2119,7 +2126,8 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
     tree->SetBranchAddress("fDetectorStatus",&fDetectorStatus);
     tree->SetBranchAddress("fDAQDetectorPattern",&fDAQDetectorPattern);
     tree->SetBranchAddress("fDAQAttributes",&fDAQAttributes);
-    tree->SetBranchAddress("fNTPCClusters",&fNTPCClusters);    
+    tree->SetBranchAddress("fNTPCClusters",&fNTPCClusters);
+    if (tree->GetBranch("fNTPCTrackBeforeClean")) tree->SetBranchAddress("fNTPCTrackBeforeClean",&fNTPCTrackBeforeClean);
     if (tree->GetBranch("fNumberOfESDTracks")) tree->SetBranchAddress("fNumberOfESDTracks",&fNumberOfESDTracks);
 
     GetStdContent();

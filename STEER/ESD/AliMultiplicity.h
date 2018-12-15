@@ -161,6 +161,13 @@ class AliMultiplicity : public AliVMultiplicity {
   Float_t GetDPhiShift()                    const {return fDPhiShift;}
   Float_t GetNStdDev()                      const {return fNStdDev;}
 
+  virtual Float_t GetCentroidX() const {return fCentroidXY[0];}
+  virtual Float_t GetCentroidY() const {return fCentroidXY[1];}
+  virtual void SetCentroidXY(float x, float y) {
+    fCentroidXY[0] = x;
+    fCentroidXY[1] = y;
+  }
+  
   //
   protected:
   void Duplicate(const AliMultiplicity &m);  // used by copy ctr.
@@ -192,8 +199,9 @@ class AliMultiplicity : public AliVMultiplicity {
   TBits fFastOrFiredChips;   // Map of FastOr fired chips
   TBits fClusterFiredChips;  // Map of fired chips (= at least one cluster)
   Int_t fNtracksOnline;      //!Number of SPD tracklets set on the fly in online processing (HLT)
-
-  ClassDef(AliMultiplicity,20);
+  Float_t fCentroidXY[2];    // tracklets centroid in X,Y 
+  
+  ClassDef(AliMultiplicity,21);
 };
 
 inline Int_t AliMultiplicity::GetLabel(Int_t i, Int_t layer) const
