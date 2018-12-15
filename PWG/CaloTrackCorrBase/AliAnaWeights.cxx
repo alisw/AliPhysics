@@ -99,13 +99,12 @@ TList * AliAnaWeights::GetCreateOutputHistograms()
 Double_t AliAnaWeights::GetWeight()
 {
   Double_t weight = 1.;
-    
+      
   if ( fCheckMCCrossSection )
   {
       Double_t temp = GetPythiaCrossSection() ;
       
       AliDebug(1,Form("MC pT-hard weight: %e",temp));
-      
       weight*=temp;
   }
     
@@ -179,15 +178,21 @@ Double_t AliAnaWeights::GetPythiaCrossSection()
   // Do not apply the weight per event, too much number of trial variation
   // -----------------------------------------------
   if ( fPyEventHeader && fCheckPythiaEventHeader )
-  {
-    fMCWeight =  1 ;
-    
-    AliDebug(fDebug,Form("Pythia event header: xs %2.2e, trial %d", fPyEventHeader->GetXsection(),fPyEventHeader->Trials()));
+  {    
+    AliDebug(fDebug,Form("Pythia event header: xs %2.2e, trial %d", 
+                         fPyEventHeader->GetXsection(),fPyEventHeader->Trials()));
     
     fhXsec  ->Fill("<#sigma>"     ,fPyEventHeader->GetXsection());
     fhTrials->Fill("#sum{ntrials}",fPyEventHeader->Trials());
     
-    return  1 ;
+    if ( !fJustFillCrossSecHist )
+    {
+      fMCWeight =  fPyEventHeader->GetXsection() / fPyEventHeader->Trials() ;
+      AliDebug(1,Form("MC Weight: %e",fMCWeight));
+    }
+    else fMCWeight = 1;
+    
+    return  fMCWeight ;
   }
 
   // -----------------------------------------------
@@ -219,7 +224,7 @@ Double_t AliAnaWeights::GetPythiaCrossSection()
 
   // average number of trials
   Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
-    
+
   if(trials >= nEntries && nEntries > 0.) avgTrials = trials/nEntries;
   
   fhTrials->Fill("#sum{ntrials}",avgTrials);
