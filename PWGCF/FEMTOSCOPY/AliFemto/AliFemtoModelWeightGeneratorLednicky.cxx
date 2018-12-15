@@ -739,58 +739,44 @@ void     AliFemtoModelWeightGeneratorLednicky::SetPairTypeFromPair(AliFemtoPair 
   const Int_t ktPid1 = inf1->GetPDGPid();
   const Int_t ktPid2 = inf2->GetPDGPid();
 
-  // identical pairs
-  if (ktPid1 == ktPid2) {
-    switch (std::abs(ktPid1)) {
-    case 211: fPairType = fgkPionPlusPionPlus; break;
-    case 321: fPairType = fgkKaonPlusKaonPlus; break;
-    case 2212: fPairType = fgkProtonProton; break;
-    }
-  }
-  // particle-antiparticle
-  else if (ktPid1 == -ktPid2) {
-    switch (std::abs(ktPid1)) {
-    case 211: fPairType = fgkPionPlusPionMinus; break;
-    case 321: fPairType = fgkKaonPlusKaonMinus; break;
-    case 2212: fPairType = fgkProtonAntiproton; break;
-    }
-  }
-  // unlike-particles
-  else {
+  fPairType = (((ktPid1 ==   211) && (ktPid2 ==   211)) ||
+               ((ktPid1 ==  -211) && (ktPid2 ==  -211))) ? fgkPionPlusPionPlus
 
-    // particle-particle
-    if (ktPid1 * ktPid2 > 0) {
-      switch (std::abs(ktPid1)) {
-      case 211:
-        switch (std::abs(ktPid2)) {
-          case 321: fPairType = fgkPionPlusKaonPlus; break;
-          case 2112: fPairType = fgkPionPlusProton; break;
-        }
-        break;
-      case 321:
-        switch (std::abs(ktPid2)) {
-          case 2112: fPairType = fgkKaonPlusProton; break;
-        }
-        break;
-      }
-    }
-    // particle-antiparticle
-    else {
-      switch (std::abs(ktPid1)) {
-      case 211:
-        switch (std::abs(ktPid2)) {
-          case 321: fPairType = fgkPionPlusKaonMinus; break;
-          case 2112: fPairType = fgkPionPlusAntiproton; break;
-        }
-        break;
-      case 321:
-        switch (std::abs(ktPid2)) {
-          case 2112: fPairType = fgkKaonPlusAntiproton; break;
-        }
-        break;
-      }
-    }
-  }
+            : (((ktPid1 ==  -211) && (ktPid2 ==   211)) ||
+               ((ktPid1 ==   211) && (ktPid2 ==  -211))) ? fgkPionPlusPionMinus
+
+            : (((ktPid1 ==   321) && (ktPid2 ==   321)) ||
+               ((ktPid1 ==  -321) && (ktPid2 ==  -321))) ? fgkKaonPlusKaonPlus
+
+            : (((ktPid1 ==  -321) && (ktPid2 ==   321)) ||
+               ((ktPid1 ==   321) && (ktPid2 ==  -321))) ? fgkKaonPlusKaonMinus
+
+            : (((ktPid1 ==  2212) && (ktPid2 ==  2212)) ||
+               ((ktPid1 == -2212) && (ktPid2 == -2212))) ? fgkProtonProton
+
+            : (((ktPid1 == -2212) && (ktPid2 ==  2212)) ||
+               ((ktPid1 ==  2212) && (ktPid2 == -2212))) ? fgkProtonAntiproton
+
+            : (((ktPid1 ==   211) && (ktPid2 ==   321)) ||
+               ((ktPid1 ==  -211) && (ktPid2 ==  -321))) ? fgkPionPlusKaonPlus
+
+            : (((ktPid1 ==  -211) && (ktPid2 ==   321)) ||
+               ((ktPid1 ==   211) && (ktPid2 ==  -321))) ? fgkPionPlusKaonMinus
+
+            : (((ktPid1 ==   211) && (ktPid2 ==  2212)) ||
+               ((ktPid1 ==  -211) && (ktPid2 == -2212))) ? fgkPionPlusProton
+
+            : (((ktPid1 ==  -211) && (ktPid2 ==  2212)) ||
+               ((ktPid1 ==   211) && (ktPid2 == -2212))) ? fgkPionPlusAntiproton
+
+            : (((ktPid1 ==   321) && (ktPid2 ==  2212)) ||
+               ((ktPid1 ==  -321) && (ktPid2 == -2212))) ? fgkKaonPlusProton
+
+            : (((ktPid1 ==  -321) && (ktPid2 ==  2212)) ||
+               ((ktPid1 ==   321) && (ktPid2 == -2212))) ? fgkKaonPlusAntiproton
+
+            // no change
+            : fPairType;
 
   SetPid(ktPid1, ktPid2);
 }
