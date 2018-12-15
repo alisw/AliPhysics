@@ -530,6 +530,8 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
   if(!fTracksCont)
     AliFatal("Particle input container not found attached to jets!");
   fClustersCont       = static_cast<AliClusterContainer*>(fJetsCont->GetClusterContainer());
+  if(!fClustersCont && fJetTree->GetSaveCaloClusters())
+    AliFatal("Cluster input container not found attached to jets!");
 
   fRandomGenerator->SetSeed(fRandomSeed);
   fRandomGeneratorCones->SetSeed(fRandomSeedCones);
@@ -1499,7 +1501,7 @@ void AliAnalysisTaskJetExtractor::Terminate(Option_t *)
 
 // ### ADDTASK MACRO
 //________________________________________________________________________
-AliAnalysisTaskJetExtractor* AliAnalysisTaskJetExtractor::AddTaskJetExtractor(TString trackArray, TString jetArray, TString rhoObject, Double_t jetRadius, TString configFile, AliRDHFJetsCutsVertex* vertexerCuts, const char* taskNameSuffix)
+AliAnalysisTaskJetExtractor* AliAnalysisTaskJetExtractor::AddTaskJetExtractor(TString trackArray, TString clusterArray, TString jetArray, TString rhoObject, Double_t jetRadius, TString configFile, AliRDHFJetsCutsVertex* vertexerCuts, const char* taskNameSuffix)
 {  
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   Double_t    minJetEta          = 0.5;
@@ -1518,6 +1520,7 @@ AliAnalysisTaskJetExtractor* AliAnalysisTaskJetExtractor::AddTaskJetExtractor(TS
   fYAMLConfig.Initialize();
 
   fYAMLConfig.GetProperty("TrackArray", trackArray, kFALSE);
+  fYAMLConfig.GetProperty("ClusterArray", clusterArray, kFALSE);
   fYAMLConfig.GetProperty("JetArray", jetArray, kFALSE);
   fYAMLConfig.GetProperty("RhoName", rhoObject, kFALSE);
   fYAMLConfig.GetProperty("JetRadius", jetRadius);
@@ -1557,6 +1560,11 @@ AliAnalysisTaskJetExtractor* AliAnalysisTaskJetExtractor::AddTaskJetExtractor(TS
     trackCont = myTask->AddTrackContainer(trackArray);
   trackCont->SetParticlePtCut(minTrackPt);
 
+  // Particle container and track pt cut
+  AliClusterContainer* clusterCont = 0;
+  if(clusterArray != "")
+    clusterCont = myTask->AddClusterContainer(clusterArray);
+
   // Secondary vertex cuts (default settings from PWGHF)
   // (can be overwritten by using myTask->SetVertexerCuts(cuts) from outside macro)
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "default");
@@ -1588,6 +1596,8 @@ AliAnalysisTaskJetExtractor* AliAnalysisTaskJetExtractor::AddTaskJetExtractor(TS
     jetCont->SetPtBiasJetTrack(minTrackPt);
     jetCont->SetJetEtaLimits(-minJetEta, +minJetEta);
     jetCont->ConnectParticleContainer(trackCont);
+    if(clusterCont)
+      jetCont->ConnectClusterContainer(clusterCont);
     jetCont->SetMaxTrackPt(1000);
   }
 
