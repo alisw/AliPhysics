@@ -9,6 +9,10 @@
 #include "AliFemtoTypes.h"
 #include "AliFemtoModelWeightGenerator.h"
 
+#include <vector>
+#include <string>
+
+
 /// \class AliFemtoModelWeightGeneratorLednicky
 /// \brief The most advanced femto weight generator available
 ///
@@ -99,7 +103,10 @@ protected:
   short     fNuclChargeSign; // sign of the 3rd body charge
   bool      fSwap;           // are particle in right order ?
   int const fLLMax;          // number of supported pairs
-  char**    fLLName;         // name of the system
+
+  /// names of each system
+  std::vector<std::string> fLLName;
+
   int *     fNumProcessPair; // number of process pairs of each type
   int       fNumbNonId;      // Number of unidentified pairs
 
@@ -116,7 +123,7 @@ protected:
   bool SetPid(const int aPid1,const int aPid2);
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoModelWeightGeneratorLednicky,1)
+  ClassDef(AliFemtoModelWeightGeneratorLednicky, 2);
 #endif
 };
 

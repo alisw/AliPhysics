@@ -124,49 +124,48 @@ AliFemtoModelWeightGeneratorLednicky::AliFemtoModelWeightGeneratorLednicky()
   , fNuclChargeSign(1)
   , fSwap(0)
   , fLLMax(30)
-  , fLLName(nullptr)
+  , fLLName({"all-pairs",
+             "neutron neutron",
+             "proton proton",
+             "neutron proton",
+             "alpha alpha",
+             "pi+ pi-",
+             "pi0 pi0",
+             "pi+ pi+",
+             "neutron deuteron",
+             "proton deuteron",
+             "pi+ K-",
+             "pi+ K+",
+             "pi+ proton",
+             "pi- proton",
+             "K+ K-",
+             "K+ K+",
+             "K+ proton",
+             "K- proton",
+             "deuteron deuteron",
+             "deuton alpha",
+             "triton triton",
+             "triton alpha",
+             "K0 K0",
+             "K0 K0b",
+             "deuteron triton",
+             "proton triton",
+             "proton alpha",
+             "proton lambda",
+             "neutron lambda",
+             "Lambda lambda",
+             "Proton Anti-proton"})
   , fNumProcessPair(nullptr)
   , fNumbNonId(0)
   , fKpKmModel(14)
   , fPhi_OffOn(1)
 {
   // default constructor
-  fLLName = new char*[fLLMax+1];
   fNumProcessPair = new int[fLLMax+1];
   for (int i=1;i<=fLLMax;i++) {
-    fLLName[i] = new char[40];
     fNumProcessPair[i] = 0;
   }
-  strncpy( fLLName[1],"neutron neutron",40);
-  strncpy( fLLName[2],"proton proton",40);
-  strncpy( fLLName[3],"neutron proton",40);
-  strncpy( fLLName[4],"alpha alpha",40);
-  strncpy( fLLName[5],"pi+ pi-",40);
-  strncpy( fLLName[6],"pi0 pi0",40);
-  strncpy( fLLName[7],"pi+ pi+",40);
-  strncpy( fLLName[8],"neutron deuteron",40);
-  strncpy( fLLName[9],"proton deuteron",40);
-  strncpy( fLLName[10],"pi+ K-",40);
-  strncpy( fLLName[11],"pi+ K+",40);
-  strncpy( fLLName[12],"pi+ proton",40);
-  strncpy( fLLName[13],"pi- proton",40);
-  strncpy( fLLName[14],"K+ K-",40);
-  strncpy( fLLName[15],"K+ K+",40);
-  strncpy( fLLName[16],"K+ proton",40);
-  strncpy( fLLName[17],"K- proton",40);
-  strncpy( fLLName[18],"deuteron deuteron",40);
-  strncpy( fLLName[19],"deuton alpha",40);
-  strncpy( fLLName[20],"triton triton",40);
-  strncpy( fLLName[21],"triton alpha",40);
-  strncpy( fLLName[22],"K0 K0",40);
-  strncpy( fLLName[23],"K0 K0b",40);
-  strncpy( fLLName[24],"deuteron triton",40);
-  strncpy( fLLName[25],"proton triton",40);
-  strncpy( fLLName[26],"proton alpha",40);
-  strncpy( fLLName[27],"proton lambda",40);
-  strncpy( fLLName[28],"neutron lambda",40);
-  strncpy( fLLName[29],"Lambda lambda",40);// gael 21May02
-  strncpy( fLLName[30],"Proton Anti-proton",40);// gael 21May02
+
   FsiInit();
   FsiNucl();
 }
@@ -191,49 +190,17 @@ AliFemtoModelWeightGeneratorLednicky
   , fNuclChargeSign(aWeight.fNuclChargeSign)
   , fSwap(aWeight.fSwap)
   , fLLMax(30)
-  , fLLName(nullptr)
+  , fLLName(aWeight.fLLName.begin(), aWeight.fLLName.end())
   , fNumProcessPair(nullptr)
   , fNumbNonId(aWeight.fNumbNonId)
   , fKpKmModel(aWeight.fKpKmModel)
   , fPhi_OffOn(aWeight.fPhi_OffOn)
 {
-  fLLName = new char*[fLLMax+1];
   fNumProcessPair = new int[fLLMax+1];
   for (int i=1;i<=fLLMax;i++) {
-    fLLName[i] = new char[40];
     fNumProcessPair[i] = 0;
   }
 
-  strncpy( fLLName[1],"neutron neutron",40);
-  strncpy( fLLName[2],"proton proton",40);
-  strncpy( fLLName[3],"neutron proton",40);
-  strncpy( fLLName[4],"alpha alpha",40);
-  strncpy( fLLName[5],"pi+ pi-",40);
-  strncpy( fLLName[6],"pi0 pi0",40);
-  strncpy( fLLName[7],"pi+ pi+",40);
-  strncpy( fLLName[8],"neutron deuteron",40);
-  strncpy( fLLName[9],"proton deuteron",40);
-  strncpy( fLLName[10],"pi+ K-",40);
-  strncpy( fLLName[11],"pi+ K+",40);
-  strncpy( fLLName[12],"pi+ proton",40);
-  strncpy( fLLName[13],"pi- proton",40);
-  strncpy( fLLName[14],"K+ K-",40);
-  strncpy( fLLName[15],"K+ K+",40);
-  strncpy( fLLName[16],"K+ proton",40);
-  strncpy( fLLName[17],"K- proton",40);
-  strncpy( fLLName[18],"deuteron deuteron",40);
-  strncpy( fLLName[19],"deuton alpha",40);
-  strncpy( fLLName[20],"triton triton",40);
-  strncpy( fLLName[21],"triton alpha",40);
-  strncpy( fLLName[22],"K0 K0",40);
-  strncpy( fLLName[23],"K0 K0b",40);
-  strncpy( fLLName[24],"deuteron triton",40);
-  strncpy( fLLName[25],"proton triton",40);
-  strncpy( fLLName[26],"proton alpha",40);
-  strncpy( fLLName[27],"proton lambda",40);
-  strncpy( fLLName[28],"neutron lambda",40);
-  strncpy( fLLName[29],"Lambda lambda",40);// gael 21May02
-  strncpy( fLLName[30],"Proton Anti-proton",40);// gael 21May02
   FsiInit();
   FsiNucl();
 }
@@ -266,51 +233,19 @@ AliFemtoModelWeightGeneratorLednicky::operator=(const AliFemtoModelWeightGenerat
   fNuclChargeSign = aWeight.fNuclChargeSign;
   fSwap = aWeight.fSwap;
   fNumbNonId = aWeight.fNumbNonId;
-  if (fLLName) {
-    free(fLLName);
-  }
-  fLLName = new char*[fLLMax+1];
+  fLLName = aWeight.fLLName;
+
   if (fNumProcessPair) {
-    free(fNumProcessPair);
+    delete [] fNumProcessPair;
   }
-  fNumProcessPair=new int[fLLMax+1];
+  fNumProcessPair = new int[fLLMax+1];
   fKpKmModel = aWeight.fKpKmModel;
   fPhi_OffOn = aWeight.fPhi_OffOn;
 
   for (int i=1;i<=fLLMax;i++) {
-    fLLName[i] = new char[40];
     fNumProcessPair[i] = 0;
   }
-  strncpy( fLLName[1],"neutron neutron",40);
-  strncpy( fLLName[2],"proton proton",40);
-  strncpy( fLLName[3],"neutron proton",40);
-  strncpy( fLLName[4],"alpha alpha",40);
-  strncpy( fLLName[5],"pi+ pi-",40);
-  strncpy( fLLName[6],"pi0 pi0",40);
-  strncpy( fLLName[7],"pi+ pi+",40);
-  strncpy( fLLName[8],"neutron deuteron",40);
-  strncpy( fLLName[9],"proton deuteron",40);
-  strncpy( fLLName[10],"pi+ K-",40);
-  strncpy( fLLName[11],"pi+ K+",40);
-  strncpy( fLLName[12],"pi+ proton",40);
-  strncpy( fLLName[13],"pi- proton",40);
-  strncpy( fLLName[14],"K+ K-",40);
-  strncpy( fLLName[15],"K+ K+",40);
-  strncpy( fLLName[16],"K+ proton",40);
-  strncpy( fLLName[17],"K- proton",40);
-  strncpy( fLLName[18],"deuteron deuteron",40);
-  strncpy( fLLName[19],"deuton alpha",40);
-  strncpy( fLLName[20],"triton triton",40);
-  strncpy( fLLName[21],"triton alpha",40);
-  strncpy( fLLName[22],"K0 K0",40);
-  strncpy( fLLName[23],"K0 K0b",40);
-  strncpy( fLLName[24],"deuteron triton",40);
-  strncpy( fLLName[25],"proton triton",40);
-  strncpy( fLLName[26],"proton alpha",40);
-  strncpy( fLLName[27],"proton lambda",40);
-  strncpy( fLLName[28],"neutron lambda",40);
-  strncpy( fLLName[29],"Lambda lambda",40);// gael 21May02
-  strncpy( fLLName[30],"Proton Anti-proton",40);// gael 21May02
+
   FsiInit();
   FsiNucl();
 
@@ -694,9 +629,6 @@ bool AliFemtoModelWeightGeneratorLednicky::SetPid(const int aPid1,const int aPid
 
 AliFemtoModelWeightGeneratorLednicky::~AliFemtoModelWeightGeneratorLednicky()
 {
-  if (fLLName) {
-    delete [] fLLName;
-  }
   if (fNumProcessPair) {
     delete [] fNumProcessPair;
   }
