@@ -427,8 +427,11 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhTrackMatchedDEtaMCConversion[2];         //!<! Eta distance between track and cluster vs cluster E, originated in conversion, after and before photon cuts 
   TH2F * fhTrackMatchedDPhiMCConversion[2];         //!<! Phi distance between track and cluster vs cluster E, originated in conversion, after and before photon cuts 
   
-  TH2F * fhTrackMatchedMCParticle[2];               //!<! Trace origin of matched particle
-  TH2F * fhTrackMatchedMCParticleConverted[2];      //!<! Trace origin of matched particle, converted
+  TH2F * fhTrackMatchedMCParticleBeforeTM[2];       //!<! Trace origin of matched particle vs cluster E, before Track-Matching criteria applied
+  TH2F * fhTrackMatchedMCParticleTrackPtBeforeTM[2];//!<! Trace origin of matched particle vs track pT, before Track-Matching criteria applied
+  TH2F * fhTrackMatchedMCParticle[2];               //!<! Trace origin of matched particle vs cluster E
+  TH2F * fhTrackMatchedMCParticleTrackPt[2];        //!<! Trace origin of matched particle vs track pT
+  TH2F * fhTrackMatchedMCParticleConverted[2];      //!<! Trace origin of matched particle vs cluster E, converted
 
   TH3F * fhTrackMatchedMCParticleVsEOverP[2];       //!<! Trace origin of matched particle vs compare to E over P
   TH3F * fhTrackMatchedMCParticleVsErecEgen[2];     //!<! Trace origin of matched particle vs reconstructed and generated E
