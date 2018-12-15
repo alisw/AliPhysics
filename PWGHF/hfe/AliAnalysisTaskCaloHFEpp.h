@@ -131,16 +131,17 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		//==== basic parameters ====
 		TH1F*                   fNevents;
 		TH1F*                   fNDB;
-		TH1F*                   fHist_VertexZ;        //! dummy histogram
-		TH1F*                   fHist_Centrality;        //! dummy histogram
-		TH2F*                   fHist_Mult;        //! dummy histogram
+		TH1F*                   fHist_VertexZ;    
+		TH1F*                   fHist_VertexZ_all;    
+		TH1F*                   fHist_Centrality; 
+		TH2F*                   fHist_Mult;       
 		TH2F*                   fTrigMulti;
-		TH1F*                   fHistEta_track;        //! dummy histogram
-		TH1F*                   fHistPhi_track;        //! dummy histogram
-		TH1F*                   fHistEta_EMcal;        //! dummy histogram
-		TH1F*                   fHistPhi_EMcal;        //! dummy histogram
-		TH2F*                   fHistScatter_EMcal;        //! dummy histogram
-		TH2F*                   fHistScatter_EMcal_aftMatch;        //! dummy histogram
+		TH1F*                   fHistEta_track;   
+		TH1F*                   fHistPhi_track;   
+		TH1F*                   fHistEta_EMcal;   
+		TH1F*                   fHistPhi_EMcal;   
+		TH2F*                   fHistScatter_EMcal;        
+		TH2F*                   fHistScatter_EMcal_aftMatch; 
 		TH2F*                   fHistoNCells;
 		TH2F*                   fM02;
 		TH2F*                   fM20;
