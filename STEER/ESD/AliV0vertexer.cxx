@@ -102,7 +102,7 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
       AliExternalTrackParam nt(*ntrk), pt(*ptrk), *ntp=&nt, *ptp=&pt;
       
       Double_t xn, xp;
-      if(fUseImprovedFinding && Preoptimize(ntp,ptp,xn,xp,b)){
+      if(fUseImprovedFinding && Preoptimize(ntp,ptp,&xn,&xp,b)){
         //Move tracks to a better position if that helps
         nt.PropagateTo(xn,b); pt.PropagateTo(xp,b);
       }
@@ -145,6 +145,8 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
       Float_t cpa=vertex.GetV0CosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex);
       const Double_t pThr=1.5;
       Double_t pv0=vertex.P();
+      
+      //Warning; this needs to be removed when loosening cuts ... FIXME!
       if (pv0<pThr) {
         //Below the threshold "pThr", try a momentum dependent cos(PA) cut
         const Double_t bend=0.03; // approximate Xi bending angle
@@ -154,7 +156,7 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
         cpaCut=(fCPAmin/cpaThr)*TMath::Cos(TMath::ATan(qt/pv0) + bend);
         if (cpa < cpaCut) continue;
       } else
-        if (cpa < fCPAmin) continue;
+      if (cpa < fCPAmin) continue;
       
       if (nHypSel) { // do we select particular hypthesese?
         Bool_t reject = kTRUE;
@@ -237,7 +239,7 @@ void AliV0vertexer::GetHelixCenter(const AliExternalTrackParam *track,Double_t c
 }
 
 //________________________________________________
-Bool_t AliV0vertexer::Preoptimize(const AliExternalTrackParam *nt, AliExternalTrackParam *pt, Double_t lPreprocessxn, Double_t lPreprocessxp, const Double_t b)
+Bool_t AliV0vertexer::Preoptimize(const AliExternalTrackParam *nt, AliExternalTrackParam *pt, Double_t *lPreprocessxn, Double_t *lPreprocessxp, const Double_t b)
 //This function pre-optimizes a two-track pair in the XY plane
 //and provides two X values for the tracks if successful
 {
@@ -279,8 +281,8 @@ Bool_t AliV0vertexer::Preoptimize(const AliExternalTrackParam *nt, AliExternalTr
   Double_t vy = +ux;
   
   Double_t lPreprocessDCAxy = 1e+3; //define outside scope
-  lPreprocessxp = pt->GetX(); //start at current location
-  lPreprocessxn = nt->GetX(); //start at current location
+  *lPreprocessxp = pt->GetX(); //start at current location
+  *lPreprocessxn = nt->GetX(); //start at current location
   
   //============================================================
   //Pre-optimization in the XY plane: cases considered here
@@ -331,8 +333,8 @@ Bool_t AliV0vertexer::Preoptimize(const AliExternalTrackParam *nt, AliExternalTr
                                      );
       //Pass coordinates
       if( lPreprocessDCAxy<999){
-        lPreprocessxp = xThisPos;
-        lPreprocessxn = xThisNeg;
+        *lPreprocessxp = xThisPos;
+        *lPreprocessxn = xThisNeg;
       }
     }
     //================================================================
@@ -436,17 +438,17 @@ Bool_t AliV0vertexer::Preoptimize(const AliExternalTrackParam *nt, AliExternalTr
     
     //Pass conclusion to lPreprocess variables, please
     lPreprocessDCAxy = lDCAxySmallestR;
-    lPreprocessxp = lxpSmallestR;
-    lPreprocessxn = lxnSmallestR;
+    *lPreprocessxp = lxpSmallestR;
+    *lPreprocessxn = lxnSmallestR;
     if( lDCAxyLargestR+1e-6 < lDCAxySmallestR ){ //beware epsilon: numerical calculations are unstable here
       lPreprocessDCAxy = lDCAxyLargestR;
-      lPreprocessxp = lxpLargestR;
-      lPreprocessxn = lxnLargestR;
+      *lPreprocessxp = lxpLargestR;
+      *lPreprocessxn = lxnLargestR;
     }
     //Protection against something too crazy, please
     if( lPreprocessDCAxy>999){
-      lPreprocessxp = pt->GetX(); //start at current location
-      lPreprocessxn = nt->GetX(); //start at current location
+      *lPreprocessxp = pt->GetX(); //start at current location
+      *lPreprocessxn = nt->GetX(); //start at current location
     }
     
   }
