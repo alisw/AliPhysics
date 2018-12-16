@@ -98,14 +98,13 @@ void AliTOFTriggerEfficiencyTask::NotifyRun(){
   cdb->SetRun(fCurrentRunNumber);
   AliGRPManager* fGRPManager = new AliGRPManager();
   if(!fGRPManager->ReadGRPEntry()) AliFatal("Cannot get GRP entry"); 
-  if(!fGRPManager->SetMagField())  AliFatal("Problem with magnetic field setup"); 
-  AliGeomManager::LoadGeometry();
+  if(!fGRPManager->SetMagField())  AliFatal("Problem with magnetic field setup");
+  if (!AliGeomManager::GetGeometry()) AliGeomManager::LoadGeometry();
   AliGeomManager::ApplyAlignObjsFromCDB("ITS TRD TOF");
   for (int i=0;i<18;i++) {
     AliGeomManager::GetOrigGlobalMatrix( Form("TOF/sm%02d",i) ,fMatOrig[i]);
     fMatCurr[i] = *AliGeomManager::GetMatrix( Form("TOF/sm%02d",i) );
   }
-
 }
 
 //-----------------------------------------------------------------------------
