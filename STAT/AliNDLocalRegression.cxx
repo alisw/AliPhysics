@@ -1165,4 +1165,46 @@ Double_t AliNDLocalRegression::EvalGraphKernel(TGraph * gr, Double_t evalTime, D
   return (evalLog==0) ? fitter.GetParameter(0) : TMath::Exp(fitter.GetParameter(0));
 }
 
-
+/// Create ND kernel regression - short cut to typical use case
+///  kernel width has to be sufficiently broad to define fit
+///  point added  to fit only in case kernel>kernelThreshold
+///    FITS CAN FAIL in case of mismatch between mesh, kernel and kernelThreshold
+///    TODO - Write more guideline in case of fit failure
+/// \param tree                 - input tree
+/// \param regressionName       - name of the regression to create (and alias to append)
+/// \param mesh                 - layout of the lookup table
+/// \param var                  - variable to fit varString:errorString
+/// \param varExp               - expression list septated by :
+/// \param selection            - tree selection
+/// \param kernels              - kernel shape
+/// \param kernelThreshold      - kernel threshold
+/// \return
+AliNDLocalRegression * AliNDLocalRegression::MakeRegression(TTree* tree, TString regressionName, TString mesh, TString var, TString varExp, TString selection,  TString kernels, Float_t kernelThreshold){
+   TObjArray * varExpArray=varExp.Tokenize(":");
+  mesh.ReplaceAll("(",""); mesh.ReplaceAll(")","");
+  TObjArray * rangeArray=mesh.Tokenize(",");
+  Int_t nVars=varExpArray->GetEntries();
+  if (nVars*3!=rangeArray->GetEntries()){
+    ::Error("makeRegression","Non compatible ranges");
+    delete rangeArray;
+    delete varExpArray;
+    return 0;
+  }
+  TArrayI bins(nVars);
+  TArrayD hmin(nVars),hmax(nVars);
+  for (Int_t i=0; i<nVars; i++){
+    bins[i]=TString(rangeArray->At(i*3+0)->GetName()).Atoi();
+    hmin[i]=TString(rangeArray->At(i*3+1)->GetName()).Atof();
+    hmax[i]=TString(rangeArray->At(i*3+2)->GetName()).Atof();
+  }
+  THnF *his = new THnF(regressionName, regressionName, nVars,bins.fArray,hmin.fArray,hmax.fArray);
+  AliNDLocalRegression *regression= new AliNDLocalRegression;
+  regression->SetHistogram(his);
+  regression->SetName(regressionName);
+  regression->MakeFit(tree,var.Data(), varExp.Data(),selection.Data(),kernels.Data(),"",kernelThreshold);
+  Int_t hashIndex=regression->GetVisualCorrectionIndex(regressionName.Data());
+  AliNDLocalRegression::AddVisualCorrection(regression, hashIndex);
+  varExp.ReplaceAll(":",",");
+  tree->SetAlias(regressionName,TString::Format("AliNDLocalRegression::GetCorrND(%d,%s+0)",hashIndex, varExp.Data()).Data());
+  return regression;
+}

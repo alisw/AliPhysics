@@ -25,6 +25,8 @@ class TObjString;
 
 class AliNDLocalRegression : public TNamed {
  public:
+  static AliNDLocalRegression * MakeRegression(TTree* tree, TString regressionName, TString mesh, TString var, TString varExp, TString selection,  TString kernels, Float_t kernelThreshold);
+
   AliNDLocalRegression();
   AliNDLocalRegression(const char* name, const char* title);
   ~AliNDLocalRegression();
