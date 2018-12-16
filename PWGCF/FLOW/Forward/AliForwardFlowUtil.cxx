@@ -20,6 +20,8 @@
 #include "AliAODEvent.h"
 #include "AliMCEvent.h"
 
+#include "AliAODMCParticle.h"
+
 #include "AliForwardFlowUtil.h"
 
 #include "AliVVZERO.h"
@@ -209,6 +211,22 @@ void AliForwardFlowUtil::FillFromTrackrefs(TH2D*& fwd) const
   }
 }
 
+void AliForwardFlowUtil::FillFromPrimariesAOD(TH2D*& cen) const
+{
+  Int_t nTracksMC = fMCevent->GetNumberOfTracks();
+
+  for (Int_t iTr = 0; iTr < nTracksMC; iTr++) {
+    AliAODMCParticle* p = static_cast< AliAODMCParticle* >(fMCevent->GetTrack(iTr));
+    if (!p->IsPhysicalPrimary()) continue;
+    if (p->Charge() == 0) continue;
+
+    Double_t eta = p->Eta();
+    if (TMath::Abs(eta) < 1.1) {
+      if (p->Pt()>=0.2 && p->Pt()<=5)
+        cen->Fill(eta,p->Phi(),1);
+    }
+  }
+}
 
 void AliForwardFlowUtil::FillFromPrimaries(TH2D*& cen) const
 {
@@ -233,6 +251,28 @@ void AliForwardFlowUtil::FillFromPrimaries(TH2D*& cen, TH2D*& fwd) const
 
   for (Int_t iTr = 0; iTr < nTracksMC; iTr++) {
     AliMCParticle* p = static_cast< AliMCParticle* >(fMCevent->GetTrack(iTr));
+    if (!p->IsPhysicalPrimary()) continue;
+    if (p->Charge() == 0) continue;
+
+    Double_t eta = p->Eta();
+    if (TMath::Abs(eta) < 1.1) {
+      if (p->Pt()>=0.2 && p->Pt()<=5)
+        cen->Fill(eta,p->Phi(),1);
+    }
+    if (eta < 5 /*fwd->GetXaxis()-GetXmax()*/ && eta > -3.5 /*fwd->GetXaxis()-GetXmin()*/) {
+      if (TMath::Abs(eta) >= 1.7)
+        fwd->Fill(eta,p->Phi(),1);
+    }
+  }
+}
+
+
+void AliForwardFlowUtil::FillFromPrimariesAOD(TH2D*& cen, TH2D*& fwd) const
+{
+  Int_t nTracksMC = fMCevent->GetNumberOfTracks();
+
+  for (Int_t iTr = 0; iTr < nTracksMC; iTr++) {
+    AliAODMCParticle* p = static_cast< AliAODMCParticle* >(fMCevent->GetTrack(iTr));
     if (!p->IsPhysicalPrimary()) continue;
     if (p->Charge() == 0) continue;
 

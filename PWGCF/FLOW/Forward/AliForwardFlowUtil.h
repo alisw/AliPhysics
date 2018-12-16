@@ -31,7 +31,9 @@ class AliForwardFlowUtil : public TObject {
   void FillFromTrackrefs(TH2D*& cen, TH2D*& fwd) const;
   void FillFromTrackrefs(TH2D*& fwd) const;
   void FillFromPrimaries(TH2D*& cen, TH2D*& fwd) const;
+  void FillFromPrimariesAOD(TH2D*& cen, TH2D*& fwd) const;
   void FillFromPrimaries(TH2D*& cen) const;
+  void FillFromPrimariesAOD(TH2D*& cen) const;
   void FillFromTracklets(TH2D*& cen) const;
   void FillFromTracks(TH2D*& cen, UInt_t tracktype) const;
 

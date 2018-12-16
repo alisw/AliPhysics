@@ -229,21 +229,31 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
     forwardDist = (fSettings.use_primaries ? &forwardPrim : &forwardTrRef);
 
-    if (fSettings.use_primaries_cen && fSettings.use_primaries_fwd){
-      fUtil.FillFromPrimaries(centralDist, forwardDist);
+    if (fSettings.esd){
+      if (fSettings.use_primaries_cen && fSettings.use_primaries_fwd){
+        fUtil.FillFromPrimaries(centralDist, forwardDist);
+      }
+      else if (!fSettings.use_primaries_cen && !fSettings.use_primaries_fwd){
+        fUtil.FillFromTrackrefs(centralDist, forwardDist);
+      }
+      else if (fSettings.use_primaries_cen && !fSettings.use_primaries_fwd){
+        fUtil.FillFromPrimaries(centralDist);
+        fUtil.FillFromTrackrefs(forwardDist);
+      }
+      else if (!fSettings.use_primaries_cen && fSettings.use_primaries_fwd){
+        fUtil.FillFromTrackrefs(centralDist);
+        fUtil.FillFromPrimaries(forwardDist);
+      }
     }
-    else if (!fSettings.use_primaries_cen && !fSettings.use_primaries_fwd){
-      fUtil.FillFromTrackrefs(centralDist, forwardDist);
-    }
-    else if (fSettings.use_primaries_cen && !fSettings.use_primaries_fwd){
-      //fUtil.FillFromTrackrefs(centralDist, forwardDist);
-      fUtil.FillFromPrimaries(centralDist);
-      fUtil.FillFromTrackrefs(forwardDist);
-    }
-    else if (!fSettings.use_primaries_cen && fSettings.use_primaries_fwd){
-      //fUtil.FillFromTrackrefs(centralDist, forwardDist);
-      fUtil.FillFromTrackrefs(centralDist);
-      fUtil.FillFromPrimaries(forwardDist);
+    else{ // AOD
+      if (fSettings.use_primaries_cen && fSettings.use_primaries_fwd){ //prim central and forward
+        fUtil.FillFromPrimaries(centralDist, forwardDist);
+      }
+      else if (fSettings.use_primaries_cen && !fSettings.use_primaries_fwd){ //prim central, AOD forward
+        fUtil.FillFromPrimaries(centralDist);
+        AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(aodevent->FindListObject("Forward"));
+        forwardDist = &aodfmult->GetHistogram();
+      }
     }
   }
 
