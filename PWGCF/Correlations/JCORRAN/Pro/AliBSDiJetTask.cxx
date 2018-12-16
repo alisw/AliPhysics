@@ -212,8 +212,6 @@ void AliBSDiJetTask::UserCreateOutputObjects(){
   fUtils = new AliAnalysisUtils();
   fUtils -> 	SetMaxVtxZ(10);
 
-	if (fOption.Contains("Emb") && fOption.Contains("LHC15o")) 
-		gSystem->Exec(Form("alien_find /alice/sim/2016/LHC16j5/ AliAOD.root | grep AOD200 | perl -nle'print \"alien://\".$_' | sort -R | head -300  > embfile.txt"));
 
 
 }
@@ -387,6 +385,11 @@ if (!gooddijet) return false;
 				FillTHnSparse("hJetPtMatched",{fCent,mj.Pt(),pthardbin},sf);
 			}
 		}
+	} else if (IsGoodVertex) {
+		TLorentzVector1D rjets = RecJets;
+		for(auto rj : rjets){
+			FillTHnSparse("hJetPt",{fCent,rj.Pt(),pthardbin},sf);
+		} 
 	}
 
 
