@@ -1,19 +1,14 @@
-///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-// AliFemtoTrack: main class holding all the necessary information       //
-// about a track (before the identification) that is required during     //
-// femtoscopic analysis. This class is filled with information from the  //
-// input stream by the reader. A particle has a link back to the Track   //
-// it was created from, so we do not copy the information.               //
-//                                                                       //
-///////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemtoTrack.cxx
+///
+
 
 #include "AliFemtoTrack.h"
 
 #include "SystemOfUnits.h"   // has "tesla" in it
-//#include "AliFemtoParticleTypes.h"
-//#include "AliFemtoTTreeEvent.h"
-//#include "AliFemtoTTreeTrack.h"
+
+#include <algorithm>
+
 
 AliFemtoTrack::AliFemtoTrack():
   fCharge(0),
@@ -57,14 +52,14 @@ AliFemtoTrack::AliFemtoTrack():
   fNSigmaTPCK(0.0f),
   fNSigmaTPCP(0.0f),
   fNSigmaTPCE(0.0f),
-  fNSigmaTPCD(0.0f),
-  fNSigmaTPCT(0.0f),
-  fNSigmaTPCH(0.0f),
-  fNSigmaTPCA(0.0f),
   fNSigmaTOFPi(0.0f),
   fNSigmaTOFK(0.0f),
   fNSigmaTOFP(0.0f),
   fNSigmaTOFE(0.0f),
+  fNSigmaTPCD(0.0f),
+  fNSigmaTPCT(0.0f),
+  fNSigmaTPCH(0.0f),
+  fNSigmaTPCA(0.0f),
   fNSigmaTOFD(0.0f),
   fNSigmaTOFT(0.0f),
   fNSigmaTOFH(0.0f),
@@ -80,45 +75,34 @@ AliFemtoTrack::AliFemtoTrack():
   fYatDCA(0.0),
   fZatDCA(0.0),
   fHiddenInfo(nullptr),
-  fTrueMomentum(nullptr),    // True (simulated) momentum
-  fEmissionPoint(nullptr),   // Emission point coordinates
-  fPDGPid(0),             // True PID of the particle
-  fMass(0.0),               // True particle mass
+  fTrueMomentum(nullptr),
+  fEmissionPoint(nullptr),
+  fPDGPid(0),
+  fMass(0.0),
   fGlobalEmissionPoint(nullptr),
   fCorrPi(0.0),
   fCorrK(0.0),
   fCorrP(0.0),
+  fCorrPiMinus(0.0),
+  fCorrKMinus(0.0),
+  fCorrPMinus(0.0),
+  fCorrAll(0.0),
   fCorrD(0.0),
   fCorrT(0.0),
   fCorrH(0.0),
   fCorrA(0.0),
-  fCorrPiMinus(0.0),
-  fCorrKMinus(0.0),
-  fCorrPMinus(0.0),
   fCorrDMinus(0.0),
   fCorrTMinus(0.0),
-  fCorrHMinus(0.0),
-  fCorrAMinus(0.0),
-  fCorrAll(0.0)
+  fCorrHMinus(0.0)
+  , fCorrAMinus(0.0)
 {
   // Default constructor
-  fKinkIndexes[0] = 0;
-  fKinkIndexes[1] = 0;
-  fKinkIndexes[2] = 0;
 
-  for (int i = 0; i < 6; i++) {
-    fHasPointOnITS[i] = kFALSE;
-  }
-
-  for (int i = 0; i < 9; i++) {
-    fNominalTpcPoints[i].SetX(0);
-    fNominalTpcPoints[i].SetY(0);
-    fNominalTpcPoints[i].SetZ(0);
-  }
-
-  fVertex[0] = -9999;
-  fVertex[1] = -9999;
-  fVertex[2] = -9999;
+  /// fill arrays with a value
+  std::fill_n(fKinkIndexes, 3, 0);
+  std::fill_n(fVertex, 3, -9999);
+  std::fill_n(fHasPointOnITS, 6, kFALSE);
+  std::fill_n(fNominalTpcPoints, 9, AliFemtoThreeVector(0.0));
 }
 
 
@@ -166,19 +150,19 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fNSigmaTPCK(t.fNSigmaTPCK),
   fNSigmaTPCP(t.fNSigmaTPCP),
   fNSigmaTPCE(t.fNSigmaTPCE),
-  fNSigmaTPCD(t.fNSigmaTPCD),
-  fNSigmaTPCT(t.fNSigmaTPCT),
-  fNSigmaTPCH(t.fNSigmaTPCH),
-  fNSigmaTPCA(t.fNSigmaTPCA),
-  fMassTOF(t.fMassTOF),
   fNSigmaTOFPi(t.fNSigmaTOFPi),
   fNSigmaTOFK(t.fNSigmaTOFK),
   fNSigmaTOFP(t.fNSigmaTOFP),
   fNSigmaTOFE(t.fNSigmaTOFE),
+  fNSigmaTPCD(t.fNSigmaTPCD),
+  fNSigmaTPCT(t.fNSigmaTPCT),
+  fNSigmaTPCH(t.fNSigmaTPCH),
+  fNSigmaTPCA(t.fNSigmaTPCA),
   fNSigmaTOFD(t.fNSigmaTOFD),
   fNSigmaTOFT(t.fNSigmaTOFT),
   fNSigmaTOFH(t.fNSigmaTOFH),
   fNSigmaTOFA(t.fNSigmaTOFA),
+  fMassTOF(t.fMassTOF),
   fSigmaToVertex(t.fSigmaToVertex),
   fClusters(t.fClusters),
   fShared(t.fShared),
@@ -188,34 +172,32 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fXatDCA(t.fXatDCA),
   fYatDCA(t.fYatDCA),
   fZatDCA(t.fZatDCA),
-  fHiddenInfo(NULL),
-  fTrueMomentum(NULL),      // True (simulated) momentum
-  fEmissionPoint(NULL),     // Emission point coordinates
-  fPDGPid(t.fPDGPid),       // True PID of the particle
-  fMass(t.fMass),           // True particle mass
-  fGlobalEmissionPoint(0),
+  fHiddenInfo(nullptr),
+  fTrueMomentum(nullptr),
+  fEmissionPoint(nullptr),
+  fPDGPid(t.fPDGPid),
+  fMass(t.fMass),
+  fGlobalEmissionPoint(nullptr),
   fCorrPi(t.fCorrPi),
   fCorrK(t.fCorrK),
   fCorrP(t.fCorrP),
+  fCorrPiMinus(t.fCorrPiMinus),
+  fCorrKMinus(t.fCorrKMinus),
+  fCorrPMinus(t.fCorrPMinus),
+  fCorrAll(t.fCorrAll),
   fCorrD(t.fCorrD),
   fCorrT(t.fCorrT),
   fCorrH(t.fCorrH),
   fCorrA(t.fCorrA),
-  fCorrPiMinus(t.fCorrPiMinus),
-  fCorrKMinus(t.fCorrKMinus),
-  fCorrPMinus(t.fCorrPMinus),
   fCorrDMinus(t.fCorrDMinus),
   fCorrTMinus(t.fCorrTMinus),
-  fCorrHMinus(t.fCorrHMinus),
-  fCorrAMinus(t.fCorrAMinus),
-  fCorrAll(t.fCorrAll)
+  fCorrHMinus(t.fCorrHMinus)
+  , fCorrAMinus(t.fCorrAMinus)
  {
    // copy constructor
   fHiddenInfo = t.ValidHiddenInfo() ? t.GetHiddenInfo()->Clone() : nullptr;
 
-  for (int i = 0; i < 9; i++) {
-    fNominalTpcPoints[i] = t.fNominalTpcPoints[i];
-  }
+  std::copy_n(t.fNominalTpcPoints, 9, fNominalTpcPoints);
 
   if (t.fTrueMomentum) {
     fTrueMomentum = new AliFemtoThreeVector(*t.fTrueMomentum);
@@ -229,7 +211,7 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
     fGlobalEmissionPoint = new AliFemtoThreeVector(*t.fGlobalEmissionPoint);
   }
 
-  SetKinkIndexes((int*)t.fKinkIndexes);
+  SetKinkIndexes(t.fKinkIndexes);
   SetPrimaryVertex(t.fVertex);
 }
 
@@ -323,16 +305,13 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   fCorrAMinus = aTrack.fCorrAMinus;
   fCorrAll = aTrack.fCorrAll;
 
-  for (int i=0; i<6; i++) {
-    fHasPointOnITS[i] = aTrack.fHasPointOnITS[i];
-  }
-
-  for (int i=0; i<9; i++) {
-    fNominalTpcPoints[i] = aTrack.fNominalTpcPoints[i];
-  }
+  std::copy_n(aTrack.fHasPointOnITS, 6, fHasPointOnITS);
+  std::copy_n(aTrack.fNominalTpcPoints, 9, fNominalTpcPoints);
 
   delete fHiddenInfo;
-  fHiddenInfo = (aTrack.ValidHiddenInfo()) ? aTrack.GetHiddenInfo()->Clone() : NULL;
+  fHiddenInfo = aTrack.ValidHiddenInfo()
+              ? aTrack.GetHiddenInfo()->Clone()
+              : nullptr;
 
   if (aTrack.fTrueMomentum != NULL) {
     if (fTrueMomentum == NULL) {
@@ -367,8 +346,8 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
     fGlobalEmissionPoint = NULL;
   }
 
-  SetKinkIndexes((int*)aTrack.fKinkIndexes);
-  SetPrimaryVertex((double*)aTrack.fVertex);
+  SetKinkIndexes(aTrack.fKinkIndexes);
+  SetPrimaryVertex(aTrack.fVertex);
 
   return *this;
 }
@@ -380,7 +359,16 @@ void AliFemtoTrack::SetPidProbPion(const float& x){fPidProbPion = x;}
 void AliFemtoTrack::SetPidProbKaon(const float& x){fPidProbKaon = x;}
 void AliFemtoTrack::SetPidProbProton(const float& x){fPidProbProton = x;}
 void AliFemtoTrack::SetPidProbMuon(const float& x){fPidProbMuon = x;}
-void AliFemtoTrack::SetTofExpectedTimes(const float& tpi, const float& tkn, const float& tpr, const float& ttof){fTofPionTime = tpi; fTofKaonTime = tkn; fTofProtonTime = tpr; fTofDeuteronTime=ttof;fTofTritonTime=ttof, fTofHe3Time=ttof;fTofAlphaTime=ttof;}
+void AliFemtoTrack::SetTofExpectedTimes(const float& tpi, const float& tkn, const float& tpr, const float& ttof)
+{
+  fTofPionTime = tpi;
+  fTofKaonTime = tkn;
+  fTofProtonTime = tpr;
+  fTofDeuteronTime = ttof;
+  fTofTritonTime = ttof;
+  fTofHe3Time = ttof;
+  fTofAlphaTime = ttof;
+}
 
 void AliFemtoTrack::SetP(const AliFemtoThreeVector& p){fP = p;}
 void AliFemtoTrack::SetPt(const float& pt){fPt = pt;}
@@ -558,7 +546,7 @@ void AliFemtoTrack::SetTPCSharedMap(const TBits& aBits)
   fShared = aBits;
 }
 
-void AliFemtoTrack::SetKinkIndexes(int points[3])
+void AliFemtoTrack::SetKinkIndexes(const int points[3])
 {
   // Transfer the Kink indices
   fKinkIndexes[0] = points[0];
