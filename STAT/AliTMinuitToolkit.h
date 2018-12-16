@@ -126,7 +126,7 @@ public:
   void  FitHistogram(const TH1 *his,  Option_t* option = "");
   void  FitGraph(const TGraph * gr, Option_t* option = "");
   Long64_t FillFitter(TTree * inputTree, TString values, TString variables, TString selection, Int_t firstEntry, Int_t nEntries, Bool_t doReset=kTRUE);
-  TString GetFitFunctionAsAlias(Option_t *option="", TTree * tree= nullptr);
+  TString GetFitFunctionAsAlias(Option_t *option="", TTree * tree= nullptr, Int_t precision=4);
   void Bootstrap(ULong_t nIter, const char* reportName, Option_t  *option= nullptr);
   void TwoFoldCrossValidation(UInt_t nIter, const char*reportName, Option_t *option= nullptr);
   void MISAC(Int_t nFitPoints, UInt_t nIter, const char*reportName, Option_t *option= nullptr);

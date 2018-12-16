@@ -462,7 +462,7 @@ Long64_t AliTMinuitToolkit::FillFitter(TTree * inputTree, TString values, TStrin
 /// \brief Format alias string for the for tree alias or for fit title
 /// \param option  - use latex in case of title request
 /// \return        - string description
-TString AliTMinuitToolkit::GetFitFunctionAsAlias(Option_t *option, TTree * tree){
+TString AliTMinuitToolkit::GetFitFunctionAsAlias(Option_t *option, TTree * tree, Int_t precision){
   //
   // construct string TTree alias for fit function
   TString inputString(fFormula->GetTitle());
@@ -488,10 +488,10 @@ TString AliTMinuitToolkit::GetFitFunctionAsAlias(Option_t *option, TTree * tree)
     }else{
       if ((*GetRMSEstimator())[0]>0) {
         inputString.ReplaceAll(TString::Format("[%d]", iPar).Data(),
-                               TString::Format("(%2.2f#pm%2.2f)", (*fParam)[iPar], (*GetRMSEstimator())[iPar]).Data());
+                               TString::Format("(%.*f#pm%0.*f)", precision, precision, (*fParam)[iPar], (*GetRMSEstimator())[iPar]).Data());
       }else{
         inputString.ReplaceAll(TString::Format("[%d]", iPar).Data(),
-                               TString::Format("(%2.2f#pm%2.2f)", (*fParam)[iPar], (*GetRMSEstimator())[iPar]).Data());
+                               TString::Format("(%.*f#pm%.*f)",  precision, precision, (*fParam)[iPar], (*GetRMSEstimator())[iPar]).Data());
       }
     }
   }
