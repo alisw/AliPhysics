@@ -302,10 +302,16 @@ public:
     #undef IMPL_BUILDITEM
     #undef IMPL_BUILDITEM_CASTED
 
+
     // -- custom operator() methods --
 
+#ifdef ENABLE_MOVE_SEMANTICS
+    BuildMap& operator()(const Key_t &key, const TString &val) { fMap.emplace(key, val.Data()); return *this; };
+    BuildMap& operator()(const Key_t &key, const char* val) { fMap.emplace(key, StringValue_t(val)); return *this; }
+#else
     BuildMap& operator()(const Key_t &key, const TString &val) { fMap[key] = val.Data(); return *this; };
     BuildMap& operator()(const Key_t &key, const char* val) { fMap[key] = StringValue_t(val); return *this; }
+#endif
 
     operator AliFemtoConfigObject() {
       return AliFemtoConfigObject(std::move(fMap));
@@ -460,8 +466,7 @@ public:
   #define IMPL_INSERT(__value_type, _ignored, __ignored)       \
     void insert(const Key_t &key, const __value_type &value) { \
       if (!is_map()) { return; }                               \
-      fValueMap[key] = AliFemtoConfigObject(value);            \
-    }
+      fValueMap[key] = AliFemtoConfigObject(value); }
 
     FORWARD_STANDARD_TYPES(IMPL_INSERT);
 
@@ -478,6 +483,17 @@ public:
     }
 
   #undef IMPL_INSERT
+
+  #ifdef ENABLE_MOVE_SEMANTICS
+  #define IMPL_INSERT(__value_type, _i, __i)              \
+    void insert(const Key_t &key, __value_type &&value) { \
+      if (!is_map()) { return; }                          \
+      fValueMap.emplace(key, std::move(value)); }
+
+  FORWARD_STANDARD_TYPES(IMPL_INSERT);
+
+  #undef IMPL_INSERT
+  #endif
 
   /// Checks for existence of key in this object.
   /// Returns false if this is not a map or key is not found.
@@ -977,6 +993,7 @@ class AliFemtoConfigObject::Painter {
 public:
   /// Construct with parent configuration object
   Painter(AliFemtoConfigObject &data);
+
   /// Copy constructor
   Painter(const Painter &o)
     : fData(o.fData)
@@ -1069,7 +1086,9 @@ AliFemtoConfigObject::~AliFemtoConfigObject()
 inline
 void AliFemtoConfigObject::_DeleteValue()
 {
-  switch (fTypeTag) {
+  TypeTagEnum_t typetag = fTypeTag;
+  fTypeTag = kEMPTY;
+  switch (typetag) {
     case kEMPTY: break;
     case kBOOL: return fValueBool.~BoolValue_t();
     case kINT: return fValueInt.~IntValue_t();
@@ -1100,6 +1119,8 @@ void AliFemtoConfigObject::_CopyConstructValue(const AliFemtoConfigObject &src)
   }
 
   #undef COPY
+
+  fTypeTag = src.fTypeTag;
 }
 
 #ifdef ENABLE_MOVE_SEMANTICS
@@ -1121,8 +1142,8 @@ void AliFemtoConfigObject::_MoveConstructValue(AliFemtoConfigObject &&src)
     case kRANGELIST: MOVE(RangeListValue_t, fValueRangeList); break;
   }
 
+  fTypeTag = src.fTypeTag;
   src._DeleteValue();
-  src.fTypeTag = kEMPTY;
 
   #undef MOVE
 }
@@ -1140,7 +1161,7 @@ AliFemtoConfigObject::AliFemtoConfigObject():
 inline
 AliFemtoConfigObject::AliFemtoConfigObject(AliFemtoConfigObject const &orig):
   TObject(orig)
-  , fTypeTag(orig.fTypeTag)
+  , fTypeTag(kEMPTY)
   , fPainter(NULL)
 {
   _CopyConstructValue(orig);
@@ -1173,9 +1194,9 @@ AliFemtoConfigObject::operator=(AliFemtoConfigObject const &rhs)
       case kRANGE: COPY(fValueRange); break;
       case kRANGELIST: COPY(fValueRangeList); break;
     }
+
     #undef COPY
   }
-  fTypeTag = rhs.fTypeTag;
   return *this;
 }
 
@@ -1185,12 +1206,10 @@ AliFemtoConfigObject::operator=(AliFemtoConfigObject const &rhs)
 inline
 AliFemtoConfigObject::AliFemtoConfigObject(AliFemtoConfigObject &&orig):
   TObject(orig)
-  , fTypeTag(orig.fTypeTag)
+  , fTypeTag(kEMPTY)
   , fPainter(orig.fPainter)
 {
   _MoveConstructValue(std::move(orig));
-  orig._DeleteValue();
-  orig.fTypeTag = kEMPTY;
   orig.fPainter = nullptr;
   if (fPainter) {
     fPainter->ResetData(this);
@@ -1219,12 +1238,9 @@ AliFemtoConfigObject& AliFemtoConfigObject::operator=(AliFemtoConfigObject &&rhs
       case kRANGE: fValueRange = std::move(rhs.fValueRange); break;
       case kRANGELIST: fValueRangeList = std::move(rhs.fValueRangeList); break;
     }
+
+    rhs._DeleteValue();
   }
-
-  fTypeTag = rhs.fTypeTag;
-
-  rhs._DeleteValue();
-  rhs.fTypeTag = kEMPTY;
 
   delete fPainter;
   fPainter = nullptr;
