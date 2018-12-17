@@ -1895,20 +1895,31 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
       continue;
 
     // Variable CPV parameters (inspired by direct photons analysis)
-    Float_t eta_param [3] = {0.010, 4.07, -2.50};
-    Float_t phi_param [3] = {0.015, 3.65, -2.00};
+    Float_t eta_param      [3] = {0.010, 4.07, -2.50}; Float_t phi_param      [3] = {0.015, 3.65, -2.00};
+    Float_t eta_param_cone [3] = {0.010, 4.07, -2.50}; Float_t phi_param_cone [3] = {0.015, 3.65, -2.00};
 
     if      ( fVariableCPVSyst == "loose" ) {
-      eta_param[0] = 0.010; eta_param[1] = 4.78; eta_param[2] = -2.50;
-      phi_param[0] = 0.015; phi_param[1] = 3.92; phi_param[2] = -2.00;
+      if ( !fVariableCPVInCone ) {
+	eta_param[0] = 0.010; eta_param[1] = 4.78; eta_param[2] = -2.50;
+	phi_param[0] = 0.015; phi_param[1] = 3.92; phi_param[2] = -2.00;
+      }
+      eta_param_cone[0] = 0.010; eta_param_cone[1] = 4.78; eta_param_cone[2] = -2.50;
+      phi_param_cone[0] = 0.015; phi_param_cone[1] = 3.92; phi_param_cone[2] = -2.00;
     }
     else if ( fVariableCPVSyst == "tight" ) {
-      eta_param[0] = 0.015; eta_param[1] = 3.46; eta_param[2] = -2.50;
-      phi_param[0] = 0.020; phi_param[1] = 3.73; phi_param[2] = -1.75;
+      if ( !fVariableCPVInCone ) {
+	eta_param[0] = 0.015; eta_param[1] = 3.46; eta_param[2] = -2.50;
+	phi_param[0] = 0.020; phi_param[1] = 3.73; phi_param[2] = -1.75;
+      }
+      eta_param_cone[0] = 0.015; eta_param_cone[1] = 3.46; eta_param_cone[2] = -2.50;
+      phi_param_cone[0] = 0.020; phi_param_cone[1] = 3.73; phi_param_cone[2] = -1.75;
     }
     else {
       eta_param[0] = 0.010; eta_param[1] = 4.07; eta_param[2] = -2.50;
       phi_param[0] = 0.015; phi_param[1] = 3.65; phi_param[2] = -2.00;
+
+      eta_param_cone[0] = 0.010; eta_param_cone[1] = 4.07; eta_param_cone[2] = -2.50;
+      phi_param_cone[0] = 0.015; phi_param_cone[1] = 3.65; phi_param_cone[2] = -2.00;
     }
 
     Double_t deltaEta, deltaPhi;
@@ -1958,8 +1969,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     }
     else{
       if((fVariableCPVBoth || fVariableCPVInCone) || (fVariableCPVBoth && fVariableCPVInCone)){
-	deltaEta = eta_param[0] + TMath::Power((mt->Pt() + eta_param[1]), eta_param[2]);
-	deltaPhi = phi_param[0] + TMath::Power((mt->Pt() + phi_param[1]), phi_param[2]);
+	deltaEta = eta_param_cone[0] + TMath::Power((mt->Pt() + eta_param_cone[1]), eta_param_cone[2]);
+	deltaPhi = phi_param_cone[0] + TMath::Power((mt->Pt() + phi_param_cone[1]), phi_param_cone[2]);
       }
       else{
 	deltaEta = fdetacutIso;
@@ -4970,9 +4981,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
 
     fGenPromptPhotonSel->Fill(4.5);
 
-    if(fPythiaHeader->ProcessType() != 201 && fPythiaHeader->ProcessType() != 202) continue; // Discard particles which do not come from prompt photon processes
+    // if(fPythiaHeader->ProcessType() != 201 && fPythiaHeader->ProcessType() != 202) continue; // Discard particles which do not come from prompt photon processes
     // OR
-    // if(fmcHeader->GetEventType() != 14 && fmcHeader->GetEventType() != 29) continue; // Discard particles which do not come from prompt photon processes
+    if(fmcHeader->GetEventType() != 14 && fmcHeader->GetEventType() != 29) continue; // Discard particles which do not come from prompt photon processes
 
     fGenPromptPhotonSel->Fill(5.5);
 

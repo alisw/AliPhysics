@@ -32,7 +32,7 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
 										 Double_t ptAsso,
 										 TString  pte = "pte",
 										 Double_t MassMin,
-										 Int_t nref,
+										 Double_t nref,
 										 TString estimatorFilename,
 										 Int_t minNtr,
 										 Int_t maxNtr)

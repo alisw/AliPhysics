@@ -1799,6 +1799,19 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("16810a23", "00200009247602008250404000", "0152501500000000"); // 60-80%
     cuts.AddCutPCM("31210a23", "00200009247602008250404000", "0152501500000000"); // 5-10%
 
+  } else if (trainConfig == 298){
+    cuts.AddCutPCM("10110013", "00200009247602008250404000", "0152501500000000");
+    cuts.AddCutPCM("11310013", "00200009247602008250404000", "0152501500000000");
+    cuts.AddCutPCM("13510013", "00200009247602008250404000", "0152501500000000");
+    cuts.AddCutPCM("15910013", "00200009247602008250404000", "0152501500000000");
+    cuts.AddCutPCM("10910013", "00200009247602008250404000", "0152501500000000");
+  } else if (trainConfig == 299){
+    cuts.AddCutPCM("10110113", "00200009247602008250404000", "0152501500000000");
+    cuts.AddCutPCM("11310113", "00200009247602008250404000", "0152501500000000");
+    cuts.AddCutPCM("13510113", "00200009247602008250404000", "0152501500000000");
+    cuts.AddCutPCM("15910113", "00200009247602008250404000", "0152501500000000");
+    cuts.AddCutPCM("10910113", "00200009247602008250404000", "0152501500000000");
+
   } else  if (trainConfig == 300){ // LHC10h standard, eta 0.65, y = 0.6
     cuts.AddCutPCM("60100013", "03200009300002003220000000", "0152304500900000"); // 0-5%
     cuts.AddCutPCM("61200013", "03200009300002003220000000", "0152304500900000"); // 5-10%
@@ -2503,9 +2516,9 @@ void AddTask_GammaConvV1_PbPb(
         TString cutNumber = cuts.GetEventCut(i);
         TString centCut = cutNumber(0,3);  // first three digits of event cut
         dataInputMultHisto = Form("%s_%s", periodNameAnchor.Data(), centCut.Data());
-        mcInputMultHisto   = Form("%s_%s", generatorName.Data(), centCut.Data());
+        mcInputMultHisto   = Form("%s_%s", periodNameV0Reader.Data(), centCut.Data());
         cout << "INFO read " << dataInputMultHisto.Data() << " and " <<  mcInputMultHisto.Data() << " from " << fileNameMultWeights.Data() << endl;
-            } else {
+      } else {
         if(i == 0){
           dataInputMultHisto      = Form("%s_0005", periodNameAnchor.Data());
           mcInputMultHisto        = "LHC14a1a_0005";
@@ -2535,10 +2548,10 @@ void AddTask_GammaConvV1_PbPb(
         TString eventCutString  = cuts.GetEventCut(i);
         TString eventCutShort   = eventCutString(0,6);   // first six digits
         weightPi0         = kTRUE;
-        histoNameMCPi0PT  = Form("Pi0_%s_5TeV_%s",   generatorName.Data(), eventCutString.Data());  // MC
-        fitNamePi0PT      = Form("Pi0_Data_5TeV_%s", eventCutShort.Data());                      // fit to data
+        histoNameMCPi0PT  = Form("Pi0_%s_5TeV_%s",   periodNameV0Reader.Data(), eventCutString.Data());  // MC
+        fitNamePi0PT      = Form("Pi0_Data_5TeV_%s", eventCutShort.Data());                              // fit to data
         weightEta         = kTRUE;
-        histoNameMCEtaPT  = Form("Eta_%s_5TeV_%s",   generatorName.Data(), eventCutString.Data());
+        histoNameMCEtaPT  = Form("Eta_%s_5TeV_%s",   periodNameV0Reader.Data(), eventCutString.Data());
         fitNameEtaPT      = Form("Eta_Data_5TeV_%s", eventCutShort.Data());
       }
       analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(weightPi0, weightEta, weightK0s, fileNamePtWeights, histoNameMCPi0PT, histoNameMCEtaPT, histoNameMCK0sPT, fitNamePi0PT, fitNameEtaPT, fitNameK0sPT);

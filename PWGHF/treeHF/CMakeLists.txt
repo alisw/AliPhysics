@@ -47,6 +47,10 @@ set(SRCS
   AliHFTreeHandlerDplustoKpipi.h
   AliHFTreeHandlerDstoKKpi.cxx
   AliHFTreeHandlerDstoKKpi.h
+  AliHFTreeHandlerLctopKpi.cxx
+  AliHFTreeHandlerLctopKpi.h
+  AliHFTreeHandlerBplustoD0pi.cxx
+  AliHFTreeHandlerBplustoD0pi.h
 
   )
 

@@ -254,8 +254,10 @@ public:
     void AddTopologicalQACascade(Int_t lRecNumberOfSteps = 100);
     // 3 - Standard analysis configurations + systematics
     void AddStandardV0Configuration(Bool_t lUseFull = kFALSE, Bool_t lDoSweepLooseTight = kFALSE, Int_t lSweepFullNumb = 0);
+    void AddStandardV0RadiusSweep(); 
     void AddStandardCascadeConfiguration(Bool_t lUseFull=kFALSE, Bool_t lDoSystematics = kTRUE);
     void AddCascadeConfiguration276TeV();
+    void AddCascadeConfigurationPreliminaryCrosscheck();
     //---------------------------------------------------------------------------------------
     Float_t GetDCAz(AliESDtrack *lTrack);
     Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);

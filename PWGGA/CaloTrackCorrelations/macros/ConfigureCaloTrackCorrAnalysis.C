@@ -192,6 +192,13 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
   else
     ana->SwitchOnFillHighMultiplicityHistograms();
   
+  // Consider real calo acceptance (borders, bad map holes)
+  // at generator level
+  if ( kAnaCutsString.Contains("MCRealCaloAcc") )
+    ana->SwitchOnRealCaloAcceptance();
+  else
+    ana->SwitchOffRealCaloAcceptance();
+  
   //
   // Debug
   //
@@ -221,9 +228,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   AliAnaPhoton *ana = new AliAnaPhoton();
   
   // cluster selection cuts
-  
-  ana->SwitchOffRealCaloAcceptance();
-  
+
   ana->SwitchOnFiducialCut(); 
   if      ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7,  80, 187) ; // EMC 
   else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7, 260, 327) ; // DMC  
@@ -260,6 +265,11 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
     ana->SwitchOnTMHistoFill() ;
     if(tm > 1) ana->SwitchOnTMTrackPtHistoFill() ;
   }
+  else
+  {
+    ana->SwitchOffTMHistoFill() ;
+    ana->SwitchOffTMTrackPtHistoFill() ;
+  }
   
   if(calorimeter == "PHOS")
   {
@@ -271,7 +281,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   else
   {//EMCAL
     ana->SetNCellCut(1);// At least 2 cells
-    ana->SetMinEnergy(0.3); // avoid mip peak at E = 260 MeV
+    ana->SetMinEnergy(0.5); 
     ana->SetMaxEnergy(100);
     ana->SetTimeCut(-1e10,1e10); // open cut, usual time window of [425-825] ns if time recalibration is off
                                  // restrict to less than 100 ns when time calibration is on
@@ -294,12 +304,20 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   caloPID->SetEMCALLambda0CutMin(0.10);
   
   // Track matching
+  
+  // E/p
+  if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
+  if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
+  if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
+  if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
+  if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
+  
   // tm = 1, fixed cuts
   caloPID->SetEMCALDEtaCut(0.025);
   caloPID->SetEMCALDPhiCut(0.030);
   
   // pT track dependent cuts
-  if(tm > 1) caloPID->SwitchOnEMCTrackPtDepResMatching();
+  if ( tm > 1 ) caloPID->SwitchOnEMCTrackPtDepResMatching();
   
   // PHOS
   caloPID->SetPHOSDispersionCut(2.5);
@@ -372,7 +390,7 @@ AliAnaElectron* ConfigureElectronAnalysis(TString col,           Bool_t simulati
   else 
   {// EMCAL
     ana->SetNCellCut(1);// At least 2 cells
-    ana->SetMinPt(0.7); // no effect minium EMCAL cut.
+    ana->SetMinPt(0.5); // no effect minium EMCAL cut.
     ana->SetMaxPt(100); 
     //ana->SetTimeCut(400,900);// Time window of [400-900] ns
     ana->SetMinDistanceToBadChannel(2);
@@ -562,6 +580,14 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
     AliCaloPID* caloPID = ana->GetCaloPID();
     
     // Track matching
+    
+    // E/p
+    if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
+    if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
+    if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
+    if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
+    if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
+    
     // tm = 1, fixed cuts
     caloPID->SetEMCALDEtaCut(0.025);
     caloPID->SetEMCALDPhiCut(0.030);
@@ -689,8 +715,6 @@ AliAnaPi0* ConfigureInvariantMassAnalysis
   else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7, 260, 327) ; // DMC  
   
   if ( calorimeter.Contains("CAL") ) ana->GetFiducialCut()->DoEMCALFiducialCut(kTRUE);  
-
-  ana->SwitchOffRealCaloAcceptance();
   
   // settings for pp collision mixing
   if(mixOn) ana->SwitchOnOwnMix();
@@ -853,7 +877,6 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   //if(!simulation) ana->SwitchOnFillPileUpHistograms();
   
   // Avoid borders of calorimeter
-  ana->SwitchOffRealCaloAcceptance();
   ana->SwitchOnFiducialCut();
   if      ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.60,  86, 174) ;
   else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.60, 266, 314) ; 
@@ -955,17 +978,36 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   else
     ana->SwitchOffSeveralIsolation() ;
   
-  AliCaloPID* caloPID = ana->GetCaloPID();
-  
   // Track matching 
-  // tm = 1, fixed cuts
-  caloPID->SetEMCALDEtaCut(0.025);
-  caloPID->SetEMCALDPhiCut(0.030);
+  //
+  // By default apply always a TM cut in cone if charged and neutrals
+  // in isolation cone
+  if ( partInCone == AliIsolationCut::kNeutralAndCharged )
+  {
+    AliCaloPID* caloPID = ana->GetCaloPID();
+    
+    // E/p
+    if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
+    if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
+    if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
+    if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
+    if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
+    
+    if ( tm == 1 )
+    {
+      // tm = 1, fixed cuts
+      
+      caloPID->SetEMCALDEtaCut(0.025);
+      caloPID->SetEMCALDPhiCut(0.030);
+    }
+    else
+    {
+      // pT track dependent cuts
+      caloPID->SwitchOnEMCTrackPtDepResMatching();
+    }
+  }
   
-  // pT track dependent cuts
-  if(tm > 1) caloPID->SwitchOnEMCTrackPtDepResMatching();
-  
-  //Set Histograms name tag, bins and ranges
+  // Set Histograms name tag, bins and ranges
   
 //  if(!multi) ana->AddToHistogramsName(Form("AnaIsol%s_TM%d_"     ,particle.Data(),tm));
 //  else       ana->AddToHistogramsName(Form("AnaMultiIsol%s_TM%d_",particle.Data(),tm));  
@@ -974,13 +1016,13 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   
   SetAnalysisCommonParameters(ana,histoString, calorimeter,year,col,simulation,printSettings,debug); // see method below
   
-  if(particle=="Hadron"  || particle.Contains("CTS"))
+  if ( particle=="Hadron"  || particle.Contains("CTS") )
   {
     ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 200) ;
     ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
   }
   
-  if(printSettings) ic ->Print("");
+  if ( printSettings ) ic ->Print("");
   
   return ana;
 }
@@ -1189,6 +1231,14 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   // Track matching, in case of mixing and specially in isolation case
   //
   AliCaloPID* caloPID = ana->GetCaloPID();
+  
+  // E/p
+  if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
+  if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
+  if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
+  if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
+  if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
+  
   // tm = 1, fixed cuts
   caloPID->SetEMCALDEtaCut(0.025);
   caloPID->SetEMCALDPhiCut(0.030);
@@ -1315,6 +1365,13 @@ AliAnaClusterShapeCorrelStudies* ConfigureClusterShape
   ana->SwitchOnCaloPID(); // do PID selection, unless specified in GetCaloPID, selection not based on bayesian
   AliCaloPID* caloPID = ana->GetCaloPID();
   
+  // E/p
+  if ( kAnaCutsString.Contains("TMEoP10" ) ) caloPID->SetEOverP(0,10);
+  if ( kAnaCutsString.Contains("TMEoP5"  ) ) caloPID->SetEOverP(0,5);
+  if ( kAnaCutsString.Contains("TMEoP3"  ) ) caloPID->SetEOverP(0,3);
+  if ( kAnaCutsString.Contains("TMEoP2"  ) ) caloPID->SetEOverP(0,2);
+  if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
+  
   if(tm > 1)
   {
     // track pT dependent cut
@@ -1370,9 +1427,7 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString col,           Bool_t  simulati
   ana->SetTimeCut(-1e10,1e10); // Open time cut
   
   ana->SwitchOffCorrelation(); // make sure you switch in the reader PHOS and EMCAL cells and clusters if option is ON
-  
-  ana->SwitchOffRealCaloAcceptance();
-  
+    
   ana->SwitchOffFiducialCut();
   ana->SwitchOffFillAllTH3Histogram();
   ana->SwitchOffFillAllPositionHistogram();
@@ -1435,7 +1490,7 @@ AliAnaGeneratorKine* ConfigureGenKineAnalysis(Int_t   thresType,     Float_t pth
   }
   
   ana->SetMinChargedPt(0.2);
-  ana->SetMinNeutralPt(0.3);
+  ana->SetMinNeutralPt(0.5);
   
   if      ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.70,  80, 174) ;
   else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.70, 260, 327) ; 
@@ -1448,7 +1503,7 @@ AliAnaGeneratorKine* ConfigureGenKineAnalysis(Int_t   thresType,     Float_t pth
   ic->SetPtThreshold(pth);
   ic->SetConeSize(cone);
   ic->SetMinDistToTrigger(coneMin);    
-  ic->SetSumPtThreshold(1.0) ;
+  ic->SetSumPtThreshold(pth) ;
   ic->SetICMethod(thresType);
   
   ana->AddToHistogramsName("AnaGenKine_");

@@ -20,6 +20,9 @@ AliAnalysisTaskDeuteronAbsorption* AddTaskDeuteronAbsorption(TString name = "sta
     if (!mgr->GetInputEventHandler()) {
         return 0x0;
     }
+    //
+    AliInputEventHandler* hdl = (AliInputEventHandler*)mgr->GetInputEventHandler();
+    if (hdl) hdl->SetNeedField();
     // by default, a file is open for writing. here, we get the filename
     TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += ":DeuteronAbsorption";      // create a subfolder in the file

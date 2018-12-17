@@ -203,6 +203,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fCheckPileUp(kFALSE),
   fCheckPrimaryFlagAOD(kFALSE),
   fUseMCforKinematics(kFALSE),
+  fRebinCorrHistos(kFALSE),
   fUseAdditionalVtxCuts(kFALSE),
   fUseOutOfBunchPileUpCutsLHC15o(kFALSE),
   fUseOutOfBunchPileUpCutsLHC15oJpsi(kFALSE),
@@ -501,34 +502,81 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fHistEtaPhiNegCorr  = new TH3F("fHistEtaPhiNegCorr","#eta-#phi distribution (-);#eta;#phi (rad);Centrality percentile",40,-1.6,1.6,72,0.,2.*TMath::Pi(),220,-5,105); 	       	 
   fList->Add(fHistEtaPhiNegCorr);
   
-  Int_t phiBin = 100;
-  Int_t etaBin = 16;
-  Int_t vertex_bin = 9;
+    if (fRebinCorrHistos) {
 
-  Double_t nArrayPhi[phiBin+1];
-  for(Int_t iBin = 0; iBin <= phiBin; iBin++)
+    Int_t perphiBin = 100;
+    Int_t phiBinRebin = 94;
+    Int_t etaBin = 16;
+    Int_t vertex_bin = 9;
+    Double_t nArrayPhiRebin[phiBinRebin+1];
+    for(Int_t iBin = 0; iBin < 32; iBin++)
+    nArrayPhiRebin[iBin] = iBin*TMath::TwoPi()/perphiBin;
+    for(Int_t iBin = 32; iBin <= phiBinRebin; iBin++)
+    nArrayPhiRebin[iBin] = (iBin+6)*TMath::TwoPi()/perphiBin;
+
+    Double_t nArrayEta[17]={-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
+    Double_t nArrayVertex[10]={-10, -7, -5, -3, -1, 1, 3, 5, 7, 10};
+
+    fHistEtaPhiVzPlusCorr = new TH3F("fHistEtaPhiVzPlusCorr",
+                                 "Survived positive primaries;#phi;#eta;V_{z} (cm)",
+                                 phiBinRebin, nArrayPhiRebin, etaBin, nArrayEta, vertex_bin, nArrayVertex);
+    fHistEtaPhiVzMinusCorr = new TH3F("fHistEtaPhiVzMinusCorr",
+                                  "Survived negative primaries;#phi;#eta;V_{z} (cm)",
+                                  phiBinRebin, nArrayPhiRebin, etaBin,nArrayEta, vertex_bin, nArrayVertex);
+
+    Int_t phiBin = 100;
+    Double_t nArrayPhi[phiBin+1];
+    for(Int_t iBin = 0; iBin <= phiBin; iBin++)
         nArrayPhi[iBin] = iBin*TMath::TwoPi()/phiBin;
 
-  Double_t nArrayEta[17]={-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
-  Double_t nArrayVertex[10]={-10, -7, -5, -3, -1, 1, 3, 5, 7, 10};
-
-  fHistEtaPhiVzPlus = new TH3F("fHistEtaPhiVzPlus",
+    fHistEtaPhiVzPlus = new TH3F("fHistEtaPhiVzPlus",
                                  "Survived positive primaries;#phi;#eta;V_{z} (cm)",
                                  phiBin, nArrayPhi, etaBin, nArrayEta, vertex_bin, nArrayVertex);
-  fHistEtaPhiVzPlusCorr = new TH3F("fHistEtaPhiVzPlusCorr",
-                                     "Survived positive primaries;#phi;#eta;V_{z} (cm)",
-                                     phiBin, nArrayPhi, etaBin, nArrayEta, vertex_bin, nArrayVertex);
-  fHistEtaPhiVzMinus = new TH3F("fHistEtaPhiVzMinus",
+
+    fHistEtaPhiVzMinus = new TH3F("fHistEtaPhiVzMinus",
                                   "Survived negative primaries;#phi;#eta;V_{z} (cm)",
                                   phiBin, nArrayPhi, etaBin,nArrayEta, vertex_bin, nArrayVertex);
-  fHistEtaPhiVzMinusCorr = new TH3F("fHistEtaPhiVzMinusCorr",
+
+    fList->Add(fHistEtaPhiVzPlus);
+    fList->Add(fHistEtaPhiVzPlusCorr);
+    fList->Add(fHistEtaPhiVzMinus);
+    fList->Add(fHistEtaPhiVzMinusCorr);
+
+    }
+    
+    else if (!fRebinCorrHistos) {
+
+    Int_t phiBin = 100;
+    Int_t etaBin = 16;
+    Int_t vertex_bin = 9;
+
+    Double_t nArrayPhi[phiBin+1];
+    for(Int_t iBin = 0; iBin <= phiBin; iBin++)
+        nArrayPhi[iBin] = iBin*TMath::TwoPi()/phiBin;
+
+    Double_t nArrayEta[17]={-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
+    Double_t nArrayVertex[10]={-10, -7, -5, -3, -1, 1, 3, 5, 7, 10};
+
+    fHistEtaPhiVzPlus = new TH3F("fHistEtaPhiVzPlus",
+                                 "Survived positive primaries;#phi;#eta;V_{z} (cm)",
+                                 phiBin, nArrayPhi, etaBin, nArrayEta, vertex_bin, nArrayVertex);
+    fHistEtaPhiVzPlusCorr = new TH3F("fHistEtaPhiVzPlusCorr",
+                                     "Survived positive primaries;#phi;#eta;V_{z} (cm)",
+                                     phiBin, nArrayPhi, etaBin, nArrayEta, vertex_bin, nArrayVertex);
+    fHistEtaPhiVzMinus = new TH3F("fHistEtaPhiVzMinus",
+                                  "Survived negative primaries;#phi;#eta;V_{z} (cm)",
+                                  phiBin, nArrayPhi, etaBin,nArrayEta, vertex_bin, nArrayVertex);
+    fHistEtaPhiVzMinusCorr = new TH3F("fHistEtaPhiVzMinusCorr",
                                       "Survived negative primaries;#phi;#eta;V_{z} (cm)",
                                       phiBin, nArrayPhi, etaBin,nArrayEta, vertex_bin, nArrayVertex);
-  fList->Add(fHistEtaPhiVzPlus);
-  fList->Add(fHistEtaPhiVzPlusCorr);
-  fList->Add(fHistEtaPhiVzMinus);
-  fList->Add(fHistEtaPhiVzMinusCorr);
 
+    fList->Add(fHistEtaPhiVzPlus);
+    fList->Add(fHistEtaPhiVzPlusCorr);
+    fList->Add(fHistEtaPhiVzMinus);
+    fList->Add(fHistEtaPhiVzMinusCorr);
+      
+    }
+    
   fHistPhiBefore  = new TH2F("fHistPhiBefore","#phi distribution;#phi;Centrality percentile",200,0.,2*TMath::Pi(),220,-5,105);
   fList->Add(fHistPhiBefore);
   fHistPhiAfter  = new TH2F("fHistPhiAfter","#phi distribution;#phi;Centrality percentile",200,0.,2*TMath::Pi(),220,-5,105);

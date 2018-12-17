@@ -138,9 +138,15 @@ public:
     { AddPair(pair, *fDenominator, *fDenominatorW); }
 #endif
 
-  /// No-op
+  /// Remove underflow-overflow contents to improve compressed file size
   virtual void Finish()
-    { }
+    {
+      #if ROOT_VERSION_CODE >= ROOT_VERSION(6, 10, 8)
+      fNumerator->ClearUnderflowAndOverflow();
+      fDenominator->ClearUnderflowAndOverflow();
+      fQinvW->ClearUnderflowAndOverflow();
+      #endif
+    }
 
   /// Return denominator
   TH3& Numerator()

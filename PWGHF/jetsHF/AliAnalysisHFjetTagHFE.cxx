@@ -84,6 +84,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fmimM20(0.01),
   fmaxM20(0.35),
   fJetEtaCut(0.6),
+  fEleEtaCut(0.6),
   fInvmassCut(0.1),
   fptAssocut(0.15),
   NembMCpi0(0),
@@ -166,6 +167,10 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   HFjetParticle(0),
   HFjetDCA_c(0),
   HFjetDCA_b(0),
+  HFjetDCA_Dp(0),
+  HFjetDCA_Dz(0),
+  HFjetDCA_Ds(0),
+  HFjetDCA_Lc(0),
   fQAHistJetPhi(0),
   fQAHistTrPhiJet(0),
   fQAHistTrPhi(0),
@@ -235,6 +240,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fmimM20(0.01),
   fmaxM20(0.35),
   fJetEtaCut(0.6),
+  fEleEtaCut(0.6),
   fInvmassCut(0.1),
   fptAssocut(0.15),
   NembMCpi0(0),
@@ -317,6 +323,10 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   HFjetParticle(0),
   HFjetDCA_c(0),
   HFjetDCA_b(0),
+  HFjetDCA_Dp(0),
+  HFjetDCA_Dz(0),
+  HFjetDCA_Ds(0),
+  HFjetDCA_Lc(0),
   fQAHistJetPhi(0),
   fQAHistTrPhiJet(0),
   fQAHistTrPhi(0),
@@ -699,6 +709,18 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   HFjetDCA_b = new TH2D("HFjetDCA_b","DCA of b->e",100,0,100,1000,-0.5,0.5); 
   fOutput->Add(HFjetDCA_b);
 
+  HFjetDCA_Dp = new TH2D("HFjetDCA_Dp","DCA of Dp->e",100,0,100,1000,-0.5,0.5); 
+  fOutput->Add(HFjetDCA_Dp);
+
+  HFjetDCA_Dz = new TH2D("HFjetDCA_Dz","DCA of Dz->e",100,0,100,1000,-0.5,0.5); 
+  fOutput->Add(HFjetDCA_Dz);
+
+  HFjetDCA_Ds = new TH2D("HFjetDCA_Ds","DCA of Ds->e",100,0,100,1000,-0.5,0.5); 
+  fOutput->Add(HFjetDCA_Ds);
+
+  HFjetDCA_Lc = new TH2D("HFjetDCA_Lc","DCA of Lc->e",100,0,100,1000,-0.5,0.5); 
+  fOutput->Add(HFjetDCA_Lc);
+
   // QA
   fQAHistJetPhi = new TH1F("fQAHistJetPhi","jet phi",650,0.0,6.5);
   fOutput->Add(fQAHistJetPhi);
@@ -921,6 +943,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             cout << "fmimSig = " << fmimSig << endl;
             cout << "fmimEop = " << fmimEop << endl;
             cout << "fJetEtaCut = " << fJetEtaCut << endl;
+            cout << "fEleEtaCut = " << fEleEtaCut << endl;
             cout << "fInvmassCut = " << fInvmassCut << endl;
             cout << "fptAssocut = " << fptAssocut << endl;
            }
@@ -1236,7 +1259,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
           if(atrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
         //cout << "DCA = " << d0z0[0] << " ; " << d0z0[1] << endl;
  
-        if(fabs(eta)>0.6)continue;
+        //if(fabs(eta)>0.6)continue;
+        if(fabs(eta)>fEleEtaCut)continue;
 
         //fQAHistTrPhi->Fill(phi); // QA
         fQAHistNits->Fill(atrack->GetITSNcls());
@@ -1595,8 +1619,20 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                        HFjetCorr3->Fill(HFjetVals3); 
                        
                      
-                       if(ich && track->Pt()>4.0)HFjetDCA_c->Fill(corrPt,epTarray[3]);
-                       if(ibe && track->Pt()>4.0)HFjetDCA_b->Fill(corrPt,epTarray[3]);
+                       if(track->Pt()>4.0 && track->Pt()<18.0)
+                          {
+                           if(ich)
+                              {
+                               HFjetDCA_c->Fill(corrPt,epTarray[3]);
+
+                               if(TMath::Abs(pidM)==411)HFjetDCA_Dp->Fill(corrPt,epTarray[3]);
+                               if(TMath::Abs(pidM)==421)HFjetDCA_Dz->Fill(corrPt,epTarray[3]);
+                               if(TMath::Abs(pidM)==431)HFjetDCA_Ds->Fill(corrPt,epTarray[3]);
+                               if(TMath::Abs(pidM)==4122)HFjetDCA_Lc->Fill(corrPt,epTarray[3]);
+                              } 
+
+                           if(ibe)HFjetDCA_b->Fill(corrPt,epTarray[3]);
+                          }
 
                        for (unsigned j = 0; j< jet->GetNumberOfTracks(); j++) 
                            {
@@ -1933,7 +1969,7 @@ Bool_t AliAnalysisHFjetTagHFE::isHeavyFlavour(int Mompdg, Bool_t &ich, Bool_t &i
  Bool_t iBeauty = kFALSE;
  Bool_t iHeavy = kFALSE;
 
-      if(abs(Mompdg)==411 || abs(Mompdg)==413 || abs(Mompdg)==421 || abs(Mompdg)==423 || abs(Mompdg)==431)iCharm = kTRUE;
+      if(abs(Mompdg)==411 || abs(Mompdg)==413 || abs(Mompdg)==421 || abs(Mompdg)==423 || abs(Mompdg)==431 || abs(Mompdg)==4122)iCharm = kTRUE;
       if(abs(Mompdg)==511 || abs(Mompdg)==513 || abs(Mompdg)==521 || abs(Mompdg)==523 || abs(Mompdg)==531)iBeauty = kTRUE;
       if(iCharm || iBeauty)iHeavy = kTRUE;
 
@@ -2009,10 +2045,13 @@ void AliAnalysisHFjetTagHFE::MakeParticleLevelJet(Double_t &pthard)
         if(idbHFEj)cout << "Mom = " << pdgMom << endl;
         Double_t etaMC = fMCparticle->Eta();
  
-        if(pdg==111 && iMC>NembMCpi0 && iMC<NembMCeta && TMath::Abs(etaMC)<0.6)fHistMCorgPi0->Fill(fMCparticle->Pt());
-        if(pdg==221 && iMC>NembMCeta && TMath::Abs(etaMC)<0.6)fHistMCorgEta->Fill(fMCparticle->Pt());
+        //if(pdg==111 && iMC>NembMCpi0 && iMC<NembMCeta && TMath::Abs(etaMC)<0.6)fHistMCorgPi0->Fill(fMCparticle->Pt());
+        //if(pdg==221 && iMC>NembMCeta && TMath::Abs(etaMC)<0.6)fHistMCorgEta->Fill(fMCparticle->Pt());
+        if(pdg==111 && iMC>NembMCpi0 && iMC<NembMCeta && TMath::Abs(etaMC)<fEleEtaCut)fHistMCorgPi0->Fill(fMCparticle->Pt());
+        if(pdg==221 && iMC>NembMCeta && TMath::Abs(etaMC)<fEleEtaCut)fHistMCorgEta->Fill(fMCparticle->Pt());
 
-        if(fabs(pdg)==11 && pdgMom!=0 && TMath::Abs(etaMC)<0.6)
+        //if(fabs(pdg)==11 && pdgMom!=0 && TMath::Abs(etaMC)<0.6)
+        if(fabs(pdg)==11 && pdgMom!=0 && TMath::Abs(etaMC)<fEleEtaCut)
           {
            Bool_t ich = kFALSE;
            Bool_t ibe = kFALSE;

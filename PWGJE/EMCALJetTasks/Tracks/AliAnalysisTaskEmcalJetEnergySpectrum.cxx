@@ -41,6 +41,7 @@
 #include "AliEmcalJet.h"
 #include "AliEmcalTriggerDecisionContainer.h"
 #include "AliEmcalTriggerStringDecoder.h"
+#include "AliEventCuts.h"
 #include "AliInputEventHandler.h"
 #include "AliJetContainer.h"
 #include "AliLog.h"
@@ -54,6 +55,7 @@ using namespace EmcalTriggerJets;
 AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   AliAnalysisTaskEmcalJet(),
   fHistos(nullptr),
+  fEventCuts(nullptr),
   fIsMC(false),
 	fTriggerSelectionBits(AliVEvent::kAny),
   fTriggerSelectionString(""),
@@ -65,6 +67,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   fNameJetContainer("datajets"),
   fRequestTriggerClusters(true),
   fRequestCentrality(false),
+  fUseAliEventCuts(false),
   fCentralityEstimator("V0M")
 {
   SetUseAliAnaUtils(true);
@@ -73,6 +76,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
 AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(const char *name):
   AliAnalysisTaskEmcalJet(name, true),
   fHistos(nullptr),
+  fEventCuts(nullptr),
   fIsMC(false),
 	fTriggerSelectionBits(AliVEvent::kAny),
   fTriggerSelectionString(""),
@@ -84,6 +88,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(con
   fNameJetContainer("datajets"),
   fRequestTriggerClusters(true),
   fRequestCentrality(false),
+  fUseAliEventCuts(false),
   fCentralityEstimator("V0M")
 {
   SetUseAliAnaUtils(true);
@@ -118,7 +123,23 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   fHistos->CreateTHnSparse("hMaxJetTHnSparse", "jet thnsparse", 6, binnings, "s");
 
   for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
+
+  if(fUseAliEventCuts) {
+    fEventCuts = new AliEventCuts(true);
+    // Do not perform trigger selection in the AliEvent cuts but let the task do this before
+    fEventCuts->OverrideAutomaticTriggerSelection(AliVEvent::kAny, true);
+    fOutput->Add(fEventCuts);
+  }
   PostData(1, fOutput);
+}
+
+bool AliAnalysisTaskEmcalJetEnergySpectrum::IsEventSelected(){
+  if(fEventCuts) {
+    if(!IsTriggerSelected()) return false;
+    if(!fEventCuts->AcceptEvent(fInputEvent)) return false;
+    return true;
+  }
+  return AliAnalysisTaskEmcal::IsEventSelected();
 }
 
 bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){

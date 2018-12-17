@@ -608,10 +608,10 @@ void AliCSAnalysisCutsBase::NotifyRunGlobal() {
     fgEnergy = kPbPb5TeV;
 
   // LHC18x PbPb productions
-  } else if (szLHCPeriod.Contains("kLHC18q")){
+  } else if (szLHCPeriod.Contains("LHC18q")){
     fgDataPeriod = kLHC18q;
     fgAnchorPeriod = kLHC18q;
-    fgIsMC = kTRUE;
+    fgIsMC = kFALSE;
     fgEnergy = kPbPb5TeV;
 
   // fast MC productions

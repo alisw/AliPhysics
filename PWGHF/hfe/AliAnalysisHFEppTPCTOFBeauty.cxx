@@ -903,9 +903,9 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     
       
     ///THnSparse to store DCA of different particle species in MC-------------
-    Int_t nBinspdg2 = 21;
+    Int_t nBinspdg2 = 30;
     Double_t minpdg2 = 0.;
-    Double_t maxpdg2 = 21.;
+    Double_t maxpdg2 = 30.;
     Double_t binLimpdg2[nBinspdg2+1];
     for(Int_t i=0; i<=nBinspdg2; i++) binLimpdg2[i]=(Double_t)minpdg2 + (maxpdg2-minpdg2)/nBinspdg2*(Double_t)i ;
     
@@ -1646,14 +1646,37 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
                 if(fIsFromD){
                     fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
                     fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+                    fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
+                    fMCparticleGGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleGMother->GetMother());
                     pdg_mother = fMCparticleMother->GetPdgCode();
+                    float pdg_gmother = fMCparticleGMother->GetPdgCode();
+                    float pdg_ggmother = fMCparticleGGMother->GetPdgCode();
                     
                     if(TMath::Abs(pdg_mother)>400 && TMath::Abs(pdg_mother)<500){///charmed meson 
 						qadca[1]=0.5; 
-						if(TMath::Abs(pdg_mother) == 421) qadca[1]=16.5; ///to check DCA D0
-						if(TMath::Abs(pdg_mother) == 411) qadca[1]=17.5; ///to check DCA D+-
-						if(TMath::Abs(pdg_mother) == 413 || TMath::Abs(pdg_mother) == 423) qadca[1]=18.5; ///to check DCA Dstar and its resonances by Sudhir Nov 22 2018 413 = Dstar+ and 423 = Dstar0
-											 
+						if(TMath::Abs(pdg_mother) == 421) qadca[1]=12.5; ///to check DCA  prompt D0 bef corr
+						if(TMath::Abs(pdg_mother) == 411) qadca[1]=15.5; ///to check DCA D+ bef corr
+						
+						if(TMath::Abs(pdg_mother) == 431) qadca[1]=17.5; ///to check DCA Ds+ bef corr
+						
+						if(TMath::Abs(pdg_gmother) == 413) qadca[1]=18.5; ///to check DCA Dstar+ bef corr
+						if(TMath::Abs(pdg_gmother) == 413){ 
+						if(TMath::Abs(pdg_mother) == 421){ 
+						qadca[1]=13.5; ///to check DCA Dstar+ bef corr
+						}
+						}
+						 
+						if(TMath::Abs(pdg_gmother) == 413){ 
+						if(TMath::Abs(pdg_mother) == 411){ 
+						qadca[1]=14.5; ///to check DCA Dstar+ bef corr
+						}
+						}
+						
+						if(TMath::Abs(pdg_gmother) == 413){ 
+						if(TMath::Abs(pdg_mother) == 431){ 
+						qadca[1]=16.5; ///to check DCA Dstar+ bef corr
+						}
+						}
 						 hCharmMotherPt->Fill(fMCparticleMother->Pt());
 						 hCharmMotherPt_vsElecPt->Fill(fPt,fMCparticleMother->Pt());
 						 hElecPt_vsCharmMotherPt->Fill(fMCparticleMother->Pt(),fPt);
@@ -1697,12 +1720,31 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 						 //cout<<"fMCparticleMother->Pt() = "<<fMCparticleMother->Pt()<<endl;
 						 //cout<<"probAcceptD = "<<probAcceptD<<endl;
 						 //cout<<"a = "<<a<<endl;
-						 if(a < probAcceptD){
-							qadca[1]=7.5;
-							if(TMath::Abs(pdg_mother) == 421) qadca[1]=12.5; ///to check DCA D0 - corrected
-							if(TMath::Abs(pdg_mother) == 411) qadca[1]=13.5; ///to check DCA D+- - corrected
-							if(TMath::Abs(pdg_mother) == 413 || TMath::Abs(pdg_mother) == 423) qadca[1]=14.5; ///to check DCA Dstar and its resonances by Sudhir Nov 22 2018 413 = Dstar+ and 423 = Dstar0 after correction
-							
+						if(a < probAcceptD){
+						qadca[1]=7.5;
+						if(TMath::Abs(pdg_mother) == 421) qadca[1]=20.5; ///to check DCA  prompt D0 bef corr
+						if(TMath::Abs(pdg_mother) == 411) qadca[1]=23.5; ///to check DCA D+ bef corr
+						
+						if(TMath::Abs(pdg_mother) == 431) qadca[1]=25.5; ///to check DCA Ds+ bef corr
+						
+						if(TMath::Abs(pdg_gmother) == 413) qadca[1]=26.5; ///to check DCA Dstar+ bef corr
+						if(TMath::Abs(pdg_gmother) == 413){ 
+						if(TMath::Abs(pdg_mother) == 421){ 
+						qadca[1]=21.5; ///to check DCA Dstar+ bef corr
+						}
+						}
+						 
+						if(TMath::Abs(pdg_gmother) == 413){ 
+						if(TMath::Abs(pdg_mother) == 411){ 
+						qadca[1]=22.5; ///to check DCA Dstar+ bef corr
+						}
+						}
+						
+						if(TMath::Abs(pdg_gmother) == 413){ 
+						if(TMath::Abs(pdg_mother) == 431){ 
+						qadca[1]=24.5; ///to check DCA Dstar+ bef corr
+						}
+						}
 							hCharmMotherPt_corr->Fill(fMCparticleMother->Pt());
 							hCharmMotherPt_corr2->Fill(fMCparticleMother->Pt());
 							hCharmMotherPt_vsElecPt_corr->Fill(fPt,fMCparticleMother->Pt());
@@ -1713,7 +1755,9 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 					
 					if(TMath::Abs(pdg_mother)>4000 && TMath::Abs(pdg_mother)<5000){///charmed baryon
 						 qadca[1]=1.5;
-						 if(TMath::Abs(pdg_mother) == 4122) qadca[1]=15.5; ///to check DCA Lc
+						 if(TMath::Abs(pdg_mother) == 4122) qadca[1]=27.5; ///to check DCA prompt Lc+
+
+						
 					}
                 }//end of electrons from charm
                 

@@ -210,7 +210,8 @@ void AliAodSkimTask::UserExec(Option_t *)
       if (fDoVertWoRefs) {
 	v->RemoveDaughters();
       }
-      new ((*out)[j++]) AliAODVertex(*v);
+      new ((*out)[j]) AliAODVertex(*v);
+      j++;
     }
   }
 

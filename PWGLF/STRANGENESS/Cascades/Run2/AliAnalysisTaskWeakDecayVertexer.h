@@ -208,6 +208,9 @@ public:
     void SetMassWindowAroundCascade     ( Double_t lMassWin ) {
         fMassWindowAroundCascade = lMassWin;
     }
+    void SetMinXforXY     ( Double_t lMinX ) {
+        fMinXforXYtest = lMinX;
+    }
     
 //---------------------------------------------------------------------------------------
     void SetUseImprovedFinding(){
@@ -333,8 +336,12 @@ private:
     //Mass Window around masses of interest
     Double_t fMassWindowAroundCascade;
     
+    Double_t fMinXforXYtest; //min X allowed for XY-plane preopt test
+    
     Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
     Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
+    
+    
     
     //(pair) -> (OTF index) map
     std::map<std::pair<int, int>, int> fOTFMap; //std::map to store index pair <-> OTF index equiv

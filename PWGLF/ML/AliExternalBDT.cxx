@@ -13,10 +13,9 @@
 #include "AliExternalBDT.h"
 
 #include <cassert>
-#include <stdio.h>
 #include <iostream>
-
-#include <TSystem.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 namespace {
   inline bool checkFile (const std::string name) {
@@ -47,10 +46,10 @@ bool AliExternalBDT::CompileAndLoadModelLibrary() {
     std::cout << "Library found: " << path.data() << "/main.so . Loading it!" << std::endl;
   } else {
     std::cout << "Starting the model compilation, depending on the model size it can take a while..." << std::endl;
-    gSystem->Exec(Form("gcc -c -O1 -fPIC %s/main.c -o %s/main.o \
-          && gcc -shared %s/main.o -o %s/main.so", path.data(), path.data(), path.data(), path.data()));
+    system((std::string("gcc -c -O1 -fPIC ") + path + "/main.c -o " + path + "/main.o && gcc -shared " + path + \
+          "/main.o -o " + path + "/main.so").data());
   }
-  return LoadModelLibrary(Form("%s/main.so", path.data()));
+  return LoadModelLibrary(path + "/main.so");
 }
 
 bool AliExternalBDT::CreateModelCode() {
@@ -75,9 +74,9 @@ bool AliExternalBDT::CreateModelCode() {
 
 std::string AliExternalBDT::GetUniquePath() {
   if (fBDTname.empty()) {
-    return std::string(Form("%s_%p",fModelName.data(),this));
+    return fModelName + std::to_string((unsigned long)this);
   } else {
-    return std::string(Form("%s_%s",fBDTname.data(), fModelName.data()));
+    return fBDTname + "_" + fModelName;
   }
 }
 

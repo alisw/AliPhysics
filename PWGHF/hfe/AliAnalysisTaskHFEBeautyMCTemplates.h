@@ -50,6 +50,9 @@ class AliAnalysisTaskHFEBeautyMCTemplates : public AliAnalysisTaskSE {
   Int_t FindSource(AliMCParticle * mcple, AliMCEvent* fMCEvent, Double_t &motherPt, Double_t &GroundStateMotherPt);
   Bool_t PassesTrackCuts(AliAODTrack *track);
   Bool_t PassesMinimalTrackCuts(AliAODTrack *track);
+  Bool_t PassesElectronPID(AliAODTrack *track, AliPIDResponse *pid);
+  Bool_t PassesPionPID(AliAODTrack *track, AliPIDResponse *pid);
+  Bool_t PassesKaonPID(AliAODTrack *track, AliPIDResponse *pid);
   Bool_t PassesITSTrackCuts(AliAODTrack *track);
   Bool_t IsAddedSignal(AliMCParticle * mcple);
   void PrintHierarchy(AliMCParticle * mcple, AliMCEvent* fMCEvent);
@@ -92,6 +95,12 @@ class AliAnalysisTaskHFEBeautyMCTemplates : public AliAnalysisTaskSE {
   TH1D * fGroundStateBeautyMotherpT;
   TH1D * fGroundStateCharmMotherpT;
   TH2D * fDCAHadrons;
+  TH3D * fDCAWErrHadrons; // Pions, mostly
+  TH3D * fDCAHadronsFineBins;
+  TH2D * fDCAKaons; // Should have less contamination, but have higher mass
+  TH3D * fDCAWErrKaons;
+  TH3D * fDCAKaonsFineBins;
+  
   TH2D * fDCAHadronsCorrected;
   TH3D * fPionV0pTRNoCuts;  // pt, R, cent
   TH3D * fPionV0pTRWithCuts;

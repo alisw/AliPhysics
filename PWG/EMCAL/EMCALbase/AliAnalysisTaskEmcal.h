@@ -325,6 +325,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetTriggerTypeSel(TriggerType t)                      { fTriggerTypeSel    = t                              ; } 
   void                        SetUseAliAnaUtils(Bool_t b, Bool_t bRejPilup = kTRUE) { fUseAliAnaUtils    = b ; fRejectPileup = bRejPilup  ; }
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
+  void                        SetMinVertexContrib(Int_t min)                        { fMinVertexContrib = min                             ; }
   void                        SetUseSPDTrackletVsClusterBG(Bool_t b)                { fTklVsClusSPDCut   = b                              ; }
   void                        SetEMCalTriggerMode(EMCalTriggerMode_t m)             { fEMCalTriggerMode  = m                              ; }
   void                        SetUseNewCentralityEstimation(Bool_t b)               { fUseNewCentralityEstimation = b                     ; }
@@ -846,6 +847,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fMaxCent;                    ///< max centrality for event selection
   Double_t                    fMinVz;                      ///< min vertex for event selection
   Double_t                    fMaxVz;                      ///< max vertex for event selection
+  Int_t                       fMinVertexContrib;           ///< Min. number of vertex contributors
   Double_t                    fTrackPtCut;                 ///< cut on track pt in event selection
   Int_t                       fMinNTrack;                  ///< minimum nr of tracks in event with pT>fTrackPtCut
   Double_t                    fZvertexDiff;                ///< upper limit for distance between primary and SPD vertex

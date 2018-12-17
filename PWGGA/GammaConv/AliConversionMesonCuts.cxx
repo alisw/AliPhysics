@@ -136,6 +136,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fDoBGProbability(kFALSE),
   fDoConvCaloMixing(kFALSE),
   fDoSectorMixing(kFALSE),
+  fDoSectorJetMixing(kFALSE),
   fDoSphericityMixing(kFALSE),
   fUseTrackMultiplicityForBG(kFALSE),
   fEnableMinOpeningAngleCut(kTRUE),
@@ -230,6 +231,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fDoBGProbability(ref.fDoBGProbability),
   fDoConvCaloMixing(ref.fDoConvCaloMixing),
   fDoSectorMixing(ref.fDoSectorMixing),
+  fDoSectorJetMixing(ref.fDoSectorJetMixing),
   fDoSphericityMixing(ref.fDoSphericityMixing),
   fUseTrackMultiplicityForBG(ref.fUseTrackMultiplicityForBG),
   fEnableMinOpeningAngleCut(ref.fEnableMinOpeningAngleCut),
@@ -2011,6 +2013,11 @@ Bool_t AliConversionMesonCuts::SetAlphaMesonCut(Int_t alphaMesonCut)
     fAlphaCutMeson      = 1.0;
     fAlphaPtDepCut      = kFALSE;
     break;
+  case 13:  //d 0-0.1
+    fAlphaMinCutMeson   = 0.0;
+    fAlphaCutMeson      = 0.1;
+    fAlphaPtDepCut      = kFALSE;
+    break;
   default:
     cout<<"Warning: AlphaMesonCut not defined "<<alphaMesonCut<<endl;
     return kFALSE;
@@ -2272,6 +2279,12 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fUseTrackMultiplicityForBG  = kFALSE;
     fDoBGProbability            = kFALSE;
     fDoSectorMixing             = kTRUE;
+    break;
+  case 19: //j mixed event with V0 multiplicity
+    fUseRotationMethodInBG      = kFALSE;
+    fUseTrackMultiplicityForBG  = kFALSE;
+    fDoBGProbability            = kFALSE;
+    fDoSectorJetMixing          = kTRUE;
     break;
   default:
     cout<<"Warning: BackgroundScheme not defined "<<BackgroundScheme<<endl;

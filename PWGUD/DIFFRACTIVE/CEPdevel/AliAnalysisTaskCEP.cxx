@@ -1178,14 +1178,21 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       trk->SetChargeSign((Int_t)tmptrk->Charge());
       trk->SetGoldenChi2(tmptrk->GetChi2TPCConstrainedVsGlobal(vertex));
       
+      // ITS modules crossed by track
+      for (Int_t ii=0; ii<12;ii++)
+        trk->SetITSModuleIndex(ii,tmptrk->GetITSModuleIndex(ii));
+        
       trk->SetITSncls(tmptrk->GetITSClusterMap());
       trk->SetTPCncls(tmptrk->GetNumberOfTPCClusters());
       trk->SetTRDncls(tmptrk->GetNumberOfTRDClusters());
       trk->SetTPCnclsS(tmptrk->GetTPCnclsS());
       
-      Double_t dca[3] = {0.,0.,0.}; tmptrk->GetXYZ(dca);
-      trk->SetXYv(sqrt(pow(dca[0],2)+pow(dca[1],2)));
-      trk->SetZv(dca[2]);
+      // distance to vertex      
+      Float_t dcaToVertexXY;
+      Float_t dcaToVertexZ;
+      tmptrk->GetImpactParameters(dcaToVertexXY,dcaToVertexZ);
+      trk->SetXYv(dcaToVertexXY);
+      trk->SetZv(dcaToVertexZ);
       
       tmptrk->GetPxPyPz(mom);
       trk->SetMomentum(TVector3(mom));
