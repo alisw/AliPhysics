@@ -83,11 +83,18 @@ set(SRCS
   Cascades/Run2/AliAnalysisTaskMCPredictions.cxx
   )
 
+if(ROOT_VERSION_MAJOR EQUAL 6)
+  set(SRCS
+    ${SRCS}
+    Lifetimes/AliAnalysisTaskFindableHyperTriton.cxx
+    )
+endif()
+
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 # Add header only files
-set(HDRS 
+set(HDRS
   ${HDRS}
   Lifetimes/MCparticle.h
   Lifetimes/MiniV0.h
