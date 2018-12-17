@@ -6,7 +6,7 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 class AliAnalysisTaskEmcalEmbeddingHelper;
 
 
-AliBSDiJetTask * AddTaskBSDiJet(TString taskname, bool isAA, Double_t leadingParticlePtMin, TString option, Double_t centmin, Double_t centmax, Int_t pthardbin ){
+AliBSDiJetTask * AddTaskBSDiJet(TString taskname, bool isAA, Double_t leadingParticlePtMin, TString option ){
 
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr)
@@ -54,7 +54,8 @@ AliBSDiJetTask * AddTaskBSDiJet(TString taskname, bool isAA, Double_t leadingPar
 		//embeddingHelper->SetInputFilename("alice/data/2015/LHC15o/");
 		//embeddingHelper->SetFilePattern("alien:///alice/data/2015/LHC15o/000246844/pass1/AOD194/");
 		//embeddingHelper->SetFilePattern("alien:///alice/sim/2016/LHC16j5/15/246488/AOD200/");
-		if (option.Contains("LHC15o")) gSystem->Exec(Form("alien_find /alice/sim/2016/LHC16j5/ AliAOD.root | grep AOD200 | perl -nle'print \"alien://\".$_' | sort -R | head -300 > embfile.txt"));
+		//if (option.Contains("LHC15o")) gSystem->Exec(Form("alien_find /alice/sim/2016/LHC16j5/ AliAOD.root | grep AOD200 | perl -nle'print \"alien://\".$_' | sort -R | head -300 > embfile.txt"));
+		if (option.Contains("LHC15o")) gSystem->Exec(Form("alien_find /alice/sim/2016/LHC16j5/ AliAOD.root | grep AOD200 | perl -nle'print \"alien://\".$_' > embfile.txt"));
 		embeddingHelper->SetFileListFilename("./embfile.txt");
 
 		//embeddingHelper->SetFilePattern("alien:///alice/sim/2016/LHC16j5/%d/%d/AOD200/");
@@ -66,11 +67,11 @@ AliBSDiJetTask * AddTaskBSDiJet(TString taskname, bool isAA, Double_t leadingPar
 		// ... randomly select which file to start from:
 		embeddingHelper->SetRandomFileAccess(kTRUE);
 		// ... Start from a random event within each file
-		embeddingHelper->SetRandomEventNumberAccess(kTRUE);
+		//embeddingHelper->SetRandomEventNumberAccess(kTRUE);
 		embeddingHelper->SetTriggerMask(AliVEvent::kINT7);
 		embeddingHelper->SetZVertexCut(10);
 		//embeddingHelper->SetMaxVertexDistance(2);
-		embeddingHelper->SetCentralityRange(centmin,centmax);
+		//embeddingHelper->SetCentralityRange(centmin,centmax);
 		//embeddingHelper->SetUseManualInternalEventCuts(true) ;
 		// ... Set pt hard bin properties
 		//embeddingHelper->SetPtHardBin(5);
