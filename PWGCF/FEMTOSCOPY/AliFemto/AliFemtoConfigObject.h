@@ -23,7 +23,7 @@
 #include <TPaveText.h>
 
 
-#if false && __cplusplus >= 201103L
+#if __cplusplus >= 201103L
 #define ENABLE_MOVE_SEMANTICS 1
 #endif
 
@@ -141,7 +141,7 @@ public:
   using ArrayValue_t = std::vector<AliFemtoConfigObject>;
   using Key_t = std::string;
   using MapValue_t = std::map<Key_t, AliFemtoConfigObject>;
-  using RangeValue_t = std::pair<FloatValue_t, FloatValue_t> ;
+  using RangeValue_t = std::pair<FloatValue_t, FloatValue_t>;
   using RangeListValue_t = std::vector<RangeValue_t>;
 #endif
     /// @}
@@ -271,35 +271,40 @@ public:
     BuildMap(): fMap() {}
 
 #ifdef ENABLE_MOVE_SEMANTICS
+
     #define IMPL_BUILDITEM(__type, __a, __b) \
-      BuildMap& operator()(const Key_t &key, const __type& val) { fMap[key] = val; return *this; }  \
-      BuildMap& operator()(const Key_t &key, __type && val) { fMap.insert(std::make_pair(key, std::move(val))); return *this; }
-    #define IMPL_CASTED_BUILDITEM(__type, __savedtype) \
-      BuildMap& operator()(const Key_t &key, const __type& val) { fMap[key] = static_cast<__savedtype>(val); return *this; }  \
-      BuildMap& operator()(const Key_t &key, __type && val) { fMap.insert(std::make_pair(key, std::move(static_cast<__savedtype &&>(val)))); return *this; }
+      BuildMap& operator()(const Key_t &key, const __type& val) { fMap.emplace(key, val); return *this; }
+    #define IMPL_BUILDITEM_CASTED(__type, __savedtype) \
+      BuildMap& operator()(const Key_t &key, const __type& val) { fMap.emplace(key, static_cast<__savedtype>(val)); return *this; } \
+      BuildMap& operator()(const Key_t &key, __type&& val) { fMap.emplace(key, std::move(static_cast<__savedtype>(val))); return *this; } \
+
 #else
+
     #define IMPL_BUILDITEM(__type, __a, __b) \
-      BuildMap& operator()(const Key_t &key, const __type& val) { fMap.insert(std::make_pair(key, val)); return *this; }
-    #define IMPL_CASTED_BUILDITEM(__type, __savedtype) \
-      BuildMap& operator()(const Key_t &key, const __type& val) { fMap.insert(std::make_pair(key, static_cast<__savedtype>(val))); return *this; }
+      BuildMap& operator()(const Key_t &key, const __type& val) { fMap[key] = val; return *this; }
+    #define IMPL_BUILDITEM_CASTED(__type, __savedtype) \
+      BuildMap& operator()(const Key_t &key, const __type& val) { fMap[key] = static_cast<__savedtype>(val); return *this; }
+
 #endif
 
     FORWARD_STANDARD_TYPES(IMPL_BUILDITEM);
 
-    IMPL_CASTED_BUILDITEM(Float_t, FloatValue_t);
-    IMPL_CASTED_BUILDITEM(Int_t, IntValue_t);
-    IMPL_CASTED_BUILDITEM(long, IntValue_t);
-    IMPL_CASTED_BUILDITEM(pair_of_ints, RangeValue_t);
-    IMPL_CASTED_BUILDITEM(UInt_t, IntValue_t);
-    IMPL_CASTED_BUILDITEM(ULong64_t, IntValue_t);
-    IMPL_CASTED_BUILDITEM(pair_of_floats, RangeValue_t);
+    IMPL_BUILDITEM_CASTED(Float_t, FloatValue_t);
+    IMPL_BUILDITEM_CASTED(Int_t, IntValue_t);
+    IMPL_BUILDITEM_CASTED(long, IntValue_t);
+    IMPL_BUILDITEM_CASTED(UInt_t, IntValue_t);
+    IMPL_BUILDITEM_CASTED(ULong64_t, IntValue_t);
+    IMPL_BUILDITEM_CASTED(pair_of_ints, RangeValue_t);
+    IMPL_BUILDITEM_CASTED(pair_of_floats, RangeValue_t);
 
     IMPL_BUILDITEM(AliFemtoConfigObject, 0, 0);
+
     #undef IMPL_BUILDITEM
+    #undef IMPL_BUILDITEM_CASTED
 
     // -- custom operator() methods --
 
-    BuildMap& operator()(const Key_t &key, const TString &val) { fMap.insert(std::make_pair(key, val.Data())); return *this; };
+    BuildMap& operator()(const Key_t &key, const TString &val) { fMap[key] = val.Data(); return *this; };
     BuildMap& operator()(const Key_t &key, const char* val) { fMap[key] = StringValue_t(val); return *this; }
 
     operator AliFemtoConfigObject() {
@@ -458,7 +463,7 @@ public:
       fValueMap[key] = AliFemtoConfigObject(value);            \
     }
 
-    FORWARD_STANDARD_TYPES(IMPL_INSERT)
+    FORWARD_STANDARD_TYPES(IMPL_INSERT);
 
     IMPL_INSERT(pair_of_floats, kRANGE, fValueRange);
     IMPL_INSERT(pair_of_ints, kRANGE, fValueRange);
@@ -966,6 +971,9 @@ private:
 /// \brief Responsible for painting routines
 ///
 class AliFemtoConfigObject::Painter {
+
+  friend class AliFemtoConfigObject;
+
 public:
   /// Construct with parent configuration object
   Painter(AliFemtoConfigObject &data);
@@ -990,6 +998,10 @@ public:
   void ExecuteEvent(int, int, int);
 
 protected:
+
+  void ResetData(AliFemtoConfigObject *data)
+    { fData = data; }
+
   AliFemtoConfigObject *fData; //!
 
   TText fTitle;
@@ -1180,7 +1192,7 @@ AliFemtoConfigObject::AliFemtoConfigObject(AliFemtoConfigObject &&orig):
   orig._DeleteValue();
   orig.fTypeTag = kEMPTY;
   orig.fPainter = nullptr;
-  fPainter.fData = this;
+  fPainter->ResetData(this);
 }
 
 /// Move assignment-operator
