@@ -87,7 +87,6 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
     }
 
     // BG HandlerSettings
-    void CalculateBackground();
     void CalculateBackgroundIsolation();
     void CalculateBackgroundRP();
     void RotateParticle(AliAODConversionPhoton *gamma);
@@ -161,7 +160,6 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
     TH2F**                fHistoMotherInvMassPt;                                //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
     THnSparseF**          fSparseMotherInvMassPtZM;                             //! array of THnSparseF with signal + BG for same event photon pairs, inv Mass, pt
     TH2F**                fHistoMotherBackInvMassPt;                            //! array of histogram with BG for mixed event photon pairs, inv Mass, pt
-    TH2F**                fHistoMotherBackInvMassIsoPt;                         //! array of histogram with BG for mixed event photon pairs, inv Mass, pt Isolation Method
     THnSparseF**          fSparseMotherBackInvMassPtZM;                         //! array of THnSparseF with BG for same event photon pairs, inv Mass, pt
     TH2F**                fHistoMotherPi0PtY;                                   //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, Y
     TH2F**                fHistoMotherEtaPtY;                                   //! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, Y
