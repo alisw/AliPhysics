@@ -1,18 +1,5 @@
 Bool_t SetGeneratedSmearingHistos = kTRUE;
 
-Bool_t DoPairing    = kTRUE;
-Bool_t DoULSLS      = kTRUE;
-Bool_t DeactivateLS = kTRUE;
-
-// Leave blank to not use resolution files
-std::string resoFilename = "";
-std::string resoFilenameFromAlien = "";
-
-Bool_t DoCocktailWeighting  = kFALSE;
-Bool_t GetCocktailFromAlien = kFALSE;
-std::string CocktailFilename = "";
-std::string CocktailFilenameFromAlien = "/alice/cern.ch/user/a/acapon/.root";
-// std::string CocktailFilenameFromAlien = "/alice/cern.ch/user/c/cklein/data/cocktail_PbPb0080_5TeV.root";
 
 Bool_t GetCentralityFromAlien = kFALSE;
 std::string centralityFilename = "";
