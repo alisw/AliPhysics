@@ -259,27 +259,27 @@ double AliFemtoModelWeightGeneratorLednicky::GenerateWeight(AliFemtoPair* aPair)
   //AliFemtoModelHiddenInfo *inf1 = (AliFemtoModelHiddenInfo *) aPair->Track1()->HiddenInfo();
   //AliFemtoModelHiddenInfo *inf2 = (AliFemtoModelHiddenInfo *) aPair->Track2()->HiddenInfo();
 
-  const AliFemtoTrack *inf1 = aPair->Track1()->Track(),
-                      *inf2 = aPair->Track2()->Track();
+  const AliFemtoTrack &track1 = *aPair->Track1()->Track(),
+                      &track2 = *aPair->Track2()->Track();
 
-  auto *hinfo1 = static_cast<AliFemtoModelHiddenInfo*>(inf1->GetHiddenInfo()),
-       *hinfo2 = static_cast<AliFemtoModelHiddenInfo*>(inf2->GetHiddenInfo());
+  auto &hinfo1 = *static_cast<AliFemtoModelHiddenInfo*>(track1.GetHiddenInfo()),
+       &hinfo2 = *static_cast<AliFemtoModelHiddenInfo*>(track2.GetHiddenInfo());
 
 
-  const auto *true_momentum1 = hinfo1->GetTrueMomentum(),
-             *true_momentum2 = hinfo2->GetTrueMomentum();
+  const auto &true_p1 = *hinfo1.GetTrueMomentum(),
+             &true_p2 = *hinfo2.GetTrueMomentum();
 
   // Calculate pair variables
   // Double_t tPx = inf1->GetTrueMomentum()->x()+inf2->GetTrueMomentum()->x();
-  Double_t tPx = true_momentum1->x() + true_momentum2->x();
-  Double_t tPy = true_momentum1->y() + true_momentum2->y();
-  Double_t tPz = true_momentum1->z() + true_momentum2->z();
+  Double_t tPx = true_p1.x() + true_p2.x();
+  Double_t tPy = true_p1.y() + true_p2.y();
+  Double_t tPz = true_p1.z() + true_p2.z();
 
-  Double_t tM1 = hinfo1->GetMass();
-  Double_t tM2 = hinfo2->GetMass();
+  Double_t tM1 = hinfo1.GetMass();
+  Double_t tM2 = hinfo2.GetMass();
 
-  Double_t tE1 = sqrt(tM1*tM1 + true_momentum1->Mag2());
-  Double_t tE2 = sqrt(tM2*tM2 + true_momentum2->Mag2());
+  Double_t tE1 = sqrt(tM1*tM1 + true_p1.Mag2());
+  Double_t tE2 = sqrt(tM2*tM2 + true_p2.Mag2());
 
 
  // if (tPx==0 && tPy==0 && tPz==0 ) {cout<<" zero true momentum "<<endl; return 0;}
@@ -305,9 +305,9 @@ double AliFemtoModelWeightGeneratorLednicky::GenerateWeight(AliFemtoPair* aPair)
   Double_t tBeta = tPz/tE;
   Double_t tGamma = tE/tMt;
 
-  Double_t pX = true_momentum1->x();
-  Double_t pY = true_momentum1->y();
-  Double_t pZ = true_momentum1->z();
+  Double_t pX = true_p1.x();
+  Double_t pY = true_p1.y();
+  Double_t pZ = true_p1.z();
 
   fKStarLong = tGamma * (pZ - tBeta * tE1);
   Double_t tE1L = tGamma * (tE1  - tBeta * pZ);
@@ -319,28 +319,18 @@ double AliFemtoModelWeightGeneratorLednicky::GenerateWeight(AliFemtoPair* aPair)
   // Boost to pair cms
   fKStarOut = tMt/tM * (fKStarOut - tPt/tMt * tE1L);
 
+  fKStar = ::sqrt(fKStarOut * fKStarOut
+                  + fKStarSide * fKStarSide
+                  + fKStarLong * fKStarLong);
   tBetat = tPt/tMt;
 
-  //Double_t tDX = epoint1.x()-epoint2.x();
-  /*
-  Double_t tDX =hinfo1->GetEmissionPoint()->x()  - hinfo2->GetEmissionPoint()->x();
-
-  Double_t tDY =hinfo1->GetEmissionPoint()->y()  - hinfo2->GetEmissionPoint()->y();
-
- Double_t tRLong =hinfo1->GetEmissionPoint()->z()  - hinfo2->GetEmissionPoint()->z();
-
-Double_t tDTime =hinfo1->GetEmissionPoint()->t()  - hinfo2->GetEmissionPoint()->t();
-*/
-
-  auto &epoint1 = *hinfo1->GetEmissionPoint(),
-       &epoint2 = *hinfo2->GetEmissionPoint();
+  const auto &epoint1 = *hinfo1.GetEmissionPoint(),
+             &epoint2 = *hinfo2.GetEmissionPoint();
 
   Double_t tDX = epoint1.x() - epoint2.x();
   Double_t tDY = epoint1.y() - epoint2.y();
   Double_t tRLong = epoint1.z() - epoint2.z();
   Double_t tDTime = epoint1.t() - epoint2.t();
-
-
 
   Double_t tROut = (tDX*tPx + tDY*tPy)/tPt;
   Double_t tRSide = (-tDX*tPy + tDY*tPx)/tPt;
@@ -362,85 +352,74 @@ Double_t tDTime =hinfo1->GetEmissionPoint()->t()  - hinfo2->GetEmissionPoint()->
 
   fRStarSide = tRSide;
 
-  fRStarLong = tGamma*(tRLong - tBeta* tDTime);
-  Double_t tDTimePairLCMS = tGamma*(tDTime - tBeta* tRLong);
+  fRStarLong = tGamma * (tRLong - tBeta * tDTime);
+  Double_t tDTimePairLCMS = tGamma * (tDTime - tBeta * tRLong);
 
   tBeta = tPt/tMt;
   tGamma = tMt/tM;
 
-  fRStarOut = tGamma*(tROut - tBeta* tDTimePairLCMS);
+  fRStarOut = tGamma * (tROut - tBeta * tDTimePairLCMS);
   fRStar = ::sqrt(fRStarOut * fRStarOut
                   + fRStarSide * fRStarSide
                   + fRStarLong * fRStarLong);
 
-  fKStar = ::sqrt(fKStarOut * fKStarOut
-                  + fKStarSide * fKStarSide
-                  + fKStarLong * fKStarLong);
-
   //cout << "-- weights generator : Got out side " << fRStarOut << " " << fRStarSide << endl;
 
-  const int pdg1 = hinfo1->GetPDGPid(),
-            pdg2 = hinfo2->GetPDGPid();
+  const int pdg1 = hinfo1.GetPDGPid(),
+            pdg2 = hinfo2.GetPDGPid();
 
-
+  // Check bad PID
   if (!SetPid(pdg1, pdg2)) {
     fWeightDen = 1.0;
-//    cout<<" bad PID weight generator pdg1 "<<hinfo1->GetPDGPid()<<" pdg2 "<<hinfo1->GetPDGPid()<<endl;
+    //    cout<<" bad PID weight generator pdg1 "<<hinfo1.GetPDGPid()<<" pdg2 " << hinfo2.GetPDGPid()<<endl;
     return 1; //non-correlated
   }
-  else { // Good Pid
-//    cout<<" good PID weight generator pdg1 "<<hinfo1->GetPDGPid()<<" pdg2 "<<hinfo1->GetPDGPid()<<endl;
-    AliFemtoThreeVector* p = hinfo1->GetTrueMomentum();
-    double p1[] = {p->x(), p->y(), p->z()};
 
-    p=hinfo2->GetTrueMomentum();
-    double p2[] = {p->x(), p->y(), p->z()};
+  // cout<<" good PID weight generator pdg1 "<<hinfo1.GetPDGPid()<<" pdg2 "<<hinfo2.GetPDGPid()<<endl;
 
-    if ((p1[0]==p2[0])&&(p1[1]==p2[1])&&(p1[2]==p2[2])) {
-      fWeightDen=0.;
-      return 0;
-    }
+  if (true_p1 == true_p2) {
+    fWeightDen = 0.;
+    return 0;
+  }
 
-    if (fSwap) {
-      fsimomentum(*p2,*p1);
-    } else {
-      fsimomentum(*p1,*p2);
-    }
+  double p1[] = {true_p1.x(), true_p1.y(), true_p1.z()},
+         p2[] = {true_p2.x(), true_p2.y(), true_p2.z()};
 
-    AliFemtoLorentzVector* tPoint;
-//    tPoint=hinfo1->GetEmissionPoint();
-    tPoint = inf1->GetEmissionPoint();
+  if (fSwap) {
+    fsimomentum(*p2,*p1);
+  } else {
+    fsimomentum(*p1,*p2);
+  }
+
+  if (epoint1 == epoint2) {
+    fWeightDen=0.;
+    return 0;
+  }
 
 //    if(pdg1==!211||pdg2!=211)cout << "Weight pdg1 pdg2 = " << pdg1<<" "<<pdg2<< endl;
-
 //     cout << "LL:in GetWeight = " << mLL << endl;
-    double x1[] = {tPoint->x(), tPoint->y(), tPoint->z(), tPoint->t()};
-//    tPoint=hinfo1->GetEmissionPoint();
 
-    tPoint = inf2->GetEmissionPoint();
-    double x2[] = {tPoint->x(), tPoint->y(), tPoint->z(), tPoint->t()};
-    if ((x1[0]==x2[0])&&(x1[1]==x2[1])&&(x1[2]==x2[2])&&(x1[3]==x2[3])) {
-      fWeightDen=0.;
-      return 0;
-    }
-    if (fSwap) {
-      fsiposition(*x2,*x1);
-    } else {
-      fsiposition(*x1,*x2);
-    }
-    FsiSetLL();
-    ltran12();
-    fsiw(1,fWeif,fWei,fWein);
+  double x1[] = {epoint1.x(), epoint1.y(), epoint1.z(), epoint1.t()},
+         x2[] = {epoint2.x(), epoint2.y(), epoint2.z(), epoint2.t()};
 
-//    cout<<" fWeif "<<fWeif<<" fWei "<<fWei<<" fWein "<<fWein<<endl;
-
-    if (fI3c==0) {
-      return fWein;
-    }
-
-    fWeightDen = fWeif;
-    return fWei;
+  if (fSwap) {
+    fsiposition(*x2,*x1);
+  } else {
+    fsiposition(*x1,*x2);
   }
+
+  FsiSetLL();
+  ltran12();
+  fsiw(1, fWeif, fWei, fWein);
+
+  //  cout<<" fWeif "<<fWeif<<" fWei "<<fWei<<" fWein "<<fWein<<endl;
+
+  if (fI3c == 0) {
+    return fWein;
+  }
+
+  fWeightDen = fWeif;
+  return fWei;
 }
 
 
