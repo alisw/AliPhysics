@@ -63,6 +63,8 @@
 #ifdef __CLING__
 #pragma link C++ class AliAnalysisTaskFindableHyperTriton+;
 #pragma link C++ class Event+;
-#pragma link C++ class std::vector<FindableHyperTriton<2>>+;
-#pragma link C++ class std::vector<FindableHyperTriton<3>>+;
+#pragma link C++ class std::vector<FindableHyperTriton>+;
+#pragma link C++ class std::vector<AliESDtrack>+;
+//#pragma link C++ class std::vector<FindableHyperTriton<2>>+;
+//#pragma link C++ class std::vector<FindableHyperTriton<3>>+;
 #endif

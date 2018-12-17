@@ -17,17 +17,15 @@ struct Event {
   float fMultiplicity = -1.f;
 };
 
-template<int N>
 struct FindableHyperTriton {
-  AliESDtrack* fTracks[N] = {nullptr}; //->
-  int fPDG[N] = {0};           ///TODO: check if the daughters are sorted according to their mass
+  FindableHyperTriton() = default;
+  std::vector<AliESDtrack> fTracks = {}; //
+  std::vector<int> fPDG = {};
   float fDecayVertex[3] = {0.f, 0.f, 0.f};
   float fMomentum[3] = {0.f, 0.f, 0.f};
   float fDeltaT = 0.f;
   unsigned char fFoundTracks = 0u;
-
-  void SetSign(bool pos) { fFoundTracks |= pos ? BIT(7) : 0; }
-  bool IsPositive() const { return fFoundTracks & BIT(7); }
+  bool fIsPositive = false;
 };
 
 
@@ -49,8 +47,8 @@ class AliAnalysisTaskFindableHyperTriton : public AliAnalysisTaskSE {
   TTree* fTree  = nullptr;    //! Output Tree
 
   Event fEventSummary;
-  std::vector<FindableHyperTriton<2>> f2Body;
-  std::vector<FindableHyperTriton<3>> f3Body;
+  std::vector<FindableHyperTriton> f2Body;
+  std::vector<FindableHyperTriton> f3Body;
 
   AliAnalysisTaskFindableHyperTriton(
       const AliAnalysisTaskFindableHyperTriton&);  // not implemented
