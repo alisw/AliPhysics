@@ -171,6 +171,7 @@ AliAnalysisTaskGammaCaloIso::AliAnalysisTaskGammaCaloIso(): AliAnalysisTaskSE(),
   fHistoMCPi0PtJetPt(NULL),
   fHistoMCEtaPtJetPt(NULL),
   fHistoTruePi0InvMassPt(NULL),
+  fHistoTruePi0noConvInvMassPt(NULL),
   fHistoTrueEtaInvMassPt(NULL),
   fHistoTruePi0CaloPhotonInvMassPt(NULL),
   fHistoTrueEtaCaloPhotonInvMassPt(NULL),
@@ -535,6 +536,7 @@ AliAnalysisTaskGammaCaloIso::AliAnalysisTaskGammaCaloIso(const char *name):
   fHistoMCPi0PtJetPt(NULL),
   fHistoMCEtaPtJetPt(NULL),
   fHistoTruePi0InvMassPt(NULL),
+  fHistoTruePi0noConvInvMassPt(NULL),
   fHistoTrueEtaInvMassPt(NULL),
   fHistoTruePi0CaloPhotonInvMassPt(NULL),
   fHistoTrueEtaCaloPhotonInvMassPt(NULL),
@@ -1916,6 +1918,7 @@ void AliAnalysisTaskGammaCaloIso::UserCreateOutputObjects(){
       }
 
       fHistoTruePi0InvMassPt                    = new TH2F*[fnCuts];
+      fHistoTruePi0noConvInvMassPt              = new TH2F*[fnCuts];
       fHistoTrueEtaInvMassPt                    = new TH2F*[fnCuts];
       fHistoDoubleCountTruePi0InvMassPt         = new TH2F*[fnCuts];
       fHistoDoubleCountTrueEtaInvMassPt         = new TH2F*[fnCuts];
@@ -2546,6 +2549,10 @@ void AliAnalysisTaskGammaCaloIso::UserCreateOutputObjects(){
         fHistoTruePi0InvMassPt[iCut]->SetYTitle("p_{T} (GeV/c)");
         fHistoTruePi0InvMassPt[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
         fTrueList[iCut]->Add(fHistoTruePi0InvMassPt[iCut]);
+        fHistoTruePi0noConvInvMassPt[iCut]                    = new TH2F("ESD_TruePi0_noConv_InvMass_Pt", "ESD_TruePi0_noConv_InvMass_Pt", 800, 0, 0.8, nBinsPt, arrPtBinning);
+        fHistoTruePi0noConvInvMassPt[iCut]->SetYTitle("p_{T} (GeV/c)");
+        fHistoTruePi0noConvInvMassPt[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
+        fTrueList[iCut]->Add(fHistoTruePi0noConvInvMassPt[iCut]);
         fHistoTrueEtaInvMassPt[iCut]                    = new TH2F("ESD_TrueEta_InvMass_Pt", "ESD_TrueEta_InvMass_Pt", 800, 0, 0.8, nBinsPt, arrPtBinning);
         fHistoTrueEtaInvMassPt[iCut]->SetYTitle("p_{T} (GeV/c)");
         fHistoTrueEtaInvMassPt[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
@@ -2633,6 +2640,7 @@ void AliAnalysisTaskGammaCaloIso::UserCreateOutputObjects(){
 
         if (fIsMC > 1){
           fHistoTruePi0InvMassPt[iCut]->Sumw2();
+          fHistoTruePi0noConvInvMassPt[iCut]->Sumw2();
           fHistoTrueEtaInvMassPt[iCut]->Sumw2();
           fHistoDoubleCountTruePi0InvMassPt[iCut]->Sumw2();
           fHistoDoubleCountTrueEtaInvMassPt[iCut]->Sumw2();
@@ -3373,8 +3381,7 @@ void AliAnalysisTaskGammaCaloIso::ProcessClusters()
 
       if(fIsMC>0){
         if(fInputEvent->IsA()==AliAODEvent::Class()){
-         // ProcessTrueIsolatedClustersAOD(clus, PhotonCandidate);
-          ProcessTrueIsolatedClustersAODnew(clus, PhotonCandidate);
+          ProcessTrueIsolatedClustersAOD(clus, PhotonCandidate);
         }
       }
 
@@ -3685,6 +3692,8 @@ void AliAnalysisTaskGammaCaloIso::ProcessTrueClusterCandidates(AliAODConversionP
   if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
     if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TruePhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2) tempPhotonWeight = 1;
   }
+
+
 
   Int_t pdgCodeParticle = Photon->GetPdgCode();
   TruePhotonCandidate->SetCaloPhotonMCFlags(fMCEvent, fEnableSortForClusMC);
@@ -4015,12 +4024,8 @@ void AliAnalysisTaskGammaCaloIso::ProcessAODMCParticles()
   for(Long_t i = 0; i < AODMCTrackArray->GetEntriesFast(); i++) {
     Double_t tempParticleWeight       = fWeightJetJetMC;
 
-
-
     AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(i));
     if (!particle) continue;
-
-
 
     Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, particle, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
     if (isPrimary){
@@ -4532,7 +4537,7 @@ void AliAnalysisTaskGammaCaloIso::CalculatePi0CandidatesIsolation(){
         Double_t tof = fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef())->GetTOF();
         if ( tof < fMinTimingCluster || tof > fMaxTimingCluster ) continue;
       }
-
+      fVectorDoubleCountTruePi0s.clear();
       for(Int_t secondGammaIndex=0;secondGammaIndex<fClusterCandidates->GetEntries();secondGammaIndex++){
         AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
         if (gamma1==NULL) continue;
@@ -4713,7 +4718,7 @@ void AliAnalysisTaskGammaCaloIso::CalculatePi0CandidatesIsolation(){
 }
 
 
-void AliAnalysisTaskGammaCaloIso::ProcessTrueIsolatedClustersAODnew(AliVCluster *cluster,AliAODConversionPhoton *photoncandidate){
+void AliAnalysisTaskGammaCaloIso::ProcessTrueIsolatedClustersAOD(AliVCluster *cluster,AliAODConversionPhoton *photoncandidate){
 
     Int_t* mclabelsCluster  = cluster->GetLabels();
     AliAODEvent *aodev = 0;
@@ -4756,23 +4761,28 @@ void AliAnalysisTaskGammaCaloIso::ProcessTrueIsolatedClustersAODnew(AliVCluster 
 
             if(motherDummy->GetPdgCode() == 111){  //TESTED
               fHistoTruePhotonsfromPi0DirectIso[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
-
+              fHistoIsoMotherPDGtoPt[fiCut]->Fill(motherDummy->GetPdgCode(), photoncandidate->Pt(), fWeightJetJetMC);
 //======================================================================================= PROCEED IF CLUSTER IS PHOTON FROM PHOTON
 
             }else if(motherDummy->GetPdgCode()==22){
                 while(motherDummy->GetMother()>-1 && motherDummy->GetPdgCode()==22){
                   motherDummy = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(motherDummy->GetMother()));
                 }
+                fHistoIsoMotherPDGtoPt[fiCut]->Fill(motherDummy->GetPdgCode(), photoncandidate->Pt(), fWeightJetJetMC);
                 if(motherDummy->GetLabel()==2){
                   fHistoTruePromptPhotonsDirectIso[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
+                  if(CheckVectorForDoubleCount(fVectorDoubleCountMCInitIsoPhotons,motherDummy->GetLabel())){
+                    fHistoDoubleCountMCIsoInitPhotonPt[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
+                  }
                 }else{
+                  fHistoIsoMotherPDGtoPt[fiCut]->Fill(motherDummy->GetPdgCode(), photoncandidate->Pt(), fWeightJetJetMC);
                   fHistoTrueFragPhotonsDirectIso[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
                 }
 
-//======================================================================================= PROCEED IF CLUSTER IS PHOTON FROM ELECTRON
-
+//======================================================================================= PROCEED IF CLUSTER IS PHOTON FROM ELECTRON -> shower particle
+/*
             }else if(TMath::Abs(motherDummy->GetPdgCode())==11){
-              while(TMath::Abs(motherDummy->GetPdgCode())==11 || motherDummy->GetPdgCode()==22){
+              while((TMath::Abs(motherDummy->GetPdgCode())==11 || motherDummy->GetPdgCode()==22) && motherDummy->GetMother()>-1){
                 motherDummy = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(motherDummy->GetMother()));
               }
               if(motherDummy->GetLabel()==2){
@@ -4785,32 +4795,43 @@ void AliAnalysisTaskGammaCaloIso::ProcessTrueIsolatedClustersAODnew(AliVCluster 
               }else{
                 fHistoTrueOtherSourcesIso[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
               }
+           */
             }else if(TMath::Abs(motherDummy->GetPdgCode())<6){
-              fHistoTrueFragPhotonsConvIso[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
+              fHistoTrueFragPhotonsDirectIso[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
+              fHistoIsoMotherPDGtoPt[fiCut]->Fill(motherDummy->GetPdgCode(), photoncandidate->Pt(), fWeightJetJetMC);
             }else{
               fHistoTrueOtherSourcesIso[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
-
+              fHistoIsoMotherPDGtoPt[fiCut]->Fill(motherDummy->GetPdgCode(), photoncandidate->Pt(), fWeightJetJetMC);
             }
 
 
         }else{//end if(cluster is real 22 photon)
-
           //proceed with electrons from conversion
-          while(TMath::Abs(motherDummy->GetPdgCode())==11 || motherDummy->GetPdgCode()==22){
-            motherDummy = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(motherDummy->GetMother()));
-          }
-          if(motherDummy->GetLabel()==2){
-            fHistoTruePromptPhotonsConvIso[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
-          }else if(motherDummy->GetPdgCode()==111){
-            fHistoTruePhotonsfromPi0ConvIso[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
-          }else if(TMath::Abs(motherDummy->GetPdgCode())<6){
-            fHistoTrueFragPhotonsConvIso[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
-          }else{
-            fHistoTrueOtherSourcesIso[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
+          motherDummy = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(motherDummy->GetMother()));
 
+          if(motherDummy->GetPdgCode()==111){
+            fHistoTruePhotonsfromPi0ConvIso[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
+            fHistoIsoMotherPDGtoPt[fiCut]->Fill(motherDummy->GetPdgCode(), photoncandidate->Pt(), fWeightJetJetMC);
+          }else if(motherDummy->GetPdgCode()==22){
+            while(TMath::Abs(motherDummy->GetPdgCode()==22) && motherDummy->GetMother()>-1){
+            motherDummy = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(motherDummy->GetMother()));
+            }
+            fHistoIsoMotherPDGtoPt[fiCut]->Fill(motherDummy->GetPdgCode(), photoncandidate->Pt(), fWeightJetJetMC);
+            if(motherDummy->GetLabel()==2){
+              fHistoTruePromptPhotonsConvIso[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
+              if(CheckVectorForDoubleCount(fVectorDoubleCountMCInitIsoPhotons,motherDummy->GetLabel())){
+                fHistoDoubleCountMCIsoInitPhotonPt[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
+              }
+            }else if(TMath::Abs(motherDummy->GetPdgCode())<6){
+              fHistoIsoMotherPDGtoPt[fiCut]->Fill(motherDummy->GetPdgCode(), photoncandidate->Pt(), fWeightJetJetMC);
+              fHistoTrueFragPhotonsConvIso[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
+            }
+          }else{
+            fHistoIsoMotherPDGtoPt[fiCut]->Fill(motherDummy->GetPdgCode(), photoncandidate->Pt(), fWeightJetJetMC);
+            fHistoTrueOtherSourcesIso[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
+          }
           }
         }
-      }
       }//end if(cluster comes from photon or conversion electron)
 
 
@@ -4820,7 +4841,7 @@ void AliAnalysisTaskGammaCaloIso::ProcessTrueIsolatedClustersAODnew(AliVCluster 
 
       //(*(photoncandidate->fCaloPhotonMCLabels)==particleLead->GetLabel())
 
-      if(photoncandidate->IsElectronFromFragPhoton()){
+      if(2==3){
           cout << "======================================================================================================" << endl;
           AliAODMCParticle* motherDummy1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particleLead->GetMother()));
           cout << "Cluster PDG: " << particleLead->GetPdgCode() << "   Label: " << particleLead->GetLabel() << endl;
@@ -4863,124 +4884,6 @@ void AliAnalysisTaskGammaCaloIso::ProcessTrueIsolatedClustersAODnew(AliVCluster 
 
 }
 // double count & energy correction
-void AliAnalysisTaskGammaCaloIso::ProcessTrueIsolatedClustersAOD(AliVCluster *cluster,AliAODConversionPhoton *photoncandidate){
-
-    Int_t pdgcode; //choose a value for mother pdg that's out of range for all the particles that aren't photons, conversion electrons (positrons)
-    Float_t corrPt=photoncandidate->Pt(); //set default value for correction
-    Int_t* mclabelsCluster  = cluster->GetLabels();
-
-     AliAODEvent *aodev = 0;
-     aodev = dynamic_cast<AliAODEvent*>(fInputEvent);
-     if (!aodev) {
-       AliError("Task needs AOD event, returning");
-       return;
-     }
-
-       TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-
-       if (AODMCTrackArray == NULL){
-        AliError("No MC particle list available in AOD");
-        return;
-       }
-
-       // check mother of cluster
-       if(cluster->GetNLabels()>0){
-
-           //create object TParticle in case of AOD to get access to PDG function
-         AliAODMCParticle* particleLead = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(mclabelsCluster[0]));
-         pdgcode = particleLead->GetPdgCode();
-//___________________________________________________________________________________________________________________________________________________________
-
-
-//_____________________________________________________________________________________________________________________________________________________________
-         //fill Pt and PDG code for all selected clusters in 2D histogram
-         fHistoIsoClusterPDGtoPt[fiCut]->Fill(pdgcode,photoncandidate->Pt(), fWeightJetJetMC);
-
-         if(particleLead->IsSecondaryFromMaterial()){
-           //fill PDG to Pt for Material Secondaries as subset of the above
-           fHistoIsoClusterPDGtoPtMatSec[fiCut]->Fill(pdgcode, photoncandidate->Pt(), fWeightJetJetMC);
-         }
-
-         //if there is a mother of the cluster and the cluster pdg code belongs to a photon, e- or e+
-         //e+ e- from photon conversion because of detector interaction; might track back to prompt photons
-         if(particleLead->GetMother() > -1 && (pdgcode == 22 || pdgcode == 11 || pdgcode == -11)){
-
-           //need to track all photons, electrons and positrons back to their original photon source to get a more accurate
-           //account of the prompt photons energy spectrum; otherwise energy is lost in electromagnetic shower
-           Int_t motherpdg = pdgcode;//because of following method
-           AliAODMCParticle* motherDummy = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particleLead->GetMother()));
-
-           if(particleLead->IsSecondaryFromMaterial()){
-             fHistoIsoMatSecConversionfromPhoton[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC); //shower particle that might come from gamma jets
-
-             //this if condition follows the particles paths to get the original energies of the prompt photons
-             if(pdgcode==22 || motherDummy->GetPdgCode()==22){//if neither the cluster nor its mother is a photon -> no need to track back
-
-               //cout << "__________________Start while loop" << endl;
-               while (motherpdg == 11 || motherpdg == -11 || motherDummy->GetPdgCode() == 11 || motherDummy->GetPdgCode() == -11){
-                 motherDummy = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(motherDummy->GetMother()));
-                 motherpdg = motherDummy->GetPdgCode();
-               //  cout << "_____________________________" << endl;
-               //  cout << "Photonenergy1: " << motherDummy->Pt() << endl;
-               //  cout << "pdgcode1: " << motherDummy->PdgCode() << endl;
-                 motherDummy = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(motherDummy->GetMother()));
-               //  cout << "Photonenergy2: " << motherDummy->Pt() << endl;
-               //  cout << "pdgcode2: " << motherDummy->PdgCode() << endl;
-               }// should track photon shower back to pure photon chain
-               //cout << "Mother after shower: " << motherDummy->GetPdgCode() << endl;
-
-               if(motherDummy->GetPdgCode()==22) corrPt = motherDummy->Pt();//use Pt of second least photon as correction, (easier than last photon before cascade)
-             }
-           }
-
-           if(pdgcode == 22 && motherDummy->GetPdgCode() == 111){
-             fHistoIsoPhotonfromPi0[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
-             //AliAODMCParticle* motherDummyPi0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(motherDummy->GetMother()));
-             //fHistoIsoPi0MotherPDGtoPtMatSec[fiCut]->Fill(motherDummyPi0->GetPdgCode(), photoncandidate->Pt(), fWeightJetJetMC);
-           }
-
-           //Photon loop, to find the mother from the first photon, e+ and e- just to be safe
-           while(motherDummy->GetPdgCode() == 22 || motherDummy->GetPdgCode() == 11 || motherDummy->GetPdgCode() == -11){
-             if(motherDummy->GetPdgCode() != 22) cout << "Another untracked conversion Particle, PDGCode: " << pdgcode << endl;
-             motherDummy = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(motherDummy->GetMother()));
-           }
-           fHistoIsoMotherPDGtoPt[fiCut]->Fill(motherDummy->GetPdgCode(), photoncandidate->Pt(), fWeightJetJetMC);
-
-           if(((motherDummy->GetPdgCode()>-6 && motherDummy->GetPdgCode()<6)) && motherDummy->GetLabel()!=2 && motherDummy->GetLabel()!=3){
-             fHistoIsoFragPhotons[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
-
-             cout << "======================================================================================================" << endl;
-             AliAODMCParticle* motherDummy1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particleLead->GetMother()));
-             cout << "Cluster PDG: " << particleLead->GetPdgCode() << "   Label: " << particleLead->GetLabel() << endl;
-             cout << "Mother1 PDG: " << motherDummy1->GetPdgCode() << "   Label: " << motherDummy1->GetLabel() << endl;
-
-             Int_t count = 0;
-             while(count<15){
-                 if (motherDummy1->GetMother()>-1){
-                 motherDummy1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(motherDummy1->GetMother()));
-                 cout << "Mother1 PDG: " << motherDummy1->GetPdgCode() << "   Label: " << motherDummy1->GetLabel() << endl;
-                 }
-                 count++;
-             }
-
-           }
-
-           if(motherDummy->GetLabel()==2 || motherDummy->GetLabel()==3){ //proceed here if particle tracks back to GammaJet
-             //fill histogram
-             fHistoIsoInitPhotons[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC); //fill
-             fHistoIsoInitPhotonsConversionCorrection[fiCut]->Fill(corrPt, fWeightJetJetMC);
-
-             if(CheckVectorForDoubleCount(fVectorDoubleCountMCInitIsoPhotons,motherDummy->GetLabel())){
-               fHistoDoubleCountMCIsoInitPhotonPt[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
-               fHistoDoubleCountMCIsoInitPhotonCorrectPt[fiCut]->Fill(corrPt, fWeightJetJetMC);
-             }
-           }
-         }
-       }
-
-     return;
-}
-
 
 //______________________________________________________________________
 void AliAnalysisTaskGammaCaloIso::ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1)
@@ -5161,6 +5064,7 @@ void AliAnalysisTaskGammaCaloIso::ProcessTrueMesonCandidates(AliAODConversionMot
   if(isTruePi0 || isTrueEta){// True Pion or Eta
     if (isTruePi0){
       fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate0->GetPhotonPt(),  tempTruePi0CandWeight);
+      if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,gamma0MotherLabel)) fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate0->GetPhotonPt(), tempTruePi0CandWeight);
       if(fDoJetAnalysis){
         if(fConvJetReader->GetTrueNJets()>0){
           fHistoTruePi0JetMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate0->GetPhotonPt(),  tempTruePi0CandWeight);
@@ -5523,7 +5427,6 @@ void AliAnalysisTaskGammaCaloIso::ProcessTrueMesonCandidates(AliAODConversionMot
         fHistoTruePrimaryPi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate0->GetPhotonPt(),weighted* tempTruePi0CandWeight);
         fHistoTruePrimaryPi0W0WeightingInvMassPt[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate0->GetPhotonPt(), tempTruePi0CandWeight);
         fProfileTruePrimaryPi0WeightsInvMassPt[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate0->GetPhotonPt(),weighted* tempTruePi0CandWeight);
-        if (CheckVectorForDoubleCount(fVectorDoubleCountTruePi0s,gamma0MotherLabel)) fHistoDoubleCountTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate0->GetPhotonPt(), weighted*tempTruePi0CandWeight);
         if(fDoJetAnalysis){
           if(fConvJetReader->GetTrueNJets()>0){
             fHistoTruePrimaryPi0JetInvMassPt[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate0->GetPhotonPt(),weighted* tempTruePi0CandWeight);
@@ -5658,6 +5561,8 @@ void AliAnalysisTaskGammaCaloIso::ProcessTrueMesonCandidatesAOD(AliAODConversion
   Bool_t isSameConvertedGamma   = kFALSE;
   Int_t convertedPhotonLabel0    = -1;
   Int_t convertedPhotonLabel1    = -1;
+  Bool_t gamma0photon            = kFALSE;
+  Bool_t gamma1photon            = kFALSE;
 
   Int_t gamma0MCLabel       = TrueGammaCandidate0->GetCaloPhotonMCLabel(0);   // get most probable MC label
   Int_t gamma0MotherLabel     = -1;
@@ -5669,8 +5574,9 @@ void AliAnalysisTaskGammaCaloIso::ProcessTrueMesonCandidatesAOD(AliAODConversion
     gammaMC0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma0MCLabel));
     if (TrueGammaCandidate0->IsLargestComponentPhoton() || TrueGammaCandidate0->IsLargestComponentElectron()){    // largest component is electro magnetic
       // get mother of interest (pi0 or eta)
-      if (TrueGammaCandidate0->IsLargestComponentPhoton()){                            // for photons its the direct mother
+      if (TrueGammaCandidate0->IsLargestComponentPhoton()){                                  // for photons its the direct mother
         gamma0MotherLabel=gammaMC0->GetMother();
+        gamma0photon=kTRUE;
       } else if (TrueGammaCandidate0->IsLargestComponentElectron()){                         // for electrons its either the direct mother or for conversions the grandmother
         if (TrueGammaCandidate0->IsConversion()){
           convertedPhotonLabel0 = gammaMC0->GetMother();
@@ -5693,6 +5599,7 @@ void AliAnalysisTaskGammaCaloIso::ProcessTrueMesonCandidatesAOD(AliAODConversion
       // get mother of interest (pi0 or eta)
       if (TrueGammaCandidate1->IsLargestComponentPhoton()){                            // for photons its the direct mother
         gamma1MotherLabel=gammaMC1->GetMother();
+        gamma1photon = kTRUE;
       } else if (TrueGammaCandidate1->IsLargestComponentElectron()){                         // for electrons its either the direct mother or for conversions the grandmother
         if (TrueGammaCandidate1->IsConversion()){
           convertedPhotonLabel1 = gammaMC1->GetMother();
@@ -5723,17 +5630,15 @@ void AliAnalysisTaskGammaCaloIso::ProcessTrueMesonCandidatesAOD(AliAODConversion
   if (convertedPhotonLabel0 > -1 && convertedPhotonLabel1 > 1){
     if (convertedPhotonLabel0==convertedPhotonLabel1){
       isSameConvertedGamma = kTRUE;
-      if (fDoMesonQA == 3 ){
+      if (fDoMesonQA == 3){
 //         fHistoGammaOpenAngleInvMassPt[fiCut]->Fill(Pi0Candidate->GetOpeningAngle(),Pi0Candidate->M(),TrueGammaCandidate0->GetPhotonPt(),1);
       }
     }
   }
 
-
-
-
   if(isTruePi0 || isTrueEta){// True Pion or Eta
     if(isTruePi0){
+      if(gamma0photon && gamma1photon) fHistoTruePi0noConvInvMassPt[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate0->GetPhotonPt(), tempTruePi0CandWeight);
       fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate0->GetPhotonPt(), tempTruePi0CandWeight);
       if(fDoJetAnalysis){
         if(fConvJetReader->GetTrueNJets()>0){

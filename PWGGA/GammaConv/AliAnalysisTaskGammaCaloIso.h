@@ -51,8 +51,6 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
     void ProcessTrueMesonCandidates( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
     void ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
     void ProcessTrueIsolatedClustersAOD(AliVCluster *cluster, AliAODConversionPhoton *photoncandidate);
-    void ProcessTrueIsolatedClustersAODnew(AliVCluster *cluster, AliAODConversionPhoton *photoncandidate);
-
 
     // switches for additional analysis streams or outputs
     void SetLightOutput(Bool_t flag){fDoLightOutput = flag;}
@@ -243,6 +241,7 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
 
     // MC validated reconstructed quantities mesons
     TH2F**                fHistoTruePi0InvMassPt;                               //! array of histos with validated mothers, invMass, pt
+    TH2F**                fHistoTruePi0noConvInvMassPt;                               //! array of histos with validated mothers, invMass, pt
     TH2F**                fHistoTrueEtaInvMassPt;                               //! array of histos with validated mothers, invMass, pt
     TH2F**                fHistoTruePi0CaloPhotonInvMassPt;                     //! array of histos with validated mothers, photon leading, invMass, pt
     TH2F**                fHistoTrueEtaCaloPhotonInvMassPt;                     //! array of histos with validated mothers, photon leading, invMass, pt
