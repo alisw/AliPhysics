@@ -9,6 +9,7 @@
 /* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+#include <TChain.h>
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TArrayD.h>
@@ -192,6 +193,27 @@ namespace NS_AliAnalysisTaskEmcalJetCDF {
                           Float_t mintrackpt = 0.15,
                           Float_t maxtrackpt = 1000.
                           );
+
+
+/**
+ * Creates a chain from an list of files
+ * Using list of directories is not supported; use find to create a list of files; Ex:
+ * find /alice/data/2016/LHC16r/ -path "_*_/000266189/_*_" -path "_*_/pass1_CENT_wSDD/_*_" -name AliAOD.root -printf "file://%p\n"
+ * NB! on macos you need gfind that is installed with "brew install findutils"
+ * @param filelist Name of the file containing the list of files
+ * @param iNumFiles If iNumFiles > 0 only nfiles files are added
+ * @param iStartWithFile starting from file 'iStartWithFile' (>= 1).
+ * @param cTreeNameArg Tree name for chaining. if "auto" it will be taken as the first tree name from the first file from filelist
+ * @param friends Specify the root_file/friend_tree that is assumed to be in the same directory as the each input file; if friend_tree is not specified we will assume the defaults
+ * @return TChain*
+ */
+TChain* CreateChain ( const char* filelist = "filelist.txt",
+                      const char* cTreeNameArg       = "auto",
+                      const char* friends            = "",
+                      UInt_t      iNumFiles          = -1,
+                      UInt_t      iStartWithFile     =  1
+                      );
+
 
 } // end of NS_AliAnalysisTaskEmcalJetCDF
 
