@@ -79,6 +79,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMaxCent(-999),
   fMinVz(-999),
   fMaxVz(999),
+  fMinVertexContrib(1),
   fTrackPtCut(0),
   fMinNTrack(0),
   fZvertexDiff(0.5),
@@ -193,6 +194,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMaxCent(-999),
   fMinVz(-999),
   fMaxVz(999),
+  fMinVertexContrib(1),
   fTrackPtCut(0),
   fMinNTrack(0),
   fZvertexDiff(0.5),
@@ -1127,7 +1129,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
   if (fUseAliAnaUtils) {
     if (!fAliAnalysisUtils)
       fAliAnalysisUtils = new AliAnalysisUtils();
-    fAliAnalysisUtils->SetMinVtxContr(fNVertCont);
+    fAliAnalysisUtils->SetMinVtxContr(fMinVertexContrib);
     fAliAnalysisUtils->SetMaxVtxZ(999);
     if(fMinVz<-998.) fMinVz = -10.;
     if(fMaxVz>998.)  fMaxVz = 10.;
