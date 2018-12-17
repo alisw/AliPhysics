@@ -167,7 +167,7 @@ void AliJJetJtTask::UserCreateOutputObjects()
 
   OpenFile(1);
   fOutput = gDirectory;//->mkdir("JDiHadronCorr");
-  fOutput->cd();    
+  fOutput->cd();
 
   fJetTask = (AliJJetTask*)(man->GetTask( fJetTaskName));
 
@@ -205,8 +205,9 @@ void AliJJetJtTask::UserCreateOutputObjects()
   fFirstEvent = kTRUE;
 }
 
+
 //______________________________________________________________________________
-/// Primary loop 
+/// Primary loop
 void AliJJetJtTask::UserExec(Option_t* /*option*/) 
 {
   // Processing of one event
@@ -236,39 +237,30 @@ void AliJJetJtTask::UserExec(Option_t* /*option*/)
   // centrality
   float fcent = -999;
   if(fRunTable->IsHeavyIon() || fRunTable->IsPA()){
-		if(fRunTable->IsPA()){
-      //cout << "Is PA" << endl;
-      //aodEvent->Print();
-			//AliMultSelection *sel = (AliMultSelection*)aodEvent->FindListObject("MultSelection");
-	    sel = (AliMultSelection*) InputEvent() -> FindListObject("MultSelection");
-      if(false){
-        cout << "V0A: " << sel->GetMultiplicityPercentile("V0A") << endl;
-        cout << "V0C: " << sel->GetMultiplicityPercentile("V0C") << endl;
-        cout << "V0M: " << sel->GetMultiplicityPercentile("V0M") << endl;
-        cout << "V0Mminus05: " << sel->GetMultiplicityPercentile("V0Mminus05") << endl;
-        cout << "V0Mminus10: " << sel->GetMultiplicityPercentile("V0Mminus10") << endl;
-        cout << "V0Mplus05: " << sel->GetMultiplicityPercentile("V0Mplus05") << endl;
-        cout << "V0Mplus10: " << sel->GetMultiplicityPercentile("V0Mplus10") << endl;
-        cout << "SPDtracklets: " << sel->GetMultiplicityPercentile("SPDtracklets") << endl;
-        cout << "CL0: " << sel->GetMultiplicityPercentile("CL0") << endl;
-        cout << "CL1: " << sel->GetMultiplicityPercentile("CL1") << endl;
-        cout << "ZDC: " << sel->GetMultiplicityPercentile("ZDC") << endl;
-      }
+    if(fDebug > 6) cout << fRunTable->GetPeriodName() << endl;
+    if(fRunTable->IsPA() && !(fRunTable->GetPeriodName().BeginsWith("LHC3"))){
+      sel = (AliMultSelection*) InputEvent() -> FindListObject("MultSelection");
       if (sel) {
         fcent = sel->GetMultiplicityPercentile("V0C");
-        //cout << "fCent: " << fcent << endl;
       }
       else{
-        cout << "Sel not found" << endl;
+        if(fDebug > 2) cout << "Sel not found" << endl;
       }
     }
-    /*AliCentrality *cent = event->GetCentrality();
-      if( ! cent ) return;
-      fcent = cent->GetCentralityPercentile("V0M");*/
+    AliCentrality *cent = event->GetCentrality();
+    if( ! cent ) return;
+    if(fRunTable->GetPeriodName().BeginsWith("LHC3")){
+      fcent = cent->GetCentralityPercentile("V0C");
+    }else{
+      fcent = cent->GetCentralityPercentile("V0M");
+    }
   } else {
     fcent = -1;
   }
-  if(fcent > fCentCut) return;
+  if(fcent > fCentCut){
+    if(fDebug > 2) cout << "Skip event, Centrality was " << fcent << " and cut is " << fCentCut << endl;
+    return;
+  }
 
   cBin = fCard->GetBin(kCentrType, fcent);;
 
