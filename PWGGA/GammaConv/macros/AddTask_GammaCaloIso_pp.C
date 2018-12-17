@@ -157,12 +157,12 @@ void AddTask_GammaCaloIso_pp(
 */
   //PhotonIsolation Variations, LHC17i3 MC without non linearity
   } else if (trainConfig == 34){ // without TrackMatching
-    cuts.AddCutCalo("00083113","1111100067032230000","0163103100000050"); //without TrackMatching
- /* cuts.AddCutCalo("00083113","b111100060032230000","0163103100000050"); //without TrackMatching, R=0.1
+  cuts.AddCutCalo("00083113","1111100067032230000","0163103100000050"); //with TrackMatching
+  /*cuts.AddCutCalo("00083113","1111100060032230000","0163103100000050"); //without TrackMatching
+  cuts.AddCutCalo("00083113","b111100060032230000","0163103100000050"); //without TrackMatching, R=0.1
   cuts.AddCutCalo("00083113","c111100060032230000","0163103100000050"); //without TrackMatching, R=0.2
   cuts.AddCutCalo("00083113","d111100060032230000","0163103100000050"); //without TrackMatching, R=0.3
-  cuts.AddCutCalo("00083113","e111100060032230000","0163103100000050"); //without TrackMatching, R=0.4
-*/
+  cuts.AddCutCalo("00083113","e111100060032230000","0163103100000050"); //without TrackMatching, R=0.4*/
   } else {
     Error(Form("GammaCaloIso_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

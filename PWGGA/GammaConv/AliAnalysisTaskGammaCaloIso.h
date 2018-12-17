@@ -40,7 +40,6 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
     // base functions for selecting photon and meson candidates in reconstructed data
     void ProcessClusters();
     void ProcessJets();
-    void CalculatePi0Candidates();
     void CalculatePi0CandidatesIsolation();
 
     // MC functions
@@ -160,7 +159,6 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
 
     //histograms for mesons reconstructed quantities
     TH2F**                fHistoMotherInvMassPt;                                //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
-    TH2F**                fHistoMotherInvMassIsoPt;                             //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
     THnSparseF**          fSparseMotherInvMassPtZM;                             //! array of THnSparseF with signal + BG for same event photon pairs, inv Mass, pt
     TH2F**                fHistoMotherBackInvMassPt;                            //! array of histogram with BG for mixed event photon pairs, inv Mass, pt
     TH2F**                fHistoMotherBackInvMassIsoPt;                         //! array of histogram with BG for mixed event photon pairs, inv Mass, pt Isolation Method
