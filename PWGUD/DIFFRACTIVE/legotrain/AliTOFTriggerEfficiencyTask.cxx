@@ -156,8 +156,11 @@ void AliTOFTriggerEfficiencyTask::UserExec(Option_t *){
   fRunNumber  = fInputEvent->GetRunNumber();
   if (!fIsMC) {
     Bool_t accept = 0;
-    if (fClassesFired.String().Contains("CINT7-B"))  { accept = 1; fTriggersVsRun->Fill(0.5,fRunNumber); }
-    if (fClassesFired.String().Contains("CCUP25-B")) { accept = 1; fTriggersVsRun->Fill(1.5,fRunNumber); }
+    if (fClassesFired.String().Contains("CINT7-B"))    { accept = 1; fTriggersVsRun->Fill(0.5,fRunNumber); }
+    if (fClassesFired.String().Contains("CCUP25-B"))   { accept = 1; fTriggersVsRun->Fill(1.5,fRunNumber); }
+    if (fClassesFired.String().Contains("CINT7ZAC-B")) { accept = 1; fTriggersVsRun->Fill(2.5,fRunNumber); }
+    if (fClassesFired.String().Contains("CCUP30-B"))   { accept = 1; fTriggersVsRun->Fill(3.5,fRunNumber); }
+    if (fClassesFired.String().Contains("CCUP31-B"))   { accept = 1; fTriggersVsRun->Fill(4.5,fRunNumber); }
     if (!accept) { PostData(1,fListOfHistos); return; }
   } else {
     fTriggersVsRun->Fill(0.5,fRunNumber); 
