@@ -47,8 +47,10 @@ ULong64_t GetEventIdAsLong(AliVHeader *header)
 
 } // namespace
 
-AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char *name) : AliAnalysisTaskSE(name),
-                                                                               fEventCuts{}
+AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
+    : AliAnalysisTaskSE(name)
+    , fTrackFilter(Form("AO2Dconverter%s", name), Form("fTrackFilter%s", name))
+    , fEventCuts{}
 {
   DefineInput(0, TChain::Class());
   for (Int_t i = 0; i < kTrees; i++) {
@@ -225,6 +227,8 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   for (Int_t itrk = 0; itrk < ntrk; itrk++)
   {
     AliESDtrack *track = fESD->GetTrack(itrk);
+    if (!fTrackFilter.IsSelected(track))
+      continue;
 
     fX = track->GetX();
     fAlpha = track->GetAlpha();

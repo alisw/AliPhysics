@@ -7,6 +7,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
+#include "AliAnalysisFilter.h"
 
 #include <TString.h>
 
@@ -44,6 +45,7 @@ public:
   static const TString TreeName[kTrees];  //! Names of the TTree containers
   static const TString TreeTitle[kTrees]; //! Titles of the TTree containers
 
+  AliAnalysisFilter fTrackFilter; // Standard track filter object
 private:
   AliEventCuts fEventCuts;      //! Standard event cuts
   AliESDEvent *fESD = nullptr;  //! input event
