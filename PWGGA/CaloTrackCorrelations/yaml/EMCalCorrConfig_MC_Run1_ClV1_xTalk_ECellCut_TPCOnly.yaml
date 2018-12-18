@@ -1,4 +1,4 @@
-configurationName: "EMCal MC Correction Cluster V1 Run1 with cross talk emulation, 100 MeV induced cut"
+configurationName: "EMCal MC Correction Cluster V1 Run1 with cross talk emulation, 100 MeV induced cut, TPC only matching"
 pass: "pass1"
 
 inputObjects:                                       # Define all of the input objects for the corrections
@@ -26,7 +26,7 @@ Clusterizer:
     enabled: true
     clusterizer: kClusterizerv1
     cellE: 0.1
-    seedE: 0.5
+    seedE: 0.3
     cellTimeMin: -50e-6
     cellTimeMax:  50e-6
     clusterTimeLength: 1e6
@@ -46,7 +46,7 @@ ClusterNonLinearity:
 ClusterTrackMatcher:
     enabled: true
     createHistos: true
-    maxDist: 0.1                                    # Max distance between a matched cluster and track
+    maxDist: 0.05                                   # Max distance between a matched cluster and track
     useDCA: false                                   # Use DCA as starting point for track propagation, rather than primary vertex
     usePIDmass: true                                # Use PID-based mass hypothesis for track propagation, rather than pion mass hypothesis
     updateClusters: true                            # Update the matching information in the cluster
