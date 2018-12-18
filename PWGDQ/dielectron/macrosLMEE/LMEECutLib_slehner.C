@@ -30,13 +30,13 @@ void LMEECutLib::SetEtaCorrection(Int_t det, Bool_t isMC, Int_t corrXdim, Int_t 
   TString detstr;
   TString type;
   switch(det) {
-    case 1: {detstr="its";break;}
-    case 2: {detstr="tpc";break;}
-    case 3: {detstr="tof";break;}
+    case 1: detstr="its";break;
+    case 2: detstr="tpc";break;
+    case 3: detstr="tof";break;
     } 
   switch(isMC) {
-    case {kTRUE: type="mc";break;}
-    case {kFALSE: type="data";break;}
+    case kTRUE: type="mc";break;
+    case kFALSE: type="data";break;
     }
     
   ::Info("LMEECutLib::SetCorrection",(TString("Starting Correction for ")+detstr).Data());
@@ -78,9 +78,9 @@ void LMEECutLib::SetEtaCorrection(Int_t det, Bool_t isMC, Int_t corrXdim, Int_t 
   
   if(fPostPIDCntrdCorr)  {   
     switch(det) {
-      case 1: {AliDielectronPID::SetCentroidCorrFunctionITS(fPostPIDCntrdCorr); break;}
-      case 2: {AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorr); break;}
-      case 3: {AliDielectronPID::SetCentroidCorrFunctionTOF(fPostPIDCntrdCorr); break;}
+      case 1: AliDielectronPID::SetCentroidCorrFunctionITS(fPostPIDCntrdCorr); break;
+      case 2: AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorr); break;
+      case 3: AliDielectronPID::SetCentroidCorrFunctionTOF(fPostPIDCntrdCorr); break;
     } 
   }
   
@@ -97,9 +97,9 @@ void LMEECutLib::SetEtaCorrection(Int_t det, Bool_t isMC, Int_t corrXdim, Int_t 
   if(fPostPIDWdthCorr)  {
     printf("POST %s on %s PID CORRECTION added for widths:  ",detstr.Data(),type.Data());
     switch(fPostPIDWdthCorr->GetDimension()) {
-    case 3: {printf(" %s, ",fPostPIDWdthCorr->GetZaxis()->GetName());break;}
-    case 2: {printf(" %s, ",fPostPIDWdthCorr->GetYaxis()->GetName());break;}
-    case 1: {printf(" %s ",fPostPIDWdthCorr->GetXaxis()->GetName());break;}
+    case 3: printf(" %s, ",fPostPIDWdthCorr->GetZaxis()->GetName());break;
+    case 2: printf(" %s, ",fPostPIDWdthCorr->GetYaxis()->GetName());break;
+    case 1: printf(" %s ",fPostPIDWdthCorr->GetXaxis()->GetName());break;
     }
     printf("\n");
     fUsedVars->SetBitNumber(corrXdim, kTRUE);
@@ -110,9 +110,9 @@ void LMEECutLib::SetEtaCorrection(Int_t det, Bool_t isMC, Int_t corrXdim, Int_t 
   
   if(fPostPIDWdthCorr){
     switch(det) {
-      case 1: {AliDielectronPID::SetWidthCorrFunctionITS(fPostPIDCntrdCorr); break;}
-      case 2: {AliDielectronPID::SetWidthCorrFunction(fPostPIDCntrdCorr); break;}
-      case 3: {AliDielectronPID::SetWidthCorrFunctionTOF(fPostPIDCntrdCorr);  break;}
+      case 1: AliDielectronPID::SetWidthCorrFunctionITS(fPostPIDCntrdCorr); break;
+      case 2: AliDielectronPID::SetWidthCorrFunction(fPostPIDCntrdCorr); break;
+      case 3: AliDielectronPID::SetWidthCorrFunctionTOF(fPostPIDCntrdCorr);  break;
   }
   if(sel==1){
         if(mean)   ::Info("LMEECutLib::SetEtaCorrection","Mean Correction Histo loaded, entries: %f",mean->GetEntries());
