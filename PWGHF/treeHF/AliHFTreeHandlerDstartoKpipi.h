@@ -1,5 +1,5 @@
-#ifndef ALIHFTREEHANDLERLCTOPKPI_H
-#define ALIHFTREEHANDLERLCTOPKPI_H
+#ifndef ALIHFTREEHANDLERDSTARTOKPIPI_H
+#define ALIHFTREEHANDLERDSTARTOKPIPI_H
 
 /* Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -7,8 +7,8 @@
 /* $Id$ */
 
 //*************************************************************************
-// \class AliHFTreeHandlerLctopKpi
-// \brief helper class to handle a tree for Lc->pKpi cut optimisation and MVA analyses
+// \class AliHFTreeHandlerDstartoKpipi
+// \brief helper class to handle a tree for Dstar cut optimisation and MVA analyses
 // \authors:
 // F. Catalano, fabio.catalano@cern.ch
 // A. Festanti, andrea.festanti@cern.ch
@@ -22,32 +22,37 @@
 /////////////////////////////////////////////////////////////
 
 #include "AliHFTreeHandler.h"
-#include <TRandom3.h>
 
 using std::vector;
 
-class AliHFTreeHandlerLctopKpi : public AliHFTreeHandler
+class AliHFTreeHandlerDstartoKpipi : public AliHFTreeHandler
 {
   public:
-    AliHFTreeHandlerLctopKpi();
-    AliHFTreeHandlerLctopKpi(int PIDopt);
+    AliHFTreeHandlerDstartoKpipi();
+    AliHFTreeHandlerDstartoKpipi(int PIDopt);
 
-    virtual ~AliHFTreeHandlerLctopKpi();
+    virtual ~AliHFTreeHandlerDstartoKpipi();
 
     virtual TTree* BuildTree(TString name="tree", TString title="tree");
     virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliAODPidHF* pidHF=0x0);
-    virtual void FillTree();
+    virtual void FillTree(); //to be called for each event, not each candidate!
 
   private:
 
     vector<float> fImpParProng[knMaxProngs]; ///vectors of prong impact parameter
-    vector<float> fSigmaVertex; /// vector of candidate sigma vertex
+    vector<float> fCosThetaStar; ///vector of candidate cos theta star
+    vector<float> fImpParProd; ///vector of D0 product of impact parameter
+    vector<float> fSoftPiPt; ///vector of pT soft pion
     vector<float> fNormd0MeasMinusExp; ///vector of candidate topomatic variable
-    TRandom3 *fRandom;
+
+    vector<float> fInvMass_D0; ///vector of candidate invariant mass D0
+    vector<float> fPt_D0; ///vector of D0 pt
+    vector<float> fY_D0; ///vector of D0 rapidity
+    vector<float> fEta_D0; ///vector of D0 pseudorapidity
+    vector<float> fPhi_D0; ///vector of D0 azimuthal angle
 
     /// \cond CLASSIMP
-    ClassDef(AliHFTreeHandlerLctopKpi,1); /// 
+    ClassDef(AliHFTreeHandlerDstartoKpipi,1); ///
     /// \endcond
 };
-
 #endif
