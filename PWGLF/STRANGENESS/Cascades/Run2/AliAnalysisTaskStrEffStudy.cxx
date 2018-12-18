@@ -209,6 +209,7 @@ fTreeVariableNegSigmaZ2(0),
 fTreeVariablePosTrack(0x0),
 fTreeVariableNegTrack(0x0),
 fTreeVariableOTFV0(0x0),
+fTreeVariableFoundOTFV0(kFALSE),
 fTreeVariableMagneticField(0),
 fTreeVariablePosOriginalX(0),
 fTreeVariableNegOriginalX(0),
@@ -451,6 +452,7 @@ fTreeVariableNegSigmaZ2(0),
 fTreeVariablePosTrack(0x0),
 fTreeVariableNegTrack(0x0),
 fTreeVariableOTFV0(0x0),
+fTreeVariableFoundOTFV0(kFALSE),
 fTreeVariableMagneticField(0),
 fTreeVariablePosOriginalX(0),
 fTreeVariableNegOriginalX(0),
@@ -758,6 +760,7 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         fTreeV0->Branch("fTreeVariablePosTrack", &fTreeVariablePosTrack,16000,99);
         fTreeV0->Branch("fTreeVariableNegTrack", &fTreeVariableNegTrack,16000,99);
         fTreeV0->Branch("fTreeVariableOTFV0", &fTreeVariableOTFV0,16000,99);
+        fTreeV0->Branch("fTreeVariableFoundOTFV0", &fTreeVariableFoundOTFV0,"fTreeVariableFoundOTFV0/O");
         fTreeV0->Branch("fTreeVariableMagneticField",&fTreeVariableMagneticField,"fTreeVariableMagneticField/F");
         fTreeV0->Branch("fTreeVariablePosOriginalX",&fTreeVariablePosOriginalX,"fTreeVariablePosOriginalX/F");
         fTreeV0->Branch("fTreeVariableNegOriginalX",&fTreeVariableNegOriginalX,"fTreeVariableNegOriginalX/F");
@@ -1445,7 +1448,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         //lNegTrackArray[iV0], lPosTrackArray[iV0]
         Int_t nv0s = lESDevent->GetNumberOfV0s();
         
-        Bool_t lFoundOTF = kFALSE;
+        fTreeVariableFoundOTFV0 = kFALSE;
         
         for(Long_t iOTFv0=0; iOTFv0<nv0s; iOTFv0++){
             AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iOTFv0);
@@ -1460,11 +1463,11 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
                 //Found corresponding OTF V0! Save it to TTree, please
                 AliESDv0 lV0ToStore(*v0), *lPointerToV0ToStore=&lV0ToStore;
                 fTreeVariableOTFV0 = lPointerToV0ToStore;
-                lFoundOTF = kTRUE;
+                fTreeVariableFoundOTFV0 = kTRUE;
                 break; //stop looking
             }
         }
-        if( !lFoundOTF ) {
+        if( !fTreeVariableFoundOTFV0 ) {
             AliESDv0 lV0ToStore, *lPointerToV0ToStore=&lV0ToStore;
             fTreeVariableOTFV0 = lPointerToV0ToStore;
         }
