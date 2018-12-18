@@ -21,7 +21,7 @@ public:
   AliAnalysisTaskAO2Dconverter(const char *name);
   virtual ~AliAnalysisTaskAO2Dconverter();
 
-  AliAnalysisTaskAO2Dconverter(const AliAnalysisTaskAO2Dconverter &) = delete;
+  AliAnalysisTaskAO2Dconverter(const AliAnalysisTaskAO2Dconverter &) = default;
   AliAnalysisTaskAO2Dconverter &operator=(const AliAnalysisTaskAO2Dconverter &) = delete;
 
   virtual void UserCreateOutputObjects();
@@ -39,6 +39,8 @@ public:
     kTrees
   };
   TTree* CreateTree(TreeIndex t);
+  void EnableTree(TreeIndex t) { fTreeStatus[t] = kTRUE; };
+  void DisableTree(TreeIndex t) { fTreeStatus[t] = kFALSE; };
   static const TString TreeName[kTrees];  //! Names of the TTree containers
   static const TString TreeTitle[kTrees]; //! Titles of the TTree containers
 
@@ -47,8 +49,9 @@ private:
   AliESDEvent *fESD = nullptr;  //! input event
   TList *fOutputList = nullptr; //! output list
 
+  Bool_t fTreeStatus[kTrees];         // Status of the trees i.e. kTRUE (enabled) or kFALSE (disabled)
   TTree* fTree[kTrees] = { nullptr }; //! Array with all the output trees
-  void FillTree(TreeIndex t) { fTree[t]->Fill(); };
+  void FillTree(TreeIndex t);
 
   int fNumberOfEventsPerCluster = 1000;
 
