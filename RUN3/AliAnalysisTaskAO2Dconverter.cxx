@@ -171,6 +171,19 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     TOF->Branch("fToT", &fToT, "fToT/F");
   }
   PostData(4, TOF);
+
+  Prune(); //Removing all unwanted branches (if any)
+}
+
+void AliAnalysisTaskAO2Dconverter::Prune()
+{
+  if (fPruneList.IsNull() || fPruneList.IsWhitespace())
+    return;
+  TObjArray* arr = fPruneList.Tokenize(" ");
+  for (Int_t i = 0; i < arr->GetEntries(); i++)
+    for (Int_t j = 0; j < kTrees; j++)
+      fTree[j]->SetBranchStatus(arr->At(i)->GetName(), 0);
+  fPruneList = "";
 }
 
 void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)

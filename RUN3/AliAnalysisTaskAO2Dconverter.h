@@ -45,12 +45,16 @@ public:
   static const TString TreeName[kTrees];  //! Names of the TTree containers
   static const TString TreeTitle[kTrees]; //! Titles of the TTree containers
 
+  TString fPruneList = ""; // Names of the branches that will not be saved to output file
+  void Prune(TString p) { fPruneList = p; };
+
   AliAnalysisFilter fTrackFilter; // Standard track filter object
 private:
   AliEventCuts fEventCuts;      //! Standard event cuts
   AliESDEvent *fESD = nullptr;  //! input event
   TList *fOutputList = nullptr; //! output list
 
+  void Prune();                       // Function to perform tree pruning
   Bool_t fTreeStatus[kTrees];         // Status of the trees i.e. kTRUE (enabled) or kFALSE (disabled)
   TTree* fTree[kTrees] = { nullptr }; //! Array with all the output trees
   void FillTree(TreeIndex t);
