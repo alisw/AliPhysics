@@ -79,8 +79,10 @@ protected:
   virtual bool Run();
   virtual bool IsEventSelected();
   virtual bool IsTriggerSelected();
+  virtual void RunChanged(Int_t newrun);
   std::vector<TriggerCluster_t> GetTriggerClusterIndices(const TString &triggerstring) const;
   bool IsSelectEmcalTriggers(const std::string &triggerstring) const;
+  std::string MatchTrigger(const std::string &striggerstring);
 
 private:
   AliAnalysisTaskEmcalJetEnergySpectrum(const AliAnalysisTaskEmcalJetEnergySpectrum &);
