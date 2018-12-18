@@ -69,7 +69,8 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fCutR(0),                               fCutEta(0),                             fCutPhi(0),
   fClusterWindow(0),                      fMass(0),                           
   fStepSurface(0),                        fStepCluster(0),
-  fITSTrackSA(kFALSE),                    fUseOuterTrackParam(kFALSE),            fEMCalSurfaceDistance(440.),
+  fITSTrackSA(kFALSE),                    fUseTrackDCA(kTRUE), // keep it active, but not working for old MC
+  fUseOuterTrackParam(kFALSE),            fEMCalSurfaceDistance(440.),
   fTrackCutsType(0),                      fCutMinTrackPt(0),                      fCutMinNClusterTPC(0), 
   fCutMinNClusterITS(0),                  fCutMaxChi2PerClusterTPC(0),            fCutMaxChi2PerClusterITS(0),
   fCutRequireTPCRefit(kFALSE),            fCutRequireITSRefit(kFALSE),            fCutAcceptKinkDaughters(kFALSE),
@@ -129,8 +130,8 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fCutR(reco.fCutR),        fCutEta(reco.fCutEta),           fCutPhi(reco.fCutPhi),
   fClusterWindow(reco.fClusterWindow),
   fMass(reco.fMass),        fStepSurface(reco.fStepSurface), fStepCluster(reco.fStepCluster),
-  fITSTrackSA(reco.fITSTrackSA),                             fUseOuterTrackParam(reco.fUseOuterTrackParam),                           
-  fEMCalSurfaceDistance(440.),
+  fITSTrackSA(reco.fITSTrackSA),                             fUseTrackDCA(reco.fUseTrackDCA),
+  fUseOuterTrackParam(reco.fUseOuterTrackParam),             fEMCalSurfaceDistance(440.),
   fTrackCutsType(reco.fTrackCutsType),                       fCutMinTrackPt(reco.fCutMinTrackPt), 
   fCutMinNClusterTPC(reco.fCutMinNClusterTPC),               fCutMinNClusterITS(reco.fCutMinNClusterITS), 
   fCutMaxChi2PerClusterTPC(reco.fCutMaxChi2PerClusterTPC),   fCutMaxChi2PerClusterITS(reco.fCutMaxChi2PerClusterITS),
@@ -232,6 +233,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fStepSurface               = reco.fStepSurface;
   fStepCluster               = reco.fStepCluster;
   fITSTrackSA                = reco.fITSTrackSA;
+  fUseTrackDCA               = reco.fUseTrackDCA;
   fUseOuterTrackParam        = reco.fUseOuterTrackParam;
   fEMCalSurfaceDistance      = reco.fEMCalSurfaceDistance;
   
@@ -2783,7 +2785,12 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
       }
       
       Double_t pos[3],mom[3];
-      aodTrack->GetXYZ(pos);
+      
+      if ( fUseTrackDCA )
+        aodTrack->GetXYZ(pos);
+      else
+        aodTrack->XvYvZv(pos);
+        
       aodTrack->GetPxPyPz(mom);
       AliDebug(5,Form("aod track: i=%d | pos=(%5.4f,%5.4f,%5.4f) | mom=(%5.4f,%5.4f,%5.4f) | charge=%d\n",
                       itr,pos[0],pos[1],pos[2],mom[0],mom[1],mom[2],aodTrack->Charge()));
