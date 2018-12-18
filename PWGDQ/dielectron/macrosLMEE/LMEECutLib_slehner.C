@@ -46,7 +46,7 @@ void LMEECutLib::SetEtaCorrection(Int_t det, Bool_t isMC, Int_t corrXdim, Int_t 
   TFile* corrfile;
   corrfile= TFile::Open(fName.Data());
   if(!corrfile){
-    gSystem->Exec(TString::Format("alien_cp %s .",path.Data()));
+    gSystem->Exec(TString::Format("alien_cp %s .",(path+fName).Data()));
     corrfile = TFile::Open(fName.Data());
     if(!corrfile) ::Error("LMEECutLib::SetEtaCorrection",(TString("Cannot get correction from Alien: ")+path+fName).Data());
     else  ::Info("LMEECutLib::SetEtaCorrection",(TString("Copy correction from Alien: ")+path+fName).Data());
