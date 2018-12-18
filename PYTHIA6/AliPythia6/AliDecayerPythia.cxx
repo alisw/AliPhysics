@@ -762,10 +762,10 @@ void AliDecayerPythia::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, In
       {iLambda   , kPiPlus,  0      ,  0}
     };
 
-    // for Lambda_c -> K0bar p, D0 -> K- pi+ pi0
+    // for Lambda_c -> K0bar p, D0 -> K- pi+ pi0, D+ -> K0s pi+ pi0
     Int_t decayP6[kNHadrons][4] =
     {
-      {-1        , -1     , -1      , -1},
+      {iK0bar    , kPiPlus, kPi0    ,  0},
       {kKMinus   , kPiPlus, kPi0    ,  0},
       {-1        , -1     , -1      , -1},
       {-1        , -1     , -1      , -1},
@@ -789,6 +789,7 @@ void AliDecayerPythia::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, In
     for(Int_t iDau=0;iDau<4;iDau++){
       decayP5[1][iDau]=-1; // switch off D0->pi0pi+pi-
       decayP6[1][iDau]=-1; // switch off D0->pi0pi+K-
+      decayP6[0][iDau]=-1; // switch off D+->K0spi+pi0
     }
   } else {
     // Pi0 options
@@ -807,18 +808,29 @@ void AliDecayerPythia::ForceHadronicD(Int_t optUse4Bodies, Int_t optUseDtoV0, In
     }
     case 3: {
       for(Int_t iDau=0;iDau<4;iDau++){
+        decayP1[1][iDau]=-1; // switch off D0 -> K- pi+
         decayP5[1][iDau]=-1; // switch off D0->pi0pi+pi-
       }
       break;
     }
     case 4: {
       for(Int_t iDau=0;iDau<4;iDau++){
+        decayP1[1][iDau]=-1; // switch off D0 -> K- pi+
         decayP6[1][iDau]=-1; // switch off D0->pi0pi+K-
       }
       break;
     }
     default: break;
     };
+    // For D+ force decays into pi0 + X
+    for(Int_t iDau=0;iDau<4;iDau++){
+      // D+
+      decayP1[0][iDau]=-1;
+      decayP2[0][iDau]=-1;
+      decayP3[0][iDau]=-1;
+      decayP4[0][iDau]=-1;
+      decayP5[0][iDau]=-1;
+    }
   }
 
   for (Int_t ihadron = 0; ihadron < kNHadrons; ihadron++)
