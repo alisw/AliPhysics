@@ -31,6 +31,8 @@
 #include "AliESDHeader.h"
 #include "AliESDtrack.h"
 
+#include "AliPIDResponse.h"
+
 ClassImp(AliAnalysisTaskAO2Dconverter);
 
 namespace
@@ -49,84 +51,104 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char *name) : A
                                                                                fEventCuts{}
 {
   DefineInput(0, TChain::Class());
-  DefineOutput(1, TTree::Class());
-  DefineOutput(2, TTree::Class());
-  DefineOutput(3, TTree::Class());
+  for (Int_t i = 0; i < kTrees; i++)
+    DefineOutput(1 + i, TTree::Class());
 }
 
 AliAnalysisTaskAO2Dconverter::~AliAnalysisTaskAO2Dconverter()
 {
-  if (fEventTree)
-    delete fEventTree;
-  if (fTrackTree)
-    delete fTrackTree;
-  if (fCaloTree)
-    delete fCaloTree;
+  for (Int_t i = 0; i < kTrees; i++)
+    if (fTree[i])
+      delete fTree[i];
 }
+
+TTree* AliAnalysisTaskAO2Dconverter::CreateTree(TreeIndex t)
+{
+  fTree[t] = new TTree(TreeName[t], TreeTitle[t]);
+  return fTree[t];
+}
+
 void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
 {
+  TTree* t = nullptr;
   // create output objects
   OpenFile(1); // Necessary for large outputs
 
   // Associate branches for fEventTree
-  fEventTree = new TTree("O2events", "Event tree");
-  fEventTree->SetAutoFlush(fNumberOfEventsPerCluster);
-  fEventTree->Branch("fEventId", &fEventId, "fEventId/l");
-  fEventTree->Branch("fVtxX", &fVtxX, "fVtxX/F");
-  fEventTree->Branch("fVtxY", &fVtxY, "fVtxY/F");
-  fEventTree->Branch("fVtxZ", &fVtxZ, "fVtxZ/F");
-  fEventTree->Branch("fCentFwd", &fCentFwd, "fCentFwd/F");
-  fEventTree->Branch("fCentBarrel", &fCentBarrel, "fCentBarrel/F");
-  PostData(1, fEventTree);
+  t = CreateTree(kEvents);
+  t->SetAutoFlush(fNumberOfEventsPerCluster);
+  t->Branch("fEventId", &fEventId, "fEventId/l");
+  t->Branch("fVtxX", &fVtxX, "fVtxX/F");
+  t->Branch("fVtxY", &fVtxY, "fVtxY/F");
+  t->Branch("fVtxZ", &fVtxZ, "fVtxZ/F");
+  t->Branch("fCentFwd", &fCentFwd, "fCentFwd/F");
+  t->Branch("fCentBarrel", &fCentBarrel, "fCentBarrel/F");
+  t->Branch("fEventTime", &fEventTime, "fEventTime[10]/F");
+  t->Branch("fEventTimeRes", &fEventTimeRes, "fEventTimeRes[10]/F");
+  t->Branch("fEventTimeMask", &fEventTimeMask, "fEventTimeMask[10]/b");
+  PostData(1, t);
 
   // Associate branches for fTrackTree
-  fTrackTree = new TTree("O2tracks", "Barrel tracks");
-  fTrackTree->SetAutoFlush(fNumberOfEventsPerCluster);
-  fTrackTree->Branch("fEventId", &fEventId, "fEventId/l"); // same
-  fTrackTree->Branch("fX", &fX, "fX/F");
-  fTrackTree->Branch("fAlpha", &fAlpha, "fAlpha/F");
-  fTrackTree->Branch("fY", &fY, "fY/F");
-  fTrackTree->Branch("fZ", &fZ, "fZ/F");
-  fTrackTree->Branch("fSnp", &fSnp, "fSnp/F");
-  fTrackTree->Branch("fTgl", &fTgl, "fTgl/F");
-  fTrackTree->Branch("fSigned1Pt", &fSigned1Pt, "fSigned1Pt/F");
-  fTrackTree->Branch("fCYY", &fCYY, "fCYY/F");
-  fTrackTree->Branch("fCZY", &fCZY, "fCZY/F");
-  fTrackTree->Branch("fCZZ", &fCZZ, "fCZZ/F");
-  fTrackTree->Branch("fCSnpY", &fCSnpY, "fCSnpY/F");
-  fTrackTree->Branch("fCSnpZ", &fCSnpZ, "fCSnpZ/F");
-  fTrackTree->Branch("fCSnpSnp", &fCSnpSnp, "fCSnpSnp/F");
-  fTrackTree->Branch("fCTglY", &fCTglY, "fCTglY/F");
-  fTrackTree->Branch("fCTglZ", &fCTglZ, "fCTglZ/F");
-  fTrackTree->Branch("fCTglSnp", &fCTglSnp, "fCTglSnp/F");
-  fTrackTree->Branch("fCTglTgl", &fCTglTgl, "fCTglTgl/F");
-  fTrackTree->Branch("fC1PtY", &fC1PtY, "fC1PtY/F");
-  fTrackTree->Branch("fC1PtZ", &fC1PtZ, "fC1PtZ/F");
-  fTrackTree->Branch("fC1PtSnp", &fC1PtSnp, "fC1PtSnp/F");
-  fTrackTree->Branch("fC1PtTgl", &fC1PtTgl, "fC1PtTgl/F");
-  fTrackTree->Branch("fC1Pt21Pt2", &fC1Pt21Pt2, "fC1Pt21Pt2/F");
-  fTrackTree->Branch("fTPCinnerP", &fTPCinnerP, "fTPCinnerP/F");
-  fTrackTree->Branch("fFlags", &fFlags, "fFlags/l");
-  fTrackTree->Branch("fITSClusterMap", &fITSClusterMap, "fITSClusterMap/b");
-  fTrackTree->Branch("fTPCncls", &fTPCncls, "fTPCncls/s");
-  fTrackTree->Branch("fTRDntracklets", &fTRDntracklets, "fTRDntracklets/b");
-  fTrackTree->Branch("fITSchi2Ncl", &fITSchi2Ncl, "fITSchi2Ncl/F");
-  fTrackTree->Branch("fTPCchi2Ncl", &fTPCchi2Ncl, "fTPCchi2Ncl/F");
-  fTrackTree->Branch("fTRDchi2", &fTRDchi2, "fTRDchi2/F");
-  fTrackTree->Branch("fTOFchi2", &fTOFchi2, "fTOFchi2/F");
-  fTrackTree->Branch("fTPCsignal", &fTPCsignal, "fTPCsignal/F");
-  fTrackTree->Branch("fTRDsignal", &fTRDsignal, "fTRDsignal/F");
-  fTrackTree->Branch("fTOFsignal", &fTOFsignal, "fTOFsignal/F");
-  fTrackTree->Branch("fLength", &fLength, "fLength/F");
-  PostData(2, fTrackTree);
+  t = CreateTree(kTracks);
+  t->SetAutoFlush(fNumberOfEventsPerCluster);
+  t->Branch("fEventId", &fEventId, "fEventId/l"); // same
+  t->Branch("fX", &fX, "fX/F");
+  t->Branch("fAlpha", &fAlpha, "fAlpha/F");
+  t->Branch("fY", &fY, "fY/F");
+  t->Branch("fZ", &fZ, "fZ/F");
+  t->Branch("fSnp", &fSnp, "fSnp/F");
+  t->Branch("fTgl", &fTgl, "fTgl/F");
+  t->Branch("fSigned1Pt", &fSigned1Pt, "fSigned1Pt/F");
+  t->Branch("fCYY", &fCYY, "fCYY/F");
+  t->Branch("fCZY", &fCZY, "fCZY/F");
+  t->Branch("fCZZ", &fCZZ, "fCZZ/F");
+  t->Branch("fCSnpY", &fCSnpY, "fCSnpY/F");
+  t->Branch("fCSnpZ", &fCSnpZ, "fCSnpZ/F");
+  t->Branch("fCSnpSnp", &fCSnpSnp, "fCSnpSnp/F");
+  t->Branch("fCTglY", &fCTglY, "fCTglY/F");
+  t->Branch("fCTglZ", &fCTglZ, "fCTglZ/F");
+  t->Branch("fCTglSnp", &fCTglSnp, "fCTglSnp/F");
+  t->Branch("fCTglTgl", &fCTglTgl, "fCTglTgl/F");
+  t->Branch("fC1PtY", &fC1PtY, "fC1PtY/F");
+  t->Branch("fC1PtZ", &fC1PtZ, "fC1PtZ/F");
+  t->Branch("fC1PtSnp", &fC1PtSnp, "fC1PtSnp/F");
+  t->Branch("fC1PtTgl", &fC1PtTgl, "fC1PtTgl/F");
+  t->Branch("fC1Pt21Pt2", &fC1Pt21Pt2, "fC1Pt21Pt2/F");
+  t->Branch("fTPCinnerP", &fTPCinnerP, "fTPCinnerP/F");
+  t->Branch("fFlags", &fFlags, "fFlags/l");
+  t->Branch("fITSClusterMap", &fITSClusterMap, "fITSClusterMap/b");
+  t->Branch("fTPCncls", &fTPCncls, "fTPCncls/s");
+  t->Branch("fTRDntracklets", &fTRDntracklets, "fTRDntracklets/b");
+  t->Branch("fITSchi2Ncl", &fITSchi2Ncl, "fITSchi2Ncl/F");
+  t->Branch("fTPCchi2Ncl", &fTPCchi2Ncl, "fTPCchi2Ncl/F");
+  t->Branch("fTRDchi2", &fTRDchi2, "fTRDchi2/F");
+  t->Branch("fTOFchi2", &fTOFchi2, "fTOFchi2/F");
+  t->Branch("fTPCsignal", &fTPCsignal, "fTPCsignal/F");
+  t->Branch("fTRDsignal", &fTRDsignal, "fTRDsignal/F");
+  t->Branch("fTOFsignal", &fTOFsignal, "fTOFsignal/F");
+  t->Branch("fLength", &fLength, "fLength/F");
+  PostData(2, t);
 
-  fCaloTree = new TTree("O2calo", "Calorimeter cells");
-  fCaloTree->Branch("fEventId", &fEventId, "fEventId/l"); // same
-  fCaloTree->Branch("fCellNumber", &fCellNumber, "fCellNumber/S");
-  fCaloTree->Branch("fAmplitude", &fAmplitude, "fAmplitude/F");
-  fCaloTree->Branch("fTime", &fTime, "fTime/F");
-  fCaloTree->Branch("fType", &fType, "fType/B");
-  PostData(3, fCaloTree);
+  // Associate branches for Calo
+  t = CreateTree(kCalo);
+  t->SetAutoFlush(fNumberOfEventsPerCluster);
+  t->Branch("fEventId", &fEventId, "fEventId/l"); // same
+  t->Branch("fCellNumber", &fCellNumber, "fCellNumber/S");
+  t->Branch("fAmplitude", &fAmplitude, "fAmplitude/F");
+  t->Branch("fTime", &fTime, "fTime/F");
+  t->Branch("fType", &fType, "fType/B");
+  PostData(3, t);
+
+  // Associate branches for TOF
+  t = CreateTree(kTOF);
+  t->SetAutoFlush(fNumberOfEventsPerCluster);
+  t->Branch("fEventId", &fEventId, "fEventId/l"); // same
+  t->Branch("fTOFChannel", &fTOFChannel, "fTOFChannel/I");
+  t->Branch("fTOFClusters", &fTOFClusters, "fTOFClusters/S");
+  t->Branch("fDx", &fDx, "fDx/F");
+  t->Branch("fDz", &fDz, "fDz/F");
+  t->Branch("fToT", &fToT, "fToT/F");
+  PostData(4, t);
 }
 
 void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
@@ -152,7 +174,31 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   fVtxZ = vtx->GetZ();
   fCentFwd = fEventCuts.GetCentrality(0);
   fCentBarrel = fEventCuts.GetCentrality(1);
-  fEventTree->Fill();
+  AliPIDResponse* PIDResponse = (AliPIDResponse*)((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
+  PIDResponse->SetTOFResponse(fESD, AliPIDResponse::kBest_T0);
+  AliTOFPIDResponse TOFResponse = PIDResponse->GetTOFResponse();
+  for (Int_t i = 0; i < TOFResponse.GetNmomBins(); i++) {
+    if (i >= 10)
+      AliFatal("Index is too high!");
+    Float_t mom = (TOFResponse.GetMinMom(i) + TOFResponse.GetMaxMom(i)) / 2.f;
+    fEventTime[i] = TOFResponse.GetStartTime(mom);
+    fEventTimeRes[i] = TOFResponse.GetStartTimeRes(mom);
+    if (TOFResponse.GetStartTimeMask(mom) & 0x1)
+      SETBIT(fEventTimeMask[i], 0);
+    else
+      CLRBIT(fEventTimeMask[i], 0);
+    //
+    if (TOFResponse.GetStartTimeMask(mom) & 0x2)
+      SETBIT(fEventTimeMask[i], 1);
+    else
+      CLRBIT(fEventTimeMask[i], 1);
+    //
+    if (TOFResponse.GetStartTimeMask(mom) & 0x3)
+      SETBIT(fEventTimeMask[i], 2);
+    else
+      CLRBIT(fEventTimeMask[i], 2);
+  }
+  FillTree(kEvents);
 
   // Fill fTrackTree
   Int_t ntrk = fESD->GetNumberOfTracks();
@@ -204,7 +250,14 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     fTOFsignal = track->GetTOFsignal();
     fLength = track->GetIntegratedLength();
 
-    fTrackTree->Fill();
+    fTOFClusters = track->GetNTOFclusters();
+    fToT = track->GetTOFsignalToT();
+    fDx = track->GetTOFsignalDx();
+    fDz = track->GetTOFsignalDz();
+    fTOFChannel = track->GetTOFCalChannel();
+
+    FillTree(kTracks);
+    FillTree(kTOF);
 
   } // end loop on tracks
 
@@ -225,7 +278,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     fTime = time;
     fType = cells->GetType(); // common for all cells
 
-    fCaloTree->Fill();
+    FillTree(kCalo);
   } // end loop on calo cells
 
   cells = fESD->GetPHOSCells();
@@ -244,12 +297,11 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     fTime = time;
     fType = cells->GetType(); // common for all cells
 
-    fCaloTree->Fill();
+    FillTree(kCalo);
   } // end loop on PHOS cells
-
-  PostData(1, fEventTree);
-  PostData(2, fTrackTree);
-  PostData(3, fCaloTree);
+  //Posting data
+  for (Int_t i = 0; i < kTrees; i++)
+    PostData(1 + i, fTree[i]);
 }
 
 void AliAnalysisTaskAO2Dconverter::Terminate(Option_t *)
@@ -285,10 +337,12 @@ AliAnalysisTaskAO2Dconverter *AliAnalysisTaskAO2Dconverter::AddTask(TString suff
   // your task needs input: here we connect the manager to your task
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   // same for the output
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer("O2event", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-  mgr->ConnectOutput(task, 2, mgr->CreateContainer("O2tracks", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-  mgr->ConnectOutput(task, 3, mgr->CreateContainer("O2calo", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  for (Int_t i = 0; i < kTrees; i++)
+    mgr->ConnectOutput(task, 1 + i, mgr->CreateContainer(TreeName[i], TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   // in the end, this macro returns a pointer to your task. this will be convenient later on
   // when you will run your analysis in an analysis train on grid
   return task;
 }
+
+const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2events", "O2tracks", "O2calo", "O2tof" };
+const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Event tree", "Barrel tracks", "Calorimeter cells", "TOF hits" };
