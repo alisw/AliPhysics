@@ -129,10 +129,11 @@ private:
 
   // TOF
   Int_t fTOFChannel = -1;    /// Index of the matched channel
-  Short_t fTOFClusters = -1; /// Number of matchable clusters of the track
+  Short_t fTOFncls = -1;     /// Number of matchable clusters of the track
   Float_t fDx = -1;          /// Residual along x
   Float_t fDz = -1;          /// Residual along z
   Float_t fToT = -1;         /// ToT
+  Float_t fLengthRatio = -1; /// Ratio of the integrated track length @ TOF to the cluster with respect to the matched cluster
 
   // fCaloTree variables
   Short_t fCellNumber = -1;     /// Cell absolute Id. number

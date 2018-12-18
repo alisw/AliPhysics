@@ -165,7 +165,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   if (fTreeStatus[kTOF]) {
     TOF->Branch("fEventId", &fEventId, "fEventId/l"); // same
     TOF->Branch("fTOFChannel", &fTOFChannel, "fTOFChannel/I");
-    TOF->Branch("fTOFClusters", &fTOFClusters, "fTOFClusters/S");
+    TOF->Branch("fTOFncls", &fTOFncls, "fTOFncls/S");
     TOF->Branch("fDx", &fDx, "fDx/F");
     TOF->Branch("fDz", &fDz, "fDz/F");
     TOF->Branch("fToT", &fToT, "fToT/F");
@@ -274,14 +274,27 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     fTOFsignal = track->GetTOFsignal();
     fLength = track->GetIntegratedLength();
 
-    fTOFClusters = track->GetNTOFclusters();
-    fToT = track->GetTOFsignalToT();
-    fDx = track->GetTOFsignalDx();
-    fDz = track->GetTOFsignalDz();
-    fTOFChannel = track->GetTOFCalChannel();
+    fTOFncls = track->GetNTOFclusters();
+
+    if (fTOFncls > 0) {
+      Int_t* TOFclsIndex = track->GetTOFclusterArray(); //Index of the matchable cluster (there are fNTOFClusters of them)
+      for (Int_t icls = 0; icls < fTOFncls; icls++) {
+        AliESDTOFCluster* TOFcls = (AliESDTOFCluster*)fESD->GetESDTOFClusters()->At(TOFclsIndex[icls]);
+        fToT = TOFcls->GetTOFsignalToT(0);
+        fTOFChannel = TOFcls->GetTOFchannel();
+        for (Int_t mtchbl = 0; mtchbl < TOFcls->GetNMatchableTracks(); mtchbl++) {
+          if (TOFcls->GetTrackIndex(mtchbl) != track->GetID())
+            continue;
+          fDx = TOFcls->GetDx(mtchbl);
+          fDz = TOFcls->GetDz(mtchbl);
+          fLengthRatio = fLength > 0 ? TOFcls->GetLength(mtchbl) / fLength : -1;
+          break;
+        }
+        FillTree(kTOF);
+      }
+    }
 
     FillTree(kTracks);
-    FillTree(kTOF);
 
   } // end loop on tracks
 
