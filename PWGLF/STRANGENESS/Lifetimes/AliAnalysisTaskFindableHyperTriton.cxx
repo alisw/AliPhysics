@@ -8,6 +8,7 @@
 #include <TChain.h>
 #include <TFile.h>
 #include <TParticle.h>
+#include <TSystem.h>
 
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisManager.h"
@@ -80,10 +81,15 @@ AliAnalysisTaskFindableHyperTriton::~AliAnalysisTaskFindableHyperTriton()
 
 void AliAnalysisTaskFindableHyperTriton::UserCreateOutputObjects()
 {
+  gSystem->Load("liblhapdf");
+  gSystem->Load("libEGPythia6");
+  gSystem->Load("libpythia6_4_25");
+  gSystem->Load("libAliPythia6");
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
   inputHandler->SetNeedField();
 
+  OpenFile(1);
   fTree = new TTree("fTree", "Findable hypertritons");
   fTree->Branch("Event", &fEventSummary);
   fTree->Branch("HyperTriton2body", &f2Body);

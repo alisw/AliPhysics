@@ -96,6 +96,7 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 # Add header only files
 set(HDRS
   ${HDRS}
+  Lifetimes/HyperTriton2Body.h
   Lifetimes/MCparticle.h
   Lifetimes/MiniV0.h
   Lifetimes/Utils.h
