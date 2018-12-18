@@ -3162,7 +3162,7 @@ void AliAnalysisManager::InitInputData(AliVEvent* esdEvent, AliVfriendEvent* esd
  * @param friends Specify the root_file/friend_tree that is assumed to be in the same directory as the each input file; if friend_tree is not specified we will assume the defaults
  * @return TChain*
  */
-TChain* AliAnalysisManager::CreateChain(const char* filelist, const char* cTreeNameArg, const char* friends, Int_t iNumFiles, Int_t iStartWithFile)
+TChain* AliAnalysisManager::CreateChain(const char* filelist, const char* cTreeNameArg, Int_t iNumFiles, Int_t iStartWithFile)
 {
 TString sTreeNameArg (cTreeNameArg), treeName;
 
@@ -3197,43 +3197,5 @@ else
 TChain* chain = new TChain (treeName.Data(),""); // lets create the chain
 if ( chain->AddFileInfoList(list) == 0 ) { return NULL; } // and add file collection (THashList is a Tlist that is a TCollection)
 
-// start treatment of friends
-TChain* chainFriend = NULL;
-TString sFriends (friends);
-if (!sFriends.IsNull()) {
-  TString friends_treename, friends_filename;
-  TObjArray* arr = sFriends.Tokenize("/");
-  TObjString* strobj_file = dynamic_cast<TObjString*>(arr->At(0));
-  if (strobj_file) { friends_filename = strobj_file->GetString(); }
-  TObjString* strobj_tree = dynamic_cast<TObjString*>(arr->At(1));
-  if (strobj_tree) { friends_treename = strobj_tree->GetString(); }
-  delete arr;
-
-  if (friends_treename.IsNull()) {
-    if (treeName.EqualTo("esdTree")) {
-      friends_treename = "esdFriendTree"; }
-    else if (treeName.EqualTo("aodTree")) {
-      friends_treename = "aodTree"; }
-    else {
-      cout << "friends argument specified but tree name neither specified nor auto-detected (unknown tree name to associate with known friend tree name)";
-      return chain; // stop processing of friends, just return the chain created so far
-      }
-    }
-
-  chainFriend = new TChain(friends_treename.Data());
-  TString friendinfo_for_chain = "/" + friends_filename + "/" + friends_treename;
-
-  TIter next(list);
-  TFileInfo* fileinfo = NULL;
-  while (( fileinfo = dynamic_cast<TFileInfo*>(next()) )) {
-    TString dirname = gSystem->DirName(fileinfo->GetFirstUrl()->GetFile());
-    TString friend_for_chain = dirname + friendinfo_for_chain;
-    if (chainFriend) { chainFriend->Add(friend_for_chain.Data()); }
-    }
-
-  if (chainFriend) { chain->AddFriend(chainFriend); }
-  }
-
 return chain;
 }
-

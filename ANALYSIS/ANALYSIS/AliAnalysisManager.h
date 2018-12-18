@@ -223,7 +223,7 @@ enum EAliAnalysisFlags {
 
    void                 ApplyDebugOptions();
    void                 AddClassDebug(const char *className, Int_t debugLevel);
-   static TChain*       CreateChain(const char* filelist = "filelist.txt", const char* cTreeNameArg = "auto", const char* friends = "", Int_t iNumFiles = -1, Int_t iStartWithFile = 1);
+   static TChain*       CreateChain(const char* filelist = "filelist.txt", const char* cTreeNameArg = "auto", Int_t iNumFiles = -1, Int_t iStartWithFile = 1);
 
    // Security
    Bool_t               IsLocked() const {return fLocked;}
