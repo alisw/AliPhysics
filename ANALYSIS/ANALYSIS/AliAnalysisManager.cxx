@@ -33,6 +33,15 @@
 #include <TROOT.h>
 #include <TCanvas.h>
 #include <TStopwatch.h>
+#include <TObject.h>
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <TString.h>
+#include <TKey.h>
+#include <TCollection.h>
+#include <THashList.h>
+#include <TRegexp.h>
+#include <TFileInfo.h>
 
 #include "AliLog.h"
 #include "AliAnalysisSelector.h"
@@ -3138,4 +3147,55 @@ void AliAnalysisManager::InitInputData(AliVEvent* esdEvent, AliVfriendEvent* esd
   else {
     Fatal("PropagateHLTEvent", "Input Handler not found, we cannot use this method!");
   }
+}
+
+//______________________________________________________________________________
+/**
+ * Creates a chain from an list of files
+ * Using list of directories is not supported; use find to create a list of files; Ex:
+ * find /alice/data/2016/LHC16r/ -path "_*_/000266189/_*_" -path "_*_/pass1_CENT_wSDD/_*_" -name AliAOD.root -printf "file://%p\n"
+ * NB! on macos you need gfind that is installed with "brew install findutils"
+ * @param filelist Name of the file containing the list of files
+ * @param iNumFiles If iNumFiles > 0 only nfiles files are added
+ * @param iStartWithFile starting from file 'iStartWithFile' (>= 1).
+ * @param cTreeNameArg Tree name for chaining. if "auto" it will be taken as the first tree name from the first file from filelist
+ * @param friends Specify the root_file/friend_tree that is assumed to be in the same directory as the each input file; if friend_tree is not specified we will assume the defaults
+ * @return TChain*
+ */
+TChain* AliAnalysisManager::CreateChain(const char* filelist, const char* cTreeNameArg, Int_t iNumFiles, Int_t iStartWithFile)
+{
+TString sTreeNameArg (cTreeNameArg), treeName;
+
+TFileCollection filecoll ("anachain","File collection for analysis"); // easy manipulation of file collections
+Int_t iAddedFiles = filecoll.AddFromFile(filelist,iNumFiles,iStartWithFile);
+if ( iAddedFiles < 1 ) { std::cout << "NO Files added to collection !!!" << std::endl; return NULL; }
+
+// if cTreeNameArg is auto lets try to autodetect what type of tree we have;
+// the assuption is that all files are the same and the first one is reprezentative
+THashList* list =  filecoll.GetList();
+if ( sTreeNameArg.EqualTo("auto") ) { // if tree name is not specified
+  TRegexp tree_regex ("[aod,esd]Tree");
+  TFileInfo* fileinfo = dynamic_cast<TFileInfo*>(list->At(0)); // get first fileinfo in list
+  TFile file (fileinfo->GetFirstUrl()->GetFile()); // get the actual TFile
+  if (file.IsZombie()) { cout << "Should not reach this message!! Error opening file" << endl; return NULL; }
+
+  // lets parse the TFile
+  TIter next(file.GetListOfKeys());
+  TKey* key = NULL;
+  while (( key = dynamic_cast<TKey*>(next()) )) {
+    TString class_name = key->GetClassName();
+    if ( ! class_name.EqualTo("TTree") ) { continue; } // searching for first TTree
+
+    TString key_name = key->GetName();
+    if ( key_name.Contains(tree_regex) ) { treeName = key_name; break;} // that is named either aodTree or esdTree
+    }
+  file.Close();
+  }
+else
+  { treeName = sTreeNameArg ; } // tree name is specified
+
+TChain* chain = new TChain (treeName.Data(),""); // lets create the chain
+if ( chain->AddFileInfoList(list) == 0 ) { return NULL; } // and add file collection (THashList is a Tlist that is a TCollection)
+
+return chain;
 }
