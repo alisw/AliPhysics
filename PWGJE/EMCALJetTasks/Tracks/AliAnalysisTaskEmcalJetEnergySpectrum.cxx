@@ -38,6 +38,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskEmcalJetEnergySpectrum.h"
 #include "AliEmcalAnalysisFactory.h"
+#include "AliEmcalDownscaleFactorsOCDB.h"
 #include "AliEmcalJet.h"
 #include "AliEmcalTriggerDecisionContainer.h"
 #include "AliEmcalTriggerStringDecoder.h"
@@ -117,8 +118,11 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   const TBinning *binnings[6] = {&centralitybinning, &jetptbinning, &etabinning, &phibinning, &nefbinning, &trgclusterbinning};
   fHistos = new THistManager(Form("Histos_%s", GetName()));
   fHistos->CreateTH1("hEventCounter", "Event counter histogram", 1, 0.5, 1.5);
+  fHistos->CreateTH1("hEventCounterAbs", "Event counter histogram absolute", 1, 0.5, 1.5);
   fHistos->CreateTH1("hEventCentrality", "Event centrality", 100., 0., 100.);
+  fHistos->CreateTH1("hEventCentralityAbs", "Event centrality absolute", 100., 0., 100.);
   fHistos->CreateTH1("hClusterCounter", "Event counter histogram", kTrgClusterN, -0.5, kTrgClusterN - 0.5);
+  fHistos->CreateTH1("hClusterCounterAbs", "Event counter histogram absolute", kTrgClusterN, -0.5, kTrgClusterN - 0.5);
   fHistos->CreateTHnSparse("hJetTHnSparse", "jet thnsparse", 6, binnings, "s");
   fHistos->CreateTHnSparse("hMaxJetTHnSparse", "jet thnsparse", 6, binnings, "s");
 
@@ -164,16 +168,25 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   }
 
   auto trgclusters = GetTriggerClusterIndices(fInputEvent->GetFiredTriggerClasses());
-  fHistos->FillTH1("hEventCounter", 1);
-  fHistos->FillTH1("hEventCentrality", eventCentrality);
+  Double_t weight = 1.;
+  if(fUseDownscaleWeight) {
+    weight = PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(MatchTrigger(fInputEvent->GetFiredTriggerClasses().Data()));
+  }
+  fHistos->FillTH1("hEventCounterAbs", 1.);
+  fHistos->FillTH1("hEventCounter", weight);
+  fHistos->FillTH1("hEventCentralityAbs", eventCentrality);
+  fHistos->FillTH1("hEventCentrality", eventCentrality, weight);
   AliEmcalJet *maxjet(nullptr);
-  for(auto t : trgclusters) fHistos->FillTH1("hClusterCounter", t);
+  for(auto t : trgclusters) {
+    fHistos->FillTH1("hClusterCounterAbs", t);
+    fHistos->FillTH1("hClusterCounter", t, weight);
+  }
   for(auto j : datajets->accepted()){
     if(!maxjet || (j->E() > maxjet->E())) maxjet = j;
     double datapoint[6] = {eventCentrality, j->Pt(), j->Eta(), j->Phi(), j->NEF(), 0.};
     for(auto t : trgclusters){
       datapoint[5] = static_cast<double>(t);
-      fHistos->FillTHnSparse("hJetTHnSparse", datapoint);
+      fHistos->FillTHnSparse("hJetTHnSparse", datapoint, weight);
     }
   }
 
@@ -188,9 +201,18 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   }
   for(auto t : trgclusters){
     maxdata[5] = static_cast<double>(t);
-    fHistos->FillTHnSparse("hMaxJetTHnSparse", maxdata);
+    fHistos->FillTHnSparse("hMaxJetTHnSparse", maxdata, weight);
   }
   return true;
+}
+
+void AliAnalysisTaskEmcalJetEnergySpectrum::RunChanged(Int_t newrun){
+  if(fUseDownscaleWeight) {
+    auto downscalehandler = PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance();
+    if(downscalehandler->GetCurrentRun() != newrun){
+      downscalehandler->SetRun(newrun);
+    }
+  }
 }
 
 std::vector<AliAnalysisTaskEmcalJetEnergySpectrum::TriggerCluster_t> AliAnalysisTaskEmcalJetEnergySpectrum::GetTriggerClusterIndices(const TString &triggerstring) const {
@@ -267,6 +289,19 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::IsTriggerSelected() {
     }
   }
   return true;
+}
+
+std::string AliAnalysisTaskEmcalJetEnergySpectrum::MatchTrigger(const std::string &triggerstring){
+  auto triggerclasses = PWG::EMCAL::Triggerinfo::DecodeTriggerString(triggerstring);
+  std::string result;
+  for(const auto &t : triggerclasses) {
+    // Use CENT cluster for downscaling
+    if(t.Triggercluster() != "CENT") continue;
+    if(t.Triggerclass().find(fTriggerSelectionString.Data()) != std::string::npos) continue; 
+    result = t.ExpandClassName();
+    break;
+  }
+  return result;
 }
 
 bool AliAnalysisTaskEmcalJetEnergySpectrum::IsSelectEmcalTriggers(const std::string &triggerstring) const {
