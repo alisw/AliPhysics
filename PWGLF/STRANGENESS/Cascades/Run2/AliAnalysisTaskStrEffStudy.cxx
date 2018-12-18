@@ -104,10 +104,19 @@ class AliAODv0;
 using std::cout;
 using std::endl;
 
+namespace {
+    struct TrackMC {
+        AliESDtrack* track;
+        TParticle* mother;
+        TParticle* particle;
+        int motherId;
+    };
+}
+
 ClassImp(AliAnalysisTaskStrEffStudy)
 
 AliAnalysisTaskStrEffStudy::AliAnalysisTaskStrEffStudy()
-: AliAnalysisTaskSE(), fListHist(0), fListV0(0), fListCascade(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0), fUtils(0), fRand(0),
+: AliAnalysisTaskSE(), fListHist(0), fListV0(0), fListCascade(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fTreeHyperTriton3Body(nullptr), fPIDResponse(0), fESDtrackCuts(0), fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0), fUtils(0), fRand(0),
 
 //---> Flags controlling Event Tree output
 fkSaveEventTree    ( kTRUE ), //no downscaling in this tree so far
@@ -137,6 +146,11 @@ fkDownScaleCascade      ( kTRUE  ),
 fDownScaleFactorCascade ( 0.001  ),
 fMinPtToSave( 0.00   ) ,
 fMaxPtToSave( 100.00 ) ,
+
+//---> Flags controlling HyperTriton3Body TTree output
+fkSaveHyperTriton3BodyTree(true),
+fkDownScaleHyperTriton3Body(false),
+fDownScaleFactorHyperTriton3Body(1.),
 
 //---> Flags controlling Vertexers
 fkRunVertexers    ( kFALSE ),
@@ -328,6 +342,24 @@ fTreeCascVarPVy(0),
 fTreeCascVarPVz(0),
 fTreeCascVarAliESDvertex(0),
 
+/// Hypertriton 3 Body sandbox
+fTreeHyp3BodyVarTracks(),
+fTreeHyp3BodyVarPDGcodes(),
+fTreeHyp3BodyVarEventId(0u),
+fTreeHyp3BodyVarMotherId(0),
+fTreeHyp3BodyVarTruePx(0.f),
+fTreeHyp3BodyVarTruePy(0.f),
+fTreeHyp3BodyVarTruePz(0.f),
+fTreeHyp3BodyVarDecayVx(0.f),
+fTreeHyp3BodyVarDecayVy(0.f),
+fTreeHyp3BodyVarDecayVz(0.f),
+fTreeHyp3BodyVarDecayT(0.f),
+fTreeHyp3BodyVarPVx(0.f),
+fTreeHyp3BodyVarPVy(0.f),
+fTreeHyp3BodyVarPVz(0.f),
+fTreeHyp3BodyVarPVt(0.f),
+fTreeHyp3BodyVarMagneticField(0.f),
+
 //Histos
 fHistEventCounter(0),
 fHistCentrality(0),
@@ -350,7 +382,7 @@ fHistGeneratedPtVsYVsCentralityAntiHypTrit(0)
 }
 
 AliAnalysisTaskStrEffStudy::AliAnalysisTaskStrEffStudy(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, const char *name, TString lExtraOptions)
-: AliAnalysisTaskSE(name), fListHist(0), fListV0(0), fListCascade(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0), fUtils(0), fRand(0),
+: AliAnalysisTaskSE(name), fListHist(0), fListV0(0), fListCascade(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fTreeHyperTriton3Body(nullptr),fPIDResponse(0), fESDtrackCuts(0), fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0), fUtils(0), fRand(0),
 
 //---> Flags controlling Event Tree output
 fkSaveEventTree    ( kFALSE ), //no downscaling in this tree so far
@@ -380,6 +412,11 @@ fkDownScaleCascade      ( kTRUE  ),
 fDownScaleFactorCascade ( 0.001  ),
 fMinPtToSave( 0.00   ) ,
 fMaxPtToSave( 100.00 ) ,
+
+//---> Flags controlling HyperTriton3Body TTree output
+fkSaveHyperTriton3BodyTree(true),
+fkDownScaleHyperTriton3Body(false),
+fDownScaleFactorHyperTriton3Body(1.),
 
 //---> Flags controlling Vertexers
 fkRunVertexers    ( kFALSE ),
@@ -565,6 +602,23 @@ fTreeCascVarPVy(0),
 fTreeCascVarPVz(0),
 fTreeCascVarAliESDvertex(0),
 
+/// Hypertriton 3 Body sandbox
+fTreeHyp3BodyVarTracks(),
+fTreeHyp3BodyVarPDGcodes(),
+fTreeHyp3BodyVarEventId(0u),
+fTreeHyp3BodyVarMotherId(0),
+fTreeHyp3BodyVarTruePx(0.f),
+fTreeHyp3BodyVarTruePy(0.f),
+fTreeHyp3BodyVarTruePz(0.f),
+fTreeHyp3BodyVarDecayVx(0.f),
+fTreeHyp3BodyVarDecayVy(0.f),
+fTreeHyp3BodyVarDecayVz(0.f),
+fTreeHyp3BodyVarDecayT(0.f),
+fTreeHyp3BodyVarPVx(0.f),
+fTreeHyp3BodyVarPVy(0.f),
+fTreeHyp3BodyVarPVz(0.f),
+fTreeHyp3BodyVarPVt(0.f),
+fTreeHyp3BodyVarMagneticField(0.f),
 
 //Histos
 fHistEventCounter(0),
@@ -630,6 +684,7 @@ fHistGeneratedPtVsYVsCentralityAntiHypTrit(0)
         DefineOutput(4, TTree::Class()); // Event Tree output
     DefineOutput(5, TTree::Class()); // V0 Tree output
     DefineOutput(6, TTree::Class()); // Cascade Tree output
+    DefineOutput(7, TTree::Class()); // HyperTriton Tree output
     
     //Special Debug Options (more to be added as needed)
     // A - Study Wrong PID for tracking bug
@@ -671,6 +726,10 @@ AliAnalysisTaskStrEffStudy::~AliAnalysisTaskStrEffStudy()
     if (fTreeCascade) {
         delete fTreeCascade;
         fTreeCascade = 0x0;
+    }    
+    if (fTreeHyperTriton3Body) {
+        delete fTreeHyperTriton3Body;
+        fTreeHyperTriton3Body = nullptr;
     }
     if (fUtils) {
         delete fUtils;
@@ -897,6 +956,36 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     fTreeCascade->Branch("fTreeCascVarV0AsOTF",&fTreeCascVarV0AsOTF,"fTreeCascVarV0AsOTF/O");
     fTreeCascade->Branch("fTreeCascVarNegBachAsOTF",&fTreeCascVarNegBachAsOTF,"fTreeCascVarNegBachAsOTF/O");
     fTreeCascade->Branch("fTreeCascVarPosBachAsOTF",&fTreeCascVarPosBachAsOTF,"fTreeCascVarPosBachAsOTF/O");
+
+    fTreeHyperTriton3Body = new TTree("fTreeHyperTriton3Body","HyperTriton3BodyCandidates");
+    if (fkSaveHyperTriton3BodyTree) {
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarTrack0", &fTreeHyp3BodyVarTracks[0],16000,99);
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarTrack1", &fTreeHyp3BodyVarTracks[1],16000,99);
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarTrack2", &fTreeHyp3BodyVarTracks[2],16000,99);
+
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarPDGcode0", &fTreeHyp3BodyVarPDGcodes[0],"fTreeHyp3BodyVarPDGcode0/I");
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarPDGcode1", &fTreeHyp3BodyVarPDGcodes[1],"fTreeHyp3BodyVarPDGcode1/I");
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarPDGcode2", &fTreeHyp3BodyVarPDGcodes[2],"fTreeHyp3BodyVarPDGcode2/I");
+
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarEventId",&fTreeHyp3BodyVarEventId,"fTreeHyp3BodyVarEventId/l");
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarMotherId",&fTreeHyp3BodyVarMotherId,"fTreeHyp3BodyVarMotherId/I");
+
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarTruePx",&fTreeHyp3BodyVarTruePx,"fTreeHyp3BodyVarTruePx/F");
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarTruePy",&fTreeHyp3BodyVarTruePy,"fTreeHyp3BodyVarTruePy/F");
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarTruePz",&fTreeHyp3BodyVarTruePz,"fTreeHyp3BodyVarTruePz/F");
+
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarDecayVx",&fTreeHyp3BodyVarDecayVx,"fTreeHyp3BodyVarDecayVx/F");
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarDecayVy",&fTreeHyp3BodyVarDecayVy,"fTreeHyp3BodyVarDecayVy/F");
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarDecayVz",&fTreeHyp3BodyVarDecayVz,"fTreeHyp3BodyVarDecayVz/F");
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarDecayT",&fTreeHyp3BodyVarDecayT,"fTreeHyp3BodyVarDecayT/F");
+
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarPVx",&fTreeHyp3BodyVarPVx,"fTreeHyp3BodyVarPVx/F");
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarPVy",&fTreeHyp3BodyVarPVy,"fTreeHyp3BodyVarPVy/F");
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarPVz",&fTreeHyp3BodyVarPVz,"fTreeHyp3BodyVarPVz/F");
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarPVt",&fTreeHyp3BodyVarPVt,"fTreeHyp3BodyVarPVt/F");
+
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarMagneticField",&fTreeHyp3BodyVarMagneticField,"fTreeHyp3BodyVarMagneticField/F");
+    }
     //------------------------------------------------
 
     //------------------------------------------------
@@ -1028,6 +1117,7 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     PostData(4, fTreeEvent   );
     PostData(5, fTreeV0      );
     PostData(6, fTreeCascade );
+    PostData(7, fTreeHyperTriton3Body);
     
 }// end UserCreateOutputObjects
 
@@ -1172,6 +1262,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         PostData(4, fTreeEvent   );
         PostData(5, fTreeV0      );
         PostData(6, fTreeCascade );
+        PostData(7, fTreeHyperTriton3Body );
         return;
     }
     
@@ -1184,6 +1275,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             PostData(4, fTreeEvent   );
             PostData(5, fTreeV0      );
             PostData(6, fTreeCascade );
+            PostData(7, fTreeHyperTriton3Body );
             return;
         }
     }
@@ -1279,7 +1371,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     //-------------------------------------------------
     
     //Particles of interest
-    const Int_t lNV0Types = 5;
+    constexpr Int_t lNV0Types = 5;
     Int_t lV0Types[lNV0Types]          = { 310, 3122, -3122,  1010010030, -1010010030};
     Int_t lV0TypesPDau[lNV0Types]      = { 211, 2212,   211,  1000010030, -211};
     Int_t lV0TypesNDau[lNV0Types]      = {-211, -211, -2212, -1000010030,  211};
@@ -1294,6 +1386,16 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     
     Long_t nTracksOfInterest = 0;
     
+    auto lRemoveDeltaRayFromDaughters = [](const AliMCEvent* lMCev, const TParticle* lMum) {
+        int lNDaughters = 0;
+        for (int iPart = lMum->GetFirstDaughter(); iPart <= lMum->GetLastDaughter(); ++iPart) {
+            TParticle* lParticle = lMCev->Particle(iPart);
+            if (lParticle->GetPdgCode() != 11)
+                lNDaughters++;
+        }
+        return lNDaughters;
+    };
+
     //____________________________________________________________________________
     //Step 1: establish list of tracks coming from desired type
     for(Long_t iTrack = 0; iTrack<lNTracks; iTrack++){
@@ -1313,13 +1415,18 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         Int_t lParticleMotherPDG = lParticleMother->GetPdgCode();
         
         //Skip three-body decays and the like
-        if ( lParticleMother->GetNDaughters()!=2 ) continue;
-        
-        Bool_t lOfDesiredType = kFALSE;
+        int lMotherType = -1;
         for(Int_t iType=0; iType<lNV0Types; iType++){
-            if( lParticleMotherPDG == lV0Types[iType] ) lOfDesiredType = kTRUE;
+            if( lParticleMotherPDG == lV0Types[iType] ) lMotherType = iType;
         }
-        if( !lOfDesiredType ) continue;
+        if( lMotherType < 0 ) continue;
+
+        int lNDaughters = lParticleMother->GetNDaughters();
+        if ( lMotherType > 2 ) { ///Count real hypertriton daughters
+            lNDaughters = lRemoveDeltaRayFromDaughters(lMCevent, lParticleMother);
+        }
+
+        if ( lNDaughters!=2 ) continue;
         
         //If here: this is a daughter of a mother particle of desired type, add
         lTrackArray        [nTracksOfInterest] = iTrack;
@@ -1581,7 +1688,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     
     Long_t nBachelorsOfInterest = 0;
     
-    //____________________________________________________________________________
+    //________________________________________________________________________fTreeCascade____
     //Step 1: establish list of bachelors from cascades
     for(Long_t iTrack = 0; iTrack<lNTracks; iTrack++){
         AliESDtrack *esdTrack = lESDevent->GetTrack(iTrack);
@@ -2039,6 +2146,88 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     
     //--] END CASCADE PART [--------------------------
     
+    //------------------------------------------------
+    // HyperTriton in 3 body from scratch: locate findable HyperTriton
+    //------------------------------------------------
+
+    //pos/neg daughters
+    std::vector<TrackMC> lTrackOfInterest;
+    lTrackOfInterest.reserve(lNTracks);
+    
+    //_________________________________________________________
+    //Step 1: establish list of tracks coming from des
+    for(Long_t iTrack = 0; iTrack<lNTracks; iTrack++){
+        AliESDtrack *esdTrack = lESDevent->GetTrack(iTrack);
+        if(!esdTrack) continue;
+        
+        Int_t lLabel = (Int_t) TMath::Abs( esdTrack->GetLabel() );
+        TParticle* lParticle = lMCstack->Particle( lLabel );
+        
+        Int_t lLabelMother = lParticle->GetFirstMother();
+        if( lLabelMother < 0 ) continue;
+        
+        if( !lMCevent->IsPhysicalPrimary(lLabelMother) ) continue;
+        
+        TParticle *lParticleMother = lMCstack->Particle( lLabelMother );
+        Int_t lParticleMotherPDG = lParticleMother->GetPdgCode();
+        if (std::abs(lParticleMotherPDG) != 1010010030) continue;
+        int lNDaughters = lRemoveDeltaRayFromDaughters(lMCevent, lParticleMother);
+        if ( lNDaughters!=3 ) continue;
+        //If here: this is a daughter of a mother particle of desired type, add
+        lTrackOfInterest.push_back({esdTrack, lParticleMother, lParticle, lLabelMother});
+    }
+
+    if (!lTrackOfInterest.empty()) {
+        fTreeHyp3BodyVarMagneticField = b;
+        fTreeHyp3BodyVarEventId++;
+        fTreeHyp3BodyVarPVt = lTrackOfInterest.back().mother->T();
+        fTreeHyp3BodyVarPVx = lTrackOfInterest.back().mother->Vx();
+        fTreeHyp3BodyVarPVy = lTrackOfInterest.back().mother->Vy();
+        fTreeHyp3BodyVarPVz = lTrackOfInterest.back().mother->Vz();
+
+        /// This makes the output tree sorted, having possible clones close to each other.
+        /// At the same time this quick sort will speed up the following loops
+        std::sort(lTrackOfInterest.begin(), lTrackOfInterest.end(), [](const TrackMC & a, const TrackMC & b)
+        { 
+            return a.motherId > b.motherId; 
+        });
+        //____________________________________________________________________________
+        //Step 2: determine findable V0s: look for pairs having shared mother label
+        for(size_t iTrack = 0; iTrack < lTrackOfInterest.size(); iTrack++){
+            //Start nested loop from iTrack+1: avoid permutations + combination with self
+            fTreeHyp3BodyVarTracks[0] = lTrackOfInterest[iTrack].track;
+            fTreeHyp3BodyVarPDGcodes[0] = lTrackOfInterest[iTrack].particle->GetPdgCode();
+            for(size_t jTrack = iTrack+1; jTrack < lTrackOfInterest.size(); jTrack++){
+                if( lTrackOfInterest[iTrack].motherId != lTrackOfInterest[jTrack].motherId)
+                    continue;
+                fTreeHyp3BodyVarTracks[1] = lTrackOfInterest[jTrack].track;            
+                fTreeHyp3BodyVarPDGcodes[1] = lTrackOfInterest[jTrack].particle->GetPdgCode();
+                for (size_t zTrack = jTrack+1; zTrack < lTrackOfInterest.size(); zTrack++){
+                    if( lTrackOfInterest[iTrack].motherId == lTrackOfInterest[zTrack].motherId) {
+                        fTreeHyp3BodyVarTracks[2] = lTrackOfInterest[zTrack].track;            
+                        fTreeHyp3BodyVarPDGcodes[2] = lTrackOfInterest[zTrack].particle->GetPdgCode();
+
+                        TParticle* lHyperTriton = lTrackOfInterest[iTrack].mother;
+                        fTreeHyp3BodyVarTruePx = lHyperTriton->Px();
+                        fTreeHyp3BodyVarTruePy = lHyperTriton->Py();
+                        fTreeHyp3BodyVarTruePz = lHyperTriton->Pz();
+
+                        TParticle* prong = lTrackOfInterest[iTrack].particle;
+                        fTreeHyp3BodyVarDecayVx = prong->Vx();
+                        fTreeHyp3BodyVarDecayVy = prong->Vy();
+                        fTreeHyp3BodyVarDecayVz = prong->Vz();
+                        fTreeHyp3BodyVarDecayT =  prong->T();
+
+                        fTreeHyp3BodyVarMotherId = lTrackOfInterest[zTrack].motherId;
+                        fTreeHyperTriton3Body->Fill();
+                    }
+                }
+            }
+        }
+    }
+
+    //--] END HYPERTRITON3BODY PART [--------------------------
+
     // Post output data.
     PostData(1, fListHist    );
     PostData(2, fListV0      );
@@ -2046,6 +2235,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     PostData(4, fTreeEvent   );
     PostData(5, fTreeV0      );
     PostData(6, fTreeCascade );
+    PostData(7, fTreeHyperTriton3Body );
 }
 
 //________________________________________________________________________

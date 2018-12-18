@@ -295,6 +295,7 @@ private:
     TTree  *fTreeEvent;              //! Output Tree, Events
     TTree  *fTreeV0;              //! Output Tree, V0s
     TTree  *fTreeCascade;              //! Output Tree, Cascades
+    TTree  *fTreeHyperTriton3Body;              //! Output Tree, Cascades
 
     AliPIDResponse *fPIDResponse;     // PID response object
     AliESDtrackCuts *fESDtrackCuts;   // ESD track cuts used for primary track definition
@@ -331,6 +332,10 @@ private:
 
     Float_t fMinPtToSave; //minimum pt above which we keep candidates in TTree output
     Float_t fMaxPtToSave; //maximum pt below which we keep candidates in TTree output
+
+    Bool_t fkSaveHyperTriton3BodyTree;         //if true, save TTree
+    Bool_t fkDownScaleHyperTriton3Body;
+    Double_t fDownScaleFactorHyperTriton3Body;
 
     //Objects Controlling Task Behaviour: has to be streamed!
     Bool_t    fkRunVertexers;           // if true, re-run vertexer with loose cuts *** only for CASCADES! ***
@@ -576,6 +581,28 @@ private:
     
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     
+    AliESDtrack *fTreeHyp3BodyVarTracks[3];
+    Int_t        fTreeHyp3BodyVarPDGcodes[3];
+    
+    ULong64_t    fTreeHyp3BodyVarEventId;
+    Int_t        fTreeHyp3BodyVarMotherId;
+
+    Float_t      fTreeHyp3BodyVarTruePx;
+    Float_t      fTreeHyp3BodyVarTruePy;
+    Float_t      fTreeHyp3BodyVarTruePz;
+
+    Float_t      fTreeHyp3BodyVarDecayVx;
+    Float_t      fTreeHyp3BodyVarDecayVy;
+    Float_t      fTreeHyp3BodyVarDecayVz;
+    Float_t      fTreeHyp3BodyVarDecayT;
+
+    Float_t      fTreeHyp3BodyVarPVx;
+    Float_t      fTreeHyp3BodyVarPVy;
+    Float_t      fTreeHyp3BodyVarPVz;
+    Float_t      fTreeHyp3BodyVarPVt;
+
+    Float_t      fTreeHyp3BodyVarMagneticField;
+
 //===========================================================================================
 //   Histograms
 //===========================================================================================
