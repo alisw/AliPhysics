@@ -181,8 +181,15 @@ void AliAnalysisTaskAO2Dconverter::Prune()
     return;
   TObjArray* arr = fPruneList.Tokenize(" ");
   for (Int_t i = 0; i < arr->GetEntries(); i++)
-    for (Int_t j = 0; j < kTrees; j++)
-      fTree[j]->SetBranchStatus(arr->At(i)->GetName(), 0);
+    for (Int_t j = 0; j < kTrees; j++) {
+      TObjArray* branches = fTree[j]->GetListOfBranches();
+      for (Int_t k = 0; k < branches->GetEntries(); k++) {
+        TString bname = branches->At(k)->GetName();
+        if (!bname.EqualTo(arr->At(i)->GetName()))
+          continue;
+        fTree[j]->SetBranchStatus(bname, 0);
+      }
+    }
   fPruneList = "";
 }
 
