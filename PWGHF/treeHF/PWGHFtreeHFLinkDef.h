@@ -12,6 +12,7 @@
 #pragma link C++ class   AliHFTreeHandlerDstoKKpi+;
 #pragma link C++ class   AliHFTreeHandlerBplustoD0pi+;
 #pragma link C++ class   AliHFTreeHandlerLctopKpi+;
+#pragma link C++ class   AliHFTreeHandlerDstartoKpipi+;
 
 
 

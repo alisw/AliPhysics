@@ -14,6 +14,8 @@
 // F. Prino, prino@to.infn.it
 // L. Vermunt, luuk.vermunt@cern.ch
 // L. van Doremalen, lennart.van.doremalen@cern.ch
+// J. Norman, jaime.norman@cern.ch
+// G. Luparello, grazia.luparello@cern.ch
 /////////////////////////////////////////////////////////////
 
 #include <TString.h>

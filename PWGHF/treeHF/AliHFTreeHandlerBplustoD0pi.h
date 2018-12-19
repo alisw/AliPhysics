@@ -8,7 +8,7 @@
 
 //*************************************************************************
 // \class AliHFTreeHandlerBplustoD0pi
-// \brief helper class to handle a tree for D+ cut optimisation and MVA analyses
+// \brief helper class to handle a tree for B+ cut optimisation and MVA analyses
 // \authors:
 // F. Catalano, fabio.catalano@cern.ch
 // A. Festanti, andrea.festanti@cern.ch
@@ -17,6 +17,8 @@
 // F. Prino, prino@to.infn.it
 // L. Vermunt, luuk.vermunt@cern.ch
 // L. van Doremalen, lennart.van.doremalen@cern.ch
+// J. Norman, jaime.norman@cern.ch
+// G. Luparello, grazia.luparello@cern.ch
 /////////////////////////////////////////////////////////////
 
 #include "AliHFTreeHandler.h"
