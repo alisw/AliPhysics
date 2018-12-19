@@ -1,4 +1,4 @@
-AliAnalysisTaskStrEffStudy *AddTaskStrEffStudy( Bool_t lSaveEventTree = kTRUE, Bool_t lSaveV0 = kTRUE, Bool_t lSaveCascade = kTRUE, TString lExtraOptions = "", const TString lMasterJobSessionFlag = "")
+AliAnalysisTaskStrEffStudy *AddTaskStrEffStudy( Bool_t lSaveEventTree = kTRUE, Bool_t lSaveV0 = kTRUE, Bool_t lSaveCascade = kTRUE, Bool_t lSaveHyperTriton = kTRUE, TString lExtraOptions = "", const TString lMasterJobSessionFlag = "")
 {
     // Creates, configures and attaches to the train a cascades check task.
     // Get the pointer to the existing analysis manager via the static access method.
@@ -63,6 +63,14 @@ AliAnalysisTaskStrEffStudy *AddTaskStrEffStudy( Bool_t lSaveEventTree = kTRUE, B
                                                                             outputFileName );
         coutputTreeCascade->SetSpecialOutput();
     }
+    AliAnalysisDataContainer *coutputTreeHyperTriton = 0x0;
+    if (lSaveHyperTriton){
+        coutputTreeHyperTriton = mgr->CreateContainer("cTreeHyperTriton",
+                                                                            TTree::Class(),
+                                                                            AliAnalysisManager::kOutputContainer,
+                                                                            outputFileName );
+        coutputTreeHyperTriton->SetSpecialOutput();
+    }
     //This one you should merge in file-resident ways...
     
     //Recommendation: Tree as a single output slot
@@ -74,6 +82,7 @@ AliAnalysisTaskStrEffStudy *AddTaskStrEffStudy( Bool_t lSaveEventTree = kTRUE, B
     if ( lSaveEventTree ) mgr->ConnectOutput(taskAuxiliary, 4, coutputTree);
     if ( lSaveV0 )        mgr->ConnectOutput(taskAuxiliary, 5, coutputTreeV0);
     if ( lSaveCascade )   mgr->ConnectOutput(taskAuxiliary, 6, coutputTreeCascade);
+    if ( lSaveHyperTriton )   mgr->ConnectOutput(taskAuxiliary, 7, coutputTreeHyperTriton);
     
     return taskAuxiliary;
 }   
