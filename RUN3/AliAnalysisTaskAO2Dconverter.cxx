@@ -31,6 +31,8 @@
 #include "AliESDHeader.h"
 #include "AliESDtrack.h"
 
+#include "AliMCEvent.h"
+#include "AliMCEventHandler.h"
 #include "AliPIDResponse.h"
 
 ClassImp(AliAnalysisTaskAO2Dconverter);
@@ -144,6 +146,13 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     Tracks->Branch("fTRDsignal", &fTRDsignal, "fTRDsignal/F");
     Tracks->Branch("fTOFsignal", &fTOFsignal, "fTOFsignal/F");
     Tracks->Branch("fLength", &fLength, "fLength/F");
+    if (fTaskMode) {
+      Tracks->Branch("fPDGcode", &fPDGcode, "fPDGcode/I");
+      Tracks->Branch("fLabel", &fLabel, "fLabel/I");
+      Tracks->Branch("fPDGcodeMother", &fPDGcodeMother, "fPDGcodeMother/I");
+      Tracks->Branch("fLabelMother", &fLabelMother, "fLabelMother/I");
+      Tracks->Branch("fTOFLabel", &fTOFLabel, "fTOFLabel[3]/I");
+    }
   }
   PostData(2, Tracks);
 
@@ -206,6 +215,24 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     return;
   }
 
+  // Configuration of the PID response
+  AliPIDResponse* PIDResponse = (AliPIDResponse*)((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
+  PIDResponse->SetTOFResponse(fESD, AliPIDResponse::kBest_T0);
+  AliTOFPIDResponse TOFResponse = PIDResponse->GetTOFResponse();
+
+  // Configuration of the MC event (if needed)
+  AliMCEvent* MCEvt = nullptr;
+  if (fTaskMode) {
+    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()); //Get the MC handler
+
+    if (!eventHandler) //Check on the MC handler
+      AliFatal("Could not retrieve MC event handler");
+    MCEvt = eventHandler->MCEvent(); //Get the MC Event
+
+    if (!MCEvt) // Check on the MC Event
+      AliFatal("Could not retrieve MC event");
+    PIDResponse->SetCurrentMCEvent(MCEvt); //Set The PID response on the current MC event
+  }
   const AliVVertex *vtx = fEventCuts.GetPrimaryVertex();
   if (!vtx) {
     ::Fatal("AliAnalysisTaskAO2Dconverter::UserExec", "Vertex not defined");
@@ -216,9 +243,6 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   fVtxZ = vtx->GetZ();
   fCentFwd = fEventCuts.GetCentrality(0);
   fCentBarrel = fEventCuts.GetCentrality(1);
-  AliPIDResponse* PIDResponse = (AliPIDResponse*)((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
-  PIDResponse->SetTOFResponse(fESD, AliPIDResponse::kBest_T0);
-  AliTOFPIDResponse TOFResponse = PIDResponse->GetTOFResponse();
   for (Int_t i = 0; i < TOFResponse.GetNmomBins(); i++) {
     if (i >= 10)
       AliFatal("Index is too high!");
@@ -312,6 +336,18 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
         }
         FillTree(kTOF);
       }
+    }
+
+    if (MCEvt) {
+      fLabel = track->GetLabel();
+      TParticle* part = MCEvt->Particle(TMath::Abs(fLabel));
+      fPDGcode = part->GetPdgCode();
+      fLabelMother = part->GetFirstMother();
+
+      track->GetTOFLabel(fTOFLabel);
+
+      if (fLabelMother >= 0) //Check if the particle has a mother
+        fPDGcodeMother = MCEvt->Particle(fLabelMother)->GetPdgCode();
     }
 
     FillTree(kTracks);

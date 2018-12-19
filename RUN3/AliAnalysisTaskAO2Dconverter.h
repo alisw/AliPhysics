@@ -45,8 +45,8 @@ public:
   static const TString TreeName[kTrees];  //! Names of the TTree containers
   static const TString TreeTitle[kTrees]; //! Titles of the TTree containers
 
-  TString fPruneList = ""; // Names of the branches that will not be saved to output file
-  void Prune(TString p) { fPruneList = p; };
+  void Prune(TString p) { fPruneList = p; }; // Setter of the pruning list
+  void SetMCMode() { fTaskMode = 1; };       // Setter of the MC running mode
 
   AliAnalysisFilter fTrackFilter; // Standard track filter object
 private:
@@ -54,12 +54,17 @@ private:
   AliESDEvent *fESD = nullptr;  //! input event
   TList *fOutputList = nullptr; //! output list
 
-  void Prune();                       // Function to perform tree pruning
-  Bool_t fTreeStatus[kTrees];         // Status of the trees i.e. kTRUE (enabled) or kFALSE (disabled)
+  // Output TTree
   TTree* fTree[kTrees] = { nullptr }; //! Array with all the output trees
-  void FillTree(TreeIndex t);
+  void Prune();                       // Function to perform tree pruning
+  void FillTree(TreeIndex t);         // Function to fill the trees (only the active ones)
 
-  int fNumberOfEventsPerCluster = 1000;
+  // Task configuration variables
+  TString fPruneList = "";                // Names of the branches that will not be saved to output file
+  Bool_t fTreeStatus[kTrees] = { kTRUE }; // Status of the trees i.e. kTRUE (enabled) or kFALSE (disabled)
+  int fNumberOfEventsPerCluster = 1000;   // Maximum basket size of the trees
+
+  Int_t fTaskMode = 0; // Running mode of the task. Useful to set for e.g. MC mode
 
   // fEventTree variables  
 
@@ -131,13 +136,20 @@ private:
   Float_t fTOFsignal = -999.f; /// TOFsignal
   Float_t fLength = -999.f;    /// Int.Lenght @ TOF
 
+  // MC information
+  Int_t fPDGcode = 0;          /// Particle PDG code
+  Int_t fLabel = 0;            /// Track label
+  Int_t fPDGcodeMother = 0;    /// Particle PDG code of the first mother
+  Int_t fLabelMother = 0;      /// First mother label
+  Int_t fTOFLabel[3] = { -1 }; /// Label of the matched track
+
   // TOF
-  Int_t fTOFChannel = -1;    /// Index of the matched channel
-  Short_t fTOFncls = -1;     /// Number of matchable clusters of the track
-  Float_t fDx = -1;          /// Residual along x
-  Float_t fDz = -1;          /// Residual along z
-  Float_t fToT = -1;         /// ToT
-  Float_t fLengthRatio = -1; /// Ratio of the integrated track length @ TOF to the cluster with respect to the matched cluster
+  Int_t fTOFChannel = -1;        /// Index of the matched channel
+  Short_t fTOFncls = -1;         /// Number of matchable clusters of the track
+  Float_t fDx = -999.f;          /// Residual along x
+  Float_t fDz = -999.f;          /// Residual along z
+  Float_t fToT = -999.f;         /// ToT
+  Float_t fLengthRatio = -999.f; /// Ratio of the integrated track length @ TOF to the cluster with respect to the matched cluster
 
   // fCaloTree variables
   Short_t fCellNumber = -1;     /// Cell absolute Id. number
