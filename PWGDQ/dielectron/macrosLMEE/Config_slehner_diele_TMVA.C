@@ -95,7 +95,7 @@ void SetTPCCorr(AliDielectron *die, Bool_t hasMC){
 
 //______________________________________________________________________________________
 void SetITSCorr(AliDielectron *die, Bool_t hasMC){
-  ::Info("Config_slehner_LMEE_TMVA","starting LMEECutLib::SetEtaCorrection for ITS\n");
+  ::Info("Config_slehner_LMEE_TMVA","starting SetITSCorr\n");
   TString path="alien:///alice/cern.ch/user/s/selehner/recal/";
   if(hasMC) TString fName= "recalib_mc_its_nsigmaele.root";
   else      TString fName= "recalib_data_its_nsigmaele.root";
@@ -117,7 +117,7 @@ void SetITSCorr(AliDielectron *die, Bool_t hasMC){
 
 //______________________________________________________________________________________
 void SetTOFCorr(AliDielectron *die, Bool_t hasMC){
-  ::Info("Config_slehner_LMEE_TMVA","starting LMEECutLib::SetEtaCorrection for TOF\n");
+  ::Info("Config_slehner_LMEE_TMVA","starting SetTOFCorr for TOF\n");
   TString path="alien:///alice/cern.ch/user/s/selehner/recal/";
   if(hasMC) TString fName= "recalib_mc_tof_nsigmaele.root";
   else      TString fName= "recalib_data_tof_nsigmaele.root";
