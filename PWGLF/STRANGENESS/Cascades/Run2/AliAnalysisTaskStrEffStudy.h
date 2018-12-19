@@ -36,28 +36,23 @@
 #define AliAnalysisTaskStrEffStudy_H
 
 class TList;
-class TH1F;
-class TH2F;
-class TH3F;
+class TH1D;
+class TH3D;
 class TVector3;
-class THnSparse;
 class TRandom3;
-class TProfile; 
+class TTree;
 
-class AliESDpid;
 class AliESDtrackCuts;
 class AliAnalysisUtils;
 class AliESDEvent;
-class AliPhysicsSelection;
-class AliESDFMD;
-class AliCFContainer;
+class AliESDtrack;
+class AliPIDResponse;
 class AliV0Result;
 class AliCascadeResult;
-class AliExternalTrackParam; 
+class AliExternalTrackParam;
 
-//#include "TString.h"
-//#include "AliESDtrackCuts.h"
-//#include "AliAnalysisTaskSE.h"
+#include "TString.h"
+#include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 
 class AliAnalysisTaskStrEffStudy : public AliAnalysisTaskSE {
@@ -342,10 +337,10 @@ private:
     Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
     Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit() to improve precision
     Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
-    
+
     //Save only decent tracks
     Bool_t fkSaveGoodTracks;
-    
+
     //Sandbox mode
     Bool_t fkSandboxV0;
     Bool_t fkSandboxCascade;
@@ -360,7 +355,7 @@ private:
 
     Double_t fLambdaMassSigma[4]; //Array to store the lambda mass sigma parametrization
     //[0]+[1]*x+[2]*TMath::Exp([3]*x)
-    
+
     Double_t fPrecisionCutoffCascadeDCA; //Precision cutoff for GetDCA numerical recipe
     Int_t fMaxIterationsCascadeDCA; //Max N Iter for cascade DCA calculation
 
