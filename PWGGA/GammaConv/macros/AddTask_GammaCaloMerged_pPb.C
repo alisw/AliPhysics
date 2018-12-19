@@ -466,6 +466,35 @@ void AddTask_GammaCaloMerged_pPb(
     cuts.AddCutMergedCalo("80093123","111114805f032200000","111114805f022700001","0163300000000000"); // EJ1
     cuts.AddCutMergedCalo("80095123","111114805f032200000","111114805f022700001","0163300000000000"); // EJ2
 
+  // configs for mcp2 (no track matching or ITS only)
+  // Analysis cuts pPb 8 TeV with TPC, fEOverPMax = 1.75, +-50ns, Nico TB NL
+  } else if (trainConfig == 1500){
+    cuts.AddCutMergedCalo("80010123","111116505f032200000","111116505f022700001","0163300000000000"); // INT7
+  } else if (trainConfig == 1501){
+    cuts.AddCutMergedCalo("80083123","111116505f032200000","111116505f022700001","0163300000000000"); // EG1
+    cuts.AddCutMergedCalo("80085123","111116505f032200000","111116505f022700001","0163300000000000"); // EG2
+  } else if (trainConfig == 1502){
+    cuts.AddCutMergedCalo("80093123","111116505f032200000","111116505f022700001","0163300000000000"); // EJ1
+    cuts.AddCutMergedCalo("80095123","111116505f032200000","111116505f022700001","0163300000000000"); // EJ2
+  // NL kSDM PCMEMC
+  } else if (trainConfig == 1510){
+    cuts.AddCutMergedCalo("80010123","1111147050032200000","1111147050022700001","0163300000000000"); // INT7
+  } else if (trainConfig == 1511){
+    cuts.AddCutMergedCalo("80083123","1111147050032200000","1111147050022700001","0163300000000000"); // EG1
+    cuts.AddCutMergedCalo("80085123","1111147050032200000","1111147050022700001","0163300000000000"); // EG2
+  } else if (trainConfig == 1512){
+    cuts.AddCutMergedCalo("80093123","1111147050032200000","1111147050022700001","0163300000000000"); // EJ1
+    cuts.AddCutMergedCalo("80095123","1111147050032200000","1111147050022700001","0163300000000000"); // EJ2
+  // NL kSDM EMC
+  } else if (trainConfig == 1521){
+    cuts.AddCutMergedCalo("80010123","1111148050032200000","1111148050022700001","0163300000000000"); // INT7
+  } else if (trainConfig == 1522){
+    cuts.AddCutMergedCalo("80083123","1111148050032200000","1111148050022700001","0163300000000000"); // EG1
+    cuts.AddCutMergedCalo("80085123","1111148050032200000","1111148050022700001","0163300000000000"); // EG2
+  } else if (trainConfig == 1523){
+    cuts.AddCutMergedCalo("80093123","1111148050032200000","1111148050022700001","0163300000000000"); // EJ1
+    cuts.AddCutMergedCalo("80095123","1111148050032200000","1111148050022700001","0163300000000000"); // EJ2
+
   } else {
     Error(Form("GammaCaloMerged_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

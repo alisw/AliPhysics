@@ -4105,11 +4105,19 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
                 if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
                 //                 cout << "CEM7? " << isSelected << endl;
               } else   if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8DG2") == 0){
-                if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
                 if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
               }
               // jet triggers -> no overlap with gamma trigger required
-            if (fSpecialTrigger == 9 && fSpecialSubTriggerName.CompareTo("7EJ1") == 0){
+            if (fSpecialTrigger == 9 && fSpecialSubTriggerName.CompareTo("7EJE") == 0){
+              if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+              if (firedTrigClass.Contains("7EGA"))  isSelected = 0;
+            } else if (fSpecialTrigger == 9 && fSpecialSubTriggerName.CompareTo("8EJE") == 0){
+              if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+              if (firedTrigClass.Contains("8EGA"))  isSelected = 0;
+            } else if (fSpecialTrigger == 9 && fSpecialSubTriggerName.CompareTo("7EJ1") == 0){
               if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
               if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
               if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
@@ -4127,7 +4135,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
               if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
               if (firedTrigClass.Contains("7EG1"))  isSelected = 0;
             } else   if (fSpecialTrigger == 9 && fSpecialSubTriggerName.CompareTo("8EJ2") == 0){
-              if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+              if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
               if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
               if (firedTrigClass.Contains("8EG2"))  isSelected = 0;
               if (firedTrigClass.Contains("8EG1"))  isSelected = 0;
