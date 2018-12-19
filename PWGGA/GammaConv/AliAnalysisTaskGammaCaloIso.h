@@ -515,7 +515,7 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloIso(const AliAnalysisTaskGammaCaloIso&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCaloIso &operator=(const AliAnalysisTaskGammaCaloIso&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloIso, 53);
+    ClassDef(AliAnalysisTaskGammaCaloIso, 54);
 };
 
 #endif
