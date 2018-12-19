@@ -13,12 +13,12 @@ ClassImp(AliPP13NonlinearityScanSelection);
 
 
 //________________________________________________________________
-TLorentzVector AliPP13NonlinearityScanSelection::ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags, Int_t ia, Int_t ib) const
+TLorentzVector AliPP13NonlinearityScanSelection::ClusterMomentumBinned(const AliVCluster * c1, const EventFlags & eflags, Int_t ia, Int_t ib) const
 {
-	Float_t energy = c1->E();
-
 	TLorentzVector p;
 	c1->GetMomentum(p, eflags.vtxBest);
+
+	Float_t energy = c1->E();
 	p *= fWeightsScan[ia][ib].Nonlinearity(energy);
 	return p;
 }
@@ -76,8 +76,8 @@ void AliPP13NonlinearityScanSelection::ConsiderPair(const AliVCluster * c1, cons
 	{
 		for (Int_t ib = 0; ib < kNbinsSigma; ++ib)
 		{
-			TLorentzVector p1 = ClusterMomentum(c1, eflags, ia, ib);
-			TLorentzVector p2 = ClusterMomentum(c2, eflags, ia, ib);
+			TLorentzVector p1 = ClusterMomentumBinned(c1, eflags, ia, ib);
+			TLorentzVector p2 = ClusterMomentumBinned(c2, eflags, ia, ib);
 			TLorentzVector psum = p1 + p2;
 
 			if (psum.M2() < 0)
@@ -106,7 +106,7 @@ void AliPP13NonlinearityScanSelection::ConsiderGeneratedParticles(const EventFla
 
 		// NB: replace this condition by find, if the number of particles will grow
 		//
-		if (code != 111) // Only neutral pions
+		if (code != kPi0) // Only neutral pions
 			continue;
 
 
@@ -122,14 +122,4 @@ void AliPP13NonlinearityScanSelection::ConsiderGeneratedParticles(const EventFla
 			continue;
 		fPtPrimaryPi0->Fill(pt, w);
 	}
-}
-
-//________________________________________________________________
-TLorentzVector AliPP13NonlinearityScanSelection::ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags) const
-{
-	// NB: Intentionally don't apply nonlinearity Correction here
-	// Float_t energy = c1->E();
-	TLorentzVector p;
-	c1->GetMomentum(p, eflags.vtxBest);
-	return p;
 }

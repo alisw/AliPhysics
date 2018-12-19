@@ -47,9 +47,7 @@ public:
 	virtual void InitSelectionHistograms();
 protected:
 	virtual void ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags);
-
-	virtual TLorentzVector ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags) const;
-	virtual TLorentzVector ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags, Int_t ia, Int_t ib) const;
+	virtual TLorentzVector ClusterMomentumBinned(const AliVCluster * c1, const EventFlags & eflags, Int_t ia, Int_t ib) const;
 
 	AliPP13NonlinearityScanSelection(const AliPP13NonlinearityScanSelection &);
 	AliPP13NonlinearityScanSelection & operator = (const AliPP13NonlinearityScanSelection &);
