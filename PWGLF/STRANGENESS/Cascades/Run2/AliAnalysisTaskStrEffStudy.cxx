@@ -2195,10 +2195,17 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
                     continue;
                 fTreeHyp3BodyVarTracks[1] = lTrackOfInterest[jTrack].track;            
                 fTreeHyp3BodyVarPDGcodes[1] = lTrackOfInterest[jTrack].particle->GetPdgCode();
+                /// Reject pairs of clone tracks, chapter 1
+                if (fTreeHyp3BodyVarPDGcodes[1] == fTreeHyp3BodyVarPDGcodes[0])
+                    continue;
                 for (size_t zTrack = jTrack+1; zTrack < lTrackOfInterest.size(); zTrack++){
                     if( lTrackOfInterest[iTrack].motherId == lTrackOfInterest[zTrack].motherId) {
                         fTreeHyp3BodyVarTracks[2] = lTrackOfInterest[zTrack].track;            
                         fTreeHyp3BodyVarPDGcodes[2] = lTrackOfInterest[zTrack].particle->GetPdgCode();
+                        /// Reject pairs of clone tracks, chapter 2
+                        if (fTreeHyp3BodyVarPDGcodes[2] == fTreeHyp3BodyVarPDGcodes[0] ||
+                            fTreeHyp3BodyVarPDGcodes[2] == fTreeHyp3BodyVarPDGcodes[1])
+                            continue;
 
                         TParticle* lHyperTriton = lTrackOfInterest[iTrack].mother;
                         fTreeHyp3BodyVarTruePx = lHyperTriton->Px();
