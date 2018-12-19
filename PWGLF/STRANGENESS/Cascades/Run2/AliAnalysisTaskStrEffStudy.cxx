@@ -2186,26 +2186,36 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         });
         //____________________________________________________________________________
         //Step 2: determine findable V0s: look for pairs having shared mother label
+        std::array<std::pair<AliESDtrack*,int>,3> lTrackPDG;
         for(size_t iTrack = 0; iTrack < lTrackOfInterest.size(); iTrack++){
             //Start nested loop from iTrack+1: avoid permutations + combination with self
-            fTreeHyp3BodyVarTracks[0] = lTrackOfInterest[iTrack].track;
-            fTreeHyp3BodyVarPDGcodes[0] = lTrackOfInterest[iTrack].particle->GetPdgCode();
+            lTrackPDG[0].first = lTrackOfInterest[iTrack].track;
+            lTrackPDG[0].second = lTrackOfInterest[iTrack].particle->GetPdgCode();
             for(size_t jTrack = iTrack+1; jTrack < lTrackOfInterest.size(); jTrack++){
                 if( lTrackOfInterest[iTrack].motherId != lTrackOfInterest[jTrack].motherId)
                     continue;
-                fTreeHyp3BodyVarTracks[1] = lTrackOfInterest[jTrack].track;            
-                fTreeHyp3BodyVarPDGcodes[1] = lTrackOfInterest[jTrack].particle->GetPdgCode();
+                lTrackPDG[1].first = lTrackOfInterest[jTrack].track;            
+                lTrackPDG[1].second = lTrackOfInterest[jTrack].particle->GetPdgCode();
                 /// Reject pairs of clone tracks, chapter 1
-                if (fTreeHyp3BodyVarPDGcodes[1] == fTreeHyp3BodyVarPDGcodes[0])
+                if (lTrackPDG[1].second == lTrackPDG[0].second)
                     continue;
                 for (size_t zTrack = jTrack+1; zTrack < lTrackOfInterest.size(); zTrack++){
                     if( lTrackOfInterest[iTrack].motherId == lTrackOfInterest[zTrack].motherId) {
-                        fTreeHyp3BodyVarTracks[2] = lTrackOfInterest[zTrack].track;            
-                        fTreeHyp3BodyVarPDGcodes[2] = lTrackOfInterest[zTrack].particle->GetPdgCode();
+                        lTrackPDG[2].first = lTrackOfInterest[zTrack].track;            
+                        lTrackPDG[2].second = lTrackOfInterest[zTrack].particle->GetPdgCode();
                         /// Reject pairs of clone tracks, chapter 2
-                        if (fTreeHyp3BodyVarPDGcodes[2] == fTreeHyp3BodyVarPDGcodes[0] ||
-                            fTreeHyp3BodyVarPDGcodes[2] == fTreeHyp3BodyVarPDGcodes[1])
+                        if (lTrackPDG[2].second == lTrackPDG[0].second ||
+                            lTrackPDG[2].second == lTrackPDG[1].second)
                             continue;
+
+                        std::sort(lTrackPDG.begin(),lTrackPDG.end(),[](const std::pair<AliESDtrack*,int> & a, const std::pair<AliESDtrack*,int> & b)
+                        { 
+                            return std::abs(a.second) > std::abs(b.second); 
+                        });
+                        for (size_t iPair{0}; iPair < lTrackPDG.size(); ++iPair) {
+                            fTreeHyp3BodyVarTracks[iPair] = lTrackPDG[iPair].first;
+                            fTreeHyp3BodyVarPDGcodes[iPair] = lTrackPDG[iPair].second;
+                        }
 
                         TParticle* lHyperTriton = lTrackOfInterest[iTrack].mother;
                         fTreeHyp3BodyVarTruePx = lHyperTriton->Px();
