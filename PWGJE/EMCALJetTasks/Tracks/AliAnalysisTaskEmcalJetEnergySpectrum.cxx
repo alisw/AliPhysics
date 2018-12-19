@@ -170,7 +170,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   auto trgclusters = GetTriggerClusterIndices(fInputEvent->GetFiredTriggerClasses());
   Double_t weight = 1.;
   if(fUseDownscaleWeight) {
-    weight = PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(MatchTrigger(fInputEvent->GetFiredTriggerClasses().Data()));
+    weight = 1./PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(MatchTrigger(fInputEvent->GetFiredTriggerClasses().Data()));
   }
   fHistos->FillTH1("hEventCounterAbs", 1.);
   fHistos->FillTH1("hEventCounter", weight);
