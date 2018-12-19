@@ -2151,8 +2151,13 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     //Step 1: establish list of tracks coming from des
     for(Long_t iTrack = 0; iTrack<lNTracks; iTrack++){
         AliESDtrack *esdTrack = lESDevent->GetTrack(iTrack);
-        if(!esdTrack) continue;
-        
+        if(!esdTrack)
+            continue;
+        /// The minimal TPC/ITS reconstruction criteria must be statisfied
+        if (((esdTrack->GetStatus() & AliVTrack::kTPCrefit) == 0 &&
+             (esdTrack->GetStatus() & AliVTrack::kITSrefit) == 0) ||
+            esdTrack->GetKinkIndex(0) > 0)
+            continue;
         Int_t lLabel = (Int_t) TMath::Abs( esdTrack->GetLabel() );
         TParticle* lParticle = lMCstack->Particle( lLabel );
         
