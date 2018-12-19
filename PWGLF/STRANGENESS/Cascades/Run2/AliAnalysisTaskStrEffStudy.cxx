@@ -2140,7 +2140,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     }
     
     //--] END CASCADE PART [--------------------------
-    
+
     //------------------------------------------------
     // HyperTriton in 3 body from scratch: locate findable HyperTriton
     //------------------------------------------------
@@ -2148,7 +2148,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     //pos/neg daughters
     std::vector<TrackMC> lTrackOfInterest;
     lTrackOfInterest.reserve(lNTracks);
-    
+
     //_________________________________________________________
     //Step 1: establish list of tracks coming from des
     for(Long_t iTrack = 0; iTrack<lNTracks; iTrack++){
@@ -2162,12 +2162,12 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             continue;
         Int_t lLabel = (Int_t) TMath::Abs( esdTrack->GetLabel() );
         TParticle* lParticle = lMCstack->Particle( lLabel );
-        
+
         Int_t lLabelMother = lParticle->GetFirstMother();
         if( lLabelMother < 0 ) continue;
-        
+
         if( !lMCevent->IsPhysicalPrimary(lLabelMother) ) continue;
-        
+
         TParticle *lParticleMother = lMCstack->Particle( lLabelMother );
         Int_t lParticleMotherPDG = lParticleMother->GetPdgCode();
         if (std::abs(lParticleMotherPDG) != 1010010030) continue;
@@ -2178,6 +2178,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     }
 
     if (!lTrackOfInterest.empty()) {
+        bool lNewEvent = true;
         fTreeHyp3BodyVarMagneticField = b;
         fTreeHyp3BodyVarEventId++;
         fTreeHyp3BodyVarPVt = lTrackOfInterest.back().mother->T();
@@ -2188,8 +2189,8 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         /// This makes the output tree sorted, having possible clones close to each other.
         /// At the same time this quick sort will speed up the following loops
         std::sort(lTrackOfInterest.begin(), lTrackOfInterest.end(), [](const TrackMC & a, const TrackMC & b)
-        { 
-            return a.motherId > b.motherId; 
+        {
+            return a.motherId > b.motherId;
         });
         //____________________________________________________________________________
         //Step 2: determine findable V0s: look for pairs having shared mother label
@@ -2201,14 +2202,14 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             for(size_t jTrack = iTrack+1; jTrack < lTrackOfInterest.size(); jTrack++){
                 if( lTrackOfInterest[iTrack].motherId != lTrackOfInterest[jTrack].motherId)
                     continue;
-                lTrackPDG[1].first = lTrackOfInterest[jTrack].track;            
+                lTrackPDG[1].first = lTrackOfInterest[jTrack].track;
                 lTrackPDG[1].second = lTrackOfInterest[jTrack].particle->GetPdgCode();
                 /// Reject pairs of clone tracks, chapter 1
                 if (lTrackPDG[1].second == lTrackPDG[0].second)
                     continue;
                 for (size_t zTrack = jTrack+1; zTrack < lTrackOfInterest.size(); zTrack++){
                     if( lTrackOfInterest[iTrack].motherId == lTrackOfInterest[zTrack].motherId) {
-                        lTrackPDG[2].first = lTrackOfInterest[zTrack].track;            
+                        lTrackPDG[2].first = lTrackOfInterest[zTrack].track;
                         lTrackPDG[2].second = lTrackOfInterest[zTrack].particle->GetPdgCode();
                         /// Reject pairs of clone tracks, chapter 2
                         if (lTrackPDG[2].second == lTrackPDG[0].second ||
@@ -2216,8 +2217,8 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
                             continue;
 
                         std::sort(lTrackPDG.begin(),lTrackPDG.end(),[](const std::pair<AliESDtrack*,int> & a, const std::pair<AliESDtrack*,int> & b)
-                        { 
-                            return std::abs(a.second) > std::abs(b.second); 
+                        {
+                            return std::abs(a.second) > std::abs(b.second);
                         });
                         for (size_t iPair{0}; iPair < lTrackPDG.size(); ++iPair) {
                             fTreeHyp3BodyVarTracks[iPair] = lTrackPDG[iPair].first;
@@ -2225,6 +2226,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
                         }
 
                         TParticle* lHyperTriton = lTrackOfInterest[iTrack].mother;
+
                         fTreeHyp3BodyVarTruePx = lHyperTriton->Px();
                         fTreeHyp3BodyVarTruePy = lHyperTriton->Py();
                         fTreeHyp3BodyVarTruePz = lHyperTriton->Pz();
@@ -2236,6 +2238,10 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
                         fTreeHyp3BodyVarDecayT =  prong->T();
 
                         fTreeHyp3BodyVarMotherId = lTrackOfInterest[zTrack].motherId;
+                        if (lNewEvent) {
+                          fTreeHyp3BodyVarMotherId *= -1;
+                          lNewEvent = false;
+                        }
                         fTreeHyperTriton3Body->Fill();
                     }
                 }
