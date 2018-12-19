@@ -921,8 +921,10 @@ Int_t  AliGenPythiaPlus::GenerateMB()
 	pdg = partCheck->GetPdgCode();  
 	if(TMath::Abs(pdg) == fFlavorSelect) { // quark  
 	  if(pdg>0) { theQ=kTRUE; } else { theQbar=kTRUE; }
-	  y = 0.5*TMath::Log((partCheck->Energy()+partCheck->Pz()+1.e-13)/
+
+      	if(partCheck->Energy()-TMath::Abs(partCheck->Pz()) > FLT_EPSILON) y = 0.5*TMath::Log((partCheck->Energy()+partCheck->Pz()+1.e-13)/
 			     (partCheck->Energy()-partCheck->Pz()+1.e-13));
+	  	else y = 9999.;
 	  if(fUseYCutHQ && y>fYMinHQ && y<fYMaxHQ) inYcut=kTRUE;
 	  if(!fUseYCutHQ && y>fYMin && y<fYMax) inYcut=kTRUE;
 	}
