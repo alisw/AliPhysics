@@ -45,7 +45,9 @@ class AliAODVertex;
 class AliESDv0;
 class AliAODv0;
 
+#include <array>
 #include <numeric>
+#include <utility>
 
 #include <Riostream.h>
 #include "TList.h"
