@@ -87,6 +87,7 @@ if(ROOT_VERSION_MAJOR EQUAL 6)
   set(SRCS
     ${SRCS}
     Lifetimes/AliAnalysisTaskFindableHyperTriton.cxx
+    Cascades/Run2/selectors/AliSelectorFindableHyperTriton3Body.cxx
     )
 endif()
 
