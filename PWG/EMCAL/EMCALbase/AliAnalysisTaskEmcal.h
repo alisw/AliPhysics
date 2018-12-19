@@ -2,7 +2,6 @@
 #define ALIANALYSISTASKEMCAL_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-
 class TClonesArray;
 class TString;
 class AliMCParticle;
@@ -17,6 +16,7 @@ class AliGenPythiaEventHeader;
 class AliGenHerwigEventHeader;
 class AliVCaloTrigger;
 class AliAnalysisUtils;
+class AliEventCuts;
 class AliEMCALTriggerPatchInfo;
 class AliAODTrack;
 class AliEmcalPythiaInfo;
@@ -324,6 +324,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetMinBiasTriggerClassName(const char *n)             { fMinBiasRefTrigger = n                              ; }
   void                        SetTriggerTypeSel(TriggerType t)                      { fTriggerTypeSel    = t                              ; } 
   void                        SetUseAliAnaUtils(Bool_t b, Bool_t bRejPilup = kTRUE) { fUseAliAnaUtils    = b ; fRejectPileup = bRejPilup  ; }
+  void                        SetUseInternalEventSelection(Bool_t doUse)            { fUseInternalEventSelection = doUse                  ; }
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
   void                        SetMinVertexContrib(Int_t min)                        { fMinVertexContrib = min                             ; }
   void                        SetUseSPDTrackletVsClusterBG(Bool_t b)                { fTklVsClusSPDCut   = b                              ; }
@@ -670,23 +671,9 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   /**
    * @brief Performing event selection.
    *
-   * This contains
-   * - Selection of the trigger class
-   * - Selection according to the centrality class
-   * - Selection of event with good vertex quality
-   * - Selection of the event plane orientation
-   * - Selection of the multiplicity (including
-   *   above minimum \f$ p_{t} \f$ and tracks in the
-   *   EMCAL acceptance
-   *
-   * Note that for the vertex selection both the usage
-   * of the analysis util and the range of the z-position
-   * of the primary vertex need to be specified.
-   *
-   * In case the event is rejected, a histogram
-   * monitoring the rejection reason is filled with
-   * the bin corresponding to the source of the rejection
-   * of the current event.
+   * By default the event selection is delegated to the 
+   * AliEventCuts. Users can specify to use a builtin 
+   * event select (old method) by calling SetUseInternalEventSelection.
    *
    * The Run function is only called in case the event
    * is selected by this function, providing a default
@@ -816,6 +803,31 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   static void                 GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array);
 
   /**
+   * @brief Perform event selection (old method)
+   * 
+   * This contains
+   * - Selection of the trigger class
+   * - Selection according to the centrality class
+   * - Selection of event with good vertex quality
+   * - Selection of the event plane orientation
+   * - Selection of the multiplicity (including
+   *   above minimum \f$ p_{t} \f$ and tracks in the
+   *   EMCAL acceptance
+   *
+   * Note that for the vertex selection both the usage
+   * of the analysis util and the range of the z-position
+   * of the primary vertex need to be specified.
+   *
+   * In case the event is rejected, a histogram
+   * monitoring the rejection reason is filled with
+   * the bin corresponding to the source of the rejection
+   * of the current event.
+   * 
+   * @return True if the event is selected, false if it is rejected
+   */
+  Bool_t                      IsEventSelectedInternal();
+
+  /**
    * @brief Calculates the fraction of momentum z of part 1 w.r.t. part 2 in the direction of part 2.
    * @param[in] part1 Momentum vector for which the relative fraction is calculated
    * @param[in] part2 Reference momentum vector for the calculation
@@ -886,12 +898,14 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t                      fUseXsecFromHeader;          //!<! Use cross section from header instead of pyxsec.root (purely transient)
   Bool_t                      fMCRejectFilter;             ///< enable the filtering of events by tail rejection
   Bool_t                      fCountDownscaleCorrectedEvents; ///< Count event number corrected for downscaling
+  Bool_t                      fUseInternalEventSelection;  ///< Use builtin event selection of the AliAnalysisTaskEmcal instead of AliEventCuts
   Float_t                     fPtHardAndJetPtFactor;       ///< Factor between ptHard and jet pT to reject/accept event.
   Float_t                     fPtHardAndClusterPtFactor;   ///< Factor between ptHard and cluster pT to reject/accept event.
   Float_t                     fPtHardAndTrackPtFactor;     ///< Factor between ptHard and track pT to reject/accept event.
 
   // Service fields
-  Int_t                       fRunNumber;                  //!<!run number (triggering RunChanged()
+  Int_t                       fRunNumber;                  //!<!run number (triggering RunChanged())
+  AliEventCuts               *fAliEventCuts;               //!<!Event cuts (run2 defaults)
   AliAnalysisUtils           *fAliAnalysisUtils;           //!<!vertex selection (optional)
   Bool_t                      fIsEsd;                      //!<!whether it's an ESD analysis
   AliEMCALGeometry           *fGeom;                       //!<!emcal geometry
