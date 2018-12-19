@@ -51,10 +51,10 @@ const Int_t    stepsThetaBin = 60;
 
 const Double_t minMassBin     = 0;
 const Double_t maxMassBin     = 5;
-const Int_t    stepsMassBin   = 250;
+const Int_t    stepsMassBin   = 500;
 const Double_t minPairPtBin   = 0;
 const Double_t maxPairPtBin   = 10;
-const Int_t    stepsPairPtBin = 20;
+const Int_t    stepsPairPtBin = 100;
 
 // Binning of resolution histograms
 const Int_t    NbinsDeltaMom   = 2000;
