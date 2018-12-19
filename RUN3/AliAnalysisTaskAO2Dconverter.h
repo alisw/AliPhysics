@@ -7,6 +7,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
+#include "AliAnalysisFilter.h"
 
 #include <TString.h>
 
@@ -21,7 +22,7 @@ public:
   AliAnalysisTaskAO2Dconverter(const char *name);
   virtual ~AliAnalysisTaskAO2Dconverter();
 
-  AliAnalysisTaskAO2Dconverter(const AliAnalysisTaskAO2Dconverter &) = delete;
+  AliAnalysisTaskAO2Dconverter(const AliAnalysisTaskAO2Dconverter &) = default;
   AliAnalysisTaskAO2Dconverter &operator=(const AliAnalysisTaskAO2Dconverter &) = delete;
 
   virtual void UserCreateOutputObjects();
@@ -31,15 +32,32 @@ public:
   void SetNumberOfEventsPerCluster(int n) { fNumberOfEventsPerCluster = n; }
 
   static AliAnalysisTaskAO2Dconverter* AddTask(TString suffix = "");
+  enum TreeIndex {
+    kEvents = 0,
+    kTracks,
+    kCalo,
+    kTOF,
+    kTrees
+  };
+  TTree* CreateTree(TreeIndex t);
+  void EnableTree(TreeIndex t) { fTreeStatus[t] = kTRUE; };
+  void DisableTree(TreeIndex t) { fTreeStatus[t] = kFALSE; };
+  static const TString TreeName[kTrees];  //! Names of the TTree containers
+  static const TString TreeTitle[kTrees]; //! Titles of the TTree containers
 
+  TString fPruneList = ""; // Names of the branches that will not be saved to output file
+  void Prune(TString p) { fPruneList = p; };
+
+  AliAnalysisFilter fTrackFilter; // Standard track filter object
 private:
   AliEventCuts fEventCuts;      //! Standard event cuts
   AliESDEvent *fESD = nullptr;  //! input event
   TList *fOutputList = nullptr; //! output list
 
-  TTree *fEventTree = nullptr; //! Event tree
-  TTree *fTrackTree = nullptr; //! Track tree
-  TTree *fCaloTree = nullptr;  //! Calo cell trees
+  void Prune();                       // Function to perform tree pruning
+  Bool_t fTreeStatus[kTrees];         // Status of the trees i.e. kTRUE (enabled) or kFALSE (disabled)
+  TTree* fTree[kTrees] = { nullptr }; //! Array with all the output trees
+  void FillTree(TreeIndex t);
 
   int fNumberOfEventsPerCluster = 1000;
 
@@ -53,6 +71,9 @@ private:
   Float_t fCentFwd = -1.f;      /// Centrality/Multiplicity percentile estimated with forward detectors
   Float_t fCentBarrel = -1.f;   /// Centrality/Multiplicity percentile estimated with barrel detectors
 
+  Float_t fEventTime[10] = { -999.f };    /// Event time (t0) obtained with different methods (best, T0, T0-TOF, ...) for the whole event as a function of momentum
+  Float_t fEventTimeRes[10] = { -999.f }; /// Resolution on the event time (t0) obtained with different methods (best, T0, T0-TOF, ...) for the whole event as a function of momentum
+  UChar_t fEventTimeMask[10] = { 0u };    /// Mask with the method used to compute the event time (0x1=T0-TOF,0x2=T0A,0x3=TOC) for each momentum bins
 
   // fTrackTree variables
 
@@ -110,6 +131,13 @@ private:
   Float_t fTOFsignal = -999.f; /// TOFsignal
   Float_t fLength = -999.f;    /// Int.Lenght @ TOF
 
+  // TOF
+  Int_t fTOFChannel = -1;    /// Index of the matched channel
+  Short_t fTOFncls = -1;     /// Number of matchable clusters of the track
+  Float_t fDx = -1;          /// Residual along x
+  Float_t fDz = -1;          /// Residual along z
+  Float_t fToT = -1;         /// ToT
+  Float_t fLengthRatio = -1; /// Ratio of the integrated track length @ TOF to the cluster with respect to the matched cluster
 
   // fCaloTree variables
   Short_t fCellNumber = -1;     /// Cell absolute Id. number
