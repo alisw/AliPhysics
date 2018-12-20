@@ -27,6 +27,8 @@ enum {kKeepBit=1, kDaughtersBit=2, kDoneBit=4, kTransportBit=BIT(14)};
 class AliStack : public TVirtualMCStack
 {
   public:
+  enum {kEmbeddingRawBit = BIT(20)};
+  
     // creators, destructors
     AliStack(Int_t size, const char* name = "");
     AliStack();
@@ -36,7 +38,7 @@ class AliStack : public TVirtualMCStack
       {st.Copy(*this); return(*this);}
 
     // methods
-
+    
     virtual void  PushTrack(Int_t done, Int_t parent, Int_t pdg, 
                            const Float_t *pmom, const Float_t *vpos, const Float_t *polar, 
                            Float_t tof, TMCProcess mech, Int_t &ntr,
@@ -91,6 +93,7 @@ class AliStack : public TVirtualMCStack
     void        SetMCEmbeddingFlag(Bool_t v=kTRUE)        {fMCEmbeddingFlag = v;}
     Bool_t      GetMCEmbeddingFlag()                const {return fMCEmbeddingFlag;}
     static const char*   GetEmbeddingBKGPathsKey() {return fgkEmbedPathsKey;}
+    static UInt_t GetEmbeddingRawBit() {return kEmbeddingRawBit;}
     static TParticle* GetDummyParticle();
     
   protected:

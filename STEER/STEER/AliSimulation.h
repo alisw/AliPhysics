@@ -51,8 +51,8 @@ public:
                    {fLoadAlObjsListOfDets = detectors;};
   void           SetMakeSDigits(const char* detectors) 
                    {fMakeSDigits = detectors;};
-  void           MergeWith(const char* fileName, Int_t nSignalPerBkgrd = 0);
-  void           EmbedInto(const char* fileName, Int_t nSignalPerBkgrd = 0);
+  void           MergeWith(const char* fileName, Int_t nSignalPerBkgrd = 0, Bool_t raw=kFALSE);
+  void           EmbedInto(const char* fileName, Int_t nSignalPerBkgrd = 0, Bool_t raw=kFALSE);
 
   Bool_t         GetEmbeddingFlag() const {return fEmbeddingFlag;}
   

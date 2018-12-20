@@ -151,10 +151,15 @@ Bool_t AliMCEventHandler::Init(Option_t* opt)
       AliInfo("galice.root contains paths of background for embedding");
       embBKGPaths->Print();
       for (int ib=0;ib<embBKGPaths->GetEntriesFast();ib++) {
+	TObjString* objstr = (TObjString*)embBKGPaths->At(ib);
+	TString pth = objstr->GetName();
+	if (objstr->TestBit(AliStack::GetEmbeddingRawBit())) {
+	  AliInfoF("Backround from %s flagged is as RAW, skip MCEvent creation",pth.Data());
+	  continue;
+	}
 	if (!fSubsidiaryHandlers || fSubsidiaryHandlers->GetEntries()<ib) AddSubsidiaryHandler(new AliMCEventHandler());
 	// if needed, add subsidiary handlers
 	AliMCEventHandler* hs = (AliMCEventHandler*)fSubsidiaryHandlers->At(ib);
-	TString pth = gSystem->DirName(embBKGPaths->At(ib)->GetName());
 	// check if the path is relative
 	if ( !pth.BeginsWith("/") && !pth.BeginsWith("alien://")) {
 	  TString pths = fPathName->Data();
