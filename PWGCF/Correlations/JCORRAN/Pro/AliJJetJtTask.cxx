@@ -241,7 +241,7 @@ void AliJJetJtTask::UserExec(Option_t* /*option*/)
     if(fRunTable->IsPA() && !(fRunTable->GetPeriodName().BeginsWith("LHC13"))){
       sel = (AliMultSelection*) InputEvent() -> FindListObject("MultSelection");
       if (sel) {
-        fcent = sel->GetMultiplicityPercentile("V0C");
+        fcent = sel->GetMultiplicityPercentile("V0A");
       }
       else{
         if(fDebug > 2) cout << "Sel not found" << endl;
@@ -250,7 +250,7 @@ void AliJJetJtTask::UserExec(Option_t* /*option*/)
       AliCentrality *cent = event->GetCentrality();
       if( ! cent ) return;
       if(fRunTable->GetPeriodName().BeginsWith("LHC13")){
-        fcent = cent->GetCentralityPercentile("V0C");
+        fcent = cent->GetCentralityPercentile("V0A");
       }else{
         fcent = cent->GetCentralityPercentile("V0M");
       }
