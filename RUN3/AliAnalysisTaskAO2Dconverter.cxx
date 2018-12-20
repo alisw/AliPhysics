@@ -201,7 +201,8 @@ void AliAnalysisTaskAO2Dconverter::Prune()
   if (fPruneList.IsNull() || fPruneList.IsWhitespace())
     return;
   TObjArray* arr = fPruneList.Tokenize(" ");
-  for (Int_t i = 0; i < arr->GetEntries(); i++)
+  for (Int_t i = 0; i < arr->GetEntries(); i++) {
+    Bool_t found = kFALSE;
     for (Int_t j = 0; j < kTrees; j++) {
       TObjArray* branches = fTree[j]->GetListOfBranches();
       for (Int_t k = 0; k < branches->GetEntries(); k++) {
@@ -209,8 +210,12 @@ void AliAnalysisTaskAO2Dconverter::Prune()
         if (!bname.EqualTo(arr->At(i)->GetName()))
           continue;
         fTree[j]->SetBranchStatus(bname, 0);
+        found = kTRUE;
       }
     }
+    if (!found)
+      AliFatal(Form("Did not find Branch %s", arr->At(i)->GetName()));
+  }
   fPruneList = "";
 }
 
