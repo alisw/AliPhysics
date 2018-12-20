@@ -364,10 +364,12 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   PDGParticles.push_back(3212);
   PDGParticles.push_back(3212);
   PDGParticles.push_back(3212);
-  PDGParticles.push_back(3122);
-  PDGParticles.push_back(22);
-  PDGParticles.push_back(3122);
-  PDGParticles.push_back(22);
+  if (suffix == "0") {
+    PDGParticles.push_back(3122);
+    PDGParticles.push_back(22);
+    PDGParticles.push_back(3122);
+    PDGParticles.push_back(22);
+  }
 
   std::vector<float> ZVtxBins;
   ZVtxBins.push_back(-10);
@@ -385,7 +387,8 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   std::vector<int> NBins;
   std::vector<float> kMin;
   std::vector<float> kMax;
-  for (int i = 0; i < 78; ++i) {
+  const int nPairs = (suffix == "0") ? 78 : 36;
+  for (int i = 0; i < nPairs; ++i) {
     if (suffix == "0") {
       NBins.push_back(750);
       kMin.push_back(0.);

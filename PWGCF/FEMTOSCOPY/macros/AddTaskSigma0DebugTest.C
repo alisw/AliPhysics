@@ -242,10 +242,12 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(
   PDGParticles.push_back(3212);
   PDGParticles.push_back(3212);
   PDGParticles.push_back(3212);
-  PDGParticles.push_back(3122);
-  PDGParticles.push_back(22);
-  PDGParticles.push_back(3122);
-  PDGParticles.push_back(22);
+  if (suffix == "0") {
+    PDGParticles.push_back(3122);
+    PDGParticles.push_back(22);
+    PDGParticles.push_back(3122);
+    PDGParticles.push_back(22);
+  }
 
   std::vector<float> ZVtxBins;
   ZVtxBins.push_back(-10);
@@ -263,10 +265,17 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(
   std::vector<int> NBins;
   std::vector<float> kMin;
   std::vector<float> kMax;
-  for (int i = 0; i < 78; ++i) {
-    NBins.push_back(500);
-    kMin.push_back(0.);
-    kMax.push_back(2.);
+  const int nPairs = (suffix == "0") ? 78 : 36;
+  for (int i = 0; i < nPairs; ++i) {
+    if (suffix == "0") {
+      NBins.push_back(750);
+      kMin.push_back(0.);
+      kMax.push_back(3.);
+    } else {
+      NBins.push_back(250);
+      kMin.push_back(0.);
+      kMax.push_back(1.);
+    }
   }
 
   AliFemtoDreamCollConfig *config =
