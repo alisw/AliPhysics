@@ -95,6 +95,13 @@ TTree* AliAnalysisTaskAO2Dconverter::CreateTree(TreeIndex t)
   return fTree[t];
 }
 
+void AliAnalysisTaskAO2Dconverter::PostTree(TreeIndex t)
+{
+  if (!fTreeStatus[t])
+    return;
+  PostData(t + 1, fTree[t]);
+}
+
 void AliAnalysisTaskAO2Dconverter::FillTree(TreeIndex t)
 {
   if (!fTreeStatus[t])
@@ -104,6 +111,14 @@ void AliAnalysisTaskAO2Dconverter::FillTree(TreeIndex t)
 
 void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
 {
+  switch (fTaskMode) { // Setting active/inactive containers based on the TaskMode
+  case kMC:
+    DisableTree(kKinematics);
+    break;
+  default:
+    break;
+  }
+
   // create output objects
   OpenFile(1); // Necessary for large outputs
 
@@ -472,7 +487,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   }
   //Posting data
   for (Int_t i = 0; i < kTrees; i++)
-    PostData(1 + i, fTree[i]);
+    PostTree((TreeIndex)i);
 }
 
 void AliAnalysisTaskAO2Dconverter::Terminate(Option_t *)

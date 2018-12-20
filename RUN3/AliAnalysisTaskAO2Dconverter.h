@@ -64,7 +64,7 @@ public:
   static const TClass* Generator[kGenerators]; // Generators
 
   TTree* CreateTree(TreeIndex t);
-  void PostTree(TreeIndex t) { AliAnalysisTask::PostData(t + 1, fTree[t]); };
+  void PostTree(TreeIndex t);
   void EnableTree(TreeIndex t) { fTreeStatus[t] = kTRUE; };
   void DisableTree(TreeIndex t) { fTreeStatus[t] = kFALSE; };
   static const TString TreeName[kTrees];  //! Names of the TTree containers
