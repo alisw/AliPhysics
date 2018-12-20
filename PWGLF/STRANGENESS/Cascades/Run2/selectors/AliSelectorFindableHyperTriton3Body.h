@@ -11,6 +11,7 @@
 
 // Headers needed by this particular selector
 #include "AliESDtrack.h"
+#include "AliVertexerTracks.h"
 
 class TH1D;
 
@@ -32,21 +33,27 @@ public :
    };
    TTreeReaderValue<ULong64_t> fTreeHyp3BodyVarEventId = {fReader, "fTreeHyp3BodyVarEventId"};
    TTreeReaderValue<Int_t> fTreeHyp3BodyVarMotherId = {fReader, "fTreeHyp3BodyVarMotherId"};
-   TTreeReaderValue<Float_t> fTreeHyp3BodyVarTruePx = {fReader, "fTreeHyp3BodyVarTruePx"};
-   TTreeReaderValue<Float_t> fTreeHyp3BodyVarTruePy = {fReader, "fTreeHyp3BodyVarTruePy"};
-   TTreeReaderValue<Float_t> fTreeHyp3BodyVarTruePz = {fReader, "fTreeHyp3BodyVarTruePz"};
-   TTreeReaderValue<Float_t> fTreeHyp3BodyVarDecayVx = {fReader, "fTreeHyp3BodyVarDecayVx"};
-   TTreeReaderValue<Float_t> fTreeHyp3BodyVarDecayVy = {fReader, "fTreeHyp3BodyVarDecayVy"};
-   TTreeReaderValue<Float_t> fTreeHyp3BodyVarDecayVz = {fReader, "fTreeHyp3BodyVarDecayVz"};
-   TTreeReaderValue<Float_t> fTreeHyp3BodyVarDecayT = {fReader, "fTreeHyp3BodyVarDecayT"};
-   TTreeReaderValue<Float_t> fTreeHyp3BodyVarPVx = {fReader, "fTreeHyp3BodyVarPVx"};
-   TTreeReaderValue<Float_t> fTreeHyp3BodyVarPVy = {fReader, "fTreeHyp3BodyVarPVy"};
-   TTreeReaderValue<Float_t> fTreeHyp3BodyVarPVz = {fReader, "fTreeHyp3BodyVarPVz"};
-   TTreeReaderValue<Float_t> fTreeHyp3BodyVarPVt = {fReader, "fTreeHyp3BodyVarPVt"};
+   TTreeReaderValue<Float_t> fTreeHyp3BodyVarTrueP[3] = {
+      {fReader, "fTreeHyp3BodyVarTruePx"},
+      {fReader, "fTreeHyp3BodyVarTruePy"},
+      {fReader, "fTreeHyp3BodyVarTruePz"}
+   };
+   TTreeReaderValue<Float_t> fTreeHyp3BodyVarDecayVtx[4] = {
+      {fReader, "fTreeHyp3BodyVarDecayVx"},
+      {fReader, "fTreeHyp3BodyVarDecayVy"},
+      {fReader, "fTreeHyp3BodyVarDecayVz"},
+      {fReader, "fTreeHyp3BodyVarDecayT"}
+   };
+   TTreeReaderValue<Float_t> fTreeHyp3BodyVarPVtx[4] = {
+      {fReader, "fTreeHyp3BodyVarPVx"},
+      {fReader, "fTreeHyp3BodyVarPVy"},
+      {fReader, "fTreeHyp3BodyVarPVz"},
+      {fReader, "fTreeHyp3BodyVarPVt"}
+   };
    TTreeReaderValue<Float_t> fTreeHyp3BodyVarMagneticField = {fReader, "fTreeHyp3BodyVarMagneticField"};
 
 
-   AliSelectorFindableHyperTriton3Body(TTree * /*tree*/ =0) : fReader{} { }
+   AliSelectorFindableHyperTriton3Body(TTree * /*tree*/ =0) : fReader{}, fVertexer{} { }
    virtual ~AliSelectorFindableHyperTriton3Body() { }
    AliSelectorFindableHyperTriton3Body(const AliSelectorFindableHyperTriton3Body&) = delete;
    AliSelectorFindableHyperTriton3Body& operator=(const AliSelectorFindableHyperTriton3Body& other) = delete;
@@ -64,11 +71,13 @@ public :
    virtual void    SlaveTerminate();
    virtual void    Terminate();
 
-
+   AliVertexerTracks fVertexer;
    ULong_t fCurrentEventId = 0ull;
    int fLastMother = -1;
-   TH1D* fHistInvMass = nullptr;
-   TH1D* fHistClones = nullptr;
+   TH1D* fHistInvMass[2] = {nullptr};
+   TH1D* fHistPt[2] = {nullptr};
+   TH1D* fHistVertexChi2[2] = {nullptr};
+   TH1D* fHistResDecayVtx[3][2] = {{nullptr}};
    ClassDef(AliSelectorFindableHyperTriton3Body,0);
 
 };
