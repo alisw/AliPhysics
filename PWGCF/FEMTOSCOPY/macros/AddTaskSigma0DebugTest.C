@@ -221,6 +221,17 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(
     antiSigmaCuts->SetLightweight(true);
   }
 
+  if (trigger == "kINT7") {
+    sigmaCuts->SetMultiplicityMode(AliVEvent::kINT7);
+    antiSigmaCuts->SetMultiplicityMode(AliVEvent::kINT7);
+  } else if (trigger == "kHighMultV0") {
+    sigmaCuts->SetMultiplicityMode(AliVEvent::kHighMultV0);
+    antiSigmaCuts->SetMultiplicityMode(AliVEvent::kHighMultV0);
+  } else if (trigger == "AliVEvent::kMB") {
+    sigmaCuts->SetMultiplicityMode(AliVEvent::kINT7);
+    antiSigmaCuts->SetMultiplicityMode(AliVEvent::kINT7);
+  }
+
   // Femto Collection
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212);
@@ -344,11 +355,19 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(
     task->SetTrigger(AliVEvent::kINT7);
     task->SelectCollisionCandidates(AliVEvent::kINT7);
   } else if (trigger == "kHighMultV0") {
-    task->SetTrigger(AliVEvent::kHighMultV0);
-    task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+    if (isMC) {
+      task->SetTrigger(AliVEvent::kINT7);
+      task->SelectCollisionCandidates(AliVEvent::kINT7);
+      task->SetMultiplicityMode(AliVEvent::kHighMultV0);
+    } else {
+      task->SetTrigger(AliVEvent::kHighMultV0);
+      task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+      task->SetMultiplicityMode(AliVEvent::kHighMultV0);
+    }
   } else if (trigger == "AliVEvent::kMB") {
     task->SetTrigger(AliVEvent::kMB);
     task->SelectCollisionCandidates(AliVEvent::kMB);
+    task->SetMultiplicityMode(AliVEvent::kINT7);
   }
   task->SetV0ReaderName(V0ReaderName.Data());
   task->SetIsHeavyIon(isHeavyIon);

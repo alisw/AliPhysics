@@ -34,6 +34,7 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fPhotonLegPileUpCut(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
+      fMultMode(AliVEvent::kINT7),
       fGammaArray(nullptr),
       fOutputContainer(nullptr),
       fQA(nullptr),
@@ -80,6 +81,7 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
       fPhotonLegPileUpCut(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
+      fMultMode(AliVEvent::kINT7),
       fGammaArray(nullptr),
       fOutputContainer(nullptr),
       fQA(nullptr),
@@ -381,7 +383,7 @@ bool AliAnalysisTaskSigma0Femto::AcceptEventRun2(AliVEvent *event) {
   if (!fIsLightweight) fHistCentralityProfileCoarseAfter->Fill(lPercentile);
 
   fHistMultiplicity->Fill(
-      AliSigma0PhotonMotherCuts::GetMultiplicityBin(lPercentile));
+      AliSigma0PhotonMotherCuts::GetMultiplicityBin(lPercentile, fMultMode));
 
   fHistCutQA->Fill(4);
   return true;
@@ -643,10 +645,16 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     fQA->Add(fHistTriggerAfter);
   }
 
-  std::vector<float> multBinsLow = {{0, 0.01, 0.05, 0.1, 5., 15., 30., 50.}};
-  std::vector<float> multBinsUp = {{0.01, 0.05, 0.1, 5., 15., 30., 50., 100.}};
+  std::vector<float> multBinsLow, multBinsUp;
+  if (fMultMode == AliVEvent::kINT7) {
+    multBinsLow = {{0, 5., 15., 30., 50.}};
+    multBinsUp = {{5., 15., 30., 50., 100.}};
+  } else if (fMultMode == AliVEvent::kHighMultV0) {
+    multBinsLow = {{0, 0.01, 0.05, 0.1, 1}};
+    multBinsUp = {{0.01, 0.05, 0.1, 1, 100.}};
+  }
   fHistMultiplicity =
-      new TH1I("fHistMultiplicity", "; Multiplicity bin; Entries", 8, 0, 8);
+      new TH1I("fHistMultiplicity", "; Multiplicity bin; Entries", 5, 0, 5);
   fHistMultiplicity->GetXaxis()->LabelsOption("u");
   for (int i = 0; i < static_cast<int>(multBinsLow.size()); i++) {
     fHistMultiplicity->GetXaxis()->SetBinLabel(
