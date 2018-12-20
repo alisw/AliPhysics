@@ -21,7 +21,7 @@ class LMEECutLib {
 		kPIDcut5,
 		kPIDcut6,
 		kPIDcut7,
-		kPIDcut1,
+		kPIDcut8,
 		kPIDcut9,
 		kPIDcut10,
 		kPIDcut11,
@@ -673,9 +673,9 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
 			AliDielectronTMVACuts* pidCuts = new AliDielectronTMVACuts("PIDCutsTMVA","PIDCutsTMVA");
 			pidCuts->AddTMVAInput("pt", AliDielectronVarManager::kPt);
 			pidCuts->AddTMVAInput("EsigTPC", AliDielectronVarManager::kTPCnSigmaEle);
-			pidCuts->AddTMVAInput("EsigITS", AliDielectronVarManager::kITSnSigmaEle);
-			pidCuts->AddTMVAInput("EsigTOF", AliDielectronVarManager::kTOFnSigmaEle);
-			pidCuts->AddTMVAInput("PsigTPC", AliDielectronVarManager::kTPCnSigmaPio);
+			pidCuts->AddTMVAInput("EsigITScorr", AliDielectronVarManager::kITSnSigmaEle);
+			pidCuts->AddTMVAInput("EsigTOFcorr", AliDielectronVarManager::kTOFnSigmaEle);
+			//pidCuts->AddTMVAInput("PsigTPC", AliDielectronVarManager::kTPCnSigmaPio);
 			pidCuts->AddTMVASpectator("pdg", AliDielectronVarManager::kPdgCode);
 			pidCuts->SetTMVAWeights("BDT", weightFile.Data());
 

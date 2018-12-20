@@ -25,6 +25,7 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fPhotonCuts(nullptr),
       fV0Reader(nullptr),
       fV0ReaderName("NoInit"),
+      fMultMode(AliVEvent::kINT7),
       fMixingDepth(10),
       fPDG(0),
       fPDGDaughter1(0),
@@ -109,6 +110,7 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fPhotonCuts(nullptr),
       fV0Reader(nullptr),
       fV0ReaderName("NoInit"),
+      fMultMode(AliVEvent::kINT7),
       fMixingDepth(10),
       fPDG(0),
       fPDGDaughter1(0),
@@ -270,7 +272,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
           continue;
       }
       const float rap = sigma.GetRapidity();
-      const int multBin = GetMultiplicityBin(lPercentile);
+      const int multBin = GetMultiplicityBin(lPercentile, fMultMode);
 
       int label = -10;
       int pdgLambdaMother = 0;
@@ -399,7 +401,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
         }
         const float invMass = sigma.GetMass();
         const float rap = sigma.GetRapidity();
-        const int multBin = GetMultiplicityBin(lPercentile);
+        const int multBin = GetMultiplicityBin(lPercentile, fMultMode);
         if (std::abs(rap) > fRapidityMax || multBin < 0) continue;
         fHistMixedInvMassPt->Fill(pT, invMass);
       }
@@ -425,7 +427,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
         }
         const float invMass = sigma.GetMass();
         const float rap = sigma.GetRapidity();
-        const int multBin = GetMultiplicityBin(lPercentile);
+        const int multBin = GetMultiplicityBin(lPercentile, fMultMode);
         if (std::abs(rap) > fRapidityMax || multBin < 0) continue;
         fHistMixedInvMassPt->Fill(pT, invMass);
       }
@@ -446,7 +448,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEventBinned(
     lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
   }
 
-  const int multBin = GetMultiplicityBin(lPercentile);
+  const int multBin = GetMultiplicityBin(lPercentile, fMultMode);
   if (multBin < 0) return;
 
   // photons from this event with mixed lambdas
@@ -537,7 +539,7 @@ void AliSigma0PhotonMotherCuts::FillEventBuffer(
   if (MultSelection) {
     lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
   }
-  const int multBin = GetMultiplicityBin(lPercentile);
+  const int multBin = GetMultiplicityBin(lPercentile, fMultMode);
   if (multBin < 0) return;
 
   // Photon
@@ -572,7 +574,7 @@ void AliSigma0PhotonMotherCuts::ProcessMC() const {
   if (MultSelection) {
     lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
   }
-  const int multBin = GetMultiplicityBin(lPercentile);
+  const int multBin = GetMultiplicityBin(lPercentile, fMultMode);
 
   // Loop over the MC tracks
   for (int iPart = 1; iPart < (fMCEvent->GetNumberOfTracks()); iPart++) {
@@ -686,25 +688,38 @@ bool AliSigma0PhotonMotherCuts::CheckDaughtersInAcceptance(
 }
 
 //____________________________________________________________________________________________________
-int AliSigma0PhotonMotherCuts::GetMultiplicityBin(float percentile) {
-  if (0 < percentile && percentile <= 0.01)
-    return 0;
-  else if (0.01 < percentile && percentile <= 0.05)
-    return 1;
-  else if (0.05 < percentile && percentile <= 0.1)
-    return 2;
-  else if (0.1 < percentile && percentile <= 5.)
-    return 3;
-  else if (5. < percentile && percentile <= 15.)
-    return 4;
-  else if (15. < percentile && percentile <= 30.)
-    return 5;
-  else if (30. < percentile && percentile <= 50.)
-    return 6;
-  else if (50. < percentile && percentile <= 100.)
-    return 7;
-  else
+int AliSigma0PhotonMotherCuts::GetMultiplicityBin(float percentile,
+                                                  UInt_t multMode) {
+  if (multMode == AliVEvent::kINT7) {
+    if (0 < percentile && percentile <= 5)
+      return 0;
+    else if (5. < percentile && percentile <= 15.)
+      return 1;
+    else if (15. < percentile && percentile <= 30.)
+      return 2;
+    else if (30. < percentile && percentile <= 50.)
+      return 3;
+    else if (50. < percentile && percentile <= 100.)
+      return 4;
+    else
+      return -1;
+  } else if (multMode == AliVEvent::kHighMultV0) {
+    if (0 < percentile && percentile <= 0.01)
+      return 0;
+    else if (0.01 < percentile && percentile <= 0.05)
+      return 1;
+    else if (0.05 < percentile && percentile <= 0.1)
+      return 2;
+    else if (0.1 < percentile && percentile <= 1.)
+      return 3;
+    else if (1. < percentile && percentile <= 100.)
+      return 4;
+    else
+      return -1;
+  } else {
+    std::cerr << "Multiplicity mode not defined \n";
     return -1;
+  }
 }
 
 //____________________________________________________________________________________________________
@@ -778,16 +793,21 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
                                  100, 0, 10, 300, 1., 1.3);
   fHistograms->Add(fHistMixedInvMassPt);
 
+  std::vector<float> multBinsLow, multBinsUp;
+  if (fMultMode == AliVEvent::kINT7) {
+    multBinsLow = {{0, 5., 15., 30., 50.}};
+    multBinsUp = {{5., 15., 30., 50., 100.}};
+  } else if (fMultMode == AliVEvent::kHighMultV0) {
+    multBinsLow = {{0, 0.01, 0.05, 0.1, 1}};
+    multBinsUp = {{0.01, 0.05, 0.1, 1, 100.}};
+  }
 
-  std::vector<float> multBinsLow = {{0, 0.01, 0.05, 0.1, 5., 15., 30., 50.}};
-  std::vector<float> multBinsUp = {{0.01, 0.05, 0.1, 5., 15., 30., 50., 100.}};
-
-  for (int i = 0; i < static_cast<int>(multBinsUp.size()); i++) {
+  for (int i = 0; i < static_cast<int>(multBinsUp.size()); ++i) {
     fHistPtMult[i] =
         new TH2F(Form("fHistPtMult_%i", i),
                  Form("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); "
                       "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
-					  multBinsLow[i], multBinsUp[i]),
+                      multBinsLow[i], multBinsUp[i]),
                  100, 0, 10, 300, 1.15, 1.3);
     fHistograms->Add(fHistPtMult[i]);
 
@@ -795,7 +815,7 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
         new TH2F(Form("fHistMixedInvMassBinnedMultPt_%i", i),
                  Form("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); "
                       "M_{#Lambda#gamma} (GeV/#it{c}^{2})",
-					  multBinsLow[i], multBinsUp[i]),
+                      multBinsLow[i], multBinsUp[i]),
                  100, 0, 10, 300, 1.15, 1.3);
     fHistograms->Add(fHistMixedInvMassBinnedMultPt[i]);
   }
@@ -905,7 +925,7 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
                               "; #it{p}_{T} (GeV/#it{c}); Entries", 100, 0, 10);
     fHistogramsMC->Add(fHistMCTruthPt);
 
-    for (int i = 0; i < static_cast<int>(multBinsUp.size()); i++) {
+    for (int i = 0; i < static_cast<int>(multBinsUp.size()); ++i) {
       fHistMCTruthPtMult[i] =
           new TH1F(Form("fHistMCTruthPtMult%i", i),
                    Form("V0M: %.2f - %.2f %%; #it{p}_{T} (GeV/#it{c}); Entries",

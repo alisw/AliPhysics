@@ -337,6 +337,15 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   if (suffix != "0" && suffix != "999") {
     antiSigmaCuts->SetLightweight(true);
   }
+
+  if (trigger == "kINT7") {
+    sigmaCuts->SetMultiplicityMode(AliVEvent::kINT7);
+    antiSigmaCuts->SetMultiplicityMode(AliVEvent::kINT7);
+  } else if (trigger == "kHighMultV0") {
+    sigmaCuts->SetMultiplicityMode(AliVEvent::kHighMultV0);
+    antiSigmaCuts->SetMultiplicityMode(AliVEvent::kHighMultV0);
+  }
+
   if (suffix == "60") {
     sigmaCuts->SetPhotonMaxPt(1);
     antiSigmaCuts->SetPhotonMaxPt(1);
@@ -355,10 +364,12 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   PDGParticles.push_back(3212);
   PDGParticles.push_back(3212);
   PDGParticles.push_back(3212);
-  PDGParticles.push_back(3122);
-  PDGParticles.push_back(22);
-  PDGParticles.push_back(3122);
-  PDGParticles.push_back(22);
+  if (suffix == "0") {
+    PDGParticles.push_back(3122);
+    PDGParticles.push_back(22);
+    PDGParticles.push_back(3122);
+    PDGParticles.push_back(22);
+  }
 
   std::vector<float> ZVtxBins;
   ZVtxBins.push_back(-10);
@@ -376,7 +387,8 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
   std::vector<int> NBins;
   std::vector<float> kMin;
   std::vector<float> kMax;
-  for (int i = 0; i < 78; ++i) {
+  const int nPairs = (suffix == "0") ? 78 : 36;
+  for (int i = 0; i < nPairs; ++i) {
     if (suffix == "0") {
       NBins.push_back(750);
       kMin.push_back(0.);
@@ -472,10 +484,18 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false,
       new AliAnalysisTaskSigma0Femto("AnalysisTaskSigma0Femto");
   if (trigger == "kINT7") {
     task->SetTrigger(AliVEvent::kINT7);
+    task->SetMultiplicityMode(AliVEvent::kINT7);
     task->SelectCollisionCandidates(AliVEvent::kINT7);
   } else if (trigger == "kHighMultV0") {
-    task->SetTrigger(AliVEvent::kHighMultV0);
-    task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+    if (isMC) {
+      task->SetTrigger(AliVEvent::kINT7);
+      task->SelectCollisionCandidates(AliVEvent::kINT7);
+      task->SetMultiplicityMode(AliVEvent::kHighMultV0);
+    } else {
+      task->SetTrigger(AliVEvent::kHighMultV0);
+      task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+      task->SetMultiplicityMode(AliVEvent::kHighMultV0);
+    }
   }
   task->SetV0ReaderName(V0ReaderName.Data());
   task->SetIsHeavyIon(isHeavyIon);

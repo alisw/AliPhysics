@@ -1348,6 +1348,8 @@ void ana ( anaModes mode = mGRID )
     //  cl->GetRecoUtils()->SwitchOnAODHybridTracksMatch();
     //  cl->GetRecoUtils()->SwitchOnAODTPCOnlyTracksMatch();
     //  cl->GetRecoUtils()->SetAODTrackFilterMask(128);
+    cl->GetRecoUtils()->SetRequireTrackDCA(kFALSE); // careful with this on old MC
+
     //  
     if ( kMC )
     {

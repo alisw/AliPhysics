@@ -520,7 +520,7 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
         const Char_t *Pid[7]       = {"Ch","Pion","Kaon","Proton","Electron","Muon","Oher"};
         const Char_t *Q[3]         = {"", "Neg", "Pos"};
 
-	const Int_t nPtBins = 59;
+	const Int_t nPtBins = 63;
 	Double_t ptBins[nPtBins+1] = {
 
 	0.01, 0.10, 0.12, 0.14, 0.16, 0.18, 0.20, 0.25, 0.30, 0.35,
@@ -528,7 +528,8 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
    	0.90, 0.95, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70,
    	1.80, 1.90, 2.00, 2.20, 2.40, 2.60, 2.80, 3.00, 3.20, 3.40,
    	3.60, 3.80, 4.00, 4.50, 5.00, 5.50, 6.00, 6.50, 7.00, 8.00,
-   	9.00, 10.00, 11.00, 12.00, 13.00, 14.00, 15.00, 16.00, 18.00, 20.00
+   	9.00, 10.00, 11.00, 12.00, 13.00, 14.00, 15.00, 16.00, 18.00, 
+	20.00,22.00,24.00,26.00,30.00
 
 	};
 

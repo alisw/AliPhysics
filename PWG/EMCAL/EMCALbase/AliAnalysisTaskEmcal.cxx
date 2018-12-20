@@ -41,6 +41,7 @@
 #include "AliESDEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliESDInputHandler.h"
+#include "AliEventCuts.h"
 #include "AliEventplane.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenHerwigEventHeader.h"
@@ -79,6 +80,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMaxCent(-999),
   fMinVz(-999),
   fMaxVz(999),
+  fMinVertexContrib(1),
   fTrackPtCut(0),
   fMinNTrack(0),
   fZvertexDiff(0.5),
@@ -117,10 +119,12 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fUseXsecFromHeader(kFALSE),
   fMCRejectFilter(kFALSE),
   fCountDownscaleCorrectedEvents(kFALSE),
+  fUseInternalEventSelection(kFALSE),
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
   fRunNumber(-1),
+  fAliEventCuts(nullptr),
   fAliAnalysisUtils(nullptr),
   fIsEsd(kFALSE),
   fGeom(nullptr),
@@ -193,6 +197,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMaxCent(-999),
   fMinVz(-999),
   fMaxVz(999),
+  fMinVertexContrib(1),
   fTrackPtCut(0),
   fMinNTrack(0),
   fZvertexDiff(0.5),
@@ -231,10 +236,12 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fUseXsecFromHeader(kFALSE),
   fMCRejectFilter(kFALSE),
   fCountDownscaleCorrectedEvents(kFALSE),
+  fUseInternalEventSelection(kFALSE),
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
   fRunNumber(-1),
+  fAliEventCuts(nullptr),
   fAliAnalysisUtils(nullptr),
   fIsEsd(kFALSE),
   fGeom(nullptr),
@@ -360,6 +367,12 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     AliError("Analysis manager not found!");
   }  
 
+  if(!fUseInternalEventSelection) {
+    fAliEventCuts = new AliEventCuts(true);
+    // Do not perform trigger selection in the AliEvent cuts but let the task do this before
+    fAliEventCuts->OverrideAutomaticTriggerSelection(AliVEvent::kAny, true);
+  }
+
   if (!fCreateHisto)
     return;
 
@@ -367,6 +380,8 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   fOutput = new AliEmcalList();
   fOutput->SetUseScaling(fUsePtHardBinScaling);
   fOutput->SetOwner();
+  
+  if(fAliEventCuts) fOutput->Add(fAliEventCuts);
 
   if (fForceBeamType == kpp)
     fNcentBins = 1;
@@ -478,29 +493,31 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     fOutput->Add(fHistEventPlane);
   }
 
-  fHistEventRejection = new TH1F("fHistEventRejection","Reasons to reject event",20,0,20);
+  if(fUseInternalEventSelection){
+    fHistEventRejection = new TH1F("fHistEventRejection","Reasons to reject event",20,0,20);
 #if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
-  fHistEventRejection->SetBit(TH1::kCanRebin);
+    fHistEventRejection->SetBit(TH1::kCanRebin);
 #else
-  fHistEventRejection->SetCanExtend(TH1::kAllAxes);
+    fHistEventRejection->SetCanExtend(TH1::kAllAxes);
 #endif
-  fHistEventRejection->GetXaxis()->SetBinLabel(1,"PhysSel");
-  fHistEventRejection->GetXaxis()->SetBinLabel(2,"trigger");
-  fHistEventRejection->GetXaxis()->SetBinLabel(3,"trigTypeSel");
-  fHistEventRejection->GetXaxis()->SetBinLabel(4,"Cent");
-  fHistEventRejection->GetXaxis()->SetBinLabel(5,"vertex contr.");
-  fHistEventRejection->GetXaxis()->SetBinLabel(6,"Vz");
-  fHistEventRejection->GetXaxis()->SetBinLabel(7,"VzSPD");
-  fHistEventRejection->GetXaxis()->SetBinLabel(8,"trackInEmcal");
-  fHistEventRejection->GetXaxis()->SetBinLabel(9,"minNTrack");
-  fHistEventRejection->GetXaxis()->SetBinLabel(10,"VtxSel2013pA");
-  fHistEventRejection->GetXaxis()->SetBinLabel(11,"PileUp");
-  fHistEventRejection->GetXaxis()->SetBinLabel(12,"EvtPlane");
-  fHistEventRejection->GetXaxis()->SetBinLabel(13,"SelPtHardBin");
-  fHistEventRejection->GetXaxis()->SetBinLabel(14,"Bkg evt");
-  fHistEventRejection->GetXaxis()->SetBinLabel(15,"RecycleEmbeddedEvent");
-  fHistEventRejection->GetYaxis()->SetTitle("counts");
-  fOutput->Add(fHistEventRejection);
+    fHistEventRejection->GetXaxis()->SetBinLabel(1,"PhysSel");
+    fHistEventRejection->GetXaxis()->SetBinLabel(2,"trigger");
+    fHistEventRejection->GetXaxis()->SetBinLabel(3,"trigTypeSel");
+    fHistEventRejection->GetXaxis()->SetBinLabel(4,"Cent");
+    fHistEventRejection->GetXaxis()->SetBinLabel(5,"vertex contr.");
+    fHistEventRejection->GetXaxis()->SetBinLabel(6,"Vz");
+    fHistEventRejection->GetXaxis()->SetBinLabel(7,"VzSPD");
+    fHistEventRejection->GetXaxis()->SetBinLabel(8,"trackInEmcal");
+    fHistEventRejection->GetXaxis()->SetBinLabel(9,"minNTrack");
+    fHistEventRejection->GetXaxis()->SetBinLabel(10,"VtxSel2013pA");
+    fHistEventRejection->GetXaxis()->SetBinLabel(11,"PileUp");
+    fHistEventRejection->GetXaxis()->SetBinLabel(12,"EvtPlane");
+    fHistEventRejection->GetXaxis()->SetBinLabel(13,"SelPtHardBin");
+    fHistEventRejection->GetXaxis()->SetBinLabel(14,"Bkg evt");
+    fHistEventRejection->GetXaxis()->SetBinLabel(15,"RecycleEmbeddedEvent");
+    fHistEventRejection->GetYaxis()->SetTitle("counts");
+    fOutput->Add(fHistEventRejection);
+  }
 
   fHistTriggerClasses = new TH1F("fHistTriggerClasses","fHistTriggerClasses",3,0,3);
 #if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
@@ -1085,7 +1102,14 @@ Bool_t AliAnalysisTaskEmcal::HasTriggerType(TriggerType trigger)
   return TESTBIT(fTriggers, trigger);
 }
 
-Bool_t AliAnalysisTaskEmcal::IsEventSelected()
+Bool_t AliAnalysisTaskEmcal::IsEventSelected(){
+  if(fUseInternalEventSelection) return IsEventSelectedInternal();
+  if(!IsTriggerSelected()) return false;
+  if(!CheckMCOutliers()) return false;
+  return fAliEventCuts->AcceptEvent(fInputEvent);
+}
+
+Bool_t AliAnalysisTaskEmcal::IsEventSelectedInternal()
 {
   AliDebugStream(1) << "Using default event selection" << std::endl;
   if (fOffTrigger != AliVEvent::kAny) {
@@ -1127,7 +1151,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
   if (fUseAliAnaUtils) {
     if (!fAliAnalysisUtils)
       fAliAnalysisUtils = new AliAnalysisUtils();
-    fAliAnalysisUtils->SetMinVtxContr(2);
+    fAliAnalysisUtils->SetMinVtxContr(fMinVertexContrib);
     fAliAnalysisUtils->SetMaxVtxZ(999);
     if(fMinVz<-998.) fMinVz = -10.;
     if(fMaxVz>998.)  fMaxVz = 10.;

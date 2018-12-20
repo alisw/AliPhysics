@@ -168,13 +168,13 @@ void AddMCSignals(AliAnalysisTaskReducedTreeMaker* task) {
    AliSignalMC* electronFromJpsiNonPrompt=new AliSignalMC("electronFromJpsiNonPrompt","",1,3);
    electronFromJpsiNonPrompt->SetPDGcode(0, 0, 11, kTRUE);
    electronFromJpsiNonPrompt->SetPDGcode(0, 1, 443);
-   electronFromJpsiNonPrompt->SetPDGcode(0, 2, 500, kTRUE);      //
+   electronFromJpsiNonPrompt->SetPDGcode(0, 2, 503, kTRUE);      //
    task->AddMCsignal(electronFromJpsiNonPrompt, AliAnalysisTaskReducedTreeMaker::kFullTrack);
    
    AliSignalMC* electronFromJpsiPrompt=new AliSignalMC("electronFromJpsiPrompt","", 1,3);
    electronFromJpsiPrompt->SetPDGcode(0, 0, 11, kTRUE);
    electronFromJpsiPrompt->SetPDGcode(0, 1, 443);
-   electronFromJpsiPrompt->SetPDGcode(0, 2, 500, kTRUE, kTRUE);    //
+   electronFromJpsiPrompt->SetPDGcode(0, 2, 503, kTRUE, kTRUE);    //
    task->AddMCsignal(electronFromJpsiPrompt, AliAnalysisTaskReducedTreeMaker::kFullTrack);
    
    AliSignalMC* electronFromJpsiRadiative=new AliSignalMC("electronFromJpsiRadiative","",1,2);

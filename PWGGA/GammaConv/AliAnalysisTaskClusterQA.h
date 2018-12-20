@@ -182,6 +182,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Int_t           fBuffer_Surrounding_NTracks;                //!<! array buffer
     Float_t*        fBuffer_Surrounding_Tracks_R;              //!<! array buffer
     Float_t*        fBuffer_Surrounding_Tracks_Pt;              //!<! array buffer
+    Float_t*        fBuffer_Surrounding_Tracks_P;              //!<! array buffer
     Float_t*        fBuffer_Surrounding_Tracks_RelativeEta;              //!<! array buffer
     Float_t*        fBuffer_Surrounding_Tracks_RelativePhi;              //!<! array buffer
     
@@ -201,7 +202,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     TH2F*           hEActiveCells100MeVVsCentrality;
     TH2F*           hEActiveCells150MeVVsCentrality;
     
-    ClassDef(AliAnalysisTaskClusterQA, 7);
+    ClassDef(AliAnalysisTaskClusterQA, 8);
 };
 
 const Int_t kMaxActiveCells = 18000;

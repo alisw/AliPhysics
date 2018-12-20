@@ -40,7 +40,6 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
     // base functions for selecting photon and meson candidates in reconstructed data
     void ProcessClusters();
     void ProcessJets();
-    void CalculatePi0Candidates();
     void CalculatePi0CandidatesIsolation();
 
     // MC functions
@@ -51,8 +50,7 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
     void ProcessTrueClusterCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate, AliVCluster* clus);
     void ProcessTrueMesonCandidates( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
     void ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
-    void ProcessMCParticlesIsolationAOD(AliVCluster *cluster, AliAODConversionPhoton *photoncandidate);
-
+    void ProcessTrueIsolatedClustersAOD(AliVCluster *cluster, AliAODConversionPhoton *photoncandidate);
 
     // switches for additional analysis streams or outputs
     void SetLightOutput(Bool_t flag){fDoLightOutput = flag;}
@@ -87,7 +85,6 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
     }
 
     // BG HandlerSettings
-    void CalculateBackground();
     void CalculateBackgroundIsolation();
     void CalculateBackgroundRP();
     void RotateParticle(AliAODConversionPhoton *gamma);
@@ -159,10 +156,8 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
 
     //histograms for mesons reconstructed quantities
     TH2F**                fHistoMotherInvMassPt;                                //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
-    TH2F**                fHistoMotherInvMassIsoPt;                             //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
     THnSparseF**          fSparseMotherInvMassPtZM;                             //! array of THnSparseF with signal + BG for same event photon pairs, inv Mass, pt
     TH2F**                fHistoMotherBackInvMassPt;                            //! array of histogram with BG for mixed event photon pairs, inv Mass, pt
-    TH2F**                fHistoMotherBackInvMassIsoPt;                         //! array of histogram with BG for mixed event photon pairs, inv Mass, pt Isolation Method
     THnSparseF**          fSparseMotherBackInvMassPtZM;                         //! array of THnSparseF with BG for same event photon pairs, inv Mass, pt
     TH2F**                fHistoMotherPi0PtY;                                   //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, Y
     TH2F**                fHistoMotherEtaPtY;                                   //! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, Y
@@ -179,7 +174,9 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
 
     // histograms for Isolation
     TH1F**                  fHistoClusterCandidates;            //! array of histograms with all cluster photons, passing the cuts, isolation cut inclusive
+    TH1F**                  fHistoClusterCandidatesBinning;     //! array of histograms with all cluster photons, passing the cuts, isolation cut inclusive, right binning
     TH1F**                  fHistoFailIsolationCut;             //! array of histograms with PhotonCandidates failing the isolation cut
+
     TH2F**                  fHistoIsoClusterPDGtoPt;            //! array of histograms with IsolatedClusterPDG
     TH2F**                  fHistoIsoClusterPDGtoPtMatSec;      //! array of histograms with IsolatedClusterPDG Material Secondaries
     TH2F**                  fHistoIsoMotherPDGtoPt;             //! array of histograms with IsolatedMotherPDG
@@ -191,6 +188,15 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
     vector<Int_t>           fVectorDoubleCountMCInitIsoPhotons;               //! vector containing labels of validated isolated Init photons for the isolation task
     TH1F**                  fHistoDoubleCountMCIsoInitPhotonCorrectPt;        //! array of histos with double counted Init isolated photons (MatSec)
     TH1F**                  fHistoDoubleCountMCIsoInitPhotonPt;               //! array of histos with double counted Init isolated photons (MatSec)
+
+    TH1F**                  fHistoTruePhotonCandidatesIso;                    //! array of histograms with true photon candidates, pdg=22 or conversion
+    TH1F**                  fHistoTruePhotonsfromPi0DirectIso;                //! array of histograms with photons (22) from Pi0s
+    TH1F**                  fHistoTrueFragPhotonsDirectIso;                   //! array of histograms with true fragmentation photons (no conversion)
+    TH1F**                  fHistoTruePromptPhotonsDirectIso;                 //! array of histograms with true prompt photons (no conversion)
+    TH1F**                  fHistoTruePhotonsfromPi0ConvIso;                  //! array of histograms with true conv. photons from Pi0s
+    TH1F**                  fHistoTrueFragPhotonsConvIso;                     //! array of histograms with true fragmentation photons, conversion
+    TH1F**                  fHistoTruePromptPhotonsConvIso;                   //! array of histograms with true prompt photons, conversion
+    TH1F**                  fHistoTrueOtherSourcesIso;                        //! array of histograms with other photon sources
 
     // histograms for rec photon clusters
     TH1F**                fHistoClusGammaPt;                                    //! array of histos with cluster, pt
@@ -235,6 +241,7 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
 
     // MC validated reconstructed quantities mesons
     TH2F**                fHistoTruePi0InvMassPt;                               //! array of histos with validated mothers, invMass, pt
+    TH2F**                fHistoTruePi0noConvInvMassPt;                               //! array of histos with validated mothers, invMass, pt
     TH2F**                fHistoTrueEtaInvMassPt;                               //! array of histos with validated mothers, invMass, pt
     TH2F**                fHistoTruePi0CaloPhotonInvMassPt;                     //! array of histos with validated mothers, photon leading, invMass, pt
     TH2F**                fHistoTrueEtaCaloPhotonInvMassPt;                     //! array of histos with validated mothers, photon leading, invMass, pt
@@ -508,7 +515,7 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloIso(const AliAnalysisTaskGammaCaloIso&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCaloIso &operator=(const AliAnalysisTaskGammaCaloIso&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloIso, 53);
+    ClassDef(AliAnalysisTaskGammaCaloIso, 54);
 };
 
 #endif

@@ -104,6 +104,7 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA() : AliAnalysisTaskSE(),
   fBuffer_Surrounding_NTracks(10),
   fBuffer_Surrounding_Tracks_R(0),
   fBuffer_Surrounding_Tracks_Pt(0),
+  fBuffer_Surrounding_Tracks_P(0),
   fBuffer_Surrounding_Tracks_RelativeEta(0),
   fBuffer_Surrounding_Tracks_RelativePhi(0),
   fBuffer_Cluster_MC_Label(-10),
@@ -132,6 +133,7 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA() : AliAnalysisTaskSE(),
   fBuffer_Surrounding_Cells_RelativePhi = new Float_t[kMaxActiveCells];
   fBuffer_Surrounding_Tracks_R          = new Float_t[kMaxNTracks];
   fBuffer_Surrounding_Tracks_Pt         = new Float_t[kMaxNTracks];
+  fBuffer_Surrounding_Tracks_P          = new Float_t[kMaxNTracks];
   fBuffer_Surrounding_Tracks_RelativeEta= new Float_t[kMaxNTracks];
   fBuffer_Surrounding_Tracks_RelativePhi= new Float_t[kMaxNTracks];
 }
@@ -200,6 +202,7 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalys
   fBuffer_Surrounding_NTracks(10),
   fBuffer_Surrounding_Tracks_R(0),
   fBuffer_Surrounding_Tracks_Pt(0),
+  fBuffer_Surrounding_Tracks_P(0),
   fBuffer_Surrounding_Tracks_RelativeEta(0),
   fBuffer_Surrounding_Tracks_RelativePhi(0),
   fBuffer_Cluster_MC_Label(-10),
@@ -228,6 +231,7 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalys
   fBuffer_Surrounding_Cells_RelativePhi = new Float_t[kMaxActiveCells];
   fBuffer_Surrounding_Tracks_R          = new Float_t[kMaxNTracks];
   fBuffer_Surrounding_Tracks_Pt         = new Float_t[kMaxNTracks];
+  fBuffer_Surrounding_Tracks_P          = new Float_t[kMaxNTracks];
   fBuffer_Surrounding_Tracks_RelativeEta= new Float_t[kMaxNTracks];
   fBuffer_Surrounding_Tracks_RelativePhi= new Float_t[kMaxNTracks];
   // Default constructor
@@ -347,6 +351,7 @@ void AliAnalysisTaskClusterQA::UserCreateOutputObjects()
     fClusterTree->Branch("Surrounding_NTracks",             &fBuffer_Surrounding_NTracks,             "Surrounding_NTracks/I");
     fClusterTree->Branch("Surrounding_Tracks_R",            fBuffer_Surrounding_Tracks_R,             "Surrounding_Tracks_R[Surrounding_NTracks]/F");
     fClusterTree->Branch("Surrounding_Tracks_Pt",           fBuffer_Surrounding_Tracks_Pt,            "Surrounding_Tracks_Pt[Surrounding_NTracks]/F");
+    fClusterTree->Branch("Surrounding_Tracks_P",            fBuffer_Surrounding_Tracks_P,             "Surrounding_Tracks_P[Surrounding_NTracks]/F");
     fClusterTree->Branch("Surrounding_Tracks_RelativeEta",  fBuffer_Surrounding_Tracks_RelativeEta,   "Surrounding_Tracks_RelativeEta[Surrounding_NTracks]/F");
     fClusterTree->Branch("Surrounding_Tracks_RelativePhi",  fBuffer_Surrounding_Tracks_RelativePhi,   "Surrounding_Tracks_RelativePhi[Surrounding_NTracks]/F");
   }
@@ -917,6 +922,7 @@ void AliAnalysisTaskClusterQA::ProcessTracksAndMatching(AliVCluster* clus, Long_
     if(dR2 < fConeRadius){
       fBuffer_Surrounding_Tracks_R[nTracksInR]=dR2;
       fBuffer_Surrounding_Tracks_Pt[nTracksInR]=inTrack->Pt();
+      fBuffer_Surrounding_Tracks_P[nTracksInR]=inTrack->P();
       fBuffer_Surrounding_Tracks_RelativeEta[nTracksInR]=dEta;
       fBuffer_Surrounding_Tracks_RelativePhi[nTracksInR]=dPhi;
       nTracksInR+=1;
@@ -926,6 +932,7 @@ void AliAnalysisTaskClusterQA::ProcessTracksAndMatching(AliVCluster* clus, Long_
   if(nTracksInR==0){
     fBuffer_Surrounding_Tracks_R[nTracksInR]=-1;
     fBuffer_Surrounding_Tracks_Pt[nTracksInR]=-1;
+    fBuffer_Surrounding_Tracks_P[nTracksInR]=-1;
     fBuffer_Surrounding_Tracks_RelativeEta[nTracksInR]=-1;
     fBuffer_Surrounding_Tracks_RelativePhi[nTracksInR]=-1;
   }
@@ -1362,6 +1369,7 @@ void AliAnalysisTaskClusterQA::ResetBuffer(){
   for(Int_t track = 0; track < kMaxNTracks; track++){
     fBuffer_Surrounding_Tracks_R[track]           = 0;
     fBuffer_Surrounding_Tracks_Pt[track]          = 0;
+    fBuffer_Surrounding_Tracks_P[track]          = 0;
     fBuffer_Surrounding_Tracks_RelativeEta[track] = 0;
     fBuffer_Surrounding_Tracks_RelativePhi[track] = 0;
   }

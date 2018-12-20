@@ -122,10 +122,12 @@ fHelperClass(0), fInitializedLocal(0),
 fHistEvtSelection(0x0),
 fhVertexZ(0x0),
 fhTrackPhiIncl(0x0), fhTrackEtaIncl(0x0), 
-fhJetPhiIncl(0x0), fhJetEtaIncl(0x0), 
+fhJetPhiIncl(0x0), fhJetEtaIncl(0x0),
+fhRhoIncl(0x0),
 fZVertexCut(10.0),
 fnHadronTTBins(0),
-fnJetChTTBins(0)
+fnJetChTTBins(0),
+fFillTTree(0)
 {
    //default constructor
 
@@ -146,6 +148,9 @@ fnJetChTTBins(0)
    for(Int_t i=0; i<fkTTbins; i++){
       fHadronTT[i] = 0;
       fJetChTT[i]  = 0;
+
+      fhMultTTHinMB[i] = 0x0;   
+      fhMultTTJinMB[i] = 0x0;  
    }
 
    for(Int_t i=0; i<fkTTbins;i++){
@@ -154,6 +159,27 @@ fnJetChTTBins(0)
       fJetChTTLowPt[i]=-1;
       fJetChTTHighPt[i]=-1;
    }
+ 
+   for(Int_t iv=0; iv<fkVtx;iv++){
+      fhVertex[iv]=0x0;
+      for(Int_t i=0; i<fkTTbins;i++){
+         fhVertexTTH[iv][i]=0x0;
+      }
+   }
+
+   for(Int_t ic=0; ic<fkCE;ic++){
+      fhCentralityMB[ic] = 0x0;
+      fhSignalMB[ic] = 0x0; 
+
+      for(Int_t i=0; i<fkTTbins;i++){
+         fhCentralityTTH[ic][i] = 0x0;
+         fhCentralityTTJ[ic][i] = 0x0;
+
+         fhSignalTTH[ic][i] = 0x0;
+         fhSignalTTJ[ic][i] = 0x0;
+      }
+   }
+
  
    sprintf(fTrigClass,"%s","");
 }
@@ -201,9 +227,11 @@ fHistEvtSelection(0x0),
 fhVertexZ(0x0),
 fhTrackPhiIncl(0x0), fhTrackEtaIncl(0x0), 
 fhJetPhiIncl(0x0), fhJetEtaIncl(0x0), 
+fhRhoIncl(0x0),
 fZVertexCut(10.0),
 fnHadronTTBins(0),
-fnJetChTTBins(0)
+fnJetChTTBins(0),
+fFillTTree(0)
 {
    //Constructor
 
@@ -225,6 +253,9 @@ fnJetChTTBins(0)
    for(Int_t i=0; i<fkTTbins; i++){
       fHadronTT[i] = 0;
       fJetChTT[i]  = 0;
+
+      fhMultTTHinMB[i] = 0x0;   
+      fhMultTTJinMB[i] = 0x0;  
    }
 
    for(Int_t i=0; i<fkTTbins;i++){
@@ -234,6 +265,27 @@ fnJetChTTBins(0)
       fJetChTTHighPt[i]=-1;
    }
  
+   for(Int_t iv=0; iv<fkVtx;iv++){
+      fhVertex[iv]=0x0;
+      for(Int_t i=0; i<fkTTbins;i++){
+         fhVertexTTH[iv][i]=0x0;
+      }
+   }
+
+   for(Int_t ic=0; ic<fkCE;ic++){
+      fhCentralityMB[ic] = 0x0;
+      fhSignalMB[ic] = 0x0; 
+
+      for(Int_t i=0; i<fkTTbins;i++){
+         fhCentralityTTH[ic][i] = 0x0;
+         fhCentralityTTJ[ic][i] = 0x0;
+
+         fhSignalTTH[ic][i] = 0x0;
+         fhSignalTTJ[ic][i] = 0x0;
+      }
+   }
+
+
    sprintf(fTrigClass,"%s","");
    //inclusive pT spectrum times the boost function
 
@@ -450,58 +502,104 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
    }
 
    const AliVVertex *vertex = InputEvent()->GetPrimaryVertexSPD();
-   fxVertex = vertex->GetX();
-   fyVertex = vertex->GetY();
-   fzVertex = vertex->GetZ();
-   if(vertex->IsFromVertexer3D()) fVertexer3d = kTRUE;
-   else fVertexer3d = kFALSE;
-
-   const AliVMultiplicity *mult = InputEvent()->GetMultiplicity();
-   fNTracklets = mult->GetNumberOfTracklets();
-
-   for(Int_t ilay=0; ilay<2; ilay++){
-      fNClusters[ilay] = mult->GetNumberOfITSClusters(ilay);
+   if(vertex){ 
+      fxVertex = vertex->GetX();
+      fyVertex = vertex->GetY();
+      fzVertex = vertex->GetZ();
+      if(vertex->IsFromVertexer3D()) fVertexer3d = kTRUE;
+      else fVertexer3d = kFALSE;
+   }else{
+      fxVertex = 9999.;
+      fyVertex = 9999.;
+      fzVertex = 9999.;
+      fVertexer3d = kFALSE;
    }
 
-   AliVVZERO *vzeroAOD = InputEvent()->GetVZEROData();
-   fMultV0A = vzeroAOD->GetMTotV0A();
-   fMultV0C = vzeroAOD->GetMTotV0C();
-   //
-   fIsV0ATriggered = vzeroAOD->GetV0ADecision();
-   fIsV0CTriggered = vzeroAOD->GetV0CDecision();
+   const AliVMultiplicity *mult = InputEvent()->GetMultiplicity();
+   if(mult){
+      fNTracklets = mult->GetNumberOfTracklets();
 
-   //
-   for(Int_t iRing = 0; iRing < 8; ++iRing){
-      for(Int_t i = 0; i < 8; ++i){
-         fRingMultV0[iRing] += vzeroAOD->GetMultiplicity(8*iRing+i);
+      for(Int_t ilay=0; ilay<2; ilay++){
+         fNClusters[ilay] = mult->GetNumberOfITSClusters(ilay);
+      }
+   }else{
+      fNTracklets = -9999;
+      for(Int_t ilay=0; ilay<2; ilay++){
+         fNClusters[ilay] = -9999; 
       }
    }
 
+  
+
+   AliVVZERO *vzeroAOD = InputEvent()->GetVZEROData();
+   if(vzeroAOD){
+      fMultV0A = vzeroAOD->GetMTotV0A();
+      fMultV0C = vzeroAOD->GetMTotV0C();
+      fIsV0ATriggered = vzeroAOD->GetV0ADecision();
+      fIsV0CTriggered = vzeroAOD->GetV0CDecision();
+      
+      for(Int_t iRing = 0; iRing < 8; ++iRing){
+         for(Int_t i = 0; i < 8; ++i){
+            fRingMultV0[iRing] += vzeroAOD->GetMultiplicity(8*iRing+i);
+         }
+      }
+   }else{
+      fMultV0A = -1; 
+      fMultV0C = -1; 
+      fIsV0ATriggered = kFALSE; 
+      fIsV0CTriggered = kFALSE; 
+      
+      for(Int_t iRing = 0; iRing < 8; ++iRing){
+         for(Int_t i = 0; i < 8; ++i){
+            fRingMultV0[iRing] += 0; 
+         }
+      }
+  }
+
+
    AliAODZDC *aodZDC =dynamic_cast<AliAODZDC*> (InputEvent()->GetZDCData());
+   if(aodZDC){ 
 
-   fZEM1Energy = (Float_t) (aodZDC->GetZEM1Energy());
-   fZEM2Energy = (Float_t) (aodZDC->GetZEM2Energy());
-
-   const Double_t* towZNC = aodZDC->GetZNCTowerEnergy();
-   const Double_t* towZPC = aodZDC->GetZPCTowerEnergy();
-   const Double_t* towZNA = aodZDC->GetZNATowerEnergy();
-   const Double_t* towZPA = aodZDC->GetZPATowerEnergy();
-   //
-   const Double_t* towZNCLG = aodZDC->GetZNCTowerEnergyLR();
-   const Double_t* towZPCLG = aodZDC->GetZPCTowerEnergyLR();
-   const Double_t* towZNALG = aodZDC->GetZNATowerEnergyLR();
-   const Double_t* towZPALG = aodZDC->GetZPATowerEnergyLR();
-   //
-   for(Int_t it=0; it<5; it++){
-      fZNCtower[it] = (Float_t) (towZNC[it]);
-      fZPCtower[it] = (Float_t) (towZPC[it]);
-      fZNAtower[it] = (Float_t) (towZNA[it]);
-      fZPAtower[it] = (Float_t) (towZPA[it]);
-      fZNCtowerLG[it] = (Float_t) (towZNCLG[it]);
-      fZPCtowerLG[it] = (Float_t) (towZPCLG[it]);
-      fZNAtowerLG[it] = (Float_t) (towZNALG[it]);
-      fZPAtowerLG[it] = (Float_t) (towZPALG[it]);
+      fZEM1Energy = (Float_t) (aodZDC->GetZEM1Energy());
+      fZEM2Energy = (Float_t) (aodZDC->GetZEM2Energy());
+      
+      const Double_t* towZNC = aodZDC->GetZNCTowerEnergy();
+      const Double_t* towZPC = aodZDC->GetZPCTowerEnergy();
+      const Double_t* towZNA = aodZDC->GetZNATowerEnergy();
+      const Double_t* towZPA = aodZDC->GetZPATowerEnergy();
+      //
+      const Double_t* towZNCLG = aodZDC->GetZNCTowerEnergyLR();
+      const Double_t* towZPCLG = aodZDC->GetZPCTowerEnergyLR();
+      const Double_t* towZNALG = aodZDC->GetZNATowerEnergyLR();
+      const Double_t* towZPALG = aodZDC->GetZPATowerEnergyLR();
+      //
+      for(Int_t it=0; it<5; it++){
+         fZNCtower[it] = (Float_t) (towZNC[it]);
+         fZPCtower[it] = (Float_t) (towZPC[it]);
+         fZNAtower[it] = (Float_t) (towZNA[it]);
+         fZPAtower[it] = (Float_t) (towZPA[it]);
+         fZNCtowerLG[it] = (Float_t) (towZNCLG[it]);
+         fZPCtowerLG[it] = (Float_t) (towZPCLG[it]);
+         fZNAtowerLG[it] = (Float_t) (towZNALG[it]);
+         fZPAtowerLG[it] = (Float_t) (towZPALG[it]);
+      }
+   }else{
+      fZEM1Energy = -1; 
+      fZEM2Energy = -1; 
+       for(Int_t it=0; it<5; it++){
+         fZNCtower[it] = -1;
+         fZPCtower[it] = -1; 
+         fZNAtower[it] = -1;
+         fZPAtower[it] = -1; 
+         fZNCtowerLG[it] = -1;
+         fZPCtowerLG[it] = -1; 
+         fZNAtowerLG[it] = -1;
+         fZPAtowerLG[it] = -1; 
+      }
    }
+
+
+
 
 
 
@@ -546,6 +644,31 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
 //    }
 //   
 
+    if(fIsMinBiasTrig){ 
+       fhVertex[0]->Fill(fxVertex);
+       fhVertex[1]->Fill(fyVertex);
+       fhVertex[2]->Fill(fzVertex);
+
+
+       fhCentralityMB[0]->Fill(fCentralityV0A); 
+       fhCentralityMB[1]->Fill(fCentralityV0C); 
+       fhCentralityMB[2]->Fill(fCentralityCL1);
+       fhCentralityMB[3]->Fill(fCentralityZNA);
+       fhCentralityMB[4]->Fill(fCentralityZNC);
+
+       fhSignalMB[0]->Fill(fMultV0A);
+       fhSignalMB[1]->Fill(fMultV0C);
+       fhSignalMB[2]->Fill(fNTracklets); 
+       fhSignalMB[3]->Fill(fZNAtower[0]); 
+       fhSignalMB[4]->Fill(fZNCtower[0]); 
+   }
+
+
+
+  
+
+
+
    //_________________________________________________________
    //LOOP OVER TRACKS DETECTOR LEVEL + SEARCH FOR HIGH PT HADRON TRIGGER 
 
@@ -559,10 +682,13 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
       track = trackIterator.second;  // Get the full track
       
       if(IsTrackInAcceptance(track, kDetLevel)){  
-         //fill some histograms for detector level tracks 
-         fhTrackPhiIncl->Fill(track->Pt(), track->Phi());
-         fhTrackEtaIncl->Fill(track->Pt(), track->Eta());
 
+
+         if(fIsMinBiasTrig){
+            //fill some histograms for detector level tracks 
+            fhTrackPhiIncl->Fill(track->Pt(), track->Phi());
+            fhTrackEtaIncl->Fill(track->Pt(), track->Eta());
+         }
 
          for(Int_t itt=0; itt<fnHadronTTBins; itt++){
             if(fHadronTTLowPt[itt] < track->Pt() && track->Pt() < fHadronTTHighPt[itt]){
@@ -570,6 +696,33 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
             } 
          }
       } 
+   }
+
+
+
+
+   for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+
+      fhMultTTHinMB[itt]->Fill(fHadronTT[itt]); 
+
+      if(!fHadronTT[itt]) continue;
+      fhVertexTTH[0][itt]->Fill(fxVertex);
+      fhVertexTTH[1][itt]->Fill(fyVertex);
+      fhVertexTTH[2][itt]->Fill(fzVertex);
+
+
+      fhCentralityTTH[fkV0A][itt]->Fill(fCentralityV0A); 
+      fhCentralityTTH[fkV0C][itt]->Fill(fCentralityV0C); 
+      fhCentralityTTH[fkSPD][itt]->Fill(fCentralityCL1);
+      fhCentralityTTH[fkZNA][itt]->Fill(fCentralityZNA);
+      fhCentralityTTH[fkZNC][itt]->Fill(fCentralityZNC);
+
+      fhSignalTTH[fkV0A][itt]->Fill(fMultV0A);
+      fhSignalTTH[fkV0C][itt]->Fill(fMultV0C);
+      fhSignalTTH[fkSPD][itt]->Fill(fNTracklets); 
+      fhSignalTTH[fkZNA][itt]->Fill(fZNAtower[0]); 
+      fhSignalTTH[fkZNC][itt]->Fill(fZNCtower[0]); 
+ 
    }
 
    //_________________________________________________________
@@ -581,14 +734,20 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
 
    Double_t rho = GetExternalRho(kDetLevel); //estimated backround pt density
 
+   if(fIsMinBiasTrig){
+      fhRhoIncl->Fill(rho);
+   }
+
    for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
       // trackIterator is a std::map of AliTLorentzVector and AliVTrack
       jet = jetIterator.second;  // Get the pointer to jet object
-      
-      //fill some histograms for detector level jets 
-      fhJetPhiIncl->Fill(jet->Pt(), jet->Phi());
-      fhJetEtaIncl->Fill(jet->Pt(), jet->Eta());
-
+      if(!jet)  continue; 
+   
+      if(fIsMinBiasTrig){
+         //fill some histograms for detector level jets 
+         fhJetPhiIncl->Fill(jet->Pt(), jet->Phi());
+         fhJetEtaIncl->Fill(jet->Pt(), jet->Eta());
+      }
 
       for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
          if(fJetChTTLowPt[ijj] < jet->Pt() && jet->Pt() < fJetChTTHighPt[ijj]){
@@ -610,6 +769,28 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
       //   jetMC = jet->ClosestJet();
       //}
    }
+
+   for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
+
+      fhMultTTJinMB[ijj]->Fill(fJetChTT[ijj]); 
+
+      if(!fJetChTT[ijj]) continue; 
+
+      fhCentralityTTJ[fkV0A][ijj]->Fill(fCentralityV0A); 
+      fhCentralityTTJ[fkV0C][ijj]->Fill(fCentralityV0C); 
+      fhCentralityTTJ[fkSPD][ijj]->Fill(fCentralityCL1);
+      fhCentralityTTJ[fkZNA][ijj]->Fill(fCentralityZNA);
+      fhCentralityTTJ[fkZNC][ijj]->Fill(fCentralityZNC);
+
+   
+      fhSignalTTJ[fkV0A][ijj]->Fill(fMultV0A);
+      fhSignalTTJ[fkV0C][ijj]->Fill(fMultV0C);
+      fhSignalTTJ[fkSPD][ijj]->Fill(fNTracklets); 
+      fhSignalTTJ[fkZNA][ijj]->Fill(fZNAtower[0]); 
+      fhSignalTTJ[fkZNC][ijj]->Fill(fZNCtower[0]); 
+ 
+   }
+
 
      
    //___________________________________________________________
@@ -653,8 +834,10 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
 //      }
 //    
 //   }
-   
-  fCentralityTree->Fill();
+
+   if(fFillTTree){ 
+      fCentralityTree->Fill();
+   }
 
 
    return kTRUE;
@@ -724,66 +907,149 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
    fhTrackPhiIncl = new TH2F("fhTrackPhiIncl","Azim dist tracks vs pTjet", 50, 0, 100, 50,0,2*TMath::Pi());
    fOutput->Add((TH2F*) fhTrackPhiIncl);
 
-   fhJetEtaIncl = new TH2F("fhJetEtaIncl","Eta dist inclusive jets vs pTjet", 50,0, 100, 40,-0.9,0.9);
+   fhJetEtaIncl = new TH2F("fhJetEtaIncl","Eta dist inclusive jets vs pTjet", 150, -20, 130, 40,-0.9,0.9);
    fOutput->Add((TH2F*) fhJetEtaIncl);
 
    fhJetPhiIncl = new TH2F("fhJetPhiIncl","Azim dist jets vs pTjet", 50, 0, 100, 50,0,2*TMath::Pi());
    fOutput->Add((TH2F*) fhJetPhiIncl);
 
+   fhRhoIncl = new TH1F("hRho","Rho",1000,0,100);
+   fOutput->Add((TH1F*) fhRhoIncl); 
+
+
+   for(Int_t iv=0; iv<fkVtx;iv++){
+      if(iv==0)       fhVertex[iv] = new TH1D("hVertexX","VertexX",100,-1,1);
+      else if(iv==1)  fhVertex[iv] = new TH1D("hVertexY","VertexY",100,-1,1);
+      else            fhVertex[iv] = new TH1D("hVertexZ","VertexZ",400,-20,20);
+      fOutput->Add((TH1D*) fhVertex[iv]); 
+   }
+
+   for(Int_t iv=0; iv<fkVtx;iv++){
+      for(Int_t itt=0; itt<fnHadronTTBins;itt++){
+         name = Form("%s_TTH%d_%d", fhVertex[iv]->GetName(), fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+         fhVertexTTH[iv][itt] = (TH1D*) fhVertex[iv]->Clone(name.Data()); 
+         fOutput->Add((TH1D*) fhVertexTTH[iv][itt]); 
+      }
+   }
+
+   TString cest[fkCE] = {"V0A", "V0C", "SPD", "ZNA", "ZNC"}; //centrality estimators
+
+   for(Int_t ic=0; ic<fkCE;ic++){
+      name = Form("hCentralityMB_%s",cest[ic].Data());
+      fhCentralityMB[ic] = new TH1D(name.Data(), name.Data(),101,0,101);
+      fOutput->Add((TH1D*) fhCentralityMB[ic]); 
+   }
+
+   for(Int_t ic=0; ic<fkCE;ic++){
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+         name = Form("hCentrality_%s_TTH%d_%d",cest[ic].Data(), fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+         fhCentralityTTH[ic][itt] = new TH1D(name.Data(), name.Data(),101,0,101);
+      }
+   }
+
+   for(Int_t ic=0; ic<fkCE;ic++){
+      for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
+         name = Form("hCentrality_%s_TTJ%d_%d", cest[ic].Data(), fJetChTTLowPt[ijj],fJetChTTHighPt[ijj]);
+         fhCentralityTTJ[ic][ijj] = new TH1D(name.Data(), name.Data(),101,0,101);
+      }
+   }
+
+   TString signal[]={"multV0A", "multV0C", "nTracklets", "znatower0", "znctower0"};
+   Float_t signalL[]={0,0,0,0,0};
+   Float_t signalH[]={1000,1000,500,30000,30000};
+   Int_t signalN[]={100,100,100,100,100};
+
+   for(Int_t ic=0; ic<fkCE;ic++){
+      name = Form("hSignalMB_%s", cest[ic].Data());
+      fhSignalMB[ic] = new TH1D(name.Data(), name.Data(), signalN[ic], signalL[ic], signalH[ic]);
+      fOutput->Add((TH1D*) fhSignalMB[ic]); 
+   }
+
+
+   for(Int_t ic=0; ic<fkCE;ic++){
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+         name = Form("hSignal_%s_TTH%d_%d", cest[ic].Data(), fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+         fhSignalTTH[ic][itt] = new TH1D(name.Data(),name.Data(),signalN[ic], signalL[ic], signalH[ic]);
+         fOutput->Add((TH1D*) fhSignalTTH[ic][itt]); 
+      }
+   }
+   
+   for(Int_t ic=0; ic<fkCE;ic++){
+      for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
+         name = Form("hSignal_%s_TTJ%d_%d", cest[ic].Data(), fJetChTTLowPt[ijj],fJetChTTHighPt[ijj]);
+         fhSignalTTJ[ic][ijj] = new TH1D(name.Data(),name.Data(),signalN[ic], signalL[ic], signalH[ic]);
+         fOutput->Add((TH1D*) fhSignalTTJ[ic][ijj]); 
+      }
+   }
+
+
+   for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+      name = Form("hMultTTHinMB_TTH%d_%d", fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+      fhMultTTHinMB[itt] = new TH1D(name.Data(),name.Data(),100,0,100);
+      fOutput->Add((TH1D*)  fhMultTTHinMB[itt]); 
+   }
+
+   for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
+      name = Form("hMultTTJinMB_TTJ%d_%d", fJetChTTLowPt[ijj],fJetChTTHighPt[ijj]);
+      fhMultTTJinMB[ijj] = new TH1D(name.Data(),name.Data(),100,0,100);
+      fOutput->Add((TH1D*) fhMultTTJinMB[ijj]); 
+   }
+
    // OUTPUT TREE
-   fCentralityTree = new TTree("fCentralityTree", "Centrality vs. multiplicity tree");
-   //
-   fCentralityTree->Branch("trigClass",fTrigClass,"trigClass/C");
-   fCentralityTree->Branch("xVertex", &fxVertex,"xVertex/D");
-   fCentralityTree->Branch("yVertex", &fyVertex,"yVertex/D");
-   fCentralityTree->Branch("zVertex", &fzVertex,"zVertex/D");
-   fCentralityTree->Branch("vertexer3d", &fVertexer3d,"vertexer3d/O");
-   fCentralityTree->Branch("nTracklets", &fNTracklets,"nTracklets/I");
-   fCentralityTree->Branch("nClusters", fNClusters,"nClusters[2]/I");
-   //
-   fCentralityTree->Branch("isV0ATriggered", &fIsV0ATriggered,"isV0ATriggered/I");
-   fCentralityTree->Branch("isV0CTriggered", &fIsV0CTriggered,"isV0CTriggered/I");
-   fCentralityTree->Branch("multV0A", &fMultV0A,"multV0A/F");
-   fCentralityTree->Branch("multV0C", &fMultV0C,"multV0C/F");
-   fCentralityTree->Branch("ringmultV0", fRingMultV0,"ringmultV0[8]/F");
+   if(fFillTTree){
+      fCentralityTree = new TTree("fCentralityTree", "Centrality vs. multiplicity tree");
+      //
+      fCentralityTree->Branch("trigClass",fTrigClass,"trigClass/C");
+      fCentralityTree->Branch("xVertex", &fxVertex,"xVertex/D");
+      fCentralityTree->Branch("yVertex", &fyVertex,"yVertex/D");
+      fCentralityTree->Branch("zVertex", &fzVertex,"zVertex/D");
+      fCentralityTree->Branch("vertexer3d", &fVertexer3d,"vertexer3d/O");
+      fCentralityTree->Branch("nTracklets", &fNTracklets,"nTracklets/I");
+      fCentralityTree->Branch("nClusters", fNClusters,"nClusters[2]/I");
+      //
+      fCentralityTree->Branch("isV0ATriggered", &fIsV0ATriggered,"isV0ATriggered/I");
+      fCentralityTree->Branch("isV0CTriggered", &fIsV0CTriggered,"isV0CTriggered/I");
+      fCentralityTree->Branch("multV0A", &fMultV0A,"multV0A/F");
+      fCentralityTree->Branch("multV0C", &fMultV0C,"multV0C/F");
+      fCentralityTree->Branch("ringmultV0", fRingMultV0,"ringmultV0[8]/F");
 
-    fCentralityTree->Branch("znctower", fZNCtower, "znctower[5]/F");
-    fCentralityTree->Branch("zpctower", fZPCtower, "zpctower[5]/F");
-    fCentralityTree->Branch("znatower", fZNAtower, "znatower[5]/F");
-    fCentralityTree->Branch("zpatower", fZPAtower, "zpatower[5]/F");
-    fCentralityTree->Branch("znctowerLG", fZNCtowerLG, "znctowerLG[5]/F");
-    fCentralityTree->Branch("zpctowerLG", fZPCtowerLG, "zpctowerLG[5]/F");
-    fCentralityTree->Branch("znatowerLG", fZNAtowerLG, "znatowerLG[5]/F");
-    fCentralityTree->Branch("zpatowerLG", fZPAtowerLG, "zpatowerLG[5]/F");
-
-    //fCentralityTree->Branch("tdc", fTDCvalues, "tdc[32][4]/I");
-    //fCentralityTree->Branch("tdcSum", &fTDCSum, "tdcSum/F");
-    //fCentralityTree->Branch("tdcDiff", &fTDCDiff, "tdcDiff/F");
-
-    fCentralityTree->Branch("centrV0Amult", &fCentralityV0A, "centrV0Amult/F");
-    fCentralityTree->Branch("centrV0Cmult", &fCentralityV0C, "centrV0Cmult/F");
-    fCentralityTree->Branch("centrSPDclu1", &fCentralityCL1, "centrSPDclu1/F");
-    fCentralityTree->Branch("centrZNA", &fCentralityZNA, "centrZNA/F");
-    fCentralityTree->Branch("centrZNC", &fCentralityZNC, "centrZNC/F");
-
-    for(Int_t itt=0; itt<fnHadronTTBins; itt++){
-       name    = Form("hadronTTbin_%d_%d",fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
-       object  = name;
-       object.Append("/I"); //Number of tracks in given bin
+      fCentralityTree->Branch("znctower", fZNCtower, "znctower[5]/F");
+      fCentralityTree->Branch("zpctower", fZPCtower, "zpctower[5]/F");
+      fCentralityTree->Branch("znatower", fZNAtower, "znatower[5]/F");
+      fCentralityTree->Branch("zpatower", fZPAtower, "zpatower[5]/F");
+      fCentralityTree->Branch("znctowerLG", fZNCtowerLG, "znctowerLG[5]/F");
+      fCentralityTree->Branch("zpctowerLG", fZPCtowerLG, "zpctowerLG[5]/F");
+      fCentralityTree->Branch("znatowerLG", fZNAtowerLG, "znatowerLG[5]/F");
+      fCentralityTree->Branch("zpatowerLG", fZPAtowerLG, "zpatowerLG[5]/F");
       
-       fCentralityTree->Branch(name.Data(), &(fHadronTT[itt]), object.Data());
-    }
-
-    for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
-       name    = Form("jetchTTbin_%d_%d",fJetChTTLowPt[ijj],fJetChTTHighPt[ijj]);
-       object  = name;
-       object.Append("/I"); //Number of jets in given bin
+      //fCentralityTree->Branch("tdc", fTDCvalues, "tdc[32][4]/I");
+      //fCentralityTree->Branch("tdcSum", &fTDCSum, "tdcSum/F");
+      //fCentralityTree->Branch("tdcDiff", &fTDCDiff, "tdcDiff/F");
       
-       fCentralityTree->Branch(name.Data(), &(fJetChTT[ijj]), object.Data());
-    }
-
-    fOutput->Add(fCentralityTree);
- 
+      fCentralityTree->Branch("centrV0Amult", &fCentralityV0A, "centrV0Amult/F");
+      fCentralityTree->Branch("centrV0Cmult", &fCentralityV0C, "centrV0Cmult/F");
+      fCentralityTree->Branch("centrSPDclu1", &fCentralityCL1, "centrSPDclu1/F");
+      fCentralityTree->Branch("centrZNA", &fCentralityZNA, "centrZNA/F");
+      fCentralityTree->Branch("centrZNC", &fCentralityZNC, "centrZNC/F");
+      
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+         name    = Form("hadronTTbin_%d_%d",fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+         object  = name;
+         object.Append("/I"); //Number of tracks in given bin
+        
+         fCentralityTree->Branch(name.Data(), &(fHadronTT[itt]), object.Data());
+      }
+      
+      for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
+         name    = Form("jetchTTbin_%d_%d",fJetChTTLowPt[ijj],fJetChTTHighPt[ijj]);
+         object  = name;
+         object.Append("/I"); //Number of jets in given bin
+        
+         fCentralityTree->Branch(name.Data(), &(fJetChTT[ijj]), object.Data());
+      }
+      
+      fOutput->Add(fCentralityTree);
+   } 
 
 
 

@@ -5,7 +5,8 @@
 #include "AliAnalysisUtils.h"
 #include "AliAODEvent.h"
 #include "AliAODTracklets.h"
-#include <AliAODMCParticle.h>
+#include "AliMultSelection.h"
+#include "AliAODMCHeader.h"
 #include <TSystem.h>
 #include <TTree.h>
 #include <TTree.h>
@@ -58,6 +59,25 @@ AliAnalysisTaskCheckVertexAOD::AliAnalysisTaskCheckVertexAOD() :
   fHistXtpcVsContrib{nullptr},
   fHistYtpcVsContrib{nullptr},
   fHistZtpcVsContrib{nullptr},  
+  fHistXspdVsMult{nullptr},
+  fHistYspdVsMult{nullptr},
+  fHistZspdVsMult{nullptr},
+  fHistXtrkVsMult{nullptr},
+  fHistYtrkVsMult{nullptr},
+  fHistZtrkVsMult{nullptr},
+  fHistXtpcVsMult{nullptr},
+  fHistYtpcVsMult{nullptr},
+  fHistZtpcVsMult{nullptr},  
+  fHistXspdVsCent{nullptr},
+  fHistYspdVsCent{nullptr},
+  fHistZspdVsCent{nullptr},
+  fHistXtrkVsCent{nullptr},
+  fHistYtrkVsCent{nullptr},
+  fHistZtrkVsCent{nullptr},
+  fHistXtpcVsCent{nullptr},
+  fHistYtpcVsCent{nullptr},
+  fHistZtpcVsCent{nullptr},
+  fHistNtracklVsZtrue{nullptr},
   fHistoNOfPileupVertSPD{nullptr},
   fHistoNOfSelPileupVertSPD{nullptr},
   fHistoNOfPileupVertMV{nullptr},
@@ -96,6 +116,25 @@ AliAnalysisTaskCheckVertexAOD::~AliAnalysisTaskCheckVertexAOD(){
     delete fHistXtpcVsContrib;
     delete fHistYtpcVsContrib;
     delete fHistZtpcVsContrib;  
+    delete fHistXspdVsMult;
+    delete fHistYspdVsMult;
+    delete fHistZspdVsMult;
+    delete fHistXtrkVsMult;
+    delete fHistYtrkVsMult;
+    delete fHistZtrkVsMult;
+    delete fHistXtpcVsMult;
+    delete fHistYtpcVsMult;
+    delete fHistZtpcVsMult;  
+    delete fHistXspdVsCent;
+    delete fHistYspdVsCent;
+    delete fHistZspdVsCent;
+    delete fHistXtrkVsCent;
+    delete fHistYtrkVsCent;
+    delete fHistZtrkVsCent;
+    delete fHistXtpcVsCent;
+    delete fHistYtpcVsCent;
+    delete fHistZtpcVsCent;
+    delete fHistNtracklVsZtrue;
     delete fHistoNOfPileupVertSPD;
     delete fHistoNOfSelPileupVertSPD;
     delete fHistoNOfPileupVertMV;
@@ -186,6 +225,28 @@ void AliAnalysisTaskCheckVertexAOD::UserCreateOutputObjects() {
   fOutput->Add(fHistYtpcVsMult);
   fOutput->Add(fHistZtpcVsMult);
 
+  fHistXspdVsCent=new TH2F("hXspdVsCent"," ; V0M centrality ; x_{Vertex} (cm)",100,0.,100.,1000,-1.,1.);
+  fHistYspdVsCent=new TH2F("hYspdVsCent"," ; V0M centrality ; y_{Vertex} (cm)",100,0.,100.,1000,-1.,1.);
+  fHistZspdVsCent=new TH2F("hZspdVsCent"," ; V0M centrality ; z_{Vertex} (cm)",100,0.,100.,300,-20.,20.);
+  fHistXtrkVsCent=new TH2F("hXtrkVsCent"," ; V0M centrality ; x_{Vertex} (cm)",100,0.,100.,1000,-1.,1.);
+  fHistYtrkVsCent=new TH2F("hYtrkVsCent"," ; V0M centrality ; y_{Vertex} (cm)",100,0.,100.,1000,-1.,1.);
+  fHistZtrkVsCent=new TH2F("hZtrkVsCent"," ; V0M centrality ; z_{Vertex} (cm)",100,0.,100.,300,-20.,20.);
+  fHistXtpcVsCent=new TH2F("hXtpcVsCent"," ; V0M centrality ; x_{Vertex} (cm)",100,0.,100.,1000,-1.,1.);
+  fHistYtpcVsCent=new TH2F("hYtpcVsCent"," ; V0M centrality ; y_{Vertex} (cm)",100,0.,100.,1000,-1.,1.);
+  fHistZtpcVsCent=new TH2F("hZtpcVsCent"," ; V0M centrality ; z_{Vertex} (cm)",100,0.,100.,300,-20.,20.);
+  fOutput->Add(fHistXspdVsCent);
+  fOutput->Add(fHistYspdVsCent);
+  fOutput->Add(fHistZspdVsCent);
+  fOutput->Add(fHistXtrkVsCent);
+  fOutput->Add(fHistYtrkVsCent);
+  fOutput->Add(fHistZtrkVsCent);
+  fOutput->Add(fHistXtpcVsCent);
+  fOutput->Add(fHistYtpcVsCent);
+  fOutput->Add(fHistZtpcVsCent);
+
+  fHistNtracklVsZtrue=new TH2F("hNtracklVsZtrue"," ; z_{TrueVertex} (cm), n_{Tracklets}",300,-20.,20.,100,0.,fMaxMult);
+  fOutput->Add(fHistNtracklVsZtrue);
+
   fHistoNOfPileupVertSPD = new TH1F("hNOfPileupVertSPD","",11,-0.5,10.5);
   fHistoNOfSelPileupVertSPD = new TH1F("hNOfSelPileupVertSPD","",11,-0.5,10.5);
   fHistoNOfPileupVertMV = new TH1F("hNOfPileupVertMV","",11,-0.5,10.5);
@@ -207,16 +268,18 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
   if(!aod) {
     printf("AliAnalysisTaskCheckVertexAOD::UserExec(): bad AOD\n");
     return;
-  } 
+  }
 
-  TClonesArray *arrayMC=0;
-
+  
+  Double_t zMCVertex = -9999.;
+  AliAODMCHeader *mcHeader=0;
   if(fReadMC){
-    arrayMC =  (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
-    if(!arrayMC) {
-      Printf("ERROR: MC particles branch not found!\n");
+    mcHeader =  (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    if(!mcHeader) {
+      printf("AliAnalysisTaskSEDplus::UserExec: MC header branch not found!\n");
       return;
     }
+    zMCVertex = mcHeader->GetVtxZ();
   }
 
 
@@ -267,6 +330,13 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
   Int_t ntracklets = 0;
   AliAODTracklets *mult=aod->GetTracklets();
   if(mult) ntracklets=mult->GetNumberOfTracklets();
+  if(mcHeader) fHistNtracklVsZtrue->Fill(zMCVertex,ntracklets);
+
+  Double_t centr=0.1; // default = all in first bin
+  AliMultSelection *multSelection = (AliMultSelection*)aod->FindListObject("MultSelection");
+  if(multSelection) centr = multSelection->GetMultiplicityPercentile("V0M");
+  else AliWarning("AliMultSelection could not be found in the aod event list of objects");
+
 
   const AliVVertex* vtSPD = aod->GetPrimaryVertexSPD();
   Int_t ct=0;
@@ -279,9 +349,14 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
     fHistXtrkVsContrib->Fill(ct,xt);
     fHistYtrkVsContrib->Fill(ct,yt);
     fHistZtrkVsContrib->Fill(ct,zt);
-    fHistXtrkVsMult->Fill(ntracklets,xt);
-    fHistYtrkVsMult->Fill(ntracklets,yt);
-    fHistZtrkVsMult->Fill(ntracklets,zt);
+    if(ct>=1){
+      fHistXtrkVsMult->Fill(ntracklets,xt);
+      fHistYtrkVsMult->Fill(ntracklets,yt);
+      fHistZtrkVsMult->Fill(ntracklets,zt);
+      fHistXtrkVsCent->Fill(centr,xt);
+      fHistYtrkVsCent->Fill(centr,yt);
+      fHistZtrkVsCent->Fill(centr,zt);
+    }
   }
   Int_t cs=0;
   Float_t zs=-999.;
@@ -299,6 +374,9 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
 	fHistXspdVsMult->Fill(ntracklets,xs);
 	fHistYspdVsMult->Fill(ntracklets,ys);
 	fHistZspdVsMult->Fill(ntracklets,zs);
+	fHistXspdVsCent->Fill(centr,xs);
+	fHistYspdVsCent->Fill(centr,ys);
+	fHistZspdVsCent->Fill(centr,zs);
       }
     }
   }
@@ -314,6 +392,9 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
       fHistXtpcVsMult->Fill(ntracklets,xtpc);
       fHistYtpcVsMult->Fill(ntracklets,ytpc);
       fHistZtpcVsMult->Fill(ntracklets,ztpc);
+      fHistXtpcVsCent->Fill(centr,xtpc);
+      fHistYtpcVsCent->Fill(centr,ytpc);
+      fHistZtpcVsCent->Fill(centr,ztpc);
     }
   }
 

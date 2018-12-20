@@ -92,6 +92,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fRemovePileUp(kFALSE),
   fRemovePileUpSPD(kFALSE),
   fUseSphericity(0),
+  fUseSphericityTrue(kFALSE),
   fPastFutureRejectionLow(0),
   fPastFutureRejectionHigh(0),
   fDoPileUpRejectV0MTPCout(0),
@@ -214,6 +215,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fRemovePileUp(ref.fRemovePileUp),
   fRemovePileUpSPD(ref.fRemovePileUpSPD),
   fUseSphericity(ref.fUseSphericity),
+  fUseSphericityTrue(ref.fUseSphericityTrue),
   fPastFutureRejectionLow(ref.fPastFutureRejectionLow),
   fPastFutureRejectionHigh(ref.fPastFutureRejectionHigh),
   fDoPileUpRejectV0MTPCout(ref.fDoPileUpRejectV0MTPCout),
@@ -1304,6 +1306,14 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
   case 27: // r: pp -> Sphericity > 0.7
     fIsHeavyIon=0;
     fUseSphericity=11;
+    break;
+  case 28: // s: pp -> Sphericity < 0.5 + Sphericity axis in EMCal coverage
+    fIsHeavyIon=0;
+    fUseSphericity=12;
+    break;
+  case 29: // t: pp -> Sphericity < 0.5 + Sphericity axis not in EMCal coverage
+    fIsHeavyIon=0;
+    fUseSphericity=13;
     break;
 
   default:
@@ -4095,8 +4105,62 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
                 if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
                 //                 cout << "CEM7? " << isSelected << endl;
               } else   if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8DG2") == 0){
+                if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+                if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+              }
+              // jet triggers -> no overlap with gamma trigger required
+            if (fSpecialTrigger == 9 && fSpecialSubTriggerName.CompareTo("7EJE") == 0){
+              if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+              if (firedTrigClass.Contains("7EGA"))  isSelected = 0;
+            } else if (fSpecialTrigger == 9 && fSpecialSubTriggerName.CompareTo("8EJE") == 0){
+              if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+              if (firedTrigClass.Contains("8EGA"))  isSelected = 0;
+            } else if (fSpecialTrigger == 9 && fSpecialSubTriggerName.CompareTo("7EJ1") == 0){
+              if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+              if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
+              if (firedTrigClass.Contains("7EG1"))  isSelected = 0;
+              if (firedTrigClass.Contains("7EJ2"))  isSelected = 0;
+            } else if (fSpecialTrigger == 9 && fSpecialSubTriggerName.CompareTo("8EJ1") == 0){
+              if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+              if (firedTrigClass.Contains("8EG2"))  isSelected = 0;
+              if (firedTrigClass.Contains("8EG1"))  isSelected = 0;
+              if (firedTrigClass.Contains("8EJ2"))  isSelected = 0;
+            } else   if (fSpecialTrigger == 9 && fSpecialSubTriggerName.CompareTo("7EJ2") == 0){
+              if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+              if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
+              if (firedTrigClass.Contains("7EG1"))  isSelected = 0;
+            } else   if (fSpecialTrigger == 9 && fSpecialSubTriggerName.CompareTo("8EJ2") == 0){
+              if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+              if (firedTrigClass.Contains("8EG2"))  isSelected = 0;
+              if (firedTrigClass.Contains("8EG1"))  isSelected = 0;
+            } else if (fSpecialTrigger == 9 && fSpecialSubTriggerName.CompareTo("7DJ1") == 0){
                 if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
                 if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                if (firedTrigClass.Contains("7DG1"))  isSelected = 0;
+                if (firedTrigClass.Contains("7DG2"))  isSelected = 0;
+                if (firedTrigClass.Contains("7DJ2"))  isSelected = 0;
+              } else if (fSpecialTrigger == 9 && fSpecialSubTriggerName.CompareTo("8DJ1") == 0){
+                if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+                if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                if (firedTrigClass.Contains("8DG1"))  isSelected = 0;
+                if (firedTrigClass.Contains("8DG2"))  isSelected = 0;
+                if (firedTrigClass.Contains("8DJ2"))  isSelected = 0;
+              } else   if (fSpecialTrigger == 9 && fSpecialSubTriggerName.CompareTo("7DJ2") == 0){
+                if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                if (firedTrigClass.Contains("7DG2"))  isSelected = 0;
+                if (firedTrigClass.Contains("7DG1"))  isSelected = 0;
+              } else   if (fSpecialTrigger == 9 && fSpecialSubTriggerName.CompareTo("8DG2") == 0){
+                if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+                if (firedTrigClass.Contains("8DG2"))  isSelected = 0;
+                if (firedTrigClass.Contains("8DG1"))  isSelected = 0;
               }
             if (fSpecialTrigger == 10 && (fInputHandler->IsEventSelected() & AliVEvent::kCaloOnly) ){
               // trigger rejection L0 triggers
@@ -4817,41 +4881,87 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
   }
 
   if(fUseSphericity > 0){
-    Double_t eventSphericity = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity();
-    if(eventSphericity == -1) return 14;
-    if(fUseSphericity == 1 && eventSphericity>0.5){
-      return 14;
-    }
-    if(fUseSphericity == 2 && eventSphericity<0.5){
-      return 14;
-    }
-    if(fUseSphericity == 3 && eventSphericity==-1){
-      return 14;
-    }
-    Int_t nPrimTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
-    if(fUseSphericity == 4 && (eventSphericity==-1 || nPrimTracks > 20)){
-      return 14;
-    }
-    if(fUseSphericity == 5 && (eventSphericity==-1 || nPrimTracks < 20)){
-      return 14;
-    }
-    if(fUseSphericity == 6 && (eventSphericity>0.5 || nPrimTracks > 20)){
-      return 14;
-    }
-    if(fUseSphericity == 7 && (eventSphericity>0.5 || nPrimTracks < 20)){
-      return 14;
-    }
-    if(fUseSphericity == 8 && (eventSphericity<0.5 || nPrimTracks > 20)){
-      return 14;
-    }
-    if(fUseSphericity == 9 && (eventSphericity<0.5 || nPrimTracks < 20)){
-      return 14;
-    }
-    if(fUseSphericity == 10 && eventSphericity>0.3){
-      return 14;
-    }
-    if(fUseSphericity == 11 && eventSphericity<0.7){
-      return 14;
+    if(fUseSphericityTrue){
+        Double_t eventSphericityTrue = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericityTrue();
+        if(eventSphericityTrue == -1) return 14;
+        if(fUseSphericity == 1 && eventSphericityTrue>0.5){
+        return 14;
+        }
+        if(fUseSphericity == 2 && eventSphericityTrue<0.5){
+        return 14;
+        }
+        if(fUseSphericity == 3 && eventSphericityTrue==-1){
+        return 14;
+        }
+        Int_t nPrimTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
+        if(fUseSphericity == 4 && (eventSphericityTrue==-1 || nPrimTracks > 20)){
+        return 14;
+        }
+        if(fUseSphericity == 5 && (eventSphericityTrue==-1 || nPrimTracks < 20)){
+        return 14;
+        }
+        if(fUseSphericity == 6 && (eventSphericityTrue>0.5 || nPrimTracks > 20)){
+        return 14;
+        }
+        if(fUseSphericity == 7 && (eventSphericityTrue>0.5 || nPrimTracks < 20)){
+        return 14;
+        }
+        if(fUseSphericity == 8 && (eventSphericityTrue<0.5 || nPrimTracks > 20)){
+        return 14;
+        }
+        if(fUseSphericity == 9 && (eventSphericityTrue<0.5 || nPrimTracks < 20)){
+        return 14;
+        }
+        if(fUseSphericity == 10 && eventSphericityTrue>0.3){
+        return 14;
+        }
+        if(fUseSphericity == 11 && eventSphericityTrue<0.7){
+        return 14;
+        }
+    }else if(!fUseSphericityTrue){
+        Double_t eventSphericity = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity();
+        if(eventSphericity == -1) return 14;
+        if(fUseSphericity == 1 && eventSphericity>0.5){
+        return 14;
+        }
+        if(fUseSphericity == 2 && eventSphericity<0.5){
+        return 14;
+        }
+        if(fUseSphericity == 3 && eventSphericity==-1){
+        return 14;
+        }
+        Int_t nPrimTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
+        if(fUseSphericity == 4 && (eventSphericity==-1 || nPrimTracks > 20)){
+        return 14;
+        }
+        if(fUseSphericity == 5 && (eventSphericity==-1 || nPrimTracks < 20)){
+        return 14;
+        }
+        if(fUseSphericity == 6 && (eventSphericity>0.5 || nPrimTracks > 20)){
+        return 14;
+        }
+        if(fUseSphericity == 7 && (eventSphericity>0.5 || nPrimTracks < 20)){
+        return 14;
+        }
+        if(fUseSphericity == 8 && (eventSphericity<0.5 || nPrimTracks > 20)){
+        return 14;
+        }
+        if(fUseSphericity == 9 && (eventSphericity<0.5 || nPrimTracks < 20)){
+        return 14;
+        }
+        if(fUseSphericity == 10 && eventSphericity>0.3){
+        return 14;
+        }
+        if(fUseSphericity == 11 && eventSphericity<0.7){
+        return 14;
+        }
+        Double_t InAcceptance = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->IsSphericityAxisInEMCalAcceptance();
+        if(fUseSphericity == 12 && (eventSphericity>0.3 || !InAcceptance)){
+        return 14;
+        }
+        if(fUseSphericity == 13 && (eventSphericity>0.3 || InAcceptance)){
+        return 14;
+        }
     }
   }
 

@@ -36,28 +36,23 @@
 #define AliAnalysisTaskStrEffStudy_H
 
 class TList;
-class TH1F;
-class TH2F;
-class TH3F;
+class TH1D;
+class TH3D;
 class TVector3;
-class THnSparse;
 class TRandom3;
-class TProfile; 
+class TTree;
 
-class AliESDpid;
 class AliESDtrackCuts;
 class AliAnalysisUtils;
 class AliESDEvent;
-class AliPhysicsSelection;
-class AliESDFMD;
-class AliCFContainer;
+class AliESDtrack;
+class AliPIDResponse;
 class AliV0Result;
 class AliCascadeResult;
-class AliExternalTrackParam; 
+class AliExternalTrackParam;
 
-//#include "TString.h"
-//#include "AliESDtrackCuts.h"
-//#include "AliAnalysisTaskSE.h"
+#include "TString.h"
+#include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 
 class AliAnalysisTaskStrEffStudy : public AliAnalysisTaskSE {
@@ -295,6 +290,7 @@ private:
     TTree  *fTreeEvent;              //! Output Tree, Events
     TTree  *fTreeV0;              //! Output Tree, V0s
     TTree  *fTreeCascade;              //! Output Tree, Cascades
+    TTree  *fTreeHyperTriton3Body;              //! Output Tree, Cascades
 
     AliPIDResponse *fPIDResponse;     // PID response object
     AliESDtrackCuts *fESDtrackCuts;   // ESD track cuts used for primary track definition
@@ -332,15 +328,19 @@ private:
     Float_t fMinPtToSave; //minimum pt above which we keep candidates in TTree output
     Float_t fMaxPtToSave; //maximum pt below which we keep candidates in TTree output
 
+    Bool_t fkSaveHyperTriton3BodyTree;         //if true, save TTree
+    Bool_t fkDownScaleHyperTriton3Body;
+    Double_t fDownScaleFactorHyperTriton3Body;
+
     //Objects Controlling Task Behaviour: has to be streamed!
     Bool_t    fkRunVertexers;           // if true, re-run vertexer with loose cuts *** only for CASCADES! ***
     Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
     Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit() to improve precision
     Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
-    
+
     //Save only decent tracks
     Bool_t fkSaveGoodTracks;
-    
+
     //Sandbox mode
     Bool_t fkSandboxV0;
     Bool_t fkSandboxCascade;
@@ -355,7 +355,7 @@ private:
 
     Double_t fLambdaMassSigma[4]; //Array to store the lambda mass sigma parametrization
     //[0]+[1]*x+[2]*TMath::Exp([3]*x)
-    
+
     Double_t fPrecisionCutoffCascadeDCA; //Precision cutoff for GetDCA numerical recipe
     Int_t fMaxIterationsCascadeDCA; //Max N Iter for cascade DCA calculation
 
@@ -435,6 +435,7 @@ private:
     AliESDtrack *fTreeVariableNegTrack;
     
     AliESDv0 *fTreeVariableOTFV0;
+    Bool_t fTreeVariableFoundOTFV0; 
     
     Float_t fTreeVariableMagneticField;
     
@@ -575,6 +576,28 @@ private:
     
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     
+    AliESDtrack *fTreeHyp3BodyVarTracks[3];
+    Int_t        fTreeHyp3BodyVarPDGcodes[3];
+    
+    ULong64_t    fTreeHyp3BodyVarEventId;
+    Int_t        fTreeHyp3BodyVarMotherId;
+
+    Float_t      fTreeHyp3BodyVarTruePx;
+    Float_t      fTreeHyp3BodyVarTruePy;
+    Float_t      fTreeHyp3BodyVarTruePz;
+
+    Float_t      fTreeHyp3BodyVarDecayVx;
+    Float_t      fTreeHyp3BodyVarDecayVy;
+    Float_t      fTreeHyp3BodyVarDecayVz;
+    Float_t      fTreeHyp3BodyVarDecayT;
+
+    Float_t      fTreeHyp3BodyVarPVx;
+    Float_t      fTreeHyp3BodyVarPVy;
+    Float_t      fTreeHyp3BodyVarPVz;
+    Float_t      fTreeHyp3BodyVarPVt;
+
+    Float_t      fTreeHyp3BodyVarMagneticField;
+
 //===========================================================================================
 //   Histograms
 //===========================================================================================

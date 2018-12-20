@@ -35,6 +35,7 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   void SetIsRun1(bool isRun1) { fIsRun1 = isRun1; }
   void SetV0Percentile(float v0perc) { fV0PercentileMax = v0perc; }
   void SetTrigger(UInt_t trigger) { fTrigger = trigger; }
+  void SetMultiplicityMode(UInt_t trigger) { fMultMode = trigger; }
   void SetProtonCuts(AliFemtoDreamTrackCuts *cuts) {
     fTrackCutsPartProton = cuts;
   }
@@ -102,6 +103,7 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   bool fPhotonLegPileUpCut;  //
   float fV0PercentileMax;    //
   UInt_t fTrigger;           //
+  UInt_t fMultMode;          //
 
   TClonesArray *fGammaArray;  //!
 
@@ -127,6 +129,6 @@ class AliAnalysisTaskSigma0Femto : public AliAnalysisTaskSE {
   TH2F *fHistCorrelationAntiPAntiSigmaAntiPAntiGamma[3];   //!
   TH2F *fHistCorrelationAntiPAntiLambdaAntiPAntiGamma[3];  //!
 
-  ClassDef(AliAnalysisTaskSigma0Femto, 8)
+  ClassDef(AliAnalysisTaskSigma0Femto, 9)
 };
 #endif

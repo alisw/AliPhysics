@@ -7,6 +7,37 @@ TString generatorNameForULSSignal = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;om
 //TString generatorNameForULSSignal = "Hijing_0;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7";
 
 
+
+
+void Config_slehner_Efficiency(AliAnalysisTaskElectronEfficiencyV2 *task,  Bool_t useAODFilterCuts,  TString TMVAweight){
+  Int_t trackCut=0;
+  Int_t PIDCut=0;
+  Int_t MVACut=0;
+  
+  for(int glcut = 0; glcut <=24; ++glcut){
+    ////////DEFINE THE CUTS AS FUNCTION OF GLCUT//////
+    if(glcut<5){
+      trackCut=glcut;
+      PIDCut=0;
+      MVACut=4;   
+    }
+    else if(glcut<13){
+      trackCut=0;
+      PIDCut=glcut-5;
+      MVACut=4;   
+    }
+    else{
+      trackCut=0;
+      PIDCut=0;
+      MVACut=glcut-13;      
+    }
+    //////////////////////////////////////////////////
+    std::cout << "Config_slehner_Efficiency: CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVA Cut: "<<-1+MVACut*0.2<<" added"<< std::endl;
+    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight);
+    task->AddTrackCuts(filter);    
+  }
+}
+
 Bool_t SetTPCCorrection = kTRUE;
 Bool_t SetITSCorrection = kTRUE;
 Bool_t SetTOFCorrection = kTRUE;

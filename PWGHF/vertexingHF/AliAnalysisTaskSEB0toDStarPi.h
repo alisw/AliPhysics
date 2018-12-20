@@ -175,10 +175,10 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
   TH1F* fDaughterHistogramArray[4][6][15];   //!
   TH2F* fDaughterHistogramArray2D[4][6];     //!
   TH1F* fDaughterHistogramArrayExtra[4][6];  //!
-  TH1F* fMotherHistogramArray[6][99][60];    //!
-  TH2F* fMotherHistogramArray2D[6][99][60];  //!
+  TH1F* fMotherHistogramArray[6][500][60];    //!
+  TH2F* fMotherHistogramArray2D[6][500][60];  //!
   TH1F* fMotherHistogramArrayExtra[7][10];   //!
-  TH3F* fMotherHistogramArray3D[6][99][60];  //!
+  TH3F* fMotherHistogramArray3D[6][500][60];  //!
 
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskSEB0toDStarPi,6);  // class for B0 spectra

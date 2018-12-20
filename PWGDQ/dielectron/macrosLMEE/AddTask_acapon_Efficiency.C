@@ -1,13 +1,20 @@
 //Names should contain a comma seperated list of cut settings
 //Current options: all, electrons, kCutSet1, TTreeCuts, V0_TPCcorr, V0_ITScorr
-AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names          = "kCutSet1",
-                                                               Int_t whichGen         = 0, // 0=all sources, 1=Jpsi, 2=HS
-                                                               Int_t wagonnr          = 0,
-                                                               Int_t centrality       = 0,
-                                                               Bool_t SDDstatus       = kTRUE,
-                                                               Bool_t applyPIDcorr    = kTRUE,
-                                                               Bool_t cutlibPreloaded = kFALSE,
-                                                               Bool_t getFromAlien    = kFALSE)
+AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names                = "kCutSet1",
+                                                               Int_t whichGen               = 0, // 0=all sources, 1=Jpsi, 2=HS
+                                                               Int_t wagonnr                = 0,
+                                                               Int_t centrality             = 0,
+                                                               Bool_t SDDstatus             = kTRUE,
+                                                               Bool_t applyPIDcorr          = kTRUE,
+																															 std::string resoFilename     = "", // Leave blank to not use resolution files
+                                                               Bool_t DoPairing             = kTRUE,
+                                                               Bool_t DoULSLS               = kTRUE,
+                                                               Bool_t DeactivateLS          = kTRUE,
+                                                               Bool_t DoCocktailWeighting   = kFALSE,
+                                                               Bool_t GetCocktailFromAlien  = kFALSE,
+                                                               std::string CocktailFilename = "",
+                                                               Bool_t cutlibPreloaded       = kFALSE,
+                                                               Bool_t getFromAlien          = kFALSE)
 {
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
@@ -17,14 +24,20 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
 	Int_t nDie          = arrNames->GetEntries();
 	Printf("Number of implemented cuts: %i", nDie);
 
-  // #########################################################
+	
+	std::string resoFilenameFromAlien = "/alice/cern.ch/user/a/acapon/ResolutionFiles/";
+	resoFilenameFromAlien.append(resoFilename);
+
+	std::string CocktailFilenameFromAlien = "/alice/cern.ch/user/a/acapon/Cocktails/";
+	CocktailFilenameFromAlien.append(CocktailFilename);
+
   // #########################################################
   // Configuring Analysis Manager
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   TString fileName        = AliAnalysisManager::GetCommonFileName();
   fileName = "AnalysisResults.root"; // create a subfolder in the file
 
-  // #########################################################
+
   // #########################################################
   // Loading individual config file either local or from Alien
 
@@ -185,7 +198,6 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
 			ApplyPIDpostCalibration(task, 1);
 		}
   }
-
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());

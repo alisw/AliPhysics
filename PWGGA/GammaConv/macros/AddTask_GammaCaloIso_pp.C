@@ -145,17 +145,20 @@ void AddTask_GammaCaloIso_pp(
 
 
   // *****************************************************************************************************
-  // ******************** pp 13 TeV cuts paper EMC *****************************************************
+  // *************************** pp 13 TeV cuts paper EMC ************************************************
   // *****************************************************************************************************
-  if (trainConfig == 33){ //Isolation Cut variations, Trackmatching, M02
-  cuts.AddCutCalo("00083113","11111000670322l0000","0163103100000050"); // EMCEG1, with TrackMatcher on
-  cuts.AddCutCalo("00083113","11111000600322l0000","0163103100000050"); // EMCEG1, with TrackMatcher off
-  cuts.AddCutCalo("00083113","1111100067032230000","0163103100000050"); // EMCEG1, with shape cut changed slightly
+  //*************************** STANDARD EMC EMC MESON CUTS **********************************************
+  //******************************************************************************************************
+  if (trainConfig == 32){ //Isolation Cut variations, Trackmatching, maxM02
+  cuts.AddCutCalo("00083113","1221100060032230000","0163103100000050"); //with TrackMatching
+  cuts.AddCutCalo("00083113","12211000600322l0000","0163103100000050"); // EMCEG1, with TrackMatcher on
+  cuts.AddCutCalo("00083113","12211000670322l0000","0163103100000050"); // EMCEG1, with TrackMatcher off
+  cuts.AddCutCalo("00083113","1221100067032230000","0163103100000050"); // EMCEG1, with shape cut changed slightly
   cuts.AddCutCalo("00083113","e2211000600322l0000","0163103100000050"); // EMCEG1, with TrackMatcher off
-
   //PhotonIsolation Variations, LHC17i3 MC without non linearity
-  } else if (trainConfig == 34){ // without TrackMatching
-  cuts.AddCutCalo("00083113","1111100067032230000","0163103100000050"); //with TrackMatching
+  } else if (trainConfig == 33){ // without TrackMatching
+  cuts.AddCutCalo("00083113","1221100067032230000","0163103100000050"); //with TrackMatching
+  cuts.AddCutCalo("00083113","1221100060032230000","0163103100000050"); //without TrackMatching
   cuts.AddCutCalo("00083113","b221100060032230000","0163103100000050"); //without TrackMatching, R=0.1
   cuts.AddCutCalo("00083113","c221100060032230000","0163103100000050"); //without TrackMatching, R=0.2
   cuts.AddCutCalo("00083113","d221100060032230000","0163103100000050"); //without TrackMatching, R=0.3

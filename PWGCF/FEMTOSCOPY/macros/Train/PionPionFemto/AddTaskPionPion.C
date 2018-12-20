@@ -9,6 +9,9 @@
 #include <TList.h>
 #include <TObjArray.h>
 
+#include "AliAnalysisTaskFemto.h"
+#include "AliAnalysisManager.h"
+
 #endif
 
 ///

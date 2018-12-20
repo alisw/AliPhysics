@@ -84,7 +84,9 @@ public:
   
   void         ClusterLoopHistograms(const TObjArray * clusters, AliVCaloCells * cells);
   
-  Bool_t       ClusterMCHistograms(Bool_t matched, const Int_t * labels, Int_t nLabels, Int_t & pdg );
+  Bool_t       ClusterMCHistograms(Bool_t matched, 
+                                   const Int_t * labels, const UShort_t * edepFrac, 
+                                   Int_t nLabels, Int_t & pdg );
 
   void         ClusterMatchedWithTrackHistograms(AliVCluster* clus, Bool_t mcOK, Int_t pdg);
 

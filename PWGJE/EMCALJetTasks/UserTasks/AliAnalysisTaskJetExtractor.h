@@ -29,7 +29,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetExtractor();
   AliAnalysisTaskJetExtractor(const char *name);
   virtual ~AliAnalysisTaskJetExtractor();
-  static AliAnalysisTaskJetExtractor* AddTaskJetExtractor(TString trackArray, TString jetArray, TString rhoObject, Double_t jetRadius, TString configFile, AliRDHFJetsCutsVertex* vertexerCuts, const char* taskNameSuffix);
+  static AliAnalysisTaskJetExtractor* AddTaskJetExtractor(TString trackArray, TString clusterArray, TString jetArray, TString rhoObject, Double_t jetRadius, TString configFile, AliRDHFJetsCutsVertex* vertexerCuts, const char* taskNameSuffix);
   void                        UserCreateOutputObjects();
   void                        Terminate(Option_t *option);
   AliEmcalJetTree*            GetJetTree() {return fJetTree;}
@@ -102,6 +102,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   // ################## BASIC EVENT VARIABLES
   AliJetContainer            *fJetsCont;                                //!<! Jets
   AliParticleContainer       *fTracksCont;                              //!<! Tracks
+  AliClusterContainer        *fClustersCont;                            //!<! Clusters
   TClonesArray*               fTruthParticleArray;                      //!<! Array of MC particles in event (mcparticles)
   TString                     fTruthJetsArrayName;                      ///< Array name for particle-level jets
   TString                     fTruthJetsRhoName;                        ///< Array name for particle-level rho
@@ -180,8 +181,10 @@ class AliEmcalJetTree : public TNamed
     void            SetSaveMCInformation(Bool_t val) {fSaveMCInformation = val; fInitialized = kFALSE;}
     void            SetSaveSecondaryVertices(Bool_t val) {fSaveSecondaryVertices = val; fInitialized = kFALSE;}
     void            SetSaveTriggerTracks(Bool_t val) {fSaveTriggerTracks = val;}
+    void            SetSaveCaloClusters(Bool_t val) {fSaveCaloClusters = val;}
     void            SetTrackContainer(AliParticleContainer* cont) {fTrackContainer = cont;}
     void            SetJetContainer(AliJetContainer* cont) {fJetContainer = cont;}
+    void            SetClusterContainer(AliClusterContainer* cont) {fClusterContainer = cont;}
     void            SetRandomGenerator(TRandom3* gen) {fRandomGenerator = gen;}
 
     void            InitializeTree();
@@ -195,6 +198,7 @@ class AliEmcalJetTree : public TNamed
     Bool_t          GetSaveMCInformation() {return fSaveMCInformation;}
     Bool_t          GetSaveSecondaryVertices() {return fSaveSecondaryVertices;}
     Bool_t          GetSaveTriggerTracks() {return fSaveTriggerTracks;}
+    Bool_t          GetSaveCaloClusters() {return fSaveCaloClusters;}
 
     std::vector<Float_t> GetExtractionPercentagePtBins() {return fExtractionPercentagePtBins;}
     std::vector<Float_t> GetExtractionPercentages() {return fExtractionPercentages;}
@@ -238,8 +242,10 @@ class AliEmcalJetTree : public TNamed
     Bool_t          fSaveMCInformation;                   ///< save MC information
     Bool_t          fSaveSecondaryVertices;               ///< save reconstructed sec. vertex properties
     Bool_t          fSaveTriggerTracks;                   ///< save event trigger track
+    Bool_t          fSaveCaloClusters;                    ///< save calorimeter clusters
 
     AliParticleContainer* fTrackContainer;                //!<! track container, used to work on tracks
+    AliClusterContainer*  fClusterContainer;              //!<! cluster container, used to work on clusters
     AliJetContainer*      fJetContainer;                  //!<! jet container, used to work on jets
     TRandom3*             fRandomGenerator;               //!<! random generator
 
@@ -255,6 +261,7 @@ class AliEmcalJetTree : public TNamed
     Float_t         fBuffer_JetPhi;                       //!<! array buffer
     Float_t         fBuffer_JetArea;                      //!<! array buffer
     Int_t           fBuffer_NumConstituents;              //!<! array buffer
+    Int_t           fBuffer_NumClusters;                  //!<! array buffer
 
     Float_t         fBuffer_Event_BackgroundDensityMass;  //!<! array buffer
     Float_t         fBuffer_Event_BackgroundDensity;      //!<! array buffer
@@ -276,6 +283,13 @@ class AliEmcalJetTree : public TNamed
     Float_t*        fBuffer_Const_ProdVtx_X;              //!<! array buffer
     Float_t*        fBuffer_Const_ProdVtx_Y;              //!<! array buffer
     Float_t*        fBuffer_Const_ProdVtx_Z;              //!<! array buffer
+
+    Float_t*        fBuffer_Cluster_Pt;                   //!<! array buffer
+    Float_t*        fBuffer_Cluster_E;                    //!<! array buffer
+    Float_t*        fBuffer_Cluster_Eta;                  //!<! array buffer
+    Float_t*        fBuffer_Cluster_Phi;                  //!<! array buffer
+    Float_t*        fBuffer_Cluster_M02;                  //!<! array buffer
+    Int_t*          fBuffer_Cluster_Label;                //!<! array buffer
 
     Float_t         fBuffer_Shape_Mass;                   //!<! array buffer
 

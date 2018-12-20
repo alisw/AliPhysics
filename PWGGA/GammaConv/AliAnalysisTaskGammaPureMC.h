@@ -68,6 +68,7 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     void SetLogBinningXTH1(TH1* histoRebin);
     void SetLogBinningXTH2(TH2* histoRebin);
     void SetIsK0(Int_t isK0){fIsK0 = isK0;}
+    void SetMaxPt(Double_t pTmax){fMaxpT = pTmax;}
 
   protected:
     TList*                fOutputContainer;           //! Output container
@@ -159,13 +160,14 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
 
 	Int_t				  fIsK0;					  // k0 flag
     Int_t                 fIsMC;                      // MC flag
+    Double_t                 fMaxpT;                      // MC flag
 
 
   private:
     AliAnalysisTaskGammaPureMC(const AliAnalysisTaskGammaPureMC&); // Prevent copy-construction
     AliAnalysisTaskGammaPureMC &operator=(const AliAnalysisTaskGammaPureMC&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaPureMC, 4);
+    ClassDef(AliAnalysisTaskGammaPureMC, 5);
 };
 
 #endif

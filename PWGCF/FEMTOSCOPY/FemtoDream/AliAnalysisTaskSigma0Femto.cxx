@@ -34,6 +34,7 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fPhotonLegPileUpCut(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
+      fMultMode(AliVEvent::kINT7),
       fGammaArray(nullptr),
       fOutputContainer(nullptr),
       fQA(nullptr),
@@ -80,6 +81,7 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name)
       fPhotonLegPileUpCut(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
+      fMultMode(AliVEvent::kINT7),
       fGammaArray(nullptr),
       fOutputContainer(nullptr),
       fQA(nullptr),
@@ -196,13 +198,15 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
 
   // Get the Sigma0 daughters
   static std::vector<AliSigma0ParticleV0> lambdaSigma;
-  fSigmaCuts->GetLambda(lambdaSigma);
   static std::vector<AliSigma0ParticleV0> photonSigma;
-  fSigmaCuts->GetPhoton(photonSigma);
   static std::vector<AliSigma0ParticleV0> lambdaAntiSigma;
-  fAntiSigmaCuts->GetLambda(lambdaAntiSigma);
   static std::vector<AliSigma0ParticleV0> photonAntiSigma;
-  fAntiSigmaCuts->GetPhoton(photonAntiSigma);
+  if (!fIsLightweight) {
+    fSigmaCuts->GetLambda(lambdaSigma);
+    fSigmaCuts->GetPhoton(photonSigma);
+    fAntiSigmaCuts->GetLambda(lambdaAntiSigma);
+    fAntiSigmaCuts->GetPhoton(photonAntiSigma);
+  }
 
   // Convert the Sigma0 into Femto particles
   static std::vector<AliFemtoDreamBasePart> sigma0particles;
@@ -225,10 +229,12 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
   CastToVector(fAntiSigmaCuts->GetSidebandDown(), antiSigma0sidebandLow,
                fMCEvent);
 
-  CastToVector(lambdaSigma, sigma0lambda, fMCEvent);
-  CastToVector(photonSigma, sigma0photon, fMCEvent);
-  CastToVector(lambdaAntiSigma, antiSigma0lambda, fMCEvent);
-  CastToVector(photonAntiSigma, antiSigma0photon, fMCEvent);
+  if (!fIsLightweight) {
+    CastToVector(lambdaSigma, sigma0lambda, fMCEvent);
+    CastToVector(photonSigma, sigma0photon, fMCEvent);
+    CastToVector(lambdaAntiSigma, antiSigma0lambda, fMCEvent);
+    CastToVector(photonAntiSigma, antiSigma0photon, fMCEvent);
+  }
 
   fPairCleaner->CleanTrackAndDecay(&particles, &sigma0particles, 0);
   fPairCleaner->CleanTrackAndDecay(&antiParticles, &antiSigma0particles, 1);
@@ -236,10 +242,12 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
   fPairCleaner->CleanTrackAndDecay(&antiParticles, &antiSigma0sidebandUp, 3);
   fPairCleaner->CleanTrackAndDecay(&particles, &sigma0sidebandLow, 4);
   fPairCleaner->CleanTrackAndDecay(&antiParticles, &antiSigma0sidebandLow, 5);
-  fPairCleaner->CleanTrackAndDecay(&particles, &sigma0lambda, 6);
-  fPairCleaner->CleanTrackAndDecay(&particles, &sigma0photon, 7);
-  fPairCleaner->CleanTrackAndDecay(&antiParticles, &antiSigma0lambda, 8);
-  fPairCleaner->CleanTrackAndDecay(&antiParticles, &antiSigma0photon, 9);
+  if (!fIsLightweight) {
+    fPairCleaner->CleanTrackAndDecay(&particles, &sigma0lambda, 6);
+    fPairCleaner->CleanTrackAndDecay(&particles, &sigma0photon, 7);
+    fPairCleaner->CleanTrackAndDecay(&antiParticles, &antiSigma0lambda, 8);
+    fPairCleaner->CleanTrackAndDecay(&antiParticles, &antiSigma0photon, 9);
+  }
 
   fPairCleaner->ResetArray();
   fPairCleaner->StoreParticle(particles);
@@ -250,10 +258,12 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
   fPairCleaner->StoreParticle(antiSigma0sidebandUp);
   fPairCleaner->StoreParticle(sigma0sidebandLow);
   fPairCleaner->StoreParticle(antiSigma0sidebandLow);
-  fPairCleaner->StoreParticle(sigma0lambda);
-  fPairCleaner->StoreParticle(sigma0photon);
-  fPairCleaner->StoreParticle(antiSigma0lambda);
-  fPairCleaner->StoreParticle(antiSigma0photon);
+  if (!fIsLightweight) {
+    fPairCleaner->StoreParticle(sigma0lambda);
+    fPairCleaner->StoreParticle(sigma0photon);
+    fPairCleaner->StoreParticle(antiSigma0lambda);
+    fPairCleaner->StoreParticle(antiSigma0photon);
+  }
 
   AliMultSelection *MultSelection = 0x0;
   MultSelection =
@@ -381,7 +391,7 @@ bool AliAnalysisTaskSigma0Femto::AcceptEventRun2(AliVEvent *event) {
   if (!fIsLightweight) fHistCentralityProfileCoarseAfter->Fill(lPercentile);
 
   fHistMultiplicity->Fill(
-      AliSigma0PhotonMotherCuts::GetMultiplicityBin(lPercentile));
+      AliSigma0PhotonMotherCuts::GetMultiplicityBin(lPercentile, fMultMode));
 
   fHistCutQA->Fill(4);
   return true;
@@ -643,10 +653,16 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     fQA->Add(fHistTriggerAfter);
   }
 
-  std::vector<float> multBinsLow = {{0, 0.01, 0.05, 0.1, 5., 15., 30., 50.}};
-  std::vector<float> multBinsUp = {{0.01, 0.05, 0.1, 5., 15., 30., 50., 100.}};
+  std::vector<float> multBinsLow, multBinsUp;
+  if (fMultMode == AliVEvent::kINT7) {
+    multBinsLow = {{0, 5., 15., 30., 50.}};
+    multBinsUp = {{5., 15., 30., 50., 100.}};
+  } else if (fMultMode == AliVEvent::kHighMultV0) {
+    multBinsLow = {{0, 0.01, 0.05, 0.1, 1}};
+    multBinsUp = {{0.01, 0.05, 0.1, 1, 100.}};
+  }
   fHistMultiplicity =
-      new TH1I("fHistMultiplicity", "; Multiplicity bin; Entries", 8, 0, 8);
+      new TH1I("fHistMultiplicity", "; Multiplicity bin; Entries", 5, 0, 5);
   fHistMultiplicity->GetXaxis()->LabelsOption("u");
   for (int i = 0; i < static_cast<int>(multBinsLow.size()); i++) {
     fHistMultiplicity->GetXaxis()->SetBinLabel(
@@ -716,8 +732,9 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     fOutputContainer->Add(fAntiSigmaCuts->GetCutHistograms());
   }
 
+  const int nPairs = (fIsLightweight) ? 6 : 10;
   fPairCleaner =
-      new AliFemtoDreamPairCleaner(10, 0, fConfig->GetMinimalBookingME());
+      new AliFemtoDreamPairCleaner(nPairs, 0, fConfig->GetMinimalBookingME());
   fPartColl =
       new AliFemtoDreamPartCollection(fConfig, fConfig->GetMinimalBookingME());
 

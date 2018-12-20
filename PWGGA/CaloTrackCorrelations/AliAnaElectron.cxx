@@ -1584,6 +1584,12 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
   else if ( dataType == AliCaloTrackReader::kAOD ) 
     pidResponse = (dynamic_cast<AliAODInputHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler()))->GetPIDResponse();
   
+  if ( !pidResponse )
+  {
+    AliFatal("AliPIDResponse not available, did you initialize the task?");
+    return; // not needed, coverity ...
+  }
+  
   //Init arrays, variables, get number of clusters
   Int_t nCaloClusters = pl->GetEntriesFast();
   //List to be used in conversion analysis, to tag the cluster as candidate for conversion
@@ -1839,8 +1845,11 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     Int_t tag = -1 ;
     if ( IsDataMC() )
     {
-      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(), calo->GetNLabels(), GetMC(),
-                                              GetReader()->GetNameOfMCEventHederGeneratorToAccept());
+      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(), 
+                                              calo->GetClusterMCEdepFraction(),
+                                              calo->GetNLabels(), GetMC(),
+                                              GetReader()->GetNameOfMCEventHederGeneratorToAccept(),
+                                              cluE);
       
       AliDebug(1,Form("Origin of candidate, bit map %d",tag));
          
