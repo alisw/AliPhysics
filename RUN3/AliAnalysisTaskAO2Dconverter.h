@@ -5,9 +5,9 @@
 #ifndef AliAnalysisTaskAO2Dconverter_H
 #define AliAnalysisTaskAO2Dconverter_H
 
+#include "AliAnalysisFilter.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
-#include "AliAnalysisFilter.h"
 
 #include <TString.h>
 
@@ -37,16 +37,22 @@ public:
     kTracks,
     kCalo,
     kTOF,
+    kKinematics,
     kTrees
   };
+  enum TaskModes {
+    kStandard = 0,
+    kMC
+  };
   TTree* CreateTree(TreeIndex t);
+  void PostTree(TreeIndex t) { AliAnalysisTask::PostData(t + 1, fTree[t]); };
   void EnableTree(TreeIndex t) { fTreeStatus[t] = kTRUE; };
   void DisableTree(TreeIndex t) { fTreeStatus[t] = kFALSE; };
   static const TString TreeName[kTrees];  //! Names of the TTree containers
   static const TString TreeTitle[kTrees]; //! Titles of the TTree containers
 
   void Prune(TString p) { fPruneList = p; }; // Setter of the pruning list
-  void SetMCMode() { fTaskMode = 1; };       // Setter of the MC running mode
+  void SetMCMode() { fTaskMode = kMC; };     // Setter of the MC running mode
 
   AliAnalysisFilter fTrackFilter; // Standard track filter object
 private:
@@ -64,7 +70,7 @@ private:
   Bool_t fTreeStatus[kTrees] = { kTRUE }; // Status of the trees i.e. kTRUE (enabled) or kFALSE (disabled)
   int fNumberOfEventsPerCluster = 1000;   // Maximum basket size of the trees
 
-  Int_t fTaskMode = 0; // Running mode of the task. Useful to set for e.g. MC mode
+  TaskModes fTaskMode = kStandard; // Running mode of the task. Useful to set for e.g. MC mode
 
   // fEventTree variables  
 
@@ -136,12 +142,23 @@ private:
   Float_t fTOFsignal = -999.f; /// TOFsignal
   Float_t fLength = -999.f;    /// Int.Lenght @ TOF
 
+  // Track labels
+  Int_t fLabel = -1;           /// Track label
+  Int_t fTOFLabel[3] = { -1 }; /// Label of the track matched to TOF
+
   // MC information
-  Int_t fPDGcode = 0;          /// Particle PDG code
-  Int_t fLabel = 0;            /// Track label
-  Int_t fPDGcodeMother = 0;    /// Particle PDG code of the first mother
-  Int_t fLabelMother = 0;      /// First mother label
-  Int_t fTOFLabel[3] = { -1 }; /// Label of the matched track
+  Int_t fPdgCode = -99999;    /// PDG code of the particle
+  Int_t fMother[2] = { 0 };   /// Indices of the mother particles
+  Int_t fDaughter[2] = { 0 }; /// Indices of the daughter particles
+
+  Float_t fPx = -999.f; /// x component of momentum
+  Float_t fPy = -999.f; /// y component of momentum
+  Float_t fPz = -999.f; /// z component of momentum
+
+  Float_t fVx = -999.f; /// x of production vertex
+  Float_t fVy = -999.f; /// y of production vertex
+  Float_t fVz = -999.f; /// z of production vertex
+  Float_t fVt = -999.f; /// t of production vertex
 
   // TOF
   Int_t fTOFChannel = -1;        /// Index of the matched channel

@@ -68,13 +68,15 @@ AliAnalysisTaskAO2Dconverter::~AliAnalysisTaskAO2Dconverter()
       delete fTree[i];
 }
 
-const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2events", "O2tracks", "O2calo", "O2tof" };
+const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2events", "O2tracks", "O2calo", "O2tof", "O2kine" };
 
-const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Event tree", "Barrel tracks", "Calorimeter cells", "TOF hits" };
+const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Event tree", "Barrel tracks", "Calorimeter cells", "TOF hits", "Kinematics" };
 
 TTree* AliAnalysisTaskAO2Dconverter::CreateTree(TreeIndex t)
 {
   fTree[t] = new TTree(TreeName[t], TreeTitle[t]);
+  if (fTreeStatus[t])
+    fTree[t]->Branch("fEventId", &fEventId, "fEventId/l"); // Branch common to all trees
   return fTree[t];
 }
 
@@ -94,7 +96,6 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   TTree* Events = CreateTree(kEvents);
   Events->SetAutoFlush(fNumberOfEventsPerCluster);
   if (fTreeStatus[kEvents]) {
-    Events->Branch("fEventId", &fEventId, "fEventId/l");
     Events->Branch("fVtxX", &fVtxX, "fVtxX/F");
     Events->Branch("fVtxY", &fVtxY, "fVtxY/F");
     Events->Branch("fVtxZ", &fVtxZ, "fVtxZ/F");
@@ -104,13 +105,12 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     Events->Branch("fEventTimeRes", &fEventTimeRes, "fEventTimeRes[10]/F");
     Events->Branch("fEventTimeMask", &fEventTimeMask, "fEventTimeMask[10]/b");
   }
-  PostData(1, Events);
+  PostTree(kEvents);
 
   // Associate branches for fTrackTree
   TTree* Tracks = CreateTree(kTracks);
   Tracks->SetAutoFlush(fNumberOfEventsPerCluster);
   if (fTreeStatus[kTracks]) {
-    Tracks->Branch("fEventId", &fEventId, "fEventId/l"); // same
     Tracks->Branch("fX", &fX, "fX/F");
     Tracks->Branch("fAlpha", &fAlpha, "fAlpha/F");
     Tracks->Branch("fY", &fY, "fY/F");
@@ -146,40 +146,52 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     Tracks->Branch("fTRDsignal", &fTRDsignal, "fTRDsignal/F");
     Tracks->Branch("fTOFsignal", &fTOFsignal, "fTOFsignal/F");
     Tracks->Branch("fLength", &fLength, "fLength/F");
-    if (fTaskMode) {
-      Tracks->Branch("fPDGcode", &fPDGcode, "fPDGcode/I");
-      Tracks->Branch("fLabel", &fLabel, "fLabel/I");
-      Tracks->Branch("fPDGcodeMother", &fPDGcodeMother, "fPDGcodeMother/I");
-      Tracks->Branch("fLabelMother", &fLabelMother, "fLabelMother/I");
-      Tracks->Branch("fTOFLabel", &fTOFLabel, "fTOFLabel[3]/I");
-    }
+    Tracks->Branch("fLabel", &fLabel, "fLabel/I");
+    Tracks->Branch("fTOFLabel", &fTOFLabel, "fTOFLabel[3]/I");
   }
-  PostData(2, Tracks);
+  PostTree(kTracks);
 
   // Associate branches for Calo
   TTree* Calo = CreateTree(kCalo);
   Calo->SetAutoFlush(fNumberOfEventsPerCluster);
   if (fTreeStatus[kCalo]) {
-    Calo->Branch("fEventId", &fEventId, "fEventId/l"); // same
     Calo->Branch("fCellNumber", &fCellNumber, "fCellNumber/S");
     Calo->Branch("fAmplitude", &fAmplitude, "fAmplitude/F");
     Calo->Branch("fTime", &fTime, "fTime/F");
     Calo->Branch("fType", &fType, "fType/B");
   }
-  PostData(3, Calo);
+  PostTree(kCalo);
 
   // Associate branches for TOF
   TTree* TOF = CreateTree(kTOF);
   TOF->SetAutoFlush(fNumberOfEventsPerCluster);
   if (fTreeStatus[kTOF]) {
-    TOF->Branch("fEventId", &fEventId, "fEventId/l"); // same
     TOF->Branch("fTOFChannel", &fTOFChannel, "fTOFChannel/I");
     TOF->Branch("fTOFncls", &fTOFncls, "fTOFncls/S");
     TOF->Branch("fDx", &fDx, "fDx/F");
     TOF->Branch("fDz", &fDz, "fDz/F");
     TOF->Branch("fToT", &fToT, "fToT/F");
   }
-  PostData(4, TOF);
+  PostTree(kTOF);
+
+  // Associate branches for Kinematics
+  TTree* Kinematics = CreateTree(kKinematics);
+  Kinematics->SetAutoFlush(fNumberOfEventsPerCluster);
+  if (fTreeStatus[kMC]) {
+    Kinematics->Branch("fPdgCode", &fPdgCode, "fPdgCode/I");
+    Kinematics->Branch("fMother", &fMother, "fMother[2]/I");
+    Kinematics->Branch("fDaughter", &fDaughter, "fDaughter[2]/I");
+
+    Kinematics->Branch("fPx", &fPx, "fPx/F");
+    Kinematics->Branch("fPy", &fPy, "fPy/F");
+    Kinematics->Branch("fPz", &fPz, "fPz/F");
+
+    Kinematics->Branch("fVx", &fVx, "fVx/F");
+    Kinematics->Branch("fVy", &fVy, "fVy/F");
+    Kinematics->Branch("fVz", &fVz, "fVz/F");
+    Kinematics->Branch("fVt", &fVt, "fVt/F");
+  }
+  PostTree(kKinematics);
 
   Prune(); //Removing all unwanted branches (if any)
 }
@@ -222,7 +234,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
   // Configuration of the MC event (if needed)
   AliMCEvent* MCEvt = nullptr;
-  if (fTaskMode) {
+  if (fTaskMode == kMC) {
     AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()); //Get the MC handler
 
     if (!eventHandler) //Check on the MC handler
@@ -338,17 +350,8 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       }
     }
 
-    if (MCEvt) {
-      fLabel = track->GetLabel();
-      TParticle* part = MCEvt->Particle(TMath::Abs(fLabel));
-      fPDGcode = part->GetPdgCode();
-      fLabelMother = part->GetFirstMother();
-
-      track->GetTOFLabel(fTOFLabel);
-
-      if (fLabelMother >= 0) //Check if the particle has a mother
-        fPDGcodeMother = MCEvt->Particle(fLabelMother)->GetPdgCode();
-    }
+    fLabel = track->GetLabel();
+    track->GetTOFLabel(fTOFLabel);
 
     FillTree(kTracks);
 
@@ -392,6 +395,31 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
 
     FillTree(kCalo);
   } // end loop on PHOS cells
+
+  if (MCEvt) {
+    TParticle* particle = nullptr;
+    for (Int_t i = 0; i < MCEvt->GetNumberOfTracks(); i++) { //loop on primary MC tracks Before Event Selection
+      particle = MCEvt->Particle(i);
+
+      //Get the kinematic values of the particles
+      fPdgCode = particle->GetPdgCode();
+      fMother[0] = particle->GetFirstMother();
+      fMother[1] = particle->GetSecondMother();
+      fDaughter[0] = particle->GetFirstDaughter();
+      fDaughter[1] = particle->GetLastDaughter();
+
+      fPx = particle->Px();
+      fPy = particle->Py();
+      fPz = particle->Pz();
+
+      fVx = particle->Vx();
+      fVy = particle->Vy();
+      fVz = particle->Vz();
+      fVt = particle->T();
+
+      FillTree(kKinematics);
+    }
+  }
   //Posting data
   for (Int_t i = 0; i < kTrees; i++)
     PostData(1 + i, fTree[i]);
