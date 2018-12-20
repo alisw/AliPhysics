@@ -45,7 +45,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   void FillEventBuffer(
       const std::vector<AliSigma0ParticleV0> &photonCandidates,
       const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
-  static int GetMultiplicityBin(float percentile);
+  static int GetMultiplicityBin(float percentile, UInt_t trigger);
   void ProcessMC() const;
   bool CheckDaughters(const AliMCParticle *particle) const;
   bool CheckDaughtersInAcceptance(const AliMCParticle *particle) const;
@@ -61,6 +61,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   void SetSigmaSideband(float down, float up) {
     fSidebandCutDown = down, fSidebandCutUp = up;
   }
+  void SetMultiplicityMode(UInt_t trigger) { fMultMode = trigger; }
 
   void SetPhotonMinPt(float minpT) { fPhotonPtMin = minpT; }
   void SetPhotonMaxPt(float maxpT) { fPhotonPtMax = maxpT; }
@@ -122,15 +123,16 @@ class AliSigma0PhotonMotherCuts : public TObject {
   std::vector<AliSigma0ParticlePhotonMother> fSidebandUp;    //!
   std::vector<AliSigma0ParticlePhotonMother> fSidebandDown;  //!
 
-  deque<vector<AliSigma0ParticleV0> > fLambdaMixed;            //!
-  deque<vector<AliSigma0ParticleV0> > fPhotonMixed;            //!
-  deque<vector<AliSigma0ParticleV0> > fLambdaMixedBinned[8];   //!
-  deque<vector<AliSigma0ParticleV0> > fPhotonMixedBinned[8];   //!
+  deque<vector<AliSigma0ParticleV0> > fLambdaMixed;           //!
+  deque<vector<AliSigma0ParticleV0> > fPhotonMixed;           //!
+  deque<vector<AliSigma0ParticleV0> > fLambdaMixedBinned[5];  //!
+  deque<vector<AliSigma0ParticleV0> > fPhotonMixedBinned[5];  //!
 
   AliSigma0V0Cuts *fLambdaCuts;  //
   AliSigma0V0Cuts *fPhotonCuts;  //
   AliV0ReaderV1 *fV0Reader;      //! basic photon Selection Task
   TString fV0ReaderName;         //
+  UInt_t fMultMode;              //
 
   short fMixingDepth;  //
   int fPDG;            //
@@ -157,20 +159,20 @@ class AliSigma0PhotonMotherCuts : public TObject {
   // =====================================================================
   TProfile *fHistCutBooking;  //!
 
-  TH1F *fHistNSigma;                        //!
-  TH1F *fHistMassCutPt;                     //!
-  TH1F *fHistInvMass;                       //!
-  TH2F *fHistInvMassRecPhoton;              //!
-  TH2F *fHistInvMassRecLambda;              //!
-  TH2F *fHistInvMassRec;                    //!
-  TH2F *fHistInvMassPt;                     //!
-  TH2F *fHistEtaPhi;                        //!
-  TH2F *fHistPtRapidity;                    //!
-  TH2F *fHistPtMult[8];                     //!
-  TH2F *fHistArmenterosBefore;              //!
-  TH2F *fHistArmenterosAfter;               //!
-  TH2F *fHistMixedInvMassPt;                //!
-  TH2F *fHistMixedInvMassBinnedMultPt[8];   //!
+  TH1F *fHistNSigma;                       //!
+  TH1F *fHistMassCutPt;                    //!
+  TH1F *fHistInvMass;                      //!
+  TH2F *fHistInvMassRecPhoton;             //!
+  TH2F *fHistInvMassRecLambda;             //!
+  TH2F *fHistInvMassRec;                   //!
+  TH2F *fHistInvMassPt;                    //!
+  TH2F *fHistEtaPhi;                       //!
+  TH2F *fHistPtRapidity;                   //!
+  TH2F *fHistPtMult[5];                    //!
+  TH2F *fHistArmenterosBefore;             //!
+  TH2F *fHistArmenterosAfter;              //!
+  TH2F *fHistMixedInvMassPt;               //!
+  TH2F *fHistMixedInvMassBinnedMultPt[5];  //!
 
   TH2F *fHistLambdaPtPhi;   //!
   TH2F *fHistLambdaPtEta;   //!
@@ -185,7 +187,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistSigmaPhotonPCorr;   //!
 
   TH1F *fHistMCTruthPt;                         //!
-  TH1F *fHistMCTruthPtMult[8];                  //!
+  TH1F *fHistMCTruthPtMult[5];                  //!
   TH2F *fHistMCTruthPtY;                        //!
   TH2F *fHistMCTruthDaughterPtY;                //!
   TH2F *fHistMCTruthDaughterPtYAccept;          //!
@@ -209,7 +211,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH2F *fHistMCV0MotherCheck;  //!
 
  private:
-  ClassDef(AliSigma0PhotonMotherCuts, 15)
+  ClassDef(AliSigma0PhotonMotherCuts, 16)
 };
 
 #endif
