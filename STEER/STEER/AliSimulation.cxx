@@ -63,7 +63,7 @@
 //                                                                           //
 // Background events can be merged by calling                                //
 //                                                                           //
-//   sim.MergeWith("background/galice.root", 2);                             //
+//   sim.MergeWith("background/galice.root", 2, raw);                        //
 //                                                                           //
 // The first argument is the file name of the background galice file. The    //
 // second argument is the number of signal events per background event.      //
@@ -71,6 +71,9 @@
 // background events. MergeWith can be called several times to merge more    //
 // than two event streams. It is assumed that the sdigits were already       //
 // produced for the background events.                                       //
+// The 3d optional (defaule=kFALSE) is to indicate that the background       //
+// event is extracted from the raw data, i.e. NO subsidiary event has to     //
+// created                                                                   //
 //                                                                           //
 // The output of raw data can be switched on by calling                      //
 //                                                                           //
@@ -613,20 +616,20 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
 }
 
 //_____________________________________________________________________________
-void AliSimulation::MergeWith(const char* fileName, Int_t nSignalPerBkgrd)
+void AliSimulation::MergeWith(const char* fileName, Int_t nSignalPerBkgrd, Bool_t raw)
 {
 // add a file with background events for merging
-
-  TObjString* fileNameStr = new TObjString(fileName);
+  TObjString* fileNameStr = new TObjString(fileName); 
   fileNameStr->SetUniqueID(nSignalPerBkgrd);
+  if (raw) fileNameStr->SetBit( AliStack::GetEmbeddingRawBit() );
   if (!fBkgrdFileNames) fBkgrdFileNames = new TObjArray;
   fBkgrdFileNames->Add(fileNameStr);
 }
 
-void AliSimulation::EmbedInto(const char* fileName, Int_t nSignalPerBkgrd)
+void AliSimulation::EmbedInto(const char* fileName, Int_t nSignalPerBkgrd, Bool_t raw)
 {
 // add a file with background events for embedding
-  MergeWith(fileName, nSignalPerBkgrd);
+  MergeWith(fileName, nSignalPerBkgrd, raw);
   fEmbeddingFlag = kTRUE;
 }
 
