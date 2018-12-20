@@ -5,11 +5,13 @@
 #ifndef AliAnalysisTaskAO2Dconverter_H
 #define AliAnalysisTaskAO2Dconverter_H
 
+#include "AliAnalysisFilter.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
-#include "AliAnalysisFilter.h"
 
 #include <TString.h>
+
+#include "TClass.h"
 
 #include <Rtypes.h>
 
@@ -32,21 +34,44 @@ public:
   void SetNumberOfEventsPerCluster(int n) { fNumberOfEventsPerCluster = n; }
 
   static AliAnalysisTaskAO2Dconverter* AddTask(TString suffix = "");
-  enum TreeIndex {
+  enum TreeIndex { // Index of the output trees
     kEvents = 0,
     kTracks,
     kCalo,
     kTOF,
+    kKinematics,
     kTrees
   };
+  enum TaskModes { // Flag for the task operation mode
+    kStandard = 0,
+    kMC
+  };
+  enum MCGeneratorID { // Generator type
+    kAliGenEventHeader = 0,
+    kAliGenCocktailEventHeader,
+    kAliGenDPMjetEventHeader,
+    kAliGenEpos3EventHeader,
+    kAliGenEposEventHeader,
+    kAliGenEventHeaderTunedPbPb,
+    kAliGenGeVSimEventHeader,
+    kAliGenHepMCEventHeader,
+    kAliGenHerwigEventHeader,
+    kAliGenHijingEventHeader,
+    kAliGenPythiaEventHeader,
+    kAliGenToyEventHeader,
+    kGenerators
+  };
+  static const TClass* Generator[kGenerators]; // Generators
+
   TTree* CreateTree(TreeIndex t);
+  void PostTree(TreeIndex t);
   void EnableTree(TreeIndex t) { fTreeStatus[t] = kTRUE; };
   void DisableTree(TreeIndex t) { fTreeStatus[t] = kFALSE; };
   static const TString TreeName[kTrees];  //! Names of the TTree containers
   static const TString TreeTitle[kTrees]; //! Titles of the TTree containers
 
-  TString fPruneList = ""; // Names of the branches that will not be saved to output file
-  void Prune(TString p) { fPruneList = p; };
+  void Prune(TString p) { fPruneList = p; }; // Setter of the pruning list
+  void SetMCMode() { fTaskMode = kMC; };     // Setter of the MC running mode
 
   AliAnalysisFilter fTrackFilter; // Standard track filter object
 private:
@@ -54,14 +79,19 @@ private:
   AliESDEvent *fESD = nullptr;  //! input event
   TList *fOutputList = nullptr; //! output list
 
-  void Prune();                       // Function to perform tree pruning
-  Bool_t fTreeStatus[kTrees];         // Status of the trees i.e. kTRUE (enabled) or kFALSE (disabled)
+  // Output TTree
   TTree* fTree[kTrees] = { nullptr }; //! Array with all the output trees
-  void FillTree(TreeIndex t);
+  void Prune();                       // Function to perform tree pruning
+  void FillTree(TreeIndex t);         // Function to fill the trees (only the active ones)
 
-  int fNumberOfEventsPerCluster = 1000;
+  // Task configuration variables
+  TString fPruneList = "";                // Names of the branches that will not be saved to output file
+  Bool_t fTreeStatus[kTrees] = { kTRUE }; // Status of the trees i.e. kTRUE (enabled) or kFALSE (disabled)
+  int fNumberOfEventsPerCluster = 1000;   // Maximum basket size of the trees
 
-  // fEventTree variables  
+  TaskModes fTaskMode = kStandard; // Running mode of the task. Useful to set for e.g. MC mode
+
+  // fEventTree variables
 
   // Event variables
   ULong64_t fEventId = 0u;      /// Event unique id
@@ -74,6 +104,12 @@ private:
   Float_t fEventTime[10] = { -999.f };    /// Event time (t0) obtained with different methods (best, T0, T0-TOF, ...) for the whole event as a function of momentum
   Float_t fEventTimeRes[10] = { -999.f }; /// Resolution on the event time (t0) obtained with different methods (best, T0, T0-TOF, ...) for the whole event as a function of momentum
   UChar_t fEventTimeMask[10] = { 0u };    /// Mask with the method used to compute the event time (0x1=T0-TOF,0x2=T0A,0x3=TOC) for each momentum bins
+
+  // MC information on the event
+  Short_t fGeneratorID = 0u; /// Generator ID used for the MC
+  Float_t fMCVtxX = -999.f;  /// Primary vertex x coordinate from MC
+  Float_t fMCVtxY = -999.f;  /// Primary vertex y coordinate from MC
+  Float_t fMCVtxZ = -999.f;  /// Primary vertex z coordinate from MC
 
   // fTrackTree variables
 
@@ -131,13 +167,31 @@ private:
   Float_t fTOFsignal = -999.f; /// TOFsignal
   Float_t fLength = -999.f;    /// Int.Lenght @ TOF
 
+  // Track labels
+  Int_t fLabel = -1;           /// Track label
+  Int_t fTOFLabel[3] = { -1 }; /// Label of the track matched to TOF
+
+  // MC information
+  Int_t fPdgCode = -99999;    /// PDG code of the particle
+  Int_t fMother[2] = { 0 };   /// Indices of the mother particles
+  Int_t fDaughter[2] = { 0 }; /// Indices of the daughter particles
+
+  Float_t fPx = -999.f; /// x component of momentum
+  Float_t fPy = -999.f; /// y component of momentum
+  Float_t fPz = -999.f; /// z component of momentum
+
+  Float_t fVx = -999.f; /// x of production vertex
+  Float_t fVy = -999.f; /// y of production vertex
+  Float_t fVz = -999.f; /// z of production vertex
+  Float_t fVt = -999.f; /// t of production vertex
+
   // TOF
-  Int_t fTOFChannel = -1;    /// Index of the matched channel
-  Short_t fTOFncls = -1;     /// Number of matchable clusters of the track
-  Float_t fDx = -1;          /// Residual along x
-  Float_t fDz = -1;          /// Residual along z
-  Float_t fToT = -1;         /// ToT
-  Float_t fLengthRatio = -1; /// Ratio of the integrated track length @ TOF to the cluster with respect to the matched cluster
+  Int_t fTOFChannel = -1;        /// Index of the matched channel
+  Short_t fTOFncls = -1;         /// Number of matchable clusters of the track
+  Float_t fDx = -999.f;          /// Residual along x
+  Float_t fDz = -999.f;          /// Residual along z
+  Float_t fToT = -999.f;         /// ToT
+  Float_t fLengthRatio = -999.f; /// Ratio of the integrated track length @ TOF to the cluster with respect to the matched cluster
 
   // fCaloTree variables
   Short_t fCellNumber = -1;     /// Cell absolute Id. number
