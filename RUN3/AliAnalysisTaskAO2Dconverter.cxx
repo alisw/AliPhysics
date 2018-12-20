@@ -112,7 +112,7 @@ void AliAnalysisTaskAO2Dconverter::FillTree(TreeIndex t)
 void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
 {
   switch (fTaskMode) { // Setting active/inactive containers based on the TaskMode
-  case kMC:
+  case kStandard:
     DisableTree(kKinematics);
     break;
   default:
