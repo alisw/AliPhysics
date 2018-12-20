@@ -35,6 +35,19 @@
 #include "AliMCEventHandler.h"
 #include "AliPIDResponse.h"
 
+#include "AliGenCocktailEventHeader.h"
+#include "AliGenDPMjetEventHeader.h"
+#include "AliGenEpos3EventHeader.h"
+#include "AliGenEposEventHeader.h"
+#include "AliGenEventHeader.h"
+#include "AliGenEventHeaderTunedPbPb.h"
+#include "AliGenGeVSimEventHeader.h"
+#include "AliGenHepMCEventHeader.h"
+#include "AliGenHerwigEventHeader.h"
+#include "AliGenHijingEventHeader.h"
+#include "AliGenPythiaEventHeader.h"
+#include "AliGenToyEventHeader.h"
+
 ClassImp(AliAnalysisTaskAO2Dconverter);
 
 namespace
@@ -72,6 +85,8 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = { "O2events", "O2
 
 const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = { "Event tree", "Barrel tracks", "Calorimeter cells", "TOF hits", "Kinematics" };
 
+const TClass* AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = { AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class() };
+
 TTree* AliAnalysisTaskAO2Dconverter::CreateTree(TreeIndex t)
 {
   fTree[t] = new TTree(TreeName[t], TreeTitle[t]);
@@ -104,6 +119,12 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     Events->Branch("fEventTime", &fEventTime, "fEventTime[10]/F");
     Events->Branch("fEventTimeRes", &fEventTimeRes, "fEventTimeRes[10]/F");
     Events->Branch("fEventTimeMask", &fEventTimeMask, "fEventTimeMask[10]/b");
+    if (fTaskMode == kMC) {
+      Events->Branch("fGeneratorID", &fGeneratorID, "fGeneratorID/S");
+      Events->Branch("fMCVtxX", &fMCVtxX, "fMCVtxX/F");
+      Events->Branch("fMCVtxY", &fMCVtxY, "fMCVtxY/F");
+      Events->Branch("fMCVtxZ", &fMCVtxZ, "fMCVtxZ/F");
+    }
   }
   PostTree(kEvents);
 
@@ -280,6 +301,30 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
       SETBIT(fEventTimeMask[i], 2);
     else
       CLRBIT(fEventTimeMask[i], 2);
+  }
+  if (MCEvt) {
+    const AliVVertex* MCvtx = MCEvt->GetPrimaryVertex();
+    if (!MCvtx) //Check on the MC vertex
+      AliFatal("Could not retrieve MC vertex");
+    fMCVtxX = MCvtx->GetX();
+    fMCVtxY = MCvtx->GetY();
+    fMCVtxZ = MCvtx->GetZ();
+    AliGenEventHeader* mcGenH = MCEvt->GenEventHeader();
+    for (Int_t gen = 0; gen < kGenerators; gen++) {
+      if (mcGenH->InheritsFrom(Generator[gen]))
+        SETBIT(fGeneratorID, gen);
+      else
+        CLRBIT(fGeneratorID, gen);
+    }
+    if (mcGenH->InheritsFrom(Generator[kAliGenCocktailEventHeader])) {
+      TList* headers = ((AliGenCocktailEventHeader*)mcGenH)->GetHeaders();
+      for (Int_t cocktail = 0; cocktail < headers->GetEntries(); headers++) {
+        for (Int_t gen = 0; gen < kGenerators; gen++) {
+          if (mcGenH->InheritsFrom(Generator[gen]))
+            SETBIT(fGeneratorID, gen);
+        }
+      }
+    }
   }
   FillTree(kEvents);
 

@@ -11,6 +11,8 @@
 
 #include <TString.h>
 
+#include "TClass.h"
+
 #include <Rtypes.h>
 
 class AliESDEvent;
@@ -32,7 +34,7 @@ public:
   void SetNumberOfEventsPerCluster(int n) { fNumberOfEventsPerCluster = n; }
 
   static AliAnalysisTaskAO2Dconverter* AddTask(TString suffix = "");
-  enum TreeIndex {
+  enum TreeIndex { // Index of the output trees
     kEvents = 0,
     kTracks,
     kCalo,
@@ -40,10 +42,27 @@ public:
     kKinematics,
     kTrees
   };
-  enum TaskModes {
+  enum TaskModes { // Flag for the task operation mode
     kStandard = 0,
     kMC
   };
+  enum MCGeneratorID { // Generator type
+    kAliGenEventHeader = 0,
+    kAliGenCocktailEventHeader,
+    kAliGenDPMjetEventHeader,
+    kAliGenEpos3EventHeader,
+    kAliGenEposEventHeader,
+    kAliGenEventHeaderTunedPbPb,
+    kAliGenGeVSimEventHeader,
+    kAliGenHepMCEventHeader,
+    kAliGenHerwigEventHeader,
+    kAliGenHijingEventHeader,
+    kAliGenPythiaEventHeader,
+    kAliGenToyEventHeader,
+    kGenerators
+  };
+  static const TClass* Generator[kGenerators]; // Generators
+
   TTree* CreateTree(TreeIndex t);
   void PostTree(TreeIndex t) { AliAnalysisTask::PostData(t + 1, fTree[t]); };
   void EnableTree(TreeIndex t) { fTreeStatus[t] = kTRUE; };
@@ -72,7 +91,7 @@ private:
 
   TaskModes fTaskMode = kStandard; // Running mode of the task. Useful to set for e.g. MC mode
 
-  // fEventTree variables  
+  // fEventTree variables
 
   // Event variables
   ULong64_t fEventId = 0u;      /// Event unique id
@@ -85,6 +104,12 @@ private:
   Float_t fEventTime[10] = { -999.f };    /// Event time (t0) obtained with different methods (best, T0, T0-TOF, ...) for the whole event as a function of momentum
   Float_t fEventTimeRes[10] = { -999.f }; /// Resolution on the event time (t0) obtained with different methods (best, T0, T0-TOF, ...) for the whole event as a function of momentum
   UChar_t fEventTimeMask[10] = { 0u };    /// Mask with the method used to compute the event time (0x1=T0-TOF,0x2=T0A,0x3=TOC) for each momentum bins
+
+  // MC information on the event
+  Short_t fGeneratorID = 0u; /// Generator ID used for the MC
+  Float_t fMCVtxX = -999.f;  /// Primary vertex x coordinate from MC
+  Float_t fMCVtxY = -999.f;  /// Primary vertex y coordinate from MC
+  Float_t fMCVtxZ = -999.f;  /// Primary vertex z coordinate from MC
 
   // fTrackTree variables
 
