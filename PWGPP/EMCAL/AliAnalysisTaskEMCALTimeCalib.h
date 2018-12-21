@@ -277,12 +277,13 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   private:
   
   // variables and functions needed for PAR handling
-  std::vector<PARInfo> fPARvec;
-  PARInfo fCurrentPARs;
-  Int_t fCurrentPARIndex = 0;
-  Bool_t fIsPARRun = kFALSE; 
+  std::vector<PARInfo> fPARvec; ///< vector of PAR info for all runs
+  PARInfo fCurrentPARs; //! Par Info for current Run Number
+  Int_t fCurrentPARIndex = 0; //! Which PAR the currnt event is after
+  Bool_t fIsPARRun = kFALSE; //! Does current run have PAR info? 
   void GetPARInfoForRunNumber(Int_t runnum);
 
+  
   virtual void PrepareTOFT0maker();
   Bool_t SetEMCalGeometry();
   Bool_t AcceptCluster(AliVCluster* clus);

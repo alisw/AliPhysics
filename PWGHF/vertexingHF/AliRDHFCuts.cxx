@@ -130,7 +130,8 @@ fCutGeoNcrNclFractionNcr(0.85),
 fCutGeoNcrNclFractionNcl(0.7),
 fUseV0ANDSelectionOffline(kFALSE),
 fUseTPCtrackCutsOnThisDaughter(kTRUE),
-fApplyZcutOnSPDvtx(kFALSE)
+fApplyZcutOnSPDvtx(kFALSE),
+fUsePreselect(0)
 {
   //
   // Default Constructor
@@ -208,7 +209,8 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fCutGeoNcrNclFractionNcl(source.fCutGeoNcrNclFractionNcl),
   fUseV0ANDSelectionOffline(source.fUseV0ANDSelectionOffline),
   fUseTPCtrackCutsOnThisDaughter(source.fUseTPCtrackCutsOnThisDaughter),
-  fApplyZcutOnSPDvtx(source.fApplyZcutOnSPDvtx)
+  fApplyZcutOnSPDvtx(source.fApplyZcutOnSPDvtx),
+  fUsePreselect(source.fUsePreselect)
 {
   //
   // Copy constructor
@@ -312,6 +314,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fCutGeoNcrNclFractionNcl=source.fCutGeoNcrNclFractionNcl;
   fUseV0ANDSelectionOffline=source.fUseV0ANDSelectionOffline;
   fUseTPCtrackCutsOnThisDaughter=source.fUseTPCtrackCutsOnThisDaughter;
+  fUsePreselect=source.fUsePreselect;
 
   PrintAll();
 
@@ -1232,6 +1235,7 @@ void AliRDHFCuts::PrintAll() const {
    }
    cout<<endl;
   }
+  printf("fUsePreselect=%d \n",fUsePreselect);
   if(fPidHF) fPidHF->PrintAll();
   return;
 }
@@ -1577,6 +1581,8 @@ Bool_t AliRDHFCuts::CompareCuts(const AliRDHFCuts *obj) const {
 
     if(fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)!=obj->fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)) {printf("ClusterReq SPD %d  %d\n",fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD),obj->fTrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD)); areEqual=kFALSE;}
   }
+  
+  if(fUsePreselect!=obj->fUsePreselect){printf("fUsePreselect: %d %d\n",fUsePreselect,obj->fUsePreselect);areEqual=kFALSE;}
 
   if(fCutsRD) {
    for(Int_t iv=0;iv<fnVars;iv++) {

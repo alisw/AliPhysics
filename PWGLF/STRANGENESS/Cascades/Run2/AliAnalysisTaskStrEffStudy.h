@@ -435,6 +435,7 @@ private:
     AliESDtrack *fTreeVariableNegTrack;
     
     AliESDv0 *fTreeVariableOTFV0;
+    Bool_t fTreeVariableFoundOTFV0; 
     
     Float_t fTreeVariableMagneticField;
     

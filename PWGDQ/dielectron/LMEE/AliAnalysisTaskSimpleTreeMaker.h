@@ -174,10 +174,6 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		// 0 = gen purp, 1=Pythia CC_1, 2= Pythia BB_1, 3=Pythia B_1, 4=Jpsi2ee_1, 5=B2Jpsi2ee_1";
 		Int_t CheckGenerator(Int_t trackID);
 
-		Bool_t isDPMJET(Bool_t answer){
-			ignoreFirstMother = answer;
-		}
-
   private:
  
 		Int_t IsEventAccepted(AliVEvent* event);
@@ -321,8 +317,6 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		// Store list of generator hashes which can be checked to determine whether
 		// or not the track was injected
 		std::vector<UInt_t> fGeneratorHashes;
-
-		Bool_t ignoreFirstMother;
 
 		ClassDef(AliAnalysisTaskSimpleTreeMaker, 6); 
 

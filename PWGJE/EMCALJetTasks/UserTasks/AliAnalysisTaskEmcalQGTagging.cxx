@@ -208,11 +208,11 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
 
 
   
-   //log(1/theta),log(z*theta),jetpT,algo// 
-   const Int_t dimSpec   = 5;
-   const Int_t nBinsSpec[5]     = {50,50,10,3,10};
-   const Double_t lowBinSpec[5] = {0.0,-10,  0,0,0};
-   const Double_t hiBinSpec[5]  = {5.0,  0,200,3,10};
+   //log(1/theta),log(kt),jetpT,depth, algo, Eradiator// 
+   const Int_t dimSpec   = 6;
+   const Int_t nBinsSpec[6]     = {50,100,100,20,3,100};
+   const Double_t lowBinSpec[6] = {0.,-10,0,0,0,0};
+   const Double_t hiBinSpec[6]  = {5.,10.,100,20,3,100};
    fHLundIterative = new THnSparseF("fHLundIterative",
                    "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
                    dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
@@ -1222,10 +1222,11 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
     double delta_R=j1.delta_R(j2);
     double z=j2.perp()/(j1.perp()+j2.perp());
     double y =log(1.0/delta_R);
-    double lnpt_rel=log(z*delta_R);
+    double lnpt_rel=log(j2.perp()*delta_R);
+    double yh=j1.e()+j2.e();
     if(z>fHardCutoff){
      ndepth=ndepth+1;  
-    Double_t LundEntries[5] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo,ndepth};  
+     Double_t LundEntries[6] = {y,lnpt_rel,fOutputJets[0].perp(),nall,xflagalgo,yh};  
     fHLundIterative->Fill(LundEntries);}
     jj=j1;} 
 

@@ -479,10 +479,16 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
     fhEneVsAbsIdLG = new TH2F("fhEneVsAbsIdLG", "energy vs ID for LG",1000,0,18000,200,0,40);
   }
 
-  //Set-up Info for PAR histograms 
+  //Set-up Info for PAR histograms
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr) AliFatal("No Analysis Manager available...\n");
   Int_t runNum = mgr->GetRunFromPath();
+  if(runNum == 0){
+    runNum = TString(gSystem->Getenv("RUNNO")).Atoi();
+    if(runNum < 200000){
+        AliFatal("Run Number not correctly set in UserCreateOutputObjects()!");
+    }
+  }
   GetPARInfoForRunNumber(runNum);
 
   if(fIsPARRun){
@@ -979,6 +985,7 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
 	  if(fFillHeavyHisto){
           fhRawTimeVsIdBC[nBC]->Fill(absId,hkdtime);
           if(fIsPARRun){
+            if(fhRawTimePARs[fCurrentPARIndex][nBC]==0x0)AliFatal(Form("No Histogram for PAR number %d! Problem with Create Output Objects", fCurrentPARIndex));
             fhRawTimePARs[fCurrentPARIndex][nBC]->Fill(absId, hkdtime);
           }
       }
@@ -1871,11 +1878,16 @@ void AliAnalysisTaskEMCALTimeCalib::SetPARInfo(TString PARFileName){
 //_______________________________________________________________________
 // Get Par info for the current run number, set-up PAR info variables
 void AliAnalysisTaskEMCALTimeCalib::GetPARInfoForRunNumber(Int_t runnum){
-
+  if(runnum < 200000) AliFatal(Form("Bad Run Number %d passed to GetPARInfo!", runnum));
   if(fRunNumber!=runnum) fRunNumber = runnum;
   fIsPARRun = kFALSE;
   fCurrentPARs.PARGlobalBCs.erase(fCurrentPARs.PARGlobalBCs.begin(), fCurrentPARs.PARGlobalBCs.end());
   for(int iPARrun = 0; iPARrun < fPARvec.size(); iPARrun++){
+      //printf("from stored vectors: %d %d", fPARvec[iPARrun].runNumber, fPARvec[iPARrun].numPARs);
+      //for(int i = 0; i < fPARvec[iPARrun].numPARs; i++){
+      //  printf(" %llu", fPARvec[iPARrun].PARGlobalBCs[i]);
+      //}
+      //printf("\n");
       if (fRunNumber==fPARvec[iPARrun].runNumber){
           //set PAR flag & setup copy of specific PAR info
           fIsPARRun = kTRUE;

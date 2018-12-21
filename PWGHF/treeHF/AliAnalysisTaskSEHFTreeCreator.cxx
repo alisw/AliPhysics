@@ -1379,8 +1379,8 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                 if(isSelectedAnalysis) isSelAnCuts=kTRUE;
                 Bool_t ispKpi=kFALSE;
                 Bool_t ispiKp=kFALSE;
-                if(isSelectedAnalysis==1 || isSelectedAnalysis==3) ispKpi=kTRUE;
-                if(isSelectedAnalysis>2)                           ispiKp=kTRUE;
+                if(isSelectedFilt==1 || isSelectedFilt==3)     ispKpi=kTRUE;
+                if(isSelectedFilt>2)                           ispiKp=kTRUE;
                 //Printf("isSelectedFilt = %i isSelectedAnalysis = %i",isSelectedFilt,isSelectedAnalysis);
                 if(isSelectedFilt){
                   fNentries->Fill(23);

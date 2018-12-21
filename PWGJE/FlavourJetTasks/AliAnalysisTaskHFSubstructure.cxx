@@ -350,7 +350,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	  }
 	  //delete Matched_Truth_Particle;
 	}
-	else continue; 
+	//else continue; 
 	if (fPromptReject && !Is_Prompt_Correct_Quark) continue; 
 
 	//if (TMath::Abs(Matched_Truth_Particle_PDG)!=fCandidatePDG) continue; 
