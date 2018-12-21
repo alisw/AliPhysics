@@ -4418,10 +4418,12 @@ void AliAnalysisTaskEMCALPhotonIsolation::ComputeConeAreaInEMCal(Double_t etaCan
 
     // Compute the isolation cone area for neutral + charged isolation depending on the cluster position (for fiducial cuts lower than cone radius)
 
-  Double_t phiMin = 0., phiMax = 0., etaMin = 0., etaMax = 0.;
-  Double_t d_eta = 0. , d_phi = 0.;
+  Double_t phiMin = 0., phiMax = 0., etaMin  = 0., etaMax  = 0.;
+  Double_t d_eta  = 0., d_phi  = 0., sqd_eta = 0., sqd_phi = 0., sqRadius = 0., fullConeArea = 0.;
 
-  coneArea = 0.;
+  coneArea     = 0.;
+  sqRadius     = TMath::Power(fIsoConeRadius, 2.);
+  fullConeArea = TMath::Pi()*sqRadius;
 
   if(fPeriod != ""){
     etaMin = fGeom->GetArm1EtaMin()+0.03;
@@ -4441,63 +4443,63 @@ void AliAnalysisTaskEMCALPhotonIsolation::ComputeConeAreaInEMCal(Double_t etaCan
   }
 
   if((etaCand > etaMax-fIsoConeRadius) && (phiCand > phiMax-fIsoConeRadius)){ // Cluster in EMCal top right corner
-    d_eta = TMath::Abs(etaMax-etaCand);
-    d_phi = TMath::Abs(phiMax-phiCand);
+    d_eta = TMath::Abs(etaMax-etaCand); sqd_eta = TMath::Power(d_eta, 2.);
+    d_phi = TMath::Abs(phiMax-phiCand); sqd_phi = TMath::Power(d_phi, 2.);
 
-    if(TMath::Sqrt(TMath::Power(d_eta, 2.)+TMath::Power(d_phi, 2.)) >= fIsoConeRadius)
-      coneArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.) - (TMath::Power(fIsoConeRadius, 2.)*TMath::ACos(d_phi/fIsoConeRadius)-d_phi*TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.))) - (TMath::Power(fIsoConeRadius, 2.)*TMath::ACos(d_eta/fIsoConeRadius)-d_eta*TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)));
+    if(TMath::Sqrt(sqd_eta+sqd_phi) >= fIsoConeRadius)
+      coneArea = fullConeArea - (sqRadius*TMath::ACos(d_phi/fIsoConeRadius)-d_phi*TMath::Sqrt(sqRadius-sqd_phi)) - (sqRadius*TMath::ACos(d_eta/fIsoConeRadius)-d_eta*TMath::Sqrt(sqRadius-sqd_eta));
     else
-      coneArea = 0.25*TMath::Pi()*TMath::Power(fIsoConeRadius, 2.) + d_eta*d_phi + d_eta*TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)) + d_phi*TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)) + TMath::Power(fIsoConeRadius, 2.)*TMath::ACos(0.5*TMath::Sqrt(4*TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)-TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)), 2.))/fIsoConeRadius) - 0.25*TMath::Sqrt(4*TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)-TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)), 2.))*TMath::Sqrt(TMath::Power(d_eta, 2.)+TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)), 2.)) + 0.5*(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)))*d_eta + TMath::Power(fIsoConeRadius, 2.)*TMath::ACos(0.5*TMath::Sqrt(4*TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)-TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)), 2.))/fIsoConeRadius) - 0.25*TMath::Sqrt(4*TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)-TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)), 2.))*TMath::Sqrt(TMath::Power(d_phi, 2.)+TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)), 2.)) + 0.5*(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)))*d_phi;
+      coneArea = 0.25*fullConeArea + d_eta*d_phi + d_eta*TMath::Sqrt(sqRadius-sqd_eta) + d_phi*TMath::Sqrt(sqRadius-sqd_phi) + sqRadius*TMath::ACos(0.5*TMath::Sqrt(4*sqRadius-sqd_eta-TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_eta), 2.))/fIsoConeRadius) - 0.25*TMath::Sqrt(4*sqRadius-sqd_eta-TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_eta), 2.))*TMath::Sqrt(sqd_eta+TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_eta), 2.)) + 0.5*(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_eta))*d_eta + sqRadius*TMath::ACos(0.5*TMath::Sqrt(4*sqRadius-sqd_phi-TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_phi), 2.))/fIsoConeRadius) - 0.25*TMath::Sqrt(4*sqRadius-sqd_phi-TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_phi), 2.))*TMath::Sqrt(sqd_phi+TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_phi), 2.)) + 0.5*(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_phi))*d_phi;
   }
   else if((etaCand > etaMax-fIsoConeRadius) && (phiCand < phiMin+fIsoConeRadius)){ // Cluster in EMCal bottom right corner
-    d_eta = TMath::Abs(etaMax-etaCand);
-    d_phi = TMath::Abs(phiMin-phiCand);
+    d_eta = TMath::Abs(etaMax-etaCand); sqd_eta = TMath::Power(d_eta, 2.);
+    d_phi = TMath::Abs(phiMin-phiCand); sqd_phi = TMath::Power(d_phi, 2.);
 
-    if(TMath::Sqrt(TMath::Power(d_eta, 2.)+TMath::Power(d_phi, 2.)) >= fIsoConeRadius)
-      coneArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.) - (TMath::Power(fIsoConeRadius, 2.)*TMath::ACos(d_phi/fIsoConeRadius)-d_phi*TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.))) - (TMath::Power(fIsoConeRadius, 2.)*TMath::ACos(d_eta/fIsoConeRadius)-d_eta*TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)));
+    if(TMath::Sqrt(sqd_eta+sqd_phi) >= fIsoConeRadius)
+      coneArea = fullConeArea - (sqRadius*TMath::ACos(d_phi/fIsoConeRadius)-d_phi*TMath::Sqrt(sqRadius-sqd_phi)) - (sqRadius*TMath::ACos(d_eta/fIsoConeRadius)-d_eta*TMath::Sqrt(sqRadius-sqd_eta));
     else
-      coneArea = 0.25*TMath::Pi()*TMath::Power(fIsoConeRadius, 2.) + d_eta*d_phi + d_eta*TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)) + d_phi*TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)) + TMath::Power(fIsoConeRadius, 2.)*TMath::ACos(0.5*TMath::Sqrt(4*TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)-TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)), 2.))/fIsoConeRadius) - 0.25*TMath::Sqrt(4*TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)-TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)), 2.))*TMath::Sqrt(TMath::Power(d_eta, 2.)+TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)), 2.)) + 0.5*(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)))*d_eta + TMath::Power(fIsoConeRadius, 2.)*TMath::ACos(0.5*TMath::Sqrt(4*TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)-TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)), 2.))/fIsoConeRadius) - 0.25*TMath::Sqrt(4*TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)-TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)), 2.))*TMath::Sqrt(TMath::Power(d_phi, 2.)+TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)), 2.)) + 0.5*(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)))*d_phi;
+      coneArea = 0.25*fullConeArea + d_eta*d_phi + d_eta*TMath::Sqrt(sqRadius-sqd_eta) + d_phi*TMath::Sqrt(sqRadius-sqd_phi) + sqRadius*TMath::ACos(0.5*TMath::Sqrt(4*sqRadius-sqd_eta-TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_eta), 2.))/fIsoConeRadius) - 0.25*TMath::Sqrt(4*sqRadius-sqd_eta-TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_eta), 2.))*TMath::Sqrt(sqd_eta+TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_eta), 2.)) + 0.5*(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_eta))*d_eta + sqRadius*TMath::ACos(0.5*TMath::Sqrt(4*sqRadius-sqd_phi-TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_phi), 2.))/fIsoConeRadius) - 0.25*TMath::Sqrt(4*sqRadius-sqd_phi-TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_phi), 2.))*TMath::Sqrt(sqd_phi+TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_phi), 2.)) + 0.5*(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_phi))*d_phi;
   }
   else if((etaCand < etaMin+fIsoConeRadius) && (phiCand < phiMin+fIsoConeRadius)){ // Cluster in EMCal bottom left corner
-    d_eta = TMath::Abs(etaMin-etaCand);
-    d_phi = TMath::Abs(phiMin-phiCand);
+    d_eta = TMath::Abs(etaMin-etaCand); sqd_eta = TMath::Power(d_eta, 2.);
+    d_phi = TMath::Abs(phiMin-phiCand); sqd_phi = TMath::Power(d_phi, 2.);
 
-    if(TMath::Sqrt(TMath::Power(d_eta, 2.)+TMath::Power(d_phi, 2.)) >= fIsoConeRadius)
-      coneArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.) - (TMath::Power(fIsoConeRadius, 2.)*TMath::ACos(d_phi/fIsoConeRadius)-d_phi*TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.))) - (TMath::Power(fIsoConeRadius, 2.)*TMath::ACos(d_eta/fIsoConeRadius)-d_eta*TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)));
+    if(TMath::Sqrt(sqd_eta+sqd_phi) >= fIsoConeRadius)
+      coneArea = fullConeArea - (sqRadius*TMath::ACos(d_phi/fIsoConeRadius)-d_phi*TMath::Sqrt(sqRadius-sqd_phi)) - (sqRadius*TMath::ACos(d_eta/fIsoConeRadius)-d_eta*TMath::Sqrt(sqRadius-sqd_eta));
     else
-      coneArea = 0.25*TMath::Pi()*TMath::Power(fIsoConeRadius, 2.) + d_eta*d_phi + d_eta*TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)) + d_phi*TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)) + TMath::Power(fIsoConeRadius, 2.)*TMath::ACos(0.5*TMath::Sqrt(4*TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)-TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)), 2.))/fIsoConeRadius) - 0.25*TMath::Sqrt(4*TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)-TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)), 2.))*TMath::Sqrt(TMath::Power(d_eta, 2.)+TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)), 2.)) + 0.5*(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)))*d_eta + TMath::Power(fIsoConeRadius, 2.)*TMath::ACos(0.5*TMath::Sqrt(4*TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)-TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)), 2.))/fIsoConeRadius) - 0.25*TMath::Sqrt(4*TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)-TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)), 2.))*TMath::Sqrt(TMath::Power(d_phi, 2.)+TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)), 2.)) + 0.5*(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)))*d_phi;
+      coneArea = 0.25*fullConeArea + d_eta*d_phi + d_eta*TMath::Sqrt(sqRadius-sqd_eta) + d_phi*TMath::Sqrt(sqRadius-sqd_phi) + sqRadius*TMath::ACos(0.5*TMath::Sqrt(4*sqRadius-sqd_eta-TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_eta), 2.))/fIsoConeRadius) - 0.25*TMath::Sqrt(4*sqRadius-sqd_eta-TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_eta), 2.))*TMath::Sqrt(sqd_eta+TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_eta), 2.)) + 0.5*(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_eta))*d_eta + sqRadius*TMath::ACos(0.5*TMath::Sqrt(4*sqRadius-sqd_phi-TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_phi), 2.))/fIsoConeRadius) - 0.25*TMath::Sqrt(4*sqRadius-sqd_phi-TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_phi), 2.))*TMath::Sqrt(sqd_phi+TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_phi), 2.)) + 0.5*(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_phi))*d_phi;
   }
   else if((etaCand < etaMin+fIsoConeRadius) && (phiCand > phiMax-fIsoConeRadius)){ // Cluster in EMCal top left corner
-    d_eta = TMath::Abs(etaMin-etaCand);
-    d_phi = TMath::Abs(phiMax-phiCand);
+    d_eta = TMath::Abs(etaMin-etaCand); sqd_eta = TMath::Power(d_eta, 2.);
+    d_phi = TMath::Abs(phiMax-phiCand); sqd_phi = TMath::Power(d_phi, 2.);
 
-    if(TMath::Sqrt(TMath::Power(d_eta, 2.)+TMath::Power(d_phi, 2.)) >= fIsoConeRadius)
-      coneArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.) - (TMath::Power(fIsoConeRadius, 2.)*TMath::ACos(d_phi/fIsoConeRadius)-d_phi*TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.))) - (TMath::Power(fIsoConeRadius, 2.)*TMath::ACos(d_eta/fIsoConeRadius)-d_eta*TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)));
+    if(TMath::Sqrt(sqd_eta+sqd_phi) >= fIsoConeRadius)
+      coneArea = fullConeArea - (sqRadius*TMath::ACos(d_phi/fIsoConeRadius)-d_phi*TMath::Sqrt(sqRadius-sqd_phi)) - (sqRadius*TMath::ACos(d_eta/fIsoConeRadius)-d_eta*TMath::Sqrt(sqRadius-sqd_eta));
     else
-      coneArea = 0.25*TMath::Pi()*TMath::Power(fIsoConeRadius, 2.) + d_eta*d_phi + d_eta*TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)) + d_phi*TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)) + TMath::Power(fIsoConeRadius, 2.)*TMath::ACos(0.5*TMath::Sqrt(4*TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)-TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)), 2.))/fIsoConeRadius) - 0.25*TMath::Sqrt(4*TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)-TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)), 2.))*TMath::Sqrt(TMath::Power(d_eta, 2.)+TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)), 2.)) + 0.5*(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)))*d_eta + TMath::Power(fIsoConeRadius, 2.)*TMath::ACos(0.5*TMath::Sqrt(4*TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)-TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)), 2.))/fIsoConeRadius) - 0.25*TMath::Sqrt(4*TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)-TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)), 2.))*TMath::Sqrt(TMath::Power(d_phi, 2.)+TMath::Power(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)), 2.)) + 0.5*(fIsoConeRadius-TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)))*d_phi;
+      coneArea = 0.25*fullConeArea + d_eta*d_phi + d_eta*TMath::Sqrt(sqRadius-sqd_eta) + d_phi*TMath::Sqrt(sqRadius-sqd_phi) + sqRadius*TMath::ACos(0.5*TMath::Sqrt(4*sqRadius-sqd_eta-TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_eta), 2.))/fIsoConeRadius) - 0.25*TMath::Sqrt(4*sqRadius-sqd_eta-TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_eta), 2.))*TMath::Sqrt(sqd_eta+TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_eta), 2.)) + 0.5*(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_eta))*d_eta + sqRadius*TMath::ACos(0.5*TMath::Sqrt(4*sqRadius-sqd_phi-TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_phi), 2.))/fIsoConeRadius) - 0.25*TMath::Sqrt(4*sqRadius-sqd_phi-TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_phi), 2.))*TMath::Sqrt(sqd_phi+TMath::Power(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_phi), 2.)) + 0.5*(fIsoConeRadius-TMath::Sqrt(sqRadius-sqd_phi))*d_phi;
   }
   else if((etaCand > etaMax-fIsoConeRadius) && (phiCand > phiMin+fIsoConeRadius && phiCand < phiMax-fIsoConeRadius)){ // Cluster on EMCal right border except corners
-    d_eta = TMath::Abs(etaMax-etaCand);
+    d_eta = TMath::Abs(etaMax-etaCand); sqd_eta = TMath::Power(d_eta, 2.);
 
-    coneArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.) - (TMath::Power(fIsoConeRadius, 2.)*TMath::ACos(d_eta/fIsoConeRadius)-d_eta*TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)));
+    coneArea = fullConeArea - (sqRadius*TMath::ACos(d_eta/fIsoConeRadius)-d_eta*TMath::Sqrt(sqRadius-sqd_eta));
   }
   else if((etaCand < etaMin+fIsoConeRadius) && (phiCand > phiMin+fIsoConeRadius && phiCand < phiMax-fIsoConeRadius)){ // Cluster on EMCal left border except corners
-    d_eta = TMath::Abs(etaMin-etaCand);
+    d_eta = TMath::Abs(etaMin-etaCand); sqd_eta = TMath::Power(d_eta, 2.);
 
-    coneArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.) - (TMath::Power(fIsoConeRadius, 2.)*TMath::ACos(d_eta/fIsoConeRadius)-d_eta*TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)));
+    coneArea = fullConeArea - (sqRadius*TMath::ACos(d_eta/fIsoConeRadius)-d_eta*TMath::Sqrt(sqRadius-sqd_eta));
   }
   else if((phiCand > phiMax-fIsoConeRadius) && (etaCand > etaMin+fIsoConeRadius && etaCand < etaMax-fIsoConeRadius)){ // Cluster on EMCal top border except corners
-    d_phi = TMath::Abs(phiMax-phiCand);
+    d_phi = TMath::Abs(phiMax-phiCand); sqd_phi = TMath::Power(d_phi, 2.);
 
-    coneArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.) - (TMath::Power(fIsoConeRadius, 2.)*TMath::ACos(d_phi/fIsoConeRadius)-d_phi*TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)));
+    coneArea = fullConeArea - (sqRadius*TMath::ACos(d_phi/fIsoConeRadius)-d_phi*TMath::Sqrt(sqRadius-sqd_phi));
   }
   else if((phiCand < phiMin+fIsoConeRadius) && (etaCand > etaMin+fIsoConeRadius && etaCand < etaMax-fIsoConeRadius)){ // Cluster on EMCal bottom border except corners
-    d_phi = TMath::Abs(phiMin-phiCand);
+    d_phi = TMath::Abs(phiMin-phiCand); sqd_phi = TMath::Power(d_phi, 2.);
 
-    coneArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.) - (TMath::Power(fIsoConeRadius, 2.)*TMath::ACos(d_phi/fIsoConeRadius)-d_phi*TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_phi, 2.)));
+    coneArea = fullConeArea - (sqRadius*TMath::ACos(d_phi/fIsoConeRadius)-d_phi*TMath::Sqrt(sqRadius-sqd_phi));
   }
   else // Full cone area (EMCal centre)
-    coneArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.);
+    coneArea = fullConeArea;
 }
 
   //__________________________________________________________________________
@@ -4505,22 +4507,24 @@ void AliAnalysisTaskEMCALPhotonIsolation::ComputeConeAreaInTPC(Double_t etaCand,
 
     // Compute the isolation cone area for charged-only isolation depending on the cluster position (for fiducial cuts lower than cone radius)
 
-  Double_t etaMin = -0.87, etaMax = 0.87, d_eta = 0.;
+  Double_t etaMin = -0.87, etaMax = 0.87, d_eta = 0., sqd_eta = 0., sqRadius = 0., fullConeArea = 0.;
 
-  coneArea = 0.;
+  coneArea     = 0.;
+  sqRadius     = TMath::Power(fIsoConeRadius, 2.);
+  fullConeArea = TMath::Pi()*sqRadius;
 
   if(etaCand > etaMax-fIsoConeRadius){ // Cluster on EMCal right border, cone going outside TPC
-    d_eta = TMath::Abs(etaMax-etaCand);
+    d_eta = TMath::Abs(etaMax-etaCand); sqd_eta = TMath::Power(d_eta, 2.);
 
-    coneArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.) - (TMath::Power(fIsoConeRadius, 2.)*TMath::ACos(d_eta/fIsoConeRadius)-d_eta*TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)));
+    coneArea = fullConeArea - (sqRadius*TMath::ACos(d_eta/fIsoConeRadius)-d_eta*TMath::Sqrt(sqRadius-sqd_eta));
   }
   else if(etaCand < etaMin+fIsoConeRadius){ // Cluster on EMCal left border, cone going outside TPC
-    d_eta = TMath::Abs(etaMin-etaCand);
+    d_eta = TMath::Abs(etaMin-etaCand); sqd_eta = TMath::Power(d_eta, 2.);
 
-    coneArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.) - (TMath::Power(fIsoConeRadius, 2.)*TMath::ACos(d_eta/fIsoConeRadius)-d_eta*TMath::Sqrt(TMath::Power(fIsoConeRadius, 2.)-TMath::Power(d_eta, 2.)));
+    coneArea = fullConeArea - (sqRadius*TMath::ACos(d_eta/fIsoConeRadius)-d_eta*TMath::Sqrt(sqRadius-sqd_eta));
   }
   else // Full cone area (EMCal centre, cone not going outside TPC)
-    coneArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.);
+    coneArea = fullConeArea;
 }
 
   //__________________________________________________________________________
