@@ -254,7 +254,11 @@ ClusterHadronicCorrection:                          # Cluster hadronic correctio
 CellEnergyVariation:                                # Cell energy shift correction component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
-    energyScaleShift: 0.                            # Fraction of cell energy to shift (positive means upward shift)
+    minCellE: 0.                                    # Min cell E to perform scaling on
+    maxCellE: 150.                                  # Max cell E to perform scaling on
+    fEnergyScaleFactorConstant: 1.                  # Constant factor to scale cell energy by
+    energyScaleFunctionPath: ""                     # Path to file containing TF1 to scale cell energy by, as a function of cell E
+    energyScaleFunctionName: ""                     # Name of TF1 describing factor to scale cell energy by, as a function of cell E
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
 ClusterEnergyVariation:                             # Cluster energy shift correction component (for systematics studies)

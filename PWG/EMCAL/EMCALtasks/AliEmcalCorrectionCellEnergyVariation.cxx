@@ -1,6 +1,9 @@
 // AliEmcalCorrectionCellEnergyVariation
 //
 
+#include <TGrid.h>
+#include <TFile.h>
+
 #include "AliEmcalCorrectionCellEnergyVariation.h"
 
 /// \cond CLASSIMP
@@ -15,7 +18,10 @@ RegisterCorrectionComponent<AliEmcalCorrectionCellEnergyVariation> AliEmcalCorre
  */
 AliEmcalCorrectionCellEnergyVariation::AliEmcalCorrectionCellEnergyVariation() :
   AliEmcalCorrectionComponent("AliEmcalCorrectionCellEnergyVariation"),
-  fEnergyScaleShift(0.)
+  fMinCellE(0.),
+  fMaxCellE(150.),
+  fEnergyScaleFactorConstant(1.),
+  fEnergyScaleFunction(nullptr)
 {
 }
 
@@ -34,7 +40,19 @@ Bool_t AliEmcalCorrectionCellEnergyVariation::Initialize()
   // Initialization
   AliEmcalCorrectionComponent::Initialize();
   
-  GetProperty("energyScaleShift", fEnergyScaleShift);
+  GetProperty("minCellE", fMinCellE);
+  GetProperty("maxCellE", fMaxCellE);
+  GetProperty("energyScaleShift", fEnergyScaleFactorConstant);
+  
+  std::string path;
+  std::string name;
+  GetProperty("energyScaleFunctionPath", path);
+  GetProperty("energyScaleFunctionName", name);
+  
+  // Load TF1 from file, if provided
+  if (!path.empty() && !name.empty()) {
+    LoadEnergyScaleFunction(path, name);
+  }
 
   return kTRUE;
 }
@@ -52,6 +70,17 @@ void AliEmcalCorrectionCellEnergyVariation::UserCreateOutputObjects()
  */
 void AliEmcalCorrectionCellEnergyVariation::ExecOnce()
 {
+  // If a constant scale factor is supplied, create a TF1 that is constant in E_cell
+  if (TMath::Abs(1 - fEnergyScaleFactorConstant) > 1e-6) {
+    
+    // If a TF1 was already loaded, throw an error
+    if (fEnergyScaleFunction) {
+      AliError(Form("%s: fEnergyScaleFunction was already loaded! Do not apply multiple scale factors.", GetName()));
+    }
+    
+    fEnergyScaleFunction = new TF1("energyScaleFunction", "[0]", fMinCellE, fMaxCellE);
+    fEnergyScaleFunction->SetParameter(0, fEnergyScaleFactorConstant);
+  }
 }
 
 /**
@@ -80,18 +109,52 @@ Bool_t AliEmcalCorrectionCellEnergyVariation::Run()
     // NOTE: GetCellHighGain() uses the cell position, not cell index, and thus should _NOT_ be used!
     Bool_t cellHighGain = fCaloCells->GetHighGain(iCell);
     
-    // Scale cell energy
-    if (TMath::Abs(fEnergyScaleShift) > 1e-6) {
+    // Scale cell energy by TF1, if supplied
+    if (fEnergyScaleFunction && ecell > fMinCellE && ecell < fMaxCellE) {
       
-      ecell *= (1 + fEnergyScaleShift);
+      ecell *= fEnergyScaleFunction->Eval(ecell);
       
       if (ecell > 0.) {
         fCaloCells->SetCell(iCell, absId, ecell, tcell, mclabel, efrac, cellHighGain);
       }
-      
     }
     
   }
 
   return kTRUE;
+}
+
+/**
+ * Load the energy scale function TF1 from a file into the member fEnergyScaleFunction
+ * @param path Path to the file containing the TF1
+ * @param name Name of the TF1
+ */
+void AliEmcalCorrectionCellEnergyVariation::LoadEnergyScaleFunction(const std::string & path, const std::string & name)
+{
+  TString fname(path);
+  if (fname.BeginsWith("alien://")) {
+    TGrid::Connect("alien://");
+  }
+  
+  TFile* file = TFile::Open(path.data());
+  
+  if (!file || file->IsZombie()) {
+    AliErrorStream() << "Could not open energy scale function file\n";
+    return;
+  }
+  
+  TF1* energyScaleFunction = dynamic_cast<TF1*>(file->Get(name.data()));
+  
+  if (energyScaleFunction) {
+    AliInfoStream() << Form("Cell energy scale function %s loaded from file %s.", name.data(), path.data()) << "\n";
+  }
+  else {
+    AliErrorStream() << Form("Cell energy scale function %s not found in file %s.", name.data(), path.data()) << "\n";
+    return;
+  }
+  
+  fEnergyScaleFunction = static_cast<TF1*>(energyScaleFunction->Clone());
+  
+  file->Close();
+  delete file;
 }
