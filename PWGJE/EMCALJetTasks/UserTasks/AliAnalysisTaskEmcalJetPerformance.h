@@ -113,6 +113,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void SetUseManualEvtCuts(Bool_t input)                    { fUseManualEventCuts = input;}
   void SetPlotJetHistograms(Bool_t b)                       { fPlotJetHistograms = b; }
   void SetPlotClusterHistograms(Bool_t b)                   { fPlotClusterHistograms = b; }
+  void SetPlotCellNonlinearityHistograms(Bool_t b)          { fPlotCellNonlinearityHistograms = b; }
   void SetPlotParticleCompositionHistograms(Bool_t b)       { fPlotParticleCompositionHistograms = b; }
   void SetComputeBackground(Bool_t b)                       { fComputeBackground = b; }
   void SetDoTriggerSimulation(Bool_t b)                     { fDoTriggerSimulation = b; }
@@ -144,12 +145,14 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void                        GenerateHistoBins()                               ;
   void                        AllocateJetHistograms()                           ;
   void                        AllocateClusterHistograms()                       ;
+  void                        AllocateCellNonlinearityHistograms()              ;
   void                        AllocateParticleCompositionHistograms()           ;
   void                        AllocateBackgroundHistograms()                    ;
   void                        AllocateTriggerSimHistograms()                    ;
   void                        AllocateMatchedJetHistograms()                    ;
   void                        FillJetHistograms()                               ;
   void                        FillClusterHistograms()                           ;
+  void                        FillCellNonlinearityHistograms()                  ;
   void                        FillParticleCompositionHistograms()               ;
   void                        FillParticleCompositionClusterHistograms(const AliMCEvent* mcevent);
   void                        FillParticleCompositionJetHistograms(const AliMCEvent* mcevent);
@@ -172,6 +175,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   // Analysis parameters
   Bool_t                      fPlotJetHistograms;                   ///< Set whether to enable inclusive jet histograms
   Bool_t                      fPlotClusterHistograms;               ///< Set whether to plot cluster histograms
+  Bool_t                      fPlotCellNonlinearityHistograms;      ///< Set whether to plot cell non-linearity histograms for embedding studies
   Bool_t                      fPlotParticleCompositionHistograms;   ///< Set whether to plot jet composition histograms
   Bool_t                      fComputeBackground;                   ///< Set whether to enable study of background
   Bool_t                      fDoTriggerSimulation;                 ///< Set whether to perform a simple trigger simulation
@@ -235,7 +239,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetPerformance &operator=(const AliAnalysisTaskEmcalJetPerformance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetPerformance, 20);
+  ClassDef(AliAnalysisTaskEmcalJetPerformance, 21);
   /// \endcond
 };
 #endif
