@@ -3880,6 +3880,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
         lCascadeResult[lN]->SetCutProperLifetime        ( lLifetimeCut[i] ) ;
         lCascadeResult[lN]->SetCutMaxV0Lifetime         ( 30.0  );
         lCascadeResult[lN]->SetCutMinTrackLength        ( 90.0  );
+        lCascadeResult[lN]->SetCutLeastNumberOfClusters( -1 );
         lCascadeResult[lN]->SetCutTPCdEdx               ( 3.0 ) ;
         lCascadeResult[lN]->SetCutXiRejection           ( 0.008 ) ;
         lCascadeResult[lN]->SetCutBachBaryonCosPA       ( TMath::Cos(0.04) ) ; //+variable
@@ -5231,6 +5232,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
         lCascadeResult[lN]->SetCutProperLifetime        ( lcuts[i][1][ 9] ) ;
         lCascadeResult[lN]->SetCutMaxV0Lifetime         ( lcuts[i][1][10] ) ;
         lCascadeResult[lN]->SetCutMinTrackLength        ( lcuts[i][1][11] ) ;
+        lCascadeResult[lN]->SetCutLeastNumberOfClusters( -1 );
         lCascadeResult[lN]->SetCutTPCdEdx               ( lcuts[i][1][12] ) ;
         lCascadeResult[lN]->SetCutXiRejection           ( lcuts[i][1][13] ) ;
         lCascadeResult[lN]->SetCutDCACascadeToPV        ( lcuts[i][1][14] ) ;
@@ -5296,6 +5298,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
             lCascadeResult[lN]->SetCutProperLifetime        ( lcuts[i][1][ 9] ) ;
             lCascadeResult[lN]->SetCutMaxV0Lifetime         ( lcuts[i][1][10] ) ;
             lCascadeResult[lN]->SetCutMinTrackLength        ( lcuts[i][1][11] ) ;
+            lCascadeResult[lN]->SetCutLeastNumberOfClusters( -1 );
             lCascadeResult[lN]->SetCutTPCdEdx               ( lcuts[i][1][12] ) ;
             lCascadeResult[lN]->SetCutXiRejection           ( lcuts[i][1][13] ) ;
             lCascadeResult[lN]->SetCutDCACascadeToPV        ( lcuts[i][1][14] ) ;
@@ -5955,6 +5958,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddCascadeConfigurationPrelim
         lCascadeResult[lN]->SetCutProperLifetime        ( 15.0 ) ;
         lCascadeResult[lN]->SetCutMaxV0Lifetime         ( 30 ) ;
         lCascadeResult[lN]->SetCutMinTrackLength        ( 90 ) ;
+        lCascadeResult[lN]->SetCutLeastNumberOfClusters( -1 );
         lCascadeResult[lN]->SetCutTPCdEdx               ( 3 ) ;
         lCascadeResult[lN]->SetCutXiRejection           ( 0.008 ) ;
         lCascadeResult[lN]->SetCutDCACascadeToPV        ( 0.8 ) ;
