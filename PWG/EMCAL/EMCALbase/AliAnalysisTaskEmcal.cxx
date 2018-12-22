@@ -367,11 +367,6 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     AliError("Analysis manager not found!");
   }  
 
-  if(!fUseInternalEventSelection) {
-    fAliEventCuts = new AliEventCuts(true);
-    // Do not perform trigger selection in the AliEvent cuts but let the task do this before
-    fAliEventCuts->OverrideAutomaticTriggerSelection(AliVEvent::kAny, true);
-  }
 
   if (!fCreateHisto)
     return;
@@ -380,8 +375,6 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   fOutput = new AliEmcalList();
   fOutput->SetUseScaling(fUsePtHardBinScaling);
   fOutput->SetOwner();
-  
-  if(fAliEventCuts) fOutput->Add(fAliEventCuts);
 
   if (fForceBeamType == kpp)
     fNcentBins = 1;
@@ -611,6 +604,15 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
   if (!fLocalInitialized){
     ExecOnce();
     UserExecOnce();
+
+    // Initialize event cuts here: This prevents a segfault
+    // in case a user task overwrites the function UserCreateOutputObjects
+    if(!fUseInternalEventSelection) {
+      fAliEventCuts = new AliEventCuts(true);
+      // Do not perform trigger selection in the AliEvent cuts but let the task do this before
+      fAliEventCuts->OverrideAutomaticTriggerSelection(AliVEvent::kAny, true);
+      if(fOutput) fOutput->Add(fAliEventCuts);
+    }
   }
 
   if (!fLocalInitialized)
