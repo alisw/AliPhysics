@@ -2879,6 +2879,9 @@ TString AliMultSelectionTask::GetSystemTypeByRunNumber() const
     //Registered production: Run 2 Xe-Xe
     if ( fCurrentRun >= 280234 && fCurrentRun <= 280235 ) lSystemType = "Xe-Xe";
     
+    //Registered production: Run 2 Pb-Pb 2018
+    if ( fCurrentRun >= 295488 && fCurrentRun <= 297624 ) lSystemType = "Pb-Pb";
+    
     return lSystemType;
 }
 //______________________________________________________________________
