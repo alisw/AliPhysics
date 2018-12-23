@@ -1963,13 +1963,18 @@ void AliAnalysisTaskEmcalJetPerformance::FillCellNonlinearityHistograms()
   
   // Loop through clusters
   AliClusterContainer* clusters = GetClusterContainer(0);
+  AliTLorentzVector clusVec;
   const AliVCluster* clus;
   for (auto it : clusters->accepted_momentum()) {
     
+    clusVec = it.first;
     clus = it.second;
     
-    // Include only EMCal/DCal clusters
+    // Include only EMCal clusters
     if (!clus->IsEMCAL()) {
+      continue;
+    }
+    if (clusVec.Phi_0_2pi() > 4.) {
       continue;
     }
   
