@@ -724,12 +724,17 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateCellNonlinearityHistograms()
   // Plot cluster non-linearity scale factor
   histname = "CellNonlinearityHistograms/hClusterNonlinearity";
   htitle = histname + ";E_{cluster}; E_{NonLinCorr}/E";
-  fHistManager.CreateTH2(histname.Data(), htitle.Data(), 1500, 0, 150, 2000, 0, 2);
+  fHistManager.CreateTH2(histname.Data(), htitle.Data(), 1500, 0, 150, 2000, 0.5, 1.5);
   
   // Plot cell non-linearity scale factor
   histname = "CellNonlinearityHistograms/hCellNonlinearity";
   htitle = histname + ";E_{cell}; E_{NonLinCorr}/E";
-  fHistManager.CreateTH2(histname.Data(), htitle.Data(), 1500, 0, 150, 2000, 0, 2);
+  fHistManager.CreateTH2(histname.Data(), htitle.Data(), 1500, 0, 150, 2000, 0.5, 1.5);
+  
+  // Plot cell non-linearity scale factor for leading cell
+  histname = "CellNonlinearityHistograms/hLeadingCellNonlinearity";
+  htitle = histname + ";E_{leading cell}; E_{NonLinCorr}/E";
+  fHistManager.CreateTH2(histname.Data(), htitle.Data(), 1500, 0, 150, 2000, 0.5, 1.5);
   
 }
 
@@ -1986,15 +1991,24 @@ void AliAnalysisTaskEmcalJetPerformance::FillCellNonlinearityHistograms()
     TString histname = "CellNonlinearityHistograms/hClusterNonlinearity";
     fHistManager.FillTH2(histname.Data(), clusEnergy, correctionFactor);
     
-    // Plot cell non-linearity scale factor
+    // Plot cell non-linearity scale factor for all cells
     histname = "CellNonlinearityHistograms/hCellNonlinearity";
+    Double_t leadEcell = 0;
     for (Int_t iCell = 0; iCell < clus->GetNCells(); iCell++) {
       
       Int_t absId = clus->GetCellAbsId(iCell);
       Double_t eCell = fCaloCells->GetCellAmplitude(absId);
+      if (eCell > leadEcell) {
+        leadEcell = eCell;
+      }
 
       fHistManager.FillTH2(histname.Data(), eCell, correctionFactor);
     }
+    
+    // Plot cell non-linearity scale factor for leading cell
+    histname = "CellNonlinearityHistograms/hLeadingCellNonlinearity";
+    fHistManager.FillTH2(histname.Data(), leadEcell, correctionFactor);
+    
   }
     
 }
