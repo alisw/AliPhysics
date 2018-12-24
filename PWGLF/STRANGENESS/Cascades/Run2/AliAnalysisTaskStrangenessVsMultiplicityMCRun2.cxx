@@ -7098,13 +7098,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardV0RadiusSweep()
     Int_t iExtra = 0;
     for (Int_t iconf = 0; iconf<lNV0; iconf++){
         //Create a new object from default
-        lCowboys[iconf] = new AliV0Result( lV0Result[iconf], Form("%s_%s","Cowboy") );
+        lCowboys[iconf] = new AliV0Result( lV0Result[iconf], Form("%s_%s",lV0Result[iconf]->GetName(),"Cowboy") );
         lCowboys[iconf] -> SetCutIsCowboy(1);
         AddConfiguration(lCowboys[iconf]);
     }
     for (Int_t iconf = 0; iconf<lNV0; iconf++){
         //Create a new object from default
-        lSailors[iconf] = new AliV0Result( lV0Result[iconf], Form("%s_%s","Sailor") );
+        lSailors[iconf] = new AliV0Result( lV0Result[iconf], Form("%s_%s",lV0Result[iconf]->GetName(),"Sailor") );
         lSailors[iconf] -> SetCutIsCowboy(-1);
         AddConfiguration(lSailors[iconf]);
     }
