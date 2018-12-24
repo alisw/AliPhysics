@@ -144,6 +144,7 @@ fkDoXYPlanePreOptCascade( kFALSE ),
 fkDoPureGeometricMinimization( kTRUE ),
 fkDoCascadeRefit( kFALSE ) ,
 fMaxIterationsWhenMinimizing(27),
+fkPreselectX(kTRUE),
 fkUseOptimalTrackParams(kFALSE),
 fkUseOptimalTrackParamsBachelor(kFALSE),
 fMinPtV0(   -1 ), //pre-selection
@@ -202,6 +203,7 @@ fkDoXYPlanePreOptCascade( kFALSE ),
 fkDoPureGeometricMinimization( kTRUE ),
 fkDoCascadeRefit( kFALSE ) ,
 fMaxIterationsWhenMinimizing(27),
+fkPreselectX(kTRUE),
 fkUseOptimalTrackParams(kFALSE),
 fkUseOptimalTrackParamsBachelor(kFALSE),
 fMinPtV0(   -1 ), //pre-selection
@@ -740,8 +742,8 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             
             fHistV0Statistics->Fill(2.5); //pass dca
             
-            if ((xn+xp) > 2*fV0VertexerSels[6]) continue;
-            if ((xn+xp) < 2*fV0VertexerSels[5]) continue;
+            if ((xn+xp) > 2*fV0VertexerSels[6] && fkPreselectX) continue;
+            if ((xn+xp) < 2*fV0VertexerSels[5] && fkPreselectX) continue;
             
             fHistV0Statistics->Fill(3.5); //pass X within R2D cut
             
