@@ -3044,9 +3044,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                   TMath::Abs(fTreeVariableNegTOFSignal) < 100 ||
                   TMath::Abs(fTreeVariablePosTOFSignal) < 100
                   )
-                 )
+                 )&&
                 
-                )
+                //Check 15: cowboy/sailor for V0
+                (
+                 lV0Result->GetCutIsCowboy()==0 ||
+                 (lV0Result->GetCutIsCowboy()== 1 && fTreeVariableIsCowboy==kTRUE ) ||
+                 (lV0Result->GetCutIsCowboy()==-1 && fTreeVariableIsCowboy==kFALSE)
+                 )//end cowboy/sailor
+                )//end major if
             {
                 //Regular fill histogram here
                 if (
@@ -5445,8 +5451,21 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                  ( lCascadeResult->GetCutUseITSRefitNegative()==kFALSE || fTreeCascVarNegTrackStatus & AliESDtrack::kITSrefit ) &&
                  ( lCascadeResult->GetCutUseITSRefitPositive()==kFALSE || fTreeCascVarPosTrackStatus & AliESDtrack::kITSrefit ) &&
                  ( lCascadeResult->GetCutUseITSRefitBachelor()==kFALSE || fTreeCascVarBachTrackStatus & AliESDtrack::kITSrefit )
-                 )
+                 )&&
                 
+                //Check 16: cowboy/sailor for V0
+                (
+                 lCascadeResult->GetCutIsCowboy()==0 ||
+                 (lCascadeResult->GetCutIsCowboy()== 1 && fTreeCascVarIsCowboy==kTRUE ) ||
+                 (lCascadeResult->GetCutIsCowboy()==-1 && fTreeCascVarIsCowboy==kFALSE)
+                 )&&//end cowboy/sailor
+                
+                //Check 17: cowboy/sailor for cascade
+                (
+                 lCascadeResult->GetCutIsCascadeCowboy()==0 ||
+                 (lCascadeResult->GetCutIsCascadeCowboy()== 1 && fTreeCascVarIsCascadeCowboy==kTRUE ) ||
+                 (lCascadeResult->GetCutIsCascadeCowboy()==-1 && fTreeCascVarIsCascadeCowboy==kFALSE)
+                 )//end cowboy/sailor
                 )//end major if
             {
                 
