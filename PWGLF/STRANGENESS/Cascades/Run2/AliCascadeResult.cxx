@@ -98,7 +98,9 @@ fCutDCACascadeToPV(1e+3),
 fCutDCANegToPVWeighted(-1),
 fCutDCAPosToPVWeighted(-1),
 fCutDCABachToPVWeighted(-1),
-fCutAtLeastOneTOF(kFALSE)
+fCutAtLeastOneTOF(kFALSE),
+fCutIsCowboy(0),
+fCutIsCascadeCowboy(0)
 {
     // Dummy Constructor - not to be used!
     fhNCentBounds = 21;
@@ -202,7 +204,9 @@ fCutDCACascadeToPV(1e+3),
 fCutDCANegToPVWeighted(-1),
 fCutDCAPosToPVWeighted(-1),
 fCutDCABachToPVWeighted(-1),
-fCutAtLeastOneTOF(kFALSE)
+fCutAtLeastOneTOF(kFALSE),
+fCutIsCowboy(0),
+fCutIsCascadeCowboy(0)
 {
     // Named constructor
     fhNCentBounds = 21;
@@ -306,7 +310,9 @@ fCutDCACascadeToPV(1e+3),
 fCutDCANegToPVWeighted(-1),
 fCutDCAPosToPVWeighted(-1),
 fCutDCABachToPVWeighted(-1),
-fCutAtLeastOneTOF(kFALSE)
+fCutAtLeastOneTOF(kFALSE),
+fCutIsCowboy(0),
+fCutIsCascadeCowboy(0)
 {
     //centrality binning assignment
     fhNCentBounds = lNCentBins+1;
@@ -410,7 +416,9 @@ fCutDCACascadeToPV(1e+3),
 fCutDCANegToPVWeighted(-1),
 fCutDCAPosToPVWeighted(-1),
 fCutDCABachToPVWeighted(-1),
-fCutAtLeastOneTOF(kFALSE)
+fCutAtLeastOneTOF(kFALSE),
+fCutIsCowboy(0),
+fCutIsCascadeCowboy(0)
 {
     //centrality binning assignment
     fhNCentBounds = lNCentBins+1;
@@ -516,7 +524,9 @@ fCutDCACascadeToPV(lCopyMe.fCutDCACascadeToPV),
 fCutDCANegToPVWeighted(lCopyMe.fCutDCANegToPVWeighted),
 fCutDCAPosToPVWeighted(lCopyMe.fCutDCAPosToPVWeighted),
 fCutDCABachToPVWeighted(lCopyMe.fCutDCABachToPVWeighted),
-fCutAtLeastOneTOF(lCopyMe.fCutAtLeastOneTOF)
+fCutAtLeastOneTOF(lCopyMe.fCutAtLeastOneTOF),
+fCutIsCowboy(lCopyMe.fCutIsCowboy),
+fCutIsCascadeCowboy(lCopyMe.fCutIsCascadeCowboy)
 
 {
     SetName( lNewName.Data() );
@@ -652,6 +662,9 @@ fHisto(0), fProtonProfile(0)
     fCutDCABachToPVWeighted = lCopyMe -> GetCutDCABachToPVWeighted();
     
     fCutAtLeastOneTOF = lCopyMe -> GetCutAtLeastOneTOF();
+    
+    fCutIsCowboy = lCopyMe -> GetCutIsCowboy();
+    fCutIsCascadeCowboy = lCopyMe -> GetCutIsCascadeCowboy();
     
     // Constructor
     Double_t lThisMass = GetMass();
@@ -803,6 +816,9 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     fCutDCABachToPVWeighted = lCopyMe.GetCutDCABachToPVWeighted();
     
     fCutAtLeastOneTOF = lCopyMe.GetCutAtLeastOneTOF();
+    
+    fCutIsCowboy = lCopyMe.GetCutIsCowboy();
+    fCutIsCascadeCowboy = lCopyMe.GetCutIsCascadeCowboy();
     
     if (fhCentBins) {
         delete [] fhCentBins;
@@ -975,6 +991,9 @@ Bool_t AliCascadeResult::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx
     
     if ( TMath::Abs(fCutAtLeastOneTOF - lCompareCascade->GetCutAtLeastOneTOF()) > 1e-6 ) lReturnValue = kFALSE;
     
+    if ( TMath::Abs(fCutIsCowboy - lCompareCascade->GetCutIsCowboy()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutIsCascadeCowboy - lCompareCascade->GetCutIsCascadeCowboy()) > 1e-6 ) lReturnValue = kFALSE;
+    
     return lReturnValue;
 }
 //________________________________________________________________
@@ -1079,6 +1098,9 @@ void AliCascadeResult::Print()
     cout<<" wDCA Pos to PV.....: "<<fCutDCAPosToPVWeighted<<endl;
     cout<<" wDCA Bach to PV....: "<<fCutDCABachToPVWeighted<<endl;
     cout<<" At least 1 tof.....: "<<fCutAtLeastOneTOF<<endl;
+    
+    cout<<" Is cowboy..........: "<<fCutIsCowboy<<endl;
+    cout<<" Is cascade cowboy..: "<<fCutIsCascadeCowboy<<endl;
     cout<<"========================================"<<endl;
     return;
 }

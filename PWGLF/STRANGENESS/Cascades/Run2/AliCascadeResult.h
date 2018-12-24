@@ -174,6 +174,9 @@ public:
     
     void SetCutAtLeastOneTOF (Bool_t lCut) { fCutAtLeastOneTOF = lCut; }
     
+    void SetCutIsCowboy (Int_t lCut) { fCutIsCowboy = lCut; }
+    void SetCutIsCascadeCowboy (Int_t lCut) { fCutIsCascadeCowboy = lCut; }
+    
     AliCascadeResult::EMassHypo GetMassHypothesis () const { return fMassHypo; }
     Double_t GetMass() const;
     TString GetParticleName() const; 
@@ -274,6 +277,9 @@ public:
     Double_t GetCutDCABachToPVWeighted   () const { return fCutDCABachToPVWeighted;    }
     
     Bool_t GetCutAtLeastOneTOF () const { return fCutAtLeastOneTOF; }
+    
+    Bool_t GetCutIsCowboy () const { return fCutIsCowboy; }
+    Bool_t GetCutIsCascadeCowboy () const { return fCutIsCascadeCowboy; }
     
     Long_t      GetNPtBins()   const { return fhNPtBounds-1;   }
     Double_t*   GetPtBins()    const { return fhPtBins;        }
@@ -417,7 +423,11 @@ private:
     
     Bool_t fCutAtLeastOneTOF;
     
-    ClassDef(AliCascadeResult, 35)
+    //Cowboy/sailor checks
+    Int_t fCutIsCowboy; //-1: sailor, 0: don't select, 1: cowboy
+    Int_t fCutIsCascadeCowboy; //-1: sailor, 0: don't select, 1: cowboy
+    
+    ClassDef(AliCascadeResult, 36)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -453,5 +463,6 @@ private:
     // 33 - streaming improvement 2
     // 34 - TOF cut: at-least-one type
     // 35 - provision for prong-wise ITS refit requirement
+    // 36 - cowboy/sailor check
 };
 #endif
