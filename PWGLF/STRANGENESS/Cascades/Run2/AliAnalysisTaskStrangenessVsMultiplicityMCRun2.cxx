@@ -6881,7 +6881,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardV0RadiusSweep()
     // STEP 1: Decide on binning (needed to improve on memory consumption)
     
     // pT binning
-    Double_t lPtbinlimitsV0[] ={0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.5, 8.0, 10, 12, 14, 15, 17, 20};
+    Double_t lPtbinlimitsV0[] ={0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.5, 8.0, 10, 12};
     Long_t lPtbinnumbV0 = sizeof(lPtbinlimitsV0)/sizeof(Double_t) - 1;
     Double_t lPtbinlimitsXi[] ={0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.5, 8.0, 10, 12, 14, 16, 19, 22, 25};
     Long_t lPtbinnumbXi = sizeof(lPtbinlimitsXi)/sizeof(Double_t) - 1;
@@ -7027,7 +7027,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardV0RadiusSweep()
     lMassHypoV0[2] = AliV0Result::kAntiLambda;
     
     //Array of results
-    AliV0Result *lV0Result[1000];
+    AliV0Result *lV0Result[3000];
     Long_t lNV0 = 0;
     
     //Central results: Stored in indices 0, 1, 2 (careful!)
@@ -7064,15 +7064,46 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardV0RadiusSweep()
     for(Int_t i = 0 ; i < lNPart ; i ++)
     {
         //Create a new object from default
+        lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_Cowboy", lParticleNameV0[i].Data() ) );
+        lV0Result[lNV0] -> SetCutIsCowboy(1);
+        //Add result to pool
+        lNV0++;
+        
+        //Create a new object from default
+        lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_Sailor", lParticleNameV0[i].Data() ) );
+        lV0Result[lNV0] -> SetCutIsCowboy(-1);
+        //Add result to pool
+        lNV0++;
+    }
+    
+    for(Int_t i = 0 ; i < lNPart ; i ++)
+    {
+        //Create a new object from default
         lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_LooseRadius", lParticleNameV0[i].Data() ) );
         lV0Result[lNV0] -> SetCutV0Radius   ( 0.9 );
         lV0Result[lNV0] -> SetCutMaxV0Radius( 5.0 );
         //Add result to pool
         lNV0++;
+        
+        //Create a new object from default
+        lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_LooseRadius_Cowboy", lParticleNameV0[i].Data() ) );
+        lV0Result[lNV0] -> SetCutV0Radius   ( 0.9 );
+        lV0Result[lNV0] -> SetCutMaxV0Radius( 5.0 );
+        lV0Result[lNV0] -> SetCutIsCowboy(1);
+        //Add result to pool
+        lNV0++;
+        
+        //Create a new object from default
+        lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_LooseRadius_Sailor", lParticleNameV0[i].Data() ) );
+        lV0Result[lNV0] -> SetCutV0Radius   ( 0.9 );
+        lV0Result[lNV0] -> SetCutMaxV0Radius( 5.0 );
+        lV0Result[lNV0] -> SetCutIsCowboy(-1);
+        //Add result to pool
+        lNV0++;
     }
     
     //Rapidity sweep
-    Double_t lRadii[] = {0.9, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10};
+    Double_t lRadii[] = {0.9, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10,15,20,30};
     Int_t lNRadii = sizeof(lRadii)/sizeof(Double_t);
     
     for(Int_t i = 0 ; i < lNPart ; i ++)
@@ -7083,30 +7114,30 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardV0RadiusSweep()
             lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_RadiusSweep_%.1f_%.1f",lParticleNameV0[i].Data(),lRadii[ir], lRadii[ir+1]) );
             lV0Result[lNV0] -> SetCutV0Radius   ( lRadii[ir  ] );
             lV0Result[lNV0] -> SetCutMaxV0Radius( lRadii[ir+1] );
+            //Add result to pool
+            lNV0++;
             
+            //Create a new object from default
+            lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_RadiusSweep_Cowboy_%.1f_%.1f",lParticleNameV0[i].Data(),lRadii[ir], lRadii[ir+1]) );
+            lV0Result[lNV0] -> SetCutV0Radius   ( lRadii[ir  ] );
+            lV0Result[lNV0] -> SetCutMaxV0Radius( lRadii[ir+1] );
+            lV0Result[lNV0] -> SetCutIsCowboy(1);
+            //Add result to pool
+            lNV0++;
+            
+            //Create a new object from default
+            lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_RadiusSweep_Sailor_%.1f_%.1f",lParticleNameV0[i].Data(),lRadii[ir], lRadii[ir+1]) );
+            lV0Result[lNV0] -> SetCutV0Radius   ( lRadii[ir  ] );
+            lV0Result[lNV0] -> SetCutMaxV0Radius( lRadii[ir+1] );
+            lV0Result[lNV0] -> SetCutIsCowboy(-1);
             //Add result to pool
             lNV0++;
         }
     }
     
     for (Int_t iconf = 0; iconf<lNV0; iconf++){
-        cout<<"Radius sweep: adding config named"<<lV0Result[iconf]->GetName()<<endl;
+        cout<<"Radius sweep: adding config named "<<lV0Result[iconf]->GetName()<<endl;
         AddConfiguration(lV0Result[iconf]);
-    }
-    //Cowboy/sailor
-    AliV0Result *lCowboys[1000], *lSailors[1000];
-    Int_t iExtra = 0;
-    for (Int_t iconf = 0; iconf<lNV0; iconf++){
-        //Create a new object from default
-        lCowboys[iconf] = new AliV0Result( lV0Result[iconf], Form("%s_%s",lV0Result[iconf]->GetName(),"Cowboy") );
-        lCowboys[iconf] -> SetCutIsCowboy(1);
-        AddConfiguration(lCowboys[iconf]);
-    }
-    for (Int_t iconf = 0; iconf<lNV0; iconf++){
-        //Create a new object from default
-        lSailors[iconf] = new AliV0Result( lV0Result[iconf], Form("%s_%s",lV0Result[iconf]->GetName(),"Sailor") );
-        lSailors[iconf] -> SetCutIsCowboy(-1);
-        AddConfiguration(lSailors[iconf]);
     }
     cout<<"Added "<<lNV0<<" V0 configurations to output."<<endl;
 }
