@@ -7103,7 +7103,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardV0RadiusSweep()
     }
     
     //Rapidity sweep
-    Double_t lRadii[] = {0.9, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10};
+    Double_t lRadii[] = {0.9, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10,15,20,30};
     Int_t lNRadii = sizeof(lRadii)/sizeof(Double_t);
     
     for(Int_t i = 0 ; i < lNPart ; i ++)
