@@ -151,7 +151,7 @@ public:
     
     Bool_t GetCutAtLeastOneTOF () const { return fCutAtLeastOneTOF; }
 
-    Bool_t GetCutIsCowboy () const { return fCutIsCowboy; }
+    Int_t GetCutIsCowboy () const { return fCutIsCowboy; }
     
     //Special dedx
     Bool_t GetCut276TeVLikedEdx () const { return fCut276TeVLikedEdx; }
