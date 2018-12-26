@@ -278,8 +278,8 @@ public:
     
     Bool_t GetCutAtLeastOneTOF () const { return fCutAtLeastOneTOF; }
     
-    Bool_t GetCutIsCowboy () const { return fCutIsCowboy; }
-    Bool_t GetCutIsCascadeCowboy () const { return fCutIsCascadeCowboy; }
+    Int_t GetCutIsCowboy () const { return fCutIsCowboy; }
+    Int_t GetCutIsCascadeCowboy () const { return fCutIsCascadeCowboy; }
     
     Long_t      GetNPtBins()   const { return fhNPtBounds-1;   }
     Double_t*   GetPtBins()    const { return fhPtBins;        }
