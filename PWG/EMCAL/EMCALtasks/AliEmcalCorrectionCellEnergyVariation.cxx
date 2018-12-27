@@ -42,7 +42,7 @@ Bool_t AliEmcalCorrectionCellEnergyVariation::Initialize()
   
   GetProperty("minCellE", fMinCellE);
   GetProperty("maxCellE", fMaxCellE);
-  GetProperty("energyScaleShift", fEnergyScaleFactorConstant);
+  GetProperty("energyScaleFactorConstant", fEnergyScaleFactorConstant);
   
   std::string path;
   std::string name;
