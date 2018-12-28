@@ -214,7 +214,9 @@ public:
     void SetPreselectX     ( Bool_t lOpt ) {
         fkPreselectX = lOpt;
     }
-    
+    void SetSkipLargeXYDCA( Bool_t lOpt = kTRUE) {
+        fkSkipLargeXYDCA=lOpt;
+    }
 //---------------------------------------------------------------------------------------
     void SetUseImprovedFinding(){
         fkRunV0Vertexer = kTRUE;
@@ -325,7 +327,8 @@ private:
     Bool_t fkDoPureGeometricMinimization;
     Bool_t fkDoCascadeRefit; //WARNING: needs DoV0Refit!
     Long_t fMaxIterationsWhenMinimizing;
-    Bool_t fkPreselectX; 
+    Bool_t fkPreselectX;
+    Bool_t fkSkipLargeXYDCA;
     
     //Bool_t to conrtol the use of on-the-fly AliExternalTrackParams
     Bool_t fkUseOptimalTrackParams; //if true, use better track estimates from OTF V0s
