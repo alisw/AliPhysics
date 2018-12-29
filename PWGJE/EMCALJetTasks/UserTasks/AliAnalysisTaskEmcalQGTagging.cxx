@@ -222,10 +222,10 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
 
 
   //// 
-   const Int_t dimResol   = 4;
-   const Int_t nBinsResol[4]     = {10,10,80,80};
-   const Double_t lowBinResol[4] = {0,0,-1,-1};
-   const Double_t hiBinResol[4]  = {200,0.3,1,1};
+   const Int_t dimResol   = 5;
+   const Int_t nBinsResol[5]     = {10,10,80,80,80};
+   const Double_t lowBinResol[5] = {0,0,-1,-1,-1};
+   const Double_t hiBinResol[5]  = {200,0.3,1,1,1};
    fHCheckResolutionSubjets = new THnSparseF("fHCheckResolutionSubjets",
                    "Mom.Resolution of Subjets vs opening angle",
 					     dimResol,nBinsResol,lowBinResol,hiBinResol);
@@ -1310,41 +1310,40 @@ void AliAnalysisTaskEmcalQGTagging::CheckSubjetResolution(AliEmcalJet *fJet,AliJ
     jj=fOutputJets[0];
     jjM=fOutputJetsM[0];
 
-   double z=0;
+   double z1=0;
+   double z2=0;
    double zcut=0.1;
-   while((jj.has_parents(j1,j2)) && (z<zcut)){
+   while((jj.has_parents(j1,j2)) && (z1<zcut)){
     if(j1.perp() < j2.perp()) swap(j1,j2);
    
-     z=j2.perp()/(j1.perp()+j2.perp());
+     z1=j2.perp()/(j1.perp()+j2.perp());
     jj=j1;} 
-   if(z<zcut) return;
-    z=0;
+   if(z1<zcut) return;
+    
 
      
-   while((jjM.has_parents(j1M,j2M)) && (z<zcut)){
+   while((jjM.has_parents(j1M,j2M)) && (z2<zcut)){
     if(j1M.perp() < j2M.perp()) swap(j1M,j2M);
    
-     z=j2M.perp()/(j1M.perp()+j2M.perp());
+     z2=j2M.perp()/(j1M.perp()+j2M.perp());
     jjM=j1M;}
-   if(z<zcut) return;
+   if(z2<zcut) return;
         
 
 
    double delta_R1=j1.delta_R(j1M);
    double delta_R2=j2.delta_R(j2M);
    double delta_R=j1.delta_R(j2);
-  
+   double residz=(z1-z2)/z2;
    double resid1=(j1.perp()-j1M.perp())/j1M.perp(); 
    double resid2=(j2.perp()-j2M.perp())/j2M.perp(); 
     
    if((delta_R1<fSubjetCutoff) && (delta_R2<fSubjetCutoff)){
-   Double_t ResolEntries[4] = {fOutputJets[0].perp(),delta_R,resid1,resid2};  
+   Double_t ResolEntries[5] = {fOutputJets[0].perp(),delta_R,resid1,resid2,residz};  
    fHCheckResolutionSubjets->Fill(ResolEntries);}
 
-   
 
-
-  } catch (fastjet::Error) {
+   } catch (fastjet::Error) {
     AliError(" [w] FJ Exception caught.");
     //return -1;
   }
