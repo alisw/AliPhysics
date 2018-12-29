@@ -72,6 +72,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fOneConstSelectOn(kFALSE),
   fTrackCheckPlots(kFALSE),
   fSubjetCutoff(0.1),
+  fMinPtConst(1),
   fHardCutoff(0),
   fDoTwoTrack(kFALSE),
   fPhiCutValue(0.02),
@@ -126,6 +127,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fOneConstSelectOn(kFALSE),
   fTrackCheckPlots(kFALSE),
   fSubjetCutoff(0.1),
+  fMinPtConst(1),
   fHardCutoff(0),
   fDoTwoTrack(kFALSE),
   fPhiCutValue(0.02),
@@ -392,8 +394,8 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
   }
   
   
-  AliParticleContainer *partContAn = GetParticleContainer(0);
-  TClonesArray *trackArrayAn = partContAn->GetArray();
+  // AliParticleContainer *partContAn = GetParticleContainer(0);
+  //TClonesArray *trackArrayAn = partContAn->GetArray();
  
   
   Float_t rhoVal=0, rhoMassVal = 0.;
@@ -608,7 +610,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       RecursiveParents(jet1,jetCont,1);
       RecursiveParents(jet1,jetCont,2);
       
-      Float_t ptMatch=0., ptDMatch=0., massMatch=0., constMatch=0.,angulMatch=0.,circMatch=0., lesubMatch=0., sigma2Match=0., coronnaMatch=0;
+      Float_t ptMatch=0., ptDMatch=0., massMatch=0.,angulMatch=0.,lesubMatch=0;
       Int_t kMatched = 0;
 
        if (fJetShapeType==kPythiaDef) {
@@ -1227,7 +1229,7 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
     double lnpt_rel=log(j2.perp()*delta_R);
     double yh=j1.e()+j2.e();
      vector < fastjet::PseudoJet > constitj1 = sorted_by_pt(j1.constituents());
-     if(constitj1[0].perp()>fminpt) flagSubjet=1; 
+     if(constitj1[0].perp()>fMinPtConst) flagSubjet=1; 
     if(z>fHardCutoff){
      ndepth=ndepth+1;  
     Double_t LundEntries[7] = {y,lnpt_rel,fOutputJets[0].perp(),nall,xflagalgo,yh,flagSubjet};  

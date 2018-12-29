@@ -2787,7 +2787,7 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::AddInputVectors(AliEmcalConta
 
 void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t ijet,Double_t type,AliHFJetDefinition& jetDef, Double_t invmass)
 {
-   double nsd = 0;        
+  
    double nall = 0;        
    double zg = 0.;         
    double flagSubjet=0;
@@ -2800,7 +2800,7 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t i
    hname = TString::Format("%s/%s/LundIterative", GetName(), jetDef.GetName());
    THnSparse* h = static_cast<THnSparse*>(fHistManager->FindObject(hname)); 
    hname2 = TString::Format("%s/%s/AngleDifference", GetName(), jetDef.GetName());
-   TH2D* hdiffangle = static_cast<THnSparse*>(fHistManager->FindObject(hname2)); 	    
+   TH2* hdiffangle = static_cast<TH2*>(fHistManager->FindObject(hname2)); 	    
       try{
       std::vector<fastjet::PseudoJet> particles(fFastJetWrapper->GetJetConstituents(ijet));
       fastjet::ClusterSequence cs_ca(particles, jet_def);
@@ -2830,7 +2830,7 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::IterativeDeclustering(Int_t i
          double yh=j1.e()+j2.e();            
          double y = log(1.0/delta_R);
          double lnpt_rel = log(j2.perp()*delta_R);
-	 double frac=j1.perp()/output_jets[0].perp();
+
 	 double lundEntries[10] = {y, lnpt_rel, output_jets[0].perp(), nall, type, flagSubjet, xconstperp, invmass,yh,TMath::Abs(output_jets[0].eta())};
          h->Fill(lundEntries);
 	 hdiffangle->Fill(delta_R, delta_Raxis);
@@ -3434,7 +3434,7 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
    
       hname = TString::Format("%s/%s/AngleDifference",param.GetName(),jetDef.GetName());
       htitle = hname + ";angle iterative declustering;angle to axis";
-      TH2D* h=fHistManager.CreateTH2(hname,htitle,100,0.,2*3.1416,100,0,2*3.1416);
+      fHistManager.CreateTH2(hname,htitle,100,0.,2*3.1416,100,0,2*3.1416);
       
     }
     switch (fOutputType) {
