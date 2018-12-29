@@ -72,6 +72,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fOneConstSelectOn(kFALSE),
   fTrackCheckPlots(kFALSE),
   fSubjetCutoff(0.1),
+  fMinPtConst(1),
   fHardCutoff(0),
   fDoTwoTrack(kFALSE),
   fPhiCutValue(0.02),
@@ -126,6 +127,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fOneConstSelectOn(kFALSE),
   fTrackCheckPlots(kFALSE),
   fSubjetCutoff(0.1),
+  fMinPtConst(1),
   fHardCutoff(0),
   fDoTwoTrack(kFALSE),
   fPhiCutValue(0.02),
@@ -209,10 +211,10 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
 
   
    //log(1/theta),log(kt),jetpT,depth, algo, Eradiator// 
-   const Int_t dimSpec   = 6;
-   const Int_t nBinsSpec[6]     = {50,100,100,20,3,100};
-   const Double_t lowBinSpec[6] = {0.,-10,0,0,0,0};
-   const Double_t hiBinSpec[6]  = {5.,10.,100,20,3,100};
+   const Int_t dimSpec   = 7;
+   const Int_t nBinsSpec[7]     = {50,100,100,20,3,100,2};
+   const Double_t lowBinSpec[7] = {0.,-10,0,0,0,0,0};
+   const Double_t hiBinSpec[7]  = {5.,10.,100,20,3,100,2};
    fHLundIterative = new THnSparseF("fHLundIterative",
                    "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
                    dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
@@ -392,8 +394,8 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
   }
   
   
-  AliParticleContainer *partContAn = GetParticleContainer(0);
-  TClonesArray *trackArrayAn = partContAn->GetArray();
+  // AliParticleContainer *partContAn = GetParticleContainer(0);
+  //TClonesArray *trackArrayAn = partContAn->GetArray();
  
   
   Float_t rhoVal=0, rhoMassVal = 0.;
@@ -608,7 +610,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       RecursiveParents(jet1,jetCont,1);
       RecursiveParents(jet1,jetCont,2);
       
-      Float_t ptMatch=0., ptDMatch=0., massMatch=0., constMatch=0.,angulMatch=0.,circMatch=0., lesubMatch=0., sigma2Match=0., coronnaMatch=0;
+      Float_t ptMatch=0., ptDMatch=0., massMatch=0.,angulMatch=0.,lesubMatch=0;
       Int_t kMatched = 0;
 
        if (fJetShapeType==kPythiaDef) {
@@ -1216,17 +1218,21 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
    jj=fOutputJets[0];
    double ndepth=0;
    double nall=0;
+   double flagSubjet=0;
     while(jj.has_parents(j1,j2)){
       nall=nall+1;
     if(j1.perp() < j2.perp()) swap(j1,j2);
+    flagSubjet=0;
     double delta_R=j1.delta_R(j2);
     double z=j2.perp()/(j1.perp()+j2.perp());
     double y =log(1.0/delta_R);
     double lnpt_rel=log(j2.perp()*delta_R);
     double yh=j1.e()+j2.e();
+     vector < fastjet::PseudoJet > constitj1 = sorted_by_pt(j1.constituents());
+     if(constitj1[0].perp()>fMinPtConst) flagSubjet=1; 
     if(z>fHardCutoff){
      ndepth=ndepth+1;  
-     Double_t LundEntries[6] = {y,lnpt_rel,fOutputJets[0].perp(),nall,xflagalgo,yh};  
+    Double_t LundEntries[7] = {y,lnpt_rel,fOutputJets[0].perp(),nall,xflagalgo,yh,flagSubjet};  
     fHLundIterative->Fill(LundEntries);}
     jj=j1;} 
 
