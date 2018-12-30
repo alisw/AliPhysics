@@ -466,12 +466,12 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   }
 
   // Primary Vertex position
-  auto *aodvertex = (fUseAliEventCuts)
-                  ? static_cast<const AliAODVertex *>(fEventCuts->GetPrimaryVertex())
-                  : static_cast<const AliAODVertex *>(fEvent->GetPrimaryVertex());
+  const auto *aodvertex = (fUseAliEventCuts)
+                        ? static_cast<const AliAODVertex *>(fEventCuts->GetPrimaryVertex())
+                        : static_cast<const AliAODVertex *>(fEvent->GetPrimaryVertex());
 
   if (!aodvertex || aodvertex->GetNContributors() < 1) {
-    delete tEvent; // Bad vertex, skip event.
+    delete tEvent;  // Bad vertex, skip event.
     return nullptr;
   }
 
@@ -517,19 +517,27 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   int realnofTracks = 0; // number of track which we use in a analysis
   int tracksPrim = 0;
 
+  // constant indicating label has been unset
+  const int UNDEFINED_LABEL = -1;
+
   // 'labels' maps a track's id to the track's index in the Event
   // i.e. labels[Event->GetTrack(x)->GetID()] == x
-  std::map<int, int> labels;
+  std::vector<int> labels(nofTracks, UNDEFINED_LABEL);
 
-  // looking for global tracks and saving their numbers to copy from them PID information to TPC-only tracks in the main loop over tracks
+  // looking for global tracks and saving their numbers to copy from
+  // them PID information to TPC-only tracks in the main loop over tracks
   for (int i = 0; i < nofTracks; i++) {
-    const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(fEvent->GetTrack(i));
-    assert(aodtrack && "Not a standard AOD");
+    const auto *aodtrack = static_cast<AliAODTrack *>(fEvent->GetTrack(i));
+
     if (!aodtrack->TestFilterBit(fFilterBit)) {
       // Skip TPC-only tracks
-      auto id = aodtrack->GetID();
+      const int id = aodtrack->GetID();
       if (id < 0) {
         continue;
+      }
+      // Resize labels vector if "id" is larger than mapping allows
+      if (id >= labels.size()) {
+        labels.resize(id + 1024, UNDEFINED_LABEL);
       }
       labels[id] = i;
     }
@@ -539,7 +547,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   Int_t norm_mult = 0;
   for (int i = 0; i < nofTracks; i++) {
     //  const AliAODTrack *aodtrack=dynamic_cast<AliAODTrack*>(fEvent->GetTrack(i));
-    AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(fEvent->GetTrack(i));
+    AliAODTrack *aodtrack = static_cast<AliAODTrack *>(fEvent->GetTrack(i));
     assert(aodtrack && "Not a standard AOD"); // Getting the AODtrack directly
 
     if (aodtrack->IsPrimaryCandidate()) {
@@ -881,6 +889,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     int count_pass = 0;
     for (Int_t i = 0; i < fEvent->GetNumberOfV0s(); i++) {
       AliAODv0 *aodv0 = fEvent->GetV0(i);
+      // ensure a "good" v0 particle passes these conditions
       if (!aodv0
           || aodv0->GetNDaughters() > 2
           || aodv0->GetNProngs() > 2
