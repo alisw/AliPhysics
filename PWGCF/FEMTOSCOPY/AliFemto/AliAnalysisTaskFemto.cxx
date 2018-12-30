@@ -485,25 +485,30 @@ void AliAnalysisTaskFemto::CreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskFemto::Exec(Option_t *)
 {
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  auto *event_handler = static_cast<AliInputEventHandler *>(mgr->GetInputEventHandler());
+
   // Task making a femtoscopic analysis.
   if (fOfflineTriggerMask) {
-    Bool_t isSelected = (((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fOfflineTriggerMask);
+    Bool_t isSelected = event_handler->IsEventSelected() & fOfflineTriggerMask;
     if (!isSelected) {
-      if (fVerbose)
-        cout << "AliAnalysisTaskFemto: is not selected" << endl;
+      if (fVerbose) {
+        // std::cout << "AliAnalysisTaskFemto: is not selected" << endl;
+        AliInfo("Event is not selected");
+      }
       return;
     }
   }
 
   if (fAnalysisType == 1) {
     if (!fESD) {
-      if (fVerbose)
+      if (fVerbose) {
         AliWarning("fESD not available");
+      }
       return;
     }
     //Get MC data
-    AliMCEventHandler *mctruth = (AliMCEventHandler *)
-                                    ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
+    AliMCEventHandler *mctruth = static_cast<AliMCEventHandler*>(mgr->GetMCtruthEventHandler());
 
     AliGenHijingEventHeader *hdh = 0;
     AliGenCocktailEventHeader *hd = 0;
@@ -610,7 +615,7 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
     }
 
     // Get AOD
-//     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+//     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*>(event_handler);
 
 //     if (!aodH) {
 //       AliWarning("Could not get AODInputHandler");
@@ -624,13 +629,15 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
 
 
 
-    if (fVerbose)
+    if (fVerbose) {
       AliInfo(Form("Tracks in AOD: %d \n", fAOD->GetNumberOfTracks()));
+    }
 
     if (fAOD->GetNumberOfTracks() > 0) {
       if (!fReader) {
-        if (fVerbose)
+        if (fVerbose) {
           AliWarning("No AOD reader for AOD analysis! \n");
+	}
       } else {
         AliFemtoEventReaderAODChain *faodc = dynamic_cast<AliFemtoEventReaderAODChain *>(fReader);
 
