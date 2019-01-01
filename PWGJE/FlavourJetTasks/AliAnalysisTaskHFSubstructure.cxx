@@ -272,7 +272,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
   fAodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
 
 
-  fRDHFCuts->IsEventSelected(fAodEvent);
+  if(!fRDHFCuts->IsEventSelected(fAodEvent)) return kFALSE;
   fhEvent->Fill(1); 
   fFastJetWrapper=new AliFJWrapper("fastjetwrapper","fastjetwrapper");
   fFastJetWrapper->SetAreaType(fastjet::active_area); 
