@@ -218,6 +218,14 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty(const char *name)
 ,fDCAxy_pt_had_phi3_B(0)
 ,fDCAxy_pt_had_phi4_ChB(0)
 ,fDCAxy_pt_had_phi4_B(0)
+,fDCAxy_pt_had_ResCorr_phi1(0)
+,fDCAxy_pt_had_ResCorr_phi2(0)
+,fDCAxy_pt_had_ResCorr_phi3(0)
+,fDCAxy_pt_had_ResCorr_phi4(0)
+,fResGausCorr_phi1(0)
+,fResGausCorr_phi2(0)
+,fResGausCorr_phi3(0)
+,fResGausCorr_phi4(0)
 ,fDCAxy_pt_ele(0)
 ,fDCAz_pt_ele(0)
 ,hCharmMotherPt(0)
@@ -427,6 +435,14 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty()
 ,fDCAxy_pt_had_phi3_B(0)
 ,fDCAxy_pt_had_phi4_ChB(0)
 ,fDCAxy_pt_had_phi4_B(0)
+,fDCAxy_pt_had_ResCorr_phi1(0)
+,fDCAxy_pt_had_ResCorr_phi2(0)
+,fDCAxy_pt_had_ResCorr_phi3(0)
+,fDCAxy_pt_had_ResCorr_phi4(0)
+,fResGausCorr_phi1(0)
+,fResGausCorr_phi2(0)
+,fResGausCorr_phi3(0)
+,fResGausCorr_phi4(0)
 ,fDCAxy_pt_ele(0)
 ,fDCAz_pt_ele(0)
 ,hCharmMotherPt(0)
@@ -845,6 +861,20 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     
     fDCAxy_pt_had_phi4_B = new TH2F("fDCAxy_pt_had_phi4_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
     fOutputList->Add(fDCAxy_pt_had_phi4_B);
+    
+       
+    fDCAxy_pt_had_ResCorr_phi1 = new TH2F("fDCAxy_pt_had_ResCorr_phi1",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_had_ResCorr_phi1);
+    
+    fDCAxy_pt_had_ResCorr_phi2 = new TH2F("fDCAxy_pt_had_ResCorr_phi2",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_had_ResCorr_phi2);
+    
+    fDCAxy_pt_had_ResCorr_phi3 = new TH2F("fDCAxy_pt_had_ResCorr_phi3",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_had_ResCorr_phi3);
+    
+    fDCAxy_pt_had_ResCorr_phi4 = new TH2F("fDCAxy_pt_had_ResCorr_phi4",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCAxy_pt_had_ResCorr_phi4);
+    
     
     fDCAz_pt_had_WoPID = new TH2F("fDCAz_pt_had_WoPID",";p_{t} (GeV/c);DCAz hadrons_WoPID",300,0,30,800,-0.2,0.2);
     fOutputList->Add(fDCAz_pt_had_WoPID);
@@ -1435,6 +1465,14 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			fDCAxy_pt_had_onlyDCA_phi1->Fill(fPt,DCAxy);
 			fDCAxy_pt_had_phi1_ChB->Fill(fPt,DCAxy*track->Charge()*signB);
 			fDCAxy_pt_had_phi1_B->Fill(fPt,DCAxy*signB);
+			
+			float DCAMCRes_phi1 = GetDCAResolMC_phi1(fPt); ///resolution of the MC
+			float DCAMCMean_phi1 = GetDCAMeanMC_phi1(fPt); ///mean of the MC
+			float correction_phi1 = gRandom->Gaus(DCAMCMean_phi1,DCAMCRes_phi1); 
+			float DCAResCorr_phi1 =  DCAxy + correction_phi1;
+			
+			//fResGausCorr_phi1->Fill(correction_phi1);
+			fDCAxy_pt_had_ResCorr_phi1->Fill(fPt,DCAResCorr_phi1);
 			//cout<<"Phi1 value:===   "<<phi_d0<<endl;
 			}
 			
@@ -1442,6 +1480,13 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			fDCAxy_pt_had_onlyDCA_phi2->Fill(fPt,DCAxy);
 			fDCAxy_pt_had_phi2_ChB->Fill(fPt,DCAxy*track->Charge()*signB);
 			fDCAxy_pt_had_phi2_B->Fill(fPt,DCAxy*signB);
+			float DCAMCRes_phi2 = GetDCAResolMC_phi2(fPt); ///resolution of the MC
+			float DCAMCMean_phi2 = GetDCAMeanMC_phi2(fPt); ///mean of the MC
+			float correction_phi2 = gRandom->Gaus(DCAMCMean_phi2,DCAMCRes_phi2); 
+			float DCAResCorr_phi2 =  DCAxy + correction_phi2;
+			
+			//fResGausCorr_phi2->Fill(correction_phi2);
+			fDCAxy_pt_had_ResCorr_phi2->Fill(fPt,DCAResCorr_phi2);
 			//cout<<"Phi2 value:===   "<<phi_d0<<endl;
 			}
 			
@@ -1449,6 +1494,13 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			fDCAxy_pt_had_onlyDCA_phi3->Fill(fPt,DCAxy);
 			fDCAxy_pt_had_phi3_ChB->Fill(fPt,DCAxy*track->Charge()*signB);
 			fDCAxy_pt_had_phi3_B->Fill(fPt,DCAxy*signB);
+			float DCAMCRes_phi3 = GetDCAResolMC_phi3(fPt); ///resolution of the MC
+			float DCAMCMean_phi3 = GetDCAMeanMC_phi3(fPt); ///mean of the MC
+			float correction_phi3 = gRandom->Gaus(DCAMCMean_phi3,DCAMCRes_phi3); 
+			float DCAResCorr_phi3 =  DCAxy + correction_phi3;
+			
+			//fResGausCorr_phi3->Fill(correction_phi3);
+			fDCAxy_pt_had_ResCorr_phi3->Fill(fPt,DCAResCorr_phi3);
 			//cout<<"Phi3 value:===   "<<phi_d0<<endl;
 			}
 			
@@ -1456,8 +1508,16 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			fDCAxy_pt_had_onlyDCA_phi4->Fill(fPt,DCAxy);
 			fDCAxy_pt_had_phi4_ChB->Fill(fPt,DCAxy*track->Charge()*signB);
 			fDCAxy_pt_had_phi4_B->Fill(fPt,DCAxy*signB);
+			float DCAMCRes_phi4 = GetDCAResolMC_phi4(fPt); ///resolution of the MC
+			float DCAMCMean_phi4 = GetDCAMeanMC_phi4(fPt); ///mean of the MC
+			float correction_phi4 = gRandom->Gaus(DCAMCMean_phi4,DCAMCRes_phi4); 
+			float DCAResCorr_phi4 =  DCAxy + correction_phi4;
+			
+			//fResGausCorr_phi4->Fill(correction_phi4);
+			fDCAxy_pt_had_ResCorr_phi4->Fill(fPt,DCAResCorr_phi4);
 			//cout<<"Phi4 value:===   "<<phi_d0<<endl;
 			}
+			
 			
 			///Checking the effect of the improver in the resolution for hijing events separetely
 			if(fIsMC){
@@ -1879,8 +1939,38 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
             }
 
      
-            ///DCAxy
-            qadca[2]=DCAxy*track->Charge()*signB;
+             ///DCAxy
+            	float DCAResCorr;
+            	
+           	if(phi_d0 > 315.0 || phi_d0 < 45.0){
+		float DCAMCRes_phi1 = GetDCAResolMC_phi1(fPt); ///resolution of the MC
+		float DCAMCMean_phi1 = GetDCAMeanMC_phi1(fPt); ///mean of the MC
+		float correction_phi1 = gRandom->Gaus(DCAMCMean_phi1,DCAMCRes_phi1); 
+		DCAResCorr =  DCAxy*track->Charge()*signB + correction_phi1;
+		}
+			
+		if(phi_d0 > 45.0 && phi_d0 < 135.0){
+		float DCAMCRes_phi2 = GetDCAResolMC_phi2(fPt); ///resolution of the MC
+		float DCAMCMean_phi2 = GetDCAMeanMC_phi2(fPt); ///mean of the MC
+		float correction_phi2 = gRandom->Gaus(DCAMCMean_phi2,DCAMCRes_phi2); 
+		DCAResCorr =  DCAxy*track->Charge()*signB + correction_phi2;
+		}
+			
+		if(phi_d0 > 135.0 && phi_d0 < 225.0){
+		float DCAMCRes_phi3 = GetDCAResolMC_phi3(fPt); ///resolution of the MC
+		float DCAMCMean_phi3 = GetDCAMeanMC_phi3(fPt); ///mean of the MC
+		float correction_phi3 = gRandom->Gaus(DCAMCMean_phi3,DCAMCRes_phi3); 
+		DCAResCorr =  DCAxy*track->Charge()*signB + correction_phi3;
+		}
+			
+		if(phi_d0 > 225.0 && phi_d0 < 315.0){
+		float DCAMCRes_phi4 = GetDCAResolMC_phi4(fPt); ///resolution of the MC
+		float DCAMCMean_phi4 = GetDCAMeanMC_phi4(fPt); ///mean of the MC
+		float correction_phi4 = gRandom->Gaus(DCAMCMean_phi4,DCAMCRes_phi4);  
+		DCAResCorr =  DCAxy*track->Charge()*signB + correction_phi4;
+		}
+		
+	    qadca[2]=DCAResCorr;	
             
             Double_t ITSNcls = atrack->GetITSNcls();
             //cout<<"atrack->GetITSNcls() = "<<atrack->GetITSNcls()<<endl;
@@ -2501,6 +2591,287 @@ Bool_t AliAnalysisHFEppTPCTOFBeauty::PassCorrCuts(AliAODEvent *fAOD)
 	}
   
 }
+
+Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAMeanMC_phi1(Float_t x){
+    
+// Return the DCA resolution of the track (in MC) accordingly to its pT
+
+float MeanGaus = 0;
+
+if (x >= 0.90 && x < 1.10) MeanGaus = 0.000086; 
+if (x >= 1.10 && x < 1.30) MeanGaus = 0.000070; 
+if (x >= 1.30 && x < 1.50) MeanGaus = 0.000090; 
+if (x >= 1.50 && x < 1.70) MeanGaus = 0.000101; 
+if (x >= 1.70 && x < 1.90) MeanGaus = 0.000118; 
+if (x >= 1.90 && x < 2.10) MeanGaus = 0.000134; 
+if (x >= 2.10 && x < 2.30) MeanGaus = 0.000142; 
+if (x >= 2.30 && x < 2.50) MeanGaus = 0.000154; 
+if (x >= 2.50 && x < 2.70) MeanGaus = 0.000172; 
+if (x >= 2.70 && x < 2.90) MeanGaus = 0.000170; 
+if (x >= 2.90 && x < 3.10) MeanGaus = 0.000180; 
+if (x >= 3.10 && x < 3.30) MeanGaus = 0.000178; 
+if (x >= 3.30 && x < 3.50) MeanGaus = 0.000183; 
+if (x >= 3.50 && x < 3.70) MeanGaus = 0.000182; 
+if (x >= 3.70 && x < 3.90) MeanGaus = 0.000173; 
+if (x >= 3.90 && x < 4.10) MeanGaus = 0.000166; 
+if (x >= 4.10 && x < 4.30) MeanGaus = 0.000178; 
+if (x >= 4.30 && x < 4.50) MeanGaus = 0.000175; 
+if (x >= 4.50 && x < 4.70) MeanGaus = 0.000166; 
+if (x >= 4.70 && x < 5.00) MeanGaus = 0.000179; 
+if (x >= 5.00 && x < 5.50) MeanGaus = 0.000155; 
+if (x >= 5.50 && x < 6.00) MeanGaus = 0.000170; 
+if (x >= 6.00 && x < 6.50) MeanGaus = 0.000148; 
+if (x >= 6.50 && x < 7.00) MeanGaus = 0.000143; 
+if (x >= 7.00 && x < 8.00) MeanGaus = 0.000137; 
+
+return MeanGaus;   
+}
+
+Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAMeanMC_phi2(Float_t x){
+    
+// Return the DCA resolution of the track (in MC) accordingly to its pT
+
+float MeanGaus = 0;
+
+if (x >= 0.90 && x < 1.10) MeanGaus = -0.001080; 
+if (x >= 1.10 && x < 1.30) MeanGaus = -0.000994; 
+if (x >= 1.30 && x < 1.50) MeanGaus = -0.000854; 
+if (x >= 1.50 && x < 1.70) MeanGaus = -0.000714; 
+if (x >= 1.70 && x < 1.90) MeanGaus = -0.000604; 
+if (x >= 1.90 && x < 2.10) MeanGaus = -0.000551; 
+if (x >= 2.10 && x < 2.30) MeanGaus = -0.000515; 
+if (x >= 2.30 && x < 2.50) MeanGaus = -0.000482; 
+if (x >= 2.50 && x < 2.70) MeanGaus = -0.000459; 
+if (x >= 2.70 && x < 2.90) MeanGaus = -0.000401; 
+if (x >= 2.90 && x < 3.10) MeanGaus = -0.000377; 
+if (x >= 3.10 && x < 3.30) MeanGaus = -0.000347; 
+if (x >= 3.30 && x < 3.50) MeanGaus = -0.000326; 
+if (x >= 3.50 && x < 3.70) MeanGaus = -0.000284; 
+if (x >= 3.70 && x < 3.90) MeanGaus = -0.000289; 
+if (x >= 3.90 && x < 4.10) MeanGaus = -0.000258; 
+if (x >= 4.10 && x < 4.30) MeanGaus = -0.000234; 
+if (x >= 4.30 && x < 4.50) MeanGaus = -0.000224; 
+if (x >= 4.50 && x < 4.70) MeanGaus = -0.000201; 
+if (x >= 4.70 && x < 5.00) MeanGaus = -0.000170; 
+if (x >= 5.00 && x < 5.50) MeanGaus = -0.000169; 
+if (x >= 5.50 && x < 6.00) MeanGaus = -0.000141; 
+if (x >= 6.00 && x < 6.50) MeanGaus = -0.000133; 
+if (x >= 6.50 && x < 7.00) MeanGaus = -0.000111; 
+if (x >= 7.00 && x < 8.00) MeanGaus = -0.000124;  
+
+return MeanGaus;   
+}
+
+Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAMeanMC_phi3(Float_t x){
+    
+// Return the DCA resolution of the track (in MC) accordingly to its pT
+
+float MeanGaus = 0;
+
+if (x >= 0.90 && x < 1.10) MeanGaus = -0.000504; 
+if (x >= 1.10 && x < 1.30) MeanGaus = -0.000454; 
+if (x >= 1.30 && x < 1.50) MeanGaus = -0.000375; 
+if (x >= 1.50 && x < 1.70) MeanGaus = -0.000307; 
+if (x >= 1.70 && x < 1.90) MeanGaus = -0.000273; 
+if (x >= 1.90 && x < 2.10) MeanGaus = -0.000263; 
+if (x >= 2.10 && x < 2.30) MeanGaus = -0.000240; 
+if (x >= 2.30 && x < 2.50) MeanGaus = -0.000202; 
+if (x >= 2.50 && x < 2.70) MeanGaus = -0.000195; 
+if (x >= 2.70 && x < 2.90) MeanGaus = -0.000170; 
+if (x >= 2.90 && x < 3.10) MeanGaus = -0.000147; 
+if (x >= 3.10 && x < 3.30) MeanGaus = -0.000092; 
+if (x >= 3.30 && x < 3.50) MeanGaus = -0.000106; 
+if (x >= 3.50 && x < 3.70) MeanGaus = -0.000088; 
+if (x >= 3.70 && x < 3.90) MeanGaus = -0.000082; 
+if (x >= 3.90 && x < 4.10) MeanGaus = -0.000075; 
+if (x >= 4.10 && x < 4.30) MeanGaus = -0.000032; 
+if (x >= 4.30 && x < 4.50) MeanGaus = -0.000046; 
+if (x >= 4.50 && x < 4.70) MeanGaus = -0.000039; 
+if (x >= 4.70 && x < 5.00) MeanGaus = -0.000050; 
+if (x >= 5.00 && x < 5.50) MeanGaus = -0.000015; 
+if (x >= 5.50 && x < 6.00) MeanGaus = -0.000029; 
+if (x >= 6.00 && x < 6.50) MeanGaus = -0.000001; 
+if (x >= 6.50 && x < 7.00) MeanGaus = -0.000016; 
+if (x >= 7.00 && x < 8.00) MeanGaus = -0.000032; 
+return MeanGaus;   
+}
+
+Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAMeanMC_phi4(Float_t x){
+    
+// Return the DCA resolution of the track (in MC) accordingly to its pT
+
+float MeanGaus = 0;
+
+if (x >= 0.90 && x < 1.10) MeanGaus = -0.001437; 
+if (x >= 1.10 && x < 1.30) MeanGaus = -0.001372; 
+if (x >= 1.30 && x < 1.50) MeanGaus = -0.001207; 
+if (x >= 1.50 && x < 1.70) MeanGaus = -0.000999; 
+if (x >= 1.70 && x < 1.90) MeanGaus = -0.000844; 
+if (x >= 1.90 && x < 2.10) MeanGaus = -0.000724; 
+if (x >= 2.10 && x < 2.30) MeanGaus = -0.000658; 
+if (x >= 2.30 && x < 2.50) MeanGaus = -0.000586; 
+if (x >= 2.50 && x < 2.70) MeanGaus = -0.000513; 
+if (x >= 2.70 && x < 2.90) MeanGaus = -0.000466; 
+if (x >= 2.90 && x < 3.10) MeanGaus = -0.000410; 
+if (x >= 3.10 && x < 3.30) MeanGaus = -0.000359; 
+if (x >= 3.30 && x < 3.50) MeanGaus = -0.000338; 
+if (x >= 3.50 && x < 3.70) MeanGaus = -0.000298; 
+if (x >= 3.70 && x < 3.90) MeanGaus = -0.000259; 
+if (x >= 3.90 && x < 4.10) MeanGaus = -0.000212; 
+if (x >= 4.10 && x < 4.30) MeanGaus = -0.000206; 
+if (x >= 4.30 && x < 4.50) MeanGaus = -0.000182; 
+if (x >= 4.50 && x < 4.70) MeanGaus = -0.000171; 
+if (x >= 4.70 && x < 5.00) MeanGaus = -0.000147; 
+if (x >= 5.00 && x < 5.50) MeanGaus = -0.000115; 
+if (x >= 5.50 && x < 6.00) MeanGaus = -0.000088; 
+if (x >= 6.00 && x < 6.50) MeanGaus = -0.000064; 
+if (x >= 6.50 && x < 7.00) MeanGaus = -0.000067; 
+if (x >= 7.00 && x < 8.00) MeanGaus = -0.000058;  
+
+return MeanGaus;   
+}
+
+
+Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAResolMC_phi1(Float_t x){
+    
+// Return the DCA resolution of the track (in MC) accordingly to its pT
+
+float sigmaG = 0;
+
+if (x >= 0.90 && x < 1.10) sigmaG = 0.002169; 
+if (x >= 1.10 && x < 1.30) sigmaG = 0.000993; 
+if (x >= 1.30 && x < 1.50) sigmaG = 0.000909; 
+if (x >= 1.50 && x < 1.70) sigmaG = 0.000698; 
+if (x >= 1.70 && x < 1.90) sigmaG = 0.000479; 
+if (x >= 1.90 && x < 2.10) sigmaG = 0.000614; 
+if (x >= 2.10 && x < 2.30) sigmaG = 0.000672; 
+if (x >= 2.30 && x < 2.50) sigmaG = 0.000599; 
+if (x >= 2.50 && x < 2.70) sigmaG = 0.000521; 
+if (x >= 2.70 && x < 2.90) sigmaG = 0.000383; 
+if (x >= 2.90 && x < 3.10) sigmaG = 0.000306; 
+if (x >= 3.10 && x < 3.30) sigmaG = 0.000214; 
+if (x >= 3.30 && x < 3.50) sigmaG = 0.000330; 
+if (x >= 3.50 && x < 3.70) sigmaG = 0.000387; 
+if (x >= 3.70 && x < 3.90) sigmaG = 0.000202; 
+if (x >= 3.90 && x < 4.10) sigmaG = 0.000241; 
+if (x >= 4.10 && x < 4.30) sigmaG = 0.000062; 
+if (x >= 4.30 && x < 4.50) sigmaG = 0.000206; 
+if (x >= 4.50 && x < 4.70) sigmaG = 0.000454; 
+if (x >= 4.70 && x < 5.00) sigmaG = 0.000643; 
+if (x >= 5.00 && x < 5.50) sigmaG = 0.000320; 
+if (x >= 5.50 && x < 6.00) sigmaG = 0.000525; 
+if (x >= 6.00 && x < 6.50) sigmaG = 0.000697; 
+if (x >= 6.50 && x < 7.00) sigmaG = 0.000151; 
+if (x >= 7.00 && x < 8.00) sigmaG = 0.000526; 
+
+return sigmaG;   
+}
+
+Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAResolMC_phi2(Float_t x){
+    
+// Return the DCA resolution of the track (in MC) accordingly to its pT
+
+float sigmaG = 0;
+
+if (x >= 0.90 && x < 1.10) sigmaG = 0.001767; 
+if (x >= 1.10 && x < 1.30) sigmaG = 0.001370; 
+if (x >= 1.30 && x < 1.50) sigmaG = 0.001260; 
+if (x >= 1.50 && x < 1.70) sigmaG = 0.001041; 
+if (x >= 1.70 && x < 1.90) sigmaG = 0.000906; 
+if (x >= 1.90 && x < 2.10) sigmaG = 0.001000; 
+if (x >= 2.10 && x < 2.30) sigmaG = 0.000963; 
+if (x >= 2.30 && x < 2.50) sigmaG = 0.000955; 
+if (x >= 2.50 && x < 2.70) sigmaG = 0.000847; 
+if (x >= 2.70 && x < 2.90) sigmaG = 0.000688; 
+if (x >= 2.90 && x < 3.10) sigmaG = 0.000564; 
+if (x >= 3.10 && x < 3.30) sigmaG = 0.000448; 
+if (x >= 3.30 && x < 3.50) sigmaG = 0.000489; 
+if (x >= 3.50 && x < 3.70) sigmaG = 0.000597; 
+if (x >= 3.70 && x < 3.90) sigmaG = 0.000390; 
+if (x >= 3.90 && x < 4.10) sigmaG = 0.000454; 
+if (x >= 4.10 && x < 4.30) sigmaG = 0.000349; 
+if (x >= 4.30 && x < 4.50) sigmaG = 0.000417; 
+if (x >= 4.50 && x < 4.70) sigmaG = 0.000318; 
+if (x >= 4.70 && x < 5.00) sigmaG = 0.000365; 
+if (x >= 5.00 && x < 5.50) sigmaG = 0.000345; 
+if (x >= 5.50 && x < 6.00) sigmaG = 0.000101; 
+if (x >= 6.00 && x < 6.50) sigmaG = 0.000156; 
+if (x >= 6.50 && x < 7.00) sigmaG = 0.000423; 
+if (x >= 7.00 && x < 8.00) sigmaG = 0.000571; 
+
+return sigmaG;   
+}
+
+Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAResolMC_phi3(Float_t x){
+    
+// Return the DCA resolution of the track (in MC) accordingly to its pT
+
+float sigmaG = 0;
+
+if (x >= 0.90 && x < 1.10) sigmaG = 0.002756; 
+if (x >= 1.10 && x < 1.30) sigmaG = 0.001274; 
+if (x >= 1.30 && x < 1.50) sigmaG = 0.001667; 
+if (x >= 1.50 && x < 1.70) sigmaG = 0.001323; 
+if (x >= 1.70 && x < 1.90) sigmaG = 0.001157; 
+if (x >= 1.90 && x < 2.10) sigmaG = 0.001088; 
+if (x >= 2.10 && x < 2.30) sigmaG = 0.001124; 
+if (x >= 2.30 && x < 2.50) sigmaG = 0.001120; 
+if (x >= 2.50 && x < 2.70) sigmaG = 0.001058; 
+if (x >= 2.70 && x < 2.90) sigmaG = 0.000790; 
+if (x >= 2.90 && x < 3.10) sigmaG = 0.000799; 
+if (x >= 3.10 && x < 3.30) sigmaG = 0.000727; 
+if (x >= 3.30 && x < 3.50) sigmaG = 0.000719; 
+if (x >= 3.50 && x < 3.70) sigmaG = 0.000575; 
+if (x >= 3.70 && x < 3.90) sigmaG = 0.000660; 
+if (x >= 3.90 && x < 4.10) sigmaG = 0.000380; 
+if (x >= 4.10 && x < 4.30) sigmaG = 0.000623; 
+if (x >= 4.30 && x < 4.50) sigmaG = 0.000462; 
+if (x >= 4.50 && x < 4.70) sigmaG = 0.000401; 
+if (x >= 4.70 && x < 5.00) sigmaG = 0.000581; 
+if (x >= 5.00 && x < 5.50) sigmaG = 0.000410; 
+if (x >= 5.50 && x < 6.00) sigmaG = 0.000476; 
+if (x >= 6.00 && x < 6.50) sigmaG = 0.000257; 
+if (x >= 6.50 && x < 7.00) sigmaG = 0.000387; 
+if (x >= 7.00 && x < 8.00) sigmaG = 0.000279;  
+return sigmaG;   
+}
+
+Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAResolMC_phi4(Float_t x){
+    
+// Return the DCA resolution of the track (in MC) accordingly to its pT
+
+float sigmaG = 0;
+
+if (x >= 0.90 && x < 1.10) sigmaG = 0.002412; 
+if (x >= 1.10 && x < 1.30) sigmaG = 0.001436; 
+if (x >= 1.30 && x < 1.50) sigmaG = 0.001695; 
+if (x >= 1.50 && x < 1.70) sigmaG = 0.001356; 
+if (x >= 1.70 && x < 1.90) sigmaG = 0.001193; 
+if (x >= 1.90 && x < 2.10) sigmaG = 0.001136; 
+if (x >= 2.10 && x < 2.30) sigmaG = 0.001075; 
+if (x >= 2.30 && x < 2.50) sigmaG = 0.001062; 
+if (x >= 2.50 && x < 2.70) sigmaG = 0.000939; 
+if (x >= 2.70 && x < 2.90) sigmaG = 0.000751; 
+if (x >= 2.90 && x < 3.10) sigmaG = 0.000605; 
+if (x >= 3.10 && x < 3.30) sigmaG = 0.000590; 
+if (x >= 3.30 && x < 3.50) sigmaG = 0.000704; 
+if (x >= 3.50 && x < 3.70) sigmaG = 0.000419; 
+if (x >= 3.70 && x < 3.90) sigmaG = 0.000517; 
+if (x >= 3.90 && x < 4.10) sigmaG = 0.000598; 
+if (x >= 4.10 && x < 4.30) sigmaG = 0.000677; 
+if (x >= 4.30 && x < 4.50) sigmaG = 0.000674; 
+if (x >= 4.50 && x < 4.70) sigmaG = 0.000508; 
+if (x >= 4.70 && x < 5.00) sigmaG = 0.000537; 
+if (x >= 5.00 && x < 5.50) sigmaG = 0.000612; 
+if (x >= 5.50 && x < 6.00) sigmaG = 0.000579; 
+if (x >= 6.00 && x < 6.50) sigmaG = 0.000588; 
+if (x >= 6.50 && x < 7.00) sigmaG = 0.000406; 
+if (x >= 7.00 && x < 8.00) sigmaG = 0.000467;  
+
+return sigmaG;   
+}
+
+
 //=======================================================================
 
 
