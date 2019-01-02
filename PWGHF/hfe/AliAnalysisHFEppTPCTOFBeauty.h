@@ -120,6 +120,22 @@ private:
     //Find Mothers (Find HFE and NonHFE from MC information)
     Bool_t FindMother(Int_t mcIndex);
     
+   
+    // Returns the resolution Gaus which is correction to the resolution in different phi regions
+    Float_t GetDCAResolMC_phi1(Float_t x);
+    Float_t GetDCAResolMC_phi2(Float_t x);
+    Float_t GetDCAResolMC_phi3(Float_t x);
+    Float_t GetDCAResolMC_phi4(Float_t x);
+    
+    
+    // Returns the mean Gaus which is correction to the mean in different phi regions
+    Float_t GetDCAMeanMC_phi1(Float_t x);
+    Float_t GetDCAMeanMC_phi2(Float_t x);
+    Float_t GetDCAMeanMC_phi3(Float_t x);
+    Float_t GetDCAMeanMC_phi4(Float_t x);
+    
+    
+    
     //Select HFE for the reconstruction efficiency calculation
     Bool_t IsHFelectronsMC(AliVTrack *track);
     
@@ -268,6 +284,14 @@ private:
     TH2F				*fDCAxy_pt_had_phi3_B;//!
     TH2F				*fDCAxy_pt_had_phi4_ChB;//!
     TH2F				*fDCAxy_pt_had_phi4_B;//!
+    TH2F				*fDCAxy_pt_had_ResCorr_phi1;//!
+    TH2F				*fDCAxy_pt_had_ResCorr_phi2;//!
+    TH2F				*fDCAxy_pt_had_ResCorr_phi3;//!
+    TH2F				*fDCAxy_pt_had_ResCorr_phi4;//!
+    TH1F				*fResGausCorr_phi1;//!
+    TH1F				*fResGausCorr_phi2;//!
+    TH1F				*fResGausCorr_phi3;//!
+    TH1F				*fResGausCorr_phi4;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_WoPID;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_Hijing;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_Phytia;//!
