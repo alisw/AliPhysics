@@ -4,7 +4,8 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Double_t centMin=0.,
                                               Bool_t useAODFilterCuts=kFALSE,
                                               Bool_t hasMC=kFALSE,
                                               TString TMVAweight = "TMVAClassification_BDTG.weights_094.xml",
-                                              Bool_t fromAlien       
+                                              Bool_t fromAlien,
+                                              TString date="ddmmyy"        
         ){
   
   TString directoryBaseName = "slehnerLMEETMVA";
@@ -19,7 +20,7 @@ AliAnalysisTask *AddTask_slehner_diele_TMVA(  Double_t centMin=0.,
 
   gSystem->Setenv("alien_CLOSE_SE","ALICE::CERN::EOS");
   
-  if(fromAlien) TString configBasePath("alien:///alice/cern.ch/user/s/selehner/configs/191218/");
+  if(fromAlien) TString configBasePath(TString("alien:///alice/cern.ch/user/s/selehner/configs/")+date+TString("/"));
   else TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
   
   TString configFile("Config_slehner_diele_TMVA.C");

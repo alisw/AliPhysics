@@ -14,23 +14,23 @@ void Config_slehner_Efficiency(AliAnalysisTaskElectronEfficiencyV2 *task,  Bool_
   Int_t PIDCut=0;
   Int_t MVACut=0;
   
-  for(int glcut = 0; glcut <=24; ++glcut){
+  for(int glcut = 0; glcut <=10; ++glcut){
     ////////DEFINE THE CUTS AS FUNCTION OF GLCUT//////
-    if(glcut<5){
-      trackCut=glcut;
-      PIDCut=0;
-      MVACut=4;   
-    }
-    else if(glcut<13){
-      trackCut=0;
-      PIDCut=glcut-5;
-      MVACut=4;   
-    }
-    else{
+    if(glcut<11){
       trackCut=0;
       PIDCut=0;
-      MVACut=glcut-13;      
+      MVACut=glcut;   
     }
+//    else if(glcut<13){
+//      trackCut=0;
+//      PIDCut=glcut-5;
+//      MVACut=4;   
+//    }
+//    else{
+//      trackCut=0;
+//      PIDCut=0;
+//      MVACut=glcut-13;      
+//    }
     //////////////////////////////////////////////////
     std::cout << "Config_slehner_Efficiency: CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVA Cut: "<<-1+MVACut*0.2<<" added"<< std::endl;
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight);
