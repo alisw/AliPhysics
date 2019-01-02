@@ -21,24 +21,24 @@ void Config_slehner_diele_TMVA(AliAnalysisTaskMultiDielectron *task,Bool_t usePI
   Int_t PIDCut=0;
   Int_t MVACut=0;
   
-  for(int glcut = 0; glcut <=24; ++glcut){
+  for(int glcut = 0; glcut <=10; ++glcut){
     ////////DEFINE THE CUTS AS FUNCTION OF GLCUT//////
-    if(glcut<5){
-      trackCut=glcut;
-      PIDCut=0;
-      MVACut=4;   
-    }
-    else if(glcut<13){
-      trackCut=0;
-      PIDCut=glcut-5;
-      MVACut=4;   
-    }
-    else{
+    if(glcut<11){
       trackCut=0;
       PIDCut=0;
-      MVACut=glcut-13;      
+      MVACut=glcut;   
     }
-   ////////////////////////////////////////////    
+//    else if(glcut<13){
+//      trackCut=0;
+//      PIDCut=glcut-5;
+//      MVACut=4;   
+//    }
+//    else{
+//      trackCut=0;
+//      PIDCut=0;
+//      MVACut=glcut-13;      
+//    }
+    //////////////////////////////////////////////////
     TString name=TString::Format("DieleTr%d_PID%d_MVA%d",trackCut,PIDCut, MVACut);
 //    cout<<"Diele name: "<<name.Data()<<endl;    
     AliDielectron * diel_low = new AliDielectron(Form("%s",name.Data()), Form("Name: %s",name.Data()));

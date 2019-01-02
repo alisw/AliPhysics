@@ -7,7 +7,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
                                                                 Bool_t useAODFilterCuts=kFALSE,
                                                                 TString TMVAweight = "TMVAClassification_BDTG.weights_094.xml",
                                                                 Int_t genGroup=0,
-                                                                Bool_t fromAlien
+                                                                Bool_t fromAlien,
+                                                                TString date="ddmmyy"
         ) {
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
@@ -24,7 +25,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_slehner_ElectronEfficiency(
   // Loading individual config file either local or from Alien
 
   
-  if(fromAlien) TString configBasePath("alien:///alice/cern.ch/user/s/selehner/configs/191218/");
+  if(fromAlien) TString configBasePath(TString("alien:///alice/cern.ch/user/s/selehner/configs/")+date+TString("/"));
   else TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
 
   TString configFile("Config_slehner_Efficiency.C");
