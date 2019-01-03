@@ -98,6 +98,8 @@ struct MacroParams {
   bool do_q3d_cf {false};
   bool do_kt_q3d_cf { false };
   bool do_kt_lcms_cf { false };
+  bool do_kt_prf_cf { false };
+  bool do_kt_bf_cf { false };
   bool do_kt_q3dpf_cf { false };
   bool do_pqq3d_cf { false };
   bool do_kt_pqq3d_cf { false };
@@ -356,7 +358,33 @@ ConfigFemtoAnalysis(const TString& param_str="")
         }
         analysis->AddCorrFctn(kt_binned_cfs);
       }
+
+      if (macro_config.do_kt_prf_cf && !macro_config.do_kt_trueq3d_cf) {
+        AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_Q3D_PRF",
+          new AliFemtoCorrFctnQ3DPF("", macro_config.q3d_bin_count, macro_config.q3d_maxq));
+
+        for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
+          float low = macro_config.kt_ranges[kt_idx],
+                high = macro_config.kt_ranges[kt_idx+1];
+          kt_binned_cfs->AddKtRange(low, high);
+        }
+        analysis->AddCorrFctn(kt_binned_cfs);
+      }
+
+      if (macro_config.do_kt_bf_cf && !macro_config.do_kt_trueq3d_cf) {
+        AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_Q3D_BF",
+          new AliFemtoCorrFctnQ3DBF("", macro_config.q3d_bin_count, macro_config.q3d_maxq));
+
+        for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
+          float low = macro_config.kt_ranges[kt_idx],
+                high = macro_config.kt_ranges[kt_idx+1];
+          kt_binned_cfs->AddKtRange(low, high);
+        }
+        analysis->AddCorrFctn(kt_binned_cfs);
+      }
+
       if (macro_config.do_kt_lcms_cf && !macro_config.do_kt_trueq3d_cf) {
+
         AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_Q3D_LCMS",
           new AliFemtoCorrFctnQ3DLCMS("", macro_config.q3d_bin_count, macro_config.q3d_maxq));
 
