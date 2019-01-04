@@ -1,7 +1,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
-// Updated Dec 30
+// Updated Jan 03
 
 
 #include "AliAnalysisManager.h"
@@ -85,7 +85,7 @@ fTreeVariablePID(-1),
 fTreeVariablePIDPositive(-1),
 fTreeVariablePIDNegative(-1),
 fNptBins(23),
-fIsMC(kTRUE),
+fIsMC(kFALSE),
 fIsAOD(kFALSE),
 fEvSel(AliVEvent::kINT7),
 fTreeVariableInvMassLambda(0),
