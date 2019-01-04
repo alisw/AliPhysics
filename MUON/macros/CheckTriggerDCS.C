@@ -77,21 +77,21 @@ void PrintQueryOptions()
 {
   printf("Missing points can be obtained in the correct format by querying the amanda server asking for the advanced options:\n");
   printf("Identification: alias; Time: Epoch\n");
-  printf("Identification: alias; Time: Epoch\n");
 }
 
 
 //________________________________________________
-Bool_t UpdateMap ( TMap* triggerDcsMap, TString recoveredPointsFilename, UInt_t startTime, UInt_t stopTime, THashList& missingAliases )
+Bool_t UpdateMap ( TMap* triggerDcsMap, const char* recoveredPointsFilename, UInt_t startTime, UInt_t stopTime, THashList& missingAliases )
 {
   /// Update the map with aliases with missing information
-  if ( gSystem->AccessPathName(recoveredPointsFilename.Data()) ) {
-    printf("Error: cannot open file %s\n",recoveredPointsFilename.Data());
+  TString expandedFilename = gSystem->ExpandPathName(recoveredPointsFilename);
+  if ( gSystem->AccessPathName(expandedFilename.Data()) ) {
+    printf("Error: cannot open file %s\n",expandedFilename.Data());
     return kFALSE;
   }
 
   TString currLine = "";
-  ifstream inFile(recoveredPointsFilename.Data());
+  ifstream inFile(expandedFilename.Data());
   while ( ! inFile.eof() ) {
     currLine.ReadLine(inFile);
     if ( ! currLine.Contains(";") ) continue;
@@ -202,7 +202,9 @@ void CheckTriggerDCS ( Int_t runNumber, TString ocdbPath="raw://", TString recov
   AliCDBManager* mgr = AliCDBManager::Instance();
   mgr->SetDefaultStorage(ocdbPath.Data());
   mgr->SetRun(runNumber);
-  mgr->SetSpecificStorage("MUON/Calib/MappingData","local://$ALICE_ROOT/OCDB"); // SAVE TIME
+  if ( gSystem->Getenv("ALIROOT_OCDB_ROOT") ) {
+    mgr->SetSpecificStorage("MUON/Calib/MappingData","local://$ALIROOT_OCDB_ROOT/OCDB"); // SAVE TIME
+  }
   
   AliMpCDB::LoadDDLStore();
   
@@ -289,6 +291,7 @@ void CheckTriggerDCS ( Int_t runNumber, TString ocdbPath="raw://", TString recov
         if ( hour == 0 ) hour = 12;
         ts.Print();
         printf("  Amanda format: %i/%i/%i %i:%i:%i %s\n",month,day,year,hour,min,sec,usTime.Data());
+        printf("  DARMA format (epoch): %u\n",timeStamp);
       }
     }
     else {
@@ -296,7 +299,7 @@ void CheckTriggerDCS ( Int_t runNumber, TString ocdbPath="raw://", TString recov
 
       TMap* clonedTriggerDCSmap = static_cast<TMap*>(triggerDcsMap->Clone());
 
-      if ( UpdateMap(clonedTriggerDCSmap, recoveredPointsFilename, minTimeStamp, maxTimeStamp, missingPoints) ) {
+      if ( UpdateMap(clonedTriggerDCSmap, recoveredPointsFilename.Data(), minTimeStamp, maxTimeStamp, missingPoints) ) {
         TString specStorageDir = "MUON/Calib/TriggerDCS";
         TString fullDir = Form("%s/%s",outDirRecovery.Data(),specStorageDir.Data());
         if ( gSystem->AccessPathName(fullDir) ) gSystem->Exec(Form("mkdir -p %s",fullDir.Data()));
