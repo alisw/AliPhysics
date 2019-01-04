@@ -48,11 +48,23 @@
 #include <TROOT.h>
 #include <TBase64.h>
 
+#include <TNamed.h>
+#include <random>
+
 #endif
 
 using AFAPP = AliFemtoAnalysisPionPion;
 
-struct MacroParams {
+
+struct MacroParams : public TNamed {
+  MacroParams()
+    : TNamed(AFAPP::make_random_string("macro_").Data(), "Macro Parameters")
+    {}
+
+  MacroParams(const TString &name)
+    : TNamed(name.Data(), "Macro Parameters")
+    {}
+
   std::vector<int> centrality_ranges;
   std::vector<unsigned char> pair_codes;
   std::vector<float> kt_ranges;
@@ -553,9 +565,14 @@ BuildConfiguration(const TString &text,
 {
   std::cout << "I-BuildConfiguration (BASE64-Encoded): " << TBase64::Encode(text) << " \n";
 
-  const TString analysis_varname = "a",
-                     cut_varname = "cut",
-                   macro_varname = "mac";
+  const TString analysis_varname = a.GetName(),
+                     cut_varname = cut.GetName(),
+                   macro_varname = mac.GetName();
+
+  auto globals = gROOT->GetListOfGlobals();
+  globals->Add(&a);
+  globals->Add(&cut);
+  globals->Add(&mac);
 
   TObjArray* lines = text.Tokenize("\n;");
 
@@ -570,15 +587,15 @@ BuildConfiguration(const TString &text,
 
     switch (line[0]) {
     case '$':
-      cmd = cut_varname + "." + line(1, line.Length() - 1);
+      cmd = cut_varname + "->" + line(1, line.Length() - 1);
       break;
 
     case '@':
-      cmd = analysis_varname + "." + line(1, line.Length() - 1);
+      cmd = analysis_varname + "->" + line(1, line.Length() - 1);
       break;
 
     case '~':
-      cmd = macro_varname + "." + line(1, line.Length() - 1);
+      cmd = macro_varname + "->" + line(1, line.Length() - 1);
       break;
 
     case '{':
@@ -601,10 +618,10 @@ BuildConfiguration(const TString &text,
         while ((subrange_it = (TObjString *)next_subrange())) {
           TString next = TString::Format("%0.2d", subrange_it->String().Atoi());
 
-          cmd = macro_varname + ".centrality_ranges.push_back(" + prev + ");";
+          cmd = macro_varname + "->centrality_ranges.push_back(" + prev + ");";
           gROOT->ProcessLineFast(cmd);
 
-          cmd = macro_varname + ".centrality_ranges.push_back(" + next + ");";
+          cmd = macro_varname + "->centrality_ranges.push_back(" + next + ");";
           gROOT->ProcessLineFast(cmd);
           prev = next;
         }
@@ -619,7 +636,7 @@ BuildConfiguration(const TString &text,
         std::cerr << "W-ConfigFemtoAnalysis: " << "Expected closing parens ')' in configuration string. Using rest of line as kT-bins\n";
         rangeend = line.Length();
       }
-      TString kt_ranges = line(1, rangeend - 2);
+      TString kt_ranges = line(1, rangeend - 3);
       std::cout << "Loaded kt-ranges: '" << kt_ranges << "'\n";
       TObjArray *range_groups = kt_ranges.Tokenize(",");
 
@@ -634,11 +651,11 @@ BuildConfiguration(const TString &text,
         while ((subrange_it = (TObjString *)next_subrange())) {
           TString next = TString::Format("%0.6e", subrange_it->String().Atof());
 
-          cmd = macro_varname + ".kt_ranges.push_back(" + prev + ");";
+          cmd = macro_varname + "->kt_ranges.push_back(" + prev + ");";
           // std::cout << "`" << cmd << "`\n";
           gROOT->ProcessLineFast(cmd);
 
-          cmd = macro_varname + ".kt_ranges.push_back(" + next + ");";
+          cmd = macro_varname + "->kt_ranges.push_back(" + next + ");";
           // std::cout << "`" << cmd << "`\n";
           gROOT->ProcessLineFast(cmd);
           prev = next;
@@ -649,10 +666,10 @@ BuildConfiguration(const TString &text,
 
     case '+':
       if (line == "+p") {
-        cmd = macro_varname + ".pair_codes.push_back(1)";
+        cmd = macro_varname + "->pair_codes.push_back(1)";
       }
       else if (line == "+m") {
-        cmd = macro_varname + ".pair_codes.push_back(0)";
+        cmd = macro_varname + "->pair_codes.push_back(0)";
       }
       else if (line == "+pp") {
         cmd = macro_varname + ".pair_codes.push_back(3)";
@@ -661,10 +678,10 @@ BuildConfiguration(const TString &text,
         cmd = macro_varname + ".pair_codes.push_back(4)";
       }
       else if (line == "+pm") {
-        cmd = macro_varname + ".pair_codes.push_back(2)";
+        cmd = macro_varname + "->pair_codes.push_back(2)";
       }
       else if (line == "+mp") {
-        cmd = macro_varname + ".pair_codes.push_back(5)";
+        cmd = macro_varname + "->pair_codes.push_back(5)";
       }
       else {
         continue;
@@ -680,4 +697,9 @@ BuildConfiguration(const TString &text,
     cout << "I-BuildConfiguration: `" << cmd << "`\n";
     gROOT->ProcessLineFast(cmd);
   }
+
+  globals->Remove(&a);
+  globals->Remove(&cut);
+  globals->Remove(&mac);
+
 }
