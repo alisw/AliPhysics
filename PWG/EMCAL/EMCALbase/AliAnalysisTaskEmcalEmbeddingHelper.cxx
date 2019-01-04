@@ -1132,7 +1132,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
     }
     else {
       // Use the cuts selected by SelectCollisionCandidates()
-      AliDebugStream(1) << "Using the trigger selection specified with SelectCollisionCandidates()\n.";
+      AliDebugStream(1) << "Using the trigger selection specified with SelectCollisionCandidates().\n";
       fInternalEventCuts.OverrideAutomaticTriggerSelection(fOfflineTriggerMask);
     }
   }
