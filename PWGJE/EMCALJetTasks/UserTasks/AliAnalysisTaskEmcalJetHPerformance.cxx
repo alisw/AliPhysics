@@ -37,7 +37,6 @@ namespace EMCALJetTasks {
 AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance():
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetHPerformance", kFALSE),
   fYAMLConfig(),
-  fConfigurationPath(""),
   fConfigurationInitialized(false),
   fEventCuts(),
   fHistManager(),
@@ -59,7 +58,6 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance():
 AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance(const char * name):
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fYAMLConfig(),
-  fConfigurationPath(""),
   fConfigurationInitialized(false),
   fEventCuts(),
   fHistManager(name),
@@ -82,7 +80,6 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance(const c
  */
 AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance(const AliAnalysisTaskEmcalJetHPerformance & other):
   fYAMLConfig(other.fYAMLConfig),
-  fConfigurationPath(other.fConfigurationPath),
   fConfigurationInitialized(other.fConfigurationInitialized),
   //fEventCuts(other.fEventCuts), // Copy constructor is private.
   fHistManager(other.fHistManager.GetName()),
@@ -130,14 +127,14 @@ void AliAnalysisTaskEmcalJetHPerformance::RetrieveAndSetTaskPropertiesFromYAMLCo
 
   // Same ordering as in the constructor (for consistency)
   std::string baseName = "enable";
-  // This exceptionally defaults to true.
-  fYAMLConfig.GetProperty({baseName, "aliEventCuts"}, fUseAliEventCuts, false);
-  // Otherwise these are disabled by default.
+  // These are disabled by default.
   fYAMLConfig.GetProperty({baseName, "QAHists"}, fCreateQAHists, false);
   fYAMLConfig.GetProperty({baseName, "responseMatrix"}, fCreateResponseMatrix, false);
 
   // Event cuts
   baseName = "eventCuts";
+  // This exceptionally defaults to true.
+  fYAMLConfig.GetProperty({baseName, "enabled"}, fUseAliEventCuts, false);
   // Need to include the namespace so that AliDebug will work properly...
   std::string taskName = "PWGJE::EMCALJetTasks::";
   taskName += GetName();
@@ -206,17 +203,10 @@ bool AliAnalysisTaskEmcalJetHPerformance::Initialize()
 {
   fConfigurationInitialized = false;
 
-  // Setup and initialize the YAML config
-  if (fConfigurationPath != "") {
-    AliInfoStream() << "Adding YAML configuration found at \"" << fConfigurationPath << "\"\n";
-    int configPosition = fYAMLConfig.AddConfiguration(fConfigurationPath, "yamlConfig");
-    if (configPosition < 0) {
-      // Return immediately
-      return fConfigurationInitialized;
-    }
-  }
-  else {
-    AliInfoStream() << "No YAML configuration fileanme passed.\n";
+  // Ensure that we have at least one configuration in the YAML config.
+  if (fYAMLConfig.DoesConfigurationExist(0) == false) {
+    // No configurations exist. Return immediately.
+    return fConfigurationInitialized;
   }
 
   // Always initialize for streaming purposes
@@ -388,19 +378,16 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupResponseMatrixHists()
 Bool_t AliAnalysisTaskEmcalJetHPerformance::IsEventSelected()
 {
   if (fUseAliEventCuts) {
-    if (!fEventCuts.AcceptEvent(InputEvent()))
-    {
+    if (!fEventCuts.AcceptEvent(InputEvent())) {
       PostData(1, fOutput);
       return kFALSE;
     }
   }
   else {
-    AliAnalysisTaskEmcalJet::IsEventSelected();
+    return AliAnalysisTaskEmcalJet::IsEventSelected();
   }
-  return kTRUE;
+  return kFALSE;
 }
-
-
 
 /**
  * Main event loop
@@ -750,7 +737,6 @@ void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance & first, PWG
 
   // Same ordering as in the constructors (for consistency)
   swap(first.fYAMLConfig, second.fYAMLConfig);
-  swap(first.fConfigurationPath, second.fConfigurationPath);
   swap(first.fConfigurationInitialized, second.fConfigurationInitialized);
   //swap(first.fEventCuts, second.fEventCuts); // Skip here, because the AliEventCuts copy constructor is private.
   //swap(first.fHistManager, second.fHistManager); // Skip here, because the THistManager copy constructor is private.

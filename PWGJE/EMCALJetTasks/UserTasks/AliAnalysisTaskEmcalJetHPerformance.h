@@ -57,7 +57,7 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   // Initialize the task
   // Configuration is handled via the YAML configuration file
   bool Initialize();
-  void SetConfigurationPath(const std::string & configurationPath) { fConfigurationPath = configurationPath; }
+  void AddConfigurationFile(const std::string & configurationPath, const std::string & configName = "") { fYAMLConfig.AddConfiguration(configurationPath, configName); }
 
   // Utility functions
   // AddTask
@@ -90,7 +90,6 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
 
   // Basic configuration
   PWG::Tools::AliYAMLConfiguration fYAMLConfig; ///< YAML configuration file.
-  std::string fConfigurationPath;     ///<  Path to the YAML configuration file.
   bool fConfigurationInitialized;     ///<  True if the task configuration has been successfully initialized.
   AliEventCuts fEventCuts;            ///<  AliEventCuts to handle event selection.
 

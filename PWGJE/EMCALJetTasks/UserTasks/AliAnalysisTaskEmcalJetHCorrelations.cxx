@@ -14,7 +14,7 @@
 #include <TVector3.h>
 #include <TFile.h>
 #include <TGrid.h>
-#include <TRandom3.h>
+#include <TList.h>
 
 #include <AliAnalysisManager.h>
 #include <AliInputEventHandler.h>
@@ -61,6 +61,10 @@ Double_t AliAnalysisTaskEmcalJetHCorrelations::p50_90G[17] = {0.97041, 0.0813559
  */
 AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetHCorrelations", kFALSE),
+  fYAMLConfig(),
+  fConfigurationInitialized(false),
+  fEventCuts(),
+  fUseAliEventCuts(true),
   fTrackBias(5),
   fClusterBias(5),
   fDoEventMixing(kFALSE),
@@ -68,6 +72,7 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations() :
   fPoolMgr(nullptr),
   fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
   fDisableFastPartition(kFALSE),
+  fRandom(0),
   fSingleTrackEfficiencyCorrectionType(AliAnalysisTaskEmcalJetHCorrelations::kEffDisable),
   fArtificialTrackInefficiency(1.0),
   fNoMixedEventJESCorrection(kFALSE),
@@ -94,6 +99,10 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations() :
  */
 AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
+  fYAMLConfig(),
+  fConfigurationInitialized(false),
+  fEventCuts(),
+  fUseAliEventCuts(true),
   fTrackBias(5),
   fClusterBias(5),
   fDoEventMixing(kFALSE),
@@ -101,6 +110,7 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations(const
   fPoolMgr(nullptr),
   fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
   fDisableFastPartition(kFALSE),
+  fRandom(0),
   fSingleTrackEfficiencyCorrectionType(AliAnalysisTaskEmcalJetHCorrelations::kEffDisable),
   fArtificialTrackInefficiency(1.0),
   fNoMixedEventJESCorrection(kFALSE),
@@ -139,11 +149,83 @@ void AliAnalysisTaskEmcalJetHCorrelations::InitializeArraysToZero()
 }
 
 /**
+ * Initialize task.
+ */
+bool AliAnalysisTaskEmcalJetHCorrelations::Initialize()
+{
+  fConfigurationInitialized = false;
+
+  // Ensure that we have at least one configuration in the YAML config.
+  if (fYAMLConfig.DoesConfigurationExist(0) == false) {
+    // No configurations exist. Return immediately.
+    return fConfigurationInitialized;
+  }
+
+  // Always initialize for streaming purposes
+  fYAMLConfig.Initialize();
+
+  // Setup task based on the properties defined in the YAML config
+  AliDebugStream(2) << "Configuring task from the YAML configuration.\n";
+  RetrieveAndSetTaskPropertiesFromYAMLConfig();
+  AliDebugStream(2) << "Finished configuring via the YAML configuration.\n";
+
+  // Print the results of the initialization
+  // Print outside of the ALICE Log system to ensure that it is always available!
+  //std::cout << *this;
+
+  fConfigurationInitialized = true;
+  return fConfigurationInitialized;
+}
+
+/**
+ * Perform task configuration via YAML.
+ */
+void AliAnalysisTaskEmcalJetHCorrelations::RetrieveAndSetTaskPropertiesFromYAMLConfig()
+{
+  // Base class options
+  // Recycle unused embedded events
+  fYAMLConfig.GetProperty("recycleUnusedEmbeddedEventsMode", fRecycleUnusedEmbeddedEventsMode, false);
+  // Task physics (trigger) selection.
+  std::string baseName = "eventCuts";
+  std::vector<std::string> physicsSelection;
+  bool res = fYAMLConfig.GetProperty(std::vector<std::string>({"eventCuts", "physicsSelection"}), physicsSelection, false);
+  if (res) {
+    fOfflineTriggerMask = AliEmcalContainerUtils::DeterminePhysicsSelectionFromYAML(physicsSelection);
+  }
+
+  // Event cuts
+  // This exceptionally defaults to true.
+  fYAMLConfig.GetProperty({baseName, "enabled"}, fUseAliEventCuts, false);
+  // Need to include the namespace so that AliDebug will work properly...
+  std::string taskName = "PWGJE::EMCALJetTasks::";
+  taskName += GetName();
+  AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(fEventCuts, fYAMLConfig, fOfflineTriggerMask, baseName, taskName);
+}
+
+/**
  * Perform run independent initializations, such as histograms and the event pool.
  */
-void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects() {
-  // Called once 
+void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects()
+{
+  // Called once
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+
+  // Check that the task was initialized
+  if (!fConfigurationInitialized) {
+    AliFatal("Task was not initialized. Please ensure that Initialize() was called!");
+  }
+  // Reinitialize the YAML configuration
+  fYAMLConfig.Reinitialize();
+
+  // Setup AliEventCuts output
+  if (fUseAliEventCuts) {
+    // We use a separate list so the output is separated.
+    auto eventCutsList = new TList();
+    eventCutsList->SetOwner(true);
+    eventCutsList->SetName("EventCuts");
+    fEventCuts.AddQAplotsToList(eventCutsList);
+    fOutput->Add(eventCutsList);
+  }
 
   // Create histograms
   fHistJetHTrackPt = new TH1F("fHistJetHTrackPt", "P_{T} distribution", 1000, 0.0, 100.0);
@@ -254,15 +336,33 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects() {
   fPoolMgr->Validate();
 }
 
-void AliAnalysisTaskEmcalJetHCorrelations::ExecOnce()
+/**
+ * User specific initializations to perform before the first event.
+ */
+void AliAnalysisTaskEmcalJetHCorrelations::UserExecOnce()
 {
-  if (fArtificialTrackInefficiency < 1.) {
-    if (gRandom) delete gRandom;
-    gRandom = new TRandom3(0);
-  }
+  // Base class.
+  AliAnalysisTaskEmcalJet::UserExecOnce();
 
-  // Call the base class
-  AliAnalysisTaskEmcalJet::ExecOnce();
+  // Ensure that the random number generator is seeded in each job.
+  fRandom.SetSeed(0);
+}
+
+/**
+ * Overloads the base class function to use AliEventCuts (if selected).
+ */
+Bool_t AliAnalysisTaskEmcalJetHCorrelations::IsEventSelected()
+{
+  if (fUseAliEventCuts) {
+    if (!fEventCuts.AcceptEvent(InputEvent())) {
+      PostData(1, fOutput);
+      return kFALSE;
+    }
+  }
+  else {
+    return AliAnalysisTaskEmcalJet::IsEventSelected();
+  }
+  return kFALSE;
 }
 
 /**
@@ -653,7 +753,7 @@ bool AliAnalysisTaskEmcalJetHCorrelations::CheckArtificialTrackEfficiency(unsign
     }
     else {
       // Rejet randomly
-      Double_t rnd = gRandom->Rndm();
+      Double_t rnd = fRandom.Rndm();
       if (fArtificialTrackInefficiency < rnd) {
         // Store index so we can reject it again if it is also filled for mixed events
         rejectedTrackIndices.push_back(trackIndex);
@@ -1405,7 +1505,6 @@ AliAnalysisTaskEmcalJetHCorrelations * AliAnalysisTaskEmcalJetHCorrelations::Add
   correlationTask->SetMixedEventTriggerType(mixEvent);
   // Options
   correlationTask->SetNCentBins(5);
-  correlationTask->SetVzRange(-10,10);
   correlationTask->SetDoLessSparseAxes(lessSparseAxes);
   correlationTask->SetDoWiderTrackBin(widerTrackBin);
   // Corrections
