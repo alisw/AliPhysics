@@ -1192,7 +1192,9 @@ AliFemtoConfigObject::AliFemtoConfigObject(AliFemtoConfigObject &&orig):
   orig._DeleteValue();
   orig.fTypeTag = kEMPTY;
   orig.fPainter = nullptr;
-  fPainter->ResetData(this);
+  if (fPainter) {
+    fPainter->ResetData(this);
+  }
 }
 
 /// Move assignment-operator
@@ -1225,8 +1227,8 @@ AliFemtoConfigObject& AliFemtoConfigObject::operator=(AliFemtoConfigObject &&rhs
   rhs.fTypeTag = kEMPTY;
 
   delete fPainter;
-  fPainter = rhs.fPainter;
-  rhs.fPainter = nullptr;
+  fPainter = nullptr;
+  std::swap(fPainter, rhs.fPainter);
 
   return *this;
 }
