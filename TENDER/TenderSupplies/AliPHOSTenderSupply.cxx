@@ -825,6 +825,7 @@ Double_t AliPHOSTenderSupply::CorrectNonlinearity(Double_t en){
     return (1.-0.08/(1.+en*en/0.055))*(0.03+6.65e-02*TMath::Sqrt(en)+en)*fNonlinearityParams[0]*(1+fNonlinearityParams[1]/(1.+en*en/fNonlinearityParams[2]/fNonlinearityParams[2])) ;
   }
   if(fNonlinearityVersion=="Run2Tune"){ //Improved Run2 tune
+    if(en<=0.) return 0.;   
     const Double_t x0=5.17 ;
     const Double_t a= 1.02165   ; 
     const Double_t b=-2.548e-01 ; 
