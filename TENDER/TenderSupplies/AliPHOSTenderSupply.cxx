@@ -824,6 +824,20 @@ Double_t AliPHOSTenderSupply::CorrectNonlinearity(Double_t en){
   if(fNonlinearityVersion=="Run2MC"){ //Default for Run2 + some correction
     return (1.-0.08/(1.+en*en/0.055))*(0.03+6.65e-02*TMath::Sqrt(en)+en)*fNonlinearityParams[0]*(1+fNonlinearityParams[1]/(1.+en*en/fNonlinearityParams[2]/fNonlinearityParams[2])) ;
   }
+  if(fNonlinearityVersion=="Run2Tune"){ //Improved Run2 tune
+    const Double_t x0=5.17 ;
+    const Double_t a= 1.02165   ; 
+    const Double_t b=-2.548e-01 ; 
+    const Double_t c= 6.483e-01 ;     
+    const Double_t d=-4.775e-01 ;    
+    const Double_t e= 1.205e-01 ;
+    const Double_t beta= b+2.*c/sqrt(x0)+3.*d/x0+4.*e/x0/sqrt(x0) ;
+    const Double_t alpha = a+b/sqrt(x0)+c/x0+d/x0/sqrt(x0)+e/(x0*x0)-beta/sqrt(x0) ;
+    if(en<x0)
+      return 1.02384*(a+b/sqrt(en)+c/en+d/en/sqrt(en)+e/(en*en)) ;
+    else
+      return 1.02384*(alpha+beta/sqrt(en)) ;  
+  }
 
   return en ;
 }
