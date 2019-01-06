@@ -59,9 +59,9 @@
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoDecayHF3Prong.h"
 #include "AliAODRecoCascadeHF.h"
-#include "AliAODPidHF.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliNormalizationCounter.h"
+#include "AliInputEventHandler.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliHFTreeHandler.h"
 #include "AliHFTreeHandlerD0toKpi.h"
@@ -135,6 +135,7 @@ fTreeHandlerGenDplus(0x0),
 fTreeHandlerGenLctopKpi(0x0),
 fTreeHandlerGenBplus(0x0),
 fTreeHandlerGenDstar(0x0),
+fPIDresp(0x0),
 fPIDoptD0(AliHFTreeHandler::kRawAndNsigmaPID),
 fPIDoptDs(AliHFTreeHandler::kRawAndNsigmaPID),
 fPIDoptDplus(AliHFTreeHandler::kRawAndNsigmaPID),
@@ -210,6 +211,7 @@ fTreeHandlerGenDplus(0x0),
 fTreeHandlerGenLctopKpi(0x0),
 fTreeHandlerGenBplus(0x0),
 fTreeHandlerGenDstar(0x0),
+fPIDresp(0x0),
 fPIDoptD0(AliHFTreeHandler::kRawAndNsigmaPID),
 fPIDoptDs(AliHFTreeHandler::kRawAndNsigmaPID),
 fPIDoptDplus(AliHFTreeHandler::kRawAndNsigmaPID),
@@ -848,6 +850,9 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     fRunNumber=aod->GetRunNumber();
     fTreeEvChar->Fill();
     
+    //get PID response
+    if(!fPIDresp) fPIDresp = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
+
     if(fWriteVariableTreeD0 || fWriteVariableTreeBplus) Process2Prong(array2prong,aod,mcArray,aod->GetMagneticField());
     if(fWriteVariableTreeDs || fWriteVariableTreeDplus || fWriteVariableTreeLctopKpi) Process3Prong(array3Prong,aod,mcArray,aod->GetMagneticField());
     if(fWriteVariableTreeDstar) ProcessCasc(arrayCasc,aod,mcArray,aod->GetMagneticField());
@@ -935,11 +940,6 @@ void AliAnalysisTaskSEHFTreeCreator::Process2Prong(TClonesArray *array2prong, Al
     Int_t nSelectedBplus = 0;
     Int_t nFilteredBplus = 0;
 
-    AliAODPidHF* pidHFD0 = fCutsD0toKpi->GetPidHF();
-    if(!pidHFD0) pidHFD0=0x0;
-    AliAODPidHF* pidHFBplus = fCutsBplustoD0pi->GetPidHF();
-    if (!pidHFBplus) pidHFBplus = 0x0;
-
     // vHF object is needed to call the method that refills the missing info of the candidates
     // if they have been deleted in dAOD reconstruction phase
     // in order to reduce the size of the file
@@ -1026,7 +1026,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process2Prong(TClonesArray *array2prong, Al
                             fTreeHandlerD0->SetCandidateType(issignal,isbkg,isprompt,isFD,isrefl);
                         }//end read MC
                         fTreeHandlerD0->SetIsSelectedStd(isSelAnCutsD0);
-                        fTreeHandlerD0->SetVariables(d,bfield,masshypo,pidHFD0);
+                        fTreeHandlerD0->SetVariables(d,bfield,masshypo,fPIDresp);
                     }//end D0
                     if (isSelectedFilt>1){//D0bar
                         issignal = kFALSE;
@@ -1052,7 +1052,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process2Prong(TClonesArray *array2prong, Al
                             fTreeHandlerD0->SetCandidateType(issignal,isbkg,isprompt,isFD,isrefl);
                         }//end readMC
                         fTreeHandlerD0->SetIsSelectedStd(isSelAnCutsD0bar);
-                        fTreeHandlerD0->SetVariables(d,bfield,masshypo,pidHFD0);
+                        fTreeHandlerD0->SetVariables(d,bfield,masshypo,fPIDresp);
                     }//end D0bar
                     if(recVtx)fFiltCutsD0toKpi->CleanOwnPrimaryVtx(d,aod,origownvtx);
                     if(unsetvtx) d->UnsetOwnPrimaryVtx();
@@ -1183,10 +1183,10 @@ void AliAnalysisTaskSEHFTreeCreator::Process2Prong(TClonesArray *array2prong, Al
                               if (fReadMC) {
                                 fTreeHandlerBplus->SetCandidateType(issignal,isbkg,isprompt,isFD,isrefl);
                                 fTreeHandlerBplus->SetIsSelectedStd(isSelAnCutsBplus);
-                                fTreeHandlerBplus->SetVariables(&trackBPlus, bfield, masshypo, pidHFBplus);
+                                fTreeHandlerBplus->SetVariables(&trackBPlus, bfield, masshypo, fPIDresp);
                               } else {
                                 fTreeHandlerBplus->SetIsSelectedStd(isSelAnCutsBplus);
-                                fTreeHandlerBplus->SetVariables(&trackBPlus, bfield, masshypo, pidHFBplus);
+                                fTreeHandlerBplus->SetVariables(&trackBPlus, bfield, masshypo, fPIDresp);
                               }
 
                             } // end Bplus is selected filt
@@ -1224,13 +1224,6 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
     Int_t pdgDstoKKpi[3]={321,321,211};
     Int_t nSelectedDs=0;
     Int_t nFilteredDs=0;
-    
-    AliAODPidHF* pidHFDs = fFiltCutsDstoKKpi->GetPidHF();
-    if(!pidHFDs) pidHFDs=0x0;
-    AliAODPidHF* pidHFDplus = fFiltCutsDplustoKpipi->GetPidHF();
-    if(!pidHFDplus) pidHFDplus=0x0;
-    AliAODPidHF* pidHFLctopKpi = fFiltCutsLctopKpi->GetPidHF();
-    if(!pidHFLctopKpi) pidHFLctopKpi=0x0;
     
     Int_t pdgDgDplustoKpipi[3]={321,211,211};
     Int_t nSelectedDplus=0;
@@ -1356,7 +1349,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                                 fTreeHandlerDs->SetCandidateType(issignal,isbkg,isprompt,isFD,isrefl);
                               }
                               fTreeHandlerDs->SetIsSelectedStd(isSelAnCutsKKpi);
-                              fTreeHandlerDs->SetVariables(ds,bfield,0,pidHFDs);
+                              fTreeHandlerDs->SetVariables(ds,bfield,0,fPIDresp);
                             }
                           issignal = kFALSE;
                           isbkg = kFALSE;
@@ -1379,7 +1372,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                                 fTreeHandlerDs->SetCandidateType(issignal,isbkg,isprompt,isFD,isrefl);
                               }
                             fTreeHandlerDs->SetIsSelectedStd(isSelAnCutspiKK);
-                            fTreeHandlerDs->SetVariables(ds,bfield,1,pidHFDs);
+                            fTreeHandlerDs->SetVariables(ds,bfield,1,fPIDresp);
                           }
                         }//end fill tree
                         if(recVtx)fFiltCutsDstoKKpi->CleanOwnPrimaryVtx(ds,aod,origownvtx);
@@ -1454,7 +1447,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                    
                    // fill tree
                     fTreeHandlerDplus->SetIsSelectedStd(isSelAnCuts);
-                    fTreeHandlerDplus->SetVariables(dplus,bfield,0,pidHFDplus);
+                    fTreeHandlerDplus->SetVariables(dplus,bfield,0,fPIDresp);
                   //end fill tree
                
                 if(recVtx)fFiltCutsDplustoKpipi->CleanOwnPrimaryVtx(dplus,aod,origownvtx);
@@ -1547,7 +1540,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
 
                     // fill tree
                     fTreeHandlerLctopKpi->SetIsSelectedStd(isSelAnCuts);
-                    fTreeHandlerLctopKpi->SetVariables(lctopkpi,bfield,1,pidHFLctopKpi);
+                    fTreeHandlerLctopKpi->SetVariables(lctopkpi,bfield,1,fPIDresp);
                   } // end pKpi
                   isPrimary=kFALSE;
                   isFeeddown=kFALSE;
@@ -1590,7 +1583,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
 
                     // fill tree
                     fTreeHandlerLctopKpi->SetIsSelectedStd(isSelAnCuts);
-                    fTreeHandlerLctopKpi->SetVariables(lctopkpi,bfield,2,pidHFLctopKpi);
+                    fTreeHandlerLctopKpi->SetVariables(lctopkpi,bfield,2,fPIDresp);
                   } // end fill piKpi
 
                 if(recVtx)fFiltCutsLctopKpi->CleanOwnPrimaryVtx(lctopkpi,aod,origownvtx);
@@ -1627,11 +1620,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessCasc(TClonesArray *arrayCasc, AliAOD
     Int_t pdgDgDStartoD0pi[2]={421,211};
     Int_t pdgDgD0toKpi[2]={321,211};
     Int_t nSelectedDstar=0;
-    Int_t nFilteredDstar=0;
-    
-    AliAODPidHF* pidHFDstar = fCutsDstartoKpipi->GetPidHF();
-    if(!pidHFDstar) pidHFDstar=0x0;
-    
+    Int_t nFilteredDstar=0;    
     
     // vHF object is needed to call the method that refills the missing info of the candidates
     // if they have been deleted in dAOD reconstruction phase
@@ -1713,7 +1702,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessCasc(TClonesArray *arrayCasc, AliAOD
                         fTreeHandlerDstar->SetCandidateType(issignal,isbkg,isprompt,isFD,isrefl);
                     }//end read MC
                     fTreeHandlerDstar->SetIsSelectedStd(isSelAnCuts);
-                    fTreeHandlerDstar->SetVariables(d,bfield,masshypo,pidHFDstar);
+                    fTreeHandlerDstar->SetVariables(d,bfield,masshypo,fPIDresp);
 	    
                     if(recVtx)fFiltCutsDstartoKpipi->CleanOwnPrimaryVtx(d,aod,origownvtx);
                     if(unsetvtx) d->UnsetOwnPrimaryVtx();

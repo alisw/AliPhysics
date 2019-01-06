@@ -96,7 +96,7 @@ TTree* AliHFTreeHandlerD0toKpi::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerD0toKpi::SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo, AliAODPidHF* pidHF) 
+bool AliHFTreeHandlerD0toKpi::SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse *pidrespo) 
 {
   fIsMCGenTree=false;
 
@@ -144,7 +144,7 @@ bool AliHFTreeHandlerD0toKpi::SetVariables(AliAODRecoDecayHF* cand, float bfield
   //pid variables
   if(fPidOpt==kNoPID) return true;
 
-  bool setpid = SetPidVars(prongtracks,pidHF,true,true,false,true,true);
+  bool setpid = SetPidVars(prongtracks,pidrespo,true,true,false,true,true);
   if(!setpid) return false;
 
   return true;
