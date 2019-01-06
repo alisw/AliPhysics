@@ -741,12 +741,20 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     
     fNentries->Fill(3); // count events
     
-    if(fFiltCutsD0toKpi->IsEventRejectedDueToTrigger())fNentries->Fill(5);
-    if(fFiltCutsD0toKpi->IsEventRejectedDueToNotRecoVertex())fNentries->Fill(6);
-    if(fFiltCutsD0toKpi->IsEventRejectedDueToVertexContributors())fNentries->Fill(7);
-    if(fFiltCutsD0toKpi->IsEventRejectedDueToZVertexOutsideFiducialRegion())fNentries->Fill(8);
-    if(fFiltCutsD0toKpi->IsEventRejectedDueToPileup())fNentries->Fill(9);
-    if(fFiltCutsD0toKpi->IsEventRejectedDueToCentrality())fNentries->Fill(10);
+    AliRDHFCuts* evCuts = 0x0;
+    if(fWriteVariableTreeD0) evCuts = (AliRDHFCuts*)fFiltCutsD0toKpi->Clone();
+    else if(fWriteVariableTreeDplus) evCuts = (AliRDHFCuts*)fFiltCutsDplustoKpipi->Clone();
+    else if(fWriteVariableTreeDs) evCuts = (AliRDHFCuts*)fFiltCutsDstoKKpi->Clone();
+    else if(fWriteVariableTreeDstar) evCuts = (AliRDHFCuts*)fFiltCutsDstartoKpipi->Clone();
+    else if(fWriteVariableTreeBplus) evCuts = (AliRDHFCuts*)fFiltCutsBplustoD0pi->Clone();
+    else if(fWriteVariableTreeLctopKpi) evCuts = (AliRDHFCuts*)fFiltCutsLctopKpi->Clone();
+
+    if(evCuts->IsEventRejectedDueToTrigger())fNentries->Fill(5);
+    if(evCuts->IsEventRejectedDueToNotRecoVertex())fNentries->Fill(6);
+    if(evCuts->IsEventRejectedDueToVertexContributors())fNentries->Fill(7);
+    if(evCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion())fNentries->Fill(8);
+    if(evCuts->IsEventRejectedDueToPileup())fNentries->Fill(9);
+    if(evCuts->IsEventRejectedDueToCentrality())fNentries->Fill(10);
     
     TClonesArray *mcArray = 0;
     AliAODMCHeader *mcHeader = 0;
@@ -804,40 +812,40 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
       return;
     }
     
-    fCounter->StoreEvent(aod,fFiltCutsD0toKpi,fReadMC);
-    Bool_t isEvSel=fFiltCutsD0toKpi->IsEventSelected(aod);
-    fCentrality = fFiltCutsD0toKpi->GetCentrality(aod);
+    fCounter->StoreEvent(aod,evCuts,fReadMC);
+    Bool_t isEvSel=evCuts->IsEventSelected(aod);
+    fCentrality = evCuts->GetCentrality(aod);
     if(fCentrality<0) fCentrality=-1.;
     //normalisation counter
-    if(!fFiltCutsD0toKpi->IsEventRejectedDuePhysicsSelection()){
+    if(!evCuts->IsEventRejectedDuePhysicsSelection()){
       if(isEvSel){
       //selected events with primary vertex
       fHistoNormCounter->Fill(0.,fCentrality);
       }
       else{
-      	if(fFiltCutsD0toKpi->GetWhyRejection()==0){
+      	if(evCuts->GetWhyRejection()==0){
       	//rejected events bc no primary vertex
       	fHistoNormCounter->Fill(1.,fCentrality);
       	}
       	//rejected events bc good primary vertex but >10cm
-        if(fFiltCutsD0toKpi->GetWhyRejection()==6){
+        if(evCuts->GetWhyRejection()==6){
         //nPrimaryV++;
         fHistoNormCounter->Fill(0.,fCentrality);
         //nzVtxGT10++;
         fHistoNormCounter->Fill(2.,fCentrality);
         }
-        if(fFiltCutsD0toKpi->GetWhyRejection()==1){
+        if(evCuts->GetWhyRejection()==1){
         //nPileup++;
         fHistoNormCounter->Fill(4.,fCentrality);
         }
       }
-      if(fFiltCutsD0toKpi->CountEventForNormalization()){
+      if(evCuts->CountEventForNormalization()){
         //nCountForNorm++;
         fHistoNormCounter->Fill(3.,fCentrality);
       }
     }
     
-    Bool_t isEvRejCent  = fFiltCutsD0toKpi->IsEventRejectedDueToCentrality();
+    Bool_t isEvRejCent  = evCuts->IsEventRejectedDueToCentrality();
 
     if(!isEvSel && isEvRejCent) return; //cut only centrality, else tag only
     if(isEvSel) fNentries->Fill(4);
@@ -846,7 +854,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     fNcontributors = vtx->GetNContributors();
     fzVtxReco = vtx->GetZ();
     fNtracks = aod->GetNumberOfTracks();
-    fIsEvRej = fFiltCutsD0toKpi->GetEventRejectionBitMap();
+    fIsEvRej = evCuts->GetEventRejectionBitMap();
     fRunNumber=aod->GetRunNumber();
     fTreeEvChar->Fill();
     
@@ -888,6 +896,8 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
         if(fFillMCGenTrees && fReadMC) PostData(17,fGenTreeDstar);
     }
 
+    delete evCuts;
+    evCuts = 0x0;
 
     return;
 }
