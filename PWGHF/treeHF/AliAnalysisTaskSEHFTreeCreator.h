@@ -37,6 +37,7 @@
 #include "AliRDHFCutsBPlustoD0Pi.h"
 #include "AliRDHFCutsDStartoKpipi.h"
 #include "AliNormalizationCounter.h"
+#include "AliPIDResponse.h"
 #include "AliHFTreeHandler.h"
 #include "AliHFTreeHandlerD0toKpi.h"
 #include "AliHFTreeHandlerDplustoKpipi.h"
@@ -170,6 +171,7 @@ private:
     AliHFTreeHandlerLctopKpi       *fTreeHandlerGenLctopKpi;       //!<! handler object for the tree with topological variables
     AliHFTreeHandlerBplustoD0pi    *fTreeHandlerGenBplus;          //!<! handler object for the tree with topological variables
     AliHFTreeHandlerDstartoKpipi   *fTreeHandlerGenDstar;          //!<! handler object for the tree with topological variables
+    AliPIDResponse          *fPIDresp;                             ///PID response
     int                     fPIDoptD0;
     int                     fPIDoptDs;
     int                     fPIDoptDplus;
@@ -188,7 +190,7 @@ private:
     
     
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,3);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,4);
     /// \endcond
 };
 
