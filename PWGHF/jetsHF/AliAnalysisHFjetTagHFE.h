@@ -125,6 +125,9 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1F                        *fHistIncEleInJet1;
   TH1F                        *fHistHfEleMC;
   TH1F                        *fHistHfEleMCreco;
+  TH2F                        *fHistHfEleMCiso;
+  TH1F                        *fHistHfEle_wISO;
+  TH1F                        *fHistHfEle_woISO;
   TH1F                        *fHistPhoEleMC;
   TH1F                        *fHistPhoEleMCpi0;
   TH1F                        *fHistPhoEleMCeta;
@@ -151,7 +154,11 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fHistDiJetMomBalance; 
   TH2F                        *fHistDiJetMomBalance_All; 
   TH2F                        *fHistDiJetPhi_MC; 
-  TH2F                        *fHistDiJetMomBalance_MC; 
+  TH2F                        *fHistDiJetMomBalance_MC;
+  TH2F                        *fHistQjet;  
+  TH2F                        *fHistQjet_mult;
+  TH2F                        *fHistJetWidthIncjet; 
+  TH2F                        *fHistJetWidthQjet; 
   TH2F                        *fInvmassULS;
   TH2F                        *fInvmassLS;
   TH2F                        *fInvmassHFuls;
@@ -206,6 +213,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   Double_t CalOccCorrection();
   void FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
   Double_t IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE);
+  Double_t CalJetWidth(AliEmcalJet* jetC);
 
  private:
 
