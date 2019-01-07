@@ -132,6 +132,7 @@ int main(int argc, char **argv)
   // Create new configuration
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
   // ROOT 5: aliroot is linked to the necessary libraries
+  gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
   new AliRun("gAlice", "The ALICE Off-line Simulation Framework");
 #else
   // ROOT 6+: aliroot has minimal dependencies: init gAlice through the interpreter
