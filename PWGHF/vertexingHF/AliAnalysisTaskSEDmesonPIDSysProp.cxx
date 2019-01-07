@@ -430,6 +430,9 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserExec(Option_t *)
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
   }
 
+  delete vHF;
+  vHF = nullptr;
+  
   PostData(1,fOutput);
   return;
 }
