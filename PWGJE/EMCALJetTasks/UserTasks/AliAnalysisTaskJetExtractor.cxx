@@ -82,6 +82,7 @@ AliEmcalJetTree::AliEmcalJetTree() : TNamed("CustomTree", "CustomTree"), fJetTre
   fBuffer_Cluster_Eta      = new Float_t[kMaxNumConstituents];
   fBuffer_Cluster_Phi      = new Float_t[kMaxNumConstituents];
   fBuffer_Cluster_M02      = new Float_t[kMaxNumConstituents];
+  fBuffer_Cluster_Time     = new Float_t[kMaxNumConstituents];
   fBuffer_Cluster_Label    = new Int_t[kMaxNumConstituents];
 }
 
@@ -103,6 +104,7 @@ AliEmcalJetTree::AliEmcalJetTree(const char* name) : TNamed(name, name), fJetTre
   fBuffer_Cluster_Eta      = new Float_t[kMaxNumConstituents];
   fBuffer_Cluster_Phi      = new Float_t[kMaxNumConstituents];
   fBuffer_Cluster_M02      = new Float_t[kMaxNumConstituents];
+  fBuffer_Cluster_Time     = new Float_t[kMaxNumConstituents];
   fBuffer_Cluster_Label    = new Int_t[kMaxNumConstituents];
 }
 
@@ -211,6 +213,7 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t vertexX, Float_t 
       fBuffer_Cluster_Eta[fBuffer_NumClusters] = clusterMomentum.Eta();
       fBuffer_Cluster_Phi[fBuffer_NumClusters] = clusterMomentum.Phi();
       fBuffer_Cluster_M02[fBuffer_NumClusters] = cluster->GetM02();
+      fBuffer_Cluster_Time[fBuffer_NumClusters] = cluster->GetTOF();
       fBuffer_Cluster_Label[fBuffer_NumClusters] = cluster->GetLabel();
 
       fBuffer_NumClusters++;
@@ -342,6 +345,7 @@ void AliEmcalJetTree::InitializeTree()
     fJetTree->Branch("Jet_Cluster_Phi",fBuffer_Cluster_Phi,"Jet_Cluster_Phi[Jet_NumClusters]/F");
     fJetTree->Branch("Jet_Cluster_Eta",fBuffer_Cluster_Eta,"Jet_Cluster_Eta[Jet_NumClusters]/F");
     fJetTree->Branch("Jet_Cluster_M02",fBuffer_Cluster_M02,"Jet_Cluster_M02[Jet_NumClusters]/F");
+    fJetTree->Branch("Jet_Cluster_Time",fBuffer_Cluster_Time,"Jet_Cluster_Time[Jet_NumClusters]/F");
     if(fSaveMCInformation)
       fJetTree->Branch("Jet_Cluster_Label",fBuffer_Cluster_Label,"Jet_Cluster_Label[Jet_NumClusters]/I");
   }
