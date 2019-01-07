@@ -96,14 +96,14 @@ class HyperTriton2Body {
   Double32_t fV0CosPA;                  //[0.9,1.0,16] V0 cosine of pointing angle
   Double32_t fChi2V0;                   //[0.0,10.24,8] V0 fit chi2
   Double32_t fDcaNeg2PrimaryVertex;     //[0.0,0.256,8] DCA of the negative prong to the PV
-  Double32_t fDcaPos2PrimaryVertex;     //[0.0,0.256,8]  DCA of the positive prong to the PV
+  Double32_t fDcaPos2PrimaryVertex;     //! [0.0,0.256,8]  DCA of the positive prong to the PV
   Double32_t fDcaV0daughters;           //[0.0,2.56,8] DCA between the two prongs
   Double32_t fV0armAlpha;               //[-1.28,1.28,8] Armenteros alpha
   Double32_t fV0armPt;                  //[0.0,0.256,8] Armenteros pt
   unsigned char fLeastNxedRows;         // Min number of xed roads
   Double32_t fLeastXedOverFindable;     //[0.0,1.0,8] Min xed roads/findable clusters
   Double32_t fMaxChi2PerCluster;        //[0,12.8,8] Max chi2 per cluster in TPC
-  Double32_t fNsigmaPionPos;            //[0.0,8.0,4] # sigma TPC pion for the positive prong
+  Double32_t fNsigmaPionPos;            //[0.0,8.0,4]
   Double32_t fNsigmaHe3Pos;  
   Double32_t fNsigmaPionNeg;            //[0.0,8.0,4] # sigma TPC pion for the positive prong
   Double32_t fNsigmaHe3Neg;          //[0.0,8.0,4] # sigma TPC proton for the positive prong
