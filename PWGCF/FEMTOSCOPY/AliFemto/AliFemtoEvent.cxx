@@ -1,12 +1,7 @@
-///////////////////////////////////////////////////////////////////////////
-//
-//  AliFemtoEvent: hold the information specific to the event and a
-//  track list
-//  AliFemtoEvent is the "transient microDST"  Objects of this class are
-//   generated from the input data by a Reader, and then presented to
-//   the Cuts of the various active Analyses.
-//
-////////////////
+///
+/// \file AliFemtoEvent.cxx
+///
+
 #include "AliFemtoEvent.h"
 #include "AliFemtoTrack.h"
 #include "AliFemtoV0.h"
@@ -51,10 +46,10 @@ AliFemtoEvent::AliFemtoEvent():
   fIsCollisionCandidate(kTRUE),
   fPrimVertPos(-999.0,-999.0,-999.0),
   fPrimVertCov(),
-  fTrackCollection(NULL),
-  fV0Collection(NULL),
-  fXiCollection(NULL),
-  fKinkCollection(NULL),
+  fTrackCollection(nullptr),
+  fV0Collection(nullptr),
+  fXiCollection(nullptr),
+  fKinkCollection(nullptr),
   fZDCN1Energy(0.0f),
   fZDCP1Energy(0.0f),
   fZDCN2Energy(0.0f),
@@ -64,7 +59,7 @@ AliFemtoEvent::AliFemtoEvent():
   fTriggerMask(0),
   fTriggerCluster(0),
   fReactionPlaneAngle(0.0f),
-  fEP(NULL)
+  fEP(nullptr)
 {
   // Default constructor
 
@@ -76,7 +71,11 @@ AliFemtoEvent::AliFemtoEvent():
   fKinkCollection = new AliFemtoKinkCollection;
 }
 //___________________
-AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, AliFemtoV0Cut* vCut, AliFemtoXiCut* xCut, AliFemtoKinkCut* kCut):
+AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev,
+                             AliFemtoTrackCut* tCut,
+                             AliFemtoV0Cut* vCut,
+                             AliFemtoXiCut* xCut,
+                             AliFemtoKinkCut* kCut):
   fEventNumber(ev.fEventNumber),
   fRunNumber(ev.fRunNumber),
   fNumberOfTracks(ev.fNumberOfTracks),
@@ -102,10 +101,10 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, Al
   fIsCollisionCandidate(ev.fIsCollisionCandidate),
   fPrimVertPos(ev.fPrimVertPos),
   fPrimVertCov(),
-  fTrackCollection(NULL),
-  fV0Collection(NULL),
-  fXiCollection(NULL),
-  fKinkCollection(NULL),
+  fTrackCollection(nullptr),
+  fV0Collection(nullptr),
+  fXiCollection(nullptr),
+  fKinkCollection(nullptr),
   fZDCN1Energy(ev.fZDCN1Energy),
   fZDCP1Energy(ev.fZDCP1Energy),
   fZDCN2Energy(ev.fZDCN2Energy),
@@ -127,29 +126,29 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, Al
   fXiCollection = new AliFemtoXiCollection;
   fKinkCollection = new AliFemtoKinkCollection;
   // copy track collection
-  for ( AliFemtoTrackIterator tIter=ev.fTrackCollection->begin(); tIter!=ev.fTrackCollection->end(); tIter++) {
-    if ( !tCut || tCut->Pass(*tIter) ) {
-      AliFemtoTrack* trackCopy = new AliFemtoTrack(**tIter);
+  for (auto &track_ptr : *ev.fTrackCollection) {
+    if ( !tCut || tCut->Pass(track_ptr) ) {
+      AliFemtoTrack* trackCopy = new AliFemtoTrack(*track_ptr);
       fTrackCollection->push_back(trackCopy);
     }
   }
   // copy v0 collection
-  for ( AliFemtoV0Iterator vIter=ev.fV0Collection->begin(); vIter!=ev.fV0Collection->end(); vIter++) {
-    if ( !vCut || vCut->Pass(*vIter) ) {
-      AliFemtoV0* v0Copy = new AliFemtoV0(**vIter);
+  for (auto *v0_ptr : *ev.fV0Collection) {
+    if ( !vCut || vCut->Pass(v0_ptr) ) {
+      AliFemtoV0* v0Copy = new AliFemtoV0(*v0_ptr);
       fV0Collection->push_back(v0Copy);
     }
   }
   // copy xi collection
-  for ( AliFemtoXiIterator xIter=ev.fXiCollection->begin(); xIter!=ev.fXiCollection->end(); xIter++) {
-    if ( !xCut || xCut->Pass(*xIter) ) {
-      AliFemtoXi* xiCopy = new AliFemtoXi(**xIter);
+  for (const auto *xi : *ev.fXiCollection) {
+    if ( !xCut || xCut->Pass(xi) ) {
+      AliFemtoXi* xiCopy = new AliFemtoXi(*xi);
       fXiCollection->push_back(xiCopy);
     }
   }
   // copy kink collection
-  for ( AliFemtoKinkIterator kIter=ev.fKinkCollection->begin(); kIter!=ev.fKinkCollection->end(); kIter++) {
-    if ( !kCut || kCut->Pass(*kIter) ) {
+  for (const auto *kink : *ev.fKinkCollection) {
+    if ( !kCut || kCut->Pass(kink) ) {
       //cout << " kinkCut passed " << endl;
       AliFemtoKink* kinkCopy = new AliFemtoKink(**kIter);
       fKinkCollection->push_back(kinkCopy);
@@ -183,10 +182,10 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev):
   fIsCollisionCandidate(ev.fIsCollisionCandidate),
   fPrimVertPos(ev.fPrimVertPos),
   fPrimVertCov(),
-  fTrackCollection(NULL),
-  fV0Collection(NULL),
-  fXiCollection(NULL),
-  fKinkCollection(NULL),
+  fTrackCollection(nullptr),
+  fV0Collection(nullptr),
+  fXiCollection(nullptr),
+  fKinkCollection(nullptr),
   fZDCN1Energy(ev.fZDCN1Energy),
   fZDCP1Energy(ev.fZDCP1Energy),
   fZDCN2Energy(ev.fZDCN2Energy),
@@ -284,17 +283,17 @@ AliFemtoEvent& AliFemtoEvent::operator=(const AliFemtoEvent& aEvent)
   }
 
   if (fV0Collection) {
-    for (AliFemtoV0Iterator tV0iter=fV0Collection->begin();tV0iter!=fV0Collection->end();tV0iter++){
-      delete *tV0iter;
-    }//added by M Chojnacki To avodid memory leak
+    for (auto *v0_ptr : *fV0Collection) {
+      delete v0_ptr;
+    }//added by M Chojnacki To avoid memory leak
     fV0Collection->clear();
   } else {
     fV0Collection = new AliFemtoV0Collection;
   }
 
   if (fXiCollection) {
-    for (AliFemtoXiIterator tXiIter=fXiCollection->begin();tXiIter!=fXiCollection->end();tXiIter++){
-      delete *tXiIter;
+    for (auto *xi_ptr : *fXiCollection) {
+      delete xi_ptr;
     }
     fXiCollection->clear();
   } else {
@@ -302,8 +301,8 @@ AliFemtoEvent& AliFemtoEvent::operator=(const AliFemtoEvent& aEvent)
   }
 
   if (fKinkCollection) {
-    for (AliFemtoKinkIterator kinkIter=fKinkCollection->begin();kinkIter!=fKinkCollection->end();kinkIter++){
-      delete *kinkIter;
+    for (auto *kink_ptr : *fKinkCollection) {
+      delete kink_ptr;
     }
     fKinkCollection->clear();
   } else {
@@ -326,8 +325,8 @@ AliFemtoEvent& AliFemtoEvent::operator=(const AliFemtoEvent& aEvent)
     fXiCollection->push_back(xiCopy);
   }
   // copy kink collection
-  for ( AliFemtoKinkIterator kIter=aEvent.fKinkCollection->begin(); kIter!=aEvent.fKinkCollection->end(); kIter++) {
-    AliFemtoKink* kinkCopy = new AliFemtoKink(**kIter);
+  for (auto kink_ptr : *aEvent.fKinkCollection) {
+    AliFemtoKink* kinkCopy = new AliFemtoKink(*kink_ptr);
     fKinkCollection->push_back(kinkCopy);
   }
 
@@ -335,42 +334,36 @@ AliFemtoEvent& AliFemtoEvent::operator=(const AliFemtoEvent& aEvent)
 }
 
 //___________________
-AliFemtoEvent::~AliFemtoEvent(){
+AliFemtoEvent::~AliFemtoEvent()
+{
   // destructor
 #ifdef STHBTDEBUG
   cout << " AliFemtoEvent::~AliFemtoEvent() " << endl;
 #endif
-  for (AliFemtoTrackIterator iter=fTrackCollection->begin();iter!=fTrackCollection->end();iter++){
-    delete *iter;
-  }
-  fTrackCollection->clear();
+
+  for (auto *track_ptr : *fTrackCollection) {
+    delete track_ptr;
+  } //added by M Chojnacki To avodid memory leak
   delete fTrackCollection;
+
   //must do the same for the V0 collection
-  for (AliFemtoV0Iterator tV0iter=fV0Collection->begin();tV0iter!=fV0Collection->end();tV0iter++){
-    delete *tV0iter;
-  }//added by M Chojnacki To avodid memory leak
-  fV0Collection->clear();
+  for (auto *v0_ptr : *fV0Collection) {
+    delete v0_ptr;
+  }
   delete fV0Collection;
+
   //must do the same for the Xi collection
-  for (AliFemtoXiIterator tXiIter=fXiCollection->begin();tXiIter!=fXiCollection->end();tXiIter++){
-    delete *tXiIter;
+  for (auto *xi_ptr : *fXiCollection) {
+    delete xi_ptr;
   }
-  fXiCollection->clear();
   delete fXiCollection;
+
   //must do the same for the Kink collection
-  for (AliFemtoKinkIterator kinkIter=fKinkCollection->begin();kinkIter!=fKinkCollection->end();kinkIter++){
-    delete *kinkIter;
+  for (auto *kink_ptr : *fKinkCollection) {
+    delete kink_ptr;
   }
-  fKinkCollection->clear();
   delete fKinkCollection;
 }
-//___________________
-
-
-
-void AliFemtoEvent::SetEventNumber(const unsigned short& event){fEventNumber = event;}
-void AliFemtoEvent::SetRunNumber(const int& runNum){fRunNumber = runNum;}
-
 
 void AliFemtoEvent::SetZDCN1Energy(const float& aZDCN1Energy){fZDCN1Energy=aZDCN1Energy;}
 void AliFemtoEvent::SetZDCP1Energy(const float& aZDCP1Energy){fZDCP1Energy=aZDCP1Energy;}
@@ -379,20 +372,10 @@ void AliFemtoEvent::SetZDCP2Energy(const float& aZDCP2Energy){fZDCP2Energy=aZDCP
 void AliFemtoEvent::SetZDCEMEnergy(const float& aZDCEMEnergy){fZDCEMEnergy=aZDCEMEnergy;}
 void AliFemtoEvent::SetZDCParticipants(const unsigned int& aZDCParticipants){fZDCParticipants=aZDCParticipants;}
 
-void AliFemtoEvent::SetNumberOfTracks(const unsigned short& tracks){fNumberOfTracks = tracks;}
-void AliFemtoEvent::SetNormalizedMult(const int& i){fNormalizedMult = i;}
-void AliFemtoEvent::SetSPDMult(const int& i){fSPDMult = i;}
-
-void AliFemtoEvent::SetPrimVertPos(const AliFemtoThreeVector& vp){fPrimVertPos = vp;}
-void AliFemtoEvent::SetPrimVertCov(const double* v){
-  fPrimVertCov[0] = v[0];
-  fPrimVertCov[1] = v[1];
-  fPrimVertCov[2] = v[2];
-  fPrimVertCov[3] = v[3];
-  fPrimVertCov[4] = v[4];
-  fPrimVertCov[5] = v[5];
+void AliFemtoEvent::SetPrimVertCov(const double* v)
+{
+  std::copy_n(v, 6, fPrimVertCov);
 }
-void AliFemtoEvent::SetMagneticField(const double& magF){fMagneticField = magF;}
 void AliFemtoEvent::SetIsCollisionCandidate(const bool& is){fIsCollisionCandidate = is;}
 
 void AliFemtoEvent::SetTriggerMask(const unsigned long int& aTriggerMask) {fTriggerMask=aTriggerMask;}
@@ -452,13 +435,13 @@ int AliFemtoEvent::UncorrectedNumberOfPrimaries() const
   if (fNormalizedMult < -1) {
     // Count number of normalized charged tracks
     Int_t tNormTrackCount = 0;
-    for (AliFemtoTrackIterator iter=fTrackCollection->begin();iter!=fTrackCollection->end();iter++){
-      if (!((*iter)->Flags()&(AliFemtoTrack::kTPCrefit))) continue;
-      if ((*iter)->TPCncls() < 50) continue;
-      if ((*iter)->TPCchi2()/(*iter)->TPCncls() > 60.0) continue;
-      if ((*iter)->ImpactD() > 6.0) continue;
-      if ((*iter)->ImpactZ() > 6.0) continue;
-      if (fabs((*iter)->P().PseudoRapidity()) > 0.9) continue;
+    for (auto track_ptr : *fTrackCollection) {
+      if (!(track_ptr->Flags() & AliFemtoTrack::kTPCrefit)) continue;
+      if (track_ptr->TPCncls() < 50) continue;
+      if (track_ptr->TPCchi2()/track_ptr->TPCncls() > 60.0) continue;
+      if (track_ptr->ImpactD() > 6.0) continue;
+      if (track_ptr->ImpactZ() > 6.0) continue;
+      if (fabs(track_ptr->P().PseudoRapidity()) > 0.9) continue;
 
       tNormTrackCount++;
     }
@@ -482,21 +465,6 @@ unsigned short AliFemtoEvent::MultiplicityEstimateTracklets() const
 unsigned short AliFemtoEvent::MultiplicityEstimateITSPure() const
 {
   return fEstimateITSPure;
-}
-
-void AliFemtoEvent::SetMultiplicityEstimateITSTPC(const unsigned short &s)
-{
-  fEstimateITSTPC = s;
-}
-
-void AliFemtoEvent::SetMultiplicityEstimateTracklets(const unsigned short &s)
-{
-  fEstimateTracklets = s;
-}
-
-void AliFemtoEvent::SetMultiplicityEstimateITSPure(const unsigned short &s)
-{
-  fEstimateITSPure = s;
 }
 
 void AliFemtoEvent::SetCentralityV0(const float &c)
