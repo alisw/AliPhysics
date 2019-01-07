@@ -325,14 +325,13 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
       if (TMath::Abs(rap) > fRapidityMax) continue;
       fHistInvMassPt->Fill(pT, invMass);
 
-      if (multBin < 0) continue;
       if (!fIsLightweight) {
         fHistArmenterosAfter->Fill(armAlpha, armQt);
         fHistInvMassRecPhoton->Fill(pT, sigma.GetRecMassPhoton());
         fHistInvMassRecLambda->Fill(pT, sigma.GetRecMassLambda());
         fHistInvMassRec->Fill(pT, sigma.GetRecMass());
       }
-      fHistPtMult[multBin]->Fill(pT, invMass);
+      if (multBin >= 0) fHistPtMult[multBin]->Fill(pT, invMass);
 
       if (fIsMC) {
         if (label > 0) {
