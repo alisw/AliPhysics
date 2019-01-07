@@ -1,4 +1,5 @@
 #include "AliSigma0ParticleV0.h"
+#include "TMath.h"
 
 ClassImp(AliSigma0ParticleV0)
 
@@ -207,7 +208,7 @@ int AliSigma0ParticleV0::MatchToMC(const AliMCEvent *mcEvent,
   // loop on daughter labels
   for (int i = 0; i < 2; ++i) {
     labMom[i] = -1;
-    lab = std::abs(trackLabels[i]);
+    lab = TMath::Abs(trackLabels[i]);
     if (lab < 0) {
       return -1;
     }
@@ -269,11 +270,11 @@ int AliSigma0ParticleV0::MatchToMC(const AliMCEvent *mcEvent,
   Double_t pyMother = mother->Py();
   Double_t pzMother = mother->Pz();
   // within 0.1%
-  if ((std::abs(pxMother - pxSumDgs) / (std::abs(pxMother) + 1.e-13)) >
+  if ((TMath::Abs(pxMother - pxSumDgs) / (TMath::Abs(pxMother) + 1.e-13)) >
           0.00001 &&
-      (std::abs(pyMother - pySumDgs) / (std::abs(pyMother) + 1.e-13)) >
+      (TMath::Abs(pyMother - pySumDgs) / (TMath::Abs(pyMother) + 1.e-13)) >
           0.00001 &&
-      (std::abs(pzMother - pzSumDgs) / (std::abs(pzMother) + 1.e-13)) >
+      (TMath::Abs(pzMother - pzSumDgs) / (TMath::Abs(pzMother) + 1.e-13)) >
           0.00001) {
     return -1;
   }
