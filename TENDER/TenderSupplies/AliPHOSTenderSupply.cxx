@@ -832,12 +832,14 @@ Double_t AliPHOSTenderSupply::CorrectNonlinearity(Double_t en){
     const Double_t c= 6.483e-01 ;     
     const Double_t d=-4.775e-01 ;    
     const Double_t e= 1.205e-01 ;
-    const Double_t beta= b+2.*c/sqrt(x0)+3.*d/x0+4.*e/x0/sqrt(x0) ;
-    const Double_t alpha = a+b/sqrt(x0)+c/x0+d/x0/sqrt(x0)+e/(x0*x0)-beta/sqrt(x0) ;
-    if(en<x0)
-      return 1.02384*(a+b/sqrt(en)+c/en+d/en/sqrt(en)+e/(en*en)) ;
-    else
-      return 1.02384*(alpha+beta/sqrt(en)) ;  
+    const Double_t beta= b+2.*c/TMath::Sqrt(x0)+3.*d/x0+4.*e/x0/TMath::Sqrt(x0) ;
+    const Double_t alpha = a+b/TMath::Sqrt(x0)+c/x0+d/x0/TMath::Sqrt(x0)+e/(x0*x0)-beta/TMath::Sqrt(x0) ;
+    if(en<x0){
+      return 1.02384*(a*en+b*TMath::Sqrt(en)+c+d/TMath::Sqrt(en)+e/en) ;
+    }
+    else{
+      return 1.02384*(alpha*en+beta*TMath::Sqrt(en)) ;  
+    }
   }
 
   return en ;
