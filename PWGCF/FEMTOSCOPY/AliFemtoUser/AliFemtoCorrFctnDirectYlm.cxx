@@ -6,6 +6,7 @@
 #include "AliFemtoCorrFctnDirectYlm.h"
 #include <TMath.h>
 #include <iostream>
+#include <algorithm>
 
 using namespace std;
 
@@ -17,24 +18,24 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const char *name,
                                                      double vmax,
                                                      int aUseLCMS)
   : AliFemtoCorrFctn()
-  , fnumsreal(nullptr)
-  , fnumsimag(nullptr)
-  , fdensreal(nullptr)
-  , fdensimag(nullptr)
+  , fMaxL(maxl)
+  , fMaxJM((maxl + 1) * (maxl + 1))
+  , fnumsreal(fMaxJM, nullptr)
+  , fnumsimag(fMaxJM, nullptr)
+  , fdensreal(fMaxJM, nullptr)
+  , fdensimag(fMaxJM, nullptr)
   , fbinctn(nullptr)
   , fbinctd(nullptr)
   , fcovnum(nullptr)
   , fcovden(nullptr)
-  , fcovmnum(nullptr)
-  , fcovmden(nullptr)
-  , fMaxL(maxl)
-  , fMaxJM((maxl + 1) * (maxl + 1))
-  , fels(nullptr)
-  , fems(nullptr)
-  , felsi(nullptr)
-  , femsi(nullptr)
-  , fYlmBuffer(nullptr)
-  , factorials(nullptr)
+  , fcovmnum(fMaxJM * fMaxJM * 4 * ibin)
+  , fcovmden(fMaxJM * fMaxJM * 4 * ibin)
+  , fels(fMaxJM)
+  , fems(fMaxJM)
+  , felsi(fMaxJM)
+  , femsi(fMaxJM)
+  , fYlmBuffer(fMaxJM)
+  , factorials(4 * (maxl + 1))
   , fSout(0.0)
   , fSside(0.0)
   , fSlong(0.0)
@@ -43,22 +44,15 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const char *name,
   // *DEB*  cout <<  "Size is " << sizeof(double) << " " << sizeof(complex<double>) << endl;
 
   // Fill in factorials table
-  factorials = (double*)malloc(sizeof(double) * (4 * (maxl + 1)));
-  int fac = 1;
   factorials[0] = 1;
-  for (int iter = 1; iter < 4 * (maxl + 1); iter++) {
-    fac *= iter;
-    factorials[iter] = fac;
+  for (size_t iter = 1; iter < factorials.size(); iter++) {
+    factorials[iter] = iter * factorials[iter - 1];
   }
 
   // Fill in els and ems table
   int el = 0;
   int em = 0;
   int il = 0;
-  fels = (double*)malloc(sizeof(double) * (fMaxJM));
-  fems = (double*)malloc(sizeof(double) * (fMaxJM));
-  felsi = (int*)malloc(sizeof(int) * (fMaxJM));
-  femsi = (int*)malloc(sizeof(int) * (fMaxJM));
   do {
     fels[il] = el;
     fems[il] = em;
@@ -78,17 +72,6 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const char *name,
   // *DEB*    cout << "il el em " << il << " " << felsi[il] << " " << femsi[il] << endl;
 
   // Create numerator and denominator historgrams
-  //  int sthp = sizeof(TH1D *);
-  //  fnumsreal = (TH1D **) malloc(sthp * fMaxJM);
-  //   fnumsreal = new TH1D * [fMaxJM];
-  //   fnumsimag = new TH1D * [fMaxJM];
-  //   fdensreal = new TH1D * [fMaxJM];
-  //   fdensimag = new TH1D * [fMaxJM];
-  fnumsreal = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
-  fnumsimag = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
-  fdensreal = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
-  fdensimag = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
-
   for (int ihist = 0; ihist < fMaxJM; ihist++) {
     const TString suffix = TString::Format("Ylm%i%i%s",
                                            felsi[ihist],
@@ -108,12 +91,6 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const char *name,
   fbinctn = new TH1D(TString("BinCountNum") + name, "Bin Occupation (Numerator)", ibin, vmin, vmax);
   fbinctd = new TH1D(TString("BinCountDen") + name, "Bin Occupation (Denominator)", ibin, vmin, vmax);
 
-  fYlmBuffer = (complex<double>*)malloc(sizeof(complex<double>) * fMaxJM);
-
-  // Covariance matrices
-  fcovmnum = (double*)malloc(sizeof(double) * fMaxJM * fMaxJM * 4 * ibin);
-  fcovmden = (double*)malloc(sizeof(double) * fMaxJM * fMaxJM * 4 * ibin);
-
   AliFemtoYlm::InitializeYlms();
 }
 
@@ -124,124 +101,36 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm()
 
 AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const AliFemtoCorrFctnDirectYlm& aCorrFctn)
   : AliFemtoCorrFctn(aCorrFctn)
-  , fnumsreal(nullptr)
-  , fnumsimag(nullptr)
-  , fdensreal(nullptr)
-  , fdensimag(nullptr)
-  , fbinctn(nullptr)
-  , fbinctd(nullptr)
-  , fcovnum(nullptr)
-  , fcovden(nullptr)
-  , fcovmnum(nullptr)
-  , fcovmden(nullptr)
   , fMaxL(aCorrFctn.fMaxL)
   , fMaxJM((fMaxL + 1) * (fMaxL + 1))
-  , fels(nullptr)
-  , fems(nullptr)
-  , felsi(nullptr)
-  , femsi(nullptr)
-  , fYlmBuffer(nullptr)
-  , factorials(nullptr)
-  , fSout(0.0)
-  , fSside(0.0)
-  , fSlong(0.0)
-  , fUseLCMS(0)
+  , fnumsreal(fMaxJM, nullptr)
+  , fnumsimag(fMaxJM, nullptr)
+  , fdensreal(fMaxJM, nullptr)
+  , fdensimag(fMaxJM, nullptr)
+  , fbinctn(new TH1D(*aCorrFctn.fbinctn))
+  , fbinctd(new TH1D(*aCorrFctn.fbinctd))
+  , fcovnum(aCorrFctn.fcovnum ? new TH3D(*aCorrFctn.fcovnum) : nullptr)
+  , fcovden(aCorrFctn.fcovden ? new TH3D(*aCorrFctn.fcovden) : nullptr)
+  , fcovmnum(aCorrFctn.fcovmnum)
+  , fcovmden(aCorrFctn.fcovmden)
+  , fels(aCorrFctn.fels)
+  , fems(aCorrFctn.fems)
+  , felsi(aCorrFctn.felsi)
+  , femsi(aCorrFctn.femsi)
+  , fYlmBuffer(aCorrFctn.fYlmBuffer)
+  , factorials(aCorrFctn.factorials)
+  , fSout(aCorrFctn.fSout)
+  , fSside(aCorrFctn.fSside)
+  , fSlong(aCorrFctn.fSlong)
+  , fUseLCMS(aCorrFctn.fUseLCMS)
 {
   // Copy constructor
-  int ibin = 0;
-  if (aCorrFctn.fbinctn) {
-    ibin = aCorrFctn.fbinctn->GetNbinsX();
-  }
-
-  // Fill in factorials table
-  factorials = (double*)malloc(sizeof(double) * (4 * (fMaxL + 1)));
-  for (int iter = 1; iter < 4 * (fMaxL + 1); iter++) {
-    factorials[iter] = aCorrFctn.factorials[iter];
-  }
-
-  // Fill in els and ems table
-  int el = 0;
-  int em = 0;
-  int il = 0;
-  fels = (double*)malloc(sizeof(double) * (fMaxJM));
-  fems = (double*)malloc(sizeof(double) * (fMaxJM));
-  felsi = (int*)malloc(sizeof(int) * (fMaxJM));
-  femsi = (int*)malloc(sizeof(int) * (fMaxJM));
-  do {
-    fels[il] = el;
-    fems[il] = em;
-    felsi[il] = (int)el;
-    femsi[il] = (int)em;
-
-    em++;
-    il++;
-    if (em > el) {
-      el++;
-      em = -el;
-    }
-  } while (el <= fMaxL);
-
-  fnumsreal = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
-  fnumsimag = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
-  fdensreal = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
-  fdensimag = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
-
   for (int ihist = 0; ihist < fMaxJM; ihist++) {
-    if (aCorrFctn.fnumsreal[ihist])
-      fnumsreal[ihist] = new TH1D(*aCorrFctn.fnumsreal[ihist]);
-    else
-      fnumsreal[ihist] = 0;
-    if (aCorrFctn.fnumsimag[ihist])
-      fnumsimag[ihist] = new TH1D(*aCorrFctn.fnumsimag[ihist]);
-    else
-      fnumsimag[ihist] = 0;
-    if (aCorrFctn.fdensreal[ihist])
-      fdensreal[ihist] = new TH1D(*aCorrFctn.fdensreal[ihist]);
-    else
-      fdensreal[ihist] = 0;
-    if (aCorrFctn.fdensimag[ihist])
-      fdensimag[ihist] = new TH1D(*aCorrFctn.fdensimag[ihist]);
-    else
-      fdensimag[ihist] = 0;
+    fnumsreal[ihist] = new TH1D(*aCorrFctn.fnumsreal[ihist]);
+    fnumsimag[ihist] = new TH1D(*aCorrFctn.fnumsimag[ihist]);
+    fdensreal[ihist] = new TH1D(*aCorrFctn.fdensreal[ihist]);
+    fdensimag[ihist] = new TH1D(*aCorrFctn.fdensimag[ihist]);
   }
-
-  if (aCorrFctn.fbinctn)
-    fbinctn = new TH1D(*aCorrFctn.fbinctn);
-  else
-    fbinctn = 0;
-  if (aCorrFctn.fbinctd)
-    fbinctd = new TH1D(*aCorrFctn.fbinctd);
-  else
-    fbinctd = 0;
-
-  fYlmBuffer = (complex<double>*)malloc(sizeof(complex<double>) * fMaxJM);
-
-  // Covariance matrices
-  fcovmnum = (double*)malloc(sizeof(double) * fMaxJM * fMaxJM * 4 * ibin);
-  fcovmden = (double*)malloc(sizeof(double) * fMaxJM * fMaxJM * 4 * ibin);
-
-  for (int iter = 0; iter < fMaxJM * fMaxJM * 4 * ibin; iter++) {
-    fcovmnum[iter] = aCorrFctn.fcovmnum[iter];
-    fcovmden[iter] = aCorrFctn.fcovmden[iter];
-  }
-
-  if (aCorrFctn.fcovnum)
-    fcovnum = new TH3D(*aCorrFctn.fcovnum);
-  else
-    fcovnum = 0;
-  if (aCorrFctn.fcovden)
-    fcovden = new TH3D(*aCorrFctn.fcovden);
-  else
-    fcovden = 0;
-
-  fSout = aCorrFctn.fSout;
-  fSside = aCorrFctn.fSside;
-  fSlong = aCorrFctn.fSlong;
-
-  if (aCorrFctn.fPairCut)
-    fPairCut = aCorrFctn.fPairCut;
-
-  fUseLCMS = aCorrFctn.fUseLCMS;
 }
 
 AliFemtoCorrFctnDirectYlm&
@@ -251,132 +140,87 @@ AliFemtoCorrFctnDirectYlm::operator=(const AliFemtoCorrFctnDirectYlm& aCorrFctn)
   if (this == &aCorrFctn)
     return *this;
 
-  int ibin = 0;
-  if (aCorrFctn.fbinctn)
-    ibin = aCorrFctn.fbinctn->GetNbinsX();
+  AliFemtoCorrFctn::operator=(aCorrFctn);
 
   fMaxL = aCorrFctn.fMaxL;
   fMaxJM = (fMaxL + 1) * (fMaxL + 1);
 
-  // Fill in factorials table
-  if (factorials)
-    free(factorials);
-  factorials = (double*)malloc(sizeof(double) * (4 * (fMaxL + 1)));
-  for (int iter = 1; iter < 4 * (fMaxL + 1); iter++) {
-    factorials[iter] = aCorrFctn.factorials[iter];
+  // Copy factorials table if necessary
+  if (factorials.size() != aCorrFctn.factorials.size()) {
+    factorials = aCorrFctn.factorials;
   }
 
-  // Fill in els and ems table
-  int el = 0;
-  int em = 0;
-  int il = 0;
+  // Copy in els and ems table
+  if (fels.size() != aCorrFctn.fels.size()) {
+    fels = aCorrFctn.fels;
+    fems = aCorrFctn.fems;
+    felsi = aCorrFctn.felsi;
+    femsi = aCorrFctn.femsi;
+  }
 
-  if (fels)
-    free(fels);
-  if (fems)
-    free(fems);
-  if (felsi)
-    free(felsi);
-  if (femsi)
-    free(femsi);
 
-  fels = (double*)malloc(sizeof(double) * (fMaxJM));
-  fems = (double*)malloc(sizeof(double) * (fMaxJM));
-  felsi = (int*)malloc(sizeof(int) * (fMaxJM));
-  femsi = (int*)malloc(sizeof(int) * (fMaxJM));
-  do {
-    fels[il] = el;
-    fems[il] = em;
-    felsi[il] = (int)el;
-    femsi[il] = (int)em;
+  if (fnumsreal.size() == aCorrFctn.fnumsreal.size()) {
+    // simple assignments if same number of histograms
 
-    em++;
-    il++;
-    if (em > el) {
-      el++;
-      em = -el;
+    for (int ihist = 0; ihist < fMaxJM; ihist++) {
+      *fnumsreal[ihist] = *aCorrFctn.fnumsreal[ihist];
+      *fnumsimag[ihist] = *aCorrFctn.fnumsimag[ihist];
+      *fdensreal[ihist] = *aCorrFctn.fdensreal[ihist];
+      *fdensimag[ihist] = *aCorrFctn.fdensimag[ihist];
     }
-  } while (el <= fMaxL);
 
-  if (fnumsreal)
-    free(fnumsreal);
-  if (fnumsimag)
-    free(fnumsimag);
-  if (fdensreal)
-    free(fdensreal);
-  if (fdensimag)
-    free(fdensimag);
+  } else {
+    // delete and resize to match
+    for (auto i = 0; i < fnumsreal.size(); ++i) {
+      delete fnumsreal[i];
+      delete fnumsimag[i];
+      delete fdensreal[i];
+      delete fdensimag[i];
+    }
 
-  fnumsreal = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
-  fnumsimag = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
-  fdensreal = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
-  fdensimag = (TH1D**)malloc(sizeof(TH1D*) * fMaxJM);
+    fnumsreal.resize(fMaxJM, nullptr);
+    fnumsimag.resize(fMaxJM, nullptr);
+    fdensreal.resize(fMaxJM, nullptr);
+    fdensimag.resize(fMaxJM, nullptr);
 
-  for (int ihist = 0; ihist < fMaxJM; ihist++) {
-    if (aCorrFctn.fnumsreal[ihist])
+    for (int ihist = 0; ihist < fMaxJM; ihist++) {
       fnumsreal[ihist] = new TH1D(*aCorrFctn.fnumsreal[ihist]);
-    else
-      fnumsreal[ihist] = 0;
-    if (aCorrFctn.fnumsimag[ihist])
       fnumsimag[ihist] = new TH1D(*aCorrFctn.fnumsimag[ihist]);
-    else
-      fnumsimag[ihist] = 0;
-    if (aCorrFctn.fdensreal[ihist])
       fdensreal[ihist] = new TH1D(*aCorrFctn.fdensreal[ihist]);
-    else
-      fdensreal[ihist] = 0;
-    if (aCorrFctn.fdensimag[ihist])
       fdensimag[ihist] = new TH1D(*aCorrFctn.fdensimag[ihist]);
-    else
-      fdensimag[ihist] = 0;
+    }
   }
 
-  if (aCorrFctn.fbinctn)
-    fbinctn = new TH1D(*aCorrFctn.fbinctn);
-  else
-    fbinctn = 0;
-  if (aCorrFctn.fbinctd)
-    fbinctd = new TH1D(*aCorrFctn.fbinctd);
-  else
-    fbinctd = 0;
+  fbinctn = new TH1D(*aCorrFctn.fbinctn);
+  fbinctd = new TH1D(*aCorrFctn.fbinctd);
 
-  if (fYlmBuffer) {
-    free(fYlmBuffer);
-  }
-
-  fYlmBuffer = (complex<double>*)malloc(sizeof(complex<double>) * fMaxJM);
+  fYlmBuffer = aCorrFctn.fYlmBuffer;
 
   // Covariance matrices
+  fcovmnum = aCorrFctn.fcovmnum;
+  fcovmden = aCorrFctn.fcovmden;
 
-  if (fcovmnum)
-    free(fcovmnum);
-  if (fcovmden)
-    free(fcovmden);
-
-  fcovmnum = (double*)malloc(sizeof(double) * fMaxJM * fMaxJM * 4 * ibin);
-  fcovmden = (double*)malloc(sizeof(double) * fMaxJM * fMaxJM * 4 * ibin);
-
-  for (int iter = 0; iter < fMaxJM * fMaxJM * 4 * ibin; iter++) {
-    fcovmnum[iter] = aCorrFctn.fcovmnum[iter];
-    fcovmden[iter] = aCorrFctn.fcovmden[iter];
+  if (aCorrFctn.fcovnum && fcovnum) {
+    *fcovnum = *aCorrFctn.fcovnum;
+  } else if (aCorrFctn.fcovnum) {
+    fcovnum = new TH3D(*aCorrFctn.fcovnum);
+  } else {
+    delete fcovnum;
+    fcovnum = nullptr;
   }
 
-  if (aCorrFctn.fcovnum)
-    fcovnum = new TH3D(*aCorrFctn.fcovnum);
-  else
-    fcovnum = 0;
-  if (aCorrFctn.fcovden)
+  if (aCorrFctn.fcovden && fcovden) {
+    *fcovden = *aCorrFctn.fcovden;
+  } else if (aCorrFctn.fcovden) {
     fcovden = new TH3D(*aCorrFctn.fcovden);
-  else
-    fcovden = 0;
+  } else {
+    delete fcovden;
+    fcovden = nullptr;
+  }
 
   fSout = aCorrFctn.fSout;
   fSside = aCorrFctn.fSside;
   fSlong = aCorrFctn.fSlong;
-
-  if (aCorrFctn.fPairCut) {
-    fPairCut = aCorrFctn.fPairCut;
-  }
 
   fUseLCMS = aCorrFctn.fUseLCMS;
 
@@ -396,33 +240,8 @@ AliFemtoCorrFctnDirectYlm::~AliFemtoCorrFctnDirectYlm()
   delete fbinctn;
   delete fbinctd;
 
-  //  delete fnumsreal;
-  //  delete fnumsimag;
-  //  delete fdensreal;
-  //  delete fdensimag;
-
-  free(fnumsreal);
-  free(fnumsimag);
-  free(fdensreal);
-  free(fdensimag);
-
-  free(factorials);
-  free(fels);
-  free(fems);
-  free(felsi);
-  free(femsi);
-  free(fYlmBuffer);
-
-  free(fcovmnum);
-  free(fcovmden);
-
-  if (fcovnum)
-    delete fcovnum;
-  if (fcovden)
-    delete fcovden;
-
-  if (fPairCut)
-    delete fPairCut;
+  delete fcovnum;
+  delete fcovden;
 }
 
 double
@@ -434,24 +253,18 @@ AliFemtoCorrFctnDirectYlm::ClebschGordan(double aJot1,
                                          double aEm)
 {
   // Calculate Clebsh-Gordan coefficient
-  int mint, maxt;
   double cgc = 0.0;
-  int titer;
-  double coef;
 
-  maxt = lrint(aJot1 + aJot2 - aJot);
-  mint = 0;
-  if (lrint(aJot1 - aEm1) < maxt)
-    maxt = lrint(aJot1 - aEm1);
-  if (lrint(aJot2 + aEm2) < maxt)
-    maxt = lrint(aJot2 + aEm2);
-  if (lrint(-(aJot - aJot2 + aEm1)) > mint)
-    mint = lrint(-(aJot - aJot2 + aEm1));
-  if (lrint(-(aJot - aJot1 - aEm2)) > mint)
-    mint = lrint(-(aJot - aJot1 - aEm2));
+  const int maxt = std::min({ lrint(aJot1 + aJot2 - aJot),
+                              lrint(aJot2 + aEm2),
+                              lrint(aJot1 - aEm1) }),
 
-  for (titer = mint; titer <= maxt; titer++) {
-    coef = TMath::Power(-1, titer);
+            mint = std::max({ 0l,
+                              lrint(-(aJot - aJot2 + aEm1)),
+                              lrint(-(aJot - aJot1 - aEm2)) });
+
+  for (int titer = mint; titer <= maxt; titer++) {
+    double coef = titer % 2 ? -1.0 : 1.0;  // (-1)^titer
     coef *= TMath::Sqrt((2 * aJot + 1)
                         * factorials[lrint(aJot1 + aEm1)]
                         * factorials[lrint(aJot1 - aEm1)]
@@ -539,24 +352,23 @@ AliFemtoCorrFctnDirectYlm::GetMtilde(complex<double> *aMat, double *aMTilde)
   int lprimi, mprimi;
   int lbisi, mbisi;
 
-  complex<double> mcomp;
-
   for (int izero = 0; izero < GetMaxJM(); izero++) {
     GetElEmForIndex(izero, &lzero, &mzero);
     GetElEmForIndex(izero, &lzeroi, &mzeroi);
+
+    const double neg_one_to_m = abs(mzeroi) % 2 ? -1.0 : 1.0;
+
     for (int ibis = 0; ibis < GetMaxJM(); ibis++) {
       GetElEmForIndex(ibis, &lbis, &mbis);
       GetElEmForIndex(ibis, &lbisi, &mbisi);
-      complex<double> val = complex<double>(0.0, 0.0);
+
+      std::complex<double> val(0.0, 0.0);
       for (int iprim = 0; iprim < GetMaxJM(); iprim++) {
 
         GetElEmForIndex(iprim, &lprim, &mprim);
         GetElEmForIndex(iprim, &lprimi, &mprimi);
 
-        if (abs(mzeroi) % 2)
-          mcomp = complex<double>(-1.0, 0.0); // (-1)^m
-        else
-          mcomp = complex<double>(1.0, 0.0);
+        std::complex<double> mcomp(neg_one_to_m, 0.0);  // (-1)^m
 
         mcomp *= sqrt((2 * lzero + 1) * (2 * lprim + 1) * (2 * lbis + 1)); // P1
         mcomp *= WignerSymbol(lzero, 0, lprim, 0, lbis, 0);                // W1
@@ -566,10 +378,7 @@ AliFemtoCorrFctnDirectYlm::GetMtilde(complex<double> *aMat, double *aMTilde)
       }
       aMTilde[(izero * 2) * (2 * GetMaxJM()) + (ibis * 2)] = real(val);
       aMTilde[(izero * 2 + 1) * (2 * GetMaxJM()) + (ibis * 2)] = imag(val);
-      if (imag(val) != 0.0)
-        aMTilde[(izero * 2) * (2 * GetMaxJM()) + (ibis * 2 + 1)] = -imag(val);
-      else
-        aMTilde[(izero * 2) * (2 * GetMaxJM()) + (ibis * 2 + 1)] = 0.0;
+      aMTilde[(izero * 2) * (2 * GetMaxJM()) + (ibis * 2 + 1)] = imag(val) ? -val.imag() : 0.0;
       aMTilde[(izero * 2 + 1) * (2 * GetMaxJM()) + (ibis * 2 + 1)] = real(val);
     }
   }
@@ -615,7 +424,7 @@ AliFemtoCorrFctnDirectYlm::AddRealPair(double qout, double qside, double qlong, 
 
   // Use saved ylm values for same qout, qside, qlong
   if ((qout != fSout) || (qside != fSside) || (qlong != fSlong)) {
-    AliFemtoYlm::YlmUpToL(fMaxL, qout, qside, qlong, fYlmBuffer);
+    AliFemtoYlm::YlmUpToL(fMaxL, qout, qside, qlong, fYlmBuffer.data());
     fSout = qout;
     fSside = qside;
     fSlong = qlong;
@@ -653,7 +462,7 @@ AliFemtoCorrFctnDirectYlm::AddMixedPair(double qout, double qside, double qlong,
 
   // Use saved ylm values for same qout, qside, qlong
   if ((qout != fSout) || (qside != fSside) || (qlong != fSlong)) {
-    AliFemtoYlm::YlmUpToL(fMaxL, qout, qside, qlong, fYlmBuffer);
+    AliFemtoYlm::YlmUpToL(fMaxL, qout, qside, qlong, fYlmBuffer.data());
     fSout = qout;
     fSside = qside;
     fSlong = qlong;

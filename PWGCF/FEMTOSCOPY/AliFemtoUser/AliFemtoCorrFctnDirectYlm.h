@@ -7,6 +7,7 @@
 
 #include <cmath>
 #include <complex>
+#include <vector>
 
 #include <TH1D.h>
 #include <TH3D.h>
@@ -91,10 +92,13 @@ private:
   void PackCovariances();
   void UnpackCovariances();
 
-  TH1D **fnumsreal; ///< Real parts of Ylm components of the numerator
-  TH1D **fnumsimag; ///< Imaginary parts of Ylm components of the numerator
-  TH1D **fdensreal; ///< Real parts of Ylm components of the denominator
-  TH1D **fdensimag; ///< Imaginary parts of Ylm components of the denominator
+  int fMaxL; ///< l cut-off of the decomposition
+  int fMaxJM; ///< number of l-m combinations
+
+  std::vector<TH1D*> fnumsreal; ///< Real parts of Ylm components of the numerator
+  std::vector<TH1D*> fnumsimag; ///< Imaginary parts of Ylm components of the numerator
+  std::vector<TH1D*> fdensreal; ///< Real parts of Ylm components of the denominator
+  std::vector<TH1D*> fdensimag; ///< Imaginary parts of Ylm components of the denominator
 
   TH1D *fbinctn; ///< Bin occupation for the numerator
   TH1D *fbinctd; ///< Bin occupation for the denominator
@@ -102,19 +106,16 @@ private:
   TH3D *fcovnum; ///< Numerator covariance matrix packed into TH3D
   TH3D *fcovden; ///< Denominator covariance matrix packed into TH3D
 
-  double *fcovmnum; ///< Covariance matrix for the numerator
-  double *fcovmden; ///<Covariance matrix for the denominator
+  std::vector<double> fcovmnum; ///< Covariance matrix for the numerator
+  std::vector<double> fcovmden; ///< Covariance matrix for the denominator
 
-  int fMaxL; ///< l cut-off of the decomposition
+  std::vector<double> fels; ///< table of l's
+  std::vector<double> fems; ///< table of m's
+  std::vector<int> felsi;   ///< table of integer l's
+  std::vector<int> femsi;   ///< table of integer m's
 
-  int fMaxJM;   ///< number of l-m combinations
-  double *fels; ///< table of l's
-  double *fems; ///< table of m's
-  int *felsi;   ///< table of integer l's
-  int *femsi;   ///< table of integer m's
-
-  std::complex<double> *fYlmBuffer; ///< buffer for ylm calculation
-  double *factorials;          ///< Helper table of factorials
+  std::vector<std::complex<double>> fYlmBuffer; ///< buffer for ylm calculation
+  std::vector<double> factorials;          ///< Helper table of factorials
 
   double fSout;  ///< Save last calculated qout
   double fSside; ///< Save last calculated qside
