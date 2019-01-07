@@ -424,7 +424,7 @@ public:
   /// \defgroup Find&Load Methods
   /// @{
   /// Copies item identified by *key*, returns true if found
-  #define IMPL_FINDANDLOAD(__dest_type, __load, __tag, __source)            \
+  #define IMPL_FINDANDLOAD(__dest_type, __load, __tag, __source)    \
     bool find_and_load(const Key_t &key, __dest_type &dest) const { \
       if (!is_map()) { return false; }                              \
       const AliFemtoConfigObject* found = find(key);                \
@@ -1196,6 +1196,8 @@ AliFemtoConfigObject::operator=(AliFemtoConfigObject const &rhs)
     }
 
     #undef COPY
+
+    fTypeTag = rhs.fTypeTag;
   }
   return *this;
 }
@@ -1207,13 +1209,15 @@ inline
 AliFemtoConfigObject::AliFemtoConfigObject(AliFemtoConfigObject &&orig):
   TObject(orig)
   , fTypeTag(kEMPTY)
-  , fPainter(orig.fPainter)
+  , fPainter(nullptr)
 {
   _MoveConstructValue(std::move(orig));
-  orig.fPainter = nullptr;
+  /*
+  std::swap(fPainter, orig.fPainter);
   if (fPainter) {
     fPainter->ResetData(this);
   }
+  */
 }
 
 /// Move assignment-operator
@@ -1242,9 +1246,15 @@ AliFemtoConfigObject& AliFemtoConfigObject::operator=(AliFemtoConfigObject &&rhs
     rhs._DeleteValue();
   }
 
+  // unsure if this is proper behavior
+  /*
   delete fPainter;
   fPainter = nullptr;
   std::swap(fPainter, rhs.fPainter);
+  if (fPainter) {
+    fPainter->ResetData(this);
+  }
+  */
 
   return *this;
 }
