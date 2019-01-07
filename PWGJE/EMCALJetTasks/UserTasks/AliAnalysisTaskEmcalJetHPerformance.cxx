@@ -135,10 +135,16 @@ void AliAnalysisTaskEmcalJetHPerformance::RetrieveAndSetTaskPropertiesFromYAMLCo
   baseName = "eventCuts";
   // This exceptionally defaults to true.
   fYAMLConfig.GetProperty({baseName, "enabled"}, fUseAliEventCuts, false);
-  // Need to include the namespace so that AliDebug will work properly...
-  std::string taskName = "PWGJE::EMCALJetTasks::";
-  taskName += GetName();
-  AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(fEventCuts, fYAMLConfig, fOfflineTriggerMask, baseName, taskName);
+  if (fUseAliEventCuts) {
+    // Need to include the namespace so that AliDebug will work properly...
+    std::string taskName = "PWGJE::EMCALJetTasks::";
+    taskName += GetName();
+    AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(fEventCuts, fYAMLConfig, fOfflineTriggerMask, baseName, taskName);
+  }
+
+  // General task options
+  baseName = "general";
+  fYAMLConfig.GetProperty({baseName, "nCentBins"}, fNcentBins, false);
 
   // QA options
   baseName = "QA";
@@ -217,6 +223,14 @@ bool AliAnalysisTaskEmcalJetHPerformance::Initialize()
   RetrieveAndSetTaskPropertiesFromYAMLConfig();
   SetupJetContainersFromYAMLConfig();
   AliDebugStream(2) << "Finished configuring via the YAML configuration.\n";
+
+  if (fUseAliEventCuts) {
+    // We use the AliEventCuts version implemented here instead of the one from the base class. The base class
+    // won't work because it is configured well after intialization. So it would be reinitialized with the wrong
+    // settings. So we disable it (to do so, we claim to use the default event selection, even though we will just
+    // ignore it).
+    SetUseInternalEventSelection(true);
+  }
 
   // Print the results of the initialization
   // Print outside of the ALICE Log system to ensure that it is always available!
@@ -386,7 +400,8 @@ Bool_t AliAnalysisTaskEmcalJetHPerformance::IsEventSelected()
   else {
     return AliAnalysisTaskEmcalJet::IsEventSelected();
   }
-  return kFALSE;
+  // The event was accepted by AliEventCuts, so we return true.
+  return kTRUE;
 }
 
 /**
@@ -641,6 +656,8 @@ AliAnalysisTaskEmcalJetHPerformance * AliAnalysisTaskEmcalJetHPerformance::AddTa
 
   // Create task and configure as desired.
   AliAnalysisTaskEmcalJetHPerformance * task = new AliAnalysisTaskEmcalJetHPerformance(taskName.c_str());
+  // Set a few general default.
+  task->SetNCentBins(5);
   // Configuration is via YAML.
   mgr->AddTask(task);
 
@@ -673,6 +690,8 @@ std::string AliAnalysisTaskEmcalJetHPerformance::toString() const
   }
   tempSS << "AliEventCuts\n";
   tempSS << "\tEnabled: " << fUseAliEventCuts << "\n";
+  // AliEventCuts in the base class needs to be __disabled__ because the implementation isn't compatible with how it's implemented here.
+  tempSS << "\tUse AliAnalysisTaskEmcal event selection (needs to be enabled to use AliEventCuts): " << fUseInternalEventSelection << "\n";
   tempSS << "QA Hists:\n";
   tempSS << "\tEnabled: " << fCreateQAHists << "\n";
   tempSS << "Response matrix:\n";
