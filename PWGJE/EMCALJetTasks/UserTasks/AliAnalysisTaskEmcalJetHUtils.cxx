@@ -167,7 +167,7 @@ void AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(AliEventCuts & eventCuts,
     // Set the 15o pileup cuts. Defaults to on.
     if (manualCutsPeriod == "LHC15o") {
       bool enablePileupCuts = true;
-      yamlConfig.GetProperty({ baseName, "enablePileupCuts" }, manualCutsPeriod, false);
+      yamlConfig.GetProperty({ baseName, "enablePileupCuts" }, enablePileupCuts, false);
       AliDebugGeneralStream(taskName.c_str(), 3) << "Setting 15o pileup cuts to " << std::boolalpha << enablePileupCuts << ".\n";
       eventCuts.fUseVariablesCorrelationCuts = enablePileupCuts;
     }
