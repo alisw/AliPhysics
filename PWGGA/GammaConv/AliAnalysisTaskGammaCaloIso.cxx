@@ -114,24 +114,23 @@ AliAnalysisTaskGammaCaloIso::AliAnalysisTaskGammaCaloIso(): AliAnalysisTaskSE(),
   fHistoClusterCandidatesBinning(NULL),
   fHistoFailIsolationCut(NULL),
   fHistoIsoClusterPDGtoPt(NULL),
-  fHistoIsoClusterPDGtoPtMatSec(NULL),
   fHistoIsoMotherPDGtoPt(NULL),
-  fHistoIsoMatSecConversionfromPhoton(NULL),
-  fHistoIsoPhotonfromPi0(NULL),
-  fHistoIsoInitPhotons(NULL),
-  fHistoIsoFragPhotons(NULL),
-  fHistoIsoInitPhotonsConversionCorrection(NULL),
   fVectorDoubleCountMCInitIsoPhotons(0),
-  fHistoDoubleCountMCIsoInitPhotonCorrectPt(NULL),
   fHistoDoubleCountMCIsoInitPhotonPt(NULL),
   fHistoTruePhotonCandidatesIso(NULL),
   fHistoTruePhotonsfromPi0DirectIso(NULL),
+  fHistoTruePhotonsfromPi0DirectIsoBinning(NULL),
   fHistoTrueFragPhotonsDirectIso(NULL),
   fHistoTruePromptPhotonsDirectIso(NULL),
   fHistoTruePhotonsfromPi0ConvIso(NULL),
+  fHistoTruePhotonsfromPi0ConvIsoBinning(NULL),
   fHistoTrueFragPhotonsConvIso(NULL),
   fHistoTruePromptPhotonsConvIso(NULL),
   fHistoTrueOtherSourcesIso(NULL),
+  fHistoTruePi0DecayCandNoConv(NULL),
+  fHistoTruePi0DecayCand(NULL),
+  fHistoTruePi0DecayCandNoConvBinning(NULL),
+  fHistoTruePi0DecayCandBinning(NULL),
   fHistoClusGammaPt(NULL),
   fHistoClusGammaE(NULL),
   fHistoClusOverlapHeadersGammaPt(NULL),
@@ -479,24 +478,23 @@ AliAnalysisTaskGammaCaloIso::AliAnalysisTaskGammaCaloIso(const char *name):
   fHistoClusterCandidatesBinning(NULL),
   fHistoFailIsolationCut(NULL),
   fHistoIsoClusterPDGtoPt(NULL),
-  fHistoIsoClusterPDGtoPtMatSec(NULL),
   fHistoIsoMotherPDGtoPt(NULL),
-  fHistoIsoMatSecConversionfromPhoton(NULL),
-  fHistoIsoPhotonfromPi0(NULL),
-  fHistoIsoInitPhotons(NULL),
-  fHistoIsoFragPhotons(NULL),
-  fHistoIsoInitPhotonsConversionCorrection(NULL),
   fVectorDoubleCountMCInitIsoPhotons(0),
-  fHistoDoubleCountMCIsoInitPhotonCorrectPt(NULL),
   fHistoDoubleCountMCIsoInitPhotonPt(NULL),
   fHistoTruePhotonCandidatesIso(NULL),
   fHistoTruePhotonsfromPi0DirectIso(NULL),
+  fHistoTruePhotonsfromPi0DirectIsoBinning(NULL),
   fHistoTrueFragPhotonsDirectIso(NULL),
   fHistoTruePromptPhotonsDirectIso(NULL),
   fHistoTruePhotonsfromPi0ConvIso(NULL),
+  fHistoTruePhotonsfromPi0ConvIsoBinning(NULL),
   fHistoTrueFragPhotonsConvIso(NULL),
   fHistoTruePromptPhotonsConvIso(NULL),
   fHistoTrueOtherSourcesIso(NULL),
+  fHistoTruePi0DecayCandNoConv(NULL),
+  fHistoTruePi0DecayCand(NULL),
+  fHistoTruePi0DecayCandNoConvBinning(NULL),
+  fHistoTruePi0DecayCandBinning(NULL),
   fHistoClusGammaPt(NULL),
   fHistoClusGammaE(NULL),
   fHistoClusOverlapHeadersGammaPt(NULL),
@@ -1164,24 +1162,23 @@ void AliAnalysisTaskGammaCaloIso::UserCreateOutputObjects(){
   fHistoFailIsolationCut    = new TH1F*[fnCuts];
   if (fIsMC > 0){
       fHistoIsoClusterPDGtoPt = new TH2F*[fnCuts];
-      fHistoIsoClusterPDGtoPtMatSec = new TH2F*[fnCuts];
       fHistoIsoMotherPDGtoPt = new TH2F*[fnCuts];
-      fHistoIsoMatSecConversionfromPhoton = new TH1F*[fnCuts];
-      fHistoIsoPhotonfromPi0 = new TH1F*[fnCuts];
-      fHistoIsoInitPhotons = new TH1F*[fnCuts];
-      fHistoIsoFragPhotons = new TH1F*[fnCuts];
-      fHistoIsoInitPhotonsConversionCorrection = new TH1F*[fnCuts];
-      fHistoDoubleCountMCIsoInitPhotonCorrectPt = new TH1F*[fnCuts];
       fHistoDoubleCountMCIsoInitPhotonPt = new TH1F*[fnCuts];
 
       fHistoTruePhotonCandidatesIso = new TH1F*[fnCuts];
       fHistoTruePhotonsfromPi0DirectIso = new TH1F*[fnCuts];
+      fHistoTruePhotonsfromPi0DirectIsoBinning = new TH1F*[fnCuts];
       fHistoTrueFragPhotonsDirectIso = new TH1F*[fnCuts];
       fHistoTruePromptPhotonsDirectIso = new TH1F*[fnCuts];
       fHistoTruePhotonsfromPi0ConvIso = new TH1F*[fnCuts];
+      fHistoTruePhotonsfromPi0ConvIsoBinning = new TH1F*[fnCuts];
       fHistoTrueFragPhotonsConvIso = new TH1F*[fnCuts];
       fHistoTruePromptPhotonsConvIso = new TH1F*[fnCuts];
       fHistoTrueOtherSourcesIso = new TH1F*[fnCuts];
+      fHistoTruePi0DecayCandNoConv = new TH1F*[fnCuts];
+      fHistoTruePi0DecayCand = new TH1F*[fnCuts];
+      fHistoTruePi0DecayCandNoConvBinning = new TH1F*[fnCuts];
+      fHistoTruePi0DecayCandBinning = new TH1F*[fnCuts];
   }
 
   if(fDoTHnSparse){
@@ -1304,11 +1301,12 @@ void AliAnalysisTaskGammaCaloIso::UserCreateOutputObjects(){
     Int_t startPDG                            = -400;
     Int_t endPDG                              = 400;
 
-    Double_t fBinsPi013TeVPCMEMCTrigEG1IsoPt[19]      = {0.0, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0, 10.5, 11.0,             11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 15.0, 17.0, 20.0};
+    Double_t fBinsPi013TeVEMCTrigEG1IsoPt[21]      = {0.0, 7.0, 7.25, 7.5, 7.75, 8.0, 8.25, 8.5, 8.75, 9.0,         9.25, 9.5, 10.0, 10.5, 11.0, 12.0, 13.0, 14.0, 15.0, 17.0,
+                                                      21.0};
 
     fHistoClusterCandidates[iCut]                         = new TH1F("ClusterCandidates","Cluster Photon Candidates",nBinsClusterPt, arrClusPtBinning);
     fIsolation[iCut]->Add(fHistoClusterCandidates[iCut]);
-    fHistoClusterCandidatesBinning[iCut]                  = new TH1F("ClusterCandidatesBinning","Cluster Photon Candidates",18, fBinsPi013TeVPCMEMCTrigEG1IsoPt);
+    fHistoClusterCandidatesBinning[iCut]                  = new TH1F("ClusterCandidatesBinning","Cluster Photon Candidates",20, fBinsPi013TeVEMCTrigEG1IsoPt);
     fIsolation[iCut]->Add(fHistoClusterCandidatesBinning[iCut]);
     fHistoFailIsolationCut[iCut]                          = new TH1F("FailIsolationCut","Cluster Candidates, failing Isolation Cut",nBinsClusterPt, arrClusPtBinning);
     fIsolation[iCut]->Add(fHistoFailIsolationCut[iCut]);
@@ -1317,24 +1315,8 @@ void AliAnalysisTaskGammaCaloIso::UserCreateOutputObjects(){
 
       fHistoIsoClusterPDGtoPt[iCut]                        = new TH2F("IsoClusterPDGtoPt","Isolated Cluster PDG Codes",PDGBins,startPDG,endPDG,IsolationBins,startIsolation,endIsolation);
       fIsolation[iCut]->Add(fHistoIsoClusterPDGtoPt[iCut]);
-      fHistoIsoClusterPDGtoPtMatSec[iCut]                  = new TH2F("IsoClusterPDGtoPtMatSec","Isolated Cluster PDG Codes for Maetrial Secondaries",PDGBins,startPDG,endPDG,IsolationBins,startIsolation,endIsolation);
-      fIsolation[iCut]->Add(fHistoIsoClusterPDGtoPtMatSec[iCut]);
       fHistoIsoMotherPDGtoPt[iCut]                         = new TH2F("IsoMotherPDGtoPt","Isolated Cluster Mother PDG Codes",PDGBins,startPDG,endPDG,IsolationBins,startIsolation,endIsolation);
       fIsolation[iCut]->Add(fHistoIsoMotherPDGtoPt[iCut]);
-      fHistoIsoMatSecConversionfromPhoton[iCut]                 = new TH1F("MatSecConversionfromPhoton","Mat. Sec. Conversion e- or e+ from Photon",IsolationBins,startIsolation,endIsolation);
-      fIsolation[iCut]->Add(fHistoIsoMatSecConversionfromPhoton[iCut]);
-      fHistoIsoPhotonfromPi0[iCut]                 = new TH1F("MatSecPhotonfromPi0","Mat. Sec. Photon from Pi0",IsolationBins,startIsolation,endIsolation);
-      fIsolation[iCut]->Add(fHistoIsoPhotonfromPi0[iCut]);
-
-      fHistoIsoInitPhotons[iCut]                 = new TH1F("IsolatedTrueGammaJets","Isolated Gamma Jets",IsolationBins,startIsolation,endIsolation);
-      fIsolation[iCut]->Add(fHistoIsoInitPhotons[iCut]);
-      fHistoIsoFragPhotons[iCut]                 = new TH1F("IsolatedTrueFragPhotons","Isolated Fragmentation Photons",IsolationBins,startIsolation,endIsolation);
-      fIsolation[iCut]->Add(fHistoIsoFragPhotons[iCut]);
-
-      fHistoIsoInitPhotonsConversionCorrection[iCut] = new TH1F("IsoTrueGammaJets_ConversionCorrection","Isolated Gamma Jets with Conversion Correction",IsolationBins,startIsolation,endIsolation);
-      fIsolation[iCut]->Add(fHistoIsoInitPhotonsConversionCorrection[iCut]);
-      fHistoDoubleCountMCIsoInitPhotonCorrectPt[iCut]        = new TH1F("DoubleCountIsoGammaJetCorrect","Double Count Isolated Gamma Jets for Material Sec.", IsolationBins,startIsolation,endIsolation);
-      fIsolation[iCut]->Add(fHistoDoubleCountMCIsoInitPhotonCorrectPt[iCut]);
       fHistoDoubleCountMCIsoInitPhotonPt[iCut]        = new TH1F("DoubleCountIsoGammaJet","Double Count Isolated Gamma Jets", IsolationBins,startIsolation,endIsolation);
       fIsolation[iCut]->Add(fHistoDoubleCountMCIsoInitPhotonPt[iCut]);
 
@@ -1342,12 +1324,16 @@ void AliAnalysisTaskGammaCaloIso::UserCreateOutputObjects(){
       fIsolation[iCut]->Add(fHistoTruePhotonCandidatesIso[iCut]);
       fHistoTruePhotonsfromPi0DirectIso[iCut]                 = new TH1F("TrueDirectPi0","True Photon from Pi0 Decay (Direct)",nBinsClusterPt, arrClusPtBinning);
       fIsolation[iCut]->Add(fHistoTruePhotonsfromPi0DirectIso[iCut]);
+      fHistoTruePhotonsfromPi0DirectIsoBinning[iCut]                 = new TH1F("TrueDirectPi0Binning","True Photon from Pi0 Decay (Direct)",20, fBinsPi013TeVEMCTrigEG1IsoPt);
+      fIsolation[iCut]->Add(fHistoTruePhotonsfromPi0DirectIsoBinning[iCut]);
       fHistoTrueFragPhotonsDirectIso[iCut]                    = new TH1F("TrueDirectFragPhoton","True Photon from Fragmentation (Direct)",nBinsClusterPt, arrClusPtBinning);
       fIsolation[iCut]->Add(fHistoTrueFragPhotonsDirectIso[iCut]);
       fHistoTruePromptPhotonsDirectIso[iCut]                  = new TH1F("TrueDirectPromptPhoton","True Prompt Photon (Direct)",nBinsClusterPt, arrClusPtBinning);
       fIsolation[iCut]->Add(fHistoTruePromptPhotonsDirectIso[iCut]);
       fHistoTruePhotonsfromPi0ConvIso[iCut]                   = new TH1F("TrueConvPi0","True Photon from Pi0 Decay (Conv)",nBinsClusterPt, arrClusPtBinning);
       fIsolation[iCut]->Add(fHistoTruePhotonsfromPi0ConvIso[iCut]);
+      fHistoTruePhotonsfromPi0ConvIsoBinning[iCut]                   = new TH1F("TrueConvPi0Binning","True Photon from Pi0 Decay (Conv)",20, fBinsPi013TeVEMCTrigEG1IsoPt);
+      fIsolation[iCut]->Add(fHistoTruePhotonsfromPi0ConvIsoBinning[iCut]);
       fHistoTrueFragPhotonsConvIso[iCut]                      = new TH1F("TrueConvFragPhoton","True Photon from Fragmentation (Conv)",nBinsClusterPt, arrClusPtBinning);
       fIsolation[iCut]->Add(fHistoTrueFragPhotonsConvIso[iCut]);
       fHistoTruePromptPhotonsConvIso[iCut]                    = new TH1F("TrueConvPromptPhoton","True Prompt Photon (Conv)",nBinsClusterPt, arrClusPtBinning);
@@ -1355,30 +1341,40 @@ void AliAnalysisTaskGammaCaloIso::UserCreateOutputObjects(){
       fHistoTrueOtherSourcesIso[iCut]                         = new TH1F("TruePhotonsOtherSources","True Photons from other sources",nBinsClusterPt, arrClusPtBinning);
       fIsolation[iCut]->Add(fHistoTrueOtherSourcesIso[iCut]);
 
+      fHistoTruePi0DecayCandNoConv[iCut]                    = new TH1F("TruePi0DecayCandNoConv","Comparison Decay Photon Yield (Direct)",nBinsClusterPt, arrClusPtBinning);
+      fIsolation[iCut]->Add(fHistoTruePi0DecayCandNoConv[iCut]);
+      fHistoTruePi0DecayCand[iCut]                         = new TH1F("TruePi0DecayCand","Comparison Decay Photon Yield",nBinsClusterPt, arrClusPtBinning);
+      fIsolation[iCut]->Add(fHistoTruePi0DecayCand[iCut]);
+
+      fHistoTruePi0DecayCandNoConvBinning[iCut]                    = new TH1F("TruePi0DecayCandNoConvBinning","Comparison Decay Photon Yield (Direct)",20, fBinsPi013TeVEMCTrigEG1IsoPt);
+      fIsolation[iCut]->Add(fHistoTruePi0DecayCandNoConvBinning[iCut]);
+      fHistoTruePi0DecayCandBinning[iCut]                         = new TH1F("TruePi0DecayCandBinning","Comparison Decay Photon Yield",20, fBinsPi013TeVEMCTrigEG1IsoPt);
+      fIsolation[iCut]->Add(fHistoTruePi0DecayCandBinning[iCut]);
+
+
     }
 
 
 
     if (fIsMC > 1){
         fHistoIsoClusterPDGtoPt[iCut]->Sumw2();
-        fHistoIsoClusterPDGtoPtMatSec[iCut]->Sumw2();
         fHistoIsoMotherPDGtoPt[iCut]->Sumw2();
-        fHistoIsoMatSecConversionfromPhoton[iCut]->Sumw2();
-        fHistoIsoPhotonfromPi0[iCut]->Sumw2();
-        fHistoIsoInitPhotons[iCut]->Sumw2();
-        fHistoIsoFragPhotons[iCut]->Sumw2();
-        fHistoIsoInitPhotonsConversionCorrection[iCut]->Sumw2();
-        fHistoDoubleCountMCIsoInitPhotonCorrectPt[iCut]->Sumw2();
         fHistoDoubleCountMCIsoInitPhotonPt[iCut]->Sumw2();
 
         fHistoTruePhotonCandidatesIso[iCut]->Sumw2();
         fHistoTruePhotonsfromPi0DirectIso[iCut]->Sumw2();
+        fHistoTruePhotonsfromPi0DirectIsoBinning[iCut]->Sumw2();
         fHistoTrueFragPhotonsDirectIso[iCut]->Sumw2();
         fHistoTruePromptPhotonsDirectIso[iCut]->Sumw2();
         fHistoTruePhotonsfromPi0ConvIso[iCut]->Sumw2();
+        fHistoTruePhotonsfromPi0ConvIsoBinning[iCut]->Sumw2();
         fHistoTrueFragPhotonsConvIso[iCut]->Sumw2();
         fHistoTruePromptPhotonsConvIso[iCut]->Sumw2();
         fHistoTrueOtherSourcesIso[iCut]->Sumw2();
+        fHistoTruePi0DecayCandNoConv[iCut]->Sumw2();
+        fHistoTruePi0DecayCand[iCut]->Sumw2();
+        fHistoTruePi0DecayCandNoConvBinning[iCut]->Sumw2();
+        fHistoTruePi0DecayCandBinning[iCut]->Sumw2();
     }
 
 
@@ -4761,6 +4757,7 @@ void AliAnalysisTaskGammaCaloIso::ProcessTrueIsolatedClustersAOD(AliVCluster *cl
 
             if(motherDummy->GetPdgCode() == 111){  //TESTED
               fHistoTruePhotonsfromPi0DirectIso[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
+              fHistoTruePhotonsfromPi0DirectIsoBinning[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
               fHistoIsoMotherPDGtoPt[fiCut]->Fill(motherDummy->GetPdgCode(), photoncandidate->Pt(), fWeightJetJetMC);
 //======================================================================================= PROCEED IF CLUSTER IS PHOTON FROM PHOTON
 
@@ -4811,6 +4808,7 @@ void AliAnalysisTaskGammaCaloIso::ProcessTrueIsolatedClustersAOD(AliVCluster *cl
 
           if(motherDummy->GetPdgCode()==111){
             fHistoTruePhotonsfromPi0ConvIso[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
+            fHistoTruePhotonsfromPi0ConvIsoBinning[fiCut]->Fill(photoncandidate->Pt(), fWeightJetJetMC);
             fHistoIsoMotherPDGtoPt[fiCut]->Fill(motherDummy->GetPdgCode(), photoncandidate->Pt(), fWeightJetJetMC);
           }else if(motherDummy->GetPdgCode()==22){
             while(TMath::Abs(motherDummy->GetPdgCode()==22) && motherDummy->GetMother()>-1){
@@ -5638,8 +5636,14 @@ void AliAnalysisTaskGammaCaloIso::ProcessTrueMesonCandidatesAOD(AliAODConversion
 
   if(isTruePi0 || isTrueEta){// True Pion or Eta
     if(isTruePi0){
-      if(gamma0photon && gamma1photon) fHistoTruePi0noConvInvMassPt[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate0->GetPhotonPt(), tempTruePi0CandWeight);
+      if(gamma0photon && gamma1photon) {
+          fHistoTruePi0noConvInvMassPt[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate0->GetPhotonPt(), tempTruePi0CandWeight);
+          fHistoTruePi0DecayCandNoConv[fiCut]->Fill(TrueGammaCandidate0->GetPhotonPt(),tempTruePi0CandWeight);
+          fHistoTruePi0DecayCandNoConvBinning[fiCut]->Fill(TrueGammaCandidate0->GetPhotonPt(),tempTruePi0CandWeight);
+      }
       fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate0->GetPhotonPt(), tempTruePi0CandWeight);
+      fHistoTruePi0DecayCand[fiCut]->Fill(TrueGammaCandidate0->GetPhotonPt(), tempTruePi0CandWeight);
+      fHistoTruePi0DecayCandBinning[fiCut]->Fill(TrueGammaCandidate0->GetPhotonPt(), tempTruePi0CandWeight);
       if(fDoJetAnalysis){
         if(fConvJetReader->GetTrueNJets()>0){
           fHistoTruePi0JetMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate0->GetPhotonPt(),  tempTruePi0CandWeight);

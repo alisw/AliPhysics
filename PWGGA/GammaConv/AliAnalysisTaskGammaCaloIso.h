@@ -178,25 +178,25 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
     TH1F**                  fHistoFailIsolationCut;             //! array of histograms with PhotonCandidates failing the isolation cut
 
     TH2F**                  fHistoIsoClusterPDGtoPt;            //! array of histograms with IsolatedClusterPDG
-    TH2F**                  fHistoIsoClusterPDGtoPtMatSec;      //! array of histograms with IsolatedClusterPDG Material Secondaries
     TH2F**                  fHistoIsoMotherPDGtoPt;             //! array of histograms with IsolatedMotherPDG
-    TH1F**                  fHistoIsoMatSecConversionfromPhoton;//! array of histograms with Conversion e-e+ from Photons (Material Secondaries)
-    TH1F**                  fHistoIsoPhotonfromPi0;             //! array of histograms with Photons from pi0s
-    TH1F**                  fHistoIsoInitPhotons;               //! array of histograms with succesfully isolated Init photons (not Material Secondaries)
-    TH1F**                  fHistoIsoFragPhotons;               //! array of histograms with fragmentation photons
-    TH1F**                  fHistoIsoInitPhotonsConversionCorrection;         //! array of histograms with isolated MC Init photons + conversion energy correction
     vector<Int_t>           fVectorDoubleCountMCInitIsoPhotons;               //! vector containing labels of validated isolated Init photons for the isolation task
-    TH1F**                  fHistoDoubleCountMCIsoInitPhotonCorrectPt;        //! array of histos with double counted Init isolated photons (MatSec)
     TH1F**                  fHistoDoubleCountMCIsoInitPhotonPt;               //! array of histos with double counted Init isolated photons (MatSec)
 
     TH1F**                  fHistoTruePhotonCandidatesIso;                    //! array of histograms with true photon candidates, pdg=22 or conversion
     TH1F**                  fHistoTruePhotonsfromPi0DirectIso;                //! array of histograms with photons (22) from Pi0s
+    TH1F**                  fHistoTruePhotonsfromPi0DirectIsoBinning;         //! array of histograms with photons (22) from Pi0s
     TH1F**                  fHistoTrueFragPhotonsDirectIso;                   //! array of histograms with true fragmentation photons (no conversion)
     TH1F**                  fHistoTruePromptPhotonsDirectIso;                 //! array of histograms with true prompt photons (no conversion)
     TH1F**                  fHistoTruePhotonsfromPi0ConvIso;                  //! array of histograms with true conv. photons from Pi0s
+    TH1F**                  fHistoTruePhotonsfromPi0ConvIsoBinning;                  //! array of histograms with true conv. photons from Pi0s
     TH1F**                  fHistoTrueFragPhotonsConvIso;                     //! array of histograms with true fragmentation photons, conversion
     TH1F**                  fHistoTruePromptPhotonsConvIso;                   //! array of histograms with true prompt photons, conversion
     TH1F**                  fHistoTrueOtherSourcesIso;                        //! array of histograms with other photon sources
+    TH1F**                  fHistoTruePi0DecayCandNoConv;                     //! array of histograms with pi0 decay photons that have been found correctly, no converions included
+    TH1F**                  fHistoTruePi0DecayCand;                           //! array of histograms with pi0 decay photons that have been found correctly conversions included
+    TH1F**                  fHistoTruePi0DecayCandNoConvBinning;                     //! array of histograms with pi0 decay photons that have been found correctly, no converions included
+    TH1F**                  fHistoTruePi0DecayCandBinning;                           //! array of histograms with pi0 decay photons that have been found correctly conversions included
+
 
     // histograms for rec photon clusters
     TH1F**                fHistoClusGammaPt;                                    //! array of histos with cluster, pt
@@ -515,7 +515,7 @@ class AliAnalysisTaskGammaCaloIso : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloIso(const AliAnalysisTaskGammaCaloIso&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCaloIso &operator=(const AliAnalysisTaskGammaCaloIso&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloIso, 54);
+    ClassDef(AliAnalysisTaskGammaCaloIso, 55);
 };
 
 #endif
