@@ -124,8 +124,8 @@ void AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(AliEventCuts & eventCuts,
   }
   else {
     // Use the cuts selected by SelectCollisionCandidates() (or via YAML)
-    AliInfoGeneralStream(taskName.c_str()) << "Using the trigger selection specified with SelectCollisionCandidates().\n";
-    eventCuts.OverrideAutomaticTriggerSelection(offlineTriggerMask);
+    AliInfoGeneralStream(taskName.c_str()) << "Using the trigger selection specified with SelectCollisionCandidates() or via YAML. Value: " << offlineTriggerMask << "\n";
+    eventCuts.OverrideAutomaticTriggerSelection(offlineTriggerMask, true);
   }
 
   // Manual mode
@@ -133,6 +133,7 @@ void AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(AliEventCuts & eventCuts,
   yamlConfig.GetProperty({baseName, "manualMode"}, manualMode, false);
   if (manualMode) {
     AliInfoGeneralStream(taskName.c_str()) << "Configuring manual event cuts.\n";
+    eventCuts.SetManualMode();
     // Confgure manual mode via YAML
     // Select the period
     typedef void (AliEventCuts::*MFP)();
@@ -166,7 +167,7 @@ void AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(AliEventCuts & eventCuts,
     // Set the 15o pileup cuts. Defaults to on.
     if (manualCutsPeriod == "LHC15o") {
       bool enablePileupCuts = true;
-      yamlConfig.GetProperty({ baseName, "enablePileupCuts" }, manualCutsPeriod, true);
+      yamlConfig.GetProperty({ baseName, "enablePileupCuts" }, manualCutsPeriod, false);
       AliDebugGeneralStream(taskName.c_str(), 3) << "Setting 15o pileup cuts to " << std::boolalpha << enablePileupCuts << ".\n";
       eventCuts.fUseVariablesCorrelationCuts = enablePileupCuts;
     }

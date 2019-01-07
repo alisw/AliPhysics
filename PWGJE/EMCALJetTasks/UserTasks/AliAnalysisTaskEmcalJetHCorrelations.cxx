@@ -169,6 +169,14 @@ bool AliAnalysisTaskEmcalJetHCorrelations::Initialize()
   RetrieveAndSetTaskPropertiesFromYAMLConfig();
   AliDebugStream(2) << "Finished configuring via the YAML configuration.\n";
 
+  if (fUseAliEventCuts) {
+    // We use the AliEventCuts version implemented here instead of the one from the base class. The base class
+    // won't work because it is configured well after intialization. So it would be reinitialized with the wrong
+    // settings. So we disable it (to do so, we claim to use the default event selection, even though we will just
+    // ignore it).
+    SetUseInternalEventSelection(true);
+  }
+
   // Print the results of the initialization
   // Print outside of the ALICE Log system to ensure that it is always available!
   //std::cout << *this;
@@ -196,10 +204,16 @@ void AliAnalysisTaskEmcalJetHCorrelations::RetrieveAndSetTaskPropertiesFromYAMLC
   // Event cuts
   // This exceptionally defaults to true.
   fYAMLConfig.GetProperty({baseName, "enabled"}, fUseAliEventCuts, false);
-  // Need to include the namespace so that AliDebug will work properly...
-  std::string taskName = "PWGJE::EMCALJetTasks::";
-  taskName += GetName();
-  AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(fEventCuts, fYAMLConfig, fOfflineTriggerMask, baseName, taskName);
+  if (fUseAliEventCuts) {
+    // Need to include the namespace so that AliDebug will work properly...
+    std::string taskName = "PWGJE::EMCALJetTasks::";
+    taskName += GetName();
+    AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(fEventCuts, fYAMLConfig, fOfflineTriggerMask, baseName, taskName);
+  }
+
+  // General task options
+  baseName = "general";
+  fYAMLConfig.GetProperty({baseName, "nCentBins"}, fNcentBins, false);
 }
 
 /**
@@ -362,7 +376,8 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::IsEventSelected()
   else {
     return AliAnalysisTaskEmcalJet::IsEventSelected();
   }
-  return kFALSE;
+  // The event was accepted by AliEventCuts, so we return true.
+  return kTRUE;
 }
 
 /**
