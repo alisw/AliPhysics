@@ -104,7 +104,7 @@ double AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(double jetAngle, double ep
 }
 
 /**
- * Configure an AliEventCuts object with the options in the given AliYAMLConfiguration object and the taks trigger mask.
+ * Configure an AliEventCuts object with the options in the given AliYAMLConfiguration object and the task trigger mask.
  *
  * @param[in] eventCuts AliEventCuts object to configure.
  * @param[in] yamlConfig %YAML configuration object to be used in configuring the event cuts object.

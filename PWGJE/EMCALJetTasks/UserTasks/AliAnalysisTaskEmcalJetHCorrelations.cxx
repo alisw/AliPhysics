@@ -179,7 +179,7 @@ bool AliAnalysisTaskEmcalJetHCorrelations::Initialize()
 
   // Print the results of the initialization
   // Print outside of the ALICE Log system to ensure that it is always available!
-  //std::cout << *this;
+  std::cout << *this;
 
   fConfigurationInitialized = true;
   return fConfigurationInitialized;
@@ -1726,5 +1726,85 @@ AliParticleContainer * AliAnalysisTaskEmcalJetHCorrelations::CreateParticleOrTra
   return partCont;
 }
 
+/**
+ * Prints information about the jet-hadron correlations task.
+ *
+ * @return std::string containing information about the task.
+ */
+std::string AliAnalysisTaskEmcalJetHCorrelations::toString() const
+{
+  std::stringstream tempSS;
+  tempSS << std::boolalpha;
+  tempSS << "Recycle unused embedded events: " << fRecycleUnusedEmbeddedEventsMode << "\n";
+  tempSS << "Jet collections:\n";
+  TIter next(&fJetCollArray);
+  AliJetContainer * jetCont;
+  while ((jetCont = static_cast<AliJetContainer *>(next()))) {
+    tempSS << "\t" << jetCont->GetName() << ": " << jetCont->GetArrayName() << "\n";
+  }
+  tempSS << "Event selection\n";
+  tempSS << "\tUse AliEventCuts: " << fUseAliEventCuts << "\n";
+  // AliEventCuts in the base class needs to be __disabled__ because the implementation isn't compatible with how it's implemented here.
+  tempSS << "\tUse AliAnalysisTaskEmcal event selection (needs to be enabled to use AliEventCuts): " << fUseInternalEventSelection << "\n";
+  tempSS << "\tTrigger event selection: " << std::bitset<32>(fTriggerType) << "\n";
+  tempSS << "\tMixed event selection: " << std::bitset<32>(fMixingEventType) << "\n";
+  tempSS << "\tEnabled only for non-fast partition: " << fDisableFastPartition << "\n";
+  tempSS << "Jet settings:\n";
+  tempSS << "\tTrack bias: " << fTrackBias << "\n";
+  tempSS << "\tCluster bias: " << fClusterBias << "\n";
+  tempSS << "Event mixing:\n";
+  tempSS << "\tEnabled: " << fDoEventMixing << "\n";
+  tempSS << "\tN mixed tracks: " << fNMixingTracks << "\n";
+  tempSS << "\tMin number of tracks for mixing: " << fMinNTracksMixedEvents << "\n";
+  tempSS << "\tMin number of events for mixing: " << fMinNEventsMixedEvents << "\n";
+  tempSS << "\tNumber of centrality bins for mixing: " << fNCentBinsMixedEvent << "\n";
+  tempSS << "Histogramming options:\n";
+  tempSS << "\tLess sparse axes: " << fDoLessSparseAxes << "\n";
+  tempSS << "\tWider associated track pt bins: " << fDoWiderTrackBin << "\n";
+  tempSS << "Jet matching options for embedding:\n";
+  tempSS << "\tRequire the jet to match to a embedded jets: " << fRequireMatchedJetWhenEmbedding << "\n";
+  tempSS << "\tRequire an additional match to a part level jet: " << fRequireMatchedPartLevelJet << "\n";
+  tempSS << "\tMinimum shared momentum fraction: " << fMinSharedMomentumFraction << "\n";
+  tempSS << "\tMax matched jet distance: " << fMaxMatchedJetDistance << "\n";
+
+  return tempSS.str();
+}
+
+/**
+ * Print jet-hadron correlations task information on an output stream using the string representation provided by
+ * AliAnalysisTaskEmcalJetHCorrelations::toString. Used by operator<<
+ * @param in output stream stream
+ * @return reference to the output stream
+ */
+std::ostream & AliAnalysisTaskEmcalJetHCorrelations::Print(std::ostream & in) const {
+  in << toString();
+  return in;
+}
+
+/**
+ * Print basic jet-hadron correlations task information using the string representation provided by
+ * AliAnalysisTaskEmcalJetHCorrelations::toString
+ *
+ * @param[in] opt Unused
+ */
+void AliAnalysisTaskEmcalJetHCorrelations::Print(Option_t* opt) const
+{
+  Printf("%s", toString().c_str());
+}
+
 } /* namespace EMCALJetTasks */
 } /* namespace PWGJE */
+
+/**
+ * Implementation of the output stream operator for AliAnalysisTaskEmcalJetHCorrelations. Printing
+ * basic jet-hadron correlations task information provided by function toString
+ * @param in output stream
+ * @param myTask Task which will be printed
+ * @return Reference to the output stream
+ */
+std::ostream & operator<<(std::ostream & in, const PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHCorrelations & myTask)
+{
+  std::ostream & result = myTask.Print(in);
+  return result;
+}
+
