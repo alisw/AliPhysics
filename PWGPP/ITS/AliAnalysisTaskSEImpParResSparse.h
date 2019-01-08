@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKSEIMPPARRESSPARSE_H
-#define ALIANALYSISTASKSEIMPPARRESSPARSE_H
+#ifndef AliAnalysisTaskSEImpParResSparse_H
+#define AliAnalysisTaskSEImpParResSparse_H
 
 /* Copyright(c) 1998-2010, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -23,10 +23,8 @@ class AliESDtrackCuts;
 
 #include "AliAnalysisTaskSE.h"
 #include <THnSparse.h>
-#if !(defined(__CINT__) || defined(__MAKECINT__))
-  #include "AliESDEvent.h"
-  #include "AliESDtrack.h"
-#endif
+#include "AliESDEvent.h"
+#include "AliESDtrack.h"
 
 
 class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
@@ -78,6 +76,7 @@ class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
   void SetUseGenPt(Bool_t opt) {fUseGeneratedPt=opt;}
 
   void SetUseFinerPhiBins(Bool_t flag) {fUseFinerPhiBins=flag;}   // mfaggin
+  void SetStoreSPDmodulesInfo(Bool_t flag) {fStoreSPDmodulesInfo=flag;}  // mfaggin
 
  private:
   
@@ -113,6 +112,7 @@ class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
 
   // mfaggin
   Bool_t fUseFinerPhiBins; /// flag to impose fine phi binning in fImpParrphiSparsePtEtaPhi sparse 
+  Bool_t fStoreSPDmodulesInfo; /// flag to decide wheter to store info about SPD modules (layer, detector index)
 
   Int_t fTrackType;
   Bool_t fFillSparseForExpert;
@@ -135,8 +135,8 @@ class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
   Bool_t fUsePhysicalPrimary; //
   Bool_t fUseGeneratedPt; //
 
-                                             // mfaggin (number 6 inserted)
-  ClassDef(AliAnalysisTaskSEImpParResSparse,6); // AliAnalysisTaskSE for the study of the impact parameter resolution
+                                             // mfaggin (number 7 inserted)
+  ClassDef(AliAnalysisTaskSEImpParResSparse,7); // AliAnalysisTaskSE for the study of the impact parameter resolution
 };
 
 #endif
