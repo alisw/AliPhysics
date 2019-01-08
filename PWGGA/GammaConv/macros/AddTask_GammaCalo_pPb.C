@@ -1776,6 +1776,35 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("84683113","11111410570322l0000","0i631031000000d0"); // 40-60 EG1
     cuts.AddCutCalo("86083113","11111410570322l0000","0i631031000000d0"); // 60-80 EG1
 
+  // configurations for pPb 5 and 8 TeV Run2 with EMCAL + DCAL
+  } else if (trainConfig == 2000){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
+    cuts.AddCutCalo("80010123","4997747057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("80010123","4997748057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("80010123","4997757057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("80010123","4997758057032230000","01631031000000d0"); // INT7
+  } else if (trainConfig == 2001){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
+    cuts.AddCutCalo("8008e123","4997747057032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008e123","4997748057032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008e123","4997757057032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008e123","4997758057032230000","01631031000000d0"); // EG2
+  } else if (trainConfig == 2002){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
+    cuts.AddCutCalo("8008d123","4997747057032230000","01631031000000d0"); // EG1
+    cuts.AddCutCalo("8008d123","4997748057032230000","01631031000000d0"); // EG1
+    cuts.AddCutCalo("8008d123","4997757057032230000","01631031000000d0"); // EG1
+    cuts.AddCutCalo("8008d123","4997758057032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2003){ // EMCAL+DCAL clusters standard cuts, triggers, NL vars
+    cuts.AddCutCalo("80010123","4997758057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008e123","4997758057032230000","01631031000000d0"); // EG2+DG2
+    cuts.AddCutCalo("8008d123","4997758057032230000","01631031000000d0"); // EG1+DG1
+  } else if (trainConfig == 2004){ // EMCAL clusters standard cuts, triggers, NL vars
+    cuts.AddCutCalo("80010123","1111158057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("80085123","1111158057032230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("80083123","1111158057032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 2005){ // DCAL clusters standard cuts, triggers, NL vars
+    cuts.AddCutCalo("80010123","3885558057032230000","01631031000000d0"); // INT7
+    cuts.AddCutCalo("8008b123","3885558057032230000","01631031000000d0"); // DG2
+    cuts.AddCutCalo("80089123","3885558057032230000","01631031000000d0"); // DG1
+
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

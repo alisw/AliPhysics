@@ -658,6 +658,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t                      fTriggerSelectedManually;               // Flag for manual trigger selection
       TString                     fSpecialTriggerName;                    // Name of the Special Triggers
       TString                     fSpecialSubTriggerName;                 // Name of the Special Triggers
+      TString                     fSpecialSubTriggerNameAdditional;       // Name of an additional Special Trigger
       Int_t                       fNSpecialSubTriggerOptions;
       TH2F*                       hSPDClusterTrackletBackgroundBefore;    ///< SPD tracklets vs SPD clusters for background-correction before cut
       TH2F*                       hSPDClusterTrackletBackground;          ///< SPD tracklets vs SPD clusters for background-correction
@@ -690,7 +691,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,59)
+      ClassDef(AliConvEventCuts,60)
       /// \endcond
 };
 
