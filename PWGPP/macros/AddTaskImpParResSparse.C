@@ -23,9 +23,10 @@ AliAnalysisTaskSEImpParResSparse *AddTaskImpParResSparse(Bool_t readMC=kFALSE,
                                                          Bool_t useCutGeoNcrNcl=kFALSE,
                                                          Bool_t fillexpertSparse=kFALSE,
                                                          Bool_t usetriggersel=kFALSE,
+                                                         Int_t species=-1,
                                                          Bool_t finebinphi = kFALSE,
-                                                         Bool_t checkSPDmod = kFALSE,
-                                          							 Int_t species=-1)
+                                                         Bool_t checkSPDmod = kFALSE
+                                          							 )
 {
     
     // Get the pointer to the existing analysis manager via the static access method.
