@@ -608,10 +608,10 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
     // Initialize event cuts here: This prevents a segfault
     // in case a user task overwrites the function UserCreateOutputObjects
     if(!fUseInternalEventSelection) {
-      fAliEventCuts = new AliEventCuts(true);
+      fAliEventCuts = new AliEventCuts(false); // Event cut should add the QA plots to the EMCAL list directly
       // Do not perform trigger selection in the AliEvent cuts but let the task do this before
       fAliEventCuts->OverrideAutomaticTriggerSelection(AliVEvent::kAny, true);
-      if(fOutput) fOutput->Add(fAliEventCuts);
+      if(fOutput) fAliEventCuts->AddQAplotsToList(fOutput);
     }
   }
 
