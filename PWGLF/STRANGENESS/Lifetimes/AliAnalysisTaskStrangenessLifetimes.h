@@ -15,6 +15,7 @@ class TTree;
 #include "Math/Vector4D.h"
 #include "MCparticle.h"
 #include "MiniV0.h"
+#include "MiniEvent.h"
 #include "HyperTriton2Body.h"
 
 
@@ -105,7 +106,7 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   std::vector<Lifetimes::MiniV0 > fV0vector;
   std::vector<Lifetimes::MCparticle> fMCvector;
   std::vector<Lifetimes::HyperTriton2Body> fV0Hyvector;
-  float fMultiplicity;
+  Lifetimes::MiniEvent fMiniEvent;
 
   AliAnalysisTaskStrangenessLifetimes(
       const AliAnalysisTaskStrangenessLifetimes&);  // not implemented

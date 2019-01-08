@@ -113,8 +113,7 @@ AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
       fMaxTPChe3Sigma{10.},
       fV0vector{},
       fMCvector{},
-      fV0Hyvector{},
-      fMultiplicity{} {
+      fV0Hyvector{} {
   // Standard output
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());  // Basic Histograms
@@ -140,7 +139,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserCreateOutputObjects() {
   inputHandler->SetNeedField();
 
   fTreeV0 = new TTree("fTreeV0", "V0 Candidates");
-  fTreeV0->Branch("fMultiplicity", &fMultiplicity, "fMultiplicity/F");
+  fTreeV0->Branch("Event", &fMiniEvent);
   fTreeV0->Branch("V0s", &fV0vector);
   fTreeV0->Branch("V0Hyper",&fV0Hyvector);
   if (man->GetMCtruthEventHandler()) {
@@ -285,8 +284,12 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
   }
 
   double primaryVertex[3];
-  fMultiplicity = fEventCuts.GetCentrality();
+  fMiniEvent.fMultiplicity = fEventCuts.GetCentrality();
   fEventCuts.GetPrimaryVertex()->GetXYZ(primaryVertex);
+
+  fMiniEvent.fXvtx = primaryVertex[0];
+  fMiniEvent.fYvtx = primaryVertex[1];
+  fMiniEvent.fZvtx = primaryVertex[2];
 
   std::unordered_map<int,int> mcMap;
   if (fMC) {
