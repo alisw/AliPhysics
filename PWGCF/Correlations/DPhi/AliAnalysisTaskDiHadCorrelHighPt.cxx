@@ -1109,7 +1109,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
     selectedMCassoc->Delete();
     selectedMCtrig->Delete();
     selectedMCV0Triggersrec->Delete();
-    mcArray->Delete();
+    mcArray->Clear("C");
     selectedMCV0TriggersrecGoodId->Delete();
     selectedMCV0TriggersrecGoodIdRec->Delete();
     selectedMCV0TriggersCanGen->Delete();
