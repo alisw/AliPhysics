@@ -441,6 +441,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t    fUseEtaCut;                               // flag for switching on eta cut
     Double_t  fMinPhiCut;                               // phi cut
     Double_t  fMaxPhiCut;                               // phi cut
+    Double_t  fMinPhiCutDMC;                            // phi cut
+    Double_t  fMaxPhiCutDMC;                            // phi cut
     Bool_t    fUsePhiCut;                               // flag for switching on phi cut
     Double_t  fMinDistanceToBadChannel;                 // minimum distance to bad channel
     Int_t     fUseDistanceToBadChannel;                 // flag for switching on distance to bad channel cut: 0 off, 1 on without corners, 2 on with corners included
@@ -613,7 +615,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,77)
+    ClassDef(AliCaloPhotonCuts,78)
 };
 
 #endif
