@@ -18,9 +18,6 @@ set(MODULE PWGHFjetsHF)
 add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
-include_directories(${AliPhysics_SOURCE_DIR}/PWG/JETFW)
-
-include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF)
 include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/jetsHF)
 
 
@@ -39,10 +36,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv
                     ${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS/Cascades/Run2
                     ${AliRoot_SOURCE_DIR}/PYTHIA6/pythia6
-                    ${AliRoot_SOURCE_DIR}/STEER/AOD
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
-                    ${AliRoot_SOURCE_DIR}/STEER/STEER
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+		    ${AliPhysics_SOURCE_DIR}/PWG/JETFW
+		    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
                     )
 
 
@@ -94,7 +89,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG Gpad Hist MathCore Physics Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGJETFW STEERBase PWGTools)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGJETFW STEERBase PWGTools PWGHFvertexingHF)
 
 # Generate the ROOT map
 # Dependecies
