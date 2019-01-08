@@ -150,9 +150,13 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
     // and also the area of later excluded jets.
     // Some of these jets do not contribute to the rho calculation
     // but to the factor with which this rho is scaled down
-    if (fExcludeAreaExcludedJets==0 && jet->GetNumberOfTracks()>0)
+    if (fExcludeAreaExcludedJets==0)
     {
-      TotaljetAreaPhys+=jet->Area();
+      // Total area of physical jets that are used for the rho calculation
+      if(jet->GetNumberOfTracks()>0)
+      {
+       TotaljetAreaPhys+=jet->Area();
+      }
       // Total area of all found jets ghost+phyical jets. This is a proxy
       // for the available detector area in which the rho could have been calculated
       TotalAreaCovered+=jet->Area();
@@ -188,9 +192,13 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
 
     // Take into account only real jets (no pure ghost jets) that also
     // contribute to the rho calculation
-    if (fExcludeAreaExcludedJets==1 && jet->GetNumberOfTracks()>0)
+    if (fExcludeAreaExcludedJets==1)
     {
-      TotaljetAreaPhys+=jet->Area();
+      // Total area of physical jets that are used for the rho calculation
+      if(jet->GetNumberOfTracks()>0)
+      {
+       TotaljetAreaPhys+=jet->Area();
+      }
       // Total area of all found jets ghost+phyical jets. This is a proxy
       // for the available detector area in which the rho could have been calculated
       TotalAreaCovered+=jet->Area();
