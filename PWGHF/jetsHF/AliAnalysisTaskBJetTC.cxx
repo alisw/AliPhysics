@@ -2710,16 +2710,16 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 	fh1dJetRecPtAcceptedunCorr = new TH1D("fh1dJetRecPtAcceptedunCorr","Rec Jet Pt uncorrected;P_{T,Jet} (Gev/c)",250 ,0, 250);
 
 
-	f2histRhoVsDeltaPt = new TH2D("f2histRhoVsDeltaPt","Rho Vs Delta Pt;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
-	f2histRhoVsDeltaPtFirst = new TH2D("f2histRhoVsDeltaPtFirst","Rho Vs Delta Pt N=1 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
-	f2histRhoVsDeltaPtSecond = new TH2D("f2histRhoVsDeltaPtSecond","Rho Vs Delta Pt N=2 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
-	f2histRhoVsDeltaPtThird = new TH2D("f2histRhoVsDeltaPtThird","Rho Vs Delta Pt N=3 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
+	f2histRhoVsDeltaPt = new TH2D("f2histRhoVsDeltaPt","Rho Vs Delta Pt;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
+	f2histRhoVsDeltaPtFirst = new TH2D("f2histRhoVsDeltaPtFirst","Rho Vs Delta Pt N=1 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
+	f2histRhoVsDeltaPtSecond = new TH2D("f2histRhoVsDeltaPtSecond","Rho Vs Delta Pt N=2 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
+	f2histRhoVsDeltaPtThird = new TH2D("f2histRhoVsDeltaPtThird","Rho Vs Delta Pt N=3 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
 
 	if(fDoDeltaPtWithSignal){
-		f2histRhoVsDeltaPtWithSignal = new TH2D("f2histRhoVsDeltaPtWithSignal","Rho Vs Delta Pt;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
-		f2histRhoVsDeltaPtWithSignalFirst = new TH2D("f2histRhoVsDeltaPtWithSignalFirst","Rho Vs Delta Pt N=1 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
-		f2histRhoVsDeltaPtWithSignalSecond = new TH2D("f2histRhoVsDeltaPtWithSignalSecond","Rho Vs Delta Pt N=2 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
-		f2histRhoVsDeltaPtWithSignalThird = new TH2D("f2histRhoVsDeltaPtWithSignalThird","Rho Vs Delta Pt N=3 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,20,0,20);
+		f2histRhoVsDeltaPtWithSignal = new TH2D("f2histRhoVsDeltaPtWithSignal","Rho Vs Delta Pt;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
+		f2histRhoVsDeltaPtWithSignalFirst = new TH2D("f2histRhoVsDeltaPtWithSignalFirst","Rho Vs Delta Pt N=1 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
+		f2histRhoVsDeltaPtWithSignalSecond = new TH2D("f2histRhoVsDeltaPtWithSignalSecond","Rho Vs Delta Pt N=2 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
+		f2histRhoVsDeltaPtWithSignalThird = new TH2D("f2histRhoVsDeltaPtWithSignalThird","Rho Vs Delta Pt N=3 tagged Events;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)",170,-20,150,30,0,30);
 	}
 
         
@@ -4787,7 +4787,7 @@ Double_t AliAnalysisTaskBJetTC::GetDeltaPtRandomCone()
 	AliVTrack* tmpTrack = 0x0;
 	AliAODTrack* trackAOD = 0x0;
 
-	for(Int_t i = 0; i < partcont->GetNParticles(); i++) {
+	for(Int_t i = 0; i < partcont->GetNAcceptedParticles(); i++) {
 
 		if(!partcont->GetParticle(i)) continue;
 		tmpTrack = static_cast<AliVTrack*>(partcont->GetParticle(i));
@@ -4830,7 +4830,7 @@ Double_t AliAnalysisTaskBJetTC::GetDeltaPtRandomConeWithSignal()
 	Double_t tmpRandConePhi = fRandom->Rndm() * TMath::TwoPi();
 	Double_t tmpConePt = -1.;
 
-	for(Int_t i = 0; i < partcont->GetNParticles(); i++) {
+	for(Int_t i = 0; i < partcont->GetNAcceptedParticles(); i++) {
 
 		if(!partcont->GetParticle(i)) continue;
 		AliVTrack* tmpTrack = static_cast<AliVTrack*>(partcont->GetParticle(i));
