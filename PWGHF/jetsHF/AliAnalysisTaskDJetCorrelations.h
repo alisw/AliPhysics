@@ -171,7 +171,6 @@ private:
    THnSparse* fhsDphiz;             //!
    THnSparse* fResponseMatrix;      //!
 
-
    ClassDef(AliAnalysisTaskDJetCorrelations,1); // class for charm-jet CorrelationsExch
 };
 

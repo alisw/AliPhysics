@@ -20,7 +20,6 @@ add_definitions(-D_MODULE_="${MODULE}")
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/jetsHF)
 
-
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
@@ -73,6 +72,7 @@ if(FASTJET_FOUND)
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
     link_directories(${FASTJET_LIBS_DIR})
     add_definitions(${FASTJET_DEFINITIONS})
+
 endif(FASTJET_FOUND)
 
 # Headers from sources
