@@ -15,6 +15,8 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
+// Migrated from PWGJE/FlavourJetTasks to PWGHF/jetsHF
+
 //-----------------------------------------------------------------------
 // Author : S. Antônio (University of São Paulo) antonio.silva@cern.ch
 //          A. Grelli,  Utrecht University
@@ -168,7 +170,6 @@ private:
    //main histograms
    THnSparse* fhsDphiz;             //!
    THnSparse* fResponseMatrix;      //!
-
 
    ClassDef(AliAnalysisTaskDJetCorrelations,1); // class for charm-jet CorrelationsExch
 };
