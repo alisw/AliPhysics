@@ -19,6 +19,8 @@
 #pragma link C++ class std::vector<AliBasicJetSecondaryVertex>+;
 #pragma link C++ class AliBasicJet+;
 
+#pragma link C++ class AliAODRecoDecayHF2Prong+;
+
 #pragma link C++ class AliAnalysisTaskEmcalJetBtagSV+;
 #pragma link C++ class AliRDHFJetsCuts+;
 #pragma link C++ class AliRDHFJetsCutsVertex+;
@@ -32,4 +34,5 @@
 #pragma link C++ class AliAnalysisTaskBJetTC+;
 #pragma link C++ class AliDJetRawYieldUncertainty+;
 #pragma link C++ class AliAnalysisTaskDJetCorrelations+;
+#pragma link C++ class AliAnalysisTaskDmesonsFilterCJ+;
 #endif

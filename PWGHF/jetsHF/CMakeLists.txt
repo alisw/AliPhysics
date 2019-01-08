@@ -66,6 +66,7 @@ set(SRCS
     AliHFJetsContainerVertex.cxx
     AliDJetRawYieldUncertainty.cxx
     AliAnalysisTaskDJetCorrelations.cxx
+    AliAnalysisTaskDmesonsFilterCJ.cxx
 )
 
 if(FASTJET_FOUND)
