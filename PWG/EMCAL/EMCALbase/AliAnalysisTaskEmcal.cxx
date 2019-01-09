@@ -1113,7 +1113,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected(){
 
 Bool_t AliAnalysisTaskEmcal::IsEventSelectedInternal()
 {
-  AliDebugStream(1) << "Using default event selection" << std::endl;
+  AliDebugStream(3) << "Using default event selection" << std::endl;
   if (fOffTrigger != AliVEvent::kAny) {
     UInt_t res = 0;
     const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(InputEvent());
@@ -1269,7 +1269,7 @@ Bool_t AliAnalysisTaskEmcal::IsTriggerSelected(){
   // to trigger selection). Users should re-implement
   // this function in case they have certain needs, in
   // particular for EMCAL triggers
-  AliDebugStream(1) << "Using default trigger selection" << std::endl;
+  AliDebugStream(3) << "Using default trigger selection" << std::endl;
   if (!fTrigClass.IsNull()) {
     TString fired = InputEvent()->GetFiredTriggerClasses();
     if (!fired.Contains("-B-")) return kFALSE;
