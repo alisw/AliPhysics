@@ -2,7 +2,7 @@
 
 #include <array>
 #include <unordered_map>
-
+#include <TRandom3.h>
 #include <Riostream.h>
 #include <TChain.h>
 #include <TFile.h>
@@ -67,7 +67,7 @@ int ComputeMother(AliMCEvent* mcEvent, const AliESDtrack* one, const AliESDtrack
 }  // namespace
 
 AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
-    bool mc, std::string name)
+    bool mc, std::string name, float downscale)
     : AliAnalysisTaskSE(name.data()),
       fEventCuts{},
       fListHist{nullptr},
@@ -75,6 +75,7 @@ AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
       fPIDResponse{nullptr},
       fDoV0Refit{true},
       fMC{mc},
+      fDownscale{downscale},
       fUseOnTheFly{false},
       fHistMCct{nullptr},
       fHistMCctPrimary{nullptr},
@@ -564,6 +565,9 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
             }
           }
         }
+      }
+      if (fake=true && fDownscale<1){
+         if((gRandom->Rndm())<fDownscale){continue;}
       }
       if (isHyperCandidate){
          auto miniHyper = HyperTriton2Body::FillHyperTriton2Body(v0,pTrack,nTrack,nSigmaPosHe3,
